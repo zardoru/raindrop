@@ -16,6 +16,7 @@ so while the code itself is fairly simple it has quite an amount of dependencies
 -glew 1.90
 -glfw 2.7.7
 -caudio 2.2.0
+-glm 0.9.4.1
 
 building is basically setting up the include and library directories to all these
 libraries (for msvc v90) after compiling them for this toolset
