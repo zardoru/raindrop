@@ -57,10 +57,10 @@ void ScreenEvaluation::Init(EvaluationData _Data)
 	WindowManager& winMgr = WindowManager::getSingleton();
 	root = (DefaultWindow*)winMgr.createWindow("DefaultWindow", "ScreenEvalRoot");
 
+	System::getSingleton().setGUISheet(root);
+
 	FrameWindow* fWnd = static_cast<FrameWindow*>(
 		winMgr.createWindow( "TaharezLook/FrameWindow", "evalWindow" ));
-
-	System::getSingleton().setGUISheet(root);
 
 	fWnd->setText("Evaluation Results!");
 	fWnd->setPosition(UVector2(cegui_reldim(0.25f), cegui_reldim( 0.25f)));

@@ -164,5 +164,8 @@
     <ClInclude Include="..\src\ScreenEdit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\ScreenMainMenu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

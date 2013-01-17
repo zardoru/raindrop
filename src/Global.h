@@ -5,3 +5,7 @@
 #include <sstream>
 #include <vector>
 #include "Game_Consts.h"
+
+#ifdef WIN32
+#pragma warning (disable: 4244)
+#endif

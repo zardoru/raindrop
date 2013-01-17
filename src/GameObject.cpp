@@ -124,7 +124,7 @@ Judgement GameObject::Hit(float Time, glm::vec2 mpos, bool KeyDown,  bool Autopl
 
 	if (!KeyDown)
 	{
-		if (!Autoplay && endTime == 0)
+		if (!Autoplay)
 			return None;
 	}
 

@@ -20,7 +20,7 @@ void Song::Process()
 		{
 			if (it->Measure != CurrentMeasure)
 				continue;
-			MaxMeasureFrac = std::max(MaxMeasureFrac + 1, it->MeasurePos + 1);
+			MaxMeasureFrac = std::max(MaxMeasureFrac, it->MeasurePos + 1);
 		}
 
 		for (std::vector<GameObject>::iterator it = Notes->begin(); it != Notes->end(); it++)

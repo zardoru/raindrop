@@ -5,7 +5,7 @@
 
 class ScreenSelectMusic : public IScreen
 {
-	std::vector<Song> SongList;
+	std::vector<Song*> SongList;
 	CEGUI::DefaultWindow *root;
 	CEGUI::Listbox *songbox;
 	bool RunMusic(const CEGUI::EventArgs&);

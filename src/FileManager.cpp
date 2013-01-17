@@ -11,7 +11,7 @@
 
 std::string FileManager::CurrentSkin = "default";
 
-void loadSong( boost::filesystem::path songPath, std::vector<Song> &VecOut )
+void loadSong( boost::filesystem::path songPath, std::vector<Song*> &VecOut )
 {
 	using namespace boost::filesystem;
 	directory_iterator end_iter;
@@ -44,7 +44,7 @@ std::fstream FileManager::OpenFile(std::string Directory)
 	return std::fstream ( (DirectoryPrefix + Directory).c_str() );
 }
 
-void FileManager::GetSongList(std::vector<Song> &OutVec)
+void FileManager::GetSongList(std::vector<Song*> &OutVec)
 {
 	using namespace boost::filesystem;
 	path songsPath (SongsPrefix);

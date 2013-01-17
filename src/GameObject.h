@@ -10,10 +10,15 @@ class GameObject : public GraphObject2D
 public:
 	GameObject();
 	bool BeingHeld;
-	float fadeout_time, fadein_time, leniency_time; // time to fadeout, and time to get a hit
+	float fadeout_time, fadein_time; // time to fadeout, and time to get a hit
+
 	float startTime, endTime, beat, hold_duration;
 	int heldKey;
+
 	unsigned int Measure, MeasurePos;
+
+
+
 	void (*judgementCallback) (Judgement);
 	Judgement Hit(float time, glm::vec2 mpos, bool KeyDown, bool Autoplay, int Key);
 	Judgement Run(float delta, float Time, bool Autoplay);

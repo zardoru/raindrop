@@ -12,10 +12,13 @@ class ScreenGameplay : public IScreen
 {
 protected: // shit the edit screen needs
 
-	Song MySong;
+	Song *MySong;
 
 	// Game Data
 	int Measure;
+
+	// the point of this is that we can change the barline's position.
+	float MeasureTimeElapsed;
 
 	bool IsAutoplaying; // true for autoplaying notes
 
@@ -29,6 +32,7 @@ protected: // shit the edit screen needs
 	// leave this to who will use it
 	void startMusic();
 	void seekTime(float time);
+	void stopMusic();
 
 private: // shit only screengameplay needs
 
@@ -44,7 +48,7 @@ private: // shit only screengameplay needs
 	// Game Data
 	// MeasureTime is the time the current measure will last.
 	// MeasureTimeElapsed is the time so far of the current measure
-	float MeasureTime, MeasureTimeElapsed;
+	float MeasureTime;
 
 	// Actors
 	ActorBarline Barline;
@@ -58,7 +62,7 @@ private: // shit only screengameplay needs
 public:
 	ScreenGameplay(IScreen *Parent);
 
-	virtual void Init(const Song &OtherSong);
+	virtual void Init(Song *OtherSong);
 	int GetMeasure();
 	virtual bool Run(float Delta);
 	virtual void HandleInput(int key, int code, bool isMouseInput);

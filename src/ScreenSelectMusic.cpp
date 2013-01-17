@@ -33,9 +33,9 @@ void ScreenSelectMusic::Init()
 	fWnd->addChildWindow(songbox);
 
 	int newid = 0;
-	for (std::vector<Song>::iterator i = SongList.begin(); i != SongList.end(); i++)
+	for (std::vector<Song*>::iterator i = SongList.begin(); i != SongList.end(); i++)
 	{
-		ListboxTextItem *newItem = new ListboxTextItem(i->SongName, newid);
+		ListboxTextItem *newItem = new ListboxTextItem((*i)->SongName, newid);
 		newItem->setSelectionBrushImage("TaharezLook", "MultiListSelectionBrush");
 		newItem->setSelectionColours(CEGUI::colour(0,0,1));
 		songbox->addItem( newItem );
@@ -149,7 +149,7 @@ bool ScreenSelectMusic::QuitGame(const CEGUI::EventArgs&)
 
 bool ScreenSelectMusic::ReloadSongs(const CEGUI::EventArgs&)
 {
-	for (int i = 0; i < songbox->getItemCount(); i++)
+	for (unsigned int i = 0; i < songbox->getItemCount(); i++)
 	{
 		songbox->removeItem(songbox->getListboxItemFromIndex(i));
 	}
@@ -159,9 +159,9 @@ bool ScreenSelectMusic::ReloadSongs(const CEGUI::EventArgs&)
 	FileManager::GetSongList(SongList);
 
 	int newid = 0;
-	for (std::vector<Song>::iterator i = SongList.begin(); i != SongList.end(); i++)
+	for (std::vector<Song*>::iterator i = SongList.begin(); i != SongList.end(); i++)
 	{
-		CEGUI::ListboxTextItem *newItem = new CEGUI::ListboxTextItem(i->SongName, newid);
+		CEGUI::ListboxTextItem *newItem = new CEGUI::ListboxTextItem((*i)->SongName, newid);
 		newItem->setSelectionBrushImage("TaharezLook", "MultiListSelectionBrush");
 		newItem->setSelectionColours(CEGUI::colour(0,0,1));
 		songbox->addItem( newItem );

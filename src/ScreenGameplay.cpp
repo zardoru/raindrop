@@ -67,7 +67,7 @@ void ScreenGameplay::StoreEvaluation(Judgement Eval)
 	Evaluation.MaxCombo = max(Evaluation.MaxCombo, Combo);
 }
 
-void ScreenGameplay::Init(const Song &OtherSong)
+void ScreenGameplay::Init(Song *OtherSong)
 {
 	MySong = OtherSong;
 	
@@ -80,7 +80,7 @@ void ScreenGameplay::Init(const Song &OtherSong)
 	Barline.setImage(ImageLoader::LoadSkin("Barline.png"));
 	MarkerA.setImage(ImageLoader::LoadSkin("barline_marker.png"));
 	MarkerB.setImage(ImageLoader::LoadSkin("barline_marker.png"));
-	Background.setImage(ImageLoader::Load(MySong.BackgroundDir));
+	Background.setImage(ImageLoader::Load(MySong->BackgroundDir));
 
 	Background.alpha = 0.8;
 	Background.width = PlayfieldWidth;
@@ -98,21 +98,21 @@ void ScreenGameplay::Init(const Song &OtherSong)
 	MarkerA.Init();
 	MarkerB.Init();
 
-	Barline.Init(MySong.Offset);
+	Barline.Init(MySong->Offset);
 	Lifebar.UpdateHealth();
 
-	MeasureTime = (60 * 4 / MySong.BPM);
+	MeasureTime = (60 * 4 / MySong->BPM);
 
-	NotesInMeasure.resize(MySong.MeasureCount);
-	for (int i = 0; i < MySong.MeasureCount; i++)
+	NotesInMeasure.resize(MySong->MeasureCount);
+	for (int i = 0; i < MySong->MeasureCount; i++)
 	{
-		NotesInMeasure[i] = MySong.GetObjectsForMeasure(i);
+		NotesInMeasure[i] = MySong->GetObjectsForMeasure(i);
 	}
 
-	song = audioMgr->create("song", MySong.SongDir.c_str(), true);
+	song = audioMgr->create("song", MySong->SongDir.c_str(), true);
 
 	if (!song)
-		throw std::exception( (boost::format ("couldn't open song %s") % MySong.SongDir).str().c_str() );
+		throw std::exception( (boost::format ("couldn't open song %s") % MySong->SongDir).str().c_str() );
 
 	MeasureTimeElapsed = 0;
 	SongTime = 0;
@@ -136,7 +136,7 @@ int ScreenGameplay::GetMeasure()
 
 void ScreenGameplay::RunMeasure(float delta)
 {
-	if (Measure < MySong.MeasureCount)
+	if (Measure < MySong->MeasureCount)
 	{
 		Judgement Val;
 
@@ -188,7 +188,7 @@ void ScreenGameplay::HandleInput(int key, int code, bool isMouseInput)
 		return;
 	}
 
-	if (Measure < MySong.MeasureCount && // if measure is playable
+	if (Measure < MySong->MeasureCount && // if measure is playable
 		(((key == 'Z' || key == 'X') && !isMouseInput) || // key is z or x and it's not mouse input or
 		(isMouseInput && (key == GLFW_MOUSE_BUTTON_LEFT || key == GLFW_MOUSE_BUTTON_RIGHT))) // is mouse input and it's a mouse button..
 		)
@@ -284,6 +284,11 @@ void ScreenGameplay::startMusic()
 	song->play();
 }
 
+void ScreenGameplay::stopMusic()
+{
+	song->stop();
+}
+
 // todo: important- use song's time instead of counting manually.
 bool ScreenGameplay::Run(float TimeDelta)
 {
@@ -314,7 +319,7 @@ bool ScreenGameplay::Run(float TimeDelta)
 
 		Barline.Run(TimeDelta, MeasureTime, MeasureTimeElapsed);
 
-		if (SongTime > MySong.Offset)
+		if (SongTime > MySong->Offset)
 		{
 			MeasureTimeElapsed += TimeDelta;
 			if (MeasureTimeElapsed > MeasureTime)
@@ -328,6 +333,10 @@ bool ScreenGameplay::Run(float TimeDelta)
 
 		RenderObjects(TimeDelta);
 	}
+
+	if (Lifebar.Health <= 0 && ShouldChangeScreenAtEnd) // You died? Not an infinite screen?
+		Running = false; // gg
+
 	return Running;
 }
 
@@ -373,7 +382,7 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 	}
 
 	// Render current measure on front of the next!
-	if (Measure + 1 < MySong.MeasureCount)
+	if (Measure + 1 < MySong->MeasureCount)
 	{
 		// Draw from latest to earliest
 		for (std::vector<GameObject>::reverse_iterator i = NotesInMeasure[Measure+1].rbegin(); 
@@ -385,7 +394,7 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 		}
 	}
 
-	if (Measure < MySong.MeasureCount)
+	if (Measure < MySong->MeasureCount)
 	{
 		for (std::vector<GameObject>::reverse_iterator i = NotesInMeasure[Measure].rbegin(); 
 			i != NotesInMeasure[Measure].rend(); 

@@ -10,7 +10,7 @@ class FileManager
 {
 	static std::string CurrentSkin;
 public:
-	static void GetSongList(std::vector<Song> &OutVec);
+	static void GetSongList(std::vector<Song*> &OutVec);
 	static std::fstream OpenFile(std::string Directory);
 	static std::string GetDirectoryPrefix();
 	static std::string GetSkinPrefix();

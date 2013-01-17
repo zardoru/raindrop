@@ -104,7 +104,7 @@ void GLFWCALL ResizeFunc(int width, int height)
 	GraphMan.size.y = height;
 
 #ifndef DISABLE_CEGUI
-	CEGUI::System::getSingleton().getRenderer()->setDisplaySize(CEGUI::Size(width, height));
+	CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Size(width, height));
 #endif
 }
 
@@ -204,7 +204,7 @@ void GraphicsManager::AutoSetupWindow()
 #endif
 #else
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 2);
-	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 0);
+	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 1);
 #endif
 
 	glfwGetDesktopMode(&mode);
@@ -285,7 +285,6 @@ void GraphicsManager::SetupCEGUI()
             (CEGUI::System::getSingleton().getResourceProvider());
     
     const char* dataPathPrefix = "./GameData/GUI/";
-    char resourcePath[256];
 
 	// az note: i literally c&p shit from CEGUI's samples because holy shit what
     // for each resource type, set a resource group directory

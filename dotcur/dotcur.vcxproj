@@ -128,6 +128,7 @@
     <ClInclude Include="..\src\ScreenEdit.h" />
     <ClInclude Include="..\src\ScreenEvaluation.h" />
     <ClInclude Include="..\src\ScreenGameplay.h" />
+    <ClInclude Include="..\src\ScreenMainMenu.h" />
     <ClInclude Include="..\src\ScreenSelectMusic.h" />
     <ClInclude Include="..\src\Song.h" />
   </ItemGroup>

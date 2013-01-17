@@ -1,6 +1,12 @@
 #include "Global.h"
 #include "NoteLoader.h"
 #include "Game_Consts.h"
+
+#include <boost/algorithm/string.hpp>
+#include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
 #include <fstream>
 
 float ScreenDifference()
@@ -8,73 +14,13 @@ float ScreenDifference()
 	return std::abs(float((ScreenWidth / 2.f) - (PlayfieldWidth / 2.f)));
 }
 
-// func returns a positive number for x position. A negative one for a measure finish.
-GameObject parse_notes(const char* str, int * len)
-{
-	std::string buf;
-	const char* start_pt = str;
-	bool isHold = false;
-	GameObject retVal;
-
-start:
-	if (*str != '{')
-	{
-		if (*str == ',') // measure end
-		{
-			*len = 1; // skip one
-			retVal.position.x = -1;
-			return retVal;
-		}
-
-		std::stringstream serr;
-		serr << "unexpected token \"" << *str << "\" while parsing";
-		throw std::exception(serr.str().c_str());
-	}
-
-	str++; // move ahead one char.
-	while (*str != '}' && *str != '\0' && *str != ';' && *str != ',') // , is the end of a measure.
-	{
-		if (*str == ' ') // basically something like {xxx yyy} will be a hold with yyy being the duration (in beats)
-			isHold = true;
-		buf += *str; 
-		str++;
-	}
-
-	if (*str == '\0')
-	{
-		std::stringstream serr;
-		serr << "unexpected end of line while parsing (this shouldn't happen)";
-		throw std::exception(serr.str().c_str());
-	}
-
-	// we parse our value within braces..
-	std::stringstream out (buf);
-	int tempVal;
-
-	// parse as iostream
-	out >> tempVal;
-
-	retVal.position.x = tempVal;
-
-	if (isHold)
-	{
-		float heldTime;
-		out >> heldTime;
-		retVal.hold_duration = heldTime;
-	}
-
-	// skip what we parsed
-	*len = str - start_pt + 1;
-	return retVal;
-}
-
-Song NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
+Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 {
 	std::ifstream filein;
 	filein.open(filename.c_str(), std::ios::in);
 	std::vector<GameObject> *myVec = new std::vector<GameObject>();
-	Song Out;
-	int Measure = 0; // Current measure
+	Song *Out = new Song();
+	int Measure = -1; // Current measure
 	int MeasurePos = 0; // position within the measure. (we divide later by measure * mlen + measure fraction to get current beat)
 
 	if (!filein.is_open())
@@ -94,31 +40,31 @@ Song NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 		// First, metadata.
 		if (command.find("#NAME") != std::string::npos)
 		{
-			Out.SongName = line.substr(line.find_first_of(":") + 1);
+			Out->SongName = line.substr(line.find_first_of(":") + 1);
 		}
 
 		// Then, Timing data.
 		if (command.find("#BPM") != std::string::npos)
 		{
 			std::stringstream str (line.substr(line.find_first_of(":") + 1));
-			str >> Out.BPM;
+			str >> Out->BPM;
 		}
 
 		if (command.find("#OFFSET") != std::string::npos)
 		{
 			std::stringstream str (line.substr(line.find_first_of(":") + 1));
-			str >> Out.Offset;
+			str >> Out->Offset;
 		}
 
 		// Then, file info.
 		if (command.find("#SONG") != std::string::npos)
 		{
-			Out.SongDir = prefix + "/" + line.substr(line.find_first_of(":") + 1);
+			Out->SongDir = prefix + "/" + line.substr(line.find_first_of(":") + 1);
 		}
 
 		if (command.find("#BACKGROUNDIMAGE") != std::string::npos)
 		{
-			Out.BackgroundDir = prefix + "/" + line.substr(line.find_first_of(":") + 1);
+			Out->BackgroundDir = prefix + "/" + line.substr(line.find_first_of(":") + 1);
 		}
 
 		// Then, the charts.
@@ -126,64 +72,94 @@ Song NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 		{
 			// get the object string (all between a colon and a semicolon.
 			std::string objectstring = line.substr(line.find_first_of(":") + 1);
-
-			objectstring += ";"; 
-
-			const char *process_str = objectstring.c_str();
+			std::vector< std::string > splitvec;
 			bool invert = false;
 
-			while (*process_str != '\0' && *process_str != ';')
+			// Remove whitespace.
+			boost::replace_all(objectstring, "\n", "");
+			// boost::replace_all(objectstring, "M", ""); // mirror flags
+
+			boost::split(splitvec, objectstring, boost::is_any_of(",")); // Separate measures!
+			BOOST_FOREACH(std::string objectlist, splitvec)
 			{
-				int adv_amt; // how much we advance in the string!
+				std::vector< std::string > splitobjects;
+				invert = false;
 
-				while (*process_str == '\n' || *process_str == ' ') // skip whitespace
+				if ( objectlist.length() == 0 )
 				{
-					process_str++;
+					Measure++;
+					continue;
 				}
 
-				if (*process_str == 'M') // Horizontal mirror flag?
+				if ( objectlist.at(0) == 'M')
 				{
-					process_str++;
 					invert = true;
+					boost::replace_all(objectlist, "M", "");
 				}
 
-				GameObject obj = parse_notes(process_str, &adv_amt);
+				Measure++;
+				MeasurePos = 0;
 
-				if (obj.position.x > -1)
+				boost::split(splitobjects, objectlist, boost::is_any_of("{}"), boost::algorithm::token_compress_on);
+				BOOST_FOREACH (std::string object_description, splitobjects) // For all objects in measure
 				{
-					obj.Measure = Measure;
-					obj.MeasurePos = MeasurePos;
+					std::vector< std::string > object_parameters;
 
-					if (invert && obj.position.x > 0)
+					if (object_description.length() == 0) // we must have at least a plain "0"
+						continue;
+
+					boost::split(object_parameters, object_description, boost::is_any_of(" :"));
+					if (object_parameters.size() > 0) // We got a position
 					{
-						obj.position.x = PlayfieldWidth - obj.position.x;
+						int xpos = 0;
+						float hold_duration = 0;
+						int sound = 0;
+
+						if (object_parameters[0].length() > 0) // does it have length?
+							xpos = boost::lexical_cast<int> (object_parameters[0].c_str()); // assign it
+
+						if (object_parameters.size() > 1) // We got a hold note parameter
+						{
+							if (object_parameters[1].length() > 0) // length?
+								hold_duration = boost::lexical_cast<float> (object_parameters[1].c_str()); // load it in
+
+							if (object_parameters.size() > 2) // We got a sound parameter
+							{
+								if (object_parameters[2].length() > 0) // got a valid sound?
+									sound = boost::lexical_cast<int> (object_parameters[2].c_str()); // cast it in
+							}
+						}
+
+						if (invert)
+						{
+							if (xpos != 0)
+								xpos = PlayfieldWidth - xpos;
+						}
+
+						GameObject Temp;
+
+						if (xpos != 0)
+							Temp.position.x = xpos + ScreenDifference();
+						else
+							Temp.position.x = 0;
+
+						Temp.hold_duration = hold_duration;
+						Temp.Measure = Measure;
+						Temp.MeasurePos = MeasurePos;
+						myVec->push_back(Temp);
+
 					}
-
-					if (obj.position.x > 0) // Adjust as neccesary (to fit in playing field) if it's a valid note.
-						obj.position.x += ScreenDifference();
-
-					myVec->push_back(obj);
-					// We calculate beat and time later.
 					MeasurePos++;
 				}
-				else if (obj.position.x == -1)
-				{
-					if (invert)
-						invert = false;
-					Measure++;
-					MeasurePos = 0; // Reset position within measure.
-				}
-
-				process_str += adv_amt;
-			} // while process_str
+			}
 		}// command == #notes
 	}
 	
-	Out.MeasureCount = Measure + 1;
-	Out.Notes = myVec;
+	Out->MeasureCount = Measure + 1;
+	Out->Notes = myVec;
 	// at this point the objects are sorted! by measure and within the measure, by fraction.
-	Out.Process();
+	Out->Process();
 
-	Out.Notes = myVec;
+	Out->Notes = myVec;
 	return Out;
 }

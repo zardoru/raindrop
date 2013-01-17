@@ -8,8 +8,8 @@ const unsigned int PlayfieldWidth = 800;
 const unsigned int PlayfieldHeight = 600;
 const unsigned int CircleSize = 64;
 const unsigned int ScreenOffset = 80;
-const float		   LeniencyHitTime = 0.35;
-const float		   HoldLeniencyHitTime = 0.1;
+const float		   LeniencyHitTime = 0.35f;
+const float		   HoldLeniencyHitTime = 0.1f;
 
 enum Judgement
 {

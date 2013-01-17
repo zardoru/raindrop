@@ -12,9 +12,18 @@ class ScreenEdit : public ScreenGameplay
 		Playing,
 		Editing
 	}EditScreenState;
+
+	bool GuiInitialized;
+	CEGUI::Editbox *CurrentMeasure;
+	CEGUI::Editbox *BPMBox;
+	bool measureTextChanged(const CEGUI::EventArgs& param);
+	bool bpmTextChanged(const CEGUI::EventArgs& param);
+
+	int measureFrac;
+
 public:
 	ScreenEdit (IScreen * Parent);
-	void Init(Song &Other = Song());
+	void Init(Song *Other);
 	void StartPlaying(int _Measure);
 	void HandleInput(int key, int code, bool isMouseInput);
 	bool Run (float Delta);
