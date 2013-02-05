@@ -16,10 +16,13 @@ class ScreenEdit : public ScreenGameplay
 	bool GuiInitialized;
 	CEGUI::Editbox *CurrentMeasure;
 	CEGUI::Editbox *BPMBox;
+	CEGUI::Editbox *OffsetBox;
 	bool measureTextChanged(const CEGUI::EventArgs& param);
 	bool bpmTextChanged(const CEGUI::EventArgs& param);
+	bool offsetTextChanged(const CEGUI::EventArgs& param);
 
 	int measureFrac;
+	int savedMeasure;
 
 public:
 	ScreenEdit (IScreen * Parent);

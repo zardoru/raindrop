@@ -39,7 +39,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>D:\Nueva carpeta (2)\boost_1_52_0\boost_1_52_0;D:\Nueva carpeta (2)\CEGUI-0.7.8\CEGUI-0.7.8\cegui\include;D:\Nueva carpeta (2)\cAudio-2.2.0\cAudio\include;D:\development\libs\glfw-2.7.7.bin.WIN32\include;D:\development\proj\dotcur\soil;D:\development\libs\glm;D:\development\libs\glew-1.9.0\include;$(IncludePath)</IncludePath>
+    <IncludePath>D:\development\libs\glfw-2.7.7\include;D:\Nueva carpeta (2)\boost_1_52_0\boost_1_52_0;D:\Nueva carpeta (2)\CEGUI-0.7.8\CEGUI-0.7.8\cegui\include;D:\Nueva carpeta (2)\cAudio-2.2.0\cAudio\include;D:\development\libs\glfw-2.7.7.bin.WIN32\include;D:\development\proj\dotcur\soil;D:\development\libs\glm;D:\development\libs\glew-1.9.0\include;$(IncludePath)</IncludePath>
     <ReferencePath>D:\Nueva carpeta %282%29\cAudio-2.2.0\cAudio\Debug;D:\development\libs\glfw-2.7.7.bin.WIN32\lib-msvc110;D:\development\libs\glew-1.9.0\lib;D:\development\libs\CEGUI-0.7.7\lib;$(ReferencePath)</ReferencePath>
     <LibraryPath>D:\development\libs\glew-1.9.0\lib;D:\Nueva carpeta (2)\boost_1_52_0\boost_1_52_0\stage\lib;D:\development\libs\glfw-2.7.7\support\msvc90\Debug;D:\Nueva carpeta (2)\CEGUI-0.7.8\CEGUI-0.7.8\lib;D:\Nueva carpeta (2)\cAudio-2.2.0\DependenciesSource\libvorbis-1.3.2\Debug;D:\Nueva carpeta (2)\cAudio-2.2.0\DependenciesSource\libogg-1.2.2\Debug;C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;D:\Nueva carpeta (2)\cAudio-2.2.0\2008\cAudio\Debug;$(LibraryPath)</LibraryPath>
     <LinkIncremental>true</LinkIncremental>

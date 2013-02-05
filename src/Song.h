@@ -8,6 +8,7 @@ float spb(float bpm);
 class Song 
 {
 public:
+	Song();
 	float Offset, BPM;
 	int MeasureCount;
 	std::string SongDir, BackgroundDir;

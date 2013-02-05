@@ -9,6 +9,12 @@ float spb(float bpm)
 	return 60 / bpm;
 }
 
+Song::Song()
+{
+	MeasureCount = BPM = Offset = 0;
+	Notes = NULL;
+}
+
 void Song::Process()
 {
 	int CurrentMeasure = 0;

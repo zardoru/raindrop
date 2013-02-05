@@ -92,13 +92,16 @@ void ScreenGameplay::Init(Song *OtherSong)
 	MarkerA.origin = MarkerB.origin = 1;
 	MarkerA.position.x = MarkerB.position.x = GetScreenOffset(0.5).x;
 	MarkerA.position.y = MarkerA.height / 2 + ScreenOffset;
-	MarkerB.position.y = PlayfieldHeight - MarkerB.height / 2 + ScreenOffset;
+	MarkerB.position.y = PlayfieldHeight - MarkerB.height / 2 + ScreenOffset + 17;
 	MarkerB.rotation = 180;
 	MarkerA.width = MarkerB.width = Lifebar.width = PlayfieldWidth;
 	MarkerA.Init();
 	MarkerB.Init();
 
-	Barline.Init(MySong->Offset);
+	if (ShouldChangeScreenAtEnd)
+		Barline.Init(MySong->Offset);
+	else
+		Barline.Init(0); // edit mode
 	Lifebar.UpdateHealth();
 
 	MeasureTime = (60 * 4 / MySong->BPM);
@@ -293,7 +296,7 @@ void ScreenGameplay::stopMusic()
 bool ScreenGameplay::Run(float TimeDelta)
 {
 	ScreenTime += TimeDelta;
-	if (ScreenTime > ScreenPauseTime) // we're over the pause?
+	if (ScreenTime > ScreenPauseTime || !ShouldChangeScreenAtEnd) // we're over the pause?
 	{
 		if (SongTime == 0)
 		{
@@ -370,48 +373,63 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 		}
 	}
 
-	if (Measure > 0)
+	try
 	{
-		for (std::vector<GameObject>::reverse_iterator i = NotesInMeasure[Measure-1].rbegin(); 
-			i != NotesInMeasure[Measure-1].rend(); 
-			i++)
+		if (Measure > 0)
 		{
-			i->Animate(TimeDelta, SongTime);
-			i->Render();
+			if (NotesInMeasure.at(Measure-1).size() > 0)
+			{
+				for (std::vector<GameObject>::reverse_iterator i = NotesInMeasure[Measure-1].rbegin(); 
+					i != NotesInMeasure[Measure-1].rend(); 
+					i++)
+				{
+					i->Animate(TimeDelta, SongTime);
+					i->Render();
+				}
+			}
 		}
-	}
 
-	// Render current measure on front of the next!
-	if (Measure + 1 < MySong->MeasureCount)
-	{
-		// Draw from latest to earliest
-		for (std::vector<GameObject>::reverse_iterator i = NotesInMeasure[Measure+1].rbegin(); 
-			i != NotesInMeasure[Measure+1].rend(); 
-			i++)
+		// Render current measure on front of the next!
+		if (Measure + 1 < MySong->MeasureCount)
 		{
-			i->Animate(TimeDelta, SongTime);
-			i->Render();
+			// Draw from latest to earliest
+			if (NotesInMeasure.at(Measure+1).size() > 0)
+			{
+				for (std::vector<GameObject>::reverse_iterator i = NotesInMeasure[Measure+1].rbegin(); 
+					i != NotesInMeasure[Measure+1].rend(); 
+					i++)
+				{
+					i->Animate(TimeDelta, SongTime);
+					i->Render();
+				}
+			}
 		}
-	}
 
-	if (Measure < MySong->MeasureCount)
-	{
-		for (std::vector<GameObject>::reverse_iterator i = NotesInMeasure[Measure].rbegin(); 
-			i != NotesInMeasure[Measure].rend(); 
-			i++)
+		if (Measure < MySong->MeasureCount)
 		{
-			i->Animate(TimeDelta, SongTime);
-			i->Render();
-		}
-	}else
-	{
-		if (ShouldChangeScreenAtEnd)
+			if (NotesInMeasure.at(Measure).size() > 0)
+
+			{
+				for (std::vector<GameObject>::reverse_iterator i = NotesInMeasure[Measure].rbegin(); 
+					i != NotesInMeasure[Measure].rend(); 
+					i++)
+				{
+					i->Animate(TimeDelta, SongTime);
+					i->Render();
+				}
+			}
+		}else
 		{
-			ScreenEvaluation *Eval = new ScreenEvaluation(this);
-			Eval->Init(Evaluation);
-			Next = Eval;
-			song->stop();
+			if (ShouldChangeScreenAtEnd)
+			{
+				ScreenEvaluation *Eval = new ScreenEvaluation(this);
+				Eval->Init(Evaluation);
+				Next = Eval;
+				song->stop();
+			}
 		}
+	}catch (...)
+	{
 	}
 
 	Barline.Render();

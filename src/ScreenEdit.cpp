@@ -9,6 +9,7 @@ ScreenEdit::ScreenEdit(IScreen *Parent)
 	ShouldChangeScreenAtEnd = false; // So it doesn't go into screen evaluation.
 	GuiInitialized = false;
 	measureFrac = 0;
+	EditScreenState = Editing;
 }
 
 void ScreenEdit::Init(Song *Other)
@@ -29,37 +30,56 @@ void ScreenEdit::Init(Song *Other)
 	
 	FrameWindow* fWnd = static_cast<FrameWindow*>(winMgr.createWindow( "TaharezLook/FrameWindow", "screenWindow" ));
 	fWnd->setPosition(UVector2 (cegui_reldim(0), cegui_reldim(0)));
-	fWnd->setSize(UVector2 (cegui_reldim(0.25), cegui_reldim(1)));
+	fWnd->setSize(UVector2 (cegui_reldim(0.25), cegui_reldim(0.85)));
 	root->addChildWindow(fWnd);
 
 	Window* st = winMgr.createWindow("TaharezLook/StaticText", "BPMText");
     fWnd->addChildWindow(st);
-	st->setText("BPM:");
-	st->setPosition(UVector2(cegui_reldim(0.0f), cegui_reldim(0.1)));
-	st->setSize(UVector2(cegui_reldim(0.3f), cegui_reldim(0.07f)));
+	st->setText("BPM");
+	st->setPosition(UVector2(cegui_reldim(0.1f), cegui_reldim(0.3)));
+	st->setSize(UVector2(cegui_reldim(0.3f), cegui_reldim(0.04f)));
 
 	BPMBox = static_cast<Editbox*> (winMgr.createWindow("TaharezLook/Editbox", "BPMBox"));
 	BPMBox->setSize(UVector2 (cegui_reldim(0.8), cegui_reldim(0.15)));
-	BPMBox->setPosition(UVector2 (cegui_reldim(0.1), cegui_reldim(0.2)));
+	BPMBox->setPosition(UVector2 (cegui_reldim(0.1), cegui_reldim(0.07)));
 	fWnd->addChildWindow(BPMBox);
 
 	Window* st2 = winMgr.createWindow("TaharezLook/StaticText", "MsrText");
     fWnd->addChildWindow(st2);
-	st2->setText("Measure:");
-	st2->setPosition(UVector2(cegui_reldim(0.23f), cegui_reldim(0.1)));
-	st2->setSize(UVector2(cegui_reldim(0.3f), cegui_reldim(0.07f)));
+	st2->setText("Measure");
+	st2->setPosition(UVector2(cegui_reldim(0.1f), cegui_reldim(0.5)));
+	st2->setSize(UVector2(cegui_reldim(0.5f), cegui_reldim(0.04f)));
+
+	Window* st3 = winMgr.createWindow("TaharezLook/StaticText", "OffsText");
+    fWnd->addChildWindow(st3);
+	st3->setText("Offset");
+	st3->setPosition(UVector2(cegui_reldim(0.1f), cegui_reldim(0.7)));
+	st3->setSize(UVector2(cegui_reldim(0.3f), cegui_reldim(0.04f)));
+
+	/*
+	st2->setVerticalAlignment(VA_TOP);
+	st2->setHorizontalAlignment(HA_CENTRE);
+	*/
 
 	CurrentMeasure = static_cast<Editbox*> (winMgr.createWindow("TaharezLook/Editbox", "MeasureBox"));
-	CurrentMeasure->setSize(UVector2 (cegui_reldim(0.8), cegui_reldim(0.15)));
+	CurrentMeasure->setSize(UVector2 (cegui_reldim(0.8), cegui_reldim(0.1)));
 	CurrentMeasure->setPosition(UVector2 (cegui_reldim(0.1), cegui_reldim(0.4)));
+
 	fWnd->addChildWindow(CurrentMeasure);
+
+	OffsetBox = static_cast<Editbox*> (winMgr.createWindow("TaharezLook/Editbox", "OffsetBox"));
+	OffsetBox->setSize(UVector2 (cegui_reldim(0.8), cegui_reldim(0.1)));
+	OffsetBox->setPosition(UVector2 (cegui_reldim(0.1), cegui_reldim(0.6)));
+	fWnd->addChildWindow(OffsetBox);
 
 	winMgr.getWindow("MeasureBox")->
 		subscribeEvent(Editbox::EventTextChanged, Event::Subscriber(&ScreenEdit::measureTextChanged, this));
 
 	winMgr.getWindow("BPMBox")->
 		subscribeEvent(Editbox::EventTextChanged, Event::Subscriber(&ScreenEdit::bpmTextChanged, this));
-	// Editbox::onTextChanged
+
+	winMgr.getWindow("OffsetBox")->
+		subscribeEvent(Editbox::EventTextChanged, Event::Subscriber(&ScreenEdit::offsetTextChanged, this));
 
 	GuiInitialized = true;
 }
@@ -69,6 +89,8 @@ void ScreenEdit::StartPlaying( int _Measure )
 	ScreenGameplay::Init(MySong);
 	Measure = _Measure;
 	seekTime( spb(MySong->BPM) * Measure * 4 + MySong->Offset );
+	startMusic();
+	savedMeasure = Measure;
 }
 
 void ScreenEdit::HandleInput(int key, int code, bool isMouseInput)
@@ -88,6 +110,7 @@ void ScreenEdit::HandleInput(int key, int code, bool isMouseInput)
 			else if (EditScreenState == Playing) // if we're playing, go back to editing
 			{
 				EditScreenState = Editing;
+				Measure = savedMeasure;
 				stopMusic();
 			}
 		}
@@ -102,6 +125,7 @@ bool ScreenEdit::Run(float delta)
 	if (EditScreenState == Playing)
 	{
 		ScreenGameplay::Run(delta);
+		RenderObjects(delta);
 	}
 	else // editing the song? run the editor
 	{
@@ -123,6 +147,18 @@ bool ScreenEdit::measureTextChanged(const CEGUI::EventArgs& param)
 	try 
 	{
 		Measure = boost::lexical_cast<int>(CurrentMeasure->getText());
+	}catch (...)
+	{
+		// hmm.. What to do?
+	}
+	return true;
+}
+
+bool ScreenEdit::offsetTextChanged(const CEGUI::EventArgs& param)
+{
+	try 
+	{
+		MySong->Offset = boost::lexical_cast<float>(OffsetBox->getText());
 	}catch (...)
 	{
 		// hmm.. What to do?
