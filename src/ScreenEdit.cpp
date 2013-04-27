@@ -36,7 +36,7 @@ void ScreenEdit::Init(Song *Other)
 	Window* st = winMgr.createWindow("TaharezLook/StaticText", "BPMText");
     fWnd->addChildWindow(st);
 	st->setText("BPM");
-	st->setPosition(UVector2(cegui_reldim(0.1f), cegui_reldim(0.3)));
+	st->setPosition(UVector2(cegui_reldim(0.1f), cegui_reldim(0.04f)));
 	st->setSize(UVector2(cegui_reldim(0.3f), cegui_reldim(0.04f)));
 
 	BPMBox = static_cast<Editbox*> (winMgr.createWindow("TaharezLook/Editbox", "BPMBox"));
@@ -81,6 +81,12 @@ void ScreenEdit::Init(Song *Other)
 	winMgr.getWindow("OffsetBox")->
 		subscribeEvent(Editbox::EventTextChanged, Event::Subscriber(&ScreenEdit::offsetTextChanged, this));
 
+	// information window
+	fWndInfo = static_cast<FrameWindow*>(winMgr.createWindow( "TaharezLook/FrameWindow", "screenInfoWindow" ));
+	fWndInfo->setPosition(UVector2 (cegui_reldim(0.75), cegui_reldim(0)));
+	fWndInfo->setSize(UVector2 (cegui_reldim(0.25), cegui_reldim(0.25)));
+	root->addChildWindow(fWndInfo);
+
 	GuiInitialized = true;
 }
 
@@ -88,7 +94,7 @@ void ScreenEdit::StartPlaying( int _Measure )
 {
 	ScreenGameplay::Init(MySong);
 	Measure = _Measure;
-	seekTime( spb(MySong->BPM) * Measure * 4 + MySong->Offset );
+	seekTime( spb(CurrentDiff->Timing[0].Value) * Measure * 4 + CurrentDiff->Offset );
 	startMusic();
 	savedMeasure = Measure;
 }
@@ -129,6 +135,10 @@ bool ScreenEdit::Run(float delta)
 	}
 	else // editing the song? run the editor
 	{
+		std::stringstream strs;
+		strs << "x: " << GraphMan.GetRelativeMPos().x - 112 << " y: " << GraphMan.GetRelativeMPos().y;
+		fWndInfo->setText(strs.str());
+
 		RenderObjects(delta);
 		CEGUI::System::getSingleton().renderGUI();
 	}
@@ -158,7 +168,7 @@ bool ScreenEdit::offsetTextChanged(const CEGUI::EventArgs& param)
 {
 	try 
 	{
-		MySong->Offset = boost::lexical_cast<float>(OffsetBox->getText());
+		CurrentDiff->Offset = boost::lexical_cast<float>(OffsetBox->getText());
 	}catch (...)
 	{
 		// hmm.. What to do?
@@ -170,7 +180,7 @@ bool ScreenEdit::bpmTextChanged(const CEGUI::EventArgs& param)
 {
 	try 
 	{
-		MySong->BPM = boost::lexical_cast<int>(BPMBox->getText());
+		CurrentDiff->Timing[0].Value = boost::lexical_cast<int>(BPMBox->getText());
 	}catch (...)
 	{
 		// hmm.. What to do?

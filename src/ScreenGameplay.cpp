@@ -70,6 +70,7 @@ void ScreenGameplay::StoreEvaluation(Judgement Eval)
 void ScreenGameplay::Init(Song *OtherSong)
 {
 	MySong = OtherSong;
+	CurrentDiff = MySong->Difficulties[0]; // todo: fix this
 	
 	memset(&Evaluation, 0, sizeof(Evaluation));
 
@@ -91,7 +92,7 @@ void ScreenGameplay::Init(Song *OtherSong)
 
 	MarkerA.origin = MarkerB.origin = 1;
 	MarkerA.position.x = MarkerB.position.x = GetScreenOffset(0.5).x;
-	MarkerA.position.y = MarkerA.height / 2 + ScreenOffset;
+	MarkerA.position.y = MarkerA.height/2 + ScreenOffset;
 	MarkerB.position.y = PlayfieldHeight - MarkerB.height / 2 + ScreenOffset + 17;
 	MarkerB.rotation = 180;
 	MarkerA.width = MarkerB.width = Lifebar.width = PlayfieldWidth;
@@ -99,17 +100,18 @@ void ScreenGameplay::Init(Song *OtherSong)
 	MarkerB.Init();
 
 	if (ShouldChangeScreenAtEnd)
-		Barline.Init(MySong->Offset);
+		Barline.Init(CurrentDiff->Offset);
 	else
 		Barline.Init(0); // edit mode
 	Lifebar.UpdateHealth();
 
-	MeasureTime = (60 * 4 / MySong->BPM);
+	MeasureTime = (60 * 4 / CurrentDiff->Timing[0].Value);
 
-	NotesInMeasure.resize(MySong->MeasureCount);
-	for (int i = 0; i < MySong->MeasureCount; i++)
+	// todo: not need to copy this whole thing. 
+	NotesInMeasure.resize(CurrentDiff->Measures.size());
+	for (int i = 0; i < CurrentDiff->Measures.size(); i++)
 	{
-		NotesInMeasure[i] = MySong->GetObjectsForMeasure(i);
+		NotesInMeasure[i] = CurrentDiff->Measures[i].MeasureNotes;
 	}
 
 	song = audioMgr->create("song", MySong->SongDir.c_str(), true);
@@ -139,7 +141,7 @@ int ScreenGameplay::GetMeasure()
 
 void ScreenGameplay::RunMeasure(float delta)
 {
-	if (Measure < MySong->MeasureCount)
+	if (Measure < CurrentDiff->Measures.size())
 	{
 		Judgement Val;
 
@@ -191,7 +193,7 @@ void ScreenGameplay::HandleInput(int key, int code, bool isMouseInput)
 		return;
 	}
 
-	if (Measure < MySong->MeasureCount && // if measure is playable
+	if (Measure < CurrentDiff->Measures.size() && // if measure is playable
 		(((key == 'Z' || key == 'X') && !isMouseInput) || // key is z or x and it's not mouse input or
 		(isMouseInput && (key == GLFW_MOUSE_BUTTON_LEFT || key == GLFW_MOUSE_BUTTON_RIGHT))) // is mouse input and it's a mouse button..
 		)
@@ -322,7 +324,7 @@ bool ScreenGameplay::Run(float TimeDelta)
 
 		Barline.Run(TimeDelta, MeasureTime, MeasureTimeElapsed);
 
-		if (SongTime > MySong->Offset)
+		if (SongTime > CurrentDiff->Offset)
 		{
 			MeasureTimeElapsed += TimeDelta;
 			if (MeasureTimeElapsed > MeasureTime)
@@ -390,7 +392,7 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 		}
 
 		// Render current measure on front of the next!
-		if (Measure + 1 < MySong->MeasureCount)
+		if (Measure + 1 < CurrentDiff->Measures.size())
 		{
 			// Draw from latest to earliest
 			if (NotesInMeasure.at(Measure+1).size() > 0)
@@ -405,7 +407,7 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 			}
 		}
 
-		if (Measure < MySong->MeasureCount)
+		if (Measure < CurrentDiff->Measures.size())
 		{
 			if (NotesInMeasure.at(Measure).size() > 0)
 

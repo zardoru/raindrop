@@ -13,7 +13,7 @@ class ScreenGameplay : public IScreen
 protected: // shit the edit screen needs
 
 	Song *MySong;
-
+	SongInternal::Difficulty* CurrentDiff;
 	// Game Data
 	int Measure;
 

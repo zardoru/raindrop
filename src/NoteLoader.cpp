@@ -18,8 +18,8 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 {
 	std::ifstream filein;
 	filein.open(filename.c_str(), std::ios::in);
-	std::vector<GameObject> *myVec = new std::vector<GameObject>();
 	Song *Out = new Song();
+	SongInternal::Difficulty *Difficulty = new SongInternal::Difficulty();
 	int Measure = -1; // Current measure
 	int MeasurePos = 0; // position within the measure. (we divide later by measure * mlen + measure fraction to get current beat)
 
@@ -46,14 +46,18 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 		// Then, Timing data.
 		if (command.find("#BPM") != std::string::npos)
 		{
+			/* TODO: List based parsing */
 			std::stringstream str (line.substr(line.find_first_of(":") + 1));
-			str >> Out->BPM;
+			SongInternal::Difficulty::TimingSegment Segment;
+			str >> Segment.Value;
+			Segment.Time = 0;
+			Difficulty->Timing.push_back(Segment);	
 		}
 
 		if (command.find("#OFFSET") != std::string::npos)
 		{
 			std::stringstream str (line.substr(line.find_first_of(":") + 1));
-			str >> Out->Offset;
+			str >> Difficulty->Offset;
 		}
 
 		// Then, file info.
@@ -67,6 +71,13 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 			Out->BackgroundDir = prefix + "/" + line.substr(line.find_first_of(":") + 1);
 		}
 
+		// not yet
+		/*
+		if (command.find("#BGALUA") != std::string::npos)
+		{
+		}
+		*/
+
 		// Then, the charts.
 		if (command.find("#NOTES") != std::string::npos) // current command is notes?
 		{
@@ -75,19 +86,22 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 			std::vector< std::string > splitvec;
 			bool invert = false;
 
+			Difficulty->Name = Out->SongName; // todo: change this.
+
 			// Remove whitespace.
 			boost::replace_all(objectstring, "\n", "");
 			// boost::replace_all(objectstring, "M", ""); // mirror flags
 
 			boost::split(splitvec, objectstring, boost::is_any_of(",")); // Separate measures!
-			BOOST_FOREACH(std::string objectlist, splitvec)
+			BOOST_FOREACH(std::string objectlist, splitvec) // for each measure
 			{
 				std::vector< std::string > splitobjects;
+				SongInternal::Measure Measure;
 				invert = false;
 
 				if ( objectlist.length() == 0 )
 				{
-					Measure++;
+					Difficulty->Measures.push_back(Measure);
 					continue;
 				}
 
@@ -97,8 +111,7 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 					boost::replace_all(objectlist, "M", "");
 				}
 
-				Measure++;
-				MeasurePos = 0;
+				Measure.Fraction = 0;
 
 				boost::split(splitobjects, objectlist, boost::is_any_of("{}"), boost::algorithm::token_compress_on);
 				BOOST_FOREACH (std::string object_description, splitobjects) // For all objects in measure
@@ -141,25 +154,35 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 						if (xpos != 0)
 							Temp.position.x = xpos + ScreenDifference();
 						else
-							Temp.position.x = 0;
+						{
+							Measure.Fraction++;
+							continue; // Don't add this note.
+							// Temp.position.x = 0;
+						}
 
 						Temp.hold_duration = hold_duration;
-						Temp.Measure = Measure;
-						Temp.MeasurePos = MeasurePos;
-						myVec->push_back(Temp);
+						Temp.Measure = Difficulty->Measures.size();
+						Temp.MeasurePos = Measure.Fraction;
+						Measure.MeasureNotes.push_back(Temp);
 
-					}
-					MeasurePos++;
-				}
-			}
+					} // got a position
+					Measure.Fraction++;
+				} // foreach object in measure
+
+				Difficulty->Measures.push_back(Measure);
+
+			} // foreach measure
+
+			// A fairly expensive copy, I'd dare say?
+			// However, it's loading. I don't think some delay will fuck it up that bad.
+			Out->Difficulties.push_back(Difficulty); 
+			Difficulty = new SongInternal::Difficulty();
 		}// command == #notes
 	}
-	
-	Out->MeasureCount = Measure + 1;
-	Out->Notes = myVec;
+
+	delete Difficulty; // There will always be an extra copy.
+
 	// at this point the objects are sorted! by measure and within the measure, by fraction.
 	Out->Process();
-
-	Out->Notes = myVec;
 	return Out;
 }

@@ -45,8 +45,8 @@
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>D:\Nueva carpeta (2)\boost_1_52_0\boost_1_52_0;D:\Nueva carpeta (2)\CEGUI-0.7.8\CEGUI-0.7.8\cegui\include;D:\Nueva carpeta (2)\cAudio-2.2.0\cAudio\include;D:\development\libs\glfw-2.7.7.bin.WIN32\include;D:\development\proj\dotcur\soil;D:\development\libs\glm;D:\development\libs\glew-1.9.0\include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\Nueva carpeta %282%29\boost_1_52_0\boost_1_52_0\stage\lib;D:\Nueva carpeta (2)\CEGUI-DEPS-0.7.x-r2-vc9\dependencies\lib\static;D:\Nueva carpeta (2)\CEGUI-0.7.8\CEGUI-0.7.8\lib;D:\Nueva carpeta (2)\cAudio-2.2.0\2008\cAudio\Debug;D:\Nueva carpeta (2)\cAudio-2.2.0\2008\cAudio\Release;D:\Nueva carpeta (2)\cAudio-2.2.0\2008\DependenciesSource\libogg-1.2.2\Release;D:\Nueva carpeta (2)\cAudio-2.2.0\2008\DependenciesSource\libvorbis-1.3.2\Release;C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;D:\development\libs\glew-1.9.0\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\development\libs\glfw-2.7.7\include;D:\Nueva carpeta (2)\boost_1_52_0\boost_1_52_0;D:\Nueva carpeta (2)\CEGUI-0.7.8\CEGUI-0.7.8\cegui\include;D:\Nueva carpeta (2)\cAudio-2.2.0\cAudio\include;D:\development\libs\glfw-2.7.7.bin.WIN32\include;D:\development\proj\dotcur\soil;D:\development\libs\glm;D:\development\libs\glew-1.9.0\include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\development\libs\glfw-2.7.7\support\msvc90\Release;D:\Nueva carpeta %282%29\boost_1_52_0\boost_1_52_0\stage\lib;D:\Nueva carpeta (2)\CEGUI-DEPS-0.7.x-r2-vc9\dependencies\lib\static;D:\Nueva carpeta (2)\CEGUI-0.7.8\CEGUI-0.7.8\lib;D:\Nueva carpeta (2)\cAudio-2.2.0\2008\cAudio\Debug;D:\Nueva carpeta (2)\cAudio-2.2.0\2008\cAudio\Release;D:\Nueva carpeta (2)\cAudio-2.2.0\2008\DependenciesSource\libogg-1.2.2\Release;D:\Nueva carpeta (2)\cAudio-2.2.0\2008\DependenciesSource\libvorbis-1.3.2\Release;C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;D:\development\libs\glew-1.9.0\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -70,7 +70,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;OLD_GL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

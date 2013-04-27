@@ -7,6 +7,7 @@
 class ScreenEdit : public ScreenGameplay
 {
 	CEGUI::DefaultWindow *root;
+	CEGUI::FrameWindow* fWndInfo;
 	enum 
 	{
 		Playing,
