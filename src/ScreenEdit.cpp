@@ -2,6 +2,7 @@
 #include "ScreenEdit.h"
 #include "GraphicsManager.h"
 #include "ImageLoader.h"
+#include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 
 ScreenEdit::ScreenEdit(IScreen *Parent)
@@ -37,7 +38,7 @@ void ScreenEdit::Init(Song *Other)
 
 	System::getSingleton().setGUISheet(root);
 	
-	FrameWindow* fWnd = static_cast<FrameWindow*>(winMgr.createWindow( "TaharezLook/FrameWindow", "screenWindow" ));
+	FrameWindow* fWnd = static_cast<FrameWindow*>(winMgr.createWindow( "TaharezLook/FrameWindow", "screenEditWindow" ));
 	fWnd->setPosition(UVector2 (cegui_reldim(0.f), cegui_reldim(0.f)));
 	fWnd->setSize(UVector2 (cegui_reldim(0.25f), cegui_reldim(0.85f)));
 	root->addChildWindow(fWnd);
@@ -117,7 +118,7 @@ void ScreenEdit::StartPlaying( int _Measure )
 {
 	ScreenGameplay::Init(MySong);
 	Measure = _Measure;
-	seekTime( spb(CurrentDiff->Timing[0].Value) * Measure * 4 + CurrentDiff->Offset );
+	seekTime( spb(CurrentDiff->Timing[0].Value) * Measure * 4 + CurrentDiff->Offset);
 	startMusic();
 	savedMeasure = Measure;
 }
@@ -249,7 +250,9 @@ bool ScreenEdit::measureTextChanged(const CEGUI::EventArgs& param)
 		if ((int)Measure > (((int)CurrentDiff->Measures.size())-1))
 		{
 			CurrentDiff->Measures.resize(Measure+1);
-			NotesInMeasure.resize(Measure+1);
+		}else
+		{
+			FracBox->setText( (boost::format("%d\n") % CurrentDiff->Measures[Measure].Fraction).str().c_str() );
 		}
 	}catch (...) { /* What to do now? */ }
 	return true;
@@ -284,9 +287,8 @@ bool ScreenEdit::fracTextChanged(const CEGUI::EventArgs& param)
 {
 	try
 	{
-		CurrentDiff->Measures[Measure].Fraction = boost::lexical_cast<int>(FracBox->getText());
-		CurrentDiff->Measures[Measure].MeasureNotes.resize(CurrentDiff->Measures[Measure].Fraction);
-		NotesInMeasure[Measure].resize(CurrentDiff->Measures[Measure].Fraction);
+		CurrentDiff->Measures.at(Measure).Fraction = boost::lexical_cast<int>(FracBox->getText());
+		CurrentDiff->Measures.at(Measure).MeasureNotes.resize(CurrentDiff->Measures[Measure].Fraction);
 	}catch(...)
 	{
 	}

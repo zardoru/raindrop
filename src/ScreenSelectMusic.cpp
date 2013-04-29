@@ -5,6 +5,7 @@
 #include "ScreenSelectMusic.h"
 #include "FileManager.h"
 #include "ScreenGameplay.h"
+#include "ScreenEdit.h"
 #include "GraphicsManager.h"
 
 ScreenSelectMusic::ScreenSelectMusic()
@@ -114,15 +115,27 @@ void ScreenSelectMusic::HandleInput(int key, int code, bool isMouseInput)
 		return;
 	}
 
-	if (key == GLFW_KEY_F1)
+	if (code == GLFW_PRESS)
 	{
-		ScreenGameplay *_Next = new ScreenGameplay(this);
-		_Next->Init(SongList.at(0));
+		if (key == GLFW_KEY_F1)
+		{
+			ScreenGameplay *_Next = new ScreenGameplay(this);
+			_Next->Init(SongList.at(0));
 
-		Next = _Next;
-		SwitchBackGuiPending = true;
-		GraphMan.isGuiInputEnabled = false;
+			Next = _Next;
+			SwitchBackGuiPending = true;
+			GraphMan.isGuiInputEnabled = false;
+		}
+
+		if (key == GLFW_KEY_F4) // Edit mode!
+		{
+			ScreenEdit *_Next = new ScreenEdit(this);
+			_Next->Init(SongList.at(songbox->getFirstSelectedItem()->getID()));
+			Next = _Next;
+			SwitchBackGuiPending = true;
+		}
 	}
+
 }
 
 #ifndef DISABLE_CEGUI

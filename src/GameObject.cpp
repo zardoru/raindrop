@@ -34,6 +34,8 @@ void GameObject::Animate(float delta, float songTime)
 
 	if (fadeout_time > 0)
 	{
+		fadeout_time -= delta*2;
+
 		// alpha out
 		alpha = 1 * (fadeout_time);
 
@@ -45,8 +47,6 @@ void GameObject::Animate(float delta, float songTime)
 			scaleX = scaleY = 2 - fadeout_time;
 		else
 			scaleX = scaleY = 3 - fadeout_time;
-
-		fadeout_time -= delta*2;
 
 		return;
 	}
@@ -74,7 +74,7 @@ Judgement GameObject::Run(double delta, double Time, bool Autoplay)
 	if (Autoplay)
 	{
 		// you can be slightly early autoplay, it's fine.
-		if (Time >= startTime - 0.01 && fadeout_time == 0 && !BeingHeld) // A pretend kind of thing. ;)
+		if (Time >= startTime - 0.001 && fadeout_time == 0 && !BeingHeld) // A pretend kind of thing. ;)
 		{
 			return Hit(Time, position, true, false, -1);
 		}
@@ -104,7 +104,7 @@ Judgement GameObject::Run(double delta, double Time, bool Autoplay)
 		}
 	}else if (!BeingHeld && Time < endTime-HoldLeniencyHitTime && (Time) > startTime+LeniencyHitTime)
 	{
-		fadeout_time = 0.3f;
+		fadeout_time = 0.7f;
 		return NG;
 	}
 
@@ -145,7 +145,7 @@ Judgement GameObject::Hit(float Time, glm::vec2 mpos, bool KeyDown,  bool Autopl
 			printf ("songt %f starttime %f difference %f beat %f xpos = %f\n", Time, startTime, Time - startTime, beat, position.x);
 
 			if (endTime == 0) // Not a hold?
-				fadeout_time = 0.1f; // 0.8 secs for fadeout
+				fadeout_time = 0.6f; // 0.8 secs for fadeout
 			else
 			{
 				heldKey = Key;

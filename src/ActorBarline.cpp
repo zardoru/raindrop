@@ -46,12 +46,25 @@ void ActorBarline::Run(double TimeDelta, double MeasureTime, double TotalTime)
 	
 	if (Parent->GetMeasure() % 2)
 	{
-		red = 1;
+		float Speed = -1/0.05;
+		if (Ratio > 0.95)
+		{
+			red = 1 * Speed * TimeDelta;
+			blue = 200.f / 255.f * (200.f / 255.f / 0.05) * TimeDelta;
+		}
+		else red = 1;
 		blue = green = 0;
 	}else
 	{
 		red = 0.0;
 		blue = 200.f / 255.f;
+
+		if (Ratio > 0.95)
+		{
+			float Speed = 1/0.05;
+			red = 1 * Speed * TimeDelta;
+			blue = 200.f / 255.f * Speed * TimeDelta;
+		}
 	}
 
 	position.y = (Ratio) * (float)PlayfieldHeight;

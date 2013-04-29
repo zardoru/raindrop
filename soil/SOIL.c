@@ -1334,7 +1334,7 @@ unsigned int
 		{
 			/*	instruct OpenGL _NOT_ to use the MIPmaps	*/
 			glTexParameteri( opengl_texture_type, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-			glTexParameteri( opengl_texture_type, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+			glTexParameteri( opengl_texture_type, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 			check_for_GL_errors( "GL_TEXTURE_MIN/MAG_FILTER" );
 		}
 		/*	does the user want clamping, or wrapping?	*/

@@ -69,11 +69,9 @@ void ScreenGameplay::StoreEvaluation(Judgement Eval)
 
 void ScreenGameplay::RemoveTrash()
 {
-	if (NotesHeld.size() > 0)
-		NotesHeld.clear();
-
-	if (AnimateOnly.size() > 0)
-		AnimateOnly.clear();
+	NotesHeld.clear();
+	AnimateOnly.clear();
+	NotesInMeasure.clear();
 }
 
 void ScreenGameplay::Init(Song *OtherSong)
@@ -93,18 +91,19 @@ void ScreenGameplay::Init(Song *OtherSong)
 	Background.setImage(ImageLoader::Load(MySong->BackgroundDir));
 
 	Background.alpha = 0.8f;
-	Background.width = PlayfieldWidth;
-	Background.height = PlayfieldHeight;
-	Background.position.x = GetScreenOffset(0.5).x - Background.width / 2;
-	Background.position.y = ScreenOffset;
+	Background.width = ScreenWidth;
+	Background.height = ScreenHeight;
+	Background.position.x = 0;
+	Background.position.y = 0;
 	Background.Init();
 
 	MarkerA.origin = MarkerB.origin = 1;
 	MarkerA.position.x = MarkerB.position.x = GetScreenOffset(0.5).x;
-	MarkerA.position.y = ScreenOffset - Barline.height - MarkerA.height/2;
-	MarkerB.position.y = PlayfieldHeight + ScreenOffset + Barline.height + MarkerB.height/2;
+	MarkerA.position.y = MarkerA.height/2 - Barline.height/2;
+	MarkerA.rotation = 180;
+	MarkerB.position.y = PlayfieldHeight + ScreenOffset + MarkerB.height/2 + Barline.height/2;
 	// MarkerB.rotation = 180;
-	MarkerA.width = MarkerB.width = Lifebar.width = PlayfieldWidth;
+	Lifebar.width = PlayfieldWidth;
 	MarkerA.Init();
 	MarkerB.Init();
 
@@ -118,6 +117,9 @@ void ScreenGameplay::Init(Song *OtherSong)
 		MeasureTime = (60 * 4 / CurrentDiff->Timing[0].Value);
 	else
 		MeasureTime = 0;
+
+	// We might be retrying- in that case we should probably clean up.
+	RemoveTrash();
 
 	// todo: not need to copy this whole thing. 
 	NotesInMeasure.resize(CurrentDiff->Measures.size());
@@ -134,9 +136,6 @@ void ScreenGameplay::Init(Song *OtherSong)
 	MeasureTimeElapsed = 0;
 	SongTime = 0;
 	ScreenTime = 0;
-
-	// We might be retrying- in that case we should probably clean up.
-	RemoveTrash();
 
 	Cursor.Init();
 }
@@ -307,7 +306,7 @@ void ScreenGameplay::stopMusic()
 bool ScreenGameplay::Run(double TimeDelta)
 {
 	ScreenTime += TimeDelta;
-	if (ScreenTime > ScreenPauseTime || !ShouldChangeScreenAtEnd) // we're over the pause?
+	if ( ScreenTime > ScreenPauseTime || !ShouldChangeScreenAtEnd ) // we're over the pause?
 	{
 		if (SongTime == 0)
 		{

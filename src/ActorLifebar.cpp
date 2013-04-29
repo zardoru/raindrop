@@ -12,9 +12,9 @@ ActorLifebar::ActorLifebar()
 	setImage(ImageLoader::LoadSkin("healthbar.png"));
 	red = blue = 0;
 	time = 0;
-	origin = 1;
-	position.y = PlayfieldHeight + height / 2 + ScreenOffset;
-	position.x = GraphMan.GetMatrixSize().x / 2;
+	origin = 0;
+	position.y = ScreenHeight - height;
+	position.x = 0;
 	Init(true);
 	UpdateHealth();
 }
@@ -22,7 +22,7 @@ ActorLifebar::ActorLifebar()
 void ActorLifebar::UpdateHealth()
 {
 	crop_x2 = Health / 100;
-	width = (Health / 100) * PlayfieldWidth;
+	width = (Health / 100) * ScreenWidth;
 	Init(); // Redo our dear VBO data.
 }
 
@@ -31,20 +31,19 @@ void ActorLifebar::HitJudgement(Judgement Hit)
 	switch (Hit)
 	{
 		case Excellent:
-			pending_health += 6;
-			break;
-		case Perfect:
-			pending_health += 5;
-			break;
-		case Great:
 			pending_health += 3;
 			break;
-		case Bad:
+		case Perfect:
+			pending_health += 2;
+			break;
+		case Great:
 			pending_health += 1;
+			break;
+		case Bad:
 			break;
 		case Miss:
 		case NG:
-			pending_health -= 15;
+			pending_health -= 30;
 	}
 }
 

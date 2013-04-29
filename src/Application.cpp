@@ -39,16 +39,16 @@ void Application::Init()
 
 void Application::Run()
 {
-	//Game = new ScreenSelectMusic();
-	ScreenEdit* sE = new ScreenEdit(NULL);
+	Game = new ScreenSelectMusic();
+	/*ScreenEdit* sE = new ScreenEdit(NULL);
 	Song* editSong = new Song();
 	editSong->SongDir = "IT.ogg";
 
 	sE->Init(editSong);
 
 	Game = sE;
-	
-	//Game->Init();
+	*/
+	Game->Init();
 
 	while (Game->IsScreenRunning())
 	{
