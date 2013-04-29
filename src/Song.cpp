@@ -15,7 +15,7 @@ Song::Song()
 {
 }
 
-void Song::Process()
+void Song::Process(bool CalculateXPos)
 {
 	for(std::vector<SongInternal::Difficulty*>::iterator Difficulty = Difficulties.begin(); Difficulty != Difficulties.end(); Difficulty++ )
 	{
@@ -40,20 +40,23 @@ void Song::Process()
 
 				if (CurrentMeasure % 2)
 				{
-					it->position.y = PlayfieldHeight - (PlayfieldHeight * frac) + 10 + ScreenOffset;
+					it->position.y = PlayfieldHeight - (PlayfieldHeight * frac) + ScreenOffset;
 					it->red = 1;
 					it->blue = 0;
 				}
 				else
 				{
-					it->position.y = PlayfieldHeight * frac + 10+ ScreenOffset;
+					it->position.y = PlayfieldHeight * frac + ScreenOffset;
 					it->red = 0;
-					it->blue = 200.0 / 255.0;
+					it->blue = 200.0f / 255.0f;
 				}
 
 				if (it->endTime > 0)
 					it->green = 0.5;
 				it->Init(false);
+
+				if (CalculateXPos)
+					it->position.x += ScreenDifference;
 			}
 			CurrentMeasure++;
 		}

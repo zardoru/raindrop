@@ -17,20 +17,23 @@ class ScreenEdit : public ScreenGameplay
 	bool GuiInitialized;
 	CEGUI::Editbox *CurrentMeasure;
 	CEGUI::Editbox *BPMBox;
+	CEGUI::Editbox *FracBox;
 	CEGUI::Editbox *OffsetBox;
 	bool measureTextChanged(const CEGUI::EventArgs& param);
 	bool bpmTextChanged(const CEGUI::EventArgs& param);
 	bool offsetTextChanged(const CEGUI::EventArgs& param);
+	bool fracTextChanged(const CEGUI::EventArgs& param);
+	uint32_t CurrentFraction;
+	uint32_t savedMeasure;
 
-	int measureFrac;
-	int savedMeasure;
-
+	float YLock;
+	GraphObject2D GhostObject;
 public:
 	ScreenEdit (IScreen * Parent);
 	void Init(Song *Other);
 	void StartPlaying(int _Measure);
 	void HandleInput(int key, int code, bool isMouseInput);
-	bool Run (float Delta);
+	bool Run (double Delta);
 	void Cleanup();
 };
 

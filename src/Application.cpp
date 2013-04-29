@@ -23,11 +23,13 @@ Application::Application()
 
 void Application::Init()
 {
+	cAudio::cAudioString DeviceName;
 	GraphMan.AutoSetupWindow();
 
 	audioMgr = cAudio::createAudioManager(false);
 	pDeviceList = cAudio::createAudioDeviceList();
-	audioMgr->initialize(pDeviceList->getDefaultDeviceName().c_str());
+	DeviceName = pDeviceList->getDefaultDeviceName();
+	audioMgr->initialize(DeviceName.c_str());
 	Game = NULL;
 
 	oldTime = 0;
@@ -37,17 +39,16 @@ void Application::Init()
 
 void Application::Run()
 {
-	Game = new ScreenSelectMusic();
-	/*ScreenEdit* sE = new ScreenEdit(NULL);
+	//Game = new ScreenSelectMusic();
+	ScreenEdit* sE = new ScreenEdit(NULL);
 	Song* editSong = new Song();
 	editSong->SongDir = "IT.ogg";
 
 	sE->Init(editSong);
 
 	Game = sE;
-	*/
-
-	Game->Init();
+	
+	//Game->Init();
 
 	while (Game->IsScreenRunning())
 	{

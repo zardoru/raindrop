@@ -9,7 +9,7 @@ public:
 	ActorLifebar();
 	float Health;
 	void HitJudgement(Judgement Hit);
-	void Run (float delta);
+	void Run (double delta);
 	void UpdateHealth();
 };
 

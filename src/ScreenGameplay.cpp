@@ -67,6 +67,15 @@ void ScreenGameplay::StoreEvaluation(Judgement Eval)
 	Evaluation.MaxCombo = max(Evaluation.MaxCombo, Combo);
 }
 
+void ScreenGameplay::RemoveTrash()
+{
+	if (NotesHeld.size() > 0)
+		NotesHeld.clear();
+
+	if (AnimateOnly.size() > 0)
+		AnimateOnly.clear();
+}
+
 void ScreenGameplay::Init(Song *OtherSong)
 {
 	MySong = OtherSong;
@@ -83,7 +92,7 @@ void ScreenGameplay::Init(Song *OtherSong)
 	MarkerB.setImage(ImageLoader::LoadSkin("barline_marker.png"));
 	Background.setImage(ImageLoader::Load(MySong->BackgroundDir));
 
-	Background.alpha = 0.8;
+	Background.alpha = 0.8f;
 	Background.width = PlayfieldWidth;
 	Background.height = PlayfieldHeight;
 	Background.position.x = GetScreenOffset(0.5).x - Background.width / 2;
@@ -92,9 +101,9 @@ void ScreenGameplay::Init(Song *OtherSong)
 
 	MarkerA.origin = MarkerB.origin = 1;
 	MarkerA.position.x = MarkerB.position.x = GetScreenOffset(0.5).x;
-	MarkerA.position.y = MarkerA.height/2 + ScreenOffset;
-	MarkerB.position.y = PlayfieldHeight - MarkerB.height / 2 + ScreenOffset + 17;
-	MarkerB.rotation = 180;
+	MarkerA.position.y = ScreenOffset - Barline.height - MarkerA.height/2;
+	MarkerB.position.y = PlayfieldHeight + ScreenOffset + Barline.height + MarkerB.height/2;
+	// MarkerB.rotation = 180;
 	MarkerA.width = MarkerB.width = Lifebar.width = PlayfieldWidth;
 	MarkerA.Init();
 	MarkerB.Init();
@@ -105,11 +114,14 @@ void ScreenGameplay::Init(Song *OtherSong)
 		Barline.Init(0); // edit mode
 	Lifebar.UpdateHealth();
 
-	MeasureTime = (60 * 4 / CurrentDiff->Timing[0].Value);
+	if (CurrentDiff->Timing.size()) // Not edit mode. XXX
+		MeasureTime = (60 * 4 / CurrentDiff->Timing[0].Value);
+	else
+		MeasureTime = 0;
 
 	// todo: not need to copy this whole thing. 
 	NotesInMeasure.resize(CurrentDiff->Measures.size());
-	for (int i = 0; i < CurrentDiff->Measures.size(); i++)
+	for (uint32_t i = 0; i < CurrentDiff->Measures.size(); i++)
 	{
 		NotesInMeasure[i] = CurrentDiff->Measures[i].MeasureNotes;
 	}
@@ -124,11 +136,8 @@ void ScreenGameplay::Init(Song *OtherSong)
 	ScreenTime = 0;
 
 	// We might be retrying- in that case we should probably clean up.
-	if (NotesHeld.size() > 0)
-		NotesHeld.clear();
+	RemoveTrash();
 
-	if (AnimateOnly.size() > 0)
-		AnimateOnly.clear();
 	Cursor.Init();
 }
 
@@ -295,7 +304,7 @@ void ScreenGameplay::stopMusic()
 }
 
 // todo: important- use song's time instead of counting manually.
-bool ScreenGameplay::Run(float TimeDelta)
+bool ScreenGameplay::Run(double TimeDelta)
 {
 	ScreenTime += TimeDelta;
 	if (ScreenTime > ScreenPauseTime || !ShouldChangeScreenAtEnd) // we're over the pause?

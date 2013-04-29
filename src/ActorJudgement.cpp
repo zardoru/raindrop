@@ -5,7 +5,7 @@
 #include "ImageLoader.h"
 #include "GraphicsManager.h"
 
-#define AnimDuration 0.3
+#define AnimDuration 0.3f
 
 ActorJudgement::ActorJudgement()
 {
@@ -21,7 +21,7 @@ ActorJudgement::ActorJudgement()
 void ActorJudgement::ChangeJudgement(Judgement New)
 {
 	AnimTime = AnimDuration;
-	scaleX = scaleY = 1.3;
+	scaleX = scaleY = 1.3f;
 	alpha = 1;
 
 	switch (New)
@@ -46,11 +46,11 @@ void ActorJudgement::ChangeJudgement(Judgement New)
 	}
 }
 
-void ActorJudgement::Run(float delta)
+void ActorJudgement::Run(double delta)
 {
 	if (AnimTime > 0)
 	{
-		float speed = 1.3 / 0.7;
+		float speed = 1.3f / 0.7f;
 		scaleX -= speed * delta;
 		scaleY -= speed * delta;
 		if (scaleX < 1)
@@ -59,7 +59,7 @@ void ActorJudgement::Run(float delta)
 			scaleY = 1;
 	}else
 	{
-		scaleX = scaleY = 0.8;
+		scaleX = scaleY = 0.8f;
 	}
 
 	AnimTime -= delta;

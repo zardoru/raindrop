@@ -1,6 +1,7 @@
 #include "Global.h"
 #include "ScreenEdit.h"
 #include "GraphicsManager.h"
+#include "ImageLoader.h"
 #include <boost/lexical_cast.hpp>
 
 ScreenEdit::ScreenEdit(IScreen *Parent)
@@ -8,14 +9,22 @@ ScreenEdit::ScreenEdit(IScreen *Parent)
 {
 	ShouldChangeScreenAtEnd = false; // So it doesn't go into screen evaluation.
 	GuiInitialized = false;
-	measureFrac = 0;
+	CurrentFraction = 0;
 	EditScreenState = Editing;
+	GhostObject.setImage(ImageLoader::LoadSkin("hitcircle.png"));
+	GhostObject.alpha = 0.7f;
+	GhostObject.origin = 1;
+	GhostObject.width = GhostObject.height = CircleSize;
 }
 
 void ScreenEdit::Init(Song *Other)
 {
 	if (Other != NULL)
+	{
+		Other->Difficulties.push_back(new SongInternal::Difficulty());
 		ScreenGameplay::Init (Other);
+		Other->Difficulties[0]->Timing.push_back(SongInternal::Difficulty::TimingSegment());
+	}
 
 	if (GuiInitialized)
 		return;
@@ -29,8 +38,8 @@ void ScreenEdit::Init(Song *Other)
 	System::getSingleton().setGUISheet(root);
 	
 	FrameWindow* fWnd = static_cast<FrameWindow*>(winMgr.createWindow( "TaharezLook/FrameWindow", "screenWindow" ));
-	fWnd->setPosition(UVector2 (cegui_reldim(0), cegui_reldim(0)));
-	fWnd->setSize(UVector2 (cegui_reldim(0.25), cegui_reldim(0.85)));
+	fWnd->setPosition(UVector2 (cegui_reldim(0.f), cegui_reldim(0.f)));
+	fWnd->setSize(UVector2 (cegui_reldim(0.25f), cegui_reldim(0.85f)));
 	root->addChildWindow(fWnd);
 
 	Window* st = winMgr.createWindow("TaharezLook/StaticText", "BPMText");
@@ -40,21 +49,27 @@ void ScreenEdit::Init(Song *Other)
 	st->setSize(UVector2(cegui_reldim(0.3f), cegui_reldim(0.04f)));
 
 	BPMBox = static_cast<Editbox*> (winMgr.createWindow("TaharezLook/Editbox", "BPMBox"));
-	BPMBox->setSize(UVector2 (cegui_reldim(0.8), cegui_reldim(0.15)));
-	BPMBox->setPosition(UVector2 (cegui_reldim(0.1), cegui_reldim(0.07)));
+	BPMBox->setSize(UVector2 (cegui_reldim(0.8f), cegui_reldim(0.15f)));
+	BPMBox->setPosition(UVector2 (cegui_reldim(0.1f), cegui_reldim(0.07f)));
 	fWnd->addChildWindow(BPMBox);
 
 	Window* st2 = winMgr.createWindow("TaharezLook/StaticText", "MsrText");
     fWnd->addChildWindow(st2);
 	st2->setText("Measure");
-	st2->setPosition(UVector2(cegui_reldim(0.1f), cegui_reldim(0.5)));
+	st2->setPosition(UVector2(cegui_reldim(0.1f), cegui_reldim(0.5f)));
 	st2->setSize(UVector2(cegui_reldim(0.5f), cegui_reldim(0.04f)));
 
-	Window* st3 = winMgr.createWindow("TaharezLook/StaticText", "OffsText");
+	Window* st3 = winMgr.createWindow("TaharezLook/StaticText", "FraText");
     fWnd->addChildWindow(st3);
-	st3->setText("Offset");
-	st3->setPosition(UVector2(cegui_reldim(0.1f), cegui_reldim(0.7)));
-	st3->setSize(UVector2(cegui_reldim(0.3f), cegui_reldim(0.04f)));
+	st3->setText("Fraction");
+	st3->setPosition(UVector2(cegui_reldim(0.1f), cegui_reldim(0.3f)));
+	st3->setSize(UVector2(cegui_reldim(0.5f), cegui_reldim(0.04f)));
+
+	Window* st4 = winMgr.createWindow("TaharezLook/StaticText", "OffsText");
+    fWnd->addChildWindow(st4);
+	st4->setText("Offset");
+	st4->setPosition(UVector2(cegui_reldim(0.1f), cegui_reldim(0.7f)));
+	st4->setSize(UVector2(cegui_reldim(0.3f), cegui_reldim(0.04f)));
 
 	/*
 	st2->setVerticalAlignment(VA_TOP);
@@ -62,15 +77,20 @@ void ScreenEdit::Init(Song *Other)
 	*/
 
 	CurrentMeasure = static_cast<Editbox*> (winMgr.createWindow("TaharezLook/Editbox", "MeasureBox"));
-	CurrentMeasure->setSize(UVector2 (cegui_reldim(0.8), cegui_reldim(0.1)));
-	CurrentMeasure->setPosition(UVector2 (cegui_reldim(0.1), cegui_reldim(0.4)));
+	CurrentMeasure->setSize(UVector2 (cegui_reldim(0.8f), cegui_reldim(0.1f)));
+	CurrentMeasure->setPosition(UVector2 (cegui_reldim(0.1f), cegui_reldim(0.4f)));
 
 	fWnd->addChildWindow(CurrentMeasure);
 
 	OffsetBox = static_cast<Editbox*> (winMgr.createWindow("TaharezLook/Editbox", "OffsetBox"));
-	OffsetBox->setSize(UVector2 (cegui_reldim(0.8), cegui_reldim(0.1)));
-	OffsetBox->setPosition(UVector2 (cegui_reldim(0.1), cegui_reldim(0.6)));
+	OffsetBox->setSize(UVector2 (cegui_reldim(0.8f), cegui_reldim(0.1f)));
+	OffsetBox->setPosition(UVector2 (cegui_reldim(0.1f), cegui_reldim(0.6f)));
 	fWnd->addChildWindow(OffsetBox);
+
+	FracBox = static_cast<Editbox*> (winMgr.createWindow("TaharezLook/Editbox", "FracBox"));
+	FracBox->setSize(UVector2 (cegui_reldim(0.8f), cegui_reldim(0.05f)));
+	FracBox->setPosition(UVector2 (cegui_reldim(0.1f), cegui_reldim(0.25f)));
+	fWnd->addChildWindow(FracBox);
 
 	winMgr.getWindow("MeasureBox")->
 		subscribeEvent(Editbox::EventTextChanged, Event::Subscriber(&ScreenEdit::measureTextChanged, this));
@@ -80,6 +100,9 @@ void ScreenEdit::Init(Song *Other)
 
 	winMgr.getWindow("OffsetBox")->
 		subscribeEvent(Editbox::EventTextChanged, Event::Subscriber(&ScreenEdit::offsetTextChanged, this));
+
+	winMgr.getWindow("FracBox")->
+		subscribeEvent(Editbox::EventTextChanged, Event::Subscriber(&ScreenEdit::fracTextChanged, this));
 
 	// information window
 	fWndInfo = static_cast<FrameWindow*>(winMgr.createWindow( "TaharezLook/FrameWindow", "screenInfoWindow" ));
@@ -118,12 +141,50 @@ void ScreenEdit::HandleInput(int key, int code, bool isMouseInput)
 				EditScreenState = Editing;
 				Measure = savedMeasure;
 				stopMusic();
+				RemoveTrash();
 			}
 		}
+		if (code == GLFW_PRESS)
+		{
+			if (key == GLFW_KEY_RIGHT)
+			{
+				CurrentFraction++;
+
+				if (CurrentFraction >= CurrentDiff->Measures[Measure].Fraction)
+				{
+					CurrentFraction = 0;
+				}
+			}else if (key == GLFW_KEY_LEFT)
+			{
+				CurrentFraction--;
+
+				if (CurrentFraction > CurrentDiff->Measures[Measure].Fraction) // overflow
+				{
+					CurrentFraction = CurrentDiff->Measures[Measure].Fraction-1;
+				}
+			}
+		}
+	}else // mouse input
+	{
+		if (EditScreenState == Editing)
+		{
+			try {
+				if (key == GLFW_MOUSE_BUTTON_LEFT)
+				{
+					CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).position.x = GhostObject.position.x;
+					CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).MeasurePos = CurrentFraction;
+				}else
+				{
+					CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).position.x = 0;
+				}
+				MySong->Process(false);
+			} catch (...){}
+		}
+
 	}
 }
 
-bool ScreenEdit::Run(float delta)
+bool ScreenEdit::Run(double delta)
 {
 	GraphMan.isGuiInputEnabled = (EditScreenState != Playing);
 
@@ -139,7 +200,35 @@ bool ScreenEdit::Run(float delta)
 		strs << "x: " << GraphMan.GetRelativeMPos().x - 112 << " y: " << GraphMan.GetRelativeMPos().y;
 		fWndInfo->setText(strs.str());
 
+		if (CurrentDiff->Measures.size())
+		{
+			Barline.Run(delta, CurrentDiff->Measures[Measure].Fraction, CurrentFraction);
+			if (! (Measure % 2 ))
+				YLock =  ((float)CurrentFraction / (float)CurrentDiff->Measures[Measure].Fraction) * (float)PlayfieldHeight;
+			else
+				YLock =  PlayfieldHeight - ((float)CurrentFraction / (float)CurrentDiff->Measures[Measure].Fraction) * (float)PlayfieldHeight;
+
+			YLock += ScreenOffset;
+		}
+
+		GhostObject.position.y = YLock;
+		GhostObject.position.x = GraphMan.GetRelativeMPos().x;
+		if ((GhostObject.position.x-112) > PlayfieldWidth)
+			GhostObject.position.x = PlayfieldWidth+112;
+		if ((GhostObject.position.x-112) < 0)
+			GhostObject.position.x = 112;
+
 		RenderObjects(delta);
+
+		if (CurrentDiff->Measures.size())
+		{
+			for (std::vector<GameObject>::iterator i = CurrentDiff->Measures[Measure].MeasureNotes.begin(); i != CurrentDiff->Measures[Measure].MeasureNotes.end(); i++)
+			{
+				i->Render();
+			}
+		}
+
+		GhostObject.Render();
 		CEGUI::System::getSingleton().renderGUI();
 	}
 
@@ -154,13 +243,15 @@ void ScreenEdit::Cleanup()
 
 bool ScreenEdit::measureTextChanged(const CEGUI::EventArgs& param)
 {
-	try 
+	try
 	{
 		Measure = boost::lexical_cast<int>(CurrentMeasure->getText());
-	}catch (...)
-	{
-		// hmm.. What to do?
-	}
+		if ((int)Measure > (((int)CurrentDiff->Measures.size())-1))
+		{
+			CurrentDiff->Measures.resize(Measure+1);
+			NotesInMeasure.resize(Measure+1);
+		}
+	}catch (...) { /* What to do now? */ }
 	return true;
 }
 
@@ -186,5 +277,18 @@ bool ScreenEdit::bpmTextChanged(const CEGUI::EventArgs& param)
 		// hmm.. What to do?
 	}
 
+	return true;
+}
+
+bool ScreenEdit::fracTextChanged(const CEGUI::EventArgs& param)
+{
+	try
+	{
+		CurrentDiff->Measures[Measure].Fraction = boost::lexical_cast<int>(FracBox->getText());
+		CurrentDiff->Measures[Measure].MeasureNotes.resize(CurrentDiff->Measures[Measure].Fraction);
+		NotesInMeasure[Measure].resize(CurrentDiff->Measures[Measure].Fraction);
+	}catch(...)
+	{
+	}
 	return true;
 }

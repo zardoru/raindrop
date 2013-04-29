@@ -71,12 +71,12 @@ void ScreenEvaluation::Init(EvaluationData _Data)
     fWnd->addChildWindow(st);
 	st->setText(Text);
 	st->setPosition(UVector2(cegui_reldim(0), cegui_reldim(0)));
-	st->setSize(UVector2(cegui_reldim(0.5f), cegui_reldim(0.85)));
+	st->setSize(UVector2(cegui_reldim(0.5f), cegui_reldim(0.85f)));
 
 	Window* st2 = winMgr.createWindow("TaharezLook/StaticText", "EvaluationResults");
 	st2->setText(_Results);
-	st2->setPosition(UVector2(cegui_reldim(0.5f), cegui_reldim( 0)));
-	st2->setSize(UVector2(cegui_reldim(0.5f), cegui_reldim(0.85)));
+	st2->setPosition(UVector2(cegui_reldim(0.5f), cegui_reldim( 0.f)));
+	st2->setSize(UVector2(cegui_reldim(0.5f), cegui_reldim(0.85f)));
 	fWnd->addChildWindow(st2);
 
 
@@ -113,7 +113,7 @@ void ScreenEvaluation::Cleanup()
 #endif
 }
 
-bool ScreenEvaluation::Run(float)
+bool ScreenEvaluation::Run(double)
 {
 #ifndef DISABLE_CEGUI
 	CEGUI::System::getSingleton().renderGUI();

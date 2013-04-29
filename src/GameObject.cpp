@@ -14,7 +14,7 @@ GameObject::GameObject()
 	origin = 1; // use the object's center instead of top-left
 	width = height = CircleSize;
 	fadeout_time = 0;
-	fadein_time = 0.7;
+	fadein_time = 0.7f;
 	hold_duration = 0;
 	endTime = 0;
 	heldKey = -1;
@@ -36,13 +36,17 @@ void GameObject::Animate(float delta, float songTime)
 	{
 		// alpha out
 		alpha = 1 * (fadeout_time);
+
+		if (alpha < 0)
+			alpha = 0;
+
 		// scale in
 		if (endTime == 0)
 			scaleX = scaleY = 2 - fadeout_time;
 		else
 			scaleX = scaleY = 3 - fadeout_time;
 
-		fadeout_time -= delta;
+		fadeout_time -= delta*2;
 
 		return;
 	}
@@ -62,7 +66,7 @@ void GameObject::Animate(float delta, float songTime)
 	}
 }
 
-Judgement GameObject::Run(float delta, float Time, bool Autoplay)
+Judgement GameObject::Run(double delta, double Time, bool Autoplay)
 {
 	if (fadeout_time || position.x == 0) // It was hit, so stop.
 		return None;
@@ -81,7 +85,7 @@ Judgement GameObject::Run(float delta, float Time, bool Autoplay)
 	{
 		if (endTime == 0)
 		{
-			fadeout_time = 0.3; // Fade out! You missed!
+			fadeout_time = 0.7f; // Fade out! You missed!
 			return Miss;
 		}
 	}
@@ -100,7 +104,7 @@ Judgement GameObject::Run(float delta, float Time, bool Autoplay)
 		}
 	}else if (!BeingHeld && Time < endTime-HoldLeniencyHitTime && (Time) > startTime+LeniencyHitTime)
 	{
-		fadeout_time = 0.3;
+		fadeout_time = 0.3f;
 		return NG;
 	}
 
@@ -141,7 +145,7 @@ Judgement GameObject::Hit(float Time, glm::vec2 mpos, bool KeyDown,  bool Autopl
 			printf ("songt %f starttime %f difference %f beat %f xpos = %f\n", Time, startTime, Time - startTime, beat, position.x);
 
 			if (endTime == 0) // Not a hold?
-				fadeout_time = 0.8; // 0.8 secs for fadeout
+				fadeout_time = 0.1f; // 0.8 secs for fadeout
 			else
 			{
 				heldKey = Key;

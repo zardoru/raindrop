@@ -9,7 +9,7 @@ class ActorBarline : public GraphObject2D
 	float AnimationTime, AnimationProgress;
 public:
 	ActorBarline(ScreenGameplay *_Parent);
-	void Run(float TimeDelta, float MeasureTime, float TotalTime);
+	void Run(double TimeDelta, double MeasureTime, double TotalTime);
 	void Init(float Offset);
 };
 

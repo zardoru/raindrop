@@ -21,7 +21,7 @@ public:
 
 	void (*judgementCallback) (Judgement);
 	Judgement Hit(float time, glm::vec2 mpos, bool KeyDown, bool Autoplay, int Key);
-	Judgement Run(float delta, float Time, bool Autoplay);
+	Judgement Run(double delta, double Time, bool Autoplay);
 	void Animate(float delta, float songTime);
 };
 

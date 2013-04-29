@@ -35,4 +35,8 @@ struct EvaluationData
 	unsigned int NumExcellents;
 };
 
+float _ScreenDifference();
+
+#define ScreenDifference _ScreenDifference()
+
 #endif

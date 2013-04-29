@@ -15,7 +15,7 @@ class ScreenSelectMusic : public IScreen
 public:
 	ScreenSelectMusic();
 	void Init();
-	bool Run(float Delta);
+	bool Run(double Delta);
 	void Cleanup();
 	void HandleInput(int key, int code, bool isMouseInput);
 };

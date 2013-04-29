@@ -14,7 +14,7 @@ class ScreenEvaluation : public IScreen
 public:
 	ScreenEvaluation(IScreen *Parent);
 	void Init(EvaluationData _Data);
-	bool Run(float Delta);
+	bool Run(double Delta);
 	void Cleanup();
 	void HandleInput(int key, int code, bool isMouseInput);
 };

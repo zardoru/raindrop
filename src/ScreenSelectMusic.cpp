@@ -26,7 +26,7 @@ void ScreenSelectMusic::Init()
 
 	fWnd->setText("Select your song.");
 	fWnd->setPosition(UVector2(cegui_reldim(0.1f), cegui_reldim( 0.1f)));
-    fWnd->setSize(UVector2(cegui_reldim(0.8), cegui_reldim( 0.8f)));
+    fWnd->setSize(UVector2(cegui_reldim(0.8f), cegui_reldim( 0.8f)));
 	root->addChildWindow(fWnd);
 
 	songbox = (Listbox*)winMgr.createWindow("TaharezLook/Listbox", "songbox");
@@ -85,7 +85,7 @@ void ScreenSelectMusic::Cleanup()
 #endif
 }
 
-bool ScreenSelectMusic::Run(float Delta)
+bool ScreenSelectMusic::Run(double Delta)
 {
 	if (RunNested(Delta))
 		return true;

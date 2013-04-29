@@ -8,7 +8,7 @@ public:
 	// I can't find anything more obvious of a name.
 	ActorJudgement();
 	void ChangeJudgement(Judgement New);
-	void Run (float delta);
+	void Run (double delta);
 };
 
 #endif

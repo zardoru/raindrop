@@ -41,7 +41,8 @@ public:
 	std::vector<SongInternal::Difficulty*> Difficulties;
 	std::string SongDir, BackgroundDir;
 	std::string SongName;
-	void Process();
+	void Process(bool CalculateXPos = true);
+	void Repack();
 };
 
 #endif

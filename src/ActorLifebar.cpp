@@ -48,7 +48,7 @@ void ActorLifebar::HitJudgement(Judgement Hit)
 	}
 }
 
-void ActorLifebar::Run(float delta)
+void ActorLifebar::Run(double delta)
 {
 	time += delta;
 	if (pending_health != 0)

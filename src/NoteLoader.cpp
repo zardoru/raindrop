@@ -9,7 +9,7 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <fstream>
 
-float ScreenDifference()
+float _ScreenDifference()
 {
 	return std::abs(float((ScreenWidth / 2.f) - (PlayfieldWidth / 2.f)));
 }
@@ -152,7 +152,7 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 						GameObject Temp;
 
 						if (xpos != 0)
-							Temp.position.x = xpos + ScreenDifference();
+							Temp.position.x = xpos;
 						else
 						{
 							Measure.Fraction++;
