@@ -11,11 +11,18 @@
 #include "Application.h"
 #include "Audio.h"
 #include "GraphicsManager.h"
+#include "BitmapFont.h"
 
-cAudio::IAudioManager* audioMgr;
-cAudio::IAudioDeviceList* pDeviceList;
-
-
+void Utility::DebugBreak()
+{
+#ifndef NDEBUG
+#ifdef WIN32
+	__asm int 3
+#else
+	asm("int 3");
+#endif
+#endif
+}
 
 Application::Application()
 {
@@ -23,13 +30,8 @@ Application::Application()
 
 void Application::Init()
 {
-	cAudio::cAudioString DeviceName;
 	GraphMan.AutoSetupWindow();
-
-	audioMgr = cAudio::createAudioManager(false);
-	pDeviceList = cAudio::createAudioDeviceList();
-	DeviceName = pDeviceList->getDefaultDeviceName();
-	audioMgr->initialize(DeviceName.c_str());
+	InitAudio();
 	Game = NULL;
 
 	oldTime = 0;
@@ -37,17 +39,11 @@ void Application::Init()
 	// throw a message here
 }
 
+	
+
 void Application::Run()
 {
 	Game = new ScreenSelectMusic();
-	/*ScreenEdit* sE = new ScreenEdit(NULL);
-	Song* editSong = new Song();
-	editSong->SongDir = "IT.ogg";
-
-	sE->Init(editSong);
-
-	Game = sE;
-	*/
 	Game->Init();
 
 	while (Game->IsScreenRunning())
@@ -63,7 +59,6 @@ void Application::Run()
 #ifndef DISABLE_CEGUI
 		CEGUI::System::getSingleton().injectTimePulse(delta);
 #endif
-
 		glfwSwapBuffers();
 		oldTime = newTime;
 	}

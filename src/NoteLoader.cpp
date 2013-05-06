@@ -63,7 +63,7 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 		// Then, file info.
 		if (command.find("#SONG") != std::string::npos)
 		{
-			Out->SongDir = prefix + "/" + line.substr(line.find_first_of(":") + 1);
+			Out->SongFilename = prefix + "/" + line.substr(line.find_first_of(":") + 1);
 		}
 
 		if (command.find("#BACKGROUNDIMAGE") != std::string::npos)

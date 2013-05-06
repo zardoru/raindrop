@@ -7,6 +7,7 @@
 #include "ActorBarline.h"
 #include "ActorJudgement.h"
 #include "ActorLifebar.h"
+#include "BitmapFont.h"
 
 class ScreenGameplay : public IScreen
 {
@@ -38,13 +39,13 @@ protected: // shit the edit screen needs
 	ActorBarline Barline;
 
 	std::vector <std::vector<GameObject>> NotesInMeasure;
-
 private: // shit only screengameplay needs
 
 	// Run the current measure (jic func name isn't obvious enough)
 	void RunMeasure(float delta);
 	void StoreEvaluation(Judgement Eval);
 	unsigned int Combo;
+	BitmapFont MyFont;
 
 	// Notes
 	std::vector<GameObject> NotesHeld, AnimateOnly;
@@ -65,7 +66,7 @@ private: // shit only screengameplay needs
 public:
 	ScreenGameplay(IScreen *Parent);
 
-	virtual void Init(Song *OtherSong);
+	virtual void Init(Song *OtherSong, unsigned int DifficultyIndex);
 	int GetMeasure();
 	virtual bool Run(double Delta);
 	virtual void HandleInput(int key, int code, bool isMouseInput);

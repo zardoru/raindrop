@@ -22,8 +22,10 @@ void ScreenEdit::Init(Song *Other)
 {
 	if (Other != NULL)
 	{
-		Other->Difficulties.push_back(new SongInternal::Difficulty());
-		ScreenGameplay::Init (Other);
+		if (Other->Difficulties.size() == 0) // No difficulties? Create a new one.
+			Other->Difficulties.push_back(new SongInternal::Difficulty());
+
+		ScreenGameplay::Init (Other, 0);
 		Other->Difficulties[0]->Timing.push_back(SongInternal::Difficulty::TimingSegment());
 	}
 
@@ -105,18 +107,12 @@ void ScreenEdit::Init(Song *Other)
 	winMgr.getWindow("FracBox")->
 		subscribeEvent(Editbox::EventTextChanged, Event::Subscriber(&ScreenEdit::fracTextChanged, this));
 
-	// information window
-	fWndInfo = static_cast<FrameWindow*>(winMgr.createWindow( "TaharezLook/FrameWindow", "screenInfoWindow" ));
-	fWndInfo->setPosition(UVector2 (cegui_reldim(0.75), cegui_reldim(0)));
-	fWndInfo->setSize(UVector2 (cegui_reldim(0.25), cegui_reldim(0.25)));
-	root->addChildWindow(fWndInfo);
-
 	GuiInitialized = true;
 }
 
 void ScreenEdit::StartPlaying( int _Measure )
 {
-	ScreenGameplay::Init(MySong);
+	ScreenGameplay::Init(MySong, 0);
 	Measure = _Measure;
 	seekTime( spb(CurrentDiff->Timing[0].Value) * Measure * 4 + CurrentDiff->Offset);
 	startMusic();
@@ -132,6 +128,7 @@ void ScreenEdit::HandleInput(int key, int code, bool isMouseInput)
 	{
 		if (key == 'P') // pressed p?
 		{
+			MySong->Process(false);
 			if (EditScreenState == Editing) // if we're editing, start playing the song
 			{
 				EditScreenState = Playing;
@@ -163,6 +160,18 @@ void ScreenEdit::HandleInput(int key, int code, bool isMouseInput)
 				{
 					CurrentFraction = CurrentDiff->Measures[Measure].Fraction-1;
 				}
+			}else if (key == 'S') // Save!
+			{
+				std::string DefaultPath = "chart.dcf";
+				MySong->Repack();
+				MySong->Save((MySong->SongDirectory + std::string("/") + DefaultPath).c_str());
+				MySong->Process();
+			}else if (key == 'Q')
+			{
+				if (Mode == Select)
+					Mode = Normal;
+				else
+					Mode = Select;
 			}
 		}
 	}else // mouse input
@@ -170,13 +179,17 @@ void ScreenEdit::HandleInput(int key, int code, bool isMouseInput)
 		if (EditScreenState == Editing)
 		{
 			try {
-				if (key == GLFW_MOUSE_BUTTON_LEFT)
+				if (Mode == Normal)
 				{
-					CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).position.x = GhostObject.position.x;
-					CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).MeasurePos = CurrentFraction;
-				}else
-				{
-					CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).position.x = 0;
+					if (key == GLFW_MOUSE_BUTTON_LEFT)
+					{
+						CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).position.x = GhostObject.position.x;
+						CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).MeasurePos = CurrentFraction;
+					}else
+					{
+						CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).position.x = 0;
+						CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).alpha = 0;
+					}
 				}
 				MySong->Process(false);
 			} catch (...){}
@@ -197,10 +210,6 @@ bool ScreenEdit::Run(double delta)
 	}
 	else // editing the song? run the editor
 	{
-		std::stringstream strs;
-		strs << "x: " << GraphMan.GetRelativeMPos().x - 112 << " y: " << GraphMan.GetRelativeMPos().y;
-		fWndInfo->setText(strs.str());
-
 		if (CurrentDiff->Measures.size())
 		{
 			Barline.Run(delta, CurrentDiff->Measures[Measure].Fraction, CurrentFraction);
@@ -214,10 +223,10 @@ bool ScreenEdit::Run(double delta)
 
 		GhostObject.position.y = YLock;
 		GhostObject.position.x = GraphMan.GetRelativeMPos().x;
-		if ((GhostObject.position.x-112) > PlayfieldWidth)
-			GhostObject.position.x = PlayfieldWidth+112;
-		if ((GhostObject.position.x-112) < 0)
-			GhostObject.position.x = 112;
+		if ((GhostObject.position.x-ScreenDifference) > PlayfieldWidth)
+			GhostObject.position.x = PlayfieldWidth+ScreenDifference;
+		if ((GhostObject.position.x-ScreenDifference) < 0)
+			GhostObject.position.x = ScreenDifference;
 
 		RenderObjects(delta);
 
@@ -229,7 +238,8 @@ bool ScreenEdit::Run(double delta)
 			}
 		}
 
-		GhostObject.Render();
+		if (Mode == Normal)
+			GhostObject.Render();
 		CEGUI::System::getSingleton().renderGUI();
 	}
 

@@ -9,6 +9,11 @@
 
 using boost::uint32_t;
 
+namespace Utility
+{
+	void DebugBreak();
+}
+
 #ifdef WIN32
 #pragma warning (disable: 4244)
 #pragma warning (disable: 4996) // deprecation

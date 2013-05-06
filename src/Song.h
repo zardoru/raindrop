@@ -38,11 +38,14 @@ class Song
 {
 public:
 	Song();
+	~Song();
 	std::vector<SongInternal::Difficulty*> Difficulties;
-	std::string SongDir, BackgroundDir;
+	std::string SongFilename, BackgroundDir;
 	std::string SongName;
+	std::string SongDirectory;
 	void Process(bool CalculateXPos = true);
 	void Repack();
+	void Save(const char* Filename);
 };
 
 #endif

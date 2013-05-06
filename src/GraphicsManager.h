@@ -3,10 +3,6 @@
 #ifndef GraphMan_H_
 #define GraphMan_H_
 
-#ifdef WIN32
-#include <Windows.h>
-#endif
-
 #include <GL/glew.h>
 #include <GL/glfw.h>
 

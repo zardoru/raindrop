@@ -27,6 +27,12 @@ class ScreenEdit : public ScreenGameplay
 	uint32_t savedMeasure;
 
 	float YLock;
+	enum
+	{
+		Select,
+		Normal,
+		Hold
+	}Mode; 
 	GraphObject2D GhostObject;
 public:
 	ScreenEdit (IScreen * Parent);

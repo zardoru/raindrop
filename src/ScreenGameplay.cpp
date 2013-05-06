@@ -8,8 +8,6 @@
 #include "ImageLoader.h"
 #include "Audio.h"
 
-cAudio::IAudioSource* song;
-
 ScreenGameplay::ScreenGameplay(IScreen *Parent) :
 	IScreen(Parent),
 	Barline(this)
@@ -17,6 +15,7 @@ ScreenGameplay::ScreenGameplay(IScreen *Parent) :
 	Running = true;
 	IsAutoplaying = false;
 	ShouldChangeScreenAtEnd = true;
+	MyFont.LoadSkinFontImage("font.tga", glm::vec2(18, 32), glm::vec2(34,34), glm::vec2(40,64), 32);
 }
 
 glm::vec2 ScreenGameplay::GetScreenOffset(float Alignment)
@@ -64,7 +63,7 @@ void ScreenGameplay::StoreEvaluation(Judgement Eval)
 	case None:
 		break;
 	}
-	Evaluation.MaxCombo = max(Evaluation.MaxCombo, Combo);
+	Evaluation.MaxCombo = std::max(Evaluation.MaxCombo, Combo);
 }
 
 void ScreenGameplay::RemoveTrash()
@@ -74,10 +73,10 @@ void ScreenGameplay::RemoveTrash()
 	NotesInMeasure.clear();
 }
 
-void ScreenGameplay::Init(Song *OtherSong)
+void ScreenGameplay::Init(Song *OtherSong, unsigned int DifficultyIndex)
 {
 	MySong = OtherSong;
-	CurrentDiff = MySong->Difficulties[0]; // todo: fix this
+	CurrentDiff = MySong->Difficulties[DifficultyIndex]; // todo: fix this
 	
 	memset(&Evaluation, 0, sizeof(Evaluation));
 
@@ -128,10 +127,11 @@ void ScreenGameplay::Init(Song *OtherSong)
 		NotesInMeasure[i] = CurrentDiff->Measures[i].MeasureNotes;
 	}
 
-	song = audioMgr->create("song", MySong->SongDir.c_str(), true);
+	// xxx : new audio system (portaudio)
+	// song = audioMgr->create("song", MySong->SongFilename.c_str(), true);
 
-	if (!song)
-		throw std::exception( (boost::format ("couldn't open song %s") % MySong->SongDir).str().c_str() );
+	/*if (!song)
+		throw std::exception( (boost::format ("couldn't open song %s") % MySong->SongFilename).str().c_str() );*/
 
 	MeasureTimeElapsed = 0;
 	SongTime = 0;
@@ -256,7 +256,7 @@ void ScreenGameplay::HandleInput(int key, int code, bool isMouseInput)
 		if (key == 'R') // Retry
 		{
 			Cleanup();
-			Init(MySong);
+			Init(MySong, 0);
 			return;
 		}
 #endif
@@ -277,29 +277,29 @@ void ScreenGameplay::HandleInput(int key, int code, bool isMouseInput)
 void ScreenGameplay::Cleanup()
 {
 	// Deleting the song's notes is ScreenSelectMusic's (or fileman's) job.
-	if (song != NULL)
+	/*if (song != NULL)
 	{
 		song->stop();
 		song->drop();
 		song = NULL;
-	}
+	}*/
 }
 
 void ScreenGameplay::seekTime(float Time)
 {
-	song->seek(Time);
+	// song->seek(Time);
 	SongTime = Time;
 	ScreenTime = 0;
 }
 
 void ScreenGameplay::startMusic()
 {
-	song->play();
+	// song->play();
 }
 
 void ScreenGameplay::stopMusic()
 {
-	song->stop();
+	// song->stop();
 }
 
 // todo: important- use song's time instead of counting manually.
@@ -310,8 +310,8 @@ bool ScreenGameplay::Run(double TimeDelta)
 	{
 		if (SongTime == 0)
 		{
-			song->seek(TimeDelta, true);
-			song->play();
+			// song->seek(TimeDelta, true);
+			// song->play();
 		}
 
 		SongTime += TimeDelta;
@@ -320,6 +320,8 @@ bool ScreenGameplay::Run(double TimeDelta)
 		{
 			return RunNested(TimeDelta); // use that instead.
 		}
+
+		// song->seek(SongTime);
 
 		// do we need this call?
 		// glfwPollEvents();
@@ -435,7 +437,7 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 				ScreenEvaluation *Eval = new ScreenEvaluation(this);
 				Eval->Init(Evaluation);
 				Next = Eval;
-				song->stop();
+				// song->stop();
 			}
 		}
 	}catch (...)
@@ -444,5 +446,8 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 
 	Barline.Render();
 	aJudgement.Render();
+	std::stringstream str;
+	str << Combo;
+	MyFont.DisplayText(str.str().c_str(), glm::vec2(aJudgement.position.x, 0));
 	Cursor.Render();
 }

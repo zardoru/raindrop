@@ -95,14 +95,14 @@ Judgement GameObject::Run(double delta, double Time, bool Autoplay)
 
 	if (BeingHeld)
 	{
-		if (Time > endTime && fadeout_time == 0)
+		if (Time >= endTime && fadeout_time == 0)
 		{
 			fadeout_time = 1;
-			audioMgr->play2D((FileManager::GetSkinPrefix() + "holdfinish.ogg").c_str());
+			// audioMgr->play2D((FileManager::GetSkinPrefix() + "holdfinish.ogg").c_str());
 			BeingHeld = false;
 			return OK;
 		}
-	}else if (!BeingHeld && Time < endTime-HoldLeniencyHitTime && (Time) > startTime+LeniencyHitTime)
+	}else if (!BeingHeld && Time > startTime+LeniencyHitTime)
 	{
 		fadeout_time = 0.7f;
 		return NG;
@@ -141,7 +141,7 @@ Judgement GameObject::Hit(float Time, glm::vec2 mpos, bool KeyDown,  bool Autopl
 			// Hit!
 			Judgement RVal;
 
-			audioMgr->play2D((FileManager::GetSkinPrefix() + "hit.ogg").c_str());
+			// audioMgr->play2D((FileManager::GetSkinPrefix() + "hit.ogg").c_str());
 			printf ("songt %f starttime %f difference %f beat %f xpos = %f\n", Time, startTime, Time - startTime, beat, position.x);
 
 			if (endTime == 0) // Not a hold?

@@ -4,7 +4,6 @@
 #include "ActorBarline.h"
 #include "GraphicsManager.h"
 #include "Game_Consts.h"
-#include <GL/glfw.h>
 
 ActorBarline::ActorBarline(ScreenGameplay *_Parent) : GraphObject2D()
 {

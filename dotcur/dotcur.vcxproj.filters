@@ -87,6 +87,15 @@
     <ClCompile Include="..\src\ScreenEdit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\BitmapFont.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Audio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pa_ringbuffer.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\GraphObject2D.h">
@@ -164,7 +173,7 @@
     <ClInclude Include="..\src\ScreenEdit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\ScreenMainMenu.h">
+    <ClInclude Include="..\src\BitmapFont.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -16,6 +16,9 @@ ScreenSelectMusic::ScreenSelectMusic()
 void ScreenSelectMusic::Init()
 {
 	FileManager::GetSongList(SongList);
+
+	// screen music :p
+	// startVorbisStream("GameData/Skins/default/loop4.ogg");
 #ifndef DISABLE_CEGUI
 
 	using namespace CEGUI;
@@ -119,20 +122,26 @@ void ScreenSelectMusic::HandleInput(int key, int code, bool isMouseInput)
 	{
 		if (key == GLFW_KEY_F1)
 		{
-			ScreenGameplay *_Next = new ScreenGameplay(this);
-			_Next->Init(SongList.at(0));
+			if (SongList.size() && SongList.at(0)->Difficulties.size())
+			{
+				ScreenGameplay *_Next = new ScreenGameplay(this);
+				_Next->Init(SongList.at(0), 0);
 
-			Next = _Next;
-			SwitchBackGuiPending = true;
-			GraphMan.isGuiInputEnabled = false;
+				Next = _Next;
+				SwitchBackGuiPending = true;
+				GraphMan.isGuiInputEnabled = false;
+			}
 		}
 
 		if (key == GLFW_KEY_F4) // Edit mode!
 		{
-			ScreenEdit *_Next = new ScreenEdit(this);
-			_Next->Init(SongList.at(songbox->getFirstSelectedItem()->getID()));
-			Next = _Next;
-			SwitchBackGuiPending = true;
+			if (songbox->getFirstSelectedItem())
+			{
+				ScreenEdit *_Next = new ScreenEdit(this);
+				_Next->Init(SongList.at(songbox->getFirstSelectedItem()->getID()));
+				Next = _Next;
+				SwitchBackGuiPending = true;
+			}
 		}
 	}
 
@@ -143,13 +152,16 @@ bool ScreenSelectMusic::RunMusic(const CEGUI::EventArgs&)
 {
 	if (songbox->getFirstSelectedItem())
 	{
-		ScreenGameplay *_Next = new ScreenGameplay(this);
-	
-		_Next->Init(SongList.at(songbox->getFirstSelectedItem()->getID()));
+		if (SongList.at(songbox->getFirstSelectedItem()->getID())->Difficulties.size())
+		{
+			ScreenGameplay *_Next = new ScreenGameplay(this);
 
-		Next = _Next;
-		SwitchBackGuiPending = true;
-		GraphMan.isGuiInputEnabled = false;
+			_Next->Init(SongList.at(songbox->getFirstSelectedItem()->getID()), 0);
+
+			Next = _Next;
+			SwitchBackGuiPending = true;
+			GraphMan.isGuiInputEnabled = false;
+		}
 	}
 	return true;
 }

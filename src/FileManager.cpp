@@ -13,8 +13,14 @@ std::string FileManager::CurrentSkin = "default";
 
 void loadSong( boost::filesystem::path songPath, std::vector<Song*> &VecOut )
 {
+	bool FoundDCF = false;
+
 	using namespace boost::filesystem;
 	directory_iterator end_iter;
+	
+	std::string Path = songPath.string();
+
+	// First, search for .dcf files.
 	for (directory_iterator it (songPath); it != end_iter ; it++)
 	{
 		if (is_regular_file(it->path()))
@@ -23,9 +29,31 @@ void loadSong( boost::filesystem::path songPath, std::vector<Song*> &VecOut )
 			{
 				// found a .dcf- load it.
 				VecOut.push_back(NoteLoader::LoadObjectsFromFile(it->path().string(), songPath.string()));
+				FoundDCF = true;
 			}
 		}
 	}
+
+	// If we didn't find any chart, add this song to the list as edit-only.
+	if (!FoundDCF)
+	{
+		for (directory_iterator it (songPath); it != end_iter ; it++)
+		{
+			if (is_regular_file(it->path()))
+			{
+				if ( extension(it->path()) == (".ogg") ) // Found an OGG file?
+				{
+					Song *NewS;
+					NewS = new Song();
+					NewS->SongDirectory = Path;
+					NewS->SongName = it->path().filename().string();
+					NewS->SongFilename = it->path().string();
+					VecOut.push_back(NewS);
+				}
+			}
+		}
+	}
+	
 }
 
 std::string FileManager::GetDirectoryPrefix()
