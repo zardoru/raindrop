@@ -12,7 +12,7 @@ ActorLifebar::ActorLifebar()
 	setImage(ImageLoader::LoadSkin("healthbar.png"));
 	red = blue = 0;
 	time = 0;
-	origin = 0;
+	Centered = false;
 	position.y = ScreenHeight - height;
 	position.x = 0;
 	Init(true);

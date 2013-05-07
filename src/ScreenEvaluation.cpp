@@ -12,7 +12,7 @@ ScreenEvaluation::ScreenEvaluation(IScreen *Parent) :
 	Running = true;
 }
 
-int ScreenEvaluation::CalculateScore()
+int32 ScreenEvaluation::CalculateScore()
 {
 	return Results.NumExcellents * 10000 +
 		Results.NumPerfects * 8500 +
@@ -98,7 +98,7 @@ bool ScreenEvaluation::StopRunning(const CEGUI::EventArgs&)
 	return true;
 }
 
-void ScreenEvaluation::HandleInput(int key, int code, bool isMouseInput)
+void ScreenEvaluation::HandleInput(int32 key, int32 code, bool isMouseInput)
 {
 	if (key == GLFW_KEY_ESC && code == GLFW_PRESS)
 		Running = false;

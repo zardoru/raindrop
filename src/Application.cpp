@@ -64,7 +64,7 @@ void Application::Run()
 	}
 }
 
-void Application::HandleInput(int key, int code, bool isMouseInput)
+void Application::HandleInput(int32 key, int32 code, bool isMouseInput)
 {
 	Game->HandleInput(key, code, isMouseInput);
 }

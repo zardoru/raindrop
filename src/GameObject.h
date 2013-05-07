@@ -13,14 +13,14 @@ public:
 	float fadeout_time, fadein_time; // time to fadeout, and time to get a hit
 
 	float startTime, endTime, beat, hold_duration;
-	int heldKey;
+	int32 heldKey;
 
-	unsigned int Measure, MeasurePos;
+	uint32 Measure, MeasurePos;
 
 
 
 	void (*judgementCallback) (Judgement);
-	Judgement Hit(float time, glm::vec2 mpos, bool KeyDown, bool Autoplay, int Key);
+	Judgement Hit(float time, glm::vec2 mpos, bool KeyDown, bool Autoplay, int32 Key);
 	Judgement Run(double delta, double Time, bool Autoplay);
 	void Animate(float delta, float songTime);
 };

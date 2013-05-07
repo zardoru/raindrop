@@ -37,7 +37,7 @@ void checkGlError()
 	return; // breakpoints yay
 }
 
-unsigned int GlfwToCeguiKey(int glfwKey)
+uint32 GlfwToCeguiKey(int32 glfwKey)
 {
 	switch(glfwKey)
 	{
@@ -82,7 +82,7 @@ unsigned int GlfwToCeguiKey(int glfwKey)
 	}
 }
 
-CEGUI::MouseButton GlfwToCeguiButton(int glfwButton)
+CEGUI::MouseButton GlfwToCeguiButton(int32 glfwButton)
 {
 	switch(glfwButton)
 	{
@@ -97,7 +97,7 @@ GraphicsManager::GraphicsManager()
 {
 }
 
-void GLFWCALL ResizeFunc(int width, int height)
+void GLFWCALL ResizeFunc(int32 width, int32 height)
 {
 	glViewport(width / 2 - GraphMan.GetMatrixSize().x / 2, 0, GraphMan.GetMatrixSize().x, height);
 	GraphMan.size.x = width;
@@ -108,7 +108,7 @@ void GLFWCALL ResizeFunc(int width, int height)
 #endif
 }
 
-void GLFWCALL InputFunc (int key, int code)
+void GLFWCALL InputFunc (int32 key, int32 code)
 {
 	App.HandleInput(key, code, false);
 
@@ -128,7 +128,7 @@ void GLFWCALL InputFunc (int key, int code)
 #endif
 }
 
-void GLFWCALL MouseInputFunc (int key, int code)
+void GLFWCALL MouseInputFunc (int32 key, int32 code)
 {
 	App.HandleInput(key, code, true);
 
@@ -144,7 +144,7 @@ void GLFWCALL MouseInputFunc (int key, int code)
 #endif
 }
 
-void GLFWCALL MouseMoveFunc (int newx, int newy)
+void GLFWCALL MouseMoveFunc (int32 newx, int32 newy)
 {
 	if (!GraphMan.isGuiInputEnabled)
 		return;
@@ -166,7 +166,7 @@ glm::vec2 GraphicsManager::GetMatrixSize()
 
 glm::vec2 GraphicsManager::GetRelativeMPos()
 {
-	int mousex, mousey;
+	int32 mousex, mousey;
 	glfwGetMousePos(&mousex, &mousey);
 	float outx = matrixSize.x * mousex / size.x;
 	float outy = matrixSize.y * mousey / size.y;
@@ -192,7 +192,7 @@ void GraphicsManager::AutoSetupWindow()
 	size.y = ScreenHeight;
 	matrixSize.x = ScreenWidth;
 	matrixSize.y = ScreenHeight;
-
+/*
 #ifndef OLD_GL
 	// Request OpenGL 3.3.
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);
@@ -203,9 +203,12 @@ void GraphicsManager::AutoSetupWindow()
 	glfwOpenWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
 #else
+	*/
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 2);
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 1);
+	/*
 #endif
+	*/
 
 	glfwGetDesktopMode(&mode);
 
@@ -260,17 +263,17 @@ void GraphicsManager::ClearWindow()
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-int GraphicsManager::GetDefaultFragShader()
+int32 GraphicsManager::GetDefaultFragShader()
 {
 	return defaultFragShader;
 }
 
-int GraphicsManager::GetDefaultVertexShader()
+int32 GraphicsManager::GetDefaultVertexShader()
 {
 	return defaultVertexShader;
 }
 
-int GraphicsManager::GetShaderProgram()
+int32 GraphicsManager::GetShaderProgram()
 {
 	return defaultShaderProgram;
 }

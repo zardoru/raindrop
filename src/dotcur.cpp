@@ -1,4 +1,4 @@
-
+#include "Global.h"
 #include <exception>
 #include "Screen.h"
 #include "Application.h"
@@ -9,7 +9,7 @@
 
 Application App;
 
-int main ()
+int32 main ()
 {
 	try  {
 		App.Init();

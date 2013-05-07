@@ -1,3 +1,4 @@
+#include "Global.h"
 #include "Screen.h"
 
 IScreen::IScreen() 

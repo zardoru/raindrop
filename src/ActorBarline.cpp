@@ -8,7 +8,7 @@
 ActorBarline::ActorBarline(ScreenGameplay *_Parent) : GraphObject2D()
 {
 	Parent = _Parent;
-	origin = 1; //use center
+	Centered = true;
 }
 
 void ActorBarline::Init(float Offset)

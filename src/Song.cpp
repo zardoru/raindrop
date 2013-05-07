@@ -28,7 +28,7 @@ void Song::Repack()
 		{
 			for (std::vector<GameObject>::iterator it = Measure->MeasureNotes.begin(); it != Measure->MeasureNotes.end(); it++)
 			{
-				if (it->position.x != 0)
+				if (it->position.x > ScreenDifference)
 					it->position.x -= ScreenDifference;
 			}
 		}
@@ -39,7 +39,7 @@ void Song::Process(bool CalculateXPos)
 {
 	for(std::vector<SongInternal::Difficulty*>::iterator Difficulty = Difficulties.begin(); Difficulty != Difficulties.end(); Difficulty++ )
 	{
-		int CurrentMeasure = 0;
+		int32 CurrentMeasure = 0;
 		for(std::vector<SongInternal::Measure>::iterator Measure = (*Difficulty)->Measures.begin(); Measure != (*Difficulty)->Measures.end(); Measure++)
 		{
 			for (std::vector<GameObject>::iterator it = Measure->MeasureNotes.begin(); it != Measure->MeasureNotes.end(); it++)
@@ -76,7 +76,10 @@ void Song::Process(bool CalculateXPos)
 				it->Init(false);
 
 				if (CalculateXPos)
-					it->position.x += ScreenDifference;
+				{
+					if (it->position.x > 0)
+						it->position.x += ScreenDifference;
+				}
 			}
 			CurrentMeasure++;
 		}
@@ -106,14 +109,14 @@ void Song::Save(const char* Filename)
 		for (std::vector<SongInternal::Measure>::iterator m = (*i)->Measures.begin(); m != (*i)->Measures.end(); m++)
 		{
 			// for each note of this difficulty
-			for (unsigned int n = 0; n != m->MeasureNotes.size(); n++)
+			for (uint32 n = 0; n != m->MeasureNotes.size(); n++)
 			{
 				// Fill in the blanks between the first and second notes.
 				if (n == 0)
 				{
 					if (m->MeasureNotes[n].MeasurePos != 0)
 					{
-						for (unsigned int i = 0; i < m->MeasureNotes[n].MeasurePos; i++)
+						for (uint32 i = 0; i < m->MeasureNotes[n].MeasurePos; i++)
 						{
 							Out << "{0}";
 						}
@@ -126,7 +129,7 @@ void Song::Save(const char* Filename)
 				// Fill in the blanks between two notes.
 				try
 				{
-					int Difference = (m->MeasureNotes[n+1].MeasurePos - m->MeasureNotes[n].MeasurePos);
+					int32 Difference = (m->MeasureNotes.at(n+1).MeasurePos - m->MeasureNotes.at(n).MeasurePos);
 					if (Difference > 1)
 					{
 						while (Difference > 1)
@@ -143,7 +146,7 @@ void Song::Save(const char* Filename)
 					if (m->MeasureNotes[n].MeasurePos < m->Fraction-1)
 					{
 						// Close it.
-						int Difference = m->Fraction-1 - m->MeasureNotes[n].MeasurePos;
+						int32 Difference = m->Fraction-1 - m->MeasureNotes[n].MeasurePos;
 						while (Difference > 0)
 						{
 							Out << "{0}";

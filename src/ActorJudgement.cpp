@@ -9,7 +9,7 @@
 
 ActorJudgement::ActorJudgement()
 {
-	origin = 1; // use center
+	Centered = 1;
 	position.x = GraphMan.GetMatrixSize().x / 2;
 	position.y = PlayfieldHeight * 3 / 4 + ScreenOffset;
 	alpha = 0;

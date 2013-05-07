@@ -9,8 +9,8 @@
 
 class GraphicsManager
 {
-	friend void ResizeFunc(int,int);
-	friend void InputFunc(int,int);
+	friend void ResizeFunc(int32,int32);
+	friend void InputFunc(int32,int32);
 	glm::vec2 size;
 	glm::vec2 matrixSize;
 	glm::mat4 projection;
@@ -40,9 +40,9 @@ public:
 	// returns the size of the orthogonal matrix
 	glm::vec2 GetMatrixSize();
 
-	int GetDefaultFragShader();
-	int GetDefaultVertexShader();
-	int GetShaderProgram();
+	int32 GetDefaultFragShader();
+	int32 GetDefaultVertexShader();
+	int32 GetShaderProgram();
 };
 
 extern GraphicsManager GraphMan;

@@ -5,6 +5,7 @@
 #include "pa_ringbuffer.h"
 #include <vorbis/vorbisfile.h>
 #include <ogg/ogg.h>
+#include <boost/thread.hpp>
 
 void InitAudio();
 void StartStream(const char* sound);
@@ -19,26 +20,36 @@ class VorbisStream
 	vorbis_info* info;
 	vorbis_comment* comment;
 	char* buffer;
-	int BufSize;
+	uint32 BufSize;
 	PaUtilRingBuffer RingBuf;
 	bool runThread;
 	bool loop;
-
+	bool threadRunning; // status report. 
+	bool isOpen;
 	friend class PaStreamWrapper;
+	boost::thread *thread;
 
 	void VorbisStream::clearBuffer();
-	char tbuf[BUFF_SIZE*sizeof(short int)];
-	void UpdateBuffer(int &read);
+	char tbuf[BUFF_SIZE*sizeof(int16)];
+	void UpdateBuffer(int32 &read);
 	void operator () ();
 
+	double SeekTime;
+	double playbackTime, streamTime;
+
 public:
-	VorbisStream(FILE *fp, int bufferSize = BUFF_SIZE);
+	VorbisStream(FILE *fp, uint32 bufferSize = BUFF_SIZE);
 
 	~VorbisStream();
 
+	void startStream();
+	void stopStream();
+
 	double getRate();
-	int getChannels();
-	int readBuffer(void * out, int length, const PaStreamCallbackTimeInfo *timeInfo);
+	int32 getChannels();
+	int32 readBuffer(void * out, uint32 length, const PaStreamCallbackTimeInfo *timeInfo);
+	void seek(double Time, bool accurate = false); /* accurate also means thread safe */
+	bool IsOpen();
 };
 
 class VorbisStream;
@@ -50,13 +61,21 @@ class PaStreamWrapper
 	VorbisStream *Sound;
 public:
 
-	PaStreamWrapper(char* filename);
+	PaStreamWrapper(const char* filename);
 	PaStreamWrapper(VorbisStream *Vs);
 
 	~PaStreamWrapper();
 
-	void Start(bool looping = false);
+	bool IsValid();
+	void Start(bool looping = false, bool Stream = true);
+	void Stop();
+	void Restart();
+	void Seek(double Time, bool Accurate = true, bool RestartStream = true);
+	double GetPlaybackTime();
+	bool IsStopped();
 };
+
+double GetDeviceLatency();
 
 #define SoundStream PaStreamWrapper
 

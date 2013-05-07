@@ -8,7 +8,7 @@ public:
 
 	Application();
 
-	void HandleInput(int key, int state, bool isMouseInput);
+	void HandleInput(int32 key, int32 state, bool isMouseInput);
 
 	void Init();
 	void Run();

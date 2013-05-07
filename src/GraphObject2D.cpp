@@ -13,7 +13,7 @@ GraphObject2D::GraphObject2D()
 	red = blue = green = 1.0;
 	scaleX = scaleY = 1.0;
 	rotation = 0;
-	origin = 0;
+	Centered = false;
 	IsInitialized = false;
 }
 

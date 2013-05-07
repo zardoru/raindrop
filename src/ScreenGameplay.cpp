@@ -16,6 +16,7 @@ ScreenGameplay::ScreenGameplay(IScreen *Parent) :
 	IsAutoplaying = false;
 	ShouldChangeScreenAtEnd = true;
 	MyFont.LoadSkinFontImage("font.tga", glm::vec2(18, 32), glm::vec2(34,34), glm::vec2(40,64), 32);
+	Music = NULL;
 }
 
 glm::vec2 ScreenGameplay::GetScreenOffset(float Alignment)
@@ -73,10 +74,10 @@ void ScreenGameplay::RemoveTrash()
 	NotesInMeasure.clear();
 }
 
-void ScreenGameplay::Init(Song *OtherSong, unsigned int DifficultyIndex)
+void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
 {
 	MySong = OtherSong;
-	CurrentDiff = MySong->Difficulties[DifficultyIndex]; // todo: fix this
+	CurrentDiff = MySong->Difficulties[DifficultyIndex];
 	
 	memset(&Evaluation, 0, sizeof(Evaluation));
 
@@ -96,7 +97,7 @@ void ScreenGameplay::Init(Song *OtherSong, unsigned int DifficultyIndex)
 	Background.position.y = 0;
 	Background.Init();
 
-	MarkerA.origin = MarkerB.origin = 1;
+	MarkerA.Centered = MarkerB.Centered = true;
 	MarkerA.position.x = MarkerB.position.x = GetScreenOffset(0.5).x;
 	MarkerA.position.y = MarkerA.height/2 - Barline.height/2;
 	MarkerA.rotation = 180;
@@ -122,7 +123,7 @@ void ScreenGameplay::Init(Song *OtherSong, unsigned int DifficultyIndex)
 
 	// todo: not need to copy this whole thing. 
 	NotesInMeasure.resize(CurrentDiff->Measures.size());
-	for (uint32_t i = 0; i < CurrentDiff->Measures.size(); i++)
+	for (uint32 i = 0; i < CurrentDiff->Measures.size(); i++)
 	{
 		NotesInMeasure[i] = CurrentDiff->Measures[i].MeasureNotes;
 	}
@@ -133,6 +134,14 @@ void ScreenGameplay::Init(Song *OtherSong, unsigned int DifficultyIndex)
 	/*if (!song)
 		throw std::exception( (boost::format ("couldn't open song %s") % MySong->SongFilename).str().c_str() );*/
 
+	if (!Music)
+	{
+		Music = new SoundStream(MySong->SongFilename.c_str());
+
+		if (!Music || !Music->IsValid())
+			throw std::exception( (boost::format ("couldn't open song %s") % MySong->SongFilename).str().c_str() );
+	}
+
 	MeasureTimeElapsed = 0;
 	SongTime = 0;
 	ScreenTime = 0;
@@ -140,7 +149,7 @@ void ScreenGameplay::Init(Song *OtherSong, unsigned int DifficultyIndex)
 	Cursor.Init();
 }
 
-int ScreenGameplay::GetMeasure()
+int32 ScreenGameplay::GetMeasure()
 {
 	return Measure;
 }
@@ -191,7 +200,7 @@ void ScreenGameplay::RunMeasure(float delta)
 	}
 }
 
-void ScreenGameplay::HandleInput(int key, int code, bool isMouseInput)
+void ScreenGameplay::HandleInput(int32 key, int32 code, bool isMouseInput)
 {
 	glm::vec2 mpos = GraphMan.GetRelativeMPos();
 
@@ -277,72 +286,74 @@ void ScreenGameplay::HandleInput(int key, int code, bool isMouseInput)
 void ScreenGameplay::Cleanup()
 {
 	// Deleting the song's notes is ScreenSelectMusic's (or fileman's) job.
-	/*if (song != NULL)
+	if (Music != NULL)
 	{
-		song->stop();
-		song->drop();
-		song = NULL;
-	}*/
+		delete Music;
+		Music = NULL;
+	}
 }
 
 void ScreenGameplay::seekTime(float Time)
 {
-	// song->seek(Time);
+	Music->Seek(Time, false);
 	SongTime = Time;
 	ScreenTime = 0;
 }
 
 void ScreenGameplay::startMusic()
 {
-	// song->play();
+	Music->Start();
 }
 
 void ScreenGameplay::stopMusic()
 {
-	// song->stop();
+	Music->Stop();
 }
 
 // todo: important- use song's time instead of counting manually.
 bool ScreenGameplay::Run(double TimeDelta)
 {
 	ScreenTime += TimeDelta;
+	
+	if (Music)
+	{
+		SongDelta = Music->GetPlaybackTime() - SongTime;
+		SongTime += SongDelta;
+	}
+
 	if ( ScreenTime > ScreenPauseTime || !ShouldChangeScreenAtEnd ) // we're over the pause?
 	{
 		if (SongTime == 0)
-		{
-			// song->seek(TimeDelta, true);
-			// song->play();
-		}
-
-		SongTime += TimeDelta;
+			Music->Start();
 
 		if (Next) // We have a pending screen?
 		{
 			return RunNested(TimeDelta); // use that instead.
 		}
 
-		// song->seek(SongTime);
-
-		// do we need this call?
-		// glfwPollEvents();
-
 		glm::vec2 mpos = GraphMan.GetRelativeMPos();
 
-		RunMeasure(TimeDelta);
+		RunMeasure(SongDelta);
 
 		Cursor.position = mpos;
 
-		Barline.Run(TimeDelta, MeasureTime, MeasureTimeElapsed);
+		Barline.Run(SongDelta, MeasureTime, MeasureTimeElapsed);
 
 		if (SongTime > CurrentDiff->Offset)
 		{
-			MeasureTimeElapsed += TimeDelta;
+			MeasureTimeElapsed += SongDelta;
+
+			if (SongDelta == 0)
+			{
+				if (Music->IsStopped())
+					MeasureTimeElapsed += TimeDelta;
+			}
 			if (MeasureTimeElapsed > MeasureTime)
 			{
 				MeasureTimeElapsed -= MeasureTime;
 				Measure += 1;
 			}
-			Lifebar.Run(TimeDelta);
+			Lifebar.Run(SongDelta);
 			aJudgement.Run(TimeDelta);
 		}
 
@@ -437,7 +448,7 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 				ScreenEvaluation *Eval = new ScreenEvaluation(this);
 				Eval->Init(Evaluation);
 				Next = Eval;
-				// song->stop();
+				Music->Stop();
 			}
 		}
 	}catch (...)

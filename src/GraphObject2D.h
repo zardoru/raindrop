@@ -5,16 +5,16 @@ class Image;
 
 class GraphObject2D
 {
-	unsigned int ourBuffer, ourUVBuffer;
+	uint32 ourBuffer, ourUVBuffer;
 	bool IsInitialized;
 public:
 
 	GraphObject2D();
 	~GraphObject2D();
 	
-	int width, height;
+	uint32 width, height;
 	glm::vec2 position;
-	int z_order;
+	uint32 z_order;
 	
 	// These crop variables define where to crop the image.
 	
@@ -26,7 +26,7 @@ public:
 	float red, blue, green;
 	float scaleX, scaleY;
 	float rotation;
-	int origin; // 0 for topleft, 1 for center
+	bool Centered; // 0 for topleft, 1 for center
 	
 	/*
 	 * crop_x1 and crop_y1 define the top-left corner of the crop rectangle.
@@ -42,7 +42,7 @@ public:
 	void Render(); // found in backend.cpp
 
 	void setCropToWholeImage();
-	void setCropByPixels(int x1, int x2, int y1, int y2);
+	void setCropByPixels(int32 x1, int32 x2, int32 y1, int32 y2);
 	
 };
 

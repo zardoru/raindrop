@@ -14,7 +14,7 @@ ScreenEdit::ScreenEdit(IScreen *Parent)
 	EditScreenState = Editing;
 	GhostObject.setImage(ImageLoader::LoadSkin("hitcircle.png"));
 	GhostObject.alpha = 0.7f;
-	GhostObject.origin = 1;
+	GhostObject.Centered = true;
 	GhostObject.width = GhostObject.height = CircleSize;
 }
 
@@ -26,6 +26,8 @@ void ScreenEdit::Init(Song *Other)
 			Other->Difficulties.push_back(new SongInternal::Difficulty());
 
 		ScreenGameplay::Init (Other, 0);
+		NotesInMeasure.clear(); 
+
 		Other->Difficulties[0]->Timing.push_back(SongInternal::Difficulty::TimingSegment());
 	}
 
@@ -110,7 +112,7 @@ void ScreenEdit::Init(Song *Other)
 	GuiInitialized = true;
 }
 
-void ScreenEdit::StartPlaying( int _Measure )
+void ScreenEdit::StartPlaying( int32 _Measure )
 {
 	ScreenGameplay::Init(MySong, 0);
 	Measure = _Measure;
@@ -119,7 +121,7 @@ void ScreenEdit::StartPlaying( int _Measure )
 	savedMeasure = Measure;
 }
 
-void ScreenEdit::HandleInput(int key, int code, bool isMouseInput)
+void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 {
 	if (EditScreenState == Playing)
 		ScreenGameplay::HandleInput(key, code, isMouseInput);
@@ -256,8 +258,8 @@ bool ScreenEdit::measureTextChanged(const CEGUI::EventArgs& param)
 {
 	try
 	{
-		Measure = boost::lexical_cast<int>(CurrentMeasure->getText());
-		if ((int)Measure > (((int)CurrentDiff->Measures.size())-1))
+		Measure = boost::lexical_cast<int32>(CurrentMeasure->getText());
+		if ((int32)Measure > (((int32)CurrentDiff->Measures.size())-1))
 		{
 			CurrentDiff->Measures.resize(Measure+1);
 		}else
@@ -284,7 +286,7 @@ bool ScreenEdit::bpmTextChanged(const CEGUI::EventArgs& param)
 {
 	try 
 	{
-		CurrentDiff->Timing[0].Value = boost::lexical_cast<int>(BPMBox->getText());
+		CurrentDiff->Timing[0].Value = boost::lexical_cast<int32>(BPMBox->getText());
 	}catch (...)
 	{
 		// hmm.. What to do?
@@ -297,7 +299,7 @@ bool ScreenEdit::fracTextChanged(const CEGUI::EventArgs& param)
 {
 	try
 	{
-		CurrentDiff->Measures.at(Measure).Fraction = boost::lexical_cast<int>(FracBox->getText());
+		CurrentDiff->Measures.at(Measure).Fraction = boost::lexical_cast<int32>(FracBox->getText());
 		CurrentDiff->Measures.at(Measure).MeasureNotes.resize(CurrentDiff->Measures[Measure].Fraction);
 	}catch(...)
 	{

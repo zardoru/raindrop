@@ -25,8 +25,8 @@ void BitmapFont::LoadSkinFontImage(char* Location, glm::vec2 _CharSize, glm::vec
 
 void BitmapFont::RegenerateCharPositions(glm::vec2 CellSize)
 {
-	int HCellCount = Font->w/CellSize.x, VCellCount = Font->h/CellSize.x;
-	unsigned int Current = StartingCharacter;
+	int32 HCellCount = Font->w/CellSize.x, VCellCount = Font->h/CellSize.x;
+	uint32 Current = StartingCharacter;
 
 	for (unsigned short y = 0; y < VCellCount; y++)
 	{
@@ -43,7 +43,7 @@ void BitmapFont::RegenerateCharPositions(glm::vec2 CellSize)
 
 void BitmapFont::DisplayText(const char* Text, glm::vec2 Position)
 {
-	int Character = 0;
+	int32 Character = 0;
 	/* OpenGL Code Ahead */
 
 	for (;*Text != '\0'; Text++)

@@ -1,6 +1,7 @@
 #include "Global.h"
 #include "NoteLoader.h"
 #include "Game_Consts.h"
+#include "Audio.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>
@@ -20,8 +21,8 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 	filein.open(filename.c_str(), std::ios::in);
 	Song *Out = new Song();
 	SongInternal::Difficulty *Difficulty = new SongInternal::Difficulty();
-	int Measure = -1; // Current measure
-	int MeasurePos = 0; // position within the measure. (we divide later by measure * mlen + measure fraction to get current beat)
+	int32 Measure = -1; // Current measure
+	int32 MeasurePos = 0; // position within the measure. (we divide later by measure * mlen + measure fraction to get current beat)
 
 	if (!filein.is_open())
 	{
@@ -29,6 +30,8 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 		serr << "couldn't open \"" << filename << "\" for reading";
 		throw std::exception(serr.str().c_str());
 	}
+
+	Out->SongDirectory = prefix;
 
 	// get lines separating with ; token
 	std::string line;
@@ -58,6 +61,7 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 		{
 			std::stringstream str (line.substr(line.find_first_of(":") + 1));
 			str >> Difficulty->Offset;
+			Difficulty->Offset += GetDeviceLatency();
 		}
 
 		// Then, file info.
@@ -124,12 +128,12 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 					boost::split(object_parameters, object_description, boost::is_any_of(" :"));
 					if (object_parameters.size() > 0) // We got a position
 					{
-						int xpos = 0;
+						int32 xpos = 0;
 						float hold_duration = 0;
-						int sound = 0;
+						int32 sound = 0;
 
 						if (object_parameters[0].length() > 0) // does it have length?
-							xpos = boost::lexical_cast<int> (object_parameters[0].c_str()); // assign it
+							xpos = boost::lexical_cast<int32> (object_parameters[0].c_str()); // assign it
 
 						if (object_parameters.size() > 1) // We got a hold note parameter
 						{
@@ -139,7 +143,7 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 							if (object_parameters.size() > 2) // We got a sound parameter
 							{
 								if (object_parameters[2].length() > 0) // got a valid sound?
-									sound = boost::lexical_cast<int> (object_parameters[2].c_str()); // cast it in
+									sound = boost::lexical_cast<int32> (object_parameters[2].c_str()); // cast it in
 							}
 						}
 
@@ -155,9 +159,10 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 							Temp.position.x = xpos;
 						else
 						{
-							Measure.Fraction++;
-							continue; // Don't add this note.
-							// Temp.position.x = 0;
+							//Measure.Fraction++;
+							//continue; // Don't add this note.
+							// why add this note? basically the editor wont work otherwise. 
+							Temp.position.x = 0;
 						}
 
 						Temp.hold_duration = hold_duration;

@@ -17,7 +17,7 @@ public:
 	void Init();
 	bool Run(double Delta);
 	void Cleanup();
-	void HandleInput(int key, int code, bool isMouseInput);
+	void HandleInput(int32 key, int32 code, bool isMouseInput);
 };
 
 #endif

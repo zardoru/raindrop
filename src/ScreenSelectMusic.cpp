@@ -36,7 +36,7 @@ void ScreenSelectMusic::Init()
 	songbox = (Listbox*)winMgr.createWindow("TaharezLook/Listbox", "songbox");
 	fWnd->addChildWindow(songbox);
 
-	int newid = 0;
+	int32 newid = 0;
 	for (std::vector<Song*>::iterator i = SongList.begin(); i != SongList.end(); i++)
 	{
 		ListboxTextItem *newItem = new ListboxTextItem((*i)->SongName, newid);
@@ -110,7 +110,7 @@ bool ScreenSelectMusic::Run(double Delta)
 	return Running;
 }
 
-void ScreenSelectMusic::HandleInput(int key, int code, bool isMouseInput)
+void ScreenSelectMusic::HandleInput(int32 key, int32 code, bool isMouseInput)
 {
 	if (Next)
 	{
@@ -174,7 +174,7 @@ bool ScreenSelectMusic::QuitGame(const CEGUI::EventArgs&)
 
 bool ScreenSelectMusic::ReloadSongs(const CEGUI::EventArgs&)
 {
-	for (unsigned int i = 0; i < songbox->getItemCount(); i++)
+	for (uint32 i = 0; i < songbox->getItemCount(); i++)
 	{
 		songbox->removeItem(songbox->getListboxItemFromIndex(i));
 	}
@@ -183,7 +183,7 @@ bool ScreenSelectMusic::ReloadSongs(const CEGUI::EventArgs&)
 
 	FileManager::GetSongList(SongList);
 
-	int newid = 0;
+	int32 newid = 0;
 	for (std::vector<Song*>::iterator i = SongList.begin(); i != SongList.end(); i++)
 	{
 		CEGUI::ListboxTextItem *newItem = new CEGUI::ListboxTextItem((*i)->SongName, newid);

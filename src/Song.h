@@ -10,7 +10,7 @@ namespace SongInternal
 	class Measure
 	{
 	public:
-		unsigned int Fraction;
+		uint32 Fraction;
 		std::vector<GameObject> MeasureNotes;
 	};
 

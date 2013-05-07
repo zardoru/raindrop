@@ -26,7 +26,7 @@ void GraphObject2D::Init(bool GenBuffers)
 
 	// since shaders are already loaded from graphman's init functions..
 	// we'll deal with what we need to deal.
-	if (!origin)
+	if (!Centered)
 	{
 		GLPositions[0] = 0;
 		GLPositions[1] = 0;
@@ -54,19 +54,19 @@ void GraphObject2D::Init(bool GenBuffers)
 	}
 	else
 	{
-		GLPositions[0] = -width / 2;
-		GLPositions[1] = -height / 2;
+		GLPositions[0] = -(float)(width / 2);
+		GLPositions[1] = -(float)(height / 2);
 
 		GLPositions[4] = width / 2;
-		GLPositions[5] = -height / 2;
+		GLPositions[5] = -(float)(height / 2);
 
 		GLPositions[8] = width / 2;
 		GLPositions[9] = height / 2;
 
-		GLPositions[12] = -width / 2;
-		GLPositions[13] = -height / 2;
+		GLPositions[12] = -(float)width / 2;
+		GLPositions[13] = -(float)height / 2;
 
-		GLPositions[16] = -width / 2;
+		GLPositions[16] = -(float)width / 2;
 		GLPositions[17] = height / 2;
 
 		GLPositions[20] = width / 2;
@@ -162,7 +162,7 @@ void GraphObject2D::Render()
 
 	glMultMatrixf(glm::value_ptr(posMatrix));
 
-	if (!origin)
+	if (!Centered)
 	{
 	glBegin(GL_QUADS);
 
@@ -181,13 +181,13 @@ void GraphObject2D::Render()
 		glBegin(GL_QUADS);
 
 		glTexCoord2f(crop_x1, crop_y1);
-		glVertex3i(-(width / 2), -(height/2), z_order);
+		glVertex3i(-((int32)(width / 2)), -((int32)(height/2)), z_order);
 		glTexCoord2f(crop_x2, crop_y1);
-		glVertex3i(width/2, -(height/2), z_order);
+		glVertex3i(width/2, -((int32)(height/2)), z_order);
 		glTexCoord2f(crop_x2, crop_y2);
 		glVertex3i(width/2, height/2, z_order);
 		glTexCoord2f(crop_x1, crop_y2);
-		glVertex3i(-width/2, height/2, z_order);
+		glVertex3i(-((int32)(width/2)), height/2, z_order);
 
 		glEnd();
 	}

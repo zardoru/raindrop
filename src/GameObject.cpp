@@ -7,11 +7,14 @@
 #include "Audio.h"
 
 bool GameObject::Initialized = false;
+SoundStream *HitSnd;
+SoundStream *HoldRelease;
+
 
 GameObject::GameObject()
 {
 	setImage(ImageLoader::LoadSkin("hitcircle.png"));
-	origin = 1; // use the object's center instead of top-left
+	Centered = true; // use the object's center instead of top-left
 	width = height = CircleSize;
 	fadeout_time = 0;
 	fadein_time = 0.7f;
@@ -21,7 +24,9 @@ GameObject::GameObject()
 	BeingHeld = false;
 
 	if (!Initialized) // the catch here is that since it's static, only one vbo is generated ;P
+	{
 		Init(true);
+	}
 }
 
 void GameObject::Animate(float delta, float songTime)
@@ -95,10 +100,10 @@ Judgement GameObject::Run(double delta, double Time, bool Autoplay)
 
 	if (BeingHeld)
 	{
+		/* it's done */
 		if (Time >= endTime && fadeout_time == 0)
 		{
 			fadeout_time = 1;
-			// audioMgr->play2D((FileManager::GetSkinPrefix() + "holdfinish.ogg").c_str());
 			BeingHeld = false;
 			return OK;
 		}
@@ -111,7 +116,7 @@ Judgement GameObject::Run(double delta, double Time, bool Autoplay)
 	return None;
 }
 
-Judgement GameObject::Hit(float Time, glm::vec2 mpos, bool KeyDown,  bool Autoplay, int Key)
+Judgement GameObject::Hit(float Time, glm::vec2 mpos, bool KeyDown,  bool Autoplay, int32 Key)
 {
 	glm::vec2 dist = position - mpos;
 	
@@ -141,7 +146,6 @@ Judgement GameObject::Hit(float Time, glm::vec2 mpos, bool KeyDown,  bool Autopl
 			// Hit!
 			Judgement RVal;
 
-			// audioMgr->play2D((FileManager::GetSkinPrefix() + "hit.ogg").c_str());
 			printf ("songt %f starttime %f difference %f beat %f xpos = %f\n", Time, startTime, Time - startTime, beat, position.x);
 
 			if (endTime == 0) // Not a hold?

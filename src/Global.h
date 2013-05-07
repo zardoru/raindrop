@@ -4,10 +4,21 @@
 #include <string>
 #include <sstream>
 #include <vector>
-#include "Game_Consts.h"
+
 #include <boost/cstdint.hpp>
 
 using boost::uint32_t;
+using boost::int32_t;
+using boost::int16_t;
+using boost::uint16_t;
+
+
+typedef uint32_t uint32;
+typedef int32_t int32;
+typedef uint16_t int16;
+typedef uint16_t uint16;
+
+#include "Game_Consts.h"
 
 namespace Utility
 {

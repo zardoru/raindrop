@@ -4,6 +4,7 @@
 #include <vector>
 #include "Screen.h"
 #include "Song.h"
+#include "Audio.h"
 #include "ActorBarline.h"
 #include "ActorJudgement.h"
 #include "ActorLifebar.h"
@@ -16,7 +17,7 @@ protected: // shit the edit screen needs
 	Song *MySong;
 	SongInternal::Difficulty* CurrentDiff;
 	// Game Data
-	uint32_t Measure;
+	uint32 Measure;
 
 	// the point of this is that we can change the barline's position.
 	float MeasureTimeElapsed;
@@ -28,7 +29,7 @@ protected: // shit the edit screen needs
 	void RenderObjects(float TimeDelta);
 
 	// Two seconds of pause before actually starting the screen.
-	static const uint32_t ScreenPauseTime = 2; 
+	static const uint32 ScreenPauseTime = 2; 
 	
 	// leave this to who will use it
 	void startMusic();
@@ -44,7 +45,7 @@ private: // shit only screengameplay needs
 	// Run the current measure (jic func name isn't obvious enough)
 	void RunMeasure(float delta);
 	void StoreEvaluation(Judgement Eval);
-	unsigned int Combo;
+	uint32 Combo;
 	BitmapFont MyFont;
 
 	// Notes
@@ -61,15 +62,16 @@ private: // shit only screengameplay needs
 	GraphObject2D MarkerA, MarkerB, Cursor, Background;
 	EvaluationData Evaluation;
 	
-	double SongTime;
-
+	double SongTime, SongDelta;
+	
+	SoundStream *Music;
 public:
 	ScreenGameplay(IScreen *Parent);
 
-	virtual void Init(Song *OtherSong, unsigned int DifficultyIndex);
-	int GetMeasure();
+	virtual void Init(Song *OtherSong, uint32 DifficultyIndex);
+	int32 GetMeasure();
 	virtual bool Run(double Delta);
-	virtual void HandleInput(int key, int code, bool isMouseInput);
+	virtual void HandleInput(int32 key, int32 code, bool isMouseInput);
 	glm::vec2 GetScreenOffset(float alignment);
 	virtual void Cleanup();
 	void RemoveTrash();
