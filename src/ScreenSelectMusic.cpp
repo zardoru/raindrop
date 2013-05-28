@@ -7,18 +7,39 @@
 #include "ScreenGameplay.h"
 #include "ScreenEdit.h"
 #include "GraphicsManager.h"
+#include "Audio.h"
+
+SoundSample *SelectSnd = NULL;
+VorbisStream	*Loops[6];
 
 ScreenSelectMusic::ScreenSelectMusic()
 {
 	Running = true;
+	if (!SelectSnd)
+	{
+		SelectSnd = new SoundSample((FileManager::GetSkinPrefix() + "select.ogg").c_str());
+		MixerAddSample(SelectSnd);
+
+		for (int i = 0; i < 6; i++)
+		{
+			std::stringstream str;
+			str << FileManager::GetSkinPrefix() << "loop" << i+1 << ".ogg";
+			Loops[i] = new VorbisStream(str.str().c_str());
+			Loops[i]->Stop();
+			Loops[i]->setLoop(true);
+			MixerAddStream(Loops[i]);
+		}
+	}
 }
 
 void ScreenSelectMusic::Init()
 {
 	FileManager::GetSongList(SongList);
 
+	SwitchBackGuiPending = true;
 	// screen music :p
 	// startVorbisStream("GameData/Skins/default/loop4.ogg");
+
 #ifndef DISABLE_CEGUI
 
 	using namespace CEGUI;
@@ -100,6 +121,10 @@ bool ScreenSelectMusic::Run(double Delta)
 		{
 			CEGUI::System::getSingleton().setGUISheet(root);
 			GraphMan.isGuiInputEnabled = true;
+			SwitchBackGuiPending = false;
+			int rn = rand() % 6;
+			Loops[rn]->seek(0);
+			Loops[rn]->Start();
 		}
 	}
 #endif
@@ -108,6 +133,15 @@ bool ScreenSelectMusic::Run(double Delta)
 	CEGUI::System::getSingleton().renderGUI();
 #endif
 	return Running;
+}
+
+void ScreenSelectMusic::StopLoops()
+{
+	for (int i = 0; i < 6; i++)
+	{
+		Loops[i]->seek(0);
+		Loops[i]->Stop();
+	}
 }
 
 void ScreenSelectMusic::HandleInput(int32 key, int32 code, bool isMouseInput)
@@ -130,6 +164,7 @@ void ScreenSelectMusic::HandleInput(int32 key, int32 code, bool isMouseInput)
 				Next = _Next;
 				SwitchBackGuiPending = true;
 				GraphMan.isGuiInputEnabled = false;
+				StopLoops();
 			}
 		}
 
@@ -141,6 +176,7 @@ void ScreenSelectMusic::HandleInput(int32 key, int32 code, bool isMouseInput)
 				_Next->Init(SongList.at(songbox->getFirstSelectedItem()->getID()));
 				Next = _Next;
 				SwitchBackGuiPending = true;
+				StopLoops();
 			}
 		}
 	}
@@ -150,11 +186,14 @@ void ScreenSelectMusic::HandleInput(int32 key, int32 code, bool isMouseInput)
 #ifndef DISABLE_CEGUI
 bool ScreenSelectMusic::RunMusic(const CEGUI::EventArgs&)
 {
+	SelectSnd->Reset();
 	if (songbox->getFirstSelectedItem())
 	{
 		if (SongList.at(songbox->getFirstSelectedItem()->getID())->Difficulties.size())
 		{
 			ScreenGameplay *_Next = new ScreenGameplay(this);
+
+			StopLoops();
 
 			_Next->Init(SongList.at(songbox->getFirstSelectedItem()->getID()), 0);
 
@@ -174,10 +213,8 @@ bool ScreenSelectMusic::QuitGame(const CEGUI::EventArgs&)
 
 bool ScreenSelectMusic::ReloadSongs(const CEGUI::EventArgs&)
 {
-	for (uint32 i = 0; i < songbox->getItemCount(); i++)
-	{
-		songbox->removeItem(songbox->getListboxItemFromIndex(i));
-	}
+
+	songbox->resetList();
 
 	SongList.clear();
 

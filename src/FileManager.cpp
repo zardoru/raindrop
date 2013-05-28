@@ -4,6 +4,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 #include "NoteLoader.h"
+#include "Audio.h"
 
 #define DirectoryPrefix std::string("./GameData/")
 #define SkinsPrefix std::string("Skins/")
@@ -46,7 +47,8 @@ void loadSong( boost::filesystem::path songPath, std::vector<Song*> &VecOut )
 					Song *NewS;
 					NewS = new Song();
 					NewS->SongDirectory = Path;
-					NewS->SongName = it->path().filename().string();
+					NewS->SongName = GetOggTitle(it->path().string());
+					NewS->SongRelativePath = it->path().filename().string();
 					NewS->SongFilename = it->path().string();
 					VecOut.push_back(NewS);
 				}

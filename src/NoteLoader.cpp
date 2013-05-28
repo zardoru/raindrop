@@ -68,11 +68,13 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 		if (command.find("#SONG") != std::string::npos)
 		{
 			Out->SongFilename = prefix + "/" + line.substr(line.find_first_of(":") + 1);
+			Out->SongRelativePath = line.substr(line.find_first_of(":") + 1);
 		}
 
 		if (command.find("#BACKGROUNDIMAGE") != std::string::npos)
 		{
 			Out->BackgroundDir = prefix + "/" + line.substr(line.find_first_of(":") + 1);
+			Out->BackgroundRelativeDir = line.substr(line.find_first_of(":") + 1);
 		}
 
 		// not yet

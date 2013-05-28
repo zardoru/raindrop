@@ -34,6 +34,7 @@ void Application::Init()
 	InitAudio();
 	Game = NULL;
 
+	srand(time(0));
 	oldTime = 0;
 	glfwSetTime(0.0); // this should match
 	// throw a message here

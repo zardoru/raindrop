@@ -128,18 +128,14 @@ void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
 		NotesInMeasure[i] = CurrentDiff->Measures[i].MeasureNotes;
 	}
 
-	// xxx : new audio system (portaudio)
-	// song = audioMgr->create("song", MySong->SongFilename.c_str(), true);
-
-	/*if (!song)
-		throw std::exception( (boost::format ("couldn't open song %s") % MySong->SongFilename).str().c_str() );*/
-
 	if (!Music)
 	{
-		Music = new SoundStream(MySong->SongFilename.c_str());
+		Music = new VorbisStream(MySong->SongFilename.c_str());
 
-		if (!Music || !Music->IsValid())
+		if (!Music || !Music->IsOpen())
 			throw std::exception( (boost::format ("couldn't open song %s") % MySong->SongFilename).str().c_str() );
+		
+		MixerAddStream(Music);
 	}
 
 	MeasureTimeElapsed = 0;
@@ -288,6 +284,7 @@ void ScreenGameplay::Cleanup()
 	// Deleting the song's notes is ScreenSelectMusic's (or fileman's) job.
 	if (Music != NULL)
 	{
+		MixerRemoveStream(Music);
 		delete Music;
 		Music = NULL;
 	}
@@ -295,7 +292,7 @@ void ScreenGameplay::Cleanup()
 
 void ScreenGameplay::seekTime(float Time)
 {
-	Music->Seek(Time, false);
+	Music->seek(Time);
 	SongTime = Time;
 	ScreenTime = 0;
 }
@@ -324,7 +321,9 @@ bool ScreenGameplay::Run(double TimeDelta)
 	if ( ScreenTime > ScreenPauseTime || !ShouldChangeScreenAtEnd ) // we're over the pause?
 	{
 		if (SongTime == 0)
-			Music->Start();
+		{
+			startMusic();
+		}
 
 		if (Next) // We have a pending screen?
 		{
@@ -345,7 +344,7 @@ bool ScreenGameplay::Run(double TimeDelta)
 
 			if (SongDelta == 0)
 			{
-				if (Music->IsStopped())
+				if (!Music || Music->IsStopped())
 					MeasureTimeElapsed += TimeDelta;
 			}
 			if (MeasureTimeElapsed > MeasureTime)
@@ -400,7 +399,7 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 	{
 		if (Measure > 0)
 		{
-			if (NotesInMeasure.at(Measure-1).size() > 0)
+			if (NotesInMeasure.size() && NotesInMeasure.at(Measure-1).size() > 0)
 			{
 				for (std::vector<GameObject>::reverse_iterator i = NotesInMeasure[Measure-1].rbegin(); 
 					i != NotesInMeasure[Measure-1].rend(); 
@@ -416,7 +415,7 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 		if (Measure + 1 < CurrentDiff->Measures.size())
 		{
 			// Draw from latest to earliest
-			if (NotesInMeasure.at(Measure+1).size() > 0)
+			if (NotesInMeasure.size() && NotesInMeasure.at(Measure+1).size() > 0)
 			{
 				for (std::vector<GameObject>::reverse_iterator i = NotesInMeasure[Measure+1].rbegin(); 
 					i != NotesInMeasure[Measure+1].rend(); 
@@ -430,7 +429,7 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 
 		if (Measure < CurrentDiff->Measures.size())
 		{
-			if (NotesInMeasure.at(Measure).size() > 0)
+			if (NotesInMeasure.size() && NotesInMeasure.at(Measure).size() > 0)
 
 			{
 				for (std::vector<GameObject>::reverse_iterator i = NotesInMeasure[Measure].rbegin(); 

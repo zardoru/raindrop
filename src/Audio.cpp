@@ -4,6 +4,10 @@
 #include <cstring>
 #include <boost/thread.hpp>
 
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/thread/condition.hpp>
+
 /* Vorbis file stream */
 
 VorbisStream::VorbisStream(FILE *fp, uint32 bufferSize)
@@ -23,7 +27,33 @@ VorbisStream::VorbisStream(FILE *fp, uint32 bufferSize)
 	}else
 		isOpen = false;	
 
+	SeekTime = -1;
+	runThread = 0;
+	streamTime = playbackTime = 0;
+	threadRunning = false;
+	loop = false;
+	thread = NULL;
+}
 
+VorbisStream::VorbisStream(const char* Filename, uint32 bufferSize)
+{
+	int32 retv = ov_fopen(Filename, &f);
+
+	if (retv == 0)
+	{
+		info = ov_info(&f, -1);
+		comment = ov_comment(&f, -1);
+		BufSize = bufferSize;
+
+		buffer = new char[sizeof(int16) * bufferSize];
+
+		PaUtil_InitializeRingBuffer(&RingBuf, sizeof(int16), bufferSize, buffer);
+		isOpen = true;
+	}else
+		isOpen = false;	
+
+	SeekTime = -1;
+	runThread = 0;
 	streamTime = playbackTime = 0;
 	threadRunning = false;
 	loop = false;
@@ -59,6 +89,7 @@ void VorbisStream::stopStream()
 void VorbisStream::clearBuffer()
 {
 	memset(buffer, 0, BufSize);
+	memset(tbuf, 0, BufSize);
 }
 
 bool VorbisStream::IsOpen()
@@ -66,6 +97,10 @@ bool VorbisStream::IsOpen()
 	return isOpen;
 }
 
+void VorbisStream::Start()
+{
+	runThread = 1;
+}
 
 void VorbisStream::UpdateBuffer(int32 &read)
 {
@@ -74,10 +109,10 @@ void VorbisStream::UpdateBuffer(int32 &read)
 	int32 size = count*sizeof(uint16);
 	read = 0;
 
-	if (SeekTime)
+	if (SeekTime >= 0)
 	{
 		ov_time_seek(&f, SeekTime);
-		SeekTime = 0;
+		SeekTime = -1;
 	}
 
 	/* read from ogg vorbis file */
@@ -89,7 +124,10 @@ void VorbisStream::UpdateBuffer(int32 &read)
 		else if (res == 0)
 		{
 			if (loop)
+			{
 				ov_time_seek(&f, 0);
+				continue;
+			}
 			else
 			{
 				clearBuffer();
@@ -126,18 +164,15 @@ void VorbisStream::operator () ()
 	threadRunning = false;
 }
 
-int32 VorbisStream::readBuffer(void * out, uint32 length,const PaStreamCallbackTimeInfo *timeInfo)
+int32 VorbisStream::readBuffer(void * out, uint32 length)
 {
 	char *outpt = (char*) out;
 
-	playbackTime += (double)length / (double)info->rate;
+	// playbackTime += (double)length / (double)info->rate;
 
 	PaUtil_ReadRingBuffer(&RingBuf, out, length*info->channels);
 
-	if (runThread)
-		return 0;
-	else
-		return 1;
+	return length;
 }
 
 double VorbisStream::getRate()
@@ -154,15 +189,272 @@ int32 VorbisStream::getChannels()
 void VorbisStream::seek(double Time, bool accurate)
 {
 	SeekTime = Time;
+	playbackTime = Time - GetDeviceLatency();
 }
+
+void VorbisStream::setLoop(bool _loop)
+{
+	loop = _loop;
+}
+
 
 static int32 StreamCallback(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags, void *userData)
 {
-	return ((VorbisStream*)(userData))->readBuffer(output, frameCount, timeInfo);
+	return ((VorbisStream*)(userData))->readBuffer(output, frameCount);
+}
+
+VorbisSample::VorbisSample(const char* filename)
+{
+	if (ov_fopen(filename, &f) == 0)
+	{
+		info = ov_info(&f, -1);
+		comment = ov_comment(&f, -1);
+		BufSize = ov_pcm_total(&f, -1)*sizeof(int16);
+		buffer = new char[BufSize];
+
+		Counter = BufSize;
+		uint32 read = 0;
+		int32 sect;
+		while (read < BufSize)
+		{
+			int result = ov_read(&f, buffer + read, BufSize-read,0,2,1,&sect);
+
+			if (result <= 0)
+				break;
+			read += result;
+		}
+	}
+}
+
+VorbisSample::~VorbisSample()
+{
+	ov_clear(&f);
+	delete buffer;
+}
+
+double VorbisSample::getRate()
+{
+	return info->rate;
+}
+
+int32 VorbisSample::getChannels()
+{
+	return info->channels;
+}
+
+void VorbisSample::Reset()
+{
+	Counter = 0;
+}
+
+int32 VorbisSample::readBuffer(void * out, uint32 length)
+{
+	if (Counter != BufSize)
+	{
+		length *= info->channels;
+		if(length > BufSize-Counter)
+		{
+			length = BufSize-Counter;
+		}
+
+		memcpy(out, buffer+Counter, length);
+
+		Counter += length;
+
+		if (Counter > BufSize)
+			Counter = BufSize;
+
+		return length;
+	}else
+		return 0;
+}
+
+void VorbisStream::Stop()
+{
+	runThread = 0;
+}
+
+bool VorbisStream::IsStopped()
+{
+	return runThread == 0;
+}
+
+double VorbisStream::GetPlaybackTime()
+{
+	return playbackTime;
+}
+
+
+int Mix(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags, void *userData);
+
+class PaMixer
+{
+	PaStream* Stream;
+	char *RingbufData;
+	PaUtilRingBuffer RingBuf;
+
+	std::vector<VorbisStream*> Streams;
+	std::vector<VorbisSample*> Samples;
+
+	void MixBuffer(char* Src, char* Dest, int Length, int Start)
+	{
+		Src += Start;
+		while (Length)
+		{
+			// *Dest = (int)*Src + (int)*Dest - (((int)*Src) * ((int)*Dest) / 256);
+
+			if (*Dest && *Src)
+				*Dest = (*Src + *Dest)/2;
+			else
+				*Dest += *Src;
+			Dest++;
+			Src++;
+			Length--;
+		}
+	}
+
+	int SizeAvailable;
+
+	boost::mutex mut, mut2, rbufmux;
+	boost::condition ringbuffer_has_space;
+public:
+	PaMixer()
+	{
+		RingbufData = new char[BUFF_SIZE*sizeof(int16)];
+		PaUtil_InitializeRingBuffer(&RingBuf, 2, BUFF_SIZE, RingbufData);
+
+		boost::thread (&PaMixer::Run, this);
+		Pa_OpenDefaultStream(&Stream, 0, 2, paInt16, 44100, 0, Mix, (void*)this);
+		Pa_StartStream(Stream);
+	}
+
+	void Run()
+	{
+		int read = 1;
+		char TempStream[BUFF_SIZE*sizeof(int16)];
+		char TempSave[BUFF_SIZE*sizeof(int16)];
+
+		SizeAvailable = PaUtil_GetRingBufferWriteAvailable(&RingBuf);
+
+		while (true)
+		{
+
+			SizeAvailable = PaUtil_GetRingBufferWriteAvailable(&RingBuf);
+
+			if (SizeAvailable > 0)
+			{
+				memset(TempStream, 0, sizeof(TempStream));
+				memset(TempSave, 0, sizeof(TempSave));
+
+				mut.lock();
+				for(std::vector<VorbisStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
+				{
+					if ((*i)->runThread)
+					{
+						(*i)->UpdateBuffer(read);
+
+						memset(TempSave, 0, sizeof(TempSave));
+
+						(*i)->readBuffer(TempSave, SizeAvailable/2);
+						MixBuffer(TempSave, TempStream, SizeAvailable*2, 0);
+						(*i)->streamTime += read / (*i)->getRate();
+					}
+				}
+				mut.unlock();
+
+				PaUtil_WriteRingBuffer(&RingBuf, TempStream, SizeAvailable);
+			}else
+			{
+				boost::mutex::scoped_lock lk(rbufmux);
+				// Wait for it.
+				ringbuffer_has_space.wait(lk);
+				SizeAvailable = PaUtil_GetRingBufferWriteAvailable(&RingBuf);
+			}
+		}
+	}
+
+	void AppendMusic(VorbisStream* Stream)
+	{
+		mut.lock();
+		Streams.push_back(Stream);
+		mut.unlock();
+	}
+
+	void RemoveMusic(VorbisStream *Stream)
+	{
+		mut.lock();
+		for(std::vector<VorbisStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
+		{
+			if ((*i) == Stream)
+			{
+				i = Streams.erase(i);
+				if (i != Streams.end())
+					continue;
+				else
+					break;
+			}
+		}
+		mut.unlock();
+	}
+
+	void AddSound(VorbisSample* Sample)
+	{
+		mut2.lock();
+		Samples.push_back(Sample);
+		mut2.unlock();
+	}
+
+	void RemoveSound(VorbisSample* Sample)
+	{
+		mut2.lock();
+		for(std::vector<VorbisSample*>::iterator i = Samples.begin(); i != Samples.end(); i++)
+		{
+			if ((*i) == Sample)
+				i = Samples.erase(i);
+		}
+		mut2.unlock();
+	}
+
+	private:
+		char ts[BUFF_SIZE*2];
+	public:
+
+	void CopyOut(char* out, int length)
+	{
+		for(std::vector<VorbisStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
+		{
+			if ((*i)->runThread && (*i)->streamTime > 0)
+			{
+				(*i)->playbackTime += length / (*i)->getRate();
+			}
+		}
+
+		PaUtil_ReadRingBuffer(&RingBuf, out, length*2);
+
+		mut2.lock();
+		for (std::vector<VorbisSample*>::iterator i = Samples.begin(); i != Samples.end(); i++)
+		{
+			memset(ts, 0, sizeof(ts));
+			(*i)->readBuffer(ts, length*2);
+			MixBuffer(ts, out, length*4, 0);
+		}
+		mut2.unlock();
+
+		if (PaUtil_GetRingBufferWriteAvailable(&RingBuf) > BUFF_SIZE/2)
+			ringbuffer_has_space.notify_one();
+	}
+};
+
+int Mix(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags, void *userData)
+{
+	PaMixer *Mix = (PaMixer*)userData;
+	Mix->CopyOut((char*)output, frameCount);
+	return 0;
 }
 
 /* PortAudio Stream Wrapper */
 
+PaMixer *Mixer;
 
 PaStreamWrapper::PaStreamWrapper(VorbisStream *Vs)
 {
@@ -197,6 +489,11 @@ PaStreamWrapper::~PaStreamWrapper()
 {
 	if (mStream)
 		Pa_CloseStream(mStream);
+}
+
+VorbisStream *PaStreamWrapper::GetStream()
+{
+	return Sound;
 }
 
 void PaStreamWrapper::Stop()
@@ -251,6 +548,7 @@ bool PaStreamWrapper::IsStopped()
 void InitAudio()
 {
 	PaError Err = Pa_Initialize();
+	Mixer = new PaMixer();
 #ifdef DEBUG
 	if (Err != 0)
 		Utility::DebugBreak();
@@ -260,4 +558,44 @@ void InitAudio()
 double GetDeviceLatency()
 {
 	return Pa_GetDeviceInfo(Pa_GetDefaultOutputDevice())->defaultLowOutputLatency;
+}
+
+std::string GetOggTitle(std::string file)
+{
+	OggVorbis_File f;
+	std::string result = "";
+	if (ov_fopen(file.c_str(), &f) == 0)
+	{
+		vorbis_comment *comment = ov_comment(&f, -1);
+
+		for (int i = 0; i < comment->comments; i++)
+		{
+			std::vector<std::string> splitvec;
+			boost::split(splitvec, std::string(comment->user_comments[i]), boost::is_any_of("="));
+			if (splitvec[0] == "TITLE")
+			{
+				result = splitvec[1].c_str();
+				break;
+			}
+		}
+
+		ov_clear(&f);
+	}
+
+	return result;
+}
+
+void MixerAddStream(VorbisStream *Sound)
+{
+	Mixer->AppendMusic(Sound);
+}
+
+void MixerRemoveStream(VorbisStream* Sound)
+{
+	Mixer->RemoveMusic(Sound);
+}
+
+void MixerAddSample(VorbisSample * Sample)
+{
+	Mixer->AddSound(Sample);
 }

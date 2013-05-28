@@ -12,6 +12,7 @@ class ScreenSelectMusic : public IScreen
 	bool QuitGame(const CEGUI::EventArgs&);
 	bool ReloadSongs(const CEGUI::EventArgs&);
 	bool SwitchBackGuiPending;
+	void StopLoops();
 public:
 	ScreenSelectMusic();
 	void Init();

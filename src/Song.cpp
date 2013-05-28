@@ -96,8 +96,8 @@ void Song::Save(const char* Filename)
 	}
 
 	Out << "#NAME:" << SongName << ";\n";
-	Out << "#SONG:" << SongFilename << ";\n";
-	Out << "#BACKGROUNDIMAGE:" << BackgroundDir << ";\n";
+	Out << "#SONG:" << SongRelativePath << ";\n";
+	Out << "#BACKGROUNDIMAGE:" << BackgroundRelativeDir << ";\n";
 
 	for (std::vector<SongInternal::Difficulty*>::iterator i = Difficulties.begin(); i != Difficulties.end(); i++)
 	{

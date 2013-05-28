@@ -64,7 +64,7 @@ private: // shit only screengameplay needs
 	
 	double SongTime, SongDelta;
 	
-	SoundStream *Music;
+	VorbisStream *Music;
 public:
 	ScreenGameplay(IScreen *Parent);
 

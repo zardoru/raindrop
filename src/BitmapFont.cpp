@@ -43,15 +43,17 @@ void BitmapFont::RegenerateCharPositions(glm::vec2 CellSize)
 
 void BitmapFont::DisplayText(const char* Text, glm::vec2 Position)
 {
-	int32 Character = 0;
+	int32 Character = 0, Line = 0;
 	/* OpenGL Code Ahead */
 
 	for (;*Text != '\0'; Text++)
 	{
-		CharPosition[*Text].position = glm::vec2(Position.x+Character, Position.y);
+		CharPosition[*Text].position = glm::vec2(Position.x+Character, Position.y+Line);
 		CharPosition[*Text].Render();
 
 		Character += RenderSize.x;
+		if(*Text == '\n')
+			Line += RenderSize.y;
 	}
 
 }

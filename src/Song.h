@@ -40,7 +40,7 @@ public:
 	Song();
 	~Song();
 	std::vector<SongInternal::Difficulty*> Difficulties;
-	std::string SongFilename, BackgroundDir;
+	std::string SongFilename, BackgroundDir, SongRelativePath, BackgroundRelativeDir;
 	std::string SongName;
 	std::string SongDirectory;
 	void Process(bool CalculateXPos = true);

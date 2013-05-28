@@ -153,6 +153,8 @@ void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 				if (CurrentFraction >= CurrentDiff->Measures[Measure].Fraction)
 				{
 					CurrentFraction = 0;
+					if (Measure+1 < CurrentDiff->Measures.size()) // Advance a measure
+						Measure++;
 				}
 			}else if (key == GLFW_KEY_LEFT)
 			{
@@ -161,6 +163,9 @@ void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 				if (CurrentFraction > CurrentDiff->Measures[Measure].Fraction) // overflow
 				{
 					CurrentFraction = CurrentDiff->Measures[Measure].Fraction-1;
+
+					if ((int32)(Measure)-1 < CurrentDiff->Measures.size()-1 && Measure > 0) // Go back a measure
+						Measure--;
 				}
 			}else if (key == 'S') // Save!
 			{
@@ -234,10 +239,23 @@ bool ScreenEdit::Run(double delta)
 
 		if (CurrentDiff->Measures.size())
 		{
-			for (std::vector<GameObject>::iterator i = CurrentDiff->Measures[Measure].MeasureNotes.begin(); i != CurrentDiff->Measures[Measure].MeasureNotes.end(); i++)
+			try
 			{
-				i->Render();
-			}
+				if (Measure > 0)
+				{
+					for (std::vector<GameObject>::reverse_iterator i = CurrentDiff->Measures.at(Measure-1).MeasureNotes.rbegin(); i != CurrentDiff->Measures.at(Measure-1).MeasureNotes.rend(); i++)
+					{	
+						if (i->position.x > ScreenDifference)
+							i->Render();
+					}
+				}
+
+				for (std::vector<GameObject>::reverse_iterator i = CurrentDiff->Measures[Measure].MeasureNotes.rbegin(); i != CurrentDiff->Measures[Measure].MeasureNotes.rend(); i++)
+				{
+					if (i->position.x > ScreenDifference)
+						i->Render();
+				}
+			}catch(...) { }
 		}
 
 		if (Mode == Normal)
@@ -301,6 +319,15 @@ bool ScreenEdit::fracTextChanged(const CEGUI::EventArgs& param)
 	{
 		CurrentDiff->Measures.at(Measure).Fraction = boost::lexical_cast<int32>(FracBox->getText());
 		CurrentDiff->Measures.at(Measure).MeasureNotes.resize(CurrentDiff->Measures[Measure].Fraction);
+
+		uint32 count = 0;
+		for (std::vector<GameObject>::iterator i = CurrentDiff->Measures.at(Measure).MeasureNotes.begin(); 
+			i != CurrentDiff->Measures.at(Measure).MeasureNotes.end(); 
+			i++)
+		{
+			i->MeasurePos = count;
+			count++;
+		}
 	}catch(...)
 	{
 	}

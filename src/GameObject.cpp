@@ -7,8 +7,8 @@
 #include "Audio.h"
 
 bool GameObject::Initialized = false;
-SoundStream *HitSnd;
-SoundStream *HoldRelease;
+SoundSample *HitSnd = NULL;
+SoundSample *HoldReleaseSnd = NULL;
 
 
 GameObject::GameObject()
@@ -23,6 +23,17 @@ GameObject::GameObject()
 	heldKey = -1;
 	BeingHeld = false;
 
+	if (!HitSnd)
+	{
+		HitSnd = new SoundSample((FileManager::GetSkinPrefix() + "/hit.ogg").c_str());
+		MixerAddSample(HitSnd);
+	}
+
+	if (!HoldReleaseSnd)
+	{
+		HoldReleaseSnd  = new SoundSample((FileManager::GetSkinPrefix() + "/holdfinish.ogg").c_str());
+		MixerAddSample(HoldReleaseSnd);
+	}
 	if (!Initialized) // the catch here is that since it's static, only one vbo is generated ;P
 	{
 		Init(true);
@@ -105,6 +116,7 @@ Judgement GameObject::Run(double delta, double Time, bool Autoplay)
 		{
 			fadeout_time = 1;
 			BeingHeld = false;
+			HoldReleaseSnd->Reset();
 			return OK;
 		}
 	}else if (!BeingHeld && Time > startTime+LeniencyHitTime)
@@ -146,7 +158,8 @@ Judgement GameObject::Hit(float Time, glm::vec2 mpos, bool KeyDown,  bool Autopl
 			// Hit!
 			Judgement RVal;
 
-			printf ("songt %f starttime %f difference %f beat %f xpos = %f\n", Time, startTime, Time - startTime, beat, position.x);
+			HitSnd->Reset();
+			// printf ("songt %f starttime %f difference %f beat %f xpos = %f\n", Time, startTime, Time - startTime, beat, position.x);
 
 			if (endTime == 0) // Not a hold?
 				fadeout_time = 0.6f; // 0.8 secs for fadeout
