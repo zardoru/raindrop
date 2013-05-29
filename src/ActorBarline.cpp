@@ -21,8 +21,8 @@ void ActorBarline::Init(float Offset)
 
 	red = green = 0;
 	blue = 200.f / 255.f;
-
-	GraphObject2D::Init(true);
+	alpha = 0;
+	GraphObject2D::InitTexture();
 }
 
 void ActorBarline::Run(double TimeDelta, double MeasureTime, double TotalTime)

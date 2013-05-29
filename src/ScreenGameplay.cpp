@@ -15,8 +15,10 @@ ScreenGameplay::ScreenGameplay(IScreen *Parent) :
 	Running = true;
 	IsAutoplaying = false;
 	ShouldChangeScreenAtEnd = true;
+	SongInfo.LoadSkinFontImage("font.tga", glm::vec2(18, 32), glm::vec2(34,34), glm::vec2(10,16), 32);
 	MyFont.LoadSkinFontImage("font.tga", glm::vec2(18, 32), glm::vec2(34,34), glm::vec2(40,64), 32);
 	Music = NULL;
+	FailEnabled = true;
 }
 
 glm::vec2 ScreenGameplay::GetScreenOffset(float Alignment)
@@ -97,20 +99,28 @@ void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
 	Background.position.y = 0;
 	Background.Init();
 
-	MarkerA.Centered = MarkerB.Centered = true;
+	MarkerB.Centered = true;
+	MarkerA.Centered = false;
+
 	MarkerA.position.x = MarkerB.position.x = GetScreenOffset(0.5).x;
-	MarkerA.position.y = MarkerA.height/2 - Barline.height/2;
 	MarkerA.rotation = 180;
+
 	MarkerB.position.y = PlayfieldHeight + ScreenOffset + MarkerB.height/2 + Barline.height/2;
-	// MarkerB.rotation = 180;
+	MarkerA.position.x = 2*MarkerA.position.x;
+	MarkerA.position.y = MarkerA.height;
 	Lifebar.width = PlayfieldWidth;
-	MarkerA.Init();
-	MarkerB.Init();
+	MarkerA.InitTexture();
+	MarkerB.InitTexture();
 
 	if (ShouldChangeScreenAtEnd)
 		Barline.Init(CurrentDiff->Offset);
 	else
+	{
 		Barline.Init(0); // edit mode
+		Barline.alpha = 1;
+	}
+
+	
 	Lifebar.UpdateHealth();
 
 	if (CurrentDiff->Timing.size()) // Not edit mode. XXX
@@ -136,13 +146,13 @@ void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
 			throw std::exception( (boost::format ("couldn't open song %s") % MySong->SongFilename).str().c_str() );
 		
 		MixerAddStream(Music);
+		seekTime(0);
 	}
 
 	MeasureTimeElapsed = 0;
-	SongTime = 0;
 	ScreenTime = 0;
 
-	Cursor.Init();
+	Cursor.InitTexture();
 }
 
 int32 ScreenGameplay::GetMeasure()
@@ -170,6 +180,43 @@ void ScreenGameplay::RunMeasure(float delta)
 				aJudgement.ChangeJudgement(Val);
 				StoreEvaluation(Val);
 				break;
+			}
+		}
+
+		// For each note in PREVIOUS measure
+		if (Measure > 0)
+		{
+			for (std::vector<GameObject>::iterator i = NotesInMeasure[Measure-1].begin(); 
+				i != NotesInMeasure[Measure-1].end(); 
+				i++)
+			{
+				// Run the note.
+				if ((Val = i->Run(delta, SongTime, IsAutoplaying)) != None)
+				{
+					Lifebar.HitJudgement(Val);
+					aJudgement.ChangeJudgement(Val);
+					StoreEvaluation(Val);
+					break;
+				}
+			}
+		}
+
+
+		// Run the ones in the NEXT measure.
+		if (Measure+1 < NotesInMeasure.size())
+		{
+			for (std::vector<GameObject>::iterator i = NotesInMeasure[Measure+1].begin(); 
+				i != NotesInMeasure[Measure+1].end(); 
+				i++)
+			{
+				// Run the note.
+				if ((Val = i->Run(delta, SongTime, IsAutoplaying)) != None)
+				{
+					Lifebar.HitJudgement(Val);
+					aJudgement.ChangeJudgement(Val);
+					StoreEvaluation(Val);
+					break;
+				}
 			}
 		}
 	}
@@ -269,9 +316,11 @@ void ScreenGameplay::HandleInput(int32 key, int32 code, bool isMouseInput)
 		if (key == 'A') // Autoplay
 		{
 			IsAutoplaying = !IsAutoplaying;
+		}else if (key == 'F')
+		{
+			FailEnabled = !FailEnabled;
 		}
-
-		if (key == GLFW_KEY_ESC)
+		else if (key == GLFW_KEY_ESC)
 		{
 			Running = false;
 			Cleanup();
@@ -293,7 +342,8 @@ void ScreenGameplay::Cleanup()
 void ScreenGameplay::seekTime(float Time)
 {
 	Music->seek(Time);
-	SongTime = Time;
+	SongTime = Time - GetDeviceLatency();
+	SongTimeLatency = Time;
 	ScreenTime = 0;
 }
 
@@ -314,13 +364,14 @@ bool ScreenGameplay::Run(double TimeDelta)
 	
 	if (Music)
 	{
-		SongDelta = Music->GetPlaybackTime() - SongTime;
+		SongDelta = Music->GetPlaybackTime() - SongTimeLatency;
 		SongTime += SongDelta;
+		SongTimeLatency += SongDelta;
 	}
 
 	if ( ScreenTime > ScreenPauseTime || !ShouldChangeScreenAtEnd ) // we're over the pause?
 	{
-		if (SongTime == 0)
+		if (SongTime <= 0)
 		{
 			startMusic();
 		}
@@ -330,11 +381,7 @@ bool ScreenGameplay::Run(double TimeDelta)
 			return RunNested(TimeDelta); // use that instead.
 		}
 
-		glm::vec2 mpos = GraphMan.GetRelativeMPos();
-
 		RunMeasure(SongDelta);
-
-		Cursor.position = mpos;
 
 		Barline.Run(SongDelta, MeasureTime, MeasureTimeElapsed);
 
@@ -356,10 +403,11 @@ bool ScreenGameplay::Run(double TimeDelta)
 			aJudgement.Run(TimeDelta);
 		}
 
-		RenderObjects(TimeDelta);
 	}
 
-	if (Lifebar.Health <= 0 && ShouldChangeScreenAtEnd) // You died? Not an infinite screen?
+	RenderObjects(TimeDelta);
+
+	if (Lifebar.Health <= 0 && ShouldChangeScreenAtEnd && FailEnabled) // You died? Not an infinite screen?
 		Running = false; // gg
 
 	return Running;
@@ -367,6 +415,9 @@ bool ScreenGameplay::Run(double TimeDelta)
 
 void ScreenGameplay::RenderObjects(float TimeDelta)
 {
+	glm::vec2 mpos = GraphMan.GetRelativeMPos();
+	Cursor.position = mpos;
+
 	// Rendering ahead.
 	Background.Render();
 	MarkerA.Render();
@@ -459,5 +510,34 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 	std::stringstream str;
 	str << Combo;
 	MyFont.DisplayText(str.str().c_str(), glm::vec2(aJudgement.position.x, 0));
+	std::stringstream info;
+	if (IsAutoplaying)
+		info << "\nAutoplay: ON";
+	else
+		info << "\nAutoplay: OFF";
+#ifndef NDEBUG
+	info << "\nSongTime: " << SongTime << "\nPlaybackTime: ";
+	if (Music)
+		info << Music->GetPlaybackTime();
+	else
+		info << "???";
+	info << "\nStreamTime: ";
+	if(Music)
+		info << Music->GetStreamedTime();
+	else
+		info << "???";
+
+	info << "\nSongDelta: " << SongDelta;
+	info << "\nTimeBuffered: ";
+	if (Music)
+		info << Music->GetStreamedTime() - Music->GetPlaybackTime();
+	else
+		info << "???";
+
+#endif
+
+	if (!FailEnabled)
+		info << "\nFailing Disabled";
+	SongInfo.DisplayText(info.str().c_str(), glm::vec2(0,0));
 	Cursor.Render();
 }

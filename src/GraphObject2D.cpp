@@ -3,6 +3,8 @@
 
 #include "Image.h"
 
+bool GraphObject2D::IsInitialized = false;
+
 GraphObject2D::GraphObject2D()
 {
 	alpha = 1.0;
@@ -14,14 +16,19 @@ GraphObject2D::GraphObject2D()
 	scaleX = scaleY = 1.0;
 	rotation = 0;
 	Centered = false;
-	IsInitialized = false;
+
+	if (!IsInitialized)
+	{
+		ourBuffer = -1;
+	}
 }
 
 GraphObject2D::~GraphObject2D()
 {
 }
 
-void GraphObject2D::setImage(Image* image){
+void GraphObject2D::setImage(Image* image)
+{
 	mImage = image;
 	setCropToWholeImage();
 	if (image) // better safe than sorry
@@ -31,12 +38,12 @@ void GraphObject2D::setImage(Image* image){
 	}
 }
 
-void GraphObject2D::setCropByPixels(int x1, int x2, int y1, int y2){
+void GraphObject2D::setCropByPixels(int x1, int x2, int y1, int y2)
+{
 	crop_x1 = (float) x1 / (float) width;
 	crop_x2 = (float) x2 / (float) width;
 	crop_y1 = (float) y1 / (float) height;
 	crop_y2 = (float) y2 / (float) height;
-	Init();
 }
 
 void GraphObject2D::setCropToWholeImage(){

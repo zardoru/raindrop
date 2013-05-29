@@ -15,7 +15,7 @@ ActorJudgement::ActorJudgement()
 	alpha = 0;
 	red = green = blue = 1;
 	setImage(ImageLoader::LoadSkin("judge-perfect.png"));
-	GraphObject2D::Init(true);
+	GraphObject2D::InitTexture();
 }
 
 void ActorJudgement::ChangeJudgement(Judgement New)

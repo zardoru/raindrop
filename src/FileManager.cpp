@@ -48,6 +48,10 @@ void loadSong( boost::filesystem::path songPath, std::vector<Song*> &VecOut )
 					NewS = new Song();
 					NewS->SongDirectory = Path;
 					NewS->SongName = GetOggTitle(it->path().string());
+
+					if (!NewS->SongName.length())
+						NewS->SongName = it->path().string();
+
 					NewS->SongRelativePath = it->path().filename().string();
 					NewS->SongFilename = it->path().string();
 					VecOut.push_back(NewS);

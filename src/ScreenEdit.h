@@ -25,6 +25,9 @@ class ScreenEdit : public ScreenGameplay
 	bool fracTextChanged(const CEGUI::EventArgs& param);
 	uint32_t CurrentFraction;
 	uint32_t savedMeasure;
+	BitmapFont EditInfo;
+
+	void AssignFraction(int Measure, int Fraction);
 
 	float YLock;
 	enum

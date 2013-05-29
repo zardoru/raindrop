@@ -5,7 +5,10 @@
 #include "pa_ringbuffer.h"
 #include <vorbis/vorbisfile.h>
 #include <ogg/ogg.h>
-#include <boost/thread.hpp>
+#include <boost/thread/condition.hpp>
+#include <boost/thread/thread.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/locks.hpp>
 
 void InitAudio();
 void StartStream(const char* sound);
@@ -56,6 +59,7 @@ public:
 	void Stop();
 	bool IsStopped();
 	double GetPlaybackTime();
+	double GetStreamedTime();
 
 	void UpdateBuffer(int32 &read);
 };

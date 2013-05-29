@@ -61,7 +61,7 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 		{
 			std::stringstream str (line.substr(line.find_first_of(":") + 1));
 			str >> Difficulty->Offset;
-			Difficulty->Offset += GetDeviceLatency();
+			// Difficulty->Offset += GetDeviceLatency();
 		}
 
 		// Then, file info.

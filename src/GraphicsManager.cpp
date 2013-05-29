@@ -8,27 +8,26 @@
 
 GraphicsManager GraphMan;
 
-const char* vertShader = "#version 330\n"
-	"in vec3 position;\n"
-	"in vec2 vertexUV;\n"
+const char* vertShader = "#version 120\n"
+	"attribute vec3 position;\n"
+	"attribute vec2 vertexUV;\n"
 	"uniform mat4 projection;\n"
 	"uniform mat4 mvp;\n"
-	"out vec2 Texcoord;\n"
+	"varying vec2 Texcoord;\n"
 	"void main() {\n"
 	"gl_Position = projection * mvp * vec4(position, 1);\n"
 	"Texcoord = vertexUV;\n"
 	"}\n";
 
-const char* fragShader = "#version 330\n"
-	"in vec2 Texcoord;\n"
+const char* fragShader = "#version 120\n"
+	"varying vec2 Texcoord;\n"
 	"uniform vec4 Color;\n"
 	"uniform sampler2D tex;\n"
 	"\n"
-	"out vec4 outColor;\n"
 	"\n"
 	"void main(void)\n"
 	"{\n"
-	"    outColor = texture(tex, Texcoord) * Color;\n"
+	"    gl_FragColor = texture2D(tex, Texcoord) * Color;\n"
 	"}\n";
 
 void checkGlError()
@@ -223,7 +222,7 @@ void GraphicsManager::AutoSetupWindow()
 		throw std::exception(serr.str().c_str());
 	}
 
-	glfwSetWindowTitle("dotCur pre-Alpha");
+	glfwSetWindowTitle("dC Alpha");
 
 	checkGlError();
 
@@ -333,8 +332,11 @@ void GraphicsManager::SetupCEGUI()
 void GraphicsManager::SetupShaders()
 {
 #ifndef OLD_GL
+
+	/*
 	glGenVertexArrays(1, &defaultVao);
 	glBindVertexArray(defaultVao);
+	*/
 
 	defaultVertexShader = glCreateShader( GL_VERTEX_SHADER );
 	glShaderSource( defaultVertexShader, 1, &vertShader, NULL );

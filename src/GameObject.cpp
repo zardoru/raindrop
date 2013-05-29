@@ -6,10 +6,10 @@
 #include <GL/glfw.h>
 #include "Audio.h"
 
-bool GameObject::Initialized = false;
 SoundSample *HitSnd = NULL;
 SoundSample *HoldReleaseSnd = NULL;
-
+bool GameObjectTexInitialized = false;
+uint32 GameObjectUVvbo;
 
 GameObject::GameObject()
 {
@@ -34,10 +34,14 @@ GameObject::GameObject()
 		HoldReleaseSnd  = new SoundSample((FileManager::GetSkinPrefix() + "/holdfinish.ogg").c_str());
 		MixerAddSample(HoldReleaseSnd);
 	}
-	if (!Initialized) // the catch here is that since it's static, only one vbo is generated ;P
+	if (GameObjectTexInitialized)
+		ourUVBuffer = GameObjectUVvbo;
+	else
 	{
-		Init(true);
+		InitTexture();
+		GameObjectUVvbo = ourUVBuffer;
 	}
+	InitTexture();
 }
 
 void GameObject::Animate(float delta, float songTime)

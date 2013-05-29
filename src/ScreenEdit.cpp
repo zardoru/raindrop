@@ -5,6 +5,8 @@
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 
+
+
 ScreenEdit::ScreenEdit(IScreen *Parent)
 	: ScreenGameplay(Parent)
 {
@@ -16,6 +18,7 @@ ScreenEdit::ScreenEdit(IScreen *Parent)
 	GhostObject.alpha = 0.7f;
 	GhostObject.Centered = true;
 	GhostObject.width = GhostObject.height = CircleSize;
+	EditInfo.LoadSkinFontImage("font.tga", glm::vec2(18, 32), glm::vec2(34,34), glm::vec2(10,16), 32);
 }
 
 void ScreenEdit::Init(Song *Other)
@@ -179,6 +182,16 @@ void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 					Mode = Normal;
 				else
 					Mode = Select;
+			}else if (key == 'R') // Repeat previous measure's fraction
+			{
+				if (Measure > 0)
+					AssignFraction(Measure, CurrentDiff->Measures.at(Measure-1).Fraction);
+			}else if (key == 'T') // Insert another measure, go to it and restart fraction
+			{
+				CurrentDiff->Measures.resize(CurrentDiff->Measures.size()+1);
+				Measure = CurrentDiff->Measures.size()-1;
+				CurrentFraction = 0;
+				AssignFraction(Measure, CurrentDiff->Measures[Measure-1].Fraction);
 			}
 		}
 	}else // mouse input
@@ -260,6 +273,12 @@ bool ScreenEdit::Run(double delta)
 
 		if (Mode == Normal)
 			GhostObject.Render();
+
+		std::stringstream info;
+		info << "Measure:   " << Measure
+			 << "\nFrac:    " << CurrentFraction
+			 << "\nMaxFrac: " << CurrentDiff->Measures.at(Measure).Fraction;
+		EditInfo.DisplayText(info.str().c_str(), glm::vec2(512, 600));
 		CEGUI::System::getSingleton().renderGUI();
 	}
 
@@ -277,12 +296,15 @@ bool ScreenEdit::measureTextChanged(const CEGUI::EventArgs& param)
 	try
 	{
 		Measure = boost::lexical_cast<int32>(CurrentMeasure->getText());
-		if ((int32)Measure > (((int32)CurrentDiff->Measures.size())-1))
+		if (Measure < 10000)
 		{
-			CurrentDiff->Measures.resize(Measure+1);
-		}else
-		{
-			FracBox->setText( (boost::format("%d\n") % CurrentDiff->Measures[Measure].Fraction).str().c_str() );
+			if ((int32)Measure > (((int32)CurrentDiff->Measures.size())-1))
+			{
+				CurrentDiff->Measures.resize(Measure+1);
+			}else
+			{
+				FracBox->setText( (boost::format("%d\n") % CurrentDiff->Measures[Measure].Fraction).str().c_str() );
+			}
 		}
 	}catch (...) { /* What to do now? */ }
 	return true;
@@ -313,21 +335,28 @@ bool ScreenEdit::bpmTextChanged(const CEGUI::EventArgs& param)
 	return true;
 }
 
+void ScreenEdit::AssignFraction(int Measure, int Fraction)
+{
+	CurrentDiff->Measures.at(Measure).Fraction = Fraction;
+	CurrentDiff->Measures.at(Measure).MeasureNotes.resize(CurrentDiff->Measures[Measure].Fraction);
+
+	uint32 count = 0;
+	for (std::vector<GameObject>::iterator i = CurrentDiff->Measures.at(Measure).MeasureNotes.begin(); 
+		i != CurrentDiff->Measures.at(Measure).MeasureNotes.end(); 
+		i++)
+	{
+		i->MeasurePos = count;
+		count++;
+	}
+}
+
 bool ScreenEdit::fracTextChanged(const CEGUI::EventArgs& param)
 {
 	try
 	{
-		CurrentDiff->Measures.at(Measure).Fraction = boost::lexical_cast<int32>(FracBox->getText());
-		CurrentDiff->Measures.at(Measure).MeasureNotes.resize(CurrentDiff->Measures[Measure].Fraction);
-
-		uint32 count = 0;
-		for (std::vector<GameObject>::iterator i = CurrentDiff->Measures.at(Measure).MeasureNotes.begin(); 
-			i != CurrentDiff->Measures.at(Measure).MeasureNotes.end(); 
-			i++)
-		{
-			i->MeasurePos = count;
-			count++;
-		}
+		int32 Frac = boost::lexical_cast<int32>(FracBox->getText());
+		if (Frac <= 192)
+			AssignFraction(Measure, Frac);
 	}catch(...)
 	{
 	}

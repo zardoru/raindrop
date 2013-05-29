@@ -24,6 +24,8 @@ void Utility::DebugBreak()
 #endif
 }
 
+BitmapFont FPSDisplay;
+
 Application::Application()
 {
 }
@@ -33,7 +35,7 @@ void Application::Init()
 	GraphMan.AutoSetupWindow();
 	InitAudio();
 	Game = NULL;
-
+	FPSDisplay.LoadSkinFontImage("font.tga", glm::vec2(18, 32), glm::vec2(34,34), glm::vec2(10,16), 32);
 	srand(time(0));
 	oldTime = 0;
 	glfwSetTime(0.0); // this should match
@@ -47,11 +49,12 @@ void Application::Run()
 	Game = new ScreenSelectMusic();
 	Game->Init();
 
-	while (Game->IsScreenRunning())
+	while (Game->IsScreenRunning() && glfwGetWindowParam(GLFW_OPENED))
 	{
 		double newTime = glfwGetTime();
 		double delta = newTime - oldTime;
-
+		std::stringstream str;
+		str << "fps: " << 1/delta;
 		GraphMan.ClearWindow();
 
 		// shit gets real
@@ -60,6 +63,7 @@ void Application::Run()
 #ifndef DISABLE_CEGUI
 		CEGUI::System::getSingleton().injectTimePulse(delta);
 #endif
+		FPSDisplay.DisplayText(str.str().c_str(), glm::vec2(0,0));
 		glfwSwapBuffers();
 		oldTime = newTime;
 	}

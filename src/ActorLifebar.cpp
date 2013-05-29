@@ -15,7 +15,7 @@ ActorLifebar::ActorLifebar()
 	Centered = false;
 	position.y = ScreenHeight - height;
 	position.x = 0;
-	Init(true);
+	InitTexture();
 	UpdateHealth();
 }
 
@@ -23,7 +23,7 @@ void ActorLifebar::UpdateHealth()
 {
 	crop_x2 = Health / 100;
 	width = (Health / 100) * ScreenWidth;
-	Init(); // Redo our dear VBO data.
+	UpdateTexture(); // Redo our dear VBO data.
 }
 
 void ActorLifebar::HitJudgement(Judgement Hit)

@@ -47,6 +47,7 @@ private: // shit only screengameplay needs
 	void StoreEvaluation(Judgement Eval);
 	uint32 Combo;
 	BitmapFont MyFont;
+	BitmapFont SongInfo;
 
 	// Notes
 	std::vector<GameObject> NotesHeld, AnimateOnly;
@@ -62,8 +63,9 @@ private: // shit only screengameplay needs
 	GraphObject2D MarkerA, MarkerB, Cursor, Background;
 	EvaluationData Evaluation;
 	
-	double SongTime, SongDelta;
+	double SongTime, SongDelta, SongTimeLatency;
 	
+	bool FailEnabled;
 	VorbisStream *Music;
 public:
 	ScreenGameplay(IScreen *Parent);

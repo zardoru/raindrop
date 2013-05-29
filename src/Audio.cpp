@@ -2,11 +2,16 @@
 #include "Audio.h"
 #include <cstdio>
 #include <cstring>
-#include <boost/thread.hpp>
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/thread/condition.hpp>
+
+#ifdef NDEBUG
+void boost::throw_exception(std::exception const&)
+{
+}
+#endif
 
 /* Vorbis file stream */
 
@@ -49,6 +54,7 @@ VorbisStream::VorbisStream(const char* Filename, uint32 bufferSize)
 
 		PaUtil_InitializeRingBuffer(&RingBuf, sizeof(int16), bufferSize, buffer);
 		isOpen = true;
+		UpdateBuffer(retv);
 	}else
 		isOpen = false;	
 
@@ -119,7 +125,7 @@ void VorbisStream::UpdateBuffer(int32 &read)
 	while (read < size)
 	{
 		int32 res = ov_read(&f, (char*)tbuf+read, size - read, 0, 2, 1, &sect);
-		if (res)
+		if (res > 0)
 			read += res;
 		else if (res == 0)
 		{
@@ -168,7 +174,7 @@ int32 VorbisStream::readBuffer(void * out, uint32 length)
 {
 	char *outpt = (char*) out;
 
-	// playbackTime += (double)length / (double)info->rate;
+	streamTime += (double)length / (double)info->rate;
 
 	PaUtil_ReadRingBuffer(&RingBuf, out, length*info->channels);
 
@@ -189,7 +195,7 @@ int32 VorbisStream::getChannels()
 void VorbisStream::seek(double Time, bool accurate)
 {
 	SeekTime = Time;
-	playbackTime = Time - GetDeviceLatency();
+	streamTime = playbackTime = Time;
 }
 
 void VorbisStream::setLoop(bool _loop)
@@ -284,6 +290,20 @@ double VorbisStream::GetPlaybackTime()
 	return playbackTime;
 }
 
+double VorbisStream::GetStreamedTime()
+{
+	return streamTime;
+}
+
+float waveshape_distort( float in ) {
+  if(in <= -1.25f) {
+    return -0.984375;
+  } else if(in >= 1.25f) {
+    return 0.984375;
+  } else {    
+    return 1.1f * in - 0.2f * in * in * in;
+  }
+}
 
 int Mix(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags, void *userData);
 
@@ -304,9 +324,34 @@ class PaMixer
 			// *Dest = (int)*Src + (int)*Dest - (((int)*Src) * ((int)*Dest) / 256);
 
 			if (*Dest && *Src)
-				*Dest = (*Src + *Dest)/2;
+			{
+				float A = (float)*Src / 256.0, B = (float)*Dest / 256.0;
+				float mex = waveshape_distort(A+B)*170;
+
+				*Dest = mex;
+			}
 			else
 				*Dest += *Src;
+
+
+			/*if (*Dest > 0 && *Src > 0)
+			{
+				*Dest = ((float)*Dest + (float)*Src) - (((float)*Dest) * ((float)*Src))/((float)255);
+			}else if (*Dest < 0 && *Src < 0)
+			{
+				*Dest = ((float)*Dest + (float)*Src) - (((float)*Dest) * ((float)*Src))/(-255.0);
+			}else
+			{
+				*Dest += *Src;
+			}*/
+			/*
+			float A = (float)*Src / 256.0, B = (float)*Dest / 256.0;
+			float mixed = (A+B)*0.8;
+			if (mixed > 1.0f) mixed = 0.9f;
+			if (mixed < -1.0f) mixed = -0.9f;
+			
+			*Dest = mixed*255;
+			*/
 			Dest++;
 			Src++;
 			Length--;
@@ -324,7 +369,15 @@ public:
 		PaUtil_InitializeRingBuffer(&RingBuf, 2, BUFF_SIZE, RingbufData);
 
 		boost::thread (&PaMixer::Run, this);
-		Pa_OpenDefaultStream(&Stream, 0, 2, paInt16, 44100, 0, Mix, (void*)this);
+
+		PaStreamParameters outputParams;
+		outputParams.device = Pa_GetDefaultOutputDevice();
+		outputParams.channelCount = 2;
+		outputParams.sampleFormat = paInt16;
+		outputParams.suggestedLatency = GetDeviceLatency();
+		outputParams.hostApiSpecificStreamInfo = NULL;
+
+		Pa_OpenStream(&Stream, NULL, &outputParams, 44100, 0, 0, Mix, (void*)this);
 		Pa_StartStream(Stream);
 	}
 
@@ -357,7 +410,6 @@ public:
 
 						(*i)->readBuffer(TempSave, SizeAvailable/2);
 						MixBuffer(TempSave, TempStream, SizeAvailable*2, 0);
-						(*i)->streamTime += read / (*i)->getRate();
 					}
 				}
 				mut.unlock();
@@ -425,7 +477,7 @@ public:
 		{
 			if ((*i)->runThread && (*i)->streamTime > 0)
 			{
-				(*i)->playbackTime += length / (*i)->getRate();
+				(*i)->playbackTime = (*i)->streamTime - GetDeviceLatency();
 			}
 		}
 
@@ -440,8 +492,7 @@ public:
 		}
 		mut2.unlock();
 
-		if (PaUtil_GetRingBufferWriteAvailable(&RingBuf) > BUFF_SIZE/2)
-			ringbuffer_has_space.notify_one();
+		ringbuffer_has_space.notify_one();
 	}
 };
 

@@ -5,8 +5,10 @@ class Image;
 
 class GraphObject2D
 {
-	uint32 ourBuffer, ourUVBuffer;
-	bool IsInitialized;
+	static uint32 ourBuffer;
+	static bool IsInitialized;
+protected:
+	uint32 ourUVBuffer;
 public:
 
 	GraphObject2D();
@@ -38,7 +40,9 @@ public:
 	Image* mImage;
 	void setImage(Image* image);
 
-	virtual void Init(bool GenBuffers = false);
+	virtual void Init();
+	virtual void InitTexture();
+	virtual void UpdateTexture();
 	void Render(); // found in backend.cpp
 
 	void setCropToWholeImage();

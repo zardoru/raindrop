@@ -73,7 +73,7 @@ void Song::Process(bool CalculateXPos)
 
 				if (it->endTime > 0)
 					it->green = 0.5;
-				it->Init(false);
+				it->Init();
 
 				if (CalculateXPos)
 				{
