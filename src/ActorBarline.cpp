@@ -25,6 +25,8 @@ void ActorBarline::Init(float Offset)
 	GraphObject2D::InitTexture();
 }
 
+#define RadioThreshold 0.9
+
 void ActorBarline::Run(double TimeDelta, double MeasureTime, double TotalTime)
 {
 	float Ratio = TotalTime / MeasureTime;
@@ -45,11 +47,13 @@ void ActorBarline::Run(double TimeDelta, double MeasureTime, double TotalTime)
 	
 	if (Parent->GetMeasure() % 2)
 	{
-		float Speed = -1/0.05;
-		if (Ratio > 0.95)
+		if (Ratio > RadioThreshold)
 		{
-			red = 1 * Speed * TimeDelta;
-			blue = 200.f / 255.f * (200.f / 255.f / 0.05) * TimeDelta;
+			float diff = Ratio - RadioThreshold;
+			float duration = (1 - RadioThreshold);
+
+			red = 1 - ( diff/duration );
+			blue = (200.f / 255.f) * (diff/duration);
 		}
 		else red = 1;
 		blue = green = 0;
@@ -58,11 +62,13 @@ void ActorBarline::Run(double TimeDelta, double MeasureTime, double TotalTime)
 		red = 0.0;
 		blue = 200.f / 255.f;
 
-		if (Ratio > 0.95)
+		if (Ratio > RadioThreshold)
 		{
-			float Speed = 1/0.05;
-			red = 1 * Speed * TimeDelta;
-			blue = 200.f / 255.f * Speed * TimeDelta;
+			float diff = Ratio - RadioThreshold;
+			float duration = (1 - RadioThreshold);
+
+			red = 1 * (diff/duration);
+			blue = 200.f / 255.f - (200.f / 255.f) * (diff/duration);
 		}
 	}
 

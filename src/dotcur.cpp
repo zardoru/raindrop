@@ -12,23 +12,30 @@ Application App;
 #ifndef WIN32
 int32 main ()
 #else
-int CALLBACK WinMain(
-  _In_  HINSTANCE hInstance,
-  _In_  HINSTANCE hPrevInstance,
-  _In_  LPSTR lpCmdLine,
-  _In_  int nCmdShow
-)
+int CALLBACK WinMain (
+    __in HINSTANCE hInstance,
+    __in_opt HINSTANCE hPrevInstance,
+    __in_opt LPSTR lpCmdLine,
+    __in int nShowCmd
+    )
 #endif
 {
-	try  {
+
+#ifdef NDEBUG
+try  
+#endif
+	{
 		App.Init();
 		App.Run();
 		App.Close();
-	} catch (std::exception &ex)
+	}
+#ifdef NDEBUG
+catch (std::exception &ex)
 	{
 #ifdef WIN32
 		MessageBox(NULL, ex.what(), "Exception!", MB_OK);
 #endif
 	}
+#endif
 	return 0;
 }

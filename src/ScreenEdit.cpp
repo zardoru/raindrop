@@ -22,6 +22,12 @@ ScreenEdit::ScreenEdit(IScreen *Parent)
 	EditMode = true;
 }
 
+void ScreenEdit::Cleanup()
+{
+	// remove our filthy windows
+	CEGUI::WindowManager::getSingleton().destroyWindow("ScreenEditRoot");
+}
+
 void ScreenEdit::Init(Song *Other)
 {
 	if (Other != NULL)
@@ -79,11 +85,6 @@ void ScreenEdit::Init(Song *Other)
 	st4->setText("Offset");
 	st4->setPosition(UVector2(cegui_reldim(0.1f), cegui_reldim(0.7f)));
 	st4->setSize(UVector2(cegui_reldim(0.3f), cegui_reldim(0.04f)));
-
-	/*
-	st2->setVerticalAlignment(VA_TOP);
-	st2->setHorizontalAlignment(HA_CENTRE);
-	*/
 
 	CurrentMeasure = static_cast<Editbox*> (winMgr.createWindow("TaharezLook/Editbox", "MeasureBox"));
 	CurrentMeasure->setSize(UVector2 (cegui_reldim(0.8f), cegui_reldim(0.1f)));
@@ -203,21 +204,25 @@ void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 	{
 		if (EditScreenState == Editing)
 		{
-			try {
-				if (Mode == Normal)
+				if (Mode == Normal && code == GLFW_PRESS)
 				{
-					if (key == GLFW_MOUSE_BUTTON_LEFT)
+					if (Measure >= 0 && Measure < CurrentDiff->Measures.size())
 					{
-						CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).position.x = GhostObject.position.x;
-						CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).MeasurePos = CurrentFraction;
-					}else
-					{
-						CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).position.x = 0;
-						CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).alpha = 0;
+						if (CurrentDiff->Measures.at(Measure).MeasureNotes.size() > CurrentFraction)
+						{
+							if (key == GLFW_MOUSE_BUTTON_LEFT)
+							{
+								CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).position.x = GhostObject.position.x;
+								CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).MeasurePos = CurrentFraction;
+							}else
+							{
+								CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).position.x = 0;
+							}
+
+							MySong->Process(false);
+						}
 					}
 				}
-				MySong->Process(false);
-			} catch (...){}
 		}
 
 	}
@@ -238,7 +243,7 @@ bool ScreenEdit::Run(double delta)
 		if (CurrentDiff->Measures.size())
 		{
 			Barline.Run(delta, CurrentDiff->Measures[Measure].Fraction, CurrentFraction);
-			if (! (Measure % 2 ))
+			if (! (Measure % 2) )
 				YLock =  ((float)CurrentFraction / (float)CurrentDiff->Measures[Measure].Fraction) * (float)PlayfieldHeight;
 			else
 				YLock =  PlayfieldHeight - ((float)CurrentFraction / (float)CurrentDiff->Measures[Measure].Fraction) * (float)PlayfieldHeight;
@@ -290,10 +295,19 @@ bool ScreenEdit::Run(double delta)
 	return Running;
 }
 
-void ScreenEdit::Cleanup()
+void ScreenEdit::AssignFraction(int Measure, int Fraction)
 {
-	// remove our filthy windows
-	CEGUI::WindowManager::getSingleton().destroyWindow("ScreenEditRoot");
+	CurrentDiff->Measures.at(Measure).Fraction = Fraction;
+	CurrentDiff->Measures.at(Measure).MeasureNotes.resize(CurrentDiff->Measures[Measure].Fraction);
+
+	uint32 count = 0;
+	for (std::vector<GameObject>::iterator i = CurrentDiff->Measures.at(Measure).MeasureNotes.begin(); 
+		i != CurrentDiff->Measures.at(Measure).MeasureNotes.end(); 
+		i++)
+	{
+		i->MeasurePos = count;
+		count++;
+	}
 }
 
 bool ScreenEdit::measureTextChanged(const CEGUI::EventArgs& param)
@@ -338,21 +352,6 @@ bool ScreenEdit::bpmTextChanged(const CEGUI::EventArgs& param)
 	}
 
 	return true;
-}
-
-void ScreenEdit::AssignFraction(int Measure, int Fraction)
-{
-	CurrentDiff->Measures.at(Measure).Fraction = Fraction;
-	CurrentDiff->Measures.at(Measure).MeasureNotes.resize(CurrentDiff->Measures[Measure].Fraction);
-
-	uint32 count = 0;
-	for (std::vector<GameObject>::iterator i = CurrentDiff->Measures.at(Measure).MeasureNotes.begin(); 
-		i != CurrentDiff->Measures.at(Measure).MeasureNotes.end(); 
-		i++)
-	{
-		i->MeasurePos = count;
-		count++;
-	}
 }
 
 bool ScreenEdit::fracTextChanged(const CEGUI::EventArgs& param)

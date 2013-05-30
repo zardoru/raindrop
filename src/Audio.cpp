@@ -7,12 +7,6 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/thread/condition.hpp>
 
-#ifdef NDEBUG
-void boost::throw_exception(std::exception const&)
-{
-}
-#endif
-
 /* Vorbis file stream */
 
 VorbisStream::VorbisStream(FILE *fp, uint32 bufferSize)
@@ -203,11 +197,34 @@ void VorbisStream::setLoop(bool _loop)
 	loop = _loop;
 }
 
+void VorbisStream::Stop()
+{
+	runThread = 0;
+}
+
+bool VorbisStream::IsStopped()
+{
+	return runThread == 0;
+}
+
+double VorbisStream::GetPlaybackTime()
+{
+	return playbackTime;
+}
+
+double VorbisStream::GetStreamedTime()
+{
+	return streamTime;
+}
 
 static int32 StreamCallback(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags, void *userData)
 {
 	return ((VorbisStream*)(userData))->readBuffer(output, frameCount);
 }
+
+/*********************************/
+/********* Vorbis sample *********/
+/*********************************/
 
 VorbisSample::VorbisSample(const char* filename)
 {
@@ -275,25 +292,9 @@ int32 VorbisSample::readBuffer(void * out, uint32 length)
 		return 0;
 }
 
-void VorbisStream::Stop()
-{
-	runThread = 0;
-}
-
-bool VorbisStream::IsStopped()
-{
-	return runThread == 0;
-}
-
-double VorbisStream::GetPlaybackTime()
-{
-	return playbackTime;
-}
-
-double VorbisStream::GetStreamedTime()
-{
-	return streamTime;
-}
+/*************************/
+/********* Mixer *********/
+/*************************/
 
 float waveshape_distort( float in ) {
   if(in <= -1.25f) {
@@ -503,7 +504,9 @@ int Mix(const void *input, void *output, unsigned long frameCount, const PaStrea
 	return 0;
 }
 
+/****************************/
 /* PortAudio Stream Wrapper */
+/****************************/
 
 PaMixer *Mixer;
 
@@ -596,14 +599,15 @@ bool PaStreamWrapper::IsStopped()
 	return !Sound->runThread;
 }
 
+/*************************/
+/********** API **********/
+/*************************/
+
 void InitAudio()
 {
 	PaError Err = Pa_Initialize();
 	Mixer = new PaMixer();
-#ifdef DEBUG
-	if (Err != 0)
-		Utility::DebugBreak();
-#endif // DEBUG
+	assert (Err == 0);
 }
 
 double GetDeviceLatency()

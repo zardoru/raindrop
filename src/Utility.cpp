@@ -33,3 +33,13 @@ namespace Utility {
 	}
 
 } // namespace Utility
+
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/thread/condition.hpp>
+
+#ifdef NDEBUG
+void boost::throw_exception(std::exception const&)
+{
+}
+#endif

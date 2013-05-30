@@ -8,6 +8,9 @@
 #include "ImageLoader.h"
 #include "Audio.h"
 
+#define ComboSizeX 40
+#define ComboSizeY 64
+
 ScreenGameplay::ScreenGameplay(IScreen *Parent) :
 	IScreen(Parent),
 	Barline(this)
@@ -16,12 +19,33 @@ ScreenGameplay::ScreenGameplay(IScreen *Parent) :
 	IsAutoplaying = false;
 	ShouldChangeScreenAtEnd = true;
 	SongInfo.LoadSkinFontImage("font.tga", glm::vec2(18, 32), glm::vec2(34,34), glm::vec2(10,16), 32);
-	MyFont.LoadSkinFontImage("font.tga", glm::vec2(18, 32), glm::vec2(34,34), glm::vec2(40,64), 32);
+	MyFont.LoadSkinFontImage("font.tga", glm::vec2(18, 32), glm::vec2(34,34), glm::vec2(ComboSizeX,ComboSizeY), 32);
 	Music = NULL;
 	FailEnabled = true;
 	TappingMode = false;
 	EditMode = false;
 }
+
+void ScreenGameplay::RemoveTrash()
+{
+	NotesHeld.clear();
+	AnimateOnly.clear();
+	NotesInMeasure.clear();
+}
+
+
+
+void ScreenGameplay::Cleanup()
+{
+	// Deleting the song's notes is ScreenSelectMusic's (or fileman's) job.
+	if (Music != NULL)
+	{
+		MixerRemoveStream(Music);
+		delete Music;
+		Music = NULL;
+	}
+}
+
 
 glm::vec2 ScreenGameplay::GetScreenOffset(float Alignment)
 {
@@ -71,13 +95,6 @@ void ScreenGameplay::StoreEvaluation(Judgement Eval)
 	Evaluation.MaxCombo = std::max(Evaluation.MaxCombo, Combo);
 }
 
-void ScreenGameplay::RemoveTrash()
-{
-	NotesHeld.clear();
-	AnimateOnly.clear();
-	NotesInMeasure.clear();
-}
-
 void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
 {
 	MySong = OtherSong;
@@ -99,7 +116,7 @@ void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
 	Background.height = ScreenHeight;
 	Background.position.x = 0;
 	Background.position.y = 0;
-	Background.Init();
+	Background.InitTexture();
 
 	MarkerB.Centered = true;
 	MarkerA.Centered = false;
@@ -109,7 +126,7 @@ void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
 
 	MarkerB.position.y = PlayfieldHeight + ScreenOffset + MarkerB.height/2 + Barline.height/2;
 	MarkerA.position.x = 2*MarkerA.position.x;
-	MarkerA.position.y = MarkerA.height;
+	MarkerA.position.y = MarkerA.height - Barline.height/2;
 	Lifebar.width = PlayfieldWidth;
 	MarkerA.InitTexture();
 	MarkerB.InitTexture();
@@ -125,7 +142,7 @@ void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
 	
 	Lifebar.UpdateHealth();
 
-	if (CurrentDiff->Timing.size()) // Not edit mode. XXX
+	if (CurrentDiff->Timing.size())
 		MeasureTime = (60 * 4 / CurrentDiff->Timing[0].Value);
 	else
 		MeasureTime = 0;
@@ -145,7 +162,10 @@ void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
 		Music = new VorbisStream(MySong->SongFilename.c_str());
 
 		if (!Music || !Music->IsOpen())
-			throw std::exception( (boost::format ("couldn't open song %s") % MySong->SongFilename).str().c_str() );
+		{
+			// we can't use exceptions because they impact the framerate. What can we do?
+			// throw std::exception( (boost::format ("couldn't open song %s") % MySong->SongFilename).str().c_str() );
+		}
 		
 		MixerAddStream(Music);
 		seekTime(0);
@@ -166,63 +186,38 @@ int32 ScreenGameplay::GetMeasure()
 
 /* Note stuff */
 
+void ScreenGameplay::RunVector(std::vector<GameObject>& Vec, float TimeDelta)
+{
+	Judgement Val;
+	// For each note in current measure
+	for (std::vector<GameObject>::iterator i = Vec.begin(); 
+		i != Vec.end(); 
+		i++)
+	{
+		// Run the note.
+		if ((Val = i->Run(TimeDelta, SongTime, IsAutoplaying)) != None)
+		{
+			Lifebar.HitJudgement(Val);
+			aJudgement.ChangeJudgement(Val);
+			StoreEvaluation(Val);
+			break;
+		}
+	}
+}
+
 void ScreenGameplay::RunMeasure(float delta)
 {
 	if (Measure < CurrentDiff->Measures.size())
 	{
-		Judgement Val;
-
-		// For each note in current measure
-		for (std::vector<GameObject>::iterator i = NotesInMeasure[Measure].begin(); 
-			i != NotesInMeasure[Measure].end(); 
-			i++)
-		{
-			// Run the note.
-			if ((Val = i->Run(delta, SongTime, IsAutoplaying)) != None)
-			{
-				Lifebar.HitJudgement(Val);
-				aJudgement.ChangeJudgement(Val);
-				StoreEvaluation(Val);
-				break;
-			}
-		}
+		RunVector(NotesInMeasure[Measure], delta);
 
 		// For each note in PREVIOUS measure (when not in edit mode)
 		if (Measure > 0 && !EditMode)
-		{
-			for (std::vector<GameObject>::iterator i = NotesInMeasure[Measure-1].begin(); 
-				i != NotesInMeasure[Measure-1].end(); 
-				i++)
-			{
-				// Run the note.
-				if ((Val = i->Run(delta, SongTime, IsAutoplaying)) != None)
-				{
-					Lifebar.HitJudgement(Val);
-					aJudgement.ChangeJudgement(Val);
-					StoreEvaluation(Val);
-					break;
-				}
-			}
-		}
-
+			RunVector(NotesInMeasure[Measure-1], delta);
 
 		// Run the ones in the NEXT measure.
 		if (Measure+1 < NotesInMeasure.size())
-		{
-			for (std::vector<GameObject>::iterator i = NotesInMeasure[Measure+1].begin(); 
-				i != NotesInMeasure[Measure+1].end(); 
-				i++)
-			{
-				// Run the note.
-				if ((Val = i->Run(delta, SongTime, IsAutoplaying)) != None)
-				{
-					Lifebar.HitJudgement(Val);
-					aJudgement.ChangeJudgement(Val);
-					StoreEvaluation(Val);
-					break;
-				}
-			}
-		}
+			RunVector(NotesInMeasure[Measure+1], delta);
 	}
 
 	if (NotesHeld.size() > 0)
@@ -249,20 +244,18 @@ void ScreenGameplay::RunMeasure(float delta)
 
 void ScreenGameplay::HandleInput(int32 key, int32 code, bool isMouseInput)
 {
-	glm::vec2 mpos = GraphMan.GetRelativeMPos();
-
 	if (Next && Next->IsScreenRunning())
 	{
 		Next->HandleInput(key, code, isMouseInput);
 		return;
 	}
 
+	/* Notes */
 	if (Measure < CurrentDiff->Measures.size() && // if measure is playable
 		(((key == 'Z' || key == 'X') && !isMouseInput) || // key is z or x and it's not mouse input or
 		(isMouseInput && (key == GLFW_MOUSE_BUTTON_LEFT || key == GLFW_MOUSE_BUTTON_RIGHT))) // is mouse input and it's a mouse button..
 		)
 	{
-		Judgement Val;
 
 		if (code == GLFW_PRESS)
 			Cursor.scaleX = Cursor.scaleY = 0.85;
@@ -270,84 +263,18 @@ void ScreenGameplay::HandleInput(int32 key, int32 code, bool isMouseInput)
 			Cursor.scaleX = Cursor.scaleY = 1;
 
 		// For all measure notes..
-		for (std::vector<GameObject>::iterator i = NotesInMeasure[Measure].begin(); 
-			i != NotesInMeasure[Measure].end(); 
-			i++)
-		{
-			// See if it's a hit.
-			if ((Val = i->Hit(SongTime, TappingMode ? i->position : mpos, code == GLFW_PRESS ? true : false, IsAutoplaying, key)) != None)
-			{
-				// Judge accordingly.
-				Lifebar.HitJudgement(Val);
-				aJudgement.ChangeJudgement(Val);
-				StoreEvaluation(Val);
+		if (Measure > 0 && JudgeVector(NotesInMeasure[Measure-1], code, key))
+			return;
+			
 
-				// If it's a hold, keep running it until it's done.
-				if (i->endTime && Val > Miss)
-				{
-					NotesHeld.push_back(*i);
-					i = NotesInMeasure[Measure].erase(i); // These notes are off the measure. We'll handle them somewhere else.
-				}
+		if (JudgeVector(NotesInMeasure[Measure], code, key))
+			return;
 
-				if (TappingMode)
-					return;
-				else
-					break;
-			}
-		}
+		if (Measure+1 < NotesInMeasure.size() && JudgeVector(NotesInMeasure[Measure+1], code, key))
+			return;
 
-		if (Measure > 0)
-		for (std::vector<GameObject>::iterator i = NotesInMeasure[Measure-1].begin(); 
-			i != NotesInMeasure[Measure-1].end(); 
-			i++)
-		{
-			// See if it's a hit.
-			if ((Val = i->Hit(SongTime, TappingMode ? i->position : mpos, code == GLFW_PRESS ? true : false, IsAutoplaying, key)) != None)
-			{
-				// Judge accordingly.
-				Lifebar.HitJudgement(Val);
-				aJudgement.ChangeJudgement(Val);
-				StoreEvaluation(Val);
-
-				// If it's a hold, keep running it until it's done.
-				if (i->endTime && Val > Miss)
-				{
-					NotesHeld.push_back(*i);
-					i = NotesInMeasure[Measure-1].erase(i); // These notes are off the measure. We'll handle them somewhere else.
-				}
-				if (TappingMode)
-					return;
-				else
-					break;
-			}
-		}
-
-		if (Measure+1 < NotesInMeasure.size())
-		for (std::vector<GameObject>::iterator i = NotesInMeasure[Measure+1].begin(); 
-			i != NotesInMeasure[Measure+1].end(); 
-			i++)
-		{
-			// See if it's a hit.
-			if ((Val = i->Hit(SongTime, TappingMode ? i->position : mpos, code == GLFW_PRESS ? true : false, IsAutoplaying, key)) != None)
-			{
-				// Judge accordingly.
-				Lifebar.HitJudgement(Val);
-				aJudgement.ChangeJudgement(Val);
-				StoreEvaluation(Val);
-
-				// If it's a hold, keep running it until it's done.
-				if (i->endTime && Val > Miss)
-				{
-					NotesHeld.push_back(*i);
-					i = NotesInMeasure[Measure+1].erase(i); // These notes are off the measure. We'll handle them somewhere else.
-				}
-				if (TappingMode)
-					return;
-				else
-					break;
-			}
-		}
-
+		Judgement Val;
+		glm::vec2 mpos = GraphMan.GetRelativeMPos();
 		// For all held notes...
 		for (std::vector<GameObject>::iterator i = NotesHeld.begin();
 			i != NotesHeld.end();
@@ -367,6 +294,7 @@ void ScreenGameplay::HandleInput(int32 key, int32 code, bool isMouseInput)
 		return;
 	}
 
+	/* Functions */
 	if (code == GLFW_PRESS)
 	{
 #ifndef NDEBUG
@@ -397,17 +325,6 @@ void ScreenGameplay::HandleInput(int32 key, int32 code, bool isMouseInput)
 	}
 }
 
-void ScreenGameplay::Cleanup()
-{
-	// Deleting the song's notes is ScreenSelectMusic's (or fileman's) job.
-	if (Music != NULL)
-	{
-		MixerRemoveStream(Music);
-		delete Music;
-		Music = NULL;
-	}
-}
-
 void ScreenGameplay::seekTime(float Time)
 {
 	Music->seek(Time);
@@ -426,7 +343,7 @@ void ScreenGameplay::stopMusic()
 	Music->Stop();
 }
 
-// todo: important- use song's time instead of counting manually.
+/* TODO: Use measure ratios instead of song time for the barline. */
 bool ScreenGameplay::Run(double TimeDelta)
 {
 	ScreenTime += TimeDelta;
@@ -441,14 +358,10 @@ bool ScreenGameplay::Run(double TimeDelta)
 	if ( ScreenTime > ScreenPauseTime || !ShouldChangeScreenAtEnd ) // we're over the pause?
 	{
 		if (SongTime <= 0)
-		{
 			startMusic();
-		}
 
 		if (Next) // We have a pending screen?
-		{
 			return RunNested(TimeDelta); // use that instead.
-		}
 
 		RunMeasure(SongDelta);
 
@@ -476,18 +389,63 @@ bool ScreenGameplay::Run(double TimeDelta)
 
 	RenderObjects(TimeDelta);
 
-	if (Lifebar.Health <= 0 && ShouldChangeScreenAtEnd && FailEnabled) // You died? Not an infinite screen?
-		Running = false; // gg
+	// You died? Not an infinite screen? Failing is enabled?
+	if (Lifebar.Health <= 0 && ShouldChangeScreenAtEnd && FailEnabled)
+		Running = false; // It's over.
 
 	return Running;
 }
+
+void ScreenGameplay::DrawVector(std::vector<GameObject>& Vec, float TimeDelta)
+{
+	for (std::vector<GameObject>::reverse_iterator i = Vec.rbegin(); 
+		i != Vec.rend(); 
+		i++)
+	{
+		i->Animate(TimeDelta, SongTime);
+		i->Render();
+	}
+}
+	
+bool ScreenGameplay::JudgeVector(std::vector<GameObject>& Vec, int code, int key)
+{
+	Judgement Val;
+	glm::vec2 mpos = GraphMan.GetRelativeMPos();
+
+	for (std::vector<GameObject>::iterator i = Vec.begin(); 
+			i != Vec.end(); 
+			i++)
+		{
+			// See if it's a hit.
+			if ((Val = i->Hit(SongTime, TappingMode ? i->position : mpos, code == GLFW_PRESS ? true : false, IsAutoplaying, key)) != None)
+			{
+				// Judge accordingly.
+				Lifebar.HitJudgement(Val);
+				aJudgement.ChangeJudgement(Val);
+				StoreEvaluation(Val);
+
+				// If it's a hold, keep running it until it's done.
+				if (i->endTime && Val > Miss)
+				{
+					NotesHeld.push_back(*i);
+					i = Vec.erase(i); // These notes are off the measure. We'll handle them somewhere else.
+				}
+				if (TappingMode)
+					return true;
+				else
+					return false;
+			}
+		}
+	return false;
+}
+
 
 void ScreenGameplay::RenderObjects(float TimeDelta)
 {
 	glm::vec2 mpos = GraphMan.GetRelativeMPos();
 	Cursor.position = mpos;
 
-	Cursor.rotation += 120 * TimeDelta;
+	Cursor.rotation += 140 * TimeDelta;
 	if (Cursor.rotation > 360)
 		Cursor.rotation -= 360;
 
@@ -497,95 +455,61 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 	MarkerB.Render();
 	Lifebar.Render();
 
-	if (NotesHeld.size() > 0)
+	DrawVector(NotesHeld, TimeDelta);
+	DrawVector(AnimateOnly, TimeDelta);
+
+	if (Measure > 0)
 	{
-		for (std::vector<GameObject>::reverse_iterator i = NotesHeld.rbegin(); 
-			i != NotesHeld.rend(); 
-			i++)
+		if (NotesInMeasure.size() && // there are measures and
+			Measure-1 < NotesInMeasure.size() && // the measure is within the range and
+			NotesInMeasure.at(Measure-1).size() > 0) // there are notes in this measure
 		{
-			i->Animate(TimeDelta, SongTime);
-			i->Render();
+			DrawVector(NotesInMeasure[Measure-1], TimeDelta);
 		}
 	}
 
-	if (AnimateOnly.size() > 0)
+	// Render current measure on front of the next!
+	if (Measure + 1 < CurrentDiff->Measures.size())
 	{
-		for (std::vector<GameObject>::reverse_iterator i = AnimateOnly.rbegin(); 
-			i != AnimateOnly.rend(); 
-			i++)
+		if (NotesInMeasure.size() && NotesInMeasure.at(Measure+1).size() > 0)
 		{
-			i->Animate(TimeDelta, SongTime);
-			i->Render();
+			DrawVector(NotesInMeasure[Measure+1], TimeDelta);
 		}
 	}
 
-	try
+	if (Measure < CurrentDiff->Measures.size())
 	{
-		if (Measure > 0)
+		if (NotesInMeasure.size() && NotesInMeasure.at(Measure).size() > 0)
 		{
-			if (NotesInMeasure.size() && NotesInMeasure.at(Measure-1).size() > 0)
-			{
-				for (std::vector<GameObject>::reverse_iterator i = NotesInMeasure[Measure-1].rbegin(); 
-					i != NotesInMeasure[Measure-1].rend(); 
-					i++)
-				{
-					i->Animate(TimeDelta, SongTime);
-					i->Render();
-				}
-			}
+			DrawVector(NotesInMeasure[Measure], TimeDelta);
 		}
-
-		// Render current measure on front of the next!
-		if (Measure + 1 < CurrentDiff->Measures.size())
-		{
-			// Draw from latest to earliest
-			if (NotesInMeasure.size() && NotesInMeasure.at(Measure+1).size() > 0)
-			{
-				for (std::vector<GameObject>::reverse_iterator i = NotesInMeasure[Measure+1].rbegin(); 
-					i != NotesInMeasure[Measure+1].rend(); 
-					i++)
-				{
-					i->Animate(TimeDelta, SongTime);
-					i->Render();
-				}
-			}
-		}
-
-		if (Measure < CurrentDiff->Measures.size())
-		{
-			if (NotesInMeasure.size() && NotesInMeasure.at(Measure).size() > 0)
-
-			{
-				for (std::vector<GameObject>::reverse_iterator i = NotesInMeasure[Measure].rbegin(); 
-					i != NotesInMeasure[Measure].rend(); 
-					i++)
-				{
-					i->Animate(TimeDelta, SongTime);
-					i->Render();
-				}
-			}
-		}else
-		{
-			if (ShouldChangeScreenAtEnd)
-			{
-				ScreenEvaluation *Eval = new ScreenEvaluation(this);
-				Eval->Init(Evaluation);
-				Next = Eval;
-				Music->Stop();
-			}
-		}
-	}catch (...)
+	}else
 	{
+		if (ShouldChangeScreenAtEnd)
+		{
+			ScreenEvaluation *Eval = new ScreenEvaluation(this);
+			Eval->Init(Evaluation);
+			Next = Eval;
+			Music->Stop();
+		}
 	}
 
 	Barline.Render();
 	aJudgement.Render();
+
+	// Combo rendering.
 	std::stringstream str;
 	str << Combo;
-	MyFont.DisplayText(str.str().c_str(), glm::vec2(aJudgement.position.x, 0));
+
+	float textX = GetScreenOffset(0.5).x - (str.str().length() * ComboSizeX / 2);
+	MyFont.DisplayText(str.str().c_str(), glm::vec2(textX, 0));
+
+	/* Lengthy information printing code goes here.*/
 	std::stringstream info;
+
 	if (IsAutoplaying)
 		info << "\nAutoplay";
+
 #ifndef NDEBUG
 	info << "\nSongTime: " << SongTime << "\nPlaybackTime: ";
 	if (Music)
@@ -605,6 +529,7 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 	else
 		info << "???";
 
+	info << "\nScreenTime: " << ScreenTime;
 #endif
 	if (TappingMode)
 		info << "\nTapping mode";
@@ -616,5 +541,6 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 #endif
 		info << "\nMeasure: " << Measure;
 	SongInfo.DisplayText(info.str().c_str(), glm::vec2(0,0));
+
 	Cursor.Render();
 }
