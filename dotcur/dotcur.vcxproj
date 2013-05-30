@@ -109,6 +109,7 @@
     <ClCompile Include="..\src\ScreenGameplay.cpp" />
     <ClCompile Include="..\src\ScreenSelectMusic.cpp" />
     <ClCompile Include="..\src\Song.cpp" />
+    <ClCompile Include="..\src\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\soil\image_DXT.h" />

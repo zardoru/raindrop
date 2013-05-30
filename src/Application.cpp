@@ -13,17 +13,6 @@
 #include "GraphicsManager.h"
 #include "BitmapFont.h"
 
-void Utility::DebugBreak()
-{
-#ifndef NDEBUG
-#ifdef WIN32
-	__asm int 3
-#else
-	asm("int 3");
-#endif
-#endif
-}
-
 BitmapFont FPSDisplay;
 
 Application::Application()

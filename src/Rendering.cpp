@@ -157,12 +157,11 @@ void GraphObject2D::Render()
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
 #else
-
 	glm::mat4 posMatrix =	glm::scale(
 		glm::rotate(
 			glm::translate(glm::mat4(1.0f), 
-			glm::vec3(!Centered ? position.x : position.x-width*scaleX/2, !Centered? position.y : position.y-height*scaleY/2, 0)), 
-		rotation, glm::vec3(0,0,1)
+			glm::vec3(position.x, position.y, 0)), 
+		rotation, glm::vec3(0, 0, 1)
 				  ), glm::vec3(scaleX*width, scaleY*height, 1));
 
 	// old gl code ahead
@@ -172,6 +171,9 @@ void GraphObject2D::Render()
 	glPushMatrix();
 
 	glMultMatrixf(glm::value_ptr(posMatrix));
+
+	if (Centered)
+		glTranslatef(-0.5, -0.5, 0);
 
 	glBegin(GL_QUADS);
 

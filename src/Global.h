@@ -23,6 +23,7 @@ typedef uint16_t uint16;
 namespace Utility
 {
 	void DebugBreak();
+	bool IsNumeric(const char* s);
 }
 
 #ifdef WIN32

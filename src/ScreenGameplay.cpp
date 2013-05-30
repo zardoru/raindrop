@@ -19,6 +19,8 @@ ScreenGameplay::ScreenGameplay(IScreen *Parent) :
 	MyFont.LoadSkinFontImage("font.tga", glm::vec2(18, 32), glm::vec2(34,34), glm::vec2(40,64), 32);
 	Music = NULL;
 	FailEnabled = true;
+	TappingMode = false;
+	EditMode = false;
 }
 
 glm::vec2 ScreenGameplay::GetScreenOffset(float Alignment)
@@ -152,6 +154,8 @@ void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
 	MeasureTimeElapsed = 0;
 	ScreenTime = 0;
 
+	Cursor.width = Cursor.height = 72;
+	Cursor.Centered = true;
 	Cursor.InitTexture();
 }
 
@@ -183,8 +187,8 @@ void ScreenGameplay::RunMeasure(float delta)
 			}
 		}
 
-		// For each note in PREVIOUS measure
-		if (Measure > 0)
+		// For each note in PREVIOUS measure (when not in edit mode)
+		if (Measure > 0 && !EditMode)
 		{
 			for (std::vector<GameObject>::iterator i = NotesInMeasure[Measure-1].begin(); 
 				i != NotesInMeasure[Measure-1].end(); 
@@ -260,13 +264,18 @@ void ScreenGameplay::HandleInput(int32 key, int32 code, bool isMouseInput)
 	{
 		Judgement Val;
 
+		if (code == GLFW_PRESS)
+			Cursor.scaleX = Cursor.scaleY = 0.85;
+		else
+			Cursor.scaleX = Cursor.scaleY = 1;
+
 		// For all measure notes..
 		for (std::vector<GameObject>::iterator i = NotesInMeasure[Measure].begin(); 
 			i != NotesInMeasure[Measure].end(); 
 			i++)
 		{
 			// See if it's a hit.
-			if ((Val = i->Hit(SongTime, mpos, code == GLFW_PRESS ? true : false, IsAutoplaying, key)) != None)
+			if ((Val = i->Hit(SongTime, TappingMode ? i->position : mpos, code == GLFW_PRESS ? true : false, IsAutoplaying, key)) != None)
 			{
 				// Judge accordingly.
 				Lifebar.HitJudgement(Val);
@@ -279,7 +288,63 @@ void ScreenGameplay::HandleInput(int32 key, int32 code, bool isMouseInput)
 					NotesHeld.push_back(*i);
 					i = NotesInMeasure[Measure].erase(i); // These notes are off the measure. We'll handle them somewhere else.
 				}
-				break;
+
+				if (TappingMode)
+					return;
+				else
+					break;
+			}
+		}
+
+		if (Measure > 0)
+		for (std::vector<GameObject>::iterator i = NotesInMeasure[Measure-1].begin(); 
+			i != NotesInMeasure[Measure-1].end(); 
+			i++)
+		{
+			// See if it's a hit.
+			if ((Val = i->Hit(SongTime, TappingMode ? i->position : mpos, code == GLFW_PRESS ? true : false, IsAutoplaying, key)) != None)
+			{
+				// Judge accordingly.
+				Lifebar.HitJudgement(Val);
+				aJudgement.ChangeJudgement(Val);
+				StoreEvaluation(Val);
+
+				// If it's a hold, keep running it until it's done.
+				if (i->endTime && Val > Miss)
+				{
+					NotesHeld.push_back(*i);
+					i = NotesInMeasure[Measure-1].erase(i); // These notes are off the measure. We'll handle them somewhere else.
+				}
+				if (TappingMode)
+					return;
+				else
+					break;
+			}
+		}
+
+		if (Measure+1 < NotesInMeasure.size())
+		for (std::vector<GameObject>::iterator i = NotesInMeasure[Measure+1].begin(); 
+			i != NotesInMeasure[Measure+1].end(); 
+			i++)
+		{
+			// See if it's a hit.
+			if ((Val = i->Hit(SongTime, TappingMode ? i->position : mpos, code == GLFW_PRESS ? true : false, IsAutoplaying, key)) != None)
+			{
+				// Judge accordingly.
+				Lifebar.HitJudgement(Val);
+				aJudgement.ChangeJudgement(Val);
+				StoreEvaluation(Val);
+
+				// If it's a hold, keep running it until it's done.
+				if (i->endTime && Val > Miss)
+				{
+					NotesHeld.push_back(*i);
+					i = NotesInMeasure[Measure+1].erase(i); // These notes are off the measure. We'll handle them somewhere else.
+				}
+				if (TappingMode)
+					return;
+				else
+					break;
 			}
 		}
 
@@ -319,6 +384,10 @@ void ScreenGameplay::HandleInput(int32 key, int32 code, bool isMouseInput)
 		}else if (key == 'F')
 		{
 			FailEnabled = !FailEnabled;
+		}
+		else if (key == 'T')
+		{
+			TappingMode = !TappingMode;
 		}
 		else if (key == GLFW_KEY_ESC)
 		{
@@ -418,6 +487,10 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 	glm::vec2 mpos = GraphMan.GetRelativeMPos();
 	Cursor.position = mpos;
 
+	Cursor.rotation += 120 * TimeDelta;
+	if (Cursor.rotation > 360)
+		Cursor.rotation -= 360;
+
 	// Rendering ahead.
 	Background.Render();
 	MarkerA.Render();
@@ -512,9 +585,7 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 	MyFont.DisplayText(str.str().c_str(), glm::vec2(aJudgement.position.x, 0));
 	std::stringstream info;
 	if (IsAutoplaying)
-		info << "\nAutoplay: ON";
-	else
-		info << "\nAutoplay: OFF";
+		info << "\nAutoplay";
 #ifndef NDEBUG
 	info << "\nSongTime: " << SongTime << "\nPlaybackTime: ";
 	if (Music)
@@ -535,9 +606,15 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 		info << "???";
 
 #endif
-
+	if (TappingMode)
+		info << "\nTapping mode";
 	if (!FailEnabled)
 		info << "\nFailing Disabled";
+
+#ifdef NDEBUG
+	if (EditMode)
+#endif
+		info << "\nMeasure: " << Measure;
 	SongInfo.DisplayText(info.str().c_str(), glm::vec2(0,0));
 	Cursor.Render();
 }

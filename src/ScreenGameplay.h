@@ -25,6 +25,7 @@ protected: // shit the edit screen needs
 	bool IsAutoplaying; // true for autoplaying notes
 
 	bool ShouldChangeScreenAtEnd;
+	bool EditMode;
 
 	void RenderObjects(float TimeDelta);
 
@@ -66,6 +67,7 @@ private: // shit only screengameplay needs
 	double SongTime, SongDelta, SongTimeLatency;
 	
 	bool FailEnabled;
+	bool TappingMode;
 	VorbisStream *Music;
 public:
 	ScreenGameplay(IScreen *Parent);

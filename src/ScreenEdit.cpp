@@ -19,6 +19,7 @@ ScreenEdit::ScreenEdit(IScreen *Parent)
 	GhostObject.Centered = true;
 	GhostObject.width = GhostObject.height = CircleSize;
 	EditInfo.LoadSkinFontImage("font.tga", glm::vec2(18, 32), glm::vec2(34,34), glm::vec2(10,16), 32);
+	EditMode = true;
 }
 
 void ScreenEdit::Init(Song *Other)
@@ -147,51 +148,55 @@ void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 				RemoveTrash();
 			}
 		}
-		if (code == GLFW_PRESS)
+
+		if (EditScreenState != Playing)
 		{
-			if (key == GLFW_KEY_RIGHT)
+			if (code == GLFW_PRESS)
 			{
-				CurrentFraction++;
-
-				if (CurrentFraction >= CurrentDiff->Measures[Measure].Fraction)
+				if (key == GLFW_KEY_RIGHT)
 				{
+					CurrentFraction++;
+
+					if (CurrentFraction >= CurrentDiff->Measures[Measure].Fraction)
+					{
+						CurrentFraction = 0;
+						if (Measure+1 < CurrentDiff->Measures.size()) // Advance a measure
+							Measure++;
+					}
+				}else if (key == GLFW_KEY_LEFT)
+				{
+					CurrentFraction--;
+
+					if (CurrentFraction > CurrentDiff->Measures[Measure].Fraction) // overflow
+					{
+						CurrentFraction = CurrentDiff->Measures[Measure].Fraction-1;
+
+						if ((int32)(Measure)-1 < CurrentDiff->Measures.size()-1 && Measure > 0) // Go back a measure
+							Measure--;
+					}
+				}else if (key == 'S') // Save!
+				{
+					std::string DefaultPath = "chart.dcf";
+					MySong->Repack();
+					MySong->Save((MySong->SongDirectory + std::string("/") + DefaultPath).c_str());
+					MySong->Process();
+				}else if (key == 'Q')
+				{
+					if (Mode == Select)
+						Mode = Normal;
+					else
+						Mode = Select;
+				}else if (key == 'R') // Repeat previous measure's fraction
+				{
+					if (Measure > 0)
+						AssignFraction(Measure, CurrentDiff->Measures.at(Measure-1).Fraction);
+				}else if (key == 'T') // Insert another measure, go to it and restart fraction
+				{
+					CurrentDiff->Measures.resize(CurrentDiff->Measures.size()+1);
+					Measure = CurrentDiff->Measures.size()-1;
 					CurrentFraction = 0;
-					if (Measure+1 < CurrentDiff->Measures.size()) // Advance a measure
-						Measure++;
+					AssignFraction(Measure, CurrentDiff->Measures[Measure-1].Fraction);
 				}
-			}else if (key == GLFW_KEY_LEFT)
-			{
-				CurrentFraction--;
-
-				if (CurrentFraction > CurrentDiff->Measures[Measure].Fraction) // overflow
-				{
-					CurrentFraction = CurrentDiff->Measures[Measure].Fraction-1;
-
-					if ((int32)(Measure)-1 < CurrentDiff->Measures.size()-1 && Measure > 0) // Go back a measure
-						Measure--;
-				}
-			}else if (key == 'S') // Save!
-			{
-				std::string DefaultPath = "chart.dcf";
-				MySong->Repack();
-				MySong->Save((MySong->SongDirectory + std::string("/") + DefaultPath).c_str());
-				MySong->Process();
-			}else if (key == 'Q')
-			{
-				if (Mode == Select)
-					Mode = Normal;
-				else
-					Mode = Select;
-			}else if (key == 'R') // Repeat previous measure's fraction
-			{
-				if (Measure > 0)
-					AssignFraction(Measure, CurrentDiff->Measures.at(Measure-1).Fraction);
-			}else if (key == 'T') // Insert another measure, go to it and restart fraction
-			{
-				CurrentDiff->Measures.resize(CurrentDiff->Measures.size()+1);
-				Measure = CurrentDiff->Measures.size()-1;
-				CurrentFraction = 0;
-				AssignFraction(Measure, CurrentDiff->Measures[Measure-1].Fraction);
 			}
 		}
 	}else // mouse input
@@ -293,7 +298,7 @@ void ScreenEdit::Cleanup()
 
 bool ScreenEdit::measureTextChanged(const CEGUI::EventArgs& param)
 {
-	try
+	if (Utility::IsNumeric(CurrentMeasure->getText().c_str()))
 	{
 		Measure = boost::lexical_cast<int32>(CurrentMeasure->getText());
 		if (Measure < 10000)
@@ -306,7 +311,7 @@ bool ScreenEdit::measureTextChanged(const CEGUI::EventArgs& param)
 				FracBox->setText( (boost::format("%d\n") % CurrentDiff->Measures[Measure].Fraction).str().c_str() );
 			}
 		}
-	}catch (...) { /* What to do now? */ }
+	}
 	return true;
 }
 
@@ -352,13 +357,12 @@ void ScreenEdit::AssignFraction(int Measure, int Fraction)
 
 bool ScreenEdit::fracTextChanged(const CEGUI::EventArgs& param)
 {
-	try
+	if (Utility::IsNumeric(FracBox->getText().c_str()))
 	{
 		int32 Frac = boost::lexical_cast<int32>(FracBox->getText());
 		if (Frac <= 192)
 			AssignFraction(Measure, Frac);
-	}catch(...)
-	{
 	}
+
 	return true;
 }

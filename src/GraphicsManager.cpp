@@ -191,23 +191,9 @@ void GraphicsManager::AutoSetupWindow()
 	size.y = ScreenHeight;
 	matrixSize.x = ScreenWidth;
 	matrixSize.y = ScreenHeight;
-/*
-#ifndef OLD_GL
-	// Request OpenGL 3.3.
-	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);
-	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 3);
-#ifndef DISABLE_CEGUI
-	glfwOpenWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE); // CEGUI needs the silly deprecated stuff.
-#else
-	glfwOpenWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#endif
-#else
-	*/
+
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 2);
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 1);
-	/*
-#endif
-	*/
 
 	glfwGetDesktopMode(&mode);
 
@@ -222,7 +208,11 @@ void GraphicsManager::AutoSetupWindow()
 		throw std::exception(serr.str().c_str());
 	}
 
-	glfwSetWindowTitle("dC Alpha");
+	glfwSetWindowTitle("dC Alpha"
+#ifndef NDEBUG
+		" (debug build)"
+#endif
+		);
 
 	checkGlError();
 
