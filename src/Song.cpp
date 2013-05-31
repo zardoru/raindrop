@@ -1,16 +1,10 @@
 #include "Global.h"
-#include "Game_Consts.h"
 #include "GameObject.h"
 #include "Song.h"
 
 #include <fstream>
 #include <boost/foreach.hpp>
 
-// converts bpm into seconds per beat
-float spb(float bpm)
-{
-	return 60 / bpm;
-}
 
 Song::Song()
 {

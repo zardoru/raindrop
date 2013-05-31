@@ -74,6 +74,8 @@
       <PreprocessorDefinitions>OLD_GL;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>false</ExceptionHandling>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -109,6 +111,7 @@
     <ClCompile Include="..\src\ScreenGameplay.cpp" />
     <ClCompile Include="..\src\ScreenSelectMusic.cpp" />
     <ClCompile Include="..\src\Song.cpp" />
+    <ClCompile Include="..\src\SongTiming.cpp" />
     <ClCompile Include="..\src\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>

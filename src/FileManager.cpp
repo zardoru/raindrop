@@ -38,13 +38,16 @@ void loadSong( boost::filesystem::path songPath, std::vector<Song*> &VecOut )
 	// If we didn't find any chart, add this song to the list as edit-only.
 	if (!FoundDCF)
 	{
+		Song *NewS = NULL;
+		std::string PotentialBG, PotentialBGRelative;
+
 		for (directory_iterator it (songPath); it != end_iter ; it++)
 		{
 			if (is_regular_file(it->path()))
 			{
 				if ( extension(it->path()) == (".ogg") ) // Found an OGG file?
 				{
-					Song *NewS;
+					
 					NewS = new Song();
 					NewS->SongDirectory = Path;
 					NewS->SongName = GetOggTitle(it->path().string());
@@ -56,6 +59,18 @@ void loadSong( boost::filesystem::path songPath, std::vector<Song*> &VecOut )
 					NewS->SongFilename = it->path().string();
 					VecOut.push_back(NewS);
 				}
+
+				if ( extension(it->path()) == (".png")  || extension(it->path()) == (".jpg"))
+				{
+					PotentialBG = it->path().string();
+					PotentialBGRelative = it->path().filename().string();
+				}
+			}
+			
+			if (NewS)
+			{
+				NewS->BackgroundDir = PotentialBG;
+				NewS->BackgroundRelativeDir = PotentialBGRelative;
 			}
 		}
 	}

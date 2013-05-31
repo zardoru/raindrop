@@ -197,6 +197,9 @@ void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 					Measure = CurrentDiff->Measures.size()-1;
 					CurrentFraction = 0;
 					AssignFraction(Measure, CurrentDiff->Measures[Measure-1].Fraction);
+				}else if (key == GLFW_KEY_ESC)
+				{
+					Running = false; // Get out.
 				}
 			}
 		}

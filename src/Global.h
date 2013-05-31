@@ -18,6 +18,10 @@ typedef int32_t int32;
 typedef uint16_t int16;
 typedef uint16_t uint16;
 
+extern float *PInfinity;
+
+#define Infinity *PInfinity
+
 #include "Game_Consts.h"
 
 namespace Utility

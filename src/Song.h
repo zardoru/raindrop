@@ -34,6 +34,10 @@ namespace SongInternal
 	};
 }
 
+// converts bpm into seconds per beat
+float spb(float bpm);
+uint32 SectionIndex(SongInternal::Difficulty *Diff, float Beat);
+
 class Song 
 {
 public:

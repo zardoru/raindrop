@@ -1,6 +1,9 @@
 #include "Global.h"
 #include <cstring>
 
+int InfinityMask = 0x7F800000;
+float *PInfinity = (float*)&InfinityMask;
+
 namespace Utility {
 
 	void DebugBreak()
