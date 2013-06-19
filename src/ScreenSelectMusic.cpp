@@ -17,7 +17,8 @@ ScreenSelectMusic::ScreenSelectMusic()
 	Running = true;
 	if (!SelectSnd)
 	{
-		SelectSnd = new SoundSample((FileManager::GetSkinPrefix() + "select.ogg").c_str());
+		SelectSnd = new SoundSample((FileManager::GetSkinPrefix() + "select.ogg").c_str()/*(FileManager::GetSkinPrefix() + "select.ogg").c_str()
+																			  */);
 		MixerAddSample(SelectSnd);
 
 		for (int i = 0; i < 6; i++)
@@ -167,6 +168,9 @@ void ScreenSelectMusic::HandleInput(int32 key, int32 code, bool isMouseInput)
 				StopLoops();
 			}
 		}
+
+		if (key == GLFW_KEY_F2)
+			SelectSnd->Reset();
 
 		if (key == GLFW_KEY_F4) // Edit mode!
 		{

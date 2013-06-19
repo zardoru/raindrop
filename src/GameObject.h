@@ -17,9 +17,6 @@ public:
 
 	uint32 Measure, MeasurePos;
 
-
-
-	void (*judgementCallback) (Judgement);
 	Judgement Hit(float time, glm::vec2 mpos, bool KeyDown, bool Autoplay, int32 Key);
 	Judgement Run(double delta, double Time, bool Autoplay);
 	void Animate(float delta, float songTime);

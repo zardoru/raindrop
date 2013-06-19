@@ -5,6 +5,10 @@
 #include <fstream>
 #include <boost/foreach.hpp>
 
+float spb(float bpm)
+{
+	return 60 / bpm;
+}
 
 Song::Song()
 {
@@ -118,7 +122,12 @@ void Song::Save(const char* Filename)
 				}
 
 				// Fill the current note.
-				Out << "{" << m->MeasureNotes[n].position.x << "}";
+				Out << "{" << m->MeasureNotes[n].position.x;
+				
+				if (m->MeasureNotes[n].hold_duration)
+					Out << " " << m->MeasureNotes[n].hold_duration;
+					
+				Out << "}";
 
 				// Fill in the blanks between two notes.
 				try

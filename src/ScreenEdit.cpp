@@ -20,6 +20,8 @@ ScreenEdit::ScreenEdit(IScreen *Parent)
 	GhostObject.width = GhostObject.height = CircleSize;
 	EditInfo.LoadSkinFontImage("font.tga", glm::vec2(18, 32), glm::vec2(34,34), glm::vec2(10,16), 32);
 	EditMode = true;
+	HeldObject = NULL;
+	Mode = Select;
 }
 
 void ScreenEdit::Cleanup()
@@ -156,6 +158,12 @@ void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 			{
 				if (key == GLFW_KEY_RIGHT)
 				{
+					if (HeldObject)
+					{
+						HeldObject->hold_duration += 4.0 / (float)CurrentDiff->Measures[Measure].Fraction;
+						MySong->Process(false);
+					}
+
 					CurrentFraction++;
 
 					if (CurrentFraction >= CurrentDiff->Measures[Measure].Fraction)
@@ -164,16 +172,28 @@ void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 						if (Measure+1 < CurrentDiff->Measures.size()) // Advance a measure
 							Measure++;
 					}
+
 				}else if (key == GLFW_KEY_LEFT)
 				{
-					CurrentFraction--;
-
-					if (CurrentFraction > CurrentDiff->Measures[Measure].Fraction) // overflow
+					if (HeldObject)
 					{
-						CurrentFraction = CurrentDiff->Measures[Measure].Fraction-1;
+						HeldObject->hold_duration -= 4.0 / (float)CurrentDiff->Measures[Measure].Fraction;
+						if (HeldObject->hold_duration < 0)
+							HeldObject->hold_duration = 0;
+						MySong->Process(false);
+					}
 
-						if ((int32)(Measure)-1 < CurrentDiff->Measures.size()-1 && Measure > 0) // Go back a measure
-							Measure--;
+					if (CurrentFraction || Measure > 1)
+					{
+						CurrentFraction--;
+
+						if (CurrentFraction > CurrentDiff->Measures[Measure].Fraction) // overflow
+						{
+							CurrentFraction = CurrentDiff->Measures[Measure].Fraction-1;
+
+							if ((int32)(Measure)-1 < CurrentDiff->Measures.size()-1 && Measure > 0) // Go back a measure
+								Measure--;
+						}
 					}
 				}else if (key == 'S') // Save!
 				{
@@ -185,6 +205,8 @@ void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 				{
 					if (Mode == Select)
 						Mode = Normal;
+					else if (Mode == Normal)
+						Mode = Hold;
 					else
 						Mode = Select;
 				}else if (key == 'R') // Repeat previous measure's fraction
@@ -207,25 +229,46 @@ void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 	{
 		if (EditScreenState == Editing)
 		{
-				if (Mode == Normal && code == GLFW_PRESS)
+			if (Mode != Select && code == GLFW_PRESS)
+			{
+				if (Measure >= 0 && Measure < CurrentDiff->Measures.size())
 				{
-					if (Measure >= 0 && Measure < CurrentDiff->Measures.size())
+					if (CurrentDiff->Measures.at(Measure).MeasureNotes.size() > CurrentFraction)
 					{
-						if (CurrentDiff->Measures.at(Measure).MeasureNotes.size() > CurrentFraction)
+						if (key == GLFW_MOUSE_BUTTON_LEFT)
 						{
-							if (key == GLFW_MOUSE_BUTTON_LEFT)
+							if (Mode == Normal)
 							{
 								CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).position.x = GhostObject.position.x;
 								CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).MeasurePos = CurrentFraction;
-							}else
+							}else if (Mode == Hold)
 							{
-								CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).position.x = 0;
+								HeldObject = &CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction);
+								HeldObject->position.x = GhostObject.position.x;
+								HeldObject->MeasurePos = CurrentFraction;
+								HeldObject->endTime = 0;
+								HeldObject->hold_duration = 0;
 							}
-
-							MySong->Process(false);
+						}else
+						{
+							HeldObject = NULL;
+							CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).position.x = 0;
+							CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).endTime = 0;
+							CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).hold_duration = 0;
 						}
+
+						MySong->Process(false);
 					}
 				}
+			}
+
+			if (Mode == Hold && code == GLFW_RELEASE)
+			{
+				if (key == GLFW_MOUSE_BUTTON_LEFT)
+				{
+					HeldObject = NULL;
+				}
+			} // Held Note, Mouse Button Release
 		}
 
 	}
@@ -284,13 +327,21 @@ bool ScreenEdit::Run(double delta)
 			}catch(...) { }
 		}
 
-		if (Mode == Normal)
+		if (Mode != Select)
 			GhostObject.Render();
 
 		std::stringstream info;
 		info << "Measure:   " << Measure
-			 << "\nFrac:    " << CurrentFraction
-			 << "\nMaxFrac: " << CurrentDiff->Measures.at(Measure).Fraction;
+			 << "\nFrac:    " << CurrentFraction;
+		if (CurrentDiff->Measures.size())
+			 info << "\nMaxFrac: " << CurrentDiff->Measures.at(Measure).Fraction;
+		info << "\nMode:    ";
+		if (Mode == Normal)
+			  info << "Normal";
+		else if (Mode == Hold)
+			info << "Hold";
+		else
+			info << "Null";
 		EditInfo.DisplayText(info.str().c_str(), glm::vec2(512, 600));
 		CEGUI::System::getSingleton().renderGUI();
 	}

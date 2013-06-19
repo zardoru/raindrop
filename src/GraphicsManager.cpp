@@ -243,7 +243,7 @@ void GraphicsManager::AutoSetupWindow()
 	glfwSetMousePosCallback(MouseMoveFunc);
 
 	// Don't show the cursor ;)
-	glfwDisable(GLFW_MOUSE_CURSOR);
+	//glfwDisable(GLFW_MOUSE_CURSOR);
 	checkGlError();
 }
 

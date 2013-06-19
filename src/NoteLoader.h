@@ -7,7 +7,6 @@
 #include "GameObject.h"
 #include "Song.h"
 
-// todo: return song
 class NoteLoader 
 {
 public:

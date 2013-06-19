@@ -326,15 +326,18 @@ class PaMixer
 
 			if (*Dest && *Src)
 			{
-				float A = (float)*Src / 256.0, B = (float)*Dest / 256.0;
+				float A = (float)*Src / 255.0, B = (float)*Dest / 255.0;
 				float mex = waveshape_distort(A+B)*170;
+				float ClipVal = A+B;
+
+				if (ClipVal > 1)
+					Utility::DebugBreak();
 
 				*Dest = mex;
 			}
 			else
 				*Dest += *Src;
-
-
+				
 			/*if (*Dest > 0 && *Src > 0)
 			{
 				*Dest = ((float)*Dest + (float)*Src) - (((float)*Dest) * ((float)*Src))/((float)255);
@@ -416,13 +419,13 @@ public:
 				mut.unlock();
 
 				PaUtil_WriteRingBuffer(&RingBuf, TempStream, SizeAvailable);
-			}else
+			}/*else
 			{
 				boost::mutex::scoped_lock lk(rbufmux);
 				// Wait for it.
 				ringbuffer_has_space.wait(lk);
 				SizeAvailable = PaUtil_GetRingBufferWriteAvailable(&RingBuf);
-			}
+			}*/
 		}
 	}
 
@@ -482,6 +485,7 @@ public:
 			}
 		}
 
+		ringbuffer_has_space.notify_one();
 		PaUtil_ReadRingBuffer(&RingBuf, out, length*2);
 
 		mut2.lock();
@@ -492,8 +496,6 @@ public:
 			MixBuffer(ts, out, length*4, 0);
 		}
 		mut2.unlock();
-
-		ringbuffer_has_space.notify_one();
 	}
 };
 

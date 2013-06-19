@@ -105,6 +105,8 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 				SongInternal::Measure Measure;
 				invert = false;
 
+				Measure.Fraction = 0;
+
 				if ( objectlist.length() == 0 )
 				{
 					Difficulty->Measures.push_back(Measure);
@@ -116,8 +118,6 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 					invert = true;
 					boost::replace_all(objectlist, "M", "");
 				}
-
-				Measure.Fraction = 0;
 
 				boost::split(splitobjects, objectlist, boost::is_any_of("{}"), boost::algorithm::token_compress_on);
 				BOOST_FOREACH (std::string object_description, splitobjects) // For all objects in measure

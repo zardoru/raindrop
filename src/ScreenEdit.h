@@ -27,6 +27,8 @@ class ScreenEdit : public ScreenGameplay
 	uint32_t savedMeasure;
 	BitmapFont EditInfo;
 
+	GameObject* HeldObject;
+
 	void AssignFraction(int Measure, int Fraction);
 
 	float YLock;
