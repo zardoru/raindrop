@@ -104,9 +104,6 @@
     <ClInclude Include="..\src\GraphObject2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Rendering.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Screen.h">
       <Filter>Header Files</Filter>
     </ClInclude>

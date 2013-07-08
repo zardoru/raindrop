@@ -133,7 +133,6 @@
     <ClInclude Include="..\src\GraphicsManager.h" />
     <ClInclude Include="..\src\GraphObject2D.h" />
     <ClInclude Include="..\src\NoteLoader.h" />
-    <ClInclude Include="..\src\Rendering.h" />
     <ClInclude Include="..\src\Screen.h" />
     <ClInclude Include="..\src\ScreenEdit.h" />
     <ClInclude Include="..\src\ScreenEvaluation.h" />

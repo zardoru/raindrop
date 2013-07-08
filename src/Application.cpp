@@ -53,6 +53,7 @@ void Application::Run()
 		CEGUI::System::getSingleton().injectTimePulse(delta);
 #endif
 		FPSDisplay.DisplayText(str.str().c_str(), glm::vec2(0,0));
+		MixerUpdate();
 		glfwSwapBuffers();
 		oldTime = newTime;
 	}

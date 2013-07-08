@@ -192,8 +192,8 @@ void GraphicsManager::AutoSetupWindow()
 	matrixSize.x = ScreenWidth;
 	matrixSize.y = ScreenHeight;
 
-	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 2);
-	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 1);
+	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 1);
+	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 2);
 
 	glfwGetDesktopMode(&mode);
 

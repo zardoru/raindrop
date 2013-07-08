@@ -71,7 +71,7 @@ void GameObject::Animate(float delta, float songTime)
 		return;
 	}
 
-	if (fadein_time > 0)
+	if (fadein_time > 0 && !fadeout_time)
 	{
 		alpha = 1-fadein_time*2;
 		fadein_time -= delta;
@@ -81,7 +81,7 @@ void GameObject::Animate(float delta, float songTime)
 	{
 		float holdDuration = endTime - startTime;
 		float Progress = songTime - startTime;
-		scaleX = scaleY = 1 + (0.2*Progress/holdDuration);
+		scaleX = scaleY = 1 + (0.3*Progress/holdDuration);
 		green = 0.5 - 0.5 * Progress/holdDuration;
 	}
 }

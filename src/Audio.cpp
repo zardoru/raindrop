@@ -143,6 +143,7 @@ void VorbisStream::UpdateBuffer(int32 &read)
 		}
 	}
 
+	runThread = 1;
 	/* fill into ring buffer */
 	PaUtil_WriteRingBuffer(&RingBuf, tbuf, count);
 
@@ -169,7 +170,7 @@ int32 VorbisStream::readBuffer(void * out, uint32 length)
 	char *outpt = (char*) out;
 
 	streamTime += (double)length / (double)info->rate;
-
+	playbackTime = streamTime;
 	PaUtil_ReadRingBuffer(&RingBuf, out, length*info->channels);
 
 	return length;
@@ -219,7 +220,8 @@ double VorbisStream::GetStreamedTime()
 
 static int32 StreamCallback(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags, void *userData)
 {
-	return ((VorbisStream*)(userData))->readBuffer(output, frameCount);
+	bool cont = !((VorbisStream*)(userData))->readBuffer(output, frameCount);
+	return cont;
 }
 
 /*********************************/
@@ -363,16 +365,22 @@ class PaMixer
 	}
 
 	int SizeAvailable;
+	bool Threaded;
 
 	boost::mutex mut, mut2, rbufmux;
 	boost::condition ringbuffer_has_space;
 public:
-	PaMixer()
+	PaMixer(bool StartThread)
 	{
 		RingbufData = new char[BUFF_SIZE*sizeof(int16)];
 		PaUtil_InitializeRingBuffer(&RingBuf, 2, BUFF_SIZE, RingbufData);
 
-		boost::thread (&PaMixer::Run, this);
+		Threaded = StartThread;
+
+		if (StartThread)
+		{
+			boost::thread (&PaMixer::Run, this);
+		}
 
 		PaStreamParameters outputParams;
 		outputParams.device = Pa_GetDefaultOutputDevice();
@@ -393,11 +401,8 @@ public:
 
 		SizeAvailable = PaUtil_GetRingBufferWriteAvailable(&RingBuf);
 
-		while (true)
+		do
 		{
-
-			SizeAvailable = PaUtil_GetRingBufferWriteAvailable(&RingBuf);
-
 			if (SizeAvailable > 0)
 			{
 				memset(TempStream, 0, sizeof(TempStream));
@@ -426,7 +431,7 @@ public:
 				ringbuffer_has_space.wait(lk);
 				SizeAvailable = PaUtil_GetRingBufferWriteAvailable(&RingBuf);
 			}*/
-		}
+		} while (Threaded);
 	}
 
 	void AppendMusic(VorbisStream* Stream)
@@ -608,8 +613,8 @@ bool PaStreamWrapper::IsStopped()
 void InitAudio()
 {
 	PaError Err = Pa_Initialize();
-	Mixer = new PaMixer();
-	assert (Err == 0);
+	Mixer = new PaMixer(false);
+	assert (Err == 0 && Mixer);
 }
 
 double GetDeviceLatency()
@@ -655,4 +660,9 @@ void MixerRemoveStream(VorbisStream* Sound)
 void MixerAddSample(VorbisSample * Sample)
 {
 	Mixer->AddSound(Sample);
+}
+
+void MixerUpdate()
+{
+	Mixer->Run();
 }

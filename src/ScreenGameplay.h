@@ -68,7 +68,7 @@ private: // shit only screengameplay needs
 	
 	bool FailEnabled;
 	bool TappingMode;
-	VorbisStream *Music;
+	SoundStream *Music;
 
 	void DrawVector(std::vector<GameObject>& Vec, float TimeDelta);
 	bool JudgeVector(std::vector<GameObject>& Vec, int code, int key);

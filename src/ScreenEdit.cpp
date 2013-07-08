@@ -13,6 +13,7 @@ ScreenEdit::ScreenEdit(IScreen *Parent)
 	ShouldChangeScreenAtEnd = false; // So it doesn't go into screen evaluation.
 	GuiInitialized = false;
 	CurrentFraction = 0;
+	Measure = 0;
 	EditScreenState = Editing;
 	GhostObject.setImage(ImageLoader::LoadSkin("hitcircle.png"));
 	GhostObject.alpha = 0.7f;
@@ -103,6 +104,11 @@ void ScreenEdit::Init(Song *Other)
 	FracBox->setSize(UVector2 (cegui_reldim(0.8f), cegui_reldim(0.05f)));
 	FracBox->setPosition(UVector2 (cegui_reldim(0.1f), cegui_reldim(0.25f)));
 	fWnd->addChildWindow(FracBox);
+	
+	BPMBox->setText( (boost::format("%d\n") % CurrentDiff->Timing[0].Value).str().c_str() );
+	OffsetBox->setText( (boost::format("%d\n") % CurrentDiff->Offset).str().c_str() );
+	FracBox->setText("0");
+	CurrentMeasure->setText("0");
 
 	winMgr.getWindow("MeasureBox")->
 		subscribeEvent(Editbox::EventTextChanged, Event::Subscriber(&ScreenEdit::measureTextChanged, this));
@@ -191,7 +197,7 @@ void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 						{
 							CurrentFraction = CurrentDiff->Measures[Measure].Fraction-1;
 
-							if ((int32)(Measure)-1 < CurrentDiff->Measures.size()-1 && Measure > 0) // Go back a measure
+							if (Measure > 0) // Go back a measure
 								Measure--;
 						}
 					}
@@ -222,6 +228,19 @@ void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 				}else if (key == GLFW_KEY_ESC)
 				{
 					Running = false; // Get out.
+				}else if (key == GLFW_KEY_F1)
+				{
+					root->setVisible(!root->isVisible());
+				}else if (key == 'X')
+				{
+					Measure++;
+				}else if (key == 'Z')
+				{
+					if (Measure > 0)
+						Measure--;
+				}else if (key == GLFW_KEY_F8)
+				{
+					IsAutoplaying = !IsAutoplaying;
 				}
 			}
 		}

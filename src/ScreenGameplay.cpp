@@ -40,7 +40,7 @@ void ScreenGameplay::Cleanup()
 	// Deleting the song's notes is ScreenSelectMusic's (or fileman's) job.
 	if (Music != NULL)
 	{
-		MixerRemoveStream(Music);
+		// MixerRemoveStream(Music);
 		delete Music;
 		Music = NULL;
 	}
@@ -159,15 +159,15 @@ void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
 
 	if (!Music)
 	{
-		Music = new VorbisStream(MySong->SongFilename.c_str());
+		Music = new SoundStream(MySong->SongFilename.c_str());
 
-		if (!Music || !Music->IsOpen())
+		if (!Music || !Music->IsValid())
 		{
 			// we can't use exceptions because they impact the framerate. What can we do?
 			// throw std::exception( (boost::format ("couldn't open song %s") % MySong->SongFilename).str().c_str() );
 		}
 		
-		MixerAddStream(Music);
+		// MixerAddStream(Music);
 		seekTime(0);
 	}
 
@@ -263,15 +263,18 @@ void ScreenGameplay::HandleInput(int32 key, int32 code, bool isMouseInput)
 			Cursor.scaleX = Cursor.scaleY = 1;
 
 		// For all measure notes..
-		if (Measure > 0 && JudgeVector(NotesInMeasure[Measure-1], code, key))
-			return;
-			
+		do
+		{
+			if (Measure > 0 && JudgeVector(NotesInMeasure[Measure-1], code, key))
+				break;
 
-		if (JudgeVector(NotesInMeasure[Measure], code, key))
-			return;
+			if (JudgeVector(NotesInMeasure[Measure], code, key))
+				break;
 
-		if (Measure+1 < NotesInMeasure.size() && JudgeVector(NotesInMeasure[Measure+1], code, key))
-			return;
+			if (Measure+1 < NotesInMeasure.size() && JudgeVector(NotesInMeasure[Measure+1], code, key))
+				break;
+
+		} while(false);
 
 		Judgement Val;
 		glm::vec2 mpos = GraphMan.GetRelativeMPos();
@@ -327,15 +330,16 @@ void ScreenGameplay::HandleInput(int32 key, int32 code, bool isMouseInput)
 
 void ScreenGameplay::seekTime(float Time)
 {
-	Music->seek(Time);
-	SongTime = Time - GetDeviceLatency();
+	Music->Seek(Time);
+	SongTime = Time/* - GetDeviceLatency()*/;
 	SongTimeLatency = Time;
+	MeasureTimeElapsed = 0;
 	ScreenTime = 0;
 }
 
 void ScreenGameplay::startMusic()
 {
-	Music->Start();
+	Music->Start(false, false);
 }
 
 void ScreenGameplay::stopMusic()
@@ -350,7 +354,7 @@ bool ScreenGameplay::Run(double TimeDelta)
 	
 	if (Music)
 	{
-		SongDelta = Music->GetPlaybackTime() - SongTimeLatency;
+		SongDelta = Music->GetPlaybackTime() - SongTime;
 		SongTime += SongDelta;
 		SongTimeLatency += SongDelta;
 	}
@@ -376,6 +380,7 @@ bool ScreenGameplay::Run(double TimeDelta)
 				if (!Music || Music->IsStopped())
 					MeasureTimeElapsed += TimeDelta;
 			}
+
 			if (MeasureTimeElapsed > MeasureTime)
 			{
 				MeasureTimeElapsed -= MeasureTime;
@@ -388,7 +393,12 @@ bool ScreenGameplay::Run(double TimeDelta)
 	}
 
 	RenderObjects(TimeDelta);
-
+	if (Music)
+	{
+		int32 read;
+		Music->GetStream()->UpdateBuffer(read);
+	}
+	
 	// You died? Not an infinite screen? Failing is enabled?
 	if (Lifebar.Health <= 0 && ShouldChangeScreenAtEnd && FailEnabled)
 		Running = false; // It's over.
@@ -430,10 +440,8 @@ bool ScreenGameplay::JudgeVector(std::vector<GameObject>& Vec, int code, int key
 					NotesHeld.push_back(*i);
 					i = Vec.erase(i); // These notes are off the measure. We'll handle them somewhere else.
 				}
-				if (TappingMode)
-					return true;
-				else
-					return false;
+
+				return true;
 			}
 		}
 	return false;
@@ -516,20 +524,23 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 		info << Music->GetPlaybackTime();
 	else
 		info << "???";
-	info << "\nStreamTime: ";
+	/*info << "\nStreamTime: ";
 	if(Music)
 		info << Music->GetStreamedTime();
 	else
 		info << "???";
-
+		*/
 	info << "\nSongDelta: " << SongDelta;
 	info << "\nTimeBuffered: ";
+	/*
 	if (Music)
 		info << Music->GetStreamedTime() - Music->GetPlaybackTime();
 	else
 		info << "???";
-
+		*/
 	info << "\nScreenTime: " << ScreenTime;
+	info << "\nMeasureElapsed: " << MeasureTimeElapsed;
+	info << "\nMeasureTotal: " << MeasureTime;
 #endif
 	if (TappingMode)
 		info << "\nTapping mode";

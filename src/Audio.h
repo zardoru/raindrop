@@ -116,4 +116,5 @@ void MixerAddStream(VorbisStream *Sound);
 void MixerRemoveStream(VorbisStream* Sound);
 void MixerAddSample(VorbisSample *Sound);
 void MixerRemoveSample(VorbisSample* Sound);
+void MixerUpdate();
 #endif // AUDIO_H_
