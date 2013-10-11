@@ -22,6 +22,7 @@ GameObject::GameObject()
 	endTime = 0;
 	heldKey = -1;
 	BeingHeld = false;
+	ColorInvert = false;
 
 	if (!HitSnd)
 	{
@@ -40,8 +41,8 @@ GameObject::GameObject()
 	{
 		InitTexture();
 		GameObjectUVvbo = ourUVBuffer;
+		GameObjectTexInitialized = true;
 	}
-	InitTexture();
 }
 
 void GameObject::Animate(float delta, float songTime)

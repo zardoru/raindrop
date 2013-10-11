@@ -5,7 +5,7 @@ class Image;
 
 class GraphObject2D
 {
-	static uint32 ourBuffer;
+	static uint32 ourBuffer, ourCenteredBuffer;
 	static bool IsInitialized;
 protected:
 	uint32 ourUVBuffer;
@@ -29,6 +29,7 @@ public:
 	float scaleX, scaleY;
 	float rotation;
 	bool Centered; // 0 for topleft, 1 for center
+	bool ColorInvert;
 	
 	/*
 	 * crop_x1 and crop_y1 define the top-left corner of the crop rectangle.

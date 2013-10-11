@@ -29,18 +29,6 @@ Image* ImageLoader::Load(std::string filename)
 	}
 	else
 	{	
-
-#ifdef OLD_GL
-		unsigned int width, height;
-		// use IL to get all the texture information.		
-		unsigned int texture = SOIL_load_OGL_texture(filename.c_str(), SOIL_LOAD_RGBA, 0, 0, &width, &height) ;
-		
-		if(texture == 0) 
-		{
-			// root->CONSOLE->PrintLogFormat("Warning: Couldn't load %s.\n", filename.c_str());
-			return NULL; // A null pointer means that nothing was loaded.
-		}
-#else
 		int width, height, channels;
 		GLuint texture;
 		unsigned char *image = SOIL_load_image(filename.c_str(), &width, &height, &channels,  SOIL_LOAD_RGBA);
@@ -58,12 +46,14 @@ Image* ImageLoader::Load(std::string filename)
 			
 		glBindTexture(GL_TEXTURE_2D, texture);
 
+		glTexParameteri( GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
 
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
 
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
 		if (glGenerateMipmap)
@@ -78,7 +68,6 @@ Image* ImageLoader::Load(std::string filename)
 
 		SOIL_free_image_data(image);
 		// reaching this point is unlikely.
-#endif
 		return (Textures[filename] = new Image(texture, width, height));
 	}
 	return 0;

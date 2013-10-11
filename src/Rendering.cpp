@@ -11,6 +11,7 @@
 #include "GraphicsManager.h"
 
 uint32 GraphObject2D::ourBuffer;
+uint32 GraphObject2D::ourCenteredBuffer;
 
 void GraphObject2D::Init()
 {
@@ -21,6 +22,7 @@ void GraphObject2D::Init()
 	if (!IsInitialized)
 	{
 		glGenBuffers(1, &ourBuffer);
+		glGenBuffers(1, &ourCenteredBuffer);
 		IsInitialized = true;
 	}
 
@@ -48,6 +50,27 @@ void GraphObject2D::Init()
 	glBindBuffer(GL_ARRAY_BUFFER, ourBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 12, GLPositions, GL_STATIC_DRAW);
 
+	GLPositions[0] = -0.5;
+	GLPositions[1] = -0.5;
+
+	GLPositions[2] = 0.5;
+	GLPositions[3] = -0.5;
+
+	GLPositions[4] = 0.5;
+	GLPositions[5] = 0.5;
+
+	GLPositions[6] = -0.5;
+	GLPositions[7] = -0.5;
+
+	GLPositions[8] = -0.5;
+	GLPositions[9] = 0.5;
+
+	GLPositions[10] = 0.5;
+	GLPositions[11] = 0.5;
+
+	glBindBuffer(GL_ARRAY_BUFFER, ourCenteredBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 12, GLPositions, GL_STATIC_DRAW);
+
 #endif
 }
 
@@ -58,7 +81,8 @@ void GraphObject2D::InitTexture()
 	if (!IsInitialized)
 		Init();
 
-	glGenBuffers(1, &ourUVBuffer);
+	if (ourUVBuffer == -1)
+		glGenBuffers(1, &ourUVBuffer);
 
 	UpdateTexture();
 #endif
@@ -117,10 +141,11 @@ void GraphObject2D::Render()
 
 		glm::mat4 posMatrix =	glm::scale(
 		glm::rotate(
-			glm::translate(glm::mat4(1.0f), 
-			glm::vec3(!Centered ? position.x : position.x-width*scaleX/2, !Centered? position.y : position.y-height*scaleY/2, 0)), 
-		rotation, glm::vec3(0,0,1)
-				  ), glm::vec3(scaleX*width, scaleY*height, 1));
+			glm::translate(
+					    glm::mat4(1.0f), 
+					    glm::vec3(position.x, position.y, 0)), 
+					rotation, glm::vec3(0,0,1)
+				   ), glm::vec3(scaleX*width, scaleY*height, 1));
 
 	// Assign our matrix.
 	GLuint MatrixID = glGetUniformLocation(GraphMan.GetShaderProgram(), "mvp");
@@ -129,6 +154,9 @@ void GraphObject2D::Render()
 	// Set the color.
 	GLuint ColorID = glGetUniformLocation(GraphMan.GetShaderProgram(), "Color");
 	glUniform4f(ColorID, red, green, blue, alpha);
+
+	GLuint ColorInvertedID = glGetUniformLocation(GraphMan.GetShaderProgram(), "inverted");
+	glUniform1i(ColorInvertedID, ColorInvert);
 
 	// Draw the buffer.
 	
@@ -141,7 +169,10 @@ void GraphObject2D::Render()
 	posAttrib = glGetAttribLocation( GraphMan.GetShaderProgram(), "position" );
 	glEnableVertexAttribArray(posAttrib);
 
-	glBindBuffer(GL_ARRAY_BUFFER, ourBuffer);
+	if (!Centered)
+		glBindBuffer(GL_ARRAY_BUFFER, ourBuffer);
+	else
+		glBindBuffer(GL_ARRAY_BUFFER, ourCenteredBuffer);
 	glVertexAttribPointer( posAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
 	// assign vertex UVs

@@ -8,7 +8,7 @@ class BitmapFont;
 class ScreenSelectMusic : public IScreen
 {
 	int Cursor;
-	GraphObject2D Background, SelCursor;
+	GraphObject2D Background, SelCursor, Logo;
 	BitmapFont* Font;
 	std::vector<Song*> SongList;
 	CEGUI::DefaultWindow *root;
@@ -18,6 +18,7 @@ class ScreenSelectMusic : public IScreen
 	bool ReloadSongs(const CEGUI::EventArgs&);
 	bool SwitchBackGuiPending;
 	void StopLoops();
+	double Time;
 public:
 	ScreenSelectMusic();
 	void Init();

@@ -9,6 +9,7 @@
 #include "GraphicsManager.h"
 #include "ImageLoader.h"
 #include "Audio.h"
+#include <GL/GL.h>
 
 SoundSample *SelectSnd = NULL;
 VorbisStream	*Loops[6];
@@ -33,6 +34,8 @@ ScreenSelectMusic::ScreenSelectMusic()
 			MixerAddStream(Loops[i]);
 		}
 	}
+
+	Cursor = 0;
 }
 
 void ScreenSelectMusic::Init()
@@ -53,6 +56,11 @@ void ScreenSelectMusic::Init()
 	SelCursor.height = 20;
 	SelCursor.position = glm::vec2(ScreenWidth/2-SelCursor.width, 120);
 	Background.setImage(ImageLoader::LoadSkin("ScreenEvaluationBackground.png"));
+	Logo.setImage(ImageLoader::LoadSkin("logo.png"));
+	Logo.width = Logo.height = 480;
+	Logo.Centered = true;
+	Logo.position = glm::vec2(Logo.width/4, ScreenHeight - Logo.height/4);
+	Time = 0;
 }
 
 void ScreenSelectMusic::Cleanup()
@@ -77,7 +85,9 @@ bool ScreenSelectMusic::Run(double Delta)
 	}
 #endif
 
-
+	Time += Delta;
+	Logo.rotation += 0.5;
+	SelCursor.alpha = (sin(Time*6)+1)/4 + 0.5;
 	Background.Render();
 	int Cur = 0;
 	for (std::vector<Song*>::iterator i = SongList.begin(); i != SongList.end(); i++)
@@ -88,8 +98,9 @@ bool ScreenSelectMusic::Run(double Delta)
 	Font->DisplayText("song select", glm::vec2(ScreenWidth/2-55, 0));
 	Font->DisplayText("press space to confirm", glm::vec2(ScreenWidth/2-110, 20));
 	SelCursor.Render();
+	Logo.Render();
 	return Running;
-}
+}	
 
 void ScreenSelectMusic::StopLoops()
 {
@@ -112,14 +123,11 @@ void ScreenSelectMusic::HandleInput(int32 key, int32 code, bool isMouseInput)
 	{
 		if (key == GLFW_KEY_F4) // Edit mode!
 		{
-			if (songbox->getFirstSelectedItem())
-			{
-				ScreenEdit *_Next = new ScreenEdit(this);
-				_Next->Init(SongList.at(songbox->getFirstSelectedItem()->getID()));
-				Next = _Next;
-				SwitchBackGuiPending = true;
-				StopLoops();
-			}
+			ScreenEdit *_Next = new ScreenEdit(this);
+			_Next->Init(SongList.at(Cursor));
+			Next = _Next;
+			SwitchBackGuiPending = true;
+			StopLoops();
 		}
 
 		if (key == GLFW_KEY_UP)

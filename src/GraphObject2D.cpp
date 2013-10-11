@@ -16,11 +16,17 @@ GraphObject2D::GraphObject2D()
 	scaleX = scaleY = 1.0;
 	rotation = 0;
 	Centered = false;
+	ColorInvert = false;
+
+	ourUVBuffer = -1;
 
 	if (!IsInitialized)
 	{
 		ourBuffer = -1;
+		ourCenteredBuffer = -1;
 	}
+
+	InitTexture();
 }
 
 GraphObject2D::~GraphObject2D()

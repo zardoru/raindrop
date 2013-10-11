@@ -23,11 +23,15 @@ const char* fragShader = "#version 120\n"
 	"varying vec2 Texcoord;\n"
 	"uniform vec4 Color;\n"
 	"uniform sampler2D tex;\n"
-	"\n"
+	"uniform bool inverted;\n"
 	"\n"
 	"void main(void)\n"
 	"{\n"
-	"    gl_FragColor = texture2D(tex, Texcoord) * Color;\n"
+	"	 if (inverted) {\n"
+	"		gl_FragColor = vec4(1 - texture2D(tex, Texcoord).r, 1 - texture2D(tex, Texcoord).g, 1 - texture2D(tex, Texcoord).b, texture2D(tex, Texcoord).a) * Color;\n"
+	"	 }else{\n"
+	"		gl_FragColor = texture2D(tex, Texcoord) * Color;\n"
+	"	 }\n"
 	"}\n";
 
 void checkGlError()
@@ -223,8 +227,10 @@ void GraphicsManager::AutoSetupWindow()
 #endif
 
 	glEnable(GL_BLEND);
+	//glEnable(GL_COLOR_LOGIC_OP);
+ 	//glLogicOp(GL_COPY_INVERTED);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+	// glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glViewport(0, 0, size.x, size.y);
 
 	
