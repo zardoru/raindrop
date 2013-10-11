@@ -12,6 +12,7 @@ float spb(float bpm)
 
 Song::Song()
 {
+	LeadInTime = 0;
 }
 
 Song::~Song()
@@ -102,6 +103,9 @@ void Song::Save(const char* Filename)
 		Out << "#BPM:" << (*i)->Timing[0].Value << ";\n";
 		Out << "#OFFSET:" << (*i)->Offset << ";\n";
 
+		if (LeadInTime)
+			Out << "#LEADIN:" << LeadInTime << ";\n";
+
 		Out << "#NOTES:";
 		// for each measure of this difficulty
 		for (std::vector<SongInternal::Measure>::iterator m = (*i)->Measures.begin(); m != (*i)->Measures.end(); m++)
@@ -161,7 +165,7 @@ void Song::Save(const char* Filename)
 				
 			} // For each note
 
-			Out << ",";
+			Out << ",\n";
 			Out.flush();
 		} // For each measure
 		Out << ";\n";

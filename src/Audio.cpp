@@ -168,10 +168,11 @@ void VorbisStream::operator () ()
 int32 VorbisStream::readBuffer(void * out, uint32 length)
 {
 	char *outpt = (char*) out;
+	size_t cnt;
 
-	streamTime += (double)length / (double)info->rate;
+	cnt = PaUtil_ReadRingBuffer(&RingBuf, out, length*info->channels);
+	streamTime += (double)(cnt/info->channels) / (double)info->rate;
 	playbackTime = streamTime;
-	PaUtil_ReadRingBuffer(&RingBuf, out, length*info->channels);
 
 	return length;
 }

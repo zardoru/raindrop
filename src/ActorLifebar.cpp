@@ -10,7 +10,6 @@ ActorLifebar::ActorLifebar()
 	Health = 50; // Out of 100!
 	pending_health = 0;
 	setImage(ImageLoader::LoadSkin("healthbar.png"));
-	red = blue = 0;
 	time = 0;
 	Centered = false;
 	position.y = ScreenHeight - height;

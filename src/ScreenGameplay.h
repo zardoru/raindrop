@@ -57,6 +57,7 @@ private: // shit only screengameplay needs
 	// MeasureTime is the time the current measure will last.
 	// MeasureTimeElapsed is the time so far of the current measure
 	double MeasureTime;
+	double LeadInTime;
 
 	// Actors
 	ActorLifebar Lifebar;

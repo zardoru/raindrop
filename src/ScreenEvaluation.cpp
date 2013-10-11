@@ -1,5 +1,7 @@
 #include "Global.h"
 #include "Game_Consts.h"
+#include "GraphObject2D.h"
+#include "BitmapFont.h"
 #include "ScreenEvaluation.h"
 #include "GraphicsManager.h"
 #include "ImageLoader.h"
@@ -10,6 +12,7 @@ ScreenEvaluation::ScreenEvaluation(IScreen *Parent) :
 	IScreen(Parent)
 {
 	Running = true;
+	Font = NULL;
 }
 
 int32 ScreenEvaluation::CalculateScore()
@@ -24,13 +27,16 @@ int32 ScreenEvaluation::CalculateScore()
 
 void ScreenEvaluation::Init(EvaluationData _Data)
 {
-#ifndef DISABLE_CEGUI
+	Background.setImage(ImageLoader::LoadSkin("ScreenEvaluationBackground.png"));
+	if (!Font)
+	{
+		Font = new BitmapFont();
+		Font->LoadSkinFontImage("font_screenevaluation.tga", glm::vec2(10, 20), glm::vec2(32, 32), glm::vec2(10,20), 32);
+	}
 	Results = _Data;
 
-	// GUI stuff.
-	using namespace CEGUI;
 	char _Results[256];
-	const char *Text = "Excellent: \n"
+	const char *Text ="Excellent: \n"
 					  "Perfect:   \n"
 					  "Great:     \n"
 					  "Bad:       \n"
@@ -40,6 +46,9 @@ void ScreenEvaluation::Init(EvaluationData _Data)
 					  "\n"
 					  "Max Combo: \n"
 					  "Score:     \n";
+
+	ResultsString = Text;
+
 	sprintf(_Results, "%d\n%d\n%d\n%d\n%d\n%d\n%d\n\n%d\n%d\n",
 	Results.NumExcellents,
 		Results.NumPerfects,
@@ -51,45 +60,7 @@ void ScreenEvaluation::Init(EvaluationData _Data)
 		Results.MaxCombo,
 		CalculateScore());
 
-	GraphMan.isGuiInputEnabled = true;
-
-
-	WindowManager& winMgr = WindowManager::getSingleton();
-	root = (DefaultWindow*)winMgr.createWindow("DefaultWindow", "ScreenEvalRoot");
-
-	System::getSingleton().setGUISheet(root);
-
-	FrameWindow* fWnd = static_cast<FrameWindow*>(
-		winMgr.createWindow( "TaharezLook/FrameWindow", "evalWindow" ));
-
-	fWnd->setText("Evaluation Results!");
-	fWnd->setPosition(UVector2(cegui_reldim(0.25f), cegui_reldim( 0.25f)));
-    fWnd->setSize(UVector2(cegui_reldim(0.5f), cegui_reldim( 0.5f)));
-	root->addChildWindow(fWnd);
-
-	Window* st = winMgr.createWindow("TaharezLook/StaticText", "EvaluationText");
-    fWnd->addChildWindow(st);
-	st->setText(Text);
-	st->setPosition(UVector2(cegui_reldim(0), cegui_reldim(0)));
-	st->setSize(UVector2(cegui_reldim(0.5f), cegui_reldim(0.85f)));
-
-	Window* st2 = winMgr.createWindow("TaharezLook/StaticText", "EvaluationResults");
-	st2->setText(_Results);
-	st2->setPosition(UVector2(cegui_reldim(0.5f), cegui_reldim( 0.f)));
-	st2->setSize(UVector2(cegui_reldim(0.5f), cegui_reldim(0.85f)));
-	fWnd->addChildWindow(st2);
-
-
-		PushButton *btn = static_cast<PushButton*>(winMgr.createWindow("TaharezLook/Button", "FinishEvalScreenButton"));
-    fWnd->addChildWindow(btn);
-    btn->setPosition(UVector2(cegui_reldim(0.25f), cegui_reldim( 0.93f)));
-    btn->setSize(UVector2(cegui_reldim(0.50f), cegui_reldim( 0.05f)));
-    btn->setText("Return To Music Selection");
-
-	// Button that activates the music. Oh yeah!
-	winMgr.getWindow("FinishEvalScreenButton")->
-		subscribeEvent(PushButton::EventClicked, Event::Subscriber(&ScreenEvaluation::StopRunning, this));
-#endif
+	ResultsNumerical = _Results;
 }
 
 bool ScreenEvaluation::StopRunning(const CEGUI::EventArgs&)
@@ -100,23 +71,24 @@ bool ScreenEvaluation::StopRunning(const CEGUI::EventArgs&)
 
 void ScreenEvaluation::HandleInput(int32 key, int32 code, bool isMouseInput)
 {
-	if (key == GLFW_KEY_ESC && code == GLFW_PRESS)
+	if (key == GLFW_KEY_ESC || key == GLFW_KEY_SPACE && code == GLFW_PRESS)
 		Running = false;
 }
 
 void ScreenEvaluation::Cleanup()
 {
-#ifndef DISABLE_CEGUI
-	using namespace CEGUI;
-	WindowManager& winMgr = WindowManager::getSingleton();
-	winMgr.destroyWindow("ScreenEvalRoot"); // Remove our silly root window.
-#endif
+	delete Font;
 }
 
 bool ScreenEvaluation::Run(double)
 {
-#ifndef DISABLE_CEGUI
-	CEGUI::System::getSingleton().renderGUI();
-#endif
+	Background.Render();
+	if (Font)
+	{
+		Font->DisplayText(ResultsString.c_str(),        glm::vec2( ScreenWidth/2 - 110, ScreenHeight/2 - 100 ));
+		Font->DisplayText(ResultsNumerical.c_str(),     glm::vec2( ScreenWidth/2, ScreenHeight/2 - 100 ));
+		Font->DisplayText("results screen",			    glm::vec2( ScreenWidth/2 - 70, 0 ));
+		Font->DisplayText("press space to continue...", glm::vec2( ScreenWidth/2 - 130, ScreenHeight*7/8 ));
+	}
 	return Running;
 }

@@ -77,6 +77,13 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 			Out->BackgroundRelativeDir = line.substr(line.find_first_of(":") + 1);
 		}
 
+		if (command.find("#LEADIN") != std::string::npos)
+		{
+			std::stringstream str;
+			str << line.substr(line.find_first_of(":") + 1);
+			str >> Out->LeadInTime;
+		}
+
 		// not yet
 		/*
 		if (command.find("#BGALUA") != std::string::npos)

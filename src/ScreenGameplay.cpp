@@ -24,6 +24,7 @@ ScreenGameplay::ScreenGameplay(IScreen *Parent) :
 	FailEnabled = true;
 	TappingMode = false;
 	EditMode = false;
+	LeadInTime = 0;
 }
 
 void ScreenGameplay::RemoveTrash()
@@ -124,7 +125,7 @@ void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
 	MarkerA.position.x = MarkerB.position.x = GetScreenOffset(0.5).x;
 	MarkerA.rotation = 180;
 
-	MarkerB.position.y = PlayfieldHeight + ScreenOffset + MarkerB.height/2 + Barline.height/2;
+	MarkerB.position.y = ScreenHeight - MarkerB.height/2;
 	MarkerA.position.x = 2*MarkerA.position.x;
 	MarkerA.position.y = MarkerA.height - Barline.height/2;
 	Lifebar.width = PlayfieldWidth;
@@ -132,7 +133,7 @@ void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
 	MarkerB.InitTexture();
 
 	if (ShouldChangeScreenAtEnd)
-		Barline.Init(CurrentDiff->Offset);
+		Barline.Init(CurrentDiff->Offset + MySong->LeadInTime);
 	else
 	{
 		Barline.Init(0); // edit mode
@@ -173,6 +174,12 @@ void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
 
 	MeasureTimeElapsed = 0;
 	ScreenTime = 0;
+
+	if (Music)
+	{
+		if (ShouldChangeScreenAtEnd)
+			LeadInTime = MySong->LeadInTime;
+	}
 
 	Cursor.width = Cursor.height = 72;
 	Cursor.Centered = true;
@@ -362,14 +369,22 @@ bool ScreenGameplay::Run(double TimeDelta)
 	if ( ScreenTime > ScreenPauseTime || !ShouldChangeScreenAtEnd ) // we're over the pause?
 	{
 		if (SongTime <= 0)
-			startMusic();
+		{
+			if (LeadInTime > 0)
+				LeadInTime -= TimeDelta;
+			else
+				startMusic();
+		}
 
 		if (Next) // We have a pending screen?
 			return RunNested(TimeDelta); // use that instead.
 
 		RunMeasure(SongDelta);
 
-		Barline.Run(SongDelta, MeasureTime, MeasureTimeElapsed);
+		if (LeadInTime)
+			Barline.Run(TimeDelta, MeasureTime, MeasureTimeElapsed);
+		else
+			Barline.Run(SongDelta, MeasureTime, MeasureTimeElapsed);
 
 		if (SongTime > CurrentDiff->Offset)
 		{

@@ -4,10 +4,16 @@
 #include "Screen.h"
 #include <CEGUI.h>
 
+class BitmapFont;
+
 class ScreenEvaluation : public IScreen
 {
 	EvaluationData Results;
 	CEGUI::DefaultWindow* root;
+	GraphObject2D Background;
+	BitmapFont* Font;
+
+	std::string ResultsString, ResultsNumerical;
 	// CEGUI::FrameWindow* wnd;
 	int32 CalculateScore();
 	bool StopRunning(const CEGUI::EventArgs&);

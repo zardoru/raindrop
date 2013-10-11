@@ -3,8 +3,13 @@
 
 #include <CEGUI.h>
 
+class BitmapFont;
+
 class ScreenSelectMusic : public IScreen
 {
+	int Cursor;
+	GraphObject2D Background, SelCursor;
+	BitmapFont* Font;
 	std::vector<Song*> SongList;
 	CEGUI::DefaultWindow *root;
 	CEGUI::Listbox *songbox;

@@ -47,6 +47,7 @@ public:
 	std::string SongFilename, BackgroundDir, SongRelativePath, BackgroundRelativeDir;
 	std::string SongName;
 	std::string SongDirectory;
+	double		LeadInTime;
 	void Process(bool CalculateXPos = true);
 	void Repack();
 	void Save(const char* Filename);
