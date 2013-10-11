@@ -428,6 +428,7 @@ void ScreenGameplay::DrawVector(std::vector<GameObject>& Vec, float TimeDelta)
 		i++)
 	{
 		i->Animate(TimeDelta, SongTime);
+		i->ColorInvert = false;
 		i->Render();
 	}
 }
