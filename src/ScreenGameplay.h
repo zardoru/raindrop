@@ -40,6 +40,8 @@ protected: // shit the edit screen needs
 	// actors we need to access on edit
 	ActorBarline Barline;
 
+	SoundStream *Music;
+
 	std::vector <std::vector<GameObject>> NotesInMeasure;
 private: // shit only screengameplay needs
 
@@ -69,7 +71,6 @@ private: // shit only screengameplay needs
 	
 	bool FailEnabled;
 	bool TappingMode;
-	SoundStream *Music;
 
 	void DrawVector(std::vector<GameObject>& Vec, float TimeDelta);
 	bool JudgeVector(std::vector<GameObject>& Vec, int code, int key);

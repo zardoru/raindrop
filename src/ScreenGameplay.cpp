@@ -338,7 +338,7 @@ void ScreenGameplay::HandleInput(int32 key, int32 code, bool isMouseInput)
 void ScreenGameplay::seekTime(float Time)
 {
 	Music->Seek(Time);
-	SongTime = Time/* - GetDeviceLatency()*/;
+	SongTime = Time;
 	SongTimeLatency = Time;
 	MeasureTimeElapsed = 0;
 	ScreenTime = 0;
@@ -547,7 +547,7 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 		info << "???";
 		*/
 	info << "\nSongDelta: " << SongDelta;
-	info << "\nTimeBuffered: ";
+	info << "\nDevice Latency: " << GetDeviceLatency();
 	/*
 	if (Music)
 		info << Music->GetStreamedTime() - Music->GetPlaybackTime();

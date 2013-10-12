@@ -33,7 +33,7 @@ class VorbisStream
 	friend class PaMixer;
 	boost::thread *thread;
 
-	void VorbisStream::clearBuffer();
+	void clearBuffer();
 	char tbuf[BUFF_SIZE*sizeof(int16)];
 	void operator () ();
 

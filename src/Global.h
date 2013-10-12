@@ -35,6 +35,6 @@ namespace Utility
 #pragma warning (disable: 4996) // deprecation
 #endif
 
-#ifndef OLD_GL
-#define DISABLE_CEGUI
-#endif
+//#ifndef OLD_GL
+// #define DISABLE_CEGUI
+//#endif

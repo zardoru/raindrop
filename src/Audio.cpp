@@ -53,7 +53,7 @@ VorbisStream::VorbisStream(const char* Filename, uint32 bufferSize)
 		isOpen = false;	
 
 	SeekTime = -1;
-	runThread = 0;
+	runThread = false;
 	streamTime = playbackTime = 0;
 	threadRunning = false;
 	loop = false;
@@ -84,12 +84,22 @@ void VorbisStream::stopStream()
 		delete thread;
 		thread = NULL;
 	}
+
+	clearBuffer();
+	if (SeekTime >= 0)
+	{
+		ov_time_seek(&f, SeekTime);
+		SeekTime = -1;
+	}
+
+	runThread = false;
 }
 
 void VorbisStream::clearBuffer()
 {
 	memset(buffer, 0, BufSize);
 	memset(tbuf, 0, BufSize);
+	PaUtil_InitializeRingBuffer(&RingBuf, sizeof(int16), BufSize, buffer);
 }
 
 bool VorbisStream::IsOpen()
@@ -132,6 +142,7 @@ void VorbisStream::UpdateBuffer(int32 &read)
 			{
 				clearBuffer();
 				runThread = 0;
+				return;
 			}
 			break;
 		}

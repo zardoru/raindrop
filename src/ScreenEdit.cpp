@@ -2,6 +2,7 @@
 #include "ScreenEdit.h"
 #include "GraphicsManager.h"
 #include "ImageLoader.h"
+#include "Audio.h"
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -130,7 +131,6 @@ void ScreenEdit::StartPlaying( int32 _Measure )
 	ScreenGameplay::Init(MySong, 0);
 	Measure = _Measure;
 	seekTime( spb(CurrentDiff->Timing[0].Value) * Measure * 4 + CurrentDiff->Offset);
-	startMusic();
 	savedMeasure = Measure;
 }
 
@@ -300,6 +300,9 @@ bool ScreenEdit::Run(double delta)
 	// we're playing the song? run the game
 	if (EditScreenState == Playing)
 	{
+		int32 read;
+		if (Music->IsStopped())
+			startMusic();
 		ScreenGameplay::Run(delta);
 		RenderObjects(delta);
 	}
@@ -362,6 +365,7 @@ bool ScreenEdit::Run(double delta)
 		else
 			info << "Null";
 		EditInfo.DisplayText(info.str().c_str(), glm::vec2(512, 600));
+
 		CEGUI::System::getSingleton().renderGUI();
 	}
 
