@@ -16,7 +16,26 @@ uint32 GraphObject2D::ourCenteredBuffer;
 void GraphObject2D::Init()
 {
 #ifndef OLD_GL
-	float GLPositions[12]; // 2 for each vertex and an uniform for z order
+	float Positions[12] =
+	{
+		0,
+		0,
+
+		1,
+		0,
+
+		1,
+		1,
+
+		0,
+		0,
+
+		0,
+		1,
+
+		1,
+		1
+	};
 
 	// The crop/etc will probably be fine with dynamic draw.
 	if (!IsInitialized)
@@ -29,47 +48,28 @@ void GraphObject2D::Init()
 	// since shaders are already loaded from graphman's init functions..
 	// we'll deal with what we need to deal.
 	// Our initial quad.
-	GLPositions[0] = 0;
-	GLPositions[1] = 0;
-
-	GLPositions[2] = 1;
-	GLPositions[3] = 0;
-
-	GLPositions[4] = 1;
-	GLPositions[5] = 1;
-
-	GLPositions[6] = 0;
-	GLPositions[7] = 0;
-
-	GLPositions[8] = 0;
-	GLPositions[9] = 1;
-
-	GLPositions[10] = 1;
-	GLPositions[11] = 1;
 
 	glBindBuffer(GL_ARRAY_BUFFER, ourBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 12, GLPositions, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 12, Positions, GL_STATIC_DRAW);
 
-	GLPositions[0] = -0.5;
-	GLPositions[1] = -0.5;
-
-	GLPositions[2] = 0.5;
-	GLPositions[3] = -0.5;
-
-	GLPositions[4] = 0.5;
-	GLPositions[5] = 0.5;
-
-	GLPositions[6] = -0.5;
-	GLPositions[7] = -0.5;
-
-	GLPositions[8] = -0.5;
-	GLPositions[9] = 0.5;
-
-	GLPositions[10] = 0.5;
-	GLPositions[11] = 0.5;
+	float PositionsCentered [12] = {
+		-0.5,
+		-0.5,
+		0.5,
+		-0.5,
+		0.5,
+		0.5,
+		-0.5,
+		-0.5,
+		-0.5,
+		0.5,
+		0.5,
+		0.5
+	};
+	
 
 	glBindBuffer(GL_ARRAY_BUFFER, ourCenteredBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 12, GLPositions, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 12, PositionsCentered, GL_STATIC_DRAW);
 
 #endif
 }
@@ -91,26 +91,26 @@ void GraphObject2D::InitTexture()
 void GraphObject2D::UpdateTexture()
 {
 #ifndef OLD_GL
-	float GLPositions[12]; // 2 for each vertex and an uniform for z order
-
+	float GLPositions[12] = { // 2 for each vertex and a uniform for z order
 	// topleft
-	GLPositions[0] = crop_x1;
-	GLPositions[1] = crop_y1;
+		mCrop_x1,
+		mCrop_y1,
 	// topright
-	GLPositions[2] = crop_x2;
-	GLPositions[3] = crop_y1;
+		mCrop_x2,
+		mCrop_y1,
 	// bottom right
-	GLPositions[4] = crop_x2;
-	GLPositions[5] = crop_y2;
+		mCrop_x2,
+		mCrop_y2,
 	// topleft again
-	GLPositions[6] = crop_x1;
-	GLPositions[7] = crop_y1;
+		mCrop_x1,
+		mCrop_y1,
 	// bottom left
-	GLPositions[8] = crop_x1;
-	GLPositions[9] = crop_y2;
+		mCrop_x1,
+		mCrop_y2,
 	// bottom right again
-	GLPositions[10] = crop_x2;
-	GLPositions[11] = crop_y2;
+		mCrop_x2,
+		mCrop_y2
+	}; 
 
 	glBindBuffer(GL_ARRAY_BUFFER, ourUVBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 12, GLPositions, GL_DYNAMIC_DRAW);
@@ -139,21 +139,30 @@ void GraphObject2D::Render()
 				  ), glm::vec3(scaleX, scaleY, 1));*/
 #ifndef OLD_GL
 
+	if (DirtyMatrix)
+	{
 		glm::mat4 posMatrix =	glm::scale(
 		glm::rotate(
 			glm::translate(
 					    glm::mat4(1.0f), 
-					    glm::vec3(position.x, position.y, 0)), 
-					rotation, glm::vec3(0,0,1)
-				   ), glm::vec3(scaleX*width, scaleY*height, 1));
+					    glm::vec3(mPosition.x, mPosition.y, 0)), 
+					mRotation, glm::vec3(0,0,1)
+				   ), glm::vec3(mScale.x*mWidth, mScale.y*mHeight, 1));
+
+		Matrix = posMatrix;
+		DirtyMatrix = false;
+	}
+
+	if (DirtyTexture)
+		UpdateTexture();
 
 	// Assign our matrix.
 	GLuint MatrixID = glGetUniformLocation(GraphMan.GetShaderProgram(), "mvp");
-	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &posMatrix[0][0]);
+	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &Matrix[0][0]);
 
 	// Set the color.
 	GLuint ColorID = glGetUniformLocation(GraphMan.GetShaderProgram(), "Color");
-	glUniform4f(ColorID, red, green, blue, alpha);
+	glUniform4f(ColorID, Red, Green, Blue, Alpha);
 
 	GLuint ColorInvertedID = glGetUniformLocation(GraphMan.GetShaderProgram(), "inverted");
 	glUniform1i(ColorInvertedID, ColorInvert);
@@ -173,6 +182,7 @@ void GraphObject2D::Render()
 		glBindBuffer(GL_ARRAY_BUFFER, ourBuffer);
 	else
 		glBindBuffer(GL_ARRAY_BUFFER, ourCenteredBuffer);
+
 	glVertexAttribPointer( posAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
 	// assign vertex UVs
@@ -221,4 +231,12 @@ void GraphObject2D::Render()
 	
 	glPopMatrix();
 #endif
+}
+
+void GraphObject2D::Cleanup()
+{
+	if (DoTextureCleanup)
+	{
+		// todo: clean up UV vbo
+	}
 }

@@ -5,24 +5,21 @@
 #include "ImageLoader.h"
 #include "GraphicsManager.h"
 
-ActorLifebar::ActorLifebar()
+ActorLifebar::ActorLifebar() : GraphObject2D()
 {
 	Health = 50; // Out of 100!
 	pending_health = 0;
-	setImage(ImageLoader::LoadSkin("healthbar.png"));
+	SetImage(ImageLoader::LoadSkin("healthbar.png"));
 	time = 0;
 	Centered = false;
-	position.y = ScreenHeight - height;
-	position.x = 0;
-	InitTexture();
+	SetPosition(0, ScreenHeight - GetHeight());
 	UpdateHealth();
 }
 
 void ActorLifebar::UpdateHealth()
 {
-	crop_x2 = Health / 100;
-	width = (Health / 100) * ScreenWidth;
-	UpdateTexture(); // Redo our dear VBO data.
+	SetCrop2(glm::vec2(Health / 100, 1));
+	SetWidth((Health / 100) * ScreenWidth);
 }
 
 void ActorLifebar::HitJudgement(Judgement Hit)

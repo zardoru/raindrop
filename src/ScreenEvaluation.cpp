@@ -27,7 +27,7 @@ int32 ScreenEvaluation::CalculateScore()
 
 void ScreenEvaluation::Init(EvaluationData _Data)
 {
-	Background.setImage(ImageLoader::LoadSkin("ScreenEvaluationBackground.png"));
+	Background.SetImage(ImageLoader::LoadSkin("ScreenEvaluationBackground.png"));
 	if (!Font)
 	{
 		Font = new BitmapFont();

@@ -106,38 +106,31 @@ void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
 	Measure = 0;
 	Combo = 0;
 
-	Cursor.setImage(ImageLoader::LoadSkin("cursor.png"));
-	Barline.setImage(ImageLoader::LoadSkin("Barline.png"));
-	MarkerA.setImage(ImageLoader::LoadSkin("barline_marker.png"));
-	MarkerB.setImage(ImageLoader::LoadSkin("barline_marker.png"));
-	Background.setImage(ImageLoader::Load(MySong->BackgroundDir));
+	Cursor.SetImage(ImageLoader::LoadSkin("cursor.png"));
+	Barline.SetImage(ImageLoader::LoadSkin("Barline.png"));
+	MarkerA.SetImage(ImageLoader::LoadSkin("barline_marker.png"));
+	MarkerB.SetImage(ImageLoader::LoadSkin("barline_marker.png"));
+	Background.SetImage(ImageLoader::Load(MySong->BackgroundDir));
 
-	Background.alpha = 0.8f;
-	Background.width = ScreenWidth;
-	Background.height = ScreenHeight;
-	Background.position.x = 0;
-	Background.position.y = 0;
-	Background.InitTexture();
-
+	Background.Alpha = 0.8f;
+	Background.SetSize(ScreenWidth, ScreenHeight);
+	Background.SetPosition(0, 0);
+	
 	MarkerB.Centered = true;
-	MarkerA.Centered = false;
+	MarkerA.Centered = true;
 
-	MarkerA.position.x = MarkerB.position.x = GetScreenOffset(0.5).x;
-	MarkerA.rotation = 180;
+	MarkerA.SetPosition(GetScreenOffset(0.5).x, MarkerA.GetHeight()/2 - Barline.GetHeight());
+	MarkerB.SetPosition(GetScreenOffset(0.5).x, ScreenHeight - MarkerB.GetHeight()/2 + Barline.GetHeight()/2);
+	MarkerA.SetRotation(180);
 
-	MarkerB.position.y = ScreenHeight - MarkerB.height/2;
-	MarkerA.position.x = 2*MarkerA.position.x;
-	MarkerA.position.y = MarkerA.height - Barline.height/2;
-	Lifebar.width = PlayfieldWidth;
-	MarkerA.InitTexture();
-	MarkerB.InitTexture();
+	Lifebar.SetWidth(PlayfieldWidth);
 
 	if (ShouldChangeScreenAtEnd)
 		Barline.Init(CurrentDiff->Offset + MySong->LeadInTime);
 	else
 	{
 		Barline.Init(0); // edit mode
-		Barline.alpha = 1;
+		Barline.Alpha = 1;
 	}
 
 	
@@ -181,9 +174,8 @@ void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
 			LeadInTime = MySong->LeadInTime;
 	}
 
-	Cursor.width = Cursor.height = 72;
+	Cursor.SetSize(72);
 	Cursor.Centered = true;
-	Cursor.InitTexture();
 }
 
 int32 ScreenGameplay::GetMeasure()
@@ -265,9 +257,9 @@ void ScreenGameplay::HandleInput(int32 key, int32 code, bool isMouseInput)
 	{
 
 		if (code == GLFW_PRESS)
-			Cursor.scaleX = Cursor.scaleY = 0.85;
+			Cursor.SetScale(0.85);
 		else
-			Cursor.scaleX = Cursor.scaleY = 1;
+			Cursor.SetScale(1);
 
 		// For all measure notes..
 		do
@@ -414,8 +406,8 @@ bool ScreenGameplay::Run(double TimeDelta)
 		Music->GetStream()->UpdateBuffer(read);
 	}
 	
-	// You died? Not an infinite screen? Failing is enabled?
-	if (Lifebar.Health <= 0 && ShouldChangeScreenAtEnd && FailEnabled)
+	// You died? Not editing? Failing is enabled?
+	if (Lifebar.Health <= 0 && !EditMode && FailEnabled)
 		Running = false; // It's over.
 
 	return Running;
@@ -443,7 +435,7 @@ bool ScreenGameplay::JudgeVector(std::vector<GameObject>& Vec, int code, int key
 			i++)
 		{
 			// See if it's a hit.
-			if ((Val = i->Hit(SongTime, TappingMode ? i->position : mpos, code == GLFW_PRESS ? true : false, IsAutoplaying, key)) != None)
+			if ((Val = i->Hit(SongTime, TappingMode ? i->GetPosition() : mpos, code == GLFW_PRESS ? true : false, IsAutoplaying, key)) != None)
 			{
 				// Judge accordingly.
 				Lifebar.HitJudgement(Val);
@@ -467,11 +459,11 @@ bool ScreenGameplay::JudgeVector(std::vector<GameObject>& Vec, int code, int key
 void ScreenGameplay::RenderObjects(float TimeDelta)
 {
 	glm::vec2 mpos = GraphMan.GetRelativeMPos();
-	Cursor.position = mpos;
+	Cursor.SetPosition(mpos);
 
-	Cursor.rotation += 140 * TimeDelta;
-	if (Cursor.rotation > 360)
-		Cursor.rotation -= 360;
+	Cursor.AddRotation(140 * TimeDelta);
+	if (Cursor.GetRotation() > 360)
+		Cursor.AddRotation(-360);
 
 	// Rendering ahead.
 	Background.Render();

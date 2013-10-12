@@ -27,8 +27,8 @@ void Song::Repack()
 		{
 			for (std::vector<GameObject>::iterator it = Measure->MeasureNotes.begin(); it != Measure->MeasureNotes.end(); it++)
 			{
-				if (it->position.x > ScreenDifference)
-					it->position.x -= ScreenDifference;
+				if (it->GetPosition().x > ScreenDifference)
+					it->SetPositionX(it->GetPosition().x - ScreenDifference);
 			}
 		}
 	}
@@ -55,29 +55,29 @@ void Song::Process(bool CalculateXPos)
 
 				float frac = float(it->MeasurePos) / float(Measure->Fraction);
 
-				it->green = 0;
+				it->Green = 0;
 
 				if (CurrentMeasure % 2)
 				{
-					it->position.y = PlayfieldHeight - (PlayfieldHeight * frac) + ScreenOffset;
-					it->red = 1;
-					it->blue = 0;
+					it->SetPositionY(PlayfieldHeight - (PlayfieldHeight * frac) + ScreenOffset);
+					it->Red = 1;
+					it->Blue = 0;
 				}
 				else
 				{
-					it->position.y = PlayfieldHeight * frac + ScreenOffset;
-					it->red = 0;
-					it->blue = 200.0f / 255.0f;
+					it->SetPositionY(PlayfieldHeight * frac + ScreenOffset);
+					it->Red = 0;
+					it->Blue = 200.0f / 255.0f;
 				}
 
 				if (it->endTime > 0)
-					it->green = 0.5;
+					it->Green = 0.5;
 				it->Init();
 
 				if (CalculateXPos)
 				{
-					if (it->position.x > 0)
-						it->position.x += ScreenDifference;
+					if (it->GetPosition().x > 0)
+						it->SetPositionX(it->GetPosition().x + ScreenDifference);
 				}
 			}
 			CurrentMeasure++;
@@ -126,7 +126,7 @@ void Song::Save(const char* Filename)
 				}
 
 				// Fill the current note.
-				Out << "{" << m->MeasureNotes[n].position.x;
+				Out << "{" << m->MeasureNotes[n].GetPosition().x;
 				
 				if (m->MeasureNotes[n].hold_duration)
 					Out << " " << m->MeasureNotes[n].hold_duration;

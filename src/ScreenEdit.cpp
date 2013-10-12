@@ -16,10 +16,12 @@ ScreenEdit::ScreenEdit(IScreen *Parent)
 	CurrentFraction = 0;
 	Measure = 0;
 	EditScreenState = Editing;
-	GhostObject.setImage(ImageLoader::LoadSkin("hitcircle.png"));
-	GhostObject.alpha = 0.7f;
+
+	GhostObject.SetImage(ImageLoader::LoadSkin("hitcircle.png"));
+	GhostObject.Alpha = 0.7f;
 	GhostObject.Centered = true;
-	GhostObject.width = GhostObject.height = CircleSize;
+	GhostObject.SetSize(CircleSize);
+
 	EditInfo.LoadSkinFontImage("font.tga", glm::vec2(18, 32), glm::vec2(34,34), glm::vec2(10,16), 32);
 	EditMode = true;
 	HeldObject = NULL;
@@ -258,12 +260,12 @@ void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 						{
 							if (Mode == Normal)
 							{
-								CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).position.x = GhostObject.position.x;
+								CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).SetPositionX(GhostObject.GetPosition().x);
 								CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).MeasurePos = CurrentFraction;
 							}else if (Mode == Hold)
 							{
 								HeldObject = &CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction);
-								HeldObject->position.x = GhostObject.position.x;
+								HeldObject->SetPositionX(GhostObject.GetPosition().x);
 								HeldObject->MeasurePos = CurrentFraction;
 								HeldObject->endTime = 0;
 								HeldObject->hold_duration = 0;
@@ -271,7 +273,7 @@ void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 						}else
 						{
 							HeldObject = NULL;
-							CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).position.x = 0;
+							CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).SetPositionX(0);
 							CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).endTime = 0;
 							CurrentDiff->Measures.at(Measure).MeasureNotes.at(CurrentFraction).hold_duration = 0;
 						}
@@ -300,7 +302,6 @@ bool ScreenEdit::Run(double delta)
 	// we're playing the song? run the game
 	if (EditScreenState == Playing)
 	{
-		int32 read;
 		if (Music->IsStopped())
 			startMusic();
 		ScreenGameplay::Run(delta);
@@ -319,12 +320,13 @@ bool ScreenEdit::Run(double delta)
 			YLock += ScreenOffset;
 		}
 
-		GhostObject.position.y = YLock;
-		GhostObject.position.x = GraphMan.GetRelativeMPos().x;
-		if ((GhostObject.position.x-ScreenDifference) > PlayfieldWidth)
-			GhostObject.position.x = PlayfieldWidth+ScreenDifference;
-		if ((GhostObject.position.x-ScreenDifference) < 0)
-			GhostObject.position.x = ScreenDifference;
+		GhostObject.SetPositionY(YLock);
+		GhostObject.SetPositionX(GraphMan.GetRelativeMPos().x);
+		
+		if ((GhostObject.GetPosition().x-ScreenDifference) > PlayfieldWidth)
+			GhostObject.SetPositionX(PlayfieldWidth+ScreenDifference);
+		if ((GhostObject.GetPosition().x-ScreenDifference) < 0)
+			GhostObject.SetPositionX(ScreenDifference);
 
 		RenderObjects(delta);
 
@@ -336,14 +338,14 @@ bool ScreenEdit::Run(double delta)
 				{
 					for (std::vector<GameObject>::reverse_iterator i = CurrentDiff->Measures.at(Measure-1).MeasureNotes.rbegin(); i != CurrentDiff->Measures.at(Measure-1).MeasureNotes.rend(); i++)
 					{	
-						if (i->position.x > ScreenDifference)
+						if (i->GetPosition().x > ScreenDifference)
 							i->Render();
 					}
 				}
 
 				for (std::vector<GameObject>::reverse_iterator i = CurrentDiff->Measures[Measure].MeasureNotes.rbegin(); i != CurrentDiff->Measures[Measure].MeasureNotes.rend(); i++)
 				{
-					if (i->position.x > ScreenDifference)
+					if (i->GetPosition().x > ScreenDifference)
 						i->Render();
 				}
 			}catch(...) { }

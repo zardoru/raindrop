@@ -165,13 +165,13 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 						GameObject Temp;
 
 						if (xpos != 0)
-							Temp.position.x = xpos;
+							Temp.SetPositionX(xpos);
 						else
 						{
 							//Measure.Fraction++;
 							//continue; // Don't add this note.
 							// why add this note? basically the editor wont work otherwise. 
-							Temp.position.x = 0;
+							Temp.SetPositionX(0);
 						}
 
 						Temp.hold_duration = hold_duration;

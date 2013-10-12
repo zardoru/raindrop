@@ -51,15 +51,14 @@ void ScreenSelectMusic::Init()
 		Font = new BitmapFont();
 		Font->LoadSkinFontImage("font_screenevaluation.tga", glm::vec2(10, 20), glm::vec2(32, 32), glm::vec2(10,20), 32);
 	}
-	SelCursor.setImage(ImageLoader::LoadSkin("songselect_cursor.png"));
-	SelCursor.width = 20;
-	SelCursor.height = 20;
-	SelCursor.position = glm::vec2(ScreenWidth/2-SelCursor.width, 120);
-	Background.setImage(ImageLoader::LoadSkin("ScreenEvaluationBackground.png"));
-	Logo.setImage(ImageLoader::LoadSkin("logo.png"));
-	Logo.width = Logo.height = 480;
+	SelCursor.SetImage(ImageLoader::LoadSkin("songselect_cursor.png"));
+	SelCursor.SetSize(20);
+	SelCursor.SetPosition(ScreenWidth/2-SelCursor.GetWidth(), 120);
+	Background.SetImage(ImageLoader::LoadSkin("ScreenEvaluationBackground.png"));
+	Logo.SetImage(ImageLoader::LoadSkin("logo.png"));
+	Logo.SetSize(480);
 	Logo.Centered = true;
-	Logo.position = glm::vec2(Logo.width/4, ScreenHeight - Logo.height/4);
+	Logo.SetPosition(Logo.GetWidth()/4, ScreenHeight - Logo.GetHeight()/4);
 	Time = 0;
 }
 
@@ -86,15 +85,19 @@ bool ScreenSelectMusic::Run(double Delta)
 #endif
 
 	Time += Delta;
-	Logo.rotation += 0.5;
-	SelCursor.alpha = (sin(Time*6)+1)/4 + 0.5;
+	Logo.AddRotation(12 * Delta);
+
+	SelCursor.Alpha = (sin(Time*6)+1)/4 + 0.5;
+
 	Background.Render();
+
 	int Cur = 0;
 	for (std::vector<Song*>::iterator i = SongList.begin(); i != SongList.end(); i++)
 	{
 		Font->DisplayText((*i)->SongName.c_str(), glm::vec2(ScreenWidth/2, Cur*20 + 120));
 		Cur++;
 	}
+
 	Font->DisplayText("song select", glm::vec2(ScreenWidth/2-55, 0));
 	Font->DisplayText("press space to confirm", glm::vec2(ScreenWidth/2-110, 20));
 	SelCursor.Render();
@@ -137,13 +140,13 @@ void ScreenSelectMusic::HandleInput(int32 key, int32 code, bool isMouseInput)
 			{
 				Cursor = SongList.size()-1;
 			}
-			SelCursor.position = glm::vec2(ScreenWidth/2-SelCursor.width, Cursor * SelCursor.height + 120);
+			SelCursor.SetPosition(ScreenWidth/2-SelCursor.GetWidth(), Cursor * SelCursor.GetHeight() + 120);
 		}else if (key == GLFW_KEY_DOWN)
 		{
 			Cursor++;
 			if (Cursor >= SongList.size())
 				Cursor = 0;
-			SelCursor.position = glm::vec2(ScreenWidth/2-SelCursor.width, Cursor * SelCursor.height + 120);
+			SelCursor.SetPosition(ScreenWidth/2-SelCursor.GetWidth(), Cursor * SelCursor.GetHeight() + 120);
 		}else if (key == GLFW_KEY_SPACE)
 		{
 				SelectSnd->Reset();

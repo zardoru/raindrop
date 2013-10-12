@@ -32,11 +32,10 @@ void BitmapFont::RegenerateCharPositions(glm::vec2 CellSize)
 	{
 		for (unsigned short x = 0; x < HCellCount; x++)
 		{
-			CharPosition[Current].setImage(Font);
-			CharPosition[Current].setCropByPixels(x*CellSize.x, (x)*CellSize.x+CharSize.x,  y*CellSize.y, (y)*CellSize.y+CharSize.y);
-			CharPosition[Current].width = RenderSize.x;
-			CharPosition[Current].height = RenderSize.y;
-			CharPosition[Current].InitTexture();
+			CharPosition[Current].SetImage(Font);
+			CharPosition[Current].SetCropByPixels(x*CellSize.x, (x)*CellSize.x+CharSize.x,  y*CellSize.y, (y)*CellSize.y+CharSize.y);
+			CharPosition[Current].SetWidth(RenderSize.x);
+			CharPosition[Current].SetHeight(RenderSize.y);
 			Current++;
 		}
 	}
@@ -56,7 +55,7 @@ void BitmapFont::DisplayText(const char* Text, glm::vec2 Position)
 			continue;
 		}
 
-		CharPosition[*Text].position = glm::vec2(Position.x+Character, Position.y+Line);
+		CharPosition[*Text].SetPosition(Position.x+Character, Position.y+Line);
 		CharPosition[*Text].Render();
 
 		Character += RenderSize.x;

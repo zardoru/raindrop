@@ -16,14 +16,12 @@ void ActorBarline::Init(float Offset)
 {
 	AnimationProgress = AnimationTime = Offset;
 
-	position.x = Parent->GetScreenOffset(0.5).x;
-	position.y = ScreenOffset + 3 * PlayfieldWidth / 4;
-	width = PlayfieldWidth;
+	SetPosition(Parent->GetScreenOffset(0.5).x, ScreenOffset + 3 * PlayfieldWidth / 4);
+	SetWidth(PlayfieldWidth);
 
-	red = green = 0;
-	blue = 200.f / 255.f;
-	alpha = 0;
-	GraphObject2D::InitTexture();
+	Red = Green = 0;
+	Blue = 200.f / 255.f;
+	Alpha = 0;
 }
 
 #define RadioThreshold 0.9
@@ -35,9 +33,9 @@ void ActorBarline::Run(double TimeDelta, double MeasureTime, double TotalTime)
 	{
 		float PosY = pow(AnimationProgress / AnimationTime, 2) * PlayfieldHeight + ScreenOffset;
 
-		alpha = 1 - AnimationProgress;
+		Alpha = 1 - AnimationProgress;
 
-		position.y = PosY;
+		SetPositionY(PosY);
 		AnimationProgress -= TimeDelta;
 
 		if (AnimationProgress <= 0)
@@ -53,30 +51,30 @@ void ActorBarline::Run(double TimeDelta, double MeasureTime, double TotalTime)
 			float diff = Ratio - RadioThreshold;
 			float duration = (1 - RadioThreshold);
 
-			red = 1 - ( diff/duration );
-			blue = (200.f / 255.f) * (diff/duration);
+			Red = 1 - ( diff/duration );
+			Blue = (200.f / 255.f) * (diff/duration);
 		}
-		else red = 1;
-		blue = green = 0;
+		else Red = 1;
+		Blue = Green = 0;
 	}else
 	{
-		red = 0.0;
-		blue = 200.f / 255.f;
+		Red = 0.0;
+		Blue = 200.f / 255.f;
 
 		if (Ratio > RadioThreshold)
 		{
 			float diff = Ratio - RadioThreshold;
 			float duration = (1 - RadioThreshold);
 
-			red = 1 * (diff/duration);
-			blue = 200.f / 255.f - (200.f / 255.f) * (diff/duration);
+			Red = 1 * (diff/duration);
+			Blue = 200.f / 255.f - (200.f / 255.f) * (diff/duration);
 		}
 	}
 
-	position.y = (Ratio) * (float)PlayfieldHeight;
+	SetPositionY(Ratio * (float)PlayfieldHeight);
 			
 	if (Parent->GetMeasure() % 2)
-		position.y = PlayfieldHeight - position.y;
+		SetPositionY(PlayfieldHeight - GetPosition().y);
 
-	position.y += ScreenOffset;
+	SetPositionY(GetPosition().y + ScreenOffset);
 }

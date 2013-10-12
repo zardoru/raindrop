@@ -11,17 +11,20 @@ SoundSample *HoldReleaseSnd = NULL;
 bool GameObjectTexInitialized = false;
 uint32 GameObjectUVvbo;
 
-GameObject::GameObject()
+GameObject::GameObject() : GraphObject2D()
 {
-	setImage(ImageLoader::LoadSkin("hitcircle.png"));
+	SetImage(ImageLoader::LoadSkin("hitcircle.png"));
 	Centered = true; // use the object's center instead of top-left
-	width = height = CircleSize;
+	
+	SetSize(CircleSize);
+
 	fadeout_time = 0;
 	fadein_time = 0.7f;
 	hold_duration = 0;
 	endTime = 0;
 	heldKey = -1;
 	BeingHeld = false;
+	DoTextureCleanup = false;
 
 	if (!HitSnd)
 	{
@@ -34,11 +37,11 @@ GameObject::GameObject()
 		HoldReleaseSnd  = new SoundSample((FileManager::GetSkinPrefix() + "/holdfinish.ogg").c_str());
 		MixerAddSample(HoldReleaseSnd);
 	}
+
 	if (GameObjectTexInitialized)
 		ourUVBuffer = GameObjectUVvbo;
 	else
 	{
-		InitTexture();
 		GameObjectUVvbo = ourUVBuffer;
 		GameObjectTexInitialized = true;
 	}
@@ -47,9 +50,9 @@ GameObject::GameObject()
 
 void GameObject::Animate(float delta, float songTime)
 {
-	if (position.x == 0)
+	if (GetPosition().x == 0)
 	{
-		alpha = 0;
+		Alpha = 0;
 		return;
 	}
 
@@ -58,23 +61,25 @@ void GameObject::Animate(float delta, float songTime)
 		fadeout_time -= delta*2;
 
 		// alpha out
-		alpha = 1 * (fadeout_time);
+		Alpha = 1 * (fadeout_time);
 
-		if (alpha < 0)
-			alpha = 0;
+		if (Alpha < 0)
+			Alpha = 0;
 
 		// scale in
 		if (endTime == 0)
-			scaleX = scaleY = 2 - fadeout_time;
+		{
+			SetScale(2 - fadeout_time);
+		}
 		else
-			scaleX = scaleY = 3 - fadeout_time;
+			SetScale(3 - fadeout_time);
 
 		return;
 	}
 
 	if (fadein_time > 0 && !fadeout_time)
 	{
-		alpha = 1-fadein_time*2;
+		Alpha = 1-fadein_time*2;
 		fadein_time -= delta;
 	}
 
@@ -82,14 +87,14 @@ void GameObject::Animate(float delta, float songTime)
 	{
 		float holdDuration = endTime - startTime;
 		float Progress = songTime - startTime;
-		scaleX = scaleY = 1 + (0.3*Progress/holdDuration);
-		green = 0.5 - 0.5 * Progress/holdDuration;
+		SetScale(1 + 0.3*Progress/holdDuration);
+		Green = 0.5 - 0.5 * Progress/holdDuration;
 	}
 }
 
 Judgement GameObject::Run(double delta, double Time, bool Autoplay)
 {
-	if (fadeout_time || position.x == 0) // It was hit, so stop.
+	if (fadeout_time || GetPosition().x == 0) // It was hit, so stop.
 		return None;
 
 	if (Autoplay)
@@ -97,7 +102,7 @@ Judgement GameObject::Run(double delta, double Time, bool Autoplay)
 		// you can be slightly early autoplay, it's fine.
 		if (Time >= startTime - 0.001 && fadeout_time == 0 && !BeingHeld) // A pretend kind of thing. ;)
 		{
-			return Hit(Time, position, true, false, -1);
+			return Hit(Time, GetPosition(), true, false, -1);
 		}
 	}
 
@@ -135,9 +140,9 @@ Judgement GameObject::Run(double delta, double Time, bool Autoplay)
 
 Judgement GameObject::Hit(float Time, glm::vec2 mpos, bool KeyDown,  bool Autoplay, int32 Key)
 {
-	glm::vec2 dist = position - mpos;
+	glm::vec2 dist = GetPosition() - mpos;
 	
-	if (fadeout_time || position.x == 0 || Autoplay)
+	if (fadeout_time || GetPosition().x == 0 || Autoplay)
 		return None;
 
 	if (BeingHeld) // Held note? Handle things here.
