@@ -30,8 +30,6 @@ ScreenEdit::ScreenEdit(IScreen *Parent)
 
 void ScreenEdit::Cleanup()
 {
-	// remove our filthy windows
-	CEGUI::WindowManager::getSingleton().destroyWindow("ScreenEditRoot");
 }
 
 void ScreenEdit::Init(Song *Other)
@@ -46,86 +44,6 @@ void ScreenEdit::Init(Song *Other)
 
 		Other->Difficulties[0]->Timing.push_back(SongInternal::Difficulty::TimingSegment());
 	}
-
-	if (GuiInitialized)
-		return;
-
-	// CEGUI stuff ahead...
-	using namespace CEGUI;
-
-	WindowManager& winMgr = WindowManager::getSingleton();
-	root = (DefaultWindow*)winMgr.createWindow("DefaultWindow", "ScreenEditRoot");
-
-	System::getSingleton().setGUISheet(root);
-	
-	FrameWindow* fWnd = static_cast<FrameWindow*>(winMgr.createWindow( "TaharezLook/FrameWindow", "screenEditWindow" ));
-	fWnd->setPosition(UVector2 (cegui_reldim(0.f), cegui_reldim(0.f)));
-	fWnd->setSize(UVector2 (cegui_reldim(0.25f), cegui_reldim(0.85f)));
-	root->addChildWindow(fWnd);
-
-	Window* st = winMgr.createWindow("TaharezLook/StaticText", "BPMText");
-    fWnd->addChildWindow(st);
-	st->setText("BPM");
-	st->setPosition(UVector2(cegui_reldim(0.1f), cegui_reldim(0.04f)));
-	st->setSize(UVector2(cegui_reldim(0.3f), cegui_reldim(0.04f)));
-
-	BPMBox = static_cast<Editbox*> (winMgr.createWindow("TaharezLook/Editbox", "BPMBox"));
-	BPMBox->setSize(UVector2 (cegui_reldim(0.8f), cegui_reldim(0.15f)));
-	BPMBox->setPosition(UVector2 (cegui_reldim(0.1f), cegui_reldim(0.07f)));
-	fWnd->addChildWindow(BPMBox);
-
-	Window* st2 = winMgr.createWindow("TaharezLook/StaticText", "MsrText");
-    fWnd->addChildWindow(st2);
-	st2->setText("Measure");
-	st2->setPosition(UVector2(cegui_reldim(0.1f), cegui_reldim(0.5f)));
-	st2->setSize(UVector2(cegui_reldim(0.5f), cegui_reldim(0.04f)));
-
-	Window* st3 = winMgr.createWindow("TaharezLook/StaticText", "FraText");
-    fWnd->addChildWindow(st3);
-	st3->setText("Fraction");
-	st3->setPosition(UVector2(cegui_reldim(0.1f), cegui_reldim(0.3f)));
-	st3->setSize(UVector2(cegui_reldim(0.5f), cegui_reldim(0.04f)));
-
-	Window* st4 = winMgr.createWindow("TaharezLook/StaticText", "OffsText");
-    fWnd->addChildWindow(st4);
-	st4->setText("Offset");
-	st4->setPosition(UVector2(cegui_reldim(0.1f), cegui_reldim(0.7f)));
-	st4->setSize(UVector2(cegui_reldim(0.3f), cegui_reldim(0.04f)));
-
-	CurrentMeasure = static_cast<Editbox*> (winMgr.createWindow("TaharezLook/Editbox", "MeasureBox"));
-	CurrentMeasure->setSize(UVector2 (cegui_reldim(0.8f), cegui_reldim(0.1f)));
-	CurrentMeasure->setPosition(UVector2 (cegui_reldim(0.1f), cegui_reldim(0.4f)));
-
-	fWnd->addChildWindow(CurrentMeasure);
-
-	OffsetBox = static_cast<Editbox*> (winMgr.createWindow("TaharezLook/Editbox", "OffsetBox"));
-	OffsetBox->setSize(UVector2 (cegui_reldim(0.8f), cegui_reldim(0.1f)));
-	OffsetBox->setPosition(UVector2 (cegui_reldim(0.1f), cegui_reldim(0.6f)));
-	fWnd->addChildWindow(OffsetBox);
-
-	FracBox = static_cast<Editbox*> (winMgr.createWindow("TaharezLook/Editbox", "FracBox"));
-	FracBox->setSize(UVector2 (cegui_reldim(0.8f), cegui_reldim(0.05f)));
-	FracBox->setPosition(UVector2 (cegui_reldim(0.1f), cegui_reldim(0.25f)));
-	fWnd->addChildWindow(FracBox);
-	
-	BPMBox->setText( (boost::format("%d\n") % CurrentDiff->Timing[0].Value).str().c_str() );
-	OffsetBox->setText( (boost::format("%d\n") % CurrentDiff->Offset).str().c_str() );
-	FracBox->setText("0");
-	CurrentMeasure->setText("0");
-
-	winMgr.getWindow("MeasureBox")->
-		subscribeEvent(Editbox::EventTextChanged, Event::Subscriber(&ScreenEdit::measureTextChanged, this));
-
-	winMgr.getWindow("BPMBox")->
-		subscribeEvent(Editbox::EventTextChanged, Event::Subscriber(&ScreenEdit::bpmTextChanged, this));
-
-	winMgr.getWindow("OffsetBox")->
-		subscribeEvent(Editbox::EventTextChanged, Event::Subscriber(&ScreenEdit::offsetTextChanged, this));
-
-	winMgr.getWindow("FracBox")->
-		subscribeEvent(Editbox::EventTextChanged, Event::Subscriber(&ScreenEdit::fracTextChanged, this));
-
-	GuiInitialized = true;
 }
 
 void ScreenEdit::StartPlaying( int32 _Measure )
@@ -232,7 +150,7 @@ void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 					Running = false; // Get out.
 				}else if (key == GLFW_KEY_F1)
 				{
-					root->setVisible(!root->isVisible());
+					// root->setVisible(!root->isVisible());
 				}else if (key == 'X')
 				{
 					Measure++;
@@ -368,7 +286,6 @@ bool ScreenEdit::Run(double delta)
 			info << "Null";
 		EditInfo.DisplayText(info.str().c_str(), glm::vec2(512, 600));
 
-		CEGUI::System::getSingleton().renderGUI();
 	}
 
 	return Running;
@@ -387,60 +304,4 @@ void ScreenEdit::AssignFraction(int Measure, int Fraction)
 		i->MeasurePos = count;
 		count++;
 	}
-}
-
-bool ScreenEdit::measureTextChanged(const CEGUI::EventArgs& param)
-{
-	if (Utility::IsNumeric(CurrentMeasure->getText().c_str()))
-	{
-		Measure = boost::lexical_cast<int32>(CurrentMeasure->getText());
-		if (Measure < 10000)
-		{
-			if ((int32)Measure > (((int32)CurrentDiff->Measures.size())-1))
-			{
-				CurrentDiff->Measures.resize(Measure+1);
-			}else
-			{
-				FracBox->setText( (boost::format("%d\n") % CurrentDiff->Measures[Measure].Fraction).str().c_str() );
-			}
-		}
-	}
-	return true;
-}
-
-bool ScreenEdit::offsetTextChanged(const CEGUI::EventArgs& param)
-{
-	try 
-	{
-		CurrentDiff->Offset = boost::lexical_cast<float>(OffsetBox->getText());
-	}catch (...)
-	{
-		// hmm.. What to do?
-	}
-	return true;
-}
-
-bool ScreenEdit::bpmTextChanged(const CEGUI::EventArgs& param)
-{
-	try 
-	{
-		CurrentDiff->Timing[0].Value = boost::lexical_cast<int32>(BPMBox->getText());
-	}catch (...)
-	{
-		// hmm.. What to do?
-	}
-
-	return true;
-}
-
-bool ScreenEdit::fracTextChanged(const CEGUI::EventArgs& param)
-{
-	if (Utility::IsNumeric(FracBox->getText().c_str()))
-	{
-		int32 Frac = boost::lexical_cast<int32>(FracBox->getText());
-		if (Frac <= 192)
-			AssignFraction(Measure, Frac);
-	}
-
-	return true;
 }

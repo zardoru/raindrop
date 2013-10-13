@@ -9,7 +9,7 @@
 #include "GraphicsManager.h"
 #include "ImageLoader.h"
 #include "Audio.h"
-#include <GL/GL.h>
+#include <sstream>
 
 SoundSample *SelectSnd = NULL;
 VorbisStream	*Loops[6];
@@ -53,7 +53,7 @@ void ScreenSelectMusic::Init()
 	}
 	SelCursor.SetImage(ImageLoader::LoadSkin("songselect_cursor.png"));
 	SelCursor.SetSize(20);
-	SelCursor.SetPosition(ScreenWidth/2-SelCursor.GetWidth(), 120);
+	SelCursor.SetPosition(ScreenWidth*3/4-SelCursor.GetWidth(), 120);
 	Background.SetImage(ImageLoader::LoadSkin("ScreenEvaluationBackground.png"));
 	Logo.SetImage(ImageLoader::LoadSkin("logo.png"));
 	Logo.SetSize(480);
@@ -70,7 +70,6 @@ bool ScreenSelectMusic::Run(double Delta)
 {
 	if (RunNested(Delta))
 		return true;
-#ifndef DISABLE_CEGUI
 	else
 	{
 		if (SwitchBackGuiPending)
@@ -82,7 +81,6 @@ bool ScreenSelectMusic::Run(double Delta)
 			Loops[rn]->Start();
 		}
 	}
-#endif
 
 	Time += Delta;
 	Logo.AddRotation(12 * Delta);
@@ -91,15 +89,34 @@ bool ScreenSelectMusic::Run(double Delta)
 
 	Background.Render();
 
+		glm::vec2 mpos = GraphMan.GetRelativeMPos();
+
+	if (mpos.x > ScreenWidth*3/4)
+	{
+		float posy = mpos.y;
+		posy -= 120;
+		posy -= (int)posy % 20;
+		posy = (posy / 20);
+		Cursor = posy;
+		UpdateCursor();
+	}
+
+
 	int Cur = 0;
 	for (std::vector<Song*>::iterator i = SongList.begin(); i != SongList.end(); i++)
 	{
-		Font->DisplayText((*i)->SongName.c_str(), glm::vec2(ScreenWidth/2, Cur*20 + 120));
+		Font->DisplayText((*i)->SongName.c_str(), glm::vec2(ScreenWidth*3/4, Cur*20 + 120));
 		Cur++;
 	}
 
 	Font->DisplayText("song select", glm::vec2(ScreenWidth/2-55, 0));
 	Font->DisplayText("press space to confirm", glm::vec2(ScreenWidth/2-110, 20));
+
+	std::stringstream ss;
+	ss << "song author: " << SongList.at(Cursor)->SongAuthor<< "\n"
+	   << "difficulties:" << SongList.at(Cursor)->Difficulties.size();
+
+	Font->DisplayText(ss.str().c_str(), glm::vec2(ScreenWidth/6, 120));
 	SelCursor.Render();
 	Logo.Render();
 	return Running;
@@ -112,6 +129,19 @@ void ScreenSelectMusic::StopLoops()
 		Loops[i]->seek(0);
 		Loops[i]->Stop();
 	}
+}
+
+void ScreenSelectMusic::UpdateCursor()
+{
+	if (Cursor < 0)
+	{
+		Cursor = SongList.size()-1;
+	}
+
+	if (Cursor >= SongList.size())
+		Cursor = 0;
+
+	SelCursor.SetPosition(ScreenWidth*3/4-SelCursor.GetWidth(), Cursor * SelCursor.GetHeight() + 120);
 }
 
 void ScreenSelectMusic::HandleInput(int32 key, int32 code, bool isMouseInput)
@@ -136,18 +166,12 @@ void ScreenSelectMusic::HandleInput(int32 key, int32 code, bool isMouseInput)
 		if (key == GLFW_KEY_UP)
 		{
 			Cursor--;
-			if (Cursor < 0)
-			{
-				Cursor = SongList.size()-1;
-			}
-			SelCursor.SetPosition(ScreenWidth/2-SelCursor.GetWidth(), Cursor * SelCursor.GetHeight() + 120);
+			UpdateCursor();
 		}else if (key == GLFW_KEY_DOWN)
 		{
 			Cursor++;
-			if (Cursor >= SongList.size())
-				Cursor = 0;
-			SelCursor.SetPosition(ScreenWidth/2-SelCursor.GetWidth(), Cursor * SelCursor.GetHeight() + 120);
-		}else if (key == GLFW_KEY_SPACE)
+			UpdateCursor();
+		}else if (key == GLFW_KEY_SPACE || (isMouseInput && key == GLFW_MOUSE_BUTTON_LEFT))
 		{
 				SelectSnd->Reset();
 				ScreenGameplay *_Next = new ScreenGameplay(this);

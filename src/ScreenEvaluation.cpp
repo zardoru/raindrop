@@ -63,11 +63,6 @@ void ScreenEvaluation::Init(EvaluationData _Data)
 	ResultsNumerical = _Results;
 }
 
-bool ScreenEvaluation::StopRunning(const CEGUI::EventArgs&)
-{
-	Running = false;
-	return true;
-}
 
 void ScreenEvaluation::HandleInput(int32 key, int32 code, bool isMouseInput)
 {

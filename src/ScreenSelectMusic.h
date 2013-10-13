@@ -11,6 +11,7 @@ class ScreenSelectMusic : public IScreen
 	std::vector<Song*> SongList;
 	bool SwitchBackGuiPending;
 	void StopLoops();
+	void UpdateCursor();
 	double Time;
 public:
 	ScreenSelectMusic();

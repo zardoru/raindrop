@@ -2,9 +2,7 @@
 #include "Screen.h"
 #include "Application.h"
 #include "GraphicsManager.h"
-#include <glm/gtc/matrix_transform.hpp>  
-#include <CEGUI.h>
-#include <RendererModules/OpenGL/CEGUIOpenGLRenderer.h>
+#include <glm/gtc/matrix_transform.hpp>
 
 GraphicsManager GraphMan;
 
@@ -40,62 +38,6 @@ void checkGlError()
 	return; // breakpoints yay
 }
 
-uint32 GlfwToCeguiKey(int32 glfwKey)
-{
-	switch(glfwKey)
-	{
-		case GLFW_KEY_UNKNOWN	: return 0;
-		case GLFW_KEY_ESC	: return CEGUI::Key::Escape;
-		case GLFW_KEY_F1	: return CEGUI::Key::F1;
-		case GLFW_KEY_F2	: return CEGUI::Key::F2;
-		case GLFW_KEY_F3	: return CEGUI::Key::F3;
-		case GLFW_KEY_F4	: return CEGUI::Key::F4;
-		case GLFW_KEY_F5	: return CEGUI::Key::F5;
-		case GLFW_KEY_F6	: return CEGUI::Key::F6;
-		case GLFW_KEY_F7	: return CEGUI::Key::F7;
-		case GLFW_KEY_F8	: return CEGUI::Key::F8;
-		case GLFW_KEY_F9	: return CEGUI::Key::F9;
-		case GLFW_KEY_F10       : return CEGUI::Key::F10;
-		case GLFW_KEY_F11       : return CEGUI::Key::F11;
-		case GLFW_KEY_F12       : return CEGUI::Key::F12;
-		case GLFW_KEY_F13       : return CEGUI::Key::F13;
-		case GLFW_KEY_F14       : return CEGUI::Key::F14;
-		case GLFW_KEY_F15       : return CEGUI::Key::F15;
-		case GLFW_KEY_UP        : return CEGUI::Key::ArrowUp;
-		case GLFW_KEY_DOWN      : return CEGUI::Key::ArrowDown;
-		case GLFW_KEY_LEFT      : return CEGUI::Key::ArrowLeft;
-		case GLFW_KEY_RIGHT     : return CEGUI::Key::ArrowRight;
-		case GLFW_KEY_LSHIFT    : return CEGUI::Key::LeftShift;
-		case GLFW_KEY_RSHIFT    : return CEGUI::Key::RightShift;
-		case GLFW_KEY_LCTRL     : return CEGUI::Key::LeftControl;
-		case GLFW_KEY_RCTRL     : return CEGUI::Key::RightControl;
-		case GLFW_KEY_LALT      : return CEGUI::Key::LeftAlt;
-		case GLFW_KEY_RALT      : return CEGUI::Key::RightAlt;
-		case GLFW_KEY_TAB       : return CEGUI::Key::Tab;
-		case GLFW_KEY_ENTER     : return CEGUI::Key::Return;
-		case GLFW_KEY_BACKSPACE : return CEGUI::Key::Backspace;
-		case GLFW_KEY_INSERT    : return CEGUI::Key::Insert;
-		case GLFW_KEY_DEL       : return CEGUI::Key::Delete;
-		case GLFW_KEY_PAGEUP    : return CEGUI::Key::PageUp;
-		case GLFW_KEY_PAGEDOWN  : return CEGUI::Key::PageDown;
-		case GLFW_KEY_HOME      : return CEGUI::Key::Home;
-		case GLFW_KEY_END       : return CEGUI::Key::End;
-		case GLFW_KEY_KP_ENTER	: return CEGUI::Key::NumpadEnter;
-		default			: return 0;
-	}
-}
-
-CEGUI::MouseButton GlfwToCeguiButton(int32 glfwButton)
-{
-	switch(glfwButton)
-	{
-		case GLFW_MOUSE_BUTTON_LEFT	: return CEGUI::LeftButton;
-		case GLFW_MOUSE_BUTTON_RIGHT	: return CEGUI::RightButton;
-		case GLFW_MOUSE_BUTTON_MIDDLE	: return CEGUI::MiddleButton;
-		default				: return CEGUI::NoButton;
-	}
-}
-
 GraphicsManager::GraphicsManager()
 {
 }
@@ -105,10 +47,6 @@ void GLFWCALL ResizeFunc(int32 width, int32 height)
 	glViewport(width / 2 - GraphMan.GetMatrixSize().x / 2, 0, GraphMan.GetMatrixSize().x, height);
 	GraphMan.size.x = width;
 	GraphMan.size.y = height;
-
-#ifndef DISABLE_CEGUI
-	CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Size(width, height));
-#endif
 }
 
 void GLFWCALL InputFunc (int32 key, int32 code)
@@ -117,18 +55,6 @@ void GLFWCALL InputFunc (int32 key, int32 code)
 
 	if (!GraphMan.isGuiInputEnabled)
 		return;
-
-#ifndef DISABLE_CEGUI
-	if (code == GLFW_PRESS)
-	{
-		if (GlfwToCeguiKey(key) == 0)
-			CEGUI::System::getSingleton().injectChar(key);
-		else
-			CEGUI::System::getSingleton().injectKeyDown(GlfwToCeguiKey(key));
-	}
-	else
-		CEGUI::System::getSingleton().injectKeyUp(key);
-#endif
 }
 
 void GLFWCALL MouseInputFunc (int32 key, int32 code)
@@ -137,24 +63,12 @@ void GLFWCALL MouseInputFunc (int32 key, int32 code)
 
 	if (!GraphMan.isGuiInputEnabled)
 		return;
-#ifndef DISABLE_CEGUI
-	if (code == GLFW_PRESS)
-	{
-		CEGUI::System::getSingleton().injectMouseButtonDown(GlfwToCeguiButton(key));
-	}
-	else
-		CEGUI::System::getSingleton().injectMouseButtonUp(GlfwToCeguiButton(key));
-#endif
 }
 
 void GLFWCALL MouseMoveFunc (int32 newx, int32 newy)
 {
 	if (!GraphMan.isGuiInputEnabled)
 		return;
-
-#ifndef DISABLE_CEGUI
-	CEGUI::System::getSingleton().injectMousePosition(newx, newy);
-#endif
 }
 
 glm::vec2 GraphicsManager::GetWindowSize()
@@ -240,7 +154,6 @@ void GraphicsManager::AutoSetupWindow()
 #endif
 
 	SetupShaders();
-	SetupCEGUI();
 
 	// GLFW Hooks
 	glfwSetWindowSizeCallback(ResizeFunc);
@@ -271,58 +184,6 @@ int32 GraphicsManager::GetDefaultVertexShader()
 int32 GraphicsManager::GetShaderProgram()
 {
 	return defaultShaderProgram;
-}
-
-void GraphicsManager::SetupCEGUI()
-{
-#ifndef DISABLE_CEGUI
-	CEGUI::OpenGLRenderer& myRenderer = CEGUI::OpenGLRenderer::bootstrapSystem();
-
-	CEGUI::DefaultResourceProvider* rp =
-        static_cast<CEGUI::DefaultResourceProvider*>
-            (CEGUI::System::getSingleton().getResourceProvider());
-    
-    const char* dataPathPrefix = "./GameData/GUI/";
-
-	// az note: i literally c&p shit from CEGUI's samples because holy shit what
-    // for each resource type, set a resource group directory
-    rp->setResourceGroupDirectory("schemes", dataPathPrefix);
-    rp->setResourceGroupDirectory("imagesets", dataPathPrefix);
-    rp->setResourceGroupDirectory("fonts", dataPathPrefix);
-    rp->setResourceGroupDirectory("layouts", dataPathPrefix);
-    rp->setResourceGroupDirectory("looknfeels", dataPathPrefix);
-    rp->setResourceGroupDirectory("schemas", dataPathPrefix);
-    rp->setResourceGroupDirectory("animations", dataPathPrefix);
-
-	    // set the default resource groups to be used
-    CEGUI::Imageset::setDefaultResourceGroup("imagesets");
-    CEGUI::Font::setDefaultResourceGroup("fonts");
-    CEGUI::Scheme::setDefaultResourceGroup("schemes");
-    CEGUI::WidgetLookManager::setDefaultResourceGroup("looknfeels");
-    CEGUI::WindowManager::setDefaultResourceGroup("layouts");
-    CEGUI::ScriptModule::setDefaultResourceGroup("lua_scripts");
-    CEGUI::AnimationManager::setDefaultResourceGroup("animations");
-    
-    // setup default group for validation schemas
-    CEGUI::XMLParser* parser = CEGUI::System::getSingleton().getXMLParser();
-    if (parser->isPropertyPresent("SchemaDefaultResourceGroup"))
-        parser->setProperty("SchemaDefaultResourceGroup", "schemas");     
-
-	// create (load) the TaharezLook scheme file
-	// (this auto-loads the TaharezLook looknfeel and imageset files)
-	CEGUI::SchemeManager::getSingleton().create( "TaharezLook.scheme" );
-
-	// create (load) a font.
-	// The first font loaded automatically becomes the default font, but note
-	// that the scheme might have already loaded a font, so there may already
-	// be a default set - if we want the "Commonweath-10" font to definitely
-	// be the default, we should set the default explicitly afterwards.
-	CEGUI::FontManager::getSingleton().create( "DejaVuSans-10.font" );
-
-	CEGUI::System::getSingleton().setDefaultMouseCursor("TaharezLook", "MouseArrow");
-	CEGUI::System::getSingleton().setMouseClickEventGenerationEnabled(false);
-	CEGUI::System::getSingleton().setDefaultTooltip("TaharezLook/Tooltip");
-#endif
 }
 
 void GraphicsManager::SetupShaders()

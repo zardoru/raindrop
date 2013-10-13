@@ -1,7 +1,6 @@
 #include "Global.h"
 #include <GL/glew.h>
 #include <GL/glfw.h>
-#include <CEGUI.h>
 #include "Screen.h"
 #include "GameObject.h"
 #include "Song.h"
@@ -47,9 +46,6 @@ void Application::Run()
 		// shit gets real
 		Game->Run(delta);
 
-#ifndef DISABLE_CEGUI
-		CEGUI::System::getSingleton().injectTimePulse(delta);
-#endif
 		MixerUpdate();
 		glfwSwapBuffers();
 		oldTime = newTime;

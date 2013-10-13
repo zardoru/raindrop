@@ -12,7 +12,7 @@ ActorLifebar::ActorLifebar() : GraphObject2D()
 	SetImage(ImageLoader::LoadSkin("healthbar.png"));
 	time = 0;
 	Centered = false;
-	SetPosition(0, ScreenHeight - GetHeight());
+	SetPosition(0, ScreenHeight - GetHeight() + 9);
 	UpdateHealth();
 }
 

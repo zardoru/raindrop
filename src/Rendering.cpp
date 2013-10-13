@@ -198,34 +198,42 @@ void GraphObject2D::Render()
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
 #else
-	glm::mat4 posMatrix =	glm::scale(
-		glm::rotate(
-			glm::translate(glm::mat4(1.0f), 
-			glm::vec3(position.x, position.y, 0)), 
-		rotation, glm::vec3(0, 0, 1)
-				  ), glm::vec3(scaleX*width, scaleY*height, 1));
+
+	if (DirtyMatrix)
+	{
+		glm::mat4 posMatrix =	glm::scale(
+			glm::rotate(
+			glm::translate(
+			glm::mat4(1.0f), 
+			glm::vec3(mPosition.x, mPosition.y, 0)), 
+			mRotation, glm::vec3(0,0,1)
+			), glm::vec3(mScale.x*mWidth, mScale.y*mHeight, 1));
+
+		Matrix = posMatrix;
+		DirtyMatrix = false;
+	}
 
 	// old gl code ahead
 
-	glColor4f(red, green, blue, alpha);
+	glColor4f(Red, Green, Blue, Alpha);
 
 	glPushMatrix();
 
-	glMultMatrixf(glm::value_ptr(posMatrix));
+	glMultMatrixf(glm::value_ptr(Matrix));
 
 	if (Centered)
 		glTranslatef(-0.5, -0.5, 0);
 
 	glBegin(GL_QUADS);
 
-		glTexCoord2f(crop_x1, crop_y1);
-		glVertex3i(0, 0, z_order); // topleft
-		glTexCoord2f(crop_x2, crop_y1);
-		glVertex3i(1, 0, z_order); // topright
-		glTexCoord2f(crop_x2, crop_y2);
-		glVertex3i(1, 1, z_order); // bottomright
-		glTexCoord2f(crop_x1, crop_y2);
-		glVertex3i(0, 1, z_order); // bottomleft
+		glTexCoord2f(mCrop_x1, mCrop_y1);
+		glVertex2i(0, 0); // topleft
+		glTexCoord2f(mCrop_x2, mCrop_y1);
+		glVertex2i(1, 0); // topright
+		glTexCoord2f(mCrop_x2, mCrop_y2);
+		glVertex2i(1, 1); // bottomright
+		glTexCoord2f(mCrop_x1, mCrop_y2);
+		glVertex2i(0, 1); // bottomleft
 
 	glEnd();
 	

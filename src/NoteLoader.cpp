@@ -46,6 +46,11 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 			Out->SongName = line.substr(line.find_first_of(":") + 1);
 		}
 
+		if (command.find("#AUTHOR") != std::string::npos)
+		{
+			Out->SongAuthor = line.substr(line.find_first_of(":") + 1);
+		}
+
 		// Then, Timing data.
 		if (command.find("#BPM") != std::string::npos)
 		{
