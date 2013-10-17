@@ -50,7 +50,7 @@ void ScreenEdit::StartPlaying( int32 _Measure )
 {
 	ScreenGameplay::Init(MySong, 0);
 	Measure = _Measure;
-	seekTime( spb(CurrentDiff->Timing[0].Value) * Measure * 4 + CurrentDiff->Offset);
+	seekTime( spb(CurrentDiff->Timing[0].Value) * Measure * MySong->MeasureLength + CurrentDiff->Offset);
 	savedMeasure = Measure;
 }
 
@@ -150,7 +150,10 @@ void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 					Running = false; // Get out.
 				}else if (key == GLFW_KEY_F1)
 				{
-					// root->setVisible(!root->isVisible());
+					AssignFraction(Measure, CurrentDiff->Measures[Measure].Fraction-1);
+				}else if (key == GLFW_KEY_F2)
+				{
+					AssignFraction(Measure, CurrentDiff->Measures[Measure].Fraction+1);
 				}else if (key == 'X')
 				{
 					Measure++;
@@ -293,15 +296,20 @@ bool ScreenEdit::Run(double delta)
 
 void ScreenEdit::AssignFraction(int Measure, int Fraction)
 {
-	CurrentDiff->Measures.at(Measure).Fraction = Fraction;
-	CurrentDiff->Measures.at(Measure).MeasureNotes.resize(CurrentDiff->Measures[Measure].Fraction);
-
-	uint32 count = 0;
-	for (std::vector<GameObject>::iterator i = CurrentDiff->Measures.at(Measure).MeasureNotes.begin(); 
-		i != CurrentDiff->Measures.at(Measure).MeasureNotes.end(); 
-		i++)
+	if (Fraction > 0)
 	{
-		i->MeasurePos = count;
-		count++;
+		CurrentDiff->Measures.at(Measure).Fraction = Fraction;
+		CurrentDiff->Measures.at(Measure).MeasureNotes.resize(CurrentDiff->Measures[Measure].Fraction);
+
+
+		// Reassign measure positions.
+		uint32 count = 0;
+		for (std::vector<GameObject>::iterator i = CurrentDiff->Measures.at(Measure).MeasureNotes.begin(); 
+			i != CurrentDiff->Measures.at(Measure).MeasureNotes.end(); 
+			i++)
+		{
+			i->MeasurePos = count;
+			count++;
+		}
 	}
 }

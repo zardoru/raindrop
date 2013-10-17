@@ -51,6 +51,12 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 			Out->SongAuthor = line.substr(line.find_first_of(":") + 1);
 		}
 
+		if (command.find("#MLEN") != std::string::npos)
+		{
+			std::stringstream str (line.substr(line.find_first_of(":") + 1));
+			str >> Out->MeasureLength;
+		}
+
 		// Then, Timing data.
 		if (command.find("#BPM") != std::string::npos)
 		{
@@ -87,6 +93,12 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 			std::stringstream str;
 			str << line.substr(line.find_first_of(":") + 1);
 			str >> Out->LeadInTime;
+		}
+
+		if (command.find("#SOUNDS") != std::string::npos)
+		{
+			std::string CmdLine = line.substr(line.find_first_of(":") + 1);
+			boost::split(Out->SoundList, CmdLine, boost::is_any_of(","));
 		}
 
 		// not yet

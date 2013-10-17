@@ -291,6 +291,7 @@ int32 VorbisSample::readBuffer(void * out, uint32 length)
 		length *= info->channels;
 		if(length > BufSize-Counter)
 		{
+			memset(out, 0, length);
 			length = BufSize-Counter;
 		}
 

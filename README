@@ -1,8 +1,9 @@
 dotcur
 ================================
 
-dotcur is a small music game project aimed to be a cytus-like game aimed
+dotcur is a small music game project aimed to be a multi-mode rhythm game 
 for home desktops. so far the game works but it's lacking on features.
+a cytus-like mode is implemented.
 
 it's built using OpenGL/PortAudio and most if not all are freely licensed libraries.
 
@@ -12,7 +13,6 @@ building & dependencies
 so while the code itself is fairly simple it has quite an amount of dependencies
 
 -boost 1.52
--CEGUI 0.78 // to be removed
 -glew 1.90
 -glfw 2.7.7 // to be updated
 -portaudio v19, libogg and libvorbis
@@ -28,17 +28,12 @@ while right now it doesn't quite support linux (and I won't ever use "make" for 
 own projects- ever) so far there are no system-specific dependencies so 
 with some minor modifications it shouldn't be too much trouble to get it to compile.
 
-there's some unfinished OpenGL 3.3 (Core profile) code in as well but using it
-breaks CEGUI. There's two important macros to notice: DISABLE_CEGUI and OLD_GL
-where the first disables cegui (while still needing the headers though)
-and the second uses fixed-pipeline tutorial-level opengl code. DISABLE_CEGUI is activated by default
-when defining OLD_GL.
+there's some unfinished OpenGL 3.3 (Core profile) code in. There's one important macro to notice: OLD_GL
+and it enables usage of fixed-pipeline tutorial-level opengl code.
 
 In the future I might do the backport of the modern shader stuff so i can use
 the best of both worlds. not now though- since rendering works I'm more worried
 about making it work at all than to pleasing graphics programmers.
-
-now we use portaudio.
 
 the format i created (BMS-like) is completely undocumented for now and I won't
 document it until I finish the editor and a decent main menu interface.

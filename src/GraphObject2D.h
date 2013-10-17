@@ -13,8 +13,8 @@ class GraphObject2D
 private: // Transformations
 
 	void InitTexture();
-	void UpdateTexture();
 	void Cleanup();
+	void UpdateTexture();
 
 	bool DirtyMatrix, DirtyTexture;
 	uint32 mWidth, mHeight;

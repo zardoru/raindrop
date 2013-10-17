@@ -21,7 +21,6 @@ void Application::Init()
 	GraphMan.AutoSetupWindow();
 	InitAudio();
 	Game = NULL;
-	// FPSDisplay.LoadSkinFontImage("font.tga", glm::vec2(18, 32), glm::vec2(34,34), glm::vec2(10,16), 32);
 	srand(time(0));
 	oldTime = 0;
 	glfwSetTime(0.0); // this should match
@@ -39,8 +38,6 @@ void Application::Run()
 	{
 		double newTime = glfwGetTime();
 		double delta = newTime - oldTime;
-		std::stringstream str;
-		str << "fps: " << 1/delta;
 		GraphMan.ClearWindow();
 
 		// shit gets real

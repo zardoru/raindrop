@@ -5,7 +5,7 @@ class BitmapFont;
 
 class ScreenSelectMusic : public IScreen
 {
-	int Cursor;
+	int Cursor, OldCursor;
 	GraphObject2D Background, SelCursor, Logo;
 	BitmapFont* Font;
 	std::vector<Song*> SongList;

@@ -10,9 +10,15 @@ float spb(float bpm)
 	return 60 / bpm;
 }
 
+SongInternal::Measure::Measure()
+{
+	Fraction = 0;
+}
+
 Song::Song()
 {
 	LeadInTime = 0;
+	MeasureLength = 4; // MeasureLength/4
 }
 
 Song::~Song()
@@ -44,7 +50,7 @@ void Song::Process(bool CalculateXPos)
 			for (std::vector<GameObject>::iterator it = Measure->MeasureNotes.begin(); it != Measure->MeasureNotes.end(); it++)
 			{
 				// all measures are 4/4 (good enough for now, change both 4s in the future, maybe)
-				it->beat = ((float)CurrentMeasure * 4.0) + ((float)it->MeasurePos * 4.0) / (float)Measure->Fraction;
+				it->beat = ((float)CurrentMeasure * MeasureLength) + ((float)it->MeasurePos * MeasureLength) / (float)Measure->Fraction;
 
 				if (it->hold_duration > 0)
 				{

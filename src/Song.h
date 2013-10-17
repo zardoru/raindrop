@@ -10,13 +10,13 @@ namespace SongInternal
 	class Measure
 	{
 	public:
+		Measure();
 		uint32 Fraction;
 		std::vector<GameObject> MeasureNotes;
 	};
 
-	class Difficulty
+	struct Difficulty
 	{
-	public:
 		// Type
 		struct TimingSegment
 		{
@@ -49,6 +49,8 @@ public:
 	std::string SongDirectory;
 	std::string SongAuthor;
 	double		LeadInTime;
+	int			MeasureLength;
+	std::vector<std::string> SoundList;
 	void Process(bool CalculateXPos = true);
 	void Repack();
 	void Save(const char* Filename);

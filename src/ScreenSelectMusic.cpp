@@ -11,7 +11,10 @@
 #include "Audio.h"
 #include <sstream>
 
-SoundSample *SelectSnd = NULL;
+#define SONGLIST_BASEY 120
+#define SONGLIST_BASEX ScreenWidth*3/4
+
+SoundSample *SelectSnd = NULL, *ClickSnd=NULL;
 VorbisStream	*Loops[6];
 
 ScreenSelectMusic::ScreenSelectMusic()
@@ -20,9 +23,11 @@ ScreenSelectMusic::ScreenSelectMusic()
 	Font = NULL;
 	if (!SelectSnd)
 	{
-		SelectSnd = new SoundSample((FileManager::GetSkinPrefix() + "select.ogg").c_str()/*(FileManager::GetSkinPrefix() + "select.ogg").c_str()
-																			  */);
+		SelectSnd = new SoundSample((FileManager::GetSkinPrefix() + "select.ogg").c_str());
 		MixerAddSample(SelectSnd);
+
+		ClickSnd = new SoundSample((FileManager::GetSkinPrefix() + "click.ogg").c_str());
+		MixerAddSample(ClickSnd);
 
 		for (int i = 0; i < 6; i++)
 		{
@@ -35,7 +40,7 @@ ScreenSelectMusic::ScreenSelectMusic()
 		}
 	}
 
-	Cursor = 0;
+	OldCursor = Cursor = 0;
 }
 
 void ScreenSelectMusic::Init()
@@ -140,6 +145,12 @@ void ScreenSelectMusic::UpdateCursor()
 
 	if (Cursor >= SongList.size())
 		Cursor = 0;
+
+	if (OldCursor != Cursor)
+	{
+		OldCursor = Cursor;
+		ClickSnd->Reset();
+	}
 
 	SelCursor.SetPosition(ScreenWidth*3/4-SelCursor.GetWidth(), Cursor * SelCursor.GetHeight() + 120);
 }
