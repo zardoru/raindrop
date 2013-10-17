@@ -1,39 +1,29 @@
-#include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
-
 #include "Global.h"
 #include "GameObject.h"
 #include "FileManager.h"
 #include "NoteLoader.h"
 #include "Audio.h"
+#include "Directory.h"
 
 #define DirectoryPrefix String("./GameData/")
 #define SkinsPrefix String("Skins/")
-#define SongsPrefix L"./Songs/"
+#define SongsPrefix String("./Songs/")
 
 String FileManager::CurrentSkin = "default";
 
-void loadSong( boost::filesystem::path songPath, std::vector<Song*> &VecOut )
+void loadSong( Directory songPath, std::vector<Song*> &VecOut )
 {
 	bool FoundDCF = false;
+	std::vector<String> Listing;
 
-	using namespace boost::filesystem;
-	directory_iterator end_iter;
-	
-	String Path = songPath.string();
+	songPath.ListDirectory(&Listing, Directory::FS_REG, "dcf");
 
 	// First, search for .dcf files.
-	for (directory_iterator it (songPath); it != end_iter ; it++)
+	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{
-		if (is_regular_file(it->path()))
-		{
-			if ( extension(it->path()) == (".dcf") )
-			{
-				// found a .dcf- load it.
-				VecOut.push_back(NoteLoader::LoadObjectsFromFile(it->path().string(), songPath.string()));
-				FoundDCF = true;
-			}
-		}
+		// found a .dcf- load it.
+		VecOut.push_back(NoteLoader::LoadObjectsFromFile(songPath.path() + "/" + *i, songPath.path()));
+		FoundDCF = true;
 	}
 
 	// If we didn't find any chart, add this song to the list as edit-only.
@@ -42,40 +32,37 @@ void loadSong( boost::filesystem::path songPath, std::vector<Song*> &VecOut )
 		Song *NewS = NULL;
 		String PotentialBG, PotentialBGRelative;
 
-		for (directory_iterator it (songPath); it != end_iter ; it++)
+		Listing.clear();
+		songPath.ListDirectory(&Listing, Directory::FS_REG);
+
+		for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 		{
-			if (is_regular_file(it->path()))
+			if (Utility::GetExtension(*i) == "ogg")
 			{
-				if ( extension(it->path()) == (".ogg") ) // Found an OGG file?
-				{
-					
-					NewS = new Song();
-					NewS->SongDirectory = Path;
-					NewS->SongName = GetOggTitle(it->path().string());
+				NewS = new Song();
+				NewS->SongDirectory = songPath.path();
+				NewS->SongName = GetOggTitle(i->c_str());
 
-					if (!NewS->SongName.length())
-						NewS->SongName = it->path().string();
+				if (!NewS->SongName.length())
+					NewS->SongName = *i;
 
-					NewS->SongRelativePath = it->path().filename().string();
-					NewS->SongFilename = it->path().string();
-					VecOut.push_back(NewS);
-				}
-
-				if ( extension(it->path()) == (".png")  || extension(it->path()) == (".jpg"))
-				{
-					PotentialBG = it->path().string();
-					PotentialBGRelative = it->path().filename().string();
-				}
+				NewS->SongRelativePath = songPath.path();
+				NewS->SongFilename = (songPath.path() + *i);
+				VecOut.push_back(NewS);
 			}
-			
-			if (NewS)
+			else if ( Utility::GetExtension(*i) == "png" || Utility::GetExtension(*i) == "jpg")
 			{
-				NewS->BackgroundDir = PotentialBG;
-				NewS->BackgroundRelativeDir = PotentialBGRelative;
+				PotentialBG = (songPath.path() + *i);
+				PotentialBGRelative = *i;
 			}
 		}
+
+		if (NewS)
+		{
+			NewS->BackgroundDir = PotentialBG;
+			NewS->BackgroundRelativeDir = PotentialBGRelative;
+		}
 	}
-	
 }
 
 String FileManager::GetDirectoryPrefix()
@@ -96,16 +83,12 @@ std::fstream FileManager::OpenFile(String Directory)
 
 void FileManager::GetSongList(std::vector<Song*> &OutVec)
 {
-	using namespace boost::filesystem;
-	path songsPath (SongsPrefix);
-	directory_iterator it(songsPath), eod;
-
-	BOOST_FOREACH(path const &p, std::make_pair(it, eod))   
+	Directory Dir (SongsPrefix);
+	std::vector <String> Listing;
+	Dir.ListDirectory(&Listing, Directory::FS_DIR);
+	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{ 
-		if(is_directory(p))
-		{
-			loadSong(p, OutVec);
-		} 
+		loadSong(Dir.path() + *i, OutVec);
 	}
 	
 }

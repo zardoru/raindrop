@@ -111,6 +111,9 @@
     <ClCompile Include="..\src\GameWindow.cpp">
       <Filter>Source Files\Backend</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Directory.cpp">
+      <Filter>Source Files\Backend</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\GraphObject2D.h">
@@ -195,6 +198,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\BindingsManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Directory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

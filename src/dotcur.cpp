@@ -21,15 +21,16 @@ int CALLBACK WinMain (
 #endif
 {
 
-#ifdef NDEBUG
-try  
-#endif
+#ifndef NDEBUG
+try 
 	{
+#endif
 		App.Init();
 		App.Run();
 		App.Close();
+	
+#ifndef NDEBUG
 	}
-#ifdef NDEBUG
 catch (std::exception &ex)
 	{
 #ifdef WIN32

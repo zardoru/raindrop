@@ -18,6 +18,8 @@ typedef int32_t int32;
 typedef uint16_t int16;
 typedef uint16_t uint16;
 
+#define String std::string
+
 extern float *PInfinity;
 
 #define Infinity *PInfinity
@@ -28,14 +30,14 @@ namespace Utility
 {
 	void DebugBreak();
 	bool IsNumeric(const char* s);
+	String GetExtension(String Filename);
+	String RelativeToPath(String Filename);
 }
 
 #ifdef WIN32
 #pragma warning (disable: 4244)
 #pragma warning (disable: 4996) // deprecation
 #endif
-
-#define String std::string
 
 //#ifndef OLD_GL
 // #define DISABLE_CEGUI

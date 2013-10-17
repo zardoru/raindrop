@@ -17,6 +17,28 @@ namespace Utility {
 #endif
 	}
 
+#ifndef isdigit
+	bool isdigit(char s)
+	{
+		switch(s)
+		{
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+		case '0':
+			return true;
+		default:
+			return false;
+		}
+	}
+#endif
+
 	bool IsNumeric(const char* s)
 	{
 		// check for first character being a minus sign
@@ -35,6 +57,15 @@ namespace Utility {
 		return true;
 	}
 
+	String GetExtension(String Filename)
+	{
+		return Filename.substr(Filename.find_last_of(".")+1);
+	}
+
+	String RelativeToPath(String Filename)
+	{
+		return Filename.substr(Filename.find_last_of("/")+1);
+	}
 } // namespace Utility
 
 #include <boost/algorithm/string/split.hpp>
