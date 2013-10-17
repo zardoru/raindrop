@@ -3,33 +3,31 @@
 #ifndef GraphMan_H_
 #define GraphMan_H_
 
-#include <GL/glew.h>
-#include <GL/glfw.h>
+struct GLFWwindow;
 
-
-class GraphicsManager
+class GameWindow
 {
-	friend void ResizeFunc(int32,int32);
-	friend void InputFunc(int32,int32);
+	friend void ResizeFunc(GLFWwindow*, int32,int32);
+	friend void InputFunc(GLFWwindow*,int32,int32,int32,int32);
 	glm::vec2 size;
 	glm::vec2 matrixSize;
 	glm::mat4 projection;
 
-	GLuint defaultVertexShader, defaultFragShader, defaultShaderProgram, defaultVao;
+	uint32 defaultVertexShader, defaultFragShader, defaultShaderProgram, defaultVao;
+	GLFWwindow *wnd;
 
 	void SetupCEGUI();
 	void SetupShaders();
 
 public:
-	GraphicsManager();
+	GameWindow();
 	bool isGuiInputEnabled;
-	void SetupWindow(GLFWvidmode videomode);
 	void AutoSetupWindow();
 	void ClearWindow(); // basically wrapping up glClear
 	void Cleanup();
 
 	// assigns this matrix on the stack
-	void SetMatrix(GLenum MatrixMode, glm::mat4 matrix);
+	void SetMatrix(uint32 MatrixMode, glm::mat4 matrix);
 
 	// returns the mouse position relative to the matrix and window size
 	glm::vec2 GetRelativeMPos();
@@ -43,8 +41,11 @@ public:
 	int32 GetDefaultFragShader();
 	int32 GetDefaultVertexShader();
 	int32 GetShaderProgram();
+
+	bool ShouldCloseWindow();
+	void SwapBuffers();
 };
 
-extern GraphicsManager GraphMan;
+extern GameWindow WindowFrame;
 
 #endif

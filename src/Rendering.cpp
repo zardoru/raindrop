@@ -2,13 +2,10 @@
 #include "Rendering.h"
 #include "GraphObject2D.h"
 
-#ifdef WIN32
-#include <Windows.h>
-#endif
 #include <GL/glew.h>
 #include "Image.h"
 #include <glm/gtc/type_ptr.hpp>
-#include "GraphicsManager.h"
+#include "GameWindow.h"
 
 uint32 GraphObject2D::ourBuffer;
 uint32 GraphObject2D::ourCenteredBuffer;
@@ -157,25 +154,25 @@ void GraphObject2D::Render()
 		UpdateTexture();
 
 	// Assign our matrix.
-	GLuint MatrixID = glGetUniformLocation(GraphMan.GetShaderProgram(), "mvp");
+	GLuint MatrixID = glGetUniformLocation(WindowFrame.GetShaderProgram(), "mvp");
 	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &Matrix[0][0]);
 
 	// Set the color.
-	GLuint ColorID = glGetUniformLocation(GraphMan.GetShaderProgram(), "Color");
+	GLuint ColorID = glGetUniformLocation(WindowFrame.GetShaderProgram(), "Color");
 	glUniform4f(ColorID, Red, Green, Blue, Alpha);
 
-	GLuint ColorInvertedID = glGetUniformLocation(GraphMan.GetShaderProgram(), "inverted");
+	GLuint ColorInvertedID = glGetUniformLocation(WindowFrame.GetShaderProgram(), "inverted");
 	glUniform1i(ColorInvertedID, ColorInvert);
 
 	// Draw the buffer.
 	
 	// assign Texture
-	GLint posAttrib = glGetUniformLocation( GraphMan.GetShaderProgram(), "tex" );
+	GLint posAttrib = glGetUniformLocation( WindowFrame.GetShaderProgram(), "tex" );
 	glUniform1i(posAttrib, 0);
 
 
 	// assign position attrib. pointer
-	posAttrib = glGetAttribLocation( GraphMan.GetShaderProgram(), "position" );
+	posAttrib = glGetAttribLocation( WindowFrame.GetShaderProgram(), "position" );
 	glEnableVertexAttribArray(posAttrib);
 
 	if (!Centered)
@@ -186,7 +183,7 @@ void GraphObject2D::Render()
 	glVertexAttribPointer( posAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
 	// assign vertex UVs
-	posAttrib = glGetAttribLocation( GraphMan.GetShaderProgram(), "vertexUV" );
+	posAttrib = glGetAttribLocation( WindowFrame.GetShaderProgram(), "vertexUV" );
 	glEnableVertexAttribArray(posAttrib);
 
 	glBindBuffer(GL_ARRAY_BUFFER, ourUVBuffer);

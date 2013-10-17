@@ -30,7 +30,7 @@ namespace SongInternal
 		std::vector<Measure> Measures;
 
 		// Meta
-		std::string Name;
+		String Name;
 	};
 }
 
@@ -44,13 +44,13 @@ public:
 	Song();
 	~Song();
 	std::vector<SongInternal::Difficulty*> Difficulties;
-	std::string SongFilename, BackgroundDir, SongRelativePath, BackgroundRelativeDir;
-	std::string SongName;
-	std::string SongDirectory;
-	std::string SongAuthor;
+	String SongFilename, BackgroundDir, SongRelativePath, BackgroundRelativeDir;
+	String SongName;
+	String SongDirectory;
+	String SongAuthor;
 	double		LeadInTime;
 	int			MeasureLength;
-	std::vector<std::string> SoundList;
+	std::vector<String> SoundList;
 	void Process(bool CalculateXPos = true);
 	void Repack();
 	void Save(const char* Filename);

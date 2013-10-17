@@ -1,11 +1,8 @@
 #include "Global.h"
 #include "ScreenEdit.h"
-#include "GraphicsManager.h"
+#include "GameWindow.h"
 #include "ImageLoader.h"
 #include "Audio.h"
-#include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
-
 
 
 ScreenEdit::ScreenEdit(IScreen *Parent)
@@ -54,8 +51,9 @@ void ScreenEdit::StartPlaying( int32 _Measure )
 	savedMeasure = Measure;
 }
 
-void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
+void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
+	KeyType tkey = BindingsManager::TranslateKey(key);
 	if (EditScreenState == Playing)
 		ScreenGameplay::HandleInput(key, code, isMouseInput);
 
@@ -80,9 +78,9 @@ void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 
 		if (EditScreenState != Playing)
 		{
-			if (code == GLFW_PRESS)
+			if (code == KE_Press)
 			{
-				if (key == GLFW_KEY_RIGHT)
+				if (tkey == KT_Right)
 				{
 					if (HeldObject)
 					{
@@ -99,7 +97,7 @@ void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 							Measure++;
 					}
 
-				}else if (key == GLFW_KEY_LEFT)
+				}else if (tkey == KT_Left)
 				{
 					if (HeldObject)
 					{
@@ -121,11 +119,20 @@ void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 								Measure--;
 						}
 					}
+				}else if (tkey == KT_Escape)
+				{
+					Running = false; // Get out.
+				}else if (tkey == KT_FractionDec)
+				{
+					AssignFraction(Measure, CurrentDiff->Measures[Measure].Fraction-1);
+				}else if (tkey == KT_FractionInc)
+				{
+					AssignFraction(Measure, CurrentDiff->Measures[Measure].Fraction+1);
 				}else if (key == 'S') // Save!
 				{
-					std::string DefaultPath = "chart.dcf";
+					String DefaultPath = "chart.dcf";
 					MySong->Repack();
-					MySong->Save((MySong->SongDirectory + std::string("/") + DefaultPath).c_str());
+					MySong->Save((MySong->SongDirectory + String("/") + DefaultPath).c_str());
 					MySong->Process();
 				}else if (key == 'Q')
 				{
@@ -145,15 +152,6 @@ void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 					Measure = CurrentDiff->Measures.size()-1;
 					CurrentFraction = 0;
 					AssignFraction(Measure, CurrentDiff->Measures[Measure-1].Fraction);
-				}else if (key == GLFW_KEY_ESC)
-				{
-					Running = false; // Get out.
-				}else if (key == GLFW_KEY_F1)
-				{
-					AssignFraction(Measure, CurrentDiff->Measures[Measure].Fraction-1);
-				}else if (key == GLFW_KEY_F2)
-				{
-					AssignFraction(Measure, CurrentDiff->Measures[Measure].Fraction+1);
 				}else if (key == 'X')
 				{
 					Measure++;
@@ -161,9 +159,6 @@ void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 				{
 					if (Measure > 0)
 						Measure--;
-				}else if (key == GLFW_KEY_F8)
-				{
-					IsAutoplaying = !IsAutoplaying;
 				}
 			}
 		}
@@ -171,13 +166,13 @@ void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 	{
 		if (EditScreenState == Editing)
 		{
-			if (Mode != Select && code == GLFW_PRESS)
+			if (Mode != Select && code == KE_Press)
 			{
 				if (Measure >= 0 && Measure < CurrentDiff->Measures.size())
 				{
 					if (CurrentDiff->Measures.at(Measure).MeasureNotes.size() > CurrentFraction)
 					{
-						if (key == GLFW_MOUSE_BUTTON_LEFT)
+						if (tkey == KT_Select)
 						{
 							if (Mode == Normal)
 							{
@@ -204,9 +199,9 @@ void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 				}
 			}
 
-			if (Mode == Hold && code == GLFW_RELEASE)
+			if (Mode == Hold && code == KE_Release)
 			{
-				if (key == GLFW_MOUSE_BUTTON_LEFT)
+				if (tkey == KT_Select)
 				{
 					HeldObject = NULL;
 				}
@@ -218,7 +213,7 @@ void ScreenEdit::HandleInput(int32 key, int32 code, bool isMouseInput)
 
 bool ScreenEdit::Run(double delta)
 {
-	GraphMan.isGuiInputEnabled = (EditScreenState != Playing);
+	WindowFrame.isGuiInputEnabled = (EditScreenState != Playing);
 
 	// we're playing the song? run the game
 	if (EditScreenState == Playing)
@@ -242,7 +237,7 @@ bool ScreenEdit::Run(double delta)
 		}
 
 		GhostObject.SetPositionY(YLock);
-		GhostObject.SetPositionX(GraphMan.GetRelativeMPos().x);
+		GhostObject.SetPositionX(WindowFrame.GetRelativeMPos().x);
 		
 		if ((GhostObject.GetPosition().x-ScreenDifference) > PlayfieldWidth)
 			GhostObject.SetPositionX(PlayfieldWidth+ScreenDifference);

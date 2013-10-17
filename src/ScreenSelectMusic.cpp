@@ -6,7 +6,7 @@
 #include "FileManager.h"
 #include "ScreenGameplay.h"
 #include "ScreenEdit.h"
-#include "GraphicsManager.h"
+#include "GameWindow.h"
 #include "ImageLoader.h"
 #include "Audio.h"
 #include <sstream>
@@ -79,7 +79,7 @@ bool ScreenSelectMusic::Run(double Delta)
 	{
 		if (SwitchBackGuiPending)
 		{
-			GraphMan.isGuiInputEnabled = true;
+			WindowFrame.isGuiInputEnabled = true;
 			SwitchBackGuiPending = false;
 			int rn = rand() % 6;
 			Loops[rn]->seek(0);
@@ -94,7 +94,7 @@ bool ScreenSelectMusic::Run(double Delta)
 
 	Background.Render();
 
-		glm::vec2 mpos = GraphMan.GetRelativeMPos();
+		glm::vec2 mpos = WindowFrame.GetRelativeMPos();
 
 	if (mpos.x > ScreenWidth*3/4)
 	{
@@ -155,7 +155,7 @@ void ScreenSelectMusic::UpdateCursor()
 	SelCursor.SetPosition(ScreenWidth*3/4-SelCursor.GetWidth(), Cursor * SelCursor.GetHeight() + 120);
 }
 
-void ScreenSelectMusic::HandleInput(int32 key, int32 code, bool isMouseInput)
+void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
 	if (Next)
 	{
@@ -163,35 +163,40 @@ void ScreenSelectMusic::HandleInput(int32 key, int32 code, bool isMouseInput)
 		return;
 	}
 
-	if (code == GLFW_PRESS)
+	if (code == KE_Press)
 	{
-		if (key == GLFW_KEY_F4) // Edit mode!
+		ScreenGameplay *_gNext = NULL;
+		ScreenEdit *_Next;
+		switch (BindingsManager::TranslateKey(key))
 		{
-			ScreenEdit *_Next = new ScreenEdit(this);
+		case KT_GoToEditMode: // Edit mode!
+			_Next = new ScreenEdit(this);
 			_Next->Init(SongList.at(Cursor));
 			Next = _Next;
 			SwitchBackGuiPending = true;
 			StopLoops();
-		}
-
-		if (key == GLFW_KEY_UP)
-		{
+			break;
+		case KT_Up:
 			Cursor--;
 			UpdateCursor();
-		}else if (key == GLFW_KEY_DOWN)
-		{
+			break;
+		case KT_Down:
 			Cursor++;
 			UpdateCursor();
-		}else if (key == GLFW_KEY_SPACE || (isMouseInput && key == GLFW_MOUSE_BUTTON_LEFT))
-		{
+			break;
+		case KT_Select:
+			if (!isMouseInput || (WindowFrame.GetRelativeMPos().x > SONGLIST_BASEX && WindowFrame.GetRelativeMPos().y > SONGLIST_BASEY))
+			{
 				SelectSnd->Reset();
-				ScreenGameplay *_Next = new ScreenGameplay(this);
-				_Next->Init(SongList.at(Cursor), 0);
+				_gNext = new ScreenGameplay(this);
+				_gNext->Init(SongList.at(Cursor), 0);
 
-				Next = _Next;
+				Next = _gNext;
 				SwitchBackGuiPending = true;
-				GraphMan.isGuiInputEnabled = false;
+				WindowFrame.isGuiInputEnabled = false;
 				StopLoops();
+			}
+				break;
 		}
 	}
 }

@@ -2,7 +2,7 @@
 #include "GraphObject2D.h"
 #include "ScreenGameplay.h"
 #include "ActorBarline.h"
-#include "GraphicsManager.h"
+#include "GameWindow.h"
 #include "Game_Consts.h"
 
 ActorBarline::ActorBarline(ScreenGameplay *_Parent) : GraphObject2D()
@@ -48,8 +48,8 @@ void ActorBarline::Run(double TimeDelta, double MeasureTime, double TotalTime)
 	{
 		if (Ratio > RadioThreshold)
 		{
-			float diff = Ratio - RadioThreshold;
-			float duration = (1 - RadioThreshold);
+			double diff = Ratio - RadioThreshold;
+			double duration = (1 - RadioThreshold);
 
 			Red = 1 - ( diff/duration );
 			Blue = (200.f / 255.f) * (diff/duration);

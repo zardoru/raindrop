@@ -11,7 +11,7 @@ class NoteLoader
 {
 public:
 	// user responsability to clean this one up.
-	static Song *LoadObjectsFromFile(std::string filename, std::string prefix = "");
+	static Song *LoadObjectsFromFile(String filename, String prefix = "");
 };
 
 #endif // NOTELOADER_H_

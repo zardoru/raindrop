@@ -86,11 +86,9 @@ void VorbisStream::stopStream()
 	}
 
 	clearBuffer();
-	if (SeekTime >= 0)
-	{
-		ov_time_seek(&f, SeekTime);
-		SeekTime = -1;
-	}
+	ov_time_seek(&f, 0);
+	SeekTime = -1;
+
 
 	runThread = false;
 }
@@ -180,10 +178,20 @@ int32 VorbisStream::readBuffer(void * out, uint32 length)
 {
 	char *outpt = (char*) out;
 	size_t cnt;
+	size_t toRead = length*info->channels;
+	
+	if (PaUtil_GetRingBufferReadAvailable(&RingBuf) < toRead || !runThread)
+	{
+		memset(out, 0, toRead);
+		toRead = PaUtil_GetRingBufferReadAvailable(&RingBuf);
+	}
 
-	cnt = PaUtil_ReadRingBuffer(&RingBuf, out, length*info->channels);
-	streamTime += (double)(cnt/info->channels) / (double)info->rate;
-	playbackTime = streamTime;
+	if (runThread)
+	{
+		cnt = PaUtil_ReadRingBuffer(&RingBuf, out, toRead);
+		streamTime += (double)(cnt/info->channels) / (double)info->rate;
+		playbackTime = streamTime;
+	}
 
 	return length;
 }
@@ -298,9 +306,6 @@ int32 VorbisSample::readBuffer(void * out, uint32 length)
 		memcpy(out, buffer+Counter, length);
 
 		Counter += length;
-
-		if (Counter > BufSize)
-			Counter = BufSize;
 
 		return length;
 	}else
@@ -635,18 +640,18 @@ double GetDeviceLatency()
 	return Pa_GetDeviceInfo(Pa_GetDefaultOutputDevice())->defaultLowOutputLatency;
 }
 
-std::string GetOggTitle(std::string file)
+String GetOggTitle(String file)
 {
 	OggVorbis_File f;
-	std::string result = "";
+	String result = "";
 	if (ov_fopen(file.c_str(), &f) == 0)
 	{
 		vorbis_comment *comment = ov_comment(&f, -1);
 
 		for (int i = 0; i < comment->comments; i++)
 		{
-			std::vector<std::string> splitvec;
-			boost::split(splitvec, std::string(comment->user_comments[i]), boost::is_any_of("="));
+			std::vector<String> splitvec;
+			boost::split(splitvec, String(comment->user_comments[i]), boost::is_any_of("="));
 			if (splitvec[0] == "TITLE")
 			{
 				result = splitvec[1].c_str();

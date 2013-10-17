@@ -6,7 +6,7 @@ class ScreenMainMenu : public IScreen
 public:
 	ScreenMainMenu(IScreen *Parent);
 	void Init();
-	void HandleInput(int32 key, int32 code, bool isMouseInput);
+	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	bool Run (double Delta);
 	void Cleanup();
 };

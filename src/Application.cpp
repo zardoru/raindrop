@@ -1,6 +1,7 @@
-#include "Global.h"
 #include <GL/glew.h>
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
+
+#include "Global.h"
 #include "Screen.h"
 #include "GameObject.h"
 #include "Song.h"
@@ -9,7 +10,7 @@
 #include "ScreenEdit.h"
 #include "Application.h"
 #include "Audio.h"
-#include "GraphicsManager.h"
+#include "GameWindow.h"
 #include "BitmapFont.h"
 
 Application::Application()
@@ -18,12 +19,11 @@ Application::Application()
 
 void Application::Init()
 {
-	GraphMan.AutoSetupWindow();
+	WindowFrame.AutoSetupWindow();
 	InitAudio();
 	Game = NULL;
 	srand(time(0));
 	oldTime = 0;
-	glfwSetTime(0.0); // this should match
 	// throw a message here
 }
 
@@ -34,28 +34,27 @@ void Application::Run()
 	Game = new ScreenSelectMusic();
 	Game->Init();
 
-	while (Game->IsScreenRunning() && glfwGetWindowParam(GLFW_OPENED))
+	while (Game->IsScreenRunning() && !WindowFrame.ShouldCloseWindow())
 	{
 		double newTime = glfwGetTime();
 		double delta = newTime - oldTime;
-		GraphMan.ClearWindow();
+		WindowFrame.ClearWindow();
 
 		// shit gets real
 		Game->Run(delta);
 
 		MixerUpdate();
-		glfwSwapBuffers();
+		WindowFrame.SwapBuffers();
 		oldTime = newTime;
 	}
 }
 
-void Application::HandleInput(int32 key, int32 code, bool isMouseInput)
+void Application::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
 	Game->HandleInput(key, code, isMouseInput);
 }
 
 void Application::Close()
 {
-	glfwCloseWindow();
-	glfwTerminate();
+	WindowFrame.Cleanup();
 }

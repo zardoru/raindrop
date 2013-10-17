@@ -3,7 +3,6 @@
 #include "GameObject.h"
 #include "ImageLoader.h"
 #include "FileManager.h"
-#include <GL/glfw.h>
 #include "Audio.h"
 
 SoundSample *HitSnd = NULL;
@@ -140,7 +139,7 @@ Judgement GameObject::Run(double delta, double Time, bool Autoplay)
 
 Judgement GameObject::Hit(float Time, glm::vec2 mpos, bool KeyDown,  bool Autoplay, int32 Key)
 {
-	glm::vec2 dist = GetPosition() - mpos;
+	glm::vec2 dist = mpos - GetPosition();
 	
 	if (fadeout_time || GetPosition().x == 0 || Autoplay)
 		return None;
@@ -160,7 +159,8 @@ Judgement GameObject::Hit(float Time, glm::vec2 mpos, bool KeyDown,  bool Autopl
 	}
 
 	// not already fading out and mouse within the circle?
-	if (std::abs(glm::length(dist)) < CircleSize && fadeout_time == 0) 
+	float dabs = std::abs(glm::length(dist))*2; // dabs*2 < diameter; dabs < radius
+	if (dabs < CircleSize && fadeout_time == 0) 
 	{
 		float SpareTime = std::abs(Time - startTime);
 		if (SpareTime < LeniencyHitTime) // within leniency?
@@ -169,7 +169,6 @@ Judgement GameObject::Hit(float Time, glm::vec2 mpos, bool KeyDown,  bool Autopl
 			Judgement RVal;
 
 			HitSnd->Reset();
-			// printf ("songt %f starttime %f difference %f beat %f xpos = %f\n", Time, startTime, Time - startTime, beat, position.x);
 
 			if (endTime == 0) // Not a hold?
 				fadeout_time = 0.6f; // 0.8 secs for fadeout

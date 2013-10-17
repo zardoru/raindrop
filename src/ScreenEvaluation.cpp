@@ -3,10 +3,12 @@
 #include "GraphObject2D.h"
 #include "BitmapFont.h"
 #include "ScreenEvaluation.h"
-#include "GraphicsManager.h"
+#include "GameWindow.h"
 #include "ImageLoader.h"
 #include "Audio.h"
+#include "FileManager.h"
 
+VorbisStream *ScreenEvaluationMusic = NULL;
 
 ScreenEvaluation::ScreenEvaluation(IScreen *Parent) :
 	IScreen(Parent)
@@ -27,6 +29,16 @@ int32 ScreenEvaluation::CalculateScore()
 
 void ScreenEvaluation::Init(EvaluationData _Data)
 {
+	if (!ScreenEvaluationMusic)
+	{
+		ScreenEvaluationMusic = new VorbisStream((FileManager::GetSkinPrefix() + "screenevaluationloop.ogg").c_str());
+		ScreenEvaluationMusic->setLoop(true);
+		MixerAddStream(ScreenEvaluationMusic);
+	}
+
+	ScreenEvaluationMusic->Start();
+
+
 	Background.SetImage(ImageLoader::LoadSkin("ScreenEvaluationBackground.png"));
 	if (!Font)
 	{
@@ -64,14 +76,15 @@ void ScreenEvaluation::Init(EvaluationData _Data)
 }
 
 
-void ScreenEvaluation::HandleInput(int32 key, int32 code, bool isMouseInput)
+void ScreenEvaluation::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
-	if (key == GLFW_KEY_ESC || key == GLFW_KEY_SPACE && code == GLFW_PRESS)
+	if ((BindingsManager::TranslateKey(key) == KT_Escape || BindingsManager::TranslateKey(key) == KT_Select) && code == KE_Press)
 		Running = false;
 }
 
 void ScreenEvaluation::Cleanup()
 {
+	ScreenEvaluationMusic->Stop();
 	delete Font;
 }
 

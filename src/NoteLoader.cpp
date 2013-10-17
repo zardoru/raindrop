@@ -15,7 +15,7 @@ float _ScreenDifference()
 	return std::abs(float((ScreenWidth / 2.f) - (PlayfieldWidth / 2.f)));
 }
 
-Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
+Song* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 {
 	std::ifstream filein;
 	filein.open(filename.c_str(), std::ios::in);
@@ -34,31 +34,31 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 	Out->SongDirectory = prefix;
 
 	// get lines separating with ; token
-	std::string line;
+	String line;
 	while (!filein.eof())
 	{
 		std::getline(filein, line, ';'); 
-		std::string command = line.substr(0, line.find_first_of(":"));
+		String command = line.substr(0, line.find_first_of(":"));
 
 		// First, metadata.
-		if (command.find("#NAME") != std::string::npos)
+		if (command.find("#NAME") != String::npos)
 		{
 			Out->SongName = line.substr(line.find_first_of(":") + 1);
 		}
 
-		if (command.find("#AUTHOR") != std::string::npos)
+		if (command.find("#AUTHOR") != String::npos)
 		{
 			Out->SongAuthor = line.substr(line.find_first_of(":") + 1);
 		}
 
-		if (command.find("#MLEN") != std::string::npos)
+		if (command.find("#MLEN") != String::npos)
 		{
 			std::stringstream str (line.substr(line.find_first_of(":") + 1));
 			str >> Out->MeasureLength;
 		}
 
 		// Then, Timing data.
-		if (command.find("#BPM") != std::string::npos)
+		if (command.find("#BPM") != String::npos)
 		{
 			/* TODO: List based parsing */
 			std::stringstream str (line.substr(line.find_first_of(":") + 1));
@@ -68,7 +68,7 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 			Difficulty->Timing.push_back(Segment);	
 		}
 
-		if (command.find("#OFFSET") != std::string::npos)
+		if (command.find("#OFFSET") != String::npos)
 		{
 			std::stringstream str (line.substr(line.find_first_of(":") + 1));
 			str >> Difficulty->Offset;
@@ -76,44 +76,44 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 		}
 
 		// Then, file info.
-		if (command.find("#SONG") != std::string::npos)
+		if (command.find("#SONG") != String::npos)
 		{
 			Out->SongFilename = prefix + "/" + line.substr(line.find_first_of(":") + 1);
 			Out->SongRelativePath = line.substr(line.find_first_of(":") + 1);
 		}
 
-		if (command.find("#BACKGROUNDIMAGE") != std::string::npos)
+		if (command.find("#BACKGROUNDIMAGE") != String::npos)
 		{
 			Out->BackgroundDir = prefix + "/" + line.substr(line.find_first_of(":") + 1);
 			Out->BackgroundRelativeDir = line.substr(line.find_first_of(":") + 1);
 		}
 
-		if (command.find("#LEADIN") != std::string::npos)
+		if (command.find("#LEADIN") != String::npos)
 		{
 			std::stringstream str;
 			str << line.substr(line.find_first_of(":") + 1);
 			str >> Out->LeadInTime;
 		}
 
-		if (command.find("#SOUNDS") != std::string::npos)
+		if (command.find("#SOUNDS") != String::npos)
 		{
-			std::string CmdLine = line.substr(line.find_first_of(":") + 1);
+			String CmdLine = line.substr(line.find_first_of(":") + 1);
 			boost::split(Out->SoundList, CmdLine, boost::is_any_of(","));
 		}
 
 		// not yet
 		/*
-		if (command.find("#BGALUA") != std::string::npos)
+		if (command.find("#BGALUA") != String::npos)
 		{
 		}
 		*/
 
 		// Then, the charts.
-		if (command.find("#NOTES") != std::string::npos) // current command is notes?
+		if (command.find("#NOTES") != String::npos) // current command is notes?
 		{
 			// get the object string (all between a colon and a semicolon.
-			std::string objectstring = line.substr(line.find_first_of(":") + 1);
-			std::vector< std::string > splitvec;
+			String objectstring = line.substr(line.find_first_of(":") + 1);
+			std::vector< String > splitvec;
 			bool invert = false;
 
 			Difficulty->Name = Out->SongName; // todo: change this.
@@ -123,9 +123,9 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 			// boost::replace_all(objectstring, "M", ""); // mirror flags
 
 			boost::split(splitvec, objectstring, boost::is_any_of(",")); // Separate measures!
-			BOOST_FOREACH(std::string objectlist, splitvec) // for each measure
+			BOOST_FOREACH(String objectlist, splitvec) // for each measure
 			{
-				std::vector< std::string > splitobjects;
+				std::vector< String > splitobjects;
 				SongInternal::Measure Measure;
 				invert = false;
 
@@ -144,9 +144,9 @@ Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
 				}
 
 				boost::split(splitobjects, objectlist, boost::is_any_of("{}"), boost::algorithm::token_compress_on);
-				BOOST_FOREACH (std::string object_description, splitobjects) // For all objects in measure
+				BOOST_FOREACH (String object_description, splitobjects) // For all objects in measure
 				{
-					std::vector< std::string > object_parameters;
+					std::vector< String > object_parameters;
 
 					if (object_description.length() == 0) // we must have at least a plain "0"
 						continue;

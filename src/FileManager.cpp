@@ -1,16 +1,17 @@
+#include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
+
 #include "Global.h"
 #include "GameObject.h"
 #include "FileManager.h"
-#include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
 #include "NoteLoader.h"
 #include "Audio.h"
 
-#define DirectoryPrefix std::string("./GameData/")
-#define SkinsPrefix std::string("Skins/")
+#define DirectoryPrefix String("./GameData/")
+#define SkinsPrefix String("Skins/")
 #define SongsPrefix L"./Songs/"
 
-std::string FileManager::CurrentSkin = "default";
+String FileManager::CurrentSkin = "default";
 
 void loadSong( boost::filesystem::path songPath, std::vector<Song*> &VecOut )
 {
@@ -19,7 +20,7 @@ void loadSong( boost::filesystem::path songPath, std::vector<Song*> &VecOut )
 	using namespace boost::filesystem;
 	directory_iterator end_iter;
 	
-	std::string Path = songPath.string();
+	String Path = songPath.string();
 
 	// First, search for .dcf files.
 	for (directory_iterator it (songPath); it != end_iter ; it++)
@@ -39,7 +40,7 @@ void loadSong( boost::filesystem::path songPath, std::vector<Song*> &VecOut )
 	if (!FoundDCF)
 	{
 		Song *NewS = NULL;
-		std::string PotentialBG, PotentialBGRelative;
+		String PotentialBG, PotentialBGRelative;
 
 		for (directory_iterator it (songPath); it != end_iter ; it++)
 		{
@@ -77,18 +78,18 @@ void loadSong( boost::filesystem::path songPath, std::vector<Song*> &VecOut )
 	
 }
 
-std::string FileManager::GetDirectoryPrefix()
+String FileManager::GetDirectoryPrefix()
 {
 	return DirectoryPrefix;
 }
 
-std::string FileManager::GetSkinPrefix()
+String FileManager::GetSkinPrefix()
 {
 	// I wonder if a directory transversal is possible. Or useful, for that matter.
 	return DirectoryPrefix + SkinsPrefix + CurrentSkin + "/";
 }
 
-std::fstream FileManager::OpenFile(std::string Directory)
+std::fstream FileManager::OpenFile(String Directory)
 {
 	return std::fstream ( (DirectoryPrefix + Directory).c_str() );
 }

@@ -67,10 +67,11 @@ private: // shit only screengameplay needs
 	GraphObject2D MarkerA, MarkerB, Cursor, Background;
 	EvaluationData Evaluation;
 	
-	double SongTime, SongDelta, SongTimeLatency;
+	double SongTime, SongDelta;
 	
 	bool FailEnabled;
 	bool TappingMode;
+	bool IsPaused;
 
 	void DrawVector(std::vector<GameObject>& Vec, float TimeDelta);
 	bool JudgeVector(std::vector<GameObject>& Vec, int code, int key);
@@ -81,7 +82,7 @@ public:
 	virtual void Init(Song *OtherSong, uint32 DifficultyIndex);
 	int32 GetMeasure();
 	virtual bool Run(double Delta);
-	virtual void HandleInput(int32 key, int32 code, bool isMouseInput);
+	virtual void HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	glm::vec2 GetScreenOffset(float alignment);
 	virtual void Cleanup();
 	void RemoveTrash();

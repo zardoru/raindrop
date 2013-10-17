@@ -6,8 +6,8 @@ const uint16 ScreenWidth = 1024;
 const uint16 ScreenHeight = 768;
 const uint16 PlayfieldWidth = 800;
 const uint16 PlayfieldHeight = 600;
-const uint16 CircleSize = 80;
 const int16 ScreenOffset = 80;
+const float CircleSize = 80.0f;
 const float		   LeniencyHitTime = 0.35f;
 const float		   HoldLeniencyHitTime = 0.1f;
 
@@ -34,6 +34,36 @@ struct EvaluationData
 	uint32 NumPerfects;
 	uint32 NumExcellents;
 };
+
+enum KeyEventType
+{
+	KE_None,
+	KE_Press,
+	KE_Release
+};
+
+enum KeyType
+{
+	KT_Unknown,
+	KT_Escape,
+	KT_Hit,
+	KT_GameplayClick,
+	KT_Select,
+	KT_SelectRight,
+	KT_GoToEditMode,
+	KT_Up,
+	KT_Down,
+	KT_Left,
+	KT_Right,
+
+	// Editor specific
+	KT_FractionDec,
+	KT_FractionInc,
+	KT_ChangeMode,
+
+};
+
+#include "BindingsManager.h"
 
 float _ScreenDifference();
 

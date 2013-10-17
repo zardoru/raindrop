@@ -8,13 +8,13 @@
 
 class FileManager
 {
-	static std::string CurrentSkin;
+	static String CurrentSkin;
 public:
 	static void GetSongList(std::vector<Song*> &OutVec);
-	static std::fstream OpenFile(std::string Directory);
-	static std::string GetDirectoryPrefix();
-	static std::string GetSkinPrefix();
-	static void SetSkin(std::string NextSkin);
+	static std::fstream OpenFile(String Directory);
+	static String GetDirectoryPrefix();
+	static String GetSkinPrefix();
+	static void SetSkin(String NextSkin);
 };
 
 #endif

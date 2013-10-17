@@ -3,22 +3,23 @@
 #include "GraphObject2D.h"
 #include "ActorJudgement.h"
 #include "ImageLoader.h"
-#include "GraphicsManager.h"
+#include "GameWindow.h"
 
 #define AnimDuration 0.3f
 
 ActorJudgement::ActorJudgement()
 {
-	Centered = 1;
-	SetPosition(GraphMan.GetMatrixSize().x / 2, PlayfieldHeight * 3 / 4 + ScreenOffset);
+	Centered = true;
+	SetRotation( -90 );
 	Alpha = 0;
 	SetImage(ImageLoader::LoadSkin("judge-perfect.png"));
+	SetPosition(40, PlayfieldHeight/2 + 70 );
 }
 
 void ActorJudgement::ChangeJudgement(Judgement New)
 {
 	AnimTime = AnimDuration;
-	SetScale(1.3);
+	SetScale(1.3f);
 	Alpha = 1;
 
 	switch (New)

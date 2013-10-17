@@ -1,10 +1,14 @@
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
 #include "Global.h"
 #include "Screen.h"
 #include "Application.h"
-#include "GraphicsManager.h"
+#include "GameWindow.h"
 #include <glm/gtc/matrix_transform.hpp>
 
-GraphicsManager GraphMan;
+
+GameWindow WindowFrame;
 
 const char* vertShader = "#version 120\n"
 	"attribute vec3 position;\n"
@@ -32,74 +36,112 @@ const char* fragShader = "#version 120\n"
 	"	 }\n"
 	"}\n";
 
-void checkGlError()
+std::map<int32, KeyType> BindingsManager::ScanFunction;
+
+void BindingsManager::Initialize()
 {
-	GLenum Val = glGetError();
-	return; // breakpoints yay
+	ScanFunction[GLFW_KEY_ESCAPE] = KT_Escape;
+	ScanFunction[GLFW_KEY_F4] = KT_GoToEditMode;
+	ScanFunction[GLFW_KEY_UP] = KT_Up;
+	ScanFunction[GLFW_KEY_DOWN] = KT_Down;
+	ScanFunction[GLFW_KEY_RIGHT] = KT_Right;
+	ScanFunction[GLFW_KEY_LEFT] = KT_Left;
+	ScanFunction[GLFW_KEY_SPACE] = KT_Select;
+	ScanFunction[GLFW_MOUSE_BUTTON_LEFT] = KT_Select;
+	ScanFunction[GLFW_MOUSE_BUTTON_RIGHT] = KT_SelectRight;
+	ScanFunction['Z'] = KT_GameplayClick;
+	ScanFunction['X'] = KT_GameplayClick;
+	ScanFunction[GLFW_KEY_F1] = KT_FractionDec;
+	ScanFunction[GLFW_KEY_F2] = KT_FractionInc;
+	ScanFunction[GLFW_KEY_TAB] = KT_ChangeMode;
 }
 
-GraphicsManager::GraphicsManager()
+KeyType BindingsManager::TranslateKey(int32 Scan)
+{
+	if (ScanFunction.find(Scan) != ScanFunction.end())
+	{
+		return ScanFunction[Scan];
+	}
+	
+	return KT_Unknown;
+}
+
+KeyEventType ToKeyEventType(int32 code)
+{
+	KeyEventType KE = KE_None;
+
+	if (code == GLFW_PRESS)
+		KE = KE_Press;
+	else if (code == GLFW_RELEASE)
+		KE = KE_Release;
+	// Ignore GLFW_REPEAT events
+
+	return KE;
+}
+
+GameWindow::GameWindow()
 {
 }
 
-void GLFWCALL ResizeFunc(int32 width, int32 height)
+void ResizeFunc(GLFWwindow*, int32 width, int32 height)
 {
-	glViewport(width / 2 - GraphMan.GetMatrixSize().x / 2, 0, GraphMan.GetMatrixSize().x, height);
-	GraphMan.size.x = width;
-	GraphMan.size.y = height;
+	glViewport(width / 2 - WindowFrame.GetMatrixSize().x / 2, 0, WindowFrame.GetMatrixSize().x, height);
+	WindowFrame.size.x = width;
+	WindowFrame.size.y = height;
 }
 
-void GLFWCALL InputFunc (int32 key, int32 code)
+void InputFunc (GLFWwindow*, int32 key, int32 scancode, int32 code, int32 modk)
 {
-	App.HandleInput(key, code, false);
+	if (ToKeyEventType(code) != KE_None) // Ignore GLFW_REPEAT events
+		App.HandleInput(key, ToKeyEventType(code), false);
 
-	if (!GraphMan.isGuiInputEnabled)
+	if (!WindowFrame.isGuiInputEnabled)
 		return;
 }
 
-void GLFWCALL MouseInputFunc (int32 key, int32 code)
+void MouseInputFunc (GLFWwindow*, int32 key, int32 code, int32 modk)
 {
-	App.HandleInput(key, code, true);
+	if (ToKeyEventType(code) != KE_None) // Ignore GLFW_REPEAT events
+		App.HandleInput(key, ToKeyEventType(code), true);
 
-	if (!GraphMan.isGuiInputEnabled)
+	if (!WindowFrame.isGuiInputEnabled)
 		return;
 }
 
-void GLFWCALL MouseMoveFunc (int32 newx, int32 newy)
+void MouseMoveFunc (GLFWwindow*,double newx, double newy)
 {
-	if (!GraphMan.isGuiInputEnabled)
+	if (!WindowFrame.isGuiInputEnabled)
 		return;
 }
 
-glm::vec2 GraphicsManager::GetWindowSize()
+glm::vec2 GameWindow::GetWindowSize()
 {
 	return size;
 }
 
-glm::vec2 GraphicsManager::GetMatrixSize()
+glm::vec2 GameWindow::GetMatrixSize()
 {
 	return matrixSize;
 }
 
-glm::vec2 GraphicsManager::GetRelativeMPos()
+glm::vec2 GameWindow::GetRelativeMPos()
 {
-	int32 mousex, mousey;
-	glfwGetMousePos(&mousex, &mousey);
+	double mousex, mousey;
+	glfwGetCursorPos(wnd, &mousex, &mousey);
 	float outx = matrixSize.x * mousex / size.x;
 	float outy = matrixSize.y * mousey / size.y;
 	return glm::vec2 (outx, outy);
 }
 
-void GraphicsManager::SetMatrix(GLenum MatrixMode, glm::mat4 matrix)
+void GameWindow::SetMatrix(uint32 MatrixMode, glm::mat4 matrix)
 {
 	glMatrixMode(MatrixMode);
 	glLoadMatrixf((GLfloat*)&matrix[0]);
 }
 
-void GraphicsManager::AutoSetupWindow()
+void GameWindow::AutoSetupWindow()
 {
 	GLenum err;
-	GLFWvidmode mode;
 
 	// todo: enum modes
 	if (!glfwInit())
@@ -110,13 +152,13 @@ void GraphicsManager::AutoSetupWindow()
 	matrixSize.x = ScreenWidth;
 	matrixSize.y = ScreenHeight;
 
-	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 2);
-	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 0);
 
-	glfwGetDesktopMode(&mode);
-
-	if (!glfwOpenWindow(size.x, size.y, mode.RedBits, mode.GreenBits, mode.BlueBits, 8, 16, 24, GLFW_WINDOW))
+	if (!(wnd = glfwCreateWindow(size.x, size.y, "dC Alpha", NULL, NULL)))
 		throw std::exception("couldn't open window!");
+
+
+	glfwSetFramebufferSizeCallback(wnd, ResizeFunc);
+	glfwMakeContextCurrent(wnd);
 
 	// we have an opengl context, try opening up glew
 	if ((err = glewInit()) != GLEW_OK)
@@ -126,13 +168,13 @@ void GraphicsManager::AutoSetupWindow()
 		throw std::exception(serr.str().c_str());
 	}
 
-	glfwSetWindowTitle("dC Alpha"
+	BindingsManager::Initialize();
+
+	glfwSetWindowTitle(wnd, "dC Alpha"
 #ifndef NDEBUG
 		" (debug build)"
 #endif
 		);
-
-	checkGlError();
 
 #ifdef OLD_GL
 	// We enable some GL stuff
@@ -141,11 +183,8 @@ void GraphicsManager::AutoSetupWindow()
 #endif
 
 	glEnable(GL_BLEND);
-	//glEnable(GL_COLOR_LOGIC_OP);
- 	//glLogicOp(GL_COPY_INVERTED);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	// glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glViewport(0, 0, size.x, size.y);
 
 	
 	projection = glm::ortho<float>(0.0, matrixSize.x, matrixSize.y, 0.0, -32.0, 32.0);
@@ -156,37 +195,50 @@ void GraphicsManager::AutoSetupWindow()
 	SetupShaders();
 
 	// GLFW Hooks
-	glfwSetWindowSizeCallback(ResizeFunc);
-	glfwSetKeyCallback(InputFunc);
-	glfwSetMouseButtonCallback(MouseInputFunc);
-	glfwSetMousePosCallback(MouseMoveFunc);
-
-	// Don't show the cursor ;)
-	//glfwDisable(GLFW_MOUSE_CURSOR);
-	checkGlError();
+	glfwSetWindowSizeCallback(wnd, ResizeFunc);
+	glfwSetKeyCallback(wnd, InputFunc);
+	glfwSetMouseButtonCallback(wnd, MouseInputFunc);
+	glfwSetCursorPosCallback(wnd, MouseMoveFunc);
 }
 
-void GraphicsManager::ClearWindow()
+void GameWindow::SwapBuffers()
+{
+	glfwSwapBuffers(wnd);
+	glfwPollEvents();
+}
+
+void GameWindow::ClearWindow()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-int32 GraphicsManager::GetDefaultFragShader()
+int32 GameWindow::GetDefaultFragShader()
 {
 	return defaultFragShader;
 }
 
-int32 GraphicsManager::GetDefaultVertexShader()
+int32 GameWindow::GetDefaultVertexShader()
 {
 	return defaultVertexShader;
 }
 
-int32 GraphicsManager::GetShaderProgram()
+int32 GameWindow::GetShaderProgram()
 {
 	return defaultShaderProgram;
 }
 
-void GraphicsManager::SetupShaders()
+void GameWindow::Cleanup()
+{
+	glfwDestroyWindow(wnd);
+	glfwTerminate();
+}
+
+bool GameWindow::ShouldCloseWindow()
+{
+	return !!glfwWindowShouldClose(wnd);
+}
+
+void GameWindow::SetupShaders()
 {
 #ifndef OLD_GL
 
@@ -246,8 +298,5 @@ void GraphicsManager::SetupShaders()
 	glDeleteShader(defaultVertexShader);
 	glDeleteShader(defaultFragShader);
 
-	
-
-	return;
 #endif
 }

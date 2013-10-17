@@ -39,14 +39,14 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>D:\development\libs\portaudio\src\common;D:\development\cAudio-2.2.0\DependenciesSource\libvorbis-1.3.2\include;D:\Nueva carpeta %282%29\boost_1_52_0\boost_1_52_0;D:\development\cAudio-2.2.0\DependenciesSource\libogg-1.2.2\include;D:\development\libs\portaudio\include;D:\development\libs\glfw-2.7.7\include;C:\Users\Azardoru\Documents\boost_1_49_0\boost_1_49_0;D:\development\libs\cAudio-2.2.0\cAudio\include;D:\development\libs\glfw-2.7.7.bin.WIN32\include;../soil;D:\development\libs\glm;D:\development\libs\glew-1.9.0\include;D:\development\cegui-0.8.2\cegui\include\;$(IncludePath)</IncludePath>
+    <IncludePath>D:\development\libs\portaudio\src\common;D:\development\cAudio-2.2.0\DependenciesSource\libvorbis-1.3.2\include;D:\Nueva carpeta %282%29\boost_1_52_0\boost_1_52_0;D:\development\cAudio-2.2.0\DependenciesSource\libogg-1.2.2\include;D:\development\libs\portaudio\include;D:\development\glfw-3.0.3\include;C:\Users\Azardoru\Documents\boost_1_49_0\boost_1_49_0;../soil;D:\development\libs\glm;D:\development\libs\glew-1.9.0\include;$(IncludePath)</IncludePath>
     <ReferencePath>D:\Nueva carpeta %282%29\cAudio-2.2.0\cAudio\Debug;D:\development\libs\glfw-2.7.7.bin.WIN32\lib-msvc110;D:\development\libs\glew-1.9.0\lib;D:\development\libs\CEGUI-0.7.7\lib;$(ReferencePath)</ReferencePath>
-    <LibraryPath>D:\Nueva carpeta (2)\boost_1_52_0\boost_1_52_0\stage\lib;D:\development\libs\boost_1_49_0\stage\lib;D:\development\libs\portaudio\bin\Win32\Debug;D:\development\cAudio-2.2.0\DependenciesSource\libvorbis-1.3.2\Debug;D:\development\cAudio-2.2.0\DependenciesSource\libogg-1.2.2\Debug;D:\development\libs\glew-1.9.0\lib;D:\development\libs\boost_1_49_0\boost_1_49_0\stage\lib;D:\development\libs\glfw-2.7.7\support\msvc90\Debug;D:\development\libs\glfw-2.7.7\lib\win32;C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;D:\development\cAudio-2.2.0\cAudio\Debug;D:\development\CEGUI-0.7.8\bin;$(LibraryPath)</LibraryPath>
+    <LibraryPath>D:\development\libs\boost_1_49_0\boost_1_49_0\stage\lib;D:\Nueva carpeta (2)\boost_1_52_0\boost_1_52_0\stage\lib;D:\development\libs\portaudio\bin\Win32\Debug;D:\development\cAudio-2.2.0\DependenciesSource\libvorbis-1.3.2\Debug;D:\development\cAudio-2.2.0\DependenciesSource\libogg-1.2.2\Debug;D:\development\libs\glew-1.9.0\lib;D:\development\glfw-3.0.3\src\Debug;$(LibraryPath)</LibraryPath>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>D:\development\libs\portaudio\src\common;D:\development\cAudio-2.2.0\DependenciesSource\libvorbis-1.3.2\include;D:\Nueva carpeta %282%29\boost_1_52_0\boost_1_52_0;D:\development\cAudio-2.2.0\DependenciesSource\libogg-1.2.2\include;D:\development\libs\portaudio\include;D:\development\libs\glfw-2.7.7\include;C:\Users\Azardoru\Documents\boost_1_49_0\boost_1_49_0;D:\development\libs\cAudio-2.2.0\cAudio\include;D:\development\libs\glfw-2.7.7.bin.WIN32\include;../soil;D:\development\libs\glm;D:\development\libs\glew-1.9.0\include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\Nueva carpeta (2)\boost_1_52_0\boost_1_52_0\stage\lib;D:\development\libs\portaudio\bin\Win32\Release;D:\development\cAudio-2.2.0\DependenciesSource\libvorbis-1.3.2\Release;D:\development\cAudio-2.2.0\DependenciesSource\libogg-1.2.2\Release;D:\development\libs\glew-1.9.0\lib;D:\development\libs\boost_1_49_0\boost_1_49_0\stage\lib;D:\development\libs\glfw-2.7.7\support\msvc90\Release;D:\development\libs\glfw-2.7.7\lib\win32;C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;D:\development\cAudio-2.2.0\cAudio\Release;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\development\libs\portaudio\src\common;D:\development\cAudio-2.2.0\DependenciesSource\libvorbis-1.3.2\include;D:\Nueva carpeta %282%29\boost_1_52_0\boost_1_52_0;D:\development\cAudio-2.2.0\DependenciesSource\libogg-1.2.2\include;D:\development\libs\portaudio\include;D:\development\glfw-3.0.3\include;C:\Users\Azardoru\Documents\boost_1_49_0\boost_1_49_0;D:\development\libs\cAudio-2.2.0\cAudio\include;D:\development\libs\glfw-2.7.7.bin.WIN32\include;../soil;D:\development\libs\glm;D:\development\libs\glew-1.9.0\include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\Nueva carpeta (2)\boost_1_52_0\boost_1_52_0\stage\lib;D:\development\libs\portaudio\bin\Win32\Release;D:\development\cAudio-2.2.0\DependenciesSource\libvorbis-1.3.2\Release;D:\development\cAudio-2.2.0\DependenciesSource\libogg-1.2.2\Release;D:\development\libs\glew-1.9.0\lib;D:\development\libs\boost_1_49_0\boost_1_49_0\stage\lib;D:\development\glfw-3.0.3\src\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -58,7 +58,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Vorbis_d.lib;portaudio_x86.lib;Ogg_d.lib;GLFW.lib;glew32d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Vorbis_d.lib;portaudio_x86.lib;Ogg_d.lib;GLFW3.lib;glew32d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AllowIsolation>true</AllowIsolation>
       <EnableUAC>true</EnableUAC>
@@ -69,19 +69,21 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>OLD_GL;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>false</ExceptionHandling>
-      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
-      <FloatingPointModel>Precise</FloatingPointModel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <StringPooling>true</StringPooling>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>portaudio_x86.lib;opengl32.lib;Ogg.lib;Vorbis.lib;GLFW.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>portaudio_x86.lib;opengl32.lib;Ogg.lib;Vorbis.lib;glfw3.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -98,7 +100,7 @@
     <ClCompile Include="..\src\dotcur.cpp" />
     <ClCompile Include="..\src\FileManager.cpp" />
     <ClCompile Include="..\src\GameObject.cpp" />
-    <ClCompile Include="..\src\GraphicsManager.cpp" />
+    <ClCompile Include="..\src\GameWindow.cpp" />
     <ClCompile Include="..\src\GraphObject2D.cpp" />
     <ClCompile Include="..\src\Image.cpp" />
     <ClCompile Include="..\src\ImageLoader.cpp" />
@@ -126,12 +128,13 @@
     <ClInclude Include="..\src\ActorLifebar.h" />
     <ClInclude Include="..\src\Application.h" />
     <ClInclude Include="..\src\Audio.h" />
+    <ClInclude Include="..\src\BindingsManager.h" />
     <ClInclude Include="..\src\BitmapFont.h" />
     <ClInclude Include="..\src\FileManager.h" />
     <ClInclude Include="..\src\GameObject.h" />
     <ClInclude Include="..\src\Game_Consts.h" />
     <ClInclude Include="..\src\Global.h" />
-    <ClInclude Include="..\src\GraphicsManager.h" />
+    <ClInclude Include="..\src\GameWindow.h" />
     <ClInclude Include="..\src\GraphObject2D.h" />
     <ClInclude Include="..\src\GuiButton.h" />
     <ClInclude Include="..\src\NoteLoader.h" />

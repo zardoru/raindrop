@@ -13,7 +13,7 @@
 void InitAudio();
 void StartStream(const char* sound);
 
-#define BUFF_SIZE 8192
+#define BUFF_SIZE 4096
 
 
 /* having to show our privates is pretty annoying. */
@@ -107,7 +107,7 @@ public:
 };
 
 double GetDeviceLatency();
-std::string GetOggTitle(std::string file);
+String GetOggTitle(String file);
 
 #define SoundStream PaStreamWrapper
 #define SoundSample	VorbisSample

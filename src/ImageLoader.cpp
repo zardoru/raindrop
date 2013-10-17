@@ -10,7 +10,7 @@
 #include <SOIL.h>
 
 
-std::map<std::string, Image*> ImageLoader::Textures;
+std::map<String, Image*> ImageLoader::Textures;
 
 ImageLoader::ImageLoader()
 {
@@ -21,7 +21,7 @@ ImageLoader::~ImageLoader()
 	// unload ALL the images.
 }
 
-Image* ImageLoader::Load(std::string filename)
+Image* ImageLoader::Load(String filename)
 {
 	if ( Textures.find(filename) != Textures.end() )
 	{
@@ -73,7 +73,7 @@ Image* ImageLoader::Load(std::string filename)
 	return 0;
 }
 
-Image* ImageLoader::LoadSkin(std::string filename)
+Image* ImageLoader::LoadSkin(String filename)
 {
 	return Load(FileManager::GetSkinPrefix() + filename);
 }

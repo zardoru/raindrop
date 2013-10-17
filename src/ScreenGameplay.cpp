@@ -1,15 +1,14 @@
 #include "Global.h"
-#include <boost/format.hpp>
 #include "Game_Consts.h"
 #include "ScreenGameplay.h"
 #include "ScreenEvaluation.h"
 #include "NoteLoader.h"
-#include "GraphicsManager.h"
+#include "GameWindow.h"
 #include "ImageLoader.h"
 #include "Audio.h"
 
-#define ComboSizeX 40
-#define ComboSizeY 64
+#define ComboSizeX 24
+#define ComboSizeY 48
 
 ScreenGameplay::ScreenGameplay(IScreen *Parent) :
 	IScreen(Parent),
@@ -19,11 +18,12 @@ ScreenGameplay::ScreenGameplay(IScreen *Parent) :
 	IsAutoplaying = false;
 	ShouldChangeScreenAtEnd = true;
 	SongInfo.LoadSkinFontImage("font.tga", glm::vec2(18, 32), glm::vec2(34,34), glm::vec2(10,16), 32);
-	MyFont.LoadSkinFontImage("font.tga", glm::vec2(18, 32), glm::vec2(34,34), glm::vec2(ComboSizeX,ComboSizeY), 32);
+	MyFont.LoadSkinFontImage("font-combo.tga", glm::vec2(24, 48), glm::vec2(64,64), glm::vec2(ComboSizeX,ComboSizeY), 48);
 	Music = NULL;
 	FailEnabled = true;
 	TappingMode = false;
 	EditMode = false;
+	IsPaused = false;
 	LeadInTime = 0;
 }
 
@@ -53,8 +53,8 @@ glm::vec2 ScreenGameplay::GetScreenOffset(float Alignment)
 	float outx; 
 	float outy;
 
-	outx = (GraphMan.GetMatrixSize().x*Alignment);
-	outy = (GraphMan.GetMatrixSize().y*Alignment);
+	outx = (WindowFrame.GetMatrixSize().x*Alignment);
+	outy = (WindowFrame.GetMatrixSize().y*Alignment);
 
 	return glm::vec2(outx, outy);
 }
@@ -137,7 +137,7 @@ void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
 	Lifebar.UpdateHealth();
 
 	if (CurrentDiff->Timing.size())
-		MeasureTime = (60 * 4 / CurrentDiff->Timing[0].Value);
+		MeasureTime = (60 * MySong->MeasureLength / CurrentDiff->Timing[0].Value);
 	else
 		MeasureTime = 0;
 
@@ -241,7 +241,7 @@ void ScreenGameplay::RunMeasure(float delta)
 	}
 }
 
-void ScreenGameplay::HandleInput(int32 key, int32 code, bool isMouseInput)
+void ScreenGameplay::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
 	if (Next && Next->IsScreenRunning())
 	{
@@ -251,78 +251,89 @@ void ScreenGameplay::HandleInput(int32 key, int32 code, bool isMouseInput)
 
 	/* Notes */
 	if (Measure < CurrentDiff->Measures.size() && // if measure is playable
-		(((key == 'Z' || key == 'X') && !isMouseInput) || // key is z or x and it's not mouse input or
-		(isMouseInput && (key == GLFW_MOUSE_BUTTON_LEFT || key == GLFW_MOUSE_BUTTON_RIGHT))) // is mouse input and it's a mouse button..
+		(BindingsManager::TranslateKey(key) == KT_Select || BindingsManager::TranslateKey(key) == KT_SelectRight ||
+		BindingsManager::TranslateKey(key) == KT_GameplayClick)// is mouse input and it's a mouse button..
 		)
 	{
 
-		if (code == GLFW_PRESS)
-			Cursor.SetScale(0.85);
+		if (code == KE_Press)
+			Cursor.SetScale(0.85f);
 		else
 			Cursor.SetScale(1);
 
 		// For all measure notes..
-		do
+		if (!IsPaused)
 		{
-			if (Measure > 0 && JudgeVector(NotesInMeasure[Measure-1], code, key))
-				break;
-
-			if (JudgeVector(NotesInMeasure[Measure], code, key))
-				break;
-
-			if (Measure+1 < NotesInMeasure.size() && JudgeVector(NotesInMeasure[Measure+1], code, key))
-				break;
-
-		} while(false);
-
-		Judgement Val;
-		glm::vec2 mpos = GraphMan.GetRelativeMPos();
-		// For all held notes...
-		for (std::vector<GameObject>::iterator i = NotesHeld.begin();
-			i != NotesHeld.end();
-			i++)
-		{
-			// See if something's going on with the hold.
-			if ((Val = i->Hit(SongTime, mpos, code == GLFW_PRESS ? true : false, IsAutoplaying, key)) != None)
+			do
 			{
-				// Judge accordingly..
-				Lifebar.HitJudgement(Val);
-				aJudgement.ChangeJudgement(Val);
-				StoreEvaluation(Val);
-				i = NotesHeld.erase(i); // Delete this object. The hold is done!
-				break;
+				if (Measure > 0 && JudgeVector(NotesInMeasure[Measure-1], code, key))
+					break;
+
+				if (JudgeVector(NotesInMeasure[Measure], code, key))
+					break;
+
+				if (Measure+1 < NotesInMeasure.size() && JudgeVector(NotesInMeasure[Measure+1], code, key))
+					break;
+
+			} while(false);
+
+			Judgement Val;
+			glm::vec2 mpos = WindowFrame.GetRelativeMPos();
+			// For all held notes...
+			for (std::vector<GameObject>::iterator i = NotesHeld.begin();
+				i != NotesHeld.end();
+				i++)
+			{
+				// See if something's going on with the hold.
+				if ((Val = i->Hit(SongTime, mpos, code != KE_Release, IsAutoplaying, key)) != None)
+				{
+					// Judge accordingly..
+					Lifebar.HitJudgement(Val);
+					aJudgement.ChangeJudgement(Val);
+					StoreEvaluation(Val);
+					i = NotesHeld.erase(i); // Delete this object. The hold is done!
+					break;
+				}
 			}
+			return;
 		}
-		return;
 	}
 
 	/* Functions */
-	if (code == GLFW_PRESS)
+	if (code == KE_Press)
 	{
-#ifndef NDEBUG
-		if (key == 'R') // Retry
+		switch (key)
 		{
+#ifndef NDEBUG
+		case 'R':
 			Cleanup();
 			Init(MySong, 0);
 			return;
-		}
 #endif
-
-		if (key == 'A') // Autoplay
-		{
+		case 'A': // Autoplay
 			IsAutoplaying = !IsAutoplaying;
-		}else if (key == 'F')
-		{
+			break;
+		case 'F':
 			FailEnabled = !FailEnabled;
-		}
-		else if (key == 'T')
-		{
+			break;
+		case 'T':
 			TappingMode = !TappingMode;
-		}
-		else if (key == GLFW_KEY_ESC)
-		{
-			Running = false;
-			Cleanup();
+			break;
+		default:
+			if (BindingsManager::TranslateKey(key) == KT_Escape)
+			{
+				/* TODO: pause */
+				if (!IsPaused)
+					stopMusic();
+				else
+				{
+					Music->Seek(SongTime);
+					startMusic();
+				}
+				IsPaused = !IsPaused;
+				//Running = false;
+				//Cleanup();
+			}
 		}
 	}
 }
@@ -331,7 +342,6 @@ void ScreenGameplay::seekTime(float Time)
 {
 	Music->Seek(Time);
 	SongTime = Time;
-	SongTimeLatency = Time;
 	MeasureTimeElapsed = 0;
 	ScreenTime = 0;
 }
@@ -350,12 +360,17 @@ void ScreenGameplay::stopMusic()
 bool ScreenGameplay::Run(double TimeDelta)
 {
 	ScreenTime += TimeDelta;
+
+	if (Music && !IsPaused)
+	{
+		int32 read;
+		Music->GetStream()->UpdateBuffer(read);
+	}
 	
 	if (Music)
 	{
 		SongDelta = Music->GetPlaybackTime() - SongTime;
 		SongTime += SongDelta;
-		SongTimeLatency += SongDelta;
 	}
 
 	if ( ScreenTime > ScreenPauseTime || !ShouldChangeScreenAtEnd ) // we're over the pause?
@@ -382,9 +397,9 @@ bool ScreenGameplay::Run(double TimeDelta)
 		{
 			MeasureTimeElapsed += SongDelta;
 
-			if (SongDelta == 0)
+			if (SongDelta == 0 && !IsPaused)
 			{
-				if (!Music || Music->IsStopped())
+				if ((!Music || Music->IsStopped()))
 					MeasureTimeElapsed += TimeDelta;
 			}
 
@@ -400,11 +415,6 @@ bool ScreenGameplay::Run(double TimeDelta)
 	}
 
 	RenderObjects(TimeDelta);
-	if (Music)
-	{
-		int32 read;
-		Music->GetStream()->UpdateBuffer(read);
-	}
 	
 	// You died? Not editing? Failing is enabled?
 	if (Lifebar.Health <= 0 && !EditMode && FailEnabled)
@@ -428,14 +438,14 @@ void ScreenGameplay::DrawVector(std::vector<GameObject>& Vec, float TimeDelta)
 bool ScreenGameplay::JudgeVector(std::vector<GameObject>& Vec, int code, int key)
 {
 	Judgement Val;
-	glm::vec2 mpos = GraphMan.GetRelativeMPos();
+	glm::vec2 mpos = WindowFrame.GetRelativeMPos();
 
 	for (std::vector<GameObject>::iterator i = Vec.begin(); 
 			i != Vec.end(); 
 			i++)
 		{
 			// See if it's a hit.
-			if ((Val = i->Hit(SongTime, TappingMode ? i->GetPosition() : mpos, code == GLFW_PRESS ? true : false, IsAutoplaying, key)) != None)
+			if ((Val = i->Hit(SongTime, TappingMode ? i->GetPosition() : mpos, code != KE_Release, IsAutoplaying, key)) != None)
 			{
 				// Judge accordingly.
 				Lifebar.HitJudgement(Val);
@@ -458,7 +468,7 @@ bool ScreenGameplay::JudgeVector(std::vector<GameObject>& Vec, int code, int key
 
 void ScreenGameplay::RenderObjects(float TimeDelta)
 {
-	glm::vec2 mpos = GraphMan.GetRelativeMPos();
+	glm::vec2 mpos = WindowFrame.GetRelativeMPos();
 	Cursor.SetPosition(mpos);
 
 	Cursor.AddRotation(140 * TimeDelta);
@@ -466,10 +476,19 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 		Cursor.AddRotation(-360);
 
 	// Rendering ahead.
+
+	if (IsPaused)
+	{
+		Background.Blue = Background.Red = Background.Green = 0.5;
+	}else
+		Background.Blue = Background.Red = Background.Green = 1;
+
 	Background.Render();
 	MarkerA.Render();
 	MarkerB.Render();
-	Lifebar.Render();
+
+	if (!EditMode)
+		Lifebar.Render();
 
 	DrawVector(NotesHeld, TimeDelta);
 	DrawVector(AnimateOnly, TimeDelta);
@@ -511,7 +530,9 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 	}
 
 	Barline.Render();
-	aJudgement.Render();
+
+	if (!EditMode)
+		aJudgement.Render();
 
 	// Combo rendering.
 	std::stringstream str;
@@ -524,7 +545,7 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 	std::stringstream info;
 
 	if (IsAutoplaying)
-		info << "\nAutoplay";
+		info << "Autoplay";
 
 #ifndef NDEBUG
 	info << "\nSongTime: " << SongTime << "\nPlaybackTime: ";

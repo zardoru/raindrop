@@ -1,11 +1,11 @@
+#ifdef WIN32
+#include <Windows.h>
+#endif
+
 #include "Global.h"
 #include <exception>
 #include "Screen.h"
 #include "Application.h"
-
-#ifdef WIN32
-#include <Windows.h>
-#endif
 
 Application App;
 

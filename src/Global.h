@@ -35,6 +35,8 @@ namespace Utility
 #pragma warning (disable: 4996) // deprecation
 #endif
 
+#define String std::string
+
 //#ifndef OLD_GL
 // #define DISABLE_CEGUI
 //#endif

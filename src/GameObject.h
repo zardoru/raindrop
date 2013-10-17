@@ -22,4 +22,6 @@ public:
 	void Animate(float delta, float songTime);
 };
 
+typedef std::vector<GameObject> GameObjectVector;
+
 #endif

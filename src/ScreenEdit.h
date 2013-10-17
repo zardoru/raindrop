@@ -33,7 +33,7 @@ public:
 	ScreenEdit (IScreen * Parent);
 	void Init(Song *Other);
 	void StartPlaying(int32 _Measure);
-	void HandleInput(int32 key, int32 code, bool isMouseInput);
+	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	bool Run (double Delta);
 	void Cleanup();
 };

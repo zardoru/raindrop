@@ -11,7 +11,7 @@ class ScreenEvaluation : public IScreen
 	GraphObject2D Background;
 	BitmapFont* Font;
 
-	std::string ResultsString, ResultsNumerical;
+	String ResultsString, ResultsNumerical;
 	// CEGUI::FrameWindow* wnd;
 	int32 CalculateScore();
 public:
@@ -19,7 +19,7 @@ public:
 	void Init(EvaluationData _Data);
 	bool Run(double Delta);
 	void Cleanup();
-	void HandleInput(int32 key, int32 code, bool isMouseInput);
+	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 };
 
 #endif
