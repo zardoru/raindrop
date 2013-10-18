@@ -151,10 +151,14 @@ void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 					CurrentDiff->Measures.resize(CurrentDiff->Measures.size()+1);
 					Measure = CurrentDiff->Measures.size()-1;
 					CurrentFraction = 0;
-					AssignFraction(Measure, CurrentDiff->Measures[Measure-1].Fraction);
+					if (Measure > 0)
+						AssignFraction(Measure, CurrentDiff->Measures[Measure-1].Fraction);
+					else
+						AssignFraction(Measure, 2);
 				}else if (key == 'X')
 				{
-					Measure++;
+					if (Measure+1 < CurrentDiff->Measures.size())
+						Measure++;
 				}else if (key == 'Z')
 				{
 					if (Measure > 0)
