@@ -188,6 +188,10 @@ int32 ScreenGameplay::GetMeasure()
 void ScreenGameplay::RunVector(std::vector<GameObject>& Vec, float TimeDelta)
 {
 	Judgement Val;
+
+	if (LeadInTime > 0) // No running while leadin is up.
+		return; 
+
 	// For each note in current measure
 	for (std::vector<GameObject>::iterator i = Vec.begin(); 
 		i != Vec.end(); 
@@ -439,6 +443,9 @@ bool ScreenGameplay::JudgeVector(std::vector<GameObject>& Vec, int code, int key
 {
 	Judgement Val;
 	glm::vec2 mpos = WindowFrame.GetRelativeMPos();
+
+	if (LeadInTime > 0) // No judgement while leadin is up.
+		return false; 
 
 	for (std::vector<GameObject>::iterator i = Vec.begin(); 
 			i != Vec.end(); 
