@@ -20,6 +20,11 @@ ActorLifebar::ActorLifebar() : GraphObject2D()
 
 void ActorLifebar::UpdateHealth()
 {
+	if (Health < 0)
+	{
+		Health = 0;
+	}
+
 	SetCrop2(glm::vec2(Health / 100, 1));
 	Red = Green = Blue = Health / 100;
 	SetWidth((Health / 100) * ScreenHeight);
@@ -30,7 +35,7 @@ void ActorLifebar::HitJudgement(Judgement Hit)
 	switch (Hit)
 	{
 		case Excellent:
-			pending_health += 3;
+			pending_health += 5;
 			break;
 		case Perfect:
 			pending_health += 2;
@@ -42,7 +47,7 @@ void ActorLifebar::HitJudgement(Judgement Hit)
 			break;
 		case Miss:
 		case NG:
-			pending_health -= 30;
+			pending_health -= 25;
 	}
 }
 

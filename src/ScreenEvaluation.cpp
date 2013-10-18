@@ -36,6 +36,7 @@ void ScreenEvaluation::Init(EvaluationData _Data)
 		MixerAddStream(ScreenEvaluationMusic);
 	}
 
+	ScreenEvaluationMusic->seek(0);
 	ScreenEvaluationMusic->Start();
 
 
