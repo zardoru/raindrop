@@ -25,6 +25,7 @@ namespace SongInternal
 		};
 		std::vector<TimingSegment> Timing;
 		float Offset;
+		float Duration;
 
 		// Notes
 		std::vector<Measure> Measures;
@@ -56,4 +57,7 @@ public:
 	void Save(const char* Filename);
 };
 
+/* Song Timing */
+double TimeAtBeat(SongInternal::Difficulty &Diff, float Beat);
+double DifficultyDuration(Song &MySong, SongInternal::Difficulty &Diff);
 #endif

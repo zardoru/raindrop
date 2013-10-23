@@ -10,6 +10,7 @@
 #include "ImageLoader.h"
 #include "Audio.h"
 #include <sstream>
+#include <iomanip>
 
 #define SONGLIST_BASEY 120
 #define SONGLIST_BASEX ScreenWidth*3/4
@@ -48,14 +49,13 @@ void ScreenSelectMusic::Init()
 	FileManager::GetSongList(SongList);
 
 	SwitchBackGuiPending = true;
-	// screen music :p
-	// startVorbisStream("GameData/Skins/default/loop4.ogg");
 
 	if (!Font)
 	{
 		Font = new BitmapFont();
 		Font->LoadSkinFontImage("font_screenevaluation.tga", glm::vec2(10, 20), glm::vec2(32, 32), glm::vec2(10,20), 32);
 	}
+
 	SelCursor.SetImage(ImageLoader::LoadSkin("songselect_cursor.png"));
 	SelCursor.SetSize(20);
 	SelCursor.SetPosition(SONGLIST_BASEX-SelCursor.GetWidth(), SONGLIST_BASEY);
@@ -117,11 +117,18 @@ bool ScreenSelectMusic::Run(double Delta)
 	Font->DisplayText("song select", glm::vec2(ScreenWidth/2-55, 0));
 	Font->DisplayText("press space to confirm", glm::vec2(ScreenWidth/2-110, 20));
 
-	std::stringstream ss;
-	ss << "song author: " << SongList.at(Cursor)->SongAuthor<< "\n"
-	   << "difficulties:" << SongList.at(Cursor)->Difficulties.size();
 
-	Font->DisplayText(ss.str().c_str(), glm::vec2(ScreenWidth/6, 120));
+	if (SongList.size())
+	{
+		std::stringstream ss;
+		ss << "song author: " << SongList.at(Cursor)->SongAuthor<< "\n"
+			<< "difficulties: " << SongList.at(Cursor)->Difficulties.size() << "\n";
+		int Min = SongList.at(Cursor)->Difficulties[0]->Duration / 60;
+		int Sec = (int)SongList.at(Cursor)->Difficulties[0]->Duration % 60;
+		ss	<< "duration: " << Min << ":" << std::setw(2) << std::setfill('0') << Sec;
+
+		Font->DisplayText(ss.str().c_str(), glm::vec2(ScreenWidth/6, 120));
+	}
 	SelCursor.Render();
 	Logo.Render();
 	return Running;

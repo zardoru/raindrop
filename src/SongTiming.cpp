@@ -11,6 +11,7 @@ float spb(float bpm)
 }
 
 /* Assume these are sorted. */
+// Return the (vector's index+1) Beat resides in.
 uint32 SectionIndex(Difficulty &Diff, float Beat)
 {
 	vector<Difficulty::TimingSegment> &Timing = Diff.Timing;
@@ -29,7 +30,7 @@ double TimeAtBeat(Difficulty &Diff, float Beat)
 {
 	vector<Difficulty::TimingSegment> &Timing = Diff.Timing;
 	uint32 CurrentIndex = SectionIndex(Diff, Beat);
-	double Time = 0;
+	double Time = Diff.Offset;
 
 	for (uint32 i = 0; i < CurrentIndex; i++)
 	{	
@@ -47,4 +48,12 @@ double TimeAtBeat(Difficulty &Diff, float Beat)
 		}else
 			Time += (Beat - Timing[i].Time) * spb ( Timing[i].Value );
 	}
+	return Time;
+}
+
+double DifficultyDuration(Song &MySong, Difficulty &Diff)
+{
+	if (Diff.Measures.size())
+		return TimeAtBeat(Diff, Diff.Measures.size() * MySong.MeasureLength);
+	return 0;
 }

@@ -49,10 +49,10 @@ void Song::Process(bool CalculateXPos)
 
 				if (it->hold_duration > 0)
 				{
-					it->endTime = (it->beat + it->hold_duration) * spb((*Difficulty)->Timing.at(0).Value) + (*Difficulty)->Offset;
+					it->endTime = TimeAtBeat(**Difficulty, it->beat + it->hold_duration);
 				}
 
-				it->startTime = it->beat * spb ((*Difficulty)->Timing.at(0).Value) + (*Difficulty)->Offset;
+				it->startTime = TimeAtBeat(**Difficulty, it->beat);
 
 				float frac = float(it->MeasurePos) / float(Measure->Fraction);
 
@@ -83,6 +83,7 @@ void Song::Process(bool CalculateXPos)
 			}
 			CurrentMeasure++;
 		}
+		(*Difficulty)->Duration = DifficultyDuration(*this, **Difficulty);
 	}
 }
 
