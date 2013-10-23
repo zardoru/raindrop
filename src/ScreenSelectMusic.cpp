@@ -58,7 +58,7 @@ void ScreenSelectMusic::Init()
 	}
 	SelCursor.SetImage(ImageLoader::LoadSkin("songselect_cursor.png"));
 	SelCursor.SetSize(20);
-	SelCursor.SetPosition(ScreenWidth*3/4-SelCursor.GetWidth(), 120);
+	SelCursor.SetPosition(SONGLIST_BASEX-SelCursor.GetWidth(), SONGLIST_BASEY);
 	Background.SetImage(ImageLoader::LoadSkin("ScreenEvaluationBackground.png"));
 	Logo.SetImage(ImageLoader::LoadSkin("logo.png"));
 	Logo.SetSize(480);
@@ -96,7 +96,7 @@ bool ScreenSelectMusic::Run(double Delta)
 
 		glm::vec2 mpos = WindowFrame.GetRelativeMPos();
 
-	if (mpos.x > ScreenWidth*3/4)
+	if (mpos.x > SONGLIST_BASEX)
 	{
 		float posy = mpos.y;
 		posy -= 120;
@@ -110,7 +110,7 @@ bool ScreenSelectMusic::Run(double Delta)
 	int Cur = 0;
 	for (std::vector<Song*>::iterator i = SongList.begin(); i != SongList.end(); i++)
 	{
-		Font->DisplayText((*i)->SongName.c_str(), glm::vec2(ScreenWidth*3/4, Cur*20 + 120));
+		Font->DisplayText((*i)->SongName.c_str(), glm::vec2(SONGLIST_BASEX, Cur*20 + SONGLIST_BASEY));
 		Cur++;
 	}
 
@@ -152,7 +152,7 @@ void ScreenSelectMusic::UpdateCursor()
 		ClickSnd->Reset();
 	}
 
-	SelCursor.SetPosition(ScreenWidth*3/4-SelCursor.GetWidth(), Cursor * SelCursor.GetHeight() + 120);
+	SelCursor.SetPosition(SONGLIST_BASEX - SelCursor.GetWidth(), Cursor * SelCursor.GetHeight() + SONGLIST_BASEY);
 }
 
 void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseInput)

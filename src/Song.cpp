@@ -5,11 +5,6 @@
 #include <fstream>
 #include <boost/foreach.hpp>
 
-float spb(float bpm)
-{
-	return 60 / bpm;
-}
-
 SongInternal::Measure::Measure()
 {
 	Fraction = 0;

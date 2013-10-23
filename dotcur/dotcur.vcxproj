@@ -115,6 +115,7 @@
     <ClCompile Include="..\src\ScreenMainMenu.cpp" />
     <ClCompile Include="..\src\ScreenSelectMusic.cpp" />
     <ClCompile Include="..\src\Song.cpp" />
+    <ClCompile Include="..\src\SongTiming.cpp" />
     <ClCompile Include="..\src\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
