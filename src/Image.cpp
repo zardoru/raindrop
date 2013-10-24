@@ -1,3 +1,4 @@
+#include <string>
 #include "Image.h"
 
 Image::Image(unsigned int texture, int w, int h) :
@@ -5,6 +6,7 @@ Image::Image(unsigned int texture, int w, int h) :
   w(w),
   h(h)
 {
+	IsValid = false;
 }
 
   Image::~Image()

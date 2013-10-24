@@ -7,6 +7,8 @@ public:
 	Image(unsigned int texture, int w, int h);
 	~Image();
 	
+	bool IsValid;
+	std::string fname;
 	int w, h;
 	unsigned int texture;
 };

@@ -63,6 +63,17 @@ enum KeyType
 
 };
 
+#define DOTCUR_WINDOWTITLE "dC ver: "
+#define DOTCUR_VERSION "underground 1"
+#ifdef NDEBUG
+#define DOTCUR_BUILDTYPE ""
+#else
+#define DOTCUR_BUILDTYPE " (debug)"
+#endif
+
+
+#define DOTCUR_VERSIONTEXT DOTCUR_VERSION DOTCUR_BUILDTYPE
+
 #include "BindingsManager.h"
 
 float _ScreenDifference();

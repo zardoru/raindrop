@@ -5,6 +5,7 @@
 #include "Screen.h"
 #include "Application.h"
 #include "GameWindow.h"
+#include "ImageLoader.h"
 #include <glm/gtc/matrix_transform.hpp>
 
 
@@ -81,11 +82,14 @@ KeyEventType ToKeyEventType(int32 code)
 
 GameWindow::GameWindow()
 {
+	Viewport.x = Viewport.y = 0;
 }
 
 void ResizeFunc(GLFWwindow*, int32 width, int32 height)
 {
-	glViewport(width / 2 - WindowFrame.GetMatrixSize().x / 2, 0, WindowFrame.GetMatrixSize().x, height);
+	WindowFrame.Viewport.x = width / 2 - WindowFrame.GetMatrixSize().x / 2;
+	WindowFrame.Viewport.y = 0;
+	glViewport(WindowFrame.Viewport.x, 0, WindowFrame.GetMatrixSize().x, height);
 	WindowFrame.size.x = width;
 	WindowFrame.size.y = height;
 }
@@ -94,6 +98,9 @@ void InputFunc (GLFWwindow*, int32 key, int32 scancode, int32 code, int32 modk)
 {
 	if (ToKeyEventType(code) != KE_None) // Ignore GLFW_REPEAT events
 		App.HandleInput(key, ToKeyEventType(code), false);
+
+	if (key == GLFW_KEY_ENTER && code == GLFW_PRESS && (modk & GLFW_MOD_ALT))
+		WindowFrame.FullscreenSwitchbackPending = true;
 
 	if (!WindowFrame.isGuiInputEnabled)
 		return;
@@ -128,7 +135,7 @@ glm::vec2 GameWindow::GetRelativeMPos()
 {
 	double mousex, mousey;
 	glfwGetCursorPos(wnd, &mousex, &mousey);
-	float outx = matrixSize.x * mousex / size.x;
+	float outx = mousex - Viewport.x;
 	float outy = matrixSize.y * mousey / size.y;
 	return glm::vec2 (outx, outy);
 }
@@ -139,25 +146,9 @@ void GameWindow::SetMatrix(uint32 MatrixMode, glm::mat4 matrix)
 	glLoadMatrixf((GLfloat*)&matrix[0]);
 }
 
-void GameWindow::AutoSetupWindow()
+void GameWindow::SetupWindow()
 {
 	GLenum err;
-
-	// todo: enum modes
-	if (!glfwInit())
-		throw std::exception("glfw failed initialization!"); // don't do shit
-
-	size.x = ScreenWidth;
-	size.y = ScreenHeight;
-	matrixSize.x = ScreenWidth;
-	matrixSize.y = ScreenHeight;
-
-
-	if (!(wnd = glfwCreateWindow(size.x, size.y, "dC Alpha", NULL, NULL)))
-		throw std::exception("couldn't open window!");
-
-
-	glfwSetFramebufferSizeCallback(wnd, ResizeFunc);
 	glfwMakeContextCurrent(wnd);
 
 	// we have an opengl context, try opening up glew
@@ -169,12 +160,6 @@ void GameWindow::AutoSetupWindow()
 	}
 
 	BindingsManager::Initialize();
-
-	glfwSetWindowTitle(wnd, "dC Alpha"
-#ifndef NDEBUG
-		" (debug build)"
-#endif
-		);
 
 #ifdef OLD_GL
 	// We enable some GL stuff
@@ -190,21 +175,67 @@ void GameWindow::AutoSetupWindow()
 	projection = glm::ortho<float>(0.0, matrixSize.x, matrixSize.y, 0.0, -32.0, 32.0);
 #if (defined OLD_GL)
 	SetMatrix(GL_PROJECTION, projection);
+#else
+	SetupShaders();
 #endif
 
-	SetupShaders();
-
 	// GLFW Hooks
+	glfwSetFramebufferSizeCallback(wnd, ResizeFunc);
 	glfwSetWindowSizeCallback(wnd, ResizeFunc);
 	glfwSetKeyCallback(wnd, InputFunc);
 	glfwSetMouseButtonCallback(wnd, MouseInputFunc);
 	glfwSetCursorPosCallback(wnd, MouseMoveFunc);
+
+	ResizeFunc(wnd, size.x, size.y);
+}
+
+void GameWindow::AutoSetupWindow()
+{
+	// todo: enum modes
+	if (!glfwInit())
+		throw std::exception("glfw failed initialization!"); // don't do shit
+
+	GLFWmonitor *mon = glfwGetPrimaryMonitor();
+	const GLFWvidmode *mode = glfwGetVideoMode(mon);
+
+	size.x = mode->width;
+	size.y = mode->height;
+	matrixSize.x = ScreenWidth;
+	matrixSize.y = ScreenHeight;
+
+	IsFullscreen = true;
+
+	if (!(wnd = glfwCreateWindow(size.x, size.y, DOTCUR_WINDOWTITLE DOTCUR_VERSIONTEXT, glfwGetPrimaryMonitor(), NULL)))
+		throw std::exception("couldn't open window!");
+
+	SetupWindow();
 }
 
 void GameWindow::SwapBuffers()
 {
 	glfwSwapBuffers(wnd);
 	glfwPollEvents();
+
+	/* Fullscreen switching */
+	if (FullscreenSwitchbackPending)
+	{
+		if (IsFullscreen)
+		{
+			glfwDestroyWindow(wnd);
+			wnd = glfwCreateWindow(size.x, size.y, DOTCUR_WINDOWTITLE DOTCUR_VERSIONTEXT, NULL, NULL);
+		}else
+		{
+			glfwDestroyWindow(wnd);
+			wnd = glfwCreateWindow(size.x, size.y, DOTCUR_WINDOWTITLE DOTCUR_VERSIONTEXT, glfwGetPrimaryMonitor(), NULL);
+		}
+		
+		SetupWindow();
+		ImageLoader::InvalidateAll();
+
+		IsFullscreen = !IsFullscreen;
+		FullscreenSwitchbackPending = false;
+	}
+
 }
 
 void GameWindow::ClearWindow()

@@ -252,8 +252,6 @@ bool ScreenEdit::Run(double delta)
 
 		if (CurrentDiff->Measures.size())
 		{
-			try
-			{
 				if (Measure > 0)
 				{
 					for (std::vector<GameObject>::reverse_iterator i = CurrentDiff->Measures.at(Measure-1).MeasureNotes.rbegin(); i != CurrentDiff->Measures.at(Measure-1).MeasureNotes.rend(); i++)
@@ -268,7 +266,6 @@ bool ScreenEdit::Run(double delta)
 					if (i->GetPosition().x > ScreenDifference)
 						i->Render();
 				}
-			}catch(...) { }
 		}
 
 		if (Mode != Select)

@@ -3,7 +3,9 @@
 
 #include "Image.h"
 
+#ifndef OLD_GL
 bool GraphObject2D::IsInitialized = false;
+#endif
 
 GraphObject2D::GraphObject2D()
 {
@@ -22,6 +24,9 @@ GraphObject2D::GraphObject2D()
 	DirtyMatrix = true;
 	DoTextureCleanup = true;
 
+	mImage = NULL;
+
+#ifndef OLD_GL
 	ourUVBuffer = -1;
 
 	if (!IsInitialized)
@@ -30,9 +35,8 @@ GraphObject2D::GraphObject2D()
 		ourCenteredBuffer = -1;
 	}
 
-	mImage = NULL;
-
 	InitTexture();
+#endif
 }
 
 GraphObject2D::~GraphObject2D()
@@ -121,6 +125,19 @@ void GraphObject2D::SetPositionX(float pX)
 void GraphObject2D::SetPositionY(float pY)
 {
 	mPosition.y = pY;
+	DirtyMatrix = true;
+}
+
+void GraphObject2D::AddPosition(float pX, float pY)
+{
+	mPosition.x += pX;
+	mPosition.y += pY;
+	DirtyMatrix = true;
+}
+
+void GraphObject2D::AddPosition(glm::vec2 pos)
+{
+	mPosition += pos;
 	DirtyMatrix = true;
 }
 

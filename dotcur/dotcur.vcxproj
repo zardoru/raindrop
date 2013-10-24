@@ -52,7 +52,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_STLP_DEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OLD_GL;_STLP_DEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
@@ -103,6 +103,7 @@
     <ClCompile Include="..\src\GameObject.cpp" />
     <ClCompile Include="..\src\GameWindow.cpp" />
     <ClCompile Include="..\src\GraphObject2D.cpp" />
+    <ClCompile Include="..\src\GuiButton.cpp" />
     <ClCompile Include="..\src\Image.cpp" />
     <ClCompile Include="..\src\ImageLoader.cpp" />
     <ClCompile Include="..\src\NoteLoader.cpp" />
@@ -140,6 +141,8 @@
     <ClInclude Include="..\src\GameWindow.h" />
     <ClInclude Include="..\src\GraphObject2D.h" />
     <ClInclude Include="..\src\GuiButton.h" />
+    <ClInclude Include="..\src\Image.h" />
+    <ClInclude Include="..\src\ImageLoader.h" />
     <ClInclude Include="..\src\NoteLoader.h" />
     <ClInclude Include="..\src\Screen.h" />
     <ClInclude Include="..\src\ScreenEdit.h" />

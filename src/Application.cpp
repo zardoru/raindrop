@@ -5,9 +5,7 @@
 #include "Screen.h"
 #include "GameObject.h"
 #include "Song.h"
-#include "ScreenSelectMusic.h"
-#include "ScreenGameplay.h"
-#include "ScreenEdit.h"
+#include "ScreenMainMenu.h"
 #include "Application.h"
 #include "Audio.h"
 #include "GameWindow.h"
@@ -31,7 +29,7 @@ void Application::Init()
 
 void Application::Run()
 {
-	Game = new ScreenSelectMusic();
+	Game = new ScreenMainMenu(NULL);
 	Game->Init();
 
 	while (Game->IsScreenRunning() && !WindowFrame.ShouldCloseWindow())

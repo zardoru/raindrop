@@ -1,8 +1,13 @@
 #ifndef SCREEN_MAINMANU_H_
 #define SCREEN_MAINMENU_H_
 
+#include "GuiButton.h"
+
 class ScreenMainMenu : public IScreen
 {
+	GUI::Button PlayBtn, EditBtn, OptionsBtn, ExitBtn;
+	GraphObject2D Logo, Background;
+	double ScreenTime;
 public:
 	ScreenMainMenu(IScreen *Parent);
 	void Init();

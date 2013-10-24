@@ -40,7 +40,7 @@ void ScreenEvaluation::Init(EvaluationData _Data)
 	ScreenEvaluationMusic->Start();
 
 
-	Background.SetImage(ImageLoader::LoadSkin("ScreenEvaluationBackground.png"));
+	Background.SetImage(ImageLoader::LoadSkin("MenuBackground.png"));
 	if (!Font)
 	{
 		Font = new BitmapFont();

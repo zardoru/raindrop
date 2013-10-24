@@ -294,9 +294,9 @@ void VorbisSample::Reset()
 
 int32 VorbisSample::readBuffer(void * out, uint32 length)
 {
+	length *= info->channels;
 	if (Counter != BufSize)
-	{
-		length *= info->channels;
+	{		
 		if(length > BufSize-Counter)
 		{
 			memset(out, 0, length);
@@ -306,10 +306,12 @@ int32 VorbisSample::readBuffer(void * out, uint32 length)
 		memcpy(out, buffer+Counter, length);
 
 		Counter += length;
-
-		return length;
 	}else
-		return 0;
+	{
+		memset(out, 0, length);
+	}
+
+	return length;
 }
 
 /*************************/

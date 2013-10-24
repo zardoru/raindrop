@@ -3,6 +3,7 @@
 
 IScreen::IScreen() 
 {  
+	Parent = NULL;
 	Running = false;
 	Next = 0;
 }

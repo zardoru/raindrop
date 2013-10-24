@@ -4,11 +4,14 @@
 
 #include <GL/glew.h>
 #include "Image.h"
+#include "ImageLoader.h"
 #include <glm/gtc/type_ptr.hpp>
 #include "GameWindow.h"
 
+#ifndef OLD_GL
 uint32 GraphObject2D::ourBuffer;
 uint32 GraphObject2D::ourCenteredBuffer;
+#endif
 
 void GraphObject2D::Init()
 {
@@ -120,6 +123,14 @@ void GraphObject2D::Render()
 	if (mImage)
 	{
 		glActiveTexture(GL_TEXTURE0);
+
+		if (!mImage->IsValid) 
+		{
+			mImage = ImageLoader::Load(mImage->fname);
+			Render();
+			return;
+		}
+
 		glBindTexture(GL_TEXTURE_2D, mImage->texture);
 	}
 	else

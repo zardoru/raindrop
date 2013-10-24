@@ -20,7 +20,6 @@ VorbisStream	*Loops[6];
 
 ScreenSelectMusic::ScreenSelectMusic()
 {
-	Running = true;
 	Font = NULL;
 	if (!SelectSnd)
 	{
@@ -40,14 +39,14 @@ ScreenSelectMusic::ScreenSelectMusic()
 			MixerAddStream(Loops[i]);
 		}
 	}
-
-	OldCursor = Cursor = 0;
 }
 
 void ScreenSelectMusic::Init()
 {
 	FileManager::GetSongList(SongList);
 
+	Running = true;
+	OldCursor = Cursor = 0;
 	SwitchBackGuiPending = true;
 
 	if (!Font)
@@ -59,7 +58,7 @@ void ScreenSelectMusic::Init()
 	SelCursor.SetImage(ImageLoader::LoadSkin("songselect_cursor.png"));
 	SelCursor.SetSize(20);
 	SelCursor.SetPosition(SONGLIST_BASEX-SelCursor.GetWidth(), SONGLIST_BASEY);
-	Background.SetImage(ImageLoader::LoadSkin("ScreenEvaluationBackground.png"));
+	Background.SetImage(ImageLoader::LoadSkin("MenuBackground.png"));
 	Logo.SetImage(ImageLoader::LoadSkin("logo.png"));
 	Logo.SetSize(480);
 	Logo.Centered = true;
@@ -69,6 +68,7 @@ void ScreenSelectMusic::Init()
 
 void ScreenSelectMusic::Cleanup()
 {
+	StopLoops();
 }
 
 bool ScreenSelectMusic::Run(double Delta)
@@ -204,6 +204,8 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 				StopLoops();
 			}
 				break;
+		case KT_Escape:
+			Running = false;
 		}
 	}
 }

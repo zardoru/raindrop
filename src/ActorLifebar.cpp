@@ -35,19 +35,19 @@ void ActorLifebar::HitJudgement(Judgement Hit)
 	switch (Hit)
 	{
 		case Excellent:
-			pending_health += 5;
-			break;
-		case Perfect:
 			pending_health += 2;
 			break;
-		case Great:
+		case Perfect:
 			pending_health += 1;
 			break;
+		case Great:
+			break;
 		case Bad:
+			pending_health -= 3;
 			break;
 		case Miss:
 		case NG:
-			pending_health -= 25;
+			pending_health -= 30;
 	}
 }
 
@@ -58,10 +58,17 @@ void ActorLifebar::Run(double delta)
 	{
 		Health += pending_health * delta;
 		pending_health -= pending_health * delta;
-	}
 
-	if (Health > 100)
-		Health = 100;
+		if (pending_health > 400) // only up to 4x health
+			pending_health = 400;
+
+		/* Accomulate health. Better you do, more forviging to mistakes. */
+		if (Health > 100)
+		{
+			pending_health += Health - 100;
+			Health = 100;
+		}
+	}
 
 	UpdateHealth();
 }

@@ -64,7 +64,7 @@ void ActorBarline::Run(double TimeDelta, double MeasureTime, double TotalTime)
 		if (Ratio > RadioThreshold)
 		{
 			float diff = Ratio - RadioThreshold;
-			float duration = (1 - RadioThreshold);
+			double duration = (1 - RadioThreshold);
 
 			Red = 1 * (diff/duration);
 			Blue = 200.f / 255.f - (200.f / 255.f) * (diff/duration);

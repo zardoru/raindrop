@@ -10,13 +10,14 @@ class GameWindow
 	friend void ResizeFunc(GLFWwindow*, int32,int32);
 	friend void InputFunc(GLFWwindow*,int32,int32,int32,int32);
 	glm::vec2 size;
-	glm::vec2 matrixSize;
+	glm::vec2 matrixSize, Viewport;
 	glm::mat4 projection;
 
+	bool FullscreenSwitchbackPending, IsFullscreen;
 	uint32 defaultVertexShader, defaultFragShader, defaultShaderProgram, defaultVao;
 	GLFWwindow *wnd;
 
-	void SetupCEGUI();
+	void SetupWindow();
 	void SetupShaders();
 
 public:

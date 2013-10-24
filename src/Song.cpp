@@ -140,7 +140,8 @@ void Song::Save(const char* Filename)
 				Out << "}";
 
 				// Fill in the blanks between two notes.
-				try
+
+				if (n+1 < m->MeasureNotes.size())
 				{
 					int32 Difference = (m->MeasureNotes.at(n+1).MeasurePos - m->MeasureNotes.at(n).MeasurePos);
 					if (Difference > 1)
@@ -151,7 +152,8 @@ void Song::Save(const char* Filename)
 							Difference--;
 						}
 					}
-				}catch (...) {}
+				}
+				
 
 				if (n == m->MeasureNotes.size()-1) // We're at the last note of the measure
 				{

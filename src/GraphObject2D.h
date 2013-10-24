@@ -5,8 +5,10 @@ class Image;
 
 class GraphObject2D
 {
+#ifndef OLD_GL
 	static uint32 ourBuffer, ourCenteredBuffer;
 	static bool IsInitialized;
+#endif
 	glm::mat4x4 Matrix;
 
 
@@ -69,6 +71,8 @@ public:
 	// Position
 	void SetPosition(glm::vec2 Pos);
 	void SetPosition(float pX, float pY);
+	void AddPosition(float pX, float pY);
+	void AddPosition(glm::vec2 pos);
 	void SetPositionX(float pX);
 	void SetPositionY(float pY);
 	glm::vec2 GetPosition();

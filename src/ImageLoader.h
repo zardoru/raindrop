@@ -15,6 +15,8 @@ public:
 	ImageLoader();
 	~ImageLoader();
 	
+	static void   InvalidateAll();
+	static void   UnloadAll();
 	static Image* Load(std::string filename);
 	static Image* LoadSkin(std::string filename);
 };

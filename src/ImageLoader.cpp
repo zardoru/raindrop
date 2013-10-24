@@ -21,9 +21,27 @@ ImageLoader::~ImageLoader()
 	// unload ALL the images.
 }
 
+void ImageLoader::InvalidateAll()
+{
+	for (std::map<std::string, Image*>::iterator i = Textures.begin(); i != Textures.end(); i++)
+	{
+		i->second->IsValid = false;
+	}
+}
+
+void ImageLoader::UnloadAll()
+{
+	for (std::map<std::string, Image*>::iterator i = Textures.begin(); i != Textures.end(); i++)
+	{
+		glDeleteTextures(1, &i->second->texture);
+	}
+
+	InvalidateAll();
+}
+
 Image* ImageLoader::Load(String filename)
 {
-	if ( Textures.find(filename) != Textures.end() )
+	if ( Textures.find(filename) != Textures.end() && Textures[filename]->IsValid)
 	{
 		return Textures[filename];
 	}
@@ -67,8 +85,21 @@ Image* ImageLoader::Load(String filename)
 		}
 
 		SOIL_free_image_data(image);
-		// reaching this point is unlikely.
-		return (Textures[filename] = new Image(texture, width, height));
+		
+		if (Textures.find(filename) == Textures.end())
+		{
+			Image* I = (Textures[filename] = new Image(texture, width, height));
+			I->IsValid = true;
+			I->fname = filename;
+			return I;
+		}else
+		{
+			Textures[filename]->texture = texture;
+			Textures[filename]->w = width;
+			Textures[filename]->h = height;
+			Textures[filename]->IsValid = true;
+			return Textures[filename];
+		}
 	}
 	return 0;
 }
