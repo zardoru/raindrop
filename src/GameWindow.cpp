@@ -83,15 +83,22 @@ KeyEventType ToKeyEventType(int32 code)
 GameWindow::GameWindow()
 {
 	Viewport.x = Viewport.y = 0;
+	SizeRatio = 1.0f;
 }
 
 void ResizeFunc(GLFWwindow*, int32 width, int32 height)
 {
-	WindowFrame.Viewport.x = width / 2 - WindowFrame.GetMatrixSize().x / 2;
+	float HeightRatio = (float)height / WindowFrame.GetMatrixSize().y;
+
+	WindowFrame.Viewport.x = width / 2 - WindowFrame.GetMatrixSize().x * HeightRatio / 2;
 	WindowFrame.Viewport.y = 0;
-	glViewport(WindowFrame.Viewport.x, 0, WindowFrame.GetMatrixSize().x, height);
+
+	glViewport(WindowFrame.Viewport.x, 0, WindowFrame.GetMatrixSize().x * HeightRatio, height);
+
 	WindowFrame.size.x = width;
 	WindowFrame.size.y = height;
+
+	WindowFrame.SizeRatio = HeightRatio;
 }
 
 void InputFunc (GLFWwindow*, int32 key, int32 scancode, int32 code, int32 modk)
@@ -135,7 +142,7 @@ glm::vec2 GameWindow::GetRelativeMPos()
 {
 	double mousex, mousey;
 	glfwGetCursorPos(wnd, &mousex, &mousey);
-	float outx = mousex - Viewport.x;
+	float outx = (mousex - Viewport.x) / SizeRatio;
 	float outy = matrixSize.y * mousey / size.y;
 	return glm::vec2 (outx, outy);
 }
@@ -225,6 +232,12 @@ void GameWindow::SwapBuffers()
 			wnd = glfwCreateWindow(size.x, size.y, DOTCUR_WINDOWTITLE DOTCUR_VERSIONTEXT, NULL, NULL);
 		}else
 		{
+			GLFWmonitor *mon = glfwGetPrimaryMonitor();
+			const GLFWvidmode *mode = glfwGetVideoMode(mon);
+
+			size.x = mode->width;
+			size.y = mode->height;
+
 			glfwDestroyWindow(wnd);
 			wnd = glfwCreateWindow(size.x, size.y, DOTCUR_WINDOWTITLE DOTCUR_VERSIONTEXT, glfwGetPrimaryMonitor(), NULL);
 		}

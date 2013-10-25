@@ -16,6 +16,7 @@ class GameWindow
 	bool FullscreenSwitchbackPending, IsFullscreen;
 	uint32 defaultVertexShader, defaultFragShader, defaultShaderProgram, defaultVao;
 	GLFWwindow *wnd;
+	float SizeRatio;
 
 	void SetupWindow();
 	void SetupShaders();
