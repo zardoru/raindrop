@@ -37,6 +37,7 @@ GameObject::GameObject() : GraphObject2D(false)
 		MixerAddSample(HoldReleaseSnd);
 	}
 
+#ifndef OLD_GL
 	if (GameObjectTexInitialized)
 		ourUVBuffer = GameObjectUVvbo;
 	else
@@ -45,6 +46,7 @@ GameObject::GameObject() : GraphObject2D(false)
 		GameObjectUVvbo = ourUVBuffer;
 		GameObjectTexInitialized = true;
 	}
+#endif
 	ColorInvert = false;
 }
 
@@ -202,6 +204,8 @@ Judgement GameObject::Hit(float Time, glm::vec2 mpos, bool KeyDown,  bool Autopl
 /* Assume GraphObject2D was already invalidated*/ 
 void GameObject::Invalidate()
 {
+#ifndef OLD_GL
 	InitTexture();
 	GameObjectUVvbo = ourUVBuffer;
+#endif
 }

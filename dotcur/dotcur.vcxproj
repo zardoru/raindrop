@@ -5,6 +5,10 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Release GL2|Win32">
+      <Configuration>Release GL2</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
@@ -28,6 +32,9 @@
     <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v90</PlatformToolset>
   </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release GL2|Win32'">
+    <PlatformToolset>v90</PlatformToolset>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -48,11 +55,15 @@
     <IncludePath>$(WindowsSdkDir)include;$(FrameworkSDKDir)include;D:\development\STLport-5.2.1.tar\stlport;$(VCInstallDir)include;D:\development\libs\portaudio\src\common;D:\development\cAudio-2.2.0\DependenciesSource\libvorbis-1.3.2\include;D:\Nueva carpeta %282%29\boost_1_52_0\boost_1_52_0;D:\development\cAudio-2.2.0\DependenciesSource\libogg-1.2.2\include;D:\development\libs\portaudio\include;D:\development\glfw-3.0.3\include;C:\Users\Azardoru\Documents\boost_1_49_0\boost_1_49_0;D:\development\libs\cAudio-2.2.0\cAudio\include;D:\development\libs\glfw-2.7.7.bin.WIN32\include;../soil;D:\development\libs\glm;D:\development\libs\glew-1.9.0\include</IncludePath>
     <LibraryPath>D:\development\STLport-5.2.1.tar\lib;D:\development\libs\portaudio\bin\Win32\Release;D:\development\cAudio-2.2.0\DependenciesSource\libvorbis-1.3.2\Release;D:\development\cAudio-2.2.0\DependenciesSource\libogg-1.2.2\Release;D:\development\libs\glew-1.9.0\lib;D:\development\libs\boost_1_49_0\boost_1_49_0\stage\lib;D:\Nueva carpeta (2)\boost_1_52_0\boost_1_52_0\stage\lib;D:\development\glfw-3.0.3\src\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release GL2|Win32'">
+    <IncludePath>$(WindowsSdkDir)include;$(FrameworkSDKDir)include;D:\development\STLport-5.2.1.tar\stlport;$(VCInstallDir)include;D:\development\libs\portaudio\src\common;D:\development\cAudio-2.2.0\DependenciesSource\libvorbis-1.3.2\include;D:\Nueva carpeta %282%29\boost_1_52_0\boost_1_52_0;D:\development\cAudio-2.2.0\DependenciesSource\libogg-1.2.2\include;D:\development\libs\portaudio\include;D:\development\glfw-3.0.3\include;C:\Users\Azardoru\Documents\boost_1_49_0\boost_1_49_0;D:\development\libs\cAudio-2.2.0\cAudio\include;D:\development\libs\glfw-2.7.7.bin.WIN32\include;../soil;D:\development\libs\glm;D:\development\libs\glew-1.9.0\include</IncludePath>
+    <LibraryPath>D:\development\STLport-5.2.1.tar\lib;D:\development\libs\portaudio\bin\Win32\Release;D:\development\cAudio-2.2.0\DependenciesSource\libvorbis-1.3.2\Release;D:\development\cAudio-2.2.0\DependenciesSource\libogg-1.2.2\Release;D:\development\libs\glew-1.9.0\lib;D:\development\libs\boost_1_49_0\boost_1_49_0\stage\lib;D:\Nueva carpeta (2)\boost_1_52_0\boost_1_52_0\stage\lib;D:\development\glfw-3.0.3\src\Release;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>OLD_GL;_STLP_DEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_STLP_DEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
@@ -84,6 +95,15 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>portaudio_x86.lib;opengl32.lib;Ogg.lib;Vorbis.lib;glfw3.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release GL2|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>OLD_GL;BOOST_NO_EXCEPTION;_STLP_NO_EXCEPTIONS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>portaudio_x86.lib;opengl32.lib;Ogg.lib;Vorbis.lib;glfw3.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)-gl2$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
