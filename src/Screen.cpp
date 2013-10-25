@@ -48,3 +48,5 @@ bool IScreen::RunNested(float delta)
 }
 
 void IScreen::Cleanup() { /* stub */ }
+
+void IScreen::Invalidate() { /* stub */ }

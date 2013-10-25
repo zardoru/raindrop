@@ -6,6 +6,8 @@
 #include "Application.h"
 #include "GameWindow.h"
 #include "ImageLoader.h"
+#include "GraphObject2D.h"
+#include "GameObject.h"
 #include <glm/gtc/matrix_transform.hpp>
 
 
@@ -17,10 +19,11 @@ const char* vertShader = "#version 120\n"
 	"uniform mat4 projection;\n"
 	"uniform mat4 mvp;\n"
 	"varying vec2 Texcoord;\n"
-	"void main() {\n"
-	"gl_Position = projection * mvp * vec4(position, 1);\n"
-	"Texcoord = vertexUV;\n"
-	"}\n";
+	"void main() \n"
+	"{\n"
+	"	gl_Position = projection * mvp * vec4(position, 1);\n"
+	"	Texcoord = vertexUV;\n"
+	"}";
 
 const char* fragShader = "#version 120\n"
 	"varying vec2 Texcoord;\n"
@@ -31,7 +34,7 @@ const char* fragShader = "#version 120\n"
 	"void main(void)\n"
 	"{\n"
 	"	 if (inverted) {\n"
-	"		gl_FragColor = vec4(1 - texture2D(tex, Texcoord).r, 1 - texture2D(tex, Texcoord).g, 1 - texture2D(tex, Texcoord).b, texture2D(tex, Texcoord).a) * Color;\n"
+	"		gl_FragColor = vec4(1.0, 1.0, 1.0, 0.0) - texture2D(tex, Texcoord) * Color;\n"
 	"	 }else{\n"
 	"		gl_FragColor = texture2D(tex, Texcoord) * Color;\n"
 	"	 }\n"
@@ -244,6 +247,13 @@ void GameWindow::SwapBuffers()
 		
 		SetupWindow();
 		ImageLoader::InvalidateAll();
+
+		/* This invalidates all GraphObject2Ds. */
+		GraphObject2D GO1;
+		GO1.Invalidate();
+
+		GameObject GO2;
+		GO2.Invalidate();
 
 		IsFullscreen = !IsFullscreen;
 		FullscreenSwitchbackPending = false;

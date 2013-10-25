@@ -11,10 +11,8 @@ class GraphObject2D
 #endif
 	glm::mat4x4 Matrix;
 
-
 private: // Transformations
 
-	void InitTexture();
 	void Cleanup();
 	void UpdateTexture();
 
@@ -42,11 +40,16 @@ private: // Transformations
 	Image* mImage;
 
 protected:
+#ifndef OLD_GL
 	uint32 ourUVBuffer;
+#endif
 	bool DoTextureCleanup;
+	void InitTexture();
+
+	virtual void Initialize(bool ShouldInitTexture);
 public:
 
-	GraphObject2D();
+	GraphObject2D(bool ShouldInitTexture = true);
 	~GraphObject2D();
 	
 	// color and other transformations
@@ -91,6 +94,8 @@ public:
 	void SetCrop(glm::vec2 Crop1, glm::vec2 Crop2);
 	void SetCrop1(glm::vec2 Crop1);
 	void SetCrop2(glm::vec2 Crop2);
+	void SetCropToWholeImage();
+	void SetCropByPixels(int32 x1, int32 x2, int32 y1, int32 y2);
 
 	// Rotation
 	void SetRotation(float Rot);
@@ -98,9 +103,7 @@ public:
 	void AddRotation(float Rot);
 
 	void Render(); // found in backend.cpp
-
-	void SetCropToWholeImage();
-	void SetCropByPixels(int32 x1, int32 x2, int32 y1, int32 y2);
+	virtual void Invalidate();
 	
 };
 

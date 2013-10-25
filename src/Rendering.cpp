@@ -251,8 +251,11 @@ void GraphObject2D::Render()
 
 void GraphObject2D::Cleanup()
 {
+#ifndef OLD_GL
 	if (DoTextureCleanup)
 	{
-		// todo: clean up UV vbo
+		if (ourUVBuffer != -1 && IsInitialized)
+			glDeleteBuffers(1, &ourUVBuffer);
 	}
+#endif
 }

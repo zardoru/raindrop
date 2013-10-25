@@ -10,7 +10,7 @@ SoundSample *HoldReleaseSnd = NULL;
 bool GameObjectTexInitialized = false;
 uint32 GameObjectUVvbo;
 
-GameObject::GameObject() : GraphObject2D()
+GameObject::GameObject() : GraphObject2D(false)
 {
 	SetImage(ImageLoader::LoadSkin("hitcircle.png"));
 	Centered = true; // use the object's center instead of top-left
@@ -41,6 +41,7 @@ GameObject::GameObject() : GraphObject2D()
 		ourUVBuffer = GameObjectUVvbo;
 	else
 	{
+		InitTexture();
 		GameObjectUVvbo = ourUVBuffer;
 		GameObjectTexInitialized = true;
 	}
@@ -196,4 +197,11 @@ Judgement GameObject::Hit(float Time, glm::vec2 mpos, bool KeyDown,  bool Autopl
 		}
 	}
 	return None;
+}
+
+/* Assume GraphObject2D was already invalidated*/ 
+void GameObject::Invalidate()
+{
+	InitTexture();
+	GameObjectUVvbo = ourUVBuffer;
 }

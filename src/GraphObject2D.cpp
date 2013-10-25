@@ -7,7 +7,7 @@
 bool GraphObject2D::IsInitialized = false;
 #endif
 
-GraphObject2D::GraphObject2D()
+GraphObject2D::GraphObject2D(bool ShouldInitTexture)
 {
 	SetCropToWholeImage();
 	mWidth = mHeight = 0;
@@ -26,17 +26,7 @@ GraphObject2D::GraphObject2D()
 
 	mImage = NULL;
 
-#ifndef OLD_GL
-	ourUVBuffer = -1;
-
-	if (!IsInitialized)
-	{
-		ourBuffer = -1;
-		ourCenteredBuffer = -1;
-	}
-
-	InitTexture();
-#endif
+	Initialize(ShouldInitTexture);
 }
 
 GraphObject2D::~GraphObject2D()
@@ -232,3 +222,27 @@ void GraphObject2D::AddRotation(float Rot)
 	mRotation += Rot;
 	DirtyMatrix = true;
 }
+
+void GraphObject2D::Invalidate()
+{
+#ifndef OLD_GL
+	IsInitialized = false;
+#endif
+}
+
+void GraphObject2D::Initialize(bool ShouldInitTexture)
+{
+#ifndef OLD_GL
+	ourUVBuffer = -1;
+
+	if (!IsInitialized)
+	{
+		ourBuffer = -1;
+		ourCenteredBuffer = -1;
+	}
+
+	if (ShouldInitTexture)
+		InitTexture();
+#endif
+}
+

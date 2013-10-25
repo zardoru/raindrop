@@ -6,7 +6,8 @@
 
 class GameObject : public GraphObject2D
 {
-	static bool Initialized;
+protected:
+	void Initialize();
 public:
 	GameObject();
 	bool BeingHeld;
@@ -20,6 +21,7 @@ public:
 	Judgement Hit(float time, glm::vec2 mpos, bool KeyDown, bool Autoplay, int32 Key);
 	Judgement Run(double delta, double Time, bool Autoplay);
 	void Animate(float delta, float songTime);
+	void Invalidate();
 };
 
 typedef std::vector<GameObject> GameObjectVector;
