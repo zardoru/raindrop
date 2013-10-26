@@ -20,10 +20,16 @@ namespace SongInternal
 		// Type
 		struct TimingSegment
 		{
-			float Time; // in beats
-			float Value; // in bpm
+			double Time; // in beats
+			double Value; // in bpm
 		};
+
+		// Stores bpm at beat pairs
 		std::vector<TimingSegment> Timing;
+
+		// Stores the ratio barline should move at a certain time
+		std::vector<TimingSegment> BarlineRatios;
+
 		float Offset;
 		float Duration;
 
@@ -60,4 +66,6 @@ public:
 /* Song Timing */
 double TimeAtBeat(SongInternal::Difficulty &Diff, float Beat);
 double DifficultyDuration(Song &MySong, SongInternal::Difficulty &Diff);
+void CalculateBarlineRatios(Song &MySong, SongInternal::Difficulty &Diff);
+
 #endif

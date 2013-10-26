@@ -84,6 +84,7 @@ void Song::Process(bool CalculateXPos)
 			CurrentMeasure++;
 		}
 		(*Difficulty)->Duration = DifficultyDuration(*this, **Difficulty);
+		CalculateBarlineRatios(*this, **Difficulty);
 	}
 }
 
