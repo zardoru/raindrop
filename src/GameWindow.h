@@ -30,6 +30,7 @@ public:
 
 	// assigns this matrix on the stack
 	void SetMatrix(uint32 MatrixMode, glm::mat4 matrix);
+	void SetVisibleCursor(bool Visible);
 
 	// returns the mouse position relative to the matrix and window size
 	glm::vec2 GetRelativeMPos();

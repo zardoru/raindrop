@@ -45,6 +45,7 @@ void ScreenGameplay::Cleanup()
 		delete Music;
 		Music = NULL;
 	}
+	WindowFrame.SetVisibleCursor(true);
 }
 
 
@@ -176,6 +177,7 @@ void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
 
 	Cursor.SetSize(72);
 	Cursor.Centered = true;
+	WindowFrame.SetVisibleCursor(false);
 }
 
 int32 ScreenGameplay::GetMeasure()
@@ -478,9 +480,9 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 	glm::vec2 mpos = WindowFrame.GetRelativeMPos();
 	Cursor.SetPosition(mpos);
 
-	Cursor.AddRotation(140 * TimeDelta);
+	/*Cursor.AddRotation(140 * TimeDelta);
 	if (Cursor.GetRotation() > 360)
-		Cursor.AddRotation(-360);
+		Cursor.AddRotation(-360);*/
 
 	// Rendering ahead.
 

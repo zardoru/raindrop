@@ -292,6 +292,15 @@ bool GameWindow::ShouldCloseWindow()
 	return !!glfwWindowShouldClose(wnd);
 }
 
+void GameWindow::SetVisibleCursor(bool Visible)
+{
+	if (Visible)
+	{
+		glfwSetInputMode(wnd, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	}else
+		glfwSetInputMode(wnd, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+}
+
 void GameWindow::SetupShaders()
 {
 #ifndef OLD_GL

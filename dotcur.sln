@@ -5,15 +5,21 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dotcur", "dotcur\dotcur.vcx
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug NoSTLPort|Win32 = Debug NoSTLPort|Win32
 		Debug|Win32 = Debug|Win32
 		Release GL2|Win32 = Release GL2|Win32
+		Release NoSTLport|Win32 = Release NoSTLport|Win32
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F065A22E-9B7B-4B5C-972F-2C8E30859D96}.Debug NoSTLPort|Win32.ActiveCfg = Debug NoSTLPort|Win32
+		{F065A22E-9B7B-4B5C-972F-2C8E30859D96}.Debug NoSTLPort|Win32.Build.0 = Debug NoSTLPort|Win32
 		{F065A22E-9B7B-4B5C-972F-2C8E30859D96}.Debug|Win32.ActiveCfg = Debug|Win32
 		{F065A22E-9B7B-4B5C-972F-2C8E30859D96}.Debug|Win32.Build.0 = Debug|Win32
 		{F065A22E-9B7B-4B5C-972F-2C8E30859D96}.Release GL2|Win32.ActiveCfg = Release GL2|Win32
 		{F065A22E-9B7B-4B5C-972F-2C8E30859D96}.Release GL2|Win32.Build.0 = Release GL2|Win32
+		{F065A22E-9B7B-4B5C-972F-2C8E30859D96}.Release NoSTLport|Win32.ActiveCfg = Release NoSTLport|Win32
+		{F065A22E-9B7B-4B5C-972F-2C8E30859D96}.Release NoSTLport|Win32.Build.0 = Release NoSTLport|Win32
 		{F065A22E-9B7B-4B5C-972F-2C8E30859D96}.Release|Win32.ActiveCfg = Release|Win32
 		{F065A22E-9B7B-4B5C-972F-2C8E30859D96}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
