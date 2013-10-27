@@ -29,6 +29,10 @@ class ScreenEdit : public ScreenGameplay
 		Hold
 	}Mode; 
 	GraphObject2D GhostObject;
+
+	bool  GridEnabled;
+	int32 GridCellSize; // ScreenSize / GridCellSize
+	// float GridOffset;
 public:
 	ScreenEdit (IScreen * Parent);
 	void Init(Song *Other);

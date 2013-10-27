@@ -60,7 +60,8 @@ enum KeyType
 	KT_FractionDec,
 	KT_FractionInc,
 	KT_ChangeMode,
-
+	KT_GridDec,
+	KT_GridInc
 };
 
 #define DOTCUR_WINDOWTITLE "dC ver: "

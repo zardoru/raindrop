@@ -23,6 +23,8 @@ ScreenEdit::ScreenEdit(IScreen *Parent)
 	EditMode = true;
 	HeldObject = NULL;
 	Mode = Select;
+	GridEnabled = false;
+	GridCellSize = 16;
 }
 
 void ScreenEdit::Cleanup()
@@ -40,7 +42,8 @@ void ScreenEdit::Init(Song *Other)
 		ScreenGameplay::Init (Other, 0);
 		NotesInMeasure.clear(); 
 
-		Other->Difficulties[0]->Timing.push_back(SongInternal::Difficulty::TimingSegment());
+		if (!Other->Difficulties[0]->Timing.size())
+			Other->Difficulties[0]->Timing.push_back(SongInternal::Difficulty::TimingSegment());
 	}
 }
 
@@ -56,12 +59,15 @@ void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
 	KeyType tkey = BindingsManager::TranslateKey(key);
 	if (EditScreenState == Playing)
+	{
 		ScreenGameplay::HandleInput(key, code, isMouseInput);
+	}
 
 	if (!isMouseInput)
 	{
 		if (key == 'P') // pressed p?
 		{
+			IsAutoplaying = false;
 			MySong->Process(false);
 			if (EditScreenState == Editing) // if we're editing, start playing the song
 			{
@@ -129,6 +135,12 @@ void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 				}else if (tkey == KT_FractionInc)
 				{
 					AssignFraction(Measure, CurrentDiff->Measures[Measure].Fraction+1);
+				}else if (tkey == KT_GridDec)
+				{
+					GridCellSize--;
+				}else if (tkey == KT_GridInc)
+				{
+					GridCellSize++;
 				}else if (key == 'S') // Save!
 				{
 					String DefaultPath = "chart.dcf";
@@ -164,6 +176,9 @@ void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 				{
 					if (Measure > 0)
 						Measure--;
+				}else if (key == 'G')
+				{
+					GridEnabled = !GridEnabled;
 				}
 			}
 		}
@@ -242,7 +257,16 @@ bool ScreenEdit::Run(double delta)
 		}
 
 		GhostObject.SetPositionY(YLock);
-		GhostObject.SetPositionX(WindowFrame.GetRelativeMPos().x);
+
+		if (!GridEnabled)
+		{
+			GhostObject.SetPositionX(WindowFrame.GetRelativeMPos().x);
+		}else
+		{
+			int32 CellSize = ScreenWidth / GridCellSize;
+			int32 Mod = (int)(WindowFrame.GetRelativeMPos().x - ScreenDifference) % CellSize;
+			GhostObject.SetPositionX((int)WindowFrame.GetRelativeMPos().x - Mod);
+		}
 		
 		if ((GhostObject.GetPosition().x-ScreenDifference) > PlayfieldWidth)
 			GhostObject.SetPositionX(PlayfieldWidth+ScreenDifference);
@@ -284,6 +308,8 @@ bool ScreenEdit::Run(double delta)
 			info << "Hold";
 		else
 			info << "Null";
+		if (GridEnabled)
+			info << "\nGrid Enabled (size " << ScreenWidth / GridCellSize << ")";
 		EditInfo.DisplayText(info.str().c_str(), glm::vec2(512, 600));
 
 	}

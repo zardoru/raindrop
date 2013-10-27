@@ -58,6 +58,8 @@ void BindingsManager::Initialize()
 	ScanFunction[GLFW_KEY_F1] = KT_FractionDec;
 	ScanFunction[GLFW_KEY_F2] = KT_FractionInc;
 	ScanFunction[GLFW_KEY_TAB] = KT_ChangeMode;
+	ScanFunction[GLFW_KEY_F5] = KT_GridDec;
+	ScanFunction[GLFW_KEY_F6] = KT_GridInc;
 }
 
 KeyType BindingsManager::TranslateKey(int32 Scan)
