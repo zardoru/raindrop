@@ -107,7 +107,6 @@ Song* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 		{
 		}
 		*/
-
 		// Then, the charts.
 		if (command.find("#NOTES") != String::npos) // current command is notes?
 		{
@@ -159,7 +158,7 @@ Song* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 						int32 sound = 0;
 
 						if (object_parameters[0].length() > 0) // does it have length?
-							xpos = boost::lexical_cast<int32> (object_parameters[0].c_str()); // assign it
+							xpos = boost::lexical_cast<float> (object_parameters[0].c_str()); // assign it
 
 						if (object_parameters.size() > 1) // We got a hold note parameter
 						{
@@ -209,8 +208,8 @@ Song* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 			Out->Difficulties.push_back(Difficulty); 
 			Difficulty = new SongInternal::Difficulty();
 		}// command == #notes
-	}
 
+	}
 	delete Difficulty; // There will always be an extra copy.
 
 	// at this point the objects are sorted! by measure and within the measure, by fraction.

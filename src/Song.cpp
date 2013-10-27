@@ -133,7 +133,7 @@ void Song::Save(const char* Filename)
 				}
 
 				// Fill the current note.
-				Out << "{" << m->MeasureNotes[n].GetPosition().x;
+				Out << "{" << (int)m->MeasureNotes[n].GetPosition().x;
 				
 				if (m->MeasureNotes[n].hold_duration)
 					Out << " " << m->MeasureNotes[n].hold_duration;

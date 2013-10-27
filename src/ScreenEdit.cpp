@@ -27,6 +27,7 @@ ScreenEdit::ScreenEdit(IScreen *Parent)
 
 void ScreenEdit::Cleanup()
 {
+	ScreenGameplay::Cleanup();
 }
 
 void ScreenEdit::Init(Song *Other)
@@ -107,7 +108,7 @@ void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 						MySong->Process(false);
 					}
 
-					if (CurrentFraction || Measure > 1)
+					if (CurrentFraction || Measure > 0)
 					{
 						CurrentFraction--;
 
