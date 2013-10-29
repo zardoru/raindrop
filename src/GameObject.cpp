@@ -205,7 +205,19 @@ Judgement GameObject::Hit(float Time, glm::vec2 mpos, bool KeyDown,  bool Autopl
 void GameObject::Invalidate()
 {
 #ifndef OLD_GL
+	ourUVBuffer = -1;
 	InitTexture();
 	GameObjectUVvbo = ourUVBuffer;
 #endif
+}
+
+void GameObject::Render()
+{
+#ifndef OLD_GL
+	if (ourUVBuffer != GameObjectUVvbo)
+	{
+		ourUVBuffer = GameObjectUVvbo;
+	}
+#endif
+	GraphObject2D::Render();
 }

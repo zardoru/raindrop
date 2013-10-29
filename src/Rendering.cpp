@@ -13,7 +13,7 @@ uint32 GraphObject2D::ourBuffer;
 uint32 GraphObject2D::ourCenteredBuffer;
 #endif
 
-void GraphObject2D::Init()
+void GraphObject2D::InitVBO()
 {
 #ifndef OLD_GL
 	float Positions[12] =
@@ -79,7 +79,7 @@ void GraphObject2D::InitTexture()
 #ifndef OLD_GL
 
 	if (!IsInitialized)
-		Init();
+		InitVBO();
 
 	if (ourUVBuffer == -1)
 		glGenBuffers(1, &ourUVBuffer);
@@ -114,6 +114,7 @@ void GraphObject2D::UpdateTexture()
 
 	glBindBuffer(GL_ARRAY_BUFFER, ourUVBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 12, GLPositions, GL_DYNAMIC_DRAW);
+	DirtyTexture = false;
 #endif
 }
 
@@ -124,12 +125,20 @@ void GraphObject2D::Render()
 	{
 		glActiveTexture(GL_TEXTURE0);
 
+#ifndef OLD_GL
 		if (!mImage->IsValid) 
 		{
 			mImage = ImageLoader::Load(mImage->fname);
+			if (DoTextureCleanup) // We manage this texture VBO?
+			{
+				ourUVBuffer = -1;
+				InitTexture();
+			}
+
 			Render();
 			return;
 		}
+#endif
 
 		glBindTexture(GL_TEXTURE_2D, mImage->texture);
 	}
@@ -165,14 +174,14 @@ void GraphObject2D::Render()
 		UpdateTexture();
 
 	// Assign our matrix.
-	GLuint MatrixID = glGetUniformLocation(WindowFrame.GetShaderProgram(), "mvp");
+	GLint MatrixID = glGetUniformLocation(WindowFrame.GetShaderProgram(), "mvp");
 	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &Matrix[0][0]);
 
 	// Set the color.
-	GLuint ColorID = glGetUniformLocation(WindowFrame.GetShaderProgram(), "Color");
+	GLint ColorID = glGetUniformLocation(WindowFrame.GetShaderProgram(), "Color");
 	glUniform4f(ColorID, Red, Green, Blue, Alpha);
 
-	GLuint ColorInvertedID = glGetUniformLocation(WindowFrame.GetShaderProgram(), "inverted");
+	GLint ColorInvertedID = glGetUniformLocation(WindowFrame.GetShaderProgram(), "inverted");
 	glUniform1i(ColorInvertedID, ColorInvert);
 
 	// Draw the buffer.

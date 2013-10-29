@@ -4,4 +4,8 @@
     <LocalDebuggerCommandArguments>.</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release GL2|Win32'">
+    <LocalDebuggerCommand>$(OutDir)$(TargetName)-gl2$(TargetExt)</LocalDebuggerCommand>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
 </Project>

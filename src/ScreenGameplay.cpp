@@ -493,6 +493,13 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 		Background.Blue = Background.Red = Background.Green = 1;
 
 	Background.Render();
+
+	if (!MarkerA.GetImage()->IsValid)
+	{
+		MarkerA.Invalidate(); MarkerA.Initialize(true);
+		MarkerB.Invalidate(); MarkerB.Initialize(true);
+	}
+
 	MarkerA.Render();
 	MarkerB.Render();
 

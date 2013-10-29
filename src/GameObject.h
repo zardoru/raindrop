@@ -6,10 +6,10 @@
 
 class GameObject : public GraphObject2D
 {
-protected:
-	void Initialize();
 public:
 	GameObject();
+	void Initialize();
+
 	bool BeingHeld;
 	float fadeout_time, fadein_time; // time to fadeout, and time to get a hit
 
@@ -22,6 +22,7 @@ public:
 	Judgement Run(double delta, double Time, bool Autoplay);
 	void Animate(float delta, float songTime);
 	void Invalidate();
+	void Render();
 };
 
 typedef std::vector<GameObject> GameObjectVector;

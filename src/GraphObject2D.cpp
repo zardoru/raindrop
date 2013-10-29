@@ -239,6 +239,7 @@ void GraphObject2D::Initialize(bool ShouldInitTexture)
 	{
 		ourBuffer = -1;
 		ourCenteredBuffer = -1;
+		InitVBO();
 	}
 
 	if (ShouldInitTexture)
@@ -246,3 +247,7 @@ void GraphObject2D::Initialize(bool ShouldInitTexture)
 #endif
 }
 
+Image* GraphObject2D::GetImage()
+{
+	return mImage;
+}

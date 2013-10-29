@@ -46,9 +46,8 @@ protected:
 	bool DoTextureCleanup;
 	void InitTexture();
 
-	virtual void Initialize(bool ShouldInitTexture);
 public:
-
+	
 	GraphObject2D(bool ShouldInitTexture = true);
 	~GraphObject2D();
 	
@@ -61,8 +60,10 @@ public:
 	bool ColorInvert;
 	
 	void SetImage(Image* image);
+	Image* GetImage();
 
-	virtual void Init();
+	virtual void InitVBO();
+	virtual void Initialize(bool ShouldInitTexture);
 
 	// Scale
 	void SetScale(glm::vec2 Scale);
@@ -102,7 +103,7 @@ public:
 	float GetRotation();
 	void AddRotation(float Rot);
 
-	void Render(); // found in backend.cpp
+	virtual void Render(); // found in backend.cpp
 	virtual void Invalidate();
 	
 };

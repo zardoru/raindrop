@@ -55,6 +55,15 @@ void BitmapFont::DisplayText(const char* Text, glm::vec2 Position)
 			continue;
 		}
 
+		if (!Font->IsValid)
+		{
+			for (int i = 0; i < 256; i++)
+			{
+				CharPosition[i].Invalidate();
+				CharPosition[i].Initialize(true);
+			}
+		}
+
 		CharPosition[*Text].SetPosition(Position.x+Character, Position.y+Line);
 		CharPosition[*Text].Render();
 

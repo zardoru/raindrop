@@ -258,6 +258,7 @@ void GameWindow::SwapBuffers()
 		/* This invalidates all GraphObject2Ds. */
 		GraphObject2D GO1;
 		GO1.Invalidate();
+		GO1.Initialize(false);
 
 		GameObject GO2;
 		GO2.Invalidate();
