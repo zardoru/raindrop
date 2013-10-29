@@ -125,20 +125,21 @@ void GraphObject2D::Render()
 	{
 		glActiveTexture(GL_TEXTURE0);
 
-#ifndef OLD_GL
 		if (!mImage->IsValid) 
 		{
 			mImage = ImageLoader::Load(mImage->fname);
+
+#ifndef OLD_GL
 			if (DoTextureCleanup) // We manage this texture VBO?
 			{
 				ourUVBuffer = -1;
 				InitTexture();
 			}
+#endif
 
 			Render();
 			return;
 		}
-#endif
 
 		glBindTexture(GL_TEXTURE_2D, mImage->texture);
 	}

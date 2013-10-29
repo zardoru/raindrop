@@ -25,6 +25,9 @@
     <Filter Include="Source Files\Graphics">
       <UniqueIdentifier>{dc59a189-d994-4429-a06a-6593e3ad016c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\GUI">
+      <UniqueIdentifier>{a7c0e635-42db-4882-8472-038699575e8c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\soil\image_DXT.c">
@@ -118,7 +121,10 @@
       <Filter>Source Files\Backend</Filter>
     </ClCompile>
     <ClCompile Include="..\src\GuiButton.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GuiTextPrompt.cpp">
+      <Filter>Source Files\GUI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -213,6 +219,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\ImageLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GuiTextPrompt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

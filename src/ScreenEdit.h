@@ -2,6 +2,7 @@
 #define SCR_EDIT_H_
 
 #include "ScreenGameplay.h"
+#include "GuiTextPrompt.h"
 
 class ScreenEdit : public ScreenGameplay
 {
@@ -12,7 +13,7 @@ class ScreenEdit : public ScreenGameplay
 		Editing
 	}EditScreenState;
 
-	bool GuiInitialized;
+	GUI::TextPrompt OffsetPrompt, BPMPrompt;
 	uint32_t CurrentFraction;
 	uint32_t savedMeasure;
 	BitmapFont EditInfo;
@@ -33,6 +34,16 @@ class ScreenEdit : public ScreenGameplay
 	bool  GridEnabled;
 	int32 GridCellSize; // ScreenSize / GridCellSize
 	// float GridOffset;
+
+	void DecreaseCurrentFraction();
+	void IncreaseCurrentFraction();
+	void SaveChart();
+	void SwitchPreviewMode();
+	void InsertMeasure();
+
+	void CalculateVerticalLock();
+	void RunGhostObject();
+	void DrawInformation();
 public:
 	ScreenEdit (IScreen * Parent);
 	void Init(Song *Other);

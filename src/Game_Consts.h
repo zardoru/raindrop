@@ -49,6 +49,8 @@ enum KeyType
 	KT_Hit,
 	KT_GameplayClick,
 	KT_Select,
+	KT_Enter,
+	KT_BSPC,
 	KT_SelectRight,
 	KT_GoToEditMode,
 	KT_Up,
@@ -61,7 +63,9 @@ enum KeyType
 	KT_FractionInc,
 	KT_ChangeMode,
 	KT_GridDec,
-	KT_GridInc
+	KT_GridInc,
+	KT_SwitchOffsetPrompt,
+	KT_SwitchBPMPrompt
 };
 
 #define DOTCUR_WINDOWTITLE "dC ver: "

@@ -9,7 +9,6 @@ ScreenEdit::ScreenEdit(IScreen *Parent)
 	: ScreenGameplay(Parent)
 {
 	ShouldChangeScreenAtEnd = false; // So it doesn't go into screen evaluation.
-	GuiInitialized = false;
 	CurrentFraction = 0;
 	Measure = 0;
 	EditScreenState = Editing;
@@ -45,6 +44,14 @@ void ScreenEdit::Init(Song *Other)
 		if (!Other->Difficulties[0]->Timing.size())
 			Other->Difficulties[0]->Timing.push_back(SongInternal::Difficulty::TimingSegment());
 	}
+
+	OffsetPrompt.SetPrompt("Please insert offset.");
+	BPMPrompt.SetPrompt("Please insert BPM.");
+	OffsetPrompt.SetFont(&EditInfo);
+	BPMPrompt.SetFont(&EditInfo);
+
+	OffsetPrompt.SetOpen(false);
+	BPMPrompt.SetOpen(false);
 }
 
 void ScreenEdit::StartPlaying( int32 _Measure )
@@ -55,9 +62,88 @@ void ScreenEdit::StartPlaying( int32 _Measure )
 	savedMeasure = Measure;
 }
 
+void ScreenEdit::SwitchPreviewMode()
+{
+	MySong->Process(false);
+	if (EditScreenState == Editing) // if we're editing, start playing the song
+	{
+		EditScreenState = Playing;
+		StartPlaying( Measure );
+	} 
+	else if (EditScreenState == Playing) // if we're playing, go back to editing
+	{
+		EditScreenState = Editing;
+		Measure = savedMeasure;
+		stopMusic();
+		RemoveTrash();
+	}
+}
+
+void ScreenEdit::DecreaseCurrentFraction()
+{
+	if (HeldObject)
+	{
+		HeldObject->hold_duration -= 4.0 / (float)CurrentDiff->Measures[Measure].Fraction;
+		if (HeldObject->hold_duration < 0)
+			HeldObject->hold_duration = 0;
+		MySong->Process(false);
+	}
+
+	if (CurrentFraction || Measure > 0)
+	{
+		CurrentFraction--;
+
+		if (CurrentFraction > CurrentDiff->Measures[Measure].Fraction) // overflow
+		{
+			CurrentFraction = CurrentDiff->Measures[Measure].Fraction-1;
+
+			if (Measure > 0) // Go back a measure
+				Measure--;
+		}
+	}
+}
+
+void ScreenEdit::IncreaseCurrentFraction()
+{
+	if (HeldObject)
+	{
+		HeldObject->hold_duration += 4.0 / (float)CurrentDiff->Measures[Measure].Fraction;
+		MySong->Process(false);
+	}
+
+	CurrentFraction++;
+
+	if (CurrentFraction >= CurrentDiff->Measures[Measure].Fraction)
+	{
+		CurrentFraction = 0;
+		if (Measure+1 < CurrentDiff->Measures.size()) // Advance a measure
+			Measure++;
+	}
+}
+
+void ScreenEdit::SaveChart()
+{
+	String DefaultPath = "chart.dcf";
+	MySong->Repack();
+	MySong->Save((MySong->SongDirectory + String("/") + DefaultPath).c_str());
+	MySong->Process();
+}
+
+void ScreenEdit::InsertMeasure()
+{
+	CurrentDiff->Measures.resize(CurrentDiff->Measures.size()+1);
+	Measure = CurrentDiff->Measures.size()-1;
+	CurrentFraction = 0;
+	if (Measure > 0)
+		AssignFraction(Measure, CurrentDiff->Measures[Measure-1].Fraction);
+	else
+		AssignFraction(Measure, 2);
+}
+
 void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
 	KeyType tkey = BindingsManager::TranslateKey(key);
+
 	if (EditScreenState == Playing)
 	{
 		ScreenGameplay::HandleInput(key, code, isMouseInput);
@@ -67,118 +153,74 @@ void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 	{
 		if (key == 'P') // pressed p?
 		{
-			IsAutoplaying = false;
-			MySong->Process(false);
-			if (EditScreenState == Editing) // if we're editing, start playing the song
-			{
-				EditScreenState = Playing;
-				StartPlaying( Measure );
-			} 
-			else if (EditScreenState == Playing) // if we're playing, go back to editing
-			{
-				EditScreenState = Editing;
-				Measure = savedMeasure;
-				stopMusic();
-				RemoveTrash();
-			}
+			SwitchPreviewMode();
 		}
 
 		if (EditScreenState != Playing)
 		{
+			int R = OffsetPrompt.HandleInput(key, code, isMouseInput);
+
+			if (R == 1)
+				return;
+			else if (R == 2)
+			{
+				CurrentDiff->Offset = atoi(OffsetPrompt.GetContents().c_str());
+				return;
+			}
+
+			R = BPMPrompt.HandleInput(key, code, isMouseInput);
+			
+			if (R == 1)
+				return;
+			else if (R == 2)
+			{
+				CurrentDiff->Timing[0].Value = atoi(BPMPrompt.GetContents().c_str());
+				return;
+			}
+
+
 			if (code == KE_Press)
 			{
-				if (tkey == KT_Right)
+				switch (tkey)
 				{
-					if (HeldObject)
-					{
-						HeldObject->hold_duration += 4.0 / (float)CurrentDiff->Measures[Measure].Fraction;
-						MySong->Process(false);
-					}
-
-					CurrentFraction++;
-
-					if (CurrentFraction >= CurrentDiff->Measures[Measure].Fraction)
-					{
-						CurrentFraction = 0;
-						if (Measure+1 < CurrentDiff->Measures.size()) // Advance a measure
-							Measure++;
-					}
-
-				}else if (tkey == KT_Left)
+				case KT_Right:              IncreaseCurrentFraction(); return;
+				case KT_Left:               DecreaseCurrentFraction(); return;
+				case KT_Escape:             Running = false; return;
+				case KT_FractionDec:        AssignFraction(Measure, CurrentDiff->Measures[Measure].Fraction-1); return;
+				case KT_FractionInc:        AssignFraction(Measure, CurrentDiff->Measures[Measure].Fraction+1); return;
+				case KT_GridDec:            GridCellSize--; return;
+				case KT_GridInc:            GridCellSize++; return;
+				case KT_SwitchOffsetPrompt: OffsetPrompt.SwitchOpen(); return;
+				case KT_SwitchBPMPrompt:	BPMPrompt.SwitchOpen(); return;
+				}
+				
+				switch (key)
 				{
-					if (HeldObject)
-					{
-						HeldObject->hold_duration -= 4.0 / (float)CurrentDiff->Measures[Measure].Fraction;
-						if (HeldObject->hold_duration < 0)
-							HeldObject->hold_duration = 0;
-						MySong->Process(false);
-					}
-
-					if (CurrentFraction || Measure > 0)
-					{
-						CurrentFraction--;
-
-						if (CurrentFraction > CurrentDiff->Measures[Measure].Fraction) // overflow
-						{
-							CurrentFraction = CurrentDiff->Measures[Measure].Fraction-1;
-
-							if (Measure > 0) // Go back a measure
-								Measure--;
-						}
-					}
-				}else if (tkey == KT_Escape)
-				{
-					Running = false; // Get out.
-				}else if (tkey == KT_FractionDec)
-				{
-					AssignFraction(Measure, CurrentDiff->Measures[Measure].Fraction-1);
-				}else if (tkey == KT_FractionInc)
-				{
-					AssignFraction(Measure, CurrentDiff->Measures[Measure].Fraction+1);
-				}else if (tkey == KT_GridDec)
-				{
-					GridCellSize--;
-				}else if (tkey == KT_GridInc)
-				{
-					GridCellSize++;
-				}else if (key == 'S') // Save!
-				{
-					String DefaultPath = "chart.dcf";
-					MySong->Repack();
-					MySong->Save((MySong->SongDirectory + String("/") + DefaultPath).c_str());
-					MySong->Process();
-				}else if (key == 'Q')
-				{
+				case 'S': SaveChart(); return;
+				case 'Q': 
 					if (Mode == Select)
 						Mode = Normal;
 					else if (Mode == Normal)
 						Mode = Hold;
 					else
 						Mode = Select;
-				}else if (key == 'R') // Repeat previous measure's fraction
-				{
+					return;
+				case 'R':
 					if (Measure > 0)
 						AssignFraction(Measure, CurrentDiff->Measures.at(Measure-1).Fraction);
-				}else if (key == 'T') // Insert another measure, go to it and restart fraction
-				{
-					CurrentDiff->Measures.resize(CurrentDiff->Measures.size()+1);
-					Measure = CurrentDiff->Measures.size()-1;
-					CurrentFraction = 0;
-					if (Measure > 0)
-						AssignFraction(Measure, CurrentDiff->Measures[Measure-1].Fraction);
-					else
-						AssignFraction(Measure, 2);
-				}else if (key == 'X')
-				{
+					return;
+				case 'T':
+					InsertMeasure();
+					return;
+				case 'X':
 					if (Measure+1 < CurrentDiff->Measures.size())
 						Measure++;
-				}else if (key == 'Z')
-				{
+					return;
+				case 'Z':
 					if (Measure > 0)
 						Measure--;
-				}else if (key == 'G')
-				{
-					GridEnabled = !GridEnabled;
+					return;
+				case 'G': GridEnabled = !GridEnabled; return;
 				}
 			}
 		}
@@ -231,6 +273,60 @@ void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 	}
 }
 
+void ScreenEdit::RunGhostObject()
+{
+	GhostObject.SetPositionY(YLock);
+
+	if (!GridEnabled)
+	{
+		GhostObject.SetPositionX(WindowFrame.GetRelativeMPos().x);
+	}else
+	{
+		int32 CellSize = ScreenWidth / GridCellSize;
+		int32 Mod = (int)(WindowFrame.GetRelativeMPos().x - ScreenDifference) % CellSize;
+		GhostObject.SetPositionX((int)WindowFrame.GetRelativeMPos().x - Mod);
+	}
+
+	if ((GhostObject.GetPosition().x-ScreenDifference) > PlayfieldWidth)
+		GhostObject.SetPositionX(PlayfieldWidth+ScreenDifference);
+	if ((GhostObject.GetPosition().x-ScreenDifference) < 0)
+		GhostObject.SetPositionX(ScreenDifference);
+
+	if (Mode != Select)
+		GhostObject.Render();
+}
+
+void ScreenEdit::DrawInformation()
+{
+	std::stringstream info;
+	info << "Beat: " << (float)Measure * MySong->MeasureLength + ((float)CurrentFraction) / (float)MySong->MeasureLength;
+	if (CurrentDiff->Measures.size())
+		info << "\nMaxFrac: " << CurrentDiff->Measures.at(Measure).Fraction;
+	info << "\nMode:    ";
+	if (Mode == Normal)
+		info << "Normal";
+	else if (Mode == Hold)
+		info << "Hold";
+	else
+		info << "Null";
+	if (GridEnabled)
+		info << "\nGrid Enabled (size " << ScreenWidth / GridCellSize << ")";
+	EditInfo.DisplayText(info.str().c_str(), glm::vec2(512, 600));
+}
+
+void ScreenEdit::CalculateVerticalLock()
+{
+	if (CurrentDiff->Measures.size())
+	{
+		if (! (Measure % 2) )
+			YLock =  ((float)CurrentFraction / (float)CurrentDiff->Measures[Measure].Fraction) * (float)PlayfieldHeight;
+		else
+			YLock =  PlayfieldHeight - ((float)CurrentFraction / (float)CurrentDiff->Measures[Measure].Fraction) * (float)PlayfieldHeight;
+
+		YLock += ScreenOffset;
+	}
+}
+
 bool ScreenEdit::Run(double delta)
 {
 	WindowFrame.isGuiInputEnabled = (EditScreenState != Playing);
@@ -245,73 +341,21 @@ bool ScreenEdit::Run(double delta)
 	}
 	else // editing the song? run the editor
 	{
-		if (CurrentDiff->Measures.size())
-		{
-			Barline.Run(delta, CurrentDiff->Measures[Measure].Fraction, CurrentFraction);
-			if (! (Measure % 2) )
-				YLock =  ((float)CurrentFraction / (float)CurrentDiff->Measures[Measure].Fraction) * (float)PlayfieldHeight;
-			else
-				YLock =  PlayfieldHeight - ((float)CurrentFraction / (float)CurrentDiff->Measures[Measure].Fraction) * (float)PlayfieldHeight;
-
-			YLock += ScreenOffset;
-		}
-
-		GhostObject.SetPositionY(YLock);
-
-		if (!GridEnabled)
-		{
-			GhostObject.SetPositionX(WindowFrame.GetRelativeMPos().x);
-		}else
-		{
-			int32 CellSize = ScreenWidth / GridCellSize;
-			int32 Mod = (int)(WindowFrame.GetRelativeMPos().x - ScreenDifference) % CellSize;
-			GhostObject.SetPositionX((int)WindowFrame.GetRelativeMPos().x - Mod);
-		}
-		
-		if ((GhostObject.GetPosition().x-ScreenDifference) > PlayfieldWidth)
-			GhostObject.SetPositionX(PlayfieldWidth+ScreenDifference);
-		if ((GhostObject.GetPosition().x-ScreenDifference) < 0)
-			GhostObject.SetPositionX(ScreenDifference);
-
+		CalculateVerticalLock();
 		RenderObjects(delta);
 
 		if (CurrentDiff->Measures.size())
 		{
-				if (Measure > 0)
-				{
-					for (std::vector<GameObject>::reverse_iterator i = CurrentDiff->Measures.at(Measure-1).MeasureNotes.rbegin(); i != CurrentDiff->Measures.at(Measure-1).MeasureNotes.rend(); i++)
-					{	
-						if (i->GetPosition().x > ScreenDifference)
-							i->Render();
-					}
-				}
-
-				for (std::vector<GameObject>::reverse_iterator i = CurrentDiff->Measures[Measure].MeasureNotes.rbegin(); i != CurrentDiff->Measures[Measure].MeasureNotes.rend(); i++)
-				{
-					if (i->GetPosition().x > ScreenDifference)
-						i->Render();
-				}
+			Barline.Run(delta, CurrentDiff->Measures[Measure].Fraction, CurrentFraction);
+			if (Measure > 0)
+				DrawVector(CurrentDiff->Measures.at(Measure-1).MeasureNotes, delta);
+			DrawVector(CurrentDiff->Measures[Measure].MeasureNotes, delta);
 		}
 
-		if (Mode != Select)
-			GhostObject.Render();
-
-		std::stringstream info;
-		info << "Measure:   " << Measure
-			 << "\nFrac:    " << CurrentFraction;
-		if (CurrentDiff->Measures.size())
-			 info << "\nMaxFrac: " << CurrentDiff->Measures.at(Measure).Fraction;
-		info << "\nMode:    ";
-		if (Mode == Normal)
-			  info << "Normal";
-		else if (Mode == Hold)
-			info << "Hold";
-		else
-			info << "Null";
-		if (GridEnabled)
-			info << "\nGrid Enabled (size " << ScreenWidth / GridCellSize << ")";
-		EditInfo.DisplayText(info.str().c_str(), glm::vec2(512, 600));
-
+		RunGhostObject();
+		DrawInformation();
+		OffsetPrompt.Render();
+		BPMPrompt.Render();
 	}
 
 	return Running;

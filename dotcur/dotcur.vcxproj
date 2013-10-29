@@ -199,6 +199,7 @@
     <ClCompile Include="..\src\GameWindow.cpp" />
     <ClCompile Include="..\src\GraphObject2D.cpp" />
     <ClCompile Include="..\src\GuiButton.cpp" />
+    <ClCompile Include="..\src\GuiTextPrompt.cpp" />
     <ClCompile Include="..\src\Image.cpp" />
     <ClCompile Include="..\src\ImageLoader.cpp" />
     <ClCompile Include="..\src\NoteLoader.cpp" />
@@ -236,6 +237,7 @@
     <ClInclude Include="..\src\GameWindow.h" />
     <ClInclude Include="..\src\GraphObject2D.h" />
     <ClInclude Include="..\src\GuiButton.h" />
+    <ClInclude Include="..\src\GuiTextPrompt.h" />
     <ClInclude Include="..\src\Image.h" />
     <ClInclude Include="..\src\ImageLoader.h" />
     <ClInclude Include="..\src\NoteLoader.h" />

@@ -51,6 +51,8 @@ void BindingsManager::Initialize()
 	ScanFunction[GLFW_KEY_RIGHT] = KT_Right;
 	ScanFunction[GLFW_KEY_LEFT] = KT_Left;
 	ScanFunction[GLFW_KEY_SPACE] = KT_Select;
+	ScanFunction[GLFW_KEY_ENTER] = KT_Enter;
+	ScanFunction[GLFW_KEY_BACKSPACE] = KT_BSPC;
 	ScanFunction[GLFW_MOUSE_BUTTON_LEFT] = KT_Select;
 	ScanFunction[GLFW_MOUSE_BUTTON_RIGHT] = KT_SelectRight;
 	ScanFunction['Z'] = KT_GameplayClick;
@@ -60,6 +62,8 @@ void BindingsManager::Initialize()
 	ScanFunction[GLFW_KEY_TAB] = KT_ChangeMode;
 	ScanFunction[GLFW_KEY_F5] = KT_GridDec;
 	ScanFunction[GLFW_KEY_F6] = KT_GridInc;
+	ScanFunction[GLFW_KEY_F7] = KT_SwitchOffsetPrompt;
+	ScanFunction[GLFW_KEY_F8] = KT_SwitchBPMPrompt;
 }
 
 KeyType BindingsManager::TranslateKey(int32 Scan)

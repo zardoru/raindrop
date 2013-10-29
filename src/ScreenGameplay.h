@@ -43,6 +43,8 @@ protected: // shit the edit screen needs
 	SoundStream *Music;
 
 	std::vector <std::vector<GameObject>> NotesInMeasure;
+	void DrawVector(std::vector<GameObject>& Vec, float TimeDelta);
+
 private: // shit only screengameplay needs
 
 	// Run the current measure (jic func name isn't obvious enough)
@@ -73,7 +75,6 @@ private: // shit only screengameplay needs
 	bool TappingMode;
 	bool IsPaused;
 
-	void DrawVector(std::vector<GameObject>& Vec, float TimeDelta);
 	bool JudgeVector(std::vector<GameObject>& Vec, int code, int key);
 	void RunVector(std::vector<GameObject>& Vec, float TimeDelta);
 public:
