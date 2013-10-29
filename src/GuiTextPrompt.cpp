@@ -23,7 +23,7 @@ int TextPrompt::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 		return 0;
 
 	if (code == KE_Release)
-		return;
+		return 1;
 
 	if (BindingsManager::TranslateKey(key) == KT_Enter)
 	{
