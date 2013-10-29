@@ -123,9 +123,12 @@ bool ScreenSelectMusic::Run(double Delta)
 		std::stringstream ss;
 		ss << "song author: " << SongList.at(Cursor)->SongAuthor<< "\n"
 			<< "difficulties: " << SongList.at(Cursor)->Difficulties.size() << "\n";
-		int Min = SongList.at(Cursor)->Difficulties[0]->Duration / 60;
-		int Sec = (int)SongList.at(Cursor)->Difficulties[0]->Duration % 60;
-		ss	<< "duration: " << Min << ":" << std::setw(2) << std::setfill('0') << Sec;
+		if (SongList.at(Cursor)->Difficulties.size())
+		{
+			int Min = SongList.at(Cursor)->Difficulties[0]->Duration / 60;
+			int Sec = (int)SongList.at(Cursor)->Difficulties[0]->Duration % 60;
+			ss	<< "duration: " << Min << ":" << std::setw(2) << std::setfill('0') << Sec;
+		}
 
 		Font->DisplayText(ss.str().c_str(), glm::vec2(ScreenWidth/6, 120));
 	}

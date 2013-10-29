@@ -46,8 +46,8 @@ void loadSong( Directory songPath, std::vector<Song*> &VecOut )
 				if (!NewS->SongName.length())
 					NewS->SongName = *i;
 
-				NewS->SongRelativePath = songPath.path();
-				NewS->SongFilename = (songPath.path() + *i);
+				NewS->SongRelativePath = *i;
+				NewS->SongFilename = (songPath.path() + "/"+ *i);
 				VecOut.push_back(NewS);
 			}
 			else if ( Utility::GetExtension(*i) == "png" || Utility::GetExtension(*i) == "jpg")

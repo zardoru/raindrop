@@ -164,7 +164,7 @@ void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 				return;
 			else if (R == 2)
 			{
-				CurrentDiff->Offset = atoi(OffsetPrompt.GetContents().c_str());
+				CurrentDiff->Offset = atof(OffsetPrompt.GetContents().c_str());
 				return;
 			}
 
@@ -174,7 +174,7 @@ void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 				return;
 			else if (R == 2)
 			{
-				CurrentDiff->Timing[0].Value = atoi(BPMPrompt.GetContents().c_str());
+				CurrentDiff->Timing[0].Value = atof(BPMPrompt.GetContents().c_str());
 				return;
 			}
 
