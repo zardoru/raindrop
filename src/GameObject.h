@@ -12,6 +12,7 @@ public:
 
 	bool BeingHeld;
 	float fadeout_time, fadein_time; // time to fadeout, and time to get a hit
+	float waiting_time;
 
 	float startTime, endTime, beat, hold_duration;
 	int32 heldKey;

@@ -24,6 +24,7 @@ GameObject::GameObject() : GraphObject2D(false)
 	heldKey = -1;
 	BeingHeld = false;
 	DoTextureCleanup = false;
+	waiting_time = 0;
 
 	if (!HitSnd)
 	{
@@ -79,11 +80,24 @@ void GameObject::Animate(float delta, float songTime)
 		return;
 	}
 
-	if (fadein_time > 0 && !fadeout_time)
+	if (fadein_time >= 0)
 	{
-		Alpha = 1-fadein_time*2;
-		fadein_time -= delta;
+		Alpha = 0;
+		if (waiting_time)
+		{
+			waiting_time -= delta;
+		}
+
+		if (waiting_time <= 0)
+		{
+			Alpha = 1-fadein_time*5;
+			fadein_time -= delta;
+		}
+
+		return;
 	}
+
+	
 
 	if (BeingHeld == true)
 	{

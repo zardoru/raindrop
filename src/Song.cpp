@@ -42,15 +42,14 @@ void Song::Process(bool CalculateXPos)
 		int32 CurrentMeasure = 0;
 		for(std::vector<SongInternal::Measure>::iterator Measure = (*Difficulty)->Measures.begin(); Measure != (*Difficulty)->Measures.end(); Measure++)
 		{
+			uint32 CurNote = 0;
 			for (std::vector<GameObject>::iterator it = Measure->MeasureNotes.begin(); it != Measure->MeasureNotes.end(); it++)
 			{
 				// all measures are 4/4 (good enough for now, change both 4s in the future, maybe)
 				it->beat = ((float)CurrentMeasure * MeasureLength) + ((float)it->MeasurePos * MeasureLength) / (float)Measure->Fraction;
 
 				if (it->hold_duration > 0)
-				{
 					it->endTime = TimeAtBeat(**Difficulty, it->beat + it->hold_duration);
-				}
 
 				it->startTime = TimeAtBeat(**Difficulty, it->beat);
 
@@ -79,6 +78,11 @@ void Song::Process(bool CalculateXPos)
 					if (it->GetPosition().x > 0)
 						it->SetPositionX(it->GetPosition().x + ScreenDifference);
 				}
+
+				it->waiting_time = 0.05f * CurNote;
+				it->fadein_time = 0.2;
+
+				CurNote++;
 			}
 			CurrentMeasure++;
 		}
@@ -112,7 +116,7 @@ bool Song::Save(const char* Filename)
 		{
 			Out << "#BPM:";
 
-			for (int k = 0; k < (*i)->Timing.size(); k++)
+			for (uint32 k = 0; k < (*i)->Timing.size(); k++)
 			{
 				Out << (*i)->Timing[k].Time << "=" << (*i)->Timing[k].Value;
 				if (k+1 < (*i)->Timing.size())
