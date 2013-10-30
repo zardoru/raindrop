@@ -22,8 +22,13 @@ void loadSong( Directory songPath, std::vector<Song*> &VecOut )
 	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{
 		// found a .dcf- load it.
-		VecOut.push_back(NoteLoader::LoadObjectsFromFile(songPath.path() + "/" + *i, songPath.path()));
-		FoundDCF = true;
+		Song *New = NoteLoader::LoadObjectsFromFile(songPath.path() + "/" + *i, songPath.path());
+		if (New)
+		{
+			New->ChartFilename = *i;
+			VecOut.push_back(New);
+			FoundDCF = true;
+		}
 	}
 
 	// If we didn't find any chart, add this song to the list as edit-only.
@@ -39,15 +44,20 @@ void loadSong( Directory songPath, std::vector<Song*> &VecOut )
 		{
 			if (Utility::GetExtension(*i) == "ogg")
 			{
+				bool UsesFilename = false;
 				NewS = new Song();
 				NewS->SongDirectory = songPath.path();
 				NewS->SongName = GetOggTitle(i->c_str());
 
 				if (!NewS->SongName.length())
+				{
+					UsesFilename = true;
 					NewS->SongName = *i;
+				}
 
 				NewS->SongRelativePath = *i;
 				NewS->SongFilename = (songPath.path() + "/"+ *i);
+				NewS->ChartFilename = UsesFilename ? Utility::RemoveExtension(NewS->SongName) : NewS->SongName + ".dcf";
 				VecOut.push_back(NewS);
 			}
 			else if ( Utility::GetExtension(*i) == "png" || Utility::GetExtension(*i) == "jpg")

@@ -73,6 +73,7 @@ class VorbisSample
 	uint32 BufSize;
 	uint32 Counter;
 	boost::mutex cntmux;
+	bool valid;
 public:
 	VorbisSample(const char* filename);
 	~VorbisSample();

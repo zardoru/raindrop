@@ -3,7 +3,9 @@
 #include "GameWindow.h"
 #include "ImageLoader.h"
 #include "Audio.h"
+#include "FileManager.h"
 
+SoundSample *SavedSound = NULL;
 
 ScreenEdit::ScreenEdit(IScreen *Parent)
 	: ScreenGameplay(Parent)
@@ -43,6 +45,12 @@ void ScreenEdit::Init(Song *Other)
 
 		if (!Other->Difficulties[0]->Timing.size())
 			Other->Difficulties[0]->Timing.push_back(SongInternal::Difficulty::TimingSegment());
+	}
+
+	if (!SavedSound)
+	{
+		SavedSound = new SoundSample((FileManager::GetSkinPrefix() + "save.ogg").c_str());
+		MixerAddSample(SavedSound);
 	}
 
 	OffsetPrompt.SetPrompt("Please insert offset.");
@@ -127,9 +135,10 @@ void ScreenEdit::IncreaseCurrentFraction()
 
 void ScreenEdit::SaveChart()
 {
-	String DefaultPath = "chart.dcf";
+	String DefaultPath = MySong->ChartFilename.length() ? MySong->ChartFilename : "chart.dcf";
 	MySong->Repack();
 	MySong->Save((MySong->SongDirectory + String("/") + DefaultPath).c_str());
+	SavedSound->Reset();
 	MySong->Process();
 }
 

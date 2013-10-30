@@ -154,9 +154,13 @@ Song* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 
 	if (!filein.is_open())
 	{
+#ifndef NDEBUG
 		std::stringstream serr;
 		serr << "couldn't open \"" << filename << "\" for reading";
 		throw std::exception(serr.str().c_str());
+#else
+		return NULL;
+#endif
 	}
 
 	Out->SongDirectory = prefix;

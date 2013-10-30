@@ -32,6 +32,7 @@ namespace Utility
 	bool IsNumeric(const char* s);
 	String GetExtension(String Filename);
 	String RelativeToPath(String Filename);
+	String RemoveExtension(String Fn);
 }
 
 #ifdef WIN32

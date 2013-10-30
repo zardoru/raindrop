@@ -66,6 +66,11 @@ namespace Utility {
 	{
 		return Filename.substr(Filename.find_last_of("/")+1);
 	}
+
+	String RemoveExtension(String Fn)
+	{
+		return Fn.substr(0, Fn.find_last_of("."));
+	}
 } // namespace Utility
 
 #ifdef NDEBUG

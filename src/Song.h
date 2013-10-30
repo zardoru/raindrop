@@ -52,6 +52,7 @@ public:
 	~Song();
 	std::vector<SongInternal::Difficulty*> Difficulties;
 	String SongFilename, BackgroundDir, SongRelativePath, BackgroundRelativeDir;
+	String ChartFilename;
 	String SongName;
 	String SongDirectory;
 	String SongAuthor;

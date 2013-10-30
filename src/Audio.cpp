@@ -250,6 +250,7 @@ static int32 StreamCallback(const void *input, void *output, unsigned long frame
 
 VorbisSample::VorbisSample(const char* filename)
 {
+	valid = false;
 	if (ov_fopen(filename, &f) == 0)
 	{
 		info = ov_info(&f, -1);
@@ -268,6 +269,7 @@ VorbisSample::VorbisSample(const char* filename)
 				break;
 			read += result;
 		}
+		valid = true;
 	}
 }
 
@@ -279,12 +281,18 @@ VorbisSample::~VorbisSample()
 
 double VorbisSample::getRate()
 {
-	return info->rate;
+	if (valid)
+		return info->rate;
+	else
+		return 0;
 }
 
 int32 VorbisSample::getChannels()
 {
-	return info->channels;
+	if (valid)
+		return info->channels;
+	else
+		return 0;
 }
 
 void VorbisSample::Reset()
@@ -294,6 +302,8 @@ void VorbisSample::Reset()
 
 int32 VorbisSample::readBuffer(void * out, uint32 length)
 {
+	if (valid)
+	{
 	length *= info->channels;
 	if (Counter != BufSize)
 	{		
@@ -312,6 +322,8 @@ int32 VorbisSample::readBuffer(void * out, uint32 length)
 	}
 
 	return length;
+	}else
+		return 0;
 }
 
 /*************************/
