@@ -186,8 +186,8 @@ void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 				case KT_Right:              IncreaseCurrentFraction(); return;
 				case KT_Left:               DecreaseCurrentFraction(); return;
 				case KT_Escape:             Running = false; return;
-				case KT_FractionDec:        AssignFraction(Measure, CurrentDiff->Measures[Measure].Fraction-1); return;
-				case KT_FractionInc:        AssignFraction(Measure, CurrentDiff->Measures[Measure].Fraction+1); return;
+				case KT_FractionDec:        if (CurrentDiff->Measures.size()) AssignFraction(Measure, CurrentDiff->Measures[Measure].Fraction-1); return;
+				case KT_FractionInc:        if (CurrentDiff->Measures.size()) AssignFraction(Measure, CurrentDiff->Measures[Measure].Fraction+1); return;
 				case KT_GridDec:            GridCellSize--; return;
 				case KT_GridInc:            GridCellSize++; return;
 				case KT_SwitchOffsetPrompt: OffsetPrompt.SwitchOpen(); return;
