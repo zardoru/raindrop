@@ -117,14 +117,14 @@
     <ClCompile Include="..\src\Directory.cpp">
       <Filter>Source Files\Backend</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\SongTiming.cpp">
-      <Filter>Source Files\Backend</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\GuiButton.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\GuiTextPrompt.cpp">
       <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SongTiming.cpp">
+      <Filter>Source Files\ScreenGameplay</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

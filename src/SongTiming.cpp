@@ -97,7 +97,7 @@ void CalculateBarlineRatios(Song &MySong, Difficulty &Diff)
 
 		GetTimingChangesInInterval(Timing, CurrentBeat, NextBeat, ChangesInInterval);
 
-		if (ChangesInInterval.size() == 0)
+		if (ChangesInInterval.size() == 0 || (ChangesInInterval.size() && ChangesInInterval.at(0).Time == 0))
 		{
 			double MeasureDuration = TimeAtBeat(Diff, (Measure+1)*MySong.MeasureLength) - TimeAtBeat(Diff, Measure*MySong.MeasureLength);
 			double Ratio = 1/MeasureDuration;

@@ -58,7 +58,7 @@ void ScreenEdit::StartPlaying( int32 _Measure )
 {
 	ScreenGameplay::Init(MySong, 0);
 	Measure = _Measure;
-	seekTime( spb(CurrentDiff->Timing[0].Value) * Measure * MySong->MeasureLength + CurrentDiff->Offset);
+	seekTime( TimeAtBeat(*CurrentDiff, Measure * MySong->MeasureLength) );
 	savedMeasure = Measure;
 }
 
@@ -346,7 +346,8 @@ bool ScreenEdit::Run(double delta)
 
 		if (CurrentDiff->Measures.size())
 		{
-			Barline.Run(delta, CurrentDiff->Measures[Measure].Fraction, CurrentFraction);
+			double Ratio =  (float)CurrentFraction / (float)CurrentDiff->Measures[Measure].Fraction;
+			Barline.Run(delta, Ratio);
 			if (Measure > 0)
 				DrawVector(CurrentDiff->Measures.at(Measure-1).MeasureNotes, delta);
 			DrawVector(CurrentDiff->Measures[Measure].MeasureNotes, delta);

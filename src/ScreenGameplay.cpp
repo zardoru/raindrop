@@ -102,6 +102,7 @@ void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
 	MySong = OtherSong;
 	CurrentDiff = MySong->Difficulties[DifficultyIndex];
 	
+	BarlineRatios = CurrentDiff->BarlineRatios;
 	memset(&Evaluation, 0, sizeof(Evaluation));
 
 	Measure = 0;
@@ -166,7 +167,8 @@ void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
 		seekTime(0);
 	}
 
-	MeasureTimeElapsed = 0;
+	MeasureRatio = 0;
+	RatioPerSecond = 0;
 	ScreenTime = 0;
 
 	if (Music)
@@ -348,7 +350,7 @@ void ScreenGameplay::seekTime(float Time)
 {
 	Music->Seek(Time);
 	SongTime = Time;
-	MeasureTimeElapsed = 0;
+	MeasureRatio = 0;
 	ScreenTime = 0;
 }
 
@@ -384,7 +386,10 @@ bool ScreenGameplay::Run(double TimeDelta)
 		if (SongTime <= 0)
 		{
 			if (LeadInTime > 0)
+			{
 				LeadInTime -= TimeDelta;
+				SongTime = -LeadInTime;
+			}
 			else
 				startMusic();
 		}
@@ -395,23 +400,30 @@ bool ScreenGameplay::Run(double TimeDelta)
 		RunMeasure(SongDelta);
 
 		if (LeadInTime)
-			Barline.Run(TimeDelta, MeasureTime, MeasureTimeElapsed);
+			Barline.Run(TimeDelta, MeasureRatio);
 		else
-			Barline.Run(SongDelta, MeasureTime, MeasureTimeElapsed);
+			Barline.Run(SongDelta, MeasureRatio);
 
 		if (SongTime > CurrentDiff->Offset)
 		{
-			MeasureTimeElapsed += SongDelta;
+
+			while (BarlineRatios.size() && BarlineRatios.at(0).Time <= SongTime)
+			{
+				RatioPerSecond = BarlineRatios.front().Value;
+				BarlineRatios.erase(BarlineRatios.begin());
+			}
+
+			MeasureRatio += RatioPerSecond * SongDelta;
 
 			if (SongDelta == 0 && !IsPaused)
 			{
 				if ((!Music || Music->IsStopped()))
-					MeasureTimeElapsed += TimeDelta;
+					MeasureRatio += RatioPerSecond * TimeDelta;
 			}
 
-			if (MeasureTimeElapsed > MeasureTime)
+			if (MeasureRatio > 1.0f)
 			{
-				MeasureTimeElapsed -= MeasureTime;
+				MeasureRatio -= 1.0f;
 				Measure += 1;
 			}
 			Lifebar.Run(SongDelta);
@@ -445,9 +457,6 @@ bool ScreenGameplay::JudgeVector(std::vector<GameObject>& Vec, int code, int key
 {
 	Judgement Val;
 	glm::vec2 mpos = WindowFrame.GetRelativeMPos();
-
-	if (LeadInTime > 0) // No judgement while leadin is up.
-		return false; 
 
 	for (std::vector<GameObject>::iterator i = Vec.begin(); 
 			i != Vec.end(); 
@@ -584,8 +593,8 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 		info << "???";
 		*/
 	info << "\nScreenTime: " << ScreenTime;
-	info << "\nMeasureElapsed: " << MeasureTimeElapsed;
-	info << "\nMeasureTotal: " << MeasureTime;
+	info << "\nMeasureRatio: " << MeasureRatio;
+	info << "\nMeasureRatioPerSecond: " << RatioPerSecond;
 #endif
 	if (TappingMode)
 		info << "\nTapping mode";

@@ -20,7 +20,8 @@ protected: // shit the edit screen needs
 	uint32 Measure;
 
 	// the point of this is that we can change the barline's position.
-	float MeasureTimeElapsed;
+	float MeasureRatio, RatioPerSecond;
+	std::vector<SongInternal::Difficulty::TimingSegment> BarlineRatios;
 
 	bool IsAutoplaying; // true for autoplaying notes
 
@@ -47,6 +48,7 @@ protected: // shit the edit screen needs
 
 private: // shit only screengameplay needs
 
+	void ProcessBarlineRatios();
 	// Run the current measure (jic func name isn't obvious enough)
 	void RunMeasure(float delta);
 	void StoreEvaluation(Judgement Eval);

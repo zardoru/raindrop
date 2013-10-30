@@ -26,9 +26,8 @@ void ActorBarline::Init(float Offset)
 
 #define RadioThreshold 0.9
 
-void ActorBarline::Run(double TimeDelta, double MeasureTime, double TotalTime)
+void ActorBarline::Run(double TimeDelta, double Ratio)
 {
-	float Ratio = TotalTime / MeasureTime;
 	if (AnimationProgress > 0)
 	{
 		float PosY = pow(AnimationProgress / AnimationTime, 2) * PlayfieldHeight + ScreenOffset;
