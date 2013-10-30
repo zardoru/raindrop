@@ -46,7 +46,7 @@ double TimeAtBeat(Difficulty &Diff, float Beat)
 
 	for (uint32 i = 0; i < CurrentIndex; i++)
 	{	
-		if (i+1 < Timing.size()) // Get how long the current timing goes.
+		if (i+1 < CurrentIndex) // Get how long the current timing goes.
 		{
 			float BeatDurationOfSectionI = Timing[i+1].Time - Timing[i].Time; // Section lasts this much.
 			float SectionDuration = BeatDurationOfSectionI * spb ( Timing[i].Value );
@@ -76,7 +76,7 @@ void GetTimingChangesInInterval(vector<Difficulty::TimingSegment> Timing, double
 
 	for (vector<Difficulty::TimingSegment>::iterator i = Timing.begin(); i != Timing.end(); i++)
 	{
-		if (i->Time >= PointA && i->Time <= PointB)
+		if (i->Time >= PointA && i->Time < PointB)
 		{
 			Out.push_back(*i);
 		}
@@ -145,6 +145,9 @@ void CalculateBarlineRatios(Song &MySong, Difficulty &Diff)
 				
 				/* t/b * b = t */ 
 				DurationSeconds = spb(i->Value) * Duration;
+
+				if (DurationSeconds == 0)
+					continue;
 
 				/* f/d = r/1 (where 1 and d are 1 second and d seconds) */
 				Ratio = Fraction / DurationSeconds;
