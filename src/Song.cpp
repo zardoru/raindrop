@@ -106,7 +106,21 @@ void Song::Save(const char* Filename)
 
 	for (std::vector<SongInternal::Difficulty*>::iterator i = Difficulties.begin(); i != Difficulties.end(); i++)
 	{
-		Out << "#BPM:" << (*i)->Timing[0].Value << ";\n";
+		if ((*i)->Timing.size() == 1)
+			Out << "#BPM:" << (*i)->Timing[0].Value << ";\n";
+		else
+		{
+			Out << "#BPM:";
+
+			for (int k = 0; k < (*i)->Timing.size(); k++)
+			{
+				Out << (*i)->Timing[k].Time << "=" << (*i)->Timing[k].Value;
+				if (k+1 < (*i)->Timing.size())
+					Out << ",";
+			}
+
+			Out << ";\n";
+		}
 		Out << "#OFFSET:" << (*i)->Offset << ";\n";
 
 		if (LeadInTime)

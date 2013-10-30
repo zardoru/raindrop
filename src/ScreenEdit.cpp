@@ -95,7 +95,11 @@ void ScreenEdit::DecreaseCurrentFraction()
 
 		if (CurrentFraction > CurrentDiff->Measures[Measure].Fraction) // overflow
 		{
-			CurrentFraction = CurrentDiff->Measures[Measure].Fraction-1;
+			if(CurrentDiff->Measures[Measure-1].Fraction)
+			{
+				CurrentFraction = CurrentDiff->Measures[Measure-1].Fraction-1;
+			}else
+				CurrentFraction = 0;
 
 			if (Measure > 0) // Go back a measure
 				Measure--;
@@ -164,7 +168,10 @@ void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 				return;
 			else if (R == 2)
 			{
-				CurrentDiff->Offset = atof(OffsetPrompt.GetContents().c_str());
+				if (Utility::IsNumeric(OffsetPrompt.GetContents().c_str()))
+				{
+					CurrentDiff->Offset = atof(OffsetPrompt.GetContents().c_str());
+				}
 				return;
 			}
 
@@ -174,7 +181,10 @@ void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 				return;
 			else if (R == 2)
 			{
-				CurrentDiff->Timing[0].Value = atof(BPMPrompt.GetContents().c_str());
+				if (Utility::IsNumeric(BPMPrompt.GetContents().c_str()))
+				{
+					CurrentDiff->Timing[0].Value = atof(BPMPrompt.GetContents().c_str());
+				}
 				return;
 			}
 

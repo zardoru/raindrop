@@ -37,7 +37,7 @@ int TextPrompt::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 	}else if (BindingsManager::TranslateKey(key) == KT_Escape)
 	{
 		mOpen = false;
-		return 2;
+		return 1;
 	}
 
 	if (isprint((char)key) && !isMouseInput)
@@ -64,7 +64,7 @@ void TextPrompt::Render()
 	if (mOpen)
 	{
 		std::stringstream ss;
-		ss << mPromptText << "\n\n" << mBufferText << "_" << "\n\n" << "Press Enter To Confirm";
+		ss << mPromptText << "\n\n" << mBufferText << "_" << "\n\n" << "Press Enter To Confirm or Escape to Abort";
 		if (mPromptFont)
 			mPromptFont->DisplayText(ss.str().c_str(), glm::vec2(100,200)); // todo: change position
 	}
