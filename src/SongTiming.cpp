@@ -42,11 +42,13 @@ double TimeAtBeat(Difficulty &Diff, float Beat)
 	uint32 CurrentIndex = SectionIndex(Diff, Beat);
 	double Time = Diff.Offset;
 
+	if (Beat == 0) return Time;
+
 	for (uint32 i = 0; i < CurrentIndex; i++)
 	{	
 		if (i+1 < Timing.size()) // Get how long the current timing goes.
 		{
-			float BeatDurationOfSectionI = Timing[i+1].Time + Timing[i].Time; // Section lasts this much.
+			float BeatDurationOfSectionI = Timing[i+1].Time - Timing[i].Time; // Section lasts this much.
 			float SectionDuration = BeatDurationOfSectionI * spb ( Timing[i].Value );
 
 			if (Beat < Timing[i+1].Time && Beat > Timing[i].Time)
@@ -94,12 +96,12 @@ void CalculateBarlineRatios(Song &MySong, Difficulty &Diff)
 		double CurrentBeat = Measure * MySong.MeasureLength;
 		double NextBeat = (Measure+1) * MySong.MeasureLength;
 		double CurrentBPM = BpmAtBeat(Diff, CurrentBeat);
+		double MeasureDuration = TimeAtBeat(Diff, (Measure+1)*MySong.MeasureLength) - TimeAtBeat(Diff, Measure*MySong.MeasureLength);
 
 		GetTimingChangesInInterval(Timing, CurrentBeat, NextBeat, ChangesInInterval);
 
-		if (ChangesInInterval.size() == 0 || (ChangesInInterval.size() && ChangesInInterval.at(0).Time == 0))
+		if (ChangesInInterval.size() == 0)
 		{
-			double MeasureDuration = TimeAtBeat(Diff, (Measure+1)*MySong.MeasureLength) - TimeAtBeat(Diff, Measure*MySong.MeasureLength);
 			double Ratio = 1/MeasureDuration;
 			Difficulty::TimingSegment New;
 
@@ -116,7 +118,50 @@ void CalculateBarlineRatios(Song &MySong, Difficulty &Diff)
 		}else
 		{
 			// Real show time on calculations is here.
+			for (vector<Difficulty::TimingSegment>::iterator i = ChangesInInterval.begin(); i != ChangesInInterval.end(); i++)
+			{
+				Difficulty::TimingSegment New;
+				double Duration;
+				double DurationSeconds;
+				double Fraction;
+				double Ratio;
 
+				/* Calculate how long this change lasts. */
+				
+				if ((i+1) != ChangesInInterval.end())
+				{
+					Duration = (i+1)->Time - i->Time;
+				}else
+				{
+					Duration = NextBeat - i->Time;
+				}
+
+				/* Assign the time the change starts
+				which we can assume i->Time >= CurrentBeat before this. */
+				CurrentBeat = i->Time;
+
+				/* Calculate how much the barline would move in 1 second */
+				Fraction = Duration / MySong.MeasureLength;
+				
+				/* t/b * b = t */ 
+				DurationSeconds = spb(i->Value) * Duration;
+
+				/* f/d = r/1 (where 1 and d are 1 second and d seconds) */
+				Ratio = Fraction / DurationSeconds;
+
+				/* create new segment at i->Time */
+				New.Value = Ratio;
+				New.Time = TimeAtBeat(Diff, CurrentBeat);
+
+				if (!Ratios.size())
+					Ratios.push_back(New);
+				else
+				{
+					if (Ratios.back().Value != Ratio) /* Don't add redundant ratios.*/
+						Ratios.push_back(New);
+				}
+
+			}
 
 		}
 	}

@@ -7,11 +7,12 @@
 #include "GameObject.h"
 #include "Song.h"
 
-class NoteLoader 
+namespace NoteLoader 
 {
-public:
+	void LoadNotes(Song* Out, SongInternal::Difficulty* Difficulty, String line);
+	void LoadBPMs(Song* Out, SongInternal::Difficulty* Difficulty, String line);
 	// user responsability to clean this one up.
-	static Song *LoadObjectsFromFile(String filename, String prefix = "");
+	Song *LoadObjectsFromFile(String filename, String prefix = "");
 };
 
 #endif // NOTELOADER_H_
