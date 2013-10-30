@@ -87,13 +87,13 @@ void Song::Process(bool CalculateXPos)
 	}
 }
 
-void Song::Save(const char* Filename)
+bool Song::Save(const char* Filename)
 {
 	std::ofstream Out(Filename);
 
 	if (!Out.is_open()) // couldn't open file for writing.
 	{
-		return /* false */;
+		return false;
 	}
 
 	Out << "#NAME:" << SongName << ";\n";
@@ -194,5 +194,5 @@ void Song::Save(const char* Filename)
 
 	} // For each difficulty
 
-	/* return true; */
+	return true;
 }

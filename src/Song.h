@@ -60,7 +60,7 @@ public:
 	std::vector<String> SoundList;
 	void Process(bool CalculateXPos = true);
 	void Repack();
-	void Save(const char* Filename);
+	bool Save(const char* Filename);
 };
 
 /* Song Timing */
