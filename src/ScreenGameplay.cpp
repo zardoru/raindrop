@@ -432,7 +432,7 @@ bool ScreenGameplay::Run(double TimeDelta)
 
 	}
 
-	RenderObjects(TimeDelta);
+	RenderObjects(SongDelta);
 	
 	// You died? Not editing? Failing is enabled?
 	if (Lifebar.Health <= 0 && !EditMode && FailEnabled)
