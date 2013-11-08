@@ -209,6 +209,7 @@
     <ClCompile Include="..\src\ScreenEdit.cpp" />
     <ClCompile Include="..\src\ScreenEvaluation.cpp" />
     <ClCompile Include="..\src\ScreenGameplay.cpp" />
+    <ClCompile Include="..\src\ScreenLoading.cpp" />
     <ClCompile Include="..\src\ScreenMainMenu.cpp" />
     <ClCompile Include="..\src\ScreenSelectMusic.cpp" />
     <ClCompile Include="..\src\Song.cpp" />
@@ -245,6 +246,7 @@
     <ClInclude Include="..\src\ScreenEdit.h" />
     <ClInclude Include="..\src\ScreenEvaluation.h" />
     <ClInclude Include="..\src\ScreenGameplay.h" />
+    <ClInclude Include="..\src\ScreenLoading.h" />
     <ClInclude Include="..\src\ScreenMainMenu.h" />
     <ClInclude Include="..\src\ScreenSelectMusic.h" />
     <ClInclude Include="..\src\Song.h" />

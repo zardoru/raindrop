@@ -13,6 +13,7 @@ class ScreenSelectMusic : public IScreen
 	void StopLoops();
 	void UpdateCursor();
 	double Time;
+	void InitializeObjects();
 public:
 	ScreenSelectMusic();
 	void Init();

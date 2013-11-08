@@ -6,7 +6,9 @@
 #include "FileManager.h"
 #include "BitmapFont.h"
 #include "ScreenMainMenu.h"
+#include "ScreenLoading.h"
 #include "ScreenSelectMusic.h"
+#include "GameObject.h"
 
 SoundSample *MMSelectSnd = NULL;
 BitmapFont* MainMenuFont = NULL;
@@ -42,6 +44,9 @@ void ScreenMainMenu::Init()
 		MMSelectSnd = new SoundSample((FileManager::GetSkinPrefix() + "select.ogg").c_str());
 		MixerAddSample(MMSelectSnd);
 	}
+
+	/* We need this object to be created in first instance in the main thread. Bad design, I'll fix it later. */
+	GameObject Dummy;
 }
 
 void ScreenMainMenu::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
@@ -56,9 +61,10 @@ void ScreenMainMenu::HandleInput(int32 key, KeyEventType code, bool isMouseInput
 	{
 		/* Use a screen loading to load selectmusic screen. */
 		MMSelectSnd->Reset();
-		ScreenSelectMusic* NewScreen = new ScreenSelectMusic();
-		NewScreen->Init();
-		Next = NewScreen;
+		ScreenLoading *LoadScreen = new ScreenLoading(this, new ScreenSelectMusic());
+		LoadScreen->Init();
+		Next = LoadScreen;
+		return;
 	}
 	else if(EditBtn.HandleInput(key, code, isMouseInput))
 	{

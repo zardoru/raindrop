@@ -4,6 +4,7 @@
 #include "ScreenEvaluation.h"
 #include "NoteLoader.h"
 #include "GameWindow.h"
+#include "FileManager.h"
 #include "ImageLoader.h"
 #include "Audio.h"
 
@@ -97,22 +98,14 @@ void ScreenGameplay::StoreEvaluation(Judgement Eval)
 	Evaluation.MaxCombo = std::max(Evaluation.MaxCombo, Combo);
 }
 
-void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
+void ScreenGameplay::InitializeObjects()
 {
-	MySong = OtherSong;
-	CurrentDiff = MySong->Difficulties[DifficultyIndex];
-	
-	BarlineRatios = CurrentDiff->BarlineRatios;
-	memset(&Evaluation, 0, sizeof(Evaluation));
-
-	Measure = 0;
-	Combo = 0;
-
 	Cursor.SetImage(ImageLoader::LoadSkin("cursor.png"));
 	Barline.SetImage(ImageLoader::LoadSkin("Barline.png"));
 	MarkerA.SetImage(ImageLoader::LoadSkin("barline_marker.png"));
 	MarkerB.SetImage(ImageLoader::LoadSkin("barline_marker.png"));
 	Background.SetImage(ImageLoader::Load(MySong->BackgroundDir));
+	GameplayObjectImage = ImageLoader::LoadSkin("hitcircle.png");
 
 	Background.Alpha = 0.8f;
 	Background.SetSize(ScreenWidth, ScreenHeight);
@@ -126,6 +119,35 @@ void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
 	MarkerA.SetRotation(180);
 
 	Lifebar.SetWidth(PlayfieldWidth);
+	
+	Cursor.SetSize(72);
+	Cursor.Centered = true;
+}
+
+void ScreenGameplay::Init()
+{
+	BarlineRatios = CurrentDiff->BarlineRatios;
+	memset(&Evaluation, 0, sizeof(Evaluation));
+
+	Measure = 0;
+	Combo = 0;
+
+	char* SkinFiles [] =
+	{
+		"cursor.png",
+		"Barline.png",
+		"barline_marker.png",
+		"hitcircle.png"
+	};
+
+	ImageLoader::LoadFromManifest(SkinFiles, 3, FileManager::GetSkinPrefix());
+	
+	char* OtherFiles [] =
+	{
+		(char*)MySong->BackgroundDir.c_str()
+	};
+
+	ImageLoader::LoadFromManifest(OtherFiles, 1);
 
 	if (ShouldChangeScreenAtEnd)
 		Barline.Init(CurrentDiff->Offset + MySong->LeadInTime);
@@ -177,9 +199,13 @@ void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
 			LeadInTime = MySong->LeadInTime;
 	}
 
-	Cursor.SetSize(72);
-	Cursor.Centered = true;
 	WindowFrame.SetVisibleCursor(false);
+}
+
+void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
+{
+	MySong = OtherSong;
+	CurrentDiff = MySong->Difficulties[DifficultyIndex];
 }
 
 int32 ScreenGameplay::GetMeasure()
@@ -367,6 +393,9 @@ void ScreenGameplay::stopMusic()
 /* TODO: Use measure ratios instead of song time for the barline. */
 bool ScreenGameplay::Run(double TimeDelta)
 {
+	if (ScreenTime == 0)
+		InitializeObjects();
+
 	ScreenTime += TimeDelta;
 
 	if (Music && !IsPaused)
@@ -447,6 +476,8 @@ void ScreenGameplay::DrawVector(std::vector<GameObject>& Vec, float TimeDelta)
 		i != Vec.rend(); 
 		i++)
 	{
+		i->SetImage(GameplayObjectImage);
+		i->SetSize(CircleSize);
 		i->Animate(TimeDelta, SongTime);
 		i->ColorInvert = false;
 		i->Render();
@@ -502,12 +533,6 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 		Background.Blue = Background.Red = Background.Green = 1;
 
 	Background.Render();
-
-	if (!MarkerA.GetImage()->IsValid)
-	{
-		MarkerA.Invalidate(); MarkerA.Initialize(true);
-		MarkerB.Invalidate(); MarkerB.Initialize(true);
-	}
 
 	MarkerA.Render();
 	MarkerB.Render();

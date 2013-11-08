@@ -222,6 +222,7 @@ void GameObject::Invalidate()
 #ifndef OLD_GL
 	UvBuffer->Invalidate();
 	UpdateTexture();
+	GameObjectUVvbo = UvBuffer;
 #endif
 }
 

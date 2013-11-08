@@ -22,11 +22,11 @@
     <Filter Include="Source Files\Backend">
       <UniqueIdentifier>{f06d75ac-94ec-40dd-a92a-02e5c1a284de}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Graphics">
-      <UniqueIdentifier>{dc59a189-d994-4429-a06a-6593e3ad016c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\GUI">
       <UniqueIdentifier>{a7c0e635-42db-4882-8472-038699575e8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Backend\Graphics">
+      <UniqueIdentifier>{dc59a189-d994-4429-a06a-6593e3ad016c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -82,19 +82,19 @@
       <Filter>Source Files\Backend</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Image.cpp">
-      <Filter>Source Files\Graphics</Filter>
+      <Filter>Source Files\Backend\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ImageLoader.cpp">
-      <Filter>Source Files\Graphics</Filter>
+      <Filter>Source Files\Backend\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="..\src\GraphObject2D.cpp">
-      <Filter>Source Files\Graphics</Filter>
+      <Filter>Source Files\Backend\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="..\src\GameObject.cpp">
       <Filter>Source Files\ScreenGameplay</Filter>
     </ClCompile>
     <ClCompile Include="..\src\BitmapFont.cpp">
-      <Filter>Source Files\Graphics</Filter>
+      <Filter>Source Files\Backend\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="..\src\NoteLoader.cpp">
       <Filter>Source Files\Backend</Filter>
@@ -125,6 +125,9 @@
     </ClCompile>
     <ClCompile Include="..\src\SongTiming.cpp">
       <Filter>Source Files\ScreenGameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenLoading.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -225,6 +228,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\VBO.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScreenLoading.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

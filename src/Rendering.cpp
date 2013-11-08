@@ -102,19 +102,24 @@ void GraphObject2D::UpdateTexture()
 #endif
 }
 
+void Image::Bind()
+{
+	if (LastBound != this)
+	{
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		LastBound = this;
+	}
+}
+
 void GraphObject2D::Render()
 {
 	
 	if (mImage)
 	{
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, mImage->texture);
-	}
-	else
-	{
-		//root->CONSOLE->PrintLog("Trying to render null texture\n");
+		mImage->Bind();
+	}else
 		return;
-	}
 
 #ifndef OLD_GL
 

@@ -28,7 +28,7 @@ public:
 	static void   UnloadAll();
 
 	/* For multi-threaded loading. */
-	static void   LoadFromManifest(char** Manifest, int Count);
+	static void   LoadFromManifest(char** Manifest, int Count, String Prefix = "");
 	static void   UpdateTextures();
 
 	/* On-the-spot, main thread loading or reloading. */

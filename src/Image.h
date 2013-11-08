@@ -3,10 +3,12 @@
 
 class Image
 {
+	static Image* LastBound;
 public:
 	Image(unsigned int texture, int w, int h);
 	~Image();
-	
+	void Bind();
+
 	bool IsValid;
 	std::string fname;
 	int w, h;

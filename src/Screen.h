@@ -24,7 +24,7 @@ public:
 	// Screen implementation.
 	virtual void Init();
 	virtual bool Run(double delta) = 0;
-	virtual void HandleInput(int32 key, KeyEventType state, bool isMouseInput) = 0;
+	virtual void HandleInput(int32 key, KeyEventType state, bool isMouseInput);
 
 	// We need to set up graphics again? This gets called.
 	virtual void Invalidate();

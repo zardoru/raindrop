@@ -3,6 +3,7 @@
 #include "GameObject.h"
 #include "Song.h"
 #include "ScreenSelectMusic.h"
+#include "ScreenLoading.h"
 #include "FileManager.h"
 #include "ScreenGameplay.h"
 #include "ScreenEdit.h"
@@ -41,14 +42,8 @@ ScreenSelectMusic::ScreenSelectMusic()
 	}
 }
 
-void ScreenSelectMusic::Init()
+void ScreenSelectMusic::InitializeObjects()
 {
-	FileManager::GetSongList(SongList);
-
-	Running = true;
-	OldCursor = Cursor = 0;
-	SwitchBackGuiPending = true;
-
 	if (!Font)
 	{
 		Font = new BitmapFont();
@@ -63,6 +58,25 @@ void ScreenSelectMusic::Init()
 	Logo.SetSize(480);
 	Logo.Centered = true;
 	Logo.SetPosition(Logo.GetWidth()/4, ScreenHeight - Logo.GetHeight()/4);
+}
+
+void ScreenSelectMusic::Init()
+{
+	FileManager::GetSongList(SongList);
+
+	Running = true;
+	OldCursor = Cursor = 0;
+	SwitchBackGuiPending = true;
+
+	char* Manifest[] =
+	{
+		"songselect_cursor.png",
+		"MenuBackground.png",
+		"logo.png"
+	};
+
+	ImageLoader::LoadFromManifest(Manifest, 3, FileManager::GetSkinPrefix());
+
 	Time = 0;
 }
 
@@ -86,6 +100,9 @@ bool ScreenSelectMusic::Run(double Delta)
 			Loops[rn]->Start();
 		}
 	}
+
+	if (Time == 0)
+		InitializeObjects();
 
 	Time += Delta;
 	Logo.AddRotation(12 * Delta);
@@ -177,6 +194,7 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 	{
 		ScreenGameplay *_gNext = NULL;
 		ScreenEdit *_Next;
+		ScreenLoading *_LNext;
 		switch (BindingsManager::TranslateKey(key))
 		{
 		case KT_GoToEditMode: // Edit mode!
@@ -199,9 +217,11 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 			{
 				SelectSnd->Reset();
 				_gNext = new ScreenGameplay(this);
+				_LNext = new ScreenLoading(this, _gNext);
 				_gNext->Init(SongList.at(Cursor), 0);
+				_LNext->Init();
 
-				Next = _gNext;
+				Next = _LNext;
 				SwitchBackGuiPending = true;
 				WindowFrame.isGuiInputEnabled = false;
 				StopLoops();

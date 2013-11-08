@@ -7,9 +7,10 @@
 #include "ImageLoader.h"
 #include "FileManager.h"
 
+#include <boost/thread.hpp>
 #include <SOIL.h>
 
-
+boost::mutex LoadMutex;
 std::map<String, Image*> ImageLoader::Textures;
 std::map<String, ImageLoader::UploadData> ImageLoader::PendingUploads;
 
@@ -116,30 +117,41 @@ Image* ImageLoader::LoadSkin(String filename)
 }
 
 /* For multi-threaded loading. */
-void ImageLoader::LoadFromManifest(char** Manifest, int Count)
+void ImageLoader::LoadFromManifest(char** Manifest, int Count, String Prefix)
 {
+	LoadMutex.lock();
 	for (int i = 0; i < Count; i++)
 	{
 		UploadData New;
 		int Channels;
-		New.Data = SOIL_load_image(Manifest[i], &New.Width, &New.Height, &Channels, SOIL_LOAD_RGBA);
-		PendingUploads.insert( std::pair<char*, UploadData>(Manifest[i], New) );
+		const char* FinalFilename = (Prefix + Manifest[i]).c_str();
+
+		if (Textures.find(FinalFilename) == Textures.end())
+		{
+			New.Data = SOIL_load_image(FinalFilename, &New.Width, &New.Height, &Channels, SOIL_LOAD_RGBA);
+			PendingUploads.insert( std::pair<char*, UploadData>((char*)FinalFilename, New) );
+		}
 	}
+	LoadMutex.unlock();
 }
 	
 	
 void ImageLoader::UpdateTextures()
 {
-	for (std::map<String, UploadData>::iterator i = PendingUploads.begin(); i != PendingUploads.end(); i++)
+	if (PendingUploads.size() && LoadMutex.try_lock())
 	{
-		unsigned int Texture = UploadToGPU(i->second.Data, i->second.Width, i->second.Height);
+		for (std::map<String, UploadData>::iterator i = PendingUploads.begin(); i != PendingUploads.end(); i++)
+		{
+			unsigned int Texture = UploadToGPU(i->second.Data, i->second.Width, i->second.Height);
 
-		InsertImage(i->first, Texture, i->second.Width, i->second.Height);
+			InsertImage(i->first, Texture, i->second.Width, i->second.Height);
 
-		SOIL_free_image_data(i->second.Data);
+			SOIL_free_image_data(i->second.Data);
+		}
+
+		PendingUploads.clear();
+		LoadMutex.unlock();
 	}
-
-	PendingUploads.clear();
 
 	if (Textures.size())
 	{
