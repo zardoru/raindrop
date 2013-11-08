@@ -8,8 +8,17 @@ class ImageLoader
 {
 private:
 
-	static std::map<std::string, Image*> Textures;
-	
+	struct UploadData
+	{
+		unsigned char* Data;
+		int Width, Height;
+	};
+
+	static std::map<String, Image*> Textures;
+	static std::map<String, UploadData> PendingUploads;
+
+	static unsigned int UploadToGPU(unsigned char* Data, unsigned int Width, unsigned int Height);
+	static Image*		InsertImage(String Name, unsigned int Texture, int Width, int Height);
 public:
 	
 	ImageLoader();
@@ -17,6 +26,12 @@ public:
 	
 	static void   InvalidateAll();
 	static void   UnloadAll();
+
+	/* For multi-threaded loading. */
+	static void   LoadFromManifest(char** Manifest, int Count);
+	static void   UpdateTextures();
+
+	/* On-the-spot, main thread loading or reloading. */
 	static Image* Load(std::string filename);
 	static Image* LoadSkin(std::string filename);
 };
