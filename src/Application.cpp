@@ -10,6 +10,7 @@
 #include "Audio.h"
 #include "GameWindow.h"
 #include "BitmapFont.h"
+#include "ImageLoader.h"
 
 Application::Application()
 {
@@ -38,6 +39,7 @@ void Application::Run()
 		double newTime = glfwGetTime();
 		double delta = newTime - oldTime;
 		WindowFrame.ClearWindow();
+		ImageLoader::UpdateTextures();
 
 		// shit gets real
 		Game->Run(delta);

@@ -220,12 +220,14 @@ VBO::VBO(Type T)
 	InternalVBO = 0;
 	IsValid = false;
 	mType = T;
+	WindowFrame.AddVBO(this);
 }
 
 VBO::~VBO()
 {
 	if (InternalVBO)
 		glDeleteBuffers(1, &InternalVBO);
+	WindowFrame.RemoveVBO(this);
 }
 
 void VBO::Invalidate()
@@ -239,6 +241,7 @@ void VBO::Validate()
 	{
 		glGenBuffers(1, &InternalVBO);
 		glBindBuffer(GL_ARRAY_BUFFER, InternalVBO);
+		AssignData(VboData);
 		IsValid = true;
 	}
 }
@@ -254,8 +257,9 @@ void VBO::AssignData(float* Data)
 	else if (mType == Static)
 		UpType = GL_STATIC_DRAW;
 
+	memmove(VboData, Data, sizeof(VboData));
 	Bind();
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 12, Data, UpType);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 12, VboData, UpType);
 }
 
 

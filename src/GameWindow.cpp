@@ -8,6 +8,7 @@
 #include "ImageLoader.h"
 #include "GraphObject2D.h"
 #include "GameObject.h"
+#include "VBO.h"
 #include <glm/gtc/matrix_transform.hpp>
 
 
@@ -261,13 +262,12 @@ void GameWindow::SwapBuffers()
 		SetupWindow();
 		ImageLoader::InvalidateAll();
 
-		/* This invalidates all GraphObject2Ds. */
-		GraphObject2D GO1;
-		GO1.Invalidate();
-		GO1.Initialize(false);
-
-		GameObject GO2;
-		GO2.Invalidate();
+		/* This revalidates all VBOs */
+		for (std::vector<VBO*>::iterator i = VBOList.begin(); i != VBOList.end(); i++)
+		{
+			(*i)->Invalidate();
+			(*i)->Validate();
+		}
 
 		IsFullscreen = !IsFullscreen;
 		FullscreenSwitchbackPending = false;
@@ -408,4 +408,21 @@ int GameWindow::DisableAttribArray(String Attrib)
 	GLint AttribID = glGetAttribLocation(GetShaderProgram(), Attrib.c_str());
 	glDisableVertexAttribArray(AttribID);
 	return AttribID;
+}
+
+void GameWindow::AddVBO(VBO *V)
+{
+	VBOList.push_back(V);
+}
+
+void GameWindow::RemoveVBO(VBO *V)
+{
+	for (std::vector<VBO*>::iterator i = VBOList.begin(); i != VBOList.end(); i++)
+	{
+		if (*i == V)
+		{
+			VBOList.erase(i);
+			return;
+		}
+	}
 }

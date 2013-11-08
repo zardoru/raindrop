@@ -17,7 +17,7 @@ private:
 	/* GLuint */ uint32 InternalVBO;
 	bool IsValid;
 	Type mType;
-
+	float VboData[12];
 public:
 	VBO(Type T);
 	~VBO();

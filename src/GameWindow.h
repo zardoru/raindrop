@@ -3,6 +3,7 @@
 #ifndef GraphMan_H_
 #define GraphMan_H_
 
+class VBO;
 struct GLFWwindow;
 
 class GameWindow
@@ -20,6 +21,8 @@ class GameWindow
 
 	void SetupWindow();
 	void SetupShaders();
+	
+	std::vector<VBO*> VBOList;
 
 public:
 	GameWindow();
@@ -31,6 +34,8 @@ public:
 	// assigns this matrix on the stack
 	void SetMatrix(uint32 MatrixMode, glm::mat4 matrix);
 	void SetVisibleCursor(bool Visible);
+	void AddVBO(VBO* V);
+	void RemoveVBO(VBO *V);
 
 	// returns the mouse position relative to the matrix and window size
 	glm::vec2 GetRelativeMPos();
