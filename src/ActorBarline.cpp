@@ -10,6 +10,8 @@ ActorBarline::ActorBarline(ScreenGameplay *_Parent) : GraphObject2D()
 	Parent = _Parent;
 	Centered = true;
 	ColorInvert = false;
+	AnimationTime = 0;
+	AnimationProgress = 0;
 }
 
 void ActorBarline::Init(float Offset)

@@ -27,7 +27,7 @@ void Directory::operator=(std::string subpath)
 	curpath = subpath;
 }
 
-bool Directory::operator==(std::string subpath)
+bool Directory::operator==(std::string subpath) const
 {
 	return curpath == subpath;
 }
@@ -57,8 +57,8 @@ Directory operator/(std::string subpath, Directory parent)
 	return operator/(parent, subpath); // o_O
 }
 
-std::string Directory::path(){ return curpath; }
-const char* Directory::c_path(){ return curpath.c_str(); }
+std::string Directory::path() const { return curpath; }
+const char* Directory::c_path() const { return curpath.c_str(); }
 
 std::vector<std::string> *Directory::ListDirectory(std::vector<std::string> *Vec, DirType T, const char* ext, bool Recursive)
 {

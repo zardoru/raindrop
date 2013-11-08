@@ -70,7 +70,7 @@ public:
 	void SetScale(float Scale);
 	void SetScaleX(float ScaleX);
 	void SetScaleY(float ScaleY);
-	glm::vec2 GetScale();
+	glm::vec2 GetScale() const;
 
 	// Position
 	void SetPosition(glm::vec2 Pos);
@@ -79,7 +79,7 @@ public:
 	void AddPosition(glm::vec2 pos);
 	void SetPositionX(float pX);
 	void SetPositionY(float pY);
-	glm::vec2 GetPosition();
+	glm::vec2 GetPosition() const;
 
 	// Size
 	void SetSize(glm::vec2 Size);
@@ -87,9 +87,9 @@ public:
 	void SetSize(float W, float H);
 	void SetWidth(uint32 W);
 	void SetHeight(uint32 H);
-	float GetWidth();
-	float GetHeight();
-	glm::vec2 GetSize();
+	float GetWidth() const;
+	float GetHeight() const;
+	glm::vec2 GetSize() const;
 
 	// Cropping
 	void SetCrop(glm::vec2 Crop1, glm::vec2 Crop2);
@@ -100,7 +100,7 @@ public:
 
 	// Rotation
 	void SetRotation(float Rot);
-	float GetRotation();
+	float GetRotation() const;
 	void AddRotation(float Rot);
 
 	virtual void Render(); // found in backend.cpp

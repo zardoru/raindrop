@@ -17,12 +17,12 @@ public:
 	~Directory();
 	
 	void operator=(std::string);
-	bool operator==(std::string);
+	bool operator==(std::string) const;
 
 	Directory ParentDirectory();
 	
-	String path();
-	const char* c_path();
+	String path() const;
+	const char* c_path() const;
 	std::vector<String> *ListDirectory(std::vector<String> *Vec = NULL, DirType T = FS_REG, const char* ext = NULL, bool Recursive = false);
 	
 private:

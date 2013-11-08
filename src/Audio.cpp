@@ -100,7 +100,7 @@ void VorbisStream::clearBuffer()
 	PaUtil_InitializeRingBuffer(&RingBuf, sizeof(int16), BufSize, buffer);
 }
 
-bool VorbisStream::IsOpen()
+bool VorbisStream::IsOpen() const
 {
 	return isOpen;
 }
@@ -196,12 +196,12 @@ int32 VorbisStream::readBuffer(void * out, uint32 length)
 	return length;
 }
 
-double VorbisStream::getRate()
+double VorbisStream::getRate() const
 {
 	return info->rate;
 }
 
-int32 VorbisStream::getChannels()
+int32 VorbisStream::getChannels() const
 {
 	return info->channels;
 }
@@ -223,17 +223,17 @@ void VorbisStream::Stop()
 	runThread = 0;
 }
 
-bool VorbisStream::IsStopped()
+bool VorbisStream::IsStopped() const
 {
 	return runThread == 0;
 }
 
-double VorbisStream::GetPlaybackTime()
+double VorbisStream::GetPlaybackTime() const
 {
 	return playbackTime;
 }
 
-double VorbisStream::GetStreamedTime()
+double VorbisStream::GetStreamedTime() const
 {
 	return streamTime;
 }
@@ -557,6 +557,7 @@ PaStreamWrapper::PaStreamWrapper(VorbisStream *Vs)
 	outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultLowOutputLatency;
 	outputParams.hostApiSpecificStreamInfo = NULL;
 	Sound = Vs;
+	mStream = NULL;
 }
 
 PaStreamWrapper::PaStreamWrapper(const char* filename)

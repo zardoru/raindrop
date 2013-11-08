@@ -95,7 +95,6 @@ void CalculateBarlineRatios(Song &MySong, Difficulty &Diff)
 	{
 		double CurrentBeat = Measure * MySong.MeasureLength;
 		double NextBeat = (Measure+1) * MySong.MeasureLength;
-		double CurrentBPM = BpmAtBeat(Diff, CurrentBeat);
 		double MeasureDuration = TimeAtBeat(Diff, (Measure+1)*MySong.MeasureLength) - TimeAtBeat(Diff, Measure*MySong.MeasureLength);
 
 		GetTimingChangesInInterval(Timing, CurrentBeat, NextBeat, ChangesInInterval);

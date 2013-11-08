@@ -88,7 +88,7 @@ void GraphObject2D::SetScaleY(float ScaleY)
 	DirtyMatrix = true;
 }
 
-glm::vec2 GraphObject2D::GetScale()
+glm::vec2 GraphObject2D::GetScale() const
 {
 	return mScale;
 }
@@ -131,7 +131,7 @@ void GraphObject2D::AddPosition(glm::vec2 pos)
 	DirtyMatrix = true;
 }
 
-glm::vec2 GraphObject2D::GetPosition()
+glm::vec2 GraphObject2D::GetPosition() const
 {
 	return mPosition;
 }
@@ -166,17 +166,17 @@ void GraphObject2D::SetHeight(uint32 H)
 	DirtyMatrix = true;
 }
 
-glm::vec2 GraphObject2D::GetSize()
+glm::vec2 GraphObject2D::GetSize() const
 {
 	return glm::vec2(mWidth, mHeight);
 }
 
-float GraphObject2D::GetWidth()
+float GraphObject2D::GetWidth() const
 {
 	return mWidth;
 }
 
-float GraphObject2D::GetHeight()
+float GraphObject2D::GetHeight() const
 {
 	return mHeight;
 }
@@ -212,7 +212,7 @@ void GraphObject2D::SetRotation(float Rot)
 }
 
 
-float GraphObject2D::GetRotation()
+float GraphObject2D::GetRotation() const
 {
 	return mRotation;
 }

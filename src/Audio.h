@@ -49,17 +49,17 @@ public:
 	void startStream();
 	void stopStream();
 
-	double getRate();
-	int32 getChannels();
+	double getRate() const;
+	int32 getChannels() const;
 	int32 readBuffer(void * out, uint32 length);
 	void seek(double Time, bool accurate = false); /* accurate also means thread safe */
-	bool IsOpen();
+	bool IsOpen() const;
 	void setLoop(bool _loop);
 	void Start();
 	void Stop();
-	bool IsStopped();
-	double GetPlaybackTime();
-	double GetStreamedTime();
+	bool IsStopped() const;
+	double GetPlaybackTime() const;
+	double GetStreamedTime() const;
 
 	void UpdateBuffer(int32 &read);
 };

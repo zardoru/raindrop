@@ -7,7 +7,6 @@ class ScreenMainMenu : public IScreen
 {
 	GUI::Button PlayBtn, EditBtn, OptionsBtn, ExitBtn;
 	GraphObject2D Logo, Background;
-	double ScreenTime;
 public:
 	ScreenMainMenu(IScreen *Parent);
 	void Init();

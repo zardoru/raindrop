@@ -36,14 +36,14 @@ public:
 	glm::vec2 GetRelativeMPos();
 
 	// returns the size of the window
-	glm::vec2 GetWindowSize();
+	glm::vec2 GetWindowSize() const;
 
 	// returns the size of the orthogonal matrix
-	glm::vec2 GetMatrixSize();
+	glm::vec2 GetMatrixSize() const;
 
-	int32 GetDefaultFragShader();
-	int32 GetDefaultVertexShader();
-	int32 GetShaderProgram();
+	int32 GetDefaultFragShader() const;
+	int32 GetDefaultVertexShader() const;
+	int32 GetShaderProgram() const;
 
 	bool ShouldCloseWindow();
 	void SwapBuffers();

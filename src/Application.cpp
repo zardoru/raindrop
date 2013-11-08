@@ -13,6 +13,8 @@
 
 Application::Application()
 {
+	oldTime = 0;
+	Game = NULL;
 }
 
 void Application::Init()
@@ -21,7 +23,6 @@ void Application::Init()
 	InitAudio();
 	Game = NULL;
 	srand(time(0));
-	oldTime = 0;
 	// throw a message here
 }
 
@@ -54,5 +55,7 @@ void Application::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 
 void Application::Close()
 {
+	if (Game)
+		delete Game;
 	WindowFrame.Cleanup();
 }

@@ -93,6 +93,8 @@ GameWindow::GameWindow()
 {
 	Viewport.x = Viewport.y = 0;
 	SizeRatio = 1.0f;
+	FullscreenSwitchbackPending = false;
+	wnd = NULL;
 }
 
 void ResizeFunc(GLFWwindow*, int32 width, int32 height)
@@ -137,12 +139,12 @@ void MouseMoveFunc (GLFWwindow*,double newx, double newy)
 		return;
 }
 
-glm::vec2 GameWindow::GetWindowSize()
+glm::vec2 GameWindow::GetWindowSize() const
 {
 	return size;
 }
 
-glm::vec2 GameWindow::GetMatrixSize()
+glm::vec2 GameWindow::GetMatrixSize() const
 {
 	return matrixSize;
 }
@@ -278,17 +280,17 @@ void GameWindow::ClearWindow()
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-int32 GameWindow::GetDefaultFragShader()
+int32 GameWindow::GetDefaultFragShader() const
 {
 	return defaultFragShader;
 }
 
-int32 GameWindow::GetDefaultVertexShader()
+int32 GameWindow::GetDefaultVertexShader() const
 {
 	return defaultVertexShader;
 }
 
-int32 GameWindow::GetShaderProgram()
+int32 GameWindow::GetShaderProgram() const
 {
 	return defaultShaderProgram;
 }

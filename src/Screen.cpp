@@ -6,6 +6,7 @@ IScreen::IScreen()
 	Parent = NULL;
 	Running = false;
 	Next = 0;
+	ScreenTime = 0;
 }
 
 IScreen::IScreen(IScreen *_Parent)
@@ -13,6 +14,7 @@ IScreen::IScreen(IScreen *_Parent)
 	Parent = _Parent;
 	Running = false;
 	Next = 0;
+	ScreenTime = 0;
 }
 
 IScreen::~IScreen() {}

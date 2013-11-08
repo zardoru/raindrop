@@ -14,6 +14,7 @@ ActorJudgement::ActorJudgement()
 	Alpha = 0;
 	SetImage(ImageLoader::LoadSkin("judge-perfect.png"));
 	SetPosition(40, PlayfieldHeight/2 + 70 );
+	AnimTime = 0;
 }
 
 void ActorJudgement::ChangeJudgement(Judgement New)
