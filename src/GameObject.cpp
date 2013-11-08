@@ -1,5 +1,6 @@
 #include "Global.h"
 #include "GraphObject2D.h"
+#include "VBO.h"
 #include "GameObject.h"
 #include "ImageLoader.h"
 #include "FileManager.h"
@@ -8,7 +9,7 @@
 SoundSample *HitSnd = NULL;
 SoundSample *HoldReleaseSnd = NULL;
 bool GameObjectTexInitialized = false;
-uint32 GameObjectUVvbo;
+VBO *GameObjectUVvbo = NULL;
 
 GameObject::GameObject() : GraphObject2D(false)
 {
@@ -40,11 +41,11 @@ GameObject::GameObject() : GraphObject2D(false)
 
 #ifndef OLD_GL
 	if (GameObjectTexInitialized)
-		ourUVBuffer = GameObjectUVvbo;
+		UvBuffer = GameObjectUVvbo;
 	else
 	{
-		InitTexture();
-		GameObjectUVvbo = ourUVBuffer;
+		UpdateTexture();
+		GameObjectUVvbo = UvBuffer;
 		GameObjectTexInitialized = true;
 	}
 #endif
@@ -219,19 +220,12 @@ Judgement GameObject::Hit(float Time, glm::vec2 mpos, bool KeyDown,  bool Autopl
 void GameObject::Invalidate()
 {
 #ifndef OLD_GL
-	ourUVBuffer = -1;
-	InitTexture();
-	GameObjectUVvbo = ourUVBuffer;
+	UvBuffer->Invalidate();
+	UpdateTexture();
 #endif
 }
 
 void GameObject::Render()
 {
-#ifndef OLD_GL
-	if (ourUVBuffer != GameObjectUVvbo)
-	{
-		ourUVBuffer = GameObjectUVvbo;
-	}
-#endif
 	GraphObject2D::Render();
 }

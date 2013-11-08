@@ -1,16 +1,18 @@
-#include "Global.h"
-#include "Rendering.h"
-#include "GraphObject2D.h"
-
 #include <GL/glew.h>
+#include <glm/gtc/type_ptr.hpp>
+
+#include "Global.h"
+
+#include "GameWindow.h"
+#include "Rendering.h"
+#include "VBO.h"
+#include "GraphObject2D.h"
 #include "Image.h"
 #include "ImageLoader.h"
-#include <glm/gtc/type_ptr.hpp>
-#include "GameWindow.h"
 
 #ifndef OLD_GL
-uint32 GraphObject2D::ourBuffer;
-uint32 GraphObject2D::ourCenteredBuffer;
+VBO* GraphObject2D::mBuffer;
+VBO* GraphObject2D::mCenteredBuffer;
 #endif
 
 void GraphObject2D::InitVBO()
@@ -37,20 +39,12 @@ void GraphObject2D::InitVBO()
 		1
 	};
 
-	// The crop/etc will probably be fine with dynamic draw.
-	if (!IsInitialized)
-	{
-		glGenBuffers(1, &ourBuffer);
-		glGenBuffers(1, &ourCenteredBuffer);
-		IsInitialized = true;
-	}
-
 	// since shaders are already loaded from graphman's init functions..
 	// we'll deal with what we need to deal.
 	// Our initial quad.
 
-	glBindBuffer(GL_ARRAY_BUFFER, ourBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 12, Positions, GL_STATIC_DRAW);
+	mBuffer->Validate();
+	mBuffer->AssignData(Positions);
 
 	float PositionsCentered [12] = {
 		-0.5,
@@ -68,30 +62,21 @@ void GraphObject2D::InitVBO()
 	};
 	
 
-	glBindBuffer(GL_ARRAY_BUFFER, ourCenteredBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 12, PositionsCentered, GL_STATIC_DRAW);
+	mCenteredBuffer->Validate();
+	mCenteredBuffer->AssignData(PositionsCentered);
 
-#endif
-}
-
-void GraphObject2D::InitTexture()
-{
-#ifndef OLD_GL
-
-	if (!IsInitialized)
-		InitVBO();
-
-	if (ourUVBuffer == -1)
-		glGenBuffers(1, &ourUVBuffer);
-
-	UpdateTexture();
 #endif
 }
 
 void GraphObject2D::UpdateTexture()
 {
 #ifndef OLD_GL
-	float GLPositions[12] = { // 2 for each vertex and a uniform for z order
+
+	if (!UvBuffer)
+		UvBuffer = new VBO(VBO::Dynamic);
+
+	UvBuffer->Validate();
+	float CropPositions[12] = { // 2 for each vertex and a uniform for z order
 	// topleft
 		mCrop_x1,
 		mCrop_y1,
@@ -112,8 +97,7 @@ void GraphObject2D::UpdateTexture()
 		mCrop_y2
 	}; 
 
-	glBindBuffer(GL_ARRAY_BUFFER, ourUVBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 12, GLPositions, GL_DYNAMIC_DRAW);
+	UvBuffer->AssignData(CropPositions);
 	DirtyTexture = false;
 #endif
 }
@@ -124,23 +108,6 @@ void GraphObject2D::Render()
 	if (mImage)
 	{
 		glActiveTexture(GL_TEXTURE0);
-
-		if (!mImage->IsValid) 
-		{
-			mImage = ImageLoader::Load(mImage->fname);
-
-#ifndef OLD_GL
-			if (DoTextureCleanup) // We manage this texture VBO?
-			{
-				ourUVBuffer = -1;
-				InitTexture();
-			}
-#endif
-
-			Render();
-			return;
-		}
-
 		glBindTexture(GL_TEXTURE_2D, mImage->texture);
 	}
 	else
@@ -149,12 +116,6 @@ void GraphObject2D::Render()
 		return;
 	}
 
-	// todo: not recalculate this every frame lol
-	/*glm::mat4 posMatrix =	glm::scale(
-		glm::rotate(
-			glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, 0)), 
-		rotation, glm::vec3(0,0,1)
-				  ), glm::vec3(scaleX, scaleY, 1));*/
 #ifndef OLD_GL
 
 	if (DirtyMatrix)
@@ -175,46 +136,31 @@ void GraphObject2D::Render()
 		UpdateTexture();
 
 	// Assign our matrix.
-	GLint MatrixID = glGetUniformLocation(WindowFrame.GetShaderProgram(), "mvp");
-	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &Matrix[0][0]);
+	WindowFrame.SetUniform("mvp", &Matrix[0][0]);
 
 	// Set the color.
-	GLint ColorID = glGetUniformLocation(WindowFrame.GetShaderProgram(), "Color");
-	glUniform4f(ColorID, Red, Green, Blue, Alpha);
+	WindowFrame.SetUniform("Color", Red, Green, Blue, Alpha);
+	WindowFrame.SetUniform("inverted", ColorInvert);
 
-	GLint ColorInvertedID = glGetUniformLocation(WindowFrame.GetShaderProgram(), "inverted");
-	glUniform1i(ColorInvertedID, ColorInvert);
+	// Assign Texture
+	WindowFrame.SetUniform("tex", 0);
 
-	// Draw the buffer.
-	
-	// assign Texture
-	GLint posAttrib = glGetUniformLocation( WindowFrame.GetShaderProgram(), "tex" );
-	glUniform1i(posAttrib, 0);
-
-
-	// assign position attrib. pointer
-	posAttrib = glGetAttribLocation( WindowFrame.GetShaderProgram(), "position" );
-	glEnableVertexAttribArray(posAttrib);
-
+	// Assign position attrib. pointer
 	if (!Centered)
-		glBindBuffer(GL_ARRAY_BUFFER, ourBuffer);
+		mBuffer->Bind();
 	else
-		glBindBuffer(GL_ARRAY_BUFFER, ourCenteredBuffer);
+		mCenteredBuffer->Bind();
 
-	glVertexAttribPointer( posAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
+	glVertexAttribPointer( WindowFrame.EnableAttribArray("position"), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
 	// assign vertex UVs
-	posAttrib = glGetAttribLocation( WindowFrame.GetShaderProgram(), "vertexUV" );
-	glEnableVertexAttribArray(posAttrib);
+	UvBuffer->Bind();
+	glVertexAttribPointer( WindowFrame.EnableAttribArray("vertexUV"), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
-	glBindBuffer(GL_ARRAY_BUFFER, ourUVBuffer);
-	glVertexAttribPointer( posAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
-
-	glBindBuffer(GL_ARRAY_BUFFER, ourBuffer);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
-	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
+	WindowFrame.DisableAttribArray("position");
+	WindowFrame.DisableAttribArray("vertexUV");
 #else
 
 	if (DirtyMatrix)
@@ -264,8 +210,56 @@ void GraphObject2D::Cleanup()
 #ifndef OLD_GL
 	if (DoTextureCleanup)
 	{
-		if (ourUVBuffer != -1 && IsInitialized)
-			glDeleteBuffers(1, &ourUVBuffer);
+		delete UvBuffer;
 	}
 #endif
+}
+
+VBO::VBO(Type T)
+{
+	InternalVBO = 0;
+	IsValid = false;
+	mType = T;
+}
+
+VBO::~VBO()
+{
+	if (InternalVBO)
+		glDeleteBuffers(1, &InternalVBO);
+}
+
+void VBO::Invalidate()
+{
+	IsValid = false;
+}
+
+void VBO::Validate()
+{
+	if (!IsValid)
+	{
+		glGenBuffers(1, &InternalVBO);
+		glBindBuffer(GL_ARRAY_BUFFER, InternalVBO);
+		IsValid = true;
+	}
+}
+
+void VBO::AssignData(float* Data)
+{
+	unsigned int UpType;
+
+	if (mType == Stream)
+		UpType = GL_STREAM_DRAW;
+	else if(mType == Dynamic)
+		UpType = GL_DYNAMIC_DRAW;
+	else if (mType == Static)
+		UpType = GL_STATIC_DRAW;
+
+	Bind();
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 12, Data, UpType);
+}
+
+
+void VBO::Bind()
+{
+	glBindBuffer(GL_ARRAY_BUFFER, InternalVBO);
 }

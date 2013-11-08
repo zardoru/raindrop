@@ -377,3 +377,35 @@ void GameWindow::SetupShaders()
 
 #endif
 }
+
+void GameWindow::SetUniform(String Uniform, int i)
+{
+	GLint UniformID = glGetUniformLocation(GetShaderProgram(), Uniform.c_str());
+	glUniform1i(UniformID, i);
+}
+
+void GameWindow::SetUniform(String Uniform, float A, float B, float C, float D)
+{
+	GLint UniformID = glGetUniformLocation(GetShaderProgram(), Uniform.c_str());
+	glUniform4f(UniformID, A, B, C, D);
+}
+
+void GameWindow::SetUniform(String Uniform, float *Matrix4x4)
+{
+	GLint UniformID = glGetUniformLocation(GetShaderProgram(), Uniform.c_str());
+	glUniformMatrix4fv(UniformID, 1, GL_FALSE, Matrix4x4);
+}
+
+int GameWindow::EnableAttribArray(String Attrib)
+{
+	GLint AttribID = glGetAttribLocation(GetShaderProgram(), Attrib.c_str());
+	glEnableVertexAttribArray(AttribID);
+	return AttribID;
+}
+
+int GameWindow::DisableAttribArray(String Attrib)
+{
+	GLint AttribID = glGetAttribLocation(GetShaderProgram(), Attrib.c_str());
+	glDisableVertexAttribArray(AttribID);
+	return AttribID;
+}

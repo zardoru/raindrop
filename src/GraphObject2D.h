@@ -1,12 +1,13 @@
 #ifndef GraphObject2D_H
 #define GraphObject2D_H
 
+class VBO;
 class Image;
 
 class GraphObject2D
 {
 #ifndef OLD_GL
-	static uint32 ourBuffer, ourCenteredBuffer;
+	static VBO *mBuffer, *mCenteredBuffer;
 	static bool IsInitialized;
 #endif
 	glm::mat4x4 Matrix;
@@ -14,7 +15,6 @@ class GraphObject2D
 private: // Transformations
 
 	void Cleanup();
-	void UpdateTexture();
 
 	bool DirtyMatrix, DirtyTexture;
 	uint32 mWidth, mHeight;
@@ -41,11 +41,10 @@ private: // Transformations
 
 protected:
 #ifndef OLD_GL
-	uint32 ourUVBuffer;
+	VBO *UvBuffer;
 #endif
 	bool DoTextureCleanup;
-	void InitTexture();
-
+	void UpdateTexture();
 public:
 	
 	GraphObject2D(bool ShouldInitTexture = true);

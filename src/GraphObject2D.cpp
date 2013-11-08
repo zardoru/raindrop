@@ -1,6 +1,7 @@
 #include "Global.h"
 #include "GraphObject2D.h"
 
+#include "VBO.h"
 #include "Image.h"
 
 #ifndef OLD_GL
@@ -33,6 +34,25 @@ GraphObject2D::~GraphObject2D()
 {
 	Cleanup();
 }
+
+void GraphObject2D::Initialize(bool ShouldInitTexture)
+{
+#ifndef OLD_GL
+	UvBuffer = NULL;
+
+	if (!IsInitialized)
+	{
+		mBuffer = new VBO(VBO::Static);
+		mCenteredBuffer = new VBO(VBO::Static);
+		InitVBO();
+		IsInitialized = true;
+	}
+
+	if (ShouldInitTexture)
+		UpdateTexture();
+#endif
+}
+
 
 void GraphObject2D::SetImage(Image* image)
 {
@@ -227,23 +247,6 @@ void GraphObject2D::Invalidate()
 {
 #ifndef OLD_GL
 	IsInitialized = false;
-#endif
-}
-
-void GraphObject2D::Initialize(bool ShouldInitTexture)
-{
-#ifndef OLD_GL
-	ourUVBuffer = -1;
-
-	if (!IsInitialized)
-	{
-		ourBuffer = -1;
-		ourCenteredBuffer = -1;
-		InitVBO();
-	}
-
-	if (ShouldInitTexture)
-		InitTexture();
 #endif
 }
 

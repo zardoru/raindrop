@@ -45,6 +45,12 @@ public:
 	int32 GetDefaultVertexShader() const;
 	int32 GetShaderProgram() const;
 
+	void SetUniform(String Uniform, int i);
+	void SetUniform(String Uniform, float A, float B, float C, float D);
+	void SetUniform(String Uniform, float *Matrix4x4);
+	int EnableAttribArray(String Attrib);
+	int DisableAttribArray(String Attrib);
+
 	bool ShouldCloseWindow();
 	void SwapBuffers();
 };
