@@ -14,6 +14,7 @@ ScreenLoading::ScreenLoading(IScreen *Parent, IScreen *_Next)
 	Next = _Next;
 	LoadThread = NULL;
 	Running = true;
+	Acceleration = 0;
 }
 
 void ScreenLoading::Init()
@@ -32,7 +33,10 @@ bool ScreenLoading::Run(double TimeDelta)
 	if (!LoadThread)
 		return RunNested(TimeDelta);
 
-	mLogo.AddRotation(TimeDelta * 360);
+	Acceleration += 180 * TimeDelta;		 
+	if (Acceleration > 720)
+		Acceleration = 720;
+	mLogo.AddRotation(TimeDelta * Acceleration);
 	mLogo.Render();
 
 	if (LoadThread->timed_join(boost::posix_time::seconds(0)))
