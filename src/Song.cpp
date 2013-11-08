@@ -76,13 +76,14 @@ void Song::Process(bool CalculateXPos)
 				if (CalculateXPos)
 				{
 					if (it->GetPosition().x > 0)
+					{
+						CurNote++;
 						it->SetPositionX(it->GetPosition().x + ScreenDifference);
+					}
 				}
 
 				it->waiting_time = 0.05f * CurNote;
 				it->fadein_time = 0.6;
-
-				CurNote++;
 			}
 			CurrentMeasure++;
 		}
