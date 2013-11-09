@@ -2,7 +2,7 @@
 #define SCREEN_LD_H_
 
 #include "Screen.h"
-#include <boost/thread.hpp>
+#include <boost/thread/thread.hpp>
 
 class ScreenLoading : public IScreen
 {

@@ -7,7 +7,7 @@
 #include "ImageLoader.h"
 #include "FileManager.h"
 
-#include <boost/thread.hpp>
+#include <boost/thread/mutex.hpp>
 #include <SOIL.h>
 
 boost::mutex LoadMutex;
