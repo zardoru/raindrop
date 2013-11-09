@@ -126,12 +126,6 @@ void ScreenGameplay::InitializeObjects()
 
 void ScreenGameplay::Init()
 {
-	BarlineRatios = CurrentDiff->BarlineRatios;
-	memset(&Evaluation, 0, sizeof(Evaluation));
-
-	Measure = 0;
-	Combo = 0;
-
 	char* SkinFiles [] =
 	{
 		"cursor.png",
@@ -148,6 +142,12 @@ void ScreenGameplay::Init()
 	};
 
 	ImageLoader::LoadFromManifest(OtherFiles, 1);
+
+	BarlineRatios = CurrentDiff->BarlineRatios;
+	memset(&Evaluation, 0, sizeof(Evaluation));
+
+	Measure = 0;
+	Combo = 0;
 
 	if (ShouldChangeScreenAtEnd)
 		Barline.Init(CurrentDiff->Offset + MySong->LeadInTime);
@@ -393,11 +393,6 @@ void ScreenGameplay::stopMusic()
 /* TODO: Use measure ratios instead of song time for the barline. */
 bool ScreenGameplay::Run(double TimeDelta)
 {
-	if (ScreenTime == 0)
-		InitializeObjects();
-
-	ScreenTime += TimeDelta;
-
 	if (Music && !IsPaused)
 	{
 		int32 read;
@@ -518,6 +513,12 @@ bool ScreenGameplay::JudgeVector(std::vector<GameObject>& Vec, int code, int key
 void ScreenGameplay::RenderObjects(float TimeDelta)
 {
 	glm::vec2 mpos = WindowFrame.GetRelativeMPos();
+
+	if (ScreenTime == 0)
+		InitializeObjects();
+
+	ScreenTime += TimeDelta;
+
 	Cursor.SetPosition(mpos);
 
 	/*Cursor.AddRotation(140 * TimeDelta);

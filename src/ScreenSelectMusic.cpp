@@ -198,9 +198,13 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 		switch (BindingsManager::TranslateKey(key))
 		{
 		case KT_GoToEditMode: // Edit mode!
+			
 			_Next = new ScreenEdit(this);
+			_LNext = new ScreenLoading(this, _Next);
 			_Next->Init(SongList.at(Cursor));
-			Next = _Next;
+			_LNext->Init();
+
+			Next = _LNext;
 			SwitchBackGuiPending = true;
 			StopLoops();
 			break;

@@ -20,11 +20,13 @@ ScreenLoading::ScreenLoading(IScreen *Parent, IScreen *_Next)
 void ScreenLoading::Init()
 {
 	mLogo.SetImage(ImageLoader::LoadSkin("logo.png"));
+	/* Force revalidation of image 
+	(fix sometimes being a white square instead of pic, there's ought to be a better way though) */
+	mLogo.GetImage()->IsValid = false;
 	mLogo.Centered = true;
 	mLogo.ColorInvert = true;
 	mLogo.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
 	mLogo.SetSize(400);
-	mLogo.SetCropToWholeImage();
 	LoadThread = new boost::thread(LoadFunction, Next);
 }
 
@@ -44,6 +46,7 @@ bool ScreenLoading::Run(double TimeDelta)
 		delete LoadThread;
 		LoadThread = NULL;
 	}
+	boost::this_thread::sleep(boost::posix_time::millisec(16));
 	return true;
 }
 

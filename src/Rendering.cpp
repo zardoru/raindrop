@@ -104,12 +104,9 @@ void GraphObject2D::UpdateTexture()
 
 void Image::Bind()
 {
-	if (LastBound != this)
-	{
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture);
-		LastBound = this;
-	}
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	LastBound = this;
 }
 
 void GraphObject2D::Render()
@@ -184,6 +181,12 @@ void GraphObject2D::Render()
 
 	// old gl code ahead
 
+	if (ColorInvert)
+	{
+		glLogicOp(GL_INVERT);
+		glEnable(GL_COLOR_LOGIC_OP);
+	}
+
 	glColor4f(Red, Green, Blue, Alpha);
 
 	glPushMatrix();
@@ -207,6 +210,9 @@ void GraphObject2D::Render()
 	glEnd();
 	
 	glPopMatrix();
+
+	if (ColorInvert)
+		glDisable(GL_COLOR_LOGIC_OP);
 #endif
 }
 
