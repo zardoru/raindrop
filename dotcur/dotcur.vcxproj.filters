@@ -16,17 +16,29 @@
     <Filter Include="soil">
       <UniqueIdentifier>{f2c08595-c064-4bf2-9ef0-d9a9639b0a91}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\ScreenGameplay">
-      <UniqueIdentifier>{0c164b7f-77ed-4f1e-ba48-ff7f6c9674c5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Backend">
       <UniqueIdentifier>{f06d75ac-94ec-40dd-a92a-02e5c1a284de}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\GUI">
-      <UniqueIdentifier>{a7c0e635-42db-4882-8472-038699575e8c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Backend\Graphics">
       <UniqueIdentifier>{dc59a189-d994-4429-a06a-6593e3ad016c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ModeDotcur">
+      <UniqueIdentifier>{43e56d78-0e28-4e15-9668-51134ec840a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ModeDotcur\Gameplay">
+      <UniqueIdentifier>{0c164b7f-77ed-4f1e-ba48-ff7f6c9674c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GameGlobal">
+      <UniqueIdentifier>{0e05638f-911f-4c35-82d2-1d212262c6d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Backend\GUI">
+      <UniqueIdentifier>{a7c0e635-42db-4882-8472-038699575e8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ModeDotcur\Internal">
+      <UniqueIdentifier>{55b94288-a7dd-46fe-aef6-b3352497170e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Mode7K">
+      <UniqueIdentifier>{c3089987-1f92-45ff-a0d1-9044d1842a64}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -42,38 +54,20 @@
     <ClCompile Include="..\soil\stb_image_aug.c">
       <Filter>soil</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Application.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\dotcur.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ScreenEvaluation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ScreenSelectMusic.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ScreenEdit.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Utility.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ScreenMainMenu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\ScreenGameplay.cpp">
-      <Filter>Source Files\ScreenGameplay</Filter>
+      <Filter>Source Files\ModeDotcur\Gameplay</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ActorBarline.cpp">
-      <Filter>Source Files\ScreenGameplay</Filter>
+      <Filter>Source Files\ModeDotcur\Gameplay</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ActorJudgement.cpp">
-      <Filter>Source Files\ScreenGameplay</Filter>
+      <Filter>Source Files\ModeDotcur\Gameplay</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ActorLifebar.cpp">
-      <Filter>Source Files\ScreenGameplay</Filter>
+      <Filter>Source Files\ModeDotcur\Gameplay</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Audio.cpp">
       <Filter>Source Files\Backend</Filter>
@@ -90,20 +84,11 @@
     <ClCompile Include="..\src\GraphObject2D.cpp">
       <Filter>Source Files\Backend\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\GameObject.cpp">
-      <Filter>Source Files\ScreenGameplay</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\BitmapFont.cpp">
       <Filter>Source Files\Backend\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\NoteLoader.cpp">
-      <Filter>Source Files\Backend</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Screen.cpp">
       <Filter>Source Files\Backend</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Song.cpp">
-      <Filter>Source Files\ScreenGameplay</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Rendering.cpp">
       <Filter>Source Files\Backend</Filter>
@@ -118,16 +103,43 @@
       <Filter>Source Files\Backend</Filter>
     </ClCompile>
     <ClCompile Include="..\src\GuiButton.cpp">
-      <Filter>Source Files\GUI</Filter>
+      <Filter>Source Files\Backend\GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\src\GuiTextPrompt.cpp">
-      <Filter>Source Files\GUI</Filter>
+      <Filter>Source Files\Backend\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\SongTiming.cpp">
-      <Filter>Source Files\ScreenGameplay</Filter>
+    <ClCompile Include="..\src\GameObject.cpp">
+      <Filter>Source Files\ModeDotcur\Internal</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ScreenLoading.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\GameGlobal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenSelectMusic.cpp">
+      <Filter>Source Files\GameGlobal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenEvaluation.cpp">
+      <Filter>Source Files\GameGlobal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenMainMenu.cpp">
+      <Filter>Source Files\GameGlobal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Utility.cpp">
+      <Filter>Source Files\Backend</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\NoteLoader.cpp">
+      <Filter>Source Files\ModeDotcur\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Application.cpp">
+      <Filter>Source Files\Backend</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenEdit.cpp">
+      <Filter>Source Files\ModeDotcur</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\TrackNote.cpp">
+      <Filter>Source Files\Mode7K</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Song.cpp">
+      <Filter>Source Files\ModeDotcur\Internal</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -231,6 +243,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\ScreenLoading.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\TrackNote.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SongTiming.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

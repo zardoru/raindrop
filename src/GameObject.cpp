@@ -198,22 +198,32 @@ Judgement GameObject::Hit(float Time, glm::vec2 mpos, bool KeyDown,  bool Autopl
 
 
 			// Judgement (values in seconds
-			if (SpareTime < 0.35)
-				RVal = Bad;
+			RVal = Bad;
 
-			if (SpareTime < 0.25)
+			if (SpareTime < DotcurGreatLeniency)
 				RVal = Great;
 
-			if (SpareTime < 0.1)
+			if (SpareTime < DotcurPerfectLeniency)
 				RVal = Perfect;
 
-			if (SpareTime < 0.05)
+			if (SpareTime < DotcurExcellentLeniency)
 				RVal = Excellent;
 
 			return RVal;
 		}
 	}
 	return None;
+}
+
+bool GameObject::IsHold()
+{
+	return endTime > 0;
+}
+
+void GameObject::Assign(float Duration, uint32 _Measure, uint32 _MeasureFraction)
+{
+	Measure = _Measure;
+	MeasurePos = _MeasureFraction;
 }
 
 /* Assume GraphObject2D was already invalidated*/ 

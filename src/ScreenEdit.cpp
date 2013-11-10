@@ -38,13 +38,13 @@ void ScreenEdit::Init(Song *Other)
 	if (Other != NULL)
 	{
 		if (Other->Difficulties.size() == 0) // No difficulties? Create a new one.
-			Other->Difficulties.push_back(new SongInternal::Difficulty());
+			Other->Difficulties.push_back(new SongInternal::TDifficulty<GameObject>());
 
 		ScreenGameplay::Init (Other, 0);
 		NotesInMeasure.clear(); 
 
 		if (!Other->Difficulties[0]->Timing.size())
-			Other->Difficulties[0]->Timing.push_back(SongInternal::Difficulty::TimingSegment());
+			Other->Difficulties[0]->Timing.push_back(SongInternal::TDifficulty<GameObject>::TimingSegment());
 	}
 
 	if (!SavedSound)
@@ -66,6 +66,7 @@ void ScreenEdit::StartPlaying( int32 _Measure )
 {
 	ScreenGameplay::Init(MySong, 0);
 	ScreenGameplay::Init();
+
 	Measure = _Measure;
 	seekTime( TimeAtBeat(*CurrentDiff, Measure * MySong->MeasureLength) );
 	savedMeasure = Measure;

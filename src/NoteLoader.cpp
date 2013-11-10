@@ -17,7 +17,7 @@ float _ScreenDifference()
 	return std::abs(float((ScreenWidth / 2.f) - (PlayfieldWidth / 2.f)));
 }
 
-void NoteLoader::LoadNotes(Song* Out, SongInternal::Difficulty* Difficulty, String line)
+void NoteLoader::LoadNotes(Song* Out, SongInternal::TDifficulty<GameObject>* Difficulty, String line)
 {
 	// get the object string (all between a colon and a semicolon.
 	String objectstring = line.substr(line.find_first_of(":") + 1);
@@ -34,7 +34,7 @@ void NoteLoader::LoadNotes(Song* Out, SongInternal::Difficulty* Difficulty, Stri
 	BOOST_FOREACH(String objectlist, splitvec) // for each measure
 	{
 		std::vector< String > splitobjects;
-		SongInternal::Measure Measure;
+		SongInternal::Measure<GameObject> Measure;
 		invert = false;
 
 		Measure.Fraction = 0;
@@ -99,9 +99,7 @@ void NoteLoader::LoadNotes(Song* Out, SongInternal::Difficulty* Difficulty, Stri
 					Temp.SetPositionX(0);
 				}
 
-				Temp.hold_duration = hold_duration;
-				Temp.Measure = Difficulty->Measures.size();
-				Temp.MeasurePos = Measure.Fraction;
+				Temp.Assign(hold_duration, Difficulty->Measures.size(), Measure.Fraction);
 				Measure.MeasureNotes.push_back(Temp);
 
 			} // got a position
@@ -117,11 +115,11 @@ void NoteLoader::LoadNotes(Song* Out, SongInternal::Difficulty* Difficulty, Stri
 	Out->Difficulties.push_back(Difficulty); 
 }
 
-void NoteLoader::LoadBPMs(Song *Out, SongInternal::Difficulty* Difficulty, String line)
+void NoteLoader::LoadBPMs(Song *Out, SongInternal::TDifficulty<GameObject>* Difficulty, String line)
 {
 	String ListString = line.substr(line.find_first_of(":") + 1);
 	std::vector< String > SplitResult;
-	SongInternal::Difficulty::TimingSegment Segment;
+	SongInternal::TDifficulty<GameObject>::TimingSegment Segment;
 
 	boost::split(SplitResult, ListString, boost::is_any_of(",")); // Separate List of BPMs.
 	BOOST_FOREACH(String BPMString, SplitResult)
@@ -148,7 +146,7 @@ Song* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 	std::ifstream filein;
 	filein.open(filename.c_str(), std::ios::in);
 	Song *Out = new Song();
-	SongInternal::Difficulty *Difficulty = new SongInternal::Difficulty();
+	SongInternal::TDifficulty<GameObject> *Difficulty = new SongInternal::TDifficulty<GameObject>();
 	int32 Measure = -1; // Current measure
 	int32 MeasurePos = 0; // position within the measure. (we divide later by measure * mlen + measure fraction to get current beat)
 
@@ -238,7 +236,7 @@ Song* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 		if (command.find("#NOTES") != String::npos) // current command is notes?
 		{
 			LoadNotes(Out, Difficulty, line);			
-			Difficulty = new SongInternal::Difficulty();
+			Difficulty = new SongInternal::TDifficulty<GameObject>();
 		}// command == #notes
 
 	}

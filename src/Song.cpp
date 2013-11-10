@@ -5,9 +5,17 @@
 #include <fstream>
 #include <boost/foreach.hpp>
 
-SongInternal::Measure::Measure()
+using std::vector;
+using namespace SongInternal;
+
+float spb(float bpm)
 {
-	Fraction = 0;
+	return 60 / bpm;
+}
+
+float bps(float bpm)
+{
+	return bpm / 60;
 }
 
 Song::Song()
@@ -20,13 +28,97 @@ Song::~Song()
 {
 }
 
+void CalculateBarlineRatios(Song &MySong, TDifficulty<GameObject> &Diff)
+{
+	vector<TDifficulty<GameObject>::TimingSegment> &Timing = Diff.Timing;
+	vector<TDifficulty<GameObject>::TimingSegment> &Ratios = Diff.BarlineRatios;
+	vector<TDifficulty<GameObject>::TimingSegment> ChangesInInterval;
+
+	Ratios.clear();
+
+	for (uint32 Measure = 0; Measure < Diff.Measures.size(); Measure++)
+	{
+		double CurrentBeat = Measure * MySong.MeasureLength;
+		double NextBeat = (Measure+1) * MySong.MeasureLength;
+		double MeasureDuration = TimeAtBeat(Diff, (Measure+1)*MySong.MeasureLength) - TimeAtBeat(Diff, Measure*MySong.MeasureLength);
+
+		GetTimingChangesInInterval<GameObject>(Timing, CurrentBeat, NextBeat, ChangesInInterval);
+
+		if (ChangesInInterval.size() == 0)
+		{
+			double Ratio = 1/MeasureDuration;
+			TDifficulty<GameObject>::TimingSegment New;
+
+			New.Value = Ratio;
+			New.Time = TimeAtBeat(Diff, CurrentBeat);
+
+			if (!Ratios.size())
+				Ratios.push_back(New);
+			else
+			{
+				if (Ratios.back().Value != Ratio) /* Don't add redundant ratios.*/
+					Ratios.push_back(New);
+			}
+		}else
+		{
+			// Real show time on calculations is here.
+			for (vector<TDifficulty<GameObject>::TimingSegment>::iterator i = ChangesInInterval.begin(); i != ChangesInInterval.end(); i++)
+			{
+				TDifficulty<GameObject>::TimingSegment New;
+				double Duration;
+				double DurationSeconds;
+				double Fraction;
+				double Ratio;
+
+				/* Calculate how long this change lasts. */
+				
+				if ((i+1) != ChangesInInterval.end())
+				{
+					Duration = (i+1)->Time - i->Time;
+				}else
+				{
+					Duration = NextBeat - i->Time;
+				}
+
+				/* Assign the time the change starts
+				which we can assume i->Time >= CurrentBeat before this. */
+				CurrentBeat = i->Time;
+
+				/* Calculate how much the barline would move in 1 second */
+				Fraction = Duration / MySong.MeasureLength;
+				
+				/* t/b * b = t */ 
+				DurationSeconds = spb(i->Value) * Duration;
+
+				if (DurationSeconds == 0)
+					continue;
+
+				/* f/d = r/1 (where 1 and d are 1 second and d seconds) */
+				Ratio = Fraction / DurationSeconds;
+
+				/* create new segment at i->Time */
+				New.Value = Ratio;
+				New.Time = TimeAtBeat(Diff, CurrentBeat);
+
+				if (!Ratios.size())
+					Ratios.push_back(New);
+				else
+				{
+					if (Ratios.back().Value != Ratio) /* Don't add redundant ratios.*/
+						Ratios.push_back(New);
+				}
+			}
+		}
+	}
+}
+
 void Song::Repack()
 {
-	for(std::vector<SongInternal::Difficulty*>::iterator Difficulty = Difficulties.begin(); Difficulty != Difficulties.end(); Difficulty++ )
+	for(vector<TDifficulty<GameObject>*>::iterator Difficulty = Difficulties.begin(); Difficulty != Difficulties.end(); Difficulty++ )
 	{
-		for(std::vector<SongInternal::Measure>::iterator Measure = (*Difficulty)->Measures.begin(); Measure != (*Difficulty)->Measures.end(); Measure++)
+		for(vector<Measure<GameObject>>::iterator Measure = (*Difficulty)->Measures.begin(); Measure != (*Difficulty)->Measures.end(); Measure++)
 		{
-			for (std::vector<GameObject>::iterator it = Measure->MeasureNotes.begin(); it != Measure->MeasureNotes.end(); it++)
+			for (vector<GameObject>::iterator it = Measure->MeasureNotes.begin(); it != Measure->MeasureNotes.end(); it++)
 			{
 				if (it->GetPosition().x > ScreenDifference)
 					it->SetPositionX(it->GetPosition().x - ScreenDifference);
@@ -37,10 +129,10 @@ void Song::Repack()
 
 void Song::Process(bool CalculateXPos)
 {
-	for(std::vector<SongInternal::Difficulty*>::iterator Difficulty = Difficulties.begin(); Difficulty != Difficulties.end(); Difficulty++ )
+	for(std::vector<TDifficulty<GameObject>*>::iterator Difficulty = Difficulties.begin(); Difficulty != Difficulties.end(); Difficulty++ )
 	{
 		int32 CurrentMeasure = 0;
-		for(std::vector<SongInternal::Measure>::iterator Measure = (*Difficulty)->Measures.begin(); Measure != (*Difficulty)->Measures.end(); Measure++)
+		for(std::vector<Measure<GameObject>>::iterator Measure = (*Difficulty)->Measures.begin(); Measure != (*Difficulty)->Measures.end(); Measure++)
 		{
 			uint32 CurNote = 0;
 			for (std::vector<GameObject>::iterator it = Measure->MeasureNotes.begin(); it != Measure->MeasureNotes.end(); it++)
@@ -83,7 +175,7 @@ void Song::Process(bool CalculateXPos)
 				}
 
 				it->waiting_time = 0.05f * CurNote;
-				it->fadein_time = 0.6;
+				it->fadein_time = 0.6f;
 			}
 			CurrentMeasure++;
 		}
@@ -109,7 +201,7 @@ bool Song::Save(const char* Filename)
 	if (MeasureLength != 4)
 		Out << "#MLEN:" << MeasureLength << ";\n";
 
-	for (std::vector<SongInternal::Difficulty*>::iterator i = Difficulties.begin(); i != Difficulties.end(); i++)
+	for (std::vector<SongInternal::TDifficulty<GameObject>*>::iterator i = Difficulties.begin(); i != Difficulties.end(); i++)
 	{
 		if ((*i)->Timing.size() == 1)
 			Out << "#BPM:" << (*i)->Timing[0].Value << ";\n";
@@ -133,7 +225,7 @@ bool Song::Save(const char* Filename)
 
 		Out << "#NOTES:";
 		// for each measure of this difficulty
-		for (std::vector<SongInternal::Measure>::iterator m = (*i)->Measures.begin(); m != (*i)->Measures.end(); m++)
+		for (std::vector<Measure<GameObject>>::iterator m = (*i)->Measures.begin(); m != (*i)->Measures.end(); m++)
 		{
 			// for each note of this difficulty
 			for (uint32 n = 0; n != m->MeasureNotes.size(); n++)

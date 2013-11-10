@@ -497,7 +497,7 @@ bool ScreenGameplay::JudgeVector(std::vector<GameObject>& Vec, int code, int key
 				StoreEvaluation(Val);
 
 				// If it's a hold, keep running it until it's done.
-				if (i->endTime && Val > Miss)
+				if (i->IsHold() && Val > Miss)
 				{
 					NotesHeld.push_back(*i);
 					i = Vec.erase(i); // These notes are off the measure. We'll handle them somewhere else.

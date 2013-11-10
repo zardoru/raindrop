@@ -9,8 +9,8 @@
 
 namespace NoteLoader 
 {
-	void LoadNotes(Song* Out, SongInternal::Difficulty* Difficulty, String line);
-	void LoadBPMs(Song* Out, SongInternal::Difficulty* Difficulty, String line);
+	void LoadNotes(Song* Out, SongInternal::TDifficulty<GameObject>* Difficulty, String line);
+	void LoadBPMs(Song* Out, SongInternal::TDifficulty<GameObject>* Difficulty, String line);
 	// user responsability to clean this one up.
 	Song *LoadObjectsFromFile(String filename, String prefix = "");
 };

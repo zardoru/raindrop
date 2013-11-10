@@ -15,13 +15,13 @@ class ScreenGameplay : public IScreen
 protected: // shit the edit screen needs
 
 	Song *MySong;
-	SongInternal::Difficulty* CurrentDiff;
+	SongInternal::TDifficulty<GameObject>* CurrentDiff;
 	// Game Data
 	uint32 Measure;
 
 	// the point of this is that we can change the barline's position.
 	float MeasureRatio, RatioPerSecond;
-	std::vector<SongInternal::Difficulty::TimingSegment> BarlineRatios;
+	std::vector<SongInternal::TDifficulty<GameObject>::TimingSegment> BarlineRatios;
 
 	bool IsAutoplaying; // true for autoplaying notes
 

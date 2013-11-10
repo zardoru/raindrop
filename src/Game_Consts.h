@@ -4,12 +4,27 @@
 
 const uint16 ScreenWidth = 1024;
 const uint16 ScreenHeight = 768;
-const uint16 PlayfieldWidth = 800;
-const uint16 PlayfieldHeight = 600;
-const int16 ScreenOffset = 80;
-const float CircleSize = 80.0f;
-const float		   LeniencyHitTime = 0.35f;
-const float		   HoldLeniencyHitTime = 0.1f;
+
+/* dotcur Consts */
+const uint16 PlayfieldWidth          = 800;
+const uint16 PlayfieldHeight         = 600;
+const int16  ScreenOffset            = 80;
+const float  CircleSize              = 80.0f;
+
+const float	 LeniencyHitTime         = 0.35f;
+const float	 HoldLeniencyHitTime     = 0.1f;
+
+const float  DotcurExcellentLeniency = 0.05f;
+const float  DotcurPerfectLeniency   = 0.1f;
+const float  DotcurGreatLeniency	 = 0.25f;
+
+/* 7k Consts */
+// Ratio of how much of the screen is for the Gear, assuming 4:3 ratio
+const float GearHeight  = 0.2f * ScreenHeight;
+const float GearWidth   = 0.4f * ScreenWidth;
+
+// Vertical Space for a Measure.
+const float MeasureBaseSpacing = 0.4f * ScreenHeight;
 
 enum Judgement
 {
@@ -44,10 +59,9 @@ enum KeyEventType
 
 enum KeyType
 {
+	// General stuff
 	KT_Unknown,
-	KT_Escape,
-	KT_Hit,
-	KT_GameplayClick,
+	KT_Escape,	
 	KT_Select,
 	KT_Enter,
 	KT_BSPC,
@@ -58,6 +72,10 @@ enum KeyType
 	KT_Left,
 	KT_Right,
 
+	// dotcur specific
+	KT_Hit,
+	KT_GameplayClick,
+
 	// Editor specific
 	KT_FractionDec,
 	KT_FractionInc,
@@ -65,7 +83,23 @@ enum KeyType
 	KT_GridDec,
 	KT_GridInc,
 	KT_SwitchOffsetPrompt,
-	KT_SwitchBPMPrompt
+	KT_SwitchBPMPrompt,
+
+	// 7K specific
+	KT_Key1,
+	KT_Key2,
+	KT_Key3,
+	KT_Key4,
+	KT_Key5,
+	KT_Key6,
+	KT_Key7,
+	KT_Key8,
+	KT_Key9,
+	KT_Key10,
+	KT_Key11,
+	KT_Key12,
+	KT_Key13,
+	KT_Key14
 };
 
 #define DOTCUR_WINDOWTITLE "dC ver: "

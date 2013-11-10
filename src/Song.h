@@ -2,20 +2,26 @@
 #define SONG_H_
 
 #include "GameObject.h"
+#include "TrackNote.h"
 
 float spb(float bpm);
 
 namespace SongInternal
 {
+	template <class T>
 	class Measure
 	{
 	public:
-		Measure();
+		Measure()
+		{
+			Fraction = 0;
+		}
 		uint32 Fraction;
-		std::vector<GameObject> MeasureNotes;
+		std::vector<T> MeasureNotes;
 	};
 
-	struct Difficulty
+	template <class T>
+	struct TDifficulty
 	{
 		// Type
 		struct TimingSegment
@@ -34,39 +40,63 @@ namespace SongInternal
 		float Duration;
 
 		// Notes
-		std::vector<Measure> Measures;
+		std::vector<Measure<T>> Measures;
 
 		// Meta
 		String Name;
 	};
 }
 
-// converts bpm into seconds per beat
-float spb(float bpm);
-uint32 SectionIndex(SongInternal::Difficulty *Diff, float Beat);
+template
+<class T>
+class TSong 
+{
+public:
+	TSong() {};
+	~TSong() {};
+	std::vector<SongInternal::TDifficulty<T>*> Difficulties;
+	
+	/* .dcf file filename*/
+	String ChartFilename;
 
-class Song 
+	/* path relative to  */
+	String SongFilename, BackgroundDir, SongRelativePath, BackgroundRelativeDir;
+
+	/* Song title */
+	String SongName;
+	
+	/* Song Author */
+	String SongAuthor;
+
+	/* Directory where files are contained */
+	String SongDirectory;
+
+	double		LeadInTime;
+	int			MeasureLength;
+	std::vector<String> SoundList;
+};
+
+/* Dotcur Song */
+class Song : public TSong < GameObject >
 {
 public:
 	Song();
 	~Song();
-	std::vector<SongInternal::Difficulty*> Difficulties;
-	String SongFilename, BackgroundDir, SongRelativePath, BackgroundRelativeDir;
-	String ChartFilename;
-	String SongName;
-	String SongDirectory;
-	String SongAuthor;
-	double		LeadInTime;
-	int			MeasureLength;
-	std::vector<String> SoundList;
 	void Process(bool CalculateXPos = true);
 	void Repack();
 	bool Save(const char* Filename);
 };
 
+class Song7K : public TSong < TrackNote >
+{
+public:
+
+};
+
 /* Song Timing */
-double TimeAtBeat(SongInternal::Difficulty &Diff, float Beat);
-double DifficultyDuration(Song &MySong, SongInternal::Difficulty &Diff);
-void CalculateBarlineRatios(Song &MySong, SongInternal::Difficulty &Diff);
+float spb(float bpm);
+float bps(float bpm);
+
+#include "SongTiming.h"
 
 #endif
