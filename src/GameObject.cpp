@@ -222,6 +222,7 @@ bool GameObject::IsHold()
 
 void GameObject::Assign(float Duration, uint32 _Measure, uint32 _MeasureFraction)
 {
+	hold_duration = Duration;
 	Measure = _Measure;
 	MeasurePos = _MeasureFraction;
 }
