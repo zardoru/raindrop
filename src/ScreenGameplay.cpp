@@ -521,9 +521,9 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 
 	Cursor.SetPosition(mpos);
 
-	/*Cursor.AddRotation(140 * TimeDelta);
+	Cursor.AddRotation(140 * TimeDelta);
 	if (Cursor.GetRotation() > 360)
-		Cursor.AddRotation(-360);*/
+		Cursor.AddRotation(-360);
 
 	// Rendering ahead.
 

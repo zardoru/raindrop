@@ -358,7 +358,6 @@ bool ScreenEdit::Run(double delta)
 		if (Music->IsStopped())
 			startMusic();
 		ScreenGameplay::Run(delta);
-		RenderObjects(delta);
 	}
 	else // editing the song? run the editor
 	{

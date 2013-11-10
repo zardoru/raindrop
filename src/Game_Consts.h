@@ -103,7 +103,7 @@ enum KeyType
 };
 
 #define DOTCUR_WINDOWTITLE "dC ver: "
-#define DOTCUR_VERSION "underground 1"
+#define DOTCUR_VERSION "underground 2"
 #ifdef NDEBUG
 #define DOTCUR_BUILDTYPE ""
 #else
