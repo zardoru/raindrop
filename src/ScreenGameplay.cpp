@@ -119,6 +119,8 @@ void ScreenGameplay::InitializeObjects()
 	MarkerB.SetPosition(GetScreenOffset(0.5).x, ScreenHeight - MarkerB.GetHeight()/2 + Barline.GetHeight()/2);
 	MarkerA.SetRotation(180);
 
+	MarkerB.AffectedByLightning = MarkerA.AffectedByLightning = true;
+
 	Lifebar.UpdateHealth();
 
 	ReadySign.SetImage(ImageLoader::LoadSkin("Ready.png"));
@@ -552,6 +554,12 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 	Cursor.AddRotation(140 * TimeDelta);
 	if (Cursor.GetRotation() > 360)
 		Cursor.AddRotation(-360);
+
+	{
+		int Beat = MeasureRatio * MySong->MeasureLength;
+		float Fraction = (float(MeasureRatio * MySong->MeasureLength) - Beat);
+		Lifebar.SetScaleX( 1.0 - 0.05 * Fraction );
+	}
 
 	// Rendering ahead.
 

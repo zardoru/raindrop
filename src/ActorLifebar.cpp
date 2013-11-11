@@ -10,7 +10,7 @@ ActorLifebar::ActorLifebar() : GraphObject2D()
 	Health = 50; // Out of 100!
 	pending_health = 0;
 	SetImage(ImageLoader::LoadSkin("healthbar.png"));
-	SetWidth(ScreenHeight / 2);
+	SetWidth(PlayfieldHeight / 2);
 	time = 0;
 	Centered = true;
 	SetPosition(ScreenWidth - GetHeight()/2, ScreenHeight/2);
@@ -28,7 +28,7 @@ void ActorLifebar::UpdateHealth()
 
 	SetCrop2(glm::vec2(Health / 100, 1));
 	Red = Green = Blue = Health / 100;
-	SetWidth((Health / 100) * ScreenHeight);
+	SetWidth((Health / 100) * PlayfieldHeight);
 }
 
 void ActorLifebar::HitJudgement(Judgement Hit)
