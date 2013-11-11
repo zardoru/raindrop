@@ -41,10 +41,12 @@ void ScreenEvaluation::Init(EvaluationData _Data)
 
 
 	Background.SetImage(ImageLoader::LoadSkin("MenuBackground.png"));
+	Background.AffectedByLightning = true;
 	if (!Font)
 	{
 		Font = new BitmapFont();
 		Font->LoadSkinFontImage("font_screenevaluation.tga", glm::vec2(10, 20), glm::vec2(32, 32), glm::vec2(10,20), 32);
+		Font->SetAffectedByLightning(true);
 	}
 	Results = _Data;
 
@@ -74,6 +76,8 @@ void ScreenEvaluation::Init(EvaluationData _Data)
 		CalculateScore());
 
 	ResultsNumerical = _Results;
+	WindowFrame.SetLightMultiplier(1);
+	WindowFrame.SetLightPosition(glm::vec3(0,0,1));
 }
 
 
@@ -89,8 +93,12 @@ void ScreenEvaluation::Cleanup()
 	delete Font;
 }
 
-bool ScreenEvaluation::Run(double)
+bool ScreenEvaluation::Run(double Delta)
 {
+	ScreenTime += Delta;
+
+	WindowFrame.SetLightMultiplier(sin(ScreenTime) * 0.2 + 1);
+
 	Background.Render();
 	if (Font)
 	{

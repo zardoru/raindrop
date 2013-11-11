@@ -2,6 +2,7 @@
 #include "GraphObject2D.h"
 #include "ScreenLoading.h"
 #include "ImageLoader.h"
+#include "GameWindow.h"
 
 void LoadFunction(void* Screen)
 {
@@ -25,9 +26,12 @@ void ScreenLoading::Init()
 	mLogo.GetImage()->IsValid = false;
 	mLogo.Centered = true;
 	mLogo.ColorInvert = true;
+	mLogo.AffectedByLightning = true;
 	mLogo.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
 	mLogo.SetSize(400);
 	LoadThread = new boost::thread(LoadFunction, Next);
+	WindowFrame.SetLightMultiplier(0.8);
+	WindowFrame.SetLightPosition(glm::vec3(0,-0.5,1));
 }
 
 bool ScreenLoading::Run(double TimeDelta)
@@ -45,6 +49,8 @@ bool ScreenLoading::Run(double TimeDelta)
 	{
 		delete LoadThread;
 		LoadThread = NULL;
+		WindowFrame.SetLightMultiplier(1);
+		WindowFrame.SetLightPosition(glm::vec3(0,0,1));
 	}
 	boost::this_thread::sleep(boost::posix_time::millisec(16));
 	return true;

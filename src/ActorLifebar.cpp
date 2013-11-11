@@ -16,6 +16,7 @@ ActorLifebar::ActorLifebar() : GraphObject2D()
 	SetPosition(ScreenWidth - GetHeight()/2, ScreenHeight/2);
 	UpdateHealth();
 	SetRotation(90);
+	AffectedByLightning = true;
 }
 
 void ActorLifebar::UpdateHealth()

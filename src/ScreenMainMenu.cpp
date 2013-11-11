@@ -26,6 +26,7 @@ void ScreenMainMenu::Init()
 	{
 		MainMenuFont = new BitmapFont();
 		MainMenuFont->LoadSkinFontImage("font_screenevaluation.tga", glm::vec2(10, 20), glm::vec2(32, 32), glm::vec2(10,20), 32);
+		MainMenuFont->SetAffectedByLightning(true);	
 	}
 
 	Background.SetImage(ImageLoader::LoadSkin("MenuBackground.png"));
@@ -34,6 +35,7 @@ void ScreenMainMenu::Init()
 	ExitBtn.SetImage(ImageLoader::LoadSkin("exitbtn.png"));
 	PlayBtn.AddPosition(ScreenWidth - PlayBtn.GetWidth(), 0);
 	ExitBtn.AddPosition(ScreenWidth - ExitBtn.GetWidth(), PlayBtn.GetHeight());
+	Background.AffectedByLightning = Logo.AffectedByLightning = true;
 
 	Logo.SetSize(480);
 	Logo.Centered = true;

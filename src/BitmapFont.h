@@ -16,6 +16,7 @@ public:
 	void DisplayText(const char* Text, glm::vec2 Position);
 	void LoadFontImage(char* Name, glm::vec2 _CharSize, glm::vec2 _CellSize, glm::vec2 _RenderSize = glm::vec2(1,1), char FontStart = 0);
 	void LoadSkinFontImage(char* Name, glm::vec2 _CharSize, glm::vec2 _CellSize, glm::vec2 _RenderSize = glm::vec2(1,1), char FontStart = 0);
+	void SetAffectedByLightning(bool Lightning);
 };
 
 #endif

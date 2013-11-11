@@ -50,6 +50,7 @@ void ScreenSelectMusic::InitializeObjects()
 		Font->LoadSkinFontImage("font_screenevaluation.tga", glm::vec2(10, 20), glm::vec2(32, 32), glm::vec2(10,20), 32);
 	}
 
+	Font->SetAffectedByLightning(true);
 	SelCursor.SetImage(ImageLoader::LoadSkin("songselect_cursor.png"));
 	SelCursor.SetSize(20);
 	SelCursor.SetPosition(SONGLIST_BASEX-SelCursor.GetWidth(), SONGLIST_BASEY);
@@ -58,6 +59,9 @@ void ScreenSelectMusic::InitializeObjects()
 	Logo.SetSize(480);
 	Logo.Centered = true;
 	Logo.SetPosition(Logo.GetWidth()/4, ScreenHeight - Logo.GetHeight()/4);
+	Logo.AffectedByLightning = true;
+	WindowFrame.SetLightMultiplier(1);
+	Background.AffectedByLightning = true;
 }
 
 void ScreenSelectMusic::Init()
@@ -108,6 +112,7 @@ bool ScreenSelectMusic::Run(double Delta)
 	Logo.AddRotation(12 * Delta);
 
 	SelCursor.Alpha = (sin(Time*6)+1)/4 + 0.5;
+	WindowFrame.SetLightMultiplier(sin(Time) * 0.2 + 1);
 
 	Background.Render();
 

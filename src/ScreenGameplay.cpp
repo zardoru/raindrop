@@ -107,6 +107,7 @@ void ScreenGameplay::InitializeObjects()
 	Background.SetImage(ImageLoader::Load(MySong->BackgroundDir));
 	GameplayObjectImage = ImageLoader::LoadSkin("hitcircle.png");
 
+	Background.AffectedByLightning = true;
 	Background.Alpha = 0.8f;
 	Background.SetSize(ScreenWidth, ScreenHeight);
 	Background.SetPosition(0, 0);
@@ -123,10 +124,13 @@ void ScreenGameplay::InitializeObjects()
 	ReadySign.SetImage(ImageLoader::LoadSkin("Ready.png"));
 	ReadySign.SetPosition(0, ScreenHeight);
 	ReadySign.Centered = true;
+	ReadySign.AffectedByLightning = true;
 
 	Cursor.SetSize(72);
 	Cursor.Centered = true;
+	Cursor.AffectedByLightning = true;
 
+	WindowFrame.SetLightMultiplier(1.2);
 	WindowFrame.SetVisibleCursor(false);
 }
 

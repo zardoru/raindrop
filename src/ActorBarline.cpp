@@ -12,6 +12,7 @@ ActorBarline::ActorBarline(ScreenGameplay *_Parent) : GraphObject2D()
 	ColorInvert = false;
 	AnimationTime = 0;
 	AnimationProgress = 0;
+	AffectedByLightning = true;
 }
 
 void ActorBarline::Init(float Offset)

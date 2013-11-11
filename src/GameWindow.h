@@ -53,6 +53,12 @@ public:
 	void SetUniform(String Uniform, int i);
 	void SetUniform(String Uniform, float A, float B, float C, float D);
 	void SetUniform(String Uniform, float *Matrix4x4);
+	void SetUniform(String Uniform, glm::vec3 Vec);
+	void SetUniform(String Uniform, float F);
+
+	/* using OpenGL -1 to 1 range*/
+	void SetLightPosition(glm::vec3 Position);
+	void SetLightMultiplier(float Multiplier);
 	int EnableAttribArray(String Attrib);
 	int DisableAttribArray(String Attrib);
 

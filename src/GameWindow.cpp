@@ -20,25 +20,39 @@ const char* vertShader = "#version 120\n"
 	"uniform mat4 projection;\n"
 	"uniform mat4 mvp;\n"
 	"varying vec2 Texcoord;\n"
+	"varying vec3 Pos_world;\n"
 	"void main() \n"
 	"{\n"
 	"	gl_Position = projection * mvp * vec4(position, 1);\n"
+	"	Pos_world = (projection * mvp * vec4(position, 1)).xyz;\n"
 	"	Texcoord = vertexUV;\n"
 	"}";
 
 const char* fragShader = "#version 120\n"
 	"varying vec2 Texcoord;\n"
+	"varying vec3 Pos_world;\n"
 	"uniform vec4 Color;\n"
 	"uniform sampler2D tex;\n"
+	"uniform float     lMul;\n"
+	"uniform vec3      lPos;\n"
 	"uniform bool inverted;\n"
+	"uniform bool AffectedByLightning;\n"
 	"\n"
 	"void main(void)\n"
 	"{\n"
+	"    vec4 tCol;"
 	"	 if (inverted) {\n"
-	"		gl_FragColor = vec4(1.0 , 1.0, 1.0, texture2D(tex, Texcoord).a*2) - texture2D(tex, Texcoord) * Color;\n"
+	"		tCol = vec4(1.0 , 1.0, 1.0, texture2D(tex, Texcoord).a*2) - texture2D(tex, Texcoord) * Color;\n"
 	"	 }else{\n"
-	"		gl_FragColor = texture2D(tex, Texcoord) * Color;\n"
+	"		tCol = texture2D(tex, Texcoord) * Color;\n"
 	"	 }\n"
+	"    float dist = length ( lPos - Pos_world );\n"
+	"    if (AffectedByLightning){\n"
+	"       float temp = (lMul * clamp (dot( vec3(0,0,1), lPos), 0, 1)) / (dist*dist);\n"
+	"		gl_FragColor = tCol * vec4(vec3(temp), 1);"
+	"	 }else{\n"
+	"		gl_FragColor = tCol;"
+	"    }\n"
 	"}\n";
 
 std::map<int32, KeyType> BindingsManager::ScanFunction;
@@ -163,6 +177,28 @@ void GameWindow::SetMatrix(uint32 MatrixMode, glm::mat4 matrix)
 {
 	glMatrixMode(MatrixMode);
 	glLoadMatrixf((GLfloat*)&matrix[0]);
+}
+
+void GameWindow::SetUniform(String Uniform, glm::vec3 Pos)
+{
+	GLint UniformID = glGetUniformLocation(GetShaderProgram(), Uniform.c_str());
+	glUniform3f(UniformID, Pos.x, Pos.y, Pos.z);
+}
+
+void GameWindow::SetUniform(String Uniform, float F)
+{
+	GLint UniformID = glGetUniformLocation(GetShaderProgram(), Uniform.c_str());
+	glUniform1f(UniformID, F);
+}
+
+void GameWindow::SetLightPosition(glm::vec3 Position)
+{
+	SetUniform("lPos", Position);
+}
+
+void GameWindow::SetLightMultiplier(float Multiplier)
+{
+	SetUniform("lMul", Multiplier);
 }
 
 void GameWindow::SetupWindow()
@@ -374,6 +410,9 @@ void GameWindow::SetupShaders()
 	// Clean up..
 	glDeleteShader(defaultVertexShader);
 	glDeleteShader(defaultFragShader);
+
+	SetLightPosition(glm::vec3(0,0,1));
+	SetLightMultiplier(1);
 
 #endif
 }

@@ -24,6 +24,7 @@ GraphObject2D::GraphObject2D(bool ShouldInitTexture)
 	ColorInvert = false;
 	DirtyMatrix = true;
 	DoTextureCleanup = true;
+	AffectedByLightning = false;
 
 	mImage = NULL;
 

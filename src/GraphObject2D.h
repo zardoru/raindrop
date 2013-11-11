@@ -57,6 +57,7 @@ public:
 	bool Centered; // 0 for topleft, 1 for center
 
 	bool ColorInvert;
+	bool AffectedByLightning;
 	
 	void SetImage(Image* image);
 	Image* GetImage();

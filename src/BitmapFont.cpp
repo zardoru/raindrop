@@ -71,3 +71,11 @@ void BitmapFont::DisplayText(const char* Text, glm::vec2 Position)
 	}
 
 }
+
+void BitmapFont::SetAffectedByLightning(bool Lightning)
+{
+	for (int i = 0; i < 256; i++)
+	{
+		CharPosition[i].AffectedByLightning = Lightning;
+	}
+}

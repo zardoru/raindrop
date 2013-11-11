@@ -15,6 +15,7 @@ ActorJudgement::ActorJudgement()
 	SetImage(ImageLoader::LoadSkin("judge-perfect.png"));
 	SetPosition(40, PlayfieldHeight/2 + 70 );
 	AnimTime = 0;
+	AffectedByLightning = true;
 }
 
 void ActorJudgement::ChangeJudgement(Judgement New)

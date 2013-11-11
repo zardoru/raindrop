@@ -143,6 +143,7 @@ void GraphObject2D::Render()
 	// Set the color.
 	WindowFrame.SetUniform("Color", Red, Green, Blue, Alpha);
 	WindowFrame.SetUniform("inverted", ColorInvert);
+	WindowFrame.SetUniform("AffectedByLightning", AffectedByLightning);
 
 	// Assign Texture
 	WindowFrame.SetUniform("tex", 0);

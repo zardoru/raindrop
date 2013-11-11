@@ -27,6 +27,7 @@ GameObject::GameObject() : GraphObject2D(false)
 	BeingHeld = false;
 	DoTextureCleanup = false;
 	waiting_time = 0;
+	AffectedByLightning = true;
 
 	if (!HitSnd)
 	{
