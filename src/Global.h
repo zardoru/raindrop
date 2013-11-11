@@ -26,6 +26,8 @@ extern float *PInfinity;
 
 #include "Game_Consts.h"
 
+#define M_PI	 3.14159265358979323846
+
 namespace Utility
 {
 	void DebugBreak();

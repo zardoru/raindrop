@@ -55,6 +55,7 @@ private: // shit only screengameplay needs
 	uint32 Combo;
 	BitmapFont MyFont;
 	BitmapFont SongInfo;
+	GraphObject2D ReadySign;
 
 	// Notes
 	std::vector<GameObject> NotesHeld, AnimateOnly;

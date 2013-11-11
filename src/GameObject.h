@@ -17,6 +17,7 @@ private:
 
 	float startTime, endTime, beat, hold_duration;
 	uint32 Measure, MeasurePos;
+	unsigned char AnimationStatus;
 
 public:
 	GameObject();

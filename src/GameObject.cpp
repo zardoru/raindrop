@@ -20,6 +20,7 @@ GameObject::GameObject() : GraphObject2D(false)
 
 	fadeout_time = 0;
 	fadein_time = 0.7f;
+	AnimationStatus = 0;
 	hold_duration = 0;
 	endTime = 0;
 	heldKey = -1;
@@ -60,7 +61,33 @@ void GameObject::Animate(float delta, float songTime)
 		return;
 	}
 
-	if (fadeout_time > 0)
+	if (AnimationStatus == 0)
+	{
+		if (fadein_time >= 0)
+		{
+			Alpha = 0;
+			if (waiting_time)
+			{
+				waiting_time -= delta;
+			}
+
+			if (waiting_time <= 0)
+			{
+				Alpha = 1-fadein_time*5;
+				fadein_time -= delta;
+			}
+
+			return;
+		}
+		AnimationStatus = 1;
+	}else if (AnimationStatus == 1)
+	{
+		Alpha = 1;
+		
+		if (fadeout_time)
+			AnimationStatus = 2;
+	}
+	else
 	{
 		fadeout_time -= delta*2;
 
@@ -77,23 +104,6 @@ void GameObject::Animate(float delta, float songTime)
 		}
 		else
 			SetScale(3 - fadeout_time);
-
-		return;
-	}
-
-	if (fadein_time >= 0)
-	{
-		Alpha = 0;
-		if (waiting_time)
-		{
-			waiting_time -= delta;
-		}
-
-		if (waiting_time <= 0)
-		{
-			Alpha = 1-fadein_time*5;
-			fadein_time -= delta;
-		}
 
 		return;
 	}

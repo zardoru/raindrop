@@ -118,10 +118,16 @@ void ScreenGameplay::InitializeObjects()
 	MarkerB.SetPosition(GetScreenOffset(0.5).x, ScreenHeight - MarkerB.GetHeight()/2 + Barline.GetHeight()/2);
 	MarkerA.SetRotation(180);
 
-	Lifebar.SetWidth(PlayfieldWidth);
-	
+	Lifebar.UpdateHealth();
+
+	ReadySign.SetImage(ImageLoader::LoadSkin("Ready.png"));
+	ReadySign.SetPosition(0, ScreenHeight);
+	ReadySign.Centered = true;
+
 	Cursor.SetSize(72);
 	Cursor.Centered = true;
+
+	WindowFrame.SetVisibleCursor(false);
 }
 
 void ScreenGameplay::Init()
@@ -131,7 +137,8 @@ void ScreenGameplay::Init()
 		"cursor.png",
 		"Barline.png",
 		"barline_marker.png",
-		"hitcircle.png"
+		"hitcircle.png",
+		"Ready.png"
 	};
 
 	ImageLoader::LoadFromManifest(SkinFiles, 3, FileManager::GetSkinPrefix());
@@ -198,8 +205,6 @@ void ScreenGameplay::Init()
 		if (ShouldChangeScreenAtEnd)
 			LeadInTime = MySong->LeadInTime;
 	}
-
-	WindowFrame.SetVisibleCursor(false);
 }
 
 void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
@@ -353,6 +358,9 @@ void ScreenGameplay::HandleInput(int32 key, KeyEventType code, bool isMouseInput
 		case 'T':
 			TappingMode = !TappingMode;
 			break;
+		case 'Q':
+			Running = false;
+			break;
 		default:
 			if (BindingsManager::TranslateKey(key) == KT_Escape)
 			{
@@ -454,6 +462,22 @@ bool ScreenGameplay::Run(double TimeDelta)
 			aJudgement.Run(TimeDelta);
 		}
 
+		
+	}
+
+	if (ShouldChangeScreenAtEnd)
+	{
+		float TotalTime = (CurrentDiff->Offset + MySong->LeadInTime + ScreenPauseTime);
+		float X = ScreenTime / TotalTime;
+		float xPos;
+
+		if (X < 0.5)
+			xPos = ((-2)*X*X + 2*X) * ScreenWidth;
+		else
+			xPos = ScreenWidth - ((-2)*X*X + 2*X) * ScreenWidth;
+
+		ReadySign.SetPosition( xPos, ScreenHeight / 2 );
+		ReadySign.Alpha = 2 * ((-2)*X*X + 2*X);
 	}
 
 	RenderObjects(TimeDelta);
@@ -632,6 +656,8 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 #endif
 		info << "\nMeasure: " << Measure;
 	SongInfo.DisplayText(info.str().c_str(), glm::vec2(0,0));
+
+	ReadySign.Render();
 
 	Cursor.Render();
 }

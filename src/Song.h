@@ -94,6 +94,7 @@ class Song7K : public TSong < TrackNote >
 {
 public:
 	Song7K();
+	~Song7K();
 };
 
 /* Song Timing */
