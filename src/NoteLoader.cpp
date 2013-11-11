@@ -17,7 +17,7 @@ float _ScreenDifference()
 	return std::abs(float((ScreenWidth / 2.f) - (PlayfieldWidth / 2.f)));
 }
 
-void NoteLoader::LoadNotes(Song* Out, SongInternal::TDifficulty<GameObject>* Difficulty, String line)
+void LoadNotes(Song* Out, SongInternal::TDifficulty<GameObject>* Difficulty, String line)
 {
 	// get the object string (all between a colon and a semicolon.
 	String objectstring = line.substr(line.find_first_of(":") + 1);
@@ -115,32 +115,6 @@ void NoteLoader::LoadNotes(Song* Out, SongInternal::TDifficulty<GameObject>* Dif
 	Out->Difficulties.push_back(Difficulty); 
 }
 
-void NoteLoader::LoadBPMs(Song *Out, SongInternal::TDifficulty<GameObject>* Difficulty, String line)
-{
-	String ListString = line.substr(line.find_first_of(":") + 1);
-	std::vector< String > SplitResult;
-	SongInternal::TDifficulty<GameObject>::TimingSegment Segment;
-
-	boost::split(SplitResult, ListString, boost::is_any_of(",")); // Separate List of BPMs.
-	BOOST_FOREACH(String BPMString, SplitResult)
-	{
-		std::vector< String > SplitResultPair;
-		boost::split(SplitResultPair, BPMString, boost::is_any_of("=")); // Separate Time=Value pairs.
-
-		if (SplitResultPair.size() == 1) // Assume only one BPM on the whole list.
-		{
-			Segment.Value = atof(SplitResultPair[0].c_str());
-			Segment.Time = 0;
-		}else // Multiple BPMs.
-		{
-			Segment.Time = atof(SplitResultPair[0].c_str());
-			Segment.Value = atof(SplitResultPair[1].c_str());
-		}
-
-		Difficulty->Timing.push_back(Segment);
-	}
-}
-
 Song* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 {
 	std::ifstream filein;
@@ -170,75 +144,71 @@ Song* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 		std::getline(filein, line, ';'); 
 		String command = line.substr(0, line.find_first_of(":"));
 
+#define OnCommand(x) if(command.find(#x)!=String::npos)
+		
+		String CommandContents = line.substr(line.find_first_of(":") + 1);
+
 		// First, metadata.
-		if (command.find("#NAME") != String::npos)
+		OnCommand(#NAME)
 		{
-			Out->SongName = line.substr(line.find_first_of(":") + 1);
+			Out->SongName = CommandContents;
 		}
 
-		if (command.find("#AUTHOR") != String::npos)
+		OnCommand(#AUTHOR)
 		{
-			Out->SongAuthor = line.substr(line.find_first_of(":") + 1);
+			Out->SongAuthor = CommandContents;
 		}
 
-		if (command.find("#MLEN") != String::npos)
+		OnCommand(#MLEN)
 		{
-			std::stringstream str (line.substr(line.find_first_of(":") + 1));
+			std::stringstream str (CommandContents);
 			str >> Out->MeasureLength;
 		}
 
 		// Then, Timing data.
-		if (command.find("#BPM") != String::npos)
+		OnCommand(#BPM)
 		{
 			LoadBPMs(Out, Difficulty, line);
 		}
 
-		if (command.find("#OFFSET") != String::npos)
+		OnCommand(#OFFSET)
 		{
-			std::stringstream str (line.substr(line.find_first_of(":") + 1));
+			std::stringstream str (CommandContents);
 			str >> Difficulty->Offset;
-			// Difficulty->Offset += GetDeviceLatency();
 		}
 
 		// Then, file info.
-		if (command.find("#SONG") != String::npos)
+		OnCommand(#SONG)
 		{
-			Out->SongFilename = prefix + "/" + line.substr(line.find_first_of(":") + 1);
-			Out->SongRelativePath = line.substr(line.find_first_of(":") + 1);
+			Out->SongFilename = prefix + "/" + CommandContents;
+			Out->SongRelativePath = CommandContents;
 		}
 
-		if (command.find("#BACKGROUNDIMAGE") != String::npos)
+		OnCommand(#BACKGROUNDIMAGE)
 		{
-			Out->BackgroundDir = prefix + "/" + line.substr(line.find_first_of(":") + 1);
-			Out->BackgroundRelativeDir = line.substr(line.find_first_of(":") + 1);
+			Out->BackgroundDir = prefix + "/" + CommandContents;
+			Out->BackgroundRelativeDir = CommandContents;
 		}
 
-		if (command.find("#LEADIN") != String::npos)
+		OnCommand(#LEADIN)
 		{
-			std::stringstream str;
-			str << line.substr(line.find_first_of(":") + 1);
+			std::stringstream str (CommandContents);
 			str >> Out->LeadInTime;
 		}
 
-		if (command.find("#SOUNDS") != String::npos)
+		OnCommand(#SOUNDS)
 		{
-			String CmdLine = line.substr(line.find_first_of(":") + 1);
+			String CmdLine = CommandContents;
 			boost::split(Out->SoundList, CmdLine, boost::is_any_of(","));
 		}
 
-		// not yet
-		/*
-		if (command.find("#BGALUA") != String::npos)
-		{
-		}
-		*/
 		// Then, the charts.
-		if (command.find("#NOTES") != String::npos) // current command is notes?
+		OnCommand(#NOTES) // current command is notes?
 		{
 			LoadNotes(Out, Difficulty, line);			
 			Difficulty = new SongInternal::TDifficulty<GameObject>();
 		}// command == #notes
-
+#undef OnCommand
 	}
 	delete Difficulty; // There will always be an extra copy.
 

@@ -6,6 +6,7 @@ class TrackNote
 private:
 	
 	uint32 Track;
+	float StartTime, EndTime;
 
 public:
 	TrackNote();

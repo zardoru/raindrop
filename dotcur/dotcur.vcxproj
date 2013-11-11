@@ -207,6 +207,7 @@
     <ClCompile Include="..\src\Image.cpp" />
     <ClCompile Include="..\src\ImageLoader.cpp" />
     <ClCompile Include="..\src\NoteLoader.cpp" />
+    <ClCompile Include="..\src\NoteLoaderSM.cpp" />
     <ClCompile Include="..\src\pa_ringbuffer.c" />
     <ClCompile Include="..\src\Rendering.cpp" />
     <ClCompile Include="..\src\Screen.cpp" />
@@ -217,6 +218,7 @@
     <ClCompile Include="..\src\ScreenMainMenu.cpp" />
     <ClCompile Include="..\src\ScreenSelectMusic.cpp" />
     <ClCompile Include="..\src\Song.cpp" />
+    <ClCompile Include="..\src\Song7K.cpp" />
     <ClCompile Include="..\src\TrackNote.cpp" />
     <ClCompile Include="..\src\Utility.cpp" />
   </ItemGroup>
@@ -246,6 +248,7 @@
     <ClInclude Include="..\src\Image.h" />
     <ClInclude Include="..\src\ImageLoader.h" />
     <ClInclude Include="..\src\NoteLoader.h" />
+    <ClInclude Include="..\src\NoteLoaderSM.h" />
     <ClInclude Include="..\src\Screen.h" />
     <ClInclude Include="..\src\ScreenEdit.h" />
     <ClInclude Include="..\src\ScreenEvaluation.h" />

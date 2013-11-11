@@ -141,6 +141,12 @@
     <ClCompile Include="..\src\Song.cpp">
       <Filter>Source Files\ModeDotcur\Internal</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\NoteLoaderSM.cpp">
+      <Filter>Source Files\Mode7K</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Song7K.cpp">
+      <Filter>Source Files\Mode7K</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\GraphObject2D.h">
@@ -249,6 +255,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\SongTiming.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\NoteLoaderSM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

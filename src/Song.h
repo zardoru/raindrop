@@ -44,6 +44,9 @@ namespace SongInternal
 
 		// Meta
 		String Name;
+
+		// 7k
+		unsigned char Channels;
 	};
 }
 
@@ -90,7 +93,7 @@ public:
 class Song7K : public TSong < TrackNote >
 {
 public:
-
+	Song7K();
 };
 
 /* Song Timing */
