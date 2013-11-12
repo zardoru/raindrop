@@ -20,15 +20,24 @@ ScreenLoading::ScreenLoading(IScreen *Parent, IScreen *_Next)
 
 void ScreenLoading::Init()
 {
-	mLogo.SetImage(ImageLoader::LoadSkin("logo.png"));
+	mLogoCore.SetImage(ImageLoader::LoadSkin("logo_core.png"));
 	/* Force revalidation of image 
 	(fix sometimes being a white square instead of pic, there's ought to be a better way though) */
-	mLogo.GetImage()->IsValid = false;
-	mLogo.Centered = true;
-	mLogo.ColorInvert = true;
-	mLogo.AffectedByLightning = true;
-	mLogo.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
-	mLogo.SetSize(400);
+	mLogoCore.GetImage()->IsValid = false;
+	mLogoCore.Centered = true;
+	mLogoCore.ColorInvert = true;
+	mLogoCore.AffectedByLightning = true;
+	mLogoCore.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
+	mLogoCore.SetSize(400);
+
+	mLogoSides.SetImage(ImageLoader::LoadSkin("logo_sides.png"));
+	mLogoSides.GetImage()->IsValid = false;
+	mLogoSides.Centered = true;
+	mLogoSides.ColorInvert = true;
+	mLogoSides.AffectedByLightning = true;
+	mLogoSides.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
+	mLogoSides.SetSize(400);
+
 	LoadThread = new boost::thread(LoadFunction, Next);
 	WindowFrame.SetLightMultiplier(0.8);
 	WindowFrame.SetLightPosition(glm::vec3(0,-0.5,1));
@@ -42,8 +51,10 @@ bool ScreenLoading::Run(double TimeDelta)
 	Acceleration += 180 * TimeDelta;		 
 	if (Acceleration > 720)
 		Acceleration = 720;
-	mLogo.AddRotation(TimeDelta * Acceleration);
-	mLogo.Render();
+
+	mLogoSides.AddRotation(TimeDelta * Acceleration);
+	mLogoSides.Render();
+	mLogoCore.Render();
 
 	if (LoadThread->timed_join(boost::posix_time::seconds(0)))
 	{

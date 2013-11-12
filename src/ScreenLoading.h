@@ -6,7 +6,7 @@
 
 class ScreenLoading : public IScreen
 {
-	GraphObject2D mLogo;
+	GraphObject2D mLogoCore, mLogoSides;
 	double Acceleration;
 	boost::thread *LoadThread;
 public:
