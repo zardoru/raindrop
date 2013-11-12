@@ -21,9 +21,6 @@ ScreenLoading::ScreenLoading(IScreen *Parent, IScreen *_Next)
 void ScreenLoading::Init()
 {
 	mLogoCore.SetImage(ImageLoader::LoadSkin("logo_core.png"));
-	/* Force revalidation of image 
-	(fix sometimes being a white square instead of pic, there's ought to be a better way though) */
-	mLogoCore.GetImage()->IsValid = false;
 	mLogoCore.Centered = true;
 	mLogoCore.ColorInvert = true;
 	mLogoCore.AffectedByLightning = true;
@@ -31,7 +28,6 @@ void ScreenLoading::Init()
 	mLogoCore.SetSize(400);
 
 	mLogoSides.SetImage(ImageLoader::LoadSkin("logo_sides.png"));
-	mLogoSides.GetImage()->IsValid = false;
 	mLogoSides.Centered = true;
 	mLogoSides.ColorInvert = true;
 	mLogoSides.AffectedByLightning = true;
