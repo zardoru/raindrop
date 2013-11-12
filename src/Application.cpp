@@ -32,7 +32,7 @@ bool Accomulation = false;
 void Application::Run()
 {
 	int Frames = 4, Counter = 0;
-	float timeStep = 1.0 / 60.0, timeTotal = 0;
+	float timeStep = 1.0 / 30.0, timeTotal = 0;
 	Game = new ScreenMainMenu(NULL);
 	Game->Init();
 
@@ -65,6 +65,7 @@ void Application::Run()
 				{
 					Counter = 0;
 					glAccum(GL_RETURN, 1.0);
+					WindowFrame.SwapBuffers();
 				}
 
 			}
@@ -73,7 +74,9 @@ void Application::Run()
 		}
 
 		MixerUpdate();
-		WindowFrame.SwapBuffers();
+
+		if (!Accomulation)
+			WindowFrame.SwapBuffers();
 		oldTime = newTime;
 	}
 }
