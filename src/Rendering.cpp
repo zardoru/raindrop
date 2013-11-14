@@ -18,17 +18,10 @@ VBO* GraphObject2D::mCenteredBuffer;
 void GraphObject2D::InitVBO()
 {
 #ifndef OLD_GL
-	float Positions[12] =
+	float Positions[8] =
 	{
-		0,
-		0,
-
 		1,
 		0,
-
-		1,
-		1,
-
 
 		1,
 		1,
@@ -37,7 +30,7 @@ void GraphObject2D::InitVBO()
 		1,
 
 		0,
-		0
+		0,
 	};
 
 	// since shaders are already loaded from graphman's init functions..
@@ -47,14 +40,9 @@ void GraphObject2D::InitVBO()
 	mBuffer->Validate();
 	mBuffer->AssignData(Positions);
 
-	float PositionsCentered [12] = {
-		-0.5,
-		-0.5,
+	float PositionsCentered [8] = {
 		0.5,
 		-0.5,
-		0.5,
-		0.5,
-
 		0.5,
 		0.5,
 		-0.5,
@@ -78,28 +66,20 @@ void GraphObject2D::UpdateTexture()
 		UvBuffer = new VBO(VBO::Dynamic);
 
 	UvBuffer->Validate();
-	float CropPositions[12] = { // 2 for each vertex and a uniform for z order
-	// topleft
-		mCrop_x1,
-		mCrop_y1,
+	float CropPositions[8] = { // 2 for each vertex and a uniform for z order
 	// topright
 		mCrop_x2,
 		mCrop_y1,
+	
 	// bottom right
 		mCrop_x2,
 		mCrop_y2,
-
-	// bottom right again
-		mCrop_x2,
-		mCrop_y2,
-	
 	// bottom left
 		mCrop_x1,
 		mCrop_y2,
-
-	// topleft again
+	// topleft
 		mCrop_x1,
-		mCrop_y1
+		mCrop_y1,
 	}; 
 
 	UvBuffer->AssignData(CropPositions);
@@ -165,7 +145,7 @@ void GraphObject2D::Render()
 	UvBuffer->Bind();
 	glVertexAttribPointer( WindowFrame.EnableAttribArray("vertexUV"), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	WindowFrame.DisableAttribArray("position");
 	WindowFrame.DisableAttribArray("vertexUV");
@@ -276,7 +256,7 @@ void VBO::AssignData(float* Data)
 
 	memmove(VboData, Data, sizeof(VboData));
 	Bind();
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 12, VboData, UpType);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 8, VboData, UpType);
 }
 
 
