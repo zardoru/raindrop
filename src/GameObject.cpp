@@ -95,8 +95,11 @@ void GameObject::Animate(float delta, float songTime)
 		// alpha out
 		Alpha = 1 * (fadeout_time);
 
-		if (Alpha < 0)
+		if (Alpha <= 0)
+		{
 			Alpha = 0;
+			AnimationStatus = 3; // Remove only
+		}
 
 		// scale in
 		if (endTime == 0)
@@ -118,6 +121,11 @@ void GameObject::Animate(float delta, float songTime)
 		SetScale(1 + 0.3*Progress/holdDuration);
 		Green = 0.5 - 0.5 * Progress/holdDuration;
 	}
+}
+
+bool GameObject::ShouldRemove()
+{
+	return AnimationStatus == 3;
 }
 
 Judgement GameObject::Run(double delta, double Time, bool Autoplay)
@@ -159,7 +167,7 @@ Judgement GameObject::Run(double delta, double Time, bool Autoplay)
 		}
 	}else if (!BeingHeld && Time > startTime+LeniencyHitTime)
 	{
-		fadeout_time = 0.7f;
+		fadeout_time = 1;
 		return NG;
 	}
 
@@ -246,9 +254,4 @@ void GameObject::Invalidate()
 	UpdateTexture();
 	GameObjectUVvbo = UvBuffer;
 #endif
-}
-
-void GameObject::Render()
-{
-	GraphObject2D::Render();
 }

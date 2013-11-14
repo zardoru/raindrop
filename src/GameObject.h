@@ -29,7 +29,7 @@ public:
 	void Assign(float Duration, uint32 Measure, uint32 MeasureFraction);
 	bool IsHold();
 	void Invalidate();
-	void Render();
+	bool ShouldRemove();
 };
 
 typedef std::vector<GameObject> GameObjectVector;

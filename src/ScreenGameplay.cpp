@@ -186,6 +186,12 @@ void ScreenGameplay::Init()
 	for (uint32 i = 0; i < CurrentDiff->Measures.size(); i++)
 	{
 		NotesInMeasure[i] = CurrentDiff->Measures[i].MeasureNotes;
+		for (std::vector<GameObject>::iterator k = NotesInMeasure[i].begin(); k != NotesInMeasure[i].end(); k++)
+		{
+			if (k->GetPosition().x == 0)
+				k = NotesInMeasure[i].erase(k);
+			if (k == NotesInMeasure[i].end()) break;
+		}
 	}
 
 	if (!Music)
@@ -501,6 +507,9 @@ void ScreenGameplay::DrawVector(std::vector<GameObject>& Vec, float TimeDelta)
 		i != Vec.rend(); 
 		i++)
 	{
+		if (i->ShouldRemove())
+			continue;
+
 		i->SetImage(GameplayObjectImage);
 		i->SetSize(CircleSize);
 		i->Animate(TimeDelta, SongTime);

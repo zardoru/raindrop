@@ -103,7 +103,7 @@ public:
 	float GetRotation() const;
 	void AddRotation(float Rot);
 
-	virtual void Render(); // found in backend.cpp
+	void Render(); // found in backend.cpp
 	virtual void Invalidate();
 	
 };
