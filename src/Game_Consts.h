@@ -22,6 +22,7 @@ const float  DotcurGreatLeniency	 = 0.25f;
 // Ratio of how much of the screen is for the Gear, assuming 4:3 ratio
 const float GearHeight  = 0.2f * ScreenHeight;
 const float GearWidth   = 0.4f * ScreenWidth;
+const float GearStartX  = (ScreenWidth - GearWidth) / 2;
 
 // Vertical Space for a Measure.
 const float MeasureBaseSpacing = 0.4f * ScreenHeight;

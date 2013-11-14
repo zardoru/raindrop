@@ -253,6 +253,7 @@
     <ClInclude Include="..\src\ScreenEdit.h" />
     <ClInclude Include="..\src\ScreenEvaluation.h" />
     <ClInclude Include="..\src\ScreenGameplay.h" />
+    <ClInclude Include="..\src\ScreenGameplay7K.h" />
     <ClInclude Include="..\src\ScreenLoading.h" />
     <ClInclude Include="..\src\ScreenMainMenu.h" />
     <ClInclude Include="..\src\ScreenSelectMusic.h" />

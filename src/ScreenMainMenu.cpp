@@ -9,6 +9,7 @@
 #include "ScreenLoading.h"
 #include "ScreenSelectMusic.h"
 #include "GameObject.h"
+#include "GameWindow.h"
 
 SoundSample *MMSelectSnd = NULL;
 BitmapFont* MainMenuFont = NULL;
@@ -46,6 +47,9 @@ void ScreenMainMenu::Init()
 		MMSelectSnd = new SoundSample((FileManager::GetSkinPrefix() + "select.ogg").c_str());
 		MixerAddSample(MMSelectSnd);
 	}
+
+	//WindowFrame.SetLightMultiplier(800);
+	//WindowFrame.SetLightPosition(glm::vec3(ScreenWidth / 2, ScreenHeight / 2, 1));
 
 	/* We need this object to be created in first instance in the main thread. Bad design, I'll fix it later. */
 	GameObject Dummy;

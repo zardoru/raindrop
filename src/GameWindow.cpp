@@ -224,10 +224,13 @@ void GameWindow::SetupWindow()
 
 	glEnable(GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CW);
 	// glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 	
-	projection = glm::ortho<float>(0.0, matrixSize.x, matrixSize.y, 0.0, -32.0, 32.0);
+	projection = glm::ortho<float>(0.0, matrixSize.x, matrixSize.y, 0.0, -1.0, 1.0);
 #if (defined OLD_GL)
 	SetMatrix(GL_PROJECTION, projection);
 #else

@@ -27,12 +27,10 @@ void Application::Init()
 	// throw a message here
 }
 
-bool Accomulation = false;
-
 void Application::Run()
 {
-	int Frames = 4, Counter = 0;
-	float timeStep = 1.0 / 30.0, timeTotal = 0;
+	int Frames = 8, Counter = 0;
+	float timeStep = 1.0 / 120.0, timeTotal = 0;
 	Game = new ScreenMainMenu(NULL);
 	Game->Init();
 
@@ -40,43 +38,14 @@ void Application::Run()
 	{
 		double newTime = glfwGetTime();
 		double delta = newTime - oldTime;
-		WindowFrame.ClearWindow();
 		ImageLoader::UpdateTextures();
 
-		timeTotal += delta;
+		WindowFrame.ClearWindow();
 
 		Game->Run(delta);
 
-		// shit gets real
-		if (timeTotal > timeStep)
-		{
-			if (Accomulation)
-			{
-
-				if (Counter == 0)
-				{
-					glAccum(GL_LOAD, 1.0 / Frames);
-				}else
-					glAccum(GL_ACCUM, 1.0 / Frames);
-
-				Counter++;
-
-				if (Counter >= Frames)
-				{
-					Counter = 0;
-					glAccum(GL_RETURN, 1.0);
-					WindowFrame.SwapBuffers();
-				}
-
-			}
-
-			timeTotal -= timeStep;
-		}
-
 		MixerUpdate();
-
-		if (!Accomulation)
-			WindowFrame.SwapBuffers();
+		WindowFrame.SwapBuffers();
 		oldTime = newTime;
 	}
 }
@@ -84,9 +53,6 @@ void Application::Run()
 void Application::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
 	Game->HandleInput(key, code, isMouseInput);
-
-	if (key == 'Y' && code == KE_Press)
-		Accomulation = !Accomulation;
 }
 
 void Application::Close()

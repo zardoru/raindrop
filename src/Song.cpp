@@ -175,7 +175,7 @@ void Song::Process(bool CalculateXPos)
 				}
 
 				it->waiting_time = 0.05f * CurNote;
-				it->fadein_time = 0.6f;
+				it->fadein_time = 0.15f;
 			}
 			CurrentMeasure++;
 		}

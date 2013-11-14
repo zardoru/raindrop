@@ -29,14 +29,15 @@ void GraphObject2D::InitVBO()
 		1,
 		1,
 
-		0,
-		0,
+
+		1,
+		1,
 
 		0,
 		1,
 
-		1,
-		1
+		0,
+		0
 	};
 
 	// since shaders are already loaded from graphman's init functions..
@@ -53,12 +54,13 @@ void GraphObject2D::InitVBO()
 		-0.5,
 		0.5,
 		0.5,
-		-0.5,
-		-0.5,
-		-0.5,
+
 		0.5,
 		0.5,
-		0.5
+		-0.5,
+		0.5,
+		-0.5,
+		-0.5,
 	};
 	
 
@@ -86,15 +88,18 @@ void GraphObject2D::UpdateTexture()
 	// bottom right
 		mCrop_x2,
 		mCrop_y2,
-	// topleft again
-		mCrop_x1,
-		mCrop_y1,
+
+	// bottom right again
+		mCrop_x2,
+		mCrop_y2,
+	
 	// bottom left
 		mCrop_x1,
 		mCrop_y2,
-	// bottom right again
-		mCrop_x2,
-		mCrop_y2
+
+	// topleft again
+		mCrop_x1,
+		mCrop_y1
 	}; 
 
 	UvBuffer->AssignData(CropPositions);
