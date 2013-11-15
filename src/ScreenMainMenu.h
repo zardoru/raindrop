@@ -1,4 +1,4 @@
-#ifndef SCREEN_MAINMANU_H_
+#ifndef SCREEN_MAINMENU_H_
 #define SCREEN_MAINMENU_H_
 
 #include "GuiButton.h"

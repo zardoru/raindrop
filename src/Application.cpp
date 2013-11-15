@@ -29,8 +29,6 @@ void Application::Init()
 
 void Application::Run()
 {
-	int Frames = 8, Counter = 0;
-	float timeStep = 1.0 / 120.0, timeTotal = 0;
 	Game = new ScreenMainMenu(NULL);
 	Game->Init();
 

@@ -176,7 +176,6 @@ void VorbisStream::operator () ()
 
 int32 VorbisStream::readBuffer(void * out, uint32 length)
 {
-	char *outpt = (char*) out;
 	size_t cnt;
 	size_t toRead = length*info->channels;
 	

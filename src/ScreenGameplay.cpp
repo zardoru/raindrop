@@ -132,7 +132,11 @@ void ScreenGameplay::InitializeObjects()
 	Cursor.Centered = true;
 	Cursor.AffectedByLightning = true;
 
-	WindowFrame.SetLightMultiplier(1.2);
+	// Start with lights off.
+	if (ShouldChangeScreenAtEnd)
+		WindowFrame.SetLightMultiplier(0);
+	else
+		WindowFrame.SetLightMultiplier(1.2);
 	WindowFrame.SetVisibleCursor(false);
 }
 
@@ -250,6 +254,13 @@ void ScreenGameplay::RunVector(std::vector<GameObject>& Vec, float TimeDelta)
 			Lifebar.HitJudgement(Val);
 			aJudgement.ChangeJudgement(Val);
 			StoreEvaluation(Val);
+
+			// If it's a hold, keep running it until it's done. (Autoplay stuff.)
+			if (i->IsHold() && Val > Miss)
+			{
+				NotesHeld.push_back(*i);
+				i = Vec.erase(i); // These notes are off the measure. We'll handle them somewhere else.
+			}
 			break;
 		}
 	}
@@ -490,6 +501,11 @@ bool ScreenGameplay::Run(double TimeDelta)
 
 		ReadySign.SetPosition( xPos, ScreenHeight / 2 );
 		ReadySign.Alpha = 2 * ((-2)*X*X + 2*X);
+
+		// Lights
+		float LightProgress = ScreenTime / 1.5;
+		if (LightProgress <= 1)
+			WindowFrame.SetLightMultiplier(LightProgress * 1.2);
 	}
 
 	RenderObjects(TimeDelta);

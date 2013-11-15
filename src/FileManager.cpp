@@ -47,7 +47,7 @@ void loadSong( Directory songPath, std::vector<Song*> &VecOut )
 				bool UsesFilename = false;
 				NewS = new Song();
 				NewS->SongDirectory = songPath.path();
-				NewS->SongName = GetOggTitle(*i);
+				NewS->SongName = GetOggTitle(songPath.path() + *i);
 
 				if (!NewS->SongName.length())
 				{
@@ -57,7 +57,7 @@ void loadSong( Directory songPath, std::vector<Song*> &VecOut )
 
 				NewS->SongRelativePath = *i;
 				NewS->SongFilename = (songPath.path() + "/"+ *i);
-				NewS->ChartFilename = UsesFilename ? Utility::RemoveExtension(NewS->SongName) : NewS->SongName + ".dcf";
+				NewS->ChartFilename = UsesFilename ? Utility::RemoveExtension(NewS->SongName) + ".dcf" : NewS->SongName + ".dcf";
 				VecOut.push_back(NewS);
 			}
 			else if ( Utility::GetExtension(*i) == "png" || Utility::GetExtension(*i) == "jpg")

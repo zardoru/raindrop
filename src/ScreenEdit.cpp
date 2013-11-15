@@ -251,7 +251,7 @@ void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 		{
 			if (Mode != Select && code == KE_Press)
 			{
-				if (Measure >= 0 && Measure < CurrentDiff->Measures.size())
+				if (Measure < CurrentDiff->Measures.size())
 				{
 					if (CurrentDiff->Measures.at(Measure).MeasureNotes.size() > CurrentFraction)
 					{

@@ -121,8 +121,6 @@ Song* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 	filein.open(filename.c_str(), std::ios::in);
 	Song *Out = new Song();
 	SongInternal::TDifficulty<GameObject> *Difficulty = new SongInternal::TDifficulty<GameObject>();
-	int32 Measure = -1; // Current measure
-	int32 MeasurePos = 0; // position within the measure. (we divide later by measure * mlen + measure fraction to get current beat)
 
 	if (!filein.is_open())
 	{
