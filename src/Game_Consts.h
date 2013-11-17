@@ -49,6 +49,11 @@ struct EvaluationData
 	uint32 NumGreats;
 	uint32 NumPerfects;
 	uint32 NumExcellents;
+
+	// Scoring
+	uint32 totalNotes;
+	double dpScore;
+	double dpScoreSquare;
 };
 
 enum KeyEventType

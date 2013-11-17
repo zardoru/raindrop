@@ -70,19 +70,26 @@ void ScreenGameplay::StoreEvaluation(Judgement Eval)
 	{
 	case Excellent:
 		Evaluation.NumExcellents++;
+		Evaluation.dpScore += 2;
+		Evaluation.dpScoreSquare += Evaluation.dpScore;
 		break;
 	case Perfect:
 		Evaluation.NumPerfects++;
+		Evaluation.dpScore += 1;
+		Evaluation.dpScoreSquare += Evaluation.dpScore * 0.5;
 		break;
 	case Great:
 		Evaluation.NumGreats++;
+		Evaluation.dpScoreSquare += std::max(1.0, Evaluation.dpScore) * 0.1;
 		break;
 	case Bad:
 		Evaluation.NumBads++;
+		Evaluation.dpScore = std::max(Evaluation.dpScore - 4, 0.0);
 		Combo = 0;
 		break;
 	case Miss:
 		Evaluation.NumMisses++;
+		Evaluation.dpScore = std::max(Evaluation.dpScore - 8, 0.0);
 		Combo = 0;
 		break;
 	case NG:
@@ -194,6 +201,9 @@ void ScreenGameplay::Init()
 		{
 			if (k->GetPosition().x == 0)
 				k = NotesInMeasure[i].erase(k);
+			else
+				Evaluation.totalNotes++;
+
 			if (k == NotesInMeasure[i].end()) break;
 		}
 	}
@@ -652,6 +662,12 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 
 	float textX = GetScreenOffset(0.5).x - (str.str().length() * ComboSizeX / 2);
 	MyFont.DisplayText(str.str().c_str(), glm::vec2(textX, 0));
+
+	std::stringstream str2;
+	str2 << int32(1000000.0 * Evaluation.dpScore / (Evaluation.totalNotes * (Evaluation.totalNotes + 1)));
+	textX = GetScreenOffset(0.5).x - (str2.str().length() * ComboSizeX / 2);
+	MyFont.DisplayText(str2.str().c_str(), glm::vec2(textX, 720));
+
 
 	/* Lengthy information printing code goes here.*/
 	std::stringstream info;

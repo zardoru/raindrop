@@ -19,12 +19,7 @@ ScreenEvaluation::ScreenEvaluation(IScreen *Parent) :
 
 int32 ScreenEvaluation::CalculateScore()
 {
-	return Results.NumExcellents * 10000 +
-		Results.NumPerfects * 8500 +
-		Results.NumGreats * 4500 +
-		Results.NumOK * 2000 +
-		Results.NumBads * 1000;
-		
+	return int32(1000000.0 * Results.dpScore / (double)(Results.totalNotes * (Results.totalNotes + 1)));
 }
 
 void ScreenEvaluation::Init(EvaluationData _Data)
