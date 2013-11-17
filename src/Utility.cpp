@@ -42,19 +42,11 @@ namespace Utility {
 	bool IsNumeric(const char* s)
 	{
 		// check for first character being a minus sign
-		if (*s != '-' && !isdigit(*s))
-			return false;
-		else
-			s++;
-
-		while (*s != 0)
-		{
-			if (!isdigit(*s))
-				return false;
-			s++;
-		}
-
-		return true;
+		std::stringstream k;
+		double d;
+		k << s;
+		k >> d;
+		return !k.fail();
 	}
 
 	String GetExtension(String Filename)

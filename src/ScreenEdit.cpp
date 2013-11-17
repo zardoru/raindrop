@@ -119,6 +119,9 @@ void ScreenEdit::DecreaseCurrentFraction()
 
 void ScreenEdit::IncreaseCurrentFraction()
 {
+	if (!CurrentDiff->Measures.size())
+		return;
+
 	if (HeldObject)
 	{
 		HeldObject->hold_duration += 4.0 / (float)CurrentDiff->Measures[Measure].Fraction;
@@ -235,11 +238,19 @@ void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 					return;
 				case 'X':
 					if (Measure+1 < CurrentDiff->Measures.size())
+					{
 						Measure++;
+						if (CurrentFraction > CurrentDiff->Measures[Measure].Fraction)
+							CurrentFraction = CurrentDiff->Measures[Measure].Fraction;
+					}
 					return;
 				case 'Z':
 					if (Measure > 0)
+					{
 						Measure--;
+						if (CurrentFraction > CurrentDiff->Measures[Measure].Fraction)
+							CurrentFraction = CurrentDiff->Measures[Measure].Fraction;
+					}
 					return;
 				case 'G': GridEnabled = !GridEnabled; return;
 				}

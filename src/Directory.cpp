@@ -72,7 +72,7 @@ std::vector<std::string> *Directory::ListDirectory(std::vector<std::string> *Vec
 #ifdef _WIN32
 	HANDLE hFind = INVALID_HANDLE_VALUE;
 	WIN32_FIND_DATA ffd;
-	std::string DirFind = curpath + "/*";
+	std::string DirFind = curpath + "./*";
 
 	hFind = FindFirstFile(DirFind.c_str(), &ffd);
 
@@ -90,7 +90,7 @@ std::vector<std::string> *Directory::ListDirectory(std::vector<std::string> *Vec
 				Out->push_back(fname);
 		}else
 		{
-			std::string fname = curpath + ffd.cFileName + "/*";
+			std::string fname = curpath + ffd.cFileName + "./*";
 
 			if (Recursive)
 			{
