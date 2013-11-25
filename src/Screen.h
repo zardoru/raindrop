@@ -22,7 +22,8 @@ public:
 	bool RunNested(float delta);
 
 	// Screen implementation.
-	virtual void Init();
+	virtual void LoadThreadInitialization();
+	virtual void MainThreadInitialization();
 	virtual bool Run(double delta) = 0;
 	virtual void HandleInput(int32 key, KeyEventType state, bool isMouseInput);
 

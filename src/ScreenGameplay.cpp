@@ -105,7 +105,7 @@ void ScreenGameplay::StoreEvaluation(Judgement Eval)
 	Evaluation.MaxCombo = std::max(Evaluation.MaxCombo, Combo);
 }
 
-void ScreenGameplay::InitializeObjects()
+void ScreenGameplay::MainThreadInitialization()
 {
 	Cursor.SetImage(ImageLoader::LoadSkin("cursor.png"));
 	Barline.SetImage(ImageLoader::LoadSkin("Barline.png"));
@@ -147,7 +147,7 @@ void ScreenGameplay::InitializeObjects()
 	WindowFrame.SetVisibleCursor(false);
 }
 
-void ScreenGameplay::Init()
+void ScreenGameplay::LoadThreadInitialization()
 {
 	char* SkinFiles [] =
 	{
@@ -578,9 +578,6 @@ bool ScreenGameplay::JudgeVector(std::vector<GameObject>& Vec, int code, int key
 void ScreenGameplay::RenderObjects(float TimeDelta)
 {
 	glm::vec2 mpos = WindowFrame.GetRelativeMPos();
-
-	if (ScreenTime == 0)
-		InitializeObjects();
 
 	ScreenTime += TimeDelta;
 

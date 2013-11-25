@@ -80,20 +80,23 @@ private: // shit only screengameplay needs
 
 	bool JudgeVector(std::vector<GameObject>& Vec, int code, int key);
 	void RunVector(std::vector<GameObject>& Vec, float TimeDelta);
-	void InitializeObjects();
 
 	Image* GameplayObjectImage;
 public:
 	ScreenGameplay(IScreen *Parent);
 
 	virtual void Init(Song *OtherSong, uint32 DifficultyIndex);
-	virtual void Init(); /* What we call from the ScreenLoading thread! */
+
 	int32 GetMeasure();
 	virtual bool Run(double Delta);
 	virtual void HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	glm::vec2 GetScreenOffset(float alignment);
 	virtual void Cleanup();
 	void RemoveTrash();
+
+	/* What we call from the ScreenLoading thread! */
+	void LoadThreadInitialization();
+	void MainThreadInitialization();
 };
 
 #endif

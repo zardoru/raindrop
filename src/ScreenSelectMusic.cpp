@@ -42,7 +42,7 @@ ScreenSelectMusic::ScreenSelectMusic()
 	}
 }
 
-void ScreenSelectMusic::InitializeObjects()
+void ScreenSelectMusic::MainThreadInitialization()
 {
 	if (!Font)
 	{
@@ -64,7 +64,7 @@ void ScreenSelectMusic::InitializeObjects()
 	Background.AffectedByLightning = true;
 }
 
-void ScreenSelectMusic::Init()
+void ScreenSelectMusic::LoadThreadInitialization()
 {
 	FileManager::GetSongList(SongList);
 
@@ -104,9 +104,6 @@ bool ScreenSelectMusic::Run(double Delta)
 			Loops[rn]->Start();
 		}
 	}
-
-	if (Time == 0)
-		InitializeObjects();
 
 	Time += Delta;
 	Logo.AddRotation(12 * Delta);

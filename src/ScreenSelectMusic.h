@@ -13,10 +13,10 @@ class ScreenSelectMusic : public IScreen
 	void StopLoops();
 	void UpdateCursor();
 	double Time;
-	void InitializeObjects();
 public:
 	ScreenSelectMusic();
-	void Init();
+	void LoadThreadInitialization();
+	void MainThreadInitialization();
 	bool Run(double Delta);
 	void Cleanup();
 	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);

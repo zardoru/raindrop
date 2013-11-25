@@ -7,7 +7,7 @@
 void LoadFunction(void* Screen)
 {
 	IScreen *S = (IScreen*)Screen;
-	S->Init();
+	S->LoadThreadInitialization();
 }
 
 ScreenLoading::ScreenLoading(IScreen *Parent, IScreen *_Next)
@@ -58,6 +58,7 @@ bool ScreenLoading::Run(double TimeDelta)
 		LoadThread = NULL;
 		WindowFrame.SetLightMultiplier(1);
 		WindowFrame.SetLightPosition(glm::vec3(0,0,1));
+		Next->MainThreadInitialization();
 	}
 	boost::this_thread::sleep(boost::posix_time::millisec(16));
 	return true;

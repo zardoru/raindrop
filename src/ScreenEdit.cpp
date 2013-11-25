@@ -65,7 +65,7 @@ void ScreenEdit::Init(Song *Other)
 void ScreenEdit::StartPlaying( int32 _Measure )
 {
 	ScreenGameplay::Init(MySong, 0);
-	ScreenGameplay::Init();
+	ScreenGameplay::MainThreadInitialization();
 
 	Measure = _Measure;
 	seekTime( TimeAtBeat(*CurrentDiff, Measure * MySong->MeasureLength) );

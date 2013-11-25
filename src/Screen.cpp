@@ -19,9 +19,14 @@ IScreen::IScreen(IScreen *_Parent)
 
 IScreen::~IScreen() {}
 
-void IScreen::Init()
+void IScreen::LoadThreadInitialization()
 {
-	// pure virtual
+	// virtual
+}
+
+void IScreen::MainThreadInitialization()
+{
+	// virtual
 }
 
 bool IScreen::IsScreenRunning()

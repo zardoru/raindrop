@@ -30,7 +30,7 @@ void Application::Init()
 void Application::Run()
 {
 	Game = new ScreenMainMenu(NULL);
-	Game->Init();
+	((ScreenMainMenu*)Game)->Init();
 
 	while (Game->IsScreenRunning() && !WindowFrame.ShouldCloseWindow())
 	{
