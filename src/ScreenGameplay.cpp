@@ -664,7 +664,7 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 	MyFont.DisplayText(str.str().c_str(), glm::vec2(textX, 0));
 
 	std::stringstream str2;
-	str2 << int32(1000000.0 * Evaluation.dpScore / (Evaluation.totalNotes * (Evaluation.totalNotes + 1)));
+	str2 << int32(1000000.0 * Evaluation.dpScoreSquare / (Evaluation.totalNotes * (Evaluation.totalNotes + 1)));
 	textX = GetScreenOffset(0.5).x - (str2.str().length() * ComboSizeX / 2);
 	MyFont.DisplayText(str2.str().c_str(), glm::vec2(textX, 720));
 
