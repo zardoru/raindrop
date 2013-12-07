@@ -20,8 +20,7 @@ uint32 SectionIndex(SongInternal::TDifficulty<T> &Diff, float Beat)
 	return Index;
 }
 
-template
-	<class T>
+template <class T>
 double BpmAtBeat(SongInternal::TDifficulty<T> &Diff, float Beat)
 {
 	return Diff.Timing[SectionIndex(Diff,Beat)-1].Value;

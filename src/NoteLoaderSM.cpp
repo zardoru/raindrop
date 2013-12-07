@@ -1,15 +1,101 @@
+#include <boost/algorithm/string/split.hpp>
+#include <fstream>
+
 #include "Global.h"
 #include "NoteLoaderSM.h"
 #include "NoteLoader.h"
-#include <fstream>
 
 /* Stepmania uses a format with a lot of information, so we'll start with the basics*/
 
 using namespace NoteLoaderSM;
+typedef std::vector<String> SplitResult;
+
+#define ModeType(m,keys) if(mode==#m) return keys;
+
+int GetTracksByMode(String mode)
+{
+	ModeType(kb7-single, 7);
+	ModeType(dance-single, 4);
+	ModeType(dance-solo, 6);
+	ModeType(dance-double, 8);
+	ModeType(pump-single, 5);
+	ModeType(pump-double, 10);
+	Utility::DebugBreak();
+	return 1;
+}
+
+#undef ModeType
 
 void LoadTracksSM(Song7K *Out, SongInternal::TDifficulty<TrackNote> *Difficulty, String line)
 {
+	String CommandContents = line.substr(line.find_first_of(":") + 1);
+	SplitResult Mainline;
+
+	/* Remove newlines */
+	boost::replace_all(CommandContents, "\n", "");
+
+	/* Split contents */
+	boost::split(Mainline, CommandContents, boost::is_any_of(":"));
+
+	/* What we'll work with */
+	String NoteString = Mainline[5];
+	int Keys = GetTracksByMode(Mainline[0]);
+
+	Difficulty->Channels = Keys;
+	Difficulty->Name = Mainline[2];
 	
+	/* Now we should have our notes within NoteString. 
+	We'll split them by measure using , as a separator.*/
+	SplitResult MeasureText;
+	boost::split(MeasureText, NoteString, boost::is_any_of(","));
+
+	/* Hold data */
+	float KeyStartTime[16];
+	int KeyMeasure[16];
+	int KeyFraction[16];
+	
+	/* For each measure of the song */
+	for (unsigned int i = 0; i < MeasureText.size(); i++) /* i = current measure */
+	{
+		int MeasureFractions = MeasureText[i].length() / Keys;
+		SongInternal::Measure<TrackNote> Measure;
+		
+		/* For each fraction of the measure*/
+		for (int m = 0; m < MeasureFractions; m++) /* m = current fraction */
+		{
+			float Beat = i * Out->MeasureLength + m / MeasureFractions; /* Current beat */
+
+			/* For every track of the fraction */
+			for (int k = 0; k < Keys; k++) /* k = current track */
+			{
+				TrackNote Note;
+				Note.AssignTrack(k);
+				switch (MeasureText[i].at(0))
+				{
+				case '1': /* Taps */
+					Note.AssignSongPosition(i, m);
+					Note.AssignTime(TimeAtBeat(*Difficulty, Beat), 0);
+					Measure.MeasureNotes.push_back(Note);
+					break;
+				case '2': /* Holds */
+				case '4':
+					KeyStartTime[k] = TimeAtBeat(*Difficulty, Beat);
+					KeyMeasure[k] = i;
+					KeyFraction[k] = m;
+					break;
+				case '3': /* Hold releases */
+					Note.AssignTime(KeyStartTime[k], TimeAtBeat(*Difficulty, Beat));
+					Note.AssignSongPosition(KeyMeasure[k], KeyFraction[k]);
+					Measure.MeasureNotes.push_back(Note);
+					break;
+				default:
+					break;
+				}
+				MeasureText[i].erase(0);
+			}
+		}
+		Difficulty->Measures.push_back(Measure);
+	}
 }
 
 Song7K* LoadObjectsFromFile(String filename, String prefix = "")
@@ -84,4 +170,5 @@ Song7K* LoadObjectsFromFile(String filename, String prefix = "")
 			LoadTracksSM(Out, Difficulty, line);
 		}
 	}
+	return Out;
 }
