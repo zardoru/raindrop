@@ -149,6 +149,15 @@ bool ScreenSelectMusic::Run(double Delta)
 	Font->DisplayText("song select", glm::vec2(ScreenWidth/2-55, 0));
 	Font->DisplayText("press space to confirm", glm::vec2(ScreenWidth/2-110, 20));
 
+	String modeString;
+
+	if (SelectedMode == MODE_DOTCUR)
+		modeString = "mode: dotcur";
+	else
+		modeString = "mode: 7K";
+
+	Font->DisplayText(modeString.c_str(), glm::vec2(ScreenWidth/2-modeString.length() * 5, 40));
+
 	/* TODO: Reduce these to functions or something */
 	if (SongList.size() && SelectedMode == MODE_DOTCUR)
 	{
@@ -283,7 +292,8 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 			if (SelectedMode == MODE_DOTCUR)
 				SelectedMode = MODE_7K;
 			else
-				SelectedMode == MODE_DOTCUR;
+				SelectedMode = MODE_DOTCUR;
+			Cursor = 0;
 		}
 	}
 }

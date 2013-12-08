@@ -1,4 +1,5 @@
 #include <boost/algorithm/string/split.hpp>
+#include <boost/regex.hpp>
 #include <fstream>
 
 #include "Global.h"
@@ -26,13 +27,47 @@ int GetTracksByMode(String mode)
 
 #undef ModeType
 
+String RemoveComments(const String Str)
+{
+	String Result;
+	int k = 0;
+	int AwatingEOL = 0;
+	for (int i = 0; i < Str.length()-1; i++)
+	{
+		if (AwatingEOL)
+		{
+			if (Str[i] != '\n')
+				continue;
+			else
+			{
+				AwatingEOL = 0;
+				continue;
+			}
+		}else
+		{
+			if (Str[i] == '/' && Str[i+1] == '/')
+			{
+				AwatingEOL = true;
+				continue;
+			}else
+			{
+				Result.push_back(Str.at(i));
+				k++;
+			}
+		}
+	}
+	return Result;
+}
+
 void LoadTracksSM(Song7K *Out, SongInternal::TDifficulty<TrackNote> *Difficulty, String line)
 {
 	String CommandContents = line.substr(line.find_first_of(":") + 1);
 	SplitResult Mainline;
 
-	/* Remove newlines */
+	/* Remove newlines and comments */
+	CommandContents = RemoveComments(CommandContents);
 	boost::replace_all(CommandContents, "\n", "");
+	boost::replace_all(CommandContents, " ", "");
 
 	/* Split contents */
 	boost::split(Mainline, CommandContents, boost::is_any_of(":"));
@@ -60,38 +95,45 @@ void LoadTracksSM(Song7K *Out, SongInternal::TDifficulty<TrackNote> *Difficulty,
 		int MeasureFractions = MeasureText[i].length() / Keys;
 		SongInternal::Measure<TrackNote> Measure;
 		
-		/* For each fraction of the measure*/
-		for (int m = 0; m < MeasureFractions; m++) /* m = current fraction */
-		{
-			float Beat = i * Out->MeasureLength + m / MeasureFractions; /* Current beat */
+		Measure.Fraction = MeasureFractions;
 
-			/* For every track of the fraction */
-			for (int k = 0; k < Keys; k++) /* k = current track */
+		if (MeasureText[i].length())
+		{
+			/* For each fraction of the measure*/
+			for (int m = 0; m < MeasureFractions; m++) /* m = current fraction */
 			{
-				TrackNote Note;
-				Note.AssignTrack(k);
-				switch (MeasureText[i].at(0))
+				float Beat = i * Out->MeasureLength + m / MeasureFractions; /* Current beat */
+
+				/* For every track of the fraction */
+				for (int k = 0; k < Keys; k++) /* k = current track */
 				{
-				case '1': /* Taps */
-					Note.AssignSongPosition(i, m);
-					Note.AssignTime(TimeAtBeat(*Difficulty, Beat), 0);
-					Measure.MeasureNotes.push_back(Note);
-					break;
-				case '2': /* Holds */
-				case '4':
-					KeyStartTime[k] = TimeAtBeat(*Difficulty, Beat);
-					KeyMeasure[k] = i;
-					KeyFraction[k] = m;
-					break;
-				case '3': /* Hold releases */
-					Note.AssignTime(KeyStartTime[k], TimeAtBeat(*Difficulty, Beat));
-					Note.AssignSongPosition(KeyMeasure[k], KeyFraction[k]);
-					Measure.MeasureNotes.push_back(Note);
-					break;
-				default:
-					break;
+					TrackNote Note;
+					Note.AssignTrack(k);
+					switch (MeasureText[i].at(0))
+					{
+					case '1': /* Taps */
+						Note.AssignSongPosition(i, m);
+						Note.AssignTime(TimeAtBeat(*Difficulty, Beat), 0);
+						Measure.MeasureNotes.push_back(Note);
+						break;
+					case '2': /* Holds */
+					case '4':
+						KeyStartTime[k] = TimeAtBeat(*Difficulty, Beat);
+						KeyMeasure[k] = i;
+						KeyFraction[k] = m;
+						break;
+					case '3': /* Hold releases */
+						Note.AssignTime(KeyStartTime[k], TimeAtBeat(*Difficulty, Beat));
+						Note.AssignSongPosition(KeyMeasure[k], KeyFraction[k]);
+						Measure.MeasureNotes.push_back(Note);
+						break;
+					default:
+						break;
+					}
+
+					if (MeasureText[i].length())
+						MeasureText[i].erase(0, 1);
 				}
-				MeasureText[i].erase(0);
 			}
 		}
 		Difficulty->Measures.push_back(Measure);
@@ -123,7 +165,7 @@ Song7K* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)
 		std::getline(filein, line, ';'); 
 		String command = line.substr(0, line.find_first_of(":"));
 
-#define OnCommand(x) if(command.find(#x)!=String::npos)
+#define OnCommand(x) if(command == #x)
 
 		String CommandContents = line.substr(line.find_first_of(":") + 1);
 
