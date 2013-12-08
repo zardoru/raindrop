@@ -1,4 +1,4 @@
-/* Song Timing functions. */
+/* SongDC Timing functions. */
 /* note to self: Template syntax is ugly. */
 #include <vector>
 using std::vector;

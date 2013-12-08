@@ -14,7 +14,7 @@ class ScreenGameplay : public IScreen
 {
 protected: // shit the edit screen needs
 
-	Song *MySong;
+	SongDC *MySong;
 	SongInternal::TDifficulty<GameObject>* CurrentDiff;
 	// Game Data
 	uint32 Measure;
@@ -85,7 +85,7 @@ private: // shit only screengameplay needs
 public:
 	ScreenGameplay(IScreen *Parent);
 
-	virtual void Init(Song *OtherSong, uint32 DifficultyIndex);
+	virtual void Init(SongDC *OtherSong, uint32 DifficultyIndex);
 
 	int32 GetMeasure();
 	virtual bool Run(double Delta);

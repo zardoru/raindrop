@@ -143,7 +143,7 @@ void ScreenGameplay::MainThreadInitialization()
 	if (ShouldChangeScreenAtEnd)
 		WindowFrame.SetLightMultiplier(0);
 	else
-		WindowFrame.SetLightMultiplier(1.2);
+		WindowFrame.SetLightMultiplier(1.2f);
 	WindowFrame.SetVisibleCursor(false);
 }
 
@@ -233,7 +233,7 @@ void ScreenGameplay::LoadThreadInitialization()
 	}
 }
 
-void ScreenGameplay::Init(Song *OtherSong, uint32 DifficultyIndex)
+void ScreenGameplay::Init(SongDC *OtherSong, uint32 DifficultyIndex)
 {
 	MySong = OtherSong;
 	CurrentDiff = MySong->Difficulties[DifficultyIndex];

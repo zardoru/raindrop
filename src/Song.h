@@ -4,8 +4,6 @@
 #include "GameObject.h"
 #include "TrackNote.h"
 
-float spb(float bpm);
-
 namespace SongInternal
 {
 	template <class T>
@@ -23,6 +21,12 @@ namespace SongInternal
 	template <class T>
 	struct TDifficulty
 	{
+		int Dummy;
+	};
+
+	template <>
+	struct TDifficulty <GameObject>
+	{
 		// Type
 		struct TimingSegment
 		{
@@ -33,14 +37,37 @@ namespace SongInternal
 		// Stores bpm at beat pairs
 		std::vector<TimingSegment> Timing;
 
+		float Offset;
+		float Duration;
+
+		// Notes
+		std::vector<Measure<GameObject>> Measures;
+
+		// Meta
+		String Name;
+
 		// Stores the ratio barline should move at a certain time
 		std::vector<TimingSegment> BarlineRatios;
+	};
+
+	template <>
+	struct TDifficulty <TrackNote>
+	{
+		// Type
+		struct TimingSegment
+		{
+			double Time; // in beats
+			double Value; // in bpm
+		};
+
+		// Stores bpm at beat pairs
+		std::vector<TimingSegment> Timing;
 
 		float Offset;
 		float Duration;
 
 		// Notes
-		std::vector<Measure<T>> Measures;
+		std::vector<Measure<TrackNote>> Measures;
 
 		// Meta
 		String Name;
@@ -65,10 +92,10 @@ public:
 	/* path relative to  */
 	String SongFilename, BackgroundDir, SongRelativePath, BackgroundRelativeDir;
 
-	/* Song title */
+	/* SongDC title */
 	String SongName;
 	
-	/* Song Author */
+	/* SongDC Author */
 	String SongAuthor;
 
 	/* Directory where files are contained */
@@ -80,16 +107,17 @@ public:
 };
 
 /* Dotcur Song */
-class Song : public TSong < GameObject >
+class SongDC : public TSong < GameObject >
 {
 public:
-	Song();
-	~Song();
+	SongDC();
+	~SongDC();
 	void Process(bool CalculateXPos = true);
 	void Repack();
 	bool Save(const char* Filename);
 };
 
+/* 7K Song */
 class Song7K : public TSong < TrackNote >
 {
 public:

@@ -33,7 +33,7 @@ void ScreenEdit::Cleanup()
 	ScreenGameplay::Cleanup();
 }
 
-void ScreenEdit::Init(Song *Other)
+void ScreenEdit::Init(SongDC *Other)
 {
 	if (Other != NULL)
 	{

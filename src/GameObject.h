@@ -8,7 +8,7 @@ class GameObject : public GraphObject2D
 {
 private:
 	friend class ScreenEdit;
-	friend class Song;
+	friend class SongDC;
 	bool BeingHeld;
 	float fadeout_time, fadein_time; // time to fadeout, and time to get a hit
 	float waiting_time;

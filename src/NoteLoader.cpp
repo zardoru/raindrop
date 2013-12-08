@@ -17,7 +17,7 @@ float _ScreenDifference()
 	return std::abs(float((ScreenWidth / 2.f) - (PlayfieldWidth / 2.f)));
 }
 
-void LoadNotes(Song* Out, SongInternal::TDifficulty<GameObject>* Difficulty, String line)
+void LoadNotes(SongDC* Out, SongInternal::TDifficulty<GameObject>* Difficulty, String line)
 {
 	// get the object string (all between a colon and a semicolon.
 	String objectstring = line.substr(line.find_first_of(":") + 1);
@@ -115,11 +115,11 @@ void LoadNotes(Song* Out, SongInternal::TDifficulty<GameObject>* Difficulty, Str
 	Out->Difficulties.push_back(Difficulty); 
 }
 
-Song* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
+SongDC* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 {
 	std::ifstream filein;
 	filein.open(filename.c_str(), std::ios::in);
-	Song *Out = new Song();
+	SongDC *Out = new SongDC();
 	SongInternal::TDifficulty<GameObject> *Difficulty = new SongInternal::TDifficulty<GameObject>();
 
 	if (!filein.is_open())

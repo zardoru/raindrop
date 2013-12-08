@@ -46,7 +46,7 @@ class ScreenEdit : public ScreenGameplay
 	void DrawInformation();
 public:
 	ScreenEdit (IScreen * Parent);
-	void Init(Song *Other);
+	void Init(SongDC *Other);
 	void StartPlaying(int32 _Measure);
 	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	bool Run (double Delta);

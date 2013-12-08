@@ -18,17 +18,17 @@ float bps(float bpm)
 	return bpm / 60;
 }
 
-Song::Song()
+SongDC::SongDC()
 {
 	LeadInTime = 0;
 	MeasureLength = 4; // MeasureLength/4
 }
 
-Song::~Song()
+SongDC::~SongDC()
 {
 }
 
-void CalculateBarlineRatios(Song &MySong, TDifficulty<GameObject> &Diff)
+void CalculateBarlineRatios(SongDC &MySong, TDifficulty<GameObject> &Diff)
 {
 	vector<TDifficulty<GameObject>::TimingSegment> &Timing = Diff.Timing;
 	vector<TDifficulty<GameObject>::TimingSegment> &Ratios = Diff.BarlineRatios;
@@ -112,7 +112,7 @@ void CalculateBarlineRatios(Song &MySong, TDifficulty<GameObject> &Diff)
 	}
 }
 
-void Song::Repack()
+void SongDC::Repack()
 {
 	for(vector<TDifficulty<GameObject>*>::iterator Difficulty = Difficulties.begin(); Difficulty != Difficulties.end(); Difficulty++ )
 	{
@@ -127,7 +127,7 @@ void Song::Repack()
 	}
 }
 
-void Song::Process(bool CalculateXPos)
+void SongDC::Process(bool CalculateXPos)
 {
 	for(std::vector<TDifficulty<GameObject>*>::iterator Difficulty = Difficulties.begin(); Difficulty != Difficulties.end(); Difficulty++ )
 	{
@@ -184,7 +184,7 @@ void Song::Process(bool CalculateXPos)
 	}
 }
 
-bool Song::Save(const char* Filename)
+bool SongDC::Save(const char* Filename)
 {
 	std::ofstream Out(Filename);
 

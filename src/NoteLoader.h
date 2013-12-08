@@ -45,7 +45,7 @@ namespace NoteLoader
 	}
 
 	// user responsability to clean this one up.
-	Song *LoadObjectsFromFile(String filename, String prefix = "");
+	SongDC *LoadObjectsFromFile(String filename, String prefix = "");
 };
 
 #endif // NOTELOADER_H_

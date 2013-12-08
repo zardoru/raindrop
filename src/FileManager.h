@@ -4,13 +4,16 @@
 #include <vector>
 #include <fstream>
 #include <string>
-#include "Song.h"
+
+class SongDC;
+class Song7K;
 
 class FileManager
 {
 	static String CurrentSkin;
 public:
-	static void GetSongList(std::vector<Song*> &OutVec);
+	static void GetSongList(std::vector<SongDC*> &OutVec);
+	static void GetSongList7K(std::vector<Song7K*> &OutVec);
 	static std::fstream OpenFile(String Directory);
 	static String GetDirectoryPrefix();
 	static String GetSkinPrefix();

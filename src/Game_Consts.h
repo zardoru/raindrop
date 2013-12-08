@@ -108,6 +108,12 @@ enum KeyType
 	KT_Key14
 };
 
+enum ModeType
+	{
+		MODE_DOTCUR,
+		MODE_7K
+	};
+
 #define DOTCUR_WINDOWTITLE "dC ver: "
 #define DOTCUR_VERSION "underground 3"
 #ifdef NDEBUG

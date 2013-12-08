@@ -98,7 +98,7 @@ void LoadTracksSM(Song7K *Out, SongInternal::TDifficulty<TrackNote> *Difficulty,
 	}
 }
 
-Song7K* LoadObjectsFromFile(String filename, String prefix = "")
+Song7K* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)
 {
 	std::ifstream filein (filename.c_str());
 	Song7K *Out = new Song7K();
@@ -168,7 +168,11 @@ Song7K* LoadObjectsFromFile(String filename, String prefix = "")
 		OnCommand(#NOTES)
 		{
 			LoadTracksSM(Out, Difficulty, line);
+			Out->Difficulties.push_back(Difficulty);
+			Difficulty = new SongInternal::TDifficulty<TrackNote>();
 		}
 	}
+
+	delete Difficulty;
 	return Out;
 }

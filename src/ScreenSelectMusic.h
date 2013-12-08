@@ -8,11 +8,18 @@ class ScreenSelectMusic : public IScreen
 	int Cursor, OldCursor;
 	GraphObject2D Background, SelCursor, Logo;
 	BitmapFont* Font;
-	std::vector<Song*> SongList;
+
+	/* Mode-based song list. */
+	std::vector<SongDC*> SongList;
+	std::vector<Song7K*> SongList7K;
+
 	bool SwitchBackGuiPending;
 	void StopLoops();
 	void UpdateCursor();
 	double Time;
+
+	ModeType SelectedMode;
+
 public:
 	ScreenSelectMusic();
 	void LoadThreadInitialization();

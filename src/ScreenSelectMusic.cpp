@@ -40,6 +40,7 @@ ScreenSelectMusic::ScreenSelectMusic()
 			MixerAddStream(Loops[i]);
 		}
 	}
+	SelectedMode = MODE_DOTCUR;
 }
 
 void ScreenSelectMusic::MainThreadInitialization()
@@ -67,6 +68,7 @@ void ScreenSelectMusic::MainThreadInitialization()
 void ScreenSelectMusic::LoadThreadInitialization()
 {
 	FileManager::GetSongList(SongList);
+	FileManager::GetSongList7K(SongList7K);
 
 	Running = true;
 	OldCursor = Cursor = 0;
@@ -127,17 +129,28 @@ bool ScreenSelectMusic::Run(double Delta)
 
 
 	int Cur = 0;
-	for (std::vector<Song*>::iterator i = SongList.begin(); i != SongList.end(); i++)
+
+	if (SelectedMode == MODE_DOTCUR)
 	{
-		Font->DisplayText((*i)->SongName.c_str(), glm::vec2(SONGLIST_BASEX, Cur*20 + SONGLIST_BASEY));
-		Cur++;
+		for (std::vector<SongDC*>::iterator i = SongList.begin(); i != SongList.end(); i++)
+		{
+			Font->DisplayText((*i)->SongName.c_str(), glm::vec2(SONGLIST_BASEX, Cur*20 + SONGLIST_BASEY));
+			Cur++;
+		}
+	}else if (SelectedMode == MODE_7K)
+	{
+		for (std::vector<Song7K*>::iterator i = SongList7K.begin(); i != SongList7K.end(); i++)
+		{
+			Font->DisplayText((*i)->SongName.c_str(), glm::vec2(SONGLIST_BASEX, Cur*20 + SONGLIST_BASEY));
+			Cur++;
+		}
 	}
 
 	Font->DisplayText("song select", glm::vec2(ScreenWidth/2-55, 0));
 	Font->DisplayText("press space to confirm", glm::vec2(ScreenWidth/2-110, 20));
 
-
-	if (SongList.size())
+	/* TODO: Reduce these to functions or something */
+	if (SongList.size() && SelectedMode == MODE_DOTCUR)
 	{
 		std::stringstream ss;
 		ss << "song author: " << SongList.at(Cursor)->SongAuthor<< "\n"
@@ -150,7 +163,22 @@ bool ScreenSelectMusic::Run(double Delta)
 		}
 
 		Font->DisplayText(ss.str().c_str(), glm::vec2(ScreenWidth/6, 120));
+	}else if (SongList7K.size() && SelectedMode == MODE_7K)
+	{
+		std::stringstream ss;
+		ss << "song author: " << SongList7K.at(Cursor)->SongAuthor<< "\n"
+			<< "difficulties: " << SongList7K.at(Cursor)->Difficulties.size() << "\n";
+		if (SongList.at(Cursor)->Difficulties.size())
+		{
+			int Min = SongList7K.at(Cursor)->Difficulties[0]->Duration / 60;
+			int Sec = (int)SongList7K.at(Cursor)->Difficulties[0]->Duration % 60;
+			ss	<< "duration: " << Min << ":" << std::setw(2) << std::setfill('0') << Sec;
+		}
+
+		Font->DisplayText(ss.str().c_str(), glm::vec2(ScreenWidth/6, 120));
 	}
+
+
 	SelCursor.Render();
 	Logo.Render();
 	return Running;
@@ -167,12 +195,19 @@ void ScreenSelectMusic::StopLoops()
 
 void ScreenSelectMusic::UpdateCursor()
 {
+	int Size;
+
+	if (SelectedMode == MODE_DOTCUR)
+		Size = SongList.size();
+	else
+		Size = SongList7K.size();
+
 	if (Cursor < 0)
 	{
-		Cursor = SongList.size()-1;
+		Cursor = Size-1;
 	}
 
-	if (Cursor >= SongList.size())
+	if (Cursor >= Size)
 		Cursor = 0;
 
 	if (OldCursor != Cursor)
@@ -222,10 +257,18 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 			if (!isMouseInput || (WindowFrame.GetRelativeMPos().x > SONGLIST_BASEX && WindowFrame.GetRelativeMPos().y > SONGLIST_BASEY))
 			{
 				SelectSnd->Reset();
-				_gNext = new ScreenGameplay(this);
-				_LNext = new ScreenLoading(this, _gNext);
-				_gNext->Init(SongList.at(Cursor), 0);
-				_LNext->Init();
+
+				if (SelectedMode == MODE_DOTCUR)
+				{
+					_gNext = new ScreenGameplay(this);
+					_LNext = new ScreenLoading(this, _gNext);
+					_gNext->Init(SongList.at(Cursor), 0);
+					_LNext->Init();
+				}else
+				{
+					// TODO: implement 7k mode gameplay screen
+					return;
+				}
 
 				Next = _LNext;
 				SwitchBackGuiPending = true;
@@ -235,6 +278,12 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 				break;
 		case KT_Escape:
 			Running = false;
+			break;
+		case KT_BSPC:
+			if (SelectedMode == MODE_DOTCUR)
+				SelectedMode = MODE_7K;
+			else
+				SelectedMode == MODE_DOTCUR;
 		}
 	}
 }
