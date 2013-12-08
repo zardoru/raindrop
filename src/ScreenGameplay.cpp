@@ -135,7 +135,7 @@ void ScreenGameplay::MainThreadInitialization()
 	ReadySign.Centered = true;
 	ReadySign.AffectedByLightning = true;
 
-	Cursor.SetSize(72);
+	Cursor.SetSize(60);
 	Cursor.Centered = true;
 	Cursor.AffectedByLightning = true;
 

@@ -48,7 +48,7 @@ void ActorLifebar::HitJudgement(Judgement Hit)
 			break;
 		case Miss:
 		case NG:
-			pending_health -= 30;
+			pending_health -= 20;
 	}
 }
 
