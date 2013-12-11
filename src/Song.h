@@ -63,6 +63,9 @@ namespace SongInternal
 		// Stores bpm at beat pairs
 		std::vector<TimingSegment> Timing;
 
+		// Vertical speeds. Same role as BarlineRatios.
+		std::vector<TimingSegment> VerticalSpeeds;
+
 		float Offset;
 		float Duration;
 
@@ -123,6 +126,7 @@ class Song7K : public TSong < TrackNote >
 public:
 	Song7K();
 	~Song7K();
+	void Process();
 };
 
 /* Song Timing */

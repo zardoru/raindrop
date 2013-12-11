@@ -9,14 +9,18 @@ private:
 	float SongOldTime;
 	glm::mat4 PositionMatrix;
 	Song7K *MySong;
+	
+	SongInternal::TDifficulty<TrackNote> *CurrentDiff;
+	std::vector<SongInternal::TDifficulty<TrackNote>::TimingSegment> VSpeeds;
+
 
 	PaStreamWrapper *Music;
 
 	GraphObject2D Keys[16];
-
+	GraphObject2D Background;
 public:
 	ScreenGameplay7K();
-	void Init(Song7K *S);
+	void Init(Song7K *S, int DifficultyIndex);
 	void LoadThreadInitialization();
 	void MainThreadInitialization();
 	void Cleanup();

@@ -32,7 +32,7 @@ String RemoveComments(const String Str)
 	String Result;
 	int k = 0;
 	int AwatingEOL = 0;
-	for (int i = 0; i < Str.length()-1; i++)
+	for (uint32 i = 0; i < Str.length()-1; i++)
 	{
 		if (AwatingEOL)
 		{
@@ -90,18 +90,18 @@ void LoadTracksSM(Song7K *Out, SongInternal::TDifficulty<TrackNote> *Difficulty,
 	int KeyFraction[16];
 	
 	/* For each measure of the song */
-	for (unsigned int i = 0; i < MeasureText.size(); i++) /* i = current measure */
+	for (uint32 i = 0; i < MeasureText.size(); i++) /* i = current measure */
 	{
 		int MeasureFractions = MeasureText[i].length() / Keys;
 		SongInternal::Measure<TrackNote> Measure[16];
 		
-		for (int k = 0; k < 16; k++)
+		for (int32 k = 0; k < 16; k++)
 			Measure[k].Fraction = MeasureFractions;
 
 		if (MeasureText[i].length())
 		{
 			/* For each fraction of the measure*/
-			for (int m = 0; m < MeasureFractions; m++) /* m = current fraction */
+			for (int32 m = 0; m < MeasureFractions; m++) /* m = current fraction */
 			{
 				float Beat = i * Out->MeasureLength + m / MeasureFractions; /* Current beat */
 
@@ -138,7 +138,7 @@ void LoadTracksSM(Song7K *Out, SongInternal::TDifficulty<TrackNote> *Difficulty,
 			}
 		}
 
-		for (int k = 0; k < 16; k++)
+		for (int32 k = 0; k < 16; k++)
 			Difficulty->Measures[k].push_back(Measure[k]);
 	}
 
