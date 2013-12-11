@@ -214,6 +214,7 @@
     <ClCompile Include="..\src\ScreenEdit.cpp" />
     <ClCompile Include="..\src\ScreenEvaluation.cpp" />
     <ClCompile Include="..\src\ScreenGameplay.cpp" />
+    <ClCompile Include="..\src\ScreenGameplay7K.cpp" />
     <ClCompile Include="..\src\ScreenLoading.cpp" />
     <ClCompile Include="..\src\ScreenMainMenu.cpp" />
     <ClCompile Include="..\src\ScreenSelectMusic.cpp" />

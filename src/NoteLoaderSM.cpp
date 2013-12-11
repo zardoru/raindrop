@@ -93,9 +93,10 @@ void LoadTracksSM(Song7K *Out, SongInternal::TDifficulty<TrackNote> *Difficulty,
 	for (unsigned int i = 0; i < MeasureText.size(); i++) /* i = current measure */
 	{
 		int MeasureFractions = MeasureText[i].length() / Keys;
-		SongInternal::Measure<TrackNote> Measure;
+		SongInternal::Measure<TrackNote> Measure[16];
 		
-		Measure.Fraction = MeasureFractions;
+		for (int k = 0; k < 16; k++)
+			Measure[k].Fraction = MeasureFractions;
 
 		if (MeasureText[i].length())
 		{
@@ -114,7 +115,7 @@ void LoadTracksSM(Song7K *Out, SongInternal::TDifficulty<TrackNote> *Difficulty,
 					case '1': /* Taps */
 						Note.AssignSongPosition(i, m);
 						Note.AssignTime(TimeAtBeat(*Difficulty, Beat), 0);
-						Measure.MeasureNotes.push_back(Note);
+						Measure[k].MeasureNotes.push_back(Note);
 						break;
 					case '2': /* Holds */
 					case '4':
@@ -125,7 +126,7 @@ void LoadTracksSM(Song7K *Out, SongInternal::TDifficulty<TrackNote> *Difficulty,
 					case '3': /* Hold releases */
 						Note.AssignTime(KeyStartTime[k], TimeAtBeat(*Difficulty, Beat));
 						Note.AssignSongPosition(KeyMeasure[k], KeyFraction[k]);
-						Measure.MeasureNotes.push_back(Note);
+						Measure[k].MeasureNotes.push_back(Note);
 						break;
 					default:
 						break;
@@ -136,8 +137,17 @@ void LoadTracksSM(Song7K *Out, SongInternal::TDifficulty<TrackNote> *Difficulty,
 				}
 			}
 		}
-		Difficulty->Measures.push_back(Measure);
+
+		for (int k = 0; k < 16; k++)
+			Difficulty->Measures[k].push_back(Measure[k]);
 	}
+
+	/* 
+		Through here we can make a few assumptions.
+		->The measures are in order from start to finish
+		->Each measure has all potential playable tracks, even if that track is empty during that measure.
+		->Measures are internally ordered
+	*/
 }
 
 Song7K* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)

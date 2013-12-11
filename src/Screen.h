@@ -6,7 +6,7 @@ class IScreen
 {
 protected:
 	IScreen *Parent;
-	float ScreenTime; // How long has it been open?
+	double ScreenTime; // How long has it been open?
 	bool Running; // Is this screen active?
 
 public:

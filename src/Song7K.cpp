@@ -4,7 +4,7 @@
 Song7K::Song7K()
 {
 	MeasureLength = 4;
-	LeadInTime = 0;
+	LeadInTime = 1.5;
 }
 
 Song7K::~Song7K()

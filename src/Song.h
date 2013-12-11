@@ -66,8 +66,8 @@ namespace SongInternal
 		float Offset;
 		float Duration;
 
-		// Notes
-		std::vector<Measure<TrackNote>> Measures;
+		// Notes (Up to 16 tracks)
+		std::vector<Measure<TrackNote>> Measures[16];
 
 		// Meta
 		String Name;
@@ -86,22 +86,22 @@ public:
 	~TSong() {};
 	std::vector<SongInternal::TDifficulty<T>*> Difficulties;
 	
-	/* .dcf file filename*/
+	/* chart filename*/
 	String ChartFilename;
 
 	/* path relative to  */
 	String SongFilename, BackgroundDir, SongRelativePath, BackgroundRelativeDir;
 
-	/* SongDC title */
+	/* Song title */
 	String SongName;
 	
-	/* SongDC Author */
+	/* Song Author */
 	String SongAuthor;
 
 	/* Directory where files are contained */
 	String SongDirectory;
 
-	double		LeadInTime;
+	double		LeadInTime; // default to 1.5 for 7K
 	int			MeasureLength;
 	std::vector<String> SoundList;
 };

@@ -494,8 +494,6 @@ bool ScreenGameplay::Run(double TimeDelta)
 			Lifebar.Run(SongDelta);
 			aJudgement.Run(TimeDelta);
 		}
-
-		
 	}
 
 	if (ShouldChangeScreenAtEnd)
