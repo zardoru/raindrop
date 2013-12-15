@@ -10,9 +10,11 @@ private:
 	glm::mat4 PositionMatrix;
 	Song7K *MySong;
 	
-	SongInternal::TDifficulty<TrackNote> *CurrentDiff;
+	SongInternal::TDifficulty<TrackNote>			 *CurrentDiff;
+	std::vector<SongInternal::Measure<TrackNote>>	 NotesByMeasure[16];
 	std::vector<SongInternal::TDifficulty<TrackNote>::TimingSegment> VSpeeds;
-	std::vector<SongInternal::Measure<TrackNote>> NotesByMeasure[16];
+
+	uint32	Channels;
 
 	PaStreamWrapper *Music;
 

@@ -17,13 +17,15 @@ private:
 	/* GLuint */ uint32 InternalVBO;
 	bool IsValid;
 	Type mType;
-	float VboData[12];
+	float *VboData;
+	uint32 ElementCount;
 public:
-	VBO(Type T);
+	VBO(Type T, uint32 Elements);
 	~VBO();
 	void Invalidate();
 	void Validate();
 	void Bind();
+	uint32 GetElementCount();
 
 	/* expects array of size 12 */
 	void AssignData(float *Data);

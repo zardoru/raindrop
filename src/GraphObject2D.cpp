@@ -8,7 +8,7 @@
 bool GraphObject2D::IsInitialized = false;
 #endif
 
-GraphObject2D::GraphObject2D(bool ShouldInitTexture)
+GraphObject2D::GraphObject2D(bool ShouldInitTexture) 
 {
 	SetCropToWholeImage();
 	mWidth = mHeight = 0;
@@ -43,8 +43,8 @@ void GraphObject2D::Initialize(bool ShouldInitTexture)
 
 	if (!IsInitialized)
 	{
-		mBuffer = new VBO(VBO::Static);
-		mCenteredBuffer = new VBO(VBO::Static);
+		mBuffer = new VBO(VBO::Static, 8);
+		mCenteredBuffer = new VBO(VBO::Static, 8);
 		InitVBO();
 		IsInitialized = true;
 	}
