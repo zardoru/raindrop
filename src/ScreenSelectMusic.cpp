@@ -285,7 +285,8 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 						_gNext->Init(SongList.at(Cursor), 0);
 
 						_LNext->Init();
-					}
+					}else
+						return;
 				}else
 				{
 					// TODO: finish 7k mode gameplay screen
