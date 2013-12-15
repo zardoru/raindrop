@@ -11,7 +11,7 @@ const uint16 PlayfieldHeight         = 600;
 const int16  ScreenOffset            = 80;
 const float  CircleSize              = 80.0f;
 
-const float	 LeniencyHitTime         = 0.15f;
+const float	 LeniencyHitTime         = 0.135f;
 const float	 HoldLeniencyHitTime     = 0.1f;
 
 const float  DotcurExcellentLeniency = 0.03f;
