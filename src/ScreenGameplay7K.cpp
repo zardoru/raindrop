@@ -46,6 +46,14 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	ImageLoader::LoadFromManifest(OtherFiles, 1);
 	/* TODO: Add playfield background */
+
+
+	for (int i = 0; i < CurrentDiff->Channels; i++)
+	{
+		/* copy all size() measures of key k into notes by measure of key k */
+		for (int k = 0; k < CurrentDiff->Measures[i].size(); k++)
+			NotesByMeasure[i].push_back(CurrentDiff->Measures[i].at(k));
+	}
 }
 
 void ScreenGameplay7K::MainThreadInitialization()

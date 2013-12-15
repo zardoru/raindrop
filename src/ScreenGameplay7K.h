@@ -12,7 +12,7 @@ private:
 	
 	SongInternal::TDifficulty<TrackNote> *CurrentDiff;
 	std::vector<SongInternal::TDifficulty<TrackNote>::TimingSegment> VSpeeds;
-
+	std::vector<SongInternal::Measure<TrackNote>> NotesByMeasure[16];
 
 	PaStreamWrapper *Music;
 
