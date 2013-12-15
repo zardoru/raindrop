@@ -11,12 +11,12 @@ const uint16 PlayfieldHeight         = 600;
 const int16  ScreenOffset            = 80;
 const float  CircleSize              = 80.0f;
 
-const float	 LeniencyHitTime         = 0.35f;
+const float	 LeniencyHitTime         = 0.15f;
 const float	 HoldLeniencyHitTime     = 0.1f;
 
-const float  DotcurExcellentLeniency = 0.05f;
-const float  DotcurPerfectLeniency   = 0.1f;
-const float  DotcurGreatLeniency	 = 0.25f;
+const float  DotcurExcellentLeniency = 0.03f;
+const float  DotcurPerfectLeniency   = 0.05f;
+const float  DotcurGreatLeniency	 = 0.1f;
 
 /* 7k Consts */
 // Ratio of how much of the screen is for the Gear, assuming 4:3 ratio
