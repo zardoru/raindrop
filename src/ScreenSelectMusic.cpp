@@ -1,17 +1,21 @@
+#include <sstream>
+#include <iomanip>
+
 #include "Global.h"
 #include "Screen.h"
+#include "GameWindow.h"
+#include "ImageLoader.h"
+#include "Audio.h"
+#include "FileManager.h"
+
 #include "GameObject.h"
 #include "Song.h"
 #include "ScreenSelectMusic.h"
 #include "ScreenLoading.h"
-#include "FileManager.h"
+
 #include "ScreenGameplay.h"
+#include "ScreenGameplay7K.h"
 #include "ScreenEdit.h"
-#include "GameWindow.h"
-#include "ImageLoader.h"
-#include "Audio.h"
-#include <sstream>
-#include <iomanip>
 
 #define SONGLIST_BASEY 120
 #define SONGLIST_BASEX ScreenWidth*3/4
@@ -239,15 +243,18 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 	if (code == KE_Press)
 	{
 		ScreenGameplay *_gNext = NULL;
-		ScreenEdit *_Next;
+		ScreenGameplay7K *_g7Next = NULL;
+
+		ScreenEdit *_eNext;
 		ScreenLoading *_LNext;
+
 		switch (BindingsManager::TranslateKey(key))
 		{
 		case KT_GoToEditMode: // Edit mode!
 			
-			_Next = new ScreenEdit(this);
-			_LNext = new ScreenLoading(this, _Next);
-			_Next->Init(SongList.at(Cursor));
+			_eNext = new ScreenEdit(this);
+			_LNext = new ScreenLoading(this, _eNext);
+			_eNext->Init(SongList.at(Cursor));
 			_LNext->Init();
 
 			Next = _LNext;
@@ -269,14 +276,25 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 
 				if (SelectedMode == MODE_DOTCUR)
 				{
-					_gNext = new ScreenGameplay(this);
-					_LNext = new ScreenLoading(this, _gNext);
-					_gNext->Init(SongList.at(Cursor), 0);
-					_LNext->Init();
+					if (/* difficulty index < */ SongList.at(Cursor)->Difficulties.size())
+					{
+						_gNext = new ScreenGameplay(this);
+						_LNext = new ScreenLoading(this, _gNext);
+
+
+						_gNext->Init(SongList.at(Cursor), 0);
+
+						_LNext->Init();
+					}
 				}else
 				{
-					// TODO: implement 7k mode gameplay screen
-					return;
+					// TODO: finish 7k mode gameplay screen
+					_g7Next = new ScreenGameplay7K();
+					_LNext = new ScreenLoading(this, _g7Next);
+
+					_g7Next->Init(SongList7K.at(Cursor), 0);
+
+					_LNext->Init();
 				}
 
 				Next = _LNext;

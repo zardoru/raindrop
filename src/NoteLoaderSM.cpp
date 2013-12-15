@@ -173,11 +173,18 @@ Song7K* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)
 	while (!filein.eof())
 	{
 		std::getline(filein, line, ';'); 
-		String command = line.substr(0, line.find_first_of(":"));
 
-#define OnCommand(x) if(command == #x)
+		if (line.size() < 3)
+			continue;
+
+		String command = line.substr(line.find_first_of("#"), line.find_first_of(":") - line.find_first_of("#"));
+
+		boost::replace_all(command, "\n", "");
+
+#define OnCommand(x) if(command == #x || command == #x + std::string(":"))
 
 		String CommandContents = line.substr(line.find_first_of(":") + 1);
+		
 
 		OnCommand(#TITLE)
 		{
@@ -226,5 +233,7 @@ Song7K* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)
 	}
 
 	delete Difficulty;
+
+	Out->Process();
 	return Out;
 }

@@ -63,14 +63,13 @@ void GraphObject2D::UpdateTexture()
 #ifndef OLD_GL
 
 	if (!UvBuffer)
-		UvBuffer = new VBO(VBO::Dynamic);
+		UvBuffer = new VBO(VBO::Dynamic, 8);
 
 	UvBuffer->Validate();
 	float CropPositions[8] = { // 2 for each vertex and a uniform for z order
 	// topright
 		mCrop_x2,
 		mCrop_y1,
-	
 	// bottom right
 		mCrop_x2,
 		mCrop_y2,
@@ -212,19 +211,30 @@ void GraphObject2D::Cleanup()
 #endif
 }
 
-VBO::VBO(Type T)
+VBO::VBO(Type T, uint32 Elements)
 {
 	InternalVBO = 0;
 	IsValid = false;
 	mType = T;
 	WindowFrame.AddVBO(this);
+
+	ElementCount = Elements;
+	VboData = new float[ElementCount];
 }
 
 VBO::~VBO()
 {
 	if (InternalVBO)
 		glDeleteBuffers(1, &InternalVBO);
+
 	WindowFrame.RemoveVBO(this);
+
+	delete VboData;
+}
+
+uint32 VBO::GetElementCount()
+{
+	return ElementCount;
 }
 
 void VBO::Invalidate()
@@ -254,9 +264,9 @@ void VBO::AssignData(float* Data)
 	else if (mType == Static)
 		UpType = GL_STATIC_DRAW;
 
-	memmove(VboData, Data, sizeof(VboData));
+	memmove(VboData, Data, sizeof(float) * ElementCount);
 	Bind();
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 8, VboData, UpType);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * ElementCount, VboData, UpType);
 }
 
 

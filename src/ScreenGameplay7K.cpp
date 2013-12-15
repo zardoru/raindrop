@@ -14,6 +14,7 @@ ScreenGameplay7K::ScreenGameplay7K()
 	Speed = 0; // Recalculate.
 	SpeedMultiplier = 1;
 	SongOldTime = -1;
+	Music = NULL;
 
 	/* Start position at judgement line.*/
 	PositionMatrix = glm::translate(glm::mat4(), glm::vec3(0, ScreenHeight - GearHeight /* - JudgelineHeight/2 */, 0));
@@ -37,7 +38,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		"key2.png"
 	};
 
-	ImageLoader::LoadFromManifest(SkinFiles, 3, FileManager::GetSkinPrefix());
+	ImageLoader::LoadFromManifest(SkinFiles, 2, FileManager::GetSkinPrefix());
 	
 	char* OtherFiles [] =
 	{
@@ -46,6 +47,38 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	ImageLoader::LoadFromManifest(OtherFiles, 1);
 	/* TODO: Add playfield background */
+
+	PositionMatrix = glm::translate(glm::mat4(), glm::vec3(GearStartX, ScreenHeight-GearHeight, 0));
+
+	if (!Music)
+	{
+		Music = new PaStreamWrapper(MySong->SongFilename.c_str());
+	}
+
+	Channels = CurrentDiff->Channels;
+	VSpeeds = CurrentDiff->VerticalSpeeds;
+
+	/* Set up notes. */
+	for (uint32 k = 0; k < Channels; k++)
+	{
+		/* Copy measures. (Eek!) */
+		for (std::vector<SongInternal::Measure<TrackNote>>::iterator i = CurrentDiff->Measures[k].begin(); 
+			i != CurrentDiff->Measures[k].end();
+			i++)
+		{
+			NotesByMeasure[k].push_back(*i);
+		}
+
+		/* Apply speed multiplier. fixme: this is overly obtuse. there MUST be a better way :v*/
+		for (uint32 i = 0; i < NotesByMeasure[k].size(); i++)
+		{
+			for (uint32 q = 0; q < NotesByMeasure[k][i].MeasureNotes.size(); q++)
+			{
+				NotesByMeasure[k][i].MeasureNotes[q].AssignPremultiplyMatrix(&PositionMatrix);
+				NotesByMeasure[k][i].MeasureNotes[q].AssignSpeedMultiplier(SpeedMultiplier);
+			}
+		}
+	}
 }
 
 void ScreenGameplay7K::MainThreadInitialization()
@@ -61,6 +94,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 	
 	Background.SetImage(ImageLoader::Load(MySong->BackgroundDir));
 	Background.AffectedByLightning = true;
+	Running = true;
 }
 
 void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
