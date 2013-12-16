@@ -227,11 +227,6 @@ void GameWindow::SetupWindow()
 
 	BindingsManager::Initialize();
 
-#ifdef OLD_GL
-	// We enable some GL stuff
-	glEnable(GL_TEXTURE_2D);
-	glDepthMask(GL_TRUE);
-#endif
 
 	glEnable(GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -242,11 +237,8 @@ void GameWindow::SetupWindow()
 
 	
 	projection = glm::ortho<float>(0.0, matrixSize.x, matrixSize.y, 0.0, -1.0, 1.0);
-#if (defined OLD_GL)
-	SetMatrix(GL_PROJECTION, projection);
-#else
+
 	SetupShaders();
-#endif
 
 	// GLFW Hooks
 	glfwSetFramebufferSizeCallback(wnd, ResizeFunc);
@@ -367,7 +359,6 @@ void GameWindow::SetVisibleCursor(bool Visible)
 
 void GameWindow::SetupShaders()
 {
-#ifndef OLD_GL
 
 	/*
 	glGenVertexArrays(1, &defaultVao);
@@ -427,8 +418,6 @@ void GameWindow::SetupShaders()
 
 	SetLightPosition(glm::vec3(0,0,1));
 	SetLightMultiplier(1);
-
-#endif
 }
 
 void GameWindow::SetUniform(String Uniform, int i)

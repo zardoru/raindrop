@@ -4,9 +4,8 @@
 #include "VBO.h"
 #include "Image.h"
 
-#ifndef OLD_GL
 bool GraphObject2D::IsInitialized = false;
-#endif
+
 
 GraphObject2D::GraphObject2D(bool ShouldInitTexture) 
 {
@@ -38,20 +37,17 @@ GraphObject2D::~GraphObject2D()
 
 void GraphObject2D::Initialize(bool ShouldInitTexture)
 {
-#ifndef OLD_GL
 	UvBuffer = NULL;
 
 	if (!IsInitialized)
 	{
 		mBuffer = new VBO(VBO::Static, 8);
-		mCenteredBuffer = new VBO(VBO::Static, 8);
 		InitVBO();
 		IsInitialized = true;
 	}
 
 	if (ShouldInitTexture)
 		UpdateTexture();
-#endif
 }
 
 
@@ -246,19 +242,12 @@ void GraphObject2D::AddRotation(float Rot)
 
 void GraphObject2D::Invalidate()
 {
-#ifndef OLD_GL
 	IsInitialized = false;
-#endif
 }
 
 Image* GraphObject2D::GetImage()
 {
 	return mImage;
-}
-
-void GraphObject2D::BindCenteredVBO()
-{
-	mCenteredBuffer->Bind();
 }
 
 void GraphObject2D::BindTopLeftVBO()

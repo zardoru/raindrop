@@ -6,10 +6,8 @@ class Image;
 
 class GraphObject2D
 {
-#ifndef OLD_GL
-	static VBO *mBuffer, *mCenteredBuffer;
+	static VBO *mBuffer;
 	static bool IsInitialized;
-#endif
 	glm::mat4x4 Matrix;
 
 private: // Transformations
@@ -40,9 +38,7 @@ private: // Transformations
 	Image* mImage;
 
 protected:
-#ifndef OLD_GL
 	VBO *UvBuffer;
-#endif
 	bool DoTextureCleanup;
 	void UpdateTexture();
 public:
@@ -106,8 +102,6 @@ public:
 	void Render(); // found in backend.cpp
 	virtual void Invalidate();
 
-	/* Back-end  (Yes, a translation is more appropriate, I'll fix it later. */
-	static void BindCenteredVBO();
 	static void BindTopLeftVBO();
 };
 

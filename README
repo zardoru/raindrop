@@ -3,7 +3,7 @@ dotcur
 
 dotcur is a small music game project aimed to be a multi-mode rhythm game 
 for home desktops. so far the game works but it's lacking on features.
-a cytus-like mode is implemented.
+a cytus-like mode is implemented and a beatmania-like mode is on the way.
 
 it's built using OpenGL/PortAudio and most if not all are freely licensed libraries.
 
@@ -27,9 +27,3 @@ notes
 while right now it doesn't quite support linux (and I won't ever use "make" for my
 own projects- ever) so far there are no system-specific dependencies so 
 with some minor modifications it shouldn't be too much trouble to get it to compile.
-
-there's some unfinished OpenGL 3.3 (Core profile) code in. There's one important macro to notice: OLD_GL
-and it enables usage of fixed-pipeline tutorial-level opengl code.
-
-the format i created (BMS-like) is completely undocumented for now and I won't
-document it until I finish the editor.

@@ -10,14 +10,10 @@
 #include "Image.h"
 #include "ImageLoader.h"
 
-#ifndef OLD_GL
 VBO* GraphObject2D::mBuffer;
-VBO* GraphObject2D::mCenteredBuffer;
-#endif
 
 void GraphObject2D::InitVBO()
 {
-#ifndef OLD_GL
 	float Positions[8] =
 	{
 		1,
@@ -39,29 +35,10 @@ void GraphObject2D::InitVBO()
 
 	mBuffer->Validate();
 	mBuffer->AssignData(Positions);
-
-	float PositionsCentered [8] = {
-		0.5,
-		-0.5,
-		0.5,
-		0.5,
-		-0.5,
-		0.5,
-		-0.5,
-		-0.5,
-	};
-	
-
-	mCenteredBuffer->Validate();
-	mCenteredBuffer->AssignData(PositionsCentered);
-
-#endif
 }
 
 void GraphObject2D::UpdateTexture()
 {
-#ifndef OLD_GL
-
 	if (!UvBuffer)
 		UvBuffer = new VBO(VBO::Dynamic, 8);
 
@@ -83,7 +60,6 @@ void GraphObject2D::UpdateTexture()
 
 	UvBuffer->AssignData(CropPositions);
 	DirtyTexture = false;
-#endif
 }
 
 void Image::Bind()
@@ -101,8 +77,6 @@ void GraphObject2D::Render()
 		mImage->Bind();
 	}else
 		return;
-
-#ifndef OLD_GL
 
 	if (DirtyMatrix)
 	{
@@ -149,67 +123,14 @@ void GraphObject2D::Render()
 
 	WindowFrame.DisableAttribArray("position");
 	//WindowFrame.DisableAttribArray("vertexUV");
-#else
-
-	if (DirtyMatrix)
-	{
-		glm::mat4 posMatrix =	glm::scale(
-			glm::rotate(
-			glm::translate(
-			glm::mat4(1.0f), 
-			glm::vec3(mPosition.x, mPosition.y, 0)), 
-			mRotation, glm::vec3(0,0,1)
-			), glm::vec3(mScale.x*mWidth, mScale.y*mHeight, 1));
-
-		Matrix = posMatrix;
-		DirtyMatrix = false;
-	}
-
-	// old gl code ahead
-
-	if (ColorInvert)
-	{
-		glLogicOp(GL_INVERT);
-		glEnable(GL_COLOR_LOGIC_OP);
-	}
-
-	glColor4f(Red, Green, Blue, Alpha);
-
-	glPushMatrix();
-
-	glMultMatrixf(glm::value_ptr(Matrix));
-
-	if (Centered)
-		glTranslatef(-0.5, -0.5, 0);
-
-	glBegin(GL_QUADS);
-
-		glTexCoord2f(mCrop_x1, mCrop_y1);
-		glVertex2i(0, 0); // topleft
-		glTexCoord2f(mCrop_x2, mCrop_y1);
-		glVertex2i(1, 0); // topright
-		glTexCoord2f(mCrop_x2, mCrop_y2);
-		glVertex2i(1, 1); // bottomright
-		glTexCoord2f(mCrop_x1, mCrop_y2);
-		glVertex2i(0, 1); // bottomleft
-
-	glEnd();
-	
-	glPopMatrix();
-
-	if (ColorInvert)
-		glDisable(GL_COLOR_LOGIC_OP);
-#endif
 }
 
 void GraphObject2D::Cleanup()
 {
-#ifndef OLD_GL
 	if (DoTextureCleanup)
 	{
 		delete UvBuffer;
 	}
-#endif
 }
 
 VBO::VBO(Type T, uint32 Elements)
