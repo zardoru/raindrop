@@ -196,6 +196,7 @@
     <ClCompile Include="..\src\Application.cpp" />
     <ClCompile Include="..\src\Audio.cpp" />
     <ClCompile Include="..\src\BitmapFont.cpp" />
+    <ClCompile Include="..\src\Configuration.cpp" />
     <ClCompile Include="..\src\Directory.cpp" />
     <ClCompile Include="..\src\dotcur.cpp" />
     <ClCompile Include="..\src\FileManager.cpp" />
@@ -239,6 +240,7 @@
     <ClInclude Include="..\src\Audio.h" />
     <ClInclude Include="..\src\BindingsManager.h" />
     <ClInclude Include="..\src\BitmapFont.h" />
+    <ClInclude Include="..\src\Configuration.h" />
     <ClInclude Include="..\src\Directory.h" />
     <ClInclude Include="..\src\FileManager.h" />
     <ClInclude Include="..\src\GameObject.h" />
