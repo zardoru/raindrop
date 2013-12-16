@@ -7,6 +7,7 @@
 #include "ImageLoader.h"
 #include "Audio.h"
 #include "FileManager.h"
+#include "Configuration.h"
 
 #include "GameObject.h"
 #include "Song.h"
@@ -21,20 +22,24 @@
 #define SONGLIST_BASEX ScreenWidth*3/4
 
 SoundSample *SelectSnd = NULL, *ClickSnd=NULL;
-VorbisStream	*Loops[6];
+VorbisStream	**Loops;
 
 ScreenSelectMusic::ScreenSelectMusic()
 {
 	Font = NULL;
 	if (!SelectSnd)
 	{
+		LoopTotal = 0;
 		SelectSnd = new SoundSample((FileManager::GetSkinPrefix() + "select.ogg").c_str());
 		MixerAddSample(SelectSnd);
 
 		ClickSnd = new SoundSample((FileManager::GetSkinPrefix() + "click.ogg").c_str());
 		MixerAddSample(ClickSnd);
+		
+		LoopTotal = Configuration::GetSkinConfigf("LoopTotal");
 
-		for (int i = 0; i < 6; i++)
+		Loops = new VorbisStream*[LoopTotal];
+		for (int i = 0; i < LoopTotal; i++)
 		{
 			std::stringstream str;
 			str << FileManager::GetSkinPrefix() << "loop" << i+1 << ".ogg";
@@ -59,7 +64,7 @@ void ScreenSelectMusic::MainThreadInitialization()
 	SelCursor.SetImage(ImageLoader::LoadSkin("songselect_cursor.png"));
 	SelCursor.SetSize(20);
 	SelCursor.SetPosition(SONGLIST_BASEX-SelCursor.GetWidth(), SONGLIST_BASEY);
-	Background.SetImage(ImageLoader::LoadSkin("MenuBackground.png"));
+	Background.SetImage(ImageLoader::LoadSkin(Configuration::GetSkinConfigs("SelectMusicBackground")));
 	Logo.SetImage(ImageLoader::LoadSkin("logo.png"));
 	Logo.SetSize(480);
 	Logo.Centered = true;
@@ -81,7 +86,7 @@ void ScreenSelectMusic::LoadThreadInitialization()
 	char* Manifest[] =
 	{
 		"songselect_cursor.png",
-		"MenuBackground.png",
+		(char*)Configuration::GetSkinConfigs("SelectMusicBackground").c_str(),
 		"logo.png"
 	};
 
@@ -105,9 +110,12 @@ bool ScreenSelectMusic::Run(double Delta)
 		{
 			WindowFrame.isGuiInputEnabled = true;
 			SwitchBackGuiPending = false;
-			int rn = rand() % 6;
-			Loops[rn]->seek(0);
-			Loops[rn]->Start();
+			if (LoopTotal)
+			{
+				int rn = rand() % LoopTotal;
+				Loops[rn]->seek(0);
+				Loops[rn]->Start();
+			}
 		}
 	}
 
@@ -119,7 +127,7 @@ bool ScreenSelectMusic::Run(double Delta)
 
 	Background.Render();
 
-		glm::vec2 mpos = WindowFrame.GetRelativeMPos();
+	glm::vec2 mpos = WindowFrame.GetRelativeMPos();
 
 	if (mpos.x > SONGLIST_BASEX)
 	{
@@ -199,7 +207,7 @@ bool ScreenSelectMusic::Run(double Delta)
 
 void ScreenSelectMusic::StopLoops()
 {
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < LoopTotal; i++)
 	{
 		Loops[i]->seek(0);
 		Loops[i]->Stop();

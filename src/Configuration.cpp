@@ -24,7 +24,10 @@ void Configuration::Initialize()
 	luaL_loadfile(CfgLua, "config.lua");
 	lua_pcall(CfgLua, 0, LUA_MULTRET, 0);
 
-	luaL_loadfile(SkinCfgLua, (GetConfigs("Skin") + "/skin.lua").c_str());
+	if (Configuration::GetConfigs("Skin").length())
+		FileManager::SetSkin(Configuration::GetConfigs("Skin"));
+
+	luaL_loadfile(SkinCfgLua, (FileManager::GetSkinPrefix() + "/skin.lua").c_str());
 	lua_pcall(SkinCfgLua, 0, LUA_MULTRET, 0);
 }
 
@@ -34,54 +37,62 @@ void Configuration::Cleanup()
 	lua_close(SkinCfgLua);
 }
 
-String Configuration::GetConfigs(String Name, String Namespace)
+String GetConfsInt(String Name, String Namespace, lua_State *L)
 {
 	if (!Namespace.length())
 	{
-		LuaRef R = getGlobal(CfgLua, Name.c_str());
-		return R.tostring();
+		LuaRef R = getGlobal(L, Name.c_str());
+		if (!R.isNil())
+			return R;
+		else
+			return "";
 	}else
 	{
-		LuaRef R = getGlobal(CfgLua, Namespace.c_str());
-		return std::string(R [Name]);
+		LuaRef R = getGlobal(L, Namespace.c_str());
+		if (!R.isNil() && !R[Name].isNil())
+			return std::string(R [Name]);
+		else
+			return "";
+
 	}
+}
+
+float GetConffInt(String Name, String Namespace, lua_State *L)
+{
+	if (!Namespace.length())
+	{
+		LuaRef R = getGlobal(L, Name.c_str());
+		if (!R.isNil())
+			return R;
+		else
+			return 0;
+	}else
+	{
+		LuaRef R = getGlobal(L, Namespace.c_str());
+		if (!R.isNil() && !R[Name].isNil())
+			return R [Name];
+		else
+			return 0;
+
+	}
+}
+
+String Configuration::GetConfigs(String Name, String Namespace)
+{
+	return GetConfsInt(Name, Namespace, CfgLua);
 }
 
 float  Configuration::GetConfigf(String Name, String Namespace)
 {
-	if (!Namespace.length())
-	{
-		LuaRef R = getGlobal(CfgLua, Name.c_str());
-		return R;
-	}else
-	{
-		LuaRef R = getGlobal(CfgLua, Namespace.c_str());
-		return R [Name];
-	}
+	return GetConffInt(Name, Namespace, CfgLua);
 }
 
 String Configuration::GetSkinConfigs(String Name, String Namespace)
 {
-	if (!Namespace.length())
-	{
-		LuaRef R = getGlobal(SkinCfgLua, Name.c_str());
-		return R.tostring();
-	}else
-	{
-		LuaRef R = getGlobal(SkinCfgLua, Namespace.c_str());
-		return std::string(R [Name]);
-	}
+	return GetConfsInt(Name, Namespace, SkinCfgLua);
 }
 
 float  Configuration::GetSkinConfigf(String Name, String Namespace)
 {
-	if (!Namespace.length())
-	{
-		LuaRef R = getGlobal(SkinCfgLua, Name.c_str());
-		return R;
-	}else
-	{
-		LuaRef R = getGlobal(SkinCfgLua, Namespace.c_str());
-		return R [Name];
-	}
+	return GetConffInt(Name, Namespace, SkinCfgLua);
 }

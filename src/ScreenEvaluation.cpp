@@ -1,6 +1,6 @@
 #include "Global.h"
-#include "Game_Consts.h"
 #include "GraphObject2D.h"
+#include "Configuration.h"
 #include "BitmapFont.h"
 #include "ScreenEvaluation.h"
 #include "GameWindow.h"
@@ -35,7 +35,7 @@ void ScreenEvaluation::Init(EvaluationData _Data)
 	ScreenEvaluationMusic->Start();
 
 
-	Background.SetImage(ImageLoader::LoadSkin("MenuBackground.png"));
+	Background.SetImage(ImageLoader::LoadSkin(Configuration::GetSkinConfigs("EvaluationBackground")));
 	Background.AffectedByLightning = true;
 	if (!Font)
 	{

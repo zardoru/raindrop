@@ -19,6 +19,8 @@ ScreenGameplay7K::ScreenGameplay7K()
 
 void ScreenGameplay7K::Cleanup()
 {
+	if (Music)
+		Music->Stop();
 }
 
 void ScreenGameplay7K::Init(Song7K* S, int DifficultyIndex)

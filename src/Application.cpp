@@ -3,14 +3,18 @@
 
 #include "Global.h"
 #include "Screen.h"
-#include "GameObject.h"
-#include "Song.h"
-#include "ScreenMainMenu.h"
-#include "Application.h"
+#include "Configuration.h"
 #include "Audio.h"
-#include "GameWindow.h"
+#include "Application.h"
+#include "GameObject.h"
 #include "BitmapFont.h"
 #include "ImageLoader.h"
+#include "GameWindow.h"
+#include "FileManager.h"
+
+#include "Song.h"
+
+#include "ScreenMainMenu.h"
 
 Application::Application()
 {
@@ -20,6 +24,7 @@ Application::Application()
 
 void Application::Init()
 {
+	Configuration::Initialize();
 	WindowFrame.AutoSetupWindow();
 	InitAudio();
 	Game = NULL;
@@ -58,4 +63,5 @@ void Application::Close()
 	if (Game)
 		delete Game;
 	WindowFrame.Cleanup();
+	Configuration::Cleanup();
 }

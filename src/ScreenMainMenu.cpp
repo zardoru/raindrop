@@ -1,15 +1,17 @@
 #include "Global.h"
+#include "Configuration.h"
 #include "Screen.h"
-#include "Song.h"
 #include "ImageLoader.h"
 #include "Audio.h"
 #include "FileManager.h"
+#include "GameWindow.h"
+#include "GameObject.h"
 #include "BitmapFont.h"
+
+#include "Song.h"
 #include "ScreenMainMenu.h"
 #include "ScreenLoading.h"
 #include "ScreenSelectMusic.h"
-#include "GameObject.h"
-#include "GameWindow.h"
 
 SoundSample *MMSelectSnd = NULL;
 BitmapFont* MainMenuFont = NULL;
@@ -30,7 +32,7 @@ void ScreenMainMenu::Init()
 		MainMenuFont->SetAffectedByLightning(true);	
 	}
 
-	Background.SetImage(ImageLoader::LoadSkin("MenuBackground.png"));
+	Background.SetImage(ImageLoader::LoadSkin(Configuration::GetSkinConfigs("MainMenuBackground")));
 	Logo.SetImage(ImageLoader::LoadSkin("logo.png"));
 	PlayBtn.SetImage(ImageLoader::LoadSkin("playbtn.png"));
 	ExitBtn.SetImage(ImageLoader::LoadSkin("exitbtn.png"));

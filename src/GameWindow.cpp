@@ -11,6 +11,7 @@
 #include "VBO.h"
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "Configuration.h"
 
 GameWindow WindowFrame;
 
@@ -256,15 +257,11 @@ void GameWindow::AutoSetupWindow()
 	if (!glfwInit())
 		throw std::exception("glfw failed initialization!"); // don't do shit
 
-	GLFWmonitor *mon = glfwGetPrimaryMonitor();
-	const GLFWvidmode *mode = glfwGetVideoMode(mon);
-
-	size.x = mode->width;
-	size.y = mode->height;
+	AssignSize();
 	matrixSize.x = ScreenWidth;
 	matrixSize.y = ScreenHeight;
 
-	IsFullscreen = true;
+	IsFullscreen = Configuration::GetConfigf("Fullscreen") != 0;
 
 #ifdef NDEBUG
 	if (!(wnd = glfwCreateWindow(size.x, size.y, DOTCUR_WINDOWTITLE DOTCUR_VERSIONTEXT, glfwGetPrimaryMonitor(), NULL)))
@@ -275,6 +272,25 @@ void GameWindow::AutoSetupWindow()
 #endif
 
 	SetupWindow();
+}
+
+void GameWindow::AssignSize()
+{
+	float WindowWidth = Configuration::GetConfigf("WindowWidth");
+	float WindowHeight = Configuration::GetConfigf("WindowHeight");
+
+	if (WindowWidth == 0 || WindowHeight == 0)
+	{
+		GLFWmonitor *mon = glfwGetPrimaryMonitor();
+		const GLFWvidmode *mode = glfwGetVideoMode(mon);
+
+		size.x = mode->width;
+		size.y = mode->height;
+	}else
+	{
+		size.x = WindowWidth;
+		size.y = WindowHeight;
+	}
 }
 
 void GameWindow::SwapBuffers()
@@ -291,11 +307,7 @@ void GameWindow::SwapBuffers()
 			wnd = glfwCreateWindow(size.x, size.y, DOTCUR_WINDOWTITLE DOTCUR_VERSIONTEXT, NULL, NULL);
 		}else
 		{
-			GLFWmonitor *mon = glfwGetPrimaryMonitor();
-			const GLFWvidmode *mode = glfwGetVideoMode(mon);
-
-			size.x = mode->width;
-			size.y = mode->height;
+			AssignSize();
 
 			glfwDestroyWindow(wnd);
 			wnd = glfwCreateWindow(size.x, size.y, DOTCUR_WINDOWTITLE DOTCUR_VERSIONTEXT, glfwGetPrimaryMonitor(), NULL);

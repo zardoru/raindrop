@@ -21,6 +21,7 @@ class GameWindow
 
 	void SetupWindow();
 	void SetupShaders();
+	void AssignSize();
 	
 	std::vector<VBO*> VBOList;
 
