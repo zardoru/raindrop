@@ -7,6 +7,9 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/thread/condition.hpp>
 
+float VolumeSFX = 1.0f;
+float VolumeMusic = 1.0f; 
+
 /* Vorbis file stream */
 
 VorbisStream::VorbisStream(FILE *fp, uint32 bufferSize)
@@ -350,8 +353,9 @@ class PaMixer
 	std::vector<VorbisStream*> Streams;
 	std::vector<VorbisSample*> Samples;
 
-	void MixBuffer(char* Src, char* Dest, int Length, int Start)
+	void MixBuffer(char* Src, char* Dest, int Length, int Start, float Multiplier)
 	{
+		static float ConstFactor = 1.0f / sqrt(2.0f);
 		Src += Start;
 		while (Length)
 		{
@@ -360,11 +364,9 @@ class PaMixer
 			if (*Dest && *Src)
 			{
 				float A = (float)*Src / 255.0, B = (float)*Dest / 255.0;
-				float mex = waveshape_distort(A+B)*170;
+				float mex = (A+B) * ConstFactor * Multiplier * 255;
 				float ClipVal = A+B;
 
-				if (ClipVal > 1)
-					Utility::DebugBreak();
 
 				*Dest = mex;
 			}
@@ -449,7 +451,7 @@ public:
 						memset(TempSave, 0, sizeof(TempSave));
 
 						(*i)->readBuffer(TempSave, SizeAvailable/2);
-						MixBuffer(TempSave, TempStream, SizeAvailable*2, 0);
+						MixBuffer(TempSave, TempStream, SizeAvailable*2, 0, VolumeMusic);
 					}
 				}
 				mut.unlock();
@@ -529,7 +531,7 @@ public:
 		{
 			memset(ts, 0, sizeof(ts));
 			(*i)->readBuffer(ts, length*2);
-			MixBuffer(ts, out, length*4, 0);
+			MixBuffer(ts, out, length*4, 0, VolumeSFX);
 		}
 		mut2.unlock();
 	}

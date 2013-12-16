@@ -21,7 +21,16 @@ int CALLBACK WinMain (
 #endif
 {
 	App.Init();
+#ifndef NDEBUG
+	try {
+#endif
 	App.Run();
+#ifndef NDEBUG
+	}catch (std::exception &e)
+	{
+		MessageBox(NULL, e.what(), "error", MB_OK);
+	}
+#endif
 	App.Close();
 	return 0;
 }

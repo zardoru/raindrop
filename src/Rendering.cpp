@@ -131,12 +131,13 @@ void GraphObject2D::Render()
 
 	// Assign Texture
 	WindowFrame.SetUniform("tex", 0);
+	
+	
+	WindowFrame.SetUniform("useTranslate", false);
+	WindowFrame.SetUniform("Centered", Centered);
 
 	// Assign position attrib. pointer
-	if (!Centered)
-		mBuffer->Bind();
-	else
-		mCenteredBuffer->Bind();
+	mBuffer->Bind();
 
 	glVertexAttribPointer( WindowFrame.EnableAttribArray("position"), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 

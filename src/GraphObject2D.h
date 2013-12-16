@@ -105,7 +105,10 @@ public:
 
 	void Render(); // found in backend.cpp
 	virtual void Invalidate();
-	
+
+	/* Back-end  (Yes, a translation is more appropriate, I'll fix it later. */
+	static void BindCenteredVBO();
+	static void BindTopLeftVBO();
 };
 
 #endif

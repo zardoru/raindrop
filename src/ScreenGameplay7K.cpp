@@ -12,12 +12,9 @@ ScreenGameplay7K::ScreenGameplay7K()
 {
 	Measure = 0;
 	Speed = 0; // Recalculate.
-	SpeedMultiplier = 1;
+	SpeedMultiplier = 3;
 	SongOldTime = -1;
 	Music = NULL;
-
-	/* Start position at judgement line.*/
-	PositionMatrix = glm::translate(glm::mat4(), glm::vec3(0, ScreenHeight - GearHeight /* - JudgelineHeight/2 */, 0));
 }
 
 void ScreenGameplay7K::Cleanup()
@@ -35,10 +32,11 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	char* SkinFiles [] =
 	{
 		"key1.png",
-		"key2.png"
+		"key2.png",
+		"note.png"
 	};
 
-	ImageLoader::LoadFromManifest(SkinFiles, 2, FileManager::GetSkinPrefix());
+	ImageLoader::LoadFromManifest(SkinFiles, 3, FileManager::GetSkinPrefix());
 	
 	char* OtherFiles [] =
 	{
@@ -48,7 +46,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	ImageLoader::LoadFromManifest(OtherFiles, 1);
 	/* TODO: Add playfield background */
 
-	PositionMatrix = glm::translate(glm::mat4(), glm::vec3(GearStartX, ScreenHeight-GearHeight, 0));
+	GearLaneWidth = GearWidth / CurrentDiff->Channels;
 
 	if (!Music)
 	{
@@ -79,6 +77,11 @@ void ScreenGameplay7K::LoadThreadInitialization()
 			}
 		}
 	}
+
+
+	/* Initial object distance */
+	float VertDistance = ((CurrentDiff->Offset / spb(CurrentDiff->Timing[0].Value)) / MySong->MeasureLength) * MeasureBaseSpacing;
+	CurrentVertical = float(ScreenHeight) - GearHeight - VertDistance * SpeedMultiplier;
 }
 
 void ScreenGameplay7K::MainThreadInitialization()
@@ -88,10 +91,11 @@ void ScreenGameplay7K::MainThreadInitialization()
 		Keys[i].SetImage ( i % 2 ? ImageLoader::LoadSkin("key2.png") : ImageLoader::LoadSkin("key1.png") );
 		Keys[i].SetSize( GearWidth / CurrentDiff->Channels, GearHeight );
 		Keys[i].Centered = true;
-		Keys[i].SetPosition( (GearWidth / 2) / CurrentDiff->Channels * i, ScreenHeight - GearHeight/2 );
+		Keys[i].SetPosition( GearStartX + GearLaneWidth * i + GearLaneWidth / 2, ScreenHeight - GearHeight/2 );
 	}
 
-	
+	NoteImage = ImageLoader::LoadSkin("note.png");
+
 	Background.SetImage(ImageLoader::Load(MySong->BackgroundDir));
 	Background.AffectedByLightning = true;
 	Running = true;
@@ -128,6 +132,7 @@ bool ScreenGameplay7K::Run(double Delta)
 
 	SongDelta = Music->GetPlaybackTime() - SongOldTime;
 	SongTime = Music->GetPlaybackTime();
+	SongOldTime = SongTime;
 
 	/* Update velocity. */
 	if (VSpeeds.size() && SongTime >= VSpeeds.at(0).Time)
@@ -136,9 +141,15 @@ bool ScreenGameplay7K::Run(double Delta)
 		VSpeeds.erase(VSpeeds.begin());
 	}
 
-	PositionMatrix = glm::translate(PositionMatrix, glm::vec3(0, Speed * SongDelta * SpeedMultiplier, 0));
-	
+	CurrentVertical += Speed * SongDelta * SpeedMultiplier;
+	PositionMatrix = glm::scale(glm::translate(glm::mat4(), 
+		glm::vec3(GearLaneWidth/2 + GearStartX, CurrentVertical, 0)), 
+		glm::vec3(GearLaneWidth, 10, 0));
+
+
 	Background.Render();
+
+	DrawMeasures();
 
 	for (int32 i = 0; i < CurrentDiff->Channels; i++)
 		Keys[i].Render();

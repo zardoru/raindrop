@@ -255,3 +255,13 @@ Image* GraphObject2D::GetImage()
 {
 	return mImage;
 }
+
+void GraphObject2D::BindCenteredVBO()
+{
+	mCenteredBuffer->Bind();
+}
+
+void GraphObject2D::BindTopLeftVBO()
+{
+	mBuffer->Bind();
+}

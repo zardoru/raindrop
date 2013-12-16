@@ -35,7 +35,7 @@ void ScreenLoading::Init()
 	mLogoSides.SetSize(400);
 
 	LoadThread = new boost::thread(LoadFunction, Next);
-	WindowFrame.SetLightMultiplier(0.8);
+	WindowFrame.SetLightMultiplier(0.8f);
 	WindowFrame.SetLightPosition(glm::vec3(0,-0.5,1));
 }
 

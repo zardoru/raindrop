@@ -51,5 +51,17 @@ void TrackNote::AssignPremultiplyMatrix(glm::mat4* _mat)
 
 void TrackNote::AssignSpeedMultiplier(float Mult)
 {
-	b_pos = b_pos * Mult;
+	b_pos.y = b_pos.y * Mult;
+
+	final = glm::translate(glm::mat4(), glm::vec3(b_pos.x, b_pos.y, 0));
+}
+
+glm::mat4& TrackNote::GetMatrix()
+{
+	return final;
+}
+
+float TrackNote::GetVertical()
+{
+	return b_pos.y;
 }

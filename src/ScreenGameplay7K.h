@@ -7,19 +7,28 @@ private:
 	int Measure;
 	float Speed, SpeedMultiplier;
 	float SongOldTime;
+	double CurrentVertical;
+	float GearLaneWidth;
 	glm::mat4 PositionMatrix;
 	Song7K *MySong;
 	
 	SongInternal::TDifficulty<TrackNote>			 *CurrentDiff;
 	std::vector<SongInternal::Measure<TrackNote>>	 NotesByMeasure[16];
 	std::vector<SongInternal::TDifficulty<TrackNote>::TimingSegment> VSpeeds;
-
+	Image*  NoteImage;
 	uint32	Channels;
 
 	PaStreamWrapper *Music;
 
 	GraphObject2D Keys[16];
 	GraphObject2D Background;
+
+	/* 
+		Optimizations will come in later. 
+		See Renderer7K.cpp.	
+	*/
+	void DrawMeasures();
+
 public:
 	ScreenGameplay7K();
 	void Init(Song7K *S, int DifficultyIndex);

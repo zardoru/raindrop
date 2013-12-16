@@ -27,11 +27,15 @@ void Song7K::Process()
 	/* For all difficulties */
 	for (std::vector<SongInternal::TDifficulty<TrackNote>*>::iterator Diff = Difficulties.begin(); Diff != Difficulties.end(); Diff++)
 	{
+		if (!(*Diff)->Timing.size())
+			continue;
+
 		/* For all channels of this difficulty */
 		for (int KeyIndex = 0; KeyIndex < (*Diff)->Channels; KeyIndex++)
 		{
-			// glm::vec2 BasePosition (GearStartX + KeyIndex * (GearWidth / (*Diff)->Channels), ScreenHeight - GearHeight);
+			glm::vec2 BasePosition (KeyIndex * (GearWidth / (*Diff)->Channels), 0);
 			int MIdx = 0;
+
 			/* For each measure of this channel */
 			for (std::vector<SongInternal::Measure<TrackNote>>::iterator Measure = (*Diff)->Measures[KeyIndex].begin(); 
 				Measure != (*Diff)->Measures[KeyIndex].end();
@@ -46,11 +50,11 @@ void Song7K::Process()
 					*/
 					TrackNote &CurrentNote = (*Measure).MeasureNotes[Note];
 					float MeasureVerticalD = MeasureBaseSpacing * MIdx;
-					float FractionVerticalD = 1.0f / float(Measure->Fraction) * CurrentNote.GetFraction();
+					float FractionVerticalD = 1.0f / float(Measure->Fraction) * float(CurrentNote.GetFraction()) * MeasureBaseSpacing;
 					glm::vec2 VerticalPosition( 0, MeasureVerticalD + FractionVerticalD );
 
 					// if upscroll change minus for plus as well as matrix at screengameplay7k
-					CurrentNote.AssignPosition(/*BasePosition*/ -VerticalPosition);
+					CurrentNote.AssignPosition(BasePosition - VerticalPosition);
 				}
 				MIdx++;
 			}
@@ -70,8 +74,10 @@ void Song7K::Process()
 			Time++)
 		{
 			TDifficulty<TrackNote>::TimingSegment VSpeed;
+			float TValue = Time->Value;
+			float FTime = (spb (Time->Value) * (float)MeasureLength);
 			VSpeed.Time = TimeAtBeat(**Diff, Time->Time);
-			VSpeed.Value = MeasureBaseSpacing / (spb (Time->Value) * MeasureLength);
+			VSpeed.Value = MeasureBaseSpacing / FTime;
 			(*Diff)->VerticalSpeeds.push_back(VSpeed);
 		}
 	}

@@ -11,6 +11,7 @@ private:
 	glm::mat4 *mt;
 	glm::vec2 b_pos;
 
+	glm::mat4 final;
 public:
 	TrackNote();
 	void AssignTrack(int T);
@@ -22,6 +23,8 @@ public:
 
 	int GetMeasure();
 	int GetFraction();
+	float GetVertical();
+	glm::mat4& GetMatrix();
 
 	~TrackNote();
 };
