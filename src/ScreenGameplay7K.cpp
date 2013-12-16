@@ -109,6 +109,10 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 	 Also potentially pausing and quitting the screen.
 	 Other than that most input can be safely ignored.
 	*/
+
+	if (BindingsManager::TranslateKey(key) == KT_Escape && code == KE_Press)
+		Running = false;
+
 }
 
 

@@ -148,7 +148,7 @@ void GraphObject2D::Render()
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	WindowFrame.DisableAttribArray("position");
-	WindowFrame.DisableAttribArray("vertexUV");
+	//WindowFrame.DisableAttribArray("vertexUV");
 #else
 
 	if (DirtyMatrix)

@@ -33,7 +33,7 @@ void ScreenGameplay7K::DrawMeasures()
 
 	glVertexAttribPointer( WindowFrame.EnableAttribArray("position"), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
-	/* todo: instancing and limiting how many measures are drawn because it's completely unplayable right now */
+	/* todo: instancing */
 	for (uint32 k = 0; k < Channels; k++)
 	{
 		for (uint32 m = 0; m < NotesByMeasure[k].size(); m++)
@@ -48,7 +48,6 @@ void ScreenGameplay7K::DrawMeasures()
 				WindowFrame.SetUniform("tranM", &(NotesByMeasure[k][m].MeasureNotes[q].GetMatrix())[0][0]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 			}
-next_measure: ;
 		}
 	}
 
