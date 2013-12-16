@@ -206,6 +206,7 @@
     <ClCompile Include="..\src\GuiTextPrompt.cpp" />
     <ClCompile Include="..\src\Image.cpp" />
     <ClCompile Include="..\src\ImageLoader.cpp" />
+    <ClCompile Include="..\src\lua.c" />
     <ClCompile Include="..\src\NoteLoader.cpp" />
     <ClCompile Include="..\src\NoteLoaderSM.cpp" />
     <ClCompile Include="..\src\pa_ringbuffer.c" />

@@ -153,6 +153,9 @@
     <ClCompile Include="..\src\Renderer7K.cpp">
       <Filter>Source Files\Mode7K</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\lua.c">
+      <Filter>Source Files\Backend</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\GraphObject2D.h">

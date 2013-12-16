@@ -12,7 +12,7 @@ ScreenGameplay7K::ScreenGameplay7K()
 {
 	Measure = 0;
 	Speed = 0; // Recalculate.
-	SpeedMultiplier = 3;
+	SpeedMultiplier = 6;
 	SongOldTime = -1;
 	Music = NULL;
 }
@@ -81,7 +81,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	/* Initial object distance */
 	float VertDistance = ((CurrentDiff->Offset / spb(CurrentDiff->Timing[0].Value)) / MySong->MeasureLength) * MeasureBaseSpacing;
-	CurrentVertical = float(ScreenHeight) - GearHeight - VertDistance * SpeedMultiplier;
+	CurrentVertical = float(ScreenHeight) - GearHeight - (VertDistance * SpeedMultiplier);
 }
 
 void ScreenGameplay7K::MainThreadInitialization()
@@ -118,34 +118,39 @@ bool ScreenGameplay7K::Run(double Delta)
 
 	ScreenTime += Delta;
 
-	if (ScreenTime < 2)
-		return Running;
-
-	if (!Music)
-		return false; // Quit inmediately. There's no point.
-
-	if (SongOldTime == -1)
+	if (ScreenTime > 3)
 	{
-		Music->Start(false, false);
-		SongOldTime = 0;
+
+		if (!Music)
+			return false; // Quit inmediately. There's no point.
+
+		if (SongOldTime == -1)
+		{
+			Music->Start(false, false);
+			SongOldTime = 0;
+		}
+
+		SongDelta = Music->GetPlaybackTime() - SongOldTime;
+		SongTime = Music->GetPlaybackTime();
+		SongOldTime = SongTime;
+
+		/* Update velocity. */
+		if (VSpeeds.size() && SongTime >= VSpeeds.at(0).Time)
+		{
+			Speed = VSpeeds.at(0).Value;
+			VSpeeds.erase(VSpeeds.begin());
+		}
+
+		CurrentVertical += Speed * SongDelta * SpeedMultiplier;
+		PositionMatrix = glm::scale(glm::translate(glm::mat4(), 
+			glm::vec3(GearLaneWidth/2 + GearStartX, CurrentVertical, 0)), 
+			glm::vec3(GearLaneWidth, 10, 0));
+
+
+		/* Update music. */
+		int32 r;
+		Music->GetStream()->UpdateBuffer(r);
 	}
-
-	SongDelta = Music->GetPlaybackTime() - SongOldTime;
-	SongTime = Music->GetPlaybackTime();
-	SongOldTime = SongTime;
-
-	/* Update velocity. */
-	if (VSpeeds.size() && SongTime >= VSpeeds.at(0).Time)
-	{
-		Speed = VSpeeds.at(0).Value;
-		VSpeeds.erase(VSpeeds.begin());
-	}
-
-	CurrentVertical += Speed * SongDelta * SpeedMultiplier;
-	PositionMatrix = glm::scale(glm::translate(glm::mat4(), 
-		glm::vec3(GearLaneWidth/2 + GearStartX, CurrentVertical, 0)), 
-		glm::vec3(GearLaneWidth, 10, 0));
-
 
 	Background.Render();
 
@@ -154,8 +159,5 @@ bool ScreenGameplay7K::Run(double Delta)
 	for (int32 i = 0; i < CurrentDiff->Channels; i++)
 		Keys[i].Render();
 
-	/* Update music. */
-	int32 r;
-	Music->GetStream()->UpdateBuffer(r);
 	return Running;
 }
