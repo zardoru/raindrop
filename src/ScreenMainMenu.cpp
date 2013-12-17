@@ -36,13 +36,13 @@ void ScreenMainMenu::Init()
 	Logo.SetImage(ImageLoader::LoadSkin("logo.png"));
 	PlayBtn.SetImage(ImageLoader::LoadSkin("playbtn.png"));
 	ExitBtn.SetImage(ImageLoader::LoadSkin("exitbtn.png"));
-	PlayBtn.AddPosition(ScreenWidth - PlayBtn.GetWidth(), 0);
-	ExitBtn.AddPosition(ScreenWidth - ExitBtn.GetWidth(), PlayBtn.GetHeight());
+	PlayBtn.AddPosition(Configuration::GetSkinConfigf("X", "PlayButton"), Configuration::GetSkinConfigf("Y", "PlayButton"));
+	ExitBtn.AddPosition(Configuration::GetSkinConfigf("X", "ExitButton"), Configuration::GetSkinConfigf("Y", "ExitButton"));
 	Background.AffectedByLightning = Logo.AffectedByLightning = true;
 
-	Logo.SetSize(480);
-	Logo.Centered = true;
-	Logo.SetPosition(Logo.GetWidth()/4, ScreenHeight - Logo.GetHeight()/4);
+	Logo.SetSize(Configuration::GetSkinConfigf("Size", "Logo"));
+	Logo.Centered = Configuration::GetSkinConfigf("Centered", "Logo") != 0;
+	Logo.SetPosition(Configuration::GetSkinConfigf("X", "Logo"), Configuration::GetSkinConfigf("Y", "Logo"));
 
 	if (!MMSelectSnd)
 	{

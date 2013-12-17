@@ -237,6 +237,9 @@ float GraphObject2D::GetRotation() const
 void GraphObject2D::AddRotation(float Rot)
 {
 	mRotation += Rot;
+
+	if (mRotation >= 360)
+		mRotation -= 360;
 	DirtyMatrix = true;
 }
 

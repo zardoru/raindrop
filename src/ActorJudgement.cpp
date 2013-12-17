@@ -1,5 +1,6 @@
 #include "Global.h"
 #include "Game_Consts.h"
+#include "Configuration.h"
 #include "GraphObject2D.h"
 #include "ActorJudgement.h"
 #include "ImageLoader.h"
@@ -9,11 +10,11 @@
 
 ActorJudgement::ActorJudgement()
 {
-	Centered = true;
-	SetRotation( -90 );
+	Centered = Configuration::GetSkinConfigf("Centered", "Judgement" ) != 0;
+	SetRotation( Configuration::GetSkinConfigf("Rotation", "Judgement" ) );
 	Alpha = 0;
-	SetImage(ImageLoader::LoadSkin("judge-perfect.png"));
-	SetPosition(40, PlayfieldHeight/2 + 70 );
+	SetImage( ImageLoader::LoadSkin("judge-perfect.png") );
+	SetPosition(Configuration::GetSkinConfigf("X", "Judgement" ), Configuration::GetSkinConfigf("Y", "Judgement" ) );
 	AnimTime = 0;
 	AffectedByLightning = true;
 }

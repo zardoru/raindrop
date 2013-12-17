@@ -66,11 +66,14 @@ void ScreenSelectMusic::MainThreadInitialization()
 	SelCursor.SetSize(20);
 	SelCursor.SetPosition(SONGLIST_BASEX-SelCursor.GetWidth(), SONGLIST_BASEY);
 	Background.SetImage(ImageLoader::LoadSkin(Configuration::GetSkinConfigs("SelectMusicBackground")));
+	
+	/* Logo */
 	Logo.SetImage(ImageLoader::LoadSkin("logo.png"));
-	Logo.SetSize(480);
-	Logo.Centered = true;
-	Logo.SetPosition(Logo.GetWidth()/4, ScreenHeight - Logo.GetHeight()/4);
+	Logo.SetSize(Configuration::GetSkinConfigf("Size", "Logo"));
+	Logo.Centered = Configuration::GetSkinConfigf("Centered", "Logo") != 0;
+	Logo.SetPosition(Configuration::GetSkinConfigf("X", "Logo"), Configuration::GetSkinConfigf("Y", "Logo"));
 	Logo.AffectedByLightning = true;
+
 	WindowFrame.SetLightMultiplier(1);
 	Background.AffectedByLightning = true;
 }
@@ -83,7 +86,6 @@ void ScreenSelectMusic::LoadThreadInitialization()
 	Running = true;
 	OldCursor = Cursor = 0;
 	SwitchBackGuiPending = true;
-
 	char* Manifest[] =
 	{
 		"songselect_cursor.png",

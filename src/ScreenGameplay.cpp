@@ -1,5 +1,6 @@
 #include "Global.h"
 #include "Game_Consts.h"
+#include "Configuration.h"
 #include "ScreenGameplay.h"
 #include "ScreenEvaluation.h"
 #include "NoteLoader.h"
@@ -135,8 +136,8 @@ void ScreenGameplay::MainThreadInitialization()
 	ReadySign.Centered = true;
 	ReadySign.AffectedByLightning = true;
 
-	Cursor.SetSize(60);
-	Cursor.Centered = true;
+	Cursor.SetSize(CursorSize);
+	Cursor.Centered = CursorCentered;
 	Cursor.AffectedByLightning = true;
 
 	// Start with lights off.
@@ -235,6 +236,14 @@ void ScreenGameplay::LoadThreadInitialization()
 		if (ShouldChangeScreenAtEnd)
 			LeadInTime = MySong->LeadInTime;
 	}
+
+	CursorRotospeed = Configuration::GetSkinConfigf("RotationSpeed", "Cursor");
+	CursorCentered = Configuration::GetSkinConfigf("Centered", "Cursor") != 0;
+	CursorZooming = Configuration::GetSkinConfigf("Zooming", "Cursor") != 0;
+	CursorSize = Configuration::GetSkinConfigf("Size", "CursorSize");
+
+	if (CursorSize == 0)
+		CursorSize = 60;
 }
 
 void ScreenGameplay::Init(SongDC *OtherSong, uint32 DifficultyIndex)
@@ -332,10 +341,13 @@ void ScreenGameplay::HandleInput(int32 key, KeyEventType code, bool isMouseInput
 		)
 	{
 
-		if (code == KE_Press)
-			Cursor.SetScale(0.85f);
-		else
-			Cursor.SetScale(1);
+		if (CursorZooming)
+		{
+			if (code == KE_Press)
+				Cursor.SetScale(0.85f);
+			else
+				Cursor.SetScale(1);
+		}
 
 		// For all measure notes..
 		if (!IsPaused)
@@ -585,9 +597,7 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 
 	Cursor.SetPosition(mpos);
 
-	Cursor.AddRotation(140 * TimeDelta);
-	if (Cursor.GetRotation() > 360)
-		Cursor.AddRotation(-360);
+	Cursor.AddRotation(CursorRotospeed * TimeDelta);
 
 	{
 		int Beat = MeasureRatio * MySong->MeasureLength;

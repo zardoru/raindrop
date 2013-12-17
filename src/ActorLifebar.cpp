@@ -1,5 +1,6 @@
 #include "Global.h"
 #include "Game_Consts.h"
+#include "Configuration.h"
 #include "GraphObject2D.h"
 #include "ActorLifebar.h"
 #include "ImageLoader.h"
@@ -9,14 +10,18 @@ ActorLifebar::ActorLifebar() : GraphObject2D()
 {
 	Health = 50; // Out of 100!
 	pending_health = 0;
-	SetImage(ImageLoader::LoadSkin("healthbar.png"));
-	SetWidth(PlayfieldHeight / 2);
 	time = 0;
-	Centered = true;
-	SetPosition(ScreenWidth - GetHeight()/2, ScreenHeight/2);
-	UpdateHealth();
-	SetRotation(90);
+
+	SetImage(ImageLoader::LoadSkin("healthbar.png"));
+
+	SetWidth(PlayfieldHeight / 2);
+	SetHeight(Configuration::GetSkinConfigf("Height", "Lifebar" ));
+	Centered = Configuration::GetSkinConfigf( "Centered", "Lifebar" ) != 0;
+	SetPosition( Configuration::GetSkinConfigf("X", "Lifebar" ), Configuration::GetSkinConfigf("Y", "Lifebar" ));
+	SetRotation( Configuration::GetSkinConfigf("Rotation", "Lifebar" ) );
 	AffectedByLightning = true;
+
+	UpdateHealth();
 }
 
 void ActorLifebar::UpdateHealth()
@@ -48,7 +53,7 @@ void ActorLifebar::HitJudgement(Judgement Hit)
 			break;
 		case Miss:
 		case NG:
-			pending_health -= 20;
+			pending_health -= 12;
 	}
 }
 
@@ -60,8 +65,8 @@ void ActorLifebar::Run(double delta)
 		Health += pending_health * delta;
 		pending_health -= pending_health * delta;
 
-		if (pending_health > 400) // only up to 4x health
-			pending_health = 400;
+		if (pending_health > 200) // only up to 2x health
+			pending_health = 200;
 
 		/* Accomulate health. Better you do, more forviging to mistakes. */
 		if (Health > 100)

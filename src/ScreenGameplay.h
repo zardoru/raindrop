@@ -47,6 +47,8 @@ protected: // shit the edit screen needs
 	void DrawVector(std::vector<GameObject>& Vec, float TimeDelta);
 	void ResetNotes();
 
+	bool CursorZooming, CursorCentered;
+	float CursorRotospeed, CursorSize;
 private: // shit only screengameplay needs
 
 	void ProcessBarlineRatios();
