@@ -65,6 +65,7 @@ void ScreenEdit::Init(SongDC *Other)
 void ScreenEdit::StartPlaying( int32 _Measure )
 {
 	ScreenGameplay::Init(MySong, 0);
+	ScreenGameplay::ResetNotes();
 	ScreenGameplay::MainThreadInitialization();
 
 	Measure = _Measure;
@@ -198,6 +199,7 @@ void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 				if (Utility::IsNumeric(BPMPrompt.GetContents().c_str()))
 				{
 					CurrentDiff->Timing[0].Value = atof(BPMPrompt.GetContents().c_str());
+					MySong->Process(false);
 				}
 				return;
 			}

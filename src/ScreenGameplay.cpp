@@ -147,6 +147,25 @@ void ScreenGameplay::MainThreadInitialization()
 	WindowFrame.SetVisibleCursor(false);
 }
 
+void ScreenGameplay::ResetNotes()
+{
+	BarlineRatios = CurrentDiff->BarlineRatios;
+	NotesInMeasure.resize(CurrentDiff->Measures.size());
+	for (uint32 i = 0; i < CurrentDiff->Measures.size(); i++)
+	{
+		NotesInMeasure[i] = CurrentDiff->Measures[i].MeasureNotes;
+		for (std::vector<GameObject>::iterator k = NotesInMeasure[i].begin(); k != NotesInMeasure[i].end(); k++)
+		{
+			if (k->GetPosition().x == 0)
+				k = NotesInMeasure[i].erase(k);
+			else
+				Evaluation.totalNotes++;
+
+			if (k == NotesInMeasure[i].end()) break;
+		}
+	}
+}
+
 void ScreenGameplay::LoadThreadInitialization()
 {
 	char* SkinFiles [] =
@@ -167,7 +186,6 @@ void ScreenGameplay::LoadThreadInitialization()
 
 	ImageLoader::LoadFromManifest(OtherFiles, 1);
 
-	BarlineRatios = CurrentDiff->BarlineRatios;
 	memset(&Evaluation, 0, sizeof(Evaluation));
 
 	Measure = 0;
@@ -192,21 +210,7 @@ void ScreenGameplay::LoadThreadInitialization()
 	// We might be retrying- in that case we should probably clean up.
 	RemoveTrash();
 
-	// todo: not need to copy this whole thing. 
-	NotesInMeasure.resize(CurrentDiff->Measures.size());
-	for (uint32 i = 0; i < CurrentDiff->Measures.size(); i++)
-	{
-		NotesInMeasure[i] = CurrentDiff->Measures[i].MeasureNotes;
-		for (std::vector<GameObject>::iterator k = NotesInMeasure[i].begin(); k != NotesInMeasure[i].end(); k++)
-		{
-			if (k->GetPosition().x == 0)
-				k = NotesInMeasure[i].erase(k);
-			else
-				Evaluation.totalNotes++;
-
-			if (k == NotesInMeasure[i].end()) break;
-		}
-	}
+	ResetNotes();
 
 	if (!Music)
 	{

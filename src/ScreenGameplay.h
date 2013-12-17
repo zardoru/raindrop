@@ -45,6 +45,7 @@ protected: // shit the edit screen needs
 
 	std::vector <std::vector<GameObject>> NotesInMeasure;
 	void DrawVector(std::vector<GameObject>& Vec, float TimeDelta);
+	void ResetNotes();
 
 private: // shit only screengameplay needs
 

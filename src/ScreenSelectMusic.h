@@ -17,7 +17,6 @@ class ScreenSelectMusic : public IScreen
 	void StopLoops();
 	void UpdateCursor();
 	double Time;
-	int LoopTotal;
 
 	ModeType SelectedMode;
 

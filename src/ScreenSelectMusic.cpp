@@ -23,6 +23,7 @@
 
 SoundSample *SelectSnd = NULL, *ClickSnd=NULL;
 VorbisStream	**Loops;
+int LoopTotal;
 
 ScreenSelectMusic::ScreenSelectMusic()
 {
