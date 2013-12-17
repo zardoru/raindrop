@@ -115,15 +115,15 @@ enum ModeType
 	};
 
 #define DOTCUR_WINDOWTITLE "dC ver: "
-#define DOTCUR_VERSION "underground 3"
+#define DOTCUR_VERSION "0.4"
 #ifdef NDEBUG
-#define DOTCUR_BUILDTYPE ""
+#define DOTCUR_BUILDTYPE " "
 #else
-#define DOTCUR_BUILDTYPE " (debug)"
+#define DOTCUR_BUILDTYPE " (debug) "
 #endif
 
 
-#define DOTCUR_VERSIONTEXT DOTCUR_VERSION DOTCUR_BUILDTYPE
+#define DOTCUR_VERSIONTEXT DOTCUR_VERSION DOTCUR_BUILDTYPE __DATE__
 
 #include "BindingsManager.h"
 
