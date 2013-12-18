@@ -38,17 +38,26 @@ void ScreenGameplay7K::DrawMeasures()
 	{
 		for (uint32 m = 0; m < NotesByMeasure[k].size(); m++)
 		{
+			if (NotesByMeasure[k][m].MeasureNotes.size())
+			{
+				/* Last note is not visible? */
+				if (NotesByMeasure[k][m].MeasureNotes[NotesByMeasure[k][m].MeasureNotes.size()-1].GetVertical() + CurrentVertical >= ScreenHeight)
+				{
+					continue; /* Continue drawing next measure. */
+				}
+			}
+
 			for (uint32 q = 0; q < NotesByMeasure[k][m].MeasureNotes.size(); q++)
 			{
+				/* This is the last note in this measure. */
 				if ((NotesByMeasure[k][m].MeasureNotes[q].GetVertical() + CurrentVertical) < 0)
-					continue;
-				if ((NotesByMeasure[k][m].MeasureNotes[q].GetVertical() + CurrentVertical) > ScreenHeight)
-					continue;
+					goto next_key; /* If this is the note that is the topmost, visible note, we move on to the next lane. */
 
 				WindowFrame.SetUniform("tranM", &(NotesByMeasure[k][m].MeasureNotes[q].GetMatrix())[0][0]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 			}
 		}
+		next_key: ;
 	}
 
 	WindowFrame.DisableAttribArray("position");

@@ -264,7 +264,7 @@ void GameWindow::AutoSetupWindow()
 	IsFullscreen = Configuration::GetConfigf("Fullscreen") != 0;
 
 #ifdef NDEBUG
-	if (!(wnd = glfwCreateWindow(size.x, size.y, DOTCUR_WINDOWTITLE DOTCUR_VERSIONTEXT, glfwGetPrimaryMonitor(), NULL)))
+	if (!(wnd = glfwCreateWindow(size.x, size.y, DOTCUR_WINDOWTITLE DOTCUR_VERSIONTEXT, IsFullscreen ? glfwGetPrimaryMonitor() : NULL, NULL)))
 		throw std::exception("couldn't open window!");
 #else
 	if (!(wnd = glfwCreateWindow(size.x, size.y, DOTCUR_WINDOWTITLE DOTCUR_VERSIONTEXT, NULL, NULL)))

@@ -48,6 +48,9 @@ void ActorBarline::Run(double TimeDelta, double Ratio)
 	
 	if (Parent->GetMeasure() % 2)
 	{
+		Red = 1;
+		Blue = Green = 0;
+
 		if (Ratio > RadioThreshold)
 		{
 			double diff = Ratio - RadioThreshold;
@@ -56,8 +59,6 @@ void ActorBarline::Run(double TimeDelta, double Ratio)
 			Red = 1 - ( diff/duration );
 			Blue = (200.f / 255.f) * (diff/duration);
 		}
-		else Red = 1;
-		Blue = Green = 0;
 	}else
 	{
 		Red = 0.0;
