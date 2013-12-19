@@ -14,10 +14,15 @@ ScreenGameplay7K::ScreenGameplay7K()
 {
 	Measure = 0;
 	Speed = 0; // Recalculate.
-	SpeedMultiplier = 1;
+	SpeedMultiplier = 0;
 	SongOldTime = -1;
 	Music = NULL;
 	deltaPos = 0;
+
+	waveEffectEnabled = false;
+	waveEffect = 0;
+
+	SpeedMultiplierUser = 1;
 
 	if (!GFont)
 	{	
@@ -138,10 +143,10 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 			Running = false;
 			break;
 		case KT_FractionInc:
-			SpeedMultiplier += 0.25;
+			SpeedMultiplierUser += 0.25;
 			break;
 		case KT_FractionDec:
-			SpeedMultiplier -= 0.25;
+			SpeedMultiplierUser -= 0.25;
 			break;
 		case KT_Left:
 			deltaPos -= 10;
@@ -184,6 +189,13 @@ bool ScreenGameplay7K::Run(double Delta)
 			Speed = VSpeeds.at(0).Value;
 			VSpeeds.erase(VSpeeds.begin());
 		}
+
+		if (waveEffectEnabled)
+		{
+			waveEffect = sin(SongTime) * 0.5 * SpeedMultiplierUser;
+		}
+
+		SpeedMultiplier = SpeedMultiplierUser + waveEffect;
 
 		CurrentVertical += Speed * SongDelta;
 		RecalculateMatrix();

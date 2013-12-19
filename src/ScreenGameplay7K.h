@@ -5,11 +5,13 @@ class ScreenGameplay7K : public IScreen
 {
 private:
 	int Measure;
-	float Speed, SpeedMultiplier;
+	float Speed, SpeedMultiplier, SpeedMultiplierUser;
 	float SongOldTime;
 	float deltaPos;
 	double CurrentVertical;
 	float GearLaneWidth, BasePos;
+	float waveEffect; 
+	bool waveEffectEnabled;
 	glm::mat4 PositionMatrix;
 	Song7K *MySong;
 	
