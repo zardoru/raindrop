@@ -20,6 +20,7 @@
 void ScreenGameplay7K::DrawMeasures()
 {
 	NoteImage->Bind();
+
 	// Assign our matrix.
 	WindowFrame.SetUniform("mvp", &PositionMatrix[0][0]);
 
@@ -29,6 +30,7 @@ void ScreenGameplay7K::DrawMeasures()
 	WindowFrame.SetUniform("AffectedByLightning", false);
 	WindowFrame.SetUniform("useTranslate", true);
 	WindowFrame.SetUniform("Centered", true);
+	WindowFrame.SetUniform("sMult", SpeedMultiplier);
 	GraphObject2D::BindTopLeftVBO();
 
 	glVertexAttribPointer( WindowFrame.EnableAttribArray("position"), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
@@ -38,26 +40,23 @@ void ScreenGameplay7K::DrawMeasures()
 	{
 		for (uint32 m = 0; m < NotesByMeasure[k].size(); m++)
 		{
-			if (NotesByMeasure[k][m].MeasureNotes.size())
-			{
-				/* Last note is not visible? */
-				if (NotesByMeasure[k][m].MeasureNotes[NotesByMeasure[k][m].MeasureNotes.size()-1].GetVertical() + CurrentVertical >= ScreenHeight)
-				{
-					continue; /* Continue drawing next measure. */
-				}
-			}
+			/* 
+				Tried using two different kinds of "don't draw after/before this point" different methods.
+				They had no visible difference whatsoever, and I'm not sure whether it'll make any difference
+				even for large counts of objects (>50000).
+			*/
 
 			for (uint32 q = 0; q < NotesByMeasure[k][m].MeasureNotes.size(); q++)
 			{
 				/* This is the last note in this measure. */
-				if ((NotesByMeasure[k][m].MeasureNotes[q].GetVertical() + CurrentVertical) < 0)
-					goto next_key; /* If this is the note that is the topmost, visible note, we move on to the next lane. */
+				float Vertical = (NotesByMeasure[k][m].MeasureNotes[q].GetVertical() + CurrentVertical) * SpeedMultiplier;
+				if (Vertical < 0 || Vertical > ScreenHeight)
+					continue; /* If this is not visible, we move on to the next one. */
 
 				WindowFrame.SetUniform("tranM", &(NotesByMeasure[k][m].MeasureNotes[q].GetMatrix())[0][0]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 			}
 		}
-		next_key: ;
 	}
 
 	WindowFrame.DisableAttribArray("position");

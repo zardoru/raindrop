@@ -12,7 +12,7 @@ ScreenGameplay7K::ScreenGameplay7K()
 {
 	Measure = 0;
 	Speed = 0; // Recalculate.
-	SpeedMultiplier = 6;
+	SpeedMultiplier = 1;
 	SongOldTime = -1;
 	Music = NULL;
 }
@@ -27,6 +27,13 @@ void ScreenGameplay7K::Init(Song7K* S, int DifficultyIndex)
 {
 	MySong = S;
 	CurrentDiff = S->Difficulties[DifficultyIndex];
+}
+
+void ScreenGameplay7K::RecalculateMatrix()
+{
+	PositionMatrix = glm::scale(glm::translate(glm::mat4(), 
+			glm::vec3(GearLaneWidth/2 + GearStartX, CurrentVertical, 0)), 
+			glm::vec3(GearLaneWidth, 10, 0));
 }
 
 void ScreenGameplay7K::LoadThreadInitialization()
@@ -69,21 +76,22 @@ void ScreenGameplay7K::LoadThreadInitialization()
 			NotesByMeasure[k].push_back(*i);
 		}
 
-		/* Apply speed multiplier. fixme: this is overly obtuse. there MUST be a better way :v*/
-		for (uint32 i = 0; i < NotesByMeasure[k].size(); i++)
+		/* Apply speed multiplier. fixme: this is overly obtuse. there MUST be a better way :v */
+		/*for (uint32 i = 0; i < NotesByMeasure[k].size(); i++)
 		{
 			for (uint32 q = 0; q < NotesByMeasure[k][i].MeasureNotes.size(); q++)
 			{
-				NotesByMeasure[k][i].MeasureNotes[q].AssignPremultiplyMatrix(&PositionMatrix);
 				NotesByMeasure[k][i].MeasureNotes[q].AssignSpeedMultiplier(SpeedMultiplier);
 			}
-		}
+		}*/
 	}
 
 
 	/* Initial object distance */
 	float VertDistance = ((CurrentDiff->Offset / spb(CurrentDiff->Timing[0].Value)) / MySong->MeasureLength) * MeasureBaseSpacing;
-	CurrentVertical = float(ScreenHeight) - GearHeight - (VertDistance * SpeedMultiplier);
+	CurrentVertical = (float(ScreenHeight) - GearHeight - (VertDistance));
+
+	RecalculateMatrix();
 }
 
 void ScreenGameplay7K::MainThreadInitialization()
@@ -112,9 +120,29 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 	 Other than that most input can be safely ignored.
 	*/
 
-	if (BindingsManager::TranslateKey(key) == KT_Escape && code == KE_Press)
-		Running = false;
-
+	if (code == KE_Press)
+	{
+		switch (BindingsManager::TranslateKey(key))
+		{
+		case KT_Escape:
+			Running = false;
+			break;
+		case KT_FractionInc:
+			SpeedMultiplier += 0.25;
+			break;
+		case KT_FractionDec:
+			SpeedMultiplier -= 0.25;
+			break;
+		case KT_Left:
+			CurrentVertical -= 10;
+			break;
+		case KT_Right:
+			CurrentVertical += 10;
+			break;
+		default:
+			break;
+		}
+	}
 }
 
 
@@ -147,10 +175,8 @@ bool ScreenGameplay7K::Run(double Delta)
 			VSpeeds.erase(VSpeeds.begin());
 		}
 
-		CurrentVertical += Speed * SongDelta * SpeedMultiplier;
-		PositionMatrix = glm::scale(glm::translate(glm::mat4(), 
-			glm::vec3(GearLaneWidth/2 + GearStartX, CurrentVertical, 0)), 
-			glm::vec3(GearLaneWidth, 10, 0));
+		CurrentVertical += Speed * SongDelta;
+		RecalculateMatrix();
 
 
 		/* Update music. */

@@ -27,6 +27,7 @@ private:
 		Optimizations will come in later. 
 		See Renderer7K.cpp.	
 	*/
+	void RecalculateMatrix();
 	void DrawMeasures();
 
 public:
