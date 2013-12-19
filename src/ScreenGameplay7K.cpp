@@ -220,8 +220,8 @@ bool ScreenGameplay7K::Run(double Delta)
 	ss << "\nsm: "    << SpeedMultiplier;
 	ss << "\ndpos: " << deltaPos;
 	ss << "\nrat: " << (CurrentVertical + deltaPos) / CurrentVertical;
-#endif
 
 	GFont->DisplayText(ss.str().c_str(), glm::vec2(0,0));
+#endif
 	return Running;
 }
