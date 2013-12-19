@@ -6,7 +6,9 @@
 
 #include "Song.h"
 #include "ScreenGameplay7K.h"
+#include "BitmapFont.h"
 
+BitmapFont * GFont = NULL;
 
 ScreenGameplay7K::ScreenGameplay7K()
 {
@@ -15,6 +17,13 @@ ScreenGameplay7K::ScreenGameplay7K()
 	SpeedMultiplier = 1;
 	SongOldTime = -1;
 	Music = NULL;
+	deltaPos = 0;
+
+	if (!GFont)
+	{	
+		GFont = new BitmapFont();
+		GFont->LoadSkinFontImage("font.tga", glm::vec2(18, 32), glm::vec2(34,34), glm::vec2(10,16), 32);
+	}
 }
 
 void ScreenGameplay7K::Cleanup()
@@ -32,7 +41,7 @@ void ScreenGameplay7K::Init(Song7K* S, int DifficultyIndex)
 void ScreenGameplay7K::RecalculateMatrix()
 {
 	PositionMatrix = glm::scale(glm::translate(glm::mat4(), 
-			glm::vec3(GearLaneWidth/2 + GearStartX, CurrentVertical, 0)), 
+			glm::vec3(GearLaneWidth/2 + GearStartX, BasePos + CurrentVertical * SpeedMultiplier + deltaPos, 0)), 
 			glm::vec3(GearLaneWidth, 10, 0));
 }
 
@@ -89,7 +98,8 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	/* Initial object distance */
 	float VertDistance = ((CurrentDiff->Offset / spb(CurrentDiff->Timing[0].Value)) / MySong->MeasureLength) * MeasureBaseSpacing;
-	CurrentVertical = (float(ScreenHeight) - GearHeight - (VertDistance));
+	BasePos = float(ScreenHeight) - GearHeight;
+	CurrentVertical = -(VertDistance);
 
 	RecalculateMatrix();
 }
@@ -134,10 +144,10 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 			SpeedMultiplier -= 0.25;
 			break;
 		case KT_Left:
-			CurrentVertical -= 10;
+			deltaPos -= 10;
 			break;
 		case KT_Right:
-			CurrentVertical += 10;
+			deltaPos += 10;
 			break;
 		default:
 			break;
@@ -191,5 +201,15 @@ bool ScreenGameplay7K::Run(double Delta)
 	for (int32 i = 0; i < CurrentDiff->Channels; i++)
 		Keys[i].Render();
 
+#ifndef NDEBUG
+	std::stringstream ss;
+	ss << "cver: " << CurrentVertical;
+	ss << "\ncverm: " << CurrentVertical * SpeedMultiplier;
+	ss << "\nsm: "    << SpeedMultiplier;
+	ss << "\ndpos: " << deltaPos;
+	ss << "\nrat: " << (CurrentVertical + deltaPos) / CurrentVertical;
+#endif
+
+	GFont->DisplayText(ss.str().c_str(), glm::vec2(0,0));
 	return Running;
 }

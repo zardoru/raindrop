@@ -19,6 +19,7 @@
 
 void ScreenGameplay7K::DrawMeasures()
 {
+	float rPos = CurrentVertical * SpeedMultiplier + BasePos;
 	NoteImage->Bind();
 
 	// Assign our matrix.
@@ -49,7 +50,7 @@ void ScreenGameplay7K::DrawMeasures()
 			for (uint32 q = 0; q < NotesByMeasure[k][m].MeasureNotes.size(); q++)
 			{
 				/* This is the last note in this measure. */
-				float Vertical = (NotesByMeasure[k][m].MeasureNotes[q].GetVertical() + CurrentVertical) * SpeedMultiplier;
+				float Vertical = (NotesByMeasure[k][m].MeasureNotes[q].GetVertical()* SpeedMultiplier + rPos) ;
 				if (Vertical < 0 || Vertical > ScreenHeight)
 					continue; /* If this is not visible, we move on to the next one. */
 

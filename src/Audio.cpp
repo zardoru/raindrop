@@ -515,6 +515,7 @@ public:
 
 	void CopyOut(char* out, int length)
 	{
+		if (Streams.size())
 		for(std::vector<VorbisStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
 		{
 			if ((*i)->runThread && (*i)->streamTime > 0)

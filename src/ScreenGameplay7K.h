@@ -7,8 +7,9 @@ private:
 	int Measure;
 	float Speed, SpeedMultiplier;
 	float SongOldTime;
+	float deltaPos;
 	double CurrentVertical;
-	float GearLaneWidth;
+	float GearLaneWidth, BasePos;
 	glm::mat4 PositionMatrix;
 	Song7K *MySong;
 	
