@@ -197,13 +197,13 @@ void GameWindow::SetMatrix(uint32 MatrixMode, glm::mat4 matrix)
 
 void GameWindow::SetUniform(String Uniform, glm::vec3 Pos)
 {
-	GLint UniformID = glGetUniformLocation(GetShaderProgram(), Uniform.c_str());
+	GLint UniformID = glGetUniformLocation(defaultShaderProgram, Uniform.c_str());
 	glUniform3f(UniformID, Pos.x, Pos.y, Pos.z);
 }
 
 void GameWindow::SetUniform(String Uniform, float F)
 {
-	GLint UniformID = glGetUniformLocation(GetShaderProgram(), Uniform.c_str());
+	GLint UniformID = glGetUniformLocation(defaultShaderProgram, Uniform.c_str());
 	glUniform1f(UniformID, F);
 }
 
@@ -444,13 +444,13 @@ void GameWindow::SetUniform(String Uniform, int i)
 
 void GameWindow::SetUniform(String Uniform, float A, float B, float C, float D)
 {
-	GLint UniformID = glGetUniformLocation(GetShaderProgram(), Uniform.c_str());
+	GLint UniformID = glGetUniformLocation(defaultShaderProgram, Uniform.c_str());
 	glUniform4f(UniformID, A, B, C, D);
 }
 
 void GameWindow::SetUniform(String Uniform, float *Matrix4x4)
 {
-	GLint UniformID = glGetUniformLocation(GetShaderProgram(), Uniform.c_str());
+	GLint UniformID = glGetUniformLocation(defaultShaderProgram, Uniform.c_str());
 	glUniformMatrix4fv(UniformID, 1, GL_FALSE, Matrix4x4);
 }
 
