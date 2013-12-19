@@ -20,7 +20,11 @@
 void ScreenGameplay7K::DrawMeasures()
 {
 	float rPos = CurrentVertical * SpeedMultiplier + BasePos;
-	NoteImage->Bind();
+
+	if(NoteImage)
+		NoteImage->Bind();
+	else
+		return; // No use drawing without a texture.
 
 	// Assign our matrix.
 	WindowFrame.SetUniform("mvp", &PositionMatrix[0][0]);

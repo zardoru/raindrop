@@ -43,8 +43,23 @@ void ScreenGameplay7K::Init(Song7K* S, int DifficultyIndex)
 	CurrentDiff = S->Difficulties[DifficultyIndex];
 }
 
+void ScreenGameplay7K::RecalculateEffects()
+{
+	float SongTime = 0;
+	
+	if (Music)
+		SongTime = Music->GetPlaybackTime();
+
+	if (waveEffectEnabled)
+	{
+		waveEffect = sin(SongTime) * 0.5 * SpeedMultiplierUser;
+	}
+}
+
 void ScreenGameplay7K::RecalculateMatrix()
 {
+	SpeedMultiplier = SpeedMultiplierUser + waveEffect;
+
 	PositionMatrix = glm::scale(glm::translate(glm::mat4(), 
 			glm::vec3(GearLaneWidth/2 + GearStartX, BasePos + CurrentVertical * SpeedMultiplier + deltaPos, 0)), 
 			glm::vec3(GearLaneWidth, 10, 0));
@@ -89,15 +104,6 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		{
 			NotesByMeasure[k].push_back(*i);
 		}
-
-		/* Apply speed multiplier. fixme: this is overly obtuse. there MUST be a better way :v */
-		/*for (uint32 i = 0; i < NotesByMeasure[k].size(); i++)
-		{
-			for (uint32 q = 0; q < NotesByMeasure[k][i].MeasureNotes.size(); q++)
-			{
-				NotesByMeasure[k][i].MeasureNotes[q].AssignSpeedMultiplier(SpeedMultiplier);
-			}
-		}*/
 	}
 
 
@@ -163,7 +169,7 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 
 bool ScreenGameplay7K::Run(double Delta)
 {
-	float SongDelta, SongTime;
+	float SongDelta, SongTime = 0;
 
 	ScreenTime += Delta;
 
@@ -190,14 +196,9 @@ bool ScreenGameplay7K::Run(double Delta)
 			VSpeeds.erase(VSpeeds.begin());
 		}
 
-		if (waveEffectEnabled)
-		{
-			waveEffect = sin(SongTime) * 0.5 * SpeedMultiplierUser;
-		}
-
-		SpeedMultiplier = SpeedMultiplierUser + waveEffect;
-
+		
 		CurrentVertical += Speed * SongDelta;
+		RecalculateEffects();
 		RecalculateMatrix();
 
 
@@ -220,7 +221,7 @@ bool ScreenGameplay7K::Run(double Delta)
 	ss << "\nsm: "    << SpeedMultiplier;
 	ss << "\ndpos: " << deltaPos;
 	ss << "\nrat: " << (CurrentVertical + deltaPos) / CurrentVertical;
-
+	ss << "\nst: " << SongTime;
 	GFont->DisplayText(ss.str().c_str(), glm::vec2(0,0));
 #endif
 	return Running;

@@ -31,6 +31,7 @@ private:
 		See Renderer7K.cpp.	
 	*/
 	void RecalculateMatrix();
+	void RecalculateEffects();
 	void DrawMeasures();
 
 public:
