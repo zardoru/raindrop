@@ -49,8 +49,9 @@ void Song7K::Process()
 					    issue is not having the speed change data there.
 					*/
 					TrackNote &CurrentNote = (*Measure).MeasureNotes[Note];
-					float MeasureVerticalD = MeasureBaseSpacing * MIdx;
-					float FractionVerticalD = 1.0f / float(Measure->Fraction) * float(CurrentNote.GetFraction()) * MeasureBaseSpacing;
+					int NoteMeasure = CurrentNote.GetMeasure();
+					float MeasureVerticalD = MeasureBaseSpacing * NoteMeasure;
+					float FractionVerticalD = 1.0f / float((*Diff)->Measures[KeyIndex][NoteMeasure].Fraction) * float(CurrentNote.GetFraction()) * MeasureBaseSpacing;
 					glm::vec2 VerticalPosition( 0, MeasureVerticalD + FractionVerticalD );
 
 					// if upscroll change minus for plus as well as matrix at screengameplay7k
