@@ -146,9 +146,12 @@ void ScreenGameplay7K::MainThreadInitialization()
 		sprintf(nstr, "Channels%d", CurrentDiff->Channels);
 		
 		/* If it says that the nth lane uses the kth key then we'll bind that! */
-		GearBindings[i] = (int)Configuration::GetSkinConfigf(cstr, nstr);
-		sprintf(str, "key%d.png", GearBindings[i]);
+		sprintf(str, "key%d.png", (int)Configuration::GetSkinConfigf(cstr, nstr));
 		GearLaneImage[i] = ImageLoader::LoadSkin(str);
+
+		sprintf(cstr, "Key%dBinding", i+1);
+
+		GearBindings[i] = Configuration::GetConfigf(cstr, nstr);
 
 		str[0] = 0;
 		sprintf(str, "key%dd.png", (int)Configuration::GetSkinConfigf(cstr, nstr));
@@ -171,7 +174,13 @@ void ScreenGameplay7K::TranslateKey(KeyType K, bool KeyDown)
 {
 	int Index = K - KT_Key1; /* Bound key */
 	int GearIndex = GearBindings[K - KT_Key1] - 1; /* Binding this key to a lane */
-	// if index < max_lanes
+
+	if (Index > 13 || Index < 0)
+		return;
+
+	if (GearIndex > 13 || GearIndex < 0)
+		return;
+
 	if (KeyDown)
 		Keys[GearIndex].SetImage( GearLaneImageDown[Index] );
 	else
