@@ -19,6 +19,9 @@ private:
 	std::vector<SongInternal::Measure<TrackNote>>	 NotesByMeasure[16];
 	std::vector<SongInternal::TDifficulty<TrackNote>::TimingSegment> VSpeeds;
 	Image*  NoteImage;
+	Image*  GearLaneImage[16];
+	Image*  GearLaneImageDown[16];
+	int		GearBindings[16];
 	uint32	Channels;
 
 	PaStreamWrapper *Music;
@@ -34,6 +37,7 @@ private:
 	void RecalculateEffects();
 	void DrawMeasures();
 
+	void TranslateKey(KeyType K, bool KeyDown);
 public:
 	ScreenGameplay7K();
 	void Init(Song7K *S, int DifficultyIndex);

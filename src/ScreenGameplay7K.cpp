@@ -1,9 +1,11 @@
+#include <stdio.h>
+
 #include "Global.h"
 #include "Screen.h"
+#include "Configuration.h"
 #include "Audio.h"
 #include "FileManager.h"
 #include "ImageLoader.h"
-
 #include "Song.h"
 #include "ScreenGameplay7K.h"
 #include "BitmapFont.h"
@@ -67,10 +69,25 @@ void ScreenGameplay7K::RecalculateMatrix()
 
 void ScreenGameplay7K::LoadThreadInitialization()
 {
+	/* Can I just use a vector<char**> and use vector.data()? */
 	char* SkinFiles [] =
 	{
 		"key1.png",
 		"key2.png",
+		"key3.png",
+		"key4.png",
+		"key5.png",
+		"key6.png",
+		"key7.png",
+		"key8.png",
+		"key1d.png",
+		"key2d.png",
+		"key3d.png",
+		"key4d.png",
+		"key5d.png",
+		"key6d.png",
+		"key7d.png",
+		"key8d.png",
 		"note.png"
 	};
 
@@ -119,8 +136,26 @@ void ScreenGameplay7K::MainThreadInitialization()
 {
 	for (int i = 0; i < CurrentDiff->Channels; i++)
 	{
-		Keys[i].SetImage ( i % 2 ? ImageLoader::LoadSkin("key2.png") : ImageLoader::LoadSkin("key1.png") );
-		Keys[i].SetSize( GearWidth / CurrentDiff->Channels, GearHeight );
+		std::stringstream ss;
+		char str[256];
+		char cstr[256];
+		char nstr[256];
+
+		/* eventually move this to its own space (this is unlikely to overflow by the way) */
+		sprintf(cstr, "Key%d", i+1);
+		sprintf(nstr, "Channels%d", CurrentDiff->Channels);
+		
+		/* If it says that the nth lane uses the kth key then we'll bind that! */
+		GearBindings[i] = (int)Configuration::GetSkinConfigf(cstr, nstr);
+		sprintf(str, "key%d.png", GearBindings[i]);
+		GearLaneImage[i] = ImageLoader::LoadSkin(str);
+
+		str[0] = 0;
+		sprintf(str, "key%dd.png", (int)Configuration::GetSkinConfigf(cstr, nstr));
+		GearLaneImageDown[i] = ImageLoader::LoadSkin(str);
+
+		Keys[i].SetImage ( GearLaneImage[i] );
+		Keys[i].SetSize( GearLaneWidth, GearHeight );
 		Keys[i].Centered = true;
 		Keys[i].SetPosition( GearStartX + GearLaneWidth * i + GearLaneWidth / 2, ScreenHeight - GearHeight/2 );
 	}
@@ -130,6 +165,17 @@ void ScreenGameplay7K::MainThreadInitialization()
 	Background.SetImage(ImageLoader::Load(MySong->BackgroundDir));
 	Background.AffectedByLightning = true;
 	Running = true;
+}
+
+void ScreenGameplay7K::TranslateKey(KeyType K, bool KeyDown)
+{
+	int Index = K - KT_Key1; /* Bound key */
+	int GearIndex = GearBindings[K - KT_Key1] - 1; /* Binding this key to a lane */
+	// if index < max_lanes
+	if (KeyDown)
+		Keys[GearIndex].SetImage( GearLaneImageDown[Index] );
+	else
+		Keys[GearIndex].SetImage( GearLaneImage[Index] );
 }
 
 void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
@@ -161,6 +207,17 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 			deltaPos += 10;
 			break;
 		default:
+			if (BindingsManager::TranslateKey(key) >= KT_Key1)
+				TranslateKey(BindingsManager::TranslateKey(key), true);
+			break;
+		}
+	}else
+	{
+		switch (BindingsManager::TranslateKey(key))
+		{
+		default:
+			if (BindingsManager::TranslateKey(key) >= KT_Key1)
+				TranslateKey(BindingsManager::TranslateKey(key), false);
 			break;
 		}
 	}
