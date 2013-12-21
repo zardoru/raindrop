@@ -190,9 +190,9 @@ void ScreenGameplay7K::TranslateKey(KeyType K, bool KeyDown)
 		return;
 
 	if (KeyDown)
-		Keys[GearIndex].SetImage( GearLaneImageDown[GearIndex] );
+		Keys[GearIndex].SetImage( GearLaneImageDown[GearIndex], false );
 	else
-		Keys[GearIndex].SetImage( GearLaneImage[GearIndex] );
+		Keys[GearIndex].SetImage( GearLaneImage[GearIndex], false );
 }
 
 void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
@@ -226,20 +226,15 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 		case KT_GoToEditMode:
 			waveEffectEnabled = !waveEffectEnabled;
 			break;
-		default:
-			if (BindingsManager::TranslateKey(key) >= KT_Key1)
-				TranslateKey(BindingsManager::TranslateKey(key), true);
-			break;
 		}
+
+		if (BindingsManager::TranslateKey7K(key) != KT_Unknown)
+			TranslateKey(BindingsManager::TranslateKey7K(key), true);
+
 	}else
 	{
-		switch (BindingsManager::TranslateKey(key))
-		{
-		default:
-			if (BindingsManager::TranslateKey(key) >= KT_Key1)
-				TranslateKey(BindingsManager::TranslateKey(key), false);
-			break;
-		}
+		if (BindingsManager::TranslateKey7K(key) != KT_Unknown)
+			TranslateKey(BindingsManager::TranslateKey7K(key), false);
 	}
 }
 

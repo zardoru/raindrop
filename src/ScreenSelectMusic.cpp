@@ -192,7 +192,7 @@ bool ScreenSelectMusic::Run(double Delta)
 		std::stringstream ss;
 		ss << "song author: " << SongList7K.at(Cursor)->SongAuthor<< "\n"
 			<< "difficulties: " << SongList7K.at(Cursor)->Difficulties.size() << "\n";
-		if (SongList.at(Cursor)->Difficulties.size())
+		if (SongList7K.at(Cursor)->Difficulties.size())
 		{
 			int Min = SongList7K.at(Cursor)->Difficulties[0]->Duration / 60;
 			int Sec = (int)SongList7K.at(Cursor)->Difficulties[0]->Duration % 60;

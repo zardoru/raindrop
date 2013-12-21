@@ -55,7 +55,7 @@ public:
 	bool ColorInvert;
 	bool AffectedByLightning;
 	
-	void SetImage(Image* image);
+	void SetImage(Image* image, bool ChangeSize = true);
 	Image* GetImage();
 
 	virtual void InitVBO();

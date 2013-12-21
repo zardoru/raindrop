@@ -51,15 +51,18 @@ void GraphObject2D::Initialize(bool ShouldInitTexture)
 }
 
 
-void GraphObject2D::SetImage(Image* image)
+void GraphObject2D::SetImage(Image* image, bool ChangeSize)
 {
 	if (image)
 	{
 		mImage = image;
-		SetCropToWholeImage();
-		mWidth = image->w;
-		mHeight = image->h;
-		DirtyMatrix = true;
+		if (ChangeSize)
+		{
+			SetCropToWholeImage();
+			mWidth = image->w;
+			mHeight = image->h;
+			DirtyMatrix = true;
+		}
 	}
 }
 

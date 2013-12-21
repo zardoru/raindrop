@@ -23,6 +23,8 @@ public:
 	int GetFraction();
 	float GetVertical();
 	glm::mat4& GetMatrix();
+	
+	float GetTimeFinal();
 
 	~TrackNote();
 };

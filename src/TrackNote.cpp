@@ -59,3 +59,8 @@ float TrackNote::GetVertical()
 {
 	return b_pos.y;
 }
+
+float TrackNote::GetTimeFinal()
+{
+	return std::max(StartTime, EndTime);
+}

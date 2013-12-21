@@ -72,6 +72,7 @@ const char* fragShader = "#version 120\n"
 	"}\n";
 
 std::map<int32, KeyType> BindingsManager::ScanFunction;
+std::map<int32, KeyType> BindingsManager::ScanFunction7K;
 
 void BindingsManager::Initialize()
 {
@@ -104,7 +105,7 @@ void BindingsManager::Initialize()
 		char Binding = Configuration::GetConfigs(KString, "Keys7K").c_str()[0];
 		
 		if (Binding)
-			ScanFunction[Binding] = (KeyType)(KT_Key1 + i);
+			ScanFunction7K[Binding] = (KeyType)(KT_Key1 + i);
 	}
 }
 
@@ -117,6 +118,18 @@ KeyType BindingsManager::TranslateKey(int32 Scan)
 	
 	return KT_Unknown;
 }
+
+KeyType BindingsManager::TranslateKey7K(int32 Scan)
+{
+	if (ScanFunction7K.find(Scan) != ScanFunction7K.end())
+	{
+		return ScanFunction7K[Scan];
+	}
+	
+	return KT_Unknown;
+}
+
+
 
 KeyEventType ToKeyEventType(int32 code)
 {
