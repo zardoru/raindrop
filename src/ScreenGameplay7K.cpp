@@ -163,7 +163,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 		sprintf(cstr, "Key%dBinding", i+1);
 
 		int Binding = Configuration::GetSkinConfigf(cstr, nstr);
-		GearBindings[i] = Binding;
+		GearBindings[Binding - 1] = i;
 
 		Keys[i].SetImage ( GearLaneImage[i] );
 		Keys[i].SetSize( GearLaneWidth, GearHeight );
@@ -181,7 +181,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 void ScreenGameplay7K::TranslateKey(KeyType K, bool KeyDown)
 {
 	int Index = K - KT_Key1; /* Bound key */
-	int GearIndex = GearBindings[K - KT_Key1] - 1; /* Binding this key to a lane */
+	int GearIndex = GearBindings[Index]; /* Binding this key to a lane */
 
 	if (Index > 13 || Index < 0)
 		return;
@@ -190,9 +190,9 @@ void ScreenGameplay7K::TranslateKey(KeyType K, bool KeyDown)
 		return;
 
 	if (KeyDown)
-		Keys[GearIndex].SetImage( GearLaneImageDown[Index] );
+		Keys[GearIndex].SetImage( GearLaneImageDown[GearIndex] );
 	else
-		Keys[GearIndex].SetImage( GearLaneImage[Index] );
+		Keys[GearIndex].SetImage( GearLaneImage[GearIndex] );
 }
 
 void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
