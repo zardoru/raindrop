@@ -95,6 +95,17 @@ void BindingsManager::Initialize()
 	ScanFunction[GLFW_KEY_F6] = KT_GridInc;
 	ScanFunction[GLFW_KEY_F7] = KT_SwitchOffsetPrompt;
 	ScanFunction[GLFW_KEY_F8] = KT_SwitchBPMPrompt;
+
+	for (int i = 0; i < 16; i++)
+	{
+		char KString[256];
+		sprintf(KString, "Key%d", i+1);
+
+		char Binding = Configuration::GetConfigs(KString, "Keys7K").c_str()[0];
+		
+		if (Binding)
+			ScanFunction[Binding] = (KeyType)(KT_Key1 + i);
+	}
 }
 
 KeyType BindingsManager::TranslateKey(int32 Scan)

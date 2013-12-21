@@ -12,7 +12,8 @@
 
 BitmapFont * GFont = NULL;
 
-#define WAITING_TIME 3
+/* Time before actually starting everything. */
+#define WAITING_TIME 5
 
 ScreenGameplay7K::ScreenGameplay7K()
 {
@@ -154,13 +155,15 @@ void ScreenGameplay7K::MainThreadInitialization()
 		sprintf(str, "key%d.png", (int)Configuration::GetSkinConfigf(cstr, nstr));
 		GearLaneImage[i] = ImageLoader::LoadSkin(str);
 
-		sprintf(cstr, "Key%dBinding", i+1);
-
-		GearBindings[i] = Configuration::GetConfigf(cstr, nstr);
-
 		str[0] = 0;
 		sprintf(str, "key%dd.png", (int)Configuration::GetSkinConfigf(cstr, nstr));
 		GearLaneImageDown[i] = ImageLoader::LoadSkin(str);
+
+		/* Assign per-lane bindings. */
+		sprintf(cstr, "Key%dBinding", i+1);
+
+		int Binding = Configuration::GetSkinConfigf(cstr, nstr);
+		GearBindings[i] = Binding;
 
 		Keys[i].SetImage ( GearLaneImage[i] );
 		Keys[i].SetSize( GearLaneWidth, GearHeight );
@@ -219,6 +222,9 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 			break;
 		case KT_Right:
 			deltaPos += 10;
+			break;
+		case KT_GoToEditMode:
+			waveEffectEnabled = !waveEffectEnabled;
 			break;
 		default:
 			if (BindingsManager::TranslateKey(key) >= KT_Key1)
