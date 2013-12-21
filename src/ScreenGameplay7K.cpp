@@ -12,6 +12,8 @@
 
 BitmapFont * GFont = NULL;
 
+#define WAITING_TIME 3
+
 ScreenGameplay7K::ScreenGameplay7K()
 {
 	Measure = 0;
@@ -25,6 +27,8 @@ ScreenGameplay7K::ScreenGameplay7K()
 	waveEffect = 0;
 
 	SpeedMultiplierUser = 1;
+
+	CurrentVertical = 0;
 
 	if (!GFont)
 	{	
@@ -127,7 +131,8 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	/* Initial object distance */
 	float VertDistance = ((CurrentDiff->Offset / spb(CurrentDiff->Timing[0].Value)) / MySong->MeasureLength) * MeasureBaseSpacing;
 	BasePos = float(ScreenHeight) - GearHeight;
-	CurrentVertical = -(VertDistance);
+	// CurrentVertical = -(VertDistance);
+	CurrentVertical -= VSpeeds.at(0).Value * (WAITING_TIME + CurrentDiff->Offset);
 
 	RecalculateMatrix();
 }
@@ -239,7 +244,7 @@ bool ScreenGameplay7K::Run(double Delta)
 
 	ScreenTime += Delta;
 
-	if (ScreenTime > 3)
+	if (ScreenTime > WAITING_TIME)
 	{
 
 		if (!Music)
@@ -271,6 +276,11 @@ bool ScreenGameplay7K::Run(double Delta)
 		/* Update music. */
 		int32 r;
 		Music->GetStream()->UpdateBuffer(r);
+	}else
+	{
+		Speed = VSpeeds.at(0).Value;
+		CurrentVertical += Speed * Delta; 
+		RecalculateMatrix();
 	}
 
 	Background.Render();
