@@ -21,11 +21,16 @@ const float  DotcurGreatLeniency	 = 0.1f;
 /* 7k Consts */
 // Ratio of how much of the screen is for the Gear, assuming 4:3 ratio
 const float GearHeight  = 0.2f * ScreenHeight;
-const float GearWidth   = 0.4f * ScreenWidth;
+const float GearWidth   = 0.35f * ScreenWidth;
 const float GearStartX  = (ScreenWidth - GearWidth) / 2;
 
 // Vertical Space for a Measure.
 const float MeasureBaseSpacing = 0.4f * ScreenHeight;
+
+const float LeniencyHitTime7K = 0.050f; // 50 ms
+const float GreatLeniency7K = 0.040f;
+const float PerfectLeniency7K = 0.025f;
+const float ExcellentLeniency7K = 0.016f;
 
 enum Judgement
 {

@@ -55,7 +55,7 @@ glm::mat4& TrackNote::GetMatrix()
 	return final;
 }
 
-float TrackNote::GetVertical()
+float TrackNote::GetVertical() const
 {
 	return b_pos.y;
 }

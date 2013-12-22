@@ -177,30 +177,45 @@ bool ScreenSelectMusic::Run(double Delta)
 	/* TODO: Reduce these to functions or something */
 	if (SongList.size() && SelectedMode == MODE_DOTCUR)
 	{
-		std::stringstream ss;
-		ss << "song author: " << SongList.at(Cursor)->SongAuthor<< "\n"
-			<< "difficulties: " << SongList.at(Cursor)->Difficulties.size() << "\n";
+		char infoStream[1024];
+
 		if (SongList.at(Cursor)->Difficulties.size())
 		{
 			int Min = SongList.at(Cursor)->Difficulties[0]->Duration / 60;
 			int Sec = (int)SongList.at(Cursor)->Difficulties[0]->Duration % 60;
-			ss	<< "duration: " << Min << ":" << std::setw(2) << std::setfill('0') << Sec;
-		}
 
-		Font->DisplayText(ss.str().c_str(), glm::vec2(ScreenWidth/6, 120));
+			sprintf(infoStream, "song author: %s\n"
+						  	    "difficulties: %d\n"
+					            "duration: %d:%02d\n",
+								SongList.at(Cursor)->SongAuthor.c_str(),
+								SongList.at(Cursor)->Difficulties.size(),
+								Min, Sec
+								);
+
+			Font->DisplayText(infoStream, glm::vec2(ScreenWidth/6, 120));
+		}else Font->DisplayText("unavailable (edit only)", glm::vec2(ScreenWidth/6, 120));
+
+		
 	}else if (SongList7K.size() && SelectedMode == MODE_7K)
 	{
-		std::stringstream ss;
-		ss << "song author: " << SongList7K.at(Cursor)->SongAuthor<< "\n"
-			<< "difficulties: " << SongList7K.at(Cursor)->Difficulties.size() << "\n";
+		
+		char infoStream[1024];
+
 		if (SongList7K.at(Cursor)->Difficulties.size())
 		{
 			int Min = SongList7K.at(Cursor)->Difficulties[0]->Duration / 60;
 			int Sec = (int)SongList7K.at(Cursor)->Difficulties[0]->Duration % 60;
-			ss	<< "duration: " << Min << ":" << std::setw(2) << std::setfill('0') << Sec;
-		}
 
-		Font->DisplayText(ss.str().c_str(), glm::vec2(ScreenWidth/6, 120));
+			sprintf(infoStream, "song author: %s\n"
+						  	    "difficulties: %d\n"
+					            "duration: %d:%02d\n",
+								SongList7K.at(Cursor)->SongAuthor.c_str(),
+								SongList7K.at(Cursor)->Difficulties.size(),
+								Min, Sec
+								);
+
+			Font->DisplayText(infoStream, glm::vec2(ScreenWidth/6, 120));
+		}
 	}
 
 

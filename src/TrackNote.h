@@ -21,7 +21,7 @@ public:
 
 	int GetMeasure();
 	int GetFraction();
-	float GetVertical();
+	float GetVertical() const;
 	glm::mat4& GetMatrix();
 	
 	float GetTimeFinal();

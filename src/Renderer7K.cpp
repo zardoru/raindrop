@@ -38,7 +38,8 @@ void ScreenGameplay7K::DrawMeasures()
 	/* todo: instancing */
 	for (uint32 k = 0; k < Channels; k++)
 	{
-		for (uint32 m = 0; m < NotesByMeasure[k].size(); m++)
+		size_t size = NotesByMeasure[k].size();
+		for (uint32 m = 0; m < size; m++)
 		{
 			/* 
 				Tried using two different kinds of "don't draw after/before this point" different methods.
@@ -46,7 +47,8 @@ void ScreenGameplay7K::DrawMeasures()
 				even for large counts of objects (>50000).
 			*/
 
-			for (uint32 q = 0; q < NotesByMeasure[k][m].MeasureNotes.size(); q++)
+			size_t total_notes = NotesByMeasure[k][m].MeasureNotes.size();
+			for (uint32 q = 0; q < total_notes; q++)
 			{
 				/* This is the last note in this measure. */
 				float Vertical = (NotesByMeasure[k][m].MeasureNotes[q].GetVertical()* SpeedMultiplier + rPos) ;

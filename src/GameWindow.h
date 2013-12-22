@@ -51,17 +51,17 @@ public:
 	int32 GetDefaultVertexShader() const;
 	int32 GetShaderProgram() const;
 
-	void SetUniform(String Uniform, int i);
-	void SetUniform(String Uniform, float A, float B, float C, float D);
-	void SetUniform(String Uniform, float *Matrix4x4);
-	void SetUniform(String Uniform, glm::vec3 Vec);
-	void SetUniform(String Uniform, float F);
+	void SetUniform(String Uniform, int i) const;
+	void SetUniform(String Uniform, float A, float B, float C, float D)  const;
+	void SetUniform(String Uniform, float *Matrix4x4)  const;
+	void SetUniform(String Uniform, glm::vec3 Vec)  const;
+	void SetUniform(String Uniform, float F)  const;
 
 	/* using OpenGL -1 to 1 range*/
-	void SetLightPosition(glm::vec3 Position);
-	void SetLightMultiplier(float Multiplier);
-	int EnableAttribArray(String Attrib);
-	int DisableAttribArray(String Attrib);
+	void SetLightPosition(glm::vec3 Position)  const;
+	void SetLightMultiplier(float Multiplier)  const;
+	int EnableAttribArray(String Attrib)  const;
+	int DisableAttribArray(String Attrib)  const;
 
 	bool ShouldCloseWindow();
 	void SwapBuffers();

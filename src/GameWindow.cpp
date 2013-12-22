@@ -219,28 +219,6 @@ void GameWindow::SetMatrix(uint32 MatrixMode, glm::mat4 matrix)
 	glLoadMatrixf((GLfloat*)&matrix[0]);
 }
 
-void GameWindow::SetUniform(String Uniform, glm::vec3 Pos)
-{
-	GLint UniformID = glGetUniformLocation(defaultShaderProgram, Uniform.c_str());
-	glUniform3f(UniformID, Pos.x, Pos.y, Pos.z);
-}
-
-void GameWindow::SetUniform(String Uniform, float F)
-{
-	GLint UniformID = glGetUniformLocation(defaultShaderProgram, Uniform.c_str());
-	glUniform1f(UniformID, F);
-}
-
-void GameWindow::SetLightPosition(glm::vec3 Position)
-{
-	SetUniform("lPos", Position);
-}
-
-void GameWindow::SetLightMultiplier(float Multiplier)
-{
-	SetUniform("lMul", Multiplier);
-}
-
 void GameWindow::SetupWindow()
 {
 	GLenum err;
@@ -265,7 +243,7 @@ void GameWindow::SetupWindow()
 	// glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 	
-	projection = glm::ortho<float>(0.0, matrixSize.x, matrixSize.y, 0.0, -1.0, 1.0);
+	projection = glm::ortho<float>(0.0, matrixSize.x, matrixSize.y, 0.0);
 
 	SetupShaders();
 
@@ -460,36 +438,59 @@ void GameWindow::SetupShaders()
 	SetLightMultiplier(1);
 }
 
-void GameWindow::SetUniform(String Uniform, int i)
+void GameWindow::SetUniform(String Uniform, int i) const
 {
-	GLint UniformID = glGetUniformLocation(GetShaderProgram(), Uniform.c_str());
+	GLint UniformID = glGetUniformLocation(defaultShaderProgram, Uniform.c_str());
 	glUniform1i(UniformID, i);
 }
 
-void GameWindow::SetUniform(String Uniform, float A, float B, float C, float D)
+void GameWindow::SetUniform(String Uniform, float A, float B, float C, float D) const
 {
 	GLint UniformID = glGetUniformLocation(defaultShaderProgram, Uniform.c_str());
 	glUniform4f(UniformID, A, B, C, D);
 }
 
-void GameWindow::SetUniform(String Uniform, float *Matrix4x4)
+void GameWindow::SetUniform(String Uniform, float *Matrix4x4) const
 {
 	GLint UniformID = glGetUniformLocation(defaultShaderProgram, Uniform.c_str());
 	glUniformMatrix4fv(UniformID, 1, GL_FALSE, Matrix4x4);
 }
 
-int GameWindow::EnableAttribArray(String Attrib)
+int GameWindow::EnableAttribArray(String Attrib) const
 {
-	GLint AttribID = glGetAttribLocation(GetShaderProgram(), Attrib.c_str());
+	GLint AttribID = glGetAttribLocation(defaultShaderProgram, Attrib.c_str());
 	glEnableVertexAttribArray(AttribID);
 	return AttribID;
 }
 
-int GameWindow::DisableAttribArray(String Attrib)
+int GameWindow::DisableAttribArray(String Attrib) const
 {
-	GLint AttribID = glGetAttribLocation(GetShaderProgram(), Attrib.c_str());
+	GLint AttribID = glGetAttribLocation(defaultShaderProgram, Attrib.c_str());
 	glDisableVertexAttribArray(AttribID);
 	return AttribID;
+}
+
+
+void GameWindow::SetUniform(String Uniform, glm::vec3 Pos) const
+{
+	GLint UniformID = glGetUniformLocation(defaultShaderProgram, Uniform.c_str());
+	glUniform3f(UniformID, Pos.x, Pos.y, Pos.z);
+}
+
+void GameWindow::SetUniform(String Uniform, float F) const
+{
+	GLint UniformID = glGetUniformLocation(defaultShaderProgram, Uniform.c_str());
+	glUniform1f(UniformID, F);
+}
+
+void GameWindow::SetLightPosition(glm::vec3 Position) const
+{
+	SetUniform("lPos", Position);
+}
+
+void GameWindow::SetLightMultiplier(float Multiplier) const
+{
+	SetUniform("lMul", Multiplier);
 }
 
 void GameWindow::AddVBO(VBO *V)
