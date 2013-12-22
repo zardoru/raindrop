@@ -19,14 +19,15 @@ private:
 	std::vector<SongInternal::Measure<TrackNote>>	 NotesByMeasure[16];
 	std::vector<SongInternal::TDifficulty<TrackNote>::TimingSegment> VSpeeds;
 	Image*  NoteImage;
-	Image*  GearLaneImage[16];
-	Image*  GearLaneImageDown[16];
-	int		GearBindings[16];
+	Image*  GearLaneImage[MAX_CHANNELS];
+	Image*  GearLaneImageDown[MAX_CHANNELS];
+	Image*  NoteImages[MAX_CHANNELS];
+	int		GearBindings[MAX_CHANNELS];
 	uint32	Channels;
 
 	PaStreamWrapper *Music;
 
-	GraphObject2D Keys[16];
+	GraphObject2D Keys[MAX_CHANNELS];
 	GraphObject2D Background;
 
 	/* 

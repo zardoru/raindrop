@@ -117,9 +117,15 @@ void ScreenGameplay::MainThreadInitialization()
 
 	Background.AffectedByLightning = true;
 	Background.Alpha = 0.8f;
-	Background.SetSize(ScreenWidth, ScreenHeight);
-	Background.SetPosition(0, 0);
 	
+	if (Background.GetImage())
+	{
+		float SizeRatio = 768 / Background.GetHeight();
+		Background.SetScale(SizeRatio);
+		Background.Centered = true;
+		Background.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
+	}
+
 	MarkerB.Centered = true;
 	MarkerA.Centered = true;
 

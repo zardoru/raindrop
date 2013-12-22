@@ -4,6 +4,8 @@
 #include "GameObject.h"
 #include "TrackNote.h"
 
+#define MAX_CHANNELS 16
+
 namespace SongInternal
 {
 	template <class T>
@@ -69,8 +71,8 @@ namespace SongInternal
 		float Offset;
 		float Duration;
 
-		// Notes (Up to 16 tracks)
-		std::vector<Measure<TrackNote>> Measures[16];
+		// Notes (Up to MAX_CHANNELS tracks)
+		std::vector<Measure<TrackNote>> Measures[MAX_CHANNELS];
 
 		// Meta
 		String Name;

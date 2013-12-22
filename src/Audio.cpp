@@ -116,9 +116,16 @@ void VorbisStream::Start()
 void VorbisStream::UpdateBuffer(int32 &read)
 {
 	int32 sect;
-	int32 count = PaUtil_GetRingBufferWriteAvailable(&RingBuf);
-	int32 size = count*sizeof(uint16);
+	int32 count;
+	int32 size;
+
 	read = 0;
+
+	if (!isOpen)
+		return;
+
+	count = PaUtil_GetRingBufferWriteAvailable(&RingBuf);
+	size = count*sizeof(uint16);
 
 	if (SeekTime >= 0)
 	{
@@ -566,6 +573,9 @@ PaStreamWrapper::PaStreamWrapper(const char* filename)
 {
 	FILE * fp = fopen(filename, "rb");
 	Sound = NULL;
+
+	mStream = NULL;
+
 	if (fp)
 	{
 		VorbisStream *Vs = new VorbisStream(fp);
@@ -578,7 +588,8 @@ PaStreamWrapper::PaStreamWrapper(const char* filename)
 	}
 
 	// fire up portaudio
-	Pa_OpenStream(&mStream, NULL, &outputParams, Sound->getRate(), 0, 0, StreamCallback, (void*)Sound);
+	if (Sound)
+		Pa_OpenStream(&mStream, NULL, &outputParams, Sound->getRate(), 0, 0, StreamCallback, (void*)Sound);
 }
 
 PaStreamWrapper::~PaStreamWrapper()
@@ -604,17 +615,16 @@ void PaStreamWrapper::Stop()
 
 void PaStreamWrapper::Start(bool looping, bool stream)
 {
-	Sound->loop = looping;
 
 	if (IsValid())
 	{
+		Sound->loop = looping;
+
 		// start filling the ring buffer
 		if (stream)
 			Sound->startStream();
 		Pa_StartStream(mStream);
 	}
-
-	return;
 }
 
 void PaStreamWrapper::Seek(double Time, bool Accurate, bool RestartStream)

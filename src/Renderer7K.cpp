@@ -21,11 +21,6 @@ void ScreenGameplay7K::DrawMeasures()
 {
 	float rPos = CurrentVertical * SpeedMultiplier + BasePos;
 
-	if(NoteImage)
-		NoteImage->Bind();
-	else
-		return; // No use drawing without a texture.
-
 	// Assign our matrix.
 	WindowFrame.SetUniform("mvp", &PositionMatrix[0][0]);
 
@@ -57,6 +52,16 @@ void ScreenGameplay7K::DrawMeasures()
 				float Vertical = (NotesByMeasure[k][m].MeasureNotes[q].GetVertical()* SpeedMultiplier + rPos) ;
 				if (Vertical < 0 || Vertical > ScreenHeight)
 					continue; /* If this is not visible, we move on to the next one. */
+
+				if (NoteImages[k])
+					NoteImages[k]->Bind();
+				else
+				{
+					if (NoteImage)
+						NoteImage->Bind();
+					else
+						continue;
+				}
 
 				WindowFrame.SetUniform("tranM", &(NotesByMeasure[k][m].MeasureNotes[q].GetMatrix())[0][0]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);

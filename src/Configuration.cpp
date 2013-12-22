@@ -28,7 +28,11 @@ void Configuration::Initialize()
 		FileManager::SetSkin(Configuration::GetConfigs("Skin"));
 
 	luaL_loadfile(SkinCfgLua, (FileManager::GetSkinPrefix() + "/skin.lua").c_str());
-	lua_pcall(SkinCfgLua, 0, LUA_MULTRET, 0);
+	if (lua_pcall(SkinCfgLua, 0, LUA_MULTRET, 0))
+	{
+		std::string reason = lua_tostring(SkinCfgLua, -1);
+		Utility::DebugBreak();
+	}
 }
 
 void Configuration::Cleanup()

@@ -7,8 +7,11 @@
 #include "FileManager.h"
 #include "ImageLoader.h"
 #include "Song.h"
-#include "ScreenGameplay7K.h"
 #include "BitmapFont.h"
+#include "GameWindow.h"
+
+
+#include "ScreenGameplay7K.h"
 
 BitmapFont * GFont = NULL;
 
@@ -165,6 +168,11 @@ void ScreenGameplay7K::MainThreadInitialization()
 		int Binding = Configuration::GetSkinConfigf(cstr, nstr);
 		GearBindings[Binding - 1] = i;
 
+		sprintf(cstr, "Key%dImage", i+1);
+
+		std::string Filename = Configuration::GetSkinConfigs(cstr, nstr);
+		NoteImages[i] = ImageLoader::LoadSkin(Filename);
+
 		Keys[i].SetImage ( GearLaneImage[i] );
 		Keys[i].SetSize( GearLaneWidth, GearHeight );
 		Keys[i].Centered = true;
@@ -175,6 +183,16 @@ void ScreenGameplay7K::MainThreadInitialization()
 
 	Background.SetImage(ImageLoader::Load(MySong->BackgroundDir));
 	Background.AffectedByLightning = true;
+
+	if (Background.GetImage())
+	{
+		float SizeRatio = 768 / Background.GetHeight();
+		Background.SetScale(SizeRatio);
+		Background.Centered = true;
+		Background.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
+	}
+
+	WindowFrame.SetLightMultiplier(0.6);	
 	Running = true;
 }
 
@@ -183,10 +201,10 @@ void ScreenGameplay7K::TranslateKey(KeyType K, bool KeyDown)
 	int Index = K - KT_Key1; /* Bound key */
 	int GearIndex = GearBindings[Index]; /* Binding this key to a lane */
 
-	if (Index > 13 || Index < 0)
+	if (Index >= MAX_CHANNELS || Index < 0)
 		return;
 
-	if (GearIndex > 13 || GearIndex < 0)
+	if (GearIndex >= MAX_CHANNELS || GearIndex < 0)
 		return;
 
 	if (KeyDown)
@@ -248,7 +266,7 @@ bool ScreenGameplay7K::Run(double Delta)
 	if (ScreenTime > WAITING_TIME)
 	{
 
-		if (!Music)
+		if (!Music || !Music->GetStream())
 			return false; // Quit inmediately. There's no point.
 
 		if (SongOldTime == -1)

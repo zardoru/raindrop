@@ -156,7 +156,8 @@ bool ScreenSelectMusic::Run(double Delta)
 	{
 		for (std::vector<Song7K*>::iterator i = SongList7K.begin(); i != SongList7K.end(); i++)
 		{
-			Font->DisplayText((*i)->SongName.c_str(), glm::vec2(SONGLIST_BASEX, Cur*20 + SONGLIST_BASEY));
+			std::string text = (*i)->SongName;
+			Font->DisplayText(text.c_str(), glm::vec2(SONGLIST_BASEX, Cur*20 + SONGLIST_BASEY));
 			Cur++;
 		}
 	}
