@@ -146,6 +146,8 @@ void ScreenGameplay::MainThreadInitialization()
 	Cursor.Centered = CursorCentered;
 	Cursor.AffectedByLightning = true;
 
+	SongTime -= LeadInTime;
+
 	// Start with lights off.
 	if (ShouldChangeScreenAtEnd)
 		WindowFrame.SetLightMultiplier(0);
@@ -464,7 +466,7 @@ bool ScreenGameplay::Run(double TimeDelta)
 	
 	if (Music)
 	{
-		SongDelta = Music->GetPlaybackTime() - SongTime;
+		SongDelta = Music->GetStream()->GetStreamedTime() - SongTime;
 		SongTime += SongDelta;
 	}
 
@@ -475,7 +477,7 @@ bool ScreenGameplay::Run(double TimeDelta)
 			if (LeadInTime > 0)
 			{
 				LeadInTime -= TimeDelta;
-				SongTime = -LeadInTime;
+				SongTime += TimeDelta;
 			}
 			else
 				startMusic();

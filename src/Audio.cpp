@@ -148,8 +148,7 @@ void VorbisStream::UpdateBuffer(int32 &read)
 			}
 			else
 			{
-				clearBuffer();
-				runThread = 0;
+				Stop();
 				return;
 			}
 			break;
@@ -199,7 +198,7 @@ int32 VorbisStream::readBuffer(void * out, uint32 length)
 	{
 		cnt = PaUtil_ReadRingBuffer(&RingBuf, out, toRead);
 		streamTime += (double)(cnt/info->channels) / (double)info->rate;
-		playbackTime = streamTime;
+		playbackTime = streamTime - GetDeviceLatency();
 	}
 
 	return length;

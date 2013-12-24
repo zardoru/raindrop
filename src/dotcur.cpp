@@ -9,7 +9,7 @@
 
 Application App;
 
-#ifndef WIN32
+#if (!defined WIN32) || (!defined NDEBUG)
 int32 main ()
 #else
 int CALLBACK WinMain (

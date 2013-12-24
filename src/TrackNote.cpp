@@ -64,3 +64,8 @@ float TrackNote::GetTimeFinal()
 {
 	return std::max(StartTime, EndTime);
 }
+
+float TrackNote::GetStartTime()
+{
+	return StartTime;
+}

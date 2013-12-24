@@ -14,6 +14,9 @@
 #include "ScreenGameplay7K.h"
 
 BitmapFont * GFont = NULL;
+int lastPressed = 0;
+int lastMsOff[MAX_CHANNELS];
+double lastClosest[MAX_CHANNELS];
 
 /* Time before actually starting everything. */
 #define WAITING_TIME 5
@@ -33,6 +36,7 @@ ScreenGameplay7K::ScreenGameplay7K()
 	SpeedMultiplierUser = 1;
 
 	CurrentVertical = 0;
+	SongTime = 0;
 
 	if (!GFont)
 	{	
@@ -63,6 +67,52 @@ void ScreenGameplay7K::RecalculateEffects()
 	if (waveEffectEnabled)
 	{
 		waveEffect = sin(SongTime) * 0.5 * SpeedMultiplierUser;
+	}
+}
+
+void ScreenGameplay7K::JudgeLane(unsigned int Lane)
+{
+	typedef std::vector<SongInternal::Measure<TrackNote>> NoteVector;
+	NoteVector &Measures = NotesByMeasure[Lane];
+
+	lastPressed = Lane;
+
+	if (!Music)
+		return;
+
+	lastClosest[Lane] = 1000000000;
+
+	for (NoteVector::iterator i = Measures.begin(); i != Measures.end(); i++)
+	{
+		for (std::vector<TrackNote>::iterator m = (*i).MeasureNotes.begin(); m != (*i).MeasureNotes.end(); m++)
+		{
+			double tD = abs (m->GetStartTime() - SongTime) * 1000;
+			// std::cout << "\n time: " << m->GetStartTime() << " st: " << SongTime << " td: " << tD;
+
+			lastClosest[Lane] = std::min(tD, (double)lastClosest[Lane]);
+
+			if (tD > 100)
+				goto next_note;
+			else
+			{
+				/* first iteration of the accuracy equation */
+				float accPercent = (-100.0/7056.0)*tD*tD + (3200.0/7056.0)*tD + 680000.0/7056.0;
+				
+				if (accPercent > 100)
+					accPercent = 100;
+
+				lastMsOff[Lane] = tD;
+
+				Score.Accuracy += accPercent;
+				Score.TotalNotes++;
+
+				/* remove note from judgement*/
+				(*i).MeasureNotes.erase(m);
+
+				return; // we judged a note in this lane, so we're done.
+			}
+			next_note: ;
+		}
 	}
 }
 
@@ -192,7 +242,8 @@ void ScreenGameplay7K::MainThreadInitialization()
 		Background.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
 	}
 
-	WindowFrame.SetLightMultiplier(0.6);	
+	WindowFrame.SetLightMultiplier(0.6);
+	memset((void*)&Score, 0, sizeof (AccuracyData7K));
 	Running = true;
 }
 
@@ -208,7 +259,10 @@ void ScreenGameplay7K::TranslateKey(KeyType K, bool KeyDown)
 		return;
 
 	if (KeyDown)
+	{
+		JudgeLane(GearIndex);
 		Keys[GearIndex].SetImage( GearLaneImageDown[GearIndex], false );
+	}
 	else
 		Keys[GearIndex].SetImage( GearLaneImage[GearIndex], false );
 }
@@ -259,7 +313,7 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 
 bool ScreenGameplay7K::Run(double Delta)
 {
-	float SongDelta, SongTime = 0;
+	float SongDelta;
 
 	ScreenTime += Delta;
 
@@ -276,7 +330,7 @@ bool ScreenGameplay7K::Run(double Delta)
 		}
 
 		SongDelta = Music->GetPlaybackTime() - SongOldTime;
-		SongTime = Music->GetPlaybackTime();
+		SongTime += SongDelta;
 		SongOldTime = SongTime;
 
 		/* Update velocity. */
@@ -309,15 +363,12 @@ bool ScreenGameplay7K::Run(double Delta)
 	for (int32 i = 0; i < CurrentDiff->Channels; i++)
 		Keys[i].Render();
 
-#ifndef NDEBUG
 	std::stringstream ss;
-	ss << "cver: " << CurrentVertical;
-	ss << "\ncverm: " << CurrentVertical * SpeedMultiplier;
-	ss << "\nsm: "    << SpeedMultiplier;
-	ss << "\ndpos: " << deltaPos;
-	ss << "\nrat: " << (CurrentVertical + deltaPos) / CurrentVertical;
-	ss << "\nst: " << SongTime;
+
+	ss << "score: " << Score.Accuracy;
+	ss << "\naccuracy: " << Score.Accuracy / (Score.TotalNotes ? Score.TotalNotes : 1);
+	ss << "\nMult/Speed: " << SpeedMultiplier << "x / " << SpeedMultiplier*4;
+
 	GFont->DisplayText(ss.str().c_str(), glm::vec2(0,0));
-#endif
 	return Running;
 }

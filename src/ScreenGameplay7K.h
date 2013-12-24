@@ -30,6 +30,9 @@ private:
 	GraphObject2D Keys[MAX_CHANNELS];
 	GraphObject2D Background;
 
+	AccuracyData7K Score;
+	double SongTime;
+
 	/* 
 		Optimizations will come in later. 
 		See Renderer7K.cpp.	
@@ -38,6 +41,8 @@ private:
 	void RecalculateEffects();
 	void DrawMeasures();
 
+
+	void JudgeLane(unsigned int Lane);
 	void TranslateKey(KeyType K, bool KeyDown);
 public:
 	ScreenGameplay7K();

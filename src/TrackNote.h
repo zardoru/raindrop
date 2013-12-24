@@ -25,6 +25,7 @@ public:
 	glm::mat4& GetMatrix();
 	
 	float GetTimeFinal();
+	float GetStartTime();
 
 	~TrackNote();
 };

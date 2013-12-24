@@ -61,6 +61,12 @@ struct EvaluationData
 	double dpScoreSquare;
 };
 
+struct AccuracyData7K
+{
+	double Accuracy;
+	unsigned int TotalNotes;
+};
+
 enum KeyEventType
 {
 	KE_None,
