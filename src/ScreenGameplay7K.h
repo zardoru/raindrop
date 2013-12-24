@@ -22,8 +22,14 @@ private:
 	Image*  GearLaneImage[MAX_CHANNELS];
 	Image*  GearLaneImageDown[MAX_CHANNELS];
 	Image*  NoteImages[MAX_CHANNELS];
+
 	int		GearBindings[MAX_CHANNELS];
 	uint32	Channels;
+
+	/* Explosions */
+	Image*  ExplosionFrames[32];
+	GraphObject2D Explosion[MAX_CHANNELS];
+	double   ExplosionTime[MAX_CHANNELS];
 
 	PaStreamWrapper *Music;
 
@@ -39,6 +45,8 @@ private:
 	*/
 	void RecalculateMatrix();
 	void RecalculateEffects();
+
+	void DrawExplosions();
 	void DrawMeasures();
 
 

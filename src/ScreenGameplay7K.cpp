@@ -106,6 +106,8 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 				Score.Accuracy += accPercent;
 				Score.TotalNotes++;
 
+				ExplosionTime[Lane] = 0;
+
 				/* remove note from judgement*/
 				(*i).MeasureNotes.erase(m);
 
@@ -227,6 +229,11 @@ void ScreenGameplay7K::MainThreadInitialization()
 		Keys[i].SetSize( GearLaneWidth, GearHeight );
 		Keys[i].Centered = true;
 		Keys[i].SetPosition( GearStartX + GearLaneWidth * i + GearLaneWidth / 2, ScreenHeight - GearHeight/2 );
+
+		Explosion[i].Centered = true;
+		Explosion[i].SetSize( GearLaneWidth * 2, GearLaneWidth * 2 );
+		Explosion[i].SetPosition( GearStartX + GearLaneWidth * i + GearLaneWidth / 2, ScreenHeight - GearHeight );
+
 	}
 
 	NoteImage = ImageLoader::LoadSkin("note.png");
@@ -240,6 +247,18 @@ void ScreenGameplay7K::MainThreadInitialization()
 		Background.SetScale(SizeRatio);
 		Background.Centered = true;
 		Background.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
+	}
+
+	for (int i = 0; i < 20 /*Frames*/; i++)
+	{
+		char str[256];
+		sprintf(str, "Explosion-%d.png", i);
+		ExplosionFrames[i] = ImageLoader::LoadSkin(str);
+	}
+
+	for (int i = 0; i < MAX_CHANNELS; i++)
+	{
+		ExplosionTime[i] = 0.016 * 20;
 	}
 
 	WindowFrame.SetLightMultiplier(0.6);
@@ -317,6 +336,11 @@ bool ScreenGameplay7K::Run(double Delta)
 
 	ScreenTime += Delta;
 
+	for (int i = 0; i < CurrentDiff->Channels; i++)
+	{
+		ExplosionTime[i] += Delta;
+	}
+
 	if (ScreenTime > WAITING_TIME)
 	{
 
@@ -362,6 +386,8 @@ bool ScreenGameplay7K::Run(double Delta)
 
 	for (int32 i = 0; i < CurrentDiff->Channels; i++)
 		Keys[i].Render();
+
+	DrawExplosions();
 
 	std::stringstream ss;
 

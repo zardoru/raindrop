@@ -73,3 +73,22 @@ void ScreenGameplay7K::DrawMeasures()
 
 	WindowFrame.DisableAttribArray("position");
 }
+
+void ScreenGameplay7K::DrawExplosions()
+{
+	for (int i = 0; i < CurrentDiff->Channels; i++)
+	{
+		int Frame = ExplosionTime[i] / 0.016;
+
+		if (Frame > 19)
+			Explosion[i].Alpha = 0;
+		else
+		{
+			Explosion[i].Alpha = 1;
+			Explosion[i].SetImage ( ExplosionFrames[Frame], false );
+		}
+
+		Explosion[i].Render();
+
+	}
+}

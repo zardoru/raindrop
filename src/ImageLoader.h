@@ -28,6 +28,7 @@ public:
 	static void   UnloadAll();
 
 	/* For multi-threaded loading. */
+	static void   AddToPending (const char* Filename);
 	static void   LoadFromManifest(char** Manifest, int Count, String Prefix = "");
 	static void   UpdateTextures();
 
