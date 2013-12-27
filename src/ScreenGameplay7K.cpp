@@ -87,7 +87,7 @@ void ScreenGameplay7K::RunMeasures()
 			{
 				/* We have to check for all gameplay conditions for this note. */
 
-				if ((SongTime - m->GetStartTime()) > MS_CUTOFF)
+				if ((SongTime - m->GetStartTime()) * 1000 > MS_CUTOFF)
 				{
 					Score.TotalNotes++;
 

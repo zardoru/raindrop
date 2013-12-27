@@ -44,7 +44,6 @@ void ImageLoader::UnloadAll()
 GLuint ImageLoader::UploadToGPU(unsigned char* Data, unsigned int Width, unsigned int Height)
 {
 	GLuint texture;
-	glActiveTexture(GL_TEXTURE0);
 	glGenTextures(1, &texture);
 
 
