@@ -15,7 +15,7 @@ private:
 
 	int32 heldKey;
 
-	float startTime, endTime, beat, hold_duration;
+	double startTime, endTime, beat, hold_duration;
 	uint32 Measure, MeasurePos;
 	unsigned char AnimationStatus;
 
@@ -23,10 +23,10 @@ public:
 	GameObject();
 	void Initialize();
 
-	Judgement Hit(float time, glm::vec2 mpos, bool KeyDown, bool Autoplay, int32 Key);
+	Judgement Hit(double time, glm::vec2 mpos, bool KeyDown, bool Autoplay, int32 Key);
 	Judgement Run(double delta, double Time, bool Autoplay);
 	void Animate(float delta, float songTime);
-	void Assign(float Duration, uint32 Measure, uint32 MeasureFraction);
+	void Assign(double Duration, uint32 Measure, uint32 MeasureFraction);
 	bool IsHold();
 	void Invalidate();
 	bool ShouldRemove();

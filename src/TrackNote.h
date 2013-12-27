@@ -6,7 +6,7 @@ class TrackNote
 private:
 	
 	uint32 Track;
-	float StartTime, EndTime;
+	double StartTime, EndTime;
 	int Measure, Fraction;
 	glm::vec2 b_pos;
 
@@ -15,17 +15,17 @@ public:
 	TrackNote();
 	void AssignTrack(int T);
 	void AssignSongPosition(int _Measure, int _Fraction);
-	void AssignTime(float Start, float End);
+	void AssignTime(double Start, double End);
 	void AssignPosition(glm::vec2 Position);
 	void AssignSpeedMultiplier(float Mult);
 
-	int GetMeasure();
-	int GetFraction();
+	int GetMeasure() const;
+	int GetFraction() const;
 	float GetVertical() const;
 	glm::mat4& GetMatrix();
 	
-	float GetTimeFinal();
-	float GetStartTime();
+	double GetTimeFinal() const;
+	double GetStartTime() const;
 
 	~TrackNote();
 };

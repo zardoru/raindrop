@@ -103,7 +103,7 @@ void LoadTracksSM(Song7K *Out, SongInternal::TDifficulty<TrackNote> *Difficulty,
 			/* For each fraction of the measure*/
 			for (int32 m = 0; m < MeasureFractions; m++) /* m = current fraction */
 			{
-				float Beat = (float)i * (float)Out->MeasureLength + (float)m * (float)Out->MeasureLength / (float)MeasureFractions; /* Current beat */
+				double Beat = (double)i * (double)Out->MeasureLength + (double)m * (double)Out->MeasureLength / (double)MeasureFractions; /* Current beat */
 
 				/* For every track of the fraction */
 				for (int k = 0; k < Keys; k++) /* k = current track */

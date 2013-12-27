@@ -16,7 +16,7 @@ void TrackNote::AssignTrack(int T)
 	Track = T;
 }
 
-void TrackNote::AssignTime(float Start, float End)
+void TrackNote::AssignTime(double Start, double End)
 {
 	StartTime = Start;
 	EndTime = End;
@@ -28,12 +28,12 @@ void TrackNote::AssignSongPosition(int _Measure, int _Fraction)
 	Fraction = _Fraction;
 }
 
-int TrackNote::GetMeasure()
+int TrackNote::GetMeasure() const
 {
 	return Measure;
 }
 
-int TrackNote::GetFraction()
+int TrackNote::GetFraction() const
 {
 	return Fraction;
 }
@@ -60,12 +60,12 @@ float TrackNote::GetVertical() const
 	return b_pos.y;
 }
 
-float TrackNote::GetTimeFinal()
+double TrackNote::GetTimeFinal() const
 {
 	return std::max(StartTime, EndTime);
 }
 
-float TrackNote::GetStartTime()
+double TrackNote::GetStartTime() const
 {
 	return StartTime;
 }

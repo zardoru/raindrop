@@ -20,6 +20,9 @@ double lastClosest[MAX_CHANNELS];
 
 /* Time before actually starting everything. */
 #define WAITING_TIME 5
+#define MS_CUTOFF 100
+#define EQ(x) (-100.0/84.0)*x + 10000.0/84.0
+
 
 ScreenGameplay7K::ScreenGameplay7K()
 {
@@ -70,6 +73,37 @@ void ScreenGameplay7K::RecalculateEffects()
 	}
 }
 
+void ScreenGameplay7K::RunMeasures()
+{
+	typedef std::vector<SongInternal::Measure<TrackNote>> NoteVector;
+
+	for (int k = 0; k < Channels; k++)
+	{
+		NoteVector &Measures = NotesByMeasure[k];
+
+		for (NoteVector::iterator i = Measures.begin(); i != Measures.end(); i++)
+		{
+			for (std::vector<TrackNote>::iterator m = (*i).MeasureNotes.begin(); m != (*i).MeasureNotes.end(); m++)
+			{
+				/* We have to check for all gameplay conditions for this note. */
+
+				if ((SongTime - m->GetStartTime()) > MS_CUTOFF)
+				{
+					Score.TotalNotes++;
+
+					/* remove note from judgement*/
+					 m = (*i).MeasureNotes.erase(m);
+
+					if (m == (*i).MeasureNotes.end())
+						goto next_measure;
+				}
+			}
+			next_measure:;
+		}
+	}
+
+}
+
 void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 {
 	typedef std::vector<SongInternal::Measure<TrackNote>> NoteVector;
@@ -91,12 +125,12 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 
 			lastClosest[Lane] = std::min(tD, (double)lastClosest[Lane]);
 
-			if (tD > 100)
+			if (tD > MS_CUTOFF)
 				goto next_note;
 			else
 			{
 				/* first iteration of the accuracy equation */
-				float accPercent = (-100.0/7056.0)*tD*tD + (3200.0/7056.0)*tD + 680000.0/7056.0;
+				float accPercent = EQ(tD);
 				
 				if (accPercent > 100)
 					accPercent = 100;
@@ -185,10 +219,8 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 
 	/* Initial object distance */
-	float VertDistance = ((CurrentDiff->Offset / spb(CurrentDiff->Timing[0].Value)) / MySong->MeasureLength) * MeasureBaseSpacing;
 	BasePos = float(ScreenHeight) - GearHeight;
-	// CurrentVertical = -(VertDistance);
-	CurrentVertical -= VSpeeds.at(0).Value * (WAITING_TIME + CurrentDiff->Offset);
+	CurrentVertical -= VSpeeds.at(0).Value * (WAITING_TIME + CurrentDiff->Offset - GetDeviceLatency());
 
 	RecalculateMatrix();
 }
@@ -366,6 +398,8 @@ bool ScreenGameplay7K::Run(double Delta)
 
 		
 		CurrentVertical += Speed * SongDelta;
+
+		RunMeasures();
 		RecalculateEffects();
 		RecalculateMatrix();
 

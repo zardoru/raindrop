@@ -45,6 +45,8 @@ private:
 	*/
 	void RecalculateMatrix();
 	void RecalculateEffects();
+	void RunMeasures();
+
 
 	void DrawExplosions();
 	void DrawMeasures();
