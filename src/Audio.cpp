@@ -65,8 +65,11 @@ VorbisStream::VorbisStream(const char* Filename, uint32 bufferSize)
 
 VorbisStream::~VorbisStream()
 {
-	ov_clear(&f);
-	delete buffer;
+	if (isOpen)
+	{
+		ov_clear(&f);
+		delete buffer;
+	}
 }
 
 void VorbisStream::startStream()
@@ -578,12 +581,16 @@ PaStreamWrapper::PaStreamWrapper(const char* filename)
 	if (fp)
 	{
 		VorbisStream *Vs = new VorbisStream(fp);
-		outputParams.device = Pa_GetDefaultOutputDevice();
-		outputParams.channelCount = Vs->getChannels();
-		outputParams.sampleFormat = paInt16;
-		outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultLowOutputLatency;
-		outputParams.hostApiSpecificStreamInfo = NULL;
-		Sound = Vs;
+		if (Vs->IsOpen())
+		{
+			outputParams.device = Pa_GetDefaultOutputDevice();
+			outputParams.channelCount = Vs->getChannels();
+			outputParams.sampleFormat = paInt16;
+			outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultLowOutputLatency;
+			outputParams.hostApiSpecificStreamInfo = NULL;
+			Sound = Vs;
+		}else
+			delete Vs;
 	}
 
 	// fire up portaudio

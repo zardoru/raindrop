@@ -16,7 +16,7 @@
 BitmapFont * GFont = NULL;
 int lastPressed = 0;
 int lastMsOff[MAX_CHANNELS];
-double lastClosest[MAX_CHANNELS];
+int lastClosest[MAX_CHANNELS];
 
 /* Time before actually starting everything. */
 #define WAITING_TIME 5
@@ -26,7 +26,6 @@ double lastClosest[MAX_CHANNELS];
 
 ScreenGameplay7K::ScreenGameplay7K()
 {
-	Measure = 0;
 	Speed = 0; // Recalculate.
 	SpeedMultiplier = 0;
 	SongOldTime = -1;
@@ -54,10 +53,11 @@ void ScreenGameplay7K::Cleanup()
 		Music->Stop();
 }
 
-void ScreenGameplay7K::Init(Song7K* S, int DifficultyIndex)
+void ScreenGameplay7K::Init(Song7K* S, int DifficultyIndex, bool UseUpscroll)
 {
 	MySong = S;
 	CurrentDiff = S->Difficulties[DifficultyIndex];
+	Upscroll = UseUpscroll;
 }
 
 void ScreenGameplay7K::RecalculateEffects()
@@ -77,7 +77,7 @@ void ScreenGameplay7K::RunMeasures()
 {
 	typedef std::vector<SongInternal::Measure<TrackNote>> NoteVector;
 
-	for (int k = 0; k < Channels; k++)
+	for (unsigned int k = 0; k < Channels; k++)
 	{
 		NoteVector &Measures = NotesByMeasure[k];
 
@@ -154,7 +154,10 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 
 void ScreenGameplay7K::RecalculateMatrix()
 {
-	SpeedMultiplier = SpeedMultiplierUser + waveEffect;
+	if (Upscroll)
+		SpeedMultiplier = - (SpeedMultiplierUser + waveEffect);
+	else
+		SpeedMultiplier = SpeedMultiplierUser + waveEffect;
 
 	PositionMatrix = glm::scale(glm::translate(glm::mat4(), 
 			glm::vec3(GearLaneWidth/2 + GearStartX, BasePos + CurrentVertical * SpeedMultiplier + deltaPos, 0)), 
@@ -219,7 +222,12 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 
 	/* Initial object distance */
-	BasePos = float(ScreenHeight) - GearHeight;
+	if (!Upscroll)
+		JudgementLinePos = float(ScreenHeight) - GearHeight;
+	else
+		JudgementLinePos = GearHeight;
+
+	BasePos = JudgementLinePos + (Upscroll ? 5 : -5) /* NoteSize/2 ;P */;
 	CurrentVertical -= VSpeeds.at(0).Value * (WAITING_TIME + CurrentDiff->Offset - GetDeviceLatency());
 
 	RecalculateMatrix();
@@ -260,11 +268,15 @@ void ScreenGameplay7K::MainThreadInitialization()
 		Keys[i].SetImage ( GearLaneImage[i] );
 		Keys[i].SetSize( GearLaneWidth, GearHeight );
 		Keys[i].Centered = true;
-		Keys[i].SetPosition( GearStartX + GearLaneWidth * i + GearLaneWidth / 2, ScreenHeight - GearHeight/2 );
+
+		Keys[i].SetPosition( GearStartX + GearLaneWidth * i + GearLaneWidth / 2, JudgementLinePos + (Upscroll? -1:1) * GearHeight/2 );
+
+		if (Upscroll)
+			Keys[i].SetRotation(180);
 
 		Explosion[i].Centered = true;
 		Explosion[i].SetSize( GearLaneWidth * 2, GearLaneWidth * 2 );
-		Explosion[i].SetPosition( GearStartX + GearLaneWidth * i + GearLaneWidth / 2, ScreenHeight - GearHeight );
+		Explosion[i].SetPosition( GearStartX + GearLaneWidth * i + GearLaneWidth / 2, JudgementLinePos );
 
 	}
 
@@ -293,7 +305,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 		ExplosionTime[i] = 0.016 * 20;
 	}
 
-	WindowFrame.SetLightMultiplier(0.6);
+	WindowFrame.SetLightMultiplier(0.6f);
 	memset((void*)&Score, 0, sizeof (AccuracyData7K));
 	Running = true;
 }
@@ -427,8 +439,16 @@ bool ScreenGameplay7K::Run(double Delta)
 
 	ss << "score: " << Score.Accuracy;
 	ss << "\naccuracy: " << Score.Accuracy / (Score.TotalNotes ? Score.TotalNotes : 1);
-	ss << "\nMult/Speed: " << SpeedMultiplier << "x / " << SpeedMultiplier*4;
+	ss << "\nMult/Speed: " << SpeedMultiplier << "x / " << SpeedMultiplier*4 << "\n";
 
 	GFont->DisplayText(ss.str().c_str(), glm::vec2(0,0));
+
+	for (unsigned int i = 0; i < Channels; i++)
+	{
+		std::stringstream ss;
+		ss << lastClosest[i];
+		GFont->DisplayText(ss.str().c_str(), Keys[i].GetPosition());
+	}
+
 	return Running;
 }
