@@ -277,7 +277,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 		Explosion[i].Centered = true;
 		Explosion[i].SetSize( GearLaneWidth * 2, GearLaneWidth * 2 );
 		Explosion[i].SetPosition( GearStartX + GearLaneWidth * i + GearLaneWidth / 2, JudgementLinePos );
-
+		lastClosest[i] = 0;
 	}
 
 	NoteImage = ImageLoader::LoadSkin("note.png");

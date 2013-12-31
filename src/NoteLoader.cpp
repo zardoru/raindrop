@@ -166,8 +166,10 @@ SongDC* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 		// Then, Timing data.
 		OnCommand(#BPM)
 		{
-			LoadBPMs(Out, Difficulty, line);
+			LoadTimingList(Difficulty->Timing, line);
 		}
+
+
 
 		OnCommand(#OFFSET)
 		{

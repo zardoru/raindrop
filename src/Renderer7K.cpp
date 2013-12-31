@@ -37,7 +37,7 @@ void ScreenGameplay7K::DrawMeasures()
 	glVertexAttribPointer( WindowFrame.EnableAttribArray("position"), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
 	/* todo: instancing */
-	for (int k = 0; k < Channels; k++)
+	for (uint32 k = 0; k < Channels; k++)
 	{
 		NoteVector &Measures = NotesByMeasure[k];
 

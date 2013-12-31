@@ -30,9 +30,9 @@ SongDC::~SongDC()
 
 void CalculateBarlineRatios(SongDC &MySong, TDifficulty<GameObject> &Diff)
 {
-	vector<TDifficulty<GameObject>::TimingSegment> &Timing = Diff.Timing;
-	vector<TDifficulty<GameObject>::TimingSegment> &Ratios = Diff.BarlineRatios;
-	vector<TDifficulty<GameObject>::TimingSegment> ChangesInInterval;
+	TimingData &Timing = Diff.Timing;
+	TimingData &Ratios = Diff.BarlineRatios;
+	TimingData ChangesInInterval;
 
 	Ratios.clear();
 
@@ -40,17 +40,19 @@ void CalculateBarlineRatios(SongDC &MySong, TDifficulty<GameObject> &Diff)
 	{
 		double CurrentBeat = Measure * MySong.MeasureLength;
 		double NextBeat = (Measure+1) * MySong.MeasureLength;
-		double MeasureDuration = TimeAtBeat(Diff, (Measure+1)*MySong.MeasureLength) - TimeAtBeat(Diff, Measure*MySong.MeasureLength);
+		double endMeasureTime = TimeAtBeat(Diff.Timing, Diff.Offset, (Measure+1)*MySong.MeasureLength);
+		double startMeasureTime = TimeAtBeat(Diff.Timing, Diff.Offset, Measure*MySong.MeasureLength);
+		double MeasureDuration = endMeasureTime - startMeasureTime;
 
-		GetTimingChangesInInterval<GameObject>(Timing, CurrentBeat, NextBeat, ChangesInInterval);
+		GetTimingChangesInInterval(Timing, CurrentBeat, NextBeat, ChangesInInterval);
 
 		if (ChangesInInterval.size() == 0)
 		{
 			double Ratio = 1/MeasureDuration;
-			TDifficulty<GameObject>::TimingSegment New;
+			SongInternal::TimingSegment New;
 
 			New.Value = Ratio;
-			New.Time = TimeAtBeat(Diff, CurrentBeat);
+			New.Time = TimeAtBeat(Diff.Timing, Diff.Offset, CurrentBeat);
 
 			if (!Ratios.size())
 				Ratios.push_back(New);
@@ -62,9 +64,9 @@ void CalculateBarlineRatios(SongDC &MySong, TDifficulty<GameObject> &Diff)
 		}else
 		{
 			// Real show time on calculations is here.
-			for (vector<TDifficulty<GameObject>::TimingSegment>::iterator i = ChangesInInterval.begin(); i != ChangesInInterval.end(); i++)
+			for (TimingData::iterator i = ChangesInInterval.begin(); i != ChangesInInterval.end(); i++)
 			{
-				TDifficulty<GameObject>::TimingSegment New;
+				SongInternal::TimingSegment New;
 				double Duration;
 				double DurationSeconds;
 				double Fraction;
@@ -98,7 +100,7 @@ void CalculateBarlineRatios(SongDC &MySong, TDifficulty<GameObject> &Diff)
 
 				/* create new segment at i->Time */
 				New.Value = Ratio;
-				New.Time = TimeAtBeat(Diff, CurrentBeat);
+				New.Time = TimeAtBeat(Diff.Timing, Diff.Offset, CurrentBeat);
 
 				if (!Ratios.size())
 					Ratios.push_back(New);
@@ -141,9 +143,9 @@ void SongDC::Process(bool CalculateXPos)
 				it->beat = ((float)CurrentMeasure * MeasureLength) + ((float)it->MeasurePos * MeasureLength) / (float)Measure->Fraction;
 
 				if (it->hold_duration > 0)
-					it->endTime = TimeAtBeat(**Difficulty, it->beat + it->hold_duration);
+					it->endTime = TimeAtBeat((*Difficulty)->Timing, (*Difficulty)->Offset, it->beat + it->hold_duration);
 
-				it->startTime = TimeAtBeat(**Difficulty, it->beat);
+				it->startTime = TimeAtBeat((*Difficulty)->Timing, (*Difficulty)->Offset, it->beat);
 
 				float frac = float(it->MeasurePos) / float(Measure->Fraction);
 

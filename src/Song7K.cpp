@@ -5,6 +5,7 @@ Song7K::Song7K()
 {
 	MeasureLength = 4;
 	LeadInTime = 1.5;
+	UseSeparateTimingData = false;
 }
 
 Song7K::~Song7K()
@@ -68,17 +69,37 @@ void Song7K::Process()
 			so since v = d/t we'd have
 		*/
 
-		/* Hideous templates! */
-		using SongInternal::TDifficulty;
-		for(std::vector<TDifficulty<TrackNote>::TimingSegment>::iterator Time = (*Diff)->Timing.begin();
+		/* Calculate VSpeeds. */
+		for(TimingData::iterator Time = (*Diff)->Timing.begin();
 			Time != (*Diff)->Timing.end();
 			Time++)
 		{
-			TDifficulty<TrackNote>::TimingSegment VSpeed;
+			SongInternal::TimingSegment VSpeed;
 			float TValue = Time->Value;
 			float FTime = (spb (Time->Value) * (float)MeasureLength);
-			VSpeed.Time = TimeAtBeat(**Diff, Time->Time);
+			VSpeed.Time = TimeAtBeat((*Diff)->Timing, (*Diff)->Offset, Time->Time) + StopTimeAtBeat((*Diff)->StopsTiming, Time->Time);
 			VSpeed.Value = MeasureBaseSpacing / FTime;
+			(*Diff)->VerticalSpeeds.push_back(VSpeed);
+		}
+
+		for(TimingData::iterator Time = (*Diff)->StopsTiming.begin();
+			Time != (*Diff)->StopsTiming.end();
+			Time++)
+		{
+			SongInternal::TimingSegment VSpeed;
+			float TValue = TimeAtBeat((*Diff)->Timing, (*Diff)->Offset, Time->Time) + StopTimeAtBeat((*Diff)->StopsTiming, Time->Time);
+			float TValueN = TimeAtBeat((*Diff)->Timing, (*Diff)->Offset, Time->Time) + StopTimeAtBeat((*Diff)->StopsTiming, Time->Time) + Time->Value;
+
+			/* Initial Stop */
+			VSpeed.Time = TValue;
+			VSpeed.Value = 0;
+
+			(*Diff)->VerticalSpeeds.push_back(VSpeed);
+
+			/* Restored speed after stop */
+			VSpeed.Time = TValueN;
+			VSpeed.Value = MeasureBaseSpacing / (spb(BpmAtBeat((*Diff)->Timing, Time->Time)) * MeasureLength);
+
 			(*Diff)->VerticalSpeeds.push_back(VSpeed);
 		}
 	}
