@@ -24,4 +24,4 @@ void GetTimingChangesInInterval(const TimingData &Timing,
 	double PointA, double PointB, 
 	TimingData &Out);
 
-void LoadTimingList(TimingData &Timing, String line);
+void LoadTimingList(TimingData &Timing, String line, bool AllowZeros = false);

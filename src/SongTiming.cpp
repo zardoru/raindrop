@@ -66,7 +66,7 @@ void GetTimingChangesInInterval(const TimingData &Timing,
 	}
 }
 
-void LoadTimingList(TimingData &Timing, String line)
+void LoadTimingList(TimingData &Timing, String line, bool AllowZeros)
 {
 	String ListString = line.substr(line.find_first_of(":") + 1);
 	std::vector< String > SplitResult;
@@ -90,7 +90,8 @@ void LoadTimingList(TimingData &Timing, String line)
 			Segment.Value = atof(SplitResultPair[1].c_str());
 		}
 
-		Timing.push_back(Segment);
+		if (AllowZeros || Segment.Value)
+			Timing.push_back(Segment);
 	}
 }
 
@@ -98,7 +99,7 @@ double StopTimeAtBeat(const TimingData &StopsTiming, float Beat)
 {
 	double Time = 0;
 
-	if (Beat == 0) return Time;
+	if (Beat == 0 || !StopsTiming.size()) return Time;
 
 	for (uint32 i = 0; i < StopsTiming.size(); i++)
 	{	

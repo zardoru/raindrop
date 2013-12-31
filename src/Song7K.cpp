@@ -88,6 +88,11 @@ void Song7K::Process()
 			(*Diff)->VerticalSpeeds.push_back(VSpeed);
 		}
 
+		if (!(*Diff)->StopsTiming.size())
+			continue;
+
+		uint32 kI = 0;
+		/* Here on, just working with stops. */
 		for(TimingData::iterator Time = (*Diff)->StopsTiming.begin();
 			Time != (*Diff)->StopsTiming.end();
 			Time++)
@@ -101,10 +106,11 @@ void Song7K::Process()
 			VSpeed.Value = 0;
 
 			/* First, eliminate collisions. */
-
 			for (TimingData::iterator k = (*Diff)->VerticalSpeeds.begin(); k != (*Diff)->VerticalSpeeds.end(); k++)
 			{
-				if ( abs(k->Time - TValue) < 0.000001 ) /* Too close? Remove the collision, leaving only the 0 in front. */
+				float kTime = k->Time;
+				float kVal = k->Value;
+				if ( abs(kTime - TValue) < 0.000001 ) /* Too close? Remove the collision, leaving only the 0 in front. */
 				{
 					k = (*Diff)->VerticalSpeeds.erase(k);
 
@@ -115,24 +121,28 @@ void Song7K::Process()
 
 			(*Diff)->VerticalSpeeds.push_back(VSpeed);
 
-			bool AddTiming = true;
+			float speedRestore = MeasureBaseSpacing / (spb(BpmAtBeat((*Diff)->Timing, Time->Time)) * MeasureLength);
 
-			/* Restored speed after stop */
-			VSpeed.Time = TValueN;
-			VSpeed.Value = MeasureBaseSpacing / (spb(BpmAtBeat((*Diff)->Timing, Time->Time)) * MeasureLength);
-
-			/* Check for collisions again, but prioritizing the BPM change over the stop. */
+			/* Find speeds between TValue and TValueN, use the last one as the speed we're going to use. */
 			for (TimingData::iterator k = (*Diff)->VerticalSpeeds.begin(); k != (*Diff)->VerticalSpeeds.end(); k++)
 			{
-				if ( abs(k->Time - TValueN) < 0.000001 )
+				if (k->Time > TValue && k->Time <= TValueN)
 				{
-					AddTiming = false;
-					break;
+					speedRestore = k->Value; /* This is the last speed change in the interval that the stop lasts. We'll use it. */
+
+					/* Eliminate this since we're not going to use it. */
+					k = (*Diff)->VerticalSpeeds.erase(k);
+
+					if (k == (*Diff)->VerticalSpeeds.end())
+						break;
 				}
 			}
 
-			if (AddTiming)
-				(*Diff)->VerticalSpeeds.push_back(VSpeed);
+			/* Restored speed after stop */
+			VSpeed.Time = TValueN;
+			VSpeed.Value = speedRestore;
+			(*Diff)->VerticalSpeeds.push_back(VSpeed);
+			kI ++;
 		}
 
 		std::sort((*Diff)->VerticalSpeeds.begin(), (*Diff)->VerticalSpeeds.end(), tSort);
