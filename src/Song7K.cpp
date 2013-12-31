@@ -1,5 +1,6 @@
 #include "Global.h"
 #include "Song.h"
+#include <algorithm>
 
 Song7K::Song7K()
 {
@@ -10,6 +11,11 @@ Song7K::Song7K()
 
 Song7K::~Song7K()
 {
+}
+
+int tSort(const SongInternal::TimingSegment &i, const SongInternal::TimingSegment &j)
+{
+	return i.Time < j.Time;
 }
 
 void Song7K::Process()
@@ -94,13 +100,41 @@ void Song7K::Process()
 			VSpeed.Time = TValue;
 			VSpeed.Value = 0;
 
+			/* First, eliminate collisions. */
+
+			for (TimingData::iterator k = (*Diff)->VerticalSpeeds.begin(); k != (*Diff)->VerticalSpeeds.end(); k++)
+			{
+				if ( abs(k->Time - TValue) < 0.000001 ) /* Too close? Remove the collision, leaving only the 0 in front. */
+				{
+					k = (*Diff)->VerticalSpeeds.erase(k);
+
+					if (k == (*Diff)->VerticalSpeeds.end())
+						break;
+				}
+			}
+
 			(*Diff)->VerticalSpeeds.push_back(VSpeed);
+
+			bool AddTiming = true;
 
 			/* Restored speed after stop */
 			VSpeed.Time = TValueN;
 			VSpeed.Value = MeasureBaseSpacing / (spb(BpmAtBeat((*Diff)->Timing, Time->Time)) * MeasureLength);
 
-			(*Diff)->VerticalSpeeds.push_back(VSpeed);
+			/* Check for collisions again, but prioritizing the BPM change over the stop. */
+			for (TimingData::iterator k = (*Diff)->VerticalSpeeds.begin(); k != (*Diff)->VerticalSpeeds.end(); k++)
+			{
+				if ( abs(k->Time - TValueN) < 0.000001 )
+				{
+					AddTiming = false;
+					break;
+				}
+			}
+
+			if (AddTiming)
+				(*Diff)->VerticalSpeeds.push_back(VSpeed);
 		}
+
+		std::sort((*Diff)->VerticalSpeeds.begin(), (*Diff)->VerticalSpeeds.end(), tSort);
 	}
 }
