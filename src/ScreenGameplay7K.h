@@ -54,6 +54,8 @@ private:
 		Optimizations will come in later. 
 		See Renderer7K.cpp.	
 	*/
+
+	void UpdateVertical();
 	void RecalculateMatrix();
 	void RecalculateEffects();
 	void RunMeasures();

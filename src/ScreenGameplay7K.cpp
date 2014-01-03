@@ -229,7 +229,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	BasePos = JudgementLinePos + (Upscroll ? 5 : -5) /* NoteSize/2 ;P */;
 	CurrentVertical -= VSpeeds.at(0).Value * (WAITING_TIME + CurrentDiff->Offset - GetDeviceLatency());
-
+	Speed = VSpeeds.at(0).Value; /* First speed is always at offset time, so we have to wait that much longer */
 	RecalculateMatrix();
 }
 
@@ -399,22 +399,13 @@ bool ScreenGameplay7K::Run(double Delta)
 
 		SongDelta = Music->GetPlaybackTime() - SongOldTime;
 		SongTime += SongDelta;
-		SongOldTime = SongTime;
 
-		/* Update velocity. */
-		if (VSpeeds.size() && SongTime >= VSpeeds.at(0).Time)
-		{
-			Speed = VSpeeds.at(0).Value;
-			VSpeeds.erase(VSpeeds.begin());
-		}
-
-		
-		CurrentVertical += Speed * SongDelta;
-
+		UpdateVertical();
 		RunMeasures();
 		RecalculateEffects();
 		RecalculateMatrix();
 
+		SongOldTime = SongTime;
 
 		/* Update music. */
 		int32 r;
@@ -451,4 +442,37 @@ bool ScreenGameplay7K::Run(double Delta)
 	}
 
 	return Running;
+}
+
+void ScreenGameplay7K::UpdateVertical()
+{
+	/* Update velocity. Use proper integration. */
+	double SongDelta = SongTime - SongOldTime;
+	uint32 Idx = SectionIndex(VSpeeds, SongOldTime) - 1;
+	TimingData IntervalTiming;
+
+	GetTimingChangesInInterval(VSpeeds, SongOldTime, SongTime, IntervalTiming);
+	
+	if (IntervalTiming.size())
+	{
+		SongInternal::TimingSegment Current = VSpeeds[Idx];
+		double OldTime = SongOldTime;
+		
+		uint32 size = IntervalTiming.size();
+
+		for (uint32 i = 0; i < size; i++)
+		{
+			double Change = (IntervalTiming[i].Time - OldTime) * Current.Value;
+			CurrentVertical += Change;
+			Current = IntervalTiming[i];
+			OldTime = Current.Time;
+		}
+
+		/* And then finish. */
+		CurrentVertical += (SongTime - Current.Time) * Current.Value;
+	}
+	else
+	{
+		CurrentVertical += VSpeeds[Idx].Value * SongDelta;
+	}
 }
