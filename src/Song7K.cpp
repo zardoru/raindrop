@@ -76,12 +76,23 @@ void Song7K::Process()
 		*/
 
 		/* Calculate VSpeeds. */
+
+		if ((*Diff)->Offset > 0) /* We have to set up a speed during this time, otherwise it'll be 0. */
+		{
+			SongInternal::TimingSegment VSpeed;
+			float FTime = (spb ((*Diff)->Timing.at(0).Value) * (float)MeasureLength);
+
+			VSpeed.Time = 0;
+			VSpeed.Value = MeasureBaseSpacing / FTime;
+
+			(*Diff)->VerticalSpeeds.push_back(VSpeed);
+		}
+
 		for(TimingData::iterator Time = (*Diff)->Timing.begin();
 			Time != (*Diff)->Timing.end();
 			Time++)
 		{
 			SongInternal::TimingSegment VSpeed;
-			float TValue = Time->Value;
 			float FTime = (spb (Time->Value) * (float)MeasureLength);
 			VSpeed.Time = TimeAtBeat((*Diff)->Timing, (*Diff)->Offset, Time->Time) + StopTimeAtBeat((*Diff)->StopsTiming, Time->Time);
 			VSpeed.Value = MeasureBaseSpacing / FTime;
@@ -108,9 +119,7 @@ void Song7K::Process()
 			/* First, eliminate collisions. */
 			for (TimingData::iterator k = (*Diff)->VerticalSpeeds.begin(); k != (*Diff)->VerticalSpeeds.end(); k++)
 			{
-				float kTime = k->Time;
-				float kVal = k->Value;
-				if ( abs(kTime - TValue) < 0.000001 ) /* Too close? Remove the collision, leaving only the 0 in front. */
+				if ( abs(k->Time - TValue) < 0.000001 ) /* Too close? Remove the collision, leaving only the 0 in front. */
 				{
 					k = (*Diff)->VerticalSpeeds.erase(k);
 

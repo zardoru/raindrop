@@ -15,8 +15,7 @@ private:
 	glm::mat4 PositionMatrix;
 	Song7K *MySong;
 	float SongOldTime;
-	float deltaPos;	
-	float Speed;
+	float deltaPos;
 	float SpeedMultiplier;
 
 	/* Positions */

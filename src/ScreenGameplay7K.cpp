@@ -26,7 +26,6 @@ int lastClosest[MAX_CHANNELS];
 
 ScreenGameplay7K::ScreenGameplay7K()
 {
-	Speed = 0; // Recalculate.
 	SpeedMultiplier = 0;
 	SongOldTime = -1;
 	Music = NULL;
@@ -229,7 +228,6 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	BasePos = JudgementLinePos + (Upscroll ? 5 : -5) /* NoteSize/2 ;P */;
 	CurrentVertical -= VSpeeds.at(0).Value * (WAITING_TIME + CurrentDiff->Offset - GetDeviceLatency());
-	Speed = VSpeeds.at(0).Value; /* First speed is always at offset time, so we have to wait that much longer */
 	RecalculateMatrix();
 }
 
@@ -412,8 +410,7 @@ bool ScreenGameplay7K::Run(double Delta)
 		Music->GetStream()->UpdateBuffer(r);
 	}else
 	{
-		Speed = VSpeeds.at(0).Value;
-		CurrentVertical += Speed * Delta; 
+		CurrentVertical += VSpeeds.at(0).Value * Delta; 
 		RecalculateMatrix();
 	}
 
