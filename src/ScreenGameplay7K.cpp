@@ -72,7 +72,7 @@ void ScreenGameplay7K::RecalculateEffects()
 
 void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 {
-	typedef std::vector<SongInternal::Measure<TrackNote>> NoteVector;
+	typedef std::vector<SongInternal::Measure<TrackNote> > NoteVector;
 	NoteVector &Measures = NotesByMeasure[Lane];
 
 	lastPressed = Lane;
@@ -173,7 +173,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	for (uint32 k = 0; k < Channels; k++)
 	{
 		/* Copy measures. (Eek!) */
-		for (std::vector<SongInternal::Measure<TrackNote>>::iterator i = CurrentDiff->Measures[k].begin(); 
+		for (std::vector<SongInternal::Measure<TrackNote> >::iterator i = CurrentDiff->Measures[k].begin(); 
 			i != CurrentDiff->Measures[k].end();
 			i++)
 		{

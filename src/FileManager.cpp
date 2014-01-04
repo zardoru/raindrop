@@ -113,9 +113,10 @@ void FileManager::SetSkin(String Skin)
 	CurrentSkin = Skin;
 }
 
-std::fstream FileManager::OpenFile(String Directory)
+std::fstream& FileManager::OpenFile(String Directory)
 {
-	return std::fstream ( (DirectoryPrefix + Directory).c_str() );
+	std::fstream* f = new std::fstream( (DirectoryPrefix + Directory).c_str() );
+	return *f;
 }
 
 void FileManager::GetSongList(std::vector<SongDC*> &OutVec)

@@ -8,9 +8,9 @@ using std::vector;
 template <class T>
 uint32 SectionIndex(SongInternal::TDifficulty<T> &Diff, float Beat)
 {
-	vector<SongInternal::TDifficulty<T>::TimingSegment> &Timing = Diff.Timing;
+	vector<typename SongInternal::TDifficulty<T>::TimingSegment> &Timing = Diff.Timing;
 	uint32 Index = 0;
-	for (vector<SongInternal::TDifficulty<T>::TimingSegment>::iterator i = Timing.begin(); i != Timing.end(); i++)
+	for (typename vector<typename SongInternal::TDifficulty<T>::TimingSegment>::iterator i = Timing.begin(); i != Timing.end(); i++)
 	{
 		if (Beat >= i->Time)
 			Index++;
@@ -29,7 +29,7 @@ double BpmAtBeat(SongInternal::TDifficulty<T> &Diff, float Beat)
 template <class T>
 double TimeAtBeat(SongInternal::TDifficulty<T> &Diff, float Beat)
 {
-	vector<SongInternal::TDifficulty<T>::TimingSegment> &Timing = Diff.Timing;
+	vector<typename SongInternal::TDifficulty<T>::TimingSegment> &Timing = Diff.Timing;
 	uint32 CurrentIndex = SectionIndex(Diff, Beat);
 	double Time = Diff.Offset;
 
@@ -69,7 +69,7 @@ void GetTimingChangesInInterval(std::vector<typename SongInternal::TDifficulty<T
 {
 	Out.clear();
 
-	for (vector<SongInternal::TDifficulty<T>::TimingSegment>::iterator i = Timing.begin(); i != Timing.end(); i++)
+	for (typename vector<typename SongInternal::TDifficulty<T>::TimingSegment>::iterator i = Timing.begin(); i != Timing.end(); i++)
 	{
 		if (i->Time >= PointA && i->Time < PointB)
 		{

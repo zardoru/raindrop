@@ -14,7 +14,7 @@ class FileManager
 public:
 	static void GetSongList(std::vector<SongDC*> &OutVec);
 	static void GetSongList7K(std::vector<Song7K*> &OutVec);
-	static std::fstream OpenFile(String Directory);
+	static std::fstream& OpenFile(String Directory);
 	static String GetDirectoryPrefix();
 	static String GetSkinPrefix();
 	static void SetSkin(String NextSkin);

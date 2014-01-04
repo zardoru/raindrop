@@ -8,7 +8,7 @@
 #include "FileManager.h"
 
 #include <boost/thread/mutex.hpp>
-#include <SOIL.h>
+#include <SOIL/SOIL.h>
 
 boost::mutex LoadMutex;
 std::map<String, Image*> ImageLoader::Textures;

@@ -1,5 +1,6 @@
 #include "Global.h"
 #include <cstring>
+#include <csignal>
 
 int InfinityMask = 0x7F800000;
 float *PInfinity = (float*)&InfinityMask;
@@ -12,7 +13,7 @@ namespace Utility {
 #ifdef WIN32
 		__asm int 3
 #else
-		asm("int 3");
+		raise(SIGTRAP);
 #endif
 #endif
 	}

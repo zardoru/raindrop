@@ -16,7 +16,7 @@ private:
 	Song7K *MySong;
 	
 	SongInternal::TDifficulty<TrackNote>			 *CurrentDiff;
-	std::vector<SongInternal::Measure<TrackNote>>	 NotesByMeasure[16];
+	std::vector<SongInternal::Measure<TrackNote> >	 NotesByMeasure[16];
 	std::vector<SongInternal::TDifficulty<TrackNote>::TimingSegment> VSpeeds;
 	Image*  NoteImage;
 	Image*  GearLaneImage[MAX_CHANNELS];

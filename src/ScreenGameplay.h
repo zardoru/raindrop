@@ -43,7 +43,7 @@ protected: // shit the edit screen needs
 
 	SoundStream *Music;
 
-	std::vector <std::vector<GameObject>> NotesInMeasure;
+	std::vector <std::vector<GameObject> > NotesInMeasure;
 	void DrawVector(std::vector<GameObject>& Vec, float TimeDelta);
 	void ResetNotes();
 

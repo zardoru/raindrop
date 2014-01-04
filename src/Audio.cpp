@@ -677,7 +677,8 @@ String GetOggTitle(String file)
 		for (int i = 0; i < comment->comments; i++)
 		{
 			std::vector<String> splitvec;
-			boost::split(splitvec, String(comment->user_comments[i]), boost::is_any_of("="));
+			std::string user_comment = comment->user_comments[i];
+			boost::split(splitvec, user_comment, boost::is_any_of("="));
 			if (splitvec[0] == "TITLE")
 			{
 				result = splitvec[1].c_str();

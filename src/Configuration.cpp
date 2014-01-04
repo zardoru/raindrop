@@ -10,6 +10,7 @@ extern "C" {
 }
 #include "LuaBridge/LuaBridge.h"
 
+#include <iostream>
 
 using namespace Configuration;
 using namespace luabridge;
@@ -54,7 +55,7 @@ String GetConfsInt(String Name, String Namespace, lua_State *L)
 	{
 		LuaRef R = getGlobal(L, Namespace.c_str());
 		if (!R.isNil() && !R[Name].isNil())
-			return std::string(R [Name]);
+			return std::string((const char*)(R [Name]));
 		else
 			return "";
 

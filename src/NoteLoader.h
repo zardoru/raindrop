@@ -20,7 +20,7 @@ namespace NoteLoader
 	{
 		String ListString = line.substr(line.find_first_of(":") + 1);
 		std::vector< String > SplitResult;
-		SongInternal::TDifficulty<T>::TimingSegment Segment;
+		typename SongInternal::TDifficulty<T>::TimingSegment Segment;
 
 		// Remove whitespace.
 		boost::replace_all(ListString, "\n", "");

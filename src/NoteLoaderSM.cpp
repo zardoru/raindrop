@@ -175,7 +175,7 @@ Song7K* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)
 #ifndef NDEBUG
 		std::stringstream serr;
 		serr << "couldn't open \"" << filename << "\" for reading";
-		throw std::exception(serr.str().c_str());
+		throw; // std::exception(serr.str().c_str());
 #else
 		return NULL;
 #endif

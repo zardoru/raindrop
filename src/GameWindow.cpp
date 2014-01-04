@@ -229,7 +229,7 @@ void GameWindow::SetupWindow()
 	{
 		std::stringstream serr;
 		serr << "glew failed initialization: " << glewGetErrorString(err);
-		throw std::exception(serr.str().c_str());
+		throw; // std::exception(serr.str().c_str());
 	}
 
 	BindingsManager::Initialize();
@@ -261,7 +261,7 @@ void GameWindow::AutoSetupWindow()
 {
 	// todo: enum modes
 	if (!glfwInit())
-		throw std::exception("glfw failed initialization!"); // don't do shit
+		throw; // std::exception("glfw failed initialization!"); // don't do shit
 
 	AssignSize();
 	matrixSize.x = ScreenWidth;
@@ -271,10 +271,10 @@ void GameWindow::AutoSetupWindow()
 
 #ifdef NDEBUG
 	if (!(wnd = glfwCreateWindow(size.x, size.y, DOTCUR_WINDOWTITLE DOTCUR_VERSIONTEXT, IsFullscreen ? glfwGetPrimaryMonitor() : NULL, NULL)))
-		throw std::exception("couldn't open window!");
+		throw; // std::exception("couldn't open window!");
 #else
 	if (!(wnd = glfwCreateWindow(size.x, size.y, DOTCUR_WINDOWTITLE DOTCUR_VERSIONTEXT, NULL, NULL)))
-		throw std::exception("couldn't open window!");
+		throw; // std::exception("couldn't open window!");
 #endif
 
 	SetupWindow();
@@ -401,7 +401,7 @@ void GameWindow::SetupShaders()
 
 	if (status != GL_TRUE)
 	{	
-		throw std::exception(buffer);
+		throw; // std::exception(buffer);
 	}else
 		printf("%s\n", buffer);
 
@@ -411,7 +411,7 @@ void GameWindow::SetupShaders()
 
 	if (status != GL_TRUE)
 	{
-		throw std::exception(buffer);
+		throw; // std::exception(buffer);
 	}
 	else printf("%s\n", buffer);
 
