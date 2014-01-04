@@ -17,6 +17,8 @@ private:
 	float SongOldTime;
 	float deltaPos;
 	float SpeedMultiplier;
+	bool AudioCompensation;
+	double TimeCompensation;
 
 	/* Positions */
 	float  JudgementLinePos;

@@ -39,6 +39,9 @@ ScreenGameplay7K::ScreenGameplay7K()
 	CurrentVertical = 0;
 	SongTime = 0;
 
+	AudioCompensation = true;
+	TimeCompensation = 0;
+
 	if (!GFont)
 	{	
 		GFont = new BitmapFont();
@@ -86,7 +89,7 @@ void ScreenGameplay7K::RunMeasures()
 			{
 				/* We have to check for all gameplay conditions for this note. */
 
-				if ((SongTime - GetDeviceLatency() - m->GetStartTime()) * 1000 > MS_CUTOFF)
+				if ((SongTime - TimeCompensation - m->GetStartTime()) * 1000 > MS_CUTOFF)
 				{
 					Score.TotalNotes++;
 
@@ -119,7 +122,7 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 	{
 		for (std::vector<TrackNote>::iterator m = (*i).MeasureNotes.begin(); m != (*i).MeasureNotes.end(); m++)
 		{
-			double tD = abs (m->GetStartTime() - (SongTime - GetDeviceLatency())) * 1000;
+			double tD = abs (m->GetStartTime() - (SongTime - TimeCompensation)) * 1000;
 			// std::cout << "\n time: " << m->GetStartTime() << " st: " << SongTime << " td: " << tD;
 
 			lastClosest[Lane] = std::min(tD, (double)lastClosest[Lane]);
@@ -219,6 +222,9 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		}
 	}
 
+	if (AudioCompensation)
+		TimeCompensation = GetDeviceLatency();
+
 
 	/* Initial object distance */
 	if (!Upscroll)
@@ -227,7 +233,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		JudgementLinePos = GearHeight;
 
 	BasePos = JudgementLinePos + (Upscroll ? 5 : -5) /* NoteSize/2 ;P */;
-	CurrentVertical -= VSpeeds.at(0).Value * (WAITING_TIME + CurrentDiff->Offset);
+	CurrentVertical -= VSpeeds.at(0).Value * (WAITING_TIME + CurrentDiff->Offset + TimeCompensation);
 	RecalculateMatrix();
 }
 
