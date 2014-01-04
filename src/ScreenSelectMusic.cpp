@@ -51,6 +51,8 @@ ScreenSelectMusic::ScreenSelectMusic()
 		}
 	}
 	SelectedMode = MODE_DOTCUR;
+
+	OptionUpscroll = false;
 }
 
 void ScreenSelectMusic::MainThreadInitialization()
@@ -170,7 +172,12 @@ bool ScreenSelectMusic::Run(double Delta)
 	if (SelectedMode == MODE_DOTCUR)
 		modeString = "mode: dotcur";
 	else
-		modeString = "mode: 7K";
+	{
+		if (OptionUpscroll)
+			modeString = "mode: 7K (upscroll)";
+		else
+			modeString = "mode: 7K (downscroll)";
+	}
 
 	Font->DisplayText(modeString.c_str(), glm::vec2(ScreenWidth/2-modeString.length() * 5, 40));
 
@@ -320,7 +327,7 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 					_g7Next = new ScreenGameplay7K();
 					_LNext = new ScreenLoading(this, _g7Next);
 
-					_g7Next->Init(SongList7K.at(Cursor), 0);
+					_g7Next->Init(SongList7K.at(Cursor), 0, OptionUpscroll);
 
 					_LNext->Init();
 				}
@@ -333,6 +340,9 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 				break;
 		case KT_Escape:
 			Running = false;
+			break;
+		case KT_FractionDec:
+			OptionUpscroll = !OptionUpscroll;
 			break;
 		case KT_BSPC:
 			if (SelectedMode == MODE_DOTCUR)

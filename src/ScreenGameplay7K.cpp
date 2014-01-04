@@ -16,15 +16,16 @@
 BitmapFont * GFont = NULL;
 int lastPressed = 0;
 int lastMsOff[MAX_CHANNELS];
-double lastClosest[MAX_CHANNELS];
+int lastClosest[MAX_CHANNELS];
 
 /* Time before actually starting everything. */
 #define WAITING_TIME 5
+#define MS_CUTOFF 100
+#define EQ(x) (-100.0/84.0)*x + 10000.0/84.0
+
 
 ScreenGameplay7K::ScreenGameplay7K()
 {
-	Measure = 0;
-	Speed = 0; // Recalculate.
 	SpeedMultiplier = 0;
 	SongOldTime = -1;
 	Music = NULL;
@@ -37,6 +38,9 @@ ScreenGameplay7K::ScreenGameplay7K()
 
 	CurrentVertical = 0;
 	SongTime = 0;
+
+	AudioCompensation = true;
+	TimeCompensation = 0;
 
 	if (!GFont)
 	{	
@@ -51,10 +55,11 @@ void ScreenGameplay7K::Cleanup()
 		Music->Stop();
 }
 
-void ScreenGameplay7K::Init(Song7K* S, int DifficultyIndex)
+void ScreenGameplay7K::Init(Song7K* S, int DifficultyIndex, bool UseUpscroll)
 {
 	MySong = S;
 	CurrentDiff = S->Difficulties[DifficultyIndex];
+	Upscroll = UseUpscroll;
 }
 
 void ScreenGameplay7K::RecalculateEffects()
@@ -68,6 +73,37 @@ void ScreenGameplay7K::RecalculateEffects()
 	{
 		waveEffect = sin(SongTime) * 0.5 * SpeedMultiplierUser;
 	}
+}
+
+void ScreenGameplay7K::RunMeasures()
+{
+	typedef std::vector<SongInternal::Measure<TrackNote>> NoteVector;
+
+	for (unsigned int k = 0; k < Channels; k++)
+	{
+		NoteVector &Measures = NotesByMeasure[k];
+
+		for (NoteVector::iterator i = Measures.begin(); i != Measures.end(); i++)
+		{
+			for (std::vector<TrackNote>::iterator m = (*i).MeasureNotes.begin(); m != (*i).MeasureNotes.end(); m++)
+			{
+				/* We have to check for all gameplay conditions for this note. */
+
+				if ((SongTime - TimeCompensation - m->GetStartTime()) * 1000 > MS_CUTOFF)
+				{
+					Score.TotalNotes++;
+
+					/* remove note from judgement*/
+					 m = (*i).MeasureNotes.erase(m);
+
+					if (m == (*i).MeasureNotes.end())
+						goto next_measure;
+				}
+			}
+			next_measure:;
+		}
+	}
+
 }
 
 void ScreenGameplay7K::JudgeLane(unsigned int Lane)
@@ -86,17 +122,17 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 	{
 		for (std::vector<TrackNote>::iterator m = (*i).MeasureNotes.begin(); m != (*i).MeasureNotes.end(); m++)
 		{
-			double tD = abs (m->GetStartTime() - SongTime) * 1000;
+			double tD = abs (m->GetStartTime() - (SongTime - TimeCompensation)) * 1000;
 			// std::cout << "\n time: " << m->GetStartTime() << " st: " << SongTime << " td: " << tD;
 
 			lastClosest[Lane] = std::min(tD, (double)lastClosest[Lane]);
 
-			if (tD > 100)
+			if (tD > MS_CUTOFF)
 				goto next_note;
 			else
 			{
 				/* first iteration of the accuracy equation */
-				float accPercent = (-100.0/7056.0)*tD*tD + (3200.0/7056.0)*tD + 680000.0/7056.0;
+				float accPercent = EQ(tD);
 				
 				if (accPercent > 100)
 					accPercent = 100;
@@ -105,6 +141,8 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 
 				Score.Accuracy += accPercent;
 				Score.TotalNotes++;
+
+				ExplosionTime[Lane] = 0;
 
 				/* remove note from judgement*/
 				(*i).MeasureNotes.erase(m);
@@ -118,7 +156,10 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 
 void ScreenGameplay7K::RecalculateMatrix()
 {
-	SpeedMultiplier = SpeedMultiplierUser + waveEffect;
+	if (Upscroll)
+		SpeedMultiplier = - (SpeedMultiplierUser + waveEffect);
+	else
+		SpeedMultiplier = SpeedMultiplierUser + waveEffect;
 
 	PositionMatrix = glm::scale(glm::translate(glm::mat4(), 
 			glm::vec3(GearLaneWidth/2 + GearStartX, BasePos + CurrentVertical * SpeedMultiplier + deltaPos, 0)), 
@@ -181,13 +222,18 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		}
 	}
 
+	if (AudioCompensation)
+		TimeCompensation = GetDeviceLatency();
+
 
 	/* Initial object distance */
-	float VertDistance = ((CurrentDiff->Offset / spb(CurrentDiff->Timing[0].Value)) / MySong->MeasureLength) * MeasureBaseSpacing;
-	BasePos = float(ScreenHeight) - GearHeight;
-	// CurrentVertical = -(VertDistance);
-	CurrentVertical -= VSpeeds.at(0).Value * (WAITING_TIME + CurrentDiff->Offset);
+	if (!Upscroll)
+		JudgementLinePos = float(ScreenHeight) - GearHeight;
+	else
+		JudgementLinePos = GearHeight;
 
+	BasePos = JudgementLinePos + (Upscroll ? 5 : -5) /* NoteSize/2 ;P */;
+	CurrentVertical -= VSpeeds.at(0).Value * (WAITING_TIME + CurrentDiff->Offset + TimeCompensation);
 	RecalculateMatrix();
 }
 
@@ -226,7 +272,16 @@ void ScreenGameplay7K::MainThreadInitialization()
 		Keys[i].SetImage ( GearLaneImage[i] );
 		Keys[i].SetSize( GearLaneWidth, GearHeight );
 		Keys[i].Centered = true;
-		Keys[i].SetPosition( GearStartX + GearLaneWidth * i + GearLaneWidth / 2, ScreenHeight - GearHeight/2 );
+
+		Keys[i].SetPosition( GearStartX + GearLaneWidth * i + GearLaneWidth / 2, JudgementLinePos + (Upscroll? -1:1) * GearHeight/2 );
+
+		if (Upscroll)
+			Keys[i].SetRotation(180);
+
+		Explosion[i].Centered = true;
+		Explosion[i].SetSize( GearLaneWidth * 2, GearLaneWidth * 2 );
+		Explosion[i].SetPosition( GearStartX + GearLaneWidth * i + GearLaneWidth / 2, JudgementLinePos );
+		lastClosest[i] = 0;
 	}
 
 	NoteImage = ImageLoader::LoadSkin("note.png");
@@ -242,7 +297,19 @@ void ScreenGameplay7K::MainThreadInitialization()
 		Background.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
 	}
 
-	WindowFrame.SetLightMultiplier(0.6);
+	for (int i = 0; i < 20 /*Frames*/; i++)
+	{
+		char str[256];
+		sprintf(str, "Explosion-%d.png", i);
+		ExplosionFrames[i] = ImageLoader::LoadSkin(str);
+	}
+
+	for (int i = 0; i < MAX_CHANNELS; i++)
+	{
+		ExplosionTime[i] = 0.016 * 20;
+	}
+
+	WindowFrame.SetLightMultiplier(0.6f);
 	memset((void*)&Score, 0, sizeof (AccuracyData7K));
 	Running = true;
 }
@@ -317,6 +384,11 @@ bool ScreenGameplay7K::Run(double Delta)
 
 	ScreenTime += Delta;
 
+	for (int i = 0; i < CurrentDiff->Channels; i++)
+	{
+		ExplosionTime[i] += Delta;
+	}
+
 	if (ScreenTime > WAITING_TIME)
 	{
 
@@ -329,30 +401,22 @@ bool ScreenGameplay7K::Run(double Delta)
 			SongOldTime = 0;
 		}
 
-		SongDelta = Music->GetPlaybackTime() - SongOldTime;
+		SongDelta = Music->GetStream()->GetStreamedTime() - SongOldTime;
 		SongTime += SongDelta;
-		SongOldTime = SongTime;
 
-		/* Update velocity. */
-		if (VSpeeds.size() && SongTime >= VSpeeds.at(0).Time)
-		{
-			Speed = VSpeeds.at(0).Value;
-			VSpeeds.erase(VSpeeds.begin());
-		}
-
-		
-		CurrentVertical += Speed * SongDelta;
+		UpdateVertical();
+		RunMeasures();
 		RecalculateEffects();
 		RecalculateMatrix();
 
+		SongOldTime = SongTime;
 
 		/* Update music. */
 		int32 r;
 		Music->GetStream()->UpdateBuffer(r);
 	}else
 	{
-		Speed = VSpeeds.at(0).Value;
-		CurrentVertical += Speed * Delta; 
+		CurrentVertical += VSpeeds.at(0).Value * Delta; 
 		RecalculateMatrix();
 	}
 
@@ -363,12 +427,55 @@ bool ScreenGameplay7K::Run(double Delta)
 	for (int32 i = 0; i < CurrentDiff->Channels; i++)
 		Keys[i].Render();
 
+	DrawExplosions();
+
 	std::stringstream ss;
 
 	ss << "score: " << Score.Accuracy;
 	ss << "\naccuracy: " << Score.Accuracy / (Score.TotalNotes ? Score.TotalNotes : 1);
-	ss << "\nMult/Speed: " << SpeedMultiplier << "x / " << SpeedMultiplier*4;
+	ss << "\nMult/Speed: " << SpeedMultiplier << "x / " << SpeedMultiplier*4 << "\n";
 
 	GFont->DisplayText(ss.str().c_str(), glm::vec2(0,0));
+
+	for (unsigned int i = 0; i < Channels; i++)
+	{
+		std::stringstream ss;
+		ss << lastClosest[i];
+		GFont->DisplayText(ss.str().c_str(), Keys[i].GetPosition());
+	}
+
 	return Running;
+}
+
+void ScreenGameplay7K::UpdateVertical()
+{
+	/* Update velocity. Use proper integration. */
+	double SongDelta = SongTime - SongOldTime;
+	uint32 Idx = SectionIndex(VSpeeds, SongOldTime) - 1;
+	TimingData IntervalTiming;
+
+	GetTimingChangesInInterval(VSpeeds, SongOldTime, SongTime, IntervalTiming);
+	
+	if (IntervalTiming.size())
+	{
+		SongInternal::TimingSegment Current = VSpeeds[Idx];
+		double OldTime = SongOldTime;
+		
+		uint32 size = IntervalTiming.size();
+
+		for (uint32 i = 0; i < size; i++)
+		{
+			double Change = (IntervalTiming[i].Time - OldTime) * Current.Value;
+			CurrentVertical += Change;
+			Current = IntervalTiming[i];
+			OldTime = Current.Time;
+		}
+
+		/* And then finish. */
+		CurrentVertical += (SongTime - Current.Time) * Current.Value;
+	}
+	else
+	{
+		CurrentVertical += VSpeeds[Idx].Value * SongDelta;
+	}
 }

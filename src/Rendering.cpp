@@ -64,9 +64,11 @@ void GraphObject2D::UpdateTexture()
 
 void Image::Bind()
 {
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	LastBound = this;
+	if (LastBound != this)
+	{
+		glBindTexture(GL_TEXTURE_2D, texture);
+		LastBound = this;
+	}
 }
 
 void GraphObject2D::Render()
@@ -133,6 +135,8 @@ void GraphObject2D::Cleanup()
 	}
 }
 
+uint32 VBO::LastBound = 0;
+
 VBO::VBO(Type T, uint32 Elements)
 {
 	InternalVBO = 0;
@@ -169,7 +173,6 @@ void VBO::Validate()
 	if (!IsValid)
 	{
 		glGenBuffers(1, &InternalVBO);
-		glBindBuffer(GL_ARRAY_BUFFER, InternalVBO);
 		AssignData(VboData);
 		IsValid = true;
 	}
@@ -194,5 +197,9 @@ void VBO::AssignData(float* Data)
 
 void VBO::Bind()
 {
-	glBindBuffer(GL_ARRAY_BUFFER, InternalVBO);
+	if (LastBound != InternalVBO)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, InternalVBO);
+		LastBound = InternalVBO;
+	}
 }

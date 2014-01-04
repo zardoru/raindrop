@@ -80,4 +80,6 @@ void ActorBarline::Run(double TimeDelta, double Ratio)
 		SetPositionY(PlayfieldHeight - GetPosition().y);
 
 	SetPositionY(GetPosition().y + ScreenOffset);
+
+	// assert(GetPosition().y > ScreenOffset);
 }

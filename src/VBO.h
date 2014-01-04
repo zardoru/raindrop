@@ -15,6 +15,7 @@ public:
 
 private:
 	/* GLuint */ uint32 InternalVBO;
+	static uint32 LastBound;
 	bool IsValid;
 	Type mType;
 	float *VboData;

@@ -8,6 +8,17 @@
 
 namespace SongInternal
 {
+	struct TimingSegment
+	{
+		double Time; // in beats
+		double Value; // in bpm
+	};
+}
+
+typedef std::vector<SongInternal::TimingSegment> TimingData;
+
+namespace SongInternal
+{
 	template <class T>
 	class Measure
 	{
@@ -29,15 +40,8 @@ namespace SongInternal
 	template <>
 	struct TDifficulty <GameObject>
 	{
-		// Type
-		struct TimingSegment
-		{
-			double Time; // in beats
-			double Value; // in bpm
-		};
-
 		// Stores bpm at beat pairs
-		std::vector<TimingSegment> Timing;
+		TimingData Timing;
 
 		float Offset;
 		float Duration;
@@ -49,24 +53,18 @@ namespace SongInternal
 		String Name;
 
 		// Stores the ratio barline should move at a certain time
-		std::vector<TimingSegment> BarlineRatios;
+		TimingData BarlineRatios;
 	};
 
 	template <>
 	struct TDifficulty <TrackNote>
 	{
-		// Type
-		struct TimingSegment
-		{
-			double Time; // in beats
-			double Value; // in bpm
-		};
-
 		// Stores bpm at beat pairs
-		std::vector<TimingSegment> Timing;
+		TimingData Timing;
+		TimingData StopsTiming;
 
 		// Vertical speeds. Same role as BarlineRatios.
-		std::vector<TimingSegment> VerticalSpeeds;
+		TimingData VerticalSpeeds;
 
 		float Offset;
 		float Duration;
@@ -81,6 +79,7 @@ namespace SongInternal
 		unsigned char Channels;
 	};
 }
+
 
 template
 <class T>
@@ -125,7 +124,14 @@ public:
 /* 7K Song */
 class Song7K : public TSong < TrackNote >
 {
+	
 public:
+
+	/* For charting systems that use one declaration of timing for all difficulties only used at load time */
+	TimingData BPMData;
+	TimingData StopsData; 
+	bool UseSeparateTimingData;
+
 	Song7K();
 	~Song7K();
 	void Process();

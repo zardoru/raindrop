@@ -4,26 +4,44 @@
 class ScreenGameplay7K : public IScreen
 {
 private:
-	int Measure;
-	float Speed, SpeedMultiplier, SpeedMultiplierUser;
-	float SongOldTime;
-	float deltaPos;
+	
+	/* User Variables */
+	float SpeedMultiplierUser;
+	bool waveEffectEnabled;	
+	bool Upscroll;
+
+	/* Game */
 	double CurrentVertical;
-	float GearLaneWidth, BasePos;
-	float waveEffect; 
-	bool waveEffectEnabled;
 	glm::mat4 PositionMatrix;
 	Song7K *MySong;
+	float SongOldTime;
+	float deltaPos;
+	float SpeedMultiplier;
+	bool AudioCompensation;
+	double TimeCompensation;
+
+	/* Positions */
+	float  JudgementLinePos;
+	float GearLaneWidth, BasePos;
+
+	/* Effects */
+	float waveEffect; 
 	
 	SongInternal::TDifficulty<TrackNote>			 *CurrentDiff;
 	std::vector<SongInternal::Measure<TrackNote> >	 NotesByMeasure[16];
-	std::vector<SongInternal::TDifficulty<TrackNote>::TimingSegment> VSpeeds;
+	TimingData VSpeeds;
 	Image*  NoteImage;
 	Image*  GearLaneImage[MAX_CHANNELS];
 	Image*  GearLaneImageDown[MAX_CHANNELS];
 	Image*  NoteImages[MAX_CHANNELS];
+
 	int		GearBindings[MAX_CHANNELS];
 	uint32	Channels;
+
+	/* Explosions */
+	Image*  ExplosionFrames[32];
+	GraphObject2D Explosion[MAX_CHANNELS];
+	double   ExplosionTime[MAX_CHANNELS];
 
 	PaStreamWrapper *Music;
 
@@ -37,8 +55,14 @@ private:
 		Optimizations will come in later. 
 		See Renderer7K.cpp.	
 	*/
+
+	void UpdateVertical();
 	void RecalculateMatrix();
 	void RecalculateEffects();
+	void RunMeasures();
+
+
+	void DrawExplosions();
 	void DrawMeasures();
 
 
@@ -46,7 +70,7 @@ private:
 	void TranslateKey(KeyType K, bool KeyDown);
 public:
 	ScreenGameplay7K();
-	void Init(Song7K *S, int DifficultyIndex);
+	void Init(Song7K *S, int DifficultyIndex, bool UseUpscroll);
 	void LoadThreadInitialization();
 	void MainThreadInitialization();
 	void Cleanup();

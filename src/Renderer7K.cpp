@@ -19,6 +19,7 @@
 
 void ScreenGameplay7K::DrawMeasures()
 {
+	typedef std::vector<SongInternal::Measure<TrackNote>> NoteVector;
 	float rPos = CurrentVertical * SpeedMultiplier + BasePos;
 
 	// Assign our matrix.
@@ -38,20 +39,14 @@ void ScreenGameplay7K::DrawMeasures()
 	/* todo: instancing */
 	for (uint32 k = 0; k < Channels; k++)
 	{
-		size_t size = NotesByMeasure[k].size();
-		for (uint32 m = 0; m < size; m++)
-		{
-			/* 
-				Tried using two different kinds of "don't draw after/before this point" different methods.
-				They had no visible difference whatsoever, and I'm not sure whether it'll make any difference
-				even for large counts of objects (>50000).
-			*/
+		NoteVector &Measures = NotesByMeasure[k];
 
-			size_t total_notes = NotesByMeasure[k][m].MeasureNotes.size();
-			for (uint32 q = 0; q < total_notes; q++)
+		for (NoteVector::iterator i = Measures.begin(); i != Measures.end(); i++)
+		{
+			for (std::vector<TrackNote>::iterator m = (*i).MeasureNotes.begin(); m != (*i).MeasureNotes.end(); m++)
 			{
 				/* This is the last note in this measure. */
-				float Vertical = (NotesByMeasure[k][m].MeasureNotes[q].GetVertical()* SpeedMultiplier + rPos) ;
+				float Vertical = (m->GetVertical()* SpeedMultiplier + rPos) ;
 				if (Vertical < 0 || Vertical > ScreenHeight)
 					continue; /* If this is not visible, we move on to the next one. */
 
@@ -65,11 +60,30 @@ void ScreenGameplay7K::DrawMeasures()
 						continue;
 				}
 
-				WindowFrame.SetUniform("tranM", &(NotesByMeasure[k][m].MeasureNotes[q].GetMatrix())[0][0]);
+				WindowFrame.SetUniform("tranM", &(m->GetMatrix())[0][0]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 			}
 		}
 	}
 
 	WindowFrame.DisableAttribArray("position");
+}
+
+void ScreenGameplay7K::DrawExplosions()
+{
+	for (int i = 0; i < CurrentDiff->Channels; i++)
+	{
+		int Frame = ExplosionTime[i] / 0.016;
+
+		if (Frame > 19)
+			Explosion[i].Alpha = 0;
+		else
+		{
+			Explosion[i].Alpha = 1;
+			Explosion[i].SetImage ( ExplosionFrames[Frame], false );
+		}
+
+		Explosion[i].Render();
+
+	}
 }

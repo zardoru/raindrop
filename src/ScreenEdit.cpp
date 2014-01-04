@@ -44,7 +44,7 @@ void ScreenEdit::Init(SongDC *Other)
 		NotesInMeasure.clear(); 
 
 		if (!Other->Difficulties[0]->Timing.size())
-			Other->Difficulties[0]->Timing.push_back(SongInternal::TDifficulty<GameObject>::TimingSegment());
+			Other->Difficulties[0]->Timing.push_back(SongInternal::TimingSegment());
 	}
 
 	if (!SavedSound)
@@ -69,7 +69,7 @@ void ScreenEdit::StartPlaying( int32 _Measure )
 	ScreenGameplay::MainThreadInitialization();
 
 	Measure = _Measure;
-	seekTime( TimeAtBeat(*CurrentDiff, Measure * MySong->MeasureLength) );
+	seekTime( TimeAtBeat(CurrentDiff->Timing, CurrentDiff->Offset, Measure * MySong->MeasureLength) );
 	savedMeasure = Measure;
 }
 

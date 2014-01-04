@@ -1,14 +1,21 @@
 #include "Global.h"
 #include "Song.h"
+#include <algorithm>
 
 Song7K::Song7K()
 {
 	MeasureLength = 4;
 	LeadInTime = 1.5;
+	UseSeparateTimingData = false;
 }
 
 Song7K::~Song7K()
 {
+}
+
+int tSort(const SongInternal::TimingSegment &i, const SongInternal::TimingSegment &j)
+{
+	return i.Time < j.Time;
 }
 
 void Song7K::Process()
@@ -68,18 +75,85 @@ void Song7K::Process()
 			so since v = d/t we'd have
 		*/
 
-		/* Hideous templates! */
-		using SongInternal::TDifficulty;
-		for(std::vector<TDifficulty<TrackNote>::TimingSegment>::iterator Time = (*Diff)->Timing.begin();
+		/* Calculate VSpeeds. */
+
+		if ((*Diff)->Offset > 0) /* We have to set up a speed during this time, otherwise it'll be 0. */
+		{
+			SongInternal::TimingSegment VSpeed;
+			float FTime = (spb ((*Diff)->Timing.at(0).Value) * (float)MeasureLength);
+
+			VSpeed.Time = 0;
+			VSpeed.Value = MeasureBaseSpacing / FTime;
+
+			(*Diff)->VerticalSpeeds.push_back(VSpeed);
+		}
+
+		for(TimingData::iterator Time = (*Diff)->Timing.begin();
 			Time != (*Diff)->Timing.end();
 			Time++)
 		{
-			TDifficulty<TrackNote>::TimingSegment VSpeed;
-			float TValue = Time->Value;
+			SongInternal::TimingSegment VSpeed;
 			float FTime = (spb (Time->Value) * (float)MeasureLength);
-			VSpeed.Time = TimeAtBeat(**Diff, Time->Time);
+			VSpeed.Time = TimeAtBeat((*Diff)->Timing, (*Diff)->Offset, Time->Time) + StopTimeAtBeat((*Diff)->StopsTiming, Time->Time);
 			VSpeed.Value = MeasureBaseSpacing / FTime;
 			(*Diff)->VerticalSpeeds.push_back(VSpeed);
 		}
+
+		if (!(*Diff)->StopsTiming.size())
+			continue;
+
+		uint32 kI = 0;
+		/* Here on, just working with stops. */
+		for(TimingData::iterator Time = (*Diff)->StopsTiming.begin();
+			Time != (*Diff)->StopsTiming.end();
+			Time++)
+		{
+			SongInternal::TimingSegment VSpeed;
+			float TValue = TimeAtBeat((*Diff)->Timing, (*Diff)->Offset, Time->Time) + StopTimeAtBeat((*Diff)->StopsTiming, Time->Time);
+			float TValueN = TimeAtBeat((*Diff)->Timing, (*Diff)->Offset, Time->Time) + StopTimeAtBeat((*Diff)->StopsTiming, Time->Time) + Time->Value;
+
+			/* Initial Stop */
+			VSpeed.Time = TValue;
+			VSpeed.Value = 0;
+
+			/* First, eliminate collisions. */
+			for (TimingData::iterator k = (*Diff)->VerticalSpeeds.begin(); k != (*Diff)->VerticalSpeeds.end(); k++)
+			{
+				if ( abs(k->Time - TValue) < 0.000001 ) /* Too close? Remove the collision, leaving only the 0 in front. */
+				{
+					k = (*Diff)->VerticalSpeeds.erase(k);
+
+					if (k == (*Diff)->VerticalSpeeds.end())
+						break;
+				}
+			}
+
+			(*Diff)->VerticalSpeeds.push_back(VSpeed);
+
+			float speedRestore = MeasureBaseSpacing / (spb(BpmAtBeat((*Diff)->Timing, Time->Time)) * MeasureLength);
+
+			/* Find speeds between TValue and TValueN, use the last one as the speed we're going to use. */
+			for (TimingData::iterator k = (*Diff)->VerticalSpeeds.begin(); k != (*Diff)->VerticalSpeeds.end(); k++)
+			{
+				if (k->Time > TValue && k->Time <= TValueN)
+				{
+					speedRestore = k->Value; /* This is the last speed change in the interval that the stop lasts. We'll use it. */
+
+					/* Eliminate this since we're not going to use it. */
+					k = (*Diff)->VerticalSpeeds.erase(k);
+
+					if (k == (*Diff)->VerticalSpeeds.end())
+						break;
+				}
+			}
+
+			/* Restored speed after stop */
+			VSpeed.Time = TValueN;
+			VSpeed.Value = speedRestore;
+			(*Diff)->VerticalSpeeds.push_back(VSpeed);
+			kI ++;
+		}
+
+		std::sort((*Diff)->VerticalSpeeds.begin(), (*Diff)->VerticalSpeeds.end(), tSort);
 	}
 }

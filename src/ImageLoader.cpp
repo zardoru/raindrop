@@ -44,7 +44,6 @@ void ImageLoader::UnloadAll()
 GLuint ImageLoader::UploadToGPU(unsigned char* Data, unsigned int Width, unsigned int Height)
 {
 	GLuint texture;
-	glActiveTexture(GL_TEXTURE0);
 	glGenTextures(1, &texture);
 
 
@@ -116,21 +115,25 @@ Image* ImageLoader::LoadSkin(String filename)
 	return Load(FileManager::GetSkinPrefix() + filename);
 }
 
+void ImageLoader::AddToPending(const char* Filename)
+{
+	UploadData New;
+	int Channels;
+	if (Textures.find(Filename) == Textures.end())
+	{
+		New.Data = SOIL_load_image(Filename, &New.Width, &New.Height, &Channels, SOIL_LOAD_RGBA);
+		PendingUploads.insert( std::pair<char*, UploadData>((char*)Filename, New) );
+	}
+}
+
 /* For multi-threaded loading. */
 void ImageLoader::LoadFromManifest(char** Manifest, int Count, String Prefix)
 {
 	LoadMutex.lock();
 	for (int i = 0; i < Count; i++)
 	{
-		UploadData New;
-		int Channels;
 		const char* FinalFilename = (Prefix + Manifest[i]).c_str();
-
-		if (Textures.find(FinalFilename) == Textures.end())
-		{
-			New.Data = SOIL_load_image(FinalFilename, &New.Width, &New.Height, &Channels, SOIL_LOAD_RGBA);
-			PendingUploads.insert( std::pair<char*, UploadData>((char*)FinalFilename, New) );
-		}
+		AddToPending(FinalFilename);
 	}
 	LoadMutex.unlock();
 }

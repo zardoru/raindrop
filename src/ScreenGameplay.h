@@ -21,7 +21,7 @@ protected: // shit the edit screen needs
 
 	// the point of this is that we can change the barline's position.
 	float MeasureRatio, RatioPerSecond;
-	std::vector<SongInternal::TDifficulty<GameObject>::TimingSegment> BarlineRatios;
+	TimingData BarlineRatios;
 
 	bool IsAutoplaying; // true for autoplaying notes
 
