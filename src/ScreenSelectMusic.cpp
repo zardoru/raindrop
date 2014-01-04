@@ -80,6 +80,7 @@ void ScreenSelectMusic::MainThreadInitialization()
 
 	WindowFrame.SetLightMultiplier(1);
 	Background.AffectedByLightning = true;
+	PendingListY = 1;
 }
 
 void ScreenSelectMusic::LoadThreadInitialization()
@@ -147,9 +148,15 @@ bool ScreenSelectMusic::Run(double Delta)
 			Size = SongList7K.size();
 
 		if (ListY < 0)
+		{
 			ListY = 0;
+			PendingListY = 0;
+		}
 		else if (ListY > ScreenHeight - Size * 20)
+		{
 			ListY = ScreenHeight - Size*20;
+			PendingListY = 0;
+		}
 	}
 
 	glm::vec2 mpos = WindowFrame.GetRelativeMPos();
@@ -161,9 +168,9 @@ bool ScreenSelectMusic::Run(double Delta)
 		posy -= (int)posy % 20;
 		posy = (posy / 20);
 		Cursor = posy;
-		UpdateCursor();
 	}
 
+	UpdateCursor();
 
 	int Cur = 0;
 

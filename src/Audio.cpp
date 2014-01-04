@@ -202,7 +202,8 @@ int32 VorbisStream::readBuffer(void * out, uint32 length)
 		cnt = PaUtil_ReadRingBuffer(&RingBuf, out, toRead);
 		streamTime += (double)(cnt/info->channels) / (double)info->rate;
 		playbackTime = streamTime - GetDeviceLatency();
-	}
+	}else
+		return 0;
 
 	return length;
 }
