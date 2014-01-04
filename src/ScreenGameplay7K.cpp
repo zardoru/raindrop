@@ -86,7 +86,7 @@ void ScreenGameplay7K::RunMeasures()
 			{
 				/* We have to check for all gameplay conditions for this note. */
 
-				if ((SongTime - m->GetStartTime()) * 1000 > MS_CUTOFF)
+				if ((SongTime - GetDeviceLatency() - m->GetStartTime()) * 1000 > MS_CUTOFF)
 				{
 					Score.TotalNotes++;
 
@@ -119,7 +119,7 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 	{
 		for (std::vector<TrackNote>::iterator m = (*i).MeasureNotes.begin(); m != (*i).MeasureNotes.end(); m++)
 		{
-			double tD = abs (m->GetStartTime() - SongTime) * 1000;
+			double tD = abs (m->GetStartTime() - (SongTime - GetDeviceLatency())) * 1000;
 			// std::cout << "\n time: " << m->GetStartTime() << " st: " << SongTime << " td: " << tD;
 
 			lastClosest[Lane] = std::min(tD, (double)lastClosest[Lane]);
@@ -227,7 +227,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		JudgementLinePos = GearHeight;
 
 	BasePos = JudgementLinePos + (Upscroll ? 5 : -5) /* NoteSize/2 ;P */;
-	CurrentVertical -= VSpeeds.at(0).Value * (WAITING_TIME + CurrentDiff->Offset - GetDeviceLatency());
+	CurrentVertical -= VSpeeds.at(0).Value * (WAITING_TIME + CurrentDiff->Offset);
 	RecalculateMatrix();
 }
 
@@ -395,7 +395,7 @@ bool ScreenGameplay7K::Run(double Delta)
 			SongOldTime = 0;
 		}
 
-		SongDelta = Music->GetPlaybackTime() - SongOldTime;
+		SongDelta = Music->GetStream()->GetStreamedTime() - SongOldTime;
 		SongTime += SongDelta;
 
 		UpdateVertical();
