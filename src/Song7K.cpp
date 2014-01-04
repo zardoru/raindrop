@@ -44,7 +44,7 @@ void Song7K::Process()
 			int MIdx = 0;
 
 			/* For each measure of this channel */
-			for (std::vector<SongInternal::Measure<TrackNote>>::iterator Measure = (*Diff)->Measures[KeyIndex].begin(); 
+			for (std::vector<SongInternal::Measure<TrackNote> >::iterator Measure = (*Diff)->Measures[KeyIndex].begin(); 
 				Measure != (*Diff)->Measures[KeyIndex].end();
 				Measure++)
 			{

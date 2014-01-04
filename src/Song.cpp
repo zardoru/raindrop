@@ -118,7 +118,7 @@ void SongDC::Repack()
 {
 	for(vector<TDifficulty<GameObject>*>::iterator Difficulty = Difficulties.begin(); Difficulty != Difficulties.end(); Difficulty++ )
 	{
-		for(vector<Measure<GameObject>>::iterator Measure = (*Difficulty)->Measures.begin(); Measure != (*Difficulty)->Measures.end(); Measure++)
+		for(vector<Measure<GameObject> >::iterator Measure = (*Difficulty)->Measures.begin(); Measure != (*Difficulty)->Measures.end(); Measure++)
 		{
 			for (vector<GameObject>::iterator it = Measure->MeasureNotes.begin(); it != Measure->MeasureNotes.end(); it++)
 			{
@@ -134,7 +134,7 @@ void SongDC::Process(bool CalculateXPos)
 	for(std::vector<TDifficulty<GameObject>*>::iterator Difficulty = Difficulties.begin(); Difficulty != Difficulties.end(); Difficulty++ )
 	{
 		int32 CurrentMeasure = 0;
-		for(std::vector<Measure<GameObject>>::iterator Measure = (*Difficulty)->Measures.begin(); Measure != (*Difficulty)->Measures.end(); Measure++)
+		for(std::vector<Measure<GameObject> >::iterator Measure = (*Difficulty)->Measures.begin(); Measure != (*Difficulty)->Measures.end(); Measure++)
 		{
 			uint32 CurNote = 0;
 			for (std::vector<GameObject>::iterator it = Measure->MeasureNotes.begin(); it != Measure->MeasureNotes.end(); it++)
@@ -227,7 +227,7 @@ bool SongDC::Save(const char* Filename)
 
 		Out << "#NOTES:";
 		// for each measure of this difficulty
-		for (std::vector<Measure<GameObject>>::iterator m = (*i)->Measures.begin(); m != (*i)->Measures.end(); m++)
+		for (std::vector<Measure<GameObject> >::iterator m = (*i)->Measures.begin(); m != (*i)->Measures.end(); m++)
 		{
 			// for each note of this difficulty
 			for (uint32 n = 0; n != m->MeasureNotes.size(); n++)

@@ -28,7 +28,7 @@ private:
 	float waveEffect; 
 	
 	SongInternal::TDifficulty<TrackNote>			 *CurrentDiff;
-	std::vector<SongInternal::Measure<TrackNote>>	 NotesByMeasure[16];
+	std::vector<SongInternal::Measure<TrackNote> >	 NotesByMeasure[16];
 	TimingData VSpeeds;
 	Image*  NoteImage;
 	Image*  GearLaneImage[MAX_CHANNELS];

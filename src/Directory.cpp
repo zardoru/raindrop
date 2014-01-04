@@ -126,8 +126,9 @@ std::vector<std::string> *Directory::ListDirectory(std::vector<std::string> *Vec
 				if (Recursive)
 				{
 					Directory NewPath (fname);
-					NewPath.ListFiles(Out, T, ext, Recursive);
+					NewPath.ListDirectory(Out, T, ext, Recursive);
 				}
+			}
 		}
 
 		closedir(d);

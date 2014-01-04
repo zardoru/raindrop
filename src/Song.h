@@ -47,7 +47,7 @@ namespace SongInternal
 		float Duration;
 
 		// Notes
-		std::vector<Measure<GameObject>> Measures;
+		std::vector<Measure<GameObject> > Measures;
 
 		// Meta
 		String Name;
@@ -70,7 +70,7 @@ namespace SongInternal
 		float Duration;
 
 		// Notes (Up to MAX_CHANNELS tracks)
-		std::vector<Measure<TrackNote>> Measures[MAX_CHANNELS];
+		std::vector<Measure<TrackNote> > Measures[MAX_CHANNELS];
 
 		// Meta
 		String Name;
