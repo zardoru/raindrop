@@ -26,6 +26,7 @@ public:
 	virtual void MainThreadInitialization();
 	virtual bool Run(double delta) = 0;
 	virtual void HandleInput(int32 key, KeyEventType state, bool isMouseInput);
+	virtual void HandleScrollInput(double xOff, double yOff);
 
 	// We need to set up graphics again? This gets called.
 	virtual void Invalidate();

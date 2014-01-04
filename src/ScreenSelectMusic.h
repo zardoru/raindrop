@@ -21,6 +21,9 @@ class ScreenSelectMusic : public IScreen
 	void UpdateCursor();
 	double Time;
 
+	float ListY;
+	float PendingListY;
+
 	ModeType SelectedMode;
 
 public:
@@ -30,6 +33,7 @@ public:
 	bool Run(double Delta);
 	void Cleanup();
 	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);
+	void HandleScrollInput(double xOff, double yOff);
 };
 
 #endif

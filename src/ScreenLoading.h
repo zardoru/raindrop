@@ -14,6 +14,7 @@ public:
 	void Init();
 	bool Run(double TimeDelta);
 	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);
+	void HandleScrollInput(double xOff, double yOff);
 	void Cleanup();
 };
 

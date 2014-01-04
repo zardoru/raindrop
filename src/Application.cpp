@@ -58,6 +58,11 @@ void Application::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 	Game->HandleInput(key, code, isMouseInput);
 }
 
+void Application::HandleScrollInput(double xOff, double yOff)
+{
+	Game->HandleScrollInput(xOff, yOff);
+}
+
 void Application::Close()
 {
 	if (Game)

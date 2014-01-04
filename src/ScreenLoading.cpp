@@ -70,6 +70,12 @@ void ScreenLoading::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 		Next->HandleInput(key, code, isMouseInput);
 }
 
+void ScreenLoading::HandleScrollInput(double xOff, double yOff)
+{
+	if (!LoadThread)
+		Next->HandleScrollInput(xOff, yOff);
+}
+
 void ScreenLoading::Cleanup()
 {
 }

@@ -56,6 +56,8 @@ bool IScreen::RunNested(float delta)
 
 void IScreen::HandleInput(int32 key, KeyEventType state, bool isMouseInput) { /* stub */ }
 
+void IScreen::HandleScrollInput(double xOff, double yOff) { /* stub */ }
+
 void IScreen::Cleanup() { /* stub */ }
 
 void IScreen::Invalidate() { /* stub */ }

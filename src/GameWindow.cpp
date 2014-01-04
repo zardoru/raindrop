@@ -188,6 +188,11 @@ void MouseInputFunc (GLFWwindow*, int32 key, int32 code, int32 modk)
 		return;
 }
 
+void ScrollFunc( GLFWwindow*, double xOff, double yOff )
+{
+	App.HandleScrollInput(xOff, yOff);
+}
+
 void MouseMoveFunc (GLFWwindow*,double newx, double newy)
 {
 	if (!WindowFrame.isGuiInputEnabled)
@@ -253,6 +258,7 @@ void GameWindow::SetupWindow()
 	glfwSetKeyCallback(wnd, InputFunc);
 	glfwSetMouseButtonCallback(wnd, MouseInputFunc);
 	glfwSetCursorPosCallback(wnd, MouseMoveFunc);
+	glfwSetScrollCallback(wnd, ScrollFunc);
 
 	ResizeFunc(wnd, size.x, size.y);
 }

@@ -53,6 +53,8 @@ ScreenSelectMusic::ScreenSelectMusic()
 	SelectedMode = MODE_DOTCUR;
 
 	OptionUpscroll = false;
+
+	ListY = SONGLIST_BASEY;
 }
 
 void ScreenSelectMusic::MainThreadInitialization()
@@ -132,12 +134,30 @@ bool ScreenSelectMusic::Run(double Delta)
 
 	Background.Render();
 
+	if (PendingListY)
+	{
+		ListY += PendingListY * Delta * 2;
+		PendingListY -= PendingListY * Delta * 2;
+
+		uint32 Size;
+
+		if (SelectedMode == MODE_DOTCUR)
+			Size = SongList.size();
+		else
+			Size = SongList7K.size();
+
+		if (ListY < 0)
+			ListY = 0;
+		else if (ListY > ScreenHeight - Size * 20)
+			ListY = ScreenHeight - Size*20;
+	}
+
 	glm::vec2 mpos = WindowFrame.GetRelativeMPos();
 
 	if (mpos.x > SONGLIST_BASEX)
 	{
 		float posy = mpos.y;
-		posy -= 120;
+		posy -= ListY;
 		posy -= (int)posy % 20;
 		posy = (posy / 20);
 		Cursor = posy;
@@ -151,7 +171,7 @@ bool ScreenSelectMusic::Run(double Delta)
 	{
 		for (std::vector<SongDC*>::iterator i = SongList.begin(); i != SongList.end(); i++)
 		{
-			Font->DisplayText((*i)->SongName.c_str(), glm::vec2(SONGLIST_BASEX, Cur*20 + SONGLIST_BASEY));
+			Font->DisplayText((*i)->SongName.c_str(), glm::vec2(SONGLIST_BASEX, Cur*20 + ListY));
 			Cur++;
 		}
 	}else if (SelectedMode == MODE_7K)
@@ -159,7 +179,7 @@ bool ScreenSelectMusic::Run(double Delta)
 		for (std::vector<Song7K*>::iterator i = SongList7K.begin(); i != SongList7K.end(); i++)
 		{
 			std::string text = (*i)->SongName;
-			Font->DisplayText(text.c_str(), glm::vec2(SONGLIST_BASEX, Cur*20 + SONGLIST_BASEY));
+			Font->DisplayText(text.c_str(), glm::vec2(SONGLIST_BASEX, Cur*20 + ListY));
 			Cur++;
 		}
 	}
@@ -263,7 +283,7 @@ void ScreenSelectMusic::UpdateCursor()
 		ClickSnd->Reset();
 	}
 
-	SelCursor.SetPosition(SONGLIST_BASEX - SelCursor.GetWidth(), Cursor * SelCursor.GetHeight() + SONGLIST_BASEY);
+	SelCursor.SetPosition(SONGLIST_BASEX - SelCursor.GetWidth() - sin(Time*2) * sin(Time*2) * 10, Cursor * SelCursor.GetHeight() + ListY);
 }
 
 void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
@@ -351,5 +371,20 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 				SelectedMode = MODE_DOTCUR;
 			Cursor = 0;
 		}
+
+		switch (key)
+		{
+		case 'Q':
+			PendingListY += 320;
+			break;
+		case 'W':
+			PendingListY -= 320;
+			break;
+		}
 	}
+}
+
+void ScreenSelectMusic::HandleScrollInput(double xOff, double yOff)
+{
+	PendingListY += yOff * 80;
 }

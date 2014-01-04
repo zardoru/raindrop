@@ -88,6 +88,12 @@ void ScreenMainMenu::HandleInput(int32 key, KeyEventType code, bool isMouseInput
 	}
 }
 
+void ScreenMainMenu::HandleScrollInput(double xOff, double yOff)
+{
+	if (Next)
+		Next->HandleScrollInput(xOff, yOff);
+}
+
 bool ScreenMainMenu::Run (double Delta)
 {
 	if (RunNested(Delta))

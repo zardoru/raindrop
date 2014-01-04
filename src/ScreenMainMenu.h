@@ -11,6 +11,7 @@ public:
 	ScreenMainMenu(IScreen *Parent);
 	void Init();
 	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);
+	void HandleScrollInput(double xOff, double yOff);
 	bool Run (double Delta);
 	void Cleanup();
 };
