@@ -109,3 +109,20 @@ double StopTimeAtBeat(const TimingData &StopsTiming, float Beat)
 
 	return Time;
 }
+
+double VerticalAtTime(const TimingData &Timing, float Time)
+{
+	uint32 Section = SectionIndex(Timing, Time) - 1;
+	double Out = 0;
+
+	if (Section < 0) Section = 0;
+
+	for (uint32 i = 0; i < Section; i++)
+	{
+		Out += (Timing[i+1].Time - Timing[i].Time) * Timing[i].Value;
+	}
+
+	Out += (Time - Timing[Section].Time) * Timing[Section].Value;
+
+	return Out;
+}

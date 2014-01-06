@@ -233,7 +233,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		JudgementLinePos = GearHeight;
 
 	BasePos = JudgementLinePos + (Upscroll ? 5 : -5) /* NoteSize/2 ;P */;
-	CurrentVertical -= VSpeeds.at(0).Value * (WAITING_TIME + CurrentDiff->Offset + TimeCompensation);
+	CurrentVertical -= VSpeeds.at(0).Value * (WAITING_TIME /*+ CurrentDiff->Offset*/ + TimeCompensation);
 	RecalculateMatrix();
 }
 

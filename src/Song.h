@@ -124,7 +124,7 @@ public:
 /* 7K Song */
 class Song7K : public TSong < TrackNote >
 {
-	
+	void ProcessVSpeeds(SongInternal::TDifficulty<TrackNote>* Diff);
 public:
 
 	/* For charting systems that use one declaration of timing for all difficulties only used at load time */
