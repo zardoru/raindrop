@@ -23,7 +23,7 @@ public:
 	
 	String path() const;
 	const char* c_path() const;
-	std::vector<String> *ListDirectory(std::vector<String> *Vec = NULL, DirType T = FS_REG, const char* ext = NULL, bool Recursive = false);
+	std::vector<String>& ListDirectory(std::vector<String>& Vec, DirType T = FS_REG, const char* ext = NULL, bool Recursive = false);
 	
 private:
 	String curpath;

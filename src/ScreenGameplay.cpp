@@ -109,7 +109,7 @@ void ScreenGameplay::StoreEvaluation(Judgement Eval)
 void ScreenGameplay::MainThreadInitialization()
 {
 	Cursor.SetImage(ImageLoader::LoadSkin("cursor.png"));
-	Barline.SetImage(ImageLoader::LoadSkin("Barline.png"));
+	Barline.SetImage(ImageLoader::LoadSkin("barline.png"));
 	MarkerA.SetImage(ImageLoader::LoadSkin("barline_marker.png"));
 	MarkerB.SetImage(ImageLoader::LoadSkin("barline_marker.png"));
 	Background.SetImage(ImageLoader::Load(MySong->BackgroundDir));
@@ -137,7 +137,7 @@ void ScreenGameplay::MainThreadInitialization()
 
 	Lifebar.UpdateHealth();
 
-	ReadySign.SetImage(ImageLoader::LoadSkin("Ready.png"));
+	ReadySign.SetImage(ImageLoader::LoadSkin("ready.png"));
 	ReadySign.SetPosition(0, ScreenHeight);
 	ReadySign.Centered = true;
 	ReadySign.AffectedByLightning = true;

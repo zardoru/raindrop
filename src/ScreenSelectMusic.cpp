@@ -85,9 +85,14 @@ void ScreenSelectMusic::MainThreadInitialization()
 
 void ScreenSelectMusic::LoadThreadInitialization()
 {
+
+	std::cout << "Getting dotCur song list..." << std::endl;
 	FileManager::GetSongList(SongList);
+	std::cout << "Getting dotCur keyboard song list..." << std::endl;
 	FileManager::GetSongList7K(SongList7K);
 
+	std::cout << "Done loading." << std::endl;
+	
 	Running = true;
 	OldCursor = Cursor = 0;
 	SwitchBackGuiPending = true;

@@ -8,19 +8,23 @@
 #include "NoteLoader.h"
 #include "NoteLoaderSM.h"
 
+#include <iostream>
+
 #define DirectoryPrefix String("./GameData/")
 #define SkinsPrefix String("Skins/")
 #define SongsPrefix String("./Songs/")
+
 
 String FileManager::CurrentSkin = "default";
 
 void loadSong( Directory songPath, std::vector<SongDC*> &VecOut )
 {
+
 	bool FoundDCF = false;
 	std::vector<String> Listing;
 
-	songPath.ListDirectory(&Listing, Directory::FS_REG, "dcf");
-
+	songPath.ListDirectory(Listing, Directory::FS_REG, "dcf");
+	
 	// First, search for .dcf files.
 	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{
@@ -41,7 +45,7 @@ void loadSong( Directory songPath, std::vector<SongDC*> &VecOut )
 		String PotentialBG, PotentialBGRelative;
 
 		Listing.clear();
-		songPath.ListDirectory(&Listing, Directory::FS_REG);
+		songPath.ListDirectory(Listing, Directory::FS_REG);
 
 		for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 		{
@@ -76,13 +80,14 @@ void loadSong( Directory songPath, std::vector<SongDC*> &VecOut )
 			NewS->BackgroundRelativeDir = PotentialBGRelative;
 		}
 	}
+
 }
 
 void loadSong7K( Directory songPath, std::vector<Song7K*> &VecOut )
 {
 	std::vector<String> Listing;
 
-	songPath.ListDirectory(&Listing, Directory::FS_REG, "sm");
+	songPath.ListDirectory(Listing, Directory::FS_REG, "sm");
 
 	// Search .sm files. Same as with dcf.
 	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
@@ -123,10 +128,12 @@ void FileManager::GetSongList(std::vector<SongDC*> &OutVec)
 {
 	Directory Dir (SongsPrefix);
 	std::vector <String> Listing;
-	Dir.ListDirectory(&Listing, Directory::FS_DIR);
+	Dir.ListDirectory(Listing, Directory::FS_DIR);
 	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{ 
+		std::cout << "loading song " << *i << "..." << std::endl;
 		loadSong(Dir.path() + *i, OutVec);
+		std::cout << "Done loading song " << *i << "." << std::endl;
 	}
 	
 }
@@ -135,9 +142,11 @@ void FileManager::GetSongList7K(std::vector<Song7K*> &OutVec)
 {
 	Directory Dir (SongsPrefix);
 	std::vector <String> Listing;
-	Dir.ListDirectory(&Listing, Directory::FS_DIR);
+	Dir.ListDirectory(Listing, Directory::FS_DIR);
 	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{ 
+		std::cout << "loading song " << *i << "..." << std::endl;
 		loadSong7K(Dir.path() + *i, OutVec);
+		std::cout << "Done loading song " << *i << "." << std::endl;
 	}
 }
