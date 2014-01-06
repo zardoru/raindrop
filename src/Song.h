@@ -132,6 +132,13 @@ public:
 	TimingData StopsData; 
 	bool UseSeparateTimingData;
 
+	enum 
+	{
+		BT_Beat,
+		BT_MS,
+		BT_Beatspace
+	} BPMType;
+
 	Song7K();
 	~Song7K();
 	void Process(float Drift = 0);

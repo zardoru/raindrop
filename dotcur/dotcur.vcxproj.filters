@@ -162,6 +162,9 @@
     <ClCompile Include="..\src\SongTiming.cpp">
       <Filter>Source Files\GameGlobal</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\NoteLoaderFTB.cpp">
+      <Filter>Source Files\Mode7K</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\GraphObject2D.h">
@@ -272,13 +275,13 @@
     <ClInclude Include="..\src\SongTiming.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\NoteLoaderSM.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\ScreenGameplay7K.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Configuration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\NoteLoader7K.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

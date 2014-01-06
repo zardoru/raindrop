@@ -6,7 +6,7 @@
 
 /* Note Loaders */
 #include "NoteLoader.h"
-#include "NoteLoaderSM.h"
+#include "NoteLoader7K.h"
 
 #include <iostream>
 

@@ -209,6 +209,7 @@
     <ClCompile Include="..\src\ImageLoader.cpp" />
     <ClCompile Include="..\src\lua.c" />
     <ClCompile Include="..\src\NoteLoader.cpp" />
+    <ClCompile Include="..\src\NoteLoaderFTB.cpp" />
     <ClCompile Include="..\src\NoteLoaderSM.cpp" />
     <ClCompile Include="..\src\pa_ringbuffer.c" />
     <ClCompile Include="..\src\Renderer7K.cpp" />
@@ -254,7 +255,7 @@
     <ClInclude Include="..\src\Image.h" />
     <ClInclude Include="..\src\ImageLoader.h" />
     <ClInclude Include="..\src\NoteLoader.h" />
-    <ClInclude Include="..\src\NoteLoaderSM.h" />
+    <ClInclude Include="..\src\NoteLoader7K.h" />
     <ClInclude Include="..\src\Screen.h" />
     <ClInclude Include="..\src\ScreenEdit.h" />
     <ClInclude Include="..\src\ScreenEvaluation.h" />

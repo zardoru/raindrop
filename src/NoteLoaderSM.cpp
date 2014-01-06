@@ -1,7 +1,7 @@
 #include <fstream>
 
 #include "Global.h"
-#include "NoteLoaderSM.h"
+#include "NoteLoader7K.h"
 #include "NoteLoader.h"
 
 #include <boost/algorithm/string.hpp>
@@ -177,6 +177,9 @@ Song7K* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)
 	std::ifstream filein (filename.c_str());
 	Song7K *Out = new Song7K();
 	SongInternal::TDifficulty<TrackNote> *Difficulty = new SongInternal::TDifficulty<TrackNote>();
+
+	// Stepmania uses beat-based locations for stops and BPM.
+	Out->BPMType = Song7K::BT_Beat;
 
 	if (!filein.is_open())
 	{

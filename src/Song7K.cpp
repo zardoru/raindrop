@@ -38,8 +38,25 @@ void Song7K::ProcessVSpeeds(SongInternal::TDifficulty<TrackNote>* Diff)
 		Time++)
 	{
 		SongInternal::TimingSegment VSpeed;
-		float FTime = (spb (Time->Value) * (float)MeasureLength);
-		VSpeed.Time = TimeAtBeat(Diff->Timing, Diff->Offset, Time->Time) + StopTimeAtBeat(Diff->StopsTiming, Time->Time);
+
+
+		float FTime;
+
+		if (BPMType == BT_Beat) // Time is in Beats
+		{
+			FTime = (spb (Time->Value) * (float)MeasureLength);
+			VSpeed.Time = TimeAtBeat(Diff->Timing, Diff->Offset, Time->Time) + StopTimeAtBeat(Diff->StopsTiming, Time->Time);
+		}
+		else if (BPMType == BT_MS) // Time is in MS
+		{
+			FTime = (spb (Time->Value) * (float)MeasureLength);
+			VSpeed.Time = Time->Time;
+		}else if ( BPMType == BT_Beatspace )
+		{
+			FTime = Time->Value / 1000.0 * MeasureLength;
+			VSpeed.Time = Time->Time;
+		}
+
 		VSpeed.Value = MeasureBaseSpacing / FTime;
 		Diff->VerticalSpeeds.push_back(VSpeed);
 	}
