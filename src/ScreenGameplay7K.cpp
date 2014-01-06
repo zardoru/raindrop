@@ -53,6 +53,8 @@ void ScreenGameplay7K::Cleanup()
 {
 	if (Music)
 		Music->Stop();
+
+	CurrentDiff->Offset -= TimeCompensation;
 }
 
 void ScreenGameplay7K::Init(Song7K* S, int DifficultyIndex, bool UseUpscroll)
@@ -209,8 +211,8 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	if (AudioCompensation)
 		TimeCompensation = GetDeviceLatency();
-	
-	MySong->Process(TimeCompensation);
+
+	MySong->Process(0);
 	
 	Channels = CurrentDiff->Channels;
 	VSpeeds = CurrentDiff->VerticalSpeeds;

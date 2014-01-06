@@ -80,7 +80,7 @@ void Song7K::ProcessVSpeeds(SongInternal::TDifficulty<TrackNote>* Diff)
 		/* Find speeds between TValue and TValueN, use the last one as the speed we're going to use. */
 		for (TimingData::iterator k = Diff->VerticalSpeeds.begin(); k != Diff->VerticalSpeeds.end(); k++)
 		{
-			if (k->Time > TValue && k->Time <= TValueN)
+			if (k->Time > TValue && k->Time < TValueN)
 			{
 				speedRestore = k->Value; /* This is the last speed change in the interval that the stop lasts. We'll use it. */
 
