@@ -207,6 +207,11 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		Music = new PaStreamWrapper(MySong->SongFilename.c_str());
 	}
 
+	if (AudioCompensation)
+		TimeCompensation = GetDeviceLatency();
+	
+	MySong->Process(TimeCompensation);
+	
 	Channels = CurrentDiff->Channels;
 	VSpeeds = CurrentDiff->VerticalSpeeds;
 
@@ -222,9 +227,6 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		}
 	}
 
-	if (AudioCompensation)
-		TimeCompensation = GetDeviceLatency();
-
 
 	/* Initial object distance */
 	if (!Upscroll)
@@ -233,8 +235,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		JudgementLinePos = GearHeight;
 
 	BasePos = JudgementLinePos + (Upscroll ? 5 : -5) /* NoteSize/2 ;P */;
-	CurrentVertical -= VSpeeds.at(0).Value * (WAITING_TIME );
-	VerticalAdjust = -VSpeeds.at(0).Value * TimeCompensation;
+	CurrentVertical -= VSpeeds.at(0).Value * (WAITING_TIME);
 	RecalculateMatrix();
 }
 
@@ -405,7 +406,7 @@ bool ScreenGameplay7K::Run(double Delta)
 		SongDelta = Music->GetStream()->GetStreamedTime() - SongOldTime;
 		SongTime += SongDelta;
 
-		UpdateVertical();
+		CurrentVertical = VerticalAtTime(VSpeeds, SongTime);
 		RunMeasures();
 		RecalculateEffects();
 		RecalculateMatrix();
@@ -447,14 +448,12 @@ bool ScreenGameplay7K::Run(double Delta)
 
 	return Running;
 }
-
+#if 0
 void ScreenGameplay7K::UpdateVertical()
 {
-	CurrentVertical = VerticalAtTime(VSpeeds, SongTime) + VerticalAdjust;
-
 	/* Using this method instead is possible, but.. */
 
-	/*double SongDelta = SongTime - SongOldTime;
+	double SongDelta = SongTime - SongOldTime;
 	uint32 Idx = SectionIndex(VSpeeds, SongOldTime) - 1;
 	TimingData IntervalTiming;
 
@@ -481,5 +480,6 @@ void ScreenGameplay7K::UpdateVertical()
 	else
 	{
 		CurrentVertical += VSpeeds[Idx].Value * SongDelta;
-	}*/
+	}
 }
+#endif

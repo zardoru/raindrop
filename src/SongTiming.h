@@ -10,7 +10,7 @@ double BpmAtBeat(const TimingData &Timing, float Beat);
 
 double TimeAtBeat(const TimingData &Timing, float Offset, float Beat);
 
-double VerticalAtTime(const TimingData &Timing, float Time);
+double VerticalAtTime(const TimingData &Timing, float Time, float Drift = 0);
 
 double StopTimeAtBeat(const TimingData &StopsTiming, float Beat);
 

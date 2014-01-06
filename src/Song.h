@@ -134,7 +134,7 @@ public:
 
 	Song7K();
 	~Song7K();
-	void Process();
+	void Process(float Drift);
 };
 
 /* Song Timing */

@@ -264,7 +264,5 @@ Song7K* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)
 	}
 
 	delete Difficulty;
-
-	Out->Process();
 	return Out;
 }

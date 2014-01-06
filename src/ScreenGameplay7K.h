@@ -11,7 +11,7 @@ private:
 	bool Upscroll;
 
 	/* Game */
-	double CurrentVertical, VerticalAdjust;
+	double CurrentVertical;
 	glm::mat4 PositionMatrix;
 	Song7K *MySong;
 	float SongOldTime;
@@ -56,7 +56,6 @@ private:
 		See Renderer7K.cpp.	
 	*/
 
-	void UpdateVertical();
 	void RecalculateMatrix();
 	void RecalculateEffects();
 	void RunMeasures();

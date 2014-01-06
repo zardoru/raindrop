@@ -110,7 +110,7 @@ double StopTimeAtBeat(const TimingData &StopsTiming, float Beat)
 	return Time;
 }
 
-double VerticalAtTime(const TimingData &Timing, float Time)
+double VerticalAtTime(const TimingData &Timing, float Time, float Drift)
 {
 	uint32 Section = SectionIndex(Timing, Time) - 1;
 	double Out = 0;
@@ -122,7 +122,7 @@ double VerticalAtTime(const TimingData &Timing, float Time)
 		Out += (Timing[i+1].Time - Timing[i].Time) * Timing[i].Value;
 	}
 
-	Out += (Time - Timing[Section].Time) * Timing[Section].Value;
+	Out += (Time - Timing[Section].Time + Drift) * Timing[Section].Value;
 
 	return Out;
 }

@@ -102,7 +102,7 @@ void Song7K::ProcessVSpeeds(SongInternal::TDifficulty<TrackNote>* Diff)
 	std::sort(Diff->VerticalSpeeds.begin(), Diff->VerticalSpeeds.end(), tSort);
 }
 
-void Song7K::Process()
+void Song7K::Process(float Drift)
 {
 	/* 
 		We'd like to build the notes' position from 0 to infinity, 
@@ -146,7 +146,7 @@ void Song7K::Process()
 					float MeasureVerticalD = MeasureBaseSpacing * NoteMeasure;
 					float FractionVerticalD = 1.0f / float((*Diff)->Measures[KeyIndex][NoteMeasure].Fraction) * float(CurrentNote.GetFraction()) * MeasureBaseSpacing;
 					*/
-					glm::vec2 VerticalPosition( 0, VerticalAtTime((*Diff)->VerticalSpeeds, CurrentNote.GetStartTime()) );
+					glm::vec2 VerticalPosition( 0, VerticalAtTime((*Diff)->VerticalSpeeds, CurrentNote.GetStartTime(), Drift) );
 
 					// if upscroll change minus for plus as well as matrix at screengameplay7k
 					CurrentNote.AssignPosition(BasePosition - VerticalPosition);
