@@ -51,7 +51,7 @@ void Song7K::ProcessVSpeeds(SongInternal::TDifficulty<TrackNote>* Diff)
 		{
 			FTime = (spb (Time->Value) * (float)MeasureLength);
 			VSpeed.Time = Time->Time;
-		}else if ( BPMType == BT_Beatspace )
+		}else if ( BPMType == BT_Beatspace ) // Time in MS, and not using bpm, but ms per beat.
 		{
 			FTime = Time->Value / 1000.0 * MeasureLength;
 			VSpeed.Time = Time->Time;
@@ -61,10 +61,9 @@ void Song7K::ProcessVSpeeds(SongInternal::TDifficulty<TrackNote>* Diff)
 		Diff->VerticalSpeeds.push_back(VSpeed);
 	}
 
-	if (!Diff->StopsTiming.size())
+	if (!Diff->StopsTiming.size() || BPMType != BT_Beat) // Stops only supported in Beat mode.
 		return;
 
-	uint32 kI = 0;
 	/* Here on, just working with stops. */
 	for(TimingData::iterator Time = Diff->StopsTiming.begin();
 		Time != Diff->StopsTiming.end();
@@ -94,7 +93,13 @@ void Song7K::ProcessVSpeeds(SongInternal::TDifficulty<TrackNote>* Diff)
 
 		float speedRestore = MeasureBaseSpacing / (spb(BpmAtBeat(Diff->Timing, Time->Time)) * MeasureLength);
 
-		/* Find speeds between TValue and TValueN, use the last one as the speed we're going to use. */
+		/* 
+			Find speeds between TValue and TValueN, use the last one as the speed we're going to use. 
+			There's quite the count of simfiles that use overlapping stops and bpm changes, and I'm not really
+			sure how to handle them from a vertical speeds perspective.
+			That said, here's my try.
+		*/
+
 		for (TimingData::iterator k = Diff->VerticalSpeeds.begin(); k != Diff->VerticalSpeeds.end(); k++)
 		{
 			if (k->Time > TValue && k->Time < TValueN)
@@ -113,7 +118,6 @@ void Song7K::ProcessVSpeeds(SongInternal::TDifficulty<TrackNote>* Diff)
 		VSpeed.Time = TValueN;
 		VSpeed.Value = speedRestore;
 		Diff->VerticalSpeeds.push_back(VSpeed);
-		kI ++;
 	}
 
 	std::sort(Diff->VerticalSpeeds.begin(), Diff->VerticalSpeeds.end(), tSort);

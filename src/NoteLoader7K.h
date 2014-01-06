@@ -5,12 +5,13 @@
 
 namespace NoteLoaderSM
 {
-	Song7K* LoadObjectsFromFile(String filename, String prefix = "");
+	Song7K* LoadObjectsFromFile(String filename, String prefix);
 }
 
 namespace NoteLoaderFTB
 {
-	Song7K* LoadObjectsFromFile(String filename, String prefix = "");
+	void LoadMetadata(String filename, String prefix, Song7K *Out);
+	void LoadObjectsFromFile(String filename, String prefix, Song7K *Out);
 }
 
 #endif

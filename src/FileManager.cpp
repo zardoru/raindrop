@@ -98,8 +98,27 @@ void loadSong7K( Directory songPath, std::vector<Song7K*> &VecOut )
 		{
 			New->ChartFilename = *i;
 			VecOut.push_back(New);
+			return;
 		}
 	}
+
+	songPath.ListDirectory(Listing, Directory::FS_REG);
+	Song7K *New = new Song7K();
+	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
+	{
+		if (Utility::GetExtension(*i) == "fmd") // Ftb MetaData
+		{
+			NoteLoaderFTB::LoadMetadata(songPath.path() + "/" + *i, songPath.path(), New);
+		}else if (Utility::GetExtension(*i) == "ftb")
+		{
+			NoteLoaderFTB::LoadObjectsFromFile(songPath.path() + "/" + *i, songPath.path(), New);
+		}
+	}
+
+	if (New->Difficulties.size())
+		VecOut.push_back(New);
+	else
+		delete New;
 }
 
 String FileManager::GetDirectoryPrefix()
