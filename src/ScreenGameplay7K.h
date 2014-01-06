@@ -11,7 +11,7 @@ private:
 	bool Upscroll;
 
 	/* Game */
-	double CurrentVertical;
+	double CurrentVertical, VerticalAdjust;
 	glm::mat4 PositionMatrix;
 	Song7K *MySong;
 	float SongOldTime;

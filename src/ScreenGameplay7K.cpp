@@ -233,7 +233,8 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		JudgementLinePos = GearHeight;
 
 	BasePos = JudgementLinePos + (Upscroll ? 5 : -5) /* NoteSize/2 ;P */;
-	CurrentVertical -= VSpeeds.at(0).Value * (WAITING_TIME /*+ CurrentDiff->Offset*/ + TimeCompensation);
+	CurrentVertical -= VSpeeds.at(0).Value * (WAITING_TIME );
+	VerticalAdjust = -VSpeeds.at(0).Value * TimeCompensation;
 	RecalculateMatrix();
 }
 
@@ -449,8 +450,11 @@ bool ScreenGameplay7K::Run(double Delta)
 
 void ScreenGameplay7K::UpdateVertical()
 {
-	/* Update velocity. Use proper integration. */
-	double SongDelta = SongTime - SongOldTime;
+	CurrentVertical = VerticalAtTime(VSpeeds, SongTime) + VerticalAdjust;
+
+	/* Using this method instead is possible, but.. */
+
+	/*double SongDelta = SongTime - SongOldTime;
 	uint32 Idx = SectionIndex(VSpeeds, SongOldTime) - 1;
 	TimingData IntervalTiming;
 
@@ -471,11 +475,11 @@ void ScreenGameplay7K::UpdateVertical()
 			OldTime = Current.Time;
 		}
 
-		/* And then finish. */
+		// And then finish. 
 		CurrentVertical += (SongTime - Current.Time) * Current.Value;
 	}
 	else
 	{
 		CurrentVertical += VSpeeds[Idx].Value * SongDelta;
-	}
+	}*/
 }
