@@ -71,7 +71,7 @@ std::vector<std::string>& Directory::ListDirectory(std::vector<std::string>& Vec
 	hFind = FindFirstFile(DirFind.c_str(), &ffd);
 
 	if (hFind == INVALID_HANDLE_VALUE)
-		return Out;
+		return Vec;
 
 	do {
 		if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY && T == FS_DIR) || (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && T == FS_REG))
@@ -79,9 +79,9 @@ std::vector<std::string>& Directory::ListDirectory(std::vector<std::string>& Vec
 			std::string fname = ffd.cFileName;
 
 			if (ext && fname.substr(fname.find_last_of(".")+1) == std::string(ext)) 
-				Out->push_back(fname);
+				Vec.push_back(fname);
 			if (!ext)
-				Out->push_back(fname);
+				Vec.push_back(fname);
 		}else
 		{
 			std::string fname = curpath + ffd.cFileName + "./*";
@@ -89,7 +89,7 @@ std::vector<std::string>& Directory::ListDirectory(std::vector<std::string>& Vec
 			if (Recursive)
 			{
 				Directory NewPath (fname);
-				NewPath.ListDirectory(Out, T, ext, Recursive);
+				NewPath.ListDirectory(Vec, T, ext, Recursive);
 			}
 		}
 	}while (FindNextFile(hFind, &ffd) != 0);

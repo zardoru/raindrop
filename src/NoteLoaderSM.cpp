@@ -196,7 +196,6 @@ Song7K* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)
 	while (filein)
 	{
 		std::getline(filein, line, ';'); 
-		std::cout << line << std::endl;
 
 		if (line.size() < 3)
 			continue;

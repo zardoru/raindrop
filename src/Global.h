@@ -37,6 +37,13 @@ namespace Utility
 	String RemoveExtension(String Fn);
 }
 
+template <class T>
+T abs (T x)
+{
+	return x > 0? x : -x;
+}
+
+
 #ifdef WIN32
 #pragma warning (disable: 4244)
 #pragma warning (disable: 4996) // deprecation
