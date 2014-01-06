@@ -10,6 +10,8 @@
 #include <boost/foreach.hpp>
 #include <fstream>
 
+#define debug(N) std::cout << "Debug " << N << std::endl;
+
 /* Note Loader for the .dcf format. Heavily inspired by Stepmania. */
 
 float _ScreenDifference()
@@ -28,6 +30,7 @@ void LoadNotes(SongDC* Out, SongInternal::TDifficulty<GameObject>* Difficulty, S
 
 	// Remove whitespace.
 	boost::replace_all(objectstring, "\n", "");
+	boost::replace_all(objectstring, "\r", "");
 	// boost::replace_all(objectstring, "M", ""); // mirror flags
 
 	boost::split(splitvec, objectstring, boost::is_any_of(",")); // Separate measures!
@@ -44,9 +47,11 @@ void LoadNotes(SongDC* Out, SongInternal::TDifficulty<GameObject>* Difficulty, S
 			Difficulty->Measures.push_back(Measure);
 			continue;
 		}
+		
+		std::cout << objectlist << std::endl;
 
 		/* Mirror command. */
-		if ( objectlist.at(0) == 'M')
+		if ( objectlist[0] == 'M')
 		{
 			invert = true;
 			boost::replace_all(objectlist, "M", "");
@@ -69,6 +74,7 @@ void LoadNotes(SongDC* Out, SongInternal::TDifficulty<GameObject>* Difficulty, S
 
 				if (object_parameters[0].length() > 0) // does it have length?
 					xpos = boost::lexical_cast<float> (object_parameters[0].c_str()); // assign it
+				
 
 				if (object_parameters.size() > 1) // We got a hold note parameter
 				{
@@ -112,6 +118,8 @@ void LoadNotes(SongDC* Out, SongInternal::TDifficulty<GameObject>* Difficulty, S
 
 	// A fairly expensive copy, I'd dare say?
 	// However, it's loading. I don't think some delay will fuck it up that bad.
+	
+
 	Out->Difficulties.push_back(Difficulty); 
 }
 
@@ -137,7 +145,7 @@ SongDC* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 
 	// get lines separating with ; token
 	String line;
-	while (!filein.eof())
+	while (filein)
 	{
 		std::getline(filein, line, ';'); 
 		String command = line.substr(0, line.find_first_of(":"));
@@ -168,8 +176,6 @@ SongDC* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 		{
 			LoadTimingList(Difficulty->Timing, line);
 		}
-
-
 
 		OnCommand(#OFFSET)
 		{
@@ -212,6 +218,7 @@ SongDC* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 	}
 	delete Difficulty; // There will always be an extra copy.
 
+	std::cout << "Done loading file." << std::endl;
 	// at this point the objects are sorted! by measure and within the measure, by fraction.
 	Out->Process();
 	return Out;

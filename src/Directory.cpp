@@ -60,14 +60,8 @@ Directory operator/(std::string subpath, Directory parent)
 std::string Directory::path() const { return curpath; }
 const char* Directory::c_path() const { return curpath.c_str(); }
 
-std::vector<std::string> *Directory::ListDirectory(std::vector<std::string> *Vec, DirType T, const char* ext, bool Recursive)
+std::vector<std::string>& Directory::ListDirectory(std::vector<std::string>& Vec, DirType T, const char* ext, bool Recursive)
 {
-	std::vector<std::string> *Out = NULL;
-	
-	if (!Vec)
-		Out = new std::vector<std::string>();
-	else
-		Out = Vec;
 
 #ifdef _WIN32
 	HANDLE hFind = INVALID_HANDLE_VALUE;
@@ -110,23 +104,24 @@ std::vector<std::string> *Directory::ListDirectory(std::vector<std::string> *Vec
 	{
 		while ((dir = readdir(d)) != NULL)
 		{
-			if (dir->d_type == DT_REG)
+			if (dir->d_type == DT_REG || dir->d_type == DT_DIR && T == FS_DIR)
 			{
 				std::string fname = dir->d_name;
 				
 				// Extension is what we need?
 				if (ext && fname.substr(fname.find_last_of(".")+1) == std::string(ext)) 
-					Out->push_back(fname);
+					Vec.push_back(fname);
 				else if (!ext)
-					Out->push_back(fname);
+					Vec.push_back(fname);
+
 			}else if (dir->d_type == DT_DIR)
 			{
-				std::string fname = curpath + "/" + dir->d_name + "/";
+				std::string fname = std::string(dir->d_name) + "/";
 
 				if (Recursive)
 				{
 					Directory NewPath (fname);
-					NewPath.ListDirectory(Out, T, ext, Recursive);
+					NewPath.ListDirectory(Vec, T, ext, Recursive);
 				}
 			}
 		}
@@ -134,5 +129,5 @@ std::vector<std::string> *Directory::ListDirectory(std::vector<std::string> *Vec
 		closedir(d);
 	}
 #endif
-	return Out;
+	return Vec;
 }

@@ -77,7 +77,7 @@ void ScreenGameplay7K::RecalculateEffects()
 
 void ScreenGameplay7K::RunMeasures()
 {
-	typedef std::vector<SongInternal::Measure<TrackNote>> NoteVector;
+	typedef std::vector<SongInternal::Measure<TrackNote> > NoteVector;
 
 	for (unsigned int k = 0; k < Channels; k++)
 	{

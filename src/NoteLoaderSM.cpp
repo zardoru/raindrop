@@ -73,6 +73,7 @@ void LoadTracksSM(Song7K *Out, SongInternal::TDifficulty<TrackNote> *Difficulty,
 	/* Remove newlines and comments */
 	CommandContents = RemoveComments(CommandContents);
 	boost::replace_all(CommandContents, "\n", "");
+	boost::replace_all(CommandContents, "\r", "");
 	boost::replace_all(CommandContents, " ", "");
 
 	/* Split contents */
@@ -192,9 +193,10 @@ Song7K* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)
 	Out->UseSeparateTimingData = false;
 
 	String line;
-	while (!filein.eof())
+	while (filein)
 	{
 		std::getline(filein, line, ';'); 
+		std::cout << line << std::endl;
 
 		if (line.size() < 3)
 			continue;

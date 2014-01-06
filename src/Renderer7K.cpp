@@ -19,7 +19,7 @@
 
 void ScreenGameplay7K::DrawMeasures()
 {
-	typedef std::vector<SongInternal::Measure<TrackNote>> NoteVector;
+	typedef std::vector<SongInternal::Measure<TrackNote> > NoteVector;
 	float rPos = CurrentVertical * SpeedMultiplier + BasePos;
 
 	// Assign our matrix.
