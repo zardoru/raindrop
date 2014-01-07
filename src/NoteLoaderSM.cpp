@@ -27,8 +27,8 @@ int GetTracksByMode(String mode)
 	ModeType(dance-double, 8);
 	ModeType(pump-single, 5);
 	ModeType(pump-double, 10);
-	Utility::DebugBreak();
-	return 1;
+	// Utility::DebugBreak();
+	return 0;
 }
 
 #undef ModeType
@@ -82,6 +82,9 @@ void LoadTracksSM(Song7K *Out, SongInternal::TDifficulty<TrackNote> *Difficulty,
 	/* What we'll work with */
 	String NoteString = Mainline[5];
 	int Keys = GetTracksByMode(Mainline[0]);
+
+	if (!Keys)
+		return;
 
 	Difficulty->Channels = Keys;
 	Difficulty->Name = Mainline[2];
