@@ -126,7 +126,7 @@ enum ModeType
 	};
 
 #define DOTCUR_WINDOWTITLE "dC ver: "
-#define DOTCUR_VERSION "0.5"
+#define DOTCUR_VERSION "0.6"
 #ifdef NDEBUG
 #define DOTCUR_BUILDTYPE " "
 #else
