@@ -39,7 +39,7 @@ ScreenGameplay7K::ScreenGameplay7K()
 	CurrentVertical = 0;
 	SongTime = 0;
 
-	AudioCompensation = true;
+	AudioCompensation = (Configuration::GetConfigf("AudioCompensation") != 0);
 	TimeCompensation = 0;
 
 	if (!GFont)
