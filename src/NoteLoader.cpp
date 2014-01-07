@@ -47,8 +47,6 @@ void LoadNotes(SongDC* Out, SongInternal::TDifficulty<GameObject>* Difficulty, S
 			Difficulty->Measures.push_back(Measure);
 			continue;
 		}
-		
-		std::cout << objectlist << std::endl;
 
 		/* Mirror command. */
 		if ( objectlist[0] == 'M')
@@ -218,7 +216,10 @@ SongDC* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 	}
 	delete Difficulty; // There will always be an extra copy.
 
+#ifndef NDEBUG
 	std::cout << "Done loading file." << std::endl;
+#endif
+
 	// at this point the objects are sorted! by measure and within the measure, by fraction.
 	Out->Process();
 	return Out;

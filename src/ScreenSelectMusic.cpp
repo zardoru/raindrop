@@ -85,13 +85,18 @@ void ScreenSelectMusic::MainThreadInitialization()
 
 void ScreenSelectMusic::LoadThreadInitialization()
 {
-
+#ifndef NDEBUG
 	std::cout << "Getting dotCur song list..." << std::endl;
+#endif
 	FileManager::GetSongList(SongList);
+#ifndef NDEBUG
 	std::cout << "Getting dotCur keyboard song list..." << std::endl;
+#endif
 	FileManager::GetSongList7K(SongList7K);
 
+#ifndef NDEBUG
 	std::cout << "Done loading." << std::endl;
+#endif
 	
 	Running = true;
 	OldCursor = Cursor = 0;
