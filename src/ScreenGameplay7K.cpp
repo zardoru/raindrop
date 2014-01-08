@@ -89,7 +89,7 @@ void ScreenGameplay7K::RunMeasures()
 			{
 				/* We have to check for all gameplay conditions for this note. */
 
-				if ((SongTime - TimeCompensation - m->GetStartTime()) * 1000 > MS_CUTOFF)
+				if ((SongTime - m->GetStartTime()) * 1000 > MS_CUTOFF)
 				{
 					Score.TotalNotes++;
 
@@ -122,7 +122,7 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 	{
 		for (std::vector<TrackNote>::iterator m = (*i).MeasureNotes.begin(); m != (*i).MeasureNotes.end(); m++)
 		{
-			double tD = abs (m->GetStartTime() - (SongTime - TimeCompensation)) * 1000;
+			double tD = abs (m->GetStartTime() - SongTime) * 1000;
 			// std::cout << "\n time: " << m->GetStartTime() << " st: " << SongTime << " td: " << tD;
 
 			lastClosest[Lane] = std::min(tD, (double)lastClosest[Lane]);
@@ -210,14 +210,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	if (AudioCompensation)
 		TimeCompensation = GetDeviceLatency();
 
-	if (CurrentDiff->StopsTiming.size())
-	{
-		CurrentDiff->Offset += TimeCompensation;
-		MySong->Process(0);
-		CurrentDiff->Offset -= TimeCompensation;
-	}
-	else 
-		MySong->Process(TimeCompensation);
+	MySong->Process(TimeCompensation);
 
 	Channels = CurrentDiff->Channels;
 	VSpeeds = CurrentDiff->VerticalSpeeds;

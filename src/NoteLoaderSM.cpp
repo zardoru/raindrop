@@ -95,9 +95,8 @@ void LoadTracksSM(Song7K *Out, SongInternal::TDifficulty<TrackNote> *Difficulty,
 	boost::split(MeasureText, NoteString, boost::is_any_of(","));
 
 	/* Hold data */
-	float KeyStartTime[16];
-	int KeyMeasure[16];
-	int KeyFraction[16];
+	double KeyStartTime[16];
+	double KeyBeat[16]; // heh
 	
 	/* For each measure of the song */
 	for (uint32 i = 0; i < MeasureText.size(); i++) /* i = current measure */
@@ -124,19 +123,18 @@ void LoadTracksSM(Song7K *Out, SongInternal::TDifficulty<TrackNote> *Difficulty,
 					switch (MeasureText[i].at(0))
 					{
 					case '1': /* Taps */
-						Note.AssignSongPosition(i, m);
-						Note.AssignTime(Time, 0);
+						Note.AssignSongPosition(Beat);
+						Note.AssignTime(Time);
 						Measure[k].MeasureNotes.push_back(Note);
 						break;
 					case '2': /* Holds */
 					case '4':
 						KeyStartTime[k] = Time;
-						KeyMeasure[k] = i;
-						KeyFraction[k] = m;
+						KeyBeat[k] /*heh*/ = Beat;
 						break;
 					case '3': /* Hold releases */
 						Note.AssignTime(KeyStartTime[k], Time);
-						Note.AssignSongPosition(KeyMeasure[k], KeyFraction[k]);
+						Note.AssignSongPosition(KeyBeat[k], Beat);
 						Measure[k].MeasureNotes.push_back(Note);
 						break;
 					default:

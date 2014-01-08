@@ -171,7 +171,7 @@ bool ScreenSelectMusic::Run(double Delta)
 
 	glm::vec2 mpos = WindowFrame.GetRelativeMPos();
 
-	if (mpos.x > SONGLIST_BASEX)
+	if (mpos.x > ListY)
 	{
 		float posy = mpos.y;
 		posy -= ListY;
@@ -341,7 +341,7 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 			UpdateCursor();
 			break;
 		case KT_Select:
-			if (!isMouseInput || (WindowFrame.GetRelativeMPos().x > SONGLIST_BASEX && WindowFrame.GetRelativeMPos().y > SONGLIST_BASEY))
+			if (!isMouseInput || (WindowFrame.GetRelativeMPos().x > SONGLIST_BASEX && WindowFrame.GetRelativeMPos().y > ListY))
 			{
 				SelectSnd->Reset();
 

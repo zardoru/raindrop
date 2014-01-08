@@ -4,7 +4,7 @@
 
 TrackNote::TrackNote()
 {
-	Track = StartTime = EndTime = Measure = Fraction = 0;
+	Track = StartTime = EndTime = 0;
 }
 
 TrackNote::~TrackNote()
@@ -22,32 +22,34 @@ void TrackNote::AssignTime(double Start, double End)
 	EndTime = End;
 }
 
-void TrackNote::AssignSongPosition(int _Measure, int _Fraction)
+void TrackNote::AssignSongPosition(double _BeatStart, double _BeatEnd)
 {
-	Measure = _Measure;
-	Fraction = _Fraction;
+	BeatStart = _BeatStart;
+	BeatEnd = _BeatEnd;
 }
 
-int TrackNote::GetMeasure() const
+double TrackNote::GetBeatStart() const
 {
-	return Measure;
+	return BeatStart;
 }
 
-int TrackNote::GetFraction() const
+double TrackNote::GetBeatEnd() const
 {
-	return Fraction;
+	return BeatEnd;
+}
+
+void TrackNote::AddTime(double Time)
+{
+	StartTime += Time;
+
+	if (EndTime) // Actually using this?
+		EndTime += Time;
 }
 
 void TrackNote::AssignPosition(glm::vec2 Position)
 {
 	b_pos = Position;
 	final = glm::translate(glm::mat4(), glm::vec3(b_pos.x, b_pos.y, 0));
-}
-
-void TrackNote::AssignSpeedMultiplier(float Mult)
-{
-	b_pos.y = b_pos.y * Mult;
-	
 }
 
 glm::mat4& TrackNote::GetMatrix()

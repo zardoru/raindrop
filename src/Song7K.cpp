@@ -7,6 +7,7 @@ Song7K::Song7K()
 	MeasureLength = 4;
 	LeadInTime = 1.5;
 	UseSeparateTimingData = false;
+	Processed = false;
 }
 
 Song7K::~Song7K()
@@ -18,11 +19,11 @@ int tSort(const SongInternal::TimingSegment &i, const SongInternal::TimingSegmen
 	return i.Time < j.Time;
 }
 
-void Song7K::ProcessVSpeeds(SongInternal::TDifficulty<TrackNote>* Diff)
+void Song7K::ProcessVSpeeds(SongInternal::TDifficulty<TrackNote>* Diff, double Drift)
 {
 	/* Calculate VSpeeds. */
 
-	if (Diff->Offset > 0) /* We have to set up a speed during this time, otherwise it'll be 0. */
+	if (Diff->Offset > 0 || Drift) /* We have to set up a speed during this time, otherwise it'll be 0. */
 	{
 		SongInternal::TimingSegment VSpeed;
 		float FTime = (spb (Diff->Timing.at(0).Value) * (float)MeasureLength);
@@ -45,21 +46,24 @@ void Song7K::ProcessVSpeeds(SongInternal::TDifficulty<TrackNote>* Diff)
 		if (BPMType == BT_Beat) // Time is in Beats
 		{
 			FTime = (spb (Time->Value) * (float)MeasureLength);
-			VSpeed.Time = TimeAtBeat(Diff->Timing, Diff->Offset, Time->Time) + StopTimeAtBeat(Diff->StopsTiming, Time->Time);
+			VSpeed.Time = TimeAtBeat(Diff->Timing, Diff->Offset + Drift, Time->Time) + StopTimeAtBeat(Diff->StopsTiming, Time->Time);
 		}
 		else if (BPMType == BT_MS) // Time is in MS
 		{
 			FTime = (spb (Time->Value) * (float)MeasureLength);
-			VSpeed.Time = Time->Time;
+			VSpeed.Time = Time->Time + Drift;
 		}else if ( BPMType == BT_Beatspace ) // Time in MS, and not using bpm, but ms per beat.
 		{
 			FTime = Time->Value / 1000.0 * MeasureLength;
-			VSpeed.Time = Time->Time;
+			VSpeed.Time = Time->Time + Drift;
 		}
 
 		VSpeed.Value = MeasureBaseSpacing / FTime;
 		Diff->VerticalSpeeds.push_back(VSpeed);
 	}
+
+	/* Sort for justice */
+	std::sort(Diff->VerticalSpeeds.begin(), Diff->VerticalSpeeds.end(), tSort);
 
 	if (!Diff->StopsTiming.size() || BPMType != BT_Beat) // Stops only supported in Beat mode.
 		return;
@@ -70,8 +74,8 @@ void Song7K::ProcessVSpeeds(SongInternal::TDifficulty<TrackNote>* Diff)
 		Time++)
 	{
 		SongInternal::TimingSegment VSpeed;
-		float TValue = TimeAtBeat(Diff->Timing, Diff->Offset, Time->Time) + StopTimeAtBeat(Diff->StopsTiming, Time->Time);
-		float TValueN = TimeAtBeat(Diff->Timing, Diff->Offset, Time->Time) + StopTimeAtBeat(Diff->StopsTiming, Time->Time) + Time->Value;
+		float TValue = TimeAtBeat(Diff->Timing, Diff->Offset + Drift, Time->Time) + StopTimeAtBeat(Diff->StopsTiming, Time->Time);
+		float TValueN = TimeAtBeat(Diff->Timing, Diff->Offset + Drift, Time->Time) + StopTimeAtBeat(Diff->StopsTiming, Time->Time) + Time->Value;
 
 		/* Initial Stop */
 		VSpeed.Time = TValue;
@@ -136,13 +140,16 @@ void Song7K::Process(float Drift)
 		measure * measuresize + fraction * fractionsize
 	*/
 
+	if (Processed)
+		return;
+
 	/* For all difficulties */
 	for (std::vector<SongInternal::TDifficulty<TrackNote>*>::iterator Diff = Difficulties.begin(); Diff != Difficulties.end(); Diff++)
 	{
 		if (!(*Diff)->Timing.size())
 			continue;
 
-		ProcessVSpeeds(*Diff);
+		ProcessVSpeeds(*Diff, Drift);
 
 		/* For all channels of this difficulty */
 		for (int KeyIndex = 0; KeyIndex < (*Diff)->Channels; KeyIndex++)
@@ -167,7 +174,9 @@ void Song7K::Process(float Drift)
 					float MeasureVerticalD = MeasureBaseSpacing * NoteMeasure;
 					float FractionVerticalD = 1.0f / float((*Diff)->Measures[KeyIndex][NoteMeasure].Fraction) * float(CurrentNote.GetFraction()) * MeasureBaseSpacing;
 					*/
-					glm::vec2 VerticalPosition( 0, VerticalAtTime((*Diff)->VerticalSpeeds, CurrentNote.GetStartTime(), Drift) );
+					CurrentNote.AddTime (Drift);
+
+					glm::vec2 VerticalPosition( 0, VerticalAtTime((*Diff)->VerticalSpeeds, CurrentNote.GetStartTime()) );
 
 					// if upscroll change minus for plus as well as matrix at screengameplay7k
 					CurrentNote.AssignPosition(BasePosition - VerticalPosition);
@@ -175,14 +184,8 @@ void Song7K::Process(float Drift)
 				MIdx++;
 			}
 		}
-
-		/* 
-			Now, vertical speeds. 
-			The model says we have to move a measure in a certain time
-			this certain time is equal to spb * mlen
-			so since v = d/t we'd have
-		*/
-
-		
 	}
+
+	PreviousDrift = Drift;
+	Processed = true;
 }
