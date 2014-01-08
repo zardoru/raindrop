@@ -54,6 +54,10 @@ namespace SongInternal
 
 		// Stores the ratio barline should move at a certain time
 		TimingData BarlineRatios;
+
+		uint32 TotalNotes;
+		uint32 TotalHolds;
+		uint32 TotalObjects;
 	};
 
 	template <>
@@ -74,6 +78,10 @@ namespace SongInternal
 
 		// Meta
 		String Name;
+
+		uint32 TotalNotes;
+		uint32 TotalHolds;
+		uint32 TotalObjects;
 
 		// 7k
 		unsigned char Channels;

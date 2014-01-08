@@ -27,6 +27,7 @@ void LoadNotes(SongDC* Out, SongInternal::TDifficulty<GameObject>* Difficulty, S
 	bool invert = false;
 
 	Difficulty->Name = Out->SongName; // todo: change this.
+	Difficulty->TotalNotes = Difficulty->TotalHolds = Difficulty->TotalObjects = 0;
 
 	// Remove whitespace.
 	boost::replace_all(objectstring, "\n", "");
@@ -95,7 +96,15 @@ void LoadNotes(SongDC* Out, SongInternal::TDifficulty<GameObject>* Difficulty, S
 				GameObject Temp;
 
 				if (xpos != 0)
+				{
 					Temp.SetPositionX(xpos);
+					Difficulty->TotalObjects++;
+
+					if (hold_duration)
+						Difficulty->TotalHolds++;
+					else
+						Difficulty->TotalNotes++;
+				}
 				else
 				{
 					/* Position 0 is a special X constant that will make the note invisible 

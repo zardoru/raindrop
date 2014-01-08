@@ -50,6 +50,7 @@ void NoteLoaderFTB::LoadObjectsFromFile(String filename, String prefix, Song7K *
 	Out->BPMType = Song7K::BT_MS; // MS using BPMs.
 	Difficulty->Channels = 7;
 	Difficulty->Offset = 0;
+	Difficulty->TotalNotes = Difficulty->TotalHolds = Difficulty->TotalObjects = 0;
 
 	for (int i = 0; i < 7; i++)
 		Measure[i].Fraction = -1;
@@ -84,13 +85,20 @@ void NoteLoaderFTB::LoadObjectsFromFile(String filename, String prefix, Song7K *
 			SplitResult NoteInfo;
 			boost::split(NoteInfo, LineContents.at(0), boost::is_any_of("-"));
 			if (NoteInfo.size() > 1)
+			{
 				Note.AssignTime(atof(NoteInfo.at(0).c_str()) / 1000.0, atof(NoteInfo.at(1).c_str()) / 1000.0);
+				Difficulty->TotalNotes++;
+			}
 			else
+			{
 				Note.AssignTime(atof(NoteInfo.at(0).c_str()) / 1000.0, 0);
+				Difficulty->TotalHolds++;
+			}
 
 			/* index 1 is unused */
 			int Track = atoi(LineContents[2].c_str()); // Always > 1
 			Note.AssignTrack(Track-1);
+			Difficulty->TotalObjects++;
 			Measure[Track-1].MeasureNotes.push_back(Note);
 		}
 	}

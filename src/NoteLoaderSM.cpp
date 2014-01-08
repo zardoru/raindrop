@@ -88,6 +88,7 @@ void LoadTracksSM(Song7K *Out, SongInternal::TDifficulty<TrackNote> *Difficulty,
 
 	Difficulty->Channels = Keys;
 	Difficulty->Name = Mainline[2];
+	Difficulty->TotalNotes = Difficulty->TotalHolds = Difficulty->TotalObjects = 0;
 	
 	/* Now we should have our notes within NoteString. 
 	We'll split them by measure using , as a separator.*/
@@ -125,6 +126,8 @@ void LoadTracksSM(Song7K *Out, SongInternal::TDifficulty<TrackNote> *Difficulty,
 					case '1': /* Taps */
 						Note.AssignSongPosition(Beat);
 						Note.AssignTime(Time);
+						Difficulty->TotalNotes++;
+						Difficulty->TotalObjects++;
 						Measure[k].MeasureNotes.push_back(Note);
 						break;
 					case '2': /* Holds */
@@ -135,6 +138,8 @@ void LoadTracksSM(Song7K *Out, SongInternal::TDifficulty<TrackNote> *Difficulty,
 					case '3': /* Hold releases */
 						Note.AssignTime(KeyStartTime[k], Time);
 						Note.AssignSongPosition(KeyBeat[k], Beat);
+						Difficulty->TotalHolds++;
+						Difficulty->TotalObjects++;
 						Measure[k].MeasureNotes.push_back(Note);
 						break;
 					default:

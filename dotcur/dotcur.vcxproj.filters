@@ -40,6 +40,12 @@
     <Filter Include="Source Files\Mode7K">
       <UniqueIdentifier>{c3089987-1f92-45ff-a0d1-9044d1842a64}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Mode7K\Gameplay">
+      <UniqueIdentifier>{ac81bae6-5efb-458d-b3bd-eb4d1ca2976b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Mode7K\Internal">
+      <UniqueIdentifier>{497e5e45-0fad-43da-9c02-48ccf3f7e14d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\soil\image_DXT.c">
@@ -135,23 +141,8 @@
     <ClCompile Include="..\src\ScreenEdit.cpp">
       <Filter>Source Files\ModeDotcur</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\TrackNote.cpp">
-      <Filter>Source Files\Mode7K</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Song.cpp">
       <Filter>Source Files\ModeDotcur\Internal</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\NoteLoaderSM.cpp">
-      <Filter>Source Files\Mode7K</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Song7K.cpp">
-      <Filter>Source Files\Mode7K</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ScreenGameplay7K.cpp">
-      <Filter>Source Files\Mode7K</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Renderer7K.cpp">
-      <Filter>Source Files\Mode7K</Filter>
     </ClCompile>
     <ClCompile Include="..\src\lua.c">
       <Filter>Source Files\Backend</Filter>
@@ -162,8 +153,23 @@
     <ClCompile Include="..\src\SongTiming.cpp">
       <Filter>Source Files\GameGlobal</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\ScreenGameplay7K.cpp">
+      <Filter>Source Files\Mode7K\Gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Song7K.cpp">
+      <Filter>Source Files\Mode7K\Gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\TrackNote.cpp">
+      <Filter>Source Files\Mode7K\Internal</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\NoteLoaderFTB.cpp">
-      <Filter>Source Files\Mode7K</Filter>
+      <Filter>Source Files\Mode7K\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\NoteLoaderSM.cpp">
+      <Filter>Source Files\Mode7K\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Renderer7K.cpp">
+      <Filter>Source Files\Mode7K\Internal</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
