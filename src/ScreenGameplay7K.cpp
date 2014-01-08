@@ -20,8 +20,20 @@ int lastClosest[MAX_CHANNELS];
 
 /* Time before actually starting everything. */
 #define WAITING_TIME 5
-#define MS_CUTOFF 100
 #define EQ(x) (-100.0/84.0)*x + 10000.0/84.0
+
+#define ACC_MIN 16
+#define ACC_MIN_SQ ACC_MIN * ACC_MIN
+#define ACC_MAX 100
+#define ACC_MAX_SQ ACC_MAX * ACC_MAX
+#define ACC_CUTOFF 100
+
+float accuracy_percent(float var){
+	if(var < ACC_MIN_SQ) return 100;
+	if(var > ACC_MAX_SQ) return 0;
+
+	return (ACC_MAX_SQ - var) / (ACC_MAX_SQ - ACC_MIN_SQ) * 100;
+}
 
 
 ScreenGameplay7K::ScreenGameplay7K()
@@ -89,9 +101,11 @@ void ScreenGameplay7K::RunMeasures()
 			{
 				/* We have to check for all gameplay conditions for this note. */
 
-				if ((SongTime - m->GetStartTime()) * 1000 > MS_CUTOFF)
+				if ((SongTime - m->GetStartTime()) * 1000 > ACC_CUTOFF)
 				{
+					Score.total_sqdev += ACC_CUTOFF * ACC_CUTOFF;
 					Score.TotalNotes++;
+					Score.Accuracy = accuracy_percent(Score.total_sqdev / Score.TotalNotes);
 
 					/* remove note from judgement*/
 					 m = (*i).MeasureNotes.erase(m);
@@ -127,20 +141,24 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 
 			lastClosest[Lane] = std::min(tD, (double)lastClosest[Lane]);
 
-			if (tD > MS_CUTOFF)
+			if (tD > ACC_CUTOFF)
 				goto next_note;
 			else
 			{
 				/* first iteration of the accuracy equation */
-				float accPercent = EQ(tD);
+				// float accPercent = accuracy_percent(tD);
 				
-				if (accPercent > 100)
-					accPercent = 100;
+				// if (accPercent > 100)
+					// accPercent = 100;
 
 				lastMsOff[Lane] = tD;
 
-				Score.Accuracy += accPercent;
+				Score.total_sqdev += tD * tD;
 				Score.TotalNotes++;
+				
+				Score.Accuracy = accuracy_percent(Score.total_sqdev / Score.TotalNotes);
+				
+				Score.points += tD <= 20 ? 1 : 2;
 
 				ExplosionTime[Lane] = 0;
 
@@ -433,8 +451,8 @@ bool ScreenGameplay7K::Run(double Delta)
 
 	std::stringstream ss;
 
-	ss << "score: " << Score.Accuracy;
-	ss << "\naccuracy: " << Score.Accuracy / (Score.TotalNotes ? Score.TotalNotes : 1);
+	ss << "score: " << Score.points;
+	ss << "\naccuracy: " << Score.Accuracy;
 	ss << "\nMult/Speed: " << SpeedMultiplier << "x / " << SpeedMultiplier*4 << "\n";
 
 	GFont->DisplayText(ss.str().c_str(), glm::vec2(0,0));

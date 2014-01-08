@@ -64,7 +64,6 @@ private:
 	void DrawExplosions();
 	void DrawMeasures();
 
-
 	void JudgeLane(unsigned int Lane);
 	void TranslateKey(KeyType K, bool KeyDown);
 public:
