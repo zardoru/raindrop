@@ -630,6 +630,7 @@ void PaStreamWrapper::Start(bool looping, bool stream)
 		// start filling the ring buffer
 		if (stream)
 			Sound->startStream();
+		Sound->Start();
 		Pa_StartStream(mStream);
 	}
 }
