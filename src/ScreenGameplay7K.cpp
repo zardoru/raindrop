@@ -26,7 +26,7 @@ int lastClosest[MAX_CHANNELS];
 #define ACC_MIN_SQ ACC_MIN * ACC_MIN
 #define ACC_MAX 100
 #define ACC_MAX_SQ ACC_MAX * ACC_MAX
-#define ACC_CUTOFF 100
+#define ACC_CUTOFF 200
 
 float accuracy_percent(float var){
 	if(var < ACC_MIN_SQ) return 100;
@@ -106,6 +106,7 @@ void ScreenGameplay7K::RunMeasures()
 					Score.total_sqdev += ACC_CUTOFF * ACC_CUTOFF;
 					Score.TotalNotes++;
 					Score.Accuracy = accuracy_percent(Score.total_sqdev / Score.TotalNotes);
+					Score.combo = 0;
 
 					/* remove note from judgement*/
 					 m = (*i).MeasureNotes.erase(m);
@@ -155,10 +156,12 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 
 				Score.total_sqdev += tD * tD;
 				Score.TotalNotes++;
+				if(tD > ACC_MAX) Score.combo = 0; else ++Score.combo;
+				if(Score.combo > Score.max_combo) Score.max_combo = Score.combo;
 				
 				Score.Accuracy = accuracy_percent(Score.total_sqdev / Score.TotalNotes);
 				
-				Score.points += tD <= 20 ? 1 : 2;
+				Score.points += tD <= 20 ? 2 : tD <= 40 ? 1 : 0;
 
 				ExplosionTime[Lane] = 0;
 
@@ -453,6 +456,8 @@ bool ScreenGameplay7K::Run(double Delta)
 
 	ss << "score: " << Score.points;
 	ss << "\naccuracy: " << Score.Accuracy;
+	ss << "\ncombo: " << Score.combo;
+	ss << "\nmax combo: " << Score.max_combo;
 	ss << "\nMult/Speed: " << SpeedMultiplier << "x / " << SpeedMultiplier*4 << "\n";
 
 	GFont->DisplayText(ss.str().c_str(), glm::vec2(0,0));

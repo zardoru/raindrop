@@ -64,6 +64,8 @@ struct EvaluationData
 struct AccuracyData7K
 {
 	double Accuracy;
+	unsigned int combo;
+	unsigned int max_combo;
 	double points;
 	double total_sqdev;
 	unsigned int TotalNotes;

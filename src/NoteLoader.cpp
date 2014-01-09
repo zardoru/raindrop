@@ -10,8 +10,6 @@
 #include <boost/foreach.hpp>
 #include <fstream>
 
-#define debug(N) std::cout << "Debug " << N << std::endl;
-
 /* Note Loader for the .dcf format. Heavily inspired by Stepmania. */
 
 float _ScreenDifference()
@@ -224,10 +222,6 @@ SongDC* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 #undef OnCommand
 	}
 	delete Difficulty; // There will always be an extra copy.
-
-#ifndef NDEBUG
-	std::cout << "Done loading file." << std::endl;
-#endif
 
 	// at this point the objects are sorted! by measure and within the measure, by fraction.
 	Out->Process();

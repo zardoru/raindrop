@@ -150,9 +150,8 @@ void FileManager::GetSongList(std::vector<SongDC*> &OutVec)
 	Dir.ListDirectory(Listing, Directory::FS_DIR);
 	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{ 
-		std::cout << "loading song " << *i << "..." << std::endl;
 		loadSong(Dir.path() + *i, OutVec);
-		std::cout << "Done loading song " << *i << "." << std::endl;
+		std::cout << *i << std::endl;
 	}
 	
 }
@@ -164,8 +163,7 @@ void FileManager::GetSongList7K(std::vector<Song7K*> &OutVec)
 	Dir.ListDirectory(Listing, Directory::FS_DIR);
 	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{ 
-		std::cout << "loading song " << *i << "..." << std::endl;
 		loadSong7K(Dir.path() + *i, OutVec);
-		std::cout << "Done loading song " << *i << "." << std::endl;
+		std::cout << *i << std::endl;
 	}
 }
