@@ -46,10 +46,36 @@ void TrackNote::AddTime(double Time)
 		EndTime += Time;
 }
 
-void TrackNote::AssignPosition(glm::vec2 Position)
+void TrackNote::AssignPosition(glm::vec2 Position, glm::vec2 endPosition)
 {
 	b_pos = Position;
 	final = glm::translate(glm::mat4(), glm::vec3(b_pos.x, b_pos.y, 0));
+
+	if (EndTime)
+	{
+		b_pos_holdend = endPosition;
+		float verticalpos = b_pos.y + (b_pos_holdend.y - b_pos.y) / 2;
+		float verticalsize = (b_pos_holdend.y - b_pos.y) / 2;
+
+		this->VerticalSize = verticalsize;
+		hold_body = glm::translate(glm::mat4(), glm::vec3(b_pos.x, verticalpos, 0));
+		hold_final = glm::translate(glm::mat4(), glm::vec3(b_pos_holdend.x, b_pos_holdend.y, 0));
+	}
+}
+
+bool TrackNote::IsHold() const
+{
+	return EndTime != 0;
+}
+
+glm::mat4& TrackNote::GetHoldBodyMatrix()
+{
+	return hold_body;
+}
+
+glm::mat4& TrackNote::GetHoldMatrix()
+{
+	return hold_final;
 }
 
 glm::mat4& TrackNote::GetMatrix()
