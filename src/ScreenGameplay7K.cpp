@@ -14,6 +14,7 @@
 #include "ScreenGameplay7K.h"
 
 BitmapFont * GFont = NULL;
+VorbisSample *MissSnd = NULL;
 int lastPressed = 0;
 int lastMsOff[MAX_CHANNELS];
 int lastClosest[MAX_CHANNELS];
@@ -26,7 +27,7 @@ int lastClosest[MAX_CHANNELS];
 #define ACC_MIN_SQ ACC_MIN * ACC_MIN
 #define ACC_MAX 100
 #define ACC_MAX_SQ ACC_MAX * ACC_MAX
-#define ACC_CUTOFF 200
+#define ACC_CUTOFF 135
 
 float accuracy_percent(float var){
 	if(var < ACC_MIN_SQ) return 100;
@@ -163,7 +164,13 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 				
 				Score.points += tD <= 20 ? 2 : tD <= 40 ? 1 : 0;
 
-				ExplosionTime[Lane] = 0;
+				if (tD < ACC_MAX) // Within hitting time, otherwise no feedback/miss feedback
+					ExplosionTime[Lane] = 0;
+				else
+				{
+					// missed feedback
+					MissSnd->Reset();
+				}
 
 				/* remove note from judgement*/
 				(*i).MeasureNotes.erase(m);
@@ -189,6 +196,12 @@ void ScreenGameplay7K::RecalculateMatrix()
 
 void ScreenGameplay7K::LoadThreadInitialization()
 {
+	if (!MissSnd)
+	{
+		MissSnd = new VorbisSample((FileManager::GetSkinPrefix() + "miss.ogg").c_str());
+		MixerAddSample(MissSnd);
+	}
+
 	/* Can I just use a vector<char**> and use vector.data()? */
 	char* SkinFiles [] =
 	{
