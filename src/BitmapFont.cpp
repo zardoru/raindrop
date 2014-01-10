@@ -25,7 +25,7 @@ void BitmapFont::LoadSkinFontImage(char* Location, glm::vec2 _CharSize, glm::vec
 
 void BitmapFont::RegenerateCharPositions(glm::vec2 CellSize)
 {
-	int32 HCellCount = Font->w/CellSize.x, VCellCount = Font->h/CellSize.x;
+	int32 HCellCount = Font->w/CellSize.x, VCellCount = Font->h/CellSize.y;
 	uint32 Current = StartingCharacter;
 
 	for (unsigned short y = 0; y < VCellCount; y++)

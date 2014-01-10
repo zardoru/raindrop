@@ -10,6 +10,7 @@
 #include "BitmapFont.h"
 #include "GameWindow.h"
 
+#include <iomanip>
 
 #include "ScreenGameplay7K.h"
 
@@ -30,8 +31,8 @@ int lastClosest[MAX_CHANNELS];
 #define ACC_CUTOFF 135
 
 float accuracy_percent(float var){
-	if(var < ACC_MIN_SQ) return 100;
-	if(var > ACC_MAX_SQ) return 0;
+	//if(var < ACC_MIN_SQ) return 100;
+	//if(var > ACC_MAX_SQ) return 0;
 
 	return (ACC_MAX_SQ - var) / (ACC_MAX_SQ - ACC_MIN_SQ) * 100;
 }
@@ -58,7 +59,7 @@ ScreenGameplay7K::ScreenGameplay7K()
 	if (!GFont)
 	{	
 		GFont = new BitmapFont();
-		GFont->LoadSkinFontImage("font.tga", glm::vec2(18, 32), glm::vec2(34,34), glm::vec2(10,16), 32);
+		GFont->LoadSkinFontImage("font.tga", glm::vec2(6, 15), glm::vec2(8, 16), glm::vec2(6, 15), 0);
 	}
 }
 
@@ -336,7 +337,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 	for (int i = 0; i < 20 /*Frames*/; i++)
 	{
 		char str[256];
-		sprintf(str, "Explosion-%d.png", i);
+		sprintf(str, "explosion-%d.png", i);
 		ExplosionFrames[i] = ImageLoader::LoadSkin(str);
 	}
 
@@ -468,10 +469,11 @@ bool ScreenGameplay7K::Run(double Delta)
 	std::stringstream ss;
 
 	ss << "score: " << Score.points;
-	ss << "\naccuracy: " << Score.Accuracy;
-	ss << "\ncombo: " << Score.combo;
+	ss << "\naccuracy: " << std::setiosflags(std::ios::fixed) << std::setprecision(2) << Score.Accuracy << "%";
+	ss << "\nnotes hit: " << std::setprecision(2) << Score.points / (Score.TotalNotes * 2.0) * 100.0 << "%";
+	ss << "\ncombo: " << std::resetiosflags(std::ios::fixed) << Score.combo;
 	ss << "\nmax combo: " << Score.max_combo;
-	ss << "\nMult/Speed: " << SpeedMultiplier << "x / " << SpeedMultiplier*4 << "\n";
+	ss << "\nMult/Speed: " << std::setiosflags(std::ios::fixed) << SpeedMultiplier << "x / " << SpeedMultiplier*4 << "\n";
 
 	GFont->DisplayText(ss.str().c_str(), glm::vec2(0,0));
 

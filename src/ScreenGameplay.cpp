@@ -19,8 +19,8 @@ ScreenGameplay::ScreenGameplay(IScreen *Parent) :
 	Running = true;
 	IsAutoplaying = false;
 	ShouldChangeScreenAtEnd = true;
-	SongInfo.LoadSkinFontImage("font.tga", glm::vec2(18, 32), glm::vec2(34,34), glm::vec2(10,16), 32);
-	MyFont.LoadSkinFontImage("font-combo.tga", glm::vec2(24, 48), glm::vec2(64,64), glm::vec2(ComboSizeX,ComboSizeY), 48);
+	SongInfo.LoadSkinFontImage("font.tga", glm::vec2(6, 15), glm::vec2(8, 16), glm::vec2(6, 15), 0);
+	MyFont.LoadSkinFontImage("font-combo.tga", glm::vec2(8, 10), glm::vec2(8, 10), glm::vec2(32, 40), 48);
 	Music = NULL;
 	FailEnabled = true;
 	TappingMode = false;
