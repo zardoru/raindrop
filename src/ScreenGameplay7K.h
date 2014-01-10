@@ -47,6 +47,7 @@ private:
 
 	GraphObject2D Keys[MAX_CHANNELS];
 	GraphObject2D Background;
+	GraphObject2D JudgementLine;
 
 	AccuracyData7K Score;
 	double SongTime;
