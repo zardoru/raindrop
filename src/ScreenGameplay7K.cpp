@@ -107,6 +107,10 @@ void ScreenGameplay7K::RunMeasures()
 					Score.total_sqdev += ACC_CUTOFF * ACC_CUTOFF;
 					Score.TotalNotes++;
 					Score.Accuracy = accuracy_percent(Score.total_sqdev / Score.TotalNotes);
+
+					if (Score.combo > 10)
+						MissSnd->Reset();
+
 					Score.combo = 0;
 
 					/* remove note from judgement*/
@@ -221,7 +225,8 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		"key6d.png",
 		"key7d.png",
 		"key8d.png",
-		"note.png"
+		"note.png",
+		"judgeline.png"
 	};
 
 	ImageLoader::LoadFromManifest(SkinFiles, 3, FileManager::GetSkinPrefix());
@@ -336,9 +341,13 @@ void ScreenGameplay7K::MainThreadInitialization()
 	for (int i = 0; i < 20 /*Frames*/; i++)
 	{
 		char str[256];
-		sprintf(str, "Explosion-%d.png", i);
+		sprintf(str, "explosion-%d.png", i);
 		ExplosionFrames[i] = ImageLoader::LoadSkin(str);
 	}
+
+	JudgementLine.SetImage(ImageLoader::LoadSkin("judgeline.png")); // todo: add GO2D management to lua
+	JudgementLine.SetSize(GearWidth, 10);
+	JudgementLine.SetPosition(GearStartX, JudgementLinePos + (Upscroll ? 0 : -JudgementLine.GetHeight()));
 
 	for (int i = 0; i < MAX_CHANNELS; i++)
 	{
@@ -462,6 +471,8 @@ bool ScreenGameplay7K::Run(double Delta)
 
 	for (int32 i = 0; i < CurrentDiff->Channels; i++)
 		Keys[i].Render();
+
+	JudgementLine.Render();
 
 	DrawExplosions();
 
