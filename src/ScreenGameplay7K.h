@@ -13,12 +13,14 @@ private:
 	/* Game */
 	double CurrentVertical;
 	glm::mat4 PositionMatrix;
+	glm::mat4 NoteMatrix;
 	Song7K *MySong;
 	float SongOldTime;
 	float deltaPos;
 	float SpeedMultiplier;
 	bool AudioCompensation;
 	double TimeCompensation;
+	bool MultiplierChanged;
 
 	/* Positions */
 	float  JudgementLinePos;
@@ -31,9 +33,11 @@ private:
 	std::vector<SongInternal::Measure<TrackNote> >	 NotesByMeasure[16];
 	TimingData VSpeeds;
 	Image*  NoteImage;
+	Image*  NoteImageHold;
 	Image*  GearLaneImage[MAX_CHANNELS];
 	Image*  GearLaneImageDown[MAX_CHANNELS];
 	Image*  NoteImages[MAX_CHANNELS];
+	Image*  NoteImagesHold[MAX_CHANNELS];
 
 	int		GearBindings[MAX_CHANNELS];
 	uint32	Channels;

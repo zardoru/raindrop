@@ -13,8 +13,11 @@ private:
 
 	glm::mat4 final;
 
-	float VerticalSize;
+	float VerticalHoldBodySize;
+	float VerticalHoldBodyPos;
+
 	glm::mat4 hold_body;
+	glm::mat4 hold_body_size;
 	glm::mat4 hold_final;
 public:
 	TrackNote();
@@ -23,12 +26,14 @@ public:
 	void AssignTime(double Start, double End = 0);
 	void AddTime(double Time);
 	void AssignPosition(glm::vec2 Position, glm::vec2 endPosition = glm::vec2(0,0));
+	void RecalculateBody(float noteWidth, float noteSize, float speedMultiplier);
 
 	float GetVertical() const;
 	float GetVerticalSize() const;
 	bool IsHold() const;
 	glm::mat4& GetMatrix();
 	glm::mat4& GetHoldBodyMatrix();
+	glm::mat4& GetHoldBodySizeMatrix();
 	glm::mat4& GetHoldMatrix();
 	
 	double GetTimeFinal() const;

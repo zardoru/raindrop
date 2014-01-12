@@ -86,6 +86,7 @@ void ScreenGameplay7K::RecalculateEffects()
 	if (waveEffectEnabled)
 	{
 		waveEffect = sin(SongTime) * 0.5 * SpeedMultiplierUser;
+		MultiplierChanged = true;
 	}
 }
 
@@ -194,9 +195,7 @@ void ScreenGameplay7K::RecalculateMatrix()
 	else
 		SpeedMultiplier = SpeedMultiplierUser + waveEffect;
 
-	PositionMatrix = glm::scale(glm::translate(glm::mat4(), 
-			glm::vec3(GearLaneWidth/2 + GearStartX, BasePos + CurrentVertical * SpeedMultiplier + deltaPos, 0)), 
-			glm::vec3(GearLaneWidth, 10, 0));
+	PositionMatrix = glm::translate(glm::mat4(), glm::vec3(GearLaneWidth/2 + GearStartX, BasePos + CurrentVertical * SpeedMultiplier + deltaPos, 0));
 }
 
 void ScreenGameplay7K::LoadThreadInitialization()
@@ -276,7 +275,11 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	BasePos = JudgementLinePos + (Upscroll ? 5 : -5) /* NoteSize/2 ;P */;
 	CurrentVertical -= VSpeeds.at(0).Value * (WAITING_TIME);
+
+	NoteMatrix = glm::scale(glm::mat4(), glm::vec3(GearLaneWidth, 10, 0));
+
 	RecalculateMatrix();
+	MultiplierChanged = true;
 }
 
 void ScreenGameplay7K::MainThreadInitialization()
@@ -306,11 +309,20 @@ void ScreenGameplay7K::MainThreadInitialization()
 		int Binding = Configuration::GetSkinConfigf(cstr, nstr);
 		GearBindings[Binding - 1] = i;
 
+		/* Note image */
 		sprintf(cstr, "Key%dImage", i+1);
 
 		std::string Filename = Configuration::GetSkinConfigs(cstr, nstr);
 		NoteImages[i] = ImageLoader::LoadSkin(Filename);
 
+		/* Hold image */
+		sprintf(cstr, "Key%dHoldImage", i+1);
+
+		Filename = Configuration::GetSkinConfigs(cstr, nstr);
+		NoteImagesHold[i] = ImageLoader::LoadSkin(Filename);
+
+
+		/* Gear */
 		Keys[i].SetImage ( GearLaneImage[i] );
 		Keys[i].SetSize( GearLaneWidth, GearHeight );
 		Keys[i].Centered = true;
@@ -320,6 +332,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 		if (Upscroll)
 			Keys[i].SetRotation(180);
 
+		/* Animated hit explosion */
 		Explosion[i].Centered = true;
 		Explosion[i].SetSize( GearLaneWidth * 2, GearLaneWidth * 2 );
 		Explosion[i].SetPosition( GearStartX + GearLaneWidth * i + GearLaneWidth / 2, JudgementLinePos );
@@ -398,9 +411,11 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 			break;
 		case KT_FractionInc:
 			SpeedMultiplierUser += 0.25;
+			MultiplierChanged = true;
 			break;
 		case KT_FractionDec:
 			SpeedMultiplierUser -= 0.25;
+			MultiplierChanged = true;
 			break;
 		case KT_Left:
 			deltaPos -= 10;

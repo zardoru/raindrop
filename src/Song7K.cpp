@@ -177,9 +177,13 @@ void Song7K::Process(float Drift)
 					CurrentNote.AddTime (Drift);
 
 					glm::vec2 VerticalPosition( 0, VerticalAtTime((*Diff)->VerticalSpeeds, CurrentNote.GetStartTime()) );
+					glm::vec2 HoldEndPosition( 0, VerticalAtTime((*Diff)->VerticalSpeeds, CurrentNote.GetTimeFinal()) );
 
 					// if upscroll change minus for plus as well as matrix at screengameplay7k
-					CurrentNote.AssignPosition(BasePosition - VerticalPosition);
+					if (!CurrentNote.IsHold())
+						CurrentNote.AssignPosition(BasePosition - VerticalPosition);
+					else
+						CurrentNote.AssignPosition(BasePosition - VerticalPosition, BasePosition - HoldEndPosition);
 				}
 				MIdx++;
 			}

@@ -47,8 +47,29 @@ void ScreenGameplay7K::DrawMeasures()
 			{
 				/* This is the last note in this measure. */
 				float Vertical = (m->GetVertical()* SpeedMultiplier + rPos) ;
+
+				if (MultiplierChanged && m->IsHold())
+					m->RecalculateBody(GearLaneWidth, 10, SpeedMultiplier);
+
 				if (Vertical < 0 || Vertical > ScreenHeight)
 					continue; /* If this is not visible, we move on to the next one. */
+
+				if (m->IsHold())
+				{
+					if (NoteImagesHold[k])
+						NoteImagesHold[k]->Bind();
+					else
+					{
+						if (NoteImage)
+							NoteImage->Bind();
+						else
+							continue;
+					}
+
+					WindowFrame.SetUniform("siM", &(m->GetHoldBodySizeMatrix())[0][0]);
+					WindowFrame.SetUniform("tranM", &(m->GetHoldBodyMatrix())[0][0]);
+					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+				}
 
 				if (NoteImages[k])
 					NoteImages[k]->Bind();
@@ -60,12 +81,21 @@ void ScreenGameplay7K::DrawMeasures()
 						continue;
 				}
 
+				WindowFrame.SetUniform("siM", &(NoteMatrix)[0][0]);
+
 				WindowFrame.SetUniform("tranM", &(m->GetMatrix())[0][0]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+				if (m->IsHold())
+				{
+					WindowFrame.SetUniform("tranM", &(m->GetHoldMatrix())[0][0]);
+					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+				}
 			}
 		}
 	}
 
+	MultiplierChanged = false;
 	WindowFrame.DisableAttribArray("position");
 }
 
