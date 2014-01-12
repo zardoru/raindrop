@@ -49,7 +49,7 @@ void ScreenGameplay7K::DrawMeasures()
 				float Vertical = (m->GetVertical()* SpeedMultiplier + rPos) ;
 
 				if (MultiplierChanged && m->IsHold())
-					m->RecalculateBody(GearLaneWidth, 10, SpeedMultiplier);
+					m->RecalculateBody(GearLaneWidth, 10, Upscroll? -SpeedMultiplier : SpeedMultiplier);
 
 				if (Vertical < 0 || Vertical > ScreenHeight)
 					continue; /* If this is not visible, we move on to the next one. */
