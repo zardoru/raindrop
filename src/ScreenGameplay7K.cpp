@@ -243,7 +243,7 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 
 				if (tD < ACC_MAX) // Within hitting time, otherwise no feedback/miss feedback
 				{
-					if (m->IsHold())
+					if (m->IsHold() && m->IsEnabled())
 					{
 						m->Hit();
 					}
