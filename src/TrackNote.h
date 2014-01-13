@@ -35,6 +35,7 @@ public:
 	void Disable();
 
 	float GetVertical() const;
+	float GetVerticalHold() const;
 	float GetVerticalSize() const;
 	uint32 GetTrack() const;
 	bool IsHold() const;

@@ -143,12 +143,33 @@ void ScreenGameplay7K::RunMeasures()
 
 }
 
+void ScreenGameplay7K::DoHit (double TimeOff, uint32 Lane)
+{
+	Score.total_sqdev += TimeOff * TimeOff;
+	Score.TotalNotes++;
+	if(TimeOff > ACC_MAX) Score.combo = 0; else ++Score.combo;
+	if(Score.combo > Score.max_combo) Score.max_combo = Score.combo;
+
+	Score.Accuracy = accuracy_percent(Score.total_sqdev / Score.TotalNotes);
+
+	Score.points += TimeOff <= 20 ? 2 : TimeOff <= 40 ? 1 : 0;
+
+	if (TimeOff < ACC_MAX) // Within hitting time, otherwise no feedback/miss feedback
+		ExplosionTime[Lane] = 0;
+}
+
+void ScreenGameplay7K::DoMiss (double TimeOff, uint32 Lane)
+{
+	Score.total_sqdev += ACC_CUTOFF * ACC_CUTOFF;
+	Score.TotalNotes++;
+	Score.Accuracy = accuracy_percent(Score.total_sqdev / Score.TotalNotes);
+	Score.combo = 0;
+}
+
 void ScreenGameplay7K::ReleaseLane(unsigned int Lane)
 {
 	typedef std::vector<SongInternal::Measure<TrackNote> > NoteVector;
 	NoteVector &Measures = NotesByMeasure[Lane];
-
-	lastClosest[Lane] = 135;
 
 	for (NoteVector::iterator i = Measures.begin(); i != Measures.end(); i++)
 	{
@@ -158,37 +179,25 @@ void ScreenGameplay7K::ReleaseLane(unsigned int Lane)
 			{
 				double tD = abs (m->GetTimeFinal() - SongTime) * 1000;
 
-				lastClosest[Lane] = std::min(tD, (double)lastClosest[Lane]);
-
 				if (tD < ACC_CUTOFF) /* Released in time */
 				{
-					Score.total_sqdev += tD * tD;
-					Score.TotalNotes++;
-					if(tD > ACC_MAX) Score.combo = 0; else ++Score.combo;
-					if(Score.combo > Score.max_combo) Score.max_combo = Score.combo;
-
-					Score.Accuracy = accuracy_percent(Score.total_sqdev / Score.TotalNotes);
-
-					Score.points += tD <= 20 ? 2 : tD <= 40 ? 1 : 0;
-
-					if (tD < ACC_MAX) // Within hitting time, otherwise no feedback/miss feedback
-						ExplosionTime[Lane] = 0;
+					DoHit(tD, Lane);
 
 					(*i).MeasureNotes.erase(m);
+
+					lastClosest[Lane] = std::min(tD, (double)lastClosest[Lane]);
 
 					return;
 				}else /* Released off time */
 				{
-					Score.total_sqdev += ACC_CUTOFF * ACC_CUTOFF;
-					Score.TotalNotes++;
-					Score.Accuracy = accuracy_percent(Score.total_sqdev / Score.TotalNotes);
+					DoMiss(tD, Lane);
 
 					if (Score.combo > 10)
 						MissSnd->Reset();
 
-					Score.combo = 0;
-
 					m->Disable();
+
+					lastClosest[Lane] = std::min(tD, (double)lastClosest[Lane]);
 
 					return;
 				}
@@ -224,22 +233,7 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 				goto next_note;
 			else
 			{
-				/* first iteration of the accuracy equation */
-				// float accPercent = accuracy_percent(tD);
-				
-				// if (accPercent > 100)
-					// accPercent = 100;
-
-				lastMsOff[Lane] = tD;
-
-				Score.total_sqdev += tD * tD;
-				Score.TotalNotes++;
-				if(tD > ACC_MAX) Score.combo = 0; else ++Score.combo;
-				if(Score.combo > Score.max_combo) Score.max_combo = Score.combo;
-				
-				Score.Accuracy = accuracy_percent(Score.total_sqdev / Score.TotalNotes);
-				
-				Score.points += tD <= 20 ? 2 : tD <= 40 ? 1 : 0;
+				DoHit(tD, Lane);
 
 				if (tD < ACC_MAX) // Within hitting time, otherwise no feedback/miss feedback
 				{

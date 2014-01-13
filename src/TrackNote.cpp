@@ -135,3 +135,8 @@ bool TrackNote::WasNoteHit() const
 {
 	return WasHit;
 }
+
+float TrackNote::GetVerticalHold() const
+{
+	return b_pos_holdend.y;
+}

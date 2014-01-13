@@ -67,6 +67,8 @@ private:
 	void RecalculateEffects();
 	void RunMeasures();
 
+	void DoHit (double TimeOff, uint32 Lane);
+	void DoMiss (double TimeOff, uint32 Lane);
 
 	void DrawExplosions();
 	void DrawMeasures();

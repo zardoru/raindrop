@@ -44,12 +44,12 @@ void ScreenGameplay7K::DrawMeasures()
 		{
 			for (std::vector<TrackNote>::iterator m = (*i).MeasureNotes.begin(); m != (*i).MeasureNotes.end(); m++)
 			{
-				float Vertical = (m->GetVertical()* SpeedMultiplier + rPos) ;
+				float Vertical = (m->GetVertical() * SpeedMultiplier + rPos) ;
 
 				if (MultiplierChanged && m->IsHold())
 					m->RecalculateBody(GearLaneWidth, 10, Upscroll? -SpeedMultiplier : SpeedMultiplier);
 
-				if (Vertical < 0/* || Vertical > ScreenHeight */)
+				if (Vertical < 0 && !m->IsHold())
 					continue; /* If this is not visible, we move on to the next one. */
 
 
