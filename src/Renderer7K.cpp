@@ -15,7 +15,10 @@
 #include "Song.h"
 #include "ScreenGameplay7K.h"
 
-
+inline bool IntervalsIntersect(const double a, const double b, const double c, const double d)
+{
+	return a <= d && c <= b;
+}
 
 void ScreenGameplay7K::DrawMeasures()
 {
@@ -45,11 +48,12 @@ void ScreenGameplay7K::DrawMeasures()
 			for (std::vector<TrackNote>::iterator m = (*i).MeasureNotes.begin(); m != (*i).MeasureNotes.end(); m++)
 			{
 				float Vertical = (m->GetVertical() * SpeedMultiplier + rPos) ;
+				float VerticalHold = (m->GetVerticalHold() * SpeedMultiplier + rPos) ;
 
 				if (MultiplierChanged && m->IsHold())
 					m->RecalculateBody(GearLaneWidth, 10, Upscroll? -SpeedMultiplier : SpeedMultiplier);
 
-				if (Vertical < 0 && !m->IsHold())
+				if (Vertical < 0 || (m->IsHold() && !IntervalsIntersect(0, ScreenHeight, VerticalHold, Vertical)) )
 					continue; /* If this is not visible, we move on to the next one. */
 
 
