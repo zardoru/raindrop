@@ -116,7 +116,7 @@ void ScreenGameplay7K::RunMeasures()
 						continue;
 				}
 
-				if ((SongTime - m->GetStartTime()) * 1000 > ACC_CUTOFF && !m->WasNoteHit())
+				if ((SongTime - m->GetStartTime()) * 1000 > ACC_CUTOFF && (!m->WasNoteHit() && m->IsEnabled()))
 				{
 					Score.total_sqdev += ACC_CUTOFF * ACC_CUTOFF;
 					Score.TotalNotes++;
@@ -418,6 +418,8 @@ void ScreenGameplay7K::MainThreadInitialization()
 		Explosion[i].SetSize( GearLaneWidth * 2, GearLaneWidth * 2 );
 		Explosion[i].SetPosition( GearStartX + GearLaneWidth * i + GearLaneWidth / 2, JudgementLinePos );
 		lastClosest[i] = 0;
+
+		HeldKey[i] = NULL;
 	}
 
 	NoteImage = ImageLoader::LoadSkin("note.png");
