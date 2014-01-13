@@ -62,7 +62,7 @@ void ScreenSelectMusic::MainThreadInitialization()
 	if (!Font)
 	{
 		Font = new BitmapFont();
-		Font->LoadSkinFontImage("font_screenevaluation.tga", glm::vec2(10, 20), glm::vec2(32, 32), glm::vec2(10,20), 32);
+		Font->LoadSkinFontImage("font_screenevaluation.tga", Vec2(10, 20), Vec2(32, 32), Vec2(10,20), 32);
 	}
 
 	Font->SetAffectedByLightning(true);
@@ -169,7 +169,7 @@ bool ScreenSelectMusic::Run(double Delta)
 		}
 	}
 
-	glm::vec2 mpos = WindowFrame.GetRelativeMPos();
+	Vec2 mpos = WindowFrame.GetRelativeMPos();
 
 	if (mpos.x > ListY)
 	{
@@ -188,7 +188,7 @@ bool ScreenSelectMusic::Run(double Delta)
 	{
 		for (std::vector<SongDC*>::iterator i = SongList.begin(); i != SongList.end(); i++)
 		{
-			Font->DisplayText((*i)->SongName.c_str(), glm::vec2(SONGLIST_BASEX, Cur*20 + ListY));
+			Font->DisplayText((*i)->SongName.c_str(), Vec2(SONGLIST_BASEX, Cur*20 + ListY));
 			Cur++;
 		}
 	}else if (SelectedMode == MODE_7K)
@@ -196,13 +196,13 @@ bool ScreenSelectMusic::Run(double Delta)
 		for (std::vector<Song7K*>::iterator i = SongList7K.begin(); i != SongList7K.end(); i++)
 		{
 			std::string text = (*i)->SongName;
-			Font->DisplayText(text.c_str(), glm::vec2(SONGLIST_BASEX, Cur*20 + ListY));
+			Font->DisplayText(text.c_str(), Vec2(SONGLIST_BASEX, Cur*20 + ListY));
 			Cur++;
 		}
 	}
 
-	Font->DisplayText("song select", glm::vec2(ScreenWidth/2-55, 0));
-	Font->DisplayText("press space to confirm", glm::vec2(ScreenWidth/2-110, 20));
+	Font->DisplayText("song select", Vec2(ScreenWidth/2-55, 0));
+	Font->DisplayText("press space to confirm", Vec2(ScreenWidth/2-110, 20));
 
 	String modeString;
 
@@ -216,7 +216,7 @@ bool ScreenSelectMusic::Run(double Delta)
 			modeString = "mode: 7K (downscroll)";
 	}
 
-	Font->DisplayText(modeString.c_str(), glm::vec2(ScreenWidth/2-modeString.length() * 5, 40));
+	Font->DisplayText(modeString.c_str(), Vec2(ScreenWidth/2-modeString.length() * 5, 40));
 
 	/* TODO: Reduce these to functions or something */
 	if (SongList.size() && SelectedMode == MODE_DOTCUR)
@@ -236,8 +236,8 @@ bool ScreenSelectMusic::Run(double Delta)
 								Min, Sec
 								);
 
-			Font->DisplayText(infoStream, glm::vec2(ScreenWidth/6, 120));
-		}else Font->DisplayText("unavailable (edit only)", glm::vec2(ScreenWidth/6, 120));
+			Font->DisplayText(infoStream, Vec2(ScreenWidth/6, 120));
+		}else Font->DisplayText("unavailable (edit only)", Vec2(ScreenWidth/6, 120));
 
 		
 	}else if (SongList7K.size() && SelectedMode == MODE_7K)
@@ -258,7 +258,7 @@ bool ScreenSelectMusic::Run(double Delta)
 								Min, Sec
 								);
 
-			Font->DisplayText(infoStream, glm::vec2(ScreenWidth/6, 120));
+			Font->DisplayText(infoStream, Vec2(ScreenWidth/6, 120));
 		}
 	}
 

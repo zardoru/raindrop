@@ -40,7 +40,7 @@ void ScreenEvaluation::Init(EvaluationData _Data)
 	if (!Font)
 	{
 		Font = new BitmapFont();
-		Font->LoadSkinFontImage("font_screenevaluation.tga", glm::vec2(10, 20), glm::vec2(32, 32), glm::vec2(10,20), 32);
+		Font->LoadSkinFontImage("font_screenevaluation.tga", Vec2(10, 20), Vec2(32, 32), Vec2(10,20), 32);
 		Font->SetAffectedByLightning(true);
 	}
 	Results = _Data;
@@ -97,10 +97,10 @@ bool ScreenEvaluation::Run(double Delta)
 	Background.Render();
 	if (Font)
 	{
-		Font->DisplayText(ResultsString.c_str(),        glm::vec2( ScreenWidth/2 - 110, ScreenHeight/2 - 100 ));
-		Font->DisplayText(ResultsNumerical.c_str(),     glm::vec2( ScreenWidth/2, ScreenHeight/2 - 100 ));
-		Font->DisplayText("results screen",			    glm::vec2( ScreenWidth/2 - 70, 0 ));
-		Font->DisplayText("press space to continue...", glm::vec2( ScreenWidth/2 - 130, ScreenHeight*7/8 ));
+		Font->DisplayText(ResultsString.c_str(),        Vec2( ScreenWidth/2 - 110, ScreenHeight/2 - 100 ));
+		Font->DisplayText(ResultsNumerical.c_str(),     Vec2( ScreenWidth/2, ScreenHeight/2 - 100 ));
+		Font->DisplayText("results screen",			    Vec2( ScreenWidth/2 - 70, 0 ));
+		Font->DisplayText("press space to continue...", Vec2( ScreenWidth/2 - 130, ScreenHeight*7/8 ));
 	}
 	return Running;
 }

@@ -12,6 +12,9 @@ using boost::int32_t;
 using boost::int16_t;
 using boost::uint16_t;
 
+typedef glm::vec2 Vec2;
+typedef glm::mat4 Mat4;
+
 
 typedef uint32_t uint32;
 typedef int32_t int32;

@@ -65,7 +65,7 @@ void ScreenGameplay7K::DrawMeasures()
 				float VerticalHold = (m->GetVerticalHold() * SpeedMultiplier + rPos) ;
 
 				if (MultiplierChanged && m->IsHold())
-					m->RecalculateBody(GearLaneWidth, 10, Upscroll? -SpeedMultiplier : SpeedMultiplier);
+					m->RecalculateBody(GearLaneWidth, NoteHeight, Upscroll? -SpeedMultiplier : SpeedMultiplier);
 
 				bool InScreen = true; 
 

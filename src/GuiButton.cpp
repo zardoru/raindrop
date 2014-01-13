@@ -14,8 +14,8 @@ bool Button::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
 	if (isMouseInput && BindingsManager::TranslateKey(key) == KT_Select)
 	{
-		glm::vec2 mpos = WindowFrame.GetRelativeMPos();
-		glm::vec2 bpos = GetPosition();
+		Vec2 mpos = WindowFrame.GetRelativeMPos();
+		Vec2 bpos = GetPosition();
 		if (mpos.x > bpos.x && mpos.x < bpos.x+GetWidth())
 		{
 			if (mpos.y > bpos.y && mpos.y < bpos.y+GetHeight())

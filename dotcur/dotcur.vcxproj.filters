@@ -123,9 +123,6 @@
     <ClCompile Include="..\src\ScreenSelectMusic.cpp">
       <Filter>Source Files\GameGlobal</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ScreenEvaluation.cpp">
-      <Filter>Source Files\GameGlobal</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\ScreenMainMenu.cpp">
       <Filter>Source Files\GameGlobal</Filter>
     </ClCompile>
@@ -170,6 +167,18 @@
     </ClCompile>
     <ClCompile Include="..\src\Renderer7K.cpp">
       <Filter>Source Files\Mode7K\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\LuaAnimationInterface.cpp">
+      <Filter>Source Files\Backend</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\LuaManager.cpp">
+      <Filter>Source Files\Backend</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenEvaluation.cpp">
+      <Filter>Source Files\ModeDotcur</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GraphObjectMan.cpp">
+      <Filter>Source Files\Backend</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -288,6 +297,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\NoteLoader7K.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\LuaManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GraphObjectMan.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -20,7 +20,7 @@ ScreenEdit::ScreenEdit(IScreen *Parent)
 	GhostObject.Centered = true;
 	GhostObject.SetSize(CircleSize);
 
-	EditInfo.LoadSkinFontImage("font.tga", glm::vec2(18, 32), glm::vec2(34,34), glm::vec2(10,16), 32);
+	EditInfo.LoadSkinFontImage("font.tga", Vec2(18, 32), Vec2(34,34), Vec2(10,16), 32);
 	EditMode = true;
 	HeldObject = NULL;
 	Mode = Select;
@@ -345,7 +345,7 @@ void ScreenEdit::DrawInformation()
 		info << "Null";
 	if (GridEnabled)
 		info << "\nGrid Enabled (size " << ScreenWidth / GridCellSize << ")";
-	EditInfo.DisplayText(info.str().c_str(), glm::vec2(512, 600));
+	EditInfo.DisplayText(info.str().c_str(), Vec2(512, 600));
 }
 
 void ScreenEdit::CalculateVerticalLock()

@@ -2,12 +2,7 @@
 #include "Configuration.h"
 #include "FileManager.h"
 
-extern "C" {
-#include "luaconf.h"
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-}
+#include "LuaManager.h"
 #include "LuaBridge/LuaBridge.h"
 
 #include <iostream>

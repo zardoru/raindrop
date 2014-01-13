@@ -12,8 +12,8 @@ private:
 
 	/* Game */
 	double CurrentVertical;
-	glm::mat4 PositionMatrix;
-	glm::mat4 NoteMatrix;
+	Mat4 PositionMatrix;
+	Mat4 NoteMatrix;
 	Song7K *MySong;
 	float SongOldTime;
 	float deltaPos;
@@ -38,6 +38,7 @@ private:
 	Image*  GearLaneImageDown[MAX_CHANNELS];
 	Image*  NoteImages[MAX_CHANNELS];
 	Image*  NoteImagesHold[MAX_CHANNELS];
+	float NoteHeight;
 
 	int		GearBindings[MAX_CHANNELS];
 	uint32	Channels;

@@ -31,7 +31,7 @@ void ActorLifebar::UpdateHealth()
 		Health = 0;
 	}
 
-	SetCrop2(glm::vec2(Health / 100, 1));
+	SetCrop2(Vec2(Health / 100, 1));
 	Red = Green = Blue = Health / 100;
 	SetWidth((Health / 100) * PlayfieldHeight);
 }

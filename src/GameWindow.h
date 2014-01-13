@@ -12,9 +12,9 @@ class GameWindow
 {
 	friend void ResizeFunc(GLFWwindow*, int32,int32);
 	friend void InputFunc(GLFWwindow*,int32,int32,int32,int32);
-	glm::vec2 size;
-	glm::vec2 matrixSize, Viewport;
-	glm::mat4 projection;
+	Vec2 size;
+	Vec2 matrixSize, Viewport;
+	Mat4 projection;
 
 	bool FullscreenSwitchbackPending, IsFullscreen;
 	uint32 defaultVertexShader, defaultFragShader, defaultShaderProgram, defaultVao;
@@ -37,19 +37,19 @@ public:
 	void Cleanup();
 
 	// assigns this matrix on the stack
-	void SetMatrix(uint32 MatrixMode, glm::mat4 matrix);
+	void SetMatrix(uint32 MatrixMode, Mat4 matrix);
 	void SetVisibleCursor(bool Visible);
 	void AddVBO(VBO* V);
 	void RemoveVBO(VBO *V);
 
 	// returns the mouse position relative to the matrix and window size
-	glm::vec2 GetRelativeMPos();
+	Vec2 GetRelativeMPos();
 
 	// returns the size of the window
-	glm::vec2 GetWindowSize() const;
+	Vec2 GetWindowSize() const;
 
 	// returns the size of the orthogonal matrix
-	glm::vec2 GetMatrixSize() const;
+	Vec2 GetMatrixSize() const;
 
 	int32 GetDefaultFragShader() const;
 	int32 GetDefaultVertexShader() const;

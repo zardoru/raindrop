@@ -28,7 +28,7 @@ void ScreenMainMenu::Init()
 	if (!MainMenuFont)
 	{
 		MainMenuFont = new BitmapFont();
-		MainMenuFont->LoadSkinFontImage("font_screenevaluation.tga", glm::vec2(10, 20), glm::vec2(32, 32), glm::vec2(10,20), 32);
+		MainMenuFont->LoadSkinFontImage("font_screenevaluation.tga", Vec2(10, 20), Vec2(32, 32), Vec2(10,20), 32);
 		MainMenuFont->SetAffectedByLightning(true);	
 	}
 
@@ -108,7 +108,7 @@ bool ScreenMainMenu::Run (double Delta)
 	EditBtn.Render();
 	OptionsBtn.Render();
 	ExitBtn.Render();
-	MainMenuFont->DisplayText("version: " DOTCUR_VERSIONTEXT "\nhttp://github.com/zardoru/dotcur", glm::vec2(0, 0));
+	MainMenuFont->DisplayText("version: " DOTCUR_VERSIONTEXT "\nhttp://github.com/zardoru/dotcur", Vec2(0, 0));
 	return Running;
 }
 

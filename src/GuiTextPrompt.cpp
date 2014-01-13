@@ -66,7 +66,7 @@ void TextPrompt::Render()
 		std::stringstream ss;
 		ss << mPromptText << "\n\n" << mBufferText << "_" << "\n\n" << "Press Enter To Confirm or Escape to Abort";
 		if (mPromptFont)
-			mPromptFont->DisplayText(ss.str().c_str(), glm::vec2(100,200)); // todo: change position
+			mPromptFont->DisplayText(ss.str().c_str(), Vec2(100,200)); // todo: change position
 	}
 }
 

@@ -172,9 +172,9 @@ Judgement GameObject::Run(double delta, double Time, bool Autoplay)
 	return None;
 }
 
-Judgement GameObject::Hit(double Time, glm::vec2 mpos, bool KeyDown,  bool Autoplay, int32 Key)
+Judgement GameObject::Hit(double Time, Vec2 mpos, bool KeyDown,  bool Autoplay, int32 Key)
 {
-	glm::vec2 dist = mpos - GetPosition();
+	Vec2 dist = mpos - GetPosition();
 	
 	if (fadeout_time || GetPosition().x == 0 || Autoplay)
 		return None;

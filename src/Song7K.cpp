@@ -154,7 +154,7 @@ void Song7K::Process(float Drift)
 		/* For all channels of this difficulty */
 		for (int KeyIndex = 0; KeyIndex < (*Diff)->Channels; KeyIndex++)
 		{
-			glm::vec2 BasePosition (KeyIndex * (GearWidth / (*Diff)->Channels), 0);
+			Vec2 BasePosition (KeyIndex * (GearWidth / (*Diff)->Channels), 0);
 			int MIdx = 0;
 
 			/* For each measure of this channel */
@@ -176,8 +176,8 @@ void Song7K::Process(float Drift)
 					*/
 					CurrentNote.AddTime (Drift);
 
-					glm::vec2 VerticalPosition( 0, VerticalAtTime((*Diff)->VerticalSpeeds, CurrentNote.GetStartTime()) );
-					glm::vec2 HoldEndPosition( 0, VerticalAtTime((*Diff)->VerticalSpeeds, CurrentNote.GetTimeFinal()) );
+					Vec2 VerticalPosition( 0, VerticalAtTime((*Diff)->VerticalSpeeds, CurrentNote.GetStartTime()) );
+					Vec2 HoldEndPosition( 0, VerticalAtTime((*Diff)->VerticalSpeeds, CurrentNote.GetTimeFinal()) );
 
 					// if upscroll change minus for plus as well as matrix at screengameplay7k
 					if (!CurrentNote.IsHold())

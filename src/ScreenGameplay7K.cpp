@@ -59,7 +59,7 @@ ScreenGameplay7K::ScreenGameplay7K()
 	if (!GFont)
 	{	
 		GFont = new BitmapFont();
-		GFont->LoadSkinFontImage("font.tga", glm::vec2(6, 15), glm::vec2(8, 16), glm::vec2(6, 15), 0);
+		GFont->LoadSkinFontImage("font.tga", Vec2(6, 15), Vec2(8, 16), Vec2(6, 15), 0);
 	}
 }
 
@@ -262,7 +262,7 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 
 void ScreenGameplay7K::RecalculateMatrix()
 {
-	PositionMatrix = glm::translate(glm::mat4(), glm::vec3(GearLaneWidth/2 + GearStartX, BasePos + CurrentVertical * SpeedMultiplier + deltaPos, 0));
+	PositionMatrix = glm::translate(Mat4(), glm::vec3(GearLaneWidth/2 + GearStartX, BasePos + CurrentVertical * SpeedMultiplier + deltaPos, 0));
 }
 
 void ScreenGameplay7K::LoadThreadInitialization()
@@ -333,6 +333,10 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		}
 	}
 
+	NoteHeight = Configuration::GetSkinConfigf("NoteHeight7K");
+
+	if (!NoteHeight)
+		NoteHeight = 10;
 
 	/* Initial object distance */
 	if (!Upscroll)
@@ -340,10 +344,10 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	else
 		JudgementLinePos = GearHeight;
 
-	BasePos = JudgementLinePos + (Upscroll ? 5 : -5) /* NoteSize/2 ;P */;
+	BasePos = JudgementLinePos + (Upscroll ? NoteHeight/2 : -NoteHeight/2) /* NoteSize/2 ;P */;
 	CurrentVertical -= VSpeeds.at(0).Value * (WAITING_TIME);
 
-	NoteMatrix = glm::scale(glm::mat4(), glm::vec3(GearLaneWidth, 10, 0));
+	NoteMatrix = glm::scale(Mat4(), glm::vec3(GearLaneWidth, NoteHeight, 0));
 
 	RecalculateMatrix();
 	MultiplierChanged = true;
@@ -429,7 +433,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 	}
 
 	JudgementLine.SetImage(ImageLoader::LoadSkin("judgeline.png")); // todo: add GO2D management to lua
-	JudgementLine.SetSize(GearWidth, 10);
+	JudgementLine.SetSize(GearWidth, NoteHeight);
 	JudgementLine.SetPosition(GearStartX, JudgementLinePos + (Upscroll ? 0 : -JudgementLine.GetHeight()));
 
 	for (int i = 0; i < MAX_CHANNELS; i++)
@@ -568,12 +572,12 @@ bool ScreenGameplay7K::Run(double Delta)
 
 	ss << "score: " << Score.points;
 	ss << "\naccuracy: " << std::setiosflags(std::ios::fixed) << std::setprecision(2) << Score.Accuracy << "%";
-	ss << "\nnotes hit: " << std::setprecision(2) << Score.points / (Score.TotalNotes * 2.0) * 100.0 << "%";
+	ss << "\nEX score: " << std::setprecision(2) << Score.points / ((CurrentDiff->TotalHolds + CurrentDiff->TotalObjects) * 2.0) * 100.0 << "%";
 	ss << "\ncombo: " << std::resetiosflags(std::ios::fixed) << Score.combo;
 	ss << "\nmax combo: " << Score.max_combo;
 	ss << "\nMult/Speed: " << std::setiosflags(std::ios::fixed) << SpeedMultiplier << "x / " << SpeedMultiplier*4 << "\n";
 
-	GFont->DisplayText(ss.str().c_str(), glm::vec2(0,0));
+	GFont->DisplayText(ss.str().c_str(), Vec2(0,0));
 
 	for (unsigned int i = 0; i < Channels; i++)
 	{
@@ -584,38 +588,3 @@ bool ScreenGameplay7K::Run(double Delta)
 
 	return Running;
 }
-#if 0
-void ScreenGameplay7K::UpdateVertical()
-{
-	/* Using this method instead is possible, but.. */
-
-	double SongDelta = SongTime - SongOldTime;
-	uint32 Idx = SectionIndex(VSpeeds, SongOldTime) - 1;
-	TimingData IntervalTiming;
-
-	GetTimingChangesInInterval(VSpeeds, SongOldTime, SongTime, IntervalTiming);
-	
-	if (IntervalTiming.size())
-	{
-		SongInternal::TimingSegment Current = VSpeeds[Idx];
-		double OldTime = SongOldTime;
-		
-		uint32 size = IntervalTiming.size();
-
-		for (uint32 i = 0; i < size; i++)
-		{
-			double Change = (IntervalTiming[i].Time - OldTime) * Current.Value;
-			CurrentVertical += Change;
-			Current = IntervalTiming[i];
-			OldTime = Current.Time;
-		}
-
-		// And then finish. 
-		CurrentVertical += (SongTime - Current.Time) * Current.Value;
-	}
-	else
-	{
-		CurrentVertical += VSpeeds[Idx].Value * SongDelta;
-	}
-}
-#endif

@@ -199,26 +199,26 @@ void MouseMoveFunc (GLFWwindow*,double newx, double newy)
 		return;
 }
 
-glm::vec2 GameWindow::GetWindowSize() const
+Vec2 GameWindow::GetWindowSize() const
 {
 	return size;
 }
 
-glm::vec2 GameWindow::GetMatrixSize() const
+Vec2 GameWindow::GetMatrixSize() const
 {
 	return matrixSize;
 }
 
-glm::vec2 GameWindow::GetRelativeMPos()
+Vec2 GameWindow::GetRelativeMPos()
 {
 	double mousex, mousey;
 	glfwGetCursorPos(wnd, &mousex, &mousey);
 	float outx = (mousex - Viewport.x) / SizeRatio;
 	float outy = matrixSize.y * mousey / size.y;
-	return glm::vec2 (outx, outy);
+	return Vec2 (outx, outy);
 }
 
-void GameWindow::SetMatrix(uint32 MatrixMode, glm::mat4 matrix)
+void GameWindow::SetMatrix(uint32 MatrixMode, Mat4 matrix)
 {
 	glMatrixMode(MatrixMode);
 	glLoadMatrixf((GLfloat*)&matrix[0]);
@@ -246,9 +246,10 @@ void GameWindow::SetupWindow()
 	// glCullFace(GL_BACK);
 	glFrontFace(GL_CW);
 	// glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	/*glEnable(GL_DEPTH_TEST);*/
 
 	
-	projection = glm::ortho<float>(0.0, matrixSize.x, matrixSize.y, 0.0);
+	projection = glm::ortho<float>(0.0, matrixSize.x, matrixSize.y, 0.0/*, -32.0, 0.0*/);
 
 	SetupShaders();
 
@@ -340,7 +341,7 @@ void GameWindow::SwapBuffers()
 
 void GameWindow::ClearWindow()
 {
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT/* | GL_DEPTH_BUFFER_BIT*/);
 }
 
 int32 GameWindow::GetDefaultFragShader() const

@@ -52,7 +52,7 @@ void ActorJudgement::Run(double delta)
 	if (AnimTime > 0)
 	{
 		float speed = 1.3f / 0.7f;
-		SetScale(glm::vec2( GetScale().x - speed * delta, GetScale().y - speed * delta));
+		SetScale(Vec2( GetScale().x - speed * delta, GetScale().y - speed * delta));
 		if (GetScale().x < 1)
 			SetScaleX(1);
 		if (GetScale().y < 1)

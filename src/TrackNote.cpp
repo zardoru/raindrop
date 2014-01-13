@@ -50,19 +50,19 @@ void TrackNote::AddTime(double Time)
 
 void TrackNote::RecalculateBody(float noteWidth, float noteSize, float speedMultiplier)
 {
-	hold_body_size = glm::scale(glm::mat4(), glm::vec3(noteWidth, VerticalHoldBodySize * speedMultiplier * 2, 0));
-	//hold_body = glm::translate(glm::mat4(), glm::vec3(b_pos.x, VerticalHoldBodyPos, 0));
+	hold_body_size = glm::scale(Mat4(), glm::vec3(noteWidth, VerticalHoldBodySize * speedMultiplier * 2, 0));
+	//hold_body = glm::translate(Mat4(), glm::vec3(b_pos.x, VerticalHoldBodyPos, 0));
 }
 
-glm::mat4& TrackNote::GetHoldBodySizeMatrix()
+Mat4& TrackNote::GetHoldBodySizeMatrix()
 {
 	return hold_body_size;
 }
 
-void TrackNote::AssignPosition(glm::vec2 Position, glm::vec2 endPosition)
+void TrackNote::AssignPosition(Vec2 Position, Vec2 endPosition)
 {
 	b_pos = Position;
-	final = glm::translate(glm::mat4(), glm::vec3(b_pos.x, b_pos.y, 0));
+	final = glm::translate(Mat4(), glm::vec3(b_pos.x, b_pos.y, 0));
 
 	if (EndTime)
 	{
@@ -71,8 +71,8 @@ void TrackNote::AssignPosition(glm::vec2 Position, glm::vec2 endPosition)
 		VerticalHoldBodyPos = b_pos.y + (b_pos_holdend.y - b_pos.y) / 2;
 		VerticalHoldBodySize = abs((b_pos_holdend.y - b_pos.y) / 2);
 
-		hold_body = glm::translate(glm::mat4(), glm::vec3(b_pos.x, VerticalHoldBodyPos, 0));
-		hold_final = glm::translate(glm::mat4(), glm::vec3(b_pos_holdend.x, b_pos_holdend.y, 0));
+		hold_body = glm::translate(Mat4(), glm::vec3(b_pos.x, VerticalHoldBodyPos, 0));
+		hold_final = glm::translate(Mat4(), glm::vec3(b_pos_holdend.x, b_pos_holdend.y, 0));
 	}
 }
 
@@ -81,17 +81,17 @@ bool TrackNote::IsHold() const
 	return EndTime != 0;
 }
 
-glm::mat4& TrackNote::GetHoldBodyMatrix()
+Mat4& TrackNote::GetHoldBodyMatrix()
 {
 	return hold_body;
 }
 
-glm::mat4& TrackNote::GetHoldEndMatrix()
+Mat4& TrackNote::GetHoldEndMatrix()
 {
 	return hold_final;
 }
 
-glm::mat4& TrackNote::GetMatrix()
+Mat4& TrackNote::GetMatrix()
 {
 	return final;
 }

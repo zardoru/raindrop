@@ -3,20 +3,23 @@
 
 #include "Image.h"
 
+class LuaManager;
+
 class BitmapFont
 {
 	Image *Font;
 	GraphObject2D CharPosition[258];
-	glm::vec2 CharSize, CellSize, RenderSize;
+	Vec2 CharSize, CellSize, RenderSize;
 	char StartingCharacter;
 
-	void RegenerateCharPositions(glm::vec2 CellSize);
+	void RegenerateCharPositions(Vec2 CellSize);
 
 public:
-	void DisplayText(const char* Text, glm::vec2 Position);
-	void LoadFontImage(char* Name, glm::vec2 _CharSize, glm::vec2 _CellSize, glm::vec2 _RenderSize = glm::vec2(1,1), char FontStart = 0);
-	void LoadSkinFontImage(char* Name, glm::vec2 _CharSize, glm::vec2 _CellSize, glm::vec2 _RenderSize = glm::vec2(1,1), char FontStart = 0);
+	void DisplayText(const char* Text, Vec2 Position);
+	void LoadFontImage(const char* Name, Vec2 _CharSize, Vec2 _CellSize, Vec2 _RenderSize = Vec2(1,1), char FontStart = 0);
+	void LoadSkinFontImage(const char* Name, Vec2 _CharSize, Vec2 _CellSize, Vec2 _RenderSize = Vec2(1,1), char FontStart = 0);
 	void SetAffectedByLightning(bool Lightning);
+	BitmapFont *BitmapFont::FromLua(LuaManager* Lua, std::string TableName);
 };
 
 #endif

@@ -12,13 +12,15 @@ GraphObject2D::GraphObject2D(bool ShouldInitTexture)
 	SetCropToWholeImage();
 	mWidth = mHeight = 0;
 
-	mPosition = glm::vec2(0, 0);
+	mPosition = Vec2(0, 0);
 	SetScale(1);
 	mRotation = 0;
 
 	Red = Blue = Green = 1.0;
 	Alpha = 1.0;
 		
+	z_order = 30;
+
 	Centered = false;
 	ColorInvert = false;
 	DirtyMatrix = true;
@@ -84,7 +86,7 @@ void GraphObject2D::SetCropToWholeImage()
 }
 
 // Scale
-void GraphObject2D::SetScale(glm::vec2 Scale)
+void GraphObject2D::SetScale(Vec2 Scale)
 {
 	mScale = Scale;
 	DirtyMatrix = true;
@@ -108,13 +110,13 @@ void GraphObject2D::SetScaleY(float ScaleY)
 	DirtyMatrix = true;
 }
 
-glm::vec2 GraphObject2D::GetScale() const
+Vec2 GraphObject2D::GetScale() const
 {
 	return mScale;
 }
 
 // Position
-void GraphObject2D::SetPosition(glm::vec2 Pos)
+void GraphObject2D::SetPosition(Vec2 Pos)
 {
 	mPosition = Pos;
 	DirtyMatrix = true;
@@ -145,19 +147,19 @@ void GraphObject2D::AddPosition(float pX, float pY)
 	DirtyMatrix = true;
 }
 
-void GraphObject2D::AddPosition(glm::vec2 pos)
+void GraphObject2D::AddPosition(Vec2 pos)
 {
 	mPosition += pos;
 	DirtyMatrix = true;
 }
 
-glm::vec2 GraphObject2D::GetPosition() const
+Vec2 GraphObject2D::GetPosition() const
 {
 	return mPosition;
 }
 
 // Size
-void GraphObject2D::SetSize(glm::vec2 Size)
+void GraphObject2D::SetSize(Vec2 Size)
 {
 	mWidth = Size.x;
 	mHeight = Size.y;
@@ -166,12 +168,12 @@ void GraphObject2D::SetSize(glm::vec2 Size)
 
 void GraphObject2D::SetSize(float Size)
 {
-	SetSize(glm::vec2(Size, Size));
+	SetSize(Vec2(Size, Size));
 }
 
 void GraphObject2D::SetSize(float W, float H)
 {
-	SetSize(glm::vec2(W, H));
+	SetSize(Vec2(W, H));
 }
 
 void GraphObject2D::SetWidth(uint32 W)
@@ -186,9 +188,9 @@ void GraphObject2D::SetHeight(uint32 H)
 	DirtyMatrix = true;
 }
 
-glm::vec2 GraphObject2D::GetSize() const
+Vec2 GraphObject2D::GetSize() const
 {
-	return glm::vec2(mWidth, mHeight);
+	return Vec2(mWidth, mHeight);
 }
 
 float GraphObject2D::GetWidth() const
@@ -201,7 +203,7 @@ float GraphObject2D::GetHeight() const
 	return mHeight;
 }
 
-void GraphObject2D::SetCrop(glm::vec2 Crop1, glm::vec2 Crop2)
+void GraphObject2D::SetCrop(Vec2 Crop1, Vec2 Crop2)
 {
 	mCrop_x1 = Crop1.x;
 	mCrop_y1 = Crop1.y;
@@ -210,14 +212,14 @@ void GraphObject2D::SetCrop(glm::vec2 Crop1, glm::vec2 Crop2)
 	DirtyTexture = true;
 }
 
-void GraphObject2D::SetCrop1(glm::vec2 Crop1)
+void GraphObject2D::SetCrop1(Vec2 Crop1)
 {
 	mCrop_x1 = Crop1.x;
 	mCrop_y1 = Crop1.y;
 	DirtyTexture = true;
 }
 
-void GraphObject2D::SetCrop2(glm::vec2 Crop2)
+void GraphObject2D::SetCrop2(Vec2 Crop2)
 {
 	mCrop_x2 = Crop2.x;
 	mCrop_y2 = Crop2.y;
@@ -251,6 +253,17 @@ void GraphObject2D::Invalidate()
 	IsInitialized = false;
 }
 
+uint32 GraphObject2D::GetZ() const
+{
+	return z_order;
+}
+
+void GraphObject2D::SetZ(uint32 Z)
+{
+	z_order = Z;
+	DirtyMatrix = true;
+}
+
 Image* GraphObject2D::GetImage()
 {
 	return mImage;
@@ -259,4 +272,15 @@ Image* GraphObject2D::GetImage()
 void GraphObject2D::BindTopLeftVBO()
 {
 	mBuffer->Bind();
+}
+
+void GraphObject2D::BindTextureVBO()
+{
+	UvBuffer->Bind();
+}
+
+const glm::mat4 &GraphObject2D::GetMatrix()
+{
+	UpdateMatrix();
+	return Matrix;
 }

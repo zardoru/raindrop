@@ -19,8 +19,8 @@ ScreenGameplay::ScreenGameplay(IScreen *Parent) :
 	Running = true;
 	IsAutoplaying = false;
 	ShouldChangeScreenAtEnd = true;
-	SongInfo.LoadSkinFontImage("font.tga", glm::vec2(6, 15), glm::vec2(8, 16), glm::vec2(6, 15), 0);
-	MyFont.LoadSkinFontImage("font-combo.tga", glm::vec2(8, 10), glm::vec2(8, 10), glm::vec2(32, 40), 48);
+	SongInfo.LoadSkinFontImage("font.tga", Vec2(6, 15), Vec2(8, 16), Vec2(6, 15), 0);
+	MyFont.LoadSkinFontImage("font-combo.tga", Vec2(8, 10), Vec2(8, 10), Vec2(32, 40), 48);
 	Music = NULL;
 	FailEnabled = true;
 	TappingMode = false;
@@ -51,7 +51,7 @@ void ScreenGameplay::Cleanup()
 }
 
 
-glm::vec2 ScreenGameplay::GetScreenOffset(float Alignment)
+Vec2 ScreenGameplay::GetScreenOffset(float Alignment)
 {
 	float outx; 
 	float outy;
@@ -59,7 +59,7 @@ glm::vec2 ScreenGameplay::GetScreenOffset(float Alignment)
 	outx = (WindowFrame.GetMatrixSize().x*Alignment);
 	outy = (WindowFrame.GetMatrixSize().y*Alignment);
 
-	return glm::vec2(outx, outy);
+	return Vec2(outx, outy);
 }
 
 void ScreenGameplay::StoreEvaluation(Judgement Eval)
@@ -374,7 +374,7 @@ void ScreenGameplay::HandleInput(int32 key, KeyEventType code, bool isMouseInput
 			} while(false);
 
 			Judgement Val;
-			glm::vec2 mpos = WindowFrame.GetRelativeMPos();
+			Vec2 mpos = WindowFrame.GetRelativeMPos();
 			// For all held notes...
 			for (std::vector<GameObject>::iterator i = NotesHeld.begin();
 				i != NotesHeld.end();
@@ -569,7 +569,7 @@ void ScreenGameplay::DrawVector(std::vector<GameObject>& Vec, float TimeDelta)
 bool ScreenGameplay::JudgeVector(std::vector<GameObject>& Vec, int code, int key)
 {
 	Judgement Val;
-	glm::vec2 mpos = WindowFrame.GetRelativeMPos();
+	Vec2 mpos = WindowFrame.GetRelativeMPos();
 
 	for (std::vector<GameObject>::iterator i = Vec.begin(); 
 			i != Vec.end(); 
@@ -599,7 +599,7 @@ bool ScreenGameplay::JudgeVector(std::vector<GameObject>& Vec, int code, int key
 
 void ScreenGameplay::RenderObjects(float TimeDelta)
 {
-	glm::vec2 mpos = WindowFrame.GetRelativeMPos();
+	Vec2 mpos = WindowFrame.GetRelativeMPos();
 
 	ScreenTime += TimeDelta;
 
@@ -678,12 +678,12 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 	str << Combo;
 
 	float textX = GetScreenOffset(0.5).x - (str.str().length() * ComboSizeX / 2);
-	MyFont.DisplayText(str.str().c_str(), glm::vec2(textX, 0));
+	MyFont.DisplayText(str.str().c_str(), Vec2(textX, 0));
 
 	std::stringstream str2;
 	str2 << int32(1000000.0 * Evaluation.dpScoreSquare / (Evaluation.totalNotes * (Evaluation.totalNotes + 1)));
 	textX = GetScreenOffset(0.5).x - (str2.str().length() * ComboSizeX / 2);
-	MyFont.DisplayText(str2.str().c_str(), glm::vec2(textX, 720));
+	MyFont.DisplayText(str2.str().c_str(), Vec2(textX, 720));
 
 
 	/* Lengthy information printing code goes here.*/
@@ -725,7 +725,7 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 	if (EditMode)
 #endif
 		info << "\nMeasure: " << Measure;
-	SongInfo.DisplayText(info.str().c_str(), glm::vec2(0,0));
+	SongInfo.DisplayText(info.str().c_str(), Vec2(0,0));
 
 	ReadySign.Render();
 
