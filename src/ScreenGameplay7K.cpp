@@ -107,6 +107,7 @@ void ScreenGameplay7K::RunMeasures()
 				{
 					if ((SongTime - m->GetTimeFinal()) * 1000 > ACC_CUTOFF)
 					{
+						DoMiss((SongTime - m->GetTimeFinal()) * 1000, k);
 						m = (*i).MeasureNotes.erase(m);
 
 						if (m == (*i).MeasureNotes.end())
@@ -118,15 +119,11 @@ void ScreenGameplay7K::RunMeasures()
 
 				if ((SongTime - m->GetStartTime()) * 1000 > ACC_CUTOFF && (!m->WasNoteHit() && m->IsEnabled()))
 				{
-					Score.total_sqdev += ACC_CUTOFF * ACC_CUTOFF;
-					Score.TotalNotes++;
-					Score.Accuracy = accuracy_percent(Score.total_sqdev / Score.TotalNotes);
+					DoMiss((SongTime - m->GetStartTime()) * 1000, k);
 
 					if (Score.combo > 10)
 						MissSnd->Reset();
-
-					Score.combo = 0;
-
+					
 					/* remove note from judgement*/
 					if (!m->IsHold())
 						m = (*i).MeasureNotes.erase(m);
