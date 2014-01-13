@@ -316,8 +316,8 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 		ScreenGameplay *_gNext = NULL;
 		ScreenGameplay7K *_g7Next = NULL;
 
-		ScreenEdit *_eNext;
-		ScreenLoading *_LNext;
+		ScreenEdit *_eNext = NULL;
+		ScreenLoading *_LNext = NULL;
 
 		switch (BindingsManager::TranslateKey(key))
 		{
@@ -345,7 +345,7 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 			{
 				SelectSnd->Reset();
 
-				if (SelectedMode == MODE_DOTCUR)
+				if (SelectedMode == MODE_DOTCUR && SongList.size())
 				{
 					if (/* difficulty index < */ SongList.at(Cursor)->Difficulties.size())
 					{
@@ -358,7 +358,7 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 						_LNext->Init();
 					}else
 						return;
-				}else
+				}else if (SongList7K.size())
 				{
 					// TODO: finish 7k mode gameplay screen
 					_g7Next = new ScreenGameplay7K();
@@ -369,10 +369,13 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 					_LNext->Init();
 				}
 
-				Next = _LNext;
-				SwitchBackGuiPending = true;
-				WindowFrame.isGuiInputEnabled = false;
-				StopLoops();
+				if (_LNext)
+				{
+					Next = _LNext;
+					SwitchBackGuiPending = true;
+					WindowFrame.isGuiInputEnabled = false;
+					StopLoops();
+				}
 			}
 				break;
 		case KT_Escape:

@@ -98,32 +98,30 @@ void GraphObject2D::Render()
 		UpdateTexture();
 
 	// Assign our matrix.
-	WindowFrame.SetUniform("mvp", &Matrix[0][0]);
+	glUniformMatrix4fv(0, 1, GL_FALSE, &(Matrix[0][0]));
 
 	// Set the color.
-	WindowFrame.SetUniform("Color", Red, Green, Blue, Alpha);
-	WindowFrame.SetUniform("inverted", ColorInvert);
-	WindowFrame.SetUniform("AffectedByLightning", AffectedByLightning);
+	glUniform4f(6, Red, Green, Blue, Alpha);
+	glUniform1i(9, ColorInvert);
+	glUniform1i(10, AffectedByLightning);
 
-	// Assign Texture
-	WindowFrame.SetUniform("tex", 0);
-	
-	
-	WindowFrame.SetUniform("useTranslate", false);
-	WindowFrame.SetUniform("Centered", Centered);
+	glUniform1i(3, false);
+	glUniform1i(4, Centered);
 
 	// Assign position attrib. pointer
 	mBuffer->Bind();
 
-	glVertexAttribPointer( WindowFrame.EnableAttribArray("position"), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer( 0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
 	// assign vertex UVs
 	UvBuffer->Bind();
-	glVertexAttribPointer( WindowFrame.EnableAttribArray("vertexUV"), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-	WindowFrame.DisableAttribArray("position");
+	glDisableVertexAttribArray(11);
 	//WindowFrame.DisableAttribArray("vertexUV");
 }
 

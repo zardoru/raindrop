@@ -16,15 +16,15 @@
 GameWindow WindowFrame;
 
 const char* vertShader = "#version 120\n"
-	"attribute vec3 position;\n"
-	"attribute vec2 vertexUV;\n"
+	"layout (location = 0) attribute vec3 position;\n"
+	"layout (location = 1) attribute vec2 vertexUV;\n"
 	"uniform mat4 projection;\n"
-	"uniform mat4 mvp;\n"
-	"uniform mat4 tranM;\n"
-	"uniform mat4 siM;\n"
-	"uniform bool useTranslate;\n"
-	"uniform bool Centered;\n"
-	"uniform float sMult;\n" // For 7K mode, letting the shader do the heavy lifting
+	"layout (location = 0) uniform mat4 mvp;\n"
+	"layout (location = 1) uniform mat4 tranM;\n"
+	"layout (location = 2) uniform mat4 siM;\n"
+	"layout (location = 3) uniform bool useTranslate;\n"
+	"layout (location = 4) uniform bool Centered;\n"
+	"layout (location = 5) uniform float sMult;\n" // For 7K mode, letting the shader do the heavy lifting
 	"varying vec2 Texcoord;\n"
 	"varying vec3 Pos_world;\n"
 	"void main() \n"
@@ -47,12 +47,12 @@ const char* vertShader = "#version 120\n"
 const char* fragShader = "#version 120\n"
 	"varying vec2 Texcoord;\n"
 	"varying vec3 Pos_world;\n"
-	"uniform vec4 Color;\n"
+	"layout (location = 6) uniform vec4 Color;\n"
 	"uniform sampler2D tex;\n"
-	"uniform float     lMul;\n"
-	"uniform vec3      lPos;\n"
-	"uniform bool inverted;\n"
-	"uniform bool AffectedByLightning;\n"
+	"layout (location = 7) uniform float     lMul;\n"
+	"layout (location = 8) uniform vec3      lPos;\n"
+	"layout (location = 9) uniform bool inverted;\n"
+	"layout (location = 10) uniform bool AffectedByLightning;\n"
 	"\n"
 	"void main(void)\n"
 	"{\n"
@@ -275,13 +275,8 @@ void GameWindow::AutoSetupWindow()
 
 	IsFullscreen = Configuration::GetConfigf("Fullscreen") != 0;
 
-#ifdef DEBUG
 	if (!(wnd = glfwCreateWindow(size.x, size.y, DOTCUR_WINDOWTITLE DOTCUR_VERSIONTEXT, IsFullscreen ? glfwGetPrimaryMonitor() : NULL, NULL)))
 		throw; // std::exception("couldn't open window!");
-#else
-	if (!(wnd = glfwCreateWindow(size.x, size.y, DOTCUR_WINDOWTITLE DOTCUR_VERSIONTEXT, NULL, NULL)))
-		throw; // std::exception("couldn't open window!");
-#endif
 
 	SetupWindow();
 }

@@ -477,7 +477,7 @@ bool ScreenGameplay::Run(double TimeDelta)
 			if (LeadInTime > 0)
 			{
 				LeadInTime -= TimeDelta;
-				SongTime += TimeDelta;
+				SongTime = -LeadInTime;
 			}
 			else
 				startMusic();

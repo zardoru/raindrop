@@ -23,20 +23,34 @@ inline bool IntervalsIntersect(const double a, const double b, const double c, c
 void ScreenGameplay7K::DrawMeasures()
 {
 	typedef std::vector<SongInternal::Measure<TrackNote> > NoteVector;
-	float rPos = CurrentVertical * SpeedMultiplier + BasePos;
+	float rPos;
+
+	if (MultiplierChanged)
+	{
+		if (Upscroll)
+			SpeedMultiplier = - (SpeedMultiplierUser + waveEffect);
+		else
+			SpeedMultiplier = SpeedMultiplierUser + waveEffect;
+	}
+
+	rPos = CurrentVertical * SpeedMultiplier + BasePos;
 
 	// Assign our matrix.
-	WindowFrame.SetUniform("mvp", &PositionMatrix[0][0]);
+	glUniformMatrix4fv(0, 1, GL_FALSE, &PositionMatrix[0][0]);
 
 	// Set the color.
-	WindowFrame.SetUniform("inverted", false);
-	WindowFrame.SetUniform("AffectedByLightning", false);
-	WindowFrame.SetUniform("useTranslate", true);
-	WindowFrame.SetUniform("Centered", true);
-	WindowFrame.SetUniform("sMult", SpeedMultiplier);
+	glUniform1i(9, false); // Color invert
+	glUniform1i(10, false); // Affected by lightning
+	
+	glUniform1i(3, true); // use extra matrices
+	glUniform1i(4, true); // center vertexes
+
+	glUniform1f(5, SpeedMultiplier);
+
 	GraphObject2D::BindTopLeftVBO();
 
-	glVertexAttribPointer( WindowFrame.EnableAttribArray("position"), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer( 0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
 	/* todo: instancing */
 	for (uint32 k = 0; k < Channels; k++)
@@ -63,11 +77,16 @@ void ScreenGameplay7K::DrawMeasures()
 					}else
 						InScreen = IntervalsIntersect(0, ScreenHeight, VerticalHold, Vertical);
 				}else
-					InScreen = Vertical > 0;
+				{
+					if (Upscroll)
+						InScreen = Vertical < ScreenHeight;
+					else
+						InScreen = Vertical > 0;
+				}
 				
 
 				if (!InScreen)
-					continue; /* If this is not visible, we move on to the next one. */
+					continue; /* If this is not visible, we move on to the next key. */
 
 
 				if (m->IsHold())
@@ -83,12 +102,12 @@ void ScreenGameplay7K::DrawMeasures()
 					}
 
 					if (m->IsEnabled())
-						WindowFrame.SetUniform("Color", 1, 1, 1, 1);
+						glUniform4f(6, 1, 1, 1, 1);
 					else
-						WindowFrame.SetUniform("Color", 0.5, 0.5, 0.5, 1);
+						glUniform4f(6, 0.5, 0.5, 0.5, 1);
 
-					WindowFrame.SetUniform("siM", &(m->GetHoldBodySizeMatrix())[0][0]);
-					WindowFrame.SetUniform("tranM", &(m->GetHoldBodyMatrix())[0][0]);
+					glUniformMatrix4fv(2, 1, GL_FALSE, &(m->GetHoldBodySizeMatrix())[0][0]);
+					glUniformMatrix4fv(1, 1, GL_FALSE, &(m->GetHoldBodyMatrix())[0][0]);
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 				}
 
@@ -102,24 +121,26 @@ void ScreenGameplay7K::DrawMeasures()
 						continue;
 				}
 
-				WindowFrame.SetUniform("Color", 1, 1, 1, 1);
+				glUniform4f(6, 1, 1, 1, 1);
 
-				WindowFrame.SetUniform("siM", &(NoteMatrix)[0][0]);
+				glUniformMatrix4fv(2, 1, GL_FALSE, &(NoteMatrix)[0][0]);
 
-				WindowFrame.SetUniform("tranM", &(m->GetMatrix())[0][0]);
+				glUniformMatrix4fv(1, 1, GL_FALSE, &(m->GetMatrix())[0][0]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 				if (m->IsHold())
 				{
-					WindowFrame.SetUniform("tranM", &(m->GetHoldEndMatrix())[0][0]);
+					glUniformMatrix4fv(1, 1, GL_FALSE, &(m->GetHoldEndMatrix())[0][0]);
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 				}
 			}
 		}
 	}
 
+	/* Clean up */
 	MultiplierChanged = false;
-	WindowFrame.DisableAttribArray("position");
+	
+	glDisableVertexAttribArray(11);
 }
 
 void ScreenGameplay7K::DrawExplosions()

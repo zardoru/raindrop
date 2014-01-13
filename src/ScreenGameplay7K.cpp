@@ -79,7 +79,7 @@ void ScreenGameplay7K::Init(Song7K* S, int DifficultyIndex, bool UseUpscroll)
 void ScreenGameplay7K::RecalculateEffects()
 {
 	float SongTime = 0;
-	
+
 	if (Music)
 		SongTime = Music->GetPlaybackTime();
 
@@ -262,11 +262,6 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 
 void ScreenGameplay7K::RecalculateMatrix()
 {
-	if (Upscroll)
-		SpeedMultiplier = - (SpeedMultiplierUser + waveEffect);
-	else
-		SpeedMultiplier = SpeedMultiplierUser + waveEffect;
-
 	PositionMatrix = glm::translate(glm::mat4(), glm::vec3(GearLaneWidth/2 + GearStartX, BasePos + CurrentVertical * SpeedMultiplier + deltaPos, 0));
 }
 
