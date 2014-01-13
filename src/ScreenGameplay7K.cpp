@@ -148,16 +148,13 @@ void ScreenGameplay7K::ReleaseLane(unsigned int Lane)
 	typedef std::vector<SongInternal::Measure<TrackNote> > NoteVector;
 	NoteVector &Measures = NotesByMeasure[Lane];
 
-	if (!HeldKey[Lane])
-		return;
-
 	lastClosest[Lane] = 135;
 
 	for (NoteVector::iterator i = Measures.begin(); i != Measures.end(); i++)
 	{
 		for (std::vector<TrackNote>::iterator m = (*i).MeasureNotes.begin(); m != (*i).MeasureNotes.end(); m++)
 		{
-			if (&(*m) == HeldKey[Lane])
+			if (m->WasNoteHit())
 			{
 				double tD = abs (m->GetTimeFinal() - SongTime) * 1000;
 
@@ -245,7 +242,14 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 				Score.points += tD <= 20 ? 2 : tD <= 40 ? 1 : 0;
 
 				if (tD < ACC_MAX) // Within hitting time, otherwise no feedback/miss feedback
+				{
+					if (m->IsHold())
+					{
+						m->Hit();
+					}
+
 					ExplosionTime[Lane] = 0;
+				}
 				else
 				{
 					// missed feedback
@@ -256,10 +260,6 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 				if (!m->IsHold())
 				{
 					(*i).MeasureNotes.erase(m);
-				}else
-				{
-					m->Hit();
-					HeldKey[m->GetTrack()] = &(*m);
 				}
 
 				return; // we judged a note in this lane, so we're done.
