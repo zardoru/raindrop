@@ -53,7 +53,20 @@ void ScreenGameplay7K::DrawMeasures()
 				if (MultiplierChanged && m->IsHold())
 					m->RecalculateBody(GearLaneWidth, 10, Upscroll? -SpeedMultiplier : SpeedMultiplier);
 
-				if (Vertical < 0 || (m->IsHold() && !IntervalsIntersect(0, ScreenHeight, VerticalHold, Vertical)) )
+				bool InScreen = true; 
+
+				if (m->IsHold())
+				{
+					if (Upscroll)
+					{
+						InScreen = IntervalsIntersect(0, ScreenHeight, Vertical, VerticalHold);
+					}else
+						InScreen = IntervalsIntersect(0, ScreenHeight, VerticalHold, Vertical);
+				}else
+					InScreen = Vertical > 0;
+				
+
+				if (!InScreen)
 					continue; /* If this is not visible, we move on to the next one. */
 
 
