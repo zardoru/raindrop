@@ -8,6 +8,9 @@ private:
 	uint32 Track;
 	double StartTime, EndTime;
 	double BeatStart, BeatEnd;
+	bool Enabled;
+	bool WasHit;
+
 	glm::vec2 b_pos;
 	glm::vec2 b_pos_holdend;
 
@@ -24,17 +27,24 @@ public:
 	void AssignTrack(int T);
 	void AssignSongPosition(double _BeatStart, double _BeatEnd = 0);
 	void AssignTime(double Start, double End = 0);
-	void AddTime(double Time);
 	void AssignPosition(glm::vec2 Position, glm::vec2 endPosition = glm::vec2(0,0));
+	void Hit();
+
+	void AddTime(double Time);
 	void RecalculateBody(float noteWidth, float noteSize, float speedMultiplier);
+	void Disable();
 
 	float GetVertical() const;
 	float GetVerticalSize() const;
+	uint32 GetTrack() const;
 	bool IsHold() const;
+	bool IsEnabled() const;
+	bool WasNoteHit() const;
+
 	glm::mat4& GetMatrix();
 	glm::mat4& GetHoldBodyMatrix();
 	glm::mat4& GetHoldBodySizeMatrix();
-	glm::mat4& GetHoldMatrix();
+	glm::mat4& GetHoldEndMatrix();
 	
 	double GetTimeFinal() const;
 	double GetStartTime() const;

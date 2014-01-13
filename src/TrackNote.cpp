@@ -5,6 +5,8 @@
 TrackNote::TrackNote()
 {
 	Track = StartTime = EndTime = 0;
+	Enabled = true;
+	WasHit = false;
 }
 
 TrackNote::~TrackNote()
@@ -84,7 +86,7 @@ glm::mat4& TrackNote::GetHoldBodyMatrix()
 	return hold_body;
 }
 
-glm::mat4& TrackNote::GetHoldMatrix()
+glm::mat4& TrackNote::GetHoldEndMatrix()
 {
 	return hold_final;
 }
@@ -107,4 +109,29 @@ double TrackNote::GetTimeFinal() const
 double TrackNote::GetStartTime() const
 {
 	return StartTime;
+}
+
+bool TrackNote::IsEnabled() const
+{
+	return Enabled;
+}
+
+void TrackNote::Disable()
+{
+	Enabled = false;
+}
+
+uint32 TrackNote::GetTrack() const
+{
+	return Track;
+}
+
+void TrackNote::Hit()
+{
+	WasHit = true;
+}
+
+bool TrackNote::WasNoteHit() const
+{
+	return WasHit;
 }

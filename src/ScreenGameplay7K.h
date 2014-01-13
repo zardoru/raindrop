@@ -56,6 +56,8 @@ private:
 	AccuracyData7K Score;
 	double SongTime;
 
+	TrackNote *HeldKey[MAX_CHANNELS];
+
 	/* 
 		Optimizations will come in later. 
 		See Renderer7K.cpp.	
@@ -70,6 +72,7 @@ private:
 	void DrawMeasures();
 
 	void JudgeLane(unsigned int Lane);
+	void ReleaseLane(unsigned int Lane);
 	void TranslateKey(KeyType K, bool KeyDown);
 public:
 	ScreenGameplay7K();

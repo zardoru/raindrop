@@ -26,7 +26,6 @@ void ScreenGameplay7K::DrawMeasures()
 	WindowFrame.SetUniform("mvp", &PositionMatrix[0][0]);
 
 	// Set the color.
-	WindowFrame.SetUniform("Color", 1, 1, 1, 1);
 	WindowFrame.SetUniform("inverted", false);
 	WindowFrame.SetUniform("AffectedByLightning", false);
 	WindowFrame.SetUniform("useTranslate", true);
@@ -45,14 +44,14 @@ void ScreenGameplay7K::DrawMeasures()
 		{
 			for (std::vector<TrackNote>::iterator m = (*i).MeasureNotes.begin(); m != (*i).MeasureNotes.end(); m++)
 			{
-				/* This is the last note in this measure. */
 				float Vertical = (m->GetVertical()* SpeedMultiplier + rPos) ;
 
 				if (MultiplierChanged && m->IsHold())
 					m->RecalculateBody(GearLaneWidth, 10, Upscroll? -SpeedMultiplier : SpeedMultiplier);
 
-				if (Vertical < 0 || Vertical > ScreenHeight)
+				if (Vertical < 0/* || Vertical > ScreenHeight */)
 					continue; /* If this is not visible, we move on to the next one. */
+
 
 				if (m->IsHold())
 				{
@@ -65,6 +64,11 @@ void ScreenGameplay7K::DrawMeasures()
 						else
 							continue;
 					}
+
+					if (m->IsEnabled())
+						WindowFrame.SetUniform("Color", 1, 1, 1, 1);
+					else
+						WindowFrame.SetUniform("Color", 0.5, 0.5, 0.5, 1);
 
 					WindowFrame.SetUniform("siM", &(m->GetHoldBodySizeMatrix())[0][0]);
 					WindowFrame.SetUniform("tranM", &(m->GetHoldBodyMatrix())[0][0]);
@@ -81,6 +85,8 @@ void ScreenGameplay7K::DrawMeasures()
 						continue;
 				}
 
+				WindowFrame.SetUniform("Color", 1, 1, 1, 1);
+
 				WindowFrame.SetUniform("siM", &(NoteMatrix)[0][0]);
 
 				WindowFrame.SetUniform("tranM", &(m->GetMatrix())[0][0]);
@@ -88,7 +94,7 @@ void ScreenGameplay7K::DrawMeasures()
 
 				if (m->IsHold())
 				{
-					WindowFrame.SetUniform("tranM", &(m->GetHoldMatrix())[0][0]);
+					WindowFrame.SetUniform("tranM", &(m->GetHoldEndMatrix())[0][0]);
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 				}
 			}
