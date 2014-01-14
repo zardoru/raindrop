@@ -32,12 +32,12 @@ void LuaManager::GetGlobal(std::string VarName)
 	lua_getglobal(State, VarName.c_str());
 }
 
-void LuaManager::RunScript(Directory file)
+bool LuaManager::RunScript(Directory file)
 {
-	RunScript(file.path());
+	return RunScript(file.path());
 }
 
-void LuaManager::RunScript(std::string Filename)
+bool LuaManager::RunScript(std::string Filename)
 {
 	int errload = 0, errcall = 0;
 
@@ -51,13 +51,12 @@ void LuaManager::RunScript(std::string Filename)
 		if (errcall)
 			root->CONSOLE->PrintLogFormat("    ->(Runtime Error %i: %s)\n", errcall, reason.c_str());
 			*/
-		printf("\n");
+		return false;
 	}
-	// else
-		// printf("ran %s\n", Filename.c_str()); // [works]
+	return true;
 }
 
-void LuaManager::RunString(std::string sString)
+bool LuaManager::RunString(std::string sString)
 {
 	int errload = 0, errcall = 0;
 	
@@ -71,8 +70,9 @@ void LuaManager::RunString(std::string sString)
 		if (errcall)
 			root->CONSOLE->PrintFormat("    ->(Runtime Error %i: %s)\n", errcall, reason.c_str());
 			*/
-		printf("\n");
+		return false;
 	}
+	return true;
 }
 
 bool LuaManager::IsValid()
@@ -296,7 +296,7 @@ void LuaManager::CallFunction(std::string Name, int Arguments, int Results)
 #endif
 }
 
-void LuaManager::RunFunction()
+bool LuaManager::RunFunction()
 {
 	func_input = false;
 	int errc = lua_pcall(State, func_args, func_results, 0);
@@ -305,7 +305,10 @@ void LuaManager::RunFunction()
 	{
 		std::string reason = lua_tostring(State, -1);
 		Utility::DebugBreak();
+		return false;
 	}
+
+	return true;
 }
 
 int LuaManager::GetFunctionResult(int StackPos)

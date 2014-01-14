@@ -161,10 +161,7 @@ bool ScreenSelectMusic::Run(double Delta)
 		
 		if (!IntervalsIntersect(0, ScreenHeight, NewListY, NewLowerBound))
 		{
-			if (ListDelta > 0)
-				ListY = ScreenHeight - LowerBound - 1;
-			else
-				ListY = 1;
+			PendingListY = 0;
 		}else
 		{
 			ListY = NewListY;

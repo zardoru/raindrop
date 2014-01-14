@@ -33,9 +33,9 @@ public:
 	bool RegisterStruct(std::string Key, void* data, std::string MetatableName = std::string());
 	void RegisterLibrary(std::string arrayname, const luaL_Reg *lib);
 	void* GetStruct(std::string Key);
-	void RunScript(Directory file);
-	void RunScript(std::string Filename);
-	void RunString(std::string sString);
+	bool RunScript(Directory file);
+	bool RunScript(std::string Filename);
+	bool RunString(std::string sString);
 
 	// Global variables
 
@@ -54,7 +54,7 @@ public:
 	void PushArgument(std::string Value);
 
 	void CallFunction(std::string Name, int Arguments = 0, int Results = 0);
-	void RunFunction();
+	bool RunFunction();
 
 	int GetFunctionResult(int StackPos = 1);
 
