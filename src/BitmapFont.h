@@ -19,7 +19,7 @@ public:
 	void LoadFontImage(const char* Name, Vec2 _CharSize, Vec2 _CellSize, Vec2 _RenderSize = Vec2(1,1), char FontStart = 0);
 	void LoadSkinFontImage(const char* Name, Vec2 _CharSize, Vec2 _CellSize, Vec2 _RenderSize = Vec2(1,1), char FontStart = 0);
 	void SetAffectedByLightning(bool Lightning);
-	BitmapFont *BitmapFont::FromLua(LuaManager* Lua, std::string TableName);
+	BitmapFont *FromLua(LuaManager* Lua, std::string TableName);
 };
 
 #endif

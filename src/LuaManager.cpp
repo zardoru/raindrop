@@ -290,10 +290,6 @@ void LuaManager::CallFunction(std::string Name, int Arguments, int Results)
 	func_args = Arguments;
 	func_results = Results;
 	lua_getglobal(State, Name.c_str());
-#ifdef DEBUG
-	if (!lua_isfunction(State, -1))
-		root->CONSOLE->PrintFormat("%s is not a function!\n", Name.c_str());
-#endif
 }
 
 bool LuaManager::RunFunction()

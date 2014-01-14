@@ -406,6 +406,7 @@ void GameWindow::SetupShaders()
 
 	if (status != GL_TRUE)
 	{	
+		printf("%s\n", buffer);
 		throw; // std::exception(buffer);
 	}else
 		printf("%s\n", buffer);
@@ -416,6 +417,7 @@ void GameWindow::SetupShaders()
 
 	if (status != GL_TRUE)
 	{
+		printf("%s\n", buffer);
 		throw; // std::exception(buffer);
 	}
 	else printf("%s\n", buffer);
