@@ -662,7 +662,7 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 		if (ShouldChangeScreenAtEnd)
 		{
 			ScreenEvaluation *Eval = new ScreenEvaluation(this);
-			Eval->Init(Evaluation);
+			Eval->Init(Evaluation, MySong->SongAuthor, MySong->SongName);
 			Next = Eval;
 			Music->Stop();
 		}

@@ -19,11 +19,12 @@ GraphObject2D::GraphObject2D(bool ShouldInitTexture)
 	Red = Blue = Green = 1.0;
 	Alpha = 1.0;
 		
-	z_order = 30;
+	z_order = 0;
 
 	Centered = false;
 	ColorInvert = false;
 	DirtyMatrix = true;
+	DirtyTexture = true;
 	DoTextureCleanup = true;
 	AffectedByLightning = false;
 
@@ -74,6 +75,7 @@ void GraphObject2D::SetCropByPixels(int32 x1, int32 x2, int32 y1, int32 y2)
 	mCrop_x2 = (float) x2 / (float) mWidth;
 	mCrop_y1 = (float) y1 / (float) mHeight;
 	mCrop_y2 = (float) y2 / (float) mHeight;
+	DirtyTexture = true;
 	UpdateTexture();
 }
 
@@ -83,6 +85,7 @@ void GraphObject2D::SetCropToWholeImage()
 	mCrop_x2 = 1;
 	mCrop_y1 = 0;
 	mCrop_y2 = 1;
+	DirtyTexture = true;
 }
 
 // Scale

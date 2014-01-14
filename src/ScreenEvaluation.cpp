@@ -22,7 +22,7 @@ int32 ScreenEvaluation::CalculateScore()
 	return int32(1000000.0 * Results.dpScoreSquare / (double)(Results.totalNotes * (Results.totalNotes + 1)));
 }
 
-void ScreenEvaluation::Init(EvaluationData _Data)
+void ScreenEvaluation::Init(EvaluationData _Data, String SongAuthor, String SongTitle)
 {
 	if (!ScreenEvaluationMusic)
 	{
@@ -73,6 +73,8 @@ void ScreenEvaluation::Init(EvaluationData _Data)
 	ResultsNumerical = _Results;
 	WindowFrame.SetLightMultiplier(1);
 	WindowFrame.SetLightPosition(glm::vec3(0,0,1));
+
+	TitleFormat = SongTitle + " by " + SongAuthor;
 }
 
 
@@ -101,6 +103,7 @@ bool ScreenEvaluation::Run(double Delta)
 		Font->DisplayText(ResultsNumerical.c_str(),     Vec2( ScreenWidth/2, ScreenHeight/2 - 100 ));
 		Font->DisplayText("results screen",			    Vec2( ScreenWidth/2 - 70, 0 ));
 		Font->DisplayText("press space to continue...", Vec2( ScreenWidth/2 - 130, ScreenHeight*7/8 ));
+		Font->DisplayText(TitleFormat.c_str(), Vec2( 0, ScreenHeight - 20 ));
 	}
 	return Running;
 }

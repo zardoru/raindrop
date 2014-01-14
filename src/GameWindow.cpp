@@ -62,9 +62,9 @@ const char* fragShader = "#version 120\n"
 	"	 }else{\n"
 	"		tCol = texture2D(tex, Texcoord) * Color;\n"
 	"	 }\n"
-	"    float dist = length ( lPos - Pos_world );\n"
+	"    float dist = length ( lPos - vec3(Pos_world.xy, 0) );\n"
 	"    if (AffectedByLightning){\n"
-	"       float temp = (lMul * clamp (dot( vec3(0,0,1), lPos), 0, 1)) / (dist*dist);\n"
+	"       float temp = lMul / (dist*dist);\n"
 	"		gl_FragColor = tCol * vec4(vec3(temp), 1);"
 	"	 }else{\n"
 	"		gl_FragColor = tCol;"
@@ -246,10 +246,11 @@ void GameWindow::SetupWindow()
 	// glCullFace(GL_BACK);
 	glFrontFace(GL_CW);
 	// glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	/*glEnable(GL_DEPTH_TEST);*/
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
 
 	
-	projection = glm::ortho<float>(0.0, matrixSize.x, matrixSize.y, 0.0/*, -32.0, 0.0*/);
+	projection = glm::ortho<float>(0.0, matrixSize.x, matrixSize.y, 0.0, -32.0, 0.0);
 
 	SetupShaders();
 
@@ -341,7 +342,7 @@ void GameWindow::SwapBuffers()
 
 void GameWindow::ClearWindow()
 {
-	glClear(GL_COLOR_BUFFER_BIT/* | GL_DEPTH_BUFFER_BIT*/);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 int32 GameWindow::GetDefaultFragShader() const
