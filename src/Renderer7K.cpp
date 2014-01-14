@@ -15,11 +15,6 @@
 #include "Song.h"
 #include "ScreenGameplay7K.h"
 
-inline bool IntervalsIntersect(const double a, const double b, const double c, const double d)
-{
-	return a <= d && c <= b;
-}
-
 void ScreenGameplay7K::DrawMeasures()
 {
 	typedef std::vector<SongInternal::Measure<TrackNote> > NoteVector;

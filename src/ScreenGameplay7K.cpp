@@ -12,6 +12,8 @@
 
 #include <iomanip>
 
+#include "LuaManager.h"
+#include "GraphObjectMan.h"
 #include "ScreenGameplay7K.h"
 
 BitmapFont * GFont = NULL;
@@ -21,7 +23,7 @@ int lastMsOff[MAX_CHANNELS];
 int lastClosest[MAX_CHANNELS];
 
 /* Time before actually starting everything. */
-#define WAITING_TIME 5
+#define WAITING_TIME 1.5
 #define EQ(x) (-100.0/84.0)*x + 10000.0/84.0
 
 #define ACC_MIN 16
@@ -61,12 +63,16 @@ ScreenGameplay7K::ScreenGameplay7K()
 		GFont = new BitmapFont();
 		GFont->LoadSkinFontImage("font.tga", Vec2(6, 15), Vec2(8, 16), Vec2(6, 15), 0);
 	}
+
+	Active = false;
 }
 
 void ScreenGameplay7K::Cleanup()
 {
 	if (Music)
 		Music->Stop();
+
+	delete Animations;
 }
 
 void ScreenGameplay7K::Init(Song7K* S, int DifficultyIndex, bool UseUpscroll)
@@ -74,6 +80,8 @@ void ScreenGameplay7K::Init(Song7K* S, int DifficultyIndex, bool UseUpscroll)
 	MySong = S;
 	CurrentDiff = S->Difficulties[DifficultyIndex];
 	Upscroll = UseUpscroll;
+
+	Animations = new GraphObjectMan();
 }
 
 void ScreenGameplay7K::RecalculateEffects()
@@ -151,6 +159,11 @@ void ScreenGameplay7K::DoHit (double TimeOff, uint32 Lane)
 
 	Score.points += TimeOff <= 20 ? 2 : TimeOff <= 40 ? 1 : 0;
 
+	Animations->GetEnv()->CallFunction("HitEvent", 2);
+	Animations->GetEnv()->PushArgument(TimeOff);
+	Animations->GetEnv()->PushArgument((int)Lane);
+	Animations->GetEnv()->RunFunction();
+
 	if (TimeOff < ACC_MAX) // Within hitting time, otherwise no feedback/miss feedback
 		ExplosionTime[Lane] = 0;
 }
@@ -161,6 +174,11 @@ void ScreenGameplay7K::DoMiss (double TimeOff, uint32 Lane)
 	Score.TotalNotes++;
 	Score.Accuracy = accuracy_percent(Score.total_sqdev / Score.TotalNotes);
 	Score.combo = 0;
+
+	Animations->GetEnv()->CallFunction("MissEvent", 2);
+	Animations->GetEnv()->PushArgument(TimeOff);
+	Animations->GetEnv()->PushArgument((int)Lane);
+	Animations->GetEnv()->RunFunction();
 }
 
 void ScreenGameplay7K::ReleaseLane(unsigned int Lane)
@@ -316,7 +334,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	if (AudioCompensation)
 		TimeCompensation = GetDeviceLatency();
 
-	MySong->Process(TimeCompensation);
+	MySong->Process(TimeCompensation + Configuration::GetConfigf("Offset7K"));
 
 	Channels = CurrentDiff->Channels;
 	VSpeeds = CurrentDiff->VerticalSpeeds;
@@ -443,6 +461,10 @@ void ScreenGameplay7K::MainThreadInitialization()
 	}
 
 	WindowFrame.SetLightMultiplier(0.45f);
+
+	UpdateScripts();
+	Animations->Initialize( FileManager::GetSkinPrefix() + "screengameplay7k.lua" );
+
 	memset((void*)&Score, 0, sizeof (AccuracyData7K));
 	Running = true;
 }
@@ -457,6 +479,11 @@ void ScreenGameplay7K::TranslateKey(KeyType K, bool KeyDown)
 
 	if (GearIndex >= MAX_CHANNELS || GearIndex < 0)
 		return;
+
+	Animations->GetEnv()->CallFunction("GearKeyEvent", 2);
+	Animations->GetEnv()->PushArgument(GearIndex);
+	Animations->GetEnv()->PushArgument(KeyDown);
+	Animations->GetEnv()->RunFunction();
 
 	if (KeyDown)
 	{
@@ -479,12 +506,17 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 	 Other than that most input can be safely ignored.
 	*/
 
+	Animations->HandleInput(key, code, isMouseInput);
+
 	if (code == KE_Press)
 	{
 		switch (BindingsManager::TranslateKey(key))
 		{
 		case KT_Escape:
 			Running = false;
+			break;
+		case KT_Enter:
+			Active = true;
 			break;
 		case KT_FractionInc:
 			SpeedMultiplierUser += 0.25;
@@ -515,48 +547,61 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 	}
 }
 
+void ScreenGameplay7K::UpdateScripts()
+{
+	LuaManager *L = Animations->GetEnv();
+	L->SetGlobal("Combo", Score.combo);
+	L->SetGlobal("MaxCombo", Score.max_combo);
+	L->SetGlobal("Upscroll", Upscroll);
+}
 
 bool ScreenGameplay7K::Run(double Delta)
 {
 	float SongDelta;
 
-	ScreenTime += Delta;
-
 	for (int i = 0; i < CurrentDiff->Channels; i++)
 	{
 		ExplosionTime[i] += Delta;
 	}
+	
+	UpdateScripts();
+	Animations->DrawTargets(Delta);
 
-	if (ScreenTime > WAITING_TIME)
+	if (Active)
 	{
+		ScreenTime += Delta;
 
-		if (!Music || !Music->GetStream())
-			return false; // Quit inmediately. There's no point.
-
-		if (SongOldTime == -1)
+		if (ScreenTime > WAITING_TIME)
 		{
-			Music->Start(false, false);
-			SongOldTime = 0;
+
+			if (!Music || !Music->GetStream())
+				return false; // Quit inmediately. There's no point.
+
+			if (SongOldTime == -1)
+			{
+				Music->Start(false, false);
+				SongOldTime = 0;
+			}
+
+			SongDelta = Music->GetStream()->GetStreamedTime() - SongOldTime;
+			SongTime += SongDelta;
+
+			CurrentVertical = VerticalAtTime(VSpeeds, SongTime);
+			RunMeasures();
+
+			SongOldTime = SongTime;
+
+			/* Update music. */
+			int32 r;
+			Music->GetStream()->UpdateBuffer(r);
+		}else
+		{
+			CurrentVertical += VSpeeds.at(0).Value * Delta; 
 		}
-
-		SongDelta = Music->GetStream()->GetStreamedTime() - SongOldTime;
-		SongTime += SongDelta;
-
-		CurrentVertical = VerticalAtTime(VSpeeds, SongTime);
-		RunMeasures();
-		RecalculateEffects();
-		RecalculateMatrix();
-
-		SongOldTime = SongTime;
-
-		/* Update music. */
-		int32 r;
-		Music->GetStream()->UpdateBuffer(r);
-	}else
-	{
-		CurrentVertical += VSpeeds.at(0).Value * Delta; 
-		RecalculateMatrix();
 	}
+
+	RecalculateEffects();
+	RecalculateMatrix();
 
 	Background.Render();
 
@@ -579,6 +624,9 @@ bool ScreenGameplay7K::Run(double Delta)
 	ss << "\nMult/Speed: " << std::setiosflags(std::ios::fixed) << SpeedMultiplier << "x / " << SpeedMultiplier*4 << "\n";
 
 	GFont->DisplayText(ss.str().c_str(), Vec2(0,0));
+
+	if (!Active)
+		GFont->DisplayText("press 'enter' to start", Vec2( ScreenWidth / 2 - 23 * 3,ScreenHeight * 5/8));
 
 	for (unsigned int i = 0; i < Channels; i++)
 	{

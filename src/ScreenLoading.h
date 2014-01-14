@@ -2,12 +2,12 @@
 #define SCREEN_LD_H_
 
 #include "Screen.h"
+#include "GraphObjectMan.h"
 #include <boost/thread/thread.hpp>
 
 class ScreenLoading : public IScreen
 {
-	GraphObject2D mLogoCore, mLogoSides;
-	double Acceleration;
+	GraphObjectMan Animation;
 	boost::thread *LoadThread;
 public:
 	ScreenLoading(IScreen *Parent, IScreen *_Next);

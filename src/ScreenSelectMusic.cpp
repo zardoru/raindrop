@@ -147,9 +147,6 @@ bool ScreenSelectMusic::Run(double Delta)
 
 	if (PendingListY)
 	{
-		ListY += PendingListY * Delta * 2;
-		PendingListY -= PendingListY * Delta * 2;
-
 		uint32 Size;
 
 		if (SelectedMode == MODE_DOTCUR)
@@ -157,15 +154,21 @@ bool ScreenSelectMusic::Run(double Delta)
 		else
 			Size = SongList7K.size();
 
-		if (ListY < 0)
+		float ListDelta = PendingListY * Delta * 2;
+		float NewListY = ListY + ListDelta;
+		float NewLowerBound = NewListY + Size * 20;
+		float LowerBound = Size * 20;
+		
+		if (!IntervalsIntersect(0, ScreenHeight, NewListY, NewLowerBound))
 		{
-			ListY = 0;
-			PendingListY = 0;
-		}
-		else if (ListY > ScreenHeight - Size * 20)
+			if (ListDelta > 0)
+				ListY = ScreenHeight - LowerBound - 1;
+			else
+				ListY = 1;
+		}else
 		{
-			ListY = ScreenHeight - Size*20;
-			PendingListY = 0;
+			ListY = NewListY;
+			PendingListY -= PendingListY * Delta * 2;
 		}
 	}
 

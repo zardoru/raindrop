@@ -3,6 +3,7 @@
 #include "ScreenLoading.h"
 #include "ImageLoader.h"
 #include "GameWindow.h"
+#include "FileManager.h"
 
 void LoadFunction(void* Screen)
 {
@@ -15,25 +16,12 @@ ScreenLoading::ScreenLoading(IScreen *Parent, IScreen *_Next)
 	Next = _Next;
 	LoadThread = NULL;
 	Running = true;
-	Acceleration = 0;
+	
+	Animation.Initialize(FileManager::GetSkinPrefix() + "screenloading.lua");
 }
 
 void ScreenLoading::Init()
 {
-	mLogoCore.SetImage(ImageLoader::LoadSkin("logo_core.png"));
-	mLogoCore.Centered = true;
-	mLogoCore.ColorInvert = true;
-	mLogoCore.AffectedByLightning = true;
-	mLogoCore.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
-	mLogoCore.SetSize(400);
-
-	mLogoSides.SetImage(ImageLoader::LoadSkin("logo_sides.png"));
-	mLogoSides.Centered = true;
-	mLogoSides.ColorInvert = true;
-	mLogoSides.AffectedByLightning = true;
-	mLogoSides.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
-	mLogoSides.SetSize(400);
-
 	LoadThread = new boost::thread(LoadFunction, Next);
 	WindowFrame.SetLightMultiplier(0.8f);
 	WindowFrame.SetLightPosition(glm::vec3(0,-0.5,1));
@@ -44,13 +32,7 @@ bool ScreenLoading::Run(double TimeDelta)
 	if (!LoadThread)
 		return RunNested(TimeDelta);
 
-	Acceleration += 180 * TimeDelta;		 
-	if (Acceleration > 720)
-		Acceleration = 720;
-
-	mLogoSides.AddRotation(TimeDelta * Acceleration);
-	mLogoSides.Render();
-	mLogoCore.Render();
+	Animation.DrawTargets(TimeDelta);
 
 	if (LoadThread->timed_join(boost::posix_time::seconds(0)))
 	{

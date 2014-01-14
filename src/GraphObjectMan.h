@@ -19,6 +19,8 @@ public:
 	void AddLuaTarget(GraphObject2D *Targ, String Varname);
 	void RemoveTarget(GraphObject2D *Targ);
 	void DrawTargets(double TimeDelta);
+
+	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 };
 
 #endif

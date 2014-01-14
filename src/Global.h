@@ -46,6 +46,10 @@ T abs (T x)
 	return x > 0? x : -x;
 }
 
+inline bool IntervalsIntersect(const double a, const double b, const double c, const double d)
+{
+	return a <= d && c <= b;
+}
 
 #ifdef WIN32
 #pragma warning (disable: 4244)

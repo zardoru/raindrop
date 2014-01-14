@@ -299,7 +299,13 @@ void LuaManager::CallFunction(std::string Name, int Arguments, int Results)
 void LuaManager::RunFunction()
 {
 	func_input = false;
-	lua_pcall(State, func_args, func_results, 0);
+	int errc = lua_pcall(State, func_args, func_results, 0);
+
+	if (errc)
+	{
+		std::string reason = lua_tostring(State, -1);
+		Utility::DebugBreak();
+	}
 }
 
 int LuaManager::GetFunctionResult(int StackPos)

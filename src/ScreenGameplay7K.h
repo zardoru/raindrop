@@ -1,6 +1,8 @@
 #ifndef SG7K_H_
 #define SG7K_H_
 
+class GraphObjectMan;
+
 class ScreenGameplay7K : public IScreen
 {
 private:
@@ -11,6 +13,7 @@ private:
 	bool Upscroll;
 
 	/* Game */
+	bool Active;
 	double CurrentVertical;
 	Mat4 PositionMatrix;
 	Mat4 NoteMatrix;
@@ -21,6 +24,12 @@ private:
 	bool AudioCompensation;
 	double TimeCompensation;
 	bool MultiplierChanged;
+	SongInternal::TDifficulty<TrackNote>			 *CurrentDiff;
+	std::vector<SongInternal::Measure<TrackNote> >	 NotesByMeasure[16];
+	TimingData VSpeeds;
+	int		GearBindings[MAX_CHANNELS];
+	uint32	Channels;
+	TrackNote *HeldKey[MAX_CHANNELS];
 
 	/* Positions */
 	float  JudgementLinePos;
@@ -29,9 +38,8 @@ private:
 	/* Effects */
 	float waveEffect; 
 	
-	SongInternal::TDifficulty<TrackNote>			 *CurrentDiff;
-	std::vector<SongInternal::Measure<TrackNote> >	 NotesByMeasure[16];
-	TimingData VSpeeds;
+	
+	/* Graphics */
 	Image*  NoteImage;
 	Image*  NoteImageHold;
 	Image*  GearLaneImage[MAX_CHANNELS];
@@ -39,9 +47,10 @@ private:
 	Image*  NoteImages[MAX_CHANNELS];
 	Image*  NoteImagesHold[MAX_CHANNELS];
 	float NoteHeight;
-
-	int		GearBindings[MAX_CHANNELS];
-	uint32	Channels;
+	GraphObject2D Keys[MAX_CHANNELS];
+	GraphObject2D Background;
+	GraphObject2D JudgementLine;
+	GraphObjectMan *Animations;
 
 	/* Explosions */
 	Image*  ExplosionFrames[32];
@@ -50,20 +59,15 @@ private:
 
 	PaStreamWrapper *Music;
 
-	GraphObject2D Keys[MAX_CHANNELS];
-	GraphObject2D Background;
-	GraphObject2D JudgementLine;
-
 	AccuracyData7K Score;
 	double SongTime;
-
-	TrackNote *HeldKey[MAX_CHANNELS];
 
 	/* 
 		Optimizations will come in later. 
 		See Renderer7K.cpp.	
 	*/
 
+	void UpdateScripts();
 	void RecalculateMatrix();
 	void RecalculateEffects();
 	void RunMeasures();

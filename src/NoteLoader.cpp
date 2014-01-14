@@ -2,6 +2,7 @@
 #include "NoteLoader.h"
 #include "Game_Consts.h"
 #include "Audio.h"
+#include "Configuration.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
@@ -186,6 +187,7 @@ SongDC* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 		{
 			std::stringstream str (CommandContents);
 			str >> Difficulty->Offset;
+			Difficulty->Offset += Configuration::GetConfigf("OffsetDC");
 		}
 
 		// Then, file info.

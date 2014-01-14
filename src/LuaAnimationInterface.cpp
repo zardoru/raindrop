@@ -13,7 +13,7 @@
 
 namespace LuaAnimFuncs
 {
-	const char * GraphObject2DMetatable = "GraphObject2D";
+	const char * GraphObject2DMetatable = "Sys.GraphObject2D";
 
 	int SetRotation(lua_State *L)
 	{
@@ -95,6 +95,14 @@ namespace LuaAnimFuncs
 		return 0;
 	}
 
+	int SetImageSkin(lua_State *L)
+	{
+		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		std::string iName = luaL_checkstring(L, 1);
+		Target->SetImage(ImageLoader::LoadSkin(iName));
+		return 0;
+	}
+
 	int GetSize(lua_State *L)
 	{
 		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
@@ -113,11 +121,13 @@ namespace LuaAnimFuncs
 
 	int CreateTarget(lua_State *L)
 	{
+		GraphObjectMan * Manager = GetObjectFromState<GraphObjectMan>(L, "GOMAN");
 		GraphObject2D *Target = new GraphObject2D;
 		GraphObject2D **RetVal = (GraphObject2D**) lua_newuserdata(L, sizeof(GraphObject2D **));
 		*RetVal = Target;
 		luaL_getmetatable(L, GraphObject2DMetatable);
 		lua_setmetatable(L, -2);
+		Manager->AddTarget(Target);
 		return 1;
 	}
 
@@ -128,6 +138,14 @@ namespace LuaAnimFuncs
 		Lua->RegisterStruct("Target", Target);
 		return 0;
 	}
+
+	int CleanTarget(lua_State *L)
+	{
+		GraphObject2D *Target = *GetUserObject<GraphObject2D*> (L, 1, GraphObject2DMetatable);
+		delete Target;
+		return 0;
+	}
+
 
 	int GetSkinConfigF(lua_State *L)
 	{
@@ -162,6 +180,40 @@ namespace LuaAnimFuncs
 		return 0;
 	}
 
+	int SetCentered(lua_State *L)
+	{
+		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		uint32 Cen = luaL_checknumber(L, 1);
+		Target->Centered = Cen;
+		return 0;
+	}
+
+	int SetSize(lua_State *L)
+	{
+		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		float W = luaL_checknumber(L, 1);
+		float H = luaL_checknumber(L, 2);
+		Target->SetSize(W, H);
+		return 0;
+	}
+
+	int SetColorInvert(lua_State *L)
+	{
+		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		uint32 Cen = luaL_checknumber(L, 1);
+		Target->ColorInvert = Cen;
+		return 0;
+	}
+
+	int SetAffectedbyLightning(lua_State *L)
+	{
+		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		uint32 Cen = luaL_checknumber(L, 1);
+		Target->AffectedByLightning = Cen;
+		return 0;
+	}
+
+
 	/*
 
 	int GetGameConfigF(lua_State *L)
@@ -180,20 +232,26 @@ namespace LuaAnimFuncs
 		{"GetRotation", GetRotation},
 		{"Rotate", Rotate},
 		{"Move", Move},
-		{"SetAbsolutePosition", SetAbsolutePosition},
-		{"GetAbsolutePosition", GetAbsolutePosition},
+		{"SetPosition", SetAbsolutePosition},
+		{"GetPosition", GetAbsolutePosition},
 		{"CropByPixels", CropByPixels},
 		{"SetScale", SetScale},
 		{"GetScale", GetScale},
 		{"GetSize", GetSize},
+		{"SetSize", SetSize},
 		{"SetImage", SetImage},
+		{"SetImageSkin", SetImageSkin},
 		{"SetAlpha", SetAlpha},
 		{"CreateTarget", CreateTarget},
 		{"SetTarget", SetTarget},
+		{"CleanTarget", CleanTarget},
 		{"GetConfigF", GetSkinConfigF},
 		{"GetConfigS", GetSkinConfigS},
 		{"GetZ", GetZ },
 		{"SetZ", SetZ },
+		{"SetCentered", SetCentered},
+		{"SetColorInvert", SetColorInvert},
+		{"SetAffectedbyLightning", SetAffectedbyLightning},
 		{NULL, NULL}
 	};
 }
@@ -201,5 +259,5 @@ namespace LuaAnimFuncs
 void CreateLuaInterface(LuaManager *AnimLua)
 {
 	AnimLua->NewMetatable(LuaAnimFuncs::GraphObject2DMetatable);
-	AnimLua->RegisterLibrary("GraphObject", ((const luaL_Reg*)LuaAnimFuncs::GraphObjectLib));
+	AnimLua->RegisterLibrary("Obj", ((const luaL_Reg*)LuaAnimFuncs::GraphObjectLib));
 }
