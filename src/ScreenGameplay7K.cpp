@@ -415,6 +415,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 	NoteImage = ImageLoader::LoadSkin("note.png");
 
 	Background.SetImage(ImageLoader::Load(MySong->BackgroundDir));
+	Background.SetZ(0);
 	Background.AffectedByLightning = true;
 
 	if (Background.GetImage())
@@ -441,7 +442,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 		ExplosionTime[i] = 0.016 * 20;
 	}
 
-	WindowFrame.SetLightMultiplier(0.6f);
+	WindowFrame.SetLightMultiplier(0.45f);
 	memset((void*)&Score, 0, sizeof (AccuracyData7K));
 	Running = true;
 }

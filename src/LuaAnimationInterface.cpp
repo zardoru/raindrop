@@ -200,6 +200,6 @@ namespace LuaAnimFuncs
 
 void CreateLuaInterface(LuaManager *AnimLua)
 {
-	// AnimLua->NewMetatable(LuaAnimFuncs::GraphObject2DMetatable);
+	AnimLua->NewMetatable(LuaAnimFuncs::GraphObject2DMetatable);
 	AnimLua->RegisterLibrary("GraphObject", ((const luaL_Reg*)LuaAnimFuncs::GraphObjectLib));
 }

@@ -327,3 +327,8 @@ void LuaManager::RegisterLibrary(std::string Libname, const luaL_Reg *Reg)
 	luaL_newlib(State, Reg);
 	lua_setglobal(State, Libname.c_str());
 }
+
+lua_State* LuaManager::GetState()
+{
+	return State;
+}

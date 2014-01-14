@@ -46,6 +46,8 @@ public:
 	void SetGlobal(std::string VariableName, std::string Value);
 	void SetGlobal(std::string VariableName, double Value);
 
+	lua_State* GetState();
+
 	// Function calling
 	void PushArgument(int Value);
 	void PushArgument(double Value);
