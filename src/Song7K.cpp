@@ -154,7 +154,6 @@ void Song7K::Process(float Drift)
 		/* For all channels of this difficulty */
 		for (int KeyIndex = 0; KeyIndex < (*Diff)->Channels; KeyIndex++)
 		{
-			Vec2 BasePosition (KeyIndex * (GearWidth / (*Diff)->Channels), 0);
 			int MIdx = 0;
 
 			/* For each measure of this channel */
@@ -181,9 +180,9 @@ void Song7K::Process(float Drift)
 
 					// if upscroll change minus for plus as well as matrix at screengameplay7k
 					if (!CurrentNote.IsHold())
-						CurrentNote.AssignPosition(BasePosition - VerticalPosition);
+						CurrentNote.AssignPosition( -VerticalPosition);
 					else
-						CurrentNote.AssignPosition(BasePosition - VerticalPosition, BasePosition - HoldEndPosition);
+						CurrentNote.AssignPosition( -VerticalPosition, -HoldEndPosition);
 				}
 				MIdx++;
 			}

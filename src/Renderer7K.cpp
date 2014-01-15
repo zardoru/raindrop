@@ -59,7 +59,7 @@ void ScreenGameplay7K::DrawMeasures()
 				float VerticalHold = (m->GetVerticalHold() * SpeedMultiplier + rPos) ;
 
 				if (MultiplierChanged && m->IsHold())
-					m->RecalculateBody(GearLaneWidth, NoteHeight, Upscroll? -SpeedMultiplier : SpeedMultiplier);
+					m->RecalculateBody(LanePositions[m->GetTrack()], LaneWidth[m->GetTrack()], NoteHeight, Upscroll? -SpeedMultiplier : SpeedMultiplier);
 
 				bool InScreen = true; 
 
@@ -117,7 +117,7 @@ void ScreenGameplay7K::DrawMeasures()
 
 				glUniform4f(6, 1, 1, 1, 1);
 
-				glUniformMatrix4fv(2, 1, GL_FALSE, &(NoteMatrix)[0][0]);
+				glUniformMatrix4fv(2, 1, GL_FALSE, &(NoteMatrix[m->GetTrack()])[0][0]);
 
 				glUniformMatrix4fv(1, 1, GL_FALSE, &(m->GetMatrix())[0][0]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -135,23 +135,4 @@ void ScreenGameplay7K::DrawMeasures()
 	MultiplierChanged = false;
 	
 	WindowFrame.DisableAttribArray("position");
-}
-
-void ScreenGameplay7K::DrawExplosions()
-{
-	for (int i = 0; i < CurrentDiff->Channels; i++)
-	{
-		int Frame = ExplosionTime[i] / 0.016;
-
-		if (Frame > 19)
-			Explosion[i].Alpha = 0;
-		else
-		{
-			Explosion[i].Alpha = 1;
-			Explosion[i].SetImage ( ExplosionFrames[Frame], false );
-		}
-
-		Explosion[i].Render();
-
-	}
 }

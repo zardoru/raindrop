@@ -118,6 +118,10 @@ void ScreenGameplay7K::RunMeasures()
 						DoMiss((SongTime - m->GetTimeFinal()) * 1000, k);
 						m = (*i).MeasureNotes.erase(m);
 
+
+						if (Score.combo > 10)
+							MissSnd->Reset();
+
 						if (m == (*i).MeasureNotes.end())
 							goto next_measure;
 
@@ -161,11 +165,9 @@ void ScreenGameplay7K::DoHit (double TimeOff, uint32 Lane)
 
 	Animations->GetEnv()->CallFunction("HitEvent", 2);
 	Animations->GetEnv()->PushArgument(TimeOff);
-	Animations->GetEnv()->PushArgument((int)Lane);
+	Animations->GetEnv()->PushArgument((int)Lane + 1);
 	Animations->GetEnv()->RunFunction();
 
-	if (TimeOff < ACC_MAX) // Within hitting time, otherwise no feedback/miss feedback
-		ExplosionTime[Lane] = 0;
 }
 
 void ScreenGameplay7K::DoMiss (double TimeOff, uint32 Lane)
@@ -177,7 +179,7 @@ void ScreenGameplay7K::DoMiss (double TimeOff, uint32 Lane)
 
 	Animations->GetEnv()->CallFunction("MissEvent", 2);
 	Animations->GetEnv()->PushArgument(TimeOff);
-	Animations->GetEnv()->PushArgument((int)Lane);
+	Animations->GetEnv()->PushArgument((int)Lane + 1);
 	Animations->GetEnv()->RunFunction();
 }
 
@@ -233,12 +235,15 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 	if (!Music)
 		return;
 
-	lastClosest[Lane] = 1000000000;
+	lastClosest[Lane] = 9999;
 
 	for (NoteVector::iterator i = Measures.begin(); i != Measures.end(); i++)
 	{
 		for (std::vector<TrackNote>::iterator m = (*i).MeasureNotes.begin(); m != (*i).MeasureNotes.end(); m++)
 		{
+			if (!m->IsEnabled())
+				continue;
+
 			double tD = abs (m->GetStartTime() - SongTime) * 1000;
 			// std::cout << "\n time: " << m->GetStartTime() << " st: " << SongTime << " td: " << tD;
 
@@ -255,14 +260,16 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 					if (m->IsHold() && m->IsEnabled())
 					{
 						m->Hit();
+						HeldKey[m->GetTrack()] = true;
 					}
-
-					ExplosionTime[Lane] = 0;
 				}
 				else
 				{
 					// missed feedback
 					MissSnd->Reset();
+
+					if (m->IsHold())
+						m->Disable();
 				}
 
 				/* remove note from judgement*/
@@ -280,7 +287,7 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 
 void ScreenGameplay7K::RecalculateMatrix()
 {
-	PositionMatrix = glm::translate(Mat4(), glm::vec3(GearLaneWidth/2 + GearStartX, BasePos + CurrentVertical * SpeedMultiplier + deltaPos, 0));
+	PositionMatrix = glm::translate(Mat4(), glm::vec3(0, BasePos + CurrentVertical * SpeedMultiplier + deltaPos, 0));
 }
 
 void ScreenGameplay7K::LoadThreadInitialization()
@@ -324,8 +331,6 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	ImageLoader::LoadFromManifest(OtherFiles, 1);
 	/* TODO: Add playfield background */
 
-	GearLaneWidth = GearWidth / CurrentDiff->Channels;
-
 	if (!Music)
 	{
 		Music = new PaStreamWrapper(MySong->SongFilename.c_str());
@@ -356,42 +361,89 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	if (!NoteHeight)
 		NoteHeight = 10;
 
+	char str[256];
+	char nstr[256];
+
+	sprintf(nstr, "Channels%d", CurrentDiff->Channels);
+
+	sprintf(str, "GearHeight");
+	GearHeightFinal = Configuration::GetSkinConfigf(str, nstr);
+
 	/* Initial object distance */
 	if (!Upscroll)
-		JudgementLinePos = float(ScreenHeight) - GearHeight;
+		JudgementLinePos = float(ScreenHeight) - GearHeightFinal;
 	else
-		JudgementLinePos = GearHeight;
+		JudgementLinePos = GearHeightFinal;
 
-	BasePos = JudgementLinePos + (Upscroll ? NoteHeight/2 : -NoteHeight/2) /* NoteSize/2 ;P */;
+	BasePos = JudgementLinePos + (Upscroll ? NoteHeight/2 : -NoteHeight/2);
 	CurrentVertical -= VSpeeds.at(0).Value * (WAITING_TIME);
-
-	NoteMatrix = glm::scale(Mat4(), glm::vec3(GearLaneWidth, NoteHeight, 0));
 
 	RecalculateMatrix();
 	MultiplierChanged = true;
 }
 
+void ScreenGameplay7K::SetupScriptConstants()
+{
+	LuaManager *L = Animations->GetEnv();
+	L->SetGlobal("Upscroll", Upscroll);
+	L->SetGlobal("Channels", Channels);
+	L->SetGlobal("JudgementLineY", JudgementLinePos);
+	L->SetGlobal("AccuracyHitMS", ACC_MAX);
+}
+
+void ScreenGameplay7K::SetupGear()
+{
+	using namespace Configuration;
+	char str[256];
+	char cstr[256];
+	char nstr[256];
+
+	sprintf(nstr, "Channels%d", CurrentDiff->Channels);
+
+	for (int i = 0; i < CurrentDiff->Channels; i++)
+	{
+		sprintf(cstr, "Key%d", i+1);
+		
+		/* If it says that the nth lane uses the kth key then we'll bind that! */
+		sprintf(str, "key%d.png", (int)GetSkinConfigf(cstr, nstr));
+		GearLaneImage[i] = ImageLoader::LoadSkin(str);
+
+		sprintf(str, "key%dd.png", (int)GetSkinConfigf(cstr, nstr));
+		GearLaneImageDown[i] = ImageLoader::LoadSkin(str);
+
+		sprintf(str, "Key%dX", i+1);
+		LanePositions[i] = Configuration::GetSkinConfigf(str, nstr);
+
+		sprintf(str, "Key%dWidth", i+1);
+		LaneWidth[i] = Configuration::GetSkinConfigf(str, nstr);
+
+		Keys[i].SetImage ( GearLaneImage[i] );
+		Keys[i].SetSize( LaneWidth[i], GearHeightFinal );
+		Keys[i].Centered = true;
+
+		Keys[i].SetPosition( LanePositions[i], JudgementLinePos + (Upscroll? -1:1) * GearHeightFinal/2 );
+
+		if (Upscroll)
+			Keys[i].SetRotation(180);
+
+		Keys[i].SetZ(11);
+
+		NoteMatrix[i] = glm::translate(Mat4(), glm::vec3(LanePositions[i], 0, 10)) * glm::scale(Mat4(), glm::vec3(LaneWidth[i], NoteHeight, 1));
+	}
+}
+
 void ScreenGameplay7K::MainThreadInitialization()
 {
+	SetupGear();
+
+	char nstr[256];
+	sprintf(nstr, "Channels%d", CurrentDiff->Channels);
+
 	for (int i = 0; i < CurrentDiff->Channels; i++)
 	{
 		std::stringstream ss;
-		char str[256];
 		char cstr[256];
-		char nstr[256];
-
-		/* eventually move this to its own space (this is unlikely to overflow by the way) */
-		sprintf(cstr, "Key%d", i+1);
-		sprintf(nstr, "Channels%d", CurrentDiff->Channels);
 		
-		/* If it says that the nth lane uses the kth key then we'll bind that! */
-		sprintf(str, "key%d.png", (int)Configuration::GetSkinConfigf(cstr, nstr));
-		GearLaneImage[i] = ImageLoader::LoadSkin(str);
-
-		str[0] = 0;
-		sprintf(str, "key%dd.png", (int)Configuration::GetSkinConfigf(cstr, nstr));
-		GearLaneImageDown[i] = ImageLoader::LoadSkin(str);
-
 		/* Assign per-lane bindings. */
 		sprintf(cstr, "Key%dBinding", i+1);
 
@@ -410,21 +462,6 @@ void ScreenGameplay7K::MainThreadInitialization()
 		Filename = Configuration::GetSkinConfigs(cstr, nstr);
 		NoteImagesHold[i] = ImageLoader::LoadSkin(Filename);
 
-
-		/* Gear */
-		Keys[i].SetImage ( GearLaneImage[i] );
-		Keys[i].SetSize( GearLaneWidth, GearHeight );
-		Keys[i].Centered = true;
-
-		Keys[i].SetPosition( GearStartX + GearLaneWidth * i + GearLaneWidth / 2, JudgementLinePos + (Upscroll? -1:1) * GearHeight/2 );
-
-		if (Upscroll)
-			Keys[i].SetRotation(180);
-
-		/* Animated hit explosion */
-		Explosion[i].Centered = true;
-		Explosion[i].SetSize( GearLaneWidth * 2, GearLaneWidth * 2 );
-		Explosion[i].SetPosition( GearStartX + GearLaneWidth * i + GearLaneWidth / 2, JudgementLinePos );
 		lastClosest[i] = 0;
 
 		HeldKey[i] = NULL;
@@ -444,25 +481,9 @@ void ScreenGameplay7K::MainThreadInitialization()
 		Background.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
 	}
 
-	for (int i = 0; i < 20 /*Frames*/; i++)
-	{
-		char str[256];
-		sprintf(str, "explosion-%d.png", i);
-		ExplosionFrames[i] = ImageLoader::LoadSkin(str);
-	}
-
-	JudgementLine.SetImage(ImageLoader::LoadSkin("judgeline.png")); // todo: add GO2D management to lua
-	JudgementLine.SetSize(GearWidth, NoteHeight);
-	JudgementLine.SetPosition(GearStartX, JudgementLinePos + (Upscroll ? 0 : -JudgementLine.GetHeight()));
-
-	for (int i = 0; i < MAX_CHANNELS; i++)
-	{
-		ExplosionTime[i] = 0.016 * 20;
-	}
-
 	WindowFrame.SetLightMultiplier(0.45f);
 
-	UpdateScripts();
+	SetupScriptConstants();
 	Animations->Initialize( FileManager::GetSkinPrefix() + "screengameplay7k.lua" );
 
 	memset((void*)&Score, 0, sizeof (AccuracyData7K));
@@ -547,26 +568,21 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 	}
 }
 
-void ScreenGameplay7K::UpdateScripts()
+void ScreenGameplay7K::UpdateScriptVariables()
 {
 	LuaManager *L = Animations->GetEnv();
 	L->SetGlobal("Combo", Score.combo);
 	L->SetGlobal("MaxCombo", Score.max_combo);
-	L->SetGlobal("Upscroll", Upscroll);
+	L->SetGlobal("SpeedMultiplier", SpeedMultiplier);
+	L->SetGlobal("SpeedMultiplierUser", SpeedMultiplierUser);
+	L->SetGlobal("waveEffectEnabled", waveEffectEnabled);
+	L->SetGlobal("Active", Active);
 }
 
 bool ScreenGameplay7K::Run(double Delta)
 {
 	float SongDelta;
-
-	for (int i = 0; i < CurrentDiff->Channels; i++)
-	{
-		ExplosionTime[i] += Delta;
-	}
 	
-	UpdateScripts();
-	Animations->DrawTargets(Delta);
-
 	if (Active)
 	{
 		ScreenTime += Delta;
@@ -610,10 +626,6 @@ bool ScreenGameplay7K::Run(double Delta)
 	for (int32 i = 0; i < CurrentDiff->Channels; i++)
 		Keys[i].Render();
 
-	JudgementLine.Render();
-
-	DrawExplosions();
-
 	std::stringstream ss;
 
 	ss << "score: " << Score.points;
@@ -634,6 +646,9 @@ bool ScreenGameplay7K::Run(double Delta)
 		ss << lastClosest[i];
 		GFont->DisplayText(ss.str().c_str(), Keys[i].GetPosition());
 	}
+
+	UpdateScriptVariables();
+	Animations->DrawTargets(Delta);
 
 	return Running;
 }

@@ -66,9 +66,9 @@ const char* fragShader = "#version 120\n"
 	"    float dist = length ( lPos - vec3(Pos_world.xy, 0) );\n"
 	"    if (AffectedByLightning){\n"
 	"       float temp = lMul / (dist*dist);\n"
-	"		gl_FragColor = tCol * vec4(vec3(temp), 1);"
+	"		gl_FragColor = tCol * vec4(vec3(temp), 1);\n"
 	"	 }else{\n"
-	"		gl_FragColor = tCol;"
+	"		gl_FragColor = tCol;\n"
 	"    }\n"
 	"}\n";
 

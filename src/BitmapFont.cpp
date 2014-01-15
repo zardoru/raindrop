@@ -39,6 +39,7 @@ void BitmapFont::RegenerateCharPositions(Vec2 CellSize)
 			CharPosition[Current].SetCropByPixels(x*CellSize.x, (x)*CellSize.x+CharSize.x,  y*CellSize.y, (y)*CellSize.y+CharSize.y);
 			CharPosition[Current].SetWidth(RenderSize.x);
 			CharPosition[Current].SetHeight(RenderSize.y);
+			CharPosition[Current].SetZ(16);
 			Current++;
 		}
 	}

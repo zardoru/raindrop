@@ -4,6 +4,7 @@
 #include "ImageLoader.h"
 #include "GraphObject2D.h"
 #include "LuaManager.h"
+#include "FileManager.h"
 #include "GraphObjectMan.h"
 #include "Configuration.h"
 
@@ -184,7 +185,7 @@ namespace LuaAnimFuncs
 	{
 		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
 		uint32 Cen = luaL_checknumber(L, 1);
-		Target->Centered = Cen;
+		Target->Centered = (Cen != 0);
 		return 0;
 	}
 
@@ -201,7 +202,7 @@ namespace LuaAnimFuncs
 	{
 		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
 		uint32 Cen = luaL_checknumber(L, 1);
-		Target->ColorInvert = Cen;
+		Target->ColorInvert = (Cen != 0);
 		return 0;
 	}
 
@@ -209,10 +210,16 @@ namespace LuaAnimFuncs
 	{
 		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
 		uint32 Cen = luaL_checknumber(L, 1);
-		Target->AffectedByLightning = Cen;
+		Target->AffectedByLightning = (Cen != 0);
 		return 0;
 	}
 
+	int Require(lua_State *L)
+	{
+		LuaManager *Lua = GetObjectFromState<LuaManager>(L, "Luaman");
+		lua_pushboolean(L, Lua->RunScript(FileManager::GetSkinPrefix() + luaL_checkstring(L, 1)));
+		return 1;
+	}
 
 	/*
 
@@ -259,5 +266,6 @@ namespace LuaAnimFuncs
 void CreateLuaInterface(LuaManager *AnimLua)
 {
 	AnimLua->NewMetatable(LuaAnimFuncs::GraphObject2DMetatable);
+	AnimLua->Register(LuaAnimFuncs::Require, "skin_require");
 	AnimLua->RegisterLibrary("Obj", ((const luaL_Reg*)LuaAnimFuncs::GraphObjectLib));
 }

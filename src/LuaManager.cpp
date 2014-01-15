@@ -6,6 +6,13 @@ int LuaPanic(lua_State* State)
 {
 	if (lua_isstring(State, -1))
 		printf("LUA ERROR: %s\n", lua_tostring(State, -1));
+	Utility::DebugBreak();
+	return 0;
+}
+
+int Break(lua_State *S)
+{
+	Utility::DebugBreak();
 	return 0;
 }
 
@@ -16,6 +23,8 @@ LuaManager::LuaManager()
 	{
 		// luaL_openlibs(State);
 		RegisterStruct("Luaman", (void*)this);
+		Register(Break, "DEBUGBREAK");
+		luaL_openlibs(State);
 		lua_atpanic(State, &LuaPanic);
 	}
 	// If we couldn't open lua, can we throw an exception?
@@ -44,6 +53,10 @@ bool LuaManager::RunScript(std::string Filename)
 	if( (errload = luaL_loadfile(State, Filename.c_str())) || (errcall = lua_pcall(State, 0, LUA_MULTRET, 0)))
 	{
 		std::string reason = lua_tostring(State, -1);
+
+#ifndef NDEBUG
+		printf("Lua error: %s\n", reason.c_str());
+#endif
 		// root->CONSOLE->LogFormat("Error [LuaManager]: Loading file %s\n", Filename.c_str());
 
 		/* if (errload)
@@ -300,6 +313,10 @@ bool LuaManager::RunFunction()
 	if (errc)
 	{
 		std::string reason = lua_tostring(State, -1);
+
+#ifndef NDEBUG
+		printf("lua call error: %s\n", reason.c_str());
+#endif
 		return false;
 	}
 

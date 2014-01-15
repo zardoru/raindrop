@@ -31,7 +31,7 @@ public:
 	void Hit();
 
 	void AddTime(double Time);
-	void RecalculateBody(float noteWidth, float noteSize, float speedMultiplier);
+	void RecalculateBody(float trackPosition, float noteWidth, float noteSize, float speedMultiplier);
 	void Disable();
 
 	float GetVertical() const;

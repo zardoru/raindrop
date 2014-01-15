@@ -16,7 +16,7 @@ private:
 	bool Active;
 	double CurrentVertical;
 	Mat4 PositionMatrix;
-	Mat4 NoteMatrix;
+	Mat4 NoteMatrix[MAX_CHANNELS];
 	Song7K *MySong;
 	float SongOldTime;
 	float deltaPos;
@@ -29,11 +29,11 @@ private:
 	TimingData VSpeeds;
 	int		GearBindings[MAX_CHANNELS];
 	uint32	Channels;
-	TrackNote *HeldKey[MAX_CHANNELS];
+	bool HeldKey[MAX_CHANNELS];
 
 	/* Positions */
 	float  JudgementLinePos;
-	float GearLaneWidth, BasePos;
+	float  BasePos;
 
 	/* Effects */
 	float waveEffect; 
@@ -49,13 +49,10 @@ private:
 	float NoteHeight;
 	GraphObject2D Keys[MAX_CHANNELS];
 	GraphObject2D Background;
-	GraphObject2D JudgementLine;
 	GraphObjectMan *Animations;
-
-	/* Explosions */
-	Image*  ExplosionFrames[32];
-	GraphObject2D Explosion[MAX_CHANNELS];
-	double   ExplosionTime[MAX_CHANNELS];
+	float LanePositions[MAX_CHANNELS];
+	float LaneWidth[MAX_CHANNELS];
+	float GearHeightFinal;
 
 	PaStreamWrapper *Music;
 
@@ -67,7 +64,11 @@ private:
 		See Renderer7K.cpp.	
 	*/
 
-	void UpdateScripts();
+	void SetupGear();
+
+	void SetupScriptConstants();
+	void UpdateScriptVariables();
+
 	void RecalculateMatrix();
 	void RecalculateEffects();
 	void RunMeasures();
@@ -75,7 +76,6 @@ private:
 	void DoHit (double TimeOff, uint32 Lane);
 	void DoMiss (double TimeOff, uint32 Lane);
 
-	void DrawExplosions();
 	void DrawMeasures();
 
 	void JudgeLane(unsigned int Lane);
