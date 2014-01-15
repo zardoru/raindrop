@@ -58,15 +58,39 @@ void GraphObjectMan::RemoveTarget(GraphObject2D *Targ)
 
 void GraphObjectMan::DrawTargets(double TimeDelta)
 {
-	Lua->CallFunction("Update", 1);
-	Lua->PushArgument(TimeDelta);
-	Lua->RunFunction();
+	UpdateTargets(TimeDelta);
 
 	for (std::vector<GraphObject2D*>::iterator i = Objects.begin(); i != Objects.end(); i++)
 	{
 		(*i)->Render();
 	}
 }
+
+void GraphObjectMan::UpdateTargets(double TimeDelta)
+{
+	Lua->CallFunction("Update", 1);
+	Lua->PushArgument(TimeDelta);
+	Lua->RunFunction();
+}
+
+void GraphObjectMan::DrawUntilLayer(uint32 Layer)
+{
+	for (std::vector<GraphObject2D*>::iterator i = Objects.begin(); i != Objects.end(); i++)
+	{
+		if ((*i)->GetZ() <= Layer)
+			(*i)->Render();
+	}
+}
+
+void GraphObjectMan::DrawFromLayer(uint32 Layer)
+{
+	for (std::vector<GraphObject2D*>::iterator i = Objects.begin(); i != Objects.end(); i++)
+	{
+		if ((*i)->GetZ() >= Layer)
+			(*i)->Render();
+	}
+}
+
 
 LuaManager *GraphObjectMan::GetEnv()
 {

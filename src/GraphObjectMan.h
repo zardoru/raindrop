@@ -20,6 +20,10 @@ public:
 	void RemoveTarget(GraphObject2D *Targ);
 	void DrawTargets(double TimeDelta);
 
+	void UpdateTargets(double TimeDelta);
+	void DrawUntilLayer(uint32 Layer);
+	void DrawFromLayer(uint32 Layer);
+
 	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 };
 

@@ -252,8 +252,6 @@ namespace LuaAnimFuncs
 		{"CreateTarget", CreateTarget},
 		{"SetTarget", SetTarget},
 		{"CleanTarget", CleanTarget},
-		{"GetConfigF", GetSkinConfigF},
-		{"GetConfigS", GetSkinConfigS},
 		{"GetZ", GetZ },
 		{"SetZ", SetZ },
 		{"SetCentered", SetCentered},
@@ -267,5 +265,7 @@ void CreateLuaInterface(LuaManager *AnimLua)
 {
 	AnimLua->NewMetatable(LuaAnimFuncs::GraphObject2DMetatable);
 	AnimLua->Register(LuaAnimFuncs::Require, "skin_require");
+	AnimLua->Register(LuaAnimFuncs::GetSkinConfigF, "GetConfigF");
+	AnimLua->Register(LuaAnimFuncs::GetSkinConfigS, "GetConfigS");
 	AnimLua->RegisterLibrary("Obj", ((const luaL_Reg*)LuaAnimFuncs::GraphObjectLib));
 }

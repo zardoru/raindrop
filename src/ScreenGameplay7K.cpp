@@ -426,9 +426,9 @@ void ScreenGameplay7K::SetupGear()
 		if (Upscroll)
 			Keys[i].SetRotation(180);
 
-		Keys[i].SetZ(11);
+		Keys[i].SetZ(15);
 
-		NoteMatrix[i] = glm::translate(Mat4(), glm::vec3(LanePositions[i], 0, 10)) * glm::scale(Mat4(), glm::vec3(LaneWidth[i], NoteHeight, 1));
+		NoteMatrix[i] = glm::translate(Mat4(), glm::vec3(LanePositions[i], 0, 14)) * glm::scale(Mat4(), glm::vec3(LaneWidth[i], NoteHeight, 1));
 	}
 }
 
@@ -583,6 +583,10 @@ bool ScreenGameplay7K::Run(double Delta)
 {
 	float SongDelta;
 	
+	UpdateScriptVariables();
+	Animations->UpdateTargets(Delta);
+	Animations->DrawUntilLayer(13);
+
 	if (Active)
 	{
 		ScreenTime += Delta;
@@ -647,8 +651,7 @@ bool ScreenGameplay7K::Run(double Delta)
 		GFont->DisplayText(ss.str().c_str(), Keys[i].GetPosition());
 	}
 
-	UpdateScriptVariables();
-	Animations->DrawTargets(Delta);
+	Animations->DrawFromLayer(14);
 
 	return Running;
 }
