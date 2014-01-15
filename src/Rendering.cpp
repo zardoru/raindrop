@@ -116,17 +116,15 @@ void GraphObject2D::Render()
 	// Assign position attrib. pointer
 	mBuffer->Bind();
 
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer( 0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
+	glVertexAttribPointer( WindowFrame.EnableAttribArray("position"), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
 	// assign vertex UVs
 	UvBuffer->Bind();
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
+	glVertexAttribPointer( WindowFrame.EnableAttribArray("vertexUV"), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-	glDisableVertexAttribArray(0);
+	WindowFrame.DisableAttribArray("position");
 	//WindowFrame.DisableAttribArray("vertexUV");
 }
 

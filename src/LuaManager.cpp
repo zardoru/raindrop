@@ -300,7 +300,6 @@ bool LuaManager::RunFunction()
 	if (errc)
 	{
 		std::string reason = lua_tostring(State, -1);
-		Utility::DebugBreak();
 		return false;
 	}
 

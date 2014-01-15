@@ -16,8 +16,9 @@
 GameWindow WindowFrame;
 
 const char* vertShader = "#version 120\n"
-	"layout (location = 0) attribute vec3 position;\n"
-	"layout (location = 1) attribute vec2 vertexUV;\n"
+	"#extension GL_ARB_explicit_attrib_location: enable\n"
+	"attribute vec3 position;\n"
+	"attribute vec2 vertexUV;\n"
 	"uniform mat4 projection;\n"
 	"layout (location = 0) uniform mat4 mvp;\n"
 	"layout (location = 1) uniform mat4 tranM;\n"

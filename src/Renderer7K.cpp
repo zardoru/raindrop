@@ -44,8 +44,7 @@ void ScreenGameplay7K::DrawMeasures()
 
 	GraphObject2D::BindTopLeftVBO();
 
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer( 0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
+	glVertexAttribPointer( WindowFrame.EnableAttribArray("position"), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
 	/* todo: instancing */
 	for (uint32 k = 0; k < Channels; k++)
@@ -135,7 +134,7 @@ void ScreenGameplay7K::DrawMeasures()
 	/* Clean up */
 	MultiplierChanged = false;
 	
-	glDisableVertexAttribArray(11);
+	WindowFrame.DisableAttribArray("position");
 }
 
 void ScreenGameplay7K::DrawExplosions()
