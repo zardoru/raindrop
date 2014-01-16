@@ -31,20 +31,20 @@ void ScreenGameplay7K::DrawMeasures()
 	rPos = CurrentVertical * SpeedMultiplier + BasePos;
 
 	// Assign our matrix.
-	glUniformMatrix4fv(0, 1, GL_FALSE, &PositionMatrix[0][0]);
+	WindowFrame.SetUniform(U_MVP, &PositionMatrix[0][0]);
 
 	// Set the color.
-	glUniform1i(9, false); // Color invert
-	glUniform1i(10, false); // Affected by lightning
+	WindowFrame.SetUniform(U_INVERT, false); // Color invert
+	WindowFrame.SetUniform(U_LIGHT, false); // Affected by lightning
 	
-	glUniform1i(3, true); // use extra matrices
-	glUniform1i(4, true); // center vertexes
+	WindowFrame.SetUniform(U_TRANSL, true); // use extra matrices
+	WindowFrame.SetUniform(U_CENTERED, true); // center vertexes
 
-	glUniform1f(5, SpeedMultiplier);
+	WindowFrame.SetUniform(U_SMULT, SpeedMultiplier);
 
 	GraphObject2D::BindTopLeftVBO();
 
-	glVertexAttribPointer( WindowFrame.EnableAttribArray("position"), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
+	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_POSITION), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
 	/* todo: instancing */
 	for (uint32 k = 0; k < Channels; k++)
@@ -96,12 +96,12 @@ void ScreenGameplay7K::DrawMeasures()
 					}
 
 					if (m->IsEnabled())
-						glUniform4f(6, 1, 1, 1, 1);
+						WindowFrame.SetUniform(U_COLOR, 1, 1, 1, 1);
 					else
-						glUniform4f(6, 0.5, 0.5, 0.5, 1);
+						WindowFrame.SetUniform(U_COLOR, 0.5, 0.5, 0.5, 1);
 
-					glUniformMatrix4fv(2, 1, GL_FALSE, &(m->GetHoldBodySizeMatrix())[0][0]);
-					glUniformMatrix4fv(1, 1, GL_FALSE, &(m->GetHoldBodyMatrix())[0][0]);
+					WindowFrame.SetUniform(U_SIM, &(m->GetHoldBodySizeMatrix())[0][0]);
+					WindowFrame.SetUniform(U_TRANM, &(m->GetHoldBodyMatrix())[0][0]);
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 				}
 
@@ -115,16 +115,16 @@ void ScreenGameplay7K::DrawMeasures()
 						continue;
 				}
 
-				glUniform4f(6, 1, 1, 1, 1);
+				WindowFrame.SetUniform(U_COLOR, 1, 1, 1, 1);
 
-				glUniformMatrix4fv(2, 1, GL_FALSE, &(NoteMatrix[m->GetTrack()])[0][0]);
+				WindowFrame.SetUniform(U_SIM, &(NoteMatrix[m->GetTrack()])[0][0]);
 
-				glUniformMatrix4fv(1, 1, GL_FALSE, &(m->GetMatrix())[0][0]);
+				WindowFrame.SetUniform(U_TRANM, &(m->GetMatrix())[0][0]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 				if (m->IsHold())
 				{
-					glUniformMatrix4fv(1, 1, GL_FALSE, &(m->GetHoldEndMatrix())[0][0]);
+					WindowFrame.SetUniform(U_TRANM, &(m->GetHoldEndMatrix())[0][0]);
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 				}
 			}
@@ -134,5 +134,5 @@ void ScreenGameplay7K::DrawMeasures()
 	/* Clean up */
 	MultiplierChanged = false;
 	
-	WindowFrame.DisableAttribArray("position");
+	WindowFrame.DisableAttribArray(A_POSITION);
 }

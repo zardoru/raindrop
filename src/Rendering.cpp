@@ -103,28 +103,28 @@ void GraphObject2D::Render()
 		UpdateTexture();
 
 	// Assign our matrix.
-	glUniformMatrix4fv(0, 1, GL_FALSE, &(Matrix[0][0]));
+	WindowFrame.SetUniform(U_MVP,  &(Matrix[0][0]));
 
 	// Set the color.
-	glUniform4f(6, Red, Green, Blue, Alpha);
-	glUniform1i(9, ColorInvert);
-	glUniform1i(10, AffectedByLightning);
+	WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha);
+	WindowFrame.SetUniform(U_INVERT, ColorInvert);
+	WindowFrame.SetUniform(U_LIGHT, AffectedByLightning);
 
-	glUniform1i(3, false);
-	glUniform1i(4, Centered);
+	WindowFrame.SetUniform(U_TRANSL, false);
+	WindowFrame.SetUniform(U_CENTERED, Centered);
 
 	// Assign position attrib. pointer
 	mBuffer->Bind();
 
-	glVertexAttribPointer( WindowFrame.EnableAttribArray("position"), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
+	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_POSITION), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
 	// assign vertex UVs
 	UvBuffer->Bind();
-	glVertexAttribPointer( WindowFrame.EnableAttribArray("vertexUV"), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
+	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-	WindowFrame.DisableAttribArray("position");
+	WindowFrame.DisableAttribArray(A_POSITION);
 	//WindowFrame.DisableAttribArray("vertexUV");
 }
 

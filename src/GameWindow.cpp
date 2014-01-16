@@ -16,16 +16,15 @@
 GameWindow WindowFrame;
 
 const char* vertShader = "#version 120\n"
-	"#extension GL_ARB_explicit_attrib_location: enable\n"
 	"attribute vec3 position;\n"
 	"attribute vec2 vertexUV;\n"
 	"uniform mat4 projection;\n"
-	"layout (location = 0) uniform mat4 mvp;\n"
-	"layout (location = 1) uniform mat4 tranM;\n"
-	"layout (location = 2) uniform mat4 siM;\n"
-	"layout (location = 3) uniform bool useTranslate;\n"
-	"layout (location = 4) uniform bool Centered;\n"
-	"layout (location = 5) uniform float sMult;\n" // For 7K mode, letting the shader do the heavy lifting
+	"uniform mat4 mvp;\n"
+	"uniform mat4 tranM;\n"
+	"uniform mat4 siM;\n"
+	"uniform bool useTranslate;\n"
+	"uniform bool Centered;\n"
+	"uniform float sMult;\n" // For 7K mode, letting the shader do the heavy lifting
 	"varying vec2 Texcoord;\n"
 	"varying vec3 Pos_world;\n"
 	"void main() \n"
@@ -48,12 +47,12 @@ const char* vertShader = "#version 120\n"
 const char* fragShader = "#version 120\n"
 	"varying vec2 Texcoord;\n"
 	"varying vec3 Pos_world;\n"
-	"layout (location = 6) uniform vec4 Color;\n"
+	"uniform vec4 Color;\n"
 	"uniform sampler2D tex;\n"
-	"layout (location = 7) uniform float     lMul;\n"
-	"layout (location = 8) uniform vec3      lPos;\n"
-	"layout (location = 9) uniform bool inverted;\n"
-	"layout (location = 10) uniform bool AffectedByLightning;\n"
+	"uniform float     lMul;\n"
+	"uniform vec3      lPos;\n"
+	"uniform bool inverted;\n"
+	"uniform bool AffectedByLightning;\n"
 	"\n"
 	"void main(void)\n"
 	"{\n"
@@ -442,132 +441,72 @@ void GameWindow::SetupShaders()
 	glDeleteShader(defaultVertexShader);
 	glDeleteShader(defaultFragShader);
 
+	uniforms[A_POSITION] = glGetAttribLocation(defaultShaderProgram, "position");
+	uniforms[A_UV] = glGetAttribLocation(defaultShaderProgram, "vertexUV");
+	uniforms[U_TRANM] = glGetUniformLocation(defaultShaderProgram, "tranM");
+	uniforms[U_MVP] = glGetUniformLocation(defaultShaderProgram, "mvp");
+	uniforms[U_SIM] = glGetUniformLocation(defaultShaderProgram, "siM");
+	uniforms[U_TRANSL] = glGetUniformLocation(defaultShaderProgram, "useTranslate");
+	uniforms[U_SMULT] = glGetUniformLocation(defaultShaderProgram, "sMult");
+	uniforms[U_CENTERED] = glGetUniformLocation(defaultShaderProgram, "Centered");
+	uniforms[U_COLOR] = glGetUniformLocation(defaultShaderProgram, "Color");
+	uniforms[U_LMUL] = glGetUniformLocation(defaultShaderProgram, "lMul");
+	uniforms[U_LPOS] = glGetUniformLocation(defaultShaderProgram, "lPos");
+	uniforms[U_INVERT] = glGetUniformLocation(defaultShaderProgram, "inverted");
+	uniforms[U_LIGHT] = glGetUniformLocation(defaultShaderProgram, "AffectedByLightning");
+
 	SetLightPosition(glm::vec3(0,0,1));
 	SetLightMultiplier(1);
 }
 
-void GameWindow::SetUniform(String Uniform, int i) 
+void GameWindow::SetUniform(uint32 Uniform, int i) 
 {
-	GLint UniformID;
-	if (UniformLocs.find(Uniform) != UniformLocs.end())
-	{
-		UniformID = UniformLocs[Uniform];
-	}
-	else
-	{
-		UniformID = glGetUniformLocation(defaultShaderProgram, Uniform.c_str());
-		UniformLocs[Uniform] = UniformID;
-	}
-	glUniform1i(UniformID, i);
+	glUniform1i(uniforms[Uniform], i);
 }
 
-void GameWindow::SetUniform(String Uniform, float A, float B, float C, float D) 
+void GameWindow::SetUniform(uint32 Uniform, float A, float B, float C, float D) 
 {
-	GLint UniformID;
-	if (UniformLocs.find(Uniform) != UniformLocs.end())
-	{
-		UniformID = UniformLocs[Uniform];
-	}
-	else
-	{
-		UniformID = glGetUniformLocation(defaultShaderProgram, Uniform.c_str());
-		UniformLocs[Uniform] = UniformID;
-	}
-	glUniform4f(UniformID, A, B, C, D);
+	glUniform4f(uniforms[Uniform], A, B, C, D);
 }
 
 
 
-void GameWindow::SetUniform(String Uniform, glm::vec3 Pos) 
+void GameWindow::SetUniform(uint32 Uniform, glm::vec3 Pos) 
 {
-	GLint UniformID;
-	if (UniformLocs.find(Uniform) != UniformLocs.end())
-	{
-		UniformID = UniformLocs[Uniform];
-	}
-	else
-	{
-		UniformID = glGetUniformLocation(defaultShaderProgram, Uniform.c_str());
-		UniformLocs[Uniform] = UniformID;
-	}
-	glUniform3f(UniformID, Pos.x, Pos.y, Pos.z);
+	glUniform3f(uniforms[Uniform], Pos.x, Pos.y, Pos.z);
 }
 
-void GameWindow::SetUniform(String Uniform, float F) 
+void GameWindow::SetUniform(uint32 Uniform, float F) 
 {
-	GLint UniformID;
-	if (UniformLocs.find(Uniform) != UniformLocs.end())
-	{
-		UniformID = UniformLocs[Uniform];
-	}
-	else
-	{
-		UniformID = glGetUniformLocation(defaultShaderProgram, Uniform.c_str());
-		UniformLocs[Uniform] = UniformID;
-	}
-	glUniform1f(UniformID, F);
+	glUniform1f(uniforms[Uniform], F);
 }
 
-void GameWindow::SetUniform(String Uniform, float *Matrix4x4) 
+void GameWindow::SetUniform(uint32 Uniform, float *Matrix4x4) 
 {
-	GLint UniformID;
-	if (UniformLocs.find(Uniform) != UniformLocs.end())
-	{
-		UniformID = UniformLocs[Uniform];
-	}
-	else
-	{
-		UniformID = glGetUniformLocation(defaultShaderProgram, Uniform.c_str());
-		UniformLocs[Uniform] = UniformID;
-	}
-	glUniformMatrix4fv(UniformID, 1, GL_FALSE, Matrix4x4);
+	glUniformMatrix4fv(uniforms[Uniform], 1, GL_FALSE, Matrix4x4);
 }
 
-int GameWindow::EnableAttribArray(String Attrib)
+int GameWindow::EnableAttribArray(uint32 Attrib)
 {
-	GLint AttribID;
-		
-	if (AttribLocs.find(Attrib) != AttribLocs.end())
-	{
-		AttribID = AttribLocs[Attrib];
-	}
-	else
-	{
-		AttribID = glGetAttribLocation(defaultShaderProgram, Attrib.c_str());
-		AttribLocs[Attrib] = AttribID;
-	}
-
-	glEnableVertexAttribArray(AttribID);
-	return AttribID;
+	glEnableVertexAttribArray(uniforms[Attrib]);
+	return uniforms[Attrib];
 }
 
-int GameWindow::DisableAttribArray(String Attrib) 
+int GameWindow::DisableAttribArray(uint32 Attrib) 
 {
-	GLint AttribID;
-		
-	if (AttribLocs.find(Attrib) != AttribLocs.end())
-	{
-		AttribID = AttribLocs[Attrib];
-	}
-	else
-	{
-		AttribID = glGetAttribLocation(defaultShaderProgram, Attrib.c_str());
-		AttribLocs[Attrib] = AttribID;
-	}
-
-	glDisableVertexAttribArray(AttribID);
-	return AttribID;
+	glDisableVertexAttribArray(uniforms[Attrib]);
+	return uniforms[Attrib];
 }
 
 
 void GameWindow::SetLightPosition(glm::vec3 Position) 
 {
-	SetUniform("lPos", Position);
+	SetUniform(U_LPOS, Position);
 }
 
 void GameWindow::SetLightMultiplier(float Multiplier) 
 {
-	SetUniform("lMul", Multiplier);
+	SetUniform(U_LMUL, Multiplier);
 }
 
 void GameWindow::AddVBO(VBO *V)

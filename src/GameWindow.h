@@ -8,6 +8,24 @@
 class VBO;
 struct GLFWwindow;
 
+enum RendererLocats
+{
+	A_POSITION,
+	A_UV,
+	U_MVP,
+	U_TRANM,
+	U_SIM,
+	U_TRANSL,
+	U_CENTERED,
+	U_SMULT,
+	U_COLOR,
+	U_LMUL,
+	U_LPOS,
+	U_INVERT,
+	U_LIGHT,
+	NUM_SHADERVARS
+} ;
+
 class GameWindow
 {
 	friend void ResizeFunc(GLFWwindow*, int32,int32);
@@ -20,6 +38,8 @@ class GameWindow
 	uint32 defaultVertexShader, defaultFragShader, defaultShaderProgram, defaultVao;
 	GLFWwindow *wnd;
 	float SizeRatio;
+
+	uint32 uniforms[NUM_SHADERVARS];
 
 	void SetupWindow();
 	void SetupShaders();
@@ -55,17 +75,17 @@ public:
 	int32 GetDefaultVertexShader() const;
 	int32 GetShaderProgram() const;
 
-	void SetUniform(String Uniform, int i) ;
-	void SetUniform(String Uniform, float A, float B, float C, float D)  ;
-	void SetUniform(String Uniform, float *Matrix4x4)  ;
-	void SetUniform(String Uniform, glm::vec3 Vec)  ;
-	void SetUniform(String Uniform, float F)  ;
+	void SetUniform(uint32 Uniform, int i) ;
+	void SetUniform(uint32 Uniform, float A, float B, float C, float D)  ;
+	void SetUniform(uint32 Uniform, float *Matrix4x4)  ;
+	void SetUniform(uint32 Uniform, glm::vec3 Vec)  ;
+	void SetUniform(uint32 Uniform, float F)  ;
 
 	/* using OpenGL -1 to 1 range*/
 	void SetLightPosition(glm::vec3 Position)  ;
 	void SetLightMultiplier(float Multiplier)  ;
-	int EnableAttribArray(String Attrib)  ;
-	int DisableAttribArray(String Attrib)  ;
+	int EnableAttribArray(uint32 Attrib)  ;
+	int DisableAttribArray(uint32 Attrib)  ;
 
 	bool ShouldCloseWindow();
 	void SwapBuffers();
