@@ -32,6 +32,9 @@ int lastClosest[MAX_CHANNELS];
 #define ACC_MAX_SQ ACC_MAX * ACC_MAX
 #define ACC_CUTOFF 135
 
+int holds_missed = 0;
+int holds_hit = 0;
+
 float accuracy_percent(float var){
 	//if(var < ACC_MIN_SQ) return 100;
 	//if(var > ACC_MAX_SQ) return 0;
@@ -50,7 +53,7 @@ ScreenGameplay7K::ScreenGameplay7K()
 	waveEffectEnabled = false;
 	waveEffect = 0;
 
-	SpeedMultiplierUser = 1;
+	SpeedMultiplierUser = 4;
 
 	CurrentVertical = 0;
 	SongTime = 0;
@@ -81,6 +84,9 @@ void ScreenGameplay7K::Init(Song7K* S, int DifficultyIndex, bool UseUpscroll)
 	CurrentDiff = S->Difficulties[DifficultyIndex];
 	Upscroll = UseUpscroll;
 
+	holds_hit = 0;
+	holds_missed = 0;
+
 	Animations = new GraphObjectMan();
 }
 
@@ -98,6 +104,45 @@ void ScreenGameplay7K::RecalculateEffects()
 	}
 }
 
+#define CLAMP(var, min, max) (var) < (min) ? (min) : (var) > (max) ? (max) : (var)
+
+void ScreenGameplay7K::HitNote (double TimeOff, uint32 Lane)
+{
+	Score.total_sqdev += TimeOff * TimeOff;
+	Score.TotalNotes++;
+	Score.notes_hit++;
+	if(TimeOff > ACC_MAX) Score.combo = 0; else ++Score.combo;
+	if(Score.combo > Score.max_combo) Score.max_combo = Score.combo;
+
+	Score.Accuracy = accuracy_percent(Score.total_sqdev / Score.TotalNotes);
+
+	Score.ex_score += TimeOff <= 20 ? 2 : TimeOff <= 40 ? 1 : 0;
+
+	Animations->GetEnv()->CallFunction("HitEvent", 2);
+	Animations->GetEnv()->PushArgument(TimeOff);
+	Animations->GetEnv()->PushArgument((int)Lane + 1);
+	Animations->GetEnv()->RunFunction();
+
+	// scoring algorithm
+	Score.dpScore += TimeOff <= ACC_MIN ? 2 : TimeOff <= ACC_MAX ? 1 : 0;
+	Score.dpdpScore += Score.dpScore;
+	Score.points = 1000000.0 * Score.dpdpScore / (CurrentDiff->TotalScoringObjects * (CurrentDiff->TotalScoringObjects + 1));
+
+}
+
+void ScreenGameplay7K::MissNote (double TimeOff, uint32 Lane)
+{
+	Score.total_sqdev += ACC_CUTOFF * ACC_CUTOFF;
+	Score.TotalNotes++;
+	Score.Accuracy = accuracy_percent(Score.total_sqdev / Score.TotalNotes);
+	Score.combo = 0;
+
+	Animations->GetEnv()->CallFunction("MissEvent", 2);
+	Animations->GetEnv()->PushArgument(TimeOff);
+	Animations->GetEnv()->PushArgument((int)Lane + 1);
+	Animations->GetEnv()->RunFunction();
+}
+
 void ScreenGameplay7K::RunMeasures()
 {
 	typedef std::vector<SongInternal::Measure<TrackNote> > NoteVector;
@@ -111,13 +156,14 @@ void ScreenGameplay7K::RunMeasures()
 			for (std::vector<TrackNote>::iterator m = (*i).MeasureNotes.begin(); m != (*i).MeasureNotes.end(); m++)
 			{
 				/* We have to check for all gameplay conditions for this note. */
-				if (m->IsHold() && m->WasNoteHit())
+				if (m->IsHold() /*&& m->WasNoteHit()*/)
 				{
+					// remove early-released notes.
 					if ((SongTime - m->GetTimeFinal()) * 1000 > ACC_CUTOFF)
 					{
-						DoMiss((SongTime - m->GetTimeFinal()) * 1000, k);
+						MissNote((SongTime - m->GetTimeFinal()) * 1000, k);
+						holds_missed += 1;
 						m = (*i).MeasureNotes.erase(m);
-
 
 						if (Score.combo > 10)
 							MissSnd->Reset();
@@ -131,56 +177,29 @@ void ScreenGameplay7K::RunMeasures()
 
 				if ((SongTime - m->GetStartTime()) * 1000 > ACC_CUTOFF && (!m->WasNoteHit() && m->IsEnabled()))
 				{
-					DoMiss((SongTime - m->GetStartTime()) * 1000, k);
+					// remove notes that were never hit.
+					MissNote((SongTime - m->GetStartTime()) * 1000, k);
 
 					if (Score.combo > 10)
 						MissSnd->Reset();
 					
-					/* remove note from judgement*/
+					/* remove note from judgement */
 					if (!m->IsHold())
 						m = (*i).MeasureNotes.erase(m);
-					else
+					else{
+						holds_missed += 1;
 						m->Disable();
+					}
 
 					if (m == (*i).MeasureNotes.end())
 						goto next_measure;
 				}
+
 			}
 			next_measure:;
 		}
 	}
 
-}
-
-void ScreenGameplay7K::DoHit (double TimeOff, uint32 Lane)
-{
-	Score.total_sqdev += TimeOff * TimeOff;
-	Score.TotalNotes++;
-	if(TimeOff > ACC_MAX) Score.combo = 0; else ++Score.combo;
-	if(Score.combo > Score.max_combo) Score.max_combo = Score.combo;
-
-	Score.Accuracy = accuracy_percent(Score.total_sqdev / Score.TotalNotes);
-
-	Score.points += TimeOff <= 20 ? 2 : TimeOff <= 40 ? 1 : 0;
-
-	Animations->GetEnv()->CallFunction("HitEvent", 2);
-	Animations->GetEnv()->PushArgument(TimeOff);
-	Animations->GetEnv()->PushArgument((int)Lane + 1);
-	Animations->GetEnv()->RunFunction();
-
-}
-
-void ScreenGameplay7K::DoMiss (double TimeOff, uint32 Lane)
-{
-	Score.total_sqdev += ACC_CUTOFF * ACC_CUTOFF;
-	Score.TotalNotes++;
-	Score.Accuracy = accuracy_percent(Score.total_sqdev / Score.TotalNotes);
-	Score.combo = 0;
-
-	Animations->GetEnv()->CallFunction("MissEvent", 2);
-	Animations->GetEnv()->PushArgument(TimeOff);
-	Animations->GetEnv()->PushArgument((int)Lane + 1);
-	Animations->GetEnv()->RunFunction();
 }
 
 void ScreenGameplay7K::ReleaseLane(unsigned int Lane)
@@ -192,13 +211,14 @@ void ScreenGameplay7K::ReleaseLane(unsigned int Lane)
 	{
 		for (std::vector<TrackNote>::iterator m = (*i).MeasureNotes.begin(); m != (*i).MeasureNotes.end(); m++)
 		{
-			if (m->WasNoteHit())
+			if (m->WasNoteHit() && m->IsEnabled())
 			{
 				double tD = abs (m->GetTimeFinal() - SongTime) * 1000;
 
 				if (tD < ACC_CUTOFF) /* Released in time */
 				{
-					DoHit(tD, Lane);
+					HitNote(tD, Lane);
+					holds_hit += 1;
 
 					(*i).MeasureNotes.erase(m);
 
@@ -207,7 +227,8 @@ void ScreenGameplay7K::ReleaseLane(unsigned int Lane)
 					return;
 				}else /* Released off time */
 				{
-					DoMiss(tD, Lane);
+					MissNote(tD, Lane);
+					holds_missed += 1;
 
 					if (Score.combo > 10)
 						MissSnd->Reset();
@@ -253,23 +274,27 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 				goto next_note;
 			else
 			{
-				DoHit(tD, Lane);
 
 				if (tD < ACC_MAX) // Within hitting time, otherwise no feedback/miss feedback
 				{
+					HitNote(tD, Lane);
 					if (m->IsHold() && m->IsEnabled())
 					{
+						holds_hit += 1;
 						m->Hit();
 						HeldKey[m->GetTrack()] = true;
 					}
 				}
 				else
 				{
+					MissNote(tD, Lane);
 					// missed feedback
 					MissSnd->Reset();
 
-					if (m->IsHold())
+					if (m->IsHold()){
+						holds_missed += 1;
 						m->Disable();
+					}
 				}
 
 				/* remove note from judgement*/
@@ -632,9 +657,15 @@ bool ScreenGameplay7K::Run(double Delta)
 
 	std::stringstream ss;
 
-	ss << "score: " << Score.points;
+	ss << "score: " << int(Score.points);
 	ss << "\naccuracy: " << std::setiosflags(std::ios::fixed) << std::setprecision(2) << Score.Accuracy << "%";
-	ss << "\nEX score: " << std::setprecision(2) << Score.points / ((CurrentDiff->TotalHolds + CurrentDiff->TotalObjects) * 2.0) * 100.0 << "%";
+	ss << "\nnotes hit: " << std::setprecision(2) << float(Score.notes_hit) / CurrentDiff->TotalScoringObjects * 100.0 << "%";
+	ss << "\nEX score: " << std::setprecision(2) << Score.ex_score / (CurrentDiff->TotalScoringObjects * 2.0) * 100.0 << "%";
+	ss << "\ntotal notes:  " << Score.TotalNotes;
+	ss << "\nloaded notes:  " << CurrentDiff->TotalScoringObjects;
+	ss << "\nholds hit: " << holds_hit;
+	ss << "\nholds missed: " << holds_missed;
+	ss << "\nloaded holds: " << CurrentDiff->TotalHolds;
 	ss << "\ncombo: " << std::resetiosflags(std::ios::fixed) << Score.combo;
 	ss << "\nmax combo: " << Score.max_combo;
 	ss << "\nMult/Speed: " << std::setiosflags(std::ios::fixed) << SpeedMultiplier << "x / " << SpeedMultiplier*4 << "\n";

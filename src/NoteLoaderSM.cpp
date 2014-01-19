@@ -128,18 +128,21 @@ void LoadTracksSM(Song7K *Out, SongInternal::TDifficulty<TrackNote> *Difficulty,
 						Note.AssignTime(Time);
 						Difficulty->TotalNotes++;
 						Difficulty->TotalObjects++;
+						Difficulty->TotalScoringObjects++;
 						Measure[k].MeasureNotes.push_back(Note);
 						break;
 					case '2': /* Holds */
 					case '4':
 						KeyStartTime[k] = Time;
 						KeyBeat[k] /*heh*/ = Beat;
+						Difficulty->TotalScoringObjects++;
 						break;
 					case '3': /* Hold releases */
 						Note.AssignTime(KeyStartTime[k], Time);
 						Note.AssignSongPosition(KeyBeat[k], Beat);
 						Difficulty->TotalHolds++;
 						Difficulty->TotalObjects++;
+						Difficulty->TotalScoringObjects++;
 						Measure[k].MeasureNotes.push_back(Note);
 						break;
 					default:
