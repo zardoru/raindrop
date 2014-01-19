@@ -156,26 +156,21 @@ void ScreenGameplay7K::RunMeasures()
 			for (std::vector<TrackNote>::iterator m = (*i).MeasureNotes.begin(); m != (*i).MeasureNotes.end(); m++)
 			{
 				/* We have to check for all gameplay conditions for this note. */
-				if (m->IsHold() /*&& m->WasNoteHit()*/)
+				if ((SongTime - m->GetTimeFinal()) * 1000 > ACC_CUTOFF && !m->WasNoteHit() && m->IsHold())
 				{
-					// remove early-released notes.
-					if ((SongTime - m->GetTimeFinal()) * 1000 > ACC_CUTOFF)
-					{
-						MissNote((SongTime - m->GetTimeFinal()) * 1000, k);
-						holds_missed += 1;
-						m = (*i).MeasureNotes.erase(m);
+					// remove hold notes that were never hit.
+					MissNote((SongTime - m->GetTimeFinal()) * 1000, k);
+					holds_missed += 1;
+					m = (*i).MeasureNotes.erase(m);
 
-						if (Score.combo > 10)
-							MissSnd->Reset();
+					if (Score.combo > 10)
+						MissSnd->Reset();
 
-						if (m == (*i).MeasureNotes.end())
-							goto next_measure;
-
-					}else
-						continue;
+					if (m == (*i).MeasureNotes.end())
+						break;
 				}
 
-				if ((SongTime - m->GetStartTime()) * 1000 > ACC_CUTOFF && (!m->WasNoteHit() && m->IsEnabled()))
+				else if ((SongTime - m->GetStartTime()) * 1000 > ACC_CUTOFF && (!m->WasNoteHit() && m->IsEnabled()))
 				{
 					// remove notes that were never hit.
 					MissNote((SongTime - m->GetStartTime()) * 1000, k);
@@ -192,11 +187,10 @@ void ScreenGameplay7K::RunMeasures()
 					}
 
 					if (m == (*i).MeasureNotes.end())
-						goto next_measure;
+						break;
 				}
 
 			}
-			next_measure:;
 		}
 	}
 
