@@ -113,7 +113,7 @@ void ScreenGameplay7K::RunMeasures()
 				/* We have to check for all gameplay conditions for this note. */
 				if (m->IsHold() && m->WasNoteHit())
 				{
-					if ((SongTime - m->GetTimeFinal()) * 1000 > ACC_CUTOFF && m->IsEnabled())
+					if ((SongTime - m->GetTimeFinal()) * 1000 > ACC_CUTOFF)
 					{
 						DoMiss((SongTime - m->GetTimeFinal()) * 1000, k);
 						m = (*i).MeasureNotes.erase(m);
@@ -140,10 +140,7 @@ void ScreenGameplay7K::RunMeasures()
 					if (!m->IsHold())
 						m = (*i).MeasureNotes.erase(m);
 					else
-					{
 						m->Disable();
-						DoMiss(ACC_CUTOFF, k); // End of hold miss
-					}
 
 					if (m == (*i).MeasureNotes.end())
 						goto next_measure;
@@ -195,7 +192,7 @@ void ScreenGameplay7K::ReleaseLane(unsigned int Lane)
 	{
 		for (std::vector<TrackNote>::iterator m = (*i).MeasureNotes.begin(); m != (*i).MeasureNotes.end(); m++)
 		{
-			if (m->WasNoteHit() && m->IsEnabled())
+			if (m->WasNoteHit())
 			{
 				double tD = abs (m->GetTimeFinal() - SongTime) * 1000;
 
