@@ -88,11 +88,13 @@ void NoteLoaderFTB::LoadObjectsFromFile(String filename, String prefix, Song7K *
 			{
 				Note.AssignTime(atof(NoteInfo.at(0).c_str()) / 1000.0, atof(NoteInfo.at(1).c_str()) / 1000.0);
 				Difficulty->TotalNotes++;
+				Difficulty->TotalScoringObjects++;
 			}
 			else
 			{
 				Note.AssignTime(atof(NoteInfo.at(0).c_str()) / 1000.0, 0);
 				Difficulty->TotalHolds++;
+				Difficulty->TotalScoringObjects += 2;
 			}
 
 			/* index 1 is unused */

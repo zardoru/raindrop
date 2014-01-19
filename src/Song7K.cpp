@@ -19,51 +19,81 @@ int tSort(const SongInternal::TimingSegment &i, const SongInternal::TimingSegmen
 	return i.Time < j.Time;
 }
 
-void Song7K::ProcessVSpeeds(SongInternal::TDifficulty<TrackNote>* Diff, double Drift)
+void Song7K::ProcessVSpeeds(SongInternal::TDifficulty<TrackNote>* Diff)
 {
-	/* Calculate VSpeeds. */
+	for (TimingData::iterator Time = Diff->BPS.begin();
+		Time != Diff->BPS.end();
+		Time++)
+	{
+		float VerticalSpeed;
+		SongInternal::TimingSegment VSpeed;
+
+		if (Time->Value)
+		{
+			float spb = 1 / Time->Value;
+			VerticalSpeed = MeasureBaseSpacing / (spb * MeasureLength);
+		}else
+			VerticalSpeed = 0;
+
+		VSpeed.Value = VerticalSpeed;
+		VSpeed.Time = Time->Time;
+
+		Diff->VerticalSpeeds.push_back(VSpeed);
+	}
+}
+
+
+void Song7K::ProcessBPS(SongInternal::TDifficulty<TrackNote>* Diff, double Drift)
+{
+	/* 
+		Calculate BPS. The algorithm is basically the same as VSpeeds, so there's probably a better way to do it
+		that is not repeating the same thing using different values.
+	*/
 
 	if (Diff->Offset > 0 || Drift) /* We have to set up a speed during this time, otherwise it'll be 0. */
 	{
-		SongInternal::TimingSegment VSpeed;
-		float FTime = (spb (Diff->Timing.at(0).Value) * (float)MeasureLength);
+		SongInternal::TimingSegment Seg;
 
-		VSpeed.Time = 0;
-		VSpeed.Value = MeasureBaseSpacing / FTime;
+		Seg.Time = 0;
 
-		Diff->VerticalSpeeds.push_back(VSpeed);
+		if (BPMType != BT_Beatspace)
+		{
+			Seg.Value = bps(Diff->Timing[0].Value);
+		}else
+			Seg.Value = Diff->Timing[0].Value / 1000.0;
+
+		Diff->BPS.push_back(Seg);
 	}
 
 	for(TimingData::iterator Time = Diff->Timing.begin();
 		Time != Diff->Timing.end();
 		Time++)
 	{
-		SongInternal::TimingSegment VSpeed;
-
+		SongInternal::TimingSegment Seg;
 
 		float FTime;
 
 		if (BPMType == BT_Beat) // Time is in Beats
 		{
-			FTime = (spb (Time->Value) * (float)MeasureLength);
-			VSpeed.Time = TimeAtBeat(Diff->Timing, Diff->Offset + Drift, Time->Time) + StopTimeAtBeat(Diff->StopsTiming, Time->Time);
+			FTime = bps (Time->Value);
+			Seg.Time = TimeAtBeat(Diff->Timing, Diff->Offset + Drift, Time->Time) + StopTimeAtBeat(Diff->StopsTiming, Time->Time);
 		}
 		else if (BPMType == BT_MS) // Time is in MS
 		{
-			FTime = (spb (Time->Value) * (float)MeasureLength);
-			VSpeed.Time = Time->Time + Drift;
+			FTime = bps (Time->Value);
+			Seg.Time = Time->Time + Drift;
 		}else if ( BPMType == BT_Beatspace ) // Time in MS, and not using bpm, but ms per beat.
 		{
-			FTime = Time->Value / 1000.0 * MeasureLength;
-			VSpeed.Time = Time->Time + Drift;
+			FTime = Time->Value / 1000.0;
+			Seg.Time = Time->Time + Drift;
 		}
 
-		VSpeed.Value = MeasureBaseSpacing / FTime;
-		Diff->VerticalSpeeds.push_back(VSpeed);
+		Seg.Value = FTime;
+		Diff->BPS.push_back(Seg);
 	}
 
 	/* Sort for justice */
-	std::sort(Diff->VerticalSpeeds.begin(), Diff->VerticalSpeeds.end(), tSort);
+	std::sort(Diff->BPS.begin(), Diff->BPS.end(), tSort);
 
 	if (!Diff->StopsTiming.size() || BPMType != BT_Beat) // Stops only supported in Beat mode.
 		return;
@@ -73,58 +103,51 @@ void Song7K::ProcessVSpeeds(SongInternal::TDifficulty<TrackNote>* Diff, double D
 		Time != Diff->StopsTiming.end();
 		Time++)
 	{
-		SongInternal::TimingSegment VSpeed;
+		SongInternal::TimingSegment Seg;
 		float TValue = TimeAtBeat(Diff->Timing, Diff->Offset + Drift, Time->Time) + StopTimeAtBeat(Diff->StopsTiming, Time->Time);
 		float TValueN = TimeAtBeat(Diff->Timing, Diff->Offset + Drift, Time->Time) + StopTimeAtBeat(Diff->StopsTiming, Time->Time) + Time->Value;
 
 		/* Initial Stop */
-		VSpeed.Time = TValue;
-		VSpeed.Value = 0;
+		Seg.Time = TValue;
+		Seg.Value = 0;
 
 		/* First, eliminate collisions. */
-		for (TimingData::iterator k = Diff->VerticalSpeeds.begin(); k != Diff->VerticalSpeeds.end(); k++)
+		for (TimingData::iterator k = Diff->BPS.begin(); k != Diff->BPS.end(); k++)
 		{
 			if ( abs(k->Time - TValue) < 0.000001 ) /* Too close? Remove the collision, leaving only the 0 in front. */
 			{
-				k = Diff->VerticalSpeeds.erase(k);
+				k = Diff->BPS.erase(k);
 
-				if (k == Diff->VerticalSpeeds.end())
+				if (k == Diff->BPS.end())
 					break;
 			}
 		}
 
-		Diff->VerticalSpeeds.push_back(VSpeed);
+		Diff->BPS.push_back(Seg);
 
-		float speedRestore = MeasureBaseSpacing / (spb(BpmAtBeat(Diff->Timing, Time->Time)) * MeasureLength);
+		float speedRestore = bps(BpmAtBeat(Diff->Timing, Time->Time));
 
-		/* 
-			Find speeds between TValue and TValueN, use the last one as the speed we're going to use. 
-			There's quite the count of simfiles that use overlapping stops and bpm changes, and I'm not really
-			sure how to handle them from a vertical speeds perspective.
-			That said, here's my try.
-		*/
-
-		for (TimingData::iterator k = Diff->VerticalSpeeds.begin(); k != Diff->VerticalSpeeds.end(); k++)
+		for (TimingData::iterator k = Diff->BPS.begin(); k != Diff->BPS.end(); k++)
 		{
 			if (k->Time > TValue && k->Time < TValueN)
 			{
 				speedRestore = k->Value; /* This is the last speed change in the interval that the stop lasts. We'll use it. */
 
 				/* Eliminate this since we're not going to use it. */
-				k = Diff->VerticalSpeeds.erase(k);
+				k = Diff->BPS.erase(k);
 
-				if (k == Diff->VerticalSpeeds.end())
+				if (k == Diff->BPS.end())
 					break;
 			}
 		}
 
 		/* Restored speed after stop */
-		VSpeed.Time = TValueN;
-		VSpeed.Value = speedRestore;
-		Diff->VerticalSpeeds.push_back(VSpeed);
+		Seg.Time = TValueN;
+		Seg.Value = speedRestore;
+		Diff->BPS.push_back(Seg);
 	}
 
-	std::sort(Diff->VerticalSpeeds.begin(), Diff->VerticalSpeeds.end(), tSort);
+	std::sort(Diff->BPS.begin(), Diff->BPS.end(), tSort);
 }
 
 void Song7K::Process(float Drift)
@@ -149,7 +172,8 @@ void Song7K::Process(float Drift)
 		if (!(*Diff)->Timing.size())
 			continue;
 
-		ProcessVSpeeds(*Diff, Drift);
+		ProcessBPS(*Diff, Drift);
+		ProcessVSpeeds(*Diff);
 
 		/* For all channels of this difficulty */
 		for (int KeyIndex = 0; KeyIndex < (*Diff)->Channels; KeyIndex++)

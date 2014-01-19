@@ -596,15 +596,12 @@ void ScreenGameplay7K::UpdateScriptVariables()
 	L->SetGlobal("SpeedMultiplierUser", SpeedMultiplierUser);
 	L->SetGlobal("waveEffectEnabled", waveEffectEnabled);
 	L->SetGlobal("Active", Active);
+	L->SetGlobal("Beat", BeatAtTime(CurrentDiff->BPS, SongTime, CurrentDiff->Offset + TimeCompensation));
 }
 
 bool ScreenGameplay7K::Run(double Delta)
 {
 	float SongDelta;
-	
-	UpdateScriptVariables();
-	Animations->UpdateTargets(Delta);
-	Animations->DrawUntilLayer(13);
 
 	if (Active)
 	{
@@ -641,6 +638,11 @@ bool ScreenGameplay7K::Run(double Delta)
 
 	RecalculateEffects();
 	RecalculateMatrix();
+		
+	UpdateScriptVariables();
+
+	Animations->UpdateTargets(Delta);
+	Animations->DrawUntilLayer(13);
 
 	Background.Render();
 

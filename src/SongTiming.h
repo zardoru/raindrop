@@ -14,6 +14,8 @@ double VerticalAtTime(const TimingData &Timing, float Time, float Drift = 0);
 
 double StopTimeAtBeat(const TimingData &StopsTiming, float Beat);
 
+double BeatAtTime(const TimingData &Timing, float Time, float Offset);
+
 template <class T>
 double DifficultyDuration(TSong<T> &MySong, SongInternal::TDifficulty<T> &Diff)
 {

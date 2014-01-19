@@ -124,3 +124,9 @@ double VerticalAtTime(const TimingData &Timing, float Time, float Drift)
 
 	return Out;
 }
+
+double BeatAtTime(const TimingData &Timing, float Time, float Offset)
+{
+	double sDelta = Timing[0].Value * Offset;
+	return VerticalAtTime(Timing, Time) - sDelta;
+}
