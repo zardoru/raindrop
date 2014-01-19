@@ -58,6 +58,7 @@ namespace SongInternal
 		uint32 TotalNotes;
 		uint32 TotalHolds;
 		uint32 TotalObjects;
+		uint32 TotalScoringObjects;
 	};
 
 	template <>
@@ -82,6 +83,7 @@ namespace SongInternal
 		uint32 TotalNotes;
 		uint32 TotalHolds;
 		uint32 TotalObjects;
+		uint32 TotalScoringObjects;
 
 		// 7k
 		unsigned char Channels;
