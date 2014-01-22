@@ -118,6 +118,7 @@ void ScreenGameplay7K::HitNote (double TimeOff, uint32 Lane)
 
 	Score.ex_score += TimeOff <= 20 ? 2 : TimeOff <= 40 ? 1 : 0;
 
+	Animations->GetEnv()->SetGlobal("Combo", Score.combo);
 	Animations->GetEnv()->CallFunction("HitEvent", 2);
 	Animations->GetEnv()->PushArgument(TimeOff);
 	Animations->GetEnv()->PushArgument((int)Lane + 1);
@@ -136,6 +137,8 @@ void ScreenGameplay7K::MissNote (double TimeOff, uint32 Lane)
 	Score.TotalNotes++;
 	Score.Accuracy = accuracy_percent(Score.total_sqdev / Score.TotalNotes);
 	Score.combo = 0;
+
+	Animations->GetEnv()->SetGlobal("Combo", Score.combo);
 
 	Animations->GetEnv()->CallFunction("MissEvent", 2);
 	Animations->GetEnv()->PushArgument(TimeOff);
@@ -590,11 +593,12 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 void ScreenGameplay7K::UpdateScriptVariables()
 {
 	LuaManager *L = Animations->GetEnv();
-	L->SetGlobal("Combo", Score.combo);
 	L->SetGlobal("MaxCombo", Score.max_combo);
 	L->SetGlobal("SpeedMultiplier", SpeedMultiplier);
 	L->SetGlobal("SpeedMultiplierUser", SpeedMultiplierUser);
 	L->SetGlobal("waveEffectEnabled", waveEffectEnabled);
+	L->SetGlobal("Accuracy", Score.Accuracy);
+	L->SetGlobal("EXScore", Score.ex_score);
 	L->SetGlobal("Active", Active);
 	L->SetGlobal("Beat", BeatAtTime(CurrentDiff->BPS, SongTime, CurrentDiff->Offset + TimeCompensation));
 }
