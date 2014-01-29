@@ -8,7 +8,7 @@
 #include "Audio.h"
 #include "FileManager.h"
 
-VorbisStream *ScreenEvaluationMusic = NULL;
+AudioStream *ScreenEvaluationMusic = NULL;
 
 ScreenEvaluation::ScreenEvaluation(IScreen *Parent) :
 	IScreen(Parent)
@@ -26,13 +26,14 @@ void ScreenEvaluation::Init(EvaluationData _Data, String SongAuthor, String Song
 {
 	if (!ScreenEvaluationMusic)
 	{
-		ScreenEvaluationMusic = new VorbisStream((FileManager::GetSkinPrefix() + "screenevaluationloop.ogg").c_str());
-		ScreenEvaluationMusic->setLoop(true);
+		ScreenEvaluationMusic = new SoundStream();
+		ScreenEvaluationMusic->Open((FileManager::GetSkinPrefix() + "screenevaluationloop.ogg").c_str());
+		ScreenEvaluationMusic->SetLoop(true);
 		MixerAddStream(ScreenEvaluationMusic);
 	}
 
-	ScreenEvaluationMusic->seek(0);
-	ScreenEvaluationMusic->Start();
+	ScreenEvaluationMusic->SeekTime(0);
+	ScreenEvaluationMusic->Play();
 
 
 	Background.SetImage(ImageLoader::LoadSkin(Configuration::GetSkinConfigs("EvaluationBackground")));

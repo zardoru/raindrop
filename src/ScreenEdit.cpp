@@ -49,7 +49,8 @@ void ScreenEdit::Init(SongDC *Other)
 
 	if (!SavedSound)
 	{
-		SavedSound = new SoundSample((FileManager::GetSkinPrefix() + "save.ogg").c_str());
+		SavedSound = new SoundSample();
+		SavedSound->Open((FileManager::GetSkinPrefix() + "save.ogg").c_str());
 		MixerAddSample(SavedSound);
 	}
 
@@ -144,7 +145,7 @@ void ScreenEdit::SaveChart()
 	String DefaultPath = MySong->ChartFilename.length() ? MySong->ChartFilename : "chart.dcf";
 	MySong->Repack();
 	MySong->Save((MySong->SongDirectory + String("/") + DefaultPath).c_str());
-	SavedSound->Reset();
+	SavedSound->Play();
 	MySong->Process();
 }
 

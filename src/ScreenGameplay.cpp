@@ -223,7 +223,7 @@ void ScreenGameplay::LoadThreadInitialization()
 
 	if (!Music)
 	{
-		Music = new SoundStream(MySong->SongFilename.c_str());
+		Music = new PaStreamWrapper(MySong->SongFilename.c_str());
 
 		if (!Music || !Music->IsValid())
 		{
@@ -447,7 +447,7 @@ void ScreenGameplay::seekTime(float Time)
 
 void ScreenGameplay::startMusic()
 {
-	Music->Start(false, false);
+	Music->Start(false);
 }
 
 void ScreenGameplay::stopMusic()
@@ -460,8 +460,7 @@ bool ScreenGameplay::Run(double TimeDelta)
 {
 	if (Music && !IsPaused)
 	{
-		int32 read;
-		Music->GetStream()->UpdateBuffer(read);
+		Music->GetStream()->Update();
 	}
 	
 	if (Music)

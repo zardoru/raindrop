@@ -31,13 +31,15 @@ GameObject::GameObject() : GraphObject2D(false)
 
 	if (!HitSnd)
 	{
-		HitSnd = new SoundSample((FileManager::GetSkinPrefix() + "/hit.ogg").c_str());
+		HitSnd = new SoundSample();
+		HitSnd->Open((FileManager::GetSkinPrefix() + "/hit.ogg").c_str());
 		MixerAddSample(HitSnd);
 	}
 
 	if (!HoldReleaseSnd)
 	{
-		HoldReleaseSnd  = new SoundSample((FileManager::GetSkinPrefix() + "/holdfinish.ogg").c_str());
+		HoldReleaseSnd  = new SoundSample();
+		HoldReleaseSnd->Open((FileManager::GetSkinPrefix() + "/holdfinish.ogg").c_str());
 		MixerAddSample(HoldReleaseSnd);
 	}
 
@@ -160,7 +162,7 @@ Judgement GameObject::Run(double delta, double Time, bool Autoplay)
 		{
 			fadeout_time = 1;
 			BeingHeld = false;
-			HoldReleaseSnd->Reset();
+			HoldReleaseSnd->Play();
 			return OK;
 		}
 	}else if (!BeingHeld && Time > startTime+LeniencyHitTime)
@@ -203,7 +205,7 @@ Judgement GameObject::Hit(double Time, Vec2 mpos, bool KeyDown,  bool Autoplay, 
 			// Hit!
 			Judgement RVal;
 
-			HitSnd->Reset();
+			HitSnd->Play();
 
 			if (endTime == 0) // Not a hold?
 				fadeout_time = 0.6f; // 0.8 secs for fadeout

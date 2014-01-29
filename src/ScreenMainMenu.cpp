@@ -46,7 +46,8 @@ void ScreenMainMenu::Init()
 
 	if (!MMSelectSnd)
 	{
-		MMSelectSnd = new SoundSample((FileManager::GetSkinPrefix() + "select.ogg").c_str());
+		MMSelectSnd = new SoundSample();
+		MMSelectSnd->Open((FileManager::GetSkinPrefix() + "select.ogg").c_str());
 		MixerAddSample(MMSelectSnd);
 	}
 
@@ -68,7 +69,7 @@ void ScreenMainMenu::HandleInput(int32 key, KeyEventType code, bool isMouseInput
 	if (PlayBtn.HandleInput(key, code, isMouseInput))
 	{
 		/* Use a screen loading to load selectmusic screen. */
-		MMSelectSnd->Reset();
+		MMSelectSnd->Play();
 		ScreenLoading *LoadScreen = new ScreenLoading(this, new ScreenSelectMusic());
 		LoadScreen->Init();
 		Next = LoadScreen;

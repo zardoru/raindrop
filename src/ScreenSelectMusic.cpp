@@ -22,7 +22,7 @@
 #define SONGLIST_BASEX ScreenWidth*3/4
 
 SoundSample *SelectSnd = NULL, *ClickSnd=NULL;
-VorbisStream	**Loops;
+AudioStream	**Loops;
 int LoopTotal;
 
 ScreenSelectMusic::ScreenSelectMusic()
@@ -31,25 +31,29 @@ ScreenSelectMusic::ScreenSelectMusic()
 	if (!SelectSnd)
 	{
 		LoopTotal = 0;
-		SelectSnd = new SoundSample((FileManager::GetSkinPrefix() + "select.ogg").c_str());
+		SelectSnd = new SoundSample();
+		SelectSnd->Open((FileManager::GetSkinPrefix() + "select.ogg").c_str());
 		MixerAddSample(SelectSnd);
 
-		ClickSnd = new SoundSample((FileManager::GetSkinPrefix() + "click.ogg").c_str());
+		ClickSnd = new SoundSample();
+		ClickSnd->Open((FileManager::GetSkinPrefix() + "click.ogg").c_str());
 		MixerAddSample(ClickSnd);
 		
 		LoopTotal = Configuration::GetSkinConfigf("LoopTotal");
 
-		Loops = new VorbisStream*[LoopTotal];
+		Loops = new AudioStream*[LoopTotal];
 		for (int i = 0; i < LoopTotal; i++)
 		{
 			std::stringstream str;
 			str << FileManager::GetSkinPrefix() << "loop" << i+1 << ".ogg";
-			Loops[i] = new VorbisStream(str.str().c_str());
+			Loops[i] = new AudioStream();
+			Loops[i]->Open(str.str().c_str());
 			Loops[i]->Stop();
-			Loops[i]->setLoop(true);
+			Loops[i]->SetLoop(true);
 			MixerAddStream(Loops[i]);
 		}
 	}
+
 	SelectedMode = MODE_DOTCUR;
 
 	OptionUpscroll = false;
@@ -131,8 +135,8 @@ bool ScreenSelectMusic::Run(double Delta)
 			if (LoopTotal)
 			{
 				int rn = rand() % LoopTotal;
-				Loops[rn]->seek(0);
-				Loops[rn]->Start();
+				Loops[rn]->SeekTime(0);
+				Loops[rn]->Play();
 			}
 		}
 	}
@@ -272,7 +276,7 @@ void ScreenSelectMusic::StopLoops()
 {
 	for (int i = 0; i < LoopTotal; i++)
 	{
-		Loops[i]->seek(0);
+		Loops[i]->SeekTime(0);
 		Loops[i]->Stop();
 	}
 }
@@ -297,7 +301,7 @@ void ScreenSelectMusic::UpdateCursor()
 	if (OldCursor != Cursor)
 	{
 		OldCursor = Cursor;
-		ClickSnd->Reset();
+		ClickSnd->Play();
 	}
 
 	SelCursor.SetPosition(SONGLIST_BASEX - SelCursor.GetWidth() - sin(Time*2) * sin(Time*2) * 10, Cursor * SelCursor.GetHeight() + ListY);
@@ -343,7 +347,7 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 		case KT_Select:
 			if (!isMouseInput || (WindowFrame.GetRelativeMPos().x > SONGLIST_BASEX && WindowFrame.GetRelativeMPos().y > ListY))
 			{
-				SelectSnd->Reset();
+				SelectSnd->Play();
 
 				if (SelectedMode == MODE_DOTCUR && SongList.size())
 				{

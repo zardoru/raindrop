@@ -193,6 +193,9 @@
     <ClCompile Include="..\src\ActorLifebar.cpp" />
     <ClCompile Include="..\src\Application.cpp" />
     <ClCompile Include="..\src\Audio.cpp" />
+    <ClCompile Include="..\src\Audiofile.cpp" />
+    <ClCompile Include="..\src\AudioSourceOGG.cpp" />
+    <ClCompile Include="..\src\AudioSourceWAV.cpp" />
     <ClCompile Include="..\src\BitmapFont.cpp" />
     <ClCompile Include="..\src\Configuration.cpp" />
     <ClCompile Include="..\src\Directory.cpp" />
@@ -241,6 +244,8 @@
     <ClInclude Include="..\src\ActorLifebar.h" />
     <ClInclude Include="..\src\Application.h" />
     <ClInclude Include="..\src\Audio.h" />
+    <ClInclude Include="..\src\Audiofile.h" />
+    <ClInclude Include="..\src\AudioSourceOGG.h" />
     <ClInclude Include="..\src\BindingsManager.h" />
     <ClInclude Include="..\src\BitmapFont.h" />
     <ClInclude Include="..\src\Configuration.h" />
@@ -271,6 +276,7 @@
     <ClInclude Include="..\src\SongTiming.h" />
     <ClInclude Include="..\src\TrackNote.h" />
     <ClInclude Include="..\src\VBO.h" />
+    <ClInclude Include="..\src\AudioSourceWAV.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

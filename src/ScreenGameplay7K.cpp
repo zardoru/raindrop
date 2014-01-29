@@ -17,7 +17,7 @@
 #include "ScreenGameplay7K.h"
 
 BitmapFont * GFont = NULL;
-VorbisSample *MissSnd = NULL;
+SoundSample *MissSnd = NULL;
 int lastPressed = 0;
 int lastMsOff[MAX_CHANNELS];
 int lastClosest[MAX_CHANNELS];
@@ -167,7 +167,7 @@ void ScreenGameplay7K::RunMeasures()
 					m = (*i).MeasureNotes.erase(m);
 
 					if (Score.combo > 10)
-						MissSnd->Reset();
+						MissSnd->Play();
 
 					if (m == (*i).MeasureNotes.end())
 						break;
@@ -179,7 +179,7 @@ void ScreenGameplay7K::RunMeasures()
 					MissNote((SongTime - m->GetStartTime()) * 1000, k);
 
 					if (Score.combo > 10)
-						MissSnd->Reset();
+						MissSnd->Play();
 					
 					/* remove note from judgement */
 					if (!m->IsHold())
@@ -228,7 +228,7 @@ void ScreenGameplay7K::ReleaseLane(unsigned int Lane)
 					holds_missed += 1;
 
 					if (Score.combo > 10)
-						MissSnd->Reset();
+						MissSnd->Play();
 
 					m->Disable();
 
@@ -285,8 +285,9 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 				else
 				{
 					MissNote(tD, Lane);
+
 					// missed feedback
-					MissSnd->Reset();
+					MissSnd->Play();
 
 					if (m->IsHold()){
 						holds_missed += 1;
@@ -316,7 +317,8 @@ void ScreenGameplay7K::LoadThreadInitialization()
 {
 	if (!MissSnd)
 	{
-		MissSnd = new VorbisSample((FileManager::GetSkinPrefix() + "miss.ogg").c_str());
+		MissSnd = new SoundSample();
+		MissSnd->Open((FileManager::GetSkinPrefix() + "miss.wav").c_str());
 		MixerAddSample(MissSnd);
 	}
 
@@ -619,7 +621,7 @@ bool ScreenGameplay7K::Run(double Delta)
 
 			if (SongOldTime == -1)
 			{
-				Music->Start(false, false);
+				Music->Start(false);
 				SongOldTime = 0;
 			}
 
@@ -632,8 +634,7 @@ bool ScreenGameplay7K::Run(double Delta)
 			SongOldTime = SongTime;
 
 			/* Update music. */
-			int32 r;
-			Music->GetStream()->UpdateBuffer(r);
+			Music->GetStream()->Update();
 		}else
 		{
 			CurrentVertical += VSpeeds.at(0).Value * Delta; 

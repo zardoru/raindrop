@@ -46,6 +46,9 @@
     <Filter Include="Source Files\Mode7K\Internal">
       <UniqueIdentifier>{497e5e45-0fad-43da-9c02-48ccf3f7e14d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Backend\Audio">
+      <UniqueIdentifier>{de8e7fda-1fc9-4cfa-a4be-c5a6041da267}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\soil\image_DXT.c">
@@ -74,9 +77,6 @@
     </ClCompile>
     <ClCompile Include="..\src\ActorLifebar.cpp">
       <Filter>Source Files\ModeDotcur\Gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Audio.cpp">
-      <Filter>Source Files\Backend</Filter>
     </ClCompile>
     <ClCompile Include="..\src\FileManager.cpp">
       <Filter>Source Files\Backend</Filter>
@@ -179,6 +179,18 @@
     </ClCompile>
     <ClCompile Include="..\src\GraphObjectMan.cpp">
       <Filter>Source Files\Backend</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Audio.cpp">
+      <Filter>Source Files\Backend\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Audiofile.cpp">
+      <Filter>Source Files\Backend\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\AudioSourceOGG.cpp">
+      <Filter>Source Files\Backend\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\AudioSourceWAV.cpp">
+      <Filter>Source Files\Backend\Audio</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -303,6 +315,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\GraphObjectMan.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Audiofile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AudioSourceWAV.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AudioSourceOGG.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
