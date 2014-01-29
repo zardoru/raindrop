@@ -102,6 +102,11 @@ void ScreenGameplay7K::RecalculateEffects()
 		waveEffect = sin(SongTime) * 0.5 * SpeedMultiplierUser;
 		MultiplierChanged = true;
 	}
+
+	if (Upscroll)
+		SpeedMultiplier = - (SpeedMultiplierUser + waveEffect);
+	else
+		SpeedMultiplier = SpeedMultiplierUser + waveEffect;
 }
 
 #define CLAMP(var, min, max) (var) < (min) ? (min) : (var) > (max) ? (max) : (var)
@@ -623,10 +628,15 @@ bool ScreenGameplay7K::Run(double Delta)
 			{
 				Music->Start(false);
 				SongOldTime = 0;
-			}
+				SongTimeReal = 0;
+			}else
+				SongTime += Delta;
 
 			SongDelta = Music->GetStream()->GetStreamedTime() - SongOldTime;
-			SongTime += SongDelta;
+			SongTimeReal += SongDelta;
+
+			if (SongTime > SongTimeReal)
+				SongTime = SongTimeReal;
 
 			CurrentVertical = VerticalAtTime(VSpeeds, SongTime);
 			RunMeasures();

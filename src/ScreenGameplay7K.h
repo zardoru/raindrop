@@ -57,7 +57,7 @@ private:
 	PaStreamWrapper *Music;
 
 	AccuracyData7K Score;
-	double SongTime;
+	double SongTime, SongTimeReal;
 
 	/* 
 		Optimizations will come in later. 

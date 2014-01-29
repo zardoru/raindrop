@@ -20,14 +20,6 @@ void ScreenGameplay7K::DrawMeasures()
 	typedef std::vector<SongInternal::Measure<TrackNote> > NoteVector;
 	float rPos;
 
-	if (MultiplierChanged)
-	{
-		if (Upscroll)
-			SpeedMultiplier = - (SpeedMultiplierUser + waveEffect);
-		else
-			SpeedMultiplier = SpeedMultiplierUser + waveEffect;
-	}
-
 	rPos = CurrentVertical * SpeedMultiplier + BasePos;
 
 	// Assign our matrix.
