@@ -87,7 +87,7 @@
     <LibraryPath>D:\development\STLport-5.2.1.tar\lib;D:\development\libs\portaudio\bin\Win32\Release;D:\development\cAudio-2.2.0\DependenciesSource\libvorbis-1.3.2\Release;D:\development\cAudio-2.2.0\DependenciesSource\libogg-1.2.2\Release;D:\development\libs\glew-1.9.0\lib;D:\development\libs\boost_1_49_0\boost_1_49_0\stage\lib;D:\Nueva carpeta (2)\boost_1_52_0\boost_1_52_0\stage\lib;D:\development\glfw-3.0.3\src\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release NoSTLport|Win32'">
-    <IncludePath>$(WindowsSdkDir)include;$(FrameworkSDKDir)include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../</IncludePath>
+    <IncludePath>$(WindowsSdkDir)include;$(FrameworkSDKDir)include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../ext-libs/libmpg123;../</IncludePath>
     <LibraryPath>..\ext-libs\Release;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release GL2|Win32'">
@@ -155,7 +155,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>BOOST_NO_EXCEPTION;_STLP_NO_EXCEPTIONS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BOOST_NO_EXCEPTION;_STLP_NO_EXCEPTIONS;WIN32;NDEBUG;MP3_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>false</ExceptionHandling>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
@@ -167,7 +167,7 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>portaudio_x86.lib;opengl32.lib;Ogg.lib;Vorbis.lib;glfw3.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libmpg123.lib;portaudio_x86.lib;opengl32.lib;Ogg.lib;Vorbis.lib;glfw3.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release GL2|Win32'">
@@ -194,6 +194,7 @@
     <ClCompile Include="..\src\Application.cpp" />
     <ClCompile Include="..\src\Audio.cpp" />
     <ClCompile Include="..\src\Audiofile.cpp" />
+    <ClCompile Include="..\src\AudioSourceMP3.cpp" />
     <ClCompile Include="..\src\AudioSourceOGG.cpp" />
     <ClCompile Include="..\src\AudioSourceWAV.cpp" />
     <ClCompile Include="..\src\BitmapFont.cpp" />
@@ -245,6 +246,7 @@
     <ClInclude Include="..\src\Application.h" />
     <ClInclude Include="..\src\Audio.h" />
     <ClInclude Include="..\src\Audiofile.h" />
+    <ClInclude Include="..\src\AudioSourceMP3.h" />
     <ClInclude Include="..\src\AudioSourceOGG.h" />
     <ClInclude Include="..\src\BindingsManager.h" />
     <ClInclude Include="..\src\BitmapFont.h" />

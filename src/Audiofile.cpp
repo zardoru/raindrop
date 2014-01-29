@@ -4,6 +4,10 @@
 #include "AudioSourceOGG.h"
 #include "AudioSourceWAV.h"
 
+#ifdef MP3_ENABLED
+#include "AudioSourceMP3.h"
+#endif
+
 AudioDataSource* SourceFromExt(String Filename)
 {
 	AudioDataSource *Ret;
@@ -12,6 +16,10 @@ AudioDataSource* SourceFromExt(String Filename)
 		Ret = new AudioSourceWAV();
 	else if (Utility::GetExtension(Filename) == "ogg")
 		Ret = new AudioSourceOGG();
+#ifdef MP3_ENABLED
+	else if (Utility::GetExtension(Filename) == "mp3")
+		Ret = new AudioSourceMP3();
+#endif
 
 	Ret->Open(Filename.c_str());
 	return Ret;
@@ -139,7 +147,7 @@ uint32 AudioStream::Read(void* buffer, size_t count)
 	}else
 		return 0;
 
-	return cnt;
+	return cnt ? cnt : mIsPlaying;
 }
 
 bool AudioStream::Open(const char* Filename)
@@ -203,6 +211,10 @@ uint32 AudioStream::Update()
 	if (ReadTotal = mSource->Read(tbuf, eCount))
 	{
 		PaUtil_WriteRingBuffer(&mRingBuf, tbuf, eCount);
+	}else
+	{
+		if (!PaUtil_GetRingBufferReadAvailable(&mRingBuf))
+			mIsPlaying = false;
 	}
 
 	return ReadTotal;

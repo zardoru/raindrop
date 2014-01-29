@@ -188,6 +188,9 @@ SongDC* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 			std::stringstream str (CommandContents);
 			str >> Difficulty->Offset;
 			Difficulty->Offset += Configuration::GetConfigf("OffsetDC");
+
+			if (Configuration::GetConfigf("AudioCompensation"))
+				Difficulty->Offset += GetDeviceLatency();
 		}
 
 		// Then, file info.

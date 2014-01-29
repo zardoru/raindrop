@@ -46,9 +46,10 @@ uint32 AudioSourceOGG::Read(void* buffer, size_t count)
 	}
 
 	/* read from ogg vorbis file */
+	int32 res = 1;
 	while (read < size)
 	{
-		int32 res = ov_read(&mOggFile, (char*)buffer+read, size - read, 0, 2, 1, &sect);
+		res = ov_read(&mOggFile, (char*)buffer+read, size - read, 0, 2, 1, &sect);
 
 		if (res > 0)
 			read += res;
@@ -67,7 +68,7 @@ uint32 AudioSourceOGG::Read(void* buffer, size_t count)
 			return 0;
 	}
 
-	return read;
+	return read || res != 0;
 }
 
 void AudioSourceOGG::Seek(float Time)
