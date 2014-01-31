@@ -117,7 +117,7 @@ double VerticalAtTime(const TimingData &Timing, float Time, float Drift)
 
 	if (Time < 0)
 	{
-		return  Timing[0].Value * Time;
+		return  Timing[0].Value * Time + VerticalAtTime(Timing, 0, Drift);
 	}
 
 	for (uint32 i = 0; i < Section; i++)

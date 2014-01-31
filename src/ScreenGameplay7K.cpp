@@ -640,7 +640,7 @@ bool ScreenGameplay7K::Run(double Delta)
 			SongDelta = Music->GetStreamTime() - SongOldTime;
 			SongTimeReal += SongDelta;
 
-			if (SongDelta > 0.00001 && abs(SongTime - SongTimeReal) > 0.00001)
+			if (SongDelta > 0.00001 && abs(SongTime - SongTimeReal) > 0.01) // Significant delta with a 10 ms difference? We're pretty off!
 				SongTime = SongTimeReal;
 
 			CurrentVertical = VerticalAtTime(VSpeeds, SongTime);
@@ -650,6 +650,7 @@ bool ScreenGameplay7K::Run(double Delta)
 		}else
 		{
 			SongTime = -(WAITING_TIME - ScreenTime);
+			SongDelta = 0;
 			CurrentVertical = VerticalAtTime(VSpeeds, SongTime);
 		}
 	}
@@ -676,8 +677,6 @@ bool ScreenGameplay7K::Run(double Delta)
 	ss << "\nEX score: " << std::setprecision(2) << Score.ex_score / (CurrentDiff->TotalScoringObjects * 2.0) * 100.0 << "%";
 	ss << "\nmax combo: " << Score.max_combo;
 	ss << "\nMult/Speed: " << std::setiosflags(std::ios::fixed) << SpeedMultiplier << "x / " << SpeedMultiplier*4 << "\n";
-	ss << "t / st " << SongTime << " / " << SongTimeReal << " / " << Music->GetPlaybackTime();
-	ss << "\nsd (ms) " << SongDelta * 1000;
 #ifndef NDEBUG
 	ss << "\nVert: " << CurrentVertical;
 	ss << "\ntotal notes:  " << Score.TotalNotes;
@@ -687,6 +686,7 @@ bool ScreenGameplay7K::Run(double Delta)
 	ss << "\nloaded holds: " << CurrentDiff->TotalHolds;
 	ss << "\nnotes hit: " << std::setprecision(2) << float(Score.notes_hit) / CurrentDiff->TotalScoringObjects * 100.0 << "%";	
 	ss << "\ncombo: " << std::resetiosflags(std::ios::fixed) << Score.combo;
+	ss << "t / st " << SongTime << " / " << SongTimeReal << " / " << Music->GetPlaybackTime();
 #endif
 
 	GFont->DisplayText(ss.str().c_str(), Vec2(0,0));

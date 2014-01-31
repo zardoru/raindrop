@@ -221,6 +221,17 @@ namespace LuaAnimFuncs
 		return 1;
 	}
 
+	int SetColor(lua_State *L)
+	{
+		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		float R = luaL_checknumber(L, 1), G = luaL_checknumber(L, 2), B = luaL_checknumber(L, 3);
+
+		Target->Red = R;
+		Target->Green = G;
+		Target->Blue = B;
+		return 0;
+	}
+
 	/*
 
 	int GetGameConfigF(lua_State *L)
@@ -239,6 +250,7 @@ namespace LuaAnimFuncs
 		{"GetRotation", GetRotation},
 		{"Rotate", Rotate},
 		{"Move", Move},
+		{"SetColor", SetColor},
 		{"SetPosition", SetAbsolutePosition},
 		{"GetPosition", GetAbsolutePosition},
 		{"CropByPixels", CropByPixels},
