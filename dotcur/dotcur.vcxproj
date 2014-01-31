@@ -214,6 +214,7 @@
     <ClCompile Include="..\src\LuaAnimationInterface.cpp" />
     <ClCompile Include="..\src\LuaManager.cpp" />
     <ClCompile Include="..\src\NoteLoader.cpp" />
+    <ClCompile Include="..\src\NoteLoaderBMS.cpp" />
     <ClCompile Include="..\src\NoteLoaderFTB.cpp" />
     <ClCompile Include="..\src\NoteLoaderSM.cpp" />
     <ClCompile Include="..\src\pa_ringbuffer.c" />

@@ -14,4 +14,9 @@ namespace NoteLoaderFTB
 	void LoadObjectsFromFile(String filename, String prefix, Song7K *Out);
 }
 
+namespace NoteLoaderBMS
+{
+	void LoadObjectsFromFile(String filename, String prefix, Song7K *Out);
+}
+
 #endif

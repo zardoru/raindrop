@@ -164,7 +164,7 @@ bool AudioStream::Open(const char* Filename)
 		PaUtil_InitializeRingBuffer(&mRingBuf, sizeof(int16), mBufferSize, mData);
 
 		mStreamTime = mPlaybackTime = 0;
-		Update();
+		// Update();
 		return true;
 	}else
 		return false;
@@ -188,6 +188,11 @@ void AudioStream::SeekTime(float Second)
 float AudioStream::GetStreamedTime()
 {
 	return mStreamTime;
+}
+
+float AudioStream::GetPlayedTime()
+{
+	return mPlaybackTime;
 }
 
 void AudioStream::SeekSample(uint32 Sample)

@@ -32,6 +32,7 @@ public:
 	void Restart();
 	void Seek(double Time);
 	double GetPlaybackTime();
+	double GetStreamTime();
 	bool IsStopped();
 
 	AudioStream *GetStream();

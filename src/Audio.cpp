@@ -282,10 +282,20 @@ bool PaStreamWrapper::IsValid()
 double PaStreamWrapper::GetPlaybackTime()
 {
 	if (IsValid())
+		return Sound->GetPlayedTime();
+	else
+		return 0;
+}
+
+
+double PaStreamWrapper::GetStreamTime()
+{
+	if (IsValid())
 		return Sound->GetStreamedTime();
 	else
 		return 0;
 }
+
 
 bool PaStreamWrapper::IsStopped()
 {

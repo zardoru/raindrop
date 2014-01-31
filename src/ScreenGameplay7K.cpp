@@ -629,25 +629,28 @@ bool ScreenGameplay7K::Run(double Delta)
 				Music->Start(false);
 				SongOldTime = 0;
 				SongTimeReal = 0;
+				SongTime = 0;
 			}else
+			{
+				/* Update music. */
+				Music->GetStream()->Update();
 				SongTime += Delta;
+			}
 
-			SongDelta = Music->GetStream()->GetStreamedTime() - SongOldTime;
+			SongDelta = Music->GetStreamTime() - SongOldTime;
 			SongTimeReal += SongDelta;
 
-			if (SongTime > SongTimeReal)
+			if (SongDelta > 0.00001 && abs(SongTime - SongTimeReal) > 0.00001)
 				SongTime = SongTimeReal;
 
 			CurrentVertical = VerticalAtTime(VSpeeds, SongTime);
 			RunMeasures();
 
-			SongOldTime = SongTime;
-
-			/* Update music. */
-			Music->GetStream()->Update();
+			SongOldTime = SongTimeReal;
 		}else
 		{
-			CurrentVertical += VSpeeds.at(0).Value * Delta; 
+			SongTime = -(WAITING_TIME - ScreenTime);
+			CurrentVertical = VerticalAtTime(VSpeeds, SongTime);
 		}
 	}
 
@@ -670,16 +673,21 @@ bool ScreenGameplay7K::Run(double Delta)
 
 	ss << "score: " << int(Score.points);
 	ss << "\naccuracy: " << std::setiosflags(std::ios::fixed) << std::setprecision(2) << Score.Accuracy << "%";
-	ss << "\nnotes hit: " << std::setprecision(2) << float(Score.notes_hit) / CurrentDiff->TotalScoringObjects * 100.0 << "%";
 	ss << "\nEX score: " << std::setprecision(2) << Score.ex_score / (CurrentDiff->TotalScoringObjects * 2.0) * 100.0 << "%";
+	ss << "\nmax combo: " << Score.max_combo;
+	ss << "\nMult/Speed: " << std::setiosflags(std::ios::fixed) << SpeedMultiplier << "x / " << SpeedMultiplier*4 << "\n";
+	ss << "t / st " << SongTime << " / " << SongTimeReal << " / " << Music->GetPlaybackTime();
+	ss << "\nsd (ms) " << SongDelta * 1000;
+#ifndef NDEBUG
+	ss << "\nVert: " << CurrentVertical;
 	ss << "\ntotal notes:  " << Score.TotalNotes;
 	ss << "\nloaded notes:  " << CurrentDiff->TotalScoringObjects;
 	ss << "\nholds hit: " << holds_hit;
 	ss << "\nholds missed: " << holds_missed;
 	ss << "\nloaded holds: " << CurrentDiff->TotalHolds;
+	ss << "\nnotes hit: " << std::setprecision(2) << float(Score.notes_hit) / CurrentDiff->TotalScoringObjects * 100.0 << "%";	
 	ss << "\ncombo: " << std::resetiosflags(std::ios::fixed) << Score.combo;
-	ss << "\nmax combo: " << Score.max_combo;
-	ss << "\nMult/Speed: " << std::setiosflags(std::ios::fixed) << SpeedMultiplier << "x / " << SpeedMultiplier*4 << "\n";
+#endif
 
 	GFont->DisplayText(ss.str().c_str(), Vec2(0,0));
 

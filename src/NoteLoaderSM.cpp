@@ -88,7 +88,7 @@ void LoadTracksSM(Song7K *Out, SongInternal::TDifficulty<TrackNote> *Difficulty,
 
 	Difficulty->Channels = Keys;
 	Difficulty->Name = Mainline[2];
-	Difficulty->TotalNotes = Difficulty->TotalHolds = Difficulty->TotalObjects = 0;
+	Difficulty->TotalNotes = Difficulty->TotalHolds = Difficulty->TotalObjects = Difficulty->TotalScoringObjects = 0;
 	
 	/* Now we should have our notes within NoteString. 
 	We'll split them by measure using , as a separator.*/

@@ -463,9 +463,12 @@ bool ScreenGameplay::Run(double TimeDelta)
 		Music->GetStream()->Update();
 	}
 	
-	if (Music)
+	if (Music && LeadInTime <= 0)
 	{
-		SongDelta = Music->GetStream()->GetStreamedTime() - SongTime;
+		SongDelta = Music->GetStreamTime() - SongTime;
+
+		// if (SongDelta < 0) Utility::DebugBreak();
+
 		SongTime += SongDelta;
 	}
 

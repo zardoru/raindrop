@@ -86,6 +86,7 @@ public:
 	void Stop();
 
 	float GetStreamedTime();
+	float GetPlayedTime();
 	uint32 GetRate();
 
 	uint32 Update();
