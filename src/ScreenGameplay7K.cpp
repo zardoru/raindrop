@@ -73,7 +73,10 @@ ScreenGameplay7K::ScreenGameplay7K()
 void ScreenGameplay7K::Cleanup()
 {
 	if (Music)
+	{
+		MixerRemoveStream(Music);
 		Music->Stop();
+	}
 
 	delete Animations;
 }
@@ -95,7 +98,7 @@ void ScreenGameplay7K::RecalculateEffects()
 	float SongTime = 0;
 
 	if (Music)
-		SongTime = Music->GetPlaybackTime();
+		SongTime = Music->GetPlayedTime();
 
 	if (waveEffectEnabled)
 	{
@@ -323,7 +326,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	if (!MissSnd)
 	{
 		MissSnd = new SoundSample();
-		MissSnd->Open((FileManager::GetSkinPrefix() + "miss.wav").c_str());
+		MissSnd->Open((FileManager::GetSkinPrefix() + "miss.ogg").c_str());
 		MixerAddSample(MissSnd);
 	}
 
@@ -362,11 +365,13 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	if (!Music)
 	{
-		Music = new PaStreamWrapper(MySong->SongFilename.c_str());
+		Music = new AudioStream();
+		Music->Open(MySong->SongFilename.c_str());
+		MixerAddStream(Music);
 	}
 
 	if (AudioCompensation)
-		TimeCompensation = GetDeviceLatency();
+		TimeCompensation = MixerGetLatency();
 
 	MySong->Process(TimeCompensation + Configuration::GetConfigf("Offset7K"));
 
@@ -621,26 +626,25 @@ bool ScreenGameplay7K::Run(double Delta)
 		if (ScreenTime > WAITING_TIME)
 		{
 
-			if (!Music || !Music->GetStream())
+			if (!Music)
 				return false; // Quit inmediately. There's no point.
 
 			if (SongOldTime == -1)
 			{
-				Music->Start(false);
+				Music->Play();
 				SongOldTime = 0;
 				SongTimeReal = 0;
 				SongTime = 0;
 			}else
 			{
 				/* Update music. */
-				Music->GetStream()->Update();
 				SongTime += Delta;
 			}
 
-			SongDelta = Music->GetStreamTime() - SongOldTime;
+			SongDelta = Music->GetStreamedTime() - SongOldTime;
 			SongTimeReal += SongDelta;
 
-			if (SongDelta > 0.00001 && abs(SongTime - SongTimeReal) > 0.01) // Significant delta with a 10 ms difference? We're pretty off!
+			if (SongDelta > 0.00001 && abs(SongTime - SongTimeReal) > 0.005) // Significant delta with a 5 ms difference? We're pretty off!
 				SongTime = SongTimeReal;
 
 			CurrentVertical = VerticalAtTime(VSpeeds, SongTime);
@@ -686,7 +690,7 @@ bool ScreenGameplay7K::Run(double Delta)
 	ss << "\nloaded holds: " << CurrentDiff->TotalHolds;
 	ss << "\nnotes hit: " << std::setprecision(2) << float(Score.notes_hit) / CurrentDiff->TotalScoringObjects * 100.0 << "%";	
 	ss << "\ncombo: " << std::resetiosflags(std::ios::fixed) << Score.combo;
-	ss << "t / st " << SongTime << " / " << SongTimeReal << " / " << Music->GetPlaybackTime();
+	ss << "t / st " << SongTime << " / " << SongTimeReal << " / " << Music->GetPlayedTime();
 #endif
 
 	GFont->DisplayText(ss.str().c_str(), Vec2(0,0));

@@ -128,6 +128,12 @@ void AudioSample::Stop()
 	mIsPlaying = false;
 }
 
+AudioStream::AudioStream()
+{
+	mIsPlaying = false;
+	mIsLooping = false;
+}
+
 uint32 AudioStream::Read(void* buffer, size_t count)
 {
 	size_t cnt;

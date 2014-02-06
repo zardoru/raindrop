@@ -59,6 +59,7 @@ namespace SongInternal
 		uint32 TotalHolds;
 		uint32 TotalObjects;
 		uint32 TotalScoringObjects;
+		std::vector<String> SoundList;
 	};
 
 	template <>
@@ -90,6 +91,7 @@ namespace SongInternal
 
 		// 7k
 		unsigned char Channels;
+		std::map<int, String> SoundList;
 	};
 }
 
@@ -120,7 +122,6 @@ public:
 
 	double		LeadInTime; // default to 1.5 for 7K
 	int			MeasureLength;
-	std::vector<String> SoundList;
 };
 
 /* Dotcur Song */

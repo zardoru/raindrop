@@ -77,6 +77,7 @@ private:
 	float			 mPlaybackTime;
 
 public:
+	AudioStream();
 
 	uint32 Read(void* buffer, size_t count);
 	bool Open(const char* Filename);

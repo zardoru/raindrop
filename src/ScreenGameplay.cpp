@@ -43,7 +43,7 @@ void ScreenGameplay::Cleanup()
 	// Deleting the song's notes is ScreenSelectMusic's (or fileman's) job.
 	if (Music != NULL)
 	{
-		// MixerRemoveStream(Music);
+		MixerRemoveStream(Music);
 		delete Music;
 		Music = NULL;
 	}
@@ -223,13 +223,14 @@ void ScreenGameplay::LoadThreadInitialization()
 
 	if (!Music)
 	{
-		Music = new PaStreamWrapper(MySong->SongFilename.c_str());
+		Music = new AudioStream();
 
-		if (!Music || !Music->IsValid())
+		if (!Music || !Music->Open(MySong->SongFilename.c_str()))
 		{
 			// we can't use exceptions because they impact the framerate. What can we do?
 			// throw std::exception( (boost::format ("couldn't open song %s") % MySong->SongFilename).str().c_str() );
-		}
+		}else
+			MixerAddStream(Music);
 		
 		// MixerAddStream(Music);
 		seekTime(0);
@@ -426,12 +427,10 @@ void ScreenGameplay::HandleInput(int32 key, KeyEventType code, bool isMouseInput
 					stopMusic();
 				else
 				{
-					Music->Seek(SongTime);
+					Music->SeekTime(SongTime);
 					startMusic();
 				}
 				IsPaused = !IsPaused;
-				//Running = false;
-				//Cleanup();
 			}
 		}
 	}
@@ -439,7 +438,7 @@ void ScreenGameplay::HandleInput(int32 key, KeyEventType code, bool isMouseInput
 
 void ScreenGameplay::seekTime(float Time)
 {
-	Music->Seek(Time);
+	Music->SeekTime(Time);
 	SongTime = Time;
 	MeasureRatio = 0;
 	ScreenTime = 0;
@@ -447,7 +446,7 @@ void ScreenGameplay::seekTime(float Time)
 
 void ScreenGameplay::startMusic()
 {
-	Music->Start(false);
+	Music->Play();
 }
 
 void ScreenGameplay::stopMusic()
@@ -458,14 +457,9 @@ void ScreenGameplay::stopMusic()
 /* TODO: Use measure ratios instead of song time for the barline. */
 bool ScreenGameplay::Run(double TimeDelta)
 {
-	if (Music && !IsPaused)
-	{
-		Music->GetStream()->Update();
-	}
-	
 	if (Music && LeadInTime <= 0)
 	{
-		SongDelta = Music->GetStreamTime() - SongTime;
+		SongDelta = Music->GetStreamedTime() - SongTime;
 
 		// if (SongDelta < 0) Utility::DebugBreak();
 
@@ -508,7 +502,7 @@ bool ScreenGameplay::Run(double TimeDelta)
 
 			if (SongDelta == 0 && !IsPaused)
 			{
-				if ((!Music || Music->IsStopped()))
+				if ((!Music || !Music->IsPlaying()))
 					MeasureRatio += RatioPerSecond * TimeDelta;
 			}
 
@@ -697,7 +691,7 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 #ifndef NDEBUG
 	info << "\nSongTime: " << SongTime << "\nPlaybackTime: ";
 	if (Music)
-		info << Music->GetPlaybackTime();
+		info << Music->GetPlayedTime();
 	else
 		info << "???";
 	/*info << "\nStreamTime: ";
@@ -706,8 +700,10 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 	else
 		info << "???";
 		*/
+
+	info << "\naudioFactor: " << MixerGetFactor();
 	info << "\nSongDelta: " << SongDelta;
-	info << "\nDevice Latency: " << GetDeviceLatency();
+	info << "\nDevice Latency: " << (int)(MixerGetLatency() * 1000);
 	/*
 	if (Music)
 		info << Music->GetStreamedTime() - Music->GetPlaybackTime();
