@@ -57,27 +57,6 @@ struct EvaluationData
 	double dpScoreSquare;
 };
 
-struct AccuracyData7K
-{
-	unsigned int notes_hit;
-	unsigned int combo;
-	unsigned int max_combo;
-	
-	double total_sqdev;
-	double Accuracy;
-
-	// EX score
-	double ex_score;
-
-	unsigned int TotalNotes;
-
-	// Scoring
-	double points;
-	double dpScore;
-	double dpdpScore;
-
-};
-
 enum KeyEventType
 {
 	KE_None,

@@ -2,6 +2,7 @@
 #define SG7K_H_
 
 class GraphObjectMan;
+class ScoreKeeper7K;
 
 class ScreenGameplay7K : public IScreen
 {
@@ -56,7 +57,7 @@ private:
 
 	PaStreamWrapper *Music;
 
-	AccuracyData7K Score;
+	ScoreKeeper7K* score_keeper;
 	double SongTime, SongTimeReal;
 
 	/* 
