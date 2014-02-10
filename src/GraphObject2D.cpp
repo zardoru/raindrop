@@ -29,6 +29,7 @@ GraphObject2D::GraphObject2D(bool ShouldInitTexture)
 	AffectedByLightning = false;
 
 	mImage = NULL;
+	UvBuffer = NULL;
 
 	Initialize(ShouldInitTexture);
 }
@@ -56,9 +57,9 @@ void GraphObject2D::Initialize(bool ShouldInitTexture)
 
 void GraphObject2D::SetImage(Image* image, bool ChangeSize)
 {
+	mImage = image;
 	if (image)
 	{
-		mImage = image;
 		if (ChangeSize)
 		{
 			SetCropToWholeImage();

@@ -369,7 +369,7 @@ bool ScreenEdit::Run(double delta)
 	// we're playing the song? run the game
 	if (EditScreenState == Playing)
 	{
-		if (Music->IsStopped())
+		if (!Music->IsPlaying())
 			startMusic();
 		ScreenGameplay::Run(delta);
 	}

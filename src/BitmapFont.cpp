@@ -28,7 +28,7 @@ void BitmapFont::LoadSkinFontImage(const char* Location, Vec2 _CharSize, Vec2 _C
 
 void BitmapFont::RegenerateCharPositions(Vec2 CellSize)
 {
-	int32 HCellCount = Font->w/CellSize.x, VCellCount = Font->h/CellSize.y;
+	int32 HCellCount = (int)((float)Font->w / (float)CellSize.x), VCellCount = (int)((float)Font->h/(float)CellSize.y);
 	uint32 Current = StartingCharacter;
 
 	for (unsigned short y = 0; y < VCellCount; y++)
@@ -58,6 +58,9 @@ void BitmapFont::DisplayText(const char* Text, Vec2 Position)
 			Line += RenderSize.y;
 			continue;
 		}
+
+		if (*Text < 0)
+			continue;
 
 		if (!Font->IsValid)
 		{

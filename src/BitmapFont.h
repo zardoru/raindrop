@@ -10,7 +10,7 @@ class BitmapFont
 	Image *Font;
 	GraphObject2D CharPosition[258];
 	Vec2 CharSize, CellSize, RenderSize;
-	char StartingCharacter;
+	unsigned char StartingCharacter;
 
 	void RegenerateCharPositions(Vec2 CellSize);
 

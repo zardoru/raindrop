@@ -189,8 +189,8 @@ SongDC* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 			str >> Difficulty->Offset;
 			Difficulty->Offset += Configuration::GetConfigf("OffsetDC");
 
-			if (Configuration::GetConfigf("AudioCompensation"))
-				Difficulty->Offset += GetDeviceLatency();
+			/*if (Configuration::GetConfigf("AudioCompensation"))
+				Difficulty->Offset += GetDeviceLatency(); */
 		}
 
 		// Then, file info.
@@ -215,7 +215,7 @@ SongDC* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 		OnCommand(#SOUNDS)
 		{
 			String CmdLine = CommandContents;
-			boost::split(Out->SoundList, CmdLine, boost::is_any_of(","));
+			boost::split(Difficulty->SoundList, CmdLine, boost::is_any_of(","));
 		}
 
 		// Then, the charts.

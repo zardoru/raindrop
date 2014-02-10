@@ -9,9 +9,9 @@
 
 Application App;
 
-#if (!defined WIN32) || (!defined NDEBUG)
+//#if (!defined WIN32) || (!defined NDEBUG)
 int32 main ()
-#else
+/*#else
 int CALLBACK WinMain (
     __in HINSTANCE hInstance,
     __in_opt HINSTANCE hPrevInstance,
@@ -19,6 +19,7 @@ int CALLBACK WinMain (
     __in int nShowCmd
     )
 #endif
+	*/
 {
 	App.Init();
 #ifndef NDEBUG

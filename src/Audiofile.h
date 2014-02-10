@@ -77,6 +77,7 @@ private:
 	float			 mPlaybackTime;
 
 public:
+	AudioStream();
 
 	uint32 Read(void* buffer, size_t count);
 	bool Open(const char* Filename);
@@ -86,6 +87,7 @@ public:
 	void Stop();
 
 	float GetStreamedTime();
+	float GetPlayedTime();
 	uint32 GetRate();
 
 	uint32 Update();

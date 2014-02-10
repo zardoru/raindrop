@@ -19,6 +19,9 @@ class PaStreamWrapper
 	PaStreamParameters outputParams;
 	PaStream* mStream;
 	AudioStream *Sound;
+
+	double deviceLatency;
+
 public:
 
 	PaStreamWrapper(const char* filename);
@@ -32,7 +35,10 @@ public:
 	void Restart();
 	void Seek(double Time);
 	double GetPlaybackTime();
+	double GetStreamTime();
 	bool IsStopped();
+
+	double GetStreamLatency();
 
 	AudioStream *GetStream();
 };
@@ -45,5 +51,7 @@ void MixerRemoveStream(SoundStream* Sound);
 void MixerAddSample(SoundSample *Sound);
 void MixerRemoveSample(SoundSample* Sound);
 void MixerUpdate();
+double MixerGetLatency();
+double MixerGetFactor();
 
 #endif // AUDIO_H_

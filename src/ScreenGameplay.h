@@ -41,7 +41,7 @@ protected: // shit the edit screen needs
 	// actors we need to access on edit
 	ActorBarline Barline;
 
-	PaStreamWrapper *Music;
+	AudioStream *Music;
 
 	std::vector <std::vector<GameObject> > NotesInMeasure;
 	void DrawVector(std::vector<GameObject>& Vec, float TimeDelta);

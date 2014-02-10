@@ -55,7 +55,7 @@ private:
 	float LaneWidth[MAX_CHANNELS];
 	float GearHeightFinal;
 
-	PaStreamWrapper *Music;
+	AudioStream *Music;
 
 	ScoreKeeper7K* score_keeper;
 	double SongTime, SongTimeReal;
