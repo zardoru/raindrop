@@ -40,6 +40,20 @@ enum PercentScoreType{
 
 const double SCORE_MAX = 100000000;
 
+enum LifeType{
+
+	LT_GROOVE = 1, // Beatmania default score
+	LT_SURVIVAL = 2, // Beatmania hard mode
+	LT_EXHARD = 3, // Beatmania EX hard mode
+	LT_DEATH = 4, // Sudden death mode
+
+	LT_EASY = 5, // Beatmania easy mode
+
+	LT_NORECOV = 6, // DDR no recov. mode
+	LT_BATTERY = 7, // DDR battery mode.
+
+};
+
 class ScoreKeeper7K {
 
 	public:
@@ -63,6 +77,9 @@ class ScoreKeeper7K {
 
 		int getScore(ScoreType score_type);
 		float getPercentScore(PercentScoreType score_type);
+		
+		int getLifebarUnits(LifeType lifebar_unit_type);
+		float getLifebarAmount(LifeType lifebar_amount_type);
 
 		void reset();
 
@@ -99,5 +116,27 @@ class ScoreKeeper7K {
 		double accuracy;
 
 		double accuracy_percent(float ms);
+
+		// lifebar data.
+		
+		double lifebar_groove;
+		double lifebar_groove_increment;
+
+		double lifebar_survival;
+		double lifebar_survival_increment;
+
+		double lifebar_exhard;
+		double lifebar_exhard_increment;
+
+		double lifebar_death;
+
+		double lifebar_easy;
+		double lifebar_easy_increment;
+		
+		// no-recovery modes.
+		
+		double lifebar_battery;
+		int lifebar_battery_lives;
+
 
 };

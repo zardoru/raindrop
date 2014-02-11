@@ -659,7 +659,8 @@ bool ScreenGameplay7K::Run(double Delta)
 	ss << "\nnotes hit: " << score_keeper->getScore(ST_NOTES_HIT);
 	ss << "\nEX score: " << score_keeper->getScore(ST_EX);
 	ss << "\nMult/Speed: " << std::setprecision(2) << std::setiosflags(std::ios::fixed) << SpeedMultiplier << "x / " << SpeedMultiplier*4 << "\n";
-	ss << "t / st " << SongTime << " / " << SongTimeReal << " / " << Music->GetPlayedTime();
+	ss << "\nLife: " << score_keeper->getLifebarAmount(LT_GROOVE) * 100.0 << "%";
+	// ss << "\nt / st " << std::setiosflags(std::ios::fixed) << SongTime << " / " << SongTimeReal << " / " << Music->GetPlayedTime() << std::resetiosflags(std::ios::fixed);
 
 #ifdef DEBUG
 	ss << "\nVert: " << CurrentVertical;
