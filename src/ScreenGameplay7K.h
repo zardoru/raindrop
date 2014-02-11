@@ -15,9 +15,12 @@ private:
 
 	/* Game */
 	bool Active;
+	int lastClosest[MAX_CHANNELS];
 	double CurrentVertical;
 	Mat4 PositionMatrix;
 	Mat4 NoteMatrix[MAX_CHANNELS];
+	Mat4 HoldHeadMatrix[MAX_CHANNELS];
+	Mat4 HoldTailMatrix[MAX_CHANNELS];
 	Song7K *MySong;
 	float SongOldTime;
 	float deltaPos;
@@ -56,6 +59,7 @@ private:
 	float GearHeightFinal;
 
 	AudioStream *Music;
+	SoundSample MissSnd;
 
 	ScoreKeeper7K* score_keeper;
 	double SongTime, SongTimeReal;
@@ -69,13 +73,14 @@ private:
 
 	void SetupScriptConstants();
 	void UpdateScriptVariables();
+	void UpdateScriptScoreVariables();
 
 	void RecalculateMatrix();
 	void RecalculateEffects();
 	void RunMeasures();
 
 	void HitNote (double TimeOff, uint32 Lane);
-	void MissNote (double TimeOff, uint32 Lane);
+	void MissNote (double TimeOff, uint32 Lane, bool auto_hold_miss);
 
 	void DrawMeasures();
 

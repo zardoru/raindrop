@@ -50,7 +50,7 @@ void NoteLoaderFTB::LoadObjectsFromFile(String filename, String prefix, Song7K *
 	Out->BPMType = Song7K::BT_MS; // MS using BPMs.
 	Difficulty->Channels = 7;
 	Difficulty->Offset = 0;
-	Difficulty->TotalNotes = Difficulty->TotalHolds = Difficulty->TotalObjects = 0;
+	Difficulty->TotalNotes = Difficulty->TotalHolds = Difficulty->TotalObjects = Difficulty->TotalScoringObjects = 0;
 
 	for (int i = 0; i < 7; i++)
 		Measure[i].Fraction = -1;
