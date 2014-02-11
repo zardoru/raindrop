@@ -59,6 +59,8 @@ ScreenSelectMusic::ScreenSelectMusic()
 	OptionUpscroll = false;
 
 	ListY = SONGLIST_BASEY;
+
+	diff_index = 0;
 }
 
 void ScreenSelectMusic::MainThreadInitialization()
@@ -249,17 +251,19 @@ bool ScreenSelectMusic::Run(double Delta)
 		
 		char infoStream[1024];
 
-		if (SongList7K.at(Cursor)->Difficulties.size())
+		if (diff_index < SongList7K.at(Cursor)->Difficulties.size())
 		{
-			int Min = SongList7K.at(Cursor)->Difficulties[0]->Duration / 60;
-			int Sec = (int)SongList7K.at(Cursor)->Difficulties[0]->Duration % 60;
+			int Min = SongList7K.at(Cursor)->Difficulties[diff_index]->Duration / 60;
+			int Sec = (int)SongList7K.at(Cursor)->Difficulties[diff_index]->Duration % 60;
 
 			sprintf(infoStream, "song author: %s\n"
 						  	    "difficulties: %d\n"
-					            "duration: %d:%02d\n",
+					            "duration: %d:%02d\n"
+								"difficulty: %s\n",
 								SongList7K.at(Cursor)->SongAuthor.c_str(),
 								SongList7K.at(Cursor)->Difficulties.size(),
-								Min, Sec
+								Min, Sec,
+								SongList7K.at(Cursor)->Difficulties[diff_index]->Name.c_str()
 								);
 
 			Font->DisplayText(infoStream, Vec2(ScreenWidth/6, 120));
@@ -301,6 +305,7 @@ void ScreenSelectMusic::UpdateCursor()
 	if (OldCursor != Cursor)
 	{
 		OldCursor = Cursor;
+		diff_index = 0;
 		ClickSnd->Play();
 	}
 
@@ -344,6 +349,22 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 			Cursor++;
 			UpdateCursor();
 			break;
+		case KT_Left:
+			diff_index--;
+			if (diff_index < 0) diff_index = 0;
+			break;
+		case KT_Right:
+			diff_index++;
+			if (SelectedMode == MODE_7K)
+			{
+				if (diff_index >= SongList7K.at(Cursor)->Difficulties.size())
+					diff_index = 0;
+			}else
+			{
+				if (diff_index >= SongList.at(Cursor)->Difficulties.size())
+					diff_index = 0;
+			}
+			break;
 		case KT_Select:
 			if (!isMouseInput || (WindowFrame.GetRelativeMPos().x > SONGLIST_BASEX && WindowFrame.GetRelativeMPos().y > ListY))
 			{
@@ -351,26 +372,29 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 
 				if (SelectedMode == MODE_DOTCUR && SongList.size())
 				{
-					if (/* difficulty index < */ SongList.at(Cursor)->Difficulties.size())
+					if (diff_index < SongList.at(Cursor)->Difficulties.size())
 					{
 						_gNext = new ScreenGameplay(this);
 						_LNext = new ScreenLoading(this, _gNext);
 
 
-						_gNext->Init(SongList.at(Cursor), 0);
+						_gNext->Init(SongList.at(Cursor), diff_index);
 
 						_LNext->Init();
 					}else
 						return;
 				}else if (SongList7K.size())
 				{
-					// TODO: finish 7k mode gameplay screen
-					_g7Next = new ScreenGameplay7K();
-					_LNext = new ScreenLoading(this, _g7Next);
+					if (diff_index < SongList7K.at(Cursor)->Difficulties.size())
+					{
+						_g7Next = new ScreenGameplay7K();
+						_LNext = new ScreenLoading(this, _g7Next);
 
-					_g7Next->Init(SongList7K.at(Cursor), 0, OptionUpscroll);
+						_g7Next->Init(SongList7K.at(Cursor), diff_index, OptionUpscroll);
 
-					_LNext->Init();
+						_LNext->Init();
+					}else
+						return;
 				}
 
 				if (_LNext)

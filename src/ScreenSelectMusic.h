@@ -26,6 +26,7 @@ class ScreenSelectMusic : public IScreen
 
 	ModeType SelectedMode;
 
+	int diff_index;
 public:
 	ScreenSelectMusic();
 	void LoadThreadInitialization();
