@@ -66,6 +66,7 @@ void ScreenGameplay7K::Cleanup()
 	}
 
 	delete Animations;
+	delete score_keeper;
 }
 
 void ScreenGameplay7K::Init(Song7K* S, int DifficultyIndex, bool UseUpscroll)
@@ -106,7 +107,8 @@ void ScreenGameplay7K::RecalculateEffects()
 
 void ScreenGameplay7K::HitNote (double TimeOff, uint32 Lane)
 {
-	
+	score_keeper->hitNote(TimeOff);
+
 	Animations->GetEnv()->SetGlobal("Combo", score_keeper->getScore(ST_COMBO));
 	Animations->GetEnv()->CallFunction("HitEvent", 2);
 	Animations->GetEnv()->PushArgument(TimeOff);
@@ -197,7 +199,6 @@ void ScreenGameplay7K::ReleaseLane(unsigned int Lane)
 				if (tD < score_keeper->getAccCutoff()) /* Released in time */
 				{
 					HitNote(tD, Lane);
-					score_keeper->hitNote(tD);
 					holds_hit += 1;
 
 					(*i).MeasureNotes.erase(m);
@@ -255,12 +256,11 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 				continue;
 			else
 			{
-				HitNote(tD, Lane);
-				score_keeper->hitNote(tD);
-				if (m->IsHold() && m->IsEnabled())
+				if (tD <= score_keeper->getAccMax())
 				{
 					HitNote(tD, Lane);
-					if (m->IsHold() && m->IsEnabled())
+
+					if (m->IsHold())
 					{
 						holds_hit += 1;
 						m->Hit();
@@ -270,6 +270,7 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 				else
 				{
 					MissNote(tD, Lane);
+					score_keeper->missNote(m->IsHold());
 
 					// missed feedback
 					MissSnd->Play();
@@ -279,6 +280,7 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 						m->Disable();
 					}
 				}
+				
 
 				/* remove note from judgement*/
 				if (!m->IsHold())
@@ -398,6 +400,7 @@ void ScreenGameplay7K::SetupScriptConstants()
 	L->SetGlobal("Upscroll", Upscroll);
 	L->SetGlobal("Channels", Channels);
 	L->SetGlobal("JudgementLineY", JudgementLinePos);
+	L->SetGlobal("AccuracyHitMS", score_keeper->getAccMax());
 }
 
 void ScreenGameplay7K::SetupGear()
@@ -640,9 +643,10 @@ bool ScreenGameplay7K::Run(double Delta)
 	UpdateScriptVariables();
 
 	Animations->UpdateTargets(Delta);
-	Animations->DrawUntilLayer(13);
 
 	Background.Render();
+
+	Animations->DrawUntilLayer(13);
 
 	DrawMeasures();
 

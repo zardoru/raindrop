@@ -38,6 +38,8 @@ enum PercentScoreType{
 
 };
 
+const double SCORE_MAX = 100000000;
+
 class ScoreKeeper7K {
 
 	public:
@@ -56,8 +58,9 @@ class ScoreKeeper7K {
 		void hitNote(int ms);
 		void missNote(bool auto_hold_miss);
 
-		int getAccCutoff();
-		
+		double getAccCutoff();
+		double getAccMax();
+
 		int getScore(ScoreType score_type);
 		float getPercentScore(PercentScoreType score_type);
 
@@ -66,8 +69,6 @@ class ScoreKeeper7K {
 	private:
 
 		// scoring parameters.
-
-		static const double SCORE_MAX = 100000000;
 		int ACC_MIN, ACC_MIN_SQ;
 		int ACC_MAX, ACC_MAX_SQ;
 		int ACC_CUTOFF;

@@ -28,10 +28,12 @@ ScoreKeeper7K::ScoreKeeper7K(){
 
 	total_sqdev = 0;
 	accuracy = 0;
-
 }
 
-double ScoreKeeper7K::accuracy_percent(float var){
+ScoreKeeper7K::~ScoreKeeper7K() { }
+
+double ScoreKeeper7K::accuracy_percent(float var)
+{
 	return float(ACC_MAX_SQ - var) / (ACC_MAX_SQ - ACC_MIN_SQ) * 100;
 }
 
@@ -64,7 +66,7 @@ void ScoreKeeper7K::hitNote(int ms){
 	++total_notes;
 	++notes_hit;
 
-	if(ms > ACC_MAX){
+	if(ms < ACC_MAX){
 		++combo;
 		if(combo > max_combo)
 			max_combo = combo;
@@ -93,8 +95,13 @@ void ScoreKeeper7K::missNote(bool auto_hold_miss){
 
 }
 
-int ScoreKeeper7K::getAccCutoff(){
+double ScoreKeeper7K::getAccCutoff(){
 	return ACC_CUTOFF;
+}
+
+double ScoreKeeper7K::getAccMax()
+{
+	return ACC_MAX;
 }
 
 /* actual score functions. */
