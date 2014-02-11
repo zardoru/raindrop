@@ -61,8 +61,9 @@ void ScreenGameplay7K::Cleanup()
 		Music->Stop();
 	}
 
-	MixerRemoveSample(&MissSnd);
+	MixerRemoveSample(MissSnd);
 
+	delete MissSnd;
 	delete Animations;
 	delete score_keeper;
 }
@@ -90,8 +91,9 @@ void ScreenGameplay7K::RecalculateMatrix()
 
 void ScreenGameplay7K::LoadThreadInitialization()
 {
-	if (MissSnd.Open((FileManager::GetSkinPrefix() + "miss.ogg").c_str()))
-		MixerAddSample(&MissSnd);
+	MissSnd = new SoundSample();
+	if (MissSnd->Open((FileManager::GetSkinPrefix() + "miss.ogg").c_str()))
+		MixerAddSample(MissSnd);
 
 	/* Can I just use a vector<char**> and use vector.data()? */
 	char* SkinFiles [] =
@@ -186,6 +188,7 @@ void ScreenGameplay7K::SetupScriptConstants()
 	L->SetGlobal("Channels", Channels);
 	L->SetGlobal("JudgementLineY", JudgementLinePos);
 	L->SetGlobal("AccuracyHitMS", score_keeper->getAccMax());
+	L->SetGlobal("SongDuration", CurrentDiff->Duration);
 }
 
 void ScreenGameplay7K::SetupGear()
@@ -371,7 +374,17 @@ void ScreenGameplay7K::UpdateScriptVariables()
 	L->SetGlobal("SpeedMultiplierUser", SpeedMultiplierUser);
 	L->SetGlobal("waveEffectEnabled", waveEffectEnabled);
 	L->SetGlobal("Active", Active);
+	L->SetGlobal("SongTime", SongTime);
 	L->SetGlobal("Beat", BeatAtTime(CurrentDiff->BPS, SongTime, CurrentDiff->Offset + TimeCompensation));
+
+	L->NewArray();
+
+	for (int i = 0; i < Channels; i++)
+	{
+		L->SetFieldI(i + 1, HeldKey[i]);
+	}
+
+	L->FinalizeArray("HeldKeys");
 }
 
 bool ScreenGameplay7K::Run(double Delta)

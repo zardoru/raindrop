@@ -79,9 +79,9 @@ void ScreenSelectMusic::MainThreadInitialization()
 	
 	/* Logo */
 	Logo.SetImage(ImageLoader::LoadSkin("logo.png"));
-	Logo.SetSize(Configuration::GetSkinConfigf("Size", "Logo"));
-	Logo.Centered = Configuration::GetSkinConfigf("Centered", "Logo") != 0;
-	Logo.SetPosition(Configuration::GetSkinConfigf("X", "Logo"), Configuration::GetSkinConfigf("Y", "Logo"));
+	Logo.SetSize(Configuration::GetSkinConfigf("Size", "Logo2"));
+	Logo.Centered = Configuration::GetSkinConfigf("Centered", "Logo2") != 0;
+	Logo.SetPosition(Configuration::GetSkinConfigf("X", "Logo2"), Configuration::GetSkinConfigf("Y", "Logo2"));
 	Logo.AffectedByLightning = true;
 
 	WindowFrame.SetLightMultiplier(1);
@@ -177,7 +177,7 @@ bool ScreenSelectMusic::Run(double Delta)
 
 	Vec2 mpos = WindowFrame.GetRelativeMPos();
 
-	if (mpos.x > ListY)
+	if (mpos.y > ListY && mpos.x > SONGLIST_BASEX)
 	{
 		float posy = mpos.y;
 		posy -= ListY;

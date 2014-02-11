@@ -59,7 +59,7 @@ private:
 	float GearHeightFinal;
 
 	AudioStream *Music;
-	SoundSample MissSnd;
+	SoundSample *MissSnd;
 
 	ScoreKeeper7K* score_keeper;
 	double SongTime, SongTimeReal;

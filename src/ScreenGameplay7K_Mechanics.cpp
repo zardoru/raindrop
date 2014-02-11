@@ -97,7 +97,7 @@ void ScreenGameplay7K::RunMeasures()
 					m = (*i).MeasureNotes.erase(m);
 
 					if (score_keeper->getScore(ST_COMBO) > 10)
-						MissSnd.Play();
+						MissSnd->Play();
 
 					if (m == (*i).MeasureNotes.end())
 						break;
@@ -109,7 +109,7 @@ void ScreenGameplay7K::RunMeasures()
 					MissNote((SongTime - m->GetStartTime()) * 1000, k, false);
 
 					if (score_keeper->getScore(ST_COMBO) > 10)
-						MissSnd.Play();
+						MissSnd->Play();
 					
 					/* remove note from judgement */
 					if (!m->IsHold())
@@ -156,7 +156,7 @@ void ScreenGameplay7K::ReleaseLane(unsigned int Lane)
 					MissNote(tD, Lane, false);
 
 					if (score_keeper->getScore(ST_COMBO) > 10)
-						MissSnd.Play();
+						MissSnd->Play();
 
 					m->Disable();
 					HeldKey[m->GetTrack()] = false;
@@ -210,7 +210,7 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 					MissNote(tD, Lane, m->IsHold());
 
 					// missed feedback
-					MissSnd.Play();
+					MissSnd->Play();
 
 					if (m->IsHold()){
 						m->Disable();

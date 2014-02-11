@@ -54,9 +54,8 @@ bool LuaManager::RunScript(std::string Filename)
 	{
 		std::string reason = lua_tostring(State, -1);
 
-#ifndef NDEBUG
 		printf("Lua error: %s\n", reason.c_str());
-#endif
+
 		// root->CONSOLE->LogFormat("Error [LuaManager]: Loading file %s\n", Filename.c_str());
 
 		/* if (errload)
@@ -314,9 +313,8 @@ bool LuaManager::RunFunction()
 	{
 		std::string reason = lua_tostring(State, -1);
 
-#ifndef NDEBUG
 		printf("lua call error: %s\n", reason.c_str());
-#endif
+
 		return false;
 	}
 
