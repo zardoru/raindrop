@@ -157,6 +157,8 @@ float ScoreKeeper7K::getLifebarAmount(LifeType lifebar_amount_type){
 	switch(lifebar_amount_type){
 		case LT_GROOVE:
 			return lifebar_groove;
+		case LT_SURVIVaL:
+			return lifebar_survival;
 		default:
 			return 0;
 	}

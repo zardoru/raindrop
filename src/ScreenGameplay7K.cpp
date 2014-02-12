@@ -126,6 +126,11 @@ void ScreenGameplay7K::MissNote (double TimeOff, uint32 Lane)
 	Animations->GetEnv()->PushArgument((int)Lane + 1);
 	Animations->GetEnv()->RunFunction();
 
+	// we might have failed the song
+	if(score_keeper->getLifebarAmount(LT_SURVIVAL) == 0){
+		Animations->GetEnv()->SetGlobal("SurvivalModeFailed", true);
+	}
+
 }
 
 void ScreenGameplay7K::RunMeasures()
@@ -144,8 +149,9 @@ void ScreenGameplay7K::RunMeasures()
 				if ((SongTime - m->GetTimeFinal()) * 1000 > score_keeper->getAccCutoff() && !m->WasNoteHit() && m->IsHold())
 				{
 					// remove hold notes that were never hit.
-					MissNote((SongTime - m->GetTimeFinal()) * 1000, k);
 					score_keeper->missNote(true);
+					MissNote((SongTime - m->GetTimeFinal()) * 1000, k);
+					
 					holds_missed += 1;
 					m = (*i).MeasureNotes.erase(m);
 
@@ -159,9 +165,9 @@ void ScreenGameplay7K::RunMeasures()
 				else if ((SongTime - m->GetStartTime()) * 1000 > score_keeper->getAccCutoff() && (!m->WasNoteHit() && m->IsEnabled()))
 				{
 					// remove notes that were never hit.
-					MissNote((SongTime - m->GetStartTime()) * 1000, k);
 					score_keeper->missNote(false);
-
+					MissNote((SongTime - m->GetStartTime()) * 1000, k);
+					
 					if (score_keeper->getScore(ST_COMBO) > 10)
 						MissSnd->Play();
 					
