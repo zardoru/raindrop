@@ -259,11 +259,11 @@ bool ScreenSelectMusic::Run(double Delta)
 			sprintf(infoStream, "song author: %s\n"
 						  	    "difficulties: %d\n"
 					            "duration: %d:%02d\n"
-								"difficulty: %s\n",
+								"difficulty: %s (%d keys)\n",
 								SongList7K.at(Cursor)->SongAuthor.c_str(),
 								SongList7K.at(Cursor)->Difficulties.size(),
 								Min, Sec,
-								SongList7K.at(Cursor)->Difficulties[diff_index]->Name.c_str()
+								SongList7K.at(Cursor)->Difficulties[diff_index]->Name.c_str(), SongList7K.at(Cursor)->Difficulties[diff_index]->Channels
 								);
 
 			Font->DisplayText(infoStream, Vec2(ScreenWidth/6, 120));

@@ -48,8 +48,17 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
 			StreamInfo.hostApiType = paWASAPI;
 			StreamInfo.size = sizeof(PaWasapiStreamInfo);
 			StreamInfo.version = 1;
-			StreamInfo.flags = paWinWasapiExclusive;
-			StreamInfo.threadPriority = eThreadPriorityProAudio;
+			if (!Configuration::GetConfigf("WasapiDontUseExclusiveMode"))
+			{
+				StreamInfo.threadPriority = eThreadPriorityProAudio;
+				StreamInfo.flags = paWinWasapiExclusive;
+			}
+			else
+			{
+				StreamInfo.threadPriority = eThreadPriorityGames;
+				StreamInfo.flags = 0; 
+			}
+	
 			StreamInfo.hostProcessorOutput = NULL;
 			StreamInfo.hostProcessorInput = NULL;
 		}else
