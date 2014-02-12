@@ -15,6 +15,7 @@
 float VolumeSFX = 0.4f;
 float VolumeMusic = 0.6f; 
 bool UseWasapi = false;
+bool UseThreadedDecoder = false;
 PaDeviceIndex DefaultWasapiDevice;
 
 /* Vorbis file stream */
@@ -47,8 +48,17 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
 			StreamInfo.hostApiType = paWASAPI;
 			StreamInfo.size = sizeof(PaWasapiStreamInfo);
 			StreamInfo.version = 1;
-			StreamInfo.flags = paWinWasapiExclusive;
-			StreamInfo.threadPriority = eThreadPriorityProAudio;
+			if (!Configuration::GetConfigf("WasapiDontUseExclusiveMode"))
+			{
+				StreamInfo.threadPriority = eThreadPriorityProAudio;
+				StreamInfo.flags = paWinWasapiExclusive;
+			}
+			else
+			{
+				StreamInfo.threadPriority = eThreadPriorityGames;
+				StreamInfo.flags = 0; 
+			}
+	
 			StreamInfo.hostProcessorOutput = NULL;
 			StreamInfo.hostProcessorInput = NULL;
 		}else
@@ -228,7 +238,12 @@ public:
 		for(std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); i++)
 		{
 			if ((*i) == Sample)
+			{
 				i = Samples.erase(i);
+				
+				if (i == Samples.end())
+					break;
+			}
 		}
 		mut2.unlock();
 	}
@@ -415,10 +430,11 @@ void InitAudio()
 	PaError Err = Pa_Initialize();
 
 	UseWasapi = (Configuration::GetConfigf("UseWasapi") != 0);
+	UseThreadedDecoder = (Configuration::GetConfigf("UseThreadedDecoder") != 0);
 
 	GetAudioInfo();
 
-	Mixer = new PaMixer(true);
+	Mixer = new PaMixer(UseThreadedDecoder);
 	assert (Err == 0 && Mixer);
 }
 
@@ -442,9 +458,15 @@ void MixerAddSample(SoundSample* Sample)
 	Mixer->AddSound(Sample);
 }
 
+void MixerRemoveSample(SoundSample* Sample)
+{
+	Mixer->RemoveSound(Sample);
+}
+
 void MixerUpdate()
 {
-	// Mixer->Run();
+	if (!UseThreadedDecoder)
+		Mixer->Run();
 }
 
 double MixerGetLatency()

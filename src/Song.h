@@ -145,6 +145,7 @@ class Song7K : public TSong < TrackNote >
 public:
 
 	/* For charting systems that use one declaration of timing for all difficulties only used at load time */
+	double Offset;
 	TimingData BPMData;
 	TimingData StopsData; 
 	bool UseSeparateTimingData;

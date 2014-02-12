@@ -249,6 +249,7 @@ Song7K* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)
 			str >> Difficulty->Offset;
 			Difficulty->Offset = -Difficulty->Offset;
 
+			Out->Offset = Difficulty->Offset;
 			Out->LeadInTime = Difficulty->Offset < 0? abs(Difficulty->Offset) + 3 : 0;
 		}
 
@@ -268,6 +269,7 @@ Song7K* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)
 		{
 			Difficulty->Timing = Out->BPMData;
 			Difficulty->StopsTiming = Out->StopsData;
+			Difficulty->Offset = Out->Offset;
 
 			LoadTracksSM(Out, Difficulty, line);
 			Out->Difficulties.push_back(Difficulty);

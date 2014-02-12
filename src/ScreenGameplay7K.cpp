@@ -19,10 +19,6 @@
 #include "ScreenGameplay7K.h"
 
 BitmapFont * GFont = NULL;
-SoundSample *MissSnd = NULL;
-int lastPressed = 0;
-int lastMsOff[MAX_CHANNELS];
-int lastClosest[MAX_CHANNELS];
 
 /* Time before actually starting everything. */
 #define WAITING_TIME 1.5
@@ -43,7 +39,7 @@ ScreenGameplay7K::ScreenGameplay7K()
 	SpeedMultiplierUser = 4;
 
 	CurrentVertical = 0;
-	SongTime = 0;
+	SongTime = SongTimeReal = 0;
 
 	AudioCompensation = (Configuration::GetConfigf("AudioCompensation") != 0);
 	TimeCompensation = 0;
@@ -65,6 +61,9 @@ void ScreenGameplay7K::Cleanup()
 		Music->Stop();
 	}
 
+	MixerRemoveSample(MissSnd);
+
+	delete MissSnd;
 	delete Animations;
 	delete score_keeper;
 }
@@ -84,222 +83,6 @@ void ScreenGameplay7K::Init(Song7K* S, int DifficultyIndex, bool UseUpscroll)
 	score_keeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
 }
 
-void ScreenGameplay7K::RecalculateEffects()
-{
-	float SongTime = 0;
-
-	if (Music)
-		SongTime = Music->GetPlayedTime();
-
-	if (waveEffectEnabled)
-	{
-		waveEffect = sin(SongTime) * 0.5 * SpeedMultiplierUser;
-		MultiplierChanged = true;
-	}
-
-	if (Upscroll)
-		SpeedMultiplier = - (SpeedMultiplierUser + waveEffect);
-	else
-		SpeedMultiplier = SpeedMultiplierUser + waveEffect;
-}
-
-#define CLAMP(var, min, max) (var) < (min) ? (min) : (var) > (max) ? (max) : (var)
-
-void ScreenGameplay7K::HitNote (double TimeOff, uint32 Lane)
-{
-	score_keeper->hitNote(TimeOff);
-
-	Animations->GetEnv()->SetGlobal("Combo", score_keeper->getScore(ST_COMBO));
-	Animations->GetEnv()->CallFunction("HitEvent", 2);
-	Animations->GetEnv()->PushArgument(TimeOff);
-	Animations->GetEnv()->PushArgument((int)Lane + 1);
-	Animations->GetEnv()->RunFunction();
-
-}
-
-void ScreenGameplay7K::MissNote (double TimeOff, uint32 Lane)
-{
-
-	Animations->GetEnv()->SetGlobal("Combo", score_keeper->getScore(ST_COMBO));
-	Animations->GetEnv()->CallFunction("MissEvent", 2);
-	Animations->GetEnv()->PushArgument(TimeOff);
-	Animations->GetEnv()->PushArgument((int)Lane + 1);
-	Animations->GetEnv()->RunFunction();
-
-	// we might have failed the song
-	if(score_keeper->getLifebarAmount(LT_SURVIVAL) == 0){
-		Animations->GetEnv()->SetGlobal("SurvivalModeFailed", true);
-	}
-
-}
-
-void ScreenGameplay7K::RunMeasures()
-{
-	typedef std::vector<SongInternal::Measure<TrackNote> > NoteVector;
-
-	for (unsigned int k = 0; k < Channels; k++)
-	{
-		NoteVector &Measures = NotesByMeasure[k];
-
-		for (NoteVector::iterator i = Measures.begin(); i != Measures.end(); i++)
-		{
-			for (std::vector<TrackNote>::iterator m = (*i).MeasureNotes.begin(); m != (*i).MeasureNotes.end(); m++)
-			{
-				/* We have to check for all gameplay conditions for this note. */
-				if ((SongTime - m->GetTimeFinal()) * 1000 > score_keeper->getAccCutoff() && !m->WasNoteHit() && m->IsHold())
-				{
-					// remove hold notes that were never hit.
-					score_keeper->missNote(true);
-					MissNote((SongTime - m->GetTimeFinal()) * 1000, k);
-					
-					holds_missed += 1;
-					m = (*i).MeasureNotes.erase(m);
-
-					if (score_keeper->getScore(ST_COMBO) > 10)
-						MissSnd->Play();
-
-					if (m == (*i).MeasureNotes.end())
-						break;
-				}
-
-				else if ((SongTime - m->GetStartTime()) * 1000 > score_keeper->getAccCutoff() && (!m->WasNoteHit() && m->IsEnabled()))
-				{
-					// remove notes that were never hit.
-					score_keeper->missNote(false);
-					MissNote((SongTime - m->GetStartTime()) * 1000, k);
-					
-					if (score_keeper->getScore(ST_COMBO) > 10)
-						MissSnd->Play();
-					
-					/* remove note from judgement */
-					if (!m->IsHold())
-						m = (*i).MeasureNotes.erase(m);
-					else{
-						holds_missed += 1;
-						m->Disable();
-					}
-
-					if (m == (*i).MeasureNotes.end())
-						break;
-				}
-
-			}
-		}
-	}
-
-}
-
-void ScreenGameplay7K::ReleaseLane(unsigned int Lane)
-{
-	typedef std::vector<SongInternal::Measure<TrackNote> > NoteVector;
-	NoteVector &Measures = NotesByMeasure[Lane];
-
-	for (NoteVector::iterator i = Measures.begin(); i != Measures.end(); i++)
-	{
-		for (std::vector<TrackNote>::iterator m = (*i).MeasureNotes.begin(); m != (*i).MeasureNotes.end(); m++)
-		{
-			if (m->WasNoteHit() && m->IsEnabled())
-			{
-				double tD = abs (m->GetTimeFinal() - SongTime) * 1000;
-
-				if (tD < score_keeper->getAccCutoff()) /* Released in time */
-				{
-					HitNote(tD, Lane);
-					holds_hit += 1;
-
-					(*i).MeasureNotes.erase(m);
-
-					lastClosest[Lane] = std::min(tD, (double)lastClosest[Lane]);
-
-					return;
-				}else /* Released off time */
-				{
-					MissNote(tD, Lane);
-					score_keeper->missNote(false);
-					holds_missed += 1;
-
-					if (score_keeper->getScore(ST_COMBO) > 10)
-						MissSnd->Play();
-
-					m->Disable();
-
-					lastClosest[Lane] = std::min(tD, (double)lastClosest[Lane]);
-
-					return;
-				}
-			}
-		}
-	}
-
-	HeldKey[Lane] = NULL;
-}
-
-void ScreenGameplay7K::JudgeLane(unsigned int Lane)
-{
-	typedef std::vector<SongInternal::Measure<TrackNote> > NoteVector;
-	NoteVector &Measures = NotesByMeasure[Lane];
-
-	lastPressed = Lane;
-
-	if (!Music)
-		return;
-
-	lastClosest[Lane] = 9999;
-
-	for (NoteVector::iterator i = Measures.begin(); i != Measures.end(); i++)
-	{
-		for (std::vector<TrackNote>::iterator m = (*i).MeasureNotes.begin(); m != (*i).MeasureNotes.end(); m++)
-		{
-			if (!m->IsEnabled())
-				continue;
-
-			double tD = abs (m->GetStartTime() - SongTime) * 1000;
-			// std::cout << "\n time: " << m->GetStartTime() << " st: " << SongTime << " td: " << tD;
-
-			lastClosest[Lane] = std::min(tD, (double)lastClosest[Lane]);
-
-			if (tD > score_keeper->getAccCutoff())
-				continue;
-			else
-			{
-				if (tD <= score_keeper->getAccMax())
-				{
-					HitNote(tD, Lane);
-
-					if (m->IsHold())
-					{
-						holds_hit += 1;
-						m->Hit();
-						HeldKey[m->GetTrack()] = true;
-					}
-				}
-				else
-				{
-					MissNote(tD, Lane);
-					score_keeper->missNote(m->IsHold());
-
-					// missed feedback
-					MissSnd->Play();
-
-					if (m->IsHold()){
-						holds_missed += 1;
-						m->Disable();
-					}
-				}
-				
-
-				/* remove note from judgement*/
-				if (!m->IsHold())
-				{
-					(*i).MeasureNotes.erase(m);
-				}
-
-				return; // we judged a note in this lane, so we're done.
-			}
-		}
-	}
-}
-
 void ScreenGameplay7K::RecalculateMatrix()
 {
 	PositionMatrix = glm::translate(Mat4(), glm::vec3(0, BasePos + CurrentVertical * SpeedMultiplier + deltaPos, 0));
@@ -307,12 +90,9 @@ void ScreenGameplay7K::RecalculateMatrix()
 
 void ScreenGameplay7K::LoadThreadInitialization()
 {
-	if (!MissSnd)
-	{
-		MissSnd = new SoundSample();
-		MissSnd->Open((FileManager::GetSkinPrefix() + "miss.ogg").c_str());
+	MissSnd = new SoundSample();
+	if (MissSnd->Open((FileManager::GetSkinPrefix() + "miss.ogg").c_str()))
 		MixerAddSample(MissSnd);
-	}
 
 	/* Can I just use a vector<char**> and use vector.data()? */
 	char* SkinFiles [] =
@@ -407,6 +187,7 @@ void ScreenGameplay7K::SetupScriptConstants()
 	L->SetGlobal("Channels", Channels);
 	L->SetGlobal("JudgementLineY", JudgementLinePos);
 	L->SetGlobal("AccuracyHitMS", score_keeper->getAccMax());
+	L->SetGlobal("SongDuration", CurrentDiff->Duration);
 }
 
 void ScreenGameplay7K::SetupGear()
@@ -588,15 +369,21 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 void ScreenGameplay7K::UpdateScriptVariables()
 {
 	LuaManager *L = Animations->GetEnv();
-	L->SetGlobal("Combo", score_keeper->getScore(ST_COMBO));
-	L->SetGlobal("MaxCombo", score_keeper->getScore(ST_MAX_COMBO));
 	L->SetGlobal("SpeedMultiplier", SpeedMultiplier);
 	L->SetGlobal("SpeedMultiplierUser", SpeedMultiplierUser);
 	L->SetGlobal("waveEffectEnabled", waveEffectEnabled);
-	L->SetGlobal("Accuracy", score_keeper->getPercentScore(PST_ACC));
-	L->SetGlobal("EXScore", score_keeper->getPercentScore(PST_EX));
 	L->SetGlobal("Active", Active);
+	L->SetGlobal("SongTime", SongTime);
 	L->SetGlobal("Beat", BeatAtTime(CurrentDiff->BPS, SongTime, CurrentDiff->Offset + TimeCompensation));
+
+	L->NewArray();
+
+	for (int i = 0; i < Channels; i++)
+	{
+		L->SetFieldI(i + 1, HeldKey[i]);
+	}
+
+	L->FinalizeArray("HeldKeys");
 }
 
 bool ScreenGameplay7K::Run(double Delta)
