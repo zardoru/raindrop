@@ -11,13 +11,14 @@
 AudioDataSource* SourceFromExt(String Filename)
 {
 	AudioDataSource *Ret;
+	String Ext = Utility::GetExtension(Filename);
 
-	if (Utility::GetExtension(Filename) == "wav")
+	if (Ext == "wav")
 		Ret = new AudioSourceWAV();
-	else if (Utility::GetExtension(Filename) == "ogg")
+	else if (Ext == "ogg")
 		Ret = new AudioSourceOGG();
 #ifdef MP3_ENABLED
-	else if (Utility::GetExtension(Filename) == "mp3")
+	else if (Ext == "mp3")
 		Ret = new AudioSourceMP3();
 #endif
 

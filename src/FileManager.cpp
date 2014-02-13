@@ -3,6 +3,7 @@
 #include "FileManager.h"
 #include "Audio.h"
 #include "Directory.h"
+#include "Configuration.h"
 
 /* Note Loaders */
 #include "NoteLoader.h"
@@ -39,7 +40,7 @@ void loadSong( Directory songPath, std::vector<SongDC*> &VecOut )
 	}
 
 	// If we didn't find any chart, add this song to the list as edit-only.
-	if (!FoundDCF)
+	if (!FoundDCF && (Configuration::GetConfigf("OggListing") != 0))
 	{
 		SongDC *NewS = NULL;
 		String PotentialBG, PotentialBGRelative;
@@ -80,7 +81,6 @@ void loadSong( Directory songPath, std::vector<SongDC*> &VecOut )
 			NewS->BackgroundRelativeDir = PotentialBGRelative;
 		}
 	}
-
 }
 
 void loadSong7K( Directory songPath, std::vector<Song7K*> &VecOut )
@@ -106,13 +106,15 @@ void loadSong7K( Directory songPath, std::vector<Song7K*> &VecOut )
 	Song7K *New = new Song7K();
 	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{
-		if (Utility::GetExtension(*i) == "fmd") // Ftb MetaData
+		String Ext = Utility::GetExtension(*i);
+		if (Ext == "fmd") // Ftb MetaData
 		{
 			NoteLoaderFTB::LoadMetadata(songPath.path() + "/" + *i, songPath.path(), New);
-		}else if (Utility::GetExtension(*i) == "ftb")
+		}else if (Ext == "ftb")
 		{
 			NoteLoaderFTB::LoadObjectsFromFile(songPath.path() + "/" + *i, songPath.path(), New);
-		}
+		}else if (Ext == "osu")
+			NoteLoaderOM::LoadObjectsFromFile(songPath.path() + "/" + *i, songPath.path(), New);
 	}
 
 	if (New->Difficulties.size())

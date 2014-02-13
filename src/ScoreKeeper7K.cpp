@@ -149,7 +149,7 @@ float ScoreKeeper7K::getPercentScore(PercentScoreType percent_score_type){
 }
 
 int ScoreKeeper7K::getLifebarUnits(LifeType lifebar_unit_type){
-	
+		return 0;
 }
 
 float ScoreKeeper7K::getLifebarAmount(LifeType lifebar_amount_type){

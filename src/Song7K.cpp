@@ -50,7 +50,7 @@ void Song7K::ProcessBPS(SongInternal::TDifficulty<TrackNote>* Diff, double Drift
 		that is not repeating the same thing using different values.
 	*/
 
-	if (Diff->Offset > 0 || Drift) /* We have to set up a speed during this time, otherwise it'll be 0. */
+	if (Diff->Offset > 0 || Drift || BPMType == BT_Beatspace) /* We have to set up a speed during this time, otherwise it'll be 0. */
 	{
 		SongInternal::TimingSegment Seg;
 
@@ -58,9 +58,9 @@ void Song7K::ProcessBPS(SongInternal::TDifficulty<TrackNote>* Diff, double Drift
 
 		if (BPMType != BT_Beatspace)
 		{
-			Seg.Value = bps(Diff->Timing[0].Value);
+			Seg.Value = bps (Diff->Timing[0].Value);
 		}else
-			Seg.Value = Diff->Timing[0].Value / 1000.0;
+			Seg.Value = bps ( 60000.0 / Diff->Timing[0].Value );
 
 		Diff->BPS.push_back(Seg);
 	}
@@ -84,7 +84,7 @@ void Song7K::ProcessBPS(SongInternal::TDifficulty<TrackNote>* Diff, double Drift
 			Seg.Time = Time->Time + Drift;
 		}else if ( BPMType == BT_Beatspace ) // Time in MS, and not using bpm, but ms per beat.
 		{
-			FTime = Time->Value / 1000.0;
+			FTime = bps (60000.0 / Time->Value);
 			Seg.Time = Time->Time + Drift;
 		}
 
