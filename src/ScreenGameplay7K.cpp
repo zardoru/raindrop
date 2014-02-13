@@ -376,6 +376,8 @@ void ScreenGameplay7K::UpdateScriptVariables()
 	L->SetGlobal("SongTime", SongTime);
 	L->SetGlobal("Beat", BeatAtTime(CurrentDiff->BPS, SongTime, CurrentDiff->Offset + TimeCompensation));
 
+	L->SetGlobal("Lifebar", score_keeper->getLifebarAmount(LT_GROOVE));
+
 	L->NewArray();
 
 	for (int i = 0; i < Channels; i++)
