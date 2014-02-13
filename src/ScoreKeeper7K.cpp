@@ -4,7 +4,7 @@
 #define max(a, b) (a) > (b) ? (a) : (b)
 #define min(a, b) (a) < (b) ? (a) : (b)
 
-ScoreKeeper7K::~ScoreKeeper7K(){ ; }
+ScoreKeeper7K::~ScoreKeeper7K(){  }
 
 double ScoreKeeper7K::accuracy_percent(float var){
 	return float(ACC_MAX_SQ - var) / (ACC_MAX_SQ - ACC_MIN_SQ) * 100;

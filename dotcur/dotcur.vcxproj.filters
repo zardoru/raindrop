@@ -204,6 +204,9 @@
     <ClCompile Include="..\src\ScreenGameplay7K_Mechanics.cpp">
       <Filter>Source Files\Mode7K\Gameplay</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\ScoreKeeper7K_init.cpp">
+      <Filter>Source Files\Mode7K\Gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\GraphObject2D.h">

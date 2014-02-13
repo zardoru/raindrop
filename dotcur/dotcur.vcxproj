@@ -222,6 +222,7 @@
     <ClCompile Include="..\src\Renderer7K.cpp" />
     <ClCompile Include="..\src\Rendering.cpp" />
     <ClCompile Include="..\src\ScoreKeeper7K.cpp" />
+    <ClCompile Include="..\src\ScoreKeeper7K_init.cpp" />
     <ClCompile Include="..\src\Screen.cpp" />
     <ClCompile Include="..\src\ScreenEdit.cpp" />
     <ClCompile Include="..\src\ScreenEvaluation.cpp" />
