@@ -68,6 +68,9 @@ void ReadDifficulty (String line, Song7K *Out, SongDiff Difficulty)
 
 		for (int i = 0; i < Difficulty->Channels; i++) // Push a single measure
 			Difficulty->Measures[i].push_back(SongInternal::Measure<TrackNote>());
+	}else if (Command == "SliderMultiplier")
+	{
+		Out->SliderVelocity = atof(Content.c_str()) * 100;
 	}
 }
 
@@ -99,7 +102,15 @@ void ReadTiming (String line, Song7K *Out, SongDiff Difficulty)
 
 	if (Spl[6] == "1") // Non-inherited section
 		Difficulty->Timing.push_back(Time);
-	// An inherited section would be added to a velocity changes vector which would later alter speeds.
+	else
+	{
+		// An inherited section would be added to a velocity changes vector which would later alter speeds.
+		float OldValue = Time.Value;
+
+		Time.Value = -100 / OldValue;
+
+		Difficulty->SpeedChanges.push_back(Time);
+	}
 }
 
 int GetInterval(float Position, int Channels)
@@ -134,20 +145,35 @@ void ReadObjects (String line, Song7K *Out, SongDiff Difficulty)
 
 	SplitResult Spl2;
 	boost::split(Spl2, Spl[5], boost::is_any_of(":"));
+	float startTime = atof(Spl[2].c_str()) / 1000.0;
 
 	if (Spl[3] == "128")
 	{
 		float endTime = atof(Spl2[0].c_str()) / 1000.0;
 
-		Note.AssignTime( atof(Spl[2].c_str()) / 1000.0, endTime );
+		Note.AssignTime( startTime, endTime );
 
 		Difficulty->TotalScoringObjects += 2;
 		Difficulty->TotalHolds++;
-	}else
+	}else if (Spl[3] == "1")
 	{
-		Note.AssignTime( atof(Spl[2].c_str()) / 1000.0 );
+		Note.AssignTime( startTime );
 		Difficulty->TotalNotes++;
 		Difficulty->TotalScoringObjects++;
+	}else if (Spl[3] == "2")
+	{
+		// 6=repeats 7=length
+		float sliderRepeats = atof(Spl[6].c_str());
+		float sliderLength = atof(Spl[7].c_str());
+		float finalSize = sliderLength * sliderRepeats * (Difficulty->SpeedChanges.size() ? BpmAtBeat(Difficulty->SpeedChanges, startTime) : 1);
+		float beatDuration = (finalSize / Out->SliderVelocity); 
+		float bpm = (60000.0 / BpmAtBeat(Difficulty->Timing, startTime));
+		float finalLength = beatDuration * spb(bpm);
+
+		Note.AssignTime( startTime, finalLength + startTime );
+
+		Difficulty->TotalScoringObjects += 2;
+		Difficulty->TotalHolds++;
 	}
 
 	Difficulty->TotalObjects++;

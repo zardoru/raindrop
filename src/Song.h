@@ -72,6 +72,9 @@ namespace SongInternal
 		// For in-game effects.
 		TimingData BPS;
 
+		// For speed changes, as obvious as it sounds.
+		TimingData SpeedChanges;
+
 		// Vertical speeds. Same role as BarlineRatios.
 		TimingData VerticalSpeeds;
 
@@ -140,9 +143,13 @@ class Song7K : public TSong < TrackNote >
 {
 	bool Processed;
 	double PreviousDrift;
+
 	void ProcessBPS(SongInternal::TDifficulty<TrackNote>* Diff, double Drift);
 	void ProcessVSpeeds(SongInternal::TDifficulty<TrackNote>* Diff);
 public:
+
+	/* For osu!mania chart loading */
+	double SliderVelocity;
 
 	/* For charting systems that use one declaration of timing for all difficulties only used at load time */
 	double Offset;
