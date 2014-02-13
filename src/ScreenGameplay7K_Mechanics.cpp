@@ -172,12 +172,13 @@ void ScreenGameplay7K::ReleaseLane(unsigned int Lane)
 void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 {
 	typedef std::vector<SongInternal::Measure<TrackNote> > NoteVector;
+	float MsDisplayMargin = (Configuration::GetSkinConfigf("HitErrorDisplayLimiter"));
 	NoteVector &Measures = NotesByMeasure[Lane];
 
 	if (!Music)
 		return;
 
-	lastClosest[Lane] = 9999;
+	lastClosest[Lane] = MsDisplayMargin;
 
 	for (NoteVector::iterator i = Measures.begin(); i != Measures.end(); i++)
 	{
@@ -190,6 +191,11 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 			// std::cout << "\n time: " << m->GetStartTime() << " st: " << SongTime << " td: " << tD;
 
 			lastClosest[Lane] = std::min(tD, (double)lastClosest[Lane]);
+
+			if (lastClosest[Lane] == MsDisplayMargin)
+			{
+				lastClosest[Lane] = 0;
+			}
 
 			if (tD > score_keeper->getAccCutoff())
 				continue;

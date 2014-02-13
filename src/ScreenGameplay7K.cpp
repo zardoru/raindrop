@@ -193,6 +193,7 @@ void ScreenGameplay7K::SetupScriptConstants()
 	L->SetGlobal("JudgementLineY", JudgementLinePos);
 	L->SetGlobal("AccuracyHitMS", score_keeper->getAccMax());
 	L->SetGlobal("SongDuration", CurrentDiff->Duration);
+	L->SetGlobal("SongDurationBeats", BeatAtTime(CurrentDiff->BPS, CurrentDiff->Duration, CurrentDiff->Offset + TimeCompensation));
 }
 
 void ScreenGameplay7K::SetupGear()
@@ -289,6 +290,14 @@ void ScreenGameplay7K::MainThreadInitialization()
 
 	SetupScriptConstants();
 	Animations->Initialize( FileManager::GetSkinPrefix() + "screengameplay7k.lua" );
+
+	double DesiredDefaultSpeed = Configuration::GetSkinConfigf("DefaultSpeedUnits");
+	double DesiredMultiplier =  DesiredDefaultSpeed / VSpeeds[0].Value;
+
+	if (DesiredDefaultSpeed > 0)
+	{
+		SpeedMultiplierUser = DesiredMultiplier;
+	}
 
 	Running = true;
 }
@@ -393,6 +402,19 @@ void ScreenGameplay7K::UpdateScriptVariables()
 	L->FinalizeArray("HeldKeys");
 }
 
+int DigitCount (float n)
+{
+	int digits = 0;
+
+	while (n >= 1)
+	{
+		n /= 10;
+		digits++;
+	}
+
+	return digits;
+}
+
 bool ScreenGameplay7K::Run(double Delta)
 {
 	float SongDelta;
@@ -455,11 +477,15 @@ bool ScreenGameplay7K::Run(double Delta)
 
 	std::stringstream ss;
 
-	ss << "\nscore: " << score_keeper->getScore(ST_SCORE);
-	ss << "\nnotes hit: " << score_keeper->getScore(ST_NOTES_HIT);
-	ss << "\nEX score: " << score_keeper->getScore(ST_EX);
-	ss << "\nMult/Speed: " << std::setprecision(2) << std::setiosflags(std::ios::fixed) << SpeedMultiplier << "x / " << SpeedMultiplier*4 << "\n";
+	ss << "score: " << score_keeper->getScore(ST_SCORE);
+	ss << "\naccuracy: " << score_keeper->getPercentScore(PST_ACC);
+	ss << "\nEX score%: " << score_keeper->getPercentScore(PST_EX);
+	ss << "\nMult/Speed: " << std::setprecision(2) << std::setiosflags(std::ios::fixed) << SpeedMultiplier << "x / " << SpeedMultiplier*4;
 	ss << "\nLife: " << score_keeper->getLifebarAmount(LT_GROOVE) * 100.0 << "%";
+	if (SongTime > 0)
+		ss << "\nScrolling Speed: " << BpmAtBeat(VSpeeds, SongTime) * SpeedMultiplier;
+	else
+		ss << "\nScrolling Speed: " << BpmAtBeat(VSpeeds, 0) * SpeedMultiplier;
 	// ss << "\nt / st " << std::setiosflags(std::ios::fixed) << SongTime << " / " << SongTimeReal << " / " << Music->GetPlayedTime() << std::resetiosflags(std::ios::fixed);
 
 #ifdef DEBUG
@@ -483,7 +509,7 @@ bool ScreenGameplay7K::Run(double Delta)
 	{
 		std::stringstream ss;
 		ss << lastClosest[i];
-		GFont->DisplayText(ss.str().c_str(), Keys[i].GetPosition());
+		GFont->DisplayText(ss.str().c_str(), Keys[i].GetPosition() - Vec2(DigitCount(lastClosest[i]) * 3 / 2, 7));
 	}
 
 	Animations->DrawFromLayer(14);
