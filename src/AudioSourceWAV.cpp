@@ -57,6 +57,8 @@ AudioSourceWAV::AudioSourceWAV()
 
 AudioSourceWAV::~AudioSourceWAV()
 {
+	if (mWavFile)
+		fclose(mWavFile);
 }
 
 bool AudioSourceWAV::Open(const char* Filename)
