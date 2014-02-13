@@ -240,16 +240,20 @@ double LuaManager::GetFieldD(std::string Key, double Default)
 {
 	double R = Default;
 
-	lua_pushstring(State, Key.c_str());
-	lua_gettable(State, -2);
-
-	if (lua_isnumber(State, -1))
+	if (lua_istable(State, -1))
 	{
-		R = lua_tonumber(State, -1);
-	}// else Error
+		lua_pushstring(State, Key.c_str());
+		lua_gettable(State, -2);
 
-	Pop();
-	return R;
+		if (lua_isnumber(State, -1))
+		{
+			R = lua_tonumber(State, -1);
+		}// else Error
+
+		Pop();
+		return R;
+	}else
+		return R;
 }
 
 std::string LuaManager::GetFieldS(std::string Key, std::string Default)
