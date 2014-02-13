@@ -96,9 +96,12 @@ bool AudioSample::Open(const char* Filename)
 		mRate = Src->GetRate();
 		mCounter = 0;
 		mIsValid = true;
+
+		delete Src;
 		return true;
 	}
 
+	delete Src;
 	return false;
 }
 
@@ -133,6 +136,13 @@ AudioStream::AudioStream()
 {
 	mIsPlaying = false;
 	mIsLooping = false;
+	mSource = NULL;
+}
+
+AudioStream::~AudioStream()
+{
+	if (mSource)
+		delete mSource;
 }
 
 uint32 AudioStream::Read(void* buffer, size_t count)

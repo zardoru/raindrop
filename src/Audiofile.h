@@ -78,6 +78,7 @@ private:
 
 public:
 	AudioStream();
+	~AudioStream();
 
 	uint32 Read(void* buffer, size_t count);
 	bool Open(const char* Filename);
