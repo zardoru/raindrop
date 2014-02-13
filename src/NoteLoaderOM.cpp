@@ -244,7 +244,8 @@ void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song7K *O
 		}else if (Line == "[HitObjects]")
 		{
 			ReadingMode = RHitobjects;
-		}
+		}else if (Line[0] == '[')
+			ReadingMode = RNotKnown;
 
 		if (ReadingMode != ReadingModeOld || ReadingMode == RNotKnown) // Skip this line since it changed modes, or it's not a valid section yet
 		{

@@ -64,6 +64,8 @@ private:
 	ScoreKeeper7K* score_keeper;
 	double SongTime, SongTimeReal;
 
+
+	double ErrorTolerance;
 	/* 
 		Optimizations will come in later. 
 		See Renderer7K.cpp.	

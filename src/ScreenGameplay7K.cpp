@@ -178,6 +178,11 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	RecalculateMatrix();
 	MultiplierChanged = true;
+
+	ErrorTolerance = Configuration::GetConfigf("ErrorTolerance");
+
+	if (ErrorTolerance <= 0)
+		ErrorTolerance = 5; // ms
 }
 
 void ScreenGameplay7K::SetupScriptConstants()
@@ -417,7 +422,7 @@ bool ScreenGameplay7K::Run(double Delta)
 			SongDelta = Music->GetStreamedTime() - SongOldTime;
 			SongTimeReal += SongDelta;
 
-			if (SongDelta > 0.00001 && abs(SongTime - SongTimeReal) > 0.005) // Significant delta with a 5 ms difference? We're pretty off!
+			if (SongDelta > 0.00001 && abs(SongTime - SongTimeReal) * 1000 > ErrorTolerance) // Significant delta with a x ms difference? We're pretty off..
 				SongTime = SongTimeReal;
 
 			CurrentVertical = VerticalAtTime(VSpeeds, SongTime);
