@@ -15,6 +15,7 @@ AudioSourceMP3::AudioSourceMP3()
 	}
 
 	mHandle = mpg123_new(NULL, &err);
+	mpg123_format_none(mHandle);
 	mIsValid = false;
 }
 
@@ -26,15 +27,18 @@ AudioSourceMP3::~AudioSourceMP3()
 
 bool AudioSourceMP3::Open(const char* Filename)
 {
+	mpg123_param(mHandle, MPG123_FORCE_RATE, 44100, 1);
 	if (mpg123_open(mHandle, Filename) == MPG123_OK)
 	{
 		long rate;
+
+		mpg123_format_all(mHandle);
+		int s = mpg123_format(mHandle, 44100, MPG123_STEREO, MPG123_ENC_SIGNED_16);
+
 		mpg123_getformat(mHandle, &rate, &mChannels, &mEncoding);
 
 		mRate = rate;
-
-		mpg123_format_none(mHandle);
-		mpg123_format(mHandle, mRate, mChannels, mEncoding);
+		// mpg123_format_none(mHandle);
 
 		size_t pos = mpg123_tell(mHandle);
 		size_t start = mpg123_seek(mHandle, 0, SEEK_SET);
