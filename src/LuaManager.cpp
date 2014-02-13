@@ -32,8 +32,8 @@ LuaManager::LuaManager()
 
 LuaManager::~LuaManager()
 {
-	if (State)
-		lua_close(State);
+	//if (State)
+	//	lua_close(State);
 }
 
 void LuaManager::GetGlobal(std::string VarName)
@@ -111,7 +111,7 @@ int LuaManager::GetGlobalI(std::string VariableName, int Default)
 		rval = lua_tonumber(State, -1);
 	}else
 	{ 
-		Pop();
+		// Pop();
 		// throw LuaTypeException(VariableName, "int");
 	}
 
@@ -130,7 +130,7 @@ std::string LuaManager::GetGlobalS(std::string VariableName, std::string Default
 		rval = lua_tostring(State, -1);
 	}else
 	{
-		Pop();
+		// Pop();
 		// throw LuaTypeException(VariableName, "string");
 	}
 
@@ -147,7 +147,7 @@ double LuaManager::GetGlobalD(std::string VariableName, double Default)
 		rval = lua_tonumber(State, -1);
 	}else
 	{ 
-		Pop();
+		// Pop();
 		// throw LuaTypeException(VariableName, "double");
 	}
 

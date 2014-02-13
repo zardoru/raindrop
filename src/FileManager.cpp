@@ -147,25 +147,44 @@ std::fstream& FileManager::OpenFile(String Directory)
 
 void FileManager::GetSongList(std::vector<SongDC*> &OutVec)
 {
-	Directory Dir (SongsPrefix);
-	std::vector <String> Listing;
-	Dir.ListDirectory(Listing, Directory::FS_DIR);
-	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
-	{ 
-		loadSong(Dir.path() + *i, OutVec);
-		std::cout << *i << std::endl;
+	std::vector <String> SongDirectories;
+	SongDirectories.push_back(SongsPrefix);
+
+	Configuration::GetConfigListS ("SongDirectories", SongDirectories);
+
+	for (std::vector<String>::iterator i = SongDirectories.begin(); i != SongDirectories.end(); i++)
+	{
+		Directory Dir (*i + "/");
+		std::vector <String> Listing;
+
+		Dir.ListDirectory(Listing, Directory::FS_DIR);
+		for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
+		{ 
+			std::cout << *i << "... ";
+			loadSong(Dir.path() + *i, OutVec);
+			std::cout << "ok\n";
+		}
 	}
-	
 }
 
 void FileManager::GetSongList7K(std::vector<Song7K*> &OutVec)
 {
-	Directory Dir (SongsPrefix);
-	std::vector <String> Listing;
-	Dir.ListDirectory(Listing, Directory::FS_DIR);
-	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
-	{ 
-		loadSong7K(Dir.path() + *i, OutVec);
-		std::cout << *i << std::endl;
+	std::vector <String> SongDirectories;
+	SongDirectories.push_back(SongsPrefix);
+
+	Configuration::GetConfigListS ("SongDirectories", SongDirectories);
+
+	for (std::vector<String>::iterator i = SongDirectories.begin(); i != SongDirectories.end(); i++)
+	{
+		Directory Dir (*i + "/");
+		std::vector <String> Listing;
+
+		Dir.ListDirectory(Listing, Directory::FS_DIR);
+		for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
+		{ 
+			std::cout << *i << "... ";
+			loadSong7K(Dir.path() + *i, OutVec);
+			std::cout << "ok\n";
+		}
 	}
 }

@@ -9,7 +9,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release NoSTLport|Win32'">
-    <LocalDebuggerEnvironment>_NO_DEBUG_HEAP</LocalDebuggerEnvironment>
+    <LocalDebuggerEnvironment>_NO_DEBUG_HEAP==1</LocalDebuggerEnvironment>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerMergeEnvironment>true</LocalDebuggerMergeEnvironment>
   </PropertyGroup>

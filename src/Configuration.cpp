@@ -74,3 +74,24 @@ float  Configuration::GetSkinConfigf(String Name, String Namespace)
 {
 	return GetConffInt(Name, Namespace, *SkinCfgLua);
 }
+
+void Configuration::GetConfigListS(String Name, std::vector<String> &Out)
+{
+	lua_State *L = CfgLua->GetState();
+
+	lua_getglobal(L, Name.c_str());
+
+	if (lua_istable(L, -1))
+	{
+		lua_pushnil(L);
+
+		while (lua_next(L, -2))
+		{
+			if (!lua_isnil(L, -1))
+			{
+				Out.push_back(lua_tostring(L, -1));
+			}
+			lua_pop(L, 1);
+		}
+	}
+}
