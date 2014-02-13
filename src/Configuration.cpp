@@ -3,101 +3,74 @@
 #include "FileManager.h"
 
 #include "LuaManager.h"
-#include "LuaBridge/LuaBridge.h"
 
 #include <iostream>
 
 using namespace Configuration;
-using namespace luabridge;
 
-lua_State *CfgLua, *SkinCfgLua;
+LuaManager *CfgLua, *SkinCfgLua;
 
 void Configuration::Initialize()
 {
-	CfgLua = luaL_newstate();
-	SkinCfgLua = luaL_newstate();
+	CfgLua = new LuaManager();
+	SkinCfgLua = new LuaManager();
 
-	luaL_loadfile(CfgLua, "config.lua");
-	lua_pcall(CfgLua, 0, LUA_MULTRET, 0);
+	CfgLua->RunScript("config.lua");
 
 	if (Configuration::GetConfigs("Skin").length())
 		FileManager::SetSkin(Configuration::GetConfigs("Skin"));
 
-	if (luaL_loadfile(SkinCfgLua, (FileManager::GetSkinPrefix() + "skin.lua").c_str()))
-	{
-		std::string reason = lua_tostring(SkinCfgLua, -1);
-		Utility::DebugBreak();
-	}
-
-	if (lua_pcall(SkinCfgLua, 0, LUA_MULTRET, 0))
-	{
-		std::string reason = lua_tostring(SkinCfgLua, -1);
-		Utility::DebugBreak();
-	}
+	SkinCfgLua->RunScript(FileManager::GetSkinPrefix() + "skin.lua");
 }
 
 void Configuration::Cleanup()
 {
-	lua_close(CfgLua);
-	lua_close(SkinCfgLua);
+	delete CfgLua;
+	delete SkinCfgLua;
 }
 
-String GetConfsInt(String Name, String Namespace, lua_State *L)
+String GetConfsInt(String Name, String Namespace, LuaManager &L)
 {
-	if (!Namespace.length())
+	String Retval;
+	if (Namespace.length())
 	{
-		LuaRef R = getGlobal(L, Name.c_str());
-		if (!R.isNil())
-			return R;
-		else
-			return "";
+		L.UseArray(Namespace);
+		Retval = L.GetFieldS(Name);
 	}else
-	{
-		LuaRef R = getGlobal(L, Namespace.c_str());
-		if (!R.isNil() && !R[Name].isNil())
-			return std::string((const char*)(R [Name]));
-		else
-			return "";
+		Retval = L.GetGlobalS(Name);
 
-	}
+	return Retval;
 }
 
-float GetConffInt(String Name, String Namespace, lua_State *L)
+float GetConffInt(String Name, String Namespace, LuaManager &L)
 {
-	if (!Namespace.length())
+	float Retval;
+	if (Namespace.length())
 	{
-		LuaRef R = getGlobal(L, Name.c_str());
-		if (!R.isNil())
-			return R;
-		else
-			return 0;
+		L.UseArray(Namespace);
+		Retval = L.GetFieldD(Name, 0);
 	}else
-	{
-		LuaRef R = getGlobal(L, Namespace.c_str());
-		if (!R.isNil() && !R[Name].isNil())
-			return R [Name];
-		else
-			return 0;
+		Retval = L.GetGlobalD(Name, 0);
 
-	}
+	return Retval;
 }
 
 String Configuration::GetConfigs(String Name, String Namespace)
 {
-	return GetConfsInt(Name, Namespace, CfgLua);
+	return GetConfsInt(Name, Namespace, *CfgLua);
 }
 
 float  Configuration::GetConfigf(String Name, String Namespace)
 {
-	return GetConffInt(Name, Namespace, CfgLua);
+	return GetConffInt(Name, Namespace, *CfgLua);
 }
 
 String Configuration::GetSkinConfigs(String Name, String Namespace)
 {
-	return GetConfsInt(Name, Namespace, SkinCfgLua);
+	return GetConfsInt(Name, Namespace, *SkinCfgLua);
 }
 
 float  Configuration::GetSkinConfigf(String Name, String Namespace)
 {
-	return GetConffInt(Name, Namespace, SkinCfgLua);
+	return GetConffInt(Name, Namespace, *SkinCfgLua);
 }

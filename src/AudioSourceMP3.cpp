@@ -33,12 +33,11 @@ bool AudioSourceMP3::Open(const char* Filename)
 		long rate;
 
 		mpg123_format_all(mHandle);
-		int s = mpg123_format(mHandle, 44100, MPG123_STEREO, MPG123_ENC_SIGNED_16);
+		mpg123_format(mHandle, 44100, MPG123_STEREO, MPG123_ENC_SIGNED_16);
 
 		mpg123_getformat(mHandle, &rate, &mChannels, &mEncoding);
 
 		mRate = rate;
-		// mpg123_format_none(mHandle);
 
 		size_t pos = mpg123_tell(mHandle);
 		size_t start = mpg123_seek(mHandle, 0, SEEK_SET);
