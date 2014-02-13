@@ -36,6 +36,7 @@ String GetConfsInt(String Name, String Namespace, LuaManager &L)
 	{
 		L.UseArray(Namespace);
 		Retval = L.GetFieldS(Name);
+		L.Pop();
 	}else
 		Retval = L.GetGlobalS(Name);
 
@@ -49,6 +50,7 @@ float GetConffInt(String Name, String Namespace, LuaManager &L)
 	{
 		L.UseArray(Namespace);
 		Retval = L.GetFieldD(Name, 0);
+		L.Pop();
 	}else
 		Retval = L.GetGlobalD(Name, 0);
 
