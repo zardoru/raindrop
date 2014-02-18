@@ -14,7 +14,7 @@
 typedef SongInternal::TDifficulty<TrackNote> *SongDiff;
 typedef std::vector<String> SplitResult;
 
-// void prototype (String line, Song7K *Out, SongDiff Difficulty)
+/* osu!mania loader. credits to wanwan159, woc2006, Zorori and the author of AIBat for helping me understand this. */
 
 bool ReadGeneral (String line, Song7K *Out, SongDiff Difficulty)
 {
@@ -24,7 +24,10 @@ bool ReadGeneral (String line, Song7K *Out, SongDiff Difficulty)
 	if (Command == "AudioFilename:")
 	{
 		if (Content == "virtual") // Virtual mode not yet supported.
+		{
+			printf("o!m loader warning: virtual mode is not supported yet\n");
 			return false;
+		}
 		else
 		{
 			Out->SongFilename = Out->SongDirectory + "/" + Content;
@@ -68,6 +71,7 @@ void ReadDifficulty (String line, Song7K *Out, SongDiff Difficulty)
 
 		for (int i = 0; i < Difficulty->Channels; i++) // Push a single measure
 			Difficulty->Measures[i].push_back(SongInternal::Measure<TrackNote>());
+
 	}else if (Command == "SliderMultiplier")
 	{
 		Out->SliderVelocity = atof(Content.c_str()) * 100;
@@ -116,22 +120,92 @@ void ReadTiming (String line, Song7K *Out, SongDiff Difficulty)
 int GetInterval(float Position, int Channels)
 {
 	float Step = 512.0 / Channels;
-	float A = 0, B = 0;
-	int It = 0;
 
-	while (It < Channels)
+	return (int)(Position / Step);
+}
+
+String GetSampleFilename(SplitResult &Spl, String NoteType, int Hitsound)
+{
+	int SampleSet, SampleSetAddition, CustomSample, Volume;
+	String SampleFilename;
+
+	if (NoteType == "128")
 	{
-		A = B;
-		B = (It + 1) * Step;
+		if (Spl[5].length())
+			return Spl[5];
 
-		if (Position > A && Position < B)
-			return It;
+		SampleSet = atoi(Spl[1].c_str());
+		SampleSetAddition = atoi(Spl[2].c_str());
+		CustomSample = atoi(Spl[3].c_str());
 
-		It++;
+		Volume = atoi(Spl[4].c_str()); // ignored lol
+
+	}else if (NoteType == "1")
+	{
+		if (Spl[4].length())
+			return Spl[4];
+
+		SampleSet = atoi(Spl[0].c_str());
+		SampleSetAddition = atoi(Spl[1].c_str());
+		CustomSample = atoi(Spl[2].c_str());
+
+		Volume = atoi(Spl[3].c_str()); // ignored
+
+	}else if (NoteType == "2")
+	{
+		SampleSet = SampleSetAddition = CustomSample = 0;
 	}
 
-	return 0;
+	String SampleSetString;
+
+	if (SampleSet)
+	{
+		// translate sampleset int into samplesetstring
+	}else
+	{
+		// get sampleset string from sampleset active at starttime
+	}
+
+	String CustomSampleString;
+
+	if (CustomSample)
+	{
+		char dst[16];
+		itoa(CustomSample, dst, 10);
+		CustomSampleString = dst;
+	}
+
+	String HitsoundString;
+
+	if (Hitsound)
+	{
+		switch (Hitsound)
+		{
+		case 1:
+			HitsoundString = "normal";
+		case 2:
+			HitsoundString = "whistle";
+		case 4:
+			HitsoundString = "finish";
+		case 8:
+			HitsoundString = "clap";
+		default:
+			break;
+		}
+	}else
+		return "";
+
+	if (HitsoundString.length())
+	{
+
+	}
+
+	return SampleFilename;
 }
+
+#define NOTE_SLIDER 2
+#define NOTE_HOLD 128
+#define NOTE_NORMAL 1
 
 void ReadObjects (String line, Song7K *Out, SongDiff Difficulty)
 {
@@ -140,27 +214,33 @@ void ReadObjects (String line, Song7K *Out, SongDiff Difficulty)
 	boost::split(Spl, line, boost::is_any_of(","));
 
 	int Track = GetInterval(atof(Spl[0].c_str()), Difficulty->Channels);
+	int Hitsound;
 	TrackNote Note;
 	Note.AssignTrack(Track);
 
 	SplitResult Spl2;
 	boost::split(Spl2, Spl[5], boost::is_any_of(":"));
 	float startTime = atof(Spl[2].c_str()) / 1000.0;
+	int NoteType = atoi(Spl[3].c_str());
 
-	if (Spl[3] == "128")
+	if (NoteType & NOTE_HOLD)
 	{
 		float endTime = atof(Spl2[0].c_str()) / 1000.0;
+
+		if (startTime > endTime)
+			printf("o!m loader warning: object at track %d has startTime > endTime (%f and %f)\n", Track, startTime, endTime);
 
 		Note.AssignTime( startTime, endTime );
 
 		Difficulty->TotalScoringObjects += 2;
 		Difficulty->TotalHolds++;
-	}else if (Spl[3] == "1")
+	}else if (NoteType & NOTE_NORMAL)
 	{
 		Note.AssignTime( startTime );
 		Difficulty->TotalNotes++;
 		Difficulty->TotalScoringObjects++;
-	}else if (Spl[3] == "2")
+
+	}else if (NoteType & NOTE_SLIDER)
 	{
 		// 6=repeats 7=length
 		float sliderRepeats = atof(Spl[6].c_str());
@@ -170,11 +250,16 @@ void ReadObjects (String line, Song7K *Out, SongDiff Difficulty)
 		float bpm = (60000.0 / BpmAtBeat(Difficulty->Timing, startTime));
 		float finalLength = beatDuration * spb(bpm);
 
+		if (startTime > finalLength + startTime)
+			printf("o!m loader warning: object at track %d has startTime > endTime (%f and %f)\n", Track, startTime, finalLength + startTime);
+
 		Note.AssignTime( startTime, finalLength + startTime );
 
 		Difficulty->TotalScoringObjects += 2;
 		Difficulty->TotalHolds++;
 	}
+
+	Hitsound = atoi(Spl[4].c_str());
 
 	Difficulty->TotalObjects++;
 	Difficulty->Measures[Track].at(0).MeasureNotes.push_back(Note);
@@ -199,6 +284,7 @@ void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song7K *O
 
 	Out->SongDirectory = prefix;
 	Difficulty->TotalNotes = Difficulty->TotalHolds = Difficulty->TotalObjects = Difficulty->TotalScoringObjects = 0;
+	Difficulty->Duration = 0;
 
 	/* 
 		Just like BMS, osu!mania charts have timing data separated by files
@@ -255,7 +341,12 @@ void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song7K *O
 
 		switch (ReadingMode)
 		{
-		case RGeneral: ReadGeneral(Line, Out, Difficulty); break;
+		case RGeneral: if (!ReadGeneral(Line, Out, Difficulty))  // don't load charts that we can't work with
+					   {
+						   delete Difficulty; 
+						   return;
+					   } 
+					   break;
 		case RMetadata: ReadMetadata(Line, Out, Difficulty); break;
 		case RDifficulty: ReadDifficulty(Line, Out, Difficulty); break;
 		case REvents: ReadEvents(Line, Out, Difficulty); break;

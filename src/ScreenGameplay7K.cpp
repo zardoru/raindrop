@@ -509,7 +509,7 @@ bool ScreenGameplay7K::Run(double Delta)
 	{
 		std::stringstream ss;
 		ss << lastClosest[i];
-		GFont->DisplayText(ss.str().c_str(), Keys[i].GetPosition() - Vec2(DigitCount(lastClosest[i]) * 3 / 2, 7));
+		GFont->DisplayText(ss.str().c_str(), Keys[i].GetPosition() - Vec2(DigitCount(lastClosest[i]) * 3, 7));
 	}
 
 	Animations->DrawFromLayer(14);

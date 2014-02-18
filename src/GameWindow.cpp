@@ -74,6 +74,44 @@ const char* fragShader = "#version 120\n"
 std::map<int32, KeyType> BindingsManager::ScanFunction;
 std::map<int32, KeyType> BindingsManager::ScanFunction7K;
 
+struct sk_s
+{
+	const char* keystring;
+	int boundkey;
+};
+
+sk_s SpecialKeys [] = // only add if someone actually needs more
+{
+	{"LShift", GLFW_KEY_LEFT_SHIFT},
+	{"RShift", GLFW_KEY_RIGHT_SHIFT},
+	{"Enter", GLFW_KEY_ENTER},
+	{"LCtrl", GLFW_KEY_LEFT_CONTROL},
+	{"RCtrl", GLFW_KEY_RIGHT_CONTROL},
+	{"LAlt", GLFW_KEY_LEFT_ALT},
+	{"RAlt", GLFW_KEY_RIGHT_ALT},
+	{"Tab", GLFW_KEY_TAB},
+	{"BSPC", GLFW_KEY_BACKSPACE}
+};
+
+int KeyTranslate(String K)
+{
+	for (int i = 0; i < (sizeof(SpecialKeys) / sizeof(sk_s)); i++)
+	{
+		if (K == SpecialKeys[i].keystring)
+			return SpecialKeys[i].boundkey;
+	}
+
+	if (K.length())
+	{
+		if (Utility::IsNumeric(K.c_str()))
+			return atoi(K.c_str());
+		else
+			return (int)K[0];
+	}
+	else
+		return 0;
+}
+
 void BindingsManager::Initialize()
 {
 	ScanFunction[GLFW_KEY_ESCAPE] = KT_Escape;
@@ -102,7 +140,7 @@ void BindingsManager::Initialize()
 		char KString[256];
 		sprintf(KString, "Key%d", i+1);
 
-		char Binding = Configuration::GetConfigs(KString, "Keys7K").c_str()[0];
+		int Binding = KeyTranslate(Configuration::GetConfigs(KString, "Keys7K"));
 		
 		if (Binding)
 			ScanFunction7K[Binding] = (KeyType)(KT_Key1 + i);
