@@ -12,7 +12,7 @@ uint32 SectionIndex(const TimingData &Timing, float Beat)
 	uint32 Index = 0;
 	for (TimingData::const_iterator i = Timing.begin(); i != Timing.end(); i++)
 	{
-		if (Beat >= i->Time)
+		if ( Beat >= i->Time )
 			Index++;
 		else
 			break;

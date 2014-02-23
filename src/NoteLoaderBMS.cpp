@@ -133,7 +133,13 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *
 		}
 
 		/* Else... */
-		String MeasureCommand;
+		String MeasureCommand = Line.substr(Line.find_first_of(":")+1);
+		String MainCommand = Line.substr(1, 5);
+
+		if (Utility::IsNumeric(MainCommand.c_str())) // We've got work to do.
+		{
+
+		}
 
 	}
 }

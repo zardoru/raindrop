@@ -150,6 +150,69 @@ void Song7K::ProcessBPS(SongInternal::TDifficulty<TrackNote>* Diff, double Drift
 	std::sort(Diff->BPS.begin(), Diff->BPS.end(), tSort);
 }
 
+void Song7K::ProcessSpeedVariations(SongInternal::TDifficulty<TrackNote>* Diff)
+{
+	TimingData tVSpeeds = Diff->VerticalSpeeds; // We need this to store what values to change
+
+	for(TimingData::iterator Change = Diff->SpeedChanges.begin();
+			Change != Diff->SpeedChanges.end();
+			Change++)
+	{
+		/* 
+			Find all VSpeeds
+			if there exists a speed change which is virtually happening at the same time as this VSpeed
+			modify it to be this value * factor
+		*/
+
+		for(TimingData::iterator Time = Diff->VerticalSpeeds.begin();
+			Time != Diff->VerticalSpeeds.end();
+			Time++)
+		{
+			if ( abs(Change->Time - Time->Time) < 0.00001)
+			{
+				Time->Value *= Change->Value;
+				goto next_speed;
+			}
+		}
+
+		/* 
+			There are no collisions- insert a new speed at this time
+		*/
+
+		if (Change->Time < 0)
+			goto next_speed;
+
+		float SpeedValue;
+		SpeedValue = BpmAtBeat(tVSpeeds, Change->Time) * Change->Value;
+
+		SongInternal::TimingSegment VSpeed;
+
+		VSpeed.Time = Change->Time;
+		VSpeed.Value = SpeedValue;
+
+		float SpeedAtBeat = BpmAtBeat(Diff->VerticalSpeeds, Change->Time);
+
+		/*
+#ifndef NDEBUG
+		if (SpeedAtBeat != SpeedValue) // No redundant speeds
+#endif
+		*/
+			Diff->VerticalSpeeds.push_back(VSpeed);
+#ifndef NDEBUG
+			/*
+		else
+		{
+			printf("Redundant speed change while processing (%f / %f) Old value at time is %f, Original value is %f\n", Change->Time, SpeedValue, SpeedAtBeat, BpmAtBeat(tVSpeeds, Change->Time));
+		}
+		*/
+#endif
+
+		next_speed: (void)0;
+	}
+
+	std::sort(Diff->VerticalSpeeds.begin(), Diff->VerticalSpeeds.end(), tSort);
+}
+
 void Song7K::Process(float Drift)
 {
 	/* 
@@ -174,6 +237,7 @@ void Song7K::Process(float Drift)
 
 		ProcessBPS(*Diff, Drift);
 		ProcessVSpeeds(*Diff);
+		ProcessSpeedVariations(*Diff);
 
 		/* For all channels of this difficulty */
 		for (int KeyIndex = 0; KeyIndex < (*Diff)->Channels; KeyIndex++)
