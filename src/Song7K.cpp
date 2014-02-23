@@ -150,7 +150,7 @@ void Song7K::ProcessBPS(SongInternal::TDifficulty<TrackNote>* Diff, double Drift
 	std::sort(Diff->BPS.begin(), Diff->BPS.end(), tSort);
 }
 
-void Song7K::ProcessSpeedVariations(SongInternal::TDifficulty<TrackNote>* Diff)
+void Song7K::ProcessSpeedVariations(SongInternal::TDifficulty<TrackNote>* Diff, double Drift)
 {
 	TimingData tVSpeeds = Diff->VerticalSpeeds; // We need this to store what values to change
 
@@ -163,6 +163,8 @@ void Song7K::ProcessSpeedVariations(SongInternal::TDifficulty<TrackNote>* Diff)
 			if there exists a speed change which is virtually happening at the same time as this VSpeed
 			modify it to be this value * factor
 		*/
+
+		Change->Time += Drift;
 
 		for(TimingData::iterator Time = Diff->VerticalSpeeds.begin();
 			Time != Diff->VerticalSpeeds.end();
@@ -237,7 +239,7 @@ void Song7K::Process(float Drift)
 
 		ProcessBPS(*Diff, Drift);
 		ProcessVSpeeds(*Diff);
-		ProcessSpeedVariations(*Diff);
+		ProcessSpeedVariations(*Diff, Drift);
 
 		/* For all channels of this difficulty */
 		for (int KeyIndex = 0; KeyIndex < (*Diff)->Channels; KeyIndex++)

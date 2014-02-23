@@ -146,7 +146,7 @@ class Song7K : public TSong < TrackNote >
 
 	void ProcessBPS(SongInternal::TDifficulty<TrackNote>* Diff, double Drift);
 	void ProcessVSpeeds(SongInternal::TDifficulty<TrackNote>* Diff);
-	void ProcessSpeedVariations(SongInternal::TDifficulty<TrackNote>* Diff);
+	void ProcessSpeedVariations(SongInternal::TDifficulty<TrackNote>* Diff, double Drift);
 public:
 
 	/* For osu!mania chart loading */

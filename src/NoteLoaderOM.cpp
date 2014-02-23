@@ -101,7 +101,7 @@ void ReadTiming (String line, Song7K *Out, SongDiff Difficulty)
 
 
 	SongInternal::TimingSegment Time;
-	Time.Time = atof(Spl[0].c_str()) / 1000;
+	Time.Time = atof(Spl[0].c_str()) / 1000.0;
 	Time.Value = atof(Spl[1].c_str());
 
 	if (Spl[6] == "1") // Non-inherited section
@@ -109,7 +109,7 @@ void ReadTiming (String line, Song7K *Out, SongDiff Difficulty)
 	else
 	{
 		// An inherited section would be added to a velocity changes vector which would later alter speeds.
-		float OldValue = Time.Value;
+		double OldValue = Time.Value;
 
 		Time.Value = -100 / OldValue;
 
@@ -220,7 +220,7 @@ void ReadObjects (String line, Song7K *Out, SongDiff Difficulty)
 
 	SplitResult Spl2;
 	boost::split(Spl2, Spl[5], boost::is_any_of(":"));
-	float startTime = atof(Spl[2].c_str()) / 1000.0;
+	double startTime = atof(Spl[2].c_str()) / 1000.0;
 	int NoteType = atoi(Spl[3].c_str());
 
 	if (NoteType & NOTE_HOLD)
