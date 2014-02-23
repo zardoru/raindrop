@@ -245,7 +245,16 @@ void ReadObjects (String line, Song7K *Out, SongDiff Difficulty)
 		// 6=repeats 7=length
 		float sliderRepeats = atof(Spl[6].c_str());
 		float sliderLength = atof(Spl[7].c_str());
-		float finalSize = sliderLength * sliderRepeats * (Difficulty->SpeedChanges.size() ? BpmAtBeat(Difficulty->SpeedChanges, startTime) : 1);
+
+		float Multiplier = 1;
+
+		if (Difficulty->SpeedChanges.size())
+		{
+			if (startTime >= Difficulty->SpeedChanges.at(0).Time)
+				Multiplier = BpmAtBeat(Difficulty->SpeedChanges, startTime);
+		}
+
+		float finalSize = sliderLength * sliderRepeats * Multiplier;
 		float beatDuration = (finalSize / Out->SliderVelocity); 
 		float bpm = (60000.0 / BpmAtBeat(Difficulty->Timing, startTime));
 		float finalLength = beatDuration * spb(bpm);
