@@ -38,7 +38,7 @@ void ScreenEdit::Init(SongDC *Other)
 	if (Other != NULL)
 	{
 		if (Other->Difficulties.size() == 0) // No difficulties? Create a new one.
-			Other->Difficulties.push_back(new SongInternal::TDifficulty<GameObject>());
+			Other->Difficulties.push_back(new SongInternal::DifficultyDC());
 
 		ScreenGameplay::Init (Other, 0);
 		NotesInMeasure.clear(); 

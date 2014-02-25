@@ -36,8 +36,8 @@ void NoteLoaderFTB::LoadMetadata(String filename, String prefix, Song7K *Out)
 
 void NoteLoaderFTB::LoadObjectsFromFile(String filename, String prefix, Song7K *Out)
 {
-	SongInternal::TDifficulty<TrackNote> *Difficulty = new SongInternal::TDifficulty<TrackNote>();
-	SongInternal::Measure<TrackNote> Measure[7];
+	SongInternal::Difficulty7K *Difficulty = new SongInternal::Difficulty7K ();
+	SongInternal::Measure7K Measure[7];
 
 	std::fstream filein ((filename).c_str());
 

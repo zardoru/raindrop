@@ -16,13 +16,10 @@ double StopTimeAtBeat(const TimingData &StopsTiming, float Beat);
 
 double BeatAtTime(const TimingData &Timing, float Time, float Offset);
 
-template <class T>
-double DifficultyDuration(TSong<T> &MySong, SongInternal::TDifficulty<T> &Diff)
-{
-	if (Diff.Measures.size())
-		return TimeAtBeat(Diff.Timing, Diff.Offset, Diff.Measures.size() * MySong.MeasureLength);
-	return 0;
-}
+#define DifficultyDuration(MySong, Diff) \
+	(Diff.Measures.size()) ? \
+		TimeAtBeat(Diff.Timing, Diff.Offset, Diff.Measures.size() * MySong.MeasureLength); : \
+	0
 
 void GetTimingChangesInInterval(const TimingData &Timing, 
 	double PointA, double PointB, 

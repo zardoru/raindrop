@@ -37,7 +37,7 @@ String CommandSubcontents (String Command, String Line)
 void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *Out)
 {
 	std::ifstream filein (filename.c_str());
-	SongInternal::TDifficulty<TrackNote> *Difficulty = new SongInternal::TDifficulty<TrackNote>();
+	SongInternal::Difficulty7K *Difficulty = new SongInternal::Difficulty7K();
 	FilenameListIndex Sounds;
 	BpmListIndex BPMs;
 

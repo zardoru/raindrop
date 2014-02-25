@@ -28,8 +28,8 @@ private:
 	bool AudioCompensation;
 	double TimeCompensation;
 	bool MultiplierChanged;
-	SongInternal::TDifficulty<TrackNote>			 *CurrentDiff;
-	std::vector<SongInternal::Measure<TrackNote> >	 NotesByMeasure[16];
+	SongInternal::Difficulty7K			 *CurrentDiff;
+	std::vector<SongInternal::Measure7K>	 NotesByMeasure[MAX_CHANNELS];
 	TimingData VSpeeds;
 	int		GearBindings[MAX_CHANNELS];
 	uint32	Channels;

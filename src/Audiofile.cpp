@@ -10,7 +10,7 @@
 
 AudioDataSource* SourceFromExt(String Filename)
 {
-	AudioDataSource *Ret;
+	AudioDataSource *Ret = NULL;
 	String Ext = Utility::GetExtension(Filename);
 
 	if (Ext == "wav")
@@ -22,7 +22,11 @@ AudioDataSource* SourceFromExt(String Filename)
 		Ret = new AudioSourceMP3();
 #endif
 
-	Ret->Open(Filename.c_str());
+	if (Ret)
+		Ret->Open(Filename.c_str());
+	else
+		printf("INFO: extension %s has no audiosource associated\n", Ext.c_str());
+
 	return Ret;
 }
 
@@ -85,7 +89,7 @@ bool AudioSample::Open(const char* Filename)
 {
 	AudioDataSource * Src = SourceFromExt (Filename);
 
-	if (Src->IsValid())
+	if (Src && Src->IsValid())
 	{
 		Channels = Src->GetChannels();
 		mBufferSize = Src->GetLength() * sizeof(uint16) * Channels;
@@ -171,7 +175,7 @@ bool AudioStream::Open(const char* Filename)
 {
 	mSource = SourceFromExt(Filename);
 
-	if (mSource->IsValid())
+	if (mSource && mSource->IsValid())
 	{
 		Channels = mSource->GetChannels();
 

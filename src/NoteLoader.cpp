@@ -18,7 +18,7 @@ float _ScreenDifference()
 	return std::abs(float((ScreenWidth / 2.f) - (PlayfieldWidth / 2.f)));
 }
 
-void LoadNotes(SongDC* Out, SongInternal::TDifficulty<GameObject>* Difficulty, String line)
+void LoadNotes(SongDC* Out, SongInternal::DifficultyDC * Difficulty, String line)
 {
 	// get the object string (all between a colon and a semicolon.
 	String objectstring = line.substr(line.find_first_of(":") + 1);
@@ -37,7 +37,7 @@ void LoadNotes(SongDC* Out, SongInternal::TDifficulty<GameObject>* Difficulty, S
 	BOOST_FOREACH(String objectlist, splitvec) // for each measure
 	{
 		std::vector< String > splitobjects;
-		SongInternal::Measure<GameObject> Measure;
+		SongInternal::MeasureDC Measure;
 		invert = false;
 
 		Measure.Fraction = 0;
@@ -134,7 +134,7 @@ SongDC* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 	std::ifstream filein;
 	filein.open(filename.c_str(), std::ios::in);
 	SongDC *Out = new SongDC();
-	SongInternal::TDifficulty<GameObject> *Difficulty = new SongInternal::TDifficulty<GameObject>();
+	SongInternal::DifficultyDC *Difficulty = new SongInternal::DifficultyDC();
 
 	if (!filein.is_open())
 	{
@@ -222,7 +222,7 @@ SongDC* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 		OnCommand(#NOTES) // current command is notes?
 		{
 			LoadNotes(Out, Difficulty, line);			
-			Difficulty = new SongInternal::TDifficulty<GameObject>();
+			Difficulty = new SongInternal::DifficultyDC();
 		}// command == #notes
 #undef OnCommand
 	}

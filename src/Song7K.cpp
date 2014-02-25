@@ -19,7 +19,7 @@ int tSort(const SongInternal::TimingSegment &i, const SongInternal::TimingSegmen
 	return i.Time < j.Time;
 }
 
-void Song7K::ProcessVSpeeds(SongInternal::TDifficulty<TrackNote>* Diff)
+void Song7K::ProcessVSpeeds(SongInternal::Difficulty7K* Diff)
 {
 	for (TimingData::iterator Time = Diff->BPS.begin();
 		Time != Diff->BPS.end();
@@ -43,7 +43,7 @@ void Song7K::ProcessVSpeeds(SongInternal::TDifficulty<TrackNote>* Diff)
 }
 
 
-void Song7K::ProcessBPS(SongInternal::TDifficulty<TrackNote>* Diff, double Drift)
+void Song7K::ProcessBPS(SongInternal::Difficulty7K* Diff, double Drift)
 {
 	/* 
 		Calculate BPS. The algorithm is basically the same as VSpeeds, so there's probably a better way to do it
@@ -150,7 +150,7 @@ void Song7K::ProcessBPS(SongInternal::TDifficulty<TrackNote>* Diff, double Drift
 	std::sort(Diff->BPS.begin(), Diff->BPS.end(), tSort);
 }
 
-void Song7K::ProcessSpeedVariations(SongInternal::TDifficulty<TrackNote>* Diff, double Drift)
+void Song7K::ProcessSpeedVariations(SongInternal::Difficulty7K* Diff, double Drift)
 {
 	TimingData tVSpeeds = Diff->VerticalSpeeds; // We need this to store what values to change
 
@@ -188,11 +188,12 @@ void Song7K::ProcessSpeedVariations(SongInternal::TDifficulty<TrackNote>* Diff, 
 		SpeedValue = BpmAtBeat(tVSpeeds, Change->Time) * Change->Value;
 
 		SongInternal::TimingSegment VSpeed;
+		float SpeedAtBeat;
 
 		VSpeed.Time = Change->Time;
 		VSpeed.Value = SpeedValue;
 
-		float SpeedAtBeat = BpmAtBeat(Diff->VerticalSpeeds, Change->Time);
+		SpeedAtBeat = BpmAtBeat(Diff->VerticalSpeeds, Change->Time);
 
 		/*
 #ifndef NDEBUG
@@ -232,7 +233,7 @@ void Song7K::Process(float Drift)
 		return;
 
 	/* For all difficulties */
-	for (std::vector<SongInternal::TDifficulty<TrackNote>*>::iterator Diff = Difficulties.begin(); Diff != Difficulties.end(); Diff++)
+	for (std::vector<SongInternal::Difficulty7K*>::iterator Diff = Difficulties.begin(); Diff != Difficulties.end(); Diff++)
 	{
 		if (!(*Diff)->Timing.size())
 			continue;
@@ -247,7 +248,7 @@ void Song7K::Process(float Drift)
 			int MIdx = 0;
 
 			/* For each measure of this channel */
-			for (std::vector<SongInternal::Measure<TrackNote> >::iterator Measure = (*Diff)->Measures[KeyIndex].begin(); 
+			for (std::vector<SongInternal::Measure7K>::iterator Measure = (*Diff)->Measures[KeyIndex].begin(); 
 				Measure != (*Diff)->Measures[KeyIndex].end();
 				Measure++)
 			{

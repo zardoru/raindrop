@@ -19,26 +19,30 @@ typedef std::vector<SongInternal::TimingSegment> TimingData;
 
 namespace SongInternal
 {
-	template <class T>
-	class Measure
+	class MeasureDC
 	{
 	public:
-		Measure()
+		MeasureDC()
 		{
 			Fraction = 0;
 		}
 		uint32 Fraction;
-		std::vector<T> MeasureNotes;
+		std::vector<GameObject> MeasureNotes;
 	};
 
-	template <class T>
-	struct TDifficulty
+	class Measure7K
 	{
-		int Dummy;
+	public:
+		Measure7K()
+		{
+			Fraction = 0;
+		}
+		uint32 Fraction;
+		std::vector<TrackNote> MeasureNotes;
 	};
 
-	template <>
-	struct TDifficulty <GameObject>
+
+	struct DifficultyDC
 	{
 		// Stores bpm at beat pairs
 		TimingData Timing;
@@ -47,7 +51,7 @@ namespace SongInternal
 		float Duration;
 
 		// Notes
-		std::vector<Measure<GameObject> > Measures;
+		std::vector<MeasureDC> Measures;
 
 		// Meta
 		String Name;
@@ -62,8 +66,7 @@ namespace SongInternal
 		std::vector<String> SoundList;
 	};
 
-	template <>
-	struct TDifficulty <TrackNote>
+	struct Difficulty7K
 	{
 		// Stores bpm at beat pairs
 		TimingData Timing;
@@ -82,7 +85,7 @@ namespace SongInternal
 		float Duration;
 
 		// Notes (Up to MAX_CHANNELS tracks)
-		std::vector<Measure<TrackNote> > Measures[MAX_CHANNELS];
+		std::vector<Measure7K> Measures[MAX_CHANNELS];
 
 		// Meta
 		String Name;
@@ -106,7 +109,16 @@ class TSong
 public:
 	TSong() {};
 	~TSong() {};
-	std::vector<SongInternal::TDifficulty<T>*> Difficulties;
+};
+
+/* Dotcur Song */
+class SongDC : public TSong < GameObject >
+{
+public:
+	SongDC();
+	~SongDC();
+
+	std::vector<SongInternal::DifficultyDC*> Difficulties;
 	
 	/* chart filename*/
 	String ChartFilename;
@@ -125,14 +137,6 @@ public:
 
 	double		LeadInTime; // default to 1.5 for 7K
 	int			MeasureLength;
-};
-
-/* Dotcur Song */
-class SongDC : public TSong < GameObject >
-{
-public:
-	SongDC();
-	~SongDC();
 	void Process(bool CalculateXPos = true);
 	void Repack();
 	bool Save(const char* Filename);
@@ -144,9 +148,9 @@ class Song7K : public TSong < TrackNote >
 	bool Processed;
 	double PreviousDrift;
 
-	void ProcessBPS(SongInternal::TDifficulty<TrackNote>* Diff, double Drift);
-	void ProcessVSpeeds(SongInternal::TDifficulty<TrackNote>* Diff);
-	void ProcessSpeedVariations(SongInternal::TDifficulty<TrackNote>* Diff, double Drift);
+	void ProcessBPS(SongInternal::Difficulty7K* Diff, double Drift);
+	void ProcessVSpeeds(SongInternal::Difficulty7K* Diff);
+	void ProcessSpeedVariations(SongInternal::Difficulty7K* Diff, double Drift);
 public:
 
 	/* For osu!mania chart loading */
@@ -165,6 +169,25 @@ public:
 		BT_Beatspace
 	} BPMType;
 
+	std::vector<SongInternal::Difficulty7K*> Difficulties;
+	
+	/* chart filename*/
+	String ChartFilename;
+
+	/* path relative to  */
+	String SongFilename, BackgroundDir, SongRelativePath, BackgroundRelativeDir;
+
+	/* Song title */
+	String SongName;
+	
+	/* Song Author */
+	String SongAuthor;
+
+	/* Directory where files are contained */
+	String SongDirectory;
+
+	double		LeadInTime; // default to 1.5 for 7K
+	int			MeasureLength;
 	Song7K();
 	~Song7K();
 	void Process(float Drift = 0);

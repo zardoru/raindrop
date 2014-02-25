@@ -427,6 +427,7 @@ void GetAudioInfo()
 
 void InitAudio()
 {
+#ifndef NO_AUDIO
 	PaError Err = Pa_Initialize();
 
 	UseWasapi = (Configuration::GetConfigf("UseWasapi") != 0);
@@ -436,45 +437,68 @@ void InitAudio()
 
 	Mixer = new PaMixer(UseThreadedDecoder);
 	assert (Err == 0 && Mixer);
+#endif
 }
 
 double GetDeviceLatency()
 {
+#ifndef NO_AUDIO
 	return Pa_GetDeviceInfo(Pa_GetDefaultOutputDevice())->defaultLowOutputLatency;
+#else
+	return 0;
+#endif
 }
 
 void MixerAddStream(SoundStream *Sound)
 {
+#ifndef NO_AUDIO
 	Mixer->AppendMusic(Sound);
+#endif
 }
 
 void MixerRemoveStream(SoundStream* Sound)
 {
+#ifndef NO_AUDIO
 	Mixer->RemoveMusic(Sound);
+#endif
 }
 
 void MixerAddSample(SoundSample* Sample)
 {
+#ifndef NO_AUDIO
 	Mixer->AddSound(Sample);
+#endif
 }
 
 void MixerRemoveSample(SoundSample* Sample)
 {
+#ifndef NO_AUDIO
 	Mixer->RemoveSound(Sample);
+#endif
 }
 
 void MixerUpdate()
 {
+#ifndef NO_AUDIO
 	if (!UseThreadedDecoder)
 		Mixer->Run();
+#endif
 }
 
 double MixerGetLatency()
 {
+#ifndef NO_AUDIO
 	return Mixer->GetLatency();
+#else
+	return 0;
+#endif
 }
 
 double MixerGetFactor()
 {
+#ifndef NO_AUDIO
 	return Mixer->GetFactor();
+#else
+	return 0;
+#endif
 }

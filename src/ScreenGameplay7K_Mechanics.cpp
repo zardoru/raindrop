@@ -18,6 +18,7 @@
 #include "ScoreKeeper.h"
 #include "ScreenGameplay7K.h"
 
+typedef std::vector<SongInternal::Measure7K> NoteVector;
 
 void ScreenGameplay7K::RecalculateEffects()
 {
@@ -78,7 +79,6 @@ void ScreenGameplay7K::MissNote (double TimeOff, uint32 Lane, bool auto_hold_mis
 
 void ScreenGameplay7K::RunMeasures()
 {
-	typedef std::vector<SongInternal::Measure<TrackNote> > NoteVector;
 
 	for (unsigned int k = 0; k < Channels; k++)
 	{
@@ -133,7 +133,6 @@ void ScreenGameplay7K::RunMeasures()
 
 void ScreenGameplay7K::ReleaseLane(unsigned int Lane)
 {
-	typedef std::vector<SongInternal::Measure<TrackNote> > NoteVector;
 	NoteVector &Measures = NotesByMeasure[Lane];
 
 	for (NoteVector::iterator i = Measures.begin(); i != Measures.end(); i++)
@@ -171,7 +170,6 @@ void ScreenGameplay7K::ReleaseLane(unsigned int Lane)
 
 void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 {
-	typedef std::vector<SongInternal::Measure<TrackNote> > NoteVector;
 	float MsDisplayMargin = (Configuration::GetSkinConfigf("HitErrorDisplayLimiter"));
 	NoteVector &Measures = NotesByMeasure[Lane];
 

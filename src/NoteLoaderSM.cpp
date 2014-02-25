@@ -65,7 +65,7 @@ String RemoveComments(const String Str)
 	return Result;
 }
 
-void LoadTracksSM(Song7K *Out, SongInternal::TDifficulty<TrackNote> *Difficulty, String line)
+void LoadTracksSM(Song7K *Out, SongInternal::Difficulty7K *Difficulty, String line)
 {
 	String CommandContents = line.substr(line.find_first_of(":") + 1);
 	SplitResult Mainline;
@@ -103,7 +103,7 @@ void LoadTracksSM(Song7K *Out, SongInternal::TDifficulty<TrackNote> *Difficulty,
 	for (uint32 i = 0; i < MeasureText.size(); i++) /* i = current measure */
 	{
 		int MeasureFractions = MeasureText[i].length() / Keys;
-		SongInternal::Measure<TrackNote> Measure[16];
+		SongInternal::Measure7K Measure[MAX_CHANNELS];
 		
 		for (int32 k = 0; k < 16; k++)
 			Measure[k].Fraction = MeasureFractions;
@@ -185,7 +185,7 @@ Song7K* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)
 {
 	std::ifstream filein (filename.c_str());
 	Song7K *Out = new Song7K();
-	SongInternal::TDifficulty<TrackNote> *Difficulty = new SongInternal::TDifficulty<TrackNote>();
+	SongInternal::Difficulty7K *Difficulty = new SongInternal::Difficulty7K();
 
 	// Stepmania uses beat-based locations for stops and BPM.
 	Out->BPMType = Song7K::BT_Beat;
@@ -274,7 +274,7 @@ Song7K* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)
 			LoadTracksSM(Out, Difficulty, line);
 			Out->Difficulties.push_back(Difficulty);
 
-			Difficulty = new SongInternal::TDifficulty<TrackNote>();
+			Difficulty = new SongInternal::Difficulty7K();
 		}
 	}
 

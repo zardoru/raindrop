@@ -1,4 +1,5 @@
 #include <fstream>
+#include <stdlib.h>
 
 #include "Global.h"
 #include "NoteLoader7K.h"
@@ -11,7 +12,7 @@
 #include <boost/foreach.hpp>
 #include <boost/algorithm/string/split.hpp>
 
-typedef SongInternal::TDifficulty<TrackNote> *SongDiff;
+typedef SongInternal::Difficulty7K *SongDiff;
 typedef std::vector<String> SplitResult;
 
 /* osu!mania loader. credits to wanwan159, woc2006, Zorori and the author of AIBat for helping me understand this. */
@@ -30,6 +31,9 @@ bool ReadGeneral (String line, Song7K *Out, SongDiff Difficulty)
 		}
 		else
 		{
+#ifdef DEBUG
+			printf("Audio filename found: %s\n", Content.c_str());
+#endif
 			Out->SongFilename = Out->SongDirectory + "/" + Content;
 			Out->SongRelativePath = Content;
 		}
@@ -46,6 +50,10 @@ void ReadMetadata (String line, Song7K *Out, SongDiff Difficulty)
 {
 	String Command = line.substr(0, line.find_first_of(":")); // Lines are Information:Content
 	String Content = line.substr(line.find_first_of(":") + 1, line.length() - line.find_first_of(":"));
+
+#ifdef DEBUG
+	printf("Command found: %s | Contents: %s\n", Command.c_str(), Content.c_str());
+#endif
 
 	if (Command == "Title")
 	{
@@ -70,7 +78,7 @@ void ReadDifficulty (String line, Song7K *Out, SongDiff Difficulty)
 		Difficulty->Channels = atoi(Content.c_str());
 
 		for (int i = 0; i < Difficulty->Channels; i++) // Push a single measure
-			Difficulty->Measures[i].push_back(SongInternal::Measure<TrackNote>());
+			Difficulty->Measures[i].push_back(SongInternal::Measure7K());
 
 	}else if (Command == "SliderMultiplier")
 	{
@@ -171,7 +179,7 @@ String GetSampleFilename(SplitResult &Spl, String NoteType, int Hitsound)
 	if (CustomSample)
 	{
 		char dst[16];
-		itoa(CustomSample, dst, 10);
+		// itoa(CustomSample, dst, 10);
 		CustomSampleString = dst;
 	}
 
@@ -279,7 +287,7 @@ void ReadObjects (String line, Song7K *Out, SongDiff Difficulty)
 void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song7K *Out)
 {
 	std::ifstream filein (filename.c_str());
-	SongDiff Difficulty = new SongInternal::TDifficulty<TrackNote>();
+	SongDiff Difficulty = new SongInternal::Difficulty7K();
 
 	// BMS uses beat-based locations for stops and BPM. (Though the beat must be calculated.)
 	Out->BPMType = Song7K::BT_Beatspace;
