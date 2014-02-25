@@ -2,28 +2,37 @@ dotcur
 ================================
 
 dotcur is a small music game project aimed to be a multi-mode rhythm game 
-for home desktops. so far the game works but it's lacking on features.
-a cytus-like mode is implemented and a beatmania-like mode is on the way.
+for home desktops. So far the game works but it's lacking on features.
+A cytus-like mode is implemented and a beatmania-like mode is functional.
+Nontheless, both modes still lack advanced features.
 
-it's built using OpenGL/PortAudio and most if not all are freely licensed libraries.
+dotcur is built using OpenGL/PortAudio and most if not all are freely licensed libraries, while
+dotcur itself is licensed under the GPLv3.
 
 
 building & dependencies
 ================================
 so while the code itself is fairly simple it has quite an amount of dependencies
 
--boost 1.52
--glew 1.90
+-boost
+-glew
 -glfw 3.0
 -portaudio v19, libogg and libvorbis
--glm 0.9.4.1
+-glm
 
 building is basically setting up the include and library directories to all these
 libraries (for msvc v90) after compiling them for this toolset
 and once that's done you open the main project and fire up your f7 key.
 
+you need scons to build it on linux and the same libraries.
+
+Optionally, you may use libmpg123 to get MP3 support on either platform.
+
 notes
 ================================
-while right now it doesn't quite support linux (and I won't ever use "make" for my
-own projects- ever) so far there are no system-specific dependencies so 
-with some minor modifications it shouldn't be too much trouble to get it to compile.
+Linux works, though you need the pa_memorybarrier.h file on both windows and linux.
+I'm not including it since it's already part of the portaudio source code, which you should
+probably have if you're compiling this on your own.
+
+You also need the current gamedata files from the latest release so far so you actually got something to play with
+that isn't a black screen or a crash.

@@ -31,7 +31,7 @@ bool ReadGeneral (String line, Song7K *Out, SongDiff Difficulty)
 		}
 		else
 		{
-#ifdef DEBUG
+#ifdef VERBOSE_DEBUG
 			printf("Audio filename found: %s\n", Content.c_str());
 #endif
 			Out->SongFilename = Out->SongDirectory + "/" + Content;
@@ -51,7 +51,7 @@ void ReadMetadata (String line, Song7K *Out, SongDiff Difficulty)
 	String Command = line.substr(0, line.find_first_of(":")); // Lines are Information:Content
 	String Content = line.substr(line.find_first_of(":") + 1, line.length() - line.find_first_of(":"));
 
-#ifdef DEBUG
+#ifdef VERBOSE_DEBUG
 	printf("Command found: %s | Contents: %s\n", Command.c_str(), Content.c_str());
 #endif
 
@@ -325,6 +325,7 @@ void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song7K *O
 	while (filein)
 	{
 		std::getline(filein, Line);
+		boost::replace_all(Line, "\r", "");
 
 		if (!Line.length())
 			continue;
