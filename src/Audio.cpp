@@ -8,23 +8,32 @@
 #include <pa_win_wasapi.h>
 #endif
 
+#ifdef LINUX
+#include <pa_linux_alsa.h>
+#endif
+
 #include <boost/thread/condition.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
 float VolumeSFX = 0.4f;
 float VolumeMusic = 0.6f; 
-bool UseWasapi = false;
 bool UseThreadedDecoder = false;
-PaDeviceIndex DefaultWasapiDevice;
 
-/* Vorbis file stream */
+#ifdef WIN32
+bool UseWasapi = false;
+PaDeviceIndex DefaultWasapiDevice;
+#endif
+
+/* Vorbis file stream
 
 static int32 StreamCallback(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags, void *userData)
 {
 	bool cont = !((SoundStream*)(userData))->Read(output, frameCount * 2);
 	return cont;
 }
+
+ */
 /*************************/
 /********* Mixer *********/
 /*************************/
@@ -39,7 +48,9 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
 		outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultLowOutputLatency;
 
 #ifndef WIN32
+
 		outputParams.hostApiSpecificStreamInfo = NULL;
+
 #else
 		PaWasapiStreamInfo StreamInfo;
 		if (UseWasapi)
@@ -75,6 +86,13 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
 		printf("%s\n", Pa_GetErrorText(Err));
 		printf("Device Selected %d\n", Device);
 	}
+#ifdef LINUX
+	else
+	{
+		printf("Audio: Enabling real time scheduling\n");
+		PaAlsa_EnableRealtimeScheduling( mStream, true );
+	}	
+#endif
 
 	return Err;
 }
@@ -124,8 +142,6 @@ class PaMixer
 	int SizeAvailable;
 	bool Threaded;
 
-	uint32 PlayingVoices;
-
 	boost::mutex mut, mut2, rbufmux;
 	boost::condition ringbuffer_has_space;
 public:
@@ -140,7 +156,7 @@ public:
 		{
 			boost::thread (&PaMixer::Run, this);
 		}
-
+#ifdef WIN32
 		if (UseWasapi)
 		{
 			OpenStream( &Stream, GetWasapiDevice(), 44100, (void*) this, Latency, Mix );
@@ -149,6 +165,10 @@ public:
 		{
 			OpenStream( &Stream, Pa_GetDefaultOutputDevice(), 44100, (void*) this, Latency, Mix );
 		}
+#else
+			OpenStream( &Stream, Pa_GetDefaultOutputDevice(), 44100, (void*) this, Latency, Mix );
+
+#endif
 
 		Pa_StartStream( Stream );
 		ConstFactor = 1.0;
@@ -164,7 +184,6 @@ public:
 		{
 			SizeAvailable = PaUtil_GetRingBufferWriteAvailable(&RingBuf);
 
-			PlayingVoices = 0;
 
 			if (SizeAvailable > 0)
 			{
@@ -177,20 +196,10 @@ public:
 					if ((*i)->IsPlaying())
 					{
 						(*i)->Update();
-						PlayingVoices++;
 					}
 				}
 				mut.unlock();
 
-				mut2.lock();
-				for(std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); i++)
-				{
-					if ((*i)->IsPlaying())
-						PlayingVoices++;
-				}
-				mut2.unlock();
-
-				// PaUtil_WriteRingBuffer(&RingBuf, TempStream, SizeAvailable);
 			}/*else
 			{
 				boost::mutex::scoped_lock lk(rbufmux);
@@ -408,8 +417,10 @@ void GetAudioInfo()
 		const PaHostApiInfo* Index = Pa_GetHostApiInfo(i);
 		printf("(%d) %s: %d (%d)\n", i, Index->name, Index->defaultOutputDevice, Index->type);
 
+#ifdef WIN32
 		if (Index->type == paWASAPI)
 			DefaultWasapiDevice = Index->defaultOutputDevice;
+#endif
 	}
 
 	printf("\nAUDIO: The audio devices are\n");
@@ -430,7 +441,10 @@ void InitAudio()
 #ifndef NO_AUDIO
 	PaError Err = Pa_Initialize();
 
+#ifdef WIN32
 	UseWasapi = (Configuration::GetConfigf("UseWasapi") != 0);
+#endif
+
 	UseThreadedDecoder = (Configuration::GetConfigf("UseThreadedDecoder") != 0);
 
 	GetAudioInfo();
