@@ -19,8 +19,18 @@ int tSort(const SongInternal::TimingSegment &i, const SongInternal::TimingSegmen
 	return i.Time < j.Time;
 }
 
-void Song7K::ProcessVSpeeds(SongInternal::Difficulty7K* Diff)
+void Song7K::ProcessVSpeeds(SongInternal::Difficulty7K* Diff, double SpeedConstant)
 {
+	if (SpeedConstant) // We're using a CMod, so further processing is pointless
+	{
+		SongInternal::TimingSegment VSpeed;
+		VSpeed.Time = 0;
+		VSpeed.Value = SpeedConstant;
+		Diff->VerticalSpeeds.push_back(VSpeed);
+		return;
+	}
+
+	// Calculate velocity at time based on BPM at time
 	for (TimingData::iterator Time = Diff->BPS.begin();
 		Time != Diff->BPS.end();
 		Time++)
@@ -195,11 +205,7 @@ void Song7K::ProcessSpeedVariations(SongInternal::Difficulty7K* Diff, double Dri
 
 		SpeedAtBeat = BpmAtBeat(Diff->VerticalSpeeds, Change->Time);
 
-		/*
-#ifndef NDEBUG
 		if (SpeedAtBeat != SpeedValue) // No redundant speeds
-#endif
-		*/
 			Diff->VerticalSpeeds.push_back(VSpeed);
 #ifndef NDEBUG
 			/*
@@ -216,7 +222,7 @@ void Song7K::ProcessSpeedVariations(SongInternal::Difficulty7K* Diff, double Dri
 	std::sort(Diff->VerticalSpeeds.begin(), Diff->VerticalSpeeds.end(), tSort);
 }
 
-void Song7K::Process(float Drift)
+void Song7K::Process(float Drift, double SpeedConstant)
 {
 	/* 
 		We'd like to build the notes' position from 0 to infinity, 
@@ -239,8 +245,10 @@ void Song7K::Process(float Drift)
 			continue;
 
 		ProcessBPS(*Diff, Drift);
-		ProcessVSpeeds(*Diff);
-		ProcessSpeedVariations(*Diff, Drift);
+		ProcessVSpeeds(*Diff, SpeedConstant);
+
+		if (!SpeedConstant) // If there is a speed constant having speed changes is not what we want
+			ProcessSpeedVariations(*Diff, Drift);
 
 		/* For all channels of this difficulty */
 		for (int KeyIndex = 0; KeyIndex < (*Diff)->Channels; KeyIndex++)
@@ -260,11 +268,6 @@ void Song7K::Process(float Drift)
 					    issue is not having the speed change data there.
 					*/
 					TrackNote &CurrentNote = (*Measure).MeasureNotes[Note];
-					/*int NoteMeasure = CurrentNote.GetMeasure();
-					float MeasureVerticalD = MeasureBaseSpacing * NoteMeasure;
-					float FractionVerticalD = 1.0f / float((*Diff)->Measures[KeyIndex][NoteMeasure].Fraction) * float(CurrentNote.GetFraction()) * MeasureBaseSpacing;
-					*/
-					CurrentNote.AddTime (Drift);
 
 					Vec2 VerticalPosition( 0, VerticalAtTime((*Diff)->VerticalSpeeds, CurrentNote.GetStartTime()) );
 					Vec2 HoldEndPosition( 0, VerticalAtTime((*Diff)->VerticalSpeeds, CurrentNote.GetTimeFinal()) );

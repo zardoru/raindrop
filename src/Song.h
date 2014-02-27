@@ -6,6 +6,10 @@
 
 #define MAX_CHANNELS 16
 
+#define SPEEDTYPE_FIRST 0
+#define SPEEDTYPE_MMOD 1
+#define SPEEDTYPE_CMOD 2
+
 namespace SongInternal
 {
 	struct TimingSegment
@@ -149,7 +153,7 @@ class Song7K : public TSong < TrackNote >
 	double PreviousDrift;
 
 	void ProcessBPS(SongInternal::Difficulty7K* Diff, double Drift);
-	void ProcessVSpeeds(SongInternal::Difficulty7K* Diff);
+	void ProcessVSpeeds(SongInternal::Difficulty7K* Diff, double SpeedConstant);
 	void ProcessSpeedVariations(SongInternal::Difficulty7K* Diff, double Drift);
 public:
 
@@ -190,7 +194,8 @@ public:
 	int			MeasureLength;
 	Song7K();
 	~Song7K();
-	void Process(float Drift = 0);
+
+	void Process(float Drift = 0, double SpeedConstant = 0);
 };
 
 /* Song Timing */

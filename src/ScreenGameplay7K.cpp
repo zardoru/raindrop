@@ -137,7 +137,55 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	if (AudioCompensation)
 		TimeCompensation = MixerGetLatency();
 
-	MySong->Process(TimeCompensation + Configuration::GetConfigf("Offset7K"));
+	double DesiredDefaultSpeed = Configuration::GetSkinConfigf("DefaultSpeedUnits");
+	double Drift = TimeCompensation + Configuration::GetConfigf("Offset7K");
+
+	int SpeedType = Configuration::GetSkinConfigf("DefaultSpeedKind");
+	double SpeedConstant = 0; // Unless set, assume we're using speed changes
+
+	/* 
+ * 		There are three kinds of speed modifiers:
+ * 			-CMod (Keep speed the same through the song, equal to a constant)
+ * 			-MMod (Find highest speed and set multiplier to such that the highest speed is equal to a constant)
+ *			-First (Find the first speed in the chart, and set multiplier to such that the first speed is equal to a constant)
+ *
+ *			The calculations are done ahead, and while SpeedConstant = 0 either MMod or first are assumed
+ *			but only if there's a constant specified by the user.
+ * */
+
+	if (DesiredDefaultSpeed)
+	{
+
+		if (SpeedType == SPEEDTYPE_CMOD) // cmod
+		{
+			SpeedMultiplierUser = 1;
+			SpeedConstant = DesiredDefaultSpeed;
+
+		}
+
+		MySong->Process(Drift, SpeedConstant);
+
+		if (SpeedType == SPEEDTYPE_MMOD) // mmod
+		{
+			double max = 0; // Find the highest speed
+			for (TimingData::iterator i = CurrentDiff->VerticalSpeeds.begin();
+				i != CurrentDiff->VerticalSpeeds.end();
+				i++)
+			{
+				max = std::max(max, abs(i->Value));
+			}
+		
+			double Ratio = DesiredDefaultSpeed / max; // How much above or below are we from the maximum speed?
+			SpeedMultiplierUser = Ratio;
+		}else if (SpeedType != SPEEDTYPE_CMOD) // We use this case as default. The logic is "Not a CMod, Not a MMod, then use first, the default.
+		{
+			double DesiredMultiplier =  DesiredDefaultSpeed / VSpeeds[0].Value;
+
+			SpeedMultiplierUser = DesiredMultiplier;
+		}
+
+	}else
+		MySong->Process(Drift, SpeedConstant); // Regular processing
 
 	Channels = CurrentDiff->Channels;
 	VSpeeds = CurrentDiff->VerticalSpeeds;
@@ -291,13 +339,6 @@ void ScreenGameplay7K::MainThreadInitialization()
 	SetupScriptConstants();
 	Animations->Initialize( FileManager::GetSkinPrefix() + "screengameplay7k.lua" );
 
-	double DesiredDefaultSpeed = Configuration::GetSkinConfigf("DefaultSpeedUnits");
-	double DesiredMultiplier =  DesiredDefaultSpeed / VSpeeds[0].Value;
-
-	if (DesiredDefaultSpeed > 0)
-	{
-		SpeedMultiplierUser = DesiredMultiplier;
-	}
 
 	Running = true;
 }
@@ -451,6 +492,9 @@ bool ScreenGameplay7K::Run(double Delta)
 			RunMeasures();
 
 			SongOldTime = SongTimeReal;
+
+			if (SongTime > CurrentDiff->Duration + 3)
+				Running = false; // Later on: evaluation screen instead.
 		}else
 		{
 			SongTime = -(WAITING_TIME - ScreenTime);

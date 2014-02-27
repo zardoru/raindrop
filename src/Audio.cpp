@@ -45,7 +45,12 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
 		outputParams.device = Device;
 		outputParams.channelCount = 2;
 		outputParams.sampleFormat = paInt16;
-		outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultLowOutputLatency;
+
+		if (!Configuration::GetConfigf("DontUseLowLatency"))
+			outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultLowOutputLatency;
+		else
+			outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultHighOutputLatency;
+			
 
 #ifndef WIN32
 
