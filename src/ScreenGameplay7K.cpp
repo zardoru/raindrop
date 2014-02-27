@@ -179,7 +179,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 			SpeedMultiplierUser = Ratio;
 		}else if (SpeedType != SPEEDTYPE_CMOD) // We use this case as default. The logic is "Not a CMod, Not a MMod, then use first, the default.
 		{
-			double DesiredMultiplier =  DesiredDefaultSpeed / VSpeeds[0].Value;
+			double DesiredMultiplier =  DesiredDefaultSpeed / CurrentDiff->VerticalSpeeds[0].Value;
 
 			SpeedMultiplierUser = DesiredMultiplier;
 		}
