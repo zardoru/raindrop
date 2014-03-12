@@ -7,7 +7,7 @@ namespace Configuration
 	String GetConfigs(String Name, String Namespace = "");
 	float  GetConfigf(String Name, String Namespace = "");
 	String GetSkinConfigs(String Name, String Namespace = "");
-	float  GetSkinConfigf(String Name, String Namespace = "");
+	double  GetSkinConfigf(String Name, String Namespace = "");
 	void GetConfigListS(String Name, std::vector<String> &Out);
 	// void SetConfig(String Name, String Value, String Namespace = "");
 	// void SetConfig(String Name, float Value, String Namespace = "");

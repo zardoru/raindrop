@@ -221,7 +221,7 @@ Judgement GameObject::Hit(double Time, Vec2 mpos, bool KeyDown,  bool Autoplay, 
 			}
 
 
-			// Judgement (values in seconds
+			// Judgement (values in seconds)
 			RVal = Bad;
 
 			if (SpareTime < DotcurGreatLeniency)

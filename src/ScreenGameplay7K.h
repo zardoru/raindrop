@@ -50,13 +50,17 @@ private:
 	Image*  GearLaneImageDown[MAX_CHANNELS];
 	Image*  NoteImages[MAX_CHANNELS];
 	Image*  NoteImagesHold[MAX_CHANNELS];
-	float NoteHeight;
+	Image*  NoteImagesHoldHead[MAX_CHANNELS];
+	Image*  NoteImagesHoldTail[MAX_CHANNELS];
+	double NoteHeight;
+	double HoldHeadHeight;
+	double HoldTailHeight;
 	GraphObject2D Keys[MAX_CHANNELS];
 	GraphObject2D Background;
 	GraphObjectMan *Animations;
-	float LanePositions[MAX_CHANNELS];
-	float LaneWidth[MAX_CHANNELS];
-	float GearHeightFinal;
+	double LanePositions[MAX_CHANNELS];
+	double LaneWidth[MAX_CHANNELS];
+	double GearHeightFinal;
 
 	AudioStream *Music;
 	SoundSample *MissSnd;
@@ -81,8 +85,8 @@ private:
 	void RecalculateEffects();
 	void RunMeasures();
 
-	void HitNote (double TimeOff, uint32 Lane);
-	void MissNote (double TimeOff, uint32 Lane, bool auto_hold_miss);
+	void HitNote (double TimeOff, uint32 Lane, bool IsHold);
+	void MissNote (double TimeOff, uint32 Lane, bool IsHold, bool auto_hold_miss);
 
 	void DrawMeasures();
 

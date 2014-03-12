@@ -43,9 +43,9 @@ String GetConfsInt(String Name, String Namespace, LuaManager &L)
 	return Retval;
 }
 
-float GetConffInt(String Name, String Namespace, LuaManager &L)
+double GetConffInt(String Name, String Namespace, LuaManager &L)
 {
-	float Retval;
+	double Retval;
 	if (Namespace.length())
 	{
 		L.UseArray(Namespace);
@@ -72,7 +72,7 @@ String Configuration::GetSkinConfigs(String Name, String Namespace)
 	return GetConfsInt(Name, Namespace, *SkinCfgLua);
 }
 
-float  Configuration::GetSkinConfigf(String Name, String Namespace)
+double  Configuration::GetSkinConfigf(String Name, String Namespace)
 {
 	return GetConffInt(Name, Namespace, *SkinCfgLua);
 }

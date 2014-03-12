@@ -5,6 +5,8 @@
 #include "GameWindow.h"
 #include "Game_Consts.h"
 
+#define BLUE_CONSTANT (200.0 / 255.0)
+
 ActorBarline::ActorBarline(ScreenGameplay *_Parent) : GraphObject2D()
 {
 	Parent = _Parent;
@@ -51,26 +53,26 @@ void ActorBarline::Run(double TimeDelta, double Ratio)
 		Red = 1;
 		Blue = Green = 0;
 
-		if (Ratio > RadioThreshold)
+		if (Ratio > RadioThreshold) // Red to blue
 		{
 			double diff = Ratio - RadioThreshold;
 			double duration = (1 - RadioThreshold);
 
-			Red = 1 - ( diff/duration );
-			Blue = (200.f / 255.f) * (diff/duration);
+			Red = LerpRatio(1.0, 0.0, diff, duration );
+			Blue = LerpRatio(0.0, BLUE_CONSTANT, diff, duration);
 		}
 	}else
 	{
 		Red = 0.0;
 		Blue = 200.f / 255.f;
 
-		if (Ratio > RadioThreshold)
+		if (Ratio > RadioThreshold) // Blue to red
 		{
 			float diff = Ratio - RadioThreshold;
 			double duration = (1 - RadioThreshold);
 
-			Red = 1 * (diff/duration);
-			Blue = 200.f / 255.f - (200.f / 255.f) * (diff/duration);
+			Red = LerpRatio(0.0, 1.0, diff, duration);
+			Blue = LerpRatio(BLUE_CONSTANT, 0.0, diff, duration);
 		}
 	}
 

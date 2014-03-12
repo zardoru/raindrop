@@ -8,9 +8,6 @@
 #include "GraphObjectMan.h"
 #include "Configuration.h"
 
-#ifdef WIN32
-#pragma warning (disable : 4244)
-#endif
 
 namespace LuaAnimFuncs
 {
@@ -19,7 +16,7 @@ namespace LuaAnimFuncs
 	int SetRotation(lua_State *L)
 	{
 		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
-		float rot = luaL_checknumber(L, 1);
+		double rot = luaL_checknumber(L, 1);
 		Target->SetRotation(rot);
 		return 0;
 	}
@@ -34,7 +31,7 @@ namespace LuaAnimFuncs
 	int Rotate(lua_State *L)
 	{
 		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
-		float delta = luaL_checknumber(L, 1);
+		double delta = luaL_checknumber(L, 1);
 		Target->AddRotation(delta);
 		return 0;
 	}
@@ -42,7 +39,7 @@ namespace LuaAnimFuncs
 	int Move(lua_State *L)
 	{
 		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
-		float x = luaL_checknumber(L, 1), y = luaL_checknumber(L, 2);
+		double x = luaL_checknumber(L, 1), y = luaL_checknumber(L, 2);
 		Target->AddPosition( Vec2(x, y) );
 		return 0;
 	}
@@ -75,7 +72,7 @@ namespace LuaAnimFuncs
 	int SetScale(lua_State *L)
 	{
 		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
-		float scalex = luaL_checknumber(L, 1), scaley = luaL_checknumber(L, 2);
+		double scalex = luaL_checknumber(L, 1), scaley = luaL_checknumber(L, 2);
 		Target->SetScale( Vec2( scalex, scaley ) );
 		return 0;
 	}
@@ -115,7 +112,7 @@ namespace LuaAnimFuncs
 	int SetAlpha(lua_State *L)
 	{
 		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
-		float alpha = luaL_checknumber(L, 1);
+		double alpha = luaL_checknumber(L, 1);
 		Target->Alpha = alpha;
 		return 0;
 	}
@@ -192,8 +189,8 @@ namespace LuaAnimFuncs
 	int SetSize(lua_State *L)
 	{
 		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
-		float W = luaL_checknumber(L, 1);
-		float H = luaL_checknumber(L, 2);
+		double W = luaL_checknumber(L, 1);
+		double H = luaL_checknumber(L, 2);
 		Target->SetSize(W, H);
 		return 0;
 	}
@@ -224,7 +221,7 @@ namespace LuaAnimFuncs
 	int SetColor(lua_State *L)
 	{
 		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
-		float R = luaL_checknumber(L, 1), G = luaL_checknumber(L, 2), B = luaL_checknumber(L, 3);
+		double R = luaL_checknumber(L, 1), G = luaL_checknumber(L, 2), B = luaL_checknumber(L, 3);
 
 		Target->Red = R;
 		Target->Green = G;

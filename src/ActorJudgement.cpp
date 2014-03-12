@@ -51,15 +51,8 @@ void ActorJudgement::Run(double delta)
 {
 	if (AnimTime > 0)
 	{
-		float speed = 1.3f / 0.7f;
-		SetScale(Vec2( GetScale().x - speed * delta, GetScale().y - speed * delta));
-		if (GetScale().x < 1)
-			SetScaleX(1);
-		if (GetScale().y < 1)
-			SetScaleY(1);
-	}else
-	{
-		SetScale(0.8f);
+		SetScale( Vec2(LerpRatio (GetScale().x, 1.0f, AnimDuration - AnimTime, AnimDuration),
+			LerpRatio (GetScale().y, 1.0f, AnimDuration - AnimTime, AnimDuration) ) );
 	}
 
 	AnimTime -= delta;

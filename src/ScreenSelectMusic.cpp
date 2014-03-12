@@ -54,7 +54,7 @@ ScreenSelectMusic::ScreenSelectMusic()
 		}
 	}
 
-	SelectedMode = MODE_DOTCUR;
+	SelectedMode = MODE_7K;
 
 	OptionUpscroll = false;
 
@@ -434,5 +434,5 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 
 void ScreenSelectMusic::HandleScrollInput(double xOff, double yOff)
 {
-	PendingListY += yOff * 80;
+	PendingListY += yOff * 90;
 }

@@ -49,29 +49,34 @@ void ScreenGameplay7K::UpdateScriptScoreVariables()
 }
 
 
-void ScreenGameplay7K::HitNote (double TimeOff, uint32 Lane)
+void ScreenGameplay7K::HitNote (double TimeOff, uint32 Lane, bool IsHold)
 {
 	score_keeper->hitNote(TimeOff);
 
 	UpdateScriptScoreVariables();
 
 	Animations->GetEnv()->SetGlobal("Combo", score_keeper->getScore(ST_COMBO));
-	Animations->GetEnv()->CallFunction("HitEvent", 2);
+	Animations->GetEnv()->CallFunction("HitEvent", 3);
 	Animations->GetEnv()->PushArgument(TimeOff);
 	Animations->GetEnv()->PushArgument((int)Lane + 1);
+	Animations->GetEnv()->PushArgument(IsHold);
 	Animations->GetEnv()->RunFunction();
 }
 
-void ScreenGameplay7K::MissNote (double TimeOff, uint32 Lane, bool auto_hold_miss)
+void ScreenGameplay7K::MissNote (double TimeOff, uint32 Lane, bool IsHold, bool auto_hold_miss)
 {
 	score_keeper->missNote(auto_hold_miss);
+
+	if (IsHold)
+		HeldKey[Lane] = false;
 
 	UpdateScriptScoreVariables();
 
 	Animations->GetEnv()->SetGlobal("Combo", score_keeper->getScore(ST_COMBO));
-	Animations->GetEnv()->CallFunction("MissEvent", 2);
+	Animations->GetEnv()->CallFunction("MissEvent", 3);
 	Animations->GetEnv()->PushArgument(TimeOff);
 	Animations->GetEnv()->PushArgument((int)Lane + 1);
+	Animations->GetEnv()->PushArgument(IsHold);
 	Animations->GetEnv()->RunFunction();
 }
 
@@ -92,7 +97,7 @@ void ScreenGameplay7K::RunMeasures()
 				if ((SongTime - m->GetTimeFinal()) * 1000 > score_keeper->getAccCutoff() && !m->WasNoteHit() && m->IsHold())
 				{
 					// remove hold notes that were never hit.
-					MissNote((SongTime - m->GetTimeFinal()) * 1000, k, true);
+					MissNote((SongTime - m->GetTimeFinal()) * 1000, k, m->IsHold(), true);
 
 					m = (*i).MeasureNotes.erase(m);
 
@@ -106,7 +111,7 @@ void ScreenGameplay7K::RunMeasures()
 				else if ((SongTime - m->GetStartTime()) * 1000 > score_keeper->getAccCutoff() && (!m->WasNoteHit() && m->IsEnabled()))
 				{
 					// remove notes that were never hit.
-					MissNote((SongTime - m->GetStartTime()) * 1000, k, false);
+					MissNote((SongTime - m->GetStartTime()) * 1000, k, m->IsHold(), false);
 
 					if (score_keeper->getScore(ST_COMBO) > 10)
 						MissSnd->Play();
@@ -145,14 +150,14 @@ void ScreenGameplay7K::ReleaseLane(unsigned int Lane)
 
 				if (tD < score_keeper->getAccCutoff()) /* Released in time */
 				{
-					HitNote(tD, Lane);
+					HitNote(tD, Lane, m->IsHold());
 
 					HeldKey[m->GetTrack()] = false;
 					(*i).MeasureNotes.erase(m);
 
 				}else /* Released off time */
 				{
-					MissNote(tD, Lane, false);
+					MissNote(tD, Lane, m->IsHold(), false);
 
 					if (score_keeper->getScore(ST_COMBO) > 10)
 						MissSnd->Play();
@@ -173,7 +178,7 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 	float MsDisplayMargin = (Configuration::GetSkinConfigf("HitErrorDisplayLimiter"));
 	NoteVector &Measures = NotesByMeasure[Lane];
 
-	if (!Music)
+	if (!Music || !Active)
 		return;
 
 	lastClosest[Lane] = MsDisplayMargin;
@@ -201,7 +206,7 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 			{
 				if (tD <= score_keeper->getAccMax())
 				{
-					HitNote(tD, Lane);
+					HitNote(tD, Lane, m->IsHold());
 
 					if (m->IsHold())
 					{
@@ -211,7 +216,7 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 				}
 				else
 				{
-					MissNote(tD, Lane, m->IsHold());
+					MissNote(tD, Lane, m->IsHold(), m->IsHold());
 
 					// missed feedback
 					MissSnd->Play();
