@@ -52,6 +52,20 @@ inline bool IntervalsIntersect(const double a, const double b, const double c, c
 	return a <= d && c <= b;
 }
 
+template <class T>
+inline T LerpRatio(const T &Start, const T& End, double Progress, double Total)
+{
+	return Start + (End - Start) * Progress / Total;
+}
+
+template <class T>
+inline T Lerp(const T &Start, const T& End, double k)
+{
+	return Start + (End - Start) * k;
+}
+
+
+
 #ifdef WIN32
 #pragma warning (disable: 4244)
 #pragma warning (disable: 4996) // deprecation

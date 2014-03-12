@@ -1,17 +1,29 @@
 /* SongDC Timing functions. */
-/* note to self: Template syntax is ugly. */
 #include <vector>
 
 /* Assume these are sorted. */
 // Return the (vector's index+1) Beat resides in.
 uint32 SectionIndex(const TimingData &Timing, float Beat);
 
-double BpmAtBeat(const TimingData &Timing, float Beat);
+/*
+	Find the value of the interval function defined by Timing at the value Beat
+*/
+double SectionValue(const TimingData &Timing, float Beat);
 
+/*
+	Find the time at Beat given a constant function defined in intervals by Timing
+*/
 double TimeAtBeat(const TimingData &Timing, float Offset, float Beat);
 
-double VerticalAtTime(const TimingData &Timing, float Time, float Drift = 0);
+/*
+	Find the antiderivative of an interval defined function through the Timing variable
+	from 0 to Time.
+*/
+double IntegrateToTime(const TimingData &Timing, float Time, float Drift = 0);
 
+/*
+	Find the sum of all stops that have happened in [0, Beat)
+*/
 double StopTimeAtBeat(const TimingData &StopsTiming, float Beat);
 
 double BeatAtTime(const TimingData &Timing, float Time, float Offset);

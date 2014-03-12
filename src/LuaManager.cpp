@@ -55,14 +55,6 @@ bool LuaManager::RunScript(std::string Filename)
 		std::string reason = lua_tostring(State, -1);
 
 		printf("Lua error: %s\n", reason.c_str());
-
-		// root->CONSOLE->LogFormat("Error [LuaManager]: Loading file %s\n", Filename.c_str());
-
-		/* if (errload)
-			root->CONSOLE->PrintLogFormat("    ->(Loading Error %i: %s)\n", errload, reason.c_str());
-		if (errcall)
-			root->CONSOLE->PrintLogFormat("    ->(Runtime Error %i: %s)\n", errcall, reason.c_str());
-			*/
 		return false;
 	}
 	return true;
@@ -75,13 +67,6 @@ bool LuaManager::RunString(std::string sString)
 	if ( (errload = luaL_loadstring(State, sString.c_str())) || (errcall = lua_pcall(State, 0, LUA_MULTRET, 0)) )
 	{
 		std::string reason = lua_tostring(State, -1);
-		/* root->CONSOLE->Print("Error [LuaManager]: Running string.\n");
-
-		if (errload)
-			root->CONSOLE->PrintFormat("    ->(Loading Error %i: %s)\n", errload, reason.c_str());
-		if (errcall)
-			root->CONSOLE->PrintFormat("    ->(Runtime Error %i: %s)\n", errcall, reason.c_str());
-			*/
 		return false;
 	}
 	return true;

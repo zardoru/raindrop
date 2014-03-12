@@ -6,6 +6,9 @@
 #include "FileManager.h"
 #include "Audio.h"
 
+#define FADEIN_DURATION 0.3f
+#define FADEOUT_DURATION 0.7f
+
 SoundSample *HitSnd = NULL;
 SoundSample *HoldReleaseSnd = NULL;
 bool GameObjectTexInitialized = false;
@@ -19,7 +22,7 @@ GameObject::GameObject() : GraphObject2D(false)
 	SetSize(CircleSize);
 
 	fadeout_time = 0;
-	fadein_time = 0.7f;
+	fadein_time = FADEIN_DURATION;
 	AnimationStatus = 0;
 	hold_duration = 0;
 	endTime = 0;
@@ -74,17 +77,19 @@ void GameObject::Animate(float delta, float songTime)
 
 			if (waiting_time <= 0)
 			{
-				Alpha = 1-fadein_time*5;
+				Alpha = LerpRatio(0.0, 1.0, FADEIN_DURATION - fadein_time, FADEIN_DURATION);
+				SetScale ( LerpRatio(1.5, 1.0, FADEIN_DURATION - fadein_time, FADEIN_DURATION) );
 				fadein_time -= delta;
 			}
 
 			return;
 		}
+
+		Alpha = 1;
+		SetScale (1);
 		AnimationStatus = 1;
 	}else if (AnimationStatus == 1)
 	{
-		Alpha = 1;
-		
 		if (fadeout_time)
 			AnimationStatus = 2;
 	}
@@ -93,9 +98,9 @@ void GameObject::Animate(float delta, float songTime)
 		fadeout_time -= delta*2;
 
 		// alpha out
-		Alpha = 1 * (fadeout_time);
+		Alpha = LerpRatio (1.0, 0.0, FADEOUT_DURATION - fadeout_time, FADEOUT_DURATION);
 
-		if (Alpha <= 0)
+		if (fadeout_time <= 0)
 		{
 			Alpha = 0;
 			AnimationStatus = 3; // Remove only
@@ -104,10 +109,10 @@ void GameObject::Animate(float delta, float songTime)
 		// scale in
 		if (endTime == 0)
 		{
-			SetScale(2 - fadeout_time);
+			SetScale(LerpRatio(1.0, 2.0, FADEOUT_DURATION - fadeout_time, FADEOUT_DURATION));
 		}
-		else
-			SetScale(3 - fadeout_time);
+		else // Holds have a bigger scale-in
+			SetScale(LerpRatio(1.0, 3.0, FADEOUT_DURATION - fadeout_time, FADEOUT_DURATION));
 
 		return;
 	}
@@ -118,8 +123,8 @@ void GameObject::Animate(float delta, float songTime)
 	{
 		float holdDuration = endTime - startTime;
 		float Progress = songTime - startTime;
-		SetScale(1 + 0.3*Progress/holdDuration);
-		Green = 0.5 - 0.5 * Progress/holdDuration;
+		SetScale(LerpRatio(1.0, 1.3, Progress, holdDuration));
+		Green = LerpRatio(0.5, 0.0, Progress, holdDuration);
 	}
 }
 
@@ -147,7 +152,7 @@ Judgement GameObject::Run(double delta, double Time, bool Autoplay)
 	{
 		if (endTime == 0)
 		{
-			fadeout_time = 0.7f; // Fade out! You missed!
+			fadeout_time = FADEOUT_DURATION; // Fade out! You missed!
 			return Miss;
 		}
 	}
@@ -160,14 +165,14 @@ Judgement GameObject::Run(double delta, double Time, bool Autoplay)
 		/* it's done */
 		if (Time >= endTime && fadeout_time == 0)
 		{
-			fadeout_time = 1;
+			fadeout_time = FADEOUT_DURATION;
 			BeingHeld = false;
 			HoldReleaseSnd->Play();
 			return OK;
 		}
 	}else if (!BeingHeld && Time > startTime+LeniencyHitTime)
 	{
-		fadeout_time = 1;
+		fadeout_time = FADEOUT_DURATION;
 		return NG;
 	}
 

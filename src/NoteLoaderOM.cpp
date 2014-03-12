@@ -132,12 +132,16 @@ int GetInterval(float Position, int Channels)
 	return (int)(Position / Step);
 }
 
-String GetSampleFilename(SplitResult &Spl, String NoteType, int Hitsound)
+#define NOTE_SLIDER 2
+#define NOTE_HOLD 128
+#define NOTE_NORMAL 1
+
+String GetSampleFilename(SplitResult &Spl, int NoteType, int Hitsound)
 {
 	int SampleSet, SampleSetAddition, CustomSample, Volume;
 	String SampleFilename;
 
-	if (NoteType == "128")
+	if (NoteType & NOTE_HOLD)
 	{
 		if (Spl[5].length())
 			return Spl[5];
@@ -148,7 +152,7 @@ String GetSampleFilename(SplitResult &Spl, String NoteType, int Hitsound)
 
 		Volume = atoi(Spl[4].c_str()); // ignored lol
 
-	}else if (NoteType == "1")
+	}else if (NoteType & NOTE_NORMAL)
 	{
 		if (Spl[4].length())
 			return Spl[4];
@@ -159,7 +163,7 @@ String GetSampleFilename(SplitResult &Spl, String NoteType, int Hitsound)
 
 		Volume = atoi(Spl[3].c_str()); // ignored
 
-	}else if (NoteType == "2")
+	}else if (NoteType & NOTE_SLIDER)
 	{
 		SampleSet = SampleSetAddition = CustomSample = 0;
 	}
@@ -211,13 +215,8 @@ String GetSampleFilename(SplitResult &Spl, String NoteType, int Hitsound)
 	return SampleFilename;
 }
 
-#define NOTE_SLIDER 2
-#define NOTE_HOLD 128
-#define NOTE_NORMAL 1
-
 void ReadObjects (String line, Song7K *Out, SongDiff Difficulty)
 {
-	// Ignoring holds for now for easier reading.
 	SplitResult Spl;
 	boost::split(Spl, line, boost::is_any_of(","));
 
@@ -259,12 +258,12 @@ void ReadObjects (String line, Song7K *Out, SongDiff Difficulty)
 		if (Difficulty->SpeedChanges.size())
 		{
 			if (startTime >= Difficulty->SpeedChanges.at(0).Time)
-				Multiplier = BpmAtBeat(Difficulty->SpeedChanges, startTime);
+				Multiplier = SectionValue(Difficulty->SpeedChanges, startTime);
 		}
 
 		float finalSize = sliderLength * sliderRepeats * Multiplier;
 		float beatDuration = (finalSize / Out->SliderVelocity); 
-		float bpm = (60000.0 / BpmAtBeat(Difficulty->Timing, startTime));
+		float bpm = (60000.0 / SectionValue(Difficulty->Timing, startTime));
 		float finalLength = beatDuration * spb(bpm);
 
 		if (startTime > finalLength + startTime)
@@ -289,7 +288,7 @@ void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song7K *O
 	std::ifstream filein (filename.c_str());
 	SongDiff Difficulty = new SongInternal::Difficulty7K();
 
-	// BMS uses beat-based locations for stops and BPM. (Though the beat must be calculated.)
+	// osu! stores bpm information as the time in ms that a beat lasts.
 	Out->BPMType = Song7K::BT_Beatspace;
 	Out->SongDirectory = prefix;
 

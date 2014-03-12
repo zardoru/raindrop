@@ -20,7 +20,7 @@ uint32 SectionIndex(const TimingData &Timing, float Beat)
 	return Index;
 }
 
-double BpmAtBeat(const TimingData &Timing, float Beat)
+double SectionValue(const TimingData &Timing, float Beat)
 {
 	return Timing[SectionIndex(Timing,Beat)-1].Value;
 }
@@ -110,14 +110,14 @@ double StopTimeAtBeat(const TimingData &StopsTiming, float Beat)
 	return Time;
 }
 
-double VerticalAtTime(const TimingData &Timing, float Time, float Drift)
+double IntegrateToTime(const TimingData &Timing, float Time, float Drift)
 {
 	uint32 Section = SectionIndex(Timing, Time) - 1;
 	double Out = 0;
 
 	if (Time < 0)
 	{
-		return  Timing[0].Value * Time + VerticalAtTime(Timing, 0, Drift);
+		return  Timing[0].Value * Time + IntegrateToTime(Timing, 0, Drift);
 	}
 
 	for (uint32 i = 0; i < Section; i++)
@@ -133,5 +133,5 @@ double VerticalAtTime(const TimingData &Timing, float Time, float Drift)
 double BeatAtTime(const TimingData &Timing, float Time, float Offset)
 {
 	double sDelta = Timing[0].Value * Offset;
-	return VerticalAtTime(Timing, Time) - sDelta;
+	return IntegrateToTime(Timing, Time) - sDelta;
 }

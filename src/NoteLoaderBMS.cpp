@@ -138,7 +138,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *
 
 		if (Utility::IsNumeric(MainCommand.c_str())) // We've got work to do.
 		{
-
+			int Measure = atoi(MainCommand.substr(0,3).c_str());
 		}
 
 	}

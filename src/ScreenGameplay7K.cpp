@@ -488,7 +488,7 @@ bool ScreenGameplay7K::Run(double Delta)
 			if (SongDelta > 0.00001 && abs(SongTime - SongTimeReal) * 1000 > ErrorTolerance) // Significant delta with a x ms difference? We're pretty off..
 				SongTime = SongTimeReal;
 
-			CurrentVertical = VerticalAtTime(VSpeeds, SongTime);
+			CurrentVertical = IntegrateToTime(VSpeeds, SongTime);
 			RunMeasures();
 
 			SongOldTime = SongTimeReal;
@@ -499,7 +499,7 @@ bool ScreenGameplay7K::Run(double Delta)
 		{
 			SongTime = -(WAITING_TIME - ScreenTime);
 			SongDelta = 0;
-			CurrentVertical = VerticalAtTime(VSpeeds, SongTime);
+			CurrentVertical = IntegrateToTime(VSpeeds, SongTime);
 		}
 	}
 
@@ -527,9 +527,9 @@ bool ScreenGameplay7K::Run(double Delta)
 	ss << "\nMult/Speed: " << std::setprecision(2) << std::setiosflags(std::ios::fixed) << SpeedMultiplier << "x / " << SpeedMultiplier*4;
 	ss << "\nLife: " << score_keeper->getLifebarAmount(LT_GROOVE) * 100.0 << "%";
 	if (SongTime > 0)
-		ss << "\nScrolling Speed: " << BpmAtBeat(VSpeeds, SongTime) * SpeedMultiplier;
+		ss << "\nScrolling Speed: " << SectionValue(VSpeeds, SongTime) * SpeedMultiplier;
 	else
-		ss << "\nScrolling Speed: " << BpmAtBeat(VSpeeds, 0) * SpeedMultiplier;
+		ss << "\nScrolling Speed: " << SectionValue(VSpeeds, 0) * SpeedMultiplier;
 	// ss << "\nt / st " << std::setiosflags(std::ios::fixed) << SongTime << " / " << SongTimeReal << " / " << Music->GetPlayedTime() << std::resetiosflags(std::ios::fixed);
 
 #ifdef DEBUG

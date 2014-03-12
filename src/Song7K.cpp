@@ -135,7 +135,7 @@ void Song7K::ProcessBPS(SongInternal::Difficulty7K* Diff, double Drift)
 
 		Diff->BPS.push_back(Seg);
 
-		float speedRestore = bps(BpmAtBeat(Diff->Timing, Time->Time));
+		float speedRestore = bps(SectionValue(Diff->Timing, Time->Time));
 
 		for (TimingData::iterator k = Diff->BPS.begin(); k != Diff->BPS.end(); k++)
 		{
@@ -195,7 +195,7 @@ void Song7K::ProcessSpeedVariations(SongInternal::Difficulty7K* Diff, double Dri
 			goto next_speed;
 
 		float SpeedValue;
-		SpeedValue = BpmAtBeat(tVSpeeds, Change->Time) * Change->Value;
+		SpeedValue = SectionValue(tVSpeeds, Change->Time) * Change->Value;
 
 		SongInternal::TimingSegment VSpeed;
 		float SpeedAtBeat;
@@ -203,7 +203,7 @@ void Song7K::ProcessSpeedVariations(SongInternal::Difficulty7K* Diff, double Dri
 		VSpeed.Time = Change->Time;
 		VSpeed.Value = SpeedValue;
 
-		SpeedAtBeat = BpmAtBeat(Diff->VerticalSpeeds, Change->Time);
+		SpeedAtBeat = SectionValue(Diff->VerticalSpeeds, Change->Time);
 
 		if (SpeedAtBeat != SpeedValue) // No redundant speeds
 			Diff->VerticalSpeeds.push_back(VSpeed);
@@ -211,7 +211,7 @@ void Song7K::ProcessSpeedVariations(SongInternal::Difficulty7K* Diff, double Dri
 			/*
 		else
 		{
-			printf("Redundant speed change while processing (%f / %f) Old value at time is %f, Original value is %f\n", Change->Time, SpeedValue, SpeedAtBeat, BpmAtBeat(tVSpeeds, Change->Time));
+			printf("Redundant speed change while processing (%f / %f) Old value at time is %f, Original value is %f\n", Change->Time, SpeedValue, SpeedAtBeat, SectionValue(tVSpeeds, Change->Time));
 		}
 		*/
 #endif
@@ -269,8 +269,8 @@ void Song7K::Process(float Drift, double SpeedConstant)
 					*/
 					TrackNote &CurrentNote = (*Measure).MeasureNotes[Note];
 
-					Vec2 VerticalPosition( 0, VerticalAtTime((*Diff)->VerticalSpeeds, CurrentNote.GetStartTime()) );
-					Vec2 HoldEndPosition( 0, VerticalAtTime((*Diff)->VerticalSpeeds, CurrentNote.GetTimeFinal()) );
+					Vec2 VerticalPosition( 0, IntegrateToTime((*Diff)->VerticalSpeeds, CurrentNote.GetStartTime()) );
+					Vec2 HoldEndPosition( 0, IntegrateToTime((*Diff)->VerticalSpeeds, CurrentNote.GetTimeFinal()) );
 
 					// if upscroll change minus for plus as well as matrix at screengameplay7k
 					if (!CurrentNote.IsHold())
