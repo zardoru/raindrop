@@ -17,6 +17,7 @@
 
 #include "ScoreKeeper.h"
 #include "ScreenGameplay7K.h"
+#include "ScreenEvaluation7K.h"
 
 BitmapFont * GFont = NULL;
 
@@ -202,7 +203,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		}
 	}
 
-	NoteHeight = Configuration::GetSkinConfigf("NoteHeight7K");
+	NoteHeight = Configuration::GetSkinConfigf("NoteHeight");
 
 	if (!NoteHeight)
 		NoteHeight = 10;
@@ -322,13 +323,19 @@ void ScreenGameplay7K::MainThreadInitialization()
 
 	NoteImage = ImageLoader::LoadSkin("note.png");
 
-	Background.SetImage(ImageLoader::Load(MySong->BackgroundDir));
+	Image* BackgroundImage = ImageLoader::Load(MySong->BackgroundDir);
+
+	if (BackgroundImage)
+		Background.SetImage(BackgroundImage);
+	else
+		Background.SetImage(ImageLoader::Load(Configuration::GetSkinConfigs("DefaultGameplay7KBackground")));
+
 	Background.SetZ(0);
 	Background.AffectedByLightning = true;
 
 	if (Background.GetImage())
 	{
-		float SizeRatio = 768 / Background.GetHeight();
+		float SizeRatio = ScreenHeight / Background.GetHeight();
 		Background.SetScale(SizeRatio);
 		Background.Centered = true;
 		Background.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
@@ -440,7 +447,7 @@ void ScreenGameplay7K::UpdateScriptVariables()
 
 	L->NewArray();
 
-	for (int i = 0; i < Channels; i++)
+	for (uint32 i = 0; i < Channels; i++)
 	{
 		L->SetFieldI(i + 1, HeldKey[i]);
 	}
@@ -502,7 +509,11 @@ bool ScreenGameplay7K::Run(double Delta)
 			SongOldTime = SongTimeReal;
 
 			if (SongTime > CurrentDiff->Duration + 3)
-				Running = false; // Later on: evaluation screen instead.
+			{
+				ScreenEvaluation7K *Eval = new ScreenEvaluation7K(this);
+				Eval->Init();
+				Next = Eval;
+			}
 		}else
 		{
 			SongTime = -(WAITING_TIME - ScreenTime);

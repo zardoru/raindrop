@@ -13,7 +13,7 @@ class ScreenEvaluation : public IScreen
 
 	String ResultsString, ResultsNumerical;
 	String TitleFormat;
-	// CEGUI::FrameWindow* wnd;
+	
 	int32 CalculateScore();
 public:
 	ScreenEvaluation(IScreen *Parent);

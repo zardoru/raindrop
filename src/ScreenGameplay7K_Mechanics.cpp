@@ -50,17 +50,18 @@ void ScreenGameplay7K::UpdateScriptScoreVariables()
 }
 
 
-void ScreenGameplay7K::HitNote (double TimeOff, uint32 Lane, bool IsHold)
+void ScreenGameplay7K::HitNote (double TimeOff, uint32 Lane, bool IsHold, bool IsHoldRelease)
 {
 	score_keeper->hitNote(TimeOff);
 
 	UpdateScriptScoreVariables();
 
 	Animations->GetEnv()->SetGlobal("Combo", score_keeper->getScore(ST_COMBO));
-	Animations->GetEnv()->CallFunction("HitEvent", 3);
+	Animations->GetEnv()->CallFunction("HitEvent", 4);
 	Animations->GetEnv()->PushArgument(TimeOff);
 	Animations->GetEnv()->PushArgument((int)Lane + 1);
 	Animations->GetEnv()->PushArgument(IsHold);
+	Animations->GetEnv()->PushArgument(IsHoldRelease);
 	Animations->GetEnv()->RunFunction();
 }
 
@@ -145,13 +146,13 @@ void ScreenGameplay7K::ReleaseLane(unsigned int Lane)
 	{
 		for (std::vector<TrackNote>::iterator m = (*i).MeasureNotes.begin(); m != (*i).MeasureNotes.end(); m++)
 		{
-			if (m->WasNoteHit() && m->IsEnabled())
+			if (m->WasNoteHit() && m->IsEnabled()) /* We hit the hold's head and we've not released it early already */
 			{
 				double tD = abs (m->GetTimeFinal() - SongTime) * 1000;
 
 				if (tD < score_keeper->getAccCutoff()) /* Released in time */
 				{
-					HitNote(tD, Lane, m->IsHold());
+					HitNote(tD, Lane, m->IsHold(), true);
 
 					HeldKey[m->GetTrack()] = false;
 					(*i).MeasureNotes.erase(m);

@@ -227,6 +227,7 @@
     <ClCompile Include="..\src\Screen.cpp" />
     <ClCompile Include="..\src\ScreenEdit.cpp" />
     <ClCompile Include="..\src\ScreenEvaluation.cpp" />
+    <ClCompile Include="..\src\ScreenEvaluation7K.cpp" />
     <ClCompile Include="..\src\ScreenGameplay.cpp" />
     <ClCompile Include="..\src\ScreenGameplay7K.cpp" />
     <ClCompile Include="..\src\ScreenGameplay7K_Mechanics.cpp" />
@@ -275,6 +276,7 @@
     <ClInclude Include="..\src\Screen.h" />
     <ClInclude Include="..\src\ScreenEdit.h" />
     <ClInclude Include="..\src\ScreenEvaluation.h" />
+    <ClInclude Include="..\src\ScreenEvaluation7K.h" />
     <ClInclude Include="..\src\ScreenGameplay.h" />
     <ClInclude Include="..\src\ScreenGameplay7K.h" />
     <ClInclude Include="..\src\ScreenLoading.h" />

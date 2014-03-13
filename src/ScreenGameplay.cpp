@@ -112,8 +112,15 @@ void ScreenGameplay::MainThreadInitialization()
 	Barline.SetImage(ImageLoader::LoadSkin("barline.png"));
 	MarkerA.SetImage(ImageLoader::LoadSkin("barline_marker.png"));
 	MarkerB.SetImage(ImageLoader::LoadSkin("barline_marker.png"));
-	Background.SetImage(ImageLoader::Load(MySong->BackgroundDir));
 	GameplayObjectImage = ImageLoader::LoadSkin("hitcircle.png");
+
+	Image* BackgroundImage = ImageLoader::Load(MySong->BackgroundDir);
+
+	if (BackgroundImage)
+		Background.SetImage(BackgroundImage);
+	else
+		Background.SetImage(ImageLoader::Load(Configuration::GetSkinConfigs("DefaultGameplayBackground")));
+
 
 	Background.AffectedByLightning = true;
 	Background.Alpha = 0.8f;

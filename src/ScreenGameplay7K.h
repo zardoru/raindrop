@@ -85,7 +85,7 @@ private:
 	void RecalculateEffects();
 	void RunMeasures();
 
-	void HitNote (double TimeOff, uint32 Lane, bool IsHold);
+	void HitNote (double TimeOff, uint32 Lane, bool IsHold, bool IsHoldRelease = false);
 	void MissNote (double TimeOff, uint32 Lane, bool IsHold, bool auto_hold_miss);
 
 	void DrawMeasures();

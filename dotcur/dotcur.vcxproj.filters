@@ -210,6 +210,9 @@
     <ClCompile Include="..\src\NoteLoaderOM.cpp">
       <Filter>Source Files\Mode7K\Internal</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\ScreenEvaluation7K.cpp">
+      <Filter>Source Files\Mode7K</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\GraphObject2D.h">
@@ -345,6 +348,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\AudioSourceMP3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScreenEvaluation7K.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
