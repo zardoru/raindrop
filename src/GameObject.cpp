@@ -112,7 +112,7 @@ void GameObject::Animate(float delta, float songTime)
 			SetScale(LerpRatio(1.0, 2.0, FADEOUT_DURATION - fadeout_time, FADEOUT_DURATION));
 		}
 		else // Holds have a bigger scale-in
-			SetScale(LerpRatio(1.0, 3.0, FADEOUT_DURATION - fadeout_time, FADEOUT_DURATION));
+			SetScale(LerpRatio(1.3, 3.0, FADEOUT_DURATION - fadeout_time, FADEOUT_DURATION));
 
 		return;
 	}
@@ -213,7 +213,7 @@ Judgement GameObject::Hit(double Time, Vec2 mpos, bool KeyDown,  bool Autoplay, 
 			HitSnd->Play();
 
 			if (endTime == 0) // Not a hold?
-				fadeout_time = 0.6f; // 0.8 secs for fadeout
+				fadeout_time = FADEOUT_DURATION;
 			else
 			{
 				heldKey = Key;

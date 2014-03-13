@@ -241,6 +241,12 @@ namespace LuaAnimFuncs
 
 	*/
 
+	int GetSkinDirectory(lua_State *L)
+	{
+		lua_pushstring(L, FileManager::GetSkinPrefix().c_str());
+		return 1;
+	}
+
 	static const struct luaL_Reg GraphObjectLib [] = 
 	{
 		{"SetRotation", SetRotation}, 
@@ -266,6 +272,7 @@ namespace LuaAnimFuncs
 		{"SetCentered", SetCentered},
 		{"SetColorInvert", SetColorInvert},
 		{"SetAffectedbyLightning", SetAffectedbyLightning},
+		{"GetSkinDirectory", GetSkinDirectory},
 		{NULL, NULL}
 	};
 }

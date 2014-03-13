@@ -380,6 +380,13 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 	 Other than that most input can be safely ignored.
 	*/
 
+	/* Handle nested screens. */
+	if (Next && Next->IsScreenRunning())
+	{
+		Next->HandleInput(key, code, isMouseInput);
+		return;
+	}
+
 	Animations->HandleInput(key, code, isMouseInput);
 
 	if (code == KE_Press)
@@ -459,6 +466,9 @@ int DigitCount (float n)
 bool ScreenGameplay7K::Run(double Delta)
 {
 	float SongDelta;
+
+	if (Next)
+		return RunNested(Delta);
 
 	if (Active)
 	{

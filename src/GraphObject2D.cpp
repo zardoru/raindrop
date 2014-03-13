@@ -72,12 +72,16 @@ void GraphObject2D::SetImage(Image* image, bool ChangeSize)
 
 void GraphObject2D::SetCropByPixels(int32 x1, int32 x2, int32 y1, int32 y2)
 {
-	mCrop_x1 = (float) x1 / (float) mWidth;
-	mCrop_x2 = (float) x2 / (float) mWidth;
-	mCrop_y1 = (float) y1 / (float) mHeight;
-	mCrop_y2 = (float) y2 / (float) mHeight;
-	DirtyTexture = true;
-	UpdateTexture();
+	if (mImage)
+	{
+		mCrop_x1 = (float) x1 / (float) mImage->w;
+		mCrop_x2 = (float) x2 / (float) mImage->w;
+		mCrop_y1 = (float) y1 / (float) mImage->h;
+		mCrop_y2 = (float) y2 / (float) mImage->h;
+
+		DirtyTexture = true;
+		UpdateTexture();
+	}
 }
 
 void GraphObject2D::SetCropToWholeImage()

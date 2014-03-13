@@ -13,8 +13,8 @@
 
 #define DirectoryPrefix String("./GameData/")
 #define SkinsPrefix String("Skins/")
-#define SongsPrefix String("./Songs/")
-
+#define SongsPrefix String("Songs/")
+#define ScriptsPrefix String("Scripts/")
 
 String FileManager::CurrentSkin = "default";
 
@@ -187,4 +187,9 @@ void FileManager::GetSongList7K(std::vector<Song7K*> &OutVec)
 			std::cout << "ok\n";
 		}
 	}
+}
+
+String FileManager::GetScriptsDirectory()
+{
+	return DirectoryPrefix + ScriptsPrefix;
 }

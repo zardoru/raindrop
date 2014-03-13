@@ -17,6 +17,7 @@ public:
 	static std::fstream& OpenFile(String Directory);
 	static String GetDirectoryPrefix();
 	static String GetSkinPrefix();
+	static String GetScriptsDirectory();
 	static void SetSkin(String NextSkin);
 };
 

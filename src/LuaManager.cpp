@@ -1,6 +1,7 @@
 #include "Global.h"
 
 #include "LuaManager.h"
+#include "FileManager.h"
 
 int LuaPanic(lua_State* State)
 {
@@ -16,6 +17,14 @@ int Break(lua_State *S)
 	return 0;
 }
 
+int DoGameScript(lua_State *S)
+{
+	LuaManager* Lua = GetObjectFromState<LuaManager>(S, "Luaman");
+	String File = luaL_checkstring(S, 1);
+	lua_pushnumber(S, Lua->RunScript(FileManager::GetScriptsDirectory() + File));
+	return 1;
+}
+
 LuaManager::LuaManager()
 {
 	State = luaL_newstate();
@@ -24,6 +33,7 @@ LuaManager::LuaManager()
 		// luaL_openlibs(State);
 		RegisterStruct("Luaman", (void*)this);
 		Register(Break, "DEBUGBREAK");
+		Register(DoGameScript, "game_require");
 		luaL_openlibs(State);
 		lua_atpanic(State, &LuaPanic);
 	}
