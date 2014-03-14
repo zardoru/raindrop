@@ -499,11 +499,14 @@ bool ScreenGameplay7K::Run(double Delta)
 				SongTime += Delta;
 			}
 
-			SongDelta = Music->GetStreamedTime() - SongOldTime;
-			SongTimeReal += SongDelta;
+			if (Music->IsPlaying())
+			{
+				SongDelta = Music->GetStreamedTime() - SongOldTime;
+				SongTimeReal += SongDelta;
 
-			if ( (SongDelta > 0.00001 && abs(SongTime - SongTimeReal) * 1000 > ErrorTolerance) || !InterpolateTime ) // Significant delta with a x ms difference? We're pretty off..
-				SongTime = SongTimeReal;
+				if ( (SongDelta > 0.00001 && abs(SongTime - SongTimeReal) * 1000 > ErrorTolerance) || !InterpolateTime ) // Significant delta with a x ms difference? We're pretty off..
+					SongTime = SongTimeReal;
+			}
 
 			CurrentVertical = IntegrateToTime(VSpeeds, SongTime);
 			RunMeasures();
