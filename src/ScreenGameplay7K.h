@@ -68,7 +68,7 @@ private:
 	ScoreKeeper7K* score_keeper;
 	double SongTime, SongTimeReal;
 
-
+	bool InterpolateTime;
 	double ErrorTolerance;
 	/* 
 		Optimizations will come in later. 

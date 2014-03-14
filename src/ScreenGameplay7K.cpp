@@ -45,6 +45,8 @@ ScreenGameplay7K::ScreenGameplay7K()
 	AudioCompensation = (Configuration::GetConfigf("AudioCompensation") != 0);
 	TimeCompensation = 0;
 
+	InterpolateTime = (Configuration::GetConfigf("InterpolateTime") != 0);
+
 	if (!GFont)
 	{	
 		GFont = new BitmapFont();
@@ -500,7 +502,7 @@ bool ScreenGameplay7K::Run(double Delta)
 			SongDelta = Music->GetStreamedTime() - SongOldTime;
 			SongTimeReal += SongDelta;
 
-			if (SongDelta > 0.00001 && abs(SongTime - SongTimeReal) * 1000 > ErrorTolerance) // Significant delta with a x ms difference? We're pretty off..
+			if ( (SongDelta > 0.00001 && abs(SongTime - SongTimeReal) * 1000 > ErrorTolerance) || InterpolateTime ) // Significant delta with a x ms difference? We're pretty off..
 				SongTime = SongTimeReal;
 
 			CurrentVertical = IntegrateToTime(VSpeeds, SongTime);

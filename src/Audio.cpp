@@ -195,7 +195,9 @@ public:
 				memset(TempStream, 0, sizeof(TempStream));
 				memset(TempSave, 0, sizeof(TempSave));
 
-				mut.lock();
+				if (Threaded)
+					mut.lock();
+
 				for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
 				{
 					if ((*i)->IsPlaying())
@@ -203,28 +205,27 @@ public:
 						(*i)->Update();
 					}
 				}
-				mut.unlock();
 
-			}/*else
-			{
-				boost::mutex::scoped_lock lk(rbufmux);
-				// Wait for it.
-				ringbuffer_has_space.wait(lk);
-				SizeAvailable = PaUtil_GetRingBufferWriteAvailable(&RingBuf);
-			}*/
+				if (Threaded)
+					mut.unlock();
+
+			}
 		} while (Threaded);
 	}
 
 	void AppendMusic(SoundStream* Stream)
 	{
-		mut.lock();
+		if (Threaded)
+					mut.lock();
 		Streams.push_back(Stream);
-		mut.unlock();
+		if (Threaded)
+					mut.unlock();
 	}
 
 	void RemoveMusic(SoundStream *Stream)
 	{
-		mut.lock();
+		if (Threaded)
+					mut.lock();
 		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
 		{
 			if ((*i) == Stream)
@@ -236,19 +237,23 @@ public:
 					break;
 			}
 		}
-		mut.unlock();
+		if (Threaded)
+				mut.unlock();
 	}
 
 	void AddSound(SoundSample* Sample)
 	{
-		mut2.lock();
+		if (Threaded)
+			mut2.lock();
 		Samples.push_back(Sample);
-		mut2.unlock();
+		if (Threaded)
+			mut2.unlock();
 	}
 
 	void RemoveSound(SoundSample* Sample)
 	{
-		mut2.lock();
+		if (Threaded)
+			mut2.lock();
 		for(std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); i++)
 		{
 			if ((*i) == Sample)
@@ -259,7 +264,8 @@ public:
 					break;
 			}
 		}
-		mut2.unlock();
+		if (Threaded)
+			mut2.unlock();
 	}
 
 	private:
@@ -271,18 +277,18 @@ public:
 		double Voices = 0;
 		memset(out, 0, samples * 2);
 
-		mut.lock();
+		// mut.lock();
 		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
 		{
 			memset(ts, 0, sizeof(ts));
 			if ((*i)->Read(ts, samples)) Voices++;
 			MixBuffer((char*)ts, (char*)out, samples * 2, 0, VolumeMusic);
 		}
-		mut.unlock();
+		// mut.unlock();
 
 		// ringbuffer_has_space.notify_one();
 
-		mut2.lock();
+		// mut2.lock();
 		for (std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); i++)
 		{
 			if ((*i)->IsPlaying())
@@ -292,7 +298,7 @@ public:
 				MixBuffer((char*)ts, (char*)out, samples * 2, 0, VolumeSFX);
 			}
 		}
-		mut2.unlock();
+		// mut2.unlock();
 	}
 
 	double GetLatency() const

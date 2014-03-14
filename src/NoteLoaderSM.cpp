@@ -149,6 +149,8 @@ void LoadTracksSM(Song7K *Out, SongInternal::Difficulty7K *Difficulty, String li
 						break;
 					}
 
+					Difficulty->Duration = std::max((double)Difficulty->Duration, Note.GetTimeFinal());
+
 					if (MeasureText[i].length())
 						MeasureText[i].erase(0, 1);
 				}
@@ -165,20 +167,6 @@ void LoadTracksSM(Song7K *Out, SongInternal::Difficulty7K *Difficulty, String li
 		->Each measure has all potential playable tracks, even if that track is empty during that measure.
 		->Measures are internally ordered
 	*/
-
-	double maxTime = 0;
-
-	for (int k = 0; k < 16; k++)
-	{
-		if (Difficulty->Measures[k].size())
-		{
-			int LastMeasure = Difficulty->Measures[k].size();
-			
-			maxTime = std::max(TimeAtBeat(Difficulty->Timing, Difficulty->Offset, LastMeasure * Out->MeasureLength), maxTime);
-		}
-	}
-
-	Difficulty->Duration = maxTime;
 }
 
 Song7K* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)
@@ -270,6 +258,7 @@ Song7K* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)
 			Difficulty->Timing = Out->BPMData;
 			Difficulty->StopsTiming = Out->StopsData;
 			Difficulty->Offset = Out->Offset;
+			Difficulty->Duration = 0;
 
 			LoadTracksSM(Out, Difficulty, line);
 			Out->Difficulties.push_back(Difficulty);
