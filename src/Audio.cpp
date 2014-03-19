@@ -128,13 +128,13 @@ class PaMixer
 	std::vector<SoundSample*> Samples;
 	double ConstFactor;
 
-	void MixBuffer(char* Src, char* Dest, int Length, int Start, float Multiplier)
+	void MixBuffer(char* Src, char* Dest, int Length, const int Start, const float Multiplier)
 	{
 		Src += Start;
 
 		while (Length)
 		{
-			float A = ((*Src) * Multiplier + *Dest);
+			float A = ((float)(*Src) * Multiplier + (float)*Dest);
 
 			*Dest = A;
 

@@ -28,12 +28,81 @@
 	#SCROLLxx <value>
 	#SPEEDxx <value> <duration>
 
-	and are to be put under channel OM (base 36)
+	and are to be put under channel DC (base 36)
+
+	Since most information is in japanese it's likely the implementation won't be perfect at the start.
 */
+
+
+		/*
+		switch (BmsChannel)
+		{
+		case 1:
+			// BGM change.
+			break;
+		case 3:
+			// BPM change.
+
+			break;
+		case 9:
+			// Stop event.
+			break;
+		default:
+
+			/* 
+				Since we're working with constants..
+				All in base 36
+				(11 to 1Z visible p1 notes)
+				(21 to 2Z visible p2 notes
+				(31 to 3Z invisible p1 notes)
+				(41 to 4Z invisible p2 notes)
+			*/
+		/*
+			if (BmsChannel >= 37 && BmsChannel <= 71)
+			{
+				// Player 1
+			}
+
+			/* 
+			
+				51 to 5Z p1 longnotes
+				61 to 6Z p2 longnotes
+
+			*/
+
+		/*
+			if (BmsChannel >= 181 && BmsChannel <= 215)
+			{
+				// Player 1 Longnote
+			}
+
+			*/
+
+struct BMSEvent
+{
+	int Event;
+	double Fraction;
+};
+
+typedef std::vector<BMSEvent> BMSEventList;
+
+struct BMSMeasure
+{
+	// first argument is channel, second is event list
+	std::map<int, BMSEventList> Events;
+	float BeatDuration;
+
+	BMSMeasure()
+	{
+		BeatDuration = 1; // Default duration
+	}
+};
+
 
 typedef std::map<int, String> FilenameListIndex;
 typedef std::map<int, double> BpmListIndex;
 typedef std::vector<TrackNote> NoteVector;
+typedef std::map<int, BMSMeasure> MeasureList;
 
 int fromBase36(const char *txt)
 {
@@ -50,20 +119,7 @@ template <char* s> int b36()
 // The first wav will always be WAV01, not WAV00 since 00 is a reserved value for "nothing"
 // Pretty fitting, in my opinion.
 
-struct BMSEvent
-{
-	int Event;
-	int Fraction;
-};
 
-typedef std::vector<BMSEvent> BMSEventList;
-
-struct BMSMeasure
-{
-	BMSEventList Notes;
-	int TotalFrac;
-	int BeatDuration;
-};
 
 struct BmsLoadInfo
 {
@@ -76,73 +132,99 @@ struct BmsLoadInfo
 		The first integer is the channel.
 		Second integer is the actual measure
 		Syntax in other words is
-		Measures[Channel][Measure].BMSMeasureMember 
+		Measures[Measure].Channel[Channel].Stuff
 	*/
-	std::map<int, std::map<int, BMSMeasure> > Measures; 
+	MeasureList Measures; 
 	Song7K* Song;
+	SongInternal::Difficulty7K *Difficulty;
 };
 
-String CommandSubcontents (String Command, String Line)
+String CommandSubcontents (const String Command, const String Line)
 {
 	uint32 len = Command.length();
 	return Line.substr(len);
 }
 
-void ParseEvents(BmsLoadInfo *Info, int Measure, int BmsChannel, String Command)
+void ParseEvents(BmsLoadInfo *Info, const int Measure, const int BmsChannel, const String Command)
 {
 	int CommandLength = Command.length() / 2;
 
-	for (int i = 0; i < CommandLength; i++)
+	if (Info->Measures[Measure].Events.find(BmsChannel) != Info->Measures[Measure].Events.end())
 	{
-		const char *EventPtr = (Command.c_str() + i*2);
-		char CharEvent [3];
-		int Event;
-		float Fraction = i / CommandLength;
+		// Can we skip it if it already exists?
+		// Or should we overwrite it?
 
-		strncpy(CharEvent, EventPtr, 2); // Obtuse, but functional.
-		CharEvent[2] = 0;
+		return; // Skip.
+	}
 
-		Event = fromBase36(CharEvent);
+	if (BmsChannel != 2)
+	{
 
-		switch (BmsChannel)
+		for (int i = 0; i < CommandLength; i++)
 		{
-		case 1:
-			// BGM change.
-		case 3:
-			// BPM change.
-		case 9:
-			// Stop event.
-		default:
+			const char *EventPtr = (Command.c_str() + i*2);
+			char CharEvent [3];
+			int Event;
+			float Fraction = i / CommandLength;
 
-			/* 
-				Since we're working with constants..
-				All in base 36
-				(11 to 1Z visible p1 notes)
-				(21 to 2Z visible p2 notes
-				(31 to 3Z invisible p1 notes)
-				(41 to 4Z invisible p2 notes)
-			*/
+			strncpy(CharEvent, EventPtr, 2); // Obtuse, but functional.
+			CharEvent[2] = 0;
 
-			if (BmsChannel >= 37 && BmsChannel <= 71)
-			{
-				// Player 1
-			}
+			Event = fromBase36(CharEvent);
 
-			/* 
-			
-				51 to 5Z p1 longnotes
-				61 to 6Z p2 longnotes
+			if (Event == 0) // Nothing to see here?
+				continue; 
 
-			*/
-			if (BmsChannel >= 181 && BmsChannel <= 215)
-			{
-				// Player 1 Longnote
-			}
+			BMSEvent New;
+
+			New.Event = Event;
+			New.Fraction = Fraction;
+
+			Info->Measures[Measure].Events[BmsChannel].push_back(New);
 		}
+	}else // Channel 2 is a measure length event.
+	{
+		double Event = atof(Command.c_str());
 
-
+		Info->Measures[Measure].BeatDuration = Event;
 	}
 }	
+
+void CalculateBPMs(BmsLoadInfo *Info)
+{
+
+	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
+	{
+		if (i->second.Events.find(3) != i->second.Events.end()) // there are bms events in here, get chopping
+		{
+			double lenMult = 1;
+
+			lenMult = i->second.BeatDuration;
+
+			for (BMSEventList::iterator ev = i->second.Events[3].begin(); ev != i->second.Events[3].end(); ev++)
+			{
+				double BPM = Info->BPMs[ev->Event];
+				double Beat = ev->Fraction + i->first * 4 * lenMult; // 4 = measure length in beats. todo: calculate appropietly!
+			}
+		}
+	}
+}
+
+void CalculateStops(BmsLoadInfo *Info)
+{
+}
+
+void CalculateObjects(BmsLoadInfo *Info)
+{
+}
+
+void CompileBMS(BmsLoadInfo *Info)
+{
+	/* To be done. */
+	CalculateBPMs(Info);
+	CalculateStops(Info);
+	CalculateObjects(Info);
+}
 
 void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *Out)
 {
@@ -151,6 +233,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *
 	BmsLoadInfo *Info = new BmsLoadInfo();
 
 	Info->Song = Out;
+	Info->Difficulty = Difficulty;
 
 	// BMS uses beat-based locations for stops and BPM. (Though the beat must be calculated.)
 	Out->BPMType = Song7K::BT_Beat;
@@ -158,6 +241,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *
 	if (!filein.is_open())
 	{
 		delete Difficulty;
+		delete Info;
 		return;
 	}
 
@@ -171,7 +255,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *
 	Out->UseSeparateTimingData = true;
 
 	/* 
-		The default BMS specifies is 8 channels when #PLAYER is unset, however
+		The default BME specifies is 8 channels when #PLAYER is unset, however
 		the modern BMS standard specifies to ignore #PLAYER and try to figure it out
 		from the amount of used channels.
 
@@ -245,7 +329,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *
 
 		OnCommandSub(#EXBPM)
 		{
-			String IndexStr = CommandSubcontents("#BPM", command);
+			String IndexStr = CommandSubcontents("#EXBPM", command);
 			int Index = fromBase36(IndexStr.c_str());
 			Info->BPMs[Index] = atof(CommandContents.c_str());
 		}
@@ -259,8 +343,12 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *
 			int Measure = atoi(MainCommand.substr(0,3).c_str());
 			int Channel = atoi(MainCommand.substr(3,2).c_str());
 
-			__asm nop;
+			ParseEvents(Info, Measure, Channel, MeasureCommand);
 		}
 
 	}
+
+	/* When all's said and done, "compile" the bms. */
+	Out->Difficulties.push_back(Difficulty);
+	delete Info;
 }

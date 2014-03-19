@@ -351,7 +351,21 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 			break;
 		case KT_Left:
 			diff_index--;
-			if (diff_index < 0) diff_index = 0;
+
+			if (diff_index < 0) 
+			{
+				int max_index = 0;
+
+				if (SelectedMode == MODE_7K)
+				{
+					max_index = SongList7K.at(Cursor)->Difficulties.size()-1;
+				}else
+				{
+					max_index = SongList.at(Cursor)->Difficulties.size()-1;
+				}
+
+				diff_index = max_index;
+			}
 			break;
 		case KT_Right:
 			diff_index++;

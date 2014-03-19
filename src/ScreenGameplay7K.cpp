@@ -140,8 +140,10 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	if (AudioCompensation)
 		TimeCompensation = MixerGetLatency();
 
+	TimeCompensation += Configuration::GetConfigf("Offset7K");
+
 	double DesiredDefaultSpeed = Configuration::GetSkinConfigf("DefaultSpeedUnits");
-	double Drift = TimeCompensation + Configuration::GetConfigf("Offset7K");
+	double Drift = TimeCompensation;
 
 	int SpeedType = Configuration::GetSkinConfigf("DefaultSpeedKind");
 	double SpeedConstant = 0; // Unless set, assume we're using speed changes
@@ -163,7 +165,6 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		{
 			SpeedMultiplierUser = 1;
 			SpeedConstant = DesiredDefaultSpeed;
-
 		}
 
 		MySong->Process(Drift, SpeedConstant);
@@ -188,7 +189,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		}
 
 	}else
-		MySong->Process(Drift, SpeedConstant); // Regular processing
+		MySong->Process(Drift); // Regular processing
 
 	Channels = CurrentDiff->Channels;
 	VSpeeds = CurrentDiff->VerticalSpeeds;

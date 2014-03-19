@@ -141,18 +141,25 @@ AudioStream::AudioStream()
 	mIsPlaying = false;
 	mIsLooping = false;
 	mSource = NULL;
+	mData = NULL;
 }
 
 AudioStream::~AudioStream()
 {
 	if (mSource)
 		delete mSource;
+
+	if (mData)
+		delete[] mData;
 }
 
 uint32 AudioStream::Read(void* buffer, size_t count)
 {
 	size_t cnt;
 	size_t toRead = count;
+
+	if (!mSource)
+		return 0;
 	
 	if (PaUtil_GetRingBufferReadAvailable(&mRingBuf) < toRead || !mIsPlaying)
 	{
@@ -185,7 +192,9 @@ bool AudioStream::Open(const char* Filename)
 		PaUtil_InitializeRingBuffer(&mRingBuf, sizeof(int16), mBufferSize, mData);
 
 		mStreamTime = mPlaybackTime = 0;
-		// Update();
+		
+		SeekTime(0);
+
 		return true;
 	}else
 		return false;
