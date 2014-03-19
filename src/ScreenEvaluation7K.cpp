@@ -24,7 +24,7 @@ void ScreenEvaluation7K::Init()
 	if (!Font)
 	{
 		Font = new BitmapFont();
-		Font->LoadSkinFontImage("font_ScreenEvaluation.tga", Vec2(10, 20), Vec2(32, 32), Vec2(10,20), 32);
+		Font->LoadSkinFontImage("font_screenevaluation.tga", Vec2(10, 20), Vec2(32, 32), Vec2(10,20), 32);
 		Font->SetAffectedByLightning(true);
 	}
 }

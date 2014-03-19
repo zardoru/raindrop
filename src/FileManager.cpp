@@ -115,6 +115,10 @@ void loadSong7K( Directory songPath, std::vector<Song7K*> &VecOut )
 			NoteLoaderFTB::LoadObjectsFromFile(songPath.path() + "/" + *i, songPath.path(), New);
 		}else if (Ext == "osu")
 			NoteLoaderOM::LoadObjectsFromFile(songPath.path() + "/" + *i, songPath.path(), New);
+#ifndef NDEBUG
+		else if (Ext == "bms" || Ext == "bme")
+			NoteLoaderBMS::LoadObjectsFromFile(songPath.path() + "/" + *i, songPath.path(), New);
+#endif
 	}
 
 	if (New->Difficulties.size())
