@@ -517,7 +517,7 @@ bool ScreenGameplay7K::Run(double Delta)
 			if (SongTime > CurrentDiff->Duration + 3)
 			{
 				ScreenEvaluation7K *Eval = new ScreenEvaluation7K(this);
-				Eval->Init();
+				Eval->Init(score_keeper);
 				Next = Eval;
 			}
 		}else

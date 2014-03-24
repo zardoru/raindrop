@@ -7,6 +7,7 @@
 #include "ImageLoader.h"
 #include "Audio.h"
 #include "FileManager.h"
+#include "ScoreKeeper.h"
 
 AudioStream *ScreenEvaluation7KMusic = NULL;
 
@@ -17,8 +18,18 @@ ScreenEvaluation7K::ScreenEvaluation7K(IScreen *Parent) :
 	Font = NULL;
 }
 
-void ScreenEvaluation7K::Init()
+void ScreenEvaluation7K::Init(ScoreKeeper7K *Result)
 {
+	Score = Result;
+
+	std::stringstream ss;
+
+	ss << "ex%: " << Result->getPercentScore(PST_EX) << "\n"
+		<< "notes hit%: " << Result->getPercentScore(PST_NH) << "\n"
+		<< "acc%: " << Result->getPercentScore(PST_ACC);
+	
+	DisplayResult = ss.str();
+
 	Background.SetImage(ImageLoader::LoadSkin(Configuration::GetSkinConfigs("EvaluationBackground7K")));
 	Background.AffectedByLightning = true;
 	if (!Font)
@@ -52,6 +63,8 @@ bool ScreenEvaluation7K::Run(double Delta)
 	{
 		Font->DisplayText("results screen",			    Vec2( ScreenWidth/2 - 70, 0 ));
 		Font->DisplayText("press space to continue...", Vec2( ScreenWidth/2 - 130, ScreenHeight*7/8 ));
+
+		Font->DisplayText(DisplayResult.c_str(), Vec2( ScreenWidth / 2 - 200, ScreenHeight / 2 - 200 ));
 	}
 	return Running;
 }

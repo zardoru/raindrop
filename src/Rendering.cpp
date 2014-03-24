@@ -97,6 +97,8 @@ void GraphObject2D::Render()
 	}else
 		return;
 
+	if (Alpha == 0) return;
+
 	UpdateMatrix();
 
 	if (DirtyTexture)

@@ -353,5 +353,8 @@
     <ClInclude Include="..\src\ScreenEvaluation7K.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\ScoreKeeper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

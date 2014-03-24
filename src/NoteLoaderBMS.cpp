@@ -132,7 +132,7 @@ struct BmsLoadInfo
 		The first integer is the channel.
 		Second integer is the actual measure
 		Syntax in other words is
-		Measures[Measure].Channel[Channel].Stuff
+		Measures[Measure].Events[Channel].Stuff
 	*/
 	MeasureList Measures; 
 	Song7K* Song;
@@ -190,6 +190,18 @@ void ParseEvents(BmsLoadInfo *Info, const int Measure, const int BmsChannel, con
 	}
 }	
 
+double BeatForMeasure(BmsLoadInfo *Info, const int Measure)
+{
+	double Beat = 0;
+
+	for (int i = 0; i < Measure; i++)
+	{
+		Beat += Info->Measures[i].BeatDuration * 4;
+	}
+
+	return Beat;
+}
+
 void CalculateBPMs(BmsLoadInfo *Info)
 {
 
@@ -197,14 +209,16 @@ void CalculateBPMs(BmsLoadInfo *Info)
 	{
 		if (i->second.Events.find(3) != i->second.Events.end()) // there are bms events in here, get chopping
 		{
-			double lenMult = 1;
-
-			lenMult = i->second.BeatDuration;
-
 			for (BMSEventList::iterator ev = i->second.Events[3].begin(); ev != i->second.Events[3].end(); ev++)
 			{
 				double BPM = Info->BPMs[ev->Event];
-				double Beat = ev->Fraction + i->first * 4 * lenMult; // 4 = measure length in beats. todo: calculate appropietly!
+				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
+
+				SongInternal::TimingSegment New;
+				New.Time = Beat;
+				New.Value = BPM;
+
+				Info->Difficulty->Timing.push_back(New);
 			}
 		}
 	}

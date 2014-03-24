@@ -273,6 +273,7 @@
     <ClInclude Include="..\src\LuaManager.h" />
     <ClInclude Include="..\src\NoteLoader.h" />
     <ClInclude Include="..\src\NoteLoader7K.h" />
+    <ClInclude Include="..\src\ScoreKeeper.h" />
     <ClInclude Include="..\src\Screen.h" />
     <ClInclude Include="..\src\ScreenEdit.h" />
     <ClInclude Include="..\src\ScreenEvaluation.h" />
