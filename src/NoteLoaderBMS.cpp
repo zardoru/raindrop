@@ -210,6 +210,8 @@ void CalculateBPMs(BmsLoadInfo *Info)
 		{
 			for (BMSEventList::iterator ev = i->second.Events[3].begin(); ev != i->second.Events[3].end(); ev++)
 			{
+				if (Info->BPMs.find(ev->Event) == Info->BPMs.end()) continue; // No BPM associated to this event
+
 				double BPM = Info->BPMs[ev->Event];
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
 
@@ -351,11 +353,11 @@ void CalculateObjects(BmsLoadInfo *Info)
 					Msr[Note.GetTrack()].MeasureNotes.push_back(Note);
 				}
 			}
+		}
 
-			for (int i = 0; i < usedChannels; i++)
+		for (int i = 0; i < usedChannels; i++)
 				if (Msr[i].MeasureNotes.size())
 					Info->Difficulty->Measures[i].push_back(Msr[i]);
-		}
 	}
 }
 
