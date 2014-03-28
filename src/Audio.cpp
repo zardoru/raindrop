@@ -16,7 +16,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
-float VolumeSFX = 0.2f;
+float VolumeSFX = 0.1f;
 float VolumeMusic = 0.8f; 
 bool UseThreadedDecoder = false;
 
@@ -268,30 +268,39 @@ public:
 
 	void CopyOut(char* out, int samples)
 	{
-		double Voices = 0;
 		memset(out, 0, samples * 2);
 
 		// mut.lock();
 		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
 		{
 			memset(ts, 0, sizeof(ts));
-			if ((*i)->Read(ts, samples)) Voices++;
+			(*i)->Read(ts, samples);
 			MixBuffer((char*)ts, (char*)out, samples * 2, 0, VolumeMusic);
 		}
 		// mut.unlock();
 
 		// ringbuffer_has_space.notify_one();
 
+		int Voices = 0;
 		mut2.lock();
 		for (std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); i++)
 		{
 			if ((*i)->IsPlaying())
 			{
-				memset(ts, 0, sizeof(ts));
-				if ((*i)->Read(ts, samples)) Voices++;
-				MixBuffer((char*)ts, (char*)out, samples * 2, 0, VolumeSFX);
+				Voices++;
 			}
 		}
+
+		for (std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); i++)
+		{
+			if ((*i)->IsPlaying())
+			{
+				memset(ts, 0, sizeof(ts));
+				(*i)->Read(ts, samples);
+				MixBuffer((char*)ts, (char*)out, samples * 2, 0, 1.0 / sqrt((double)Voices));
+			}
+		}
+
 		mut2.unlock();
 	}
 

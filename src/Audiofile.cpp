@@ -60,17 +60,26 @@ uint32 AudioSample::Read(void* buffer, size_t count)
 	if (mIsValid)
 	{
 		uint32 bufferLeft = mBufferSize-mCounter;
+		
 		count *= sizeof(int16);
+
 		if (mCounter < mBufferSize)
-		{		
+		{	
+			int diff = 0;
 			if(count > bufferLeft)
+			{
+				diff = count - bufferLeft;
 				count = bufferLeft;
+			}
 
 			memcpy(buffer, (char*)mData+mCounter, count);
+
+			memset((char*)buffer + count, 0, diff);
 
 			mCounter += count;
 		}else
 		{
+			mIsPlaying = false;
 			memset(buffer, 0, count);
 		}
 
