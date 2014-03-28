@@ -7,6 +7,14 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 
+/*
+	This is pretty much the simplest possible loader.
+
+	The important part is: all notes should contain a start time, possibly an end time (both in seconds)
+	and you require at least a single BPM to calculate speed properly. And that's it, set the duration
+	of the chart and the loading is done.
+*/
+
 typedef std::vector<String> SplitResult;
 
 void NoteLoaderFTB::LoadMetadata(String filename, String prefix, Song7K *Out)
@@ -110,7 +118,7 @@ void NoteLoaderFTB::LoadObjectsFromFile(String filename, String prefix, Song7K *
 	for (int i = 0; i < 7; i++)
 	{
 		Difficulty->Measures[i].push_back(Measure[i]);
-		Difficulty->Duration = std::max((float)Difficulty->Measures[i][0].MeasureNotes.at(Difficulty->Measures[i][0].MeasureNotes.size()-1).GetTimeFinal(), Difficulty->Duration);
+		Difficulty->Duration = std::max(Difficulty->Measures[i][0].MeasureNotes.at(Difficulty->Measures[i][0].MeasureNotes.size()-1).GetTimeFinal(), Difficulty->Duration);
 	}
 
 	Difficulty->Timing[0].Time = 0;

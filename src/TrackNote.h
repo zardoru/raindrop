@@ -19,6 +19,7 @@ private:
 	float VerticalHoldBodySize;
 	float VerticalHoldBodyPos;
 
+	int Sound;
 	Mat4 hold_body;
 	Mat4 hold_body_size;
 	Mat4 hold_final;
@@ -28,6 +29,7 @@ public:
 	void AssignSongPosition(double _BeatStart, double _BeatEnd = 0);
 	void AssignTime(double Start, double End = 0);
 	void AssignPosition(Vec2 Position, Vec2 endPosition = Vec2(0,0));
+	void AssignSound(int Sound);
 	void Hit();
 
 	void AddTime(double Time);
@@ -41,7 +43,7 @@ public:
 	bool IsHold() const;
 	bool IsEnabled() const;
 	bool WasNoteHit() const;
-
+	int GetSound() const;
 	Mat4& GetMatrix();
 	Mat4& GetHoldBodyMatrix();
 	Mat4& GetHoldBodySizeMatrix();

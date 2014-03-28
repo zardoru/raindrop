@@ -16,8 +16,8 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
-float VolumeSFX = 0.4f;
-float VolumeMusic = 0.6f; 
+float VolumeSFX = 0.2f;
+float VolumeMusic = 0.8f; 
 bool UseThreadedDecoder = false;
 
 #ifdef WIN32
@@ -136,6 +136,16 @@ class PaMixer
 		{
 			float A = ((float)(*Src) * Multiplier + (float)*Dest);
 
+			if (A > 127)
+			{
+				A = 127;
+			}
+			if (A < -128)
+			{
+				A = -128;
+			}
+
+
 			*Dest = A;
 
 			Dest++;
@@ -181,19 +191,8 @@ public:
 
 	void Run()
 	{
-		int read = 1;
-		char TempStream[BUFF_SIZE*sizeof(int16)];
-		char TempSave[BUFF_SIZE*sizeof(int16)];
-
 		do
 		{
-			SizeAvailable = PaUtil_GetRingBufferWriteAvailable(&RingBuf);
-
-
-			if (SizeAvailable > 0)
-			{
-				memset(TempStream, 0, sizeof(TempStream));
-				memset(TempSave, 0, sizeof(TempSave));
 
 				if (Threaded)
 					mut.lock();
@@ -209,7 +208,6 @@ public:
 				if (Threaded)
 					mut.unlock();
 
-			}
 		} while (Threaded);
 	}
 
@@ -243,17 +241,14 @@ public:
 
 	void AddSound(SoundSample* Sample)
 	{
-		if (Threaded)
-			mut2.lock();
+		mut2.lock();
 		Samples.push_back(Sample);
-		if (Threaded)
-			mut2.unlock();
+		mut2.unlock();
 	}
 
 	void RemoveSound(SoundSample* Sample)
 	{
-		if (Threaded)
-			mut2.lock();
+		mut2.lock();
 		for(std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); i++)
 		{
 			if ((*i) == Sample)
@@ -264,8 +259,7 @@ public:
 					break;
 			}
 		}
-		if (Threaded)
-			mut2.unlock();
+		mut2.unlock();
 	}
 
 	private:
@@ -288,7 +282,7 @@ public:
 
 		// ringbuffer_has_space.notify_one();
 
-		// mut2.lock();
+		mut2.lock();
 		for (std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); i++)
 		{
 			if ((*i)->IsPlaying())
@@ -298,7 +292,7 @@ public:
 				MixBuffer((char*)ts, (char*)out, samples * 2, 0, VolumeSFX);
 			}
 		}
-		// mut2.unlock();
+		mut2.unlock();
 	}
 
 	double GetLatency() const

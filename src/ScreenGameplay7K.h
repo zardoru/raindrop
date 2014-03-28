@@ -35,6 +35,8 @@ private:
 	uint32	Channels;
 	bool HeldKey[MAX_CHANNELS];
 
+	std::map <int, SoundSample*> Keysounds;
+
 	/* Positions */
 	float  JudgementLinePos;
 	float  BasePos;

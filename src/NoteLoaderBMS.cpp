@@ -165,7 +165,7 @@ void ParseEvents(BmsLoadInfo *Info, const int Measure, const int BmsChannel, con
 			const char *EventPtr = (Command.c_str() + i*2);
 			char CharEvent [3];
 			int Event;
-			float Fraction = i / CommandLength;
+			double Fraction = (double)i / (double)CommandLength;
 
 			strncpy(CharEvent, EventPtr, 2); // Obtuse, but functional.
 			CharEvent[2] = 0;
@@ -174,7 +174,7 @@ void ParseEvents(BmsLoadInfo *Info, const int Measure, const int BmsChannel, con
 
 			if (Event == 0) // Nothing to see here?
 				continue; 
-
+			
 			BMSEvent New;
 
 			New.Event = Event;
@@ -204,7 +204,6 @@ double BeatForMeasure(BmsLoadInfo *Info, const int Measure)
 
 void CalculateBPMs(BmsLoadInfo *Info)
 {
-
 	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
 	{
 		if (i->second.Events.find(3) != i->second.Events.end()) // there are bms events in here, get chopping
@@ -228,8 +227,136 @@ void CalculateStops(BmsLoadInfo *Info)
 {
 }
 
+int translateTrackBME(int Channel)
+{
+	int relTrack = Channel - fromBase36("11");
+
+	switch (relTrack)
+	{
+	case 0:
+	case 1:
+	case 2:
+	case 3:
+	case 4:
+		return relTrack + 1;
+	case 5:
+		return 0;
+	case 6: // foot pedal is ignored
+		return 10;
+	case 7:
+		return 6;
+	case 8:
+		return 7;
+	default: // Undefined
+		return relTrack + 1;
+	}
+}
+
+int translateTrackBMS(int Channel)
+{
+	int relTrack = Channel - fromBase36("11");
+
+	switch (relTrack)
+	{
+	case 0:
+	case 1:
+	case 2:
+	case 3:
+	case 4:
+		return relTrack + 1;
+	case 5:
+		return 0;
+	default: // Undefined
+		return relTrack + 1;
+	}
+}
+
+int translateTrackDDR(int Channel)
+{
+	return Channel - fromBase36("11");
+}
+
+int translateTracko2Mania(int Channel)
+{
+	return Channel == fromBase36("16") ? 0 : (Channel - fromBase36("11") + 1);
+}
+
+
+
 void CalculateObjects(BmsLoadInfo *Info)
 {
+	int startChannel = fromBase36("11");
+	int endChannel   = fromBase36("1Z");
+	int usedChannels = 0;
+	
+	/* Autodetect channel count */
+	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
+	{
+		for (int curChannel = startChannel; curChannel <= endChannel; curChannel++)
+		{
+			if (i->second.Events.find(curChannel) != i->second.Events.end())
+				usedChannels = std::max(startChannel, curChannel) - startChannel + 1;
+		}
+	}
+
+	if (usedChannels == 9) // Move PMS to BME unless PMS flag is set..
+		usedChannels = 8; 
+
+	Info->Difficulty->Channels = usedChannels;
+
+
+	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
+	{
+		SongInternal::Measure7K Msr[MAX_CHANNELS];
+
+		for (int curChannel = startChannel; curChannel <= endChannel; curChannel++)
+		{
+			if (i->second.Events.find(curChannel) != i->second.Events.end()) // there are bms events for this channel.
+			{
+				int Track = 0;
+				switch (usedChannels)
+				{
+				case 8: // Classic BME
+				case 9:
+					Track = translateTrackBME(curChannel);
+					break;
+				case 6: // Classic BMS
+					Track = translateTrackBMS(curChannel);
+					break;
+				default: // o2mania
+					Track = translateTracko2Mania(curChannel);
+				}
+
+				for (BMSEventList::iterator ev = i->second.Events[curChannel].begin(); ev != i->second.Events[curChannel].end(); ev++)
+				{
+					int Event = ev->Event;
+
+					if (!Event || Track >= usedChannels) continue; // UNUSABLE event
+
+					double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
+
+					double Time = TimeAtBeat(Info->Difficulty->Timing, 0, Beat);
+					TrackNote Note;
+
+					Info->Difficulty->Duration = std::max((double)Info->Difficulty->Duration, Time);
+
+					Note.AssignTime(Time);
+					Note.AssignSound(Event);
+
+					Note.AssignTrack(Track);
+					Info->Difficulty->TotalScoringObjects++;
+					Info->Difficulty->TotalNotes++;
+					Info->Difficulty->TotalObjects++;
+
+					Msr[Note.GetTrack()].MeasureNotes.push_back(Note);
+				}
+			}
+
+			for (int i = 0; i < usedChannels; i++)
+				if (Msr[i].MeasureNotes.size())
+					Info->Difficulty->Measures[i].push_back(Msr[i]);
+		}
+	}
 }
 
 void CompileBMS(BmsLoadInfo *Info)
@@ -258,6 +385,14 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *
 		delete Info;
 		return;
 	}
+
+	Difficulty->TotalNotes = 0;
+	Difficulty->TotalHolds = 0;
+	Difficulty->TotalObjects = 0;
+	Difficulty->TotalScoringObjects = 0;
+	Difficulty->IsVirtual = true;
+	Difficulty->Offset = 0;
+	Difficulty->Duration = 0;
 
 	Out->SongDirectory = prefix;
 
@@ -341,6 +476,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *
 			Info->BPMs[Index] = atof(CommandContents.c_str());
 		}
 
+		/* Do we need this?... */
 		OnCommandSub(#EXBPM)
 		{
 			String IndexStr = CommandSubcontents("#EXBPM", command);
@@ -355,7 +491,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *
 		if (Utility::IsNumeric(MainCommand.c_str())) // We've got work to do.
 		{
 			int Measure = atoi(MainCommand.substr(0,3).c_str());
-			int Channel = atoi(MainCommand.substr(3,2).c_str());
+			int Channel = fromBase36(MainCommand.substr(3,2).c_str());
 
 			ParseEvents(Info, Measure, Channel, MeasureCommand);
 		}
@@ -363,6 +499,9 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *
 	}
 
 	/* When all's said and done, "compile" the bms. */
+	CompileBMS(Info);
+	Difficulty->SoundList = Info->Sounds;
+
 	Out->Difficulties.push_back(Difficulty);
 	delete Info;
 }

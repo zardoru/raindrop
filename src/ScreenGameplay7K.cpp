@@ -64,6 +64,12 @@ void ScreenGameplay7K::Cleanup()
 		Music->Stop();
 	}
 
+	for (std::map<int, SoundSample*>::iterator i = Keysounds.begin(); i != Keysounds.end(); i++)
+	{
+		MixerRemoveSample(i->second);
+		delete i->second;
+	}
+
 	MixerRemoveSample(MissSnd);
 
 	delete MissSnd;
@@ -204,6 +210,13 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		{
 			NotesByMeasure[k].push_back(*i);
 		}
+	}
+
+	for (std::map<int, String>::iterator i = CurrentDiff->SoundList.begin(); i != CurrentDiff->SoundList.end(); i++)
+	{
+		Keysounds[i->first] = new SoundSample();
+		if (Keysounds[i->first]->Open((MySong->SongDirectory + "/" + i->second).c_str()))
+			MixerAddSample(Keysounds[i->first]);
 	}
 
 	NoteHeight = Configuration::GetSkinConfigf("NoteHeight");
@@ -500,7 +513,7 @@ bool ScreenGameplay7K::Run(double Delta)
 				SongTime += Delta;
 			}
 
-			if (Music->IsPlaying())
+			if (Music->IsPlaying() && !CurrentDiff->IsVirtual)
 			{
 				SongDelta = Music->GetStreamedTime() - SongOldTime;
 				SongTimeReal += SongDelta;
@@ -546,30 +559,14 @@ bool ScreenGameplay7K::Run(double Delta)
 
 	std::stringstream ss;
 
-	ss << "score: " << score_keeper->getScore(ST_SCORE);
-	ss << "\naccuracy: " << score_keeper->getPercentScore(PST_ACC);
-	ss << "\nEX score%: " << score_keeper->getPercentScore(PST_EX);
+
 	ss << "\nMult/Speed: " << std::setprecision(2) << std::setiosflags(std::ios::fixed) << SpeedMultiplier << "x / " << SpeedMultiplier*4;
-	ss << "\nLife: " << score_keeper->getLifebarAmount(LT_GROOVE) * 100.0 << "%";
 	if (SongTime > 0)
 		ss << "\nScrolling Speed: " << SectionValue(VSpeeds, SongTime) * SpeedMultiplier;
 	else
 		ss << "\nScrolling Speed: " << SectionValue(VSpeeds, 0) * SpeedMultiplier;
-	// ss << "\nt / st " << std::setiosflags(std::ios::fixed) << SongTime << " / " << SongTimeReal << " / " << Music->GetPlayedTime() << std::resetiosflags(std::ios::fixed);
 
-#ifdef DEBUG
-	ss << "\nVert: " << CurrentVertical;
-	// ss << "\ntotal notes:  " << [total notes];
-	ss << "\nloaded notes:  " << CurrentDiff->TotalScoringObjects;
-	ss << "\nholds hit: " << holds_hit;
-	ss << "\nholds missed: " << holds_missed;
-	ss << "\nloaded holds: " << CurrentDiff->TotalHolds;
-	ss << "\nnotes hit: " << std::setprecision(2) << float(score_keeper->getScore(ST_NOTES_HIT)) / CurrentDiff->TotalScoringObjects * 100.0 << "%";	
-	ss << "\ncombo: " << std::resetiosflags(std::ios::fixed) << score_keeper->getScore(ST_NOTES_HIT);
-	ss << "\nmax combo: " << score_keeper->getScore(ST_MAX_COMBO);
-#endif
-
-	GFont->DisplayText(ss.str().c_str(), Vec2(0,0));
+	GFont->DisplayText(ss.str().c_str(), Vec2(0, ScreenHeight - 45));
 
 	if (!Active)
 		GFont->DisplayText("press 'enter' to start", Vec2( ScreenWidth / 2 - 23 * 3,ScreenHeight * 5/8));

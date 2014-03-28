@@ -86,7 +86,7 @@ namespace SongInternal
 		TimingData VerticalSpeeds;
 
 		float Offset;
-		float Duration;
+		double Duration;
 
 		// Notes (Up to MAX_CHANNELS tracks)
 		std::vector<Measure7K> Measures[MAX_CHANNELS];
@@ -102,6 +102,9 @@ namespace SongInternal
 		// 7k
 		unsigned char Channels;
 		std::map<int, String> SoundList;
+		bool IsVirtual;
+
+		Difficulty7K::Difficulty7K() { IsVirtual = false; };
 	};
 }
 

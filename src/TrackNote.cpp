@@ -4,7 +4,7 @@
 
 TrackNote::TrackNote()
 {
-	Track = StartTime = EndTime = 0;
+	Sound = Track = StartTime = EndTime = 0;
 	Enabled = true;
 	WasHit = false;
 }
@@ -22,6 +22,11 @@ void TrackNote::AssignTime(double Start, double End)
 {
 	StartTime = Start;
 	EndTime = End;
+}
+
+void TrackNote::AssignSound(int Snd)
+{
+	Sound = Snd;
 }
 
 void TrackNote::AssignSongPosition(double _BeatStart, double _BeatEnd)
@@ -139,4 +144,9 @@ bool TrackNote::WasNoteHit() const
 float TrackNote::GetVerticalHold() const
 {
 	return b_pos_holdend.y;
+}
+
+int TrackNote::GetSound() const
+{
+	return Sound;
 }
