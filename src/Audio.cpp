@@ -268,20 +268,20 @@ public:
 
 	void CopyOut(char* out, int samples)
 	{
+		int Voices = 0;
 		memset(out, 0, samples * 2);
 
 		// mut.lock();
 		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
 		{
-			memset(ts, 0, sizeof(ts));
-			(*i)->Read(ts, samples);
-			MixBuffer((char*)ts, (char*)out, samples * 2, 0, VolumeMusic);
+			if ((*i)->IsPlaying())
+				Voices++;
 		}
+
 		// mut.unlock();
 
 		// ringbuffer_has_space.notify_one();
 
-		int Voices = 0;
 		mut2.lock();
 		for (std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); i++)
 		{
@@ -291,14 +291,23 @@ public:
 			}
 		}
 
+		double MixFactor = 1.0 / sqrt((double)Voices);
+
 		for (std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); i++)
 		{
 			if ((*i)->IsPlaying())
 			{
 				memset(ts, 0, sizeof(ts));
 				(*i)->Read(ts, samples);
-				MixBuffer((char*)ts, (char*)out, samples * 2, 0, 1.0 / sqrt((double)Voices));
+				MixBuffer((char*)ts, (char*)out, samples * 2, 0, MixFactor);
 			}
+		}
+
+		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
+		{
+			memset(ts, 0, sizeof(ts));
+			(*i)->Read(ts, samples);
+			MixBuffer((char*)ts, (char*)out, samples * 2, 0, MixFactor);
 		}
 
 		mut2.unlock();
