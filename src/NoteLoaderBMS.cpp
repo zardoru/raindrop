@@ -158,13 +158,16 @@ void ParseEvents(BmsLoadInfo *Info, const int Measure, const int BmsChannel, con
 {
 	int CommandLength = Command.length() / 2;
 
-	if ( BmsChannel != CHANNEL_BGM && Info->Measures[Measure].Events.find(BmsChannel) != Info->Measures[Measure].Events.end())
+	/*if ( BmsChannel != CHANNEL_BGM && Info->Measures[Measure].Events.find(BmsChannel) != Info->Measures[Measure].Events.end())
 	{
 		// Can we skip it if it already exists?
 		// Or should we overwrite it?
 
 		return; // Skip.
-	}
+	}*/
+
+
+	// Combining lines behavour: don't skip.
 
 	if (BmsChannel != CHANNEL_METER)
 	{
@@ -235,7 +238,7 @@ void CalculateBPMs(BmsLoadInfo *Info)
 }
 
 void CalculateStops(BmsLoadInfo *Info)
-{/*
+{
 	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
 	{
 		if (i->second.Events.find(CHANNEL_STOPS) != i->second.Events.end())
@@ -243,11 +246,17 @@ void CalculateStops(BmsLoadInfo *Info)
 			for (BMSEventList::iterator ev = i->second.Events[CHANNEL_STOPS].begin(); ev != i->second.Events[CHANNEL_STOPS].end(); ev++)
 			{
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first);
-				double StopDuration = Info->Stops[ev->Event]; // A value of 1 is... a 192nd of the measure? Or a 192nd of a beat? Or (192 / (4 * meter)) * spb? I'm not sure...
+				double StopDuration = Info->Stops[ev->Event] * 48 * spb (SectionValue(Info->Difficulty->Timing, Beat)); // A value of 1 is... a 192nd of the measure? Or a 192nd of a beat? Or (192 / (4 * meter)) * spb? I'm not sure...
+
+				SongInternal::TimingSegment New;
+				New.Time = Beat;
+				New.Value = StopDuration;
+
+				Info->Difficulty->StopsTiming.push_back(New);
 			}
 		}
 	}
-	*/
+	
 }
 
 int translateTrackBME(int Channel)
