@@ -304,6 +304,11 @@ int translateTracko2Mania(int Channel)
 	return Channel == fromBase36("16") ? 0 : (Channel - fromBase36("11") + 1);
 }
 
+int evsort(const SongInternal::AutoplaySound &i, const SongInternal::AutoplaySound &j)
+{
+	return i.Time < j.Time;
+}
+
 void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 {
 	int usedChannels = Info->Difficulty->Channels;
@@ -375,8 +380,12 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 			New.Time = Time;
 			New.Sound = Event;
 
+			// printf("Event %i, %f, %f..\n", Event, Beat, Time);
+
 			Info->Difficulty->BGMEvents.push_back(New);
 		}
+
+		std::sort(Info->Difficulty->BGMEvents.begin(), Info->Difficulty->BGMEvents.end(), evsort);
 	}
 }
 
@@ -501,6 +510,12 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *
 			Difficulty->Timing.push_back(Seg);
 
 			continue;
+		}
+
+		OnCommand(#STAGEFILE)
+		{
+			Out->BackgroundRelativeDir = CommandContents;
+			Out->BackgroundDir = prefix + "/" + CommandContents;
 		}
 
 		OnCommand(#DIFFICULTY)

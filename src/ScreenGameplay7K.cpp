@@ -527,10 +527,11 @@ bool ScreenGameplay7K::Run(double Delta)
 			// Play BGM events.
 			for (std::vector<SongInternal::AutoplaySound>::iterator s = BGMEvents.begin(); s != BGMEvents.end(); s++)
 			{
-				if (s->Time >= SongTime)
+				if (s->Time <= SongTime)
 				{
 					Keysounds[s->Sound]->Play();
-					BGMEvents.erase(s);
+					// printf("s->Time %f, sTime = %f\n", s->Time, SongTime);
+					s = BGMEvents.erase(s);
 					if (s == BGMEvents.end()) break;
 				}
 			}
