@@ -36,6 +36,7 @@ private:
 	bool HeldKey[MAX_CHANNELS];
 
 	std::map <int, SoundSample*> Keysounds;
+	std::vector<SongInternal::AutoplaySound> BGMEvents;
 
 	/* Positions */
 	float  JudgementLinePos;

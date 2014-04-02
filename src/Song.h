@@ -17,6 +17,12 @@ namespace SongInternal
 		double Time; // in beats
 		double Value; // in bpm
 	};
+
+	struct AutoplaySound
+	{
+		double Time;
+		int Sound;
+	};
 }
 
 typedef std::vector<SongInternal::TimingSegment> TimingData;
@@ -102,6 +108,7 @@ namespace SongInternal
 		// 7k
 		unsigned char Channels;
 		std::map<int, String> SoundList;
+		std::vector<AutoplaySound> BGMEvents;
 		bool IsVirtual;
 
 		Difficulty7K::Difficulty7K() { IsVirtual = false; };

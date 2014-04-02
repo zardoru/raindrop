@@ -128,32 +128,6 @@ class PaMixer
 	std::vector<SoundSample*> Samples;
 	double ConstFactor;
 
-	void MixBuffer(char* Src, char* Dest, int Length, const int Start, const float Multiplier)
-	{
-		Src += Start;
-
-		while (Length)
-		{
-			float A = ((float)(*Src) * Multiplier + (float)*Dest);
-
-			if (A > 127)
-			{
-				A = 127;
-			}
-			if (A < -128)
-			{
-				A = -128;
-			}
-
-
-			*Dest = A;
-
-			Dest++;
-			Src++;
-			Length--;
-		}
-	}
-
 	int SizeAvailable;
 	bool Threaded;
 
@@ -264,12 +238,16 @@ public:
 
 	private:
 		char ts[BUFF_SIZE*2];
+		int tsF[BUFF_SIZE*2];
 	public:
 
 	void CopyOut(char* out, int samples)
 	{
 		int Voices = 0;
-		memset(out, 0, samples * 2);
+		int count = samples * 2;
+		
+		memset(out, 0, count);
+		memset(tsF, 0, sizeof(tsF));
 
 		// mut.lock();
 		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
@@ -293,21 +271,35 @@ public:
 
 		double MixFactor = 1.0 / sqrt((double)Voices);
 
+		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
+		{
+			memset(ts, 0, sizeof(ts));
+			(*i)->Read(ts, samples);
+
+			for (int i = 0; i < count; i++)
+			{
+				tsF[i] += ts[i];
+			}
+			
+		}
+
 		for (std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); i++)
 		{
 			if ((*i)->IsPlaying())
 			{
 				memset(ts, 0, sizeof(ts));
 				(*i)->Read(ts, samples);
-				MixBuffer((char*)ts, (char*)out, samples * 2, 0, MixFactor);
+				for (int i = 0; i < count; i++)
+				{
+					tsF[i] += ts[i];
+				}
 			}
 		}
 
-		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
+		for (int i = 0; i < count; i++)
 		{
-			memset(ts, 0, sizeof(ts));
-			(*i)->Read(ts, samples);
-			MixBuffer((char*)ts, (char*)out, samples * 2, 0, MixFactor);
+			tsF[i] *= MixFactor;
+			((char*)out)[i] = tsF[i];
 		}
 
 		mut2.unlock();

@@ -219,6 +219,8 @@ void ScreenGameplay7K::LoadThreadInitialization()
 			MixerAddSample(Keysounds[i->first]);
 	}
 
+	BGMEvents = CurrentDiff->BGMEvents;
+
 	NoteHeight = Configuration::GetSkinConfigf("NoteHeight");
 
 	if (!NoteHeight)
@@ -520,6 +522,17 @@ bool ScreenGameplay7K::Run(double Delta)
 
 				if ( (SongDelta > 0.00001 && abs(SongTime - SongTimeReal) * 1000 > ErrorTolerance) || !InterpolateTime ) // Significant delta with a x ms difference? We're pretty off..
 					SongTime = SongTimeReal;
+			}
+
+			// Play BGM events.
+			for (std::vector<SongInternal::AutoplaySound>::iterator s = BGMEvents.begin(); s != BGMEvents.end(); s++)
+			{
+				if (s->Time >= SongTime)
+				{
+					Keysounds[s->Sound]->Play();
+					BGMEvents.erase(s);
+					if (s == BGMEvents.end()) break;
+				}
 			}
 
 			CurrentVertical = IntegrateToTime(VSpeeds, SongTime);

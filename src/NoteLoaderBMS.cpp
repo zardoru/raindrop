@@ -78,6 +78,12 @@
 
 			*/
 
+// From base 36 they're 01, 02, 03 and 09.
+#define CHANNEL_BGM 1
+#define CHANNEL_METER 2
+#define CHANNEL_BPM 3
+#define CHANNEL_STOPS 9
+
 struct BMSEvent
 {
 	int Event;
@@ -108,6 +114,9 @@ int fromBase36(const char *txt)
 {
 	return strtoul(txt, NULL, 36);
 }
+
+const int startChannel = fromBase36("11");
+const int endChannel   = fromBase36("1Z");
 
 /*
 template <char* s> int b36()
@@ -149,7 +158,7 @@ void ParseEvents(BmsLoadInfo *Info, const int Measure, const int BmsChannel, con
 {
 	int CommandLength = Command.length() / 2;
 
-	if (Info->Measures[Measure].Events.find(BmsChannel) != Info->Measures[Measure].Events.end())
+	if ( BmsChannel != CHANNEL_BGM && Info->Measures[Measure].Events.find(BmsChannel) != Info->Measures[Measure].Events.end())
 	{
 		// Can we skip it if it already exists?
 		// Or should we overwrite it?
@@ -157,7 +166,7 @@ void ParseEvents(BmsLoadInfo *Info, const int Measure, const int BmsChannel, con
 		return; // Skip.
 	}
 
-	if (BmsChannel != 2)
+	if (BmsChannel != CHANNEL_METER)
 	{
 
 		for (int i = 0; i < CommandLength; i++)
@@ -206,9 +215,9 @@ void CalculateBPMs(BmsLoadInfo *Info)
 {
 	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
 	{
-		if (i->second.Events.find(3) != i->second.Events.end()) // there are bms events in here, get chopping
+		if (i->second.Events.find(CHANNEL_BPM) != i->second.Events.end()) // there are bms events in here, get chopping
 		{
-			for (BMSEventList::iterator ev = i->second.Events[3].begin(); ev != i->second.Events[3].end(); ev++)
+			for (BMSEventList::iterator ev = i->second.Events[CHANNEL_BPM].begin(); ev != i->second.Events[CHANNEL_BPM].end(); ev++)
 			{
 				if (Info->BPMs.find(ev->Event) == Info->BPMs.end()) continue; // No BPM associated to this event
 
@@ -226,7 +235,19 @@ void CalculateBPMs(BmsLoadInfo *Info)
 }
 
 void CalculateStops(BmsLoadInfo *Info)
-{
+{/*
+	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
+	{
+		if (i->second.Events.find(CHANNEL_STOPS) != i->second.Events.end())
+		{
+			for (BMSEventList::iterator ev = i->second.Events[CHANNEL_STOPS].begin(); ev != i->second.Events[CHANNEL_STOPS].end(); ev++)
+			{
+				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first);
+				double StopDuration = Info->Stops[ev->Event]; // A value of 1 is... a 192nd of the measure? Or a 192nd of a beat? Or (192 / (4 * meter)) * spb? I'm not sure...
+			}
+		}
+	}
+	*/
 }
 
 int translateTrackBME(int Channel)
@@ -283,12 +304,84 @@ int translateTracko2Mania(int Channel)
 	return Channel == fromBase36("16") ? 0 : (Channel - fromBase36("11") + 1);
 }
 
+void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
+{
+	int usedChannels = Info->Difficulty->Channels;
+	SongInternal::Measure7K Msr[MAX_CHANNELS];
 
+	for (int curChannel = startChannel; curChannel <= endChannel; curChannel++)
+	{
+		if (i->second.Events.find(curChannel) != i->second.Events.end()) // there are bms events for this channel.
+		{
+			int Track = 0;
+			switch (usedChannels)
+			{
+			case 8: // Classic BME
+			case 9:
+				Track = translateTrackBME(curChannel);
+				break;
+			case 6: // Classic BMS
+				Track = translateTrackBMS(curChannel);
+				break;
+			default: // o2mania
+				Track = translateTracko2Mania(curChannel);
+			}
+
+			for (BMSEventList::iterator ev = i->second.Events[curChannel].begin(); ev != i->second.Events[curChannel].end(); ev++)
+			{
+				int Event = ev->Event;
+
+				if (!Event || Track >= usedChannels) continue; // UNUSABLE event
+
+				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
+
+				double Time = TimeAtBeat(Info->Difficulty->Timing, 0, Beat) + StopTimeAtBeat(Info->Difficulty->StopsTiming, Beat);
+				TrackNote Note;
+
+				Info->Difficulty->Duration = std::max((double)Info->Difficulty->Duration, Time);
+
+				Note.AssignTime(Time);
+				Note.AssignSound(Event);
+
+				Note.AssignTrack(Track);
+				Info->Difficulty->TotalScoringObjects++;
+				Info->Difficulty->TotalNotes++;
+				Info->Difficulty->TotalObjects++;
+
+				Msr[Note.GetTrack()].MeasureNotes.push_back(Note);
+			}
+		}
+	}
+
+	for (int k = 0; k < usedChannels; k++)
+	{
+		if (Msr[k].MeasureNotes.size())
+			Info->Difficulty->Measures[k].push_back(Msr[k]);
+	}
+
+	if (i->second.Events[CHANNEL_BGM].size()) // There are some BGM events?
+	{
+		for (BMSEventList::iterator ev = i->second.Events[CHANNEL_BGM].begin(); ev != i->second.Events[CHANNEL_BGM].end(); ev++)
+		{
+			int Event = ev->Event;
+
+			if (!Event) continue; // UNUSABLE event
+
+			double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
+
+			double Time = TimeAtBeat(Info->Difficulty->Timing, 0, Beat) + StopTimeAtBeat(Info->Difficulty->StopsTiming, Beat);
+
+			SongInternal::AutoplaySound New;
+			New.Time = Time;
+			New.Sound = Event;
+
+			Info->Difficulty->BGMEvents.push_back(New);
+		}
+	}
+}
 
 void CalculateObjects(BmsLoadInfo *Info)
 {
-	int startChannel = fromBase36("11");
-	int endChannel   = fromBase36("1Z");
 	int usedChannels = 0;
 	
 	/* Autodetect channel count */
@@ -309,55 +402,7 @@ void CalculateObjects(BmsLoadInfo *Info)
 
 	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
 	{
-		SongInternal::Measure7K Msr[MAX_CHANNELS];
-
-		for (int curChannel = startChannel; curChannel <= endChannel; curChannel++)
-		{
-			if (i->second.Events.find(curChannel) != i->second.Events.end()) // there are bms events for this channel.
-			{
-				int Track = 0;
-				switch (usedChannels)
-				{
-				case 8: // Classic BME
-				case 9:
-					Track = translateTrackBME(curChannel);
-					break;
-				case 6: // Classic BMS
-					Track = translateTrackBMS(curChannel);
-					break;
-				default: // o2mania
-					Track = translateTracko2Mania(curChannel);
-				}
-
-				for (BMSEventList::iterator ev = i->second.Events[curChannel].begin(); ev != i->second.Events[curChannel].end(); ev++)
-				{
-					int Event = ev->Event;
-
-					if (!Event || Track >= usedChannels) continue; // UNUSABLE event
-
-					double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
-
-					double Time = TimeAtBeat(Info->Difficulty->Timing, 0, Beat);
-					TrackNote Note;
-
-					Info->Difficulty->Duration = std::max((double)Info->Difficulty->Duration, Time);
-
-					Note.AssignTime(Time);
-					Note.AssignSound(Event);
-
-					Note.AssignTrack(Track);
-					Info->Difficulty->TotalScoringObjects++;
-					Info->Difficulty->TotalNotes++;
-					Info->Difficulty->TotalObjects++;
-
-					Msr[Note.GetTrack()].MeasureNotes.push_back(Note);
-				}
-			}
-		}
-
-		for (int i = 0; i < usedChannels; i++)
-				if (Msr[i].MeasureNotes.size())
-					Info->Difficulty->Measures[i].push_back(Msr[i]);
+		measureCalculate(Info, i);
 	}
 }
 
