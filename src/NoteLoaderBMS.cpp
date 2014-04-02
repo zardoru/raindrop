@@ -503,6 +503,35 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *
 			continue;
 		}
 
+		OnCommand(#DIFFICULTY)
+		{
+			int Kind = atoi(CommandContents.c_str());
+			String dName;
+
+			switch (Kind)
+			{
+			case 1:
+				dName = "Beginner";
+				break;
+			case 2:
+				dName = "Normal";
+				break;
+			case 3:
+				dName = "Hard";
+				break;
+			case 4:
+				dName = "Another";
+				break;
+			case 5:
+				dName = "Another+";
+				break;
+			default:
+				dName = "???";
+			}
+
+			Difficulty->Name = dName;
+		}
+
 		OnCommand(#BACKBMP)
 		{
 			Out->BackgroundRelativeDir = CommandContents;

@@ -167,9 +167,6 @@ class Song7K : public TSong < TrackNote >
 	void ProcessSpeedVariations(SongInternal::Difficulty7K* Diff, double Drift);
 public:
 
-	/* For osu!mania chart loading */
-	double SliderVelocity;
-
 	/* For charting systems that use one declaration of timing for all difficulties only used at load time */
 	double Offset;
 	TimingData BPMData;

@@ -35,8 +35,12 @@ void ScreenGameplay7K::DrawMeasures()
 	WindowFrame.SetUniform(U_SMULT, SpeedMultiplier);
 
 	GraphObject2D::BindTopLeftVBO();
-
 	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_POSITION), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
+
+	// Ugly hack for now.
+	Background.BindTextureVBO(); 
+	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
+	
 
 	/* todo: instancing */
 	for (uint32 k = 0; k < Channels; k++)
