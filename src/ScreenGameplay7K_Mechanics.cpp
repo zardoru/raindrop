@@ -211,7 +211,10 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 					HitNote(tD, Lane, m->IsHold());
 
 					if (m->GetSound())
-						Keysounds[m->GetSound()]->Play();
+					{
+						if (Keysounds.find(m->GetSound()) != Keysounds.end())
+							Keysounds[m->GetSound()]->Play();
+					}
 
 					if (m->IsHold())
 					{
