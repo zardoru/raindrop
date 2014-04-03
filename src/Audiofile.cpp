@@ -108,7 +108,7 @@ bool AudioSample::Open(const char* Filename)
 	if (Src && Src->IsValid())
 	{
 		Channels = Src->GetChannels();
-		mBufferSize = Src->GetLength() * Channels;
+		mBufferSize = Src->GetLength();
 
 		mData = new short[mBufferSize];
 		Src->Read(mData, mBufferSize);
@@ -173,7 +173,7 @@ AudioStream::~AudioStream()
 uint32 AudioStream::Read(void* buffer, size_t count)
 {
 	size_t cnt;
-	size_t toRead = count;
+	size_t toRead = count; // Count is the amount of s16 samples.
 
 	if (!mSource)
 		return 0;
@@ -205,7 +205,7 @@ bool AudioStream::Open(const char* Filename)
 
 		mBufferSize = BUFF_SIZE;
 
-		mData = new unsigned char[sizeof(int16) * mBufferSize];
+		mData = new short[mBufferSize];
 		PaUtil_InitializeRingBuffer(&mRingBuf, sizeof(int16), mBufferSize, mData);
 
 		mStreamTime = mPlaybackTime = 0;
@@ -264,7 +264,7 @@ uint32 AudioStream::Update()
 
 	if (ReadTotal = mSource->Read(tbuf, eCount))
 	{
-		PaUtil_WriteRingBuffer(&mRingBuf, tbuf, eCount);
+		PaUtil_WriteRingBuffer(&mRingBuf, tbuf, ReadTotal);
 	}else
 	{
 		if (!PaUtil_GetRingBufferReadAvailable(&mRingBuf))

@@ -70,7 +70,7 @@ class AudioStream : public Sound
 private:
 
 	AudioDataSource* mSource;
-	unsigned char*   mData;
+	short*   mData;
 	unsigned int     mBufferSize;
 	PaUtilRingBuffer mRingBuf;
 	bool			 mIsPlaying;

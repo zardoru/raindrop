@@ -7,6 +7,7 @@ class AudioSourceSFM : public AudioDataSource
 	SF_INFO *info;
 	uint32 mChannels;
 	uint32 mRate;
+	uint32 mFlen;
 
 public:
 	AudioSourceSFM();

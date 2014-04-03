@@ -18,7 +18,9 @@ typedef std::vector<String> SplitResult;
 struct OsuLoadInfo
 {
 	double SliderVelocity;
+	int last_sound_index;
 	Song7K *Song;
+	std::map <String, int> Sounds;
 	SongDiff Difficulty;
 };
 
@@ -31,10 +33,10 @@ bool ReadGeneral (String line, OsuLoadInfo* Info)
 
 	if (Command == "AudioFilename:")
 	{
-		if (Content == "virtual") // Virtual mode not yet supported.
+		if (Content == "virtual")
 		{
-			printf("o!m loader warning: virtual mode is not supported yet\n");
-			return false;
+			Info->Difficulty->IsVirtual = true;
+			return true;
 		}
 		else
 		{
@@ -105,6 +107,23 @@ void ReadEvents (String line, OsuLoadInfo* Info)
 			boost::replace_all(Spl[2], "\"", "");
 			Info->Song->BackgroundRelativeDir = Spl[2];
 			Info->Song->BackgroundDir = Info->Song->SongDirectory + "/" + Spl[2];
+		}else if (Spl[0] == "5")
+		{
+			boost::replace_all(Spl[3], "\"", "");
+
+			if (Info->Sounds.find(Spl[3]) == Info->Sounds.end())
+			{
+				Info->Sounds[Spl[3]] = Info->last_sound_index;
+				Info->last_sound_index++;
+			}
+
+			double Time = atof(Spl[1].c_str()) / 1000.0;
+			int Evt = Info->Sounds[Spl[3]];
+			SongInternal::AutoplaySound New;
+			New.Time = Time;
+			New.Sound = Evt;
+
+			Info->Difficulty->BGMEvents.push_back(New);
 		}
 	}
 }
@@ -284,6 +303,19 @@ void ReadObjects (String line, OsuLoadInfo* Info)
 
 	Hitsound = atoi(Spl[4].c_str());
 
+	String Sample = GetSampleFilename(Spl2, NoteType, Hitsound);
+
+	if (Sample.length())
+	{
+		if (Info->Sounds.find(Sample) == Info->Sounds.end())
+		{
+			Info->Sounds[Sample] = Info->last_sound_index;
+			Info->last_sound_index++;
+		}
+
+		Note.AssignSound(Info->Sounds[Sample]);
+	}
+
 	Info->Difficulty->TotalObjects++;
 	Info->Difficulty->Measures[Track].at(0).MeasureNotes.push_back(Note);
 
@@ -299,6 +331,7 @@ void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song7K *O
 	Info.Song = Out;
 	Info.SliderVelocity = 1.4;
 	Info.Difficulty = Difficulty;
+	Info.last_sound_index = 1;
 
 	// osu! stores bpm information as the time in ms that a beat lasts.
 	Out->BPMType = Song7K::BT_Beatspace;
@@ -383,6 +416,11 @@ void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song7K *O
 		case RHitobjects: ReadObjects(Line, &Info); break;
 		default: break;
 		}
+	}
+
+	for (std::map<String, int>::iterator i = Info.Sounds.begin(); i != Info.Sounds.end(); i++)
+	{
+		Difficulty->SoundList[i->second] = i->first;
 	}
 
 	Out->Difficulties.push_back(Difficulty);
