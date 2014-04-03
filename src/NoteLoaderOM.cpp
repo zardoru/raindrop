@@ -166,29 +166,34 @@ String GetSampleFilename(SplitResult &Spl, int NoteType, int Hitsound)
 {
 	int SampleSet, SampleSetAddition, CustomSample, Volume;
 	String SampleFilename;
+	int SplCnt = Spl.size();
 
 	if (NoteType & NOTE_HOLD)
 	{
-		if (Spl[5].length())
+		if (SplCnt > 5 && Spl[5].length())
 			return Spl[5];
 
 		SampleSet = atoi(Spl[1].c_str());
 		SampleSetAddition = atoi(Spl[2].c_str());
 		CustomSample = atoi(Spl[3].c_str());
 
-		Volume = atoi(Spl[4].c_str()); // ignored lol
-
+		/*
+		if (SplCnt > 4)
+			Volume = atoi(Spl[4].c_str()); // ignored lol
+			*/
 	}else if (NoteType & NOTE_NORMAL)
 	{
-		if (Spl[4].length())
+		if (SplCnt > 4 && Spl[4].length())
 			return Spl[4];
 
 		SampleSet = atoi(Spl[0].c_str());
 		SampleSetAddition = atoi(Spl[1].c_str());
 		CustomSample = atoi(Spl[2].c_str());
 
-		Volume = atoi(Spl[3].c_str()); // ignored
-
+		/*
+		if (SplCnt > 3)
+			Volume = atoi(Spl[3].c_str()); // ignored
+			*/
 	}else if (NoteType & NOTE_SLIDER)
 	{
 		SampleSet = SampleSetAddition = CustomSample = 0;
@@ -199,9 +204,11 @@ String GetSampleFilename(SplitResult &Spl, int NoteType, int Hitsound)
 	if (SampleSet)
 	{
 		// translate sampleset int into samplesetstring
+		SampleSetString = "normal";
 	}else
 	{
 		// get sampleset string from sampleset active at starttime
+		SampleSetString = "normal";
 	}
 
 	String CustomSampleString;
@@ -209,7 +216,7 @@ String GetSampleFilename(SplitResult &Spl, int NoteType, int Hitsound)
 	if (CustomSample)
 	{
 		char dst[16];
-		// itoa(CustomSample, dst, 10);
+		itoa(CustomSample, dst, 10);
 		CustomSampleString = dst;
 	}
 
@@ -231,12 +238,14 @@ String GetSampleFilename(SplitResult &Spl, int NoteType, int Hitsound)
 			break;
 		}
 	}else
-		return "";
+		HitsoundString = "normal";
 
-	if (HitsoundString.length())
+	if (CustomSample)
 	{
-
+		SampleFilename = SampleSetString + "-hit" + HitsoundString + CustomSampleString + ".wav";
 	}
+	else
+		SampleFilename = SampleSetString + "-hit" + HitsoundString + ".wav";
 
 	return SampleFilename;
 }

@@ -42,21 +42,21 @@ bool AudioSourceSFM::Open(const char* Filename)
 
 uint32 AudioSourceSFM::Read(void* buffer, size_t count)
 {
-	uint32 cnt;
+	uint32 read;
 	if (mWavFile)
 	{
-		cnt = sf_read_short(mWavFile, (short*)buffer, count);
-		int remaining = count - cnt;
+		read = sf_read_short(mWavFile, (short*)buffer, count);
+		int remaining = count - read;
 
 		while (mSourceLoop && (remaining > 0))
 		{
 			Seek(0);
-			cnt += sf_read_short(mWavFile, (short*)(buffer) + cnt, remaining);
-			remaining -= cnt;
+			read += sf_read_short(mWavFile, (short*)(buffer) + (read), remaining);
+			remaining -= read;
 		}
 
 	}
-	return cnt;
+	return read;
 }
 
 void AudioSourceSFM::Seek(float Time)

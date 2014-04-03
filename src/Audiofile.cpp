@@ -68,7 +68,7 @@ uint32 AudioSample::Read(void* buffer, size_t count)
 	{
 		uint32 bufferLeft = mBufferSize-mCounter;
 		
-		count *= Channels;
+		count *= sizeof(int16);
 
 		if (mCounter < mBufferSize)
 		{	
