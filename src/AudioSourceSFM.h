@@ -1,7 +1,7 @@
 #ifndef WAVFILESRC_H_
 #define WAVFILESRC_H_
 
-class AudioSourceWAV : public AudioDataSource
+class AudioSourceSFM : public AudioDataSource
 {
 	SNDFILE*  mWavFile;
 	SF_INFO *info;
@@ -9,8 +9,8 @@ class AudioSourceWAV : public AudioDataSource
 	uint32 mRate;
 
 public:
-	AudioSourceWAV();
-	~AudioSourceWAV();
+	AudioSourceSFM();
+	~AudioSourceSFM();
 
 	bool Open(const char* Filename);
 	uint32 Read(void* buffer, size_t count);

@@ -55,13 +55,8 @@ void loadSong( Directory songPath, std::vector<SongDC*> &VecOut )
 				bool UsesFilename = false;
 				NewS = new SongDC();
 				NewS->SongDirectory = songPath.path();
-				NewS->SongName = GetOggTitle(songPath.path() + *i);
-
-				if (!NewS->SongName.length())
-				{
-					UsesFilename = true;
-					NewS->SongName = *i;
-				}
+				NewS->SongName = *i;
+				UsesFilename = true;
 
 				NewS->SongRelativePath = *i;
 				NewS->SongFilename = (songPath.path() + "/"+ *i);

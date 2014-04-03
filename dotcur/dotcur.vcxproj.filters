@@ -186,12 +186,6 @@
     <ClCompile Include="..\src\Audiofile.cpp">
       <Filter>Source Files\Backend\Audio</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\AudioSourceOGG.cpp">
-      <Filter>Source Files\Backend\Audio</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\AudioSourceWAV.cpp">
-      <Filter>Source Files\Backend\Audio</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\AudioSourceMP3.cpp">
       <Filter>Source Files\Backend\Audio</Filter>
     </ClCompile>
@@ -212,6 +206,9 @@
     </ClCompile>
     <ClCompile Include="..\src\ScreenEvaluation7K.cpp">
       <Filter>Source Files\Mode7K</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\AudioSourceSFM.cpp">
+      <Filter>Source Files\Backend\Audio</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -341,12 +338,6 @@
     <ClInclude Include="..\src\Audiofile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\AudioSourceWAV.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\AudioSourceOGG.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\AudioSourceMP3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -354,6 +345,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\ScoreKeeper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AudioSourceSFM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

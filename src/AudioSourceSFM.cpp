@@ -1,9 +1,10 @@
+
 #include <cstdio>
 #include <sndfile.h>
 #include "Global.h"
 #include "Audio.h"
 #include "Audiofile.h"
-#include "AudioSourceWAV.h"
+#include "AudioSourceSFM.h"
 
 
 #define RIFF_MAGIC 0x46464952
@@ -52,13 +53,13 @@ bool validate_wav_header(FILE* f, wavHeader& head)
 	return true;
 }
 
-AudioSourceWAV::AudioSourceWAV()
+AudioSourceSFM::AudioSourceSFM()
 {
 	mWavFile = NULL;
 	info = NULL;
 }
 
-AudioSourceWAV::~AudioSourceWAV()
+AudioSourceSFM::~AudioSourceSFM()
 {
 	if (mWavFile)
 		sf_close(mWavFile);
@@ -66,7 +67,7 @@ AudioSourceWAV::~AudioSourceWAV()
 		delete info;
 }
 
-bool AudioSourceWAV::Open(const char* Filename)
+bool AudioSourceSFM::Open(const char* Filename)
 {
 	info = new SF_INFO;
 	info->format = 0;
@@ -87,35 +88,51 @@ bool AudioSourceWAV::Open(const char* Filename)
 	return true;
 }
 
-uint32 AudioSourceWAV::Read(void* buffer, size_t count)
+uint32 AudioSourceSFM::Read(void* buffer, size_t count)
 {
+	uint32 cnt;
 	if (mWavFile)
-		return sf_read_short(mWavFile, (short*)buffer, count);
-	return 0;
+	{
+		cnt = sf_read_short(mWavFile, (short*)buffer, count);
+		int remaining = count - cnt;
+
+		while (mSourceLoop && (remaining > 0))
+		{
+			Seek(0);
+			cnt += sf_read_short(mWavFile, (short*)(buffer) + cnt, remaining);
+			remaining -= cnt;
+		}
+
+	}
+	return cnt;
 }
 
-void AudioSourceWAV::Seek(float Time)
+void AudioSourceSFM::Seek(float Time)
 {
 	if (mWavFile)
 		sf_seek(mWavFile, Time * mRate / mChannels, SEEK_SET);
 }
 
-size_t AudioSourceWAV::GetLength()
+size_t AudioSourceSFM::GetLength()
 {
-	return info->frames * mChannels;
+	// I'm not sure why- but this is inconsistent.
+	if (info->format & SF_FORMAT_WAV)
+		return info->frames * 2;
+	else
+		return info->frames;
 }
 
-uint32 AudioSourceWAV::GetRate()
+uint32 AudioSourceSFM::GetRate()
 {
 	return mRate;
 }
 
-uint32 AudioSourceWAV::GetChannels()
+uint32 AudioSourceSFM::GetChannels()
 {
 	return mChannels;
 }
 
-bool AudioSourceWAV::IsValid()
+bool AudioSourceSFM::IsValid()
 {
 	return mWavFile != NULL;
 }

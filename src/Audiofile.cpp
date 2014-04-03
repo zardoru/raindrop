@@ -1,9 +1,9 @@
+
 #include <sndfile.h>
 #include "Global.h"
 #include "Audio.h"
 #include "Audiofile.h"
-#include "AudioSourceOGG.h"
-#include "AudioSourceWAV.h"
+#include "AudioSourceSFM.h"
 
 #ifdef MP3_ENABLED
 #include "AudioSourceMP3.h"
@@ -16,10 +16,8 @@ AudioDataSource* SourceFromExt(String Filename)
 
 	if (Filename.length() == 0) return NULL;
 
-	if (Ext == "wav")
-		Ret = new AudioSourceWAV();
-	else if (Ext == "ogg")
-		Ret = new AudioSourceOGG();
+	if (Ext == "wav" || Ext == "ogg" || Ext == "flac")
+		Ret = new AudioSourceSFM();
 #ifdef MP3_ENABLED
 	else if (Ext == "mp3")
 		Ret = new AudioSourceMP3();
@@ -256,7 +254,7 @@ void AudioStream::Stop()
 
 uint32 AudioStream::Update()
 {
-	unsigned char tbuf[BUFF_SIZE * 2];
+	short tbuf[BUFF_SIZE];
 	uint32 eCount = PaUtil_GetRingBufferWriteAvailable(&mRingBuf);
 	uint32 ReadTotal;
 
