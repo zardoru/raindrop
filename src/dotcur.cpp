@@ -31,7 +31,9 @@ int CALLBACK WinMain (
 	{
 #endif
 #if (!defined NDEBUG) && (defined WIN32)
-		MessageBox(NULL, e.what(), "error", MB_OK);
+		wchar_t k[1024];
+		mbstowcs(k, e.what(), 1024);
+		MessageBox(NULL, k, L"error", MB_OK);
 #endif
 #ifndef NDEBUG
 	}

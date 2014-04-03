@@ -67,8 +67,12 @@ std::vector<std::string>& Directory::ListDirectory(std::vector<std::string>& Vec
 	HANDLE hFind = INVALID_HANDLE_VALUE;
 	WIN32_FIND_DATA ffd;
 	std::string DirFind = curpath + "./*";
+	wchar_t tmp[MAX_PATH];
+	char tmpmbs[MAX_PATH];
 
-	hFind = FindFirstFile(DirFind.c_str(), &ffd);
+	mbstowcs(tmp, DirFind.c_str(), MAX_PATH);
+
+	hFind = FindFirstFile((LPCWSTR)tmp, &ffd);
 
 	if (hFind == INVALID_HANDLE_VALUE)
 		return Vec;
@@ -76,15 +80,29 @@ std::vector<std::string>& Directory::ListDirectory(std::vector<std::string>& Vec
 	do {
 		if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY && T == FS_DIR) || (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && T == FS_REG))
 		{
-			std::string fname = ffd.cFileName;
+			std::wstring fname = ffd.cFileName;
 
-			if (ext && fname.substr(fname.find_last_of(".")+1) == std::string(ext)) 
-				Vec.push_back(fname);
+			if (ext)
+			{
+				mbstowcs(tmp, ext, MAX_PATH);
+				if (fname.substr(fname.find_last_of(L".")+1) == std::wstring(tmp)) 
+				{
+					wcstombs(tmpmbs, fname.c_str(), MAX_PATH);
+					Vec.push_back(tmpmbs);
+				}
+			}
+
 			if (!ext)
-				Vec.push_back(fname);
+			{
+				wcstombs(tmpmbs, fname.c_str(), MAX_PATH);
+				Vec.push_back(tmpmbs);
+			}
+
 		}else
 		{
-			std::string fname = curpath + ffd.cFileName + "./*";
+			wcstombs(tmpmbs, ffd.cFileName, MAX_PATH);
+
+			std::string fname = curpath + tmpmbs + "./*";
 
 			if (Recursive)
 			{

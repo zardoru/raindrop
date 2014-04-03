@@ -22,8 +22,8 @@ struct wavHeader
 	short int chan_cnt;
 	int sample_rate;
 	int sbc;
-	char bpsc;
-	char bits_per_sample;
+	short int align;
+	short int bits_per_sample;
 	int data_mark;
 	int data_chunk_size;
 };

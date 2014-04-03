@@ -364,6 +364,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 	SetupScriptConstants();
 	Animations->Initialize( FileManager::GetSkinPrefix() + "screengameplay7k.lua" );
 
+	memset(PlaySounds, 0, sizeof(PlaySounds));
 
 	Running = true;
 }

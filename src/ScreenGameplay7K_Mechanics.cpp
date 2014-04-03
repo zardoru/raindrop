@@ -86,6 +86,10 @@ void ScreenGameplay7K::MissNote (double TimeOff, uint32 Lane, bool IsHold, bool 
 
 void ScreenGameplay7K::RunMeasures()
 {
+	double timeClosest[MAX_CHANNELS];
+
+	for (int i = 0; i < MAX_CHANNELS; i++)
+		 timeClosest[i] = CurrentDiff->Duration;
 
 	for (unsigned int k = 0; k < Channels; k++)
 	{
@@ -95,6 +99,16 @@ void ScreenGameplay7K::RunMeasures()
 		{
 			for (std::vector<TrackNote>::iterator m = (*i).MeasureNotes.begin(); m != (*i).MeasureNotes.end(); m++)
 			{
+				if (CurrentDiff->IsVirtual)
+				{
+					if (m->IsEnabled() && (abs(SongTime - m->GetTimeFinal()) < timeClosest[m->GetTrack()]))
+					{
+						PlaySounds[m->GetTrack()] = m->GetSound();
+						timeClosest[m->GetTrack()] = abs(SongTime - m->GetTimeFinal());
+					}
+				}
+
+
 				/* We have to check for all gameplay conditions for this note. */
 				if ((SongTime - m->GetTimeFinal()) * 1000 > score_keeper->getAccCutoff() && !m->WasNoteHit() && m->IsHold())
 				{
@@ -197,13 +211,21 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 
 			lastClosest[Lane] = std::min(tD, (double)lastClosest[Lane]);
 
-			if (lastClosest[Lane] == MsDisplayMargin)
+			if (lastClosest[Lane] >= MsDisplayMargin)
 			{
 				lastClosest[Lane] = 0;
 			}
 
 			if (tD > score_keeper->getAccCutoff())
+			{
+				if (PlaySounds[Lane])
+				{
+					if (Keysounds.find(PlaySounds[Lane]) != Keysounds.end())
+						Keysounds[PlaySounds[Lane]]->Play();
+				}
+
 				continue;
+			}
 			else
 			{
 				if (tD <= score_keeper->getAccMax())
@@ -215,6 +237,8 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 						if (Keysounds.find(m->GetSound()) != Keysounds.end())
 							Keysounds[m->GetSound()]->Play();
 					}
+
+
 
 					if (m->IsHold())
 					{

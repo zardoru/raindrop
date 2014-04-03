@@ -38,6 +38,8 @@ private:
 	std::map <int, SoundSample*> Keysounds;
 	std::vector<SongInternal::AutoplaySound> BGMEvents;
 
+	int PlaySounds[MAX_CHANNELS];
+
 	/* Positions */
 	float  JudgementLinePos;
 	float  BasePos;

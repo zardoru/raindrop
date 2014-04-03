@@ -112,7 +112,8 @@ bool AudioSample::Open(const char* Filename)
 
 		delete Src;
 		return true;
-	}
+	}else
+		printf("Invalid source for %s.\n", Filename);
 
 	delete Src;
 	return false;
