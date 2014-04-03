@@ -1,8 +1,10 @@
 #include <cstdio>
+#include <sndfile.h>
 #include "Global.h"
 #include "Audio.h"
 #include "Audiofile.h"
 #include "AudioSourceWAV.h"
+
 
 #define RIFF_MAGIC 0x46464952
 #define RIFF_MAGIC_ALT 0x66666972
@@ -53,34 +55,34 @@ bool validate_wav_header(FILE* f, wavHeader& head)
 AudioSourceWAV::AudioSourceWAV()
 {
 	mWavFile = NULL;
+	info = NULL;
 }
 
 AudioSourceWAV::~AudioSourceWAV()
 {
 	if (mWavFile)
-		fclose(mWavFile);
+		sf_close(mWavFile);
+	if (info)
+		delete info;
 }
 
 bool AudioSourceWAV::Open(const char* Filename)
 {
-	wavHeader Header;
+	info = new SF_INFO;
+	info->format = 0;
 
-	mWavFile = fopen(Filename, "rb");
+	mWavFile = sf_open(Filename, SFM_READ, info);
 
-	if (!mWavFile)
-		return false;
+	mRate		= info->samplerate;
+	mChannels   = info->channels;
 
-	if (!validate_wav_header(mWavFile, Header))
+
+	int err = 0;
+	if (!mWavFile || (err = sf_error(mWavFile)))
 	{
-		fclose (mWavFile);
-		mWavFile = NULL;
+		printf("Error %d (wavfile %p)\n", err, mWavFile);
 		return false;
 	}
-
-	mDataLength = Header.data_size / 8;
-	mRate		= Header.sample_rate;
-	mChannels   = Header.chan_cnt;
-	mDataChunkSize = Header.data_chunk_size;
 
 	return true;
 }
@@ -88,19 +90,19 @@ bool AudioSourceWAV::Open(const char* Filename)
 uint32 AudioSourceWAV::Read(void* buffer, size_t count)
 {
 	if (mWavFile)
-		return fread(buffer, mDataLength, count, mWavFile);
+		return sf_read_short(mWavFile, (short*)buffer, count);
 	return 0;
 }
 
 void AudioSourceWAV::Seek(float Time)
 {
 	if (mWavFile)
-		fseek(mWavFile, sizeof(wavHeader) + Time * mRate, SEEK_SET);
+		sf_seek(mWavFile, Time * mRate / mChannels, SEEK_SET);
 }
 
 size_t AudioSourceWAV::GetLength()
 {
-	return mDataChunkSize / mDataLength;
+	return info->frames * mChannels;
 }
 
 uint32 AudioSourceWAV::GetRate()

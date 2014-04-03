@@ -18,7 +18,7 @@ public:
 	bool Open(const char* Filename);
 	uint32 Read(void* buffer, size_t count);
 	void Seek(float Time);
-	size_t GetLength(); // Always returns total samples. Frames = Length/Channels.
+	size_t GetLength(); // Always returns total frames.
 	uint32 GetRate(); // Returns sampling rate of audio
 	uint32 GetChannels(); // Returns channels of audio
 	bool IsValid();

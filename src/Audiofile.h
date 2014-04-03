@@ -12,7 +12,7 @@ public:
 	virtual bool Open(const char* Filename) = 0;
 	virtual uint32 Read(void* buffer, size_t count) = 0;
 	virtual void Seek(float Time) = 0;
-	virtual size_t GetLength() = 0; // Always returns total samples. Frames = Length/Channels.
+	virtual size_t GetLength() = 0; // Always returns total frames.
 	virtual uint32 GetRate() = 0; // Returns sampling rate of audio
 	virtual uint32 GetChannels() = 0; // Returns channels of audio
 	virtual bool IsValid() = 0;
@@ -43,7 +43,7 @@ class AudioSample : public Sound
 {
 private:
 
-	unsigned char* mData;
+	short* mData;
 	unsigned int   mBufferSize;
 	unsigned int   mCounter;
 	bool		   mValid;
@@ -54,6 +54,7 @@ private:
 
 public:
 	AudioSample();
+	~AudioSample();
 	uint32 Read(void* buffer, size_t count);
 	bool Open(const char* Filename);
 	void Play();

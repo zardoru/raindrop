@@ -1,18 +1,12 @@
 #ifndef WAVFILESRC_H_
 #define WAVFILESRC_H_
 
-#include <cstdio>
-
 class AudioSourceWAV : public AudioDataSource
 {
-	bool   mIsValid;
-	FILE*  mWavFile;
+	SNDFILE*  mWavFile;
+	SF_INFO *info;
 	uint32 mChannels;
 	uint32 mRate;
-	uint32 mDataLength;
-	uint32 mDataChunkSize;
-	
-	unsigned char* mData;
 
 public:
 	AudioSourceWAV();

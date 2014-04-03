@@ -1,3 +1,4 @@
+#include <sndfile.h>
 #include "Global.h"
 #include "Audio.h"
 #include "Audiofile.h"
@@ -12,6 +13,8 @@ AudioDataSource* SourceFromExt(String Filename)
 {
 	AudioDataSource *Ret = NULL;
 	String Ext = Utility::GetExtension(Filename);
+
+	if (Filename.length() == 0) return NULL;
 
 	if (Ext == "wav")
 		Ret = new AudioSourceWAV();
@@ -50,6 +53,12 @@ AudioSample::AudioSample()
 	mIsPlaying = false;
 	mIsValid = false;
 	mIsLooping = false;
+	mData = NULL;
+}
+
+AudioSample::~AudioSample()
+{
+	if (mData) delete mData;
 }
 
 uint32 AudioSample::Read(void* buffer, size_t count)
@@ -101,10 +110,10 @@ bool AudioSample::Open(const char* Filename)
 	if (Src && Src->IsValid())
 	{
 		Channels = Src->GetChannels();
-		mBufferSize = Src->GetLength() * sizeof(uint16);
+		mBufferSize = Src->GetLength() * Channels;
 
-		mData = new unsigned char[mBufferSize];
-		Src->Read(mData, mBufferSize / Channels);
+		mData = new short[mBufferSize];
+		Src->Read(mData, mBufferSize);
 
 		mRate = Src->GetRate();
 		mCounter = 0;
