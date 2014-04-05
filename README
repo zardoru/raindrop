@@ -18,6 +18,7 @@ so while the code itself is fairly simple it has quite an amount of dependencies
 -glew
 -glfw 3.0
 -portaudio v19, libogg and libvorbis
+-libsndfile
 -glm
 
 building is basically setting up the include and library directories to all these

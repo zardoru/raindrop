@@ -50,7 +50,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v90</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release GL2|Win32'">
@@ -164,10 +164,10 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>libmpg123.lib;portaudio_x86.lib;opengl32.lib;Ogg.lib;Vorbis.lib;glfw3.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libsndfile-1.lib;libmpg123.lib;portaudio_x86.lib;opengl32.lib;Ogg.lib;Vorbis.lib;glfw3.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -196,6 +196,7 @@
     <ClCompile Include="..\src\Audio.cpp" />
     <ClCompile Include="..\src\Audiofile.cpp" />
     <ClCompile Include="..\src\AudioSourceMP3.cpp" />
+    <ClCompile Include="..\src\AudioSourceOGG.cpp" />
     <ClCompile Include="..\src\AudioSourceSFM.cpp" />
     <ClCompile Include="..\src\BitmapFont.cpp" />
     <ClCompile Include="..\src\Configuration.cpp" />
@@ -253,6 +254,7 @@
     <ClInclude Include="..\src\Audio.h" />
     <ClInclude Include="..\src\Audiofile.h" />
     <ClInclude Include="..\src\AudioSourceMP3.h" />
+    <ClInclude Include="..\src\AudioSourceOGG.h" />
     <ClInclude Include="..\src\BindingsManager.h" />
     <ClInclude Include="..\src\BitmapFont.h" />
     <ClInclude Include="..\src\Configuration.h" />

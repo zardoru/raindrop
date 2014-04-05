@@ -166,28 +166,29 @@ String GetSampleFilename(SplitResult &Spl, int NoteType, int Hitsound)
 {
 	int SampleSet, SampleSetAddition, CustomSample, Volume;
 	String SampleFilename;
+	size_t SplSize = Spl.size();
 
 	if (NoteType & NOTE_HOLD)
 	{
-		if (Spl[5].length())
+		if (SplSize > 5 && Spl[5].length())
 			return Spl[5];
 
 		SampleSet = atoi(Spl[1].c_str());
 		SampleSetAddition = atoi(Spl[2].c_str());
 		CustomSample = atoi(Spl[3].c_str());
 
-		Volume = atoi(Spl[4].c_str()); // ignored lol
+		// Volume = atoi(Spl[4].c_str()); // ignored lol
 
 	}else if (NoteType & NOTE_NORMAL)
 	{
-		if (Spl[4].length())
+		if (SplSize > 4 && Spl[4].length())
 			return Spl[4];
 
 		SampleSet = atoi(Spl[0].c_str());
 		SampleSetAddition = atoi(Spl[1].c_str());
 		CustomSample = atoi(Spl[2].c_str());
 
-		Volume = atoi(Spl[3].c_str()); // ignored
+		// Volume = atoi(Spl[3].c_str()); // ignored
 
 	}else if (NoteType & NOTE_SLIDER)
 	{

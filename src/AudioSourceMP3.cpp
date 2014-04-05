@@ -57,7 +57,7 @@ uint32 AudioSourceMP3::Read(void* buffer, size_t count)
 {
 	size_t ret;
 	int res = mpg123_read(mHandle, (unsigned char*)buffer, count * sizeof(int16), &ret);
-	return res != MPG123_DONE;
+	return ret;
 }
 
 void AudioSourceMP3::Seek(float Time)
