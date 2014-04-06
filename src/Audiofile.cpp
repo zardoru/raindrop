@@ -111,7 +111,7 @@ bool AudioSample::Open(const char* Filename)
 	if (Src && Src->IsValid())
 	{
 		Channels = Src->GetChannels();
-		mBufferSize = Src->GetLength();
+		mBufferSize = Src->GetLength() * Channels;
 
 		mData = new short[mBufferSize];
 		Src->Read(mData, mBufferSize);
