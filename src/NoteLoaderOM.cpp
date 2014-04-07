@@ -18,6 +18,7 @@ typedef std::vector<String> SplitResult;
 struct OsuLoadInfo
 {
 	double SliderVelocity;
+	int Version;
 	int last_sound_index;
 	Song7K *Song;
 	std::map <String, int> Sounds;
@@ -166,16 +167,25 @@ String GetSampleFilename(SplitResult &Spl, int NoteType, int Hitsound)
 {
 	int SampleSet, SampleSetAddition, CustomSample, Volume;
 	String SampleFilename;
-	int SplCnt = Spl.size();
+
+	size_t SplSize = Spl.size();
 
 	if (NoteType & NOTE_HOLD)
 	{
-		if (SplCnt > 5 && Spl[5].length())
+		if (SplSize > 5 && Spl[5].length())
 			return Spl[5];
 
-		SampleSet = atoi(Spl[1].c_str());
-		SampleSetAddition = atoi(Spl[2].c_str());
-		CustomSample = atoi(Spl[3].c_str());
+		if (Spl.size() == 4)
+		{
+			SampleSet = atoi(Spl[1].c_str());
+			SampleSetAddition = atoi(Spl[2].c_str());
+			CustomSample = atoi(Spl[3].c_str());
+		}else
+		{
+			SampleSet = atoi(Spl[0].c_str());
+			SampleSetAddition = atoi(Spl[1].c_str());
+			CustomSample = atoi(Spl[2].c_str());
+		}
 
 		/*
 		if (SplCnt > 4)
@@ -183,7 +193,7 @@ String GetSampleFilename(SplitResult &Spl, int NoteType, int Hitsound)
 			*/
 	}else if (NoteType & NOTE_NORMAL)
 	{
-		if (SplCnt > 4 && Spl[4].length())
+		if (SplSize > 4 && Spl[4].length())
 			return Spl[4];
 
 		SampleSet = atoi(Spl[0].c_str());
@@ -261,13 +271,27 @@ void ReadObjects (String line, OsuLoadInfo* Info)
 	Note.AssignTrack(Track);
 
 	SplitResult Spl2;
-	boost::split(Spl2, Spl[5], boost::is_any_of(":"));
+
+	/* 
+		A few of these "ifs" are just since v11 and v12 store hold endtimes in different locations.
+	*/
+	int splitType = 5;
+	if (Spl.size() == 7)
+		splitType = 6;
+	
+	boost::split(Spl2, Spl[splitType], boost::is_any_of(":"));
+
+
 	double startTime = atof(Spl[2].c_str()) / 1000.0;
 	int NoteType = atoi(Spl[3].c_str());
 
 	if (NoteType & NOTE_HOLD)
 	{
-		float endTime = atof(Spl2[0].c_str()) / 1000.0;
+		float endTime;
+		if (splitType == 5)
+			endTime = atof(Spl2[0].c_str()) / 1000.0;
+		else
+			endTime = atof(Spl[5].c_str()) / 1000.0;
 
 		if (startTime > endTime)
 			printf("o!m loader warning: object at track %d has startTime > endTime (%f and %f)\n", Track, startTime, endTime);

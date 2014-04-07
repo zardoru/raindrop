@@ -198,23 +198,11 @@ void Song7K::ProcessSpeedVariations(SongInternal::Difficulty7K* Diff, double Dri
 		SpeedValue = SectionValue(tVSpeeds, Change->Time) * Change->Value;
 
 		SongInternal::TimingSegment VSpeed;
-		float SpeedAtBeat;
 
 		VSpeed.Time = Change->Time;
 		VSpeed.Value = SpeedValue;
 
-		SpeedAtBeat = SectionValue(Diff->VerticalSpeeds, Change->Time);
-
-		if (SpeedAtBeat != SpeedValue) // No redundant speeds
-			Diff->VerticalSpeeds.push_back(VSpeed);
-#ifndef NDEBUG
-			/*
-		else
-		{
-			printf("Redundant speed change while processing (%f / %f) Old value at time is %f, Original value is %f\n", Change->Time, SpeedValue, SpeedAtBeat, SectionValue(tVSpeeds, Change->Time));
-		}
-		*/
-#endif
+		Diff->VerticalSpeeds.push_back(VSpeed);
 
 		next_speed: (void)0;
 	}

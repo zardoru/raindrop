@@ -4,6 +4,7 @@
 #include "Audio.h"
 #include "Audiofile.h"
 #include "AudioSourceSFM.h"
+#include "AudioSourceOGG.h"
 
 #ifdef MP3_ENABLED
 #include "AudioSourceMP3.h"
@@ -16,12 +17,14 @@ AudioDataSource* SourceFromExt(String Filename)
 
 	if (Filename.length() == 0) return NULL;
 
-	if (Ext == "wav" || Ext == "ogg" || Ext == "flac")
+	if (Ext == "wav" || Ext == "flac")
 		Ret = new AudioSourceSFM();
 #ifdef MP3_ENABLED
 	else if (Ext == "mp3")
 		Ret = new AudioSourceMP3();
 #endif
+	else if (Ext == "ogg")
+		Ret = new AudioSourceOGG();
 
 	if (Ret)
 		Ret->Open(Filename.c_str());
@@ -108,7 +111,7 @@ bool AudioSample::Open(const char* Filename)
 	if (Src && Src->IsValid())
 	{
 		Channels = Src->GetChannels();
-		mBufferSize = Src->GetLength();
+		mBufferSize = Src->GetLength() * Channels;
 
 		mData = new short[mBufferSize];
 		Src->Read(mData, mBufferSize);

@@ -210,6 +210,9 @@
     <ClCompile Include="..\src\AudioSourceSFM.cpp">
       <Filter>Source Files\Backend\Audio</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\AudioSourceOGG.cpp">
+      <Filter>Source Files\Backend\Audio</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\GraphObject2D.h">
@@ -348,6 +351,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\AudioSourceSFM.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AudioSourceOGG.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
