@@ -78,11 +78,20 @@
 
 			*/
 
+
+int fromBase36(const char *txt)
+{
+	return strtoul(txt, NULL, 36);
+}
+
+int chanScratch = fromBase36("16");
+
 // From base 36 they're 01, 02, 03 and 09.
 #define CHANNEL_BGM 1
 #define CHANNEL_METER 2
 #define CHANNEL_BPM 3
 #define CHANNEL_STOPS 9
+#define CHANNEL_SCRATCH chanScratch
 
 struct BMSEvent
 {
@@ -109,11 +118,6 @@ typedef std::map<int, String> FilenameListIndex;
 typedef std::map<int, double> BpmListIndex;
 typedef std::vector<TrackNote> NoteVector;
 typedef std::map<int, BMSMeasure> MeasureList;
-
-int fromBase36(const char *txt)
-{
-	return strtoul(txt, NULL, 36);
-}
 
 const int startChannel = fromBase36("11");
 const int endChannel   = fromBase36("1Z");
@@ -146,6 +150,9 @@ struct BmsLoadInfo
 	MeasureList Measures; 
 	Song7K* Song;
 	SongInternal::Difficulty7K *Difficulty;
+
+	int LowerBound, UpperBound;
+	bool usingScratch;
 };
 
 String CommandSubcontents (const String Command, const String Line)
@@ -158,19 +165,10 @@ void ParseEvents(BmsLoadInfo *Info, const int Measure, const int BmsChannel, con
 {
 	int CommandLength = Command.length() / 2;
 
-	/*if ( BmsChannel != CHANNEL_BGM && Info->Measures[Measure].Events.find(BmsChannel) != Info->Measures[Measure].Events.end())
-	{
-		// Can we skip it if it already exists?
-		// Or should we overwrite it?
-
-		return; // Skip.
-	}*/
-
-
-	// Combining lines behavour: don't skip.
-
 	if (BmsChannel != CHANNEL_METER)
 	{
+		if (BmsChannel == CHANNEL_SCRATCH)
+			Info->usingScratch = true;
 
 		for (int i = 0; i < CommandLength; i++)
 		{
@@ -261,7 +259,7 @@ void CalculateStops(BmsLoadInfo *Info)
 
 int translateTrackBME(int Channel)
 {
-	int relTrack = Channel - fromBase36("11");
+	int relTrack = Channel - startChannel;
 
 	switch (relTrack)
 	{
@@ -273,8 +271,8 @@ int translateTrackBME(int Channel)
 		return relTrack + 1;
 	case 5:
 		return 0;
-	case 6: // foot pedal is ignored
-		return 10;
+	case 6: // foot pedal is ignored.
+		return MAX_CHANNELS + 1;
 	case 7:
 		return 6;
 	case 8:
@@ -284,38 +282,51 @@ int translateTrackBME(int Channel)
 	}
 }
 
-int translateTrackBMS(int Channel)
-{
-	int relTrack = Channel - fromBase36("11");
-
-	switch (relTrack)
-	{
-	case 0:
-	case 1:
-	case 2:
-	case 3:
-	case 4:
-		return relTrack + 1;
-	case 5:
-		return 0;
-	default: // Undefined
-		return relTrack + 1;
-	}
-}
-
-int translateTrackDDR(int Channel)
-{
-	return Channel - fromBase36("11");
-}
-
-int translateTracko2Mania(int Channel)
-{
-	return Channel == fromBase36("16") ? 0 : (Channel - fromBase36("11") + 1);
-}
+void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i);
 
 int evsort(const SongInternal::AutoplaySound &i, const SongInternal::AutoplaySound &j)
 {
 	return i.Time < j.Time;
+}
+
+void CalculateObjects(BmsLoadInfo *Info)
+{
+	int usedChannels[MAX_CHANNELS];
+
+	for (int i = 0; i < MAX_CHANNELS; i++)
+		usedChannels[i] = 0;
+
+	Info->LowerBound = -1;
+	
+	/* Autodetect channel count */
+	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
+	{
+		for (int curChannel = startChannel; curChannel <= (startChannel + MAX_CHANNELS); curChannel++)
+		{
+			if (i->second.Events.find(curChannel) != i->second.Events.end())
+				usedChannels[translateTrackBME(curChannel)] = 1;
+		}
+	}
+
+	int usedChannelCNT = 0;
+	for (int i = 0; i < MAX_CHANNELS; i++)
+		if (usedChannels[i] != 0)
+		{
+			if (Info->LowerBound == -1) // Lowest channel being used. Used for translation back to track 0.
+				Info->LowerBound = i;
+
+			Info->UpperBound = i;
+		}
+
+	// We pick the range of channels we're going to use.
+	Info->Difficulty->Channels = Info->UpperBound - Info->LowerBound + 1;
+
+	/* At this point we know the channel count from 1 to MAX_CHANNELS. We should be able to use it now..*/
+
+	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
+	{
+		measureCalculate(Info, i);
+	}
 }
 
 void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
@@ -323,23 +334,12 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 	int usedChannels = Info->Difficulty->Channels;
 	SongInternal::Measure7K Msr[MAX_CHANNELS];
 
-	for (int curChannel = startChannel; curChannel <= endChannel; curChannel++)
+	for (int curChannel = startChannel; curChannel <= (startChannel+MAX_CHANNELS); curChannel++)
 	{
 		if (i->second.Events.find(curChannel) != i->second.Events.end()) // there are bms events for this channel.
 		{
 			int Track = 0;
-			switch (usedChannels)
-			{
-			case 8: // Classic BME
-			case 9:
-				Track = translateTrackBME(curChannel);
-				break;
-			case 6: // Classic BMS
-				Track = translateTrackBMS(curChannel);
-				break;
-			default: // o2mania
-				Track = translateTracko2Mania(curChannel);
-			}
+			Track = translateTrackBME(curChannel) - Info->LowerBound;
 
 			for (BMSEventList::iterator ev = i->second.Events[curChannel].begin(); ev != i->second.Events[curChannel].end(); ev++)
 			{
@@ -398,31 +398,6 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 	}
 }
 
-void CalculateObjects(BmsLoadInfo *Info)
-{
-	int usedChannels = 0;
-	
-	/* Autodetect channel count */
-	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
-	{
-		for (int curChannel = startChannel; curChannel <= endChannel; curChannel++)
-		{
-			if (i->second.Events.find(curChannel) != i->second.Events.end())
-				usedChannels = std::max(startChannel, curChannel) - startChannel + 1;
-		}
-	}
-
-	if (usedChannels == 9) // Move PMS to BME unless PMS flag is set..
-		usedChannels = 8; 
-
-	Info->Difficulty->Channels = usedChannels;
-
-
-	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
-	{
-		measureCalculate(Info, i);
-	}
-}
 
 void CompileBMS(BmsLoadInfo *Info)
 {

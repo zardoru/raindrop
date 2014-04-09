@@ -142,6 +142,8 @@ float ScoreKeeper7K::getPercentScore(PercentScoreType percent_score_type){
 			return float(ex_score) / float(total_notes * 2) * 100.0;
 		case PST_ACC:
 			return accuracy;
+		case PST_NH:
+			return float(notes_hit) / float(total_notes) * 100.0;
 		default:
 			return 0;
 	}

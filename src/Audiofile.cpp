@@ -10,12 +10,16 @@
 #include "AudioSourceMP3.h"
 #endif
 
+#include <boost/locale.hpp>
+
 AudioDataSource* SourceFromExt(String Filename)
 {
 	AudioDataSource *Ret = NULL;
 	String Ext = Utility::GetExtension(Filename);
 
 	if (Filename.length() == 0) return NULL;
+
+	boost::locale::to_lower(Ext);
 
 	if (Ext == "wav" || Ext == "flac")
 		Ret = new AudioSourceSFM();
