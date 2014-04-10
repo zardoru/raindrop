@@ -1,6 +1,7 @@
 #include "Global.h"
 #include <cstring>
 #include <csignal>
+#include <sys/stat.h>
 
 int InfinityMask = 0x7F800000;
 float *PInfinity = (float*)&InfinityMask;
@@ -49,6 +50,13 @@ namespace Utility {
 	{
 		return Fn.substr(0, Fn.find_last_of("."));
 	}
+
+	bool FileExists(String Fn)
+	{
+		struct stat st;
+		return (stat(Fn.c_str(), &st) != -1);
+	}
+
 } // namespace Utility
 
 #ifdef NDEBUG

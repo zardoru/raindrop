@@ -10,7 +10,7 @@
 #include "AudioSourceMP3.h"
 #endif
 
-#include <boost/locale.hpp>
+#include <boost/algorithm/string.hpp>
 
 AudioDataSource* SourceFromExt(String Filename)
 {
@@ -19,7 +19,7 @@ AudioDataSource* SourceFromExt(String Filename)
 
 	if (Filename.length() == 0) return NULL;
 
-	boost::locale::to_lower(Ext);
+	boost::algorithm::to_lower(Ext);
 
 	if (Ext == "wav" || Ext == "flac")
 		Ret = new AudioSourceSFM();
@@ -108,9 +108,33 @@ bool AudioSample::IsPlaying()
 	return mIsPlaying;
 }
 
+String RearrangeFilename(const char* Fn)
+{
+	String Ret;
+
+	if (Utility::FileExists(Fn))
+		return Fn;
+	else
+	{
+		String Ext = Utility::GetExtension(Fn);
+
+		if (Ext == "wav")
+			Ret = Utility::RemoveExtension(Fn) + ".ogg";
+		else
+			Ret = Utility::RemoveExtension(Fn) + ".wav";
+
+		if (!Utility::FileExists(Ret))
+			return Fn;
+		else
+			return Ret;
+	}
+}
+
 bool AudioSample::Open(const char* Filename)
 {
-	AudioDataSource * Src = SourceFromExt (Filename);
+	String FilenameFixed = RearrangeFilename(Filename);
+
+	AudioDataSource * Src = SourceFromExt (FilenameFixed);
 
 	if (Src && Src->IsValid())
 	{
@@ -121,6 +145,10 @@ bool AudioSample::Open(const char* Filename)
 		Src->Read(mData, mBufferSize);
 
 		mRate = Src->GetRate();
+
+		if (mRate != 44100) // mixer_constant.. in the future, resample.
+			printf("AudioSample::Open(): Sample rate (%d) != System Sample Rate (44100)\n", mRate); 
+
 		mCounter = 0;
 		mIsValid = true;
 

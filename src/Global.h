@@ -39,6 +39,7 @@ namespace Utility
 	String GetExtension(String Filename);
 	String RelativeToPath(String Filename);
 	String RemoveExtension(String Fn);
+	bool FileExists(String Filename);
 }
 
 template <class T>
