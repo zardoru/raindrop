@@ -147,7 +147,35 @@ bool AudioSample::Open(const char* Filename)
 		mRate = Src->GetRate();
 
 		if (mRate != 44100) // mixer_constant.. in the future, resample.
+		{
 			printf("AudioSample::Open(): Sample rate (%d) != System Sample Rate (44100)\n", mRate); 
+			
+			double ResamplingRate = 44100.0 / (double)mRate;
+			short* mDataNew = new short [mBufferSize * ResamplingRate];
+
+			int i;
+			double j;
+			for (j = i = 0; i < mBufferSize; i++, j += ResamplingRate)
+			{
+				int dst = j;
+				mDataNew[dst] = mData[i];
+
+				if (i > 0)
+				{
+					// linearly interpolate
+					int start = (i-1)*ResamplingRate;
+					double step = double (mDataNew[dst] - mDataNew[start]) / double (dst - start);
+					for (int k = start; k < dst; k++)
+					{
+						mDataNew[k] = step * (dst - k);
+					}
+				}
+			}
+
+			delete mData;
+			mBufferSize *= ResamplingRate;
+			mData = mDataNew;
+		}
 
 		mCounter = 0;
 		mIsValid = true;
