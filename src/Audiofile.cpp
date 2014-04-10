@@ -165,9 +165,9 @@ bool AudioSample::Open(const char* Filename)
 					// linearly interpolate
 					int start = (i-1)*ResamplingRate;
 					double step = double (mDataNew[dst] - mDataNew[start]) / double (dst - start);
-					for (int k = start; k < dst; k++)
+					for (int k = (start + 1); k < dst; k++)
 					{
-						mDataNew[k] = step * (dst - k);
+						mDataNew[k] = step * (dst - k) + mDataNew[start];
 					}
 				}
 			}
