@@ -108,7 +108,7 @@ void ReadEvents (String line, OsuLoadInfo* Info)
 			boost::replace_all(Spl[2], "\"", "");
 			Info->Song->BackgroundRelativeDir = Spl[2];
 			Info->Song->BackgroundDir = Info->Song->SongDirectory + "/" + Spl[2];
-		}else if (Spl[0] == "5")
+		}else if (Spl[0] == "5" || Spl[0] == "Sample")
 		{
 			boost::replace_all(Spl[3], "\"", "");
 
