@@ -225,9 +225,9 @@ String GetSampleFilename(SplitResult &Spl, int NoteType, int Hitsound)
 
 	if (CustomSample)
 	{
-		char dst[16];
-		itoa(CustomSample, dst, 10);
-		CustomSampleString = dst;
+		std::stringstream ss;
+		ss << CustomSample;
+		CustomSampleString = ss.str();
 	}
 
 	String HitsoundString;

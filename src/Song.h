@@ -111,7 +111,7 @@ namespace SongInternal
 		std::vector<AutoplaySound> BGMEvents;
 		bool IsVirtual;
 
-		Difficulty7K::Difficulty7K() { IsVirtual = false; };
+		Difficulty7K() { IsVirtual = false; };
 	};
 }
 

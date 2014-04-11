@@ -151,7 +151,7 @@ bool AudioSample::Open(const char* Filename)
 			printf("AudioSample::Open(): Sample rate (%d) != System Sample Rate (44100)\n", mRate); 
 			
 			double ResamplingRate = 44100.0 / (double)mRate;
-			short* mDataNew = new short [mBufferSize * ResamplingRate];
+			short* mDataNew = new short [int(double(mBufferSize * ResamplingRate))];
 
 			int i;
 			double j;
