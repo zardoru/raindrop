@@ -78,7 +78,7 @@ void AudioSourceOGG::Seek(float Time)
 
 size_t AudioSourceOGG::GetLength()
 { 
-	return ov_pcm_total(&mOggFile, -1) * info->channels;
+	return ov_pcm_total(&mOggFile, -1);
 }
 
 uint32 AudioSourceOGG::GetRate()

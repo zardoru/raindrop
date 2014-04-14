@@ -68,7 +68,7 @@ void AudioSourceSFM::Seek(float Time)
 size_t AudioSourceSFM::GetLength()
 {
 	// I'm not sure why- but this is inconsistent.
-	return info->frames * mChannels;
+	return info->frames;
 }
 
 uint32 AudioSourceSFM::GetRate()

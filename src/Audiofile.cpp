@@ -73,11 +73,11 @@ uint32 AudioSample::Read(void* buffer, size_t count)
 
 	if (mIsValid)
 	{
-		uint32 bufferLeft = mBufferSize-mCounter;
+		uint32 bufferLeft = mByteSize-mCounter;
 		
-		count *= sizeof(int16);
+		count *= sizeof(short);
 
-		if (mCounter < mBufferSize)
+		if (mCounter < mByteSize)
 		{	
 			int diff = 0;
 			if(count > bufferLeft)
@@ -142,6 +142,7 @@ bool AudioSample::Open(const char* Filename)
 		mBufferSize = Src->GetLength() * Channels;
 
 		mData = new short[mBufferSize];
+		memset(mData, 0, mBufferSize * sizeof(short));
 		Src->Read(mData, mBufferSize);
 
 		mRate = Src->GetRate();
@@ -151,7 +152,9 @@ bool AudioSample::Open(const char* Filename)
 			printf("AudioSample::Open(): Sample rate (%d) != System Sample Rate (44100)\n", mRate); 
 			
 			double ResamplingRate = 44100.0 / (double)mRate;
-			short* mDataNew = new short [int(double(mBufferSize * ResamplingRate))];
+			int size = int(double(mBufferSize * ResamplingRate));
+			short* mDataNew = new short [size];
+			memset(mData, 0, size * sizeof(short));
 
 			int i;
 			double j;
@@ -179,6 +182,7 @@ bool AudioSample::Open(const char* Filename)
 
 		mCounter = 0;
 		mIsValid = true;
+		mByteSize = mBufferSize * sizeof(short);
 
 		delete Src;
 		return true;

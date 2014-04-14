@@ -50,6 +50,7 @@ private:
 	bool		   mIsPlaying;
 	bool		   mIsValid;
 	uint32		   mRate;
+	uint32		   mByteSize;
 
 
 public:
