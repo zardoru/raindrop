@@ -142,7 +142,6 @@ bool AudioSample::Open(const char* Filename)
 		mBufferSize = Src->GetLength() * Channels;
 
 		mData = new short[mBufferSize];
-		memset(mData, 0, mBufferSize * sizeof(short));
 		Src->Read(mData, mBufferSize);
 
 		mRate = Src->GetRate();
@@ -154,7 +153,6 @@ bool AudioSample::Open(const char* Filename)
 			double ResamplingRate = 44100.0 / (double)mRate;
 			int size = int(double(mBufferSize * ResamplingRate));
 			short* mDataNew = new short [size];
-			memset(mData, 0, size * sizeof(short));
 
 			int i;
 			double j;
