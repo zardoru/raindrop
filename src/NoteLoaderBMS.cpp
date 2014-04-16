@@ -152,7 +152,16 @@ struct BmsLoadInfo
 	SongInternal::Difficulty7K *Difficulty;
 
 	int LowerBound, UpperBound;
-	bool usingScratch;
+	
+	float startTime[MAX_CHANNELS];
+
+	BmsLoadInfo()
+	{
+		for (int k = 0; k < MAX_CHANNELS; k++)
+			startTime[k] = -1;
+		Difficulty = NULL;
+		Song = NULL;
+	}
 };
 
 String CommandSubcontents (const String Command, const String Line)
@@ -167,8 +176,6 @@ void ParseEvents(BmsLoadInfo *Info, const int Measure, const int BmsChannel, con
 
 	if (BmsChannel != CHANNEL_METER)
 	{
-		if (BmsChannel == CHANNEL_SCRATCH)
-			Info->usingScratch = true;
 
 		for (int i = 0; i < CommandLength; i++)
 		{
@@ -257,9 +264,11 @@ void CalculateStops(BmsLoadInfo *Info)
 	
 }
 
-int translateTrackBME(int Channel)
+int translateTrackBME(int Channel, int relativeTo = startChannel);
+
+int translateTrackBME(int Channel, int relativeTo)
 {
-	int relTrack = Channel - startChannel;
+	int relTrack = Channel - relativeTo;
 
 	switch (relTrack)
 	{
@@ -329,6 +338,8 @@ void CalculateObjects(BmsLoadInfo *Info)
 	}
 }
 
+int startChannelLN = fromBase36("51");
+
 void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 {
 	int usedChannels = Info->Difficulty->Channels;
@@ -343,9 +354,7 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 
 			for (BMSEventList::iterator ev = i->second.Events[curChannel].begin(); ev != i->second.Events[curChannel].end(); ev++)
 			{
-				int Event = ev->Event;
-
-				if (!Event || Track >= usedChannels) continue; // UNUSABLE event
+				if (!ev->Event || Track >= usedChannels) continue; // UNUSABLE event
 
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
 
@@ -355,7 +364,7 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 				Info->Difficulty->Duration = std::max((double)Info->Difficulty->Duration, Time);
 
 				Note.AssignTime(Time);
-				Note.AssignSound(Event);
+				Note.AssignSound(ev->Event);
 
 				Note.AssignTrack(Track);
 				Info->Difficulty->TotalScoringObjects++;
@@ -363,6 +372,47 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 				Info->Difficulty->TotalObjects++;
 
 				Msr[Note.GetTrack()].MeasureNotes.push_back(Note);
+			}
+		}
+	}
+
+	for (int curChannel = startChannelLN; curChannel <= (startChannelLN+MAX_CHANNELS); curChannel++)
+	{
+		if (i->second.Events.find(curChannel) != i->second.Events.end()) // there are bms events for this channel.
+		{
+			int Track = 0;
+
+			Track = translateTrackBME(curChannel, startChannelLN) - Info->LowerBound;
+
+			for (BMSEventList::iterator ev = i->second.Events[curChannel].begin(); ev != i->second.Events[curChannel].end(); ev++)
+			{
+				if (Track >= usedChannels) continue;
+
+				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
+
+				double Time = TimeAtBeat(Info->Difficulty->Timing, 0, Beat) + StopTimeAtBeat(Info->Difficulty->StopsTiming, Beat);
+
+				if (Info->startTime[Track] == -1)
+				{
+					Info->startTime[Track] = Time;
+				}else
+				{
+					TrackNote Note;
+
+					Info->Difficulty->Duration = std::max((double)Info->Difficulty->Duration, Time);
+
+					Note.AssignTime(Info->startTime[Track], Time);
+					Note.AssignSound(ev->Event);
+
+					Note.AssignTrack(Track);
+					Info->Difficulty->TotalScoringObjects += 2;
+					Info->Difficulty->TotalHolds++;
+					Info->Difficulty->TotalObjects++;
+
+					Msr[Track].MeasureNotes.push_back(Note);
+
+					Info->startTime[Track] = -1;
+				}
 			}
 		}
 	}
@@ -576,6 +626,24 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *
 	/* When all's said and done, "compile" the bms. */
 	CompileBMS(Info);
 	Difficulty->SoundList = Info->Sounds;
+
+	if (Difficulty->Name.length() == 0)
+	{
+		size_t startBracket = filename.find_first_of("[");
+		size_t endBracket = filename.find_last_of("]");
+
+		if (startBracket != std::string::npos && endBracket != std::string::npos)
+			Difficulty->Name = filename.substr(startBracket + 1, endBracket - startBracket - 1);
+
+		// No brackets? Okay then, let's use the filename.
+		if (Difficulty->Name.length() == 0)
+		{
+			size_t last_slash = filename.find_last_of("/");
+			size_t last_dslash = filename.find_last_of("\\");
+			size_t last_dir = std::max( last_slash != std::string::npos ? last_slash : 0, last_dslash != std::string::npos ? last_dslash : 0 );
+			Difficulty->Name = filename.substr(last_dir + 1, filename.length() - last_dir - 5);
+		}
+	}
 
 	Out->Difficulties.push_back(Difficulty);
 	delete Info;

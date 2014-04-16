@@ -12,6 +12,7 @@ AudioSourceMP3::AudioSourceMP3()
 	if (!mpg123_initialized)
 	{
 		mpg123_init();
+		mpg123_initialized = true;
 	}
 
 	mHandle = mpg123_new(NULL, &err);
