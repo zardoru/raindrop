@@ -164,10 +164,14 @@ void Song7K::ProcessSpeedVariations(SongInternal::Difficulty7K* Diff, double Dri
 {
 	TimingData tVSpeeds = Diff->VerticalSpeeds; // We need this to store what values to change
 
+	std::sort( Diff->SpeedChanges.begin(), Diff->SpeedChanges.end(), tSort );
+
 	for(TimingData::iterator Change = Diff->SpeedChanges.begin();
 			Change != Diff->SpeedChanges.end();
 			Change++)
 	{
+		TimingData::iterator NextChange = (Change+1);
+
 		/* 
 			Find all VSpeeds
 			if there exists a speed change which is virtually happening at the same time as this VSpeed
@@ -203,6 +207,33 @@ void Song7K::ProcessSpeedVariations(SongInternal::Difficulty7K* Diff, double Dri
 		VSpeed.Value = SpeedValue;
 
 		Diff->VerticalSpeeds.push_back(VSpeed);
+
+		/* 
+			Theorically, if there were a VSpeed change after this one (such as a BPM change) we've got to modify them 
+			if they're between this and the next speed change.
+		*/
+
+		for(TimingData::iterator Time = Diff->VerticalSpeeds.begin();
+			Time != Diff->VerticalSpeeds.end();
+			Time++)
+		{
+			if (Time->Time > Change->Time)
+			{
+				// Two options, between two speed changes, or the last one. Second case, NextChange == SpeedChanges.end().
+				// Otherwise, just move on
+				// Last speed change
+				if (NextChange == Diff->SpeedChanges.end())
+				{
+					Time->Value *= SpeedValue;
+				}else
+				{
+					if (Time->Time < NextChange->Time) // Between speed changes
+					{
+						Time->Value *= SpeedValue;
+					}
+				}
+			}
+		}
 
 		next_speed: (void)0;
 	}
