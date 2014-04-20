@@ -170,6 +170,13 @@ void Song7K::ProcessSpeedVariations(SongInternal::Difficulty7K* Diff, double Dri
 			Change != Diff->SpeedChanges.end();
 			Change++)
 	{
+		Change->Time += Drift;
+	}
+
+	for(TimingData::iterator Change = Diff->SpeedChanges.begin();
+			Change != Diff->SpeedChanges.end();
+			Change++)
+	{
 		TimingData::iterator NextChange = (Change+1);
 
 		/* 
@@ -177,8 +184,6 @@ void Song7K::ProcessSpeedVariations(SongInternal::Difficulty7K* Diff, double Dri
 			if there exists a speed change which is virtually happening at the same time as this VSpeed
 			modify it to be this value * factor
 		*/
-
-		Change->Time += Drift;
 
 		for(TimingData::iterator Time = Diff->VerticalSpeeds.begin();
 			Time != Diff->VerticalSpeeds.end();
@@ -229,7 +234,7 @@ void Song7K::ProcessSpeedVariations(SongInternal::Difficulty7K* Diff, double Dri
 				{
 					if (Time->Time < NextChange->Time) // Between speed changes
 					{
-						Time->Value *= SpeedValue;
+						Time->Value *= Change->Value;
 					}
 				}
 			}
