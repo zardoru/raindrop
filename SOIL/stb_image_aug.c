@@ -70,6 +70,10 @@
 #include <string.h> // strcmp
 #endif
 
+#ifdef WIN32
+#include <Windows.h>
+#endif
+
 #ifndef STBI_NO_STDIO
 #include <stdio.h>
 #endif
@@ -174,8 +178,17 @@ static stbi_uc *hdr_to_ldr(float   *data, int x, int y, int comp);
 #ifndef STBI_NO_STDIO
 unsigned char *stbi_load(char const *filename, int *x, int *y, int *comp, int req_comp)
 {
-   FILE *f = fopen(filename, "rb");
+   FILE *f;
    unsigned char *result;
+#ifndef WIN32
+    f = fopen(filename, "rb");
+#else
+   wchar_t fnwide[MAX_PATH];
+   size_t len = MultiByteToWideChar(CP_UTF8, 0, filename, strlen(filename), fnwide, MAX_PATH);
+   fnwide[len] = 0;
+   f = _wfopen(fnwide, L"rb");
+#endif
+
    if (!f) return epuc("can't fopen", "Unable to open file");
    result = stbi_load_from_file(f,x,y,comp,req_comp);
    fclose(f);

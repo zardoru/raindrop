@@ -33,7 +33,7 @@ AudioDataSource* SourceFromExt(String Filename)
 	if (Ret)
 		Ret->Open(Filename.c_str());
 	else
-		printf("INFO: extension %s has no audiosource associated\n", Ext.c_str());
+		wprintf(L"INFO: extension %s has no audiosource associated\n", Ext.c_str());
 
 	return Ret;
 }
@@ -148,7 +148,7 @@ bool AudioSample::Open(const char* Filename)
 
 		if (mRate != 44100) // mixer_constant.. in the future, resample.
 		{
-			printf("AudioSample::Open(): Sample rate (%d) != System Sample Rate (44100)\n", mRate); 
+			wprintf(L"AudioSample::Open(): Sample rate (%d) != System Sample Rate (44100)\n", mRate); 
 			
 			double ResamplingRate = 44100.0 / (double)mRate;
 			int size = int(double(mBufferSize * ResamplingRate));
@@ -185,7 +185,7 @@ bool AudioSample::Open(const char* Filename)
 		delete Src;
 		return true;
 	}else
-		printf("Invalid source for %s.\n", Filename);
+		wprintf(L"Invalid source for %ls.\n", Utility::Widen(Filename).c_str());
 
 	delete Src;
 	return false;

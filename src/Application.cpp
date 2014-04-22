@@ -1,3 +1,9 @@
+#ifdef WIN32
+#include <io.h>
+#include <fcntl.h>
+#include <Windows.h>
+#endif
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -15,7 +21,6 @@
 #include "Song.h"
 
 #include "ScreenMainMenu.h"
-#include <ctime>
 
 Application::Application()
 {
@@ -25,11 +30,16 @@ Application::Application()
 
 void Application::Init()
 {
+#ifdef WIN32
+	SetConsoleOutputCP(CP_UTF8);
+	_setmode(_fileno(stdout), _O_U8TEXT); 
+#endif
+
 	Configuration::Initialize();
 	WindowFrame.AutoSetupWindow();
 	InitAudio();
 	Game = NULL;
-	srand(time(0));
+	// srand(time(0));
 	// throw a message here
 }
 

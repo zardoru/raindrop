@@ -68,8 +68,8 @@ namespace Utility {
 #ifndef WIN32
 		mbstowcs(u16s, Line.c_str(), 2048);
 #else
+		memset(u16s, 0, sizeof(wchar_t) * 2048);
 		size_t len = MultiByteToWideChar(CP_UTF8, 0, Line.c_str(), Line.length(), u16s, 2048);
-		u16s[len] = 0;
 #endif
 		return std::wstring(u16s);
 	}
@@ -81,8 +81,8 @@ namespace Utility {
 #ifndef WIN32
 		wcstombs(mbs, Line.c_str(), 2048);
 #else
+		memset(mbs, 0, 2048);
 		size_t len = WideCharToMultiByte(CP_UTF8, 0, Line.c_str(), Line.length(), mbs, 2048, NULL, NULL);
-		mbs[len] = 0;
 #endif
 		return String(mbs);
 	}

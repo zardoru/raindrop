@@ -1,6 +1,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <stdio.h>
+#include <iostream>
 
 #include "Global.h"
 #include "Screen.h"
@@ -446,10 +446,10 @@ void GameWindow::SetupShaders()
 
 	if (status != GL_TRUE)
 	{	
-		printf("%s\n", buffer);
+		std::wcout << buffer << "\n";
 		throw; // std::exception(buffer);
 	}else
-		printf("%s\n", buffer);
+		std::wcout << buffer << "\n";
 
 	glGetShaderiv( defaultFragShader, GL_COMPILE_STATUS, &status );
 
@@ -457,10 +457,10 @@ void GameWindow::SetupShaders()
 
 	if (status != GL_TRUE)
 	{
-		printf("%s\n", buffer);
+		std::wcout << buffer << "\n";
 		throw; // std::exception(buffer);
 	}
-	else printf("%s\n", buffer);
+	else std::wcout << buffer << "\n";
 
 	defaultShaderProgram = glCreateProgram();
 	glAttachShader( defaultShaderProgram, defaultVertexShader );

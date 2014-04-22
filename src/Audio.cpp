@@ -425,12 +425,12 @@ void GetAudioInfo()
 {
 	PaHostApiIndex ApiCount = Pa_GetHostApiCount();
 
-	printf("AUDIO: The default API is %d\n", Pa_GetDefaultHostApi());
+	wprintf(L"AUDIO: The default API is %d\n", Pa_GetDefaultHostApi());
 
 	for (PaHostApiIndex i = 0; i < ApiCount; i++)
 	{
 		const PaHostApiInfo* Index = Pa_GetHostApiInfo(i);
-		printf("(%d) %s: %d (%d)\n", i, Index->name, Index->defaultOutputDevice, Index->type);
+		wprintf(L"(%d) %s: %d (%d)\n", i, Utility::Widen(Index->name).c_str(), Index->defaultOutputDevice, Index->type);
 
 #ifdef WIN32
 		if (Index->type == paWASAPI)
@@ -438,16 +438,16 @@ void GetAudioInfo()
 #endif
 	}
 
-	printf("\nAUDIO: The audio devices are\n");
+	wprintf(L"\nAUDIO: The audio devices are\n");
 	
 	PaDeviceIndex DevCount = Pa_GetDeviceCount();
 	for (PaDeviceIndex i = 0; i < DevCount; i++)
 	{
 		const PaDeviceInfo *Info = Pa_GetDeviceInfo(i);
-		printf("(%d): %s\n", i, Info->name);
-		printf("\thighLat: %f, lowLat: %f\n", Info->defaultHighOutputLatency, Info->defaultLowOutputLatency);
-		printf("\tsampleRate: %f, hostApi: %d\n", Info->defaultSampleRate, Info->hostApi);
-		printf("\tmaxchannels: %d\n", Info->maxOutputChannels);
+		wprintf(L"(%d): %s\n", i, Utility::Widen(Info->name).c_str());
+		wprintf(L"\thighLat: %f, lowLat: %f\n", Info->defaultHighOutputLatency, Info->defaultLowOutputLatency);
+		wprintf(L"\tsampleRate: %f, hostApi: %d\n", Info->defaultSampleRate, Info->hostApi);
+		wprintf(L"\tmaxchannels: %d\n", Info->maxOutputChannels);
 	}
 }
 

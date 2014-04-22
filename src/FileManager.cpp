@@ -164,13 +164,9 @@ void FileManager::GetSongList(std::vector<SongDC*> &OutVec)
 		Dir.ListDirectory(Listing, Directory::FS_DIR);
 		for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 		{ 
-#ifdef WIN32
-			std::wcout << Utility::Widen(*i) << L"... ";
-#else
-			std::cout << *i << "... ";
-#endif
+			wprintf(L"%ls...\n", Utility::Widen(*i).c_str());
 			loadSong(Dir.path() + *i, OutVec);
-			std::cout << "ok\n";
+			wprintf(L"ok\n");
 		}
 	}
 }
@@ -190,13 +186,9 @@ void FileManager::GetSongList7K(std::vector<Song7K*> &OutVec)
 		Dir.ListDirectory(Listing, Directory::FS_DIR);
 		for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 		{ 
-#ifdef WIN32
-			std::wcout << Utility::Widen(*i) << L"... ";
-#else
-			std::cout << *i << "... ";
-#endif
+			wprintf(L"%ls...\n", Utility::Widen(*i).c_str());
 			loadSong7K(Dir.path() + *i, OutVec);
-			std::cout << "ok\n";
+			wprintf(L"ok\n");
 		}
 	}
 }

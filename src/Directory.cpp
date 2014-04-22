@@ -93,19 +93,13 @@ std::vector<std::string>& Directory::ListDirectory(std::vector<std::string>& Vec
 				mbstowcs(tmp, ext, MAX_PATH);
 				if (fname.substr(fname.find_last_of(L".")+1) == std::wstring(tmp)) 
 				{
-					size_t len = WideCharToMultiByte(CP_UTF8, 0, fname.c_str(), fname.length(), tmpmbs, MAX_PATH, NULL, NULL);
-					std::string fn (tmpmbs);
-					fn[len] = 0;
-					Vec.push_back(fn);
+					Vec.push_back(Utility::Narrow(fname));
 				}
 			}
 
 			if (!ext)
 			{
-				size_t len = WideCharToMultiByte(CP_UTF8, 0, fname.c_str(), fname.length(), tmpmbs, MAX_PATH, NULL, NULL);
-				std::string fn (tmpmbs);
-				fn[len] = 0;
-				Vec.push_back(fn);
+				Vec.push_back(Utility::Narrow(fname));
 			}
 
 		}else
