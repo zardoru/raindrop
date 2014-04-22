@@ -13,7 +13,7 @@
 
 #define DirectoryPrefix String("./GameData/")
 #define SkinsPrefix String("Skins/")
-#define SongsPrefix String("Songs/")
+#define SongsPrefix String("Songs")
 #define ScriptsPrefix String("Scripts/")
 
 String FileManager::CurrentSkin = "default";
@@ -101,17 +101,24 @@ void loadSong7K( Directory songPath, std::vector<Song7K*> &VecOut )
 	Song7K *New = new Song7K();
 	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{
-		String Ext = Utility::GetExtension(*i);
-		if (Ext == "fmd") // Ftb MetaData
+		std::wstring Ext = Utility::Widen(Utility::GetExtension(*i));
+
+		if (Ext == L"wav" || Ext == L"ogg") continue;
+
+		std::wstring fn = L"/" + Utility::Widen(*i);
+		std::wstring sp = Utility::Widen(songPath.path());
+		std::string fn_f = Utility::Narrow(sp + fn);
+
+		if (Ext == L"fmd") // Ftb MetaData
 		{
-			NoteLoaderFTB::LoadMetadata(songPath.path() + "/" + *i, songPath.path(), New);
-		}else if (Ext == "ftb")
+			NoteLoaderFTB::LoadMetadata(fn_f, songPath.path(), New);
+		}else if (Ext == L"ftb")
 		{
-			NoteLoaderFTB::LoadObjectsFromFile(songPath.path() + "/" + *i, songPath.path(), New);
-		}else if (Ext == "osu")
-			NoteLoaderOM::LoadObjectsFromFile(songPath.path() + "/" + *i, songPath.path(), New);
-		else if (Ext == "bms" || Ext == "bme")
-			NoteLoaderBMS::LoadObjectsFromFile(songPath.path() + "/" + *i, songPath.path(), New);
+			NoteLoaderFTB::LoadObjectsFromFile(fn_f, songPath.path(), New);
+		}else if (Ext == L"osu")
+			NoteLoaderOM::LoadObjectsFromFile(fn_f, songPath.path(), New);
+		else if (Ext == L"bms" || Ext == L"bme" || Ext == L"bml")
+			NoteLoaderBMS::LoadObjectsFromFile(fn_f, songPath.path(), New);
 	}
 
 	if (New->Difficulties.size())
@@ -157,7 +164,11 @@ void FileManager::GetSongList(std::vector<SongDC*> &OutVec)
 		Dir.ListDirectory(Listing, Directory::FS_DIR);
 		for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 		{ 
+#ifdef WIN32
+			std::wcout << Utility::Widen(*i) << L"... ";
+#else
 			std::cout << *i << "... ";
+#endif
 			loadSong(Dir.path() + *i, OutVec);
 			std::cout << "ok\n";
 		}
@@ -179,7 +190,11 @@ void FileManager::GetSongList7K(std::vector<Song7K*> &OutVec)
 		Dir.ListDirectory(Listing, Directory::FS_DIR);
 		for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 		{ 
+#ifdef WIN32
+			std::wcout << Utility::Widen(*i) << L"... ";
+#else
 			std::cout << *i << "... ";
+#endif
 			loadSong7K(Dir.path() + *i, OutVec);
 			std::cout << "ok\n";
 		}

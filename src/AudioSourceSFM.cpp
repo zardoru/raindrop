@@ -1,4 +1,9 @@
 
+#ifdef WIN32
+#include <Windows.h>
+#define ENABLE_SNDFILE_WINDOWS_PROTOTYPES 1
+#endif
+
 #include <cstdio>
 #include <sndfile.h>
 #include "Global.h"
@@ -25,7 +30,12 @@ bool AudioSourceSFM::Open(const char* Filename)
 	info = new SF_INFO;
 	info->format = 0;
 
+
+#ifndef WIN32
 	mWavFile = sf_open(Filename, SFM_READ, info);
+#else
+	mWavFile = sf_wchar_open( Utility::Widen(Filename).c_str(), SFM_READ, info);
+#endif
 
 	mRate		= info->samplerate;
 	mChannels   = info->channels;

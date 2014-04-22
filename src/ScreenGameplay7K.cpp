@@ -215,8 +215,18 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	for (std::map<int, String>::iterator i = CurrentDiff->SoundList.begin(); i != CurrentDiff->SoundList.end(); i++)
 	{
 		Keysounds[i->first] = new SoundSample();
+
+#ifdef WIN32
+
+		std::wstring sd = Utility::Widen(MySong->SongDirectory) + L"/" + Utility::Widen(i->second);
+
+		if (Keysounds[i->first]->Open(Utility::Narrow(sd).c_str()))
+			MixerAddSample(Keysounds[i->first]);
+
+#else
 		if (Keysounds[i->first]->Open((MySong->SongDirectory + "/" + i->second).c_str()))
 			MixerAddSample(Keysounds[i->first]);
+#endif
 	}
 
 	BGMEvents = CurrentDiff->BGMEvents;

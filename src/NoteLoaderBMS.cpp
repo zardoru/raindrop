@@ -5,12 +5,8 @@
 #include "NoteLoader.h"
 
 #include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
-#include <boost/foreach.hpp>
-#include <boost/algorithm/string/split.hpp>
-
 
 /*
 	Source for implemented commands:
@@ -459,7 +455,11 @@ void CompileBMS(BmsLoadInfo *Info)
 
 void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *Out)
 {
+#if (!defined _WIN32) || (defined STLP)
 	std::ifstream filein (filename.c_str());
+#else
+	std::ifstream filein (Utility::Widen(filename).c_str());
+#endif
 	SongInternal::Difficulty7K *Difficulty = new SongInternal::Difficulty7K();
 	BmsLoadInfo *Info = new BmsLoadInfo();
 

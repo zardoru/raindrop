@@ -40,6 +40,8 @@ namespace Utility
 	String RelativeToPath(String Filename);
 	String RemoveExtension(String Fn);
 	bool FileExists(String Filename);
+	std::wstring Widen(String Line);
+	String Narrow(std::wstring Line);
 }
 
 template <class T>

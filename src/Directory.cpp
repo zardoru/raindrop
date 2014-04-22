@@ -66,36 +66,46 @@ std::vector<std::string>& Directory::ListDirectory(std::vector<std::string>& Vec
 #ifdef _WIN32
 	HANDLE hFind = INVALID_HANDLE_VALUE;
 	WIN32_FIND_DATA ffd;
-	std::string DirFind = curpath + "./*";
+	std::string DirFind = curpath + "/*";
 	wchar_t tmp[MAX_PATH];
 	char tmpmbs[MAX_PATH];
 
-	mbstowcs(tmp, DirFind.c_str(), MAX_PATH);
+	memset(tmp, 0, sizeof(wchar_t) * MAX_PATH);
 
-	hFind = FindFirstFile((LPCWSTR)tmp, &ffd);
+	std::wstring Wide = Utility::Widen(curpath) + L"/*";
 
-	if (hFind == INVALID_HANDLE_VALUE)
-		return Vec;
+	hFind = FindFirstFile((LPCWSTR)Wide.c_str(), &ffd);
 
 	do {
+
+		if (hFind == INVALID_HANDLE_VALUE)
+			continue;
+
 		if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY && T == FS_DIR) || (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && T == FS_REG))
 		{
 			std::wstring fname = ffd.cFileName;
+
+			if (fname == L"." || fname == L"..")
+				continue;
 
 			if (ext)
 			{
 				mbstowcs(tmp, ext, MAX_PATH);
 				if (fname.substr(fname.find_last_of(L".")+1) == std::wstring(tmp)) 
 				{
-					wcstombs(tmpmbs, fname.c_str(), MAX_PATH);
-					Vec.push_back(tmpmbs);
+					size_t len = WideCharToMultiByte(CP_UTF8, 0, fname.c_str(), fname.length(), tmpmbs, MAX_PATH, NULL, NULL);
+					std::string fn (tmpmbs);
+					fn[len] = 0;
+					Vec.push_back(fn);
 				}
 			}
 
 			if (!ext)
 			{
-				wcstombs(tmpmbs, fname.c_str(), MAX_PATH);
-				Vec.push_back(tmpmbs);
+				size_t len = WideCharToMultiByte(CP_UTF8, 0, fname.c_str(), fname.length(), tmpmbs, MAX_PATH, NULL, NULL);
+				std::string fn (tmpmbs);
+				fn[len] = 0;
+				Vec.push_back(fn);
 			}
 
 		}else
