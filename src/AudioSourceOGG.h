@@ -11,6 +11,7 @@ class AudioSourceOGG : public AudioDataSource
 	vorbis_info* info;
 	vorbis_comment* comment;
 	float mSeekTime;
+	bool mIsDataLeft;
 
 public:
 	AudioSourceOGG();
@@ -22,6 +23,7 @@ public:
 	uint32 GetRate(); // Returns sampling rate of audio
 	uint32 GetChannels(); // Returns channels of audio
 	bool IsValid();
+	bool HasDataLeft();
 };
 
 #endif

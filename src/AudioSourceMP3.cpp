@@ -3,7 +3,7 @@
 #include "Audio.h"
 #include "AudioSourceMP3.h"
 
-bool mpg123_initialized = false;
+static bool mpg123_initialized = false;
 
 AudioSourceMP3::AudioSourceMP3()
 {
@@ -18,6 +18,7 @@ AudioSourceMP3::AudioSourceMP3()
 	mHandle = mpg123_new(NULL, &err);
 	mpg123_format_none(mHandle);
 	mIsValid = false;
+	mIsDataLeft = false;
 }
 
 AudioSourceMP3::~AudioSourceMP3()
@@ -48,6 +49,7 @@ bool AudioSourceMP3::Open(const char* Filename)
 		mLen = end - start;
 
 		mIsValid = true;
+		mIsDataLeft = true;
 		return true;
 	}
 
@@ -58,11 +60,16 @@ uint32 AudioSourceMP3::Read(void* buffer, size_t count)
 {
 	size_t ret;
 	int res = mpg123_read(mHandle, (unsigned char*)buffer, count * sizeof(int16), &ret);
+
+	if (res == MPG123_DONE)
+		mIsDataLeft = false;
+
 	return ret;
 }
 
 void AudioSourceMP3::Seek(float Time)
 {
+	mIsDataLeft = true;
 	mpg123_seek(mHandle, mRate * Time * mChannels, SEEK_SET);
 }
 
@@ -84,6 +91,11 @@ uint32 AudioSourceMP3::GetChannels()
 bool AudioSourceMP3::IsValid()
 {
 	return mIsValid;
+}
+
+bool AudioSourceMP3::HasDataLeft()
+{
+	return mIsDataLeft;
 }
 
 #endif

@@ -15,6 +15,7 @@ AudioSourceSFM::AudioSourceSFM()
 {
 	mWavFile = NULL;
 	info = NULL;
+	mIsDataLeft = false;
 }
 
 AudioSourceSFM::~AudioSourceSFM()
@@ -47,6 +48,7 @@ bool AudioSourceSFM::Open(const char* Filename)
 		return false;
 	}
 
+	mIsDataLeft = true;
 	return true;
 }
 
@@ -65,6 +67,9 @@ uint32 AudioSourceSFM::Read(void* buffer, size_t count)
 			remaining -= read;
 		}
 
+		
+		if (read < 0)
+			mIsDataLeft = false;
 	}
 	return read;
 }
@@ -72,12 +77,14 @@ uint32 AudioSourceSFM::Read(void* buffer, size_t count)
 void AudioSourceSFM::Seek(float Time)
 {
 	if (mWavFile)
+	{
+		mIsDataLeft = true;
 		sf_seek(mWavFile, Time * mRate / mChannels, SEEK_SET);
+	}
 }
 
 size_t AudioSourceSFM::GetLength()
 {
-	// I'm not sure why- but this is inconsistent.
 	return info->frames;
 }
 
@@ -94,4 +101,9 @@ uint32 AudioSourceSFM::GetChannels()
 bool AudioSourceSFM::IsValid()
 {
 	return mWavFile != NULL;
+}
+
+bool AudioSourceSFM::HasDataLeft()
+{
+	return mIsDataLeft;
 }

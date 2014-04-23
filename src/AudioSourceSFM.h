@@ -8,6 +8,7 @@ class AudioSourceSFM : public AudioDataSource
 	uint32 mChannels;
 	uint32 mRate;
 	uint32 mFlen;
+	bool mIsDataLeft;
 
 public:
 	AudioSourceSFM();
@@ -20,6 +21,7 @@ public:
 	uint32 GetRate();
 	uint32 GetChannels();
 	bool IsValid();
+	bool HasDataLeft();
 };
 
 

@@ -332,7 +332,7 @@ uint32 AudioStream::Update()
 		PaUtil_WriteRingBuffer(&mRingBuf, tbuf, ReadTotal);
 	}else
 	{
-		if (!PaUtil_GetRingBufferReadAvailable(&mRingBuf))
+		if (!PaUtil_GetRingBufferReadAvailable(&mRingBuf) && !mSource->HasDataLeft())
 			mIsPlaying = false;
 	}
 

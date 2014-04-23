@@ -6,6 +6,7 @@ AudioSourceOGG::AudioSourceOGG()
 { 
 	mIsValid = false;
 	mSourceLoop = false;
+	mIsDataLeft = false;
 }
 AudioSourceOGG::~AudioSourceOGG()
 {
@@ -23,6 +24,7 @@ bool AudioSourceOGG::Open(const char* Filename)
 		comment = ov_comment(&mOggFile, -1);
 
 		mIsValid = true;
+		mIsDataLeft = true;
 	}else
 		mIsValid = false;
 
@@ -41,6 +43,7 @@ uint32 AudioSourceOGG::Read(void* buffer, size_t count)
 
 	if (mSeekTime >= 0)
 	{
+		mIsDataLeft = true;
 		ov_time_seek(&mOggFile, mSeekTime);
 		mSeekTime = -1;
 	}
@@ -62,10 +65,16 @@ uint32 AudioSourceOGG::Read(void* buffer, size_t count)
 				continue;
 			}
 			else
+			{
+				mIsDataLeft = false;
 				return 0;
+			}
 		}
 		else 
+		{
+			mIsDataLeft = false;
 			return 0;
+		}
 	}
 
 	return read;
@@ -96,6 +105,10 @@ bool AudioSourceOGG::IsValid()
 	return mIsValid;
 }
 
+bool AudioSourceOGG::HasDataLeft()
+{
+	return mIsDataLeft;
+}
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>

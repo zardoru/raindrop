@@ -16,6 +16,7 @@ public:
 	virtual uint32 GetRate() = 0; // Returns sampling rate of audio
 	virtual uint32 GetChannels() = 0; // Returns channels of audio
 	virtual bool IsValid() = 0;
+	virtual bool HasDataLeft() = 0;
 
 	void SetLooping(bool Loop);
 };

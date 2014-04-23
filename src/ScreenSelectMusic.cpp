@@ -255,15 +255,18 @@ bool ScreenSelectMusic::Run(double Delta)
 		{
 			int Min = SongList7K.at(Cursor)->Difficulties[diff_index]->Duration / 60;
 			int Sec = (int)SongList7K.at(Cursor)->Difficulties[diff_index]->Duration % 60;
+			float nps = SongList7K.at(Cursor)->Difficulties[diff_index]->TotalObjects / SongList7K.at(Cursor)->Difficulties[diff_index]->Duration;
 
 			sprintf(infoStream, "song author: %s\n"
 						  	    "difficulties: %d\n"
 					            "duration: %d:%02d\n"
-								"difficulty: %s (%d keys)\n",
+								"difficulty: %s (%d keys)\n"
+								"avg. nps: %f\n",
 								SongList7K.at(Cursor)->SongAuthor.c_str(),
 								SongList7K.at(Cursor)->Difficulties.size(),
 								Min, Sec,
-								SongList7K.at(Cursor)->Difficulties[diff_index]->Name.c_str(), SongList7K.at(Cursor)->Difficulties[diff_index]->Channels
+								SongList7K.at(Cursor)->Difficulties[diff_index]->Name.c_str(), SongList7K.at(Cursor)->Difficulties[diff_index]->Channels,
+								nps
 								);
 
 			Font->DisplayText(infoStream, Vec2(ScreenWidth/6, 120));

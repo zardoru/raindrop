@@ -269,7 +269,7 @@ public:
 			}
 		}
 
-		double MixFactor = 1.0 / sqrt((double)Voices);
+		double MixFactor = 1.0 / sqrt((double)Voices + 1) * 0.8;
 
 		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
 		{

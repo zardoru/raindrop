@@ -127,7 +127,7 @@ void GraphObject2D::Render()
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	WindowFrame.DisableAttribArray(A_POSITION);
-	//WindowFrame.DisableAttribArray("vertexUV");
+	WindowFrame.DisableAttribArray(A_UV);
 }
 
 void GraphObject2D::Cleanup()

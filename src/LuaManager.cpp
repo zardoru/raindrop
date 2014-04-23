@@ -6,7 +6,7 @@
 int LuaPanic(lua_State* State)
 {
 	if (lua_isstring(State, -1))
-		printf("LUA ERROR: %s\n", lua_tostring(State, -1));
+		wprintf(L"LUA ERROR: %ls\n", Utility::Widen(lua_tostring(State, -1)).c_str());
 	Utility::DebugBreak();
 	return 0;
 }
@@ -62,9 +62,9 @@ bool LuaManager::RunScript(std::string Filename)
 
 	if( (errload = luaL_loadfile(State, Filename.c_str())) || (errcall = lua_pcall(State, 0, LUA_MULTRET, 0)))
 	{
-		std::string reason = lua_tostring(State, -1);
+		std::wstring reason = Utility::Widen(lua_tostring(State, -1));
 
-		printf("Lua error: %s\n", reason.c_str());
+		wprintf(L"Lua error: %s\n", reason.c_str());
 		return false;
 	}
 	return true;
@@ -310,9 +310,9 @@ bool LuaManager::RunFunction()
 
 	if (errc)
 	{
-		std::string reason = lua_tostring(State, -1);
+		std::wstring reason = Utility::Widen(lua_tostring(State, -1));
 
-		printf("lua call error: %s\n", reason.c_str());
+		wprintf(L"lua call error: %s\n", reason.c_str());
 
 		return false;
 	}

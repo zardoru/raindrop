@@ -13,6 +13,7 @@ class AudioSourceMP3 : public AudioDataSource
 	int mEncoding;
 	int mChannels;
 	uint32 mLen;
+	bool mIsDataLeft;
 
 public:
 	AudioSourceMP3();
@@ -24,6 +25,7 @@ public:
 	uint32 GetRate(); // Returns sampling rate of audio
 	uint32 GetChannels(); // Returns channels of audio
 	bool IsValid();
+	bool HasDataLeft();
 };
 
 #endif
