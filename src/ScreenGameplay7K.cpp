@@ -540,8 +540,8 @@ bool ScreenGameplay7K::Run(double Delta)
 			{
 				if (s->Time <= SongTime)
 				{
-					Keysounds[s->Sound]->Play();
-					// printf("s->Time %f, sTime = %f\n", s->Time, SongTime);
+					if (Keysounds[s->Sound])
+						Keysounds[s->Sound]->Play();
 					s = BGMEvents.erase(s);
 					if (s == BGMEvents.end()) break;
 				}
