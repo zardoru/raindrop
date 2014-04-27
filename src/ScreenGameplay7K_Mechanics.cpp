@@ -20,6 +20,8 @@
 
 typedef std::vector<SongInternal::Measure7K> NoteVector;
 
+#define PI 3.14159265358979323846
+
 void ScreenGameplay7K::RecalculateEffects()
 {
 	float SongTime = 0;
@@ -29,14 +31,19 @@ void ScreenGameplay7K::RecalculateEffects()
 
 	if (waveEffectEnabled)
 	{
-		waveEffect = sin(SongTime) * 0.5 * SpeedMultiplierUser;
+		float cs = sin (CurrentBeat * PI / 4);
+		waveEffect = cs * 0.35 * std::min(SpeedMultiplierUser, 2.0f);
 		MultiplierChanged = true;
 	}
 
+/*
+		for (int i = 0; i < Channels; i++)
+			noteEffectsMatrix[i] = glm::translate(glm::mat4(), glm::vec3(cos(CurrentBeat * PI / 4) * 30, 0, 0) ) /** glm::rotate(glm::mat4(), 360 * CurrentBeat, glm::vec3(0,0,1) )*/;
+
 	if (Upscroll)
-		SpeedMultiplier = - (SpeedMultiplierUser + waveEffect);
+		SpeedMultiplier = - (SpeedMultiplierUser + waveEffect + beatScrollEffect);
 	else
-		SpeedMultiplier = SpeedMultiplierUser + waveEffect;
+		SpeedMultiplier = SpeedMultiplierUser + waveEffect + beatScrollEffect;
 }
 
 void ScreenGameplay7K::UpdateScriptScoreVariables()

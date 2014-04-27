@@ -34,6 +34,8 @@ private:
 	int		GearBindings[MAX_CHANNELS];
 	uint32	Channels;
 	bool HeldKey[MAX_CHANNELS];
+	
+	float CurrentBeat;
 
 	std::map <int, SoundSample*> Keysounds;
 	std::vector<SongInternal::AutoplaySound> BGMEvents;
@@ -46,6 +48,10 @@ private:
 
 	/* Effects */
 	float waveEffect; 
+	float beatScrollEffect;
+
+	bool beatScrollEffectEnabled;
+	glm::mat4 noteEffectsMatrix[MAX_CHANNELS];
 	
 	
 	/* Graphics */

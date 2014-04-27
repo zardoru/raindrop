@@ -95,6 +95,9 @@ void ScreenGameplay7K::Init(Song7K* S, int DifficultyIndex, bool UseUpscroll)
 void ScreenGameplay7K::RecalculateMatrix()
 {
 	PositionMatrix = glm::translate(Mat4(), glm::vec3(0, BasePos + CurrentVertical * SpeedMultiplier + deltaPos, 0));
+
+	for (int i = 0; i < Channels; i++)
+		NoteMatrix[i] = glm::translate(Mat4(), glm::vec3(LanePositions[i], 0, 14)) * noteEffectsMatrix[i] *  glm::scale(Mat4(), glm::vec3(LaneWidth[i], NoteHeight, 1));
 }
 
 void ScreenGameplay7K::LoadThreadInitialization()
@@ -310,7 +313,6 @@ void ScreenGameplay7K::SetupGear()
 
 		Keys[i].SetZ(15);
 
-		NoteMatrix[i] = glm::translate(Mat4(), glm::vec3(LanePositions[i], 0, 14)) * glm::scale(Mat4(), glm::vec3(LaneWidth[i], NoteHeight, 1));
 	}
 }
 
@@ -375,6 +377,8 @@ void ScreenGameplay7K::MainThreadInitialization()
 	Animations->Initialize( FileManager::GetSkinPrefix() + "screengameplay7k.lua" );
 
 	memset(PlaySounds, 0, sizeof(PlaySounds));
+
+	CurrentBeat = BeatAtTime(CurrentDiff->BPS, -1.5, CurrentDiff->Offset + TimeCompensation);
 
 	Running = true;
 }
@@ -472,7 +476,9 @@ void ScreenGameplay7K::UpdateScriptVariables()
 	L->SetGlobal("waveEffectEnabled", waveEffectEnabled);
 	L->SetGlobal("Active", Active);
 	L->SetGlobal("SongTime", SongTime);
-	L->SetGlobal("Beat", BeatAtTime(CurrentDiff->BPS, SongTime, CurrentDiff->Offset + TimeCompensation));
+
+	CurrentBeat = BeatAtTime(CurrentDiff->BPS, SongTime, CurrentDiff->Offset + TimeCompensation);
+	L->SetGlobal("Beat", CurrentBeat);
 
 	L->NewArray();
 
