@@ -509,6 +509,8 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *
 	{
 		std::getline(filein, Line);
 
+		boost::replace_all(Line, "\r", "");
+
 		if ( Line.length() == 0 || Line[0] != '#' )
 			continue;
 

@@ -1,14 +1,24 @@
 env = Environment(CPPPATH=['src'])
 
+IsDebug = ARGUMENTS.get('debug', 0)
+DisableMP3 = ARGUMENTS.get('nomp3', 0)
 
-# env.Append(CCFLAGS=["-g"])
-env.Append(CCFLAGS=["-O2"])
+if int(IsDebug):
+	env.Append(CCFLAGS=["-g"])
+else:
+	env.Append(CCFLAGS=["-O2", "-DNDEBUG"])
 
-# take the MP3_ENABLED out if you feel you hate mp3s
-env.Append(CPPDEFINES=['MP3_ENABLED', 'LINUX']) #another possible macro is NO_AUDIO but.. really now.
+if not int(DisableMP3):
+	env.Append(CPPDEFINES=['MP3_ENABLED']) #another possible macro is NO_AUDIO but.. really now.
+	env.Append(LIBS=['mpg123']) 
 
-# and here remove mpg123 from the list if you don't even have libmpg123
-env.Append(LIBS= ['sndfile', 'GL', 'GLU', 'GLEW', 'glfw3', 'X11', 'Xrandr', 'mpg123', 'Xxf86vm', 'Xi', 'boost_system', 'boost_thread', 'ogg', 'vorbis', 'vorbisfile', 'portaudio', 'pthread'])
+import sys
+
+if sys.platform.startswith('linux'):
+	env.Append(CPPDEFINES=['LINUX'])
+	env.Append(LIBS=['X11', 'Xrandr', 'Xxf86vm', 'Xi', 'pthread']);
+
+env.Append(LIBS= ['sndfile', 'GL', 'GLEW', 'glfw3', 'boost_system', 'boost_thread', 'ogg', 'vorbis', 'vorbisfile', 'portaudio'])
 env.Append(CPPPATH='.')
 
-env.Program("dotcur.exe", source = [Glob('src/*.cpp'), Glob('src/*.c'), Glob('SOIL/*.c')])
+env.Program("dc", source = [Glob('src/*.cpp'), Glob('src/*.c'), Glob('SOIL/*.c')])

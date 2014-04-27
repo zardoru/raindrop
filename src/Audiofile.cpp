@@ -23,21 +23,21 @@ AudioDataSource* SourceFromExt(String Filename)
 	}
 
 	boost::algorithm::to_lower(Ext);
-	Ext = Ext.substr(0, 3); // Strange bug..
 
-	if (Ext == "wav" || Ext == "flac")
+	const char* xt = Ext.c_str();
+	if (strstr(xt, "wav") || strstr(xt, "flac"))
 		Ret = new AudioSourceSFM();
 #ifdef MP3_ENABLED
-	else if (Ext == "mp3")
+	else if (strstr(xt, "mp3"))
 		Ret = new AudioSourceMP3();
 #endif
-	else if (Ext == "ogg")
+	else if (strstr(xt, "ogg"))
 		Ret = new AudioSourceOGG();
 
 	if (Ret)
 		Ret->Open(Filename.c_str());
 	else
-		wprintf(L"extension %s has no audiosource associated\n", Ext.c_str());
+		wprintf(L"extension %ls has no audiosource associated\n", Utility::Widen(Ext).c_str());
 
 	return Ret;
 }
@@ -121,9 +121,8 @@ String RearrangeFilename(const char* Fn)
 	else
 	{
 		std::string Ext = Utility::GetExtension(Fn);
-		Ext = Ext.substr(0,3);
 
-		if (Ext == "wav")
+		if (strstr(Ext.c_str(), "wav"))
 			Ret = Utility::RemoveExtension(Fn) + ".ogg";
 		else
 			Ret = Utility::RemoveExtension(Fn) + ".wav";

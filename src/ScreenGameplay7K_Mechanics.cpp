@@ -220,7 +220,7 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 			{
 				if (PlaySounds[Lane])
 				{
-					if (Keysounds.find(PlaySounds[Lane]) != Keysounds.end())
+					if (Keysounds[PlaySounds[Lane]])
 						Keysounds[PlaySounds[Lane]]->Play();
 				}
 
@@ -234,7 +234,7 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 
 					if (m->GetSound())
 					{
-						if (Keysounds.find(m->GetSound()) != Keysounds.end())
+						if (Keysounds[m->GetSound()])
 							Keysounds[m->GetSound()]->Play();
 					}
 
