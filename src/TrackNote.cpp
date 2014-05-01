@@ -36,38 +36,12 @@ void TrackNote::AssignSongPosition(double _BeatStart, double _BeatEnd)
 	BeatEnd = _BeatEnd;
 }
 
-#define FRACKIND(x,y) if(Row%x==0)fracKind=y
+int GetFractionKindBeat(double frac);
 
 /* calculate the beat snap for this fraction */
 void TrackNote::AssignFraction(double frac)
 {
-	int Row = frac*48;
-
-	if (Row%2) Row+=1; // Round to ceiled pair
-
-	// placed on 1/24th of a beat
-	FRACKIND(2, 24);
-
-	// placed on 1/16th of a beat
-	FRACKIND(3,16);
-
-	// placed on 1/8th of a beat
-	FRACKIND(6,8);
-
-	// placed on 1/6th of a beat
-	FRACKIND(8,6);
-
-	// placed on 1/4th of a beat
-	FRACKIND(12,4);
-
-	// placed on 1/3rd of a beat
-	FRACKIND(16,3);
-
-	// placed on 1/2nd of a beat
-	FRACKIND(24,2);
-
-	// placed on 1/1 of a beat
-	FRACKIND(48,1);
+	fracKind = GetFractionKindBeat(frac);
 }
 
 double TrackNote::GetBeatStart() const

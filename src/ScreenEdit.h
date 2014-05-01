@@ -15,12 +15,16 @@ class ScreenEdit : public ScreenGameplay
 
 	GUI::TextPrompt OffsetPrompt, BPMPrompt;
 	uint32_t CurrentFraction;
+	uint32_t CurrentTotalFraction; // basically beat snap
 	uint32_t savedMeasure;
 	BitmapFont EditInfo;
 
 	GameObject* HeldObject;
 
-	void AssignFraction(int Measure, int Fraction);
+	void IncreaseTotalFraction();
+	void DecreaseTotalFraction();
+
+	GameObject &GetObject();
 
 	float YLock;
 	enum

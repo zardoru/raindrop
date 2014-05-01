@@ -56,6 +56,14 @@ void LoadNotes(SongDC* Out, SongInternal::DifficultyDC * Difficulty, String line
 		}
 
 		boost::split(splitobjects, objectlist, boost::is_any_of("{}"), boost::algorithm::token_compress_on);
+		size_t SoSize = 0;
+
+		BOOST_FOREACH (String object_description, splitobjects) // Count total valid objects
+		{
+			if (object_description.length() != 0)
+				SoSize += 1;
+		}
+
 		BOOST_FOREACH (String object_description, splitobjects) // For all objects in measure
 		{
 			std::vector< String > object_parameters;
@@ -111,7 +119,7 @@ void LoadNotes(SongDC* Out, SongInternal::DifficultyDC * Difficulty, String line
 					Temp.SetPositionX(0);
 				}
 
-				Temp.Assign(hold_duration, Difficulty->Measures.size(), Measure.Fraction);
+				Temp.Assign(hold_duration, Difficulty->Measures.size(), (double)Measure.Fraction / SoSize);
 				Measure.MeasureNotes.push_back(Temp);
 
 			} // got a position

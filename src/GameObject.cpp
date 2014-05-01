@@ -27,6 +27,7 @@ GameObject::GameObject() : GraphObject2D(false)
 	hold_duration = 0;
 	endTime = 0;
 	heldKey = -1;
+	Fraction = -1;
 	BeingHeld = false;
 	DoTextureCleanup = false;
 	waiting_time = 0;
@@ -244,11 +245,11 @@ bool GameObject::IsHold()
 	return endTime > 0;
 }
 
-void GameObject::Assign(double Duration, uint32 _Measure, uint32 _MeasureFraction)
+void GameObject::Assign(double Duration, uint32 _Measure, double _MeasureFraction)
 {
 	hold_duration = Duration;
 	Measure = _Measure;
-	MeasurePos = _MeasureFraction;
+	Fraction = _MeasureFraction;
 }
 
 /* Assume GraphObject2D was already invalidated*/ 
@@ -257,4 +258,9 @@ void GameObject::Invalidate()
 	UvBuffer->Invalidate();
 	UpdateTexture();
 	GameObjectUVvbo = UvBuffer;
+}
+
+double GameObject::GetFraction() const
+{
+	return Fraction;
 }

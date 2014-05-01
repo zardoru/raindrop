@@ -468,8 +468,6 @@ bool ScreenGameplay::Run(double TimeDelta)
 	{
 		SongDelta = Music->GetStreamedTime() - SongTime;
 
-		// if (SongDelta < 0) Utility::DebugBreak();
-
 		SongTime += SongDelta;
 	}
 
@@ -648,7 +646,7 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 	// Render current measure on front of the next!
 	if (Measure + 1 < CurrentDiff->Measures.size())
 	{
-		if (NotesInMeasure.size() && NotesInMeasure.at(Measure+1).size() > 0)
+		if (NotesInMeasure.size() > Measure+1 && NotesInMeasure.at(Measure+1).size() > 0)
 		{
 			DrawVector(NotesInMeasure[Measure+1], TimeDelta);
 		}
@@ -656,7 +654,7 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 
 	if (Measure < CurrentDiff->Measures.size())
 	{
-		if (NotesInMeasure.size() && NotesInMeasure.at(Measure).size() > 0)
+		if (NotesInMeasure.size() > Measure && NotesInMeasure.at(Measure).size() > 0)
 		{
 			DrawVector(NotesInMeasure[Measure], TimeDelta);
 		}

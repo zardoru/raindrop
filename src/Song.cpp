@@ -3,6 +3,7 @@
 #include "Song.h"
 
 #include <fstream>
+#include <algorithm>
 #include <boost/foreach.hpp>
 
 using std::vector;
@@ -129,6 +130,11 @@ void SongDC::Repack()
 	}
 }
 
+int noteSort(const GameObject &A, const GameObject &B)
+{
+	return A.GetFraction() < B.GetFraction();
+}
+
 void SongDC::Process(bool CalculateXPos)
 {
 	for(std::vector<DifficultyDC*>::iterator Difficulty = Difficulties.begin(); Difficulty != Difficulties.end(); Difficulty++ )
@@ -137,10 +143,13 @@ void SongDC::Process(bool CalculateXPos)
 		for(vector<MeasureDC>::iterator Measure = (*Difficulty)->Measures.begin(); Measure != (*Difficulty)->Measures.end(); Measure++)
 		{
 			uint32 CurNote = 0;
+
+			std::sort(Measure->MeasureNotes.begin(), Measure->MeasureNotes.end(), noteSort);
+
 			for (std::vector<GameObject>::iterator it = Measure->MeasureNotes.begin(); it != Measure->MeasureNotes.end(); it++)
 			{
 				// all measures are 4/4 (good enough for now, change both 4s in the future, maybe)
-				it->beat = ((float)CurrentMeasure * MeasureLength) + ((float)it->MeasurePos * MeasureLength) / (float)Measure->Fraction;
+				it->beat = ((float)CurrentMeasure * MeasureLength) + ((float)it->Fraction * MeasureLength);
 
 				if (it->hold_duration > 0)
 					it->endTime = TimeAtBeat((*Difficulty)->Timing, (*Difficulty)->Offset, it->beat + it->hold_duration);
@@ -149,7 +158,7 @@ void SongDC::Process(bool CalculateXPos)
 
 				(*Difficulty)->Duration = std::max((float)it->startTime, (*Difficulty)->Duration);
 
-				float frac = float(it->MeasurePos) / float(Measure->Fraction);
+				double frac = it->Fraction;
 
 				it->Green = 0;
 
@@ -189,6 +198,8 @@ void SongDC::Process(bool CalculateXPos)
 		CalculateBarlineRatios(*this, **Difficulty);
 	}
 }
+
+int GetFractionKindMeasure(double frac);
 
 bool SongDC::Save(const char* Filename)
 {
@@ -230,22 +241,45 @@ bool SongDC::Save(const char* Filename)
 			Out << "#LEADIN:" << LeadInTime << ";\n";
 
 		Out << "#NOTES:";
+
+		int MNum = 0;
+
 		// for each measure of this difficulty
 		for (vector<MeasureDC>::iterator m = (*i)->Measures.begin(); m != (*i)->Measures.end(); m++)
 		{
-			// for each note of this difficulty
+			MeasureDC old = *m; // Copy temporarily
+			int mAdvance = 192;
+
+			std::sort(m->MeasureNotes.begin(), m->MeasureNotes.end(), noteSort);
+
+			// get lowest fraction that is valid
 			for (uint32 n = 0; n != m->MeasureNotes.size(); n++)
 			{
-				// Fill in the blanks between the first and second notes.
-				if (n == 0)
+				GameObject &G = m->MeasureNotes[n];
+				if (G.GetPosition().x != 0)
 				{
-					if (m->MeasureNotes[n].MeasurePos != 0)
-					{
-						for (uint32 i = 0; i < m->MeasureNotes[n].MeasurePos; i++)
-						{
-							Out << "{0}";
-						}
-					}
+					int advance = 192 / GetFractionKindMeasure(G.GetFraction());
+					mAdvance = std::min(advance, mAdvance);
+				}
+			}
+
+			// for each note of this difficulty
+			int prevRow = 0;
+			for (uint32 n = 0; n != m->MeasureNotes.size(); n++)
+			{
+				if (m->MeasureNotes[n].GetPosition().x == 0)
+					continue;
+
+				int nRow = m->MeasureNotes[n].GetFraction() * 192.0;
+
+				// Fill the gap between previous and current note
+				wprintf(L"%d, %d, %d\n", nRow, nRow-prevRow, mAdvance);
+
+				if (nRow)
+				{
+					int limit = (nRow-prevRow) / mAdvance - 1;
+					for (int k = 0; k < limit; k++)
+						Out << "{0}";
 				}
 
 				// Fill the current note.
@@ -256,42 +290,20 @@ bool SongDC::Save(const char* Filename)
 					
 				Out << "}";
 
-				// Fill in the blanks between two notes.
-
-				if (n+1 < m->MeasureNotes.size())
-				{
-					int32 Difference = (m->MeasureNotes.at(n+1).MeasurePos - m->MeasureNotes.at(n).MeasurePos);
-					if (Difference > 1)
-					{
-						while (Difference > 1)
-						{
-							Out << "{0}";
-							Difference--;
-						}
-					}
-				}
-				
-
-				if (n == m->MeasureNotes.size()-1) // We're at the last note of the measure
-				{
-					// We have a gap to close between this and the last fraction of the measure?
-					if (m->MeasureNotes[n].MeasurePos < m->Fraction-1)
-					{
-						// Close it.
-						int32 Difference = m->Fraction-1 - m->MeasureNotes[n].MeasurePos;
-						while (Difference > 0)
-						{
-							Out << "{0}";
-							Difference--;
-						}
-					}
-				}
-
-				
+				prevRow = nRow;
 			} // For each note
 
+			// fill end
+			int limit = (192-prevRow) / mAdvance - 1;
+			for (int k = 0; k < limit; k++)
+				Out << "{0}";
+
 			Out << ",\n";
+
+			*m = old; // Copy back
 			Out.flush();
+
+			MNum++;
 		} // For each measure
 		Out << ";\n";
 

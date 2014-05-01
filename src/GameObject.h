@@ -16,7 +16,8 @@ private:
 	int32 heldKey;
 
 	double startTime, endTime, beat, hold_duration;
-	uint32 Measure, MeasurePos;
+	uint32 Measure;
+	double Fraction;
 	unsigned char AnimationStatus;
 
 public:
@@ -26,7 +27,9 @@ public:
 	Judgement Hit(double time, Vec2 mpos, bool KeyDown, bool Autoplay, int32 Key);
 	Judgement Run(double delta, double Time, bool Autoplay);
 	void Animate(float delta, float songTime);
-	void Assign(double Duration, uint32 Measure, uint32 MeasureFraction);
+	void Assign(double Duration, uint32 Measure, double MeasureFraction);
+
+	double GetFraction() const;
 	bool IsHold();
 	void Invalidate();
 	bool ShouldRemove();

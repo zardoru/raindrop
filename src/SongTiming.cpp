@@ -135,3 +135,63 @@ double BeatAtTime(const TimingData &Timing, float Time, float Offset)
 	double sDelta = Timing[0].Value * Offset;
 	return IntegrateToTime(Timing, Time) - sDelta;
 }
+
+#define FRACKIND(x,y) if(Row%x==0)fracKind=y
+
+int GetFractionKindMeasure(double frac)
+{
+	int fracKind = 1;
+	int Row = frac*192;
+
+	if (Row%2) Row+=1; // Round to ceiled pair
+	if (!Row) return 4;
+
+	FRACKIND(2,96);
+	FRACKIND(3,64);
+	FRACKIND(4,48);
+	FRACKIND(6,32);
+	FRACKIND(8,24);
+	FRACKIND(12,16);
+	FRACKIND(16,12);
+	FRACKIND(24,8);
+	FRACKIND(32,6);
+	FRACKIND(48,4);
+	FRACKIND(64,3);
+	FRACKIND(96,2);
+
+	return fracKind;
+}
+
+int GetFractionKindBeat(double frac)
+{
+	int fracKind;
+	int Row = frac*48;
+
+	if (Row%2) Row+=1; // Round to ceiled pair
+
+	// placed on 1/24th of a beat
+	FRACKIND(2, 24);
+
+	// placed on 1/16th of a beat
+	FRACKIND(3,16);
+
+	// placed on 1/8th of a beat
+	FRACKIND(6,8);
+
+	// placed on 1/6th of a beat
+	FRACKIND(8,6);
+
+	// placed on 1/4th of a beat
+	FRACKIND(12,4);
+
+	// placed on 1/3rd of a beat
+	FRACKIND(16,3);
+
+	// placed on 1/2nd of a beat
+	FRACKIND(24,2);
+
+	// placed on 1/1 of a beat
+	FRACKIND(48,1);
+
+	return fracKind;
+}

@@ -298,7 +298,9 @@ void AudioStream::Play()
 
 void AudioStream::SeekTime(float Second)
 {
-	mSource->Seek(Second);
+	if (mSource)
+		mSource->Seek(Second);
+	mStreamTime = Second;
 }
 
 float AudioStream::GetStreamedTime()

@@ -22,22 +22,7 @@ int CALLBACK WinMain (
 	*/
 {
 	App.Init();
-#ifndef NDEBUG
-	try {
-#endif
 	App.Run();
-#ifndef NDEBUG
-	}catch (std::exception &e)
-	{
-#endif
-#if (!defined NDEBUG) && (defined WIN32)
-		wchar_t k[1024];
-		mbstowcs(k, e.what(), 1024);
-		MessageBox(NULL, k, L"error", MB_OK);
-#endif
-#ifndef NDEBUG
-	}
-#endif
 	App.Close();
 	return 0;
 }
