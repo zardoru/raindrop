@@ -1,5 +1,6 @@
 #include "Global.h"
 #include "Song.h"
+#include "Configuration.h"
 #include <algorithm>
 
 Song7K::Song7K()
@@ -262,11 +263,20 @@ void Song7K::Process(float Drift, double SpeedConstant)
 	if (Processed)
 		return;
 
+	int ApplyDriftVirtual = Configuration::GetConfigf("UseAudioCompensationKeysounds");
+	int ApplyDriftDecoder = Configuration::GetConfigf("UseAudioCompensationNonKeysounded");
+	double rDrift = Drift;
+
 	/* For all difficulties */
 	for (std::vector<SongInternal::Difficulty7K*>::iterator Diff = Difficulties.begin(); Diff != Difficulties.end(); Diff++)
 	{
 		if (!(*Diff)->Timing.size())
 			continue;
+
+		if ( (!ApplyDriftVirtual && (*Diff)->IsVirtual) || (!ApplyDriftDecoder && !(*Diff)->IsVirtual) )
+			Drift = 0;
+		else
+			Drift = rDrift;
 
 		ProcessBPS(*Diff, Drift);
 		ProcessVSpeeds(*Diff, SpeedConstant);
@@ -293,6 +303,8 @@ void Song7K::Process(float Drift, double SpeedConstant)
 					*/
 					TrackNote &CurrentNote = (*Measure).MeasureNotes[Note];
 
+					CurrentNote.AddTime(Drift);
+
 					Vec2 VerticalPosition( 0, IntegrateToTime((*Diff)->VerticalSpeeds, CurrentNote.GetStartTime()) );
 					Vec2 HoldEndPosition( 0, IntegrateToTime((*Diff)->VerticalSpeeds, CurrentNote.GetTimeFinal()) );
 
@@ -301,6 +313,12 @@ void Song7K::Process(float Drift, double SpeedConstant)
 						CurrentNote.AssignPosition( -VerticalPosition);
 					else
 						CurrentNote.AssignPosition( -VerticalPosition, -HoldEndPosition);
+
+					double cBeat = BeatAtTime((*Diff)->BPS, CurrentNote.GetStartTime(), (*Diff)->Offset + Drift);
+					double iBeat = floor(cBeat);
+					double dBeat = cBeat - iBeat;
+
+					CurrentNote.AssignFraction(dBeat);
 				}
 				MIdx++;
 			}

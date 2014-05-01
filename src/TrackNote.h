@@ -20,6 +20,9 @@ private:
 	float VerticalHoldBodyPos;
 
 	int Sound;
+
+	int fracKind;
+
 	Mat4 hold_body;
 	Mat4 hold_body_size;
 	Mat4 hold_final;
@@ -30,6 +33,7 @@ public:
 	void AssignTime(double Start, double End = 0);
 	void AssignPosition(Vec2 Position, Vec2 endPosition = Vec2(0,0));
 	void AssignSound(int Sound);
+	void AssignFraction (double frc); // frc = fraction of a beat
 	void Hit();
 
 	void AddTime(double Time);
@@ -51,8 +55,11 @@ public:
 	
 	double GetTimeFinal() const;
 	double GetStartTime() const;
+
+	// These must be calculated when using a non-beat based system. Consider them unreliable.
 	double GetBeatStart() const;
 	double GetBeatEnd() const;
+	int GetFracKind() const;
 
 	~TrackNote();
 };

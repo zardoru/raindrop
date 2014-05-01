@@ -245,8 +245,6 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 							Keysounds[m->GetSound()]->Play();
 					}
 
-
-
 					if (m->IsHold())
 					{
 						m->Hit();

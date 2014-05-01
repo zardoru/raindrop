@@ -41,6 +41,7 @@ ScreenGameplay7K::ScreenGameplay7K()
 
 	CurrentVertical = 0;
 	SongTime = SongTimeReal = 0;
+	beatScrollEffect = 0;
 
 	AudioCompensation = (Configuration::GetConfigf("AudioCompensation") != 0);
 	TimeCompensation = 0;
