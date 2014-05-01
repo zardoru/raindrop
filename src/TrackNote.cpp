@@ -45,7 +45,10 @@ void TrackNote::AssignFraction(double frac)
 
 	if (Row%2) Row+=1; // Round to ceiled pair
 
-	// placed on a 1/16th of a beat
+	// placed on 1/24th of a beat
+	FRACKIND(2, 24);
+
+	// placed on 1/16th of a beat
 	FRACKIND(3,16);
 
 	// placed on 1/8th of a beat
