@@ -116,11 +116,13 @@ void ScreenGameplay7K::DrawMeasures()
 				// Assign our matrix - encore
 				if ( (Vertical < BasePos && Upscroll) || (Vertical >= BasePos && !Upscroll) )
 				{
+					// As long as it's not judged, we'll keep it in place 
 					glm::mat4 identity;
 					WindowFrame.SetUniform(U_MVP, &PositionMatrixJudgement[0][0]);
 					WindowFrame.SetUniform(U_TRANM, &(identity)[0][0]);
 				}else
 				{
+					// Otherwise scroll normally
 					WindowFrame.SetUniform(U_MVP, &PositionMatrix[0][0]);
 					WindowFrame.SetUniform(U_TRANM, &(m->GetMatrix())[0][0]);
 				}
@@ -143,4 +145,5 @@ void ScreenGameplay7K::DrawMeasures()
 	MultiplierChanged = false;
 	
 	WindowFrame.DisableAttribArray(A_POSITION);
+	WindowFrame.DisableAttribArray(A_UV);
 }
