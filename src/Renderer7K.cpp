@@ -22,9 +22,6 @@ void ScreenGameplay7K::DrawMeasures()
 
 	rPos = CurrentVertical * SpeedMultiplier + BasePos;
 
-	// Assign our matrix.
-	WindowFrame.SetUniform(U_MVP, &PositionMatrix[0][0]);
-
 	// Set the color.
 	WindowFrame.SetUniform(U_INVERT, false); // Color invert
 	WindowFrame.SetUniform(U_LIGHT, false); // Affected by lightning
@@ -78,7 +75,10 @@ void ScreenGameplay7K::DrawMeasures()
 				if (!InScreen)
 					continue; /* If this is not visible, we move on to the next key. */
 
+				// Assign our matrix.
+				WindowFrame.SetUniform(U_MVP, &PositionMatrix[0][0]);
 
+				// We draw the body first, so that way the heads get drawn on top
 				if (m->IsHold())
 				{
 					if (NoteImagesHold[k])
@@ -113,13 +113,25 @@ void ScreenGameplay7K::DrawMeasures()
 
 				WindowFrame.SetUniform(U_COLOR, 1, 1, 1, 1);
 
+				// Assign our matrix - encore
+				if ( (Vertical < BasePos && Upscroll) || (Vertical >= BasePos && !Upscroll) )
+				{
+					glm::mat4 identity;
+					WindowFrame.SetUniform(U_MVP, &PositionMatrixJudgement[0][0]);
+					WindowFrame.SetUniform(U_TRANM, &(identity)[0][0]);
+				}else
+				{
+					WindowFrame.SetUniform(U_MVP, &PositionMatrix[0][0]);
+					WindowFrame.SetUniform(U_TRANM, &(m->GetMatrix())[0][0]);
+				}
+
 				WindowFrame.SetUniform(U_SIM, &(NoteMatrix[m->GetTrack()])[0][0]);
 
-				WindowFrame.SetUniform(U_TRANM, &(m->GetMatrix())[0][0]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 				if (m->IsHold())
 				{
+					WindowFrame.SetUniform(U_MVP, &PositionMatrix[0][0]);
 					WindowFrame.SetUniform(U_TRANM, &(m->GetHoldEndMatrix())[0][0]);
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 				}

@@ -264,20 +264,30 @@ bool SongDC::Save(const char* Filename)
 			}
 
 			// for each note of this difficulty
-			int prevRow = 0;
+
+			// For the first note, we must leave a gap so we can pretend there was a note "before"
+			// and that gap between a null note and the first note can be filled in
+			// if the first note WERE to be fraction == 0
+			// limit would be 1, -1 to account for the previous note so it doesn't get filled
+			// if it weren't it's going to add one so the limit isn't below what we expect
+			int prevRow = -mAdvance; 
 			for (uint32 n = 0; n != m->MeasureNotes.size(); n++)
 			{
 				if (m->MeasureNotes[n].GetPosition().x == 0)
 					continue;
 
+				// what row is this?
 				int nRow = m->MeasureNotes[n].GetFraction() * 192.0;
 
 				// Fill the gap between previous and current note
-				wprintf(L"%d, %d, %d\n", nRow, nRow-prevRow, mAdvance);
-
 				if (nRow)
 				{
-					int limit = (nRow-prevRow) / mAdvance - 1;
+					// how many rows are between this and the previous note
+					int limit = (nRow-prevRow) / mAdvance;
+
+					// at this point a negative limit will be effectively impossible
+					limit -= 1; 
+					assert(limit >= 0);
 					for (int k = 0; k < limit; k++)
 						Out << "{0}";
 				}
@@ -294,6 +304,8 @@ bool SongDC::Save(const char* Filename)
 			} // For each note
 
 			// fill end
+			// total rows from last to end of measure, minus the last note itself
+			// it should usually be > 1 when there are notes in the measure
 			int limit = (192-prevRow) / mAdvance - 1;
 			for (int k = 0; k < limit; k++)
 				Out << "{0}";

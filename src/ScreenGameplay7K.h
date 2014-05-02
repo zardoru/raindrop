@@ -18,6 +18,7 @@ private:
 	int lastClosest[MAX_CHANNELS];
 	double CurrentVertical;
 	Mat4 PositionMatrix;
+	Mat4 PositionMatrixJudgement;
 	Mat4 NoteMatrix[MAX_CHANNELS];
 	Mat4 HoldHeadMatrix[MAX_CHANNELS];
 	Mat4 HoldTailMatrix[MAX_CHANNELS];

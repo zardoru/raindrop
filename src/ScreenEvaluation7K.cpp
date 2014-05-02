@@ -26,7 +26,8 @@ void ScreenEvaluation7K::Init(ScoreKeeper7K *Result)
 
 	ss << "ex%: " << Result->getPercentScore(PST_EX) << "\n"
 		<< "notes hit%: " << Result->getPercentScore(PST_NH) << "\n"
-		<< "acc%: " << Result->getPercentScore(PST_ACC);
+		<< "acc%: " << Result->getPercentScore(PST_ACC) << "\n"
+		<< "max combo: " << Result->getScore(ST_MAX_COMBO);
 	
 	DisplayResult = ss.str();
 

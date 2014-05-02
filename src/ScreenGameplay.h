@@ -28,7 +28,7 @@ protected: // shit the edit screen needs
 	bool ShouldChangeScreenAtEnd;
 	bool EditMode;
 
-	void RenderObjects(float TimeDelta);
+	void RenderObjects(float TimeDelta, bool drawPlayable = true);
 
 	// Two seconds of pause before actually starting the screen.
 	static const uint32 ScreenPauseTime = 2; 

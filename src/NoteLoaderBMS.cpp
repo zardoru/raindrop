@@ -151,12 +151,20 @@ struct BmsLoadInfo
 	
 	float startTime[MAX_CHANNELS];
 
+	TrackNote *LastNotes[MAX_CHANNELS];
+
+	int LNObj;
+
 	BmsLoadInfo()
 	{
 		for (int k = 0; k < MAX_CHANNELS; k++)
+		{
 			startTime[k] = -1;
+			LastNotes[k] = NULL;
+		}
 		Difficulty = NULL;
 		Song = NULL;
+		LNObj = 0;
 	}
 };
 
@@ -334,6 +342,11 @@ void CalculateObjects(BmsLoadInfo *Info)
 	}
 }
 
+int evtSort(const BMSEvent &A, const BMSEvent &B)
+{
+	return A.Fraction < B.Fraction;
+}
+
 int startChannelLN = fromBase36("51");
 
 void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
@@ -348,6 +361,9 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 			int Track = 0;
 			Track = translateTrackBME(curChannel) - Info->LowerBound;
 
+			if (Info->LNObj)
+				std::sort(i->second.Events[curChannel].begin(), i->second.Events[curChannel].end(), evtSort);
+
 			for (BMSEventList::iterator ev = i->second.Events[curChannel].begin(); ev != i->second.Events[curChannel].end(); ev++)
 			{
 				if (!ev->Event || Track >= usedChannels) continue; // UNUSABLE event
@@ -355,19 +371,34 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
 
 				double Time = TimeAtBeat(Info->Difficulty->Timing, 0, Beat) + StopTimeAtBeat(Info->Difficulty->StopsTiming, Beat);
-				TrackNote Note;
 
 				Info->Difficulty->Duration = std::max((double)Info->Difficulty->Duration, Time);
 
-				Note.AssignTime(Time);
-				Note.AssignSound(ev->Event);
+				if (!Info->LNObj || (Info->LNObj != ev->Event))
+				{
+degradetonote:
+					TrackNote Note;
 
-				Note.AssignTrack(Track);
-				Info->Difficulty->TotalScoringObjects++;
-				Info->Difficulty->TotalNotes++;
-				Info->Difficulty->TotalObjects++;
+					Note.AssignTime(Time);
+					Note.AssignSound(ev->Event);
 
-				Msr[Note.GetTrack()].MeasureNotes.push_back(Note);
+					Note.AssignTrack(Track);
+					Info->Difficulty->TotalScoringObjects++;
+					Info->Difficulty->TotalNotes++;
+					Info->Difficulty->TotalObjects++;
+
+					Msr[Note.GetTrack()].MeasureNotes.push_back(Note);
+					Info->LastNotes[Note.GetTrack()] = &Msr[Note.GetTrack()].MeasureNotes.back();
+				}else if (Info->LNObj && (Info->LNObj == ev->Event))
+				{
+					if (Info->LastNotes[Track]) 
+					{
+						Info->LastNotes[Track]->AssignTime( Info->LastNotes[Track]->GetStartTime(), Time );
+						Info->LastNotes[Track] = NULL;
+					}
+					else
+						goto degradetonote;
+				}
 			}
 		}
 	}
@@ -416,7 +447,13 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 	for (int k = 0; k < usedChannels; k++)
 	{
 		if (Msr[k].MeasureNotes.size())
+		{
 			Info->Difficulty->Measures[k].push_back(Msr[k]);
+
+			// Our old pointers are invalid by now since the Msr structures are going to go out of scope
+			// Which means we must renew them, and that's better done here.
+			Info->LastNotes[k] = &Info->Difficulty->Measures[k].back().MeasureNotes.back();
+		}
 	}
 
 	if (i->second.Events[CHANNEL_BGM].size()) // There are some BGM events?
@@ -552,6 +589,11 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *
 		{
 			Out->BackgroundRelativeDir = CommandContents;
 			Out->BackgroundDir = prefix + "/" + CommandContents;
+		}
+
+		OnCommand(#LNOBJ)
+		{
+			Info->LNObj = fromBase36(CommandContents.c_str());
 		}
 
 		OnCommand(#DIFFICULTY)

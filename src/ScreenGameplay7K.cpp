@@ -96,6 +96,7 @@ void ScreenGameplay7K::Init(Song7K* S, int DifficultyIndex, bool UseUpscroll)
 void ScreenGameplay7K::RecalculateMatrix()
 {
 	PositionMatrix = glm::translate(Mat4(), glm::vec3(0, BasePos + CurrentVertical * SpeedMultiplier + deltaPos, 0));
+	PositionMatrixJudgement = glm::translate(Mat4(), glm::vec3(0, BasePos + deltaPos, 0));
 
 	for (int i = 0; i < Channels; i++)
 		NoteMatrix[i] = glm::translate(Mat4(), glm::vec3(LanePositions[i], 0, 14)) * noteEffectsMatrix[i] *  glm::scale(Mat4(), glm::vec3(LaneWidth[i], NoteHeight, 1));
@@ -168,6 +169,8 @@ void ScreenGameplay7K::LoadThreadInitialization()
  *			but only if there's a constant specified by the user.
  * */
 
+	wprintf(L"Processing song... ");
+
 	if (DesiredDefaultSpeed)
 	{
 
@@ -201,6 +204,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	}else
 		MySong->Process(Drift); // Regular processing
 
+	wprintf(L"Copying data... ");
 	Channels = CurrentDiff->Channels;
 	VSpeeds = CurrentDiff->VerticalSpeeds;
 
@@ -215,6 +219,8 @@ void ScreenGameplay7K::LoadThreadInitialization()
 			NotesByMeasure[k].push_back(*i);
 		}
 	}
+
+	wprintf(L"Loading samples... ");
 
 	for (std::map<int, String>::iterator i = CurrentDiff->SoundList.begin(); i != CurrentDiff->SoundList.end(); i++)
 	{
@@ -234,6 +240,8 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	}
 
 	BGMEvents = CurrentDiff->BGMEvents;
+
+	wprintf(L"Done.\n");
 
 	NoteHeight = Configuration::GetSkinConfigf("NoteHeight");
 
@@ -275,6 +283,8 @@ void ScreenGameplay7K::SetupScriptConstants()
 	L->SetGlobal("AccuracyHitMS", score_keeper->getAccMax());
 	L->SetGlobal("SongDuration", CurrentDiff->Duration);
 	L->SetGlobal("SongDurationBeats", BeatAtTime(CurrentDiff->BPS, CurrentDiff->Duration, CurrentDiff->Offset + TimeCompensation));
+
+	Animations->AddLuaTarget(&Background, "ScreenBackground");
 }
 
 void ScreenGameplay7K::SetupGear()
@@ -359,7 +369,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 	if (BackgroundImage)
 		Background.SetImage(BackgroundImage);
 	else
-		Background.SetImage(ImageLoader::Load(Configuration::GetSkinConfigs("DefaultGameplay7KBackground")));
+		Background.SetImage(ImageLoader::LoadSkin(Configuration::GetSkinConfigs("DefaultGameplay7KBackground")));
 
 	Background.SetZ(0);
 	Background.AffectedByLightning = true;
@@ -477,6 +487,7 @@ void ScreenGameplay7K::UpdateScriptVariables()
 	L->SetGlobal("waveEffectEnabled", waveEffectEnabled);
 	L->SetGlobal("Active", Active);
 	L->SetGlobal("SongTime", SongTime);
+	L->SetGlobal("Lifebar", score_keeper->getLifebarAmount(LT_GROOVE));
 
 	CurrentBeat = BeatAtTime(CurrentDiff->BPS, SongTime, CurrentDiff->Offset + TimeCompensation);
 	L->SetGlobal("Beat", CurrentBeat);
@@ -565,6 +576,9 @@ bool ScreenGameplay7K::Run(double Delta)
 				Eval->Init(score_keeper);
 				Next = Eval;
 			}
+
+			if (score_keeper->getLifebarAmount(LT_GROOVE) <= 0)
+				Running = false;
 		}else
 		{
 			SongTime = -(WAITING_TIME - ScreenTime);

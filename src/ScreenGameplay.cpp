@@ -119,7 +119,7 @@ void ScreenGameplay::MainThreadInitialization()
 	if (BackgroundImage)
 		Background.SetImage(BackgroundImage);
 	else
-		Background.SetImage(ImageLoader::Load(Configuration::GetSkinConfigs("DefaultGameplayBackground")));
+		Background.SetImage(ImageLoader::LoadSkin(Configuration::GetSkinConfigs("DefaultGameplayBackground")));
 
 
 	Background.AffectedByLightning = true;
@@ -539,9 +539,18 @@ bool ScreenGameplay::Run(double TimeDelta)
 		float LightProgress = ScreenTime / 1.5;
 		if (LightProgress <= 1)
 			WindowFrame.SetLightMultiplier(LightProgress * 1.2);
-	}
+	}else
+		ReadySign.Alpha = 0;
 
 	RenderObjects(TimeDelta);
+
+	if (ShouldChangeScreenAtEnd && Measure >= CurrentDiff->Measures.size())
+	{
+		ScreenEvaluation *Eval = new ScreenEvaluation(this);
+		Eval->Init(Evaluation, MySong->SongAuthor, MySong->SongName);
+		Next = Eval;
+		Music->Stop();
+	}
 	
 	// You died? Not editing? Failing is enabled?
 	if (Lifebar.Health <= 0 && !EditMode && FailEnabled)
@@ -598,7 +607,7 @@ bool ScreenGameplay::JudgeVector(std::vector<GameObject>& Vec, int code, int key
 }
 
 
-void ScreenGameplay::RenderObjects(float TimeDelta)
+void ScreenGameplay::RenderObjects(float TimeDelta, bool drawPlayable)
 {
 	Vec2 mpos = WindowFrame.GetRelativeMPos();
 
@@ -608,11 +617,10 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 
 	Cursor.AddRotation(CursorRotospeed * TimeDelta);
 
-	{
-		int Beat = MeasureRatio * MySong->MeasureLength;
-		float Fraction = (float(MeasureRatio * MySong->MeasureLength) - Beat);
-		Lifebar.SetScaleX( 1.0 - 0.05 * Fraction );
-	}
+	int Beat = MeasureRatio * MySong->MeasureLength;
+	float Fraction = (float(MeasureRatio * MySong->MeasureLength) - Beat);
+	Lifebar.SetScaleX( 1.0 - 0.05 * Fraction );
+
 
 	// Rendering ahead.
 
@@ -630,44 +638,41 @@ void ScreenGameplay::RenderObjects(float TimeDelta)
 	if (!EditMode)
 		Lifebar.Render();
 
-	DrawVector(NotesHeld, TimeDelta);
-	DrawVector(AnimateOnly, TimeDelta);
+	if (drawPlayable) {
 
-	if (Measure > 0)
-	{
-		if (NotesInMeasure.size() && // there are measures and
-			Measure-1 < NotesInMeasure.size() && // the measure is within the range and
-			NotesInMeasure.at(Measure-1).size() > 0) // there are notes in this measure
+		DrawVector(NotesHeld, TimeDelta);
+		DrawVector(AnimateOnly, TimeDelta);
+
+		if (Measure > 0)
 		{
-			DrawVector(NotesInMeasure[Measure-1], TimeDelta);
+			if (NotesInMeasure.size() && // there are measures and
+				Measure-1 < NotesInMeasure.size() && // the measure is within the range and
+				NotesInMeasure.at(Measure-1).size() > 0) // there are notes in this measure
+			{
+				DrawVector(NotesInMeasure[Measure-1], TimeDelta);
+			}
 		}
+
+		// Render current measure on front of the next!
+		if (Measure + 1 < CurrentDiff->Measures.size())
+		{
+			if (NotesInMeasure.size() > Measure+1 && NotesInMeasure.at(Measure+1).size() > 0)
+			{
+				DrawVector(NotesInMeasure[Measure+1], TimeDelta);
+			}
+		}
+
+		if (Measure < CurrentDiff->Measures.size())
+		{
+			if (NotesInMeasure.size() > Measure && NotesInMeasure.at(Measure).size() > 0)
+			{
+				DrawVector(NotesInMeasure[Measure], TimeDelta);
+			}
+		}
+
 	}
 
-	// Render current measure on front of the next!
-	if (Measure + 1 < CurrentDiff->Measures.size())
-	{
-		if (NotesInMeasure.size() > Measure+1 && NotesInMeasure.at(Measure+1).size() > 0)
-		{
-			DrawVector(NotesInMeasure[Measure+1], TimeDelta);
-		}
-	}
 
-	if (Measure < CurrentDiff->Measures.size())
-	{
-		if (NotesInMeasure.size() > Measure && NotesInMeasure.at(Measure).size() > 0)
-		{
-			DrawVector(NotesInMeasure[Measure], TimeDelta);
-		}
-	}else
-	{
-		if (ShouldChangeScreenAtEnd)
-		{
-			ScreenEvaluation *Eval = new ScreenEvaluation(this);
-			Eval->Init(Evaluation, MySong->SongAuthor, MySong->SongName);
-			Next = Eval;
-			Music->Stop();
-		}
-	}
 
 	Barline.Render();
 

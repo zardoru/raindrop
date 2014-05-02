@@ -45,6 +45,9 @@ class ScreenEdit : public ScreenGameplay
 	void SwitchPreviewMode();
 	void InsertMeasure();
 
+	void OnMousePress(KeyType tkey);
+	void OnMouseRelease(KeyType tkey);
+
 	void CalculateVerticalLock();
 	void RunGhostObject();
 	void DrawInformation();
