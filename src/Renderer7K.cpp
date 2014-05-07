@@ -111,7 +111,14 @@ void ScreenGameplay7K::DrawMeasures()
 						continue;
 				}
 
+				WindowFrame.SetUniform(U_SIM, &(NoteMatrix[m->GetTrack()])[0][0]);
 				WindowFrame.SetUniform(U_COLOR, 1, 1, 1, 1);
+
+				if (m->IsHold())
+				{
+					WindowFrame.SetUniform(U_TRANM, &(m->GetHoldEndMatrix())[0][0]);
+					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+				}
 
 				// Assign our matrix - encore
 				if ( (Vertical < BasePos && Upscroll) || (Vertical >= BasePos && !Upscroll) )
@@ -123,20 +130,10 @@ void ScreenGameplay7K::DrawMeasures()
 				}else
 				{
 					// Otherwise scroll normally
-					WindowFrame.SetUniform(U_MVP, &PositionMatrix[0][0]);
 					WindowFrame.SetUniform(U_TRANM, &(m->GetMatrix())[0][0]);
 				}
 
-				WindowFrame.SetUniform(U_SIM, &(NoteMatrix[m->GetTrack()])[0][0]);
-
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-				if (m->IsHold())
-				{
-					WindowFrame.SetUniform(U_MVP, &PositionMatrix[0][0]);
-					WindowFrame.SetUniform(U_TRANM, &(m->GetHoldEndMatrix())[0][0]);
-					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-				}
 			}
 		}
 	}

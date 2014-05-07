@@ -37,6 +37,8 @@ ScreenGameplay7K::ScreenGameplay7K()
 	waveEffectEnabled = false;
 	waveEffect = 0;
 
+	NoFail = false;
+
 	SpeedMultiplierUser = 4;
 
 	CurrentVertical = 0;
@@ -577,7 +579,7 @@ bool ScreenGameplay7K::Run(double Delta)
 				Next = Eval;
 			}
 
-			if (score_keeper->getLifebarAmount(LT_GROOVE) <= 0)
+			if (score_keeper->getLifebarAmount(LT_GROOVE) <= 0 && !NoFail)
 				Running = false;
 		}else
 		{

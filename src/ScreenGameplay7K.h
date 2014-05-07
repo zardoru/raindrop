@@ -12,6 +12,8 @@ private:
 	float SpeedMultiplierUser;
 	bool waveEffectEnabled;	
 	bool Upscroll;
+	bool NoFail;
+
 
 	/* Game */
 	bool Active;
