@@ -19,12 +19,16 @@ void ScreenGameplay7K::DrawMeasures()
 {
 	typedef std::vector<SongInternal::Measure7K> NoteVector;
 	float rPos;
+	float MultAbs = abs(SpeedMultiplier);
 
 	rPos = CurrentVertical * SpeedMultiplier + BasePos;
 
 	// Set the color.
 	WindowFrame.SetUniform(U_INVERT, false); // Color invert
 	WindowFrame.SetUniform(U_LIGHT, false); // Affected by lightning
+
+	// Sudden = 1, Hidden = 2 (Defined in the shader)
+	WindowFrame.SetUniform(U_HIDDEN, 0); // Affected by hidden lightning
 	
 	WindowFrame.SetUniform(U_TRANSL, true); // use extra matrices
 	WindowFrame.SetUniform(U_CENTERED, true); // center vertexes
@@ -52,7 +56,7 @@ void ScreenGameplay7K::DrawMeasures()
 				float VerticalHold = (m->GetVerticalHold() * SpeedMultiplier + rPos) ;
 
 				if (MultiplierChanged && m->IsHold())
-					m->RecalculateBody(LanePositions[m->GetTrack()], LaneWidth[m->GetTrack()], NoteHeight, Upscroll? -SpeedMultiplier : SpeedMultiplier);
+					m->RecalculateBody(LanePositions[m->GetTrack()], LaneWidth[m->GetTrack()], NoteHeight, MultAbs);
 
 				bool InScreen = true; 
 
@@ -63,7 +67,8 @@ void ScreenGameplay7K::DrawMeasures()
 						InScreen = IntervalsIntersect(0, ScreenHeight, Vertical, VerticalHold);
 					}else
 						InScreen = IntervalsIntersect(0, ScreenHeight, VerticalHold, Vertical);
-				}else
+				}
+				else
 				{
 					if (Upscroll)
 						InScreen = Vertical < ScreenHeight;

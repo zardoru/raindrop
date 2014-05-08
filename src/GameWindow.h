@@ -23,6 +23,7 @@ enum RendererLocats
 	U_LPOS,
 	U_INVERT,
 	U_LIGHT,
+	U_HIDDEN,
 	NUM_SHADERVARS
 } ;
 

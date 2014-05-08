@@ -111,6 +111,7 @@ void GraphObject2D::Render()
 	WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha);
 	WindowFrame.SetUniform(U_INVERT, ColorInvert);
 	WindowFrame.SetUniform(U_LIGHT, AffectedByLightning);
+	WindowFrame.SetUniform(U_HIDDEN, 0); // not affected by hidden lightning
 
 	WindowFrame.SetUniform(U_TRANSL, false);
 	WindowFrame.SetUniform(U_CENTERED, Centered);

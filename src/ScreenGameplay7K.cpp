@@ -264,6 +264,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	else
 		JudgementLinePos = GearHeightFinal;
 
+	// BasePos = JudgementLinePos + (Upscroll ? NoteHeight/2 : -NoteHeight/2);
 	BasePos = JudgementLinePos + (Upscroll ? NoteHeight/2 : -NoteHeight/2);
 	CurrentVertical -= VSpeeds.at(0).Value * (WAITING_TIME);
 
@@ -384,7 +385,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 		Background.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
 	}
 
-	WindowFrame.SetLightMultiplier(0.45f);
+	WindowFrame.SetLightMultiplier(0.75f);
 
 	SetupScriptConstants();
 	Animations->Initialize( FileManager::GetSkinPrefix() + "screengameplay7k.lua" );

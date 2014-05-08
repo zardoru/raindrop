@@ -96,9 +96,6 @@
     <ClCompile Include="..\src\Screen.cpp">
       <Filter>Source Files\Backend</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Rendering.cpp">
-      <Filter>Source Files\Backend</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\pa_ringbuffer.c">
       <Filter>Source Files\Backend</Filter>
     </ClCompile>
@@ -212,6 +209,9 @@
     </ClCompile>
     <ClCompile Include="..\src\AudioSourceOGG.cpp">
       <Filter>Source Files\Backend\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Rendering.cpp">
+      <Filter>Source Files\Backend\Graphics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

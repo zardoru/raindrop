@@ -33,16 +33,17 @@ const char* vertShader = "#version 120\n"
 	"{\n"
 	"	vec3 k_pos = position;\n"
 	"	if (Centered){\n"
-	"		k_pos = k_pos + vec3(-0.5, -0.5, 0);"
-	"	}"
+	"		k_pos = k_pos + vec3(-0.5, -0.5, 0);\n"
+	"	}\n"
 	"	if (useTranslate){\n"
 	"		mat4 m = tranM;\n" // m = note position k = position
 	"		m[3][1] *= sMult;\n"
-	"		gl_Position = projection * m * mvp * siM * vec4(k_pos, 1);"
+	"		gl_Position = projection * m * mvp * siM * vec4(k_pos, 1);\n"
+	"		Pos_world = (projection * m * mvp * siM * vec4(k_pos.xyz, 1)).xyz;\n"
 	"	}else{\n"
-	"		gl_Position = projection * mvp * vec4(k_pos, 1);\n"
+	"		gl_Position = projection * mvp * vec4(k_pos.xyz, 1);\n"
+	"		Pos_world = (projection * mvp * vec4(k_pos.xyz, 1)).xyz;\n"
 	"	}\n"
-	"	Pos_world = (projection * mvp * vec4(k_pos, 1)).xyz;\n"
 	"	Texcoord = vertexUV;\n"
 	"}";
 
@@ -55,6 +56,7 @@ const char* fragShader = "#version 120\n"
 	"uniform vec3      lPos;\n"
 	"uniform bool inverted;\n"
 	"uniform bool AffectedByLightning;\n"
+	"uniform int HiddenLightning;\n"
 	"\n"
 	"void main(void)\n"
 	"{\n"
@@ -65,12 +67,19 @@ const char* fragShader = "#version 120\n"
 	"	 }else{\n"
 	"		tCol = tex2D * Color;\n"
 	"	 }\n"
-	"    float dist = length ( lPos - vec3(Pos_world.xy, 0) );\n"
 	"    if (AffectedByLightning){\n"
+	"		float dist = length ( lPos - vec3(Pos_world.xy, 0) );\n"
 	"       float temp = lMul / (dist*dist);\n"
 	"		gl_FragColor = tCol * vec4(vec3(temp), 1);\n"
 	"	 }else{\n"
-	"		gl_FragColor = tCol;\n"
+	"		if (HiddenLightning > 0) {\n"
+	"			float clmp = clamp(Pos_world.y, 0, 0.5);\n"
+	"			float ld;\n"
+	"			if (HiddenLightning == 1) ld = 1 - clmp * 2; else ld = clmp*2;\n"
+	"			gl_FragColor = vec4(tCol.rgb, tCol.a * ld);\n"
+	"		} else if (HiddenLightning == 0) {\n"
+	"			gl_FragColor = tCol;\n"
+	"		}\n"
 	"    }\n"
 	"}\n";
 
@@ -447,7 +456,7 @@ void GameWindow::SetupShaders()
 
 	if (status != GL_TRUE)
 	{	
-		std::wcout << buffer << "\n";
+		std::wcout << "Vertex Shader Error: " << buffer << "\n";
 		throw; // std::exception(buffer);
 	}else
 		std::wcout << buffer << "\n";
@@ -458,7 +467,7 @@ void GameWindow::SetupShaders()
 
 	if (status != GL_TRUE)
 	{
-		std::wcout << buffer << "\n";
+		std::wcout << "Fragment Shader Error: " << buffer << "\n";
 		throw; // std::exception(buffer);
 	}
 	else std::wcout << buffer << "\n";
@@ -495,6 +504,7 @@ void GameWindow::SetupShaders()
 	uniforms[U_LPOS] = glGetUniformLocation(defaultShaderProgram, "lPos");
 	uniforms[U_INVERT] = glGetUniformLocation(defaultShaderProgram, "inverted");
 	uniforms[U_LIGHT] = glGetUniformLocation(defaultShaderProgram, "AffectedByLightning");
+	uniforms[U_HIDDEN] = glGetUniformLocation(defaultShaderProgram, "HiddenLightning");
 
 	SetLightPosition(glm::vec3(0,0,1));
 	SetLightMultiplier(1);
