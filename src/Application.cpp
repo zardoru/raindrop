@@ -30,10 +30,13 @@ Application::Application()
 
 void Application::Init()
 {
+	double T1 = glfwGetTime();
 #ifdef WIN32
 	SetConsoleOutputCP(CP_UTF8);
 	_setmode(_fileno(stdout), _O_U8TEXT); 
 #endif
+
+	wprintf(L"Initializing... ");
 
 	Configuration::Initialize();
 	WindowFrame.AutoSetupWindow();
@@ -41,6 +44,8 @@ void Application::Init()
 	Game = NULL;
 	// srand(time(0));
 	// throw a message here
+
+	wprintf(L"Total Initialization Time: %fs\n", glfwGetTime() - T1);
 }
 
 void Application::Run()

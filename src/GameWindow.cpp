@@ -194,6 +194,9 @@ KeyEventType ToKeyEventType(int32 code)
 	return KE;
 }
 
+bool doFlush = false;
+bool VSync = false;
+
 GameWindow::GameWindow()
 {
 	Viewport.x = Viewport.y = 0;
@@ -209,7 +212,8 @@ void ResizeFunc(GLFWwindow*, int32 width, int32 height)
 	WindowFrame.Viewport.x = width / 2 - WindowFrame.GetMatrixSize().x * HeightRatio / 2;
 	WindowFrame.Viewport.y = 0;
 
-	glViewport(WindowFrame.Viewport.x, 0, WindowFrame.GetMatrixSize().x * HeightRatio, height);
+	double mwidth = WindowFrame.GetMatrixSize().x * HeightRatio;
+	glViewport(WindowFrame.Viewport.x, 0, mwidth, height);
 
 	WindowFrame.size.x = width;
 	WindowFrame.size.y = height;
@@ -299,6 +303,9 @@ void GameWindow::SetupWindow()
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 
+	if (VSync)
+		glfwSwapInterval(1);
+
 	
 	projection = glm::ortho<float>(0.0, matrixSize.x, matrixSize.y, 0.0, -32.0, 0.0);
 
@@ -327,6 +334,9 @@ void GameWindow::AutoSetupWindow()
 
 	IsFullscreen = Configuration::GetConfigf("Fullscreen") != 0;
 
+	doFlush = Configuration::GetConfigf("VideoFlush") != 0;
+	VSync = Configuration::GetConfigf("VSync") != 0;
+
 	if (!(wnd = glfwCreateWindow(size.x, size.y, DOTCUR_WINDOWTITLE DOTCUR_VERSIONTEXT, IsFullscreen ? glfwGetPrimaryMonitor() : NULL, NULL)))
 		throw; // std::exception("couldn't open window!");
 
@@ -354,6 +364,9 @@ void GameWindow::AssignSize()
 
 void GameWindow::SwapBuffers()
 {
+	if (doFlush)
+		glFlush();
+
 	glfwSwapBuffers(wnd);
 	glfwPollEvents();
 

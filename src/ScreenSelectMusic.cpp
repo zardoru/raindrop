@@ -76,6 +76,9 @@ void ScreenSelectMusic::MainThreadInitialization()
 	SelCursor.SetSize(20);
 	SelCursor.SetPosition(SONGLIST_BASEX-SelCursor.GetWidth(), SONGLIST_BASEY);
 	Background.SetImage(ImageLoader::LoadSkin(Configuration::GetSkinConfigs("SelectMusicBackground")));
+
+	Background.Centered = 1;
+	Background.SetPosition( ScreenWidth / 2, ScreenHeight / 2 );
 	
 	/* Logo */
 	Logo.SetImage(ImageLoader::LoadSkin("logo.png"));

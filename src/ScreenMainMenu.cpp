@@ -33,6 +33,8 @@ void ScreenMainMenu::Init()
 	}
 
 	Background.SetImage(ImageLoader::LoadSkin(Configuration::GetSkinConfigs("MainMenuBackground")));
+	Background.Centered = 1;
+	Background.SetPosition( ScreenWidth / 2, ScreenHeight / 2 );
 	Logo.SetImage(ImageLoader::LoadSkin("logo.png"));
 	PlayBtn.SetImage(ImageLoader::LoadSkin("playbtn.png"));
 	ExitBtn.SetImage(ImageLoader::LoadSkin("exitbtn.png"));

@@ -9,6 +9,7 @@
 using namespace Configuration;
 
 LuaManager *CfgLua, *SkinCfgLua;
+bool IsWidescreen;
 
 void Configuration::Initialize()
 {
@@ -21,6 +22,8 @@ void Configuration::Initialize()
 		FileManager::SetSkin(Configuration::GetConfigs("Skin"));
 
 	SkinCfgLua->RunScript(FileManager::GetSkinPrefix() + "skin.lua");
+
+	IsWidescreen = (Configuration::GetConfigf("Widescreen") != 0);
 }
 
 void Configuration::Cleanup()
@@ -96,4 +99,20 @@ void Configuration::GetConfigListS(String Name, std::vector<String> &Out)
 			lua_pop(L, 1);
 		}
 	}
+}
+
+double Configuration::CfgScreenHeight()
+{
+	if (IsWidescreen)
+		return ScreenHeightWidescreen;
+	else
+		return ScreenHeightDefault;
+}
+
+double Configuration::CfgScreenWidth()
+{
+	if (IsWidescreen)
+		return ScreenWidthWidescreen;
+	else
+		return ScreenWidthDefault;
 }

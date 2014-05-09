@@ -411,7 +411,7 @@ bool ScreenEdit::Run(double delta)
 
 void ScreenEdit::IncreaseTotalFraction()
 {
-	int Frac = (CurrentFraction / Fracs[CurrentTotalFraction]) * 192;
+	double Frac = (CurrentFraction / Fracs[CurrentTotalFraction]);
 	int ClosestFrac;
 
 	CurrentTotalFraction += 1;
@@ -419,7 +419,7 @@ void ScreenEdit::IncreaseTotalFraction()
 	if (CurrentTotalFraction >= sizeof(Fracs) / sizeof(double))
 		CurrentTotalFraction -= 1;
 
-	ClosestFrac = Frac - Frac % (int)Fracs[CurrentTotalFraction];
+	ClosestFrac = Frac * Fracs[CurrentTotalFraction];
 
 	// Normalize.
 	CurrentFraction = ClosestFrac;
@@ -427,14 +427,19 @@ void ScreenEdit::IncreaseTotalFraction()
 
 void ScreenEdit::DecreaseTotalFraction()
 {
+	double Frac = (CurrentFraction / Fracs[CurrentTotalFraction]);
+	int ClosestFrac;
+
 	CurrentTotalFraction -= 1;
 
 	// Don't forget it's unsigned, and as such it could overflow instead.
 	if (CurrentTotalFraction >= sizeof(Fracs) / sizeof(double))
 		CurrentTotalFraction = 0;
 
-	IncreaseCurrentFraction();
-	DecreaseCurrentFraction();
+	ClosestFrac = Frac * Fracs[CurrentTotalFraction];
+
+	// Normalize.
+	CurrentFraction = ClosestFrac;
 }
 
 GameObject &ScreenEdit::GetObject()

@@ -33,6 +33,9 @@ void ScreenEvaluation7K::Init(ScoreKeeper7K *Result)
 
 	Background.SetImage(ImageLoader::LoadSkin(Configuration::GetSkinConfigs("EvaluationBackground7K")));
 	Background.AffectedByLightning = true;
+	Background.Centered = 1;
+	Background.SetPosition( ScreenWidth / 2, ScreenHeight / 2 );
+
 	if (!Font)
 	{
 		Font = new BitmapFont();

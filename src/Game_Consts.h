@@ -2,8 +2,11 @@
 #ifndef GAMECONSTS_H_
 #define GAMECONSTS_H_
 
-const uint16 ScreenWidth = 1024;
-const uint16 ScreenHeight = 768;
+const uint16 ScreenWidthDefault = 1024;
+const uint16 ScreenHeightDefault = 768;
+
+const uint16 ScreenWidthWidescreen = 1360;
+const uint16 ScreenHeightWidescreen = 768;
 
 /* dotcur Consts */
 const uint16 PlayfieldWidth          = 800;
@@ -19,7 +22,7 @@ const float  DotcurPerfectLeniency   = 0.05f;
 const float  DotcurGreatLeniency	 = 0.1f;
 
 // Vertical Space for a Measure.
-const float MeasureBaseSpacing = 0.4f * ScreenHeight;
+const float MeasureBaseSpacing = 0.4f * ScreenHeightDefault;
 
 /*
 const float LeniencyHitTime7K = 0.050f; // 50 ms
@@ -127,6 +130,7 @@ enum ModeType
 #define DOTCUR_VERSIONTEXT DOTCUR_VERSION DOTCUR_BUILDTYPE __DATE__
 
 #include "BindingsManager.h"
+#include "Configuration.h"
 
 float _ScreenDifference();
 
