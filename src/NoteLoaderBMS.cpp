@@ -75,9 +75,29 @@
 			*/
 
 
+/* literally pasted from wikipedia */
+std::string tob36(long unsigned int value)
+{
+	const char base36[37] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // off by 1 lol
+	char buffer[14];
+	unsigned int offset = sizeof(buffer);
+ 
+	buffer[--offset] = '\0';
+	do {
+		buffer[--offset] = base36[value % 36];
+	} while (value /= 36);
+ 
+	return std::string(&buffer[offset]);
+}
+
 int fromBase36(const char *txt)
 {
 	return strtoul(txt, NULL, 36);
+}
+
+int fromBase16(const char *txt)
+{
+	return strtoul(txt, NULL, 16);
 }
 
 int chanScratch = fromBase36("16");
@@ -231,9 +251,11 @@ void CalculateBPMs(BmsLoadInfo *Info)
 		{
 			for (BMSEventList::iterator ev = i->second.Events[CHANNEL_BPM].begin(); ev != i->second.Events[CHANNEL_BPM].end(); ev++)
 			{
-				if (Info->BPMs.find(ev->Event) == Info->BPMs.end()) continue; // No BPM associated to this event
-
-				double BPM = Info->BPMs[ev->Event];
+				double BPM;
+				if (Info->BPMs.find(ev->Event) == Info->BPMs.end())
+					BPM = fromBase16(tob36(ev->Event).c_str());
+				else
+					BPM = Info->BPMs[ev->Event];
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
 
 				SongInternal::TimingSegment New;
