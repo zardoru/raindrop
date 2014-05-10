@@ -277,7 +277,7 @@ void CalculateStops(BmsLoadInfo *Info)
 			for (BMSEventList::iterator ev = i->second.Events[CHANNEL_STOPS].begin(); ev != i->second.Events[CHANNEL_STOPS].end(); ev++)
 			{
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first);
-				double StopDuration = Info->Stops[ev->Event] * 48 * spb (SectionValue(Info->Difficulty->Timing, Beat)); // A value of 1 is... a 192nd of the measure? Or a 192nd of a beat? Or (192 / (4 * meter)) * spb? I'm not sure...
+				double StopDuration = Info->Stops[ev->Event] / 48 * spb (SectionValue(Info->Difficulty->Timing, Beat)); // A value of 1 is... a 192nd of the measure? Or a 192nd of a beat? Or (192 / (4 * meter)) * spb? I'm not sure...
 
 				SongInternal::TimingSegment New;
 				New.Time = Beat;
@@ -332,6 +332,7 @@ void CalculateObjects(BmsLoadInfo *Info)
 		usedChannels[i] = 0;
 
 	Info->LowerBound = -1;
+	Info->UpperBound = 0;
 	
 	/* Autodetect channel count */
 	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
@@ -466,7 +467,7 @@ degradetonote:
 		}
 	}
 
-	for (int k = 0; k < usedChannels; k++)
+	for (int k = 0; k < MAX_CHANNELS; k++)
 	{
 		if (Msr[k].MeasureNotes.size())
 		{
@@ -665,6 +666,13 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *
 			String IndexStr = CommandSubcontents("#BPM", command);
 			int Index = fromBase36(IndexStr.c_str());
 			Info->BPMs[Index] = atof(CommandContents.c_str());
+		}
+
+		OnCommandSub(#STOP)
+		{
+			String IndexStr = CommandSubcontents("#STOP", command);
+			int Index = fromBase36(IndexStr.c_str());
+			Info->Stops[Index] = atof(CommandContents.c_str());
 		}
 
 		/* Do we need this?... */

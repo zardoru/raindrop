@@ -103,7 +103,8 @@ void loadSong7K( Directory songPath, std::vector<Song7K*> &VecOut )
 	{
 		std::wstring Ext = Utility::Widen(Utility::GetExtension(*i));
 
-		if (Ext == L"wav" || Ext == L"ogg") continue;
+		// no extension
+		if (Ext == L"wav" || Ext == L"ogg" || i->find_first_of('.') == std::wstring::npos) continue;
 
 		std::wstring fn = L"/" + Utility::Widen(*i);
 		std::wstring sp = Utility::Widen(songPath.path());
