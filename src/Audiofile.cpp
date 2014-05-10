@@ -150,12 +150,28 @@ bool AudioSample::Open(const char* Filename)
 
 		mRate = Src->GetRate();
 
+		if (Channels == 1) // Mono? We'll need to duplicate information for both channels.
+		{
+			size_t size = mBufferSize * 2;
+			short* mDataNew = new short [size];
+
+			for (size_t i = 0, j = 0; i < mBufferSize; i++, j += 2) 
+			{
+				mDataNew[j] = mData[i];
+				mDataNew[j+1] = mData[i];
+			}
+
+			delete mData;
+			mBufferSize = size;
+			mData = mDataNew;
+		}
+
 		if (mRate != 44100) // mixer_constant.. in the future, resample.
 		{
-			wprintf(L"AudioSample::Open(): Sample rate (%d) != System Sample Rate (44100)\n", mRate); 
+			// wprintf(L"AudioSample::Open(%ls): Sample rate (%d) != System Sample Rate (44100)\n", Utility::Widen(Filename).c_str(), mRate); 
 			
 			double ResamplingRate = 44100.0 / (double)mRate;
-			int size = int(double(mBufferSize * ResamplingRate));
+			size_t size = size_t(double(mBufferSize * ResamplingRate));
 			short* mDataNew = new short [size];
 
 			int i;
@@ -178,7 +194,7 @@ bool AudioSample::Open(const char* Filename)
 			}
 
 			delete mData;
-			mBufferSize *= ResamplingRate;
+			mBufferSize = size;
 			mData = mDataNew;
 		}
 
