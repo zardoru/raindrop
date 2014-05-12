@@ -21,9 +21,12 @@ void Configuration::Initialize()
 	if (Configuration::GetConfigs("Skin").length())
 		FileManager::SetSkin(Configuration::GetConfigs("Skin"));
 
-	SkinCfgLua->RunScript(FileManager::GetSkinPrefix() + "skin.lua");
-
 	IsWidescreen = (Configuration::GetConfigf("Widescreen") != 0);
+
+	SkinCfgLua->SetGlobal("Widescreen", IsWidescreen);
+	SkinCfgLua->SetGlobal("ScreenWidth", ScreenWidth);
+	SkinCfgLua->SetGlobal("ScreenHeight", ScreenHeight);
+	SkinCfgLua->RunScript(FileManager::GetSkinPrefix() + "skin.lua");
 }
 
 void Configuration::Cleanup()
