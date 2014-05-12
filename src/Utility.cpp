@@ -57,8 +57,12 @@ namespace Utility {
 
 	bool FileExists(String Fn)
 	{
+#ifndef WIN32
 		struct stat st;
 		return (stat(Fn.c_str(), &st) != -1);
+#else
+		return _waccess( Utility::Widen(Fn).c_str(), 00 ) != -1;
+#endif
 	}
 
 	std::wstring Widen(String Line)
