@@ -68,7 +68,7 @@ uint32 AudioSourceSFM::Read(void* buffer, size_t count)
 		}
 
 		
-		if (read < 0)
+		if (read <= 0)
 			mIsDataLeft = false;
 	}
 	return read;
@@ -79,7 +79,7 @@ void AudioSourceSFM::Seek(float Time)
 	if (mWavFile)
 	{
 		mIsDataLeft = true;
-		sf_seek(mWavFile, Time * mRate / mChannels, SEEK_SET);
+		sf_seek(mWavFile, Time * mRate, SEEK_SET);
 	}
 }
 

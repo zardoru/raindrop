@@ -25,15 +25,14 @@ AudioDataSource* SourceFromExt(String Filename)
 	boost::algorithm::to_lower(Ext);
 
 	const char* xt = Ext.c_str();
-	if (strstr(xt, "wav") || strstr(xt, "flac") || strstr(xt, "ogg"))
+	if (strstr(xt, "wav") || strstr(xt, "flac"))
 		Ret = new AudioSourceSFM();
 #ifdef MP3_ENABLED
 	else if (strstr(xt, "mp3"))
 		Ret = new AudioSourceMP3();
 #endif
-	/* else if (strstr(xt, "ogg"))
+	else if (strstr(xt, "ogg"))
 		Ret = new AudioSourceOGG();
-		*/
 
 	if (Ret)
 		Ret->Open(Filename.c_str());

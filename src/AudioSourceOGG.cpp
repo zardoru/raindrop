@@ -16,7 +16,12 @@ AudioSourceOGG::~AudioSourceOGG()
 
 bool AudioSourceOGG::Open(const char* Filename)
 {
+#ifndef WIN32
 	int32 retv = ov_fopen(Filename, &mOggFile);
+#else
+	FILE* fp = _wfopen(Utility::Widen(Filename).c_str(), L"rb");
+	int32 retv = ov_open(fp, &mOggFile, NULL, 0);
+#endif
 
 	if (retv == 0)
 	{
