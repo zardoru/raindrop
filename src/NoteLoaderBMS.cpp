@@ -106,6 +106,7 @@ int chanScratch = fromBase36("16");
 #define CHANNEL_BGM 1
 #define CHANNEL_METER 2
 #define CHANNEL_BPM 3
+#define CHANNEL_EXBPM 8
 #define CHANNEL_STOPS 9
 #define CHANNEL_SCRATCH chanScratch
 
@@ -243,8 +244,16 @@ double BeatForMeasure(BmsLoadInfo *Info, const int Measure)
 	return Beat;
 }
 
-void CalculateBPMs(BmsLoadInfo *Info)
+int ts_sort( const SongInternal::TimingSegment &A, const SongInternal::TimingSegment &B )
 {
+	return A.Time < B.Time;
+}
+
+void CalculateBPMs(BmsLoadInfo *Info, int Chan = CHANNEL_BPM);
+
+void CalculateBPMs(BmsLoadInfo *Info, int Chan)
+{
+
 	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
 	{
 		if (i->second.Events.find(CHANNEL_BPM) != i->second.Events.end()) // there are bms events in here, get chopping
@@ -252,11 +261,9 @@ void CalculateBPMs(BmsLoadInfo *Info)
 			for (BMSEventList::iterator ev = i->second.Events[CHANNEL_BPM].begin(); ev != i->second.Events[CHANNEL_BPM].end(); ev++)
 			{
 				double BPM;
-				if (Info->BPMs.find(ev->Event) == Info->BPMs.end())
-					BPM = fromBase16(tob36(ev->Event).c_str());
-				else
-					BPM = Info->BPMs[ev->Event];
-				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
+				BPM = fromBase16(tob36(ev->Event).c_str());
+
+				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first);
 
 				SongInternal::TimingSegment New;
 				New.Time = Beat;
@@ -266,6 +273,30 @@ void CalculateBPMs(BmsLoadInfo *Info)
 			}
 		}
 	}
+
+	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
+	{
+		if (i->second.Events.find(CHANNEL_EXBPM) != i->second.Events.end()) // there are bms events in here, get chopping
+		{
+			for (BMSEventList::iterator ev = i->second.Events[CHANNEL_EXBPM].begin(); ev != i->second.Events[CHANNEL_EXBPM].end(); ev++)
+			{
+				double BPM;
+				if (Info->BPMs.find(ev->Event) != Info->BPMs.end())
+					BPM = Info->BPMs[ev->Event];
+				else continue;
+
+				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first);
+
+				SongInternal::TimingSegment New;
+				New.Time = Beat;
+				New.Value = BPM;
+
+				Info->Difficulty->Timing.push_back(New);
+			}
+		}
+	}
+
+	std::sort(Info->Difficulty->Timing.begin(), Info->Difficulty->Timing.end(), ts_sort);
 }
 
 void CalculateStops(BmsLoadInfo *Info)
