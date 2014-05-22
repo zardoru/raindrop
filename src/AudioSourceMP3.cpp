@@ -59,12 +59,13 @@ bool AudioSourceMP3::Open(const char* Filename)
 uint32 AudioSourceMP3::Read(void* buffer, size_t count)
 {
 	size_t ret;
-	int res = mpg123_read(mHandle, (unsigned char*)buffer, count * sizeof(int16), &ret);
+	int res = mpg123_read(mHandle, (unsigned char*)buffer, count * sizeof(short), &ret);
 
 	if (res == MPG123_DONE)
 		mIsDataLeft = false;
 
-	return ret;
+	// according to mpg123_read documentation, ret is the amount of bytes read. We want to return samples read.
+	return ret / sizeof(short);
 }
 
 void AudioSourceMP3::Seek(float Time)

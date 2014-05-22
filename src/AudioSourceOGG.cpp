@@ -82,7 +82,7 @@ uint32 AudioSourceOGG::Read(void* buffer, size_t count)
 		}
 	}
 
-	return read;
+	return read / sizeof(short);
 }
 
 void AudioSourceOGG::Seek(float Time)
