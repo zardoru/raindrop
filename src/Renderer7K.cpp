@@ -146,7 +146,8 @@ void ScreenGameplay7K::DrawMeasures()
 					WindowFrame.SetUniform(U_TRANM, &(m->GetMatrix())[0][0]);
 				}
 
-				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+				if ( m->IsEnabled() || m->IsHold() )
+					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 			}
 		}
 	}

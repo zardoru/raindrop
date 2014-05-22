@@ -120,36 +120,22 @@ void ScreenGameplay7K::RunMeasures()
 				if ((SongTime - m->GetTimeFinal()) * 1000 > score_keeper->getAccCutoff() && !m->WasNoteHit() && m->IsHold())
 				{
 					// remove hold notes that were never hit.
-					MissNote((SongTime - m->GetTimeFinal()) * 1000, k, m->IsHold(), true);
+					MissNote(abs(SongTime - m->GetTimeFinal()) * 1000, k, m->IsHold(), true);
 
-					m = (*i).MeasureNotes.erase(m);
+					m->Hit(); // Don't allow any further hits.
 
 					if (score_keeper->getScore(ST_COMBO) > 10)
 						MissSnd->Play();
-
-					if (m == (*i).MeasureNotes.end())
-						break;
-				}
-
-				else if ((SongTime - m->GetStartTime()) * 1000 > score_keeper->getAccCutoff() && (!m->WasNoteHit() && m->IsEnabled()))
+				}else if ((SongTime - m->GetStartTime()) * 1000 > score_keeper->getAccCutoff() && (!m->WasNoteHit() && m->IsEnabled()))
 				{
-					// remove notes that were never hit.
-					MissNote((SongTime - m->GetStartTime()) * 1000, k, m->IsHold(), false);
+					MissNote(abs(SongTime - m->GetStartTime()) * 1000, k, m->IsHold(), false);
 
 					if (score_keeper->getScore(ST_COMBO) > 10)
 						MissSnd->Play();
-					
+
 					/* remove note from judgement */
-					if (!m->IsHold())
-						m = (*i).MeasureNotes.erase(m);
-					else{
-						m->Disable();
-					}
-
-					if (m == (*i).MeasureNotes.end())
-						break;
+					m->Disable();
 				}
-
 			}
 		}
 	}
@@ -176,7 +162,8 @@ void ScreenGameplay7K::ReleaseLane(unsigned int Lane)
 					HitNote(tD, Lane, m->IsHold(), true);
 
 					HeldKey[m->GetTrack()] = false;
-					(*i).MeasureNotes.erase(m);
+
+					m->Disable();
 
 				}else /* Released off time */
 				{
@@ -237,6 +224,7 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 			{
 				if (tD <= score_keeper->getAccMax())
 				{
+					m->Hit();
 					HitNote(tD, Lane, m->IsHold());
 
 					if (m->GetSound())
@@ -246,28 +234,16 @@ void ScreenGameplay7K::JudgeLane(unsigned int Lane)
 					}
 
 					if (m->IsHold())
-					{
-						m->Hit();
 						HeldKey[m->GetTrack()] = true;
-					}
+					else
+						m->Disable();
 				}
 				else
 				{
 					MissNote(tD, Lane, m->IsHold(), m->IsHold());
-
 					// missed feedback
 					MissSnd->Play();
-
-					if (m->IsHold()){
-						m->Disable();
-					}
-				}
-				
-
-				/* remove note from judgement*/
-				if (!m->IsHold())
-				{
-					(*i).MeasureNotes.erase(m);
+					m->Disable();
 				}
 
 				return; // we judged a note in this lane, so we're done.
