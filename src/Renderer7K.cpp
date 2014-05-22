@@ -27,8 +27,16 @@ void ScreenGameplay7K::DrawMeasures()
 	WindowFrame.SetUniform(U_INVERT, false); // Color invert
 	WindowFrame.SetUniform(U_LIGHT, false); // Affected by lightning
 
-	// Sudden = 1, Hidden = 2 (Defined in the shader)
-	WindowFrame.SetUniform(U_HIDDEN, 0); // Affected by hidden lightning
+	// Sudden = 1, Hidden = 2, flashlight = 3 (Defined in the shader)
+	WindowFrame.SetUniform(U_HIDDEN, HiddenMode); // Affected by hidden lightning?
+
+	if (HiddenMode)
+	{
+		WindowFrame.SetUniform(U_HIDLOW, HideClampLow);
+		WindowFrame.SetUniform(U_HIDHIGH, HideClampHigh);
+		WindowFrame.SetUniform(U_HIDFAC, HideClampFactor);
+		WindowFrame.SetUniform(U_HIDSUM, HideClampSum);
+	}
 	
 	WindowFrame.SetUniform(U_TRANSL, true); // use extra matrices
 	WindowFrame.SetUniform(U_CENTERED, true); // center vertexes

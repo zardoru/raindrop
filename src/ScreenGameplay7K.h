@@ -13,6 +13,7 @@ private:
 	bool waveEffectEnabled;	
 	bool Upscroll;
 	bool NoFail;
+	int HiddenMode;
 
 
 	/* Game */
@@ -37,7 +38,9 @@ private:
 	int		GearBindings[MAX_CHANNELS];
 	uint32	Channels;
 	bool HeldKey[MAX_CHANNELS];
-	
+	float HideClampLow, HideClampHigh, HideClampFactor;
+	float HideClampSum;
+
 	float CurrentBeat;
 
 	std::map <int, SoundSample*> Keysounds;
@@ -94,6 +97,8 @@ private:
 	void SetupScriptConstants();
 	void UpdateScriptVariables();
 	void UpdateScriptScoreVariables();
+	void CalculateHiddenConstants();
+
 
 	void RecalculateMatrix();
 	void RecalculateEffects();

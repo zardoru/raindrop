@@ -191,6 +191,8 @@ Song7K* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)
 
 	Out->SongDirectory = prefix;
 	Out->UseSeparateTimingData = false;
+	Difficulty->Offset = 0;
+	Difficulty->Duration = 0;
 
 	String line;
 	while (filein)

@@ -37,7 +37,9 @@ ScreenGameplay7K::ScreenGameplay7K()
 	waveEffectEnabled = false;
 	waveEffect = 0;
 
-	NoFail = false;
+	NoFail = true;
+	HiddenMode = 0; // No Hidden
+	HideClampSum = 0;
 
 	SpeedMultiplierUser = 4;
 
@@ -78,6 +80,68 @@ void ScreenGameplay7K::Cleanup()
 	delete MissSnd;
 	delete Animations;
 	delete score_keeper;
+}
+
+void ScreenGameplay7K::CalculateHiddenConstants()
+{
+	const float FlashlightRatio = 0.25;
+	float Center;
+
+	// Hidden calc 
+	if (HiddenMode)
+	{
+		float LimPos = - ((BasePos / ScreenHeight)*2 - 1); // Frac. of screen
+		float AdjustmentSize;
+
+		if (Upscroll)
+		{
+			Center = -(( ((ScreenHeight - BasePos) / 2 + BasePos) / ScreenHeight)*2 - 1);
+			
+			AdjustmentSize = -( ((ScreenHeight - BasePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
+
+			if (HiddenMode == 2)
+			{
+				HideClampHigh = Center;
+				HideClampLow = -1 + AdjustmentSize;
+			}else if (HiddenMode == 1)
+			{
+				HideClampHigh = LimPos - AdjustmentSize;
+				HideClampLow = Center;
+			}
+
+			// Invert Hidden Mode.
+			if (HiddenMode == 2) HiddenMode = 1;
+			else if (HiddenMode == 1) HiddenMode = 2;
+		}else
+		{
+			Center = -((BasePos / 2 / ScreenHeight)*2 - 1);
+			
+			AdjustmentSize = -( ((BasePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
+
+			// Hidden/Sudden
+			if (HiddenMode == 2)
+			{
+				HideClampHigh = 1 - AdjustmentSize;
+				HideClampLow = Center;
+			}else if (HiddenMode == 1)
+			{
+				HideClampHigh = Center;
+				HideClampLow = LimPos + AdjustmentSize;
+			}
+		}
+
+		if (HiddenMode == 3) // Flashlight)
+		{
+			HideClampLow = Center - FlashlightRatio;
+			HideClampHigh = Center + FlashlightRatio;
+			HideClampSum = - Center;
+			HideClampFactor = 1 / FlashlightRatio;
+		}else
+		{
+			HideClampSum = - HideClampLow;
+			HideClampFactor = 1 / (HideClampHigh + HideClampSum);
+		}
+	}
 }
 
 void ScreenGameplay7K::Init(Song7K* S, int DifficultyIndex, bool UseUpscroll)
@@ -394,6 +458,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 
 	CurrentBeat = BeatAtTime(CurrentDiff->BPS, -1.5, CurrentDiff->Offset + TimeCompensation);
 
+	CalculateHiddenConstants();
 	Running = true;
 }
 
@@ -462,10 +527,10 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 			MultiplierChanged = true;
 			break;
 		case KT_Left:
-			deltaPos -= 10;
+			HideClampSum -= 0.1;
 			break;
 		case KT_Right:
-			deltaPos += 10;
+			HideClampSum += 0.1;
 			break;
 		case KT_GoToEditMode:
 			waveEffectEnabled = !waveEffectEnabled;

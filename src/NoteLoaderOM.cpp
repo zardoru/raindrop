@@ -377,6 +377,7 @@ void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song7K *O
 		return;
 	}
 
+	Difficulty->Offset = 0;
 	Out->SongDirectory = prefix;
 	Difficulty->TotalNotes = Difficulty->TotalHolds = Difficulty->TotalObjects = Difficulty->TotalScoringObjects = 0;
 	Difficulty->Duration = 0;

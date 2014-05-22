@@ -55,6 +55,10 @@ const char* fragShader = "#version 120\n"
 	"uniform float     lMul;\n"
 	"uniform vec3      lPos;\n"
 	"uniform bool inverted;\n"
+	"uniform float clampHSUnder;\n"
+	"uniform float clampHSOver;\n"
+	"uniform float clampFLSum;\n"
+	"uniform float HFactor;\n"
 	"uniform bool AffectedByLightning;\n"
 	"uniform int HiddenLightning;\n"
 	"\n"
@@ -73,10 +77,12 @@ const char* fragShader = "#version 120\n"
 	"		gl_FragColor = tCol * vec4(vec3(temp), 1);\n"
 	"	 }else{\n"
 	"		if (HiddenLightning > 0) {\n"
-	"			float clmp = clamp(Pos_world.y, 0, 0.5);\n"
+	"			float clmp = clamp(Pos_world.y, clampHSUnder, clampHSOver) + clampFLSum;\n"
 	"			float ld;\n"
-	"			if (HiddenLightning == 1) ld = 1 - clmp * 2; else ld = clmp*2;\n"
-	"			gl_FragColor = vec4(tCol.rgb, tCol.a * ld);\n"
+	"			if (HiddenLightning == 1) ld = 1 - clmp * HFactor;\n"
+	"			else if (HiddenLightning == 2) ld = clmp * HFactor;\n"
+	"			else { clmp = abs(clmp); ld = 1 - clmp * HFactor; } \n"
+	"			gl_FragColor = vec4(tCol.rgb, tCol.a * clamp(ld, 0, 1));\n"
 	"		} else if (HiddenLightning == 0) {\n"
 	"			gl_FragColor = tCol;\n"
 	"		}\n"
@@ -518,6 +524,10 @@ void GameWindow::SetupShaders()
 	uniforms[U_INVERT] = glGetUniformLocation(defaultShaderProgram, "inverted");
 	uniforms[U_LIGHT] = glGetUniformLocation(defaultShaderProgram, "AffectedByLightning");
 	uniforms[U_HIDDEN] = glGetUniformLocation(defaultShaderProgram, "HiddenLightning");
+	uniforms[U_HIDLOW] = glGetUniformLocation(defaultShaderProgram, "clampHSUnder");
+	uniforms[U_HIDHIGH] = glGetUniformLocation(defaultShaderProgram, "clampHSOver");
+	uniforms[U_HIDFAC] = glGetUniformLocation(defaultShaderProgram, "HFactor");
+	uniforms[U_HIDSUM] = glGetUniformLocation(defaultShaderProgram, "clampFLSum");
 
 	SetLightPosition(glm::vec3(0,0,1));
 	SetLightMultiplier(1);

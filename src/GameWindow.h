@@ -24,6 +24,10 @@ enum RendererLocats
 	U_INVERT,
 	U_LIGHT,
 	U_HIDDEN,
+	U_HIDLOW,
+	U_HIDHIGH,
+	U_HIDFAC,
+	U_HIDSUM,
 	NUM_SHADERVARS
 } ;
 
