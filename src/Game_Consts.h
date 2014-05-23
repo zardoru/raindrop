@@ -8,7 +8,7 @@ const uint16 ScreenHeightDefault = 768;
 const uint16 ScreenWidthWidescreen = 1360;
 const uint16 ScreenHeightWidescreen = 768;
 
-/* dotcur Consts */
+/* raindrop Consts */
 const uint16 PlayfieldWidth          = 800;
 const uint16 PlayfieldHeight         = 600;
 const int16  ScreenOffset            = 80;
@@ -82,7 +82,7 @@ enum KeyType
 	KT_Left,
 	KT_Right,
 
-	// dotcur specific
+	// raindrop specific
 	KT_Hit,
 	KT_GameplayClick,
 
@@ -118,16 +118,16 @@ enum ModeType
 		MODE_7K
 	};
 
-#define DOTCUR_WINDOWTITLE "dC ver: "
-#define DOTCUR_VERSION "0.130"
+#define RAINDROP_WINDOWTITLE "raindrop ver: "
+#define RAINDROP_VERSION "0.130"
 #ifdef NDEBUG
-#define DOTCUR_BUILDTYPE " "
+#define RAINDROP_BUILDTYPE " "
 #else
-#define DOTCUR_BUILDTYPE " (debug) "
+#define RAINDROP_BUILDTYPE " (debug) "
 #endif
 
 
-#define DOTCUR_VERSIONTEXT DOTCUR_VERSION DOTCUR_BUILDTYPE __DATE__
+#define RAINDROP_VERSIONTEXT RAINDROP_VERSION RAINDROP_BUILDTYPE __DATE__
 
 #include "BindingsManager.h"
 #include "Configuration.h"

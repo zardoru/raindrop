@@ -343,7 +343,7 @@ void GameWindow::AutoSetupWindow()
 	doFlush = Configuration::GetConfigf("VideoFlush") != 0;
 	VSync = Configuration::GetConfigf("VSync") != 0;
 
-	if (!(wnd = glfwCreateWindow(size.x, size.y, DOTCUR_WINDOWTITLE DOTCUR_VERSIONTEXT, IsFullscreen ? glfwGetPrimaryMonitor() : NULL, NULL)))
+	if (!(wnd = glfwCreateWindow(size.x, size.y, RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, IsFullscreen ? glfwGetPrimaryMonitor() : NULL, NULL)))
 		throw; // std::exception("couldn't open window!");
 
 	SetupWindow();
@@ -382,13 +382,13 @@ void GameWindow::SwapBuffers()
 		if (IsFullscreen)
 		{
 			glfwDestroyWindow(wnd);
-			wnd = glfwCreateWindow(size.x, size.y, DOTCUR_WINDOWTITLE DOTCUR_VERSIONTEXT, NULL, NULL);
+			wnd = glfwCreateWindow(size.x, size.y, RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, NULL, NULL);
 		}else
 		{
 			AssignSize();
 
 			glfwDestroyWindow(wnd);
-			wnd = glfwCreateWindow(size.x, size.y, DOTCUR_WINDOWTITLE DOTCUR_VERSIONTEXT, glfwGetPrimaryMonitor(), NULL);
+			wnd = glfwCreateWindow(size.x, size.y, RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, glfwGetPrimaryMonitor(), NULL);
 		}
 		
 		AttribLocs.clear();

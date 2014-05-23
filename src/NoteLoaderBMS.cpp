@@ -19,12 +19,12 @@
 	keys 6 and 7 are 21/22 in bms
 	keys 6 and 7 are 18/19, 28/29 in bme
 
-	two additional extensions to BMS are planned for dotcur to introduce compatibility
+	two additional extensions to BMS are planned for raindrop to introduce compatibility
 	with SV changes:
 	#SCROLLxx <value>
 	#SPEEDxx <value> <duration>
 
-	and are to be put under channel DC (base 36)
+	and are to be put under channel SV (base 36)
 
 	Since most information is in japanese it's likely the implementation won't be perfect at the start.
 */

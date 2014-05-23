@@ -111,7 +111,7 @@ bool ScreenMainMenu::Run (double Delta)
 	EditBtn.Render();
 	OptionsBtn.Render();
 	ExitBtn.Render();
-	MainMenuFont->DisplayText("version: " DOTCUR_VERSIONTEXT "\nhttp://github.com/zardoru/dotcur", Vec2(0, 0));
+	MainMenuFont->DisplayText("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop", Vec2(0, 0));
 	return Running;
 }
 

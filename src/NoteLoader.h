@@ -1,4 +1,4 @@
-/* description: .dcf (dotcur format) reader*/
+/* description: .dcf (raindrop format) reader*/
 
 #ifndef NOTELOADER_H_
 #define NOTELOADER_H_

@@ -216,13 +216,13 @@ bool ScreenSelectMusic::Run(double Delta)
 	String modeString;
 
 	if (SelectedMode == MODE_DOTCUR)
-		modeString = "mode: dotcur";
+		modeString = "mode: .cur";
 	else
 	{
 		if (OptionUpscroll)
-			modeString = "mode: 7K (upscroll)";
+			modeString = "mode: vsrg (upscroll)";
 		else
-			modeString = "mode: 7K (downscroll)";
+			modeString = "mode: vsrg (downscroll)";
 	}
 
 	Font->DisplayText(modeString.c_str(), Vec2(ScreenWidth/2-modeString.length() * 5, 40));
