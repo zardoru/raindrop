@@ -116,6 +116,8 @@ void ScreenGameplay7K::RunMeasures()
 					if (score_keeper->getScore(ST_COMBO) > 10)
 						MissSnd->Play();
 
+					HeldKey[k] = false;
+
 					m->Hit();
 
 				} // Condition B: Regular note or hold head outside cutoff, wasn't hit and it's enabled.
