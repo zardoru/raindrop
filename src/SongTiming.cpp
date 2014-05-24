@@ -1,3 +1,5 @@
+#include <map>
+
 #include "Global.h"
 #include "Song.h"
 
@@ -70,7 +72,7 @@ void LoadTimingList(TimingData &Timing, String line, bool AllowZeros)
 {
 	String ListString = line.substr(line.find_first_of(":") + 1);
 	std::vector< String > SplitResult;
-	SongInternal::TimingSegment Segment;
+	TimingSegment Segment;
 
 	// Remove whitespace.
 	boost::replace_all(ListString, "\n", "");

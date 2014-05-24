@@ -1,10 +1,7 @@
-#include "Global.h"
-#include "Game_Consts.h"
-#include "Configuration.h"
+#include "GameGlobal.h"
 #include "GraphObject2D.h"
 #include "ActorJudgement.h"
 #include "ImageLoader.h"
-#include "GameWindow.h"
 
 #define AnimDuration 0.3f
 

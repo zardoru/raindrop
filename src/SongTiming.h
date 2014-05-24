@@ -1,5 +1,8 @@
 /* SongDC Timing functions. */
-#include <vector>
+
+/* Song Timing */
+inline float spb(float bpm) { return 60 / bpm; } // Return seconds per beat.
+inline float bps(float bpm) { return bpm / 60; } // Return beats per second.
 
 /* Assume these are sorted. */
 // Return the (vector's index+1) Beat resides in.

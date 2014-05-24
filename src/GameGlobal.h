@@ -1,14 +1,19 @@
+#include "Global.h"
 
-#ifndef GAMECONSTS_H_
-#define GAMECONSTS_H_
+#ifndef GAMEGLOBAL_H_
+#define GAMEGLOBAL_H_
 
+/* Matrix size constants */
+
+// 4:3
 const uint16 ScreenWidthDefault = 1024;
 const uint16 ScreenHeightDefault = 768;
 
+// 16:9
 const uint16 ScreenWidthWidescreen = 1360;
 const uint16 ScreenHeightWidescreen = 768;
 
-/* raindrop Consts */
+/* raindrop  .cur mode Consts */
 const uint16 PlayfieldWidth          = 800;
 const uint16 PlayfieldHeight         = 600;
 const int16  ScreenOffset            = 80;
@@ -21,15 +26,9 @@ const float  DotcurExcellentLeniency = 0.03f;
 const float  DotcurPerfectLeniency   = 0.05f;
 const float  DotcurGreatLeniency	 = 0.1f;
 
-// Vertical Space for a Measure.
-const float MeasureBaseSpacing = 0.4f * ScreenHeightDefault;
+float _ScreenDifference();
 
-/*
-const float LeniencyHitTime7K = 0.050f; // 50 ms
-const float GreatLeniency7K = 0.040f;
-const float PerfectLeniency7K = 0.025f;
-const float ExcellentLeniency7K = 0.016f;
-*/
+#define ScreenDifference _ScreenDifference()
 
 enum Judgement
 {
@@ -60,12 +59,6 @@ struct EvaluationData
 	double dpScoreSquare;
 };
 
-enum KeyEventType
-{
-	KE_None,
-	KE_Press,
-	KE_Release
-};
 
 enum KeyType
 {
@@ -118,6 +111,27 @@ enum ModeType
 		MODE_7K
 	};
 
+/* vsrg constants */
+
+enum ESpeedType {
+	SPEEDTYPE_DEFAULT = -1,
+	SPEEDTYPE_FIRST,
+	SPEEDTYPE_MMOD,
+	SPEEDTYPE_CMOD
+} ;
+
+// The values here must be consistent with the shaders!
+enum EHiddenMode {
+	HIDDENMODE_NONE = 0,
+	HIDDENMODE_SUDDEN = 1,
+	HIDDENMODE_HIDDEN = 2,
+	HIDDENMODE_FLASHLIGHT = 3
+} ;
+
+// Vertical Space for a Measure.
+const float MeasureBaseSpacing = 0.4f * ScreenHeightDefault;
+
+/* Program itself consts */
 #define RAINDROP_WINDOWTITLE "raindrop ver: "
 #define RAINDROP_VERSION "0.130"
 #ifdef NDEBUG
@@ -131,9 +145,5 @@ enum ModeType
 
 #include "BindingsManager.h"
 #include "Configuration.h"
-
-float _ScreenDifference();
-
-#define ScreenDifference _ScreenDifference()
 
 #endif

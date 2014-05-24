@@ -1,4 +1,4 @@
-#include "Global.h"
+#include "GameGlobal.h"
 #include "GameWindow.h"
 #include "GuiButton.h"
 

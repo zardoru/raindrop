@@ -1,8 +1,6 @@
-#include "Global.h"
-#include "NoteLoader.h"
-#include "Game_Consts.h"
-#include "Audio.h"
-#include "Configuration.h"
+#include "GameGlobal.h"
+#include "SongDC.h"
+#include "NoteLoaderDC.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
@@ -13,20 +11,22 @@
 
 /* Note Loader for the .dcf format. Heavily inspired by Stepmania. */
 
+using namespace dotcur;
+
 float _ScreenDifference()
 {
 	return std::abs(float((ScreenWidth / 2.f) - (PlayfieldWidth / 2.f)));
 }
 
-void LoadNotes(SongDC* Out, SongInternal::DifficultyDC * Difficulty, String line)
+void LoadNotes(Song* Out, Difficulty * Diff, String line)
 {
 	// get the object string (all between a colon and a semicolon.
 	String objectstring = line.substr(line.find_first_of(":") + 1);
 	std::vector< String > splitvec;
 	bool invert = false;
 
-	Difficulty->Name = Out->SongName; // todo: change this.
-	Difficulty->TotalNotes = Difficulty->TotalHolds = Difficulty->TotalObjects = 0;
+	Diff->Name = Out->SongName; // todo: change this.
+	Diff->TotalNotes = Diff->TotalHolds = Diff->TotalObjects = 0;
 
 	// Remove whitespace.
 	boost::replace_all(objectstring, "\n", "");
@@ -37,14 +37,12 @@ void LoadNotes(SongDC* Out, SongInternal::DifficultyDC * Difficulty, String line
 	BOOST_FOREACH(String objectlist, splitvec) // for each measure
 	{
 		std::vector< String > splitobjects;
-		SongInternal::MeasureDC Measure;
+		Measure Msr;
 		invert = false;
-
-		Measure.Fraction = 0;
 
 		if ( objectlist.length() == 0 )
 		{
-			Difficulty->Measures.push_back(Measure);
+			Diff->Measures.push_back(Msr);
 			continue;
 		}
 
@@ -57,6 +55,7 @@ void LoadNotes(SongDC* Out, SongInternal::DifficultyDC * Difficulty, String line
 
 		boost::split(splitobjects, objectlist, boost::is_any_of("{}"), boost::algorithm::token_compress_on);
 		size_t SoSize = 0;
+		size_t CurObj = 0;
 
 		BOOST_FOREACH (String object_description, splitobjects) // Count total valid objects
 		{
@@ -105,12 +104,12 @@ void LoadNotes(SongDC* Out, SongInternal::DifficultyDC * Difficulty, String line
 				if (xpos != 0)
 				{
 					Temp.SetPositionX(xpos);
-					Difficulty->TotalObjects++;
+					Diff->TotalObjects++;
 
 					if (hold_duration)
-						Difficulty->TotalHolds++;
+						Diff->TotalHolds++;
 					else
-						Difficulty->TotalNotes++;
+						Diff->TotalNotes++;
 				}
 				else
 				{
@@ -119,30 +118,26 @@ void LoadNotes(SongDC* Out, SongInternal::DifficultyDC * Difficulty, String line
 					Temp.SetPositionX(0);
 				}
 
-				Temp.Assign(hold_duration, Difficulty->Measures.size(), (double)Measure.Fraction / SoSize);
-				Measure.MeasureNotes.push_back(Temp);
+				Temp.Assign(hold_duration, Diff->Measures.size(), (double)CurObj / SoSize);
+				Msr.push_back(Temp);
 
 			} // got a position
-			Measure.Fraction++;
+			CurObj++;
 		} // foreach object in measure
 
-		Difficulty->Measures.push_back(Measure);
+		Diff->Measures.push_back(Msr);
 
 	} // foreach measure
 
-	// A fairly expensive copy, I'd dare say?
-	// However, it's loading. I don't think some delay will fuck it up that bad.
-	
-
-	Out->Difficulties.push_back(Difficulty); 
+	Out->Difficulties.push_back(Diff); 
 }
 
-SongDC* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
+Song* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 {
 	std::ifstream filein;
 	filein.open(filename.c_str(), std::ios::in);
-	SongDC *Out = new SongDC();
-	SongInternal::DifficultyDC *Difficulty = new SongInternal::DifficultyDC();
+	Song *Out = new Song();
+	Difficulty *Diff = new Difficulty();
 
 	if (!filein.is_open())
 	{
@@ -188,27 +183,25 @@ SongDC* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 		// Then, Timing data.
 		OnCommand(#BPM)
 		{
-			LoadTimingList(Difficulty->Timing, line);
+			LoadTimingList(Diff->Timing, line);
 		}
 
 		OnCommand(#OFFSET)
 		{
 			std::stringstream str (CommandContents);
-			str >> Difficulty->Offset;
-			Difficulty->Offset += Configuration::GetConfigf("OffsetDC");
+			str >> Diff->Offset;
+			Diff->Offset += Configuration::GetConfigf("OffsetDC");
 		}
 
 		// Then, file info.
 		OnCommand(#SONG)
 		{
-			Out->SongFilename = prefix + "/" + CommandContents;
-			Out->SongRelativePath = CommandContents;
+			Out->SongFilename = CommandContents;
 		}
 
 		OnCommand(#BACKGROUNDIMAGE)
 		{
-			Out->BackgroundDir = prefix + "/" + CommandContents;
-			Out->BackgroundRelativeDir = CommandContents;
+			Out->BackgroundFilename = CommandContents;
 		}
 
 		OnCommand(#LEADIN)
@@ -220,18 +213,18 @@ SongDC* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 		OnCommand(#SOUNDS)
 		{
 			String CmdLine = CommandContents;
-			boost::split(Difficulty->SoundList, CmdLine, boost::is_any_of(","));
+			boost::split(Diff->SoundList, CmdLine, boost::is_any_of(","));
 		}
 
 		// Then, the charts.
 		OnCommand(#NOTES) // current command is notes?
 		{
-			LoadNotes(Out, Difficulty, line);			
-			Difficulty = new SongInternal::DifficultyDC();
+			LoadNotes(Out, Diff, line);			
+			Diff = new Difficulty();
 		}// command == #notes
 #undef OnCommand
 	}
-	delete Difficulty; // There will always be an extra copy.
+	delete Diff; // There will always be an extra copy.
 
 	// at this point the objects are sorted! by measure and within the measure, by fraction.
 	Out->Process();

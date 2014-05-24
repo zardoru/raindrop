@@ -1,11 +1,15 @@
 #include <fstream>
+#include <map>
 
 #include "Global.h"
+#include "Song7K.h"
 #include "NoteLoader7K.h"
 
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
+
+using namespace VSRG;
 
 /*
 	This is pretty much the simplest possible loader.
@@ -17,7 +21,7 @@
 
 typedef std::vector<String> SplitResult;
 
-void NoteLoaderFTB::LoadMetadata(String filename, String prefix, Song7K *Out)
+void NoteLoaderFTB::LoadMetadata(String filename, String prefix, Song *Out)
 {
 	std::fstream filein ((filename).c_str());
 
@@ -32,36 +36,35 @@ void NoteLoaderFTB::LoadMetadata(String filename, String prefix, Song7K *Out)
 	std::getline(filein, Title);
 	std::getline(filein, Author);
 
-	Out->SongRelativePath = musName;
-	Out->SongFilename = prefix + "/" + musName;
+	Out->SongFilename = musName;
 	Out->SongName = Title;
 	Out->SongAuthor = Author;
-	Out->SongDirectory = prefix;
+	Out->SongDirectory = prefix + "/";
 	Out->UseSeparateTimingData = true;
 
 	filein.close();
 }
 
-void NoteLoaderFTB::LoadObjectsFromFile(String filename, String prefix, Song7K *Out)
+void NoteLoaderFTB::LoadObjectsFromFile(String filename, String prefix, Song *Out)
 {
-	SongInternal::Difficulty7K *Difficulty = new SongInternal::Difficulty7K ();
-	SongInternal::Measure7K Measure[7];
+	Difficulty *Diff = new Difficulty();
+	Measure Msr;
 
-	std::fstream filein ((filename).c_str());
+#if (!defined _WIN32) || (defined STLP)
+	std::ifstream filein (filename.c_str());
+#else
+	std::ifstream filein (Utility::Widen(filename).c_str());
+#endif
 
 	if (!filein.is_open())
 	{
-		delete Difficulty;
+failed:
+		delete Diff;
 		return;
 	}
 
-	Out->BPMType = Song7K::BT_MS; // MS using BPMs.
-	Difficulty->Channels = 7;
-	Difficulty->Offset = 0;
-	Difficulty->TotalNotes = Difficulty->TotalHolds = Difficulty->TotalObjects = Difficulty->TotalScoringObjects = 0;
-
-	for (int i = 0; i < 7; i++)
-		Measure[i].Fraction = -1;
+	Out->BPMType = Song::BT_MS; // MS using BPMs.
+	Diff->Channels = 7;
 
 	while (filein)
 	{
@@ -76,10 +79,10 @@ void NoteLoaderFTB::LoadObjectsFromFile(String filename, String prefix, Song7K *
 
 		if (LineContents.at(0) == "BPM")
 		{
-			SongInternal::TimingSegment Seg;
+			TimingSegment Seg;
 			Seg.Time = atof(LineContents[1].c_str()) / 1000.0;
 			Seg.Value = atof(LineContents[2].c_str());
-			Difficulty->Timing.push_back(Seg);
+			Diff->Timing.push_back(Seg);
 		}else
 		{
 
@@ -89,39 +92,38 @@ void NoteLoaderFTB::LoadObjectsFromFile(String filename, String prefix, Song7K *
 				so we'll use a single measure for all the song, containing all notes.
 		*/
 
-			TrackNote Note;
+			NoteData Note;
 			SplitResult NoteInfo;
 			boost::split(NoteInfo, LineContents.at(0), boost::is_any_of("-"));
 			if (NoteInfo.size() > 1)
 			{
-				Note.AssignTime(atof(NoteInfo.at(0).c_str()) / 1000.0, atof(NoteInfo.at(1).c_str()) / 1000.0);
-				Difficulty->TotalNotes++;
-				Difficulty->TotalScoringObjects++;
+				Note.StartTime = atof(NoteInfo.at(0).c_str()) / 1000.0;
+				Note.EndTime = atof(NoteInfo.at(1).c_str()) / 1000.0;
+				Diff->TotalHolds++;
+				Diff->TotalScoringObjects += 2;
 			}
 			else
 			{
-				Note.AssignTime(atof(NoteInfo.at(0).c_str()) / 1000.0, 0);
-				Difficulty->TotalHolds++;
-				Difficulty->TotalScoringObjects += 2;
+				Note.StartTime = atof(NoteInfo.at(0).c_str()) / 1000.0;
+				Diff->TotalNotes++;
+				Diff->TotalScoringObjects++;
 			}
 
 			/* index 1 is unused */
 			int Track = atoi(LineContents[2].c_str()); // Always > 1
-			Note.AssignTrack(Track-1);
-			Difficulty->TotalObjects++;
-			Measure[Track-1].MeasureNotes.push_back(Note);
+			Diff->TotalObjects++;
+
+			Diff->Duration = max(max(Note.StartTime, Note.EndTime), Diff->Duration);
+			Msr.MeasureNotes[Track-1].push_back(Note);
 		}
 	}
+
 	filein.close();
 
-	Difficulty->Duration = 0;
-	for (int i = 0; i < 7; i++)
-	{
-		Difficulty->Measures[i].push_back(Measure[i]);
-		Difficulty->Duration = std::max(Difficulty->Measures[i][0].MeasureNotes.at(Difficulty->Measures[i][0].MeasureNotes.size()-1).GetTimeFinal(), Difficulty->Duration);
-	}
+	if (Diff->Timing.size())
+		Diff->Timing[0].Time = 0;
+	else
+		goto failed;
 
-	Difficulty->Timing[0].Time = 0;
-
-	Out->Difficulties.push_back(Difficulty);
+	Out->Difficulties.push_back(Diff);
 }

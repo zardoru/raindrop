@@ -174,7 +174,7 @@ bool AudioSample::Open(const char* Filename)
 			size_t size = size_t(double(mBufferSize * ResamplingRate));
 			short* mDataNew = new short [size];
 
-			int i;
+			size_t i;
 			double j;
 			for (j = i = 0; i < mBufferSize; i++, j += ResamplingRate)
 			{

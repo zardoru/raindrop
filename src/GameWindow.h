@@ -4,6 +4,8 @@
 #define GraphMan_H_
 
 #include <list>
+#include <map>
+#include <vector>
 
 class VBO;
 struct GLFWwindow;

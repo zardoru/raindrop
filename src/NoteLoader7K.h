@@ -5,23 +5,23 @@
 
 namespace NoteLoaderSM
 {
-	Song7K* LoadObjectsFromFile(String filename, String prefix);
+	VSRG::Song* LoadObjectsFromFile(String filename, String prefix);
 }
 
 namespace NoteLoaderFTB
 {
-	void LoadMetadata(String filename, String prefix, Song7K *Out);
-	void LoadObjectsFromFile(String filename, String prefix, Song7K *Out);
+	void LoadMetadata(String filename, String prefix, VSRG::Song *Out);
+	void LoadObjectsFromFile(String filename, String prefix, VSRG::Song *Out);
 }
 
 namespace NoteLoaderBMS
 {
-	void LoadObjectsFromFile(String filename, String prefix, Song7K *Out);
+	void LoadObjectsFromFile(String filename, String prefix, VSRG::Song *Out);
 }
 
 namespace NoteLoaderOM
 {
-	void LoadObjectsFromFile(String filename, String prefix, Song7K *Out);
+	void LoadObjectsFromFile(String filename, String prefix, VSRG::Song *Out);
 }
 
 #endif

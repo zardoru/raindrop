@@ -1,8 +1,9 @@
 #include <fstream>
+#include <map>
 
 #include "Global.h"
+#include "Song7K.h"
 #include "NoteLoader7K.h"
-#include "NoteLoader.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
@@ -14,6 +15,7 @@
 
 /* Stepmania uses a format with a lot of information, so we'll start with the basics*/
 
+using namespace VSRG;
 using namespace NoteLoaderSM;
 typedef std::vector<String> SplitResult;
 
@@ -65,7 +67,7 @@ String RemoveComments(const String Str)
 	return Result;
 }
 
-void LoadTracksSM(Song7K *Out, SongInternal::Difficulty7K *Difficulty, String line)
+void LoadTracksSM(Song *Out, Difficulty *Diff, String line)
 {
 	String CommandContents = line.substr(line.find_first_of(":") + 1);
 	SplitResult Mainline;
@@ -86,9 +88,8 @@ void LoadTracksSM(Song7K *Out, SongInternal::Difficulty7K *Difficulty, String li
 	if (!Keys)
 		return;
 
-	Difficulty->Channels = Keys;
-	Difficulty->Name = Mainline[2];
-	Difficulty->TotalNotes = Difficulty->TotalHolds = Difficulty->TotalObjects = Difficulty->TotalScoringObjects = 0;
+	Diff->Channels = Keys;
+	Diff->Name = Mainline[2];
 	
 	/* Now we should have our notes within NoteString. 
 	We'll split them by measure using , as a separator.*/
@@ -103,53 +104,52 @@ void LoadTracksSM(Song7K *Out, SongInternal::Difficulty7K *Difficulty, String li
 	for (uint32 i = 0; i < MeasureText.size(); i++) /* i = current measure */
 	{
 		int MeasureFractions = MeasureText[i].length() / Keys;
-		SongInternal::Measure7K Measure[MAX_CHANNELS];
-		
-		for (int32 k = 0; k < 16; k++)
-			Measure[k].Fraction = MeasureFractions;
+		Measure Msr;
 
 		if (MeasureText[i].length())
 		{
 			/* For each fraction of the measure*/
 			for (int32 m = 0; m < MeasureFractions; m++) /* m = current fraction */
 			{
-				double Beat = (double)i * (double)Out->MeasureLength + (double)m * (double)Out->MeasureLength / (double)MeasureFractions; /* Current beat */
-				double StopsTime = StopTimeAtBeat(Difficulty->StopsTiming, Beat);
-				double Time = TimeAtBeat(Difficulty->Timing, Difficulty->Offset, Beat) + StopsTime;
+				double Beat = i * 4.0 + m * 4.0 / (double)MeasureFractions; /* Current beat */
+				double StopsTime = StopTimeAtBeat(Diff->StopsTiming, Beat);
+				double Time = TimeAtBeat(Diff->Timing, Diff->Offset, Beat) + StopsTime;
 				/* For every track of the fraction */
 				for (int k = 0; k < Keys; k++) /* k = current track */
 				{
-					TrackNote Note;
-					Note.AssignTrack(k);
+					NoteData Note;
+					
 					switch (MeasureText[i].at(0))
 					{
 					case '1': /* Taps */
-						Note.AssignSongPosition(Beat);
-						Note.AssignTime(Time);
-						Difficulty->TotalNotes++;
-						Difficulty->TotalObjects++;
-						Difficulty->TotalScoringObjects++;
-						Measure[k].MeasureNotes.push_back(Note);
+						Note.StartTime = Time;
+
+						Diff->TotalNotes++;
+						Diff->TotalObjects++;
+						Diff->TotalScoringObjects++;
+
+						Msr.MeasureNotes[k].push_back(Note);
 						break;
 					case '2': /* Holds */
 					case '4':
 						KeyStartTime[k] = Time;
 						KeyBeat[k] /*heh*/ = Beat;
-						Difficulty->TotalScoringObjects++;
+						Diff->TotalScoringObjects++;
 						break;
 					case '3': /* Hold releases */
-						Note.AssignTime(KeyStartTime[k], Time);
-						Note.AssignSongPosition(KeyBeat[k], Beat);
-						Difficulty->TotalHolds++;
-						Difficulty->TotalObjects++;
-						Difficulty->TotalScoringObjects++;
-						Measure[k].MeasureNotes.push_back(Note);
+						Note.StartTime = KeyStartTime[k];
+						Note.EndTime = Time;
+						
+						Diff->TotalHolds++;
+						Diff->TotalObjects++;
+						Diff->TotalScoringObjects++;
+						Msr.MeasureNotes[k].push_back(Note);
 						break;
 					default:
 						break;
 					}
 
-					Difficulty->Duration = std::max((double)Difficulty->Duration, Note.GetTimeFinal());
+					Diff->Duration = max(max (Note.StartTime, Note.EndTime), Diff->Duration);
 
 					if (MeasureText[i].length())
 						MeasureText[i].erase(0, 1);
@@ -157,8 +157,7 @@ void LoadTracksSM(Song7K *Out, SongInternal::Difficulty7K *Difficulty, String li
 			}
 		}
 
-		for (int32 k = 0; k < 16; k++)
-			Difficulty->Measures[k].push_back(Measure[k]);
+		Diff->Measures.push_back(Msr);
 	}
 
 	/* 
@@ -169,14 +168,14 @@ void LoadTracksSM(Song7K *Out, SongInternal::Difficulty7K *Difficulty, String li
 	*/
 }
 
-Song7K* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)
+Song* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)
 {
 	std::ifstream filein (filename.c_str());
-	Song7K *Out = new Song7K();
-	SongInternal::Difficulty7K *Difficulty = new SongInternal::Difficulty7K();
+	Song *Out = new Song();
+	Difficulty *Diff = new Difficulty();
 
 	// Stepmania uses beat-based locations for stops and BPM.
-	Out->BPMType = Song7K::BT_Beat;
+	Out->BPMType = Song::BT_Beat;
 
 	if (!filein.is_open())
 	{
@@ -189,10 +188,10 @@ Song7K* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)
 #endif
 	}
 
-	Out->SongDirectory = prefix;
+	Out->SongDirectory = prefix + "/";
 	Out->UseSeparateTimingData = false;
-	Difficulty->Offset = 0;
-	Difficulty->Duration = 0;
+	Diff->Offset = 0;
+	Diff->Duration = 0;
 
 	String line;
 	while (filein)
@@ -223,24 +222,19 @@ Song7K* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)
 
 		OnCommand(#BACKGROUND)
 		{
-			Out->BackgroundRelativeDir = CommandContents;
-			Out->BackgroundDir = prefix + "/" + CommandContents;
+			Out->BackgroundFilename = CommandContents;
 		}
 
 		OnCommand(#MUSIC)
 		{
-			Out->SongFilename = prefix + "/" + CommandContents;
-			Out->SongRelativePath = CommandContents;
+			Out->SongFilename = CommandContents;
 		}
 
 		OnCommand(#OFFSET)
 		{
 			std::stringstream str (CommandContents);
-			str >> Difficulty->Offset;
-			Difficulty->Offset = -Difficulty->Offset;
-
-			Out->Offset = Difficulty->Offset;
-			Out->LeadInTime = Difficulty->Offset < 0? abs(Difficulty->Offset) + 3 : 0;
+			str >> Diff->Offset;
+			Out->Offset = Diff->Offset;
 		}
 
 		OnCommand(#BPMS)
@@ -257,18 +251,18 @@ Song7K* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)
 
 		OnCommand(#NOTES)
 		{
-			Difficulty->Timing = Out->BPMData;
-			Difficulty->StopsTiming = Out->StopsData;
-			Difficulty->Offset = Out->Offset;
-			Difficulty->Duration = 0;
+			Diff->Timing = Out->BPMData;
+			Diff->StopsTiming = Out->StopsData;
+			Diff->Offset = -Out->Offset;
+			Diff->Duration = 0;
 
-			LoadTracksSM(Out, Difficulty, line);
-			Out->Difficulties.push_back(Difficulty);
+			LoadTracksSM(Out, Diff, line);
+			Out->Difficulties.push_back(Diff);
 
-			Difficulty = new SongInternal::Difficulty7K();
+			Diff = new Difficulty();
 		}
 	}
 
-	delete Difficulty;
+	delete Diff;
 	return Out;
 }

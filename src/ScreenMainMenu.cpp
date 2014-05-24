@@ -1,11 +1,11 @@
-#include "Global.h"
+#include "GameGlobal.h"
 #include "Configuration.h"
 #include "Screen.h"
 #include "ImageLoader.h"
 #include "Audio.h"
 #include "FileManager.h"
 #include "GameWindow.h"
-#include "GameObject.h"
+#include "GraphObject2D.h"
 #include "BitmapFont.h"
 
 #include "Song.h"
@@ -55,9 +55,6 @@ void ScreenMainMenu::Init()
 
 	//WindowFrame.SetLightMultiplier(800);
 	//WindowFrame.SetLightPosition(glm::vec3(ScreenWidth / 2, ScreenHeight / 2, 1));
-
-	/* We need this object to be created in first instance in the main thread. Bad design, I'll fix it later. */
-	GameObject Dummy;
 }
 
 void ScreenMainMenu::HandleInput(int32 key, KeyEventType code, bool isMouseInput)

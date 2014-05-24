@@ -214,7 +214,7 @@
     <ClCompile Include="..\src\lua.c" />
     <ClCompile Include="..\src\LuaAnimationInterface.cpp" />
     <ClCompile Include="..\src\LuaManager.cpp" />
-    <ClCompile Include="..\src\NoteLoader.cpp" />
+    <ClCompile Include="..\src\NoteLoaderDC.cpp" />
     <ClCompile Include="..\src\NoteLoaderBMS.cpp" />
     <ClCompile Include="..\src\NoteLoaderFTB.cpp" />
     <ClCompile Include="..\src\NoteLoaderOM.cpp" />
@@ -234,7 +234,7 @@
     <ClCompile Include="..\src\ScreenLoading.cpp" />
     <ClCompile Include="..\src\ScreenMainMenu.cpp" />
     <ClCompile Include="..\src\ScreenSelectMusic.cpp" />
-    <ClCompile Include="..\src\Song.cpp" />
+    <ClCompile Include="..\src\SongDC.cpp" />
     <ClCompile Include="..\src\Song7K.cpp" />
     <ClCompile Include="..\src\SongTiming.cpp" />
     <ClCompile Include="..\src\TrackNote.cpp" />
@@ -261,7 +261,7 @@
     <ClInclude Include="..\src\Directory.h" />
     <ClInclude Include="..\src\FileManager.h" />
     <ClInclude Include="..\src\GameObject.h" />
-    <ClInclude Include="..\src\Game_Consts.h" />
+    <ClInclude Include="..\src\GameGlobal.h" />
     <ClInclude Include="..\src\Global.h" />
     <ClInclude Include="..\src\GameWindow.h" />
     <ClInclude Include="..\src\GraphObject2D.h" />
@@ -271,7 +271,7 @@
     <ClInclude Include="..\src\Image.h" />
     <ClInclude Include="..\src\ImageLoader.h" />
     <ClInclude Include="..\src\LuaManager.h" />
-    <ClInclude Include="..\src\NoteLoader.h" />
+    <ClInclude Include="..\src\NoteLoaderDC.h" />
     <ClInclude Include="..\src\NoteLoader7K.h" />
     <ClInclude Include="..\src\ScoreKeeper.h" />
     <ClInclude Include="..\src\Screen.h" />
@@ -284,6 +284,8 @@
     <ClInclude Include="..\src\ScreenMainMenu.h" />
     <ClInclude Include="..\src\ScreenSelectMusic.h" />
     <ClInclude Include="..\src\Song.h" />
+    <ClInclude Include="..\src\Song7K.h" />
+    <ClInclude Include="..\src\SongDC.h" />
     <ClInclude Include="..\src\SongTiming.h" />
     <ClInclude Include="..\src\TrackNote.h" />
     <ClInclude Include="..\src\VBO.h" />

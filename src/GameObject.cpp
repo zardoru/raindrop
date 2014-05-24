@@ -1,4 +1,4 @@
-#include "Global.h"
+#include "GameGlobal.h"
 #include "GraphObject2D.h"
 #include "VBO.h"
 #include "GameObject.h"
@@ -260,7 +260,7 @@ void GameObject::Invalidate()
 	GameObjectUVvbo = UvBuffer;
 }
 
-double GameObject::GetFraction() const
+double &GameObject::GetFraction()
 {
 	return Fraction;
 }

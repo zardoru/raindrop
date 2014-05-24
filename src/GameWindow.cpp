@@ -2,8 +2,11 @@
 #include <GLFW/glfw3.h>
 #include <stdio.h>
 #include <iostream>
+#include <map>
 
-#include "Global.h"
+#include "GameGlobal.h"
+#include "BindingsManager.h"
+#include "Configuration.h"
 #include "Screen.h"
 #include "Application.h"
 #include "GameWindow.h"
@@ -12,8 +15,6 @@
 #include "GameObject.h"
 #include "VBO.h"
 #include <glm/gtc/matrix_transform.hpp>
-
-#include "Configuration.h"
 
 GameWindow WindowFrame;
 

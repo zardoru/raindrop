@@ -3,7 +3,7 @@
 
 #include <vector>
 #include "Screen.h"
-#include "Song.h"
+#include "SongDC.h"
 #include "Audio.h"
 #include "ActorBarline.h"
 #include "ActorJudgement.h"
@@ -14,8 +14,8 @@ class ScreenGameplay : public IScreen
 {
 protected: // shit the edit screen needs
 
-	SongDC *MySong;
-	SongInternal::DifficultyDC* CurrentDiff;
+	dotcur::Song *MySong;
+	dotcur::Difficulty* CurrentDiff;
 	// Game Data
 	uint32 Measure;
 
@@ -88,7 +88,7 @@ private: // shit only screengameplay needs
 public:
 	ScreenGameplay(IScreen *Parent);
 
-	virtual void Init(SongDC *OtherSong, uint32 DifficultyIndex);
+	virtual void Init(dotcur::Song *OtherSong, uint32 DifficultyIndex);
 
 	int32 GetMeasure();
 	virtual bool Run(double Delta);

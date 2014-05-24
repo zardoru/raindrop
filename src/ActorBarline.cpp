@@ -1,9 +1,7 @@
-#include "Global.h"
-#include "GraphObject2D.h"
+#include "GameGlobal.h"
 #include "ScreenGameplay.h"
 #include "ActorBarline.h"
 #include "GameWindow.h"
-#include "Game_Consts.h"
 
 #define BLUE_CONSTANT (200.0 / 255.0)
 

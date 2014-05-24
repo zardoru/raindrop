@@ -12,13 +12,11 @@
 #include "Configuration.h"
 #include "Audio.h"
 #include "Application.h"
-#include "GameObject.h"
+#include "GraphObject2D.h"
 #include "BitmapFont.h"
 #include "ImageLoader.h"
 #include "GameWindow.h"
 #include "FileManager.h"
-
-#include "Song.h"
 
 #include "ScreenMainMenu.h"
 

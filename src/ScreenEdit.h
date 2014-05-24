@@ -14,9 +14,9 @@ class ScreenEdit : public ScreenGameplay
 	}EditScreenState;
 
 	GUI::TextPrompt OffsetPrompt, BPMPrompt;
-	uint32_t CurrentFraction;
-	uint32_t CurrentTotalFraction; // basically beat snap
-	uint32_t savedMeasure;
+	uint32 CurrentFraction;
+	uint32 CurrentTotalFraction; // basically beat snap
+	uint32 savedMeasure;
 	BitmapFont EditInfo;
 
 	GameObject* HeldObject;
@@ -53,7 +53,7 @@ class ScreenEdit : public ScreenGameplay
 	void DrawInformation();
 public:
 	ScreenEdit (IScreen * Parent);
-	void Init(SongDC *Other);
+	void Init(dotcur::Song *Other);
 	void StartPlaying(int32 _Measure);
 	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	bool Run (double Delta);

@@ -2,38 +2,21 @@
 #include "GraphObject2D.h"
 #include "TrackNote.h"
 
+using namespace VSRG;
+
 TrackNote::TrackNote()
 {
-	Sound = Track = StartTime = EndTime = 0;
 	Enabled = true;
 	WasHit = false;
-	fracKind = 0;
 }
 
 TrackNote::~TrackNote()
 {
 }
 
-void TrackNote::AssignTrack(int T)
+void TrackNote::AssignNotedata(const VSRG::NoteData &Notedata)
 {
-	Track = T;
-}
-
-void TrackNote::AssignTime(double Start, double End)
-{
-	StartTime = Start;
-	EndTime = End;
-}
-
-void TrackNote::AssignSound(int Snd)
-{
-	Sound = Snd;
-}
-
-void TrackNote::AssignSongPosition(double _BeatStart, double _BeatEnd)
-{
-	BeatStart = _BeatStart;
-	BeatEnd = _BeatEnd;
+	Data = Notedata;
 }
 
 int GetFractionKindBeat(double frac);
@@ -41,31 +24,12 @@ int GetFractionKindBeat(double frac);
 /* calculate the beat snap for this fraction */
 void TrackNote::AssignFraction(double frac)
 {
-	fracKind = GetFractionKindBeat(frac);
-}
-
-double TrackNote::GetBeatStart() const
-{
-	return BeatStart;
-}
-
-double TrackNote::GetBeatEnd() const
-{
-	return BeatEnd;
-}
-
-void TrackNote::AddTime(double Time)
-{
-	StartTime += Time;
-
-	if (EndTime) // Actually using this?
-		EndTime += Time;
+	Data.FractionKind = GetFractionKindBeat(frac);
 }
 
 void TrackNote::RecalculateBody(float trackPosition, float noteWidth, float noteSize, float speedMultiplier)
 {
 	hold_body_size = glm::translate(Mat4(), glm::vec3(trackPosition, 0, 14)) * glm::scale(Mat4(), glm::vec3(noteWidth, VerticalHoldBodySize * speedMultiplier * 2, 0));
-	//hold_body = glm::translate(Mat4(), glm::vec3(b_pos.x, VerticalHoldBodyPos, 0));
 }
 
 Mat4& TrackNote::GetHoldBodySizeMatrix()
@@ -78,7 +42,7 @@ void TrackNote::AssignPosition(Vec2 Position, Vec2 endPosition)
 	b_pos = Position;
 	final = glm::translate(Mat4(), glm::vec3(b_pos.x, b_pos.y, 0));
 
-	if (EndTime)
+	if (Data.EndTime)
 	{
 		b_pos_holdend = endPosition;
 		
@@ -92,7 +56,7 @@ void TrackNote::AssignPosition(Vec2 Position, Vec2 endPosition)
 
 bool TrackNote::IsHold() const
 {
-	return EndTime != 0;
+	return Data.EndTime != 0;
 }
 
 Mat4& TrackNote::GetHoldBodyMatrix()
@@ -115,14 +79,22 @@ float TrackNote::GetVertical() const
 	return b_pos.y;
 }
 
+void TrackNote::AddTime(double Time)
+{
+	Data.StartTime += Time;
+
+	if (IsHold())
+		Data.EndTime += Time;
+}
+
 double TrackNote::GetTimeFinal() const
 {
-	return std::max(StartTime, EndTime);
+	return max(Data.StartTime, Data.EndTime);
 }
 
 double TrackNote::GetStartTime() const
 {
-	return StartTime;
+	return Data.StartTime;
 }
 
 bool TrackNote::IsEnabled() const
@@ -133,11 +105,6 @@ bool TrackNote::IsEnabled() const
 void TrackNote::Disable()
 {
 	Enabled = false;
-}
-
-uint32 TrackNote::GetTrack() const
-{
-	return Track;
 }
 
 void TrackNote::Hit()
@@ -157,10 +124,10 @@ float TrackNote::GetVerticalHold() const
 
 int TrackNote::GetSound() const
 {
-	return Sound;
+	return Data.Sound;
 }
 
 int TrackNote::GetFracKind() const
 {
-	return fracKind;
+	return Data.FractionKind;
 }

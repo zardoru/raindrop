@@ -1,5 +1,4 @@
-#include "Global.h"
-#include "Game_Consts.h"
+#include "GameGlobal.h"
 #include "Configuration.h"
 #include "GraphObject2D.h"
 #include "ActorLifebar.h"

@@ -1,35 +1,24 @@
-#include "Global.h"
-#include "GameObject.h"
-#include "Song.h"
+#include "GameGlobal.h"
+#include "SongDC.h"
 
 #include <fstream>
 #include <algorithm>
 #include <boost/foreach.hpp>
 
 using std::vector;
-using namespace SongInternal;
+using namespace dotcur;
 
-float spb(float bpm)
-{
-	return 60 / bpm;
-}
-
-float bps(float bpm)
-{
-	return bpm / 60;
-}
-
-SongDC::SongDC()
+Song::Song()
 {
 	LeadInTime = 0;
 	MeasureLength = 4; // MeasureLength/4
 }
 
-SongDC::~SongDC()
+Song::~Song()
 {
 }
 
-void CalculateBarlineRatios(SongDC &MySong, DifficultyDC &Diff)
+void CalculateBarlineRatios(Song &MySong, Difficulty &Diff)
 {
 	TimingData &Timing = Diff.Timing;
 	TimingData &Ratios = Diff.BarlineRatios;
@@ -50,7 +39,7 @@ void CalculateBarlineRatios(SongDC &MySong, DifficultyDC &Diff)
 		if (ChangesInInterval.size() == 0)
 		{
 			double Ratio = 1/MeasureDuration;
-			SongInternal::TimingSegment New;
+			TimingSegment New;
 
 			New.Value = Ratio;
 			New.Time = TimeAtBeat(Diff.Timing, Diff.Offset, CurrentBeat);
@@ -67,7 +56,7 @@ void CalculateBarlineRatios(SongDC &MySong, DifficultyDC &Diff)
 			// Real show time on calculations is here.
 			for (TimingData::iterator i = ChangesInInterval.begin(); i != ChangesInInterval.end(); i++)
 			{
-				SongInternal::TimingSegment New;
+				TimingSegment New;
 				double Duration;
 				double DurationSeconds;
 				double Fraction;
@@ -115,13 +104,13 @@ void CalculateBarlineRatios(SongDC &MySong, DifficultyDC &Diff)
 	}
 }
 
-void SongDC::Repack()
+void Song::Repack()
 {
-	for(vector<DifficultyDC*>::iterator Difficulty = Difficulties.begin(); Difficulty != Difficulties.end(); Difficulty++ )
+	for(vector<dotcur::Difficulty*>::iterator Diff = Difficulties.begin(); Diff != Difficulties.end(); Diff++ )
 	{
-		for(vector<MeasureDC>::iterator Measure = (*Difficulty)->Measures.begin(); Measure != (*Difficulty)->Measures.end(); Measure++)
+		for(vector<Measure>::iterator Msr = (*Diff)->Measures.begin(); Msr != (*Diff)->Measures.end(); Msr++)
 		{
-			for (vector<GameObject>::iterator it = Measure->MeasureNotes.begin(); it != Measure->MeasureNotes.end(); it++)
+			for (vector<GameObject>::iterator it = Msr->begin(); it != Msr->end(); it++)
 			{
 				if (it->GetPosition().x > ScreenDifference)
 					it->SetPositionX(it->GetPosition().x - ScreenDifference);
@@ -130,33 +119,33 @@ void SongDC::Repack()
 	}
 }
 
-int noteSort(const GameObject &A, const GameObject &B)
+int noteSort(GameObject &A, GameObject &B)
 {
 	return A.GetFraction() < B.GetFraction();
 }
 
-void SongDC::Process(bool CalculateXPos)
+void Song::Process(bool CalculateXPos)
 {
-	for(std::vector<DifficultyDC*>::iterator Difficulty = Difficulties.begin(); Difficulty != Difficulties.end(); Difficulty++ )
+	for(std::vector<dotcur::Difficulty*>::iterator Diff = Difficulties.begin(); Diff != Difficulties.end(); Diff++ )
 	{
 		int32 CurrentMeasure = 0;
-		for(vector<MeasureDC>::iterator Measure = (*Difficulty)->Measures.begin(); Measure != (*Difficulty)->Measures.end(); Measure++)
+		for(vector<Measure>::iterator Msr = (*Diff)->Measures.begin(); Msr != (*Diff)->Measures.end(); Msr++)
 		{
 			uint32 CurNote = 0;
 
-			std::sort(Measure->MeasureNotes.begin(), Measure->MeasureNotes.end(), noteSort);
+			std::sort(Msr->begin(), Msr->end(), noteSort);
 
-			for (std::vector<GameObject>::iterator it = Measure->MeasureNotes.begin(); it != Measure->MeasureNotes.end(); it++)
+			for (std::vector<GameObject>::iterator it = Msr->begin(); it != Msr->end(); it++)
 			{
 				// all measures are 4/4 (good enough for now, change both 4s in the future, maybe)
 				it->beat = ((float)CurrentMeasure * MeasureLength) + ((float)it->Fraction * MeasureLength);
 
 				if (it->hold_duration > 0)
-					it->endTime = TimeAtBeat((*Difficulty)->Timing, (*Difficulty)->Offset, it->beat + it->hold_duration);
+					it->endTime = TimeAtBeat((*Diff)->Timing, (*Diff)->Offset, it->beat + it->hold_duration);
 
-				it->startTime = TimeAtBeat((*Difficulty)->Timing, (*Difficulty)->Offset, it->beat);
+				it->startTime = TimeAtBeat((*Diff)->Timing, (*Diff)->Offset, it->beat);
 
-				(*Difficulty)->Duration = std::max((float)it->startTime, (*Difficulty)->Duration);
+				(*Diff)->Duration = max(it->startTime, (*Diff)->Duration);
 
 				double frac = it->Fraction;
 
@@ -177,7 +166,7 @@ void SongDC::Process(bool CalculateXPos)
 
 				if (it->endTime > 0)
 				{
-					(*Difficulty)->Duration = std::max((float)it->endTime, (*Difficulty)->Duration);
+					(*Diff)->Duration = max(it->endTime, (*Diff)->Duration);
 					it->Green = 0.5;
 				}
 
@@ -195,13 +184,13 @@ void SongDC::Process(bool CalculateXPos)
 			}
 			CurrentMeasure++;
 		}
-		CalculateBarlineRatios(*this, **Difficulty);
+		CalculateBarlineRatios(*this, **Diff);
 	}
 }
 
 int GetFractionKindMeasure(double frac);
 
-bool SongDC::Save(const char* Filename)
+bool Song::Save(const char* Filename)
 {
 	std::ofstream Out(Filename);
 
@@ -211,14 +200,14 @@ bool SongDC::Save(const char* Filename)
 	}
 
 	Out << "#NAME:" << SongName << ";\n";
-	Out << "#SONG:" << SongRelativePath << ";\n";
+	Out << "#SONG:" << SongFilename << ";\n";
 	Out << "#AUTHOR:" << SongAuthor << ";\n";
-	Out << "#BACKGROUNDIMAGE:" << BackgroundRelativeDir << ";\n";
+	Out << "#BACKGROUNDIMAGE:" << BackgroundFilename << ";\n";
 
 	if (MeasureLength != 4)
 		Out << "#MLEN:" << MeasureLength << ";\n";
 
-	for (std::vector<SongInternal::DifficultyDC*>::iterator i = Difficulties.begin(); i != Difficulties.end(); i++)
+	for (std::vector<dotcur::Difficulty*>::iterator i = Difficulties.begin(); i != Difficulties.end(); i++)
 	{
 		if ((*i)->Timing.size() == 1)
 			Out << "#BPM:" << (*i)->Timing[0].Value << ";\n";
@@ -245,17 +234,17 @@ bool SongDC::Save(const char* Filename)
 		int MNum = 0;
 
 		// for each measure of this difficulty
-		for (vector<MeasureDC>::iterator m = (*i)->Measures.begin(); m != (*i)->Measures.end(); m++)
+		for (vector<dotcur::Measure>::iterator m = (*i)->Measures.begin(); m != (*i)->Measures.end(); m++)
 		{
-			MeasureDC old = *m; // Copy temporarily
+			dotcur::Measure old = *m; // Copy temporarily
 			int mAdvance = 192;
 
-			std::sort(m->MeasureNotes.begin(), m->MeasureNotes.end(), noteSort);
+			std::sort(m->begin(), m->end(), noteSort);
 
 			// get lowest fraction that is valid
-			for (uint32 n = 0; n != m->MeasureNotes.size(); n++)
+			for (uint32 n = 0; n != m->size(); n++)
 			{
-				GameObject &G = m->MeasureNotes[n];
+				GameObject &G = (*m)[n];
 				if (G.GetPosition().x != 0)
 				{
 					int advance = 192 / GetFractionKindMeasure(G.GetFraction());
@@ -271,13 +260,13 @@ bool SongDC::Save(const char* Filename)
 			// limit would be 1, -1 to account for the previous note so it doesn't get filled
 			// if it weren't it's going to add one so the limit isn't below what we expect
 			int prevRow = -mAdvance; 
-			for (uint32 n = 0; n != m->MeasureNotes.size(); n++)
+			for (uint32 n = 0; n != m->size(); n++)
 			{
-				if (m->MeasureNotes[n].GetPosition().x == 0)
+				if ((*m)[n].GetPosition().x == 0)
 					continue;
 
 				// what row is this?
-				int nRow = m->MeasureNotes[n].GetFraction() * 192.0;
+				int nRow = (*m)[n].GetFraction() * 192.0;
 
 				// Fill the gap between previous and current note
 				if (nRow)
@@ -293,10 +282,10 @@ bool SongDC::Save(const char* Filename)
 				}
 
 				// Fill the current note.
-				Out << "{" << (int)m->MeasureNotes[n].GetPosition().x;
+				Out << "{" << (int)(*m)[n].GetPosition().x;
 				
-				if (m->MeasureNotes[n].hold_duration)
-					Out << " " << m->MeasureNotes[n].hold_duration;
+				if ((*m)[n].hold_duration)
+					Out << " " << (*m)[n].hold_duration;
 					
 				Out << "}";
 

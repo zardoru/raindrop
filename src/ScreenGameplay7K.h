@@ -1,6 +1,8 @@
 #ifndef SG7K_H_
 #define SG7K_H_
 
+#include "Song7K.h"
+
 class GraphObjectMan;
 class ScoreKeeper7K;
 
@@ -13,40 +15,42 @@ private:
 	bool waveEffectEnabled;	
 	bool Upscroll;
 	bool NoFail;
-	int HiddenMode;
+	EHiddenMode SelectedHiddenMode;
 
 
 	/* Game */
 	bool Active;
-	int lastClosest[MAX_CHANNELS];
+	int lastClosest[VSRG::MAX_CHANNELS];
 	double CurrentVertical;
+	double WaitingTime;
+	EHiddenMode RealHiddenMode;
 	Mat4 PositionMatrix;
 	Mat4 PositionMatrixJudgement;
-	Mat4 NoteMatrix[MAX_CHANNELS];
-	Mat4 HoldHeadMatrix[MAX_CHANNELS];
-	Mat4 HoldTailMatrix[MAX_CHANNELS];
-	Song7K *MySong;
+	Mat4 NoteMatrix[VSRG::MAX_CHANNELS];
+	Mat4 HoldHeadMatrix[VSRG::MAX_CHANNELS];
+	Mat4 HoldTailMatrix[VSRG::MAX_CHANNELS];
+	VSRG::Song *MySong;
 	float SongOldTime;
 	float deltaPos;
 	float SpeedMultiplier;
 	bool AudioCompensation;
 	double TimeCompensation;
 	bool MultiplierChanged;
-	SongInternal::Difficulty7K			 *CurrentDiff;
-	std::vector<SongInternal::Measure7K>	 NotesByMeasure[MAX_CHANNELS];
+	VSRG::Difficulty			 *CurrentDiff;
+	VSRG::MeasureVectorTN NotesByMeasure[VSRG::MAX_CHANNELS];
 	TimingData VSpeeds;
-	int		GearBindings[MAX_CHANNELS];
+	int		GearBindings[VSRG::MAX_CHANNELS];
 	uint32	Channels;
-	bool HeldKey[MAX_CHANNELS];
+	bool HeldKey[VSRG::MAX_CHANNELS];
 	float HideClampLow, HideClampHigh, HideClampFactor;
 	float HideClampSum;
 
 	float CurrentBeat;
 
 	std::map <int, SoundSample*> Keysounds;
-	std::vector<SongInternal::AutoplaySound> BGMEvents;
+	std::vector<AutoplaySound> BGMEvents;
 
-	int PlaySounds[MAX_CHANNELS];
+	int PlaySounds[VSRG::MAX_CHANNELS];
 
 	/* Positions */
 	float  JudgementLinePos;
@@ -57,26 +61,26 @@ private:
 	float beatScrollEffect;
 
 	bool beatScrollEffectEnabled;
-	glm::mat4 noteEffectsMatrix[MAX_CHANNELS];
+	Mat4 noteEffectsMatrix[VSRG::MAX_CHANNELS];
 	
 	
 	/* Graphics */
 	Image*  NoteImage;
 	Image*  NoteImageHold;
-	Image*  GearLaneImage[MAX_CHANNELS];
-	Image*  GearLaneImageDown[MAX_CHANNELS];
-	Image*  NoteImages[MAX_CHANNELS];
-	Image*  NoteImagesHold[MAX_CHANNELS];
-	Image*  NoteImagesHoldHead[MAX_CHANNELS];
-	Image*  NoteImagesHoldTail[MAX_CHANNELS];
+	Image*  GearLaneImage[VSRG::MAX_CHANNELS];
+	Image*  GearLaneImageDown[VSRG::MAX_CHANNELS];
+	Image*  NoteImages[VSRG::MAX_CHANNELS];
+	Image*  NoteImagesHold[VSRG::MAX_CHANNELS];
+	Image*  NoteImagesHoldHead[VSRG::MAX_CHANNELS];
+	Image*  NoteImagesHoldTail[VSRG::MAX_CHANNELS];
 	double NoteHeight;
 	double HoldHeadHeight;
 	double HoldTailHeight;
-	GraphObject2D Keys[MAX_CHANNELS];
+	GraphObject2D Keys[VSRG::MAX_CHANNELS];
 	GraphObject2D Background;
 	GraphObjectMan *Animations;
-	double LanePositions[MAX_CHANNELS];
-	double LaneWidth[MAX_CHANNELS];
+	double LanePositions[VSRG::MAX_CHANNELS];
+	double LaneWidth[VSRG::MAX_CHANNELS];
 	double GearHeightFinal;
 
 	AudioStream *Music;
@@ -109,12 +113,12 @@ private:
 
 	void DrawMeasures();
 
-	void JudgeLane(unsigned int Lane);
-	void ReleaseLane(unsigned int Lane);
+	void JudgeLane(uint32 Lane);
+	void ReleaseLane(uint32 Lane);
 	void TranslateKey(KeyType K, bool KeyDown);
 public:
 	ScreenGameplay7K();
-	void Init(Song7K *S, int DifficultyIndex, bool UseUpscroll);
+	void Init(VSRG::Song *S, int DifficultyIndex, bool UseUpscroll);
 	void LoadThreadInitialization();
 	void MainThreadInitialization();
 	void Cleanup();

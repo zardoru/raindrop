@@ -3,6 +3,16 @@
 
 class BitmapFont;
 
+namespace dotcur
+{
+	class Song;
+}
+
+namespace VSRG
+{
+	class Song;
+}
+
 class ScreenSelectMusic : public IScreen
 {
 	int Cursor, OldCursor;
@@ -10,8 +20,8 @@ class ScreenSelectMusic : public IScreen
 	BitmapFont* Font;
 
 	/* Mode-based song list. */
-	std::vector<SongDC*> SongList;
-	std::vector<Song7K*> SongList7K;
+	std::vector<dotcur::Song*> SongList;
+	std::vector<VSRG::Song*> SongList7K;
 
 	bool SwitchBackGuiPending;
 

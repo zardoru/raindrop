@@ -1,4 +1,4 @@
-#include "Global.h"
+#include "GameGlobal.h"
 #include "ScreenEdit.h"
 #include "GameWindow.h"
 #include "ImageLoader.h"
@@ -52,18 +52,18 @@ void ScreenEdit::Cleanup()
 	ScreenGameplay::Cleanup();
 }
 
-void ScreenEdit::Init(SongDC *Other)
+void ScreenEdit::Init(dotcur::Song *Other)
 {
 	if (Other != NULL)
 	{
 		if (Other->Difficulties.size() == 0) // No difficulties? Create a new one.
-			Other->Difficulties.push_back(new SongInternal::DifficultyDC());
+			Other->Difficulties.push_back(new dotcur::Difficulty());
 
 		ScreenGameplay::Init (Other, 0);
 		NotesInMeasure.clear(); 
 
 		if (!Other->Difficulties[0]->Timing.size())
-			Other->Difficulties[0]->Timing.push_back(SongInternal::TimingSegment());
+			Other->Difficulties[0]->Timing.push_back(TimingSegment());
 	}
 
 	if (!SavedSound)
@@ -278,7 +278,7 @@ void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 			switch (key)
 			{
 			case 'S': SaveChart(); return;
-			case 'M': CurrentDiff->Measures[Measure].MeasureNotes.clear(); return;
+			case 'M': CurrentDiff->Measures[Measure].clear(); return;
 			case 'Q': 
 				if (Mode == Select)
 					Mode = Normal;
@@ -396,8 +396,8 @@ bool ScreenEdit::Run(double delta)
 			double Ratio = ((float)CurrentFraction / Fracs[CurrentTotalFraction]);;
 			Barline.Run(delta, Ratio);
 			if (Measure > 0)
-				DrawVector(CurrentDiff->Measures.at(Measure-1).MeasureNotes, delta);
-			DrawVector(CurrentDiff->Measures[Measure].MeasureNotes, delta);
+				DrawVector(CurrentDiff->Measures.at(Measure-1), delta);
+			DrawVector(CurrentDiff->Measures[Measure], delta);
 		}
 
 		RunGhostObject();
@@ -444,13 +444,13 @@ void ScreenEdit::DecreaseTotalFraction()
 
 GameObject &ScreenEdit::GetObject()
 {
-	for (std::vector<GameObject>::iterator i = CurrentDiff->Measures.at(Measure).MeasureNotes.begin();
-			i != CurrentDiff->Measures.at(Measure).MeasureNotes.end();
+	for (std::vector<GameObject>::iterator i = CurrentDiff->Measures.at(Measure).begin();
+			i != CurrentDiff->Measures.at(Measure).end();
 			i++)
 	{
 		if (i->GetFraction() * 192 == (CurrentFraction / Fracs[CurrentTotalFraction]) * 192)
 			return *i;
 	}
-	CurrentDiff->Measures.at(Measure).MeasureNotes.push_back(GameObject());
-	return CurrentDiff->Measures.at(Measure).MeasureNotes.back();
+	CurrentDiff->Measures.at(Measure).push_back(GameObject());
+	return CurrentDiff->Measures.at(Measure).back();
 }

@@ -1,9 +1,6 @@
-#include "Global.h"
-#include "Game_Consts.h"
-#include "Configuration.h"
+#include "GameGlobal.h"
 #include "ScreenGameplay.h"
 #include "ScreenEvaluation.h"
-#include "NoteLoader.h"
 #include "GameWindow.h"
 #include "FileManager.h"
 #include "ImageLoader.h"
@@ -114,7 +111,7 @@ void ScreenGameplay::MainThreadInitialization()
 	MarkerB.SetImage(ImageLoader::LoadSkin("barline_marker.png"));
 	GameplayObjectImage = ImageLoader::LoadSkin("hitcircle.png");
 
-	Image* BackgroundImage = ImageLoader::Load(MySong->BackgroundDir);
+	Image* BackgroundImage = ImageLoader::Load(MySong->SongDirectory + MySong->BackgroundFilename);
 
 	if (BackgroundImage)
 		Background.SetImage(BackgroundImage);
@@ -169,7 +166,7 @@ void ScreenGameplay::ResetNotes()
 	NotesInMeasure.resize(CurrentDiff->Measures.size());
 	for (uint32 i = 0; i < CurrentDiff->Measures.size(); i++)
 	{
-		NotesInMeasure[i] = CurrentDiff->Measures[i].MeasureNotes;
+		NotesInMeasure[i] = CurrentDiff->Measures[i];
 		for (std::vector<GameObject>::iterator k = NotesInMeasure[i].begin(); k != NotesInMeasure[i].end(); k++)
 		{
 			if (k->GetPosition().x == 0)
@@ -194,13 +191,6 @@ void ScreenGameplay::LoadThreadInitialization()
 	};
 
 	ImageLoader::LoadFromManifest(SkinFiles, 3, FileManager::GetSkinPrefix());
-	
-	char* OtherFiles [] =
-	{
-		(char*)MySong->BackgroundDir.c_str()
-	};
-
-	ImageLoader::LoadFromManifest(OtherFiles, 1);
 
 	memset(&Evaluation, 0, sizeof(Evaluation));
 
@@ -262,7 +252,7 @@ void ScreenGameplay::LoadThreadInitialization()
 		CursorSize = 60;
 }
 
-void ScreenGameplay::Init(SongDC *OtherSong, uint32 DifficultyIndex)
+void ScreenGameplay::Init(dotcur::Song *OtherSong, uint32 DifficultyIndex)
 {
 	MySong = OtherSong;
 	CurrentDiff = MySong->Difficulties[DifficultyIndex];

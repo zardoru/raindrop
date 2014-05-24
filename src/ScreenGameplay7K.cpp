@@ -1,12 +1,9 @@
-#include <stdio.h>
-
-#include "Global.h"
+#include "GameGlobal.h"
 #include "Screen.h"
-#include "Configuration.h"
 #include "Audio.h"
 #include "FileManager.h"
 #include "ImageLoader.h"
-#include "Song.h"
+#include "GraphObject2D.h"
 #include "BitmapFont.h"
 #include "GameWindow.h"
 
@@ -21,11 +18,7 @@
 
 BitmapFont * GFont = NULL;
 
-/* Time before actually starting everything. */
-#define WAITING_TIME 1.5
-
-int holds_missed = 0;
-int holds_hit = 0;
+using namespace VSRG;
 
 ScreenGameplay7K::ScreenGameplay7K()
 {
@@ -36,9 +29,11 @@ ScreenGameplay7K::ScreenGameplay7K()
 
 	waveEffectEnabled = false;
 	waveEffect = 0;
+	WaitingTime = 1.5;
 
 	NoFail = true;
-	HiddenMode = 0; // No Hidden
+	SelectedHiddenMode = HIDDENMODE_NONE; // No Hidden
+	RealHiddenMode = HIDDENMODE_NONE;
 	HideClampSum = 0;
 
 	SpeedMultiplierUser = 4;
@@ -84,11 +79,15 @@ void ScreenGameplay7K::Cleanup()
 
 void ScreenGameplay7K::CalculateHiddenConstants()
 {
+	/*
+		Given the top of the screen being 1, the bottom being -1
+		calculate the range for which the current hidden mode is defined.
+	*/
 	const float FlashlightRatio = 0.25;
 	float Center;
 
 	// Hidden calc 
-	if (HiddenMode)
+	if (SelectedHiddenMode)
 	{
 		float LimPos = - ((BasePos / ScreenHeight)*2 - 1); // Frac. of screen
 		float AdjustmentSize;
@@ -99,19 +98,20 @@ void ScreenGameplay7K::CalculateHiddenConstants()
 			
 			AdjustmentSize = -( ((ScreenHeight - BasePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
 
-			if (HiddenMode == 2)
+			if (SelectedHiddenMode == 2)
 			{
 				HideClampHigh = Center;
 				HideClampLow = -1 + AdjustmentSize;
-			}else if (HiddenMode == 1)
+			}else if (SelectedHiddenMode == 1)
 			{
 				HideClampHigh = LimPos - AdjustmentSize;
 				HideClampLow = Center;
 			}
 
 			// Invert Hidden Mode.
-			if (HiddenMode == 2) HiddenMode = 1;
-			else if (HiddenMode == 1) HiddenMode = 2;
+			if (SelectedHiddenMode == HIDDENMODE_SUDDEN) RealHiddenMode = HIDDENMODE_HIDDEN;
+			else if (SelectedHiddenMode == HIDDENMODE_HIDDEN) RealHiddenMode = HIDDENMODE_SUDDEN;
+			else RealHiddenMode = SelectedHiddenMode;
 		}else
 		{
 			Center = -((BasePos / 2 / ScreenHeight)*2 - 1);
@@ -119,24 +119,26 @@ void ScreenGameplay7K::CalculateHiddenConstants()
 			AdjustmentSize = -( ((BasePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
 
 			// Hidden/Sudden
-			if (HiddenMode == 2)
+			if (SelectedHiddenMode == 2)
 			{
 				HideClampHigh = 1 - AdjustmentSize;
 				HideClampLow = Center;
-			}else if (HiddenMode == 1)
+			}else if (SelectedHiddenMode == 1)
 			{
 				HideClampHigh = Center;
 				HideClampLow = LimPos + AdjustmentSize;
 			}
+
+			RealHiddenMode = SelectedHiddenMode;
 		}
 
-		if (HiddenMode == 3) // Flashlight)
+		if (SelectedHiddenMode == HIDDENMODE_FLASHLIGHT) // Flashlight
 		{
 			HideClampLow = Center - FlashlightRatio;
 			HideClampHigh = Center + FlashlightRatio;
 			HideClampSum = - Center;
 			HideClampFactor = 1 / FlashlightRatio;
-		}else
+		}else // Hidden/Sudden
 		{
 			HideClampSum = - HideClampLow;
 			HideClampFactor = 1 / (HideClampHigh + HideClampSum);
@@ -144,14 +146,11 @@ void ScreenGameplay7K::CalculateHiddenConstants()
 	}
 }
 
-void ScreenGameplay7K::Init(Song7K* S, int DifficultyIndex, bool UseUpscroll)
+void ScreenGameplay7K::Init(Song* S, int DifficultyIndex, bool UseUpscroll)
 {
 	MySong = S;
 	CurrentDiff = S->Difficulties[DifficultyIndex];
 	Upscroll = UseUpscroll;
-
-	holds_hit = 0;
-	holds_missed = 0;
 
 	Animations = new GraphObjectMan();
 
@@ -164,7 +163,7 @@ void ScreenGameplay7K::RecalculateMatrix()
 	PositionMatrix = glm::translate(Mat4(), glm::vec3(0, BasePos + CurrentVertical * SpeedMultiplier + deltaPos, 0));
 	PositionMatrixJudgement = glm::translate(Mat4(), glm::vec3(0, BasePos + deltaPos, 0));
 
-	for (int i = 0; i < Channels; i++)
+	for (uint8 i = 0; i < Channels; i++)
 		NoteMatrix[i] = glm::translate(Mat4(), glm::vec3(LanePositions[i], 0, 14)) * noteEffectsMatrix[i] *  glm::scale(Mat4(), glm::vec3(LaneWidth[i], NoteHeight, 1));
 }
 
@@ -174,7 +173,6 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	if (MissSnd->Open((FileManager::GetSkinPrefix() + "miss.ogg").c_str()))
 		MixerAddSample(MissSnd);
 
-	/* Can I just use a vector<char**> and use vector.data()? */
 	char* SkinFiles [] =
 	{
 		"key1.png",
@@ -199,18 +197,10 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	ImageLoader::LoadFromManifest(SkinFiles, 3, FileManager::GetSkinPrefix());
 	
-	char* OtherFiles [] =
-	{
-		(char*)MySong->BackgroundDir.c_str()
-	};
-
-	ImageLoader::LoadFromManifest(OtherFiles, 1);
-	/* TODO: Add playfield background */
-
 	if (!Music)
 	{
 		Music = new AudioStream();
-		Music->Open(MySong->SongFilename.c_str());
+		Music->Open((MySong->SongDirectory + MySong->SongFilename).c_str());
 		MixerAddStream(Music);
 	}
 
@@ -222,7 +212,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	double DesiredDefaultSpeed = Configuration::GetSkinConfigf("DefaultSpeedUnits");
 	double Drift = TimeCompensation;
 
-	int SpeedType = Configuration::GetSkinConfigf("DefaultSpeedKind");
+	ESpeedType Type = (ESpeedType)(int)Configuration::GetSkinConfigf("DefaultSpeedKind");
 	double SpeedConstant = 0; // Unless set, assume we're using speed changes
 
 	/* 
@@ -240,15 +230,15 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	if (DesiredDefaultSpeed)
 	{
 
-		if (SpeedType == SPEEDTYPE_CMOD) // cmod
+		if (Type == SPEEDTYPE_CMOD) // cmod
 		{
 			SpeedMultiplierUser = 1;
 			SpeedConstant = DesiredDefaultSpeed;
 		}
 
-		MySong->Process(Drift, SpeedConstant);
+		MySong->Process(CurrentDiff, NotesByMeasure, Drift, SpeedConstant);
 
-		if (SpeedType == SPEEDTYPE_MMOD) // mmod
+		if (Type == SPEEDTYPE_MMOD) // mmod
 		{
 			double max = 0; // Find the highest speed
 			for (TimingData::iterator i = CurrentDiff->VerticalSpeeds.begin();
@@ -260,7 +250,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		
 			double Ratio = DesiredDefaultSpeed / max; // How much above or below are we from the maximum speed?
 			SpeedMultiplierUser = Ratio;
-		}else if (SpeedType != SPEEDTYPE_CMOD) // We use this case as default. The logic is "Not a CMod, Not a MMod, then use first, the default.
+		}else if (Type != SPEEDTYPE_CMOD) // We use this case as default. The logic is "Not a CMod, Not a MMod, then use first, the default.
 		{
 			double DesiredMultiplier =  DesiredDefaultSpeed / CurrentDiff->VerticalSpeeds[0].Value;
 
@@ -268,23 +258,11 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		}
 
 	}else
-		MySong->Process(Drift); // Regular processing
+		MySong->Process(CurrentDiff, NotesByMeasure, Drift); // Regular processing
 
 	wprintf(L"Copying data... ");
 	Channels = CurrentDiff->Channels;
 	VSpeeds = CurrentDiff->VerticalSpeeds;
-
-	/* Set up notes. */
-	for (uint32 k = 0; k < Channels; k++)
-	{
-		/* Copy measures. (Eek!) */
-		for (std::vector<SongInternal::Measure7K>::iterator i = CurrentDiff->Measures[k].begin(); 
-			i != CurrentDiff->Measures[k].end();
-			i++)
-		{
-			NotesByMeasure[k].push_back(*i);
-		}
-	}
 
 	wprintf(L"Loading samples... ");
 
@@ -330,7 +308,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	// BasePos = JudgementLinePos + (Upscroll ? NoteHeight/2 : -NoteHeight/2);
 	BasePos = JudgementLinePos + (Upscroll ? NoteHeight/2 : -NoteHeight/2);
-	CurrentVertical -= VSpeeds.at(0).Value * (WAITING_TIME);
+	CurrentVertical -= VSpeeds.at(0).Value * (WaitingTime);
 
 	RecalculateMatrix();
 	MultiplierChanged = true;
@@ -350,6 +328,7 @@ void ScreenGameplay7K::SetupScriptConstants()
 	L->SetGlobal("AccuracyHitMS", score_keeper->getAccMax());
 	L->SetGlobal("SongDuration", CurrentDiff->Duration);
 	L->SetGlobal("SongDurationBeats", BeatAtTime(CurrentDiff->BPS, CurrentDiff->Duration, CurrentDiff->Offset + TimeCompensation));
+	L->SetGlobal("WaitingTime", WaitingTime);
 
 	Animations->AddLuaTarget(&Background, "ScreenBackground");
 }
@@ -431,7 +410,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 
 	NoteImage = ImageLoader::LoadSkin("note.png");
 
-	Image* BackgroundImage = ImageLoader::Load(MySong->BackgroundDir);
+	Image* BackgroundImage = ImageLoader::Load(MySong->SongDirectory + MySong->BackgroundFilename);
 
 	if (BackgroundImage)
 		Background.SetImage(BackgroundImage);
@@ -594,7 +573,7 @@ bool ScreenGameplay7K::Run(double Delta)
 	{
 		ScreenTime += Delta;
 
-		if (ScreenTime > WAITING_TIME)
+		if (ScreenTime >= WaitingTime)
 		{
 
 			if (!Music)
@@ -622,7 +601,7 @@ bool ScreenGameplay7K::Run(double Delta)
 			}
 
 			// Play BGM events.
-			for (std::vector<SongInternal::AutoplaySound>::iterator s = BGMEvents.begin(); s != BGMEvents.end(); s++)
+			for (std::vector<AutoplaySound>::iterator s = BGMEvents.begin(); s != BGMEvents.end(); s++)
 			{
 				if (s->Time <= SongTime)
 				{
@@ -649,7 +628,7 @@ bool ScreenGameplay7K::Run(double Delta)
 				Running = false;
 		}else
 		{
-			SongTime = -(WAITING_TIME - ScreenTime);
+			SongTime = -(WaitingTime - ScreenTime);
 			SongDelta = 0;
 			CurrentVertical = IntegrateToTime(VSpeeds, SongTime);
 		}

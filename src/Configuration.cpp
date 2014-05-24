@@ -1,4 +1,4 @@
-#include "Global.h"
+#include "GameGlobal.h"
 #include "Configuration.h"
 #include "FileManager.h"
 

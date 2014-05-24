@@ -1,15 +1,15 @@
 #include <sstream>
 #include <iomanip>
 
-#include "Global.h"
+#include "GameGlobal.h"
 #include "Screen.h"
 #include "GameWindow.h"
 #include "ImageLoader.h"
 #include "Audio.h"
 #include "FileManager.h"
 #include "Configuration.h"
+#include "GraphObject2D.h"
 
-#include "GameObject.h"
 #include "Song.h"
 #include "ScreenSelectMusic.h"
 #include "ScreenLoading.h"
@@ -195,14 +195,14 @@ bool ScreenSelectMusic::Run(double Delta)
 
 	if (SelectedMode == MODE_DOTCUR)
 	{
-		for (std::vector<SongDC*>::iterator i = SongList.begin(); i != SongList.end(); i++)
+		for (std::vector<dotcur::Song*>::iterator i = SongList.begin(); i != SongList.end(); i++)
 		{
 			Font->DisplayText((*i)->SongName.c_str(), Vec2(SONGLIST_BASEX, Cur*20 + ListY));
 			Cur++;
 		}
 	}else if (SelectedMode == MODE_7K)
 	{
-		for (std::vector<Song7K*>::iterator i = SongList7K.begin(); i != SongList7K.end(); i++)
+		for (std::vector<VSRG::Song*>::iterator i = SongList7K.begin(); i != SongList7K.end(); i++)
 		{
 			std::string text = (*i)->SongName;
 			Font->DisplayText(text.c_str(), Vec2(SONGLIST_BASEX, Cur*20 + ListY));

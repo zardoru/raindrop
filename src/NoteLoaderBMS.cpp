@@ -1,8 +1,9 @@
 #include <fstream>
+#include <map>
 
 #include "Global.h"
+#include "Song7K.h"
 #include "NoteLoader7K.h"
-#include "NoteLoader.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -130,21 +131,15 @@ struct BMSMeasure
 	}
 };
 
+using namespace VSRG;
 
 typedef std::map<int, String> FilenameListIndex;
 typedef std::map<int, double> BpmListIndex;
-typedef std::vector<TrackNote> NoteVector;
+typedef std::vector<NoteData> NoteVector;
 typedef std::map<int, BMSMeasure> MeasureList;
 
 const int startChannel = fromBase36("11");
 const int endChannel   = fromBase36("1Z");
-
-/*
-template <char* s> int b36()
-{
-	return fromBase36(s);
-}
-*/
 
 // The first wav will always be WAV01, not WAV00 since 00 is a reserved value for "nothing"
 // Pretty fitting, in my opinion.
@@ -165,14 +160,14 @@ struct BmsLoadInfo
 		Measures[Measure].Events[Channel].Stuff
 	*/
 	MeasureList Measures; 
-	Song7K* Song;
-	SongInternal::Difficulty7K *Difficulty;
+	Song* Song;
+	Difficulty *Difficulty;
 
 	int LowerBound, UpperBound;
 	
 	float startTime[MAX_CHANNELS];
 
-	TrackNote *LastNotes[MAX_CHANNELS];
+	NoteData *LastNotes[MAX_CHANNELS];
 
 	int LNObj;
 
@@ -244,7 +239,7 @@ double BeatForMeasure(BmsLoadInfo *Info, const int Measure)
 	return Beat;
 }
 
-int ts_sort( const SongInternal::TimingSegment &A, const SongInternal::TimingSegment &B )
+int ts_sort( const TimingSegment &A, const TimingSegment &B )
 {
 	return A.Time < B.Time;
 }
@@ -253,7 +248,6 @@ void CalculateBPMs(BmsLoadInfo *Info, int Chan = CHANNEL_BPM);
 
 void CalculateBPMs(BmsLoadInfo *Info, int Chan)
 {
-
 	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
 	{
 		if (i->second.Events.find(CHANNEL_BPM) != i->second.Events.end()) // there are bms events in here, get chopping
@@ -265,7 +259,7 @@ void CalculateBPMs(BmsLoadInfo *Info, int Chan)
 
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first);
 
-				SongInternal::TimingSegment New;
+				TimingSegment New;
 				New.Time = Beat;
 				New.Value = BPM;
 
@@ -287,7 +281,7 @@ void CalculateBPMs(BmsLoadInfo *Info, int Chan)
 
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first);
 
-				SongInternal::TimingSegment New;
+				TimingSegment New;
 				New.Time = Beat;
 				New.Value = BPM;
 
@@ -310,7 +304,7 @@ void CalculateStops(BmsLoadInfo *Info)
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first);
 				double StopDuration = Info->Stops[ev->Event] / 48 * spb (SectionValue(Info->Difficulty->Timing, Beat)); // A value of 1 is... a 192nd of the measure? Or a 192nd of a beat? Or (192 / (4 * meter)) * spb? I'm not sure...
 
-				SongInternal::TimingSegment New;
+				TimingSegment New;
 				New.Time = Beat;
 				New.Value = StopDuration;
 
@@ -350,7 +344,7 @@ int translateTrackBME(int Channel, int relativeTo)
 
 void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i);
 
-int evsort(const SongInternal::AutoplaySound &i, const SongInternal::AutoplaySound &j)
+int evsort(const AutoplaySound &i, const AutoplaySound &j)
 {
 	return i.Time < j.Time;
 }
@@ -359,7 +353,7 @@ void CalculateObjects(BmsLoadInfo *Info)
 {
 	int usedChannels[MAX_CHANNELS];
 
-	for (int i = 0; i < MAX_CHANNELS; i++)
+	for (uint8 i = 0; i < MAX_CHANNELS; i++)
 		usedChannels[i] = 0;
 
 	Info->LowerBound = -1;
@@ -368,7 +362,7 @@ void CalculateObjects(BmsLoadInfo *Info)
 	/* Autodetect channel count */
 	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
 	{
-		for (int curChannel = startChannel; curChannel <= (startChannel + MAX_CHANNELS); curChannel++)
+		for (uint8 curChannel = startChannel; curChannel <= (startChannel + MAX_CHANNELS); curChannel++)
 		{
 			if (i->second.Events.find(curChannel) != i->second.Events.end())
 				usedChannels[translateTrackBME(curChannel)] = 1;
@@ -406,9 +400,11 @@ int startChannelLN = fromBase36("51");
 void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 {
 	int usedChannels = Info->Difficulty->Channels;
-	SongInternal::Measure7K Msr[MAX_CHANNELS];
+	Measure Msr;
 
-	for (int curChannel = startChannel; curChannel <= (startChannel+MAX_CHANNELS); curChannel++)
+	Msr.MeasureLength = 4 * i->second.BeatDuration;
+
+	for (uint8 curChannel = startChannel; curChannel <= (startChannel+MAX_CHANNELS); curChannel++)
 	{
 		if (i->second.Events.find(curChannel) != i->second.Events.end()) // there are bms events for this channel.
 		{
@@ -422,7 +418,7 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 			{
 				if (!ev->Event || Track >= usedChannels) continue; // UNUSABLE event
 
-				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
+				double Beat = ev->Fraction * Msr.MeasureLength + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
 
 				double Time = TimeAtBeat(Info->Difficulty->Timing, 0, Beat) + StopTimeAtBeat(Info->Difficulty->StopsTiming, Beat);
 
@@ -431,23 +427,25 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 				if (!Info->LNObj || (Info->LNObj != ev->Event))
 				{
 degradetonote:
-					TrackNote Note;
+					NoteData Note;
 
-					Note.AssignTime(Time);
-					Note.AssignSound(ev->Event);
-
-					Note.AssignTrack(Track);
+					Note.StartTime = Time;
+					Note.Sound = ev->Event;
+					
 					Info->Difficulty->TotalScoringObjects++;
 					Info->Difficulty->TotalNotes++;
 					Info->Difficulty->TotalObjects++;
 
-					Msr[Note.GetTrack()].MeasureNotes.push_back(Note);
-					Info->LastNotes[Note.GetTrack()] = &Msr[Note.GetTrack()].MeasureNotes.back();
+					Msr.MeasureNotes[Track].push_back(Note);
+					if (Msr.MeasureNotes[Track].size())
+						Info->LastNotes[Track] = &Msr.MeasureNotes[Track].back();
 				}else if (Info->LNObj && (Info->LNObj == ev->Event))
 				{
 					if (Info->LastNotes[Track]) 
 					{
-						Info->LastNotes[Track]->AssignTime( Info->LastNotes[Track]->GetStartTime(), Time );
+						Info->Difficulty->TotalHolds++;
+						Info->Difficulty->TotalScoringObjects++;
+						Info->LastNotes[Track]->EndTime = Time;
 						Info->LastNotes[Track] = NULL;
 					}
 					else
@@ -457,7 +455,7 @@ degradetonote:
 		}
 	}
 
-	for (int curChannel = startChannelLN; curChannel <= (startChannelLN+MAX_CHANNELS); curChannel++)
+	for (uint8 curChannel = startChannelLN; curChannel <= (startChannelLN+MAX_CHANNELS); curChannel++)
 	{
 		if (i->second.Events.find(curChannel) != i->second.Events.end()) // there are bms events for this channel.
 		{
@@ -478,19 +476,20 @@ degradetonote:
 					Info->startTime[Track] = Time;
 				}else
 				{
-					TrackNote Note;
+					NoteData Note;
 
 					Info->Difficulty->Duration = std::max((double)Info->Difficulty->Duration, Time);
 
-					Note.AssignTime(Info->startTime[Track], Time);
-					Note.AssignSound(ev->Event);
+					Note.StartTime = Info->startTime[Track];
+					Note.EndTime = Time;
 
-					Note.AssignTrack(Track);
+					Note.Sound = ev->Event;
+
 					Info->Difficulty->TotalScoringObjects += 2;
 					Info->Difficulty->TotalHolds++;
 					Info->Difficulty->TotalObjects++;
 
-					Msr[Track].MeasureNotes.push_back(Note);
+					Msr.MeasureNotes[Track].push_back(Note);
 
 					Info->startTime[Track] = -1;
 				}
@@ -498,16 +497,24 @@ degradetonote:
 		}
 	}
 
-	for (int k = 0; k < MAX_CHANNELS; k++)
-	{
-		if (Msr[k].MeasureNotes.size())
-		{
-			Info->Difficulty->Measures[k].push_back(Msr[k]);
+	Info->Difficulty->Measures.push_back(Msr);
 
-			// Our old pointers are invalid by now since the Msr structures are going to go out of scope
-			// Which means we must renew them, and that's better done here.
-			Info->LastNotes[k] = &Info->Difficulty->Measures[k].back().MeasureNotes.back();
+	for (uint8 k = 0; k < MAX_CHANNELS; k++)
+	{
+		// Our old pointers are invalid by now since the Msr structures are going to go out of scope
+		// Which means we must renew them, and that's better done here.
+
+		MeasureVector::reverse_iterator q = Info->Difficulty->Measures.rbegin();
+		
+		while (q != Info->Difficulty->Measures.rend())
+		{
+			if ((*q).MeasureNotes[k].size()) {
+				Info->LastNotes[k] = &((*q).MeasureNotes[k].back());
+				goto next_chan;
+			}
+			q++;
 		}
+		next_chan:;
 	}
 
 	if (i->second.Events[CHANNEL_BGM].size()) // There are some BGM events?
@@ -518,11 +525,11 @@ degradetonote:
 
 			if (!Event) continue; // UNUSABLE event
 
-			double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
+			double Beat = ev->Fraction * Msr.MeasureLength + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
 
 			double Time = TimeAtBeat(Info->Difficulty->Timing, 0, Beat) + StopTimeAtBeat(Info->Difficulty->StopsTiming, Beat);
 
-			SongInternal::AutoplaySound New;
+			AutoplaySound New;
 			New.Time = Time;
 			New.Sound = Event;
 
@@ -544,36 +551,30 @@ void CompileBMS(BmsLoadInfo *Info)
 	CalculateObjects(Info);
 }
 
-void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *Out)
+void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Out)
 {
 #if (!defined _WIN32) || (defined STLP)
 	std::ifstream filein (filename.c_str());
 #else
 	std::ifstream filein (Utility::Widen(filename).c_str());
 #endif
-	SongInternal::Difficulty7K *Difficulty = new SongInternal::Difficulty7K();
+	Difficulty *Diff = new Difficulty();
 	BmsLoadInfo *Info = new BmsLoadInfo();
 
 	Info->Song = Out;
-	Info->Difficulty = Difficulty;
+	Info->Difficulty = Diff;
 
 	// BMS uses beat-based locations for stops and BPM. (Though the beat must be calculated.)
-	Out->BPMType = Song7K::BT_Beat;
+	Out->BPMType = Song::BT_Beat;
 
 	if (!filein.is_open())
 	{
-		delete Difficulty;
+		delete Diff;
 		delete Info;
 		return;
 	}
 
-	Difficulty->TotalNotes = 0;
-	Difficulty->TotalHolds = 0;
-	Difficulty->TotalObjects = 0;
-	Difficulty->TotalScoringObjects = 0;
-	Difficulty->IsVirtual = true;
-	Difficulty->Offset = 0;
-	Difficulty->Duration = 0;
+	Diff->IsVirtual = true;
 
 	Out->SongDirectory = prefix;
 
@@ -591,9 +592,6 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *
 
 		And that's what we're going to try to do.
 	*/
-
-
-	Difficulty->Channels = 8; 
 
 	String Line;
 	while (filein)
@@ -631,18 +629,17 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *
 
 		OnCommand(#BPM)
 		{
-			SongInternal::TimingSegment Seg;
+			TimingSegment Seg;
 			Seg.Time = 0;
 			Seg.Value = atof(CommandContents.c_str());
-			Difficulty->Timing.push_back(Seg);
+			Diff->Timing.push_back(Seg);
 
 			continue;
 		}
 
 		OnCommand(#STAGEFILE)
 		{
-			Out->BackgroundRelativeDir = CommandContents;
-			Out->BackgroundDir = prefix + "/" + CommandContents;
+			Out->BackgroundFilename = CommandContents;
 		}
 
 		OnCommand(#LNOBJ)
@@ -676,13 +673,12 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *
 				dName = "???";
 			}
 
-			Difficulty->Name = dName;
+			Diff->Name = dName;
 		}
 
 		OnCommand(#BACKBMP)
 		{
-			Out->BackgroundRelativeDir = CommandContents;
-			Out->BackgroundDir = prefix + "/" + CommandContents;
+			Out->BackgroundFilename = CommandContents;
 		}
 
 		OnCommandSub(#WAV)
@@ -730,26 +726,26 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song7K *
 
 	/* When all's said and done, "compile" the bms. */
 	CompileBMS(Info);
-	Difficulty->SoundList = Info->Sounds;
+	Diff->SoundList = Info->Sounds;
 
-	if (Difficulty->Name.length() == 0)
+	if (Diff->Name.length() == 0)
 	{
 		size_t startBracket = filename.find_first_of("[");
 		size_t endBracket = filename.find_last_of("]");
 
 		if (startBracket != std::string::npos && endBracket != std::string::npos)
-			Difficulty->Name = filename.substr(startBracket + 1, endBracket - startBracket - 1);
+			Diff->Name = filename.substr(startBracket + 1, endBracket - startBracket - 1);
 
 		// No brackets? Okay then, let's use the filename.
-		if (Difficulty->Name.length() == 0)
+		if (Diff->Name.length() == 0)
 		{
 			size_t last_slash = filename.find_last_of("/");
 			size_t last_dslash = filename.find_last_of("\\");
 			size_t last_dir = std::max( last_slash != std::string::npos ? last_slash : 0, last_dslash != std::string::npos ? last_dslash : 0 );
-			Difficulty->Name = filename.substr(last_dir + 1, filename.length() - last_dir - 5);
+			Diff->Name = filename.substr(last_dir + 1, filename.length() - last_dir - 5);
 		}
 	}
 
-	Out->Difficulties.push_back(Difficulty);
+	Out->Difficulties.push_back(Diff);
 	delete Info;
 }

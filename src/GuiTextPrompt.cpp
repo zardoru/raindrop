@@ -1,9 +1,8 @@
-#include "Global.h"
+#include "GameGlobal.h"
 #include "Image.h"
 #include "GraphObject2D.h"
 #include "BitmapFont.h"
 #include "GuiTextPrompt.h"
-#include <ctype.h>
 
 using namespace GUI;
 

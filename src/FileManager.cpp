@@ -1,12 +1,13 @@
-#include "Global.h"
-#include "GameObject.h"
+#include "GameGlobal.h"
 #include "FileManager.h"
 #include "Audio.h"
 #include "Directory.h"
 #include "Configuration.h"
 
 /* Note Loaders */
-#include "NoteLoader.h"
+#include "SongDC.h"
+#include "Song7K.h"
+#include "NoteLoaderDC.h"
 #include "NoteLoader7K.h"
 
 #include <iostream>
@@ -18,7 +19,7 @@
 
 String FileManager::CurrentSkin = "default";
 
-void loadSong( Directory songPath, std::vector<SongDC*> &VecOut )
+void loadSong( Directory songPath, std::vector<dotcur::Song*> &VecOut )
 {
 
 	bool FoundDCF = false;
@@ -30,7 +31,7 @@ void loadSong( Directory songPath, std::vector<SongDC*> &VecOut )
 	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{
 		// found a .dcf- load it.
-		SongDC *New = NoteLoader::LoadObjectsFromFile(songPath.path() + "/" + *i, songPath.path());
+		dotcur::Song *New = NoteLoader::LoadObjectsFromFile(songPath.path() + "/" + *i, songPath.path());
 		if (New)
 		{
 			New->ChartFilename = *i;
@@ -42,7 +43,7 @@ void loadSong( Directory songPath, std::vector<SongDC*> &VecOut )
 	// If we didn't find any chart, add this song to the list as edit-only.
 	if (!FoundDCF && (Configuration::GetConfigf("OggListing") != 0))
 	{
-		SongDC *NewS = NULL;
+		dotcur::Song *NewS = NULL;
 		String PotentialBG, PotentialBGRelative;
 
 		Listing.clear();
@@ -53,13 +54,12 @@ void loadSong( Directory songPath, std::vector<SongDC*> &VecOut )
 			if (Utility::GetExtension(*i) == "ogg")
 			{
 				bool UsesFilename = false;
-				NewS = new SongDC();
+				NewS = new dotcur::Song();
 				NewS->SongDirectory = songPath.path();
 				NewS->SongName = *i;
 				UsesFilename = true;
 
-				NewS->SongRelativePath = *i;
-				NewS->SongFilename = (songPath.path() + "/"+ *i);
+				NewS->SongFilename = *i;
 				NewS->ChartFilename = UsesFilename ? Utility::RemoveExtension(NewS->SongName) + ".dcf" : NewS->SongName + ".dcf";
 				VecOut.push_back(NewS);
 			}
@@ -72,13 +72,12 @@ void loadSong( Directory songPath, std::vector<SongDC*> &VecOut )
 
 		if (NewS)
 		{
-			NewS->BackgroundDir = PotentialBG;
-			NewS->BackgroundRelativeDir = PotentialBGRelative;
+			NewS->BackgroundFilename = PotentialBG;
 		}
 	}
 }
 
-void loadSong7K( Directory songPath, std::vector<Song7K*> &VecOut )
+void loadSong7K( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 {
 	std::vector<String> Listing;
 
@@ -88,17 +87,16 @@ void loadSong7K( Directory songPath, std::vector<Song7K*> &VecOut )
 	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{
 		// Found it? Load it.
-		Song7K *New = NoteLoaderSM::LoadObjectsFromFile(songPath.path() + "/" + *i, songPath.path());
+		VSRG::Song *New = NoteLoaderSM::LoadObjectsFromFile(songPath.path() + "/" + *i, songPath.path());
 		if (New)
 		{
-			New->ChartFilename = *i;
 			VecOut.push_back(New);
 			return;
 		}
 	}
 
 	songPath.ListDirectory(Listing, Directory::FS_REG);
-	Song7K *New = new Song7K();
+	VSRG::Song *New = new VSRG::Song();
 	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{
 		std::wstring Ext = Utility::Widen(Utility::GetExtension(*i));
@@ -150,7 +148,7 @@ std::fstream& FileManager::OpenFile(String Directory)
 	return *f;
 }
 
-void FileManager::GetSongList(std::vector<SongDC*> &OutVec)
+void FileManager::GetSongList(std::vector<dotcur::Song*> &OutVec)
 {
 	std::vector <String> SongDirectories;
 	SongDirectories.push_back(SongsPrefix);
@@ -172,7 +170,7 @@ void FileManager::GetSongList(std::vector<SongDC*> &OutVec)
 	}
 }
 
-void FileManager::GetSongList7K(std::vector<Song7K*> &OutVec)
+void FileManager::GetSongList7K(std::vector<VSRG::Song*> &OutVec)
 {
 	std::vector <String> SongDirectories;
 	SongDirectories.push_back(SongsPrefix);

@@ -1,4 +1,4 @@
-#include "Global.h"
+#include "GameGlobal.h"
 #include "GraphObject2D.h"
 #include "LuaManager.h"
 #include "GraphObjectMan.h"

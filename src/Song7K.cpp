@@ -1,30 +1,35 @@
-#include "Global.h"
-#include "Song.h"
+#include <map>
+
+#include "GameGlobal.h"
+#include "Song7K.h"
 #include "Configuration.h"
 #include <algorithm>
 
-Song7K::Song7K()
+using namespace VSRG;
+
+Song::Song()
 {
-	MeasureLength = 4;
-	LeadInTime = 1.5;
-	UseSeparateTimingData = false;
+	PreviousDrift = 0;
 	Processed = false;
+	UseSeparateTimingData = false;
 }
 
-Song7K::~Song7K()
+Song::~Song()
 {
 }
 
-int tSort(const SongInternal::TimingSegment &i, const SongInternal::TimingSegment &j)
+int tSort(const TimingSegment &i, const TimingSegment &j)
 {
 	return i.Time < j.Time;
 }
 
-void Song7K::ProcessVSpeeds(SongInternal::Difficulty7K* Diff, double SpeedConstant)
+void Song::ProcessVSpeeds(VSRG::Difficulty* Diff, double SpeedConstant)
 {
+	Diff->VerticalSpeeds.clear();
+
 	if (SpeedConstant) // We're using a CMod, so further processing is pointless
 	{
-		SongInternal::TimingSegment VSpeed;
+		TimingSegment VSpeed;
 		VSpeed.Time = 0;
 		VSpeed.Value = SpeedConstant;
 		Diff->VerticalSpeeds.push_back(VSpeed);
@@ -37,12 +42,12 @@ void Song7K::ProcessVSpeeds(SongInternal::Difficulty7K* Diff, double SpeedConsta
 		Time++)
 	{
 		float VerticalSpeed;
-		SongInternal::TimingSegment VSpeed;
+		TimingSegment VSpeed;
 
 		if (Time->Value)
 		{
 			float spb = 1 / Time->Value;
-			VerticalSpeed = MeasureBaseSpacing / (spb * MeasureLength);
+			VerticalSpeed = MeasureBaseSpacing / (spb * 4);
 		}else
 			VerticalSpeed = 0;
 
@@ -54,16 +59,17 @@ void Song7K::ProcessVSpeeds(SongInternal::Difficulty7K* Diff, double SpeedConsta
 }
 
 
-void Song7K::ProcessBPS(SongInternal::Difficulty7K* Diff, double Drift)
+void Song::ProcessBPS(VSRG::Difficulty* Diff, double Drift)
 {
 	/* 
 		Calculate BPS. The algorithm is basically the same as VSpeeds, so there's probably a better way to do it
 		that is not repeating the same thing using different values.
 	*/
+	Diff->BPS.clear();
 
 	if (Diff->Offset > 0 || Drift || BPMType == BT_Beatspace) /* We have to set up a speed during this time, otherwise it'll be 0. */
 	{
-		SongInternal::TimingSegment Seg;
+		TimingSegment Seg;
 
 		Seg.Time = 0;
 
@@ -80,7 +86,7 @@ void Song7K::ProcessBPS(SongInternal::Difficulty7K* Diff, double Drift)
 		Time != Diff->Timing.end();
 		Time++)
 	{
-		SongInternal::TimingSegment Seg;
+		TimingSegment Seg;
 
 		float FTime;
 
@@ -114,7 +120,7 @@ void Song7K::ProcessBPS(SongInternal::Difficulty7K* Diff, double Drift)
 		Time != Diff->StopsTiming.end();
 		Time++)
 	{
-		SongInternal::TimingSegment Seg;
+		TimingSegment Seg;
 		float TValue = TimeAtBeat(Diff->Timing, Diff->Offset + Drift, Time->Time) + StopTimeAtBeat(Diff->StopsTiming, Time->Time);
 		float TValueN = TimeAtBeat(Diff->Timing, Diff->Offset + Drift, Time->Time) + StopTimeAtBeat(Diff->StopsTiming, Time->Time) + Time->Value;
 
@@ -161,24 +167,18 @@ void Song7K::ProcessBPS(SongInternal::Difficulty7K* Diff, double Drift)
 	std::sort(Diff->BPS.begin(), Diff->BPS.end(), tSort);
 }
 
-void Song7K::ProcessSpeedVariations(SongInternal::Difficulty7K* Diff, double Drift)
+void Song::ProcessSpeedVariations(VSRG::Difficulty* Diff, double Drift)
 {
 	TimingData tVSpeeds = Diff->VerticalSpeeds; // We need this to store what values to change
 
 	std::sort( Diff->SpeedChanges.begin(), Diff->SpeedChanges.end(), tSort );
 
-	for(TimingData::iterator Change = Diff->SpeedChanges.begin();
+	for(TimingData::const_iterator Change = Diff->SpeedChanges.begin();
 			Change != Diff->SpeedChanges.end();
 			Change++)
 	{
-		Change->Time += Drift;
-	}
-
-	for(TimingData::iterator Change = Diff->SpeedChanges.begin();
-			Change != Diff->SpeedChanges.end();
-			Change++)
-	{
-		TimingData::iterator NextChange = (Change+1);
+		TimingData::const_iterator NextChange = (Change+1);
+		double ChangeTime = Change->Time + Drift;
 
 		/* 
 			Find all VSpeeds
@@ -190,7 +190,7 @@ void Song7K::ProcessSpeedVariations(SongInternal::Difficulty7K* Diff, double Dri
 			Time != Diff->VerticalSpeeds.end();
 			Time++)
 		{
-			if ( abs(Change->Time - Time->Time) < 0.00001)
+			if ( abs(ChangeTime - Time->Time) < 0.00001)
 			{
 				Time->Value *= Change->Value;
 				goto next_speed;
@@ -201,15 +201,15 @@ void Song7K::ProcessSpeedVariations(SongInternal::Difficulty7K* Diff, double Dri
 			There are no collisions- insert a new speed at this time
 		*/
 
-		if (Change->Time < 0)
+		if (ChangeTime < 0)
 			goto next_speed;
 
 		float SpeedValue;
-		SpeedValue = SectionValue(tVSpeeds, Change->Time) * Change->Value;
+		SpeedValue = SectionValue(tVSpeeds, ChangeTime) * Change->Value;
 
-		SongInternal::TimingSegment VSpeed;
+		TimingSegment VSpeed;
 
-		VSpeed.Time = Change->Time;
+		VSpeed.Time = ChangeTime;
 		VSpeed.Value = SpeedValue;
 
 		Diff->VerticalSpeeds.push_back(VSpeed);
@@ -223,7 +223,7 @@ void Song7K::ProcessSpeedVariations(SongInternal::Difficulty7K* Diff, double Dri
 			Time != Diff->VerticalSpeeds.end();
 			Time++)
 		{
-			if (Time->Time > Change->Time)
+			if (Time->Time > ChangeTime)
 			{
 				// Two options, between two speed changes, or the last one. Second case, NextChange == SpeedChanges.end().
 				// Otherwise, just move on
@@ -247,7 +247,7 @@ void Song7K::ProcessSpeedVariations(SongInternal::Difficulty7K* Diff, double Dri
 	std::sort(Diff->VerticalSpeeds.begin(), Diff->VerticalSpeeds.end(), tSort);
 }
 
-void Song7K::Process(float Drift, double SpeedConstant)
+void Song::Process(VSRG::Difficulty* Which, MeasureVectorTN *NotesOut, float Drift, double SpeedConstant)
 {
 	/* 
 		We'd like to build the notes' position from 0 to infinity, 
@@ -260,17 +260,14 @@ void Song7K::Process(float Drift, double SpeedConstant)
 		measure * measuresize + fraction * fractionsize
 	*/
 
-	if (Processed)
-		return;
-
 	int ApplyDriftVirtual = Configuration::GetConfigf("UseAudioCompensationKeysounds");
 	int ApplyDriftDecoder = Configuration::GetConfigf("UseAudioCompensationNonKeysounded");
-	double rDrift = Drift;
+	double rDrift = Drift - PreviousDrift;
 
 	/* For all difficulties */
-	for (std::vector<SongInternal::Difficulty7K*>::iterator Diff = Difficulties.begin(); Diff != Difficulties.end(); Diff++)
+	for (std::vector<VSRG::Difficulty*>::iterator Diff = Difficulties.begin(); Diff != Difficulties.end(); Diff++)
 	{
-		if (!(*Diff)->Timing.size())
+		if (!(*Diff)->Timing.size() || Which != *Diff)
 			continue;
 
 		if ( (!ApplyDriftVirtual && (*Diff)->IsVirtual) || (!ApplyDriftDecoder && !(*Diff)->IsVirtual) )
@@ -284,47 +281,59 @@ void Song7K::Process(float Drift, double SpeedConstant)
 		if (!SpeedConstant) // If there is a speed constant having speed changes is not what we want
 			ProcessSpeedVariations(*Diff, Drift);
 
+		for (int KeyIndex = 0; KeyIndex < (*Diff)->Channels; KeyIndex++)
+			NotesOut[KeyIndex].clear();
+
 		/* For all channels of this difficulty */
 		for (int KeyIndex = 0; KeyIndex < (*Diff)->Channels; KeyIndex++)
 		{
 			int MIdx = 0;
 
 			/* For each measure of this channel */
-			for (std::vector<SongInternal::Measure7K>::iterator Measure = (*Diff)->Measures[KeyIndex].begin(); 
-				Measure != (*Diff)->Measures[KeyIndex].end();
-				Measure++)
+			for (std::vector<VSRG::Measure>::iterator Msr = (*Diff)->Measures.begin(); 
+				Msr != (*Diff)->Measures.end();
+				Msr++)
 			{
+				NotesOut[KeyIndex].push_back(std::vector<TrackNote>());
 				/* For each note in the measure... */
-				for (uint32 Note = 0; Note < Measure->MeasureNotes.size(); Note++)
+				size_t total_notes = Msr->MeasureNotes[KeyIndex].size();
+				for (uint32 Note = 0; Note < total_notes; Note++)
 				{
 					/* 
 					    Calculate position. (Change this to TrackNote instead of processing?)
 					    issue is not having the speed change data there.
 					*/
-					TrackNote &CurrentNote = (*Measure).MeasureNotes[Note];
+					NoteData &CurrentNote = (*Msr).MeasureNotes[KeyIndex][Note];
+					TrackNote NewNote;
 
-					CurrentNote.AddTime(Drift);
+					NewNote.AssignNotedata(CurrentNote);
+					NewNote.AddTime(Drift);
 
-					Vec2 VerticalPosition( 0, IntegrateToTime((*Diff)->VerticalSpeeds, CurrentNote.GetStartTime()) );
-					Vec2 HoldEndPosition( 0, IntegrateToTime((*Diff)->VerticalSpeeds, CurrentNote.GetTimeFinal()) );
+					Vec2 VerticalPosition( 0, IntegrateToTime((*Diff)->VerticalSpeeds, CurrentNote.StartTime + Drift) );
+					Vec2 HoldEndPosition( 0, IntegrateToTime((*Diff)->VerticalSpeeds, CurrentNote.EndTime + Drift) );
 
 					// if upscroll change minus for plus as well as matrix at screengameplay7k
-					if (!CurrentNote.IsHold())
-						CurrentNote.AssignPosition( -VerticalPosition);
+					if (!CurrentNote.EndTime)
+						NewNote.AssignPosition( -VerticalPosition);
 					else
-						CurrentNote.AssignPosition( -VerticalPosition, -HoldEndPosition);
+						NewNote.AssignPosition( -VerticalPosition, -HoldEndPosition);
 
-					double cBeat = BeatAtTime((*Diff)->BPS, CurrentNote.GetStartTime(), (*Diff)->Offset + Drift);
+					double cBeat = BeatAtTime((*Diff)->BPS, CurrentNote.StartTime, (*Diff)->Offset + Drift);
 					double iBeat = floor(cBeat);
 					double dBeat = cBeat - iBeat;
 
-					CurrentNote.AssignFraction(dBeat);
+					NewNote.AssignFraction(dBeat);
+					NotesOut[KeyIndex].back().push_back(NewNote);
 				}
 				MIdx++;
 			}
 		}
 	}
 
-	PreviousDrift = Drift;
 	Processed = true;
+	PreviousDrift = Drift;
+}
+
+void WriteOut(MeasureVectorTN &Vec)
+{
 }

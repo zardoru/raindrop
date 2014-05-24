@@ -1,8 +1,5 @@
+#include "Global.h"
 #include "ScoreKeeper.h"
-
-#define CLAMP(var, min, max) (var) < (min) ? (min) : (var) > (max) ? (max) : (var)
-#define max(a, b) (a) > (b) ? (a) : (b)
-#define min(a, b) (a) < (b) ? (a) : (b)
 
 ScoreKeeper7K::~ScoreKeeper7K(){  }
 
@@ -23,8 +20,8 @@ void ScoreKeeper7K::setAccMax(int ms){
 void ScoreKeeper7K::setMaxNotes(int notes){
 	max_notes = notes;
 	// recalculate groove lifebar increments.
-	lifebar_easy_increment = CLAMP(5.0 / max_notes, 0.002, 0.8);
-	lifebar_groove_increment = CLAMP(3.0 / max_notes, 0.001, 0.8);
+	lifebar_easy_increment = Clamp(5.0 / max_notes, 0.002, 0.8);
+	lifebar_groove_increment = Clamp(3.0 / max_notes, 0.001, 0.8);
 	lifebar_survival_increment = 1.2 / max_notes;
 	lifebar_exhard_increment = 0.5 / max_notes;
 }
@@ -58,8 +55,8 @@ void ScoreKeeper7K::hitNote(int ms){
 
 // Numerical score / money score
 
-	sc_score += CLAMP(accuracy_percent(ms * ms) / 100, 0, 1) * 2;
-	sc_sc_score += sc_score * CLAMP(accuracy_percent(ms * ms) / 100, 0, 1);
+	sc_score += Clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.1) * 2;
+	sc_sc_score += sc_score * Clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.0);
 	
 	score = float(SCORE_MAX * sc_sc_score) / (max_notes * (max_notes + 1)); 
 
@@ -71,18 +68,18 @@ void ScoreKeeper7K::hitNote(int ms){
 // lifebars
 	
 	if(ms < ACC_MAX){
-		lifebar_groove = min(1, lifebar_groove + lifebar_groove_increment);
+		lifebar_groove = min(1.0, lifebar_groove + lifebar_groove_increment);
 		if(lifebar_survival > 0)
-			lifebar_survival = min(1, lifebar_survival + lifebar_survival_increment);
+			lifebar_survival = min(1.0, lifebar_survival + lifebar_survival_increment);
 		if(lifebar_exhard > 0)
-			lifebar_exhard = min(1, lifebar_exhard + lifebar_exhard_increment);
-		lifebar_easy = min(1, lifebar_easy + lifebar_easy_increment);
+			lifebar_exhard = min(1.0, lifebar_exhard + lifebar_exhard_increment);
+		lifebar_easy = min(1.0, lifebar_easy + lifebar_easy_increment);
 	}else{
 		// miss tier 1
-		lifebar_groove = max(0, lifebar_groove - 0.02);
-		lifebar_survival = max(0, lifebar_survival - CLAMP(50.0 / max_notes, 0.02, 0.20));
-		lifebar_exhard = max(0, lifebar_survival - CLAMP(100.0 / max_notes, 0.10, 0.50));
-		lifebar_easy = max(0, lifebar_groove - 0.02);
+		lifebar_groove = max(0.0, lifebar_groove - 0.02);
+		lifebar_survival = max(0.0, lifebar_survival - Clamp(50.0 / max_notes, 0.02, 0.20));
+		lifebar_exhard = max(0.0, lifebar_survival - Clamp(100.0 / max_notes, 0.10, 0.50));
+		lifebar_easy = max(0.0, lifebar_groove - 0.02);
 	}
 
 }
@@ -98,10 +95,10 @@ void ScoreKeeper7K::missNote(bool auto_hold_miss){
 	combo = 0;
 
 	// miss tier 2
-	lifebar_groove = max(0, lifebar_groove - 0.03);
-	lifebar_survival = max(0, lifebar_survival - CLAMP(100.0 / max_notes, 0.06, 0.50));
-	lifebar_exhard = max(0, lifebar_survival - CLAMP(200.0 / max_notes, 0.20, 0.80));
-	lifebar_easy = max(0, lifebar_easy - 0.06);
+	lifebar_groove = max(0.0, lifebar_groove - 0.03);
+	lifebar_survival = max(0.0, lifebar_survival - Clamp(100.0 / max_notes, 0.06, 0.50));
+	lifebar_exhard = max(0.0, lifebar_survival - Clamp(200.0 / max_notes, 0.20, 0.80));
+	lifebar_easy = max(0.0, lifebar_easy - 0.06);
 
 }
 

@@ -1,4 +1,4 @@
-#include "Global.h"
+#include "GameGlobal.h"
 #include "GraphObject2D.h"
 #include "Configuration.h"
 #include "BitmapFont.h"

@@ -1,7 +1,7 @@
 #include <GL/glew.h>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "Global.h"
+#include "GameGlobal.h"
 #include "Screen.h"
 #include "Audio.h"
 
@@ -12,12 +12,12 @@
 #include "Image.h"
 #include "ImageLoader.h"
 
-#include "Song.h"
 #include "ScreenGameplay7K.h"
+
+using namespace VSRG;
 
 void ScreenGameplay7K::DrawMeasures()
 {
-	typedef std::vector<SongInternal::Measure7K> NoteVector;
 	float rPos;
 	float MultAbs = abs(SpeedMultiplier);
 
@@ -28,9 +28,9 @@ void ScreenGameplay7K::DrawMeasures()
 	WindowFrame.SetUniform(U_LIGHT, false); // Affected by lightning
 
 	// Sudden = 1, Hidden = 2, flashlight = 3 (Defined in the shader)
-	WindowFrame.SetUniform(U_HIDDEN, HiddenMode); // Affected by hidden lightning?
+	WindowFrame.SetUniform(U_HIDDEN, RealHiddenMode); // Affected by hidden lightning?
 
-	if (HiddenMode)
+	if (RealHiddenMode)
 	{
 		WindowFrame.SetUniform(U_HIDLOW, HideClampLow);
 		WindowFrame.SetUniform(U_HIDHIGH, HideClampHigh);
@@ -54,17 +54,17 @@ void ScreenGameplay7K::DrawMeasures()
 	/* todo: instancing */
 	for (uint32 k = 0; k < Channels; k++)
 	{
-		NoteVector &Measures = NotesByMeasure[k];
+		MeasureVectorTN &Measures = NotesByMeasure[k];
 
-		for (NoteVector::iterator i = Measures.begin(); i != Measures.end(); i++)
+		for (MeasureVectorTN::iterator i = Measures.begin(); i != Measures.end(); i++)
 		{
-			for (std::vector<TrackNote>::iterator m = (*i).MeasureNotes.begin(); m != (*i).MeasureNotes.end(); m++)
+			for (std::vector<TrackNote>::iterator m = i->begin(); m != i->end(); m++)
 			{
 				float Vertical = (m->GetVertical() * SpeedMultiplier + rPos) ;
 				float VerticalHold = (m->GetVerticalHold() * SpeedMultiplier + rPos) ;
 
 				if (MultiplierChanged && m->IsHold())
-					m->RecalculateBody(LanePositions[m->GetTrack()], LaneWidth[m->GetTrack()], NoteHeight, MultAbs);
+					m->RecalculateBody(LanePositions[k], LaneWidth[k], NoteHeight, MultAbs);
 
 				bool InScreen = true; 
 
@@ -114,40 +114,46 @@ void ScreenGameplay7K::DrawMeasures()
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 				}
 
-				if (NoteImages[k])
-					NoteImages[k]->Bind();
-				else
+				if ( m->IsEnabled() || m->IsHold() ) // Hold head or enabled note
 				{
-					if (NoteImage)
-						NoteImage->Bind();
+					// Use the lane's note image
+					if (NoteImages[k])
+						NoteImages[k]->Bind();
 					else
-						continue;
-				}
+					{
+						if (NoteImage)
+							NoteImage->Bind();
+						else
+							continue;
+					}
 
-				WindowFrame.SetUniform(U_SIM, &(NoteMatrix[m->GetTrack()])[0][0]);
-				WindowFrame.SetUniform(U_COLOR, 1, 1, 1, 1);
+					// Assign the note matrix
+					WindowFrame.SetUniform(U_SIM, &(NoteMatrix[k])[0][0]);
+					WindowFrame.SetUniform(U_COLOR, 1, 1, 1, 1);
 
-				if (m->IsHold())
-				{
-					WindowFrame.SetUniform(U_TRANM, &(m->GetHoldEndMatrix())[0][0]);
+					// Draw Hold tail
+					if (m->IsHold())
+					{
+						WindowFrame.SetUniform(U_TRANM, &(m->GetHoldEndMatrix())[0][0]);
+						glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+					}
+
+					// Assign our matrix - encore
+					if ( (Vertical < BasePos && Upscroll) || (Vertical >= BasePos && !Upscroll) )
+					{
+						// As long as it's not judged, we'll keep it in place 
+						Mat4 identity;
+						WindowFrame.SetUniform(U_MVP, &PositionMatrixJudgement[0][0]);
+						WindowFrame.SetUniform(U_TRANM, &(identity)[0][0]);
+					}else
+					{
+						// Otherwise scroll normally
+						WindowFrame.SetUniform(U_TRANM, &(m->GetMatrix())[0][0]);
+					}
+
+
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 				}
-
-				// Assign our matrix - encore
-				if ( (Vertical < BasePos && Upscroll) || (Vertical >= BasePos && !Upscroll) )
-				{
-					// As long as it's not judged, we'll keep it in place 
-					glm::mat4 identity;
-					WindowFrame.SetUniform(U_MVP, &PositionMatrixJudgement[0][0]);
-					WindowFrame.SetUniform(U_TRANM, &(identity)[0][0]);
-				}else
-				{
-					// Otherwise scroll normally
-					WindowFrame.SetUniform(U_TRANM, &(m->GetMatrix())[0][0]);
-				}
-
-				if ( m->IsEnabled() || m->IsHold() )
-					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 			}
 		}
 	}

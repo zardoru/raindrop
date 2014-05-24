@@ -8,19 +8,21 @@ class GameObject : public GraphObject2D
 {
 private:
 	friend class ScreenEdit;
-	friend class SongDC;
+
 	bool BeingHeld;
-	float fadeout_time, fadein_time; // time to fadeout, and time to get a hit
-	float waiting_time;
 
 	int32 heldKey;
+
+	unsigned char AnimationStatus;
+
+public:
 
 	double startTime, endTime, beat, hold_duration;
 	uint32 Measure;
 	double Fraction;
-	unsigned char AnimationStatus;
+	float fadeout_time, fadein_time; // time to fadeout, and time to get a hit
+	float waiting_time;
 
-public:
 	GameObject();
 	void Initialize();
 
@@ -29,7 +31,7 @@ public:
 	void Animate(float delta, float songTime);
 	void Assign(double Duration, uint32 Measure, double MeasureFraction);
 
-	double GetFraction() const;
+	double &GetFraction();
 	bool IsHold();
 	void Invalidate();
 	bool ShouldRemove();
