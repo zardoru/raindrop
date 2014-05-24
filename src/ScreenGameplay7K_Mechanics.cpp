@@ -116,8 +116,6 @@ void ScreenGameplay7K::RunMeasures()
 					if (score_keeper->getScore(ST_COMBO) > 10)
 						MissSnd->Play();
 
-					HeldKey[k] = false;
-
 					m->Hit();
 
 				} // Condition B: Regular note or hold head outside cutoff, wasn't hit and it's enabled.
@@ -131,6 +129,14 @@ void ScreenGameplay7K::RunMeasures()
 
 					/* remove note from judgement
 					   relevant to note that hit isn't being set here so the hold tail can be judged later.	*/
+					m->Disable();
+				} // Condition C: Hold head was hit, but hold tail was not released.
+				else if ((SongTime - m->GetTimeFinal()) * 1000 > score_keeper->getAccCutoff() &&
+					m->IsHold() && m->WasNoteHit() && m->IsEnabled())
+				{
+					MissNote(abs(SongTime - m->GetTimeFinal()) * 1000, k, m->IsHold(), true);
+
+					HeldKey[k] = false;
 					m->Disable();
 				}
 
