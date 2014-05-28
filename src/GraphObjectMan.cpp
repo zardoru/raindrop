@@ -2,6 +2,8 @@
 #include "GraphObject2D.h"
 #include "LuaManager.h"
 #include "GraphObjectMan.h"
+#include "FileManager.h"
+#include "ImageList.h"
 
 void CreateLuaInterface(LuaManager *AnimLua);
 
@@ -12,6 +14,7 @@ GraphObjectMan::GraphObjectMan()
 	Lua->SetGlobal("ScreenHeight", ScreenHeight);
 	Lua->SetGlobal("ScreenWidth", ScreenWidth);
 	CreateLuaInterface(Lua);
+	Images = new ImageList(true);
 }
 
 GraphObjectMan::~GraphObjectMan()
@@ -19,14 +22,36 @@ GraphObjectMan::~GraphObjectMan()
 	Lua->CallFunction("Cleanup");
 	Lua->RunFunction();
 	delete Lua;
+	delete Images;
 }
 
-void GraphObjectMan::Initialize(String Filename)
+void GraphObjectMan::Preload(String Filename, String Arrname)
 {
 	Lua->RunScript(Filename);
 
+	if (Lua->UseArray(Arrname))
+	{
+		Lua->StartIteration();
+
+		while (Lua->IterateNext())
+		{
+			Images->AddToList (Lua->NextString(), FileManager::GetSkinPrefix());
+			Lua->Pop();
+		}
+
+		Lua->Pop();
+	}
+}
+
+void GraphObjectMan::Initialize(String Filename, bool RunScript)
+{
+	if (RunScript)
+		Lua->RunScript(Filename);
+
 	Lua->CallFunction("Init");
 	Lua->RunFunction();
+
+	Images->LoadAll();
 }
 
 void GraphObjectMan::AddTarget(GraphObject2D *Targ)

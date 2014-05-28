@@ -41,6 +41,15 @@ void ImageLoader::UnloadAll()
 	InvalidateAll();
 }
 
+void ImageLoader::DeleteImage(Image* &ToDelete)
+{
+	Textures.erase(Textures.find(ToDelete->fname));
+	if (ToDelete->IsValid)
+		glDeleteTextures(1, &ToDelete->texture);
+	delete ToDelete;
+	ToDelete = NULL;
+}
+
 GLuint ImageLoader::UploadToGPU(unsigned char* Data, unsigned int Width, unsigned int Height)
 {
 	GLuint texture;
@@ -98,6 +107,7 @@ Image* ImageLoader::Load(String filename)
 
 		if (!image)
 		{
+			wprintf(L"Could not load image \"%s\".\n", Utility::Widen(filename).c_str());
 			return NULL;
 		}
 

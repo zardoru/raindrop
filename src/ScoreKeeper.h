@@ -12,7 +12,7 @@ enum ScoreKeeperJudgment{
 	SKJ_MISS = 6, // Miss / Poor
 	SKJ_HOLD_OK = 10, // OK, only used with DDR-style holds
 	SKJ_HOLD_NG = 11, // NG
-	
+	SKJ_AMOUNT
 };
 
 enum ScoreType{
@@ -69,7 +69,7 @@ class ScoreKeeper7K {
 		void setDP2(int ms);
 		void setDP1(int ms);
 		
-		void hitNote(int ms);
+		ScoreKeeperJudgment hitNote(int ms);
 		void missNote(bool auto_hold_miss);
 
 		double getAccCutoff();
@@ -138,5 +138,6 @@ class ScoreKeeper7K {
 		double lifebar_battery;
 		int lifebar_battery_lives;
 
-
+		double judgement_time[SKJ_AMOUNT];
+		double judgement_amt[SKJ_AMOUNT];
 };

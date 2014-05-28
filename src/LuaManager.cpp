@@ -350,3 +350,28 @@ lua_State* LuaManager::GetState()
 {
 	return State;
 }
+
+void LuaManager::StartIteration ()
+{
+	lua_pushnil(State);
+}
+
+bool LuaManager::IterateNext()
+{
+	return lua_next(State, -2) != 0;
+}
+
+int LuaManager::NextInt()
+{
+	return lua_tonumber(State, -1);
+}
+
+double LuaManager::NextDouble()
+{
+	return lua_tonumber(State, -1);
+}
+
+std::string LuaManager::NextString()
+{
+	return lua_tostring(State, -1);
+}

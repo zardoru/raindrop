@@ -27,6 +27,8 @@ public:
 	static void   InvalidateAll();
 	static void   UnloadAll();
 
+	static void   DeleteImage(Image* &ToDelete);
+
 	/* For multi-threaded loading. */
 	static void   AddToPending (const char* Filename);
 	static void   LoadFromManifest(char** Manifest, int Count, String Prefix = "");

@@ -172,30 +172,6 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	MissSnd = new SoundSample();
 	if (MissSnd->Open((FileManager::GetSkinPrefix() + "miss.ogg").c_str()))
 		MixerAddSample(MissSnd);
-
-	char* SkinFiles [] =
-	{
-		"key1.png",
-		"key2.png",
-		"key3.png",
-		"key4.png",
-		"key5.png",
-		"key6.png",
-		"key7.png",
-		"key8.png",
-		"key1d.png",
-		"key2d.png",
-		"key3d.png",
-		"key4d.png",
-		"key5d.png",
-		"key6d.png",
-		"key7d.png",
-		"key8d.png",
-		"note.png",
-		"judgeline.png"
-	};
-
-	ImageLoader::LoadFromManifest(SkinFiles, 3, FileManager::GetSkinPrefix());
 	
 	if (!Music)
 	{
@@ -317,6 +293,10 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	if (ErrorTolerance <= 0)
 		ErrorTolerance = 5; // ms
+
+	// This will execute the script once, so we won't need to do it later
+	SetupScriptConstants();
+	Animations->Preload(FileManager::GetSkinPrefix() + "screengameplay7k.lua", "Preload");
 }
 
 void ScreenGameplay7K::SetupScriptConstants()
@@ -430,8 +410,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 
 	WindowFrame.SetLightMultiplier(0.75f);
 
-	SetupScriptConstants();
-	Animations->Initialize( FileManager::GetSkinPrefix() + "screengameplay7k.lua" );
+	Animations->Initialize("", false);
 
 	memset(PlaySounds, 0, sizeof(PlaySounds));
 
@@ -504,12 +483,6 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 		case KT_FractionDec:
 			SpeedMultiplierUser -= 0.25;
 			MultiplierChanged = true;
-			break;
-		case KT_Left:
-			HideClampSum -= 0.1;
-			break;
-		case KT_Right:
-			HideClampSum += 0.1;
 			break;
 		case KT_GoToEditMode:
 			waveEffectEnabled = !waveEffectEnabled;

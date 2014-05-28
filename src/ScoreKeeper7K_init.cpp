@@ -35,5 +35,12 @@ ScoreKeeper7K::ScoreKeeper7K(){
 	lifebar_death = 1;
 	lifebar_easy = 0.2;
 
+	double JudgementValues[] = { 22.5, 45, 90, 135, 150 };
+
+	for (int i = 0; i < sizeof(JudgementValues)/sizeof(double); i++)
+		judgement_time[i] = JudgementValues[i];
+
+	for (int i = 0; i < SKJ_AMOUNT; i++)
+		judgement_amt[i] = 0;
 }
 

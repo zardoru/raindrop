@@ -82,6 +82,14 @@ public:
 	int GetFieldI(std::string Key, int Default = -1);
 	double GetFieldD(std::string Key, double Default = -1);
 	std::string GetFieldS(std::string Key, std::string Default = std::string());
+
+	// Table iteration
+	void StartIteration ();
+
+	bool IterateNext();
+	int NextInt();
+	double NextDouble();
+	std::string NextString();
 	
 	void FinalizeArray(std::string ArrayName); // saves the new array with this name
 

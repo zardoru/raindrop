@@ -51,12 +51,13 @@ void ScreenGameplay7K::UpdateScriptScoreVariables()
 
 void ScreenGameplay7K::HitNote (double TimeOff, uint32 Lane, bool IsHold, bool IsHoldRelease)
 {
-	score_keeper->hitNote(TimeOff);
+	int Judgement = score_keeper->hitNote(TimeOff);
 
 	UpdateScriptScoreVariables();
 
 	Animations->GetEnv()->SetGlobal("Combo", score_keeper->getScore(ST_COMBO));
-	Animations->GetEnv()->CallFunction("HitEvent", 4);
+	Animations->GetEnv()->CallFunction("HitEvent", 5);
+	Animations->GetEnv()->PushArgument(Judgement);
 	Animations->GetEnv()->PushArgument(TimeOff);
 	Animations->GetEnv()->PushArgument((int)Lane + 1);
 	Animations->GetEnv()->PushArgument(IsHold);

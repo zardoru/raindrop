@@ -193,19 +193,31 @@ bool ScreenSelectMusic::Run(double Delta)
 
 	int Cur = 0;
 
+
 	if (SelectedMode == MODE_DOTCUR)
 	{
 		for (std::vector<dotcur::Song*>::iterator i = SongList.begin(); i != SongList.end(); i++)
 		{
-			Font->DisplayText((*i)->SongName.c_str(), Vec2(SONGLIST_BASEX, Cur*20 + ListY));
+			float Y = Cur*20 + ListY;
+			
+			if (Y > 0 && Y < ScreenHeight)
+			{
+				Font->DisplayText((*i)->SongName.c_str(), Vec2(SONGLIST_BASEX, Y));
+			}
+
 			Cur++;
 		}
 	}else if (SelectedMode == MODE_7K)
 	{
 		for (std::vector<VSRG::Song*>::iterator i = SongList7K.begin(); i != SongList7K.end(); i++)
 		{
-			std::string text = (*i)->SongName;
-			Font->DisplayText(text.c_str(), Vec2(SONGLIST_BASEX, Cur*20 + ListY));
+			float Y = Cur*20 + ListY;
+			
+			if (Y > 0 && Y < ScreenHeight)
+			{
+				Font->DisplayText((*i)->SongName.c_str(), Vec2(SONGLIST_BASEX, Y));
+			}
+
 			Cur++;
 		}
 	}

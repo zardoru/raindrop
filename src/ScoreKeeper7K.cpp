@@ -32,7 +32,7 @@ void ScoreKeeper7K::setEX1(int ms){ EX1 = ms; if(EX1 < EX2) EX2 = EX1 - 1; }
 void ScoreKeeper7K::setDP2(int ms){ DP2 = ms; if(DP2 > DP1) DP1 = DP2 + 1; }
 void ScoreKeeper7K::setDP1(int ms){ DP1 = ms; if(DP1 < DP2) DP2 = DP1 - 1; }
 
-void ScoreKeeper7K::hitNote(int ms){
+ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 	
 	// interesting stuff goes here.
 
@@ -82,6 +82,16 @@ void ScoreKeeper7K::hitNote(int ms){
 		lifebar_easy = max(0.0, lifebar_groove - 0.02);
 	}
 
+// judgements
+
+	for (int i = 0; i < 5; i++)
+	{
+		if (ms < judgement_time[i])
+		{
+			judgement_amt[i]++;
+			return ScoreKeeperJudgment(SKJ_W1 + (ScoreKeeperJudgment)i);
+		}
+	}
 }
 
 
@@ -163,4 +173,3 @@ float ScoreKeeper7K::getLifebarAmount(LifeType lifebar_amount_type){
 	}
 
 }
-

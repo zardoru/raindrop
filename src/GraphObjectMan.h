@@ -3,20 +3,24 @@
 
 class GraphObject2D;
 class LuaManager;
+class ImageList;
 
 class GraphObjectMan
 {
 	LuaManager *Lua;
+	ImageList *Images;
 	std::vector<GraphObject2D*> Objects;
 public:
 	GraphObjectMan();
 	~GraphObjectMan();
 
-	void Initialize(String Filename);
+	void Preload(String Filename, String ArrayName);
+	void Initialize(String Filename = "", bool RunScript = true);
 	LuaManager *GetEnv();
 
 	void AddTarget(GraphObject2D *Targ);
 	void AddLuaTarget(GraphObject2D *Targ, String Varname);
+	void AddLuaTargetArray(GraphObject2D *Targ, String Varname, String Arrname);
 	void RemoveTarget(GraphObject2D *Targ);
 	void DrawTargets(double TimeDelta);
 
