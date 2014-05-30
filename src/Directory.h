@@ -20,6 +20,7 @@ public:
 	bool operator==(std::string) const;
 
 	Directory ParentDirectory();
+	Directory Filename();
 	
 	String path() const;
 	const char* c_path() const;

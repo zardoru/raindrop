@@ -36,7 +36,7 @@ Directory Directory::ParentDirectory()
 {
 	int a = curpath.length();
 	while(--a){
-		if(curpath[a] == '/'){
+		if(curpath[a] == '/' || curpath[a] == '\\'){
 			return Directory(curpath.substr(0, a));
 		}
 	}
@@ -55,6 +55,20 @@ Directory operator/(Directory parent, std::string subpath)
 Directory operator/(std::string subpath, Directory parent)
 {
 	return operator/(parent, subpath); // o_O
+}
+
+Directory Directory::Filename()
+{
+	size_t place;
+	if ((place = curpath.find_last_of('/')) != std::string::npos)
+	{
+		return curpath.substr(place+1);
+	}else if ((place = curpath.find_last_of('\\')) != std::string::npos)
+	{
+		return curpath.substr(place+1);
+	}
+
+	return curpath;
 }
 
 std::string Directory::path() const { return curpath; }

@@ -21,6 +21,7 @@
 
 #include "ScreenMainMenu.h"
 #include "ScreenGameplay7K.h"
+#include "Converter.h"
 
 Application::Application(int argc, char *argv[])
 {
@@ -34,6 +35,7 @@ Application::Application(int argc, char *argv[])
 	Upscroll = false;
 	difIndex = 0;
 	Measure = 0;
+	Author = "raindrop";
 }
 
 inline bool ValidArg(int count, int req, int i)
@@ -95,6 +97,14 @@ void Application::ParseArgs()
 					i++;
 				} 
 				continue;
+			case 'a':
+
+				if (ValidArg(Args.Argc, 1, i))
+				{
+					Author = Args.Argv[i+1];
+					i++;
+				} 
+
 			default:
 				continue;
 
@@ -115,9 +125,10 @@ void Application::Init()
 #endif
 	wprintf(L"Initializing... \n");
 
+	Configuration::Initialize();
+
 	if (RunMode == MODE_PLAY || RunMode == MODE_VSRGPREVIEW)
 	{
-		Configuration::Initialize();
 		WindowFrame.AutoSetupWindow(this);
 		InitAudio();
 		Game = NULL;
@@ -145,6 +156,13 @@ void Application::Run()
 		((ScreenGameplay7K*)Game)->Init (Sng, difIndex, Upscroll);
 	}else if (RunMode == MODE_CONVERT)
 	{
+		VSRG::Song* Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), NULL);
+
+		if (Sng) 
+		{
+		// if (ConvertMode == CONV_OM) // for now this is the default
+			ConvertToOM (Sng, OutFile.path(), Author);
+		}
 
 		RunLoop = false;
 	}else if (RunMode == MODE_GENCACHE)

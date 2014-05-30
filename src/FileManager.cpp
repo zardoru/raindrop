@@ -110,7 +110,10 @@ VSRG::Song* LoadSong7KFromFilename(String Filename, String Prefix, VSRG::Song *S
 	else if (Ext == L"bms" || Ext == L"bme" || Ext == L"bml")
 		NoteLoaderBMS::LoadObjectsFromFile(fn_f, Prefix, Sng);
 	else if (Ext == L"sm")
+	{
+		if (AllocSong) delete Sng;
 		Sng = NoteLoaderSM::LoadObjectsFromFile(Prefix + "/" + Filename, Prefix);
+	}
 
 	return Sng;
 }
