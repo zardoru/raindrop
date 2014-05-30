@@ -8,6 +8,7 @@
 #include "BindingsManager.h"
 #include "Configuration.h"
 #include "Screen.h"
+#include "Directory.h"
 #include "Application.h"
 #include "GameWindow.h"
 #include "ImageLoader.h"
@@ -231,7 +232,7 @@ void ResizeFunc(GLFWwindow*, int32 width, int32 height)
 void InputFunc (GLFWwindow*, int32 key, int32 scancode, int32 code, int32 modk)
 {
 	if (ToKeyEventType(code) != KE_None) // Ignore GLFW_REPEAT events
-		App.HandleInput(key, ToKeyEventType(code), false);
+		WindowFrame.Parent->HandleInput(key, ToKeyEventType(code), false);
 
 	if (key == GLFW_KEY_ENTER && code == GLFW_PRESS && (modk & GLFW_MOD_ALT))
 		WindowFrame.FullscreenSwitchbackPending = true;
@@ -243,7 +244,7 @@ void InputFunc (GLFWwindow*, int32 key, int32 scancode, int32 code, int32 modk)
 void MouseInputFunc (GLFWwindow*, int32 key, int32 code, int32 modk)
 {
 	if (ToKeyEventType(code) != KE_None) // Ignore GLFW_REPEAT events
-		App.HandleInput(key, ToKeyEventType(code), true);
+		WindowFrame.Parent->HandleInput(key, ToKeyEventType(code), true);
 
 	if (!WindowFrame.isGuiInputEnabled)
 		return;
@@ -251,7 +252,7 @@ void MouseInputFunc (GLFWwindow*, int32 key, int32 code, int32 modk)
 
 void ScrollFunc( GLFWwindow*, double xOff, double yOff )
 {
-	App.HandleScrollInput(xOff, yOff);
+	WindowFrame.Parent->HandleScrollInput(xOff, yOff);
 }
 
 void MouseMoveFunc (GLFWwindow*,double newx, double newy)
@@ -329,8 +330,10 @@ void GameWindow::SetupWindow()
 	ResizeFunc(wnd, size.x, size.y);
 }
 
-void GameWindow::AutoSetupWindow()
+void GameWindow::AutoSetupWindow(Application* _parent)
 {
+	Parent = _parent;
+
 	// todo: enum modes
 	if (!glfwInit())
 		throw; // std::exception("glfw failed initialization!"); // don't do shit

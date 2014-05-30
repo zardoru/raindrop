@@ -281,6 +281,9 @@ void Song::Process(VSRG::Difficulty* Which, MeasureVectorTN *NotesOut, float Dri
 		if (!SpeedConstant) // If there is a speed constant having speed changes is not what we want
 			ProcessSpeedVariations(*Diff, Drift);
 
+		if (!NotesOut)
+			return;
+
 		for (int KeyIndex = 0; KeyIndex < (*Diff)->Channels; KeyIndex++)
 			NotesOut[KeyIndex].clear();
 
@@ -332,8 +335,4 @@ void Song::Process(VSRG::Difficulty* Which, MeasureVectorTN *NotesOut, float Dri
 
 	Processed = true;
 	PreviousDrift = Drift;
-}
-
-void WriteOut(MeasureVectorTN &Vec)
-{
 }

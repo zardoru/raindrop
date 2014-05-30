@@ -200,8 +200,9 @@
     <ClCompile Include="..\src\AudioSourceSFM.cpp" />
     <ClCompile Include="..\src\BitmapFont.cpp" />
     <ClCompile Include="..\src\Configuration.cpp" />
+    <ClCompile Include="..\src\Convert.cpp" />
     <ClCompile Include="..\src\Directory.cpp" />
-    <ClCompile Include="..\src\dotcur.cpp" />
+    <ClCompile Include="..\src\raindrop.cpp" />
     <ClCompile Include="..\src\FileManager.cpp" />
     <ClCompile Include="..\src\GameObject.cpp" />
     <ClCompile Include="..\src\GameWindow.cpp" />
@@ -259,6 +260,7 @@
     <ClInclude Include="..\src\BindingsManager.h" />
     <ClInclude Include="..\src\BitmapFont.h" />
     <ClInclude Include="..\src\Configuration.h" />
+    <ClInclude Include="..\src\Converter.h" />
     <ClInclude Include="..\src\Directory.h" />
     <ClInclude Include="..\src\FileManager.h" />
     <ClInclude Include="..\src\GameObject.h" />

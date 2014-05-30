@@ -3,14 +3,12 @@
 #endif
 
 #include "Global.h"
-#include <exception>
 #include "Screen.h"
+#include "Directory.h"
 #include "Application.h"
 
-Application App;
-
 //#if (!defined WIN32) || (!defined NDEBUG)
-int32 main ()
+int32 main (int argc, char *argv[])
 /*#else
 int CALLBACK WinMain (
     __in HINSTANCE hInstance,
@@ -21,6 +19,7 @@ int CALLBACK WinMain (
 #endif
 	*/
 {
+	Application App(argc, argv);
 	App.Init();
 	App.Run();
 	App.Close();

@@ -266,7 +266,7 @@ bool ScreenSelectMusic::Run(double Delta)
 		
 		char infoStream[1024];
 
-		if (diff_index < SongList7K.at(Cursor)->Difficulties.size())
+		if (Cursor < SongList7K.size() && diff_index < SongList7K.at(Cursor)->Difficulties.size())
 		{
 			int Min = SongList7K.at(Cursor)->Difficulties[diff_index]->Duration / 60;
 			int Sec = (int)SongList7K.at(Cursor)->Difficulties[diff_index]->Duration % 60;

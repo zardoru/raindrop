@@ -8,6 +8,7 @@
 #include <vector>
 
 class VBO;
+class Application;
 struct GLFWwindow;
 
 enum RendererLocats
@@ -37,6 +38,9 @@ class GameWindow
 {
 	friend void ResizeFunc(GLFWwindow*, int32,int32);
 	friend void InputFunc(GLFWwindow*,int32,int32,int32,int32);
+	friend void MouseInputFunc (GLFWwindow*, int32 key, int32 code, int32 modk);
+	friend void ScrollFunc( GLFWwindow*, double xOff, double yOff );
+	friend void MouseMoveFunc (GLFWwindow*,double newx, double newy);
 	Vec2 size;
 	Vec2 matrixSize, Viewport;
 	Mat4 projection;
@@ -55,11 +59,13 @@ class GameWindow
 	std::vector<VBO*> VBOList;
 	std::map<String, uint32> UniformLocs;
 	std::map<String, uint32> AttribLocs;
+	Application* Parent;
+
 
 public:
 	GameWindow();
 	bool isGuiInputEnabled;
-	void AutoSetupWindow();
+	void AutoSetupWindow(Application* Parent);
 	void ClearWindow(); // basically wrapping up glClear
 	void Cleanup();
 

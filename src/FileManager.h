@@ -28,4 +28,6 @@ public:
 	static void SetSkin(String NextSkin);
 };
 
+VSRG::Song* LoadSong7KFromFilename(String Filename, String Prefix, VSRG::Song *Sng);
+
 #endif

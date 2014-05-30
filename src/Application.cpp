@@ -7,10 +7,11 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "Global.h"
+#include "GameGlobal.h"
 #include "Screen.h"
 #include "Configuration.h"
 #include "Audio.h"
+#include "Directory.h"
 #include "Application.h"
 #include "GraphObject2D.h"
 #include "BitmapFont.h"
@@ -19,37 +20,143 @@
 #include "FileManager.h"
 
 #include "ScreenMainMenu.h"
+#include "ScreenGameplay7K.h"
 
-Application::Application()
+Application::Application(int argc, char *argv[])
 {
 	oldTime = 0;
 	Game = NULL;
+
+	RunMode = MODE_PLAY;
+	Args.Argc = argc;
+	Args.Argv = argv;
+
+	Upscroll = false;
+	difIndex = 0;
+	Measure = 0;
+}
+
+inline bool ValidArg(int count, int req, int i)
+{
+	return (i + req) < count;
+}
+
+void Application::ParseArgs()
+{
+	for (int i = 1; i < Args.Argc; i++)
+	{
+		if (Args.Argv[i][0] == '-')
+		{
+			switch (Args.Argv[i][1])
+			{
+			case 'p': // Preview file (VSRG preview mode)
+				RunMode = MODE_VSRGPREVIEW;
+			case 'i': // Infile (convert mode/preview file)
+				if (ValidArg(Args.Argc, 1, i))
+				{
+					InFile = Args.Argv[i+1];
+					i++;
+				}
+
+				continue;
+			case 'o': // Outfile (convert mode)
+
+				RunMode = MODE_CONVERT;
+
+				if (ValidArg(Args.Argc, 1, i))
+				{
+					OutFile = Args.Argv[i+1];
+					i++;
+				}
+
+				continue;
+			case 'c': // Generate cache
+				RunMode = MODE_GENCACHE;
+				continue;
+			case 'g': // Mode to convert to
+
+				if (ValidArg(Args.Argc, 1, i))
+				{
+					String Mode = Args.Argv[i+1];
+					if (Mode == "om")
+						ConvertMode = CONV_OM;
+					else if (Mode == "sm")
+						ConvertMode = CONV_SM;
+					else if (Mode == "bms")
+						ConvertMode = CONV_BMS;
+					i++;
+				}
+
+				continue;
+			case 'm': // Measure selected for preview
+				if (ValidArg(Args.Argc, 1, i))
+				{
+					Measure = atoi (Args.Argv[i+1]);
+					i++;
+				} 
+				continue;
+			default:
+				continue;
+
+			}
+		}
+	}
 }
 
 void Application::Init()
 {
 	double T1 = glfwGetTime();
+
+	ParseArgs();
+
 #ifdef WIN32
 	SetConsoleOutputCP(CP_UTF8);
 	_setmode(_fileno(stdout), _O_U8TEXT); 
 #endif
+	wprintf(L"Initializing... \n");
 
-	wprintf(L"Initializing... ");
-
-	Configuration::Initialize();
-	WindowFrame.AutoSetupWindow();
-	InitAudio();
-	Game = NULL;
-	// srand(time(0));
-	// throw a message here
+	if (RunMode == MODE_PLAY || RunMode == MODE_VSRGPREVIEW)
+	{
+		Configuration::Initialize();
+		WindowFrame.AutoSetupWindow(this);
+		InitAudio();
+		Game = NULL;
+	}
 
 	wprintf(L"Total Initialization Time: %fs\n", glfwGetTime() - T1);
 }
 
 void Application::Run()
 {
-	Game = new ScreenMainMenu(NULL);
-	((ScreenMainMenu*)Game)->Init();
+	double T1 = glfwGetTime();
+	bool RunLoop = true;
+
+	wprintf(L"Link start.\n");
+
+	if (RunMode == MODE_PLAY)
+	{
+		Game = new ScreenMainMenu(NULL);
+		((ScreenMainMenu*)Game)->Init();
+
+	}else if (RunMode == MODE_VSRGPREVIEW)
+	{
+		Game = new ScreenGameplay7K();
+		VSRG::Song* Sng = LoadSong7KFromFilename(InFile.path(), InFile.ParentDirectory().path(), NULL);
+		((ScreenGameplay7K*)Game)->Init (Sng, difIndex, Upscroll);
+	}else if (RunMode == MODE_CONVERT)
+	{
+
+		RunLoop = false;
+	}else if (RunMode == MODE_GENCACHE)
+	{
+
+		RunLoop = false;
+	}
+
+	wprintf(L"Time: %fs\n", glfwGetTime() - T1);
+
+	if (!RunLoop)
+		return;
 
 	while (Game->IsScreenRunning() && !WindowFrame.ShouldCloseWindow())
 	{

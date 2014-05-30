@@ -77,6 +77,44 @@ void loadSong( Directory songPath, std::vector<dotcur::Song*> &VecOut )
 	}
 }
 
+VSRG::Song* LoadSong7KFromFilename(String Filename, String Prefix, VSRG::Song *Sng)
+{
+	bool AllocSong = false;
+	if (!Sng)
+	{
+		AllocSong = true;
+		Sng = new VSRG::Song();
+	}
+
+	std::wstring Ext = Utility::Widen(Utility::GetExtension(Filename));
+
+	// no extension
+	if (Ext == L"wav" || Ext == L"ogg" || Ext == L"mp3" || Filename.find_first_of('.') == std::wstring::npos)
+	{
+		if (AllocSong) delete Sng;
+		return NULL;
+	}
+
+	std::wstring fn = L"/" + Utility::Widen(Filename);
+	std::wstring sp = Utility::Widen(Prefix);
+	std::string fn_f = Utility::Narrow(sp + fn);
+
+	if (Ext == L"fmd") // Ftb MetaData
+	{
+		NoteLoaderFTB::LoadMetadata(fn_f, Prefix, Sng);
+	}else if (Ext == L"ftb")
+	{
+		NoteLoaderFTB::LoadObjectsFromFile(fn_f, Prefix, Sng);
+	}else if (Ext == L"osu")
+		NoteLoaderOM::LoadObjectsFromFile(fn_f, Prefix, Sng);
+	else if (Ext == L"bms" || Ext == L"bme" || Ext == L"bml")
+		NoteLoaderBMS::LoadObjectsFromFile(fn_f, Prefix, Sng);
+	else if (Ext == L"sm")
+		Sng = NoteLoaderSM::LoadObjectsFromFile(Prefix + "/" + Filename, Prefix);
+
+	return Sng;
+}
+
 void loadSong7K( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 {
 	std::vector<String> Listing;
@@ -87,7 +125,7 @@ void loadSong7K( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{
 		// Found it? Load it.
-		VSRG::Song *New = NoteLoaderSM::LoadObjectsFromFile(songPath.path() + "/" + *i, songPath.path());
+		VSRG::Song *New = LoadSong7KFromFilename(*i, songPath.path(), NULL);
 		if (New)
 		{
 			VecOut.push_back(New);
@@ -98,27 +136,7 @@ void loadSong7K( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 	songPath.ListDirectory(Listing, Directory::FS_REG);
 	VSRG::Song *New = new VSRG::Song();
 	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
-	{
-		std::wstring Ext = Utility::Widen(Utility::GetExtension(*i));
-
-		// no extension
-		if (Ext == L"wav" || Ext == L"ogg" || i->find_first_of('.') == std::wstring::npos) continue;
-
-		std::wstring fn = L"/" + Utility::Widen(*i);
-		std::wstring sp = Utility::Widen(songPath.path());
-		std::string fn_f = Utility::Narrow(sp + fn);
-
-		if (Ext == L"fmd") // Ftb MetaData
-		{
-			NoteLoaderFTB::LoadMetadata(fn_f, songPath.path(), New);
-		}else if (Ext == L"ftb")
-		{
-			NoteLoaderFTB::LoadObjectsFromFile(fn_f, songPath.path(), New);
-		}else if (Ext == L"osu")
-			NoteLoaderOM::LoadObjectsFromFile(fn_f, songPath.path(), New);
-		else if (Ext == L"bms" || Ext == L"bme" || Ext == L"bml")
-			NoteLoaderBMS::LoadObjectsFromFile(fn_f, songPath.path(), New);
-	}
+		LoadSong7KFromFilename(*i, songPath.path(), New);
 
 	if (New->Difficulties.size())
 		VecOut.push_back(New);

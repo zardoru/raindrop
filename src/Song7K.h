@@ -40,10 +40,12 @@ namespace VSRG
 		std::vector<AutoplaySound> BGMEvents;
 		bool IsVirtual;
 
+		double PreviewTime;
 	public:
 		Difficulty() { 
 			IsVirtual = false;
 			Channels = 0;
+			PreviewTime = 0;
 		};
 	};
 
