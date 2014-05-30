@@ -36,6 +36,8 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, String Author)
 			<< "Countdown: 0\n"
 			<< "SampleSet: None\n"
 			<< "StackLeniency: 0.7\n"
+			<< "SpecialStyle: 0\n"
+			<< "WidescreenStoryboard: 0\n"
 			<< "Mode: 3\n"
 			<< "LetterboxInBreaks: 0\n\n"
 			<< "[Editor]\n"
@@ -61,14 +63,14 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, String Author)
 		out
 			<< "[Difficulty]\n"
 			<< "HPDrainRate: 7\n"
-			<< "CircleSize: " << (*i)->Channels << "\n"
+			<< "CircleSize: " << (int)(*i)->Channels << "\n"
 			<< "OverallDifficulty: 7\n"
 			<< "ApproachRate: 9\n"
 			<< "SliderMultiplier: 1.4\n"
 			<< "SliderTickRate: 1\n\n"
 			<< "[Events]\n"
 			<< "// Background and Video events\n"
-			<< "0,0,\"" << Sng->BackgroundFilename << "\""
+			<< "0,0,\"" << Sng->BackgroundFilename << "\"\n"
 			<< "// Storyboard Layer 0 (Background)\n// Storyboard Layer 1 (Fail)\n// Storyboard Layer 2 (Pass)\n"
 			<< "// Storyboard Layer 3 (Foreground)\n// Storyboard Sound Samples\n// Background Colour Transformations\n"
 			<< "3,100,163,162,255\n\n";
@@ -83,7 +85,7 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, String Author)
 			t != (*i)->BPS.end();
 			t++)
 		{
-			out << t->Time << "," << 1000 / (t->Value ? t->Value : 0.00001) << ",4,1,0,15,0,0\n";
+			out << t->Time * 1000 << "," << 1000 / (t->Value ? t->Value : 0.00001) << ",4,1,0,15,1,0\n";
 			out.flush();
 		}
 
@@ -100,12 +102,16 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, String Author)
 					Note != k->MeasureNotes[n].end();
 					Note++)
 				{
-					out << TrackToXPos((*i)->Channels, n) << ",192," << Note->StartTime * 1000 << ","
+					out << TrackToXPos((*i)->Channels, n) << ",0," << int(Note->StartTime * 1000.0) << ","
 						<< (Note->EndTime ? "128" : "1") << ",0,";
 					if (Note->EndTime)
-						out << Note->EndTime * 1000 << ":";
-					out << "1:0:0:0:" << 
-						( Note->Sound ? ((*i)->SoundList.find(Note->Sound) != (*i)->SoundList.end() ? (*i)->SoundList[Note->Sound].c_str() : "" ) : "") << "\n";
+						out << int(Note->EndTime * 1000.0) << ",";
+					out << "1:0:0";
+
+					if (Note->Sound)
+						out << ":" << ( Note->Sound ? ((*i)->SoundList.find(Note->Sound) != (*i)->SoundList.end() ? (*i)->SoundList[Note->Sound].c_str() : "" ) : "");
+
+					out << "\n";
 					out.flush();
 				}
 			}
