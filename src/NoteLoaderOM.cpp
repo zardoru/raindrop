@@ -165,7 +165,7 @@ int GetInterval(float Position, int Channels)
 
 String GetSampleFilename(SplitResult &Spl, int NoteType, int Hitsound)
 {
-	int SampleSet, SampleSetAddition, CustomSample;
+	int SampleSet, SampleSetAddition, CustomSample = 0;
 	String SampleFilename;
 
 	size_t SplSize = Spl.size();
@@ -198,7 +198,8 @@ String GetSampleFilename(SplitResult &Spl, int NoteType, int Hitsound)
 
 		SampleSet = atoi(Spl[0].c_str());
 		SampleSetAddition = atoi(Spl[1].c_str());
-		CustomSample = atoi(Spl[2].c_str());
+		if (Spl.size() > 2)
+			CustomSample = atoi(Spl[2].c_str());
 
 		/*
 		if (SplCnt > 3)

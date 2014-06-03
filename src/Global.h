@@ -42,6 +42,7 @@ namespace Utility
 	String Narrow(std::wstring Line);
 	void CheckDir (String Dirname);
 	int GetLMT(String Path);
+	void RemoveFilenameIllegalCharacters(String &S);
 }
 
 

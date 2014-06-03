@@ -8,6 +8,9 @@
 #include <csignal>
 #include <sys/stat.h>
 
+#include <boost/algorithm/string/replace.hpp>
+#include <boost/algorithm/string/classification.hpp>
+
 int InfinityMask = 0x7F800000;
 float *PInfinity = (float*)&InfinityMask;
 
@@ -113,6 +116,18 @@ namespace Utility {
 			return st.st_mtime;
 		}
 		else return 0;
+	}
+
+	void RemoveFilenameIllegalCharacters(String &S)
+	{
+		// size_t len = strlen(fn);
+		boost::replace_all(S, "<", "");
+		boost::replace_all(S, ">", "");
+		boost::replace_all(S, ":", "");
+		boost::replace_all(S, "\"", "");
+		boost::replace_all(S, "|", "");
+		boost::replace_all(S, "?", "");
+		boost::replace_all(S, "*", "");
 	}
 
 } // namespace Utility

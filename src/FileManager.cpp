@@ -248,7 +248,7 @@ void loadSong7K( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 	VSRG::Song *New = new VSRG::Song();
 
 	int LMTPath = Utility::GetLMT(songPath.path());
-	int LMTFile;
+
 
 	String Hash = GenHash(songPath.path(), LMTPath);
 	String FilenameCache = FileManager::GetCacheDirectory() + Hash;
