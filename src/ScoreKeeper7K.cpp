@@ -92,6 +92,8 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 			return ScoreKeeperJudgment(SKJ_W1 + (ScoreKeeperJudgment)i);
 		}
 	}
+
+	return SKJ_NONE;
 }
 
 

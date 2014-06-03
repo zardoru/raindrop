@@ -24,7 +24,10 @@ uint32 SectionIndex(const TimingData &Timing, float Beat)
 
 double SectionValue(const TimingData &Timing, float Beat)
 {
-	return Timing[SectionIndex(Timing,Beat)-1].Value;
+	if (Beat < Timing[0].Time)
+		return Timing[0].Value;
+	else
+		return Timing[SectionIndex(Timing,Beat)-1].Value;
 }
 
 double TimeAtBeat(const TimingData &Timing, float Offset, float Beat)
@@ -117,17 +120,18 @@ double IntegrateToTime(const TimingData &Timing, float Time, float Drift)
 	uint32 Section = SectionIndex(Timing, Time) - 1;
 	double Out = 0;
 
-	if (Time < 0)
+	if (Time < Timing[0].Time)
 	{
-		return  Timing[0].Value * Time + IntegrateToTime(Timing, 0, Drift);
-	}
-
-	for (uint32 i = 0; i < Section; i++)
+		Out = - (Timing[0].Time - Time) * Timing[0].Value;
+	}else
 	{
-		Out += (Timing[i+1].Time - Timing[i].Time) * Timing[i].Value;
-	}
+		for (uint32 i = 0; i < Section; i++)
+		{
+			Out += (Timing[i+1].Time - Timing[i].Time) * Timing[i].Value;
+		}
 
-	Out += (Time - Timing[Section].Time + Drift) * Timing[Section].Value;
+		Out += (Time - Timing[Section].Time + Drift) * Timing[Section].Value;
+	}
 
 	return Out;
 }

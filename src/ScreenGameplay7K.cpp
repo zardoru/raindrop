@@ -58,6 +58,8 @@ ScreenGameplay7K::ScreenGameplay7K()
 
 void ScreenGameplay7K::Cleanup()
 {
+	CurrentDiff->Destroy();
+
 	if (Music)
 	{
 		MixerRemoveStream(Music);
@@ -182,6 +184,9 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	if (AudioCompensation)
 		TimeCompensation = MixerGetLatency();
+
+	String CacheFilename = MySong->FilenameCache + CurrentDiff->Name;
+	CurrentDiff->LoadCache(CacheFilename);
 
 	TimeCompensation += Configuration::GetConfigf("Offset7K");
 

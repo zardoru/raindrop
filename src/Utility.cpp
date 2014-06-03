@@ -1,5 +1,6 @@
 #ifdef WIN32
 #include <Windows.h>
+#include <direct.h>
 #endif
 
 #include "Global.h"
@@ -89,6 +90,19 @@ namespace Utility {
 		size_t len = WideCharToMultiByte(CP_UTF8, 0, Line.c_str(), Line.length(), mbs, 2048, NULL, NULL);
 #endif
 		return String(mbs);
+	}
+
+	void CheckDir(String path)
+	{
+		struct stat st;
+		if (stat(path.c_str(), &st))
+		{
+#ifdef WIN32
+			_mkdir(path.c_str());
+#else
+			mkdir(path, S_IWUSR);
+#endif
+		}
 	}
 
 } // namespace Utility

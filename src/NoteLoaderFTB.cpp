@@ -23,7 +23,12 @@ typedef std::vector<String> SplitResult;
 
 void NoteLoaderFTB::LoadMetadata(String filename, String prefix, Song *Out)
 {
-	std::fstream filein ((filename).c_str());
+#if (!defined _WIN32) || (defined STLP)
+	std::ifstream filein (filename.c_str());
+#else
+	std::ifstream filein (Utility::Widen(filename).c_str());
+#endif
+
 
 	if (!filein.is_open())
 		return;

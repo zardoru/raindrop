@@ -12,6 +12,7 @@ namespace dotcur
 
 namespace VSRG
 {
+	struct Difficulty;
 	class Song;
 }
 
@@ -25,9 +26,12 @@ public:
 	static String GetDirectoryPrefix();
 	static String GetSkinPrefix();
 	static String GetScriptsDirectory();
+	static String GetCacheDirectory();
 	static void SetSkin(String NextSkin);
+	static void Initialize();
 };
 
 VSRG::Song* LoadSong7KFromFilename(String Filename, String Prefix, VSRG::Song *Sng);
+String GenHash(VSRG::Song *Sng, VSRG::Difficulty *Diff);
 
 #endif

@@ -5,7 +5,7 @@
 
 namespace NoteLoaderSM
 {
-	VSRG::Song* LoadObjectsFromFile(String filename, String prefix);
+	void LoadObjectsFromFile(String filename, String prefix, VSRG::Song *Out);
 }
 
 namespace NoteLoaderFTB

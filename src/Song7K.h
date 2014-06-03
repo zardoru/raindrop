@@ -22,6 +22,7 @@ namespace VSRG
 
 	struct Difficulty : public Game::Song::Difficulty
 	{
+		// This is saved to the cache file.
 		TimingData StopsTiming;
 
 		// For in-game effects.
@@ -36,17 +37,35 @@ namespace VSRG
 		// Notes (Up to MAX_CHANNELS tracks)
 		MeasureVector Measures;
 
-		unsigned char Channels;
+		// Autoplay Sounds
 		std::vector<AutoplaySound> BGMEvents;
+
+		// This information won't be saved into the cache file.
+		unsigned char Channels;
 		bool IsVirtual;
 
+		// New variables for cache
+		bool IsLoaded;
+		bool ParseAgain;
+		String ChartFilename;
+
 		double PreviewTime;
+
 	public:
-		Difficulty() { 
+		Difficulty() {
+			ParseAgain = false;
+			IsLoaded = false;
 			IsVirtual = false;
 			Channels = 0;
 			PreviewTime = 0;
 		};
+
+		// Load and save from cache
+		bool SaveCache(String filename);
+		bool LoadCache(String filename);
+
+		// Destroy all information that can be loaded from cache
+		void Destroy();
 	};
 
 
@@ -66,8 +85,9 @@ namespace VSRG
 		TimingData BPMData;
 		TimingData StopsData; 
 		bool UseSeparateTimingData;
+		String FilenameCache;
 
-		enum 
+		enum EBt
 		{
 			BT_Beat,
 			BT_MS,

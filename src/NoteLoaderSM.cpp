@@ -168,10 +168,14 @@ void LoadTracksSM(Song *Out, Difficulty *Diff, String line)
 	*/
 }
 
-Song* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)
+void NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix, Song *Out)
 {
+#if (!defined _WIN32) || (defined STLP)
 	std::ifstream filein (filename.c_str());
-	Song *Out = new Song();
+#else
+	std::ifstream filein (Utility::Widen(filename).c_str());
+#endif
+
 	Difficulty *Diff = new Difficulty();
 
 	// Stepmania uses beat-based locations for stops and BPM.
@@ -184,7 +188,7 @@ Song* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)
 		serr << "couldn't open \"" << filename << "\" for reading";
 		throw; // std::exception(serr.str().c_str());
 #else
-		return NULL;
+		return;
 #endif
 	}
 
@@ -264,5 +268,4 @@ Song* NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix)
 	}
 
 	delete Diff;
-	return Out;
 }

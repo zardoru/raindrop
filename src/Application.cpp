@@ -126,6 +126,7 @@ void Application::Init()
 	wprintf(L"Initializing... \n");
 
 	Configuration::Initialize();
+	FileManager::Initialize();
 
 	if (RunMode == MODE_PLAY || RunMode == MODE_VSRGPREVIEW)
 	{

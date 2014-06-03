@@ -1,4 +1,5 @@
 #include <map>
+#include <fstream>
 
 #include "GameGlobal.h"
 #include "Song7K.h"
@@ -56,6 +57,18 @@ void Song::ProcessVSpeeds(VSRG::Difficulty* Diff, double SpeedConstant)
 
 		Diff->VerticalSpeeds.push_back(VSpeed);
 	}
+
+	// Let first speed be not-null.
+	if (Diff->VerticalSpeeds.size() && Diff->VerticalSpeeds[0].Value == 0)
+	{
+		for (TimingData::iterator i = Diff->VerticalSpeeds.begin(); 
+			i != Diff->VerticalSpeeds.end();
+			i++)
+		{
+			if (i->Value != 0)
+				Diff->VerticalSpeeds[0].Value = i->Value;
+		}
+	}
 }
 
 
@@ -66,21 +79,6 @@ void Song::ProcessBPS(VSRG::Difficulty* Diff, double Drift)
 		that is not repeating the same thing using different values.
 	*/
 	Diff->BPS.clear();
-
-	if (Diff->Offset > 0 || Drift || BPMType == BT_Beatspace) /* We have to set up a speed during this time, otherwise it'll be 0. */
-	{
-		TimingSegment Seg;
-
-		Seg.Time = 0;
-
-		if (BPMType != BT_Beatspace)
-		{
-			Seg.Value = bps (Diff->Timing[0].Value);
-		}else
-			Seg.Value = bps ( 60000.0 / Diff->Timing[0].Value );
-
-		Diff->BPS.push_back(Seg);
-	}
 
 	for(TimingData::iterator Time = Diff->Timing.begin();
 		Time != Diff->Timing.end();
@@ -335,4 +333,192 @@ void Song::Process(VSRG::Difficulty* Which, MeasureVectorTN *NotesOut, float Dri
 
 	Processed = true;
 	PreviousDrift = Drift;
+}
+
+
+/*
+
+	The convention for writing cache data is
+
+	Sounds list:
+	index,filename
+
+	Timing:
+	time,value
+
+	Speed Changes:
+	time,value
+
+	Stops:
+	time,value
+
+	BGM events:
+	time,value
+
+	Notes: (measure separator: @)
+	track,start,end,sound
+
+
+	separated by a newline only writing the character $.
+*/
+
+using std::vector;
+
+void WriteTimingData(const TimingData &Data, std::fstream& out)
+{
+	for (TimingData::const_iterator i = Data.begin(); i != Data.end(); i++)
+		out << i->Time << "," << i->Value << std::endl;
+}
+
+#define SEPARATOR "$" << std::endl
+#define MSSEPARATOR "@" << std::endl
+bool Difficulty::SaveCache(String filename)
+{
+	if (/*!IsLoaded || */ParseAgain)
+		return false;
+
+	std::fstream out (filename.c_str(), std::ios::out);
+
+	for (std::map<int, String>::iterator i = SoundList.begin();
+		i != SoundList.end();
+		i++)
+	{
+		out << i->first << "," << i->second << std::endl;
+	}
+
+	out << SEPARATOR;
+	WriteTimingData(Timing, out);
+	out << SEPARATOR;
+	WriteTimingData(SpeedChanges, out);
+	out << SEPARATOR;
+	WriteTimingData(StopsTiming, out);
+	out << SEPARATOR;
+
+	for (std::vector<AutoplaySound>::iterator i = BGMEvents.begin(); i != BGMEvents.end(); i++)
+		out << i->Time << "," << i->Sound << std::endl;
+
+	out << SEPARATOR;
+
+	for (MeasureVector::iterator i = Measures.begin(); i != Measures.end(); i++)
+	{
+		out << MSSEPARATOR;
+
+		for (char k = 0; k < MAX_CHANNELS; k++)
+			for (std::vector<NoteData>::iterator n = i->MeasureNotes[k].begin(); n != i->MeasureNotes[k].end(); n++)
+			{
+				out << (int)k << "," << n->StartTime << "," << n->EndTime << "," << n->Sound << std::endl;
+			}
+	}
+
+	return true;
+}
+
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/lexical_cast.hpp>
+
+using boost::split;
+using boost::lexical_cast;
+
+void LoadTimingData(TimingData& Timing, std::ifstream &in)
+{
+	String line;
+	while (std::getline(in, line))
+	{
+		if (line == "$")
+			break;
+		else
+		{
+			vector<String> res;
+			split(res, line, boost::is_any_of(","));
+			double time = lexical_cast<double> (res[0]);
+			double value = lexical_cast<double> (res[1]);
+			TimingSegment S;
+			S.Time = time;
+			S.Value = value;
+			Timing.push_back(S);
+		}
+	}
+}
+
+bool Difficulty::LoadCache(String filename)
+{
+	std::ifstream in (filename.c_str());
+
+	if (!in.is_open())
+		return false;
+
+	String line;
+	while (std::getline(in, line))
+	{
+		if (line == "$")
+			break;
+		else
+		{
+			vector<String> res;
+			split(res, line, boost::is_any_of(","));
+			int index = lexical_cast<int>(res[0].c_str());
+			SoundList[index] = res[1];
+		}
+	}
+
+	LoadTimingData(Timing, in);
+	LoadTimingData(SpeedChanges, in);
+	LoadTimingData(StopsTiming, in);
+
+	while (std::getline(in, line))
+	{
+		if (line == "$")
+			break;
+		else
+		{
+			vector<String> res;
+			split(res, line, boost::is_any_of(","));
+			double Time = lexical_cast<double>(res[0]);
+			int Value = lexical_cast<int>(res[1]);
+			AutoplaySound S;
+			S.Sound = Value;
+			S.Time = Time;
+			BGMEvents.push_back(S);
+		}
+	}
+
+	while (std::getline(in, line))
+	{
+		if (line == "$")
+			break;
+		else
+		{
+			if (line == "@")
+			{
+				Measure M;
+				Measures.push_back(M);
+			}else
+			{
+				vector<String> res;
+				split(res, line, boost::is_any_of(","));
+				int Track = lexical_cast<int> (res[0]);
+				double startTime = lexical_cast<double>(res[1]);
+				double endTime = lexical_cast<double>(res[2]);
+				int Sound = lexical_cast<int> (res[3]);
+				NoteData N;
+				N.Sound = Sound;
+				N.StartTime = startTime;
+				N.EndTime = endTime;
+				Measures.back().MeasureNotes[Track].push_back(N);
+			}
+		}
+	}
+
+	return true;
+}
+
+void Difficulty::Destroy()
+{
+	SoundList.clear();
+	Timing.clear();
+	SpeedChanges.clear();
+	StopsTiming.clear();
+	BGMEvents.clear();
+	Measures.clear();
 }

@@ -358,7 +358,12 @@ void ReadObjects (String line, OsuLoadInfo* Info)
 
 void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song *Out)
 {
+#if (!defined _WIN32) || (defined STLP)
 	std::ifstream filein (filename.c_str());
+#else
+	std::ifstream filein (Utility::Widen(filename).c_str());
+#endif
+
 	Difficulty *Diff = new Difficulty();
 	OsuLoadInfo Info;
 
