@@ -566,6 +566,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 
 	// BMS uses beat-based locations for stops and BPM. (Though the beat must be calculated.)
 	Out->BPMType = Song::BT_Beat;
+	Diff->LMT = Utility::GetLMT(filename);
 
 	if (!filein.is_open())
 	{

@@ -105,6 +105,16 @@ namespace Utility {
 		}
 	}
 
+	int GetLMT(String Path)
+	{
+		struct stat st;
+		if (stat(Path.c_str(), &st) != -1)
+		{
+			return st.st_mtime;
+		}
+		else return 0;
+	}
+
 } // namespace Utility
 
 #ifdef NDEBUG

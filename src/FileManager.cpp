@@ -93,7 +93,7 @@ void loadSong( Directory songPath, std::vector<dotcur::Song*> &VecOut )
 }
 
 
-String GenHash(String Dir)
+String GenHash(String Dir, int Sd)
 {
 	size_t Sum = 0;
 	for (size_t i = 0; i < Dir.length(); i++)
@@ -102,13 +102,18 @@ String GenHash(String Dir)
 	}
 
 	std::stringstream ss;
-	ss << Sum;
+	ss << Sum + Sd;
 	return ss.str();
 }
 
 void WriteMetaCache(VSRG::Song *Sng, String filename)
 {
+#ifndef WIN32
 	std::fstream out(filename.c_str(), std::ios::out);
+#else
+	std::fstream out(Utility::Widen(filename).c_str(), std::ios::out);
+#endif
+
 	out << Sng->SongAuthor << "\n";
 	out << Sng->SongName << "\n";
 	out << Sng->SongFilename << "\n";
@@ -129,7 +134,8 @@ void WriteMetaCache(VSRG::Song *Sng, String filename)
 			<< (*k)->TotalHolds << " "
 			<< (*k)->TotalNotes << " "
 			<< (*k)->TotalObjects << " "
-			<< (*k)->TotalScoringObjects
+			<< (*k)->TotalScoringObjects << " "
+			<< (*k)->LMT
 			<< std::endl;
 
 	}
@@ -177,6 +183,7 @@ void LoadMetaCache(VSRG::Song *Sng, String filename)
 		Diff->TotalNotes = lexical_cast<int> (res[5]);
 		Diff->TotalObjects = lexical_cast<int> (res[6]);
 		Diff->TotalScoringObjects = lexical_cast<int> (res[7]);
+		Diff->LMT = lexical_cast<int> (res[8]);
 		Sng->Difficulties.push_back(Diff);
 	}
 }
@@ -240,7 +247,10 @@ void loadSong7K( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 	songPath.ListDirectory(Listing, Directory::FS_REG);
 	VSRG::Song *New = new VSRG::Song();
 
-	String Hash = GenHash(songPath.path());
+	int LMTPath = Utility::GetLMT(songPath.path());
+	int LMTFile;
+
+	String Hash = GenHash(songPath.path(), LMTPath);
 	String FilenameCache = FileManager::GetCacheDirectory() + Hash;
 
 	New->SongDirectory = songPath.path() + "/";
@@ -259,6 +269,8 @@ void loadSong7K( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 		}
 	}
 
+	New->FilenameCache = FilenameCache;
+
 	// If it doesn't, generate cache files.
 	if (!Utility::FileExists(FilenameCache))
 	{
@@ -275,12 +287,10 @@ void loadSong7K( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 			k != New->Difficulties.end();
 			k++)
 		{
-			(*k)->SaveCache(FilenameCache + (*k)->Name);
+			(*k)->SaveCache(New->DifficultyCacheFilename(*k));
 			(*k)->Destroy();
 		}
 	}
-
-	New->FilenameCache = FilenameCache;
 
 
 	if (New->Difficulties.size())

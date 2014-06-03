@@ -377,7 +377,11 @@ bool Difficulty::SaveCache(String filename)
 	if (/*!IsLoaded || */ParseAgain)
 		return false;
 
-	std::fstream out (filename.c_str(), std::ios::out);
+#ifndef WIN32
+	std::fstream out(filename.c_str(), std::ios::out);
+#else
+	std::fstream out(Utility::Widen(filename).c_str(), std::ios::out);
+#endif
 
 	for (std::map<int, String>::iterator i = SoundList.begin();
 		i != SoundList.end();
@@ -525,4 +529,11 @@ void Difficulty::Destroy()
 	StopsTiming.clear();
 	BGMEvents.clear();
 	Measures.clear();
+}
+
+String Song::DifficultyCacheFilename(VSRG::Difficulty * Diff)
+{
+	std::stringstream ss;
+	ss << FilenameCache << Diff->Name << Diff->LMT;
+	return ss.str();
 }

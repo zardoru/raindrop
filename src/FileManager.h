@@ -32,6 +32,6 @@ public:
 };
 
 VSRG::Song* LoadSong7KFromFilename(String Filename, String Prefix, VSRG::Song *Sng);
-String GenHash(VSRG::Song *Sng, VSRG::Difficulty *Diff);
+String GenHash(String Str, int Sd = 0);
 
 #endif

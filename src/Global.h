@@ -41,6 +41,7 @@ namespace Utility
 	std::wstring Widen(String Line);
 	String Narrow(std::wstring Line);
 	void CheckDir (String Dirname);
+	int GetLMT(String Path);
 }
 
 

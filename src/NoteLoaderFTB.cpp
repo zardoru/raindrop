@@ -70,6 +70,7 @@ failed:
 
 	Out->BPMType = Song::BT_MS; // MS using BPMs.
 	Diff->Channels = 7;
+	Diff->LMT = Utility::GetLMT(filename);
 
 	while (filein)
 	{

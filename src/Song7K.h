@@ -22,6 +22,8 @@ namespace VSRG
 
 	struct Difficulty : public Game::Song::Difficulty
 	{
+		int LMT; // Last modified time
+
 		// This is saved to the cache file.
 		TimingData StopsTiming;
 
@@ -99,6 +101,7 @@ namespace VSRG
 		Song();
 		~Song();
 
+		String DifficultyCacheFilename(VSRG::Difficulty * Diff);
 		void Process(VSRG::Difficulty* Which, MeasureVectorTN *NotesOut, float Drift = 0, double SpeedConstant = 0);
 	};
 

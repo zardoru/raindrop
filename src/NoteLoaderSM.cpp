@@ -255,6 +255,7 @@ void NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 
 		OnCommand(#NOTES)
 		{
+			Diff->LMT = Utility::GetLMT(filename);
 			Diff->Timing = Out->BPMData;
 			Diff->StopsTiming = Out->StopsData;
 			Diff->Offset = -Out->Offset;

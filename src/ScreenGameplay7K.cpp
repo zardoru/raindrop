@@ -185,8 +185,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	if (AudioCompensation)
 		TimeCompensation = MixerGetLatency();
 
-	String CacheFilename = MySong->FilenameCache + CurrentDiff->Name;
-	CurrentDiff->LoadCache(CacheFilename);
+	CurrentDiff->LoadCache(MySong->DifficultyCacheFilename(CurrentDiff));
 
 	TimeCompensation += Configuration::GetConfigf("Offset7K");
 
