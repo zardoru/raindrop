@@ -12,6 +12,10 @@
 
 #include <iostream>
 
+#include <boost/algorithm/string/split.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/classification.hpp>
+
 #define DirectoryPrefix String("GameData/")
 #define SkinsPrefix String("Skins/")
 #define SongsPrefix String("Songs")
@@ -107,6 +111,7 @@ void WriteMetaCache(VSRG::Song *Sng, String filename)
 	std::fstream out(filename.c_str(), std::ios::out);
 	out << Sng->SongAuthor << "\n";
 	out << Sng->SongName << "\n";
+	out << Sng->SongFilename << "\n";
 	out << Sng->BPMType << "\n";
 	out << Sng->BackgroundFilename << "\n";
 
@@ -132,30 +137,47 @@ void WriteMetaCache(VSRG::Song *Sng, String filename)
 
 void LoadMetaCache(VSRG::Song *Sng, String filename)
 {
-	std::ifstream in(filename.c_str());
+#if (!defined _WIN32) || (defined STLP)
+	std::ifstream in (filename.c_str());
+#else
+	std::ifstream in (Utility::Widen(filename).c_str());
+#endif
 	String tmp;
 
-	if (!in.is_open())
-		return;
+	std::getline(in, tmp);
+	Sng->SongAuthor = tmp;
 
-	std::getline(in, Sng->SongAuthor);
-	std::getline(in, Sng->SongName);
+	std::getline(in, tmp);
+	Sng->SongName = tmp;
+
+	std::getline(in, tmp);
+	Sng->SongFilename = tmp;
+
 	std::getline(in, tmp);
 	Sng->BPMType = (VSRG::Song::EBt)atoi(tmp.c_str());
-	std::getline(in, Sng->BackgroundFilename);
+
+	std::getline(in, tmp);
+	Sng->BackgroundFilename = tmp;
 
 	while (std::getline(in, tmp))
 	{
 		VSRG::Difficulty *Diff = new VSRG::Difficulty();
-		std::getline(in, Diff->Name);
-		in >> Diff->Channels
-			>> Diff->Duration
-			>> Diff->IsVirtual
-			>> Diff->Offset
-			>> Diff->TotalHolds
-			>> Diff->TotalNotes
-			>> Diff->TotalObjects
-			>> Diff->TotalScoringObjects;
+		std::getline(in, tmp);
+		Diff->Name = tmp;
+
+		std::getline(in, tmp);
+		std::vector<String> res;
+		using boost::lexical_cast;
+		boost::split(res, tmp, boost::is_any_of(" "));
+		Diff->Channels = lexical_cast<int> (res[0]);
+		Diff->Duration = lexical_cast<double> (res[1]);
+		Diff->IsVirtual = lexical_cast<bool> (res[2]);
+		Diff->Offset = lexical_cast<double> (res[3]);
+		Diff->TotalHolds = lexical_cast<int> (res[4]);
+		Diff->TotalNotes = lexical_cast<int> (res[5]);
+		Diff->TotalObjects = lexical_cast<int> (res[6]);
+		Diff->TotalScoringObjects = lexical_cast<int> (res[7]);
+		Sng->Difficulties.push_back(Diff);
 	}
 }
 
@@ -219,7 +241,9 @@ void loadSong7K( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 	VSRG::Song *New = new VSRG::Song();
 
 	String Hash = GenHash(songPath.path());
-	String FilenameCache = "cache/" + Hash;
+	String FilenameCache = FileManager::GetCacheDirectory() + Hash;
+
+	New->SongDirectory = songPath.path() + "/";
 
 	// Find if there exists a cache file for this directory
 	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)

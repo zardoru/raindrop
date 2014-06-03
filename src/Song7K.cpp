@@ -443,7 +443,11 @@ void LoadTimingData(TimingData& Timing, std::ifstream &in)
 
 bool Difficulty::LoadCache(String filename)
 {
+#if (!defined _WIN32) || (defined STLP)
 	std::ifstream in (filename.c_str());
+#else
+	std::ifstream in (Utility::Widen(filename).c_str());
+#endif
 
 	if (!in.is_open())
 		return false;
