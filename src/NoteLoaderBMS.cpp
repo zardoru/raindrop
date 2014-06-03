@@ -375,7 +375,7 @@ void CalculateObjects(BmsLoadInfo *Info)
 		for (uint8 curChannel = startChannelLN; curChannel <= (startChannelLN + MAX_CHANNELS); curChannel++)
 		{
 			if (i->second.Events.find(curChannel) != i->second.Events.end())
-				usedChannels[translateTrackBME(curChannel)] = 1;
+				usedChannels[translateTrackBME(curChannel, startChannelLN)] = 1;
 		}
 	}
 
