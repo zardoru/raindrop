@@ -140,6 +140,7 @@ typedef std::map<int, BMSMeasure> MeasureList;
 
 const int startChannel = fromBase36("11");
 const int endChannel   = fromBase36("1Z");
+const int startChannelLN = fromBase36("51");
 
 // The first wav will always be WAV01, not WAV00 since 00 is a reserved value for "nothing"
 // Pretty fitting, in my opinion.
@@ -369,6 +370,15 @@ void CalculateObjects(BmsLoadInfo *Info)
 		}
 	}
 
+	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
+	{
+		for (uint8 curChannel = startChannelLN; curChannel <= (startChannelLN + MAX_CHANNELS); curChannel++)
+		{
+			if (i->second.Events.find(curChannel) != i->second.Events.end())
+				usedChannels[translateTrackBME(curChannel)] = 1;
+		}
+	}
+
 	int usedChannelCNT = 0;
 	for (int i = 0; i < MAX_CHANNELS; i++)
 		if (usedChannels[i] != 0)
@@ -394,8 +404,6 @@ int evtSort(const BMSEvent &A, const BMSEvent &B)
 {
 	return A.Fraction < B.Fraction;
 }
-
-int startChannelLN = fromBase36("51");
 
 void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 {
@@ -465,7 +473,7 @@ degradetonote:
 
 			for (BMSEventList::iterator ev = i->second.Events[curChannel].begin(); ev != i->second.Events[curChannel].end(); ev++)
 			{
-				if (Track >= usedChannels) continue;
+				if (Track >= usedChannels || Track < 0) continue;
 
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
 
