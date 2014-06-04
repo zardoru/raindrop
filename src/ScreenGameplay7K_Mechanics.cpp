@@ -44,8 +44,9 @@ void ScreenGameplay7K::UpdateScriptScoreVariables()
 	L->SetGlobal("Combo", score_keeper->getScore(ST_COMBO));
 	L->SetGlobal("MaxCombo", score_keeper->getScore(ST_MAX_COMBO));
 	L->SetGlobal("Accuracy", score_keeper->getPercentScore(PST_ACC));
-	L->SetGlobal("EXScore", score_keeper->getPercentScore(PST_EX));
-	L->SetGlobal("Lifebar", score_keeper->getLifebarAmount(LT_GROOVE));
+	L->SetGlobal("EXScore", score_keeper->getScore(ST_EX));
+	L->SetGlobal("SCScore", score_keeper->getScore(ST_SCORE));
+	L->SetGlobal("LifebarValue", score_keeper->getLifebarAmount(LT_GROOVE));
 }
 
 
@@ -139,7 +140,7 @@ void ScreenGameplay7K::RunMeasures()
 
 					HeldKey[k] = false;
 					m->Disable();
-				}
+				} // Condition D: Hold head was hit, but was released early was already handled at ReleaseLane so no need to be redundant here.
 
 			} // end for notes
 		} // end for measures

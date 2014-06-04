@@ -313,6 +313,7 @@ void ScreenGameplay7K::SetupScriptConstants()
 	L->SetGlobal("SongDuration", CurrentDiff->Duration);
 	L->SetGlobal("SongDurationBeats", BeatAtTime(CurrentDiff->BPS, CurrentDiff->Duration, CurrentDiff->Offset + TimeCompensation));
 	L->SetGlobal("WaitingTime", WaitingTime);
+	L->SetGlobal("Lifebar", score_keeper->getLifebarAmount(LT_GROOVE));
 
 	Animations->AddLuaTarget(&Background, "ScreenBackground");
 }
@@ -511,7 +512,7 @@ void ScreenGameplay7K::UpdateScriptVariables()
 	L->SetGlobal("waveEffectEnabled", waveEffectEnabled);
 	L->SetGlobal("Active", Active);
 	L->SetGlobal("SongTime", SongTime);
-	L->SetGlobal("Lifebar", score_keeper->getLifebarAmount(LT_GROOVE));
+	L->SetGlobal("LifebarValue", score_keeper->getLifebarAmount(LT_GROOVE));
 
 	CurrentBeat = BeatAtTime(CurrentDiff->BPS, SongTime, CurrentDiff->Offset + TimeCompensation);
 	L->SetGlobal("Beat", CurrentBeat);

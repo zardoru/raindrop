@@ -69,6 +69,8 @@ class ScoreKeeper7K {
 		void setDP2(int ms);
 		void setDP1(int ms);
 		
+		int getJudgmentCount(ScoreKeeperJudgment Judge);
+
 		ScoreKeeperJudgment hitNote(int ms);
 		void missNote(bool auto_hold_miss);
 
