@@ -260,7 +260,12 @@ void GameObject::Invalidate()
 	GameObjectUVvbo = UvBuffer;
 }
 
-double &GameObject::GetFraction()
+double GameObject::GetFraction() const
 {
 	return Fraction;
+}
+
+void GameObject::SetFraction (double frac)
+{
+	Fraction = frac;
 }

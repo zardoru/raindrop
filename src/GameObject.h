@@ -31,7 +31,8 @@ public:
 	void Animate(float delta, float songTime);
 	void Assign(double Duration, uint32 Measure, double MeasureFraction);
 
-	double &GetFraction();
+	double GetFraction() const;
+	void SetFraction (double frac);
 	bool IsHold();
 	void Invalidate();
 	bool ShouldRemove();

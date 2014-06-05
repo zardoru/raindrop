@@ -119,7 +119,7 @@ void Song::Repack()
 	}
 }
 
-int noteSort(GameObject &A, GameObject &B)
+int noteSort(const GameObject &A, const GameObject &B)
 {
 	return A.GetFraction() < B.GetFraction();
 }
