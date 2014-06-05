@@ -42,7 +42,6 @@ void ScreenMainMenu::Init()
 	ExitBtn.AddPosition(Configuration::GetSkinConfigf("X", "ExitButton"), Configuration::GetSkinConfigf("Y", "ExitButton"));
 	Background.AffectedByLightning = Logo.AffectedByLightning = true;
 
-	Logo.SetSize(Configuration::GetSkinConfigf("Size", "Logo"));
 	Logo.Centered = Configuration::GetSkinConfigf("Centered", "Logo") != 0;
 	Logo.SetPosition(Configuration::GetSkinConfigf("X", "Logo"), Configuration::GetSkinConfigf("Y", "Logo"));
 
@@ -100,7 +99,6 @@ bool ScreenMainMenu::Run (double Delta)
 		return true;
 
 	ScreenTime += Delta;
-	Logo.SetScale( 1.0f + sin(ScreenTime)*sin(ScreenTime)*0.3 );
 
 	Background.Render();
 	Logo.Render();

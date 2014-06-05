@@ -79,13 +79,6 @@ void ScreenSelectMusic::MainThreadInitialization()
 
 	Background.Centered = 1;
 	Background.SetPosition( ScreenWidth / 2, ScreenHeight / 2 );
-	
-	/* Logo */
-	Logo.SetImage(ImageLoader::LoadSkin("logo.png"));
-	Logo.SetSize(Configuration::GetSkinConfigf("Size", "Logo2"));
-	Logo.Centered = Configuration::GetSkinConfigf("Centered", "Logo2") != 0;
-	Logo.SetPosition(Configuration::GetSkinConfigf("X", "Logo2"), Configuration::GetSkinConfigf("Y", "Logo2"));
-	Logo.AffectedByLightning = true;
 
 	WindowFrame.SetLightMultiplier(1);
 	Background.AffectedByLightning = true;
@@ -147,7 +140,6 @@ bool ScreenSelectMusic::Run(double Delta)
 	}
 
 	Time += Delta;
-	Logo.AddRotation(12 * Delta);
 
 	SelCursor.Alpha = (sin(Time*6)+1)/4 + 0.5;
 	WindowFrame.SetLightMultiplier(sin(Time) * 0.2 + 1);
@@ -200,7 +192,7 @@ bool ScreenSelectMusic::Run(double Delta)
 		{
 			float Y = Cur*20 + ListY;
 			
-			if (Y > 0 && Y < ScreenHeight)
+			if (Y > -20 && Y < ScreenHeight)
 			{
 				Font->DisplayText((*i)->SongName.c_str(), Vec2(SONGLIST_BASEX, Y));
 			}
@@ -213,7 +205,7 @@ bool ScreenSelectMusic::Run(double Delta)
 		{
 			float Y = Cur*20 + ListY;
 			
-			if (Y > 0 && Y < ScreenHeight)
+			if (Y > -20 && Y < ScreenHeight)
 			{
 				Font->DisplayText((*i)->SongName.c_str(), Vec2(SONGLIST_BASEX, Y));
 			}
@@ -290,7 +282,6 @@ bool ScreenSelectMusic::Run(double Delta)
 
 
 	SelCursor.Render();
-	Logo.Render();
 	return Running;
 }	
 

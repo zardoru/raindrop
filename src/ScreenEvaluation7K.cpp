@@ -28,7 +28,7 @@ void ScreenEvaluation7K::Init(ScoreKeeper7K *Result)
 		<< "Notes hit%: " << Result->getPercentScore(PST_NH) << "\n"
 		<< "Accuracy%: " << Result->getPercentScore(PST_ACC) << "\n"
 		<< "Max Combo: " << Result->getScore(ST_MAX_COMBO) << "\n"
-		<< "SC score:" << Result->getScore(ST_SCORE) << "\n"
+		<< "SC score: " << Result->getScore(ST_SCORE) << "\n"
 		<< "Judgement (F/N/G/O/B): " 
 		<< Result->getJudgmentCount(SKJ_W1) << "/" 
 		<< Result->getJudgmentCount(SKJ_W2) << "/" 
