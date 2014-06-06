@@ -19,7 +19,7 @@ public:
 	AudioSourceMP3();
 	~AudioSourceMP3();
 	bool Open(const char* Filename);
-	uint32 Read(void* buffer, size_t count);
+	uint32 Read(short* buffer, size_t count);
 	void Seek(float Time);
 	size_t GetLength(); // Always returns total samples. Frames = Length/Channels.
 	uint32 GetRate(); // Returns sampling rate of audio

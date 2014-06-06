@@ -36,7 +36,7 @@ bool AudioSourceOGG::Open(const char* Filename)
 	return mIsValid;
 }
 
-uint32 AudioSourceOGG::Read(void* buffer, size_t count)
+uint32 AudioSourceOGG::Read(short* buffer, size_t count)
 {
 	int32 size;
 	int32 read = 0, sect;

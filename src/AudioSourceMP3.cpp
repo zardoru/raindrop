@@ -56,7 +56,7 @@ bool AudioSourceMP3::Open(const char* Filename)
 	return false;
 }
 
-uint32 AudioSourceMP3::Read(void* buffer, size_t count)
+uint32 AudioSourceMP3::Read(short* buffer, size_t count)
 {
 	size_t ret;
 	int res = mpg123_read(mHandle, (unsigned char*)buffer, count * sizeof(short), &ret);

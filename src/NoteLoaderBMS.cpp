@@ -585,8 +585,6 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 
 	Diff->IsVirtual = true;
 
-	Out->SongDirectory = prefix;
-
 	/* 
 		BMS files are separated always one file, one difficulty, so it'd make sense
 		that every BMS 'set' might have different timing information per chart.

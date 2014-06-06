@@ -70,31 +70,23 @@ AudioSample::~AudioSample()
 	if (mData) delete mData;
 }
 
-uint32 AudioSample::Read(void* buffer, size_t count)
+uint32 AudioSample::Read(short* buffer, size_t count)
 {
 	if (!mIsPlaying)
 		return 0;
 
 	if (mIsValid)
 	{
-		uint32 bufferLeft = mByteSize-mCounter;
-		
-		count *= sizeof(short);
+		size_t bufferLeft = mBufferSize-mCounter;
+		uint32 ReadAmount = min(bufferLeft, count);
 
-		if (mCounter < mByteSize)
+		if (mCounter < mBufferSize)
 		{	
 			int diff = 0;
-			if(count > bufferLeft)
-			{
-				diff = count - bufferLeft;
-				count = bufferLeft;
-			}
 
-			memcpy(buffer, (char*)mData+mCounter, count);
+			memcpy(buffer, mData+mCounter, ReadAmount * sizeof(short));
 
-			memset((char*)buffer + count, 0, diff);
-
-			mCounter += count;
+			mCounter += ReadAmount;
 		}else
 		{
 			mIsPlaying = false;
@@ -255,7 +247,7 @@ AudioStream::~AudioStream()
 		delete[] mData;
 }
 
-uint32 AudioStream::Read(void* buffer, size_t count)
+uint32 AudioStream::Read(short* buffer, size_t count)
 {
 	size_t cnt;
 	size_t toRead = count; // Count is the amount of s16 samples.

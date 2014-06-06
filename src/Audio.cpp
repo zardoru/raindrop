@@ -237,16 +237,16 @@ public:
 	}
 
 	private:
-		char ts[BUFF_SIZE*2];
+		short ts[BUFF_SIZE*2];
 		int tsF[BUFF_SIZE*2];
 	public:
 
 	void CopyOut(char* out, int samples)
 	{
 		int Voices = 0;
-		int count = samples * 2;
+		int count = samples;
 		
-		memset(out, 0, count);
+		memset(out, 0, count * sizeof(short));
 		memset(tsF, 0, sizeof(tsF));
 
 		// mut.lock();
@@ -277,10 +277,7 @@ public:
 			(*i)->Read(ts, samples);
 
 			for (int i = 0; i < count; i++)
-			{
 				tsF[i] += ts[i];
-			}
-			
 		}
 
 		for (std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); i++)
@@ -289,17 +286,16 @@ public:
 			{
 				memset(ts, 0, sizeof(ts));
 				(*i)->Read(ts, samples);
+
 				for (int i = 0; i < count; i++)
-				{
 					tsF[i] += ts[i];
-				}
 			}
 		}
 
 		for (int i = 0; i < count; i++)
 		{
 			tsF[i] *= MixFactor;
-			((char*)out)[i] = tsF[i];
+			((short*)out)[i] = tsF[i];
 		}
 
 		mut2.unlock();

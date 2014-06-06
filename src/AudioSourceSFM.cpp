@@ -52,12 +52,12 @@ bool AudioSourceSFM::Open(const char* Filename)
 	return true;
 }
 
-uint32 AudioSourceSFM::Read(void* buffer, size_t count)
+uint32 AudioSourceSFM::Read(short* buffer, size_t count)
 {
 	uint32 read;
 	if (mWavFile)
 	{
-		read = sf_read_short(mWavFile, (short*)buffer, count);
+		read = sf_read_short(mWavFile, buffer, count);
 		int remaining = count - read;
 
 		while (mSourceLoop && (remaining > 0))
