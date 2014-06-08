@@ -49,13 +49,19 @@ GameObject::GameObject() : GraphObject2D(false)
 
 	if (GameObjectTexInitialized)
 		UvBuffer = GameObjectUVvbo;
-	else
+
+	ColorInvert = false;
+}
+
+void GameObject::GlobalInit()
+{
+	if (!GameObjectTexInitialized)
 	{
-		UpdateTexture();
-		GameObjectUVvbo = UvBuffer;
+		GameObject O;
+		O.UpdateTexture();
+		GameObjectUVvbo = O.UvBuffer;
 		GameObjectTexInitialized = true;
 	}
-	ColorInvert = false;
 }
 
 void GameObject::Animate(float delta, float songTime)
