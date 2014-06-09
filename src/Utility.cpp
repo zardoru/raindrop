@@ -103,7 +103,7 @@ namespace Utility {
 #ifdef WIN32
 			_mkdir(path.c_str());
 #else
-			mkdir(path, S_IWUSR);
+			mkdir(path.c_str(), S_IWUSR);
 #endif
 		}
 	}

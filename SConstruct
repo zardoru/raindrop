@@ -14,11 +14,11 @@ if not int(DisableMP3):
 
 import sys
 
-if sys.platform.startswith('linux'):
-	env.Append(CPPDEFINES=['LINUX'])
-	env.Append(LIBS=['X11', 'Xrandr', 'Xxf86vm', 'Xi', 'pthread']);
+env.Append(CPPDEFINES=['LINUX'])
 
 env.Append(LIBS= ['sndfile', 'GL', 'GLEW', 'glfw3', 'boost_system', 'boost_thread', 'ogg', 'vorbis', 'vorbisfile', 'portaudio'])
+env.Append(LIBS=['X11', 'Xrandr', 'Xxf86vm', 'Xi', 'pthread']);
+
 env.Append(CPPPATH='.')
 
 env.Program("dc", source = [Glob('src/*.cpp'), Glob('src/*.c'), Glob('SOIL/*.c')])

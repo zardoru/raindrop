@@ -161,8 +161,8 @@ struct BmsLoadInfo
 		Measures[Measure].Events[Channel].Stuff
 	*/
 	MeasureList Measures; 
-	Song* Song;
-	Difficulty *Difficulty;
+	Song* song;
+	Difficulty *difficulty;
 
 	int LowerBound, UpperBound;
 	
@@ -179,8 +179,8 @@ struct BmsLoadInfo
 			startTime[k] = -1;
 			LastNotes[k] = NULL;
 		}
-		Difficulty = NULL;
-		Song = NULL;
+		difficulty = NULL;
+		song = NULL;
 		LNObj = 0;
 	}
 };
@@ -264,7 +264,7 @@ void CalculateBPMs(BmsLoadInfo *Info, int Chan)
 				New.Time = Beat;
 				New.Value = BPM;
 
-				Info->Difficulty->Timing.push_back(New);
+				Info->difficulty->Timing.push_back(New);
 			}
 		}
 	}
@@ -286,12 +286,12 @@ void CalculateBPMs(BmsLoadInfo *Info, int Chan)
 				New.Time = Beat;
 				New.Value = BPM;
 
-				Info->Difficulty->Timing.push_back(New);
+				Info->difficulty->Timing.push_back(New);
 			}
 		}
 	}
 
-	std::sort(Info->Difficulty->Timing.begin(), Info->Difficulty->Timing.end(), ts_sort);
+	std::sort(Info->difficulty->Timing.begin(), Info->difficulty->Timing.end(), ts_sort);
 }
 
 void CalculateStops(BmsLoadInfo *Info)
@@ -303,13 +303,13 @@ void CalculateStops(BmsLoadInfo *Info)
 			for (BMSEventList::iterator ev = i->second.Events[CHANNEL_STOPS].begin(); ev != i->second.Events[CHANNEL_STOPS].end(); ev++)
 			{
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first);
-				double StopDuration = Info->Stops[ev->Event] / 48 * spb (SectionValue(Info->Difficulty->Timing, Beat)); // A value of 1 is... a 192nd of the measure? Or a 192nd of a beat? Or (192 / (4 * meter)) * spb? I'm not sure...
+				double StopDuration = Info->Stops[ev->Event] / 48 * spb (SectionValue(Info->difficulty->Timing, Beat)); // A value of 1 is... a 192nd of the measure? Or a 192nd of a beat? Or (192 / (4 * meter)) * spb? I'm not sure...
 
 				TimingSegment New;
 				New.Time = Beat;
 				New.Value = StopDuration;
 
-				Info->Difficulty->StopsTiming.push_back(New);
+				Info->difficulty->StopsTiming.push_back(New);
 			}
 		}
 	}
@@ -390,7 +390,7 @@ void CalculateObjects(BmsLoadInfo *Info)
 		}
 
 	// We pick the range of channels we're going to use.
-	Info->Difficulty->Channels = Info->UpperBound - Info->LowerBound + 1;
+	Info->difficulty->Channels = Info->UpperBound - Info->LowerBound + 1;
 
 	/* At this point we know the channel count from 1 to MAX_CHANNELS. We should be able to use it now..*/
 
@@ -407,7 +407,7 @@ int evtSort(const BMSEvent &A, const BMSEvent &B)
 
 void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 {
-	int usedChannels = Info->Difficulty->Channels;
+	int usedChannels = Info->difficulty->Channels;
 	Measure Msr;
 
 	Msr.MeasureLength = 4 * i->second.BeatDuration;
@@ -428,9 +428,9 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 
 				double Beat = ev->Fraction * Msr.MeasureLength + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
 
-				double Time = TimeAtBeat(Info->Difficulty->Timing, 0, Beat) + StopTimeAtBeat(Info->Difficulty->StopsTiming, Beat);
+				double Time = TimeAtBeat(Info->difficulty->Timing, 0, Beat) + StopTimeAtBeat(Info->difficulty->StopsTiming, Beat);
 
-				Info->Difficulty->Duration = std::max((double)Info->Difficulty->Duration, Time);
+				Info->difficulty->Duration = std::max((double)Info->difficulty->Duration, Time);
 
 				if (!Info->LNObj || (Info->LNObj != ev->Event))
 				{
@@ -440,9 +440,9 @@ degradetonote:
 					Note.StartTime = Time;
 					Note.Sound = ev->Event;
 					
-					Info->Difficulty->TotalScoringObjects++;
-					Info->Difficulty->TotalNotes++;
-					Info->Difficulty->TotalObjects++;
+					Info->difficulty->TotalScoringObjects++;
+					Info->difficulty->TotalNotes++;
+					Info->difficulty->TotalObjects++;
 
 					Msr.MeasureNotes[Track].push_back(Note);
 					if (Msr.MeasureNotes[Track].size())
@@ -451,8 +451,8 @@ degradetonote:
 				{
 					if (Info->LastNotes[Track]) 
 					{
-						Info->Difficulty->TotalHolds++;
-						Info->Difficulty->TotalScoringObjects++;
+						Info->difficulty->TotalHolds++;
+						Info->difficulty->TotalScoringObjects++;
 						Info->LastNotes[Track]->EndTime = Time;
 						Info->LastNotes[Track] = NULL;
 					}
@@ -477,7 +477,7 @@ degradetonote:
 
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
 
-				double Time = TimeAtBeat(Info->Difficulty->Timing, 0, Beat) + StopTimeAtBeat(Info->Difficulty->StopsTiming, Beat);
+				double Time = TimeAtBeat(Info->difficulty->Timing, 0, Beat) + StopTimeAtBeat(Info->difficulty->StopsTiming, Beat);
 
 				if (Info->startTime[Track] == -1)
 				{
@@ -486,16 +486,16 @@ degradetonote:
 				{
 					NoteData Note;
 
-					Info->Difficulty->Duration = std::max((double)Info->Difficulty->Duration, Time);
+					Info->difficulty->Duration = std::max((double)Info->difficulty->Duration, Time);
 
 					Note.StartTime = Info->startTime[Track];
 					Note.EndTime = Time;
 
 					Note.Sound = ev->Event;
 
-					Info->Difficulty->TotalScoringObjects += 2;
-					Info->Difficulty->TotalHolds++;
-					Info->Difficulty->TotalObjects++;
+					Info->difficulty->TotalScoringObjects += 2;
+					Info->difficulty->TotalHolds++;
+					Info->difficulty->TotalObjects++;
 
 					Msr.MeasureNotes[Track].push_back(Note);
 
@@ -505,16 +505,16 @@ degradetonote:
 		}
 	}
 
-	Info->Difficulty->Measures.push_back(Msr);
+	Info->difficulty->Measures.push_back(Msr);
 
 	for (uint8 k = 0; k < MAX_CHANNELS; k++)
 	{
 		// Our old pointers are invalid by now since the Msr structures are going to go out of scope
 		// Which means we must renew them, and that's better done here.
 
-		MeasureVector::reverse_iterator q = Info->Difficulty->Measures.rbegin();
+		MeasureVector::reverse_iterator q = Info->difficulty->Measures.rbegin();
 		
-		while (q != Info->Difficulty->Measures.rend())
+		while (q != Info->difficulty->Measures.rend())
 		{
 			if ((*q).MeasureNotes[k].size()) {
 				Info->LastNotes[k] = &((*q).MeasureNotes[k].back());
@@ -535,7 +535,7 @@ degradetonote:
 
 			double Beat = ev->Fraction * Msr.MeasureLength + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
 
-			double Time = TimeAtBeat(Info->Difficulty->Timing, 0, Beat) + StopTimeAtBeat(Info->Difficulty->StopsTiming, Beat);
+			double Time = TimeAtBeat(Info->difficulty->Timing, 0, Beat) + StopTimeAtBeat(Info->difficulty->StopsTiming, Beat);
 
 			AutoplaySound New;
 			New.Time = Time;
@@ -543,10 +543,10 @@ degradetonote:
 
 			// printf("Event %i, %f, %f..\n", Event, Beat, Time);
 
-			Info->Difficulty->BGMEvents.push_back(New);
+			Info->difficulty->BGMEvents.push_back(New);
 		}
 
-		std::sort(Info->Difficulty->BGMEvents.begin(), Info->Difficulty->BGMEvents.end(), evsort);
+		std::sort(Info->difficulty->BGMEvents.begin(), Info->difficulty->BGMEvents.end(), evsort);
 	}
 }
 
@@ -569,8 +569,8 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 	Difficulty *Diff = new Difficulty();
 	BmsLoadInfo *Info = new BmsLoadInfo();
 
-	Info->Song = Out;
-	Info->Difficulty = Diff;
+	Info->song = Out;
+	Info->difficulty = Diff;
 
 	// BMS uses beat-based locations for stops and BPM. (Though the beat must be calculated.)
 	Out->BPMType = Song::BT_Beat;
