@@ -24,6 +24,7 @@ public:
 	float waiting_time;
 
 	GameObject();
+	static void GlobalInit();
 	void Initialize();
 
 	Judgement Hit(double time, Vec2 mpos, bool KeyDown, bool Autoplay, int32 Key);

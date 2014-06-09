@@ -10,7 +10,7 @@ protected:
 public:
 	virtual ~AudioDataSource();
 	virtual bool Open(const char* Filename) = 0;
-	virtual uint32 Read(void* buffer, size_t count) = 0;
+	virtual uint32 Read(short* buffer, size_t count) = 0; // count is in samples.
 	virtual void Seek(float Time) = 0;
 	virtual size_t GetLength() = 0; // Always returns total frames.
 	virtual uint32 GetRate() = 0; // Returns sampling rate of audio
@@ -27,7 +27,7 @@ protected:
 	bool mIsLooping;
 	uint32 Channels;
 public:
-	virtual uint32 Read(void* buffer, size_t count) = 0;
+	virtual uint32 Read(short* buffer, size_t count) = 0;
 	virtual bool Open(const char* Filename) = 0;
 	virtual void Play() = 0;
 	virtual bool IsPlaying() = 0;
@@ -57,7 +57,7 @@ private:
 public:
 	AudioSample();
 	~AudioSample();
-	uint32 Read(void* buffer, size_t count);
+	uint32 Read(short* buffer, size_t count);
 	bool Open(const char* Filename);
 	void Play();
 	void SeekTime(float Second);
@@ -83,7 +83,7 @@ public:
 	AudioStream();
 	~AudioStream();
 
-	uint32 Read(void* buffer, size_t count);
+	uint32 Read(short* buffer, size_t count);
 	bool Open(const char* Filename);
 	void Play();
 	void SeekTime(float Second);

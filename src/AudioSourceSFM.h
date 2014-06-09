@@ -15,7 +15,7 @@ public:
 	~AudioSourceSFM();
 
 	bool Open(const char* Filename);
-	uint32 Read(void* buffer, size_t count);
+	uint32 Read(short* buffer, size_t count);
 	void Seek(float Time);
 	size_t GetLength();
 	uint32 GetRate();

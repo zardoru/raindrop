@@ -3,6 +3,7 @@
 
 class Image
 {
+	friend class ImageLoader;
 	static Image* LastBound;
 public:
 	Image(unsigned int texture, int w, int h);

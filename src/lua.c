@@ -14753,10 +14753,11 @@ LUALIB_API void luaL_checkversion_ (lua_State *L, lua_Number ver) {
 //->#include "lauxlib.h"
 //->#include "lualib.h"
 
+#include <wchar.h>
 
 static int luaB_print (lua_State *L) {
   int n = lua_gettop(L);  /* number of arguments */
-  int i;
+  int i,j;
   lua_getglobal(L, "tostring");
   for (i=1; i<=n; i++) {
     const char *s;
@@ -14768,11 +14769,28 @@ static int luaB_print (lua_State *L) {
     if (s == NULL)
       return luaL_error(L,
          LUA_QL("tostring") " must return a string to " LUA_QL("print"));
-    if (i>1) luai_writestring("\t", 1);
+    if (i>1)
+	{
+#ifndef WIN32
+		luai_writestring("\t", 1);
+#else
+		wprintf(L"\t");
+#endif
+	}
+#ifndef WIN32
     luai_writestring(s, l);
+#else
+	for (j=0;j<l;j++)
+		putwc(btowc(s[j]), stdout);
+#endif
     lua_pop(L, 1);  /* pop result */
   }
+#ifndef WIN32
   luai_writeline();
+#else
+  wprintf(L"\n");
+  fflush(stdout);
+#endif
   return 0;
 }
 

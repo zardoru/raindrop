@@ -54,6 +54,8 @@ ScreenSelectMusic::ScreenSelectMusic()
 		}
 	}
 
+	GameObject::GlobalInit();
+
 	SelectedMode = MODE_7K;
 
 	OptionUpscroll = false;

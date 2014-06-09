@@ -115,7 +115,10 @@ Image* ImageLoader::Load(String filename)
 
 		SOIL_free_image_data(image);
 		
-		return InsertImage(filename, texture, width, height);
+		Image* Ret = InsertImage(filename, texture, width, height);
+		Image::LastBound = Ret;
+
+		return Ret;
 	}
 	return 0;
 }
@@ -157,7 +160,7 @@ void ImageLoader::UpdateTextures()
 		{
 			unsigned int Texture = UploadToGPU(i->second.Data, i->second.Width, i->second.Height);
 
-			InsertImage(i->first, Texture, i->second.Width, i->second.Height);
+			Image::LastBound = InsertImage(i->first, Texture, i->second.Width, i->second.Height);
 
 			SOIL_free_image_data(i->second.Data);
 		}
