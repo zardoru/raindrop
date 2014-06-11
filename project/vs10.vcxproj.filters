@@ -1,0 +1,408 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\src\ActorBarline.cpp">
+      <Filter>Source\dotcur\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ActorJudgement.cpp">
+      <Filter>Source\dotcur\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ActorLifebar.cpp">
+      <Filter>Source\dotcur\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GameObject.cpp">
+      <Filter>Source\dotcur\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\soil\image_DXT.c">
+      <Filter>Source\libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\lua.c">
+      <Filter>Source\libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\soil\image_helper.c">
+      <Filter>Source\libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\NoteLoaderSM.cpp">
+      <Filter>Source\vsrg\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\NoteLoaderBMS.cpp">
+      <Filter>Source\vsrg\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\NoteLoaderFTB.cpp">
+      <Filter>Source\vsrg\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\NoteLoaderOM.cpp">
+      <Filter>Source\vsrg\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScoreKeeper7K_init.cpp">
+      <Filter>Source\vsrg\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScoreKeeper7K.cpp">
+      <Filter>Source\vsrg\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pa_ringbuffer.c">
+      <Filter>Source\libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenEdit.cpp">
+      <Filter>Source\dotcur\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenEvaluation.cpp">
+      <Filter>Source\dotcur\evaluation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenEvaluation7K.cpp">
+      <Filter>Source\vsrg\evaluation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenGameplay.cpp">
+      <Filter>Source\dotcur\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenGameplay7K.cpp">
+      <Filter>Source\vsrg\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenGameplay7K_Mechanics.cpp">
+      <Filter>Source\vsrg\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\soil\SOIL.c">
+      <Filter>Source\libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SongDC.cpp">
+      <Filter>Source\dotcur\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\soil\stb_image_aug.c">
+      <Filter>Source\libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\TrackNote.cpp">
+      <Filter>Source\vsrg\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Audio.cpp">
+      <Filter>Source\backend\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Audiofile.cpp">
+      <Filter>Source\backend\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\AudioSourceMP3.cpp">
+      <Filter>Source\backend\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\AudioSourceOGG.cpp">
+      <Filter>Source\backend\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\AudioSourceSFM.cpp">
+      <Filter>Source\backend\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Configuration.cpp">
+      <Filter>Source\backend\cfg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Directory.cpp">
+      <Filter>Source\backend\files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\FileManager.cpp">
+      <Filter>Source\backend\files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GameWindow.cpp">
+      <Filter>Source\backend\window</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GuiButton.cpp">
+      <Filter>Source\backend\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GuiTextPrompt.cpp">
+      <Filter>Source\backend\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\LuaAnimationInterface.cpp">
+      <Filter>Source\backend\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\LuaManager.cpp">
+      <Filter>Source\backend\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Rendering.cpp">
+      <Filter>Source\backend\render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Application.cpp">
+      <Filter>Source\backend\window</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GraphObjectMan.cpp">
+      <Filter>Source\backend\other</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Screen.cpp">
+      <Filter>Source\backend\other</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Utility.cpp">
+      <Filter>Source\backend\other</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenLoading.cpp">
+      <Filter>Source\game global\screens</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenMainMenu.cpp">
+      <Filter>Source\game global\screens</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenSelectMusic.cpp">
+      <Filter>Source\game global\screens</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SongTiming.cpp">
+      <Filter>Source\game global\song interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Renderer7K.cpp">
+      <Filter>Source\vsrg\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Song7K.cpp">
+      <Filter>Source\vsrg\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\NoteLoaderDC.cpp">
+      <Filter>Source\dotcur\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Image.cpp">
+      <Filter>Source\backend\render\textures</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ImageLoader.cpp">
+      <Filter>Source\backend\render\textures</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\BitmapFont.cpp">
+      <Filter>Source\backend\render\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GraphObject2D.cpp">
+      <Filter>Source\backend\render\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ImageList.cpp">
+      <Filter>Source\backend\render\textures</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\raindrop.cpp">
+      <Filter>Source\backend</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Convert.cpp">
+      <Filter>Source\vsrg\converting</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\ActorLifebar.h">
+      <Filter>Source\dotcur\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ActorBarline.h">
+      <Filter>Source\dotcur\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ActorJudgement.h">
+      <Filter>Source\dotcur\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GameObject.h">
+      <Filter>Source\dotcur\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Global.h">
+      <Filter>Source\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="..\soil\image_DXT.h">
+      <Filter>Source\libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\soil\image_helper.h">
+      <Filter>Source\libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScoreKeeper.h">
+      <Filter>Source\game global</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScreenEdit.h">
+      <Filter>Source\dotcur\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScreenEvaluation.h">
+      <Filter>Source\dotcur\evaluation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScreenEvaluation7K.h">
+      <Filter>Source\vsrg\evaluation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScreenGameplay.h">
+      <Filter>Source\dotcur\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScreenGameplay7K.h">
+      <Filter>Source\vsrg\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="..\soil\SOIL.h">
+      <Filter>Source\libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\soil\stbi_DDS_aug_c.h">
+      <Filter>Source\libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\soil\stb_image_aug.h">
+      <Filter>Source\libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\soil\stbi_DDS_aug.h">
+      <Filter>Source\libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\TrackNote.h">
+      <Filter>Source\vsrg\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Audio.h">
+      <Filter>Source\backend\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AudioSourceSFM.h">
+      <Filter>Source\backend\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Audiofile.h">
+      <Filter>Source\backend\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AudioSourceMP3.h">
+      <Filter>Source\backend\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AudioSourceOGG.h">
+      <Filter>Source\backend\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Configuration.h">
+      <Filter>Source\backend\cfg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BindingsManager.h">
+      <Filter>Source\backend\window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\FileManager.h">
+      <Filter>Source\backend\files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Directory.h">
+      <Filter>Source\backend\files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GameWindow.h">
+      <Filter>Source\backend\window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GuiTextPrompt.h">
+      <Filter>Source\backend\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GuiButton.h">
+      <Filter>Source\backend\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\LuaManager.h">
+      <Filter>Source\backend\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Application.h">
+      <Filter>Source\backend\window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Screen.h">
+      <Filter>Source\backend\other</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GraphObjectMan.h">
+      <Filter>Source\backend\other</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScreenSelectMusic.h">
+      <Filter>Source\game global\screens</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScreenLoading.h">
+      <Filter>Source\game global\screens</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScreenMainMenu.h">
+      <Filter>Source\game global\screens</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Song.h">
+      <Filter>Source\game global\song interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SongTiming.h">
+      <Filter>Source\game global\song interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GameGlobal.h">
+      <Filter>Source\game global</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SongDC.h">
+      <Filter>Source\dotcur\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\NoteLoader7K.h">
+      <Filter>Source\vsrg\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Song7K.h">
+      <Filter>Source\vsrg\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\NoteLoaderDC.h">
+      <Filter>Source\dotcur\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ImageLoader.h">
+      <Filter>Source\backend\render\textures</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Image.h">
+      <Filter>Source\backend\render\textures</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GraphObject2D.h">
+      <Filter>Source\backend\render\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BitmapFont.h">
+      <Filter>Source\backend\render\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\VBO.h">
+      <Filter>Source\backend\render\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ImageList.h">
+      <Filter>Source\backend\render\textures</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Converter.h">
+      <Filter>Source\vsrg\converting</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{fb32c722-535f-44c8-92d5-ff7948fd273f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\backend">
+      <UniqueIdentifier>{48ccc0c2-188b-46a2-8080-66472591d9ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\vsrg">
+      <UniqueIdentifier>{bd2267ab-5113-4024-a6b6-15c663dd66d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\dotcur">
+      <UniqueIdentifier>{9261a9c5-ccc7-4433-b029-e260937043fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\dotcur\gameplay">
+      <UniqueIdentifier>{b2ec28de-3414-458a-bb89-cf72d13ef448}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\libraries">
+      <UniqueIdentifier>{80165aaf-e155-45c8-adf2-16bdfe4f727c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\dotcur\internal">
+      <UniqueIdentifier>{8c25d747-a0bd-44d5-9d86-93e09945f8d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\vsrg\internal">
+      <UniqueIdentifier>{d49242fb-ee13-4836-b0e5-b0136ae1566e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\vsrg\gameplay">
+      <UniqueIdentifier>{3e6704ea-2ff2-4a67-9864-52f50b89771f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\dotcur\editor">
+      <UniqueIdentifier>{edbcc753-4b06-401f-b8e6-f4b541df7f8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\game global">
+      <UniqueIdentifier>{a68a9139-8807-4481-abf5-9ba1f3f0a2d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\dotcur\evaluation">
+      <UniqueIdentifier>{ae121511-6718-4bd2-b39b-a2b0e9470c92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\vsrg\evaluation">
+      <UniqueIdentifier>{8b582cad-32d5-4f19-ae5d-972436643c80}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\backend\audio">
+      <UniqueIdentifier>{739056b2-26e2-44b8-9bcb-0fb0fcf50d9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\backend\cfg">
+      <UniqueIdentifier>{2028ba63-d636-446d-9511-8bcc77cf5455}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\backend\window">
+      <UniqueIdentifier>{e772aae2-a655-4a59-83cc-4caa5a14cb50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\backend\render">
+      <UniqueIdentifier>{b935270a-cd76-4ac2-8a6c-05cd33737330}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\backend\files">
+      <UniqueIdentifier>{f3eeaf66-4063-4666-92d8-cff236388802}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\backend\gui">
+      <UniqueIdentifier>{c2b9f21a-2d12-4ebe-94a5-dcb9a207dea5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\backend\lua">
+      <UniqueIdentifier>{bbfaaf09-f4a3-4219-a896-c60616c8ad7f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\backend\other">
+      <UniqueIdentifier>{b6179f2f-8e96-413f-930e-671459c7b05e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\game global\screens">
+      <UniqueIdentifier>{b9fe9eea-fefc-47ad-aa57-650da1c43ac8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\game global\song interface">
+      <UniqueIdentifier>{0c1dacd1-f4e5-4a0e-93f0-4190b392758b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\backend\render\textures">
+      <UniqueIdentifier>{be92e194-9b35-465d-8344-488d7d311846}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\backend\render\objects">
+      <UniqueIdentifier>{46562340-2edd-4f4c-958b-5dc567f13c32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\vsrg\converting">
+      <UniqueIdentifier>{9e1fa62b-dcc8-43d6-af3c-a6ca61ee8ae6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
