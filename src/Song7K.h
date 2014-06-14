@@ -60,6 +60,7 @@ namespace VSRG
 			IsVirtual = false;
 			Channels = 0;
 			PreviewTime = 0;
+			LMT = 0;
 		};
 
 		// Load and save from cache

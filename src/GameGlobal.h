@@ -117,7 +117,8 @@ enum ESpeedType {
 	SPEEDTYPE_DEFAULT = -1,
 	SPEEDTYPE_FIRST,
 	SPEEDTYPE_MMOD,
-	SPEEDTYPE_CMOD
+	SPEEDTYPE_CMOD,
+	SPEEDTYPE_FIRSTBPM,
 } ;
 
 // The values here must be consistent with the shaders!

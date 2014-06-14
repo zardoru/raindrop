@@ -212,8 +212,12 @@ Song* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 
 		OnCommand(#SOUNDS)
 		{
+			std::vector<String> SoundList;
 			String CmdLine = CommandContents;
-			boost::split(Diff->SoundList, CmdLine, boost::is_any_of(","));
+			boost::split(SoundList, CmdLine, boost::is_any_of(","));
+
+			for (int i = 1; i <= SoundList.size(); i++) // Copy in
+				Diff->SoundList[i] = SoundList[i-1];
 		}
 
 		// Then, the charts.

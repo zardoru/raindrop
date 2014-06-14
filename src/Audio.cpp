@@ -129,7 +129,7 @@ class PaMixer
 	double ConstFactor;
 
 	int SizeAvailable;
-	bool Threaded;
+	bool Threaded, WaitForRingbufferSpace;
 
 	boost::mutex mut, mut2, rbufmux;
 	boost::condition ringbuffer_has_space;
@@ -137,6 +137,9 @@ public:
 	PaMixer(bool StartThread)
 	{
 		RingbufData = new char[BUFF_SIZE*sizeof(int16)];
+
+		WaitForRingbufferSpace = false;
+
 		PaUtil_InitializeRingBuffer(&RingBuf, sizeof(int16), BUFF_SIZE, RingbufData);
 
 		Threaded = StartThread;
@@ -168,8 +171,13 @@ public:
 		do
 		{
 
+				WaitForRingbufferSpace = true;
+
 				if (Threaded)
+				{
 					mut.lock();
+				}
+
 
 				for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
 				{
@@ -180,7 +188,15 @@ public:
 				}
 
 				if (Threaded)
+				{
+					boost::unique_lock<boost::mutex> lock (rbufmux);
 					mut.unlock();
+
+					while (WaitForRingbufferSpace)
+					{
+						ringbuffer_has_space.wait(lock);
+					}
+				}
 
 		} while (Threaded);
 	}
@@ -258,8 +274,6 @@ public:
 
 		// mut.unlock();
 
-		// ringbuffer_has_space.notify_one();
-
 		mut2.lock();
 		for (std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); i++)
 		{
@@ -299,6 +313,9 @@ public:
 		}
 
 		mut2.unlock();
+
+		WaitForRingbufferSpace = false;
+		ringbuffer_has_space.notify_one();
 	}
 
 	double GetLatency() const

@@ -230,9 +230,16 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		
 			double Ratio = DesiredDefaultSpeed / max; // How much above or below are we from the maximum speed?
 			SpeedMultiplierUser = Ratio;
-		}else if (Type != SPEEDTYPE_CMOD) // We use this case as default. The logic is "Not a CMod, Not a MMod, then use first, the default.
+		}else if (Type == SPEEDTYPE_FIRST) // We use this case as default. The logic is "Not a CMod, Not a MMod, then use first, the default.
 		{
 			double DesiredMultiplier =  DesiredDefaultSpeed / CurrentDiff->VerticalSpeeds[0].Value;
+
+			SpeedMultiplierUser = DesiredMultiplier;
+		}else if (Type != SPEEDTYPE_CMOD) // other cases
+		{
+			double bpsd = 4.0/(CurrentDiff->BPS[0].Value);
+			double Speed = (MeasureBaseSpacing / bpsd);
+			double DesiredMultiplier = DesiredDefaultSpeed / Speed;
 
 			SpeedMultiplierUser = DesiredMultiplier;
 		}
@@ -288,7 +295,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	// BasePos = JudgementLinePos + (Upscroll ? NoteHeight/2 : -NoteHeight/2);
 	BasePos = JudgementLinePos + (Upscroll ? NoteHeight/2 : -NoteHeight/2);
-	CurrentVertical -= VSpeeds.at(0).Value * (WaitingTime);
+	CurrentVertical = IntegrateToTime (VSpeeds, -WaitingTime);
 
 	RecalculateMatrix();
 	MultiplierChanged = true;

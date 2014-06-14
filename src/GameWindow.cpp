@@ -381,7 +381,7 @@ void GameWindow::SwapBuffers()
 	glfwPollEvents();
 
 	/* Fullscreen switching */
-	if (FullscreenSwitchbackPending)
+5	if (FullscreenSwitchbackPending)
 	{
 		if (IsFullscreen)
 		{
