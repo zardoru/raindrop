@@ -163,6 +163,11 @@ public:
 #endif
 
 		Pa_StartStream( Stream );
+		
+		Latency = Pa_GetStreamInfo(Stream)->outputLatency;
+
+		wprintf(L"AUDIO: Latency after opening stream = %f \n", Latency);
+
 		ConstFactor = 1.0;
 	}
 
