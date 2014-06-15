@@ -265,6 +265,7 @@ public:
 	void CopyOut(char* out, int samples)
 	{
 		int Voices = 0;
+		int StreamVoices = 0;
 		int count = samples;
 		
 		memset(out, 0, count * sizeof(short));
@@ -274,7 +275,10 @@ public:
 		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
 		{
 			if ((*i)->IsPlaying())
+			{
+				StreamVoices++;
 				Voices++;
+			}
 		}
 
 		// mut.unlock();
@@ -288,7 +292,7 @@ public:
 			}
 		}
 
-		double MixFactor = 1.0 / sqrt((double)Voices + 1);
+		double MixFactor = 1.0 / sqrt((double)Voices + 2);
 
 		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
 		{
@@ -319,8 +323,11 @@ public:
 
 		mut2.unlock();
 
-		WaitForRingbufferSpace = false;
-		ringbuffer_has_space.notify_one();
+		if (StreamVoices)
+		{
+			WaitForRingbufferSpace = false;
+			ringbuffer_has_space.notify_one();
+		}
 	}
 
 	double GetLatency() const
