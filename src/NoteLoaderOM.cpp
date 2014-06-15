@@ -293,14 +293,19 @@ void ReadObjects (String line, OsuLoadInfo* Info)
 		else
 			endTime = atof(Spl[5].c_str()) / 1000.0;
 
-		if (startTime > endTime)
-			printf("o!m loader warning: object at track %d has startTime > endTime (%f and %f)\n", Track, startTime, endTime);
-
 		Note.StartTime = startTime;
 		Note.EndTime = endTime;
 
-		Info->Diff->TotalScoringObjects += 2;
-		Info->Diff->TotalHolds++;
+		if (startTime > endTime) {
+			wprintf(L"o!m loader warning: object at track %d has startTime > endTime (%f and %f)\n", Track, startTime, endTime);
+			Note.EndTime = startTime;
+
+			Info->Diff->TotalScoringObjects += 1;
+			Info->Diff->TotalNotes++;
+		}else {
+			Info->Diff->TotalScoringObjects += 2;
+			Info->Diff->TotalHolds++;
+		}
 	}else if (NoteType & NOTE_NORMAL)
 	{
 		Note.StartTime = startTime;
