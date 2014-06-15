@@ -16,8 +16,8 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
-float VolumeSFX = 0.1f;
-float VolumeMusic = 0.8f; 
+float VolumeSFX = 1;
+float VolumeMusic = 1; 
 bool UseThreadedDecoder = false;
 
 #ifdef WIN32
@@ -288,7 +288,7 @@ public:
 			}
 		}
 
-		double MixFactor = 1.0 / sqrt((double)Voices + 1) * 0.8;
+		double MixFactor = 1.0 / sqrt((double)Voices + 1);
 
 		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
 		{
