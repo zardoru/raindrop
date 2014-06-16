@@ -296,11 +296,14 @@ public:
 
 		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
 		{
-			memset(ts, 0, sizeof(ts));
-			(*i)->Read(ts, samples);
+			if ((*i)->IsPlaying())
+			{
+				memset(ts, 0, sizeof(ts));
+				(*i)->Read(ts, samples);
 
-			for (int i = 0; i < count; i++)
-				tsF[i] += ts[i];
+				for (int i = 0; i < count; i++)
+					tsF[i] += ts[i];
+			}
 		}
 
 		for (std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); i++)

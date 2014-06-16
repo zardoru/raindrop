@@ -252,8 +252,11 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 	size_t cnt;
 	size_t toRead = count; // Count is the amount of s16 samples.
 
-	if (!mSource)
+	if (!mSource || !mSource->IsValid())
+	{
+		mIsPlaying = false;
 		return 0;
+	}
 	
 	if (PaUtil_GetRingBufferReadAvailable(&mRingBuf) < toRead || !mIsPlaying)
 	{
