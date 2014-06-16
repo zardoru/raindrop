@@ -410,6 +410,16 @@ void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 
 	String Line;
 
+	std::getline(filein, Line);
+	int version;
+	sscanf(Line.c_str(), "osu file format v%d", &version);
+
+	if (version < 11) // why
+	{
+		delete Diff;
+		return;
+	}
+
 	enum 
 	{
 		RNotKnown,
