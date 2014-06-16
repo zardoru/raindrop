@@ -3,10 +3,15 @@
 
 #include "GuiButton.h"
 
+class GraphObjectMan;
+
 class ScreenMainMenu : public IScreen
 {
 	GUI::Button PlayBtn, EditBtn, OptionsBtn, ExitBtn;
-	GraphObject2D Logo, Background;
+
+	GraphObjectMan * Objects;
+
+	GraphObject2D Background;
 public:
 	ScreenMainMenu(IScreen *Parent);
 	void Init();

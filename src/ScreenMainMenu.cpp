@@ -12,18 +12,54 @@
 #include "ScreenMainMenu.h"
 #include "ScreenLoading.h"
 #include "ScreenSelectMusic.h"
+#include "LuaManager.h"
 
 SoundSample *MMSelectSnd = NULL;
 BitmapFont* MainMenuFont = NULL;
+LuaManager* MainMenuLua = NULL;
 
 ScreenMainMenu::ScreenMainMenu(IScreen *Parent) : IScreen(Parent)
 {
+}
+
+void PlayBtnHover(GraphObject2D *obj)
+{
+	MainMenuLua->CallFunction("PlayBtnHover");
+	MainMenuLua->RunFunction();
+}
+
+void PlayBtnLeave(GraphObject2D *obj)
+{
+	MainMenuLua->CallFunction("PlayBtnHoverLeave");
+	MainMenuLua->RunFunction();
+}
+
+void ExitBtnHover(GraphObject2D *obj)
+{
+	MainMenuLua->CallFunction("ExitBtnHover");
+	MainMenuLua->RunFunction();
+}
+
+void ExitBtnLeave(GraphObject2D *obj)
+{
+	MainMenuLua->CallFunction("ExitBtnHoverLeave");
+	MainMenuLua->RunFunction();
 }
 
 void ScreenMainMenu::Init()
 {
 	ScreenTime = 0;
 	Running = true;
+
+	Objects = new GraphObjectMan();
+	MainMenuLua = Objects->GetEnv();
+
+	Objects->AddTarget(&Background);
+	Objects->AddTarget(&PlayBtn);
+	Objects->AddTarget(&ExitBtn);
+	Objects->AddLuaTarget(&PlayBtn, "PlayButton");
+	Objects->AddLuaTarget(&ExitBtn, "ExitButton");
+	Objects->Initialize(FileManager::GetSkinPrefix() + "mainmenu.lua");
 
 	if (!MainMenuFont)
 	{
@@ -35,15 +71,15 @@ void ScreenMainMenu::Init()
 	Background.SetImage(ImageLoader::LoadSkin(Configuration::GetSkinConfigs("MainMenuBackground")));
 	Background.Centered = 1;
 	Background.SetPosition( ScreenWidth / 2, ScreenHeight / 2 );
-	Logo.SetImage(ImageLoader::LoadSkin("logo.png"));
-	PlayBtn.SetImage(ImageLoader::LoadSkin("playbtn.png"));
-	ExitBtn.SetImage(ImageLoader::LoadSkin("exitbtn.png"));
-	PlayBtn.AddPosition(Configuration::GetSkinConfigf("X", "PlayButton"), Configuration::GetSkinConfigf("Y", "PlayButton"));
-	ExitBtn.AddPosition(Configuration::GetSkinConfigf("X", "ExitButton"), Configuration::GetSkinConfigf("Y", "ExitButton"));
-	Background.AffectedByLightning = Logo.AffectedByLightning = true;
+	
+	PlayBtn.SetImage(ImageLoader::LoadSkin("play.png"), false);
+	ExitBtn.SetImage(ImageLoader::LoadSkin("quit.png"), false);
+	PlayBtn.OnHover = PlayBtnHover;
+	PlayBtn.OnLeave = PlayBtnLeave;
+	ExitBtn.OnHover = ExitBtnHover;
+	ExitBtn.OnLeave = ExitBtnLeave;
 
-	Logo.Centered = Configuration::GetSkinConfigf("Centered", "Logo") != 0;
-	Logo.SetPosition(Configuration::GetSkinConfigf("X", "Logo"), Configuration::GetSkinConfigf("Y", "Logo"));
+	Background.AffectedByLightning = true;
 
 	if (!MMSelectSnd)
 	{
@@ -100,16 +136,23 @@ bool ScreenMainMenu::Run (double Delta)
 
 	ScreenTime += Delta;
 
+	PlayBtn.Run(Delta);
+	ExitBtn.Run(Delta);
+
 	Background.Render();
-	Logo.Render();
-	PlayBtn.Render();
+	
+	Objects->DrawUntilLayer(16);
+
 	EditBtn.Render();
 	OptionsBtn.Render();
-	ExitBtn.Render();
+
+	Objects->DrawFromLayer(17);
+
 	MainMenuFont->DisplayText("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop", Vec2(0, 0));
 	return Running;
 }
 
 void ScreenMainMenu::Cleanup()
 {
+	delete Objects;
 }

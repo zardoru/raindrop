@@ -44,6 +44,7 @@ class GameWindow
 	Vec2 size;
 	Vec2 matrixSize, Viewport;
 	Mat4 projection;
+	Mat4 projectionInverse;
 
 	bool FullscreenSwitchbackPending, IsFullscreen;
 	uint32 defaultVertexShader, defaultFragShader, defaultShaderProgram, defaultVao;
@@ -74,6 +75,9 @@ public:
 	void SetVisibleCursor(bool Visible);
 	void AddVBO(VBO* V);
 	void RemoveVBO(VBO *V);
+
+	Mat4 GetMatrixProjection();
+	Mat4 GetMatrixProjectionInverse();
 
 	// returns the mouse position relative to the matrix and window size
 	Vec2 GetRelativeMPos();

@@ -316,6 +316,7 @@ void GameWindow::SetupWindow()
 
 	
 	projection = glm::ortho<float>(0.0, matrixSize.x, matrixSize.y, 0.0, -32.0, 0.0);
+	projectionInverse = projection._inverse();
 
 	SetupShaders();
 
@@ -329,6 +330,18 @@ void GameWindow::SetupWindow()
 
 	ResizeFunc(wnd, size.x, size.y);
 }
+
+
+Mat4 GameWindow::GetMatrixProjection()
+{
+	return projection;
+}
+
+Mat4 GameWindow::GetMatrixProjectionInverse()
+{
+	return projectionInverse;
+}
+
 
 void GameWindow::AutoSetupWindow(Application* _parent)
 {

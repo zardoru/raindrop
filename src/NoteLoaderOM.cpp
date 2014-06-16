@@ -168,6 +168,9 @@ String GetSampleFilename(SplitResult &Spl, int NoteType, int Hitsound)
 	int SampleSet, SampleSetAddition, CustomSample = 0;
 	String SampleFilename;
 
+	if (!Spl.size()) // Handle this properly, eventually.
+		return "normal-hitnormal.wav";
+
 	size_t SplSize = Spl.size();
 
 	if (NoteType & NOTE_HOLD)
@@ -197,7 +200,8 @@ String GetSampleFilename(SplitResult &Spl, int NoteType, int Hitsound)
 			return Spl[4];
 
 		SampleSet = atoi(Spl[0].c_str());
-		SampleSetAddition = atoi(Spl[1].c_str());
+		if (Spl.size() > 1)
+			SampleSetAddition = atoi(Spl[1].c_str());
 		if (Spl.size() > 2)
 			CustomSample = atoi(Spl[2].c_str());
 
@@ -274,12 +278,16 @@ void ReadObjects (String line, OsuLoadInfo* Info)
 
 	/* 
 		A few of these "ifs" are just since v11 and v12 store hold endtimes in different locations.
+		Or not include some information at all...
 	*/
 	int splitType = 5;
 	if (Spl.size() == 7)
 		splitType = 6;
+	else if (Spl.size() == 5)
+		splitType = 4;
 	
-	boost::split(Spl2, Spl[splitType], boost::is_any_of(":"));
+	if (splitType != 4) // only 5 entries
+		boost::split(Spl2, Spl[splitType], boost::is_any_of(":"));
 
 
 	double startTime = atof(Spl[2].c_str()) / 1000.0;
@@ -288,10 +296,12 @@ void ReadObjects (String line, OsuLoadInfo* Info)
 	if (NoteType & NOTE_HOLD)
 	{
 		float endTime;
-		if (splitType == 5)
+		if (splitType == 5 && Spl2.size())
 			endTime = atof(Spl2[0].c_str()) / 1000.0;
-		else
+		else if (splitType == 6)
 			endTime = atof(Spl[5].c_str()) / 1000.0;
+		else // what really? a hold that doesn't bother to tell us when it ends?
+			endTime = 0;
 
 		Note.StartTime = startTime;
 		Note.EndTime = endTime;

@@ -292,3 +292,8 @@ const glm::mat4 &GraphObject2D::GetMatrix()
 	UpdateMatrix();
 	return Matrix;
 }
+
+bool GraphObject2D::ShouldUpdateMatrix() const
+{
+	return DirtyMatrix;
+}

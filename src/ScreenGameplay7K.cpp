@@ -532,6 +532,8 @@ void ScreenGameplay7K::UpdateScriptVariables()
 	}
 
 	L->FinalizeArray("HeldKeys");
+
+	L->SetGlobal("CurrentSPB", 1 / SectionValue(CurrentDiff->BPS, SongTime));
 }
 
 int DigitCount (float n)

@@ -6,35 +6,81 @@ using namespace GUI;
 
 Button::Button()
 {
-	OnHover = OnClick = OnLeave = NULL;
+	OnRelease = OnClick = OnLeave = OnHover = NULL;
 	PressedDown = false;
+	Hovering = false;
 }
+
+bool MouseInBoundaries(const Mat4 &Inverse, bool Centered)
+{
+	Vec2 mpos = WindowFrame.GetRelativeMPos();
+	glm::vec4 mv4 (mpos.x, mpos.y, 0, 1);
+	glm::vec4 screenPos = (mv4 * Inverse);
+
+	if (Centered)
+	{
+		if (screenPos.x <= 0.5 && screenPos.x >= -0.5) // Within X boundaries
+		{
+			if (screenPos.y <= 0.5 && screenPos.y >= -0.5) // Within Y boundaries
+			{
+				return true;
+			}else return false;
+		}else return false;
+	}else
+	{
+		if (screenPos.x <= 1 && screenPos.x >= 0) // Within X boundaries
+		{
+			if (screenPos.y <= 1 && screenPos.y >= 0) // Within Y boundaries
+			{
+				return true;
+			}return false;
+		}return false;
+	}
+}
+
 
 bool Button::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
 	if (isMouseInput && BindingsManager::TranslateKey(key) == KT_Select)
 	{
-		Vec2 mpos = WindowFrame.GetRelativeMPos();
-		Vec2 bpos = GetPosition();
-		if (mpos.x > bpos.x && mpos.x < bpos.x+GetWidth())
+		if (MouseInBoundaries (transformReverse, Centered) &&  code == KE_Press)
 		{
-			if (mpos.y > bpos.y && mpos.y < bpos.y+GetHeight())
-			{
-				if (code == KE_Press)
-				{
-					if (OnClick) OnClick;
-					PressedDown = true;
-				}
-			}
+			if (OnClick) OnClick(this);
+			PressedDown = true;
 		}
 
 		if (code == KE_Release && PressedDown)
 		{
-			if (OnRelease) OnRelease;
+			if (OnRelease) OnRelease(this);
 			PressedDown = false;
 			return true;
 		}
 	}
 
 	return false;
+}
+
+void Button::HoverUpdate(bool IsHovering)
+{
+	bool OldHoveringState = Hovering;
+	Hovering = IsHovering;
+
+	if (Hovering != OldHoveringState) // We've changed state (false => true, true => false)
+	{
+		if (Hovering) // state is true, we've entered hovering
+		{
+			if (OnHover) OnHover(this);
+		}else
+			if (OnLeave) OnLeave(this);
+	}
+}
+
+
+void Button::Run(double delta)
+{
+	transformReverse = GetMatrix()._inverse();
+
+	if (MouseInBoundaries(transformReverse, Centered))
+		HoverUpdate(true);
+	else HoverUpdate(false);
 }
