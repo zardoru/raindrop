@@ -405,4 +405,7 @@
       <UniqueIdentifier>{9e1fa62b-dcc8-43d6-af3c-a6ca61ee8ae6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="app.rc" />
+  </ItemGroup>
 </Project>

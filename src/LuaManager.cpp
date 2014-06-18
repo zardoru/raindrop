@@ -322,7 +322,12 @@ bool LuaManager::RunFunction()
 
 int LuaManager::GetFunctionResult(int StackPos)
 {
-	int Value = -1;
+	return GetFunctionResultF(StackPos);
+}
+
+float LuaManager::GetFunctionResultF(int StackPos)
+{
+	float Value = -1;
 	
 	if (lua_isnumber(State, -StackPos))
 	{

@@ -29,11 +29,11 @@ ScoreKeeper7K::ScoreKeeper7K(){
 	total_sqdev = 0;
 	accuracy = 0;
 
-	lifebar_groove = 0.2;
+	lifebar_groove = 0.78;
 	lifebar_survival = 1;
 	lifebar_exhard = 1;
 	lifebar_death = 1;
-	lifebar_easy = 0.2;
+	lifebar_easy = 0.78;
 
 	double JudgementValues[] = { 22.5, 45, 90, 135, 150 };
 

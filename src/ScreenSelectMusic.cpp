@@ -17,6 +17,7 @@
 #include "ScreenGameplay.h"
 #include "ScreenGameplay7K.h"
 #include "ScreenEdit.h"
+#include "LuaManager.h"
 
 #define SONGLIST_BASEY 120
 #define SONGLIST_BASEX ScreenWidth*3/4
@@ -73,6 +74,10 @@ void ScreenSelectMusic::MainThreadInitialization()
 		Font->LoadSkinFontImage("font_screenevaluation.tga", Vec2(10, 20), Vec2(32, 32), Vec2(10,20), 32);
 	}
 
+	Objects = new GraphObjectMan();
+
+	Objects->Initialize( FileManager::GetSkinPrefix() + "screenselectmusic.lua" );
+
 	Font->SetAffectedByLightning(true);
 	SelCursor.SetImage(ImageLoader::LoadSkin("songselect_cursor.png"));
 	SelCursor.SetSize(20);
@@ -89,19 +94,14 @@ void ScreenSelectMusic::MainThreadInitialization()
 
 void ScreenSelectMusic::LoadThreadInitialization()
 {
-#ifndef NDEBUG
-	std::wcout << "Getting dotCur song list..." << std::endl;
-#endif
+	wprintf(L"Getting dotCur song list...\n");;
 	FileManager::GetSongList(SongList);
-#ifndef NDEBUG
-	std::wcout << "Getting dotCur keyboard song list..." << std::endl;
-#endif
-	FileManager::GetSongList7K(SongList7K);
 
-#ifndef NDEBUG
-	std::wcout << "Done loading." << std::endl;
-#endif
+	wprintf(L"Getting VSRG song list...\n");
+	FileManager::GetSongList7K(SongList7K);
 	
+	wprintf(L"Finished.\n");
+
 	Running = true;
 	OldCursor = Cursor = 0;
 	SwitchBackGuiPending = true;
@@ -119,7 +119,17 @@ void ScreenSelectMusic::LoadThreadInitialization()
 
 void ScreenSelectMusic::Cleanup()
 {
+	delete Objects;
 	StopLoops();
+}
+
+float ScreenSelectMusic::GetListYTransformation(const float Y)
+{
+	LuaManager *Lua = Objects->GetEnv();
+	Lua->CallFunction("TransformList", 1, 1);
+	Lua->PushArgument(Y);
+	Lua->RunFunction();
+	return Lua->GetFunctionResultF();
 }
 
 bool ScreenSelectMusic::Run(double Delta)
@@ -147,6 +157,7 @@ bool ScreenSelectMusic::Run(double Delta)
 	WindowFrame.SetLightMultiplier(sin(Time) * 0.2 + 1);
 
 	Background.Render();
+	Objects->DrawTargets(Delta);
 
 	if (PendingListY)
 	{
@@ -174,7 +185,7 @@ bool ScreenSelectMusic::Run(double Delta)
 
 	Vec2 mpos = WindowFrame.GetRelativeMPos();
 
-	if (mpos.y > ListY && mpos.x > SONGLIST_BASEX)
+	if (mpos.y > ListY && mpos.x > GetListYTransformation(mpos.y))
 	{
 		float posy = mpos.y;
 		posy -= ListY;
@@ -196,7 +207,8 @@ bool ScreenSelectMusic::Run(double Delta)
 			
 			if (Y > -20 && Y < ScreenHeight)
 			{
-				Font->DisplayText((*i)->SongName.c_str(), Vec2(SONGLIST_BASEX, Y));
+				float xTransform = GetListYTransformation(Y);
+				Font->DisplayText((*i)->SongName.c_str(), Vec2(xTransform, Y));
 			}
 
 			Cur++;
@@ -209,7 +221,8 @@ bool ScreenSelectMusic::Run(double Delta)
 			
 			if (Y > -20 && Y < ScreenHeight)
 			{
-				Font->DisplayText((*i)->SongName.c_str(), Vec2(SONGLIST_BASEX, Y));
+				float xTransform = GetListYTransformation(Y);
+				Font->DisplayText((*i)->SongName.c_str(), Vec2(xTransform, Y));
 			}
 
 			Cur++;
@@ -320,7 +333,13 @@ void ScreenSelectMusic::UpdateCursor()
 		ClickSnd->Play();
 	}
 
-	SelCursor.SetPosition(SONGLIST_BASEX - SelCursor.GetWidth() - sin(Time*2) * sin(Time*2) * 10, Cursor * SelCursor.GetHeight() + ListY);
+	float Y = Cursor * SelCursor.GetHeight() + ListY;
+	float sinTSquare = sin(Time*2);
+
+	sinTSquare *= sinTSquare;
+
+	float X = GetListYTransformation(Cursor * SelCursor.GetHeight() + ListY) - SelCursor.GetWidth() -  sinTSquare * 10;
+	SelCursor.SetPosition(X, Y);
 }
 
 void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseInput)

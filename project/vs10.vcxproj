@@ -296,6 +296,9 @@
     <ClInclude Include="..\src\VBO.h" />
     <ClInclude Include="..\src\AudioSourceSFM.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="app.rc" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
