@@ -185,7 +185,13 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	if (AudioCompensation)
 		TimeCompensation = MixerGetLatency();
 
-	CurrentDiff->LoadCache(MySong->DifficultyCacheFilename(CurrentDiff));
+	std::string fn = MySong->DifficultyCacheFilename(CurrentDiff);
+	if (!CurrentDiff->LoadCache(fn))
+	{
+		wprintf(L"Cache was not possible to load. Aborting load. (%ls)\n", Utility::Widen(fn).c_str());
+		DoPlay = false;
+		return;
+	}
 
 	TimeCompensation += Configuration::GetConfigf("Offset7K");
 
@@ -308,6 +314,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	// This will execute the script once, so we won't need to do it later
 	SetupScriptConstants();
 	Animations->Preload(FileManager::GetSkinPrefix() + "screengameplay7k.lua", "Preload");
+	DoPlay = true;
 }
 
 void ScreenGameplay7K::SetupScriptConstants()
@@ -367,6 +374,12 @@ void ScreenGameplay7K::SetupGear()
 
 void ScreenGameplay7K::MainThreadInitialization()
 {
+	if (!DoPlay) // Failure to load something important?
+	{
+		Running = false;
+		return;
+	}
+
 	SetupGear();
 
 	char nstr[256];

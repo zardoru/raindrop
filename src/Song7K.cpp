@@ -534,7 +534,9 @@ void Difficulty::Destroy()
 String Song::DifficultyCacheFilename(VSRG::Difficulty * Diff)
 {
 	std::stringstream ss;
-	ss << FilenameCache << Diff->Name << Diff->LMT;
+	std::string dfName = Diff->Name;
+	Utility::RemoveFilenameIllegalCharacters(dfName, true);
+	ss << FilenameCache << dfName << Diff->LMT;
 	String Remove = ss.str();
 	Utility::RemoveFilenameIllegalCharacters(Remove);
 	return Remove;

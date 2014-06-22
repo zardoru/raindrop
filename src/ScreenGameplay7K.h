@@ -20,6 +20,7 @@ private:
 
 	/* Game */
 	bool Active;
+	bool DoPlay;
 	int lastClosest[VSRG::MAX_CHANNELS];
 	double CurrentVertical;
 	double WaitingTime;

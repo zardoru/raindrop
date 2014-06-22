@@ -118,7 +118,7 @@ namespace Utility {
 		else return 0;
 	}
 
-	void RemoveFilenameIllegalCharacters(String &S)
+	void RemoveFilenameIllegalCharacters(String &S, bool removeSlash)
 	{
 		// size_t len = strlen(fn);
 		boost::replace_all(S, "<", "");
@@ -128,6 +128,8 @@ namespace Utility {
 		boost::replace_all(S, "|", "");
 		boost::replace_all(S, "?", "");
 		boost::replace_all(S, "*", "");
+		if (removeSlash)
+			boost::replace_all(S, "/", "");
 	}
 
 } // namespace Utility

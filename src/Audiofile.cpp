@@ -113,6 +113,7 @@ String RearrangeFilename(const char* Fn)
 	else
 	{
 		std::string Ext = Utility::GetExtension(Fn);
+		boost::algorithm::to_lower(Ext);
 
 		if (strstr(Ext.c_str(), "wav"))
 			Ret = Utility::RemoveExtension(Fn) + ".ogg";
