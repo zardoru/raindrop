@@ -735,6 +735,8 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 	CompileBMS(Info);
 	Diff->SoundList = Info->Sounds;
 
+	// Get actual filename instead of full path.
+	filename = Utility::RelativeToPath(filename);
 	if (Diff->Name.length() == 0)
 	{
 		size_t startBracket = filename.find_first_of("[");
