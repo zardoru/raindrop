@@ -215,6 +215,9 @@ void Song::ProcessSpeedVariations(VSRG::Difficulty* Diff, double Drift)
 		/* 
 			Theorically, if there were a VSpeed change after this one (such as a BPM change) we've got to modify them 
 			if they're between this and the next speed change.
+
+			Apparently, this behaviour is a "bug" since both stepmania and osu!mania reset SV changes
+			after a BPM change.
 		*/
 
 		for(TimingData::iterator Time = Diff->VerticalSpeeds.begin();
@@ -228,13 +231,11 @@ void Song::ProcessSpeedVariations(VSRG::Difficulty* Diff, double Drift)
 				// Last speed change
 				if (NextChange == Diff->SpeedChanges.end())
 				{
-					Time->Value *= SpeedValue;
+					Time->Value = Change->Value * SectionValue(tVSpeeds, Time->Time);
 				}else
 				{
 					if (Time->Time < NextChange->Time) // Between speed changes
-					{
-						Time->Value *= Change->Value;
-					}
+						Time->Value = Change->Value * SectionValue(tVSpeeds, Time->Time);
 				}
 			}
 		}
