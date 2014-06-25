@@ -88,13 +88,13 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
 
 	if (Err)
 	{
-		printf("%s\n", Pa_GetErrorText(Err));
-		printf("Device Selected %d\n", Device);
+		wprintf(L"%s\n", Pa_GetErrorText(Err));
+		wprintf(L"Device Selected %d\n", Device);
 	}
 #ifdef LINUX
 	else
 	{
-		printf("Audio: Enabling real time scheduling\n");
+		wprintf(L"Audio: Enabling real time scheduling\n");
 		PaAlsa_EnableRealtimeScheduling( mStream, true );
 	}	
 #endif
@@ -483,6 +483,9 @@ void InitAudio()
 {
 #ifndef NO_AUDIO
 	PaError Err = Pa_Initialize();
+
+	if (Err != 0) // Couldn't get audio, bail out
+		return;
 
 #ifdef WIN32
 	UseWasapi = (Configuration::GetConfigf("UseWasapi") != 0);

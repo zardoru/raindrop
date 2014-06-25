@@ -50,22 +50,36 @@ void ScreenGameplay7K::DrawMeasures()
 	Background.BindTextureVBO(); 
 	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
+	if (MultiplierChanged)
+	{
+		for (uint32 k = 0; k < Channels; k++)
+		{
+			for (std::vector<TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); m++)
+			{
+				if (m->IsHold())
+					m->RecalculateBody(LanePositions[k], LaneWidth[k], NoteHeight, MultAbs);
+			}
+		}
+	}
 
 	/* todo: instancing */
 	for (uint32 k = 0; k < Channels; k++)
 	{
 		for (std::vector<TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); m++)
 		{
-			float Vertical = (m->GetVertical() * SpeedMultiplier + rPos) ;
-			float VerticalHold = (m->GetVerticalHold() * SpeedMultiplier + rPos) ;
+			if (!m->IsEnabled())
+				if (!m->IsHold())
+					continue;
 
-			if (MultiplierChanged && m->IsHold())
-				m->RecalculateBody(LanePositions[k], LaneWidth[k], NoteHeight, MultAbs);
+			float Vertical = (m->GetVertical() * SpeedMultiplier + rPos) ;
+			float VerticalHold;
 
 			bool InScreen = true; 
 
 			if (m->IsHold())
 			{
+				VerticalHold = (m->GetVerticalHold() * SpeedMultiplier + rPos);
+
 				if (Upscroll)
 					InScreen = IntervalsIntersect(0, ScreenHeight, Vertical, VerticalHold);
 				else
@@ -73,6 +87,11 @@ void ScreenGameplay7K::DrawMeasures()
 			}
 			else
 			{
+				if (Upscroll && Vertical > ScreenHeight)
+					goto next_key;
+				else if (Vertical < 0)
+					goto next_key;
+
 				if (Upscroll)
 					InScreen = Vertical < ScreenHeight;
 				else
@@ -109,48 +128,50 @@ void ScreenGameplay7K::DrawMeasures()
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 			}
 
-			if ( m->IsEnabled() || m->IsHold() ) // Hold head or enabled note
+
+			// Use the lane's note image
+			if (NoteImages[k])
+				NoteImages[k]->Bind();
+			else
 			{
-				// Use the lane's note image
-				if (NoteImages[k])
-					NoteImages[k]->Bind();
+				if (NoteImage)
+					NoteImage->Bind();
 				else
-				{
-					if (NoteImage)
-						NoteImage->Bind();
-					else
-						continue;
-				}
+					continue;
+			}
 
-				// Assign the note matrix
-				WindowFrame.SetUniform(U_SIM, &(NoteMatrix[k])[0][0]);
-				WindowFrame.SetUniform(U_COLOR, 1, 1, 1, 1);
+			// Assign the note matrix
+			WindowFrame.SetUniform(U_SIM, &(NoteMatrix[k])[0][0]);
+			WindowFrame.SetUniform(U_COLOR, 1, 1, 1, 1);
 
-				// Draw Hold tail
-				if (m->IsHold())
-				{
-					WindowFrame.SetUniform(U_TRANM, &(m->GetHoldEndMatrix())[0][0]);
-					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-				}
-
-				// Assign our matrix - encore
-				if ( ((Vertical < BasePos && Upscroll) || (Vertical >= BasePos && !Upscroll))
-					&& ( (Vertical > VerticalHold && Upscroll) || (Vertical < VerticalHold && !Upscroll)) )
-				{
-					// As long as it's not judged, we'll keep it in place 
-					Mat4 identity;
-					WindowFrame.SetUniform(U_MVP, &PositionMatrixJudgement[0][0]);
-					WindowFrame.SetUniform(U_TRANM, &(identity)[0][0]);
-				}else
-				{
-					// Otherwise scroll normally
-					WindowFrame.SetUniform(U_TRANM, &(m->GetMatrix())[0][0]);
-				}
-
-
+			// Draw Hold tail
+			if (m->IsHold())
+			{
+				WindowFrame.SetUniform(U_TRANM, &(m->GetHoldEndMatrix())[0][0]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 			}
+
+			// Assign our matrix - encore
+			if ( (!m->IsHold() && (Vertical < BasePos && Upscroll || Vertical >= BasePos && !Upscroll))
+				|| (m->IsHold() && (Vertical > VerticalHold && Upscroll || Vertical < VerticalHold && !Upscroll)) )
+			{
+
+				// As long as it's not judged, we'll keep it in place 
+				Mat4 identity;
+				WindowFrame.SetUniform(U_MVP, &PositionMatrixJudgement[0][0]);
+				WindowFrame.SetUniform(U_TRANM, &(identity)[0][0]);
+			}else
+			{
+				// Otherwise scroll normally
+				WindowFrame.SetUniform(U_TRANM, &(m->GetMatrix())[0][0]);
+			}
+
+
+			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
 		}
+
+		next_key: (void)0;
 	}
 
 	/* Clean up */
