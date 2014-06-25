@@ -17,7 +17,7 @@ namespace VSRG
 
 	typedef std::vector<Measure> MeasureVector;
 	
-	typedef std::vector<std::vector<TrackNote> > MeasureVectorTN;
+	typedef std::vector<TrackNote> VectorTN[MAX_CHANNELS];
 	
 
 	struct Difficulty : public Game::Song::Difficulty
@@ -103,7 +103,7 @@ namespace VSRG
 		~Song();
 
 		String DifficultyCacheFilename(VSRG::Difficulty * Diff);
-		void Process(VSRG::Difficulty* Which, MeasureVectorTN *NotesOut, float Drift = 0, double SpeedConstant = 0);
+		void Process(VSRG::Difficulty* Which, VectorTN NotesOut, float Drift = 0, double SpeedConstant = 0);
 	};
 
 }

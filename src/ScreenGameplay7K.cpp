@@ -222,7 +222,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 			SpeedConstant = DesiredDefaultSpeed;
 		}
 
-		MySong->Process(CurrentDiff, NotesByMeasure, Drift, SpeedConstant);
+		MySong->Process(CurrentDiff, NotesByChannel, Drift, SpeedConstant);
 
 		if (Type == SPEEDTYPE_MMOD) // mmod
 		{
@@ -251,7 +251,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		}
 
 	}else
-		MySong->Process(CurrentDiff, NotesByMeasure, Drift); // Regular processing
+		MySong->Process(CurrentDiff, NotesByChannel, Drift); // Regular processing
 
 	wprintf(L"Copying data... ");
 	Channels = CurrentDiff->Channels;

@@ -38,7 +38,7 @@ private:
 	double TimeCompensation;
 	bool MultiplierChanged;
 	VSRG::Difficulty			 *CurrentDiff;
-	VSRG::MeasureVectorTN NotesByMeasure[VSRG::MAX_CHANNELS];
+	VSRG::VectorTN NotesByChannel;
 	TimingData VSpeeds;
 	int		GearBindings[VSRG::MAX_CHANNELS];
 	uint32	Channels;

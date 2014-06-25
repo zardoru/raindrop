@@ -24,6 +24,11 @@ int tSort(const TimingSegment &i, const TimingSegment &j)
 	return i.Time < j.Time;
 }
 
+int nSort (const TrackNote &i, const TrackNote &j)
+{
+	return i.GetStartTime() < j.GetStartTime();
+}
+
 void Song::ProcessVSpeeds(VSRG::Difficulty* Diff, double SpeedConstant)
 {
 	Diff->VerticalSpeeds.clear();
@@ -246,7 +251,7 @@ void Song::ProcessSpeedVariations(VSRG::Difficulty* Diff, double Drift)
 	std::sort(Diff->VerticalSpeeds.begin(), Diff->VerticalSpeeds.end(), tSort);
 }
 
-void Song::Process(VSRG::Difficulty* Which, MeasureVectorTN *NotesOut, float Drift, double SpeedConstant)
+void Song::Process(VSRG::Difficulty* Which, VectorTN NotesOut, float Drift, double SpeedConstant)
 {
 	/* 
 		We'd like to build the notes' position from 0 to infinity, 
@@ -296,7 +301,6 @@ void Song::Process(VSRG::Difficulty* Which, MeasureVectorTN *NotesOut, float Dri
 				Msr != (*Diff)->Measures.end();
 				Msr++)
 			{
-				NotesOut[KeyIndex].push_back(std::vector<TrackNote>());
 				/* For each note in the measure... */
 				size_t total_notes = Msr->MeasureNotes[KeyIndex].size();
 				for (uint32 Note = 0; Note < total_notes; Note++)
@@ -325,8 +329,10 @@ void Song::Process(VSRG::Difficulty* Which, MeasureVectorTN *NotesOut, float Dri
 					double dBeat = cBeat - iBeat;
 
 					NewNote.AssignFraction(dBeat);
-					NotesOut[KeyIndex].back().push_back(NewNote);
+					NotesOut[KeyIndex].push_back(NewNote);
 				}
+
+				std::sort(NotesOut[KeyIndex].begin(), NotesOut[KeyIndex].end(), nSort);
 				MIdx++;
 			}
 		}
