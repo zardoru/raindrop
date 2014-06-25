@@ -107,9 +107,12 @@ int chanScratch = fromBase36("16");
 #define CHANNEL_BGM 1
 #define CHANNEL_METER 2
 #define CHANNEL_BPM 3
+#define CHANNEL_BGABASE 4
+#define CHANNEL_BGAPOOR 6
+#define CHANNEL_BGALAYER 7
 #define CHANNEL_EXBPM 8
 #define CHANNEL_STOPS 9
-#define CHANNEL_SCRATCH chanScratch
+#define CHANNEL_SCRATCH chanScratch 
 
 struct BMSEvent
 {
@@ -138,9 +141,19 @@ typedef std::map<int, double> BpmListIndex;
 typedef std::vector<NoteData> NoteVector;
 typedef std::map<int, BMSMeasure> MeasureList;
 
-const int startChannel = fromBase36("11");
-const int endChannel   = fromBase36("1Z");
-const int startChannelLN = fromBase36("51");
+// End channels are usually xZ where X is the start (1, 2, 3 all the way to Z)
+
+// Left side channels
+const int startChannelP1 = fromBase36("11");
+const int startChannelLNP1 = fromBase36("51");
+const int startChannelInvisibleP1 = fromBase36("31");
+const int startChannelMinesP1 = fromBase36("D1");
+
+// Right side channels
+const int startChannelP2 = fromBase36("21");
+const int startChannelLNP2 = fromBase36("61");
+const int startChannelInvisibleP2 = fromBase36("41");
+const int startChannelMinesP2 = fromBase36("E1");
 
 // The first wav will always be WAV01, not WAV00 since 00 is a reserved value for "nothing"
 // Pretty fitting, in my opinion.
@@ -171,6 +184,7 @@ struct BmsLoadInfo
 	NoteData *LastNotes[MAX_CHANNELS];
 
 	int LNObj;
+	int SideBOffset;
 
 	BmsLoadInfo()
 	{
@@ -245,9 +259,7 @@ int ts_sort( const TimingSegment &A, const TimingSegment &B )
 	return A.Time < B.Time;
 }
 
-void CalculateBPMs(BmsLoadInfo *Info, int Chan = CHANNEL_BPM);
-
-void CalculateBPMs(BmsLoadInfo *Info, int Chan)
+void CalculateBPMs(BmsLoadInfo *Info)
 {
 	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
 	{
@@ -271,7 +283,7 @@ void CalculateBPMs(BmsLoadInfo *Info, int Chan)
 
 	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
 	{
-		if (i->second.Events.find(CHANNEL_EXBPM) != i->second.Events.end()) // there are bms events in here, get chopping
+		if (i->second.Events.find(CHANNEL_EXBPM) != i->second.Events.end())
 		{
 			for (BMSEventList::iterator ev = i->second.Events[CHANNEL_EXBPM].begin(); ev != i->second.Events[CHANNEL_EXBPM].end(); ev++)
 			{
@@ -316,8 +328,6 @@ void CalculateStops(BmsLoadInfo *Info)
 	
 }
 
-int translateTrackBME(int Channel, int relativeTo = startChannel);
-
 int translateTrackBME(int Channel, int relativeTo)
 {
 	int relTrack = Channel - relativeTo;
@@ -352,52 +362,9 @@ int evsort(const AutoplaySound &i, const AutoplaySound &j)
 
 void CalculateObjects(BmsLoadInfo *Info)
 {
-	int usedChannels[MAX_CHANNELS];
-
-	for (uint8 i = 0; i < MAX_CHANNELS; i++)
-		usedChannels[i] = 0;
-
-	Info->LowerBound = -1;
-	Info->UpperBound = 0;
-	
-	/* Autodetect channel count */
-	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
-	{
-		for (uint8 curChannel = startChannel; curChannel <= (startChannel + MAX_CHANNELS); curChannel++)
-		{
-			if (i->second.Events.find(curChannel) != i->second.Events.end())
-				usedChannels[translateTrackBME(curChannel)] = 1;
-		}
-	}
-
-	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
-	{
-		for (uint8 curChannel = startChannelLN; curChannel <= (startChannelLN + MAX_CHANNELS); curChannel++)
-		{
-			if (i->second.Events.find(curChannel) != i->second.Events.end())
-				usedChannels[translateTrackBME(curChannel, startChannelLN)] = 1;
-		}
-	}
-
-	int usedChannelCNT = 0;
-	for (int i = 0; i < MAX_CHANNELS; i++)
-		if (usedChannels[i] != 0)
-		{
-			if (Info->LowerBound == -1) // Lowest channel being used. Used for translation back to track 0.
-				Info->LowerBound = i;
-
-			Info->UpperBound = i;
-		}
-
-	// We pick the range of channels we're going to use.
-	Info->Difficulty->Channels = Info->UpperBound - Info->LowerBound + 1;
-
 	/* At this point we know the channel count from 1 to MAX_CHANNELS. We should be able to use it now..*/
-
 	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
-	{
 		measureCalculate(Info, i);
-	}
 }
 
 int evtSort(const BMSEvent &A, const BMSEvent &B)
@@ -405,19 +372,17 @@ int evtSort(const BMSEvent &A, const BMSEvent &B)
 	return A.Fraction < B.Fraction;
 }
 
-void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
+void measureCalculateSide(BmsLoadInfo *Info, MeasureList::iterator &i, int TrackOffset, int startChannel, int startChannelLN, int startChannelMines, int startChannelInvisible, Measure &Msr)
 {
 	int usedChannels = Info->Difficulty->Channels;
-	Measure Msr;
 
-	Msr.MeasureLength = 4 * i->second.BeatDuration;
-
+	// Standard events
 	for (uint8 curChannel = startChannel; curChannel <= (startChannel+MAX_CHANNELS); curChannel++)
 	{
 		if (i->second.Events.find(curChannel) != i->second.Events.end()) // there are bms events for this channel.
 		{
 			int Track = 0;
-			Track = translateTrackBME(curChannel) - Info->LowerBound;
+			Track = translateTrackBME(curChannel, startChannel) - Info->LowerBound + TrackOffset;
 
 			if (Info->LNObj)
 				std::sort(i->second.Events[curChannel].begin(), i->second.Events[curChannel].end(), evtSort);
@@ -463,13 +428,14 @@ degradetonote:
 		}
 	}
 
+	// LN events
 	for (uint8 curChannel = startChannelLN; curChannel <= (startChannelLN+MAX_CHANNELS); curChannel++)
 	{
 		if (i->second.Events.find(curChannel) != i->second.Events.end()) // there are bms events for this channel.
 		{
 			int Track = 0;
 
-			Track = translateTrackBME(curChannel, startChannelLN) - Info->LowerBound;
+			Track = translateTrackBME(curChannel, startChannelLN) - Info->LowerBound + TrackOffset;
 
 			for (BMSEventList::iterator ev = i->second.Events[curChannel].begin(); ev != i->second.Events[curChannel].end(); ev++)
 			{
@@ -504,7 +470,19 @@ degradetonote:
 			}
 		}
 	}
+}
 
+void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
+{
+	Measure Msr;
+
+	Msr.MeasureLength = 4 * i->second.BeatDuration;
+
+	// see both sides, p1 and p2
+	measureCalculateSide(Info, i, 0, startChannelP1, startChannelLNP1, startChannelMinesP1, startChannelInvisibleP1, Msr);
+	measureCalculateSide(Info, i, Info->SideBOffset, startChannelP2, startChannelLNP2, startChannelMinesP2, startChannelInvisibleP2, Msr);
+
+	// insert it into the difficulty structure
 	Info->Difficulty->Measures.push_back(Msr);
 
 	for (uint8 k = 0; k < MAX_CHANNELS; k++)
@@ -550,12 +528,86 @@ degradetonote:
 	}
 }
 
+void AutodetectChannelCountSide(BmsLoadInfo *Info, int offset, int usedChannels[MAX_CHANNELS], int startChannel, int startChannelLN, int startChannelMines, int startChannelInvisible)
+{
+	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
+	{
+		// normal channels
+		for (uint8 curChannel = startChannel; curChannel <= (startChannel + MAX_CHANNELS); curChannel++)
+		{
+			if (i->second.Events.find(curChannel) != i->second.Events.end())
+				usedChannels[translateTrackBME(curChannel, startChannel)+offset] = 1;
+		}
+
+		// LN channels
+		for (uint8 curChannel = startChannelLN; curChannel <= (startChannelLN + MAX_CHANNELS); curChannel++)
+		{
+			if (i->second.Events.find(curChannel) != i->second.Events.end())
+				usedChannels[translateTrackBME(curChannel, startChannelLN)+offset] = 1;
+		}
+	}
+}
+
+void AutodetectChannelCount(BmsLoadInfo *Info)
+{
+	int usedChannels[MAX_CHANNELS];
+
+	for (uint8 i = 0; i < MAX_CHANNELS; i++)
+		usedChannels[i] = 0;
+
+	Info->LowerBound = -1;
+	Info->UpperBound = 0;
+	
+	/* Autodetect channel count based off channel information */
+	AutodetectChannelCountSide(Info, 0, usedChannels, startChannelP1, startChannelLNP1, startChannelMinesP1, startChannelInvisibleP1);
+
+	/* Find the last channel we've used's index */
+	int FirstIndex = -1;
+	int LastIndex = 0;
+	for (int i = 0; i < MAX_CHANNELS; i++)
+	{
+		if (usedChannels[i] != 0)
+		{
+			if (FirstIndex == -1) // Lowest channel being used. Used for translation back to track 0.
+				FirstIndex = i;
+
+			LastIndex = i;
+		}
+	}
+
+	// This means, Side B offset starts from here.
+	// If the last index was 7 for instance, and the first was 0, our side B offset would be 8, first channel of second side.
+	// If the last index was 5 and the first was 0, side B offset would be 6.
+	// While other cases would really not make much sense, they're theorically supported, anyway.
+	Info->SideBOffset = LastIndex - FirstIndex + 1;
+
+	// Use that information to add the p2 side right next to the p1 side and have a continuous thing.
+	AutodetectChannelCountSide(Info, LastIndex+1, usedChannels, startChannelP2, startChannelLNP2, startChannelMinesP2, startChannelInvisibleP2);
+
+	/* Find boundaries for used channels */
+	for (int i = 0; i < MAX_CHANNELS; i++)
+	{
+		if (usedChannels[i] != 0)
+		{
+			if (Info->LowerBound == -1) // Lowest channel being used. Used for translation back to track 0.
+				Info->LowerBound = i;
+
+			Info->UpperBound = i;
+		}
+	}
+
+	
+
+	// We pick the range of channels we're going to use.
+	Info->Difficulty->Channels = Info->UpperBound - Info->LowerBound + 1;
+}
 
 void CompileBMS(BmsLoadInfo *Info)
 {
 	/* To be done. */
 	CalculateBPMs(Info);
 	CalculateStops(Info);
+	AutodetectChannelCount(Info);
 	CalculateObjects(Info);
 }
 
