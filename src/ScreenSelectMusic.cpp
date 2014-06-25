@@ -33,6 +33,12 @@ int LoopTotal;
 ScreenSelectMusic::ScreenSelectMusic()
 {
 	Font = NULL;
+
+	boost::function<float (float)> TransformFunc( boost::bind(&ScreenSelectMusic::GetListYTransformation, this, _1) );
+	boost::function<void (Game::Song*, uint8)> SongNotifyFunc( boost::bind(&ScreenSelectMusic::OnSongChange, this, _1, _2) );
+	boost::function<void (Game::Song*, uint8)> SongNotifySelectFunc( boost::bind(&ScreenSelectMusic::OnSongSelect, this, _1, _2) );
+	Game::SongWheel::GetInstance().Initialize(0, 0, true, true, TransformFunc, SongNotifyFunc, SongNotifySelectFunc);
+
 	if (!SelectSnd)
 	{
 		LoopTotal = 0;
@@ -92,11 +98,6 @@ void ScreenSelectMusic::MainThreadInitialization()
 
 	WindowFrame.SetLightMultiplier(1);
 	Background.AffectedByLightning = true;
-
-	boost::function<float (float)> TransformFunc( boost::bind(&ScreenSelectMusic::GetListYTransformation, this, _1) );
-	boost::function<void (Game::Song*, uint8)> SongNotifyFunc( boost::bind(&ScreenSelectMusic::OnSongChange, this, _1, _2) );
-	boost::function<void (Game::Song*, uint8)> SongNotifySelectFunc( boost::bind(&ScreenSelectMusic::OnSongSelect, this, _1, _2) );
-	Game::SongWheel::GetInstance().Initialize(0, 0, true, true, TransformFunc, SongNotifyFunc, SongNotifySelectFunc);
 
 	Game::SongWheel::GetInstance().ChangeMode(SelectedMode);
 }

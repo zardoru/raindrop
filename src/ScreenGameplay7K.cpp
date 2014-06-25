@@ -658,8 +658,9 @@ bool ScreenGameplay7K::Run(double Delta)
 		ss << "\nScrolling Speed: " << SectionValue(VSpeeds, SongTime) * SpeedMultiplier;
 	else
 		ss << "\nScrolling Speed: " << SectionValue(VSpeeds, 0) * SpeedMultiplier;
+	ss << "\nCurVer: " << CurrentVertical;
 
-	GFont->DisplayText(ss.str().c_str(), Vec2(0, ScreenHeight - 45));
+	GFont->DisplayText(ss.str().c_str(), Vec2(0, ScreenHeight - 65));
 
 	if (!Active)
 		GFont->DisplayText("press 'enter' to start", Vec2( ScreenWidth / 2 - 23 * 3,ScreenHeight * 5/8));

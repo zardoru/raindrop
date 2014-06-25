@@ -29,18 +29,18 @@ SongWheel& SongWheel::GetInstance()
 
 void SongWheel::Initialize(float Start, float End, bool IsDotcurActive, bool IsVSRGActive, ListTransformFunction FuncTransform, SongNotification FuncNotify, SongNotification FuncNotifySelect)
 {
-	if (IsInitialized)
-		return;
-
-	RangeStart = Start;
-	RangeEnd = End;
-
 	dotcurModeActive = IsDotcurActive;
 	VSRGModeActive = IsVSRGActive;
 
 	OnSongChange = FuncNotify;
 	OnSongSelect = FuncNotifySelect;
 	Transform = FuncTransform;
+
+	if (IsInitialized)
+		return;
+
+	RangeStart = Start;
+	RangeEnd = End;
 
 	CursorPos = 0;
 	OldCursorPos = 0;
