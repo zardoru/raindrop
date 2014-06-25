@@ -6,7 +6,7 @@
 class GraphObjectMan;
 class ScoreKeeper7K;
 
-class ScreenGameplay7K : public IScreen
+class ScreenGameplay7K : public Screen
 {
 private:
 	

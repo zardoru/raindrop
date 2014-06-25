@@ -18,7 +18,7 @@ SoundSample *MMSelectSnd = NULL;
 BitmapFont* MainMenuFont = NULL;
 LuaManager* MainMenuLua = NULL;
 
-ScreenMainMenu::ScreenMainMenu(IScreen *Parent) : IScreen(Parent)
+ScreenMainMenu::ScreenMainMenu(Screen *Parent) : Screen(Parent)
 {
 }
 

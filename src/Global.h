@@ -4,7 +4,6 @@
 #include <cstring>
 #include <sstream>
 #include <vector>
-
 #include <boost/cstdint.hpp>
 
 using boost::uint32_t;
@@ -86,6 +85,8 @@ inline T Clamp(const T &Value, const T &Min, const T &Max)
 
 using std::max;
 using std::min;
+
+#include "Directory.h"
 
 #ifdef WIN32
 #pragma warning (disable: 4244)

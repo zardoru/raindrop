@@ -2,20 +2,20 @@
 #define ISCREEN_H_
 
 // Interface.
-class IScreen
+class Screen
 {
 protected:
-	IScreen *Parent;
+	Screen *Parent;
 	double ScreenTime; // How long has it been open?
 	bool Running; // Is this screen active?
 
 public:
 
-	IScreen *Next;
+	Screen *Next;
 
-	IScreen ();
-	IScreen (IScreen * _Parent);
-	virtual ~IScreen ();
+	Screen ();
+	Screen (Screen * _Parent);
+	virtual ~Screen ();
 
 	// Nesting screens.
 	bool IsScreenRunning();

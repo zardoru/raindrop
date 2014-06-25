@@ -9,8 +9,8 @@
 #define ComboSizeX 24
 #define ComboSizeY 48
 
-ScreenGameplay::ScreenGameplay(IScreen *Parent) :
-	IScreen(Parent),
+ScreenGameplay::ScreenGameplay(Screen *Parent) :
+	Screen(Parent),
 	Barline(this)
 {
 	Running = true;

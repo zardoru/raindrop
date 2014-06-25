@@ -5,7 +5,7 @@
 
 class GraphObjectMan;
 
-class ScreenMainMenu : public IScreen
+class ScreenMainMenu : public Screen
 {
 	GUI::Button PlayBtn, EditBtn, OptionsBtn, ExitBtn;
 
@@ -13,7 +13,7 @@ class ScreenMainMenu : public IScreen
 
 	GraphObject2D Background;
 public:
-	ScreenMainMenu(IScreen *Parent);
+	ScreenMainMenu(Screen *Parent);
 	void Init();
 	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	void HandleScrollInput(double xOff, double yOff);

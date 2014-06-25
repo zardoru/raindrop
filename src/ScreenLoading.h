@@ -5,12 +5,12 @@
 #include "GraphObjectMan.h"
 #include <boost/thread/thread.hpp>
 
-class ScreenLoading : public IScreen
+class ScreenLoading : public Screen
 {
 	GraphObjectMan Animation;
 	boost::thread *LoadThread;
 public:
-	ScreenLoading(IScreen *Parent, IScreen *_Next);
+	ScreenLoading(Screen *Parent, Screen *_Next);
 	void Init();
 	bool Run(double TimeDelta);
 	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);

@@ -6,7 +6,7 @@
 class BitmapFont;
 class ScoreKeeper7K;
 
-class ScreenEvaluation7K : public IScreen
+class ScreenEvaluation7K : public Screen
 {
 	GraphObject2D Background;
 	BitmapFont* Font;
@@ -14,7 +14,7 @@ class ScreenEvaluation7K : public IScreen
 	ScoreKeeper7K *Score;
 
 public:
-	ScreenEvaluation7K(IScreen *Parent);
+	ScreenEvaluation7K(Screen *Parent);
 	void Init(ScoreKeeper7K *Result);
 	bool Run(double Delta);
 	void Cleanup();

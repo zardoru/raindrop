@@ -169,6 +169,12 @@
     <ClCompile Include="..\src\Convert.cpp">
       <Filter>Source\vsrg\converting</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\SongWheel.cpp">
+      <Filter>Source\game global\game status</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GameState.cpp">
+      <Filter>Source\game global\game status</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">
@@ -324,6 +330,12 @@
     <ClInclude Include="..\src\Converter.h">
       <Filter>Source\vsrg\converting</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\SongWheel.h">
+      <Filter>Source\game global\game status</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GameState.h">
+      <Filter>Source\game global\game status</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -403,6 +415,9 @@
     </Filter>
     <Filter Include="Source\vsrg\converting">
       <UniqueIdentifier>{9e1fa62b-dcc8-43d6-af3c-a6ca61ee8ae6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\game global\game status">
+      <UniqueIdentifier>{9cb48b7b-447e-411e-bc50-2468f5ae2674}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
