@@ -17,6 +17,12 @@ Song::Song()
 
 Song::~Song()
 {
+	for (std::vector<VSRG::Difficulty*>::iterator i = Difficulties.begin();
+		i != Difficulties.end();
+		i++)
+	{
+		delete *i;
+	}
 }
 
 int tSort(const TimingSegment &i, const TimingSegment &j)
