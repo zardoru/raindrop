@@ -295,12 +295,12 @@ void LuaManager::PushArgument(std::string Value)
 		lua_pushstring(State, Value.c_str());
 }
 
-void LuaManager::CallFunction(std::string Name, int Arguments, int Results)
+void LuaManager::CallFunction(const char* Name, int Arguments, int Results)
 {	
 	func_input = true;
 	func_args = Arguments;
 	func_results = Results;
-	lua_getglobal(State, Name.c_str());
+	lua_getglobal(State, Name);
 }
 
 bool LuaManager::RunFunction()
@@ -322,7 +322,12 @@ bool LuaManager::RunFunction()
 
 int LuaManager::GetFunctionResult(int StackPos)
 {
-	int Value = -1;
+	return GetFunctionResultF(StackPos);
+}
+
+float LuaManager::GetFunctionResultF(int StackPos)
+{
+	float Value = -1;
 	
 	if (lua_isnumber(State, -StackPos))
 	{

@@ -11,8 +11,8 @@
 
 AudioStream *ScreenEvaluation7KMusic = NULL;
 
-ScreenEvaluation7K::ScreenEvaluation7K(IScreen *Parent) :
-	IScreen(Parent)
+ScreenEvaluation7K::ScreenEvaluation7K(Screen *Parent) :
+	Screen(Parent)
 {
 	Running = true;
 	Font = NULL;

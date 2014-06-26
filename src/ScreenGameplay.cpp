@@ -9,8 +9,8 @@
 #define ComboSizeX 24
 #define ComboSizeY 48
 
-ScreenGameplay::ScreenGameplay(IScreen *Parent) :
-	IScreen(Parent),
+ScreenGameplay::ScreenGameplay(Screen *Parent) :
+	Screen(Parent),
 	Barline(this)
 {
 	Running = true;
@@ -222,7 +222,7 @@ void ScreenGameplay::LoadThreadInitialization()
 	{
 		Music = new AudioStream();
 
-		if (!Music || !Music->Open(MySong->SongFilename.c_str()))
+		if (!Music || !Music->Open( (MySong->SongDirectory + "/" + MySong->SongFilename) .c_str()))
 		{
 			// we can't use exceptions because they impact the framerate. What can we do?
 			// throw std::exception( (boost::format ("couldn't open song %s") % MySong->SongFilename).str().c_str() );

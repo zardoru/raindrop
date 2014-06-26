@@ -6,7 +6,7 @@
 class GraphObjectMan;
 class ScoreKeeper7K;
 
-class ScreenGameplay7K : public IScreen
+class ScreenGameplay7K : public Screen
 {
 private:
 	
@@ -20,6 +20,7 @@ private:
 
 	/* Game */
 	bool Active;
+	bool DoPlay;
 	int lastClosest[VSRG::MAX_CHANNELS];
 	double CurrentVertical;
 	double WaitingTime;
@@ -37,7 +38,7 @@ private:
 	double TimeCompensation;
 	bool MultiplierChanged;
 	VSRG::Difficulty			 *CurrentDiff;
-	VSRG::MeasureVectorTN NotesByMeasure[VSRG::MAX_CHANNELS];
+	VSRG::VectorTN NotesByChannel;
 	TimingData VSpeeds;
 	int		GearBindings[VSRG::MAX_CHANNELS];
 	uint32	Channels;

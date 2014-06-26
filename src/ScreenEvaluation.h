@@ -5,7 +5,7 @@
 
 class BitmapFont;
 
-class ScreenEvaluation : public IScreen
+class ScreenEvaluation : public Screen
 {
 	EvaluationData Results;
 	GraphObject2D Background;
@@ -16,7 +16,7 @@ class ScreenEvaluation : public IScreen
 	
 	int32 CalculateScore();
 public:
-	ScreenEvaluation(IScreen *Parent);
+	ScreenEvaluation(Screen *Parent);
 	void Init(EvaluationData _Data, String SongAuthor, String SongTitle);
 	bool Run(double Delta);
 	void Cleanup();

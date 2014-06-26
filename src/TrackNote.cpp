@@ -24,17 +24,12 @@ int GetFractionKindBeat(double frac);
 /* calculate the beat snap for this fraction */
 void TrackNote::AssignFraction(double frac)
 {
-	Data.FractionKind = GetFractionKindBeat(frac);
+	FractionKind = GetFractionKindBeat(frac);
 }
 
 void TrackNote::RecalculateBody(float trackPosition, float noteWidth, float noteSize, float speedMultiplier)
 {
 	hold_body_size = glm::translate(Mat4(), glm::vec3(trackPosition, 0, 14)) * glm::scale(Mat4(), glm::vec3(noteWidth, VerticalHoldBodySize * speedMultiplier * 2, 0));
-}
-
-Mat4& TrackNote::GetHoldBodySizeMatrix()
-{
-	return hold_body_size;
 }
 
 void TrackNote::AssignPosition(Vec2 Position, Vec2 endPosition)
@@ -46,7 +41,7 @@ void TrackNote::AssignPosition(Vec2 Position, Vec2 endPosition)
 	{
 		b_pos_holdend = endPosition;
 		
-		VerticalHoldBodyPos = b_pos.y + (b_pos_holdend.y - b_pos.y) / 2;
+		float VerticalHoldBodyPos = b_pos.y + (b_pos_holdend.y - b_pos.y) / 2;
 		VerticalHoldBodySize = abs((b_pos_holdend.y - b_pos.y) / 2);
 
 		hold_body = glm::translate(Mat4(), glm::vec3(b_pos.x, VerticalHoldBodyPos, 0));
@@ -59,19 +54,24 @@ bool TrackNote::IsHold() const
 	return Data.EndTime != 0;
 }
 
-Mat4& TrackNote::GetHoldBodyMatrix()
+Mat4 TrackNote::GetHoldBodyMatrix() const
 {
 	return hold_body;
 }
 
-Mat4& TrackNote::GetHoldEndMatrix()
+Mat4 TrackNote::GetHoldEndMatrix() const
 {
 	return hold_final;
 }
 
-Mat4& TrackNote::GetMatrix()
+Mat4 TrackNote::GetMatrix() const
 {
 	return final;
+}
+
+Mat4 TrackNote::GetHoldBodySizeMatrix() const
+{
+	return hold_body_size;
 }
 
 float TrackNote::GetVertical() const
@@ -129,5 +129,5 @@ int TrackNote::GetSound() const
 
 int TrackNote::GetFracKind() const
 {
-	return Data.FractionKind;
+	return FractionKind;
 }

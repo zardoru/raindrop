@@ -5,13 +5,13 @@
 #include "GameWindow.h"
 #include "FileManager.h"
 
-void LoadFunction(void* Screen)
+void LoadFunction(void* pScreen)
 {
-	IScreen *S = (IScreen*)Screen;
+	Screen *S = (Screen*)pScreen;
 	S->LoadThreadInitialization();
 }
 
-ScreenLoading::ScreenLoading(IScreen *Parent, IScreen *_Next)
+ScreenLoading::ScreenLoading(Screen *Parent, Screen *_Next)
 {
 	Next = _Next;
 	LoadThread = NULL;

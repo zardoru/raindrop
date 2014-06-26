@@ -15,6 +15,7 @@ class BitmapFont
 	void RegenerateCharPositions(Vec2 CellSize);
 
 public:
+	BitmapFont();
 	void DisplayText(const char* Text, Vec2 Position);
 	void LoadFontImage(const char* Name, Vec2 _CharSize, Vec2 _CellSize, Vec2 _RenderSize = Vec2(1,1), char FontStart = 0);
 	void LoadSkinFontImage(const char* Name, Vec2 _CharSize, Vec2 _CellSize, Vec2 _RenderSize = Vec2(1,1), char FontStart = 0);

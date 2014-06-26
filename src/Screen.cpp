@@ -1,7 +1,7 @@
 #include "Global.h"
 #include "Screen.h"
 
-IScreen::IScreen() 
+Screen::Screen() 
 {  
 	Parent = NULL;
 	Running = false;
@@ -9,7 +9,7 @@ IScreen::IScreen()
 	ScreenTime = 0;
 }
 
-IScreen::IScreen(IScreen *_Parent)
+Screen::Screen(Screen *_Parent)
 {
 	Parent = _Parent;
 	Running = false;
@@ -17,24 +17,24 @@ IScreen::IScreen(IScreen *_Parent)
 	ScreenTime = 0;
 }
 
-IScreen::~IScreen() {}
+Screen::~Screen() {}
 
-void IScreen::LoadThreadInitialization()
+void Screen::LoadThreadInitialization()
 {
 	// virtual
 }
 
-void IScreen::MainThreadInitialization()
+void Screen::MainThreadInitialization()
 {
 	// virtual
 }
 
-bool IScreen::IsScreenRunning()
+bool Screen::IsScreenRunning()
 {
 	return Running;
 }
 
-bool IScreen::RunNested(float delta)
+bool Screen::RunNested(float delta)
 {
 	if (!Next)
 		return false;
@@ -54,10 +54,10 @@ bool IScreen::RunNested(float delta)
 	return false;
 }
 
-void IScreen::HandleInput(int32 key, KeyEventType state, bool isMouseInput) { /* stub */ }
+void Screen::HandleInput(int32 key, KeyEventType state, bool isMouseInput) { /* stub */ }
 
-void IScreen::HandleScrollInput(double xOff, double yOff) { /* stub */ }
+void Screen::HandleScrollInput(double xOff, double yOff) { /* stub */ }
 
-void IScreen::Cleanup() { /* stub */ }
+void Screen::Cleanup() { /* stub */ }
 
-void IScreen::Invalidate() { /* stub */ }
+void Screen::Invalidate() { /* stub */ }

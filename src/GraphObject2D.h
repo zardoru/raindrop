@@ -104,6 +104,7 @@ public:
 	void AddRotation(float Rot);
 
 	const glm::mat4 &GetMatrix();
+	bool ShouldUpdateMatrix() const;
 
 	void Render(); // found in backend.cpp
 	virtual void Invalidate();

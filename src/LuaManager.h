@@ -53,10 +53,11 @@ public:
 	void PushArgument(double Value);
 	void PushArgument(std::string Value);
 
-	void CallFunction(std::string Name, int Arguments = 0, int Results = 0);
+	void CallFunction(const char* Name, int Arguments = 0, int Results = 0);
 	bool RunFunction();
 
 	int GetFunctionResult(int StackPos = 1);
+	float GetFunctionResultF(int StackPos = 1);
 
 	void Pop();
 

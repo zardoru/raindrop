@@ -6,6 +6,10 @@
 #include "FileManager.h"
 #include "Directory.h"
 
+BitmapFont::BitmapFont()
+{
+}
+
 void BitmapFont::LoadFontImage(const char* Location, Vec2 _CharSize, Vec2 _CellSize, Vec2 _RenderSize, char FontStart)
 {
 	Font = ImageLoader::Load(Location);

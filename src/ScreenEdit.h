@@ -52,7 +52,7 @@ class ScreenEdit : public ScreenGameplay
 	void RunGhostObject();
 	void DrawInformation();
 public:
-	ScreenEdit (IScreen * Parent);
+	ScreenEdit (Screen * Parent);
 	void Init(dotcur::Song *Other);
 	void StartPlaying(int32 _Measure);
 	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);

@@ -2,7 +2,7 @@
 class Application 
 {
 	double oldTime;
-	IScreen *Game;
+	Screen *Game;
 	
 	struct {
 		int Argc;

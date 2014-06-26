@@ -17,11 +17,22 @@ Song::Song()
 
 Song::~Song()
 {
+	for (std::vector<VSRG::Difficulty*>::iterator i = Difficulties.begin();
+		i != Difficulties.end();
+		i++)
+	{
+		delete *i;
+	}
 }
 
 int tSort(const TimingSegment &i, const TimingSegment &j)
 {
 	return i.Time < j.Time;
+}
+
+int nSort (const TrackNote &i, const TrackNote &j)
+{
+	return i.GetStartTime() < j.GetStartTime();
 }
 
 void Song::ProcessVSpeeds(VSRG::Difficulty* Diff, double SpeedConstant)
@@ -215,6 +226,9 @@ void Song::ProcessSpeedVariations(VSRG::Difficulty* Diff, double Drift)
 		/* 
 			Theorically, if there were a VSpeed change after this one (such as a BPM change) we've got to modify them 
 			if they're between this and the next speed change.
+
+			Apparently, this behaviour is a "bug" since both stepmania and osu!mania reset SV changes
+			after a BPM change.
 		*/
 
 		for(TimingData::iterator Time = Diff->VerticalSpeeds.begin();
@@ -228,13 +242,11 @@ void Song::ProcessSpeedVariations(VSRG::Difficulty* Diff, double Drift)
 				// Last speed change
 				if (NextChange == Diff->SpeedChanges.end())
 				{
-					Time->Value *= SpeedValue;
+					Time->Value = Change->Value * SectionValue(tVSpeeds, Time->Time);
 				}else
 				{
 					if (Time->Time < NextChange->Time) // Between speed changes
-					{
-						Time->Value *= Change->Value;
-					}
+						Time->Value = Change->Value * SectionValue(tVSpeeds, Time->Time);
 				}
 			}
 		}
@@ -245,7 +257,7 @@ void Song::ProcessSpeedVariations(VSRG::Difficulty* Diff, double Drift)
 	std::sort(Diff->VerticalSpeeds.begin(), Diff->VerticalSpeeds.end(), tSort);
 }
 
-void Song::Process(VSRG::Difficulty* Which, MeasureVectorTN *NotesOut, float Drift, double SpeedConstant)
+void Song::Process(VSRG::Difficulty* Which, VectorTN NotesOut, float Drift, double SpeedConstant)
 {
 	/* 
 		We'd like to build the notes' position from 0 to infinity, 
@@ -295,7 +307,6 @@ void Song::Process(VSRG::Difficulty* Which, MeasureVectorTN *NotesOut, float Dri
 				Msr != (*Diff)->Measures.end();
 				Msr++)
 			{
-				NotesOut[KeyIndex].push_back(std::vector<TrackNote>());
 				/* For each note in the measure... */
 				size_t total_notes = Msr->MeasureNotes[KeyIndex].size();
 				for (uint32 Note = 0; Note < total_notes; Note++)
@@ -324,8 +335,10 @@ void Song::Process(VSRG::Difficulty* Which, MeasureVectorTN *NotesOut, float Dri
 					double dBeat = cBeat - iBeat;
 
 					NewNote.AssignFraction(dBeat);
-					NotesOut[KeyIndex].back().push_back(NewNote);
+					NotesOut[KeyIndex].push_back(NewNote);
 				}
+
+				std::sort(NotesOut[KeyIndex].begin(), NotesOut[KeyIndex].end(), nSort);
 				MIdx++;
 			}
 		}
@@ -534,7 +547,9 @@ void Difficulty::Destroy()
 String Song::DifficultyCacheFilename(VSRG::Difficulty * Diff)
 {
 	std::stringstream ss;
-	ss << FilenameCache << Diff->Name << Diff->LMT;
+	std::string dfName = Diff->Name;
+	Utility::RemoveFilenameIllegalCharacters(dfName, true);
+	ss << FilenameCache << dfName << Diff->LMT;
 	String Remove = ss.str();
 	Utility::RemoveFilenameIllegalCharacters(Remove);
 	return Remove;

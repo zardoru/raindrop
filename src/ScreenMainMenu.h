@@ -3,12 +3,17 @@
 
 #include "GuiButton.h"
 
-class ScreenMainMenu : public IScreen
+class GraphObjectMan;
+
+class ScreenMainMenu : public Screen
 {
 	GUI::Button PlayBtn, EditBtn, OptionsBtn, ExitBtn;
-	GraphObject2D Logo, Background;
+
+	GraphObjectMan * Objects;
+
+	GraphObject2D Background;
 public:
-	ScreenMainMenu(IScreen *Parent);
+	ScreenMainMenu(Screen *Parent);
 	void Init();
 	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	void HandleScrollInput(double xOff, double yOff);

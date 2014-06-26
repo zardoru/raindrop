@@ -10,7 +10,7 @@
 #include "ActorLifebar.h"
 #include "BitmapFont.h"
 
-class ScreenGameplay : public IScreen
+class ScreenGameplay : public Screen
 {
 protected: // shit the edit screen needs
 
@@ -86,7 +86,7 @@ private: // shit only screengameplay needs
 
 	Image* GameplayObjectImage;
 public:
-	ScreenGameplay(IScreen *Parent);
+	ScreenGameplay(Screen *Parent);
 
 	virtual void Init(dotcur::Song *OtherSong, uint32 DifficultyIndex);
 

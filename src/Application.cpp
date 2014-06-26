@@ -18,6 +18,7 @@
 #include "ImageLoader.h"
 #include "GameWindow.h"
 #include "FileManager.h"
+#include "GameState.h"
 
 #include "ScreenMainMenu.h"
 #include "ScreenGameplay7K.h"
@@ -123,7 +124,9 @@ void Application::Init()
 	SetConsoleOutputCP(CP_UTF8);
 	_setmode(_fileno(stdout), _O_U8TEXT); 
 #endif
-	wprintf(L"Initializing... \n");
+
+	GameState::GetInstance().Initialize();
+	GameState::Printf("Initializing... \n");
 
 	Configuration::Initialize();
 	FileManager::Initialize();

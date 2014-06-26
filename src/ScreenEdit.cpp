@@ -24,7 +24,7 @@ double Fracs[] = {
 	192,
 };
 
-ScreenEdit::ScreenEdit(IScreen *Parent)
+ScreenEdit::ScreenEdit(Screen *Parent)
 	: ScreenGameplay(Parent)
 {
 	ShouldChangeScreenAtEnd = false; // So it doesn't go into screen evaluation.

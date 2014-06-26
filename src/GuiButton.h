@@ -11,6 +11,11 @@ namespace GUI
 class Button : public GraphObject2D
 {
 	bool PressedDown;
+	bool Hovering;
+	Mat4 transformReverse;
+
+	void HoverUpdate(bool IsHovering);
+
 public:
 
 	EventAnimationFunction OnHover;
@@ -21,6 +26,7 @@ public:
 	Button();
 	// True if clicked!
 	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
+	void Run(double delta); // We assume this is called BEFORE Render() is.
 };
 
 }

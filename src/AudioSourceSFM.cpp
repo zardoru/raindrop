@@ -44,7 +44,7 @@ bool AudioSourceSFM::Open(const char* Filename)
 	int err = 0;
 	if (!mWavFile || (err = sf_error(mWavFile)))
 	{
-		wprintf(L"Error %d: Filename %s (wavfile %p)\n", err, Filename, mWavFile);
+		wprintf(L"Error %d: Filename %ls (wavfile %p)\n", err, Utility::Widen(Filename).c_str(), mWavFile);
 		return false;
 	}
 

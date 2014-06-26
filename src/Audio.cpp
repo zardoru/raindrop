@@ -16,8 +16,8 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
-float VolumeSFX = 0.1f;
-float VolumeMusic = 0.8f; 
+float VolumeSFX = 1;
+float VolumeMusic = 1; 
 bool UseThreadedDecoder = false;
 
 #ifdef WIN32
@@ -88,13 +88,13 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
 
 	if (Err)
 	{
-		printf("%s\n", Pa_GetErrorText(Err));
-		printf("Device Selected %d\n", Device);
+		wprintf(L"%s\n", Pa_GetErrorText(Err));
+		wprintf(L"Device Selected %d\n", Device);
 	}
 #ifdef LINUX
 	else
 	{
-		printf("Audio: Enabling real time scheduling\n");
+		wprintf(L"Audio: Enabling real time scheduling\n");
 		PaAlsa_EnableRealtimeScheduling( mStream, true );
 	}	
 #endif
@@ -129,7 +129,7 @@ class PaMixer
 	double ConstFactor;
 
 	int SizeAvailable;
-	bool Threaded;
+	bool Threaded, WaitForRingbufferSpace;
 
 	boost::mutex mut, mut2, rbufmux;
 	boost::condition ringbuffer_has_space;
@@ -137,6 +137,9 @@ public:
 	PaMixer(bool StartThread)
 	{
 		RingbufData = new char[BUFF_SIZE*sizeof(int16)];
+
+		WaitForRingbufferSpace = false;
+
 		PaUtil_InitializeRingBuffer(&RingBuf, sizeof(int16), BUFF_SIZE, RingbufData);
 
 		Threaded = StartThread;
@@ -160,6 +163,11 @@ public:
 #endif
 
 		Pa_StartStream( Stream );
+		
+		Latency = Pa_GetStreamInfo(Stream)->outputLatency;
+
+		wprintf(L"AUDIO: Latency after opening stream = %f \n", Latency);
+
 		ConstFactor = 1.0;
 	}
 
@@ -168,8 +176,13 @@ public:
 		do
 		{
 
+				WaitForRingbufferSpace = true;
+
 				if (Threaded)
+				{
 					mut.lock();
+				}
+
 
 				for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
 				{
@@ -180,7 +193,15 @@ public:
 				}
 
 				if (Threaded)
+				{
+					boost::unique_lock<boost::mutex> lock (rbufmux);
 					mut.unlock();
+
+					while (WaitForRingbufferSpace)
+					{
+						ringbuffer_has_space.wait(lock);
+					}
+				}
 
 		} while (Threaded);
 	}
@@ -244,6 +265,7 @@ public:
 	void CopyOut(char* out, int samples)
 	{
 		int Voices = 0;
+		int StreamVoices = 0;
 		int count = samples;
 		
 		memset(out, 0, count * sizeof(short));
@@ -253,12 +275,13 @@ public:
 		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
 		{
 			if ((*i)->IsPlaying())
+			{
+				StreamVoices++;
 				Voices++;
+			}
 		}
 
 		// mut.unlock();
-
-		// ringbuffer_has_space.notify_one();
 
 		mut2.lock();
 		for (std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); i++)
@@ -269,15 +292,18 @@ public:
 			}
 		}
 
-		double MixFactor = 1.0 / sqrt((double)Voices + 1) * 0.8;
+		double MixFactor = 1.0 / sqrt((double)Voices + 2);
 
 		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
 		{
-			memset(ts, 0, sizeof(ts));
-			(*i)->Read(ts, samples);
+			if ((*i)->IsPlaying())
+			{
+				memset(ts, 0, sizeof(ts));
+				(*i)->Read(ts, samples);
 
-			for (int i = 0; i < count; i++)
-				tsF[i] += ts[i];
+				for (int i = 0; i < count; i++)
+					tsF[i] += ts[i];
+			}
 		}
 
 		for (std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); i++)
@@ -299,6 +325,12 @@ public:
 		}
 
 		mut2.unlock();
+
+		if (StreamVoices)
+		{
+			WaitForRingbufferSpace = false;
+			ringbuffer_has_space.notify_one();
+		}
 	}
 
 	double GetLatency() const
@@ -451,6 +483,9 @@ void InitAudio()
 {
 #ifndef NO_AUDIO
 	PaError Err = Pa_Initialize();
+
+	if (Err != 0) // Couldn't get audio, bail out
+		return;
 
 #ifdef WIN32
 	UseWasapi = (Configuration::GetConfigf("UseWasapi") != 0);

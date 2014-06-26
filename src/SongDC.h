@@ -8,16 +8,11 @@ namespace dotcur {
 
 	struct Difficulty : public Game::Song::Difficulty
 	{
-		// Stores bpm at beat pairs
-		TimingData Timing;
-
 		// Notes
 		std::vector<Measure> Measures;
 
 		// Stores the ratio barline should move at a certain time
 		TimingData BarlineRatios;
-
-		std::vector<String> SoundList;
 	};
 
 	/* Dotcur Song */

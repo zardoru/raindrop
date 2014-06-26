@@ -114,7 +114,7 @@ void ScoreKeeper7K::missNote(bool auto_hold_miss){
 	combo = 0;
 
 	// miss tier 2
-	lifebar_groove = max(0.0, lifebar_groove - 0.04);
+	lifebar_groove = max(0.0, lifebar_groove - 0.06);
 	lifebar_survival = max(0.0, lifebar_survival - Clamp(100.0 / max_notes, 0.06, 0.50));
 	lifebar_exhard = max(0.0, lifebar_survival - Clamp(200.0 / max_notes, 0.20, 0.80));
 	lifebar_easy = max(0.0, lifebar_easy - 0.06);

@@ -8,12 +8,10 @@ namespace VSRG
 	{
 		double StartTime, EndTime;
 		uint32 Sound;
-		uint32 FractionKind;
 
 		NoteData() {
 			StartTime = EndTime = 0;
 			Sound = 0;
-			FractionKind = 0;
 		}
 	};
 
@@ -28,12 +26,11 @@ namespace VSRG
 
 		Vec2 b_pos;
 		Vec2 b_pos_holdend;
-
-		Mat4 final;
+		uint32 FractionKind;
 
 		float VerticalHoldBodySize;
-		float VerticalHoldBodyPos;
 
+		Mat4 final;
 		Mat4 hold_body;
 		Mat4 hold_body_size;
 		Mat4 hold_final;
@@ -57,10 +54,10 @@ namespace VSRG
 		bool IsEnabled() const;
 		bool WasNoteHit() const;
 		int GetSound() const;
-		Mat4& GetMatrix();
-		Mat4& GetHoldBodyMatrix();
-		Mat4& GetHoldBodySizeMatrix();
-		Mat4& GetHoldEndMatrix();
+		Mat4 GetMatrix() const;
+		Mat4 GetHoldBodyMatrix() const;
+		Mat4 GetHoldBodySizeMatrix() const;
+		Mat4 GetHoldEndMatrix() const;
 
 		double GetTimeFinal() const;
 		double GetStartTime() const;

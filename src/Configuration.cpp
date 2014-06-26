@@ -9,7 +9,7 @@
 using namespace Configuration;
 
 LuaManager *CfgLua, *SkinCfgLua;
-bool IsWidescreen;
+int IsWidescreen;
 
 void Configuration::Initialize()
 {
@@ -21,7 +21,7 @@ void Configuration::Initialize()
 	if (Configuration::GetConfigs("Skin").length())
 		FileManager::SetSkin(Configuration::GetConfigs("Skin"));
 
-	IsWidescreen = (Configuration::GetConfigf("Widescreen") != 0);
+	IsWidescreen = Configuration::GetConfigf("Widescreen");
 
 	SkinCfgLua->SetGlobal("Widescreen", IsWidescreen);
 	SkinCfgLua->SetGlobal("ScreenWidth", ScreenWidth);
@@ -114,8 +114,10 @@ double Configuration::CfgScreenHeight()
 
 double Configuration::CfgScreenWidth()
 {
-	if (IsWidescreen)
+	if (IsWidescreen == 1)
 		return ScreenWidthWidescreen;
+	else if (IsWidescreen == 2)
+		return 1230;
 	else
 		return ScreenWidthDefault;
 }

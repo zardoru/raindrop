@@ -13,22 +13,20 @@ namespace VSRG
 	class Song;
 }
 
-class ScreenSelectMusic : public IScreen
+class GraphObjectMan;
+
+class ScreenSelectMusic : public Screen
 {
-	int Cursor, OldCursor;
-	GraphObject2D Background, SelCursor, Logo;
+	GraphObject2D Background, Logo;
 	BitmapFont* Font;
 
-	/* Mode-based song list. */
-	std::vector<dotcur::Song*> SongList;
-	std::vector<VSRG::Song*> SongList7K;
+	GraphObjectMan *Objects;
 
 	bool SwitchBackGuiPending;
 
 	bool OptionUpscroll;
 
 	void StopLoops();
-	void UpdateCursor();
 	double Time;
 
 	float ListY;
@@ -37,6 +35,11 @@ class ScreenSelectMusic : public IScreen
 	ModeType SelectedMode;
 
 	int diff_index;
+
+	float GetListYTransformation(const float Y);
+	void OnSongChange(Game::Song* MySong, uint8 difindex);
+	void OnSongSelect(Game::Song* MySong, uint8 difindex);
+
 public:
 	ScreenSelectMusic();
 	void LoadThreadInitialization();

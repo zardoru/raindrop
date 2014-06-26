@@ -103,22 +103,25 @@ class ScoreKeeper7K {
 		double sc_score;
 		double sc_sc_score;
 
-		int notes_hit;
+		int notes_hit; // notes hit %.
 		int total_notes;
 
-		int ex_score;
+		int ex_score; // Beatmania EX score
 		
-		int dp_score;
+		int dp_score; // DDR dance-point scoring
 		int dp_dp_score;
 
 		int combo;
 		int max_combo;
 
-		double total_sqdev;
+		double total_sqdev; // accuracy scoring
 		double accuracy;
 
 		double accuracy_percent(float ms);
-
+		
+		int rank_pts; // rank scoring
+		int max_rank_pts;		
+		
 		// lifebar data.
 		
 		double lifebar_groove;

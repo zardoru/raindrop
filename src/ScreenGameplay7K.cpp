@@ -185,7 +185,13 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	if (AudioCompensation)
 		TimeCompensation = MixerGetLatency();
 
-	CurrentDiff->LoadCache(MySong->DifficultyCacheFilename(CurrentDiff));
+	std::string fn = MySong->DifficultyCacheFilename(CurrentDiff);
+	if (!CurrentDiff->LoadCache(fn))
+	{
+		wprintf(L"Cache was not possible to load. Aborting load. (%ls)\n", Utility::Widen(fn).c_str());
+		DoPlay = false;
+		return;
+	}
 
 	TimeCompensation += Configuration::GetConfigf("Offset7K");
 
@@ -216,7 +222,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 			SpeedConstant = DesiredDefaultSpeed;
 		}
 
-		MySong->Process(CurrentDiff, NotesByMeasure, Drift, SpeedConstant);
+		MySong->Process(CurrentDiff, NotesByChannel, Drift, SpeedConstant);
 
 		if (Type == SPEEDTYPE_MMOD) // mmod
 		{
@@ -230,15 +236,22 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		
 			double Ratio = DesiredDefaultSpeed / max; // How much above or below are we from the maximum speed?
 			SpeedMultiplierUser = Ratio;
-		}else if (Type != SPEEDTYPE_CMOD) // We use this case as default. The logic is "Not a CMod, Not a MMod, then use first, the default.
+		}else if (Type == SPEEDTYPE_FIRST) // We use this case as default. The logic is "Not a CMod, Not a MMod, then use first, the default.
 		{
 			double DesiredMultiplier =  DesiredDefaultSpeed / CurrentDiff->VerticalSpeeds[0].Value;
+
+			SpeedMultiplierUser = DesiredMultiplier;
+		}else if (Type != SPEEDTYPE_CMOD) // other cases
+		{
+			double bpsd = 4.0/(CurrentDiff->BPS[0].Value);
+			double Speed = (MeasureBaseSpacing / bpsd);
+			double DesiredMultiplier = DesiredDefaultSpeed / Speed;
 
 			SpeedMultiplierUser = DesiredMultiplier;
 		}
 
 	}else
-		MySong->Process(CurrentDiff, NotesByMeasure, Drift); // Regular processing
+		MySong->Process(CurrentDiff, NotesByChannel, Drift); // Regular processing
 
 	wprintf(L"Copying data... ");
 	Channels = CurrentDiff->Channels;
@@ -288,7 +301,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	// BasePos = JudgementLinePos + (Upscroll ? NoteHeight/2 : -NoteHeight/2);
 	BasePos = JudgementLinePos + (Upscroll ? NoteHeight/2 : -NoteHeight/2);
-	CurrentVertical -= VSpeeds.at(0).Value * (WaitingTime);
+	CurrentVertical = IntegrateToTime (VSpeeds, -WaitingTime);
 
 	RecalculateMatrix();
 	MultiplierChanged = true;
@@ -301,6 +314,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	// This will execute the script once, so we won't need to do it later
 	SetupScriptConstants();
 	Animations->Preload(FileManager::GetSkinPrefix() + "screengameplay7k.lua", "Preload");
+	DoPlay = true;
 }
 
 void ScreenGameplay7K::SetupScriptConstants()
@@ -360,6 +374,12 @@ void ScreenGameplay7K::SetupGear()
 
 void ScreenGameplay7K::MainThreadInitialization()
 {
+	if (!DoPlay) // Failure to load something important?
+	{
+		Running = false;
+		return;
+	}
+
 	SetupGear();
 
 	char nstr[256];
@@ -525,6 +545,8 @@ void ScreenGameplay7K::UpdateScriptVariables()
 	}
 
 	L->FinalizeArray("HeldKeys");
+
+	L->SetGlobal("CurrentSPB", 1 / SectionValue(CurrentDiff->BPS, SongTime));
 }
 
 int DigitCount (float n)
@@ -636,8 +658,9 @@ bool ScreenGameplay7K::Run(double Delta)
 		ss << "\nScrolling Speed: " << SectionValue(VSpeeds, SongTime) * SpeedMultiplier;
 	else
 		ss << "\nScrolling Speed: " << SectionValue(VSpeeds, 0) * SpeedMultiplier;
+	ss << "\nCurVer: " << CurrentVertical;
 
-	GFont->DisplayText(ss.str().c_str(), Vec2(0, ScreenHeight - 45));
+	GFont->DisplayText(ss.str().c_str(), Vec2(0, ScreenHeight - 65));
 
 	if (!Active)
 		GFont->DisplayText("press 'enter' to start", Vec2( ScreenWidth / 2 - 23 * 3,ScreenHeight * 5/8));

@@ -358,7 +358,7 @@ void FileManager::GetSongList7K(std::vector<VSRG::Song*> &OutVec)
 		Dir.ListDirectory(Listing, Directory::FS_DIR);
 		for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 		{ 
-			wprintf(L"%ls...\n", Utility::Widen(*i).c_str());
+			wprintf(L"%ls... ", Utility::Widen(*i).c_str());
 			loadSong7K(Dir.path() + *i, OutVec);
 			wprintf(L"ok\n");
 		}

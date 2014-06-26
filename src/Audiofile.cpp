@@ -113,6 +113,7 @@ String RearrangeFilename(const char* Fn)
 	else
 	{
 		std::string Ext = Utility::GetExtension(Fn);
+		boost::algorithm::to_lower(Ext);
 
 		if (strstr(Ext.c_str(), "wav"))
 			Ret = Utility::RemoveExtension(Fn) + ".ogg";
@@ -252,8 +253,11 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 	size_t cnt;
 	size_t toRead = count; // Count is the amount of s16 samples.
 
-	if (!mSource)
+	if (!mSource || !mSource->IsValid())
+	{
+		mIsPlaying = false;
 		return 0;
+	}
 	
 	if (PaUtil_GetRingBufferReadAvailable(&mRingBuf) < toRead || !mIsPlaying)
 	{
