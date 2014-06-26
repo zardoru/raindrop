@@ -320,10 +320,13 @@ String GetSampleFilename(OsuLoadInfo *Info, SplitResult &Spl, int NoteType, int 
 		{
 		case 1:
 			HitsoundString = "normal";
+			break;
 		case 2:
 			HitsoundString = "whistle";
+			break;
 		case 4:
 			HitsoundString = "finish";
+			break;
 		case 8:
 			HitsoundString = "clap";
 		default:

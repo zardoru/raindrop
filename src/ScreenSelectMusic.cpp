@@ -105,7 +105,7 @@ void ScreenSelectMusic::LoadThreadInitialization()
 		(char*)Configuration::GetSkinConfigs("SelectMusicBackground").c_str(),
 	};
 
-	ImageLoader::LoadFromManifest(Manifest, 3, FileManager::GetSkinPrefix());
+	ImageLoader::LoadFromManifest(Manifest, 1, FileManager::GetSkinPrefix());
 
 	Objects = new GraphObjectMan();
 	Objects->Preload( FileManager::GetSkinPrefix() + "screenselectmusic.lua", "Preload" );
