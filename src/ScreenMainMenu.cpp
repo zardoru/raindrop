@@ -57,6 +57,8 @@ void ScreenMainMenu::Init()
 	Objects->AddTarget(&Background);
 	Objects->AddTarget(&PlayBtn);
 	Objects->AddTarget(&ExitBtn);
+	Objects->AddTarget(&OptionsBtn);
+	Objects->AddTarget(&EditBtn);
 	Objects->AddLuaTarget(&PlayBtn, "PlayButton");
 	Objects->AddLuaTarget(&ExitBtn, "ExitButton");
 	Objects->Initialize(FileManager::GetSkinPrefix() + "mainmenu.lua");
@@ -87,9 +89,6 @@ void ScreenMainMenu::Init()
 		MMSelectSnd->Open((FileManager::GetSkinPrefix() + "select.ogg").c_str());
 		MixerAddSample(MMSelectSnd);
 	}
-
-	//WindowFrame.SetLightMultiplier(800);
-	//WindowFrame.SetLightPosition(glm::vec3(ScreenWidth / 2, ScreenHeight / 2, 1));
 }
 
 void ScreenMainMenu::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
@@ -138,15 +137,8 @@ bool ScreenMainMenu::Run (double Delta)
 
 	PlayBtn.Run(Delta);
 	ExitBtn.Run(Delta);
-
-	Background.Render();
 	
-	Objects->DrawUntilLayer(16);
-
-	EditBtn.Render();
-	OptionsBtn.Render();
-
-	Objects->DrawFromLayer(17);
+	Objects->DrawTargets(Delta);
 
 	MainMenuFont->DisplayText("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop", Vec2(0, 0));
 	return Running;

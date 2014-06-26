@@ -17,7 +17,7 @@ class GraphObjectMan;
 
 class ScreenSelectMusic : public Screen
 {
-	GraphObject2D Background, Logo;
+	GraphObject2D Background;
 	BitmapFont* Font;
 
 	GraphObjectMan *Objects;
@@ -29,12 +29,7 @@ class ScreenSelectMusic : public Screen
 	void StopLoops();
 	double Time;
 
-	float ListY;
-	float PendingListY;
-
 	ModeType SelectedMode;
-
-	int diff_index;
 
 	float GetListYTransformation(const float Y);
 	void OnSongChange(Game::Song* MySong, uint8 difindex);

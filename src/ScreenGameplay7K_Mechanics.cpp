@@ -191,16 +191,13 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane)
 			continue;
 
 		double tD = abs (m->GetStartTime() - SongTime) * 1000;
-		// std::cout << "\n time: " << m->GetStartTime() << " st: " << SongTime << " td: " << tD;
 
 		lastClosest[Lane] = min(tD, (double)lastClosest[Lane]);
 
 		if (lastClosest[Lane] >= MsDisplayMargin)
-		{
 			lastClosest[Lane] = 0;
-		}
 
-		if (tD > score_keeper->getAccCutoff())
+		if (tD > score_keeper->getAccCutoff()) // Outside of judging range
 		{
 			if (PlaySounds[Lane])
 			{
@@ -210,9 +207,9 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane)
 
 			continue;
 		}
-		else
+		else // Within judging range
 		{
-			if (tD <= score_keeper->getAccMax())
+			if (tD <= score_keeper->getAccMax()) // within combo-keeping judging accuracy
 			{
 				m->Hit();
 				HitNote(tD, Lane, m->IsHold());
@@ -228,7 +225,7 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane)
 				else
 					m->Disable();
 			}
-			else
+			else // on POOR judging range
 			{
 				MissNote(tD, Lane, m->IsHold(), m->IsHold());
 				// missed feedback

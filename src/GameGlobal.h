@@ -102,7 +102,9 @@ enum KeyType
 	KT_Key11,
 	KT_Key12,
 	KT_Key13,
-	KT_Key14
+	KT_Key14,
+	KT_Key15,
+	KT_Key16
 };
 
 enum ModeType

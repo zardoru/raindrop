@@ -11,47 +11,55 @@ class ScreenGameplay7K : public Screen
 private:
 	
 	/* User Variables */
-	float SpeedMultiplierUser;
-	bool waveEffectEnabled;	
-	bool Upscroll;
-	bool NoFail;
+	float       SpeedMultiplierUser;
+	bool        waveEffectEnabled;	
+	bool        Upscroll;
+	bool        NoFail;
 	EHiddenMode SelectedHiddenMode;
 
 
 	/* Game */
-	bool Active;
-	bool DoPlay;
-	int lastClosest[VSRG::MAX_CHANNELS];
-	double CurrentVertical;
-	double WaitingTime;
-	EHiddenMode RealHiddenMode;
-	Mat4 PositionMatrix;
-	Mat4 PositionMatrixJudgement;
-	Mat4 NoteMatrix[VSRG::MAX_CHANNELS];
-	Mat4 HoldHeadMatrix[VSRG::MAX_CHANNELS];
-	Mat4 HoldTailMatrix[VSRG::MAX_CHANNELS];
-	VSRG::Song *MySong;
-	float SongOldTime;
-	float deltaPos;
-	float SpeedMultiplier;
-	bool AudioCompensation;
-	double TimeCompensation;
-	bool MultiplierChanged;
-	VSRG::Difficulty			 *CurrentDiff;
-	VSRG::VectorTN NotesByChannel;
-	TimingData VSpeeds;
-	int		GearBindings[VSRG::MAX_CHANNELS];
-	uint32	Channels;
-	bool HeldKey[VSRG::MAX_CHANNELS];
-	float HideClampLow, HideClampHigh, HideClampFactor;
-	float HideClampSum;
-
-	float CurrentBeat;
-
+	bool			 Active;
+	bool			 DoPlay;
+	
+	Mat4			 PositionMatrix;
+	Mat4			 PositionMatrixJudgement;
+	Mat4			 NoteMatrix[VSRG::MAX_CHANNELS];
+	Mat4			 HoldHeadMatrix[VSRG::MAX_CHANNELS];
+	Mat4			 HoldTailMatrix[VSRG::MAX_CHANNELS];
+	
+	double			 CurrentVertical;
+	double			 WaitingTime;
+	float            SongOldTime;
+	float			 SpeedMultiplier;
+	
+	VSRG::Difficulty *CurrentDiff;
+	VSRG::VectorTN   NotesByChannel;
+	TimingData       VSpeeds;
+	VSRG::Song       *MySong;
 	std::map <int, SoundSample*> Keysounds;
 	std::vector<AutoplaySound> BGMEvents;
 
-	int PlaySounds[VSRG::MAX_CHANNELS];
+	int		         GearBindings[VSRG::MAX_CHANNELS];
+	bool             HeldKey[VSRG::MAX_CHANNELS];
+	bool			 MultiplierChanged;
+	uint32	         Channels;
+	
+	EHiddenMode		 RealHiddenMode;
+	float            HideClampLow, HideClampHigh, HideClampFactor;
+	float            HideClampSum;
+
+	int				 lastClosest[VSRG::MAX_CHANNELS];
+	int				 PlaySounds[VSRG::MAX_CHANNELS];
+
+	float  CurrentBeat;
+	double SongTime, SongTimeReal;
+
+	bool    InterpolateTime;
+	bool    AudioCompensation;
+
+	double  ErrorTolerance;
+	double  TimeCompensation;
 
 	/* Positions */
 	float  JudgementLinePos;
@@ -74,24 +82,24 @@ private:
 	Image*  NoteImagesHold[VSRG::MAX_CHANNELS];
 	Image*  NoteImagesHoldHead[VSRG::MAX_CHANNELS];
 	Image*  NoteImagesHoldTail[VSRG::MAX_CHANNELS];
+
+
 	double NoteHeight;
 	double HoldHeadHeight;
 	double HoldTailHeight;
-	GraphObject2D Keys[VSRG::MAX_CHANNELS];
-	GraphObject2D Background;
-	GraphObjectMan *Animations;
 	double LanePositions[VSRG::MAX_CHANNELS];
 	double LaneWidth[VSRG::MAX_CHANNELS];
 	double GearHeightFinal;
+
+	GraphObject2D Keys[VSRG::MAX_CHANNELS];
+	GraphObject2D Background;
+	GraphObjectMan *Animations;
 
 	AudioStream *Music;
 	SoundSample *MissSnd;
 
 	ScoreKeeper7K* score_keeper;
-	double SongTime, SongTimeReal;
 
-	bool InterpolateTime;
-	double ErrorTolerance;
 	/* 
 		Optimizations will come in later. 
 		See Renderer7K.cpp.	

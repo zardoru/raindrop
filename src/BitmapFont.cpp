@@ -32,6 +32,9 @@ void BitmapFont::LoadSkinFontImage(const char* Location, Vec2 _CharSize, Vec2 _C
 
 void BitmapFont::RegenerateCharPositions(Vec2 CellSize)
 {
+	if (!Font)
+		return;
+
 	int32 HCellCount = (int)((float)Font->w / (float)CellSize.x), VCellCount = (int)((float)Font->h/(float)CellSize.y);
 	uint32 Current = StartingCharacter;
 
@@ -39,6 +42,7 @@ void BitmapFont::RegenerateCharPositions(Vec2 CellSize)
 	{
 		for (unsigned short x = 0; x < HCellCount; x++)
 		{
+			// Ideally, we should actually be using a texture matrix.
 			CharPosition[Current].SetImage(Font);
 			CharPosition[Current].SetCropByPixels(x*CellSize.x, (x)*CellSize.x+CharSize.x,  y*CellSize.y, (y)*CellSize.y+CharSize.y);
 			CharPosition[Current].SetWidth(RenderSize.x);

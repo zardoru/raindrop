@@ -1,4 +1,5 @@
 #include "GameGlobal.h"
+#include "GameState.h"
 #include "Screen.h"
 #include "Audio.h"
 #include "FileManager.h"
@@ -25,7 +26,6 @@ ScreenGameplay7K::ScreenGameplay7K()
 	SpeedMultiplier = 0;
 	SongOldTime = -1;
 	Music = NULL;
-	deltaPos = 0;
 
 	waveEffectEnabled = false;
 	waveEffect = 0;
@@ -162,8 +162,8 @@ void ScreenGameplay7K::Init(Song* S, int DifficultyIndex, bool UseUpscroll)
 
 void ScreenGameplay7K::RecalculateMatrix()
 {
-	PositionMatrix = glm::translate(Mat4(), glm::vec3(0, BasePos + CurrentVertical * SpeedMultiplier + deltaPos, 0));
-	PositionMatrixJudgement = glm::translate(Mat4(), glm::vec3(0, BasePos + deltaPos, 0));
+	PositionMatrix = glm::translate(Mat4(), glm::vec3(0, JudgementLinePos + CurrentVertical * SpeedMultiplier, 0));
+	PositionMatrixJudgement = glm::translate(Mat4(), glm::vec3(0, JudgementLinePos, 0));
 
 	for (uint8 i = 0; i < Channels; i++)
 		NoteMatrix[i] = glm::translate(Mat4(), glm::vec3(LanePositions[i], 0, 14)) * noteEffectsMatrix[i] *  glm::scale(Mat4(), glm::vec3(LaneWidth[i], NoteHeight, 1));
@@ -188,7 +188,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	std::string fn = MySong->DifficultyCacheFilename(CurrentDiff);
 	if (!CurrentDiff->LoadCache(fn))
 	{
-		wprintf(L"Cache was not possible to load. Aborting load. (%ls)\n", Utility::Widen(fn).c_str());
+		GameState::Printf("Cache was not possible to load. Aborting load. (%ls)\n", Utility::Widen(fn).c_str());
 		DoPlay = false;
 		return;
 	}
@@ -211,7 +211,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
  *			but only if there's a constant specified by the user.
  * */
 
-	wprintf(L"Processing song... ");
+	GameState::Printf("Processing song... ");
 
 	if (DesiredDefaultSpeed)
 	{
@@ -253,11 +253,10 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	}else
 		MySong->Process(CurrentDiff, NotesByChannel, Drift); // Regular processing
 
-	wprintf(L"Copying data... ");
 	Channels = CurrentDiff->Channels;
 	VSpeeds = CurrentDiff->VerticalSpeeds;
 
-	wprintf(L"Loading samples... ");
+	GameState::Printf("Loading samples... ");
 
 	for (std::map<int, String>::iterator i = CurrentDiff->SoundList.begin(); i != CurrentDiff->SoundList.end(); i++)
 	{
@@ -278,7 +277,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	BGMEvents = CurrentDiff->BGMEvents;
 
-	wprintf(L"Done.\n");
+	GameState::Printf("Done.\n");
 
 	NoteHeight = Configuration::GetSkinConfigf("NoteHeight");
 

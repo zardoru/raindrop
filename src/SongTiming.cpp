@@ -120,15 +120,13 @@ double IntegrateToTime(const TimingData &Timing, float Time, float Drift)
 	uint32 Section = SectionIndex(Timing, Time) - 1;
 	double Out = 0;
 
-	if (Time < Timing[0].Time)
+	if (Time < Timing[0].Time) // In this case, Section will hold an invalid value.
 	{
 		Out = - (Timing[0].Time - Time) * Timing[0].Value;
 	}else
 	{
 		for (uint32 i = 0; i < Section; i++)
-		{
 			Out += (Timing[i+1].Time - Timing[i].Time) * Timing[i].Value;
-		}
 
 		Out += (Time - Timing[Section].Time + Drift) * Timing[Section].Value;
 	}

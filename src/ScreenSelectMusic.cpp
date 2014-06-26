@@ -70,10 +70,6 @@ ScreenSelectMusic::ScreenSelectMusic()
 	SelectedMode = MODE_7K;
 
 	OptionUpscroll = false;
-
-	ListY = SONGLIST_BASEY;
-
-	diff_index = 0;
 }
 
 void ScreenSelectMusic::MainThreadInitialization()
@@ -84,12 +80,9 @@ void ScreenSelectMusic::MainThreadInitialization()
 		Font->LoadSkinFontImage("font_screenevaluation.tga", Vec2(10, 20), Vec2(32, 32), Vec2(10,20), 32);
 	}
 
-	Objects = new GraphObjectMan();
-
-	Objects->Initialize( FileManager::GetSkinPrefix() + "screenselectmusic.lua" );
+	Objects->Initialize();
 
 	Font->SetAffectedByLightning(true);
-	
 
 	Background.SetImage(ImageLoader::LoadSkin(Configuration::GetSkinConfigs("SelectMusicBackground")));
 
@@ -109,12 +102,13 @@ void ScreenSelectMusic::LoadThreadInitialization()
 	SwitchBackGuiPending = true;
 	char* Manifest[] =
 	{
-		"songselect_cursor.png",
 		(char*)Configuration::GetSkinConfigs("SelectMusicBackground").c_str(),
-		"logo.png"
 	};
 
 	ImageLoader::LoadFromManifest(Manifest, 3, FileManager::GetSkinPrefix());
+
+	Objects = new GraphObjectMan();
+	Objects->Preload( FileManager::GetSkinPrefix() + "screenselectmusic.lua", "Preload" );
 
 	Game::SongWheel::GetInstance().ReloadSongs();
 
@@ -138,7 +132,7 @@ float ScreenSelectMusic::GetListYTransformation(const float Y)
 
 void ScreenSelectMusic::OnSongSelect(Game::Song* MySong, uint8 difindex)
 {
-	// Handle a SONG JUST WAS SELECTED OH GOD
+	// Handle a recently selected song
 	ScreenLoading *LoadNext = NULL;
 
 	SelectSnd->Play();

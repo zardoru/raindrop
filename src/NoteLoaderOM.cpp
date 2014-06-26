@@ -17,6 +17,23 @@ typedef std::vector<String> SplitResult;
 
 using namespace VSRG;
 
+#define SAMPLESET_NORMAL 1
+#define SAMPLESET_SOFT 2
+#define SAMPLESET_DRUM 3
+
+#define HITSOUND_NORMAL 0
+#define HITSOUND_WHISTLE 2
+#define HITSOUND_FINISH 4
+#define HITSOUND_CLAP 8
+
+struct HitsoundSectionData
+{
+	float Time;
+	int Sampleset;
+	int Volume;
+	int Custom;
+};
+
 struct OsuLoadInfo
 {
 	double SliderVelocity;
@@ -24,7 +41,9 @@ struct OsuLoadInfo
 	int last_sound_index;
 	Song *OsuSong;
 	std::map <String, int> Sounds;
+	std::vector<HitsoundSectionData> HitsoundSections;
 	Difficulty *Diff;
+	String DefaultSampleset;
 };
 
 /* osu!mania loader. credits to wanwan159, woc2006, Zorori and the author of AIBat for helping me understand this. */
@@ -52,6 +71,10 @@ bool ReadGeneral (String line, OsuLoadInfo* Info)
 	{
 		if (Content != "3") // It's not a osu!mania chart, so we can't use it.
 			return false; // (What if we wanted to support taiko though?)
+	}else if (Command == "SampleSet:")
+	{
+		boost::algorithm::to_lower(Content);
+		Info->DefaultSampleset = Content;
 	}
 
 	return true;
@@ -150,6 +173,22 @@ void ReadTiming (String line, OsuLoadInfo* Info)
 
 		Info->Diff->SpeedChanges.push_back(Time);
 	}
+
+	int Sampleset = -1;
+	int Custom = 0;
+
+	if (Spl.size() > 3)
+		Sampleset = atoi(Spl[3].c_str());
+
+	if (Spl.size() > 4)
+		Custom = atoi(Spl[4].c_str());
+
+	HitsoundSectionData SecData;
+	SecData.Time = Time.Time;
+	SecData.Sampleset = Sampleset;
+	SecData.Custom = Custom;
+
+	Info->HitsoundSections.push_back(SecData);
 }
 
 int GetInterval(float Position, int Channels)
@@ -163,7 +202,21 @@ int GetInterval(float Position, int Channels)
 #define NOTE_HOLD 128
 #define NOTE_NORMAL 1
 
-String GetSampleFilename(SplitResult &Spl, int NoteType, int Hitsound)
+String SamplesetToString(int Sampleset)
+{
+	switch (Sampleset)
+	{
+	case SAMPLESET_SOFT:
+		return "soft";
+	case SAMPLESET_DRUM:
+		return "drum";
+	case SAMPLESET_NORMAL:
+	default:
+		return "normal";
+	}
+}
+
+String GetSampleFilename(OsuLoadInfo *Info, SplitResult &Spl, int NoteType, int Hitsound, float Time)
 {
 	int SampleSet, SampleSetAddition, CustomSample = 0;
 	String SampleFilename;
@@ -219,11 +272,35 @@ String GetSampleFilename(SplitResult &Spl, int NoteType, int Hitsound)
 	if (SampleSet)
 	{
 		// translate sampleset int into samplesetstring
-		SampleSetString = "normal";
+		SampleSetString = SamplesetToString(SampleSet);
 	}else
 	{
 		// get sampleset string from sampleset active at starttime
-		SampleSetString = "normal";
+		int Sampleset = -1;
+
+		for (int i = 0; i < (int)Info->HitsoundSections.size() - (int)1; i++)
+		{
+			if (Info->HitsoundSections[i].Time <= Time && Info->HitsoundSections[i+1].Time < Time)
+				Sampleset = Info->HitsoundSections[i].Sampleset;
+			else if (Info->HitsoundSections[i+1].Time > Time)
+				Sampleset = Info->HitsoundSections[i+1].Sampleset;
+		}
+
+		if (SampleSet == -1)
+			SampleSetString = Info->DefaultSampleset;
+		else
+			SampleSetString = SamplesetToString(Sampleset);
+	}
+
+	if (!CustomSample)
+	{
+		for (int i = 0; i < (int)Info->HitsoundSections.size()-(int)1; i++)
+		{
+			if (Info->HitsoundSections[i].Time <= Time && Info->HitsoundSections[i+1].Time < Time)
+				CustomSample = Info->HitsoundSections[i].Custom;
+			else if (Info->HitsoundSections[i+1].Time > Time)
+				CustomSample = Info->HitsoundSections[i+1].Custom;
+		}
 	}
 
 	String CustomSampleString;
@@ -255,7 +332,7 @@ String GetSampleFilename(SplitResult &Spl, int NoteType, int Hitsound)
 	}else
 		HitsoundString = "normal";
 
-	if (CustomSample)
+	if (CustomSample > 1)
 	{
 		SampleFilename = SampleSetString + "-hit" + HitsoundString + CustomSampleString + ".wav";
 	}
@@ -353,7 +430,7 @@ void ReadObjects (String line, OsuLoadInfo* Info)
 
 	Hitsound = atoi(Spl[4].c_str());
 
-	String Sample = GetSampleFilename(Spl2, NoteType, Hitsound);
+	String Sample = GetSampleFilename(Info, Spl2, NoteType, Hitsound, startTime);
 
 	if (Sample.length())
 	{
@@ -419,6 +496,8 @@ void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 		delete Diff;
 		return;
 	}
+
+	Info.Version = version;
 
 	enum 
 	{

@@ -138,15 +138,13 @@ void Application::Init()
 		Game = NULL;
 	}
 
-	wprintf(L"Total Initialization Time: %fs\n", glfwGetTime() - T1);
+	GameState::Printf("Total Initialization Time: %fs\n", glfwGetTime() - T1);
 }
 
 void Application::Run()
 {
 	double T1 = glfwGetTime();
 	bool RunLoop = true;
-
-	wprintf(L"Link start.\n");
 
 	if (RunMode == MODE_PLAY)
 	{
@@ -171,11 +169,18 @@ void Application::Run()
 		RunLoop = false;
 	}else if (RunMode == MODE_GENCACHE)
 	{
+		std::vector<VSRG::Song*> Songs;
+
+		GameState::Printf("Generating cache...\n");
+		FileManager::GetSongList7K(Songs);
+
+		for (std::vector<VSRG::Song*>::iterator i = Songs.begin(); i != Songs.end(); i++)
+			delete *i;
 
 		RunLoop = false;
 	}
 
-	wprintf(L"Time: %fs\n", glfwGetTime() - T1);
+	GameState::Printf("Time: %fs\n", glfwGetTime() - T1);
 
 	if (!RunLoop)
 		return;
