@@ -98,6 +98,7 @@ std::map<int32, KeyType> BindingsManager::ScanFunction7K;
 const int NUM_OF_USED_CONTROLLER_BUTTONS = 9;
 
 int controllerToUse;
+bool JoystickEnabled;
 
 //True is pressed, false is released
 bool controllerButtonState[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = {false, false, false, false, false, false, false, false, false};
@@ -128,7 +129,7 @@ std::vector<sk_s> SpecialKeys;
 
 int KeyTranslate(String K)
 {
-	for (int i = 0; i < SpecialKeys.size(); i++)
+	for (uint32 i = 0; i < SpecialKeys.size(); i++)
 	{
 		if (K == SpecialKeys.at(i).keystring)
 			return SpecialKeys.at(i).boundkey;
@@ -169,6 +170,8 @@ void BindingsManager::Initialize()
 			}
 		}
 	}
+
+	JoystickEnabled = (glfwJoystickPresent(GLFW_JOYSTICK_1) == GL_TRUE);
 	
 	ScanFunction[GLFW_KEY_ESCAPE] = KT_Escape;
 	ScanFunction[GLFW_KEY_F4] = KT_GoToEditMode;
@@ -430,11 +433,11 @@ void GameWindow::SwapBuffers()
 	glfwPollEvents();
 	
 	int buttonArraySize = 0;
-	if(glfwJoystickPresent(GLFW_JOYSTICK_1) == GL_TRUE) {
+	if(JoystickEnabled) {
 		const unsigned char *buttonArray = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &buttonArraySize);
 		if(buttonArraySize > 0) {
 			for (int i = 0; i < buttonArraySize; i++) {
-				for(int j = 0; j < SpecialKeys.size(); j++) {
+				for(uint32 j = 0; j < SpecialKeys.size(); j++) {
 					/* Matches the pressed button to its entry in the SpecialKeys vector. */
 					int thisKeyNumber = SpecialKeys[j].boundkey - 1000;
 					if (i + 1 == thisKeyNumber) {
