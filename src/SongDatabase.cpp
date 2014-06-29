@@ -293,7 +293,9 @@ void SongDatabase::GetSongInformation7K (int ID, VSRG::Song* Out)
 		Diff->Duration = sqlite3_column_double(st_GetDiffInfo, 6);
 		Diff->IsVirtual = sqlite3_column_int(st_GetDiffInfo, 7);
 		Diff->Channels = sqlite3_column_int(st_GetDiffInfo, 8);
-		Diff->BPMType = (VSRG::Difficulty::EBt)sqlite3_column_int(st_GetDiffInfo, 9);
+
+		int colInt = sqlite3_column_int(st_GetDiffInfo, 10);
+		Diff->BPMType = (VSRG::Difficulty::EBt)colInt;
 		
 
 		// File ID associated data

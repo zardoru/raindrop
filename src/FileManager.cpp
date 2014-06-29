@@ -189,7 +189,10 @@ void loadSong7K( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 	if (!SongExists)
 		ID = Database->AddSong(New->SongDirectory, MODE_7K, New);
 	else
-		Database->GetSongInformation7K (ID, New);
+	{
+		if (!RenewCache)
+			Database->GetSongInformation7K (ID, New);
+	}
 
 	// Files were modified- we have to renew the difficulty entries as well as the cache itself.
 	if (RenewCache)

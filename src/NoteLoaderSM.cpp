@@ -261,6 +261,7 @@ void NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 			Diff->Offset = -Out->Offset;
 			Diff->Duration = 0;
 			Diff->Filename = filename;
+			Diff->BPMType = VSRG::Difficulty::BT_Beat;
 
 			LoadTracksSM(Out, Diff, line);
 			Out->Difficulties.push_back(Diff);
