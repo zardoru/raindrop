@@ -269,7 +269,7 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 	{
 		cnt = PaUtil_ReadRingBuffer(&mRingBuf, buffer, toRead);
 		mStreamTime += (double)(cnt/Channels) / (double)mSource->GetRate();
-		mPlaybackTime = mStreamTime - GetDeviceLatency();
+		mPlaybackTime = mStreamTime - MixerGetLatency();
 	}else
 		return 0;
 

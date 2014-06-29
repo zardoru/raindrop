@@ -10,6 +10,7 @@
 #include "NoteLoaderDC.h"
 #include "NoteLoader7K.h"
 
+#include "SongDatabase.h"
 #include <iostream>
 
 #include <boost/algorithm/string/split.hpp>
@@ -24,8 +25,11 @@
 
 String FileManager::CurrentSkin = "default";
 
+SongDatabase* Database;
+
 void FileManager::Initialize()
 {
+	Database = new SongDatabase("songs.db");
 	Utility::CheckDir(GetCacheDirectory().c_str());
 }
 
@@ -91,95 +95,6 @@ void loadSong( Directory songPath, std::vector<dotcur::Song*> &VecOut )
 		}
 	}
 }
-String GenHash(String Dir, int Sd)
-{
-	Utility::RemoveFilenameIllegalCharacters(Dir, true);
-	std::stringstream ss;
-	ss << Dir << Sd;
-	return ss.str();
-}
-
-void WriteMetaCache(VSRG::Song *Sng, String filename)
-{
-#ifndef WIN32
-	std::fstream out(filename.c_str(), std::ios::out);
-#else
-	std::fstream out(Utility::Widen(filename).c_str(), std::ios::out);
-#endif
-
-	out << Sng->SongAuthor << "\n";
-	out << Sng->SongName << "\n";
-	out << Sng->SongFilename << "\n";
-	out << Sng->BPMType << "\n";
-	out << Sng->BackgroundFilename << "\n";
-
-	for (std::vector<VSRG::Difficulty*>::iterator k = Sng->Difficulties.begin();
-			k != Sng->Difficulties.end();
-			k++)
-	{
-		out << "$\n";
-
-		out << (*k)->Name << std::endl;
-		out << (int)(*k)->Channels << " "
-			<< (*k)->Duration << " "
-			<< (*k)->IsVirtual << " "
-			<< (*k)->Offset << " "
-			<< (*k)->TotalHolds << " "
-			<< (*k)->TotalNotes << " "
-			<< (*k)->TotalObjects << " "
-			<< (*k)->TotalScoringObjects << " "
-			<< (*k)->LMT
-			<< std::endl;
-
-	}
-}
-
-void LoadMetaCache(VSRG::Song *Sng, String filename)
-{
-#if (!defined _WIN32) || (defined STLP)
-	std::ifstream in (filename.c_str());
-#else
-	std::ifstream in (Utility::Widen(filename).c_str());
-#endif
-	String tmp;
-
-	std::getline(in, tmp);
-	Sng->SongAuthor = tmp;
-
-	std::getline(in, tmp);
-	Sng->SongName = tmp;
-
-	std::getline(in, tmp);
-	Sng->SongFilename = tmp;
-
-	std::getline(in, tmp);
-	Sng->BPMType = (VSRG::Song::EBt)atoi(tmp.c_str());
-
-	std::getline(in, tmp);
-	Sng->BackgroundFilename = tmp;
-
-	while (std::getline(in, tmp))
-	{
-		VSRG::Difficulty *Diff = new VSRG::Difficulty();
-		std::getline(in, tmp);
-		Diff->Name = tmp;
-
-		std::getline(in, tmp);
-		std::vector<String> res;
-		using boost::lexical_cast;
-		boost::split(res, tmp, boost::is_any_of(" "));
-		Diff->Channels = lexical_cast<int> (res[0]);
-		Diff->Duration = lexical_cast<double> (res[1]);
-		Diff->IsVirtual = lexical_cast<bool> (res[2]);
-		Diff->Offset = lexical_cast<double> (res[3]);
-		Diff->TotalHolds = lexical_cast<int> (res[4]);
-		Diff->TotalNotes = lexical_cast<int> (res[5]);
-		Diff->TotalObjects = lexical_cast<int> (res[6]);
-		Diff->TotalScoringObjects = lexical_cast<int> (res[7]);
-		Diff->LMT = lexical_cast<int> (res[8]);
-		Sng->Difficulties.push_back(Diff);
-	}
-}
 
 bool VSRGValidExtension(std::wstring Ext)
 {
@@ -233,6 +148,11 @@ VSRG::Song* LoadSong7KFromFilename(String Filename, String Prefix, VSRG::Song *S
 	return Sng;
 }
 
+String FileManager::GetCacheFilename(String Fn, String Nm)
+{
+	return FileManager::GetCacheDirectory() + Database->GetDifficultyCacheFilename(Fn, Nm);
+}
+
 void loadSong7K( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 {
 	std::vector<String> Listing;
@@ -240,52 +160,53 @@ void loadSong7K( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 	songPath.ListDirectory(Listing, Directory::FS_REG);
 	VSRG::Song *New = new VSRG::Song();
 
-	int LMTPath = Utility::GetLMT(songPath.path());
-
-
-	String Hash = GenHash(songPath.path(), LMTPath);
-	String FilenameCache = FileManager::GetCacheDirectory() + Hash;
-
 	New->SongDirectory = songPath.path() + "/";
 
-	// Find if there exists a cache file for this directory
+	New->FilenameCache = FileManager::GetCacheDirectory();
+
+	/*
+		Procedure:
+		1.- Check all files if cache needs to be renewed or created.
+		2.- If it needs to, load the song again.
+		3.- If it loaded the song for either reason, rewrite the difficulty cache.
+		4.- If it does not need to be renewed or created, just read the metadata and leave it like that.
+	*/
+
+	int ID;
+	int SongExists = Database->IsSongDirectory(New->SongDirectory, &ID);
+	bool RenewCache = false;
+
 	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{
 		std::wstring Ext = Utility::Widen(Utility::GetExtension(*i));
-		if (VSRGValidExtension(Ext))
+		if (VSRGValidExtension(Ext) && (!SongExists || Database->CacheNeedsRenewal(songPath.path() + "/" + *i)))
 		{
-			if (Utility::FileExists(FilenameCache))
-			{
-				LoadMetaCache(New, FilenameCache);
-				break; // Found it, move on.
-			}
+			RenewCache = true;
+			LoadSong7KFromFilename(*i, songPath.path(), New);
 		}
 	}
 
-	New->FilenameCache = FilenameCache;
+	if (!SongExists)
+		ID = Database->AddSong(New->SongDirectory, MODE_7K, New);
+	else
+		Database->GetSongInformation7K (ID, New);
 
-	// If it doesn't, generate cache files.
-	if (!Utility::FileExists(FilenameCache))
+	// Files were modified- we have to renew the difficulty entries as well as the cache itself.
+	if (RenewCache)
 	{
-		for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
-		{
-			std::wstring Ext = Utility::Widen(Utility::GetExtension(*i));
-			if (VSRGValidExtension(Ext))
-				LoadSong7KFromFilename(*i, songPath.path(), New);
-		}
-
-		WriteMetaCache(New, FilenameCache);
-
+		Database->ClearDifficulties(ID);
 		for (std::vector<VSRG::Difficulty*>::iterator k = New->Difficulties.begin();
 			k != New->Difficulties.end();
 			k++)
 		{
+			Database->AddDifficulty(ID, (*k)->Filename, *k, MODE_7K);
+
 			(*k)->SaveCache(New->DifficultyCacheFilename(*k));
 			(*k)->Destroy();
 		}
 	}
 
-
+	
 	if (New->Difficulties.size())
 		VecOut.push_back(New);
 	else

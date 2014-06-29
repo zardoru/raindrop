@@ -31,6 +31,7 @@ namespace Game
 
 			// Meta
 			String Name;
+			String Filename;
 
 			uint32 TotalNotes;
 			uint32 TotalHolds;
@@ -39,7 +40,10 @@ namespace Game
 
 			std::map<int, String> SoundList;
 
+			int ID;
+
 			Difficulty() {
+				ID = 0;
 				Duration = 0;
 				Offset = 0;
 				TotalNotes = 0;

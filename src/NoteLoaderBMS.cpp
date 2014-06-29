@@ -526,7 +526,7 @@ void AutodetectChannelCountSide(BmsLoadInfo *Info, int offset, int usedChannels[
 	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
 	{
 		// normal channels
-		for (int curChannel = startChannel; curChannel < (startChannel + MAX_CHANNELS - offset); curChannel++)
+		for (int curChannel = startChannel; curChannel <= (startChannel + MAX_CHANNELS - offset); curChannel++)
 		{
 			if (i->second.Events.find(curChannel) != i->second.Events.end())
 			{
@@ -537,7 +537,7 @@ void AutodetectChannelCountSide(BmsLoadInfo *Info, int offset, int usedChannels[
 		}
 
 		// LN channels
-		for (int curChannel = startChannelLN; curChannel < (startChannelLN + MAX_CHANNELS - offset); curChannel++)
+		for (int curChannel = startChannelLN; curChannel <= (startChannelLN + MAX_CHANNELS - offset); curChannel++)
 		{
 			if (i->second.Events.find(curChannel) != i->second.Events.end())
 			{
@@ -627,11 +627,13 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 	Difficulty *Diff = new Difficulty();
 	BmsLoadInfo *Info = new BmsLoadInfo();
 
+	Diff->Filename = filename;
+
 	Info->Song = Out;
 	Info->Difficulty = Diff;
 
 	// BMS uses beat-based locations for stops and BPM. (Though the beat must be calculated.)
-	Out->BPMType = Song::BT_Beat;
+	Diff->BPMType = VSRG::Difficulty::BT_Beat;
 	Diff->LMT = Utility::GetLMT(filename);
 
 	if (!filein.is_open())

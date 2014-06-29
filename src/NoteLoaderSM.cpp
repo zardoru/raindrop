@@ -179,7 +179,7 @@ void NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 	Difficulty *Diff = new Difficulty();
 
 	// Stepmania uses beat-based locations for stops and BPM.
-	Out->BPMType = Song::BT_Beat;
+	Diff->BPMType = VSRG::Difficulty::BT_Beat;
 
 	if (!filein.is_open())
 	{
@@ -260,6 +260,7 @@ void NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 			Diff->StopsTiming = Out->StopsData;
 			Diff->Offset = -Out->Offset;
 			Diff->Duration = 0;
+			Diff->Filename = filename;
 
 			LoadTracksSM(Out, Diff, line);
 			Out->Difficulties.push_back(Diff);

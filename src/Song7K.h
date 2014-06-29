@@ -49,9 +49,15 @@ namespace VSRG
 		// New variables for cache
 		bool IsLoaded;
 		bool ParseAgain;
-		String ChartFilename;
 
 		double PreviewTime;
+
+		enum EBt
+		{
+			BT_Beat,
+			BT_MS,
+			BT_Beatspace
+		} BPMType;
 
 	public:
 		Difficulty() {
@@ -89,13 +95,6 @@ namespace VSRG
 		TimingData StopsData; 
 		bool UseSeparateTimingData;
 		String FilenameCache;
-
-		enum EBt
-		{
-			BT_Beat,
-			BT_MS,
-			BT_Beatspace
-		} BPMType;
 
 		std::vector<VSRG::Difficulty*> Difficulties;
 

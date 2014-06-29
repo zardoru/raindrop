@@ -99,16 +99,16 @@ void Song::ProcessBPS(VSRG::Difficulty* Diff, double Drift)
 
 		float FTime;
 
-		if (BPMType == BT_Beat) // Time is in Beats
+		if (Diff->BPMType == VSRG::Difficulty::BT_Beat) // Time is in Beats
 		{
 			FTime = bps (Time->Value);
 			Seg.Time = TimeAtBeat(Diff->Timing, Diff->Offset + Drift, Time->Time) + StopTimeAtBeat(Diff->StopsTiming, Time->Time);
 		}
-		else if (BPMType == BT_MS) // Time is in MS
+		else if (Diff->BPMType == VSRG::Difficulty::BT_MS) // Time is in MS
 		{
 			FTime = bps (Time->Value);
 			Seg.Time = Time->Time + Drift;
-		}else if ( BPMType == BT_Beatspace ) // Time in MS, and not using bpm, but ms per beat.
+		}else if ( Diff->BPMType == VSRG::Difficulty::BT_Beatspace ) // Time in MS, and not using bpm, but ms per beat.
 		{
 			FTime = bps (60000.0 / Time->Value);
 			Seg.Time = Time->Time + Drift;
@@ -121,7 +121,7 @@ void Song::ProcessBPS(VSRG::Difficulty* Diff, double Drift)
 	/* Sort for justice */
 	std::sort(Diff->BPS.begin(), Diff->BPS.end(), tSort);
 
-	if (!Diff->StopsTiming.size() || BPMType != BT_Beat) // Stops only supported in Beat mode.
+	if (!Diff->StopsTiming.size() || Diff->BPMType != VSRG::Difficulty::BT_Beat) // Stops only supported in Beat mode.
 		return;
 
 	/* Here on, just working with stops. */
@@ -544,13 +544,14 @@ void Difficulty::Destroy()
 	Measures.clear();
 }
 
+#include "FileManager.h"
+
 String Song::DifficultyCacheFilename(VSRG::Difficulty * Diff)
 {
-	std::stringstream ss;
 	std::string dfName = Diff->Name;
 	Utility::RemoveFilenameIllegalCharacters(dfName, true);
-	ss << FilenameCache << dfName << Diff->LMT;
-	String Remove = ss.str();
-	Utility::RemoveFilenameIllegalCharacters(Remove);
-	return Remove;
+
+	String fnA = FileManager::GetCacheFilename(Diff->Filename, dfName);
+	Utility::RemoveFilenameIllegalCharacters(fnA);
+	return fnA;
 }

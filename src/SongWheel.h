@@ -29,7 +29,7 @@ class SongWheel
 private:
 	SongWheel();
 
-	uint8 CursorPos, OldCursorPos;
+	int CursorPos, OldCursorPos;
 	ModeType CurrentMode;
 
 	BitmapFont* mFont;

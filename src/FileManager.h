@@ -22,6 +22,9 @@ class FileManager
 public:
 	static void GetSongList(std::vector<dotcur::Song*> &OutVec);
 	static void GetSongList7K(std::vector<VSRG::Song*> &OutVec);
+
+	static String GetCacheFilename(String Fn, String Nm);
+
 	static std::fstream& OpenFile(String Directory);
 	static String GetDirectoryPrefix();
 	static String GetSkinPrefix();

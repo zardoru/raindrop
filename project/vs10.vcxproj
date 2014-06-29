@@ -79,7 +79,7 @@
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug NoSTLPort|Win32'">
-    <IncludePath>../ext-libs/libmpg123;$(WindowsSdkDir)include;$(FrameworkSDKDir)include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../</IncludePath>
+    <IncludePath>../ext-src/SOIL;../ext-src;../ext-libs/libmpg123;$(WindowsSdkDir)include;$(FrameworkSDKDir)include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../</IncludePath>
     <LibraryPath>..\ext-libs\Debug;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
@@ -88,7 +88,7 @@
     <LibraryPath>D:\development\STLport-5.2.1.tar\lib;..\ext-libs\Release;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release NoSTLport|Win32'">
-    <IncludePath>$(WindowsSdkDir)include;$(FrameworkSDKDir)include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../ext-libs/libmpg123;../</IncludePath>
+    <IncludePath>../ext-src/SOIL;../ext-src;$(WindowsSdkDir)include;$(FrameworkSDKDir)include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../</IncludePath>
     <LibraryPath>..\ext-libs\Release;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release GL2|Win32'">
@@ -186,10 +186,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\soil\image_DXT.c" />
-    <ClCompile Include="..\soil\image_helper.c" />
-    <ClCompile Include="..\soil\SOIL.c" />
-    <ClCompile Include="..\soil\stb_image_aug.c" />
+    <ClCompile Include="..\ext-src\lua.c" />
+    <ClCompile Include="..\ext-src\pa_ringbuffer.c" />
+    <ClCompile Include="..\ext-src\SOIL\image_DXT.c" />
+    <ClCompile Include="..\ext-src\SOIL\image_helper.c" />
+    <ClCompile Include="..\ext-src\SOIL\SOIL.c" />
+    <ClCompile Include="..\ext-src\SOIL\stb_image_aug.c" />
+    <ClCompile Include="..\ext-src\sqlite3.c" />
     <ClCompile Include="..\src\ActorBarline.cpp" />
     <ClCompile Include="..\src\ActorJudgement.cpp" />
     <ClCompile Include="..\src\ActorLifebar.cpp" />
@@ -215,7 +218,6 @@
     <ClCompile Include="..\src\Image.cpp" />
     <ClCompile Include="..\src\ImageList.cpp" />
     <ClCompile Include="..\src\ImageLoader.cpp" />
-    <ClCompile Include="..\src\lua.c" />
     <ClCompile Include="..\src\LuaAnimationInterface.cpp" />
     <ClCompile Include="..\src\LuaManager.cpp" />
     <ClCompile Include="..\src\NoteLoaderDC.cpp" />
@@ -223,7 +225,6 @@
     <ClCompile Include="..\src\NoteLoaderFTB.cpp" />
     <ClCompile Include="..\src\NoteLoaderOM.cpp" />
     <ClCompile Include="..\src\NoteLoaderSM.cpp" />
-    <ClCompile Include="..\src\pa_ringbuffer.c" />
     <ClCompile Include="..\src\Renderer7K.cpp" />
     <ClCompile Include="..\src\Rendering.cpp" />
     <ClCompile Include="..\src\ScoreKeeper7K.cpp" />
@@ -238,6 +239,7 @@
     <ClCompile Include="..\src\ScreenLoading.cpp" />
     <ClCompile Include="..\src\ScreenMainMenu.cpp" />
     <ClCompile Include="..\src\ScreenSelectMusic.cpp" />
+    <ClCompile Include="..\src\SongDatabase.cpp" />
     <ClCompile Include="..\src\SongDC.cpp" />
     <ClCompile Include="..\src\Song7K.cpp" />
     <ClCompile Include="..\src\SongTiming.cpp" />
@@ -246,12 +248,17 @@
     <ClCompile Include="..\src\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\soil\image_DXT.h" />
-    <ClInclude Include="..\soil\image_helper.h" />
-    <ClInclude Include="..\soil\SOIL.h" />
-    <ClInclude Include="..\soil\stbi_DDS_aug.h" />
-    <ClInclude Include="..\soil\stbi_DDS_aug_c.h" />
-    <ClInclude Include="..\soil\stb_image_aug.h" />
+    <ClInclude Include="..\ext-src\lua.h" />
+    <ClInclude Include="..\ext-src\luaconf.h" />
+    <ClInclude Include="..\ext-src\lualib.h" />
+    <ClInclude Include="..\ext-src\pa_ringbuffer.h" />
+    <ClInclude Include="..\ext-src\SOIL\image_DXT.h" />
+    <ClInclude Include="..\ext-src\SOIL\image_helper.h" />
+    <ClInclude Include="..\ext-src\SOIL\SOIL.h" />
+    <ClInclude Include="..\ext-src\SOIL\stbi_DDS_aug.h" />
+    <ClInclude Include="..\ext-src\SOIL\stbi_DDS_aug_c.h" />
+    <ClInclude Include="..\ext-src\SOIL\stb_image_aug.h" />
+    <ClInclude Include="..\ext-src\sqlite3.h" />
     <ClInclude Include="..\src\ActorBarline.h" />
     <ClInclude Include="..\src\ActorJudgement.h" />
     <ClInclude Include="..\src\ActorLifebar.h" />
@@ -293,6 +300,7 @@
     <ClInclude Include="..\src\ScreenSelectMusic.h" />
     <ClInclude Include="..\src\Song.h" />
     <ClInclude Include="..\src\Song7K.h" />
+    <ClInclude Include="..\src\SongDatabase.h" />
     <ClInclude Include="..\src\SongDC.h" />
     <ClInclude Include="..\src\SongTiming.h" />
     <ClInclude Include="..\src\SongWheel.h" />

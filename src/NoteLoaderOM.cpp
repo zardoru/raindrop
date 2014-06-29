@@ -471,7 +471,7 @@ void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 	Diff->LMT = Utility::GetLMT(filename);
 
 	// osu! stores bpm information as the time in ms that a beat lasts.
-	Out->BPMType = Song::BT_Beatspace;
+	Diff->BPMType = VSRG::Difficulty::BT_Beatspace;
 	Out->SongDirectory = prefix;
 
 	if (!filein.is_open())
@@ -480,6 +480,7 @@ void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 		return;
 	}
 
+	Diff->Filename = filename;
 	Out->SongDirectory = prefix + "/";
 
 	/* 

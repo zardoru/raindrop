@@ -61,6 +61,8 @@ void NoteLoaderFTB::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 	std::ifstream filein (Utility::Widen(filename).c_str());
 #endif
 
+	Diff->Filename = filename;
+
 	if (!filein.is_open())
 	{
 failed:
@@ -68,7 +70,7 @@ failed:
 		return;
 	}
 
-	Out->BPMType = Song::BT_MS; // MS using BPMs.
+	Diff->BPMType = VSRG::Difficulty::BT_MS; // MS using BPMs.
 	Diff->Channels = 7;
 	Diff->LMT = Utility::GetLMT(filename);
 	Diff->Name = Utility::RemoveExtension(Utility::RelativeToPath(filename));
