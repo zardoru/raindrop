@@ -1,6 +1,5 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <boost/lexical_cast.hpp>
 #include <stdio.h>
 #include <iostream>
 #include <map>
@@ -106,7 +105,7 @@ bool controllerButtonState[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = {false, false, 
 
 struct sk_s
 {
-	const char* keystring;
+	char keystring[32];
 	int boundkey;
 };
 
@@ -155,17 +154,18 @@ void BindingsManager::Initialize()
 	//controllerToUse = 1; should use this if the user entered garbage data (anything that isn't a number)
 	controllerToUse = (int) Configuration::GetConfigf("ControllerNumber") - 1;
 
-	if (glfwJoystickPresent(controllerToUse)) {
+	if (glfwJoystickPresent(controllerToUse)) 
+	{
 		int numOfButtons;
 		glfwGetJoystickButtons(controllerToUse, &numOfButtons);
 		if (numOfButtons) {
 			for (int i = 1; i <= numOfButtons; i++) {
-				char *name = new char[12]; //Only supports up to 99 keys, if we need to have more than that, set array size to 13 (one more digit means up to 999 buttons)
+				char name[32];
 				sprintf(name, "Controller%d", i);
-				sk_s *thisButton = new sk_s;
-				thisButton->keystring = name;
-				thisButton->boundkey = 1000 + i;
-				SpecialKeys.push_back(*thisButton); //Memory leak! Shouldn't matter, but it's bad practice - will fix soon
+				sk_s thisButton;
+				strcpy(thisButton.keystring, name);
+				thisButton.boundkey = 1000 + i;
+				SpecialKeys.push_back(thisButton);
 			}
 		}
 	}
@@ -439,12 +439,10 @@ void GameWindow::SwapBuffers()
 					int thisKeyNumber = SpecialKeys[j].boundkey - 1000;
 					if (i + 1 == thisKeyNumber) {
 						/* Only processes the button push/release if the state has changed. */
-						bool thisButtonState = buttonArray[i] == GLFW_PRESS ? true : false;
-						if (thisButtonState != controllerButtonState[thisKeyNumber]) {
+						if (buttonArray[i] != controllerButtonState[thisKeyNumber]) {
 							WindowFrame.Parent->HandleInput(SpecialKeys[j].boundkey, ToKeyEventType(buttonArray[i]), false);
 							controllerButtonState[thisKeyNumber] = !controllerButtonState[thisKeyNumber];
 						}
-						
 					}
 				}
 			}
