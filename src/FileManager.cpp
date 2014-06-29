@@ -91,18 +91,11 @@ void loadSong( Directory songPath, std::vector<dotcur::Song*> &VecOut )
 		}
 	}
 }
-
-
 String GenHash(String Dir, int Sd)
 {
-	size_t Sum = 0;
-	for (size_t i = 0; i < Dir.length(); i++)
-	{
-		Sum += Dir[i];
-	}
-
+	Utility::RemoveFilenameIllegalCharacters(Dir, true);
 	std::stringstream ss;
-	ss << Sum + Sd;
+	ss << Dir << Sd;
 	return ss.str();
 }
 

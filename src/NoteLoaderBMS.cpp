@@ -360,13 +360,6 @@ int evsort(const AutoplaySound &i, const AutoplaySound &j)
 	return i.Time < j.Time;
 }
 
-void CalculateObjects(BmsLoadInfo *Info)
-{
-	/* At this point we know the channel count from 1 to MAX_CHANNELS. We should be able to use it now..*/
-	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
-		measureCalculate(Info, i);
-}
-
 int evtSort(const BMSEvent &A, const BMSEvent &B)
 {
 	return A.Fraction < B.Fraction;
@@ -533,22 +526,30 @@ void AutodetectChannelCountSide(BmsLoadInfo *Info, int offset, int usedChannels[
 	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
 	{
 		// normal channels
-		for (uint8 curChannel = startChannel; curChannel <= (startChannel + MAX_CHANNELS); curChannel++)
+		for (int curChannel = startChannel; curChannel < (startChannel + MAX_CHANNELS - offset); curChannel++)
 		{
 			if (i->second.Events.find(curChannel) != i->second.Events.end())
-				usedChannels[translateTrackBME(curChannel, startChannel)+offset] = 1;
+			{
+				int offs = translateTrackBME(curChannel, startChannel)+offset;
+				if (offs < MAX_CHANNELS) // A few BMSes use the foot pedal, so we need to not overflow the array.
+					usedChannels[offs] = 1;
+			}
 		}
 
 		// LN channels
-		for (uint8 curChannel = startChannelLN; curChannel <= (startChannelLN + MAX_CHANNELS); curChannel++)
+		for (int curChannel = startChannelLN; curChannel < (startChannelLN + MAX_CHANNELS - offset); curChannel++)
 		{
 			if (i->second.Events.find(curChannel) != i->second.Events.end())
-				usedChannels[translateTrackBME(curChannel, startChannelLN)+offset] = 1;
+			{
+				int offs = translateTrackBME(curChannel, startChannelLN)+offset;
+				if (offs < MAX_CHANNELS)
+					usedChannels[offs] = 1;
+			}
 		}
 	}
 }
 
-void AutodetectChannelCount(BmsLoadInfo *Info)
+int AutodetectChannelCount(BmsLoadInfo *Info)
 {
 	int usedChannels[MAX_CHANNELS];
 
@@ -599,16 +600,21 @@ void AutodetectChannelCount(BmsLoadInfo *Info)
 	
 
 	// We pick the range of channels we're going to use.
-	Info->Difficulty->Channels = Info->UpperBound - Info->LowerBound + 1;
+	return Info->UpperBound - Info->LowerBound + 1;
 }
 
 void CompileBMS(BmsLoadInfo *Info)
 {
 	/* To be done. */
+	MeasureList &m = Info->Measures;
 	CalculateBPMs(Info);
 	CalculateStops(Info);
-	AutodetectChannelCount(Info);
-	CalculateObjects(Info);
+
+	Info->Difficulty->Channels = AutodetectChannelCount(Info);
+
+	
+	for (MeasureList::iterator i = m.begin(); i != m.end(); i++)
+		measureCalculate(Info, i);
 }
 
 void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Out)
