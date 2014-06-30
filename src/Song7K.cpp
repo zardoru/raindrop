@@ -542,6 +542,7 @@ void Difficulty::Destroy()
 	StopsTiming.clear();
 	BGMEvents.clear();
 	Measures.clear();
+	Filename.clear();
 }
 
 #include "FileManager.h"
