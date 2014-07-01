@@ -23,11 +23,15 @@ private:
 		*st_DelDiffsQuery,
 		*st_GetSongInfo,
 		*st_GetDiffInfo,
-		*st_GetFileInfo;
+		*st_GetFileInfo,
+		*st_UpdateLMT,
+		*st_GetDiffNameQuery,
+		*st_GetDiffIDFile,
+		*st_DiffUpdateQuery;
 
 	// Returns the ID.
 	int InsertFilename(Directory Fn);
-	bool DifficultyExists(int SongID, String DifficultyName);
+	bool DifficultyExists(int FileID, String DifficultyName, int *IDOut = NULL);
 public:
 
 	SongDatabase(String Database);

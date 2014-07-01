@@ -148,11 +148,6 @@ VSRG::Song* LoadSong7KFromFilename(String Filename, String Prefix, VSRG::Song *S
 	return Sng;
 }
 
-String FileManager::GetCacheFilename(String Fn, String Nm)
-{
-	return FileManager::GetCacheDirectory() + Database->GetDifficultyCacheFilename(Fn, Nm);
-}
-
 void loadSong7K( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 {
 	std::vector<String> Listing;
@@ -197,7 +192,6 @@ void loadSong7K( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 	// Files were modified- we have to renew the difficulty entries as well as the cache itself.
 	if (RenewCache)
 	{
-		Database->ClearDifficulties(ID);
 		for (std::vector<VSRG::Difficulty*>::iterator k = New->Difficulties.begin();
 			k != New->Difficulties.end();
 			k++)

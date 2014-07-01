@@ -551,8 +551,10 @@ String Song::DifficultyCacheFilename(VSRG::Difficulty * Diff)
 {
 	std::string dfName = Diff->Name;
 	Utility::RemoveFilenameIllegalCharacters(dfName, true);
+	std::stringstream ss;
 
-	String fnA = FileManager::GetCacheFilename(Diff->Filename, dfName);
+	ss << FileManager::GetCacheDirectory() << Diff->ID << dfName;
+	String fnA = ss.str();
 	Utility::RemoveFilenameIllegalCharacters(fnA);
 	return fnA;
 }

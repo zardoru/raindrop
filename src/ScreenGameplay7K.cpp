@@ -41,6 +41,7 @@ ScreenGameplay7K::ScreenGameplay7K()
 	CurrentVertical = 0;
 	SongTime = SongTimeReal = 0;
 	beatScrollEffect = 0;
+	Channels = 0;
 
 	AudioCompensation = (Configuration::GetConfigf("AudioCompensation") != 0);
 	TimeCompensation = 0;
@@ -567,6 +568,9 @@ bool ScreenGameplay7K::Run(double Delta)
 
 	if (Next)
 		return RunNested(Delta);
+
+	if (!DoPlay)
+		return false;
 
 	if (Active)
 	{

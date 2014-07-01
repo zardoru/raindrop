@@ -179,7 +179,7 @@
       <Filter>Source\libraries</Filter>
     </ClCompile>
     <ClCompile Include="..\src\SongDatabase.cpp">
-      <Filter>Source\game global\song interface</Filter>
+      <Filter>Source\game global\game status</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -358,7 +358,7 @@
       <Filter>Source\libraries</Filter>
     </ClInclude>
     <ClInclude Include="..\src\SongDatabase.h">
-      <Filter>Source\game global\song interface</Filter>
+      <Filter>Source\game global\game status</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
