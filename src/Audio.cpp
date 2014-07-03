@@ -65,8 +65,8 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
 			}
 			else
 			{
-				StreamInfo.threadPriority = eThreadPriorityGames;
-				StreamInfo.flags = paWinWasapiThreadPriority; 
+				StreamInfo.threadPriority = eThreadPriorityAudio;
+				StreamInfo.flags = 0; 
 			}
 	
 			StreamInfo.hostProcessorOutput = NULL;
@@ -82,7 +82,7 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
 
 	if (Err)
 	{
-		wprintf(L"%s\n", Pa_GetErrorText(Err));
+		wprintf(L"%ls\n", Utility::Widen(Pa_GetErrorText(Err)).c_str());
 		wprintf(L"Device Selected %d\n", Device);
 	}
 #ifdef LINUX
@@ -147,6 +147,7 @@ public:
 		PaUtil_InitializeRingBuffer(&RingBuf, sizeof(int16), BUFF_SIZE, RingbufData);
 
 		Threaded = StartThread;
+		Stream = NULL;
 
 		if (StartThread)
 		{
@@ -156,6 +157,15 @@ public:
 		if (UseWasapi)
 		{
 			OpenStream( &Stream, GetWasapiDevice(), 44100, (void*) this, Latency, Mix );
+
+			if (!Stream)
+			{
+				// This was a Wasapi problem. Retry without it.
+				wprintf(L"Problem initializing WASAPI. Falling back to default API.");
+				UseWasapi = false;
+				OpenStream( &Stream, Pa_GetDefaultOutputDevice(), 44100, (void*) this, Latency, Mix );
+			}
+
 		}
 		else
 		{
@@ -166,11 +176,12 @@ public:
 
 #endif
 
-		Pa_StartStream( Stream );
-		
-		Latency = Pa_GetStreamInfo(Stream)->outputLatency;
-
-		wprintf(L"AUDIO: Latency after opening stream = %f \n", Latency);
+		if (Stream)
+		{
+			Pa_StartStream( Stream );
+			Latency = Pa_GetStreamInfo(Stream)->outputLatency;
+			wprintf(L"AUDIO: Latency after opening stream = %f \n", Latency);
+		}
 
 		ConstFactor = 1.0;
 	}
