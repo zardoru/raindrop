@@ -92,14 +92,14 @@ void ScreenGameplay7K::CalculateHiddenConstants()
 	// Hidden calc 
 	if (SelectedHiddenMode)
 	{
-		float LimPos = - ((BasePos / ScreenHeight)*2 - 1); // Frac. of screen
+		float LimPos = - ((JudgementLinePos / ScreenHeight)*2 - 1); // Frac. of screen
 		float AdjustmentSize;
 
 		if (Upscroll)
 		{
-			Center = -(( ((ScreenHeight - BasePos) / 2 + BasePos) / ScreenHeight)*2 - 1);
+			Center = -(( ((ScreenHeight - JudgementLinePos) / 2 + JudgementLinePos) / ScreenHeight)*2 - 1);
 			
-			AdjustmentSize = -( ((ScreenHeight - BasePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
+			AdjustmentSize = -( ((ScreenHeight - JudgementLinePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
 
 			if (SelectedHiddenMode == 2)
 			{
@@ -117,9 +117,9 @@ void ScreenGameplay7K::CalculateHiddenConstants()
 			else RealHiddenMode = SelectedHiddenMode;
 		}else
 		{
-			Center = -((BasePos / 2 / ScreenHeight)*2 - 1);
+			Center = -((JudgementLinePos / 2 / ScreenHeight)*2 - 1);
 			
-			AdjustmentSize = -( ((BasePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
+			AdjustmentSize = -( ((JudgementLinePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
 
 			// Hidden/Sudden
 			if (SelectedHiddenMode == 2)
@@ -299,8 +299,8 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	else
 		JudgementLinePos = GearHeightFinal;
 
-	// BasePos = JudgementLinePos + (Upscroll ? NoteHeight/2 : -NoteHeight/2);
-	BasePos = JudgementLinePos + (Upscroll ? NoteHeight/2 : -NoteHeight/2);
+	JudgementLinePos += (Upscroll ? NoteHeight/2 : -NoteHeight/2);
+	// JudgementLinePos = JudgementLinePos + (Upscroll ? NoteHeight/2 : -NoteHeight/2);
 	CurrentVertical = IntegrateToTime (VSpeeds, -WaitingTime);
 
 	RecalculateMatrix();

@@ -63,7 +63,6 @@ private:
 
 	/* Positions */
 	float  JudgementLinePos;
-	float  BasePos;
 
 	/* Effects */
 	float waveEffect; 
