@@ -91,8 +91,6 @@ void ScreenSelectMusic::MainThreadInitialization()
 
 	WindowFrame.SetLightMultiplier(1);
 	Background.AffectedByLightning = true;
-
-	Game::SongWheel::GetInstance().ChangeMode(SelectedMode);
 }
 
 void ScreenSelectMusic::LoadThreadInitialization()
@@ -136,7 +134,7 @@ void ScreenSelectMusic::OnSongSelect(Game::Song* MySong, uint8 difindex)
 	ScreenLoading *LoadNext = NULL;
 
 	SelectSnd->Play();
-	if (SelectedMode == MODE_DOTCUR)
+	if (MySong->Mode == MODE_DOTCUR)
 	{
 		ScreenGameplay *DotcurGame = new ScreenGameplay(this);
 		DotcurGame->Init(static_cast<dotcur::Song*>(MySong), difindex);
@@ -196,15 +194,11 @@ bool ScreenSelectMusic::Run(double Delta)
 
 	String modeString;
 
-	if (SelectedMode == MODE_DOTCUR)
-		modeString = "mode: .cur";
+	if (OptionUpscroll)
+		modeString = "upscroll";
 	else
-	{
-		if (OptionUpscroll)
-			modeString = "mode: vsrg (upscroll)";
-		else
-			modeString = "mode: vsrg (downscroll)";
-	}
+		modeString = "downscroll";
+
 
 	Font->DisplayText(modeString.c_str(), Vec2(ScreenWidth/2-modeString.length() * 5, 40));
 
@@ -246,12 +240,6 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 		case KT_FractionDec:
 			OptionUpscroll = !OptionUpscroll;
 			break;
-		case KT_BSPC:
-			if (SelectedMode == MODE_DOTCUR)
-				SelectedMode = MODE_7K;
-			else
-				SelectedMode = MODE_DOTCUR;
-			Game::SongWheel::GetInstance().ChangeMode(SelectedMode);
 		}
 	}
 }

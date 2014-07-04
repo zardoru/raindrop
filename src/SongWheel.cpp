@@ -103,7 +103,7 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 			{
 				DifficultyIndex--;
 				max_index = 0;
-				if (CurrentMode == MODE_7K)
+				if (CurrentList->GetSongEntry(CursorPos)->Mode == MODE_7K)
 				{
 					max_index = ((VSRG::Song*)CurrentList->GetSongEntry(CursorPos))->Difficulties.size()-1;
 				}else
@@ -118,7 +118,7 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 			if (CursorPos < CurrentList->GetNumEntries() && !CurrentList->IsDirectory(CursorPos))
 			{
 				DifficultyIndex++;
-				if (CurrentMode == MODE_7K)
+				if (CurrentList->GetSongEntry(CursorPos)->Mode == MODE_7K)
 				{
 					if (DifficultyIndex >= ((VSRG::Song*)CurrentList->GetSongEntry(CursorPos))->Difficulties.size())
 						DifficultyIndex = 0;
@@ -165,11 +165,6 @@ bool SongWheel::HandleScrollInput(const double dx, const double dy)
 {
 	PendingVerticalDisplacement += dy * 90;
 	return true;
-}
-
-void SongWheel::ChangeMode (const ModeType NewMode)
-{
-	CurrentMode = NewMode;
 }
 
 Game::Song* SongWheel::GetSelectedSong()
@@ -307,7 +302,7 @@ void SongWheel::Render()
 			}else mFont->DisplayText("unavailable (edit only)", InfoPosition);
 
 
-		}else if (CurrentMode == MODE_7K && CurrentList->GetSongEntry(CursorPos)->Mode == MODE_7K)
+		}else if (CurrentList->GetSongEntry(CursorPos)->Mode == MODE_7K)
 		{
 
 			char infoStream[1024];

@@ -53,6 +53,7 @@ void LoadSongDCFromDir( Directory songPath, std::vector<dotcur::Song*> &VecOut )
 		dotcur::Song *New = NoteLoader::LoadObjectsFromFile(songPath.path() + "/" + *i, songPath.path());
 		if (New)
 		{
+			New->SongDirectory = songPath.path();
 			New->ChartFilename = *i;
 			VecOut.push_back(New);
 			FoundDCF = true;
@@ -247,25 +248,6 @@ void FileManager::GetSongListDC(std::vector<dotcur::Song*> &OutVec, Directory Di
 
 void FileManager::GetSongList7K(std::vector<VSRG::Song*> &OutVec, Directory Dir)
 {
-	/*std::vector <String> SongDirectories;
-	SongDirectories.push_back(SongsPrefix);
-
-	Configuration::GetConfigListS ("SongDirectories", SongDirectories);
-
-	for (std::vector<String>::iterator i = SongDirectories.begin(); i != SongDirectories.end(); i++)
-	{
-		Directory Dir (*i + "/");
-		std::vector <String> Listing;
-
-		Dir.ListDirectory(Listing, Directory::FS_DIR);
-		for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
-		{ 
-			wprintf(L"%ls... ", Utility::Widen(*i).c_str());
-			loadSong7K(Dir.path() + *i, OutVec);
-			wprintf(L"ok\n");
-		}
-	}*/
-
 	std::vector <String> Listing;
 
 	Dir.ListDirectory(Listing, Directory::FS_DIR);

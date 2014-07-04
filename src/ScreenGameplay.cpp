@@ -111,7 +111,7 @@ void ScreenGameplay::MainThreadInitialization()
 	MarkerB.SetImage(ImageLoader::LoadSkin("barline_marker.png"));
 	GameplayObjectImage = ImageLoader::LoadSkin("hitcircle.png");
 
-	Image* BackgroundImage = ImageLoader::Load(MySong->SongDirectory + MySong->BackgroundFilename);
+	Image* BackgroundImage = ImageLoader::Load(MySong->SongDirectory + "/" + MySong->BackgroundFilename);
 
 	if (BackgroundImage)
 		Background.SetImage(BackgroundImage);

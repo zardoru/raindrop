@@ -34,6 +34,6 @@ public:
 
 void LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*> &VecOut );
 VSRG::Song* LoadSong7KFromFilename(String Filename, String Prefix, VSRG::Song *Sng);
-String GenHash(String Str, int Sd = 0);
+void LoadSongDCFromDir( Directory songPath, std::vector<dotcur::Song*> &VecOut );
 
 #endif

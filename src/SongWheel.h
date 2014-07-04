@@ -31,7 +31,6 @@ private:
 	SongWheel();
 
 	unsigned int CursorPos, OldCursorPos;
-	ModeType CurrentMode;
 
 	BitmapFont* mFont;
 
@@ -78,7 +77,6 @@ public:
 	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	bool HandleScrollInput(const double dx, const double dy);
 	Game::Song* GetSelectedSong();
-	void ChangeMode (const ModeType NewMode);
 	void ReloadSongs();
 
 	void SetFont(Directory FontDirectory);

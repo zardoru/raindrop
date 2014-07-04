@@ -46,35 +46,59 @@ void SongList::AddDirectory(Directory Dir, bool VSRGActive, bool DotcurActive)
 	SongList* NewList = new SongList(this);
 
 	ListEntry NewEntry;
-	NewEntry.EntryName = Dir.path();
+
+	NewEntry.EntryName = Dir.path().substr(Dir.path().find_last_of('/')+1);
 	NewEntry.Kind = ListEntry::Directory;
 	NewEntry.Data = NewList;
 
-	if (VSRGActive)
+	std::vector<VSRG::Song*> Songs7K;
+	std::vector<dotcur::Song*> SongsDC;
+	std::vector<String> Listing;
+
+	Dir.ListDirectory(Listing, Directory::FS_DIR);
+	
+	for (std::vector<String>::iterator i = Listing.begin();
+		i != Listing.end();
+		i++)
 	{
-		std::vector<VSRG::Song*> Songs;
-		FileManager::GetSongList7K(Songs, Dir);		
-		for (std::vector<VSRG::Song*>::iterator i = Songs.begin();
-			i != Songs.end();
-			i++)
+		if (VSRGActive)
+			LoadSong7KFromDir(Dir / *i, Songs7K);
+		
+		if (DotcurActive)
+			LoadSongDCFromDir(Dir / *i, SongsDC);
+
+		if (!SongsDC.size() && !Songs7K.size())
+			NewList->AddDirectory(Dir / *i, VSRGActive, DotcurActive);
+
+		if (Songs7K.size())
 		{
-			NewList->AddSong(*i);
+			for (std::vector<VSRG::Song*>::iterator j = Songs7K.begin();
+				j != Songs7K.end();
+				j++)
+			{
+				NewList->AddSong(*j);
+			}
+
+			Songs7K.clear();
+		}
+
+		if (SongsDC.size())
+		{
+			for (std::vector<dotcur::Song*>::iterator j = SongsDC.begin();
+				j != SongsDC.end();
+				j++)
+			{
+				NewList->AddSong(*j);
+			}
+
+			SongsDC.clear();
 		}
 	}
 
-	if (DotcurActive)
-	{
-		std::vector<dotcur::Song*> Songs;
-		FileManager::GetSongListDC(Songs, Dir);
-		for (std::vector<dotcur::Song*>::iterator i = Songs.begin();
-			i != Songs.end();
-			i++)
-		{
-			NewList->AddSong(*i);
-		}		
-	}
-
-	mChildren.push_back(NewEntry);
+	if (NewList->GetNumEntries())
+		mChildren.push_back(NewEntry);
+	else
+		delete NewList;
 }
 
 void SongList::AddVirtualDirectory(String NewEntryName, Game::Song* List, int Count)
