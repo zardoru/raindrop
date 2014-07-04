@@ -181,6 +181,9 @@
     <ClCompile Include="..\src\SongDatabase.cpp">
       <Filter>Source\game global\game status</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\SongList.cpp">
+      <Filter>Source\game global\game status</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">
@@ -358,6 +361,9 @@
       <Filter>Source\libraries</Filter>
     </ClInclude>
     <ClInclude Include="..\src\SongDatabase.h">
+      <Filter>Source\game global\game status</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SongList.h">
       <Filter>Source\game global\game status</Filter>
     </ClInclude>
   </ItemGroup>

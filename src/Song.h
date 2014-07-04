@@ -15,6 +15,12 @@ struct AutoplaySound
 	int Sound;
 };
 
+enum ModeType
+{
+	MODE_DOTCUR,
+	MODE_7K
+};
+
 namespace Game
 {
 
@@ -53,6 +59,8 @@ namespace Game
 			}
 		};
 
+		ModeType Mode;
+
 		/* Song title */
 		String SongName;
 
@@ -66,7 +74,7 @@ namespace Game
 		String SongFilename, BackgroundFilename;
 
 		Song() {};
-		~Song() {};
+		virtual ~Song() {};
 	};
 
 }

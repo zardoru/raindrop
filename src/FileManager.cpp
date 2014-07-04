@@ -38,7 +38,7 @@ String FileManager::GetCacheDirectory()
 	return CachePrefix;
 }
 
-void loadSong( Directory songPath, std::vector<dotcur::Song*> &VecOut )
+void LoadSongDCFromDir( Directory songPath, std::vector<dotcur::Song*> &VecOut )
 {
 
 	bool FoundDCF = false;
@@ -148,7 +148,7 @@ VSRG::Song* LoadSong7KFromFilename(String Filename, String Prefix, VSRG::Song *S
 	return Sng;
 }
 
-void loadSong7K( Directory songPath, std::vector<VSRG::Song*> &VecOut )
+void LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 {
 	std::vector<String> Listing;
 
@@ -232,31 +232,22 @@ std::fstream& FileManager::OpenFile(String Directory)
 	return *f;
 }
 
-void FileManager::GetSongList(std::vector<dotcur::Song*> &OutVec)
+void FileManager::GetSongListDC(std::vector<dotcur::Song*> &OutVec, Directory Dir)
 {
-	std::vector <String> SongDirectories;
-	SongDirectories.push_back(SongsPrefix);
+	std::vector <String> Listing;
 
-	Configuration::GetConfigListS ("SongDirectories", SongDirectories);
-
-	for (std::vector<String>::iterator i = SongDirectories.begin(); i != SongDirectories.end(); i++)
-	{
-		Directory Dir (*i + "/");
-		std::vector <String> Listing;
-
-		Dir.ListDirectory(Listing, Directory::FS_DIR);
-		for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
-		{ 
-			wprintf(L"%ls...\n", Utility::Widen(*i).c_str());
-			loadSong(Dir.path() + *i, OutVec);
-			wprintf(L"ok\n");
-		}
+	Dir.ListDirectory(Listing, Directory::FS_DIR);
+	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
+	{ 
+		wprintf(L"%ls... ", Utility::Widen(*i).c_str());
+		LoadSongDCFromDir(Dir.path() + "/" + *i, OutVec);
+		wprintf(L"ok\n");
 	}
 }
 
-void FileManager::GetSongList7K(std::vector<VSRG::Song*> &OutVec)
+void FileManager::GetSongList7K(std::vector<VSRG::Song*> &OutVec, Directory Dir)
 {
-	std::vector <String> SongDirectories;
+	/*std::vector <String> SongDirectories;
 	SongDirectories.push_back(SongsPrefix);
 
 	Configuration::GetConfigListS ("SongDirectories", SongDirectories);
@@ -273,6 +264,16 @@ void FileManager::GetSongList7K(std::vector<VSRG::Song*> &OutVec)
 			loadSong7K(Dir.path() + *i, OutVec);
 			wprintf(L"ok\n");
 		}
+	}*/
+
+	std::vector <String> Listing;
+
+	Dir.ListDirectory(Listing, Directory::FS_DIR);
+	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
+	{ 
+		wprintf(L"%ls... ", Utility::Widen(*i).c_str());
+		LoadSong7KFromDir(Dir.path() + "/" + *i, OutVec);
+		wprintf(L"ok\n");
 	}
 }
 

@@ -107,12 +107,6 @@ enum KeyType
 	KT_Key16
 };
 
-enum ModeType
-	{
-		MODE_DOTCUR,
-		MODE_7K
-	};
-
 /* vsrg constants */
 
 enum ESpeedType {

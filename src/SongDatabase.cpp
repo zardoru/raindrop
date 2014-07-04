@@ -137,8 +137,6 @@ int SongDatabase::AddSong(Directory Dir, int Mode, Game::Song* In)
 
 bool SongDatabase::IsSongDirectory(Directory Dir, int *IDOut)
 {
-	char* tail;
-
 	int res1 = sqlite3_bind_text(st_IDQuery, 1, Dir.c_path(), Dir.path().length(), SQLITE_TRANSIENT);
 
 	int ret = sqlite3_step(st_IDQuery);
@@ -369,7 +367,7 @@ void SongDatabase::GetSongInformation7K (int ID, VSRG::Song* Out)
 		Diff->TotalHolds = sqlite3_column_int(st_GetDiffInfo, 4);
 		Diff->TotalNotes = sqlite3_column_int(st_GetDiffInfo, 5);
 		Diff->Duration = sqlite3_column_double(st_GetDiffInfo, 6);
-		Diff->IsVirtual = sqlite3_column_int(st_GetDiffInfo, 7);
+		Diff->IsVirtual = (bool)sqlite3_column_int(st_GetDiffInfo, 7);
 		Diff->Channels = sqlite3_column_int(st_GetDiffInfo, 8);
 
 		int colInt = sqlite3_column_int(st_GetDiffInfo, 10);

@@ -216,7 +216,7 @@ Song* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 			String CmdLine = CommandContents;
 			boost::split(SoundList, CmdLine, boost::is_any_of(","));
 
-			for (int i = 1; i <= SoundList.size(); i++) // Copy in
+			for (unsigned int i = 1; i <= SoundList.size(); i++) // Copy in
 				Diff->SoundList[i] = SoundList[i-1];
 		}
 

@@ -172,7 +172,16 @@ void Application::Run()
 		std::vector<VSRG::Song*> Songs;
 
 		GameState::Printf("Generating cache...\n");
-		FileManager::GetSongList7K(Songs);
+
+		std::vector<String> Directories;
+		Configuration::GetConfigListS("SongDirectories", Directories);
+
+		for (std::vector<String>::iterator i = Directories.begin(); 
+			i != Directories.end();
+			i++)
+		{
+			FileManager::GetSongList7K(Songs, *i);
+		}
 
 		for (std::vector<VSRG::Song*>::iterator i = Songs.begin(); i != Songs.end(); i++)
 			delete *i;

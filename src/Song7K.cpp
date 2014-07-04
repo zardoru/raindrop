@@ -13,6 +13,7 @@ Song::Song()
 	PreviousDrift = 0;
 	Processed = false;
 	UseSeparateTimingData = false;
+	Mode = MODE_7K;
 }
 
 Song::~Song()

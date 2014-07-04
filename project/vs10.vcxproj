@@ -242,6 +242,7 @@
     <ClCompile Include="..\src\SongDatabase.cpp" />
     <ClCompile Include="..\src\SongDC.cpp" />
     <ClCompile Include="..\src\Song7K.cpp" />
+    <ClCompile Include="..\src\SongList.cpp" />
     <ClCompile Include="..\src\SongTiming.cpp" />
     <ClCompile Include="..\src\SongWheel.cpp" />
     <ClCompile Include="..\src\TrackNote.cpp" />
@@ -302,6 +303,7 @@
     <ClInclude Include="..\src\Song7K.h" />
     <ClInclude Include="..\src\SongDatabase.h" />
     <ClInclude Include="..\src\SongDC.h" />
+    <ClInclude Include="..\src\SongList.h" />
     <ClInclude Include="..\src\SongTiming.h" />
     <ClInclude Include="..\src\SongWheel.h" />
     <ClInclude Include="..\src\TrackNote.h" />
