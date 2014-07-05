@@ -105,7 +105,7 @@ bool VSRGValidExtension(std::wstring Ext)
 		return true;
 	else if (Ext == L"osu")
 		return true;
-	else if (Ext == L"bms" || Ext == L"bme" || Ext == L"bml")
+	else if (Ext == L"bms" || Ext == L"bme" || Ext == L"bml" || Ext == L"pms")
 		return true;
 	else if (Ext == L"sm")
 		return true;
@@ -141,7 +141,7 @@ VSRG::Song* LoadSong7KFromFilename(String Filename, String Prefix, VSRG::Song *S
 		NoteLoaderFTB::LoadObjectsFromFile(fn_f, Prefix, Sng);
 	else if (Ext == L"osu")
 		NoteLoaderOM::LoadObjectsFromFile(fn_f, Prefix, Sng);
-	else if (Ext == L"bms" || Ext == L"bme" || Ext == L"bml")
+	else if (Ext == L"bms" || Ext == L"bme" || Ext == L"bml" || Ext == L"pms")
 		NoteLoaderBMS::LoadObjectsFromFile(fn_f, Prefix, Sng);
 	else if (Ext == L"sm")
 		NoteLoaderSM::LoadObjectsFromFile(Prefix + "/" + Filename, Prefix, Sng);

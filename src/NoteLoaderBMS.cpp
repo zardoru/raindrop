@@ -185,6 +185,7 @@ struct BmsLoadInfo
 
 	int LNObj;
 	int SideBOffset;
+	bool IsPMS;
 
 	BmsLoadInfo()
 	{
@@ -196,6 +197,7 @@ struct BmsLoadInfo
 		Difficulty = NULL;
 		Song = NULL;
 		LNObj = 0;
+		IsPMS = false;
 	}
 };
 
@@ -353,6 +355,46 @@ int translateTrackBME(int Channel, int relativeTo)
 	}
 }
 
+int translateTrackPMS(int Channel, int relativeTo)
+{
+	int relTrack = Channel - relativeTo;
+
+	if (relativeTo == startChannelP1 || relativeTo == startChannelLNP1)
+	{
+		switch (relTrack)
+		{
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+		case 4:
+			return relTrack;
+		case 5:
+			return 7;
+		case 6:
+			return 8;
+		case 7:
+			return 5;
+		case 8:
+			return 6;
+		default: // Undefined
+			return relTrack;
+		}
+	}else
+	{
+		switch (relTrack)
+		{
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+			return relTrack;
+		default: // Undefined
+			return relTrack;
+		}
+	}
+}
+
 void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i);
 
 int evsort(const AutoplaySound &i, const AutoplaySound &j)
@@ -375,7 +417,11 @@ void measureCalculateSide(BmsLoadInfo *Info, MeasureList::iterator &i, int Track
 		if (i->second.Events.find(curChannel) != i->second.Events.end()) // there are bms events for this channel.
 		{
 			int Track = 0;
-			Track = translateTrackBME(curChannel, startChannel) - Info->LowerBound + TrackOffset;
+
+			if (!Info->IsPMS)
+				Track = translateTrackBME(curChannel, startChannel) - Info->LowerBound + TrackOffset;
+			else
+				Track = translateTrackPMS(curChannel, startChannel) + TrackOffset;
 
 			if (Info->LNObj)
 				std::sort(i->second.Events[curChannel].begin(), i->second.Events[curChannel].end(), evtSort);
@@ -428,7 +474,10 @@ degradetonote:
 		{
 			int Track = 0;
 
-			Track = translateTrackBME(curChannel, startChannelLN) - Info->LowerBound + TrackOffset;
+			if (!Info->IsPMS)
+				Track = translateTrackBME(curChannel, startChannelLN) - Info->LowerBound + TrackOffset;
+			else
+				Track = translateTrackPMS(curChannel, startChannelLN) + TrackOffset;
 
 			for (BMSEventList::iterator ev = i->second.Events[curChannel].begin(); ev != i->second.Events[curChannel].end(); ev++)
 			{
@@ -472,8 +521,15 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 	Msr.MeasureLength = 4 * i->second.BeatDuration;
 
 	// see both sides, p1 and p2
-	measureCalculateSide(Info, i, 0, startChannelP1, startChannelLNP1, startChannelMinesP1, startChannelInvisibleP1, Msr);
-	measureCalculateSide(Info, i, Info->SideBOffset, startChannelP2, startChannelLNP2, startChannelMinesP2, startChannelInvisibleP2, Msr);
+	if (!Info->IsPMS) // or BME-type PMS
+	{
+		measureCalculateSide(Info, i, 0, startChannelP1, startChannelLNP1, startChannelMinesP1, startChannelInvisibleP1, Msr);
+		measureCalculateSide(Info, i, Info->SideBOffset, startChannelP2, startChannelLNP2, startChannelMinesP2, startChannelInvisibleP2, Msr);
+	}else
+	{
+		measureCalculateSide(Info, i, 0, startChannelP1, startChannelLNP1, startChannelMinesP1, startChannelInvisibleP1, Msr);
+		measureCalculateSide(Info, i, 5, startChannelP2+1, startChannelLNP2+1, startChannelMinesP2+1, startChannelInvisibleP2+1, Msr);
+	}
 
 	// insert it into the difficulty structure
 	Info->Difficulty->Measures.push_back(Msr);
@@ -530,7 +586,13 @@ void AutodetectChannelCountSide(BmsLoadInfo *Info, int offset, int usedChannels[
 		{
 			if (i->second.Events.find(curChannel) != i->second.Events.end())
 			{
-				int offs = translateTrackBME(curChannel, startChannel)+offset;
+				int offs;
+				
+				if (!Info->IsPMS)
+					offs = translateTrackBME(curChannel, startChannel)+offset;
+				else
+					offs = translateTrackPMS(curChannel, startChannel)+offset;
+
 				if (offs < MAX_CHANNELS) // A few BMSes use the foot pedal, so we need to not overflow the array.
 					usedChannels[offs] = 1;
 			}
@@ -541,7 +603,13 @@ void AutodetectChannelCountSide(BmsLoadInfo *Info, int offset, int usedChannels[
 		{
 			if (i->second.Events.find(curChannel) != i->second.Events.end())
 			{
-				int offs = translateTrackBME(curChannel, startChannelLN)+offset;
+				int offs;
+				
+				if (!Info->IsPMS)
+					offs = translateTrackBME(curChannel, startChannelLN)+offset;
+				else
+					offs = translateTrackPMS(curChannel, startChannelLN)+offset;
+
 				if (offs < MAX_CHANNELS)
 					usedChannels[offs] = 1;
 			}
@@ -552,6 +620,9 @@ void AutodetectChannelCountSide(BmsLoadInfo *Info, int offset, int usedChannels[
 int AutodetectChannelCount(BmsLoadInfo *Info)
 {
 	int usedChannels[MAX_CHANNELS];
+
+	if (Info->IsPMS)
+		return 9;
 
 	for (uint8 i = 0; i < MAX_CHANNELS; i++)
 		usedChannels[i] = 0;
@@ -631,6 +702,9 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 
 	Info->Song = Out;
 	Info->Difficulty = Diff;
+
+	if (Utility::Widen(filename).find(L"pms") != std::wstring::npos)
+		Info->IsPMS = true;
 
 	// BMS uses beat-based locations for stops and BPM. (Though the beat must be calculated.)
 	Diff->BPMType = VSRG::Difficulty::BT_Beat;
