@@ -169,7 +169,7 @@ bool AudioSample::Open(const char* Filename)
 
 			size_t i;
 			double j;
-			for (j = i = 0; i < mBufferSize; i++, j += ResamplingRate)
+			for (j = i = 0; i < mBufferSize && j < size; i++, j += ResamplingRate)
 			{
 				int dst = j;
 				mDataNew[dst] = mData[i];

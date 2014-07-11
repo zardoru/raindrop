@@ -64,6 +64,12 @@ OggListing = 0
 -- This are the only set of keys to modify. Don't add stuff like Keys8K, as these are bound to the skin
 -- by saying KeyQ = BindingN where N is one of the numbers formated as KeyN in here.
 -- basically if Key1Binding = 7 the first lane will use the Key7 entry of this structure
+
+-- For controllers: use 'Controller#' where # is the number of the button
+-- as defined in software - in Windows, open up the Game Controllers panel in Control Panel and click Properties
+-- to see what buttons/axes are mapped to what controls
+-- Examples: Key1 = 'Controller1' or Key8 = 'Controller11'
+
 Keys7K = {
 	Key1 = 'S',
 	Key2 = 'D',
@@ -74,6 +80,9 @@ Keys7K = {
 	Key7 = '39',
 	Key8 = 'A'
 }
+
+--Change this number if you have more than one controller plugged in
+ControllerNumber = 1
 
 --[[
 Fill this in like

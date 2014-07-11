@@ -38,6 +38,10 @@ bool AudioSourceSFM::Open(const char* Filename)
 	mWavFile = sf_wchar_open( Utility::Widen(Filename).c_str(), SFM_READ, info);
 #endif
 
+#ifndef NDEBUG
+	dFILENAME = Filename;
+#endif
+
 	mRate		= info->samplerate;
 	mChannels   = info->channels;
 

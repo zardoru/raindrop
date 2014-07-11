@@ -87,37 +87,12 @@ class ScoreKeeper7K {
 
 	private:
 
-		// scoring parameters.
-		int ACC_MIN, ACC_MIN_SQ;
-		int ACC_MAX, ACC_MAX_SQ;
-		int ACC_CUTOFF;
-
-		int EX2, EX1;
-		int DP2, DP1;
-
-		// scoring number data.
-
-		int max_notes;
-
 		double score; // standard score.
 		double sc_score;
 		double sc_sc_score;
 
-		int notes_hit;
-		int total_notes;
-
-		int ex_score;
-		
-		int dp_score;
-		int dp_dp_score;
-
-		int combo;
-		int max_combo;
-
 		double total_sqdev;
 		double accuracy;
-
-		double accuracy_percent(float ms);
 
 		// lifebar data.
 		
@@ -134,12 +109,39 @@ class ScoreKeeper7K {
 
 		double lifebar_easy;
 		double lifebar_easy_increment;
+
+		// judgement information
+		double judgement_time[SKJ_AMOUNT];
+		double judgement_amt[SKJ_AMOUNT];
 		
 		// no-recovery modes.
 		
 		double lifebar_battery;
+
 		int lifebar_battery_lives;
 
-		double judgement_time[SKJ_AMOUNT];
-		double judgement_amt[SKJ_AMOUNT];
+		// scoring parameters.
+		int ACC_MIN, ACC_MIN_SQ;
+		int ACC_MAX, ACC_MAX_SQ;
+		int ACC_CUTOFF;
+
+		int EX2, EX1;
+		int DP2, DP1;
+
+		// scoring number data.
+
+		int max_notes;
+
+		int notes_hit;
+		int total_notes;
+
+		int ex_score;
+		
+		int dp_score;
+		int dp_dp_score;
+
+		int combo;
+		int max_combo;
+
+		double accuracy_percent(float ms);
 };

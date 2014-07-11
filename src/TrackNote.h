@@ -21,9 +21,6 @@ namespace VSRG
 
 		NoteData Data;
 
-		bool Enabled;
-		bool WasHit;
-
 		Vec2 b_pos;
 		Vec2 b_pos_holdend;
 		uint32 FractionKind;
@@ -34,6 +31,10 @@ namespace VSRG
 		Mat4 hold_body;
 		Mat4 hold_body_size;
 		Mat4 hold_final;
+
+		bool Enabled;
+		bool WasHit;
+
 	public:
 		TrackNote();
 

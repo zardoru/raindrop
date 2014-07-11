@@ -117,7 +117,7 @@ int chanScratch = fromBase36("16");
 struct BMSEvent
 {
 	int Event;
-	double Fraction;
+	float Fraction;
 };
 
 typedef std::vector<BMSEvent> BMSEventList;

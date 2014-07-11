@@ -10,9 +10,10 @@ namespace GUI
 
 class Button : public GraphObject2D
 {
+	Mat4 transformReverse;
+
 	bool PressedDown;
 	bool Hovering;
-	Mat4 transformReverse;
 
 	void HoverUpdate(bool IsHovering);
 

@@ -46,7 +46,6 @@ class GameWindow
 	Mat4 projection;
 	Mat4 projectionInverse;
 
-	bool FullscreenSwitchbackPending, IsFullscreen;
 	uint32 defaultVertexShader, defaultFragShader, defaultShaderProgram, defaultVao;
 	GLFWwindow *wnd;
 	float SizeRatio;
@@ -61,6 +60,8 @@ class GameWindow
 	std::map<String, uint32> UniformLocs;
 	std::map<String, uint32> AttribLocs;
 	Application* Parent;
+
+	bool FullscreenSwitchbackPending, IsFullscreen;
 
 
 public:

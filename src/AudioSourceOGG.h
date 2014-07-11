@@ -7,10 +7,12 @@
 class AudioSourceOGG : public AudioDataSource
 {
 	OggVorbis_File mOggFile;
-	bool mIsValid;
+
 	vorbis_info* info;
 	vorbis_comment* comment;
 	float mSeekTime;
+
+	bool mIsValid;
 	bool mIsDataLeft;
 
 public:
