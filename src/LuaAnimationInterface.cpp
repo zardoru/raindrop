@@ -247,6 +247,15 @@ namespace LuaAnimFuncs
 		return 1;
 	}
 
+	int SetBlendMode(lua_State *L)
+	{
+		int B = luaL_checknumber(L, 1);
+		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+
+		Target->SetBlendMode((rBlendMode)B);
+		return 0;
+	}
+
 	static const struct luaL_Reg GraphObjectLib [] = 
 	{
 		{"SetRotation", SetRotation}, 
@@ -268,6 +277,7 @@ namespace LuaAnimFuncs
 		{"SetTarget", SetTarget},
 		{"CleanTarget", CleanTarget},
 		{"GetZ", GetZ },
+		{ "SetBlendMode", SetBlendMode },
 		{"SetZ", SetZ },
 		{"SetCentered", SetCentered},
 		{"SetColorInvert", SetColorInvert},
