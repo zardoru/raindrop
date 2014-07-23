@@ -16,6 +16,7 @@
 #include "ScoreKeeper.h"
 #include "ScreenGameplay7K.h"
 #include "ScreenEvaluation7K.h"
+#include "SongDatabase.h"
 
 BitmapFont * GFont = NULL;
 
@@ -54,12 +55,17 @@ ScreenGameplay7K::ScreenGameplay7K()
 		GFont->LoadSkinFontImage("font.tga", Vec2(6, 15), Vec2(8, 16), Vec2(6, 15), 0);
 	}
 
+
+	LoadedSong = NULL;
 	Active = false;
 }
 
 void ScreenGameplay7K::Cleanup()
 {
 	CurrentDiff->Destroy();
+
+	if (LoadedSong)
+		delete LoadedSong;
 
 	if (Music)
 	{
@@ -186,13 +192,43 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	if (AudioCompensation)
 		TimeCompensation = MixerGetLatency();
 
-	std::string fn = MySong->DifficultyCacheFilename(CurrentDiff);
-	if (!CurrentDiff->LoadCache(fn))
+	/* Load song from directory */
+	int SongID;
+
+	FileManager::GetSongsDatabase()->IsSongDirectory(MySong->SongDirectory, &SongID);
+
+	std::string fn = FileManager::GetSongsDatabase()->GetDifficultyFilename(CurrentDiff->ID);
+	LoadedSong = LoadSong7KFromFilename(fn, "", NULL);
+
+	// Copy relevant data
+	LoadedSong->SongDirectory = MySong->SongDirectory;
+	MySong = LoadedSong;
+
+	/* Find out Difficulty IDs to the recently loaded song's difficulty! */
+	bool DifficultyFound = false;
+	for (std::vector<VSRG::Difficulty*>::iterator k = LoadedSong->Difficulties.begin();
+			k != LoadedSong->Difficulties.end();
+			k++)
 	{
-		GameState::Printf("Cache was not possible to load. Aborting load. (%ls)\n", Utility::Widen(fn).c_str());
+		FileManager::GetSongsDatabase()->AddDifficulty(SongID, (*k)->Filename, *k, MODE_7K);
+		if ((*k)->ID == CurrentDiff->ID) // We've got a match; move onward.
+		{
+			CurrentDiff = *k;
+			DifficultyFound = true;
+			break; // We're done here, we've found the difficulty we were trying to load
+		}
+	}
+
+	if (!DifficultyFound)
+	{
 		DoPlay = false;
 		return;
 	}
+	
+	/* 
+		At this point, MySong == LoadedSong, which means it's not a metadata-only Song* Instance. 
+		The old copy is preserved; but this new one will be removed by the end of ScreenGameplay7K.
+	*/
 
 	TimeCompensation += Configuration::GetConfigf("Offset7K");
 

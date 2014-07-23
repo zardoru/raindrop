@@ -176,6 +176,10 @@ void NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 	std::ifstream filein (Utility::Widen(filename).c_str());
 #endif
 
+	TimingData BPMData;
+	TimingData StopsData; 
+	double Offset;
+
 	Difficulty *Diff = new Difficulty();
 
 	// Stepmania uses beat-based locations for stops and BPM.
@@ -193,7 +197,6 @@ void NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 	}
 
 	Out->SongDirectory = prefix + "/";
-	Out->UseSeparateTimingData = false;
 	Diff->Offset = 0;
 	Diff->Duration = 0;
 
@@ -237,18 +240,17 @@ void NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 		OnCommand(#OFFSET)
 		{
 			std::stringstream str (CommandContents);
-			str >> Diff->Offset;
-			Out->Offset = Diff->Offset;
+			str >> Offset;
 		}
 
 		OnCommand(#BPMS)
 		{
-			LoadTimingList(Out->BPMData, line);
+			LoadTimingList(BPMData, line);
 		}
 
 		OnCommand(#STOPS)
 		{
-			LoadTimingList(Out->StopsData, line);
+			LoadTimingList(StopsData, line);
 		}
 
 		/* Stops: TBD */
@@ -256,9 +258,9 @@ void NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 		OnCommand(#NOTES)
 		{
 			Diff->LMT = Utility::GetLMT(filename);
-			Diff->Timing = Out->BPMData;
-			Diff->StopsTiming = Out->StopsData;
-			Diff->Offset = -Out->Offset;
+			Diff->Timing = BPMData;
+			Diff->StopsTiming = StopsData;
+			Diff->Offset = -Offset;
 			Diff->Duration = 0;
 			Diff->Filename = filename;
 			Diff->BPMType = VSRG::Difficulty::BT_Beat;

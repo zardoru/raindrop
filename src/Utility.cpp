@@ -51,7 +51,7 @@ namespace Utility {
 
 	String RelativeToPath(String Filename)
 	{
-		return Filename.substr(Filename.find_last_of("/")+1);
+		return Filename.substr(Filename.find_last_of("/"));
 	}
 
 	String RemoveExtension(String Fn)

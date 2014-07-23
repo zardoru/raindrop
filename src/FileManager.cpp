@@ -21,21 +21,19 @@
 #define SkinsPrefix String("Skins/")
 #define SongsPrefix String("Songs")
 #define ScriptsPrefix String("Scripts/")
-#define CachePrefix String("Cache/")
 
 String FileManager::CurrentSkin = "default";
 
-SongDatabase* Database;
+SongDatabase* FileManager::Database;
 
 void FileManager::Initialize()
 {
-	Database = new SongDatabase("songs.db");
-	Utility::CheckDir(GetCacheDirectory().c_str());
+	Database = new SongDatabase("songdatabase.db");
 }
 
-String FileManager::GetCacheDirectory()
+SongDatabase* FileManager::GetSongsDatabase()
 {
-	return CachePrefix;
+	return Database;
 }
 
 void LoadSongDCFromDir( Directory songPath, std::vector<dotcur::Song*> &VecOut )
@@ -131,7 +129,12 @@ VSRG::Song* LoadSong7KFromFilename(String Filename, String Prefix, VSRG::Song *S
 		return NULL;
 	}
 
-	std::wstring fn = L"/" + Utility::Widen(Filename);
+	std::wstring fn;
+	if (Prefix.length())
+		fn = L"/" + Utility::Widen(Filename);
+	else
+		fn = Utility::Widen(Filename);
+
 	std::wstring sp = Utility::Widen(Prefix);
 	std::string fn_f = Utility::Narrow(sp + fn);
 
@@ -158,8 +161,6 @@ void LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 
 	New->SongDirectory = songPath.path() + "/";
 
-	New->FilenameCache = FileManager::GetCacheDirectory();
-
 	/*
 		Procedure:
 		1.- Check all files if cache needs to be renewed or created.
@@ -169,25 +170,29 @@ void LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 	*/
 
 	int ID;
-	int SongExists = Database->IsSongDirectory(New->SongDirectory, &ID);
+	int SongExists = FileManager::GetSongsDatabase()->IsSongDirectory(New->SongDirectory, &ID);
 	bool RenewCache = false;
 
 	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{
 		std::wstring Ext = Utility::Widen(Utility::GetExtension(*i));
-		if (VSRGValidExtension(Ext) && (!SongExists || Database->CacheNeedsRenewal(songPath.path() + "/" + *i)))
+		if (VSRGValidExtension(Ext) && (!SongExists || FileManager::GetSongsDatabase()->CacheNeedsRenewal(songPath.path() + "/" + *i)))
 		{
 			RenewCache = true;
+			wprintf(L"loading %ls from directory...", Utility::Widen((*i)).c_str());
 			LoadSong7KFromFilename(*i, songPath.path(), New);
 		}
 	}
 
 	if (!SongExists)
-		ID = Database->AddSong(New->SongDirectory, MODE_7K, New);
+		ID = FileManager::GetSongsDatabase()->AddSong(New->SongDirectory, MODE_7K, New);
 	else
 	{
 		if (!RenewCache)
-			Database->GetSongInformation7K (ID, New);
+		{
+			wprintf(L"loading %ls from cache...", Utility::Widen(New->SongDirectory).c_str());
+			FileManager::GetSongsDatabase()->GetSongInformation7K (ID, New);
+		}
 	}
 
 	// Files were modified- we have to renew the difficulty entries as well as the cache itself.
@@ -197,18 +202,22 @@ void LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 			k != New->Difficulties.end();
 			k++)
 		{
-			Database->AddDifficulty(ID, (*k)->Filename, *k, MODE_7K);
-
-			(*k)->SaveCache(New->DifficultyCacheFilename(*k));
+			FileManager::GetSongsDatabase()->AddDifficulty(ID, (*k)->Filename, *k, MODE_7K);
 			(*k)->Destroy();
 		}
 	}
 
 	
 	if (New->Difficulties.size())
+	{
 		VecOut.push_back(New);
+		wprintf(L"ok\n");
+	}
 	else
+	{
+		wprintf(L"nothing loadable\n");
 		delete New;
+	}
 }
 
 String FileManager::GetDirectoryPrefix()

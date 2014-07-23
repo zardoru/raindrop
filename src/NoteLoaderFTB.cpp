@@ -45,7 +45,6 @@ void NoteLoaderFTB::LoadMetadata(String filename, String prefix, Song *Out)
 	Out->SongName = Title;
 	Out->SongAuthor = Author;
 	Out->SongDirectory = prefix + "/";
-	Out->UseSeparateTimingData = true;
 
 	filein.close();
 }

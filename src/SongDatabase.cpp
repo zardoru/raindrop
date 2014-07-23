@@ -54,6 +54,8 @@ const char* UpdateLMT = "UPDATE songfiledb SET lastmodified=? WHERE id=?";
 const char* UpdateDiff = "UPDATE diffdb SET name=?,objcount=?,scoreobjectcount=?,holdcount=?,notecount=?,\
 	duration=?,isvirtual=?,keys=?,bpmtype=? WHERE diffid=?";
 
+const char* GetDiffFilename = "SELECT filename FROM songfiledb WHERE (songfiledb.id = (SELECT diffdb.fileid FROM diffdb WHERE diffid=?))";
+
 const char* GetDiffIDFileID = "SELECT diffid FROM diffdb \
 							 WHERE diffdb.fileid=? AND\
 							 diffdb.name = ?";
@@ -88,6 +90,7 @@ SongDatabase::SongDatabase(String Database)
 		SC(sqlite3_prepare_v2(db, GetDiffNameQuery, strlen(GetDiffNameQuery), &st_GetDiffNameQuery, &tail));
 		SC(sqlite3_prepare_v2(db, GetDiffIDFileID, strlen(GetDiffIDFileID), &st_GetDiffIDFile, &tail));
 		SC(sqlite3_prepare_v2(db, UpdateDiff, strlen(UpdateDiff), &st_DiffUpdateQuery, &tail));
+		SC(sqlite3_prepare_v2(db, GetDiffFilename, strlen(GetDiffFilename), &st_GetDiffFilename, &tail));
 	}
 }
 
@@ -109,6 +112,7 @@ SongDatabase::~SongDatabase()
 		sqlite3_finalize(st_GetDiffNameQuery);
 		sqlite3_finalize(st_GetDiffIDFile);
 		sqlite3_finalize(st_DiffUpdateQuery);
+		sqlite3_finalize(st_GetDiffFilename);
 		sqlite3_close(db);
 	}
 }
@@ -282,17 +286,14 @@ void SongDatabase::AddDifficulty(int SongID, Directory Filename, Game::Song::Dif
 	Diff->ID = DiffID;
 }
 
-String SongDatabase::GetDifficultyCacheFilename (Directory Dir, String Name)
+String SongDatabase::GetDifficultyFilename (int ID)
 {
-	sqlite3_bind_text(st_DiffIDQuery, 1, Dir.c_path(), Dir.path().length(), SQLITE_TRANSIENT);
-	sqlite3_bind_text(st_DiffIDQuery, 2, Name.c_str(), Name.length(), SQLITE_TRANSIENT);
-	sqlite3_step(st_DiffIDQuery);
+	sqlite3_bind_int(st_GetDiffFilename, 1, ID);
+	sqlite3_step(st_GetDiffFilename);
 
-	int out = sqlite3_column_int(st_DiffIDQuery, 0);
-	sqlite3_reset(st_DiffIDQuery);
-	std::stringstream ss;
-	ss << out << Name;
-	return ss.str();
+	String out = (char *)sqlite3_column_text(st_GetDiffFilename, 0);
+	sqlite3_reset(st_GetDiffFilename);
+	return out;
 }
 
 bool SongDatabase::CacheNeedsRenewal(Directory Dir)
@@ -309,30 +310,24 @@ bool SongDatabase::CacheNeedsRenewal(Directory Dir)
 		sqlite3_reset(st_LMTQuery);
 
 		bool IsLMTCurrent = (CurLMT==OldLMT); // file was not modified since last time
-		bool CacheDoesNotExist = true;
 
-		// Check if Cache files exist!
-		int TotalCacheFiles = 0;
-		int ExistingCacheFiles = 0;
-
-		sqlite3_bind_text(st_GetDiffNameQuery, 1, Dir.c_path(), Dir.path().length(), SQLITE_TRANSIENT);
-		
-		while (sqlite3_step (st_GetDiffNameQuery) == SQLITE_ROW)
-		{
-			String fn = (char*)sqlite3_column_text(st_GetDiffNameQuery, 0);
-			TotalCacheFiles++;
-			if (Utility::FileExists(FileManager::GetCacheDirectory() + GetDifficultyCacheFilename(Dir, fn)))
-				ExistingCacheFiles++;
-		}
-
-		sqlite3_reset(st_GetDiffNameQuery);
-		CacheDoesNotExist = !(ExistingCacheFiles && ExistingCacheFiles == TotalCacheFiles);
-
-		return !IsLMTCurrent || CacheDoesNotExist;
+		return !IsLMTCurrent;
 	}else {
 		sqlite3_reset(st_LMTQuery);
 		return 1;
 	}
+}
+
+void SongDatabase::StartTransaction()
+{
+	char* tail;
+	sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, &tail);
+}
+
+void SongDatabase::EndTransaction()
+{
+	char* tail;
+	sqlite3_exec(db, "COMMIT;", NULL, NULL, &tail);
 }
 
 void SongDatabase::GetSongInformation7K (int ID, VSRG::Song* Out)

@@ -27,7 +27,8 @@ private:
 		*st_UpdateLMT,
 		*st_GetDiffNameQuery,
 		*st_GetDiffIDFile,
-		*st_DiffUpdateQuery;
+		*st_DiffUpdateQuery,
+		*st_GetDiffFilename;
 
 	// Returns the ID.
 	int InsertFilename(Directory Fn);
@@ -42,9 +43,12 @@ public:
 	int AddSong(Directory Dir, int Mode, Game::Song* In);
 	void AddDifficulty(int SongID, Directory Filename, Game::Song::Difficulty* Diff, int Mode);
 	bool IsSongDirectory(Directory Dir, int* IDOut = NULL);
-	String GetDifficultyCacheFilename (Directory Dir, String Name); 
+	String GetDifficultyFilename (int ID); 
 
 	void GetSongInformation7K (int ID, VSRG::Song* Out);
+
+	void StartTransaction();
+	void EndTransaction();
 };
 
 #else

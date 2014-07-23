@@ -723,10 +723,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 		BMS files are separated always one file, one difficulty, so it'd make sense
 		that every BMS 'set' might have different timing information per chart.
 		While BMS specifies no 'set' support it's usually implied using folders.
-	*/
-	Out->UseSeparateTimingData = true;
 
-	/* 
 		The default BME specifies is 8 channels when #PLAYER is unset, however
 		the modern BMS standard specifies to ignore #PLAYER and try to figure it out
 		from the amount of used channels.

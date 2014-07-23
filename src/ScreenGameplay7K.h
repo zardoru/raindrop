@@ -17,6 +17,7 @@ private:
 	VSRG::VectorTN   NotesByChannel;
 	TimingData       VSpeeds;
 	VSRG::Song       *MySong;
+	VSRG::Song		 *LoadedSong;
 	std::map <int, SoundSample*> Keysounds;
 	std::vector<AutoplaySound> BGMEvents;
 

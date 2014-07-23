@@ -487,7 +487,6 @@ void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 		Just like BMS, osu!mania charts have timing data separated by files
 		and a set is implied using folders.
 	*/
-	Out->UseSeparateTimingData = true;
 
 	String Line;
 

@@ -69,10 +69,6 @@ namespace VSRG
 			LMT = 0;
 		};
 
-		// Load and save from cache
-		bool SaveCache(String filename);
-		bool LoadCache(String filename);
-
 		// Destroy all information that can be loaded from cache
 		void Destroy();
 	};
@@ -89,21 +85,11 @@ namespace VSRG
 		void ProcessSpeedVariations(VSRG::Difficulty* Diff, double Drift);
 	public:
 
-		/* For charting systems that use one declaration of timing for all difficulties only used at load time */
-		String FilenameCache;
-
-		TimingData BPMData;
-		TimingData StopsData; 
-
 		std::vector<VSRG::Difficulty*> Difficulties;
-		double Offset;
-
-		bool UseSeparateTimingData;
 
 		Song();
 		~Song();
 
-		String DifficultyCacheFilename(VSRG::Difficulty * Diff);
 		void Process(VSRG::Difficulty* Which, VectorTN NotesOut, float Drift = 0, double SpeedConstant = 0);
 	};
 

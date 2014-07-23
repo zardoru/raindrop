@@ -10,6 +10,8 @@
 #include "BitmapFont.h"
 #include "SongList.h"
 
+#include "SongDatabase.h"
+
 using namespace Game;
 
 SongWheel::SongWheel()
@@ -72,6 +74,8 @@ void SongWheel::ReloadSongs()
 	std::vector<String> Directories;
 	Configuration::GetConfigListS("SongDirectories", Directories);
 
+	FileManager::GetSongsDatabase()->StartTransaction();
+
 	for (std::vector<String>::iterator i = Directories.begin(); 
 		i != Directories.end();
 		i++)
@@ -79,6 +83,7 @@ void SongWheel::ReloadSongs()
 		ListRoot->AddDirectory (*i, VSRGModeActive, dotcurModeActive);
 	}
 	
+	FileManager::GetSongsDatabase()->EndTransaction();
 	CurrentList = ListRoot;
 	GameState::Printf("Finished reloading songs.\n");
 }
