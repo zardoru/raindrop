@@ -195,6 +195,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	/* Load song from directory */
 	int SongID;
 
+	GameState::Printf("Loading Chart...");
 	FileManager::GetSongsDatabase()->IsSongDirectory(MySong->SongDirectory, &SongID);
 
 	std::string fn = FileManager::GetSongsDatabase()->GetDifficultyFilename(CurrentDiff->ID);

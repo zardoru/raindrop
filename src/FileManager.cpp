@@ -147,7 +147,12 @@ VSRG::Song* LoadSong7KFromFilename(String Filename, String Prefix, VSRG::Song *S
 	else if (Ext == L"bms" || Ext == L"bme" || Ext == L"bml" || Ext == L"pms")
 		NoteLoaderBMS::LoadObjectsFromFile(fn_f, Prefix, Sng);
 	else if (Ext == L"sm")
-		NoteLoaderSM::LoadObjectsFromFile(Prefix + "/" + Filename, Prefix, Sng);
+	{
+		if (Prefix.length())
+			NoteLoaderSM::LoadObjectsFromFile(Prefix + "/" + Filename, Prefix, Sng);
+		else
+			NoteLoaderSM::LoadObjectsFromFile(Filename, Prefix, Sng);
+	}
 
 	return Sng;
 }
@@ -179,7 +184,7 @@ void LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 		if (VSRGValidExtension(Ext) && (!SongExists || FileManager::GetSongsDatabase()->CacheNeedsRenewal(songPath.path() + "/" + *i)))
 		{
 			RenewCache = true;
-			wprintf(L"loading %ls from directory...", Utility::Widen((*i)).c_str());
+			wprintf(L"loading %ls from directory...\n", Utility::Widen((*i)).c_str());
 			LoadSong7KFromFilename(*i, songPath.path(), New);
 		}
 	}
@@ -190,7 +195,7 @@ void LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 	{
 		if (!RenewCache)
 		{
-			wprintf(L"loading %ls from cache...", Utility::Widen(New->SongDirectory).c_str());
+			// wprintf(L"loading %ls from cache...", Utility::Widen(New->SongDirectory).c_str());
 			FileManager::GetSongsDatabase()->GetSongInformation7K (ID, New);
 		}
 	}
@@ -211,11 +216,11 @@ void LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 	if (New->Difficulties.size())
 	{
 		VecOut.push_back(New);
-		wprintf(L"ok\n");
+		// wprintf(L"ok\n");
 	}
 	else
 	{
-		wprintf(L"nothing loadable\n");
+		// wprintf(L"nothing loadable\n");
 		delete New;
 	}
 }
