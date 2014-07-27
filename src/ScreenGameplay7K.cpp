@@ -476,11 +476,10 @@ void ScreenGameplay7K::MainThreadInitialization()
 
 	memset(PlaySounds, 0, sizeof(PlaySounds));
 
-	CurrentBeat = BeatAtTime(CurrentDiff->BPS, -1.5, CurrentDiff->Offset + TimeCompensation);
-
 	CalculateHiddenConstants();
 
-	WaitingTime = std::min(WaitingTime, CurrentDiff->Offset - 1.5);
+	WaitingTime = abs(std::min(-WaitingTime, CurrentDiff->Offset - 1.5));
+	CurrentBeat = BeatAtTime(CurrentDiff->BPS, -WaitingTime, CurrentDiff->Offset + TimeCompensation);
 	Running = true;
 }
 
