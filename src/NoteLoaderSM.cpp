@@ -205,10 +205,16 @@ void NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 	{
 		std::getline(filein, line, ';'); 
 
-		if (line.size() < 3)
+		if (line.length() < 3)
 			continue;
 
-		String command = line.substr(line.find_first_of("#"), line.find_first_of(":") - line.find_first_of("#"));
+		String command;
+		size_t iHash = line.find_first_of("#");
+		size_t iColon = line.find_first_of(":");
+		if (iHash != String::npos && iColon != String::npos)
+			command = line.substr(iHash, iColon - iHash);
+		else
+			continue;
 
 		boost::replace_all(command, "\n", "");
 
