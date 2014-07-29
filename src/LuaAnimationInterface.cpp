@@ -120,7 +120,7 @@ namespace LuaAnimFuncs
 	int GetAlpha(lua_State *L)
 	{
 		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
-		lua_pushnumber(Target->Alpha);
+		lua_pushnumber(L, Target->Alpha);
 		return 1;
 	}
 
