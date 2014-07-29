@@ -52,9 +52,17 @@ void SongWheel::Initialize(float Start, float End, bool IsDotcurActive, bool IsV
 	OldCursorPos = 0;
 	Time = 0;
 	DisplacementSpeed = 2;
+
+	Item = new GraphObject2D;
+	Item->SetImage(ImageLoader::LoadSkin("item.png"));
+	ItemHeight = Item->GetHeight();
+	Item->SetZ(16);
+
 	SelCursor = new GraphObject2D;
 	SelCursor->SetImage(ImageLoader::LoadSkin("songselect_cursor.png"));
-	SelCursor->SetSize(20);
+	SelCursor->SetSize(ItemHeight);
+
+	ItemTextOffset = Vec2(Configuration::GetSkinConfigf("X", "ItemTextOffset"), Configuration::GetSkinConfigf("Y", "ItemTextOffset"));
 
 	IsInitialized = true;
 	DifficultyIndex = 0;
@@ -62,7 +70,7 @@ void SongWheel::Initialize(float Start, float End, bool IsDotcurActive, bool IsV
 	mFont = new BitmapFont();
 	mFont->LoadSkinFontImage("font_screenevaluation.tga", Vec2(10, 20), Vec2(32, 32), Vec2(10,20), 32);
 
-	ItemHeight = 20;
+	
 }
 
 void SongWheel::ReloadSongs()
@@ -252,7 +260,11 @@ void SongWheel::Update(float Delta)
 void SongWheel::DisplayItem(String Text, Vec2 Position)
 {
 	if (Position.y > -ItemHeight && Position.y < ScreenHeight)
-		mFont->DisplayText(Text.c_str(), Position);
+	{
+		Item->SetPosition(Position);
+		Item->Render();
+		mFont->DisplayText(Text.c_str(), Position + ItemTextOffset);
+	}
 }
 
 void SongWheel::Render()

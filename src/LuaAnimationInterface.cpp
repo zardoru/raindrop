@@ -40,7 +40,7 @@ namespace LuaAnimFuncs
 	{
 		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
 		double x = luaL_checknumber(L, 1), y = luaL_checknumber(L, 2);
-		Target->AddPosition( Vec2(x, y) );
+		Target->AddPosition(Vec2(x, y));
 		return 0;
 	}
 
@@ -73,7 +73,7 @@ namespace LuaAnimFuncs
 	{
 		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
 		double scalex = luaL_checknumber(L, 1), scaley = luaL_checknumber(L, 2);
-		Target->SetScale( Vec2( scalex, scaley ) );
+		Target->SetScale(Vec2(scalex, scaley));
 		return 0;
 	}
 
@@ -121,7 +121,7 @@ namespace LuaAnimFuncs
 	{
 		GraphObjectMan * Manager = GetObjectFromState<GraphObjectMan>(L, "GOMAN");
 		GraphObject2D *Target = new GraphObject2D;
-		GraphObject2D **RetVal = (GraphObject2D**) lua_newuserdata(L, sizeof(GraphObject2D **));
+		GraphObject2D **RetVal = (GraphObject2D**)lua_newuserdata(L, sizeof(GraphObject2D **));
 		*RetVal = Target;
 		luaL_getmetatable(L, GraphObject2DMetatable);
 		lua_setmetatable(L, -2);
@@ -131,7 +131,7 @@ namespace LuaAnimFuncs
 
 	int SetTarget(lua_State *L)
 	{
-		GraphObject2D *Target = *GetUserObject<GraphObject2D*> (L, 1, GraphObject2DMetatable);
+		GraphObject2D *Target = *GetUserObject<GraphObject2D*>(L, 1, GraphObject2DMetatable);
 		LuaManager *Lua = GetObjectFromState<LuaManager>(L, "Luaman");
 		Lua->RegisterStruct("Target", Target);
 		return 0;
@@ -139,7 +139,7 @@ namespace LuaAnimFuncs
 
 	int CleanTarget(lua_State *L)
 	{
-		GraphObject2D *Target = *GetUserObject<GraphObject2D*> (L, 1, GraphObject2DMetatable);
+		GraphObject2D *Target = *GetUserObject<GraphObject2D*>(L, 1, GraphObject2DMetatable);
 		delete Target;
 		return 0;
 	}
@@ -256,34 +256,34 @@ namespace LuaAnimFuncs
 		return 0;
 	}
 
-	static const struct luaL_Reg GraphObjectLib [] = 
+	static const struct luaL_Reg GraphObjectLib[] =
 	{
-		{"SetRotation", SetRotation}, 
-		{"GetRotation", GetRotation},
-		{"Rotate", Rotate},
-		{"Move", Move},
-		{"SetColor", SetColor},
-		{"SetPosition", SetAbsolutePosition},
-		{"GetPosition", GetAbsolutePosition},
-		{"CropByPixels", CropByPixels},
-		{"SetScale", SetScale},
-		{"GetScale", GetScale},
-		{"GetSize", GetSize},
-		{"SetSize", SetSize},
-		{"SetImage", SetImage},
-		{"SetImageSkin", SetImageSkin},
-		{"SetAlpha", SetAlpha},
-		{"CreateTarget", CreateTarget},
-		{"SetTarget", SetTarget},
-		{"CleanTarget", CleanTarget},
-		{"GetZ", GetZ },
+		{ "SetRotation", SetRotation },
+		{ "GetRotation", GetRotation },
+		{ "Rotate", Rotate },
+		{ "Move", Move },
+		{ "SetColor", SetColor },
+		{ "SetPosition", SetAbsolutePosition },
+		{ "GetPosition", GetAbsolutePosition },
+		{ "CropByPixels", CropByPixels },
+		{ "SetScale", SetScale },
+		{ "GetScale", GetScale },
+		{ "GetSize", GetSize },
+		{ "SetSize", SetSize },
+		{ "SetImage", SetImage },
+		{ "SetImageSkin", SetImageSkin },
+		{ "SetAlpha", SetAlpha },
+		{ "CreateTarget", CreateTarget },
+		{ "SetTarget", SetTarget },
+		{ "CleanTarget", CleanTarget },
+		{ "GetZ", GetZ },
 		{ "SetBlendMode", SetBlendMode },
-		{"SetZ", SetZ },
-		{"SetCentered", SetCentered},
-		{"SetColorInvert", SetColorInvert},
-		{"SetAffectedbyLightning", SetAffectedbyLightning},
-		{"GetSkinDirectory", GetSkinDirectory},
-		{NULL, NULL}
+		{ "SetZ", SetZ },
+		{ "SetCentered", SetCentered },
+		{ "SetColorInvert", SetColorInvert },
+		{ "SetAffectedbyLightning", SetAffectedbyLightning },
+		{ "GetSkinDirectory", GetSkinDirectory },
+		{ NULL, NULL }
 	};
 }
 

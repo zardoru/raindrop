@@ -68,8 +68,6 @@ ScreenSelectMusic::ScreenSelectMusic()
 	GameObject::GlobalInit();
 
 	SelectedMode = MODE_7K;
-
-	OptionUpscroll = false;
 }
 
 void ScreenSelectMusic::MainThreadInitialization()
@@ -82,6 +80,7 @@ void ScreenSelectMusic::MainThreadInitialization()
 
 	Objects->Initialize();
 
+	SwitchUpscroll(false);
 	Font->SetAffectedByLightning(true);
 
 	Background.SetImage(ImageLoader::LoadSkin(Configuration::GetSkinConfigs("SelectMusicBackground")));
@@ -91,6 +90,7 @@ void ScreenSelectMusic::MainThreadInitialization()
 
 	WindowFrame.SetLightMultiplier(1);
 	Background.AffectedByLightning = true;
+	Objects->AddLuaTarget(&Background, "Background");
 }
 
 void ScreenSelectMusic::LoadThreadInitialization()
@@ -151,6 +151,10 @@ void ScreenSelectMusic::OnSongSelect(Game::Song* MySong, uint8 difindex)
 	LoadNext->Init();
 	Next = LoadNext;
 	StopLoops();
+
+	Objects->GetEnv()->CallFunction("OnSelect");
+	Objects->GetEnv()->RunFunction();
+
 	SwitchBackGuiPending = true;
 }
 
@@ -175,6 +179,9 @@ bool ScreenSelectMusic::Run(double Delta)
 				Loops[rn]->SeekTime(0);
 				Loops[rn]->Play();
 			}
+
+			Objects->GetEnv()->CallFunction("OnRestore");
+			Objects->GetEnv()->RunFunction();
 		}
 	}
 
@@ -185,22 +192,13 @@ bool ScreenSelectMusic::Run(double Delta)
 	WindowFrame.SetLightMultiplier(sin(Time) * 0.2 + 1);
 
 	Background.Render();
-	Objects->DrawTargets(Delta);
+	Objects->UpdateTargets(Delta);
+
+	Objects->DrawUntilLayer(16);
 
 	Game::SongWheel::GetInstance().Render();
 
-	Font->DisplayText("song select", Vec2(ScreenWidth/2-55, 0));
-	Font->DisplayText("press space to confirm", Vec2(ScreenWidth/2-110, 20));
-
-	String modeString;
-
-	if (OptionUpscroll)
-		modeString = "upscroll";
-	else
-		modeString = "downscroll";
-
-
-	Font->DisplayText(modeString.c_str(), Vec2(ScreenWidth/2-modeString.length() * 5, 40));
+	Objects->DrawFromLayer(16);
 
 	return Running;
 }	
@@ -214,6 +212,12 @@ void ScreenSelectMusic::StopLoops()
 	}
 }
 
+void ScreenSelectMusic::SwitchUpscroll(bool NewUpscroll)
+{
+	OptionUpscroll = NewUpscroll;
+	Objects->GetEnv()->SetGlobal("Upscroll", OptionUpscroll);
+}
+
 void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
 	if (Next)
@@ -222,23 +226,18 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 		return;
 	}
 
-	Game::SongWheel::GetInstance().HandleInput(key, code, isMouseInput);
+	if (Game::SongWheel::GetInstance().HandleInput(key, code, isMouseInput))
+		return;
 
 	if (code == KE_Press)
 	{
-		ScreenGameplay *_gNext = NULL;
-		ScreenGameplay7K *_g7Next = NULL;
-
-		ScreenEdit *_eNext = NULL;
-		ScreenLoading *_LNext = NULL;
-
 		switch (BindingsManager::TranslateKey(key))
 		{
 		case KT_Escape:
 			Running = false;
 			break;
 		case KT_FractionDec:
-			OptionUpscroll = !OptionUpscroll;
+			SwitchUpscroll(!OptionUpscroll);
 			break;
 		}
 	}

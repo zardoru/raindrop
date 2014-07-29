@@ -36,6 +36,7 @@ class ScreenSelectMusic : public Screen
 	void OnSongChange(Game::Song* MySong, uint8 difindex);
 	void OnSongSelect(Game::Song* MySong, uint8 difindex);
 
+	void SwitchUpscroll(bool NewUpscroll);
 public:
 	ScreenSelectMusic();
 	void LoadThreadInitialization();

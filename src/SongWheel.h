@@ -40,11 +40,13 @@ private:
 	float CurrentVerticalDisplacement;
 	float PendingVerticalDisplacement;
 
-	GraphObject2D* SelCursor;
+	GraphObject2D* SelCursor, *Item;
 
 	SongNotification OnSongChange;
 	SongNotification OnSongSelect;
 	ListTransformFunction Transform;
+
+	Vec2 ItemTextOffset;
 
 	enum
 	{
