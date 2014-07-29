@@ -89,7 +89,7 @@ void LoadTracksSM(Song *Out, Difficulty *Diff, String line)
 		return;
 
 	Diff->Channels = Keys;
-	Diff->Name = Mainline[2];
+	Diff->Name = Mainline[2] + "(" + Mainline[0] + ")";
 	
 	/* Now we should have our notes within NoteString. 
 	We'll split them by measure using , as a separator.*/

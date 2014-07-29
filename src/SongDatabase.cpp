@@ -219,7 +219,7 @@ void SongDatabase::AddDifficulty(int SongID, Directory Filename, Game::Song::Dif
 	int FileID = InsertFilename(Filename);
 	int DiffID;
 
-	if (!DifficultyExists(SongID, Diff->Name, &DiffID)) 
+	if (!DifficultyExists(FileID, Diff->Name, &DiffID)) 
 	{
 		sqlite3_bind_int(st_DiffInsertQuery, 1, SongID);
 		sqlite3_bind_int(st_DiffInsertQuery, 2, FileID);
