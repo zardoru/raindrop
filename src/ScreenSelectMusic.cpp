@@ -90,7 +90,7 @@ void ScreenSelectMusic::MainThreadInitialization()
 
 	WindowFrame.SetLightMultiplier(1);
 	Background.AffectedByLightning = true;
-	Objects->AddLuaTarget(&Background, "Background");
+	Objects->AddLuaTarget(&Background, "ScreenBackground");
 }
 
 void ScreenSelectMusic::LoadThreadInitialization()

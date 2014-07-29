@@ -117,6 +117,13 @@ namespace LuaAnimFuncs
 		return 0;
 	}
 
+	int GetAlpha(lua_State *L)
+	{
+		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		lua_pushnumber(Target->Alpha);
+		return 1;
+	}
+
 	int CreateTarget(lua_State *L)
 	{
 		GraphObjectMan * Manager = GetObjectFromState<GraphObjectMan>(L, "GOMAN");
@@ -273,6 +280,7 @@ namespace LuaAnimFuncs
 		{ "SetImage", SetImage },
 		{ "SetImageSkin", SetImageSkin },
 		{ "SetAlpha", SetAlpha },
+		{ "GetAlpha", GetAlpha },
 		{ "CreateTarget", CreateTarget },
 		{ "SetTarget", SetTarget },
 		{ "CleanTarget", CleanTarget },
