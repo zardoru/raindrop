@@ -42,6 +42,9 @@ void BitmapFont::RegenerateCharPositions(Vec2 CellSize)
 	{
 		for (unsigned short x = 0; x < HCellCount; x++)
 		{
+			if (Current >= 256)
+				return;
+
 			// Ideally, we should actually be using a texture matrix.
 			CharPosition[Current].SetImage(Font);
 			CharPosition[Current].SetCropByPixels(x*CellSize.x, (x)*CellSize.x+CharSize.x,  y*CellSize.y, (y)*CellSize.y+CharSize.y);

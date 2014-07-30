@@ -68,9 +68,7 @@ void SongWheel::Initialize(float Start, float End, bool IsDotcurActive, bool IsV
 	DifficultyIndex = 0;
 
 	mFont = new BitmapFont();
-	mFont->LoadSkinFontImage("font_screenevaluation.tga", Vec2(10, 20), Vec2(32, 32), Vec2(10,20), 32);
-
-	
+	mFont->LoadSkinFontImage("font-wheel.tga", Vec2(10, 20), Vec2(32, 32), Vec2(10,20), 32);
 }
 
 void SongWheel::ReloadSongs()
