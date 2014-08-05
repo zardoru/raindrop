@@ -22,6 +22,7 @@
 
 #include "ScreenMainMenu.h"
 #include "ScreenGameplay7K.h"
+#include "ScreenLoading.h"
 #include "Converter.h"
 
 Application::Application(int argc, char *argv[])
@@ -57,7 +58,7 @@ void Application::ParseArgs()
 			case 'i': // Infile (convert mode/preview file)
 				if (ValidArg(Args.Argc, 1, i))
 				{
-					InFile = Args.Argv[i+1];
+					InFile = Args.Argv[i+2];
 					i++;
 				}
 
@@ -68,7 +69,7 @@ void Application::ParseArgs()
 
 				if (ValidArg(Args.Argc, 1, i))
 				{
-					OutFile = Args.Argv[i+1];
+					OutFile = Args.Argv[i+2];
 					i++;
 				}
 
@@ -80,7 +81,7 @@ void Application::ParseArgs()
 
 				if (ValidArg(Args.Argc, 1, i))
 				{
-					String Mode = Args.Argv[i+1];
+					String Mode = Args.Argv[i+2];
 					if (Mode == "om")
 						ConvertMode = CONV_OM;
 					else if (Mode == "sm")
@@ -102,7 +103,7 @@ void Application::ParseArgs()
 
 				if (ValidArg(Args.Argc, 1, i))
 				{
-					Author = Args.Argv[i+1];
+					Author = Args.Argv[i+2];
 					i++;
 				} 
 
@@ -153,9 +154,21 @@ void Application::Run()
 
 	}else if (RunMode == MODE_VSRGPREVIEW)
 	{
-		Game = new ScreenGameplay7K();
-		VSRG::Song* Sng = LoadSong7KFromFilename(InFile.path(), InFile.ParentDirectory().path(), NULL);
-		((ScreenGameplay7K*)Game)->Init (Sng, difIndex, Upscroll);
+		VSRG::Song* Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), NULL);
+		ScreenGameplay7K *SGame = new ScreenGameplay7K();
+		ScreenLoading *LoadScreen = new ScreenLoading(NULL, SGame);
+
+		Sng->SongDirectory = InFile.ParentDirectory().path();
+
+		ScreenGameplay7K::Parameters Param;
+		Param.Upscroll = Upscroll;
+		Param.StartMeasure = Measure;
+		Param.Preloaded = true;
+
+		SGame->Init (Sng, difIndex, Param);
+		LoadScreen->Init();
+
+		Game = LoadScreen;
 	}else if (RunMode == MODE_CONVERT)
 	{
 		VSRG::Song* Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), NULL);
@@ -223,7 +236,11 @@ void Application::HandleScrollInput(double xOff, double yOff)
 void Application::Close()
 {
 	if (Game)
+	{
+		Game->Cleanup();
 		delete Game;
+	}
+
 	WindowFrame.Cleanup();
 	Configuration::Cleanup();
 }

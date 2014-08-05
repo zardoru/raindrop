@@ -48,6 +48,8 @@ private:
 	float			 SpeedMultiplier;
 
 	uint32	         Channels;
+	uint32			 StartMeasure;
+
 	int		         GearBindings[VSRG::MAX_CHANNELS];
 	int				 lastClosest[VSRG::MAX_CHANNELS];
 	int				 PlaySounds[VSRG::MAX_CHANNELS];
@@ -85,11 +87,12 @@ private:
 	float  CurrentBeat;
 
 	bool beatScrollEffectEnabled;
-	bool        waveEffectEnabled;	
-	bool        Upscroll;
-	bool        NoFail;
-	bool			 Active;
-	bool			 DoPlay;
+	bool waveEffectEnabled;	
+	bool Upscroll;
+	bool NoFail;
+	bool Active;
+	bool DoPlay;
+	bool Preloaded;
 
 	bool             HeldKey[VSRG::MAX_CHANNELS];
 	bool			 MultiplierChanged;
@@ -122,9 +125,36 @@ private:
 	void JudgeLane(uint32 Lane);
 	void ReleaseLane(uint32 Lane);
 	void TranslateKey(KeyType K, bool KeyDown);
+	void AssignMeasure(uint32 Measure);
 public:
+
+	struct Parameters {
+		// If true, use upscroll
+		bool Upscroll;
+
+		// If true, enable Wave
+		bool Wave;
+
+		// If true, assume difficulty is already loaded and is not just metadata
+		bool Preloaded;
+
+		// Selected hidden mode
+		EHiddenMode HiddenMode;
+
+		// Selected starting measure
+		uint32 StartMeasure;
+
+		Parameters() {
+			Upscroll = false;
+			Wave = false;
+			Preloaded = false;
+			HiddenMode = HIDDENMODE_NONE;
+			StartMeasure = 0;
+		}
+	};
+
 	ScreenGameplay7K();
-	void Init(VSRG::Song *S, int DifficultyIndex, bool UseUpscroll);
+	void Init(VSRG::Song *S, int DifficultyIndex, const Parameters &Param);
 	void LoadThreadInitialization();
 	void MainThreadInitialization();
 	void Cleanup();

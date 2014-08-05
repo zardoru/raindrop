@@ -27,6 +27,7 @@ ScreenGameplay7K::ScreenGameplay7K()
 	SpeedMultiplier = 0;
 	SongOldTime = -1;
 	Music = NULL;
+	MissSnd = NULL;
 
 	waveEffectEnabled = false;
 	waveEffect = 0;
@@ -155,16 +156,20 @@ void ScreenGameplay7K::CalculateHiddenConstants()
 	}
 }
 
-void ScreenGameplay7K::Init(Song* S, int DifficultyIndex, bool UseUpscroll)
+void ScreenGameplay7K::Init(Song* S, int DifficultyIndex, const ScreenGameplay7K::Parameters &Param)
 {
 	MySong = S;
 	CurrentDiff = S->Difficulties[DifficultyIndex];
-	Upscroll = UseUpscroll;
+
+	Upscroll = Param.Upscroll;
+	StartMeasure = Param.StartMeasure;
+	waveEffectEnabled = Param.Wave;
+	SelectedHiddenMode = Param.HiddenMode;
+	Preloaded = Param.Preloaded;
 
 	Animations = new GraphObjectMan();
 
 	score_keeper = new ScoreKeeper7K();
-	score_keeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
 }
 
 void ScreenGameplay7K::RecalculateMatrix()
@@ -181,55 +186,73 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	MissSnd = new SoundSample();
 	if (MissSnd->Open((FileManager::GetSkinPrefix() + "miss.ogg").c_str()))
 		MixerAddSample(MissSnd);
+	else
+		delete MissSnd;
 	
 	if (!Music)
 	{
 		Music = new AudioStream();
-		Music->Open((MySong->SongDirectory + MySong->SongFilename).c_str());
-		MixerAddStream(Music);
+		if (Music->Open((MySong->SongDirectory + MySong->SongFilename).c_str()))
+		{
+			MixerAddStream(Music);
+		}
+		else
+		{
+			delete Music;
+			Music = NULL;
+			if (!CurrentDiff->IsVirtual)
+			{
+				DoPlay = false;
+				return; // Quit.
+			}
+		}
 	}
 
 	if (AudioCompensation)
 		TimeCompensation = MixerGetLatency();
 
-	/* Load song from directory */
-	int SongID;
+	// The difficulty details are destroyed; which means we should load this from its original file.
+	if (!Preloaded)
+	{
+		/* Load song from directory */
+		int SongID;
 
-	GameState::Printf("Loading Chart...");
-	FileManager::GetSongsDatabase()->IsSongDirectory(MySong->SongDirectory, &SongID);
+		GameState::Printf("Loading Chart...");
+		FileManager::GetSongsDatabase()->IsSongDirectory(MySong->SongDirectory, &SongID);
 
-	std::string fn = FileManager::GetSongsDatabase()->GetDifficultyFilename(CurrentDiff->ID);
-	LoadedSong = LoadSong7KFromFilename(fn, "", NULL);
+		std::string fn = FileManager::GetSongsDatabase()->GetDifficultyFilename(CurrentDiff->ID);
+		LoadedSong = LoadSong7KFromFilename(fn, "", NULL);
 
-	// Copy relevant data
-	LoadedSong->SongDirectory = MySong->SongDirectory;
-	MySong = LoadedSong;
+		// Copy relevant data
+		LoadedSong->SongDirectory = MySong->SongDirectory;
+		MySong = LoadedSong;
 
-	/* Find out Difficulty IDs to the recently loaded song's difficulty! */
-	bool DifficultyFound = false;
-	for (std::vector<VSRG::Difficulty*>::iterator k = LoadedSong->Difficulties.begin();
+		/* Find out Difficulty IDs to the recently loaded song's difficulty! */
+		bool DifficultyFound = false;
+		for (std::vector<VSRG::Difficulty*>::iterator k = LoadedSong->Difficulties.begin();
 			k != LoadedSong->Difficulties.end();
 			k++)
-	{
-		FileManager::GetSongsDatabase()->AddDifficulty(SongID, (*k)->Filename, *k, MODE_7K);
-		if ((*k)->ID == CurrentDiff->ID) // We've got a match; move onward.
 		{
-			CurrentDiff = *k;
-			DifficultyFound = true;
-			break; // We're done here, we've found the difficulty we were trying to load
+			FileManager::GetSongsDatabase()->AddDifficulty(SongID, (*k)->Filename, *k, MODE_7K);
+			if ((*k)->ID == CurrentDiff->ID) // We've got a match; move onward.
+			{
+				CurrentDiff = *k;
+				DifficultyFound = true;
+				break; // We're done here, we've found the difficulty we were trying to load
+			}
 		}
-	}
 
-	if (!DifficultyFound)
-	{
-		DoPlay = false;
-		return;
+		if (!DifficultyFound)
+		{
+			DoPlay = false;
+			return;
+		}
+
+		/*
+			At this point, MySong == LoadedSong, which means it's not a metadata-only Song* Instance.
+			The old copy is preserved; but this new one will be removed by the end of ScreenGameplay7K.
+		*/
 	}
-	
-	/* 
-		At this point, MySong == LoadedSong, which means it's not a metadata-only Song* Instance. 
-		The old copy is preserved; but this new one will be removed by the end of ScreenGameplay7K.
-	*/
 
 	TimeCompensation += Configuration::GetConfigf("Offset7K");
 
@@ -317,11 +340,13 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	GameState::Printf("Done.\n");
 
+	// Get Noteheight
 	NoteHeight = Configuration::GetSkinConfigf("NoteHeight");
 
 	if (!NoteHeight)
 		NoteHeight = 10;
 
+	// Get Gear Height
 	char str[256];
 	char nstr[256];
 
@@ -337,7 +362,6 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		JudgementLinePos = GearHeightFinal;
 
 	JudgementLinePos += (Upscroll ? NoteHeight/2 : -NoteHeight/2);
-	// JudgementLinePos = JudgementLinePos + (Upscroll ? NoteHeight/2 : -NoteHeight/2);
 	CurrentVertical = IntegrateToTime (VSpeeds, -WaitingTime);
 
 	RecalculateMatrix();
@@ -351,6 +375,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	// This will execute the script once, so we won't need to do it later
 	SetupScriptConstants();
 	Animations->Preload(FileManager::GetSkinPrefix() + "screengameplay7k.lua", "Preload");
+	score_keeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
 	DoPlay = true;
 }
 
@@ -407,6 +432,51 @@ void ScreenGameplay7K::SetupGear()
 		Keys[i].SetZ(15);
 
 	}
+}
+
+void ScreenGameplay7K::AssignMeasure(uint32 Measure)
+{
+	float Beat = 0;
+	
+	if (!Measure)
+		return;
+
+	for (int i = 0; i < Measure; i++)
+		Beat += CurrentDiff->Measures.at(Measure).MeasureLength;
+
+	float Time = TimeAtBeat(CurrentDiff->Timing, CurrentDiff->Offset, Beat)
+				+ StopTimeAtBeat(CurrentDiff->StopsTiming, Beat);
+
+	// Disable all notes before the current measure.
+	for (uint32 k = 0; k < Channels; k++)
+	{
+		for (std::vector<TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); m++)
+		{
+			if (m->GetStartTime() < Time)
+			{
+				m = NotesByChannel[k].erase(m);
+				if (m == NotesByChannel[k].end()) break;
+			}
+		}
+	}
+
+	// Remove non-played objects
+	for (std::vector<AutoplaySound>::iterator s = BGMEvents.begin(); s != BGMEvents.end(); s++)
+	{
+		if (s->Time <= Time)
+		{
+			GameState::Printf("del %f\n", s->Time);
+			s = BGMEvents.erase(s);
+			if (s == BGMEvents.end()) break;
+		}
+	}
+
+	SongTime = SongTimeReal = Time;
+
+	if (Music)
+		Music->SeekTime(Time);
+
+	Active = true;
 }
 
 void ScreenGameplay7K::MainThreadInitialization()
@@ -477,8 +547,12 @@ void ScreenGameplay7K::MainThreadInitialization()
 	memset(PlaySounds, 0, sizeof(PlaySounds));
 
 	CalculateHiddenConstants();
+	AssignMeasure(StartMeasure);
 
-	WaitingTime = abs(std::min(-WaitingTime, CurrentDiff->Offset - 1.5));
+	if (!StartMeasure)
+		WaitingTime = abs(std::min(-WaitingTime, CurrentDiff->Offset - 1.5));
+	else
+		WaitingTime = 0;
 	CurrentBeat = BeatAtTime(CurrentDiff->BPS, -WaitingTime, CurrentDiff->Offset + TimeCompensation);
 	Running = true;
 }
@@ -617,22 +691,23 @@ bool ScreenGameplay7K::Run(double Delta)
 		if (ScreenTime >= WaitingTime)
 		{
 
-			if (!Music)
-				return false; // Quit inmediately. There's no point.
-
 			if (SongOldTime == -1)
 			{
-				Music->Play();
-				SongOldTime = 0;
-				SongTimeReal = 0;
-				SongTime = 0;
+				if (Music)
+					Music->Play();
+				if (!StartMeasure)
+				{
+					SongOldTime = 0;
+					SongTimeReal = 0;
+					SongTime = 0;
+				}
 			}else
 			{
 				/* Update music. */
 				SongTime += Delta;
 			}
 
-			if (Music->IsPlaying() && !CurrentDiff->IsVirtual)
+			if (Music && Music->IsPlaying() && !CurrentDiff->IsVirtual)
 			{
 				SongDelta = Music->GetStreamedTime() - SongOldTime;
 				SongTimeReal += SongDelta;
@@ -699,7 +774,7 @@ bool ScreenGameplay7K::Run(double Delta)
 		ss << "\nScrolling Speed: " << SectionValue(VSpeeds, SongTime) * SpeedMultiplier;
 	else
 		ss << "\nScrolling Speed: " << SectionValue(VSpeeds, 0) * SpeedMultiplier;
-	ss << "\nCurVer: " << CurrentVertical;
+	ss << "\nT: " << SongTime;
 
 	GFont->DisplayText(ss.str().c_str(), Vec2(0, ScreenHeight - 65));
 

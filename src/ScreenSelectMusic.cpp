@@ -143,7 +143,10 @@ void ScreenSelectMusic::OnSongSelect(Game::Song* MySong, uint8 difindex)
 	}else
 	{
 		ScreenGameplay7K *VSRGGame = new ScreenGameplay7K();
-		VSRGGame->Init(static_cast<VSRG::Song*>(MySong), difindex, OptionUpscroll);
+		ScreenGameplay7K::Parameters Param;
+
+		Param.Upscroll = OptionUpscroll;
+		VSRGGame->Init(static_cast<VSRG::Song*>(MySong), difindex, Param);
 
 		LoadNext = new ScreenLoading(this, VSRGGame);
 	}

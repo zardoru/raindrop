@@ -180,7 +180,7 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane)
 {
 	float MsDisplayMargin = (Configuration::GetSkinConfigf("HitErrorDisplayLimiter"));
 
-	if (!Music || !Active)
+	if ( (!Music && !CurrentDiff->IsVirtual) || !Active)
 		return;
 
 	lastClosest[Lane] = MsDisplayMargin;

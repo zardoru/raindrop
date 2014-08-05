@@ -30,7 +30,7 @@ void ScreenLoading::Init()
 bool ScreenLoading::Run(double TimeDelta)
 {
 	if (!LoadThread)
-		return RunNested(TimeDelta);
+		return (Running = RunNested(TimeDelta));
 
 	Animation.DrawTargets(TimeDelta);
 
@@ -43,13 +43,14 @@ bool ScreenLoading::Run(double TimeDelta)
 		Next->MainThreadInitialization();
 	}
 	boost::this_thread::sleep(boost::posix_time::millisec(16));
-	return true;
+	return Running;
 }
 
 void ScreenLoading::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
 	if (!LoadThread)
-		Next->HandleInput(key, code, isMouseInput);
+		if (Next)
+			Next->HandleInput(key, code, isMouseInput);
 }
 
 void ScreenLoading::HandleScrollInput(double xOff, double yOff)
