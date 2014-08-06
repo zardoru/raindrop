@@ -38,6 +38,8 @@ ScreenGameplay7K::ScreenGameplay7K()
 	RealHiddenMode = HIDDENMODE_NONE;
 	HideClampSum = 0;
 
+	Auto = false;
+
 	SpeedMultiplierUser = 4;
 
 	CurrentVertical = 0;
@@ -166,6 +168,7 @@ void ScreenGameplay7K::Init(Song* S, int DifficultyIndex, const ScreenGameplay7K
 	waveEffectEnabled = Param.Wave;
 	SelectedHiddenMode = Param.HiddenMode;
 	Preloaded = Param.Preloaded;
+	Auto = Param.Auto;
 
 	Animations = new GraphObjectMan();
 
@@ -626,12 +629,12 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 			break;
 		}
 
-		if (BindingsManager::TranslateKey7K(key) != KT_Unknown)
+		if (!Auto && BindingsManager::TranslateKey7K(key) != KT_Unknown)
 			TranslateKey(BindingsManager::TranslateKey7K(key), true);
 
 	}else
 	{
-		if (BindingsManager::TranslateKey7K(key) != KT_Unknown)
+		if (!Auto && BindingsManager::TranslateKey7K(key) != KT_Unknown)
 			TranslateKey(BindingsManager::TranslateKey7K(key), false);
 	}
 }
@@ -722,7 +725,10 @@ bool ScreenGameplay7K::Run(double Delta)
 				if (s->Time <= SongTime)
 				{
 					if (Keysounds[s->Sound])
+					{
+						Keysounds[s->Sound]->SeekTime(SongTime - s->Time);
 						Keysounds[s->Sound]->Play();
+					}
 					s = BGMEvents.erase(s);
 					if (s == BGMEvents.end()) break;
 				}

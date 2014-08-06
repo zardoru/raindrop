@@ -102,6 +102,28 @@ void ScreenGameplay7K::RunMeasures()
 				}
 			}
 
+			if (Auto) {
+				float TimeThreshold = SongTime;
+				if ( m->GetStartTime() < TimeThreshold )
+				{
+					if (m->IsEnabled()) {
+						if (m->IsHold()) 
+						{
+							if (m->WasNoteHit())
+							{
+								if ( m->GetTimeFinal() < TimeThreshold )
+									ReleaseLane(k);
+							}else
+								JudgeLane(k);
+						}else
+						{
+							JudgeLane(k);
+							ReleaseLane(k);
+						}
+					}
+				}
+			}
+
 
 			/* We have to check for all gameplay conditions for this note. */
 

@@ -25,6 +25,8 @@
 #include "ScreenLoading.h"
 #include "Converter.h"
 
+bool Auto = false;
+
 Application::Application(int argc, char *argv[])
 {
 	oldTime = 0;
@@ -107,6 +109,12 @@ void Application::ParseArgs()
 					i++;
 				} 
 
+				continue;
+
+			case 'A':
+				Auto = true;
+				continue;
+
 			default:
 				continue;
 
@@ -164,6 +172,7 @@ void Application::Run()
 		Param.Upscroll = Upscroll;
 		Param.StartMeasure = Measure;
 		Param.Preloaded = true;
+		Param.Auto = Auto;
 
 		SGame->Init (Sng, difIndex, Param);
 		LoadScreen->Init();

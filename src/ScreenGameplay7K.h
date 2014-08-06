@@ -88,6 +88,7 @@ private:
 
 	bool beatScrollEffectEnabled;
 	bool waveEffectEnabled;	
+	bool Auto;
 	bool Upscroll;
 	bool NoFail;
 	bool Active;
@@ -137,6 +138,12 @@ public:
 
 		// If true, assume difficulty is already loaded and is not just metadata
 		bool Preloaded;
+		
+		// Fail disabled if true.
+		bool NoFail;
+
+		// Auto mode enabled if true.
+		bool Auto;
 
 		// Selected hidden mode
 		EHiddenMode HiddenMode;
@@ -148,6 +155,7 @@ public:
 			Upscroll = false;
 			Wave = false;
 			Preloaded = false;
+			Auto = false;
 			HiddenMode = HIDDENMODE_NONE;
 			StartMeasure = 0;
 		}

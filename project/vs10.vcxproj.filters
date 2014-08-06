@@ -282,9 +282,6 @@
     <ClInclude Include="..\src\Song.h">
       <Filter>Source\game global\song interface</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\SongTiming.h">
-      <Filter>Source\game global\song interface</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\GameGlobal.h">
       <Filter>Source\game global</Filter>
     </ClInclude>
@@ -365,6 +362,9 @@
     </ClInclude>
     <ClInclude Include="..\src\SongList.h">
       <Filter>Source\game global\game status</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SongTiming.h">
+      <Filter>Source\backend\lua</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
