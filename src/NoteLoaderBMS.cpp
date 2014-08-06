@@ -655,7 +655,7 @@ int AutodetectChannelCount(BmsLoadInfo *Info)
 	AutodetectChannelCountSide(Info, LastIndex+1, usedChannelsB, startChannelP2, startChannelLNP2, startChannelMinesP2, startChannelInvisibleP2);
 
 	// Correct if second side starts at an offset different from zero.
-	int sideBIndex = 0;
+	int sideBIndex = -1;
 
 	for (int i = 0; i < MAX_CHANNELS; i++)
 		if (usedChannelsB[i])
@@ -665,14 +665,17 @@ int AutodetectChannelCount(BmsLoadInfo *Info)
 		}
 
 	// We found where it starts; append that starting point to the end of the left side.
-	for (int i = LastIndex+1; i < MAX_CHANNELS; i++)
+
+	if (sideBIndex > 0)
 	{
-		int idx2 = i - 1 + (sideBIndex - Info->SideBOffset);
+		for (int i = LastIndex+1; i < MAX_CHANNELS; i++)
+		{
+			int idx2 = i - 1 + (sideBIndex - Info->SideBOffset);
 
-		if (idx2 >= MAX_CHANNELS)
-			break;
+			if (idx2 >= MAX_CHANNELS) break;
 
-		usedChannels[i] |= usedChannelsB[idx2];
+			usedChannels[i] |= usedChannelsB[idx2];
+		}
 	}
 
 	/* Find boundaries for used channels */
