@@ -155,8 +155,8 @@ double latof(String s)
 		if (point == ',') toFind = '.';
 		else if (point == '.') toFind = ',';
 
-		size_t idx;
-		if (s.find_first_of(toFind))
+		size_t idx = s.find_first_of(toFind);
+		if (idx != std::string::npos)
 			s[idx] = point;
 	}
 
