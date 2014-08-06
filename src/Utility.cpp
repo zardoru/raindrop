@@ -3,10 +3,12 @@
 #include <direct.h>
 #endif
 
-#include "Global.h"
 #include <cstring>
 #include <csignal>
 #include <sys/stat.h>
+#include <clocale>
+
+#include "Global.h"
 
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/classification.hpp>
@@ -142,3 +144,21 @@ void throw_exception(std::exception const&)
 }
 }
 #endif
+
+double latof(String s)
+{
+	char point = *localeconv()->decimal_point;
+
+	if (s.find_first_of(point) == std::string::npos)
+	{
+		char toFind;
+		if (point == ',') toFind = '.';
+		else if (point == '.') toFind = ',';
+
+		size_t idx;
+		if (s.find_first_of(toFind))
+			s[idx] = point;
+	}
+
+	return atof(s.c_str());
+}

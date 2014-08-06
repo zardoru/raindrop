@@ -83,6 +83,8 @@ inline T Clamp(const T &Value, const T &Min, const T &Max)
 	else return Value;
 }
 
+double latof(String s);
+
 using std::max;
 using std::min;
 

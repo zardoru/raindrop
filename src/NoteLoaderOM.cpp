@@ -116,7 +116,7 @@ void ReadDifficulty (String line, OsuLoadInfo* Info)
 
 	}else if (Command == "SliderMultiplier")
 	{
-		Info->SliderVelocity = atof(Content.c_str()) * 100;
+		Info->SliderVelocity = latof(Content.c_str()) * 100;
 	}
 }
 
@@ -141,7 +141,7 @@ void ReadEvents (String line, OsuLoadInfo* Info)
 				Info->last_sound_index++;
 			}
 
-			double Time = atof(Spl[1].c_str()) / 1000.0;
+			double Time = latof(Spl[1].c_str()) / 1000.0;
 			int Evt = Info->Sounds[Spl[3]];
 			AutoplaySound New;
 			New.Time = Time;
@@ -159,8 +159,8 @@ void ReadTiming (String line, OsuLoadInfo* Info)
 
 
 	TimingSegment Time;
-	Time.Time = atof(Spl[0].c_str()) / 1000.0;
-	Time.Value = atof(Spl[1].c_str());
+	Time.Time = latof(Spl[0].c_str()) / 1000.0;
+	Time.Value = latof(Spl[1].c_str());
 
 	if (Spl[6] == "1") // Non-inherited section
 		Info->Diff->Timing.push_back(Time);
@@ -350,7 +350,7 @@ void ReadObjects (String line, OsuLoadInfo* Info)
 	SplitResult Spl;
 	boost::split(Spl, line, boost::is_any_of(","));
 
-	int Track = GetInterval(atof(Spl[0].c_str()), Info->Diff->Channels);
+	int Track = GetInterval(latof(Spl[0].c_str()), Info->Diff->Channels);
 	int Hitsound;
 	NoteData Note;
 
@@ -370,16 +370,16 @@ void ReadObjects (String line, OsuLoadInfo* Info)
 		boost::split(Spl2, Spl[splitType], boost::is_any_of(":"));
 
 
-	double startTime = atof(Spl[2].c_str()) / 1000.0;
+	double startTime = latof(Spl[2].c_str()) / 1000.0;
 	int NoteType = atoi(Spl[3].c_str());
 
 	if (NoteType & NOTE_HOLD)
 	{
 		float endTime;
 		if (splitType == 5 && Spl2.size())
-			endTime = atof(Spl2[0].c_str()) / 1000.0;
+			endTime = latof(Spl2[0].c_str()) / 1000.0;
 		else if (splitType == 6)
-			endTime = atof(Spl[5].c_str()) / 1000.0;
+			endTime = latof(Spl[5].c_str()) / 1000.0;
 		else // what really? a hold that doesn't bother to tell us when it ends?
 			endTime = 0;
 
@@ -405,8 +405,8 @@ void ReadObjects (String line, OsuLoadInfo* Info)
 	}else if (NoteType & NOTE_SLIDER)
 	{
 		// 6=repeats 7=length
-		float sliderRepeats = atof(Spl[6].c_str());
-		float sliderLength = atof(Spl[7].c_str());
+		float sliderRepeats = latof(Spl[6].c_str());
+		float sliderLength = latof(Spl[7].c_str());
 
 		float Multiplier = 1;
 

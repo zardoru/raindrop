@@ -444,7 +444,7 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 	if (!Measure)
 		return;
 
-	for (int i = 0; i < Measure; i++)
+	for (uint32 i = 0; i < Measure; i++)
 		Beat += CurrentDiff->Measures.at(Measure).MeasureLength;
 
 	float Time = TimeAtBeat(CurrentDiff->Timing, CurrentDiff->Offset, Beat)

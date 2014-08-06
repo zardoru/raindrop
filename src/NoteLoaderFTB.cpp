@@ -88,8 +88,8 @@ failed:
 		if (LineContents.at(0) == "BPM")
 		{
 			TimingSegment Seg;
-			Seg.Time = atof(LineContents[1].c_str()) / 1000.0;
-			Seg.Value = atof(LineContents[2].c_str());
+			Seg.Time = latof(LineContents[1].c_str()) / 1000.0;
+			Seg.Value = latof(LineContents[2].c_str());
 			Diff->Timing.push_back(Seg);
 		}else
 		{
@@ -105,14 +105,14 @@ failed:
 			boost::split(NoteInfo, LineContents.at(0), boost::is_any_of("-"));
 			if (NoteInfo.size() > 1)
 			{
-				Note.StartTime = atof(NoteInfo.at(0).c_str()) / 1000.0;
-				Note.EndTime = atof(NoteInfo.at(1).c_str()) / 1000.0;
+				Note.StartTime = latof(NoteInfo.at(0).c_str()) / 1000.0;
+				Note.EndTime = latof(NoteInfo.at(1).c_str()) / 1000.0;
 				Diff->TotalHolds++;
 				Diff->TotalScoringObjects += 2;
 			}
 			else
 			{
-				Note.StartTime = atof(NoteInfo.at(0).c_str()) / 1000.0;
+				Note.StartTime = latof(NoteInfo.at(0).c_str()) / 1000.0;
 				Diff->TotalNotes++;
 				Diff->TotalScoringObjects++;
 			}
