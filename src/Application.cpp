@@ -166,7 +166,7 @@ void Application::Run()
 		ScreenGameplay7K *SGame = new ScreenGameplay7K();
 		ScreenLoading *LoadScreen = new ScreenLoading(NULL, SGame);
 
-		Sng->SongDirectory = InFile.ParentDirectory().path();
+		Sng->SongDirectory = InFile.ParentDirectory().path() + "/";
 
 		ScreenGameplay7K::Parameters Param;
 		Param.Upscroll = Upscroll;

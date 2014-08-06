@@ -468,7 +468,6 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 	{
 		if (s->Time <= Time)
 		{
-			GameState::Printf("del %f\n", s->Time);
 			s = BGMEvents.erase(s);
 			if (s == BGMEvents.end()) break;
 		}
