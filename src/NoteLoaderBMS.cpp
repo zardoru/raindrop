@@ -1,5 +1,6 @@
 #include <fstream>
 #include <map>
+#include <locale>
 
 #include "Global.h"
 #include "Song7K.h"
@@ -238,9 +239,25 @@ void ParseEvents(BmsLoadInfo *Info, const int Measure, const int BmsChannel, con
 		}
 	}else // Channel 2 is a measure length event.
 	{
-		double Event = atof(Command.c_str());
+		// Deal with different locales
+		char point = std::use_facet< std::numpunct<char> >(std::cout.getloc()).decimal_point();
+		char* nCmd = strdup(Command.c_str());
+
+		if (Command.find_first_of(point) == std::string::npos)
+		{
+			char toFind;
+			if (point == ',') toFind = '.';
+			else if (point == '.') toFind = ',';
+
+			size_t idx;
+			if (idx = Command.find_first_of(toFind))
+				nCmd[idx] = point;
+		}
+
+		double Event = atof(nCmd);
 
 		Info->Measures[Measure].BeatDuration = Event;
+		free (nCmd);
 	}
 }	
 
@@ -307,6 +324,8 @@ void CalculateBPMs(BmsLoadInfo *Info)
 
 	std::sort(Info->Difficulty->Timing.begin(), Info->Difficulty->Timing.end(), ts_sort);
 }
+
+
 
 void CalculateStops(BmsLoadInfo *Info)
 {
