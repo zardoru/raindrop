@@ -163,13 +163,18 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 			PendingVerticalDisplacement -= 320;
 			return true;
 		case 'E':
-			if (CurrentList->HasParentDirectory())
-				CurrentList = CurrentList->GetParentDirectory();
+			GoUp();
 			return true;
 		}
 	}
 
 	return false;
+}
+
+void SongWheel::GoUp()
+{
+	if (CurrentList->HasParentDirectory())
+		CurrentList = CurrentList->GetParentDirectory();
 }
 
 bool SongWheel::HandleScrollInput(const double dx, const double dy)

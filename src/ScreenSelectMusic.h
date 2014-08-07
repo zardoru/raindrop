@@ -13,6 +13,11 @@ namespace VSRG
 	class Song;
 }
 
+namespace GUI
+{
+	class Button;
+}
+
 class GraphObjectMan;
 
 class ScreenSelectMusic : public Screen
@@ -23,6 +28,8 @@ class ScreenSelectMusic : public Screen
 	BitmapFont* Font;
 
 	GraphObjectMan *Objects;
+
+	GUI::Button *UpBtn, *BackBtn;
 
 	bool SwitchBackGuiPending;
 

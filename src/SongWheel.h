@@ -75,6 +75,7 @@ public:
 	// Singleton
 	static SongWheel& GetInstance();
 
+	void GoUp();
 	void Initialize(float Start, float End, bool IsDotcurActive, bool IsVSRGActive, ListTransformFunction FuncTransform, SongNotification FuncNotify, SongNotification FuncNotifySelect);
 	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	bool HandleScrollInput(const double dx, const double dy);

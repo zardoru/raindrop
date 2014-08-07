@@ -96,7 +96,31 @@ void SongList::AddDirectory(Directory Dir, bool VSRGActive, bool DotcurActive)
 	}
 
 	if (NewList->GetNumEntries())
-		mChildren.push_back(NewEntry);
+	{
+		if (NewList->GetNumEntries() > 1)
+			mChildren.push_back(NewEntry);
+		else
+		{
+			// Move the entries back here, as they are too small to warrant having a list of a single item.
+			for (std::vector<ListEntry>::iterator i = NewList->mChildren.begin(); i != NewList->mChildren.end(); i++)
+			{
+				mChildren.push_back(*i);
+
+				if (i->Kind == ListEntry::Directory)
+				{
+					SongList* L = static_cast<SongList*> (i->Data);
+					L->mParent = this;
+				}
+
+				i = NewList->mChildren.erase(i);
+
+				if (i == NewList->mChildren.end())
+					break;
+			}
+
+			delete NewList;
+		}
+	}
 	else
 		delete NewList;
 }

@@ -392,6 +392,7 @@ void ScreenGameplay7K::SetupScriptConstants()
 	L->SetGlobal("SongDuration", CurrentDiff->Duration);
 	L->SetGlobal("SongDurationBeats", BeatAtTime(CurrentDiff->BPS, CurrentDiff->Duration, CurrentDiff->Offset + TimeCompensation));
 	L->SetGlobal("WaitingTime", WaitingTime);
+	L->SetGlobal("Auto", Auto);
 	L->SetGlobal("Lifebar", score_keeper->getLifebarAmount(LT_GROOVE));
 
 	Animations->AddLuaTarget(&Background, "ScreenBackground");

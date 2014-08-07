@@ -11,6 +11,7 @@
 #include "FileManager.h"
 #include "Configuration.h"
 #include "GraphObject2D.h"
+#include "GuiButton.h"
 
 #include "Song.h"
 #include "ScreenSelectMusic.h"
@@ -28,7 +29,45 @@
 
 SoundSample *SelectSnd = NULL, *ClickSnd=NULL;
 AudioStream	**Loops;
+
+static LuaManager* LuaMan;
 int LoopTotal;
+
+void OnUpHover(GraphObject2D* Obj)
+{
+	LuaMan->CallFunction("DirUpBtnHover");
+	LuaMan->RunFunction();
+}
+
+void OnUpClick(GraphObject2D* Obj)
+{
+	LuaMan->CallFunction("DirUpBtnClick");
+	LuaMan->RunFunction();
+}
+
+void OnUpHoverLeave(GraphObject2D* Obj)
+{
+	LuaMan->CallFunction("DirUpBtnHoverLeave");
+	LuaMan->RunFunction();
+}
+
+void OnBackHover(GraphObject2D* Obj)
+{
+	LuaMan->CallFunction("BackBtnHover");
+	LuaMan->RunFunction();
+}
+
+void OnBackClick(GraphObject2D* Obj)
+{
+	LuaMan->CallFunction("BackBtnClick");
+	LuaMan->RunFunction();
+}
+
+void OnBackHoverLeave(GraphObject2D* Obj)
+{
+	LuaMan->CallFunction("BackBtnHoverLeave");
+	LuaMan->RunFunction();
+}
 
 ScreenSelectMusic::ScreenSelectMusic()
 {
@@ -78,6 +117,22 @@ void ScreenSelectMusic::MainThreadInitialization()
 		Font->LoadSkinFontImage("font_screenevaluation.tga", Vec2(10, 20), Vec2(32, 32), Vec2(10,20), 32);
 	}
 
+	
+	UpBtn = new GUI::Button;
+	UpBtn->OnClick = OnUpClick;
+	UpBtn->OnHover = OnUpHover;
+	UpBtn->OnLeave = OnUpHoverLeave;
+
+	BackBtn = new GUI::Button;
+	BackBtn->OnClick = OnBackClick;
+	BackBtn->OnHover = OnBackHover;
+	BackBtn->OnLeave = OnBackHoverLeave;
+
+	Objects->AddLuaTarget(BackBtn, "BackButton");
+	Objects->AddLuaTarget(UpBtn, "DirUpButton");
+	Objects->AddTarget(BackBtn);
+	Objects->AddTarget(UpBtn);
+
 	Objects->Initialize();
 
 	SwitchUpscroll(false);
@@ -105,9 +160,10 @@ void ScreenSelectMusic::LoadThreadInitialization()
 
 	ImageLoader::LoadFromManifest(Manifest, 1, FileManager::GetSkinPrefix());
 
-	Objects = new GraphObjectMan();
+	Objects = new GraphObjectMan;
 	Objects->Preload( FileManager::GetSkinPrefix() + "screenselectmusic.lua", "Preload" );
 
+	LuaMan = Objects->GetEnv();
 	Game::SongWheel::GetInstance().ReloadSongs();
 
 	Time = 0;
@@ -191,6 +247,8 @@ bool ScreenSelectMusic::Run(double Delta)
 	Time += Delta;
 
 	Game::SongWheel::GetInstance().Update(Delta);
+	UpBtn->Run(Delta);
+	BackBtn->Run(Delta);
 
 	WindowFrame.SetLightMultiplier(sin(Time) * 0.2 + 1);
 
@@ -231,6 +289,11 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 
 	if (Game::SongWheel::GetInstance().HandleInput(key, code, isMouseInput))
 		return;
+
+	if (UpBtn->HandleInput(key, code, isMouseInput))
+		Game::SongWheel::GetInstance().GoUp();
+
+	Objects->HandleInput(key, code, isMouseInput);
 
 	if (code == KE_Press)
 	{
