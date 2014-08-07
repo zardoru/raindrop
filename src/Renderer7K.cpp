@@ -89,7 +89,8 @@ void ScreenGameplay7K::DrawMeasures()
 			{
 				if (Upscroll && Vertical > ScreenHeight)
 					goto next_key;
-				else if (Vertical < 0)
+
+				if (!Upscroll && Vertical < 0)
 					goto next_key;
 
 				if (Upscroll)
