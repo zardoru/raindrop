@@ -625,7 +625,8 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 			MultiplierChanged = true;
 			break;
 		case KT_GoToEditMode:
-			waveEffectEnabled = !waveEffectEnabled;
+			if (!Active)
+				Auto = !Auto;
 			break;
 		}
 
@@ -780,7 +781,9 @@ bool ScreenGameplay7K::Run(double Delta)
 		ss << "\nScrolling Speed: " << SectionValue(VSpeeds, SongTime) * SpeedMultiplier;
 	else
 		ss << "\nScrolling Speed: " << SectionValue(VSpeeds, 0) * SpeedMultiplier;
-	ss << "\nT: " << SongTime;
+
+	if (Auto)
+		ss << "\nAuto Mode";
 
 	GFont->DisplayText(ss.str().c_str(), Vec2(0, ScreenHeight - 65));
 
