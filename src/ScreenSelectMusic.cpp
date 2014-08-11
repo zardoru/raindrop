@@ -69,6 +69,24 @@ void OnBackHoverLeave(GraphObject2D* Obj)
 	LuaMan->RunFunction();
 }
 
+void OnAutoClick(GraphObject2D* Obj)
+{
+	LuaMan->CallFunction("AutoBtnClick");
+	LuaMan->RunFunction();
+}
+
+void OnAutoHover(GraphObject2D* Obj)
+{
+	LuaMan->CallFunction("AutoBtnHover");
+	LuaMan->RunFunction();
+}
+
+void OnAutoHoverLeave(GraphObject2D* Obj)
+{
+	LuaMan->CallFunction("AutoBtnHoverLeave");
+	LuaMan->RunFunction();
+}
+
 ScreenSelectMusic::ScreenSelectMusic()
 {
 	Font = NULL;
@@ -130,8 +148,10 @@ void ScreenSelectMusic::MainThreadInitialization()
 
 	Objects->AddLuaTarget(BackBtn, "BackButton");
 	Objects->AddLuaTarget(UpBtn, "DirUpButton");
+	Objects->AddLuaTarget(UpBtn, "AutoButton");
 	Objects->AddTarget(BackBtn);
 	Objects->AddTarget(UpBtn);
+	Objects->AddTarget(AutoBtn);
 
 	Objects->Initialize();
 

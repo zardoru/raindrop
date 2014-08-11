@@ -1,20 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug NoSTLPort|Win32">
-      <Configuration>Debug NoSTLPort</Configuration>
+    <ProjectConfiguration Include="Debug NoIters|Win32">
+      <Configuration>Debug NoIters</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release GL2|Win32">
-      <Configuration>Release GL2</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release NoSTLport|Win32">
-      <Configuration>Release NoSTLport</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
@@ -34,7 +26,7 @@
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v90</PlatformToolset>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug NoSTLPort|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug NoIters|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
@@ -47,72 +39,37 @@
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v90</PlatformToolset>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release NoSTLport|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v90</PlatformToolset>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release GL2|Win32'">
-    <PlatformToolset>v90</PlatformToolset>
-  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug NoSTLPort|Win32'" Label="PropertySheets">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug NoIters|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release NoSTLport|Win32'" Label="PropertySheets">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>D:\development\STLport-5.2.1.tar\stlport;$(WindowsSdkDir)include;$(FrameworkSDKDir)include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../ext-libs/libmpg123;../</IncludePath>
-    <LibraryPath>D:\development\STLport-5.2.1.tar\lib;..\ext-libs\Debug;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>../ext-src/SOIL;../ext-src;../ext-libs/libmpg123;$(WindowsSdkDir)include;$(FrameworkSDKDir)include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../</IncludePath>
+    <LibraryPath>..\ext-libs\Debug;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug NoSTLPort|Win32'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug NoIters|Win32'">
     <IncludePath>../ext-src/SOIL;../ext-src;../ext-libs/libmpg123;$(WindowsSdkDir)include;$(FrameworkSDKDir)include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../</IncludePath>
     <LibraryPath>..\ext-libs\Debug;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>D:\development\STLport-5.2.1.tar\stlport;$(WindowsSdkDir)include;$(FrameworkSDKDir)include;$(VCInstallDir)include$(WindowsSdkDir)include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../ext-libs/libmpg123;../</IncludePath>
-    <LibraryPath>D:\development\STLport-5.2.1.tar\lib;..\ext-libs\Release;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release NoSTLport|Win32'">
     <IncludePath>../ext-src/SOIL;../ext-src;$(WindowsSdkDir)include;$(FrameworkSDKDir)include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../</IncludePath>
     <LibraryPath>..\ext-libs\Release;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release GL2|Win32'">
-    <IncludePath>$(WindowsSdkDir)include;$(FrameworkSDKDir)include;D:\development\STLport-5.2.1.tar\stlport;$(VCInstallDir)include;D:\development\libs\portaudio\src\common;D:\development\cAudio-2.2.0\DependenciesSource\libvorbis-1.3.2\include;D:\Nueva carpeta %282%29\boost_1_52_0\boost_1_52_0;D:\development\cAudio-2.2.0\DependenciesSource\libogg-1.2.2\include;D:\development\libs\portaudio\include;D:\development\glfw-3.0.3\include;C:\Users\Azardoru\Documents\boost_1_49_0\boost_1_49_0;D:\development\libs\cAudio-2.2.0\cAudio\include;D:\development\libs\glfw-2.7.7.bin.WIN32\include;../soil;D:\development\libs\glm;D:\development\libs\glew-1.9.0\include</IncludePath>
-    <LibraryPath>D:\development\STLport-5.2.1.tar\lib;D:\development\libs\portaudio\bin\Win32\Release;D:\development\cAudio-2.2.0\DependenciesSource\libvorbis-1.3.2\Release;D:\development\cAudio-2.2.0\DependenciesSource\libogg-1.2.2\Release;D:\development\libs\glew-1.9.0\lib;D:\development\libs\boost_1_49_0\boost_1_49_0\stage\lib;D:\Nueva carpeta (2)\boost_1_52_0\boost_1_52_0\stage\lib;D:\development\glfw-3.0.3\src\Release;$(LibraryPath)</LibraryPath>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release NoSTLport|Win32'">
+    <LibraryPath>..\ext-libs\Release;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>MP3_ENABLED;_STLP_DEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
-    </ClCompile>
-    <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libsndfile-1.lib;libmpg123.lib;Vorbis_d.lib;portaudio_x86.lib;Ogg_d.lib;glew32d.lib;GLFW3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AllowIsolation>true</AllowIsolation>
-      <EnableUAC>true</EnableUAC>
-      <SubSystem>Console</SubSystem>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug NoSTLPort|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
@@ -129,28 +86,24 @@
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug NoIters|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
-      <FunctionLevelLinking>false</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>STLP;MP3_ENABLED;BOOST_NO_EXCEPTION;_STLP_NO_EXCEPTIONS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ExceptionHandling>false</ExceptionHandling>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_HAS_ITERATOR_DEBUGGING=0;MP3_ENABLED;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
-      <FloatingPointModel>Precise</FloatingPointModel>
-      <StringPooling>true</StringPooling>
-      <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>libsndfile-1.lib;libmpg123.lib;portaudio_x86.lib;opengl32.lib;Ogg.lib;Vorbis.lib;glfw3.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libsndfile-1.lib;libmpg123.lib;Vorbis_d.lib;portaudio_x86.lib;Ogg_d.lib;GLFW3.lib;glew32d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AllowIsolation>true</AllowIsolation>
+      <EnableUAC>true</EnableUAC>
+      <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release NoSTLport|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
@@ -172,18 +125,38 @@
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release GL2|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release NoSTLport|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>OLD_GL;BOOST_NO_EXCEPTION;_STLP_NO_EXCEPTIONS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <Optimization>Full</Optimization>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release NoSTLport|Win32'">
+    <ClCompile>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <OmitFramePointers>true</OmitFramePointers>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release NoSTLport|Win32'">
+    <ClCompile>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release NoSTLport|Win32'">
+    <ClCompile>
       <WholeProgramOptimization>true</WholeProgramOptimization>
+      <MinimalRebuild>true</MinimalRebuild>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>portaudio_x86.lib;opengl32.lib;Ogg.lib;Vorbis.lib;glfw3.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)$(TargetName)-gl2$(TargetExt)</OutputFile>
+      <AdditionalDependencies>libsndfile-1.lib;libmpg123.lib;Vorbis.lib;portaudio_x86.lib;Ogg.lib;GLFW3.lib;glew32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug NoSTLPort|Win32'">
+    <Link>
+      <AdditionalDependencies>libsndfile-1.lib;libmpg123.lib;Vorbis_d.lib;portaudio_x86.lib;Ogg_d.lib;GLFW3.lib;glew32d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\ext-src\lua.c" />

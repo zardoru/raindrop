@@ -29,7 +29,7 @@ class ScreenSelectMusic : public Screen
 
 	GraphObjectMan *Objects;
 
-	GUI::Button *UpBtn, *BackBtn;
+	GUI::Button *UpBtn, *BackBtn, *AutoBtn;
 
 	bool SwitchBackGuiPending;
 
