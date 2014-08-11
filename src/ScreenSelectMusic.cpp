@@ -146,12 +146,14 @@ void ScreenSelectMusic::MainThreadInitialization()
 	BackBtn->OnHover = OnBackHover;
 	BackBtn->OnLeave = OnBackHoverLeave;
 
+	AutoBtn = NULL;
+
 	Objects->AddLuaTarget(BackBtn, "BackButton");
 	Objects->AddLuaTarget(UpBtn, "DirUpButton");
-	Objects->AddLuaTarget(UpBtn, "AutoButton");
+	// Objects->AddLuaTarget(UpBtn, "AutoButton");
 	Objects->AddTarget(BackBtn);
 	Objects->AddTarget(UpBtn);
-	Objects->AddTarget(AutoBtn);
+	// Objects->AddTarget(AutoBtn);
 
 	Objects->Initialize();
 
