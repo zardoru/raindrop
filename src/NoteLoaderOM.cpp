@@ -565,6 +565,16 @@ void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 		}
 	}
 
+	Diff->Offset = Diff->Timing.begin()->Time;
+
+	for (TimingData::iterator i = Diff->Timing.begin();
+		i != Diff->Timing.end();
+		i++)
+	{
+
+		i->Time -= Diff->Offset;
+	}
+
 	for (std::map<String, int>::iterator i = Info.Sounds.begin(); i != Info.Sounds.end(); i++)
 	{
 		Diff->SoundList[i->second] = i->first;

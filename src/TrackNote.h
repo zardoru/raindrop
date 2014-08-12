@@ -26,11 +26,7 @@ namespace VSRG
 		uint32 FractionKind;
 
 		float VerticalHoldBodySize;
-
-		Mat4 final;
-		Mat4 hold_body;
 		Mat4 hold_body_size;
-		Mat4 hold_final;
 
 		bool Enabled;
 		bool WasHit;
@@ -45,19 +41,17 @@ namespace VSRG
 		void Hit();
 
 		void AddTime(double Time);
-		void RecalculateBody(float trackPosition, float noteWidth, float noteSize, float speedMultiplier);
 		void Disable();
 
 		float GetVertical() const;
 		float GetVerticalHold() const;
-		float GetVerticalSize() const;
 		bool IsHold() const;
 		bool IsEnabled() const;
 		bool WasNoteHit() const;
 		int GetSound() const;
 		Mat4 GetMatrix() const;
-		Mat4 GetHoldBodyMatrix() const;
-		Mat4 GetHoldBodySizeMatrix() const;
+		Mat4 GetHoldPositionMatrix(const float &trackPosition) const;
+		Mat4 GetHoldBodyMatrix(const float &noteWidth, const float &speedMultiplier) const;
 		Mat4 GetHoldEndMatrix() const;
 
 		double GetTimeFinal() const;
