@@ -94,6 +94,7 @@ private:
 	bool Active;
 	bool DoPlay;
 	bool Preloaded;
+	bool PlayReactiveSounds;
 
 	bool             HeldKey[VSRG::MAX_CHANNELS];
 	bool			 MultiplierChanged;

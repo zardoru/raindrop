@@ -238,7 +238,7 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane)
 
 				if (m->GetSound())
 				{
-					if (Keysounds[m->GetSound()])
+					if (Keysounds[m->GetSound()] && PlayReactiveSounds)
 						Keysounds[m->GetSound()]->Play();
 				}
 

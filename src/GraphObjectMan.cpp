@@ -130,3 +130,8 @@ void GraphObjectMan::HandleInput(int32 key, KeyEventType code, bool isMouseInput
 	Lua->PushArgument(isMouseInput);
 	Lua->RunFunction();
 }
+
+ImageList* GraphObjectMan::GetImageList()
+{
+	return Images;
+}

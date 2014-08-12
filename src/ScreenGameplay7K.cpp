@@ -7,6 +7,7 @@
 #include "GraphObject2D.h"
 #include "BitmapFont.h"
 #include "GameWindow.h"
+#include "ImageList.h"
 
 #include <iomanip>
 
@@ -490,6 +491,8 @@ void ScreenGameplay7K::MainThreadInitialization()
 		return;
 	}
 
+	PlayReactiveSounds = (!CurrentDiff->IsVirtual && !(Configuration::GetConfigf("DisableHitsounds")));
+
 	SetupGear();
 
 	char nstr[256];
@@ -557,6 +560,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 	else
 		WaitingTime = 0;
 	CurrentBeat = BeatAtTime(CurrentDiff->BPS, -WaitingTime, CurrentDiff->Offset + TimeCompensation);
+	Animations->GetImageList()->ForceFetch();
 	Running = true;
 }
 
@@ -650,7 +654,7 @@ void ScreenGameplay7K::UpdateScriptVariables()
 	L->SetGlobal("SongTime", SongTime);
 	L->SetGlobal("LifebarValue", score_keeper->getLifebarAmount(LT_GROOVE));
 
-	CurrentBeat = BeatAtTime(CurrentDiff->BPS, SongTime, CurrentDiff->Offset + TimeCompensation);
+	CurrentBeat = BeatAtTime(CurrentDiff->BPS, SongTime, CurrentDiff->Offset);
 	L->SetGlobal("Beat", CurrentBeat);
 
 	L->NewArray();
