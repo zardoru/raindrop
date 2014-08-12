@@ -102,14 +102,10 @@ enum KeyType
 	KT_Key11,
 	KT_Key12,
 	KT_Key13,
-	KT_Key14
+	KT_Key14,
+	KT_Key15,
+	KT_Key16
 };
-
-enum ModeType
-	{
-		MODE_DOTCUR,
-		MODE_7K
-	};
 
 /* vsrg constants */
 
@@ -134,7 +130,7 @@ const float MeasureBaseSpacing = 0.4f * ScreenHeightDefault;
 
 /* Program itself consts */
 #define RAINDROP_WINDOWTITLE "raindrop ver: "
-#define RAINDROP_VERSION "0.140"
+#define RAINDROP_VERSION "0.160"
 #ifdef NDEBUG
 #define RAINDROP_BUILDTYPE " "
 #else

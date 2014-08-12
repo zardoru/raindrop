@@ -7,6 +7,11 @@ class AudioDataSource
 {
 protected:
 	bool mSourceLoop;
+
+#ifndef NDEBUG
+	String dFILENAME;
+#endif
+
 public:
 	virtual ~AudioDataSource();
 	virtual bool Open(const char* Filename) = 0;
@@ -24,8 +29,8 @@ public:
 class Sound
 {
 protected:
-	bool mIsLooping;
 	uint32 Channels;
+	bool mIsLooping;
 public:
 	virtual uint32 Read(short* buffer, size_t count) = 0;
 	virtual bool Open(const char* Filename) = 0;
@@ -44,14 +49,14 @@ class AudioSample : public Sound
 {
 private:
 
-	short* mData;
-	unsigned int   mBufferSize;
-	unsigned int   mCounter;
-	bool		   mValid;
-	bool		   mIsPlaying;
-	bool		   mIsValid;
-	uint32		   mRate;
-	uint32		   mByteSize;
+	uint32	 mRate;
+	uint32	 mByteSize;
+	uint32   mBufferSize;
+	uint32   mCounter;
+	short*   mData;
+	bool	 mValid;
+	bool	 mIsPlaying;
+	bool	 mIsValid;
 
 
 public:
@@ -70,14 +75,17 @@ public:
 class AudioStream : public Sound
 {
 private:
+	
+	PaUtilRingBuffer mRingBuf;
 
 	AudioDataSource* mSource;
-	short*   mData;
 	unsigned int     mBufferSize;
-	PaUtilRingBuffer mRingBuf;
-	bool			 mIsPlaying;
+	short*   mData;
 	float			 mStreamTime;
 	float			 mPlaybackTime;
+
+	bool			 mIsPlaying;
+	
 
 public:
 	AudioStream();

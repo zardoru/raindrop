@@ -8,6 +8,9 @@
 #include "GraphObject2D.h"
 #include "ImageLoader.h"
 #include "BitmapFont.h"
+#include "SongList.h"
+
+#include "SongDatabase.h"
 
 using namespace Game;
 
@@ -39,6 +42,9 @@ void SongWheel::Initialize(float Start, float End, bool IsDotcurActive, bool IsV
 	if (IsInitialized)
 		return;
 
+	ListRoot = NULL;
+	CurrentList = NULL;
+
 	RangeStart = Start;
 	RangeEnd = End;
 
@@ -46,50 +52,45 @@ void SongWheel::Initialize(float Start, float End, bool IsDotcurActive, bool IsV
 	OldCursorPos = 0;
 	Time = 0;
 	DisplacementSpeed = 2;
+
+	Item = new GraphObject2D;
+	Item->SetImage(ImageLoader::LoadSkin("item.png"));
+	ItemHeight = Item->GetHeight();
+	Item->SetZ(16);
+
 	SelCursor = new GraphObject2D;
 	SelCursor->SetImage(ImageLoader::LoadSkin("songselect_cursor.png"));
-	SelCursor->SetSize(20);
+	SelCursor->SetSize(ItemHeight);
+
+	ItemTextOffset = Vec2(Configuration::GetSkinConfigf("X", "ItemTextOffset"), Configuration::GetSkinConfigf("Y", "ItemTextOffset"));
 
 	IsInitialized = true;
 	DifficultyIndex = 0;
 
 	mFont = new BitmapFont();
-	mFont->LoadSkinFontImage("font_screenevaluation.tga", Vec2(10, 20), Vec2(32, 32), Vec2(10,20), 32);
-
-	ItemHeight = 20;
+	mFont->LoadSkinFontImage("font-wheel.tga", Vec2(10, 20), Vec2(32, 32), Vec2(10,20), 32);
 }
 
 void SongWheel::ReloadSongs()
 {
-	for (std::vector<dotcur::Song*>::iterator i = SongList.begin(); 
-		i != SongList.end();
+	delete ListRoot;
+
+	ListRoot = new SongList();
+
+	std::vector<String> Directories;
+	Configuration::GetConfigListS("SongDirectories", Directories);
+
+	FileManager::GetSongsDatabase()->StartTransaction();
+
+	for (std::vector<String>::iterator i = Directories.begin(); 
+		i != Directories.end();
 		i++)
 	{
-		delete *i;
-	}
-
-	for (std::vector<VSRG::Song*>::iterator i = SongList7K.begin(); 
-		i != SongList7K.end();
-		i++)
-	{
-		delete *i;
-	}
-
-	SongList.clear();
-	SongList7K.clear();
-
-	if (dotcurModeActive)
-	{
-		GameState::Printf("Getting dotCur song list...\n");;
-		FileManager::GetSongList(SongList);
-	}
-
-	if (VSRGModeActive)
-	{
-		GameState::Printf("Getting VSRG song list...\n");
-		FileManager::GetSongList7K(SongList7K);
+		ListRoot->AddDirectory (*i, VSRGModeActive, dotcurModeActive);
 	}
 	
+	FileManager::GetSongsDatabase()->EndTransaction();
+	CurrentList = ListRoot;
 	GameState::Printf("Finished reloading songs.\n");
 }
 
@@ -109,51 +110,48 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 			CursorPos++;
 			return true;
 		case KT_Left:
-			DifficultyIndex--;
-			max_index = 0;
-			if (CurrentMode == MODE_7K)
+			if (CursorPos < CurrentList->GetNumEntries() && !CurrentList->IsDirectory(CursorPos))
 			{
-				if (CursorPos < SongList7K.size())
-					max_index = SongList7K.at(CursorPos)->Difficulties.size()-1;
-			}
-			else
-			{
-				if (CursorPos < SongList.size())
-					max_index = SongList.at(CursorPos)->Difficulties.size()-1;
+				DifficultyIndex--;
+				max_index = 0;
+				if (CurrentList->GetSongEntry(CursorPos)->Mode == MODE_7K)
+				{
+					max_index = ((VSRG::Song*)CurrentList->GetSongEntry(CursorPos))->Difficulties.size()-1;
+				}else
+				{
+					max_index = ((dotcur::Song*)CurrentList->GetSongEntry(CursorPos))->Difficulties.size()-1;
+				}
 			}
 
 			DifficultyIndex = min(max_index, DifficultyIndex);
 			return true;
 		case KT_Right:
-			DifficultyIndex++;
-			if (CurrentMode == MODE_7K)
+			if (CursorPos < CurrentList->GetNumEntries() && !CurrentList->IsDirectory(CursorPos))
 			{
-				if (CursorPos < SongList7K.size())
-					if (DifficultyIndex >= SongList7K.at(CursorPos)->Difficulties.size())
+				DifficultyIndex++;
+				if (CurrentList->GetSongEntry(CursorPos)->Mode == MODE_7K)
+				{
+					if (DifficultyIndex >= ((VSRG::Song*)CurrentList->GetSongEntry(CursorPos))->Difficulties.size())
 						DifficultyIndex = 0;
-			}else
-			{
-				if (CursorPos < SongList.size())
-					if (DifficultyIndex >= SongList.at(CursorPos)->Difficulties.size())
+				}else
+				{
+					if (DifficultyIndex >= ((dotcur::Song*)CurrentList->GetSongEntry(CursorPos))->Difficulties.size())
 						DifficultyIndex = 0;
+				}
 			}
 			return true;
 		case KT_Select:
 			Vec2 mpos = GameState::GetWindow()->GetRelativeMPos();
-			if (!isMouseInput || mpos.x > Transform(mpos.y) && mpos.y > CurrentVerticalDisplacement)
+			if (CursorPos < CurrentList->GetNumEntries() && 
+				(!isMouseInput || mpos.x > Transform(mpos.y) && mpos.y > CurrentVerticalDisplacement))
 			{
-				if (CurrentMode == MODE_DOTCUR && SongList.size())
-				{
-					if (DifficultyIndex < SongList.at(CursorPos)->Difficulties.size())
-						OnSongSelect(SongList.at(CursorPos), DifficultyIndex);
-					
-				}else if (SongList7K.size())
-				{
-					if (DifficultyIndex < SongList7K.at(CursorPos)->Difficulties.size())
-						OnSongSelect(SongList7K.at(CursorPos), DifficultyIndex);
-				}
+				if (!CurrentList->IsDirectory(CursorPos))
+					OnSongSelect(CurrentList->GetSongEntry(CursorPos), DifficultyIndex);
+				else
+					CurrentList = CurrentList->GetListEntry(CursorPos);
+
+				return true;
 			}
-			return true;
 		}
 
 		switch (key)
@@ -164,10 +162,19 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 		case 'W':
 			PendingVerticalDisplacement -= 320;
 			return true;
+		case 'E':
+			GoUp();
+			return true;
 		}
 	}
 
 	return false;
+}
+
+void SongWheel::GoUp()
+{
+	if (CurrentList->HasParentDirectory())
+		CurrentList = CurrentList->GetParentDirectory();
 }
 
 bool SongWheel::HandleScrollInput(const double dx, const double dy)
@@ -178,15 +185,12 @@ bool SongWheel::HandleScrollInput(const double dx, const double dy)
 
 Game::Song* SongWheel::GetSelectedSong()
 {
-	if (CurrentMode == MODE_DOTCUR)
-		return SongList.at(CursorPos);
-	else
-		return SongList7K.at(CursorPos);
-}
+	if (CursorPos >= CurrentList->GetNumEntries())
+		return NULL;
 
-void SongWheel::ChangeMode (const ModeType NewMode)
-{
-	CurrentMode = NewMode;
+	if (CurrentList->IsDirectory(CursorPos))
+		return NULL;
+	else return CurrentList->GetSongEntry(CursorPos);
 }
 
 void SongWheel::Update(float Delta)
@@ -194,12 +198,7 @@ void SongWheel::Update(float Delta)
 	Time += Delta;
 	SelCursor->Alpha = (sin(Time*6)+1)/4 + 0.5;
 
-	uint32 Size;
-
-	if (CurrentMode == MODE_DOTCUR)
-		Size = SongList.size();
-	else
-		Size = SongList7K.size();
+	uint32 Size = CurrentList->GetNumEntries();
 
 	if (PendingVerticalDisplacement)
 	{
@@ -264,81 +263,94 @@ void SongWheel::Update(float Delta)
 void SongWheel::DisplayItem(String Text, Vec2 Position)
 {
 	if (Position.y > -ItemHeight && Position.y < ScreenHeight)
-		mFont->DisplayText(Text.c_str(), Position);
+	{
+		Item->SetPosition(Position);
+		Item->Render();
+		mFont->DisplayText(Text.c_str(), Position + ItemTextOffset);
+	}
 }
 
 void SongWheel::Render()
 {
 	int Cur = 0;
-	int Max = 0;
-
-	if (CurrentMode == MODE_DOTCUR)
-		Max = SongList.size();
-	else
-		Max = SongList7K.size();
+	int Max = CurrentList->GetNumEntries();
 
 	Game::Song *ToDisplay;
 
 	for (Cur = 0; Cur < Max; Cur++)
 	{
-		if (CurrentMode == MODE_DOTCUR)
-			ToDisplay = SongList.at(Cur);
-		else
-			ToDisplay = SongList7K.at(Cur);
-
 		float yTransform = Cur*ItemHeight + CurrentVerticalDisplacement;
 		float xTransform = Transform(yTransform);
+		Vec2 Position = Vec2(xTransform, yTransform);
 
-		DisplayItem(ToDisplay->SongName, Vec2(xTransform, yTransform));
-	}
-
-	if (SongList.size() && CurrentMode == MODE_DOTCUR)
-	{
-		char infoStream[1024];
-
-		if (SongList.at(CursorPos)->Difficulties.size())
+		if (!CurrentList->IsDirectory(Cur))
 		{
-			int Min = SongList.at(CursorPos)->Difficulties[0]->Duration / 60;
-			int Sec = (int)SongList.at(CursorPos)->Difficulties[0]->Duration % 60;
-
-			sprintf(infoStream, "song author: %s\n"
-						  	    "difficulties: %d\n"
-					            "duration: %d:%02d\n",
-								SongList.at(CursorPos)->SongAuthor.c_str(),
-								SongList.at(CursorPos)->Difficulties.size(),
-								Min, Sec
-								);
-
-			mFont->DisplayText(infoStream, Vec2(ScreenWidth/6, 120));
-		}else mFont->DisplayText("unavailable (edit only)", Vec2(ScreenWidth/6, 120));
-
-		
-	}else if (SongList7K.size() && CurrentMode == MODE_7K)
-	{
-		
-		char infoStream[1024];
-
-		if (CursorPos < SongList7K.size() && DifficultyIndex < SongList7K.at(CursorPos)->Difficulties.size())
+			ToDisplay = CurrentList->GetSongEntry(Cur);
+			DisplayItem(ToDisplay->SongName, Position);
+		}else
 		{
-			int Min = SongList7K.at(CursorPos)->Difficulties[DifficultyIndex]->Duration / 60;
-			int Sec = (int)SongList7K.at(CursorPos)->Difficulties[DifficultyIndex]->Duration % 60;
-			float nps = SongList7K.at(CursorPos)->Difficulties[DifficultyIndex]->TotalObjects / SongList7K.at(CursorPos)->Difficulties[DifficultyIndex]->Duration;
-
-			sprintf(infoStream, "song author: %s\n"
-						  	    "difficulties: %d\n"
-					            "duration: %d:%02d\n"
-								"difficulty: %s (%d keys)\n"
-								"avg. nps: %f\n",
-								SongList7K.at(CursorPos)->SongAuthor.c_str(),
-								SongList7K.at(CursorPos)->Difficulties.size(),
-								Min, Sec,
-								SongList7K.at(CursorPos)->Difficulties[DifficultyIndex]->Name.c_str(), SongList7K.at(CursorPos)->Difficulties[DifficultyIndex]->Channels,
-								nps
-								);
-
-			mFont->DisplayText(infoStream, Vec2(ScreenWidth/6, 120));
+			DisplayItem(CurrentList->GetEntryTitle(Cur), Position);
 		}
 	}
 
+	if (!CurrentList->GetNumEntries())
+		return;
+
+	if (CurrentList->IsDirectory(CursorPos))
+	{
+	}else
+	{
+		Vec2 InfoPosition = Vec2(ScreenWidth/6, 120);
+		if (CurrentList->GetSongEntry(CursorPos)->Mode == MODE_DOTCUR)
+		{
+			char infoStream[1024];
+
+			dotcur::Song* Entry = static_cast<dotcur::Song*> (CurrentList->GetSongEntry(CursorPos));
+			if (Entry->Difficulties.size())
+			{
+				int Min = Entry->Difficulties[0]->Duration / 60;
+				int Sec = (int)Entry->Difficulties[0]->Duration % 60;
+
+				sprintf(infoStream, "song author: %s\n"
+					"difficulties: %d\n"
+					"duration: %d:%02d\n",
+					Entry->SongAuthor.c_str(),
+					Entry->Difficulties.size(),
+					Min, Sec);
+
+				mFont->DisplayText(infoStream, Vec2(ScreenWidth/6, 120));
+			}else mFont->DisplayText("unavailable (edit only)", InfoPosition);
+
+
+		}else if (CurrentList->GetSongEntry(CursorPos)->Mode == MODE_7K)
+		{
+
+			char infoStream[1024];
+
+			VSRG::Song* Entry = static_cast<VSRG::Song*>(CurrentList->GetSongEntry(CursorPos));
+
+			if (DifficultyIndex < Entry->Difficulties.size())
+			{
+				int Min = Entry->Difficulties[DifficultyIndex]->Duration / 60;
+				int Sec = (int)Entry->Difficulties[DifficultyIndex]->Duration % 60;
+				float nps = Entry->Difficulties[DifficultyIndex]->TotalObjects / Entry->Difficulties[DifficultyIndex]->Duration;
+
+				sprintf(infoStream, "song author: %s\n"
+					"difficulties: %d\n"
+					"duration: %d:%02d\n"
+					"difficulty: %s (%d keys)\n"
+					"avg. nps: %f\n",
+					Entry->SongAuthor.c_str(),
+					Entry->Difficulties.size(),
+					Min, Sec,
+					Entry->Difficulties[DifficultyIndex]->Name.c_str(), Entry->Difficulties[DifficultyIndex]->Channels,
+					nps);
+
+				mFont->DisplayText(infoStream, InfoPosition);
+			}
+		}
+
+	}
 	SelCursor->Render();
+
 }

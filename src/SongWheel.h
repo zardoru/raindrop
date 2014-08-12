@@ -16,6 +16,7 @@ namespace VSRG
 
 class BitmapFont;
 class GraphObject2D;
+class SongList;
 
 namespace Game 
 {
@@ -29,22 +30,23 @@ class SongWheel
 private:
 	SongWheel();
 
-	uint8 CursorPos, OldCursorPos;
-	ModeType CurrentMode;
+	unsigned int CursorPos, OldCursorPos;
 
 	BitmapFont* mFont;
 
-	std::vector<dotcur::Song*> SongList;
-	std::vector<VSRG::Song*> SongList7K;
+	SongList* ListRoot;
+	SongList* CurrentList;
 
 	float CurrentVerticalDisplacement;
 	float PendingVerticalDisplacement;
 
-	GraphObject2D* SelCursor;
+	GraphObject2D* SelCursor, *Item;
 
 	SongNotification OnSongChange;
 	SongNotification OnSongSelect;
 	ListTransformFunction Transform;
+
+	Vec2 ItemTextOffset;
 
 	enum
 	{
@@ -73,11 +75,11 @@ public:
 	// Singleton
 	static SongWheel& GetInstance();
 
+	void GoUp();
 	void Initialize(float Start, float End, bool IsDotcurActive, bool IsVSRGActive, ListTransformFunction FuncTransform, SongNotification FuncNotify, SongNotification FuncNotifySelect);
 	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	bool HandleScrollInput(const double dx, const double dy);
 	Game::Song* GetSelectedSong();
-	void ChangeMode (const ModeType NewMode);
 	void ReloadSongs();
 
 	void SetFont(Directory FontDirectory);

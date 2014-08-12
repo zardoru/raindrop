@@ -7,12 +7,13 @@
 
 class AudioSourceMP3 : public AudioDataSource
 {
-	bool mIsValid;
 	mpg123_handle *mHandle;
 	uint32 mRate;
 	int mEncoding;
 	int mChannels;
 	uint32 mLen;
+
+	bool mIsValid;
 	bool mIsDataLeft;
 
 public:

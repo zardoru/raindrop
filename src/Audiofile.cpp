@@ -169,7 +169,7 @@ bool AudioSample::Open(const char* Filename)
 
 			size_t i;
 			double j;
-			for (j = i = 0; i < mBufferSize; i++, j += ResamplingRate)
+			for (j = i = 0; i < mBufferSize && j < size; i++, j += ResamplingRate)
 			{
 				int dst = j;
 				mDataNew[dst] = mData[i];
@@ -269,7 +269,7 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 	{
 		cnt = PaUtil_ReadRingBuffer(&mRingBuf, buffer, toRead);
 		mStreamTime += (double)(cnt/Channels) / (double)mSource->GetRate();
-		mPlaybackTime = mStreamTime - GetDeviceLatency();
+		mPlaybackTime = mStreamTime - MixerGetLatency();
 	}else
 		return 0;
 

@@ -10,7 +10,7 @@ class GameState
 
 public:
 
-	GameState::GameState();
+	GameState();
 	static GameState &GetInstance();
 	void Initialize();
 

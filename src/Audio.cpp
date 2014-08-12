@@ -4,6 +4,9 @@
 #include <cstdio>
 #include <cstring>
 
+#include <portaudio.h>
+#include <pa_ringbuffer.h>
+
 #ifdef WIN32
 #include <pa_win_wasapi.h>
 #endif
@@ -25,15 +28,6 @@ bool UseWasapi = false;
 PaDeviceIndex DefaultWasapiDevice;
 #endif
 
-/* Vorbis file stream
-
-static int32 StreamCallback(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags, void *userData)
-{
-	bool cont = !((SoundStream*)(userData))->Read(output, frameCount * 2);
-	return cont;
-}
-
- */
 /*************************/
 /********* Mixer *********/
 /*************************/
@@ -71,7 +65,7 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
 			}
 			else
 			{
-				StreamInfo.threadPriority = eThreadPriorityGames;
+				StreamInfo.threadPriority = eThreadPriorityAudio;
 				StreamInfo.flags = 0; 
 			}
 	
@@ -88,7 +82,7 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
 
 	if (Err)
 	{
-		wprintf(L"%s\n", Pa_GetErrorText(Err));
+		wprintf(L"%ls\n", Utility::Widen(Pa_GetErrorText(Err)).c_str());
 		wprintf(L"Device Selected %d\n", Device);
 	}
 #ifdef LINUX
@@ -133,8 +127,18 @@ class PaMixer
 
 	boost::mutex mut, mut2, rbufmux;
 	boost::condition ringbuffer_has_space;
+
+	PaMixer(){};
 public:
-	PaMixer(bool StartThread)
+	
+
+	static PaMixer &GetInstance()
+	{
+		static PaMixer *Mixer = new PaMixer;
+		return *Mixer;
+	}
+
+	void Initialize(bool StartThread)
 	{
 		RingbufData = new char[BUFF_SIZE*sizeof(int16)];
 
@@ -143,6 +147,7 @@ public:
 		PaUtil_InitializeRingBuffer(&RingBuf, sizeof(int16), BUFF_SIZE, RingbufData);
 
 		Threaded = StartThread;
+		Stream = NULL;
 
 		if (StartThread)
 		{
@@ -152,6 +157,15 @@ public:
 		if (UseWasapi)
 		{
 			OpenStream( &Stream, GetWasapiDevice(), 44100, (void*) this, Latency, Mix );
+
+			if (!Stream)
+			{
+				// This was a Wasapi problem. Retry without it.
+				wprintf(L"Problem initializing WASAPI. Falling back to default API.");
+				UseWasapi = false;
+				OpenStream( &Stream, Pa_GetDefaultOutputDevice(), 44100, (void*) this, Latency, Mix );
+			}
+
 		}
 		else
 		{
@@ -162,11 +176,12 @@ public:
 
 #endif
 
-		Pa_StartStream( Stream );
-		
-		Latency = Pa_GetStreamInfo(Stream)->outputLatency;
-
-		wprintf(L"AUDIO: Latency after opening stream = %f \n", Latency);
+		if (Stream)
+		{
+			Pa_StartStream( Stream );
+			Latency = Pa_GetStreamInfo(Stream)->outputLatency;
+			wprintf(L"AUDIO: Latency after opening stream = %f \n", Latency);
+		}
 
 		ConstFactor = 1.0;
 	}
@@ -351,100 +366,6 @@ int Mix(const void *input, void *output, unsigned long frameCount, const PaStrea
 	return 0;
 }
 
-/****************************/
-/* PortAudio Stream Wrapper */
-/****************************/
-
-PaMixer *Mixer;
-
-PaStreamWrapper::PaStreamWrapper(SoundStream *Vs)
-{
-	Sound = Vs;
-	mStream = NULL;
-}
-
-PaStreamWrapper::PaStreamWrapper(const char* filename)
-{
-	Sound = NULL;
-
-	mStream = NULL;
-
-	SoundStream *Vs = new SoundStream();
-
-	if (Vs->Open(filename))
-	{
-		Sound = Vs;
-	}else
-		delete Vs;
-}
-
-PaStreamWrapper::~PaStreamWrapper()
-{
-	if (mStream)
-		Pa_CloseStream(mStream);
-}
-
-SoundStream *PaStreamWrapper::GetStream()
-{
-	return Sound;
-}
-
-void PaStreamWrapper::Stop()
-{
-	if (mStream)
-		Pa_StopStream(mStream);
-}
-
-double PaStreamWrapper::GetStreamLatency()
-{
-	return deviceLatency;
-}
-
-void PaStreamWrapper::Start(bool looping)
-{
-	if (IsValid())
-	{
-		Sound->SetLoop(looping);
-
-		// start filling the ring buffer
-		Sound->Play();
-	}
-}
-
-void PaStreamWrapper::Seek(double Time)
-{
-	// this stops the sound streaming thread and flushes the ring buffer
-	Sound->SeekTime(Time);
-}
-
-bool PaStreamWrapper::IsValid()
-{
-	return mStream && Sound;
-}
-
-double PaStreamWrapper::GetPlaybackTime()
-{
-	if (IsValid())
-		return Sound->GetPlayedTime();
-	else
-		return 0;
-}
-
-
-double PaStreamWrapper::GetStreamTime()
-{
-	if (IsValid())
-		return Sound->GetStreamedTime();
-	else
-		return 0;
-}
-
-
-bool PaStreamWrapper::IsStopped()
-{
-	return !Sound->IsPlaying();
-}
-
 /*************************/
 /********** API **********/
 /*************************/
@@ -495,8 +416,8 @@ void InitAudio()
 
 	GetAudioInfo();
 
-	Mixer = new PaMixer(UseThreadedDecoder);
-	assert (Err == 0 && Mixer);
+	PaMixer::GetInstance().Initialize(UseThreadedDecoder);
+	assert (Err == 0);
 #endif
 }
 
@@ -512,28 +433,28 @@ double GetDeviceLatency()
 void MixerAddStream(SoundStream *Sound)
 {
 #ifndef NO_AUDIO
-	Mixer->AppendMusic(Sound);
+	PaMixer::GetInstance().AppendMusic(Sound);
 #endif
 }
 
 void MixerRemoveStream(SoundStream* Sound)
 {
 #ifndef NO_AUDIO
-	Mixer->RemoveMusic(Sound);
+	PaMixer::GetInstance().RemoveMusic(Sound);
 #endif
 }
 
 void MixerAddSample(SoundSample* Sample)
 {
 #ifndef NO_AUDIO
-	Mixer->AddSound(Sample);
+	PaMixer::GetInstance().AddSound(Sample);
 #endif
 }
 
 void MixerRemoveSample(SoundSample* Sample)
 {
 #ifndef NO_AUDIO
-	Mixer->RemoveSound(Sample);
+	PaMixer::GetInstance().RemoveSound(Sample);
 #endif
 }
 
@@ -541,14 +462,14 @@ void MixerUpdate()
 {
 #ifndef NO_AUDIO
 	if (!UseThreadedDecoder)
-		Mixer->Run();
+		PaMixer::GetInstance().Run();
 #endif
 }
 
 double MixerGetLatency()
 {
 #ifndef NO_AUDIO
-	return Mixer->GetLatency();
+	return PaMixer::GetInstance().GetLatency();
 #else
 	return 0;
 #endif
@@ -557,7 +478,7 @@ double MixerGetLatency()
 double MixerGetFactor()
 {
 #ifndef NO_AUDIO
-	return Mixer->GetFactor();
+	return PaMixer::GetInstance().GetFactor();
 #else
 	return 0;
 #endif

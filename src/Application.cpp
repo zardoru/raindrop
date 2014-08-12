@@ -22,7 +22,10 @@
 
 #include "ScreenMainMenu.h"
 #include "ScreenGameplay7K.h"
+#include "ScreenLoading.h"
 #include "Converter.h"
+
+bool Auto = false;
 
 Application::Application(int argc, char *argv[])
 {
@@ -57,7 +60,7 @@ void Application::ParseArgs()
 			case 'i': // Infile (convert mode/preview file)
 				if (ValidArg(Args.Argc, 1, i))
 				{
-					InFile = Args.Argv[i+1];
+					InFile = Args.Argv[i+2];
 					i++;
 				}
 
@@ -68,7 +71,7 @@ void Application::ParseArgs()
 
 				if (ValidArg(Args.Argc, 1, i))
 				{
-					OutFile = Args.Argv[i+1];
+					OutFile = Args.Argv[i+2];
 					i++;
 				}
 
@@ -80,7 +83,7 @@ void Application::ParseArgs()
 
 				if (ValidArg(Args.Argc, 1, i))
 				{
-					String Mode = Args.Argv[i+1];
+					String Mode = Args.Argv[i+2];
 					if (Mode == "om")
 						ConvertMode = CONV_OM;
 					else if (Mode == "sm")
@@ -102,9 +105,15 @@ void Application::ParseArgs()
 
 				if (ValidArg(Args.Argc, 1, i))
 				{
-					Author = Args.Argv[i+1];
+					Author = Args.Argv[i+2];
 					i++;
 				} 
+
+				continue;
+
+			case 'A':
+				Auto = true;
+				continue;
 
 			default:
 				continue;
@@ -138,15 +147,13 @@ void Application::Init()
 		Game = NULL;
 	}
 
-	wprintf(L"Total Initialization Time: %fs\n", glfwGetTime() - T1);
+	GameState::Printf("Total Initialization Time: %fs\n", glfwGetTime() - T1);
 }
 
 void Application::Run()
 {
 	double T1 = glfwGetTime();
 	bool RunLoop = true;
-
-	wprintf(L"Link start.\n");
 
 	if (RunMode == MODE_PLAY)
 	{
@@ -155,9 +162,22 @@ void Application::Run()
 
 	}else if (RunMode == MODE_VSRGPREVIEW)
 	{
-		Game = new ScreenGameplay7K();
-		VSRG::Song* Sng = LoadSong7KFromFilename(InFile.path(), InFile.ParentDirectory().path(), NULL);
-		((ScreenGameplay7K*)Game)->Init (Sng, difIndex, Upscroll);
+		VSRG::Song* Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), NULL);
+		ScreenGameplay7K *SGame = new ScreenGameplay7K();
+		ScreenLoading *LoadScreen = new ScreenLoading(NULL, SGame);
+
+		Sng->SongDirectory = InFile.ParentDirectory().path() + "/";
+
+		ScreenGameplay7K::Parameters Param;
+		Param.Upscroll = Upscroll;
+		Param.StartMeasure = Measure;
+		Param.Preloaded = true;
+		Param.Auto = Auto;
+
+		SGame->Init (Sng, difIndex, Param);
+		LoadScreen->Init();
+
+		Game = LoadScreen;
 	}else if (RunMode == MODE_CONVERT)
 	{
 		VSRG::Song* Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), NULL);
@@ -171,11 +191,27 @@ void Application::Run()
 		RunLoop = false;
 	}else if (RunMode == MODE_GENCACHE)
 	{
+		std::vector<VSRG::Song*> Songs;
+
+		GameState::Printf("Generating cache...\n");
+
+		std::vector<String> Directories;
+		Configuration::GetConfigListS("SongDirectories", Directories);
+
+		for (std::vector<String>::iterator i = Directories.begin(); 
+			i != Directories.end();
+			i++)
+		{
+			FileManager::GetSongList7K(Songs, *i);
+		}
+
+		for (std::vector<VSRG::Song*>::iterator i = Songs.begin(); i != Songs.end(); i++)
+			delete *i;
 
 		RunLoop = false;
 	}
 
-	wprintf(L"Time: %fs\n", glfwGetTime() - T1);
+	GameState::Printf("Time: %fs\n", glfwGetTime() - T1);
 
 	if (!RunLoop)
 		return;
@@ -209,7 +245,11 @@ void Application::HandleScrollInput(double xOff, double yOff)
 void Application::Close()
 {
 	if (Game)
+	{
+		Game->Cleanup();
 		delete Game;
+	}
+
 	WindowFrame.Cleanup();
 	Configuration::Cleanup();
 }

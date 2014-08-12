@@ -1,4 +1,5 @@
 #include "GameGlobal.h"
+#include "GameState.h"
 #include "Screen.h"
 #include "Audio.h"
 #include "FileManager.h"
@@ -15,6 +16,7 @@
 #include "ScoreKeeper.h"
 #include "ScreenGameplay7K.h"
 #include "ScreenEvaluation7K.h"
+#include "SongDatabase.h"
 
 BitmapFont * GFont = NULL;
 
@@ -25,7 +27,7 @@ ScreenGameplay7K::ScreenGameplay7K()
 	SpeedMultiplier = 0;
 	SongOldTime = -1;
 	Music = NULL;
-	deltaPos = 0;
+	MissSnd = NULL;
 
 	waveEffectEnabled = false;
 	waveEffect = 0;
@@ -36,11 +38,14 @@ ScreenGameplay7K::ScreenGameplay7K()
 	RealHiddenMode = HIDDENMODE_NONE;
 	HideClampSum = 0;
 
+	Auto = false;
+
 	SpeedMultiplierUser = 4;
 
 	CurrentVertical = 0;
 	SongTime = SongTimeReal = 0;
 	beatScrollEffect = 0;
+	Channels = 0;
 
 	AudioCompensation = (Configuration::GetConfigf("AudioCompensation") != 0);
 	TimeCompensation = 0;
@@ -53,12 +58,17 @@ ScreenGameplay7K::ScreenGameplay7K()
 		GFont->LoadSkinFontImage("font.tga", Vec2(6, 15), Vec2(8, 16), Vec2(6, 15), 0);
 	}
 
+
+	LoadedSong = NULL;
 	Active = false;
 }
 
 void ScreenGameplay7K::Cleanup()
 {
 	CurrentDiff->Destroy();
+
+	if (LoadedSong)
+		delete LoadedSong;
 
 	if (Music)
 	{
@@ -91,14 +101,14 @@ void ScreenGameplay7K::CalculateHiddenConstants()
 	// Hidden calc 
 	if (SelectedHiddenMode)
 	{
-		float LimPos = - ((BasePos / ScreenHeight)*2 - 1); // Frac. of screen
+		float LimPos = - ((JudgementLinePos / ScreenHeight)*2 - 1); // Frac. of screen
 		float AdjustmentSize;
 
 		if (Upscroll)
 		{
-			Center = -(( ((ScreenHeight - BasePos) / 2 + BasePos) / ScreenHeight)*2 - 1);
+			Center = -(( ((ScreenHeight - JudgementLinePos) / 2 + JudgementLinePos) / ScreenHeight)*2 - 1);
 			
-			AdjustmentSize = -( ((ScreenHeight - BasePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
+			AdjustmentSize = -( ((ScreenHeight - JudgementLinePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
 
 			if (SelectedHiddenMode == 2)
 			{
@@ -116,9 +126,9 @@ void ScreenGameplay7K::CalculateHiddenConstants()
 			else RealHiddenMode = SelectedHiddenMode;
 		}else
 		{
-			Center = -((BasePos / 2 / ScreenHeight)*2 - 1);
+			Center = -((JudgementLinePos / 2 / ScreenHeight)*2 - 1);
 			
-			AdjustmentSize = -( ((BasePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
+			AdjustmentSize = -( ((JudgementLinePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
 
 			// Hidden/Sudden
 			if (SelectedHiddenMode == 2)
@@ -148,22 +158,27 @@ void ScreenGameplay7K::CalculateHiddenConstants()
 	}
 }
 
-void ScreenGameplay7K::Init(Song* S, int DifficultyIndex, bool UseUpscroll)
+void ScreenGameplay7K::Init(Song* S, int DifficultyIndex, const ScreenGameplay7K::Parameters &Param)
 {
 	MySong = S;
 	CurrentDiff = S->Difficulties[DifficultyIndex];
-	Upscroll = UseUpscroll;
+
+	Upscroll = Param.Upscroll;
+	StartMeasure = Param.StartMeasure;
+	waveEffectEnabled = Param.Wave;
+	SelectedHiddenMode = Param.HiddenMode;
+	Preloaded = Param.Preloaded;
+	Auto = Param.Auto;
 
 	Animations = new GraphObjectMan();
 
 	score_keeper = new ScoreKeeper7K();
-	score_keeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
 }
 
 void ScreenGameplay7K::RecalculateMatrix()
 {
-	PositionMatrix = glm::translate(Mat4(), glm::vec3(0, BasePos + CurrentVertical * SpeedMultiplier + deltaPos, 0));
-	PositionMatrixJudgement = glm::translate(Mat4(), glm::vec3(0, BasePos + deltaPos, 0));
+	PositionMatrix = glm::translate(Mat4(), glm::vec3(0, JudgementLinePos + CurrentVertical * SpeedMultiplier, 0));
+	PositionMatrixJudgement = glm::translate(Mat4(), glm::vec3(0, JudgementLinePos, 0));
 
 	for (uint8 i = 0; i < Channels; i++)
 		NoteMatrix[i] = glm::translate(Mat4(), glm::vec3(LanePositions[i], 0, 14)) * noteEffectsMatrix[i] *  glm::scale(Mat4(), glm::vec3(LaneWidth[i], NoteHeight, 1));
@@ -174,23 +189,72 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	MissSnd = new SoundSample();
 	if (MissSnd->Open((FileManager::GetSkinPrefix() + "miss.ogg").c_str()))
 		MixerAddSample(MissSnd);
+	else
+		delete MissSnd;
 	
 	if (!Music)
 	{
 		Music = new AudioStream();
-		Music->Open((MySong->SongDirectory + MySong->SongFilename).c_str());
-		MixerAddStream(Music);
+		if (Music->Open((MySong->SongDirectory + MySong->SongFilename).c_str()))
+		{
+			MixerAddStream(Music);
+		}
+		else
+		{
+			delete Music;
+			Music = NULL;
+			if (!CurrentDiff->IsVirtual)
+			{
+				DoPlay = false;
+				return; // Quit.
+			}
+		}
 	}
 
 	if (AudioCompensation)
 		TimeCompensation = MixerGetLatency();
 
-	std::string fn = MySong->DifficultyCacheFilename(CurrentDiff);
-	if (!CurrentDiff->LoadCache(fn))
+	// The difficulty details are destroyed; which means we should load this from its original file.
+	if (!Preloaded)
 	{
-		wprintf(L"Cache was not possible to load. Aborting load. (%ls)\n", Utility::Widen(fn).c_str());
-		DoPlay = false;
-		return;
+		/* Load song from directory */
+		int SongID;
+
+		GameState::Printf("Loading Chart...");
+		FileManager::GetSongsDatabase()->IsSongDirectory(MySong->SongDirectory, &SongID);
+
+		std::string fn = FileManager::GetSongsDatabase()->GetDifficultyFilename(CurrentDiff->ID);
+		LoadedSong = LoadSong7KFromFilename(fn, "", NULL);
+
+		// Copy relevant data
+		LoadedSong->SongDirectory = MySong->SongDirectory;
+		MySong = LoadedSong;
+
+		/* Find out Difficulty IDs to the recently loaded song's difficulty! */
+		bool DifficultyFound = false;
+		for (std::vector<VSRG::Difficulty*>::iterator k = LoadedSong->Difficulties.begin();
+			k != LoadedSong->Difficulties.end();
+			k++)
+		{
+			FileManager::GetSongsDatabase()->AddDifficulty(SongID, (*k)->Filename, *k, MODE_7K);
+			if ((*k)->ID == CurrentDiff->ID) // We've got a match; move onward.
+			{
+				CurrentDiff = *k;
+				DifficultyFound = true;
+				break; // We're done here, we've found the difficulty we were trying to load
+			}
+		}
+
+		if (!DifficultyFound)
+		{
+			DoPlay = false;
+			return;
+		}
+
+		/*
+			At this point, MySong == LoadedSong, which means it's not a metadata-only Song* Instance.
+			The old copy is preserved; but this new one will be removed by the end of ScreenGameplay7K.
+		*/
 	}
 
 	TimeCompensation += Configuration::GetConfigf("Offset7K");
@@ -211,7 +275,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
  *			but only if there's a constant specified by the user.
  * */
 
-	wprintf(L"Processing song... ");
+	GameState::Printf("Processing song... ");
 
 	if (DesiredDefaultSpeed)
 	{
@@ -253,11 +317,10 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	}else
 		MySong->Process(CurrentDiff, NotesByChannel, Drift); // Regular processing
 
-	wprintf(L"Copying data... ");
 	Channels = CurrentDiff->Channels;
 	VSpeeds = CurrentDiff->VerticalSpeeds;
 
-	wprintf(L"Loading samples... ");
+	GameState::Printf("Loading samples... ");
 
 	for (std::map<int, String>::iterator i = CurrentDiff->SoundList.begin(); i != CurrentDiff->SoundList.end(); i++)
 	{
@@ -278,13 +341,15 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	BGMEvents = CurrentDiff->BGMEvents;
 
-	wprintf(L"Done.\n");
+	GameState::Printf("Done.\n");
 
+	// Get Noteheight
 	NoteHeight = Configuration::GetSkinConfigf("NoteHeight");
 
 	if (!NoteHeight)
 		NoteHeight = 10;
 
+	// Get Gear Height
 	char str[256];
 	char nstr[256];
 
@@ -299,8 +364,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	else
 		JudgementLinePos = GearHeightFinal;
 
-	// BasePos = JudgementLinePos + (Upscroll ? NoteHeight/2 : -NoteHeight/2);
-	BasePos = JudgementLinePos + (Upscroll ? NoteHeight/2 : -NoteHeight/2);
+	JudgementLinePos += (Upscroll ? NoteHeight/2 : -NoteHeight/2);
 	CurrentVertical = IntegrateToTime (VSpeeds, -WaitingTime);
 
 	RecalculateMatrix();
@@ -314,6 +378,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	// This will execute the script once, so we won't need to do it later
 	SetupScriptConstants();
 	Animations->Preload(FileManager::GetSkinPrefix() + "screengameplay7k.lua", "Preload");
+	score_keeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
 	DoPlay = true;
 }
 
@@ -327,6 +392,7 @@ void ScreenGameplay7K::SetupScriptConstants()
 	L->SetGlobal("SongDuration", CurrentDiff->Duration);
 	L->SetGlobal("SongDurationBeats", BeatAtTime(CurrentDiff->BPS, CurrentDiff->Duration, CurrentDiff->Offset + TimeCompensation));
 	L->SetGlobal("WaitingTime", WaitingTime);
+	L->SetGlobal("Auto", Auto);
 	L->SetGlobal("Lifebar", score_keeper->getLifebarAmount(LT_GROOVE));
 
 	Animations->AddLuaTarget(&Background, "ScreenBackground");
@@ -370,6 +436,50 @@ void ScreenGameplay7K::SetupGear()
 		Keys[i].SetZ(15);
 
 	}
+}
+
+void ScreenGameplay7K::AssignMeasure(uint32 Measure)
+{
+	float Beat = 0;
+	
+	if (!Measure)
+		return;
+
+	for (uint32 i = 0; i < Measure; i++)
+		Beat += CurrentDiff->Measures.at(Measure).MeasureLength;
+
+	float Time = TimeAtBeat(CurrentDiff->Timing, CurrentDiff->Offset, Beat)
+				+ StopTimeAtBeat(CurrentDiff->StopsTiming, Beat);
+
+	// Disable all notes before the current measure.
+	for (uint32 k = 0; k < Channels; k++)
+	{
+		for (std::vector<TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); m++)
+		{
+			if (m->GetStartTime() < Time)
+			{
+				m = NotesByChannel[k].erase(m);
+				if (m == NotesByChannel[k].end()) break;
+			}
+		}
+	}
+
+	// Remove non-played objects
+	for (std::vector<AutoplaySound>::iterator s = BGMEvents.begin(); s != BGMEvents.end(); s++)
+	{
+		if (s->Time <= Time)
+		{
+			s = BGMEvents.erase(s);
+			if (s == BGMEvents.end()) break;
+		}
+	}
+
+	SongTime = SongTimeReal = Time;
+
+	if (Music)
+		Music->SeekTime(Time);
+
+	Active = true;
 }
 
 void ScreenGameplay7K::MainThreadInitialization()
@@ -439,9 +549,14 @@ void ScreenGameplay7K::MainThreadInitialization()
 
 	memset(PlaySounds, 0, sizeof(PlaySounds));
 
-	CurrentBeat = BeatAtTime(CurrentDiff->BPS, -1.5, CurrentDiff->Offset + TimeCompensation);
-
 	CalculateHiddenConstants();
+	AssignMeasure(StartMeasure);
+
+	if (!StartMeasure)
+		WaitingTime = abs(std::min(-WaitingTime, CurrentDiff->Offset - 1.5));
+	else
+		WaitingTime = 0;
+	CurrentBeat = BeatAtTime(CurrentDiff->BPS, -WaitingTime, CurrentDiff->Offset + TimeCompensation);
 	Running = true;
 }
 
@@ -510,16 +625,17 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 			MultiplierChanged = true;
 			break;
 		case KT_GoToEditMode:
-			waveEffectEnabled = !waveEffectEnabled;
+			if (!Active)
+				Auto = !Auto;
 			break;
 		}
 
-		if (BindingsManager::TranslateKey7K(key) != KT_Unknown)
+		if (!Auto && BindingsManager::TranslateKey7K(key) != KT_Unknown)
 			TranslateKey(BindingsManager::TranslateKey7K(key), true);
 
 	}else
 	{
-		if (BindingsManager::TranslateKey7K(key) != KT_Unknown)
+		if (!Auto && BindingsManager::TranslateKey7K(key) != KT_Unknown)
 			TranslateKey(BindingsManager::TranslateKey7K(key), false);
 	}
 }
@@ -569,6 +685,9 @@ bool ScreenGameplay7K::Run(double Delta)
 	if (Next)
 		return RunNested(Delta);
 
+	if (!DoPlay)
+		return false;
+
 	if (Active)
 	{
 		ScreenTime += Delta;
@@ -576,22 +695,23 @@ bool ScreenGameplay7K::Run(double Delta)
 		if (ScreenTime >= WaitingTime)
 		{
 
-			if (!Music)
-				return false; // Quit inmediately. There's no point.
-
 			if (SongOldTime == -1)
 			{
-				Music->Play();
-				SongOldTime = 0;
-				SongTimeReal = 0;
-				SongTime = 0;
+				if (Music)
+					Music->Play();
+				if (!StartMeasure)
+				{
+					SongOldTime = 0;
+					SongTimeReal = 0;
+					SongTime = 0;
+				}
 			}else
 			{
 				/* Update music. */
 				SongTime += Delta;
 			}
 
-			if (Music->IsPlaying() && !CurrentDiff->IsVirtual)
+			if (Music && Music->IsPlaying() && !CurrentDiff->IsVirtual)
 			{
 				SongDelta = Music->GetStreamedTime() - SongOldTime;
 				SongTimeReal += SongDelta;
@@ -606,7 +726,10 @@ bool ScreenGameplay7K::Run(double Delta)
 				if (s->Time <= SongTime)
 				{
 					if (Keysounds[s->Sound])
+					{
+						Keysounds[s->Sound]->SeekTime(SongTime - s->Time);
 						Keysounds[s->Sound]->Play();
+					}
 					s = BGMEvents.erase(s);
 					if (s == BGMEvents.end()) break;
 				}
@@ -658,7 +781,9 @@ bool ScreenGameplay7K::Run(double Delta)
 		ss << "\nScrolling Speed: " << SectionValue(VSpeeds, SongTime) * SpeedMultiplier;
 	else
 		ss << "\nScrolling Speed: " << SectionValue(VSpeeds, 0) * SpeedMultiplier;
-	ss << "\nCurVer: " << CurrentVertical;
+
+	if (Auto)
+		ss << "\nAuto Mode";
 
 	GFont->DisplayText(ss.str().c_str(), Vec2(0, ScreenHeight - 65));
 

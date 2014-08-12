@@ -29,9 +29,10 @@ class Application
 	} ConvertMode;
 
 	int Measure;
-	bool Upscroll;
 	int difIndex;
 	String Author;
+
+	bool Upscroll;
 
 
 public:

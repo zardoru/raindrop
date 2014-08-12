@@ -13,33 +13,37 @@ namespace VSRG
 	class Song;
 }
 
+namespace GUI
+{
+	class Button;
+}
+
 class GraphObjectMan;
 
 class ScreenSelectMusic : public Screen
 {
-	GraphObject2D Background, Logo;
+	double Time;
+
+	GraphObject2D Background;
 	BitmapFont* Font;
 
 	GraphObjectMan *Objects;
+
+	GUI::Button *UpBtn, *BackBtn, *AutoBtn;
 
 	bool SwitchBackGuiPending;
 
 	bool OptionUpscroll;
 
 	void StopLoops();
-	double Time;
-
-	float ListY;
-	float PendingListY;
 
 	ModeType SelectedMode;
-
-	int diff_index;
 
 	float GetListYTransformation(const float Y);
 	void OnSongChange(Game::Song* MySong, uint8 difindex);
 	void OnSongSelect(Game::Song* MySong, uint8 difindex);
 
+	void SwitchUpscroll(bool NewUpscroll);
 public:
 	ScreenSelectMusic();
 	void LoadThreadInitialization();

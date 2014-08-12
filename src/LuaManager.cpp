@@ -60,6 +60,9 @@ bool LuaManager::RunScript(std::string Filename)
 {
 	int errload = 0, errcall = 0;
 
+	if (!Filename.length())
+		return false;
+
 	if( (errload = luaL_loadfile(State, Filename.c_str())) || (errcall = lua_pcall(State, 0, LUA_MULTRET, 0)))
 	{
 		std::wstring reason = Utility::Widen(lua_tostring(State, -1));

@@ -30,6 +30,11 @@ AudioSourceMP3::~AudioSourceMP3()
 bool AudioSourceMP3::Open(const char* Filename)
 {
 	mpg123_param(mHandle, MPG123_FORCE_RATE, 44100, 1);
+
+#ifndef NDEBUG
+	dFILENAME = Filename;
+#endif
+
 	if (mpg123_open(mHandle, Filename) == MPG123_OK)
 	{
 		long rate;

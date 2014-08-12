@@ -13,15 +13,6 @@
     <ClCompile Include="..\src\GameObject.cpp">
       <Filter>Source\dotcur\gameplay</Filter>
     </ClCompile>
-    <ClCompile Include="..\soil\image_DXT.c">
-      <Filter>Source\libraries</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\lua.c">
-      <Filter>Source\libraries</Filter>
-    </ClCompile>
-    <ClCompile Include="..\soil\image_helper.c">
-      <Filter>Source\libraries</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\NoteLoaderSM.cpp">
       <Filter>Source\vsrg\internal</Filter>
     </ClCompile>
@@ -39,9 +30,6 @@
     </ClCompile>
     <ClCompile Include="..\src\ScoreKeeper7K.cpp">
       <Filter>Source\vsrg\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\pa_ringbuffer.c">
-      <Filter>Source\libraries</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ScreenEdit.cpp">
       <Filter>Source\dotcur\editor</Filter>
@@ -61,14 +49,8 @@
     <ClCompile Include="..\src\ScreenGameplay7K_Mechanics.cpp">
       <Filter>Source\vsrg\gameplay</Filter>
     </ClCompile>
-    <ClCompile Include="..\soil\SOIL.c">
-      <Filter>Source\libraries</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\SongDC.cpp">
       <Filter>Source\dotcur\internal</Filter>
-    </ClCompile>
-    <ClCompile Include="..\soil\stb_image_aug.c">
-      <Filter>Source\libraries</Filter>
     </ClCompile>
     <ClCompile Include="..\src\TrackNote.cpp">
       <Filter>Source\vsrg\internal</Filter>
@@ -175,6 +157,33 @@
     <ClCompile Include="..\src\GameState.cpp">
       <Filter>Source\game global\game status</Filter>
     </ClCompile>
+    <ClCompile Include="..\ext-src\lua.c">
+      <Filter>Source\libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext-src\pa_ringbuffer.c">
+      <Filter>Source\libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext-src\sqlite3.c">
+      <Filter>Source\libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext-src\SOIL\image_DXT.c">
+      <Filter>Source\libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext-src\SOIL\image_helper.c">
+      <Filter>Source\libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext-src\SOIL\SOIL.c">
+      <Filter>Source\libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext-src\SOIL\stb_image_aug.c">
+      <Filter>Source\libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SongDatabase.cpp">
+      <Filter>Source\game global\game status</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SongList.cpp">
+      <Filter>Source\game global\game status</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">
@@ -191,12 +200,6 @@
     </ClInclude>
     <ClInclude Include="..\src\Global.h">
       <Filter>Source\backend</Filter>
-    </ClInclude>
-    <ClInclude Include="..\soil\image_DXT.h">
-      <Filter>Source\libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="..\soil\image_helper.h">
-      <Filter>Source\libraries</Filter>
     </ClInclude>
     <ClInclude Include="..\src\ScoreKeeper.h">
       <Filter>Source\game global</Filter>
@@ -215,18 +218,6 @@
     </ClInclude>
     <ClInclude Include="..\src\ScreenGameplay7K.h">
       <Filter>Source\vsrg\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="..\soil\SOIL.h">
-      <Filter>Source\libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="..\soil\stbi_DDS_aug_c.h">
-      <Filter>Source\libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="..\soil\stb_image_aug.h">
-      <Filter>Source\libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="..\soil\stbi_DDS_aug.h">
-      <Filter>Source\libraries</Filter>
     </ClInclude>
     <ClInclude Include="..\src\TrackNote.h">
       <Filter>Source\vsrg\internal</Filter>
@@ -291,9 +282,6 @@
     <ClInclude Include="..\src\Song.h">
       <Filter>Source\game global\song interface</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\SongTiming.h">
-      <Filter>Source\game global\song interface</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\GameGlobal.h">
       <Filter>Source\game global</Filter>
     </ClInclude>
@@ -335,6 +323,48 @@
     </ClInclude>
     <ClInclude Include="..\src\GameState.h">
       <Filter>Source\game global\game status</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ext-src\lua.h">
+      <Filter>Source\libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ext-src\luaconf.h">
+      <Filter>Source\libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ext-src\lualib.h">
+      <Filter>Source\libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ext-src\pa_ringbuffer.h">
+      <Filter>Source\libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ext-src\sqlite3.h">
+      <Filter>Source\libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ext-src\SOIL\image_DXT.h">
+      <Filter>Source\libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ext-src\SOIL\image_helper.h">
+      <Filter>Source\libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ext-src\SOIL\SOIL.h">
+      <Filter>Source\libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ext-src\SOIL\stb_image_aug.h">
+      <Filter>Source\libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ext-src\SOIL\stbi_DDS_aug.h">
+      <Filter>Source\libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ext-src\SOIL\stbi_DDS_aug_c.h">
+      <Filter>Source\libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SongDatabase.h">
+      <Filter>Source\game global\game status</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SongList.h">
+      <Filter>Source\game global\game status</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SongTiming.h">
+      <Filter>Source\backend\lua</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <map>
+#include <vector>
 
 #include "GameGlobal.h"
 #include "BindingsManager.h"
@@ -94,13 +95,22 @@ const char* fragShader = "#version 120\n"
 std::map<int32, KeyType> BindingsManager::ScanFunction;
 std::map<int32, KeyType> BindingsManager::ScanFunction7K;
 
+const int NUM_OF_USED_CONTROLLER_BUTTONS = 9;
+
+int controllerToUse;
+bool JoystickEnabled;
+
+//True is pressed, false is released
+bool controllerButtonState[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = {false, false, false, false, false, false, false, false, false};
+//The first member of this array should never be accessed; it's there to make reading some of the code easier.
+
 struct sk_s
 {
-	const char* keystring;
+	char keystring[32];
 	int boundkey;
 };
 
-sk_s SpecialKeys [] = // only add if someone actually needs more
+sk_s StaticSpecialKeys [] = // only add if someone actually needs more
 {
 	{"LShift", GLFW_KEY_LEFT_SHIFT},
 	{"RShift", GLFW_KEY_RIGHT_SHIFT},
@@ -113,12 +123,16 @@ sk_s SpecialKeys [] = // only add if someone actually needs more
 	{"BSPC", GLFW_KEY_BACKSPACE}
 };
 
+const int NUM_OF_STATIC_SPECIAL_KEYS = 9; //make sure to match the above array
+
+std::vector<sk_s> SpecialKeys;
+
 int KeyTranslate(String K)
 {
-	for (int i = 0; i < (sizeof(SpecialKeys) / sizeof(sk_s)); i++)
+	for (uint32 i = 0; i < SpecialKeys.size(); i++)
 	{
-		if (K == SpecialKeys[i].keystring)
-			return SpecialKeys[i].boundkey;
+		if (K == SpecialKeys.at(i).keystring)
+			return SpecialKeys.at(i).boundkey;
 	}
 
 	if (K.length())
@@ -134,6 +148,31 @@ int KeyTranslate(String K)
 
 void BindingsManager::Initialize()
 {
+	for(int i = 0; i < NUM_OF_STATIC_SPECIAL_KEYS; i++)
+		SpecialKeys.push_back(StaticSpecialKeys[i]);
+
+
+	//controllerToUse = 1; should use this if the user entered garbage data (anything that isn't a number)
+	controllerToUse = (int) Configuration::GetConfigf("ControllerNumber") - 1;
+
+	if (glfwJoystickPresent(controllerToUse)) 
+	{
+		int numOfButtons;
+		glfwGetJoystickButtons(controllerToUse, &numOfButtons);
+		if (numOfButtons) {
+			for (int i = 1; i <= numOfButtons; i++) {
+				char name[32];
+				sprintf(name, "Controller%d", i);
+				sk_s thisButton;
+				strcpy(thisButton.keystring, name);
+				thisButton.boundkey = 1000 + i;
+				SpecialKeys.push_back(thisButton);
+			}
+		}
+	}
+
+	JoystickEnabled = (glfwJoystickPresent(GLFW_JOYSTICK_1) == GL_TRUE);
+	
 	ScanFunction[GLFW_KEY_ESCAPE] = KT_Escape;
 	ScanFunction[GLFW_KEY_F4] = KT_GoToEditMode;
 	ScanFunction[GLFW_KEY_UP] = KT_Up;
@@ -392,6 +431,26 @@ void GameWindow::SwapBuffers()
 
 	glfwSwapBuffers(wnd);
 	glfwPollEvents();
+	
+	int buttonArraySize = 0;
+	if(JoystickEnabled) {
+		const unsigned char *buttonArray = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &buttonArraySize);
+		if(buttonArraySize > 0) {
+			for (int i = 0; i < buttonArraySize; i++) {
+				for(uint32 j = 0; j < SpecialKeys.size(); j++) {
+					/* Matches the pressed button to its entry in the SpecialKeys vector. */
+					int thisKeyNumber = SpecialKeys[j].boundkey - 1000;
+					if (i + 1 == thisKeyNumber) {
+						/* Only processes the button push/release if the state has changed. */
+						if ((bool)buttonArray[i] != controllerButtonState[thisKeyNumber]) {
+							WindowFrame.Parent->HandleInput(SpecialKeys[j].boundkey, ToKeyEventType(buttonArray[i]), false);
+							controllerButtonState[thisKeyNumber] = !controllerButtonState[thisKeyNumber];
+						}
+					}
+				}
+			}
+		}
+	}
 
 	/* Fullscreen switching */
 	if (FullscreenSwitchbackPending)

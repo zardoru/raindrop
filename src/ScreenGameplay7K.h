@@ -9,62 +9,51 @@ class ScoreKeeper7K;
 class ScreenGameplay7K : public Screen
 {
 private:
-	
-	/* User Variables */
-	float SpeedMultiplierUser;
-	bool waveEffectEnabled;	
-	bool Upscroll;
-	bool NoFail;
-	EHiddenMode SelectedHiddenMode;
 
+	GraphObject2D Keys[VSRG::MAX_CHANNELS];
+	GraphObject2D Background;
 
-	/* Game */
-	bool Active;
-	bool DoPlay;
-	int lastClosest[VSRG::MAX_CHANNELS];
-	double CurrentVertical;
-	double WaitingTime;
-	EHiddenMode RealHiddenMode;
-	Mat4 PositionMatrix;
-	Mat4 PositionMatrixJudgement;
-	Mat4 NoteMatrix[VSRG::MAX_CHANNELS];
-	Mat4 HoldHeadMatrix[VSRG::MAX_CHANNELS];
-	Mat4 HoldTailMatrix[VSRG::MAX_CHANNELS];
-	VSRG::Song *MySong;
-	float SongOldTime;
-	float deltaPos;
-	float SpeedMultiplier;
-	bool AudioCompensation;
-	double TimeCompensation;
-	bool MultiplierChanged;
-	VSRG::Difficulty			 *CurrentDiff;
-	VSRG::VectorTN NotesByChannel;
-	TimingData VSpeeds;
-	int		GearBindings[VSRG::MAX_CHANNELS];
-	uint32	Channels;
-	bool HeldKey[VSRG::MAX_CHANNELS];
-	float HideClampLow, HideClampHigh, HideClampFactor;
-	float HideClampSum;
-
-	float CurrentBeat;
-
+	VSRG::Difficulty *CurrentDiff;
+	VSRG::VectorTN   NotesByChannel;
+	TimingData       VSpeeds;
+	VSRG::Song       *MySong;
+	VSRG::Song		 *LoadedSong;
 	std::map <int, SoundSample*> Keysounds;
 	std::vector<AutoplaySound> BGMEvents;
 
-	int PlaySounds[VSRG::MAX_CHANNELS];
-
-	/* Positions */
-	float  JudgementLinePos;
-	float  BasePos;
-
-	/* Effects */
-	float waveEffect; 
-	float beatScrollEffect;
-
-	bool beatScrollEffectEnabled;
-	Mat4 noteEffectsMatrix[VSRG::MAX_CHANNELS];
+	double NoteHeight;
+	double HoldHeadHeight;
+	double HoldTailHeight;
+	double LanePositions[VSRG::MAX_CHANNELS];
+	double LaneWidth[VSRG::MAX_CHANNELS];
+	double GearHeightFinal;
+	double SongTime, SongTimeReal;
+	double			 CurrentVertical;
+	double			 WaitingTime;
+	double  ErrorTolerance;
+	double  TimeCompensation;
 	
+	/* User Variables */
+	float       SpeedMultiplierUser;
 	
+	EHiddenMode SelectedHiddenMode;
+	
+	Mat4			 PositionMatrix;
+	Mat4			 PositionMatrixJudgement;
+	Mat4			 NoteMatrix[VSRG::MAX_CHANNELS];
+	Mat4			 HoldHeadMatrix[VSRG::MAX_CHANNELS];
+	Mat4			 HoldTailMatrix[VSRG::MAX_CHANNELS];
+	
+	float            SongOldTime;
+	float			 SpeedMultiplier;
+
+	uint32	         Channels;
+	uint32			 StartMeasure;
+
+	int		         GearBindings[VSRG::MAX_CHANNELS];
+	int				 lastClosest[VSRG::MAX_CHANNELS];
+	int				 PlaySounds[VSRG::MAX_CHANNELS];
+
 	/* Graphics */
 	Image*  NoteImage;
 	Image*  NoteImageHold;
@@ -74,24 +63,44 @@ private:
 	Image*  NoteImagesHold[VSRG::MAX_CHANNELS];
 	Image*  NoteImagesHoldHead[VSRG::MAX_CHANNELS];
 	Image*  NoteImagesHoldTail[VSRG::MAX_CHANNELS];
-	double NoteHeight;
-	double HoldHeadHeight;
-	double HoldTailHeight;
-	GraphObject2D Keys[VSRG::MAX_CHANNELS];
-	GraphObject2D Background;
+
 	GraphObjectMan *Animations;
-	double LanePositions[VSRG::MAX_CHANNELS];
-	double LaneWidth[VSRG::MAX_CHANNELS];
-	double GearHeightFinal;
 
 	AudioStream *Music;
 	SoundSample *MissSnd;
 
 	ScoreKeeper7K* score_keeper;
-	double SongTime, SongTimeReal;
 
-	bool InterpolateTime;
-	double ErrorTolerance;
+	EHiddenMode		 RealHiddenMode;
+	float            HideClampLow, HideClampHigh, HideClampFactor;
+	float            HideClampSum;
+
+	/* Positions */
+	float  JudgementLinePos;
+
+	/* Effects */
+	float waveEffect; 
+	float beatScrollEffect;
+
+	Mat4 noteEffectsMatrix[VSRG::MAX_CHANNELS];
+
+	float  CurrentBeat;
+
+	bool beatScrollEffectEnabled;
+	bool waveEffectEnabled;	
+	bool Auto;
+	bool Upscroll;
+	bool NoFail;
+	bool Active;
+	bool DoPlay;
+	bool Preloaded;
+
+	bool             HeldKey[VSRG::MAX_CHANNELS];
+	bool			 MultiplierChanged;
+	
+	bool    InterpolateTime;
+	bool    AudioCompensation;
+
 	/* 
 		Optimizations will come in later. 
 		See Renderer7K.cpp.	
@@ -117,9 +126,43 @@ private:
 	void JudgeLane(uint32 Lane);
 	void ReleaseLane(uint32 Lane);
 	void TranslateKey(KeyType K, bool KeyDown);
+	void AssignMeasure(uint32 Measure);
 public:
+
+	struct Parameters {
+		// If true, use upscroll
+		bool Upscroll;
+
+		// If true, enable Wave
+		bool Wave;
+
+		// If true, assume difficulty is already loaded and is not just metadata
+		bool Preloaded;
+		
+		// Fail disabled if true.
+		bool NoFail;
+
+		// Auto mode enabled if true.
+		bool Auto;
+
+		// Selected hidden mode
+		EHiddenMode HiddenMode;
+
+		// Selected starting measure
+		uint32 StartMeasure;
+
+		Parameters() {
+			Upscroll = false;
+			Wave = false;
+			Preloaded = false;
+			Auto = false;
+			HiddenMode = HIDDENMODE_NONE;
+			StartMeasure = 0;
+		}
+	};
+
 	ScreenGameplay7K();
-	void Init(VSRG::Song *S, int DifficultyIndex, bool UseUpscroll);
+	void Init(VSRG::Song *S, int DifficultyIndex, const Parameters &Param);
 	void LoadThreadInitialization();
 	void MainThreadInitialization();
 	void Cleanup();

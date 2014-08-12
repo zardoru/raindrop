@@ -10,6 +10,7 @@
 #include "NoteLoaderDC.h"
 #include "NoteLoader7K.h"
 
+#include "SongDatabase.h"
 #include <iostream>
 
 #include <boost/algorithm/string/split.hpp>
@@ -20,21 +21,22 @@
 #define SkinsPrefix String("Skins/")
 #define SongsPrefix String("Songs")
 #define ScriptsPrefix String("Scripts/")
-#define CachePrefix String("Cache/")
 
 String FileManager::CurrentSkin = "default";
 
+SongDatabase* FileManager::Database;
+
 void FileManager::Initialize()
 {
-	Utility::CheckDir(GetCacheDirectory().c_str());
+	Database = new SongDatabase("songdatabase.db");
 }
 
-String FileManager::GetCacheDirectory()
+SongDatabase* FileManager::GetSongsDatabase()
 {
-	return CachePrefix;
+	return Database;
 }
 
-void loadSong( Directory songPath, std::vector<dotcur::Song*> &VecOut )
+void LoadSongDCFromDir( Directory songPath, std::vector<dotcur::Song*> &VecOut )
 {
 
 	bool FoundDCF = false;
@@ -49,6 +51,7 @@ void loadSong( Directory songPath, std::vector<dotcur::Song*> &VecOut )
 		dotcur::Song *New = NoteLoader::LoadObjectsFromFile(songPath.path() + "/" + *i, songPath.path());
 		if (New)
 		{
+			New->SongDirectory = songPath.path();
 			New->ChartFilename = *i;
 			VecOut.push_back(New);
 			FoundDCF = true;
@@ -92,102 +95,6 @@ void loadSong( Directory songPath, std::vector<dotcur::Song*> &VecOut )
 	}
 }
 
-
-String GenHash(String Dir, int Sd)
-{
-	size_t Sum = 0;
-	for (size_t i = 0; i < Dir.length(); i++)
-	{
-		Sum += Dir[i];
-	}
-
-	std::stringstream ss;
-	ss << Sum + Sd;
-	return ss.str();
-}
-
-void WriteMetaCache(VSRG::Song *Sng, String filename)
-{
-#ifndef WIN32
-	std::fstream out(filename.c_str(), std::ios::out);
-#else
-	std::fstream out(Utility::Widen(filename).c_str(), std::ios::out);
-#endif
-
-	out << Sng->SongAuthor << "\n";
-	out << Sng->SongName << "\n";
-	out << Sng->SongFilename << "\n";
-	out << Sng->BPMType << "\n";
-	out << Sng->BackgroundFilename << "\n";
-
-	for (std::vector<VSRG::Difficulty*>::iterator k = Sng->Difficulties.begin();
-			k != Sng->Difficulties.end();
-			k++)
-	{
-		out << "$\n";
-
-		out << (*k)->Name << std::endl;
-		out << (int)(*k)->Channels << " "
-			<< (*k)->Duration << " "
-			<< (*k)->IsVirtual << " "
-			<< (*k)->Offset << " "
-			<< (*k)->TotalHolds << " "
-			<< (*k)->TotalNotes << " "
-			<< (*k)->TotalObjects << " "
-			<< (*k)->TotalScoringObjects << " "
-			<< (*k)->LMT
-			<< std::endl;
-
-	}
-}
-
-void LoadMetaCache(VSRG::Song *Sng, String filename)
-{
-#if (!defined _WIN32) || (defined STLP)
-	std::ifstream in (filename.c_str());
-#else
-	std::ifstream in (Utility::Widen(filename).c_str());
-#endif
-	String tmp;
-
-	std::getline(in, tmp);
-	Sng->SongAuthor = tmp;
-
-	std::getline(in, tmp);
-	Sng->SongName = tmp;
-
-	std::getline(in, tmp);
-	Sng->SongFilename = tmp;
-
-	std::getline(in, tmp);
-	Sng->BPMType = (VSRG::Song::EBt)atoi(tmp.c_str());
-
-	std::getline(in, tmp);
-	Sng->BackgroundFilename = tmp;
-
-	while (std::getline(in, tmp))
-	{
-		VSRG::Difficulty *Diff = new VSRG::Difficulty();
-		std::getline(in, tmp);
-		Diff->Name = tmp;
-
-		std::getline(in, tmp);
-		std::vector<String> res;
-		using boost::lexical_cast;
-		boost::split(res, tmp, boost::is_any_of(" "));
-		Diff->Channels = lexical_cast<int> (res[0]);
-		Diff->Duration = lexical_cast<double> (res[1]);
-		Diff->IsVirtual = lexical_cast<bool> (res[2]);
-		Diff->Offset = lexical_cast<double> (res[3]);
-		Diff->TotalHolds = lexical_cast<int> (res[4]);
-		Diff->TotalNotes = lexical_cast<int> (res[5]);
-		Diff->TotalObjects = lexical_cast<int> (res[6]);
-		Diff->TotalScoringObjects = lexical_cast<int> (res[7]);
-		Diff->LMT = lexical_cast<int> (res[8]);
-		Sng->Difficulties.push_back(Diff);
-	}
-}
-
 bool VSRGValidExtension(std::wstring Ext)
 {
 	if (Ext == L"fmd") // Ftb MetaData
@@ -196,7 +103,7 @@ bool VSRGValidExtension(std::wstring Ext)
 		return true;
 	else if (Ext == L"osu")
 		return true;
-	else if (Ext == L"bms" || Ext == L"bme" || Ext == L"bml")
+	else if (Ext == L"bms" || Ext == L"bme" || Ext == L"bml" || Ext == L"pms")
 		return true;
 	else if (Ext == L"sm")
 		return true;
@@ -222,7 +129,12 @@ VSRG::Song* LoadSong7KFromFilename(String Filename, String Prefix, VSRG::Song *S
 		return NULL;
 	}
 
-	std::wstring fn = L"/" + Utility::Widen(Filename);
+	std::wstring fn;
+	if (Prefix.length())
+		fn = L"/" + Utility::Widen(Filename);
+	else
+		fn = Utility::Widen(Filename);
+
 	std::wstring sp = Utility::Widen(Prefix);
 	std::string fn_f = Utility::Narrow(sp + fn);
 
@@ -232,71 +144,85 @@ VSRG::Song* LoadSong7KFromFilename(String Filename, String Prefix, VSRG::Song *S
 		NoteLoaderFTB::LoadObjectsFromFile(fn_f, Prefix, Sng);
 	else if (Ext == L"osu")
 		NoteLoaderOM::LoadObjectsFromFile(fn_f, Prefix, Sng);
-	else if (Ext == L"bms" || Ext == L"bme" || Ext == L"bml")
+	else if (Ext == L"bms" || Ext == L"bme" || Ext == L"bml" || Ext == L"pms")
 		NoteLoaderBMS::LoadObjectsFromFile(fn_f, Prefix, Sng);
 	else if (Ext == L"sm")
-		NoteLoaderSM::LoadObjectsFromFile(Prefix + "/" + Filename, Prefix, Sng);
+	{
+		if (Prefix.length())
+			NoteLoaderSM::LoadObjectsFromFile(Prefix + "/" + Filename, Prefix, Sng);
+		else
+			NoteLoaderSM::LoadObjectsFromFile(Filename, Prefix, Sng);
+	}
 
 	return Sng;
 }
 
-void loadSong7K( Directory songPath, std::vector<VSRG::Song*> &VecOut )
+void LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 {
 	std::vector<String> Listing;
 
 	songPath.ListDirectory(Listing, Directory::FS_REG);
 	VSRG::Song *New = new VSRG::Song();
 
-	int LMTPath = Utility::GetLMT(songPath.path());
-
-
-	String Hash = GenHash(songPath.path(), LMTPath);
-	String FilenameCache = FileManager::GetCacheDirectory() + Hash;
-
 	New->SongDirectory = songPath.path() + "/";
 
-	// Find if there exists a cache file for this directory
+	/*
+		Procedure:
+		1.- Check all files if cache needs to be renewed or created.
+		2.- If it needs to, load the song again.
+		3.- If it loaded the song for either reason, rewrite the difficulty cache.
+		4.- If it does not need to be renewed or created, just read the metadata and leave it like that.
+	*/
+
+	int ID;
+	int SongExists = FileManager::GetSongsDatabase()->IsSongDirectory(New->SongDirectory, &ID);
+	bool RenewCache = false;
+
 	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{
 		std::wstring Ext = Utility::Widen(Utility::GetExtension(*i));
-		if (VSRGValidExtension(Ext))
+		if (VSRGValidExtension(Ext) && (!SongExists || FileManager::GetSongsDatabase()->CacheNeedsRenewal(songPath.path() + "/" + *i)))
 		{
-			if (Utility::FileExists(FilenameCache))
-			{
-				LoadMetaCache(New, FilenameCache);
-				break; // Found it, move on.
-			}
+			RenewCache = true;
+			wprintf(L"loading %ls from directory...\n", Utility::Widen((*i)).c_str());
+			LoadSong7KFromFilename(*i, songPath.path(), New);
 		}
 	}
 
-	New->FilenameCache = FilenameCache;
-
-	// If it doesn't, generate cache files.
-	if (!Utility::FileExists(FilenameCache))
+	if (!SongExists)
+		ID = FileManager::GetSongsDatabase()->AddSong(New->SongDirectory, MODE_7K, New);
+	else
 	{
-		for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
+		if (!RenewCache)
 		{
-			std::wstring Ext = Utility::Widen(Utility::GetExtension(*i));
-			if (VSRGValidExtension(Ext))
-				LoadSong7KFromFilename(*i, songPath.path(), New);
+			// wprintf(L"loading %ls from cache...", Utility::Widen(New->SongDirectory).c_str());
+			FileManager::GetSongsDatabase()->GetSongInformation7K (ID, New);
 		}
+	}
 
-		WriteMetaCache(New, FilenameCache);
-
+	// Files were modified- we have to renew the difficulty entries as well as the cache itself.
+	if (RenewCache)
+	{
 		for (std::vector<VSRG::Difficulty*>::iterator k = New->Difficulties.begin();
 			k != New->Difficulties.end();
 			k++)
 		{
-			(*k)->SaveCache(New->DifficultyCacheFilename(*k));
+			FileManager::GetSongsDatabase()->AddDifficulty(ID, (*k)->Filename, *k, MODE_7K);
 			(*k)->Destroy();
 		}
 	}
 
-
+	
 	if (New->Difficulties.size())
+	{
 		VecOut.push_back(New);
+		// wprintf(L"ok\n");
+	}
 	else
+	{
+		// wprintf(L"nothing loadable\n");
 		delete New;
+	}
 }
 
 String FileManager::GetDirectoryPrefix()
@@ -321,47 +247,29 @@ std::fstream& FileManager::OpenFile(String Directory)
 	return *f;
 }
 
-void FileManager::GetSongList(std::vector<dotcur::Song*> &OutVec)
+void FileManager::GetSongListDC(std::vector<dotcur::Song*> &OutVec, Directory Dir)
 {
-	std::vector <String> SongDirectories;
-	SongDirectories.push_back(SongsPrefix);
+	std::vector <String> Listing;
 
-	Configuration::GetConfigListS ("SongDirectories", SongDirectories);
-
-	for (std::vector<String>::iterator i = SongDirectories.begin(); i != SongDirectories.end(); i++)
-	{
-		Directory Dir (*i + "/");
-		std::vector <String> Listing;
-
-		Dir.ListDirectory(Listing, Directory::FS_DIR);
-		for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
-		{ 
-			wprintf(L"%ls...\n", Utility::Widen(*i).c_str());
-			loadSong(Dir.path() + *i, OutVec);
-			wprintf(L"ok\n");
-		}
+	Dir.ListDirectory(Listing, Directory::FS_DIR);
+	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
+	{ 
+		wprintf(L"%ls... ", Utility::Widen(*i).c_str());
+		LoadSongDCFromDir(Dir.path() + "/" + *i, OutVec);
+		wprintf(L"ok\n");
 	}
 }
 
-void FileManager::GetSongList7K(std::vector<VSRG::Song*> &OutVec)
+void FileManager::GetSongList7K(std::vector<VSRG::Song*> &OutVec, Directory Dir)
 {
-	std::vector <String> SongDirectories;
-	SongDirectories.push_back(SongsPrefix);
+	std::vector <String> Listing;
 
-	Configuration::GetConfigListS ("SongDirectories", SongDirectories);
-
-	for (std::vector<String>::iterator i = SongDirectories.begin(); i != SongDirectories.end(); i++)
-	{
-		Directory Dir (*i + "/");
-		std::vector <String> Listing;
-
-		Dir.ListDirectory(Listing, Directory::FS_DIR);
-		for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
-		{ 
-			wprintf(L"%ls... ", Utility::Widen(*i).c_str());
-			loadSong7K(Dir.path() + *i, OutVec);
-			wprintf(L"ok\n");
-		}
+	Dir.ListDirectory(Listing, Directory::FS_DIR);
+	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
+	{ 
+		wprintf(L"%ls... ", Utility::Widen(*i).c_str());
+		LoadSong7KFromDir(Dir.path() + "/" + *i, OutVec);
+		wprintf(L"ok\n");
 	}
 }
 

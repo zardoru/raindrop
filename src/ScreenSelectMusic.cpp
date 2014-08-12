@@ -11,6 +11,7 @@
 #include "FileManager.h"
 #include "Configuration.h"
 #include "GraphObject2D.h"
+#include "GuiButton.h"
 
 #include "Song.h"
 #include "ScreenSelectMusic.h"
@@ -28,7 +29,63 @@
 
 SoundSample *SelectSnd = NULL, *ClickSnd=NULL;
 AudioStream	**Loops;
+
+static LuaManager* LuaMan;
 int LoopTotal;
+
+void OnUpHover(GraphObject2D* Obj)
+{
+	LuaMan->CallFunction("DirUpBtnHover");
+	LuaMan->RunFunction();
+}
+
+void OnUpClick(GraphObject2D* Obj)
+{
+	LuaMan->CallFunction("DirUpBtnClick");
+	LuaMan->RunFunction();
+}
+
+void OnUpHoverLeave(GraphObject2D* Obj)
+{
+	LuaMan->CallFunction("DirUpBtnHoverLeave");
+	LuaMan->RunFunction();
+}
+
+void OnBackHover(GraphObject2D* Obj)
+{
+	LuaMan->CallFunction("BackBtnHover");
+	LuaMan->RunFunction();
+}
+
+void OnBackClick(GraphObject2D* Obj)
+{
+	LuaMan->CallFunction("BackBtnClick");
+	LuaMan->RunFunction();
+}
+
+void OnBackHoverLeave(GraphObject2D* Obj)
+{
+	LuaMan->CallFunction("BackBtnHoverLeave");
+	LuaMan->RunFunction();
+}
+
+void OnAutoClick(GraphObject2D* Obj)
+{
+	LuaMan->CallFunction("AutoBtnClick");
+	LuaMan->RunFunction();
+}
+
+void OnAutoHover(GraphObject2D* Obj)
+{
+	LuaMan->CallFunction("AutoBtnHover");
+	LuaMan->RunFunction();
+}
+
+void OnAutoHoverLeave(GraphObject2D* Obj)
+{
+	LuaMan->CallFunction("AutoBtnHoverLeave");
+	LuaMan->RunFunction();
+}
 
 ScreenSelectMusic::ScreenSelectMusic()
 {
@@ -68,12 +125,6 @@ ScreenSelectMusic::ScreenSelectMusic()
 	GameObject::GlobalInit();
 
 	SelectedMode = MODE_7K;
-
-	OptionUpscroll = false;
-
-	ListY = SONGLIST_BASEY;
-
-	diff_index = 0;
 }
 
 void ScreenSelectMusic::MainThreadInitialization()
@@ -84,12 +135,30 @@ void ScreenSelectMusic::MainThreadInitialization()
 		Font->LoadSkinFontImage("font_screenevaluation.tga", Vec2(10, 20), Vec2(32, 32), Vec2(10,20), 32);
 	}
 
-	Objects = new GraphObjectMan();
-
-	Objects->Initialize( FileManager::GetSkinPrefix() + "screenselectmusic.lua" );
-
-	Font->SetAffectedByLightning(true);
 	
+	UpBtn = new GUI::Button;
+	UpBtn->OnClick = OnUpClick;
+	UpBtn->OnHover = OnUpHover;
+	UpBtn->OnLeave = OnUpHoverLeave;
+
+	BackBtn = new GUI::Button;
+	BackBtn->OnClick = OnBackClick;
+	BackBtn->OnHover = OnBackHover;
+	BackBtn->OnLeave = OnBackHoverLeave;
+
+	AutoBtn = NULL;
+
+	Objects->AddLuaTarget(BackBtn, "BackButton");
+	Objects->AddLuaTarget(UpBtn, "DirUpButton");
+	// Objects->AddLuaTarget(UpBtn, "AutoButton");
+	Objects->AddTarget(BackBtn);
+	Objects->AddTarget(UpBtn);
+	// Objects->AddTarget(AutoBtn);
+
+	Objects->Initialize();
+
+	SwitchUpscroll(false);
+	Font->SetAffectedByLightning(true);
 
 	Background.SetImage(ImageLoader::LoadSkin(Configuration::GetSkinConfigs("SelectMusicBackground")));
 
@@ -98,8 +167,7 @@ void ScreenSelectMusic::MainThreadInitialization()
 
 	WindowFrame.SetLightMultiplier(1);
 	Background.AffectedByLightning = true;
-
-	Game::SongWheel::GetInstance().ChangeMode(SelectedMode);
+	Objects->AddLuaTarget(&Background, "ScreenBackground");
 }
 
 void ScreenSelectMusic::LoadThreadInitialization()
@@ -109,13 +177,15 @@ void ScreenSelectMusic::LoadThreadInitialization()
 	SwitchBackGuiPending = true;
 	char* Manifest[] =
 	{
-		"songselect_cursor.png",
 		(char*)Configuration::GetSkinConfigs("SelectMusicBackground").c_str(),
-		"logo.png"
 	};
 
-	ImageLoader::LoadFromManifest(Manifest, 3, FileManager::GetSkinPrefix());
+	ImageLoader::LoadFromManifest(Manifest, 1, FileManager::GetSkinPrefix());
 
+	Objects = new GraphObjectMan;
+	Objects->Preload( FileManager::GetSkinPrefix() + "screenselectmusic.lua", "Preload" );
+
+	LuaMan = Objects->GetEnv();
 	Game::SongWheel::GetInstance().ReloadSongs();
 
 	Time = 0;
@@ -138,11 +208,11 @@ float ScreenSelectMusic::GetListYTransformation(const float Y)
 
 void ScreenSelectMusic::OnSongSelect(Game::Song* MySong, uint8 difindex)
 {
-	// Handle a SONG JUST WAS SELECTED OH GOD
+	// Handle a recently selected song
 	ScreenLoading *LoadNext = NULL;
 
 	SelectSnd->Play();
-	if (SelectedMode == MODE_DOTCUR)
+	if (MySong->Mode == MODE_DOTCUR)
 	{
 		ScreenGameplay *DotcurGame = new ScreenGameplay(this);
 		DotcurGame->Init(static_cast<dotcur::Song*>(MySong), difindex);
@@ -151,7 +221,10 @@ void ScreenSelectMusic::OnSongSelect(Game::Song* MySong, uint8 difindex)
 	}else
 	{
 		ScreenGameplay7K *VSRGGame = new ScreenGameplay7K();
-		VSRGGame->Init(static_cast<VSRG::Song*>(MySong), difindex, OptionUpscroll);
+		ScreenGameplay7K::Parameters Param;
+
+		Param.Upscroll = OptionUpscroll;
+		VSRGGame->Init(static_cast<VSRG::Song*>(MySong), difindex, Param);
 
 		LoadNext = new ScreenLoading(this, VSRGGame);
 	}
@@ -159,6 +232,10 @@ void ScreenSelectMusic::OnSongSelect(Game::Song* MySong, uint8 difindex)
 	LoadNext->Init();
 	Next = LoadNext;
 	StopLoops();
+
+	Objects->GetEnv()->CallFunction("OnSelect");
+	Objects->GetEnv()->RunFunction();
+
 	SwitchBackGuiPending = true;
 }
 
@@ -183,36 +260,28 @@ bool ScreenSelectMusic::Run(double Delta)
 				Loops[rn]->SeekTime(0);
 				Loops[rn]->Play();
 			}
+
+			Objects->GetEnv()->CallFunction("OnRestore");
+			Objects->GetEnv()->RunFunction();
 		}
 	}
 
 	Time += Delta;
 
 	Game::SongWheel::GetInstance().Update(Delta);
+	UpBtn->Run(Delta);
+	BackBtn->Run(Delta);
 
 	WindowFrame.SetLightMultiplier(sin(Time) * 0.2 + 1);
 
 	Background.Render();
-	Objects->DrawTargets(Delta);
+	Objects->UpdateTargets(Delta);
+
+	Objects->DrawUntilLayer(16);
 
 	Game::SongWheel::GetInstance().Render();
 
-	Font->DisplayText("song select", Vec2(ScreenWidth/2-55, 0));
-	Font->DisplayText("press space to confirm", Vec2(ScreenWidth/2-110, 20));
-
-	String modeString;
-
-	if (SelectedMode == MODE_DOTCUR)
-		modeString = "mode: .cur";
-	else
-	{
-		if (OptionUpscroll)
-			modeString = "mode: vsrg (upscroll)";
-		else
-			modeString = "mode: vsrg (downscroll)";
-	}
-
-	Font->DisplayText(modeString.c_str(), Vec2(ScreenWidth/2-modeString.length() * 5, 40));
+	Objects->DrawFromLayer(16);
 
 	return Running;
 }	
@@ -226,6 +295,12 @@ void ScreenSelectMusic::StopLoops()
 	}
 }
 
+void ScreenSelectMusic::SwitchUpscroll(bool NewUpscroll)
+{
+	OptionUpscroll = NewUpscroll;
+	Objects->GetEnv()->SetGlobal("Upscroll", OptionUpscroll);
+}
+
 void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
 	if (Next)
@@ -234,30 +309,24 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 		return;
 	}
 
-	Game::SongWheel::GetInstance().HandleInput(key, code, isMouseInput);
+	if (Game::SongWheel::GetInstance().HandleInput(key, code, isMouseInput))
+		return;
+
+	if (UpBtn->HandleInput(key, code, isMouseInput))
+		Game::SongWheel::GetInstance().GoUp();
+
+	Objects->HandleInput(key, code, isMouseInput);
 
 	if (code == KE_Press)
 	{
-		ScreenGameplay *_gNext = NULL;
-		ScreenGameplay7K *_g7Next = NULL;
-
-		ScreenEdit *_eNext = NULL;
-		ScreenLoading *_LNext = NULL;
-
 		switch (BindingsManager::TranslateKey(key))
 		{
 		case KT_Escape:
 			Running = false;
 			break;
 		case KT_FractionDec:
-			OptionUpscroll = !OptionUpscroll;
+			SwitchUpscroll(!OptionUpscroll);
 			break;
-		case KT_BSPC:
-			if (SelectedMode == MODE_DOTCUR)
-				SelectedMode = MODE_7K;
-			else
-				SelectedMode = MODE_DOTCUR;
-			Game::SongWheel::GetInstance().ChangeMode(SelectedMode);
 		}
 	}
 }

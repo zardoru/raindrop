@@ -97,12 +97,23 @@ void GraphObject2D::Render()
 	}else
 		return;
 
+	if (DirtyTexture)
+		UpdateTexture();
+
 	if (Alpha == 0) return;
 
 	UpdateMatrix();
 
-	if (DirtyTexture)
-		UpdateTexture();
+	if (BlendingMode == MODE_ADD)
+	{
+		glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	}
+	else if (BlendingMode == MODE_ALPHA)
+	{
+		glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
 
 	// Assign our matrix.
 	WindowFrame.SetUniform(U_MVP,  &(Matrix[0][0]));

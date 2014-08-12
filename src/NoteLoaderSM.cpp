@@ -89,7 +89,7 @@ void LoadTracksSM(Song *Out, Difficulty *Diff, String line)
 		return;
 
 	Diff->Channels = Keys;
-	Diff->Name = Mainline[2];
+	Diff->Name = Mainline[2] + "(" + Mainline[0] + ")";
 	
 	/* Now we should have our notes within NoteString. 
 	We'll split them by measure using , as a separator.*/
@@ -176,10 +176,14 @@ void NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 	std::ifstream filein (Utility::Widen(filename).c_str());
 #endif
 
+	TimingData BPMData;
+	TimingData StopsData; 
+	double Offset;
+
 	Difficulty *Diff = new Difficulty();
 
 	// Stepmania uses beat-based locations for stops and BPM.
-	Out->BPMType = Song::BT_Beat;
+	Diff->BPMType = VSRG::Difficulty::BT_Beat;
 
 	if (!filein.is_open())
 	{
@@ -193,7 +197,6 @@ void NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 	}
 
 	Out->SongDirectory = prefix + "/";
-	Out->UseSeparateTimingData = false;
 	Diff->Offset = 0;
 	Diff->Duration = 0;
 
@@ -202,10 +205,16 @@ void NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 	{
 		std::getline(filein, line, ';'); 
 
-		if (line.size() < 3)
+		if (line.length() < 3)
 			continue;
 
-		String command = line.substr(line.find_first_of("#"), line.find_first_of(":") - line.find_first_of("#"));
+		String command;
+		size_t iHash = line.find_first_of("#");
+		size_t iColon = line.find_first_of(":");
+		if (iHash != String::npos && iColon != String::npos)
+			command = line.substr(iHash, iColon - iHash);
+		else
+			continue;
 
 		boost::replace_all(command, "\n", "");
 
@@ -237,18 +246,17 @@ void NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 		OnCommand(#OFFSET)
 		{
 			std::stringstream str (CommandContents);
-			str >> Diff->Offset;
-			Out->Offset = Diff->Offset;
+			str >> Offset;
 		}
 
 		OnCommand(#BPMS)
 		{
-			LoadTimingList(Out->BPMData, line);
+			LoadTimingList(BPMData, line);
 		}
 
 		OnCommand(#STOPS)
 		{
-			LoadTimingList(Out->StopsData, line);
+			LoadTimingList(StopsData, line);
 		}
 
 		/* Stops: TBD */
@@ -256,10 +264,12 @@ void NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 		OnCommand(#NOTES)
 		{
 			Diff->LMT = Utility::GetLMT(filename);
-			Diff->Timing = Out->BPMData;
-			Diff->StopsTiming = Out->StopsData;
-			Diff->Offset = -Out->Offset;
+			Diff->Timing = BPMData;
+			Diff->StopsTiming = StopsData;
+			Diff->Offset = -Offset;
 			Diff->Duration = 0;
+			Diff->Filename = filename;
+			Diff->BPMType = VSRG::Difficulty::BT_Beat;
 
 			LoadTracksSM(Out, Diff, line);
 			Out->Difficulties.push_back(Diff);

@@ -4,6 +4,12 @@
 class VBO;
 class Image;
 
+enum rBlendMode
+{
+	MODE_ADD,
+	MODE_ALPHA,
+};
+
 class GraphObject2D
 {
 	static VBO *mBuffer;
@@ -19,6 +25,8 @@ private: // Transformations
 	Vec2 mPosition;
 	uint32 z_order;
 	
+	rBlendMode BlendingMode;
+
 	// These crop variables define where to crop the image.
 	
 
@@ -62,6 +70,8 @@ public:
 
 	virtual void InitVBO();
 	virtual void Initialize(bool ShouldInitTexture);
+
+	void SetBlendMode(rBlendMode Mode);
 
 	// Scale
 	void SetScale(Vec2 Scale);

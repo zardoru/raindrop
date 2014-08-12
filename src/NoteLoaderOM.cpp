@@ -17,6 +17,23 @@ typedef std::vector<String> SplitResult;
 
 using namespace VSRG;
 
+#define SAMPLESET_NORMAL 1
+#define SAMPLESET_SOFT 2
+#define SAMPLESET_DRUM 3
+
+#define HITSOUND_NORMAL 0
+#define HITSOUND_WHISTLE 2
+#define HITSOUND_FINISH 4
+#define HITSOUND_CLAP 8
+
+struct HitsoundSectionData
+{
+	float Time;
+	int Sampleset;
+	int Volume;
+	int Custom;
+};
+
 struct OsuLoadInfo
 {
 	double SliderVelocity;
@@ -24,7 +41,9 @@ struct OsuLoadInfo
 	int last_sound_index;
 	Song *OsuSong;
 	std::map <String, int> Sounds;
+	std::vector<HitsoundSectionData> HitsoundSections;
 	Difficulty *Diff;
+	String DefaultSampleset;
 };
 
 /* osu!mania loader. credits to wanwan159, woc2006, Zorori and the author of AIBat for helping me understand this. */
@@ -52,6 +71,10 @@ bool ReadGeneral (String line, OsuLoadInfo* Info)
 	{
 		if (Content != "3") // It's not a osu!mania chart, so we can't use it.
 			return false; // (What if we wanted to support taiko though?)
+	}else if (Command == "SampleSet:")
+	{
+		boost::algorithm::to_lower(Content);
+		Info->DefaultSampleset = Content;
 	}
 
 	return true;
@@ -93,7 +116,7 @@ void ReadDifficulty (String line, OsuLoadInfo* Info)
 
 	}else if (Command == "SliderMultiplier")
 	{
-		Info->SliderVelocity = atof(Content.c_str()) * 100;
+		Info->SliderVelocity = latof(Content.c_str()) * 100;
 	}
 }
 
@@ -118,7 +141,7 @@ void ReadEvents (String line, OsuLoadInfo* Info)
 				Info->last_sound_index++;
 			}
 
-			double Time = atof(Spl[1].c_str()) / 1000.0;
+			double Time = latof(Spl[1].c_str()) / 1000.0;
 			int Evt = Info->Sounds[Spl[3]];
 			AutoplaySound New;
 			New.Time = Time;
@@ -136,8 +159,8 @@ void ReadTiming (String line, OsuLoadInfo* Info)
 
 
 	TimingSegment Time;
-	Time.Time = atof(Spl[0].c_str()) / 1000.0;
-	Time.Value = atof(Spl[1].c_str());
+	Time.Time = latof(Spl[0].c_str()) / 1000.0;
+	Time.Value = latof(Spl[1].c_str());
 
 	if (Spl[6] == "1") // Non-inherited section
 		Info->Diff->Timing.push_back(Time);
@@ -150,6 +173,22 @@ void ReadTiming (String line, OsuLoadInfo* Info)
 
 		Info->Diff->SpeedChanges.push_back(Time);
 	}
+
+	int Sampleset = -1;
+	int Custom = 0;
+
+	if (Spl.size() > 3)
+		Sampleset = atoi(Spl[3].c_str());
+
+	if (Spl.size() > 4)
+		Custom = atoi(Spl[4].c_str());
+
+	HitsoundSectionData SecData;
+	SecData.Time = Time.Time;
+	SecData.Sampleset = Sampleset;
+	SecData.Custom = Custom;
+
+	Info->HitsoundSections.push_back(SecData);
 }
 
 int GetInterval(float Position, int Channels)
@@ -163,7 +202,21 @@ int GetInterval(float Position, int Channels)
 #define NOTE_HOLD 128
 #define NOTE_NORMAL 1
 
-String GetSampleFilename(SplitResult &Spl, int NoteType, int Hitsound)
+String SamplesetToString(int Sampleset)
+{
+	switch (Sampleset)
+	{
+	case SAMPLESET_SOFT:
+		return "soft";
+	case SAMPLESET_DRUM:
+		return "drum";
+	case SAMPLESET_NORMAL:
+	default:
+		return "normal";
+	}
+}
+
+String GetSampleFilename(OsuLoadInfo *Info, SplitResult &Spl, int NoteType, int Hitsound, float Time)
 {
 	int SampleSet, SampleSetAddition, CustomSample = 0;
 	String SampleFilename;
@@ -219,11 +272,35 @@ String GetSampleFilename(SplitResult &Spl, int NoteType, int Hitsound)
 	if (SampleSet)
 	{
 		// translate sampleset int into samplesetstring
-		SampleSetString = "normal";
+		SampleSetString = SamplesetToString(SampleSet);
 	}else
 	{
 		// get sampleset string from sampleset active at starttime
-		SampleSetString = "normal";
+		int Sampleset = -1;
+
+		for (int i = 0; i < (int)Info->HitsoundSections.size() - (int)1; i++)
+		{
+			if (Info->HitsoundSections[i].Time <= Time && Info->HitsoundSections[i+1].Time < Time)
+				Sampleset = Info->HitsoundSections[i].Sampleset;
+			else if (Info->HitsoundSections[i+1].Time > Time)
+				Sampleset = Info->HitsoundSections[i+1].Sampleset;
+		}
+
+		if (SampleSet == -1)
+			SampleSetString = Info->DefaultSampleset;
+		else
+			SampleSetString = SamplesetToString(Sampleset);
+	}
+
+	if (!CustomSample)
+	{
+		for (int i = 0; i < (int)Info->HitsoundSections.size()-(int)1; i++)
+		{
+			if (Info->HitsoundSections[i].Time <= Time && Info->HitsoundSections[i+1].Time < Time)
+				CustomSample = Info->HitsoundSections[i].Custom;
+			else if (Info->HitsoundSections[i+1].Time > Time)
+				CustomSample = Info->HitsoundSections[i+1].Custom;
+		}
 	}
 
 	String CustomSampleString;
@@ -243,10 +320,13 @@ String GetSampleFilename(SplitResult &Spl, int NoteType, int Hitsound)
 		{
 		case 1:
 			HitsoundString = "normal";
+			break;
 		case 2:
 			HitsoundString = "whistle";
+			break;
 		case 4:
 			HitsoundString = "finish";
+			break;
 		case 8:
 			HitsoundString = "clap";
 		default:
@@ -255,7 +335,7 @@ String GetSampleFilename(SplitResult &Spl, int NoteType, int Hitsound)
 	}else
 		HitsoundString = "normal";
 
-	if (CustomSample)
+	if (CustomSample > 1)
 	{
 		SampleFilename = SampleSetString + "-hit" + HitsoundString + CustomSampleString + ".wav";
 	}
@@ -270,7 +350,7 @@ void ReadObjects (String line, OsuLoadInfo* Info)
 	SplitResult Spl;
 	boost::split(Spl, line, boost::is_any_of(","));
 
-	int Track = GetInterval(atof(Spl[0].c_str()), Info->Diff->Channels);
+	int Track = GetInterval(latof(Spl[0].c_str()), Info->Diff->Channels);
 	int Hitsound;
 	NoteData Note;
 
@@ -290,16 +370,16 @@ void ReadObjects (String line, OsuLoadInfo* Info)
 		boost::split(Spl2, Spl[splitType], boost::is_any_of(":"));
 
 
-	double startTime = atof(Spl[2].c_str()) / 1000.0;
+	double startTime = latof(Spl[2].c_str()) / 1000.0;
 	int NoteType = atoi(Spl[3].c_str());
 
 	if (NoteType & NOTE_HOLD)
 	{
 		float endTime;
 		if (splitType == 5 && Spl2.size())
-			endTime = atof(Spl2[0].c_str()) / 1000.0;
+			endTime = latof(Spl2[0].c_str()) / 1000.0;
 		else if (splitType == 6)
-			endTime = atof(Spl[5].c_str()) / 1000.0;
+			endTime = latof(Spl[5].c_str()) / 1000.0;
 		else // what really? a hold that doesn't bother to tell us when it ends?
 			endTime = 0;
 
@@ -325,8 +405,8 @@ void ReadObjects (String line, OsuLoadInfo* Info)
 	}else if (NoteType & NOTE_SLIDER)
 	{
 		// 6=repeats 7=length
-		float sliderRepeats = atof(Spl[6].c_str());
-		float sliderLength = atof(Spl[7].c_str());
+		float sliderRepeats = latof(Spl[6].c_str());
+		float sliderLength = latof(Spl[7].c_str());
 
 		float Multiplier = 1;
 
@@ -353,7 +433,7 @@ void ReadObjects (String line, OsuLoadInfo* Info)
 
 	Hitsound = atoi(Spl[4].c_str());
 
-	String Sample = GetSampleFilename(Spl2, NoteType, Hitsound);
+	String Sample = GetSampleFilename(Info, Spl2, NoteType, Hitsound, startTime);
 
 	if (Sample.length())
 	{
@@ -391,7 +471,7 @@ void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 	Diff->LMT = Utility::GetLMT(filename);
 
 	// osu! stores bpm information as the time in ms that a beat lasts.
-	Out->BPMType = Song::BT_Beatspace;
+	Diff->BPMType = VSRG::Difficulty::BT_Beatspace;
 	Out->SongDirectory = prefix;
 
 	if (!filein.is_open())
@@ -400,13 +480,13 @@ void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 		return;
 	}
 
+	Diff->Filename = filename;
 	Out->SongDirectory = prefix + "/";
 
 	/* 
 		Just like BMS, osu!mania charts have timing data separated by files
 		and a set is implied using folders.
 	*/
-	Out->UseSeparateTimingData = true;
 
 	String Line;
 
@@ -419,6 +499,8 @@ void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 		delete Diff;
 		return;
 	}
+
+	Info.Version = version;
 
 	enum 
 	{

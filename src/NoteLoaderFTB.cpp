@@ -45,7 +45,6 @@ void NoteLoaderFTB::LoadMetadata(String filename, String prefix, Song *Out)
 	Out->SongName = Title;
 	Out->SongAuthor = Author;
 	Out->SongDirectory = prefix + "/";
-	Out->UseSeparateTimingData = true;
 
 	filein.close();
 }
@@ -61,6 +60,8 @@ void NoteLoaderFTB::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 	std::ifstream filein (Utility::Widen(filename).c_str());
 #endif
 
+	Diff->Filename = filename;
+
 	if (!filein.is_open())
 	{
 failed:
@@ -68,7 +69,7 @@ failed:
 		return;
 	}
 
-	Out->BPMType = Song::BT_MS; // MS using BPMs.
+	Diff->BPMType = VSRG::Difficulty::BT_MS; // MS using BPMs.
 	Diff->Channels = 7;
 	Diff->LMT = Utility::GetLMT(filename);
 	Diff->Name = Utility::RemoveExtension(Utility::RelativeToPath(filename));
@@ -87,8 +88,8 @@ failed:
 		if (LineContents.at(0) == "BPM")
 		{
 			TimingSegment Seg;
-			Seg.Time = atof(LineContents[1].c_str()) / 1000.0;
-			Seg.Value = atof(LineContents[2].c_str());
+			Seg.Time = latof(LineContents[1].c_str()) / 1000.0;
+			Seg.Value = latof(LineContents[2].c_str());
 			Diff->Timing.push_back(Seg);
 		}else
 		{
@@ -104,14 +105,14 @@ failed:
 			boost::split(NoteInfo, LineContents.at(0), boost::is_any_of("-"));
 			if (NoteInfo.size() > 1)
 			{
-				Note.StartTime = atof(NoteInfo.at(0).c_str()) / 1000.0;
-				Note.EndTime = atof(NoteInfo.at(1).c_str()) / 1000.0;
+				Note.StartTime = latof(NoteInfo.at(0).c_str()) / 1000.0;
+				Note.EndTime = latof(NoteInfo.at(1).c_str()) / 1000.0;
 				Diff->TotalHolds++;
 				Diff->TotalScoringObjects += 2;
 			}
 			else
 			{
-				Note.StartTime = atof(NoteInfo.at(0).c_str()) / 1000.0;
+				Note.StartTime = latof(NoteInfo.at(0).c_str()) / 1000.0;
 				Diff->TotalNotes++;
 				Diff->TotalScoringObjects++;
 			}

@@ -23,6 +23,10 @@ bool AudioSourceOGG::Open(const char* Filename)
 	int32 retv = ov_open(fp, &mOggFile, NULL, 0);
 #endif
 
+#ifndef NDEBUG
+	dFILENAME = Filename;
+#endif
+
 	if (retv == 0)
 	{
 		info = ov_info(&mOggFile, -1);

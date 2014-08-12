@@ -12,6 +12,7 @@ Song::Song()
 {
 	LeadInTime = 0;
 	MeasureLength = 4; // MeasureLength/4
+	Mode = MODE_DOTCUR;
 }
 
 Song::~Song()

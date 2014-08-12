@@ -1,5 +1,6 @@
 #include <fstream>
 #include <map>
+#include <ctime>
 
 #include "Global.h"
 #include "Song7K.h"
@@ -117,7 +118,7 @@ int chanScratch = fromBase36("16");
 struct BMSEvent
 {
 	int Event;
-	double Fraction;
+	float Fraction;
 };
 
 typedef std::vector<BMSEvent> BMSEventList;
@@ -186,6 +187,13 @@ struct BmsLoadInfo
 	int LNObj;
 	int SideBOffset;
 
+	uint32 RandomStack[16]; // Up to 16 nested levels.
+	uint8 CurrentNestedLevel;
+	uint8 SkipNestedLevel;
+	bool Skip;
+
+	bool IsPMS;
+
 	BmsLoadInfo()
 	{
 		for (int k = 0; k < MAX_CHANNELS; k++)
@@ -196,6 +204,12 @@ struct BmsLoadInfo
 		difficulty = NULL;
 		song = NULL;
 		LNObj = 0;
+		IsPMS = false;
+
+		Skip = false;
+		CurrentNestedLevel = 0;
+
+		memset (RandomStack, 0, sizeof(RandomStack));
 	}
 };
 
@@ -211,6 +225,8 @@ void ParseEvents(BmsLoadInfo *Info, const int Measure, const int BmsChannel, con
 
 	if (BmsChannel != CHANNEL_METER)
 	{
+		size_t cSize = Info->Measures[Measure].Events[BmsChannel].size();
+		Info->Measures[Measure].Events[BmsChannel].reserve(CommandLength);
 
 		for (int i = 0; i < CommandLength; i++)
 		{
@@ -236,7 +252,7 @@ void ParseEvents(BmsLoadInfo *Info, const int Measure, const int BmsChannel, con
 		}
 	}else // Channel 2 is a measure length event.
 	{
-		double Event = atof(Command.c_str());
+		double Event = latof(Command);
 
 		Info->Measures[Measure].BeatDuration = Event;
 	}
@@ -306,6 +322,8 @@ void CalculateBPMs(BmsLoadInfo *Info)
 	std::sort(Info->difficulty->Timing.begin(), Info->difficulty->Timing.end(), ts_sort);
 }
 
+
+
 void CalculateStops(BmsLoadInfo *Info)
 {
 	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
@@ -353,18 +371,51 @@ int translateTrackBME(int Channel, int relativeTo)
 	}
 }
 
+int translateTrackPMS(int Channel, int relativeTo)
+{
+	int relTrack = Channel - relativeTo;
+
+	if (relativeTo == startChannelP1 || relativeTo == startChannelLNP1)
+	{
+		switch (relTrack)
+		{
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+		case 4:
+			return relTrack;
+		case 5:
+			return 7;
+		case 6:
+			return 8;
+		case 7:
+			return 5;
+		case 8:
+			return 6;
+		default: // Undefined
+			return relTrack;
+		}
+	}else
+	{
+		switch (relTrack)
+		{
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+			return relTrack;
+		default: // Undefined
+			return relTrack;
+		}
+	}
+}
+
 void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i);
 
 int evsort(const AutoplaySound &i, const AutoplaySound &j)
 {
 	return i.Time < j.Time;
-}
-
-void CalculateObjects(BmsLoadInfo *Info)
-{
-	/* At this point we know the channel count from 1 to MAX_CHANNELS. We should be able to use it now..*/
-	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
-		measureCalculate(Info, i);
 }
 
 int evtSort(const BMSEvent &A, const BMSEvent &B)
@@ -382,7 +433,11 @@ void measureCalculateSide(BmsLoadInfo *Info, MeasureList::iterator &i, int Track
 		if (i->second.Events.find(curChannel) != i->second.Events.end()) // there are bms events for this channel.
 		{
 			int Track = 0;
-			Track = translateTrackBME(curChannel, startChannel) - Info->LowerBound + TrackOffset;
+
+			if (!Info->IsPMS)
+				Track = translateTrackBME(curChannel, startChannel) - Info->LowerBound + TrackOffset;
+			else
+				Track = translateTrackPMS(curChannel, startChannel) + TrackOffset;
 
 			if (Info->LNObj)
 				std::sort(i->second.Events[curChannel].begin(), i->second.Events[curChannel].end(), evtSort);
@@ -435,7 +490,10 @@ degradetonote:
 		{
 			int Track = 0;
 
-			Track = translateTrackBME(curChannel, startChannelLN) - Info->LowerBound + TrackOffset;
+			if (!Info->IsPMS)
+				Track = translateTrackBME(curChannel, startChannelLN) - Info->LowerBound + TrackOffset;
+			else
+				Track = translateTrackPMS(curChannel, startChannelLN) + TrackOffset;
 
 			for (BMSEventList::iterator ev = i->second.Events[curChannel].begin(); ev != i->second.Events[curChannel].end(); ev++)
 			{
@@ -479,8 +537,15 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 	Msr.MeasureLength = 4 * i->second.BeatDuration;
 
 	// see both sides, p1 and p2
-	measureCalculateSide(Info, i, 0, startChannelP1, startChannelLNP1, startChannelMinesP1, startChannelInvisibleP1, Msr);
-	measureCalculateSide(Info, i, Info->SideBOffset, startChannelP2, startChannelLNP2, startChannelMinesP2, startChannelInvisibleP2, Msr);
+	if (!Info->IsPMS) // or BME-type PMS
+	{
+		measureCalculateSide(Info, i, 0, startChannelP1, startChannelLNP1, startChannelMinesP1, startChannelInvisibleP1, Msr);
+		measureCalculateSide(Info, i, Info->SideBOffset, startChannelP2, startChannelLNP2, startChannelMinesP2, startChannelInvisibleP2, Msr);
+	}else
+	{
+		measureCalculateSide(Info, i, 0, startChannelP1, startChannelLNP1, startChannelMinesP1, startChannelInvisibleP1, Msr);
+		measureCalculateSide(Info, i, 5, startChannelP2+1, startChannelLNP2+1, startChannelMinesP2+1, startChannelInvisibleP2+1, Msr);
+	}
 
 	// insert it into the difficulty structure
 	Info->difficulty->Measures.push_back(Msr);
@@ -533,27 +598,48 @@ void AutodetectChannelCountSide(BmsLoadInfo *Info, int offset, int usedChannels[
 	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
 	{
 		// normal channels
-		for (uint8 curChannel = startChannel; curChannel <= (startChannel + MAX_CHANNELS); curChannel++)
+		for (int curChannel = startChannel; curChannel <= (startChannel + MAX_CHANNELS - offset); curChannel++)
 		{
 			if (i->second.Events.find(curChannel) != i->second.Events.end())
-				usedChannels[translateTrackBME(curChannel, startChannel)+offset] = 1;
+			{
+				int offs;
+				
+				if (!Info->IsPMS)
+					offs = translateTrackBME(curChannel, startChannel)+offset;
+				else
+					offs = translateTrackPMS(curChannel, startChannel)+offset;
+
+				if (offs < MAX_CHANNELS) // A few BMSes use the foot pedal, so we need to not overflow the array.
+					usedChannels[offs] = 1;
+			}
 		}
 
 		// LN channels
-		for (uint8 curChannel = startChannelLN; curChannel <= (startChannelLN + MAX_CHANNELS); curChannel++)
+		for (int curChannel = startChannelLN; curChannel <= (startChannelLN + MAX_CHANNELS - offset); curChannel++)
 		{
 			if (i->second.Events.find(curChannel) != i->second.Events.end())
-				usedChannels[translateTrackBME(curChannel, startChannelLN)+offset] = 1;
+			{
+				int offs;
+				
+				if (!Info->IsPMS)
+					offs = translateTrackBME(curChannel, startChannelLN)+offset;
+				else
+					offs = translateTrackPMS(curChannel, startChannelLN)+offset;
+
+				if (offs < MAX_CHANNELS)
+					usedChannels[offs] = 1;
+			}
 		}
 	}
 }
 
-void AutodetectChannelCount(BmsLoadInfo *Info)
+int AutodetectChannelCount(BmsLoadInfo *Info)
 {
-	int usedChannels[MAX_CHANNELS];
+	int usedChannels[MAX_CHANNELS] = {};
+	int usedChannelsB[MAX_CHANNELS] = {};
 
-	for (uint8 i = 0; i < MAX_CHANNELS; i++)
-		usedChannels[i] = 0;
+	if (Info->IsPMS)
+		return 9;
 
 	Info->LowerBound = -1;
 	Info->UpperBound = 0;
@@ -582,7 +668,31 @@ void AutodetectChannelCount(BmsLoadInfo *Info)
 	Info->SideBOffset = LastIndex - FirstIndex + 1;
 
 	// Use that information to add the p2 side right next to the p1 side and have a continuous thing.
-	AutodetectChannelCountSide(Info, LastIndex+1, usedChannels, startChannelP2, startChannelLNP2, startChannelMinesP2, startChannelInvisibleP2);
+	AutodetectChannelCountSide(Info, LastIndex+1, usedChannelsB, startChannelP2, startChannelLNP2, startChannelMinesP2, startChannelInvisibleP2);
+
+	// Correct if second side starts at an offset different from zero.
+	int sideBIndex = -1;
+
+	for (int i = 0; i < MAX_CHANNELS; i++)
+		if (usedChannelsB[i])
+		{
+			sideBIndex = i;
+			break;
+		}
+
+	// We found where it starts; append that starting point to the end of the left side.
+
+	if (sideBIndex > 0)
+	{
+		for (int i = LastIndex+1; i < MAX_CHANNELS; i++)
+		{
+			int idx2 = i - 1 + (sideBIndex - Info->SideBOffset);
+
+			if (idx2 >= MAX_CHANNELS) break;
+
+			usedChannels[i] |= usedChannelsB[idx2];
+		}
+	}
 
 	/* Find boundaries for used channels */
 	for (int i = 0; i < MAX_CHANNELS; i++)
@@ -599,33 +709,101 @@ void AutodetectChannelCount(BmsLoadInfo *Info)
 	
 
 	// We pick the range of channels we're going to use.
-	Info->difficulty->Channels = Info->UpperBound - Info->LowerBound + 1;
+	return Info->UpperBound - Info->LowerBound + 1;
 }
 
 void CompileBMS(BmsLoadInfo *Info)
 {
 	/* To be done. */
+	MeasureList &m = Info->Measures;
 	CalculateBPMs(Info);
 	CalculateStops(Info);
-	AutodetectChannelCount(Info);
-	CalculateObjects(Info);
+
+	Info->Difficulty->Channels = AutodetectChannelCount(Info);
+	if (Info->Difficulty->Channels == 9) // Assume pop'n
+		Info->IsPMS = true;
+	
+	for (MeasureList::iterator i = m.begin(); i != m.end(); i++)
+		measureCalculate(Info, i);
+}
+
+bool InterpStatement(String Command, String Contents, BmsLoadInfo *Info)
+{
+	bool IsControlFlowCommand = false;
+
+	// Starting off with the basics.
+
+	do {
+		if (Command == "#RANDOM")
+		{
+			IsControlFlowCommand = true;
+
+			if (Info->Skip)
+				break;
+
+			int Limit = atoi(Contents.c_str());
+
+			assert(Info->CurrentNestedLevel < 16);
+			assert(Limit > 1);
+
+			Info->RandomStack[Info->CurrentNestedLevel] = rand() % Limit + 1;
+
+		}else if (Command == "#IF")
+		{
+			IsControlFlowCommand = true;
+			Info->CurrentNestedLevel++;
+
+			if (Info->Skip)
+				break;
+
+			int Var = atoi(Contents.c_str());
+
+			assert (Var > 0);
+
+			if (Var != Info->RandomStack[Info->CurrentNestedLevel-1])
+			{
+				Info->Skip = 1;
+				Info->SkipNestedLevel = Info->CurrentNestedLevel-1; // Once we reach this nested level, we end skipping.
+			}
+
+		}else if (Command == "#ENDIF")
+		{
+			IsControlFlowCommand = true;
+			Info->CurrentNestedLevel--;
+
+			if (Info->Skip)
+			{
+				if (Info->CurrentNestedLevel == Info->SkipNestedLevel)
+					Info->Skip = 0;
+			}
+		}
+
+	} while (0);
+
+	return !IsControlFlowCommand && !Info->Skip;
 }
 
 void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Out)
 {
-#if (!defined _WIN32) || (defined STLP)
+#if (!defined _WIN32)
 	std::ifstream filein (filename.c_str());
 #else
 	std::ifstream filein (Utility::Widen(filename).c_str());
 #endif
+
 	Difficulty *Diff = new Difficulty();
 	BmsLoadInfo *Info = new BmsLoadInfo();
+
+	Diff->Filename = filename;
 
 	Info->song = Out;
 	Info->difficulty = Diff;
 
+	if (Utility::Widen(filename).find(L"pms") != std::wstring::npos)
+		Info->IsPMS = true;
+
 	// BMS uses beat-based locations for stops and BPM. (Though the beat must be calculated.)
-	Out->BPMType = Song::BT_Beat;
+	Diff->BPMType = VSRG::Difficulty::BT_Beat;
 	Diff->LMT = Utility::GetLMT(filename);
 
 	if (!filein.is_open())
@@ -635,16 +813,14 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 		return;
 	}
 
+	srand(time(0));
 	Diff->IsVirtual = true;
 
 	/* 
 		BMS files are separated always one file, one difficulty, so it'd make sense
 		that every BMS 'set' might have different timing information per chart.
 		While BMS specifies no 'set' support it's usually implied using folders.
-	*/
-	Out->UseSeparateTimingData = true;
 
-	/* 
 		The default BME specifies is 8 channels when #PLAYER is unset, however
 		the modern BMS standard specifies to ignore #PLAYER and try to figure it out
 		from the amount of used channels.
@@ -670,117 +846,120 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 #define OnCommandSub(x) if(command.substr(0, strlen(#x)) == #x)
 
 		String CommandContents = Line.substr(Line.find_first_of(" ") + 1);
-
-		OnCommand(#GENRE)
+		if (InterpStatement(command, CommandContents, Info)) 
 		{
-			// stub
-		}
 
-		OnCommand(#TITLE)
-		{
-			Out->SongName = CommandContents;
-		}
-		
-		OnCommand(#ARTIST)
-		{
-			Out->SongAuthor = CommandContents;
-		}
-
-		OnCommand(#BPM)
-		{
-			TimingSegment Seg;
-			Seg.Time = 0;
-			Seg.Value = atof(CommandContents.c_str());
-			Diff->Timing.push_back(Seg);
-
-			continue;
-		}
-
-		OnCommand(#STAGEFILE)
-		{
-			Out->BackgroundFilename = CommandContents;
-		}
-
-		OnCommand(#LNOBJ)
-		{
-			Info->LNObj = fromBase36(CommandContents.c_str());
-		}
-
-		OnCommand(#DIFFICULTY)
-		{
-			int Kind = atoi(CommandContents.c_str());
-			String dName;
-
-			switch (Kind)
+			OnCommand(#GENRE)
 			{
-			case 1:
-				dName = "Beginner";
-				break;
-			case 2:
-				dName = "Normal";
-				break;
-			case 3:
-				dName = "Hard";
-				break;
-			case 4:
-				dName = "Another";
-				break;
-			case 5:
-				dName = "Another+";
-				break;
-			default:
-				dName = "???";
+				// stub
 			}
 
-			Diff->Name = dName;
+			OnCommand(#TITLE)
+			{
+				Out->SongName = CommandContents;
+			}
+
+			OnCommand(#ARTIST)
+			{
+				Out->SongAuthor = CommandContents;
+			}
+
+			OnCommand(#BPM)
+			{
+				TimingSegment Seg;
+				Seg.Time = 0;
+				Seg.Value = latof(CommandContents.c_str());
+				Diff->Timing.push_back(Seg);
+
+				continue;
+			}
+
+			OnCommand(#STAGEFILE)
+			{
+				Out->BackgroundFilename = CommandContents;
+			}
+
+			OnCommand(#LNOBJ)
+			{
+				Info->LNObj = fromBase36(CommandContents.c_str());
+			}
+
+			OnCommand(#DIFFICULTY)
+			{
+				int Kind = atoi(CommandContents.c_str());
+				String dName;
+
+				switch (Kind)
+				{
+				case 1:
+					dName = "Beginner";
+					break;
+				case 2:
+					dName = "Normal";
+					break;
+				case 3:
+					dName = "Hard";
+					break;
+				case 4:
+					dName = "Another";
+					break;
+				case 5:
+					dName = "Another+";
+					break;
+				default:
+					dName = "???";
+				}
+
+				Diff->Name = dName;
+			}
+
+			OnCommand(#BACKBMP)
+			{
+				Out->BackgroundFilename = CommandContents;
+			}
+
+			OnCommandSub(#WAV)
+			{
+				String IndexStr = CommandSubcontents("#WAV", command);
+				int Index = fromBase36(IndexStr.c_str());
+				Info->Sounds[Index] = CommandContents;
+			}
+
+			OnCommandSub(#BPM)
+			{
+				String IndexStr = CommandSubcontents("#BPM", command);
+				int Index = fromBase36(IndexStr.c_str());
+				Info->BPMs[Index] = latof(CommandContents.c_str());
+			}
+
+			OnCommandSub(#STOP)
+			{
+				String IndexStr = CommandSubcontents("#STOP", command);
+				int Index = fromBase36(IndexStr.c_str());
+				Info->Stops[Index] = latof(CommandContents.c_str());
+			}
+
+			/* Do we need this?... */
+			OnCommandSub(#EXBPM)
+			{
+				String IndexStr = CommandSubcontents("#EXBPM", command);
+				int Index = fromBase36(IndexStr.c_str());
+				Info->BPMs[Index] = latof(CommandContents.c_str());
+			}
+
+			/* Else... */
+			String MeasureCommand = Line.substr(Line.find_first_of(":")+1);
+			String MainCommand = Line.substr(1, 5);
+
+			if (Utility::IsNumeric(MainCommand.c_str())) // We've got work to do.
+			{
+				int Measure = atoi(MainCommand.substr(0,3).c_str());
+				int Channel = fromBase36(MainCommand.substr(3,2).c_str());
+
+				ParseEvents(Info, Measure, Channel, MeasureCommand);
+			}
+
 		}
-
-		OnCommand(#BACKBMP)
-		{
-			Out->BackgroundFilename = CommandContents;
-		}
-
-		OnCommandSub(#WAV)
-		{
-			String IndexStr = CommandSubcontents("#WAV", command);
-			int Index = fromBase36(IndexStr.c_str());
-			Info->Sounds[Index] = CommandContents;
-		}
-
-		OnCommandSub(#BPM)
-		{
-			String IndexStr = CommandSubcontents("#BPM", command);
-			int Index = fromBase36(IndexStr.c_str());
-			Info->BPMs[Index] = atof(CommandContents.c_str());
-		}
-
-		OnCommandSub(#STOP)
-		{
-			String IndexStr = CommandSubcontents("#STOP", command);
-			int Index = fromBase36(IndexStr.c_str());
-			Info->Stops[Index] = atof(CommandContents.c_str());
-		}
-
-		/* Do we need this?... */
-		OnCommandSub(#EXBPM)
-		{
-			String IndexStr = CommandSubcontents("#EXBPM", command);
-			int Index = fromBase36(IndexStr.c_str());
-			Info->BPMs[Index] = atof(CommandContents.c_str());
-		}
-
-		/* Else... */
-		String MeasureCommand = Line.substr(Line.find_first_of(":")+1);
-		String MainCommand = Line.substr(1, 5);
-
-		if (Utility::IsNumeric(MainCommand.c_str())) // We've got work to do.
-		{
-			int Measure = atoi(MainCommand.substr(0,3).c_str());
-			int Channel = fromBase36(MainCommand.substr(3,2).c_str());
-
-			ParseEvents(Info, Measure, Channel, MeasureCommand);
-		}
-
 	}
 
 	/* When all's said and done, "compile" the bms. */

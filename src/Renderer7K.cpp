@@ -21,7 +21,7 @@ void ScreenGameplay7K::DrawMeasures()
 	float rPos;
 	float MultAbs = abs(SpeedMultiplier);
 
-	rPos = CurrentVertical * SpeedMultiplier + BasePos;
+	rPos = CurrentVertical * SpeedMultiplier + JudgementLinePos;
 
 	// Set the color.
 	WindowFrame.SetUniform(U_INVERT, false); // Color invert
@@ -89,7 +89,8 @@ void ScreenGameplay7K::DrawMeasures()
 			{
 				if (Upscroll && Vertical > ScreenHeight)
 					goto next_key;
-				else if (Vertical < 0)
+
+				if (!Upscroll && Vertical < 0)
 					goto next_key;
 
 				if (Upscroll)
@@ -152,7 +153,7 @@ void ScreenGameplay7K::DrawMeasures()
 			}
 
 			// Assign our matrix - encore
-			if ( (!m->IsHold() && (Vertical < BasePos && Upscroll || Vertical >= BasePos && !Upscroll))
+			if ( (!m->IsHold() && (Vertical < JudgementLinePos && Upscroll || Vertical >= JudgementLinePos && !Upscroll))
 				|| (m->IsHold() && (Vertical > VerticalHold && Upscroll || Vertical < VerticalHold && !Upscroll)) )
 			{
 

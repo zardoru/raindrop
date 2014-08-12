@@ -16,6 +16,8 @@ GraphObject2D::GraphObject2D(bool ShouldInitTexture)
 	SetScale(1);
 	mRotation = 0;
 
+	BlendingMode = MODE_ALPHA;
+
 	Red = Blue = Green = 1.0;
 	Alpha = 1.0;
 		
@@ -37,6 +39,11 @@ GraphObject2D::GraphObject2D(bool ShouldInitTexture)
 GraphObject2D::~GraphObject2D()
 {
 	Cleanup();
+}
+
+void GraphObject2D::SetBlendMode(rBlendMode Mode)
+{
+	BlendingMode = Mode;
 }
 
 void GraphObject2D::Initialize(bool ShouldInitTexture)

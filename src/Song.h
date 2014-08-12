@@ -15,6 +15,12 @@ struct AutoplaySound
 	int Sound;
 };
 
+enum ModeType
+{
+	MODE_DOTCUR,
+	MODE_7K
+};
+
 namespace Game
 {
 
@@ -31,6 +37,7 @@ namespace Game
 
 			// Meta
 			String Name;
+			String Filename;
 
 			uint32 TotalNotes;
 			uint32 TotalHolds;
@@ -39,7 +46,10 @@ namespace Game
 
 			std::map<int, String> SoundList;
 
+			int ID;
+
 			Difficulty() {
+				ID = 0;
 				Duration = 0;
 				Offset = 0;
 				TotalNotes = 0;
@@ -48,6 +58,8 @@ namespace Game
 				TotalScoringObjects = 0;
 			}
 		};
+
+		ModeType Mode;
 
 		/* Song title */
 		String SongName;
@@ -62,7 +74,7 @@ namespace Game
 		String SongFilename, BackgroundFilename;
 
 		Song() {};
-		~Song() {};
+		virtual ~Song() {};
 	};
 
 }

@@ -7,8 +7,8 @@ namespace VSRG
 
 	struct Measure 
 	{
-		float MeasureLength; // In beats. 4 by default.
 		std::vector<NoteData> MeasureNotes[MAX_CHANNELS];
+		float MeasureLength; // In beats. 4 by default.
 
 		Measure() {
 			MeasureLength = 4;
@@ -22,8 +22,6 @@ namespace VSRG
 
 	struct Difficulty : public Game::Song::Difficulty
 	{
-		int LMT; // Last modified time
-
 		// This is saved to the cache file.
 		TimingData StopsTiming;
 
@@ -42,6 +40,17 @@ namespace VSRG
 		// Autoplay Sounds
 		std::vector<AutoplaySound> BGMEvents;
 
+		double PreviewTime;
+
+		int LMT; // Last modified time
+
+		enum EBt
+		{
+			BT_Beat,
+			BT_MS,
+			BT_Beatspace
+		} BPMType;
+
 		// This information won't be saved into the cache file.
 		unsigned char Channels;
 		bool IsVirtual;
@@ -49,9 +58,6 @@ namespace VSRG
 		// New variables for cache
 		bool IsLoaded;
 		bool ParseAgain;
-		String ChartFilename;
-
-		double PreviewTime;
 
 	public:
 		Difficulty() {
@@ -62,10 +68,6 @@ namespace VSRG
 			PreviewTime = 0;
 			LMT = 0;
 		};
-
-		// Load and save from cache
-		bool SaveCache(String filename);
-		bool LoadCache(String filename);
 
 		// Destroy all information that can be loaded from cache
 		void Destroy();
@@ -83,26 +85,11 @@ namespace VSRG
 		void ProcessSpeedVariations(VSRG::Difficulty* Diff, double Drift);
 	public:
 
-		/* For charting systems that use one declaration of timing for all difficulties only used at load time */
-		double Offset;
-		TimingData BPMData;
-		TimingData StopsData; 
-		bool UseSeparateTimingData;
-		String FilenameCache;
-
-		enum EBt
-		{
-			BT_Beat,
-			BT_MS,
-			BT_Beatspace
-		} BPMType;
-
 		std::vector<VSRG::Difficulty*> Difficulties;
 
 		Song();
 		~Song();
 
-		String DifficultyCacheFilename(VSRG::Difficulty * Diff);
 		void Process(VSRG::Difficulty* Which, VectorTN NotesOut, float Drift = 0, double SpeedConstant = 0);
 	};
 
