@@ -291,6 +291,8 @@ void Song::Process(VSRG::Difficulty* Which, VectorTN NotesOut, float Drift, doub
 		if (!SpeedConstant) // If there is a speed constant having speed changes is not what we want
 			ProcessSpeedVariations(*Diff, Drift);
 
+
+		// From here on, we'll just copy the notes out. Otherwise, just leave the processed data.
 		if (!NotesOut)
 			return;
 

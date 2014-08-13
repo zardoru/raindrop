@@ -51,16 +51,23 @@ void Application::ParseArgs()
 {
 	for (int i = 1; i < Args.Argc; i++)
 	{
+		wprintf(L"%d: %ls\n", i, Utility::Widen(Args.Argv[i]).c_str());
+	}
+
+	for (int i = 1; i < Args.Argc; i++)
+	{
 		if (Args.Argv[i][0] == '-')
 		{
 			switch (Args.Argv[i][1])
 			{
 			case 'p': // Preview file (VSRG preview mode)
 				RunMode = MODE_VSRGPREVIEW;
+				continue;
+
 			case 'i': // Infile (convert mode/preview file)
 				if (ValidArg(Args.Argc, 1, i))
 				{
-					InFile = Args.Argv[i+2];
+					InFile = Args.Argv[i+1];
 					i++;
 				}
 
@@ -71,7 +78,7 @@ void Application::ParseArgs()
 
 				if (ValidArg(Args.Argc, 1, i))
 				{
-					OutFile = Args.Argv[i+2];
+					OutFile = Args.Argv[i+1];
 					i++;
 				}
 
@@ -83,7 +90,7 @@ void Application::ParseArgs()
 
 				if (ValidArg(Args.Argc, 1, i))
 				{
-					String Mode = Args.Argv[i+2];
+					String Mode = Args.Argv[i+1];
 					if (Mode == "om")
 						ConvertMode = CONV_OM;
 					else if (Mode == "sm")
@@ -163,6 +170,10 @@ void Application::Run()
 	}else if (RunMode == MODE_VSRGPREVIEW)
 	{
 		VSRG::Song* Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), NULL);
+
+		if (!Sng)
+			return;
+
 		ScreenGameplay7K *SGame = new ScreenGameplay7K();
 		ScreenLoading *LoadScreen = new ScreenLoading(NULL, SGame);
 
@@ -182,10 +193,12 @@ void Application::Run()
 	{
 		VSRG::Song* Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), NULL);
 
-		if (Sng) 
+		if (Sng && Sng->Difficulties.size()) 
 		{
-		// if (ConvertMode == CONV_OM) // for now this is the default
-			ConvertToOM (Sng, OutFile.path(), Author);
+			if (ConvertMode == CONV_OM) // for now this is the default
+				ConvertToOM (Sng, OutFile.path(), Author);
+			else
+				ConvertToSMTiming(Sng, OutFile.path());
 		}
 
 		RunLoop = false;
