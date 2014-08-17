@@ -491,7 +491,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 		return;
 	}
 
-	PlayReactiveSounds = (!CurrentDiff->IsVirtual && !(Configuration::GetConfigf("DisableHitsounds")));
+	PlayReactiveSounds = (CurrentDiff->IsVirtual || !(Configuration::GetConfigf("DisableHitsounds")));
 
 	SetupGear();
 
