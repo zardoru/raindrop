@@ -66,7 +66,7 @@ Directory operator/(Directory parent, std::string subpath)
 
 Directory operator/(std::string subpath, Directory parent)
 {
-	return operator/(parent, subpath); // o_O
+	return operator/( Directory(subpath), std::string(parent)); // o_O
 }
 
 Directory Directory::Filename()

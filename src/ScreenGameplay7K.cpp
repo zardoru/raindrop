@@ -221,9 +221,19 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	{
 		/* Load song from directory */
 		SongLoader Loader(GameState::GetInstance().GetSongDatabase());
+		Directory FN;
 
 		Log::Printf("Loading Chart...");
-		LoadedSong = Loader.LoadFromMeta(MySong, CurrentDiff);
+		LoadedSong = Loader.LoadFromMeta(MySong, CurrentDiff, &FN);
+
+		if (LoadedSong == NULL)
+		{
+			Log::Printf("Failure to load chart. (Filename: %ls)\n", Utility::Widen(FN.path()));
+			DoPlay = false;
+			return;
+		}
+
+		MySong = LoadedSong;
 
 		/*
 			At this point, MySong == LoadedSong, which means it's not a metadata-only Song* Instance.

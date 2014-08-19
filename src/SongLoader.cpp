@@ -227,13 +227,15 @@ void SongLoader::GetSongList7K(std::vector<VSRG::Song*> &OutVec, Directory Dir)
 	}
 }
 
-VSRG::Song* SongLoader::LoadFromMeta(VSRG::Song* Meta, VSRG::Difficulty* CurrentDiff)
+VSRG::Song* SongLoader::LoadFromMeta(const VSRG::Song* Meta, VSRG::Difficulty* &CurrentDiff, Directory *FilenameOut)
 {
 	int SongID;
 	VSRG::Song* Out;
 	DB->IsSongDirectory(Meta->SongDirectory, &SongID);
 
 	std::string fn = DB->GetDifficultyFilename(CurrentDiff->ID);
+	*FilenameOut = fn;
+
 	Out = LoadSong7KFromFilename(fn, "", NULL);
 
 	// Copy relevant data
