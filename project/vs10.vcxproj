@@ -180,8 +180,8 @@
     <ClCompile Include="..\src\Convert.cpp" />
     <ClCompile Include="..\src\Directory.cpp" />
     <ClCompile Include="..\src\GameState.cpp" />
+    <ClCompile Include="..\src\Logging.cpp" />
     <ClCompile Include="..\src\raindrop.cpp" />
-    <ClCompile Include="..\src\FileManager.cpp" />
     <ClCompile Include="..\src\GameObject.cpp" />
     <ClCompile Include="..\src\GameWindow.cpp" />
     <ClCompile Include="..\src\GraphObject2D.cpp" />
@@ -216,6 +216,7 @@
     <ClCompile Include="..\src\SongDC.cpp" />
     <ClCompile Include="..\src\Song7K.cpp" />
     <ClCompile Include="..\src\SongList.cpp" />
+    <ClCompile Include="..\src\SongLoader.cpp" />
     <ClCompile Include="..\src\SongTiming.cpp" />
     <ClCompile Include="..\src\SongWheel.cpp" />
     <ClCompile Include="..\src\TrackNote.cpp" />
@@ -246,7 +247,6 @@
     <ClInclude Include="..\src\Configuration.h" />
     <ClInclude Include="..\src\Converter.h" />
     <ClInclude Include="..\src\Directory.h" />
-    <ClInclude Include="..\src\FileManager.h" />
     <ClInclude Include="..\src\GameObject.h" />
     <ClInclude Include="..\src\GameGlobal.h" />
     <ClInclude Include="..\src\GameState.h" />
@@ -259,6 +259,7 @@
     <ClInclude Include="..\src\Image.h" />
     <ClInclude Include="..\src\ImageList.h" />
     <ClInclude Include="..\src\ImageLoader.h" />
+    <ClInclude Include="..\src\Logging.h" />
     <ClInclude Include="..\src\LuaManager.h" />
     <ClInclude Include="..\src\NoteLoaderDC.h" />
     <ClInclude Include="..\src\NoteLoader7K.h" />
@@ -277,6 +278,7 @@
     <ClInclude Include="..\src\SongDatabase.h" />
     <ClInclude Include="..\src\SongDC.h" />
     <ClInclude Include="..\src\SongList.h" />
+    <ClInclude Include="..\src\SongLoader.h" />
     <ClInclude Include="..\src\SongTiming.h" />
     <ClInclude Include="..\src\SongWheel.h" />
     <ClInclude Include="..\src\TrackNote.h" />

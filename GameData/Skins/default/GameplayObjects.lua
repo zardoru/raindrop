@@ -90,13 +90,14 @@ function Lifebar.Run(Delta)
 	local partB = Lifebar.Display * 0.02 * DP
 	local Display = partA + partB
 	local NewY = ScreenHeight - Lifebar.FillSize * (Display) / 2
+	local NewYFixed = ScreenHeight - Lifebar.FillSize * (Lifebar.Display) / 2
 
 	Lifebar.CurrentPosition = Lifebar.Position
 
 	Obj.SetTarget(Lifebar.Fill)
-	Obj.SetScale( 1, Display )
-	Obj.SetPosition( Lifebar.CurrentPosition.x, NewY );
-	Obj.CropByPixels( 0, Lifebar.FillSize - Lifebar.FillSize * Display, Lifebar.Width, Lifebar.FillSize )
+	Obj.SetScale( 1, Lifebar.Display )
+	Obj.SetPosition( Lifebar.CurrentPosition.x, NewYFixed );
+	Obj.CropByPixels( 0, Lifebar.FillSize - Lifebar.FillSize * Lifebar.Display, Lifebar.Width, Lifebar.FillSize )
 
 	Obj.SetTarget(Lifebar.Fill2)
 	Obj.SetScale( 1, Display )

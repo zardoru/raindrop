@@ -1,10 +1,10 @@
 #include "GameGlobal.h"
 #include "Song.h"
 #include "SongList.h"
-#include "FileManager.h"
 
 #include "Song7K.h"
 #include "SongDC.h"
+#include "SongLoader.h"
 
 SongList::SongList (SongList* Parent)
 	: mParent(Parent)
@@ -41,7 +41,7 @@ void SongList::AddSong(Game::Song* Song)
 	mChildren.push_back(NewEntry);
 }
 
-void SongList::AddDirectory(Directory Dir, bool VSRGActive, bool DotcurActive)
+void SongList::AddDirectory(SongLoader *Loader, Directory Dir, bool VSRGActive, bool DotcurActive)
 {
 	SongList* NewList = new SongList(this);
 
@@ -62,13 +62,13 @@ void SongList::AddDirectory(Directory Dir, bool VSRGActive, bool DotcurActive)
 		i++)
 	{
 		if (VSRGActive)
-			LoadSong7KFromDir(Dir / *i, Songs7K);
+			Loader->LoadSong7KFromDir(Dir / *i, Songs7K);
 		
 		if (DotcurActive)
-			LoadSongDCFromDir(Dir / *i, SongsDC);
+			Loader->LoadSongDCFromDir(Dir / *i, SongsDC);
 
 		if (!SongsDC.size() && !Songs7K.size())
-			NewList->AddDirectory(Dir / *i, VSRGActive, DotcurActive);
+			NewList->AddDirectory(Loader, Dir / *i, VSRGActive, DotcurActive);
 
 		if (Songs7K.size())
 		{

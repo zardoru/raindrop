@@ -1,9 +1,8 @@
 #include "GameGlobal.h"
-#include "GameState.h"
+#include "Logging.h"
 
 #include "Song7K.h"
 #include "SongDatabase.h"
-#include "FileManager.h"
 
 #include <sqlite3.h>
 
@@ -60,13 +59,13 @@ const char* GetDiffIDFileID = "SELECT diffid FROM diffdb \
 							 WHERE diffdb.fileid=? AND\
 							 diffdb.name = ?";
 
-#define SC(x) ret=x; if(ret!=SQLITE_OK)wprintf(L"%ls\n",Utility::Widen(sqlite3_errmsg(db)).c_str());
+#define SC(x) ret=x; if(ret!=SQLITE_OK) Log::Printf("%ls\n",Utility::Widen(sqlite3_errmsg(db)).c_str());
 SongDatabase::SongDatabase(String Database)
 {
 	int ret = sqlite3_open(Database.c_str(), &db);
 
 	if (ret != SQLITE_OK)
-		GameState::Printf("Unable to open song database file.");
+		Log::Printf("Unable to open song database file.");
 	else
 	{
 		char* err; // Do the "create tables" query.
@@ -75,7 +74,6 @@ SongDatabase::SongDatabase(String Database)
 
 		// And not just that, also the statements.
 		SC(sqlite3_prepare_v2(db, GetSongIDQuery, strlen(GetSongIDQuery), &st_IDQuery, &tail));
-		
 		SC(sqlite3_prepare_v2(db, InsertSongQuery, strlen(InsertSongQuery), &st_SngInsertQuery, &tail));
 		SC(sqlite3_prepare_v2(db, InsertDifficultyQuery, strlen(InsertDifficultyQuery), &st_DiffInsertQuery, &tail));
 		SC(sqlite3_prepare_v2(db, GetFilenameIDQuery, strlen(GetFilenameIDQuery), &st_FilenameQuery, &tail));
@@ -98,9 +96,9 @@ SongDatabase::~SongDatabase()
 {
 	if (db)
 	{
+		sqlite3_finalize(st_IDQuery);
 		sqlite3_finalize(st_SngInsertQuery);
 		sqlite3_finalize(st_DiffInsertQuery);
-		sqlite3_finalize(st_IDQuery);
 		sqlite3_finalize(st_FilenameQuery);
 		sqlite3_finalize(st_FilenameInsertQuery);
 		sqlite3_finalize(st_DiffIDQuery);
@@ -139,6 +137,7 @@ int SongDatabase::AddSong(Directory Dir, int Mode, Game::Song* In)
 	return ID;
 }
 
+// Only returns whether the directory exists in the database.
 bool SongDatabase::IsSongDirectory(Directory Dir, int *IDOut)
 {
 	int res1 = sqlite3_bind_text(st_IDQuery, 1, Dir.c_path(), Dir.path().length(), SQLITE_TRANSIENT);
@@ -155,8 +154,10 @@ bool SongDatabase::IsSongDirectory(Directory Dir, int *IDOut)
 	return ret == SQLITE_ROW;
 }
 
+// Inserts a filename, if it already exists, updates it.
 int SongDatabase::InsertFilename(Directory Fn)
 {
+	int ret;
 	int idOut;
 	sqlite3_bind_text(st_FilenameQuery, 1, Fn.c_path(), Fn.path().length(), SQLITE_TRANSIENT);
 	sqlite3_bind_int(st_FilenameQuery, 2, Utility::GetLMT(Fn.path()));
@@ -168,7 +169,7 @@ int SongDatabase::InsertFilename(Directory Fn)
 
 		sqlite3_bind_int(st_UpdateLMT, 1, Utility::GetLMT(Fn.path()));
 		sqlite3_bind_int(st_UpdateLMT, 2, idOut);
-		sqlite3_step(st_UpdateLMT);
+		SC(sqlite3_step(st_UpdateLMT));
 		sqlite3_reset(st_UpdateLMT);
 	}else
 	{
@@ -299,6 +300,7 @@ String SongDatabase::GetDifficultyFilename (int ID)
 bool SongDatabase::CacheNeedsRenewal(Directory Dir)
 {
 	int CurLMT = Utility::GetLMT(Dir.path());
+	bool NeedsRenewal;
 	int res;
 
 	sqlite3_bind_text(st_LMTQuery, 1, Dir.c_path(), Dir.path().length(), SQLITE_TRANSIENT);
@@ -307,15 +309,14 @@ bool SongDatabase::CacheNeedsRenewal(Directory Dir)
 	if (res == SQLITE_ROW) // entry exists
 	{
 		int OldLMT = sqlite3_column_int(st_LMTQuery, 0);
-		sqlite3_reset(st_LMTQuery);
-
 		bool IsLMTCurrent = (CurLMT==OldLMT); // file was not modified since last time
-
-		return !IsLMTCurrent;
+		NeedsRenewal = !IsLMTCurrent;
 	}else {
-		sqlite3_reset(st_LMTQuery);
-		return 1;
+		NeedsRenewal = true;
 	}
+
+	sqlite3_reset(st_LMTQuery);
+	return NeedsRenewal;
 }
 
 void SongDatabase::StartTransaction()

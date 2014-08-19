@@ -4,11 +4,21 @@
 #include "GameGlobal.h"
 #include "GameState.h"
 #include "GameWindow.h"
+#include "Song.h"
+#include "SongDatabase.h"
+
+#include "ImageLoader.h"
+
+#define DirectoryPrefix String("GameData/")
+#define SkinsPrefix String("Skins/")
+#define SongsPrefix String("Songs")
+#define ScriptsPrefix String("Scripts/")
 
 using namespace Game;
 
 GameState::GameState()
 {
+	CurrentSkin = "default";
 }
 
 GameState& GameState::GetInstance()
@@ -19,38 +29,41 @@ GameState& GameState::GetInstance()
 
 void GameState::Initialize()
 {
-}
-
-#ifdef DEBUG
-static void DebugPrintf(String Format, ...)
-{
-
-}
-#endif
-
-void GameState::Printf(String Format, ...)
-{
-	char Buffer[2048];
-	va_list vl;
-	va_start(vl,Format);
-	vsnprintf(Buffer, 2048, Format.c_str(), vl);
-	va_end(vl);
-	wprintf(L"%ls", Utility::Widen(Buffer).c_str());
-}
-
-void GameState::Logf(String Format, ...)
-{
-	static std::fstream logf ("log.txt", std::ios::out);
-	char Buffer[2048];
-	va_list vl;
-	va_start(vl,Format);
-	vsnprintf(Buffer, 2048, Format.c_str(), vl);
-	va_end(vl);
-	logf << Buffer;
-	logf.flush();
+	Database = new SongDatabase("songdatabase.db");
 }
 
 GameWindow* GameState::GetWindow()
 {
 	return &WindowFrame;
+}
+
+String GameState::GetDirectoryPrefix()
+{
+	return DirectoryPrefix;
+}
+
+String GameState::GetSkinPrefix()
+{
+	// I wonder if a directory transversal is possible. Or useful, for that matter.
+	return DirectoryPrefix + SkinsPrefix + CurrentSkin + "/";
+}
+
+void GameState::SetSkin(String Skin)
+{
+	CurrentSkin = Skin;
+}
+
+String GameState::GetScriptsDirectory()
+{
+	return DirectoryPrefix + ScriptsPrefix;
+}
+
+SongDatabase* GameState::GetSongDatabase()
+{
+	return Database;
+}
+
+Image* GameState::GetSkinImage(Directory Path)
+{
+	return ImageLoader::Load(GetSkinPrefix() / Path);
 }

@@ -1,9 +1,9 @@
 #include "GameGlobal.h"
+#include "GameState.h"
 #include "Configuration.h"
 #include "Screen.h"
 #include "ImageLoader.h"
 #include "Audio.h"
-#include "FileManager.h"
 #include "GameWindow.h"
 #include "GraphObject2D.h"
 #include "BitmapFont.h"
@@ -61,7 +61,7 @@ void ScreenMainMenu::Init()
 	Objects->AddTarget(&EditBtn);
 	Objects->AddLuaTarget(&PlayBtn, "PlayButton");
 	Objects->AddLuaTarget(&ExitBtn, "ExitButton");
-	Objects->Initialize(FileManager::GetSkinPrefix() + "mainmenu.lua");
+	Objects->Initialize(GameState::GetInstance().GetSkinPrefix() + "mainmenu.lua");
 
 	if (!MainMenuFont)
 	{
@@ -70,12 +70,12 @@ void ScreenMainMenu::Init()
 		MainMenuFont->SetAffectedByLightning(true);	
 	}
 
-	Background.SetImage(ImageLoader::LoadSkin(Configuration::GetSkinConfigs("MainMenuBackground")));
+	Background.SetImage(GameState::GetInstance().GetSkinImage(Configuration::GetSkinConfigs("MainMenuBackground")));
 	Background.Centered = 1;
 	Background.SetPosition( ScreenWidth / 2, ScreenHeight / 2 );
 	
-	PlayBtn.SetImage(ImageLoader::LoadSkin("play.png"), false);
-	ExitBtn.SetImage(ImageLoader::LoadSkin("quit.png"), false);
+	PlayBtn.SetImage(GameState::GetInstance().GetSkinImage("play.png"), false);
+	ExitBtn.SetImage(GameState::GetInstance().GetSkinImage("quit.png"), false);
 	PlayBtn.OnHover = PlayBtnHover;
 	PlayBtn.OnLeave = PlayBtnLeave;
 	ExitBtn.OnHover = ExitBtnHover;
@@ -86,7 +86,7 @@ void ScreenMainMenu::Init()
 	if (!MMSelectSnd)
 	{
 		MMSelectSnd = new SoundSample();
-		MMSelectSnd->Open((FileManager::GetSkinPrefix() + "select.ogg").c_str());
+		MMSelectSnd->Open((GameState::GetInstance().GetSkinPrefix() + "select.ogg").c_str());
 		MixerAddSample(MMSelectSnd);
 	}
 }

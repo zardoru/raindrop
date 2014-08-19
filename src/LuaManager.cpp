@@ -1,7 +1,7 @@
 #include "Global.h"
+#include "GameState.h"
 
 #include "LuaManager.h"
-#include "FileManager.h"
 
 int LuaPanic(lua_State* State)
 {
@@ -21,7 +21,7 @@ int DoGameScript(lua_State *S)
 {
 	LuaManager* Lua = GetObjectFromState<LuaManager>(S, "Luaman");
 	String File = luaL_checkstring(S, 1);
-	lua_pushnumber(S, Lua->RunScript(FileManager::GetScriptsDirectory() + File));
+	lua_pushnumber(S, Lua->RunScript(GameState::GetInstance().GetScriptsDirectory() + File));
 	return 1;
 }
 

@@ -54,6 +54,12 @@ bool Screen::RunNested(float delta)
 	return false;
 }
 
+Screen* Screen::GetTop()
+{
+	if (Next) return Next->GetTop();
+	else return this;
+}
+
 void Screen::HandleInput(int32 key, KeyEventType state, bool isMouseInput) { /* stub */ }
 
 void Screen::HandleScrollInput(double xOff, double yOff) { /* stub */ }

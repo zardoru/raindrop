@@ -1,4 +1,5 @@
 #include "GameGlobal.h"
+#include "GameState.h"
 #include "GraphObject2D.h"
 #include "Configuration.h"
 #include "BitmapFont.h"
@@ -6,7 +7,6 @@
 #include "GameWindow.h"
 #include "ImageLoader.h"
 #include "Audio.h"
-#include "FileManager.h"
 #include "ScoreKeeper.h"
 
 AudioStream *ScreenEvaluation7KMusic = NULL;
@@ -38,7 +38,7 @@ void ScreenEvaluation7K::Init(ScoreKeeper7K *Result)
 	
 	DisplayResult = ss.str();
 
-	Background.SetImage(ImageLoader::LoadSkin(Configuration::GetSkinConfigs("EvaluationBackground7K")));
+	Background.SetImage(GameState::GetInstance().GetSkinImage(Configuration::GetSkinConfigs("EvaluationBackground7K")));
 	Background.AffectedByLightning = true;
 	Background.Centered = 1;
 	Background.SetPosition( ScreenWidth / 2, ScreenHeight / 2 );

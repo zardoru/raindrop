@@ -17,6 +17,7 @@ namespace VSRG
 class BitmapFont;
 class GraphObject2D;
 class SongList;
+class SongDatabase;
 
 namespace Game 
 {
@@ -34,13 +35,15 @@ private:
 
 	BitmapFont* mFont;
 
+	SongDatabase* DB;
+
 	SongList* ListRoot;
 	SongList* CurrentList;
 
 	float CurrentVerticalDisplacement;
 	float PendingVerticalDisplacement;
 
-	GraphObject2D* SelCursor, *Item;
+	GraphObject2D* SelCursor, *Item, *ItemDirectory;
 
 	SongNotification OnSongChange;
 	SongNotification OnSongSelect;
@@ -76,7 +79,10 @@ public:
 	static SongWheel& GetInstance();
 
 	void GoUp();
-	void Initialize(float Start, float End, bool IsDotcurActive, bool IsVSRGActive, ListTransformFunction FuncTransform, SongNotification FuncNotify, SongNotification FuncNotifySelect);
+	void Initialize(float Start, float End, bool IsDotcurActive, bool IsVSRGActive, 
+		ListTransformFunction FuncTransform, SongNotification FuncNotify, SongNotification FuncNotifySelect, 
+		SongDatabase* Database);
+
 	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	bool HandleScrollInput(const double dx, const double dy);
 	Game::Song* GetSelectedSong();

@@ -5,7 +5,6 @@
 
 #include "Image.h"
 #include "ImageLoader.h"
-#include "FileManager.h"
 
 #include <boost/thread/mutex.hpp>
 #include <SOIL/SOIL.h>
@@ -124,11 +123,6 @@ Image* ImageLoader::Load(String filename)
 		return Ret;
 	}
 	return 0;
-}
-
-Image* ImageLoader::LoadSkin(String filename)
-{
-	return Load(FileManager::GetSkinPrefix() + filename);
 }
 
 void ImageLoader::AddToPending(const char* Filename)

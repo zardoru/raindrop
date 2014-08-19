@@ -8,6 +8,7 @@
 #include <GLFW/glfw3.h>
 
 #include "GameGlobal.h"
+#include "Logging.h"
 #include "Screen.h"
 #include "Configuration.h"
 #include "Audio.h"
@@ -17,13 +18,14 @@
 #include "BitmapFont.h"
 #include "ImageLoader.h"
 #include "GameWindow.h"
-#include "FileManager.h"
 #include "GameState.h"
 
 #include "ScreenMainMenu.h"
 #include "ScreenGameplay7K.h"
 #include "ScreenLoading.h"
 #include "Converter.h"
+
+#include "SongLoader.h"
 
 bool Auto = false;
 
@@ -51,7 +53,7 @@ void Application::ParseArgs()
 {
 	for (int i = 1; i < Args.Argc; i++)
 	{
-		wprintf(L"%d: %ls\n", i, Utility::Widen(Args.Argv[i]).c_str());
+		Log::Printf("%d: %ls\n", i, Utility::Widen(Args.Argv[i]).c_str());
 	}
 
 	for (int i = 1; i < Args.Argc; i++)
@@ -67,7 +69,7 @@ void Application::ParseArgs()
 			case 'i': // Infile (convert mode/preview file)
 				if (ValidArg(Args.Argc, 1, i))
 				{
-					InFile = Args.Argv[i+1];
+					InFile = Directory(Args.Argv[i+1]);
 					i++;
 				}
 
@@ -78,7 +80,7 @@ void Application::ParseArgs()
 
 				if (ValidArg(Args.Argc, 1, i))
 				{
-					OutFile = Args.Argv[i+1];
+					OutFile = Directory(Args.Argv[i+1]);
 					i++;
 				}
 
@@ -142,10 +144,9 @@ void Application::Init()
 #endif
 
 	GameState::GetInstance().Initialize();
-	GameState::Printf("Initializing... \n");
+	Log::Printf("Initializing... \n");
 
 	Configuration::Initialize();
-	FileManager::Initialize();
 
 	if (RunMode == MODE_PLAY || RunMode == MODE_VSRGPREVIEW)
 	{
@@ -154,7 +155,7 @@ void Application::Init()
 		Game = NULL;
 	}
 
-	GameState::Printf("Total Initialization Time: %fs\n", glfwGetTime() - T1);
+	Log::Printf("Total Initialization Time: %fs\n", glfwGetTime() - T1);
 }
 
 void Application::Run()
@@ -205,8 +206,9 @@ void Application::Run()
 	}else if (RunMode == MODE_GENCACHE)
 	{
 		std::vector<VSRG::Song*> Songs;
+		SongLoader SL(GameState::GetInstance().GetSongDatabase());
 
-		GameState::Printf("Generating cache...\n");
+		Log::Printf("Generating cache...\n");
 
 		std::vector<String> Directories;
 		Configuration::GetConfigListS("SongDirectories", Directories);
@@ -215,7 +217,7 @@ void Application::Run()
 			i != Directories.end();
 			i++)
 		{
-			FileManager::GetSongList7K(Songs, *i);
+			SL.GetSongList7K(Songs, *i);
 		}
 
 		for (std::vector<VSRG::Song*>::iterator i = Songs.begin(); i != Songs.end(); i++)
@@ -224,7 +226,7 @@ void Application::Run()
 		RunLoop = false;
 	}
 
-	GameState::Printf("Time: %fs\n", glfwGetTime() - T1);
+	Log::Printf("Time: %fs\n", glfwGetTime() - T1);
 
 	if (!RunLoop)
 		return;

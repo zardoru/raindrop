@@ -1,8 +1,8 @@
 #include "GameGlobal.h"
+#include "GameState.h"
 #include "ScreenGameplay.h"
 #include "ScreenEvaluation.h"
 #include "GameWindow.h"
-#include "FileManager.h"
 #include "ImageLoader.h"
 #include "Audio.h"
 
@@ -105,18 +105,18 @@ void ScreenGameplay::StoreEvaluation(Judgement Eval)
 
 void ScreenGameplay::MainThreadInitialization()
 {
-	Cursor.SetImage(ImageLoader::LoadSkin("cursor.png"));
-	Barline.SetImage(ImageLoader::LoadSkin("barline.png"));
-	MarkerA.SetImage(ImageLoader::LoadSkin("barline_marker.png"));
-	MarkerB.SetImage(ImageLoader::LoadSkin("barline_marker.png"));
-	GameplayObjectImage = ImageLoader::LoadSkin("hitcircle.png");
+	Cursor.SetImage(GameState::GetInstance().GetSkinImage("cursor.png"));
+	Barline.SetImage(GameState::GetInstance().GetSkinImage("barline.png"));
+	MarkerA.SetImage(GameState::GetInstance().GetSkinImage("barline_marker.png"));
+	MarkerB.SetImage(GameState::GetInstance().GetSkinImage("barline_marker.png"));
+	GameplayObjectImage = GameState::GetInstance().GetSkinImage("hitcircle.png");
 
 	Image* BackgroundImage = ImageLoader::Load(MySong->SongDirectory + "/" + MySong->BackgroundFilename);
 
 	if (BackgroundImage)
 		Background.SetImage(BackgroundImage);
 	else
-		Background.SetImage(ImageLoader::LoadSkin(Configuration::GetSkinConfigs("DefaultGameplayBackground")));
+		Background.SetImage(GameState::GetInstance().GetSkinImage(Configuration::GetSkinConfigs("DefaultGameplayBackground")));
 
 
 	Background.AffectedByLightning = true;
@@ -141,7 +141,7 @@ void ScreenGameplay::MainThreadInitialization()
 
 	Lifebar.UpdateHealth();
 
-	ReadySign.SetImage(ImageLoader::LoadSkin("ready.png"));
+	ReadySign.SetImage(GameState::GetInstance().GetSkinImage("ready.png"));
 	ReadySign.SetPosition(0, ScreenHeight);
 	ReadySign.Centered = true;
 	ReadySign.AffectedByLightning = true;
@@ -190,7 +190,7 @@ void ScreenGameplay::LoadThreadInitialization()
 		"Ready.png"
 	};
 
-	ImageLoader::LoadFromManifest(SkinFiles, 3, FileManager::GetSkinPrefix());
+	ImageLoader::LoadFromManifest(SkinFiles, 3, GameState::GetInstance().GetSkinPrefix());
 
 	memset(&Evaluation, 0, sizeof(Evaluation));
 

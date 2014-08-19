@@ -33,7 +33,6 @@ namespace Utility
 {
 	void DebugBreak();
 	bool IsNumeric(const char* s);
-	String GetExtension(String Filename);
 	String RelativeToPath(String Filename);
 	String RemoveExtension(String Fn);
 	bool FileExists(String Filename);

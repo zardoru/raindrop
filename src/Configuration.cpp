@@ -1,6 +1,6 @@
 #include "GameGlobal.h"
 #include "Configuration.h"
-#include "FileManager.h"
+#include "GameState.h"
 
 #include "LuaManager.h"
 
@@ -16,17 +16,17 @@ void Configuration::Initialize()
 	CfgLua = new LuaManager();
 	SkinCfgLua = new LuaManager();
 
-	CfgLua->RunScript("config.lua");
+	CfgLua->RunScript(Directory("config.lua"));
 
 	if (Configuration::GetConfigs("Skin").length())
-		FileManager::SetSkin(Configuration::GetConfigs("Skin"));
+		GameState::GetInstance().SetSkin(Configuration::GetConfigs("Skin"));
 
 	IsWidescreen = Configuration::GetConfigf("Widescreen");
 
 	SkinCfgLua->SetGlobal("Widescreen", IsWidescreen);
 	SkinCfgLua->SetGlobal("ScreenWidth", ScreenWidth);
 	SkinCfgLua->SetGlobal("ScreenHeight", ScreenHeight);
-	SkinCfgLua->RunScript(FileManager::GetSkinPrefix() + "skin.lua");
+	SkinCfgLua->RunScript(GameState::GetInstance().GetSkinPrefix() + "skin.lua");
 }
 
 void Configuration::Cleanup()

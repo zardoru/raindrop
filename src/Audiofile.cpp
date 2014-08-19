@@ -12,13 +12,13 @@
 
 #include <boost/algorithm/string.hpp>
 
-AudioDataSource* SourceFromExt(String Filename)
+AudioDataSource* SourceFromExt(Directory Filename)
 {
 	AudioDataSource *Ret = NULL;
-	String Ext = Utility::GetExtension(Filename);
+	String Ext = Filename.GetExtension();
 
-	if (Filename.length() == 0 || Ext.length() == 0) {
-		wprintf(L"Invalid filename. (%s) (%s)\n", Filename.c_str(), Ext.c_str());
+	if (Filename.path().length() == 0 || Ext.length() == 0) {
+		wprintf(L"Invalid filename. (%s) (%s)\n", Filename.c_path(), Ext.c_str());
 		return NULL;
 	}
 
@@ -35,7 +35,7 @@ AudioDataSource* SourceFromExt(String Filename)
 		Ret = new AudioSourceOGG();
 
 	if (Ret)
-		Ret->Open(Filename.c_str());
+		Ret->Open(Filename.c_path());
 	else
 		wprintf(L"extension %ls has no audiosource associated\n", Utility::Widen(Ext).c_str());
 
@@ -112,7 +112,7 @@ String RearrangeFilename(const char* Fn)
 		return Fn;
 	else
 	{
-		std::string Ext = Utility::GetExtension(Fn);
+		std::string Ext = Directory(Fn).GetExtension();
 		boost::algorithm::to_lower(Ext);
 
 		if (strstr(Ext.c_str(), "wav"))

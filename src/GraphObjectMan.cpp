@@ -1,8 +1,8 @@
 #include "GameGlobal.h"
+#include "GameState.h"
 #include "GraphObject2D.h"
 #include "LuaManager.h"
 #include "GraphObjectMan.h"
-#include "FileManager.h"
 #include "ImageList.h"
 
 void CreateLuaInterface(LuaManager *AnimLua);
@@ -35,7 +35,7 @@ void GraphObjectMan::Preload(String Filename, String Arrname)
 
 		while (Lua->IterateNext())
 		{
-			Images->AddToList (Lua->NextString(), FileManager::GetSkinPrefix());
+			Images->AddToList (Lua->NextString(), GameState::GetInstance().GetSkinPrefix());
 			Lua->Pop();
 		}
 

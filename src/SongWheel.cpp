@@ -1,9 +1,10 @@
 #include "GameGlobal.h"
+#include "GameState.h"
+#include "Logging.h"
 #include "SongDC.h"
 #include "Song7K.h"
-#include "FileManager.h"
 #include "GameWindow.h"
-#include "GameState.h"
+#include "SongLoader.h"
 #include "SongWheel.h"
 #include "GraphObject2D.h"
 #include "ImageLoader.h"
@@ -30,7 +31,9 @@ SongWheel& SongWheel::GetInstance()
 	return *WheelInstance;
 }
 
-void SongWheel::Initialize(float Start, float End, bool IsDotcurActive, bool IsVSRGActive, ListTransformFunction FuncTransform, SongNotification FuncNotify, SongNotification FuncNotifySelect)
+void SongWheel::Initialize(float Start, float End, bool IsDotcurActive, bool IsVSRGActive, 
+	ListTransformFunction FuncTransform, SongNotification FuncNotify, SongNotification FuncNotifySelect,
+	SongDatabase* Database)
 {
 	dotcurModeActive = IsDotcurActive;
 	VSRGModeActive = IsVSRGActive;
@@ -39,6 +42,7 @@ void SongWheel::Initialize(float Start, float End, bool IsDotcurActive, bool IsV
 	OnSongSelect = FuncNotifySelect;
 	Transform = FuncTransform;
 
+	DB = Database;
 	if (IsInitialized)
 		return;
 
@@ -54,12 +58,12 @@ void SongWheel::Initialize(float Start, float End, bool IsDotcurActive, bool IsV
 	DisplacementSpeed = 2;
 
 	Item = new GraphObject2D;
-	Item->SetImage(ImageLoader::LoadSkin("item.png"));
+	Item->SetImage(GameState::GetInstance().GetSkinImage("item.png"));
 	ItemHeight = Item->GetHeight();
 	Item->SetZ(16);
 
 	SelCursor = new GraphObject2D;
-	SelCursor->SetImage(ImageLoader::LoadSkin("songselect_cursor.png"));
+	SelCursor->SetImage(GameState::GetInstance().GetSkinImage("songselect_cursor.png"));
 	SelCursor->SetSize(ItemHeight);
 
 	ItemTextOffset = Vec2(Configuration::GetSkinConfigf("X", "ItemTextOffset"), Configuration::GetSkinConfigf("Y", "ItemTextOffset"));
@@ -80,18 +84,20 @@ void SongWheel::ReloadSongs()
 	std::vector<String> Directories;
 	Configuration::GetConfigListS("SongDirectories", Directories);
 
-	FileManager::GetSongsDatabase()->StartTransaction();
+	SongLoader Loader (DB);
+
+	DB->StartTransaction();
 
 	for (std::vector<String>::iterator i = Directories.begin(); 
 		i != Directories.end();
 		i++)
 	{
-		ListRoot->AddDirectory (*i, VSRGModeActive, dotcurModeActive);
+		ListRoot->AddDirectory (&Loader, *i, VSRGModeActive, dotcurModeActive);
 	}
 	
-	FileManager::GetSongsDatabase()->EndTransaction();
+	DB->EndTransaction();
 	CurrentList = ListRoot;
-	GameState::Printf("Finished reloading songs.\n");
+	Log::Printf("Finished reloading songs.\n");
 }
 
 bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)

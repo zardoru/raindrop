@@ -14,14 +14,17 @@ public:
 
 	Directory();
 	Directory(std::string path);
+	Directory(const char* path);
 	~Directory();
 	
 	void operator=(std::string);
 	bool operator==(std::string) const;
+	operator std::string() const;
 
 	Directory ParentDirectory();
 	Directory Filename();
 	
+	String GetExtension() const;
 	String path() const;
 	const char* c_path() const;
 	std::vector<String>& ListDirectory(std::vector<String>& Vec, DirType T = FS_REG, const char* ext = NULL, bool Recursive = false);

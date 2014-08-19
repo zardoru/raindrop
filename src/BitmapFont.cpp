@@ -1,9 +1,9 @@
 #include "Global.h"
+#include "GameState.h"
 #include "LuaManager.h"
 #include "GraphObject2D.h"
 #include "BitmapFont.h"
 #include "ImageLoader.h"
-#include "FileManager.h"
 #include "Directory.h"
 
 BitmapFont::BitmapFont()
@@ -22,7 +22,7 @@ void BitmapFont::LoadFontImage(const char* Location, Vec2 _CharSize, Vec2 _CellS
 
 void BitmapFont::LoadSkinFontImage(const char* Location, Vec2 _CharSize, Vec2 _CellSize, Vec2 _RenderSize, char FontStart)
 {
-	Font = ImageLoader::LoadSkin(Location);
+	Font = GameState::GetInstance().GetSkinImage(Location);
 	StartingCharacter = FontStart;
 	CharSize = _CharSize;
 	CellSize = _CellSize;
@@ -103,7 +103,7 @@ BitmapFont *BitmapFont::FromLua(LuaManager* Lua, std::string TableName)
 	BitmapFont* Ret = new BitmapFont();
 
 	Lua->UseArray(TableName);
-	Directory Locat  = Lua->GetFieldS("Location", FileManager::GetSkinPrefix() + "font.tga");
+	Directory Locat  = Lua->GetFieldS("Location", GameState::GetInstance().GetSkinPrefix() + "font.tga");
 	int CharWidth    = Lua->GetFieldI("CharWidth");
 	int CharHeight   = Lua->GetFieldI("CharHeight");
 	int CellWidth    = Lua->GetFieldI("CellWidth");
