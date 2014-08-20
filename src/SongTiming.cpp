@@ -140,12 +140,28 @@ double BeatAtTime(const TimingData &Timing, float Time, float Offset)
 	return IntegrateToTime(Timing, Time) - sDelta;
 }
 
+double QuantizeFractionBeat(float Frac)
+{
+	return (min (48.0, (int) Frac * 49.0)) / 48.0;
+}
+
+double QuantizeFractionMeasure (float Frac)
+{
+	return  (min (192.0, (int) Frac * 193.0)) / 192.0;
+}
+
+double QuantizeBeat(float Beat)
+{
+	double dec = QuantizeFractionBeat(Beat - floor(Beat));
+	return dec + floor(Beat);
+}
+
 #define FRACKIND(x,y) if(Row%x==0)fracKind=y
 
 int GetFractionKindMeasure(double frac)
 {
 	int fracKind = 1;
-	int Row = frac*192;
+	int Row = QuantizeFractionMeasure (frac);
 
 	if (Row%2) Row+=1; // Round to ceiled pair
 	if (!Row) return 4;
@@ -169,9 +185,7 @@ int GetFractionKindMeasure(double frac)
 int GetFractionKindBeat(double frac)
 {
 	int fracKind;
-	int Row = frac*48;
-
-	if (Row%2) Row+=1; // Round to ceiled pair
+	int Row = QuantizeFractionBeat (frac);
 
 	// placed on 1/24th of a beat
 	FRACKIND(2, 24);

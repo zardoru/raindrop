@@ -41,3 +41,13 @@ void GetTimingChangesInInterval(const TimingData &Timing,
 	TimingData &Out);
 
 void LoadTimingList(TimingData &Timing, String line, bool AllowZeros = false);
+
+
+// Quantizes fraction to a beat's maximum resolution (1/48th of a beat)
+double QuantizeFractionBeat(float Frac);
+
+// Quantizes fraction to a measure's maximum resolution (1/192nd of a measure)
+double QuantizeFractionMeasure (float Frac);
+
+// Quantizes beat to a beat's maximum resolution (1/48th of a beat)
+double QuantizeBeat (float Beat);

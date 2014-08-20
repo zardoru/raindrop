@@ -156,11 +156,11 @@ void ConvertToSMTiming(VSRG::Song *Sng, Directory PathOut)
 			break;
 		}
 
-		double Beat = BeatAtTime(Diff->BPS, Time, 0);
+		double Beat = QuantizeBeat(BeatAtTime(Diff->BPS, Time, 0));
 
 		out << Beat << "=" << Value;
 
-		if ( (i+1) != Diff->Timing.end() )
+		if ( (i+1) != Diff->Timing.end() ) // Only output comma if there's still stuff to output.
 			out << "\n,";
 	}
 
