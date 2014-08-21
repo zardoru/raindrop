@@ -565,20 +565,25 @@ void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 		}
 	}
 
-	Diff->Offset = Diff->Timing.begin()->Time;
-
-	for (TimingData::iterator i = Diff->Timing.begin();
-		i != Diff->Timing.end();
-		i++)
+	if (Diff->TotalObjects) 
 	{
+		Diff->Offset = Diff->Timing.begin()->Time;
 
-		i->Time -= Diff->Offset;
-	}
+		for (TimingData::iterator i = Diff->Timing.begin();
+			i != Diff->Timing.end();
+			i++)
+		{
 
-	for (std::map<String, int>::iterator i = Info.Sounds.begin(); i != Info.Sounds.end(); i++)
-	{
-		Diff->SoundList[i->second] = i->first;
-	}
+			i->Time -= Diff->Offset;
+		}
 
-	Out->Difficulties.push_back(Diff);
+		for (std::map<String, int>::iterator i = Info.Sounds.begin(); i != Info.Sounds.end(); i++)
+		{
+			Diff->SoundList[i->second] = i->first;
+		}
+
+		Out->Difficulties.push_back(Diff);
+	}else
+		delete Diff; // metadata-only difficulty
+
 }

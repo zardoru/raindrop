@@ -18,7 +18,8 @@ struct loaderVSRGEntry_t {
 	{L"bml", NoteLoaderBMS::LoadObjectsFromFile},
 	{L"pms", NoteLoaderBMS::LoadObjectsFromFile},
 	{L"sm",  NoteLoaderSM::LoadObjectsFromFile},
-	{L"osu", NoteLoaderOM::LoadObjectsFromFile}
+	{L"osu", NoteLoaderOM::LoadObjectsFromFile},
+	{L"fcf", NoteLoaderFTB::LoadObjectsFromFile}
 };
 
 SongLoader::SongLoader(SongDatabase* Database)
