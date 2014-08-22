@@ -5,12 +5,12 @@ Fullscreen = 0
 Skin = "default"
 
 -- Uncomment these and set as you like, otherwise it'll be automatically set to fit your desktop
--- WindowWidth = 428
--- WindowHeight = 240
+WindowWidth = 1024
+WindowHeight = 768
 
 -- Enable Widescreen
 -- 16:9 is 1, 16:10 is 2, anything else is 4:3
-Widescreen = 1
+Widescreen = 0
 
 -- Mode offsets, adds this much time in seconds to all notes
 OffsetDC = 0
@@ -20,7 +20,7 @@ Offset7K = 0
 FlushVideo = 0
 
 -- Enable Vertical Syncronization
-VSync = 0
+VSync = 1
 
 -- The recommended settings for BMS playing are (On Windows)
 -- UseWasapi = 1
@@ -38,7 +38,7 @@ DisableHitsounds = 1
 -- trying to calculate from the data uploaded to the audio card.
 -- If on, may improve scrolling smoothness and reduce accuracy depending on the Error Tolerance
 -- If off, may cause choppier scrolling, but increase the accuracy in game. Best results when off come from low latency audio output.
-InterpolateTime = 0
+InterpolateTime = 1
 
 -- How many MS off can Audio non-interpolated playback be from real-time?
 -- leave this as is if you have no idea what this is
@@ -63,7 +63,7 @@ UseAudioCompensationNonKeysounded = 0
 
 -- Set to 1 to prefer high-latency audio output.
 -- May prevent underruns.
-DontUseLowLatency = 0
+DontUseLowLatency = 1
 
 
 -- Set this to 1 to put the decoder in its own thread
@@ -87,9 +87,9 @@ Keys7K = {
 	Key2 = 'D',
 	Key3 = 'F',
 	Key4 = ' ',
-	Key5 = 'L',
-	Key6 = '96',
-	Key7 = '39',
+	Key5 = 'J',
+	Key6 = 'K',
+	Key7 = 'L',
 	Key8 = 'A'
 }
 

@@ -61,6 +61,8 @@ void SongList::AddDirectory(SongLoader *Loader, Directory Dir, bool VSRGActive, 
 		i != Listing.end();
 		i++)
 	{
+		if (*i == "." || *i == "..") continue;
+		
 		if (VSRGActive)
 			Loader->LoadSong7KFromDir(Dir / *i, Songs7K);
 		
