@@ -22,6 +22,11 @@ Directory::Directory(std::string subpath)
 	curpath = subpath;
 }
 
+Directory::Directory(const char* path)
+{
+	curpath = path;
+}
+
 void Directory::operator=(std::string subpath)
 {
 	curpath = subpath;
@@ -47,14 +52,21 @@ Directory operator/(Directory parent, std::string subpath)
 {
 	if(subpath == "..") return parent.ParentDirectory();
 
-	std::string newpath = parent.path() + "/" + subpath;
-	Directory newdir(newpath);
-	return newdir;
+	std::string newpath;
+
+	char last = parent.path()[parent.path().length()-1];
+		
+	if (last == '/' || last == '\\')
+		newpath = parent.path() + subpath;
+	else
+		newpath = parent.path() + "/" + subpath;
+
+	return Directory(newpath);
 }
 
 Directory operator/(std::string subpath, Directory parent)
 {
-	return operator/(parent, subpath); // o_O
+	return operator/( Directory(subpath), std::string(parent)); // o_O
 }
 
 Directory Directory::Filename()
@@ -69,6 +81,11 @@ Directory Directory::Filename()
 	}
 
 	return curpath;
+}
+
+String Directory::GetExtension() const
+{
+	return curpath.substr(curpath.find_last_of(".")+1);
 }
 
 std::string Directory::path() const { return curpath; }
@@ -166,4 +183,9 @@ std::vector<std::string>& Directory::ListDirectory(std::vector<std::string>& Vec
 	}
 #endif
 	return Vec;
+}
+
+Directory::operator std::string() const
+{
+	return path();
 }

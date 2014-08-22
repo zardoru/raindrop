@@ -1,6 +1,8 @@
 #ifndef SONGLIST_H_
 #define SONGLIST_H_
 
+class SongLoader;
+
 struct ListEntry
 {
 	enum {
@@ -20,7 +22,7 @@ public:
 	SongList (SongList* Parent = NULL);
 	~SongList();
 
-	void AddDirectory(Directory Dir, bool VSRGActive, bool DotcurActive);
+	void AddDirectory(SongLoader *Loader, Directory Dir, bool VSRGActive, bool DotcurActive);
 	void AddVirtualDirectory(String NewEntryName, Game::Song* List, int Count);
 	void AddSong(Game::Song* Song);
 

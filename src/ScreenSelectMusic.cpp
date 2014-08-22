@@ -4,11 +4,11 @@
 #include <boost/function.hpp>
 
 #include "GameGlobal.h"
+#include "GameState.h"
 #include "Screen.h"
 #include "GameWindow.h"
 #include "ImageLoader.h"
 #include "Audio.h"
-#include "FileManager.h"
 #include "Configuration.h"
 #include "GraphObject2D.h"
 #include "GuiButton.h"
@@ -94,17 +94,19 @@ ScreenSelectMusic::ScreenSelectMusic()
 	boost::function<float (float)> TransformFunc( boost::bind(&ScreenSelectMusic::GetListYTransformation, this, _1) );
 	boost::function<void (Game::Song*, uint8)> SongNotifyFunc( boost::bind(&ScreenSelectMusic::OnSongChange, this, _1, _2) );
 	boost::function<void (Game::Song*, uint8)> SongNotifySelectFunc( boost::bind(&ScreenSelectMusic::OnSongSelect, this, _1, _2) );
-	Game::SongWheel::GetInstance().Initialize(0, 0, true, true, TransformFunc, SongNotifyFunc, SongNotifySelectFunc);
+	Game::SongWheel::GetInstance().Initialize(0, 0, true, true, 
+		TransformFunc, SongNotifyFunc, SongNotifySelectFunc, 
+		GameState::GetInstance().GetSongDatabase());
 
 	if (!SelectSnd)
 	{
 		LoopTotal = 0;
 		SelectSnd = new SoundSample();
-		SelectSnd->Open((FileManager::GetSkinPrefix() + "select.ogg").c_str());
+		SelectSnd->Open((GameState::GetInstance().GetSkinPrefix() + "select.ogg").c_str());
 		MixerAddSample(SelectSnd);
 
 		ClickSnd = new SoundSample();
-		ClickSnd->Open((FileManager::GetSkinPrefix() + "click.ogg").c_str());
+		ClickSnd->Open((GameState::GetInstance().GetSkinPrefix() + "click.ogg").c_str());
 		MixerAddSample(ClickSnd);
 		
 		LoopTotal = Configuration::GetSkinConfigf("LoopTotal");
@@ -113,7 +115,7 @@ ScreenSelectMusic::ScreenSelectMusic()
 		for (int i = 0; i < LoopTotal; i++)
 		{
 			std::stringstream str;
-			str << FileManager::GetSkinPrefix() << "loop" << i+1 << ".ogg";
+			str << GameState::GetInstance().GetSkinPrefix() << "loop" << i+1 << ".ogg";
 			Loops[i] = new AudioStream();
 			Loops[i]->Open(str.str().c_str());
 			Loops[i]->Stop();
@@ -160,7 +162,7 @@ void ScreenSelectMusic::MainThreadInitialization()
 	SwitchUpscroll(false);
 	Font->SetAffectedByLightning(true);
 
-	Background.SetImage(ImageLoader::LoadSkin(Configuration::GetSkinConfigs("SelectMusicBackground")));
+	Background.SetImage(GameState::GetInstance().GetSkinImage(Configuration::GetSkinConfigs("SelectMusicBackground")));
 
 	Background.Centered = 1;
 	Background.SetPosition( ScreenWidth / 2, ScreenHeight / 2 );
@@ -180,10 +182,10 @@ void ScreenSelectMusic::LoadThreadInitialization()
 		(char*)Configuration::GetSkinConfigs("SelectMusicBackground").c_str(),
 	};
 
-	ImageLoader::LoadFromManifest(Manifest, 1, FileManager::GetSkinPrefix());
+	ImageLoader::LoadFromManifest(Manifest, 1, GameState::GetInstance().GetSkinPrefix());
 
 	Objects = new GraphObjectMan;
-	Objects->Preload( FileManager::GetSkinPrefix() + "screenselectmusic.lua", "Preload" );
+	Objects->Preload( GameState::GetInstance().GetSkinPrefix() + "screenselectmusic.lua", "Preload" );
 
 	LuaMan = Objects->GetEnv();
 	Game::SongWheel::GetInstance().ReloadSongs();

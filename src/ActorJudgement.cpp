@@ -1,4 +1,5 @@
 #include "GameGlobal.h"
+#include "GameState.h"
 #include "GraphObject2D.h"
 #include "ActorJudgement.h"
 #include "ImageLoader.h"
@@ -10,7 +11,7 @@ ActorJudgement::ActorJudgement()
 	Centered = Configuration::GetSkinConfigf("Centered", "Judgement" ) != 0;
 	SetRotation( Configuration::GetSkinConfigf("Rotation", "Judgement" ) );
 	Alpha = 0;
-	SetImage( ImageLoader::LoadSkin("judge-perfect.png") );
+	SetImage( GameState::GetInstance().GetSkinImage("judge-perfect.png") );
 	SetPosition(Configuration::GetSkinConfigf("X", "Judgement" ), Configuration::GetSkinConfigf("Y", "Judgement" ) );
 	AnimTime = 0;
 	AffectedByLightning = true;
@@ -25,19 +26,19 @@ void ActorJudgement::ChangeJudgement(Judgement New)
 	switch (New)
 	{
 	case Excellent:
-		SetImage(ImageLoader::LoadSkin("judge-excellent.png"));
+		SetImage(GameState::GetInstance().GetSkinImage("judge-excellent.png"));
 		break;
 	case Perfect:
-		SetImage(ImageLoader::LoadSkin("judge-perfect.png"));
+		SetImage(GameState::GetInstance().GetSkinImage("judge-perfect.png"));
 		break;
 	case Great:
-		SetImage(ImageLoader::LoadSkin("judge-great.png"));
+		SetImage(GameState::GetInstance().GetSkinImage("judge-great.png"));
 		break;
 	case Bad:
-		SetImage(ImageLoader::LoadSkin("judge-bad.png"));
+		SetImage(GameState::GetInstance().GetSkinImage("judge-bad.png"));
 		break;
 	case Miss:
-		SetImage(ImageLoader::LoadSkin("judge-miss.png"));
+		SetImage(GameState::GetInstance().GetSkinImage("judge-miss.png"));
 		break;
 	case None:
 		break;

@@ -51,18 +51,11 @@ namespace VSRG
 			BT_Beatspace
 		} BPMType;
 
-		// This information won't be saved into the cache file.
 		unsigned char Channels;
 		bool IsVirtual;
 
-		// New variables for cache
-		bool IsLoaded;
-		bool ParseAgain;
-
 	public:
 		Difficulty() {
-			ParseAgain = false;
-			IsLoaded = false;
 			IsVirtual = false;
 			Channels = 0;
 			PreviewTime = 0;

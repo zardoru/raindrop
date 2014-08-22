@@ -3,6 +3,8 @@ env = Environment(CPPPATH=['src'])
 IsDebug = ARGUMENTS.get('debug', 0)
 DisableMP3 = ARGUMENTS.get('nomp3', 0)
 
+env.Append(CPPDEFINES=['LINUX'])
+
 if int(IsDebug):
 	env.Append(CCFLAGS=["-g"])
 else:
@@ -14,11 +16,8 @@ if not int(DisableMP3):
 
 import sys
 
-env.Append(CPPDEFINES=['LINUX'])
-
-env.Append(LIBS= ['sndfile', 'GL', 'GLEW', 'glfw3', 'boost_system', 'boost_thread', 'ogg', 'vorbis', 'vorbisfile', 'portaudio'])
-env.Append(LIBS=['X11', 'Xrandr', 'Xxf86vm', 'Xi', 'pthread']);
-
 env.Append(CPPPATH='.')
 
-env.Program("dc", source = [Glob('src/*.cpp'), Glob('src/*.c'), Glob('SOIL/*.c')])
+env.Program("dc", source = [Glob('src/*.cpp'), Glob('src/*.c'), Glob('ext-src/SOIL/*.c')])
+
+env.Append(LIBS=['dl', 'pthread', 'sndfile', 'GL', 'GLEW', 'glfw3', 'boost_system', 'boost_thread', 'ogg', 'vorbis', 'vorbisfile', 'portaudio', 'X11', 'Xrandr', 'Xxf86vm', 'Xi']);

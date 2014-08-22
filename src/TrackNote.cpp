@@ -27,26 +27,22 @@ void TrackNote::AssignFraction(double frac)
 	FractionKind = GetFractionKindBeat(frac);
 }
 
-void TrackNote::RecalculateBody(float trackPosition, float noteWidth, float noteSize, float speedMultiplier)
+Mat4 TrackNote::GetHoldPositionMatrix(const float &trackPosition) const
 {
-	hold_body_size = glm::translate(Mat4(), glm::vec3(trackPosition, 0, 14)) * glm::scale(Mat4(), glm::vec3(noteWidth, VerticalHoldBodySize * speedMultiplier * 2, 0));
+	float VerticalHoldBodyPos = b_pos.y + (b_pos_holdend.y - b_pos.y) / 2;
+	return glm::translate(Mat4(), glm::vec3(trackPosition, VerticalHoldBodyPos, 14));
+}
+
+Mat4 TrackNote::GetHoldBodyMatrix(const float &noteWidth, const float &speedMultiplier) const
+{
+	float VertHBS = abs((b_pos_holdend.y - b_pos.y));
+	return glm::scale(Mat4(), glm::vec3(noteWidth, VertHBS * speedMultiplier, 1)) * glm::translate(Mat4(), glm::vec3());
 }
 
 void TrackNote::AssignPosition(Vec2 Position, Vec2 endPosition)
 {
 	b_pos = Position;
-	final = glm::translate(Mat4(), glm::vec3(b_pos.x, b_pos.y, 0));
-
-	if (Data.EndTime)
-	{
-		b_pos_holdend = endPosition;
-		
-		float VerticalHoldBodyPos = b_pos.y + (b_pos_holdend.y - b_pos.y) / 2;
-		VerticalHoldBodySize = abs((b_pos_holdend.y - b_pos.y) / 2);
-
-		hold_body = glm::translate(Mat4(), glm::vec3(b_pos.x, VerticalHoldBodyPos, 0));
-		hold_final = glm::translate(Mat4(), glm::vec3(b_pos_holdend.x, b_pos_holdend.y, 0));
-	}
+	b_pos_holdend = endPosition;
 }
 
 bool TrackNote::IsHold() const
@@ -54,24 +50,14 @@ bool TrackNote::IsHold() const
 	return Data.EndTime != 0;
 }
 
-Mat4 TrackNote::GetHoldBodyMatrix() const
-{
-	return hold_body;
-}
-
 Mat4 TrackNote::GetHoldEndMatrix() const
 {
-	return hold_final;
+	return glm::translate(Mat4(), glm::vec3(b_pos_holdend.x, b_pos_holdend.y, 0));
 }
 
 Mat4 TrackNote::GetMatrix() const
 {
-	return final;
-}
-
-Mat4 TrackNote::GetHoldBodySizeMatrix() const
-{
-	return hold_body_size;
+	return glm::translate(Mat4(), glm::vec3(b_pos.x, b_pos.y, 0));
 }
 
 float TrackNote::GetVertical() const

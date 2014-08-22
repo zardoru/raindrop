@@ -67,7 +67,7 @@ String RemoveComments(const String Str)
 	return Result;
 }
 
-void LoadTracksSM(Song *Out, Difficulty *Diff, String line)
+bool LoadTracksSM(Song *Out, Difficulty *Diff, String line)
 {
 	String CommandContents = line.substr(line.find_first_of(":") + 1);
 	SplitResult Mainline;
@@ -81,12 +81,20 @@ void LoadTracksSM(Song *Out, Difficulty *Diff, String line)
 	/* Split contents */
 	boost::split(Mainline, CommandContents, boost::is_any_of(":"));
 
+	if (Mainline.size() < 6) // No, like HELL I'm loading this.
+	{
+		// The first time I found this it was because a ; was used as a separator instead of a :
+		// Which means a rewrite is what probably should be done to fix that particular case.
+		wprintf(L"Corrupt simfile (%d entries instead of 6)", Mainline.size());
+		return false;
+	}
+
 	/* What we'll work with */
 	String NoteString = Mainline[5];
 	int Keys = GetTracksByMode(Mainline[0]);
 
 	if (!Keys)
-		return;
+		return false;
 
 	Diff->Channels = Keys;
 	Diff->Name = Mainline[2] + "(" + Mainline[0] + ")";
@@ -166,6 +174,7 @@ void LoadTracksSM(Song *Out, Difficulty *Diff, String line)
 		->Each measure has all potential playable tracks, even if that track is empty during that measure.
 		->Measures are internally ordered
 	*/
+	return true;
 }
 
 void NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix, Song *Out)
@@ -271,10 +280,12 @@ void NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 			Diff->Filename = filename;
 			Diff->BPMType = VSRG::Difficulty::BT_Beat;
 
-			LoadTracksSM(Out, Diff, line);
-			Out->Difficulties.push_back(Diff);
+			if (LoadTracksSM(Out, Diff, line))
+			{
+				Out->Difficulties.push_back(Diff);
+				Diff = new Difficulty();
+			}
 
-			Diff = new Difficulty();
 		}
 	}
 

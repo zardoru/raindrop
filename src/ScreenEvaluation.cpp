@@ -1,11 +1,11 @@
 #include "GameGlobal.h"
+#include "GameState.h"
 #include "GraphObject2D.h"
 #include "BitmapFont.h"
 #include "ScreenEvaluation.h"
 #include "GameWindow.h"
 #include "ImageLoader.h"
 #include "Audio.h"
-#include "FileManager.h"
 
 AudioStream *ScreenEvaluationMusic = NULL;
 
@@ -26,7 +26,7 @@ void ScreenEvaluation::Init(EvaluationData _Data, String SongAuthor, String Song
 	if (!ScreenEvaluationMusic)
 	{
 		ScreenEvaluationMusic = new SoundStream();
-		ScreenEvaluationMusic->Open((FileManager::GetSkinPrefix() + "screenevaluationloop.ogg").c_str());
+		ScreenEvaluationMusic->Open((GameState::GetInstance().GetSkinPrefix() + "screenevaluationloop.ogg").c_str());
 		ScreenEvaluationMusic->SetLoop(true);
 		MixerAddStream(ScreenEvaluationMusic);
 	}
@@ -35,7 +35,7 @@ void ScreenEvaluation::Init(EvaluationData _Data, String SongAuthor, String Song
 	ScreenEvaluationMusic->Play();
 
 
-	Background.SetImage(ImageLoader::LoadSkin(Configuration::GetSkinConfigs("EvaluationBackground")));
+	Background.SetImage(GameState::GetInstance().GetSkinImage(Configuration::GetSkinConfigs("EvaluationBackground")));
 	Background.AffectedByLightning = true;
 	if (!Font)
 	{

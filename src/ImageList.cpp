@@ -1,10 +1,11 @@
 #include <map>
 
 #include "Global.h"
+#include "GameState.h"
 #include "Image.h"
 #include "ImageList.h"
 #include "ImageLoader.h"
-#include "FileManager.h"
+#include "GraphObject2D.h"
 
 #include <boost/algorithm/string/replace.hpp>
 
@@ -70,5 +71,20 @@ Image* ImageList::GetFromFilename(const String Filename)
 // Gets image from SkinPrefix + filename
 Image* ImageList::GetFromSkin(const String Filename)
 {
-	return Images[FileManager::GetSkinPrefix() + Filename];
+	return Images[GameState::GetInstance().GetSkinPrefix() + Filename];
+}
+
+void ImageList::ForceFetch()
+{
+	GraphObject2D Fill;
+
+	// Draw as black.
+	Fill.Red = Fill.Blue = Fill.Green = 0;
+	Fill.Alpha = 0.0001;
+
+	for (std::map<String, Image*>::iterator i = Images.begin(); i != Images.end(); i++)
+	{
+		Fill.SetImage (i->second);
+		Fill.Render();
+	}
 }

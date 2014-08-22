@@ -87,6 +87,8 @@ class ScoreKeeper7K {
 
 	private:
 
+		int max_notes;
+
 		double score; // standard score.
 		double sc_score;
 		double sc_sc_score;
@@ -110,9 +112,6 @@ class ScoreKeeper7K {
 		int rank_pts; // rank scoring
 		int max_rank_pts;		
 		
-		double total_sqdev;
-		double accuracy;
-
 		// lifebar data.
 		
 		double lifebar_groove;
@@ -147,20 +146,4 @@ class ScoreKeeper7K {
 		int EX2, EX1;
 		int DP2, DP1;
 
-		// scoring number data.
-
-		int max_notes;
-
-		int notes_hit;
-		int total_notes;
-
-		int ex_score;
-		
-		int dp_score;
-		int dp_dp_score;
-
-		int combo;
-		int max_combo;
-
-		double accuracy_percent(float ms);
 };

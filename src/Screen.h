@@ -21,6 +21,8 @@ public:
 	bool IsScreenRunning();
 	bool RunNested(float delta);
 
+	Screen* GetTop();
+
 	// Screen implementation.
 	virtual void LoadThreadInitialization();
 	virtual void MainThreadInitialization();

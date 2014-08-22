@@ -1,14 +1,16 @@
+#include <iomanip>
+
 #include "GameGlobal.h"
 #include "GameState.h"
+#include "Logging.h"
+#include "SongLoader.h"
 #include "Screen.h"
 #include "Audio.h"
-#include "FileManager.h"
 #include "ImageLoader.h"
 #include "GraphObject2D.h"
 #include "BitmapFont.h"
 #include "GameWindow.h"
-
-#include <iomanip>
+#include "ImageList.h"
 
 #include "LuaManager.h"
 #include "GraphObjectMan.h"
@@ -187,7 +189,7 @@ void ScreenGameplay7K::RecalculateMatrix()
 void ScreenGameplay7K::LoadThreadInitialization()
 {
 	MissSnd = new SoundSample();
-	if (MissSnd->Open((FileManager::GetSkinPrefix() + "miss.ogg").c_str()))
+	if (MissSnd->Open((GameState::GetInstance().GetSkinPrefix() + "miss.ogg").c_str()))
 		MixerAddSample(MissSnd);
 	else
 		delete MissSnd;
@@ -218,38 +220,20 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	if (!Preloaded)
 	{
 		/* Load song from directory */
-		int SongID;
+		SongLoader Loader(GameState::GetInstance().GetSongDatabase());
+		Directory FN;
 
-		GameState::Printf("Loading Chart...");
-		FileManager::GetSongsDatabase()->IsSongDirectory(MySong->SongDirectory, &SongID);
+		Log::Printf("Loading Chart...");
+		LoadedSong = Loader.LoadFromMeta(MySong, CurrentDiff, &FN);
 
-		std::string fn = FileManager::GetSongsDatabase()->GetDifficultyFilename(CurrentDiff->ID);
-		LoadedSong = LoadSong7KFromFilename(fn, "", NULL);
-
-		// Copy relevant data
-		LoadedSong->SongDirectory = MySong->SongDirectory;
-		MySong = LoadedSong;
-
-		/* Find out Difficulty IDs to the recently loaded song's difficulty! */
-		bool DifficultyFound = false;
-		for (std::vector<VSRG::Difficulty*>::iterator k = LoadedSong->Difficulties.begin();
-			k != LoadedSong->Difficulties.end();
-			k++)
+		if (LoadedSong == NULL)
 		{
-			FileManager::GetSongsDatabase()->AddDifficulty(SongID, (*k)->Filename, *k, MODE_7K);
-			if ((*k)->ID == CurrentDiff->ID) // We've got a match; move onward.
-			{
-				CurrentDiff = *k;
-				DifficultyFound = true;
-				break; // We're done here, we've found the difficulty we were trying to load
-			}
-		}
-
-		if (!DifficultyFound)
-		{
+			Log::Printf("Failure to load chart. (Filename: %ls)\n", Utility::Widen(FN.path()).c_str());
 			DoPlay = false;
 			return;
 		}
+
+		MySong = LoadedSong;
 
 		/*
 			At this point, MySong == LoadedSong, which means it's not a metadata-only Song* Instance.
@@ -275,7 +259,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
  *			but only if there's a constant specified by the user.
  * */
 
-	GameState::Printf("Processing song... ");
+	Log::Printf("Processing song... ");
 
 	if (DesiredDefaultSpeed)
 	{
@@ -320,7 +304,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	Channels = CurrentDiff->Channels;
 	VSpeeds = CurrentDiff->VerticalSpeeds;
 
-	GameState::Printf("Loading samples... ");
+	Log::Printf("Loading samples... ");
 
 	for (std::map<int, String>::iterator i = CurrentDiff->SoundList.begin(); i != CurrentDiff->SoundList.end(); i++)
 	{
@@ -341,7 +325,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	BGMEvents = CurrentDiff->BGMEvents;
 
-	GameState::Printf("Done.\n");
+	Log::Printf("Done.\n");
 
 	// Get Noteheight
 	NoteHeight = Configuration::GetSkinConfigf("NoteHeight");
@@ -377,7 +361,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	// This will execute the script once, so we won't need to do it later
 	SetupScriptConstants();
-	Animations->Preload(FileManager::GetSkinPrefix() + "screengameplay7k.lua", "Preload");
+	Animations->Preload(GameState::GetInstance().GetSkinPrefix() + "screengameplay7k.lua", "Preload");
 	score_keeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
 	DoPlay = true;
 }
@@ -413,10 +397,10 @@ void ScreenGameplay7K::SetupGear()
 		
 		/* If it says that the nth lane uses the kth key then we'll bind that! */
 		sprintf(str, "key%d.png", (int)GetSkinConfigf(cstr, nstr));
-		GearLaneImage[i] = ImageLoader::LoadSkin(str);
+		GearLaneImage[i] = GameState::GetInstance().GetSkinImage(str);
 
 		sprintf(str, "key%dd.png", (int)GetSkinConfigf(cstr, nstr));
-		GearLaneImageDown[i] = ImageLoader::LoadSkin(str);
+		GearLaneImageDown[i] = GameState::GetInstance().GetSkinImage(str);
 
 		sprintf(str, "Key%dX", i+1);
 		LanePositions[i] = Configuration::GetSkinConfigf(str, nstr);
@@ -490,6 +474,8 @@ void ScreenGameplay7K::MainThreadInitialization()
 		return;
 	}
 
+	PlayReactiveSounds = (CurrentDiff->IsVirtual || !(Configuration::GetConfigf("DisableHitsounds")));
+
 	SetupGear();
 
 	char nstr[256];
@@ -510,27 +496,27 @@ void ScreenGameplay7K::MainThreadInitialization()
 		sprintf(cstr, "Key%dImage", i+1);
 
 		std::string Filename = Configuration::GetSkinConfigs(cstr, nstr);
-		NoteImages[i] = ImageLoader::LoadSkin(Filename);
+		NoteImages[i] = GameState::GetInstance().GetSkinImage(Filename);
 
 		/* Hold image */
 		sprintf(cstr, "Key%dHoldImage", i+1);
 
 		Filename = Configuration::GetSkinConfigs(cstr, nstr);
-		NoteImagesHold[i] = ImageLoader::LoadSkin(Filename);
+		NoteImagesHold[i] = GameState::GetInstance().GetSkinImage(Filename);
 
 		lastClosest[i] = 0;
 
 		HeldKey[i] = NULL;
 	}
 
-	NoteImage = ImageLoader::LoadSkin("note.png");
+	NoteImage = GameState::GetInstance().GetSkinImage("note.png");
 
 	Image* BackgroundImage = ImageLoader::Load(MySong->SongDirectory + MySong->BackgroundFilename);
 
 	if (BackgroundImage)
 		Background.SetImage(BackgroundImage);
 	else
-		Background.SetImage(ImageLoader::LoadSkin(Configuration::GetSkinConfigs("DefaultGameplay7KBackground")));
+		Background.SetImage(GameState::GetInstance().GetSkinImage(Configuration::GetSkinConfigs("DefaultGameplay7KBackground")));
 
 	Background.SetZ(0);
 	Background.AffectedByLightning = true;
@@ -557,6 +543,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 	else
 		WaitingTime = 0;
 	CurrentBeat = BeatAtTime(CurrentDiff->BPS, -WaitingTime, CurrentDiff->Offset + TimeCompensation);
+	Animations->GetImageList()->ForceFetch();
 	Running = true;
 }
 
@@ -650,7 +637,7 @@ void ScreenGameplay7K::UpdateScriptVariables()
 	L->SetGlobal("SongTime", SongTime);
 	L->SetGlobal("LifebarValue", score_keeper->getLifebarAmount(LT_GROOVE));
 
-	CurrentBeat = BeatAtTime(CurrentDiff->BPS, SongTime, CurrentDiff->Offset + TimeCompensation);
+	CurrentBeat = BeatAtTime(CurrentDiff->BPS, SongTime, CurrentDiff->Offset);
 	L->SetGlobal("Beat", CurrentBeat);
 
 	L->NewArray();

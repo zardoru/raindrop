@@ -28,15 +28,9 @@ Preload = {
 	"progress_tick.png",
 	"stage-lifeb.png",
 	"stage-lifeb-s.png",
-
--- Being on this list implies they're unloaded at the end.
--- On some systems, the first time these are drawn a minor lag spike occurs
--- We can make it happen only once by making these stay in video memory
--- after the screen is closed.
-
---	"combosheet.png",
---	"explsheet.png",
---	"holdsheet.png",
+	"combosheet.png",
+	"explsheet.png",
+	"holdsheet.png",
 	"note1.png",
 	"note2.png",
 	"note3.png",

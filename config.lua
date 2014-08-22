@@ -22,6 +22,18 @@ FlushVideo = 0
 -- Enable Vertical Syncronization
 VSync = 0
 
+-- The recommended settings for BMS playing are (On Windows)
+-- UseWasapi = 1
+-- DontUseLowLatency = 0
+-- UseThreadedDecoder = 0
+-- Use the opposite for streamed audio files (aka not keysounded)
+-- It's highly recommended to enable DontUseLowLatency on Linux.
+
+
+-- Disable hitsounds for non-virtual charts
+-- Mostly applicable to osu!mania. Has no effect on BMS charts.
+DisableHitsounds = 1
+
 -- Set this to 1 to try to use the real-time timer instead of
 -- trying to calculate from the data uploaded to the audio card.
 -- If on, may improve scrolling smoothness and reduce accuracy depending on the Error Tolerance
@@ -104,5 +116,6 @@ or else it'll crash and burn and I won't make myself responsible for that
 ]]
 
 SongDirectories = {
-	"./examplesongsdirectory/"
+	"./examplesongsdirectory/",
+	"./Songs"
 }

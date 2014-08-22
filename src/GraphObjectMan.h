@@ -17,6 +17,7 @@ public:
 	void Preload(String Filename, String ArrayName);
 	void Initialize(String Filename = "", bool RunScript = true);
 	LuaManager *GetEnv();
+	ImageList* GetImageList();
 
 	void AddTarget(GraphObject2D *Targ);
 	void AddLuaTarget(GraphObject2D *Targ, String Varname);

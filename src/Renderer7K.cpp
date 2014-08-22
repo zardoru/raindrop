@@ -16,6 +16,8 @@
 
 using namespace VSRG;
 
+static Mat4 identity;
+
 void ScreenGameplay7K::DrawMeasures()
 {
 	float rPos;
@@ -49,18 +51,6 @@ void ScreenGameplay7K::DrawMeasures()
 	// Ugly hack for now.
 	Background.BindTextureVBO(); 
 	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
-
-	if (MultiplierChanged)
-	{
-		for (uint32 k = 0; k < Channels; k++)
-		{
-			for (std::vector<TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); m++)
-			{
-				if (m->IsHold())
-					m->RecalculateBody(LanePositions[k], LaneWidth[k], NoteHeight, MultAbs);
-			}
-		}
-	}
 
 	/* todo: instancing */
 	for (uint32 k = 0; k < Channels; k++)
@@ -124,8 +114,8 @@ void ScreenGameplay7K::DrawMeasures()
 				else
 					WindowFrame.SetUniform(U_COLOR, 0.5, 0.5, 0.5, 1);
 
-				WindowFrame.SetUniform(U_SIM, &(m->GetHoldBodySizeMatrix())[0][0]);
-				WindowFrame.SetUniform(U_TRANM, &(m->GetHoldBodyMatrix())[0][0]);
+				WindowFrame.SetUniform(U_TRANM, &(m->GetHoldPositionMatrix(LanePositions[k]))[0][0]);
+				WindowFrame.SetUniform(U_SIM, &(m->GetHoldBodyMatrix(LaneWidth[k], MultAbs))[0][0]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 			}
 
@@ -158,7 +148,6 @@ void ScreenGameplay7K::DrawMeasures()
 			{
 
 				// As long as it's not judged, we'll keep it in place 
-				Mat4 identity;
 				WindowFrame.SetUniform(U_MVP, &PositionMatrixJudgement[0][0]);
 				WindowFrame.SetUniform(U_TRANM, &(identity)[0][0]);
 			}else

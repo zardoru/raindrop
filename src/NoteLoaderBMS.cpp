@@ -719,8 +719,8 @@ void CompileBMS(BmsLoadInfo *Info)
 	CalculateBPMs(Info);
 	CalculateStops(Info);
 
-	Info->Difficulty->Channels = AutodetectChannelCount(Info);
-	if (Info->Difficulty->Channels == 9) // Assume pop'n
+	Info->difficulty->Channels = AutodetectChannelCount(Info);
+	if (Info->difficulty->Channels == 9) // Assume pop'n
 		Info->IsPMS = true;
 	
 	for (MeasureList::iterator i = m.begin(); i != m.end(); i++)

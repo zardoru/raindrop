@@ -36,7 +36,6 @@ public:
 
 	/* On-the-spot, main thread loading or reloading. */
 	static Image* Load(std::string filename);
-	static Image* LoadSkin(std::string filename);
 };
 
 #endif

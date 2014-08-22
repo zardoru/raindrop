@@ -1,9 +1,9 @@
 #include "GameGlobal.h"
+#include "GameState.h"
 #include "GraphObject2D.h"
 #include "VBO.h"
 #include "GameObject.h"
 #include "ImageLoader.h"
-#include "FileManager.h"
 #include "Audio.h"
 
 #define FADEIN_DURATION 0.3f
@@ -16,7 +16,7 @@ VBO *GameObjectUVvbo = NULL;
 
 GameObject::GameObject() : GraphObject2D(false)
 {
-	SetImage(ImageLoader::LoadSkin("hitcircle.png"));
+	SetImage(GameState::GetInstance().GetSkinImage("hitcircle.png"));
 	Centered = true; // use the object's center instead of top-left
 	
 	SetSize(CircleSize);
@@ -36,14 +36,14 @@ GameObject::GameObject() : GraphObject2D(false)
 	if (!HitSnd)
 	{
 		HitSnd = new SoundSample();
-		HitSnd->Open((FileManager::GetSkinPrefix() + "/hit.ogg").c_str());
+		HitSnd->Open((GameState::GetInstance().GetSkinPrefix() + "/hit.ogg").c_str());
 		MixerAddSample(HitSnd);
 	}
 
 	if (!HoldReleaseSnd)
 	{
 		HoldReleaseSnd  = new SoundSample();
-		HoldReleaseSnd->Open((FileManager::GetSkinPrefix() + "/holdfinish.ogg").c_str());
+		HoldReleaseSnd->Open((GameState::GetInstance().GetSkinPrefix() + "/holdfinish.ogg").c_str());
 		MixerAddSample(HoldReleaseSnd);
 	}
 

@@ -20,6 +20,8 @@ public:
 	void AddToList(const uint32 Count, const String *Filename, const String Prefix);
 	bool LoadAll();
 
+	void ForceFetch();
+
 	// Gets image from this filename
 	Image* GetFromFilename(const String Filename);
 

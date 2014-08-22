@@ -1,9 +1,9 @@
 #include "GameGlobal.h"
+#include "GameState.h"
 #include "ScreenEdit.h"
 #include "GameWindow.h"
 #include "ImageLoader.h"
 #include "Audio.h"
-#include "FileManager.h"
 
 SoundSample *SavedSound = NULL;
 
@@ -32,7 +32,7 @@ ScreenEdit::ScreenEdit(Screen *Parent)
 	Measure = 0;
 	EditScreenState = Editing;
 
-	GhostObject.SetImage(ImageLoader::LoadSkin("hitcircle.png"));
+	GhostObject.SetImage(GameState::GetInstance().GetSkinImage("hitcircle.png"));
 	GhostObject.Alpha = 0.7f;
 	GhostObject.Centered = true;
 	GhostObject.SetSize(CircleSize);
@@ -69,7 +69,7 @@ void ScreenEdit::Init(dotcur::Song *Other)
 	if (!SavedSound)
 	{
 		SavedSound = new SoundSample();
-		SavedSound->Open((FileManager::GetSkinPrefix() + "save.ogg").c_str());
+		SavedSound->Open((GameState::GetInstance().GetSkinPrefix() + "save.ogg").c_str());
 		MixerAddSample(SavedSound);
 	}
 

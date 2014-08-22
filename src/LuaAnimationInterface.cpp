@@ -1,10 +1,10 @@
 #include "Global.h"
+#include "GameState.h"
 
 #include "Image.h"
 #include "ImageLoader.h"
 #include "GraphObject2D.h"
 #include "LuaManager.h"
-#include "FileManager.h"
 #include "GraphObjectMan.h"
 #include "Configuration.h"
 
@@ -97,7 +97,7 @@ namespace LuaAnimFuncs
 	{
 		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
 		std::string iName = luaL_checkstring(L, 1);
-		Target->SetImage(ImageLoader::LoadSkin(iName));
+		Target->SetImage(GameState::GetInstance().GetSkinImage(iName));
 		return 0;
 	}
 
@@ -221,7 +221,7 @@ namespace LuaAnimFuncs
 	int Require(lua_State *L)
 	{
 		LuaManager *Lua = GetObjectFromState<LuaManager>(L, "Luaman");
-		lua_pushboolean(L, Lua->RunScript(FileManager::GetSkinPrefix() + luaL_checkstring(L, 1)));
+		lua_pushboolean(L, Lua->RunScript(GameState::GetInstance().GetSkinPrefix() + luaL_checkstring(L, 1)));
 		return 1;
 	}
 
@@ -250,7 +250,7 @@ namespace LuaAnimFuncs
 
 	int GetSkinDirectory(lua_State *L)
 	{
-		lua_pushstring(L, FileManager::GetSkinPrefix().c_str());
+		lua_pushstring(L, GameState::GetInstance().GetSkinPrefix().c_str());
 		return 1;
 	}
 

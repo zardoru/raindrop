@@ -1,7 +1,6 @@
 #include "GameGlobal.h"
 #include "Screen.h"
 #include "Audio.h"
-#include "FileManager.h"
 #include "ImageLoader.h"
 #include "GameWindow.h"
 
@@ -238,7 +237,7 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane)
 
 				if (m->GetSound())
 				{
-					if (Keysounds[m->GetSound()])
+					if (Keysounds[m->GetSound()] && PlayReactiveSounds)
 						Keysounds[m->GetSound()]->Play();
 				}
 

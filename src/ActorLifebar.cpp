@@ -1,4 +1,5 @@
 #include "GameGlobal.h"
+#include "GameState.h"
 #include "Configuration.h"
 #include "GraphObject2D.h"
 #include "ActorLifebar.h"
@@ -11,7 +12,7 @@ ActorLifebar::ActorLifebar() : GraphObject2D()
 	pending_health = 0;
 	time = 0;
 
-	SetImage(ImageLoader::LoadSkin("healthbar.png"));
+	SetImage(GameState::GetInstance().GetSkinImage("healthbar.png"));
 
 	SetWidth(PlayfieldHeight / 2);
 	SetHeight(Configuration::GetSkinConfigf("Height", "Lifebar" ));

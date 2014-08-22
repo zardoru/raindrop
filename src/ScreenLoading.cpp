@@ -1,9 +1,10 @@
 #include "Global.h"
+#include "GameState.h"
 #include "GraphObject2D.h"
 #include "ScreenLoading.h"
 #include "ImageLoader.h"
 #include "GameWindow.h"
-#include "FileManager.h"
+
 
 void LoadFunction(void* pScreen)
 {
@@ -17,7 +18,7 @@ ScreenLoading::ScreenLoading(Screen *Parent, Screen *_Next)
 	LoadThread = NULL;
 	Running = true;
 	
-	Animation.Initialize(FileManager::GetSkinPrefix() + "screenloading.lua");
+	Animation.Initialize(GameState::GetInstance().GetSkinPrefix() + "screenloading.lua");
 }
 
 void ScreenLoading::Init()

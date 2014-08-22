@@ -76,9 +76,6 @@
     <ClCompile Include="..\src\Directory.cpp">
       <Filter>Source\backend\files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\FileManager.cpp">
-      <Filter>Source\backend\files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\GameWindow.cpp">
       <Filter>Source\backend\window</Filter>
     </ClCompile>
@@ -184,6 +181,12 @@
     <ClCompile Include="..\src\SongList.cpp">
       <Filter>Source\game global\game status</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Logging.cpp">
+      <Filter>Source\backend\logging</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SongLoader.cpp">
+      <Filter>Source\game global\song interface</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">
@@ -242,9 +245,6 @@
     </ClInclude>
     <ClInclude Include="..\src\BindingsManager.h">
       <Filter>Source\backend\window</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\FileManager.h">
-      <Filter>Source\backend\files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Directory.h">
       <Filter>Source\backend\files</Filter>
@@ -363,8 +363,14 @@
     <ClInclude Include="..\src\SongList.h">
       <Filter>Source\game global\game status</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Logging.h">
+      <Filter>Source\backend\logging</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SongLoader.h">
+      <Filter>Source\game global\song interface</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\SongTiming.h">
-      <Filter>Source\backend\lua</Filter>
+      <Filter>Source\game global\song interface</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -448,6 +454,9 @@
     </Filter>
     <Filter Include="Source\game global\game status">
       <UniqueIdentifier>{9cb48b7b-447e-411e-bc50-2468f5ae2674}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\backend\logging">
+      <UniqueIdentifier>{7c95638d-8828-48b3-b6d6-ee037d7490ee}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
