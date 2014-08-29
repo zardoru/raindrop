@@ -193,25 +193,6 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		MixerAddSample(MissSnd);
 	else
 		delete MissSnd;
-	
-	if (!Music)
-	{
-		Music = new AudioStream();
-		if (Music->Open((MySong->SongDirectory + MySong->SongFilename).c_str()))
-		{
-			MixerAddStream(Music);
-		}
-		else
-		{
-			delete Music;
-			Music = NULL;
-			if (!CurrentDiff->IsVirtual)
-			{
-				DoPlay = false;
-				return; // Quit.
-			}
-		}
-	}
 
 	if (AudioCompensation)
 		TimeCompensation = MixerGetLatency();
@@ -239,6 +220,26 @@ void ScreenGameplay7K::LoadThreadInitialization()
 			At this point, MySong == LoadedSong, which means it's not a metadata-only Song* Instance.
 			The old copy is preserved; but this new one will be removed by the end of ScreenGameplay7K.
 		*/
+	}
+
+	// Now that the song is loaded, let's try and load the proper audio file.
+	if (!Music)
+	{
+		Music = new AudioStream();
+		if (Music->Open((MySong->SongDirectory + MySong->SongFilename).c_str()))
+		{
+			MixerAddStream(Music);
+		}
+		else
+		{
+			delete Music;
+			Music = NULL;
+			if (!CurrentDiff->IsVirtual)
+			{
+				DoPlay = false;
+				return; // Quit.
+			}
+		}
 	}
 
 	TimeCompensation += Configuration::GetConfigf("Offset7K");
@@ -637,7 +638,7 @@ void ScreenGameplay7K::UpdateScriptVariables()
 	L->SetGlobal("SongTime", SongTime);
 	L->SetGlobal("LifebarValue", score_keeper->getLifebarAmount(LT_GROOVE));
 
-	CurrentBeat = BeatAtTime(CurrentDiff->BPS, SongTime, CurrentDiff->Offset);
+	CurrentBeat = IntegrateToTime(CurrentDiff->BPS, SongTime);
 	L->SetGlobal("Beat", CurrentBeat);
 
 	L->NewArray();
