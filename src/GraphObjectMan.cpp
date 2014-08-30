@@ -7,8 +7,32 @@
 
 void CreateLuaInterface(LuaManager *AnimLua);
 
+bool LuaAnimation(LuaManager* Lua, const char* Func, GraphObject2D* Target, float Frac)
+{
+	Lua->RegisterStruct( "Target", (void*)Target );
+	Lua->CallFunction(Func, 1, 1);
+	Lua->PushArgument(Frac);
+
+	if (Lua->RunFunction())
+		return Lua->GetFunctionResult() > 0;
+	else
+		return false;
+}
+
+void GraphObjectMan::AddLuaAnimation (GraphObject2D* Target, const String &FuncName, Animation::EEaseType Easing, float Duration)
+{
+	Animation Anim;
+	Anim.Function = bind(LuaAnimation, Lua, FuncName, _1, _2);
+	Anim.Easing = Easing;
+	Anim.Duration = Duration;
+	Anim.Target = Target;
+
+	Animations.push_back(Anim);
+}
+
 GraphObjectMan::GraphObjectMan()
 {
+	Animations.reserve(10);
 	Lua = new LuaManager;
 	Lua->RegisterStruct("GOMAN", this);
 	Lua->SetGlobal("ScreenHeight", ScreenHeight);
@@ -93,6 +117,29 @@ void GraphObjectMan::DrawTargets(double TimeDelta)
 
 void GraphObjectMan::UpdateTargets(double TimeDelta)
 {
+	for (std::vector<Animation>::iterator i = Animations.begin();
+		i != Animations.end();
+		i++)
+	{
+		i->Time += TimeDelta;
+
+		float frac;
+
+		switch (i->Easing) {
+		case Animation::EaseIn:
+			frac = pow(i->Time / i->Duration, 2);
+			break;
+		case Animation::EaseOut:
+			frac = pow (1 - i->Time / i->Duration, 2);
+			break;
+		case Animation::EaseLinear:
+		default:
+			frac = i->Time / i->Duration;
+		}
+
+		i->Function (i->Target, frac);
+	}
+
 	Lua->CallFunction("Update", 1);
 	Lua->PushArgument(TimeDelta);
 	Lua->RunFunction();

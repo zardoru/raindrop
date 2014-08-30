@@ -5,11 +5,30 @@ class GraphObject2D;
 class LuaManager;
 class ImageList;
 
+struct Animation {
+	function <bool (GraphObject2D* Target, float Fraction)> Function;
+
+	float Time, Duration;
+	enum EEaseType {
+		EaseLinear,
+		EaseIn,
+		EaseOut
+	} Easing;
+
+	GraphObject2D* Target;
+
+	Animation() {
+		Time = Duration = 0;
+		Target = NULL;
+	}
+};
+
 class GraphObjectMan
 {
 	LuaManager *Lua;
 	ImageList *Images;
 	std::vector<GraphObject2D*> Objects;
+	std::vector <Animation> Animations;
 public:
 	GraphObjectMan();
 	~GraphObjectMan();
@@ -19,6 +38,7 @@ public:
 	LuaManager *GetEnv();
 	ImageList* GetImageList();
 
+	void AddLuaAnimation (GraphObject2D* Target, const String &FName, Animation::EEaseType Easing, float Duration);
 	void AddTarget(GraphObject2D *Targ);
 	void AddLuaTarget(GraphObject2D *Targ, String Varname);
 	void AddLuaTargetArray(GraphObject2D *Targ, String Varname, String Arrname);

@@ -5,7 +5,11 @@
 #include <sstream>
 #include <vector>
 #include <boost/cstdint.hpp>
+#include <boost/function.hpp>
+#include <boost/bind.hpp>
 
+using boost::function;
+using boost::bind;
 using boost::uint32_t;
 using boost::int32_t;
 using boost::int16_t;
