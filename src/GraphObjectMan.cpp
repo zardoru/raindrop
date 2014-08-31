@@ -22,7 +22,7 @@ bool LuaAnimation(LuaManager* Lua, const char* Func, GraphObject2D* Target, floa
 void GraphObjectMan::AddLuaAnimation (GraphObject2D* Target, const String &FuncName, Animation::EEaseType Easing, float Duration)
 {
 	Animation Anim;
-	Anim.Function = bind(LuaAnimation, Lua, FuncName, _1, _2);
+	Anim.Function = bind(LuaAnimation, Lua, FuncName.c_str(), _1, _2);
 	Anim.Easing = Easing;
 	Anim.Duration = Duration;
 	Anim.Target = Target;

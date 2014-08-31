@@ -24,7 +24,9 @@ void ScreenEvaluation7K::Init(ScoreKeeper7K *Result)
 
 	std::stringstream ss;
 
-	ss <<  "EX%: " << Result->getPercentScore(PST_EX) << "\n"
+	ss
+		<< "RANK: " << (Result->getRank() > 0 ? "+" : "") << Result->getRank() << "\n"
+		<< "EX%: " << Result->getPercentScore(PST_EX) << "\n"
 		<< "Notes hit%: " << Result->getPercentScore(PST_NH) << "\n"
 		<< "Accuracy%: " << Result->getPercentScore(PST_ACC) << "\n"
 		<< "Max Combo: " << Result->getScore(ST_MAX_COMBO) << "\n"

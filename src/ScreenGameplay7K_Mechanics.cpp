@@ -29,7 +29,7 @@ void ScreenGameplay7K::RecalculateEffects()
 
 /*
 		for (int i = 0; i < Channels; i++)
-			noteEffectsMatrix[i] = glm::translate(glm::mat4(), glm::vec3(cos(CurrentBeat * PI / 4) * 30, 0, 0) ) /** glm::rotate(glm::mat4(), 360 * CurrentBeat, glm::vec3(0,0,1) )*/;
+			noteEffectsMatrix[i] = glm::translate(glm::mat4(), glm::vec3(cos(CurrentBeat * PI / 4) * 30, 0, 0) ) / ** glm::rotate(glm::mat4(), 360 * CurrentBeat, glm::vec3(0,0,1) )*/;
 
 	if (Upscroll)
 		SpeedMultiplier = - (SpeedMultiplierUser + waveEffect + beatScrollEffect);

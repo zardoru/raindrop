@@ -18,12 +18,18 @@ void ScoreKeeper7K::setAccMax(int ms){
 }
 
 void ScoreKeeper7K::setMaxNotes(int notes){
+
 	max_notes = notes;
+
+	if(notes < 10) bms_max_combo_pts = notes * (notes + 1) / 2;
+	else bms_max_combo_pts = 55 + (notes - 10) * 10;
+
 	// recalculate groove lifebar increments.
 	lifebar_easy_increment = Clamp(5.0 / max_notes, 0.002, 0.8);
 	lifebar_groove_increment = Clamp(3.0 / max_notes, 0.001, 0.8);
 	lifebar_survival_increment = 1.2 / max_notes;
 	lifebar_exhard_increment = 0.5 / max_notes;
+
 }
 
 void ScoreKeeper7K::setEX2(int ms){ EX2 = ms; if(EX2 > EX1) EX1 = EX2 + 1; }
@@ -49,13 +55,10 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 			max_combo = combo;
 	}
 	
-// EX Score
-
-	ex_score += ms <= EX2 ? 2 : ms <= EX1 ? 1 : 0;
 
 // Numerical score / money score
 
-	sc_score += Clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.1) * 2;
+	sc_score += Clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.0) * 2;
 	sc_sc_score += sc_score * Clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.0);
 	
 	score = float(SCORE_MAX * sc_sc_score) / (max_notes * (max_notes + 1)); 
@@ -83,17 +86,26 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 	}
 
 // judgements
-
+	
+	ScoreKeeperJudgment judgment = SKJ_NONE;
+	
 	for (int i = 0; i < 5; i++)
 	{
 		if (ms < judgement_time[i])
 		{
 			judgement_amt[SKJ_W1 + (ScoreKeeperJudgment)i]++;
-			return ScoreKeeperJudgment(SKJ_W1 + (ScoreKeeperJudgment)i);
+			judgment = ScoreKeeperJudgment(SKJ_W1 + (ScoreKeeperJudgment)i);
+			break;
 		}
 	}
 
-	return SKJ_NONE;
+// Other methods
+
+	update_ranks(ms); // rank calculation
+	update_bms(ms, true);
+	
+	return judgment;
+
 }
 
 int ScoreKeeper7K::getJudgmentCount(ScoreKeeperJudgment Judge)
@@ -119,6 +131,9 @@ void ScoreKeeper7K::missNote(bool auto_hold_miss){
 	lifebar_exhard = max(0.0, lifebar_survival - Clamp(200.0 / max_notes, 0.20, 0.80));
 	lifebar_easy = max(0.0, lifebar_easy - 0.06);
 
+	// other methods
+	update_bms(1000, false);
+
 }
 
 double ScoreKeeper7K::getAccCutoff(){
@@ -139,6 +154,8 @@ int ScoreKeeper7K::getScore(ScoreType score_type){
 			return int(score);
 		case ST_EX:
 			return ex_score;
+		case ST_IIDX:
+			return bms_score;
 		case ST_COMBO:
 			return combo;
 		case ST_MAX_COMBO:
@@ -154,6 +171,8 @@ int ScoreKeeper7K::getScore(ScoreType score_type){
 float ScoreKeeper7K::getPercentScore(PercentScoreType percent_score_type){
 
 	switch(percent_score_type){
+		case PST_RANK:
+			return float(rank_pts) / float(total_notes * 3) * 100.0;
 		case PST_EX:
 			return float(ex_score) / float(total_notes * 2) * 100.0;
 		case PST_ACC:

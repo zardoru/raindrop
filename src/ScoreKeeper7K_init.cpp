@@ -15,11 +15,21 @@ ScoreKeeper7K::ScoreKeeper7K(){
 	max_notes = 0;
 
 	score = 0;
-
+	
+	rank_w1_count = 0;
+	rank_w2_count = 0;
+	rank_w3_count = 0;
+	
 	notes_hit = 0;
 	total_notes = 0;
 
 	ex_score = 0;
+	
+	bms_combo = 0;
+	bms_combo_pts = 0;
+	bms_dance_pts = 0;
+	bms_score = 0;
+
 	sc_score = 0;
 	sc_sc_score = 0;
 

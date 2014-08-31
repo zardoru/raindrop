@@ -17,21 +17,26 @@ enum ScoreKeeperJudgment{
 
 enum ScoreType{
 	
-	ST_SCORE = 1, // dotCur's 7K scoring type.
+	ST_SCORE = 1, // raindrop's 7K scoring type.
+	
 	ST_EX = 2, // EX score
 	ST_DP = 3, // DP score
 
-	ST_COMBO = 10, // current combo
-	ST_MAX_COMBO = 11, // max combo
-	ST_NOTES_HIT = 12, // total notes hit
-	
+	ST_IIDX = 10, // IIDX score
+
 	ST_OSU = 21, // osu!mania scoring
 	ST_JB2 = 22, // jubeat^2 scoring
+	
+	ST_COMBO = 100, // current combo
+	ST_MAX_COMBO = 101, // max combo
+	ST_NOTES_HIT = 102, // total notes hit
 	
 };
 
 enum PercentScoreType{
 	
+	PST_RANK = 1, // raindrop rank score
+
 	PST_EX = 2, // EX score
 	PST_NH = 3, // % notes hit
 	PST_ACC = 4 // Accuracy
@@ -82,21 +87,63 @@ class ScoreKeeper7K {
 		
 		int getLifebarUnits(LifeType lifebar_unit_type);
 		float getLifebarAmount(LifeType lifebar_amount_type);
-
+		
+		int getRank(); // returns a number from -9 to 9
+		
 		void reset();
 
 	private:
-
-		int max_notes;
-
+		
 		double score; // standard score.
 		double sc_score;
 		double sc_sc_score;
 
+	/*
+		Rank scoring
+	*/
+
+		static const int RANK_W1_MS = 16;
+		static const int RANK_W2_MS = 40;
+		static const int RANK_W3_MS = 100;
+
+		int rank_w1_count;
+		int rank_w2_count;
+		int rank_w3_count;
+		
+		int rank_pts; // rank scoring
+		
+		void update_ranks(int ms);
+
+		int max_notes;
+
+	/*
+		BMS scoring
+	*/
+
+		int ex_score;
+		
+		int bms_combo;
+		int bms_combo_pts;
+		int bms_max_combo_pts;
+
+		int bms_dance_pts;
+		int bms_score;
+
+		void update_bms(int ms, bool hit);
+	
+	/*
+		osu!
+	*/
+		
+		void set_osu_judgment(int ms, ScoreKeeperJudgment judgment);
+
+	/*
+		misc.
+	*/
+
 		int notes_hit; // notes hit %.
 		int total_notes;
 
-		int ex_score; // Beatmania EX score
 		
 		int dp_score; // DDR dance-point scoring
 		int dp_dp_score;
@@ -108,9 +155,6 @@ class ScoreKeeper7K {
 		double accuracy;
 
 		double accuracy_percent(float ms);
-		
-		int rank_pts; // rank scoring
-		int max_rank_pts;		
 		
 		// lifebar data.
 		
