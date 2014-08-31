@@ -187,6 +187,15 @@
     <ClCompile Include="..\src\SongLoader.cpp">
       <Filter>Source\game global\song interface</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\ScoreKeeper7K_bms.cpp">
+      <Filter>Source\vsrg\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScoreKeeper7K_osu.cpp">
+      <Filter>Source\vsrg\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScoreKeeper7K_rank.cpp">
+      <Filter>Source\vsrg\gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">

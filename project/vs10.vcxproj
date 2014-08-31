@@ -201,7 +201,10 @@
     <ClCompile Include="..\src\Renderer7K.cpp" />
     <ClCompile Include="..\src\Rendering.cpp" />
     <ClCompile Include="..\src\ScoreKeeper7K.cpp" />
+    <ClCompile Include="..\src\ScoreKeeper7K_bms.cpp" />
     <ClCompile Include="..\src\ScoreKeeper7K_init.cpp" />
+    <ClCompile Include="..\src\ScoreKeeper7K_osu.cpp" />
+    <ClCompile Include="..\src\ScoreKeeper7K_rank.cpp" />
     <ClCompile Include="..\src\Screen.cpp" />
     <ClCompile Include="..\src\ScreenEdit.cpp" />
     <ClCompile Include="..\src\ScreenEvaluation.cpp" />
