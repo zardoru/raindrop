@@ -12,7 +12,7 @@ enum ScoreKeeperJudgment{
 	SKJ_MISS = 6, // Miss / Poor
 	SKJ_HOLD_OK = 10, // OK, only used with DDR-style holds
 	SKJ_HOLD_NG = 11, // NG
-	SKJ_AMOUNT
+
 };
 
 enum ScoreType{
@@ -102,10 +102,6 @@ class ScoreKeeper7K {
 		Rank scoring
 	*/
 
-		static const int RANK_W1_MS = 16;
-		static const int RANK_W2_MS = 40;
-		static const int RANK_W3_MS = 100;
-
 		int rank_w1_count;
 		int rank_w2_count;
 		int rank_w3_count;
@@ -173,8 +169,8 @@ class ScoreKeeper7K {
 		double lifebar_easy_increment;
 
 		// judgement information
-		double judgement_time[SKJ_AMOUNT];
-		double judgement_amt[SKJ_AMOUNT];
+		double judgement_time[9];
+		double judgement_amt[9];
 		
 		// no-recovery modes.
 		

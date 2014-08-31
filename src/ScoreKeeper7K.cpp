@@ -89,12 +89,12 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 	
 	ScoreKeeperJudgment judgment = SKJ_NONE;
 	
-	for (int i = 0; i < 5; i++)
+	for (int i = 1; i < 6; i++)
 	{
 		if (ms < judgement_time[i])
 		{
-			judgement_amt[SKJ_W1 + (ScoreKeeperJudgment)i]++;
-			judgment = ScoreKeeperJudgment(SKJ_W1 + (ScoreKeeperJudgment)i);
+			judgement_amt[(ScoreKeeperJudgment)i]++;
+			judgment = ScoreKeeperJudgment((ScoreKeeperJudgment)i);
 			break;
 		}
 	}

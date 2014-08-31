@@ -85,8 +85,8 @@ end
 -- Actually-used-by-dotcur-directly variables.
 
 -- show up to 9999 ms off
-HitErrorDisplayLimiter = 9999
-DefaultSpeedUnits = 1300
+HitErrorDisplayLimiter = 999
+DefaultSpeedUnits = 1000
 
 -- 1 is first after processing SV, 1 is mmod, 2 is cmod, anything else is default.
 -- default: first before processing SV
