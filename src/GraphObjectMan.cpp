@@ -130,7 +130,8 @@ void GraphObjectMan::UpdateTargets(double TimeDelta)
 			frac = pow(i->Time / i->Duration, 2);
 			break;
 		case Animation::EaseOut:
-			frac = pow (1 - i->Time / i->Duration, 2);
+			frac = i->Time / i->Duration;
+			frac = -frac*(frac-2);
 			break;
 		case Animation::EaseLinear:
 		default:
