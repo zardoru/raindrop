@@ -102,7 +102,7 @@ void Song::ProcessBPS(VSRG::Difficulty* Diff, double Drift)
 		if (Diff->BPMType == VSRG::Difficulty::BT_Beat) // Time is in Beats
 		{
 			FTime = bps (Time->Value);
-			Seg.Time = TimeAtBeat(Diff->Timing, Diff->Offset + Drift, Time->Time) + StopTimeAtBeat(Diff->StopsTiming, Time->Time);
+			Seg.Time = TimeAtBeat(Diff->Timing, 0, Time->Time) + StopTimeAtBeat(Diff->StopsTiming, Time->Time) + Drift + Diff->Offset;
 		}
 		else if (Diff->BPMType == VSRG::Difficulty::BT_MS) // Time is in MS
 		{
@@ -227,9 +227,12 @@ void Song::ProcessSpeedVariations(VSRG::Difficulty* Diff, double Drift)
 			Theorically, if there were a VSpeed change after this one (such as a BPM change) we've got to modify them 
 			if they're between this and the next speed change.
 
-			Apparently, this behaviour is a "bug" since both stepmania and osu!mania reset SV changes
+			Apparently, this behaviour is a "bug" since osu!mania reset SV changes
 			after a BPM change.
 		*/
+
+		if (Diff->BPMType == VSRG::Difficulty::BT_Beatspace)
+			goto next_speed;
 
 		for(TimingData::iterator Time = Diff->VerticalSpeeds.begin();
 			Time != Diff->VerticalSpeeds.end();

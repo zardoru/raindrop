@@ -778,7 +778,9 @@ bool ScreenGameplay7K::Run(double Delta)
 		ss << "\nScrolling Speed: " << SectionValue(VSpeeds, 0) * SpeedMultiplier;
 
 	if (Auto)
-		ss << "\nAuto Mode";
+		ss << "\nAuto Mode ";
+
+	ss << "T: " << SongTime << " B: " << CurrentBeat << " O: " << CurrentDiff->Offset;
 
 	GFont->DisplayText(ss.str().c_str(), Vec2(0, ScreenHeight - 65));
 

@@ -1,4 +1,8 @@
 
+function InBackground(frac)
+	Obj.SetAlpha( 1 - frac )
+end
+
 function PlayBtnHover()
 	Obj.SetTarget(PlayButton)
 	Obj.SetImageSkin("playh.png")
@@ -27,6 +31,7 @@ function Init()
 
 	targBadge = Obj.CreateTarget()
 	targLogo = Obj.CreateTarget()
+	targBlack = Obj.CreateTarget()
 
 	Obj.SetTarget(targLogo)
 
@@ -45,6 +50,10 @@ function Init()
 
 	Obj.SetPosition (0, ScreenHeight - 153)
 
+	Obj.SetTarget(targBlack)
+	Obj.SetImageSkin("filter.png")
+	Obj.SetAlpha(1)
+	Obj.AddAnimation("InBackground", 1, 0, EaseNone)
 end
 
 function Cleanup()
