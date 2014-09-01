@@ -263,6 +263,29 @@ namespace LuaAnimFuncs
 		return 0;
 	}
 
+	// Lua Animation stuff: Move these onto their own file eventually.
+	int AddLuaAnimation(lua_State* L)
+	{
+		GraphObjectMan* GoMan = GetObjectFromState<GraphObjectMan> (L, "GOMAN");
+		GraphObject2D* Target = GetObjectFromState<GraphObject2D> (L, "Target");
+		String Name = luaL_checkstring(L, 1);
+		float Duration = luaL_checknumber(L, 2);
+		float Delay = luaL_checknumber(L, 3);
+		Animation::EEaseType Easing = (Animation::EEaseType)(int)luaL_checknumber(L, 4);
+
+		GoMan->AddLuaAnimation(Target, Name, Easing, Duration, Delay);
+		return 0;
+	}
+
+	int LuaStopAnimationsForTarget(lua_State *L)
+	{
+		GraphObjectMan* GoMan = GetObjectFromState<GraphObjectMan> (L, "GOMAN");
+		GraphObject2D* Target = GetObjectFromState<GraphObject2D> (L, "Target");
+
+		GoMan->StopAnimationsForTarget(Target);
+		return 0;
+	}
+
 	static const struct luaL_Reg GraphObjectLib[] =
 	{
 		{ "SetRotation", SetRotation },
@@ -284,16 +307,19 @@ namespace LuaAnimFuncs
 		{ "CreateTarget", CreateTarget },
 		{ "SetTarget", SetTarget },
 		{ "CleanTarget", CleanTarget },
-		{ "GetZ", GetZ },
 		{ "SetBlendMode", SetBlendMode },
+		{ "GetZ", GetZ },
 		{ "SetZ", SetZ },
 		{ "SetCentered", SetCentered },
 		{ "SetColorInvert", SetColorInvert },
 		{ "SetAffectedbyLightning", SetAffectedbyLightning },
 		{ "GetSkinDirectory", GetSkinDirectory },
+		{ "AddAnimation", AddLuaAnimation },
+		{ "ClearAnimations", LuaStopAnimationsForTarget },
 		{ NULL, NULL }
 	};
 }
+
 
 void CreateLuaInterface(LuaManager *AnimLua)
 {
@@ -302,4 +328,15 @@ void CreateLuaInterface(LuaManager *AnimLua)
 	AnimLua->Register(LuaAnimFuncs::GetSkinConfigF, "GetConfigF");
 	AnimLua->Register(LuaAnimFuncs::GetSkinConfigS, "GetConfigS");
 	AnimLua->RegisterLibrary("Obj", ((const luaL_Reg*)LuaAnimFuncs::GraphObjectLib));
+	
+	AnimLua->SetGlobal("ScreenHeight", ScreenHeight);
+	AnimLua->SetGlobal("ScreenWidth", ScreenWidth);
+
+	// Animation constants
+	AnimLua->SetGlobal("EaseNone", Animation::EaseLinear);
+	AnimLua->SetGlobal("EaseIn", Animation::EaseIn);
+	AnimLua->SetGlobal("EaseOut", Animation::EaseOut);
+
+	AnimLua->SetGlobal("BlendAdd", (int)MODE_ADD);
+	AnimLua->SetGlobal("BlendAlpha", (int)MODE_ALPHA);
 }

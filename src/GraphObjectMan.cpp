@@ -19,19 +19,21 @@ bool LuaAnimation(LuaManager* Lua, const char* Func, GraphObject2D* Target, floa
 		return false;
 }
 
-// Lua Animation stuff: Move these onto their own file eventually.
-int LuaAddLuaAnimation(lua_State* L)
+void GraphObjectMan::StopAnimationsForTarget(GraphObject2D* Target)
 {
-	GraphObjectMan* GoMan = GetObjectFromState<GraphObjectMan> (L, "GOMAN");
-	GraphObject2D* Target = GetObjectFromState<GraphObject2D> (L, "Target");
-	String Name = luaL_checkstring(L, 1);
-	float Duration = luaL_checknumber(L, 2);
-	float Delay = luaL_checknumber(L, 3);
-	Animation::EEaseType Easing = (Animation::EEaseType)(int)luaL_checknumber(L, 4);
-
-	GoMan->AddLuaAnimation(Target, Name, Easing, Duration, Delay);
-	return 0;
+	for (std::vector<Animation>::iterator i = Animations.begin();
+		i != Animations.end();
+		)
+	{
+		if (i->Target == Target)
+		{
+			i = Animations.erase(i);
+			if (i == Animations.end()) break;
+		}else
+			i++;
+	}
 }
+
 
 void GraphObjectMan::AddLuaAnimation (GraphObject2D* Target, const String &FuncName, 
 	Animation::EEaseType Easing, float Duration, float Delay)
@@ -51,14 +53,6 @@ GraphObjectMan::GraphObjectMan()
 	Animations.reserve(10);
 	Lua = new LuaManager;
 	Lua->RegisterStruct("GOMAN", this);
-	Lua->SetGlobal("ScreenHeight", ScreenHeight);
-	Lua->SetGlobal("ScreenWidth", ScreenWidth);
-
-	// Animation constants
-	Lua->SetGlobal("EaseNone", Animation::EaseLinear);
-	Lua->SetGlobal("EaseIn", Animation::EaseIn);
-	Lua->SetGlobal("EaseOut", Animation::EaseOut);
-	Lua->Register(LuaAddLuaAnimation, "AddAnimation");
 
 	CreateLuaInterface(Lua);
 	Images = new ImageList(true);
