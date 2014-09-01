@@ -7,10 +7,10 @@
 
 void CreateLuaInterface(LuaManager *AnimLua);
 
-bool LuaAnimation(LuaManager* Lua, const char* Func, GraphObject2D* Target, float Frac)
+bool LuaAnimation(LuaManager* Lua, String Func, GraphObject2D* Target, float Frac)
 {
 	Lua->RegisterStruct( "Target", (void*)Target );
-	Lua->CallFunction(Func, 1, 1);
+	Lua->CallFunction(Func.c_str(), 1, 1);
 	Lua->PushArgument(Frac);
 
 	if (Lua->RunFunction())
@@ -39,7 +39,7 @@ void GraphObjectMan::AddLuaAnimation (GraphObject2D* Target, const String &FuncN
 	Animation::EEaseType Easing, float Duration, float Delay)
 {
 	Animation Anim;
-	Anim.Function = bind(LuaAnimation, Lua, FuncName.c_str(), _1, _2);
+	Anim.Function = bind(LuaAnimation, Lua, FuncName, _1, _2);
 	Anim.Easing = Easing;
 	Anim.Duration = Duration;
 	Anim.Target = Target;
