@@ -19,13 +19,29 @@ bool LuaAnimation(LuaManager* Lua, const char* Func, GraphObject2D* Target, floa
 		return false;
 }
 
-void GraphObjectMan::AddLuaAnimation (GraphObject2D* Target, const String &FuncName, Animation::EEaseType Easing, float Duration)
+// Lua Animation stuff: Move these onto their own file eventually.
+int LuaAddLuaAnimation(lua_State* L)
+{
+	GraphObjectMan* GoMan = GetObjectFromState<GraphObjectMan> (L, "GOMAN");
+	GraphObject2D* Target = GetObjectFromState<GraphObject2D> (L, "Target");
+	String Name = luaL_checkstring(L, 1);
+	float Duration = luaL_checknumber(L, 2);
+	float Delay = luaL_checknumber(L, 3);
+	Animation::EEaseType Easing = (Animation::EEaseType)(int)luaL_checknumber(L, 4);
+
+	GoMan->AddLuaAnimation(Target, Name, Easing, Duration, Delay);
+	return 0;
+}
+
+void GraphObjectMan::AddLuaAnimation (GraphObject2D* Target, const String &FuncName, 
+	Animation::EEaseType Easing, float Duration, float Delay)
 {
 	Animation Anim;
 	Anim.Function = bind(LuaAnimation, Lua, FuncName.c_str(), _1, _2);
 	Anim.Easing = Easing;
 	Anim.Duration = Duration;
 	Anim.Target = Target;
+	Anim.Delay = Delay;
 
 	Animations.push_back(Anim);
 }
@@ -37,6 +53,13 @@ GraphObjectMan::GraphObjectMan()
 	Lua->RegisterStruct("GOMAN", this);
 	Lua->SetGlobal("ScreenHeight", ScreenHeight);
 	Lua->SetGlobal("ScreenWidth", ScreenWidth);
+
+	// Animation constants
+	Lua->SetGlobal("EaseNone", Animation::EaseLinear);
+	Lua->SetGlobal("EaseIn", Animation::EaseIn);
+	Lua->SetGlobal("EaseOut", Animation::EaseOut);
+	Lua->Register(LuaAddLuaAnimation, "AddAnimation");
+
 	CreateLuaInterface(Lua);
 	Images = new ImageList(true);
 }
@@ -121,7 +144,19 @@ void GraphObjectMan::UpdateTargets(double TimeDelta)
 		i != Animations.end();
 		i++)
 	{
+		if (i->Delay > 0)
+		{
+			i->Delay -= TimeDelta; // Still waiting for this to start.
+			continue;
+		}
+
 		i->Time += TimeDelta;
+
+		if (i->Time >= i->Duration)
+		{
+			i = Animations.erase(i);
+			if (i == Animations.end()) break;
+		}
 
 		float frac;
 
@@ -138,7 +173,11 @@ void GraphObjectMan::UpdateTargets(double TimeDelta)
 			frac = i->Time / i->Duration;
 		}
 
-		i->Function (i->Target, frac);
+		if (!i->Function (i->Target, frac)) // Says the animation is over?
+		{
+			i = Animations.erase(i);
+			if (i == Animations.end()) break;
+		}
 	}
 
 	Lua->CallFunction("Update", 1);

@@ -1,6 +1,8 @@
 #ifndef GOM_H_
 #define GOM_H_
 
+#include <limits>
+
 class GraphObject2D;
 class LuaManager;
 class ImageList;
@@ -8,7 +10,7 @@ class ImageList;
 struct Animation {
 	function <bool (GraphObject2D* Target, float Fraction)> Function;
 
-	float Time, Duration;
+	float Time, Duration, Delay;
 	enum EEaseType {
 		EaseLinear,
 		EaseIn,
@@ -18,7 +20,8 @@ struct Animation {
 	GraphObject2D* Target;
 
 	Animation() {
-		Time = Duration = 0;
+		Time = Delay = 0;
+		Duration = std::numeric_limits<float>::infinity();
 		Target = NULL;
 	}
 };
@@ -38,7 +41,7 @@ public:
 	LuaManager *GetEnv();
 	ImageList* GetImageList();
 
-	void AddLuaAnimation (GraphObject2D* Target, const String &FName, Animation::EEaseType Easing, float Duration);
+	void AddLuaAnimation (GraphObject2D* Target, const String &FName, Animation::EEaseType Easing, float Duration, float Delay);
 	void AddTarget(GraphObject2D *Targ);
 	void AddLuaTarget(GraphObject2D *Targ, String Varname);
 	void AddLuaTargetArray(GraphObject2D *Targ, String Varname, String Arrname);
