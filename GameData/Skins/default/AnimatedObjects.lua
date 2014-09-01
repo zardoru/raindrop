@@ -5,6 +5,10 @@ Pulse = { Image = "pulse_ver.png", Height = 200 }
 function ProgressTick.Init()
 	ProgressTick.Object = Obj.CreateTarget()
 
+	-- When not active, Beat <= 0.
+	print (Beat)
+	ProgressTick.BeatOffs = -Beat
+
 	Obj.SetTarget(ProgressTick.Object)
 	Obj.SetImageSkin(ProgressTick.Image)
 	Obj.SetPosition( GearStartX - 5 - 16, 0 )
@@ -17,12 +21,13 @@ end
 
 function ProgressTick.Run(Delta)
 	if Active ~= 0 then
+		local Ratio = (Beat + ProgressTick.BeatOffs) / (SongDurationBeats + ProgressTick.BeatOffs)
 		if SongTime > 0 then
 			Obj.SetAlpha(1)
-			Obj.SetPosition( GearStartX - 5 - 16, SongTime / SongDuration * ScreenHeight )
+			Obj.SetPosition( GearStartX - 5 - 16, Ratio * (ScreenHeight - 16) )
 		else
 			Obj.SetAlpha(1 - SongTime / -1.5, 2)
-			Obj.SetPosition( GearStartX - 5 - 16, ScreenHeight * math.pow(SongTime / -1.5, 2) )
+			Obj.SetPosition( GearStartX - 5 - 16, (ScreenHeight - 16) * math.pow(SongTime / -1.5, 2) )
 		end
 	else
 		Obj.SetAlpha( 0 )

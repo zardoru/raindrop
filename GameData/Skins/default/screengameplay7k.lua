@@ -114,6 +114,10 @@ function Cleanup()
 
 end
 
+function OnActivate()
+		
+end
+
 function HitEvent(JudgementValue, TimeOff, Lane, IsHold, IsHoldRelease)
 	-- When hits happen, this function is called.
 	if TimeOff < AccuracyHitMS then

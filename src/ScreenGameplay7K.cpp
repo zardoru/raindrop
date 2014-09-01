@@ -351,6 +351,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	JudgementLinePos += (Upscroll ? NoteHeight/2 : -NoteHeight/2);
 	CurrentVertical = IntegrateToTime (VSpeeds, -WaitingTime);
+	CurrentBeat = IntegrateToTime(CurrentDiff->BPS, 0);
 
 	RecalculateMatrix();
 	MultiplierChanged = true;
@@ -378,6 +379,7 @@ void ScreenGameplay7K::SetupScriptConstants()
 	L->SetGlobal("SongDurationBeats", BeatAtTime(CurrentDiff->BPS, CurrentDiff->Duration, CurrentDiff->Offset + TimeCompensation));
 	L->SetGlobal("WaitingTime", WaitingTime);
 	L->SetGlobal("Auto", Auto);
+	L->SetGlobal("Beat", CurrentBeat);
 	L->SetGlobal("Lifebar", score_keeper->getLifebarAmount(LT_GROOVE));
 
 	Animations->AddLuaTarget(&Background, "ScreenBackground");
@@ -602,7 +604,12 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 			Running = false;
 			break;
 		case KT_Enter:
-			Active = true;
+			if (!Active)
+			{
+				Active = true;
+				Animations->GetEnv()->CallFunction("OnActivate");
+				Animations->GetEnv()->RunFunction();
+			}
 			break;
 		case KT_FractionInc:
 			SpeedMultiplierUser += 0.25;
