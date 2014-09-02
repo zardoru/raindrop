@@ -86,9 +86,10 @@ void Song::ProcessVSpeeds(VSRG::Difficulty* Diff, double SpeedConstant)
 void Song::ProcessBPS(VSRG::Difficulty* Diff, double Drift)
 {
 	/* 
-		Calculate BPS. The algorithm is basically the same as VSpeeds, so there's probably a better way to do it
-		that is not repeating the same thing using different values.
+		Calculate BPS. The algorithm is basically the same as VSpeeds.
+		BPS time is calculated applying the offset.
 	*/
+
 	Diff->BPS.clear();
 
 	for(TimingData::iterator Time = Diff->Timing.begin();
@@ -102,16 +103,15 @@ void Song::ProcessBPS(VSRG::Difficulty* Diff, double Drift)
 		if (Diff->BPMType == VSRG::Difficulty::BT_Beat) // Time is in Beats
 		{
 			FTime = bps (Time->Value);
-			Seg.Time = TimeAtBeat(Diff->Timing, 0, Time->Time) + StopTimeAtBeat(Diff->StopsTiming, Time->Time) + Drift + Diff->Offset;
-		}
-		else if (Diff->BPMType == VSRG::Difficulty::BT_MS) // Time is in MS
+			Seg.Time = TimeAtBeat(Diff->Timing, Drift + Diff->Offset, Time->Time) + StopTimeAtBeat(Diff->StopsTiming, Time->Time);
+		}else if (Diff->BPMType == VSRG::Difficulty::BT_MS) // Time is in MS
 		{
 			FTime = bps (Time->Value);
-			Seg.Time = Time->Time + Drift;
+			Seg.Time = Time->Time + Drift + Diff->Offset;
 		}else if ( Diff->BPMType == VSRG::Difficulty::BT_Beatspace ) // Time in MS, and not using bpm, but ms per beat.
 		{
 			FTime = bps (60000.0 / Time->Value);
-			Seg.Time = Time->Time + Drift;
+			Seg.Time = Time->Time + Drift + Diff->Offset;
 		}
 
 		Seg.Value = FTime;
@@ -187,7 +187,7 @@ void Song::ProcessSpeedVariations(VSRG::Difficulty* Diff, double Drift)
 			Change++)
 	{
 		TimingData::const_iterator NextChange = (Change+1);
-		double ChangeTime = Change->Time + Drift;
+		double ChangeTime = Change->Time + Drift + Diff->Offset;
 
 		/* 
 			Find all VSpeeds

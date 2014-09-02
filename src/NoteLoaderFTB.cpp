@@ -129,7 +129,16 @@ failed:
 	filein.close();
 
 	if (Diff->Timing.size())
-		Diff->Timing[0].Time = 0;
+	{
+		Diff->Offset = Diff->Timing.begin()->Time;
+
+		for (TimingData::iterator i = Diff->Timing.begin();
+			i != Diff->Timing.end();
+			i++)
+		{
+			i->Time -= Diff->Offset;
+		}
+	}
 	else
 		goto failed;
 

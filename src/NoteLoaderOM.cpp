@@ -573,7 +573,13 @@ void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 			i != Diff->Timing.end();
 			i++)
 		{
+			i->Time -= Diff->Offset;
+		}
 
+		for (TimingData::iterator i = Diff->SpeedChanges.begin();
+			i != Diff->SpeedChanges.end();
+			i++)
+		{
 			i->Time -= Diff->Offset;
 		}
 

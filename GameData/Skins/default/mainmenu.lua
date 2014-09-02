@@ -53,7 +53,7 @@ function Init()
 	Obj.SetTarget(targBlack)
 	Obj.SetImageSkin("filter.png")
 	Obj.SetAlpha(1)
-	Obj.AddAnimation("InBackground", 1, 0, EaseNone)
+	Obj.AddAnimation("InBackground", 2, 0, EaseIn)
 end
 
 function Cleanup()
