@@ -242,6 +242,14 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		}
 	}
 
+	// What, you mean we don't have timing data at all?
+	if (CurrentDiff->Timing.size() == 0)
+	{
+		Log::Printf("Error loading chart: No timing data.\n");
+		DoPlay = false;
+		return;
+	}
+
 	TimeCompensation += Configuration::GetConfigf("Offset7K");
 
 	double DesiredDefaultSpeed = Configuration::GetSkinConfigf("DefaultSpeedUnits");
