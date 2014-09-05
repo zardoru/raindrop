@@ -1,6 +1,8 @@
 #ifndef SONGLIST_H_
 #define SONGLIST_H_
 
+#include <boost/thread.hpp>
+
 class SongLoader;
 
 struct ListEntry
@@ -22,7 +24,7 @@ public:
 	SongList (SongList* Parent = NULL);
 	~SongList();
 
-	void AddDirectory(SongLoader *Loader, Directory Dir, bool VSRGActive, bool DotcurActive);
+	void AddDirectory(boost::mutex &loadMutex, SongLoader *Loader, Directory Dir, bool VSRGActive, bool DotcurActive);
 	void AddVirtualDirectory(String NewEntryName, Game::Song* List, int Count);
 	void AddSong(Game::Song* Song);
 

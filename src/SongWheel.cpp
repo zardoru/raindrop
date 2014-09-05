@@ -75,11 +75,12 @@ void SongWheel::Initialize(float Start, float End, bool IsDotcurActive, bool IsV
 	mFont->LoadSkinFontImage("font-wheel.tga", Vec2(10, 20), Vec2(32, 32), Vec2(10,20), 32);
 }
 
-void SongWheel::ReloadSongs()
+void SongWheel::ReloadSongs(boost::mutex &loadMutex)
 {
 	delete ListRoot;
 
 	ListRoot = new SongList();
+	CurrentList = ListRoot;
 
 	std::vector<String> Directories;
 	Configuration::GetConfigListS("SongDirectories", Directories);
@@ -92,11 +93,10 @@ void SongWheel::ReloadSongs()
 		i != Directories.end();
 		i++)
 	{
-		ListRoot->AddDirectory (&Loader, *i, VSRGModeActive, dotcurModeActive);
+		ListRoot->AddDirectory (loadMutex, &Loader, *i, VSRGModeActive, dotcurModeActive);
 	}
 	
 	DB->EndTransaction();
-	CurrentList = ListRoot;
 	Log::Printf("Finished reloading songs.\n");
 }
 
@@ -203,6 +203,9 @@ void SongWheel::Update(float Delta)
 {
 	Time += Delta;
 	SelCursor->Alpha = (sin(Time*6)+1)/4 + 0.5;
+
+	if (!CurrentList)
+		return;
 
 	uint32 Size = CurrentList->GetNumEntries();
 

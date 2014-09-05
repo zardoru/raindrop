@@ -3,6 +3,7 @@
 #define SONGWHEEL_H_
 
 #include <boost/function.hpp>
+#include <boost/thread.hpp>
 
 namespace dotcur
 {
@@ -86,7 +87,7 @@ public:
 	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	bool HandleScrollInput(const double dx, const double dy);
 	Game::Song* GetSelectedSong();
-	void ReloadSongs();
+	void ReloadSongs(boost::mutex &loadMutex);
 
 	void SetFont(Directory FontDirectory);
 	void SetItemHeight(float Height);

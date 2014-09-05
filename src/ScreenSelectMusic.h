@@ -1,6 +1,8 @@
 #ifndef SCREENSELECTMUSIC_H_
 #define SCREENSELECTMUSIC_H_
 
+#include <boost/thread.hpp>
+
 class BitmapFont;
 
 namespace dotcur
@@ -38,6 +40,9 @@ class ScreenSelectMusic : public Screen
 	void StopLoops();
 
 	ModeType SelectedMode;
+
+	boost::thread* LoaderThread;
+	boost::mutex LoadMutex;
 
 	float GetListYTransformation(const float Y);
 	void OnSongChange(Game::Song* MySong, uint8 difindex);

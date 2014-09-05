@@ -41,8 +41,9 @@ void SongList::AddSong(Game::Song* Song)
 	mChildren.push_back(NewEntry);
 }
 
-void SongList::AddDirectory(SongLoader *Loader, Directory Dir, bool VSRGActive, bool DotcurActive)
+void SongList::AddDirectory(boost::mutex &loadMutex, SongLoader *Loader, Directory Dir, bool VSRGActive, bool DotcurActive)
 {
+	bool EntryWasPushed = false;
 	SongList* NewList = new SongList(this);
 
 	ListEntry NewEntry;
@@ -69,62 +70,69 @@ void SongList::AddDirectory(SongLoader *Loader, Directory Dir, bool VSRGActive, 
 		if (DotcurActive)
 			Loader->LoadSongDCFromDir(Dir / *i, SongsDC);
 
-		if (!SongsDC.size() && !Songs7K.size())
-			NewList->AddDirectory(Loader, Dir / *i, VSRGActive, DotcurActive);
-
-		if (Songs7K.size())
+		if (!SongsDC.size() && !Songs7K.size()) // No songs, so, time to recursively search.
 		{
-			for (std::vector<VSRG::Song*>::iterator j = Songs7K.begin();
-				j != Songs7K.end();
-				j++)
+			NewList->AddDirectory(loadMutex, Loader, Dir / *i, VSRGActive, DotcurActive);
+			if (NewList->GetNumEntries())
 			{
-				NewList->AddSong(*j);
+				if (!EntryWasPushed)
+				{
+					loadMutex.lock();
+					mChildren.push_back	(NewEntry);
+					loadMutex.unlock();
+					EntryWasPushed = true;
+				}
 			}
-
-			Songs7K.clear();
 		}
-
-		if (SongsDC.size())
-		{
-			for (std::vector<dotcur::Song*>::iterator j = SongsDC.begin();
-				j != SongsDC.end();
-				j++)
-			{
-				NewList->AddSong(*j);
-			}
-
-			SongsDC.clear();
-		}
-	}
-
-	if (NewList->GetNumEntries())
-	{
-		if (NewList->GetNumEntries() > 1)
-			mChildren.push_back(NewEntry);
 		else
 		{
-			// Move the entries back here, as they are too small to warrant having a list of a single item.
-			for (std::vector<ListEntry>::iterator i = NewList->mChildren.begin(); i != NewList->mChildren.end(); i++)
-			{
-				mChildren.push_back(*i);
+			size_t tSize = Songs7K.size() + SongsDC.size();
 
-				if (i->Kind == ListEntry::Directory)
+			if (Songs7K.size())
+			{
+				loadMutex.lock();
+				for (std::vector<VSRG::Song*>::iterator j = Songs7K.begin();
+					j != Songs7K.end();
+					j++)
 				{
-					SongList* L = static_cast<SongList*> (i->Data);
-					L->mParent = this;
+					NewList->AddSong(*j);
 				}
 
-				i = NewList->mChildren.erase(i);
-
-				if (i == NewList->mChildren.end())
-					break;
+				Songs7K.clear();
+				loadMutex.unlock();
 			}
 
-			delete NewList;
+			if (SongsDC.size())
+			{
+				loadMutex.lock();
+				for (std::vector<dotcur::Song*>::iterator j = SongsDC.begin();
+					j != SongsDC.end();
+					j++)
+				{
+					NewList->AddSong(*j);
+				}
+
+				SongsDC.clear();
+				loadMutex.unlock();
+			}
+
+			if (tSize > 0) // There's a song in here. 
+			{
+				if (!EntryWasPushed)
+				{
+					loadMutex.lock();
+					mChildren.push_back	(NewEntry);
+					loadMutex.unlock();
+					EntryWasPushed = true;
+				}
+			}
 		}
 	}
-	else
+
+	if (!EntryWasPushed)
+	{
 		delete NewList;
+	}	
 }
 
 void SongList::AddVirtualDirectory(String NewEntryName, Game::Song* List, int Count)
