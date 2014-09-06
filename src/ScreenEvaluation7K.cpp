@@ -26,17 +26,19 @@ void ScreenEvaluation7K::Init(ScoreKeeper7K *Result)
 
 	ss
 		<< "RANK: " << (Result->getRank() > 0 ? "+" : "") << Result->getRank() << "\n"
-		<< "EX%: " << Result->getPercentScore(PST_EX) << "\n"
-		<< "Notes hit%: " << Result->getPercentScore(PST_NH) << "\n"
+		<< "\n"
 		<< "Accuracy%: " << Result->getPercentScore(PST_ACC) << "\n"
+		<< "Final Score: " << Result->getScore(ST_SCORE) << "\n"
 		<< "Max Combo: " << Result->getScore(ST_MAX_COMBO) << "\n"
-		<< "SC score: " << Result->getScore(ST_SCORE) << "\n"
-		<< "Judgement (F/N/G/O/B): " 
-		<< Result->getJudgmentCount(SKJ_W1) << "/" 
-		<< Result->getJudgmentCount(SKJ_W2) << "/" 
-		<< Result->getJudgmentCount(SKJ_W3) << "/" 
-		<< Result->getJudgmentCount(SKJ_W4) << "/" 
-		<< Result->getJudgmentCount(SKJ_W5);
+		<< "\n"
+		<< "Fantastic: " << Result->getJudgmentCount(SKJ_W1) << "\n"
+		<< "    Great: " << Result->getJudgmentCount(SKJ_W2) << "\n" 
+		<< "     Good: " << Result->getJudgmentCount(SKJ_W3) << "\n" 
+		<< "      Bad: " << Result->getJudgmentCount(SKJ_W4) << "\n" 
+		<< "       NG: " << Result->getJudgmentCount(SKJ_W5) << "\n"
+		<< "\n"
+		<< "Notes hit%: " << Result->getPercentScore(PST_NH) << "\n"
+		<< "EX%: " << Result->getPercentScore(PST_EX) << "\n";
 	
 	DisplayResult = ss.str();
 
