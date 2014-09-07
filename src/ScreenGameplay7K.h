@@ -28,10 +28,11 @@ private:
 	double LaneWidth[VSRG::MAX_CHANNELS];
 	double GearHeightFinal;
 	double SongTime, SongTimeReal;
-	double			 CurrentVertical;
-	double			 WaitingTime;
-	double  ErrorTolerance;
-	double  TimeCompensation;
+	double CurrentVertical;
+	double WaitingTime;
+	double ErrorTolerance;
+	double TimeCompensation;
+	double GameTime;
 	
 	/* User Variables */
 	float       SpeedMultiplierUser;

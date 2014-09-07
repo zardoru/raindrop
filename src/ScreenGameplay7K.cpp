@@ -30,6 +30,7 @@ ScreenGameplay7K::ScreenGameplay7K()
 	SongOldTime = -1;
 	Music = NULL;
 	MissSnd = NULL;
+	GameTime = 0;
 
 	waveEffectEnabled = false;
 	waveEffect = 0;
@@ -693,9 +694,9 @@ bool ScreenGameplay7K::Run(double Delta)
 
 	if (Active)
 	{
-		ScreenTime += Delta;
+		GameTime += Delta;
 
-		if (ScreenTime >= WaitingTime)
+		if (GameTime >= WaitingTime)
 		{
 
 			if (SongOldTime == -1)
@@ -754,7 +755,7 @@ bool ScreenGameplay7K::Run(double Delta)
 				Running = false;
 		}else
 		{
-			SongTime = -(WaitingTime - ScreenTime);
+			SongTime = -(WaitingTime - GameTime);
 			SongDelta = 0;
 			CurrentVertical = IntegrateToTime(VSpeeds, SongTime);
 		}

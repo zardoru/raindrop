@@ -15,6 +15,7 @@ Screen::Screen(Screen *_Parent)
 	Running = false;
 	Next = 0;
 	ScreenTime = 0;
+	ScreenState = StateRunning;
 }
 
 Screen::~Screen() {}
@@ -59,6 +60,55 @@ Screen* Screen::GetTop()
 	if (Next) return Next->GetTop();
 	else return this;
 }
+
+double Screen::GetScreenTime()
+{
+	return ScreenTime;
+}
+
+bool Screen::Update(float delta)
+{
+	ScreenTime += delta;
+
+	if (ScreenState == StateIntro)
+	{
+		float Frac;
+		IntroTime += delta;
+
+		if (IntroTime < IntroDuration)
+			Frac = Clamp (IntroTime / IntroDuration, 0.0, 1.0);
+		else
+		{
+			Frac = 1;
+			ScreenState = StateRunning;
+		}
+
+		return RunIntro(Frac);
+	}else if (ScreenState == StateExit)
+	{
+		float Frac;
+
+		ExitTime += delta;
+		if (IntroTime < IntroDuration)
+			Frac = Clamp (ExitTime / ExitDuration, 0.0, 1.0);
+		else
+		{
+			Frac = 1;
+			ScreenState = StateRunning;
+		}
+
+		/* 
+			StateExit can still go back to the "StateRunning" state
+			This way it can be used for transitions.
+		*/
+		return RunExit(Frac); 
+	}else
+		return Run(delta);
+}
+
+bool Screen::RunIntro(float Fraction) { return true; }
+
+bool Screen::RunExit(float Fraction) {	return false; }
 
 void Screen::HandleInput(int32 key, KeyEventType state, bool isMouseInput) { /* stub */ }
 

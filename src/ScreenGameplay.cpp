@@ -235,7 +235,6 @@ void ScreenGameplay::LoadThreadInitialization()
 
 	MeasureRatio = 0;
 	RatioPerSecond = 0;
-	ScreenTime = 0;
 
 	if (Music)
 	{
@@ -438,7 +437,6 @@ void ScreenGameplay::seekTime(float Time)
 	Music->SeekTime(Time);
 	SongTime = Time;
 	MeasureRatio = 0;
-	ScreenTime = 0;
 }
 
 void ScreenGameplay::startMusic()
@@ -461,7 +459,7 @@ bool ScreenGameplay::Run(double TimeDelta)
 		SongTime += SongDelta;
 	}
 
-	if ( ScreenTime > ScreenPauseTime || !ShouldChangeScreenAtEnd ) // we're over the pause?
+	if ( GetScreenTime() > ScreenPauseTime || !ShouldChangeScreenAtEnd ) // we're over the pause?
 	{
 		if (SongTime <= 0)
 		{
@@ -514,7 +512,7 @@ bool ScreenGameplay::Run(double TimeDelta)
 	if (ShouldChangeScreenAtEnd)
 	{
 		float TotalTime = (CurrentDiff->Offset + MySong->LeadInTime + ScreenPauseTime);
-		float X = ScreenTime / TotalTime;
+		float X = GetScreenTime() / TotalTime;
 		float xPos;
 
 		if (X < 0.5)
@@ -526,7 +524,7 @@ bool ScreenGameplay::Run(double TimeDelta)
 		ReadySign.Alpha = 2 * ((-2)*X*X + 2*X);
 
 		// Lights
-		float LightProgress = ScreenTime / 1.5;
+		float LightProgress = GetScreenTime() / 1.5;
 		if (LightProgress <= 1)
 			WindowFrame.SetLightMultiplier(LightProgress * 1.2);
 	}else
@@ -600,8 +598,6 @@ bool ScreenGameplay::JudgeVector(std::vector<GameObject>& Vec, int code, int key
 void ScreenGameplay::RenderObjects(float TimeDelta, bool drawPlayable)
 {
 	Vec2 mpos = WindowFrame.GetRelativeMPos();
-
-	ScreenTime += TimeDelta;
 
 	Cursor.SetPosition(mpos);
 
@@ -710,7 +706,7 @@ void ScreenGameplay::RenderObjects(float TimeDelta, bool drawPlayable)
 	else
 		info << "???";
 		*/
-	info << "\nScreenTime: " << ScreenTime;
+	info << "\nScreenTime: " << GetScreenTime();
 	info << "\nMeasureRatio: " << MeasureRatio;
 	info << "\nMeasureRatioPerSecond: " << RatioPerSecond;
 #endif

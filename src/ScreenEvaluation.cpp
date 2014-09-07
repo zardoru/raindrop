@@ -92,9 +92,7 @@ void ScreenEvaluation::Cleanup()
 
 bool ScreenEvaluation::Run(double Delta)
 {
-	ScreenTime += Delta;
-
-	WindowFrame.SetLightMultiplier(sin(ScreenTime) * 0.2 + 1);
+	WindowFrame.SetLightMultiplier(sin(GetScreenTime()) * 0.2 + 1);
 
 	Background.Render();
 	if (Font)

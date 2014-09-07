@@ -1,6 +1,7 @@
 
 function InBackground(frac)
 	Obj.SetAlpha( 1 - frac )
+	return 1
 end
 
 function PlayBtnHover()
@@ -52,8 +53,9 @@ function Init()
 
 	Obj.SetTarget(targBlack)
 	Obj.SetImageSkin("filter.png")
+	Obj.SetSize(ScreenWidth, ScreenHeight)
 	Obj.SetAlpha(1)
-	Obj.AddAnimation("InBackground", 2, 0, EaseIn)
+	Obj.AddAnimation("InBackground", 0.5, 0.5, EaseOut)
 end
 
 function Cleanup()

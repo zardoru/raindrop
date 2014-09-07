@@ -48,7 +48,6 @@ void ExitBtnLeave(GraphObject2D *obj)
 
 void ScreenMainMenu::Init()
 {
-	ScreenTime = 0;
 	Running = true;
 
 	Objects = new GraphObjectMan();
@@ -132,8 +131,6 @@ bool ScreenMainMenu::Run (double Delta)
 {
 	if (RunNested(Delta))
 		return true;
-
-	ScreenTime += Delta;
 
 	PlayBtn.Run(Delta);
 	ExitBtn.Run(Delta);

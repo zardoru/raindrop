@@ -231,6 +231,9 @@ void Application::Run()
 	if (!RunLoop)
 		return;
 
+	ImageLoader::UpdateTextures();
+
+	oldTime = glfwGetTime();
 	while (Game->IsScreenRunning() && !WindowFrame.ShouldCloseWindow())
 	{
 		double newTime = glfwGetTime();
@@ -239,7 +242,7 @@ void Application::Run()
 
 		WindowFrame.ClearWindow();
 
-		Game->Run(delta);
+		Game->Update(delta);
 
 		MixerUpdate();
 		WindowFrame.SwapBuffers();

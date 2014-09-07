@@ -94,9 +94,6 @@
     <ClCompile Include="..\src\Rendering.cpp">
       <Filter>Source\backend\render</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Application.cpp">
-      <Filter>Source\backend\window</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\GraphObjectMan.cpp">
       <Filter>Source\backend\other</Filter>
     </ClCompile>
@@ -196,6 +193,9 @@
     <ClCompile Include="..\src\ScoreKeeper7K_rank.cpp">
       <Filter>Source\vsrg\gameplay</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Application.cpp">
+      <Filter>Source\game global</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">
@@ -269,9 +269,6 @@
     </ClInclude>
     <ClInclude Include="..\src\LuaManager.h">
       <Filter>Source\backend\lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Application.h">
-      <Filter>Source\backend\window</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Screen.h">
       <Filter>Source\backend\other</Filter>
@@ -380,6 +377,9 @@
     </ClInclude>
     <ClInclude Include="..\src\SongTiming.h">
       <Filter>Source\game global\song interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Application.h">
+      <Filter>Source\game global</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
