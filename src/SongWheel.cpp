@@ -215,8 +215,16 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 
 void SongWheel::GoUp()
 {
+	if (mLoadMutex) 
+	{
+		if (!mLoadMutex->try_lock())
+			return;
+	}
+
 	if (CurrentList->HasParentDirectory())
 		CurrentList = CurrentList->GetParentDirectory();
+
+	if (mLoadMutex) mLoadMutex->unlock();
 }
 
 bool SongWheel::HandleScrollInput(const double dx, const double dy)
@@ -237,13 +245,18 @@ Game::Song* SongWheel::GetSelectedSong()
 
 void SongWheel::Update(float Delta)
 {
+	if (mLoadMutex) 
+	{
+		if (!mLoadMutex->try_lock())
+			return;
+	}
+
 	Time += Delta;
 	SelCursor->Alpha = (sin(Time*6)+1)/4 + 0.5;
 
 	if (!CurrentList)
 		return;
 
-	if (mLoadMutex) mLoadMutex->lock();
 	uint32 Size = CurrentList->GetNumEntries();
 	if (mLoadMutex) mLoadMutex->unlock();
 
@@ -288,7 +301,12 @@ void SongWheel::Update(float Delta)
 		DifficultyIndex = 0;
 		if (OnSongChange)
 		{
-			if (mLoadMutex) mLoadMutex->lock();
+			if (mLoadMutex) 
+			{
+				if (!mLoadMutex->try_lock())
+					return;
+			}
+
 			if (CursorPos < Size)
 			{
 				Game::Song* Notify = GetSelectedSong();
@@ -321,7 +339,11 @@ void SongWheel::DisplayItem(String Text, Vec2 Position)
 
 void SongWheel::Render()
 {
-	if (mLoadMutex) mLoadMutex->lock();
+	if (mLoadMutex) 
+	{
+		if (!mLoadMutex->try_lock())
+			return;
+	}
 
 	int Cur = 0;
 	int Max = CurrentList->GetNumEntries();
