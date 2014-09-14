@@ -284,7 +284,10 @@ void CalculateBPMs(BmsLoadInfo *Info)
 			for (BMSEventList::iterator ev = i->second.Events[CHANNEL_BPM].begin(); ev != i->second.Events[CHANNEL_BPM].end(); ev++)
 			{
 				double BPM;
-				BPM = fromBase16(tob36(ev->Event).c_str());
+				if (Info->BPMs.find(ev->Event) != Info->BPMs.end())
+					BPM = Info->BPMs[ev->Event];
+				else 
+					BPM = fromBase16(tob36(ev->Event).c_str());
 
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first);
 
