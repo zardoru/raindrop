@@ -840,6 +840,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 
 		String command = Line.substr(Line.find_first_of("#"), Line.find_first_of(" ") - Line.find_first_of("#"));
 
+		boost::to_upper(command);
 		boost::replace_all(command, "\n", "");
 
 #define OnCommand(x) if(command == #x)
