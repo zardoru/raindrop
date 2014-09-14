@@ -41,9 +41,6 @@ class ScreenSelectMusic : public Screen
 
 	ModeType SelectedMode;
 
-	boost::thread* LoaderThread;
-	boost::mutex LoadMutex;
-
 	float GetListYTransformation(const float Y);
 	void OnSongChange(Game::Song* MySong, uint8 difindex);
 	void OnSongSelect(Game::Song* MySong, uint8 difindex);

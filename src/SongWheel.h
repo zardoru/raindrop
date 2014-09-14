@@ -35,6 +35,8 @@ private:
 	unsigned int CursorPos, OldCursorPos;
 
 	BitmapFont* mFont;
+	boost::mutex* mLoadMutex;
+	boost::thread* mLoadThread;
 
 	SongDatabase* DB;
 
@@ -87,7 +89,7 @@ public:
 	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	bool HandleScrollInput(const double dx, const double dy);
 	Game::Song* GetSelectedSong();
-	void ReloadSongs(boost::mutex &loadMutex);
+	void ReloadSongs();
 
 	void SetFont(Directory FontDirectory);
 	void SetItemHeight(float Height);

@@ -206,6 +206,7 @@ void VBO::AssignData(float* Data)
 
 	memmove(VboData, Data, sizeof(float) * ElementCount);
 	Bind();
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * ElementCount, NULL, UpType); // Release handle
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * ElementCount, VboData, UpType);
 }
 

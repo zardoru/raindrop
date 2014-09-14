@@ -72,16 +72,22 @@ void SongList::AddDirectory(boost::mutex &loadMutex, SongLoader *Loader, Directo
 
 		if (!SongsDC.size() && !Songs7K.size()) // No songs, so, time to recursively search.
 		{
-			NewList->AddDirectory(loadMutex, Loader, Dir / *i, VSRGActive, DotcurActive);
-			if (NewList->GetNumEntries())
+			if (!EntryWasPushed)
 			{
-				if (!EntryWasPushed)
-				{
-					loadMutex.lock();
-					mChildren.push_back	(NewEntry);
-					loadMutex.unlock();
-					EntryWasPushed = true;
-				}
+				loadMutex.lock();
+				mChildren.push_back	(NewEntry);
+				loadMutex.unlock();
+				EntryWasPushed = true;
+			}
+
+			NewList->AddDirectory(loadMutex, Loader, Dir / *i, VSRGActive, DotcurActive);
+
+			if (!NewList->GetNumEntries())
+			{
+				loadMutex.lock();
+				if (mChildren.size())
+					mChildren.erase(mChildren.end()-1);
+				loadMutex.unlock();
 			}
 		}
 		else

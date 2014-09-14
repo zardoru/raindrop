@@ -9,6 +9,7 @@
 
 #ifdef WIN32
 #include <pa_win_wasapi.h>
+#include <pa_win_ds.h>
 #endif
 
 #ifdef LINUX
@@ -26,6 +27,7 @@ bool UseThreadedDecoder = false;
 #ifdef WIN32
 bool UseWasapi = false;
 PaDeviceIndex DefaultWasapiDevice;
+PaDeviceIndex DefaultDSDevice;
 #endif
 
 /*************************/
@@ -52,6 +54,7 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
 
 #else
 		PaWasapiStreamInfo StreamInfo;
+		PaWinDirectSoundStreamInfo DSStreamInfo;
 		if (UseWasapi)
 		{
 			outputParams.hostApiSpecificStreamInfo = &StreamInfo;
@@ -72,7 +75,14 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
 			StreamInfo.hostProcessorOutput = NULL;
 			StreamInfo.hostProcessorInput = NULL;
 		}else
-			outputParams.hostApiSpecificStreamInfo = NULL;
+		{
+			outputParams.hostApiSpecificStreamInfo = &DSStreamInfo;
+
+			DSStreamInfo.size = sizeof(PaWinDirectSoundStreamInfo);
+			DSStreamInfo.hostApiType = paDirectSound;
+			DSStreamInfo.version = 2;
+			DSStreamInfo.flags = 0;
+		}
 #endif
 
 	dLatency = outputParams.suggestedLatency;
@@ -169,7 +179,7 @@ public:
 		}
 		else
 		{
-			OpenStream( &Stream, Pa_GetDefaultOutputDevice(), 44100, (void*) this, Latency, Mix );
+			OpenStream( &Stream, DefaultDSDevice, 44100, (void*) this, Latency, Mix );
 		}
 #else
 			OpenStream( &Stream, Pa_GetDefaultOutputDevice(), 44100, (void*) this, Latency, Mix );
@@ -384,6 +394,8 @@ void GetAudioInfo()
 #ifdef WIN32
 		if (Index->type == paWASAPI)
 			DefaultWasapiDevice = Index->defaultOutputDevice;
+		else if (Index->type == paDirectSound)
+			DefaultDSDevice = Index->defaultOutputDevice;
 #endif
 	}
 

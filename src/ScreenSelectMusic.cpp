@@ -129,11 +129,6 @@ ScreenSelectMusic::ScreenSelectMusic()
 	SelectedMode = MODE_7K;
 }
 
-void SongLoaderThreadFunction(boost::mutex *loadMutex)
-{
-	Game::SongWheel::GetInstance().ReloadSongs(*loadMutex);
-}
-
 void ScreenSelectMusic::MainThreadInitialization()
 {
 	if (!Font)
@@ -141,8 +136,6 @@ void ScreenSelectMusic::MainThreadInitialization()
 		Font = new BitmapFont();
 		Font->LoadSkinFontImage("font_screenevaluation.tga", Vec2(10, 20), Vec2(32, 32), Vec2(10,20), 32);
 	}
-
-	LoaderThread = new boost::thread(SongLoaderThreadFunction, &LoadMutex);
 	
 	UpBtn = new GUI::Button;
 	UpBtn->OnClick = OnUpClick;
@@ -275,9 +268,7 @@ bool ScreenSelectMusic::Run(double Delta)
 
 	Time += Delta;
 
-	LoadMutex.lock();
 	Game::SongWheel::GetInstance().Update(Delta);
-	LoadMutex.unlock();
 
 	UpBtn->Run(Delta);
 	BackBtn->Run(Delta);
@@ -289,9 +280,7 @@ bool ScreenSelectMusic::Run(double Delta)
 
 	Objects->DrawUntilLayer(16);
 
-	LoadMutex.lock();
 	Game::SongWheel::GetInstance().Render();
-	LoadMutex.unlock();
 
 	Objects->DrawFromLayer(16);
 

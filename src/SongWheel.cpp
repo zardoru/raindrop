@@ -22,6 +22,8 @@ SongWheel::SongWheel()
 	IsInitialized = false;
 	mFont = NULL;
 	PendingVerticalDisplacement = 0;
+	mLoadMutex = NULL;
+	mLoadThread = NULL;
 	CurrentVerticalDisplacement = 0;
 }
 
@@ -73,31 +75,65 @@ void SongWheel::Initialize(float Start, float End, bool IsDotcurActive, bool IsV
 
 	mFont = new BitmapFont();
 	mFont->LoadSkinFontImage("font-wheel.tga", Vec2(10, 20), Vec2(32, 32), Vec2(10,20), 32);
+	ReloadSongs();
 }
 
-void SongWheel::ReloadSongs(boost::mutex &loadMutex)
+class LoadThread
 {
+	boost::mutex* mLoadMutex;
+	SongDatabase* DB;
+	SongList* ListRoot;
+	bool VSRGActive;
+	bool DCActive;
+public:
+	LoadThread(boost::mutex* m, SongDatabase* d, SongList* r, bool va, bool da)
+		: mLoadMutex(m),
+		DB(d),
+		ListRoot(r),
+		VSRGActive(va),
+		DCActive(da)
+	{
+	}
+
+	void Load()
+	{
+		std::vector<String> Directories;
+		Configuration::GetConfigListS("SongDirectories", Directories);
+
+		SongLoader Loader (DB);
+
+		DB->StartTransaction();
+
+		for (std::vector<String>::iterator i = Directories.begin(); 
+			i != Directories.end();
+			i++)
+		{
+			ListRoot->AddDirectory (*mLoadMutex, &Loader, *i, VSRGActive, DCActive);
+		}
+
+		DB->EndTransaction();
+		Log::Printf("Finished reloading songs.\n");
+	}
+};
+
+void SongWheel::ReloadSongs()
+{
+	if (mLoadThread)
+	{
+		mLoadThread->join();
+		delete mLoadThread;
+	}
+
 	delete ListRoot;
 
 	ListRoot = new SongList();
 	CurrentList = ListRoot;
 
-	std::vector<String> Directories;
-	Configuration::GetConfigListS("SongDirectories", Directories);
+	if (!mLoadMutex)
+		mLoadMutex = new boost::mutex;
 
-	SongLoader Loader (DB);
-
-	DB->StartTransaction();
-
-	for (std::vector<String>::iterator i = Directories.begin(); 
-		i != Directories.end();
-		i++)
-	{
-		ListRoot->AddDirectory (loadMutex, &Loader, *i, VSRGModeActive, dotcurModeActive);
-	}
-	
-	DB->EndTransaction();
-	Log::Printf("Finished reloading songs.\n");
+	LoadThread L(mLoadMutex, DB, ListRoot, VSRGModeActive, dotcurModeActive);
+	mLoadThread = new boost::thread(&LoadThread::Load, L);
 }
 
 bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
@@ -207,7 +243,9 @@ void SongWheel::Update(float Delta)
 	if (!CurrentList)
 		return;
 
+	if (mLoadMutex) mLoadMutex->lock();
 	uint32 Size = CurrentList->GetNumEntries();
+	if (mLoadMutex) mLoadMutex->unlock();
 
 	if (PendingVerticalDisplacement)
 	{
@@ -250,12 +288,14 @@ void SongWheel::Update(float Delta)
 		DifficultyIndex = 0;
 		if (OnSongChange)
 		{
+			if (mLoadMutex) mLoadMutex->lock();
 			if (CursorPos < Size)
 			{
 				Game::Song* Notify = GetSelectedSong();
 
 				OnSongChange(Notify, DifficultyIndex);
 			}
+			if (mLoadMutex) mLoadMutex->unlock();
 		}
 	}
 
@@ -281,6 +321,8 @@ void SongWheel::DisplayItem(String Text, Vec2 Position)
 
 void SongWheel::Render()
 {
+	if (mLoadMutex) mLoadMutex->lock();
+
 	int Cur = 0;
 	int Max = CurrentList->GetNumEntries();
 
@@ -360,6 +402,8 @@ void SongWheel::Render()
 		}
 
 	}
+	mLoadMutex->unlock();
+
 	SelCursor->Render();
 
 }

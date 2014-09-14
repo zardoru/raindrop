@@ -95,9 +95,14 @@ void ScreenGameplay7K::RunMeasures()
 
 			// Keysound update to closest note.
 			if (CurrentDiff->IsVirtual)	{
-				if (m->IsEnabled() && (abs(SongTime - m->GetTimeFinal()) < timeClosest[k]))	{
-					PlaySounds[k] = m->GetSound();
-					timeClosest[k] = abs(SongTime - m->GetTimeFinal());
+				if (m->IsEnabled())	
+				{
+					if ((abs(SongTime - m->GetTimeFinal()) < timeClosest[k]))
+					{
+						PlaySounds[k] = m->GetSound();
+						timeClosest[k] = abs(SongTime - m->GetTimeFinal());
+					}else
+						break; // In other words, we're getting further away.
 				}
 			}
 
@@ -168,7 +173,7 @@ void ScreenGameplay7K::ReleaseLane(uint32 Lane)
 {
 	for (std::vector<TrackNote>::iterator m = NotesByChannel[Lane].begin(); m != NotesByChannel[Lane].end(); m++)
 	{
-		if (m->WasNoteHit() && m->IsEnabled()) /* We hit the hold's head and we've not released it early already */
+		if (m->IsHold() && m->WasNoteHit() && m->IsEnabled()) /* We hit the hold's head and we've not released it early already */
 		{
 			double tD = abs (m->GetTimeFinal() - SongTime) * 1000;
 
