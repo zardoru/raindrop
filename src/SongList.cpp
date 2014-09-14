@@ -81,14 +81,6 @@ void SongList::AddDirectory(boost::mutex &loadMutex, SongLoader *Loader, Directo
 			}
 
 			NewList->AddDirectory(loadMutex, Loader, Dir / *i, VSRGActive, DotcurActive);
-
-			loadMutex.lock();
-			if (!NewList->GetNumEntries())
-			{
-				if (mChildren.size())
-					mChildren.erase(mChildren.end()-1);
-			}
-			loadMutex.unlock();
 		}
 		else
 		{
