@@ -26,21 +26,21 @@ void ScreenEvaluation7K::Init(ScoreKeeper7K *Result)
 
 	std::stringstream ss;
 
-	ss
+	ss  << std::fixed << std::setprecision(3)
 		<< "RANK: " << (Result->getRank() > 0 ? "+" : "") << Result->getRank() << "  (" << Result->getPercentScore(PST_RANK) << " pts.)\n"
-		<< "\n"
-		<< "Accuracy%: " << Result->getPercentScore(PST_ACC) << "\n"
+		<< "\n" << std::setprecision(2)
+		<< "Accuracy: " << Result->getPercentScore(PST_ACC) << "%\n"
 		<< "Final Score: " << Result->getScore(ST_SCORE) << "\n"
 		<< "Max Combo: " << Result->getScore(ST_MAX_COMBO) << "\n"
-		<< "\n" << std::fixed << std::setprecision(2)
+		<< "\n"
 		<< "Fantastic: " << Result->getJudgmentCount(SKJ_W1) << " (" << float(Result->getJudgmentCount(SKJ_W1) * 100) / float(Result->getMaxNotes()) << "%)\n"
 		<< "    Great: " << Result->getJudgmentCount(SKJ_W2) << " (" << float(Result->getJudgmentCount(SKJ_W2) * 100) / float(Result->getMaxNotes()) << "%)\n"
 		<< "     Good: " << Result->getJudgmentCount(SKJ_W3) << " (" << float(Result->getJudgmentCount(SKJ_W3) * 100) / float(Result->getMaxNotes()) << "%)\n"
 		<< "      Bad: " << Result->getJudgmentCount(SKJ_W4) << " (" << float(Result->getJudgmentCount(SKJ_W4) * 100) / float(Result->getMaxNotes()) << "%)\n"
 		<< "       NG: " << Result->getJudgmentCount(SKJ_W5) << " (" << float(Result->getJudgmentCount(SKJ_W5) * 100) / float(Result->getMaxNotes()) << "%)\n"
-		<< "\n" << std::resetiosflags
-		<< "Notes hit%: " << Result->getPercentScore(PST_NH) << "\n"
-		<< "EX%: " << Result->getPercentScore(PST_EX) << "\n";
+		<< "\n"
+		<< "Notes hit: " << Result->getPercentScore(PST_NH) << "%\n"
+		<< "EX score: " << Result->getPercentScore(PST_EX) << "%\n";
 
 	DisplayResult = ss.str();
 

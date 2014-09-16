@@ -56,7 +56,7 @@ ScreenGameplay7K::ScreenGameplay7K()
 	InterpolateTime = (Configuration::GetConfigf("InterpolateTime") != 0);
 
 	if (!GFont)
-	{	
+	{
 		GFont = new BitmapFont();
 		GFont->LoadSkinFontImage("font.tga", Vec2(6, 15), Vec2(8, 16), Vec2(6, 15), 0);
 	}
@@ -101,7 +101,7 @@ void ScreenGameplay7K::CalculateHiddenConstants()
 	const float FlashlightRatio = 0.25;
 	float Center;
 
-	// Hidden calc 
+	// Hidden calc
 	if (SelectedHiddenMode)
 	{
 		float LimPos = - ((JudgementLinePos / ScreenHeight)*2 - 1); // Frac. of screen
@@ -110,7 +110,7 @@ void ScreenGameplay7K::CalculateHiddenConstants()
 		if (Upscroll)
 		{
 			Center = -(( ((ScreenHeight - JudgementLinePos) / 2 + JudgementLinePos) / ScreenHeight)*2 - 1);
-			
+
 			AdjustmentSize = -( ((ScreenHeight - JudgementLinePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
 
 			if (SelectedHiddenMode == 2)
@@ -130,7 +130,7 @@ void ScreenGameplay7K::CalculateHiddenConstants()
 		}else
 		{
 			Center = -((JudgementLinePos / 2 / ScreenHeight)*2 - 1);
-			
+
 			AdjustmentSize = -( ((JudgementLinePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
 
 			// Hidden/Sudden
@@ -259,7 +259,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	ESpeedType Type = (ESpeedType)(int)Configuration::GetSkinConfigf("DefaultSpeedKind");
 	double SpeedConstant = 0; // Unless set, assume we're using speed changes
 
-	/* 
+	/*
  * 		There are three kinds of speed modifiers:
  * 			-CMod (Keep speed the same through the song, equal to a constant)
  * 			-MMod (Find highest speed and set multiplier to such that the highest speed is equal to a constant)
@@ -291,7 +291,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 			{
 				max = std::max(max, abs(i->Value));
 			}
-		
+
 			double Ratio = DesiredDefaultSpeed / max; // How much above or below are we from the maximum speed?
 			SpeedMultiplierUser = Ratio;
 		}else if (Type == SPEEDTYPE_FIRST) // We use this case as default. The logic is "Not a CMod, Not a MMod, then use first, the default.
@@ -406,7 +406,7 @@ void ScreenGameplay7K::SetupGear()
 	for (int i = 0; i < CurrentDiff->Channels; i++)
 	{
 		sprintf(cstr, "Key%d", i+1);
-		
+
 		/* If it says that the nth lane uses the kth key then we'll bind that! */
 		sprintf(str, "key%d.png", (int)GetSkinConfigf(cstr, nstr));
 		GearLaneImage[i] = GameState::GetInstance().GetSkinImage(str);
@@ -437,7 +437,7 @@ void ScreenGameplay7K::SetupGear()
 void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 {
 	float Beat = 0;
-	
+
 	if (!Measure)
 		return;
 
@@ -497,7 +497,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 	{
 		std::stringstream ss;
 		char cstr[256];
-		
+
 		/* Assign per-lane bindings. */
 		sprintf(cstr, "Key%dBinding", i+1);
 
@@ -577,20 +577,20 @@ void ScreenGameplay7K::TranslateKey(KeyType K, bool KeyDown)
 
 	if (KeyDown)
 	{
-		JudgeLane(GearIndex);
+		JudgeLane(GearIndex, SongTime);
 		Keys[GearIndex].SetImage( GearLaneImageDown[GearIndex], false );
 	}
 	else
 	{
-		ReleaseLane(GearIndex);
+		ReleaseLane(GearIndex, SongTime);
 		Keys[GearIndex].SetImage( GearLaneImage[GearIndex], false );
 	}
 }
 
 void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
-	/* 
-	 In here we should use the input arrangements depending on 
+	/*
+	 In here we should use the input arrangements depending on
 	 the amount of channels the current difficulty is using.
 	 Also potentially pausing and quitting the screen.
 	 Other than that most input can be safely ignored.
@@ -763,7 +763,7 @@ bool ScreenGameplay7K::Run(double Delta)
 
 	RecalculateEffects();
 	RecalculateMatrix();
-		
+
 	UpdateScriptVariables();
 
 	Animations->UpdateTargets(Delta);

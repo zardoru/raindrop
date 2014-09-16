@@ -148,9 +148,10 @@ Judgement GameObject::Run(double delta, double Time, bool Autoplay)
 	if (Autoplay)
 	{
 		// you can be slightly early autoplay, it's fine.
-		if (Time >= startTime - 0.001 && fadeout_time == 0 && !BeingHeld) // A pretend kind of thing. ;)
+		if (Time >= startTime - 0.008 && fadeout_time == 0 && !BeingHeld) // A pretend kind of thing. ;)
 		{
-			return Hit(Time, GetPosition(), true, false, -1);
+			return Hit(startTime, GetPosition(), true, false, -1);
+			           // pretend that all autoplay notes were hit exactly on time.
 		}
 	}
 

@@ -95,7 +95,7 @@ void ScreenGameplay7K::RunMeasures()
 
 			// Keysound update to closest note.
 			if (CurrentDiff->IsVirtual)	{
-				if (m->IsEnabled())	
+				if (m->IsEnabled())
 				{
 					if ((abs(SongTime - m->GetTimeFinal()) < timeClosest[k]))
 					{
@@ -108,21 +108,21 @@ void ScreenGameplay7K::RunMeasures()
 
 			if (Auto) {
 				float TimeThreshold = SongTime;
-				if ( m->GetStartTime() < TimeThreshold )
+				if ( m->GetStartTime() < TimeThreshold + 0.008 ) // allow a tolerance of 1/2 frame
 				{
 					if (m->IsEnabled()) {
-						if (m->IsHold()) 
+						if (m->IsHold())
 						{
 							if (m->WasNoteHit())
 							{
-								if ( m->GetTimeFinal() < TimeThreshold )
-									ReleaseLane(k);
+								if ( m->GetTimeFinal() < TimeThreshold + 0.008 )
+									ReleaseLane(k, m->GetTimeFinal());
 							}else
-								JudgeLane(k);
+								JudgeLane(k, m->GetStartTime());
 						}else
 						{
-							JudgeLane(k);
-							ReleaseLane(k);
+							JudgeLane(k, m->GetStartTime());
+							ReleaseLane(k, m->GetTimeFinal());
 						}
 					}
 				}
@@ -131,7 +131,7 @@ void ScreenGameplay7K::RunMeasures()
 
 			/* We have to check for all gameplay conditions for this note. */
 
-			// Condition A: Hold tail outside accuracy cutoff (can't be hit any longer), 
+			// Condition A: Hold tail outside accuracy cutoff (can't be hit any longer),
 			// note wasn't hit at the head and it's a hold
 			if ((SongTime - m->GetTimeFinal()) * 1000 > score_keeper->getAccCutoff() && !m->WasNoteHit() && m->IsHold()) {
 
@@ -144,7 +144,7 @@ void ScreenGameplay7K::RunMeasures()
 				m->Hit();
 
 			} // Condition B: Regular note or hold head outside cutoff, wasn't hit and it's enabled.
-			else if ((SongTime - m->GetStartTime()) * 1000 > score_keeper->getAccCutoff() && 
+			else if ((SongTime - m->GetStartTime()) * 1000 > score_keeper->getAccCutoff() &&
 				(!m->WasNoteHit() && m->IsEnabled()))
 			{
 				MissNote(abs(SongTime - m->GetStartTime()) * 1000, k, m->IsHold(), false);
@@ -169,13 +169,13 @@ void ScreenGameplay7K::RunMeasures()
 	} // end for channels
 }
 
-void ScreenGameplay7K::ReleaseLane(uint32 Lane)
+void ScreenGameplay7K::ReleaseLane(uint32 Lane, float Time)
 {
 	for (std::vector<TrackNote>::iterator m = NotesByChannel[Lane].begin(); m != NotesByChannel[Lane].end(); m++)
 	{
 		if (m->IsHold() && m->WasNoteHit() && m->IsEnabled()) /* We hit the hold's head and we've not released it early already */
 		{
-			double tD = abs (m->GetTimeFinal() - SongTime) * 1000;
+			double tD = abs (Time - m->GetTimeFinal()) * 1000;
 
 			if (tD < score_keeper->getAccCutoff()) /* Released in time */
 			{
@@ -202,7 +202,7 @@ void ScreenGameplay7K::ReleaseLane(uint32 Lane)
 	}
 }
 
-void ScreenGameplay7K::JudgeLane(uint32 Lane)
+void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 {
 	float MsDisplayMargin = (Configuration::GetSkinConfigf("HitErrorDisplayLimiter"));
 
@@ -216,7 +216,7 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane)
 		if (!m->IsEnabled())
 			continue;
 
-		double tD = abs (m->GetStartTime() - SongTime) * 1000;
+		double tD = abs (Time - m->GetStartTime()) * 1000;
 
 		lastClosest[Lane] = min(tD, (double)lastClosest[Lane]);
 

@@ -33,18 +33,18 @@ private:
 	double ErrorTolerance;
 	double TimeCompensation;
 	double GameTime;
-	
+
 	/* User Variables */
 	float       SpeedMultiplierUser;
-	
+
 	EHiddenMode SelectedHiddenMode;
-	
+
 	Mat4			 PositionMatrix;
 	Mat4			 PositionMatrixJudgement;
 	Mat4			 NoteMatrix[VSRG::MAX_CHANNELS];
 	Mat4			 HoldHeadMatrix[VSRG::MAX_CHANNELS];
 	Mat4			 HoldTailMatrix[VSRG::MAX_CHANNELS];
-	
+
 	float            SongOldTime;
 	float			 SpeedMultiplier;
 
@@ -80,7 +80,7 @@ private:
 	float  JudgementLinePos;
 
 	/* Effects */
-	float waveEffect; 
+	float waveEffect;
 	float beatScrollEffect;
 
 	Mat4 noteEffectsMatrix[VSRG::MAX_CHANNELS];
@@ -88,7 +88,7 @@ private:
 	float  CurrentBeat;
 
 	bool beatScrollEffectEnabled;
-	bool waveEffectEnabled;	
+	bool waveEffectEnabled;
 	bool Auto;
 	bool Upscroll;
 	bool NoFail;
@@ -99,13 +99,13 @@ private:
 
 	bool             HeldKey[VSRG::MAX_CHANNELS];
 	bool			 MultiplierChanged;
-	
+
 	bool    InterpolateTime;
 	bool    AudioCompensation;
 
-	/* 
-		Optimizations will come in later. 
-		See Renderer7K.cpp.	
+	/*
+		Optimizations will come in later.
+		See Renderer7K.cpp.
 	*/
 
 	void SetupGear();
@@ -125,8 +125,8 @@ private:
 
 	void DrawMeasures();
 
-	void JudgeLane(uint32 Lane);
-	void ReleaseLane(uint32 Lane);
+	void JudgeLane(uint32 Lane, float Time);
+	void ReleaseLane(uint32 Lane, float Time);
 	void TranslateKey(KeyType K, bool KeyDown);
 	void AssignMeasure(uint32 Measure);
 public:
@@ -140,7 +140,7 @@ public:
 
 		// If true, assume difficulty is already loaded and is not just metadata
 		bool Preloaded;
-		
+
 		// Fail disabled if true.
 		bool NoFail;
 
