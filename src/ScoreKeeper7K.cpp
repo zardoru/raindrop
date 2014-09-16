@@ -32,6 +32,8 @@ void ScoreKeeper7K::setMaxNotes(int notes){
 
 }
 
+int ScoreKeeper7K::getMaxNotes(){ return max_notes; }
+
 void ScoreKeeper7K::setEX2(int ms){ EX2 = ms; if(EX2 > EX1) EX1 = EX2 + 1; }
 void ScoreKeeper7K::setEX1(int ms){ EX1 = ms; if(EX1 < EX2) EX2 = EX1 - 1; }
 
@@ -39,7 +41,7 @@ void ScoreKeeper7K::setDP2(int ms){ DP2 = ms; if(DP2 > DP1) DP1 = DP2 + 1; }
 void ScoreKeeper7K::setDP1(int ms){ DP1 = ms; if(DP1 < DP2) DP2 = DP1 - 1; }
 
 ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
-	
+
 	// interesting stuff goes here.
 
 // hit notes
@@ -54,14 +56,14 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 		if(combo > max_combo)
 			max_combo = combo;
 	}
-	
+
 
 // Numerical score / money score
 
 	sc_score += Clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.0) * 2;
 	sc_sc_score += sc_score * Clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.0);
-	
-	score = float(SCORE_MAX * sc_sc_score) / (max_notes * (max_notes + 1)); 
+
+	score = float(SCORE_MAX * sc_sc_score) / (max_notes * (max_notes + 1));
 
 // accuracy score
 
@@ -69,7 +71,7 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 	accuracy = accuracy_percent(total_sqdev / total_notes);
 
 // lifebars
-	
+
 	if(ms < ACC_MAX){
 		lifebar_groove = min(1.0, lifebar_groove + lifebar_groove_increment);
 		if(lifebar_survival > 0)
@@ -86,9 +88,9 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 	}
 
 // judgements
-	
+
 	ScoreKeeperJudgment judgment = SKJ_NONE;
-	
+
 	for (int i = 1; i < 6; i++)
 	{
 		if (ms < judgement_time[i])
@@ -103,7 +105,7 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 
 	update_ranks(ms); // rank calculation
 	update_bms(ms, true);
-	
+
 	return judgment;
 
 }
@@ -115,14 +117,14 @@ int ScoreKeeper7K::getJudgmentCount(ScoreKeeperJudgment Judge)
 
 
 void ScoreKeeper7K::missNote(bool auto_hold_miss){
-	
+
 	total_sqdev += ACC_CUTOFF * ACC_CUTOFF;
 
 	judgement_amt[SKJ_W5]++;
 
 	++total_notes;
 	accuracy = accuracy_percent(total_sqdev / total_notes);
-	
+
 	combo = 0;
 
 	// miss tier 2
@@ -172,7 +174,7 @@ float ScoreKeeper7K::getPercentScore(PercentScoreType percent_score_type){
 
 	switch(percent_score_type){
 		case PST_RANK:
-			return float(rank_pts) / float(total_notes * 3) * 100.0;
+			return float(rank_pts) / float(total_notes) * 100.0;
 		case PST_EX:
 			return float(ex_score) / float(total_notes * 2) * 100.0;
 		case PST_ACC:
@@ -190,7 +192,7 @@ int ScoreKeeper7K::getLifebarUnits(LifeType lifebar_unit_type){
 }
 
 float ScoreKeeper7K::getLifebarAmount(LifeType lifebar_amount_type){
-	
+
 	switch(lifebar_amount_type){
 		case LT_GROOVE:
 			return lifebar_groove;

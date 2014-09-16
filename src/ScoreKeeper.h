@@ -67,6 +67,7 @@ class ScoreKeeper7K {
 		~ScoreKeeper7K();
 		
 		void setMaxNotes(int notes);
+		int getMaxNotes();
 		void setAccMin(int ms);
 		void setAccMax(int ms);
 		void setEX2(int ms);
@@ -126,6 +127,7 @@ class ScoreKeeper7K {
 		int bms_score;
 
 		void update_bms(int ms, bool hit);
+		void update_lr2(int ms, bool hit);
 	
 	/*
 		osu!

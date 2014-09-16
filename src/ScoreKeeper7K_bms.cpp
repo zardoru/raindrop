@@ -2,13 +2,13 @@
 #include "ScoreKeeper.h"
 
 void ScoreKeeper7K::update_bms(int ms, bool hit){
-	
+
 	if(hit){
 
-		if(ms <= EX2){
+		if(ms <= judgement_time[SKJ_W1]){ // make times based on judgments.
 			ex_score += 2;
 			bms_dance_pts += 15;
-		}else if(ms <= EX1){
+		}else if(ms <= judgement_time[SKJ_W2]){
 			ex_score += 1;
 			bms_dance_pts += 10;
 		}else{
@@ -27,5 +27,11 @@ void ScoreKeeper7K::update_bms(int ms, bool hit){
 		bms_combo = 0;
 
 	}
+
+}
+
+void ScoreKeeper7K::update_lr2(int ms, bool hit){
+
+	
 
 }
