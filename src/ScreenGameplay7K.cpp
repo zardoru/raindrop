@@ -549,7 +549,27 @@ void ScreenGameplay7K::MainThreadInitialization()
 	if (BackgroundImage)
 		Background.SetImage(BackgroundImage);
 	else
-		Background.SetImage(GameState::GetInstance().GetSkinImage(Configuration::GetSkinConfigs("DefaultGameplay7KBackground")));
+	{
+		// Caveat 2: Try to automatically load background.
+		std::vector<String> DirCnt;
+		Directory SngDir = MySong->SongDirectory;
+
+		SngDir.ListDirectory(DirCnt, Directory::FS_REG);
+		for (std::vector<String>::iterator i = DirCnt.begin(); 
+			i != DirCnt.end();
+			i++)
+		{
+			String ext = Directory(*i).GetExtension();
+			if (strstr(i->c_str(), "bg") && ext == "jpg" || ext == "png")
+				if (BackgroundImage = ImageLoader::Load(MySong->SongDirectory + *i))
+					break;
+		}
+
+		if (!BackgroundImage)
+			Background.SetImage(GameState::GetInstance().GetSkinImage(Configuration::GetSkinConfigs("DefaultGameplay7KBackground")));
+		else
+			Background.SetImage(BackgroundImage);
+	}
 
 	Background.SetZ(0);
 	Background.AffectedByLightning = true;
