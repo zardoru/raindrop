@@ -210,7 +210,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 		if (LoadedSong == NULL)
 		{
-			Log::Printf("Failure to load chart. (Filename: %ls)\n", Utility::Widen(FN.path()).c_str());
+			Log::Printf("Failure to load chart. (Filename: %s)\n", FN.path().c_str());
 			DoPlay = false;
 			return;
 		}
@@ -233,15 +233,36 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		}
 		else
 		{
-			delete Music;
-			Music = NULL;
 			if (!CurrentDiff->IsVirtual)
 			{
+				// Caveat: Try to autodetect an mp3/ogg file.
+				std::vector<String> DirCnt;
+				Directory SngDir = MySong->SongDirectory;
+
+				SngDir.ListDirectory(DirCnt, Directory::FS_REG);
+				for (std::vector<String>::iterator i = DirCnt.begin(); 
+					i != DirCnt.end();
+					i++)
+				{
+					if (Directory(*i).GetExtension() == "mp3" || Directory(*i).GetExtension() == "ogg")
+						if ( Music->Open( (SngDir / *i ).c_path()) )
+						{
+							MixerAddStream(Music);
+							goto MusicWasLoaded;
+						}
+				}
+
+				delete Music;
+				Music = NULL;
+
+				Log::Printf("Unable to load song (Filename: %s)\n", MySong->SongFilename.c_str());
 				DoPlay = false;
 				return; // Quit.
 			}
 		}
 	}
+
+MusicWasLoaded:
 
 	// What, you mean we don't have timing data at all?
 	if (CurrentDiff->Timing.size() == 0)

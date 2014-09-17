@@ -35,7 +35,11 @@ bool AudioSourceMP3::Open(const char* Filename)
 	dFILENAME = Filename;
 #endif
 
+#ifndef WIN32
 	if (mpg123_open(mHandle, Filename) == MPG123_OK)
+#else
+	if (mpg123_topen(mHandle, Utility::Widen(Filename).c_str()) == MPG123_OK)
+#endif
 	{
 		long rate;
 
