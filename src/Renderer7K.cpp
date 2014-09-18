@@ -11,6 +11,7 @@
 #include "GraphObject2D.h"
 #include "Image.h"
 #include "ImageLoader.h"
+#include "ImageList.h"
 
 #include "ScreenGameplay7K.h"
 

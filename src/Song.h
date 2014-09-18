@@ -11,8 +11,14 @@ typedef std::vector<TimingSegment> TimingData;
 
 struct AutoplaySound
 {
-	double Time;
+	float Time;
 	int Sound;
+};
+
+struct AutoplayBMP
+{
+	float Time;
+	int BMP;
 };
 
 enum ModeType

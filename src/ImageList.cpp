@@ -24,7 +24,7 @@ ImageList::~ImageList()
 
 void ImageList::AddToList(const String Filename, const String Prefix)
 {
-	String ResFilename = Prefix + "/" + Filename;
+	String ResFilename = Directory(Prefix) / Filename;
 
 	boost::replace_all (ResFilename, "//", "/");
 
@@ -33,6 +33,22 @@ void ImageList::AddToList(const String Filename, const String Prefix)
 		ImageLoader::AddToPending(ResFilename.c_str());
 		Images[ResFilename] = NULL;
 	}
+}
+
+void ImageList::AddToListIndex(const String Filename, const String Prefix, int Index)
+{
+	String ResFilename = Directory(Prefix) / Filename;
+
+	boost::replace_all (ResFilename, "//", "/");
+
+	if (ImagesIndex.find(Index) == ImagesIndex.end())
+	{
+		ImageLoader::AddToPending(ResFilename.c_str());
+		Images[ResFilename] = NULL;
+		ImagesIndex[Index] = NULL;
+		ImagesIndexPending[Index] = ResFilename;
+	}
+
 }
 
 void ImageList::Destroy()
@@ -59,6 +75,15 @@ bool ImageList::LoadAll()
 			WereErrors = true;
 	}
 
+	for (std::map<int, String>::iterator i = ImagesIndexPending.begin(); i != ImagesIndexPending.end(); i++)
+	{
+		ImagesIndex[i->first] = ImageLoader::Load(i->second);
+		if (ImagesIndex[i->first] == NULL)
+			WereErrors = true;
+	}
+
+	ImagesIndexPending.clear();
+
 	return WereErrors;
 }
 
@@ -72,6 +97,11 @@ Image* ImageList::GetFromFilename(const String Filename)
 Image* ImageList::GetFromSkin(const String Filename)
 {
 	return Images[GameState::GetInstance().GetSkinPrefix() + Filename];
+}
+
+Image* ImageList::GetFromIndex(int Index)
+{
+	return ImagesIndex[Index];
 }
 
 void ImageList::ForceFetch()

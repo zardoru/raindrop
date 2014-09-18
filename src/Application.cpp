@@ -19,6 +19,7 @@
 #include "ImageLoader.h"
 #include "GameWindow.h"
 #include "GameState.h"
+#include "ImageList.h"
 
 #include "ScreenMainMenu.h"
 #include "ScreenGameplay7K.h"

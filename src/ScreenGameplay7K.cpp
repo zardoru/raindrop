@@ -356,6 +356,14 @@ MusicWasLoaded:
 
 	BGMEvents = CurrentDiff->BGMEvents;
 
+	Log::Printf("Loading BMPs...\n");
+
+	for (std::map<int, String>::iterator i = CurrentDiff->BMPList.begin(); i != CurrentDiff->BMPList.end(); i++)
+	{
+		BMPs.AddToListIndex(i->second, MySong->SongDirectory, i->first);
+	}
+
+	BMPEvents = CurrentDiff->BMPEvents;
 	Log::Printf("Done.\n");
 
 	// Get Noteheight
@@ -560,7 +568,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 			i++)
 		{
 			String ext = Directory(*i).GetExtension();
-			if (strstr(i->c_str(), "bg") && ext == "jpg" || ext == "png")
+			if (strstr(i->c_str(), "bg") && (ext == "jpg" || ext == "png"))
 				if (BackgroundImage = ImageLoader::Load(MySong->SongDirectory + *i))
 					break;
 		}
@@ -595,8 +603,13 @@ void ScreenGameplay7K::MainThreadInitialization()
 		WaitingTime = abs(std::min(-WaitingTime, CurrentDiff->Offset - 1.5));
 	else
 		WaitingTime = 0;
+
+
 	CurrentBeat = BeatAtTime(CurrentDiff->BPS, -WaitingTime, CurrentDiff->Offset + TimeCompensation);
 	Animations->GetImageList()->ForceFetch();
+
+	BMPs.LoadAll();
+	BMPs.ForceFetch();
 	Running = true;
 }
 
@@ -766,7 +779,9 @@ bool ScreenGameplay7K::Run(double Delta)
 			}
 
 			// Play BGM events.
-			for (std::vector<AutoplaySound>::iterator s = BGMEvents.begin(); s != BGMEvents.end(); s++)
+			for (std::vector<AutoplaySound>::iterator s = BGMEvents.begin(); 
+				s != BGMEvents.end();
+				s++)
 			{
 				if (s->Time <= SongTime)
 				{
@@ -777,6 +792,24 @@ bool ScreenGameplay7K::Run(double Delta)
 					}
 					s = BGMEvents.erase(s);
 					if (s == BGMEvents.end()) break;
+				}
+			}
+
+			// Play BMP Base Events
+			for (std::vector<AutoplayBMP>::iterator b = BMPEvents.begin();
+				b != BMPEvents.end();
+				b++)
+			{
+				if (b->Time <= SongTime)
+				{
+					Image* Img = BMPs.GetFromIndex(b->BMP);
+					if (Img != NULL)
+					{
+						Background.SetImage(Img, false);
+					}
+
+					b = BMPEvents.erase(b);
+					if (b == BMPEvents.end()) break;
 				}
 			}
 

@@ -21,6 +21,9 @@ private:
 	std::map <int, SoundSample*> Keysounds;
 	std::vector<AutoplaySound> BGMEvents;
 
+	ImageList				 BMPs;
+	std::vector<AutoplayBMP> BMPEvents;
+
 	double NoteHeight;
 	double HoldHeadHeight;
 	double HoldTailHeight;

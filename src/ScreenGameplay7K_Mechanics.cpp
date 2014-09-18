@@ -7,6 +7,7 @@
 #include "LuaManager.h"
 #include "GraphObject2D.h"
 #include "GraphObjectMan.h"
+#include "ImageList.h"
 
 #include "ScoreKeeper.h"
 #include "ScreenGameplay7K.h"

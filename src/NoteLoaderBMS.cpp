@@ -113,6 +113,7 @@ int chanScratch = fromBase36("16");
 #define CHANNEL_BGALAYER 7
 #define CHANNEL_EXBPM 8
 #define CHANNEL_STOPS 9
+#define CHANNEL_LAYER2 10
 #define CHANNEL_SCRATCH chanScratch 
 
 struct BMSEvent
@@ -164,6 +165,8 @@ const int startChannelMinesP2 = fromBase36("E1");
 struct BmsLoadInfo
 {
 	FilenameListIndex Sounds;
+	FilenameListIndex BMP;
+
 	BpmListIndex BPMs;
 	BpmListIndex Stops;
 
@@ -275,6 +278,28 @@ int ts_sort( const TimingSegment &A, const TimingSegment &B )
 	return A.Time < B.Time;
 }
 
+void CalculateBaseBMP (BmsLoadInfo *Info)
+{
+	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
+	{
+		if (i->second.Events.find(CHANNEL_BGABASE) != i->second.Events.end())
+		{
+			for (BMSEventList::iterator ev = i->second.Events[CHANNEL_BGABASE].begin(); ev != i->second.Events[CHANNEL_BGABASE].end(); ev++)
+			{
+				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first);
+				int BMP = ev->Event;
+				double Time = TimeAtBeat(Info->difficulty->Timing, 0, Beat) + StopTimeAtBeat(Info->difficulty->StopsTiming, Beat);
+
+				AutoplayBMP New;
+				New.BMP = BMP;
+				New.Time = Time;
+
+				Info->difficulty->BMPEvents.push_back(New);
+			}
+		}
+	}
+}
+
 void CalculateBPMs(BmsLoadInfo *Info)
 {
 	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
@@ -346,7 +371,6 @@ void CalculateStops(BmsLoadInfo *Info)
 			}
 		}
 	}
-	
 }
 
 int translateTrackBME(int Channel, int relativeTo)
@@ -722,6 +746,8 @@ void CompileBMS(BmsLoadInfo *Info)
 	CalculateBPMs(Info);
 	CalculateStops(Info);
 
+	CalculateBaseBMP(Info);
+
 	Info->difficulty->Channels = AutodetectChannelCount(Info);
 	if (Info->difficulty->Channels == 9) // Assume pop'n
 		Info->IsPMS = true;
@@ -929,6 +955,13 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 				Info->Sounds[Index] = CommandContents;
 			}
 
+			OnCommandSub(#BMP)
+			{
+				String IndexStr = CommandSubcontents("#BMP", command);
+				int Index = fromBase36(IndexStr.c_str());
+				Info->BMP[Index] = CommandContents.c_str();
+			}
+
 			OnCommandSub(#BPM)
 			{
 				String IndexStr = CommandSubcontents("#BPM", command);
@@ -969,6 +1002,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 	/* When all's said and done, "compile" the bms. */
 	CompileBMS(Info);
 	Diff->SoundList = Info->Sounds;
+	Diff->BMPList = Info->BMP;
 
 	// Get actual filename instead of full path.
 	filename = Utility::RelativeToPath(filename);

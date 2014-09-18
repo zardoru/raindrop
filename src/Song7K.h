@@ -40,6 +40,10 @@ namespace VSRG
 		// Autoplay Sounds
 		std::vector<AutoplaySound> BGMEvents;
 
+		// Autoplay BMP
+		std::map<int, String> BMPList;
+		std::vector<AutoplayBMP> BMPEvents;
+
 		double PreviewTime;
 
 		int LMT; // Last modified time

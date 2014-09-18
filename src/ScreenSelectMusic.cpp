@@ -12,6 +12,7 @@
 #include "Configuration.h"
 #include "GraphObject2D.h"
 #include "GuiButton.h"
+#include "ImageList.h"
 
 #include "Song.h"
 #include "ScreenSelectMusic.h"

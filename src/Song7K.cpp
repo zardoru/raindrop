@@ -364,4 +364,6 @@ void Difficulty::Destroy()
 	BGMEvents.clear();
 	Measures.clear();
 	Filename.clear();
+	BMPEvents.clear();
+	BMPList.clear();
 }
