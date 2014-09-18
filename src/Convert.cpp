@@ -126,8 +126,7 @@ void ConvertToSMTiming(VSRG::Song *Sng, Directory PathOut)
 	VSRG::Difficulty* Diff = Sng->Difficulties[0];
 	Sng->Process (Diff, NULL);
 
-	ss << PathOut.path() << "/" << Diff->Name << " timing.txt";
-	std::ofstream out (ss.str().c_str());
+	std::ofstream out (PathOut.c_path());
 
 	// Technically, stepmania's #OFFSET is actually #GAP, not #OFFSET.
 	out << "#OFFSET:" << -Diff->Offset << ";\n";
@@ -156,7 +155,7 @@ void ConvertToSMTiming(VSRG::Song *Sng, Directory PathOut)
 			break;
 		}
 
-		double Beat = QuantizeBeat(BeatAtTime(Diff->BPS, Time, 0));
+		double Beat = QuantizeBeat(BeatAtTime(Diff->BPS, Time + Diff->Offset, 0));
 
 		out << Beat << "=" << Value;
 

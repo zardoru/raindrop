@@ -142,12 +142,12 @@ double BeatAtTime(const TimingData &Timing, float Time, float Offset)
 
 double QuantizeFractionBeat(float Frac)
 {
-	return (min (48.0, (int) Frac * 49.0)) / 48.0;
+	return double (min (48.0, floor(Frac * 49.0))) / 48.0;
 }
 
 double QuantizeFractionMeasure (float Frac)
 {
-	return  (min (192.0, (int) Frac * 193.0)) / 192.0;
+	return  (min (192.0, floor(Frac * 193.0))) / 192.0;
 }
 
 double QuantizeBeat(float Beat)
