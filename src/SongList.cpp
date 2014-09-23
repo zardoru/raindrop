@@ -74,23 +74,23 @@ void SongList::AddDirectory(boost::mutex &loadMutex, SongLoader *Loader, Directo
 		{
 			if (!EntryWasPushed)
 			{
-				while (!loadMutex.try_lock()) ;
+				boost::mutex::scoped_lock lock (loadMutex);
 				mChildren.push_back	(NewEntry);
-				loadMutex.unlock();
 				EntryWasPushed = true;
 			}
 
 			NewList->AddDirectory(loadMutex, Loader, Dir / *i, VSRGActive, DotcurActive);
 
-			while (!loadMutex.try_lock()) ;
 
-			if (!NewList->GetNumEntries())
 			{
-				if (mChildren.size())
-					mChildren.erase(mChildren.end()-1);
-				EntryWasPushed = false;
+				boost::mutex::scoped_lock lock (loadMutex);
+				if (!NewList->GetNumEntries())
+				{
+					if (mChildren.size())
+						mChildren.erase(mChildren.end()-1);
+					EntryWasPushed = false;
+				}
 			}
-			loadMutex.unlock();
 		}
 		else
 		{
@@ -98,7 +98,7 @@ void SongList::AddDirectory(boost::mutex &loadMutex, SongLoader *Loader, Directo
 
 			if (Songs7K.size())
 			{
-				while (!loadMutex.try_lock()) ;
+				boost::mutex::scoped_lock lock (loadMutex);
 
 				for (std::vector<VSRG::Song*>::iterator j = Songs7K.begin();
 					j != Songs7K.end();
@@ -108,12 +108,12 @@ void SongList::AddDirectory(boost::mutex &loadMutex, SongLoader *Loader, Directo
 				}
 
 				Songs7K.clear();
-				loadMutex.unlock();
+				
 			}
 
 			if (SongsDC.size())
 			{
-				while (!loadMutex.try_lock()) ; 
+				boost::mutex::scoped_lock lock (loadMutex);
 
 				for (std::vector<dotcur::Song*>::iterator j = SongsDC.begin();
 					j != SongsDC.end();
@@ -123,17 +123,14 @@ void SongList::AddDirectory(boost::mutex &loadMutex, SongLoader *Loader, Directo
 				}
 
 				SongsDC.clear();
-				loadMutex.unlock();
 			}
 
 			if (tSize > 0) // There's a song in here. 
 			{
 				if (!EntryWasPushed)
 				{
-					while (!loadMutex.try_lock()) ;
-
+					boost::mutex::scoped_lock lock (loadMutex);
 					mChildren.push_back	(NewEntry);
-					loadMutex.unlock();
 					EntryWasPushed = true;
 				}
 			}

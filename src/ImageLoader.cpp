@@ -132,20 +132,20 @@ void ImageLoader::AddToPending(const char* Filename)
 	if (Textures.find(Filename) == Textures.end())
 	{
 		New.Data = SOIL_load_image(Filename, &New.Width, &New.Height, &Channels, SOIL_LOAD_RGBA);
+		LoadMutex.lock();
 		PendingUploads.insert( std::pair<char*, UploadData>((char*)Filename, New) );
+		LoadMutex.unlock();
 	}
 }
 
 /* For multi-threaded loading. */
 void ImageLoader::LoadFromManifest(char** Manifest, int Count, String Prefix)
 {
-	LoadMutex.lock();
 	for (int i = 0; i < Count; i++)
 	{
 		const char* FinalFilename = (Prefix + Manifest[i]).c_str();
 		AddToPending(FinalFilename);
 	}
-	LoadMutex.unlock();
 }
 	
 	

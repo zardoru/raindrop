@@ -223,7 +223,6 @@ void SongDatabase::AddDifficulty(int SongID, Directory Filename, Game::Song::Dif
 {
 	int FileID = InsertFilename(Filename);
 	int DiffID;
-	const char* tail;
 	int ret;
 
 	if (!DifficultyExists(FileID, Diff->Name, &DiffID)) 

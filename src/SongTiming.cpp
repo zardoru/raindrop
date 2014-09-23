@@ -187,6 +187,8 @@ int GetFractionKindBeat(double frac)
 	int fracKind;
 	int Row = QuantizeFractionBeat (frac);
 
+	FRACKIND(1, 48);
+
 	// placed on 1/24th of a beat
 	FRACKIND(2, 24);
 

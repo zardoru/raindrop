@@ -110,7 +110,7 @@ void ImageList::ForceFetch()
 
 	// Draw as black.
 	Fill.Red = Fill.Blue = Fill.Green = 0;
-	Fill.Alpha = 0.0001;
+	Fill.Alpha = 0.0001f;
 
 	for (std::map<String, Image*>::iterator i = Images.begin(); i != Images.end(); i++)
 	{
