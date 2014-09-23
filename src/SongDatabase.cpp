@@ -120,7 +120,7 @@ int SongDatabase::AddSong(Directory Dir, int Mode, Game::Song* In)
 {
 	int ID;
 	int ret;
-	
+
 	if (!IsSongDirectory(Dir, &ID)) // Song does not exist in the database, database, woah woah
 	{
 		SC(sqlite3_bind_text(st_SngInsertQuery, 1, Dir.c_path(), Dir.path().length(), SQLITE_TRANSIENT));
@@ -179,7 +179,7 @@ int SongDatabase::InsertFilename(Directory Fn)
 		SC(sqlite3_bind_text(st_FilenameInsertQuery, 1, Fn.c_path(), Fn.path().length(), SQLITE_TRANSIENT));
 		SC(sqlite3_bind_int(st_FilenameInsertQuery, 2, Utility::GetLMT(Fn.path())));
 		SC(sqlite3_step(st_FilenameInsertQuery)); // This should not fail. Otherwise, there are bigger problems to worry about...
-		SC(sqlite3_reset(st_FilenameInsertQuery)); 
+		SC(sqlite3_reset(st_FilenameInsertQuery));
 
 		SC(sqlite3_reset(st_FilenameQuery));
 		SC(sqlite3_bind_text(st_FilenameQuery, 1, Fn.c_path(), Fn.path().length(), SQLITE_TRANSIENT));
@@ -206,7 +206,7 @@ bool SongDatabase::DifficultyExists(int FileID, String DifficultyName, int *IDOu
 	SC(sqlite3_bind_int (st_GetDiffIDFile, 1, FileID));
 	SC(sqlite3_bind_text(st_GetDiffIDFile, 2, DifficultyName.c_str(), DifficultyName.length(), SQLITE_TRANSIENT));
 	int r = sqlite3_step(st_GetDiffIDFile);
-	
+
 	if (IDOut)
 	{
 		if (r == SQLITE_ROW)
@@ -225,7 +225,7 @@ void SongDatabase::AddDifficulty(int SongID, Directory Filename, Game::Song::Dif
 	int DiffID;
 	int ret;
 
-	if (!DifficultyExists(FileID, Diff->Name, &DiffID)) 
+	if (!DifficultyExists(FileID, Diff->Name, &DiffID))
 	{
 		SC(sqlite3_bind_int(st_DiffInsertQuery, 1, SongID));
 		SC(sqlite3_bind_int(st_DiffInsertQuery, 2, FileID));
@@ -342,7 +342,7 @@ void SongDatabase::GetSongInformation7K (int ID, VSRG::Song* Out)
 	int res = sqlite3_step(st_GetSongInfo);
 
 	// Main metadata is up in this query.
-	
+
 	Out->SongName = (char*)sqlite3_column_text(st_GetSongInfo, 0);
 	Out->SongAuthor = (char*)sqlite3_column_text(st_GetSongInfo, 1);
 	Out->SongFilename = (char*)sqlite3_column_text(st_GetSongInfo, 2);
@@ -373,11 +373,11 @@ void SongDatabase::GetSongInformation7K (int ID, VSRG::Song* Out)
 
 		int colInt = sqlite3_column_int(st_GetDiffInfo, 10);
 		Diff->BPMType = (VSRG::Difficulty::EBt)colInt;
-		
+
 
 		// File ID associated data
 		int FileID = sqlite3_column_int(st_GetDiffInfo, 9);
-		
+
 		sqlite3_bind_int(st_GetFileInfo, 1, FileID);
 		sqlite3_step(st_GetFileInfo);
 		Diff->Filename = (char*)sqlite3_column_text(st_GetFileInfo, 0);

@@ -15,7 +15,7 @@ void ScoreKeeper7K::update_bms(int ms, bool hit){
 			bms_dance_pts += 2;
 		}
 
-		bms_combo = min(10, bms_combo + 1);
+		bms_combo = min(10LL, bms_combo + 1);
 		bms_combo_pts += bms_combo;
 
 		bms_score =
@@ -32,6 +32,6 @@ void ScoreKeeper7K::update_bms(int ms, bool hit){
 
 void ScoreKeeper7K::update_lr2(int ms, bool hit){
 
-	
+
 
 }

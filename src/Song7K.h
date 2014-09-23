@@ -5,7 +5,7 @@ namespace VSRG
 {
 	const uint8 MAX_CHANNELS = 16;
 
-	struct Measure 
+	struct Measure
 	{
 		std::vector<NoteData> MeasureNotes[MAX_CHANNELS];
 		float MeasureLength; // In beats. 4 by default.
@@ -16,9 +16,9 @@ namespace VSRG
 	};
 
 	typedef std::vector<Measure> MeasureVector;
-	
+
 	typedef std::vector<TrackNote> VectorTN[MAX_CHANNELS];
-	
+
 
 	struct Difficulty : public Game::Song::Difficulty
 	{

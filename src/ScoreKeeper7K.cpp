@@ -1,6 +1,8 @@
 #include "Global.h"
 #include "ScoreKeeper.h"
 
+#include <iomanip>
+
 ScoreKeeper7K::~ScoreKeeper7K(){  }
 
 double ScoreKeeper7K::accuracy_percent(float var){
@@ -47,14 +49,21 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 // hit notes
 
 	++total_notes;
-	++notes_hit;
+
+	if(abs(ms) < 128)
+	++histogram[ms + 127];
+
+	ms = abs(ms);
 
 // combo
 
-	if(ms < ACC_MAX){
+	if(ms <= judgement_time[SKJ_W3]){
+		++notes_hit;
 		++combo;
 		if(combo > max_combo)
 			max_combo = combo;
+	}else{
+		combo = 0;
 	}
 
 
@@ -63,7 +72,7 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 	sc_score += Clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.0) * 2;
 	sc_sc_score += sc_score * Clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.0);
 
-	score = float(SCORE_MAX * sc_sc_score) / (max_notes * (max_notes + 1));
+	score = double(SCORE_MAX * sc_sc_score) / (max_notes * (max_notes + 1));
 
 // accuracy score
 
@@ -72,7 +81,7 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 
 // lifebars
 
-	if(ms < ACC_MAX){
+	if(ms < judgement_time[SKJ_W3]){
 		lifebar_groove = min(1.0, lifebar_groove + lifebar_groove_increment);
 		if(lifebar_survival > 0)
 			lifebar_survival = min(1.0, lifebar_survival + lifebar_survival_increment);
@@ -93,7 +102,7 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 
 	for (int i = 1; i < 6; i++)
 	{
-		if (ms < judgement_time[i])
+		if (ms <= judgement_time[i])
 		{
 			judgement_amt[(ScoreKeeperJudgment)i]++;
 			judgment = ScoreKeeperJudgment((ScoreKeeperJudgment)i);
@@ -104,7 +113,7 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 // Other methods
 
 	update_ranks(ms); // rank calculation
-	update_bms(ms, true);
+	update_bms(ms, ms <= judgement_time[SKJ_W3]);
 
 	return judgment;
 
@@ -120,7 +129,8 @@ void ScoreKeeper7K::missNote(bool auto_hold_miss){
 
 	total_sqdev += ACC_CUTOFF * ACC_CUTOFF;
 
-	judgement_amt[SKJ_W5]++;
+	judgement_amt[SKJ_W5]++; // for current 7K mode?
+	judgement_amt[SKJ_MISS]++;
 
 	++total_notes;
 	accuracy = accuracy_percent(total_sqdev / total_notes);
@@ -142,10 +152,31 @@ double ScoreKeeper7K::getAccCutoff(){
 	return ACC_CUTOFF;
 }
 
-double ScoreKeeper7K::getAccMax()
-{
+double ScoreKeeper7K::getAccMax(){
 	return ACC_MAX;
 }
+
+int ScoreKeeper7K::getJudgmentWindow(ScoreKeeperJudgment judgment){
+	return judgement_time[judgment];
+}
+
+
+std::string ScoreKeeper7K::getHistogram(){
+
+	std::stringstream ss;
+
+	for (int i = 0; i < 255; ++i){
+		int it = (i % 5) * 51 + (i / 5); // transpose
+	 	ss << std::setw(4) << it - 127 << ": " << std::setw(4) << histogram[it] << " ";
+		if(i % 5 == 4)
+			ss << "\n";
+	}
+
+	return ss.str();
+
+}
+
+
 
 /* actual score functions. */
 

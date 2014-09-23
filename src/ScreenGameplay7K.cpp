@@ -1,4 +1,5 @@
 #include <iomanip>
+#include <cmath>
 
 #include "GameGlobal.h"
 #include "GameState.h"
@@ -240,7 +241,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 				Directory SngDir = MySong->SongDirectory;
 
 				SngDir.ListDirectory(DirCnt, Directory::FS_REG);
-				for (std::vector<String>::iterator i = DirCnt.begin(); 
+				for (std::vector<String>::iterator i = DirCnt.begin();
 					i != DirCnt.end();
 					i++)
 				{
@@ -563,7 +564,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 		Directory SngDir = MySong->SongDirectory;
 
 		SngDir.ListDirectory(DirCnt, Directory::FS_REG);
-		for (std::vector<String>::iterator i = DirCnt.begin(); 
+		for (std::vector<String>::iterator i = DirCnt.begin();
 			i != DirCnt.end();
 			i++)
 		{
@@ -779,7 +780,7 @@ bool ScreenGameplay7K::Run(double Delta)
 			}
 
 			// Play BGM events.
-			for (std::vector<AutoplaySound>::iterator s = BGMEvents.begin(); 
+			for (std::vector<AutoplaySound>::iterator s = BGMEvents.begin();
 				s != BGMEvents.end();
 				s++)
 			{
@@ -846,26 +847,15 @@ bool ScreenGameplay7K::Run(double Delta)
 
 	Animations->DrawUntilLayer(13);
 
+
+
 	DrawMeasures();
 
 	for (int32 i = 0; i < CurrentDiff->Channels; i++)
 		Keys[i].Render();
 
-	std::stringstream ss;
 
-
-	ss << "\nMult/Speed: " << std::setprecision(2) << std::setiosflags(std::ios::fixed) << SpeedMultiplier << "x / " << SpeedMultiplier*4;
-	if (SongTime > 0)
-		ss << "\nScrolling Speed: " << SectionValue(VSpeeds, SongTime) * SpeedMultiplier;
-	else
-		ss << "\nScrolling Speed: " << SectionValue(VSpeeds, 0) * SpeedMultiplier;
-
-	if (Auto)
-		ss << "\nAuto Mode ";
-
-	ss << "T: " << SongTime << " B: " << CurrentBeat << " O: " << CurrentDiff->Offset;
-
-	GFont->DisplayText(ss.str().c_str(), Vec2(0, ScreenHeight - 65));
+	// text
 
 	if (!Active)
 		GFont->DisplayText("press 'enter' to start", Vec2( ScreenWidth / 2 - 23 * 3,ScreenHeight * 5/8));
@@ -874,10 +864,59 @@ bool ScreenGameplay7K::Run(double Delta)
 	{
 		std::stringstream ss;
 		ss << lastClosest[i];
-		GFont->DisplayText(ss.str().c_str(), Keys[i].GetPosition() - Vec2(DigitCount(lastClosest[i]) * 3, 7));
+		GFont->DisplayText(ss.str().c_str(), Vec2(floor(Keys[i].GetPosition().x), floor(Keys[i].GetPosition().y)) - Vec2(DigitCount(lastClosest[i]) * 3, 7));
 	}
 
+
+	// speed info
+
+	std::stringstream ss;
+
+	ss << "\nMult/Speed: " << std::setprecision(2) << std::setiosflags(std::ios::fixed) << SpeedMultiplier << "x / " << SpeedMultiplier*4;
+
+	if (SongTime > 0)
+		ss << "\nScrolling Speed: " << SectionValue(VSpeeds, SongTime) * SpeedMultiplier;
+	else
+		ss << "\nScrolling Speed: " << SectionValue(VSpeeds, 0) * SpeedMultiplier;
+
+	if (Auto)
+		ss << "\nAuto Mode ";
+	else
+		ss << "\n";
+
+	ss << "T: " << SongTime << " B: " << CurrentBeat << " O: " << CurrentDiff->Offset;
+
+	GFont->DisplayText(ss.str().c_str(), Vec2(432, ScreenHeight - 145));
+
+
+	// performance info
+
+	ss.str("");
+
+	ss
+	<< "PG: " << score_keeper->getJudgmentCount(SKJ_W1) << "\n"
+	<< "GR: " << score_keeper->getJudgmentCount(SKJ_W2) << "\n"
+	<< "GD: " << score_keeper->getJudgmentCount(SKJ_W3) << "\n"
+	<< "BD: " << score_keeper->getJudgmentCount(SKJ_W4) << "\n"
+	<< "NG: " << score_keeper->getJudgmentCount(SKJ_W5) << "\n";
+
+	GFont->DisplayText(ss.str().c_str(), Vec2(432, ScreenHeight - 80));
+
+
+	ss.str("");
+
+	ss
+	// << "EX score: " << score_keeper->getPercentScore(PST_EX) << "\n"
+	// << "Rank score: " << score_keeper->getPercentScore(PST_RANK) << "\n"
+	<< "Beatmania score: " << score_keeper->getScore(ST_IIDX) << "\n"
+	;
+
+	GFont->DisplayText(ss.str().c_str(), Vec2(20, ScreenHeight - 40));
+
+
+
 	Animations->DrawFromLayer(14);
+
 
 	return Running;
 }
