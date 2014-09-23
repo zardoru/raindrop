@@ -108,22 +108,26 @@ void ScreenGameplay7K::RunMeasures()
 			}
 
 			if (Auto) {
-				float TimeThreshold = SongTime;
-				if ( m->GetStartTime() < TimeThreshold + 0.008 ) // allow a tolerance of 1/2 frame
+				float TimeThreshold = SongTime + 0.016;
+				if ( m->GetStartTime() < TimeThreshold) // allow a tolerance equal to the judgment window?
 				{
 					if (m->IsEnabled()) {
 						if (m->IsHold())
 						{
 							if (m->WasNoteHit())
 							{
-								if ( m->GetTimeFinal() < TimeThreshold + 0.008 )
-									ReleaseLane(k, m->GetTimeFinal());
+								if ( m->GetTimeFinal() < TimeThreshold)
+									ReleaseLane(k, SongTime);
+									// ReleaseLane(k, m->GetTimeFinal());
 							}else
-								JudgeLane(k, m->GetStartTime());
+								JudgeLane(k, SongTime);
+								// JudgeLane(k, m->GetStartTime());
 						}else
 						{
-							JudgeLane(k, m->GetStartTime());
-							ReleaseLane(k, m->GetTimeFinal());
+							JudgeLane(k, SongTime);
+							ReleaseLane(k, SongTime);
+							// JudgeLane(k, m->GetStartTime());
+							// ReleaseLane(k, m->GetTimeFinal());
 						}
 					}
 				}
@@ -176,11 +180,13 @@ void ScreenGameplay7K::ReleaseLane(uint32 Lane, float Time)
 	{
 		if (m->IsHold() && m->WasNoteHit() && m->IsEnabled()) /* We hit the hold's head and we've not released it early already */
 		{
-			double tD = abs (Time - m->GetTimeFinal()) * 1000;
 
-			if (tD < score_keeper->getAccCutoff()) /* Released in time */
+			double dev = (Time - m->GetTimeFinal()) * 1000;
+			double tD = abs(dev);
+
+			if (tD < score_keeper->getJudgmentWindow(SKJ_W3)) /* Released in time */
 			{
-				HitNote(tD, Lane, m->IsHold(), true);
+				HitNote(dev, Lane, m->IsHold(), true);
 
 				HeldKey[Lane] = false;
 
@@ -188,7 +194,7 @@ void ScreenGameplay7K::ReleaseLane(uint32 Lane, float Time)
 
 			}else /* Released off time */
 			{
-				MissNote(tD, Lane, m->IsHold(), false);
+				MissNote(dev, Lane, m->IsHold(), false);
 
 				if (score_keeper->getScore(ST_COMBO) > 10)
 					MissSnd->Play();
@@ -217,7 +223,8 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 		if (!m->IsEnabled())
 			continue;
 
-		double tD = abs (Time - m->GetStartTime()) * 1000;
+		double dev = (Time - m->GetStartTime()) * 1000;
+		double tD = abs(dev);
 
 		lastClosest[Lane] = min(tD, (double)lastClosest[Lane]);
 
@@ -236,10 +243,10 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 		}
 		else // Within judging range
 		{
-			if (tD <= score_keeper->getAccMax()) // within combo-keeping judging accuracy
+			if (tD <= score_keeper->getAccCutoff()) // within combo-keeping judging accuracy
 			{
 				m->Hit();
-				HitNote(tD, Lane, m->IsHold());
+				HitNote(dev, Lane, m->IsHold());
 
 				if (m->GetSound())
 				{
@@ -254,7 +261,7 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 			}
 			else // on POOR judging range
 			{
-				MissNote(tD, Lane, m->IsHold(), m->IsHold());
+				MissNote(dev, Lane, m->IsHold(), m->IsHold());
 				// missed feedback
 				MissSnd->Play();
 				m->Disable();

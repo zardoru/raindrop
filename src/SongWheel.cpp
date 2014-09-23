@@ -33,7 +33,7 @@ SongWheel& SongWheel::GetInstance()
 	return *WheelInstance;
 }
 
-void SongWheel::Initialize(float Start, float End, bool IsDotcurActive, bool IsVSRGActive, 
+void SongWheel::Initialize(float Start, float End, bool IsDotcurActive, bool IsVSRGActive,
 	ListTransformFunction FuncTransform, SongNotification FuncNotify, SongNotification FuncNotifySelect,
 	SongDatabase* Database)
 {
@@ -104,7 +104,7 @@ public:
 
 		DB->StartTransaction();
 
-		for (std::vector<String>::iterator i = Directories.begin(); 
+		for (std::vector<String>::iterator i = Directories.begin();
 			i != Directories.end();
 			i++)
 		{
@@ -184,7 +184,7 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 			return true;
 		case KT_Select:
 			Vec2 mpos = GameState::GetWindow()->GetRelativeMPos();
-			if (CursorPos < CurrentList->GetNumEntries() && 
+			if (CursorPos < CurrentList->GetNumEntries() &&
 				(!isMouseInput || mpos.x > Transform(mpos.y) && mpos.y > CurrentVerticalDisplacement))
 			{
 				if (!CurrentList->IsDirectory(CursorPos))
@@ -215,7 +215,7 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 
 void SongWheel::GoUp()
 {
-	if (mLoadMutex) 
+	if (mLoadMutex)
 	{
 		if (!mLoadMutex->try_lock())
 			return;
@@ -245,7 +245,7 @@ Game::Song* SongWheel::GetSelectedSong()
 
 void SongWheel::Update(float Delta)
 {
-	if (mLoadMutex) 
+	if (mLoadMutex)
 	{
 		if (!mLoadMutex->try_lock())
 			return;
@@ -266,7 +266,7 @@ void SongWheel::Update(float Delta)
 		float NewListY = CurrentVerticalDisplacement + ListDelta;
 		float NewLowerBound = NewListY + Size * ItemHeight;
 		float LowerBound = Size * ItemHeight;
-		
+
 		if (!IntervalsIntersect(0, ScreenHeight, NewListY, NewLowerBound))
 		{
 			CurrentVerticalDisplacement = 0;
@@ -301,7 +301,7 @@ void SongWheel::Update(float Delta)
 		DifficultyIndex = 0;
 		if (OnSongChange)
 		{
-			if (mLoadMutex) 
+			if (mLoadMutex)
 			{
 				if (!mLoadMutex->try_lock())
 					return;
@@ -339,7 +339,7 @@ void SongWheel::DisplayItem(String Text, Vec2 Position)
 
 void SongWheel::Render()
 {
-	if (mLoadMutex) 
+	if (mLoadMutex)
 	{
 		if (!mLoadMutex->try_lock())
 			return;
