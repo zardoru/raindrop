@@ -7,6 +7,7 @@
 #include "GameWindow.h"
 #include "GraphObject2D.h"
 #include "BitmapFont.h"
+#include "TruetypeFont.h"
 
 #include "Song.h"
 #include "ScreenMainMenu.h"
@@ -17,6 +18,7 @@
 SoundSample *MMSelectSnd = NULL;
 BitmapFont* MainMenuFont = NULL;
 LuaManager* MainMenuLua = NULL;
+TruetypeFont* TTFO = NULL;
 
 ScreenMainMenu::ScreenMainMenu(Screen *Parent) : Screen(Parent)
 {
@@ -62,11 +64,16 @@ void ScreenMainMenu::Init()
 	Objects->AddLuaTarget(&ExitBtn, "ExitButton");
 	Objects->Initialize(GameState::GetInstance().GetSkinPrefix() + "mainmenu.lua");
 
-	if (!MainMenuFont)
+	/*if (!MainMenuFont)
 	{
 		MainMenuFont = new BitmapFont();
 		MainMenuFont->LoadSkinFontImage("font_screenevaluation.tga", Vec2(10, 20), Vec2(32, 32), Vec2(10,20), 32);
 		MainMenuFont->SetAffectedByLightning(true);	
+	}*/
+
+	if (!TTFO)
+	{
+		TTFO = new TruetypeFont("GameData/k.ttf");
 	}
 
 	Background.SetImage(GameState::GetInstance().GetSkinImage(Configuration::GetSkinConfigs("MainMenuBackground")));
@@ -137,7 +144,8 @@ bool ScreenMainMenu::Run (double Delta)
 	
 	Objects->DrawTargets(Delta);
 
-	MainMenuFont->DisplayText("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop", Vec2(0, 0));
+	// MainMenuFont->DisplayText("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop", Vec2(0, 0));
+	TTFO->Render ("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop", Vec2(0, 0), Vec2(0, 128));
 	return Running;
 }
 

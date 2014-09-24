@@ -196,6 +196,9 @@
     <ClCompile Include="..\src\Application.cpp">
       <Filter>Source\game global</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\TruetypeFont.cpp">
+      <Filter>Source\backend\render\objects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">
@@ -380,6 +383,9 @@
     </ClInclude>
     <ClInclude Include="..\src\Application.h">
       <Filter>Source\game global</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\TruetypeFont.h">
+      <Filter>Source\backend\render\objects</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

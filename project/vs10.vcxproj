@@ -227,6 +227,7 @@
     <ClCompile Include="..\src\SongTiming.cpp" />
     <ClCompile Include="..\src\SongWheel.cpp" />
     <ClCompile Include="..\src\TrackNote.cpp" />
+    <ClCompile Include="..\src\TruetypeFont.cpp" />
     <ClCompile Include="..\src\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -289,6 +290,7 @@
     <ClInclude Include="..\src\SongTiming.h" />
     <ClInclude Include="..\src\SongWheel.h" />
     <ClInclude Include="..\src\TrackNote.h" />
+    <ClInclude Include="..\src\TruetypeFont.h" />
     <ClInclude Include="..\src\VBO.h" />
     <ClInclude Include="..\src\AudioSourceSFM.h" />
   </ItemGroup>

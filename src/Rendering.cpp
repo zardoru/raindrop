@@ -10,11 +10,13 @@
 #include "Image.h"
 #include "ImageLoader.h"
 
+#include "stb_truetype.h"
+#include "TruetypeFont.h"
+#include "utf8.h"
+
 VBO* GraphObject2D::mBuffer;
 
-void GraphObject2D::InitVBO()
-{
-	float Positions[8] =
+float QuadPositions[8] =
 	{
 		1,
 		0,
@@ -29,12 +31,14 @@ void GraphObject2D::InitVBO()
 		0,
 	};
 
+void GraphObject2D::InitVBO()
+{
 	// since shaders are already loaded from graphman's init functions..
 	// we'll deal with what we need to deal.
 	// Our initial quad.
 
 	mBuffer->Validate();
-	mBuffer->AssignData(Positions);
+	mBuffer->AssignData(QuadPositions);
 }
 
 void GraphObject2D::UpdateMatrix()
@@ -148,6 +152,70 @@ void GraphObject2D::Cleanup()
 	{
 		delete UvBuffer;
 	}
+}
+
+void TruetypeFont::SetupTexture()
+{
+	Texform = new VBO (VBO::Dynamic, 8);
+	Texform->Validate();
+	Texform->AssignData(QuadPositions);
+
+	glGenTextures(1, &tex);
+}
+
+void TruetypeFont::Render (const char* Text, const Vec2 &Position, const Vec2 &Scale)
+{
+	std::vector<int> r; 
+	glm::vec3 vOffs (Position.x, Position.y, 16);
+	utf8::utf8to32(Text, Text + Utility::Widen(Text).length(), std::back_inserter(r));
+
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glEnable(GL_ALPHA_TEST);
+	glAlphaFunc(GL_GREATER, 0);
+
+	glBindTexture(GL_TEXTURE_2D, tex);
+
+	// Set the color.
+	WindowFrame.SetUniform(U_COLOR, 1, 1, 1, 1);
+	WindowFrame.SetUniform(U_INVERT, false);
+	WindowFrame.SetUniform(U_LIGHT, false);
+	WindowFrame.SetUniform(U_HIDDEN, 0); // not affected by hidden lightning
+
+	WindowFrame.SetUniform(U_TRANSL, false);
+	WindowFrame.SetUniform(U_CENTERED, false);
+
+	// Assign position attrib. pointer
+	GraphObject2D::BindTopLeftVBO();
+	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_POSITION), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
+
+	// assign vertex UVs
+	GraphObject2D::BindTopLeftVBO();
+	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
+
+	size_t s = strlen(Text);
+	for (int i = 0; i < s; i++)
+	{
+		int w, h, xofs, yofs;
+		unsigned char* tx = stbtt_GetCodepointBitmap (info, 0, stbtt_ScaleForPixelHeight(info, Scale.y), r[i], &w, &h, &xofs, &yofs);
+		glm::mat4 dx;
+		dx = glm::translate(Mat4(), vOffs) * glm::scale(Mat4(), glm::vec3(w, h, 1));
+		
+		// do the actual draw?
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, w, h, 0, GL_ALPHA, GL_UNSIGNED_BYTE, tx);
+
+		WindowFrame.SetUniform(U_MVP,  &(dx[0][0]));
+
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+		stbtt_FreeBitmap(tx, NULL);
+
+		if (i+1 < s)
+			vOffs.x += w;
+	}
+
+	WindowFrame.DisableAttribArray(A_POSITION);
+	WindowFrame.DisableAttribArray(A_UV);
 }
 
 uint32 VBO::LastBound = 0;
