@@ -145,7 +145,7 @@ bool ScreenMainMenu::Run (double Delta)
 	Objects->DrawTargets(Delta);
 
 	// MainMenuFont->DisplayText("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop", Vec2(0, 0));
-	TTFO->Render ("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop", Vec2(0, 0), Vec2(0, 128));
+	TTFO->Render ("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop", Vec2(0, 32), Vec2(0, 32));
 	return Running;
 }
 

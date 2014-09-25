@@ -18,15 +18,38 @@ VBO* GraphObject2D::mBuffer;
 
 float QuadPositions[8] =
 	{
+		// tr
 		1,
 		0,
 
+		// br
 		1,
 		1,
 
+		// bl
 		0,
 		1,
 
+		// tl
+		0,
+		0,
+	};
+
+float QuadPositionsTX[8] =
+	{
+				// tr
+		1,
+		0,
+
+		// br
+		1,
+		1,
+
+		// bl
+		0,
+		1,
+
+		// tl
 		0,
 		0,
 	};
@@ -158,14 +181,20 @@ void TruetypeFont::SetupTexture()
 {
 	Texform = new VBO (VBO::Dynamic, 8);
 	Texform->Validate();
-	Texform->AssignData(QuadPositions);
+	Texform->AssignData(QuadPositionsTX);
 
 	glGenTextures(1, &tex);
+	glBindTexture(GL_TEXTURE_2D, tex);
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 }
 
 void TruetypeFont::Render (const char* Text, const Vec2 &Position, const Vec2 &Scale)
 {
 	std::vector<int> r; 
+	int Line = 0;
 	glm::vec3 vOffs (Position.x, Position.y, 16);
 	utf8::utf8to32(Text, Text + Utility::Widen(Text).length(), std::back_inserter(r));
 
@@ -197,9 +226,11 @@ void TruetypeFont::Render (const char* Text, const Vec2 &Position, const Vec2 &S
 	for (int i = 0; i < s; i++)
 	{
 		int w, h, xofs, yofs;
-		unsigned char* tx = stbtt_GetCodepointBitmap (info, 0, stbtt_ScaleForPixelHeight(info, Scale.y), r[i], &w, &h, &xofs, &yofs);
+		float scale = stbtt_ScaleForPixelHeight(info, Scale.y);
+		unsigned char* tx = stbtt_GetCodepointBitmap (info, 0, scale, r[i], &w, &h, &xofs, &yofs);
+		glm::vec3 trans = vOffs + glm::vec3(xofs, yofs, 0);
 		glm::mat4 dx;
-		dx = glm::translate(Mat4(), vOffs) * glm::scale(Mat4(), glm::vec3(w, h, 1));
+		dx = glm::translate(Mat4(), trans) * glm::scale(Mat4(), glm::vec3(w, h, 1));
 		
 		// do the actual draw?
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, w, h, 0, GL_ALPHA, GL_UNSIGNED_BYTE, tx);
@@ -211,7 +242,19 @@ void TruetypeFont::Render (const char* Text, const Vec2 &Position, const Vec2 &S
 		stbtt_FreeBitmap(tx, NULL);
 
 		if (i+1 < s)
-			vOffs.x += w;
+		{
+			float aW = stbtt_GetCodepointKernAdvance(info, r[i], r[i+1]);
+			int bW;
+			stbtt_GetCodepointHMetrics(info, r[i], &bW, NULL);
+			vOffs.x += aW * scale + bW * scale;
+		}
+
+		if (r[i] == 10) // utf-32 line feed
+		{
+			Line++;
+			vOffs.x = Position.x;
+			vOffs.y = Position.y + Scale.y * Line;
+		}
 	}
 
 	WindowFrame.DisableAttribArray(A_POSITION);
