@@ -29,6 +29,7 @@ void ScreenGameplay7K::DrawMeasures()
 	// Set the color.
 	WindowFrame.SetUniform(U_INVERT, false); // Color invert
 	WindowFrame.SetUniform(U_LIGHT, false); // Affected by lightning
+	WindowFrame.SetUniform(U_REPCOLOR, false);
 
 	// Sudden = 1, Hidden = 2, flashlight = 3 (Defined in the shader)
 	WindowFrame.SetUniform(U_HIDDEN, RealHiddenMode); // Affected by hidden lightning?

@@ -297,9 +297,6 @@
     <ClInclude Include="..\src\SongDC.h">
       <Filter>Source\dotcur\internal</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\NoteLoader7K.h">
-      <Filter>Source\vsrg\internal</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Song7K.h">
       <Filter>Source\vsrg\internal</Filter>
     </ClInclude>
@@ -386,6 +383,9 @@
     </ClInclude>
     <ClInclude Include="..\src\TruetypeFont.h">
       <Filter>Source\backend\render\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\NoteLoader7K.h">
+      <Filter>Source\vsrg\gameplay</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -150,6 +150,7 @@ void GraphObject2D::Render()
 	WindowFrame.SetUniform(U_INVERT, ColorInvert);
 	WindowFrame.SetUniform(U_LIGHT, AffectedByLightning);
 	WindowFrame.SetUniform(U_HIDDEN, 0); // not affected by hidden lightning
+	WindowFrame.SetUniform(U_REPCOLOR, false);
 
 	WindowFrame.SetUniform(U_TRANSL, false);
 	WindowFrame.SetUniform(U_CENTERED, Centered);
@@ -189,19 +190,19 @@ void TruetypeFont::SetupTexture()
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 }
 
-void TruetypeFont::Render (const char* Text, const Vec2 &Position, const Vec2 &Scale)
+void TruetypeFont::Render (const char* Text, const Vec2 &Position, const float &Scale)
 {
 	std::vector<int> r; 
 	int Line = 0;
-	glm::vec3 vOffs (Position.x, Position.y, 16);
+	glm::vec3 vOffs (Position.x, Position.y + Scale, 16);
 	utf8::utf8to32(Text, Text + Utility::Widen(Text).length(), std::back_inserter(r));
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GREATER, 0);
 
 	glBindTexture(GL_TEXTURE_2D, tex);
 
@@ -209,7 +210,8 @@ void TruetypeFont::Render (const char* Text, const Vec2 &Position, const Vec2 &S
 	WindowFrame.SetUniform(U_COLOR, 1, 1, 1, 1);
 	WindowFrame.SetUniform(U_INVERT, false);
 	WindowFrame.SetUniform(U_LIGHT, false);
-	WindowFrame.SetUniform(U_HIDDEN, 0); // not affected by hidden lightning
+	WindowFrame.SetUniform(U_HIDDEN, 0);
+	WindowFrame.SetUniform(U_REPCOLOR, true);
 
 	WindowFrame.SetUniform(U_TRANSL, false);
 	WindowFrame.SetUniform(U_CENTERED, false);
@@ -226,10 +228,19 @@ void TruetypeFont::Render (const char* Text, const Vec2 &Position, const Vec2 &S
 	for (int i = 0; i < s; i++)
 	{
 		int w, h, xofs, yofs;
-		float scale = stbtt_ScaleForPixelHeight(info, Scale.y);
-		unsigned char* tx = stbtt_GetCodepointBitmap (info, 0, scale, r[i], &w, &h, &xofs, &yofs);
+		float rscale = stbtt_ScaleForPixelHeight(info, Scale);
+		unsigned char* tx = stbtt_GetCodepointBitmap (info, 0, rscale, r[i], &w, &h, &xofs, &yofs);
 		glm::vec3 trans = vOffs + glm::vec3(xofs, yofs, 0);
 		glm::mat4 dx;
+
+		if (r[i] == 10) // utf-32 line feed
+		{
+			Line++;
+			vOffs.x = Position.x;
+			vOffs.y = Position.y + Scale * (Line+1);
+			continue;
+		}
+
 		dx = glm::translate(Mat4(), trans) * glm::scale(Mat4(), glm::vec3(w, h, 1));
 		
 		// do the actual draw?
@@ -246,14 +257,7 @@ void TruetypeFont::Render (const char* Text, const Vec2 &Position, const Vec2 &S
 			float aW = stbtt_GetCodepointKernAdvance(info, r[i], r[i+1]);
 			int bW;
 			stbtt_GetCodepointHMetrics(info, r[i], &bW, NULL);
-			vOffs.x += aW * scale + bW * scale;
-		}
-
-		if (r[i] == 10) // utf-32 line feed
-		{
-			Line++;
-			vOffs.x = Position.x;
-			vOffs.y = Position.y + Scale.y * Line;
+			vOffs.x += aW * rscale + bW * rscale;
 		}
 	}
 

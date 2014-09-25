@@ -58,6 +58,7 @@ const char* fragShader = "#version 120\n"
 	"uniform float     lMul;\n"
 	"uniform vec3      lPos;\n"
 	"uniform bool inverted;\n"
+	"uniform bool replaceColor;\n"
 	"uniform float clampHSUnder;\n"
 	"uniform float clampHSOver;\n"
 	"uniform float clampFLSum;\n"
@@ -68,9 +69,14 @@ const char* fragShader = "#version 120\n"
 	"void main(void)\n"
 	"{\n"
 	"    vec4 tCol;\n"
-	"	 vec4 tex2D = texture2D(tex, Texcoord);\n"
+	"	 vec4 tex2D;\n"
+	"	 if (!replaceColor){\n"
+	"		tex2D = texture2D(tex, Texcoord);\n"
+	"	 }else{"
+	"		tex2D = vec4(1.0, 1.0, 1.0, texture2D(tex, Texcoord).a);"
+	"	 }"
 	"	 if (inverted) {\n"
-	"		tCol = vec4(1.0 , 1.0, 1.0, tex2D.a*2) - tex2D * Color;\n"
+	"		tCol = vec4(1.0, 1.0, 1.0, tex2D.a*2) - tex2D * Color;\n"
 	"	 }else{\n"
 	"		tCol = tex2D * Color;\n"
 	"	 }\n"
@@ -350,6 +356,9 @@ void GameWindow::SetupWindow()
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 
+	glEnable(GL_ALPHA_TEST);
+	glAlphaFunc(GL_GREATER, 0);
+
 	if (VSync)
 		glfwSwapInterval(1);
 
@@ -604,6 +613,7 @@ void GameWindow::SetupShaders()
 	uniforms[U_HIDHIGH] = glGetUniformLocation(defaultShaderProgram, "clampHSOver");
 	uniforms[U_HIDFAC] = glGetUniformLocation(defaultShaderProgram, "HFactor");
 	uniforms[U_HIDSUM] = glGetUniformLocation(defaultShaderProgram, "clampFLSum");
+	uniforms[U_REPCOLOR] = glGetUniformLocation(defaultShaderProgram, "replaceColor");
 
 	SetLightPosition(glm::vec3(0,0,1));
 	SetLightMultiplier(1);
