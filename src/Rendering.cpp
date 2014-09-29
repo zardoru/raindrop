@@ -270,6 +270,19 @@ void TruetypeFont::Render (const char* Text, const Vec2 &Position)
 	Image::ForceRebind();
 }
 
+void TruetypeFont::ReleaseTextures()
+{
+	for (std::map <int, codepdata>::iterator i = Texes.begin();
+		i != Texes.end();
+		i++)
+	{
+		delete i->second.tex;
+		glDeleteTextures(1, &i->second.gltx);
+	}
+
+	delete Texform;
+}
+
 uint32 VBO::LastBound = 0;
 
 VBO::VBO(Type T, uint32 Elements)

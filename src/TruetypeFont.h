@@ -28,6 +28,7 @@ class TruetypeFont
 	VBO *Texform;
 	void SetupTexture();
 	codepdata& GetTexFromCodepoint(int cp);
+	void ReleaseTextures();
 
 public:
 	TruetypeFont(Directory Filename, float Scale);

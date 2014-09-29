@@ -44,6 +44,7 @@ TruetypeFont::~TruetypeFont()
 	WindowFrame.RemoveTTF(this);
 	delete data;
 	delete info;
+	ReleaseTextures();
 }
 
 void TruetypeFont::Invalidate()
