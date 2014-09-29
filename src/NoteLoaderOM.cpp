@@ -100,10 +100,12 @@ void ReadMetadata (String line, OsuLoadInfo* Info)
 		Info->Diff->Name = Content;
 	}else if (Command == "TitleUnicode")
 	{
-		Info->OsuSong->SongName = Content;
+		if (Content.length() > 1)
+			Info->OsuSong->SongName = Content;
 	}else if (Command == "ArtistUnicode")
 	{
-		Info->OsuSong->SongAuthor = Content;
+		if (Content.length() > 1)
+			Info->OsuSong->SongAuthor = Content;
 	}
 }
 
