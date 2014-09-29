@@ -4,6 +4,7 @@
 #include "Global.h"
 #include "Song7K.h"
 #include "NoteLoader7K.h"
+#include "utf8.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
@@ -234,12 +235,18 @@ void NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 
 		OnCommand(#TITLE)
 		{
-			Out->SongName = CommandContents;
+			if (utf8::is_valid(CommandContents.begin(), CommandContents.end()))
+				Out->SongName = CommandContents;
+			else
+				Out->SongName = Utility::SJIStoU8(CommandContents);
 		}
 
 		OnCommand(#ARTIST)
 		{
-			Out->SongAuthor = CommandContents;
+			if (utf8::is_valid(CommandContents.begin(), CommandContents.end()))
+				Out->SongAuthor = CommandContents;
+			else
+				Out->SongAuthor = Utility::SJIStoU8(CommandContents);
 		}
 
 		OnCommand(#BACKGROUND)
@@ -249,7 +256,10 @@ void NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 
 		OnCommand(#MUSIC)
 		{
-			Out->SongFilename = CommandContents;
+			if (utf8::is_valid(CommandContents.begin(), CommandContents.end()))
+				Out->SongFilename = CommandContents;
+			else
+				Out->SongFilename = Utility::SJIStoU8(CommandContents);
 		}
 
 		OnCommand(#OFFSET)

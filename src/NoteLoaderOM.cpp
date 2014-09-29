@@ -98,6 +98,12 @@ void ReadMetadata (String line, OsuLoadInfo* Info)
 	}else if (Command == "Version")
 	{
 		Info->Diff->Name = Content;
+	}else if (Command == "TitleUnicode")
+	{
+		Info->OsuSong->SongName = Content;
+	}else if (Command == "ArtistUnicode")
+	{
+		Info->OsuSong->SongAuthor = Content;
 	}
 }
 
