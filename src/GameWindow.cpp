@@ -16,6 +16,7 @@
 #include "GraphObject2D.h"
 #include "GameObject.h"
 #include "VBO.h"
+#include "TruetypeFont.h"
 #include <glm/gtc/matrix_transform.hpp>
 
 GameWindow WindowFrame;
@@ -481,11 +482,16 @@ void GameWindow::SwapBuffers()
 		SetupWindow();
 		ImageLoader::InvalidateAll();
 
-		/* This revalidates all VBOs */
+		/* This revalidates all VBOs and fonts */
 		for (std::vector<VBO*>::iterator i = VBOList.begin(); i != VBOList.end(); i++)
 		{
 			(*i)->Invalidate();
 			(*i)->Validate();
+		}
+
+		for (std::vector<TruetypeFont*>::iterator i = TTFList.begin(); i != TTFList.end(); i++)
+		{
+			(*i)->Invalidate();
 		}
 
 		IsFullscreen = !IsFullscreen;
@@ -681,6 +687,23 @@ void GameWindow::RemoveVBO(VBO *V)
 		if (*i == V)
 		{
 			VBOList.erase(i);
+			return;
+		}
+	}
+}
+
+void GameWindow::AddTTF(TruetypeFont* TTF)
+{
+	TTFList.push_back(TTF);
+}
+
+void GameWindow::RemoveTTF(TruetypeFont *TTF)
+{
+	for (std::vector<TruetypeFont*>::iterator i = TTFList.begin(); i != TTFList.end(); i++)
+	{
+		if (*i == TTF)
+		{
+			TTFList.erase(i);
 			return;
 		}
 	}

@@ -357,13 +357,20 @@ void Song::Process(VSRG::Difficulty* Which, VectorTN NotesOut, float Drift, doub
 
 void Difficulty::Destroy()
 {
-	SoundList.clear();
-	Timing.clear();
-	SpeedChanges.clear();
-	StopsTiming.clear();
-	BGMEvents.clear();
-	Measures.clear();
-	Filename.clear();
-	BMPEvents.clear();
+	// Do the swap to try and force memory release.
+	TimingData S1, S2, S3;
+	VSRG::MeasureVector MV;
+	std::vector<AutoplaySound> BGM;
+	std::vector <AutoplayBMP> BMP;
+
+	Timing.swap(S1);
+	SpeedChanges.swap(S2);
+	StopsTiming.swap(S3);
+	BGMEvents.swap(BGM);
+	Measures.swap(MV);
+	BMPEvents.swap(BMP);
+
 	BMPList.clear();
+	Filename.clear();
+	SoundList.clear();
 }

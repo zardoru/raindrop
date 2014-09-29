@@ -155,11 +155,20 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 	int ID;
 	int SongExists = DB->IsSongDirectory(New->SongDirectory, &ID);
 	bool RenewCache = false;
+	bool DoReload = false;
 
 	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{
 		std::wstring Ext = Utility::Widen(Directory(*i).GetExtension());
+
+		// Do a full reload if there's at least one file that needs updating.
 		if (VSRGValidExtension(Ext) && (!SongExists || DB->CacheNeedsRenewal(songPath.path() + "/" + *i)))
+			DoReload = true;
+	}
+
+	if (DoReload)
+	{
+		for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 		{
 			RenewCache = true;
 			Log::Printf("%ls (dir)\n", Utility::Widen((*i)).c_str());

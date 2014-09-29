@@ -1,6 +1,7 @@
 #include <fstream>
 #include "Global.h"
 #include "TruetypeFont.h"
+#include "GameWindow.h"
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
@@ -34,6 +35,24 @@ TruetypeFont::TruetypeFont(Directory Filename, float Scale)
 	{
 		SetupTexture();
 		realscale = stbtt_ScaleForPixelHeight(info, scale);
+		WindowFrame.AddTTF(this);
+	}
+}
+
+TruetypeFont::~TruetypeFont()
+{
+	WindowFrame.RemoveTTF(this);
+	delete data;
+	delete info;
+}
+
+void TruetypeFont::Invalidate()
+{
+	for (std::map <int, codepdata>::iterator i = Texes.begin();
+		i != Texes.end();
+		i++)
+	{
+		i->second.gltx = 0;
 	}
 }
 

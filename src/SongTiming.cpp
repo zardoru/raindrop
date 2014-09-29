@@ -163,7 +163,6 @@ int GetFractionKindMeasure(double frac)
 	int fracKind = 1;
 	int Row = QuantizeFractionMeasure (frac);
 
-	if (Row%2) Row+=1; // Round to ceiled pair
 	if (!Row) return 4;
 
 	FRACKIND(2,96);

@@ -9,6 +9,7 @@
 
 class VBO;
 class Application;
+class TruetypeFont;
 struct GLFWwindow;
 
 enum RendererLocats
@@ -58,6 +59,7 @@ class GameWindow
 	void AssignSize();
 	
 	std::vector<VBO*> VBOList;
+	std::vector<TruetypeFont*> TTFList;
 	std::map<String, uint32> UniformLocs;
 	std::map<String, uint32> AttribLocs;
 	Application* Parent;
@@ -77,6 +79,9 @@ public:
 	void SetVisibleCursor(bool Visible);
 	void AddVBO(VBO* V);
 	void RemoveVBO(VBO *V);
+
+	void AddTTF(TruetypeFont* TTF);
+	void RemoveTTF(TruetypeFont* TTF);
 
 	Mat4 GetMatrixProjection();
 	Mat4 GetMatrixProjectionInverse();

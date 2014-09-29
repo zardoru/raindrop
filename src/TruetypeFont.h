@@ -31,6 +31,7 @@ class TruetypeFont
 
 public:
 	TruetypeFont(Directory Filename, float Scale);
-
+	~TruetypeFont();
+	void Invalidate();
 	void Render(const char* Text, const Vec2 &Position);
 };
