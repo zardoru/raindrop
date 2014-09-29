@@ -9,6 +9,7 @@ public:
 	Image(unsigned int texture, int w, int h);
 	~Image();
 	void Bind();
+	static void ForceRebind();
 
 	std::string fname;
 	int w, h;

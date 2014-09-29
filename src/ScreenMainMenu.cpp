@@ -73,7 +73,7 @@ void ScreenMainMenu::Init()
 
 	if (!TTFO)
 	{
-		TTFO = new TruetypeFont("GameData/r.ttf");
+		TTFO = new TruetypeFont(GameState::GetInstance().GetSkinPrefix() / "font.ttf", 16);
 	}
 
 	Background.SetImage(GameState::GetInstance().GetSkinImage(Configuration::GetSkinConfigs("MainMenuBackground")));
@@ -145,7 +145,7 @@ bool ScreenMainMenu::Run (double Delta)
 	Objects->DrawTargets(Delta);
 
 	// MainMenuFont->DisplayText("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop", Vec2(0, 0));
-	TTFO->Render ("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop", Vec2(0, 0), 18);
+	TTFO->Render ("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop", Vec2(0, 0));
 	return Running;
 }
 

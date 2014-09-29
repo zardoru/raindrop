@@ -218,7 +218,7 @@ String SamplesetToString(int Sampleset)
 
 String GetSampleFilename(OsuLoadInfo *Info, SplitResult &Spl, int NoteType, int Hitsound, float Time)
 {
-	int SampleSet, SampleSetAddition, CustomSample = 0;
+	int SampleSet = 0, SampleSetAddition, CustomSample = 0;
 	String SampleFilename;
 
 	if (!Spl.size()) // Handle this properly, eventually.

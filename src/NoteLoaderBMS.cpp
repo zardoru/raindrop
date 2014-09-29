@@ -5,6 +5,7 @@
 #include "Global.h"
 #include "Song7K.h"
 #include "NoteLoader7K.h"
+#include "utf8.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -858,9 +859,19 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 	*/
 
 	String Line;
+	bool TestedU8 = false;
+	bool IsU8 = false;
+
 	while (filein)
 	{
 		std::getline(filein, Line);
+
+		if (!TestedU8)
+		{
+			if (utf8::starts_with_bom(Line.begin(), Line.end()))
+				IsU8 = true;
+			TestedU8 = true;
+		}
 
 		boost::replace_all(Line, "\r", "");
 
@@ -886,12 +897,21 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 
 			OnCommand(#TITLE)
 			{
-				Out->SongName = CommandContents;
+				if (IsU8)
+					Out->SongName = CommandContents;
+				else
+					Out->SongName = Utility::SJIStoU8(CommandContents);
+				// ltrim the string
+				Out->SongName = Out->SongName.substr(Out->SongName.find_first_not_of(" "));
 			}
 
 			OnCommand(#ARTIST)
 			{
-				Out->SongAuthor = CommandContents;
+				if (IsU8)
+					Out->SongAuthor = CommandContents;
+				else
+					Out->SongAuthor = Utility::SJIStoU8(CommandContents);
+				Out->SongAuthor = Out->SongAuthor.substr(Out->SongAuthor.find_first_not_of(" "));
 			}
 
 			OnCommand(#BPM)

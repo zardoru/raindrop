@@ -1,4 +1,6 @@
 
+#include <map>
+
 struct stbtt_fontinfo;
 class VBO;
 
@@ -8,11 +10,27 @@ class TruetypeFont
 	unsigned char* data;
 	size_t offs;
 	uint32 tex;
+	bool IsValid;
+	float scale;
+	float realscale;
 
+	struct codepdata
+	{
+		unsigned char* tex;
+		uint32 gltx;
+		int xofs;
+		int yofs;
+		int w;
+		int h;
+	};
+	
+	std::map<int, codepdata> Texes;
 	VBO *Texform;
 	void SetupTexture();
-public:
-	TruetypeFont(Directory Filename);
+	codepdata& GetTexFromCodepoint(int cp);
 
-	void Render(const char* Text, const Vec2 &Position, const float &Scale);
+public:
+	TruetypeFont(Directory Filename, float Scale);
+
+	void Render(const char* Text, const Vec2 &Position);
 };

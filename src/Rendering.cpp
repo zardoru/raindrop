@@ -183,24 +183,18 @@ void TruetypeFont::SetupTexture()
 	Texform = new VBO (VBO::Dynamic, 8);
 	Texform->Validate();
 	Texform->AssignData(QuadPositionsTX);
-
-	glGenTextures(1, &tex);
-	glBindTexture(GL_TEXTURE_2D, tex);
-
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 }
 
-void TruetypeFont::Render (const char* Text, const Vec2 &Position, const float &Scale)
+void TruetypeFont::Render (const char* Text, const Vec2 &Position)
 {
 	std::vector<int> r; 
 	int Line = 0;
-	glm::vec3 vOffs (Position.x, Position.y + Scale, 16);
-	utf8::utf8to32(Text, Text + Utility::Widen(Text).length(), std::back_inserter(r));
+	glm::vec3 vOffs (Position.x, Position.y + scale, 16);
+
+	if (!IsValid)
+		return;
+
+	utf8::utf8to32(Text, Text + strlen(Text), std::back_inserter(r));
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -224,45 +218,56 @@ void TruetypeFont::Render (const char* Text, const Vec2 &Position, const float &
 	GraphObject2D::BindTopLeftVBO();
 	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
-	size_t s = strlen(Text);
-	for (int i = 0; i < s; i++)
+	size_t s = r.size();
+	for (uint32 i = 0; i < s; i++)
 	{
-		int w, h, xofs, yofs;
-		float rscale = stbtt_ScaleForPixelHeight(info, Scale);
-		unsigned char* tx = stbtt_GetCodepointBitmap (info, 0, rscale, r[i], &w, &h, &xofs, &yofs);
-		glm::vec3 trans = vOffs + glm::vec3(xofs, yofs, 0);
+		codepdata &cp = GetTexFromCodepoint(r[i]);
+		unsigned char* tx = cp.tex;
+		glm::vec3 trans = vOffs + glm::vec3(cp.xofs, cp.yofs, 0);
 		glm::mat4 dx;
 
 		if (r[i] == 10) // utf-32 line feed
 		{
 			Line++;
 			vOffs.x = Position.x;
-			vOffs.y = Position.y + Scale * (Line+1);
+			vOffs.y = Position.y + scale * (Line+1);
 			continue;
 		}
 
-		dx = glm::translate(Mat4(), trans) * glm::scale(Mat4(), glm::vec3(w, h, 1));
+		dx = glm::translate(Mat4(), trans) * glm::scale(Mat4(), glm::vec3(cp.w, cp.h, 1));
 		
 		// do the actual draw?
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, w, h, 0, GL_ALPHA, GL_UNSIGNED_BYTE, tx);
+		if (cp.gltx == 0)
+		{
+			glGenTextures(1, &cp.gltx);
+			glBindTexture(GL_TEXTURE_2D, cp.gltx);
 
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, cp.w, cp.h, 0, GL_ALPHA, GL_UNSIGNED_BYTE, tx);
+		}else
+			glBindTexture(GL_TEXTURE_2D, cp.gltx);
 		WindowFrame.SetUniform(U_MVP,  &(dx[0][0]));
 
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-		stbtt_FreeBitmap(tx, NULL);
 
 		if (i+1 < s)
 		{
 			float aW = stbtt_GetCodepointKernAdvance(info, r[i], r[i+1]);
 			int bW;
 			stbtt_GetCodepointHMetrics(info, r[i], &bW, NULL);
-			vOffs.x += aW * rscale + bW * rscale;
+			vOffs.x += aW * realscale + bW * realscale;
 		}
 	}
 
 	WindowFrame.DisableAttribArray(A_POSITION);
 	WindowFrame.DisableAttribArray(A_UV);
+	Image::ForceRebind();
 }
 
 uint32 VBO::LastBound = 0;

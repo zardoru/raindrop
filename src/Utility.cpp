@@ -97,6 +97,20 @@ namespace Utility {
 		return String(mbs);
 	}
 
+	String SJIStoU8 (String Line)
+	{
+		wchar_t u16s[2048];
+		char mbs[2048];
+#ifdef WIN32
+		size_t len = MultiByteToWideChar(932, 0, Line.c_str(), Line.length(), u16s, 2048);
+		len = WideCharToMultiByte(CP_UTF8, 0, u16s, len, mbs, 2048, NULL, NULL);
+		mbs[len] = 0;
+		return String(mbs);
+#else // Not implemented
+		return Line;
+#endif
+	}
+
 	void CheckDir(String path)
 	{
 		struct stat st;

@@ -42,6 +42,7 @@ namespace Utility
 	bool FileExists(String Filename);
 	std::wstring Widen(String Line);
 	String Narrow(std::wstring Line);
+	String SJIStoU8(String Line);
 	void CheckDir (String Dirname);
 	int GetLMT(String Path);
 	void RemoveFilenameIllegalCharacters(String &S, bool removeSlash = false);

@@ -9,6 +9,7 @@
 #include "GraphObject2D.h"
 #include "ImageLoader.h"
 #include "BitmapFont.h"
+#include "TruetypeFont.h"
 #include "SongList.h"
 
 #include "SongDatabase.h"
@@ -73,8 +74,10 @@ void SongWheel::Initialize(float Start, float End, bool IsDotcurActive, bool IsV
 	IsInitialized = true;
 	DifficultyIndex = 0;
 
-	mFont = new BitmapFont();
-	mFont->LoadSkinFontImage("font-wheel.tga", Vec2(10, 20), Vec2(32, 32), Vec2(10,20), 32);
+	//mFont = new BitmapFont();
+	//mFont->LoadSkinFontImage("font-wheel.tga", Vec2(10, 20), Vec2(32, 32), Vec2(10,20), 32);
+
+	mTFont = new TruetypeFont(GameState::GetInstance().GetSkinPrefix() / "font.ttf", 20);
 	ReloadSongs();
 }
 
@@ -319,7 +322,7 @@ void SongWheel::DisplayItem(String Text, Vec2 Position)
 	{
 		Item->SetPosition(Position);
 		Item->Render();
-		mFont->DisplayText(Text.c_str(), Position + ItemTextOffset);
+		mTFont->Render(Text.c_str(), Position + ItemTextOffset);
 	}
 }
 
@@ -372,8 +375,8 @@ void SongWheel::Render()
 					Entry->Difficulties.size(),
 					Min, Sec);
 
-				mFont->DisplayText(infoStream, Vec2(ScreenWidth/6, 120));
-			}else mFont->DisplayText("unavailable (edit only)", InfoPosition);
+				mTFont->Render(infoStream, Vec2(ScreenWidth/6, 120));
+			}else mTFont->Render("unavailable (edit only)", InfoPosition);
 
 
 		}else if (CurrentList->GetSongEntry(CursorPos)->Mode == MODE_7K)
@@ -400,7 +403,7 @@ void SongWheel::Render()
 					Entry->Difficulties[DifficultyIndex]->Name.c_str(), Entry->Difficulties[DifficultyIndex]->Channels,
 					nps);
 
-				mFont->DisplayText(infoStream, InfoPosition);
+				mTFont->Render(infoStream, InfoPosition);
 			}
 		}
 

@@ -19,6 +19,7 @@ class BitmapFont;
 class GraphObject2D;
 class SongList;
 class SongDatabase;
+class TruetypeFont;
 
 namespace Game 
 {
@@ -34,6 +35,7 @@ private:
 
 	unsigned int CursorPos, OldCursorPos;
 
+	TruetypeFont* mTFont;
 	BitmapFont* mFont;
 	boost::mutex* mLoadMutex;
 	boost::thread* mLoadThread;

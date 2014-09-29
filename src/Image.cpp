@@ -11,6 +11,11 @@ Image::Image(unsigned int texture, int w, int h) :
 	IsValid = false;
 }
 
+  void Image::ForceRebind()
+  {
+	  LastBound = NULL;
+  }
+
   Image::~Image()
   {
   }
