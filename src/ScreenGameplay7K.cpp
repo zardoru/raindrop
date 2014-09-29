@@ -454,7 +454,9 @@ void ScreenGameplay7K::SetupGear()
 		Keys[i].SetSize( LaneWidth[i], GearHeightFinal );
 		Keys[i].Centered = true;
 
-		Keys[i].SetPosition( LanePositions[i], JudgementLinePos + (Upscroll? -1:1) * GearHeightFinal/2 );
+		float UMod = (Upscroll? -1:1);
+
+		Keys[i].SetPosition( LanePositions[i], JudgementLinePos + UMod * GearHeightFinal/2 + UMod * NoteHeight/2);
 
 		if (Upscroll)
 			Keys[i].SetRotation(180);

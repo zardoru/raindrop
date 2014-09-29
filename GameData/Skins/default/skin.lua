@@ -12,7 +12,7 @@ DefaultGameplay7KBackground = DefaultBackground
 -- Audio
 
 -- Amount of .ogg BGM loops. this will be calculated automatically in the future.
-LoopTotal = 7
+LoopTotal = 0
 
 ItemTextOffset = {
 	X = 15,
