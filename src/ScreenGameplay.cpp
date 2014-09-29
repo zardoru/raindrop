@@ -459,7 +459,8 @@ bool ScreenGameplay::Run(double TimeDelta)
 		SongTime += SongDelta;
 	}
 
-	if ( GetScreenTime() > ScreenPauseTime || !ShouldChangeScreenAtEnd ) // we're over the pause?
+	float ScreenTime = Screen::GetScreenTime();
+	if ( ScreenTime > ScreenPauseTime || !ShouldChangeScreenAtEnd ) // we're over the pause?
 	{
 		if (SongTime <= 0)
 		{

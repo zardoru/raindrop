@@ -40,7 +40,7 @@ bool Screen::RunNested(float delta)
 	if (!Next)
 		return false;
 
-	if (Next->Run(delta))
+	if (Next->Update(delta))
 		return true;
 	else // The screen's done?
 	{
