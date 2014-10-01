@@ -123,7 +123,7 @@ function HitEvent(JudgementValue, TimeOff, Lane, IsHold, IsHoldRelease)
 	if TimeOff < AccuracyHitMS then
 		DoColor = 0
 
-		if TimeOff <= 16 then
+		if TimeOff <= 6.4 then
 			DoColor = 1
 		end
 

@@ -16,7 +16,7 @@
 #include "LuaManager.h"
 #include "GraphObjectMan.h"
 
-#include "ScoreKeeper.h"
+#include "ScoreKeeper7K.h"
 #include "ScreenGameplay7K.h"
 #include "ScreenEvaluation7K.h"
 #include "SongDatabase.h"
@@ -911,6 +911,7 @@ bool ScreenGameplay7K::Run(double Delta)
 	// << "EX score: " << score_keeper->getPercentScore(PST_EX) << "\n"
 	// << "Rank score: " << score_keeper->getPercentScore(PST_RANK) << "\n"
 	<< "Beatmania score: " << score_keeper->getScore(ST_IIDX) << "\n"
+	<< "Lunatic Rave 2 score: " << score_keeper->getScore(ST_LR2) << "\n"
 	;
 
 	GFont->DisplayText(ss.str().c_str(), Vec2(20, ScreenHeight - 40));

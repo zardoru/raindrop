@@ -1,5 +1,5 @@
 #include "Global.h"
-#include "ScoreKeeper.h"
+#include "ScoreKeeper7K.h"
 
 
 void ScoreKeeper7K::update_ranks(int ms){

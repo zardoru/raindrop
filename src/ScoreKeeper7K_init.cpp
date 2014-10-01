@@ -1,5 +1,5 @@
 #include "Global.h"
-#include "ScoreKeeper.h"
+#include "ScoreKeeper7K.h"
 
 ScoreKeeper7K::ScoreKeeper7K(){
 
@@ -23,6 +23,8 @@ ScoreKeeper7K::ScoreKeeper7K(){
 	bms_combo_pts = 0;
 	bms_dance_pts = 0;
 	bms_score = 0;
+	
+	lr2_dance_pts = 0;
 
 	sc_score = 0;
 	sc_sc_score = 0;

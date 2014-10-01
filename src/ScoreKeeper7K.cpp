@@ -1,5 +1,5 @@
 #include "Global.h"
-#include "ScoreKeeper.h"
+#include "ScoreKeeper7K.h"
 
 #include <iomanip>
 
@@ -107,7 +107,9 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 // Other methods
 
 	update_ranks(ms); // rank calculation
+
 	update_bms(ms, ms <= judgement_time[SKJ_W3]);
+	update_lr2(ms, ms <= judgement_time[SKJ_W3]);
 
 	return judgment;
 
@@ -183,6 +185,8 @@ int ScoreKeeper7K::getScore(ScoreType score_type){
 			return ex_score;
 		case ST_IIDX:
 			return bms_score;
+		case ST_LR2:
+			return lr2_score;
 		case ST_COMBO:
 			return combo;
 		case ST_MAX_COMBO:

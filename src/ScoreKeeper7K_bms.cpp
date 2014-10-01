@@ -1,5 +1,5 @@
 #include "Global.h"
-#include "ScoreKeeper.h"
+#include "ScoreKeeper7K.h"
 
 void ScoreKeeper7K::update_bms(int ms, bool hit){
 
@@ -32,6 +32,18 @@ void ScoreKeeper7K::update_bms(int ms, bool hit){
 
 void ScoreKeeper7K::update_lr2(int ms, bool hit){
 
+	if(hit){
 
+		if(ms <= judgement_time[SKJ_W1]){ // make times based on judgments.
+			lr2_dance_pts += 10;
+		}else if(ms <= judgement_time[SKJ_W2]){
+			lr2_dance_pts += 5;
+		}else{
+			lr2_dance_pts += 1;
+		}
+
+		lr2_score = 20000 * lr2_dance_pts / max_notes;
+
+	}
 
 }

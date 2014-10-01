@@ -7,7 +7,7 @@
 #include "GameWindow.h"
 #include "ImageLoader.h"
 #include "Audio.h"
-#include "ScoreKeeper.h"
+#include "ScoreKeeper7K.h"
 
 #include <iostream>
 #include <iomanip>

@@ -9,7 +9,7 @@
 #include "GraphObjectMan.h"
 #include "ImageList.h"
 
-#include "ScoreKeeper.h"
+#include "ScoreKeeper7K.h"
 #include "ScreenGameplay7K.h"
 
 using namespace VSRG;
