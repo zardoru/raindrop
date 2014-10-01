@@ -1,7 +1,7 @@
 #ifndef AUDIOFILE_H_
 #define AUDIOFILE_H_
 
-#include "pa_ringbuffer.h"
+#include <pa_ringbuffer.h>
 
 class AudioDataSource 
 {

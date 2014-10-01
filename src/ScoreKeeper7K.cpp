@@ -36,12 +36,6 @@ void ScoreKeeper7K::setMaxNotes(int notes){
 
 int ScoreKeeper7K::getMaxNotes(){ return max_notes; }
 
-void ScoreKeeper7K::setEX2(int ms){ EX2 = ms; if(EX2 > EX1) EX1 = EX2 + 1; }
-void ScoreKeeper7K::setEX1(int ms){ EX1 = ms; if(EX1 < EX2) EX2 = EX1 - 1; }
-
-void ScoreKeeper7K::setDP2(int ms){ DP2 = ms; if(DP2 > DP1) DP1 = DP2 + 1; }
-void ScoreKeeper7K::setDP1(int ms){ DP1 = ms; if(DP1 < DP2) DP2 = DP1 - 1; }
-
 ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 
 	// interesting stuff goes here.

@@ -188,7 +188,4 @@ class ScoreKeeper7K {
 		long long ACC_MAX, ACC_MAX_SQ;
 		long long ACC_CUTOFF;
 
-		long long EX2, EX1;
-		long long DP2, DP1;
-
 };

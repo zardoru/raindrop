@@ -6,12 +6,6 @@ ScoreKeeper7K::ScoreKeeper7K(){
 	setAccMin(16);
 	setAccMax(100);
 
-	setEX2(20);
-	setEX1(40);
-
-	setDP2(45);
-	setDP1(90);
-
 	max_notes = 0;
 
 	score = 0;

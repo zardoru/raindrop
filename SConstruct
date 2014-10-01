@@ -16,8 +16,8 @@ if not int(DisableMP3):
 
 import sys
 
-env.Append(CPPPATH='.')
+env.Append(CPPPATH=['ext-src'])
 
-env.Program("dc", source = [Glob('src/*.cpp'), Glob('src/*.c'), Glob('src/SOIL/*.c')])
+env.Program("dc", source = [Glob('src/*.cpp'), Glob('src/*.c'), Glob('ext-src/*.c'), Glob('ext-src/*.cpp'), Glob('ext-src/SOIL/*.c')])
 
 env.Append(LIBS=['dl', 'pthread', 'sndfile', 'GL', 'GLEW', 'glfw3', 'boost_system', 'boost_thread', 'ogg', 'vorbis', 'vorbisfile', 'portaudio', 'X11', 'Xrandr', 'Xxf86vm', 'Xi']);
