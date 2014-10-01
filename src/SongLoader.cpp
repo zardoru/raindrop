@@ -170,9 +170,14 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 	{
 		for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
 		{
-			RenewCache = true;
-			Log::Printf("%ls (dir)\n", Utility::Widen((*i)).c_str());
-			LoadSong7KFromFilename(*i, songPath.path(), New);
+			std::wstring Ext = Utility::Widen(Directory(*i).GetExtension());
+
+			if (VSRGValidExtension(Ext))
+			{
+				RenewCache = true;
+				Log::Printf("%ls (dir)\n", Utility::Widen((*i)).c_str());
+				LoadSong7KFromFilename(*i, songPath.path(), New);
+			}
 		}
 	}
 

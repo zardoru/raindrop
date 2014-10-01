@@ -901,8 +901,11 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 					Out->SongName = CommandContents;
 				else
 					Out->SongName = Utility::SJIStoU8(CommandContents);
+
 				// ltrim the string
-				Out->SongName = Out->SongName.substr(Out->SongName.find_first_not_of(" "));
+				size_t np = Out->SongName.find_first_not_of(" ");
+				if (np != String::npos)
+					Out->SongName = Out->SongName.substr(np);
 			}
 
 			OnCommand(#ARTIST)
@@ -911,7 +914,11 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 					Out->SongAuthor = CommandContents;
 				else
 					Out->SongAuthor = Utility::SJIStoU8(CommandContents);
-				Out->SongAuthor = Out->SongAuthor.substr(Out->SongAuthor.find_first_not_of(" "));
+
+				size_t np = Out->SongAuthor.find_first_not_of(" ");
+
+				if (np != String::npos)
+					Out->SongAuthor = Out->SongAuthor.substr(np);
 			}
 
 			OnCommand(#BPM)
