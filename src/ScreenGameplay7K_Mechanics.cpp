@@ -16,11 +16,6 @@ using namespace VSRG;
 
 void ScreenGameplay7K::RecalculateEffects()
 {
-	float SongTime = 0;
-
-	if (Music)
-		SongTime = Music->GetPlayedTime();
-
 	if (waveEffectEnabled)
 	{
 		float cs = sin (CurrentBeat * M_PI / 4);
@@ -186,7 +181,7 @@ void ScreenGameplay7K::ReleaseLane(uint32 Lane, float Time)
 
 			if (tD < score_keeper->getJudgmentWindow(SKJ_W3)) /* Released in time */
 			{
-				HitNote(dev, Lane, m->IsHold(), true);
+				HitNote(tD, Lane, m->IsHold(), true);
 
 				HeldKey[Lane] = false;
 
@@ -243,7 +238,7 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 		}
 		else // Within judging range
 		{
-			if (tD <= score_keeper->getAccCutoff()) // within combo-keeping judging accuracy
+			if (tD <= score_keeper->getJudgmentWindow(SKJ_W3)) // within combo-keeping judging accuracy
 			{
 				m->Hit();
 				HitNote(dev, Lane, m->IsHold());
