@@ -413,7 +413,7 @@ void ScreenGameplay7K::SetupScriptConstants()
 	L->SetGlobal("Upscroll", Upscroll);
 	L->SetGlobal("Channels", Channels);
 	L->SetGlobal("JudgmentLineY", JudgmentLinePos);
-	L->SetGlobal("AccuracyHitMS", score_keeper->getAccMax());
+	L->SetGlobal("AccuracyHitMS", score_keeper->getMissCutoff());
 	L->SetGlobal("SongDuration", CurrentDiff->Duration);
 	L->SetGlobal("SongDurationBeats", BeatAtTime(CurrentDiff->BPS, CurrentDiff->Duration, CurrentDiff->Offset + TimeCompensation));
 	L->SetGlobal("WaitingTime", WaitingTime);
