@@ -4,7 +4,7 @@
     <ClCompile Include="..\src\ActorBarline.cpp">
       <Filter>Source\dotcur\gameplay</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ActorJudgement.cpp">
+    <ClCompile Include="..\src\ActorJudgment.cpp">
       <Filter>Source\dotcur\gameplay</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ActorLifebar.cpp">
@@ -207,7 +207,7 @@
     <ClInclude Include="..\src\ActorBarline.h">
       <Filter>Source\dotcur\gameplay</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\ActorJudgement.h">
+    <ClInclude Include="..\src\ActorJudgment.h">
       <Filter>Source\dotcur\gameplay</Filter>
     </ClInclude>
     <ClInclude Include="..\src\GameObject.h">

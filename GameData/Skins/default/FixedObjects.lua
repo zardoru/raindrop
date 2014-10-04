@@ -35,9 +35,9 @@ function JudgeLine.Init()
 	Obj.SetCentered(1)
 
 	if Upscroll ~= 0 then
-		Obj.SetPosition (GearStartX + GearWidth / 2, JudgementLineY)
+		Obj.SetPosition (GearStartX + GearWidth / 2, JudgmentLineY)
 	else
-		Obj.SetPosition (GearStartX + GearWidth / 2, JudgementLineY)
+		Obj.SetPosition (GearStartX + GearWidth / 2, JudgmentLineY)
 	end
 
 	Obj.SetSize(JudgeLine.Size.w, JudgeLine.Size.h)

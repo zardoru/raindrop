@@ -59,7 +59,7 @@ Vec2 ScreenGameplay::GetScreenOffset(float Alignment)
 	return Vec2(outx, outy);
 }
 
-void ScreenGameplay::StoreEvaluation(Judgement Eval)
+void ScreenGameplay::StoreEvaluation(Judgment Eval)
 {
 	if (Eval > Bad || Eval == OK)
 		Combo++;
@@ -266,7 +266,7 @@ int32 ScreenGameplay::GetMeasure()
 
 void ScreenGameplay::RunVector(std::vector<GameObject>& Vec, float TimeDelta)
 {
-	Judgement Val;
+	Judgment Val;
 
 	if (LeadInTime > 0) // No running while leadin is up.
 		return; 
@@ -279,8 +279,8 @@ void ScreenGameplay::RunVector(std::vector<GameObject>& Vec, float TimeDelta)
 		// Run the note.
 		if ((Val = i->Run(TimeDelta, SongTime, IsAutoplaying)) != None)
 		{
-			Lifebar.HitJudgement(Val);
-			aJudgement.ChangeJudgement(Val);
+			Lifebar.HitJudgment(Val);
+			aJudgment.ChangeJudgment(Val);
 			StoreEvaluation(Val);
 
 			// If it's a hold, keep running it until it's done. (Autoplay stuff.)
@@ -311,7 +311,7 @@ void ScreenGameplay::RunMeasure(float delta)
 
 	if (NotesHeld.size() > 0)
 	{
-		Judgement Val;
+		Judgment Val;
 		for (std::vector<GameObject>::iterator i = NotesHeld.begin();
 			i != NotesHeld.end();
 			i++)
@@ -320,8 +320,8 @@ void ScreenGameplay::RunMeasure(float delta)
 			if ((Val = i->Run(delta, SongTime, IsAutoplaying)) != None)
 			{
 				// Judge accordingly..
-				Lifebar.HitJudgement(Val);
-				aJudgement.ChangeJudgement(Val);
+				Lifebar.HitJudgment(Val);
+				aJudgment.ChangeJudgment(Val);
 				StoreEvaluation(Val);
 				AnimateOnly.push_back(*i); // Animate this one.
 				i = NotesHeld.erase(i);
@@ -370,7 +370,7 @@ void ScreenGameplay::HandleInput(int32 key, KeyEventType code, bool isMouseInput
 
 			} while(false);
 
-			Judgement Val;
+			Judgment Val;
 			Vec2 mpos = WindowFrame.GetRelativeMPos();
 			// For all held notes...
 			for (std::vector<GameObject>::iterator i = NotesHeld.begin();
@@ -381,8 +381,8 @@ void ScreenGameplay::HandleInput(int32 key, KeyEventType code, bool isMouseInput
 				if ((Val = i->Hit(SongTime, mpos, code != KE_Release, IsAutoplaying, key)) != None)
 				{
 					// Judge accordingly..
-					Lifebar.HitJudgement(Val);
-					aJudgement.ChangeJudgement(Val);
+					Lifebar.HitJudgment(Val);
+					aJudgment.ChangeJudgment(Val);
 					StoreEvaluation(Val);
 					i = NotesHeld.erase(i); // Delete this object. The hold is done!
 					break;
@@ -506,7 +506,7 @@ bool ScreenGameplay::Run(double TimeDelta)
 				Measure += 1;
 			}
 			Lifebar.Run(SongDelta);
-			aJudgement.Run(TimeDelta);
+			aJudgment.Run(TimeDelta);
 		}
 	}
 
@@ -567,7 +567,7 @@ void ScreenGameplay::DrawVector(std::vector<GameObject>& Vec, float TimeDelta)
 	
 bool ScreenGameplay::JudgeVector(std::vector<GameObject>& Vec, int code, int key)
 {
-	Judgement Val;
+	Judgment Val;
 	Vec2 mpos = WindowFrame.GetRelativeMPos();
 
 	for (std::vector<GameObject>::iterator i = Vec.begin(); 
@@ -578,8 +578,8 @@ bool ScreenGameplay::JudgeVector(std::vector<GameObject>& Vec, int code, int key
 			if ((Val = i->Hit(SongTime, TappingMode ? i->GetPosition() : mpos, code != KE_Release, IsAutoplaying, key)) != None)
 			{
 				// Judge accordingly.
-				Lifebar.HitJudgement(Val);
-				aJudgement.ChangeJudgement(Val);
+				Lifebar.HitJudgment(Val);
+				aJudgment.ChangeJudgment(Val);
 				StoreEvaluation(Val);
 
 				// If it's a hold, keep running it until it's done.
@@ -664,7 +664,7 @@ void ScreenGameplay::RenderObjects(float TimeDelta, bool drawPlayable)
 	Barline.Render();
 
 	if (!EditMode)
-		aJudgement.Render();
+		aJudgment.Render();
 
 	// Combo rendering.
 	std::stringstream str;

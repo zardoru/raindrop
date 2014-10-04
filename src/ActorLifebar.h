@@ -8,7 +8,7 @@ public:
 	// I can't find anything more obvious of a name.
 	ActorLifebar();
 	float Health;
-	void HitJudgement(Judgement Hit);
+	void HitJudgment(Judgment Hit);
 	void Run (double delta);
 	void UpdateHealth();
 };

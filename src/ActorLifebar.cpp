@@ -36,7 +36,7 @@ void ActorLifebar::UpdateHealth()
 	SetWidth((Health / 100) * PlayfieldHeight);
 }
 
-void ActorLifebar::HitJudgement(Judgement Hit)
+void ActorLifebar::HitJudgment(Judgment Hit)
 {
 	switch (Hit)
 	{

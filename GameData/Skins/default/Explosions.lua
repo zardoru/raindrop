@@ -13,7 +13,7 @@ function ObjectPosition(Atlas, i, Size)
 	Obj.SetImageSkin(Atlas.File)
 	Obj.SetSize(Size.w, Size.h)
 	Obj.SetCentered(1)
-	Obj.SetPosition(GetConfigF("Key"..i.."X", ChannelSpace), JudgementLineY)
+	Obj.SetPosition(GetConfigF("Key"..i.."X", ChannelSpace), JudgmentLineY)
 
 	if Upscroll ~= 0 then
 		Obj.SetRotation(180)

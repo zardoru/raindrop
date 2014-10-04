@@ -23,8 +23,9 @@ ScoreKeeper7K::ScoreKeeper7K(){
 	bms_combo_pts = 0;
 	bms_dance_pts = 0;
 	bms_score = 0;
-	
+
 	lr2_dance_pts = 0;
+	lr2_score = 0;
 
 	sc_score = 0;
 	sc_sc_score = 0;
@@ -41,14 +42,15 @@ ScoreKeeper7K::ScoreKeeper7K(){
 	lifebar_death = 1;
 	lifebar_easy = 0.78;
 
-	double JudgementValues[] = { 16, 40, 100, 180, 324 };
-	ACC_CUTOFF = 180;
+	double JudgmentValues[] = { 16, 40, 100, 250, 625 };
 
-	for (int i = 0; i < sizeof(JudgementValues)/sizeof(double); i++)
-		judgement_time[i+1] = JudgementValues[i];
+	ACC_CUTOFF = 625; // the time frame in which all judgments, including early misses, can be judged.
+
+	for (int i = 0; i < sizeof(JudgmentValues)/sizeof(double); i++)
+		judgment_time[i+1] = JudgmentValues[i];
 
 	for (int i = 0; i < 9; i++)
-		judgement_amt[i] = 0;
+		judgment_amt[i] = 0;
 
 	for (int i = -127; i < 128; ++i)
 		histogram[i+127] = 0;

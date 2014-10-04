@@ -43,7 +43,7 @@ private:
 	EHiddenMode SelectedHiddenMode;
 
 	Mat4			 PositionMatrix;
-	Mat4			 PositionMatrixJudgement;
+	Mat4			 PositionMatrixJudgment;
 	Mat4			 NoteMatrix[VSRG::MAX_CHANNELS];
 	Mat4			 HoldHeadMatrix[VSRG::MAX_CHANNELS];
 	Mat4			 HoldTailMatrix[VSRG::MAX_CHANNELS];
@@ -80,7 +80,7 @@ private:
 	float            HideClampSum;
 
 	/* Positions */
-	float  JudgementLinePos;
+	float  JudgmentLinePos;
 
 	/* Effects */
 	float waveEffect;
@@ -124,7 +124,7 @@ private:
 	void RunMeasures();
 
 	void HitNote (double TimeOff, uint32 Lane, bool IsHold, bool IsHoldRelease = false);
-	void MissNote (double TimeOff, uint32 Lane, bool IsHold, bool auto_hold_miss);
+	void MissNote (double TimeOff, uint32 Lane, bool IsHold, bool auto_hold_miss, bool early_miss);
 
 	void DrawMeasures();
 

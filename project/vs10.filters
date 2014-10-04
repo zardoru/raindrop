@@ -72,7 +72,7 @@
     <ClCompile Include="..\src\ActorBarline.cpp">
       <Filter>Source Files\ModeDotcur\Gameplay</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ActorJudgement.cpp">
+    <ClCompile Include="..\src\ActorJudgment.cpp">
       <Filter>Source Files\ModeDotcur\Gameplay</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ActorLifebar.cpp">
@@ -266,7 +266,7 @@
     <ClInclude Include="..\src\ActorLifebar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\ActorJudgement.h">
+    <ClInclude Include="..\src\ActorJudgment.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\ScreenEvaluation.h">

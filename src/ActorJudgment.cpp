@@ -1,23 +1,23 @@
 #include "GameGlobal.h"
 #include "GameState.h"
 #include "GraphObject2D.h"
-#include "ActorJudgement.h"
+#include "ActorJudgment.h"
 #include "ImageLoader.h"
 
 #define AnimDuration 0.3f
 
-ActorJudgement::ActorJudgement()
+ActorJudgment::ActorJudgment()
 {
-	Centered = Configuration::GetSkinConfigf("Centered", "Judgement" ) != 0;
-	SetRotation( Configuration::GetSkinConfigf("Rotation", "Judgement" ) );
+	Centered = Configuration::GetSkinConfigf("Centered", "Judgment" ) != 0;
+	SetRotation( Configuration::GetSkinConfigf("Rotation", "Judgment" ) );
 	Alpha = 0;
 	SetImage( GameState::GetInstance().GetSkinImage("judge-perfect.png") );
-	SetPosition(Configuration::GetSkinConfigf("X", "Judgement" ), Configuration::GetSkinConfigf("Y", "Judgement" ) );
+	SetPosition(Configuration::GetSkinConfigf("X", "Judgment" ), Configuration::GetSkinConfigf("Y", "Judgment" ) );
 	AnimTime = 0;
 	AffectedByLightning = true;
 }
 
-void ActorJudgement::ChangeJudgement(Judgement New)
+void ActorJudgment::ChangeJudgment(Judgment New)
 {
 	AnimTime = AnimDuration;
 	SetScale(1.3f);
@@ -45,7 +45,7 @@ void ActorJudgement::ChangeJudgement(Judgement New)
 	}
 }
 
-void ActorJudgement::Run(double delta)
+void ActorJudgment::Run(double delta)
 {
 	if (AnimTime > 0)
 	{

@@ -114,7 +114,7 @@ void LoadNotes(Song* Out, Difficulty * Diff, String line)
 				else
 				{
 					/* Position 0 is a special X constant that will make the note invisible 
-					as well as making it not emit any kind of judgement in-game. It's filler. */
+					as well as making it not emit any kind of judgment in-game. It's filler. */
 					Temp.SetPositionX(0);
 				}
 

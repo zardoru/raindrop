@@ -51,7 +51,7 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 
 // combo
 
-	if(ms <= judgement_time[SKJ_W3]){
+	if(ms <= judgment_time[SKJ_W3]){
 		++notes_hit;
 		++combo;
 		if(combo > max_combo)
@@ -75,7 +75,7 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 
 // lifebars
 
-	if(ms < judgement_time[SKJ_W3]){
+	if(ms < judgment_time[SKJ_W3]){
 		lifebar_groove = min(1.0, lifebar_groove + lifebar_groove_increment);
 		if(lifebar_survival > 0)
 			lifebar_survival = min(1.0, lifebar_survival + lifebar_survival_increment);
@@ -90,15 +90,15 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 		lifebar_easy = max(0.0, lifebar_groove - 0.02);
 	}
 
-// judgements
+// judgments
 
 	ScoreKeeperJudgment judgment = SKJ_NONE;
 
 	for (int i = 1; i < 6; i++)
 	{
-		if (ms <= judgement_time[i])
+		if (ms <= judgment_time[i])
 		{
-			judgement_amt[(ScoreKeeperJudgment)i]++;
+			judgment_amt[(ScoreKeeperJudgment)i]++;
 			judgment = ScoreKeeperJudgment((ScoreKeeperJudgment)i);
 			break;
 		}
@@ -108,36 +108,47 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 
 	update_ranks(ms); // rank calculation
 
-	update_bms(ms, ms <= judgement_time[SKJ_W3]);
-	update_lr2(ms, ms <= judgement_time[SKJ_W3]);
+	update_bms(ms, ms <= judgment_time[SKJ_W3]);
+	update_lr2(ms, ms <= judgment_time[SKJ_W3]);
 
 	return judgment;
 
 }
 
-int ScoreKeeper7K::getJudgmentCount(ScoreKeeperJudgment Judge)
+int ScoreKeeper7K::getJudgmentCount(ScoreKeeperJudgment judgment)
 {
-	return judgement_amt[Judge];
+	return judgment_amt[judgment];
 }
 
 
-void ScoreKeeper7K::missNote(bool auto_hold_miss){
+void ScoreKeeper7K::missNote(bool auto_hold_miss, bool early_miss){
 
-	total_sqdev += ACC_CUTOFF * ACC_CUTOFF;
-
-	judgement_amt[SKJ_W5]++; // for current 7K mode?
-	judgement_amt[SKJ_MISS]++;
+	judgment_amt[SKJ_W5]++; // for current 7K mode?
+	judgment_amt[SKJ_MISS]++;
 
 	++total_notes;
 	accuracy = accuracy_percent(total_sqdev / total_notes);
 
-	combo = 0;
+	if(!auto_hold_miss && !early_miss){
 
-	// miss tier 2
-	lifebar_groove = max(0.0, lifebar_groove - 0.06);
-	lifebar_survival = max(0.0, lifebar_survival - Clamp(100.0 / max_notes, 0.06, 0.50));
-	lifebar_exhard = max(0.0, lifebar_survival - Clamp(200.0 / max_notes, 0.20, 0.80));
-	lifebar_easy = max(0.0, lifebar_easy - 0.06);
+		total_sqdev += getMissCutoff() * getMissCutoff();
+		combo = 0;
+
+		// miss tier 2
+		lifebar_groove = max(0.0, lifebar_groove - 0.06);
+		lifebar_survival = max(0.0, lifebar_survival - Clamp(100.0 / max_notes, 0.06, 0.50));
+		lifebar_exhard = max(0.0, lifebar_survival - Clamp(200.0 / max_notes, 0.20, 0.80));
+		lifebar_easy = max(0.0, lifebar_easy - 0.06);
+
+	}else if(early_miss){
+
+		// miss tier 1
+		lifebar_groove = max(0.0, lifebar_groove - 0.02);
+		lifebar_survival = max(0.0, lifebar_survival - Clamp(50.0 / max_notes, 0.02, 0.20));
+		lifebar_exhard = max(0.0, lifebar_survival - Clamp(100.0 / max_notes, 0.10, 0.50));
+		lifebar_easy = max(0.0, lifebar_groove - 0.02);
+
+	}
 
 	// other methods
 	update_bms(1000, false);
@@ -148,12 +159,16 @@ double ScoreKeeper7K::getAccCutoff(){
 	return ACC_CUTOFF;
 }
 
+double ScoreKeeper7K::getMissCutoff(){
+	return judgment_time[SKJ_W4]; // TODO: make this configurable.
+}
+
 double ScoreKeeper7K::getAccMax(){
 	return ACC_MAX;
 }
 
 int ScoreKeeper7K::getJudgmentWindow(ScoreKeeperJudgment judgment){
-	return judgement_time[judgment];
+	return judgment_time[judgment];
 }
 
 

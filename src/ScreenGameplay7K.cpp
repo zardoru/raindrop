@@ -105,14 +105,14 @@ void ScreenGameplay7K::CalculateHiddenConstants()
 	// Hidden calc
 	if (SelectedHiddenMode)
 	{
-		float LimPos = - ((JudgementLinePos / ScreenHeight)*2 - 1); // Frac. of screen
+		float LimPos = - ((JudgmentLinePos / ScreenHeight)*2 - 1); // Frac. of screen
 		float AdjustmentSize;
 
 		if (Upscroll)
 		{
-			Center = -(( ((ScreenHeight - JudgementLinePos) / 2 + JudgementLinePos) / ScreenHeight)*2 - 1);
+			Center = -(( ((ScreenHeight - JudgmentLinePos) / 2 + JudgmentLinePos) / ScreenHeight)*2 - 1);
 
-			AdjustmentSize = -( ((ScreenHeight - JudgementLinePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
+			AdjustmentSize = -( ((ScreenHeight - JudgmentLinePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
 
 			if (SelectedHiddenMode == 2)
 			{
@@ -130,9 +130,9 @@ void ScreenGameplay7K::CalculateHiddenConstants()
 			else RealHiddenMode = SelectedHiddenMode;
 		}else
 		{
-			Center = -((JudgementLinePos / 2 / ScreenHeight)*2 - 1);
+			Center = -((JudgmentLinePos / 2 / ScreenHeight)*2 - 1);
 
-			AdjustmentSize = -( ((JudgementLinePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
+			AdjustmentSize = -( ((JudgmentLinePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
 
 			// Hidden/Sudden
 			if (SelectedHiddenMode == 2)
@@ -181,8 +181,8 @@ void ScreenGameplay7K::Init(Song* S, int DifficultyIndex, const ScreenGameplay7K
 
 void ScreenGameplay7K::RecalculateMatrix()
 {
-	PositionMatrix = glm::translate(Mat4(), glm::vec3(0, JudgementLinePos + CurrentVertical * SpeedMultiplier, 0));
-	PositionMatrixJudgement = glm::translate(Mat4(), glm::vec3(0, JudgementLinePos, 0));
+	PositionMatrix = glm::translate(Mat4(), glm::vec3(0, JudgmentLinePos + CurrentVertical * SpeedMultiplier, 0));
+	PositionMatrixJudgment = glm::translate(Mat4(), glm::vec3(0, JudgmentLinePos, 0));
 
 	for (uint8 i = 0; i < Channels; i++)
 		NoteMatrix[i] = glm::translate(Mat4(), glm::vec3(LanePositions[i], 0, 14)) * noteEffectsMatrix[i] *  glm::scale(Mat4(), glm::vec3(LaneWidth[i], NoteHeight, 1));
@@ -384,11 +384,11 @@ MusicWasLoaded:
 
 	/* Initial object distance */
 	if (!Upscroll)
-		JudgementLinePos = float(ScreenHeight) - GearHeightFinal;
+		JudgmentLinePos = float(ScreenHeight) - GearHeightFinal;
 	else
-		JudgementLinePos = GearHeightFinal;
+		JudgmentLinePos = GearHeightFinal;
 
-	JudgementLinePos += (Upscroll ? NoteHeight/2 : -NoteHeight/2);
+	JudgmentLinePos += (Upscroll ? NoteHeight/2 : -NoteHeight/2);
 	CurrentVertical = IntegrateToTime (VSpeeds, -WaitingTime);
 	CurrentBeat = IntegrateToTime(CurrentDiff->BPS, 0);
 
@@ -412,7 +412,7 @@ void ScreenGameplay7K::SetupScriptConstants()
 	LuaManager *L = Animations->GetEnv();
 	L->SetGlobal("Upscroll", Upscroll);
 	L->SetGlobal("Channels", Channels);
-	L->SetGlobal("JudgementLineY", JudgementLinePos);
+	L->SetGlobal("JudgmentLineY", JudgmentLinePos);
 	L->SetGlobal("AccuracyHitMS", score_keeper->getAccMax());
 	L->SetGlobal("SongDuration", CurrentDiff->Duration);
 	L->SetGlobal("SongDurationBeats", BeatAtTime(CurrentDiff->BPS, CurrentDiff->Duration, CurrentDiff->Offset + TimeCompensation));
@@ -456,7 +456,7 @@ void ScreenGameplay7K::SetupGear()
 
 		float UMod = (Upscroll? -1:1);
 
-		Keys[i].SetPosition( LanePositions[i], JudgementLinePos + UMod * GearHeightFinal/2 + UMod * NoteHeight/2);
+		Keys[i].SetPosition( LanePositions[i], JudgmentLinePos + UMod * GearHeightFinal/2 + UMod * NoteHeight/2);
 
 		if (Upscroll)
 			Keys[i].SetRotation(180);

@@ -140,7 +140,7 @@ bool GameObject::ShouldRemove()
 	return AnimationStatus == 3;
 }
 
-Judgement GameObject::Run(double delta, double Time, bool Autoplay)
+Judgment GameObject::Run(double delta, double Time, bool Autoplay)
 {
 	if (fadeout_time || GetPosition().x == 0) // It was hit, so stop.
 		return None;
@@ -187,7 +187,7 @@ Judgement GameObject::Run(double delta, double Time, bool Autoplay)
 	return None;
 }
 
-Judgement GameObject::Hit(double Time, Vec2 mpos, bool KeyDown,  bool Autoplay, int32 Key)
+Judgment GameObject::Hit(double Time, Vec2 mpos, bool KeyDown,  bool Autoplay, int32 Key)
 {
 	Vec2 dist = mpos - GetPosition();
 	
@@ -216,7 +216,7 @@ Judgement GameObject::Hit(double Time, Vec2 mpos, bool KeyDown,  bool Autoplay, 
 		if (SpareTime < LeniencyHitTime) // within leniency?
 		{
 			// Hit!
-			Judgement RVal;
+			Judgment RVal;
 
 			HitSnd->Play();
 
@@ -229,7 +229,7 @@ Judgement GameObject::Hit(double Time, Vec2 mpos, bool KeyDown,  bool Autoplay, 
 			}
 
 
-			// Judgement (values in seconds)
+			// Judgment (values in seconds)
 			RVal = Bad;
 
 			if (SpareTime < DotcurGreatLeniency)

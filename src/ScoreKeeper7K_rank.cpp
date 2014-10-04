@@ -4,9 +4,9 @@
 
 void ScoreKeeper7K::update_ranks(int ms){
 
-	if (ms < judgement_time[SKJ_W1]) ++rank_w1_count;
-	if (ms < judgement_time[SKJ_W2]) ++rank_w2_count;
-	if (ms < judgement_time[SKJ_W3]) ++rank_w3_count;
+	if (ms < judgment_time[SKJ_W1]) ++rank_w1_count;
+	if (ms < judgment_time[SKJ_W2]) ++rank_w2_count;
+	if (ms < judgment_time[SKJ_W3]) ++rank_w3_count;
 
 	long long rank_w1_pts = max(rank_w1_count * 2 - total_notes, 0LL);
 	long long rank_w2_pts = max(rank_w2_count * 2 - total_notes, 0LL);

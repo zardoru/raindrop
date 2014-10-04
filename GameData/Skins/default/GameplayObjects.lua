@@ -8,7 +8,7 @@ Lifebar = {
 	Speed = 10
 }
 
-Judgement = {
+Judgment = {
 
 	FadeoutTime = 2,
 	FadeoutDuration = 0.5,
@@ -109,37 +109,37 @@ function Lifebar.Run(Delta)
 	Obj.SetPosition( Lifebar.CurrentPosition.x, Lifebar.CurrentPosition.y )
 end
 
-function Judgement.Init()
-	Judgement.Object = Obj.CreateTarget()
-	Obj.SetTarget(Judgement.Object)
+function Judgment.Init()
+	Judgment.Object = Obj.CreateTarget()
+	Obj.SetTarget(Judgment.Object)
 	Obj.SetZ(24)
 	Obj.SetCentered(1)
-	Obj.SetScale (Judgement.Scale, Judgement.Scale)
-	Obj.SetPosition (Judgement.Position.x, Judgement.Position.y)
+	Obj.SetScale (Judgment.Scale, Judgment.Scale)
+	Obj.SetPosition (Judgment.Position.x, Judgment.Position.y)
 
-	Judgement.Time = Judgement.FadeoutTime
+	Judgment.Time = Judgment.FadeoutTime
 end
 
-function Judgement.Cleanup()
-	Obj.CleanTarget(Judgement.Object)
+function Judgment.Cleanup()
+	Obj.CleanTarget(Judgment.Object)
 end
 
-function Judgement.Run(Delta)
+function Judgment.Run(Delta)
 	if Active ~= 0 then
 
-		Judgement.Time = Judgement.Time + Delta
+		Judgment.Time = Judgment.Time + Delta
 
-		Obj.SetTarget(Judgement.Object)
+		Obj.SetTarget(Judgment.Object)
 		local OldJudgeScale = Obj.GetScale()
 
-		local DeltaScale = (Judgement.Scale - OldJudgeScale) * Delta * Judgement.Speed
+		local DeltaScale = (Judgment.Scale - OldJudgeScale) * Delta * Judgment.Speed
 
 		Obj.SetScale (OldJudgeScale + DeltaScale, OldJudgeScale + DeltaScale)
 
-		if Judgement.Time > Judgement.FadeoutTime then
-			local Time = Judgement.Time - Judgement.FadeoutTime
+		if Judgment.Time > Judgment.FadeoutTime then
+			local Time = Judgment.Time - Judgment.FadeoutTime
 			if Time > 0 then
-				local Ratio = Time / Judgement.FadeoutDuration
+				local Ratio = Time / Judgment.FadeoutDuration
 
 				if Ratio < 1 then
 					Obj.SetAlpha(1 - Ratio)
@@ -153,14 +153,14 @@ function Judgement.Run(Delta)
 	end
 end
 
-function Judgement.Hit(JudgementValue)
-	Obj.SetTarget(Judgement.Object)
-	Obj.SetImageSkin(Judgement.Table[JudgementValue])
+function Judgment.Hit(JudgmentValue)
+	Obj.SetTarget(Judgment.Object)
+	Obj.SetImageSkin(Judgment.Table[JudgmentValue])
 
-	if JudgementValue ~= 5 then
-		Obj.SetScale (Judgement.ScaleHit, Judgement.ScaleHit)
+	if JudgmentValue ~= 5 then
+		Obj.SetScale (Judgment.ScaleHit, Judgment.ScaleHit)
 	else
-	    Obj.SetScale (Judgement.ScaleMiss, Judgement.ScaleMiss)
+	    Obj.SetScale (Judgment.ScaleMiss, Judgment.ScaleMiss)
 	end
-	Judgement.Time = 0
+	Judgment.Time = 0
 end

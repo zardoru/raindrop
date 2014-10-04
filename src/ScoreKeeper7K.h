@@ -21,9 +21,10 @@ class ScoreKeeper7K {
 		std::string getHistogram();
 
 		ScoreKeeperJudgment hitNote(int ms);
-		void missNote(bool auto_hold_miss);
+		void missNote(bool auto_hold_miss, bool early_miss);
 
 		double getAccCutoff();
+		double getMissCutoff();
 		double getAccMax();
 
 		int getScore(ScoreType score_type);
@@ -116,9 +117,9 @@ class ScoreKeeper7K {
 		double lifebar_easy;
 		double lifebar_easy_increment;
 
-		// judgement information
-		double judgement_time[9];
-		double judgement_amt[9];
+		// judgment information
+		double judgment_time[9];
+		double judgment_amt[9];
 
 		double histogram[255]; // records from -127 to +127 ms.
 

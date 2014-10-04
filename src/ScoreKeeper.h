@@ -9,7 +9,9 @@ enum ScoreKeeperJudgment{
 	SKJ_W3 = 3, // Good
 	SKJ_W4 = 4, // Bad
 	SKJ_W5 = 5, // W5 is unused in beatmania.
+
 	SKJ_MISS = 6, // Miss / Poor
+	
 	SKJ_HOLD_OK = 10, // OK, only used with DDR-style holds
 	SKJ_HOLD_NG = 11, // NG
 
@@ -59,4 +61,3 @@ enum LifeType{
 	LT_BATTERY = 7, // DDR battery mode.
 
 };
-

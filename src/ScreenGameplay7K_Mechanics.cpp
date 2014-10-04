@@ -47,13 +47,13 @@ void ScreenGameplay7K::UpdateScriptScoreVariables()
 
 void ScreenGameplay7K::HitNote (double TimeOff, uint32 Lane, bool IsHold, bool IsHoldRelease)
 {
-	int Judgement = score_keeper->hitNote(TimeOff);
+	int Judgment = score_keeper->hitNote(TimeOff);
 
 	UpdateScriptScoreVariables();
 
 	Animations->GetEnv()->SetGlobal("Combo", score_keeper->getScore(ST_COMBO));
 	Animations->GetEnv()->CallFunction("HitEvent", 5);
-	Animations->GetEnv()->PushArgument(Judgement);
+	Animations->GetEnv()->PushArgument(Judgment);
 	Animations->GetEnv()->PushArgument(TimeOff);
 	Animations->GetEnv()->PushArgument((int)Lane + 1);
 	Animations->GetEnv()->PushArgument(IsHold);
@@ -61,9 +61,10 @@ void ScreenGameplay7K::HitNote (double TimeOff, uint32 Lane, bool IsHold, bool I
 	Animations->GetEnv()->RunFunction();
 }
 
-void ScreenGameplay7K::MissNote (double TimeOff, uint32 Lane, bool IsHold, bool auto_hold_miss)
+void ScreenGameplay7K::MissNote (double TimeOff, uint32 Lane, bool IsHold, bool auto_hold_miss, bool early_miss)
 {
-	score_keeper->missNote(auto_hold_miss);
+
+	score_keeper->missNote(auto_hold_miss, early_miss);
 
 	if (IsHold)
 		HeldKey[Lane] = false;
@@ -76,6 +77,7 @@ void ScreenGameplay7K::MissNote (double TimeOff, uint32 Lane, bool IsHold, bool 
 	Animations->GetEnv()->PushArgument((int)Lane + 1);
 	Animations->GetEnv()->PushArgument(IsHold);
 	Animations->GetEnv()->RunFunction();
+
 }
 
 void ScreenGameplay7K::RunMeasures()
@@ -133,10 +135,10 @@ void ScreenGameplay7K::RunMeasures()
 
 			// Condition A: Hold tail outside accuracy cutoff (can't be hit any longer),
 			// note wasn't hit at the head and it's a hold
-			if ((SongTime - m->GetTimeFinal()) * 1000 > score_keeper->getAccCutoff() && !m->WasNoteHit() && m->IsHold()) {
+			if ((SongTime - m->GetTimeFinal()) * 1000 > score_keeper->getMissCutoff() && !m->WasNoteHit() && m->IsHold()) {
 
 				// remove hold notes that were never hit.
-				MissNote(abs(SongTime - m->GetTimeFinal()) * 1000, k, m->IsHold(), true);
+				MissNote(abs(SongTime - m->GetTimeFinal()) * 1000, k, m->IsHold(), true, false);
 
 				if (score_keeper->getScore(ST_COMBO) > 10)
 					MissSnd->Play();
@@ -144,25 +146,29 @@ void ScreenGameplay7K::RunMeasures()
 				m->Hit();
 
 			} // Condition B: Regular note or hold head outside cutoff, wasn't hit and it's enabled.
-			else if ((SongTime - m->GetStartTime()) * 1000 > score_keeper->getAccCutoff() &&
+			else if ((SongTime - m->GetStartTime()) * 1000 > score_keeper->getMissCutoff() &&
 				(!m->WasNoteHit() && m->IsEnabled()))
 			{
-				MissNote(abs(SongTime - m->GetStartTime()) * 1000, k, m->IsHold(), false);
+
+				MissNote(abs(SongTime - m->GetStartTime()) * 1000, k, m->IsHold(), false, false);
 
 				if (score_keeper->getScore(ST_COMBO) > 10)
 					MissSnd->Play();
 
-				/* remove note from judgement
-				relevant to note that hit isn't being set here so the hold tail can be judged later.	*/
+				/* remove note from judgment
+				relevant to note that hit isn't being set here so the hold tail can be judged later. */
 				m->Disable();
+
 			} // Condition C: Hold head was hit, but hold tail was not released.
-			else if ((SongTime - m->GetTimeFinal()) * 1000 > score_keeper->getAccCutoff() &&
+			else if ((SongTime - m->GetTimeFinal()) * 1000 > score_keeper->getMissCutoff() &&
 				m->IsHold() && m->WasNoteHit() && m->IsEnabled())
 			{
-				MissNote(abs(SongTime - m->GetTimeFinal()) * 1000, k, m->IsHold(), true);
+
+				MissNote(abs(SongTime - m->GetTimeFinal()) * 1000, k, m->IsHold(), true, false);
 
 				HeldKey[k] = false;
 				m->Disable();
+
 			} // Condition D: Hold head was hit, but was released early was already handled at ReleaseLane so no need to be redundant here.
 
 		} // end for notes
@@ -181,7 +187,7 @@ void ScreenGameplay7K::ReleaseLane(uint32 Lane, float Time)
 
 			if (tD < score_keeper->getJudgmentWindow(SKJ_W3)) /* Released in time */
 			{
-				HitNote(tD, Lane, m->IsHold(), true);
+				HitNote(dev, Lane, m->IsHold(), true);
 
 				HeldKey[Lane] = false;
 
@@ -189,7 +195,8 @@ void ScreenGameplay7K::ReleaseLane(uint32 Lane, float Time)
 
 			}else /* Released off time */
 			{
-				MissNote(dev, Lane, m->IsHold(), false);
+				// early misses for hold notes always count as regular misses.
+				MissNote(dev, Lane, m->IsHold(), false, false);
 
 				if (score_keeper->getScore(ST_COMBO) > 10)
 					MissSnd->Play();
@@ -226,8 +233,10 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 		if (lastClosest[Lane] >= MsDisplayMargin)
 			lastClosest[Lane] = 0;
 
-		if (tD > score_keeper->getAccCutoff()) // Outside of judging range
+		if (tD > score_keeper->getAccCutoff()) // If the note was hit outside of judging range
 		{
+
+			// do nothing else
 			if (PlaySounds[Lane])
 			{
 				if (Keysounds[PlaySounds[Lane]])
@@ -235,13 +244,27 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 			}
 
 			continue;
+
 		}
-		else // Within judging range
+
+		else // Within judging range, including early misses
 		{
-			if (tD <= score_keeper->getJudgmentWindow(SKJ_W3)) // within combo-keeping judging accuracy
-			{
+
+			// early miss
+			if(dev < -(score_keeper->getMissCutoff())){
+
+				// treat specially for Beatmania.
+
+				MissSnd->Play();
+
+				MissNote(dev, Lane, m->IsHold(), m->IsHold(), true);
+				// missed feedback
+				// m->Disable();
+
+			}else{
+
 				m->Hit();
-				HitNote(tD, Lane, m->IsHold());
+				HitNote(dev, Lane, m->IsHold());
 
 				if (m->GetSound())
 				{
@@ -253,14 +276,10 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 					HeldKey[Lane] = true;
 				else
 					m->Disable();
+
 			}
-			else // on POOR judging range
-			{
-				MissNote(tD, Lane, m->IsHold(), m->IsHold());
-				// missed feedback
-				MissSnd->Play();
-				m->Disable();
-			}
+
+
 
 			return; // we judged a note in this lane, so we're done.
 		}

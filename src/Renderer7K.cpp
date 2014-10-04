@@ -24,7 +24,7 @@ void ScreenGameplay7K::DrawMeasures()
 	float rPos;
 	float MultAbs = abs(SpeedMultiplier);
 
-	rPos = CurrentVertical * SpeedMultiplier + JudgementLinePos;
+	rPos = CurrentVertical * SpeedMultiplier + JudgmentLinePos;
 
 	// Set the color.
 	WindowFrame.SetUniform(U_INVERT, false); // Color invert
@@ -145,12 +145,12 @@ void ScreenGameplay7K::DrawMeasures()
 			}
 
 			// Assign our matrix - encore
-			if ( (!m->IsHold() && (Vertical < JudgementLinePos && Upscroll || Vertical >= JudgementLinePos && !Upscroll))
+			if ( (!m->IsHold() && (Vertical < JudgmentLinePos && Upscroll || Vertical >= JudgmentLinePos && !Upscroll))
 				|| (m->IsHold() && (Vertical > VerticalHold && Upscroll || Vertical < VerticalHold && !Upscroll)) )
 			{
 
 				// As long as it's not judged, we'll keep it in place 
-				WindowFrame.SetUniform(U_MVP, &PositionMatrixJudgement[0][0]);
+				WindowFrame.SetUniform(U_MVP, &PositionMatrixJudgment[0][0]);
 				WindowFrame.SetUniform(U_TRANM, &(identity)[0][0]);
 			}else
 			{

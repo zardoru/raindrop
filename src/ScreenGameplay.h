@@ -6,7 +6,7 @@
 #include "SongDC.h"
 #include "Audio.h"
 #include "ActorBarline.h"
-#include "ActorJudgement.h"
+#include "ActorJudgment.h"
 #include "ActorLifebar.h"
 #include "BitmapFont.h"
 
@@ -54,7 +54,7 @@ private: // shit only screengameplay needs
 	void ProcessBarlineRatios();
 	// Run the current measure (jic func name isn't obvious enough)
 	void RunMeasure(float delta);
-	void StoreEvaluation(Judgement Eval);
+	void StoreEvaluation(Judgment Eval);
 	uint32 Combo;
 	BitmapFont MyFont;
 	BitmapFont SongInfo;
@@ -71,7 +71,7 @@ private: // shit only screengameplay needs
 
 	// Actors
 	ActorLifebar Lifebar;
-	ActorJudgement aJudgement;
+	ActorJudgment aJudgment;
 	GraphObject2D MarkerA, MarkerB, Cursor, Background;
 	EvaluationData Evaluation;
 	

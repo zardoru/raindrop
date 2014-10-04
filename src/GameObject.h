@@ -27,8 +27,8 @@ public:
 	static void GlobalInit();
 	void Initialize();
 
-	Judgement Hit(double time, Vec2 mpos, bool KeyDown, bool Autoplay, int32 Key);
-	Judgement Run(double delta, double Time, bool Autoplay);
+	Judgment Hit(double time, Vec2 mpos, bool KeyDown, bool Autoplay, int32 Key);
+	Judgment Run(double delta, double Time, bool Autoplay);
 	void Animate(float delta, float songTime);
 	void Assign(double Duration, uint32 Measure, double MeasureFraction);
 

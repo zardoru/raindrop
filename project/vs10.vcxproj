@@ -171,7 +171,7 @@
     <ClCompile Include="..\ext-src\SOIL\stb_image_aug.c" />
     <ClCompile Include="..\ext-src\sqlite3.c" />
     <ClCompile Include="..\src\ActorBarline.cpp" />
-    <ClCompile Include="..\src\ActorJudgement.cpp" />
+    <ClCompile Include="..\src\ActorJudgment.cpp" />
     <ClCompile Include="..\src\ActorLifebar.cpp" />
     <ClCompile Include="..\src\Application.cpp" />
     <ClCompile Include="..\src\Audio.cpp" />
@@ -243,7 +243,7 @@
     <ClInclude Include="..\ext-src\SOIL\stb_image_aug.h" />
     <ClInclude Include="..\ext-src\sqlite3.h" />
     <ClInclude Include="..\src\ActorBarline.h" />
-    <ClInclude Include="..\src\ActorJudgement.h" />
+    <ClInclude Include="..\src\ActorJudgment.h" />
     <ClInclude Include="..\src\ActorLifebar.h" />
     <ClInclude Include="..\src\Application.h" />
     <ClInclude Include="..\src\Audio.h" />

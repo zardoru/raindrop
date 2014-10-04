@@ -264,9 +264,9 @@ void Song::Process(VSRG::Difficulty* Which, VectorTN NotesOut, float Drift, doub
 {
 	/* 
 		We'd like to build the notes' position from 0 to infinity, 
-		however the real "zero" position would be the judgement line
+		however the real "zero" position would be the judgment line
 		in other words since "up" is negative relative to 0
-		and 0 is the judgement line
+		and 0 is the judgment line
 		position would actually be
 		judgeline - positiveposition
 		and positiveposition would just be

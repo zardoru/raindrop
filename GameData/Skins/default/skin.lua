@@ -36,7 +36,7 @@ Cursor = {
 	Size = 60
 }
 
-Judgement = {
+Judgment = {
 	Rotation = -90,
 	X = 40,
 	Y = 370,

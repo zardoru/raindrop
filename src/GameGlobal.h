@@ -30,7 +30,7 @@ float _ScreenDifference();
 
 #define ScreenDifference _ScreenDifference()
 
-enum Judgement
+enum Judgment
 {
 	None,
 	NG,

@@ -66,7 +66,7 @@ AnimatedObjects = {
 		Lifebar,
 		MissHighlight,
 		Explosions,
-		Judgement
+		Judgment
 	},
 
 	-- Internal functions for automating stuff.
@@ -119,7 +119,7 @@ function OnActivate()
 		
 end
 
-function HitEvent(JudgementValue, TimeOff, Lane, IsHold, IsHoldRelease)
+function HitEvent(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease)
 	-- When hits happen, this function is called.
 	if TimeOff < AccuracyHitMS then
 		DoColor = 0
@@ -130,7 +130,7 @@ function HitEvent(JudgementValue, TimeOff, Lane, IsHold, IsHoldRelease)
 
 		Explosions.Hit(Lane, 0, IsHold, IsHoldRelease)
 		ComboDisplay.Hit(DoColor)
-		Judgement.Hit(JudgementValue)
+		Judgment.Hit(JudgmentValue)
 	end
 
 	ScoreDisplay.Update()
@@ -142,7 +142,7 @@ function MissEvent(TimeOff, Lane, IsHold)
 		Explosions.Hit(Lane, 1, IsHold, 0)
 	end
 
-	Judgement.Hit(5)
+	Judgment.Hit(5)
 
 	ScoreDisplay.Update()
 	ComboDisplay.Miss()
