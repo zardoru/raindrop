@@ -1,6 +1,7 @@
 
 ProgressTick = { Image = "progress_tick.png" }
 Pulse = { Image = "pulse_ver.png", Height = 200 }
+MissHighlight = {}
 
 function ProgressTick.Init()
 	ProgressTick.Object = Obj.CreateTarget()
@@ -62,4 +63,50 @@ function Pulse.Run(Delta)
 	else
 		Obj.SetAlpha(0)
 	end
+end
+
+function MissHighlight.Init()
+
+	MissHighlight.Time = {}
+	MissHighlight.CurrentTime = {}
+
+	for i=0, Channels do
+		MissHighlight[i] = Obj.CreateTarget()
+		Obj.SetTarget(MissHighlight[i])
+		Obj.SetCentered(1)
+		Obj.SetImageSkin("miss_highlight.png")
+		Obj.SetPosition(GetConfigF("Key"..i.."X", ChannelSpace), ScreenHeight/2)
+		Obj.SetSize(GetConfigF("Key"..i.."Width", ChannelSpace), ScreenHeight)
+		Obj.SetAlpha(0)
+		Obj.SetZ(15)
+		
+		MissHighlight.Time[i] = 1 
+		MissHighlight.CurrentTime[i] = 1
+	end
+end
+
+function MissHighlight.Run(Delta)
+	for i=0, Channels do
+		Obj.SetTarget(MissHighlight[i])
+		MissHighlight.CurrentTime[i] = MissHighlight.CurrentTime[i] + Delta
+		
+		if MissHighlight.CurrentTime[i] < MissHighlight.Time[i] then
+			local Lerp = 1 - MissHighlight.CurrentTime[i] / MissHighlight.Time[i]
+			Obj.SetAlpha(Lerp)
+		else
+			Obj.SetAlpha(0)
+		end
+	end
+end
+
+function MissHighlight.Cleanup()
+	for i=0, Channels do
+		Obj.CleanTarget(MissHighlight[i])
+	end
+end
+
+function MissHighlight.OnMiss(Lane)
+	MissHighlight.CurrentTime[Lane] = 0
+	MissHighlight.Time[Lane] = CurrentSPB / 2
+
 end

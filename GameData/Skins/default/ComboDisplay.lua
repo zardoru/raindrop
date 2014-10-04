@@ -17,7 +17,7 @@ ComboDisplay = {
 	BumpTime = 0,
 	BumpTotalTime = 0.1, -- Time the animation runs
 	BumpFactor = 1.3,
-	HoldBumpFactor = 1.1,
+	HoldBumpFactor = 1.2,
 	ExNotifyImg = "combo_bonus.png",
 	ExNotifyTime = 0.34,
 	ExNotifyExtraBump = 0.5
@@ -169,7 +169,8 @@ function ComboDisplay.Run(Delta)
 	local HoldScale = 1
 
 	if RebootHT == 1 then
-		local Ratio = (Beat - math.floor(Beat))
+		local BT = Beat * 2
+		local Ratio = (BT - math.floor(BT))
 		HoldScale = ComboDisplay.HoldBumpFactor - Ratio * (ComboDisplay.HoldBumpFactor - 1)
 	end
 

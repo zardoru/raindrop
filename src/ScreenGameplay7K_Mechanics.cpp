@@ -241,7 +241,7 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 			if (tD <= score_keeper->getJudgmentWindow(SKJ_W3)) // within combo-keeping judging accuracy
 			{
 				m->Hit();
-				HitNote(dev, Lane, m->IsHold());
+				HitNote(tD, Lane, m->IsHold());
 
 				if (m->GetSound())
 				{
@@ -256,7 +256,7 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 			}
 			else // on POOR judging range
 			{
-				MissNote(dev, Lane, m->IsHold(), m->IsHold());
+				MissNote(tD, Lane, m->IsHold(), m->IsHold());
 				// missed feedback
 				MissSnd->Play();
 				m->Disable();

@@ -64,6 +64,7 @@ AnimatedObjects = {
 		ComboDisplay,
 		ScoreDisplay,
 		Lifebar,
+		MissHighlight,
 		Explosions,
 		Judgement
 	},
@@ -145,6 +146,7 @@ function MissEvent(TimeOff, Lane, IsHold)
 
 	ScoreDisplay.Update()
 	ComboDisplay.Miss()
+	MissHighlight.OnMiss(Lane)
 end
 
 function KeyEvent(Key, Code, IsMouseInput)

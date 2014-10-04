@@ -1,6 +1,6 @@
 HitLightning = {}
 
-HitLightning.OffTime = 0.2
+HitLightning.OffTime = {}
 
 HitLightning.Times = {}
 
@@ -8,7 +8,6 @@ HitLightning.Height = 250
 
 HitLightning.Enabled = GetConfigF("DisableHitlightning", "") ~= 0
 HitLightning.Animate = GetConfigF("DisableHitlightningAnimation", "") ~= 0
-
 
 HitLightning.Pressed = {}
 HitLightning.Position = {}
@@ -22,17 +21,19 @@ function HitLightning.Init()
 	end
 
 	for i = 1, Channels do
-		HitLightning.Times[i] = HitLightning.OffTime
+		HitLightning.Times[i] = 1
 		HitLightning.Pressed[i] = 0
 	end
 
 	for i=1, Channels do
 		HitLightning[i] = Obj.CreateTarget()
 
+		HitLightning.OffTime[i] = 1
+
 		Obj.SetTarget(HitLightning[i])
 		Obj.SetImageSkin(HitLightning.Image)
 		Obj.SetCentered(1)
-		Obj.SetBlendMode(0)
+		Obj.SetBlendMode(BlendAdd)
 
 		Obj.SetSize(GetConfigF("Key" .. i .. "Width", ChannelSpace), HitLightning.Height)
 
@@ -54,11 +55,13 @@ function HitLightning.Init()
 	end
 end
 
-function HitLightning.LanePress(Lane, IsKeyDown)
+function HitLightning.LanePress(Lane, IsKeyDown, SetRed)
 
 	if HitLightning.Enabled == 0 then
 		return
 	end
+
+	HitLightning.OffTime[Lane+1] = CurrentSPB / 4
 
 	if IsKeyDown == 0 then
 		HitLightning.Times[Lane+1] = 0
@@ -82,9 +85,9 @@ function HitLightning.Run(Delta)
 
 		if HitLightning.Pressed[i] == 0 then
 
-			if HitLightning.Times[i] <= HitLightning.OffTime and HitLightning.Animate ~= 0 then
+			if HitLightning.Times[i] <= HitLightning.OffTime[i] and HitLightning.Animate ~= 0 then
 
-				local Lerping = math.pow(HitLightning.Times[i] / HitLightning.OffTime, 2)
+				local Lerping = math.pow(HitLightning.Times[i] / HitLightning.OffTime[i], 2)
 
 				Obj.SetScale(1 - Lerping, 1 + 1.5 * Lerping)
 
