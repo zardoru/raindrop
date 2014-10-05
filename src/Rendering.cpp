@@ -7,6 +7,7 @@
 #include "Rendering.h"
 #include "VBO.h"
 #include "GraphObject2D.h"
+#include "Line.h"
 #include "Image.h"
 #include "ImageLoader.h"
 
@@ -281,6 +282,60 @@ void TruetypeFont::ReleaseTextures()
 	}
 
 	delete Texform;
+}
+
+void Line::UpdateVBO()
+{
+	if (NeedsUpdate)
+	{
+		if (!lnvbo)
+		{
+			lnvbo = new VBO(VBO::Dynamic, 4);
+		}
+
+		lnvbo->Validate();
+
+		float xx[] = {
+			x1, y1,
+			x2, y2
+		};
+
+		lnvbo->AssignData(xx);
+
+		NeedsUpdate = false;
+	}
+}
+
+void Line::Render()
+{
+	Mat4 Identity;
+	UpdateVBO();
+
+	glDisable(GL_DEPTH_TEST);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// Set the color.
+	WindowFrame.SetUniform(U_COLOR, R, G, B, A);
+	WindowFrame.SetUniform(U_INVERT, false);
+	WindowFrame.SetUniform(U_LIGHT, false);
+	WindowFrame.SetUniform(U_HIDDEN, 0);
+	WindowFrame.SetUniform(U_REPCOLOR, true);
+
+	WindowFrame.SetUniform(U_TRANSL, false);
+	WindowFrame.SetUniform(U_CENTERED, false);
+
+	WindowFrame.SetUniform(U_MVP, &(Identity[0][0]));
+
+	// Assign position attrib. pointer
+	lnvbo->Bind();
+	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_POSITION), 2, GL_FLOAT, GL_FALSE, 0, 0 );
+
+	glDrawArrays(GL_LINES, 0, 2);
+
+	WindowFrame.DisableAttribArray(A_POSITION);
+	Image::ForceRebind();
+
+	glEnable(GL_DEPTH_TEST);
 }
 
 uint32 VBO::LastBound = 0;
