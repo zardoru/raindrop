@@ -121,10 +121,10 @@ end
 
 function HitEvent(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease)
 	-- When hits happen, this function is called.
-	if TimeOff < AccuracyHitMS then
+	if math.abs(TimeOff) < AccuracyHitMS then
 		DoColor = 0
 
-		if TimeOff <= 6.4 then
+		if math.abs(TimeOff) <= 6.4 then
 			DoColor = 1
 		end
 
@@ -138,7 +138,7 @@ end
 
 function MissEvent(TimeOff, Lane, IsHold)
 	-- When misses happen, this function is called.
-	if TimeOff <= 135 then -- mishit
+	if math.abs(TimeOff) <= 135 then -- mishit
 		Explosions.Hit(Lane, 1, IsHold, 0)
 	end
 
