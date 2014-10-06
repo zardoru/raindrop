@@ -9,6 +9,7 @@
 #include "Rendering.h"
 #include "VBO.h"
 #include "GraphObject2D.h"
+#include "Line.h"
 #include "Image.h"
 #include "ImageLoader.h"
 #include "ImageList.h"
@@ -19,12 +20,30 @@ using namespace VSRG;
 
 static Mat4 identity;
 
+void ScreenGameplay7K::DrawBarlines(float rPos)
+{
+	for (std::vector<float>::iterator i = MeasureBarlines.begin();
+		i != MeasureBarlines.end();
+		i++)
+	{
+		float realV = rPos - (*i) * SpeedMultiplier + BarlineOffset;
+		if (realV > 0 && realV < ScreenWidth)
+		{
+			Barline->SetLocation (Vec2(BarlineX, realV), Vec2(BarlineX + BarlineWidth, realV));
+			Barline->Render();
+		}
+	}
+}
+
 void ScreenGameplay7K::DrawMeasures()
 {
 	float rPos;
 	float MultAbs = abs(SpeedMultiplier);
 
 	rPos = CurrentVertical * SpeedMultiplier + JudgmentLinePos;
+
+	if (BarlineEnabled)
+		DrawBarlines(rPos);
 
 	// Set the color.
 	WindowFrame.SetUniform(U_INVERT, false); // Color invert

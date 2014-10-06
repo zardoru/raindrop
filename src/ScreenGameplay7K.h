@@ -5,6 +5,7 @@
 
 class GraphObjectMan;
 class ScoreKeeper7K;
+class Line;
 
 class ScreenGameplay7K : public Screen
 {
@@ -20,10 +21,15 @@ private:
 	VSRG::Song		 *LoadedSong;
 	std::map <int, SoundSample*> Keysounds;
 	std::vector<AutoplaySound> BGMEvents;
+	std::vector<float> MeasureBarlines;
 
 	ImageList				 BMPs;
 	std::vector<AutoplayBMP> BMPEvents;
+	Line* Barline;
 
+	double BarlineOffset;
+	double BarlineX;
+	double BarlineWidth;
 	double NoteHeight;
 	double HoldHeadHeight;
 	double HoldTailHeight;
@@ -57,6 +63,7 @@ private:
 	int		         GearBindings[VSRG::MAX_CHANNELS];
 	int				 lastClosest[VSRG::MAX_CHANNELS];
 	int				 PlaySounds[VSRG::MAX_CHANNELS];
+	int				 BarlineOffsetKind;
 
 	/* Graphics */
 	Image*  NoteImage;
@@ -99,6 +106,7 @@ private:
 	bool DoPlay;
 	bool Preloaded;
 	bool PlayReactiveSounds;
+	bool BarlineEnabled;
 
 	bool             HeldKey[VSRG::MAX_CHANNELS];
 	bool			 MultiplierChanged;
@@ -126,6 +134,7 @@ private:
 	void HitNote (double TimeOff, uint32 Lane, bool IsHold, bool IsHoldRelease = false);
 	void MissNote (double TimeOff, uint32 Lane, bool IsHold, bool auto_hold_miss, bool early_miss);
 
+	void DrawBarlines(float rPos);
 	void DrawMeasures();
 
 	void JudgeLane(uint32 Lane, float Time);

@@ -12,7 +12,6 @@ class ScreenMainMenu : public Screen
 
 	GraphObjectMan * Objects;
 
-	Line *L;
 	GraphObject2D Background;
 public:
 	ScreenMainMenu(Screen *Parent);
