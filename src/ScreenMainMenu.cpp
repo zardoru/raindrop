@@ -142,10 +142,11 @@ bool ScreenMainMenu::Run (double Delta)
 	PlayBtn.Run(Delta);
 	ExitBtn.Run(Delta);
 	
+	TTFO->Render ("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop", Vec2(0, 0));
 	Objects->DrawTargets(Delta);
 
 	// MainMenuFont->DisplayText("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop", Vec2(0, 0));
-	TTFO->Render ("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop", Vec2(0, 0));
+
 	return Running;
 }
 

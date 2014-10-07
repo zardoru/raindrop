@@ -9,6 +9,7 @@
 #include "Audio.h"
 #include "ImageLoader.h"
 #include "GraphObject2D.h"
+#include "Line.h"
 #include "BitmapFont.h"
 #include "GameWindow.h"
 #include "ImageList.h"
@@ -395,6 +396,19 @@ MusicWasLoaded:
 	RecalculateMatrix();
 	MultiplierChanged = true;
 
+	BarlineEnabled = Configuration::GetSkinConfigf("BarlineEnabled");
+	BarlineOffsetKind = Configuration::GetSkinConfigf("BarlineOffset");
+	BarlineX = Configuration::GetSkinConfigf("BarlineX");
+	BarlineWidth = Configuration::GetSkinConfigf("BarlineWidth");
+
+	if (BarlineEnabled)
+	{
+		CurrentDiff->GetMeasureLines(MeasureBarlines, TimeCompensation);
+
+		int UpscrollMod = Upscroll ? -1 : 1;
+		BarlineOffset = BarlineOffsetKind == 0 ? NoteHeight * UpscrollMod / 2 : 0;
+	}
+
 	ErrorTolerance = Configuration::GetConfigf("ErrorTolerance");
 
 	if (ErrorTolerance <= 0)
@@ -462,8 +476,10 @@ void ScreenGameplay7K::SetupGear()
 			Keys[i].SetRotation(180);
 
 		Keys[i].SetZ(15);
-
 	}
+
+	if (BarlineEnabled)
+		Barline = new Line();
 }
 
 void ScreenGameplay7K::AssignMeasure(uint32 Measure)

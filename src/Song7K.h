@@ -19,7 +19,6 @@ namespace VSRG
 
 	typedef std::vector<TrackNote> VectorTN[MAX_CHANNELS];
 
-
 	struct Difficulty : public Game::Song::Difficulty
 	{
 		// This is saved to the cache file.
@@ -66,6 +65,10 @@ namespace VSRG
 			LMT = 0;
 		};
 
+
+		// The floats are in vertical units; like the notes' vertical position.
+		void GetMeasureLines(std::vector<float> &Out, float Drift);
+
 		// Destroy all information that can be loaded from cache
 		void Destroy();
 	};
@@ -87,7 +90,7 @@ namespace VSRG
 		Song();
 		~Song();
 
-		void Process(VSRG::Difficulty* Which, VectorTN NotesOut, float Drift = 0, double SpeedConstant = 0);
+		void Process(VSRG::Difficulty* Which, VectorTN NotesOut, float Drift = 0, double SpeedConstant = 0);		
 	};
 
 }

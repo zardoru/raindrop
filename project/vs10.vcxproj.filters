@@ -199,6 +199,9 @@
     <ClCompile Include="..\src\TruetypeFont.cpp">
       <Filter>Source\backend\render\objects</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Line.cpp">
+      <Filter>Source\backend\render\objects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">
@@ -386,6 +389,9 @@
     </ClInclude>
     <ClInclude Include="..\src\NoteLoader7K.h">
       <Filter>Source\vsrg\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Line.h">
+      <Filter>Source\backend\render\objects</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

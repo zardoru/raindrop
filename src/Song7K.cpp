@@ -82,6 +82,36 @@ void Song::ProcessVSpeeds(VSRG::Difficulty* Diff, double SpeedConstant)
 	}
 }
 
+double TimeFromTimingKind(const TimingData &Timing, 
+	const TimingData &StopsTiming,
+	const TimingSegment& S, 
+	VSRG::Difficulty::EBt TimingType, 
+	float Offset, 
+	float Drift)
+{
+	if (TimingType == VSRG::Difficulty::BT_Beat) // Time is in Beats
+	{
+		return TimeAtBeat(Timing, Drift + Offset, S.Time) + StopTimeAtBeat(StopsTiming, S.Time);
+	}else if (TimingType == VSRG::Difficulty::BT_MS || TimingType == VSRG::Difficulty::BT_Beatspace) // Time is in MS
+	{
+		return S.Time + Drift + Offset;
+	}
+
+	assert (0); // Never happens.
+}
+
+double BPSFromTimingKind(float Value, VSRG::Difficulty::EBt TimingType)
+{
+	if (TimingType == VSRG::Difficulty::BT_Beat || TimingType == VSRG::Difficulty::BT_MS) // Time is in Beats
+	{
+		return bps (Value);
+	}else if ( TimingType == VSRG::Difficulty::BT_Beatspace ) // Time in MS, and not using bpm, but ms per beat.
+	{
+		return bps (60000.0 / Value);
+	}
+
+	assert (0);
+}
 
 void Song::ProcessBPS(VSRG::Difficulty* Diff, double Drift)
 {
@@ -97,24 +127,10 @@ void Song::ProcessBPS(VSRG::Difficulty* Diff, double Drift)
 		Time++)
 	{
 		TimingSegment Seg;
+		
+		Seg.Time = TimeFromTimingKind(Diff->Timing, Diff->StopsTiming, *Time, Diff->BPMType, Diff->Offset, Drift);
+		Seg.Value = BPSFromTimingKind(Time->Value, Diff->BPMType);
 
-		float FTime;
-
-		if (Diff->BPMType == VSRG::Difficulty::BT_Beat) // Time is in Beats
-		{
-			FTime = bps (Time->Value);
-			Seg.Time = TimeAtBeat(Diff->Timing, Drift + Diff->Offset, Time->Time) + StopTimeAtBeat(Diff->StopsTiming, Time->Time);
-		}else if (Diff->BPMType == VSRG::Difficulty::BT_MS) // Time is in MS
-		{
-			FTime = bps (Time->Value);
-			Seg.Time = Time->Time + Drift + Diff->Offset;
-		}else if ( Diff->BPMType == VSRG::Difficulty::BT_Beatspace ) // Time in MS, and not using bpm, but ms per beat.
-		{
-			FTime = bps (60000.0 / Time->Value);
-			Seg.Time = Time->Time + Drift + Diff->Offset;
-		}
-
-		Seg.Value = FTime;
 		Diff->BPS.push_back(Seg);
 	}
 
@@ -353,7 +369,30 @@ void Song::Process(VSRG::Difficulty* Which, VectorTN NotesOut, float Drift, doub
 	PreviousDrift = Drift;
 }
 
+void Difficulty::GetMeasureLines(std::vector<float> &Out, float Drift)
+{
+	float Last = 0;
 
+	Out.reserve(Measures.size());
+
+	for (std::vector<VSRG::Measure>::iterator Msr = Measures.begin(); 
+		Msr != Measures.end();
+		Msr++)
+	{
+		float PositionOut = 0;
+
+		if (BPMType == BT_Beat)
+		{
+			PositionOut = IntegrateToTime(VerticalSpeeds, TimeAtBeat(Timing, Offset, Last) + StopTimeAtBeat(StopsTiming, Last));
+		}else
+		{
+			// PositionOut = IntegrateToTime(VerticalSpeeds, /* ???? */);
+		}
+
+		Out.push_back(PositionOut);
+		Last += Msr->MeasureLength;
+	}
+}
 
 void Difficulty::Destroy()
 {

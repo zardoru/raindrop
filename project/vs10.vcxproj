@@ -184,6 +184,7 @@
     <ClCompile Include="..\src\Convert.cpp" />
     <ClCompile Include="..\src\Directory.cpp" />
     <ClCompile Include="..\src\GameState.cpp" />
+    <ClCompile Include="..\src\Line.cpp" />
     <ClCompile Include="..\src\Logging.cpp" />
     <ClCompile Include="..\src\raindrop.cpp" />
     <ClCompile Include="..\src\GameObject.cpp" />
@@ -267,6 +268,7 @@
     <ClInclude Include="..\src\Image.h" />
     <ClInclude Include="..\src\ImageList.h" />
     <ClInclude Include="..\src\ImageLoader.h" />
+    <ClInclude Include="..\src\Line.h" />
     <ClInclude Include="..\src\Logging.h" />
     <ClInclude Include="..\src\LuaManager.h" />
     <ClInclude Include="..\src\NoteLoaderDC.h" />

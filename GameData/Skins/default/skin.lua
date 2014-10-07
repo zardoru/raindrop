@@ -75,6 +75,14 @@ GearStartX = 15
 -- Gear height.
 GearHeight = GearHeightCommon
 
+-- Barline
+BarlineEnabled = 1
+
+-- A value of 0 means from the bottom/top (depending on upscroll) of the note. A value of 1 means the middle of the note.
+BarlineOffset = 0
+BarlineX = GearStartX
+BarlineWidth = GearWidth
+
 -- Enable or disable the screen filter in 7K.
 ScreenFilter = 1
 

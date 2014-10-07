@@ -2,6 +2,7 @@
 #define SCREEN_MAINMENU_H_
 
 #include "GuiButton.h"
+#include "Line.h"
 
 class GraphObjectMan;
 
