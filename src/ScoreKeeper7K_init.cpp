@@ -42,12 +42,15 @@ ScoreKeeper7K::ScoreKeeper7K(){
 	lifebar_death = 1;
 	lifebar_easy = 0.78;
 
+	judge_window_scale = 1.00;
+	// double JudgmentValues[] = { 16, 40, 100, 250, 625 };
 	double JudgmentValues[] = { 16, 40, 100, 250, 625 };
-
-	ACC_CUTOFF = 625; // the time frame in which all judgments, including early misses, can be judged.
+	
+	miss_threshold = 250;
+	earlymiss_threshold = 1250;
 
 	for (int i = 0; i < sizeof(JudgmentValues)/sizeof(double); i++)
-		judgment_time[i+1] = JudgmentValues[i];
+		judgment_time[i+1] = JudgmentValues[i] * judge_window_scale;
 
 	for (int i = 0; i < 9; i++)
 		judgment_amt[i] = 0;

@@ -17,15 +17,16 @@ class ScoreKeeper7K {
 		void setDP1(int ms);
 
 		int getJudgmentCount(ScoreKeeperJudgment Judge);
-		int getJudgmentWindow(ScoreKeeperJudgment judgment);
 		std::string getHistogram();
 
 		ScoreKeeperJudgment hitNote(int ms);
 		void missNote(bool auto_hold_miss, bool early_miss);
 
-		double getAccCutoff();
-		double getMissCutoff();
 		double getAccMax();
+
+		int getJudgmentWindow(ScoreKeeperJudgment judgment);
+		double getMissCutoff();
+		double getEarlyMissCutoff();
 
 		int getScore(ScoreType score_type);
 		float getPercentScore(PercentScoreType score_type);
@@ -120,6 +121,11 @@ class ScoreKeeper7K {
 		// judgment information
 		double judgment_time[9];
 		double judgment_amt[9];
+		double judge_window_scale;
+
+		// miss thresholds; notes hit outside here count as misses.
+		double miss_threshold;
+		double earlymiss_threshold;
 
 		double histogram[255]; // records from -127 to +127 ms.
 
@@ -131,6 +137,5 @@ class ScoreKeeper7K {
 		// scoring parameters.
 		long long ACC_MIN, ACC_MIN_SQ;
 		long long ACC_MAX, ACC_MAX_SQ;
-		long long ACC_CUTOFF;
 
 };

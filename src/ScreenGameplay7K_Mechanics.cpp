@@ -234,7 +234,7 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 		if (lastClosest[Lane] >= MsDisplayMargin)
 			lastClosest[Lane] = 0;
 
-		if (tD > score_keeper->getAccCutoff()) // If the note was hit outside of judging range
+		if (tD > score_keeper->getEarlyMissCutoff()) // If the note was hit outside of judging range
 		{
 
 			// do nothing else

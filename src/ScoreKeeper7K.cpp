@@ -123,10 +123,11 @@ int ScoreKeeper7K::getJudgmentCount(ScoreKeeperJudgment judgment)
 
 void ScoreKeeper7K::missNote(bool auto_hold_miss, bool early_miss){
 
-	judgment_amt[SKJ_W5]++; // for current 7K mode?
 	judgment_amt[SKJ_MISS]++;
 
-	++total_notes;
+	if(!early_miss)
+		++total_notes;
+	
 	accuracy = accuracy_percent(total_sqdev / total_notes);
 
 	if(!auto_hold_miss && !early_miss){
@@ -155,12 +156,12 @@ void ScoreKeeper7K::missNote(bool auto_hold_miss, bool early_miss){
 
 }
 
-double ScoreKeeper7K::getAccCutoff(){
-	return ACC_CUTOFF;
+double ScoreKeeper7K::getEarlyMissCutoff(){
+	return earlymiss_threshold;
 }
 
 double ScoreKeeper7K::getMissCutoff(){
-	return judgment_time[SKJ_W4]; // TODO: make this configurable.
+	return miss_threshold;
 }
 
 double ScoreKeeper7K::getAccMax(){
