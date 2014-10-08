@@ -158,7 +158,15 @@ function HitEvent(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease)
 
 		Explosions.Hit(Lane, 0, IsHold, IsHoldRelease)
 		ComboDisplay.Hit(DoColor)
-		Judgment.Hit(JudgmentValue)
+
+		local EarlyOrLate
+		if TimeOff < 0 then
+			EarlyOrLate = 1
+		else	
+			EarlyOrLate = 2
+		end
+
+		Judgment.Hit(JudgmentValue, EarlyOrLate)
 	end
 
 	ScoreDisplay.Update()
@@ -170,7 +178,14 @@ function MissEvent(TimeOff, Lane, IsHold)
 		Explosions.Hit(Lane, 1, IsHold, 0)
 	end
 
-	Judgment.Hit(5)
+	local EarlyOrLate
+	if TimeOff < 0 then
+		EarlyOrLate = 1
+	else
+		EarlyOrLate = 2
+	end
+
+	Judgment.Hit(5, EarlyOrLate)
 
 	ScoreDisplay.Update()
 	ComboDisplay.Miss()

@@ -55,7 +55,7 @@ void ScreenGameplay7K::HitNote (double TimeOff, uint32 Lane, bool IsHold, bool I
 	Animations->GetEnv()->SetGlobal("Combo", score_keeper->getScore(ST_COMBO));
 	Animations->GetEnv()->CallFunction("HitEvent", 5);
 	Animations->GetEnv()->PushArgument(Judgment);
-	Animations->GetEnv()->PushArgument(abs(TimeOff));
+	Animations->GetEnv()->PushArgument(TimeOff);
 	Animations->GetEnv()->PushArgument((int)Lane + 1);
 	Animations->GetEnv()->PushArgument(IsHold);
 	Animations->GetEnv()->PushArgument(IsHoldRelease);

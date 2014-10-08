@@ -29,7 +29,9 @@ Judgment = {
 		"judge-good.png",
 		"judge-bad.png",
 		"judge-miss.png",
-	}
+	},
+
+	TimingIndicator = "hiterror.png"
 
 }
 
@@ -118,6 +120,14 @@ function Judgment.Init()
 	Obj.SetPosition (Judgment.Position.x, Judgment.Position.y)
 
 	Judgment.Time = Judgment.FadeoutTime
+
+	Judgment.IndicatorObject = Obj.CreateTarget()
+	Obj.SetTarget(Judgment.IndicatorObject)
+	Obj.SetImageSkin(Judgment.TimingIndicator)
+	Obj.SetZ(24)
+	Obj.SetCentered(1)
+	Obj.SetScale(Judgment.Scale, Judgment.Scale)
+	Obj.SetAlpha(0)
 end
 
 function Judgment.Cleanup()
@@ -126,15 +136,16 @@ end
 
 function Judgment.Run(Delta)
 	if Active ~= 0 then
-
+		local AlphaRatio
 		Judgment.Time = Judgment.Time + Delta
 
 		Obj.SetTarget(Judgment.Object)
 		local OldJudgeScale = Obj.GetScale()
 
 		local DeltaScale = (Judgment.Scale - OldJudgeScale) * Delta * Judgment.Speed
+		local FinalScale = OldJudgeScale + DeltaScale
 
-		Obj.SetScale (OldJudgeScale + DeltaScale, OldJudgeScale + DeltaScale)
+		Obj.SetScale (FinalScale, FinalScale)
 
 		if Judgment.Time > Judgment.FadeoutTime then
 			local Time = Judgment.Time - Judgment.FadeoutTime
@@ -142,25 +153,54 @@ function Judgment.Run(Delta)
 				local Ratio = Time / Judgment.FadeoutDuration
 
 				if Ratio < 1 then
-					Obj.SetAlpha(1 - Ratio)
+					AlphaRatio = 1 - Ratio
 				else
-					Obj.SetAlpha(0)
+					AlphaRatio = 0
+				end
+
+			end
+		else
+			AlphaRatio = 1
+		end
+		
+		local w, h = Obj.GetSize()
+
+		Obj.SetAlpha(AlphaRatio)
+
+		Obj.SetTarget (Judgment.IndicatorObject)
+
+		if Judgment.Value ~= 1 then -- not a "flawless"
+			Obj.SetAlpha(AlphaRatio)
+
+			local NewRatio = FinalScale / Judgment.Scale
+			Obj.SetScale(NewRatio, NewRatio)
+
+			if Judgment.EarlyOrLate == 1 then -- early
+				Obj.SetPosition (Judgment.Position.x - w/2 * FinalScale - 20, Judgment.Position.y)
+			else 
+				if Judgment.EarlyOrLate == 2 then -- late
+					Obj.SetPosition (Judgment.Position.x + w/2 * FinalScale + 20, Judgment.Position.y)
 				end
 			end
 		else
-			Obj.SetAlpha(1)
+			Obj.SetAlpha(0)
 		end
 	end
 end
 
-function Judgment.Hit(JudgmentValue)
+function Judgment.Hit(JudgmentValue, EarlyOrLate)
 	Obj.SetTarget(Judgment.Object)
 	Obj.SetImageSkin(Judgment.Table[JudgmentValue])
 
+	Judgment.Value = JudgmentValue
 	if JudgmentValue ~= 5 then
 		Obj.SetScale (Judgment.ScaleHit, Judgment.ScaleHit)
 	else
 	    Obj.SetScale (Judgment.ScaleMiss, Judgment.ScaleMiss)
 	end
+
 	Judgment.Time = 0
+
+	Obj.SetTarget(Judgment.IndicatorObject)
+	Judgment.EarlyOrLate = EarlyOrLate
 end
