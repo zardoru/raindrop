@@ -107,6 +107,9 @@ end
 
 function MissHighlight.OnMiss(Lane)
 	MissHighlight.CurrentTime[Lane] = 0
-	MissHighlight.Time[Lane] = CurrentSPB / 2
+
+	if CurrentSPB ~= 0 then
+		MissHighlight.Time[Lane] = CurrentSPB / 2
+	end
 
 end
