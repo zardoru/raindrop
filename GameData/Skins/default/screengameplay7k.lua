@@ -132,7 +132,7 @@ function OnActivate()
 	if Auto ~= 0 then
 		AutoBN = Obj.CreateTarget()
 		
-		BnMoveFunction = getMoveFunction(GearStartX + GearWidth/2, -60, GearStartX + GearWidth/2, 110)
+		BnMoveFunction = getMoveFunction(GearStartX + GearWidth/2, -60, GearStartX + GearWidth/2, 100)
 			
 		Obj.SetTarget(AutoBN)
 		Obj.SetImageSkin("auto.png")
@@ -142,7 +142,7 @@ function OnActivate()
 
 		w, h = Obj.GetSize()
 		factor = GearWidth / w * 3/4
-		Obj.SetScale(factor, factor)
+		Obj.SetSize(w * factor, h * factor)
 		Obj.SetZ(28)
 	end
 end
@@ -202,6 +202,14 @@ function Update(Delta)
 			Obj.SetAlpha (a + Delta)
 		else
 			Obj.SetAlpha(1)
+		end
+
+		if AutoBN then
+			local BeatRate = Beat / 2
+			local Scale = math.sin( math.pi * 2 * BeatRate  )
+			Scale = Scale * Scale * 0.25 + 0.75
+			Obj.SetTarget(AutoBN)
+			Obj.SetScale(Scale, Scale)
 		end
 	end
 	
