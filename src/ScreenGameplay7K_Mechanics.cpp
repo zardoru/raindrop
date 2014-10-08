@@ -178,6 +178,8 @@ void ScreenGameplay7K::RunMeasures()
 
 void ScreenGameplay7K::ReleaseLane(uint32 Lane, float Time)
 {
+	GearKeyEvent(Lane, false);
+
 	for (std::vector<TrackNote>::iterator m = NotesByChannel[Lane].begin(); m != NotesByChannel[Lane].end(); m++)
 	{
 		if (m->IsHold() && m->WasNoteHit() && m->IsEnabled()) /* We hit the hold's head and we've not released it early already */
@@ -218,6 +220,8 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 
 	if ( (!Music && !CurrentDiff->IsVirtual) || !Active)
 		return;
+
+	GearKeyEvent(Lane, true);
 
 	lastClosest[Lane] = MsDisplayMargin;
 
@@ -279,8 +283,6 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 					m->Disable();
 
 			}
-
-
 
 			return; // we judged a note in this lane, so we're done.
 		}

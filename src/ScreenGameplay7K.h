@@ -137,6 +137,7 @@ private:
 	void DrawBarlines(float rPos);
 	void DrawMeasures();
 
+	void GearKeyEvent(uint32 Lane, bool KeyDown);
 	void JudgeLane(uint32 Lane, float Time);
 	void ReleaseLane(uint32 Lane, float Time);
 	void TranslateKey(KeyType K, bool KeyDown);

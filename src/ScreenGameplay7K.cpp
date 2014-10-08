@@ -632,6 +632,19 @@ void ScreenGameplay7K::MainThreadInitialization()
 	Running = true;
 }
 
+void ScreenGameplay7K::GearKeyEvent(uint32 Lane, bool KeyDown)
+{
+	Animations->GetEnv()->CallFunction("GearKeyEvent", 2);
+	Animations->GetEnv()->PushArgument((int)Lane);
+	Animations->GetEnv()->PushArgument(KeyDown);
+	Animations->GetEnv()->RunFunction();
+
+	if (KeyDown)
+		Keys[Lane].SetImage( GearLaneImageDown[Lane], false );
+	else
+		Keys[Lane].SetImage( GearLaneImage[Lane], false );
+}
+
 void ScreenGameplay7K::TranslateKey(KeyType K, bool KeyDown)
 {
 	int Index = K - KT_Key1; /* Bound key */
@@ -643,21 +656,10 @@ void ScreenGameplay7K::TranslateKey(KeyType K, bool KeyDown)
 	if (GearIndex >= MAX_CHANNELS || GearIndex < 0)
 		return;
 
-	Animations->GetEnv()->CallFunction("GearKeyEvent", 2);
-	Animations->GetEnv()->PushArgument(GearIndex);
-	Animations->GetEnv()->PushArgument(KeyDown);
-	Animations->GetEnv()->RunFunction();
-
 	if (KeyDown)
-	{
 		JudgeLane(GearIndex, SongTime);
-		Keys[GearIndex].SetImage( GearLaneImageDown[GearIndex], false );
-	}
 	else
-	{
 		ReleaseLane(GearIndex, SongTime);
-		Keys[GearIndex].SetImage( GearLaneImage[GearIndex], false );
-	}
 }
 
 void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
