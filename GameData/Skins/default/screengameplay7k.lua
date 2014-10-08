@@ -47,7 +47,8 @@ Preload = {
 	"judge-excellent.png",
 	"judge-good.png",
 	"judge-bad.png",
-	"judge-miss.png"
+	"judge-miss.png",
+	"auto.png"
 }
 
 
@@ -116,10 +117,6 @@ function Cleanup()
 	if AutoBN then
 		Obj.CleanTarget (AutoBN)
 	end
-
-	if AutoST then
-		Obj.CleanTarget (AutoST)
-	end
 end
 
 function getMoveFunction(sX, sY, eX, eY)
@@ -134,21 +131,18 @@ function OnActivate()
 	print (Auto)
 	if Auto ~= 0 then
 		AutoBN = Obj.CreateTarget()
-		AutoST = Obj.CreateTarget()
 		
-		BnMoveFunction = getMoveFunction(GearStartX, -60, GearStartX, 0)
-		StMoveFunction = getMoveFunction(GearStartX + 260, -60, GearStartX + 260, 4)
+		BnMoveFunction = getMoveFunction(GearStartX + GearWidth/2, -60, GearStartX + GearWidth/2, 110)
 			
 		Obj.SetTarget(AutoBN)
 		Obj.SetImageSkin("auto.png")
-		Obj.AddAnimation( "BnMoveFunction", 0.5, 0, EaseNone )
-		Obj.SetSize(GearWidth, 60)
-		Obj.SetZ(28)
+		Obj.SetCentered(1)
 
-		Obj.SetTarget(AutoST)
-		Obj.SetImageSkin("star.png")
-		Obj.SetSize(50, 50)
-		Obj.AddAnimation( "StMoveFunction", 0.5, 0, EaseNone )
+		Obj.AddAnimation( "BnMoveFunction", 0.75, 0, EaseOut )
+
+		w, h = Obj.GetSize()
+		factor = GearWidth / w * 3/4
+		Obj.SetScale(factor, factor)
 		Obj.SetZ(28)
 	end
 end
