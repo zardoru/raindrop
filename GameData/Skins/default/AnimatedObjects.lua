@@ -40,6 +40,7 @@ function Pulse.Init()
 
 	Obj.SetTarget(Pulse.Object)
 	Obj.SetImageSkin(Pulse.Image)
+	Obj.SetBlendMode(BlendAdd)
 
 	if Upscroll ~= 0 then
 		Obj.SetRotation(180)
@@ -59,7 +60,7 @@ end
 
 function Pulse.Run(Delta)
 	if Active ~= 0 then
-		Obj.SetAlpha(0.5*(1- (Beat - math.floor(Beat))))
+		Obj.SetAlpha(1 - (Beat - math.floor(Beat)))
 	else
 		Obj.SetAlpha(0)
 	end
