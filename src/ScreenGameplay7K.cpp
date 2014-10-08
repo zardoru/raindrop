@@ -427,11 +427,11 @@ void ScreenGameplay7K::SetupScriptConstants()
 	L->SetGlobal("Upscroll", Upscroll);
 	L->SetGlobal("Channels", Channels);
 	L->SetGlobal("JudgmentLineY", JudgmentLinePos);
+	L->SetGlobal("Auto", Auto);
 	L->SetGlobal("AccuracyHitMS", score_keeper->getMissCutoff());
 	L->SetGlobal("SongDuration", CurrentDiff->Duration);
 	L->SetGlobal("SongDurationBeats", BeatAtTime(CurrentDiff->BPS, CurrentDiff->Duration, CurrentDiff->Offset + TimeCompensation));
 	L->SetGlobal("WaitingTime", WaitingTime);
-	L->SetGlobal("Auto", Auto);
 	L->SetGlobal("Beat", CurrentBeat);
 	L->SetGlobal("Lifebar", score_keeper->getLifebarAmount(LT_GROOVE));
 
@@ -703,7 +703,10 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 			break;
 		case KT_GoToEditMode:
 			if (!Active)
+			{
 				Auto = !Auto;
+				Animations->GetEnv()->SetGlobal("Auto", Auto);
+			}
 			break;
 		}
 

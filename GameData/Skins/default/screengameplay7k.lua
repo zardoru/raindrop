@@ -113,10 +113,44 @@ function Cleanup()
 
 	AnimatedObjects.Cleanup()
 
+	if AutoBN then
+		Obj.CleanTarget (AutoBN)
+	end
+
+	if AutoST then
+		Obj.CleanTarget (AutoST)
+	end
 end
 
+function getMoveFunction(sX, sY, eX, eY)
+	return function(frac)
+		Obj.SetPosition(sX + (eX - sX)*frac, sY + (eY - sY)*frac)
+		return 1
+	end
+end
+
+-- When 'enter' is pressed and the game starts, this function is called.
 function OnActivate()
+	print (Auto)
+	if Auto ~= 0 then
+		AutoBN = Obj.CreateTarget()
+		AutoST = Obj.CreateTarget()
 		
+		BnMoveFunction = getMoveFunction(GearStartX, -60, GearStartX, 0)
+		StMoveFunction = getMoveFunction(GearStartX + 260, -60, GearStartX + 260, 4)
+			
+		Obj.SetTarget(AutoBN)
+		Obj.SetImageSkin("auto.png")
+		Obj.AddAnimation( "BnMoveFunction", 0.5, 0, EaseNone )
+		Obj.SetSize(GearWidth, 60)
+		Obj.SetZ(28)
+
+		Obj.SetTarget(AutoST)
+		Obj.SetImageSkin("star.png")
+		Obj.SetSize(50, 50)
+		Obj.AddAnimation( "StMoveFunction", 0.5, 0, EaseNone )
+		Obj.SetZ(28)
+	end
 end
 
 function HitEvent(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease)
