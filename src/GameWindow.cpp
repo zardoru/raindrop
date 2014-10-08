@@ -351,6 +351,7 @@ void GameWindow::SetupWindow()
 	glEnable(GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_CULL_FACE);
+	glEnable(GL_LINE_SMOOTH);
 	// glCullFace(GL_BACK);
 	glFrontFace(GL_CW);
 	// glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
