@@ -167,6 +167,13 @@ void GraphObject2D::Render()
 
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
+	if (Lighten)
+	{
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha * LightenFactor);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	}
+
 	WindowFrame.DisableAttribArray(A_POSITION);
 	WindowFrame.DisableAttribArray(A_UV);
 }

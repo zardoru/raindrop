@@ -60,7 +60,11 @@ public:
 	float Alpha;
 	float Red, Blue, Green;
 
+	// Only valid if lighten is enabled.
+	float LightenFactor; 
+
 	bool Centered; // 0 for topleft, 1 for center
+	bool Lighten;
 
 	bool ColorInvert;
 	bool AffectedByLightning;

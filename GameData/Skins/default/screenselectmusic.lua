@@ -4,7 +4,7 @@ CurrentTX = ScreenWidth
 
 -- List transformation
 function TransformList(Y)
-  return ((Y*Y - 768*Y) / (-1055)) + CurrentTX
+  return ((Y*Y - 768*Y) / (1055)) + CurrentTX
 end
 
 function InBanner(frac)

@@ -236,6 +236,22 @@ namespace LuaAnimFuncs
 		return 0;
 	}
 
+	int SetLighten(lua_State *L)
+	{
+		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		int Lighten = luaL_checkinteger(L, 1);
+		Target->Lighten = (Lighten != 0);
+		return 0;
+	}
+
+	int SetLightenFactor(lua_State *L)
+	{
+		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		float LightenFactor = luaL_checknumber(L, 1);
+		Target->LightenFactor = LightenFactor;
+		return 0;
+	}
+
 	/*
 
 	int GetGameConfigF(lua_State *L)
@@ -316,6 +332,8 @@ namespace LuaAnimFuncs
 		{ "GetSkinDirectory", GetSkinDirectory },
 		{ "AddAnimation", AddLuaAnimation },
 		{ "ClearAnimations", LuaStopAnimationsForTarget },
+		{ "SetLighten", SetLighten },
+		{ "SetLightenFactor", SetLightenFactor },
 		{ NULL, NULL }
 	};
 }

@@ -15,6 +15,8 @@ GraphObject2D::GraphObject2D(bool ShouldInitTexture)
 	mPosition = Vec2(0, 0);
 	SetScale(1);
 	mRotation = 0;
+	Lighten = false;
+	LightenFactor = 1.0f;
 
 	BlendingMode = MODE_ALPHA;
 

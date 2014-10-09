@@ -15,7 +15,7 @@ function Filter.Init()
 	Obj.SetImageSkin(Filter.Image)
 	Obj.SetPosition(GearStartX, 0)
 	Obj.SetSize(GearWidth, ScreenHeight)
-	Obj.SetAlpha(0.7)
+	Obj.SetAlpha(1)
 	Obj.SetZ(1)
 end
 
