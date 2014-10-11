@@ -26,6 +26,9 @@ void ScoreKeeper7K::setMaxNotes(int notes){
 	if(notes < 10) bms_max_combo_pts = notes * (notes + 1) / 2;
 	else bms_max_combo_pts = 55 + (notes - 10) * 10;
 
+	if(notes < 25) exp_max_combo_pts = notes * (notes + 1) * 2;
+	else exp_max_combo_pts = 1300 + (notes - 25) * 100;
+
 	// recalculate groove lifebar increments.
 	lifebar_easy_increment = Clamp(5.0 / max_notes, 0.002, 0.8);
 	lifebar_groove_increment = Clamp(3.0 / max_notes, 0.001, 0.8);
@@ -61,34 +64,13 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 	}
 
 
-// Numerical score / money score
-
-	sc_score += Clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.0) * 2;
-	sc_sc_score += sc_score * Clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.0);
-
-	score = double(SCORE_MAX * sc_sc_score) / (max_notes * (max_notes + 1));
 
 // accuracy score
 
 	total_sqdev += ms * ms;
 	accuracy = accuracy_percent(total_sqdev / total_notes);
 
-// lifebars
 
-	if(ms < judgment_time[SKJ_W3]){
-		lifebar_groove = min(1.0, lifebar_groove + lifebar_groove_increment);
-		if(lifebar_survival > 0)
-			lifebar_survival = min(1.0, lifebar_survival + lifebar_survival_increment);
-		if(lifebar_exhard > 0)
-			lifebar_exhard = min(1.0, lifebar_exhard + lifebar_exhard_increment);
-		lifebar_easy = min(1.0, lifebar_easy + lifebar_easy_increment);
-	}else{
-		// miss tier 1
-		lifebar_groove = max(0.0, lifebar_groove - 0.02);
-		lifebar_survival = max(0.0, lifebar_survival - Clamp(50.0 / max_notes, 0.02, 0.20));
-		lifebar_exhard = max(0.0, lifebar_survival - Clamp(100.0 / max_notes, 0.10, 0.50));
-		lifebar_easy = max(0.0, lifebar_groove - 0.02);
-	}
 
 // judgments
 
@@ -104,12 +86,49 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 		}
 	}
 
+
+
+
+// SC, ACC^2 score
+
+	sc_score += Clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.0) * 2;
+	sc_sc_score += sc_score * Clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.0);
+
+	score = double(SCORE_MAX * sc_sc_score) / (max_notes * (max_notes + 1));
+
+
+
+// lifebars
+
+	if(ms < judgment_time[SKJ_W3]){
+
+		lifebar_groove = min(1.0, lifebar_groove + lifebar_groove_increment);
+		if(lifebar_survival > 0)
+			lifebar_survival = min(1.0, lifebar_survival + lifebar_survival_increment);
+		if(lifebar_exhard > 0)
+			lifebar_exhard = min(1.0, lifebar_exhard + lifebar_exhard_increment);
+		lifebar_easy = min(1.0, lifebar_easy + lifebar_easy_increment);
+
+	}else{
+
+		// miss tier 1
+		lifebar_groove = max(0.0, lifebar_groove - 0.02);
+		lifebar_survival = max(0.0, lifebar_survival - Clamp(50.0 / max_notes, 0.02, 0.20));
+		lifebar_exhard = max(0.0, lifebar_survival - Clamp(100.0 / max_notes, 0.10, 0.50));
+		lifebar_easy = max(0.0, lifebar_groove - 0.02);
+
+	}
+
+
+
 // Other methods
 
 	update_ranks(ms); // rank calculation
 
-	update_bms(ms, ms <= judgment_time[SKJ_W3]);
-	update_lr2(ms, ms <= judgment_time[SKJ_W3]);
+	update_bms(ms, ms <= judgment_time[SKJ_W3]); // Beatmania scoring
+	update_lr2(ms, ms <= judgment_time[SKJ_W3]); // Lunatic Rave 2 scoring
+
+	update_exp2(ms);
 
 	return judgment;
 
@@ -127,7 +146,7 @@ void ScoreKeeper7K::missNote(bool auto_hold_miss, bool early_miss){
 
 	if(!early_miss)
 		++total_notes;
-	
+
 	accuracy = accuracy_percent(total_sqdev / total_notes);
 
 	if(!auto_hold_miss && !early_miss){
@@ -153,6 +172,7 @@ void ScoreKeeper7K::missNote(bool auto_hold_miss, bool early_miss){
 
 	// other methods
 	update_bms(1000, false);
+	update_exp2(1000);
 
 }
 
@@ -203,6 +223,8 @@ int ScoreKeeper7K::getScore(ScoreType score_type){
 			return bms_score;
 		case ST_LR2:
 			return lr2_score;
+		case ST_EXP:
+			return exp_score;
 		case ST_COMBO:
 			return combo;
 		case ST_MAX_COMBO:
@@ -233,7 +255,9 @@ float ScoreKeeper7K::getPercentScore(PercentScoreType percent_score_type){
 }
 
 int ScoreKeeper7K::getLifebarUnits(LifeType lifebar_unit_type){
-		return 0;
+
+	return 0;
+
 }
 
 float ScoreKeeper7K::getLifebarAmount(LifeType lifebar_amount_type){

@@ -11,7 +11,7 @@ enum ScoreKeeperJudgment{
 	SKJ_W5 = 5, // W5 is unused in beatmania.
 
 	SKJ_MISS = 6, // Miss / Poor
-	
+
 	SKJ_HOLD_OK = 10, // OK, only used with DDR-style holds
 	SKJ_HOLD_NG = 11, // NG
 
@@ -29,6 +29,8 @@ enum ScoreType{
 
 	ST_OSU = 21, // osu!mania scoring
 	ST_JB2 = 22, // jubeat^2 scoring
+
+	ST_EXP = 30, // experimental scoring.
 
 	ST_COMBO = 100, // current combo
 	ST_MAX_COMBO = 101, // max combo
