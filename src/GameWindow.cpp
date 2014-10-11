@@ -366,7 +366,7 @@ void GameWindow::SetupWindow()
 
 	
 	projection = glm::ortho<float>(0.0, matrixSize.x, matrixSize.y, 0.0, -32.0, 0.0);
-	projectionInverse = projection._inverse();
+	projectionInverse = glm::inverse(projection);
 
 	SetupShaders();
 
