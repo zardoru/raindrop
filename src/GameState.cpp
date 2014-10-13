@@ -1,4 +1,5 @@
 #include <stdarg.h>
+#include <stdio.h>
 #include <fstream>
 
 #include "GameGlobal.h"
@@ -66,4 +67,11 @@ SongDatabase* GameState::GetSongDatabase()
 Image* GameState::GetSkinImage(Directory Path)
 {
 	return ImageLoader::Load(GetSkinPrefix() / Path);
+}
+
+bool GameState::SkinSupportsChannelCount(int Count)
+{
+	char nstr[256];
+	sprintf(nstr, "Channels%d", Count);
+	return Configuration::ListExists(nstr);
 }

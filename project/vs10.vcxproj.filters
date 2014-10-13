@@ -205,6 +205,9 @@
     <ClCompile Include="..\src\ScoreKeeper7K_experimental.cpp">
       <Filter>Source\vsrg\gameplay</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\ScreenGameplay7K_Setup.cpp">
+      <Filter>Source\vsrg\gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">

@@ -118,6 +118,7 @@ private:
 	bool Preloaded;
 	bool PlayReactiveSounds;
 	bool BarlineEnabled;
+	bool SongFinished;
 
 	bool             HeldKey[VSRG::MAX_CHANNELS];
 	bool			 MultiplierChanged;
@@ -137,6 +138,16 @@ private:
 	void UpdateScriptScoreVariables();
 	void CalculateHiddenConstants();
 
+	// Done in loading thread
+	bool LoadChartData();
+	bool LoadSongAudio();
+	bool LoadBMPs();
+	bool ProcessSong();
+
+	void SetupAfterLoadingVariables();
+
+	// Done in main thread, after the loading thread
+	void SetupBackground();
 
 	void RecalculateMatrix();
 	void RecalculateEffects();

@@ -14,6 +14,15 @@
 
 using namespace VSRG;
 
+void ScreenGameplay7K::RecalculateMatrix()
+{
+	PositionMatrix = glm::translate(Mat4(), glm::vec3(0, JudgmentLinePos + CurrentVertical * SpeedMultiplier, 0));
+	PositionMatrixJudgment = glm::translate(Mat4(), glm::vec3(0, JudgmentLinePos, 0));
+
+	for (uint8 i = 0; i < Channels; i++)
+		NoteMatrix[i] = glm::translate(Mat4(), glm::vec3(LanePositions[i], 0, 14)) * noteEffectsMatrix[i] *  glm::scale(Mat4(), glm::vec3(LaneWidth[i], NoteHeight, 1));
+}
+
 void ScreenGameplay7K::RecalculateEffects()
 {
 
