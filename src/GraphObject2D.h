@@ -68,7 +68,8 @@ public:
 
 	bool ColorInvert;
 	bool AffectedByLightning;
-	
+	bool BlackToTransparent; // If enabled, transforms black pixels into transparent pixels.
+
 	void SetImage(Image* image, bool ChangeSize = true);
 	Image* GetImage();
 

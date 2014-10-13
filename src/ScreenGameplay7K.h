@@ -14,17 +14,26 @@ private:
 	GraphObject2D Keys[VSRG::MAX_CHANNELS];
 	GraphObject2D Background;
 
-	VSRG::Difficulty *CurrentDiff;
-	VSRG::VectorTN   NotesByChannel;
+	// BGA stuff.
+	GraphObject2D LayerMiss;
+	GraphObject2D Layer1;
+	GraphObject2D Layer2;
+
 	TimingData       VSpeeds;
-	VSRG::Song       *MySong;
-	VSRG::Song		 *LoadedSong;
+	VSRG::VectorTN   NotesByChannel;
 	std::map <int, SoundSample*> Keysounds;
 	std::vector<AutoplaySound> BGMEvents;
 	std::vector<float> MeasureBarlines;
 
+	VSRG::Difficulty *CurrentDiff;
+	VSRG::Song       *MySong;
+	VSRG::Song		 *LoadedSong;
+
 	ImageList				 BMPs;
 	std::vector<AutoplayBMP> BMPEvents;
+	std::vector<AutoplayBMP> BMPEventsMiss;
+	std::vector<AutoplayBMP> BMPEventsLayer;
+	std::vector<AutoplayBMP> BMPEventsLayer2;
 	Line* Barline;
 
 	double BarlineOffset;
@@ -37,11 +46,14 @@ private:
 	double LaneWidth[VSRG::MAX_CHANNELS];
 	double GearHeightFinal;
 	double SongTime, SongTimeReal;
+	double SongOldTime;
 	double CurrentVertical;
 	double WaitingTime;
 	double ErrorTolerance;
 	double TimeCompensation;
 	double GameTime;
+	double MissTime;
+
 
 	/* User Variables */
 	float       SpeedMultiplierUser;
@@ -54,7 +66,6 @@ private:
 	Mat4			 HoldHeadMatrix[VSRG::MAX_CHANNELS];
 	Mat4			 HoldTailMatrix[VSRG::MAX_CHANNELS];
 
-	float            SongOldTime;
 	float			 SpeedMultiplier;
 
 	uint32	         Channels;
@@ -142,6 +153,10 @@ private:
 	void ReleaseLane(uint32 Lane, float Time);
 	void TranslateKey(KeyType K, bool KeyDown);
 	void AssignMeasure(uint32 Measure);
+	void RunAutoEvents();
+	void CheckShouldEndScreen();
+	void UpdateSongTime(float Delta);
+	void Render();
 public:
 
 	struct Parameters {

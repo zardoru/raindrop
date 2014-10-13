@@ -63,7 +63,7 @@ ScreenGameplay7K::ScreenGameplay7K()
 		GFont->LoadSkinFontImage("font.tga", Vec2(6, 15), Vec2(8, 16), Vec2(6, 15), 0);
 	}
 
-
+	MissTime = 0;
 	LoadedSong = NULL;
 	Active = false;
 }
@@ -358,14 +358,26 @@ MusicWasLoaded:
 
 	BGMEvents = CurrentDiff->BGMEvents;
 
-	Log::Printf("Loading BMPs...\n");
-
-	for (std::map<int, String>::iterator i = CurrentDiff->BMPList.begin(); i != CurrentDiff->BMPList.end(); i++)
+	if (Configuration::GetConfigf("DisableBMP") == 0)
 	{
-		BMPs.AddToListIndex(i->second, MySong->SongDirectory, i->first);
+		if (CurrentDiff->BMPList.size())
+			Log::Printf("Loading BMPs...\n");
+
+		for (std::map<int, String>::iterator i = CurrentDiff->BMPList.begin(); i != CurrentDiff->BMPList.end(); i++)
+		{
+			BMPs.AddToListIndex(i->second, MySong->SongDirectory, i->first);
+		}
+
+		// We don't need this any more.
+		CurrentDiff->BMPList.clear();
+
+		BMPEvents = CurrentDiff->BMPEvents;
+		BMPEventsMiss = CurrentDiff->BMPEventsMiss;
+		BMPEventsLayer = CurrentDiff->BMPEventsLayer;
+		BMPEventsLayer2 = CurrentDiff->BMPEventsLayer2;
 	}
 
-	BMPEvents = CurrentDiff->BMPEvents;
+
 	Log::Printf("Done.\n");
 
 	// Get Noteheight
@@ -609,6 +621,19 @@ void ScreenGameplay7K::MainThreadInitialization()
 		Background.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
 	}
 
+	Layer1.Centered = Layer2.Centered = LayerMiss.Centered = true;
+	float LW = Background.GetWidth(), LH = Background.GetHeight();
+	float Scale = Background.GetScale().x;
+	Layer1.SetSize(LW, LH); Layer2.SetSize(LW, LH); LayerMiss.SetSize(LW, LH);
+	Layer1.BlackToTransparent = Layer2.BlackToTransparent = true;
+	Layer1.SetScale(Scale); Layer2.SetScale(Scale); LayerMiss.SetScale(Scale);
+	Layer1.SetZ(0); Layer2.SetZ(0); LayerMiss.SetZ(0);
+	Layer1.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
+	Layer2.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
+	LayerMiss.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
+	LayerMiss.SetImage(BMPs.GetFromIndex(0));
+
+
 	WindowFrame.SetLightMultiplier(0.75f);
 
 	Animations->Initialize("", false);
@@ -722,31 +747,6 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 	}
 }
 
-void ScreenGameplay7K::UpdateScriptVariables()
-{
-	LuaManager *L = Animations->GetEnv();
-	L->SetGlobal("SpeedMultiplier", SpeedMultiplier);
-	L->SetGlobal("SpeedMultiplierUser", SpeedMultiplierUser);
-	L->SetGlobal("waveEffectEnabled", waveEffectEnabled);
-	L->SetGlobal("Active", Active);
-	L->SetGlobal("SongTime", SongTime);
-	L->SetGlobal("LifebarValue", score_keeper->getLifebarAmount(LT_GROOVE));
-
-	CurrentBeat = IntegrateToTime(CurrentDiff->BPS, SongTime);
-	L->SetGlobal("Beat", CurrentBeat);
-
-	L->NewArray();
-
-	for (uint32 i = 0; i < Channels; i++)
-	{
-		L->SetFieldI(i + 1, HeldKey[i]);
-	}
-
-	L->FinalizeArray("HeldKeys");
-
-	L->SetGlobal("CurrentSPB", 1 / SectionValue(CurrentDiff->BPS, SongTime));
-}
-
 int DigitCount (float n)
 {
 	int digits = 0;
@@ -760,10 +760,142 @@ int DigitCount (float n)
 	return digits;
 }
 
+void ScreenGameplay7K::RunAutoEvents()
+{
+	// Play BGM events.
+	for (std::vector<AutoplaySound>::iterator s = BGMEvents.begin();
+		s != BGMEvents.end();
+		s++)
+	{
+		if (s->Time <= SongTime)
+		{
+			if (Keysounds[s->Sound])
+			{
+				Keysounds[s->Sound]->SeekTime(SongTime - s->Time);
+				Keysounds[s->Sound]->Play();
+			}
+			s = BGMEvents.erase(s);
+			if (s == BGMEvents.end()) break;
+		}
+	}
+
+	// Play BMP Base Events
+	for (std::vector<AutoplayBMP>::iterator b = BMPEvents.begin();
+		b != BMPEvents.end();
+		b++)
+	{
+		if (b->Time <= SongTime)
+		{
+			Image* Img = BMPs.GetFromIndex(b->BMP);
+			if (Img != NULL)
+			{
+				Background.SetImage(Img, false);
+			}
+
+			b = BMPEvents.erase(b);
+			if (b == BMPEvents.end()) break;
+		}
+	}
+
+	// BMP Miss layer events
+	for (std::vector<AutoplayBMP>::iterator b = BMPEventsMiss.begin();
+		b != BMPEventsMiss.end();
+		b++)
+	{
+		if (b->Time <= SongTime)
+		{
+			Image* Img = BMPs.GetFromIndex(b->BMP);
+			if (Img != NULL)
+				LayerMiss.SetImage(Img, false);
+
+			b = BMPEventsMiss.erase(b);
+			if (b == BMPEventsMiss.end()) break;
+		}
+	}
+
+	// BMP Layer1 events
+	for (std::vector<AutoplayBMP>::iterator b = BMPEventsLayer.begin();
+		b != BMPEventsLayer.end();
+		b++)
+	{
+		if (b->Time <= SongTime)
+		{
+			Image* Img = BMPs.GetFromIndex(b->BMP);
+			if (Img != NULL)
+				Layer1.SetImage(Img, false);
+
+			b = BMPEventsLayer.erase(b);
+			if (b == BMPEventsLayer.end()) break;
+		}
+	}
+
+	// BMP Layer 2 events.
+	for (std::vector<AutoplayBMP>::iterator b = BMPEventsLayer2.begin();
+		b != BMPEventsLayer2.end();
+		b++)
+	{
+		if (b->Time <= SongTime)
+		{
+			Image* Img = BMPs.GetFromIndex(b->BMP);
+			if (Img != NULL)
+				Layer2.SetImage(Img, false);
+
+			b = BMPEventsLayer2.erase(b);
+			if (b == BMPEventsLayer2.end()) break;
+		}
+	}
+}
+
+void ScreenGameplay7K::CheckShouldEndScreen()
+{
+	// Reached the end!
+	if (SongTime > CurrentDiff->Duration + 3)
+	{
+		ScreenEvaluation7K *Eval = new ScreenEvaluation7K(this);
+		Eval->Init(score_keeper);
+		Next = Eval;
+	}
+
+	// We failed!
+	if (score_keeper->getLifebarAmount(LT_GROOVE) <= 0 && !NoFail)
+		Running = false;
+}
+
+void ScreenGameplay7K::UpdateSongTime(float Delta)
+{
+	// Check if we should play the music..
+	if (SongOldTime == -1)
+	{
+		if (Music)
+			Music->Play();
+		if (!StartMeasure)
+		{
+			SongOldTime = 0;
+			SongTimeReal = 0;
+			SongTime = 0;
+		}
+	}else
+	{
+		/* Update music. */
+		SongTime += Delta;
+	}
+
+	// Update for the next delta.
+	SongOldTime = SongTimeReal;
+
+	// Run interpolation.
+	if (Music && Music->IsPlaying() && !CurrentDiff->IsVirtual)
+	{
+		double SongDelta = Music->GetStreamedTime() - SongOldTime;
+		SongTimeReal += SongDelta;
+
+		if ( (SongDelta > 0.001 && abs(SongTime - SongTimeReal) * 1000 > ErrorTolerance) || !InterpolateTime ) // Significant delta with a x ms difference? We're pretty off..
+			SongTime = SongTimeReal;
+	}
+}
+
 bool ScreenGameplay7K::Run(double Delta)
 {
-	float SongDelta;
-
 	if (Next)
 		return RunNested(Delta);
 
@@ -773,88 +905,19 @@ bool ScreenGameplay7K::Run(double Delta)
 	if (Active)
 	{
 		GameTime += Delta;
+		MissTime -= Delta;
 
 		if (GameTime >= WaitingTime)
 		{
-
-			if (SongOldTime == -1)
-			{
-				if (Music)
-					Music->Play();
-				if (!StartMeasure)
-				{
-					SongOldTime = 0;
-					SongTimeReal = 0;
-					SongTime = 0;
-				}
-			}else
-			{
-				/* Update music. */
-				SongTime += Delta;
-			}
-
-			if (Music && Music->IsPlaying() && !CurrentDiff->IsVirtual)
-			{
-				SongDelta = Music->GetStreamedTime() - SongOldTime;
-				SongTimeReal += SongDelta;
-
-				if ( (SongDelta > 0.001 && abs(SongTime - SongTimeReal) * 1000 > ErrorTolerance) || !InterpolateTime ) // Significant delta with a x ms difference? We're pretty off..
-					SongTime = SongTimeReal;
-			}
-
-			// Play BGM events.
-			for (std::vector<AutoplaySound>::iterator s = BGMEvents.begin();
-				s != BGMEvents.end();
-				s++)
-			{
-				if (s->Time <= SongTime)
-				{
-					if (Keysounds[s->Sound])
-					{
-						Keysounds[s->Sound]->SeekTime(SongTime - s->Time);
-						Keysounds[s->Sound]->Play();
-					}
-					s = BGMEvents.erase(s);
-					if (s == BGMEvents.end()) break;
-				}
-			}
-
-			// Play BMP Base Events
-			for (std::vector<AutoplayBMP>::iterator b = BMPEvents.begin();
-				b != BMPEvents.end();
-				b++)
-			{
-				if (b->Time <= SongTime)
-				{
-					Image* Img = BMPs.GetFromIndex(b->BMP);
-					if (Img != NULL)
-					{
-						Background.SetImage(Img, false);
-					}
-
-					b = BMPEvents.erase(b);
-					if (b == BMPEvents.end()) break;
-				}
-			}
-
+			UpdateSongTime(Delta);
 			CurrentVertical = IntegrateToTime(VSpeeds, SongTime);
+
+			RunAutoEvents();
 			RunMeasures();
-
-			SongOldTime = SongTimeReal;
-
-			if (SongTime > CurrentDiff->Duration + 3)
-			{
-				ScreenEvaluation7K *Eval = new ScreenEvaluation7K(this);
-				Eval->Init(score_keeper);
-				Next = Eval;
-			}
-
-			if (score_keeper->getLifebarAmount(LT_GROOVE) <= 0 && !NoFail)
-				Running = false;
+			CheckShouldEndScreen();
 		}else
 		{
 			SongTime = -(WaitingTime - GameTime);
-			SongDelta = 0;
 			CurrentVertical = IntegrateToTime(VSpeeds, SongTime);
 		}
 	}
@@ -865,82 +928,6 @@ bool ScreenGameplay7K::Run(double Delta)
 	UpdateScriptVariables();
 
 	Animations->UpdateTargets(Delta);
-
-	Background.Render();
-
-	Animations->DrawUntilLayer(13);
-
-
-
-	DrawMeasures();
-
-	for (int32 i = 0; i < CurrentDiff->Channels; i++)
-		Keys[i].Render();
-
-
-	// text
-
-	if (!Active)
-		GFont->DisplayText("press 'enter' to start", Vec2( ScreenWidth / 2 - 23 * 3,ScreenHeight * 5/8));
-
-	for (unsigned int i = 0; i < Channels; i++)
-	{
-		std::stringstream ss;
-		ss << lastClosest[i];
-		GFont->DisplayText(ss.str().c_str(), Vec2(floor(Keys[i].GetPosition().x), floor(Keys[i].GetPosition().y)) - Vec2(DigitCount(lastClosest[i]) * 3, 7));
-	}
-
-
-	// speed info
-
-	std::stringstream ss;
-
-	ss << "\nMult/Speed: " << std::setprecision(2) << std::setiosflags(std::ios::fixed) << SpeedMultiplier << "x / " << SpeedMultiplier*4;
-
-	if (SongTime > 0)
-		ss << "\nScrolling Speed: " << SectionValue(VSpeeds, SongTime) * SpeedMultiplier;
-	else
-		ss << "\nScrolling Speed: " << SectionValue(VSpeeds, 0) * SpeedMultiplier;
-
-	if (Auto)
-		ss << "\nAuto Mode ";
-	else
-		ss << "\n";
-
-	ss << "T: " << SongTime << " B: " << CurrentBeat << " O: " << CurrentDiff->Offset;
-
-	GFont->DisplayText(ss.str().c_str(), Vec2(432, ScreenHeight - 145));
-
-
-	// performance info
-
-	ss.str("");
-
-	ss
-	<< "PG: " << score_keeper->getJudgmentCount(SKJ_W1) << "\n"
-	<< "GR: " << score_keeper->getJudgmentCount(SKJ_W2) << "\n"
-	<< "GD: " << score_keeper->getJudgmentCount(SKJ_W3) << "\n"
-	<< "BD: " << score_keeper->getJudgmentCount(SKJ_W4) << "\n"
-	<< "NG: " << score_keeper->getJudgmentCount(SKJ_W5) << "\n";
-
-	GFont->DisplayText(ss.str().c_str(), Vec2(432, ScreenHeight - 80));
-
-
-	ss.str("");
-
-	ss
-	// << "EX score: " << score_keeper->getPercentScore(PST_EX) << "\n"
-	// << "Rank score: " << score_keeper->getPercentScore(PST_RANK) << "\n"
-	<< "Beatmania score: " << score_keeper->getScore(ST_IIDX) << "\n"
-	<< "Lunatic Rave 2 score: " << score_keeper->getScore(ST_LR2) << "\n"
-	;
-
-	GFont->DisplayText(ss.str().c_str(), Vec2(20, ScreenHeight - 40));
-
-
-
-	Animations->DrawFromLayer(14);
-
-
+	Render();
 	return Running;
 }

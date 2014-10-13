@@ -65,6 +65,7 @@ const char* fragShader = "#version 120\n"
 	"uniform float clampFLSum;\n"
 	"uniform float HFactor;\n"
 	"uniform bool AffectedByLightning;\n"
+	"uniform bool BlackToTransparent;\n" // If true, transform r0 g0 b0 aX to a0.
 	"uniform int HiddenLightning;\n"
 	"\n"
 	"void main(void)\n"
@@ -81,6 +82,9 @@ const char* fragShader = "#version 120\n"
 	"	 }else{\n"
 	"		tCol = tex2D * Color;\n"
 	"	 }\n"
+	"	 if (BlackToTransparent) {\n"
+	"			if (tCol.r == 0 && tCol.g == 0 && tCol.b == 0) tCol.a = 0;"
+	"	 }"
 	"    if (AffectedByLightning){\n"
 	"		float dist = length ( lPos - vec3(Pos_world.xy, 0) );\n"
 	"       float temp = lMul / (dist*dist);\n"
@@ -621,6 +625,7 @@ void GameWindow::SetupShaders()
 	uniforms[U_HIDFAC] = glGetUniformLocation(defaultShaderProgram, "HFactor");
 	uniforms[U_HIDSUM] = glGetUniformLocation(defaultShaderProgram, "clampFLSum");
 	uniforms[U_REPCOLOR] = glGetUniformLocation(defaultShaderProgram, "replaceColor");
+	uniforms[U_BTRANSP] = glGetUniformLocation(defaultShaderProgram, "BlackToTransparent");
 
 	SetLightPosition(glm::vec3(0,0,1));
 	SetLightMultiplier(1);

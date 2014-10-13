@@ -401,6 +401,9 @@ void Difficulty::Destroy()
 	VSRG::MeasureVector MV;
 	std::vector<AutoplaySound> BGM;
 	std::vector <AutoplayBMP> BMP;
+	std::vector <AutoplayBMP> BMPL;
+	std::vector <AutoplayBMP> BMPL2;
+	std::vector <AutoplayBMP> BMPM;
 
 	Timing.swap(S1);
 	SpeedChanges.swap(S2);
@@ -408,6 +411,9 @@ void Difficulty::Destroy()
 	BGMEvents.swap(BGM);
 	Measures.swap(MV);
 	BMPEvents.swap(BMP);
+	BMPEventsLayer.swap(BMPL);
+	BMPEventsLayer2.swap(BMPL2);
+	BMPEventsMiss.swap(BMPM);
 
 	BMPList.clear();
 	Filename.clear();

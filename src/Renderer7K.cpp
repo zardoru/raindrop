@@ -13,12 +13,96 @@
 #include "Image.h"
 #include "ImageLoader.h"
 #include "ImageList.h"
+#include "GraphObjectMan.h"
+#include "BitmapFont.h"
 
 #include "ScreenGameplay7K.h"
 
 using namespace VSRG;
 
 static Mat4 identity;
+
+void ScreenGameplay7K::Render()
+{
+	Background.Render();
+	Layer1.Render();
+	Layer2.Render();
+
+	if (MissTime > 0)
+		LayerMiss.Render();
+
+	Animations->DrawUntilLayer(13);
+
+	DrawMeasures();
+
+	for (int32 i = 0; i < CurrentDiff->Channels; i++)
+		Keys[i].Render();
+
+
+	// text
+	// This /REALLY REALLY/ shouldn't be done here.
+	/*
+	if (!Active)
+		GFont->DisplayText("press 'enter' to start", Vec2( ScreenWidth / 2 - 23 * 3,ScreenHeight * 5/8));
+
+	for (unsigned int i = 0; i < Channels; i++)
+	{
+		std::stringstream ss;
+		ss << lastClosest[i];
+		GFont->DisplayText(ss.str().c_str(), Vec2(floor(Keys[i].GetPosition().x), floor(Keys[i].GetPosition().y)) - Vec2(DigitCount(lastClosest[i]) * 3, 7));
+	}
+
+
+	// speed info
+
+	std::stringstream ss;
+
+	ss << "\nMult/Speed: " << std::setprecision(2) << std::setiosflags(std::ios::fixed) << SpeedMultiplier << "x / " << SpeedMultiplier*4;
+
+	if (SongTime > 0)
+		ss << "\nScrolling Speed: " << SectionValue(VSpeeds, SongTime) * SpeedMultiplier;
+	else
+		ss << "\nScrolling Speed: " << SectionValue(VSpeeds, 0) * SpeedMultiplier;
+
+	if (Auto)
+		ss << "\nAuto Mode ";
+	else
+		ss << "\n";
+
+	ss << "T: " << SongTime << " B: " << CurrentBeat << " O: " << CurrentDiff->Offset;
+
+	GFont->DisplayText(ss.str().c_str(), Vec2(432, ScreenHeight - 145));
+
+
+	// performance info
+
+	ss.str("");
+
+	ss
+	<< "PG: " << score_keeper->getJudgmentCount(SKJ_W1) << "\n"
+	<< "GR: " << score_keeper->getJudgmentCount(SKJ_W2) << "\n"
+	<< "GD: " << score_keeper->getJudgmentCount(SKJ_W3) << "\n"
+	<< "BD: " << score_keeper->getJudgmentCount(SKJ_W4) << "\n"
+	<< "NG: " << score_keeper->getJudgmentCount(SKJ_W5) << "\n";
+
+	GFont->DisplayText(ss.str().c_str(), Vec2(432, ScreenHeight - 80));
+
+
+	ss.str("");
+
+	ss
+	// << "EX score: " << score_keeper->getPercentScore(PST_EX) << "\n"
+	// << "Rank score: " << score_keeper->getPercentScore(PST_RANK) << "\n"
+	<< "Beatmania score: " << score_keeper->getScore(ST_IIDX) << "\n"
+	<< "Lunatic Rave 2 score: " << score_keeper->getScore(ST_LR2) << "\n"
+	;
+
+	GFont->DisplayText(ss.str().c_str(), Vec2(20, ScreenHeight - 40));
+	*/
+
+
+	Animations->DrawFromLayer(14);
+}
 
 void ScreenGameplay7K::DrawBarlines(float rPos)
 {

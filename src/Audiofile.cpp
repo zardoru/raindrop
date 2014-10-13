@@ -315,12 +315,12 @@ void AudioStream::SeekTime(float Second)
 	mStreamTime = Second;
 }
 
-float AudioStream::GetStreamedTime()
+double AudioStream::GetStreamedTime()
 {
 	return mStreamTime;
 }
 
-float AudioStream::GetPlayedTime()
+double AudioStream::GetPlayedTime()
 {
 	return mPlaybackTime;
 }

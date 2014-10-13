@@ -70,6 +70,9 @@ void ScreenGameplay7K::MissNote (double TimeOff, uint32 Lane, bool IsHold, bool 
 	if (IsHold)
 		HeldKey[Lane] = false;
 
+	// 3 seconds showing miss bga
+	MissTime = 3;
+
 	UpdateScriptScoreVariables();
 
 	Animations->GetEnv()->SetGlobal("Combo", score_keeper->getScore(ST_COMBO));
@@ -287,4 +290,29 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 			return; // we judged a note in this lane, so we're done.
 		}
 	}
+}
+
+void ScreenGameplay7K::UpdateScriptVariables()
+{
+	LuaManager *L = Animations->GetEnv();
+	L->SetGlobal("SpeedMultiplier", SpeedMultiplier);
+	L->SetGlobal("SpeedMultiplierUser", SpeedMultiplierUser);
+	L->SetGlobal("waveEffectEnabled", waveEffectEnabled);
+	L->SetGlobal("Active", Active);
+	L->SetGlobal("SongTime", SongTime);
+	L->SetGlobal("LifebarValue", score_keeper->getLifebarAmount(LT_GROOVE));
+
+	CurrentBeat = IntegrateToTime(CurrentDiff->BPS, SongTime);
+	L->SetGlobal("Beat", CurrentBeat);
+
+	L->NewArray();
+
+	for (uint32 i = 0; i < Channels; i++)
+	{
+		L->SetFieldI(i + 1, HeldKey[i]);
+	}
+
+	L->FinalizeArray("HeldKeys");
+
+	L->SetGlobal("CurrentSPB", 1 / SectionValue(CurrentDiff->BPS, SongTime));
 }
