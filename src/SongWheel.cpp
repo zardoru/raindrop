@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "GameGlobal.h"
 #include "GameState.h"
 #include "Logging.h"

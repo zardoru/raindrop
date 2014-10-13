@@ -202,6 +202,9 @@
     <ClCompile Include="..\src\Line.cpp">
       <Filter>Source\backend\render\objects</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\ScoreKeeper7K_experimental.cpp">
+      <Filter>Source\vsrg\gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">

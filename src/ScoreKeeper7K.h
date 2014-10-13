@@ -83,6 +83,19 @@ class ScoreKeeper7K {
 
 		void set_osu_judgment(int ms, ScoreKeeperJudgment judgment);
 
+
+	/*
+		experimental
+	*/
+
+		long long exp_combo;
+		long long exp_combo_pts;
+		long long exp_max_combo_pts;
+
+		double exp_score;
+
+		void update_exp2(int ms);
+
 	/*
 		misc.
 	*/
@@ -91,8 +104,9 @@ class ScoreKeeper7K {
 		long long total_notes;
 
 
-		long long dp_score; // DDR dance-polong long scoring
+		long long dp_score; // DDR dance-point scoring
 		long long dp_dp_score;
+
 
 		long long combo;
 		long long max_combo;
@@ -101,6 +115,8 @@ class ScoreKeeper7K {
 		double accuracy;
 
 		double accuracy_percent(float ms);
+
+
 
 		// lifebar data.
 

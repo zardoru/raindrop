@@ -236,7 +236,19 @@ void NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 		OnCommand(#TITLE)
 		{
 			if (utf8::is_valid(CommandContents.begin(), CommandContents.end()))
+			{
+#ifdef WIN32
 				Out->SongName = CommandContents;
+#else
+				Out->SongName = CommandContents;
+				try {
+					std::vector<int> cp;
+					utf8::utf8to16 (CommandContents.begin(), CommandContents.end(), std::back_inserter(cp));
+				}catch (utf8::not_enough_room &e) {
+					Out->SongName = Utility::SJIStoU8(CommandContents);
+				}
+#endif
+			}
 			else
 				Out->SongName = Utility::SJIStoU8(CommandContents);
 		}
@@ -244,7 +256,19 @@ void NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 		OnCommand(#ARTIST)
 		{
 			if (utf8::is_valid(CommandContents.begin(), CommandContents.end()))
+			{
+#ifdef WIN32
 				Out->SongAuthor = CommandContents;
+#else
+				Out->SongAuthor = CommandContents;
+				try {
+					std::vector<int> cp;
+					utf8::utf8to16 (CommandContents.begin(), CommandContents.end(), std::back_inserter(cp));
+				}catch (utf8::not_enough_room &e) {
+					Out->SongAuthor = Utility::SJIStoU8(CommandContents);
+				}
+#endif
+			}
 			else
 				Out->SongAuthor = Utility::SJIStoU8(CommandContents);
 		}

@@ -27,6 +27,10 @@ ScoreKeeper7K::ScoreKeeper7K(){
 	lr2_dance_pts = 0;
 	lr2_score = 0;
 
+	exp_combo = 0;
+	exp_combo_pts = 0;
+	exp_max_combo_pts = 0;
+
 	sc_score = 0;
 	sc_sc_score = 0;
 
@@ -45,7 +49,7 @@ ScoreKeeper7K::ScoreKeeper7K(){
 	judge_window_scale = 1.00;
 	// double JudgmentValues[] = { 16, 40, 100, 250, 625 };
 	double JudgmentValues[] = { 16, 40, 100, 250, 625 };
-	
+
 	miss_threshold = 250;
 	earlymiss_threshold = 1250;
 

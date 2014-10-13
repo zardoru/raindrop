@@ -41,7 +41,7 @@ void ScreenGameplay7K::UpdateScriptScoreVariables()
 	L->SetGlobal("MaxCombo", score_keeper->getScore(ST_MAX_COMBO));
 	L->SetGlobal("Accuracy", score_keeper->getPercentScore(PST_ACC));
 	L->SetGlobal("EXScore", score_keeper->getScore(ST_EX));
-	L->SetGlobal("SCScore", score_keeper->getScore(ST_SCORE));
+	L->SetGlobal("SCScore", score_keeper->getScore(ST_EXP));
 	L->SetGlobal("LifebarValue", score_keeper->getLifebarAmount(LT_GROOVE));
 }
 

@@ -32,7 +32,7 @@ void ScreenEvaluation7K::Init(ScoreKeeper7K *Result)
 	<< "RANK: " << (Result->getRank() > 0 ? "+" : "") << Result->getRank() << "  (" << Result->getPercentScore(PST_RANK) << " pts.)\n"
 	<< "\n" << std::setprecision(2)
 	<< "Accuracy: " << Result->getPercentScore(PST_ACC) << "%\n"
-	<< "Final Score: " << Result->getScore(ST_SCORE) << "\n"
+	<< "Final Score: " << Result->getScore(ST_EXP) << "\n"
 	<< "Max Combo: " << Result->getScore(ST_MAX_COMBO) << "\n"
 	<< "\n"
 	<< "Fantastic: " << Result->getJudgmentCount(SKJ_W1) << " (" << float(Result->getJudgmentCount(SKJ_W1) * 100) / float(Result->getMaxNotes()) << "%)\n"

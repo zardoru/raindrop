@@ -142,6 +142,8 @@ void Application::Init()
 #ifdef WIN32
 	SetConsoleOutputCP(CP_UTF8);
 	_setmode(_fileno(stdout), _O_U8TEXT); 
+#else
+	setlocale(LC_ALL, "");
 #endif
 
 	GameState::GetInstance().Initialize();
