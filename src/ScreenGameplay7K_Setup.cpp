@@ -641,6 +641,6 @@ void ScreenGameplay7K::MainThreadInitialization()
 	Animations->GetImageList()->ForceFetch();
 
 	BMPs.LoadAll();
- 	BMPs.ForceFetch();
+// 	BMPs.ForceFetch();
 	Running = true;
 }

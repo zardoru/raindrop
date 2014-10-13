@@ -159,7 +159,6 @@ void GraphObject2D::Render()
 
 	// Assign position attrib. pointer
 	mBuffer->Bind();
-
 	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_POSITION), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
 	// assign vertex UVs
