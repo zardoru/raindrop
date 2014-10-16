@@ -227,7 +227,7 @@ void ScreenGameplay7K::CheckShouldEndScreen()
 		if (!SongFinished)
 		{
 			SongFinished = true;
-			Animations->GetEnv()->CallFunction("SongFinished");
+			Animations->GetEnv()->CallFunction("SongFinishedEvent");
 			Animations->GetEnv()->RunFunction();
 		}
 	}

@@ -7,7 +7,13 @@
 #include "LuaManager.h"
 #include "GraphObjectMan.h"
 #include "Configuration.h"
+#include "LuaBridge.h"
 
+#include "Font.h"
+#include "TruetypeFont.h"
+#include "BitmapFont.h"
+
+#include "GraphicalString.h"
 
 namespace LuaAnimFuncs
 {
@@ -338,9 +344,102 @@ namespace LuaAnimFuncs
 	};
 }
 
+// Wrapper functions
+void SetImage(GraphObject2D *O, std::string &dir)
+{
+	O->SetImage(GameState::GetInstance().GetSkinImage(dir));
+}
 
+String GetImage(const GraphObject2D *O)
+{
+	return O->GetImageFilename();
+}
+
+void AddPosition(GraphObject2D *O, float px, float py)
+{
+	O->AddPosition(px, py);
+}
+
+void SetPosition(GraphObject2D *O, float px, float py)
+{
+	O->SetPosition(px, py);
+}
+
+BitmapFont& LoadBmFont(BitmapFont& B, std::string Fn, float CellWidth, float CellHeight, float CharWidth, float CharHeight, int startChar)
+{
+	Vec2 Size(CharWidth, CharHeight);
+	Vec2 CellSize(CellWidth, CellHeight);
+	B.LoadSkinFontImage(Fn.c_str(), Size, CellSize, Size, startChar);
+	return B;
+}
+
+// New lua interface.
+void CreateNewLuaAnimInterface(LuaManager *AnimLua)
+{
+#define f(x) addFunction(#x, &GraphObject2D::x)
+#define p(x) addProperty(#x, &GraphObject2D::Get##x, &GraphObject2D::Set##x)
+#define v(x) addData(#x, &GraphObject2D::x)
+
+	luabridge::getGlobalNamespace(AnimLua->GetState())
+		.beginClass <GraphObject2D>("Object2D")
+		.v(Centered)
+		.v(Lighten)
+		.v(LightenFactor)
+		.v(AffectedByLightning)
+		.v(ColorInvert)
+		.v(Alpha)
+		.v(Red)
+		.v(Blue)
+		.v(Green)
+		.p(Rotation)
+		.p(Z)
+		.p(Width)
+		.p(Height)
+		.p(ScaleX)
+		.p(ScaleY)
+		.f(SetCropByPixels)
+		.addProperty("X", &GraphObject2D::GetPositionX, &GraphObject2D::SetPositionX)
+		.addProperty("Y", &GraphObject2D::GetPositionY, &GraphObject2D::SetPositionY)
+		.addProperty("Image", GetImage, SetImage) // Special for setting image.
+		.endClass()
+		.beginClass <GraphObjectMan> ("GraphObjMan")
+		.addFunction("AddAnimation", &GraphObjectMan::AddLuaAnimation)
+		.addFunction("AddTarget", &GraphObjectMan::AddTarget)
+		.endClass();
+
+	luabridge::push(AnimLua->GetState(), GetObjectFromState<GraphObjectMan>(AnimLua->GetState(), "GOMAN"));
+	lua_setglobal(AnimLua->GetState(), "Engine");
+#undef f
+#undef p
+#undef v
+
+	// These are mostly defined so we can pass them around and construct them.
+	luabridge::getGlobalNamespace(AnimLua->GetState())
+		.beginNamespace("Fonts")
+		.beginClass<Font>("Font")
+		.addFunction("SetColor", &Font::SetColor)
+		.addFunction("SetAlpha", &Font::SetAlpha)
+		.endClass()
+		.deriveClass <TruetypeFont, Font>("TruetypeFont")
+		.addConstructor <void(*) (std::string, float)>()
+		.endClass()
+		.deriveClass <BitmapFont, Font> ("BitmapFont")
+		.endClass()
+		.addFunction("LoadBitmapFont", LoadBmFont)
+		.endNamespace();
+
+	luabridge::getGlobalNamespace(AnimLua->GetState())
+		.deriveClass<GraphicalString, GraphObject2D>("StringObject2D")
+		.addProperty("Font", &GraphicalString::GetFont, &GraphicalString::SetFont)
+		.addProperty ("Text", &GraphicalString::GetText, &GraphicalString::SetText)
+		.endClass();
+}
+
+// Old, stateful lua interface.
 void CreateLuaInterface(LuaManager *AnimLua)
 {
+	CreateNewLuaAnimInterface(AnimLua);
+
 	AnimLua->NewMetatable(LuaAnimFuncs::GraphObject2DMetatable);
 	AnimLua->Register(LuaAnimFuncs::Require, "skin_require");
 	AnimLua->Register(LuaAnimFuncs::GetSkinConfigF, "GetConfigF");

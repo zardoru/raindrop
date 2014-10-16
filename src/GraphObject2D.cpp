@@ -307,3 +307,31 @@ bool GraphObject2D::ShouldUpdateMatrix() const
 {
 	return DirtyMatrix;
 }
+
+float GraphObject2D::GetScaleX() const
+{
+	return mScale.x;
+}
+
+float GraphObject2D::GetScaleY() const
+{
+	return mScale.y;
+}
+
+float GraphObject2D::GetPositionX() const
+{
+	return mPosition.x;
+}
+
+float GraphObject2D::GetPositionY() const
+{
+	return mPosition.y;
+}
+
+String GraphObject2D::GetImageFilename() const
+{
+	if (mImage)
+		return mImage->fname;
+	else
+		return String();
+}

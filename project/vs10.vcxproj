@@ -185,6 +185,7 @@
     <ClCompile Include="..\src\Directory.cpp" />
     <ClCompile Include="..\src\Font.cpp" />
     <ClCompile Include="..\src\GameState.cpp" />
+    <ClCompile Include="..\src\GraphicalString.cpp" />
     <ClCompile Include="..\src\Line.cpp" />
     <ClCompile Include="..\src\Logging.cpp" />
     <ClCompile Include="..\src\raindrop.cpp" />
@@ -265,6 +266,7 @@
     <ClInclude Include="..\src\GameState.h" />
     <ClInclude Include="..\src\Global.h" />
     <ClInclude Include="..\src\GameWindow.h" />
+    <ClInclude Include="..\src\GraphicalString.h" />
     <ClInclude Include="..\src\GraphObject2D.h" />
     <ClInclude Include="..\src\GraphObjectMan.h" />
     <ClInclude Include="..\src\GuiButton.h" />

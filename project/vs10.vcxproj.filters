@@ -211,6 +211,9 @@
     <ClCompile Include="..\src\Font.cpp">
       <Filter>Source\backend\render\fonts</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\GraphicalString.cpp">
+      <Filter>Source\backend\render\objects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">
@@ -407,6 +410,9 @@
     </ClInclude>
     <ClInclude Include="..\src\Font.h">
       <Filter>Source\backend\render\fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GraphicalString.h">
+      <Filter>Source\backend\render\objects</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
