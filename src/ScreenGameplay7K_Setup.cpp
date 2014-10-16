@@ -488,6 +488,12 @@ void ScreenGameplay7K::SetupGear()
 		sprintf(str, "Key%dWidth", i+1);
 		LaneWidth[i] = Configuration::GetSkinConfigf(str, nstr);
 
+		float ChanBarlineWidth;
+		sprintf(str, "BarlineWidth", i + 1);
+		ChanBarlineWidth = Configuration::GetSkinConfigf(str, nstr);
+		if (ChanBarlineWidth)
+			BarlineWidth = ChanBarlineWidth;
+
 		Keys[i].SetImage ( GearLaneImage[i] );
 		Keys[i].SetSize( LaneWidth[i], GearHeightFinal );
 		Keys[i].Centered = true;

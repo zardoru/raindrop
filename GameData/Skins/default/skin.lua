@@ -81,6 +81,8 @@ BarlineEnabled = 1
 -- A value of 0 means from the bottom/top (depending on upscroll) of the note. A value of 1 means the middle of the note.
 BarlineOffset = 0
 BarlineX = GearStartX
+
+-- This is a default value when it's not found in the ChannelsXX tables.
 BarlineWidth = GearWidth
 
 -- Enable or disable the screen filter in 7K.
@@ -146,6 +148,7 @@ Channels16 = {
     Key16Binding = 15,
 
     GearHeight = GearHeightCommon,
+    BarlineWidth = GearWidth*2,
 
     -- Note Images
     Key1Image = NoteImage3,
@@ -255,6 +258,7 @@ Channels12 = {
     Key11Binding = 12,
     Key12Binding = 13,
     GearHeight = GearHeightCommon,
+    BarlineWidth = GearWidth*2,
 
     -- Note Images
     Key1Image = NoteImage3,
