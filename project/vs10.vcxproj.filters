@@ -130,9 +130,6 @@
     <ClCompile Include="..\src\ImageLoader.cpp">
       <Filter>Source\backend\render\textures</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\BitmapFont.cpp">
-      <Filter>Source\backend\render\objects</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\GraphObject2D.cpp">
       <Filter>Source\backend\render\objects</Filter>
     </ClCompile>
@@ -196,9 +193,6 @@
     <ClCompile Include="..\src\Application.cpp">
       <Filter>Source\game global</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\TruetypeFont.cpp">
-      <Filter>Source\backend\render\objects</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Line.cpp">
       <Filter>Source\backend\render\objects</Filter>
     </ClCompile>
@@ -207,6 +201,15 @@
     </ClCompile>
     <ClCompile Include="..\src\ScreenGameplay7K_Setup.cpp">
       <Filter>Source\vsrg\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\TruetypeFont.cpp">
+      <Filter>Source\backend\render\fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\BitmapFont.cpp">
+      <Filter>Source\backend\render\fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Font.cpp">
+      <Filter>Source\backend\render\fonts</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -321,9 +324,6 @@
     <ClInclude Include="..\src\GraphObject2D.h">
       <Filter>Source\backend\render\objects</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\BitmapFont.h">
-      <Filter>Source\backend\render\objects</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\VBO.h">
       <Filter>Source\backend\render\objects</Filter>
     </ClInclude>
@@ -390,14 +390,23 @@
     <ClInclude Include="..\src\Application.h">
       <Filter>Source\game global</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\TruetypeFont.h">
-      <Filter>Source\backend\render\objects</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\NoteLoader7K.h">
       <Filter>Source\vsrg\gameplay</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Line.h">
       <Filter>Source\backend\render\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GuiSwitchPanel.h">
+      <Filter>Source\backend\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\TruetypeFont.h">
+      <Filter>Source\backend\render\fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BitmapFont.h">
+      <Filter>Source\backend\render\fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Font.h">
+      <Filter>Source\backend\render\fonts</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -484,6 +493,9 @@
     </Filter>
     <Filter Include="Source\backend\logging">
       <UniqueIdentifier>{7c95638d-8828-48b3-b6d6-ee037d7490ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\backend\render\fonts">
+      <UniqueIdentifier>{1fc3da10-f22d-4719-b3ed-1e12cbbc788d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

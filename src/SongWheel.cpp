@@ -323,7 +323,7 @@ void SongWheel::DisplayItem(String Text, Vec2 Position)
 	{
 		Item->SetPosition(Position);
 		Item->Render();
-		mTFont->Render(Text.c_str(), Position + ItemTextOffset);
+		mTFont->Render(Text, Position + ItemTextOffset);
 	}
 }
 
@@ -376,8 +376,8 @@ void SongWheel::Render()
 					Entry->Difficulties.size(),
 					Min, Sec);
 
-				mTFont->Render(infoStream, Vec2(ScreenWidth/6, 120));
-			}else mTFont->Render("unavailable (edit only)", InfoPosition);
+				mTFont->Render(String(infoStream), Vec2(ScreenWidth/6, 120));
+			}else mTFont->Render(String("unavailable (edit only)"), InfoPosition);
 
 
 		}else if (CurrentList->GetSongEntry(CursorPos)->Mode == MODE_7K)
@@ -404,7 +404,7 @@ void SongWheel::Render()
 					Entry->Difficulties[DifficultyIndex]->Name.c_str(), Entry->Difficulties[DifficultyIndex]->Channels,
 					nps);
 
-				mTFont->Render(infoStream, InfoPosition);
+				mTFont->Render(String(infoStream), InfoPosition);
 			}
 		}
 

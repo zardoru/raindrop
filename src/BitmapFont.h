@@ -1,11 +1,12 @@
 #ifndef BITMAPFONT_H_
 #define BITMAPFONT_H_
 
+#include "Font.h"
 #include "Image.h"
 
 class LuaManager;
 
-class BitmapFont
+class BitmapFont : public Font
 {
 	Image *Font;
 	GraphObject2D CharPosition[258];
@@ -16,7 +17,7 @@ class BitmapFont
 
 public:
 	BitmapFont();
-	void DisplayText(const char* Text, Vec2 Position);
+	void Render(String &Text, const Vec2 &Position, const Mat4& Transform = Mat4());
 	void LoadFontImage(const char* Name, Vec2 _CharSize, Vec2 _CellSize, Vec2 _RenderSize = Vec2(1,1), char FontStart = 0);
 	void LoadSkinFontImage(const char* Name, Vec2 _CharSize, Vec2 _CellSize, Vec2 _RenderSize = Vec2(1,1), char FontStart = 0);
 	void SetAffectedByLightning(bool Lightning);
