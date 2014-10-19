@@ -19,6 +19,7 @@ void ScoreKeeper7K::setAccMax(int ms){
 	ACC_MAX_SQ = ms * ms;
 }
 
+
 void ScoreKeeper7K::setMaxNotes(int notes){
 
 	max_notes = notes;
@@ -29,15 +30,42 @@ void ScoreKeeper7K::setMaxNotes(int notes){
 	if(notes < 25) exp_max_combo_pts = notes * (notes + 1) * 2;
 	else exp_max_combo_pts = 1300 + (notes - 25) * 100;
 
-	// recalculate groove lifebar increments.
-	lifebar_easy_increment = Clamp(5.0 / max_notes, 0.002, 0.8);
-	lifebar_groove_increment = Clamp(3.0 / max_notes, 0.001, 0.8);
-	lifebar_survival_increment = 1.2 / max_notes;
-	lifebar_exhard_increment = 0.5 / max_notes;
-
 }
 
 int ScoreKeeper7K::getMaxNotes(){ return max_notes; }
+
+
+void ScoreKeeper7K::setLifeTotal(double total){
+
+	if(total != -1) lifebar_total = total;
+	else lifebar_total = 7.605 * max_notes / (6.5 + 0.01 * max_notes);
+
+	// recalculate groove lifebar increments.
+	lifebar_easy_increment = Clamp(lifebar_total / max_notes / 50.0, 0.004, 0.8);
+	lifebar_groove_increment = Clamp(lifebar_total / max_notes / 100.0, 0.002, 0.8);
+	lifebar_survival_increment = lifebar_total / max_notes / 200.0;
+	lifebar_exhard_increment = lifebar_total / max_notes / 200.0;
+
+	lifebar_easy_decrement = Clamp(lifebar_total / max_notes / 12.0, 0.00, 0.2);
+	lifebar_groove_decrement = Clamp(lifebar_total / max_notes / 10.0, 0.01, 0.2);
+	lifebar_survival_decrement = Clamp(lifebar_total / max_notes / 5.0, 0.0, 0.5);
+	lifebar_exhard_decrement = Clamp(lifebar_total / max_notes / 2.0, 0.0, 0.8);
+
+}
+
+void ScoreKeeper7K::setJudgeRank(int rank){
+	switch(rank){
+		case 0:
+			judge_window_scale = 0.50; break;
+		case 1:
+			judge_window_scale = 0.75; break;
+		case 2:
+			judge_window_scale = 1.00; break;
+		case 3:
+			judge_window_scale = 1.50; break;
+	}
+	set_timing_windows();
+}
 
 int ScoreKeeper7K::getTotalNotes(){ return total_notes; }
 
@@ -105,20 +133,20 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 
 	if(ms < judgment_time[SKJ_W3]){
 
+		lifebar_easy = min(1.0, lifebar_easy + lifebar_easy_increment);
 		lifebar_groove = min(1.0, lifebar_groove + lifebar_groove_increment);
 		if(lifebar_survival > 0)
 			lifebar_survival = min(1.0, lifebar_survival + lifebar_survival_increment);
 		if(lifebar_exhard > 0)
 			lifebar_exhard = min(1.0, lifebar_exhard + lifebar_exhard_increment);
-		lifebar_easy = min(1.0, lifebar_easy + lifebar_easy_increment);
 
 	}else{
 
 		// miss tier 1
-		lifebar_groove = max(0.0, lifebar_groove - 0.02);
-		lifebar_survival = max(0.0, lifebar_survival - Clamp(50.0 / max_notes, 0.02, 0.20));
-		lifebar_exhard = max(0.0, lifebar_survival - Clamp(100.0 / max_notes, 0.10, 0.50));
-		lifebar_easy = max(0.0, lifebar_groove - 0.02);
+		lifebar_easy = max(0.0, lifebar_easy - lifebar_easy_decrement);
+		lifebar_groove = max(0.0, lifebar_groove - lifebar_groove_decrement);
+		lifebar_survival = max(0.0, lifebar_survival - lifebar_groove_decrement);
+		lifebar_exhard = max(0.0, lifebar_exhard - lifebar_exhard_decrement);
 
 	}
 
@@ -158,18 +186,18 @@ void ScoreKeeper7K::missNote(bool auto_hold_miss, bool early_miss){
 		combo = 0;
 
 		// miss tier 2
-		lifebar_groove = max(0.0, lifebar_groove - 0.06);
-		lifebar_survival = max(0.0, lifebar_survival - Clamp(100.0 / max_notes, 0.06, 0.50));
-		lifebar_exhard = max(0.0, lifebar_survival - Clamp(200.0 / max_notes, 0.20, 0.80));
-		lifebar_easy = max(0.0, lifebar_easy - 0.06);
+		lifebar_easy = max(0.0, lifebar_easy - lifebar_easy_decrement * 3);
+		lifebar_groove = max(0.0, lifebar_groove - lifebar_groove_decrement * 3);
+		lifebar_survival = max(0.0, lifebar_survival - lifebar_groove_decrement * 3);
+		lifebar_exhard = max(0.0, lifebar_exhard - lifebar_exhard_decrement * 3);
 
 	}else if(early_miss){
 
 		// miss tier 1
-		lifebar_groove = max(0.0, lifebar_groove - 0.02);
-		lifebar_survival = max(0.0, lifebar_survival - Clamp(50.0 / max_notes, 0.02, 0.20));
-		lifebar_exhard = max(0.0, lifebar_survival - Clamp(100.0 / max_notes, 0.10, 0.50));
-		lifebar_easy = max(0.0, lifebar_groove - 0.02);
+		lifebar_easy = max(0.0, lifebar_easy - lifebar_easy_decrement);
+		lifebar_groove = max(0.0, lifebar_groove - lifebar_groove_decrement);
+		lifebar_survival = max(0.0, lifebar_survival - lifebar_groove_decrement);
+		lifebar_exhard = max(0.0, lifebar_exhard - lifebar_exhard_decrement);
 
 	}
 

@@ -313,9 +313,9 @@ bool LuaManager::RunFunction()
 
 	if (errc)
 	{
-		std::wstring reason = Utility::Widen(lua_tostring(State, -1));
+		std::string reason = lua_tostring(State, -1);
 
-		wprintf(L"lua call error: %s\n", reason.c_str());
+		printf("lua call error: %s\n", reason.c_str());
 
 		return false;
 	}

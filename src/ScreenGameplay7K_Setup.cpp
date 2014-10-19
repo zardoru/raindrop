@@ -436,6 +436,8 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	SetupScriptConstants();
 	Animations->Preload(GameState::GetInstance().GetSkinPrefix() + "screengameplay7k.lua", "Preload");
 	score_keeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
+	score_keeper->setLifeTotal(CurrentDiff->getLifeTotal());
+	score_keeper->setJudgeRank(CurrentDiff->getJudgeRank());
 	DoPlay = true;
 }
 

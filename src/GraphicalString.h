@@ -9,8 +9,8 @@ public:
 	GraphicalString();
 	void SetText(String _Text);
 	String GetText() const;
-	void SetFont(Font& _Font);
-	Font &GetFont() const;
+	void SetFont(Font* _Font);
+	Font* GetFont() const;
 
 	void Render();
 };

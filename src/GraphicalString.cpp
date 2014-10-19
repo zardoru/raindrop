@@ -9,15 +9,14 @@ GraphicalString::GraphicalString()
 {
 }
 
-void GraphicalString::SetFont(Font& _Font)
+void GraphicalString::SetFont(Font* _Font)
 {
-	assert(_Font);
-	mFont = &_Font;
+	mFont = _Font;
 }
 
-Font& GraphicalString::GetFont() const
+Font* GraphicalString::GetFont() const
 {
-	return *mFont;
+	return mFont;
 }
 
 void GraphicalString::SetText(String _Text)

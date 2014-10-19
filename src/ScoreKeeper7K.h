@@ -12,6 +12,9 @@ class ScoreKeeper7K {
 		void init();
 
 		void setMaxNotes(int notes);
+		void setLifeTotal(double total);
+		void setJudgeRank(int rank);
+
 		int getMaxNotes();
 		int getTotalNotes();
 		void setAccMin(int ms);
@@ -127,19 +130,26 @@ class ScoreKeeper7K {
 
 		// lifebar data.
 
+		double lifebar_total;
+		
+
 		double lifebar_groove;
 		double lifebar_groove_increment;
+		double lifebar_groove_decrement;
 
 		double lifebar_survival;
 		double lifebar_survival_increment;
+		double lifebar_survival_decrement;
 
 		double lifebar_exhard;
 		double lifebar_exhard_increment;
+		double lifebar_exhard_decrement;
 
 		double lifebar_death;
 
 		double lifebar_easy;
 		double lifebar_easy_increment;
+		double lifebar_easy_decrement;
 
 		// judgment information
 		double judgment_time[9];

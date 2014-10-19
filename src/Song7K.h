@@ -60,14 +60,25 @@ namespace VSRG
 		unsigned char Channels;
 		bool IsVirtual;
 
+
 	public:
+	
+		// custom BMS options.
+		int judge_rank;
+		double life_total;
+
 		Difficulty() {
 			IsVirtual = false;
 			Channels = 0;
 			PreviewTime = 0;
 			LMT = 0;
+
+			judge_rank = 2;
+			life_total = -1;
 		};
 
+		int getJudgeRank(){ return judge_rank; }
+		int getLifeTotal(){ return life_total; }
 
 		// The floats are in vertical units; like the notes' vertical position.
 		void GetMeasureLines(std::vector<float> &Out, float Drift);

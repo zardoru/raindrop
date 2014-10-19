@@ -17,6 +17,8 @@ skin_require("AnimatedObjects.lua")
 skin_require("ScoreDisplay.lua")
 skin_require("GameplayObjects.lua")
 
+skin_require("TextDisplay.lua")
+
 -- All of these will be loaded in the loading screen instead of
 -- in the main thread once loading is over.
 Preload = {
@@ -102,6 +104,7 @@ BgAlpha = 0
 -- Not on preload time.
 function Init()
 	AnimatedObjects.Init()
+	DrawTextObjects()
 
 	Obj.SetTarget(ScreenBackground)
 	Obj.SetAlpha(0)
@@ -246,6 +249,7 @@ function Update(Delta)
 			Obj.SetTarget(AutoBN)
 			Obj.SetScale(Scale, Scale)
 		end
+
 	end
 	
 	AnimatedObjects.Run(Delta)
