@@ -315,7 +315,11 @@ bool LuaManager::RunFunction()
 	{
 		std::string reason = lua_tostring(State, -1);
 
+#ifndef WIN32
 		printf("lua call error: %s\n", reason.c_str());
+#else
+		wprintf(L"lua call error: %s\n", Utility::Widen(reason).c_str());
+#endif
 
 		return false;
 	}

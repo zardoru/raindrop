@@ -25,11 +25,13 @@ end
 
 function UpdateTextObjects()
 	
-	pacemaker1.Text = PacemakerText;
+	if PacemakerText then
+		pacemaker1.Text = PacemakerText;
+	end
 
 	pre_char = "+";
 	
-	if PacemakerValue < 0 then
+	if PacemakerValue and PacemakerValue < 0 then
 		pre_char = "-";
 	end
 
