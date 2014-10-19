@@ -47,3 +47,5 @@ void ScoreKeeper7K::update_lr2(int ms, bool hit){
 	}
 
 }
+
+

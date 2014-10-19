@@ -63,3 +63,32 @@ enum LifeType{
 	LT_BATTERY = 7, // DDR battery mode.
 
 };
+
+
+
+
+// Pacemakers.
+enum PacemakerType{
+
+	PT_NONE = 0,
+	
+	PMT_A = 1,
+	PMT_AA = 2,
+	PMT_AAA = 3,
+
+	PMT_50EX = 4,
+	PMT_75EX = 5,
+	PMT_85EX = 6,
+	PMT_90EX = 7,
+
+	PMT_RANK_P1 = 21,
+	PMT_RANK_P2 = 22,
+	PMT_RANK_P3 = 23,
+	PMT_RANK_P4 = 24,
+	PMT_RANK_P5 = 25,
+	PMT_RANK_P6 = 26,
+	PMT_RANK_P7 = 27,
+	PMT_RANK_P8 = 28,
+	PMT_RANK_P9 = 29,
+
+};

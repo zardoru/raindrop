@@ -5,10 +5,15 @@ class ScoreKeeper7K {
 	public:
 
 		ScoreKeeper7K();
+		ScoreKeeper7K(double judge_window_scale);
+
 		~ScoreKeeper7K();
+
+		void init();
 
 		void setMaxNotes(int notes);
 		int getMaxNotes();
+		int getTotalNotes();
 		void setAccMin(int ms);
 		void setAccMax(int ms);
 		void setEX2(int ms);
@@ -33,6 +38,8 @@ class ScoreKeeper7K {
 
 		int getLifebarUnits(LifeType lifebar_unit_type);
 		float getLifebarAmount(LifeType lifebar_amount_type);
+
+		int getPacemakerDiff(PacemakerType pmt);
 
 		int getRank(); // returns a number from -9 to 9
 
@@ -76,7 +83,7 @@ class ScoreKeeper7K {
 
 		void update_bms(int ms, bool hit);
 		void update_lr2(int ms, bool hit);
-
+		
 	/*
 		osu!
 	*/
@@ -138,7 +145,9 @@ class ScoreKeeper7K {
 		double judgment_time[9];
 		double judgment_amt[9];
 		double judge_window_scale;
-
+		
+		void set_timing_windows();
+		
 		// miss thresholds; notes hit outside here count as misses.
 		double miss_threshold;
 		double earlymiss_threshold;

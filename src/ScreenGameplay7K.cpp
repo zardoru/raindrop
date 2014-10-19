@@ -177,7 +177,7 @@ void ScreenGameplay7K::Init(Song* S, int DifficultyIndex, const ScreenGameplay7K
 
 	Animations = new GraphObjectMan();
 
-	score_keeper = new ScoreKeeper7K();
+	score_keeper = new ScoreKeeper7K(1.00);
 }
 
 void ScreenGameplay7K::RecalculateMatrix()
@@ -744,7 +744,9 @@ void ScreenGameplay7K::UpdateScriptVariables()
 
 	L->FinalizeArray("HeldKeys");
 
-	L->SetGlobal("CurrentSPB", 1 / SectionValue(CurrentDiff->BPS, SongTime));
+	double bps = SectionValue(CurrentDiff->BPS, SongTime);
+	L->SetGlobal("CurrentSPB", 1 / bps);
+	L->SetGlobal("CurrentBPM", bps * 60);
 }
 
 int DigitCount (float n)
@@ -895,6 +897,7 @@ bool ScreenGameplay7K::Run(double Delta)
 
 	std::stringstream ss;
 
+	ss << "Tempo: " << SectionValue(CurrentDiff->BPS, SongTime) * 60 << " BPM";
 	ss << "\nMult/Speed: " << std::setprecision(2) << std::setiosflags(std::ios::fixed) << SpeedMultiplier << "x / " << SpeedMultiplier*4;
 
 	if (SongTime > 0)
@@ -936,6 +939,22 @@ bool ScreenGameplay7K::Run(double Delta)
 	;
 
 	GFont->DisplayText(ss.str().c_str(), Vec2(20, ScreenHeight - 40));
+
+
+	if(score_keeper->getTotalNotes() > 0){
+		// pacemakers :D
+		ss.str("");
+		
+		int pacemaker = score_keeper->getPacemakerDiff(PMT_AA);
+		int pacemaker2 = score_keeper->getPacemakerDiff(PMT_RANK_P5);
+		
+		ss
+		<< (pacemaker >= 0 ? "+" : "-") << std::setfill('0') << std::setw(4) << abs(pacemaker) << "\n"
+		<< (pacemaker2 >= 0 ? "+" : "-") << std::setfill('0') << std::setw(4) << abs(pacemaker2) << "\n"
+		;
+
+		GFont->DisplayText(ss.str().c_str(), Vec2(168, 300));
+	}
 
 
 

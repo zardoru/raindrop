@@ -1,7 +1,7 @@
 #include "Global.h"
 #include "ScoreKeeper7K.h"
 
-ScoreKeeper7K::ScoreKeeper7K(){
+void ScoreKeeper7K::init(){
 
 	setAccMin(16);
 	setAccMax(100);
@@ -47,7 +47,13 @@ ScoreKeeper7K::ScoreKeeper7K(){
 	lifebar_easy = 0.78;
 
 	judge_window_scale = 1.00;
-	// double JudgmentValues[] = { 16, 40, 100, 250, 625 };
+	set_timing_windows();
+
+}
+
+
+void ScoreKeeper7K::set_timing_windows(){
+
 	double JudgmentValues[] = { 16, 40, 100, 250, 625 };
 
 	miss_threshold = 250;
@@ -62,4 +68,15 @@ ScoreKeeper7K::ScoreKeeper7K(){
 	for (int i = -127; i < 128; ++i)
 		histogram[i+127] = 0;
 
+}
+
+
+ScoreKeeper7K::ScoreKeeper7K(){
+	init();
+}
+
+ScoreKeeper7K::ScoreKeeper7K(double judge_window_scale){
+	init();
+	this->judge_window_scale = judge_window_scale;
+	set_timing_windows();
 }

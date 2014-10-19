@@ -39,6 +39,9 @@ void ScoreKeeper7K::setMaxNotes(int notes){
 
 int ScoreKeeper7K::getMaxNotes(){ return max_notes; }
 
+int ScoreKeeper7K::getTotalNotes(){ return total_notes; }
+
+
 ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 
 	// interesting stuff goes here.
@@ -269,6 +272,45 @@ float ScoreKeeper7K::getLifebarAmount(LifeType lifebar_amount_type){
 			return lifebar_survival;
 		default:
 			return 0;
+	}
+
+}
+
+
+int ScoreKeeper7K::getPacemakerDiff(PacemakerType pacemaker){
+	
+	switch(pacemaker){
+		case PMT_A:
+			return ex_score - (total_notes * 12 / 9); 
+		case PMT_AA:
+			return ex_score - (total_notes * 14 / 9); 
+		case PMT_AAA:
+			return ex_score - (total_notes * 16 / 9); 
+		case PMT_50EX:
+			return ex_score - (total_notes * 50 / 50); 
+		case PMT_75EX:
+			return ex_score - (total_notes * 75 / 50); 
+		case PMT_85EX:
+			return ex_score - (total_notes * 85 / 50);
+
+		case PMT_RANK_P1:
+			return rank_pts - (total_notes * 120 / 100);
+		case PMT_RANK_P2:
+			return rank_pts - (total_notes * 140 / 100);
+		case PMT_RANK_P3:
+			return rank_pts - (total_notes * 160 / 100);
+		case PMT_RANK_P4:
+			return rank_pts - (total_notes * 180 / 100);
+		case PMT_RANK_P5:
+			return rank_pts - (total_notes * 200 / 100);
+		case PMT_RANK_P6:
+			return rank_pts - (total_notes * 220 / 100);
+		case PMT_RANK_P7:
+			return rank_pts - (total_notes * 240 / 100);
+		case PMT_RANK_P8:
+			return rank_pts - (total_notes * 260 / 100);
+		case PMT_RANK_P9:
+			return rank_pts - (total_notes * 280 / 100);
 	}
 
 }
