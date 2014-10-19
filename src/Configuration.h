@@ -9,6 +9,7 @@ namespace Configuration
 	String GetSkinConfigs(String Name, String Namespace = "");
 	double  GetSkinConfigf(String Name, String Namespace = "");
 	void GetConfigListS(String Name, std::vector<String> &Out);
+	bool ListExists(String Name);
 
 	double CfgScreenHeight();
 	double CfgScreenWidth();

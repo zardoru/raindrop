@@ -34,6 +34,10 @@ VSync = 1
 -- Mostly applicable to osu!mania. Has no effect on BMS charts.
 DisableHitsounds = 1
 
+-- Disable BMP BGAs.
+-- Only applicable to BMS charts.
+DisableBMP = 0
+
 -- Set this to 1 to try to use the real-time timer instead of
 -- trying to calculate from the data uploaded to the audio card.
 -- If on, may improve scrolling smoothness and reduce accuracy depending on the Error Tolerance

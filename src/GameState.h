@@ -39,6 +39,7 @@ public:
 	String GetScriptsDirectory();
 	void SetSkin(String NextSkin);
 	Image* GetSkinImage(Directory Image);
+	bool SkinSupportsChannelCount(int Count);
 
 	SongDatabase* GetSongDatabase();
 	static GameWindow* GetWindow();

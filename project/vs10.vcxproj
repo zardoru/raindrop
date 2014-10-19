@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug NoIters|Win32">
       <Configuration>Debug NoIters</Configuration>
@@ -24,20 +24,20 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v90</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug NoIters|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v90</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v90</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -63,7 +63,7 @@
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>../ext-src/SOIL;../ext-src;$(WindowsSdkDir)include;$(FrameworkSDKDir)include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../</IncludePath>
+    <IncludePath>../ext-src/SOIL;../ext-src;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../</IncludePath>
     <LibraryPath>..\ext-libs\Release;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release NoSTLport|Win32'">
@@ -183,7 +183,9 @@
     <ClCompile Include="..\src\Configuration.cpp" />
     <ClCompile Include="..\src\Convert.cpp" />
     <ClCompile Include="..\src\Directory.cpp" />
+    <ClCompile Include="..\src\Font.cpp" />
     <ClCompile Include="..\src\GameState.cpp" />
+    <ClCompile Include="..\src\GraphicalString.cpp" />
     <ClCompile Include="..\src\Line.cpp" />
     <ClCompile Include="..\src\Logging.cpp" />
     <ClCompile Include="..\src\raindrop.cpp" />
@@ -207,6 +209,7 @@
     <ClCompile Include="..\src\Rendering.cpp" />
     <ClCompile Include="..\src\ScoreKeeper7K.cpp" />
     <ClCompile Include="..\src\ScoreKeeper7K_bms.cpp" />
+    <ClCompile Include="..\src\ScoreKeeper7K_experimental.cpp" />
     <ClCompile Include="..\src\ScoreKeeper7K_init.cpp" />
     <ClCompile Include="..\src\ScoreKeeper7K_osu.cpp" />
     <ClCompile Include="..\src\ScoreKeeper7K_rank.cpp" />
@@ -217,6 +220,7 @@
     <ClCompile Include="..\src\ScreenGameplay.cpp" />
     <ClCompile Include="..\src\ScreenGameplay7K.cpp" />
     <ClCompile Include="..\src\ScreenGameplay7K_Mechanics.cpp" />
+    <ClCompile Include="..\src\ScreenGameplay7K_Setup.cpp" />
     <ClCompile Include="..\src\ScreenLoading.cpp" />
     <ClCompile Include="..\src\ScreenMainMenu.cpp" />
     <ClCompile Include="..\src\ScreenSelectMusic.cpp" />
@@ -256,11 +260,13 @@
     <ClInclude Include="..\src\Configuration.h" />
     <ClInclude Include="..\src\Converter.h" />
     <ClInclude Include="..\src\Directory.h" />
+    <ClInclude Include="..\src\Font.h" />
     <ClInclude Include="..\src\GameObject.h" />
     <ClInclude Include="..\src\GameGlobal.h" />
     <ClInclude Include="..\src\GameState.h" />
     <ClInclude Include="..\src\Global.h" />
     <ClInclude Include="..\src\GameWindow.h" />
+    <ClInclude Include="..\src\GraphicalString.h" />
     <ClInclude Include="..\src\GraphObject2D.h" />
     <ClInclude Include="..\src\GraphObjectMan.h" />
     <ClInclude Include="..\src\GuiButton.h" />
@@ -291,6 +297,7 @@
     <ClInclude Include="..\src\SongLoader.h" />
     <ClInclude Include="..\src\SongTiming.h" />
     <ClInclude Include="..\src\SongWheel.h" />
+    <ClInclude Include="..\src\GuiSwitchPanel.h" />
     <ClInclude Include="..\src\TrackNote.h" />
     <ClInclude Include="..\src\TruetypeFont.h" />
     <ClInclude Include="..\src\VBO.h" />

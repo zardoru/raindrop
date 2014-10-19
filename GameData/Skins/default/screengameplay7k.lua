@@ -126,6 +126,14 @@ function getMoveFunction(sX, sY, eX, eY)
 	end
 end
 
+function getUncropFunction(w, h, iw, ih)
+	return function(frac)
+		Obj.SetSize(w, h*(1-frac))
+		Obj.CropByPixels(0, ih*frac*0.5, iw, (ih - (ih*frac*0.5)))
+		return 1
+	end
+end
+
 -- When 'enter' is pressed and the game starts, this function is called.
 function OnActivate()
 	print (Auto)
@@ -136,6 +144,7 @@ function OnActivate()
 			
 		Obj.SetTarget(AutoBN)
 		Obj.SetImageSkin("auto.png")
+
 		Obj.SetCentered(1)
 
 		Obj.AddAnimation( "BnMoveFunction", 0.75, 0, EaseOut )
@@ -144,6 +153,8 @@ function OnActivate()
 		factor = GearWidth / w * 3/4
 		Obj.SetSize(w * factor, h * factor)
 		Obj.SetZ(28)
+		AutoFinishAnimation = getUncropFunction(w*factor, h*factor, w, h)
+		RunAutoAnimation = true
 	end
 end
 
@@ -206,6 +217,15 @@ function GearKeyEvent (Lane, IsKeyDown)
 	HitLightning.LanePress(Lane, IsKeyDown)
 end
 
+-- Called when the song is over.
+function SongFinishedEvent()
+	if AutoBN then
+		Obj.SetTarget(AutoBN)
+		Obj.AddAnimation ("AutoFinishAnimation", 0.35, 0, EaseOut)
+		RunAutoAnimation = false
+	end
+end
+
 function Update(Delta)
 	-- Executed every frame.
 	
@@ -219,7 +239,7 @@ function Update(Delta)
 			Obj.SetAlpha(1)
 		end
 
-		if AutoBN then
+		if AutoBN and RunAutoAnimation == true then
 			local BeatRate = Beat / 2
 			local Scale = math.sin( math.pi * 2 * BeatRate  )
 			Scale = Scale * Scale * 0.25 + 0.75

@@ -13,6 +13,7 @@
 
 #include "stb_truetype.h"
 #include "TruetypeFont.h"
+#include "BitmapFont.h"
 #include "utf8.h"
 
 VBO* GraphObject2D::mBuffer;
@@ -152,13 +153,13 @@ void GraphObject2D::Render()
 	WindowFrame.SetUniform(U_LIGHT, AffectedByLightning);
 	WindowFrame.SetUniform(U_HIDDEN, 0); // not affected by hidden lightning
 	WindowFrame.SetUniform(U_REPCOLOR, false);
+	WindowFrame.SetUniform(U_BTRANSP, BlackToTransparent);
 
 	WindowFrame.SetUniform(U_TRANSL, false);
 	WindowFrame.SetUniform(U_CENTERED, Centered);
 
 	// Assign position attrib. pointer
 	mBuffer->Bind();
-
 	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_POSITION), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
 	// assign vertex UVs
@@ -193,8 +194,9 @@ void TruetypeFont::SetupTexture()
 	Texform->AssignData(QuadPositionsTX);
 }
 
-void TruetypeFont::Render (const char* Text, const Vec2 &Position)
+void TruetypeFont::Render (String &In, const Vec2 &Position, const Mat4 &Transform)
 {
+	const char* Text = In.c_str();
 	std::vector<int> r; 
 	int Line = 0;
 	glm::vec3 vOffs (Position.x, Position.y + scale, 16);
@@ -209,11 +211,12 @@ void TruetypeFont::Render (const char* Text, const Vec2 &Position)
 	glBindTexture(GL_TEXTURE_2D, tex);
 
 	// Set the color.
-	WindowFrame.SetUniform(U_COLOR, 1, 1, 1, 1);
+	WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha);
 	WindowFrame.SetUniform(U_INVERT, false);
 	WindowFrame.SetUniform(U_LIGHT, false);
 	WindowFrame.SetUniform(U_HIDDEN, 0);
 	WindowFrame.SetUniform(U_REPCOLOR, true);
+	WindowFrame.SetUniform(U_BTRANSP, false);
 
 	WindowFrame.SetUniform(U_TRANSL, false);
 	WindowFrame.SetUniform(U_CENTERED, false);
@@ -242,7 +245,7 @@ void TruetypeFont::Render (const char* Text, const Vec2 &Position)
 			continue;
 		}
 
-		dx = glm::translate(Mat4(), trans) * glm::scale(Mat4(), glm::vec3(cp.w, cp.h, 1));
+		dx = Transform * glm::translate(Mat4(), trans) * glm::scale(Mat4(), glm::vec3(cp.w, cp.h, 1));
 		
 		// do the actual draw?
 		if (cp.gltx == 0)
@@ -260,6 +263,7 @@ void TruetypeFont::Render (const char* Text, const Vec2 &Position)
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, cp.w, cp.h, 0, GL_ALPHA, GL_UNSIGNED_BYTE, tx);
 		}else
 			glBindTexture(GL_TEXTURE_2D, cp.gltx);
+
 		WindowFrame.SetUniform(U_MVP,  &(dx[0][0]));
 
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -327,6 +331,7 @@ void Line::Render()
 	WindowFrame.SetUniform(U_LIGHT, false);
 	WindowFrame.SetUniform(U_HIDDEN, 0);
 	WindowFrame.SetUniform(U_REPCOLOR, true);
+	WindowFrame.SetUniform(U_BTRANSP, false);
 
 	WindowFrame.SetUniform(U_TRANSL, false);
 	WindowFrame.SetUniform(U_CENTERED, false);
@@ -343,6 +348,73 @@ void Line::Render()
 	Image::ForceRebind();
 
 	glEnable(GL_DEPTH_TEST);
+}
+
+void BitmapFont::Render(String &St, const Vec2 &Position, const Mat4 &Transform)
+{
+	const char* Text = St.c_str();
+	int32 Character = 0, Line = 0;
+	/* OpenGL Code Ahead */
+
+	if (!Font)
+		return;
+
+	if (!Font->IsValid)
+	{
+		for (int i = 0; i < 256; i++)
+		{
+			CharPosition[i].Invalidate();
+			CharPosition[i].Initialize(true);
+		}
+		Font->IsValid = true;
+	}
+
+	WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha);
+	WindowFrame.SetUniform(U_INVERT, false);
+	WindowFrame.SetUniform(U_LIGHT, false);
+	WindowFrame.SetUniform(U_HIDDEN, 0);
+	WindowFrame.SetUniform(U_REPCOLOR, false);
+	WindowFrame.SetUniform(U_BTRANSP, false);
+
+	WindowFrame.SetUniform(U_TRANSL, false);
+	WindowFrame.SetUniform(U_CENTERED, false);
+
+	Font->Bind();
+	// Assign position attrib. pointer
+	GraphObject2D::BindTopLeftVBO();
+	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_POSITION), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
+
+	for (;*Text != '\0'; Text++)
+	{
+		if(*Text == '\n')
+		{
+			Character = 0;
+			Line += RenderSize.y;
+			continue;
+		}
+
+		if (*Text < 0)
+			continue;
+
+		CharPosition[*Text].SetPosition(Position.x+Character, Position.y+Line);
+		Mat4 RenderTransform = Transform * CharPosition[*Text].GetMatrix();
+
+		// Assign transformation matrix
+		WindowFrame.SetUniform(U_MVP,  &(RenderTransform[0][0]));
+
+		// Assign vertex UVs
+		CharPosition[*Text].BindTextureVBO();
+		glVertexAttribPointer( WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
+
+		// Do the rendering!
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		
+		WindowFrame.DisableAttribArray(A_UV);
+
+		Character += RenderSize.x;
+	}
+
+	WindowFrame.DisableAttribArray(A_POSITION);
 }
 
 uint32 VBO::LastBound = 0;

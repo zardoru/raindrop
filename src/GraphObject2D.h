@@ -68,9 +68,11 @@ public:
 
 	bool ColorInvert;
 	bool AffectedByLightning;
-	
+	bool BlackToTransparent; // If enabled, transforms black pixels into transparent pixels.
+
 	void SetImage(Image* image, bool ChangeSize = true);
 	Image* GetImage();
+	String GetImageFilename() const;
 
 	virtual void InitVBO();
 	virtual void Initialize(bool ShouldInitTexture);
@@ -82,16 +84,20 @@ public:
 	void SetScale(float Scale);
 	void SetScaleX(float ScaleX);
 	void SetScaleY(float ScaleY);
+	float GetScaleX() const;
+	float GetScaleY() const;
 	Vec2 GetScale() const;
 
 	// Position
 	void SetPosition(Vec2 Pos);
 	void SetPosition(float pX, float pY);
-	void AddPosition(float pX, float pY);
 	void AddPosition(Vec2 pos);
+	void AddPosition(float pX, float pY);
 	void SetPositionX(float pX);
 	void SetPositionY(float pY);
 	Vec2 GetPosition() const;
+	float GetPositionX() const;
+	float GetPositionY() const;
 	void SetZ(uint32 Z);
 	uint32 GetZ() const;
 
@@ -120,7 +126,7 @@ public:
 	const glm::mat4 &GetMatrix();
 	bool ShouldUpdateMatrix() const;
 
-	void Render(); // found in backend.cpp
+	virtual void Render(); // found in backend.cpp
 	virtual void Invalidate();
 
 	static void BindTopLeftVBO();

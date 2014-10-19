@@ -33,6 +33,7 @@ enum RendererLocats
 	U_HIDFAC,
 	U_HIDSUM,
 	U_REPCOLOR,
+	U_BTRANSP,
 	NUM_SHADERVARS
 } ;
 

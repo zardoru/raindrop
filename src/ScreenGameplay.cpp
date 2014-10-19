@@ -671,12 +671,12 @@ void ScreenGameplay::RenderObjects(float TimeDelta, bool drawPlayable)
 	str << Combo;
 
 	float textX = GetScreenOffset(0.5).x - (str.str().length() * ComboSizeX / 2);
-	MyFont.DisplayText(str.str().c_str(), Vec2(textX, 0));
+	MyFont.Render(str.str(), Vec2(textX, 0));
 
 	std::stringstream str2;
 	str2 << int32(1000000.0 * Evaluation.dpScoreSquare / (Evaluation.totalNotes * (Evaluation.totalNotes + 1)));
 	textX = GetScreenOffset(0.5).x - (str2.str().length() * ComboSizeX / 2);
-	MyFont.DisplayText(str2.str().c_str(), Vec2(textX, 720));
+	MyFont.Render(str2.str(), Vec2(textX, 720));
 
 
 	/* Lengthy information printing code goes here.*/
@@ -720,7 +720,7 @@ void ScreenGameplay::RenderObjects(float TimeDelta, bool drawPlayable)
 	if (EditMode)
 #endif
 		info << "\nMeasure: " << Measure;
-	SongInfo.DisplayText(info.str().c_str(), Vec2(0,0));
+	SongInfo.Render(info.str(), Vec2(0,0));
 
 	ReadySign.Render();
 

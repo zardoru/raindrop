@@ -17,6 +17,7 @@ GraphObject2D::GraphObject2D(bool ShouldInitTexture)
 	mRotation = 0;
 	Lighten = false;
 	LightenFactor = 1.0f;
+	BlackToTransparent = false;
 
 	BlendingMode = MODE_ALPHA;
 
@@ -305,4 +306,32 @@ const glm::mat4 &GraphObject2D::GetMatrix()
 bool GraphObject2D::ShouldUpdateMatrix() const
 {
 	return DirtyMatrix;
+}
+
+float GraphObject2D::GetScaleX() const
+{
+	return mScale.x;
+}
+
+float GraphObject2D::GetScaleY() const
+{
+	return mScale.y;
+}
+
+float GraphObject2D::GetPositionX() const
+{
+	return mPosition.x;
+}
+
+float GraphObject2D::GetPositionY() const
+{
+	return mPosition.y;
+}
+
+String GraphObject2D::GetImageFilename() const
+{
+	if (mImage)
+		return mImage->fname;
+	else
+		return String();
 }

@@ -13,12 +13,33 @@
 #include "Image.h"
 #include "ImageLoader.h"
 #include "ImageList.h"
+#include "GraphObjectMan.h"
+#include "BitmapFont.h"
 
 #include "ScreenGameplay7K.h"
 
 using namespace VSRG;
 
 static Mat4 identity;
+
+void ScreenGameplay7K::Render()
+{
+	Background.Render();
+	Layer1.Render();
+	Layer2.Render();
+
+	if (MissTime > 0)
+		LayerMiss.Render();
+
+	Animations->DrawUntilLayer(13);
+
+	DrawMeasures();
+
+	for (int32 i = 0; i < CurrentDiff->Channels; i++)
+		Keys[i].Render();
+
+	Animations->DrawFromLayer(14);
+}
 
 void ScreenGameplay7K::DrawBarlines(float rPos)
 {
@@ -140,15 +161,20 @@ void ScreenGameplay7K::DrawMeasures()
 
 
 			// Use the lane's note image
-			if (NoteImages[k])
-				NoteImages[k]->Bind();
-			else
+
+			if (!m->IsHold())
 			{
-				if (NoteImage)
-					NoteImage->Bind();
+				if (NoteImages[k])
+					NoteImages[k]->Bind();
 				else
-					continue;
+				{
+					if (NoteImage)
+						NoteImage->Bind();
+					else
+						continue;
+				}
 			}
+
 
 			// Assign the note matrix
 			WindowFrame.SetUniform(U_SIM, &(NoteMatrix[k])[0][0]);
@@ -157,6 +183,9 @@ void ScreenGameplay7K::DrawMeasures()
 			// Draw Hold tail
 			if (m->IsHold())
 			{
+				if (NoteImagesHoldTail[k])
+					NoteImagesHoldTail[k]->Bind();
+
 				WindowFrame.SetUniform(U_TRANM, &(m->GetHoldEndMatrix())[0][0]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 			}
@@ -175,9 +204,10 @@ void ScreenGameplay7K::DrawMeasures()
 				WindowFrame.SetUniform(U_TRANM, &(m->GetMatrix())[0][0]);
 			}
 
+			if (m->IsHold())
+				if (NoteImagesHoldHead[k]) NoteImagesHoldHead[k]->Bind();
 
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
 		}
 
 		next_key: (void)0;

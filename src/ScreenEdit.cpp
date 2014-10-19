@@ -358,7 +358,7 @@ void ScreenEdit::DrawInformation()
 		info << "Null";
 	if (GridEnabled)
 		info << "\nGrid Enabled (size " << ScreenWidth / GridCellSize << ")";
-	EditInfo.DisplayText(info.str().c_str(), Vec2(512, 600));
+	EditInfo.Render(info.str(), Vec2(512, 600));
 }
 
 void ScreenEdit::CalculateVerticalLock()

@@ -82,10 +82,10 @@ bool ScreenEvaluation7K::Run(double Delta)
 	Background.Render();
 	if (Font)
 	{
-		Font->DisplayText("results screen",			    Vec2( ScreenWidth/2 - 70, 0 ));
-		Font->DisplayText("press space to continue...", Vec2( ScreenWidth/2 - 130, ScreenHeight*7/8 ));
+		Font->Render(String("results screen"),			    Vec2( ScreenWidth/2 - 70, 0 ));
+		Font->Render(String("press space to continue..."), Vec2( ScreenWidth/2 - 130, ScreenHeight*7/8 ));
 
-		Font->DisplayText(DisplayResult.c_str(), Vec2( ScreenWidth / 2 - 200, ScreenHeight / 2 - 200 ));
+		Font->Render(DisplayResult, Vec2( ScreenWidth / 2 - 200, ScreenHeight / 2 - 200 ));
 	}
 	return Running;
 }

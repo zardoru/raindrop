@@ -42,6 +42,9 @@ namespace VSRG
 		// Autoplay BMP
 		std::map<int, String> BMPList;
 		std::vector<AutoplayBMP> BMPEvents;
+		std::vector<AutoplayBMP> BMPEventsMiss;
+		std::vector<AutoplayBMP> BMPEventsLayer;
+		std::vector<AutoplayBMP> BMPEventsLayer2;
 
 		double PreviewTime;
 

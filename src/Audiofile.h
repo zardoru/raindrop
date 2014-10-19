@@ -81,8 +81,8 @@ private:
 	AudioDataSource* mSource;
 	unsigned int     mBufferSize;
 	short*   mData;
-	float			 mStreamTime;
-	float			 mPlaybackTime;
+	double			 mStreamTime;
+	double			 mPlaybackTime;
 
 	bool			 mIsPlaying;
 	
@@ -98,8 +98,8 @@ public:
 	void SeekSample(uint32 Sample);
 	void Stop();
 
-	float GetStreamedTime();
-	float GetPlayedTime();
+	double GetStreamedTime();
+	double GetPlayedTime();
 	uint32 GetRate();
 
 	uint32 Update();

@@ -1,10 +1,11 @@
 
+#include "Font.h"
 #include <map>
 
 struct stbtt_fontinfo;
 class VBO;
 
-class TruetypeFont
+class TruetypeFont : public Font
 {
 	stbtt_fontinfo* info;
 	unsigned char* data;
@@ -34,5 +35,5 @@ public:
 	TruetypeFont(Directory Filename, float Scale);
 	~TruetypeFont();
 	void Invalidate();
-	void Render(const char* Text, const Vec2 &Position);
+	void Render(String &Text, const Vec2 &Position, const Mat4 &Transform = Mat4());
 };

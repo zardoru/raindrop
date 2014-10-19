@@ -104,6 +104,18 @@ void Configuration::GetConfigListS(String Name, std::vector<String> &Out)
 	}
 }
 
+bool Configuration::ListExists(String Name)
+{
+	lua_State *L = SkinCfgLua->GetState();
+	bool Exists;
+
+	lua_getglobal(L, Name.c_str());
+	Exists = lua_istable(L, -1);
+
+	lua_pop(L, 1);
+	return Exists;
+}
+
 double Configuration::CfgScreenHeight()
 {
 	if (IsWidescreen)

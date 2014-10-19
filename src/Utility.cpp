@@ -1,6 +1,8 @@
 #ifdef WIN32
 #include <Windows.h>
 #include <direct.h>
+#else
+#include <iconv.h>
 #endif
 
 #include <cstring>
@@ -9,6 +11,7 @@
 #include <clocale>
 
 #include "Global.h"
+#include "Logging.h"
 
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/classification.hpp>
@@ -97,17 +100,35 @@ namespace Utility {
 		return String(mbs);
 	}
 
+	char* buf = (char*)malloc(2048);
+
 	String SJIStoU8 (String Line)
 	{
+#ifdef WIN32
 		wchar_t u16s[2048];
 		char mbs[2048];
-#ifdef WIN32
 		size_t len = MultiByteToWideChar(932, 0, Line.c_str(), Line.length(), u16s, 2048);
 		len = WideCharToMultiByte(CP_UTF8, 0, u16s, len, mbs, 2048, NULL, NULL);
 		mbs[len] = 0;
 		return String(mbs);
-#else // Not implemented
-		return Line;
+#else
+		iconv_t conv;
+		char** out = &buf;
+		const char* in = Line.c_str();
+		size_t BytesLeftSrc = Line.length();
+		size_t BytesLeftDst = 2048;
+
+		conv = iconv_open("UTF-8", "SHIFT_JIS");
+		bool success = (iconv(conv, (char **)&in, &BytesLeftSrc, out, &BytesLeftDst) > -1);
+
+		iconv_close(conv);
+		if (success)
+			return String(*out);
+		else
+		{
+			Log::Printf("Failure converting character sets.");
+			return String();
+		}
 #endif
 	}
 

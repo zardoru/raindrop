@@ -114,7 +114,7 @@ int chanScratch = fromBase36("16");
 #define CHANNEL_BGALAYER 7
 #define CHANNEL_EXBPM 8
 #define CHANNEL_STOPS 9
-#define CHANNEL_LAYER2 10
+#define CHANNEL_BGALAYER2 10
 #define CHANNEL_SCRATCH chanScratch 
 
 struct BMSEvent
@@ -279,13 +279,13 @@ int ts_sort( const TimingSegment &A, const TimingSegment &B )
 	return A.Time < B.Time;
 }
 
-void CalculateBaseBMP (BmsLoadInfo *Info)
+void CalculateBMP (BmsLoadInfo *Info, std::vector<AutoplayBMP> &BMPEvents, int Channel)
 {
 	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
 	{
-		if (i->second.Events.find(CHANNEL_BGABASE) != i->second.Events.end())
+		if (i->second.Events.find(Channel) != i->second.Events.end())
 		{
-			for (BMSEventList::iterator ev = i->second.Events[CHANNEL_BGABASE].begin(); ev != i->second.Events[CHANNEL_BGABASE].end(); ev++)
+			for (BMSEventList::iterator ev = i->second.Events[Channel].begin(); ev != i->second.Events[Channel].end(); ev++)
 			{
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first);
 				int BMP = ev->Event;
@@ -295,7 +295,7 @@ void CalculateBaseBMP (BmsLoadInfo *Info)
 				New.BMP = BMP;
 				New.Time = Time;
 
-				Info->difficulty->BMPEvents.push_back(New);
+				BMPEvents.push_back(New);
 			}
 		}
 	}
@@ -747,7 +747,10 @@ void CompileBMS(BmsLoadInfo *Info)
 	CalculateBPMs(Info);
 	CalculateStops(Info);
 
-	CalculateBaseBMP(Info);
+	CalculateBMP(Info, Info->difficulty->BMPEvents, CHANNEL_BGABASE);
+	CalculateBMP(Info, Info->difficulty->BMPEventsMiss, CHANNEL_BGAPOOR);
+	CalculateBMP(Info, Info->difficulty->BMPEventsLayer, CHANNEL_BGALAYER);
+	CalculateBMP(Info, Info->difficulty->BMPEventsLayer2, CHANNEL_BGALAYER2);
 
 	Info->difficulty->Channels = AutodetectChannelCount(Info);
 	if (Info->difficulty->Channels == 9) // Assume pop'n
@@ -1054,3 +1057,4 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 	Out->Difficulties.push_back(Diff);
 	delete Info;
 }
+

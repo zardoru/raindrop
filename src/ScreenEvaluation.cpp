@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "GameGlobal.h"
 #include "GameState.h"
 #include "GraphObject2D.h"
@@ -97,11 +98,11 @@ bool ScreenEvaluation::Run(double Delta)
 	Background.Render();
 	if (Font)
 	{
-		Font->DisplayText(ResultsString.c_str(),        Vec2( ScreenWidth/2 - 110, ScreenHeight/2 - 100 ));
-		Font->DisplayText(ResultsNumerical.c_str(),     Vec2( ScreenWidth/2, ScreenHeight/2 - 100 ));
-		Font->DisplayText("results screen",			    Vec2( ScreenWidth/2 - 70, 0 ));
-		Font->DisplayText("press space to continue...", Vec2( ScreenWidth/2 - 130, ScreenHeight*7/8 ));
-		Font->DisplayText(TitleFormat.c_str(), Vec2( 0, ScreenHeight - 20 ));
+		Font->Render(ResultsString,        Vec2( ScreenWidth/2 - 110, ScreenHeight/2 - 100 ));
+		Font->Render(ResultsNumerical,     Vec2( ScreenWidth/2, ScreenHeight/2 - 100 ));
+		Font->Render(String("results screen"),			    Vec2( ScreenWidth/2 - 70, 0 ));
+		Font->Render(String("press space to continue..."), Vec2( ScreenWidth/2 - 130, ScreenHeight*7/8 ));
+		Font->Render(TitleFormat, Vec2( 0, ScreenHeight - 20 ));
 	}
 	return Running;
 }
