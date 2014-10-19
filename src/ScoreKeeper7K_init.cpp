@@ -3,6 +3,15 @@
 
 void ScoreKeeper7K::init(){
 
+	pacemaker_texts[PMT_F] = "F" ;
+	pacemaker_texts[PMT_E] = "E" ;
+	pacemaker_texts[PMT_D] = "D" ;
+	pacemaker_texts[PMT_C] = "C" ;
+	pacemaker_texts[PMT_B] = "B" ;
+	pacemaker_texts[PMT_A] = "A" ;
+	pacemaker_texts[PMT_AA] = "AA" ;
+	pacemaker_texts[PMT_AAA] = "AAA" ;
+
 	setAccMin(16);
 	setAccMax(100);
 

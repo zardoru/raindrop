@@ -187,6 +187,7 @@ void GraphObjectMan::DrawUntilLayer(uint32 Layer)
 {
 	for (std::vector<GraphObject2D*>::iterator i = Objects.begin(); i != Objects.end(); i++)
 	{
+		if (*i == NULL){ /* throw an error */ continue; }
 		if ((*i)->GetZ() <= Layer)
 			(*i)->Render();
 	}

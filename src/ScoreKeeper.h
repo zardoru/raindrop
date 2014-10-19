@@ -91,4 +91,10 @@ enum PacemakerType{
 	PMT_RANK_P8 = 28,
 	PMT_RANK_P9 = 29,
 
+	PMT_B = 31,
+	PMT_C = 32,
+	PMT_D = 33,
+	PMT_E = 34,
+	PMT_F = 35,
+
 };

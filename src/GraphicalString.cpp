@@ -15,6 +15,10 @@ void GraphicalString::SetFont(Font* _Font)
 	mFont = _Font;
 }
 
+void GraphicalString::SetColour(float red, float green, float blue){
+	Red = red; Green = green; Blue = blue;
+}
+
 Font* GraphicalString::GetFont() const
 {
 	return mFont;

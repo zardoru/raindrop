@@ -1,5 +1,8 @@
 #include "ScoreKeeper.h"
 
+#include <utility>
+#include <map>
+
 class ScoreKeeper7K {
 
 	public:
@@ -19,10 +22,6 @@ class ScoreKeeper7K {
 		int getTotalNotes();
 		void setAccMin(int ms);
 		void setAccMax(int ms);
-		void setEX2(int ms);
-		void setEX1(int ms);
-		void setDP2(int ms);
-		void setDP1(int ms);
 
 		int getJudgmentCount(ScoreKeeperJudgment Judge);
 		std::string getHistogram();
@@ -43,6 +42,8 @@ class ScoreKeeper7K {
 		float getLifebarAmount(LifeType lifebar_amount_type);
 
 		int getPacemakerDiff(PacemakerType pmt);
+		std::pair<std::string, int> getAutoPacemaker();
+		std::map<PacemakerType, std::string> pacemaker_texts;
 
 		int getRank(); // returns a number from -9 to 9
 

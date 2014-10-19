@@ -2,6 +2,7 @@
 #include "ScoreKeeper7K.h"
 
 #include <iomanip>
+#include <map>
 
 ScoreKeeper7K::~ScoreKeeper7K(){  }
 
@@ -308,14 +309,25 @@ float ScoreKeeper7K::getLifebarAmount(LifeType lifebar_amount_type){
 int ScoreKeeper7K::getPacemakerDiff(PacemakerType pacemaker){
 	
 	switch(pacemaker){
+		case PMT_F:
+			return ex_score - (total_notes * 2 / 9 + (total_notes * 2 % 9 != 0)); 
+		case PMT_E:
+			return ex_score - (total_notes * 4 / 9 + (total_notes * 4 % 9 != 0)); 
+		case PMT_D:
+			return ex_score - (total_notes * 6 / 9 + (total_notes * 6 % 9 != 0)); 
+		case PMT_C:
+			return ex_score - (total_notes * 8 / 9 + (total_notes * 8 % 9 != 0)); 
+		case PMT_B:
+			return ex_score - (total_notes * 10 / 9 + (total_notes * 10 % 9 != 0)); 
 		case PMT_A:
-			return ex_score - (total_notes * 12 / 9); 
+			return ex_score - (total_notes * 12 / 9 + (total_notes * 12 % 9 != 0)); 
 		case PMT_AA:
-			return ex_score - (total_notes * 14 / 9); 
+			return ex_score - (total_notes * 14 / 9 + (total_notes * 14 % 9 != 0)); 
 		case PMT_AAA:
-			return ex_score - (total_notes * 16 / 9); 
+			return ex_score - (total_notes * 16 / 9 + (total_notes * 16 % 9 != 0));
+
 		case PMT_50EX:
-			return ex_score - (total_notes * 50 / 50); 
+			return ex_score - (total_notes); 
 		case PMT_75EX:
 			return ex_score - (total_notes * 75 / 50); 
 		case PMT_85EX:
@@ -340,5 +352,31 @@ int ScoreKeeper7K::getPacemakerDiff(PacemakerType pacemaker){
 		case PMT_RANK_P9:
 			return rank_pts - (total_notes * 280 / 100);
 	}
+
+}
+
+
+
+
+
+std::pair<std::string, int> ScoreKeeper7K::getAutoPacemaker(){
+	
+	PacemakerType pmt;
+	
+	if (ex_score < total_notes * 2 / 9)  pmt = PMT_F;
+	else if (ex_score < total_notes * 5 / 9)  pmt = PMT_E;
+	else if (ex_score < total_notes * 7 / 9)  pmt = PMT_D;
+	else if (ex_score < total_notes * 9 / 9)  pmt = PMT_C;
+	else if (ex_score < total_notes * 11 / 9)  pmt = PMT_B;
+	else if (ex_score < total_notes * 13 / 9)  pmt = PMT_A;
+	else if (ex_score < total_notes * 15 / 9)  pmt = PMT_AA;
+	else  pmt = PMT_AAA;
+
+	int pacemaker = getPacemakerDiff(pmt);
+	std::stringstream ss;
+	ss
+	<< std::setfill(' ') << std::setw(4) << pacemaker_texts[pmt] << ": ";
+
+	return std::make_pair(ss.str(), pacemaker);
 
 }

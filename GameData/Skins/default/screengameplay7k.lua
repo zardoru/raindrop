@@ -253,5 +253,7 @@ function Update(Delta)
 	end
 	
 	AnimatedObjects.Run(Delta)
+	UpdateTextObjects()
+
 end
 
