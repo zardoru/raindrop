@@ -53,7 +53,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>../ext-src/SOIL;../ext-src;../ext-libs/libmpg123;$(WindowsSdkDir)include;$(FrameworkSDKDir)include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../</IncludePath>
+    <IncludePath>../ext-src/SOIL;../ext-src;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../</IncludePath>
     <LibraryPath>..\ext-libs\Debug;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>

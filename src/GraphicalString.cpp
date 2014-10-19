@@ -7,6 +7,7 @@ GraphicalString::GraphicalString()
 	: GraphObject2D(false),
 	mFont(NULL)
 {
+	SetSize(1); // Default size, so it doesn't scale to 0
 }
 
 void GraphicalString::SetFont(Font* _Font)
