@@ -35,6 +35,8 @@ function UpdateTextObjects()
 		pre_char = "-";
 	end
 
-	pacemaker2.Text = string.format("%s%04d", pre_char, math.abs(PacemakerValue));
+	if PacemakerValue then
+		pacemaker2.Text = string.format("%s%04d", pre_char, math.abs(PacemakerValue));
+	end
 	
 end
