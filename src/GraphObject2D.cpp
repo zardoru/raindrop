@@ -6,8 +6,7 @@
 
 bool GraphObject2D::IsInitialized = false;
 
-
-GraphObject2D::GraphObject2D(bool ShouldInitTexture) 
+void GraphObject2D::Construct(bool doInitTexture)
 {
 	SetCropToWholeImage();
 	mWidth = mHeight = 0;
@@ -23,7 +22,7 @@ GraphObject2D::GraphObject2D(bool ShouldInitTexture)
 
 	Red = Blue = Green = 1.0;
 	Alpha = 1.0;
-		
+
 	z_order = 0;
 
 	Centered = false;
@@ -36,7 +35,17 @@ GraphObject2D::GraphObject2D(bool ShouldInitTexture)
 	mImage = NULL;
 	UvBuffer = NULL;
 
-	Initialize(ShouldInitTexture);
+	Initialize(doInitTexture);
+}
+
+GraphObject2D::GraphObject2D(bool ShouldInitTexture) 
+{
+	Construct(ShouldInitTexture);
+}
+
+GraphObject2D::GraphObject2D()
+{
+	Construct(true);
 }
 
 GraphObject2D::~GraphObject2D()
@@ -44,9 +53,14 @@ GraphObject2D::~GraphObject2D()
 	Cleanup();
 }
 
-void GraphObject2D::SetBlendMode(rBlendMode Mode)
+void GraphObject2D::SetBlendMode(int Mode)
 {
-	BlendingMode = Mode;
+	BlendingMode = (rBlendMode)Mode;
+}
+
+int GraphObject2D::GetBlendMode() const
+{
+	return BlendingMode;
 }
 
 void GraphObject2D::Initialize(bool ShouldInitTexture)

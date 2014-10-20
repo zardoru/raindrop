@@ -2,10 +2,10 @@
 
 -- Backgrounds
 DefaultBackground = "MenuBackground.png"
-SelectMusicBackground = DefaultBackground
+SelectMusicBackground = ""
 EvaluationBackground = DefaultBackground
 EvaluationBackground7K = DefaultBackground
-MainMenuBackground = DefaultBackground
+MainMenuBackground = ""
 DefaultGameplayBackground = DefaultBackground
 DefaultGameplay7KBackground = DefaultBackground
 

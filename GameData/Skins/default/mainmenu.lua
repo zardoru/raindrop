@@ -1,3 +1,4 @@
+skin_require("Background.lua")
 
 function InBackground(frac)
 	Obj.SetAlpha( 1 - frac )
@@ -29,6 +30,7 @@ function ExitBtnHoverLeave()
 end
 
 function Init()
+	BackgroundAnimation:Init()
 
 	targBadge = Obj.CreateTarget()
 	targLogo = Obj.CreateTarget()
@@ -63,4 +65,5 @@ function Cleanup()
 end
 
 function Update(Delta)
+	BackgroundAnimation:Update(Delta)
 end

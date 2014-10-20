@@ -45,15 +45,16 @@ private: // Transformations
 
 	Image* mImage;
 
+	void Construct(bool doInitTexture);
 protected:
 	VBO *UvBuffer;
 	bool DoTextureCleanup;
 	void UpdateTexture();
 	void UpdateMatrix();
-
 public:
 	
-	GraphObject2D(bool ShouldInitTexture = true);
+	GraphObject2D(bool ShouldInitTexture);
+	GraphObject2D();
 	~GraphObject2D();
 	
 	// color and other transformations
@@ -77,7 +78,8 @@ public:
 	virtual void InitVBO();
 	virtual void Initialize(bool ShouldInitTexture);
 
-	void SetBlendMode(rBlendMode Mode);
+	void SetBlendMode(int Mode);
+	int GetBlendMode() const;
 
 	// Scale
 	void SetScale(Vec2 Scale);
