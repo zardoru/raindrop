@@ -27,20 +27,23 @@ ScreenGameplay7K::ScreenGameplay7K()
 	SongOldTime = -1;
 	Music = NULL;
 	MissSnd = NULL;
+	FailSnd = NULL;
 	GameTime = 0;
 
 	waveEffectEnabled = false;
 	waveEffect = 0;
 	WaitingTime = 1.5;
 
+	stage_failed = false;
 	NoFail = true;
+
 	SelectedHiddenMode = HIDDENMODE_NONE; // No Hidden
 	RealHiddenMode = HIDDENMODE_NONE;
 	HideClampSum = 0;
 
 	Auto = false;
 
-	lifebar_type = LT_GROOVE;
+	lifebar_type = LT_SURVIVAL;
 	SpeedMultiplierUser = 4;
 	SongFinished = false;
 
@@ -80,6 +83,7 @@ void ScreenGameplay7K::Cleanup()
 	}
 
 	MixerRemoveSample(MissSnd);
+	MixerRemoveSample(FailSnd);
 
 	delete MissSnd;
 	delete Animations;
@@ -415,11 +419,18 @@ void ScreenGameplay7K::SetupAfterLoadingVariables()
 
 void ScreenGameplay7K::LoadThreadInitialization()
 {
+
 	MissSnd = new SoundSample();
 	if (MissSnd->Open((GameState::GetInstance().GetSkinPrefix() + "miss.ogg").c_str()))
 		MixerAddSample(MissSnd);
 	else
 		delete MissSnd;
+
+	FailSnd = new SoundSample();
+	if (FailSnd->Open((GameState::GetInstance().GetSkinPrefix() + "stage_failed.ogg").c_str()))
+		MixerAddSample(FailSnd);
+	else
+		delete FailSnd;
 
 	if (AudioCompensation)
 		TimeCompensation = MixerGetLatency();
@@ -439,7 +450,10 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	Animations->Preload(GameState::GetInstance().GetSkinPrefix() + "screengameplay7k.lua", "Preload");
 	score_keeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
 	score_keeper->setLifeTotal(CurrentDiff->getLifeTotal());
+
 	score_keeper->setJudgeRank(CurrentDiff->getJudgeRank());
+	// score_keeper->setODWindows(CurrentDiff->getODRank());
+
 	DoPlay = true;
 }
 

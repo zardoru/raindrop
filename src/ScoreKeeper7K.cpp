@@ -49,8 +49,8 @@ void ScoreKeeper7K::setLifeTotal(double total){
 
 	lifebar_easy_decrement = Clamp(lifebar_total / max_notes / 12.0, 0.00, 0.02);
 	lifebar_groove_decrement = Clamp(lifebar_total / max_notes / 10.0, 0.01, 0.02);
-	lifebar_survival_decrement = Clamp(lifebar_total / max_notes / 5.0, 0.0, 0.15);
-	lifebar_exhard_decrement = Clamp(lifebar_total / max_notes / 2.0, 0.0, 0.3);
+	lifebar_survival_decrement = Clamp(lifebar_total / max_notes / 7.0, 0.02, 0.15);
+	lifebar_exhard_decrement = Clamp(lifebar_total / max_notes / 2.0, 0.03, 0.3);
 
 }
 
@@ -67,6 +67,13 @@ void ScoreKeeper7K::setJudgeRank(int rank){
 	}
 	set_timing_windows();
 }
+
+void ScoreKeeper7K::setJudgeScale(double scale){
+	judge_window_scale = scale;
+	set_timing_windows();
+}
+
+
 
 int ScoreKeeper7K::getTotalNotes(){ return total_notes; }
 
@@ -108,7 +115,7 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 
 	ScoreKeeperJudgment judgment = SKJ_NONE;
 
-	for (int i = 1; i < 6; i++)
+	for (int i = (use_w0 ? 0 : 1); i < 6; i++)
 	{
 		if (ms <= judgment_time[i])
 		{
@@ -171,6 +178,7 @@ int ScoreKeeper7K::getJudgmentCount(ScoreKeeperJudgment judgment)
 	return judgment_amt[judgment];
 }
 
+bool ScoreKeeper7K::usesW0(){ return use_w0; }
 
 void ScoreKeeper7K::missNote(bool auto_hold_miss, bool early_miss){
 
@@ -189,7 +197,7 @@ void ScoreKeeper7K::missNote(bool auto_hold_miss, bool early_miss){
 		// miss tier 2
 		lifebar_easy = max(0.0, lifebar_easy - lifebar_easy_decrement * 3);
 		lifebar_groove = max(0.0, lifebar_groove - lifebar_groove_decrement * 3);
-		lifebar_survival = max(0.0, lifebar_survival - lifebar_groove_decrement * 3);
+		lifebar_survival = max(0.0, lifebar_survival - lifebar_survival_decrement * 3);
 		lifebar_exhard = max(0.0, lifebar_exhard - lifebar_exhard_decrement * 3);
 
 	}else if(early_miss){
@@ -197,7 +205,7 @@ void ScoreKeeper7K::missNote(bool auto_hold_miss, bool early_miss){
 		// miss tier 1
 		lifebar_easy = max(0.0, lifebar_easy - lifebar_easy_decrement);
 		lifebar_groove = max(0.0, lifebar_groove - lifebar_groove_decrement);
-		lifebar_survival = max(0.0, lifebar_survival - lifebar_groove_decrement);
+		lifebar_survival = max(0.0, lifebar_survival - lifebar_survival_decrement);
 		lifebar_exhard = max(0.0, lifebar_exhard - lifebar_exhard_decrement);
 
 	}
@@ -301,6 +309,23 @@ float ScoreKeeper7K::getLifebarAmount(LifeType lifebar_amount_type){
 			return lifebar_survival;
 		default:
 			return 0;
+	}
+
+}
+
+bool ScoreKeeper7K::isStageFailed(LifeType lifebar_amount_type){
+	
+	switch(lifebar_amount_type){
+		case LT_GROOVE:
+			return total_notes == max_notes && lifebar_easy < 0.80;
+		case LT_EASY:
+			return total_notes == max_notes && lifebar_groove < 0.80;
+		case LT_SURVIVAL:
+			return lifebar_survival == 0.0;
+		case LT_EXHARD:
+			return lifebar_exhard == 0.0;
+		default:
+			return false;
 	}
 
 }

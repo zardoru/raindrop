@@ -10,6 +10,7 @@ class Line;
 
 class ScreenGameplay7K : public Screen
 {
+
 private:
 
 	GraphObject2D Keys[VSRG::MAX_CHANNELS];
@@ -55,7 +56,7 @@ private:
 	double GameTime;
 	double MissTime;
 
-
+	bool stage_failed;
 
 	/* User Variables */
     float       SpeedMultiplierUser;
@@ -94,6 +95,7 @@ private:
 
 	AudioStream *Music;
 	SoundSample *MissSnd;
+	SoundSample *FailSnd;
 
 	ScoreKeeper7K* score_keeper;
 

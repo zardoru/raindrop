@@ -166,8 +166,9 @@ function HitEvent(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease)
 	if math.abs(TimeOff) < AccuracyHitMS then
 		DoColor = 0
 
-		if math.abs(TimeOff) <= 6.4 then
+		if JudgmentValue == 0 then
 			DoColor = 1
+			JudgmentValue = 1
 		end
 
 		Explosions.Hit(Lane, 0, IsHold, IsHoldRelease)

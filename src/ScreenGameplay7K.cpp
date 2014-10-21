@@ -240,9 +240,13 @@ void ScreenGameplay7K::CheckShouldEndScreen()
 		Next = Eval;
 	}
 
-	// We failed!
-	if (score_keeper->getLifebarAmount(LT_GROOVE) <= 0 && !NoFail)
-		Running = false;
+	if (score_keeper->isStageFailed(lifebar_type) && !stage_failed){
+		// Run stage failed animation.
+		stage_failed = true;
+		Music->Stop();
+		FailSnd->Play();
+	}
+	
 }
 
 void ScreenGameplay7K::UpdateSongTime(float Delta)

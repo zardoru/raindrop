@@ -1,11 +1,11 @@
-// A class dedicated to keeping score.
-
 #ifndef ScoreKeeper_H
 #define ScoreKeeper_H
 
 enum ScoreKeeperJudgment{
 
-	SKJ_NONE = 0, // no judgment.
+	SKJ_NONE = -1, // no judgment.
+
+	SKJ_W0 = 0, // Ridiculous / rainbow 300, for those programs that use it.
 
 	SKJ_W1 = 1, // Perfect / flashing Great
 	SKJ_W2 = 2, // Great

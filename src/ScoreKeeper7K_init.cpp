@@ -2,7 +2,9 @@
 #include "ScoreKeeper7K.h"
 
 void ScoreKeeper7K::init(){
-
+	
+	use_w0 = false; // don't use Ridiculous by default.
+	
 	pacemaker_texts[PMT_F] = "F" ;
 	pacemaker_texts[PMT_E] = "E" ;
 	pacemaker_texts[PMT_D] = "D" ;
@@ -62,14 +64,14 @@ void ScoreKeeper7K::init(){
 
 
 void ScoreKeeper7K::set_timing_windows(){
-
-	double JudgmentValues[] = { 16, 40, 100, 250, 625 };
+	
+	double JudgmentValues[] = { 6.4, 16, 40, 100, 250, 625 };
 
 	miss_threshold = 250;
 	earlymiss_threshold = 1250;
 
 	for (int i = 0; i < sizeof(JudgmentValues)/sizeof(double); i++)
-		judgment_time[i+1] = JudgmentValues[i] * judge_window_scale;
+		judgment_time[i] = JudgmentValues[i] * judge_window_scale;
 
 	for (int i = 0; i < 9; i++)
 		judgment_amt[i] = 0;
@@ -78,6 +80,32 @@ void ScoreKeeper7K::set_timing_windows(){
 		histogram[i+127] = 0;
 
 }
+
+
+void ScoreKeeper7K::setODWindows(int od){
+
+	use_w0 = true; // if chart has OD, use osu!mania scoring.
+
+	double JudgmentValues[] = { 16, 34, 67, 97, 121, 158 };
+
+	miss_threshold = 121 + (10 - od) * 3;
+	earlymiss_threshold = 158 + (10 - od) * 3;
+	
+	judgment_time[SKJ_W0] = JudgmentValues[SKJ_W0];
+	// judgment_time[SKJ_W1] = 16; // set this one constant.
+	for (int i = 1; i < sizeof(JudgmentValues)/sizeof(double); i++)
+		judgment_time[i] = JudgmentValues[i] + (10 - od) * 3;
+
+	for (int i = 0; i < 9; i++)
+		judgment_amt[i] = 0;
+
+	for (int i = -127; i < 128; ++i)
+		histogram[i+127] = 0;
+
+}
+
+
+void ScoreKeeper7K::set_manual_w0(bool on){ use_w0 = on; } // make a config option
 
 
 ScoreKeeper7K::ScoreKeeper7K(){

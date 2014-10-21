@@ -132,6 +132,7 @@ void ScreenGameplay7K::RunMeasures()
 				}
 			}
 
+
 			if (Auto) {
 				float TimeThreshold = SongTime + 0.016;
 				if ( m->GetStartTime() < TimeThreshold) // allow a tolerance equal to the judgment window?
@@ -157,6 +158,9 @@ void ScreenGameplay7K::RunMeasures()
 					}
 				}
 			}
+
+
+			if(stage_failed) continue; // don't check for judgments after stage is failed.
 
 
 			/* We have to check for all gameplay conditions for this note. */
@@ -207,6 +211,8 @@ void ScreenGameplay7K::ReleaseLane(uint32 Lane, float Time)
 {
 	GearKeyEvent(Lane, false);
 
+	if(stage_failed) return; // don't judge any more after stage is failed.
+
 	for (std::vector<TrackNote>::iterator m = NotesByChannel[Lane].begin(); m != NotesByChannel[Lane].end(); m++)
 	{
 		if (m->IsHold() && m->WasNoteHit() && m->IsEnabled()) /* We hit the hold's head and we've not released it early already */
@@ -245,7 +251,7 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 {
 	float MsDisplayMargin = (Configuration::GetSkinConfigf("HitErrorDisplayLimiter"));
 
-	if ( (!Music && !CurrentDiff->IsVirtual) || !Active)
+	if ( (!Music && !CurrentDiff->IsVirtual) || !Active || stage_failed)
 		return;
 
 	GearKeyEvent(Lane, true);

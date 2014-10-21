@@ -34,8 +34,14 @@ void ScreenEvaluation7K::Init(ScoreKeeper7K *Result)
 	<< "Accuracy: " << Result->getPercentScore(PST_ACC) << "%\n"
 	<< "Final Score: " << Result->getScore(ST_EXP) << "\n"
 	<< "Max Combo: " << Result->getScore(ST_MAX_COMBO) << "\n"
-	<< "\n"
-	<< "Fantastic: " << Result->getJudgmentCount(SKJ_W1) << " (" << float(Result->getJudgmentCount(SKJ_W1) * 100) / float(Result->getMaxNotes()) << "%)\n"
+	<< "\n";
+
+	if(Result->usesW0()){	
+		ss << "Fantastic: " << Result->getJudgmentCount(SKJ_W0) << " (" << float(Result->getJudgmentCount(SKJ_W0) * 100) / float(Result->getMaxNotes()) << "%)\n";
+	}
+
+	ss
+	<< "  Perfect: " << Result->getJudgmentCount(SKJ_W1) << " (" << float(Result->getJudgmentCount(SKJ_W1) * 100) / float(Result->getMaxNotes()) << "%)\n"
 	<< "    Great: " << Result->getJudgmentCount(SKJ_W2) << " (" << float(Result->getJudgmentCount(SKJ_W2) * 100) / float(Result->getMaxNotes()) << "%)\n"
 	<< "     Good: " << Result->getJudgmentCount(SKJ_W3) << " (" << float(Result->getJudgmentCount(SKJ_W3) * 100) / float(Result->getMaxNotes()) << "%)\n"
 	<< "      Bad: " << Result->getJudgmentCount(SKJ_W4) << " (" << float(Result->getJudgmentCount(SKJ_W4) * 100) / float(Result->getMaxNotes()) << "%)\n"

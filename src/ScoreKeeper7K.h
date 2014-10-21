@@ -17,11 +17,16 @@ class ScoreKeeper7K {
 		void setMaxNotes(int notes);
 		void setLifeTotal(double total);
 		void setJudgeRank(int rank);
+		void setJudgeScale(double scale);
+
+		void setODWindows(int od);
 
 		int getMaxNotes();
 		int getTotalNotes();
 		void setAccMin(int ms);
 		void setAccMax(int ms);
+		
+		// accessor functions
 
 		int getJudgmentCount(ScoreKeeperJudgment Judge);
 		std::string getHistogram();
@@ -40,16 +45,27 @@ class ScoreKeeper7K {
 
 		int getLifebarUnits(LifeType lifebar_unit_type);
 		float getLifebarAmount(LifeType lifebar_amount_type);
+		bool isStageFailed(LifeType lifebar_amount_type);
 
 		int getPacemakerDiff(PacemakerType pmt);
 		std::pair<std::string, int> getAutoPacemaker();
 		std::map<PacemakerType, std::string> pacemaker_texts;
 
 		int getRank(); // returns a number from -9 to 9
-
+		
+		void set_manual_w0(bool);
+		bool usesW0();
+		
 		void reset();
 
 	private:
+
+		bool use_w0; // whether or not to use ridiculous timing.
+	
+
+	/*
+		Standard scoring.
+	*/
 
 		double score; // standard score.
 		double sc_score;
