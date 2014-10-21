@@ -149,7 +149,12 @@ int SongWheel::GetCursorIndex()
 	}
 
 	if (Size)
-		return abs(CursorPos % Size);
+	{
+		int ret = CursorPos % (int)Size;
+		while (ret < 0)
+			ret += Size;
+		return ret;
+	}
 	else
 		return 0;
 }
