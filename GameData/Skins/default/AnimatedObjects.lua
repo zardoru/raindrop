@@ -7,7 +7,6 @@ function ProgressTick.Init()
 	ProgressTick.Object = Obj.CreateTarget()
 
 	-- When not active, Beat <= 0.
-	print (Beat)
 	ProgressTick.BeatOffs = -Beat
 
 	Obj.SetTarget(ProgressTick.Object)
@@ -109,7 +108,7 @@ end
 function MissHighlight.OnMiss(Lane)
 	MissHighlight.CurrentTime[Lane] = 0
 
-	if CurrentSPB ~= 0 then
+	if CurrentSPB ~= math.huge then
 		MissHighlight.Time[Lane] = CurrentSPB / 2
 	end
 
