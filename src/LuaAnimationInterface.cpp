@@ -345,7 +345,7 @@ namespace LuaAnimFuncs
 }
 
 // Wrapper functions
-void SetImage(GraphObject2D *O, std::string &dir)
+void SetImage(GraphObject2D *O, std::string dir)
 {
 	O->SetImage(GameState::GetInstance().GetSkinImage(dir));
 }
@@ -382,6 +382,7 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 
 	luabridge::getGlobalNamespace(AnimLua->GetState())
 		.beginClass <GraphObject2D>("Object2D")
+		.addConstructor<void(*) ()>()
 		.v(Centered)
 		.v(Lighten)
 		.v(LightenFactor)
@@ -397,6 +398,7 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 		.p(Height)
 		.p(ScaleX)
 		.p(ScaleY)
+		.p(BlendMode)
 		.f(SetCropByPixels)
 		.addProperty("X", &GraphObject2D::GetPositionX, &GraphObject2D::SetPositionX)
 		.addProperty("Y", &GraphObject2D::GetPositionY, &GraphObject2D::SetPositionY)
@@ -424,6 +426,7 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 		.addConstructor <void(*) (std::string, float)>()
 		.endClass()
 		.deriveClass <BitmapFont, Font> ("BitmapFont")
+		.addConstructor<void(*)()>()
 		.endClass()
 		.addFunction("LoadBitmapFont", LoadBmFont)
 		.endNamespace();

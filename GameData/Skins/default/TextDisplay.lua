@@ -40,13 +40,13 @@ function UpdateTextObjects()
 		pacemaker1.Text = PacemakerText;
 	end
 
-	pre_char = "+";
-	
-	if PacemakerValue and PacemakerValue < 0 then
-		pre_char = "-";
+	if PacemakerValue then
+		pre_char = "+";
+		if PacemakerValue < 0 then
+			pre_char = "-";
+		end
+		pacemaker2.Text = string.format("%s%04d", pre_char, math.abs(PacemakerValue));
 	end
-
-	pacemaker2.Text = string.format("%s%04d", pre_char, math.abs(PacemakerValue));
 
 	if LifebarValue then
 		lifebar.Text = LifebarDisplay;

@@ -1,3 +1,5 @@
+skin_require("Background.lua")
+
 -- Wheel transformation
 TransformX =  ScreenWidth * 13/20
 CurrentTX = ScreenWidth
@@ -73,6 +75,9 @@ function BackBtnHoverLeave()
 end
 
 function Init()
+
+	BackgroundAnimation:Init()
+
 	Banner = Obj.CreateTarget()
 	Obj.SetTarget(Banner)
 	Obj.SetImageSkin("ssbanner.png")
@@ -89,5 +94,6 @@ function Cleanup()
 end
 
 function Update(Delta)
+	BackgroundAnimation:Update(Delta)
 	CurrentTX = CurrentTX + (TransformX - CurrentTX) * Delta * 8
 end
