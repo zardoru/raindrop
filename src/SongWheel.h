@@ -33,7 +33,8 @@ class SongWheel
 private:
 	SongWheel();
 
-	unsigned int CursorPos, OldCursorPos;
+	int32 CursorPos, OldCursorPos;
+	int StartIndex, EndIndex;
 
 	TruetypeFont* mTFont;
 	BitmapFont* mFont;
@@ -65,19 +66,21 @@ private:
 
 	float RangeStart, RangeEnd;
 
-	bool dotcurModeActive;
-	bool VSRGModeActive;
-
 	float ItemHeight;
 	float Time;
 	float DisplacementSpeed;
 
 	void DisplayItem(String Text, Vec2 Position);
 
-	bool IsInitialized;
+	bool IsInitialized; 
+	bool dotcurModeActive;
+	bool VSRGModeActive;
 
 	uint8 DifficultyIndex;
 
+	// We need to find the start and the end indices of what we want to display.
+	int GetCursorIndex();
+	void CalculateIndices();
 public:
 
 	// Singleton

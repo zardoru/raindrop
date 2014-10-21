@@ -450,16 +450,24 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	Animations->Preload(GameState::GetInstance().GetSkinPrefix() + "screengameplay7k.lua", "Preload");
 	score_keeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
 
-	if (CurrentDiff->TimingInfo->GetType() == VSRG::TI_BMS)
+	if (CurrentDiff->TimingInfo)
 	{
-		VSRG::BmsTimingInfo *Info = static_cast<VSRG::BmsTimingInfo*> (CurrentDiff->TimingInfo);
-		score_keeper->setLifeTotal(Info->life_total);
-		score_keeper->setJudgeRank(Info->judge_rank);
+		if (CurrentDiff->TimingInfo->GetType() == VSRG::TI_BMS)
+		{
+			VSRG::BmsTimingInfo *Info = static_cast<VSRG::BmsTimingInfo*> (CurrentDiff->TimingInfo);
+			score_keeper->setLifeTotal(Info->life_total);
+			score_keeper->setJudgeRank(Info->judge_rank);
+		}
+		else if (CurrentDiff->TimingInfo->GetType() == VSRG::TI_OSUMANIA)
+		{
+			VSRG::OsuManiaTimingInfo *Info = static_cast<VSRG::OsuManiaTimingInfo*> (CurrentDiff->TimingInfo);
+			score_keeper->setODWindows(Info->OD);
+		}
 	}
-	else if (CurrentDiff->TimingInfo->GetType() == VSRG::TI_OSUMANIA)
+	else
 	{
-		VSRG::OsuManiaTimingInfo *Info = static_cast<VSRG::OsuManiaTimingInfo*> (CurrentDiff->TimingInfo);
-		score_keeper->setODWindows(Info->OD);
+		score_keeper->setLifeTotal(-1);
+		score_keeper->setJudgeRank(3);
 	}
 
 	DoPlay = true;
