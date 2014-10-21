@@ -19,6 +19,52 @@ namespace VSRG
 
 	typedef std::vector<TrackNote> VectorTN[MAX_CHANNELS];
 
+	enum TimingInfoType {
+		TI_NONE,
+		TI_BMS,
+		TI_OSUMANIA
+	};
+
+	class CustomTimingInfo {
+	protected:
+		TimingInfoType Type;
+	public:
+		CustomTimingInfo()
+		{
+			Type = TI_NONE;
+		}
+
+		virtual ~CustomTimingInfo() {}
+
+		TimingInfoType GetType();
+	};
+
+	class BmsTimingInfo : public CustomTimingInfo
+	{
+	public:
+		int judge_rank;
+		float life_total;
+
+		BmsTimingInfo()
+		{
+			Type = TI_BMS;
+			judge_rank = 3;
+			life_total = -1;
+		}
+	};
+
+	class OsuManiaTimingInfo : public CustomTimingInfo
+	{
+	public:
+		float HP, OD;
+		OsuManiaTimingInfo()
+		{
+			Type = TI_OSUMANIA;
+			HP = 5;
+			OD = 5;
+		}
+	};
+
 	struct Difficulty : public Game::Song::Difficulty
 	{
 		// This is saved to the cache file.
@@ -63,22 +109,15 @@ namespace VSRG
 
 	public:
 	
-		// custom BMS options.
-		int judge_rank;
-		double life_total;
+		CustomTimingInfo* TimingInfo;
 
 		Difficulty() {
 			IsVirtual = false;
 			Channels = 0;
 			PreviewTime = 0;
 			LMT = 0;
-
-			judge_rank = 3;
-			life_total = -1;
+			TimingInfo = NULL;
 		};
-
-		int getJudgeRank(){ return judge_rank; }
-		int getLifeTotal(){ return life_total; }
 
 		// The floats are in vertical units; like the notes' vertical position.
 		void GetMeasureLines(std::vector<float> &Out, float Drift);

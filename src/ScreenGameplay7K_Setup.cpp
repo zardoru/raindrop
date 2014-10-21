@@ -449,10 +449,18 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	SetupScriptConstants();
 	Animations->Preload(GameState::GetInstance().GetSkinPrefix() + "screengameplay7k.lua", "Preload");
 	score_keeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
-	score_keeper->setLifeTotal(CurrentDiff->getLifeTotal());
 
-	score_keeper->setJudgeRank(CurrentDiff->getJudgeRank());
-	// score_keeper->setODWindows(CurrentDiff->getODRank());
+	if (CurrentDiff->TimingInfo->GetType() == VSRG::TI_BMS)
+	{
+		VSRG::BmsTimingInfo *Info = static_cast<VSRG::BmsTimingInfo*> (CurrentDiff->TimingInfo);
+		score_keeper->setLifeTotal(Info->life_total);
+		score_keeper->setJudgeRank(Info->judge_rank);
+	}
+	else if (CurrentDiff->TimingInfo->GetType() == VSRG::TI_OSUMANIA)
+	{
+		VSRG::OsuManiaTimingInfo *Info = static_cast<VSRG::OsuManiaTimingInfo*> (CurrentDiff->TimingInfo);
+		score_keeper->setODWindows(Info->OD);
+	}
 
 	DoPlay = true;
 }

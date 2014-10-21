@@ -39,7 +39,8 @@ struct OsuLoadInfo
 	double SliderVelocity;
 	int Version;
 	int last_sound_index;
-	Song *OsuSong;
+	VSRG::Song *OsuSong;
+	VSRG::OsuManiaTimingInfo *TimingInfo;
 	std::map <String, int> Sounds;
 	std::vector<HitsoundSectionData> HitsoundSections;
 	Difficulty *Diff;
@@ -121,11 +122,19 @@ void ReadDifficulty (String line, OsuLoadInfo* Info)
 
 		for (int i = 0; i < Info->Diff->Channels; i++) // Push a single measure
 			Info->Diff->Measures.push_back(Measure());
-
 	}else if (Command == "SliderMultiplier")
 	{
 		Info->SliderVelocity = latof(Content.c_str()) * 100;
 	}
+	else if (Command == "HPDrainRate")
+	{
+		Info->TimingInfo->HP = latof(Content.c_str());
+	}
+	else if (Command == "OverallDifficulty")
+	{
+		Info->TimingInfo->OD = latof(Content.c_str());
+	}
+
 }
 
 void ReadEvents (String line, OsuLoadInfo* Info)
@@ -471,11 +480,13 @@ void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 	Difficulty *Diff = new Difficulty();
 	OsuLoadInfo Info;
 
+	Info.TimingInfo = new VSRG::OsuManiaTimingInfo;
 	Info.OsuSong = Out;
 	Info.SliderVelocity = 1.4;
 	Info.Diff = Diff;
 	Info.last_sound_index = 1;
 
+	Diff->TimingInfo = Info.TimingInfo;
 	Diff->LMT = Utility::GetLMT(filename);
 
 	// osu! stores bpm information as the time in ms that a beat lasts.

@@ -8,6 +8,11 @@
 
 using namespace VSRG;
 
+TimingInfoType CustomTimingInfo::GetType()
+{
+	return Type;
+}
+
 Song::Song()
 {
 	PreviousDrift = 0;
@@ -418,4 +423,5 @@ void Difficulty::Destroy()
 	BMPList.clear();
 	Filename.clear();
 	SoundList.clear();
+	delete TimingInfo;
 }

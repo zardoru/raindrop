@@ -849,6 +849,9 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 	srand(time(0));
 	Diff->IsVirtual = true;
 
+	VSRG::BmsTimingInfo *TimingInfo = new VSRG::BmsTimingInfo;
+	Diff->TimingInfo = TimingInfo;
+
 	/* 
 		BMS files are separated always one file, one difficulty, so it'd make sense
 		that every BMS 'set' might have different timing information per chart.
@@ -980,12 +983,12 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 
 			OnCommand(#TOTAL)
 			{
-				Diff->life_total = latof(CommandContents);
+				TimingInfo->life_total = latof(CommandContents);
 			}
 
 			OnCommand(#RANK)
 			{
-				Diff->judge_rank = latof(CommandContents);
+				TimingInfo->judge_rank = latof(CommandContents);
 			}
 
 			OnCommandSub(#WAV)
