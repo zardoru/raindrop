@@ -978,6 +978,16 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 				Out->BackgroundFilename = CommandContents;
 			}
 
+			OnCommand(#TOTAL)
+			{
+				Diff->life_total = latof(CommandContents);
+			}
+
+			OnCommand(#RANK)
+			{
+				Diff->judge_rank = latof(CommandContents);
+			}
+
 			OnCommandSub(#WAV)
 			{
 				String IndexStr = CommandSubcontents("#WAV", command);
