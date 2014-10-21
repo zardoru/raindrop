@@ -7,6 +7,8 @@ Screen::Screen()
 	Running = false;
 	Next = 0;
 	ScreenTime = 0;
+	IntroDuration = 0;
+	ScreenState = StateRunning;
 }
 
 Screen::Screen(Screen *_Parent)
@@ -15,6 +17,7 @@ Screen::Screen(Screen *_Parent)
 	Running = false;
 	Next = 0;
 	ScreenTime = 0;
+	IntroDuration = 0;
 	ScreenState = StateRunning;
 }
 
