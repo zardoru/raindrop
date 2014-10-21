@@ -49,11 +49,11 @@ void ScoreKeeper7K::init(){
 	total_sqdev = 0;
 	accuracy = 0;
 
-	lifebar_groove = 0.78;
+	lifebar_groove = 0.20;
+	lifebar_easy = 0.20;
 	lifebar_survival = 1;
 	lifebar_exhard = 1;
 	lifebar_death = 1;
-	lifebar_easy = 0.78;
 
 	judge_window_scale = 1.00;
 	set_timing_windows();

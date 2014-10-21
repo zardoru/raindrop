@@ -73,7 +73,7 @@ namespace VSRG
 			PreviewTime = 0;
 			LMT = 0;
 
-			judge_rank = 2;
+			judge_rank = 3;
 			life_total = -1;
 		};
 

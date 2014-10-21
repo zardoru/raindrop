@@ -40,6 +40,7 @@ ScreenGameplay7K::ScreenGameplay7K()
 
 	Auto = false;
 
+	lifebar_type = LT_GROOVE;
 	SpeedMultiplierUser = 4;
 	SongFinished = false;
 
@@ -99,6 +100,7 @@ void ScreenGameplay7K::Init(VSRG::Song* S, int DifficultyIndex, const ScreenGame
 
 	Animations = new GraphObjectMan();
 	score_keeper = new ScoreKeeper7K();
+	UpdateScriptScoreVariables();
 }
 
 

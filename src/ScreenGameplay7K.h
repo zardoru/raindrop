@@ -2,6 +2,7 @@
 #define SG7K_H_
 
 #include "Song7K.h"
+#include "ScoreKeeper.h"
 
 class GraphObjectMan;
 class ScoreKeeper7K;
@@ -55,26 +56,29 @@ private:
 	double MissTime;
 
 
+
 	/* User Variables */
-	float       SpeedMultiplierUser;
+    float       SpeedMultiplierUser;
 
-	EHiddenMode SelectedHiddenMode;
+    EHiddenMode SelectedHiddenMode;
 
-	Mat4			 PositionMatrix;
-	Mat4			 PositionMatrixJudgment;
-	Mat4			 NoteMatrix[VSRG::MAX_CHANNELS];
-	Mat4			 HoldHeadMatrix[VSRG::MAX_CHANNELS];
-	Mat4			 HoldTailMatrix[VSRG::MAX_CHANNELS];
+    Mat4             PositionMatrix;
+    Mat4             PositionMatrixJudgment;
+    Mat4             NoteMatrix[VSRG::MAX_CHANNELS];
+    Mat4             HoldHeadMatrix[VSRG::MAX_CHANNELS];
+    Mat4             HoldTailMatrix[VSRG::MAX_CHANNELS];
 
-	float			 SpeedMultiplier;
+    float            SpeedMultiplier;
 
-	uint32	         Channels;
-	uint32			 StartMeasure;
+    uint32           Channels;
+    uint32           StartMeasure;
 
-	int		         GearBindings[VSRG::MAX_CHANNELS];
-	int				 lastClosest[VSRG::MAX_CHANNELS];
-	int				 PlaySounds[VSRG::MAX_CHANNELS];
-	int				 BarlineOffsetKind;
+    int              GearBindings[VSRG::MAX_CHANNELS];
+    int              lastClosest[VSRG::MAX_CHANNELS];
+    int              PlaySounds[VSRG::MAX_CHANNELS];
+    int              BarlineOffsetKind;
+
+	LifeType         lifebar_type;		 
 
 	/* Graphics */
 	Image*  NoteImage;
@@ -168,6 +172,7 @@ private:
 	void CheckShouldEndScreen();
 	void UpdateSongTime(float Delta);
 	void Render();
+
 public:
 
 	struct Parameters {

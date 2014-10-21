@@ -1,5 +1,8 @@
 // A class dedicated to keeping score.
 
+#ifndef ScoreKeeper_H
+#define ScoreKeeper_H
+
 enum ScoreKeeperJudgment{
 
 	SKJ_NONE = 0, // no judgment.
@@ -98,3 +101,6 @@ enum PacemakerType{
 	PMT_F = 35,
 
 };
+
+
+#endif

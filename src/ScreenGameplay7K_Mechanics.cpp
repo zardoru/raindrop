@@ -13,6 +13,7 @@
 #include "ScreenGameplay7K.h"
 
 #include <iomanip>
+#include <cmath>
 
 using namespace VSRG;
 
@@ -53,13 +54,18 @@ void ScreenGameplay7K::UpdateScriptScoreVariables()
 	L->SetGlobal("MaxCombo", score_keeper->getScore(ST_MAX_COMBO));
 	L->SetGlobal("Accuracy", score_keeper->getPercentScore(PST_ACC));
 	L->SetGlobal("SCScore", score_keeper->getScore(ST_EXP));
-	L->SetGlobal("LifebarValue", score_keeper->getLifebarAmount(LT_GROOVE));
-
 	L->SetGlobal("EXScore", score_keeper->getScore(ST_EX));
 
 	std::pair<std::string, int> autopacemaker = score_keeper->getAutoPacemaker();
 	L->SetGlobal("PacemakerText", autopacemaker.first);
 	L->SetGlobal("PacemakerValue", autopacemaker.second);
+
+	double lifebar_amount = score_keeper->getLifebarAmount(lifebar_type);
+	L->SetGlobal("LifebarValue", lifebar_amount);
+	if(lifebar_type == LT_GROOVE || lifebar_type == LT_EASY)
+		L->SetGlobal("LifebarDisplay", max(2, int(floor(lifebar_amount * 50) * 2)));
+	else
+		L->SetGlobal("LifebarDisplay", int(ceil(lifebar_amount * 50) * 2));
 
 }
 
@@ -318,7 +324,6 @@ void ScreenGameplay7K::UpdateScriptVariables()
 	L->SetGlobal("waveEffectEnabled", waveEffectEnabled);
 	L->SetGlobal("Active", Active);
 	L->SetGlobal("SongTime", SongTime);
-	L->SetGlobal("LifebarValue", score_keeper->getLifebarAmount(LT_GROOVE));
 
 	CurrentBeat = IntegrateToTime(CurrentDiff->BPS, SongTime);
 	L->SetGlobal("Beat", CurrentBeat);

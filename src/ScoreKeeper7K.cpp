@@ -39,7 +39,7 @@ int ScoreKeeper7K::getMaxNotes(){ return max_notes; }
 void ScoreKeeper7K::setLifeTotal(double total){
 
 	if(total != -1) lifebar_total = total;
-	else lifebar_total = 7.605 * max_notes / (6.5 + 0.01 * max_notes);
+	else lifebar_total = max(260.0, 7.605 * max_notes / (6.5 + 0.01 * max_notes));
 
 	// recalculate groove lifebar increments.
 	lifebar_easy_increment = Clamp(lifebar_total / max_notes / 50.0, 0.004, 0.8);
@@ -47,10 +47,10 @@ void ScoreKeeper7K::setLifeTotal(double total){
 	lifebar_survival_increment = lifebar_total / max_notes / 200.0;
 	lifebar_exhard_increment = lifebar_total / max_notes / 200.0;
 
-	lifebar_easy_decrement = Clamp(lifebar_total / max_notes / 12.0, 0.00, 0.2);
-	lifebar_groove_decrement = Clamp(lifebar_total / max_notes / 10.0, 0.01, 0.2);
-	lifebar_survival_decrement = Clamp(lifebar_total / max_notes / 5.0, 0.0, 0.5);
-	lifebar_exhard_decrement = Clamp(lifebar_total / max_notes / 2.0, 0.0, 0.8);
+	lifebar_easy_decrement = Clamp(lifebar_total / max_notes / 12.0, 0.00, 0.02);
+	lifebar_groove_decrement = Clamp(lifebar_total / max_notes / 10.0, 0.01, 0.02);
+	lifebar_survival_decrement = Clamp(lifebar_total / max_notes / 5.0, 0.0, 0.15);
+	lifebar_exhard_decrement = Clamp(lifebar_total / max_notes / 2.0, 0.0, 0.3);
 
 }
 
