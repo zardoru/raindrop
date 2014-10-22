@@ -1171,9 +1171,9 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 	Diff->BMPList = Info->BMP;
 
 	// First try to find a suiting subtitle
+	Out->SongName = GetSubtitles(Out->SongName, Subs);
 	if (Diff->Name.length() == 0)
 	{
-		Out->SongName = GetSubtitles(Out->SongName, Subs);
 		Diff->Name = DifficultyNameFromSubtitles(Subs);
 	}
 
