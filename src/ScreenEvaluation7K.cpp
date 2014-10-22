@@ -48,9 +48,15 @@ void ScreenEvaluation7K::Init(ScoreKeeper7K *Result)
 	<< "       NG: " << Result->getJudgmentCount(SKJ_MISS) << " (" << float(Result->getJudgmentCount(SKJ_MISS) * 100) / float(Result->getMaxNotes()) << "%)\n"
 	<< "\n"
 	<< "Notes hit: " << Result->getPercentScore(PST_NH) << "%\n"
-	<< "EX score: " << Result->getPercentScore(PST_EX) << "%\n"
+	<< "EX score: " << Result->getPercentScore(PST_EX) << "%\n";
+
+	if(Result->usesW0()){	
+		ss << "osu!mania accuracy: " << Result->getPercentScore(PST_OSU) << "%\n";
+	}
+
+	// ss
 	// << "Histogram: " << Result->getHistogram() << "\n"
-	;
+	// ;
 
 	std::cerr << Result->getHistogram();
 

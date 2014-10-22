@@ -30,7 +30,7 @@ enum ScoreType{
 	ST_IIDX = 10, // IIDX score
 	ST_LR2 = 11, // LR2 score
 
-	ST_OSU = 21, // osu!mania scoring
+	ST_OSUMANIA = 21, // osu!mania scoring
 	ST_JB2 = 22, // jubeat^2 scoring
 
 	ST_EXP = 30, // experimental scoring.
@@ -47,23 +47,30 @@ enum PercentScoreType{
 
 	PST_EX = 2, // EX score
 	PST_NH = 3, // % notes hit
-	PST_ACC = 4 // Accuracy
+	PST_ACC = 4, // Accuracy
+
+	PST_OSU = 5, // osu!mania
 
 };
 
 const double SCORE_MAX = 100000000;
 
+
 enum LifeType{
 
-	LT_GROOVE = 1, // Beatmania default score
+	LT_GROOVE = 1, // Beatmania default lifebar
+
 	LT_SURVIVAL = 2, // Beatmania hard mode
 	LT_EXHARD = 3, // Beatmania EX hard mode
 	LT_DEATH = 4, // Sudden death mode
-
+	
 	LT_EASY = 5, // Beatmania easy mode
+	
+	LT_STEPMANIA = 6, // Stepmania/DDR/osu!mania scoring mode.
+	LT_NORECOV = 7, // DDR no recov. mode
 
-	LT_NORECOV = 6, // DDR no recov. mode
-	LT_BATTERY = 7, // DDR battery mode.
+
+	LT_BATTERY = 11, // DDR battery mode.
 
 };
 

@@ -16,17 +16,22 @@ class ScoreKeeper7K {
 
 		void setMaxNotes(int notes);
 		void setLifeTotal(double total);
+		void setLifeIncrements(double* increments, int inc_n);
+		void setMissDecrement(double decrement);
+		void setEarlyMissDecrement(double decrement);
+		
 		void setJudgeRank(int rank);
 		void setJudgeScale(double scale);
 
 		void setODWindows(int od);
 
-		int getMaxNotes();
-		int getTotalNotes();
 		void setAccMin(int ms);
 		void setAccMax(int ms);
 		
 		// accessor functions
+
+		int getMaxNotes();
+		int getTotalNotes();
 
 		int getJudgmentCount(ScoreKeeperJudgment Judge);
 		std::string getHistogram();
@@ -45,7 +50,9 @@ class ScoreKeeper7K {
 
 		int getLifebarUnits(LifeType lifebar_unit_type);
 		float getLifebarAmount(LifeType lifebar_amount_type);
+
 		bool isStageFailed(LifeType lifebar_amount_type);
+		void failStage();
 
 		int getPacemakerDiff(PacemakerType pmt);
 		std::pair<std::string, int> getAutoPacemaker();
@@ -107,8 +114,15 @@ class ScoreKeeper7K {
 	/*
 		osu!
 	*/
+		
+		long long osu_points;
+		long long osu_accuracy;
+		int bonus_counter;
+		double osu_bonus_points;
 
-		void set_osu_judgment(int ms, ScoreKeeperJudgment judgment);
+		double osu_score;
+		
+		void update_osu(int ms, ScoreKeeperJudgment judgment);
 
 
 	/*
@@ -148,7 +162,7 @@ class ScoreKeeper7K {
 		// lifebar data.
 
 		double lifebar_total;
-		
+
 
 		double lifebar_groove;
 		double lifebar_groove_increment;
@@ -168,10 +182,17 @@ class ScoreKeeper7K {
 		double lifebar_easy_increment;
 		double lifebar_easy_decrement;
 
+
+		double lifebar_stepmania;
+		double lifebar_stepmania_miss_decrement;
+		double lifebar_stepmania_earlymiss_decrement;
+
 		// judgment information
 		double judgment_time[9];
 		double judgment_amt[9];
 		double judge_window_scale;
+
+		double life_increment[9];
 		
 		void set_timing_windows();
 		

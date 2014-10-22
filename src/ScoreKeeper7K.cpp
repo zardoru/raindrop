@@ -50,9 +50,25 @@ void ScoreKeeper7K::setLifeTotal(double total){
 	lifebar_easy_decrement = Clamp(lifebar_total / max_notes / 12.0, 0.00, 0.02);
 	lifebar_groove_decrement = Clamp(lifebar_total / max_notes / 10.0, 0.01, 0.02);
 	lifebar_survival_decrement = Clamp(lifebar_total / max_notes / 7.0, 0.02, 0.15);
-	lifebar_exhard_decrement = Clamp(lifebar_total / max_notes / 2.0, 0.03, 0.3);
+	lifebar_exhard_decrement = Clamp(lifebar_total / max_notes / 3.0, 0.03, 0.3);
 
 }
+
+
+void ScoreKeeper7K::setLifeIncrements(double* increments, int inc_n){
+	for (int a = 0; a < inc_n; ++a){
+		life_increment[a] = increments[a];
+	}
+}
+
+void ScoreKeeper7K::setMissDecrement(double decrement){
+	lifebar_stepmania_miss_decrement = decrement;
+}
+
+void ScoreKeeper7K::setEarlyMissDecrement(double decrement){
+	lifebar_stepmania_earlymiss_decrement = decrement;
+}
+
 
 void ScoreKeeper7K::setJudgeRank(int rank){
 	switch(rank){
@@ -67,6 +83,7 @@ void ScoreKeeper7K::setJudgeRank(int rank){
 	}
 	set_timing_windows();
 }
+
 
 void ScoreKeeper7K::setJudgeScale(double scale){
 	judge_window_scale = scale;
@@ -127,7 +144,6 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 
 
 
-
 // SC, ACC^2 score
 
 	sc_score += Clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.0) * 2;
@@ -139,7 +155,7 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 
 // lifebars
 
-	if(ms < judgment_time[SKJ_W3]){
+	if(ms <= judgment_time[SKJ_W3]){
 
 		lifebar_easy = min(1.0, lifebar_easy + lifebar_easy_increment);
 		lifebar_groove = min(1.0, lifebar_groove + lifebar_groove_increment);
@@ -155,9 +171,12 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 		lifebar_groove = max(0.0, lifebar_groove - lifebar_groove_decrement);
 		lifebar_survival = max(0.0, lifebar_survival - lifebar_groove_decrement);
 		lifebar_exhard = max(0.0, lifebar_exhard - lifebar_exhard_decrement);
+		
+		lifebar_death = 0;
 
 	}
-
+	
+	lifebar_stepmania = min(1.0, lifebar_stepmania + life_increment[judgment]);
 
 
 // Other methods
@@ -168,6 +187,8 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 	update_lr2(ms, ms <= judgment_time[SKJ_W3]); // Lunatic Rave 2 scoring
 
 	update_exp2(ms);
+
+	update_osu(ms, judgment);
 
 	return judgment;
 
@@ -200,6 +221,10 @@ void ScoreKeeper7K::missNote(bool auto_hold_miss, bool early_miss){
 		lifebar_survival = max(0.0, lifebar_survival - lifebar_survival_decrement * 3);
 		lifebar_exhard = max(0.0, lifebar_exhard - lifebar_exhard_decrement * 3);
 
+		lifebar_death = 0;
+
+		lifebar_stepmania = max(0.0, lifebar_stepmania - lifebar_stepmania_miss_decrement);
+
 	}else if(early_miss){
 
 		// miss tier 1
@@ -208,11 +233,14 @@ void ScoreKeeper7K::missNote(bool auto_hold_miss, bool early_miss){
 		lifebar_survival = max(0.0, lifebar_survival - lifebar_survival_decrement);
 		lifebar_exhard = max(0.0, lifebar_exhard - lifebar_exhard_decrement);
 
+		lifebar_stepmania = max(0.0, lifebar_stepmania - lifebar_stepmania_earlymiss_decrement);
+
 	}
 
 	// other methods
 	update_bms(1000, false);
 	update_exp2(1000);
+	update_osu(1000, SKJ_MISS);
 
 }
 
@@ -265,6 +293,8 @@ int ScoreKeeper7K::getScore(ScoreType score_type){
 			return lr2_score;
 		case ST_EXP:
 			return exp_score;
+		case ST_OSUMANIA:
+			return osu_score;
 		case ST_COMBO:
 			return combo;
 		case ST_MAX_COMBO:
@@ -281,13 +311,15 @@ float ScoreKeeper7K::getPercentScore(PercentScoreType percent_score_type){
 
 	switch(percent_score_type){
 		case PST_RANK:
-			return float(rank_pts) / float(total_notes) * 100.0;
+			return double(rank_pts) / double(total_notes) * 100.0;
 		case PST_EX:
-			return float(ex_score) / float(total_notes * 2) * 100.0;
+			return double(ex_score) / double(total_notes * 2) * 100.0;
 		case PST_ACC:
 			return accuracy;
 		case PST_NH:
-			return float(notes_hit) / float(total_notes) * 100.0;
+			return double(notes_hit) / double(total_notes) * 100.0;
+		case PST_OSU:
+			return double(osu_accuracy) / double(total_notes) / 3.0;
 		default:
 			return 0;
 	}
@@ -303,10 +335,18 @@ int ScoreKeeper7K::getLifebarUnits(LifeType lifebar_unit_type){
 float ScoreKeeper7K::getLifebarAmount(LifeType lifebar_amount_type){
 
 	switch(lifebar_amount_type){
+		case LT_EASY:
+			return lifebar_easy;
 		case LT_GROOVE:
 			return lifebar_groove;
 		case LT_SURVIVAL:
 			return lifebar_survival;
+		case LT_EXHARD:
+			return lifebar_exhard;
+		case LT_DEATH:
+			return lifebar_death;
+		case LT_STEPMANIA:
+			return lifebar_stepmania;
 		default:
 			return 0;
 	}
@@ -324,10 +364,21 @@ bool ScoreKeeper7K::isStageFailed(LifeType lifebar_amount_type){
 			return lifebar_survival == 0.0;
 		case LT_EXHARD:
 			return lifebar_exhard == 0.0;
+		case LT_DEATH:
+			return lifebar_death == 0.0;
+		case LT_STEPMANIA:
+			return lifebar_stepmania == 0.0;
 		default:
 			return false;
 	}
 
+}
+
+
+void ScoreKeeper7K::failStage(){
+	
+	total_notes = max_notes;
+	
 }
 
 

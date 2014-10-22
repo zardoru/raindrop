@@ -53,7 +53,7 @@ void ScreenGameplay7K::UpdateScriptScoreVariables()
 	L->SetGlobal("Combo", score_keeper->getScore(ST_COMBO));
 	L->SetGlobal("MaxCombo", score_keeper->getScore(ST_MAX_COMBO));
 	L->SetGlobal("Accuracy", score_keeper->getPercentScore(PST_ACC));
-	L->SetGlobal("SCScore", score_keeper->getScore(ST_EXP));
+	L->SetGlobal("SCScore", score_keeper->getScore(scoring_type));
 	L->SetGlobal("EXScore", score_keeper->getScore(ST_EX));
 
 	std::pair<std::string, int> autopacemaker = score_keeper->getAutoPacemaker();

@@ -37,7 +37,14 @@ void ScoreKeeper7K::init(){
 
 	lr2_dance_pts = 0;
 	lr2_score = 0;
+	
+	osu_points = 0;
+	bonus_counter = 100;
+	osu_bonus_points = 0;
 
+	osu_score = 0;
+	osu_accuracy = 100;
+	
 	exp_combo = 0;
 	exp_combo_pts = 0;
 	exp_max_combo_pts = 0;
@@ -56,6 +63,13 @@ void ScoreKeeper7K::init(){
 	lifebar_survival = 1;
 	lifebar_exhard = 1;
 	lifebar_death = 1;
+
+	lifebar_stepmania = 0.50;
+	
+	double inc[6] = {+0.010, +0.008, +0.004, 0, -0.04, -0.08};
+	setLifeIncrements(inc, 5);
+	setMissDecrement(0.08);
+	setEarlyMissDecrement(0.02);
 
 	judge_window_scale = 1.00;
 	set_timing_windows();
@@ -92,7 +106,6 @@ void ScoreKeeper7K::setODWindows(int od){
 	earlymiss_threshold = 158 + (10 - od) * 3;
 	
 	judgment_time[SKJ_W0] = JudgmentValues[SKJ_W0];
-	// judgment_time[SKJ_W1] = 16; // set this one constant.
 	for (int i = 1; i < sizeof(JudgmentValues)/sizeof(double); i++)
 		judgment_time[i] = JudgmentValues[i] + (10 - od) * 3;
 

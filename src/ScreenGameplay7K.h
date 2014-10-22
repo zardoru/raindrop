@@ -80,6 +80,7 @@ private:
     int              BarlineOffsetKind;
 
 	LifeType         lifebar_type;		 
+	ScoreType        scoring_type;		 
 
 	/* Graphics */
 	Image*  NoteImage;

@@ -44,6 +44,8 @@ ScreenGameplay7K::ScreenGameplay7K()
 	Auto = false;
 
 	lifebar_type = LT_SURVIVAL;
+	scoring_type = ST_IIDX;
+	
 	SpeedMultiplierUser = 4;
 	SongFinished = false;
 
@@ -462,6 +464,8 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		{
 			VSRG::OsuManiaTimingInfo *Info = static_cast<VSRG::OsuManiaTimingInfo*> (CurrentDiff->TimingInfo);
 			score_keeper->setODWindows(Info->OD);
+			lifebar_type = LT_STEPMANIA;
+			scoring_type = ST_OSUMANIA;
 		}
 	}
 	else
