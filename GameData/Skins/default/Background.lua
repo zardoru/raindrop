@@ -52,13 +52,13 @@ function BackgroundAnimation.Init(self)
 	self.Fog.Alpha = 0.2
 	self.Fog2.Alpha = 0.2
 
-	Engine:AddTarget(self.Drops)
-	Engine:AddTarget(self.Drops2)
+	 Engine:AddTarget(self.Drops)
+	 Engine:AddTarget(self.Drops2)
 	Engine:AddTarget(self.Blue)
-	Engine:AddTarget(self.Rain)
-	Engine:AddTarget(self.Rain2)
-	Engine:AddTarget(self.Fog)
-	Engine:AddTarget(self.Fog2)
+	-- Engine:AddTarget(self.Rain)
+	-- Engine:AddTarget(self.Rain2)
+	-- Engine:AddTarget(self.Fog)
+	-- Engine:AddTarget(self.Fog2)
 end
 
 function BackgroundAnimation.UpdateObjects(self)

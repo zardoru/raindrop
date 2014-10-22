@@ -298,12 +298,22 @@ void LuaManager::PushArgument(std::string Value)
 		lua_pushstring(State, Value.c_str());
 }
 
-void LuaManager::CallFunction(const char* Name, int Arguments, int Results)
-{	
-	func_input = true;
+bool LuaManager::CallFunction(const char* Name, int Arguments, int Results)
+{
+	bool IsFunc;
+
 	func_args = Arguments;
 	func_results = Results;
 	lua_getglobal(State, Name);
+
+	IsFunc = lua_isfunction(State, -1);
+
+	if (IsFunc)
+		func_input = true;
+	else
+		Pop();
+
+	return IsFunc;
 }
 
 bool LuaManager::RunFunction()

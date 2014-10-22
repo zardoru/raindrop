@@ -221,3 +221,9 @@ ImageList* GraphObjectMan::GetImageList()
 {
 	return Images;
 }
+
+void GraphObjectMan::DoEvent(String EventName, int Return)
+{
+	if (Lua->CallFunction(EventName.c_str(), 0, Return))
+		Lua->RunFunction();
+}

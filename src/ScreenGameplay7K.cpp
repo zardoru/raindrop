@@ -126,8 +126,7 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 			if (!Active)
 			{
 				Active = true;
-				Animations->GetEnv()->CallFunction("OnActivate");
-				Animations->GetEnv()->RunFunction();
+				Animations->DoEvent("OnActivateEvent");
 			}
 			break;
 		case KT_FractionInc:
@@ -227,26 +226,34 @@ void ScreenGameplay7K::CheckShouldEndScreen()
 		if (!SongFinished)
 		{
 			SongFinished = true;
-			Animations->GetEnv()->CallFunction("SongFinishedEvent");
-			Animations->GetEnv()->RunFunction();
+			Animations->DoEvent("SongFinishedEvent");
 		}
 	}
 
 	// Reached the end!
-	if (SongTime > CurrentDiff->Duration + 3)
+	if (SongTime > CurrentDiff->Duration + 3 && !stage_failed)
 	{
 		ScreenEvaluation7K *Eval = new ScreenEvaluation7K(this);
 		Eval->Init(score_keeper);
 		Next = Eval;
 	}
 
-	if (score_keeper->isStageFailed(lifebar_type) && !stage_failed){
+	if (score_keeper->isStageFailed(lifebar_type) && !stage_failed)
+	{
 		// Run stage failed animation.
 		stage_failed = true;
 		Music->Stop();
 		FailSnd->Play();
+
+		Animations->DoEvent("OnFailureEvent", 1);
+		FailureTime = Clamp(Animations->GetEnv()->GetFunctionResultF(), 0.0f, 30.0f);
 	}
-	
+
+	if (stage_failed)
+	{
+		if (FailureTime <= 0)
+			Running = false;
+	}
 }
 
 void ScreenGameplay7K::UpdateSongTime(float Delta)
@@ -294,6 +301,7 @@ bool ScreenGameplay7K::Run(double Delta)
 	{
 		GameTime += Delta;
 		MissTime -= Delta;
+		FailureTime -= Delta;
 
 		if (GameTime >= WaitingTime)
 		{

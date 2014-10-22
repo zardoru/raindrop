@@ -55,6 +55,7 @@ private:
 	double TimeCompensation;
 	double GameTime;
 	double MissTime;
+	double FailureTime;
 
 	bool stage_failed;
 

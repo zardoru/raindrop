@@ -339,7 +339,7 @@ void SongWheel::CalculateIndices()
 	// I only really need the top index.
 	float V = floor(-CurrentVerticalDisplacement / ItemHeight);
 	StartIndex = V;
-	EndIndex = StartIndex + maxItems;
+	EndIndex = StartIndex + maxItems + 1;
 }
 
 void SongWheel::Render()

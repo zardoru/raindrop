@@ -137,8 +137,38 @@ function getUncropFunction(w, h, iw, ih)
 	end
 end
 
+
+function FailAnim(frac)
+	White.Alpha = 1 - frac
+	return 1
+end
+
+-- Returns duration of failure animation.
+function OnFailureEvent()
+	
+	Backg = Object2D()
+	White = Object2D()
+	White.Image = "white.png"
+	White.Width = ScreenWidth
+	White.Height = ScreenHeight
+	Backg.Image = "blue.png"
+	Backg.Centered = 1
+	Backg.X = ScreenWidth / 2
+	Backg.Y = ScreenHeight / 2
+
+	White.Z = 31
+	Backg.Z = 30
+
+	Engine:AddTarget(Backg)
+	Engine:AddTarget(White)
+
+	Obj.AddAnimation("FailAnim", EaseIn, 1, 0)
+
+	return 3
+end
+
 -- When 'enter' is pressed and the game starts, this function is called.
-function OnActivate()
+function OnActivateEvent()
 	print (Auto)
 	if Auto ~= 0 then
 		AutoBN = Obj.CreateTarget()
