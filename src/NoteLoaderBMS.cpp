@@ -1,6 +1,7 @@
 #include <fstream>
 #include <map>
 #include <ctime>
+#include <stack>
 
 #include "Global.h"
 #include "Song7K.h"
@@ -737,7 +738,19 @@ int AutodetectChannelCount(BmsLoadInfo *Info)
 	
 
 	// We pick the range of channels we're going to use.
-	return Info->UpperBound - Info->LowerBound + 1;
+	int Range = Info->UpperBound - Info->LowerBound + 1;
+
+	// We modify it for completey unused key modes to not appear..
+	if (Range < 4) // 1, 2, 3
+		Range = 6;
+
+	if (Range > 9 && Range < 12) // 10, 11
+		Range = 12;
+
+	if (Range > 12 && Range < 16) // 13, 14, 15
+		Range = 16;
+
+	return Range;
 }
 
 void CompileBMS(BmsLoadInfo *Info)
@@ -816,12 +829,115 @@ bool InterpStatement(String Command, String Contents, BmsLoadInfo *Info)
 	return !IsControlFlowCommand && !Info->Skip;
 }
 
+bool ShouldUseU8(const char* Line)
+{
+	bool IsU8 = false;
+	int i = strstr(Line, "\x0A") - Line;
+
+	if (!utf8::starts_with_bom(Line, Line + 1024))
+	{
+		if (utf8::is_valid(Line, Line + 1024))
+		{
+			IsU8 = true;
+			for (int i = 0; i < 1024; i++)
+			{
+				if (Line[i] && 0x80) // high bit is set
+				{
+					IsU8 = false;
+					break;
+				}
+			}
+		}
+}
+	else
+		IsU8 = true;
+	return IsU8;
+}
+
+bool isany(char x, const char* p, int len)
+{
+	for (int i = 0; i < len; i++)
+		if (x == p[i]) return true;
+
+	return false;
+}
+
+// Returns: Out: a vector with all the subtitles, String: The title without the subtitles.
+String GetSubtitles(String SLine, std::vector<String> &Out)
+{
+	const char* EntryChars = "({[";
+	const char* ExitChars = ")}]";
+	const char* Line = SLine.c_str();
+	size_t len = SLine.length();
+
+	String CurrentParse;
+	std::stack<char> Paren;
+
+	for (int i = 0; i < len; i++)
+	{
+		if (isany(Line[i], EntryChars, 3))
+			Paren.push(Line[i]);
+		else if (isany(Line[i], ExitChars, 3))
+		{
+			if (Paren.size())
+			{
+				Paren.pop();
+				Out.push_back(CurrentParse);
+				CurrentParse = "";
+			}
+		}
+		else
+		{
+			if (Paren.size())
+				CurrentParse += Line[i];
+		}
+	}
+
+	return SLine.substr(0, SLine.find_first_of(EntryChars));
+}
+
+String DifficultyNameFromSubtitles(std::vector<String> &Subs)
+{
+	for (std::vector<String>::iterator i = Subs.begin();
+		i != Subs.end();
+		i++)
+	{
+		String Current = *i;
+		boost::to_lower(Current);
+		const char* s = Current.c_str();
+
+		if (strstr(s, "another"))
+			return "Another";
+		else if (strstr(s, "ex"))
+			return "EX";
+		else if (strstr(s, "hyper"))
+			return "Hyper";
+		else if (strstr(s, "normal"))
+			return "Normal";
+		else if (strstr(s, "hard"))
+			return "Hyper";
+		else if (strstr(s, "light"))
+			return "Light";
+		else if (strstr(s, "beginner"))
+			return "Beginner";
+	}
+
+	if (Subs.size()) // Okay then, join them together.
+	{
+		String sub = boost::join(Subs, " / ");
+		return sub;
+	}
+
+	// Oh, we failed then..
+	return "";
+}
+
 void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Out)
 {
 #if (!defined _WIN32)
 	std::ifstream filein (filename.c_str());
 #else
-	std::ifstream filein (Utility::Widen(filename).c_str());
+	std::ifstream filein(Utility::Widen(filename).c_str());
 #endif
 
 	Difficulty *Diff = new Difficulty();
@@ -852,7 +968,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 	VSRG::BmsTimingInfo *TimingInfo = new VSRG::BmsTimingInfo;
 	Diff->TimingInfo = TimingInfo;
 
-	/* 
+	/*
 		BMS files are separated always one file, one difficulty, so it'd make sense
 		that every BMS 'set' might have different timing information per chart.
 		While BMS specifies no 'set' support it's usually implied using folders.
@@ -862,22 +978,24 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 		from the amount of used channels.
 
 		And that's what we're going to try to do.
-	*/
+		*/
 
+	std::vector<String> Subs; // Subtitle list
 	String Line;
-	bool TestedU8 = false;
 	bool IsU8 = false;
+	char* TestU8 = new char[1025];
+
+	filein.read(TestU8, 1024);
+	TestU8[1024] = 0;
+
+	// Sonorous UTF-8 extension
+	IsU8 = ShouldUseU8(TestU8);
+	delete TestU8;
+	filein.seekg(0);
 
 	while (filein)
 	{
 		std::getline(filein, Line);
-
-		if (!TestedU8)
-		{
-			if (utf8::starts_with_bom(Line.begin(), Line.end()))
-				IsU8 = true;
-			TestedU8 = true;
-		}
 
 		boost::replace_all(Line, "\r", "");
 
@@ -899,6 +1017,11 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 			OnCommand(#GENRE)
 			{
 				// stub
+			}
+
+			OnCommand(#SUBTITLE)
+			{
+				Subs.push_back(CommandContents);
 			}
 
 			OnCommand(#TITLE)
@@ -1047,6 +1170,14 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 	Diff->SoundList = Info->Sounds;
 	Diff->BMPList = Info->BMP;
 
+	// First try to find a suiting subtitle
+	if (Diff->Name.length() == 0)
+	{
+		Out->SongName = GetSubtitles(Out->SongName, Subs);
+		Diff->Name = DifficultyNameFromSubtitles(Subs);
+	}
+
+	// Okay, we didn't find a fitting subtitle, let's try something else.
 	// Get actual filename instead of full path.
 	filename = Utility::RelativeToPath(filename);
 	if (Diff->Name.length() == 0)
