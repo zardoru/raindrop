@@ -15,8 +15,8 @@ Judgment = {
 	Speed = 15,
 
 	Scale = 0.20,
-	ScaleHit = 0.25,
-	ScaleMiss = 0.15,
+	ScaleHit = 0.30,
+	ScaleMiss = 0.12,
 
 	Position = {
 		x = GearWidth/2 + GearStartX,
@@ -190,13 +190,27 @@ end
 
 function Judgment.Hit(JudgmentValue, EarlyOrLate)
 	Obj.SetTarget(Judgment.Object)
-	Obj.SetImageSkin(Judgment.Table[JudgmentValue])
 
 	Judgment.Value = JudgmentValue
-	if JudgmentValue ~= 5 then
-		Obj.SetScale (Judgment.ScaleHit, Judgment.ScaleHit)
+
+	if Judgment.Value == 0 then
+		Obj.SetLighten(1)
+		Obj.SetLightenFactor(1.5)
+		Judgment.Value = 1
 	else
-	    Obj.SetScale (Judgment.ScaleMiss, Judgment.ScaleMiss)
+		Obj.SetLighten(0)
+	end
+
+	Obj.SetImageSkin(Judgment.Table[Judgment.Value])
+
+	if JudgmentValue ~= 5 then
+		if JudgmentValue ~= 0 then
+			Obj.SetScale (Judgment.ScaleHit, Judgment.ScaleHit)
+		else
+			Obj.SetScale (Judgment.Scale, Judgment.Scale)
+		end
+	else
+		Obj.SetScale (Judgment.ScaleMiss, Judgment.ScaleMiss)
 	end
 
 	Judgment.Time = 0
