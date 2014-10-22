@@ -189,20 +189,23 @@ void DoBMPEventList (GraphObject2D &Obj, std::vector<AutoplayBMP> &Events, Image
 
 void ScreenGameplay7K::RunAutoEvents()
 {
-	// Play BGM events.
-	for (std::vector<AutoplaySound>::iterator s = BGMEvents.begin();
-		s != BGMEvents.end();
-		s++)
+	if (!stage_failed)
 	{
-		if (s->Time <= SongTime)
+		// Play BGM events.
+		for (std::vector<AutoplaySound>::iterator s = BGMEvents.begin();
+			s != BGMEvents.end();
+			s++)
 		{
-			if (Keysounds[s->Sound])
+			if (s->Time <= SongTime)
 			{
-				Keysounds[s->Sound]->SeekTime(SongTime - s->Time);
-				Keysounds[s->Sound]->Play();
+				if (Keysounds[s->Sound])
+				{
+					Keysounds[s->Sound]->SeekTime(SongTime - s->Time);
+					Keysounds[s->Sound]->Play();
+				}
+				s = BGMEvents.erase(s);
+				if (s == BGMEvents.end()) break;
 			}
-			s = BGMEvents.erase(s);
-			if (s == BGMEvents.end()) break;
 		}
 	}
 
@@ -245,12 +248,16 @@ void ScreenGameplay7K::CheckShouldEndScreen()
 		Music->Stop();
 		FailSnd->Play();
 
+		for (std::map<int, SoundSample*>::iterator i = Keysounds.begin(); i != Keysounds.end(); i++)
+			i->second->Stop();
+
 		Animations->DoEvent("OnFailureEvent", 1);
 		FailureTime = Clamp(Animations->GetEnv()->GetFunctionResultF(), 0.0f, 30.0f);
 	}
 
 	if (stage_failed)
 	{
+		MissTime = 10; // Infinite, for as long as it lasts.
 		if (FailureTime <= 0)
 			Running = false;
 	}
