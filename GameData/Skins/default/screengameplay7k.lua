@@ -170,12 +170,15 @@ function FailBurst(frac)
 end
 
 function FailAnim(frac)
-	White.Height = frac * ScreenHeight
 
 	local fnh = FailNotif.Height
 	local fnw = FailNotif.Width
-	FailNotif.ScaleY = frac
-	-- FailNotif:SetCropByPixels(0, fnw, 0.5*(1-frac)*fnh, fnh - 0.5*(1-frac)*fnh)
+	local cosfacadd = 0.75
+	local cos = math.cos(frac * 2 * math.pi) * cosfacadd
+	local ftype = (1-frac)
+	local sc = (cos + cosfacadd/2) * (ftype * ftype) * 1.2 + 1
+	FailNotif.ScaleY = sc
+	FailNotif.ScaleX = sc
 	
 	Obj.SetTarget(ScreenBackground)
 	Obj.SetAlpha(1 - frac)
@@ -214,6 +217,11 @@ function FailAnim(frac)
 	return 1
 end
 
+function WhiteFailAnim(frac)
+	White.Height = ScreenHeight * frac
+	return 1
+end
+
 -- Returns duration of failure animation.
 function OnFailureEvent()
 	
@@ -237,8 +245,8 @@ function OnFailureEvent()
 	Engine:AddTarget(White)
 	Engine:AddTarget(FailNotif)
 
-
-	Engine:AddAnimation(White, "FailAnim", EaseIn, 0.25, 0)
+	Engine:AddAnimation(White, "WhiteFailAnim", EaseIn, 0.35, 0)
+	Engine:AddAnimation(FailNotif, "FailAnim", EaseNone, 1.3, 0)
 
 	return 2
 end
