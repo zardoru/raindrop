@@ -27,6 +27,7 @@ Preload = {
 	"stage-left.png",
 	"stage-right.png",
 	"pulse_ver.png",
+	"stagefailed.png",
 	"progress_tick.png",
 	"stage-lifeb.png",
 	"stage-lifeb-s.png",
@@ -169,12 +170,12 @@ function FailBurst(frac)
 end
 
 function FailAnim(frac)
-	White.Alpha = 1 - frac
+	White.Height = frac * ScreenHeight
 
 	local fnh = FailNotif.Height
 	local fnw = FailNotif.Width
 	FailNotif.ScaleY = frac
-	FailNotif:SetCropByPixels(0, fnw, 0.5*(1-frac)*fnh, fnh - 0.5*(1-frac)*fnh)
+	-- FailNotif:SetCropByPixels(0, fnw, 0.5*(1-frac)*fnh, fnh - 0.5*(1-frac)*fnh)
 	
 	Obj.SetTarget(ScreenBackground)
 	Obj.SetAlpha(1 - frac)
@@ -200,12 +201,9 @@ function FailAnim(frac)
 		BE.FnA.Alpha = 0
 		BE.FnB.Alpha = 0
 		BE.FnB.Alpha = 0
-		BE.FnA.Z = 30
-		BE.FnB.Z = 30
-		BE.FnC.Z = 30
-		BE.FnA.BlendMode = BlendAdd
-		BE.FnB.BlendMode = BlendAdd
-		BE.FnC.BlendMode = BlendAdd
+		BE.FnA.Z = 31
+		BE.FnB.Z = 31
+		BE.FnC.Z = 31
 
 		Engine:AddTarget(BE.FnC)
 		Engine:AddTarget(BE.FnB)
@@ -222,21 +220,25 @@ function OnFailureEvent()
 	White = Object2D()
 	FailNotif = Object2D()
 
+	White.Centered = 1
+	White.X = ScreenWidth / 2
+	White.Y = ScreenHeight / 2
+	White.Height = 0
 	White.Image = "white.png"
 	White.Width = ScreenWidth
-	White.Height = ScreenHeight
 	FailNotif.Image = "stagefailed.png"
 	FailNotif.Centered = 1
 	FailNotif.X = ScreenWidth / 2
 	FailNotif.Y = ScreenHeight / 2
 
-	White.Z = 31
-	FailNotif.Z = 30
+	White.Z = 30
+	FailNotif.Z = 31
 
-	Engine:AddTarget(FailNotif)
 	Engine:AddTarget(White)
+	Engine:AddTarget(FailNotif)
 
-	Engine:AddAnimation(White, "FailAnim", EaseOut, 0.3, 0)
+
+	Engine:AddAnimation(White, "FailAnim", EaseIn, 0.25, 0)
 
 	return 2
 end
