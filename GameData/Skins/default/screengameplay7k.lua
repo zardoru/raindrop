@@ -246,7 +246,7 @@ function OnFailureEvent()
 	Engine:AddTarget(FailNotif)
 
 	Engine:AddAnimation(White, "WhiteFailAnim", EaseIn, 0.35, 0)
-	Engine:AddAnimation(FailNotif, "FailAnim", EaseNone, 1.3, 0)
+	Engine:AddAnimation(FailNotif, "FailAnim", EaseNone, 0.75, 0)
 
 	return 2
 end
