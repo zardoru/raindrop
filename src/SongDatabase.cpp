@@ -57,9 +57,10 @@ const char* GetDiffFilename = "SELECT filename FROM songfiledb WHERE (songfiledb
 
 const char* GetDiffIDFileID = "SELECT diffid FROM diffdb \
 							 WHERE diffdb.fileid=? AND\
-							 diffdb.name = ?";
+							 							 diffdb.name = ?";
 
-#define SC(x) ret=x; if(ret!=SQLITE_OK) Log::Printf("%ls\n",Utility::Widen(sqlite3_errmsg(db)).c_str());
+#define SC(x) ret=x; if(ret!=SQLITE_OK) {Log::Printf("sqlite: %ls (code %d)\n",Utility::Widen(sqlite3_errmsg(db)).c_str(), ret); Utility::DebugBreak(); }
+#define SCS(x) ret=x; if(ret!=SQLITE_DONE) {Log::Printf("sqlite: %ls (code %d)\n",Utility::Widen(sqlite3_errmsg(db)).c_str(), ret); Utility::DebugBreak(); }
 SongDatabase::SongDatabase(String Database)
 {
 	int ret = sqlite3_open_v2(Database.c_str(), &db, SQLITE_OPEN_FULLMUTEX | SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
@@ -70,7 +71,7 @@ SongDatabase::SongDatabase(String Database)
 	{
 		char* err; // Do the "create tables" query.
 		const char* tail;
-		sqlite3_exec(db, DatabaseQuery, NULL, NULL, &err);
+		SC(sqlite3_exec(db, DatabaseQuery, NULL, NULL, &err));
 
 		// And not just that, also the statements.
 		SC(sqlite3_prepare_v2(db, GetSongIDQuery, strlen(GetSongIDQuery), &st_IDQuery, &tail));
@@ -115,7 +116,7 @@ SongDatabase::~SongDatabase()
 	}
 }
 
-
+// Returns: Song ID.
 int SongDatabase::AddSong(Directory Dir, int Mode, Game::Song* In)
 {
 	int ID;
@@ -129,7 +130,7 @@ int SongDatabase::AddSong(Directory Dir, int Mode, Game::Song* In)
 		SC(sqlite3_bind_text(st_SngInsertQuery, 4, In->SongFilename.c_str(), In->SongFilename.length(), SQLITE_TRANSIENT));
 		SC(sqlite3_bind_text(st_SngInsertQuery, 5, In->BackgroundFilename.c_str(), In->BackgroundFilename.length(), SQLITE_TRANSIENT));
 		SC(sqlite3_bind_int(st_SngInsertQuery, 6, Mode));
-		SC(sqlite3_step(st_SngInsertQuery));
+		SCS(sqlite3_step(st_SngInsertQuery));
 		SC(sqlite3_reset(st_SngInsertQuery));
 	}
 
@@ -140,11 +141,13 @@ int SongDatabase::AddSong(Directory Dir, int Mode, Game::Song* In)
 }
 
 // Only returns whether the directory exists in the database.
+// ID of the song if it exists.
 bool SongDatabase::IsSongDirectory(Directory Dir, int *IDOut)
 {
-	int res1 = sqlite3_bind_text(st_IDQuery, 1, Dir.c_path(), Dir.path().length(), SQLITE_TRANSIENT);
+	int ret;
+	SC(sqlite3_bind_text(st_IDQuery, 1, Dir.c_path(), Dir.path().length(), SQLITE_TRANSIENT));
 
-	int ret = sqlite3_step(st_IDQuery);
+	ret = sqlite3_step(st_IDQuery);
 
 	if (ret == SQLITE_ROW)
 	{
@@ -157,34 +160,37 @@ bool SongDatabase::IsSongDirectory(Directory Dir, int *IDOut)
 }
 
 // Inserts a filename, if it already exists, updates it.
+// Returns the ID of the filename.
 int SongDatabase::InsertFilename(Directory Fn)
 {
 	int ret;
 	int idOut;
-	sqlite3_bind_text(st_FilenameQuery, 1, Fn.c_path(), Fn.path().length(), SQLITE_TRANSIENT);
-	sqlite3_bind_int(st_FilenameQuery, 2, Utility::GetLMT(Fn.path()));
+	SC(sqlite3_bind_text(st_FilenameQuery, 1, Fn.c_path(), Fn.path().length(), SQLITE_TRANSIENT));
+	SC(sqlite3_bind_int(st_FilenameQuery, 2, Utility::GetLMT(Fn.path())));
 
 	if (sqlite3_step(st_FilenameQuery) == SQLITE_ROW)
 	{
 		// There's an entry. Move along.
 		idOut = sqlite3_column_int(st_FilenameQuery, 0);
 
+		// Update the last-modified-time of this file.
 		SC(sqlite3_bind_int(st_UpdateLMT, 1, Utility::GetLMT(Fn.path())));
 		SC(sqlite3_bind_int(st_UpdateLMT, 2, idOut));
-		SC(sqlite3_step(st_UpdateLMT));
-		sqlite3_reset(st_UpdateLMT);
+		SCS(sqlite3_step(st_UpdateLMT));
+		SC(sqlite3_reset(st_UpdateLMT));
 	}else
 	{
 		// There's no entry, got to insert it.
 		SC(sqlite3_bind_text(st_FilenameInsertQuery, 1, Fn.c_path(), Fn.path().length(), SQLITE_TRANSIENT));
 		SC(sqlite3_bind_int(st_FilenameInsertQuery, 2, Utility::GetLMT(Fn.path())));
-		SC(sqlite3_step(st_FilenameInsertQuery)); // This should not fail. Otherwise, there are bigger problems to worry about...
+		SCS(sqlite3_step(st_FilenameInsertQuery)); // This should not fail. Otherwise, there are bigger problems to worry about...
 		SC(sqlite3_reset(st_FilenameInsertQuery));
 
+		// okay, then return the ID.
 		SC(sqlite3_reset(st_FilenameQuery));
 		SC(sqlite3_bind_text(st_FilenameQuery, 1, Fn.c_path(), Fn.path().length(), SQLITE_TRANSIENT));
 		SC(sqlite3_bind_int(st_FilenameQuery, 2, Utility::GetLMT(Fn.path())));
-		SC(sqlite3_step(st_FilenameQuery));
+		sqlite3_step(st_FilenameQuery);
 		idOut = sqlite3_column_int(st_FilenameQuery, 0);
 	}
 
@@ -192,14 +198,16 @@ int SongDatabase::InsertFilename(Directory Fn)
 	return idOut;
 }
 
+// remove all difficulties associated to this ID
 void SongDatabase::ClearDifficulties(int SongID)
 {
 	int ret;
 	SC(sqlite3_bind_int(st_DelDiffsQuery, 1, SongID));
-	SC(sqlite3_step(st_DelDiffsQuery));
-	sqlite3_reset(st_DelDiffsQuery);
+	SCS(sqlite3_step(st_DelDiffsQuery));
+	SC(sqlite3_reset(st_DelDiffsQuery));
 }
 
+// returns if difficulty exists in the database. And difficulty ID.
 bool SongDatabase::DifficultyExists(int FileID, String DifficultyName, int *IDOut)
 {
 	int ret;
@@ -219,6 +227,7 @@ bool SongDatabase::DifficultyExists(int FileID, String DifficultyName, int *IDOu
 	return r == SQLITE_ROW;
 }
 
+// Adds a difficulty to the database, or updates it if it already exists.
 void SongDatabase::AddDifficulty(int SongID, Directory Filename, Game::Song::Difficulty* Diff, int Mode)
 {
 	int FileID = InsertFilename(Filename);
@@ -250,7 +259,7 @@ void SongDatabase::AddDifficulty(int SongID, Directory Filename, Game::Song::Dif
 			SC(sqlite3_bind_int(st_DiffInsertQuery, 11, 0));
 		}
 
-		SC(sqlite3_step(st_DiffInsertQuery));
+		SCS(sqlite3_step(st_DiffInsertQuery));
 		SC(sqlite3_reset(st_DiffInsertQuery));
 
 	}else
@@ -277,8 +286,8 @@ void SongDatabase::AddDifficulty(int SongID, Directory Filename, Game::Song::Dif
 		}
 
 		SC(sqlite3_bind_int(st_DiffUpdateQuery, 10, DiffID));
-		SC(sqlite3_step(st_DiffUpdateQuery));
-		sqlite3_reset(st_DiffUpdateQuery);
+		SCS(sqlite3_step(st_DiffUpdateQuery));
+		SC(sqlite3_reset(st_DiffUpdateQuery));
 	}
 
 	if (DiffID == 0)
@@ -294,11 +303,12 @@ void SongDatabase::AddDifficulty(int SongID, Directory Filename, Game::Song::Dif
 
 String SongDatabase::GetDifficultyFilename (int ID)
 {
-	sqlite3_bind_int(st_GetDiffFilename, 1, ID);
-	sqlite3_step(st_GetDiffFilename);
+	int ret;
+	SC(sqlite3_bind_int(st_GetDiffFilename, 1, ID));
+	SCS(sqlite3_step(st_GetDiffFilename));
 
 	String out = (char *)sqlite3_column_text(st_GetDiffFilename, 0);
-	sqlite3_reset(st_GetDiffFilename);
+	SC(sqlite3_reset(st_GetDiffFilename));
 	return out;
 }
 
@@ -306,9 +316,9 @@ bool SongDatabase::CacheNeedsRenewal(Directory Dir)
 {
 	int CurLMT = Utility::GetLMT(Dir.path());
 	bool NeedsRenewal;
-	int res;
+	int res, ret;
 
-	sqlite3_bind_text(st_LMTQuery, 1, Dir.c_path(), Dir.path().length(), SQLITE_TRANSIENT);
+	SC(sqlite3_bind_text(st_LMTQuery, 1, Dir.c_path(), Dir.path().length(), SQLITE_TRANSIENT));
 	res = sqlite3_step(st_LMTQuery);
 
 	if (res == SQLITE_ROW) // entry exists
@@ -320,7 +330,7 @@ bool SongDatabase::CacheNeedsRenewal(Directory Dir)
 		NeedsRenewal = true;
 	}
 
-	sqlite3_reset(st_LMTQuery);
+	SC(sqlite3_reset(st_LMTQuery));
 	return NeedsRenewal;
 }
 
@@ -338,8 +348,15 @@ void SongDatabase::EndTransaction()
 
 void SongDatabase::GetSongInformation7K (int ID, VSRG::Song* Out)
 {
-	sqlite3_bind_int(st_GetSongInfo, 1, ID);
-	int res = sqlite3_step(st_GetSongInfo);
+	int ret;
+	SC(sqlite3_bind_int(st_GetSongInfo, 1, ID));
+	ret = sqlite3_step(st_GetSongInfo);
+
+	if (ret != SQLITE_ROW)
+	{
+		Log::Printf("SongDatabase::GetSongInformation7K: Chart %d does not exist.\n", ID);
+		return;
+	}
 
 	// Main metadata is up in this query.
 
@@ -349,13 +366,13 @@ void SongDatabase::GetSongInformation7K (int ID, VSRG::Song* Out)
 	Out->BackgroundFilename = (char*)sqlite3_column_text(st_GetSongInfo, 3);
 	int mode = sqlite3_column_int(st_GetSongInfo, 4);
 
-	sqlite3_reset(st_GetSongInfo);
+	SC(sqlite3_reset(st_GetSongInfo));
 
 	if (mode != MODE_7K)
 		return; // Sowwy.
 
 	// Now, difficulty information.
-	sqlite3_bind_int(st_GetDiffInfo, 1, ID);
+	SC(sqlite3_bind_int(st_GetDiffInfo, 1, ID));
 	while (sqlite3_step(st_GetDiffInfo) != SQLITE_DONE)
 	{
 		VSRG::Difficulty * Diff = new VSRG::Difficulty;
@@ -378,14 +395,14 @@ void SongDatabase::GetSongInformation7K (int ID, VSRG::Song* Out)
 		// File ID associated data
 		int FileID = sqlite3_column_int(st_GetDiffInfo, 9);
 
-		sqlite3_bind_int(st_GetFileInfo, 1, FileID);
+		SC(sqlite3_bind_int(st_GetFileInfo, 1, FileID));
 		sqlite3_step(st_GetFileInfo);
 		Diff->Filename = (char*)sqlite3_column_text(st_GetFileInfo, 0);
 		Diff->LMT = sqlite3_column_int(st_GetFileInfo, 1);
-		sqlite3_reset(st_GetFileInfo);
+		SC(sqlite3_reset(st_GetFileInfo));
 
 		Out->Difficulties.push_back(Diff);
 	}
 
-	sqlite3_reset(st_GetDiffInfo);
+	SC(sqlite3_reset(st_GetDiffInfo));
 }

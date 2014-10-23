@@ -170,7 +170,11 @@ void ImageLoader::UpdateTextures()
 			if (i->second->IsValid) /* all of them are valid */
 				break;
 
-			Load(i->first);
+			if (Load(i->first) == NULL) // If we failed loading it no need to try every. single. time.
+			{
+				i = Textures.erase(i);
+				if (i == Textures.end()) break;
+			}
 		}
 	}
 }
