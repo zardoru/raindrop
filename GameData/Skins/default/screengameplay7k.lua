@@ -184,34 +184,7 @@ function FailAnim(frac)
 	Obj.SetAlpha(1 - frac)
 
 	if frac == 1 then -- we're at the end
-		BE = {}
-		BE.FnA = Object2D()
-		BE.FnB = Object2D()
-		BE.FnC = Object2D()
-		BE.FnA.Image = "stagefailed.png"
-		BE.FnB.Image = "stagefailed.png"
-		BE.FnC.Image = "stagefailed.png"
-
-		BE.FnA.X = ScreenWidth/2
-		BE.FnB.X = ScreenWidth/2 
-		BE.FnC.X = ScreenWidth/2
-		BE.FnA.Y = ScreenHeight/2
-		BE.FnB.Y = ScreenHeight/2
-		BE.FnC.Y = ScreenHeight/2
-		BE.FnA.Centered = 1
-		BE.FnB.Centered = 1
-		BE.FnC.Centered = 1
-		BE.FnA.Alpha = 0
-		BE.FnB.Alpha = 0
-		BE.FnB.Alpha = 0
-		BE.FnA.Z = 31
-		BE.FnB.Z = 31
-		BE.FnC.Z = 31
-
-		Engine:AddTarget(BE.FnC)
-		Engine:AddTarget(BE.FnB)
-		Engine:AddTarget(BE.FnA)
-		Engine:AddAnimation(BE.FnA, "FailBurst", EaseOut, 0.7, 0)
+		
 	end
 
 	return 1
@@ -247,7 +220,35 @@ function OnFailureEvent()
 
 	Engine:AddAnimation(White, "WhiteFailAnim", EaseIn, 0.35, 0)
 	Engine:AddAnimation(FailNotif, "FailAnim", EaseNone, 0.75, 0)
+	
+	BE = {}
+	BE.FnA = Object2D()
+	BE.FnB = Object2D()
+	BE.FnC = Object2D()
+	BE.FnA.Image = "stagefailed.png"
+	BE.FnB.Image = "stagefailed.png"
+	BE.FnC.Image = "stagefailed.png"
 
+	BE.FnA.X = ScreenWidth/2
+	BE.FnB.X = ScreenWidth/2 
+	BE.FnC.X = ScreenWidth/2
+	BE.FnA.Y = ScreenHeight/2
+	BE.FnB.Y = ScreenHeight/2
+	BE.FnC.Y = ScreenHeight/2
+	BE.FnA.Centered = 1
+	BE.FnB.Centered = 1
+	BE.FnC.Centered = 1
+	BE.FnA.Alpha = 0
+	BE.FnB.Alpha = 0
+	BE.FnB.Alpha = 0
+	BE.FnA.Z = 31
+	BE.FnB.Z = 31
+	BE.FnC.Z = 31
+
+	Engine:AddTarget(BE.FnC)
+	Engine:AddTarget(BE.FnB)
+	Engine:AddTarget(BE.FnA)
+	Engine:AddAnimation(BE.FnA, "FailBurst", EaseOut, 0.7, 0.33 * 0.75)
 	return 2
 end
 
