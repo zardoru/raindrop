@@ -36,11 +36,11 @@ void GraphObjectMan::StopAnimationsForTarget(GraphObject2D* Target)
 
 
 void GraphObjectMan::AddLuaAnimation (GraphObject2D* Target, const String &FuncName, 
-	Animation::EEaseType Easing, float Duration, float Delay)
+	int Easing, float Duration, float Delay)
 {
 	Animation Anim;
 	Anim.Function = boost::bind(LuaAnimation, Lua, FuncName, _1, _2);
-	Anim.Easing = Easing;
+	Anim.Easing = (Animation::EEaseType)Easing;
 	Anim.Duration = Duration;
 	Anim.Target = Target;
 	Anim.Delay = Delay;

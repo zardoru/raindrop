@@ -84,6 +84,9 @@ void ScreenGameplay7K::HitNote (double TimeOff, uint32 Lane, bool IsHold, bool I
 	Animations->GetEnv()->PushArgument(IsHold);
 	Animations->GetEnv()->PushArgument(IsHoldRelease);
 	Animations->GetEnv()->RunFunction();
+
+	if (score_keeper->getMaxNotes() == score_keeper->getScore(ST_NOTES_HIT))
+		Animations->DoEvent("OnFullComboEvent");
 }
 
 void ScreenGameplay7K::MissNote (double TimeOff, uint32 Lane, bool IsHold, bool auto_hold_miss, bool early_miss)

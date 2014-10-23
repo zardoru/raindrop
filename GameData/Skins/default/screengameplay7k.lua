@@ -137,39 +137,121 @@ function getUncropFunction(w, h, iw, ih)
 	end
 end
 
+function OnFullComboEvent()
+	fcnotify = Object2D ()
+	fcnotify.Image = "fullcombo.png"
+
+	local scalef = GearWidth / fcnotify.Width * 0.85
+	fcnotify.X = GearStartX + 2
+	fcnotify.ScaleX = scalef
+	fcnotify.ScaleY = scalef
+	fcanim = getMoveFunction(fcnotify.X, -fcnotify.Height * scalef, fcnotify.X, ScreenWidth/2 - fcnotify.Height*scalef/2)
+	Engine:AddTarget(fcnotify)
+	Engine:AddAnimation(fcnotify, "fcanim", EaseOut, 0.75, 0)
+end
+
+function FailBurst(frac)
+	local TargetScaleA = 4
+	local TargetScaleB = 3
+	local TargetScaleC = 2
+	BE.FnA.Alpha = 1 - frac
+	BE.FnB.Alpha = 1 - frac
+	BE.FnC.Alpha = 1 - frac
+
+	BE.FnA.ScaleY = 1 + (TargetScaleA-1) * frac
+	BE.FnB.ScaleY = 1 + (TargetScaleB-1) * frac
+	BE.FnC.ScaleY = 1 + (TargetScaleC-1) * frac
+	BE.FnA.ScaleX = 1 + (TargetScaleA-1) * frac
+	BE.FnB.ScaleX = 1 + (TargetScaleB-1) * frac
+	BE.FnC.ScaleX = 1 + (TargetScaleC-1) * frac
+
+	return 1
+end
 
 function FailAnim(frac)
 	White.Alpha = 1 - frac
+
+	local fnh = FailNotif.Height
+	local fnw = FailNotif.Width
+	FailNotif.ScaleY = frac
+	FailNotif:SetCropByPixels(0, fnw, 0.5*(1-frac)*fnh, fnh - 0.5*(1-frac)*fnh)
+	
+	Obj.SetTarget(ScreenBackground)
+	Obj.SetAlpha(1 - frac)
+
+	if frac == 1 then -- we're at the end
+		BE = {}
+		BE.FnA = Object2D()
+		BE.FnB = Object2D()
+		BE.FnC = Object2D()
+		BE.FnA.Image = "stagefailed.png"
+		BE.FnB.Image = "stagefailed.png"
+		BE.FnC.Image = "stagefailed.png"
+
+		BE.FnA.X = ScreenWidth/2
+		BE.FnB.X = ScreenWidth/2 
+		BE.FnC.X = ScreenWidth/2
+		BE.FnA.Y = ScreenHeight/2
+		BE.FnB.Y = ScreenHeight/2
+		BE.FnC.Y = ScreenHeight/2
+		BE.FnA.Centered = 1
+		BE.FnB.Centered = 1
+		BE.FnC.Centered = 1
+		BE.FnA.Alpha = 0
+		BE.FnB.Alpha = 0
+		BE.FnB.Alpha = 0
+		BE.FnA.Z = 30
+		BE.FnB.Z = 30
+		BE.FnC.Z = 30
+		BE.FnA.BlendMode = BlendAdd
+		BE.FnB.BlendMode = BlendAdd
+		BE.FnC.BlendMode = BlendAdd
+
+		Engine:AddTarget(BE.FnC)
+		Engine:AddTarget(BE.FnB)
+		Engine:AddTarget(BE.FnA)
+		Engine:AddAnimation(BE.FnA, "FailBurst", EaseOut, 0.7, 0)
+	end
+
 	return 1
 end
 
 -- Returns duration of failure animation.
 function OnFailureEvent()
 	
-	Backg = Object2D()
 	White = Object2D()
+	FailNotif = Object2D()
+
 	White.Image = "white.png"
 	White.Width = ScreenWidth
 	White.Height = ScreenHeight
-	Backg.Image = "blue.png"
-	Backg.Centered = 1
-	Backg.X = ScreenWidth / 2
-	Backg.Y = ScreenHeight / 2
+	FailNotif.Image = "stagefailed.png"
+	FailNotif.Centered = 1
+	FailNotif.X = ScreenWidth / 2
+	FailNotif.Y = ScreenHeight / 2
 
 	White.Z = 31
-	Backg.Z = 30
+	FailNotif.Z = 30
 
-	Engine:AddTarget(Backg)
+	Engine:AddTarget(FailNotif)
 	Engine:AddTarget(White)
 
-	Obj.AddAnimation("FailAnim", EaseIn, 0.75, 0)
+	Engine:AddAnimation(White, "FailAnim", EaseOut, 0.3, 0)
 
-	return 3
+	return 2
+end
+
+function BackgroundFadeIn(frac)
+	Obj.SetAlpha(frac)
+	return 1
 end
 
 -- When 'enter' is pressed and the game starts, this function is called.
 function OnActivateEvent()
-	print (Auto)
+
+	Obj.SetTarget(ScreenBackground)
+	Obj.AddAnimation("BackgroundFadeIn", 1, 0, EaseNone)
+
 	if Auto ~= 0 then
 		AutoBN = Obj.CreateTarget()
 		
@@ -263,15 +345,6 @@ function Update(Delta)
 	-- Executed every frame.
 	
 	if Active ~= 0 then
-		Obj.SetTarget(ScreenBackground)
-		a = Obj.GetAlpha()
-
-		if a < 1 then
-			Obj.SetAlpha (a + Delta)
-		else
-			Obj.SetAlpha(1)
-		end
-
 		if AutoBN and RunAutoAnimation == true then
 			local BeatRate = Beat / 2
 			local Scale = math.sin( math.pi * 2 * BeatRate  )

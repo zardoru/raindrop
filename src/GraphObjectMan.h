@@ -42,7 +42,7 @@ public:
 	ImageList* GetImageList();
 
 	void DoEvent(String EventName, int Return = 0);
-	void AddLuaAnimation (GraphObject2D* Target, const String &FName, Animation::EEaseType Easing, float Duration, float Delay);
+	void AddLuaAnimation (GraphObject2D* Target, const String &FName, int Easing, float Duration, float Delay);
 	void StopAnimationsForTarget(GraphObject2D* Target);
 	void AddTarget(GraphObject2D *Targ);
 	void AddLuaTarget(GraphObject2D *Targ, String Varname);

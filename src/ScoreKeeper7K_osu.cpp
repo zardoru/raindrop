@@ -6,7 +6,7 @@
 
 void ScoreKeeper7K::update_osu(int ms, ScoreKeeperJudgment judgment){
 	
-	int osu_bonus_multiplier;
+	int osu_bonus_multiplier = 0;
 
 	switch(judgment){
 		case SKJ_W0:
