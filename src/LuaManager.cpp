@@ -42,8 +42,8 @@ LuaManager::LuaManager()
 
 LuaManager::~LuaManager()
 {
-	//if (State)
-	//	lua_close(State);
+	if (State)
+		lua_close(State);
 }
 
 void LuaManager::GetGlobal(std::string VarName)

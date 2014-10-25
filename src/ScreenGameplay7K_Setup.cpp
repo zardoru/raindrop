@@ -513,14 +513,11 @@ void ScreenGameplay7K::SetupGear()
 
 	for (int i = 0; i < CurrentDiff->Channels; i++)
 	{
-		sprintf(cstr, "Key%d", i+1);
+		sprintf(cstr, "Key%d", i + 1);
+		GearLaneImage[i] = GameState::GetInstance().GetSkinImage(GetSkinConfigs(cstr, nstr));
 
-		/* If it says that the nth lane uses the kth key then we'll bind that! */
-		sprintf(str, "key%d.png", (int)GetSkinConfigf(cstr, nstr));
-		GearLaneImage[i] = GameState::GetInstance().GetSkinImage(str);
-
-		sprintf(str, "key%dd.png", (int)GetSkinConfigf(cstr, nstr));
-		GearLaneImageDown[i] = GameState::GetInstance().GetSkinImage(str);
+		sprintf(cstr, "Key%dDown", i + 1);
+		GearLaneImageDown[i] = GameState::GetInstance().GetSkinImage(GetSkinConfigs(cstr, nstr));
 
 		sprintf(str, "Key%dX", i+1);
 		LanePositions[i] = Configuration::GetSkinConfigf(str, nstr);

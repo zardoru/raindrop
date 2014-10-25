@@ -107,28 +107,60 @@ NoteHeight = 16
 
 -- Actual channels configuration.
 -- Lane X positions are always centered.
+--
+
+C1 = "VSRG/key1.png"
+C1D = "VSRG/key1d.png"
+C2 = "VSRG/key2.png"
+C2D = "VSRG/key2d.png"
+C3 = "VSRG/key3.png"
+C3D = "VSRG/key3d.png"
+C4 = "VSRG/key4.png"
+C4D = "VSRG/key4d.png"
+C5 = "VSRG/key5.png"
+C5D = "VSRG/key5d.png"
 
 -- Channels16 is, of course, DP.
 Channels16 = {
     -- Gear bindings
-    Key1 = 3, -- scratch channel on the left side
-    Key2 = 1,
-    Key3 = 2,
-    Key4 = 1,
-    Key5 = 2,
-    Key6 = 1,
-    Key7 = 2,
-    Key8 = 1,
     
-    Key9 = 3, -- scratch channel on the right side
-    Key10 = 1,
-    Key11 = 2,
-    Key12 = 1,
-    Key13 = 2,
-    Key14 = 1,
-    Key15 = 2,
-    Key16 = 1,
+    Key1 = C3, -- scratch channel on the left side
+    Key2 = C1,
+    Key3 = C2,
+    Key4 = C1,
+    Key5 = C2,
+    Key6 = C1,
+    Key7 = C2,
+    Key8 = C1,
     
+    Key9 = C3, -- scratch channel on the right side
+    Key10 = C1,
+    Key11 = C2,
+    Key12 = C1,
+    Key13 = C2,
+    Key14 = C1,
+    Key15 = C2,
+    Key16 = C1,
+
+
+    Key1Down = C3D, -- scratch channel on the left side
+    Key2Down = C1D,
+    Key3Down = C2D,
+    Key4Down = C1D,
+    Key5Down = C2D,
+    Key6Down = C1D,
+    Key7Down = C2D,
+    Key8Down = C1D,
+    
+    Key9Down = C3D, -- scratch channel on the right side
+    Key10Down = C1D,
+    Key11Down = C2D,
+    Key12Down = C1D,
+    Key13Down = C2D,
+    Key14Down = C1D,
+    Key15Down = C2D,
+    Key16Down = C1D,
+
     Key1Binding = 8, -- Use Key8 from config.lua. Notes that follow are keys 1 through 7.
     Key2Binding = 1,
     Key3Binding = 2,
@@ -223,26 +255,39 @@ Channels16 = {
     Key13Width = GearLaneSize[8],
     Key14Width = GearLaneSize[8],
     Key15Width = GearLaneSize[8],
-    Key16Width = GearLaneSize[8],
-
+    Key16Width = GearLaneSize[8]
 }
 
 -- Channels12 is of course, 5k DP.
 Channels12 = {
     -- Gear bindings
-    Key1 = 3, -- scratch channel on the left side
-    Key2 = 1,
-    Key3 = 2,
-    Key4 = 1,
-    Key5 = 2,
-    Key6 = 1,
+    Key1 = C3, -- scratch channel on the left side
+    Key2 = C1,
+    Key3 = C2,
+    Key4 = C1,
+    Key5 = C2,
+    Key6 = C1,
 
-    Key7 = 3, -- scratch channel on the right side
-    Key8 = 1,
-    Key9 = 2, 
-    Key10 = 1,
-    Key11 = 2,
-    Key12 = 1,
+    Key7 = C3, -- scratch channel on the right side
+    Key8 = C1,
+    Key9 = C2, 
+    Key10 =C1,
+    Key11 =C2,
+    Key12 =C1,
+
+    Key1Down = C3D, -- scratch channel on the left side
+    Key2Down = C1D,
+    Key3Down = C2D,
+    Key4Down = C1D,
+    Key5Down = C2D,
+    Key6Down = C1D,
+
+    Key7Down = C3D, -- scratch channel on the right side
+    Key8Down = C1D,
+    Key9Down = C2D, 
+    Key10Down =C1D,
+    Key11Down =C2D,
+    Key12Down =C1D,
     
     Key1Binding = 8, -- Use Key8 from config.lua. Notes that follow are keys 1 through 7.
     Key2Binding = 1,
@@ -326,15 +371,24 @@ Channels12 = {
 }
 -- Channels9 is, by default, pop'n like.
 Channels9 = {
-    Key1 = 4,
-    Key2 = 1,
-    Key3 = 2,
-    Key4 = 3,
-    Key5 = 5,
-    Key6 = 3,
-    Key7 = 2,
-    Key8 = 1,
-    Key9 = 4,
+    Key1 = C4,
+    Key2 = C1,
+    Key3 = C2,
+    Key4 = C3,
+    Key5 = C5,
+    Key6 = C3,
+    Key7 = C2,
+    Key8 = C1,
+    Key9 = C4,
+    Key1Down = C4D,
+    Key2Down = C1D,
+    Key3Down = C2D,
+    Key4Down = C3D,
+    Key5Down = C5D,
+    Key6Down = C3D,
+    Key7Down = C2D,
+    Key8Down = C1D,
+    Key9Down = C4D,
     Key1Binding = 8, -- Use Key8 from config.lua. Notes that 
     Key2Binding = 1,
     Key3Binding = 2,
@@ -396,14 +450,22 @@ GearHeight = GearHeightCommon,
 -- Channels8 is, by default, 7k+1. Key1 is always the scratch channel.
 Channels8 = {
     -- Gear bindings
-    Key1 = 3,
-    Key2 = 1,
-    Key3 = 2,
-    Key4 = 1,
-    Key5 = 2,
-    Key6 = 1,
-    Key7 = 2,
-    Key8 = 1,
+    Key1 = C3,
+    Key2 = C1,
+    Key3 = C2,
+    Key4 = C1,
+    Key5 = C2,
+    Key6 = C1,
+    Key7 = C2,
+    Key8 = C1,
+    Key1Down = C3D,
+    Key2Down = C1D,
+    Key3Down = C2D,
+    Key4Down = C1D,
+    Key5Down = C2D,
+    Key6Down = C1D,
+    Key7Down = C2D,
+    Key8Down = C1D,
     Key1Binding = 8, -- Use Key8 from config.lua. Notes that follow are keys 1 through 7.
     Key2Binding = 1,
     Key3Binding = 2,
@@ -459,13 +521,20 @@ Channels8 = {
 -- 7 Channels. By default, it's o2jam-like.
 Channels7 = {
     -- Gear bindings
-    Key1 = 4,
-    Key2 = 1,
-    Key3 = 2,
-    Key4 = 3,
-    Key5 = 2,
-    Key6 = 1,
-    Key7 = 4,
+    Key1 = C4,
+    Key2 = C1,
+    Key3 = C2,
+    Key4 = C3,
+    Key5 = C2,
+    Key6 = C1,
+    Key7 = C4,
+    Key1Down = C4D,
+    Key2Down = C1D,
+    Key3Down = C2D,
+    Key4Down = C3D,
+    Key5Down = C2D,
+    Key6Down = C1D,
+    Key7Down = C4D,
     Key1Binding = 1,
     Key2Binding = 2,
     Key3Binding = 3,
@@ -515,12 +584,18 @@ Channels7 = {
 
 -- 6 Channels. By default, it's BMS-like.
 Channels6 = {
-    Key1 = 4,
-    Key2 = 1,
-    Key3 = 2,
-    Key4 = 2,
-    Key5 = 1,
-    Key6 = 4,
+    Key1 = C4,
+    Key2 = C1,
+    Key3 = C2,
+    Key4 = C2,
+    Key5 = C1,
+    Key6 = C4,
+    Key1Down = C4D,
+    Key2Down = C1D,
+    Key3Down = C2D,
+    Key4Down = C2D,
+    Key5Down = C1D,
+    Key6Down = C4D,
     GearHeight = GearHeightCommon,
     Key1Binding = 1,
     Key2Binding = 2,
@@ -558,45 +633,54 @@ Channels6 = {
 
 -- 5 Channels. By default, ez2dj-like.
 Channels5 = {
-	Key1 = 1,
-    Key2 = 2,
-	Key3 = 1,
-    Key4 = 2,
-    Key5 = 1,
-    GearHeight = GearHeightCommon,
-    Key1Binding = 2,
-    Key2Binding = 3,
+	Key1 = C1,
+	Key2 = C2,
+	Key3 = C3,
+	Key4 = C2,
+	Key5 = C1,
+	Key1Down = C1D,
+	Key2Down = C2D,
+	Key3Down = C3D,
+	Key4Down = C2D,
+	Key5Down = C1D,
+	GearHeight = GearHeightCommon,
+	Key1Binding = 2,
+	Key2Binding = 3,
 	Key3Binding = 4,
-    Key4Binding = 5,
-    Key5Binding = 6,
-    Key1Image = NoteImage1,
-    Key2Image = NoteImage2,
+	Key4Binding = 5,
+	Key5Binding = 6,
+	Key1Image = NoteImage1,
+	Key2Image = NoteImage2,
 	Key3Image = NoteImage3,
-    Key4Image = NoteImage2,
-    Key5Image = NoteImage1,
-    Key1HoldImage = NoteImageHold1,
-    Key2HoldImage = NoteImageHold2,
+	Key4Image = NoteImage2,
+	Key5Image = NoteImage1,
+	Key1HoldImage = NoteImageHold1,
+	Key2HoldImage = NoteImageHold2,
 	Key3HoldImage = NoteImageHold3,
-    Key4HoldImage = NoteImageHold2,
-    Key5HoldImage = NoteImageHold1,
-    Key1Width = GearLaneSize[5],
-    Key2Width = GearLaneSize[5],
+	Key4HoldImage = NoteImageHold2,
+	Key5HoldImage = NoteImageHold1,
+	Key1Width = GearLaneSize[5],
+	Key2Width = GearLaneSize[5],
 	Key3Width = GearLaneSize[5],
-    Key4Width = GearLaneSize[5],
-    Key5Width = GearLaneSize[5],
-    Key1X = GearStartX + GearLaneSize[5] / 2,
-    Key2X = GearStartX + GearLaneSize[5] / 2 + GearLaneSize[5],
-    Key3X = GearStartX + GearLaneSize[5] / 2 + GearLaneSize[5] * 2,
-    Key4X = GearStartX + GearLaneSize[5] / 2 + GearLaneSize[5] * 3,
+	Key4Width = GearLaneSize[5],
+	Key5Width = GearLaneSize[5],
+	Key1X = GearStartX + GearLaneSize[5] / 2,
+	Key2X = GearStartX + GearLaneSize[5] / 2 + GearLaneSize[5],
+	Key3X = GearStartX + GearLaneSize[5] / 2 + GearLaneSize[5] * 2,
+	Key4X = GearStartX + GearLaneSize[5] / 2 + GearLaneSize[5] * 3,
 	Key5X = GearStartX + GearLaneSize[5] / 2 + GearLaneSize[5] * 4,
 }
 
 -- 4 Channels. By default, it's DJMax-like.
 Channels4 = {
-    Key1 = 1,
-    Key2 = 2,
-    Key3 = 2,
-    Key4 = 1,
+    Key1 = C1,
+    Key2 = C2,
+    Key3 = C2,
+    Key4 = C1,
+    Key1Down = C1D,
+    Key2Down = C2D,
+    Key3Down = C2D,
+    Key4Down = C1D,
     GearHeight = GearHeightCommon,
     Key1Binding = 2,
     Key2Binding = 3,
