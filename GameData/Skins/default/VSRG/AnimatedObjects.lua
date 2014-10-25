@@ -1,6 +1,6 @@
 
-ProgressTick = { Image = "progress_tick.png" }
-Pulse = { Image = "pulse_ver.png", Height = 200 }
+ProgressTick = { Image = "VSRG/progress_tick.png" }
+Pulse = { Image = "VSRG/pulse_ver.png", Height = 200 }
 MissHighlight = {}
 
 function ProgressTick.Init()
@@ -74,7 +74,7 @@ function MissHighlight.Init()
 		MissHighlight[i] = Obj.CreateTarget()
 		Obj.SetTarget(MissHighlight[i])
 		Obj.SetCentered(1)
-		Obj.SetImageSkin("miss_highlight.png")
+		Obj.SetImageSkin("VSRG/miss_highlight.png")
 		Obj.SetPosition(GetConfigF("Key"..i.."X", ChannelSpace), ScreenHeight/2)
 		Obj.SetSize(GetConfigF("Key"..i.."Width", ChannelSpace), ScreenHeight)
 		Obj.SetAlpha(0)

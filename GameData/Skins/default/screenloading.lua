@@ -9,13 +9,13 @@ function Init()
 
 	Obj.SetTarget(targLogo)
 
-	Obj.SetImageSkin("loading.png")
+	Obj.SetImageSkin("Loading/loading.png")
 	w, h = Obj.GetSize()
 	Obj.SetPosition(w, ScreenHeight - h)
 	Obj.SetCentered(1)
 
 	Obj.SetTarget(targBadge)
-	Obj.SetImageSkin("loadingbadge.png")
+	Obj.SetImageSkin("Loading/loadingbadge.png")
 	Obj.SetCentered(1)
 	wb = Obj.GetSize()
 	Obj.SetPosition(w - w/2 - wb/2, ScreenHeight - h)

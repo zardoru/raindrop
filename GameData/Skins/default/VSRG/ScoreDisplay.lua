@@ -16,7 +16,7 @@ function ScoreDisplay.Init()
 		ScoreDisplay.Images[i] = i-1 .. ".png"
 	end
 
-	ScoreDisplay.Atlas = TextureAtlas:new(Obj.GetSkinDirectory() .. "combosheet.csv")
+	ScoreDisplay.Atlas = TextureAtlas:new(Obj.GetSkinDirectory() .. "VSRG/combosheet.csv")
 
 	for i = 1, ScoreDisplay.DigitCount do
 		ScoreDisplay.Targets[i] = Obj.CreateTarget()

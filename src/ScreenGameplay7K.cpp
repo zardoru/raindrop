@@ -229,12 +229,13 @@ void ScreenGameplay7K::CheckShouldEndScreen()
 		if (!SongFinished)
 		{
 			SongFinished = true;
-			Animations->DoEvent("SongFinishedEvent");
+			Animations->DoEvent("OnSongFinishedEvent", 1);
+			SuccessTime = Clamp(Animations->GetEnv()->GetFunctionResultF(), 0.0f, 30.0f);
 		}
 	}
 
 	// Reached the end!
-	if (SongTime > CurrentDiff->Duration + 3 && !stage_failed)
+	if (SuccessTime < 0 && SongFinished)
 	{
 		ScreenEvaluation7K *Eval = new ScreenEvaluation7K(this);
 		Eval->Init(score_keeper);
@@ -309,6 +310,7 @@ bool ScreenGameplay7K::Run(double Delta)
 		GameTime += Delta;
 		MissTime -= Delta;
 		FailureTime -= Delta;
+		SuccessTime -= Delta;
 
 		if (GameTime >= WaitingTime)
 		{

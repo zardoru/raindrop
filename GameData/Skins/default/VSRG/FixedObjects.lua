@@ -1,7 +1,7 @@
 
-Filter = { Image = "filter.png" }
-JudgeLine = { Image = "judgeline.png" }
-StageLines = { ImageLeft = "stage-left.png", ImageRight = "stage-right.png" }
+Filter = { Image = "Global/filter.png" }
+JudgeLine = { Image = "VSRG/judgeline.png" }
+StageLines = { ImageLeft = "VSRG/stage-left.png", ImageRight = "VSRG/stage-right.png" }
 
 function Filter.Init()
 	if GetConfigF("ScreenFilter", "") == 0 then

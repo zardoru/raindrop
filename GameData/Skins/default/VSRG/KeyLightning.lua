@@ -12,7 +12,7 @@ HitLightning.Animate = GetConfigF("DisableHitlightningAnimation", "") ~= 0
 HitLightning.Pressed = {}
 HitLightning.Position = {}
 
-HitLightning.Image = "hitlightning.png"
+HitLightning.Image = "VSRG/hitlightning.png"
 
 function HitLightning.Init()
 

@@ -64,24 +64,13 @@ void ScreenMainMenu::Init()
 	Objects->AddLuaTarget(&ExitBtn, "ExitButton");
 	Objects->Initialize(GameState::GetInstance().GetSkinPrefix() + "mainmenu.lua");
 
-	/*if (!MainMenuFont)
-	{
-		MainMenuFont = new BitmapFont();
-		MainMenuFont->LoadSkinFontImage("font_screenevaluation.tga", Vec2(10, 20), Vec2(32, 32), Vec2(10,20), 32);
-		MainMenuFont->SetAffectedByLightning(true);	
-	}*/
-
 	if (!TTFO)
-	{
 		TTFO = new TruetypeFont(GameState::GetInstance().GetSkinPrefix() / "font.ttf", 16);
-	}
 
 	Background.SetImage(GameState::GetInstance().GetSkinImage(Configuration::GetSkinConfigs("MainMenuBackground")));
 	Background.Centered = 1;
 	Background.SetPosition( ScreenWidth / 2, ScreenHeight / 2 );
 	
-	PlayBtn.SetImage(GameState::GetInstance().GetSkinImage("play.png"), false);
-	ExitBtn.SetImage(GameState::GetInstance().GetSkinImage("quit.png"), false);
 	PlayBtn.OnHover = PlayBtnHover;
 	PlayBtn.OnLeave = PlayBtnLeave;
 	ExitBtn.OnHover = ExitBtnHover;

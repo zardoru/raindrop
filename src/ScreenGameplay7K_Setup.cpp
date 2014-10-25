@@ -35,6 +35,7 @@ ScreenGameplay7K::ScreenGameplay7K()
 	WaitingTime = 1.5;
 
 	stage_failed = false;
+
 	NoFail = true;
 
 	SelectedHiddenMode = HIDDENMODE_NONE; // No Hidden
@@ -60,6 +61,7 @@ ScreenGameplay7K::ScreenGameplay7K()
 	InterpolateTime = (Configuration::GetConfigf("InterpolateTime") != 0);
 
 	MissTime = 0;
+	SuccessTime = 0;
 	LoadedSong = NULL;
 	Active = false;
 }

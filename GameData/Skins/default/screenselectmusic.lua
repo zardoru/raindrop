@@ -1,4 +1,4 @@
-skin_require("Background.lua")
+skin_require("Global/Background.lua")
 
 -- Wheel transformation
 TransformX =  ScreenWidth * 13/20
@@ -54,12 +54,12 @@ end
 
 function DirUpBtnHover()
 	Obj.SetTarget(DirUpButton)
-	Obj.SetImageSkin("up_h.png")
+	Obj.SetImageSkin("SongSelect/up_h.png")
 end
 
 function DirUpBtnHoverLeave()
 	Obj.SetTarget(DirUpButton)
-	Obj.SetImageSkin("up.png")
+	Obj.SetImageSkin("SongSelect/up.png")
 end
 
 function BackBtnClick()
@@ -80,11 +80,11 @@ function Init()
 
 	Banner = Obj.CreateTarget()
 	Obj.SetTarget(Banner)
-	Obj.SetImageSkin("ssbanner.png")
+	Obj.SetImageSkin("SongSelect/ssbanner.png")
 	Obj.SetZ(18)
 
 	Obj.SetTarget(DirUpButton)
-	Obj.SetImageSkin("up.png")
+	Obj.SetImageSkin("SongSelect/up.png")
 	Obj.SetCentered(1)
 	Obj.SetZ(18)
 end

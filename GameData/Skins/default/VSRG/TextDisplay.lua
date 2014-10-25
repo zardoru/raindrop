@@ -7,24 +7,24 @@ lifebar = StringObject2D();
 
 function DrawTextObjects()
 
-	fnt1 = Fonts.TruetypeFont("GameData/Skins/default/font.ttf", 20);
-	fnt2 = Fonts.TruetypeFont("GameData/Skins/default/font.ttf", 40);
+	fnt1 = Fonts.TruetypeFont(Obj.GetSkinDirectory() .. "font.ttf", 20);
+	fnt2 = Fonts.TruetypeFont(Obj.GetSkinDirectory() .. "font.ttf", 40);
 	-- fnt = Fonts.BitmapFont()
 	-- Fonts.LoadBitmapFont(fnt, "font.tga", 6, 16, 5, 13, 0);
 
 	pacemaker1.Text = "";
 	pacemaker1.Font = fnt1;
-	pacemaker1.X = 100;
-	pacemaker1.Y = 286;
+	pacemaker1.X = Judgment.Position.x - 40;
+	pacemaker1.Y = Judgment.Position.y + 20;
 
 	pacemaker2.Text = "";
 	pacemaker2.Font = fnt1;
-	pacemaker2.X = 160;
-	pacemaker2.Y = 286;
+	pacemaker2.X = Judgment.Position.x + 15;
+	pacemaker2.Y = Judgment.Position.y + 20;
 
 	lifebar.Text = "0";
 	lifebar.Font = fnt2;
-	lifebar.X = 420;
+	lifebar.X = Lifebar.Position.x + 70;
 	lifebar.Y = 340;
 
 	Engine:AddTarget(pacemaker1)

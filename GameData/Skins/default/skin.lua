@@ -1,7 +1,7 @@
 -- Default skin configuration.
 
 -- Backgrounds
-DefaultBackground = "MenuBackground.png"
+DefaultBackground = "Global/MenuBackground.png"
 SelectMusicBackground = ""
 EvaluationBackground = DefaultBackground
 EvaluationBackground7K = DefaultBackground
@@ -55,16 +55,16 @@ Lifebar = {
 -- 7K mode configuration.
 
 -- Auxiliary variables.
-NoteImage1 = "note1.png"
-NoteImage2 = "note2.png"
-NoteImage3 = "note3.png"
-NoteImage4 = "note4.png"
-NoteImage5 = "note5.png"
-NoteImageHold1 = "note1L.png"
-NoteImageHold2 = "note2L.png"
-NoteImageHold3 = "note3L.png"
-NoteImageHold4 = "note4L.png"
-NoteImageHold5 = "note5L.png"
+NoteImage1 = "VSRG/note1.png"
+NoteImage2 = "VSRG/note2.png"
+NoteImage3 = "VSRG/note3.png"
+NoteImage4 = "VSRG/note4.png"
+NoteImage5 = "VSRG/note5.png"
+NoteImageHold1 = "VSRG/note1L.png"
+NoteImageHold2 = "VSRG/note2L.png"
+NoteImageHold3 = "VSRG/note3L.png"
+NoteImageHold4 = "VSRG/note4L.png"
+NoteImageHold5 = "VSRG/note5L.png"
 
 GearHeightCommon = 135
 GearWidth = 336

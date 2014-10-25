@@ -39,8 +39,8 @@ function Explosions.Init()
 	Explosions.HoldDuration = Explosions.HoldFrameTime * Explosions.HoldFrames
 
 
-	Explosions.HitAtlas = TextureAtlas:new(Obj.GetSkinDirectory() .. "explsheet.csv")
-	Explosions.HoldAtlas = TextureAtlas:new(Obj.GetSkinDirectory() .. "holdsheet.csv")
+	Explosions.HitAtlas = TextureAtlas:new(Obj.GetSkinDirectory() .. "VSRG/explsheet.csv")
+	Explosions.HoldAtlas = TextureAtlas:new(Obj.GetSkinDirectory() .. "VSRG/holdsheet.csv")
 
 	for i = 1, Explosions.HitFrames do
 		Explosions.HitImages[i] = "lightingN-" .. i-1 .. ".png"

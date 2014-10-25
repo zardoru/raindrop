@@ -26,13 +26,13 @@ function BackgroundAnimation.Init(self)
 	self.Fog2Time = self.FogTotalTime/2
 
 
-	self.Fog.Image = "fogfx.png"
-	self.Rain.Image = "rainfx.png"
-	self.Rain2.Image = "rainfx.png"
-	self.Fog2.Image = "fogfx.png"
-	self.Drops.Image = "rainfx2.png"
-	self.Drops2.Image = "rainfx2.png"
-	self.Blue.Image = "blue.png"
+	self.Fog.Image = "Global/fogfx.png"
+	self.Rain.Image = "Global/rainfx.png"
+	self.Rain2.Image = "Global/rainfx.png"
+	self.Fog2.Image = "Global/fogfx.png"
+	self.Drops.Image = "Global/rainfx2.png"
+	self.Drops2.Image = "Global/rainfx2.png"
+	self.Blue.Image = "Global/blue.png"
 
 	self.Rain.Z = 0
 	self.Rain2.Z = 0

@@ -18,7 +18,7 @@ ComboDisplay = {
 	BumpTotalTime = 0.1, -- Time the animation runs
 	BumpFactor = 1.3,
 	HoldBumpFactor = 1.2,
-	ExNotifyImg = "combo_bonus.png",
+	ExNotifyImg = "VSRG/combo_bonus.png",
 	ExNotifyTime = 0.34,
 	ExNotifyExtraBump = 0.5
 }
@@ -44,7 +44,7 @@ ComboDisplay.ExNotifyObject = nil
 
 function ComboDisplay.Init()
 
-	ComboDisplay.Atlas = TextureAtlas:new(Obj.GetSkinDirectory() .. "combosheet.csv")
+	ComboDisplay.Atlas = TextureAtlas:new(Obj.GetSkinDirectory() .. "VSRG/combosheet.csv")
 
 	for i = 1, 6 do -- Drawing targets
 		ComboDisplay.Targets[i] = Obj.CreateTarget()

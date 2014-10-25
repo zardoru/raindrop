@@ -2,8 +2,8 @@
 
 Lifebar = {
 	FillSize = 367,
-	MarginFile = "stage-lifeb.png",
-	FillFile = "stage-lifeb-s.png",
+	MarginFile = "VSRG/stage-lifeb.png",
+	FillFile = "VSRG/stage-lifeb-s.png",
 	Width = 50,
 	Speed = 10
 }
@@ -123,7 +123,7 @@ function Judgment.Init()
 
 	Judgment.IndicatorObject = Obj.CreateTarget()
 	Obj.SetTarget(Judgment.IndicatorObject)
-	Obj.SetImageSkin(Judgment.TimingIndicator)
+	Obj.SetImageSkin("VSRG/" .. Judgment.TimingIndicator)
 	Obj.SetZ(24)
 	Obj.SetCentered(1)
 	Obj.SetScale(Judgment.Scale, Judgment.Scale)
@@ -201,7 +201,7 @@ function Judgment.Hit(JudgmentValue, EarlyOrLate)
 		Obj.SetLighten(0)
 	end
 
-	Obj.SetImageSkin(Judgment.Table[Judgment.Value])
+	Obj.SetImageSkin("VSRG/" .. Judgment.Table[Judgment.Value])
 
 	if JudgmentValue ~= 5 then
 		if JudgmentValue ~= 0 then
