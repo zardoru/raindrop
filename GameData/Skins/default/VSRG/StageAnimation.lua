@@ -41,6 +41,10 @@ function DoSuccessAnimation()
 	Engine:AddTarget(Black)	
 	Engine:AddAnimation(Black, "FadeInBlack", EaseNone, 0.5, 3)
 
+	if IsFullCombo then
+		DoFullComboAnimation()
+	end
+
 	Engine:AddTarget(StageClear)
 	Engine:AddAnimation(StageClear, "ZoomVertIn", EaseOut, 0.75, 3)
 	Engine:AddAnimation(StageClear, "ZoomVertOut", EaseNone, 1, 4)

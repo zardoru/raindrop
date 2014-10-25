@@ -12,3 +12,10 @@ function getUncropFunction(w, h, iw, ih)
 		return 1
 	end
 end
+
+function getFadeFunction(sF, eF)
+	return function (frac)
+		Obj.SetAlpha(sF + (eF - sF)*frac)
+		return 1
+	end
+end

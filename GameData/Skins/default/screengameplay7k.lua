@@ -125,8 +125,9 @@ function Cleanup()
 end
 
 function OnFullComboEvent()
-	print ("Full combo!")
-	DoFullComboAnimation()
+	-- print ("Full combo!")
+	-- DoFullComboAnimation()
+	IsFullCombo = 1
 end
 
 
