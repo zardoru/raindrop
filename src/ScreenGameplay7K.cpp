@@ -252,7 +252,11 @@ void ScreenGameplay7K::CheckShouldEndScreen()
 		FailSnd->Play();
 
 		for (std::map<int, SoundSample*>::iterator i = Keysounds.begin(); i != Keysounds.end(); i++)
-			i->second->Stop();
+		{
+			if (i->second)
+				i->second->Stop();
+		}
+			
 
 		Animations->DoEvent("OnFailureEvent", 1);
 		FailureTime = Clamp(Animations->GetEnv()->GetFunctionResultF(), 0.0f, 30.0f);
