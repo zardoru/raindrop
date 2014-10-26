@@ -12,6 +12,7 @@ function DoFullComboAnimation()
 
 	local scalef = GearWidth / fcnotify.Width * 0.85
 	fcnotify.X = ScreenWidth / 2
+	fcnotify.Y = -fcnotify.Height / 2
 	fcnotify.Z = 30
 	fcnotify.ScaleX = scalef
 	fcnotify.ScaleY = scalef

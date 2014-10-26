@@ -1011,6 +1011,9 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 #define OnCommandSub(x) if(command.substr(0, strlen(#x)) == #x)
 
 		String CommandContents = Line.substr(Line.find_first_of(" ") + 1);
+		if (!IsU8)
+			CommandContents = Utility::SJIStoU8(CommandContents);
+
 		if (InterpStatement(command, CommandContents, Info)) 
 		{
 
@@ -1026,11 +1029,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 
 			OnCommand(#TITLE)
 			{
-				if (IsU8)
-					Out->SongName = CommandContents;
-				else
-					Out->SongName = Utility::SJIStoU8(CommandContents);
-
+				Out->SongName = CommandContents;
 				// ltrim the string
 				size_t np = Out->SongName.find_first_not_of(" ");
 				if (np != String::npos)
@@ -1039,10 +1038,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 
 			OnCommand(#ARTIST)
 			{
-				if (IsU8)
-					Out->SongAuthor = CommandContents;
-				else
-					Out->SongAuthor = Utility::SJIStoU8(CommandContents);
+				Out->SongAuthor = CommandContents;
 
 				size_t np = Out->SongAuthor.find_first_not_of(" ");
 
