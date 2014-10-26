@@ -44,7 +44,7 @@ ScreenGameplay7K::ScreenGameplay7K()
 
 	Auto = false;
 
-	lifebar_type = LT_SURVIVAL;
+	lifebar_type = LT_GROOVE;
 	scoring_type = ST_IIDX;
 	
 	SpeedMultiplierUser = 4;
@@ -473,7 +473,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	else
 	{
 		score_keeper->setLifeTotal(-1);
-		score_keeper->setJudgeRank(3);
+		score_keeper->setJudgeRank(2);
 	}
 
 	DoPlay = true;

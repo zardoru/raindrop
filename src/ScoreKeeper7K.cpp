@@ -379,6 +379,12 @@ void ScoreKeeper7K::failStage(){
 	
 	total_notes = max_notes;
 	
+	update_ranks(1000); // rank calculation
+	update_bms(1000, false); // Beatmania scoring
+	update_lr2(1000, false); // Lunatic Rave 2 scoring
+	update_exp2(1000);
+	update_osu(1000, SKJ_MISS);
+	
 }
 
 

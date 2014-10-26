@@ -94,7 +94,7 @@ Keys7K = {
 	Key5 = 'J',
 	Key6 = 'K',
 	Key7 = 'L',
-	Key8 = 'A'
+	Key8 = 'LShift'
 }
 
 --Change this number if you have more than one controller plugged in

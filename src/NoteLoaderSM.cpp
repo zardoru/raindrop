@@ -13,6 +13,7 @@
 #include <boost/foreach.hpp>
 #include <boost/algorithm/string/split.hpp>
 
+#include "ScoreKeeper.h"
 
 /* Stepmania uses a format with a lot of information, so we'll start with the basics*/
 

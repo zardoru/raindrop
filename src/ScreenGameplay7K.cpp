@@ -224,6 +224,7 @@ void ScreenGameplay7K::RunAutoEvents()
 
 void ScreenGameplay7K::CheckShouldEndScreen()
 {
+
 	if (SongTime > CurrentDiff->Duration)
 	{
 		if (!SongFinished)
@@ -246,6 +247,7 @@ void ScreenGameplay7K::CheckShouldEndScreen()
 	{
 		// Run stage failed animation.
 		stage_failed = true;
+		score_keeper->failStage();
 		Music->Stop();
 		FailSnd->Play();
 
@@ -259,9 +261,13 @@ void ScreenGameplay7K::CheckShouldEndScreen()
 	if (stage_failed)
 	{
 		MissTime = 10; // Infinite, for as long as it lasts.
-		if (FailureTime <= 0)
-			Running = false;
+		if (FailureTime <= 0){ // go to evaluation screen.
+			ScreenEvaluation7K *Eval = new ScreenEvaluation7K(this);
+			Eval->Init(score_keeper);
+			Next = Eval;
+		}
 	}
+
 }
 
 void ScreenGameplay7K::UpdateSongTime(float Delta)

@@ -77,6 +77,7 @@ function ComboDisplay.Cleanup()
 end
 
 function ComboDisplay.Update()
+
 	ComboDisplay.Digits = {}
 
 	local TCombo = Combo
@@ -117,6 +118,7 @@ function ComboDisplay.Update()
 end
 
 function ComboDisplay.Hit(Kind)
+
 	ComboDisplay.BumpTime = 0
 	ComboDisplay.BumpKind = BumpHit
 	ComboDisplay.BumpColor = Kind
@@ -124,13 +126,17 @@ function ComboDisplay.Hit(Kind)
 	if ComboDisplay.BumpColor ~= 0 then
 		ComboDisplay.ExNotifyCurTime = 0
 	end
+
 	ComboDisplay.Update()
+
 end
 
 function ComboDisplay.Miss()
+
 	ComboDisplay.BumpTime = 0
 	ComboDisplay.BumpKind = BumpMiss
 	ComboDisplay.Update()
+
 end
 
 function ComboDisplay.Run(Delta)
@@ -141,12 +147,14 @@ function ComboDisplay.Run(Delta)
 
 	-- the +2 at the topright
 	if #ComboDisplay.Digits ~= 0 then
+		
 		if ComboDisplay.BumpColor ~= 0 then
 
 			Obj.SetPosition(ComboDisplay.ExNotifyPos.x, ComboDisplay.ExNotifyPos.y)
 
 			local Factor = 1 + ComboDisplay.ExNotifyExtraBump * Ratio
 			Obj.SetScale(Factor, Factor)
+		
 		else -- Time only runs if we're not at an "AWESOME" hit.
 			ComboDisplay.ExNotifyCurTime = ComboDisplay.ExNotifyCurTime + Delta
 		end
@@ -189,7 +197,7 @@ function ComboDisplay.Run(Delta)
 		newScaleRatio = (ComboDisplay.BumpFactor - (Ratio * math.abs(ComboDisplay.BumpFactor - 1))) * HoldScale
 	end
 
-	for i=1, 6 do
+	for i= 1, 6 do
 
 		Obj.SetTarget(ComboDisplay.Targets[i])
 
@@ -198,11 +206,13 @@ function ComboDisplay.Run(Delta)
 		else
 			Obj.SetScale (HoldScale, HoldScale)
 		end
-			if ComboDisplay.BumpColor ~= 0 then
+
+		if ComboDisplay.BumpColor ~= 0 then
 			Obj.SetColor(1, 2.5, 2.5)
 		else
 			Obj.SetColor(1, 1, 1)
 		end
+	
 	end
 
 end

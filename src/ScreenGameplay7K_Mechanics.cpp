@@ -60,6 +60,9 @@ void ScreenGameplay7K::UpdateScriptScoreVariables()
 	L->SetGlobal("PacemakerText", autopacemaker.first);
 	L->SetGlobal("PacemakerValue", autopacemaker.second);
 
+	L->SetGlobal("AccText", "ACC:");
+	L->SetGlobal("AccValue", score_keeper->getPercentScore(PST_EX));
+
 	double lifebar_amount = score_keeper->getLifebarAmount(lifebar_type);
 	L->SetGlobal("LifebarValue", lifebar_amount);
 	if(lifebar_type == LT_GROOVE || lifebar_type == LT_EASY)

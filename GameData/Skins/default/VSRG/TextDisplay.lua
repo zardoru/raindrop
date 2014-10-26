@@ -5,6 +5,9 @@ pacemaker2 = StringObject2D();
 
 lifebar = StringObject2D();
 
+acc1 = StringObject2D();
+acc2 = StringObject2D();
+
 function DrawTextObjects()
 
 	fnt1 = Fonts.TruetypeFont(Obj.GetSkinDirectory() .. "font.ttf", 20);
@@ -14,22 +17,34 @@ function DrawTextObjects()
 
 	pacemaker1.Text = "";
 	pacemaker1.Font = fnt1;
-	pacemaker1.X = Judgment.Position.x - 40;
+	pacemaker1.X = Judgment.Position.x - 65;
 	pacemaker1.Y = Judgment.Position.y + 20;
 
 	pacemaker2.Text = "";
 	pacemaker2.Font = fnt1;
-	pacemaker2.X = Judgment.Position.x + 15;
+	pacemaker2.X = Judgment.Position.x - 20;
 	pacemaker2.Y = Judgment.Position.y + 20;
 
 	lifebar.Text = "0";
 	lifebar.Font = fnt2;
-	lifebar.X = Lifebar.Position.x + 70;
+	lifebar.X = Lifebar.Position.x + 30;
 	lifebar.Y = 340;
 
-	Engine:AddTarget(pacemaker1)
-	Engine:AddTarget(pacemaker2)
-	Engine:AddTarget(lifebar)
+	acc1.Text = "";
+	acc1.Font = fnt1;
+	acc1.X = Judgment.Position.x - 65;
+	acc1.Y = Judgment.Position.y + 20;
+
+	acc2.Text = "";
+	acc2.Font = fnt1;
+	acc2.X = Judgment.Position.x - 20;
+	acc2.Y = Judgment.Position.y + 20;
+
+	Engine:AddTarget(acc1);
+	Engine:AddTarget(acc2);
+	--Engine:AddTarget(pacemaker1);
+	--Engine:AddTarget(pacemaker2);
+	Engine:AddTarget(lifebar);
 
 end
 
@@ -46,6 +61,14 @@ function UpdateTextObjects()
 			pre_char = "-";
 		end
 		pacemaker2.Text = string.format("%s%04d", pre_char, math.abs(PacemakerValue));
+	end
+
+	if AccText then
+		acc1.Text = AccText;
+	end
+
+	if AccValue then
+		acc2.Text = string.format("%.2f%%", AccValue);
 	end
 
 	if LifebarValue then
