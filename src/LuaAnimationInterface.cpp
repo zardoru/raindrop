@@ -432,7 +432,7 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 		.endNamespace();
 
 	luabridge::getGlobalNamespace(AnimLua->GetState())
-		.deriveClass<GraphicalString, GraphObject2D>("GStringObject2D")
+		.deriveClass<GraphicalString, GraphObject2D>("StringObject2D")
 		.addConstructor <void(*) ()>()
 		.addProperty("Font", &GraphicalString::GetFont, &GraphicalString::SetFont)
 		.addProperty ("Text", &GraphicalString::GetText, &GraphicalString::SetText)
