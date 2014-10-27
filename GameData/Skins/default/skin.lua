@@ -16,12 +16,12 @@ LoopTotal = 7
 
 WheelFont = {
 	Font = "font.ttf",
-	Size = 28
+	Size = 26
 }
 
 ItemTextOffset = {
 	X = 15,
-	Y = -2
+	Y = -6
 }
 
 -- Gameplay
