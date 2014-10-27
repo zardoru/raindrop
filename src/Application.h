@@ -30,7 +30,7 @@ class Application
 
 	int Measure;
 	int difIndex;
-	String Author;
+	GString Author;
 
 	bool Upscroll;
 

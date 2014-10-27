@@ -10,7 +10,7 @@ void InitAudio();
 #define SoundStream AudioStream
 #define SoundSample	AudioSample
 
-String GetOggTitle(String file);
+GString GetOggTitle(GString file);
 
 void MixerAddStream(SoundStream *Sound);
 void MixerRemoveStream(SoundStream* Sound);

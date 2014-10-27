@@ -13,28 +13,28 @@ public:
 	};
 
 	Directory();
-	Directory(std::string path);
+	Directory(GString path);
 	Directory(const char* path);
 	~Directory();
 	
-	void operator=(std::string);
-	bool operator==(std::string) const;
-	operator std::string() const;
+	void operator=(GString);
+	bool operator==(GString) const;
+	operator GString() const;
 
 	Directory ParentDirectory();
 	Directory Filename();
 	
-	String GetExtension() const;
-	String path() const;
+	GString GetExtension() const;
+	GString path() const;
 	const char* c_path() const;
-	std::vector<String>& ListDirectory(std::vector<String>& Vec, DirType T = FS_REG, const char* ext = NULL, bool Recursive = false);
+	std::vector<GString>& ListDirectory(std::vector<GString>& Vec, DirType T = FS_REG, const char* ext = NULL, bool Recursive = false);
 	
 private:
-	String curpath;
+	GString curpath;
 
 };
 
-extern Directory operator/(Directory, String);
-extern Directory operator/(String, Directory);
+extern Directory operator/(Directory, GString);
+extern Directory operator/(GString, Directory);
 
 #endif

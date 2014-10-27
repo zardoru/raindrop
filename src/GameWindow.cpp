@@ -117,7 +117,7 @@ bool controllerButtonState[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = {false, false, 
 
 struct sk_s
 {
-	char keystring[32];
+	char keyGString[32];
 	int boundkey;
 };
 
@@ -138,11 +138,11 @@ const int NUM_OF_STATIC_SPECIAL_KEYS = 9; //make sure to match the above array
 
 std::vector<sk_s> SpecialKeys;
 
-int KeyTranslate(String K)
+int KeyTranslate(GString K)
 {
 	for (uint32 i = 0; i < SpecialKeys.size(); i++)
 	{
-		if (K == SpecialKeys.at(i).keystring)
+		if (K == SpecialKeys.at(i).keyGString)
 			return SpecialKeys.at(i).boundkey;
 	}
 
@@ -175,7 +175,7 @@ void BindingsManager::Initialize()
 				char name[32];
 				sprintf(name, "Controller%d", i);
 				sk_s thisButton;
-				strcpy(thisButton.keystring, name);
+				strcpy(thisButton.keyGString, name);
 				thisButton.boundkey = 1000 + i;
 				SpecialKeys.push_back(thisButton);
 			}
@@ -207,10 +207,10 @@ void BindingsManager::Initialize()
 
 	for (int i = 0; i < 16; i++)
 	{
-		char KString[256];
-		sprintf(KString, "Key%d", i+1);
+		char KGString[256];
+		sprintf(KGString, "Key%d", i+1);
 
-		int Binding = KeyTranslate(Configuration::GetConfigs(KString, "Keys7K"));
+		int Binding = KeyTranslate(Configuration::GetConfigs(KGString, "Keys7K"));
 		
 		if (Binding)
 			ScanFunction7K[Binding] = (KeyType)(KT_Key1 + i);

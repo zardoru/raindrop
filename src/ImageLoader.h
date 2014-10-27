@@ -14,11 +14,11 @@ private:
 		int Width, Height;
 	};
 
-	static std::map<String, Image*> Textures;
-	static std::map<String, UploadData> PendingUploads;
+	static std::map<GString, Image*> Textures;
+	static std::map<GString, UploadData> PendingUploads;
 
 	static unsigned int UploadToGPU(unsigned char* Data, unsigned int Width, unsigned int Height);
-	static Image*		InsertImage(String Name, unsigned int Texture, int Width, int Height);
+	static Image*		InsertImage(GString Name, unsigned int Texture, int Width, int Height);
 public:
 	
 	ImageLoader();
@@ -31,11 +31,11 @@ public:
 
 	/* For multi-threaded loading. */
 	static void   AddToPending (const char* Filename);
-	static void   LoadFromManifest(char** Manifest, int Count, String Prefix = "");
+	static void   LoadFromManifest(char** Manifest, int Count, GString Prefix = "");
 	static void   UpdateTextures();
 
 	/* On-the-spot, main thread loading or reloading. */
-	static Image* Load(std::string filename);
+	static Image* Load(GString filename);
 };
 
 #endif

@@ -122,18 +122,18 @@ bool AudioSourceOGG::HasDataLeft()
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 
-String GetOggTitle(String file)
+GString GetOggTitle(GString file)
 {
 	OggVorbis_File f;
-	String result = "";
+	GString result = "";
 	if (ov_fopen(file.c_str(), &f) == 0)
 	{
 		vorbis_comment *comment = ov_comment(&f, -1);
 
 		for (int i = 0; i < comment->comments; i++)
 		{
-			std::vector<String> splitvec;
-			std::string user_comment = comment->user_comments[i];
+			std::vector<GString> splitvec;
+			GString user_comment = comment->user_comments[i];
 			boost::split(splitvec, user_comment, boost::is_any_of("="));
 			if (splitvec[0] == "TITLE")
 			{

@@ -36,17 +36,17 @@ public:
 	GraphObjectMan();
 	~GraphObjectMan();
 
-	void Preload(String Filename, String ArrayName);
-	void Initialize(String Filename = "", bool RunScript = true);
+	void Preload(GString Filename, GString ArrayName);
+	void Initialize(GString Filename = "", bool RunScript = true);
 	LuaManager *GetEnv();
 	ImageList* GetImageList();
 
-	void DoEvent(String EventName, int Return = 0);
-	void AddLuaAnimation (GraphObject2D* Target, const String &FName, int Easing, float Duration, float Delay);
+	void DoEvent(GString EventName, int Return = 0);
+	void AddLuaAnimation (GraphObject2D* Target, const GString &FName, int Easing, float Duration, float Delay);
 	void StopAnimationsForTarget(GraphObject2D* Target);
 	void AddTarget(GraphObject2D *Targ);
-	void AddLuaTarget(GraphObject2D *Targ, String Varname);
-	void AddLuaTargetArray(GraphObject2D *Targ, String Varname, String Arrname);
+	void AddLuaTarget(GraphObject2D *Targ, GString Varname);
+	void AddLuaTargetArray(GraphObject2D *Targ, GString Varname, GString Arrname);
 	void RemoveTarget(GraphObject2D *Targ);
 	void DrawTargets(double TimeDelta);
 

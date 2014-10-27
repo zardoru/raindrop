@@ -42,15 +42,15 @@ namespace Game
 			double Duration;
 
 			// Meta
-			String Name;
-			String Filename;
+			GString Name;
+			GString Filename;
 
 			uint32 TotalNotes;
 			uint32 TotalHolds;
 			uint32 TotalObjects;
 			uint32 TotalScoringObjects;
 
-			std::map<int, String> SoundList;
+			std::map<int, GString> SoundList;
 
 			int ID;
 
@@ -68,16 +68,16 @@ namespace Game
 		ModeType Mode;
 
 		/* Song title */
-		String SongName;
+		GString SongName;
 
 		/* Song Author */
-		String SongAuthor;
+		GString SongAuthor;
 
 		/* Directory where files are contained */
-		String SongDirectory;
+		GString SongDirectory;
 
 		/* Relative Paths */
-		String SongFilename, BackgroundFilename;
+		GString SongFilename, BackgroundFilename;
 
 		Song() {};
 		virtual ~Song() {};

@@ -1,7 +1,6 @@
 #include "Global.h"
 #include <GL/glew.h>
 #include <map>
-#include <string>
 
 #include "Image.h"
 #include "ImageLoader.h"
@@ -10,8 +9,8 @@
 #include <SOIL/SOIL.h>
 
 boost::mutex LoadMutex;
-std::map<String, Image*> ImageLoader::Textures;
-std::map<String, ImageLoader::UploadData> ImageLoader::PendingUploads;
+std::map<GString, Image*> ImageLoader::Textures;
+std::map<GString, ImageLoader::UploadData> ImageLoader::PendingUploads;
 
 ImageLoader::ImageLoader()
 {
@@ -24,7 +23,7 @@ ImageLoader::~ImageLoader()
 
 void ImageLoader::InvalidateAll()
 {
-	for (std::map<std::string, Image*>::iterator i = Textures.begin(); i != Textures.end(); i++)
+	for (std::map<GString, Image*>::iterator i = Textures.begin(); i != Textures.end(); i++)
 	{
 		i->second->IsValid = false;
 	}
@@ -32,7 +31,7 @@ void ImageLoader::InvalidateAll()
 
 void ImageLoader::UnloadAll()
 {
-	for (std::map<std::string, Image*>::iterator i = Textures.begin(); i != Textures.end(); i++)
+	for (std::map<GString, Image*>::iterator i = Textures.begin(); i != Textures.end(); i++)
 	{
 		glDeleteTextures(1, &i->second->texture);
 	}
@@ -73,7 +72,7 @@ GLuint ImageLoader::UploadToGPU(unsigned char* Data, unsigned int Width, unsigne
 	return texture;
 }
 
-Image* ImageLoader::InsertImage(String Name, unsigned int Texture, int Width, int Height)
+Image* ImageLoader::InsertImage(GString Name, unsigned int Texture, int Width, int Height)
 {
 	if (Textures.find(Name) == Textures.end())
 	{
@@ -92,7 +91,7 @@ Image* ImageLoader::InsertImage(String Name, unsigned int Texture, int Width, in
 }
 
 
-Image* ImageLoader::Load(String filename)
+Image* ImageLoader::Load(GString filename)
 {
 	if ( Textures.find(filename) != Textures.end() && Textures[filename]->IsValid)
 	{
@@ -136,7 +135,7 @@ void ImageLoader::AddToPending(const char* Filename)
 }
 
 /* For multi-threaded loading. */
-void ImageLoader::LoadFromManifest(char** Manifest, int Count, String Prefix)
+void ImageLoader::LoadFromManifest(char** Manifest, int Count, GString Prefix)
 {
 	for (int i = 0; i < Count; i++)
 	{
@@ -150,7 +149,7 @@ void ImageLoader::UpdateTextures()
 {
 	if (PendingUploads.size() && LoadMutex.try_lock())
 	{
-		for (std::map<String, UploadData>::iterator i = PendingUploads.begin(); i != PendingUploads.end(); i++)
+		for (std::map<GString, UploadData>::iterator i = PendingUploads.begin(); i != PendingUploads.end(); i++)
 		{
 			unsigned int Texture = UploadToGPU(i->second.Data, i->second.Width, i->second.Height);
 
@@ -165,7 +164,7 @@ void ImageLoader::UpdateTextures()
 
 	if (Textures.size())
 	{
-		for (std::map<String, Image*>::iterator i = Textures.begin(); i != Textures.end(); i++)
+		for (std::map<GString, Image*>::iterator i = Textures.begin(); i != Textures.end(); i++)
 		{
 			if (i->second->IsValid) /* all of them are valid */
 				break;

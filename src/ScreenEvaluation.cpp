@@ -22,7 +22,7 @@ int32 ScreenEvaluation::CalculateScore()
 	return int32(1000000.0 * Results.dpScoreSquare / (double)(Results.totalNotes * (Results.totalNotes + 1)));
 }
 
-void ScreenEvaluation::Init(EvaluationData _Data, String SongAuthor, String SongTitle)
+void ScreenEvaluation::Init(EvaluationData _Data, GString SongAuthor, GString SongTitle)
 {
 	if (!ScreenEvaluationMusic)
 	{
@@ -58,7 +58,7 @@ void ScreenEvaluation::Init(EvaluationData _Data, String SongAuthor, String Song
 					  "Max Combo: \n"
 					  "Score:     \n";
 
-	ResultsString = Text;
+	ResultsGString = Text;
 
 	sprintf(_Results, "%d\n%d\n%d\n%d\n%d\n%d\n%d\n\n%d\n%d\n",
 	Results.NumExcellents,
@@ -98,10 +98,10 @@ bool ScreenEvaluation::Run(double Delta)
 	Background.Render();
 	if (Font)
 	{
-		Font->Render(ResultsString,        Vec2( ScreenWidth/2 - 110, ScreenHeight/2 - 100 ));
+		Font->Render(ResultsGString,        Vec2( ScreenWidth/2 - 110, ScreenHeight/2 - 100 ));
 		Font->Render(ResultsNumerical,     Vec2( ScreenWidth/2, ScreenHeight/2 - 100 ));
-		Font->Render(String("results screen"),			    Vec2( ScreenWidth/2 - 70, 0 ));
-		Font->Render(String("press space to continue..."), Vec2( ScreenWidth/2 - 130, ScreenHeight*7/8 ));
+		Font->Render(GString("results screen"),			    Vec2( ScreenWidth/2 - 70, 0 ));
+		Font->Render(GString("press space to continue..."), Vec2( ScreenWidth/2 - 130, ScreenHeight*7/8 ));
 		Font->Render(TitleFormat, Vec2( 0, ScreenHeight - 20 ));
 	}
 	return Running;

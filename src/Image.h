@@ -11,7 +11,7 @@ public:
 	void Bind();
 	static void ForceRebind();
 
-	std::string fname;
+	GString fname;
 	int w, h;
 	unsigned int texture;
 	bool IsValid;

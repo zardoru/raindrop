@@ -7,13 +7,13 @@
 
 
 #ifdef DEBUG
-static void Log::DebugPrintf(String Format, ...)
+static void Log::DebugPrintf(GString Format, ...)
 {
 
 }
 #endif
 
-void Log::Printf(String Format, ...)
+void Log::Printf(GString Format, ...)
 {
 	char Buffer[2048];
 	va_list vl;
@@ -23,7 +23,7 @@ void Log::Printf(String Format, ...)
 	wprintf(L"%ls", Utility::Widen(Buffer).c_str());
 }
 
-void Log::Logf(String Format, ...)
+void Log::Logf(GString Format, ...)
 {
 	static std::fstream logf ("log.txt", std::ios::out);
 	char Buffer[2048];

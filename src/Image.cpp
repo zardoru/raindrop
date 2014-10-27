@@ -1,4 +1,4 @@
-#include <string>
+#include "Global.h"
 #include "Image.h"
 
 Image* Image::LastBound = NULL;

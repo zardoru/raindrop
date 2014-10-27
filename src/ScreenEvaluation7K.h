@@ -10,7 +10,7 @@ class ScreenEvaluation7K : public Screen
 {
 	GraphObject2D Background;
 	BitmapFont* Font;
-	String DisplayResult;
+	GString DisplayResult;
 	ScoreKeeper7K *Score;
 
 public:

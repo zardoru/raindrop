@@ -101,18 +101,18 @@ public:
 
 	void Load()
 	{
-		std::vector<String> Directories;
-		Configuration::GetConfigListS("SongDirectories", Directories);
+		std::map<GString, GString> Directories;
+		Configuration::GetConfigListS("SongDirectories", Directories, "Songs");
 
 		SongLoader Loader (DB);
 
 		DB->StartTransaction();
 
-		for (std::vector<String>::iterator i = Directories.begin();
+		for (std::map<GString, GString>::iterator i = Directories.begin();
 			i != Directories.end();
 			i++)
 		{
-			ListRoot->AddDirectory (*mLoadMutex, &Loader, *i, VSRGActive, DCActive);
+			ListRoot->AddNamedDirectory (*mLoadMutex, &Loader, i->second, i->first, VSRGActive, DCActive);
 		}
 
 		DB->EndTransaction();
@@ -209,11 +209,13 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 			Vec2 mpos = GameState::GetWindow()->GetRelativeMPos();
 			if (!isMouseInput || mpos.x > Transform(mpos.y))
 			{
-				if (!CurrentList->IsDirectory(GetCursorIndex()))
-					OnSongSelect(CurrentList->GetSongEntry(GetCursorIndex()), DifficultyIndex);
-				else
-					CurrentList = CurrentList->GetListEntry(GetCursorIndex());
-
+				if (GetCursorIndex() < CurrentList->GetNumEntries())
+				{
+					if (!CurrentList->IsDirectory(GetCursorIndex()))
+						OnSongSelect(CurrentList->GetSongEntry(GetCursorIndex()), DifficultyIndex);
+					else
+						CurrentList = CurrentList->GetListEntry(GetCursorIndex());
+				}
 				return true;
 			}
 		}
@@ -322,7 +324,7 @@ void SongWheel::Update(float Delta)
 	SelCursor->SetPosition(X, Y);
 }
 
-void SongWheel::DisplayItem(String Text, Vec2 Position)
+void SongWheel::DisplayItem(GString Text, Vec2 Position)
 {
 	if (Position.y > -ItemHeight && Position.y < ScreenHeight)
 	{
@@ -403,8 +405,8 @@ void SongWheel::Render()
 					Entry->Difficulties.size(),
 					Min, Sec);
 
-				mTFont->Render(String(infoStream), Vec2(ScreenWidth/6, 120));
-			}else mTFont->Render(String("unavailable (edit only)"), InfoPosition);
+				mTFont->Render(GString(infoStream), Vec2(ScreenWidth/6, 120));
+			}else mTFont->Render(GString("unavailable (edit only)"), InfoPosition);
 
 
 		}
@@ -432,7 +434,7 @@ void SongWheel::Render()
 					Entry->Difficulties[DifficultyIndex]->Name.c_str(), Entry->Difficulties[DifficultyIndex]->Channels,
 					nps);
 
-				mTFont->Render(String(infoStream), InfoPosition);
+				mTFont->Render(GString(infoStream), InfoPosition);
 			}
 		}
 

@@ -11,13 +11,13 @@ class ScreenEvaluation : public Screen
 	GraphObject2D Background;
 	BitmapFont* Font;
 
-	String ResultsString, ResultsNumerical;
-	String TitleFormat;
+	GString ResultsGString, ResultsNumerical;
+	GString TitleFormat;
 	
 	int32 CalculateScore();
 public:
 	ScreenEvaluation(Screen *Parent);
-	void Init(EvaluationData _Data, String SongAuthor, String SongTitle);
+	void Init(EvaluationData _Data, GString SongAuthor, GString SongTitle);
 	bool Run(double Delta);
 	void Cleanup();
 	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);

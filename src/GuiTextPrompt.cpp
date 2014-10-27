@@ -53,7 +53,7 @@ void TextPrompt::SetFont(BitmapFont* Font)
 		mPromptFont = Font;
 }
 
-void TextPrompt::SetPrompt(String PromptText)
+void TextPrompt::SetPrompt(GString PromptText)
 {
 	mPromptText = PromptText;
 }
@@ -82,7 +82,7 @@ void TextPrompt::SwitchOpen()
 	SetOpen(!mOpen);
 }
 
-String TextPrompt::GetContents()
+GString TextPrompt::GetContents()
 {
 	return mBufferText;
 }

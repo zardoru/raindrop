@@ -18,25 +18,25 @@ float _ScreenDifference()
 	return std::abs(float((ScreenWidth / 2.f) - (PlayfieldWidth / 2.f)));
 }
 
-void LoadNotes(Song* Out, Difficulty * Diff, String line)
+void LoadNotes(Song* Out, Difficulty * Diff, GString line)
 {
-	// get the object string (all between a colon and a semicolon.
-	String objectstring = line.substr(line.find_first_of(":") + 1);
-	std::vector< String > splitvec;
+	// get the object GString (all between a colon and a semicolon.
+	GString objectGString = line.substr(line.find_first_of(":") + 1);
+	std::vector< GString > splitvec;
 	bool invert = false;
 
 	Diff->Name = Out->SongName; // todo: change this.
 	Diff->TotalNotes = Diff->TotalHolds = Diff->TotalObjects = 0;
 
 	// Remove whitespace.
-	boost::replace_all(objectstring, "\n", "");
-	boost::replace_all(objectstring, "\r", "");
-	// boost::replace_all(objectstring, "M", ""); // mirror flags
+	boost::replace_all(objectGString, "\n", "");
+	boost::replace_all(objectGString, "\r", "");
+	// boost::replace_all(objectGString, "M", ""); // mirror flags
 
-	boost::split(splitvec, objectstring, boost::is_any_of(",")); // Separate measures!
-	BOOST_FOREACH(String objectlist, splitvec) // for each measure
+	boost::split(splitvec, objectGString, boost::is_any_of(",")); // Separate measures!
+	BOOST_FOREACH(GString objectlist, splitvec) // for each measure
 	{
-		std::vector< String > splitobjects;
+		std::vector< GString > splitobjects;
 		Measure Msr;
 		invert = false;
 
@@ -57,15 +57,15 @@ void LoadNotes(Song* Out, Difficulty * Diff, String line)
 		size_t SoSize = 0;
 		size_t CurObj = 0;
 
-		BOOST_FOREACH (String object_description, splitobjects) // Count total valid objects
+		BOOST_FOREACH (GString object_description, splitobjects) // Count total valid objects
 		{
 			if (object_description.length() != 0)
 				SoSize += 1;
 		}
 
-		BOOST_FOREACH (String object_description, splitobjects) // For all objects in measure
+		BOOST_FOREACH (GString object_description, splitobjects) // For all objects in measure
 		{
-			std::vector< String > object_parameters;
+			std::vector< GString > object_parameters;
 
 			if (object_description.length() == 0) // we must have at least a plain "0"
 				continue;
@@ -132,7 +132,7 @@ void LoadNotes(Song* Out, Difficulty * Diff, String line)
 	Out->Difficulties.push_back(Diff); 
 }
 
-Song* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
+Song* NoteLoader::LoadObjectsFromFile(GString filename, GString prefix)
 {
 	std::ifstream filein;
 	filein.open(filename.c_str(), std::ios::in);
@@ -153,15 +153,15 @@ Song* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 	Out->SongDirectory = prefix;
 
 	// get lines separating with ; token
-	String line;
+	GString line;
 	while (filein)
 	{
 		std::getline(filein, line, ';'); 
-		String command = line.substr(0, line.find_first_of(":"));
+		GString command = line.substr(0, line.find_first_of(":"));
 
-#define OnCommand(x) if(command.find(#x)!=String::npos)
+#define OnCommand(x) if(command.find(#x)!=GString::npos)
 		
-		String CommandContents = line.substr(line.find_first_of(":") + 1);
+		GString CommandContents = line.substr(line.find_first_of(":") + 1);
 
 		// First, metadata.
 		OnCommand(#NAME)
@@ -212,8 +212,8 @@ Song* NoteLoader::LoadObjectsFromFile(String filename, String prefix)
 
 		OnCommand(#SOUNDS)
 		{
-			std::vector<String> SoundList;
-			String CmdLine = CommandContents;
+			std::vector<GString> SoundList;
+			GString CmdLine = CommandContents;
 			boost::split(SoundList, CmdLine, boost::is_any_of(","));
 
 			for (unsigned int i = 1; i <= SoundList.size(); i++) // Copy in

@@ -25,7 +25,7 @@ typedef int32_t int32;
 typedef uint16_t int16;
 typedef uint16_t uint16;
 typedef uint8_t uint8;
-#define String std::string
+#define GString std::string
 
 extern float *PInfinity;
 
@@ -37,15 +37,15 @@ namespace Utility
 {
 	void DebugBreak();
 	bool IsNumeric(const char* s);
-	String RelativeToPath(String Filename);
-	String RemoveExtension(String Fn);
-	bool FileExists(String Filename);
-	std::wstring Widen(String Line);
-	String Narrow(std::wstring Line);
-	String SJIStoU8(String Line);
-	void CheckDir (String Dirname);
-	int GetLMT(String Path);
-	void RemoveFilenameIllegalCharacters(String &S, bool removeSlash = false);
+	GString RelativeToPath(GString Filename);
+	GString RemoveExtension(GString Fn);
+	bool FileExists(GString Filename);
+	std::wstring Widen(GString Line);
+	GString Narrow(std::wstring Line);
+	GString SJIStoU8(GString Line);
+	void CheckDir (GString Dirname);
+	int GetLMT(GString Path);
+	void RemoveFilenameIllegalCharacters(GString &S, bool removeSlash = false);
 }
 
 
@@ -87,7 +87,7 @@ inline T Clamp(const T &Value, const T &Min, const T &Max)
 	else return Value;
 }
 
-double latof(String s);
+double latof(GString s);
 
 using std::max;
 using std::min;

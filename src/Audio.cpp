@@ -2,7 +2,6 @@
 #include "Audio.h"
 #include "Configuration.h"
 #include <cstdio>
-#include <cstring>
 
 #include <portaudio.h>
 #include <pa_ringbuffer.h>

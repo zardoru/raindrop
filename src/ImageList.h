@@ -7,9 +7,9 @@
 */
 class ImageList {
 
-	std::map <String, Image*> Images;
+	std::map <GString, Image*> Images;
 
-	std::map <int, String> ImagesIndexPending;
+	std::map <int, GString> ImagesIndexPending;
 	std::map <int, Image*> ImagesIndex;
 	bool ShouldDeleteAtDestruction;
 
@@ -19,19 +19,19 @@ public:
 	~ImageList();
 
 	void Destroy();
-	void AddToList(const String Filename, const String Prefix);
-	void AddToListIndex(const String Filename, const String Prefix, int Index);
-	void AddToList(const uint32 Count, const String *Filename, const String Prefix);
+	void AddToList(const GString Filename, const GString Prefix);
+	void AddToListIndex(const GString Filename, const GString Prefix, int Index);
+	void AddToList(const uint32 Count, const GString *Filename, const GString Prefix);
 	bool LoadAll();
 
 	void ForceFetch();
 
 	// Gets image from this filename
-	Image* GetFromFilename(const String Filename);
+	Image* GetFromFilename(const GString Filename);
 
 	// Gets image from this index
 	Image* GetFromIndex(int Index);
 
 	// Gets image from SkinPrefix + filename
-	Image* GetFromSkin(const String Filename);
+	Image* GetFromSkin(const GString Filename);
 };

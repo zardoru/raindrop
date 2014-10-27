@@ -224,11 +224,11 @@ bool ScreenGameplay7K::LoadSongAudio()
 			if (!CurrentDiff->IsVirtual)
 			{
 				// Caveat: Try to autodetect an mp3/ogg file.
-				std::vector<String> DirCnt;
+				std::vector<GString> DirCnt;
 				Directory SngDir = MySong->SongDirectory;
 
 				SngDir.ListDirectory(DirCnt, Directory::FS_REG);
-				for (std::vector<String>::iterator i = DirCnt.begin();
+				for (std::vector<GString>::iterator i = DirCnt.begin();
 					i != DirCnt.end();
 					i++)
 				{
@@ -253,7 +253,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 	// Load samples.
 
 	Log::Printf("Loading samples... ");
-	for (std::map<int, String>::iterator i = CurrentDiff->SoundList.begin(); i != CurrentDiff->SoundList.end(); i++)
+	for (std::map<int, GString>::iterator i = CurrentDiff->SoundList.begin(); i != CurrentDiff->SoundList.end(); i++)
 	{
 		Keysounds[i->first] = new SoundSample();
 
@@ -356,7 +356,7 @@ bool ScreenGameplay7K::LoadBMPs()
 		if (CurrentDiff->BMPList.size())
 			Log::Printf("Loading BMPs...\n");
 
-		for (std::map<int, String>::iterator i = CurrentDiff->BMPList.begin(); i != CurrentDiff->BMPList.end(); i++)
+		for (std::map<int, GString>::iterator i = CurrentDiff->BMPList.begin(); i != CurrentDiff->BMPList.end(); i++)
 			BMPs.AddToListIndex(i->second, MySong->SongDirectory, i->first);
 
 		// We don't need this any more.
@@ -558,15 +558,15 @@ void ScreenGameplay7K::SetupBackground()
 	else
 	{
 		// Caveat 2: Try to automatically load background.
-		std::vector<String> DirCnt;
+		std::vector<GString> DirCnt;
 		Directory SngDir = MySong->SongDirectory;
 
 		SngDir.ListDirectory(DirCnt, Directory::FS_REG);
-		for (std::vector<String>::iterator i = DirCnt.begin();
+		for (std::vector<GString>::iterator i = DirCnt.begin();
 			i != DirCnt.end();
 			i++)
 		{
-			String ext = Directory(*i).GetExtension();
+			GString ext = Directory(*i).GetExtension();
 			if (strstr(i->c_str(), "bg") && (ext == "jpg" || ext == "png"))
 				if (BackgroundImage = ImageLoader::Load(MySong->SongDirectory + *i))
 					break;
@@ -632,7 +632,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 		/* Note image */
 		sprintf(cstr, "Key%dImage", i+1);
 
-		std::string Filename = Configuration::GetSkinConfigs(cstr, nstr);
+		GString Filename = Configuration::GetSkinConfigs(cstr, nstr);
 		NoteImages[i] = GameState::GetInstance().GetSkinImage(Filename);
 
 		/* Hold head image */

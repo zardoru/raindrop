@@ -73,7 +73,7 @@ public:
 
 	void SetImage(Image* image, bool ChangeSize = true);
 	Image* GetImage();
-	String GetImageFilename() const;
+	GString GetImageFilename() const;
 
 	virtual void InitVBO();
 	virtual void Initialize(bool ShouldInitTexture);

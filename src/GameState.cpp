@@ -10,10 +10,10 @@
 
 #include "ImageLoader.h"
 
-#define DirectoryPrefix String("GameData/")
-#define SkinsPrefix String("Skins/")
-#define SongsPrefix String("Songs")
-#define ScriptsPrefix String("Scripts/")
+#define DirectoryPrefix GString("GameData/")
+#define SkinsPrefix GString("Skins/")
+#define SongsPrefix GString("Songs")
+#define ScriptsPrefix GString("Scripts/")
 
 using namespace Game;
 
@@ -38,23 +38,23 @@ GameWindow* GameState::GetWindow()
 	return &WindowFrame;
 }
 
-String GameState::GetDirectoryPrefix()
+GString GameState::GetDirectoryPrefix()
 {
 	return DirectoryPrefix;
 }
 
-String GameState::GetSkinPrefix()
+GString GameState::GetSkinPrefix()
 {
 	// I wonder if a directory transversal is possible. Or useful, for that matter.
 	return DirectoryPrefix + SkinsPrefix + CurrentSkin + "/";
 }
 
-void GameState::SetSkin(String Skin)
+void GameState::SetSkin(GString Skin)
 {
 	CurrentSkin = Skin;
 }
 
-String GameState::GetScriptsDirectory()
+GString GameState::GetScriptsDirectory()
 {
 	return DirectoryPrefix + ScriptsPrefix;
 }

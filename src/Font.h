@@ -11,7 +11,7 @@ public:
 	void SetAlpha(float _Alpha);
 
 	virtual void Invalidate();
-	virtual void Render(String Text, const Vec2 &Position, const Mat4& Transform = Mat4());
+	virtual void Render(GString Text, const Vec2 &Position, const Mat4& Transform = Mat4());
 };
 
 #endif

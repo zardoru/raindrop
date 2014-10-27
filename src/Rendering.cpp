@@ -194,7 +194,7 @@ void TruetypeFont::SetupTexture()
 	Texform->AssignData(QuadPositionsTX);
 }
 
-void TruetypeFont::Render(String In, const Vec2 &Position, const Mat4 &Transform)
+void TruetypeFont::Render(GString In, const Vec2 &Position, const Mat4 &Transform)
 {
 
 	const char* Text = In.c_str();
@@ -352,7 +352,7 @@ void Line::Render()
 	glEnable(GL_DEPTH_TEST);
 }
 
-void BitmapFont::Render(String St, const Vec2 &Position, const Mat4 &Transform)
+void BitmapFont::Render(GString St, const Vec2 &Position, const Mat4 &Transform)
 {
 	const char* Text = St.c_str();
 	int32 Character = 0, Line = 0;

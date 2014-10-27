@@ -23,7 +23,7 @@ void Font::Invalidate()
 	/* stub */
 }
 
-void Font::Render(String Text, const Vec2 &Position, const Mat4& Transform)
+void Font::Render(GString Text, const Vec2 &Position, const Mat4& Transform)
 {
 	/* stub */
 }

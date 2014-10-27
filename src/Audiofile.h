@@ -9,7 +9,7 @@ protected:
 	bool mSourceLoop;
 
 #ifndef NDEBUG
-	String dFILENAME;
+	GString dFILENAME;
 #endif
 
 public:
