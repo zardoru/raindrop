@@ -70,7 +70,7 @@ private:
 	float Time;
 	float DisplacementSpeed;
 
-	void DisplayItem(String Text, Vec2 Position);
+	void DisplayItem(GString Text, Vec2 Position);
 
 	bool IsInitialized; 
 	bool dotcurModeActive;

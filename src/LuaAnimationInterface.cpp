@@ -94,7 +94,7 @@ namespace LuaAnimFuncs
 	int SetImage(lua_State *L)
 	{
 		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
-		std::string iName = luaL_checkstring(L, 1);
+		GString iName = luaL_checkstring(L, 1);
 		Target->SetImage(ImageLoader::Load(iName));
 		return 0;
 	}
@@ -102,7 +102,7 @@ namespace LuaAnimFuncs
 	int SetImageSkin(lua_State *L)
 	{
 		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
-		std::string iName = luaL_checkstring(L, 1);
+		GString iName = luaL_checkstring(L, 1);
 		Target->SetImage(GameState::GetInstance().GetSkinImage(iName));
 		return 0;
 	}
@@ -160,8 +160,8 @@ namespace LuaAnimFuncs
 
 	int GetSkinConfigF(lua_State *L)
 	{
-		String Key = luaL_checkstring(L, 1);
-		String Namespace = luaL_checkstring(L, 2);
+		GString Key = luaL_checkstring(L, 1);
+		GString Namespace = luaL_checkstring(L, 2);
 
 		lua_pushnumber(L, Configuration::GetSkinConfigf(Key, Namespace));
 		return 1;
@@ -169,8 +169,8 @@ namespace LuaAnimFuncs
 
 	int GetSkinConfigS(lua_State *L)
 	{
-		String Key = luaL_checkstring(L, 1);
-		String Namespace = luaL_checkstring(L, 2);
+		GString Key = luaL_checkstring(L, 1);
+		GString Namespace = luaL_checkstring(L, 2);
 
 		lua_pushstring(L, Configuration::GetSkinConfigs(Key, Namespace).c_str());
 		return 1;
@@ -290,7 +290,7 @@ namespace LuaAnimFuncs
 	{
 		GraphObjectMan* GoMan = GetObjectFromState<GraphObjectMan> (L, "GOMAN");
 		GraphObject2D* Target = GetObjectFromState<GraphObject2D> (L, "Target");
-		String Name = luaL_checkstring(L, 1);
+		GString Name = luaL_checkstring(L, 1);
 		float Duration = luaL_checknumber(L, 2);
 		float Delay = luaL_checknumber(L, 3);
 		Animation::EEaseType Easing = (Animation::EEaseType)(int)luaL_checknumber(L, 4);
@@ -345,12 +345,12 @@ namespace LuaAnimFuncs
 }
 
 // Wrapper functions
-void SetImage(GraphObject2D *O, std::string dir)
+void SetImage(GraphObject2D *O, GString dir)
 {
 	O->SetImage(GameState::GetInstance().GetSkinImage(dir));
 }
 
-String GetImage(const GraphObject2D *O)
+GString GetImage(const GraphObject2D *O)
 {
 	return O->GetImageFilename();
 }
@@ -365,7 +365,7 @@ void SetPosition(GraphObject2D *O, float px, float py)
 	O->SetPosition(px, py);
 }
 
-BitmapFont& LoadBmFont(BitmapFont& B, std::string Fn, float CellWidth, float CellHeight, float CharWidth, float CharHeight, int startChar)
+BitmapFont& LoadBmFont(BitmapFont& B, GString Fn, float CellWidth, float CellHeight, float CharWidth, float CharHeight, int startChar)
 {
 	Vec2 Size(CharWidth, CharHeight);
 	Vec2 CellSize(CellWidth, CellHeight);
@@ -423,7 +423,7 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 		.addFunction("SetAlpha", &Font::SetAlpha)
 		.endClass()
 		.deriveClass <TruetypeFont, Font>("TruetypeFont")
-		.addConstructor <void(*) (std::string, float)>()
+		.addConstructor <void(*) (GString, float)>()
 		.endClass()
 		.deriveClass <BitmapFont, Font> ("BitmapFont")
 		.addConstructor<void(*)()>()
@@ -432,7 +432,7 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 		.endNamespace();
 
 	luabridge::getGlobalNamespace(AnimLua->GetState())
-		.deriveClass<GraphicalString, GraphObject2D>("StringObject2D")
+		.deriveClass<GraphicalString, GraphObject2D>("GStringObject2D")
 		.addConstructor <void(*) ()>()
 		.addProperty("Font", &GraphicalString::GetFont, &GraphicalString::SetFont)
 		.addProperty ("Text", &GraphicalString::GetText, &GraphicalString::SetText)

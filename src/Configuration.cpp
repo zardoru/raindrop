@@ -1,5 +1,6 @@
 #include "GameGlobal.h"
 #include "Configuration.h"
+#include "SimpleIni.h"
 #include "GameState.h"
 
 #include "LuaManager.h"
@@ -8,15 +9,15 @@
 
 using namespace Configuration;
 
-LuaManager *CfgLua, *SkinCfgLua;
+LuaManager *SkinCfgLua;
+CSimpleIniA *Config;
 int IsWidescreen;
 
 void Configuration::Initialize()
 {
-	CfgLua = new LuaManager();
+	Config = new CSimpleIniA;
+	Config->LoadFile("config.ini");
 	SkinCfgLua = new LuaManager();
-
-	CfgLua->RunScript(Directory("config.lua"));
 
 	if (Configuration::GetConfigs("Skin").length())
 		GameState::GetInstance().SetSkin(Configuration::GetConfigs("Skin"));
@@ -31,13 +32,14 @@ void Configuration::Initialize()
 
 void Configuration::Cleanup()
 {
-	delete CfgLua;
+	Config->SaveFile("config.ini");
+	delete Config;
 	delete SkinCfgLua;
 }
 
-String GetConfsInt(String Name, String Namespace, LuaManager &L)
+GString GetConfsInt(GString Name, GString Namespace, LuaManager &L)
 {
-	String Retval;
+	GString Retval;
 	if (Namespace.length())
 	{
 		L.UseArray(Namespace);
@@ -49,7 +51,7 @@ String GetConfsInt(String Name, String Namespace, LuaManager &L)
 	return Retval;
 }
 
-double GetConffInt(String Name, String Namespace, LuaManager &L)
+double GetConffInt(GString Name, GString Namespace, LuaManager &L)
 {
 	double Retval;
 	if (Namespace.length())
@@ -63,48 +65,61 @@ double GetConffInt(String Name, String Namespace, LuaManager &L)
 	return Retval;
 }
 
-String Configuration::GetConfigs(String Name, String Namespace)
+GString Configuration::GetConfigs(GString Name, GString Namespace)
 {
-	return GetConfsInt(Name, Namespace, *CfgLua);
+	GString g = "Global";
+	if (Namespace.length()) g = Namespace;
+	GString out;
+	if (Config->GetValue(g.c_str(), Name.c_str()))
+		out = Config->GetValue(g.c_str(), Name.c_str());
+	else
+		Config->SetValue(g.c_str(), Name.c_str(), "");
+	return out;
 }
 
-float  Configuration::GetConfigf(String Name, String Namespace)
+float  Configuration::GetConfigf(GString Name, GString Namespace)
 {
-	return GetConffInt(Name, Namespace, *CfgLua);
+	GString g = "Global";
+	double out;
+	if (Namespace.length()) g = Namespace;
+	if (Config->GetDoubleValue(g.c_str(), Name.c_str(), -10000) == -10000)
+	{
+		Config->SetValue(g.c_str(), Name.c_str(), "0");
+		out = 0;
+	}
+	else
+		out = Config->GetDoubleValue(g.c_str(), Name.c_str(), -10000);
+	return out;
 }
 
-String Configuration::GetSkinConfigs(String Name, String Namespace)
+GString Configuration::GetSkinConfigs(GString Name, GString Namespace)
 {
 	return GetConfsInt(Name, Namespace, *SkinCfgLua);
 }
 
-double  Configuration::GetSkinConfigf(String Name, String Namespace)
+double  Configuration::GetSkinConfigf(GString Name, GString Namespace)
 {
 	return GetConffInt(Name, Namespace, *SkinCfgLua);
 }
 
-void Configuration::GetConfigListS(String Name, std::vector<String> &Out)
+void Configuration::GetConfigListS(GString Name, std::map<GString, GString> &Out, GString DefaultKeyName)
 {
-	lua_State *L = CfgLua->GetState();
+	CSimpleIniA::TNamesDepend List;
+	Config->GetAllKeys(Name.c_str(), List);
 
-	lua_getglobal(L, Name.c_str());
+	if (!List.size())
+		Config->SetValue(Name.c_str(), DefaultKeyName.c_str(), "");
 
-	if (lua_istable(L, -1))
+	for (CSimpleIniA::TNamesDepend::iterator i = List.begin();
+		i != List.end();
+		i++)
 	{
-		lua_pushnil(L);
-
-		while (lua_next(L, -2))
-		{
-			if (!lua_isnil(L, -1))
-			{
-				Out.push_back(lua_tostring(L, -1));
-			}
-			lua_pop(L, 1);
-		}
+		if (Config->GetValue(Name.c_str(), i->pItem))
+			Out[GString(i->pItem)] = Config->GetValue(Name.c_str(), i->pItem);
 	}
 }
 
-bool Configuration::ListExists(String Name)
+bool Configuration::ListExists(GString Name)
 {
 	lua_State *L = SkinCfgLua->GetState();
 	bool Exists;

@@ -7,7 +7,7 @@
 
 void CreateLuaInterface(LuaManager *AnimLua);
 
-bool LuaAnimation(LuaManager* Lua, String Func, GraphObject2D* Target, float Frac)
+bool LuaAnimation(LuaManager* Lua, GString Func, GraphObject2D* Target, float Frac)
 {
 	Lua->RegisterStruct( "Target", (void*)Target );
 	Lua->CallFunction(Func.c_str(), 1, 1);
@@ -35,7 +35,7 @@ void GraphObjectMan::StopAnimationsForTarget(GraphObject2D* Target)
 }
 
 
-void GraphObjectMan::AddLuaAnimation (GraphObject2D* Target, const String &FuncName, 
+void GraphObjectMan::AddLuaAnimation (GraphObject2D* Target, const GString &FuncName, 
 	int Easing, float Duration, float Delay)
 {
 	Animation Anim;
@@ -66,7 +66,7 @@ GraphObjectMan::~GraphObjectMan()
 	delete Images;
 }
 
-void GraphObjectMan::Preload(String Filename, String Arrname)
+void GraphObjectMan::Preload(GString Filename, GString Arrname)
 {
 	Lua->RunScript(Filename);
 
@@ -76,7 +76,7 @@ void GraphObjectMan::Preload(String Filename, String Arrname)
 
 		while (Lua->IterateNext())
 		{
-			Images->AddToList (Lua->NextString(), GameState::GetInstance().GetSkinPrefix());
+			Images->AddToList (Lua->NextGString(), GameState::GetInstance().GetSkinPrefix());
 			Lua->Pop();
 		}
 
@@ -84,7 +84,7 @@ void GraphObjectMan::Preload(String Filename, String Arrname)
 	}
 }
 
-void GraphObjectMan::Initialize(String Filename, bool RunScript)
+void GraphObjectMan::Initialize(GString Filename, bool RunScript)
 {
 	if (RunScript)
 		Lua->RunScript(Filename);
@@ -100,7 +100,7 @@ void GraphObjectMan::AddTarget(GraphObject2D *Targ)
 	Objects.push_back(Targ);
 }
 
-void GraphObjectMan::AddLuaTarget(GraphObject2D *Targ, String Varname)
+void GraphObjectMan::AddLuaTarget(GraphObject2D *Targ, GString Varname)
 {
 	lua_State *L = Lua->GetState();
 	GraphObject2D **RetVal = (GraphObject2D**) lua_newuserdata(L, sizeof(GraphObject2D **));
@@ -222,7 +222,7 @@ ImageList* GraphObjectMan::GetImageList()
 	return Images;
 }
 
-void GraphObjectMan::DoEvent(String EventName, int Return)
+void GraphObjectMan::DoEvent(GString EventName, int Return)
 {
 	if (Lua->CallFunction(EventName.c_str(), 0, Return))
 		Lua->RunFunction();

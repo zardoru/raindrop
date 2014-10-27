@@ -18,11 +18,11 @@
 
 using namespace VSRG;
 using namespace NoteLoaderSM;
-typedef std::vector<String> SplitResult;
+typedef std::vector<GString> SplitResult;
 
 #define ModeType(m,keys) if(mode==#m) return keys;
 
-int GetTracksByMode(String mode)
+int GetTracksByMode(GString mode)
 {
 	ModeType(kb7-single, 7);
 	ModeType(dance-single, 4);
@@ -36,9 +36,9 @@ int GetTracksByMode(String mode)
 
 #undef ModeType
 
-String RemoveComments(const String Str)
+GString RemoveComments(const GString Str)
 {
-	String Result;
+	GString Result;
 	int k = 0;
 	int AwatingEOL = 0;
 	for (uint32 i = 0; i < Str.length()-1; i++)
@@ -68,9 +68,9 @@ String RemoveComments(const String Str)
 	return Result;
 }
 
-bool LoadTracksSM(Song *Out, Difficulty *Diff, String line)
+bool LoadTracksSM(Song *Out, Difficulty *Diff, GString line)
 {
-	String CommandContents = line.substr(line.find_first_of(":") + 1);
+	GString CommandContents = line.substr(line.find_first_of(":") + 1);
 	SplitResult Mainline;
 
 	/* Remove newlines and comments */
@@ -91,7 +91,7 @@ bool LoadTracksSM(Song *Out, Difficulty *Diff, String line)
 	}
 
 	/* What we'll work with */
-	String NoteString = Mainline[5];
+	GString NoteGString = Mainline[5];
 	int Keys = GetTracksByMode(Mainline[0]);
 
 	if (!Keys)
@@ -100,10 +100,10 @@ bool LoadTracksSM(Song *Out, Difficulty *Diff, String line)
 	Diff->Channels = Keys;
 	Diff->Name = Mainline[2] + "(" + Mainline[0] + ")";
 	
-	/* Now we should have our notes within NoteString. 
+	/* Now we should have our notes within NoteGString. 
 	We'll split them by measure using , as a separator.*/
 	SplitResult MeasureText;
-	boost::split(MeasureText, NoteString, boost::is_any_of(","));
+	boost::split(MeasureText, NoteGString, boost::is_any_of(","));
 
 	/* Hold data */
 	double KeyStartTime[16];
@@ -178,7 +178,7 @@ bool LoadTracksSM(Song *Out, Difficulty *Diff, String line)
 	return true;
 }
 
-void NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix, Song *Out)
+void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *Out)
 {
 #if (!defined _WIN32) || (defined STLP)
 	std::ifstream filein (filename.c_str());
@@ -210,7 +210,7 @@ void NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 	Diff->Offset = 0;
 	Diff->Duration = 0;
 
-	String line;
+	GString line;
 	while (filein)
 	{
 		std::getline(filein, line, ';'); 
@@ -218,19 +218,19 @@ void NoteLoaderSM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 		if (line.length() < 3)
 			continue;
 
-		String command;
+		GString command;
 		size_t iHash = line.find_first_of("#");
 		size_t iColon = line.find_first_of(":");
-		if (iHash != String::npos && iColon != String::npos)
+		if (iHash != GString::npos && iColon != GString::npos)
 			command = line.substr(iHash, iColon - iHash);
 		else
 			continue;
 
 		boost::replace_all(command, "\n", "");
 
-#define OnCommand(x) if(command == #x || command == #x + std::string(":"))
+#define OnCommand(x) if(command == #x || command == #x + GString(":"))
 
-		String CommandContents = line.substr(line.find_first_of(":") + 1);
+		GString CommandContents = line.substr(line.find_first_of(":") + 1);
 		
 
 		OnCommand(#TITLE)

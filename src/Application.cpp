@@ -93,7 +93,7 @@ void Application::ParseArgs()
 
 				if (ValidArg(Args.Argc, 1, i))
 				{
-					String Mode = Args.Argv[i+1];
+					GString Mode = Args.Argv[i+1];
 					if (Mode == "om")
 						ConvertMode = CONV_OM;
 					else if (Mode == "sm")
@@ -213,14 +213,14 @@ void Application::Run()
 
 		Log::Printf("Generating cache...\n");
 
-		std::vector<String> Directories;
-		Configuration::GetConfigListS("SongDirectories", Directories);
+		std::map<GString, GString> Directories;
+		Configuration::GetConfigListS("SongDirectories", Directories, "Songs");
 
-		for (std::vector<String>::iterator i = Directories.begin(); 
+		for (std::map<GString, GString>::iterator i = Directories.begin(); 
 			i != Directories.end();
 			i++)
 		{
-			SL.GetSongList7K(Songs, *i);
+			SL.GetSongList7K(Songs, i->second);
 		}
 
 		for (std::vector<VSRG::Song*>::iterator i = Songs.begin(); i != Songs.end(); i++)

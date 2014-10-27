@@ -71,19 +71,19 @@ void GetTimingChangesInInterval(const TimingData &Timing,
 	}
 }
 
-void LoadTimingList(TimingData &Timing, String line, bool AllowZeros)
+void LoadTimingList(TimingData &Timing, GString line, bool AllowZeros)
 {
-	String ListString = line.substr(line.find_first_of(":") + 1);
-	std::vector< String > SplitResult;
+	GString ListGString = line.substr(line.find_first_of(":") + 1);
+	std::vector< GString > SplitResult;
 	TimingSegment Segment;
 
 	// Remove whitespace.
-	boost::replace_all(ListString, "\n", "");
-	boost::split(SplitResult, ListString, boost::is_any_of(",")); // Separate List of BPMs.
-	BOOST_FOREACH(String ValueString, SplitResult)
+	boost::replace_all(ListGString, "\n", "");
+	boost::split(SplitResult, ListGString, boost::is_any_of(",")); // Separate List of BPMs.
+	BOOST_FOREACH(GString ValueGString, SplitResult)
 	{
-		std::vector< String > SplitResultPair;
-		boost::split(SplitResultPair, ValueString, boost::is_any_of("=")); // Separate Time=Value pairs.
+		std::vector< GString > SplitResultPair;
+		boost::split(SplitResultPair, ValueGString, boost::is_any_of("=")); // Separate Time=Value pairs.
 
 		if (SplitResultPair.size() == 1) // Assume only one BPM on the whole list.
 		{

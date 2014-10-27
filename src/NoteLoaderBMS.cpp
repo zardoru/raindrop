@@ -80,7 +80,7 @@
 
 
 /* literally pasted from wikipedia */
-std::string tob36(long unsigned int value)
+GString tob36(long unsigned int value)
 {
 	const char base36[37] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // off by 1 lol
 	char buffer[14];
@@ -91,7 +91,7 @@ std::string tob36(long unsigned int value)
 		buffer[--offset] = base36[value % 36];
 	} while (value /= 36);
  
-	return std::string(&buffer[offset]);
+	return GString(&buffer[offset]);
 }
 
 int fromBase36(const char *txt)
@@ -140,7 +140,7 @@ struct BMSMeasure
 
 using namespace VSRG;
 
-typedef std::map<int, String> FilenameListIndex;
+typedef std::map<int, GString> FilenameListIndex;
 typedef std::map<int, double> BpmListIndex;
 typedef std::vector<NoteData> NoteVector;
 typedef std::map<int, BMSMeasure> MeasureList;
@@ -218,13 +218,13 @@ struct BmsLoadInfo
 	}
 };
 
-String CommandSubcontents (const String Command, const String Line)
+GString CommandSubcontents (const GString Command, const GString Line)
 {
 	uint32 len = Command.length();
 	return Line.substr(len);
 }
 
-void ParseEvents(BmsLoadInfo *Info, const int Measure, const int BmsChannel, const String Command)
+void ParseEvents(BmsLoadInfo *Info, const int Measure, const int BmsChannel, const GString Command)
 {
 	int CommandLength = Command.length() / 2;
 
@@ -773,7 +773,7 @@ void CompileBMS(BmsLoadInfo *Info)
 		measureCalculate(Info, i);
 }
 
-bool InterpStatement(String Command, String Contents, BmsLoadInfo *Info)
+bool InterpStatement(GString Command, GString Contents, BmsLoadInfo *Info)
 {
 	bool IsControlFlowCommand = false;
 
@@ -862,15 +862,15 @@ bool isany(char x, const char* p, int len)
 	return false;
 }
 
-// Returns: Out: a vector with all the subtitles, String: The title without the subtitles.
-String GetSubtitles(String SLine, std::vector<String> &Out)
+// Returns: Out: a vector with all the subtitles, GString: The title without the subtitles.
+GString GetSubtitles(GString SLine, std::vector<GString> &Out)
 {
 	const char* EntryChars = "({[";
 	const char* ExitChars = ")}]";
 	const char* Line = SLine.c_str();
 	size_t len = SLine.length();
 
-	String CurrentParse;
+	GString CurrentParse;
 	std::stack<char> Paren;
 
 	for (int i = 0; i < len; i++)
@@ -896,13 +896,13 @@ String GetSubtitles(String SLine, std::vector<String> &Out)
 	return SLine.substr(0, SLine.find_first_of(EntryChars));
 }
 
-String DifficultyNameFromSubtitles(std::vector<String> &Subs)
+GString DifficultyNameFromSubtitles(std::vector<GString> &Subs)
 {
-	for (std::vector<String>::iterator i = Subs.begin();
+	for (std::vector<GString>::iterator i = Subs.begin();
 		i != Subs.end();
 		i++)
 	{
-		String Current = *i;
+		GString Current = *i;
 		boost::to_lower(Current);
 		const char* s = Current.c_str();
 
@@ -924,7 +924,7 @@ String DifficultyNameFromSubtitles(std::vector<String> &Subs)
 
 	if (Subs.size()) // Okay then, join them together.
 	{
-		String sub = boost::join(Subs, " / ");
+		GString sub = boost::join(Subs, " / ");
 		return sub;
 	}
 
@@ -932,7 +932,7 @@ String DifficultyNameFromSubtitles(std::vector<String> &Subs)
 	return "";
 }
 
-void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Out)
+void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *Out)
 {
 #if (!defined _WIN32)
 	std::ifstream filein (filename.c_str());
@@ -980,8 +980,8 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 		And that's what we're going to try to do.
 		*/
 
-	std::vector<String> Subs; // Subtitle list
-	String Line;
+	std::vector<GString> Subs; // Subtitle list
+	GString Line;
 	bool IsU8 = false;
 	char* TestU8 = new char[1025];
 
@@ -1002,7 +1002,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 		if ( Line.length() == 0 || Line[0] != '#' )
 			continue;
 
-		String command = Line.substr(Line.find_first_of("#"), Line.find_first_of(" ") - Line.find_first_of("#"));
+		GString command = Line.substr(Line.find_first_of("#"), Line.find_first_of(" ") - Line.find_first_of("#"));
 
 		boost::to_upper(command);
 		boost::replace_all(command, "\n", "");
@@ -1010,7 +1010,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 #define OnCommand(x) if(command == #x)
 #define OnCommandSub(x) if(command.substr(0, strlen(#x)) == #x)
 
-		String CommandContents = Line.substr(Line.find_first_of(" ") + 1);
+		GString CommandContents = Line.substr(Line.find_first_of(" ") + 1);
 		if (!IsU8)
 			CommandContents = Utility::SJIStoU8(CommandContents);
 
@@ -1030,9 +1030,9 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 			OnCommand(#TITLE)
 			{
 				Out->SongName = CommandContents;
-				// ltrim the string
+				// ltrim the GString
 				size_t np = Out->SongName.find_first_not_of(" ");
-				if (np != String::npos)
+				if (np != GString::npos)
 					Out->SongName = Out->SongName.substr(np);
 			}
 
@@ -1042,7 +1042,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 
 				size_t np = Out->SongAuthor.find_first_not_of(" ");
 
-				if (np != String::npos)
+				if (np != GString::npos)
 					Out->SongAuthor = Out->SongAuthor.substr(np);
 			}
 
@@ -1069,7 +1069,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 			OnCommand(#DIFFICULTY)
 			{
 				int Kind = atoi(CommandContents.c_str());
-				String dName;
+				GString dName;
 
 				switch (Kind)
 				{
@@ -1112,28 +1112,28 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 
 			OnCommandSub(#WAV)
 			{
-				String IndexStr = CommandSubcontents("#WAV", command);
+				GString IndexStr = CommandSubcontents("#WAV", command);
 				int Index = fromBase36(IndexStr.c_str());
 				Info->Sounds[Index] = CommandContents;
 			}
 
 			OnCommandSub(#BMP)
 			{
-				String IndexStr = CommandSubcontents("#BMP", command);
+				GString IndexStr = CommandSubcontents("#BMP", command);
 				int Index = fromBase36(IndexStr.c_str());
 				Info->BMP[Index] = CommandContents.c_str();
 			}
 
 			OnCommandSub(#BPM)
 			{
-				String IndexStr = CommandSubcontents("#BPM", command);
+				GString IndexStr = CommandSubcontents("#BPM", command);
 				int Index = fromBase36(IndexStr.c_str());
 				Info->BPMs[Index] = latof(CommandContents.c_str());
 			}
 
 			OnCommandSub(#STOP)
 			{
-				String IndexStr = CommandSubcontents("#STOP", command);
+				GString IndexStr = CommandSubcontents("#STOP", command);
 				int Index = fromBase36(IndexStr.c_str());
 				Info->Stops[Index] = latof(CommandContents.c_str());
 			}
@@ -1141,14 +1141,14 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 			/* Do we need this?... */
 			OnCommandSub(#EXBPM)
 			{
-				String IndexStr = CommandSubcontents("#EXBPM", command);
+				GString IndexStr = CommandSubcontents("#EXBPM", command);
 				int Index = fromBase36(IndexStr.c_str());
 				Info->BPMs[Index] = latof(CommandContents.c_str());
 			}
 
 			/* Else... */
-			String MeasureCommand = Line.substr(Line.find_first_of(":")+1);
-			String MainCommand = Line.substr(1, 5);
+			GString MeasureCommand = Line.substr(Line.find_first_of(":")+1);
+			GString MainCommand = Line.substr(1, 5);
 
 			if (Utility::IsNumeric(MainCommand.c_str())) // We've got work to do.
 			{
@@ -1181,7 +1181,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 		size_t startBracket = filename.find_first_of("[");
 		size_t endBracket = filename.find_last_of("]");
 
-		if (startBracket != std::string::npos && endBracket != std::string::npos)
+		if (startBracket != GString::npos && endBracket != GString::npos)
 			Diff->Name = filename.substr(startBracket + 1, endBracket - startBracket - 1);
 
 		// No brackets? Okay then, let's use the filename.
@@ -1189,7 +1189,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(String filename, String prefix, Song *Ou
 		{
 			size_t last_slash = filename.find_last_of("/");
 			size_t last_dslash = filename.find_last_of("\\");
-			size_t last_dir = std::max( last_slash != std::string::npos ? last_slash : 0, last_dslash != std::string::npos ? last_dslash : 0 );
+			size_t last_dir = std::max( last_slash != GString::npos ? last_slash : 0, last_dslash != GString::npos ? last_dslash : 0 );
 			Diff->Name = filename.substr(last_dir + 1, filename.length() - last_dir - 5);
 		}
 	}

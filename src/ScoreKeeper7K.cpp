@@ -261,7 +261,7 @@ int ScoreKeeper7K::getJudgmentWindow(ScoreKeeperJudgment judgment){
 }
 
 
-std::string ScoreKeeper7K::getHistogram(){
+GString ScoreKeeper7K::getHistogram(){
 
 	std::stringstream ss;
 
@@ -435,7 +435,7 @@ int ScoreKeeper7K::getPacemakerDiff(PacemakerType pacemaker){
 
 
 
-std::pair<std::string, int> ScoreKeeper7K::getAutoPacemaker(){
+std::pair<GString, int> ScoreKeeper7K::getAutoPacemaker(){
 	
 	PacemakerType pmt;
 	

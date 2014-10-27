@@ -11,7 +11,7 @@
 
 struct loaderVSRGEntry_t {
 	const wchar_t* Ext;
-	void (*LoadFunc) (String filename, String prefix, VSRG::Song* Out);
+	void (*LoadFunc) (GString filename, GString prefix, VSRG::Song* Out);
 } LoadersVSRG [] = {
 	{L"bms", NoteLoaderBMS::LoadObjectsFromFile},
 	{L"bme", NoteLoaderBMS::LoadObjectsFromFile},
@@ -31,12 +31,12 @@ void SongLoader::LoadSongDCFromDir( Directory songPath, std::vector<dotcur::Song
 {
 
 	bool FoundDCF = false;
-	std::vector<String> Listing;
+	std::vector<GString> Listing;
 
 	songPath.ListDirectory(Listing, Directory::FS_REG, "dcf");
 	
 	// First, search for .dcf files.
-	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
+	for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{
 		// found a .dcf- load it.
 		dotcur::Song *New = NoteLoader::LoadObjectsFromFile(songPath.path() + "/" + *i, songPath.path());
@@ -53,14 +53,14 @@ void SongLoader::LoadSongDCFromDir( Directory songPath, std::vector<dotcur::Song
 	if (!FoundDCF && (Configuration::GetConfigf("OggListing") != 0))
 	{
 		dotcur::Song *NewS = NULL;
-		String PotentialBG, PotentialBGRelative;
+		GString PotentialBG, PotentialBGRelative;
 
 		Listing.clear();
 		songPath.ListDirectory(Listing, Directory::FS_REG);
 
-		for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
+		for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
 		{
-			String Ext = Directory(*i).GetExtension();
+			GString Ext = Directory(*i).GetExtension();
 			if ( Ext == "ogg")
 			{
 				bool UsesFilename = false;
@@ -124,7 +124,7 @@ VSRG::Song* LoadSong7KFromFilename(Directory Filename, Directory Prefix, VSRG::S
 		fn = Utility::Widen(Filename);
 
 	std::wstring sp = Utility::Widen(Prefix);
-	std::string fn_f = Utility::Narrow(sp + fn);
+	GString fn_f = Utility::Narrow(sp + fn);
 
 	for (int i = 0; i < sizeof (LoadersVSRG)/sizeof(loaderVSRGEntry_t); i++)
 	{
@@ -137,7 +137,7 @@ VSRG::Song* LoadSong7KFromFilename(Directory Filename, Directory Prefix, VSRG::S
 
 void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 {
-	std::vector<String> Listing;
+	std::vector<GString> Listing;
 
 	songPath.ListDirectory(Listing, Directory::FS_REG);
 	VSRG::Song *New = new VSRG::Song();
@@ -157,7 +157,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 	bool RenewCache = false;
 	bool DoReload = false;
 
-	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
+	for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{
 		std::wstring Ext = Utility::Widen(Directory(*i).GetExtension());
 
@@ -168,7 +168,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 
 	if (DoReload)
 	{
-		for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
+		for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
 		{
 			std::wstring Ext = Utility::Widen(Directory(*i).GetExtension());
 
@@ -218,10 +218,10 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 
 void SongLoader::GetSongListDC(std::vector<dotcur::Song*> &OutVec, Directory Dir)
 {
-	std::vector <String> Listing;
+	std::vector <GString> Listing;
 
 	Dir.ListDirectory(Listing, Directory::FS_DIR);
-	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
+	for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{ 
 		Log::Printf("%ls... ", Utility::Widen(*i).c_str());
 		LoadSongDCFromDir(Dir.path() + "/" + *i, OutVec);
@@ -231,10 +231,10 @@ void SongLoader::GetSongListDC(std::vector<dotcur::Song*> &OutVec, Directory Dir
 
 void SongLoader::GetSongList7K(std::vector<VSRG::Song*> &OutVec, Directory Dir)
 {
-	std::vector <String> Listing;
+	std::vector <GString> Listing;
 
 	Dir.ListDirectory(Listing, Directory::FS_DIR);
-	for (std::vector<String>::iterator i = Listing.begin(); i != Listing.end(); i++)
+	for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{ 
 		Log::Printf("%ls... ", Utility::Widen(*i).c_str());
 		LoadSong7KFromDir(Dir.path() + "/" + *i, OutVec);
@@ -248,7 +248,7 @@ VSRG::Song* SongLoader::LoadFromMeta(const VSRG::Song* Meta, VSRG::Difficulty* &
 	VSRG::Song* Out;
 	DB->IsSongDirectory(Meta->SongDirectory, &SongID);
 
-	std::string fn = DB->GetDifficultyFilename(CurrentDiff->ID);
+	GString fn = DB->GetDifficultyFilename(CurrentDiff->ID);
 	*FilenameOut = fn;
 
 	Out = LoadSong7KFromFilename(fn, "", NULL);

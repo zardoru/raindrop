@@ -21,7 +21,7 @@ namespace Game
 {
 class GameState
 {
-	String CurrentSkin;
+	GString CurrentSkin;
 	SongDatabase* Database;
 
 public:
@@ -34,10 +34,10 @@ public:
 	static GameState &GetInstance();
 	void Initialize();
 
-	String GetDirectoryPrefix();
-	String GetSkinPrefix();
-	String GetScriptsDirectory();
-	void SetSkin(String NextSkin);
+	GString GetDirectoryPrefix();
+	GString GetSkinPrefix();
+	GString GetScriptsDirectory();
+	void SetSkin(GString NextSkin);
 	Image* GetSkinImage(Directory Image);
 	bool SkinSupportsChannelCount(int Count);
 

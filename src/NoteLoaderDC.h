@@ -6,7 +6,7 @@
 namespace NoteLoader 
 {
 	// user responsability to clean this one up.
-	dotcur::Song *LoadObjectsFromFile(String filename, String prefix = "");
+	dotcur::Song *LoadObjectsFromFile(GString filename, GString prefix = "");
 };
 
 #endif // NOTELOADER_H_

@@ -41,32 +41,32 @@ void SongList::AddSong(Game::Song* Song)
 	mChildren.push_back(NewEntry);
 }
 
-void SongList::AddDirectory(boost::mutex &loadMutex, SongLoader *Loader, Directory Dir, bool VSRGActive, bool DotcurActive)
+void SongList::AddNamedDirectory(boost::mutex &loadMutex, SongLoader *Loader, Directory Dir, GString Name, bool VSRGActive, bool DotcurActive)
 {
 	bool EntryWasPushed = false;
 	SongList* NewList = new SongList(this);
 
 	ListEntry NewEntry;
 
-	NewEntry.EntryName = Dir.path().substr(Dir.path().find_last_of('/')+1);
+	NewEntry.EntryName = Name;
 	NewEntry.Kind = ListEntry::Directory;
 	NewEntry.Data = NewList;
 
 	std::vector<VSRG::Song*> Songs7K;
 	std::vector<dotcur::Song*> SongsDC;
-	std::vector<String> Listing;
+	std::vector<GString> Listing;
 
 	Dir.ListDirectory(Listing, Directory::FS_DIR);
-	
-	for (std::vector<String>::iterator i = Listing.begin();
+
+	for (std::vector<GString>::iterator i = Listing.begin();
 		i != Listing.end();
 		i++)
 	{
 		if (*i == "." || *i == "..") continue;
-		
+
 		if (VSRGActive)
 			Loader->LoadSong7KFromDir(Dir / *i, Songs7K);
-		
+
 		if (DotcurActive)
 			Loader->LoadSongDCFromDir(Dir / *i, SongsDC);
 
@@ -74,8 +74,8 @@ void SongList::AddDirectory(boost::mutex &loadMutex, SongLoader *Loader, Directo
 		{
 			if (!EntryWasPushed)
 			{
-				boost::mutex::scoped_lock lock (loadMutex);
-				mChildren.push_back	(NewEntry);
+				boost::mutex::scoped_lock lock(loadMutex);
+				mChildren.push_back(NewEntry);
 				EntryWasPushed = true;
 			}
 
@@ -83,11 +83,11 @@ void SongList::AddDirectory(boost::mutex &loadMutex, SongLoader *Loader, Directo
 
 
 			{
-				boost::mutex::scoped_lock lock (loadMutex);
+				boost::mutex::scoped_lock lock(loadMutex);
 				if (!NewList->GetNumEntries())
 				{
 					if (mChildren.size())
-						mChildren.erase(mChildren.end()-1);
+						mChildren.erase(mChildren.end() - 1);
 					EntryWasPushed = false;
 				}
 			}
@@ -98,7 +98,7 @@ void SongList::AddDirectory(boost::mutex &loadMutex, SongLoader *Loader, Directo
 
 			if (Songs7K.size())
 			{
-				boost::mutex::scoped_lock lock (loadMutex);
+				boost::mutex::scoped_lock lock(loadMutex);
 
 				for (std::vector<VSRG::Song*>::iterator j = Songs7K.begin();
 					j != Songs7K.end();
@@ -108,12 +108,12 @@ void SongList::AddDirectory(boost::mutex &loadMutex, SongLoader *Loader, Directo
 				}
 
 				Songs7K.clear();
-				
+
 			}
 
 			if (SongsDC.size())
 			{
-				boost::mutex::scoped_lock lock (loadMutex);
+				boost::mutex::scoped_lock lock(loadMutex);
 
 				for (std::vector<dotcur::Song*>::iterator j = SongsDC.begin();
 					j != SongsDC.end();
@@ -129,8 +129,8 @@ void SongList::AddDirectory(boost::mutex &loadMutex, SongLoader *Loader, Directo
 			{
 				if (!EntryWasPushed)
 				{
-					boost::mutex::scoped_lock lock (loadMutex);
-					mChildren.push_back	(NewEntry);
+					boost::mutex::scoped_lock lock(loadMutex);
+					mChildren.push_back(NewEntry);
 					EntryWasPushed = true;
 				}
 			}
@@ -140,10 +140,25 @@ void SongList::AddDirectory(boost::mutex &loadMutex, SongLoader *Loader, Directo
 	if (!EntryWasPushed)
 	{
 		delete NewList;
-	}	
+	}
 }
 
-void SongList::AddVirtualDirectory(String NewEntryName, Game::Song* List, int Count)
+void SongList::AddDirectory(boost::mutex &loadMutex, SongLoader *Loader, Directory Dir, bool VSRGActive, bool DotcurActive)
+{
+	int idx = Dir.path().find_last_of('/') + 1;
+	GString path;
+	if (idx == Dir.path().length() - 1) // it ends with a /
+	{
+		idx = Dir.ParentDirectory().path().find_last_of('/') + 1;
+		Dir.ParentDirectory().path().substr(idx);
+	}
+	else
+		path = Dir.path().substr(idx);
+
+	AddNamedDirectory(loadMutex, Loader, Dir, path, VSRGActive, DotcurActive);
+}
+
+void SongList::AddVirtualDirectory(GString NewEntryName, Game::Song* List, int Count)
 {
 	SongList* NewList = new SongList(this);
 
@@ -161,6 +176,7 @@ void SongList::AddVirtualDirectory(String NewEntryName, Game::Song* List, int Co
 // if false, it's a song
 bool SongList::IsDirectory(unsigned int Entry)
 {
+	if (Entry >= mChildren.size()) return true;
 	return mChildren[Entry].Kind == ListEntry::Directory;
 }
 
@@ -176,7 +192,7 @@ Game::Song* SongList::GetSongEntry(unsigned int Entry)
 	return static_cast<Game::Song*> (mChildren[Entry].Data);
 }
 
-String SongList::GetEntryTitle(unsigned int Entry)
+GString SongList::GetEntryTitle(unsigned int Entry)
 {
 	return mChildren[Entry].EntryName;
 }

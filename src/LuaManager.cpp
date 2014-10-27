@@ -20,7 +20,7 @@ int Break(lua_State *S)
 int DoGameScript(lua_State *S)
 {
 	LuaManager* Lua = GetObjectFromState<LuaManager>(S, "Luaman");
-	String File = luaL_checkstring(S, 1);
+	GString File = luaL_checkstring(S, 1);
 	lua_pushnumber(S, Lua->RunScript(GameState::GetInstance().GetScriptsDirectory() + File));
 	return 1;
 }
@@ -46,7 +46,7 @@ LuaManager::~LuaManager()
 		lua_close(State);
 }
 
-void LuaManager::GetGlobal(std::string VarName)
+void LuaManager::GetGlobal(GString VarName)
 {
 	lua_getglobal(State, VarName.c_str());
 }
@@ -56,7 +56,7 @@ bool LuaManager::RunScript(Directory file)
 	return RunScript(file.path());
 }
 
-bool LuaManager::RunScript(std::string Filename)
+bool LuaManager::RunScript(GString Filename)
 {
 	int errload = 0, errcall = 0;
 
@@ -73,13 +73,13 @@ bool LuaManager::RunScript(std::string Filename)
 	return true;
 }
 
-bool LuaManager::RunString(std::string sString)
+bool LuaManager::RunGString(GString string)
 {
 	int errload = 0, errcall = 0;
 	
-	if ( (errload = luaL_loadstring(State, sString.c_str())) || (errcall = lua_pcall(State, 0, LUA_MULTRET, 0)) )
+	if ( (errload = luaL_loadstring(State, string.c_str())) || (errcall = lua_pcall(State, 0, LUA_MULTRET, 0)) )
 	{
-		std::string reason = lua_tostring(State, -1);
+		GString reason = lua_tostring(State, -1);
 		return false;
 	}
 	return true;
@@ -90,7 +90,7 @@ bool LuaManager::IsValid()
 	return State != NULL;
 }
 
-bool LuaManager::Register(lua_CFunction Function, std::string FunctionName)
+bool LuaManager::Register(lua_CFunction Function, GString FunctionName)
 {
 	if (!Function || FunctionName.empty())
 		return false;
@@ -98,7 +98,7 @@ bool LuaManager::Register(lua_CFunction Function, std::string FunctionName)
 	return true;
 }
 
-int LuaManager::GetGlobalI(std::string VariableName, int Default)
+int LuaManager::GetGlobalI(GString VariableName, int Default)
 {
 	int rval = Default;
 	
@@ -117,9 +117,9 @@ int LuaManager::GetGlobalI(std::string VariableName, int Default)
 	return rval;
 }
 
-std::string LuaManager::GetGlobalS(std::string VariableName, std::string Default)
+GString LuaManager::GetGlobalS(GString VariableName, GString Default)
 {
-	std::string rval = Default;
+	GString rval = Default;
 	
 	GetGlobal(VariableName);
 	
@@ -129,14 +129,14 @@ std::string LuaManager::GetGlobalS(std::string VariableName, std::string Default
 	}else
 	{
 		// Pop();
-		// throw LuaTypeException(VariableName, "string");
+		// throw LuaTypeException(VariableName, "GString");
 	}
 
 	Pop();
 	return rval;
 }
 
-double LuaManager::GetGlobalD(std::string VariableName, double Default)
+double LuaManager::GetGlobalD(GString VariableName, double Default)
 {
 	double rval = Default;
 	GetGlobal(VariableName);
@@ -153,19 +153,19 @@ double LuaManager::GetGlobalD(std::string VariableName, double Default)
 	return rval;
 }
 
-void LuaManager::SetGlobal(std::string VariableName, std::string Value)
+void LuaManager::SetGlobal(GString VariableName, GString Value)
 {
 	lua_pushstring(State, Value.c_str());
 	lua_setglobal(State, VariableName.c_str());
 }
 
-void LuaManager::SetGlobal(std::string VariableName, double Value)
+void LuaManager::SetGlobal(GString VariableName, double Value)
 {
 	lua_pushnumber(State, Value);
 	lua_setglobal(State, VariableName.c_str());
 }
 
-bool LuaManager::RegisterStruct(std::string Key, void* data, std::string MetatableName)
+bool LuaManager::RegisterStruct(GString Key, void* data, GString MetatableName)
 {
 	if (!data) return false;
 	if (Key.length() < 1) return false;
@@ -183,7 +183,7 @@ bool LuaManager::RegisterStruct(std::string Key, void* data, std::string Metatab
 	return true;
 }
 
-void* LuaManager::GetStruct(std::string Key)
+void* LuaManager::GetStruct(GString Key)
 {
 	lua_pushstring(State, Key.c_str());
 	lua_gettable(State, LUA_REGISTRYINDEX);
@@ -195,7 +195,7 @@ void LuaManager::NewArray()
 	lua_newtable(State);
 }
 
-bool LuaManager::UseArray(std::string VariableName)
+bool LuaManager::UseArray(GString VariableName)
 {
 	GetGlobal(VariableName);
 	return lua_istable(State, -1);
@@ -207,7 +207,7 @@ void LuaManager::SetFieldI(int index, int Value)
 	lua_rawseti(State, -2, index);
 }
 
-void LuaManager::SetFieldS(int index, std::string Value)
+void LuaManager::SetFieldS(int index, GString Value)
 {
 	lua_pushstring(State, Value.c_str());
 	lua_rawseti(State, -2, index);
@@ -219,7 +219,7 @@ void LuaManager::SetFieldD(int index, double Value)
 	lua_rawseti(State, -2, index);
 }
 
-int LuaManager::GetFieldI(std::string Key, int Default)
+int LuaManager::GetFieldI(GString Key, int Default)
 {
 	int R = Default;
 	lua_pushstring(State, Key.c_str());
@@ -234,7 +234,7 @@ int LuaManager::GetFieldI(std::string Key, int Default)
 	return R;
 }
 
-double LuaManager::GetFieldD(std::string Key, double Default)
+double LuaManager::GetFieldD(GString Key, double Default)
 {
 	double R = Default;
 
@@ -254,9 +254,9 @@ double LuaManager::GetFieldD(std::string Key, double Default)
 		return R;
 }
 
-std::string LuaManager::GetFieldS(std::string Key, std::string Default)
+GString LuaManager::GetFieldS(GString Key, GString Default)
 {
-	std::string R = Default;
+	GString R = Default;
 
 	lua_pushstring(State, Key.c_str());
 	lua_gettable(State, -2);
@@ -275,7 +275,7 @@ void LuaManager::Pop()
 	lua_pop(State, 1);
 }
 
-void LuaManager::FinalizeArray(std::string ArrayName)
+void LuaManager::FinalizeArray(GString ArrayName)
 {
 	lua_setglobal(State, ArrayName.c_str());
 }
@@ -292,7 +292,7 @@ void LuaManager::PushArgument(double Value)
 		lua_pushnumber(State, Value);
 }
 
-void LuaManager::PushArgument(std::string Value)
+void LuaManager::PushArgument(GString Value)
 {
 	if(func_input)
 		lua_pushstring(State, Value.c_str());
@@ -323,7 +323,7 @@ bool LuaManager::RunFunction()
 
 	if (errc)
 	{
-		std::string reason = lua_tostring(State, -1);
+		GString reason = lua_tostring(State, -1);
 
 #ifndef WIN32
 		printf("lua call error: %s\n", reason.c_str());
@@ -357,12 +357,12 @@ float LuaManager::GetFunctionResultF(int StackPos)
 	return Value;
 }
 
-void LuaManager::NewMetatable(std::string MtName)
+void LuaManager::NewMetatable(GString MtName)
 {
 	luaL_newmetatable(State, MtName.c_str());
 }
 
-void LuaManager::RegisterLibrary(std::string Libname, const luaL_Reg *Reg)
+void LuaManager::RegisterLibrary(GString Libname, const luaL_Reg *Reg)
 {
 	luaL_newlib(State, Reg);
 	lua_setglobal(State, Libname.c_str());
@@ -393,7 +393,7 @@ double LuaManager::NextDouble()
 	return lua_tonumber(State, -1);
 }
 
-std::string LuaManager::NextString()
+GString LuaManager::NextGString()
 {
 	return lua_tostring(State, -1);
 }

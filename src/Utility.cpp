@@ -5,7 +5,6 @@
 #include <iconv.h>
 #endif
 
-#include <cstring>
 #include <csignal>
 #include <sys/stat.h>
 #include <clocale>
@@ -49,22 +48,22 @@ namespace Utility {
 		return !k.fail();
 	}
 
-	String GetExtension(String Filename)
+	GString GetExtension(GString Filename)
 	{
 		return Filename.substr(Filename.find_last_of(".")+1);
 	}
 
-	String RelativeToPath(String Filename)
+	GString RelativeToPath(GString Filename)
 	{
 		return Filename.substr(Filename.find_last_of("/"));
 	}
 
-	String RemoveExtension(String Fn)
+	GString RemoveExtension(GString Fn)
 	{
 		return Fn.substr(0, Fn.find_last_of("."));
 	}
 
-	bool FileExists(String Fn)
+	bool FileExists(GString Fn)
 	{
 #ifndef WIN32
 		struct stat st;
@@ -74,7 +73,7 @@ namespace Utility {
 #endif
 	}
 
-	std::wstring Widen(String Line)
+	std::wstring Widen(GString Line)
 	{
 		wchar_t u16s[2048]; // Ought to be enough for everyone.
 
@@ -87,7 +86,7 @@ namespace Utility {
 		return std::wstring(u16s);
 	}
 
-	String Narrow(std::wstring Line)
+	GString Narrow(std::wstring Line)
 	{
 		char mbs[2048];
 		
@@ -97,12 +96,12 @@ namespace Utility {
 		memset(mbs, 0, 2048);
 		size_t len = WideCharToMultiByte(CP_UTF8, 0, Line.c_str(), Line.length(), mbs, 2048, NULL, NULL);
 #endif
-		return String(mbs);
+		return GString(mbs);
 	}
 
 	char* buf = (char*)malloc(2048);
 
-	String SJIStoU8 (String Line)
+	GString SJIStoU8 (GString Line)
 	{
 #ifdef WIN32
 		wchar_t u16s[2048];
@@ -110,7 +109,7 @@ namespace Utility {
 		size_t len = MultiByteToWideChar(932, 0, Line.c_str(), Line.length(), u16s, 2048);
 		len = WideCharToMultiByte(CP_UTF8, 0, u16s, len, mbs, 2048, NULL, NULL);
 		mbs[len] = 0;
-		return String(mbs);
+		return GString(mbs);
 #else
 		iconv_t conv;
 		char** out = &buf;
@@ -123,16 +122,16 @@ namespace Utility {
 
 		iconv_close(conv);
 		if (success)
-			return String(*out);
+			return GString(*out);
 		else
 		{
 			Log::Printf("Failure converting character sets.");
-			return String();
+			return GString();
 		}
 #endif
 	}
 
-	void CheckDir(String path)
+	void CheckDir(GString path)
 	{
 		struct stat st;
 		if (stat(path.c_str(), &st))
@@ -145,7 +144,7 @@ namespace Utility {
 		}
 	}
 
-	int GetLMT(String Path)
+	int GetLMT(GString Path)
 	{
 		struct stat st;
 		if (stat(Path.c_str(), &st) != -1)
@@ -155,7 +154,7 @@ namespace Utility {
 		else return 0;
 	}
 
-	void RemoveFilenameIllegalCharacters(String &S, bool removeSlash)
+	void RemoveFilenameIllegalCharacters(GString &S, bool removeSlash)
 	{
 		// size_t len = strlen(fn);
 		boost::replace_all(S, "<", "");
@@ -180,18 +179,18 @@ void throw_exception(std::exception const&)
 }
 #endif
 
-double latof(String s)
+double latof(GString s)
 {
 	char point = *localeconv()->decimal_point;
 
-	if (s.find_first_of(point) == std::string::npos)
+	if (s.find_first_of(point) == GString::npos)
 	{
 		char toFind;
 		if (point == ',') toFind = '.';
 		else if (point == '.') toFind = ',';
 
 		size_t idx = s.find_first_of(toFind);
-		if (idx != std::string::npos)
+		if (idx != GString::npos)
 			s[idx] = point;
 	}
 

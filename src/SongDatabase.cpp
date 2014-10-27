@@ -59,9 +59,9 @@ const char* GetDiffIDFileID = "SELECT diffid FROM diffdb \
 							 WHERE diffdb.fileid=? AND\
 							 							 diffdb.name = ?";
 
-#define SC(x) ret=x; if(ret!=SQLITE_OK) {Log::Printf("sqlite: %ls (code %d)\n",Utility::Widen(sqlite3_errmsg(db)).c_str(), ret); Utility::DebugBreak(); }
-#define SCS(x) ret=x; if(ret!=SQLITE_DONE) {Log::Printf("sqlite: %ls (code %d)\n",Utility::Widen(sqlite3_errmsg(db)).c_str(), ret); Utility::DebugBreak(); }
-SongDatabase::SongDatabase(String Database)
+#define SC(x) ret=x; if(ret!=SQLITE_OK && ret != SQLITE_DONE) {Log::Printf("sqlite: %ls (code %d)\n",Utility::Widen(sqlite3_errmsg(db)).c_str(), ret); Utility::DebugBreak(); }
+#define SCS(x) ret=x; if(ret!=SQLITE_DONE && ret != SQLITE_ROW) {Log::Printf("sqlite: %ls (code %d)\n",Utility::Widen(sqlite3_errmsg(db)).c_str(), ret); Utility::DebugBreak(); }
+SongDatabase::SongDatabase(GString Database)
 {
 	int ret = sqlite3_open_v2(Database.c_str(), &db, SQLITE_OPEN_FULLMUTEX | SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
 
@@ -208,7 +208,7 @@ void SongDatabase::ClearDifficulties(int SongID)
 }
 
 // returns if difficulty exists in the database. And difficulty ID.
-bool SongDatabase::DifficultyExists(int FileID, String DifficultyName, int *IDOut)
+bool SongDatabase::DifficultyExists(int FileID, GString DifficultyName, int *IDOut)
 {
 	int ret;
 	SC(sqlite3_bind_int (st_GetDiffIDFile, 1, FileID));
@@ -301,13 +301,13 @@ void SongDatabase::AddDifficulty(int SongID, Directory Filename, Game::Song::Dif
 	Diff->ID = DiffID;
 }
 
-String SongDatabase::GetDifficultyFilename (int ID)
+GString SongDatabase::GetDifficultyFilename (int ID)
 {
 	int ret;
 	SC(sqlite3_bind_int(st_GetDiffFilename, 1, ID));
 	SCS(sqlite3_step(st_GetDiffFilename));
 
-	String out = (char *)sqlite3_column_text(st_GetDiffFilename, 0);
+	GString out = (char *)sqlite3_column_text(st_GetDiffFilename, 0);
 	SC(sqlite3_reset(st_GetDiffFilename));
 	return out;
 }

@@ -15,7 +15,7 @@
 AudioDataSource* SourceFromExt(Directory Filename)
 {
 	AudioDataSource *Ret = NULL;
-	String Ext = Filename.GetExtension();
+	GString Ext = Filename.GetExtension();
 
 	if (Filename.path().length() == 0 || Ext.length() == 0) {
 		wprintf(L"Invalid filename. (%s) (%s)\n", Filename.c_path(), Ext.c_str());
@@ -104,15 +104,15 @@ bool AudioSample::IsPlaying()
 	return mIsPlaying;
 }
 
-String RearrangeFilename(const char* Fn)
+GString RearrangeFilename(const char* Fn)
 {
-	String Ret;
+	GString Ret;
 
 	if (Utility::FileExists(Fn))
 		return Fn;
 	else
 	{
-		std::string Ext = Directory(Fn).GetExtension();
+		GString Ext = Directory(Fn).GetExtension();
 		boost::algorithm::to_lower(Ext);
 
 		if (strstr(Ext.c_str(), "wav"))
@@ -129,7 +129,7 @@ String RearrangeFilename(const char* Fn)
 
 bool AudioSample::Open(const char* Filename)
 {
-	String FilenameFixed = RearrangeFilename(Filename);
+	GString FilenameFixed = RearrangeFilename(Filename);
 
 	AudioDataSource * Src = SourceFromExt (FilenameFixed);
 

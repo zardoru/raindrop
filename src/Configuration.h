@@ -1,21 +1,23 @@
 #ifndef CMAN_H_
 #define CMAN_H_
 
+#include <map>
+
 namespace Configuration
 {
 	void Initialize();
-	String GetConfigs(String Name, String Namespace = "");
-	float  GetConfigf(String Name, String Namespace = "");
-	String GetSkinConfigs(String Name, String Namespace = "");
-	double  GetSkinConfigf(String Name, String Namespace = "");
-	void GetConfigListS(String Name, std::vector<String> &Out);
-	bool ListExists(String Name);
+	GString GetConfigs(GString Name, GString Namespace = "");
+	float  GetConfigf(GString Name, GString Namespace = "");
+	GString GetSkinConfigs(GString Name, GString Namespace = "");
+	double  GetSkinConfigf(GString Name, GString Namespace = "");
+	void GetConfigListS(GString Name, std::map<GString, GString> &Out, GString DefaultKeyName);
+	bool ListExists(GString Name);
 
 	double CfgScreenHeight();
 	double CfgScreenWidth();
 
-	// void SetConfig(String Name, String Value, String Namespace = "");
-	// void SetConfig(String Name, float Value, String Namespace = "");
+	// void SetConfig(GString Name, GString Value, GString Namespace = "");
+	// void SetConfig(GString Name, float Value, GString Namespace = "");
 	/// void SaveConfig();
 	void Cleanup();
 }

@@ -22,9 +22,9 @@ ImageList::~ImageList()
 	Destroy();
 }
 
-void ImageList::AddToList(const String Filename, const String Prefix)
+void ImageList::AddToList(const GString Filename, const GString Prefix)
 {
-	String ResFilename = Directory(Prefix) / Filename;
+	GString ResFilename = Directory(Prefix) / Filename;
 
 	boost::replace_all (ResFilename, "//", "/");
 
@@ -35,9 +35,9 @@ void ImageList::AddToList(const String Filename, const String Prefix)
 	}
 }
 
-void ImageList::AddToListIndex(const String Filename, const String Prefix, int Index)
+void ImageList::AddToListIndex(const GString Filename, const GString Prefix, int Index)
 {
-	String ResFilename = Directory(Prefix) / Filename;
+	GString ResFilename = Directory(Prefix) / Filename;
 
 	boost::replace_all (ResFilename, "//", "/");
 
@@ -53,11 +53,11 @@ void ImageList::AddToListIndex(const String Filename, const String Prefix, int I
 
 void ImageList::Destroy()
 {
-	for (std::map<String, Image*>::iterator i = Images.begin(); i != Images.end(); i++)
+	for (std::map<GString, Image*>::iterator i = Images.begin(); i != Images.end(); i++)
 		ImageLoader::DeleteImage(i->second);
 }
 
-void ImageList::AddToList(const uint32 Count, const String *Filename, const String Prefix)
+void ImageList::AddToList(const uint32 Count, const GString *Filename, const GString Prefix)
 {
 	for (uint32 i = 0; i < Count; i++)
 	{
@@ -68,14 +68,14 @@ void ImageList::AddToList(const uint32 Count, const String *Filename, const Stri
 bool ImageList::LoadAll()
 {
 	bool WereErrors = false;
-	for (std::map<String, Image*>::iterator i = Images.begin(); i != Images.end(); i++)
+	for (std::map<GString, Image*>::iterator i = Images.begin(); i != Images.end(); i++)
 	{
 		i->second = ImageLoader::Load(i->first);
 		if (i->second == NULL)
 			WereErrors = true;
 	}
 
-	for (std::map<int, String>::iterator i = ImagesIndexPending.begin(); i != ImagesIndexPending.end(); i++)
+	for (std::map<int, GString>::iterator i = ImagesIndexPending.begin(); i != ImagesIndexPending.end(); i++)
 	{
 		ImagesIndex[i->first] = ImageLoader::Load(i->second);
 		if (ImagesIndex[i->first] == NULL)
@@ -88,13 +88,13 @@ bool ImageList::LoadAll()
 }
 
 // Gets image from this filename
-Image* ImageList::GetFromFilename(const String Filename)
+Image* ImageList::GetFromFilename(const GString Filename)
 {
 	return Images[Filename];
 }
 
 // Gets image from SkinPrefix + filename
-Image* ImageList::GetFromSkin(const String Filename)
+Image* ImageList::GetFromSkin(const GString Filename)
 {
 	return Images[GameState::GetInstance().GetSkinPrefix() + Filename];
 }
@@ -112,7 +112,7 @@ void ImageList::ForceFetch()
 	Fill.Red = Fill.Blue = Fill.Green = 0;
 	Fill.Alpha = 0.0001f;
 
-	for (std::map<String, Image*>::iterator i = Images.begin(); i != Images.end(); i++)
+	for (std::map<GString, Image*>::iterator i = Images.begin(); i != Images.end(); i++)
 	{
 		Fill.SetImage (i->second);
 		Fill.Render();

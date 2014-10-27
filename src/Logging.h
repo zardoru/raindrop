@@ -4,13 +4,13 @@
 namespace Log
 {
 #ifdef DEBUG
-	static void DebugPrintf(String Format, ...);
+	static void DebugPrintf(GString Format, ...);
 #else
 #define DebugPrintf(...)
 #endif
 
-	void Printf(String Format, ...);
-	void Logf(String Format, ...);
+	void Printf(GString Format, ...);
+	void Logf(GString Format, ...);
 };
 
 #endif

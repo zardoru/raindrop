@@ -13,7 +13,7 @@ int TrackToXPos(int totaltracks, int track)
 	return (base * (track + 1) - minus);
 }
 
-void ConvertToOM(VSRG::Song *Sng, Directory PathOut, String Author)
+void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 {
 	for (std::vector<VSRG::Difficulty*>::iterator i = Sng->Difficulties.begin(); 
 		i != Sng->Difficulties.end();

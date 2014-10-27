@@ -10,8 +10,8 @@ class TextPrompt
 {
 private:
 	BitmapFont* mPromptFont;
-	String		mPromptText;
-	String		mBufferText;
+	GString		mPromptText;
+	GString		mBufferText;
 	bool		mOpen;
 public:
 	TextPrompt();
@@ -19,11 +19,11 @@ public:
 	/* Returns 0 if closed, 1 if handling input and 2 if there's data to get from the prompt. */
 	int HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	void SetFont(BitmapFont* Font);
-	void SetPrompt(String PromptText);
+	void SetPrompt(GString PromptText);
 	void Render();
 	void SetOpen(bool Open);
 	void SwitchOpen();
-	String GetContents();
+	GString GetContents();
 };
 
 }

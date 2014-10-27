@@ -1,15 +1,15 @@
-#ifndef GSTRING_H_
-#define GSTRING_H_
+#ifndef GGString_H_
+#define GGString_H_
 
 class GraphicalString : public GraphObject2D
 {
-	String mText;
+	GString mText;
 	Font* mFont;
 public:
 	GraphicalString();
-	void SetText(String _Text);
+	void SetText(GString _Text);
 	void SetColour(float red, float green, float blue);
-	String GetText() const;
+	GString GetText() const;
 	void SetFont(Font* _Font);
 	Font* GetFont() const;
 

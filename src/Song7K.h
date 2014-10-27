@@ -86,7 +86,7 @@ namespace VSRG
 		std::vector<AutoplaySound> BGMEvents;
 
 		// Autoplay BMP
-		std::map<int, String> BMPList;
+		std::map<int, GString> BMPList;
 		std::vector<AutoplayBMP> BMPEvents;
 		std::vector<AutoplayBMP> BMPEventsMiss;
 		std::vector<AutoplayBMP> BMPEventsLayer;

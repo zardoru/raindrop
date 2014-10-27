@@ -17,7 +17,7 @@ Directory::~Directory()
 	
 }
 
-Directory::Directory(std::string subpath)
+Directory::Directory(GString subpath)
 {
 	curpath = subpath;
 }
@@ -27,12 +27,12 @@ Directory::Directory(const char* path)
 	curpath = path;
 }
 
-void Directory::operator=(std::string subpath)
+void Directory::operator=(GString subpath)
 {
 	curpath = subpath;
 }
 
-bool Directory::operator==(std::string subpath) const
+bool Directory::operator==(GString subpath) const
 {
 	return curpath == subpath;
 }
@@ -45,14 +45,14 @@ Directory Directory::ParentDirectory()
 			return Directory(curpath.substr(0, a));
 		}
 	}
-	return Directory(std::string(".")); // if there is no slash, then the root directory has been reached.
+	return Directory(GString(".")); // if there is no slash, then the root directory has been reached.
 }
 
-Directory operator/(Directory parent, std::string subpath)
+Directory operator/(Directory parent, GString subpath)
 {
 	if(subpath == "..") return parent.ParentDirectory();
 
-	std::string newpath;
+	GString newpath;
 
 	char last = parent.path()[parent.path().length()-1];
 		
@@ -64,18 +64,18 @@ Directory operator/(Directory parent, std::string subpath)
 	return Directory(newpath);
 }
 
-Directory operator/(std::string subpath, Directory parent)
+Directory operator/(GString subpath, Directory parent)
 {
-	return operator/( Directory(subpath), std::string(parent)); // o_O
+	return operator/( Directory(subpath), GString(parent)); // o_O
 }
 
 Directory Directory::Filename()
 {
 	size_t place;
-	if ((place = curpath.find_last_of('/')) != std::string::npos)
+	if ((place = curpath.find_last_of('/')) != GString::npos)
 	{
 		return curpath.substr(place+1);
-	}else if ((place = curpath.find_last_of('\\')) != std::string::npos)
+	}else if ((place = curpath.find_last_of('\\')) != GString::npos)
 	{
 		return curpath.substr(place+1);
 	}
@@ -83,21 +83,21 @@ Directory Directory::Filename()
 	return curpath;
 }
 
-String Directory::GetExtension() const
+GString Directory::GetExtension() const
 {
 	return curpath.substr(curpath.find_last_of(".")+1);
 }
 
-std::string Directory::path() const { return curpath; }
+GString Directory::path() const { return curpath; }
 const char* Directory::c_path() const { return curpath.c_str(); }
 
-std::vector<std::string>& Directory::ListDirectory(std::vector<std::string>& Vec, DirType T, const char* ext, bool Recursive)
+std::vector<GString>& Directory::ListDirectory(std::vector<GString>& Vec, DirType T, const char* ext, bool Recursive)
 {
 
 #ifdef _WIN32
 	HANDLE hFind = INVALID_HANDLE_VALUE;
 	WIN32_FIND_DATA ffd;
-	std::string DirFind = curpath + "/*";
+	GString DirFind = curpath + "/*";
 	wchar_t tmp[MAX_PATH];
 	char tmpmbs[MAX_PATH];
 
@@ -137,7 +137,7 @@ std::vector<std::string>& Directory::ListDirectory(std::vector<std::string>& Vec
 		{
 			wcstombs(tmpmbs, ffd.cFileName, MAX_PATH);
 
-			std::string fname = curpath + tmpmbs + "./*";
+			GString fname = curpath + tmpmbs + "./*";
 
 			if (Recursive)
 			{
@@ -159,17 +159,17 @@ std::vector<std::string>& Directory::ListDirectory(std::vector<std::string>& Vec
 		{
 			if (dir->d_type == DT_REG || dir->d_type == DT_DIR && T == FS_DIR)
 			{
-				std::string fname = dir->d_name;
+				GString fname = dir->d_name;
 				
 				// Extension is what we need?
-				if (ext && fname.substr(fname.find_last_of(".")+1) == std::string(ext)) 
+				if (ext && fname.substr(fname.find_last_of(".")+1) == GString(ext)) 
 					Vec.push_back(fname);
 				else if (!ext)
 					Vec.push_back(fname);
 
 			}else if (dir->d_type == DT_DIR)
 			{
-				std::string fname = std::string(dir->d_name) + "/";
+				GString fname = GString(dir->d_name) + "/";
 
 				if (Recursive)
 				{
@@ -185,7 +185,7 @@ std::vector<std::string>& Directory::ListDirectory(std::vector<std::string>& Vec
 	return Vec;
 }
 
-Directory::operator std::string() const
+Directory::operator GString() const
 {
 	return path();
 }

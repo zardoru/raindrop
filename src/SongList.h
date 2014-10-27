@@ -12,7 +12,7 @@ struct ListEntry
 		Song
 	} Kind;
 	void* Data;
-	String EntryName; 
+	GString EntryName; 
 };
 
 class SongList
@@ -24,8 +24,9 @@ public:
 	SongList (SongList* Parent = NULL);
 	~SongList();
 
+	void AddNamedDirectory(boost::mutex &loadMutex, SongLoader *Loader, Directory Dir, GString Name, bool VSRGActive, bool DotcurActive);
 	void AddDirectory(boost::mutex &loadMutex, SongLoader *Loader, Directory Dir, bool VSRGActive, bool DotcurActive);
-	void AddVirtualDirectory(String NewEntryName, Game::Song* List, int Count);
+	void AddVirtualDirectory(GString NewEntryName, Game::Song* List, int Count);
 	void AddSong(Game::Song* Song);
 
 	// if false, it's a song
@@ -33,7 +34,7 @@ public:
 	SongList* GetListEntry(unsigned int Entry);
 	Game::Song* GetSongEntry(unsigned int Entry);
 
-	String GetEntryTitle(unsigned int Entry);
+	GString GetEntryTitle(unsigned int Entry);
 	unsigned int GetNumEntries();
 
 	void SortAlphabetically();

@@ -342,10 +342,10 @@ float GraphObject2D::GetPositionY() const
 	return mPosition.y;
 }
 
-String GraphObject2D::GetImageFilename() const
+GString GraphObject2D::GetImageFilename() const
 {
 	if (mImage)
 		return mImage->fname;
 	else
-		return String();
+		return GString();
 }

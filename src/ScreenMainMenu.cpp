@@ -131,7 +131,7 @@ bool ScreenMainMenu::Run (double Delta)
 	PlayBtn.Run(Delta);
 	ExitBtn.Run(Delta);
 	
-	TTFO->Render (String("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop"), Vec2(0, 0));
+	TTFO->Render (GString("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop"), Vec2(0, 0));
 	Objects->DrawTargets(Delta);
 
 	// MainMenuFont->DisplayText("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop", Vec2(0, 0));

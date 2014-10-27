@@ -35,5 +35,5 @@ public:
 	TruetypeFont(Directory Filename, float Scale);
 	~TruetypeFont();
 	void Invalidate();
-	void Render(String Text, const Vec2 &Position, const Mat4 &Transform = Mat4());
+	void Render(GString Text, const Vec2 &Position, const Mat4 &Transform = Mat4());
 };

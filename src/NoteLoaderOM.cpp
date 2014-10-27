@@ -13,7 +13,7 @@
 #include <boost/foreach.hpp>
 #include <boost/algorithm/string/split.hpp>
 
-typedef std::vector<String> SplitResult;
+typedef std::vector<GString> SplitResult;
 
 using namespace VSRG;
 
@@ -41,18 +41,18 @@ struct OsuLoadInfo
 	int last_sound_index;
 	VSRG::Song *OsuSong;
 	VSRG::OsuManiaTimingInfo *TimingInfo;
-	std::map <String, int> Sounds;
+	std::map <GString, int> Sounds;
 	std::vector<HitsoundSectionData> HitsoundSections;
 	Difficulty *Diff;
-	String DefaultSampleset;
+	GString DefaultSampleset;
 };
 
 /* osu!mania loader. credits to wanwan159, woc2006, Zorori and the author of AIBat for helping me understand this. */
 
-bool ReadGeneral (String line, OsuLoadInfo* Info)
+bool ReadGeneral (GString line, OsuLoadInfo* Info)
 {
-	String Command = line.substr(0, line.find_first_of(" ")); // Lines are Information:<space>Content
-	String Content = line.substr(line.find_first_of(" ") + 1, line.length() - line.find_first_of(" "));
+	GString Command = line.substr(0, line.find_first_of(" ")); // Lines are Information:<space>Content
+	GString Content = line.substr(line.find_first_of(" ") + 1, line.length() - line.find_first_of(" "));
 
 	if (Command == "AudioFilename:")
 	{
@@ -81,10 +81,10 @@ bool ReadGeneral (String line, OsuLoadInfo* Info)
 	return true;
 }
 
-void ReadMetadata (String line, OsuLoadInfo* Info)
+void ReadMetadata (GString line, OsuLoadInfo* Info)
 {
-	String Command = line.substr(0, line.find_first_of(":")); // Lines are Information:Content
-	String Content = line.substr(line.find_first_of(":") + 1, line.length() - line.find_first_of(":"));
+	GString Command = line.substr(0, line.find_first_of(":")); // Lines are Information:Content
+	GString Content = line.substr(line.find_first_of(":") + 1, line.length() - line.find_first_of(":"));
 
 #ifdef VERBOSE_DEBUG
 	printf("Command found: %s | Contents: %s\n", Command.c_str(), Content.c_str());
@@ -110,10 +110,10 @@ void ReadMetadata (String line, OsuLoadInfo* Info)
 	}
 }
 
-void ReadDifficulty (String line, OsuLoadInfo* Info)
+void ReadDifficulty (GString line, OsuLoadInfo* Info)
 {
-	String Command = line.substr(0, line.find_first_of(":")); // Lines are Information:Content
-	String Content = line.substr(line.find_first_of(":") + 1, line.length() - line.find_first_of(":"));
+	GString Command = line.substr(0, line.find_first_of(":")); // Lines are Information:Content
+	GString Content = line.substr(line.find_first_of(":") + 1, line.length() - line.find_first_of(":"));
 
 	// We ignore everything but the key count!
 	if (Command == "CircleSize")
@@ -137,7 +137,7 @@ void ReadDifficulty (String line, OsuLoadInfo* Info)
 
 }
 
-void ReadEvents (String line, OsuLoadInfo* Info)
+void ReadEvents (GString line, OsuLoadInfo* Info)
 {
 	SplitResult Spl;
 	boost::split(Spl, line, boost::is_any_of(","));
@@ -169,7 +169,7 @@ void ReadEvents (String line, OsuLoadInfo* Info)
 	}
 }
 
-void ReadTiming (String line, OsuLoadInfo* Info)
+void ReadTiming (GString line, OsuLoadInfo* Info)
 {
 	SplitResult Spl;
 	boost::split(Spl, line, boost::is_any_of(","));
@@ -219,7 +219,7 @@ int GetInterval(float Position, int Channels)
 #define NOTE_HOLD 128
 #define NOTE_NORMAL 1
 
-String SamplesetToString(int Sampleset)
+GString SamplesetToGString(int Sampleset)
 {
 	switch (Sampleset)
 	{
@@ -233,10 +233,10 @@ String SamplesetToString(int Sampleset)
 	}
 }
 
-String GetSampleFilename(OsuLoadInfo *Info, SplitResult &Spl, int NoteType, int Hitsound, float Time)
+GString GetSampleFilename(OsuLoadInfo *Info, SplitResult &Spl, int NoteType, int Hitsound, float Time)
 {
 	int SampleSet = 0, SampleSetAddition, CustomSample = 0;
-	String SampleFilename;
+	GString SampleFilename;
 
 	if (!Spl.size()) // Handle this properly, eventually.
 		return "normal-hitnormal.wav";
@@ -284,15 +284,15 @@ String GetSampleFilename(OsuLoadInfo *Info, SplitResult &Spl, int NoteType, int 
 		SampleSet = SampleSetAddition = CustomSample = 0;
 	}
 
-	String SampleSetString;
+	GString SampleSetGString;
 
 	if (SampleSet)
 	{
-		// translate sampleset int into samplesetstring
-		SampleSetString = SamplesetToString(SampleSet);
+		// translate sampleset int into samplesetGString
+		SampleSetGString = SamplesetToGString(SampleSet);
 	}else
 	{
-		// get sampleset string from sampleset active at starttime
+		// get sampleset GString from sampleset active at starttime
 		int Sampleset = -1;
 
 		for (int i = 0; i < (int)Info->HitsoundSections.size() - (int)1; i++)
@@ -304,9 +304,9 @@ String GetSampleFilename(OsuLoadInfo *Info, SplitResult &Spl, int NoteType, int 
 		}
 
 		if (SampleSet == -1)
-			SampleSetString = Info->DefaultSampleset;
+			SampleSetGString = Info->DefaultSampleset;
 		else
-			SampleSetString = SamplesetToString(Sampleset);
+			SampleSetGString = SamplesetToGString(Sampleset);
 	}
 
 	if (!CustomSample)
@@ -320,49 +320,49 @@ String GetSampleFilename(OsuLoadInfo *Info, SplitResult &Spl, int NoteType, int 
 		}
 	}
 
-	String CustomSampleString;
+	GString CustomSampleGString;
 
 	if (CustomSample)
 	{
 		std::stringstream ss;
 		ss << CustomSample;
-		CustomSampleString = ss.str();
+		CustomSampleGString = ss.str();
 	}
 
-	String HitsoundString;
+	GString HitsoundGString;
 
 	if (Hitsound)
 	{
 		switch (Hitsound)
 		{
 		case 1:
-			HitsoundString = "normal";
+			HitsoundGString = "normal";
 			break;
 		case 2:
-			HitsoundString = "whistle";
+			HitsoundGString = "whistle";
 			break;
 		case 4:
-			HitsoundString = "finish";
+			HitsoundGString = "finish";
 			break;
 		case 8:
-			HitsoundString = "clap";
+			HitsoundGString = "clap";
 		default:
 			break;
 		}
 	}else
-		HitsoundString = "normal";
+		HitsoundGString = "normal";
 
 	if (CustomSample > 1)
 	{
-		SampleFilename = SampleSetString + "-hit" + HitsoundString + CustomSampleString + ".wav";
+		SampleFilename = SampleSetGString + "-hit" + HitsoundGString + CustomSampleGString + ".wav";
 	}
 	else
-		SampleFilename = SampleSetString + "-hit" + HitsoundString + ".wav";
+		SampleFilename = SampleSetGString + "-hit" + HitsoundGString + ".wav";
 
 	return SampleFilename;
 }
 
-void ReadObjects (String line, OsuLoadInfo* Info)
+void ReadObjects (GString line, OsuLoadInfo* Info)
 {
 	SplitResult Spl;
 	boost::split(Spl, line, boost::is_any_of(","));
@@ -450,7 +450,7 @@ void ReadObjects (String line, OsuLoadInfo* Info)
 
 	Hitsound = atoi(Spl[4].c_str());
 
-	String Sample = GetSampleFilename(Info, Spl2, NoteType, Hitsound, startTime);
+	GString Sample = GetSampleFilename(Info, Spl2, NoteType, Hitsound, startTime);
 
 	if (Sample.length())
 	{
@@ -469,7 +469,7 @@ void ReadObjects (String line, OsuLoadInfo* Info)
 	Info->Diff->Duration = max(max (Note.StartTime, Note.EndTime), Info->Diff->Duration);
 }
 
-void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song *Out)
+void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *Out)
 {
 #if (!defined _WIN32) || (defined STLP)
 	std::ifstream filein (filename.c_str());
@@ -507,7 +507,7 @@ void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 		and a set is implied using folders.
 	*/
 
-	String Line;
+	GString Line;
 
 	std::getline(filein, Line);
 	int version;
@@ -602,7 +602,7 @@ void NoteLoaderOM::LoadObjectsFromFile(String filename, String prefix, Song *Out
 			i->Time -= Diff->Offset;
 		}
 
-		for (std::map<String, int>::iterator i = Info.Sounds.begin(); i != Info.Sounds.end(); i++)
+		for (std::map<GString, int>::iterator i = Info.Sounds.begin(); i != Info.Sounds.end(); i++)
 		{
 			Diff->SoundList[i->second] = i->first;
 		}
