@@ -7,6 +7,7 @@
 class GraphObjectMan;
 class ScoreKeeper7K;
 class Line;
+class AudioSourceOJM;
 
 class ScreenGameplay7K : public Screen
 {
@@ -97,6 +98,7 @@ private:
 	GraphObjectMan *Animations;
 
 	AudioStream *Music;
+	AudioSourceOJM *OJMAudio;
 	SoundSample *MissSnd;
 	SoundSample *FailSnd;
 

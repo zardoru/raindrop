@@ -178,6 +178,7 @@
     <ClCompile Include="..\src\Audiofile.cpp" />
     <ClCompile Include="..\src\AudioSourceMP3.cpp" />
     <ClCompile Include="..\src\AudioSourceOGG.cpp" />
+    <ClCompile Include="..\src\AudioSourceOJM.cpp" />
     <ClCompile Include="..\src\AudioSourceSFM.cpp" />
     <ClCompile Include="..\src\BitmapFont.cpp" />
     <ClCompile Include="..\src\Configuration.cpp" />
@@ -188,6 +189,7 @@
     <ClCompile Include="..\src\GraphicalString.cpp" />
     <ClCompile Include="..\src\Line.cpp" />
     <ClCompile Include="..\src\Logging.cpp" />
+    <ClCompile Include="..\src\NoteLoaderOJN.cpp" />
     <ClCompile Include="..\src\raindrop.cpp" />
     <ClCompile Include="..\src\GameObject.cpp" />
     <ClCompile Include="..\src\GameWindow.cpp" />
@@ -253,6 +255,7 @@
     <ClInclude Include="..\src\Application.h" />
     <ClInclude Include="..\src\Audio.h" />
     <ClInclude Include="..\src\Audiofile.h" />
+    <ClInclude Include="..\src\AudioSourceOJM.h" />
     <ClInclude Include="..\src\AudioSourceMP3.h" />
     <ClInclude Include="..\src\AudioSourceOGG.h" />
     <ClInclude Include="..\src\BindingsManager.h" />

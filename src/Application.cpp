@@ -175,8 +175,11 @@ void Application::Run()
 	{
 		VSRG::Song* Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), NULL);
 
-		if (!Sng)
+		if (!Sng || !Sng->Difficulties.size())
+		{
+			Log::Printf("File %s could not be loaded for preview.\n", InFile.c_path());
 			return;
+		}
 
 		ScreenGameplay7K *SGame = new ScreenGameplay7K();
 		ScreenLoading *LoadScreen = new ScreenLoading(NULL, SGame);

@@ -1,4 +1,5 @@
 #include <cmath>
+#include <fstream>
 
 #include "GameGlobal.h"
 #include "GameState.h"
@@ -20,6 +21,8 @@
 #include "ScreenGameplay7K.h"
 #include "ScreenEvaluation7K.h"
 #include "SongDatabase.h"
+
+#include "AudioSourceOJM.h"
 
 ScreenGameplay7K::ScreenGameplay7K()
 {
@@ -46,6 +49,8 @@ ScreenGameplay7K::ScreenGameplay7K()
 
 	lifebar_type = LT_GROOVE;
 	scoring_type = ST_IIDX;
+
+	OJMAudio = NULL;
 	
 	SpeedMultiplierUser = 4;
 	SongFinished = false;
@@ -80,10 +85,15 @@ void ScreenGameplay7K::Cleanup()
 		Music->Stop();
 	}
 
-	for (std::map<int, SoundSample*>::iterator i = Keysounds.begin(); i != Keysounds.end(); i++)
+	if (OJMAudio)
+		delete OJMAudio;
+	else
 	{
-		MixerRemoveSample(i->second);
-		delete i->second;
+		for (std::map<int, SoundSample*>::iterator i = Keysounds.begin(); i != Keysounds.end(); i++)
+		{
+			MixerRemoveSample(i->second);
+			delete i->second;
+		}
 	}
 
 	MixerRemoveSample(MissSnd);
@@ -268,6 +278,21 @@ bool ScreenGameplay7K::LoadSongAudio()
 		if (Keysounds[i->first]->Open((MySong->SongDirectory + "/" + i->second).c_str()))
 			MixerAddSample(Keysounds[i->first]);
 #endif
+	}
+
+	if (strstr(MySong->SongFilename.c_str(), ".ojm"))
+	{
+		Log::Printf("Loading OJM.\n");
+		OJMAudio = new AudioSourceOJM;
+		OJMAudio->Open((MySong->SongDirectory + MySong->SongFilename).c_str());
+
+		for (int i = 0; i < 2000; i++)
+		{
+			SoundSample *Snd = OJMAudio->GetFromIndex(i);
+
+			if (i != NULL)
+				Keysounds[i] = Snd;
+		}
 	}
 
 	BGMEvents = CurrentDiff->BGMEvents;

@@ -13,13 +13,14 @@ struct loaderVSRGEntry_t {
 	const wchar_t* Ext;
 	void (*LoadFunc) (GString filename, GString prefix, VSRG::Song* Out);
 } LoadersVSRG [] = {
-	{L"bms", NoteLoaderBMS::LoadObjectsFromFile},
-	{L"bme", NoteLoaderBMS::LoadObjectsFromFile},
-	{L"bml", NoteLoaderBMS::LoadObjectsFromFile},
-	{L"pms", NoteLoaderBMS::LoadObjectsFromFile},
-	{L"sm",  NoteLoaderSM::LoadObjectsFromFile},
-	{L"osu", NoteLoaderOM::LoadObjectsFromFile},
-	{L"fcf", NoteLoaderFTB::LoadObjectsFromFile}
+	{ L"bms",  NoteLoaderBMS::LoadObjectsFromFile },
+	{ L"bme",  NoteLoaderBMS::LoadObjectsFromFile },
+	{ L"bml",  NoteLoaderBMS::LoadObjectsFromFile },
+	{ L"pms",  NoteLoaderBMS::LoadObjectsFromFile },
+	{ L"sm",   NoteLoaderSM::LoadObjectsFromFile },
+	{ L"osu",  NoteLoaderOM::LoadObjectsFromFile },
+	{ L"fcf",  NoteLoaderFTB::LoadObjectsFromFile },
+	{ L"ojn",  NoteLoaderOJN::LoadObjectsFromFile }
 };
 
 SongLoader::SongLoader(SongDatabase* Database)

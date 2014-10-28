@@ -13,6 +13,7 @@ protected:
 #endif
 
 public:
+	AudioDataSource();
 	virtual ~AudioDataSource();
 	virtual bool Open(const char* Filename) = 0;
 	virtual uint32 Read(short* buffer, size_t count) = 0; // count is in samples.
@@ -44,7 +45,6 @@ public:
 	uint32 GetChannels();
 };
 
-
 class AudioSample : public Sound
 {
 private:
@@ -58,12 +58,12 @@ private:
 	bool	 mIsPlaying;
 	bool	 mIsValid;
 
-
 public:
 	AudioSample();
 	~AudioSample();
 	uint32 Read(short* buffer, size_t count);
 	bool Open(const char* Filename);
+	bool Open(AudioDataSource* Source);
 	void Play();
 	void SeekTime(float Second);
 	void SeekSample(uint32 Sample);
