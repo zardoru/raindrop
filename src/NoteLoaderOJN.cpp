@@ -88,6 +88,7 @@ class OjnLoadInfo
 {
 public:
 	std::vector<OjnMeasure> Measures;
+	VSRG::Song* S;
 };
 
 static double BeatForMeasure(OjnLoadInfo *Info, int Measure)
@@ -132,8 +133,17 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 			if (Evt->Channel != BPM_CHANNEL) continue;
 			float Beat = MeasureBaseBeat + Evt->Fraction * 4;
 			TimingSegment Segment;
+
+			if (Evt->fValue == 0) continue;
+
 			Segment.Time = Beat;
 			Segment.Value = Evt->fValue;
+
+			if (Out->Timing.size())
+			{
+				if (Out->Timing.back().Value == Evt->fValue) // ... We already have this BPM.
+					continue;
+			}
 
 			Out->Timing.push_back(Segment);
 		}
@@ -177,13 +187,20 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 				switch (Evt->noteKind)
 				{
 				case 0:
+					Out->TotalNotes++;
+					Out->TotalObjects++;
+					Out->TotalScoringObjects++;
 					Out->Measures[CurrentMeasure].MeasureNotes[Evt->Channel].push_back(Note);
 					break;
 				case 2:
+					Out->TotalScoringObjects++;
 					PendingLNs[Evt->Channel] = Time;
 					PendingLNSound[Evt->Channel] = Evt->iValue;
 					break;
 				case 3:
+					Out->TotalObjects++;
+					Out->TotalHolds++;
+					Out->TotalScoringObjects++;
 					Note.StartTime = PendingLNs[Evt->Channel];
 					Note.EndTime = Time;
 					Note.Sound = PendingLNSound[Evt->Channel];
@@ -201,11 +218,21 @@ void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::
 #if (!defined _WIN32)
 	std::ifstream filein(filename.c_str());
 #else
-	std::ifstream filein(Utility::Widen(filename).c_str());
+	std::ifstream filein(Utility::Widen(filename).c_str(), std::ios::binary);
 #endif
 
 	OjnHeader Head;
-	filein.read((char*)&Head, sizeof(OjnHeader));
+	char hData[sizeof(OjnHeader)];
+	size_t qz = sizeof(OjnHeader);
+	filein.read(hData, qz);
+	if (!filein)
+	{
+		if (filein.eofbit)
+			Log::Printf("NoteLoaderOJN: EOF reached before header could be read\n");
+		return;
+	}
+
+	memcpy(&Head, hData, sizeof(OjnHeader));
 
 	if (strcmp(Head.signature, "ojn"))
 	{
@@ -215,19 +242,24 @@ void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::
 
 	Out->SongAuthor = Head.artist;
 	Out->SongName = Head.title;
+	Out->SongFilename = Head.ojm_file;
 	for (int i = 0; i < 3; i++)
 	{
 		OjnLoadInfo Info;
 		VSRG::Difficulty *Diff = new VSRG::Difficulty();
+		Info.S = Out;
 		filein.seekg(Head.note_offset[i]);
 
 		// O2Jam files use Beat-Based notation.
 		Diff->BPMType = VSRG::Difficulty::BT_Beat;
 		Diff->LMT = Utility::GetLMT(filename);
 		Diff->Duration = Head.time[i];
+		Diff->Name = DifficultyNames[i];
+		Diff->Channels = 7;
+		Diff->Filename = filename;
 
 		Info.Measures.reserve(Head.measure_count[i]);
-		for (int k = 0; k < Head.measure_count[i]; k++)
+		for (int k = 0; k <= Head.measure_count[i]; k++)
 			Info.Measures.push_back(OjnMeasure());
 
 		/* 

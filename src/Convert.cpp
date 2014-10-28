@@ -21,7 +21,7 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 	{
 		std::stringstream ss;
 
-		ss << PathOut.path() << "/" << Sng->SongAuthor << " - " << Sng->SongName << " [" << (*i)->Name << "] (" << Author << ").osu";
+		ss << PathOut.path() << "/" << Sng->SongAuthor << " - " << Sng->SongName << " [" << (*i)->Name << "] (" << Author << ").osu\0";
 		std::ofstream out (ss.str().c_str());
 
 		Sng->Process(*i, NULL);

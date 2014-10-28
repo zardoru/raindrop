@@ -79,6 +79,9 @@ namespace Game
 		/* Relative Paths */
 		GString SongFilename, BackgroundFilename;
 
+		/* When != 0 will look for this file and try and load it */
+		GString SongFileSource;
+
 		Song() {};
 		virtual ~Song() {};
 	};
