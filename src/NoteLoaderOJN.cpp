@@ -218,8 +218,14 @@ void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::
 #if (!defined _WIN32)
 	std::ifstream filein(filename.c_str());
 #else
-	std::ifstream filein(Utility::Widen(filename).c_str(), std::ios::binary);
+	std::ifstream filein(Utility::Widen(filename).c_str(), std::ios::binary | std::ios::in);
 #endif
+
+	if (!filein)
+	{
+		Log::Printf("NoteLoaderOJN: %s could not be opened\n", filename.c_str());
+		return;
+	}
 
 	OjnHeader Head;
 	char hData[sizeof(OjnHeader)];

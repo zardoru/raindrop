@@ -1,6 +1,8 @@
 #include <cstdio>
 #include <map>
 #include <sndfile.h>
+#include <ogg/ogg.h>
+#include <vorbis/vorbisfile.h>
 #include <fstream>
 
 
@@ -122,12 +124,62 @@ sf_count_t tellM30(void* p)
 	return min(state->Offset, state->DataLength);
 }
 
+size_t readM30OGG(void* ptr, size_t size, size_t nmemb, void* p)
+{
+	SFM30 *state = (SFM30*)p;
+	int toRead = min((unsigned int)(size*nmemb), state->DataLength - state->Offset);
+
+	if (state->Offset >= state->DataLength)
+		return 0;
+	else
+	{
+		memcpy(ptr, state->Buffer + state->Offset, toRead);
+		state->Offset += toRead;
+	}
+
+	return toRead;
+}
+
+int seekM30OGG(void* p, ogg_int64_t offs, int whence)
+{
+	SFM30 *state = (SFM30*)p;
+
+	switch (whence)
+	{
+	case SEEK_CUR:
+		state->Offset += offs;
+		break;
+	case SEEK_END:
+		state->Offset = state->DataLength;
+		break;
+	case SEEK_SET:
+		state->Offset = offs;
+		break;
+	}
+
+	return state->Offset;
+}
+
+long tellM30OGG(void* p)
+{
+	SFM30 *state = (SFM30*)p;
+	return state->Offset;
+}
+
+
 SF_VIRTUAL_IO M30Interface = {
 	getFileLenM30,
 	seekM30,
 	readM30,
 	NULL,
 	tellM30
+};
+
+ov_callbacks M30InterfaceOgg = {
+	readM30OGG,
+	seekM30OGG,
+	NULL,
+	tellM30OGG
 };
 
 enum OJMContainerKind
@@ -176,6 +228,49 @@ char REARRANGE_TABLE[] = {
 		0x04, 0x00};
 
 
+// AZ: Let me conserve the comment from the original source code for ojmdumper.
+/**
+* fuck the person who invented this, FUCK YOU!... but with love =$
+*/
+void OJMRearrange(char* buf_io, size_t len)
+{
+	int key = ((len % 17) << 4) + (len % 17);
+	int block_size = len / 17;
+	char *buf_encoded = new char[len];
+	memcpy(buf_encoded, buf_io, len);
+
+	for (int block = 0; block < 17; block++)
+	{
+		int block_start_encoded = block_size * block;	// Where is the start of the enconded block
+		int block_start_plain = block_size * REARRANGE_TABLE[key];	// Where the final plain block will be
+		memcpy(buf_io + block_start_plain, buf_encoded + block_start_encoded, block_size);
+	}
+
+	delete buf_encoded;
+}
+
+void acc_xor(char* buf, size_t len, int &acc_keybyte, int &acc_counter)
+{
+	int tmp = 0;
+	char this_byte = 0;
+
+	for (int i = 0; i < len; i++)
+	{
+		tmp = this_byte = buf[i];
+
+		if (((acc_keybyte << acc_counter) & 0x80) != 0)
+			this_byte = ~this_byte;
+
+		buf[i] = this_byte;
+		acc_counter++;
+		if (acc_counter > 7)
+		{
+			acc_counter = 0;
+			acc_keybyte = tmp;
+		}
+	}
+}
+
 void NamiXOR(char* buffer, size_t length)
 {
 	char NAMI[] = { 0x6E, 0x61, 0x6D, 0x69 };
@@ -191,12 +286,13 @@ void NamiXOR(char* buffer, size_t length)
 AudioSourceOJM::AudioSourceOJM()
 {
 	TemporaryState.Enabled = false;
-	memset(Arr, 0, sizeof(Arr));
+	for (int i = 0; i < 2000; i++)
+		Arr[i] = NULL;
 }
 
 AudioSourceOJM::~AudioSourceOJM()
 {
-	for (int i = 0; i != 2000; i++)
+	for (int i = 0; i < 2000; i++)
 	{
 		if (Arr[i])
 		{
@@ -233,18 +329,18 @@ void AudioSourceOJM::parseM30()
 		ifile->read((char*)&Entry, sizeof(M30Entry));
 		sizeLeft -= sizeof(M30Entry);
 
-		char* SampleData = new char[Entry.sample_size];
-		ifile->read(SampleData, Entry.sample_size);
 		sizeLeft -= Entry.sample_size;
-		
-		if (Head.namiencoded)
-			NamiXOR(SampleData, Entry.sample_size);
 
 		int OJMIndex = Entry.ref;
 		if (Entry.unk_sample_type == 0)
 			OJMIndex += 1000;
+		else if (Entry.unk_sample_type != 5) continue; // Unknown sample id type.
 
-		if (Entry.unk_sample_type != 5) continue; // Unknown sample id type.
+		char* SampleData = new char[Entry.sample_size];
+		ifile->read(SampleData, Entry.sample_size);
+		
+		if (Head.namiencoded)
+			NamiXOR(SampleData, Entry.sample_size);
 
 		SoundSample* NewSample = new SoundSample;
 
@@ -252,65 +348,23 @@ void AudioSourceOJM::parseM30()
 		ToLoad.Buffer = SampleData;
 		ToLoad.DataLength = Entry.sample_size;
 		
-		SF_INFO Info;
-		Info.format = 0;
-		TemporaryState.File = (SNDFILE*)sf_open_virtual(&M30Interface, SFM_READ, &Info, &ToLoad);
-		TemporaryState.Info = &Info;
-		TemporaryState.Enabled = true;
+		OggVorbis_File vf;
+
+		ov_open_callbacks(&ToLoad, &vf, NULL, 0, M30InterfaceOgg);
+		TemporaryState.File = &vf;
+		TemporaryState.Info = vf.vi;
+		TemporaryState.Enabled = OJM_OGG;
 		NewSample->Open(this);
-		TemporaryState.Enabled = false;
+		TemporaryState.Enabled = 0;
 
 		delete SampleData;
-
+		ov_clear(&vf);
 		
 		MixerAddSample(NewSample);
 		Arr[OJMIndex] = NewSample;
 	}
 
 	delete Buffer;
-}
-
-// AZ: Let me conserve the comment from the original source code for ojmdumper.
-/**
-* fuck the person who invented this, FUCK YOU!... but with love =$
-*/
-void OJMRearrange(char* buf_io, size_t len)
-{
-	int key = ((len % 17) << 4) + (len % 17);
-	int block_size = len / 17;
-	char *buf_encoded = new char[len];
-	memcpy(buf_encoded, buf_io, len);
-
-	for (int block = 0; block < 17; block++)
-	{
-		int block_start_encoded = block_size * block;	// Where is the start of the enconded block
-		int block_start_plain = block_size * REARRANGE_TABLE[key];	// Where the final plain block will be
-		memcpy(buf_io + block_start_plain, buf_encoded + block_start_encoded, block_size);
-	}
-	
-	delete buf_encoded;
-}
-
-void acc_xor(char* buf, size_t len, int &acc_keybyte, int &acc_counter)
-{
-	int tmp = 0;
-	char this_byte = 0;
-
-	for (int i = 0; i < len; i++)
-	{
-		tmp = this_byte = buf[i];
-
-		if (((acc_keybyte << acc_counter) & 0x80) != 0)
-			this_byte = ~this_byte;
-
-		buf[i] = this_byte;
-		acc_counter++;
-		if (acc_counter > 7)
-		{
-			acc_counter = 0;
-			acc_keybyte = tmp;
-		}
-	}
 }
 
 void AudioSourceOJM::parseOMC()
@@ -375,7 +429,7 @@ void AudioSourceOJM::parseOMC()
 		SoundSample* NewSample = new SoundSample;
 		TemporaryState.File = (SNDFILE*)sf_open_virtual(&M30Interface, SFM_READ, &Info, &ToLoad);
 		TemporaryState.Info = &Info;
-		TemporaryState.Enabled = true;
+		TemporaryState.Enabled = OJM_WAV;
 		NewSample->Open(this);
 		TemporaryState.Enabled = false;
 
@@ -408,13 +462,15 @@ void AudioSourceOJM::parseOMC()
 		ToLoad.Buffer = Buffer;
 		ToLoad.DataLength = OggHead.sample_size;
 
-		SF_INFO Info;
-		Info.format = 0;
-		TemporaryState.File = (SNDFILE*)sf_open_virtual(&M30Interface, SFM_READ, &Info, &ToLoad);
-		TemporaryState.Info = &Info;
-		TemporaryState.Enabled = true;
+		OggVorbis_File vf;
+		ov_open_callbacks(&ToLoad, &vf, NULL, 0, M30InterfaceOgg);
+		TemporaryState.File = &vf;
+		TemporaryState.Info = vf.vi;
+		TemporaryState.Enabled = OJM_OGG;
 		NewSample->Open(this);
 		TemporaryState.Enabled = false;
+
+		ov_clear(&vf);
 
 		delete Buffer;
 
@@ -430,16 +486,31 @@ bool AudioSourceOJM::HasDataLeft()
 
 size_t AudioSourceOJM::GetLength()
 {
-	if (TemporaryState.Enabled)
-		return TemporaryState.Info->frames;
+	if (TemporaryState.Enabled == OJM_WAV)
+	{
+		SF_INFO *Info = (SF_INFO*)TemporaryState.Info;
+		return Info->frames;
+	}
+	else if (TemporaryState.Enabled == OJM_OGG)
+	{
+		return ov_pcm_total((OggVorbis_File*)TemporaryState.File, -1);
+	}
 	else
 		return 0;
 }
 
 uint32 AudioSourceOJM::GetRate()
 {
-	if (TemporaryState.Enabled)
-		return TemporaryState.Info->samplerate;
+	if (TemporaryState.Enabled == OJM_WAV)
+	{
+		SF_INFO *Info = (SF_INFO*)TemporaryState.Info;
+		return Info->samplerate;
+	}
+	else if (TemporaryState.Enabled == OJM_OGG)
+	{
+		vorbis_info *vi = (vorbis_info*)TemporaryState.Info;
+		return vi->rate;
+	}
 	else
 		return 0;
 }
@@ -451,13 +522,21 @@ void AudioSourceOJM::Seek(float Time)
 
 SoundSample* AudioSourceOJM::GetFromIndex(int index)
 {
-	return Arr[index];
+	return Arr[index-1];
 }
 
 uint32 AudioSourceOJM::GetChannels()
 {
-	if (TemporaryState.Enabled)
-		return TemporaryState.Info->channels;
+	if (TemporaryState.Enabled == OJM_WAV)
+	{
+		SF_INFO *Info = (SF_INFO*)TemporaryState.Info;
+		return Info->channels;
+	}
+	else if (TemporaryState.Enabled == OJM_OGG)
+	{
+		vorbis_info *vi = (vorbis_info*)TemporaryState.Info;
+		return vi->channels;
+	}
 	else
 		return 0;
 }
@@ -465,7 +544,7 @@ uint32 AudioSourceOJM::GetChannels()
 
 bool AudioSourceOJM::IsValid()
 {
-	return TemporaryState.Enabled;
+	return TemporaryState.Enabled != 0;
 }
 
 bool AudioSourceOJM::Open(const char* f)
@@ -493,9 +572,24 @@ bool AudioSourceOJM::Open(const char* f)
 
 uint32 AudioSourceOJM::Read(short* buffer, size_t count)
 {
+	int read = 0;
 	if (TemporaryState.Enabled == 0)
 		return 0;
 
-	int read = sf_read_short((SNDFILE*)TemporaryState.File, buffer, count);
+	if (TemporaryState.Enabled == OJM_WAV)
+		read = sf_read_short((SNDFILE*)TemporaryState.File, buffer, count);
+	else if (TemporaryState.Enabled == OJM_OGG)
+	{
+		size_t size = (count*sizeof(short));
+		while (read < size)
+		{
+			int sect;
+			int res = ov_read((OggVorbis_File*)TemporaryState.File, (char*)buffer + read, size - read, 0, 2, 1, &sect);
+
+			if (res > 0)
+				read += res;
+		}
+	}
+
 	return read; // We /KNOW/ we won't be overreading.
 }

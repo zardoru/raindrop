@@ -2,10 +2,13 @@ struct SF_INFO;
 
 class AudioSourceOJM : public AudioDataSource
 {
+	static const int OJM_OGG = 1;
+	static const int OJM_WAV = 2;
+
 	struct 
 	{
 		int Enabled;
-		SF_INFO *Info;
+		void *Info;
 		void* File;
 	} TemporaryState;
 

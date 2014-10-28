@@ -85,16 +85,20 @@ void ScreenGameplay7K::Cleanup()
 		Music->Stop();
 	}
 
-	for (std::map<int, SoundSample*>::iterator i = Keysounds.begin(); i != Keysounds.end(); i++)
+	if (OJMAudio)
+		delete OJMAudio;
+	else
 	{
-		MixerRemoveSample(i->second);
-		delete i->second;
+		for (std::map<int, SoundSample*>::iterator i = Keysounds.begin(); i != Keysounds.end(); i++)
+		{
+			MixerRemoveSample(i->second);
+			delete i->second;
+		}
 	}
 
 	MixerRemoveSample(MissSnd);
 	MixerRemoveSample(FailSnd);
 
-	delete OJMAudio;
 	delete MissSnd;
 	delete Animations;
 	delete score_keeper;
