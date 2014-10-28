@@ -24,4 +24,9 @@ namespace NoteLoaderOM
 	void LoadObjectsFromFile(GString filename, GString prefix, VSRG::Song *Out);
 }
 
+namespace NoteLoaderOJN
+{
+	void LoadObjectsFromFile(GString filename, GString prefix, VSRG::Song *Out);
+}
+
 #endif

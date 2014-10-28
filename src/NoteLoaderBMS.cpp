@@ -263,7 +263,7 @@ void ParseEvents(BmsLoadInfo *Info, const int Measure, const int BmsChannel, con
 	}
 }	
 
-double BeatForMeasure(BmsLoadInfo *Info, const int Measure)
+static double BeatForMeasure(BmsLoadInfo *Info, const int Measure)
 {
 	double Beat = 0;
 
@@ -848,7 +848,7 @@ bool ShouldUseU8(const char* Line)
 				}
 			}
 		}
-}
+	}
 	else
 		IsU8 = true;
 	return IsU8;
