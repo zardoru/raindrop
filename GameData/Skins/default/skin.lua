@@ -14,9 +14,14 @@ DefaultGameplay7KBackground = DefaultBackground
 -- Amount of .ogg BGM loops. this will be calculated automatically in the future.
 LoopTotal = 7
 
+WheelFont = {
+	Font = "font.ttf",
+	Size = 26
+}
+
 ItemTextOffset = {
 	X = 15,
-	Y = 3
+	Y = -6
 }
 
 -- Gameplay
