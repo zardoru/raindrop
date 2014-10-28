@@ -184,6 +184,7 @@ ov_callbacks M30InterfaceOgg = {
 
 enum OJMContainerKind
 {
+	Undefined = -1,
 	M30,
 	OMC
 };
@@ -308,6 +309,8 @@ OJMContainerKind GetContainerKind(const char* sig)
 		return M30;
 	else if (!strcmp(sig, "OMC") || !strcmp(sig, "OJM"))
 		return OMC;
+
+	return Undefined;
 }
 
 void AudioSourceOJM::parseM30()

@@ -108,9 +108,62 @@ bool OrderOJNEventsPredicate (OjnInternalEvent& A, OjnInternalEvent& B)
 	return A.Fraction < B.Fraction;
 }
 
+// Based off the O2JAM method at 
+// https://github.com/open2jamorg/open2jam/blob/master/parsers/src/org/open2jam/parsers/EventList.java
+void FixOJNEvents(OjnLoadInfo *Info)
+{
+	int CurrentMeasure = 0;
+	typedef std::vector<OjnInternalEvent>::iterator evtIter;
+	evtIter previousEvt[7];
+
+
+	for (std::vector<OjnMeasure>::iterator Measure = Info->Measures.begin();
+		Measure != Info->Measures.end();
+		Measure++)
+	{
+		float MeasureBaseBeat = BeatForMeasure(Info, CurrentMeasure);
+
+		// Sort events. This is very important, since we assume events are sorted!
+		std::sort(Measure->Events.begin(), Measure->Events.end(), OrderOJNEventsPredicate);
+
+		for (evtIter Evt = Measure->Events.begin();
+			Evt != Measure->Events.end();
+			Evt++)
+		{
+			if (Evt->Channel < AUTOPLAY_CHANNEL)
+			{
+				if (previousEvt[Evt->Channel] != evtIter()) // There is a previous event
+				{
+					if (previousEvt[Evt->Channel]->noteKind == 2 && 
+						(Evt->noteKind == 0 || Evt->noteKind == 2)) // This note or hold head is in between holds
+					{
+						Evt->Channel = AUTOPLAY_CHANNEL;
+						Evt->noteKind = 0;
+					}
+
+					if (previousEvt[Evt->Channel]->noteKind != 2 && // Hold tail without ongoing hold
+						Evt->noteKind == 3)
+					{
+						Evt = Measure->Events.erase(Evt); // Erase completely.
+						if (Evt == Measure->Events.end()) goto next_measure;
+					}
+				}
+
+				previousEvt[Evt->Channel] = Evt;
+			}
+
+		next_measure:;
+		}
+
+		CurrentMeasure++;
+	}
+}
+
 void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 {
 	int CurrentMeasure = 0;
+
+	FixOJNEvents(Info);
 	Out->Measures.reserve(Info->Measures.size());
 
 
@@ -121,7 +174,6 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 	{
 		float MeasureBaseBeat = BeatForMeasure(Info, CurrentMeasure);
 
-		std::sort(Measure->Events.begin(), Measure->Events.end(), OrderOJNEventsPredicate);
 		Out->Measures.push_back(VSRG::Measure());
 
 		Out->Measures[CurrentMeasure].MeasureLength = Measure->Len;
