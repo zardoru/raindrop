@@ -1,4 +1,5 @@
 #include <cmath>
+#include <fstream>
 
 #include "GameGlobal.h"
 #include "GameState.h"
@@ -20,6 +21,8 @@
 #include "ScreenGameplay7K.h"
 #include "ScreenEvaluation7K.h"
 #include "SongDatabase.h"
+
+#include "AudioSourceOJM.h"
 
 ScreenGameplay7K::ScreenGameplay7K()
 {
@@ -43,6 +46,8 @@ ScreenGameplay7K::ScreenGameplay7K()
 	HideClampSum = 0;
 
 	Auto = false;
+
+	OJMAudio = NULL;
 
 	lifebar_type = LT_SURVIVAL;
 	scoring_type = ST_IIDX;
@@ -89,6 +94,7 @@ void ScreenGameplay7K::Cleanup()
 	MixerRemoveSample(MissSnd);
 	MixerRemoveSample(FailSnd);
 
+	delete OJMAudio;
 	delete MissSnd;
 	delete Animations;
 	delete score_keeper;
@@ -268,6 +274,21 @@ bool ScreenGameplay7K::LoadSongAudio()
 		if (Keysounds[i->first]->Open((MySong->SongDirectory + "/" + i->second).c_str()))
 			MixerAddSample(Keysounds[i->first]);
 #endif
+	}
+
+	if (strstr(MySong->SongFilename.c_str(), ".ojm"))
+	{
+		Log::Printf("Loading OJM.\n");
+		OJMAudio = new AudioSourceOJM;
+		OJMAudio->Open((MySong->SongDirectory + MySong->SongFilename).c_str());
+
+		for (int i = 0; i < 2000; i++)
+		{
+			SoundSample *Snd = OJMAudio->GetFromIndex(i);
+
+			if (i != NULL)
+				Keysounds[i] = Snd;
+		}
 	}
 
 	BGMEvents = CurrentDiff->BGMEvents;

@@ -257,6 +257,7 @@ void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::
 		Diff->Name = DifficultyNames[i];
 		Diff->Channels = 7;
 		Diff->Filename = filename;
+		Diff->IsVirtual = true;
 
 		Info.Measures.reserve(Head.measure_count[i]);
 		for (int k = 0; k <= Head.measure_count[i]; k++)
