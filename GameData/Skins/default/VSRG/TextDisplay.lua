@@ -40,10 +40,10 @@ function DrawTextObjects()
 	acc2.X = Judgment.Position.x - 20;
 	acc2.Y = Judgment.Position.y + 20;
 
-	Engine:AddTarget(acc1);
-	Engine:AddTarget(acc2);
-	--Engine:AddTarget(pacemaker1);
-	--Engine:AddTarget(pacemaker2);
+	-- Engine:AddTarget(acc1);
+	-- Engine:AddTarget(acc2);
+	Engine:AddTarget(pacemaker1);
+	Engine:AddTarget(pacemaker2);
 	Engine:AddTarget(lifebar);
 
 end
