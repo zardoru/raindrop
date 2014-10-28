@@ -188,6 +188,7 @@
     <ClCompile Include="..\src\GraphicalString.cpp" />
     <ClCompile Include="..\src\Line.cpp" />
     <ClCompile Include="..\src\Logging.cpp" />
+    <ClCompile Include="..\src\NoteLoaderOJN.cpp" />
     <ClCompile Include="..\src\raindrop.cpp" />
     <ClCompile Include="..\src\GameObject.cpp" />
     <ClCompile Include="..\src\GameWindow.cpp" />

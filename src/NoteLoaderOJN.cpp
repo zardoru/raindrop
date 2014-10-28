@@ -1,4 +1,5 @@
 #include <fstream>
+#include <map>
 
 #include "Global.h"
 #include "Logging.h"
