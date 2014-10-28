@@ -59,6 +59,9 @@ const char* GetDiffIDFileID = "SELECT diffid FROM diffdb \
 							 WHERE diffdb.fileid=? AND\
 							 							 diffdb.name = ?";
 
+const char* GetSongIDFromFilename = "SELECT songid FROM diffdb WHERE (diffdb.fileid = (SELECT id FROM songfiledb WHERE filename=?))";
+const char* GetLatestSongID = "SELECT MAX(id) FROM songdb";
+
 #define SC(x) ret=x; if(ret!=SQLITE_OK && ret != SQLITE_DONE) {Log::Printf("sqlite: %ls (code %d)\n",Utility::Widen(sqlite3_errmsg(db)).c_str(), ret); Utility::DebugBreak(); }
 #define SCS(x) ret=x; if(ret!=SQLITE_DONE && ret != SQLITE_ROW) {Log::Printf("sqlite: %ls (code %d)\n",Utility::Widen(sqlite3_errmsg(db)).c_str(), ret); Utility::DebugBreak(); }
 SongDatabase::SongDatabase(GString Database)
@@ -90,6 +93,8 @@ SongDatabase::SongDatabase(GString Database)
 		SC(sqlite3_prepare_v2(db, GetDiffIDFileID, strlen(GetDiffIDFileID), &st_GetDiffIDFile, &tail));
 		SC(sqlite3_prepare_v2(db, UpdateDiff, strlen(UpdateDiff), &st_DiffUpdateQuery, &tail));
 		SC(sqlite3_prepare_v2(db, GetDiffFilename, strlen(GetDiffFilename), &st_GetDiffFilename, &tail));
+		SC(sqlite3_prepare_v2(db, GetSongIDFromFilename, strlen(GetSongIDFromFilename), &st_GetSIDFromFilename, &tail));
+		SC(sqlite3_prepare_v2(db, GetLatestSongID, strlen(GetLatestSongID), &st_GetLastSongID, &tail));
 	}
 }
 
@@ -112,33 +117,12 @@ SongDatabase::~SongDatabase()
 		sqlite3_finalize(st_GetDiffIDFile);
 		sqlite3_finalize(st_DiffUpdateQuery);
 		sqlite3_finalize(st_GetDiffFilename);
+		sqlite3_finalize(st_GetSIDFromFilename);
+		sqlite3_finalize(st_GetLastSongID);
 		sqlite3_close(db);
 	}
 }
 
-// Returns: Song ID.
-int SongDatabase::AddSong(Directory Dir, int Mode, Game::Song* In)
-{
-	int ID;
-	int ret;
-
-	if (!IsSongDirectory(Dir, &ID)) // Song does not exist in the database, database, woah woah
-	{
-		SC(sqlite3_bind_text(st_SngInsertQuery, 1, Dir.c_path(), Dir.path().length(), SQLITE_TRANSIENT));
-		SC(sqlite3_bind_text(st_SngInsertQuery, 2, In->SongName.c_str(), In->SongName.length(), SQLITE_TRANSIENT));
-		SC(sqlite3_bind_text(st_SngInsertQuery, 3, In->SongAuthor.c_str(), In->SongAuthor.length(), SQLITE_TRANSIENT));
-		SC(sqlite3_bind_text(st_SngInsertQuery, 4, In->SongFilename.c_str(), In->SongFilename.length(), SQLITE_TRANSIENT));
-		SC(sqlite3_bind_text(st_SngInsertQuery, 5, In->BackgroundFilename.c_str(), In->BackgroundFilename.length(), SQLITE_TRANSIENT));
-		SC(sqlite3_bind_int(st_SngInsertQuery, 6, Mode));
-		SCS(sqlite3_step(st_SngInsertQuery));
-		SC(sqlite3_reset(st_SngInsertQuery));
-	}
-
-	// Call again to get the actual ID!
-	IsSongDirectory(Dir, &ID);
-
-	return ID;
-}
 
 // Only returns whether the directory exists in the database.
 // ID of the song if it exists.
@@ -406,3 +390,39 @@ void SongDatabase::GetSongInformation7K (int ID, VSRG::Song* Out)
 
 	SC(sqlite3_reset(st_GetDiffInfo));
 }
+
+int SongDatabase::GetSongIDForFile(Directory File, VSRG::Song* In)
+{
+	int ret;
+	int Out = -1;
+	SC(sqlite3_bind_text(st_GetSIDFromFilename, 1, File.c_path(), File.path().length(), SQLITE_TRANSIENT));
+
+	int r = sqlite3_step(st_GetSIDFromFilename);
+	if (r == SQLITE_ROW)
+	{
+		// We found a song with ID and everything..
+		Out = sqlite3_column_int(st_GetSIDFromFilename, 0);
+	}
+	else
+	{
+		assert(In); // Okay, this is a query isn't it? Why doesn't the song exist?
+		// Okay then, insert the song.
+		// So now the latest entry is what we're going to insert difficulties and files into.
+		SC(sqlite3_bind_text(st_SngInsertQuery, 1, In->SongDirectory.c_str(), In->SongDirectory.length(), SQLITE_TRANSIENT));
+		SC(sqlite3_bind_text(st_SngInsertQuery, 2, In->SongName.c_str(), In->SongName.length(), SQLITE_TRANSIENT));
+		SC(sqlite3_bind_text(st_SngInsertQuery, 3, In->SongAuthor.c_str(), In->SongAuthor.length(), SQLITE_TRANSIENT));
+		SC(sqlite3_bind_text(st_SngInsertQuery, 4, In->SongFilename.c_str(), In->SongFilename.length(), SQLITE_TRANSIENT));
+		SC(sqlite3_bind_text(st_SngInsertQuery, 5, In->BackgroundFilename.c_str(), In->BackgroundFilename.length(), SQLITE_TRANSIENT));
+		SC(sqlite3_bind_int(st_SngInsertQuery, 6, In->Mode));
+		SCS(sqlite3_step(st_SngInsertQuery));
+		SC(sqlite3_reset(st_SngInsertQuery));
+
+		sqlite3_step(st_GetLastSongID);
+		Out = sqlite3_column_int(st_GetLastSongID, 0);
+		sqlite3_reset(st_GetLastSongID);
+	}
+
+	sqlite3_reset(st_GetSIDFromFilename);
+	return Out;
+}
+

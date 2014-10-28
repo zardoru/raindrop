@@ -28,7 +28,9 @@ private:
 		*st_GetDiffNameQuery,
 		*st_GetDiffIDFile,
 		*st_DiffUpdateQuery,
-		*st_GetDiffFilename;
+		*st_GetDiffFilename,
+		*st_GetSIDFromFilename,
+		*st_GetLastSongID;
 
 	// Returns the ID.
 	int InsertFilename(Directory Fn);
@@ -40,10 +42,11 @@ public:
 
 	void ClearDifficulties(int SongID);
 	bool CacheNeedsRenewal(Directory Dir);
-	int AddSong(Directory Dir, int Mode, Game::Song* In);
 	void AddDifficulty(int SongID, Directory Filename, Game::Song::Difficulty* Diff, int Mode);
 	bool IsSongDirectory(Directory Dir, int* IDOut = NULL);
 	GString GetDifficultyFilename (int ID); 
+
+	int GetSongIDForFile(Directory File, VSRG::Song* In);
 
 	void GetSongInformation7K (int ID, VSRG::Song* Out);
 

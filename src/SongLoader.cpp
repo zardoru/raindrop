@@ -99,6 +99,17 @@ bool VSRGValidExtension(std::wstring Ext)
 	return false;
 }
 
+bool ValidBMSExtension(std::wstring Ext)
+{
+	for (int i = 0; i < sizeof(LoadersVSRG) / sizeof(loaderVSRGEntry_t); i++)
+	{
+		if (Ext == LoadersVSRG[i].Ext && LoadersVSRG[i].LoadFunc == NoteLoaderBMS::LoadObjectsFromFile)
+			return true;
+	}
+
+	return false;
+}
+
 VSRG::Song* LoadSong7KFromFilename(Directory Filename, Directory Prefix, VSRG::Song *Sng)
 {
 	bool AllocSong = false;
@@ -127,6 +138,8 @@ VSRG::Song* LoadSong7KFromFilename(Directory Filename, Directory Prefix, VSRG::S
 	std::wstring sp = Utility::Widen(Prefix);
 	GString fn_f = Utility::Narrow(sp + fn);
 
+	Sng->SongDirectory = Prefix / "";
+
 	for (int i = 0; i < sizeof (LoadersVSRG)/sizeof(loaderVSRGEntry_t); i++)
 	{
 		if (Ext == LoadersVSRG[i].Ext)
@@ -136,14 +149,41 @@ VSRG::Song* LoadSong7KFromFilename(Directory Filename, Directory Prefix, VSRG::S
 	return Sng;
 }
 
+void VSRGUpdateDatabaseDifficulties(SongDatabase* DB, VSRG::Song *New)
+{
+	int ID;
+
+	if (!New->Difficulties.size())
+		return;
+
+	// All difficulties have the same song ID, so..
+	ID = DB->GetSongIDForFile(New->Difficulties.at(0)->Filename, New);
+
+	// Do the update, with the either new or old difficulty.
+	for (std::vector<VSRG::Difficulty*>::iterator k = New->Difficulties.begin();
+		k != New->Difficulties.end();
+		k++)
+	{
+		DB->AddDifficulty(ID, (*k)->Filename, *k, MODE_7K);
+		(*k)->Destroy();
+	}
+}
+
+void PushVSRGSong(std::vector<VSRG::Song*> &VecOut, VSRG::Song* Sng)
+{
+	if (Sng->Difficulties.size())
+		VecOut.push_back(Sng);
+	else
+		delete Sng;
+}
+
 void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 {
 	std::vector<GString> Listing;
 
 	songPath.ListDirectory(Listing, Directory::FS_REG);
-	VSRG::Song *New = new VSRG::Song();
 
-	New->SongDirectory = songPath.path() + "/";
+	Directory SongDirectory = songPath.path() + "/";
 
 	/*
 		Procedure:
@@ -153,66 +193,126 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 		4.- If it does not need to be renewed or created, just read the metadata and leave it like that.
 	*/
 
-	int ID;
-	int SongExists = DB->IsSongDirectory(New->SongDirectory, &ID);
 	bool RenewCache = false;
 	bool DoReload = false;
 
+	/*
+		We want the following:
+		All BMS must be packed together.
+		All osu!mania charts must be packed together.
+		OJNs must be their own chart.
+		SMs must be their own chart. (And SSc have priority if more loaders are supported later)
+		All FCFs to be grouped together
+
+		Therefore; it's not the song directory which we check, but the difficulties' files.
+	*/
+
+	/* First we need to see whether this file needs to be renewed.*/
 	for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{
 		std::wstring Ext = Utility::Widen(Directory(*i).GetExtension());
 
-		// Do a full reload if there's at least one file that needs updating.
-		if (VSRGValidExtension(Ext) && (!SongExists || DB->CacheNeedsRenewal(songPath.path() + "/" + *i)))
-			DoReload = true;
+		if ( VSRGValidExtension(Ext) && DB->CacheNeedsRenewal(SongDirectory / *i) )
+			RenewCache = true;
 	}
 
-	if (DoReload)
+	// Files were modified- we have to reload the charts.
+	if (RenewCache)
 	{
+		// First, pack BMS charts together.
+		VSRG::Song *BMSSong = new VSRG::Song;
+		for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
+		{
+			std::wstring Ext = Utility::Widen(Directory(*i).GetExtension());
+			
+			if (ValidBMSExtension(Ext))
+				LoadSong7KFromFilename(*i, SongDirectory, BMSSong);
+		}
+
+		VSRGUpdateDatabaseDifficulties(DB, BMSSong);
+		PushVSRGSong(VecOut, BMSSong);
+
+		// Every OJN gets its own Song object.
+		VSRG::Song *OJNSong = new VSRG::Song;
 		for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
 		{
 			std::wstring Ext = Utility::Widen(Directory(*i).GetExtension());
 
-			if (VSRGValidExtension(Ext))
+			if (Ext == L"ojn")
 			{
-				RenewCache = true;
-				Log::Printf("%ls (dir)\n", Utility::Widen((*i)).c_str());
-				LoadSong7KFromFilename(*i, songPath.path(), New);
+				LoadSong7KFromFilename(*i, SongDirectory, OJNSong);
+				VSRGUpdateDatabaseDifficulties(DB, OJNSong);
+				PushVSRGSong(VecOut, OJNSong);
+				OJNSong = new VSRG::Song;
 			}
 		}
-	}
 
-	if (!SongExists)
-		ID = DB->AddSong(New->SongDirectory, MODE_7K, New);
-	else
-	{
-		if (!RenewCache)
+		VSRGUpdateDatabaseDifficulties(DB, OJNSong);
+		PushVSRGSong(VecOut, OJNSong);
+
+		
+		// osu!mania charts are packed together, with FTB charts.
+		VSRG::Song *osuSong = new VSRG::Song;
+		for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
 		{
-			Log::Printf("%ls (cache)\n", Utility::Widen(New->SongDirectory).c_str());
-			DB->GetSongInformation7K (ID, New);
-		}
-	}
+			std::wstring Ext = Utility::Widen(Directory(*i).GetExtension());
 
-	// Files were modified- we have to renew the difficulty entries as well as the cache itself.
-	if (RenewCache)
-	{
-		for (std::vector<VSRG::Difficulty*>::iterator k = New->Difficulties.begin();
-			k != New->Difficulties.end();
-			k++)
+			if (Ext == L"osu" || Ext == L"fcf")
+				LoadSong7KFromFilename(*i, SongDirectory, osuSong);
+		}
+
+		VSRGUpdateDatabaseDifficulties(DB, osuSong);
+		PushVSRGSong(VecOut, osuSong);
+
+		VSRG::Song *smSong = new VSRG::Song;
+		for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
 		{
-			DB->AddDifficulty(ID, (*k)->Filename, *k, MODE_7K);
-			(*k)->Destroy();
-		}
-	}
+			std::wstring Ext = Utility::Widen(Directory(*i).GetExtension());
 
-	
-	if (New->Difficulties.size())
-	{
-		VecOut.push_back(New);
+			if (Ext == L"sm")
+			{
+				LoadSong7KFromFilename(*i, SongDirectory, smSong);
+				VSRGUpdateDatabaseDifficulties(DB, smSong);
+				PushVSRGSong(VecOut, smSong);
+				smSong = new VSRG::Song;
+			}
+		}
+
+		VSRGUpdateDatabaseDifficulties(DB, smSong);
+		PushVSRGSong(VecOut, smSong);
 	}
-	else
+	else // We can reload from cache. We do this on a per-file basis.
 	{
-		delete New;
+		// We need to get the song IDs for every file; it's guaranteed that they exist, in theory.
+		int ID = -1;
+		std::vector<int> IDList;
+
+		for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
+		{
+			std::wstring Ext = Utility::Widen(Directory(*i).GetExtension());
+			if (VSRGValidExtension(Ext))
+			{
+				assert(!DB->CacheNeedsRenewal(SongDirectory / *i));
+				int CurrentID = DB->GetSongIDForFile(SongDirectory / *i, NULL);
+				if (CurrentID != ID)
+				{
+					ID = CurrentID;
+					IDList.push_back(ID);
+				}
+			}
+		}
+
+		// So now we have our list with song IDs that are present on the current directory.
+		// Time to load from cache.
+		for (std::vector<int>::iterator i = IDList.begin();
+			i != IDList.end();
+			i++)
+		{
+			VSRG::Song *New = new VSRG::Song;
+			DB->GetSongInformation7K(*i, New);
+
+			PushVSRGSong(VecOut, New);
+		}
 	}
 }
 
