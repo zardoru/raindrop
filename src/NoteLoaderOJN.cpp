@@ -241,9 +241,13 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 			{
 				float Beat = MeasureBaseBeat + Evt->Fraction * Measure->Len;
 				float Time = TimeAtBeat(Out->Timing, 0, Beat);
+				int Value = Evt->iValue;
 				AutoplaySound Snd;
 
-				Snd.Sound = Evt->iValue;
+				if (Evt->noteKind % 8 > 3) // Okay...
+					Value += 1000;
+
+				Snd.Sound = Value;
 				Snd.Time = Time;
 				Out->BGMEvents.push_back(Snd);
 			}
@@ -255,6 +259,13 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 
 				Note.StartTime = Time;
 				Note.Sound = Evt->iValue;
+
+				if (Evt->noteKind % 8 > 3)
+				{
+					Note.Sound += 1000;
+					Evt->noteKind = Evt->noteKind % 4;
+				}
+
 				switch (Evt->noteKind)
 				{
 				case 0:
@@ -393,6 +404,7 @@ void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::
 					IEvt.Channel = AUTOPLAY_CHANNEL;
 					IEvt.Fraction = Fraction;
 					IEvt.iValue = Event.noteValue;
+					IEvt.noteKind = Event.type;
 					Info.Measures[PackageHeader.measure].Events.push_back(IEvt);
 					break;
 				}
