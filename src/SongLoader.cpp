@@ -130,10 +130,7 @@ VSRG::Song* LoadSong7KFromFilename(Directory Filename, Directory Prefix, VSRG::S
 
 	std::wstring fn;
 
-	if (Prefix.path().length())
-		fn = L"/" + Utility::Widen(Filename);
-	else
-		fn = Utility::Widen(Filename);
+	fn = Utility::Widen(Filename);
 
 	std::wstring sp = Utility::Widen(Prefix);
 	GString fn_f = Utility::Narrow(sp + fn);

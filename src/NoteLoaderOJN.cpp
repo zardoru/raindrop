@@ -114,7 +114,9 @@ void FixOJNEvents(OjnLoadInfo *Info)
 {
 	int CurrentMeasure = 0;
 	typedef std::vector<OjnInternalEvent>::iterator evtIter;
-	evtIter previousEvt[7];
+	OjnInternalEvent *prevIter[7];
+
+	for (int i = 0; i < 7; i++) prevIter[i] = NULL;
 
 
 	for (std::vector<OjnMeasure>::iterator Measure = Info->Measures.begin();
@@ -132,24 +134,26 @@ void FixOJNEvents(OjnLoadInfo *Info)
 		{
 			if (Evt->Channel < AUTOPLAY_CHANNEL)
 			{
-				if (previousEvt[Evt->Channel] != evtIter()) // There is a previous event
+				if (prevIter[Evt->Channel]) // There is a previous event
 				{
-					if (previousEvt[Evt->Channel]->noteKind == 2 && 
+					if (prevIter[Evt->Channel]->noteKind == 2 && 
 						(Evt->noteKind == 0 || Evt->noteKind == 2)) // This note or hold head is in between holds
 					{
 						Evt->Channel = AUTOPLAY_CHANNEL;
 						Evt->noteKind = 0;
+						continue;
 					}
 
-					if (previousEvt[Evt->Channel]->noteKind != 2 && // Hold tail without ongoing hold
+					if (prevIter[Evt->Channel]->noteKind != 2 && // Hold tail without ongoing hold
 						Evt->noteKind == 3)
 					{
-						Evt = Measure->Events.erase(Evt); // Erase completely.
-						if (Evt == Measure->Events.end()) goto next_measure;
+						Evt->Channel = AUTOPLAY_CHANNEL;
+						Evt->noteKind = 0;
+						continue;
 					}
 				}
 
-				previousEvt[Evt->Channel] = Evt;
+				prevIter[Evt->Channel] = &(*Evt);
 			}
 
 		next_measure:;
