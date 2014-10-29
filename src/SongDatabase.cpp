@@ -348,6 +348,7 @@ void SongDatabase::GetSongInformation7K (int ID, VSRG::Song* Out)
 	Out->SongAuthor = (char*)sqlite3_column_text(st_GetSongInfo, 1);
 	Out->SongFilename = (char*)sqlite3_column_text(st_GetSongInfo, 2);
 	Out->BackgroundFilename = (char*)sqlite3_column_text(st_GetSongInfo, 3);
+	Out->ID = ID;
 	int mode = sqlite3_column_int(st_GetSongInfo, 4);
 
 	SC(sqlite3_reset(st_GetSongInfo));
@@ -423,6 +424,7 @@ int SongDatabase::GetSongIDForFile(Directory File, VSRG::Song* In)
 	}
 
 	sqlite3_reset(st_GetSIDFromFilename);
+	if (In) In->ID = Out;
 	return Out;
 }
 

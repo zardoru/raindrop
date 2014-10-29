@@ -34,6 +34,7 @@ namespace Game
 	{
 	public:
 
+		int ID;
 		struct Difficulty {
 
 			TimingData Timing;
@@ -82,7 +83,7 @@ namespace Game
 		/* When != 0 will look for this file and try and load it */
 		GString SongFileSource;
 
-		Song() {};
+		Song() { ID = -1;  };
 		virtual ~Song() {};
 	};
 

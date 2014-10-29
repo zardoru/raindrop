@@ -135,7 +135,7 @@ VSRG::Song* LoadSong7KFromFilename(Directory Filename, Directory Prefix, VSRG::S
 	std::wstring sp = Utility::Widen(Prefix);
 	GString fn_f = Utility::Narrow(sp + fn);
 
-	Sng->SongDirectory = Prefix / "";
+	Sng->SongDirectory = Prefix;
 
 	for (int i = 0; i < sizeof (LoadersVSRG)/sizeof(loaderVSRGEntry_t); i++)
 	{
@@ -218,6 +218,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 	{
 		// First, pack BMS charts together.
 		VSRG::Song *BMSSong = new VSRG::Song;
+		BMSSong->SongDirectory = SongDirectory;
 		for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
 		{
 			std::wstring Ext = Utility::Widen(Directory(*i).GetExtension());
@@ -231,6 +232,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 
 		// Every OJN gets its own Song object.
 		VSRG::Song *OJNSong = new VSRG::Song;
+		OJNSong->SongDirectory = SongDirectory;
 		for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
 		{
 			std::wstring Ext = Utility::Widen(Directory(*i).GetExtension());
@@ -241,6 +243,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 				VSRGUpdateDatabaseDifficulties(DB, OJNSong);
 				PushVSRGSong(VecOut, OJNSong);
 				OJNSong = new VSRG::Song;
+				OJNSong->SongDirectory = SongDirectory;
 			}
 		}
 
@@ -250,6 +253,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 		
 		// osu!mania charts are packed together, with FTB charts.
 		VSRG::Song *osuSong = new VSRG::Song;
+		osuSong->SongDirectory = SongDirectory;
 		for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
 		{
 			std::wstring Ext = Utility::Widen(Directory(*i).GetExtension());
@@ -262,6 +266,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 		PushVSRGSong(VecOut, osuSong);
 
 		VSRG::Song *smSong = new VSRG::Song;
+		smSong->SongDirectory = SongDirectory;
 		for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
 		{
 			std::wstring Ext = Utility::Widen(Directory(*i).GetExtension());
@@ -272,6 +277,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 				VSRGUpdateDatabaseDifficulties(DB, smSong);
 				PushVSRGSong(VecOut, smSong);
 				smSong = new VSRG::Song;
+				smSong->SongDirectory = SongDirectory;
 			}
 		}
 
@@ -307,6 +313,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 		{
 			VSRG::Song *New = new VSRG::Song;
 			DB->GetSongInformation7K(*i, New);
+			New->SongDirectory = SongDirectory;
 
 			PushVSRGSong(VecOut, New);
 		}
@@ -342,9 +349,7 @@ void SongLoader::GetSongList7K(std::vector<VSRG::Song*> &OutVec, Directory Dir)
 
 VSRG::Song* SongLoader::LoadFromMeta(const VSRG::Song* Meta, VSRG::Difficulty* &CurrentDiff, Directory *FilenameOut)
 {
-	int SongID;
 	VSRG::Song* Out;
-	DB->IsSongDirectory(Meta->SongDirectory, &SongID);
 
 	GString fn = DB->GetDifficultyFilename(CurrentDiff->ID);
 	*FilenameOut = fn;
@@ -361,7 +366,7 @@ VSRG::Song* SongLoader::LoadFromMeta(const VSRG::Song* Meta, VSRG::Difficulty* &
 		k != Out->Difficulties.end();
 		k++)
 	{
-		DB->AddDifficulty(SongID, (*k)->Filename, *k, MODE_7K);
+		DB->AddDifficulty(Meta->ID, (*k)->Filename, *k, MODE_7K);
 		if ((*k)->ID == CurrentDiff->ID) // We've got a match; move onward.
 		{
 			CurrentDiff = *k;

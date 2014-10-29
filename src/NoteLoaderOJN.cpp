@@ -1,6 +1,7 @@
 #include <fstream>
 #include <map>
 
+#include "utf8.h"
 #include "Global.h"
 #include "Logging.h"
 #include "Song7K.h"
@@ -89,6 +90,7 @@ class OjnLoadInfo
 public:
 	std::vector<OjnMeasure> Measures;
 	VSRG::Song* S;
+	float BPM;
 };
 
 static double BeatForMeasure(OjnLoadInfo *Info, int Measure)
@@ -155,12 +157,15 @@ void FixOJNEvents(OjnLoadInfo *Info)
 
 				prevIter[Evt->Channel] = &(*Evt);
 			}
-
-		next_measure:;
 		}
 
 		CurrentMeasure++;
 	}
+}
+
+bool sortTiming(const TimingSegment& A, const TimingSegment& B)
+{
+	return A.Time < B.Time;
 }
 
 void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
@@ -206,6 +211,16 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 
 		CurrentMeasure++;
 	}
+
+	if (Out->Timing.size() == 0 || Out->Timing[0].Time > 0)
+	{
+		TimingSegment Seg;
+		Seg.Time = 0;
+		Seg.Value = Info->BPM;
+		Out->Timing.push_back(Seg);
+	}
+
+	std::sort(Out->Timing.begin(), Out->Timing.end(), sortTiming);
 
 	// Now, we can process notes and long notes.
 	CurrentMeasure = 0;
@@ -302,8 +317,13 @@ void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::
 		return;
 	}
 
-	Out->SongAuthor = Head.artist;
-	Out->SongName = Head.title;
+	GString vArtist;
+	GString vName;
+	utf8::replace_invalid(Head.artist, Head.artist + 32, std::back_inserter(vArtist));
+	utf8::replace_invalid(Head.title, Head.title + 64, std::back_inserter(vName));
+
+	Out->SongAuthor = vArtist;
+	Out->SongName = vName;
 	Out->SongFilename = Head.ojm_file;
 	for (int i = 0; i < 3; i++)
 	{
@@ -320,6 +340,7 @@ void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::
 		Diff->Channels = 7;
 		Diff->Filename = filename;
 		Diff->IsVirtual = true;
+		Info.BPM = Head.bpm;
 
 		Info.Measures.reserve(Head.measure_count[i]);
 		for (int k = 0; k <= Head.measure_count[i]; k++)

@@ -459,6 +459,8 @@ void AudioSourceOJM::parseOMC()
 
 		char *Buffer = new char[OggHead.sample_size];
 
+		ifile->read(Buffer, OggHead.sample_size);
+
 		SoundSample* NewSample = new SoundSample;
 
 		SFM30 ToLoad;
@@ -555,6 +557,12 @@ bool AudioSourceOJM::Open(const char* f)
 	char sig[4];
 
 	ifile = new std::ifstream(f, std::ios::binary);
+
+	if (!*ifile)
+	{
+		Log::Printf("AudioSourceOJM: unable to load %s.\n", f);
+		return false;
+	}
 	ifile->read(sig, 4);
 
 	switch (GetContainerKind(sig))
