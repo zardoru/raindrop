@@ -481,6 +481,7 @@ void AudioSourceOJM::parseOMC()
 
 		Arr[SampleID] = NewSample;
 		MixerAddSample(NewSample);
+		SampleID++;
 	}
 }
 
