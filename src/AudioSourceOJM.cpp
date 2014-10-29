@@ -440,6 +440,7 @@ void AudioSourceOJM::parseOMC()
 
 		Arr[SampleID] = NewSample;
 		MixerAddSample(NewSample);
+		SampleID++;
 	}
 
 	SampleID = 1000; // We start from the first OGG file..
