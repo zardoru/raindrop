@@ -17,7 +17,7 @@ Song::Song()
 {
 	PreviousDrift = 0;
 	Processed = false;
-	Mode = MODE_7K;
+	Mode = MODE_VSRG;
 }
 
 Song::~Song()

@@ -248,7 +248,7 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 			Evt++)
 		{
 			if (Evt->Channel == BPM_CHANNEL) continue;
-			else if (Evt->Channel == AUTOPLAY_CHANNEL)
+			else
 			{
 				float Beat = MeasureBaseBeat + Evt->Fraction * Measure->Len;
 				float Time = TimeAtBeat(Out->Timing, 0, Beat);

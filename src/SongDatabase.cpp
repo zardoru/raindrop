@@ -229,7 +229,7 @@ void SongDatabase::AddDifficulty(int SongID, Directory Filename, Game::Song::Dif
 		SC(sqlite3_bind_int(st_DiffInsertQuery, 7, Diff->TotalNotes));
 		SC(sqlite3_bind_double(st_DiffInsertQuery, 8, Diff->Duration));
 
-		if (Mode == MODE_7K)
+		if (Mode == MODE_VSRG)
 		{
 			VSRG::Difficulty *VDiff = static_cast<VSRG::Difficulty*>(Diff);
 
@@ -255,7 +255,7 @@ void SongDatabase::AddDifficulty(int SongID, Directory Filename, Game::Song::Dif
 		SC(sqlite3_bind_int(st_DiffUpdateQuery, 5, Diff->TotalNotes));
 		SC(sqlite3_bind_double(st_DiffUpdateQuery, 6, Diff->Duration));
 
-		if (Mode == MODE_7K)
+		if (Mode == MODE_VSRG)
 		{
 			VSRG::Difficulty *VDiff = static_cast<VSRG::Difficulty*>(Diff);
 
@@ -353,7 +353,7 @@ void SongDatabase::GetSongInformation7K (int ID, VSRG::Song* Out)
 
 	SC(sqlite3_reset(st_GetSongInfo));
 
-	if (mode != MODE_7K)
+	if (mode != MODE_VSRG)
 		return; // Sowwy.
 
 	// Now, difficulty information.

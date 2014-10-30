@@ -24,7 +24,7 @@ struct AutoplayBMP
 enum ModeType
 {
 	MODE_DOTCUR,
-	MODE_7K
+	MODE_VSRG
 };
 
 namespace Game

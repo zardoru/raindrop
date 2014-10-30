@@ -165,7 +165,7 @@ void VSRGUpdateDatabaseDifficulties(SongDatabase* DB, VSRG::Song *New)
 		k != New->Difficulties.end();
 		k++)
 	{
-		DB->AddDifficulty(ID, (*k)->Filename, *k, MODE_7K);
+		DB->AddDifficulty(ID, (*k)->Filename, *k, MODE_VSRG);
 		(*k)->Destroy();
 	}
 }
@@ -373,7 +373,7 @@ VSRG::Song* SongLoader::LoadFromMeta(const VSRG::Song* Meta, VSRG::Difficulty* &
 		k != Out->Difficulties.end();
 		k++)
 	{
-		DB->AddDifficulty(Meta->ID, (*k)->Filename, *k, MODE_7K);
+		DB->AddDifficulty(Meta->ID, (*k)->Filename, *k, MODE_VSRG);
 		if ((*k)->ID == CurrentDiff->ID) // We've got a match; move onward.
 		{
 			CurrentDiff = *k;

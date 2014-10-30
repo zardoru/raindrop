@@ -181,7 +181,7 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 			{
 				DifficultyIndex--;
 				max_index = 0;
-				if (CurrentList->GetSongEntry(GetCursorIndex())->Mode == MODE_7K)
+				if (CurrentList->GetSongEntry(GetCursorIndex())->Mode == MODE_VSRG)
 				{
 					max_index = ((VSRG::Song*)CurrentList->GetSongEntry(GetCursorIndex()))->Difficulties.size() - 1;
 				}else
@@ -196,7 +196,7 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 			if (!CurrentList->IsDirectory(GetCursorIndex()))
 			{
 				DifficultyIndex++;
-				if (CurrentList->GetSongEntry(GetCursorIndex())->Mode == MODE_7K)
+				if (CurrentList->GetSongEntry(GetCursorIndex())->Mode == MODE_VSRG)
 				{
 					if (DifficultyIndex >= ((VSRG::Song*)CurrentList->GetSongEntry(GetCursorIndex()))->Difficulties.size())
 						DifficultyIndex = 0;
@@ -412,7 +412,7 @@ void SongWheel::Render()
 
 
 		}
-		else if (CurrentList->GetSongEntry(Index)->Mode == MODE_7K)
+		else if (CurrentList->GetSongEntry(Index)->Mode == MODE_VSRG)
 		{
 
 			char infoStream[1024];

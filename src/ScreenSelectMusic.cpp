@@ -127,7 +127,7 @@ ScreenSelectMusic::ScreenSelectMusic()
 
 	GameObject::GlobalInit();
 
-	SelectedMode = MODE_7K;
+	SelectedMode = MODE_VSRG;
 }
 
 void ScreenSelectMusic::MainThreadInitialization()
