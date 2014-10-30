@@ -83,6 +83,9 @@ GearHeight = GearHeightCommon
 -- Barline
 BarlineEnabled = 1
 
+-- Time that the 'miss' layer will be shown on BMS when a miss occurs.
+OnMissBGATime = 3
+
 -- A value of 0 means from the bottom/top (depending on upscroll) of the note. A value of 1 means the middle of the note.
 BarlineOffset = 0
 BarlineX = GearStartX

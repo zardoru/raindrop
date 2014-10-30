@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "Global.h"
+#include "Logging.h"
 #include "Song7K.h"
 #include "NoteLoader7K.h"
 
@@ -233,6 +234,13 @@ GString SamplesetToGString(int Sampleset)
 	}
 }
 
+/* 
+	This function is mostly correct; the main issue is that we'd have to know
+	when custom = 0, that we should use 'per theme' default sounds.
+	We don't have those, we don't use those, those are an osu!-ism
+	so the sounds are not going to be 100% osu!-correct
+	but they're going to be correct enough for virtual-mode charts to be accurate.
+*/
 GString GetSampleFilename(OsuLoadInfo *Info, SplitResult &Spl, int NoteType, int Hitsound, float Time)
 {
 	int SampleSet = 0, SampleSetAddition, CustomSample = 0;
@@ -403,9 +411,9 @@ void ReadObjects (GString line, OsuLoadInfo* Info)
 		Note.StartTime = startTime;
 		Note.EndTime = endTime;
 
-		if (startTime > endTime) {
-			wprintf(L"o!m loader warning: object at track %d has startTime > endTime (%f and %f)\n", Track, startTime, endTime);
-			Note.EndTime = startTime;
+		if (startTime > endTime) { // Okay then, we'll transform this into a regular note..
+			Log::Printf("NoteLoaderOM: object at track %d has startTime > endTime (%f and %f)\n", Track, startTime, endTime);
+			Note.EndTime = 0;
 
 			Info->Diff->TotalScoringObjects += 1;
 			Info->Diff->TotalNotes++;

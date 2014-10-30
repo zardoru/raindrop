@@ -28,7 +28,6 @@ void ScreenGameplay7K::RecalculateMatrix()
 
 void ScreenGameplay7K::RecalculateEffects()
 {
-
 	if (waveEffectEnabled)
 	{
 		float cs = sin (CurrentBeat * M_PI / 4);
@@ -79,7 +78,6 @@ void ScreenGameplay7K::HitNote (double TimeOff, uint32 Lane, bool IsHold, bool I
 
 	UpdateScriptScoreVariables();
 
-	Animations->GetEnv()->SetGlobal("Combo", score_keeper->getScore(ST_COMBO));
 	Animations->GetEnv()->CallFunction("HitEvent", 5);
 	Animations->GetEnv()->PushArgument(Judgment);
 	Animations->GetEnv()->PushArgument(TimeOff);
@@ -100,12 +98,11 @@ void ScreenGameplay7K::MissNote (double TimeOff, uint32 Lane, bool IsHold, bool 
 	if (IsHold)
 		HeldKey[Lane] = false;
 
-	// 3 seconds showing miss bga
-	MissTime = 3;
+	// per-theme seconds showing miss bga
+	MissTime = Configuration::GetSkinConfigf("OnMissBGATime");
 
 	UpdateScriptScoreVariables();
 
-	Animations->GetEnv()->SetGlobal("Combo", score_keeper->getScore(ST_COMBO));
 	Animations->GetEnv()->CallFunction("MissEvent", 3);
 	Animations->GetEnv()->PushArgument(TimeOff);
 	Animations->GetEnv()->PushArgument((int)Lane + 1);
@@ -257,10 +254,10 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 {
 	float MsDisplayMargin = (Configuration::GetSkinConfigf("HitErrorDisplayLimiter"));
 
+	GearKeyEvent(Lane, true);
+
 	if ( (!Music && !CurrentDiff->IsVirtual) || !Active || stage_failed)
 		return;
-
-	GearKeyEvent(Lane, true);
 
 	lastClosest[Lane] = MsDisplayMargin;
 

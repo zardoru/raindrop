@@ -224,18 +224,39 @@ void ScreenGameplay7K::RunAutoEvents()
 
 void ScreenGameplay7K::CheckShouldEndScreen()
 {
+	// Run failure first; make sure it has priority over checking whether it's a pass or not.
+	if (score_keeper->isStageFailed(lifebar_type) && !stage_failed)
+	{
+		// We make sure we don't trigger this twice.
+		stage_failed = true;
+		score_keeper->failStage();
+		FailSnd->Play();
 
-	if (SongTime > CurrentDiff->Duration)
+		// We stop all audio..
+		Music->Stop();
+		for (std::map<int, SoundSample*>::iterator i = Keysounds.begin(); i != Keysounds.end(); i++)
+		{
+			if (i->second)
+				i->second->Stop();
+		}
+
+		// Run stage failed animation.
+		Animations->DoEvent("OnFailureEvent", 1);
+		FailureTime = Clamp(Animations->GetEnv()->GetFunctionResultF(), 0.0f, 30.0f);
+	}
+
+	// Okay then, so it's a pass?
+	if (SongTime > CurrentDiff->Duration && !stage_failed)
 	{
 		if (!SongFinished)
 		{
-			SongFinished = true;
+			SongFinished = true; // Reached the end!
 			Animations->DoEvent("OnSongFinishedEvent", 1);
 			SuccessTime = Clamp(Animations->GetEnv()->GetFunctionResultF(), 0.0f, 30.0f);
 		}
 	}
 
-	// Reached the end!
+	// Okay then, the song's done, and the success animation is done too. Time to evaluate.
 	if (SuccessTime < 0 && SongFinished)
 	{
 		ScreenEvaluation7K *Eval = new ScreenEvaluation7K(this);
@@ -243,35 +264,21 @@ void ScreenGameplay7K::CheckShouldEndScreen()
 		Next = Eval;
 	}
 
-	if (score_keeper->isStageFailed(lifebar_type) && !stage_failed)
-	{
-		// Run stage failed animation.
-		stage_failed = true;
-		score_keeper->failStage();
-		Music->Stop();
-		FailSnd->Play();
-
-		for (std::map<int, SoundSample*>::iterator i = Keysounds.begin(); i != Keysounds.end(); i++)
-		{
-			if (i->second)
-				i->second->Stop();
-		}
-			
-
-		Animations->DoEvent("OnFailureEvent", 1);
-		FailureTime = Clamp(Animations->GetEnv()->GetFunctionResultF(), 0.0f, 30.0f);
-	}
-
 	if (stage_failed)
 	{
 		MissTime = 10; // Infinite, for as long as it lasts.
-		if (FailureTime <= 0){ // go to evaluation screen.
-			ScreenEvaluation7K *Eval = new ScreenEvaluation7K(this);
-			Eval->Init(score_keeper);
-			Next = Eval;
+		if (FailureTime <= 0){ // go to evaluation screen, or back to song select depending on the skin
+
+			if (Configuration::GetSkinConfigf("GoToSongSelectOnFailure") == 0)
+			{
+				ScreenEvaluation7K *Eval = new ScreenEvaluation7K(this);
+				Eval->Init(score_keeper);
+				Next = Eval;
+			}
+			else
+				Running = false;
 		}
 	}
-
 }
 
 void ScreenGameplay7K::UpdateSongTime(float Delta)
@@ -296,7 +303,7 @@ void ScreenGameplay7K::UpdateSongTime(float Delta)
 	// Update for the next delta.
 	SongOldTime = SongTimeReal;
 
-	// Run interpolation.
+	// Run interpolation, if enabled.
 	if (Music && Music->IsPlaying() && !CurrentDiff->IsVirtual)
 	{
 		double SongDelta = Music->GetStreamedTime() - SongOldTime;

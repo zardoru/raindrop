@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "GameGlobal.h"
+#include "Logging.h"
 #include "BindingsManager.h"
 #include "Configuration.h"
 #include "Screen.h"
@@ -112,7 +113,7 @@ int controllerToUse;
 bool JoystickEnabled;
 
 //True is pressed, false is released
-bool controllerButtonState[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = {false, false, false, false, false, false, false, false, false};
+bool controllerButtonState[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = {0};
 //The first member of this array should never be accessed; it's there to make reading some of the code easier.
 
 struct sk_s
@@ -286,18 +287,12 @@ void InputFunc (GLFWwindow*, int32 key, int32 scancode, int32 code, int32 modk)
 
 	if (key == GLFW_KEY_ENTER && code == GLFW_PRESS && (modk & GLFW_MOD_ALT))
 		WindowFrame.FullscreenSwitchbackPending = true;
-
-	if (!WindowFrame.isGuiInputEnabled)
-		return;
 }
 
 void MouseInputFunc (GLFWwindow*, int32 key, int32 code, int32 modk)
 {
 	if (ToKeyEventType(code) != KE_None) // Ignore GLFW_REPEAT events
 		WindowFrame.Parent->HandleInput(key, ToKeyEventType(code), true);
-
-	if (!WindowFrame.isGuiInputEnabled)
-		return;
 }
 
 void ScrollFunc( GLFWwindow*, double xOff, double yOff )
@@ -307,8 +302,6 @@ void ScrollFunc( GLFWwindow*, double xOff, double yOff )
 
 void MouseMoveFunc (GLFWwindow*,double newx, double newy)
 {
-	if (!WindowFrame.isGuiInputEnabled)
-		return;
 }
 
 Vec2 GameWindow::GetWindowSize() const
@@ -330,13 +323,7 @@ Vec2 GameWindow::GetRelativeMPos()
 	return Vec2 (outx, outy);
 }
 
-void GameWindow::SetMatrix(uint32 MatrixMode, Mat4 matrix)
-{
-	glMatrixMode(MatrixMode);
-	glLoadMatrixf((GLfloat*)&matrix[0]);
-}
-
-void GameWindow::SetupWindow()
+bool GameWindow::SetupWindow()
 {
 	GLenum err;
 	glfwMakeContextCurrent(wnd);
@@ -344,13 +331,11 @@ void GameWindow::SetupWindow()
 	// we have an opengl context, try opening up glew
 	if ((err = glewInit()) != GLEW_OK)
 	{
-		std::stringstream serr;
-		serr << "glew failed initialization: " << glewGetErrorString(err);
-		throw; // std::exception(serr.str().c_str());
+		Log::Logf( "glew failed initialization: %s", glewGetErrorString(err));
+		return false;
 	}
 
 	BindingsManager::Initialize();
-
 
 	glEnable(GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -367,12 +352,12 @@ void GameWindow::SetupWindow()
 
 	if (VSync)
 		glfwSwapInterval(1);
-
 	
 	projection = glm::ortho<float>(0.0, matrixSize.x, matrixSize.y, 0.0, -32.0, 0.0);
 	projectionInverse = glm::inverse(projection);
 
-	SetupShaders();
+	if (!SetupShaders())
+		return false;
 
 	// GLFW Hooks
 	glfwSetFramebufferSizeCallback(wnd, ResizeFunc);
@@ -383,6 +368,8 @@ void GameWindow::SetupWindow()
 	glfwSetScrollCallback(wnd, ScrollFunc);
 
 	ResizeFunc(wnd, size.x, size.y);
+
+	return true;
 }
 
 
@@ -397,13 +384,16 @@ Mat4 GameWindow::GetMatrixProjectionInverse()
 }
 
 
-void GameWindow::AutoSetupWindow(Application* _parent)
+bool GameWindow::AutoSetupWindow(Application* _parent)
 {
 	Parent = _parent;
 
 	// todo: enum modes
 	if (!glfwInit())
-		throw; // std::exception("glfw failed initialization!"); // don't do shit
+	{
+		Log::Logf("Failure to initialize glfw.\n");
+		return false; // std::exception("glfw failed initialization!"); // don't do shit
+	}
 
 	AssignSize();
 	matrixSize.x = ScreenWidth;
@@ -415,9 +405,12 @@ void GameWindow::AutoSetupWindow(Application* _parent)
 	VSync = Configuration::GetConfigf("VSync") != 0;
 
 	if (!(wnd = glfwCreateWindow(size.x, size.y, RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, IsFullscreen ? glfwGetPrimaryMonitor() : NULL, NULL)))
-		throw; // std::exception("couldn't open window!");
-
-	SetupWindow();
+	{
+		Log::Logf("Failure to initialize window.\n");
+		return false;
+	}
+	
+	return SetupWindow();
 }
 
 void GameWindow::AssignSize()
@@ -545,13 +538,16 @@ void GameWindow::SetVisibleCursor(bool Visible)
 		glfwSetInputMode(wnd, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 }
 
-void GameWindow::SetupShaders()
+bool GameWindow::SetupShaders()
 {
+	Log::Printf("Setting up shaders...");
 
-	/*
-	glGenVertexArrays(1, &defaultVao);
-	glBindVertexArray(defaultVao);
-	*/
+	if (glGenVertexArrays && glBindVertexArray)
+	{
+		glGenVertexArrays(1, &defaultVao);
+		glBindVertexArray(defaultVao);
+	}
+	
 
 	defaultVertexShader = glCreateShader( GL_VERTEX_SHADER );
 	glShaderSource( defaultVertexShader, 1, &vertShader, NULL );
@@ -571,10 +567,10 @@ void GameWindow::SetupShaders()
 
 	if (status != GL_TRUE)
 	{	
-		std::wcout << "Vertex Shader Error: " << buffer << "\n";
-		throw; // std::exception(buffer);
+		Log::Logf("Vertex Shader Error: %s\n", buffer);
+		return false;
 	}else
-		std::wcout << buffer << "\n";
+		Log::Logf("Vertex Shader Status: %s\n", buffer);
 
 	glGetShaderiv( defaultFragShader, GL_COMPILE_STATUS, &status );
 
@@ -582,10 +578,10 @@ void GameWindow::SetupShaders()
 
 	if (status != GL_TRUE)
 	{
-		std::wcout << "Fragment Shader Error: " << buffer << "\n";
-		throw; // std::exception(buffer);
+		Log::Logf("Fragment Shader Error: %s\n", buffer);
+		return false;
 	}
-	else std::wcout << buffer << "\n";
+	else Log::Logf("Fragment Shader Status: %s\n", buffer);
 
 	defaultShaderProgram = glCreateProgram();
 	glAttachShader( defaultShaderProgram, defaultVertexShader );
@@ -606,6 +602,8 @@ void GameWindow::SetupShaders()
 	glDeleteShader(defaultVertexShader);
 	glDeleteShader(defaultFragShader);
 
+
+	// Set up the uniform constants we'll be using in the program.
 	uniforms[A_POSITION] = glGetAttribLocation(defaultShaderProgram, "position");
 	uniforms[A_UV] = glGetAttribLocation(defaultShaderProgram, "vertexUV");
 	uniforms[U_TRANM] = glGetUniformLocation(defaultShaderProgram, "tranM");
@@ -629,6 +627,7 @@ void GameWindow::SetupShaders()
 
 	SetLightPosition(glm::vec3(0,0,1));
 	SetLightMultiplier(1);
+	return true;
 }
 
 void GameWindow::SetUniform(uint32 Uniform, int i) 
@@ -640,8 +639,6 @@ void GameWindow::SetUniform(uint32 Uniform, float A, float B, float C, float D)
 {
 	glUniform4f(uniforms[Uniform], A, B, C, D);
 }
-
-
 
 void GameWindow::SetUniform(uint32 Uniform, glm::vec3 Pos) 
 {

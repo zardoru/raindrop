@@ -377,8 +377,6 @@ void ScreenEdit::CalculateVerticalLock()
 
 bool ScreenEdit::Run(double delta)
 {
-	WindowFrame.isGuiInputEnabled = (EditScreenState != Playing);
-
 	// we're playing the song? run the game
 	if (EditScreenState == Playing)
 	{

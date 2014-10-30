@@ -55,8 +55,8 @@ class GameWindow
 
 	uint32 uniforms[NUM_SHADERVARS];
 
-	void SetupWindow();
-	void SetupShaders();
+	bool SetupWindow();
+	bool SetupShaders();
 	void AssignSize();
 	
 	std::vector<VBO*> VBOList;
@@ -70,13 +70,10 @@ class GameWindow
 
 public:
 	GameWindow();
-	bool isGuiInputEnabled;
-	void AutoSetupWindow(Application* Parent);
+	bool AutoSetupWindow(Application* Parent);
 	void ClearWindow(); // basically wrapping up glClear
 	void Cleanup();
 
-	// assigns this matrix on the stack
-	void SetMatrix(uint32 MatrixMode, Mat4 matrix);
 	void SetVisibleCursor(bool Visible);
 	void AddVBO(VBO* V);
 	void RemoveVBO(VBO *V);

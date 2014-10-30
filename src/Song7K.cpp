@@ -102,7 +102,8 @@ double TimeFromTimingKind(const TimingData &Timing,
 		return S.Time + Drift + Offset;
 	}
 
-	assert (0); // Never happens.
+	assert (0); // Never happens. Must never happen ever ever.
+	return 0;
 }
 
 double BPSFromTimingKind(float Value, VSRG::Difficulty::EBt TimingType)
@@ -252,9 +253,10 @@ void Song::ProcessSpeedVariations(VSRG::Difficulty* Diff, double Drift)
 			after a BPM change.
 		*/
 
-		if (Diff->BPMType == VSRG::Difficulty::BT_Beatspace)
+		if (Diff->BPMType == VSRG::Difficulty::BT_Beatspace) // Okay, we're an osu!mania chart, leave the resetting.
 			goto next_speed;
 
+		// We're not an osu!mania chart, so it's time to do what should be done.
 		for(TimingData::iterator Time = Diff->VerticalSpeeds.begin();
 			Time != Diff->VerticalSpeeds.end();
 			Time++)
@@ -292,6 +294,10 @@ void Song::Process(VSRG::Difficulty* Which, VectorTN NotesOut, float Drift, doub
 		judgeline - positiveposition
 		and positiveposition would just be
 		measure * measuresize + fraction * fractionsize
+
+		In practice, since we use a ms-based model rather than a beat one,
+		we just do regular integration of 
+		position = sum(speed_i * duration_i) + speed_current * (time_current - speed_start_time)
 	*/
 
 	int ApplyDriftVirtual = Configuration::GetConfigf("UseAudioCompensationKeysounds");
@@ -356,6 +362,8 @@ void Song::Process(VSRG::Difficulty* Which, VectorTN NotesOut, float Drift, doub
 					else
 						NewNote.AssignPosition( -VerticalPosition, -HoldEndPosition);
 
+					// Okay, now we want to know what fraction of a beat we're dealing with
+					// this way we can display colored (a la Stepmania) notes.
 					double cBeat = BeatAtTime((*Diff)->BPS, CurrentNote.StartTime, (*Diff)->Offset + Drift);
 					double iBeat = floor(cBeat);
 					double dBeat = cBeat - iBeat;

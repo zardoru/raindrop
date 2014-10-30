@@ -100,6 +100,7 @@ void ScreenGameplay7K::Cleanup()
 	MixerRemoveSample(FailSnd);
 
 	delete MissSnd;
+	delete FailSnd;
 	delete Animations;
 	delete score_keeper;
 }
@@ -196,7 +197,6 @@ bool ScreenGameplay7K::LoadChartData()
 	if (!Preloaded)
 	{
 		// The difficulty details are destroyed; which means we should load this from its original file.
-		/* Load song from directory */
 		SongLoader Loader(GameState::GetInstance().GetSongDatabase());
 		Directory FN;
 
@@ -213,7 +213,7 @@ bool ScreenGameplay7K::LoadChartData()
 
 		/*
 			At this point, MySong == LoadedSong, which means it's not a metadata-only Song* Instance.
-			The old copy is preserved; but this new one will be removed by the end of ScreenGameplay7K.
+			The old copy is preserved; but this new one (LoadedSong) will be removed by the end of ScreenGameplay7K.
 		*/
 	}
 
@@ -253,7 +253,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 				delete Music;
 				Music = NULL;
 
-				Log::Printf("Unable to load song (Filename: %s)\n", MySong->SongFilename.c_str());
+				Log::Printf("Unable to load song (Path: %s)\n", MySong->SongFilename.c_str());
 				DoPlay = false;
 				return false; // Quit; couldn't find audio for a chart that requires it.
 			}
@@ -261,25 +261,6 @@ bool ScreenGameplay7K::LoadSongAudio()
 	}
 
 	// Load samples.
-
-	Log::Printf("Loading samples... ");
-	for (std::map<int, GString>::iterator i = CurrentDiff->SoundList.begin(); i != CurrentDiff->SoundList.end(); i++)
-	{
-		Keysounds[i->first] = new SoundSample();
-
-#ifdef WIN32
-
-		std::wstring sd = Utility::Widen(MySong->SongDirectory) + L"/" + Utility::Widen(i->second);
-
-		if (Keysounds[i->first]->Open(Utility::Narrow(sd).c_str()))
-			MixerAddSample(Keysounds[i->first]);
-
-#else
-		if (Keysounds[i->first]->Open((MySong->SongDirectory + "/" + i->second).c_str()))
-			MixerAddSample(Keysounds[i->first]);
-#endif
-	}
-
 	if (strstr(MySong->SongFilename.c_str(), ".ojm"))
 	{
 		Log::Printf("Loading OJM.\n");
@@ -292,6 +273,25 @@ bool ScreenGameplay7K::LoadSongAudio()
 
 			if (i != NULL)
 				Keysounds[i] = Snd;
+		}
+	}
+	else if (CurrentDiff->SoundList.size())
+	{
+		Log::Printf("Loading samples... ");
+		for (std::map<int, GString>::iterator i = CurrentDiff->SoundList.begin(); i != CurrentDiff->SoundList.end(); i++)
+		{
+			Keysounds[i->first] = new SoundSample();
+
+#ifdef WIN32
+			std::wstring sd = Utility::Widen(MySong->SongDirectory) + L"/" + Utility::Widen(i->second);
+
+			if (Keysounds[i->first]->Open(Utility::Narrow(sd).c_str()))
+				MixerAddSample(Keysounds[i->first]);
+
+#else
+			if (Keysounds[i->first]->Open((MySong->SongDirectory + "/" + i->second).c_str()))
+				MixerAddSample(Keysounds[i->first]);
+#endif
 		}
 	}
 
@@ -426,7 +426,7 @@ void ScreenGameplay7K::SetupAfterLoadingVariables()
 	RecalculateMatrix();
 	MultiplierChanged = true;
 
-	BarlineEnabled = Configuration::GetSkinConfigf("BarlineEnabled");
+	BarlineEnabled = (Configuration::GetSkinConfigf("BarlineEnabled") != 0);
 	BarlineOffsetKind = Configuration::GetSkinConfigf("BarlineOffset");
 	BarlineX = Configuration::GetSkinConfigf("BarlineX");
 	BarlineWidth = Configuration::GetSkinConfigf("BarlineWidth");

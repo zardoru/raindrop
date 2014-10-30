@@ -62,7 +62,7 @@ void SongLoader::LoadSongDCFromDir( Directory songPath, std::vector<dotcur::Song
 		for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
 		{
 			GString Ext = Directory(*i).GetExtension();
-			if ( Ext == "ogg")
+			if ( Ext == "ogg" )
 			{
 				bool UsesFilename = false;
 				NewS = new dotcur::Song();
@@ -140,7 +140,11 @@ VSRG::Song* LoadSong7KFromFilename(Directory Filename, Directory Prefix, VSRG::S
 	for (int i = 0; i < sizeof (LoadersVSRG)/sizeof(loaderVSRGEntry_t); i++)
 	{
 		if (Ext == LoadersVSRG[i].Ext)
+		{
+			Log::Printf("Load %s from disk...", Filename.c_path());
 			LoadersVSRG[i].LoadFunc (fn_f, Prefix, Sng);
+			Log::Printf(" ok\n");
+		}
 	}
 
 	return Sng;
@@ -198,13 +202,13 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 		All BMS must be packed together.
 		All osu!mania charts must be packed together.
 		OJNs must be their own chart.
-		SMs must be their own chart. (And SSc have priority if more loaders are supported later)
+		SMs must be their own chart. (And SSCs have priority if more loaders are supported later)
 		All FCFs to be grouped together
 
 		Therefore; it's not the song directory which we check, but the difficulties' files.
 	*/
 
-	/* First we need to see whether this file needs to be renewed.*/
+	/* First we need to see whether these file need to be renewed.*/
 	for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{
 		std::wstring Ext = Utility::Widen(Directory(*i).GetExtension());
@@ -265,6 +269,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 		VSRGUpdateDatabaseDifficulties(DB, osuSong);
 		PushVSRGSong(VecOut, osuSong);
 
+		// Stepmania charts get their own song objects too.
 		VSRG::Song *smSong = new VSRG::Song;
 		smSong->SongDirectory = SongDirectory;
 		for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
@@ -312,10 +317,12 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 			i++)
 		{
 			VSRG::Song *New = new VSRG::Song;
+			Log::Printf("Song ID %d load from cache...", *i);
 			DB->GetSongInformation7K(*i, New);
 			New->SongDirectory = SongDirectory;
 
 			PushVSRGSong(VecOut, New);
+			Log::Printf(" ok\n");
 		}
 	}
 }

@@ -101,6 +101,7 @@ void ScreenGameplay7K::DrawMeasures()
 				if (!m->IsHold())
 					continue;
 
+			// Is there a better way to do this that doesn't involve recalculating this eeeeeevery note?
 			float Vertical = (m->GetVertical() * SpeedMultiplier + rPos) ;
 			float VerticalHold;
 

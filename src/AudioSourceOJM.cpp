@@ -19,22 +19,22 @@
 struct M30Header
 {
 	int32 file_format_version;
-	char namiencoded;
-	char unk_fixed2[3];
-	int16 sample_count;
-	char unk_fixed3[6];
+	int32 encryption_flag;
+	int32 sample_count;
+	int32 sample_offset;
 	int32 payload_size;
 	int32 padding;
 };
+
+
 
 struct M30Entry
 {
 	char  sample_name[32];
 	int32 sample_size;
-	char  unk_sample_type;
-	char  unk_off;
-	int16 fixed2;
-	int32 unk_sample_type2;
+	int16 codec_code;
+	int16 codec_code2;
+	int32 music_flag;
 	int16 ref;
 	int16 unk_zero;
 	int32 pcm_samples;
@@ -233,7 +233,7 @@ char REARRANGE_TABLE[] = {
 /**
 * fuck the person who invented this, FUCK YOU!... but with love =$
 */
-void OJMRearrange(char* buf_io, size_t len)
+void omc_rearrange(char* buf_io, size_t len)
 {
 	int key = ((len % 17) << 4) + (len % 17);
 	int block_size = len / 17;
@@ -245,12 +245,14 @@ void OJMRearrange(char* buf_io, size_t len)
 		int block_start_encoded = block_size * block;	// Where is the start of the enconded block
 		int block_start_plain = block_size * REARRANGE_TABLE[key];	// Where the final plain block will be
 		memcpy(buf_io + block_start_plain, buf_encoded + block_start_encoded, block_size);
+
+		key++;
 	}
 
 	delete buf_encoded;
 }
 
-void acc_xor(char* buf, size_t len, int &acc_keybyte, int &acc_counter)
+void omc_xor(char* buf, size_t len, int &acc_keybyte, int &acc_counter)
 {
 	int tmp = 0;
 	char this_byte = 0;
@@ -281,6 +283,18 @@ void NamiXOR(char* buffer, size_t length)
 		buffer[i+1] ^= NAMI[1];
 		buffer[i+2] ^= NAMI[2];
 		buffer[i+3] ^= NAMI[3];
+	}
+}
+
+void F412XOR(char* buffer, size_t length)
+{
+	char F412[] = { 0x30, 0x34, 0x31, 0x32 };
+	for (uint32 i = 0; i + 3 < length; i += 4)
+	{
+		buffer[i] ^= F412[0];
+		buffer[i + 1] ^= F412[1];
+		buffer[i + 2] ^= F412[2];
+		buffer[i + 3] ^= F412[3];
 	}
 }
 
@@ -335,16 +349,19 @@ void AudioSourceOJM::parseM30()
 		sizeLeft -= Entry.sample_size;
 
 		int OJMIndex = Entry.ref;
-		if (Entry.unk_sample_type == 0)
+		if (Entry.codec_code == 0)
 			OJMIndex += 1000;
-		else if (Entry.unk_sample_type != 5) continue; // Unknown sample id type.
+		else if (Entry.codec_code != 5) continue; // Unknown sample id type.
 
 		char* SampleData = new char[Entry.sample_size];
 		ifile->read(SampleData, Entry.sample_size);
 		
-		if (Head.namiencoded)
+		if (Head.encryption_flag & 16)
 			NamiXOR(SampleData, Entry.sample_size);
+		else if (Head.encryption_flag & 32)
+			F412XOR(SampleData, Entry.sample_size);
 
+		// Sample data is done. Now the bits that are specific to raindrop..
 		SoundSample* NewSample = new SoundSample;
 
 		SFM30 ToLoad;
@@ -397,8 +414,8 @@ void AudioSourceOJM::parseOMC()
 		char *Buffer = new char[WavHead.chunk_size];
 		ifile->read(Buffer, WavHead.chunk_size);
 
-		OJMRearrange(Buffer, WavHead.chunk_size);
-		acc_xor(Buffer, WavHead.chunk_size, acc_keybyte, acc_counter);
+		omc_rearrange(Buffer, WavHead.chunk_size);
+		omc_xor(Buffer, WavHead.chunk_size, acc_keybyte, acc_counter);
 
 		int ifmt;
 

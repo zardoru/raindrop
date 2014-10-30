@@ -56,7 +56,7 @@ union OjnEvent
 {
 	struct {
 		short noteValue;
-		char unk;
+		char volume_pan;
 		char type;
 	};
 	float floatValue;
@@ -65,7 +65,7 @@ union OjnEvent
 struct OjnInternalEvent
 {
 	int Channel;
-	int noteKind; // undefined if channel is not note channel
+	int noteKind; // undefined if channel is not note or autoplay channel
 	float Fraction;
 	union {
 		float fValue;
@@ -172,7 +172,10 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 {
 	int CurrentMeasure = 0;
 
+	// First, we sort and clear up invalid events.
 	FixOJNEvents(Info);
+
+	// Then we need to have just as many measures going out as we've got in here.
 	Out->Measures.reserve(Info->Measures.size());
 
 
@@ -185,16 +188,18 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 
 		Out->Measures.push_back(VSRG::Measure());
 
+		// All fractional measure events were already handled at read time.
 		Out->Measures[CurrentMeasure].MeasureLength = Measure->Len;
 
 		for (std::vector<OjnInternalEvent>::iterator Evt = Measure->Events.begin();
 			Evt != Measure->Events.end();
 			Evt++)
 		{
-			if (Evt->Channel != BPM_CHANNEL) continue;
+			if (Evt->Channel != BPM_CHANNEL) continue; // These are the only ones we directly handle.
 			float Beat = MeasureBaseBeat + Evt->Fraction * 4;
 			TimingSegment Segment;
 
+			// 0 values must be ignored.
 			if (Evt->fValue == 0) continue;
 
 			Segment.Time = Beat;
@@ -202,6 +207,7 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 
 			if (Out->Timing.size())
 			{
+				// For some reason, a few BPMs are redundant. Since our events are sorted, there's no need for worry..
 				if (Out->Timing.back().Value == Evt->fValue) // ... We already have this BPM.
 					continue;
 			}
@@ -212,15 +218,20 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 		CurrentMeasure++;
 	}
 
+	// The BPM info on the header is not for decoration. It's the very first BPM we should be using.
+	// A few of the charts already have set BPMs at beat 0, so we only need to add information if it's missing.
 	if (Out->Timing.size() == 0 || Out->Timing[0].Time > 0)
 	{
 		TimingSegment Seg;
 		Seg.Time = 0;
 		Seg.Value = Info->BPM;
 		Out->Timing.push_back(Seg);
+
+		// Since events and measures are ordered already, there's no need to sort
+		// timing data unless we insert new information.
+		std::sort(Out->Timing.begin(), Out->Timing.end(), sortTiming);
 	}
 
-	std::sort(Out->Timing.begin(), Out->Timing.end(), sortTiming);
 
 	// Now, we can process notes and long notes.
 	CurrentMeasure = 0;
@@ -241,53 +252,50 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 			{
 				float Beat = MeasureBaseBeat + Evt->Fraction * Measure->Len;
 				float Time = TimeAtBeat(Out->Timing, 0, Beat);
-				int Value = Evt->iValue;
-				AutoplaySound Snd;
 
-				if (Evt->noteKind % 8 > 3) // Okay...
-					Value += 1000;
+				if (Evt->noteKind % 8 > 3) // Okay... This is obscure. Big thanks to open2jam.
+					Evt->iValue += 1000;
 
-				Snd.Sound = Value;
-				Snd.Time = Time;
-				Out->BGMEvents.push_back(Snd);
-			}
-			else
-			{
-				float Beat = MeasureBaseBeat + Evt->Fraction * Measure->Len;
-				float Time = TimeAtBeat(Out->Timing, 0, Beat);
-				VSRG::NoteData Note;
-
-				Note.StartTime = Time;
-				Note.Sound = Evt->iValue;
-
-				if (Evt->noteKind % 8 > 3)
+				if (Evt->Channel == AUTOPLAY_CHANNEL) // Ah, autoplay audio.
 				{
-					Note.Sound += 1000;
-					Evt->noteKind = Evt->noteKind % 4;
+					AutoplaySound Snd;
+
+					Snd.Sound = Evt->iValue;
+					Snd.Time = Time;
+					Out->BGMEvents.push_back(Snd);
 				}
-
-				switch (Evt->noteKind)
+				else // A note! In this case, we already 'normalized' O2Jam channels into raindrop channels.
 				{
-				case 0:
-					Out->TotalNotes++;
-					Out->TotalObjects++;
-					Out->TotalScoringObjects++;
-					Out->Measures[CurrentMeasure].MeasureNotes[Evt->Channel].push_back(Note);
-					break;
-				case 2:
-					Out->TotalScoringObjects++;
-					PendingLNs[Evt->Channel] = Time;
-					PendingLNSound[Evt->Channel] = Evt->iValue;
-					break;
-				case 3:
-					Out->TotalObjects++;
-					Out->TotalHolds++;
-					Out->TotalScoringObjects++;
-					Note.StartTime = PendingLNs[Evt->Channel];
-					Note.EndTime = Time;
-					Note.Sound = PendingLNSound[Evt->Channel];
-					Out->Measures[CurrentMeasure].MeasureNotes[Evt->Channel].push_back(Note);
-					break;
+					VSRG::NoteData Note;
+
+					if (Evt->Channel >= 7) continue; // Who knows... A buffer overflow may be possible.
+
+					Note.StartTime = Time;
+					Note.Sound = Evt->iValue;
+
+					switch (Evt->noteKind)
+					{
+					case 0:
+						Out->TotalNotes++;
+						Out->TotalObjects++;
+						Out->TotalScoringObjects++;
+						Out->Measures[CurrentMeasure].MeasureNotes[Evt->Channel].push_back(Note);
+						break;
+					case 2:
+						Out->TotalScoringObjects++;
+						PendingLNs[Evt->Channel] = Time;
+						PendingLNSound[Evt->Channel] = Evt->iValue;
+						break;
+					case 3:
+						Out->TotalObjects++;
+						Out->TotalHolds++;
+						Out->TotalScoringObjects++;
+						Note.StartTime = PendingLNs[Evt->Channel];
+						Note.EndTime = Time;
+						Note.Sound = PendingLNSound[Evt->Channel];
+						Out->Measures[CurrentMeasure].MeasureNotes[Evt->Channel].push_back(Note);
+						break;
+					}
 				}
 			}
 		}
@@ -310,17 +318,14 @@ void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::
 	}
 
 	OjnHeader Head;
-	char hData[sizeof(OjnHeader)];
-	size_t qz = sizeof(OjnHeader);
-	filein.read(hData, qz);
+	filein.read((char*)&Head, sizeof(OjnHeader));
+
 	if (!filein)
 	{
 		if (filein.eofbit)
 			Log::Printf("NoteLoaderOJN: EOF reached before header could be read\n");
 		return;
 	}
-
-	memcpy(&Head, hData, sizeof(OjnHeader));
 
 	if (strcmp(Head.signature, "ojn"))
 	{
@@ -330,6 +335,12 @@ void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::
 
 	GString vArtist;
 	GString vName;
+
+	/*  
+		These are the only values we display, so we should clean them up so that nobody cries.
+		Of course, the right thing to do would be to iconv these, but unless
+		I implement some way of detecting encodings, this is the best we can do in here.
+	*/
 	utf8::replace_invalid(Head.artist, Head.artist + 32, std::back_inserter(vArtist));
 	utf8::replace_invalid(Head.title, Head.title + 64, std::back_inserter(vName));
 

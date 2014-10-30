@@ -87,7 +87,7 @@ public:
 	static SongWheel& GetInstance();
 
 	void GoUp();
-	void Initialize(float Start, float End, bool IsDotcurActive, bool IsVSRGActive, 
+	void Initialize(float Start, float End, 
 		ListTransformFunction FuncTransform, SongNotification FuncNotify, SongNotification FuncNotifySelect, 
 		SongDatabase* Database);
 

@@ -197,15 +197,12 @@ void TruetypeFont::SetupTexture()
 void TruetypeFont::Render(GString In, const Vec2 &Position, const Mat4 &Transform)
 {
 
-	const char* Text = In.c_str();
-	std::vector<int> r; 
+	const char* Text = In.c_str(); 
 	int Line = 0;
 	glm::vec3 vOffs (Position.x, Position.y + scale, 16);
 
 	if (!IsValid)
 		return;
-
-	utf8::utf8to32(Text, Text + strlen(Text), std::back_inserter(r));
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -230,15 +227,16 @@ void TruetypeFont::Render(GString In, const Vec2 &Position, const Mat4 &Transfor
 	GraphObject2D::BindTopLeftVBO();
 	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
-	size_t s = r.size();
-	for (uint32 i = 0; i < s; i++)
+	utf8::iterator<const char*> it (Text, Text, Text + In.length());
+	utf8::iterator<const char*> itend(Text + In.length(), Text, Text + In.length());
+	for (; it != itend; it++)
 	{
-		codepdata &cp = GetTexFromCodepoint(r[i]);
+		codepdata &cp = GetTexFromCodepoint(*it);
 		unsigned char* tx = cp.tex;
 		glm::vec3 trans = vOffs + glm::vec3(cp.xofs, cp.yofs, 0);
 		glm::mat4 dx;
 
-		if (r[i] == 10) // utf-32 line feed
+		if (*it == 10) // utf-32 line feed
 		{
 			Line++;
 			vOffs.x = Position.x;
@@ -269,11 +267,13 @@ void TruetypeFont::Render(GString In, const Vec2 &Position, const Mat4 &Transfor
 
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-		if (i+1 < s)
+		utf8::iterator<const char*> next = it;
+		next++;
+		if (next != itend)
 		{
-			float aW = stbtt_GetCodepointKernAdvance(info, r[i], r[i+1]);
+			float aW = stbtt_GetCodepointKernAdvance(info, *it, *next);
 			int bW;
-			stbtt_GetCodepointHMetrics(info, r[i], &bW, NULL);
+			stbtt_GetCodepointHMetrics(info, *it, &bW, NULL);
 			vOffs.x += aW * realscale + bW * realscale;
 		}
 	}

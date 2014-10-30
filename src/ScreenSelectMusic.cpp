@@ -95,7 +95,7 @@ ScreenSelectMusic::ScreenSelectMusic()
 	boost::function<float (float)> TransformFunc( boost::bind(&ScreenSelectMusic::GetListYTransformation, this, _1) );
 	boost::function<void (Game::Song*, uint8)> SongNotifyFunc( boost::bind(&ScreenSelectMusic::OnSongChange, this, _1, _2) );
 	boost::function<void (Game::Song*, uint8)> SongNotifySelectFunc( boost::bind(&ScreenSelectMusic::OnSongSelect, this, _1, _2) );
-	Game::SongWheel::GetInstance().Initialize(0, 0, true, true, 
+	Game::SongWheel::GetInstance().Initialize(0, 0,
 		TransformFunc, SongNotifyFunc, SongNotifySelectFunc, 
 		GameState::GetInstance().GetSongDatabase());
 
@@ -253,7 +253,6 @@ bool ScreenSelectMusic::Run(double Delta)
 	{
 		if (SwitchBackGuiPending)
 		{
-			WindowFrame.isGuiInputEnabled = true;
 			SwitchBackGuiPending = false;
 			if (LoopTotal)
 			{

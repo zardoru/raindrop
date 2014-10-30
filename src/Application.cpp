@@ -27,8 +27,10 @@
 #include "Converter.h"
 
 #include "SongLoader.h"
+#include "SongWheel.h"
 
 bool Auto = false;
+bool DoRun = false;
 
 Application::Application(int argc, char *argv[])
 {
@@ -153,10 +155,12 @@ void Application::Init()
 
 	if (RunMode == MODE_PLAY || RunMode == MODE_VSRGPREVIEW)
 	{
-		WindowFrame.AutoSetupWindow(this);
+		DoRun = WindowFrame.AutoSetupWindow(this);
 		InitAudio();
 		Game = NULL;
 	}
+	else
+		DoRun = true;
 
 	Log::Printf("Total Initialization Time: %fs\n", glfwGetTime() - T1);
 }
@@ -165,6 +169,9 @@ void Application::Run()
 {
 	double T1 = glfwGetTime();
 	bool RunLoop = true;
+
+	if (!DoRun)
+		return;
 
 	if (RunMode == MODE_PLAY)
 	{
@@ -211,23 +218,8 @@ void Application::Run()
 		RunLoop = false;
 	}else if (RunMode == MODE_GENCACHE)
 	{
-		std::vector<VSRG::Song*> Songs;
-		SongLoader SL(GameState::GetInstance().GetSongDatabase());
-
 		Log::Printf("Generating cache...\n");
-
-		std::map<GString, GString> Directories;
-		Configuration::GetConfigListS("SongDirectories", Directories, "Songs");
-
-		for (std::map<GString, GString>::iterator i = Directories.begin(); 
-			i != Directories.end();
-			i++)
-		{
-			SL.GetSongList7K(Songs, i->second);
-		}
-
-		for (std::vector<VSRG::Song*>::iterator i = Songs.begin(); i != Songs.end(); i++)
-			delete *i;
+		Game::SongWheel::GetInstance().ReloadSongs();
 
 		RunLoop = false;
 	}

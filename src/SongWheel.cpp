@@ -27,6 +27,8 @@ SongWheel::SongWheel()
 	mLoadMutex = NULL;
 	mLoadThread = NULL;
 	CurrentVerticalDisplacement = 0;
+	VSRGModeActive = Configuration::GetConfigf("VSRGEnabled");
+	dotcurModeActive = Configuration::GetConfigf("dotcurEnabled");
 }
 
 SongWheel& SongWheel::GetInstance()
@@ -35,13 +37,10 @@ SongWheel& SongWheel::GetInstance()
 	return *WheelInstance;
 }
 
-void SongWheel::Initialize(float Start, float End, bool IsDotcurActive, bool IsVSRGActive,
+void SongWheel::Initialize(float Start, float End,
 	ListTransformFunction FuncTransform, SongNotification FuncNotify, SongNotification FuncNotifySelect,
 	SongDatabase* Database)
 {
-	dotcurModeActive = IsDotcurActive;
-	VSRGModeActive = IsVSRGActive;
-
 	OnSongChange = FuncNotify;
 	OnSongSelect = FuncNotifySelect;
 	Transform = FuncTransform;
@@ -108,6 +107,7 @@ public:
 
 		SongLoader Loader (DB);
 
+		Log::Printf("Started loading songs..\n");
 		DB->StartTransaction();
 
 		for (std::map<GString, GString>::iterator i = Directories.begin();
