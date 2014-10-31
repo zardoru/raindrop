@@ -27,8 +27,8 @@ SongWheel::SongWheel()
 	mLoadMutex = NULL;
 	mLoadThread = NULL;
 	CurrentVerticalDisplacement = 0;
-	VSRGModeActive = Configuration::GetConfigf("VSRGEnabled");
-	dotcurModeActive = Configuration::GetConfigf("dotcurEnabled");
+	VSRGModeActive = (Configuration::GetConfigf("VSRGEnabled") != 0);
+	dotcurModeActive = (Configuration::GetConfigf("dotcurEnabled") != 0);
 }
 
 SongWheel& SongWheel::GetInstance()
@@ -211,7 +211,7 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 			Vec2 mpos = GameState::GetWindow()->GetRelativeMPos();
 			if (!isMouseInput || mpos.x > Transform(mpos.y))
 			{
-				if (GetCursorIndex() < CurrentList->GetNumEntries())
+				if ((uint32)GetCursorIndex() < CurrentList->GetNumEntries())
 				{
 					if (!CurrentList->IsDirectory(GetCursorIndex()))
 						OnSongSelect(CurrentList->GetSongEntry(GetCursorIndex()), DifficultyIndex);

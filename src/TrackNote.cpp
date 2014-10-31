@@ -6,8 +6,7 @@ using namespace VSRG;
 
 TrackNote::TrackNote()
 {
-	Enabled = true;
-	WasHit = false;
+	Data.EnabledHitFlags = EnabledFlag;
 }
 
 TrackNote::~TrackNote()
@@ -24,22 +23,22 @@ int GetFractionKindBeat(double frac);
 /* calculate the beat snap for this fraction */
 void TrackNote::AssignFraction(double frac)
 {
-	FractionKind = GetFractionKindBeat(frac);
+	Data.FractionKind = GetFractionKindBeat(frac);
 }
 
 Mat4 TrackNote::GetHoldPositionMatrix(const float &trackPosition) const
 {
-	float VerticalHoldBodyPos = b_pos.y + (b_pos_holdend.y - b_pos.y) / 2;
+	float VerticalHoldBodyPos = b_pos + (b_pos_holdend - b_pos) / 2;
 	return glm::translate(Mat4(), glm::vec3(trackPosition, VerticalHoldBodyPos, 14));
 }
 
 Mat4 TrackNote::GetHoldBodyMatrix(const float &noteWidth, const float &speedMultiplier) const
 {
-	float VertHBS = abs((b_pos_holdend.y - b_pos.y));
+	float VertHBS = abs((b_pos_holdend - b_pos));
 	return glm::scale(Mat4(), glm::vec3(noteWidth, VertHBS * speedMultiplier, 1)) * glm::translate(Mat4(), glm::vec3());
 }
 
-void TrackNote::AssignPosition(Vec2 Position, Vec2 endPosition)
+void TrackNote::AssignPosition(float Position, float endPosition)
 {
 	b_pos = Position;
 	b_pos_holdend = endPosition;
@@ -52,17 +51,17 @@ bool TrackNote::IsHold() const
 
 Mat4 TrackNote::GetHoldEndMatrix() const
 {
-	return glm::translate(Mat4(), glm::vec3(b_pos_holdend.x, b_pos_holdend.y, 0));
+	return glm::translate(Mat4(), glm::vec3(0, b_pos_holdend, 0));
 }
 
 Mat4 TrackNote::GetMatrix() const
 {
-	return glm::translate(Mat4(), glm::vec3(b_pos.x, b_pos.y, 0));
+	return glm::translate(Mat4(), glm::vec3(0, b_pos, 0));
 }
 
 float TrackNote::GetVertical() const
 {
-	return b_pos.y;
+	return b_pos;
 }
 
 void TrackNote::AddTime(double Time)
@@ -85,27 +84,27 @@ double TrackNote::GetStartTime() const
 
 bool TrackNote::IsEnabled() const
 {
-	return Enabled;
+	return Data.EnabledHitFlags & EnabledFlag;
 }
 
 void TrackNote::Disable()
 {
-	Enabled = false;
+	Data.EnabledHitFlags &= ~EnabledFlag;
 }
 
 void TrackNote::Hit()
 {
-	WasHit = true;
+	Data.EnabledHitFlags |= WasHitFlag;
 }
 
 bool TrackNote::WasNoteHit() const
 {
-	return WasHit;
+	return (Data.EnabledHitFlags & WasHitFlag) != 0;
 }
 
 float TrackNote::GetVerticalHold() const
 {
-	return b_pos_holdend.y;
+	return b_pos_holdend;
 }
 
 int TrackNote::GetSound() const
@@ -115,5 +114,5 @@ int TrackNote::GetSound() const
 
 int TrackNote::GetFracKind() const
 {
-	return FractionKind;
+	return Data.FractionKind;
 }

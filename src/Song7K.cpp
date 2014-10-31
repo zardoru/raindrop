@@ -353,8 +353,8 @@ void Song::Process(VSRG::Difficulty* Which, VectorTN NotesOut, float Drift, doub
 					NewNote.AssignNotedata(CurrentNote);
 					NewNote.AddTime(Drift);
 
-					Vec2 VerticalPosition( 0, IntegrateToTime((*Diff)->VerticalSpeeds, CurrentNote.StartTime + Drift) );
-					Vec2 HoldEndPosition( 0, IntegrateToTime((*Diff)->VerticalSpeeds, CurrentNote.EndTime + Drift) );
+					float VerticalPosition = IntegrateToTime((*Diff)->VerticalSpeeds, CurrentNote.StartTime + Drift);
+					float HoldEndPosition = IntegrateToTime((*Diff)->VerticalSpeeds, CurrentNote.EndTime + Drift);
 
 					// if upscroll change minus for plus as well as matrix at screengameplay7k
 					if (!CurrentNote.EndTime)
