@@ -36,6 +36,7 @@ namespace VSRG
 			StartTime = EndTime = 0;
 			Sound = 0;
 			NoteKind = NK_NORMAL;
+			EnabledHitFlags = EnabledFlag;
 		}
 	};
 

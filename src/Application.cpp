@@ -46,7 +46,7 @@ Application::Application(int argc, char *argv[])
 	Measure = 0;
 	Author = "raindrop";
 
-	Log::Printf("sizeof NoteData: %d - sizeof Tracknote: %d", sizeof(VSRG::NoteData), sizeof(VSRG::TrackNote));
+	// Log::Printf("sizeof NoteData: %d - sizeof Tracknote: %d", sizeof(VSRG::NoteData), sizeof(VSRG::TrackNote));
 }
 
 inline bool ValidArg(int count, int req, int i)

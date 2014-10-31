@@ -6,7 +6,6 @@ using namespace VSRG;
 
 TrackNote::TrackNote()
 {
-	Data.EnabledHitFlags = EnabledFlag;
 }
 
 TrackNote::~TrackNote()
