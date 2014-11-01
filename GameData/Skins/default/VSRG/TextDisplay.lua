@@ -81,7 +81,7 @@ function UpdateTextObjects()
 		lifebar.Text = string.format("%03d%%", LifebarDisplay);
 	end
 
-	local fmtext= string.format("Speed: %02.2fx\n", Game:GetUserMultiplier())
+	local fmtext= string.format("Speed: %02.2fx (%.0f)\n", Game:GetUserMultiplier(), Game:GetCurrentVerticalSpeed())
 	local w0, w1, w2, w3, w4, w5
 
 	w0 = ScoreKeeper:getJudgmentCount(SKJ_W0)
@@ -95,6 +95,8 @@ function UpdateTextObjects()
 	else
 		fmtext = fmtext .. string.format("F:%04d\nE:%04d\nS:%04d\nN:%04d\nO:%04d\nG:%04d", w0, w1, w2, w3, w4, w5)
 	end
+
+	fmtext = fmtext .. string.format("\nBPM: %d", CurrentBPM)
 
 	judgments.Text = fmtext
 end
