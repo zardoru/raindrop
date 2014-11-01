@@ -411,8 +411,11 @@ void Difficulty::Destroy()
 	
 	Filename.clear();
 	SoundList.clear();
+
 	delete TimingInfo;
 	delete BMPEvents;
+	TimingInfo = NULL;
+	BMPEvents = NULL;
 
 	DestroyNotes();
 }

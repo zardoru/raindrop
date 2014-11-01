@@ -507,14 +507,8 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	// We're done with the data stored in the difficulties that aren't the one we're using. Clear it up.
 	for (auto i = MySong->Difficulties.begin(); i != MySong->Difficulties.end(); i++)
 	{
-		if (*i != CurrentDiff)
-		{
-			delete *i;
-			i = MySong->Difficulties.erase(i);
-			if (i == MySong->Difficulties.end()) break;
-		}
+		(*i)->Destroy();
 	}
-		
 }
 
 void ScreenGameplay7K::SetupGear()
