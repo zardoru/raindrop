@@ -508,7 +508,11 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	for (auto i = MySong->Difficulties.begin(); i != MySong->Difficulties.end(); i++)
 	{
 		if (*i != CurrentDiff)
+		{
 			delete *i;
+			i = MySong->Difficulties.erase(i);
+			if (i == MySong->Difficulties.end()) break;
+		}
 	}
 		
 }

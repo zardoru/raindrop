@@ -90,10 +90,10 @@ function UpdateTextObjects()
 	w3 = ScoreKeeper:getJudgmentCount(SKJ_W3)
 	w4 = ScoreKeeper:getJudgmentCount(SKJ_W4)
 	w5 = ScoreKeeper:getJudgmentCount(SKJ_W5)
-	if ScoreKeeper:usesW0() ~= 0 then
-		fmtext = fmtext .. string.format("%04d\n%04d\n%04d\n%04d\n%04d", w1, w2, w3, w4, w5)
+	if ScoreKeeper:usesW0() == false then
+		fmtext = fmtext .. string.format("E:%04d\nS:%04d\nN:%04d\nO:%04d\nG:%04d", w1, w2, w3, w4, w5)
 	else
-		fmtext = fmtext .. string.format("%04d\n%04d\n%04d\n%04d\n%04d\n%04d", w0, w1, w2, w3, w4, w5)
+		fmtext = fmtext .. string.format("F:%04d\nE:%04d\nS:%04d\nN:%04d\nO:%04d\nG:%04d", w0, w1, w2, w3, w4, w5)
 	end
 
 	judgments.Text = fmtext
