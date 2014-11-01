@@ -6,16 +6,16 @@
 
 ScoreKeeper7K::~ScoreKeeper7K(){  }
 
-double ScoreKeeper7K::accuracy_percent(float var){
-	return float(ACC_MAX_SQ - var) / (ACC_MAX_SQ - ACC_MIN_SQ) * 100;
+double ScoreKeeper7K::accuracy_percent(double var){
+	return double(ACC_MAX_SQ - var) / (ACC_MAX_SQ - ACC_MIN_SQ) * 100;
 }
 
-void ScoreKeeper7K::setAccMin(int ms){
+void ScoreKeeper7K::setAccMin(double ms){
 	ACC_MIN = ms;
 	ACC_MIN_SQ = ms * ms;
 }
 
-void ScoreKeeper7K::setAccMax(int ms){
+void ScoreKeeper7K::setAccMax(double ms){
 	ACC_MAX = ms;
 	ACC_MAX_SQ = ms * ms;
 }

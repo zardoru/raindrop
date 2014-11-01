@@ -88,6 +88,15 @@ inline T Clamp(const T &Value, const T &Min, const T &Max)
 	else return Value;
 }
 
+template <class T>
+inline T clamp_to_interval(const T& value, const T& target, const T& interval)
+{
+	T output = value;
+	while(output > target + interval) output -= interval * 2;
+	while(output < target - interval) output += interval * 2;
+	return output;
+}
+
 double latof(GString s);
 
 using std::max;

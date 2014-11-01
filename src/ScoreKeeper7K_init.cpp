@@ -14,7 +14,7 @@ void ScoreKeeper7K::init(){
 	pacemaker_texts[PMT_AA] = "AA" ;
 	pacemaker_texts[PMT_AAA] = "AAA" ;
 
-	setAccMin(16);
+	setAccMin(6.4);
 	setAccMax(100);
 
 	max_notes = 0;

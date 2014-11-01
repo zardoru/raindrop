@@ -1,4 +1,5 @@
 #include <cmath>
+#include <iostream>
 
 #include "GameGlobal.h"
 #include "GameState.h"
@@ -314,8 +315,13 @@ void ScreenGameplay7K::UpdateSongTime(float Delta)
 	}
 }
 
+
 bool ScreenGameplay7K::Run(double Delta)
 {
+	
+	if(Delta > 0.001)
+	std::cerr << Delta << std::endl;
+
 	if (Next)
 		return RunNested(Delta);
 

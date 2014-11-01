@@ -25,8 +25,8 @@ class ScoreKeeper7K {
 
 		void setODWindows(int od);
 
-		void setAccMin(int ms);
-		void setAccMax(int ms);
+		void setAccMin(double ms);
+		void setAccMax(double ms);
 		
 		// accessor functions
 
@@ -155,7 +155,7 @@ class ScoreKeeper7K {
 		double total_sqdev; // accuracy scoring
 		double accuracy;
 
-		double accuracy_percent(float ms);
+		double accuracy_percent(double var);
 
 
 
@@ -208,8 +208,8 @@ class ScoreKeeper7K {
 		long long lifebar_battery_lives;
 
 		// scoring parameters.
-		long long ACC_MIN, ACC_MIN_SQ;
-		long long ACC_MAX, ACC_MAX_SQ;
+		double ACC_MIN, ACC_MIN_SQ;
+		double ACC_MAX, ACC_MAX_SQ;
 
 };
 

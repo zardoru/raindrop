@@ -3,7 +3,7 @@ env = Environment(CPPPATH=['src'])
 IsDebug = ARGUMENTS.get('debug', 0)
 DisableMP3 = ARGUMENTS.get('nomp3', 0)
 
-env.Append(CPPDEFINES=['LINUX'])
+env.Append(CPPDEFINES=['LINUX'], CXXFLAGS="-std=c++0x")
 
 if int(IsDebug):
 	env.Append(CCFLAGS=["-g"])

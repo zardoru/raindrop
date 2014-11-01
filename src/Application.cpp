@@ -249,6 +249,7 @@ void Application::Run()
 		WindowFrame.SwapBuffers();
 		oldTime = newTime;
 	}
+
 }
 
 void Application::HandleInput(int32 key, KeyEventType code, bool isMouseInput)

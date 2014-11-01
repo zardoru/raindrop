@@ -111,24 +111,30 @@ void ScreenGameplay7K::RunMeasures()
 
 
 			if (Auto) {
-				float TimeThreshold = SongTime + 0.016;
-				if ( m->GetStartTime() < TimeThreshold) // allow a tolerance equal to the judgment window?
+				double TimeThreshold = SongTime + 0.008; // latest time a note can activate.
+				if ( m->GetStartTime() <= TimeThreshold)
 				{
 					if (m->IsEnabled()) {
 						if (m->IsHold())
 						{
 							if (m->WasNoteHit())
 							{
-								if ( m->GetTimeFinal() < TimeThreshold)
-									ReleaseLane(k, SongTime);
+								if ( m->GetTimeFinal() < TimeThreshold){
+									double hit_time = clamp_to_interval(SongTime, m->GetTimeFinal(), 0.008);
+									// We use clamp_to_interval for those pesky outliers.
+									ReleaseLane(k, hit_time);
 									// ReleaseLane(k, m->GetTimeFinal());
-							}else
-								JudgeLane(k, SongTime);
+								}
+							}else{
+								double hit_time = clamp_to_interval(SongTime, m->GetStartTime(), 0.008);
+								JudgeLane(k, hit_time);
 								// JudgeLane(k, m->GetStartTime());
+							}
 						}else
 						{
-							JudgeLane(k, SongTime);
-							ReleaseLane(k, SongTime);
+							double hit_time = clamp_to_interval(SongTime, m->GetStartTime(), 0.008);
+							JudgeLane(k, hit_time);
+							ReleaseLane(k, hit_time);
 							// JudgeLane(k, m->GetStartTime());
 							// ReleaseLane(k, m->GetTimeFinal());
 						}
