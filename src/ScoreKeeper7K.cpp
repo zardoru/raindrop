@@ -194,8 +194,10 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 
 }
 
-int ScoreKeeper7K::getJudgmentCount(ScoreKeeperJudgment judgment)
+int ScoreKeeper7K::getJudgmentCount(int judgment)
 {
+	if (judgment >= 9 || judgment < 0) return 0;
+
 	return judgment_amt[judgment];
 }
 
@@ -256,7 +258,8 @@ double ScoreKeeper7K::getAccMax(){
 	return ACC_MAX;
 }
 
-int ScoreKeeper7K::getJudgmentWindow(ScoreKeeperJudgment judgment){
+double ScoreKeeper7K::getJudgmentWindow(int judgment){
+	if (judgment >= 9 || judgment < 0) return 0;
 	return judgment_time[judgment];
 }
 
@@ -280,7 +283,7 @@ GString ScoreKeeper7K::getHistogram(){
 
 /* actual score functions. */
 
-int ScoreKeeper7K::getScore(ScoreType score_type){
+int ScoreKeeper7K::getScore(int score_type){
 
 	switch(score_type){
 		case ST_SCORE:
@@ -307,7 +310,7 @@ int ScoreKeeper7K::getScore(ScoreType score_type){
 
 }
 
-float ScoreKeeper7K::getPercentScore(PercentScoreType percent_score_type){
+float ScoreKeeper7K::getPercentScore(int percent_score_type){
 
 	switch(percent_score_type){
 		case PST_RANK:
@@ -326,13 +329,13 @@ float ScoreKeeper7K::getPercentScore(PercentScoreType percent_score_type){
 
 }
 
-int ScoreKeeper7K::getLifebarUnits(LifeType lifebar_unit_type){
+int ScoreKeeper7K::getLifebarUnits(int lifebar_unit_type){
 
 	return 0;
 
 }
 
-float ScoreKeeper7K::getLifebarAmount(LifeType lifebar_amount_type){
+float ScoreKeeper7K::getLifebarAmount(int lifebar_amount_type){
 
 	switch(lifebar_amount_type){
 		case LT_EASY:
@@ -353,7 +356,7 @@ float ScoreKeeper7K::getLifebarAmount(LifeType lifebar_amount_type){
 
 }
 
-bool ScoreKeeper7K::isStageFailed(LifeType lifebar_amount_type){
+bool ScoreKeeper7K::isStageFailed(int lifebar_amount_type){
 	
 	switch(lifebar_amount_type){
 		case LT_GROOVE:
@@ -435,6 +438,7 @@ int ScoreKeeper7K::getPacemakerDiff(PacemakerType pacemaker){
 			return rank_pts - (total_notes * 280 / 100);
 	}
 
+	return 0;
 }
 
 

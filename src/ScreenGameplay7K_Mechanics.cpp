@@ -22,7 +22,7 @@ void ScreenGameplay7K::RecalculateMatrix()
 	PositionMatrix = glm::translate(Mat4(), glm::vec3(0, JudgmentLinePos + CurrentVertical * SpeedMultiplier, 0));
 	PositionMatrixJudgment = glm::translate(Mat4(), glm::vec3(0, JudgmentLinePos, 0));
 
-	for (uint8 i = 0; i < Channels; i++)
+	for (uint8 i = 0; i < CurrentDiff->Channels; i++)
 		NoteMatrix[i] = glm::translate(Mat4(), glm::vec3(LanePositions[i], 0, 14)) * noteEffectsMatrix[i] *  glm::scale(Mat4(), glm::vec3(LaneWidth[i], NoteHeight, 1));
 }
 
@@ -43,32 +43,6 @@ void ScreenGameplay7K::RecalculateEffects()
 		SpeedMultiplier = - (SpeedMultiplierUser + waveEffect + beatScrollEffect);
 	else
 		SpeedMultiplier = SpeedMultiplierUser + waveEffect + beatScrollEffect;
-}
-
-void ScreenGameplay7K::UpdateScriptScoreVariables()
-{
-
-	LuaManager *L = Animations->GetEnv();
-	L->SetGlobal("Combo", score_keeper->getScore(ST_COMBO));
-	L->SetGlobal("MaxCombo", score_keeper->getScore(ST_MAX_COMBO));
-	L->SetGlobal("Accuracy", score_keeper->getPercentScore(PST_ACC));
-	L->SetGlobal("SCScore", score_keeper->getScore(scoring_type));
-	L->SetGlobal("EXScore", score_keeper->getScore(ST_EX));
-
-	std::pair<GString, int> autopacemaker = score_keeper->getAutoPacemaker();
-	L->SetGlobal("PacemakerText", autopacemaker.first);
-	L->SetGlobal("PacemakerValue", autopacemaker.second);
-
-	L->SetGlobal("AccText", "ACC:");
-	L->SetGlobal("AccValue", score_keeper->getPercentScore(PST_EX));
-
-	double lifebar_amount = score_keeper->getLifebarAmount(lifebar_type);
-	L->SetGlobal("LifebarValue", lifebar_amount);
-	if(lifebar_type == LT_GROOVE || lifebar_type == LT_EASY)
-		L->SetGlobal("LifebarDisplay", max(2, int(floor(lifebar_amount * 50) * 2)));
-	else
-		L->SetGlobal("LifebarDisplay", int(ceil(lifebar_amount * 50) * 2));
-
 }
 
 
@@ -118,7 +92,7 @@ void ScreenGameplay7K::RunMeasures()
 	for (int i = 0; i < VSRG::MAX_CHANNELS; i++)
 		timeClosest[i] = CurrentDiff->Duration;
 
-	for (uint16 k = 0; k < Channels; k++)
+	for (uint16 k = 0; k < CurrentDiff->Channels; k++)
 	{
 		for (std::vector<TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); m++)	{
 
@@ -323,29 +297,4 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 			return; // we judged a note in this lane, so we're done.
 		}
 	}
-}
-
-void ScreenGameplay7K::UpdateScriptVariables()
-{
-	LuaManager *L = Animations->GetEnv();
-	L->SetGlobal("SpeedMultiplier", SpeedMultiplier);
-	L->SetGlobal("SpeedMultiplierUser", SpeedMultiplierUser);
-	L->SetGlobal("waveEffectEnabled", waveEffectEnabled);
-	L->SetGlobal("Active", Active);
-	L->SetGlobal("SongTime", SongTime);
-
-	CurrentBeat = IntegrateToTime(CurrentDiff->BPS, SongTime);
-	L->SetGlobal("Beat", CurrentBeat);
-
-	L->NewArray();
-
-	for (uint32 i = 0; i < Channels; i++)
-	{
-		L->SetFieldI(i + 1, HeldKey[i]);
-	}
-
-	L->FinalizeArray("HeldKeys");
-
-	L->SetGlobal("CurrentSPB", 1 / SectionValue(CurrentDiff->BPS, SongTime));
-	L->SetGlobal("CurrentBPM", 60 * SectionValue(CurrentDiff->BPS, SongTime));
 }

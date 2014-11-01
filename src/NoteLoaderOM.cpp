@@ -495,7 +495,6 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 	Info.last_sound_index = 1;
 
 	Diff->TimingInfo = Info.TimingInfo;
-	Diff->LMT = Utility::GetLMT(filename);
 
 	// osu! stores bpm information as the time in ms that a beat lasts.
 	Diff->BPMType = VSRG::Difficulty::BT_Beatspace;

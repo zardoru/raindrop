@@ -49,7 +49,7 @@ const char* RenewDiff = "DELETE FROM diffdb WHERE songid=?";
 const char* GetSongInfo = "SELECT songtitle, songauthor, songfilename, songbackground, mode FROM songdb WHERE id=?";
 const char* GetDiffInfo = "SELECT diffid, name, objcount, scoreobjectcount, holdcount, notecount, duration, isvirtual, keys, fileid, bpmtype FROM diffdb WHERE songid=?";
 const char* GetFileInfo = "SELECT filename, lastmodified FROM songfiledb WHERE id=?";
-const char* UpdateLMT = "UPDATE songfiledb SET lastmodified=? WHERE id=?";
+const char* UpdateLMT = "UPDATE songfiledb SET lastmodified=? WHERE filename=?";
 const char* UpdateDiff = "UPDATE diffdb SET name=?,objcount=?,scoreobjectcount=?,holdcount=?,notecount=?,\
 	duration=?,isvirtual=?,keys=?,bpmtype=? WHERE diffid=?";
 
@@ -154,12 +154,11 @@ int SongDatabase::InsertFilename(Directory Fn)
 
 	if (sqlite3_step(st_FilenameQuery) == SQLITE_ROW)
 	{
-		// There's an entry. Move along.
 		idOut = sqlite3_column_int(st_FilenameQuery, 0);
 
 		// Update the last-modified-time of this file.
 		SC(sqlite3_bind_int(st_UpdateLMT, 1, Utility::GetLMT(Fn.path())));
-		SC(sqlite3_bind_int(st_UpdateLMT, 2, idOut));
+		SC(sqlite3_bind_text(st_UpdateLMT, 2, Fn.c_path(), Fn.path().length(), SQLITE_TRANSIENT));
 		SCS(sqlite3_step(st_UpdateLMT));
 		SC(sqlite3_reset(st_UpdateLMT));
 	}else
@@ -383,7 +382,6 @@ void SongDatabase::GetSongInformation7K (int ID, VSRG::Song* Out)
 		SC(sqlite3_bind_int(st_GetFileInfo, 1, FileID));
 		sqlite3_step(st_GetFileInfo);
 		Diff->Filename = (char*)sqlite3_column_text(st_GetFileInfo, 0);
-		Diff->LMT = sqlite3_column_int(st_GetFileInfo, 1);
 		SC(sqlite3_reset(st_GetFileInfo));
 
 		Out->Difficulties.push_back(Diff);

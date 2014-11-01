@@ -213,6 +213,7 @@
     <ClCompile Include="..\src\ScoreKeeper7K_bms.cpp" />
     <ClCompile Include="..\src\ScoreKeeper7K_experimental.cpp" />
     <ClCompile Include="..\src\ScoreKeeper7K_init.cpp" />
+    <ClCompile Include="..\src\ScoreKeeper7K_Lua.cpp" />
     <ClCompile Include="..\src\ScoreKeeper7K_osu.cpp" />
     <ClCompile Include="..\src\ScoreKeeper7K_rank.cpp" />
     <ClCompile Include="..\src\Screen.cpp" />
@@ -221,6 +222,7 @@
     <ClCompile Include="..\src\ScreenEvaluation7K.cpp" />
     <ClCompile Include="..\src\ScreenGameplay.cpp" />
     <ClCompile Include="..\src\ScreenGameplay7K.cpp" />
+    <ClCompile Include="..\src\ScreenGameplay7K_Lua.cpp" />
     <ClCompile Include="..\src\ScreenGameplay7K_Mechanics.cpp" />
     <ClCompile Include="..\src\ScreenGameplay7K_Setup.cpp" />
     <ClCompile Include="..\src\ScreenLoading.cpp" />

@@ -33,7 +33,7 @@ class ScoreKeeper7K {
 		int getMaxNotes();
 		int getTotalNotes();
 
-		int getJudgmentCount(ScoreKeeperJudgment Judge);
+		int getJudgmentCount(int Judge);
 		std::string getHistogram();
 
 		ScoreKeeperJudgment hitNote(int ms);
@@ -41,17 +41,17 @@ class ScoreKeeper7K {
 
 		double getAccMax();
 
-		int getJudgmentWindow(ScoreKeeperJudgment judgment);
+		double getJudgmentWindow(int judgment);
 		double getMissCutoff();
 		double getEarlyMissCutoff();
 
-		int getScore(ScoreType score_type);
-		float getPercentScore(PercentScoreType score_type);
+		int getScore(int score_type);
+		float getPercentScore(int score_type);
 
-		int getLifebarUnits(LifeType lifebar_unit_type);
-		float getLifebarAmount(LifeType lifebar_amount_type);
+		int getLifebarUnits(int lifebar_unit_type);
+		float getLifebarAmount(int lifebar_amount_type);
 
-		bool isStageFailed(LifeType lifebar_amount_type);
+		bool isStageFailed(int lifebar_amount_type);
 		void failStage();
 
 		int getPacemakerDiff(PacemakerType pmt);
@@ -212,3 +212,6 @@ class ScoreKeeper7K {
 		long long ACC_MAX, ACC_MAX_SQ;
 
 };
+
+void SetupScorekeeper7KLuaInterface(void* state);
+void SetScorekeeper7KInstance(void* state, ScoreKeeper7K *Instance);

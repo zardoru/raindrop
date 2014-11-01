@@ -22,7 +22,9 @@ namespace VSRG
 	enum TimingInfoType {
 		TI_NONE,
 		TI_BMS,
-		TI_OSUMANIA
+		TI_OSUMANIA,
+		TI_O2JAM,
+		TI_STEPMANIA
 	};
 
 	class CustomTimingInfo {
@@ -65,19 +67,46 @@ namespace VSRG
 		}
 	};
 
+	class O2JamTimingInfo : public CustomTimingInfo
+	{
+	public:
+		enum {
+			O2_EX,
+			O2_NX,
+			O2_HX
+		} Difficulty;
+
+		O2JamTimingInfo()
+		{
+			Type = TI_O2JAM;
+			Difficulty = O2_HX;
+		}
+	};
+
+	class StepmaniaTimingInfo : public CustomTimingInfo
+	{
+	public:
+		StepmaniaTimingInfo()
+		{
+			Type = TI_STEPMANIA;
+		}
+	};
+
+	struct BMPEventsDetail {
+		std::map<int, GString> BMPList;
+		std::vector<AutoplayBMP> BMPEventsLayerBase;
+		std::vector<AutoplayBMP> BMPEventsLayer;
+		std::vector<AutoplayBMP> BMPEventsLayer2;
+		std::vector<AutoplayBMP> BMPEventsLayerMiss;
+	};
+
 	struct Difficulty : public Game::Song::Difficulty
 	{
-		// This is saved to the cache file.
+		// Contains stops data.
 		TimingData StopsTiming;
-
-		// For in-game effects.
-		TimingData BPS;
 
 		// For speed changes, as obvious as it sounds.
 		TimingData SpeedChanges;
-
-		// Vertical speeds. Same role as BarlineRatios.
-		TimingData VerticalSpeeds;
 
 		// Notes (Up to MAX_CHANNELS tracks)
 		MeasureVector Measures;
@@ -86,15 +115,7 @@ namespace VSRG
 		std::vector<AutoplaySound> BGMEvents;
 
 		// Autoplay BMP
-		std::map<int, GString> BMPList;
-		std::vector<AutoplayBMP> BMPEvents;
-		std::vector<AutoplayBMP> BMPEventsMiss;
-		std::vector<AutoplayBMP> BMPEventsLayer;
-		std::vector<AutoplayBMP> BMPEventsLayer2;
-
-		double PreviewTime;
-
-		int LMT; // Last modified time
+		BMPEventsDetail *BMPEvents;
 
 		enum EBt
 		{
@@ -106,7 +127,9 @@ namespace VSRG
 		unsigned char Channels;
 		bool IsVirtual;
 
-
+		void ProcessBPS(TimingData& BPS, double Drift);
+		void ProcessVSpeeds(TimingData& BPS, TimingData& VSpeeds, double SpeedConstant);
+		void ProcessSpeedVariations(TimingData& BPS, TimingData& VSpeeds, double Drift);
 	public:
 	
 		CustomTimingInfo* TimingInfo;
@@ -114,36 +137,32 @@ namespace VSRG
 		Difficulty() {
 			IsVirtual = false;
 			Channels = 0;
-			PreviewTime = 0;
-			LMT = 0;
 			TimingInfo = NULL;
+			BMPEvents = NULL;
 		};
 
+		// Get processed data for use on ScreenGameplay7K.
+		void Process(VectorTN NotesOut, TimingData &BPS, TimingData& VerticalSpeeds, float Drift = 0, double SpeedConstant = 0);
+
 		// The floats are in vertical units; like the notes' vertical position.
-		void GetMeasureLines(std::vector<float> &Out, float Drift);
+		void GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSpeeds, float Drift);
 
 		// Destroy all information that can be loaded from cache
 		void Destroy();
+
+		// Destroy notes data, since it's unnecesary once the difficulty is processed.
+		void DestroyNotes();
 	};
 
 
 	/* 7K Song */
 	class Song : public Game::Song
 	{
-		double PreviousDrift;
-		bool Processed;
-
-		void ProcessBPS(VSRG::Difficulty* Diff, double Drift);
-		void ProcessVSpeeds(VSRG::Difficulty* Diff, double SpeedConstant);
-		void ProcessSpeedVariations(VSRG::Difficulty* Diff, double Drift);
 	public:
-
 		std::vector<VSRG::Difficulty*> Difficulties;
 
 		Song();
 		~Song();
-
-		void Process(VSRG::Difficulty* Which, VectorTN NotesOut, float Drift = 0, double SpeedConstant = 0);		
 	};
 
 }

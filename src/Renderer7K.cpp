@@ -93,7 +93,7 @@ void ScreenGameplay7K::DrawMeasures()
 	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
 	/* todo: instancing */
-	for (uint32 k = 0; k < Channels; k++)
+	for (uint32 k = 0; k < CurrentDiff->Channels; k++)
 	{
 		for (std::vector<TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); m++)
 		{

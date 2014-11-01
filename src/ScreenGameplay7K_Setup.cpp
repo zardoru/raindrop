@@ -58,7 +58,6 @@ ScreenGameplay7K::ScreenGameplay7K()
 	CurrentVertical = 0;
 	SongTime = SongTimeReal = 0;
 	beatScrollEffect = 0;
-	Channels = 0;
 
 	AudioCompensation = (Configuration::GetConfigf("AudioCompensation") != 0);
 	TimeCompensation = 0;
@@ -330,20 +329,19 @@ bool ScreenGameplay7K::ProcessSong()
 
 	if (DesiredDefaultSpeed)
 	{
-
 		if (Type == SPEEDTYPE_CMOD) // cmod
 		{
 			SpeedMultiplierUser = 1;
 			SpeedConstant = DesiredDefaultSpeed;
 		}
 
-		MySong->Process(CurrentDiff, NotesByChannel, Drift, SpeedConstant);
+		CurrentDiff->Process(NotesByChannel, BPS, VSpeeds, Drift, SpeedConstant);
 
 		if (Type == SPEEDTYPE_MMOD) // mmod
 		{
 			double max = 0; // Find the highest speed
-			for (TimingData::iterator i = CurrentDiff->VerticalSpeeds.begin();
-				i != CurrentDiff->VerticalSpeeds.end();
+			for (TimingData::iterator i = VSpeeds.begin();
+				i != VSpeeds.end();
 				i++)
 			{
 				max = std::max(max, abs(i->Value));
@@ -353,12 +351,12 @@ bool ScreenGameplay7K::ProcessSong()
 			SpeedMultiplierUser = Ratio;
 		}else if (Type == SPEEDTYPE_FIRST) // We use this case as default. The logic is "Not a CMod, Not a MMod, then use first, the default.
 		{
-			double DesiredMultiplier =  DesiredDefaultSpeed / CurrentDiff->VerticalSpeeds[0].Value;
+			double DesiredMultiplier =  DesiredDefaultSpeed / VSpeeds[0].Value;
 
 			SpeedMultiplierUser = DesiredMultiplier;
 		}else if (Type != SPEEDTYPE_CMOD) // other cases
 		{
-			double bpsd = 4.0/(CurrentDiff->BPS[0].Value);
+			double bpsd = 4.0/(BPS[0].Value);
 			double Speed = (MeasureBaseSpacing / bpsd);
 			double DesiredMultiplier = DesiredDefaultSpeed / Speed;
 
@@ -366,31 +364,28 @@ bool ScreenGameplay7K::ProcessSong()
 		}
 
 	}else
-		MySong->Process(CurrentDiff, NotesByChannel, Drift); // Regular processing
-
-	Channels = CurrentDiff->Channels;
-	VSpeeds = CurrentDiff->VerticalSpeeds;
-
+		CurrentDiff->Process(NotesByChannel, BPS, VSpeeds, Drift); // Regular processing
 	return true;
 }
 
 bool ScreenGameplay7K::LoadBMPs()
 {
-	if (Configuration::GetConfigf("DisableBMP") == 0)
+	if (Configuration::GetConfigf("DisableBMP") == 0 && CurrentDiff->BMPEvents)
 	{
-		if (CurrentDiff->BMPList.size())
+		if (CurrentDiff->BMPEvents->BMPList.size())
 			Log::Printf("Loading BMPs...\n");
 
-		for (std::map<int, GString>::iterator i = CurrentDiff->BMPList.begin(); i != CurrentDiff->BMPList.end(); i++)
+		for (std::map<int, GString>::iterator i = CurrentDiff->BMPEvents->BMPList.begin(); 
+			i != CurrentDiff->BMPEvents->BMPList.end(); i++)
 			BMPs.AddToListIndex(i->second, MySong->SongDirectory, i->first);
 
 		// We don't need this any more.
-		CurrentDiff->BMPList.clear();
+		CurrentDiff->BMPEvents->BMPList.clear();
 
-		BMPEvents = CurrentDiff->BMPEvents;
-		BMPEventsMiss = CurrentDiff->BMPEventsMiss;
-		BMPEventsLayer = CurrentDiff->BMPEventsLayer;
-		BMPEventsLayer2 = CurrentDiff->BMPEventsLayer2;
+		BMPEvents = CurrentDiff->BMPEvents->BMPEventsLayerBase;
+		BMPEventsMiss = CurrentDiff->BMPEvents->BMPEventsLayerMiss;
+		BMPEventsLayer = CurrentDiff->BMPEvents->BMPEventsLayer;
+		BMPEventsLayer2 = CurrentDiff->BMPEvents->BMPEventsLayer2;
 	}
 
 	return true;
@@ -421,7 +416,7 @@ void ScreenGameplay7K::SetupAfterLoadingVariables()
 
 	JudgmentLinePos += (Upscroll ? NoteHeight/2 : -NoteHeight/2);
 	CurrentVertical = IntegrateToTime (VSpeeds, -WaitingTime);
-	CurrentBeat = IntegrateToTime(CurrentDiff->BPS, 0);
+	CurrentBeat = IntegrateToTime(BPS, 0);
 
 	RecalculateMatrix();
 	MultiplierChanged = true;
@@ -433,7 +428,7 @@ void ScreenGameplay7K::SetupAfterLoadingVariables()
 
 	if (BarlineEnabled)
 	{
-		CurrentDiff->GetMeasureLines(MeasureBarlines, TimeCompensation);
+		CurrentDiff->GetMeasureLines(MeasureBarlines, VSpeeds, TimeCompensation);
 
 		int UpscrollMod = Upscroll ? -1 : 1;
 		BarlineOffset = BarlineOffsetKind == 0 ? NoteHeight * UpscrollMod / 2 : 0;
@@ -472,12 +467,11 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	SetupAfterLoadingVariables();
 
-	Log::Printf("Done.\n");
-
-	// This will execute the script once, so we won't need to do it later
-	SetupScriptConstants();
-	Animations->Preload(GameState::GetInstance().GetSkinPrefix() + "screengameplay7k.lua", "Preload");
+	
 	score_keeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
+	SetupLua();
+
+	Log::Printf("Done.\n");
 
 	if (CurrentDiff->TimingInfo)
 	{
@@ -494,6 +488,13 @@ void ScreenGameplay7K::LoadThreadInitialization()
 			lifebar_type = LT_STEPMANIA;
 			scoring_type = ST_OSUMANIA;
 		}
+		else if (CurrentDiff->TimingInfo->GetType() == VSRG::TI_O2JAM)
+		{
+			// Todo...
+			lifebar_type = LT_STEPMANIA;
+			score_keeper->setLifeTotal(-1);
+			score_keeper->setJudgeRank(2);
+		}
 	}
 	else
 	{
@@ -502,23 +503,14 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	}
 
 	DoPlay = true;
-}
 
-void ScreenGameplay7K::SetupScriptConstants()
-{
-	LuaManager *L = Animations->GetEnv();
-	L->SetGlobal("Upscroll", Upscroll);
-	L->SetGlobal("Channels", Channels);
-	L->SetGlobal("JudgmentLineY", JudgmentLinePos);
-	L->SetGlobal("Auto", Auto);
-	L->SetGlobal("AccuracyHitMS", score_keeper->getMissCutoff());
-	L->SetGlobal("SongDuration", CurrentDiff->Duration);
-	L->SetGlobal("SongDurationBeats", BeatAtTime(CurrentDiff->BPS, CurrentDiff->Duration, CurrentDiff->Offset + TimeCompensation));
-	L->SetGlobal("WaitingTime", WaitingTime);
-	L->SetGlobal("Beat", CurrentBeat);
-	L->SetGlobal("Lifebar", score_keeper->getLifebarAmount(LT_GROOVE));
-
-	Animations->AddLuaTarget(&Background, "ScreenBackground");
+	// We're done with the data stored in the difficulties that aren't the one we're using. Clear it up.
+	for (auto i = MySong->Difficulties.begin(); i != MySong->Difficulties.end(); i++)
+	{
+		if (*i != CurrentDiff)
+			delete *i;
+	}
+		
 }
 
 void ScreenGameplay7K::SetupGear()
@@ -530,6 +522,7 @@ void ScreenGameplay7K::SetupGear()
 
 	if (!GameState::GetInstance().SkinSupportsChannelCount(CurrentDiff->Channels))
 	{
+		Log::Printf("Unsupported skin key count: %d", CurrentDiff->Channels);
 		DoPlay = false;
 		return;
 	}
@@ -705,7 +698,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 		WaitingTime = 0;
 
 
-	CurrentBeat = BeatAtTime(CurrentDiff->BPS, -WaitingTime, CurrentDiff->Offset + TimeCompensation);
+	CurrentBeat = BeatAtTime(BPS, -WaitingTime, CurrentDiff->Offset + TimeCompensation);
 	Animations->GetImageList()->ForceFetch();
 
 	BMPs.LoadAll();

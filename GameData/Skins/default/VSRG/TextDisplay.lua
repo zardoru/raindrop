@@ -2,6 +2,7 @@
 
 pacemaker1 = StringObject2D();
 pacemaker2 = StringObject2D();
+judgments = StringObject2D();
 
 lifebar = StringObject2D();
 
@@ -40,11 +41,16 @@ function DrawTextObjects()
 	acc2.X = Judgment.Position.x - 20;
 	acc2.Y = Judgment.Position.y + 20;
 
+	judgments.Font = fnt1
+	judgments.X = Lifebar.Position.x + 30
+	judgments.Y = 380
+
 	-- Engine:AddTarget(acc1);
 	-- Engine:AddTarget(acc2);
 	Engine:AddTarget(pacemaker1);
 	Engine:AddTarget(pacemaker2);
 	Engine:AddTarget(lifebar);
+	Engine:AddTarget(judgments)
 
 end
 
@@ -72,9 +78,25 @@ function UpdateTextObjects()
 	end
 
 	if LifebarValue then
-		lifebar.Text = LifebarDisplay;
+		lifebar.Text = string.format("%03d%%", LifebarDisplay);
 	end
-	
+
+	local fmtext= string.format("Speed: %02.2fx\n", Game:GetUserMultiplier())
+	local w0, w1, w2, w3, w4, w5
+
+	w0 = ScoreKeeper:getJudgmentCount(SKJ_W0)
+	w1 = ScoreKeeper:getJudgmentCount(SKJ_W1)
+	w2 = ScoreKeeper:getJudgmentCount(SKJ_W2)
+	w3 = ScoreKeeper:getJudgmentCount(SKJ_W3)
+	w4 = ScoreKeeper:getJudgmentCount(SKJ_W4)
+	w5 = ScoreKeeper:getJudgmentCount(SKJ_W5)
+	if ScoreKeeper:usesW0() ~= 0 then
+		fmtext = fmtext .. string.format("%04d\n%04d\n%04d\n%04d\n%04d", w1, w2, w3, w4, w5)
+	else
+		fmtext = fmtext .. string.format("%04d\n%04d\n%04d\n%04d\n%04d\n%04d", w0, w1, w2, w3, w4, w5)
+	end
+
+	judgments.Text = fmtext
 end
 
 

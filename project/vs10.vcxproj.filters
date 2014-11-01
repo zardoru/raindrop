@@ -220,6 +220,12 @@
     <ClCompile Include="..\src\AudioSourceOJM.cpp">
       <Filter>Source\backend\audio</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\ScoreKeeper7K_Lua.cpp">
+      <Filter>Source\vsrg\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenGameplay7K_Lua.cpp">
+      <Filter>Source\vsrg\gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">

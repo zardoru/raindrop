@@ -37,7 +37,7 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 				+ StopTimeAtBeat(CurrentDiff->StopsTiming, Beat);
 
 	// Disable all notes before the current measure.
-	for (uint32 k = 0; k < Channels; k++)
+	for (uint32 k = 0; k < CurrentDiff->Channels; k++)
 	{
 		for (std::vector<TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); m++)
 		{

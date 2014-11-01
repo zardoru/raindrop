@@ -23,10 +23,11 @@ private:
 	GraphObject2D Layer2;
 
 	TimingData       VSpeeds;
+	TimingData		 BPS;
 	VSRG::VectorTN   NotesByChannel;
 	std::map <int, SoundSample*> Keysounds;
-	std::vector<AutoplaySound> BGMEvents;
-	std::vector<float> MeasureBarlines;
+	std::vector<AutoplaySound>   BGMEvents;
+	std::vector<float>			 MeasureBarlines;
 
 	VSRG::Difficulty *CurrentDiff;
 	VSRG::Song       *MySong;
@@ -43,8 +44,6 @@ private:
 	double BarlineX;
 	double BarlineWidth;
 	double NoteHeight;
-	double HoldHeadHeight;
-	double HoldTailHeight;
 	double LanePositions[VSRG::MAX_CHANNELS];
 	double LaneWidth[VSRG::MAX_CHANNELS];
 	double GearHeightFinal;
@@ -69,12 +68,8 @@ private:
     Mat4             PositionMatrix;
     Mat4             PositionMatrixJudgment;
     Mat4             NoteMatrix[VSRG::MAX_CHANNELS];
-    Mat4             HoldHeadMatrix[VSRG::MAX_CHANNELS];
-    Mat4             HoldTailMatrix[VSRG::MAX_CHANNELS];
 
     float            SpeedMultiplier;
-
-    uint32           Channels;
     uint32           StartMeasure;
 
     int              GearBindings[VSRG::MAX_CHANNELS];
@@ -145,6 +140,7 @@ private:
 	void SetupGear();
 
 	void SetupScriptConstants();
+	void SetupLua();
 	void UpdateScriptVariables();
 	void UpdateScriptScoreVariables();
 	void CalculateHiddenConstants();
@@ -181,6 +177,15 @@ private:
 	void Render();
 
 public:
+
+	// Functions for data.
+	bool IsAutoEnabled();
+	bool IsFailEnabled();
+	float GetCurrentBeat();
+	float GetUserMultiplier();
+	float GetCurrentVerticalSpeed();
+	float GetCurrentVertical();
+	double GetSongTime();
 
 	struct Parameters {
 		// If true, use upscroll

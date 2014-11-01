@@ -56,7 +56,7 @@ namespace Game
 			int ID;
 
 			Difficulty() {
-				ID = 0;
+				ID = -1;
 				Duration = 0;
 				Offset = 0;
 				TotalNotes = 0;

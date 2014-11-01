@@ -20,11 +20,13 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 		i++)
 	{
 		std::stringstream ss;
+		TimingData BPS;
+		TimingData VSpeeds;
 
 		ss << PathOut.path() << "/" << Sng->SongAuthor << " - " << Sng->SongName << " [" << (*i)->Name << "] (" << Author << ").osu\0";
 		std::ofstream out (ss.str().c_str());
 
-		Sng->Process(*i, NULL);
+		(*i)->Process(NULL, BPS, VSpeeds, 0, 0);
 
 		// First, convert metadata.
 		out 
@@ -32,7 +34,7 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 			<< "[General]\n"
 			<< "AudioFilename: " << ((*i)->IsVirtual ? "virtual" : Sng->SongFilename) << "\n"
 			<< "AudioLeadIn: 1500\n"
-			<< "PreviewTime: " << (*i)->PreviewTime << "\n"
+			//<< "PreviewTime: " << (*i)->PreviewTime << "\n"
 			<< "Countdown: 0\n"
 			<< "SampleSet: None\n"
 			<< "StackLeniency: 0.7\n"
@@ -81,8 +83,8 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 		out << "[TimingPoints]\n";
 
 
-		for (TimingData::iterator t = (*i)->BPS.begin(); 
-			t != (*i)->BPS.end();
+		for (TimingData::iterator t = BPS.begin(); 
+			t != BPS.end();
 			t++)
 		{
 			out << t->Time * 1000 << "," << 1000 / (t->Value ? t->Value : 0.00001) << ",4,1,0,15,1,0\n";
@@ -122,9 +124,9 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 void ConvertToSMTiming(VSRG::Song *Sng, Directory PathOut)
 {
 	std::stringstream ss;
-
+	TimingData BPS, VSpeeds;
 	VSRG::Difficulty* Diff = Sng->Difficulties[0];
-	Sng->Process (Diff, NULL);
+	Diff->Process (NULL, BPS, VSpeeds);
 
 	std::ofstream out (PathOut.c_path());
 
@@ -155,7 +157,7 @@ void ConvertToSMTiming(VSRG::Song *Sng, Directory PathOut)
 			break;
 		}
 
-		double Beat = QuantizeBeat(BeatAtTime(Diff->BPS, Time + Diff->Offset, 0));
+		double Beat = QuantizeBeat(BeatAtTime(BPS, Time + Diff->Offset, 0));
 
 		out << Beat << "=" << Value;
 

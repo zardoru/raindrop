@@ -199,6 +199,8 @@ struct BmsLoadInfo
 
 	bool IsPMS;
 
+	bool HasBMPEvents;
+
 	BmsLoadInfo()
 	{
 		for (int k = 0; k < MAX_CHANNELS; k++)
@@ -210,7 +212,7 @@ struct BmsLoadInfo
 		song = NULL;
 		LNObj = 0;
 		IsPMS = false;
-
+		HasBMPEvents = false;
 		Skip = false;
 		CurrentNestedLevel = 0;
 
@@ -232,6 +234,10 @@ void ParseEvents(BmsLoadInfo *Info, const int Measure, const int BmsChannel, con
 	{
 		size_t cSize = Info->Measures[Measure].Events[BmsChannel].size();
 		Info->Measures[Measure].Events[BmsChannel].reserve(CommandLength);
+
+		if (BmsChannel == CHANNEL_BGABASE || BmsChannel == CHANNEL_BGALAYER
+			|| BmsChannel == CHANNEL_BGALAYER2 || BmsChannel == CHANNEL_BGAPOOR)
+			Info->HasBMPEvents = true;
 
 		for (int i = 0; i < CommandLength; i++)
 		{
@@ -760,10 +766,15 @@ void CompileBMS(BmsLoadInfo *Info)
 	CalculateBPMs(Info);
 	CalculateStops(Info);
 
-	CalculateBMP(Info, Info->difficulty->BMPEvents, CHANNEL_BGABASE);
-	CalculateBMP(Info, Info->difficulty->BMPEventsMiss, CHANNEL_BGAPOOR);
-	CalculateBMP(Info, Info->difficulty->BMPEventsLayer, CHANNEL_BGALAYER);
-	CalculateBMP(Info, Info->difficulty->BMPEventsLayer2, CHANNEL_BGALAYER2);
+	if (Info->HasBMPEvents)
+	{
+		BMPEventsDetail *BMP = new BMPEventsDetail;
+		CalculateBMP(Info, BMP->BMPEventsLayerBase, CHANNEL_BGABASE);
+		CalculateBMP(Info, BMP->BMPEventsLayerMiss, CHANNEL_BGAPOOR);
+		CalculateBMP(Info, BMP->BMPEventsLayer, CHANNEL_BGALAYER);
+		CalculateBMP(Info, BMP->BMPEventsLayer2, CHANNEL_BGALAYER2);
+		Info->difficulty->BMPEvents = BMP;
+	}
 
 	Info->difficulty->Channels = AutodetectChannelCount(Info);
 	if (Info->difficulty->Channels == 9) // Assume pop'n
@@ -953,7 +964,6 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 
 	// BMS uses beat-based locations for stops and BPM. (Though the beat must be calculated.)
 	Diff->BPMType = VSRG::Difficulty::BT_Beat;
-	Diff->LMT = Utility::GetLMT(filename);
 
 	if (!filein.is_open())
 	{
@@ -978,7 +988,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 		from the amount of used channels.
 
 		And that's what we're going to try to do.
-		*/
+	*/
 
 	std::vector<GString> Subs; // Subtitle list
 	GString Line;
@@ -1164,7 +1174,11 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 	/* When all's said and done, "compile" the bms. */
 	CompileBMS(Info);
 	Diff->SoundList = Info->Sounds;
-	Diff->BMPList = Info->BMP;
+
+	if (Info->HasBMPEvents)
+	{
+		Diff->BMPEvents->BMPList = Info->BMP;
+	}
 
 	// First try to find a suiting subtitle
 	Out->SongName = GetSubtitles(Out->SongName, Subs);

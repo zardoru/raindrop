@@ -307,13 +307,13 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 
 		OnCommand(#NOTES)
 		{
-			Diff->LMT = Utility::GetLMT(filename);
 			Diff->Timing = BPMData;
 			Diff->StopsTiming = StopsData;
 			Diff->Offset = -Offset;
 			Diff->Duration = 0;
 			Diff->Filename = filename;
 			Diff->BPMType = VSRG::Difficulty::BT_Beat;
+			Diff->TimingInfo = new VSRG::StepmaniaTimingInfo;
 
 			if (LoadTracksSM(Out, Diff, line))
 			{

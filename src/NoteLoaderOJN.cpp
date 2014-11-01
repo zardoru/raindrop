@@ -351,12 +351,26 @@ void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::
 	{
 		OjnLoadInfo Info;
 		VSRG::Difficulty *Diff = new VSRG::Difficulty();
+		VSRG::O2JamTimingInfo *TInfo = new VSRG::O2JamTimingInfo;
+
+		switch (i)
+		{
+		case 0:
+			TInfo->Difficulty = VSRG::O2JamTimingInfo::O2_EX;
+			break;
+		case 1:
+			TInfo->Difficulty = VSRG::O2JamTimingInfo::O2_NX;
+			break;
+		case 2:
+			TInfo->Difficulty = VSRG::O2JamTimingInfo::O2_HX;
+			break;
+		}
+
 		Info.S = Out;
 		filein.seekg(Head.note_offset[i]);
 
 		// O2Jam files use Beat-Based notation.
 		Diff->BPMType = VSRG::Difficulty::BT_Beat;
-		Diff->LMT = Utility::GetLMT(filename);
 		Diff->Duration = Head.time[i];
 		Diff->Name = DifficultyNames[i];
 		Diff->Channels = 7;
