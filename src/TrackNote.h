@@ -7,6 +7,7 @@ namespace VSRG
 {
 	const unsigned char EnabledFlag = 1 << 0;
 	const unsigned char WasHitFlag = 1 << 1;
+	const unsigned char HeadEnabledFlag = 1 << 2;
 
 	// note type: 3 bits
 	enum ENoteKind {
@@ -36,7 +37,7 @@ namespace VSRG
 			StartTime = EndTime = 0;
 			Sound = 0;
 			NoteKind = NK_NORMAL;
-			EnabledHitFlags = EnabledFlag;
+			EnabledHitFlags = EnabledFlag | HeadEnabledFlag;
 		}
 	};
 
@@ -61,11 +62,13 @@ namespace VSRG
 
 		void AddTime(double Time);
 		void Disable();
+		void DisableHead();
 
 		float GetVertical() const;
 		float GetVerticalHold() const;
 		bool IsHold() const;
 		bool IsEnabled() const;
+		bool IsHeadEnabled() const;
 		bool WasNoteHit() const;
 		int GetSound() const;
 		Mat4 GetMatrix() const;

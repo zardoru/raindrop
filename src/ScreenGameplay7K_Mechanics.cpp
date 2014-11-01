@@ -12,6 +12,7 @@
 #include "ScoreKeeper7K.h"
 #include "ScreenGameplay7K.h"
 
+#include <iostream>
 #include <iomanip>
 #include <cmath>
 
@@ -150,8 +151,8 @@ void ScreenGameplay7K::RunMeasures()
 
 			// Condition A: Hold tail outside accuracy cutoff (can't be hit any longer),
 			// note wasn't hit at the head and it's a hold
-			if ((SongTime - m->GetTimeFinal()) * 1000 > score_keeper->getMissCutoff() && !m->WasNoteHit() && m->IsHold()) {
-
+			if ((SongTime - m->GetTimeFinal()) > 0 && !m->WasNoteHit() && m->IsHold()) {
+			                                 // ^ no need for delays here.
 				// remove hold notes that were never hit.
 				MissNote(abs(SongTime - m->GetTimeFinal()) * 1000, k, m->IsHold(), true, false);
 
@@ -162,7 +163,7 @@ void ScreenGameplay7K::RunMeasures()
 
 			} // Condition B: Regular note or hold head outside cutoff, wasn't hit and it's enabled.
 			else if ((SongTime - m->GetStartTime()) * 1000 > score_keeper->getMissCutoff() &&
-				(!m->WasNoteHit() && m->IsEnabled()))
+				(!m->WasNoteHit() && m->IsHeadEnabled()))
 			{
 
 				MissNote(abs(SongTime - m->GetStartTime()) * 1000, k, m->IsHold(), false, false);
@@ -172,7 +173,17 @@ void ScreenGameplay7K::RunMeasures()
 
 				/* remove note from judgment
 				relevant to note that hit isn't being set here so the hold tail can be judged later. */
-				m->Disable();
+
+				// only remove tap notes from judgment; hold notes might be activated before the tail later.
+				if(!(m->IsHold())){
+					m->Disable();
+				}else{ 
+					m->DisableHead();
+					if(GearIsPressed[k]){ // if the note was already being held down
+						m->Hit();
+						HeldKey[k] = true;
+					}
+				}
 
 			} // Condition C: Hold head was hit, but hold tail was not released.
 			else if ((SongTime - m->GetTimeFinal()) * 1000 > score_keeper->getMissCutoff() &&
@@ -243,7 +254,9 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 	{
 		if (!m->IsEnabled())
 			continue;
-
+		
+		std::cerr << "note was hit!";
+		
 		double dev = (Time - m->GetStartTime()) * 1000;
 		double tD = abs(dev);
 

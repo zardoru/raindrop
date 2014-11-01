@@ -35,7 +35,7 @@ void ScoreKeeper7K::update_osu(int ms, ScoreKeeperJudgment judgment){
 			break;
 		case SKJ_W4:
 			osu_points += 50;
-			osu_accuracy += 500;
+			osu_accuracy += 50;
 			osu_bonus_multiplier = 4;
 			bonus_counter = max(0, bonus_counter - 44);
 			break;

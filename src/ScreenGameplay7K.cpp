@@ -92,10 +92,13 @@ void ScreenGameplay7K::TranslateKey(KeyType K, bool KeyDown)
 	if (GearIndex >= MAX_CHANNELS || GearIndex < 0)
 		return;
 
-	if (KeyDown)
+	if (KeyDown){
 		JudgeLane(GearIndex, SongTime);
-	else
+		GearIsPressed[GearIndex] = true;
+	}else{
 		ReleaseLane(GearIndex, SongTime);
+		GearIsPressed[GearIndex] = false;
+	}
 }
 
 void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
@@ -320,7 +323,7 @@ bool ScreenGameplay7K::Run(double Delta)
 {
 	
 	if(Delta > 0.001)
-	std::cerr << Delta << std::endl;
+		std::cerr << Delta << std::endl;
 
 	if (Next)
 		return RunNested(Delta);
@@ -358,7 +361,7 @@ bool ScreenGameplay7K::Run(double Delta)
 	Animations->UpdateTargets(Delta);
 	Render();
 
-	if (Delta > 0.16)
+	if (Delta > 0.1)
 		Log::Printf("%f: delta = %f\n", GetScreenTime(), Delta);
 
 	return Running;

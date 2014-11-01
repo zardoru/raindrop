@@ -86,9 +86,20 @@ bool TrackNote::IsEnabled() const
 	return Data.EnabledHitFlags & EnabledFlag;
 }
 
+bool TrackNote::IsHeadEnabled() const
+{
+	return Data.EnabledHitFlags & HeadEnabledFlag;
+}
+
 void TrackNote::Disable()
 {
 	Data.EnabledHitFlags &= ~EnabledFlag;
+	DisableHead();
+}
+
+void TrackNote::DisableHead()
+{
+	Data.EnabledHitFlags &= ~HeadEnabledFlag;
 }
 
 void TrackNote::Hit()

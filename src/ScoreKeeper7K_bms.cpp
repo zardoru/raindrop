@@ -5,11 +5,17 @@ void ScoreKeeper7K::update_bms(int ms, bool hit){
 
 	if(hit){
 
-		if(ms <= judgment_time[SKJ_W1]){ // make times based on judgments.
-			ex_score += 2;
+		if(ms <= judgment_time[SKJ_W1]){ // make times based on judgments.a
+			if(use_w0 && use_w0_for_ex2 && ms > judgment_time[SKJ_W0]){
+				ex_score += 1;	
+			}else{
+				ex_score += 2;
+			}
 			bms_dance_pts += 15;
 		}else if(ms <= judgment_time[SKJ_W2]){
-			ex_score += 1;
+			if(!(use_w0 && use_w0_for_ex2)){
+				ex_score += 1;
+			}
 			bms_dance_pts += 10;
 		}else{
 			bms_dance_pts += 2;

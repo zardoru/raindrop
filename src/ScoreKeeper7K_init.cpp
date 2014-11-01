@@ -4,6 +4,7 @@
 void ScoreKeeper7K::init(){
 	
 	use_w0 = false; // don't use Ridiculous by default.
+	use_w0_for_ex2 = false;
 	
 	pacemaker_texts[PMT_F] = "F" ;
 	pacemaker_texts[PMT_E] = "E" ;
@@ -99,6 +100,7 @@ void ScoreKeeper7K::set_timing_windows(){
 void ScoreKeeper7K::setODWindows(int od){
 
 	use_w0 = true; // if chart has OD, use osu!mania scoring.
+	use_w0_for_ex2 = true;
 
 	double JudgmentValues[] = { 16, 34, 67, 97, 121, 158 };
 

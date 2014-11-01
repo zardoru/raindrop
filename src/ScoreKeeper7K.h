@@ -68,7 +68,7 @@ class ScoreKeeper7K {
 	private:
 
 		bool use_w0; // whether or not to use ridiculous timing.
-	
+		bool use_w0_for_ex2; // whether or not to require ridiculous for 2 EX score.
 
 	/*
 		Standard scoring.

@@ -74,6 +74,7 @@ private:
     uint32           StartMeasure;
 
     int              GearBindings[VSRG::MAX_CHANNELS];
+	int              GearIsPressed[VSRG::MAX_CHANNELS];
     int              lastClosest[VSRG::MAX_CHANNELS];
     int              PlaySounds[VSRG::MAX_CHANNELS];
     int              BarlineOffsetKind;
