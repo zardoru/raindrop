@@ -352,5 +352,8 @@ bool ScreenGameplay7K::Run(double Delta)
 	Animations->UpdateTargets(Delta);
 	Render();
 
+	if (Delta > 0.16)
+		Log::Printf("%f: delta = %f\n", GetScreenTime(), Delta);
+
 	return Running;
 }

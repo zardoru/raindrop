@@ -630,6 +630,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 	}
 
 	PlayReactiveSounds = (CurrentDiff->IsVirtual || !(Configuration::GetConfigf("DisableHitsounds")));
+	MsDisplayMargin = (Configuration::GetSkinConfigf("HitErrorDisplayLimiter"));
 
 	char nstr[256];
 	sprintf(nstr, "Channels%d", CurrentDiff->Channels);

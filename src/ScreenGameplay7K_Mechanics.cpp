@@ -226,8 +226,6 @@ void ScreenGameplay7K::ReleaseLane(uint32 Lane, float Time)
 
 void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 {
-	float MsDisplayMargin = (Configuration::GetSkinConfigf("HitErrorDisplayLimiter"));
-
 	GearKeyEvent(Lane, true);
 
 	if ( (!Music && !CurrentDiff->IsVirtual) || !Active || stage_failed)

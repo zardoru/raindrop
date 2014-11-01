@@ -57,6 +57,7 @@ private:
 	double MissTime;
 	double FailureTime;
 	double SuccessTime;
+	double MsDisplayMargin;
 
 	bool stage_failed;
 
