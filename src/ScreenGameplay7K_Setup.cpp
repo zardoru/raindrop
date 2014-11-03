@@ -14,11 +14,13 @@
 #include "GameWindow.h"
 #include "ImageList.h"
 
+
 #include "LuaManager.h"
 #include "GraphObjectMan.h"
 
 #include "ScoreKeeper7K.h"
 #include "ScreenGameplay7K.h"
+#include "ScreenGameplay7K_Mechanics.h"
 #include "ScreenEvaluation7K.h"
 #include "SongDatabase.h"
 
@@ -441,38 +443,8 @@ void ScreenGameplay7K::SetupAfterLoadingVariables()
 
 }
 
-void ScreenGameplay7K::LoadThreadInitialization()
+void ScreenGameplay7K::SetupMechanics()
 {
-
-	MissSnd = new SoundSample();
-	if (MissSnd->Open((GameState::GetInstance().GetSkinPrefix() + "miss.ogg").c_str()))
-		MixerAddSample(MissSnd);
-	else
-		delete MissSnd;
-
-	FailSnd = new SoundSample();
-	if (FailSnd->Open((GameState::GetInstance().GetSkinPrefix() + "stage_failed.ogg").c_str()))
-		MixerAddSample(FailSnd);
-	else
-		delete FailSnd;
-
-	if (AudioCompensation)
-		TimeCompensation = MixerGetLatency();
-
-	if (!LoadChartData() || !LoadSongAudio() || !ProcessSong() || !LoadBMPs())
-	{
-		DoPlay = false;
-		return;
-	}
-
-	SetupAfterLoadingVariables();
-
-	
-	score_keeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
-	SetupLua();
-
-	Log::Printf("Done.\n");
-
 	if (CurrentDiff->TimingInfo)
 	{
 		if (CurrentDiff->TimingInfo->GetType() == VSRG::TI_BMS)
@@ -501,6 +473,47 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		score_keeper->setLifeTotal(-1);
 		score_keeper->setJudgeRank(2);
 	}
+
+	MechanicsSet = new RaindropMechanics;
+	MechanicsSet->Setup(MySong, CurrentDiff, score_keeper);
+	MechanicsSet->HitNotify = bind(&ScreenGameplay7K::HitNote, this, _1, _2, _3, _4);
+	MechanicsSet->MissNotify = bind(&ScreenGameplay7K::MissNote, this, _1, _2, _3, _4, _5);
+	MechanicsSet->IsLaneKeyDown = bind(&ScreenGameplay7K::GetGearLaneState, this, _1);
+	MechanicsSet->SetLaneHoldingState = bind(&ScreenGameplay7K::SetLaneHoldState, this, _1, _2);
+	MechanicsSet->PlayLaneSoundEvent = bind(&ScreenGameplay7K::PlayLaneKeysound, this, _1);
+	MechanicsSet->PlayNoteSoundEvent = bind(&ScreenGameplay7K::PlayKeysound, this, _1);
+}
+
+void ScreenGameplay7K::LoadThreadInitialization()
+{
+	MissSnd = new SoundSample();
+	if (MissSnd->Open((GameState::GetInstance().GetSkinPrefix() + "miss.ogg").c_str()))
+		MixerAddSample(MissSnd);
+	else
+		delete MissSnd;
+
+	FailSnd = new SoundSample();
+	if (FailSnd->Open((GameState::GetInstance().GetSkinPrefix() + "stage_failed.ogg").c_str()))
+		MixerAddSample(FailSnd);
+	else
+		delete FailSnd;
+
+	if (AudioCompensation)
+		TimeCompensation = MixerGetLatency();
+
+	if (!LoadChartData() || !LoadSongAudio() || !ProcessSong() || !LoadBMPs())
+	{
+		DoPlay = false;
+		return;
+	}
+
+	SetupAfterLoadingVariables();
+	
+	score_keeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
+	SetupLua();
+	Log::Printf("Done.\n");
+
+	SetupMechanics();
 
 	DoPlay = true;
 

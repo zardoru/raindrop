@@ -257,7 +257,7 @@ void omc_xor(char* buf, size_t len, int &acc_keybyte, int &acc_counter)
 	int tmp = 0;
 	char this_byte = 0;
 
-	for (int i = 0; i < len; i++)
+	for (size_t i = 0; i < len; i++)
 	{
 		tmp = this_byte = buf[i];
 
@@ -505,7 +505,7 @@ void AudioSourceOJM::parseOMC()
 
 bool AudioSourceOJM::HasDataLeft()
 {
-	return TemporaryState.Enabled;
+	return TemporaryState.Enabled != 0;
 }
 
 size_t AudioSourceOJM::GetLength()

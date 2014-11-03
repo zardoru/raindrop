@@ -226,6 +226,9 @@
     <ClCompile Include="..\src\ScreenGameplay7K_Lua.cpp">
       <Filter>Source\vsrg\gameplay</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\ScreenGameplay7K_MechanicsDetails.cpp">
+      <Filter>Source\vsrg\gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">
@@ -428,6 +431,9 @@
     </ClInclude>
     <ClInclude Include="..\src\NoteLoader7K.h">
       <Filter>Source\vsrg\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScreenGameplay7K_Mechanics.h">
+      <Filter>Source\vsrg\gameplay</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

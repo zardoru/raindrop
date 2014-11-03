@@ -11,6 +11,7 @@
 
 #include "ScoreKeeper7K.h"
 #include "ScreenGameplay7K.h"
+#include "ScreenGameplay7K_Mechanics.h"
 
 #include <iostream>
 #include <iomanip>
@@ -83,7 +84,30 @@ void ScreenGameplay7K::MissNote (double TimeOff, uint32 Lane, bool IsHold, bool 
 	Animations->GetEnv()->PushArgument((int)Lane + 1);
 	Animations->GetEnv()->PushArgument(IsHold);
 	Animations->GetEnv()->RunFunction();
+}
 
+
+void ScreenGameplay7K::PlayLaneKeysound(uint32 Lane)
+{
+	if (Keysounds[PlaySounds[Lane]])
+		Keysounds[PlaySounds[Lane]]->Play();
+}
+
+void ScreenGameplay7K::PlayKeysound(uint32 Index)
+{
+	if (Keysounds[Index])
+		Keysounds[Index]->Play();
+}
+
+void ScreenGameplay7K::SetLaneHoldState(uint32 Lane, bool NewState)
+{
+	HeldKey[Lane] = NewState;
+}
+
+// true if holding down key
+bool ScreenGameplay7K::GetGearLaneState(uint32 Lane)
+{
+	return GearIsPressed[Lane];
 }
 
 void ScreenGameplay7K::RunMeasures()
@@ -120,7 +144,7 @@ void ScreenGameplay7K::RunMeasures()
 						{
 							if (m->WasNoteHit())
 							{
-								if ( m->GetTimeFinal() < TimeThreshold){
+								if (m->GetTimeFinal() < TimeThreshold){
 									double hit_time = clamp_to_interval(SongTime, m->GetTimeFinal(), 0.008);
 									// We use clamp_to_interval for those pesky outliers.
 									ReleaseLane(k, hit_time);
@@ -144,59 +168,10 @@ void ScreenGameplay7K::RunMeasures()
 			}
 
 
-			if(stage_failed) continue; // don't check for judgments after stage is failed.
+			if(stage_failed) continue; // don't check for judgments after stage has failed.
 
-
-			/* We have to check for all gameplay conditions for this note. */
-
-			// Condition A: Hold tail outside accuracy cutoff (can't be hit any longer),
-			// note wasn't hit at the head and it's a hold
-			if ((SongTime - m->GetTimeFinal()) > 0 && !m->WasNoteHit() && m->IsHold()) {
-			                                 // ^ no need for delays here.
-				// remove hold notes that were never hit.
-				MissNote(abs(SongTime - m->GetTimeFinal()) * 1000, k, m->IsHold(), true, false);
-
-				if (score_keeper->getScore(ST_COMBO) > 10)
-					MissSnd->Play();
-
-				m->Hit();
-
-			} // Condition B: Regular note or hold head outside cutoff, wasn't hit and it's enabled.
-			else if ((SongTime - m->GetStartTime()) * 1000 > score_keeper->getMissCutoff() &&
-				(!m->WasNoteHit() && m->IsHeadEnabled()))
-			{
-
-				MissNote(abs(SongTime - m->GetStartTime()) * 1000, k, m->IsHold(), false, false);
-
-				if (score_keeper->getScore(ST_COMBO) > 10)
-					MissSnd->Play();
-
-				/* remove note from judgment
-				relevant to note that hit isn't being set here so the hold tail can be judged later. */
-
-				// only remove tap notes from judgment; hold notes might be activated before the tail later.
-				if(!(m->IsHold())){
-					m->Disable();
-				}else{ 
-					m->DisableHead();
-					if(GearIsPressed[k]){ // if the note was already being held down
-						m->Hit();
-						HeldKey[k] = true;
-					}
-				}
-
-			} // Condition C: Hold head was hit, but hold tail was not released.
-			else if ((SongTime - m->GetTimeFinal()) * 1000 > score_keeper->getMissCutoff() &&
-				m->IsHold() && m->WasNoteHit() && m->IsEnabled())
-			{
-
-				MissNote(abs(SongTime - m->GetTimeFinal()) * 1000, k, m->IsHold(), true, false);
-
-				HeldKey[k] = false;
-				m->Disable();
-
-			} // Condition D: Hold head was hit, but was released early was already handled at ReleaseLane so no need to be redundant here.
-
+			if (MechanicsSet->OnUpdate(SongTime, &(*m), k))
+				break;
 		} // end for notes
 	} // end for channels
 }
@@ -209,35 +184,8 @@ void ScreenGameplay7K::ReleaseLane(uint32 Lane, float Time)
 
 	for (std::vector<TrackNote>::iterator m = NotesByChannel[Lane].begin(); m != NotesByChannel[Lane].end(); m++)
 	{
-		if (m->IsHold() && m->WasNoteHit() && m->IsEnabled()) /* We hit the hold's head and we've not released it early already */
-		{
-
-			double dev = (Time - m->GetTimeFinal()) * 1000;
-			double tD = abs(dev);
-
-			if (tD < score_keeper->getJudgmentWindow(SKJ_W3)) /* Released in time */
-			{
-				HitNote(dev, Lane, m->IsHold(), true);
-
-				HeldKey[Lane] = false;
-
-				m->Disable();
-
-			}else /* Released off time */
-			{
-				// early misses for hold notes always count as regular misses.
-				MissNote(dev, Lane, m->IsHold(), false, false);
-
-				if (score_keeper->getScore(ST_COMBO) > 10)
-					MissSnd->Play();
-
-				m->Disable();
-				HeldKey[Lane] = false;
-			}
-
-			lastClosest[Lane] = (double)min(tD, (double)lastClosest[Lane]);
-			return;
-		}
+		if (MechanicsSet->OnReleaseLane(Time, &(*m), Lane)) // Are we done judging..?
+			break;
 	}
 }
 
@@ -252,12 +200,7 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 
 	for (std::vector<TrackNote>::iterator m = NotesByChannel[Lane].begin(); m != NotesByChannel[Lane].end(); m++)
 	{
-		if (!m->IsEnabled())
-			continue;
-		
-		std::cerr << "note was hit!";
-		
-		double dev = (Time - m->GetStartTime()) * 1000;
+		double dev = (SongTime - m->GetStartTime()) * 1000;
 		double tD = abs(dev);
 
 		lastClosest[Lane] = min(tD, (double)lastClosest[Lane]);
@@ -265,53 +208,8 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 		if (lastClosest[Lane] >= MsDisplayMargin)
 			lastClosest[Lane] = 0;
 
-		if (tD > score_keeper->getEarlyMissCutoff()) // If the note was hit outside of judging range
-		{
-
-			// do nothing else
-			if (PlaySounds[Lane])
-			{
-				if (Keysounds[PlaySounds[Lane]])
-					Keysounds[PlaySounds[Lane]]->Play();
-			}
-
-			continue;
-
-		}
-
-		else // Within judging range, including early misses
-		{
-
-			// early miss
-			if(dev < -(score_keeper->getMissCutoff())){
-
-				// treat specially for Beatmania.
-
-				MissSnd->Play();
-
-				MissNote(dev, Lane, m->IsHold(), m->IsHold(), true);
-				// missed feedback
-				// m->Disable();
-
-			}else{
-
-				m->Hit();
-				HitNote(dev, Lane, m->IsHold());
-
-				if (m->GetSound())
-				{
-					if (Keysounds[m->GetSound()] && PlayReactiveSounds)
-						Keysounds[m->GetSound()]->Play();
-				}
-
-				if (m->IsHold())
-					HeldKey[Lane] = true;
-				else
-					m->Disable();
-
-			}
-
+		if (MechanicsSet->OnPressLane(Time, &(*m), Lane))
 			return; // we judged a note in this lane, so we're done.
-		}
+
 	}
 }

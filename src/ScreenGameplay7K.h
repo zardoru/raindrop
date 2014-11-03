@@ -4,16 +4,21 @@
 #include "Song7K.h"
 #include "ScoreKeeper.h"
 
+class AudioStream;
+class Image;
 class GraphObjectMan;
 class ScoreKeeper7K;
 class Line;
 class AudioSourceOJM;
+class VSRGMechanics;
+class SoundSample;
 
 class ScreenGameplay7K : public Screen
 {
 
 private:
 
+	VSRGMechanics *MechanicsSet;
 	GraphObject2D Keys[VSRG::MAX_CHANNELS];
 	GraphObject2D Background;
 
@@ -143,6 +148,7 @@ private:
 
 	void SetupScriptConstants();
 	void SetupLua();
+	void SetupMechanics();
 	void UpdateScriptVariables();
 	void UpdateScriptScoreVariables();
 	void CalculateHiddenConstants();
@@ -177,6 +183,13 @@ private:
 	void CheckShouldEndScreen();
 	void UpdateSongTime(float Delta);
 	void Render();
+
+	void PlayLaneKeysound(uint32 Lane);
+	void PlayKeysound(uint32 Index);
+	void SetLaneHoldState(uint32 Lane, bool NewState);
+
+	// true if holding down key
+	bool GetGearLaneState(uint32 Lane);
 
 public:
 
