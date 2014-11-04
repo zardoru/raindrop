@@ -19,6 +19,14 @@ Song::~Song()
 {
 }
 
+dotcur::Difficulty* Song::GetDifficulty(uint32 i)
+{
+	if (i >= Difficulties.size())
+		return NULL;
+	else
+		return Difficulties.at(i);
+}
+
 void CalculateBarlineRatios(Song &MySong, Difficulty &Diff)
 {
 	TimingData &Timing = Diff.Timing;

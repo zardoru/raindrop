@@ -3,7 +3,7 @@
 
 #include "GraphObject2D.h"
 
-typedef void(*EventAnimationFunction)(GraphObject2D*);
+typedef function<void(GraphObject2D*)> EventAnimationFunction;
 
 namespace GUI
 {

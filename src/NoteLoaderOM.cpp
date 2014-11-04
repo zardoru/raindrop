@@ -614,8 +614,8 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 			Diff->SoundList[i->second] = i->first;
 		}
 
+		Diff->Level = Diff->TotalScoringObjects / Diff->Duration;
 		Out->Difficulties.push_back(Diff);
 	}else
 		delete Diff; // metadata-only difficulty
-
 }

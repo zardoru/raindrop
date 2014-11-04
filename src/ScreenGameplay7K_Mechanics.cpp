@@ -107,7 +107,7 @@ void ScreenGameplay7K::SetLaneHoldState(uint32 Lane, bool NewState)
 // true if holding down key
 bool ScreenGameplay7K::GetGearLaneState(uint32 Lane)
 {
-	return GearIsPressed[Lane];
+	return GearIsPressed[Lane] != 0;
 }
 
 void ScreenGameplay7K::RunMeasures()

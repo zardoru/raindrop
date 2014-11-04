@@ -884,7 +884,7 @@ GString GetSubtitles(GString SLine, std::vector<GString> &Out)
 	GString CurrentParse;
 	std::stack<char> Paren;
 
-	for (int i = 0; i < len; i++)
+	for (size_t i = 0; i < len; i++)
 	{
 		if (isany(Line[i], EntryChars, 3))
 			Paren.push(Line[i]);
@@ -923,10 +923,10 @@ GString DifficultyNameFromSubtitles(std::vector<GString> &Subs)
 			return "EX";
 		else if (strstr(s, "hyper"))
 			return "Hyper";
-		else if (strstr(s, "normal"))
-			return "Normal";
 		else if (strstr(s, "hard"))
 			return "Hyper";
+		else if (strstr(s, "normal"))
+			return "Normal";
 		else if (strstr(s, "light"))
 			return "Light";
 		else if (strstr(s, "beginner"))
@@ -1113,6 +1113,11 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 			OnCommand(#TOTAL)
 			{
 				TimingInfo->life_total = latof(CommandContents);
+			}
+
+			OnCommand(#PLAYLEVEL)
+			{
+				Diff->Level = atoi(CommandContents.c_str());
 			}
 
 			OnCommand(#RANK)

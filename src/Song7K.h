@@ -124,6 +124,7 @@ namespace VSRG
 			BT_Beatspace
 		} BPMType;
 
+		int Level;
 		unsigned char Channels;
 		bool IsVirtual;
 
@@ -137,6 +138,7 @@ namespace VSRG
 		Difficulty() {
 			IsVirtual = false;
 			Channels = 0;
+			Level = 0;
 			TimingInfo = NULL;
 			BMPEvents = NULL;
 		};
@@ -163,6 +165,8 @@ namespace VSRG
 
 		Song();
 		~Song();
+
+		VSRG::Difficulty* GetDifficulty(uint32 i);
 	};
 
 }

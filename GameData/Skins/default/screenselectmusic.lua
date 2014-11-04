@@ -1,7 +1,7 @@
 skin_require("Global/Background.lua")
 
 -- Wheel transformation
-TransformX =  ScreenWidth * 13/20
+TransformX =  ScreenWidth * 15/20
 CurrentTX = ScreenWidth
 
 -- List transformation
@@ -26,10 +26,12 @@ end
 
 -- Screen Events
 function OnSelect()
-
+	TransformX = ScreenWidth
+	return 2
 end
 
 function OnRestore()
+	TransformX =  ScreenWidth * 15/20
 	CurrentTX = ScreenWidth	
 	BgAlpha = 0
 	Obj.SetTarget(DirUpButton)

@@ -88,7 +88,7 @@ bool TrackNote::IsEnabled() const
 
 bool TrackNote::IsHeadEnabled() const
 {
-	return Data.EnabledHitFlags & HeadEnabledFlag;
+	return (Data.EnabledHitFlags & HeadEnabledFlag) != 0;
 }
 
 void TrackNote::Disable()

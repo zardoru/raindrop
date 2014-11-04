@@ -25,6 +25,7 @@ class GraphObjectMan;
 class ScreenSelectMusic : public Screen
 {
 	double Time;
+	double TransitionTime;
 
 	GraphObject2D Background;
 	BitmapFont* Font;
@@ -37,6 +38,8 @@ class ScreenSelectMusic : public Screen
 
 	bool OptionUpscroll;
 
+	bool IsTransitioning;
+	
 	void StopLoops();
 
 	ModeType SelectedMode;

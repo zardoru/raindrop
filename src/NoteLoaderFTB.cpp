@@ -141,5 +141,6 @@ failed:
 	else
 		goto failed;
 
+	Diff->Level = Diff->TotalScoringObjects / Diff->Duration;
 	Out->Difficulties.push_back(Diff);
 }

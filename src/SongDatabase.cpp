@@ -32,11 +32,13 @@ CREATE TABLE IF NOT EXISTS [diffdb] (\
   [duration] DOUBLE, \
   [isvirtual] INTEGER, \
   [keys] INTEGER,\
-  [bpmtype] INT);";
+  [bpmtype] INT,\
+  [level] INT,\
+  [author] VARCHAR(256));";
 
 const char* GetSongIDQuery = "SELECT * FROM songdb WHERE directory=?";
 const char* InsertSongQuery = "INSERT INTO songdb VALUES (NULL,?,?,?,?,?,?)";
-const char* InsertDifficultyQuery = "INSERT INTO diffdb VALUES (?,NULL,?,?,?,?,?,?,?,?,?,?)";
+const char* InsertDifficultyQuery = "INSERT INTO diffdb VALUES (?,NULL,?,?,?,?,?,?,?,?,?,?,?,?)";
 const char* GetFilenameIDQuery = "SELECT id FROM songfiledb WHERE filename=? AND lastmodified=?";
 const char* InsertFilenameQuery = "INSERT INTO songfiledb VALUES (NULL,?,?)";
 const char* GetDiffIDQuery = "SELECT diffid FROM diffdb \
@@ -47,11 +49,12 @@ const char* GetDiffNameQuery = "SELECT name FROM diffdb \
 const char* GetLMTQuery = "SELECT lastmodified FROM songfiledb WHERE filename=?";
 const char* RenewDiff = "DELETE FROM diffdb WHERE songid=?";
 const char* GetSongInfo = "SELECT songtitle, songauthor, songfilename, songbackground, mode FROM songdb WHERE id=?";
-const char* GetDiffInfo = "SELECT diffid, name, objcount, scoreobjectcount, holdcount, notecount, duration, isvirtual, keys, fileid, bpmtype FROM diffdb WHERE songid=?";
+const char* GetDiffInfo = "SELECT diffid, name, objcount, scoreobjectcount, holdcount, notecount, duration, isvirtual, \
+						  keys, fileid, bpmtype, level, author FROM diffdb WHERE songid=?";
 const char* GetFileInfo = "SELECT filename, lastmodified FROM songfiledb WHERE id=?";
 const char* UpdateLMT = "UPDATE songfiledb SET lastmodified=? WHERE filename=?";
 const char* UpdateDiff = "UPDATE diffdb SET name=?,objcount=?,scoreobjectcount=?,holdcount=?,notecount=?,\
-	duration=?,isvirtual=?,keys=?,bpmtype=? WHERE diffid=?";
+	duration=?,isvirtual=?,keys=?,bpmtype=?,level=?,author=? WHERE diffid=?";
 
 const char* GetDiffFilename = "SELECT filename FROM songfiledb WHERE (songfiledb.id = (SELECT diffdb.fileid FROM diffdb WHERE diffid=?))";
 
@@ -235,11 +238,15 @@ void SongDatabase::AddDifficulty(int SongID, Directory Filename, Game::Song::Dif
 			SC(sqlite3_bind_int(st_DiffInsertQuery, 9, VDiff->IsVirtual));
 			SC(sqlite3_bind_int(st_DiffInsertQuery, 10, VDiff->Channels));
 			SC(sqlite3_bind_int(st_DiffInsertQuery, 11, VDiff->BPMType));
+			SC(sqlite3_bind_int(st_DiffInsertQuery, 12, VDiff->Level));
+			SC(sqlite3_bind_text(st_DiffInsertQuery, 13, VDiff->Author.c_str(), VDiff->Author.length(), SQLITE_TRANSIENT));
 		}else if (Mode == MODE_DOTCUR)
 		{
 			SC(sqlite3_bind_int(st_DiffInsertQuery, 9, 0));
 			SC(sqlite3_bind_int(st_DiffInsertQuery, 10, 0));
 			SC(sqlite3_bind_int(st_DiffInsertQuery, 11, 0));
+			SC(sqlite3_bind_int(st_DiffInsertQuery, 12, 0));
+			SC(sqlite3_bind_text(st_DiffInsertQuery, 13, Diff->Author.c_str(), Diff->Author.length(), SQLITE_TRANSIENT));
 		}
 
 		SCS(sqlite3_step(st_DiffInsertQuery));
@@ -261,14 +268,19 @@ void SongDatabase::AddDifficulty(int SongID, Directory Filename, Game::Song::Dif
 			SC(sqlite3_bind_int(st_DiffUpdateQuery, 7, VDiff->IsVirtual));
 			SC(sqlite3_bind_int(st_DiffUpdateQuery, 8, VDiff->Channels));
 			SC(sqlite3_bind_int(st_DiffUpdateQuery, 9, VDiff->BPMType));
+			SC(sqlite3_bind_int(st_DiffUpdateQuery, 10, VDiff->Level));
+			SC(sqlite3_bind_text(st_DiffUpdateQuery, 11, VDiff->Author.c_str(), VDiff->Author.length(), SQLITE_TRANSIENT));
 		}else if (Mode == MODE_DOTCUR)
 		{
 			SC(sqlite3_bind_int(st_DiffUpdateQuery, 7, 0));
 			SC(sqlite3_bind_int(st_DiffUpdateQuery, 8, 0));
 			SC(sqlite3_bind_int(st_DiffUpdateQuery, 9, 0));
+
+			SC(sqlite3_bind_int(st_DiffUpdateQuery, 10, 0));
+			SC(sqlite3_bind_text(st_DiffUpdateQuery, 11, Diff->Author.c_str(), Diff->Author.length(), SQLITE_TRANSIENT));
 		}
 
-		SC(sqlite3_bind_int(st_DiffUpdateQuery, 10, DiffID));
+		SC(sqlite3_bind_int(st_DiffUpdateQuery, 12, DiffID));
 		SCS(sqlite3_step(st_DiffUpdateQuery));
 		SC(sqlite3_reset(st_DiffUpdateQuery));
 	}

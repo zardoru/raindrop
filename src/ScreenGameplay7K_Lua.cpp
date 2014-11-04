@@ -133,6 +133,7 @@ void ScreenGameplay7K::SetupLua()
 {
 	SetupScorekeeper7KLuaInterface((void*)Animations->GetEnv()->GetState());
 	SetScorekeeper7KInstance((void*)Animations->GetEnv()->GetState(), score_keeper);
+	GameState::GetInstance().InitializeLua(Animations->GetEnv()->GetState());
 
 #define f(x) addFunction(#x, &ScreenGameplay7K::x)
 	luabridge::getGlobalNamespace(Animations->GetEnv()->GetState())

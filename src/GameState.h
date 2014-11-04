@@ -17,13 +17,18 @@ namespace VSRG
 class SongDatabase;
 class Image;
 
+struct lua_State;
+
 namespace Game
 {
+	class Song;
+
 class GameState
 {
 	GString CurrentSkin;
 	SongDatabase* Database;
 
+	Game::Song *SelectedSong;
 public:
 
 	GameState();
@@ -34,12 +39,17 @@ public:
 	static GameState &GetInstance();
 	void Initialize();
 
+	void InitializeLua(lua_State *L);
+
 	GString GetDirectoryPrefix();
 	GString GetSkinPrefix();
 	GString GetScriptsDirectory();
 	void SetSkin(GString NextSkin);
 	Image* GetSkinImage(Directory Image);
 	bool SkinSupportsChannelCount(int Count);
+
+	void SetSelectedSong(Game::Song* Song);
+	Game::Song *GetSelectedSong();
 
 	SongDatabase* GetSongDatabase();
 	static GameWindow* GetWindow();

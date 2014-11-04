@@ -98,6 +98,9 @@ function UpdateTextObjects()
 
 	fmtext = fmtext .. string.format("\nBPM: %d", CurrentBPM)
 
+	sng = Global:GetSelectedSong()
+	fmtext = fmtext .. string.format("\n%s by %s", sng.Title, sng.Author)
+
 	judgments.Text = fmtext
 end
 

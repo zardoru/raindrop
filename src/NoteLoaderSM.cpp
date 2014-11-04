@@ -98,6 +98,7 @@ bool LoadTracksSM(Song *Out, Difficulty *Diff, GString line)
 	if (!Keys)
 		return false;
 
+	Diff->Level = atoi(Mainline[3].c_str());
 	Diff->Channels = Keys;
 	Diff->Name = Mainline[2] + "(" + Mainline[0] + ")";
 	

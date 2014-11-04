@@ -28,6 +28,14 @@ Song::~Song()
 	}
 }
 
+VSRG::Difficulty* Song::GetDifficulty(uint32 i)
+{
+	if (i >= Difficulties.size())
+		return NULL;
+	else
+		return Difficulties.at(i);
+}
+
 int tSort(const TimingSegment &i, const TimingSegment &j)
 {
 	return i.Time < j.Time;

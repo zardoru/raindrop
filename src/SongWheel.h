@@ -51,10 +51,6 @@ private:
 
 	GraphObject2D* SelCursor, *Item, *ItemDirectory;
 
-	SongNotification OnSongChange;
-	SongNotification OnSongSelect;
-	ListTransformFunction Transform;
-
 	Vec2 ItemTextOffset;
 
 	enum
@@ -83,18 +79,27 @@ private:
 	void CalculateIndices();
 public:
 
+	SongNotification OnSongChange;
+	SongNotification OnSongSelect;
+	ListTransformFunction Transform;
+	ListTransformFunction TransformHorizontal;
+
 	// Singleton
 	static SongWheel& GetInstance();
 
 	void GoUp();
-	void Initialize(float Start, float End, 
-		ListTransformFunction FuncTransform, SongNotification FuncNotify, SongNotification FuncNotifySelect, 
-		SongDatabase* Database);
+	void Initialize(float Start, float End, SongDatabase* Database);
 
 	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	bool HandleScrollInput(const double dx, const double dy);
 	Game::Song* GetSelectedSong();
 	void ReloadSongs();
+
+	// return: the new difficulty index
+	int NextDifficulty();
+	int PrevDifficulty();
+
+	void SetDifficulty(uint32 i);
 
 	void SetFont(Directory FontDirectory);
 	void SetItemHeight(float Height);

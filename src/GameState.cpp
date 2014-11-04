@@ -20,6 +20,7 @@ using namespace Game;
 GameState::GameState()
 {
 	CurrentSkin = "default";
+	SelectedSong = NULL;
 }
 
 GameState& GameState::GetInstance()
@@ -28,9 +29,19 @@ GameState& GameState::GetInstance()
 	return *StateInstance;
 }
 
+Game::Song *GameState::GetSelectedSong()
+{
+	return SelectedSong;
+}
+
+void GameState::SetSelectedSong(Game::Song* Song)
+{
+	SelectedSong = Song;
+}
+
 void GameState::Initialize()
 {
-	Database = new SongDatabase("songdatabase.db");
+	Database = new SongDatabase("rd.db");
 }
 
 GameWindow* GameState::GetWindow()

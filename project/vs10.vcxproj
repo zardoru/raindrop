@@ -186,6 +186,7 @@
     <ClCompile Include="..\src\Directory.cpp" />
     <ClCompile Include="..\src\Font.cpp" />
     <ClCompile Include="..\src\GameState.cpp" />
+    <ClCompile Include="..\src\GameStateLua.cpp" />
     <ClCompile Include="..\src\GraphicalString.cpp" />
     <ClCompile Include="..\src\Line.cpp" />
     <ClCompile Include="..\src\Logging.cpp" />

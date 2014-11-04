@@ -366,6 +366,8 @@ void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::
 			break;
 		}
 
+		Diff->Level = Head.level[i];
+
 		Info.S = Out;
 		filein.seekg(Head.note_offset[i]);
 

@@ -45,6 +45,7 @@ namespace Game
 			// Meta
 			GString Name;
 			GString Filename;
+			GString Author;
 
 			uint32 TotalNotes;
 			uint32 TotalHolds;
