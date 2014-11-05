@@ -137,7 +137,7 @@ bool O2JamMechanics::OnReleaseLane(double SongBeat, VSRG::TrackNote* m, uint32 L
 {
 	if (m->IsHold() && m->WasNoteHit() && m->IsEnabled()) /* We hit the hold's head and we've not released it early already */
 	{
-		double dev = (SongBeat - m->GetTimeFinal()) * 1000;
+		double dev = (SongBeat - m->GetTimeFinal());
 		double tD = abs(dev);
 
 		if (tD < score_keeper->getJudgmentWindow(SKJ_W3)) /* Released in time */
@@ -159,32 +159,29 @@ bool O2JamMechanics::OnReleaseLane(double SongBeat, VSRG::TrackNote* m, uint32 L
 	return false;
 }
 
+
+#include "Logging.h"
 bool O2JamMechanics::OnPressLane(double SongBeat, VSRG::TrackNote* m, uint32 Lane)
 {
 	if (!m->IsEnabled())
 		return false;
 
-	double dev = (SongBeat - m->GetStartTime()) * 1000;
+	double dev = (SongBeat - m->GetStartTime());
 	double tD = abs(dev);
 
 	if (tD < score_keeper->getMissCutoff()) // If the note was hit inside judging range
 	{
-		// within BAD window.
-		if (tD > score_keeper->getJudgmentWindow(SKJ_W3))
-		{
-			MissNotify(dev, Lane, m->IsHold(), m->IsHold(), true);
-		}
-		else{ // either COOL or GOOD window
-			m->Hit();
-			HitNotify(dev, Lane, m->IsHold(), false);
+		Log::Printf("sb: %f nt: %f td: %f\n", SongBeat, m->GetStartTime(), dev);
 
-			PlayNoteSoundEvent(m->GetSound());
+		m->Hit();
+		HitNotify(dev, Lane, m->IsHold(), false);
 
-			if (m->IsHold())
-				SetLaneHoldingState(Lane, true);
-			else
-				m->Disable();
-		}
+		PlayNoteSoundEvent(m->GetSound());
+
+		if (m->IsHold())
+			SetLaneHoldingState(Lane, true);
+		else
+			m->Disable();
 
 		return true;
 	}
@@ -201,10 +198,11 @@ bool O2JamMechanics::OnUpdate(double SongBeat, VSRG::TrackNote* m, uint32 Lane)
 	// note wasn't hit at the head and it's a hold
 	if (tD > 0 && !m->WasNoteHit() && m->IsHold()) {
 		// remove hold notes that were never hit.
-		MissNotify(abs(tD) * 1000, k, m->IsHold(), true, false);
+		MissNotify(abs(tD), k, m->IsHold(), true, false);
 		m->Hit();
+		m->Disable();
 	} // Condition B: Regular note or hold head outside cutoff, wasn't hit and it's enabled.
-	else if (tHead > score_keeper->getMissCutoff() && !m->WasNoteHit())
+	else if (tHead > score_keeper->getMissCutoff() && !m->WasNoteHit() && m->IsEnabled())
 	{
 		MissNotify(abs(tD), k, m->IsHold(), false, false);
 
@@ -215,7 +213,7 @@ bool O2JamMechanics::OnUpdate(double SongBeat, VSRG::TrackNote* m, uint32 Lane)
 	else if (tD > score_keeper->getMissCutoff() &&
 		m->IsHold() && m->WasNoteHit() && m->IsEnabled())
 	{
-		MissNotify(abs(tD) * 1000, k, m->IsHold(), true, false);
+		MissNotify(abs(tD), k, m->IsHold(), true, false);
 
 		SetLaneHoldingState(k, false);
 		m->Disable();

@@ -38,7 +38,7 @@ class ScoreKeeper7K {
 		int getJudgmentCount(int Judge);
 		std::string getHistogram();
 
-		ScoreKeeperJudgment hitNote(int ms);
+		ScoreKeeperJudgment hitNote(double ms);
 		void missNote(bool auto_hold_miss, bool early_miss);
 
 		double getAccMax();
@@ -73,6 +73,8 @@ class ScoreKeeper7K {
 
 		bool use_w0; // whether or not to use ridiculous timing.
 		bool use_w0_for_ex2; // whether or not to require ridiculous for 2 EX score.
+
+		bool use_bbased;
 
 	/*
 		Standard scoring.

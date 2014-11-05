@@ -68,7 +68,6 @@ void ScreenGameplay7K::HitNote (double TimeOff, uint32 Lane, bool IsHold, bool I
 
 void ScreenGameplay7K::MissNote (double TimeOff, uint32 Lane, bool IsHold, bool auto_hold_miss, bool early_miss)
 {
-
 	score_keeper->missNote(auto_hold_miss, early_miss);
 
 	if (IsHold)

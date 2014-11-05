@@ -469,6 +469,7 @@ void ScreenGameplay7K::SetupMechanics()
 			score_keeper->setLifeTotal(Info->life_total);
 			score_keeper->setJudgeRank(Info->judge_rank);
 			UsedTimingType = TT_TIME;
+			lifebar_type = LT_GROOVE;
 		}
 		else if (CurrentDiff->TimingInfo->GetType() == VSRG::TI_OSUMANIA)
 		{
@@ -480,10 +481,13 @@ void ScreenGameplay7K::SetupMechanics()
 		}
 		else if (CurrentDiff->TimingInfo->GetType() == VSRG::TI_O2JAM)
 		{
+			Log::Printf("Using o2jam mechanics set!");
+			VSRG::O2JamTimingInfo *O2Info = (VSRG::O2JamTimingInfo*) CurrentDiff->TimingInfo;
 			// Todo...
 			lifebar_type = LT_O2JAM;
 			UsedTimingType = TT_BEATS;
 			score_keeper->setJudgeRank(-100); // Special constant to notify beat based timing.
+			score_keeper->setO2LifebarRating(O2Info->Difficulty);
 		}
 		else if (CurrentDiff->TimingInfo->GetType() == VSRG::TI_STEPMANIA)
 		{
@@ -498,6 +502,7 @@ void ScreenGameplay7K::SetupMechanics()
 		score_keeper->setLifeTotal(-1);
 		score_keeper->setJudgeRank(2);
 		UsedTimingType = TT_TIME;
+		lifebar_type = LT_GROOVE;
 	}
 
 	/*
@@ -512,6 +517,7 @@ void ScreenGameplay7K::SetupMechanics()
 		MechanicsSet = new O2JamMechanics;
 		ChangeNoteTimeToBeats();
 	}
+
 	MechanicsSet->Setup(MySong, CurrentDiff, score_keeper);
 	MechanicsSet->HitNotify = bind(&ScreenGameplay7K::HitNote, this, _1, _2, _3, _4);
 	MechanicsSet->MissNotify = bind(&ScreenGameplay7K::MissNote, this, _1, _2, _3, _4, _5);

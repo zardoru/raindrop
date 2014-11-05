@@ -98,10 +98,13 @@ void ScoreKeeper7K::setJudgeRank(int rank){
 
 	if (rank == -100) // We assume we're dealing with beats-based timing.
 	{
+		use_bbased = true;
+		use_w0 = false;
 		set_beat_timing_windows();
 		return;
 	}
 
+	use_bbased = false;
 	switch(rank){
 		case 0:
 			judge_window_scale = 0.50; break;
@@ -126,8 +129,9 @@ void ScoreKeeper7K::setJudgeScale(double scale){
 int ScoreKeeper7K::getTotalNotes(){ return total_notes; }
 
 
+#include "Logging.h"
 // ms is misleading- since it may very well be beats, but it's fine.
-ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
+ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms){
 
 	// interesting stuff goes here.
 
@@ -136,13 +140,19 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 	++total_notes;
 
 	if(abs(ms) < 128)
-	++histogram[ms + 127];
+	++histogram[(int)ms + 127];
 
 	ms = abs(ms);
 
 // combo
 
-	if(ms <= judgment_time[SKJ_W3]){
+	double jt;
+	if (use_bbased)
+		jt = judgment_time[SKJ_W2];
+	else
+		jt = judgment_time[SKJ_W3];
+
+	if(ms <= jt){
 		++notes_hit;
 		++combo;
 		if(combo > max_combo)
@@ -164,10 +174,11 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 
 	ScoreKeeperJudgment judgment = SKJ_NONE;
 
-	for (int i = (use_w0 ? 0 : 1); i < 6; i++)
+	for (int i = (use_w0 ? 0 : 1); i < (use_bbased ? 4 : 6); i++)
 	{
 		if (ms <= judgment_time[i])
 		{
+			Log::Printf("ms %f <= jt[i] %f", ms, judgment_time[i]);
 			judgment_amt[(ScoreKeeperJudgment)i]++;
 			judgment = ScoreKeeperJudgment((ScoreKeeperJudgment)i);
 			break;
@@ -196,10 +207,6 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 		if(lifebar_exhard > 0)
 			lifebar_exhard = min(1.0, lifebar_exhard + lifebar_exhard_increment);
 
-		if (ms <= judgment_time[SKJ_W1]){ // only COOLs restore o2jam lifebar
-			lifebar_o2jam = min(1.0, lifebar_o2jam + lifebar_o2jam_increment);
-		}
-
 	}else{
 
 		// miss tier 1
@@ -209,9 +216,12 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 		lifebar_exhard = max(0.0, lifebar_exhard - lifebar_exhard_decrement);
 		
 		lifebar_death = 0;
-
-		lifebar_o2jam = max(0.0, lifebar_o2jam - lifebar_o2jam_decrement);
 	}
+
+	if (ms <= judgment_time[SKJ_W1]){ // only COOLs restore o2jam lifebar
+		lifebar_o2jam = min(1.0, lifebar_o2jam + lifebar_o2jam_increment);
+	} else if (ms > judgment_time[SKJ_W2]) // BADs get some HP from you, 
+		lifebar_o2jam = max(0.0, lifebar_o2jam - lifebar_o2jam_decrement);
 	
 	lifebar_stepmania = min(1.0, lifebar_stepmania + life_increment[judgment]);
 
@@ -264,6 +274,8 @@ void ScoreKeeper7K::missNote(bool auto_hold_miss, bool early_miss){
 
 		lifebar_stepmania = max(0.0, lifebar_stepmania - lifebar_stepmania_miss_decrement);
 
+		lifebar_o2jam = max(0.0, lifebar_o2jam - lifebar_o2jam_decrement);
+
 	}else if(early_miss){
 
 		// miss tier 1
@@ -273,7 +285,6 @@ void ScoreKeeper7K::missNote(bool auto_hold_miss, bool early_miss){
 		lifebar_exhard = max(0.0, lifebar_exhard - lifebar_exhard_decrement);
 
 		lifebar_stepmania = max(0.0, lifebar_stepmania - lifebar_stepmania_earlymiss_decrement);
-
 	}
 
 	// other methods
@@ -410,6 +421,8 @@ bool ScoreKeeper7K::isStageFailed(int lifebar_amount_type){
 			return lifebar_death == 0.0;
 		case LT_STEPMANIA:
 			return lifebar_stepmania == 0.0;
+		case LT_O2JAM:
+			return lifebar_o2jam == 0.0;
 		default:
 			return false;
 	}
