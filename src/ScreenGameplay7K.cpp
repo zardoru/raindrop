@@ -236,7 +236,7 @@ void ScreenGameplay7K::RunAutoEvents()
 void ScreenGameplay7K::CheckShouldEndScreen()
 {
 	// Run failure first; make sure it has priority over checking whether it's a pass or not.
-	if (score_keeper->isStageFailed(lifebar_type) && !stage_failed)
+	if (score_keeper->isStageFailed(lifebar_type) && !stage_failed && !NoFail)
 	{
 		// We make sure we don't trigger this twice.
 		stage_failed = true;

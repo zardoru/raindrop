@@ -496,9 +496,22 @@ void ScreenGameplay7K::SetupMechanics()
 			score_keeper->setLifeTotal(-1);
 			score_keeper->setJudgeRank(2);
 		}
+		else if (CurrentDiff->TimingInfo->GetType() == VSRG::TI_STEPMANIA)
+		{
+			lifebar_type = LT_STEPMANIA;
+			score_keeper->setLifeTotal(-1);
+			score_keeper->setJudgeRank(2);
+		}
+		else
+		{
+			lifebar_type = LT_GROOVE;
+			score_keeper->setLifeTotal(-1);
+			score_keeper->setJudgeRank(2);
+		}
 	}
 	else
 	{
+		lifebar_type = LT_GROOVE;
 		score_keeper->setLifeTotal(-1);
 		score_keeper->setJudgeRank(2);
 		UsedTimingType = TT_TIME;
