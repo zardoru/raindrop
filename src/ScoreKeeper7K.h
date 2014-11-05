@@ -20,6 +20,8 @@ class ScoreKeeper7K {
 		void setMissDecrement(double decrement);
 		void setEarlyMissDecrement(double decrement);
 		
+		void setO2LifebarRating(int difficulty);
+
 		void setJudgeRank(int rank);
 		void setJudgeScale(double scale);
 
@@ -66,6 +68,8 @@ class ScoreKeeper7K {
 		void reset();
 
 	private:
+
+		void set_beat_timing_windows();
 
 		bool use_w0; // whether or not to use ridiculous timing.
 		bool use_w0_for_ex2; // whether or not to require ridiculous for 2 EX score.
@@ -182,6 +186,9 @@ class ScoreKeeper7K {
 		double lifebar_easy_increment;
 		double lifebar_easy_decrement;
 
+		double lifebar_o2jam;
+		double lifebar_o2jam_increment;
+		double lifebar_o2jam_decrement;
 
 		double lifebar_stepmania;
 		double lifebar_stepmania_miss_decrement;

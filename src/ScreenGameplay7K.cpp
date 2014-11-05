@@ -92,11 +92,18 @@ void ScreenGameplay7K::TranslateKey(KeyType K, bool KeyDown)
 	if (GearIndex >= MAX_CHANNELS || GearIndex < 0)
 		return;
 
+	double usedTime;
+
+	if (UsedTimingType == TT_TIME)
+		usedTime = SongTime;
+	else if (UsedTimingType == TT_BEATS)
+		usedTime = CurrentBeat;
+
 	if (KeyDown){
-		JudgeLane(GearIndex, SongTime);
+		JudgeLane(GearIndex, usedTime);
 		GearIsPressed[GearIndex] = true;
 	}else{
-		ReleaseLane(GearIndex, SongTime);
+		ReleaseLane(GearIndex, usedTime);
 		GearIsPressed[GearIndex] = false;
 	}
 }
@@ -316,6 +323,9 @@ void ScreenGameplay7K::UpdateSongTime(float Delta)
 		if ( (SongDelta > 0.001 && abs(SongTime - SongTimeReal) * 1000 > ErrorTolerance) || !InterpolateTime ) // Significant delta with a x ms difference? We're pretty off..
 			SongTime = SongTimeReal;
 	}
+
+	// Update current beat
+	CurrentBeat = IntegrateToTime(BPS, SongTime);
 }
 
 

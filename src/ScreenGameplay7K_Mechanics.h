@@ -1,5 +1,14 @@
+#ifndef SG7KMECHS_H_
+#define SG7KMECHS_H_
 
 class ScoreKeeper7K;
+
+enum TimingType
+{
+	TT_TIME,
+	TT_BEATS,
+	TT_PIXELS
+};
 
 class VSRGMechanics
 {
@@ -32,6 +41,8 @@ public:
 
 	// If returns true, don't judge any more notes either.
 	virtual bool OnReleaseLane(double SongTime, VSRG::TrackNote* Note, uint32 Lane) = 0;
+
+	virtual TimingType GetTimingKind() = 0;
 };
 
 class RaindropMechanics : public VSRGMechanics
@@ -40,5 +51,43 @@ public:
 	bool OnUpdate(double SongTime, VSRG::TrackNote* Note, uint32 Lane);
 	bool OnPressLane(double SongTime, VSRG::TrackNote* Note, uint32 Lane);
 	bool OnReleaseLane(double SongTime, VSRG::TrackNote* Note, uint32 Lane);
+
+	TimingType GetTimingKind();
 };
 
+class O2JamMechanics : public VSRGMechanics
+{
+public:
+
+	bool OnUpdate(double SongBeat, VSRG::TrackNote* Note, uint32 Lane);
+	bool OnPressLane(double SongBeat, VSRG::TrackNote* Note, uint32 Lane);
+	bool OnReleaseLane(double SongBeat, VSRG::TrackNote* Note, uint32 Lane);
+
+	TimingType GetTimingKind();
+};
+
+/*
+class BMSMechanics : public VSRGMechanics
+{
+public:
+	bool OnUpdate(double SongTime, VSRG::TrackNote* Note, uint32 Lane);
+	bool OnPressLane(double SongTime, VSRG::TrackNote* Note, uint32 Lane);
+	bool OnReleaseLane(double SongTime, VSRG::TrackNote* Note, uint32 Lane);
+
+	TimingType GetTimingKind();
+};
+*/
+
+/*
+class StepmaniaMechanics : public VSRGMechanics
+{
+public:
+	bool OnUpdate(double SongTime, VSRG::TrackNote* Note, uint32 Lane);
+	bool OnPressLane(double SongTime, VSRG::TrackNote* Note, uint32 Lane);
+	bool OnReleaseLane(double SongTime, VSRG::TrackNote* Note, uint32 Lane);
+
+	TimingType GetTimingKind();
+};
+*/
+
+#endif

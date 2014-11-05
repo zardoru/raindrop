@@ -126,3 +126,8 @@ int TrackNote::GetFracKind() const
 {
 	return Data.FractionKind;
 }
+
+NoteData &TrackNote::GetNotedata()
+{
+	return Data;
+}

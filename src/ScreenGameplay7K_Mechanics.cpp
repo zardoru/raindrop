@@ -89,7 +89,7 @@ void ScreenGameplay7K::MissNote (double TimeOff, uint32 Lane, bool IsHold, bool 
 
 void ScreenGameplay7K::PlayLaneKeysound(uint32 Lane)
 {
-	if (Keysounds[PlaySounds[Lane]])
+	if (Keysounds[PlaySounds[Lane]] && PlayReactiveSounds)
 		Keysounds[PlaySounds[Lane]]->Play();
 }
 
@@ -117,6 +117,13 @@ void ScreenGameplay7K::RunMeasures()
 	for (int i = 0; i < VSRG::MAX_CHANNELS; i++)
 		timeClosest[i] = CurrentDiff->Duration;
 
+	double usedTime;
+
+	if (UsedTimingType == TT_TIME)
+		usedTime = SongTime;
+	else if (UsedTimingType == TT_BEATS)
+		usedTime = CurrentBeat;
+
 	for (uint16 k = 0; k < CurrentDiff->Channels; k++)
 	{
 		for (std::vector<TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); m++)	{
@@ -125,10 +132,10 @@ void ScreenGameplay7K::RunMeasures()
 			if (CurrentDiff->IsVirtual)	{
 				if (m->IsEnabled())
 				{
-					if ((abs(SongTime - m->GetTimeFinal()) < timeClosest[k]))
+					if ((abs(usedTime - m->GetTimeFinal()) < timeClosest[k]))
 					{
 						PlaySounds[k] = m->GetSound();
-						timeClosest[k] = abs(SongTime - m->GetTimeFinal());
+						timeClosest[k] = abs(usedTime - m->GetTimeFinal());
 					}else
 						break; // In other words, we're getting further away.
 				}
@@ -136,7 +143,7 @@ void ScreenGameplay7K::RunMeasures()
 
 
 			if (Auto) {
-				double TimeThreshold = SongTime + 0.008; // latest time a note can activate.
+				double TimeThreshold = usedTime + 0.008; // latest time a note can activate.
 				if ( m->GetStartTime() <= TimeThreshold)
 				{
 					if (m->IsEnabled()) {
@@ -145,19 +152,19 @@ void ScreenGameplay7K::RunMeasures()
 							if (m->WasNoteHit())
 							{
 								if (m->GetTimeFinal() < TimeThreshold){
-									double hit_time = clamp_to_interval(SongTime, m->GetTimeFinal(), 0.008);
+									double hit_time = clamp_to_interval(usedTime, m->GetTimeFinal(), 0.008);
 									// We use clamp_to_interval for those pesky outliers.
 									ReleaseLane(k, hit_time);
 									// ReleaseLane(k, m->GetTimeFinal());
 								}
 							}else{
-								double hit_time = clamp_to_interval(SongTime, m->GetStartTime(), 0.008);
+								double hit_time = clamp_to_interval(usedTime, m->GetStartTime(), 0.008);
 								JudgeLane(k, hit_time);
 								// JudgeLane(k, m->GetStartTime());
 							}
 						}else
 						{
-							double hit_time = clamp_to_interval(SongTime, m->GetStartTime(), 0.008);
+							double hit_time = clamp_to_interval(usedTime, m->GetStartTime(), 0.008);
 							JudgeLane(k, hit_time);
 							ReleaseLane(k, hit_time);
 							// JudgeLane(k, m->GetStartTime());
@@ -170,7 +177,7 @@ void ScreenGameplay7K::RunMeasures()
 
 			if(stage_failed) continue; // don't check for judgments after stage has failed.
 
-			if (MechanicsSet->OnUpdate(SongTime, &(*m), k))
+			if (MechanicsSet->OnUpdate(usedTime, &(*m), k))
 				break;
 		} // end for notes
 	} // end for channels

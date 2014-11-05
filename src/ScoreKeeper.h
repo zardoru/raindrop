@@ -68,7 +68,7 @@ enum LifeType{
 	
 	LT_STEPMANIA = 6, // Stepmania/DDR/osu!mania scoring mode.
 	LT_NORECOV = 7, // DDR no recov. mode
-
+	LT_O2JAM = 8,
 
 	LT_BATTERY = 11, // DDR battery mode.
 

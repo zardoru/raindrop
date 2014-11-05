@@ -3,6 +3,7 @@
 
 #include "Song7K.h"
 #include "ScoreKeeper.h"
+#include "ScreenGameplay7K_Mechanics.h"
 
 class AudioStream;
 class Image;
@@ -37,6 +38,7 @@ private:
 	VSRG::Difficulty *CurrentDiff;
 	VSRG::Song       *MySong;
 	VSRG::Song		 *LoadedSong;
+	TimingType		 UsedTimingType;
 
 	ImageList				 BMPs;
 	std::vector<AutoplayBMP> BMPEvents;
@@ -63,8 +65,6 @@ private:
 	double FailureTime;
 	double SuccessTime;
 	double MsDisplayMargin;
-
-	bool stage_failed;
 
 	/* User Variables */
     float       SpeedMultiplierUser;
@@ -121,6 +121,7 @@ private:
 
 	float  CurrentBeat;
 
+	bool stage_failed;
 	bool beatScrollEffectEnabled;
 	bool waveEffectEnabled;
 	bool Auto;
@@ -152,6 +153,8 @@ private:
 	void UpdateScriptVariables();
 	void UpdateScriptScoreVariables();
 	void CalculateHiddenConstants();
+
+	void ChangeNoteTimeToBeats();
 
 	// Done in loading thread
 	bool LoadChartData();

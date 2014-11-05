@@ -19,6 +19,7 @@
 #include "GraphObjectMan.h"
 
 #include "ScoreKeeper7K.h"
+#include "TrackNote.h"
 #include "ScreenGameplay7K.h"
 #include "ScreenGameplay7K_Mechanics.h"
 #include "ScreenEvaluation7K.h"
@@ -443,6 +444,21 @@ void ScreenGameplay7K::SetupAfterLoadingVariables()
 
 }
 
+void ScreenGameplay7K::ChangeNoteTimeToBeats()
+{
+	for (uint32 k = 0; k < CurrentDiff->Channels; k++)
+	{
+		for (std::vector<VSRG::TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); m++)
+		{
+			VSRG::NoteData &dt = m->GetNotedata();
+			double beatStart = IntegrateToTime(BPS, dt.StartTime);
+			double beatEnd = IntegrateToTime(BPS, dt.EndTime);
+			dt.StartTime = beatStart;
+			dt.EndTime = beatEnd;
+		}
+	}
+}
+
 void ScreenGameplay7K::SetupMechanics()
 {
 	if (CurrentDiff->TimingInfo)
@@ -452,6 +468,7 @@ void ScreenGameplay7K::SetupMechanics()
 			VSRG::BmsTimingInfo *Info = static_cast<VSRG::BmsTimingInfo*> (CurrentDiff->TimingInfo);
 			score_keeper->setLifeTotal(Info->life_total);
 			score_keeper->setJudgeRank(Info->judge_rank);
+			UsedTimingType = TT_TIME;
 		}
 		else if (CurrentDiff->TimingInfo->GetType() == VSRG::TI_OSUMANIA)
 		{
@@ -459,11 +476,19 @@ void ScreenGameplay7K::SetupMechanics()
 			score_keeper->setODWindows(Info->OD);
 			lifebar_type = LT_STEPMANIA;
 			scoring_type = ST_OSUMANIA;
+			UsedTimingType = TT_TIME;
 		}
 		else if (CurrentDiff->TimingInfo->GetType() == VSRG::TI_O2JAM)
 		{
 			// Todo...
+			lifebar_type = LT_O2JAM;
+			UsedTimingType = TT_BEATS;
+			score_keeper->setJudgeRank(-100); // Special constant to notify beat based timing.
+		}
+		else if (CurrentDiff->TimingInfo->GetType() == VSRG::TI_STEPMANIA)
+		{
 			lifebar_type = LT_STEPMANIA;
+			UsedTimingType = TT_TIME;
 			score_keeper->setLifeTotal(-1);
 			score_keeper->setJudgeRank(2);
 		}
@@ -472,9 +497,21 @@ void ScreenGameplay7K::SetupMechanics()
 	{
 		score_keeper->setLifeTotal(-1);
 		score_keeper->setJudgeRank(2);
+		UsedTimingType = TT_TIME;
 	}
 
-	MechanicsSet = new RaindropMechanics;
+	/*
+		If we're on TT_BEATS we've got to recalculate all note positions to beats, 
+		and use mechanics that use TT_BEATS as its timing type.
+	*/
+
+	if (UsedTimingType == TT_TIME)
+		MechanicsSet = new RaindropMechanics;
+	else if (UsedTimingType == TT_BEATS)
+	{
+		MechanicsSet = new O2JamMechanics;
+		ChangeNoteTimeToBeats();
+	}
 	MechanicsSet->Setup(MySong, CurrentDiff, score_keeper);
 	MechanicsSet->HitNotify = bind(&ScreenGameplay7K::HitNote, this, _1, _2, _3, _4);
 	MechanicsSet->MissNotify = bind(&ScreenGameplay7K::MissNote, this, _1, _2, _3, _4, _5);

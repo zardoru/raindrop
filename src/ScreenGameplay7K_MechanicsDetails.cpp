@@ -122,3 +122,105 @@ bool RaindropMechanics::OnReleaseLane(double SongTime, VSRG::TrackNote* m, uint3
 
 	return false;
 }
+
+TimingType RaindropMechanics::GetTimingKind()
+{
+	return TT_TIME;
+}
+
+TimingType O2JamMechanics::GetTimingKind()
+{
+	return TT_BEATS;
+}
+
+bool O2JamMechanics::OnReleaseLane(double SongBeat, VSRG::TrackNote* m, uint32 Lane)
+{
+	if (m->IsHold() && m->WasNoteHit() && m->IsEnabled()) /* We hit the hold's head and we've not released it early already */
+	{
+		double dev = (SongBeat - m->GetTimeFinal()) * 1000;
+		double tD = abs(dev);
+
+		if (tD < score_keeper->getJudgmentWindow(SKJ_W3)) /* Released in time */
+		{
+			HitNotify(dev, Lane, m->IsHold(), true);
+			SetLaneHoldingState(Lane, false);
+			m->Disable();
+		}
+		else /* Released off time */
+		{
+			MissNotify(dev, Lane, m->IsHold(), false, false);
+
+			m->Disable();
+			SetLaneHoldingState(Lane, false);
+		}
+		return true;
+	}
+
+	return false;
+}
+
+bool O2JamMechanics::OnPressLane(double SongBeat, VSRG::TrackNote* m, uint32 Lane)
+{
+	if (!m->IsEnabled())
+		return false;
+
+	double dev = (SongBeat - m->GetStartTime()) * 1000;
+	double tD = abs(dev);
+
+	if (tD < score_keeper->getMissCutoff()) // If the note was hit inside judging range
+	{
+		// within BAD window.
+		if (tD > score_keeper->getJudgmentWindow(SKJ_W3))
+		{
+			MissNotify(dev, Lane, m->IsHold(), m->IsHold(), true);
+		}
+		else{ // either COOL or GOOD window
+			m->Hit();
+			HitNotify(dev, Lane, m->IsHold(), false);
+
+			PlayNoteSoundEvent(m->GetSound());
+
+			if (m->IsHold())
+				SetLaneHoldingState(Lane, true);
+			else
+				m->Disable();
+		}
+
+		return true;
+	}
+	return false;
+}
+
+bool O2JamMechanics::OnUpdate(double SongBeat, VSRG::TrackNote* m, uint32 Lane)
+{
+	uint32 k = Lane;
+	double tD = SongBeat - m->GetTimeFinal();
+	double tHead = SongBeat - m->GetStartTime();
+
+	// Condition A: Hold tail outside accuracy cutoff (can't be hit any longer),
+	// note wasn't hit at the head and it's a hold
+	if (tD > 0 && !m->WasNoteHit() && m->IsHold()) {
+		// remove hold notes that were never hit.
+		MissNotify(abs(tD) * 1000, k, m->IsHold(), true, false);
+		m->Hit();
+	} // Condition B: Regular note or hold head outside cutoff, wasn't hit and it's enabled.
+	else if (tHead > score_keeper->getMissCutoff() && !m->WasNoteHit())
+	{
+		MissNotify(abs(tD), k, m->IsHold(), false, false);
+
+		// remove from judgment completely
+		m->Disable();
+
+	} // Condition C: Hold head was hit, but hold tail was not released.
+	else if (tD > score_keeper->getMissCutoff() &&
+		m->IsHold() && m->WasNoteHit() && m->IsEnabled())
+	{
+		MissNotify(abs(tD) * 1000, k, m->IsHold(), true, false);
+
+		SetLaneHoldingState(k, false);
+		m->Disable();
+	}
+
+	return false;
+}
+

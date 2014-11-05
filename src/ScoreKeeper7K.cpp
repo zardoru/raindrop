@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <map>
 
+
 ScoreKeeper7K::~ScoreKeeper7K(){  }
 
 double ScoreKeeper7K::accuracy_percent(double var){
@@ -20,6 +21,29 @@ void ScoreKeeper7K::setAccMax(double ms){
 	ACC_MAX_SQ = ms * ms;
 }
 
+void ScoreKeeper7K::setO2LifebarRating(int difficulty)
+{
+	difficulty = Clamp(difficulty, 0, 2);
+
+	lifebar_o2jam = 1;
+
+	// Thanks to Entozer for giving this approximate information.
+	switch (difficulty)
+	{
+	case 0: // EX
+		lifebar_o2jam_increment = (19.0 / 20.0) / 290.0;
+		lifebar_o2jam_decrement = 1.0 / 20.0;
+		break;
+	case 1: // NX
+		lifebar_o2jam_increment = (24.0 / 25.0) / 470.0;
+		lifebar_o2jam_decrement = 1.0 / 25.0;
+		break;
+	case 2: // HX
+		lifebar_o2jam_increment = (33.0 / 34.0) / 950.0;
+		lifebar_o2jam_decrement = 1.0 / 34.0;
+		break;
+	}
+}
 
 void ScoreKeeper7K::setMaxNotes(int notes){
 
@@ -71,6 +95,13 @@ void ScoreKeeper7K::setEarlyMissDecrement(double decrement){
 
 
 void ScoreKeeper7K::setJudgeRank(int rank){
+
+	if (rank == -100) // We assume we're dealing with beats-based timing.
+	{
+		set_beat_timing_windows();
+		return;
+	}
+
 	switch(rank){
 		case 0:
 			judge_window_scale = 0.50; break;
@@ -95,6 +126,7 @@ void ScoreKeeper7K::setJudgeScale(double scale){
 int ScoreKeeper7K::getTotalNotes(){ return total_notes; }
 
 
+// ms is misleading- since it may very well be beats, but it's fine.
 ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 
 	// interesting stuff goes here.
@@ -164,6 +196,10 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 		if(lifebar_exhard > 0)
 			lifebar_exhard = min(1.0, lifebar_exhard + lifebar_exhard_increment);
 
+		if (ms <= judgment_time[SKJ_W1]){ // only COOLs restore o2jam lifebar
+			lifebar_o2jam = min(1.0, lifebar_o2jam + lifebar_o2jam_increment);
+		}
+
 	}else{
 
 		// miss tier 1
@@ -174,6 +210,7 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(int ms){
 		
 		lifebar_death = 0;
 
+		lifebar_o2jam = max(0.0, lifebar_o2jam - lifebar_o2jam_decrement);
 	}
 	
 	lifebar_stepmania = min(1.0, lifebar_stepmania + life_increment[judgment]);
@@ -350,6 +387,8 @@ float ScoreKeeper7K::getLifebarAmount(int lifebar_amount_type){
 			return lifebar_death;
 		case LT_STEPMANIA:
 			return lifebar_stepmania;
+		case LT_O2JAM:
+			return lifebar_o2jam;
 		default:
 			return 0;
 	}

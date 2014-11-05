@@ -55,6 +55,7 @@ namespace VSRG
 		TrackNote();
 
 		void AssignNotedata(const NoteData &Data);
+		NoteData &GetNotedata();
 
 		void AssignPosition(float Position, float endPosition = 0);
 		void AssignFraction(double frc); // frc = fraction of a beat

@@ -85,7 +85,6 @@ void ScreenGameplay7K::UpdateScriptVariables()
 	L->SetGlobal("Active", Active);
 	L->SetGlobal("SongTime", SongTime);
 
-	CurrentBeat = IntegrateToTime(BPS, SongTime);
 	L->SetGlobal("Beat", CurrentBeat);
 
 	L->NewArray();

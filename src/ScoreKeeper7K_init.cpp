@@ -67,6 +67,8 @@ void ScoreKeeper7K::init(){
 
 	lifebar_stepmania = 0.50;
 	
+	setO2LifebarRating(2); // HX by default.
+
 	double inc[6] = {+0.010, +0.008, +0.004, 0, -0.04, -0.08};
 	setLifeIncrements(inc, 5);
 	setMissDecrement(0.08);
@@ -77,6 +79,24 @@ void ScoreKeeper7K::init(){
 
 }
 
+void ScoreKeeper7K::set_beat_timing_windows()
+{
+	// This in beats.
+	double o2jamTimingAmt[] =
+	{
+		0.664 * 0.2, // COOL threshold
+		0.664 * 0.5, // GOOD threshold
+		0.664 * 0.8, //  BAD threshold
+		0.664 // MISS threshold
+	};
+
+	judgment_time[SKJ_W1] = o2jamTimingAmt[0];
+	judgment_time[SKJ_W2] = o2jamTimingAmt[1];
+	judgment_time[SKJ_W3] = o2jamTimingAmt[2];
+	
+	// No early misses, only plain misses.
+	earlymiss_threshold = miss_threshold = o2jamTimingAmt[3];
+}
 
 void ScoreKeeper7K::set_timing_windows(){
 	
