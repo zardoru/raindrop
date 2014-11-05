@@ -160,7 +160,6 @@ bool O2JamMechanics::OnReleaseLane(double SongBeat, VSRG::TrackNote* m, uint32 L
 }
 
 
-#include "Logging.h"
 bool O2JamMechanics::OnPressLane(double SongBeat, VSRG::TrackNote* m, uint32 Lane)
 {
 	if (!m->IsEnabled())
@@ -171,8 +170,6 @@ bool O2JamMechanics::OnPressLane(double SongBeat, VSRG::TrackNote* m, uint32 Lan
 
 	if (tD < score_keeper->getMissCutoff()) // If the note was hit inside judging range
 	{
-		Log::Printf("sb: %f nt: %f td: %f\n", SongBeat, m->GetStartTime(), dev);
-
 		m->Hit();
 		HitNotify(dev, Lane, m->IsHold(), false);
 

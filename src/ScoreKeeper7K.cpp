@@ -128,8 +128,6 @@ void ScoreKeeper7K::setJudgeScale(double scale){
 
 int ScoreKeeper7K::getTotalNotes(){ return total_notes; }
 
-
-#include "Logging.h"
 // ms is misleading- since it may very well be beats, but it's fine.
 ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms){
 
@@ -178,7 +176,6 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms){
 	{
 		if (ms <= judgment_time[i])
 		{
-			Log::Printf("ms %f <= jt[i] %f", ms, judgment_time[i]);
 			judgment_amt[(ScoreKeeperJudgment)i]++;
 			judgment = ScoreKeeperJudgment((ScoreKeeperJudgment)i);
 			break;
