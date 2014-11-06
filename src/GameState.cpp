@@ -21,6 +21,7 @@ GameState::GameState()
 {
 	CurrentSkin = "default";
 	SelectedSong = NULL;
+	DifficultyIndex = 0;
 }
 
 GameState& GameState::GetInstance()

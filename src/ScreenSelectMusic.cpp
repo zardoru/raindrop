@@ -217,6 +217,7 @@ void ScreenSelectMusic::OnSongChange(Game::Song* MySong, uint8 difindex)
 	if (MySong)
 	{
 		GameState::GetInstance().SetSelectedSong(MySong);
+		GameState::GetInstance().SetDifficultyIndex(0);
 		Objects->DoEvent("OnSongChange");
 	}
 }

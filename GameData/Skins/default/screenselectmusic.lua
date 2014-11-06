@@ -89,6 +89,14 @@ function Init()
 	Obj.SetImageSkin("SongSelect/up.png")
 	Obj.SetCentered(1)
 	Obj.SetZ(18)
+
+	font = Fonts.TruetypeFont(Obj.GetSkinDirectory() .. "font.ttf", 24)
+	
+	dd = StringObject2D()
+	dd.Font = font
+	dd.Y = 348
+	dd.X = 120
+	Engine:AddTarget(dd)
 end
 
 function Cleanup()
@@ -98,4 +106,20 @@ end
 function Update(Delta)
 	BackgroundAnimation:Update(Delta)
 	CurrentTX = CurrentTX + (TransformX - CurrentTX) * Delta * 8
+
+	local sng = Global:GetSelectedSong()
+	if sng then
+		local s7k = toSong7K(sng)
+		if s7k then
+			local diff = s7k:GetDifficulty(Global.DifficultyIndex)
+			if diff then
+				dd.Text = "Difficulty: " .. diff.Name .. " by " .. diff.Author ..
+					"\nChannels: " .. diff.Channels .. 
+					"\nSong by " .. s7k.Author
+
+			end
+		end
+	else
+		dd.Text = ""
+	end
 end
