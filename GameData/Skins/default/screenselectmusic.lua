@@ -113,9 +113,17 @@ function Update(Delta)
 		if s7k then
 			local diff = s7k:GetDifficulty(Global.DifficultyIndex)
 			if diff then
-				dd.Text = "Difficulty: " .. diff.Name .. " by " .. diff.Author ..
+				local author = diff.Author
+				local nps = diff.Objects / diff.Duration
+				if string.len(author) > 0 then
+					author = " by " .. author
+				end
+
+				dd.Text = "Selected " .. diff.Name .. author ..
 					"\nChannels: " .. diff.Channels .. 
-					"\nSong by " .. s7k.Author
+					"\nSong by " .. s7k.Author ..
+					"\nLevel " .. diff.Level .. 
+					" (" .. string.format("%.02f", nps) .. " nps)"
 
 			end
 		end
