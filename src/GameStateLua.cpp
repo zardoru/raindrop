@@ -107,6 +107,7 @@ void GameState::InitializeLua(lua_State *L)
 	luabridge::getGlobalNamespace(L)
 		.beginClass <GameState> ("GameState")
 		.addFunction("GetSelectedSong", &GameState::GetSelectedSong)
+		.addProperty("DifficultyIndex", &GameState::GetDifficultyIndex, &GameState::SetDifficultyIndex)
 		.endClass()
 		.addFunction("toSong7K", toSong7K)
 		.addFunction("toSongDC", toSongDC);

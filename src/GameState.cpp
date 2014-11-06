@@ -44,6 +44,16 @@ void GameState::Initialize()
 	Database = new SongDatabase("rd.db");
 }
 
+void GameState::SetDifficultyIndex(uint32 Index)
+{
+	DifficultyIndex = Index;
+}
+
+uint32 GameState::GetDifficultyIndex() const
+{
+	return DifficultyIndex;
+}
+
 GameWindow* GameState::GetWindow()
 {
 	return &WindowFrame;

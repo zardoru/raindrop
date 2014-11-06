@@ -313,6 +313,12 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 		case KT_Escape:
 			Running = false;
 			break;
+		case KT_Left:
+			GameState::GetInstance().SetDifficultyIndex(Game::SongWheel::GetInstance().PrevDifficulty());
+			break;
+		case KT_Right:
+			GameState::GetInstance().SetDifficultyIndex(Game::SongWheel::GetInstance().NextDifficulty());
+			break;
 		case KT_FractionDec:
 			SwitchUpscroll(!OptionUpscroll);
 			break;

@@ -29,6 +29,7 @@ class GameState
 	SongDatabase* Database;
 
 	Game::Song *SelectedSong;
+	uint32 DifficultyIndex;
 public:
 
 	GameState();
@@ -50,6 +51,8 @@ public:
 
 	void SetSelectedSong(Game::Song* Song);
 	Game::Song *GetSelectedSong();
+	void SetDifficultyIndex(uint32 DifficultyIndex);
+	uint32 GetDifficultyIndex() const;
 
 	SongDatabase* GetSongDatabase();
 	static GameWindow* GetWindow();

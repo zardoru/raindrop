@@ -563,13 +563,12 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		return;
 	}
 
+	SetupMechanics();
+
 	SetupAfterLoadingVariables();
-	
 	score_keeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
 	SetupLua();
 	Log::Printf("Done.\n");
-
-	SetupMechanics();
 
 	DoPlay = true;
 
