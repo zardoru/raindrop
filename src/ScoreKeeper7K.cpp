@@ -11,6 +11,11 @@ double ScoreKeeper7K::accuracy_percent(double var){
 	return double(ACC_MAX_SQ - var) / (ACC_MAX_SQ - ACC_MIN_SQ) * 100;
 }
 
+bool ScoreKeeper7K::usesO2()
+{
+	return use_bbased;
+}
+
 void ScoreKeeper7K::setAccMin(double ms){
 	ACC_MIN = ms;
 	ACC_MIN_SQ = ms * ms;
@@ -124,7 +129,15 @@ void ScoreKeeper7K::setJudgeScale(double scale){
 	set_timing_windows();
 }
 
+int ScoreKeeper7K::getCoolCombo()
+{
+	return coolcombo;
+}
 
+uint8 ScoreKeeper7K::getPills()
+{
+	return pills;
+}
 
 int ScoreKeeper7K::getTotalNotes(){ return total_notes; }
 
@@ -176,13 +189,37 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms){
 	{
 		if (ms <= judgment_time[i])
 		{
-			judgment_amt[(ScoreKeeperJudgment)i]++;
-			judgment = ScoreKeeperJudgment((ScoreKeeperJudgment)i);
+			judgment = ScoreKeeperJudgment(i);
+
+			if (!use_bbased)
+				judgment_amt[judgment]++;
+			else
+			{
+				// we using o2 based mechanics..
+				int j = judgment;
+
+				// if we've got a pill we may transform bads into cools
+				if (judgment == SKJ_W1)
+					coolcombo++;
+				else
+				{
+					coolcombo = 0;
+					if ((judgment == SKJ_W3) && pills) // transform this into a cool
+					{
+						pills--;
+						j = SKJ_W1;
+					}
+				}
+
+				if (coolcombo && coolcombo % 15) // every 15 cools you gain a pill, up to 5.
+					pills = min(pills + 1, 5);
+
+				judgment_amt[(ScoreKeeperJudgment)j]++;
+			}
+
 			break;
 		}
 	}
-
-
 
 // SC, ACC^2 score
 

@@ -61,9 +61,14 @@ class ScoreKeeper7K {
 		std::map<PacemakerType, std::string> pacemaker_texts;
 
 		int getRank(); // returns a number from -9 to 9
+
+
+		uint8 getPills();
+		int getCoolCombo();
 		
 		void set_manual_w0(bool);
 		bool usesW0();
+		bool usesO2();
 		
 		void reset();
 
@@ -74,8 +79,11 @@ class ScoreKeeper7K {
 		bool use_w0; // whether or not to use ridiculous timing.
 		bool use_w0_for_ex2; // whether or not to require ridiculous for 2 EX score.
 
+		// o2jam
 		bool use_bbased;
+		char pills;
 
+		long long coolcombo;
 	/*
 		Standard scoring.
 	*/

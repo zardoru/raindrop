@@ -316,7 +316,7 @@ void SongWheel::Update(float Delta)
 		posy -= CurrentVerticalDisplacement;
 		posy -= (int)posy % (int)ItemHeight;
 		posy = (posy / ItemHeight);
-		CursorPos = posy;
+		CursorPos = floor(posy);
 	}
 
 	// Hey we've got a new cursor position, update.

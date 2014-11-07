@@ -202,6 +202,8 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 	if ( (!Music && !CurrentDiff->IsVirtual) || !Active || stage_failed)
 		return;
 
+	bool notJudged = true;
+
 	lastClosest[Lane] = MsDisplayMargin;
 
 	for (std::vector<TrackNote>::iterator m = NotesByChannel[Lane].begin(); m != NotesByChannel[Lane].end(); m++)
@@ -215,7 +217,12 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 			lastClosest[Lane] = 0;
 
 		if (MechanicsSet->OnPressLane(Time, &(*m), Lane))
+		{
+			notJudged = false;
 			return; // we judged a note in this lane, so we're done.
-
+		}
 	}
+
+	if (notJudged)
+		PlayLaneKeysound(Lane);
 }

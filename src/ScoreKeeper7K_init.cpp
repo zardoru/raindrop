@@ -56,6 +56,10 @@ void ScoreKeeper7K::init(){
 	combo = 0;
 	max_combo = 0;
 
+
+	coolcombo = 0;
+	pills = 0;
+
 	total_sqdev = 0;
 	accuracy = 0;
 

@@ -50,7 +50,7 @@ const char* GetLMTQuery = "SELECT lastmodified FROM songfiledb WHERE filename=?"
 const char* RenewDiff = "DELETE FROM diffdb WHERE songid=?";
 const char* GetSongInfo = "SELECT songtitle, songauthor, songfilename, songbackground, mode FROM songdb WHERE id=?";
 const char* GetDiffInfo = "SELECT diffid, name, objcount, scoreobjectcount, holdcount, notecount, duration, isvirtual, \
-						  keys, fileid, bpmtype, level, author FROM diffdb WHERE songid=?";
+						  keys, fileid, bpmtype, level FROM diffdb WHERE songid=?";
 const char* GetFileInfo = "SELECT filename, lastmodified FROM songfiledb WHERE id=?";
 const char* UpdateLMT = "UPDATE songfiledb SET lastmodified=? WHERE filename=?";
 const char* UpdateDiff = "UPDATE diffdb SET name=?,objcount=?,scoreobjectcount=?,holdcount=?,notecount=?,\
@@ -64,6 +64,7 @@ const char* GetDiffIDFileID = "SELECT diffid FROM diffdb \
 
 const char* GetSongIDFromFilename = "SELECT songid FROM diffdb WHERE (diffdb.fileid = (SELECT id FROM songfiledb WHERE filename=?))";
 const char* GetLatestSongID = "SELECT MAX(id) FROM songdb";
+const char* GetAuthorOfDifficulty = "SELECT author FROM diffdb WHERE diffid=?";
 
 #define SC(x) ret=x; if(ret!=SQLITE_OK && ret != SQLITE_DONE) {Log::Printf("sqlite: %ls (code %d)\n",Utility::Widen(sqlite3_errmsg(db)).c_str(), ret); Utility::DebugBreak(); }
 #define SCS(x) ret=x; if(ret!=SQLITE_DONE && ret != SQLITE_ROW) {Log::Printf("sqlite: %ls (code %d)\n",Utility::Widen(sqlite3_errmsg(db)).c_str(), ret); Utility::DebugBreak(); }
@@ -98,6 +99,7 @@ SongDatabase::SongDatabase(GString Database)
 		SC(sqlite3_prepare_v2(db, GetDiffFilename, strlen(GetDiffFilename), &st_GetDiffFilename, &tail));
 		SC(sqlite3_prepare_v2(db, GetSongIDFromFilename, strlen(GetSongIDFromFilename), &st_GetSIDFromFilename, &tail));
 		SC(sqlite3_prepare_v2(db, GetLatestSongID, strlen(GetLatestSongID), &st_GetLastSongID, &tail));
+		SC(sqlite3_prepare_v2(db, GetAuthorOfDifficulty, strlen(GetAuthorOfDifficulty), &st_GetDiffAuthor, &tail));
 	}
 }
 
@@ -122,6 +124,7 @@ SongDatabase::~SongDatabase()
 		sqlite3_finalize(st_GetDiffFilename);
 		sqlite3_finalize(st_GetSIDFromFilename);
 		sqlite3_finalize(st_GetLastSongID);
+		sqlite3_finalize(st_GetDiffAuthor);
 		sqlite3_close(db);
 	}
 }
@@ -341,6 +344,21 @@ void SongDatabase::EndTransaction()
 	sqlite3_exec(db, "COMMIT;", NULL, NULL, &tail);
 }
 
+GString SongDatabase::GetArtistForDifficulty(int ID)
+{
+	int rs;
+	GString out;
+
+	sqlite3_bind_int(st_GetDiffAuthor, 1, ID);
+	rs = sqlite3_step(st_GetDiffAuthor);
+
+	if (rs == SQLITE_ROW)
+		out = (char*)sqlite3_column_text(st_GetDiffAuthor, 0);
+
+	sqlite3_reset(st_GetDiffAuthor);
+	return out;
+}
+
 void SongDatabase::GetSongInformation7K (int ID, VSRG::Song* Out)
 {
 	int ret;
@@ -386,6 +404,10 @@ void SongDatabase::GetSongInformation7K (int ID, VSRG::Song* Out)
 
 		int colInt = sqlite3_column_int(st_GetDiffInfo, 10);
 		Diff->BPMType = (VSRG::Difficulty::EBt)colInt;
+
+		// We don't include author information to force querying it from the database.
+		// Diff->Author
+		Diff->Level = sqlite3_column_int(st_GetDiffInfo, 11);
 
 
 		// File ID associated data

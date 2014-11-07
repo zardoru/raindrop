@@ -109,6 +109,10 @@ void ReadMetadata (GString line, OsuLoadInfo* Info)
 		if (Content.length() > 1)
 			Info->OsuSong->SongAuthor = Content;
 	}
+	else if (Command == "Creator")
+	{
+		Info->Diff->Author = Content;
+	}
 }
 
 void ReadDifficulty (GString line, OsuLoadInfo* Info)

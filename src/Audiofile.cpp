@@ -79,7 +79,12 @@ bool AudioSample::Open(AudioDataSource* Src)
 		mBufferSize = Src->GetLength() * Channels;
 
 		mData = new short[mBufferSize];
-		Src->Read(mData, mBufferSize);
+		size_t total = Src->Read(mData, mBufferSize);
+
+		if (total < mBufferSize) // Oh, odd. Oh well.
+			mBufferSize = total;
+
+		
 
 		mRate = Src->GetRate();
 

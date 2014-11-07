@@ -481,7 +481,6 @@ void ScreenGameplay7K::SetupMechanics()
 		}
 		else if (CurrentDiff->TimingInfo->GetType() == VSRG::TI_O2JAM)
 		{
-			Log::Printf("Using o2jam mechanics set!");
 			VSRG::O2JamTimingInfo *O2Info = (VSRG::O2JamTimingInfo*) CurrentDiff->TimingInfo;
 			// Todo...
 			lifebar_type = LT_O2JAM;
@@ -524,9 +523,13 @@ void ScreenGameplay7K::SetupMechanics()
 	*/
 
 	if (UsedTimingType == TT_TIME)
+	{
+		Log::Printf("Using raindrop mechanics set!\n");
 		MechanicsSet = new RaindropMechanics;
+	}
 	else if (UsedTimingType == TT_BEATS)
 	{
+		Log::Printf("Using o2jam mechanics set!\n");
 		MechanicsSet = new O2JamMechanics;
 		ChangeNoteTimeToBeats();
 	}

@@ -335,7 +335,7 @@ void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::
 
 	GString vArtist;
 	GString vName;
-
+	GString Noter;
 	/*  
 		These are the only values we display, so we should clean them up so that nobody cries.
 		Of course, the right thing to do would be to iconv these, but unless
@@ -343,6 +343,7 @@ void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::
 	*/
 	utf8::replace_invalid(Head.artist, Head.artist + 32, std::back_inserter(vArtist));
 	utf8::replace_invalid(Head.title, Head.title + 64, std::back_inserter(vName));
+	utf8::replace_invalid(Head.noter, Head.noter + 32, std::back_inserter(Noter));
 
 	Out->SongAuthor = vArtist;
 	Out->SongName = vName;
@@ -368,6 +369,7 @@ void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::
 
 		Diff->Level = Head.level[i];
 		Diff->TimingInfo = TInfo;
+		Diff->Author = Noter;
 
 		Info.S = Out;
 		filein.seekg(Head.note_offset[i]);

@@ -365,12 +365,11 @@ void SetPosition(GraphObject2D *O, float px, float py)
 	O->SetPosition(px, py);
 }
 
-BitmapFont& LoadBmFont(BitmapFont& B, GString Fn, float CellWidth, float CellHeight, float CharWidth, float CharHeight, int startChar)
+void LoadBmFont(BitmapFont* B, GString Fn, float CellWidth, float CellHeight, float CharWidth, float CharHeight, int startChar)
 {
 	Vec2 Size(CharWidth, CharHeight);
 	Vec2 CellSize(CellWidth, CellHeight);
-	B.LoadSkinFontImage(Fn.c_str(), Size, CellSize, Size, startChar);
-	return B;
+	B->LoadSkinFontImage(Fn.c_str(), Size, CellSize, Size, startChar);
 }
 
 // New lua interface.

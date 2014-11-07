@@ -9,6 +9,7 @@
 #include "Song.h"
 #include "Song7K.h"
 #include "SongDC.h"
+#include "SongDatabase.h"
 
 enum OBJTYPE {
 	OB_HOLDS,
@@ -27,6 +28,18 @@ struct songHelper
 
 	template <class T>
 	static void setDifficultyCountForSong(T *Sng, uint32 v)
+	{
+		return;
+	}
+
+	template <class T>
+	static GString getDifficultyAuthor(T const *Diff)
+	{
+		return GameState::GetInstance().GetSongDatabase()->GetArtistForDifficulty(Diff->ID);
+	}
+
+	template <class T>
+	static void setDifficultyAuthor(T *Diff, GString s)
 	{
 		return;
 	}
@@ -70,7 +83,6 @@ void GameState::InitializeLua(lua_State *L)
 
 	luabridge::getGlobalNamespace(L)
 		.beginClass <Game::Song::Difficulty>("Difficulty")
-		.addData("Author", &Game::Song::Difficulty::Author, false)
 		.addData("Duration", &Game::Song::Difficulty::Duration, false)
 		.addData("Name", &Game::Song::Difficulty::Name, false)
 		.addData("Offset", &Game::Song::Difficulty::Offset, false)
@@ -78,6 +90,8 @@ void GameState::InitializeLua(lua_State *L)
 		.addData("Notes", &Game::Song::Difficulty::TotalNotes, false)
 		.addData("Objects", &Game::Song::Difficulty::TotalObjects, false)
 		.addData("ScoreObjects", &Game::Song::Difficulty::TotalScoringObjects, false)
+		.addProperty("Author", &songHelper::getDifficultyAuthor<Game::Song::Difficulty>, 
+			&songHelper::setDifficultyAuthor <Game::Song::Difficulty>)
 		.endClass();
 
 	luabridge::getGlobalNamespace(L)

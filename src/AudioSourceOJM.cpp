@@ -618,6 +618,13 @@ uint32 AudioSourceOJM::Read(short* buffer, size_t count)
 
 			if (res > 0)
 				read += res;
+			if (res == 0)
+				break;
+		}
+
+		if (read < size)
+		{
+			Log::Printf("AudioSourceOJM: PCM count differs from what's reported! (%d out of %d)\n", read, size);
 		}
 	}
 

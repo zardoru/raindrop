@@ -171,14 +171,15 @@ bool O2JamMechanics::OnPressLane(double SongBeat, VSRG::TrackNote* m, uint32 Lan
 	if (tD < score_keeper->getMissCutoff()) // If the note was hit inside judging range
 	{
 		m->Hit();
+			
 		HitNotify(dev, Lane, m->IsHold(), false);
-
-		PlayNoteSoundEvent(m->GetSound());
 
 		if (m->IsHold())
 			SetLaneHoldingState(Lane, true);
 		else
 			m->Disable();
+
+		PlayNoteSoundEvent(m->GetSound());
 
 		return true;
 	}

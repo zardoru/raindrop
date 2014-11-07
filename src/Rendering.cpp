@@ -435,11 +435,15 @@ VBO::VBO(Type T, uint32 Elements)
 VBO::~VBO()
 {
 	if (InternalVBO)
+	{
 		glDeleteBuffers(1, &InternalVBO);
+		InternalVBO = 0;
+	}
 
 	WindowFrame.RemoveVBO(this);
 
 	delete VboData;
+	VboData = NULL;
 }
 
 uint32 VBO::GetElementCount()

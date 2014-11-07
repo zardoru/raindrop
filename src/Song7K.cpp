@@ -417,6 +417,7 @@ void Difficulty::Destroy()
 	StopsTiming.swap(S3);
 	BGMEvents.swap(BGM);
 	
+	Author.clear();
 	Filename.clear();
 	SoundList.clear();
 

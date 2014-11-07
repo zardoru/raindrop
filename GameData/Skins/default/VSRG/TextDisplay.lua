@@ -13,8 +13,8 @@ function DrawTextObjects()
 
 	fnt1 = Fonts.TruetypeFont(Obj.GetSkinDirectory() .. "font.ttf", 20);
 	fnt2 = Fonts.TruetypeFont(Obj.GetSkinDirectory() .. "font.ttf", 40);
-	-- fnt = Fonts.BitmapFont()
-	-- Fonts.LoadBitmapFont(fnt, "font.tga", 6, 16, 5, 13, 0);
+	fntB = Fonts.BitmapFont()
+	Fonts.LoadBitmapFont(fntB, "font.tga", 8, 16, 6, 15, 0);
 
 	pacemaker1.Text = "";
 	pacemaker1.Font = fnt1;
@@ -41,12 +41,23 @@ function DrawTextObjects()
 	acc2.X = Judgment.Position.x - 20;
 	acc2.Y = Judgment.Position.y + 20;
 
-	judgments.Font = fnt1
+	judgments.Font = fntB
 	judgments.X = Lifebar.Position.x + 30
-	judgments.Y = 380
+	judgments.Y = 580
+
+	author = StringObject2D()
+
+	author.Font = fnt1
+	author.X = lifebar.X
+	author.Y = 380
+
+	sng = toSong7K(Global:GetSelectedSong())
+	diff = sng:GetDifficulty(Global.DifficultyIndex)
+	author.Text = string.format("\n%s by %s\nChart: %s by %s", sng.Title, sng.Author, diff.Name, diff.Author)
 
 	-- Engine:AddTarget(acc1);
 	-- Engine:AddTarget(acc2);
+	Engine:AddTarget(author)
 	Engine:AddTarget(pacemaker1);
 	Engine:AddTarget(pacemaker2);
 	Engine:AddTarget(lifebar);
@@ -81,7 +92,9 @@ function UpdateTextObjects()
 		lifebar.Text = string.format("%03d%%", LifebarDisplay);
 	end
 
-	local fmtext= string.format("Speed: %02.2fx (%.0f)\n", Game:GetUserMultiplier(), Game:GetCurrentVerticalSpeed())
+	local mlt = Game:GetUserMultiplier()
+	local vspd = Game:GetCurrentVerticalSpeed()
+	local fmtext = string.format("Speed: %02.2fx (%.0f -> %.0f)\n", mlt, vspd, mlt*vspd)
 	local w0, w1, w2, w3, w4, w5
 
 	w0 = ScoreKeeper:getJudgmentCount(SKJ_W0)
@@ -89,17 +102,22 @@ function UpdateTextObjects()
 	w2 = ScoreKeeper:getJudgmentCount(SKJ_W2)
 	w3 = ScoreKeeper:getJudgmentCount(SKJ_W3)
 	w4 = ScoreKeeper:getJudgmentCount(SKJ_W4)
-	w5 = ScoreKeeper:getJudgmentCount(SKJ_W5)
+	w5 = ScoreKeeper:getJudgmentCount(SKJ_MISS)
 	if ScoreKeeper:usesW0() == false then
-		fmtext = fmtext .. string.format("E:%04d\nS:%04d\nN:%04d\nO:%04d\nG:%04d", w1, w2, w3, w4, w5)
+		if ScoreKeeper:usesO2() == false then
+			fmtext = fmtext .. string.format("E:%04d\nS:%04d\nN:%04d\nO:%04d\nM:%04d", w1, w2, w3, w4, w5)
+		else
+			local p = ScoreKeeper:getPills()
+			local rem = 15 - ScoreKeeper:getCoolCombo() % 15
+			fmtext = fmtext .. string.format("F:%04d\nE:%04d\nO:%04d\nM:%04d\nP:%04d / CC: %04d", w1, w2, w3, w5, p, rem)
+		end
 	else
-		fmtext = fmtext .. string.format("F:%04d\nE:%04d\nS:%04d\nN:%04d\nO:%04d\nG:%04d", w0, w1, w2, w3, w4, w5)
+		fmtext = fmtext .. string.format("F:%04d\nE:%04d\nS:%04d\nN:%04d\nO:%04d\nM:%04d", w0, w1, w2, w3, w4, w5)
 	end
 
+	fmtext = fmtext .. string.format("\nMaxCombo: %d", ScoreKeeper:getScore(ST_MAX_COMBO))
 	fmtext = fmtext .. string.format("\nBPM: %d", CurrentBPM)
 
-	sng = Global:GetSelectedSong()
-	fmtext = fmtext .. string.format("\n%s by %s", sng.Title, sng.Author)
 
 	judgments.Text = fmtext
 end

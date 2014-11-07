@@ -18,6 +18,9 @@ void SetupScorekeeper7KLuaInterface(void* state)
 		.addFunction("getScore", &ScoreKeeper7K::getScore)
 		.addFunction("getPercentScore", &ScoreKeeper7K::getPercentScore)
 		.addFunction("getRank", &ScoreKeeper7K::getRank)
+		.addFunction("usesO2", &ScoreKeeper7K::usesO2)
+		.addFunction("getPills", &ScoreKeeper7K::getPills)
+		.addFunction("getCoolCombo", &ScoreKeeper7K::getCoolCombo)
 		.endClass();
 
 #define cns(x) lua_pushinteger(L,x); lua_setglobal(L, #x);
