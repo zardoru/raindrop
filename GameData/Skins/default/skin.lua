@@ -21,7 +21,7 @@ WheelFont = {
 
 ItemTextOffset = {
 	X = 15,
-	Y = -6
+	Y = -3
 }
 
 -- Gameplay

@@ -221,23 +221,50 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 	if (RenewCache)
 	{
 		// First, pack BMS charts together.
+		std::map<GString, VSRG::Song*> bmsk;
 		VSRG::Song *BMSSong = new VSRG::Song;
-		BMSSong->SongDirectory = SongDirectory;
-		for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
+
+		// We want to group charts with the same title together.
+		for (auto i = Listing.begin(); i != Listing.end(); i++)
 		{
 			std::wstring Ext = Utility::Widen(Directory(*i).GetExtension());
 			
 			if (ValidBMSExtension(Ext))
+			{
+				BMSSong->SongDirectory = SongDirectory;
+
 				LoadSong7KFromFilename(*i, SongDirectory, BMSSong);
+
+				if (bmsk.find(BMSSong->SongName) != bmsk.end()) // We found a chart with the same title already.
+				{
+					VSRG::Song *oldSng = bmsk[BMSSong->SongName];
+
+					if (BMSSong->Difficulties.size()) // BMS charts don't have more than one difficulty anyway.
+						oldSng->Difficulties.push_back(BMSSong->Difficulties[0]);
+
+					BMSSong->Difficulties.clear();
+					delete BMSSong;
+				}
+				else // Ah then, don't delete it.
+				{
+					bmsk[BMSSong->SongName] = BMSSong;
+				}
+					
+				BMSSong = new VSRG::Song;
+			}
 		}
 
-		VSRGUpdateDatabaseDifficulties(DB, BMSSong);
-		PushVSRGSong(VecOut, BMSSong);
+		for (auto i = bmsk.begin();
+			i != bmsk.end(); i++)
+		{
+			VSRGUpdateDatabaseDifficulties(DB, i->second);
+			PushVSRGSong(VecOut, i->second);
+		}
 
 		// Every OJN gets its own Song object.
 		VSRG::Song *OJNSong = new VSRG::Song;
 		OJNSong->SongDirectory = SongDirectory;
-		for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
+		for (auto i = Listing.begin(); i != Listing.end(); i++)
 		{
 			std::wstring Ext = Utility::Widen(Directory(*i).GetExtension());
 
