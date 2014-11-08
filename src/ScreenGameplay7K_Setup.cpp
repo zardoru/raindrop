@@ -461,6 +461,10 @@ void ScreenGameplay7K::ChangeNoteTimeToBeats()
 
 void ScreenGameplay7K::SetupMechanics()
 {
+	
+	// This must be done before setLifeTotal in order for it to work.
+	score_keeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
+	
 	if (CurrentDiff->TimingInfo)
 	{
 		if (CurrentDiff->TimingInfo->GetType() == VSRG::TI_BMS)
@@ -490,14 +494,9 @@ void ScreenGameplay7K::SetupMechanics()
 		}
 		else if (CurrentDiff->TimingInfo->GetType() == VSRG::TI_STEPMANIA)
 		{
-			lifebar_type = LT_STEPMANIA;
+			// lifebar_type = LT_STEPMANIA;
+			lifebar_type = LT_GROOVE;
 			UsedTimingType = TT_TIME;
-			score_keeper->setLifeTotal(-1);
-			score_keeper->setJudgeRank(2);
-		}
-		else if (CurrentDiff->TimingInfo->GetType() == VSRG::TI_STEPMANIA)
-		{
-			lifebar_type = LT_STEPMANIA;
 			score_keeper->setLifeTotal(-1);
 			score_keeper->setJudgeRank(2);
 		}
@@ -569,7 +568,6 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	SetupMechanics();
 
 	SetupAfterLoadingVariables();
-	score_keeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
 	SetupLua();
 	Log::Printf("Done.\n");
 

@@ -203,7 +203,7 @@ void SongWheel::SetDifficulty(uint32 i)
 		size_t maxIndex = ((VSRG::Song*)CurrentList->GetSongEntry(GetCursorIndex()))->Difficulties.size();
 
 		if (maxIndex)
-			DifficultyIndex = Clamp(i, (uint32)0, maxIndex - 1);
+			DifficultyIndex = Clamp(i, (uint32)0, (uint32)(maxIndex - 1));
 		else
 			DifficultyIndex = 0;
 	}

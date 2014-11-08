@@ -1,19 +1,14 @@
 #include "Global.h"
 #include "ScoreKeeper7K.h"
 
+#include <iostream>
 #include <iomanip>
 #include <map>
-
 
 ScoreKeeper7K::~ScoreKeeper7K(){  }
 
 double ScoreKeeper7K::accuracy_percent(double var){
 	return double(ACC_MAX_SQ - var) / (ACC_MAX_SQ - ACC_MIN_SQ) * 100;
-}
-
-bool ScoreKeeper7K::usesO2()
-{
-	return use_bbased;
 }
 
 void ScoreKeeper7K::setAccMin(double ms){
@@ -24,30 +19,6 @@ void ScoreKeeper7K::setAccMin(double ms){
 void ScoreKeeper7K::setAccMax(double ms){
 	ACC_MAX = ms;
 	ACC_MAX_SQ = ms * ms;
-}
-
-void ScoreKeeper7K::setO2LifebarRating(int difficulty)
-{
-	difficulty = Clamp(difficulty, 0, 2);
-
-	lifebar_o2jam = 1;
-
-	// Thanks to Entozer for giving this approximate information.
-	switch (difficulty)
-	{
-	case 0: // EX
-		lifebar_o2jam_increment = (19.0 / 20.0) / 290.0;
-		lifebar_o2jam_decrement = 1.0 / 20.0;
-		break;
-	case 1: // NX
-		lifebar_o2jam_increment = (24.0 / 25.0) / 470.0;
-		lifebar_o2jam_decrement = 1.0 / 25.0;
-		break;
-	case 2: // HX
-		lifebar_o2jam_increment = (33.0 / 34.0) / 950.0;
-		lifebar_o2jam_decrement = 1.0 / 34.0;
-		break;
-	}
 }
 
 void ScoreKeeper7K::setMaxNotes(int notes){
@@ -127,16 +98,6 @@ void ScoreKeeper7K::setJudgeRank(int rank){
 void ScoreKeeper7K::setJudgeScale(double scale){
 	judge_window_scale = scale;
 	set_timing_windows();
-}
-
-int ScoreKeeper7K::getCoolCombo()
-{
-	return coolcombo;
-}
-
-uint8 ScoreKeeper7K::getPills()
-{
-	return pills;
 }
 
 int ScoreKeeper7K::getTotalNotes(){ return total_notes; }
@@ -236,6 +197,7 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms){
 
 		lifebar_easy = min(1.0, lifebar_easy + lifebar_easy_increment);
 		lifebar_groove = min(1.0, lifebar_groove + lifebar_groove_increment);
+
 		if(lifebar_survival > 0)
 			lifebar_survival = min(1.0, lifebar_survival + lifebar_survival_increment);
 		if(lifebar_exhard > 0)
@@ -262,13 +224,12 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms){
 
 // Other methods
 
-	update_ranks(ms); // rank calculation
+	if(use_bbased) ms *= 150; // convert into time-based for other methods
 
+	update_ranks(ms); // rank calculation
 	update_bms(ms, ms <= judgment_time[SKJ_W3]); // Beatmania scoring
 	update_lr2(ms, ms <= judgment_time[SKJ_W3]); // Lunatic Rave 2 scoring
-
 	update_exp2(ms);
-
 	update_osu(ms, judgment);
 
 	return judgment;
