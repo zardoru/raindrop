@@ -90,6 +90,9 @@ bool AudioSample::Open(AudioDataSource* Src)
 		Channels = Src->GetChannels();
 		mBufferSize = Src->GetLength() * Channels;
 
+		if (!mBufferSize) // Huh what why?
+			return false;
+
 		mData = new short[mBufferSize];
 		size_t total = Src->Read(mData, mBufferSize);
 
@@ -114,6 +117,7 @@ bool AudioSample::Open(AudioDataSource* Src)
 			delete mData;
 			mBufferSize = size;
 			mData = mDataNew;
+			Channels = 2;
 		}
 
 		if (mRate != 44100) // mixer_constant.. in the future, allow changing this destination sample rate.

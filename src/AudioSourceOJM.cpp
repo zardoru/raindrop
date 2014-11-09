@@ -438,7 +438,7 @@ void AudioSourceOJM::parseOMC()
 		}
 
 		SF_INFO Info;
-		Info.format = ifmt;
+		Info.format = ifmt | SF_FORMAT_RAW;
 		Info.samplerate = WavHead.sample_rate;
 		Info.channels = WavHead.num_channels;
 

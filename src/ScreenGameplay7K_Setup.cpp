@@ -35,7 +35,7 @@ ScreenGameplay7K::ScreenGameplay7K()
 	MissSnd = NULL;
 	FailSnd = NULL;
 	GameTime = 0;
-	Speed = 1.5;
+	Speed = 1;
 
 	waveEffectEnabled = false;
 	waveEffect = 0;
