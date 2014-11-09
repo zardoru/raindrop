@@ -22,41 +22,6 @@
 
 #include "LuaBridge.h"
 
-bool ScreenGameplay7K::IsAutoEnabled()
-{
-	return Auto; 
-}
-
-bool ScreenGameplay7K::IsFailEnabled()
-{
-	return NoFail;
-}
-
-float ScreenGameplay7K::GetCurrentBeat()
-{
-	return CurrentBeat;
-}
-
-float ScreenGameplay7K::GetUserMultiplier()
-{
-	return SpeedMultiplierUser;
-}
-
-float ScreenGameplay7K::GetCurrentVerticalSpeed()
-{
-	return SectionValue(VSpeeds, SongTime);
-}
-
-float ScreenGameplay7K::GetCurrentVertical()
-{
-	return CurrentVertical;
-}
-
-double ScreenGameplay7K::GetSongTime()
-{
-	return SongTime;
-}
-
 // Called right after the scorekeeper and the engine's objects are initialized.
 void ScreenGameplay7K::SetupScriptConstants()
 {

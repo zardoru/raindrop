@@ -116,12 +116,7 @@ void ScreenGameplay7K::RunMeasures()
 	for (int i = 0; i < VSRG::MAX_CHANNELS; i++)
 		timeClosest[i] = CurrentDiff->Duration;
 
-	double usedTime;
-
-	if (UsedTimingType == TT_TIME)
-		usedTime = SongTime;
-	else if (UsedTimingType == TT_BEATS)
-		usedTime = CurrentBeat;
+	double usedTime = GetSongTime();
 
 	for (uint16 k = 0; k < CurrentDiff->Channels; k++)
 	{

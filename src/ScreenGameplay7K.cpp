@@ -24,49 +24,48 @@
 
 using namespace VSRG;
 
-void ScreenGameplay7K::AssignMeasure(uint32 Measure)
+bool ScreenGameplay7K::IsAutoEnabled()
 {
-	float Beat = 0;
-
-	if (!Measure)
-		return;
-
-	for (uint32 i = 0; i < Measure; i++)
-		Beat += CurrentDiff->Measures.at(Measure).MeasureLength;
-
-	float Time = TimeAtBeat(CurrentDiff->Timing, CurrentDiff->Offset, Beat)
-				+ StopTimeAtBeat(CurrentDiff->StopsTiming, Beat);
-
-	// Disable all notes before the current measure.
-	for (uint32 k = 0; k < CurrentDiff->Channels; k++)
-	{
-		for (std::vector<TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); m++)
-		{
-			if (m->GetStartTime() < Time)
-			{
-				m = NotesByChannel[k].erase(m);
-				if (m == NotesByChannel[k].end()) break;
-			}
-		}
-	}
-
-	// Remove non-played objects
-	for (std::vector<AutoplaySound>::iterator s = BGMEvents.begin(); s != BGMEvents.end(); s++)
-	{
-		if (s->Time <= Time)
-		{
-			s = BGMEvents.erase(s);
-			if (s == BGMEvents.end()) break;
-		}
-	}
-
-	SongTime = SongTimeReal = Time;
-
-	if (Music)
-		Music->SeekTime(Time);
-
-	Active = true;
+	return Auto;
 }
+
+bool ScreenGameplay7K::IsFailEnabled()
+{
+	return NoFail;
+}
+
+float ScreenGameplay7K::GetCurrentBeat()
+{
+	return CurrentBeat;
+}
+
+float ScreenGameplay7K::GetUserMultiplier()
+{
+	return SpeedMultiplierUser;
+}
+
+float ScreenGameplay7K::GetCurrentVerticalSpeed()
+{
+	return SectionValue(VSpeeds, SongTime);
+}
+
+float ScreenGameplay7K::GetCurrentVertical()
+{
+	return CurrentVertical;
+}
+
+double ScreenGameplay7K::GetSongTime()
+{
+	double usedTime;
+
+	if (UsedTimingType == TT_BEATS)
+		usedTime = CurrentBeat;
+	else if (UsedTimingType == TT_TIME)
+		usedTime = SongTime;
+
+	return usedTime;
+}
+
 
 void ScreenGameplay7K::GearKeyEvent(uint32 Lane, bool KeyDown)
 {
@@ -92,18 +91,11 @@ void ScreenGameplay7K::TranslateKey(KeyType K, bool KeyDown)
 	if (GearIndex >= MAX_CHANNELS || GearIndex < 0)
 		return;
 
-	double usedTime;
-
-	if (UsedTimingType == TT_TIME)
-		usedTime = SongTime;
-	else if (UsedTimingType == TT_BEATS)
-		usedTime = CurrentBeat;
-
 	if (KeyDown){
-		JudgeLane(GearIndex, usedTime);
+		JudgeLane(GearIndex, GetSongTime());
 		GearIsPressed[GearIndex] = true;
 	}else{
-		ReleaseLane(GearIndex, usedTime);
+		ReleaseLane(GearIndex, GetSongTime());
 		GearIsPressed[GearIndex] = false;
 	}
 }
@@ -308,7 +300,7 @@ void ScreenGameplay7K::UpdateSongTime(float Delta)
 	}else
 	{
 		/* Update music. */
-		SongTime += Delta;
+		SongTime += Delta * Speed;
 	}
 
 	// Update for the next delta.

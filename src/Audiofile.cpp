@@ -290,7 +290,7 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 		double origRate = mSource->GetRate();
 
 		// This is what our destination rate is.
-		double resRate = 44100.0 * mPitch;
+		double resRate = 44100.0 / mPitch;
 		
 		// This is how many samples we want to read from the source buffer
 		size_t scount = ceil(origRate * toRead / resRate); 
@@ -312,7 +312,7 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 			buffer, outcnt / Channels, NULL,
 			&sis, NULL, NULL);
 
-		mStreamTime += (double)(cnt/Channels) / (double)mSource->GetRate() * mPitch;
+		mStreamTime += (double)(cnt/Channels) / (double)mSource->GetRate();
 		mPlaybackTime = mStreamTime - MixerGetLatency();
 	}else
 		return 0;
