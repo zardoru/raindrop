@@ -1,6 +1,39 @@
 #include "Global.h"
 #include "Audiofile.h"
 #include "AudioSourceOGG.h"
+#include "Logging.h"
+
+
+size_t readOGG(void* ptr, size_t size, size_t nmemb, void* p)
+{
+	FILE* fp = (FILE*)p;
+	return fread(ptr, size, nmemb, fp);
+}
+
+int seekOGG(void* p, ogg_int64_t offs, int whence)
+{
+	FILE* fp = (FILE*)p;
+	return fseek(fp, offs, whence);
+}
+
+long tellOGG(void* p)
+{
+	FILE* fp = (FILE*)p;
+	return ftell(fp);
+}
+
+int closeOgg(void* p)
+{
+	return fclose((FILE*)p);
+}
+
+ov_callbacks fileInterfaceOgg = {
+	readOGG,
+	seekOGG,
+	closeOgg,
+	tellOGG
+};
+
 
 AudioSourceOGG::AudioSourceOGG()
 { 
@@ -8,6 +41,7 @@ AudioSourceOGG::AudioSourceOGG()
 	mSourceLoop = false;
 	mIsDataLeft = false;
 }
+
 AudioSourceOGG::~AudioSourceOGG()
 {
 	if (mIsValid)
@@ -20,7 +54,7 @@ bool AudioSourceOGG::Open(const char* Filename)
 	int32 retv = ov_fopen(Filename, &mOggFile);
 #else
 	FILE* fp = _wfopen(Utility::Widen(Filename).c_str(), L"rb");
-	int32 retv = ov_open(fp, &mOggFile, NULL, 0);
+	int32 retv = ov_open_callbacks((void*)fp, &mOggFile, NULL, 0, fileInterfaceOgg);
 #endif
 
 #ifndef NDEBUG
@@ -81,6 +115,7 @@ uint32 AudioSourceOGG::Read(short* buffer, size_t count)
 		}
 		else 
 		{
+			Log::Printf("AudioSourceOGG: Error while reading OGG source (%d)\n", res);
 			mIsDataLeft = false;
 			return 0;
 		}

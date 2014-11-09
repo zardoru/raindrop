@@ -1,5 +1,7 @@
 
 #include <sndfile.h>
+#include <soxr.h>
+
 #include "Global.h"
 #include "Audio.h"
 #include "Audiofile.h"
@@ -42,6 +44,15 @@ AudioDataSource* SourceFromExt(Directory Filename)
 	return Ret;
 }
 
+void Sound::SetPitch(double Pitch)
+{
+	mPitch = Pitch;
+}
+
+double Sound::GetPitch()
+{
+	return mPitch;
+}
 
 void Sound::SetLoop(bool Loop)
 {
@@ -60,6 +71,7 @@ uint32 Sound::GetChannels()
 
 AudioSample::AudioSample()
 {
+	mPitch = 1;
 	mIsPlaying = false;
 	mIsValid = false;
 	mIsLooping = false;
@@ -104,30 +116,25 @@ bool AudioSample::Open(AudioDataSource* Src)
 			mData = mDataNew;
 		}
 
-		if (mRate != 44100) // mixer_constant.. in the future, resample better.
+		if (mRate != 44100) // mixer_constant.. in the future, allow changing this destination sample rate.
 		{
-			double ResamplingRate = 44100.0 / (double)mRate;
-			size_t size = size_t(double(mBufferSize * ResamplingRate));
+			size_t done;
+			size_t doneb;
+			double ResamplingRate = 44100.0 / mRate;
+			soxr_io_spec_t spc;
+			size_t size = size_t(double(mBufferSize * ResamplingRate + .5));
 			short* mDataNew = new short[size];
 
-			size_t i;
-			double j;
-			for (j = i = 0; i < mBufferSize && j < size; i++, j += ResamplingRate)
-			{
-				int dst = j;
-				mDataNew[dst] = mData[i];
+			spc.e = 0;
+			spc.itype = SOXR_INT16_I;
+			spc.otype = SOXR_INT16_I;
+			spc.scale = 1;
+			spc.flags = 0;
 
-				if (i > 0)
-				{
-					// linearly interpolate
-					int start = (i - 1)*ResamplingRate;
-					double step = double(mDataNew[dst] - mDataNew[start]) / double(dst - start);
-					for (int k = (start + 1); k < dst; k++)
-					{
-						mDataNew[k] = step * (dst - k) + mDataNew[start];
-					}
-				}
-			}
+			soxr_oneshot(mRate, 44100, Channels,
+				mData, mBufferSize / Channels, &done,
+				mDataNew, size / Channels, &doneb,
+				&spc, NULL, NULL);
 
 			delete mData;
 			mBufferSize = size;
@@ -242,10 +249,12 @@ void AudioSample::Stop()
 
 AudioStream::AudioStream()
 {
+	mPitch = 1;
 	mIsPlaying = false;
 	mIsLooping = false;
 	mSource = NULL;
 	mData = NULL;
+	tmpBuffer = new short[BUFF_SIZE];
 }
 
 AudioStream::~AudioStream()
@@ -261,6 +270,7 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 {
 	size_t cnt;
 	size_t toRead = count; // Count is the amount of s16 samples.
+	size_t outcnt;
 
 	if (!mSource || !mSource->IsValid())
 	{
@@ -276,13 +286,38 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 
 	if (mIsPlaying)
 	{
-		cnt = PaUtil_ReadRingBuffer(&mRingBuf, buffer, toRead);
+		// This is what our destination rate will be
+		double origRate = mSource->GetRate();
+
+		// This is what our destination rate is.
+		double resRate = 44100.0 / mPitch;
+		
+		// This is how many samples we want to read from the source buffer
+		size_t scount = ceil(origRate * toRead / resRate); 
+
+		cnt = PaUtil_ReadRingBuffer(&mRingBuf, tmpBuffer, scount);
+		// cnt now contains how many samples we actually read... 
+
+		// This is how many resulting samples we can output with what we read...
+		outcnt = (cnt * resRate / origRate);
+
+		soxr_io_spec_t sis;
+		sis.flags = 0;
+		sis.itype = SOXR_INT16_I;
+		sis.otype = SOXR_INT16_I;
+		sis.scale = 1;
+
+		soxr_oneshot(origRate, resRate, Channels,
+			tmpBuffer, cnt / Channels, NULL,
+			buffer, outcnt / Channels, NULL,
+			&sis, NULL, NULL);
+
 		mStreamTime += (double)(cnt/Channels) / (double)mSource->GetRate();
 		mPlaybackTime = mStreamTime - MixerGetLatency();
 	}else
 		return 0;
 
-	return cnt ? cnt : mIsPlaying;
+	return outcnt ? outcnt : mIsPlaying;
 }
 
 bool AudioStream::Open(const char* Filename)

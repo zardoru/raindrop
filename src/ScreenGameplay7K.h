@@ -65,6 +65,7 @@ private:
 	double FailureTime;
 	double SuccessTime;
 	double MsDisplayMargin;
+	double Speed;
 
 	/* User Variables */
     float       SpeedMultiplierUser;

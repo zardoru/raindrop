@@ -188,6 +188,7 @@ public:
 		if (Stream)
 		{
 			Pa_StartStream( Stream );
+			boost::this_thread::sleep(boost::posix_time::millisec(16));
 			Latency = Pa_GetStreamInfo(Stream)->outputLatency;
 			wprintf(L"AUDIO: Latency after opening stream = %f \n", Latency);
 		}
@@ -316,7 +317,7 @@ public:
 			}
 		}
 
-		double MixFactor = 1.0 / sqrt((double)Voices + 2);
+		double MixFactor = 0.85 / sqrt((double)Voices);
 
 		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
 		{

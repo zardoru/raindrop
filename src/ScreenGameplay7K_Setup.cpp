@@ -35,6 +35,7 @@ ScreenGameplay7K::ScreenGameplay7K()
 	MissSnd = NULL;
 	FailSnd = NULL;
 	GameTime = 0;
+	Speed = 1.5;
 
 	waveEffectEnabled = false;
 	waveEffect = 0;
@@ -106,6 +107,51 @@ void ScreenGameplay7K::Cleanup()
 	delete Animations;
 	delete score_keeper;
 }
+
+void ScreenGameplay7K::AssignMeasure(uint32 Measure)
+{
+	float Beat = 0;
+
+	if (!Measure)
+		return;
+
+	for (uint32 i = 0; i < Measure; i++)
+		Beat += CurrentDiff->Measures.at(Measure).MeasureLength;
+
+	float Time = TimeAtBeat(CurrentDiff->Timing, CurrentDiff->Offset, Beat)
+		+ StopTimeAtBeat(CurrentDiff->StopsTiming, Beat);
+
+	// Disable all notes before the current measure.
+	for (uint32 k = 0; k < CurrentDiff->Channels; k++)
+	{
+		for (std::vector<VSRG::TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); m++)
+		{
+			if (m->GetStartTime() < Time)
+			{
+				m = NotesByChannel[k].erase(m);
+				if (m == NotesByChannel[k].end()) break;
+			}
+		}
+	}
+
+	// Remove non-played objects
+	for (std::vector<AutoplaySound>::iterator s = BGMEvents.begin(); s != BGMEvents.end(); s++)
+	{
+		if (s->Time <= Time)
+		{
+			s = BGMEvents.erase(s);
+			if (s == BGMEvents.end()) break;
+		}
+	}
+
+	SongTime = SongTimeReal = Time;
+
+	if (Music)
+		Music->SeekTime(Time);
+
+	Active = true;
+}
+
 
 void ScreenGameplay7K::Init(VSRG::Song* S, int DifficultyIndex, const ScreenGameplay7K::Parameters &Param)
 {
@@ -227,6 +273,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 	if (!Music)
 	{
 		Music = new AudioStream();
+		Music->SetPitch(Speed);
 		if (Music->Open((MySong->SongDirectory + MySong->SongFilename).c_str()))
 		{
 			MixerAddStream(Music);

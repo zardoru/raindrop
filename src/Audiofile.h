@@ -32,6 +32,7 @@ class Sound
 protected:
 	uint32 Channels;
 	bool mIsLooping;
+	double mPitch;
 public:
 	virtual uint32 Read(short* buffer, size_t count) = 0;
 	virtual bool Open(const char* Filename) = 0;
@@ -40,6 +41,8 @@ public:
 	virtual void SeekTime(float Second) = 0;
 	virtual void SeekSample(uint32 Sample) = 0;
 	virtual void Stop() = 0;
+	void SetPitch(double pitch);
+	double GetPitch();
 	void SetLoop(bool Loop);
 	bool IsLooping();
 	uint32 GetChannels();
@@ -80,7 +83,8 @@ private:
 
 	AudioDataSource* mSource;
 	unsigned int     mBufferSize;
-	short*   mData;
+	short*			 mData;
+	short*			 tmpBuffer;
 	double			 mStreamTime;
 	double			 mPlaybackTime;
 
