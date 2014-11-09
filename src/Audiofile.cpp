@@ -1,5 +1,7 @@
 
 #include <sndfile.h>
+#include <soxr.h>
+
 #include "Global.h"
 #include "Audio.h"
 #include "Audiofile.h"
@@ -106,28 +108,23 @@ bool AudioSample::Open(AudioDataSource* Src)
 
 		if (mRate != 44100) // mixer_constant.. in the future, resample better.
 		{
-			double ResamplingRate = 44100.0 / (double)mRate;
-			size_t size = size_t(double(mBufferSize * ResamplingRate));
+			size_t done;
+			size_t doneb;
+			double ResamplingRate = 44100.0 / mRate;
+			soxr_io_spec_t spc;
+			size_t size = size_t(double(mBufferSize * ResamplingRate + .5));
 			short* mDataNew = new short[size];
 
-			size_t i;
-			double j;
-			for (j = i = 0; i < mBufferSize && j < size; i++, j += ResamplingRate)
-			{
-				int dst = j;
-				mDataNew[dst] = mData[i];
+			spc.e = 0;
+			spc.itype = SOXR_INT16_I;
+			spc.otype = SOXR_INT16_I;
+			spc.scale = 1;
+			spc.flags = 0;
 
-				if (i > 0)
-				{
-					// linearly interpolate
-					int start = (i - 1)*ResamplingRate;
-					double step = double(mDataNew[dst] - mDataNew[start]) / double(dst - start);
-					for (int k = (start + 1); k < dst; k++)
-					{
-						mDataNew[k] = step * (dst - k) + mDataNew[start];
-					}
-				}
-			}
+			soxr_oneshot(mRate, 44100, 1,
+				mData, mBufferSize, &done,
+				mDataNew, size, &doneb,
+				&spc, NULL, NULL);
 
 			delete mData;
 			mBufferSize = size;

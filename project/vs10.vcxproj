@@ -79,7 +79,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libsndfile-1.lib;libmpg123.lib;Vorbis_d.lib;portaudio_x86.lib;Ogg_d.lib;GLFW3.lib;glew32d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libsoxr.lib;libsndfile-1.lib;libmpg123.lib;Vorbis_d.lib;portaudio_x86.lib;Ogg_d.lib;GLFW3.lib;glew32d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AllowIsolation>true</AllowIsolation>
       <EnableUAC>true</EnableUAC>
@@ -125,7 +125,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>libsndfile-1.lib;libmpg123.lib;portaudio_x86.lib;opengl32.lib;Ogg.lib;Vorbis.lib;glfw3.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libsoxr.lib;libsndfile-1.lib;libmpg123.lib;portaudio_x86.lib;opengl32.lib;Ogg.lib;Vorbis.lib;glfw3.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
