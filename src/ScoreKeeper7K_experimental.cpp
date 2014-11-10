@@ -12,25 +12,27 @@ The max score for this system is 1,200,000 points, which is a normalized version
 
 The score that a note receives is based on your current "point combo".
 
-- W3 increases the point combo by  5.
-- W2 increases the point combo by  9.
-- W1 increases the point combo by 10.
+- W3 increases the point combo by  2.
+- W2 increases the point combo by  3.
+- W1 increases the point combo by  4.
 
 This point combo starts at the beginning of a song and has a maximum bound of 100.
-However, the point combo resets to a maximum of 90 after a note is judged, so a W3 cannot get more than 95 points, and a W2 cannot get more than 99.
+However, the point combo resets to a maximum of 96 after a note is judged, so a W3 cannot get more than 98 points, and a W2 cannot get more than 99.
 
 Also, the point combo resets to 0 if a note is missed.
 
 */
 
-void ScoreKeeper7K::update_exp2(int ms){
+void ScoreKeeper7K::update_exp2(ScoreKeeperJudgment judgment){
 
-	if(ms <= judgment_time[SKJ_W1]){
+	if(!use_w0_for_ex2 && judgment == SKJ_W1 || use_w0_for_ex2 && judgment == SKJ_W0){
 		exp_combo += 4;
-	}else if(ms <= judgment_time[SKJ_W2]){
+	}else if(!use_w0_for_ex2 && judgment == SKJ_W2 || use_w0_for_ex2 && judgment == SKJ_W1){
 		exp_combo += 3;
-	}else if(ms <= judgment_time[SKJ_W3]){
+	}else if(!use_w0_for_ex2 && judgment == SKJ_W3 || use_w0_for_ex2 && judgment == SKJ_W2){
 		exp_combo += 2;
+	}else if(use_w0_for_ex2 && judgment == SKJ_W3){
+		exp_combo = 1;
 	}else{
 		exp_combo = 0;
 	}

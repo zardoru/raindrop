@@ -4,7 +4,7 @@
 
 #include <cmath>
 
-void ScoreKeeper7K::update_osu(int ms, ScoreKeeperJudgment judgment){
+void ScoreKeeper7K::update_osu(ScoreKeeperJudgment judgment){
 	
 	int osu_bonus_multiplier = 0;
 

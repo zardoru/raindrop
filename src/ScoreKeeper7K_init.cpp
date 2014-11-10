@@ -6,6 +6,8 @@ void ScoreKeeper7K::init(){
 	use_w0 = false; // don't use Ridiculous by default.
 	use_w0_for_ex2 = false;
 	
+	use_bbased = false;
+	
 	pacemaker_texts[PMT_F] = "F" ;
 	pacemaker_texts[PMT_E] = "E" ;
 	pacemaker_texts[PMT_D] = "D" ;
@@ -56,7 +58,6 @@ void ScoreKeeper7K::init(){
 	combo = 0;
 	max_combo = 0;
 
-
 	coolcombo = 0;
 	pills = 0;
 
@@ -74,7 +75,7 @@ void ScoreKeeper7K::init(){
 	setO2LifebarRating(2); // HX by default.
 
 	double inc[6] = {+0.010, +0.008, +0.004, 0, -0.04, -0.08};
-	setLifeIncrements(inc, 5);
+	setLifeIncrements(inc, 6);
 	setMissDecrement(0.08);
 	setEarlyMissDecrement(0.02);
 
@@ -154,5 +155,70 @@ ScoreKeeper7K::ScoreKeeper7K(){
 ScoreKeeper7K::ScoreKeeper7K(double judge_window_scale){
 	init();
 	this->judge_window_scale = judge_window_scale;
+	set_timing_windows();
+}
+
+void ScoreKeeper7K::setLifeTotal(double total){
+
+	if(total != -1) lifebar_total = total;
+	else lifebar_total = max(260.0, 7.605 * max_notes / (6.5 + 0.01 * max_notes));
+
+	// recalculate groove lifebar increments.
+	lifebar_easy_increment = Clamp(lifebar_total / max_notes / 50.0, 0.004, 0.8);
+	lifebar_groove_increment = Clamp(lifebar_total / max_notes / 100.0, 0.002, 0.8);
+	lifebar_survival_increment = lifebar_total / max_notes / 200.0;
+	lifebar_exhard_increment = lifebar_total / max_notes / 200.0;
+
+	lifebar_easy_decrement = Clamp(lifebar_total / max_notes / 12.0, 0.00, 0.02);
+	lifebar_groove_decrement = Clamp(lifebar_total / max_notes / 10.0, 0.01, 0.02);
+	lifebar_survival_decrement = Clamp(lifebar_total / max_notes / 7.0, 0.02, 0.15);
+	lifebar_exhard_decrement = Clamp(lifebar_total / max_notes / 3.0, 0.03, 0.3);
+
+}
+
+
+void ScoreKeeper7K::setLifeIncrements(double* increments, int inc_n){
+	for (int a = 0; a < inc_n; ++a){
+		life_increment[a] = increments[a];
+	}
+}
+
+
+void ScoreKeeper7K::setMissDecrement(double decrement){
+	lifebar_stepmania_miss_decrement = decrement;
+}
+
+void ScoreKeeper7K::setEarlyMissDecrement(double decrement){
+	lifebar_stepmania_earlymiss_decrement = decrement;
+}
+
+
+void ScoreKeeper7K::setJudgeRank(int rank){
+
+	if (rank == -100) // We assume we're dealing with beats-based timing.
+	{
+		use_bbased = true;
+		use_w0 = false;
+		set_beat_timing_windows();
+		return;
+	}
+
+	use_bbased = false;
+	switch(rank){
+		case 0:
+			judge_window_scale = 0.50; break;
+		case 1:
+			judge_window_scale = 0.75; break;
+		case 2:
+			judge_window_scale = 1.00; break;
+		case 3:
+			judge_window_scale = 1.50; break;
+	}
+	set_timing_windows();
+}
+
+
+void ScoreKeeper7K::setJudgeScale(double scale){
+	judge_window_scale = scale;
 	set_timing_windows();
 }

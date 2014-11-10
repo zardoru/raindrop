@@ -102,7 +102,7 @@ class ScoreKeeper7K {
 
 		long long rank_pts; // rank scoring
 
-		void update_ranks(int ms);
+		void update_ranks(ScoreKeeperJudgment judgment);
 
 		long long max_notes;
 
@@ -122,8 +122,8 @@ class ScoreKeeper7K {
 		long long lr2_dance_pts;
 		long long lr2_score;
 
-		void update_bms(int ms, bool hit);
-		void update_lr2(int ms, bool hit);
+		void update_bms(ScoreKeeperJudgment judgment);
+		void update_lr2(ScoreKeeperJudgment judgment);
 		
 	/*
 		osu!
@@ -136,7 +136,7 @@ class ScoreKeeper7K {
 
 		double osu_score;
 		
-		void update_osu(int ms, ScoreKeeperJudgment judgment);
+		void update_osu(ScoreKeeperJudgment judgment);
 
 
 	/*
@@ -149,7 +149,7 @@ class ScoreKeeper7K {
 
 		double exp_score;
 
-		void update_exp2(int ms);
+		void update_exp2(ScoreKeeperJudgment judgment);
 
 	/*
 		misc.

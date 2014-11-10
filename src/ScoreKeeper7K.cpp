@@ -36,83 +36,27 @@ void ScoreKeeper7K::setMaxNotes(int notes){
 int ScoreKeeper7K::getMaxNotes(){ return max_notes; }
 
 
-void ScoreKeeper7K::setLifeTotal(double total){
-
-	if(total != -1) lifebar_total = total;
-	else lifebar_total = max(260.0, 7.605 * max_notes / (6.5 + 0.01 * max_notes));
-
-	// recalculate groove lifebar increments.
-	lifebar_easy_increment = Clamp(lifebar_total / max_notes / 50.0, 0.004, 0.8);
-	lifebar_groove_increment = Clamp(lifebar_total / max_notes / 100.0, 0.002, 0.8);
-	lifebar_survival_increment = lifebar_total / max_notes / 200.0;
-	lifebar_exhard_increment = lifebar_total / max_notes / 200.0;
-
-	lifebar_easy_decrement = Clamp(lifebar_total / max_notes / 12.0, 0.00, 0.02);
-	lifebar_groove_decrement = Clamp(lifebar_total / max_notes / 10.0, 0.01, 0.02);
-	lifebar_survival_decrement = Clamp(lifebar_total / max_notes / 7.0, 0.02, 0.15);
-	lifebar_exhard_decrement = Clamp(lifebar_total / max_notes / 3.0, 0.03, 0.3);
-
-}
-
-
-void ScoreKeeper7K::setLifeIncrements(double* increments, int inc_n){
-	for (int a = 0; a < inc_n; ++a){
-		life_increment[a] = increments[a];
-	}
-}
-
-void ScoreKeeper7K::setMissDecrement(double decrement){
-	lifebar_stepmania_miss_decrement = decrement;
-}
-
-void ScoreKeeper7K::setEarlyMissDecrement(double decrement){
-	lifebar_stepmania_earlymiss_decrement = decrement;
-}
-
-
-void ScoreKeeper7K::setJudgeRank(int rank){
-
-	if (rank == -100) // We assume we're dealing with beats-based timing.
-	{
-		use_bbased = true;
-		use_w0 = false;
-		set_beat_timing_windows();
-		return;
-	}
-
-	use_bbased = false;
-	switch(rank){
-		case 0:
-			judge_window_scale = 0.50; break;
-		case 1:
-			judge_window_scale = 0.75; break;
-		case 2:
-			judge_window_scale = 1.00; break;
-		case 3:
-			judge_window_scale = 1.50; break;
-	}
-	set_timing_windows();
-}
-
-
-void ScoreKeeper7K::setJudgeScale(double scale){
-	judge_window_scale = scale;
-	set_timing_windows();
-}
 
 int ScoreKeeper7K::getTotalNotes(){ return total_notes; }
 
 // ms is misleading- since it may very well be beats, but it's fine.
 ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms){
 
-	// interesting stuff goes here.
-
 // hit notes
 
 	++total_notes;
 
-	if(abs(ms) < 128)
-	++histogram[(int)ms + 127];
+	std::cerr << use_bbased << " " << ms << " ";
+
+	if(use_bbased) {
+		if(abs(ms * 150) < 128){
+			++histogram[(int)(ms * 150) + 127];
+		}
+	}else{
+		if(abs(ms) < 128){
+			++histogram[(int)ms + 127];
+		}	
+	}
 
 	ms = abs(ms);
 
@@ -137,9 +81,12 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms){
 
 // accuracy score
 
-	total_sqdev += ms * ms;
+	if(use_bbased)
+		total_sqdev += ms * ms * 22500;
+	else
+		total_sqdev += ms * ms;
+	
 	accuracy = accuracy_percent(total_sqdev / total_notes);
-
 
 
 // judgments
@@ -189,8 +136,6 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms){
 
 	score = double(SCORE_MAX * sc_sc_score) / (max_notes * (max_notes + 1));
 
-
-
 // lifebars
 
 	if(ms <= judgment_time[SKJ_W3]){
@@ -219,18 +164,22 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms){
 	} else if (ms > judgment_time[SKJ_W2]) // BADs get some HP from you, 
 		lifebar_o2jam = max(0.0, lifebar_o2jam - lifebar_o2jam_decrement);
 	
+	// std::cerr << ms << " " << judgment << " " << life_increment[judgment] << std::endl;
+
 	lifebar_stepmania = min(1.0, lifebar_stepmania + life_increment[judgment]);
 
+	if(judgment == SKJ_NONE)
+		std::cerr << "Error, invalid judgment: " << ms << " ";
+
+	std::cerr << std::endl;
 
 // Other methods
 
-	if(use_bbased) ms *= 150; // convert into time-based for other methods
-
-	update_ranks(ms); // rank calculation
-	update_bms(ms, ms <= judgment_time[SKJ_W3]); // Beatmania scoring
-	update_lr2(ms, ms <= judgment_time[SKJ_W3]); // Lunatic Rave 2 scoring
-	update_exp2(ms);
-	update_osu(ms, judgment);
+	update_ranks(judgment); // rank calculation
+	update_bms(judgment); // Beatmania scoring
+	update_lr2(judgment); // Lunatic Rave 2 scoring
+	update_exp2(judgment);
+	update_osu(judgment);
 
 	return judgment;
 
@@ -283,9 +232,9 @@ void ScoreKeeper7K::missNote(bool auto_hold_miss, bool early_miss){
 	}
 
 	// other methods
-	update_bms(1000, false);
-	update_exp2(1000);
-	update_osu(1000, SKJ_MISS);
+	update_bms(SKJ_MISS);
+	update_exp2(SKJ_MISS);
+	update_osu(SKJ_MISS);
 
 }
 
@@ -310,11 +259,13 @@ double ScoreKeeper7K::getJudgmentWindow(int judgment){
 GString ScoreKeeper7K::getHistogram(){
 
 	std::stringstream ss;
+	
+	const int HISTOGRAM_DISPLAY_WIDTH = 15;
 
 	for (int i = 0; i < 255; ++i){
-		int it = (i % 5) * 51 + (i / 5); // transpose
+		int it = (i % HISTOGRAM_DISPLAY_WIDTH) * (255 / HISTOGRAM_DISPLAY_WIDTH) + (i / HISTOGRAM_DISPLAY_WIDTH); // transpose
 	 	ss << std::setw(4) << it - 127 << ": " << std::setw(4) << histogram[it] << " ";
-		if(i % 5 == 4)
+		if(i % HISTOGRAM_DISPLAY_WIDTH == HISTOGRAM_DISPLAY_WIDTH - 1)
 			ss << "\n";
 	}
 
@@ -429,11 +380,11 @@ void ScoreKeeper7K::failStage(){
 	
 	total_notes = max_notes;
 	
-	update_ranks(1000); // rank calculation
-	update_bms(1000, false); // Beatmania scoring
-	update_lr2(1000, false); // Lunatic Rave 2 scoring
-	update_exp2(1000);
-	update_osu(1000, SKJ_MISS);
+	update_ranks(SKJ_MISS); // rank calculation
+	update_bms(SKJ_MISS); // Beatmania scoring
+	update_lr2(SKJ_MISS); // Lunatic Rave 2 scoring
+	update_exp2(SKJ_MISS);
+	update_osu(SKJ_MISS);
 	
 }
 

@@ -20,6 +20,7 @@ public:
 	bool Run(double Delta);
 	void Cleanup();
 	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);
+	void PrintCLIResults(ScoreKeeper7K *result);
 };
 
 #endif
