@@ -533,9 +533,9 @@ void ScreenGameplay7K::SetupMechanics()
 		else if (CurrentDiff->TimingInfo->GetType() == VSRG::TI_O2JAM)
 		{
 			VSRG::O2JamTimingInfo *O2Info = (VSRG::O2JamTimingInfo*) CurrentDiff->TimingInfo;
-			// Todo...
 			lifebar_type = LT_O2JAM;
 			UsedTimingType = TT_BEATS;
+			scoring_type = ST_O2JAM;
 			score_keeper->setJudgeRank(-100); // Special constant to notify beat based timing.
 			score_keeper->setO2LifebarRating(O2Info->Difficulty);
 		}

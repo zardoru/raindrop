@@ -60,6 +60,9 @@ void ScoreKeeper7K::init(){
 
 	coolcombo = 0;
 	pills = 0;
+	jams = 0;
+	jam_jchain = 0;
+	o2_score = 0;
 
 	total_sqdev = 0;
 	accuracy = 0;

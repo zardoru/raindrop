@@ -104,23 +104,7 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms){
 			else
 			{
 				// we using o2 based mechanics..
-				int j = judgment;
-
-				// if we've got a pill we may transform bads into cools
-				if (judgment == SKJ_W1)
-					coolcombo++;
-				else
-				{
-					coolcombo = 0;
-					if ((judgment == SKJ_W3) && pills) // transform this into a cool
-					{
-						pills--;
-						j = SKJ_W1;
-					}
-				}
-
-				if (coolcombo && coolcombo % 15) // every 15 cools you gain a pill, up to 5.
-					pills = min(pills + 1, 5);
+				int j = getO2Judge(judgment);
 
 				judgment_amt[(ScoreKeeperJudgment)j]++;
 			}
@@ -162,7 +146,7 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms){
 	if (ms <= judgment_time[SKJ_W1]){ // only COOLs restore o2jam lifebar
 		lifebar_o2jam = min(1.0, lifebar_o2jam + lifebar_o2jam_increment);
 	} else if (ms > judgment_time[SKJ_W2]) // BADs get some HP from you, 
-		lifebar_o2jam = max(0.0, lifebar_o2jam - lifebar_o2jam_decrement);
+		lifebar_o2jam = max(0.0, lifebar_o2jam - lifebar_o2jam_decrement / 6.0);
 	
 	// std::cerr << ms << " " << judgment << " " << life_increment[judgment] << std::endl;
 
@@ -180,6 +164,7 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms){
 	update_lr2(judgment); // Lunatic Rave 2 scoring
 	update_exp2(judgment);
 	update_osu(judgment);
+	update_o2(judgment);
 
 	return judgment;
 
@@ -235,6 +220,7 @@ void ScoreKeeper7K::missNote(bool auto_hold_miss, bool early_miss){
 	update_bms(SKJ_MISS);
 	update_exp2(SKJ_MISS);
 	update_osu(SKJ_MISS);
+	update_o2(SKJ_MISS);
 
 }
 
@@ -298,6 +284,8 @@ int ScoreKeeper7K::getScore(int score_type){
 			return max_combo;
 		case ST_NOTES_HIT:
 			return notes_hit;
+		case ST_O2JAM:
+			return o2_score;
 		default:
 			return 0;
 	}

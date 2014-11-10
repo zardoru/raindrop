@@ -42,6 +42,7 @@ void SetupScorekeeper7KLuaInterface(void* state)
 	cns(ST_MAX_COMBO);
 	cns(ST_NOTES_HIT);
 	cns(ST_OSUMANIA);
+	cns(ST_O2JAM);
 	cns(PST_RANK);
 	cns(PST_ACC);
 	cns(PST_EX);
@@ -52,6 +53,7 @@ void SetupScorekeeper7KLuaInterface(void* state)
 	cns(LT_EXHARD);
 	cns(LT_DEATH);
 	cns(LT_EASY);
+	cns(LT_O2JAM);
 	cns(LT_STEPMANIA);
 	cns(LT_NORECOV);
 	cns(LT_BATTERY);

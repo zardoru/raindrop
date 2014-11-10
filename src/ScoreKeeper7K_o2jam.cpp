@@ -1,6 +1,72 @@
 #include "Global.h"
 #include "ScoreKeeper7K.h"
 
+int ScoreKeeper7K::getO2Judge(ScoreKeeperJudgment j)
+{
+	// if we've got a pill we may transform bads into cools
+	if (j == SKJ_W1)
+		coolcombo++;
+	else
+	{
+		coolcombo = 0;
+		if ((j == SKJ_W3) && pills) // transform this into a cool
+		{
+			pills--;
+			j = SKJ_W1;
+		}
+	}
+
+	if (coolcombo && coolcombo % 15) // every 15 cools you gain a pill, up to 5.
+		pills = min(pills + 1, 5);
+
+	return j;
+}
+
+void ScoreKeeper7K::update_o2(ScoreKeeperJudgment j)
+{
+	if (j == SKJ_W1)
+	{
+		jam_jchain += 2;
+	}
+	else if (j == SKJ_W2)
+		jam_jchain += 1;
+	else
+	{
+		jam_jchain = 0;
+		// source says jam combo gets reset too, so ok..
+		jams = 0;
+	}
+
+	// every 50 jam points you get a jam
+	if (jam_jchain >= 50)
+	{
+		jam_jchain -= 50;
+		jams++;
+	}
+
+	int weight;
+
+	switch (j)
+	{
+	case SKJ_W1:
+		weight = 200 + 10 * jams;
+		break;
+	case SKJ_W2:
+		weight = 100 + 5 * jams;
+		break;
+	case SKJ_W3:
+		weight = 4;
+		break;
+	case SKJ_MISS:
+		weight = -10;
+		break;
+	default:
+		weight = 0;
+	}
+
+	o2_score += weight;
+	o2_score = max((long long)0, o2_score);
+}
 
 void ScoreKeeper7K::setO2LifebarRating(int difficulty)
 {

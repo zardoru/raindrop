@@ -215,6 +215,7 @@
     <ClCompile Include="..\src\ScoreKeeper7K_experimental.cpp" />
     <ClCompile Include="..\src\ScoreKeeper7K_init.cpp" />
     <ClCompile Include="..\src\ScoreKeeper7K_Lua.cpp" />
+    <ClCompile Include="..\src\ScoreKeeper7K_o2jam.cpp" />
     <ClCompile Include="..\src\ScoreKeeper7K_osu.cpp" />
     <ClCompile Include="..\src\ScoreKeeper7K_rank.cpp" />
     <ClCompile Include="..\src\Screen.cpp" />

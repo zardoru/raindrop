@@ -35,6 +35,8 @@ enum ScoreType{
 
 	ST_EXP = 30, // experimental scoring.
 
+	ST_O2JAM = 40, // O2jam scoring.
+
 	ST_COMBO = 100, // current combo
 	ST_MAX_COMBO = 101, // max combo
 	ST_NOTES_HIT = 102, // total notes hit

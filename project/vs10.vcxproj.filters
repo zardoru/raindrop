@@ -232,6 +232,9 @@
     <ClCompile Include="..\src\GameStateLua.cpp">
       <Filter>Source\lua</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\ScoreKeeper7K_o2jam.cpp">
+      <Filter>Source\vsrg\gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">

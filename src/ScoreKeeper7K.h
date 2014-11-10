@@ -79,11 +79,9 @@ class ScoreKeeper7K {
 		bool use_w0; // whether or not to use ridiculous timing.
 		bool use_w0_for_ex2; // whether or not to require ridiculous for 2 EX score.
 
-		// o2jam
+		// o2jam-specific variable
 		bool use_bbased;
-		char pills;
-
-		long long coolcombo;
+		
 	/*
 		Standard scoring.
 	*/
@@ -150,6 +148,20 @@ class ScoreKeeper7K {
 		double exp_score;
 
 		void update_exp2(ScoreKeeperJudgment judgment);
+
+		/*
+			o2jam
+		*/
+
+		char pills;
+
+		long long coolcombo;
+		long long o2_score;
+		long long jams;
+		long long jam_jchain;
+
+		void update_o2(ScoreKeeperJudgment judgment);
+		int getO2Judge(ScoreKeeperJudgment j);
 
 	/*
 		misc.
