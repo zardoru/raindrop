@@ -94,7 +94,7 @@ void ScreenGameplay7K::PlayLaneKeysound(uint32 Lane)
 
 void ScreenGameplay7K::PlayKeysound(uint32 Index)
 {
-	if (Keysounds[Index])
+	if (Keysounds[Index] && PlayReactiveSounds)
 		Keysounds[Index]->Play();
 }
 

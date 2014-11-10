@@ -91,6 +91,12 @@ void ScreenEvaluation7K::PrintCLIResults(ScoreKeeper7K *result){
 	if(result->usesW0())
 		ss << "osu!mania accuracy: " << result->getPercentScore(PST_OSU) << "%\n";
 	
+	ss << "\n";
+
+	ss
+		<< "===== Judgments =====\n"
+	;
+
 	if(result->usesW0())
 		ss << "Fantastic: " << result->getJudgmentCount(SKJ_W0) << " (" << float(result->getJudgmentCount(SKJ_W0) * 100) / float(result->getMaxNotes()) << "%)\n";
 	
@@ -105,7 +111,7 @@ void ScreenEvaluation7K::PrintCLIResults(ScoreKeeper7K *result){
 
 	std::cerr << ss.str();
 	
-	std::cerr << "Histogram:" << std::endl;
+	std::cerr << "Histogram:\n" << std::endl;
 	
 	std::cerr << result->getHistogram();
 
