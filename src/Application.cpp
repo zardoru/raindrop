@@ -191,6 +191,9 @@ void Application::Run()
 			return;
 		}
 
+		GameState::GetInstance().SetSelectedSong(Sng);
+		GameState::GetInstance().SetDifficultyIndex(difIndex);
+
 		ScreenGameplay7K *SGame = new ScreenGameplay7K();
 		ScreenLoading *LoadScreen = new ScreenLoading(NULL, SGame);
 
