@@ -244,7 +244,7 @@ public:
 	{
 		if (Threaded)
 					mut.lock();
-		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
+		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end();)
 		{
 			if ((*i) == Stream)
 			{
@@ -254,6 +254,8 @@ public:
 				else
 					break;
 			}
+
+			i++;
 		}
 		if (Threaded)
 				mut.unlock();
@@ -269,7 +271,7 @@ public:
 	void RemoveSound(SoundSample* Sample)
 	{
 		mut2.lock();
-		for(std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); i++)
+		for(std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); )
 		{
 			if ((*i) == Sample)
 			{
@@ -277,8 +279,12 @@ public:
 				
 				if (i == Samples.end())
 					break;
+				else continue;
 			}
+
+			i++;
 		}
+
 		mut2.unlock();
 	}
 

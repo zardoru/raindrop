@@ -124,24 +124,28 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 	// Disable all notes before the current measure.
 	for (uint32 k = 0; k < CurrentDiff->Channels; k++)
 	{
-		for (std::vector<VSRG::TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); m++)
+		for (std::vector<VSRG::TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); )
 		{
 			if (m->GetStartTime() < Time)
 			{
 				m = NotesByChannel[k].erase(m);
 				if (m == NotesByChannel[k].end()) break;
+				else continue;
 			}
+			m++;
 		}
 	}
 
 	// Remove non-played objects
-	for (std::vector<AutoplaySound>::iterator s = BGMEvents.begin(); s != BGMEvents.end(); s++)
+	for (std::vector<AutoplaySound>::iterator s = BGMEvents.begin(); s != BGMEvents.end();)
 	{
 		if (s->Time <= Time)
 		{
 			s = BGMEvents.erase(s);
 			if (s == BGMEvents.end()) break;
+			else continue;
 		}
+		s++;
 	}
 
 	SongTime = SongTimeReal = Time;

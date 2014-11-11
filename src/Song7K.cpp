@@ -167,7 +167,7 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 		Seg.Value = 0;
 
 		/* First, eliminate collisions. */
-		for (TimingData::iterator k = BPS.begin(); k != BPS.end(); k++)
+		for (TimingData::iterator k = BPS.begin(); k != BPS.end();)
 		{
 			if ( abs(k->Time - TValue) < 0.000001 ) /* Too close? Remove the collision, leaving only the 0 in front. */
 			{
@@ -175,14 +175,17 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 
 				if (k == BPS.end())
 					break;
+				else continue;
 			}
+
+			k++;
 		}
 
 		BPS.push_back(Seg);
 
 		float speedRestore = bps(SectionValue(Timing, Time->Time));
 
-		for (TimingData::iterator k = BPS.begin(); k != BPS.end(); k++)
+		for (TimingData::iterator k = BPS.begin(); k != BPS.end(); )
 		{
 			if (k->Time > TValue && k->Time < TValueN)
 			{
@@ -193,7 +196,10 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 
 				if (k == BPS.end())
 					break;
+				else continue;
 			}
+
+			k++;
 		}
 
 		/* Restored speed after stop */

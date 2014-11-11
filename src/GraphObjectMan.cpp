@@ -29,8 +29,10 @@ void GraphObjectMan::StopAnimationsForTarget(GraphObject2D* Target)
 		{
 			i = Animations.erase(i);
 			if (i == Animations.end()) break;
-		}else
-			i++;
+			else continue;
+		}
+		
+		i++;
 	}
 }
 
@@ -134,9 +136,8 @@ void GraphObjectMan::DrawTargets(double TimeDelta)
 
 void GraphObjectMan::UpdateTargets(double TimeDelta)
 {
-	for (std::vector<Animation>::iterator i = Animations.begin();
-		i != Animations.end();
-		i++)
+	for (auto i = Animations.begin();
+		i != Animations.end();)
 	{
 		if (i->Delay > 0)
 		{
@@ -154,6 +155,7 @@ void GraphObjectMan::UpdateTargets(double TimeDelta)
 			i->Function (i->Target, 1); 
 			i = Animations.erase(i);
 			if (i == Animations.end()) break;
+			else continue;
 		}
 
 		float frac;
@@ -175,7 +177,10 @@ void GraphObjectMan::UpdateTargets(double TimeDelta)
 		{
 			i = Animations.erase(i);
 			if (i == Animations.end()) break;
+			else continue;
 		}
+
+		i++;
 	}
 
 	Lua->CallFunction("Update", 1);
