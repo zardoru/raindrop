@@ -620,6 +620,8 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	DoPlay = true;
 
+	AssignMeasure(StartMeasure);
+
 	// We're done with the data stored in the difficulties that aren't the one we're using. Clear it up.
 	for (auto i = MySong->Difficulties.begin(); i != MySong->Difficulties.end(); i++)
 	{
@@ -805,7 +807,6 @@ void ScreenGameplay7K::MainThreadInitialization()
 	memset(PlaySounds, 0, sizeof(PlaySounds));
 
 	CalculateHiddenConstants();
-	AssignMeasure(StartMeasure);
 
 	if (!StartMeasure)
 		WaitingTime = abs(std::min(-WaitingTime, CurrentDiff->Offset - 1.5));
