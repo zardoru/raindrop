@@ -126,6 +126,7 @@ private:
 	bool beatScrollEffectEnabled;
 	bool waveEffectEnabled;
 	bool Auto;
+	bool perfect_auto; // if enabled, auto will play perfectly.
 	bool Upscroll;
 	bool NoFail;
 	bool Active;

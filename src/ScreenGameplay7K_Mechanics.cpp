@@ -148,21 +148,24 @@ void ScreenGameplay7K::RunMeasures()
 								if (m->GetTimeFinal() < TimeThreshold){
 									double hit_time = clamp_to_interval(usedTime, m->GetTimeFinal(), 0.008);
 									// We use clamp_to_interval for those pesky outliers.
-									ReleaseLane(k, hit_time);
-									// ReleaseLane(k, m->GetTimeFinal());
+									if (perfect_auto) ReleaseLane(k, m->GetTimeFinal());
+									else ReleaseLane(k, hit_time);
 								}
 							}else{
 								double hit_time = clamp_to_interval(usedTime, m->GetStartTime(), 0.008);
-								JudgeLane(k, hit_time);
-								// JudgeLane(k, m->GetStartTime());
+								if(perfect_auto) JudgeLane(k, m->GetStartTime());
+								else JudgeLane(k, hit_time);
 							}
 						}else
 						{
 							double hit_time = clamp_to_interval(usedTime, m->GetStartTime(), 0.008);
-							JudgeLane(k, hit_time);
-							ReleaseLane(k, hit_time);
-							// JudgeLane(k, m->GetStartTime());
-							// ReleaseLane(k, m->GetTimeFinal());
+							if(perfect_auto){
+								JudgeLane(k, m->GetStartTime());
+								ReleaseLane(k, m->GetTimeFinal());
+							}else{
+								JudgeLane(k, hit_time);
+								ReleaseLane(k, hit_time);
+							}
 						}
 					}
 				}

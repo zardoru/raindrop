@@ -50,6 +50,7 @@ ScreenGameplay7K::ScreenGameplay7K()
 	HideClampSum = 0;
 
 	Auto = false;
+	perfect_auto = true;
 
 	lifebar_type = LT_GROOVE;
 	scoring_type = ST_IIDX;
