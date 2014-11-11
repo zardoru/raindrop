@@ -187,7 +187,7 @@ void Application::Run()
 
 		if (!Sng || !Sng->Difficulties.size())
 		{
-			Log::Printf("File %s could not be loaded for preview.\n", InFile.c_path());
+			Log::Printf("File %s could not be loaded for preview. (%d/%d)\n", InFile.c_path(), (int)Sng, Sng? Sng->Difficulties.size() : 0);
 			return;
 		}
 

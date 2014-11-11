@@ -4,6 +4,7 @@
 #include <stack>
 
 #include "Global.h"
+#include "Logging.h"
 #include "Song7K.h"
 #include "NoteLoader7K.h"
 #include "utf8.h"
@@ -967,6 +968,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 
 	if (!filein.is_open())
 	{
+		Log::Printf("NoteLoaderBMS: Couldn't open file %s!", filename.c_str());
 		delete Diff;
 		delete Info;
 		return;
