@@ -3,15 +3,14 @@ Explosions = {}
 -- Changeable parameters
 Explosions.HitFramerate = 60
 Explosions.HitFrames = 10
-Explosions.HitSize = { w = 250, h = 250 }
+Explosions.HitScale = 1
 
 Explosions.HoldFramerate = 60
 Explosions.HoldFrames = 40
-Explosions.HoldSize = { w = 250, h = 250 }
+Explosions.HoldScale = 1
 
-function ObjectPosition(Atlas, i, Size)
-	Obj.SetImageSkin(Atlas.File)
-	Obj.SetSize(Size.w, Size.h)
+function ObjectPosition(Atlas, i, Scale)
+	Obj.SetImageSkin("VSRG/"..Atlas.File)
 	Obj.SetCentered(1)
 	Obj.SetPosition(GetConfigF("Key"..i.."X", ChannelSpace), JudgmentLineY)
 
@@ -21,6 +20,7 @@ function ObjectPosition(Atlas, i, Size)
 
 	Obj.SetZ(28)
 	Obj.SetBlendMode(0) -- Add
+	Obj.SetScale(Scale, Scale)
 end
 
 function Explosions.Init()
@@ -55,7 +55,7 @@ function Explosions.Init()
 		Explosions.HitTargets[i] = Obj.CreateTarget()
 
 		Obj.SetTarget(Explosions.HitTargets[i])
-		ObjectPosition(Explosions.HitAtlas, i, Explosions.HitSize)
+		ObjectPosition(Explosions.HitAtlas, i, Explosions.HitScale)
 
 		Explosions.HitTime[i] = Explosions.HitFrameTime * Explosions.HitFrames
 		Explosions.HitColorize[i] = 0
@@ -64,7 +64,7 @@ function Explosions.Init()
 		Explosions.HoldTargets[i] = Obj.CreateTarget()
 
 		Obj.SetTarget(Explosions.HoldTargets[i])
-		ObjectPosition(Explosions.HoldAtlas, i, Explosions.HoldSize)
+		ObjectPosition(Explosions.HoldAtlas, i, Explosions.HoldScale)
 		Explosions.HoldTime[i] = Explosions.HoldDuration
 	end
 end

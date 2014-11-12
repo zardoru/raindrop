@@ -125,65 +125,7 @@ function Cleanup()
 end
 
 function OnFullComboEvent()
-
-	fcnotify = Object2D ()
-	fcnotify.Image = "fullcombo.png"
-
-	local scalef = GearWidth / fcnotify.Width * 0.85
-	fcnotify.X = GearStartX + 2
-	fcnotify.ScaleX = scalef
-	fcnotify.ScaleY = scalef
-	fcanim = getMoveFunction(fcnotify.X, -fcnotify.Height * scalef, fcnotify.X, ScreenWidth/2 - fcnotify.Height*scalef/2)
-	Engine:AddTarget(fcnotify)
-	Engine:AddAnimation(fcnotify, "fcanim", EaseOut, 0.75, 0)
-
-end
-
-function FailBurst(frac)
-	local TargetScaleA = 4
-	local TargetScaleB = 3
-	local TargetScaleC = 2
-	BE.FnA.Alpha = 1 - frac
-	BE.FnB.Alpha = 1 - frac
-	BE.FnC.Alpha = 1 - frac
-
-	BE.FnA.ScaleY = 1 + (TargetScaleA-1) * frac
-	BE.FnB.ScaleY = 1 + (TargetScaleB-1) * frac
-	BE.FnC.ScaleY = 1 + (TargetScaleC-1) * frac
-	BE.FnA.ScaleX = 1 + (TargetScaleA-1) * frac
-	BE.FnB.ScaleX = 1 + (TargetScaleB-1) * frac
-	BE.FnC.ScaleX = 1 + (TargetScaleC-1) * frac
-
-	return 1
-end
-
-
-function FailAnim(frac)
-
-	local fnh = FailNotif.Height
-	local fnw = FailNotif.Width
-	local cosfacadd = 0.75
-	local cos = math.cos(frac * 2 * math.pi) * cosfacadd
-	local ftype = (1-frac)
-	local sc = (cos + cosfacadd/2) * (ftype * ftype) * 1.2 + 1
-	FailNotif.ScaleY = sc
-	FailNotif.ScaleX = sc
-	
-	Obj.SetTarget(ScreenBackground)
-	Obj.SetAlpha(1 - frac)
-
-	if frac == 1 then -- we're at the end
-		
-	end
-
-	return 1
-end
-
-function WhiteFailAnim(frac)
-
-	White.Height = ScreenHeight * frac
-	return 1
-
+	IsFullCombo = 1
 end
 
 -- Returns duration of failure animation.

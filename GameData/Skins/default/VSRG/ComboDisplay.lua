@@ -49,7 +49,7 @@ function ComboDisplay.Init()
 	for i = 1, 6 do -- Drawing targets
 		ComboDisplay.Targets[i] = Obj.CreateTarget()
 		Obj.SetTarget(ComboDisplay.Targets[i])
-		Obj.SetImageSkin(ComboDisplay.Atlas.File)
+		Obj.SetImageSkin("VSRG/"..ComboDisplay.Atlas.File)
 		Obj.SetCentered(1)
 		Obj.SetZ(24)
 		Obj.SetAlpha(0)
