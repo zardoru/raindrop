@@ -90,7 +90,7 @@ function Init()
 	Obj.SetCentered(1)
 	Obj.SetZ(18)
 
-	font = Fonts.TruetypeFont(Obj.GetSkinDirectory() .. "font.ttf", 24)
+	font = Fonts.TruetypeFont(Obj.GetSkinFile("font.ttf"), 24)
 	
 	dd = StringObject2D()
 	dd.Font = font

@@ -174,9 +174,7 @@ int DigitCount (float n)
 
 void DoBMPEventList (GraphObject2D &Obj, std::vector<AutoplayBMP> &Events, ImageList &Images, double SongTime)
 {
-	for (std::vector<AutoplayBMP>::iterator b = Events.begin();
-		b != Events.end();
-		b++)
+	for (auto b = Events.begin(); b != Events.end();)
 	{
 		if (b->Time <= SongTime)
 		{
@@ -186,7 +184,10 @@ void DoBMPEventList (GraphObject2D &Obj, std::vector<AutoplayBMP> &Events, Image
 
 			b = Events.erase(b);
 			if (b == Events.end()) break;
+			else continue;
 		}
+
+		b++;
 	}
 }
 
@@ -195,9 +196,7 @@ void ScreenGameplay7K::RunAutoEvents()
 	if (!stage_failed)
 	{
 		// Play BGM events.
-		for (std::vector<AutoplaySound>::iterator s = BGMEvents.begin();
-			s != BGMEvents.end();
-			s++)
+		for (auto s = BGMEvents.begin(); s != BGMEvents.end();)
 		{
 			if (s->Time <= SongTime)
 			{
@@ -208,7 +207,10 @@ void ScreenGameplay7K::RunAutoEvents()
 				}
 				s = BGMEvents.erase(s);
 				if (s == BGMEvents.end()) break;
+				else continue;
 			}
+
+			s++;
 		}
 	}
 

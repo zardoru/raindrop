@@ -57,7 +57,7 @@ struct songHelper
 
 VSRG::Song* toSong7K(Game::Song* Sng)
 {
-	if (Sng->Mode == MODE_VSRG)
+	if (Sng && Sng->Mode == MODE_VSRG)
 		return(VSRG::Song*) Sng;
 	else
 		return NULL;
@@ -65,7 +65,7 @@ VSRG::Song* toSong7K(Game::Song* Sng)
 
 dotcur::Song* toSongDC(Game::Song* Sng)
 {
-	if (Sng->Mode == MODE_DOTCUR)
+	if (Sng && Sng->Mode == MODE_DOTCUR)
 		return (dotcur::Song*) Sng;
 	else
 		return NULL;

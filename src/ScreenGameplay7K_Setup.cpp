@@ -125,24 +125,28 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 	// Disable all notes before the current measure.
 	for (uint32 k = 0; k < CurrentDiff->Channels; k++)
 	{
-		for (std::vector<VSRG::TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); m++)
+		for (std::vector<VSRG::TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); )
 		{
 			if (m->GetStartTime() < Time)
 			{
 				m = NotesByChannel[k].erase(m);
 				if (m == NotesByChannel[k].end()) break;
+				else continue;
 			}
+			m++;
 		}
 	}
 
 	// Remove non-played objects
-	for (std::vector<AutoplaySound>::iterator s = BGMEvents.begin(); s != BGMEvents.end(); s++)
+	for (std::vector<AutoplaySound>::iterator s = BGMEvents.begin(); s != BGMEvents.end();)
 	{
 		if (s->Time <= Time)
 		{
 			s = BGMEvents.erase(s);
 			if (s == BGMEvents.end()) break;
+			else continue;
 		}
+		s++;
 	}
 
 	SongTime = SongTimeReal = Time;
@@ -593,13 +597,13 @@ void ScreenGameplay7K::SetupMechanics()
 void ScreenGameplay7K::LoadThreadInitialization()
 {
 	MissSnd = new SoundSample();
-	if (MissSnd->Open((GameState::GetInstance().GetSkinPrefix() + "miss.ogg").c_str()))
+	if (MissSnd->Open((GameState::GetInstance().GetSkinFile("miss.ogg")).c_str()))
 		MixerAddSample(MissSnd);
 	else
 		delete MissSnd;
 
 	FailSnd = new SoundSample();
-	if (FailSnd->Open((GameState::GetInstance().GetSkinPrefix() + "stage_failed.ogg").c_str()))
+	if (FailSnd->Open((GameState::GetInstance().GetSkinFile("stage_failed.ogg")).c_str()))
 		MixerAddSample(FailSnd);
 	else
 		delete FailSnd;
@@ -620,6 +624,8 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	Log::Printf("Done.\n");
 
 	DoPlay = true;
+
+	AssignMeasure(StartMeasure);
 
 	// We're done with the data stored in the difficulties that aren't the one we're using. Clear it up.
 	for (auto i = MySong->Difficulties.begin(); i != MySong->Difficulties.end(); i++)
@@ -806,7 +812,6 @@ void ScreenGameplay7K::MainThreadInitialization()
 	memset(PlaySounds, 0, sizeof(PlaySounds));
 
 	CalculateHiddenConstants();
-	AssignMeasure(StartMeasure);
 
 	if (!StartMeasure)
 		WaitingTime = abs(std::min(-WaitingTime, CurrentDiff->Offset - 1.5));

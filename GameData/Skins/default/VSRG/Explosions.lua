@@ -3,15 +3,27 @@ Explosions = {}
 -- Changeable parameters
 Explosions.HitFramerate = 60
 Explosions.HitFrames = 10
-Explosions.HitSize = { w = 250, h = 250 }
+Explosions.HitScale = 1
+Explosions.HitSheet = "VSRG/explsheet.csv"
 
 Explosions.HoldFramerate = 60
 Explosions.HoldFrames = 40
-Explosions.HoldSize = { w = 250, h = 250 }
+Explosions.HoldScale = 1
+Explosions.HoldSheet = "VSRG/holdsheet.csv"
 
-function ObjectPosition(Atlas, i, Size)
-	Obj.SetImageSkin(Atlas.File)
-	Obj.SetSize(Size.w, Size.h)
+Explosions.MissShow = 1
+
+function Explosions.HitName (i)
+	return "lightingN-" .. i-1 .. ".png"
+end
+
+function Explosions.HoldName (i)
+	return "lightingL-" .. i-1 .. ".png"
+end
+
+-- Internal functions
+function ObjectPosition(Atlas, i, Scale)
+	Obj.SetImageSkin("VSRG/"..Atlas.File)
 	Obj.SetCentered(1)
 	Obj.SetPosition(GetConfigF("Key"..i.."X", ChannelSpace), JudgmentLineY)
 
@@ -21,6 +33,7 @@ function ObjectPosition(Atlas, i, Size)
 
 	Obj.SetZ(28)
 	Obj.SetBlendMode(0) -- Add
+	Obj.SetScale(Scale, Scale)
 end
 
 function Explosions.Init()
@@ -39,15 +52,15 @@ function Explosions.Init()
 	Explosions.HoldDuration = Explosions.HoldFrameTime * Explosions.HoldFrames
 
 
-	Explosions.HitAtlas = TextureAtlas:new(Obj.GetSkinDirectory() .. "VSRG/explsheet.csv")
-	Explosions.HoldAtlas = TextureAtlas:new(Obj.GetSkinDirectory() .. "VSRG/holdsheet.csv")
+	Explosions.HitAtlas = TextureAtlas:new(Obj.GetSkinFile(Explosions.HitSheet))
+	Explosions.HoldAtlas = TextureAtlas:new(Obj.GetSkinFile(Explosions.HoldSheet))
 
 	for i = 1, Explosions.HitFrames do
-		Explosions.HitImages[i] = "lightingN-" .. i-1 .. ".png"
+		Explosions.HitImages[i] = Explosions.HitName(i)
 	end
 
 	for i = 1, Explosions.HoldFrames do
-		Explosions.HoldImages[i] = "lightingL-" .. i-1 .. ".png"
+		Explosions.HoldImages[i] = Explosions.HoldName(i)
 	end
 
 	for i = 1, Channels do
@@ -55,7 +68,7 @@ function Explosions.Init()
 		Explosions.HitTargets[i] = Obj.CreateTarget()
 
 		Obj.SetTarget(Explosions.HitTargets[i])
-		ObjectPosition(Explosions.HitAtlas, i, Explosions.HitSize)
+		ObjectPosition(Explosions.HitAtlas, i, Explosions.HitScale)
 
 		Explosions.HitTime[i] = Explosions.HitFrameTime * Explosions.HitFrames
 		Explosions.HitColorize[i] = 0
@@ -64,7 +77,7 @@ function Explosions.Init()
 		Explosions.HoldTargets[i] = Obj.CreateTarget()
 
 		Obj.SetTarget(Explosions.HoldTargets[i])
-		ObjectPosition(Explosions.HoldAtlas, i, Explosions.HoldSize)
+		ObjectPosition(Explosions.HoldAtlas, i, Explosions.HoldScale)
 		Explosions.HoldTime[i] = Explosions.HoldDuration
 	end
 end
@@ -85,7 +98,8 @@ function Explosions.Run(Delta)
 		-- Calculate frame
 		Frame = Explosions.HitTime[i] / Explosions.HitFrameTime + 1
 
-		if Frame > Explosions.HitFrames then
+		if Frame > Explosions.HitFrames or 
+			(Explosions.HitColorize[i] ~= 0 and Explosions.MissShow == 0) then
 			Obj.SetAlpha(0)
 		else
 			Obj.SetAlpha(1)

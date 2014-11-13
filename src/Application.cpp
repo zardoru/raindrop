@@ -187,9 +187,12 @@ void Application::Run()
 
 		if (!Sng || !Sng->Difficulties.size())
 		{
-			Log::Printf("File %s could not be loaded for preview.\n", InFile.c_path());
+			Log::Printf("File %s could not be loaded for preview. (%d/%d)\n", InFile.c_path(), (long long int)Sng, Sng? Sng->Difficulties.size() : 0);
 			return;
 		}
+
+		GameState::GetInstance().SetSelectedSong(Sng);
+		GameState::GetInstance().SetDifficultyIndex(difIndex);
 
 		ScreenGameplay7K *SGame = new ScreenGameplay7K();
 		ScreenLoading *LoadScreen = new ScreenLoading(NULL, SGame);

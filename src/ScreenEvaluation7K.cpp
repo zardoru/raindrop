@@ -33,7 +33,7 @@ void ScreenEvaluation7K::Init(ScoreKeeper7K *Result)
 	SetScorekeeper7KInstance(Objects->GetEnv()->GetState(), Result);
 	GameState::GetInstance().InitializeLua(Objects->GetEnv()->GetState());
 
-	Objects->Initialize(GameState::GetInstance().GetSkinPrefix() + "screenevaluation7k.lua");
+	Objects->Initialize(GameState::GetInstance().GetSkinFile("screenevaluation7k.lua"));
 
 	Background.SetImage(GameState::GetInstance().GetSkinImage(Configuration::GetSkinConfigs("EvaluationBackground7K")));
 	Background.AffectedByLightning = true;
@@ -78,18 +78,20 @@ void ScreenEvaluation7K::PrintCLIResults(ScoreKeeper7K *result){
 
 	ss
 		<< std::fixed << std::setprecision(3)
-		<< "Rank: " << (result->getRank() > 0 ? "+" : "") << result->getRank() << " (" << result->getPercentScore(PST_RANK) << " pts.)\n"
+		<< "  Rank: " << (result->getRank() > 0 ? "+" : "") << result->getRank() << " (" << result->getPercentScore(PST_RANK) << " pts.)\n"
 		<< "\n" << std::setprecision(2)
-		<< "Accuracy: " << result->getPercentScore(PST_ACC) << "%\n"
-		<< "Final Score: " << result->getScore(ST_EXP) << "\n"
-		<< "Max Combo: " << result->getScore(ST_MAX_COMBO) << "\n"
+		<< "  Accuracy: " << result->getPercentScore(PST_ACC) << "%\n"
+		<< "  Final Score: " << result->getScore(ST_EXP) << "\n"
+		<< "  Max Combo: " << result->getScore(ST_MAX_COMBO) << "\n"
 		<< "\n"
-		<< "Notes hit: " << result->getPercentScore(PST_NH) << "%\n"
-		<< "EX score: " << result->getPercentScore(PST_EX) << "%\n"
+		<< "  Notes hit: " << result->getPercentScore(PST_NH) << "%\n"
+		<< "  EX score: " << result->getPercentScore(PST_EX) << "%\n"
 	;
 
-	if(result->usesW0())
-		ss << "osu!mania accuracy: " << result->getPercentScore(PST_OSU) << "%\n";
+	if(result->usesW0()){
+		ss << "  osu!mania accuracy: " << result->getPercentScore(PST_OSU) << "%\n";
+		ss << "  osu!mania score: " << result->getScore(ST_OSUMANIA) << "%\n";
+	}
 	
 	ss << "\n";
 
@@ -98,14 +100,14 @@ void ScreenEvaluation7K::PrintCLIResults(ScoreKeeper7K *result){
 	;
 
 	if(result->usesW0())
-		ss << "Fantastic: " << result->getJudgmentCount(SKJ_W0) << " (" << float(result->getJudgmentCount(SKJ_W0) * 100) / float(result->getMaxNotes()) << "%)\n";
+		ss << " Fantastic: " << result->getJudgmentCount(SKJ_W0) << " (" << float(result->getJudgmentCount(SKJ_W0) * 100) / float(result->getMaxNotes()) << "%)\n";
 	
 	ss
-		<< "  Perfect: " << result->getJudgmentCount(SKJ_W1) << " (" << float(result->getJudgmentCount(SKJ_W1) * 100) / float(result->getMaxNotes()) << "%)\n"
-		<< "    Great: " << result->getJudgmentCount(SKJ_W2) << " (" << float(result->getJudgmentCount(SKJ_W2) * 100) / float(result->getMaxNotes()) << "%)\n"
-		<< "     Good: " << result->getJudgmentCount(SKJ_W3) << " (" << float(result->getJudgmentCount(SKJ_W3) * 100) / float(result->getMaxNotes()) << "%)\n"
-		<< "      Bad: " << result->getJudgmentCount(SKJ_W4) << " (" << float(result->getJudgmentCount(SKJ_W4) * 100) / float(result->getMaxNotes()) << "%)\n"
-		<< "       NG: " << result->getJudgmentCount(SKJ_MISS) << " (" << float(result->getJudgmentCount(SKJ_MISS) * 100) / float(result->getMaxNotes()) << "%)\n"
+		<< "   Perfect: " << result->getJudgmentCount(SKJ_W1) << " (" << float(result->getJudgmentCount(SKJ_W1) * 100) / float(result->getMaxNotes()) << "%)\n"
+		<< "     Great: " << result->getJudgmentCount(SKJ_W2) << " (" << float(result->getJudgmentCount(SKJ_W2) * 100) / float(result->getMaxNotes()) << "%)\n"
+		<< "      Good: " << result->getJudgmentCount(SKJ_W3) << " (" << float(result->getJudgmentCount(SKJ_W3) * 100) / float(result->getMaxNotes()) << "%)\n"
+		<< "       Bad: " << result->getJudgmentCount(SKJ_W4) << " (" << float(result->getJudgmentCount(SKJ_W4) * 100) / float(result->getMaxNotes()) << "%)\n"
+		<< "        NG: " << result->getJudgmentCount(SKJ_MISS) << " (" << float(result->getJudgmentCount(SKJ_MISS) * 100) / float(result->getMaxNotes()) << "%)\n"
 		<< "\n"
 	;
 

@@ -17,12 +17,17 @@ ComboDisplay = {
 	BumpTime = 0,
 	BumpTotalTime = 0.1, -- Time the animation runs
 	BumpFactor = 1.3,
+	BumpVertically = 1,
+	BumpHorizontally = 1,
 	HoldBumpFactor = 1.2,
 	ExNotifyImg = "VSRG/combo_bonus.png",
 	ExNotifyTime = 0.34,
 	ExNotifyExtraBump = 0.5
 }
 
+function ComboDisplay.SetName(i)
+	return i-1 .. ".png"
+end
 
 -- Internal Constants
 ComboDisplay.Targets = {}
@@ -44,19 +49,19 @@ ComboDisplay.ExNotifyObject = nil
 
 function ComboDisplay.Init()
 
-	ComboDisplay.Atlas = TextureAtlas:new(Obj.GetSkinDirectory() .. "VSRG/combosheet.csv")
+	ComboDisplay.Atlas = TextureAtlas:new(Obj.GetSkinFile("VSRG/combosheet.csv"))
 
 	for i = 1, 6 do -- Drawing targets
 		ComboDisplay.Targets[i] = Obj.CreateTarget()
 		Obj.SetTarget(ComboDisplay.Targets[i])
-		Obj.SetImageSkin(ComboDisplay.Atlas.File)
+		Obj.SetImageSkin("VSRG/"..ComboDisplay.Atlas.File)
 		Obj.SetCentered(1)
 		Obj.SetZ(24)
 		Obj.SetAlpha(0)
 	end
 
 	for i = 1, 10 do -- Digit images
-		ComboDisplay.Images[i] = i-1 .. ".png"
+		ComboDisplay.Images[i] = ComboDisplay.SetName(i)
 	end
 
 	ComboDisplay.ExNotifyObject = Obj.CreateTarget()
@@ -152,7 +157,7 @@ function ComboDisplay.Run(Delta)
 
 			Obj.SetPosition(ComboDisplay.ExNotifyPos.x, ComboDisplay.ExNotifyPos.y)
 
-			local Factor = 1 + ComboDisplay.ExNotifyExtraBump * Ratio
+			local Factor = 1 + ComboDisplay.ExNotifyExtraBump * Ratio			
 			Obj.SetScale(Factor, Factor)
 		
 		else -- Time only runs if we're not at an "AWESOME" hit.
@@ -200,12 +205,25 @@ function ComboDisplay.Run(Delta)
 	for i= 1, 6 do
 
 		Obj.SetTarget(ComboDisplay.Targets[i])
-
+		local scaleX = 1
+		local scaleY = 1
+		local usedScale
+		
 		if ComboDisplay.BumpKind ~= ComboDisplay.BumpInactive then
-			Obj.SetScale (newScaleRatio, newScaleRatio)
+			usedScale = newScaleRatio
 		else
-			Obj.SetScale (HoldScale, HoldScale)
+			usedScale = HoldScale
 		end
+		
+		if ComboDisplay.BumpHorizontally ~= 0 then
+			scaleX = usedScale
+		end
+			
+		if ComboDisplay.BumpVertically ~= 0 then
+			scaleY = usedScale
+		end
+		
+		Obj.SetScale (scaleX, scaleY)
 
 		if ComboDisplay.BumpColor ~= 0 then
 			Obj.SetColor(1, 2.5, 2.5)

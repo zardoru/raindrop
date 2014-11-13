@@ -54,6 +54,9 @@ public:
 	void SetDifficultyIndex(uint32 DifficultyIndex);
 	uint32 GetDifficultyIndex() const;
 
+	GString GetSkinFile(Directory Name);
+	GString GetFallbackSkinFile(Directory Name);
+
 	SongDatabase* GetSongDatabase();
 	static GameWindow* GetWindow();
 };
