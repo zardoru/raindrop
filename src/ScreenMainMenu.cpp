@@ -62,7 +62,7 @@ void ScreenMainMenu::Init()
 	Objects->AddTarget(&EditBtn);
 	Objects->AddLuaTarget(&PlayBtn, "PlayButton");
 	Objects->AddLuaTarget(&ExitBtn, "ExitButton");
-	Objects->Initialize(GameState::GetInstance().GetSkinPrefix() + "mainmenu.lua");
+	Objects->Initialize(GameState::GetInstance().GetSkinFile("mainmenu.lua"));
 
 	if (!TTFO)
 		TTFO = new TruetypeFont(GameState::GetInstance().GetSkinPrefix() / "font.ttf", 16);
@@ -81,7 +81,7 @@ void ScreenMainMenu::Init()
 	if (!MMSelectSnd)
 	{
 		MMSelectSnd = new SoundSample();
-		MMSelectSnd->Open((GameState::GetInstance().GetSkinPrefix() + "select.ogg").c_str());
+		MMSelectSnd->Open((GameState::GetInstance().GetSkinFile("select.ogg")).c_str());
 		MixerAddSample(MMSelectSnd);
 	}
 }

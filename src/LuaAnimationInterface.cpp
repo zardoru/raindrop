@@ -227,7 +227,14 @@ namespace LuaAnimFuncs
 	int Require(lua_State *L)
 	{
 		LuaManager *Lua = GetObjectFromState<LuaManager>(L, "Luaman");
-		lua_pushboolean(L, Lua->RunScript(GameState::GetInstance().GetSkinPrefix() + luaL_checkstring(L, 1)));
+		lua_pushboolean(L, Lua->RunScript(GameState::GetInstance().GetSkinFile(luaL_checkstring(L, 1))));
+		return 1;
+	}
+
+	int FallbackRequire(lua_State *L)
+	{
+		LuaManager *Lua = GetObjectFromState<LuaManager>(L, "Luaman");
+		lua_pushboolean(L, Lua->RunScript(GameState::GetInstance().GetFallbackSkinFile(luaL_checkstring(L, 1))));
 		return 1;
 	}
 
@@ -258,21 +265,23 @@ namespace LuaAnimFuncs
 		return 0;
 	}
 
-	/*
-
-	int GetGameConfigF(lua_State *L)
-	{
-	}
-
-	int GetGameConfigS(lua_State *L)
-	{
-	}
-
-	*/
-
 	int GetSkinDirectory(lua_State *L)
 	{
 		lua_pushstring(L, GameState::GetInstance().GetSkinPrefix().c_str());
+		return 1;
+	}
+
+	int GetSkinFile(lua_State *L)
+	{
+		GString Out = GameState::GetInstance().GetSkinFile(GString(luaL_checkstring(L, 1)));
+		lua_pushstring(L, Out.c_str());
+		return 1;
+	}
+
+	int GetFallbackFile(lua_State *L)
+	{
+		GString Out = GameState::GetInstance().GetFallbackSkinFile(GString(luaL_checkstring(L, 1)));
+		lua_pushstring(L, Out.c_str());
 		return 1;
 	}
 
@@ -336,6 +345,7 @@ namespace LuaAnimFuncs
 		{ "SetColorInvert", SetColorInvert },
 		{ "SetAffectedbyLightning", SetAffectedbyLightning },
 		{ "GetSkinDirectory", GetSkinDirectory },
+		{ "GetSkinFile", GetSkinFile },
 		{ "AddAnimation", AddLuaAnimation },
 		{ "ClearAnimations", LuaStopAnimationsForTarget },
 		{ "SetLighten", SetLighten },
@@ -445,6 +455,7 @@ void CreateLuaInterface(LuaManager *AnimLua)
 
 	AnimLua->NewMetatable(LuaAnimFuncs::GraphObject2DMetatable);
 	AnimLua->Register(LuaAnimFuncs::Require, "skin_require");
+	AnimLua->Register(LuaAnimFuncs::FallbackRequire, "fallback_require");
 	AnimLua->Register(LuaAnimFuncs::GetSkinConfigF, "GetConfigF");
 	AnimLua->Register(LuaAnimFuncs::GetSkinConfigS, "GetConfigS");
 	AnimLua->RegisterLibrary("Obj", ((const luaL_Reg*)LuaAnimFuncs::GraphObjectLib));

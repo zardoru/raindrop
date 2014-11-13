@@ -33,7 +33,7 @@ void ScreenEvaluation7K::Init(ScoreKeeper7K *Result)
 	SetScorekeeper7KInstance(Objects->GetEnv()->GetState(), Result);
 	GameState::GetInstance().InitializeLua(Objects->GetEnv()->GetState());
 
-	Objects->Initialize(GameState::GetInstance().GetSkinPrefix() + "screenevaluation7k.lua");
+	Objects->Initialize(GameState::GetInstance().GetSkinFile("screenevaluation7k.lua"));
 
 	Background.SetImage(GameState::GetInstance().GetSkinImage(Configuration::GetSkinConfigs("EvaluationBackground7K")));
 	Background.AffectedByLightning = true;

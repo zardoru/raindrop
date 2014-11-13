@@ -40,6 +40,19 @@ void GameState::SetSelectedSong(Game::Song* Song)
 	SelectedSong = Song;
 }
 
+GString GameState::GetSkinFile(Directory Name)
+{
+	GString Orig = GetSkinPrefix() + Name.path();
+	if (Utility::FileExists(Orig))
+	{
+		return Orig;
+	}
+	else
+	{
+		return GetFallbackSkinFile(Name);
+	}
+}
+
 void GameState::Initialize()
 {
 	Database = new SongDatabase("rd.db");
@@ -86,9 +99,14 @@ SongDatabase* GameState::GetSongDatabase()
 	return Database;
 }
 
+GString GameState::GetFallbackSkinFile(Directory Name)
+{
+	return DirectoryPrefix + SkinsPrefix + GString("default/") + Name.path();
+}
+
 Image* GameState::GetSkinImage(Directory Path)
 {
-	return ImageLoader::Load(GetSkinPrefix() / Path);
+	return ImageLoader::Load(GetSkinFile(Path));
 }
 
 bool GameState::SkinSupportsChannelCount(int Count)

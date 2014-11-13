@@ -596,13 +596,13 @@ void ScreenGameplay7K::SetupMechanics()
 void ScreenGameplay7K::LoadThreadInitialization()
 {
 	MissSnd = new SoundSample();
-	if (MissSnd->Open((GameState::GetInstance().GetSkinPrefix() + "miss.ogg").c_str()))
+	if (MissSnd->Open((GameState::GetInstance().GetSkinFile("miss.ogg")).c_str()))
 		MixerAddSample(MissSnd);
 	else
 		delete MissSnd;
 
 	FailSnd = new SoundSample();
-	if (FailSnd->Open((GameState::GetInstance().GetSkinPrefix() + "stage_failed.ogg").c_str()))
+	if (FailSnd->Open((GameState::GetInstance().GetSkinFile("stage_failed.ogg")).c_str()))
 		MixerAddSample(FailSnd);
 	else
 		delete FailSnd;

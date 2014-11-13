@@ -150,7 +150,7 @@ void ScreenSelectMusic::LoadThreadInitialization()
 	ImageLoader::LoadFromManifest(Manifest, 1, GameState::GetInstance().GetSkinPrefix());
 
 	Objects = new GraphObjectMan;
-	Objects->Preload( GameState::GetInstance().GetSkinPrefix() + "screenselectmusic.lua", "Preload" );
+	Objects->Preload( GameState::GetInstance().GetSkinFile("screenselectmusic.lua"), "Preload" );
 
 	Time = 0;
 }
