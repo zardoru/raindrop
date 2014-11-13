@@ -27,7 +27,7 @@ void ScreenEvaluation::Init(EvaluationData _Data, GString SongAuthor, GString So
 	if (!ScreenEvaluationMusic)
 	{
 		ScreenEvaluationMusic = new SoundStream();
-		ScreenEvaluationMusic->Open((GameState::GetInstance().GetSkinPrefix() + "screenevaluationloop.ogg").c_str());
+		ScreenEvaluationMusic->Open((GameState::GetInstance().GetSkinFile("screenevaluationloop.ogg")).c_str());
 		ScreenEvaluationMusic->SetLoop(true);
 		MixerAddStream(ScreenEvaluationMusic);
 	}

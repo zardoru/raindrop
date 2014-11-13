@@ -36,14 +36,14 @@ GameObject::GameObject() : GraphObject2D(false)
 	if (!HitSnd)
 	{
 		HitSnd = new SoundSample();
-		HitSnd->Open((GameState::GetInstance().GetSkinPrefix() + "/hit.ogg").c_str());
+		HitSnd->Open((GameState::GetInstance().GetSkinFile("hit.ogg")).c_str());
 		MixerAddSample(HitSnd);
 	}
 
 	if (!HoldReleaseSnd)
 	{
 		HoldReleaseSnd  = new SoundSample();
-		HoldReleaseSnd->Open((GameState::GetInstance().GetSkinPrefix() + "/holdfinish.ogg").c_str());
+		HoldReleaseSnd->Open((GameState::GetInstance().GetSkinFile("holdfinish.ogg")).c_str());
 		MixerAddSample(HoldReleaseSnd);
 	}
 

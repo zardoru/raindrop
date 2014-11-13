@@ -78,7 +78,7 @@ void GraphObjectMan::Preload(GString Filename, GString Arrname)
 
 		while (Lua->IterateNext())
 		{
-			Images->AddToList (Lua->NextGString(), GameState::GetInstance().GetSkinPrefix());
+			Images->AddToList (GameState::GetInstance().GetSkinFile(Lua->NextGString()), "");
 			Lua->Pop();
 		}
 

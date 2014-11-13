@@ -65,7 +65,7 @@ void ScreenMainMenu::Init()
 	Objects->Initialize(GameState::GetInstance().GetSkinFile("mainmenu.lua"));
 
 	if (!TTFO)
-		TTFO = new TruetypeFont(GameState::GetInstance().GetSkinPrefix() / "font.ttf", 16);
+		TTFO = new TruetypeFont(GameState::GetInstance().GetSkinFile("font.ttf"), 16);
 
 	Background.SetImage(GameState::GetInstance().GetSkinImage(Configuration::GetSkinConfigs("MainMenuBackground")));
 	Background.Centered = 1;

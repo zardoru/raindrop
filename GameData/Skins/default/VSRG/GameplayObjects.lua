@@ -31,8 +31,8 @@ Judgment = {
 		"judge-miss.png",
 	},
 
-	TimingIndicator = "hiterror.png"
-
+	TimingIndicator = "hiterror.png",
+	ShowTimingIndicator = 1
 }
 
 function Lifebar.Init()
@@ -169,7 +169,7 @@ function Judgment.Run(Delta)
 
 		Obj.SetTarget (Judgment.IndicatorObject)
 
-		if Judgment.Value ~= 1 then -- not a "flawless"
+		if Judgment.Value ~= 1 and Judgment.ShowTimingIndicator == 1 then -- not a "flawless"
 			Obj.SetAlpha(AlphaRatio)
 
 			local NewRatio = FinalScale / Judgment.Scale

@@ -57,11 +57,11 @@ ScreenSelectMusic::ScreenSelectMusic()
 	{
 		LoopTotal = 0;
 		SelectSnd = new SoundSample();
-		SelectSnd->Open((GameState::GetInstance().GetSkinPrefix() + "select.ogg").c_str());
+		SelectSnd->Open((GameState::GetInstance().GetSkinFile("select.ogg")).c_str());
 		MixerAddSample(SelectSnd);
 
 		ClickSnd = new SoundSample();
-		ClickSnd->Open((GameState::GetInstance().GetSkinPrefix() + "click.ogg").c_str());
+		ClickSnd->Open((GameState::GetInstance().GetSkinFile("click.ogg")).c_str());
 		MixerAddSample(ClickSnd);
 		
 		LoopTotal = Configuration::GetSkinConfigf("LoopTotal");
@@ -70,9 +70,9 @@ ScreenSelectMusic::ScreenSelectMusic()
 		for (int i = 0; i < LoopTotal; i++)
 		{
 			std::stringstream str;
-			str << GameState::GetInstance().GetSkinPrefix() << "loop" << i+1 << ".ogg";
+			str << "loop" << i+1 << ".ogg";
 			Loops[i] = new AudioStream();
-			Loops[i]->Open(str.str().c_str());
+			Loops[i]->Open(GameState::GetInstance().GetSkinFile(str.str()).c_str());
 			Loops[i]->Stop();
 			Loops[i]->SetLoop(true);
 			MixerAddStream(Loops[i]);
@@ -85,13 +85,7 @@ ScreenSelectMusic::ScreenSelectMusic()
 }
 
 void ScreenSelectMusic::MainThreadInitialization()
-{
-	if (!Font)
-	{
-		Font = new BitmapFont();
-		Font->LoadSkinFontImage("font_screenevaluation.tga", Vec2(10, 20), Vec2(32, 32), Vec2(10,20), 32);
-	}
-	
+{	
 	LuaManager* LuaM = Objects->GetEnv();
 	UpBtn = new GUI::Button;
 
@@ -125,7 +119,6 @@ void ScreenSelectMusic::MainThreadInitialization()
 	GameState::GetInstance().InitializeLua(Objects->GetEnv()->GetState());
 
 	SwitchUpscroll(false);
-	Font->SetAffectedByLightning(true);
 
 	Background.SetImage(GameState::GetInstance().GetSkinImage(Configuration::GetSkinConfigs("SelectMusicBackground")));
 

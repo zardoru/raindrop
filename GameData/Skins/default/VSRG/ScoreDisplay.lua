@@ -2,10 +2,15 @@ ScoreDisplay = {}
 
 ScoreDisplay.Digits = {}
 ScoreDisplay.DigitWidth = 30
+ScoreDisplay.Sheet = "VSRG/combosheet.csv"
 ScoreDisplay.DigitHeight = 30
 ScoreDisplay.DigitCount = 9
 ScoreDisplay.Targets = {}
 ScoreDisplay.Images = {}
+
+function ScoreDisplay.SetName(i)
+	return i-1 .. ".png"
+end
 
 function ScoreDisplay.Init()
 
@@ -13,16 +18,16 @@ function ScoreDisplay.Init()
 	ScoreDisplay.DisplayScore = 0
 
 	for i = 1, 10 do -- Digit images
-		ScoreDisplay.Images[i] = i-1 .. ".png"
+		ScoreDisplay.Images[i] = ScoreDisplay.SetName(i)
 	end
 
-	ScoreDisplay.Atlas = TextureAtlas:new(Obj.GetSkinDirectory() .. "VSRG/combosheet.csv")
+	ScoreDisplay.Atlas = TextureAtlas:new(Obj.GetSkinFile(ScoreDisplay.Sheet))
 
 	for i = 1, ScoreDisplay.DigitCount do
 		ScoreDisplay.Targets[i] = Obj.CreateTarget()
 		Obj.SetTarget(ScoreDisplay.Targets[i])
 		Obj.SetPosition(ScreenWidth - ScoreDisplay.DigitWidth * i, ScreenHeight - ScoreDisplay.DigitHeight)
-		Obj.SetImageSkin(ScoreDisplay.Atlas.File)
+		Obj.SetImageSkin("VSRG/"..ScoreDisplay.Atlas.File)
 		Obj.SetSize(ScoreDisplay.DigitWidth, ScoreDisplay.DigitHeight)
 
 		local Tab = ScoreDisplay.Atlas.Sprites[ScoreDisplay.Images[1]]

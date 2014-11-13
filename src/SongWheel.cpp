@@ -73,7 +73,7 @@ void SongWheel::Initialize(float Start, float End, SongDatabase* Database)
 
 	double FSize = Configuration::GetSkinConfigf("Size", "WheelFont");
 	GString fname = Configuration::GetSkinConfigs("Font", "WheelFont");
-	mTFont = new TruetypeFont(GameState::GetInstance().GetSkinPrefix() / fname.c_str(), FSize);
+	mTFont = new TruetypeFont(GameState::GetInstance().GetSkinFile(fname), FSize);
 	ReloadSongs();
 }
 

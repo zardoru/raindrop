@@ -69,7 +69,7 @@ void ScreenEdit::Init(dotcur::Song *Other)
 	if (!SavedSound)
 	{
 		SavedSound = new SoundSample();
-		SavedSound->Open((GameState::GetInstance().GetSkinPrefix() + "save.ogg").c_str());
+		SavedSound->Open((GameState::GetInstance().GetSkinFile("save.ogg")).c_str());
 		MixerAddSample(SavedSound);
 	}
 

@@ -27,7 +27,7 @@ void Configuration::Initialize()
 	SkinCfgLua->SetGlobal("Widescreen", IsWidescreen);
 	SkinCfgLua->SetGlobal("ScreenWidth", ScreenWidth);
 	SkinCfgLua->SetGlobal("ScreenHeight", ScreenHeight);
-	SkinCfgLua->RunScript(GameState::GetInstance().GetSkinPrefix() + "skin.lua");
+	SkinCfgLua->RunScript(GameState::GetInstance().GetSkinFile("skin.lua"));
 }
 
 void Configuration::Cleanup()

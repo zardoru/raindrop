@@ -4,11 +4,24 @@ Explosions = {}
 Explosions.HitFramerate = 60
 Explosions.HitFrames = 10
 Explosions.HitScale = 1
+Explosions.HitSheet = "VSRG/explsheet.csv"
 
 Explosions.HoldFramerate = 60
 Explosions.HoldFrames = 40
 Explosions.HoldScale = 1
+Explosions.HoldSheet = "VSRG/holdsheet.csv"
 
+Explosions.MissShow = 1
+
+function Explosions.HitName (i)
+	return "lightingN-" .. i-1 .. ".png"
+end
+
+function Explosions.HoldName (i)
+	return "lightingL-" .. i-1 .. ".png"
+end
+
+-- Internal functions
 function ObjectPosition(Atlas, i, Scale)
 	Obj.SetImageSkin("VSRG/"..Atlas.File)
 	Obj.SetCentered(1)
@@ -39,15 +52,15 @@ function Explosions.Init()
 	Explosions.HoldDuration = Explosions.HoldFrameTime * Explosions.HoldFrames
 
 
-	Explosions.HitAtlas = TextureAtlas:new(Obj.GetSkinDirectory() .. "VSRG/explsheet.csv")
-	Explosions.HoldAtlas = TextureAtlas:new(Obj.GetSkinDirectory() .. "VSRG/holdsheet.csv")
+	Explosions.HitAtlas = TextureAtlas:new(Obj.GetSkinFile(Explosions.HitSheet))
+	Explosions.HoldAtlas = TextureAtlas:new(Obj.GetSkinFile(Explosions.HoldSheet))
 
 	for i = 1, Explosions.HitFrames do
-		Explosions.HitImages[i] = "lightingN-" .. i-1 .. ".png"
+		Explosions.HitImages[i] = Explosions.HitName(i)
 	end
 
 	for i = 1, Explosions.HoldFrames do
-		Explosions.HoldImages[i] = "lightingL-" .. i-1 .. ".png"
+		Explosions.HoldImages[i] = Explosions.HoldName(i)
 	end
 
 	for i = 1, Channels do
@@ -85,7 +98,8 @@ function Explosions.Run(Delta)
 		-- Calculate frame
 		Frame = Explosions.HitTime[i] / Explosions.HitFrameTime + 1
 
-		if Frame > Explosions.HitFrames then
+		if Frame > Explosions.HitFrames or 
+			(Explosions.HitColorize[i] ~= 0 and Explosions.MissShow == 0) then
 			Obj.SetAlpha(0)
 		else
 			Obj.SetAlpha(1)

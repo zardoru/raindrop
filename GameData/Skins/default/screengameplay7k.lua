@@ -17,7 +17,6 @@ skin_require("VSRG/KeyLightning.lua")
 skin_require("VSRG/FixedObjects.lua")
 skin_require("VSRG/AnimatedObjects.lua")
 skin_require("VSRG/ScoreDisplay.lua")
-skin_require("VSRG/FullCombo.lua")
 skin_require("VSRG/AutoplayAnimation.lua")
 skin_require("VSRG/GameplayObjects.lua")
 skin_require("VSRG/StageAnimation.lua")
@@ -73,8 +72,8 @@ AnimatedObjects = {
 		ScoreDisplay,
 		Lifebar,
 		MissHighlight,
-		Explosions,
-		Judgment
+		Judgment,
+		Explosions
 	},
 
 	-- Internal functions for automating stuff.
