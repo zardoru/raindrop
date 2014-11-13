@@ -46,13 +46,7 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms){
 
 	++total_notes;
 
-<<<<<<< HEAD
-#ifndef NDEBUG
-	std::cerr << use_bbased << " " << ms << " ";
-#endif
-=======
 	// std::cerr << use_bbased << " " << ms << " ";
->>>>>>> 7ff34f9a6bf9c47157b0c7aa95f09fbfe26bcdd5
 
 	if(use_bbased) {
 		if(abs(ms * 150) < 128){
