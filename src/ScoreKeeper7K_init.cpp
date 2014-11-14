@@ -17,6 +17,17 @@ void ScoreKeeper7K::init(){
 	pacemaker_texts[PMT_AA] = "AA" ;
 	pacemaker_texts[PMT_AAA] = "AAA" ;
 
+	pacemaker_texts[PMT_RANK_ZERO] = "0" ;
+	pacemaker_texts[PMT_RANK_P1] = "+1" ;
+	pacemaker_texts[PMT_RANK_P2] = "+2" ;
+	pacemaker_texts[PMT_RANK_P3] = "+3" ;
+	pacemaker_texts[PMT_RANK_P4] = "+4" ;
+	pacemaker_texts[PMT_RANK_P5] = "+5" ;
+	pacemaker_texts[PMT_RANK_P6] = "+6" ;
+	pacemaker_texts[PMT_RANK_P7] = "+7" ;
+	pacemaker_texts[PMT_RANK_P8] = "+8" ;
+	pacemaker_texts[PMT_RANK_P9] = "+9" ;
+
 	setAccMin(6.4);
 	setAccMax(100);
 

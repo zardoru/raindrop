@@ -90,7 +90,7 @@ void ScreenEvaluation7K::PrintCLIResults(ScoreKeeper7K *result){
 
 	if(result->usesW0()){
 		ss << "  osu!mania accuracy: " << result->getPercentScore(PST_OSU) << "%\n";
-		ss << "  osu!mania score: " << result->getScore(ST_OSUMANIA) << "%\n";
+		ss << "  osu!mania score: " << result->getScore(ST_OSUMANIA) << "\n";
 	}
 	
 	ss << "\n";

@@ -93,6 +93,7 @@ enum PacemakerType{
 	PMT_85EX = 6,
 	PMT_90EX = 7,
 
+	PMT_RANK_ZERO = 20,
 	PMT_RANK_P1 = 21,
 	PMT_RANK_P2 = 22,
 	PMT_RANK_P3 = 23,

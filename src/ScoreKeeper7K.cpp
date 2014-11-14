@@ -153,9 +153,9 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms){
 	lifebar_stepmania = min(1.0, lifebar_stepmania + life_increment[judgment]);
 
 	if(judgment == SKJ_NONE)
-		std::cerr << "Error, invalid judgment: " << ms << " ";
+		std::cerr << "Error, invalid judgment: " << ms << "\n";
 
-	std::cerr << std::endl;
+	// std::cerr << std::endl;
 
 // Other methods
 
@@ -214,6 +214,7 @@ void ScoreKeeper7K::missNote(bool auto_hold_miss, bool early_miss){
 		lifebar_exhard = max(0.0, lifebar_exhard - lifebar_exhard_decrement);
 
 		lifebar_stepmania = max(0.0, lifebar_stepmania - lifebar_stepmania_earlymiss_decrement);
+
 	}
 
 	// other methods
@@ -404,24 +405,26 @@ int ScoreKeeper7K::getPacemakerDiff(PacemakerType pacemaker){
 		case PMT_85EX:
 			return ex_score - (total_notes * 85 / 50);
 
+		case PMT_RANK_ZERO:
+			return rank_pts - (total_notes * 100 / 100);
 		case PMT_RANK_P1:
-			return rank_pts - (total_notes * 120 / 100);
+			return rank_pts - (total_notes * 120 / 100 + (total_notes * 120 % 100 != 0));
 		case PMT_RANK_P2:
-			return rank_pts - (total_notes * 140 / 100);
+			return rank_pts - (total_notes * 140 / 100 + (total_notes * 140 % 100 != 0));
 		case PMT_RANK_P3:
-			return rank_pts - (total_notes * 160 / 100);
+			return rank_pts - (total_notes * 160 / 100 + (total_notes * 160 % 100 != 0));
 		case PMT_RANK_P4:
-			return rank_pts - (total_notes * 180 / 100);
+			return rank_pts - (total_notes * 180 / 100 + (total_notes * 180 % 100 != 0));
 		case PMT_RANK_P5:
 			return rank_pts - (total_notes * 200 / 100);
 		case PMT_RANK_P6:
-			return rank_pts - (total_notes * 220 / 100);
+			return rank_pts - (total_notes * 220 / 100 + (total_notes * 220 % 100 != 0));
 		case PMT_RANK_P7:
-			return rank_pts - (total_notes * 240 / 100);
+			return rank_pts - (total_notes * 240 / 100 + (total_notes * 240 % 100 != 0));
 		case PMT_RANK_P8:
-			return rank_pts - (total_notes * 260 / 100);
+			return rank_pts - (total_notes * 260 / 100 + (total_notes * 260 % 100 != 0));
 		case PMT_RANK_P9:
-			return rank_pts - (total_notes * 280 / 100);
+			return rank_pts - (total_notes * 280 / 100 + (total_notes * 280 % 100 != 0));
 	}
 
 	return 0;
@@ -445,6 +448,31 @@ std::pair<GString, int> ScoreKeeper7K::getAutoPacemaker(){
 	else  pmt = PMT_AAA;
 
 	int pacemaker = getPacemakerDiff(pmt);
+	std::stringstream ss;
+	ss
+	<< std::setfill(' ') << std::setw(4) << pacemaker_texts[pmt] << ": ";
+
+	return std::make_pair(ss.str(), pacemaker);
+
+}
+
+
+std::pair<GString, int> ScoreKeeper7K::getAutoRankPacemaker(){
+	
+	PacemakerType pmt;
+	if (rank_pts < total_notes * 110 / 100)  pmt = PMT_RANK_ZERO;
+	else if (rank_pts < total_notes * 130 / 100)  pmt = PMT_RANK_P1;
+	else if (rank_pts < total_notes * 150 / 100)  pmt = PMT_RANK_P2;
+	else if (rank_pts < total_notes * 170 / 100)  pmt = PMT_RANK_P3;
+	else if (rank_pts < total_notes * 190 / 100)  pmt = PMT_RANK_P4;
+	else if (rank_pts < total_notes * 210 / 100)  pmt = PMT_RANK_P5;
+	else if (rank_pts < total_notes * 230 / 100)  pmt = PMT_RANK_P6;
+	else if (rank_pts < total_notes * 250 / 100)  pmt = PMT_RANK_P7;
+	else if (rank_pts < total_notes * 270 / 100)  pmt = PMT_RANK_P8;
+	else  pmt = PMT_RANK_P9;
+
+	int pacemaker = getPacemakerDiff(pmt);
+
 	std::stringstream ss;
 	ss
 	<< std::setfill(' ') << std::setw(4) << pacemaker_texts[pmt] << ": ";

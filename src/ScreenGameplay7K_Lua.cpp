@@ -76,7 +76,7 @@ void ScreenGameplay7K::UpdateScriptScoreVariables()
 	L->SetGlobal("SCScore", score_keeper->getScore(scoring_type));
 	L->SetGlobal("EXScore", score_keeper->getScore(ST_EX));
 
-	std::pair<GString, int> autopacemaker = score_keeper->getAutoPacemaker();
+	std::pair<GString, int> autopacemaker = score_keeper->getAutoRankPacemaker();
 	L->SetGlobal("PacemakerText", autopacemaker.first);
 	L->SetGlobal("PacemakerValue", autopacemaker.second);
 
