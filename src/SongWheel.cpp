@@ -19,8 +19,6 @@ using namespace Game;
 
 SongWheel::SongWheel()
 {
-	Transform = NULL;
-	OnSongChange = NULL;
 	IsInitialized = false;
 	mFont = NULL;
 	PendingVerticalDisplacement = 0;
@@ -40,15 +38,15 @@ SongWheel& SongWheel::GetInstance()
 void SongWheel::Initialize(float Start, float End, SongDatabase* Database)
 {
 	DB = Database;
+
 	if (IsInitialized)
 		return;
 
 	ListRoot = NULL;
 	CurrentList = NULL;
 
-	RangeStart = Start;
-	RangeEnd = End;
-
+	ScrollSpeed = 90;
+	SelectedItem = 0;
 	CursorPos = 0;
 	OldCursorPos = 0;
 	Time = 0;
@@ -58,10 +56,6 @@ void SongWheel::Initialize(float Start, float End, SongDatabase* Database)
 	Item->SetImage(GameState::GetInstance().GetSkinImage("item.png"));
 	ItemHeight = Item->GetHeight();
 	Item->SetZ(16);
-
-	SelCursor = new GraphObject2D;
-	SelCursor->SetImage(GameState::GetInstance().GetSkinImage("songselect_cursor.png"));
-	SelCursor->SetSize(ItemHeight);
 
 	ItemTextOffset = Vec2(Configuration::GetSkinConfigf("X", "ItemTextOffset"), Configuration::GetSkinConfigf("Y", "ItemTextOffset"));
 
@@ -136,20 +130,17 @@ void SongWheel::ReloadSongs()
 	mLoadThread = new boost::thread(&LoadThread::Load, L);
 }
 
-int SongWheel::GetCursorIndex()
+uint32 SongWheel::GetCursorIndex()
 {
 	size_t Size;
-	{
-		boost::mutex::scoped_lock lock(*mLoadMutex);
-		Size = CurrentList->GetNumEntries();
-	}
+	Size = GetNumItems();
 
 	if (Size)
 	{
 		int ret = CursorPos % (int)Size;
 		while (ret < 0)
 			ret += Size;
-		return ret;
+		return (uint32)ret;
 	}
 	else
 		return 0;
@@ -196,6 +187,11 @@ int SongWheel::NextDifficulty()
 	return DifficultyIndex;
 }
 
+bool SongWheel::InWheelBounds(Vec2 Pos)
+{
+	return Pos.x > TransformHorizontal(Pos.y) && Pos.x < TransformHorizontal(Pos.y) + Item->GetWidth();
+}
+
 void SongWheel::SetDifficulty(uint32 i)
 {
 	if (!CurrentList->IsDirectory(GetCursorIndex()))
@@ -224,14 +220,16 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 			return true;
 		case KT_Select:
 			Vec2 mpos = GameState::GetWindow()->GetRelativeMPos();
-			if (!isMouseInput || mpos.x > Transform(mpos.y))
+			uint32 Idx = GetCursorIndex();
+			if (Idx < CurrentList->GetNumEntries())
 			{
-				if ((uint32)GetCursorIndex() < CurrentList->GetNumEntries())
+				if (InWheelBounds(mpos) || !isMouseInput)
 				{
-					if (!CurrentList->IsDirectory(GetCursorIndex()))
-						OnSongSelect(CurrentList->GetSongEntry(GetCursorIndex()), DifficultyIndex);
-					else
-						CurrentList = CurrentList->GetListEntry(GetCursorIndex());
+					if (OnItemClick)
+						OnItemClick(Idx, CurrentList->GetEntryTitle(Idx), CurrentList->GetSongEntry(Idx));
+
+					if (CurrentList->IsDirectory(Idx))
+						CurrentList = CurrentList->GetListEntry(Idx);
 				}
 				return true;
 			}
@@ -264,59 +262,49 @@ void SongWheel::GoUp()
 
 bool SongWheel::HandleScrollInput(const double dx, const double dy)
 {
-	PendingVerticalDisplacement += dy * 90;
+	PendingVerticalDisplacement += dy * ScrollSpeed;
 	return true;
 }
 
 Game::Song* SongWheel::GetSelectedSong()
 {
-	int Index = GetCursorIndex();
-	if (Index >= CurrentList->GetNumEntries())
-		return NULL;
-
-	if (CurrentList->IsDirectory(Index))
-		return NULL;
-	else return CurrentList->GetSongEntry(Index);
+	return CurrentList->GetSongEntry(SelectedItem);
 }
 
 void SongWheel::Update(float Delta)
 {
-	uint32 Size;
+	uint32 Size = GetNumItems();
 
 	Time += Delta;
-	SelCursor->Alpha = (sin(Time*6)+1)/4 + 0.5;
 
 	if (!CurrentList)
 		return;
-
-	{
-		boost::mutex::scoped_lock lock (*mLoadMutex);
-		Size = CurrentList->GetNumEntries();
-	}
 	
-
-	if (PendingVerticalDisplacement)
+	if (TransformPendingDisplacement) // We have a pending displacement transformation function
+	{
+		float Delta = TransformPendingDisplacement(PendingVerticalDisplacement);
+		CurrentVerticalDisplacement += Delta;
+		PendingVerticalDisplacement -= Delta;
+	}
+	else if (PendingVerticalDisplacement) // We don't, so we use the default hardcoded method
 	{
 		float ListDelta = PendingVerticalDisplacement * Delta * DisplacementSpeed;
 		float NewListY = CurrentVerticalDisplacement + ListDelta;
-		float NewLowerBound = NewListY + Size * ItemHeight;
-		float LowerBound = Size * ItemHeight;
 
-		{
-			CurrentVerticalDisplacement = NewListY;
-			PendingVerticalDisplacement -= ListDelta;
-		}
+		CurrentVerticalDisplacement = NewListY;
+		PendingVerticalDisplacement -= ListDelta;
 	}
 
+	if (TransformListY)
+		shownListY = TransformListY(CurrentVerticalDisplacement);
+	else
+		shownListY = CurrentVerticalDisplacement;
+
 	Vec2 mpos = GameState::GetInstance().GetWindow()->GetRelativeMPos();
-	float Transformed = Transform(mpos.y);
-	if (mpos.x > Transformed && mpos.x < Transformed + Item->GetWidth()) // change to InWheelBounds(mpos)
+	float Transformed = TransformHorizontal(mpos.y);
+	if (InWheelBounds(mpos))
 	{
-		float posy = mpos.y;
-		posy -= CurrentVerticalDisplacement;
-		posy -= (int)posy % (int)ItemHeight;
-		posy = (posy / ItemHeight);
-		CursorPos = floor(posy);
+		CursorPos = IndexAtPoint(mpos.y);
 	}
 
 	// Hey we've got a new cursor position, update.
@@ -324,30 +312,40 @@ void SongWheel::Update(float Delta)
 	{
 		OldCursorPos = CursorPos;
 		DifficultyIndex = 0;
-		if (OnSongChange)
+		if (OnItemHover)
 		{
 			Game::Song* Notify = GetSelectedSong();
-			OnSongChange(Notify, DifficultyIndex);
+			OnItemHover(GetCursorIndex(), CurrentList->GetEntryTitle(GetCursorIndex()), Notify);
 		}
 	}
-
-	// Set its position.
-	float Y = CursorPos * SelCursor->GetHeight() + CurrentVerticalDisplacement;
-	float sinTSquare = sin(Time*2);
-
-	sinTSquare *= sinTSquare;
-
-	float X = Transform(Y) - SelCursor->GetWidth() -  sinTSquare * 10;
-	SelCursor->SetPosition(X, Y);
 }
 
-void SongWheel::DisplayItem(GString Text, Vec2 Position)
+void SongWheel::DisplayItem(int32 ListItem, Vec2 Position)
 {
 	if (Position.y > -ItemHeight && Position.y < ScreenHeight)
 	{
+		bool IsDirectory = true;
+		bool IsSelected = false;
+		Game::Song* Song = NULL;
+		GString Text;
+
 		Item->SetPosition(Position);
+
+		if (ListItem != -1)
+		{
+			Song = CurrentList->GetSongEntry(ListItem);
+			Text = CurrentList->GetEntryTitle(ListItem);
+			IsSelected = (ListItem == SelectedItem);
+		}
+
+		if (TransformItem)
+			TransformItem(Item, Song, IsSelected); // third arg: 'IsSelected'
+
+		// Render the objects.
 		Item->Render();
-		mTFont->Render(Text, Position + ItemTextOffset);
+		
+		if (Text.length())
+			mTFont->Render(Text, Position + ItemTextOffset);
 	}
 }
 
@@ -356,7 +354,7 @@ void SongWheel::CalculateIndices()
 	int maxItems = ScreenHeight / ItemHeight; // This is how many items we want to draw.
 
 	// I only really need the top index.
-	float V = floor(-CurrentVerticalDisplacement / ItemHeight);
+	float V = floor(-shownListY / ItemHeight);
 	StartIndex = V;
 	EndIndex = StartIndex + maxItems + 1;
 }
@@ -374,8 +372,8 @@ void SongWheel::Render()
 
 	for (Cur = StartIndex; Cur <= EndIndex; Cur++)
 	{
-		float yTransform = Cur*ItemHeight + CurrentVerticalDisplacement;
-		float xTransform = Transform(yTransform);
+		float yTransform = Cur*ItemHeight + shownListY;
+		float xTransform = TransformHorizontal(yTransform);
 		Vec2 Position = Vec2(xTransform, yTransform);
 
 		if (Max)
@@ -388,15 +386,99 @@ void SongWheel::Render()
 			if (!CurrentList->IsDirectory(RealIndex))
 			{
 				ToDisplay = CurrentList->GetSongEntry(RealIndex);
-				DisplayItem(ToDisplay->SongName, Position);
+				DisplayItem(RealIndex, Position);
 			}
 			else
 			{
-				DisplayItem(CurrentList->GetEntryTitle(RealIndex), Position);
+				DisplayItem(RealIndex, Position);
 			}
 		}else
-			DisplayItem("", Position);
+			DisplayItem(-1, Position);
 	}
+}
 
-	SelCursor->Render();
+int32 SongWheel::GetSelectedItem()
+{
+	return SelectedItem;
+}
+
+void SongWheel::SetSelectedItem(uint32 Item)
+{
+	if (!CurrentList)
+		return;
+
+	if (CurrentList->GetNumEntries() <= Item)
+		return;
+
+	if (SelectedItem != Item)
+	{
+		SelectedItem = Item;
+		GameState::GetInstance().SetSelectedSong(GetSelectedSong());
+	}
+	else if (!CurrentList->IsDirectory(Item))
+		OnSongConfirm(CurrentList->GetSongEntry(Item), DifficultyIndex);
+}
+
+int32 SongWheel::IndexAtPoint(float Y)
+{
+	float posy = Y;
+	posy -= shownListY;
+	posy -= (int)posy % (int)ItemHeight;
+	posy = (posy / ItemHeight);
+	return floor(posy);
+}
+
+uint32 SongWheel::NormalizedIndexAtPoint(float Y)
+{
+	int32 Idx = IndexAtPoint(Y);
+	while (Idx > 0)
+		Idx -= GetNumItems();
+	while (Idx < 0)
+		Idx += GetNumItems();
+	return Idx;
+}
+
+int32 SongWheel::GetNumItems()
+{
+	if (!CurrentList)
+		return 0;
+	else
+	{
+		return CurrentList->GetNumEntries();
+	}
+}
+
+void SongWheel::SetCursorIndex(int32 Index)
+{
+	CursorPos = Index;
+}
+
+float SongWheel::GetItemHeight()
+{
+	return ItemHeight;
+}
+
+float SongWheel::GetListY() const
+{
+	return CurrentVerticalDisplacement;
+}
+
+void SongWheel::SetListY(float List)
+{
+	CurrentVerticalDisplacement = List;
+}
+
+float SongWheel::GetDeltaY() const
+{
+	return PendingVerticalDisplacement;
+}
+
+void SongWheel::SetDeltaY(float PD)
+{
+	PendingVerticalDisplacement = PD;
+}
+
+float SongWheel::GetTransformedY() const
+{
+	return shownListY;
 }

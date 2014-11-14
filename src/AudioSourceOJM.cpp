@@ -373,10 +373,13 @@ void AudioSourceOJM::parseM30()
 		ov_open_callbacks(&ToLoad, &vf, NULL, 0, M30InterfaceOgg);
 		TemporaryState.File = &vf;
 		TemporaryState.Info = vf.vi;
-		TemporaryState.Enabled = OJM_OGG;
-		NewSample->Open(this);
-		TemporaryState.Enabled = 0;
 
+		if (vf.vi)
+		{
+			TemporaryState.Enabled = OJM_OGG;
+			NewSample->Open(this);
+			TemporaryState.Enabled = 0;
+		}
 		delete SampleData;
 		ov_clear(&vf);
 		

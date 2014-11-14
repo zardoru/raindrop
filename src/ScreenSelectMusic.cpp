@@ -22,6 +22,7 @@
 #include "ScreenGameplay7K.h"
 #include "ScreenEdit.h"
 #include "LuaManager.h"
+#include "LuaBridge.h"
 
 #include "SongWheel.h"
 
@@ -39,19 +40,60 @@ void LuaEvt(LuaManager* LuaMan, GString Func, GraphObject2D* Obj)
 	LuaMan->RunFunction();
 }
 
+void SetupWheelLua(LuaManager* Man)
+{
+	using namespace Game;
+	lua_State* L = Man->GetState();
+	luabridge::getGlobalNamespace(L)
+		.beginClass<SongWheel>("SongWheel")
+		.addFunction("NextDifficulty", &SongWheel::NextDifficulty)
+		.addFunction("PrevDifficulty", &SongWheel::PrevDifficulty)
+		.addFunction("SetDifficulty", &SongWheel::SetDifficulty)
+		.addFunction("GetCursorIndex", &SongWheel::GetCursorIndex)
+		.addFunction("SetSelectedItem", &SongWheel::SetSelectedItem)
+		.addFunction("GetSelectedItem", &SongWheel::GetSelectedItem)
+		.addFunction("GetNumItems", &SongWheel::GetNumItems)
+		.addFunction("GetItemHeight", &SongWheel::GetItemHeight)
+		.addFunction("IndexAtPoint", &SongWheel::IndexAtPoint)
+		.addFunction("NormalizedIndexAtPoint", &SongWheel::NormalizedIndexAtPoint)
+		.addFunction("GetTransformedY", &SongWheel::GetTransformedY)
+		.addProperty("ListY", &SongWheel::GetListY, &SongWheel::SetListY)
+		.addProperty("PendingY", &SongWheel::GetDeltaY, &SongWheel::SetDeltaY)
+		.addData("ScrollSpeed", &SongWheel::ScrollSpeed)
+		.endClass();
+
+	luabridge::push(L, &Game::SongWheel::GetInstance());
+	lua_setglobal(L, "Wheel");
+}	
+
 ScreenSelectMusic::ScreenSelectMusic()
 {
 	Font = NULL;
 
-	boost::function<float (float)> TransformFunc( boost::bind(&ScreenSelectMusic::GetListYTransformation, this, _1) );
-	boost::function<void (Game::Song*, uint8)> SongNotifyFunc( boost::bind(&ScreenSelectMusic::OnSongChange, this, _1, _2) );
-	boost::function<void (Game::Song*, uint8)> SongNotifySelectFunc( boost::bind(&ScreenSelectMusic::OnSongSelect, this, _1, _2) );
 	Game::SongWheel * Wheel = &Game::SongWheel::GetInstance();
 	Wheel->Initialize(0, 0, GameState::GetInstance().GetSongDatabase());
-	Wheel->OnSongChange = SongNotifyFunc;
-	Wheel->OnSongSelect = SongNotifySelectFunc;
-	Wheel->Transform = TransformFunc;
 
+	boost::function<void(Game::Song*, uint8)> SongNotifyFunc(bind(&ScreenSelectMusic::OnSongChange, this, _1, _2));
+	boost::function<void(Game::Song*, uint8)> SongNotifySelectFunc(bind(&ScreenSelectMusic::OnSongSelect, this, _1, _2));
+	Wheel->OnSongTentativeSelect = SongNotifyFunc;
+	Wheel->OnSongConfirm = SongNotifySelectFunc;
+
+	Game::ListTransformFunction TransformHFunc(bind(&ScreenSelectMusic::GetListHorizontalTransformation, this, _1));
+	Game::ListTransformFunction TransformVFunc(bind(&ScreenSelectMusic::GetListVerticalTransformation, this, _1));
+	Game::ListTransformFunction TransformPVert(bind(&ScreenSelectMusic::GetListPendingVerticalTransformation, this, _1));
+	Wheel->TransformHorizontal = TransformHFunc;
+	Wheel->TransformListY = TransformVFunc;
+	Wheel->TransformPendingDisplacement = TransformPVert;
+
+	Game::DirectoryChangeNotifyFunction DirChangeNotif(bind(&ScreenSelectMusic::OnDirectoryChange, this));
+	Wheel->OnDirectoryChange = DirChangeNotif;
+
+	Game::ItemNotification ItClickNotif(bind(&ScreenSelectMusic::OnItemClick, this, _1, _2, _3));
+	Game::ItemNotification ItHoverNotif(bind(&ScreenSelectMusic::OnItemHover, this, _1, _2, _3));
+	Wheel->OnItemClick = ItClickNotif;
+	Wheel->OnItemHover = ItHoverNotif;
+
+	Wheel->TransformItem = bind(&ScreenSelectMusic::TransformItem, this, _1, _2, _3);
 
 	if (!SelectSnd)
 	{
@@ -81,7 +123,8 @@ ScreenSelectMusic::ScreenSelectMusic()
 
 	GameObject::GlobalInit();
 
-	SelectedMode = MODE_VSRG;
+	IsTransitioning = false;
+	TransitionTime = 0;
 }
 
 void ScreenSelectMusic::MainThreadInitialization()
@@ -143,6 +186,7 @@ void ScreenSelectMusic::LoadThreadInitialization()
 	ImageLoader::LoadFromManifest(Manifest, 1, GameState::GetInstance().GetSkinPrefix());
 
 	Objects = new GraphObjectMan;
+	SetupWheelLua(Objects->GetEnv());
 	Objects->Preload( GameState::GetInstance().GetSkinFile("screenselectmusic.lua"), "Preload" );
 
 	Time = 0;
@@ -154,13 +198,41 @@ void ScreenSelectMusic::Cleanup()
 	StopLoops();
 }
 
-float ScreenSelectMusic::GetListYTransformation(const float Y)
+float ScreenSelectMusic::GetListPendingVerticalTransformation(const float Y)
 {
 	LuaManager *Lua = Objects->GetEnv();
-	Lua->CallFunction("TransformList", 1, 1);
-	Lua->PushArgument(Y);
-	Lua->RunFunction();
-	return Lua->GetFunctionResultF();
+	if (Lua->CallFunction("TransformPendingVertical", 1, 1))
+	{
+		Lua->PushArgument(Y);
+		Lua->RunFunction();
+		return Lua->GetFunctionResultF();
+	}
+	else return 0;
+}
+
+float ScreenSelectMusic::GetListVerticalTransformation(const float Y)
+{
+	LuaManager *Lua = Objects->GetEnv();
+	if (Lua->CallFunction("TransformListVertical", 1, 1))
+	{
+		Lua->PushArgument(Y);
+		Lua->RunFunction();
+		return Lua->GetFunctionResultF();
+	}
+	else return 0;
+}
+
+float ScreenSelectMusic::GetListHorizontalTransformation(const float Y)
+{
+	LuaManager *Lua = Objects->GetEnv();
+	if (Lua->CallFunction("TransformListHorizontal", 1, 1))
+	{
+		Lua->PushArgument(Y);
+		Lua->RunFunction();
+		return Lua->GetFunctionResultF();
+	}
+	else
+		return 0;
 }
 
 void ScreenSelectMusic::OnSongSelect(Game::Song* MySong, uint8 difindex)
@@ -331,4 +403,42 @@ void ScreenSelectMusic::HandleScrollInput(double xOff, double yOff)
 	}
 
 	Game::SongWheel::GetInstance().HandleScrollInput(xOff, yOff);
+}
+
+void ScreenSelectMusic::TransformItem(GraphObject2D* Item, Game::Song* Song, bool IsSelected)
+{
+	if (Objects->GetEnv()->CallFunction("TransformItem", 3))
+	{
+		luabridge::push(Objects->GetEnv()->GetState(), Item);
+		luabridge::push(Objects->GetEnv()->GetState(), Song);
+		luabridge::push(Objects->GetEnv()->GetState(), IsSelected);
+		Objects->GetEnv()->RunFunction();
+	}
+}
+
+void ScreenSelectMusic::OnDirectoryChange()
+{
+	Objects->DoEvent("OnDirectoryChange");
+}
+
+void ScreenSelectMusic::OnItemClick(uint32 Index, GString Line, Game::Song* Selected)
+{
+	if (Objects->GetEnv()->CallFunction("OnItemClick", 3))
+	{
+		luabridge::push(Objects->GetEnv()->GetState(), Index);
+		luabridge::push(Objects->GetEnv()->GetState(), Line);
+		luabridge::push(Objects->GetEnv()->GetState(), Selected);
+		Objects->GetEnv()->RunFunction();
+	}
+}
+
+void ScreenSelectMusic::OnItemHover(uint32 Index, GString Line, Game::Song* Selected)
+{
+	if (Objects->GetEnv()->CallFunction("OnItemHover", 3))
+	{
+		luabridge::push(Objects->GetEnv()->GetState(), Index);
+		luabridge::push(Objects->GetEnv()->GetState(), Line);
+		luabridge::push(Objects->GetEnv()->GetState(), Selected);
+		Objects->GetEnv()->RunFunction();
+	}
 }

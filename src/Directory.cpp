@@ -54,6 +54,9 @@ Directory operator/(Directory parent, GString subpath)
 
 	GString newpath;
 
+	if (!parent.path().length())
+		return subpath;
+
 	char last = parent.path()[parent.path().length()-1];
 		
 	if (last == '/' || last == '\\')

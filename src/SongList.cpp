@@ -34,7 +34,6 @@ SongList::~SongList()
 void SongList::AddSong(Game::Song* Song)
 {
 	ListEntry NewEntry;
-	NewEntry.EntryName = Song->SongName;
 	NewEntry.Kind = ListEntry::Song;
 	NewEntry.Data = Song;
 
@@ -188,13 +187,21 @@ SongList* SongList::GetListEntry(unsigned int Entry)
 
 Game::Song* SongList::GetSongEntry(unsigned int Entry)
 {
-	assert(!IsDirectory(Entry));
-	return static_cast<Game::Song*> (mChildren[Entry].Data);
+	if (!IsDirectory(Entry))
+		return static_cast<Game::Song*> (mChildren[Entry].Data);
+	else
+		return NULL;
 }
 
 GString SongList::GetEntryTitle(unsigned int Entry)
 {
-	return mChildren[Entry].EntryName;
+	if (Entry >= mChildren.size())
+		return "";
+
+	if (mChildren[Entry].Kind == ListEntry::Directory)
+		return mChildren[Entry].EntryName;
+	else
+		return ((Game::Song*)mChildren[Entry].Data)->SongName;
 }
 
 unsigned int SongList::GetNumEntries()

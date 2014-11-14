@@ -1,12 +1,78 @@
 skin_require("Global/Background.lua")
 
+floor = math.floor
+
 -- Wheel transformation
 TransformX =  ScreenWidth * 15/20
 CurrentTX = ScreenWidth
+WheelSpeed = 12
+GDelta = 0
+
+function clamp (v, mn, mx)
+    if v < mn then 
+	   return mn
+	else 
+	   if v > mx then  
+	    return mx
+	   else 
+	    return v
+	   end
+	end
+end
 
 -- List transformation
-function TransformList(Y)
+function TransformListHorizontal(Y)
   return ((Y*Y - 768*Y) / (1055)) + CurrentTX
+end
+
+function sign(x)
+    if x == 0 then return 0 end
+    if x > 0 then return 1 else return -1 end
+end
+
+Wheel.ListY = 0
+Wheel.PendingY = 0
+Wheel.ScrollSpeed = 30
+LastSign = 0
+Time = 0
+
+function TransformPendingVertical(V)
+	LastSign = sign(V)
+	Time = 0.25
+	return V * GDelta * WheelSpeed
+end
+
+function TransformListVertical(LY)  
+
+	local Middle = math.ceil(LY) + (ScreenHeight / 4 / Wheel:GetItemHeight())
+	local D = Middle % Wheel:GetItemHeight()
+	
+	Middle = Middle - D
+	
+	-- Okay, so Middle is the place where we want to lock ourselves, but..
+
+  return LY + (LY - Middle) * clamp(1 - Time / 0.25, 0, 1)
+end
+
+function OnItemHover(Index, Line, Selected)
+end
+
+function OnItemClick(Index, Line, Selected)
+	Wheel:SetSelectedItem(Index)
+	Wheel.PendingY = (Wheel:NormalizedIndexAtPoint(ScreenHeight/2) - Index) * Wheel:GetItemHeight()
+end
+
+function TransformItem(Item, Song, IsSelected)
+	if IsSelected == true then
+		Item.Image = "itemS.png"
+	else
+	    local Idx = Wheel:NormalizedIndexAtPoint(Item.Y)
+		if Idx == Wheel:GetCursorIndex() then
+			Item.Image = "itemH.png"
+		else
+			Item.Image = "item.png"
+		end
+	end
 end
 
 function InBanner(frac)
@@ -26,7 +92,7 @@ end
 
 -- Screen Events
 function OnSelect()
-	TransformX = ScreenWidth
+	TransformX = ScreenWidth + 80
 	return 2
 end
 
@@ -99,14 +165,7 @@ function Init()
 	Engine:AddTarget(dd)
 end
 
-function Cleanup()
-	Obj.CleanTarget(Banner)
-end
-
-function Update(Delta)
-	BackgroundAnimation:Update(Delta)
-	CurrentTX = CurrentTX + (TransformX - CurrentTX) * Delta * 8
-
+function updText()
 	local sng = Global:GetSelectedSong()
 	if sng then
 		local s7k = toSong7K(sng)
@@ -130,4 +189,28 @@ function Update(Delta)
 	else
 		dd.Text = ""
 	end
+end
+
+function Cleanup()
+	Obj.CleanTarget(Banner)
+end
+
+lastIndex = -1
+
+function Update(Delta)
+	GDelta = Delta
+	BackgroundAnimation:Update(Delta)
+	CurrentTX = CurrentTX + (TransformX - CurrentTX) * Delta * 8
+
+	Time = Time - Delta
+	
+	local idx = Wheel:NormalizedIndexAtPoint(ScreenHeight/2)
+	if lastIndex ~= idx then
+	    lastIndex = idx
+		if lastIndex ~= Wheel:GetSelectedItem() then
+			Wheel:SetSelectedItem(idx)
+		end
+	end
+	
+	updText()
 end

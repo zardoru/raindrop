@@ -37,6 +37,7 @@ GString GraphicalString::GetText() const
 void GraphicalString::Render()
 {
 	if (!mFont) return;
-
+	mFont->SetColor(Red, Green, Blue);
+	mFont->SetAlpha(Alpha);
 	mFont->Render(mText, Vec2(0, 0), GetMatrix());
 }
