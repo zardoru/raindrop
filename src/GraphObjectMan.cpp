@@ -148,13 +148,17 @@ void GraphObjectMan::UpdateTargets(double TimeDelta)
 			if (i->Delay < 0) // We rolled into the negatives.
 				i->Time += -i->Delay; // Add it to passed time, to pretend it started right on time.
 			else
+			{
+				i++;
 				continue; // It hasn't began yet, so keep at it.
+			}
+
 		}else 
 			i->Time += TimeDelta;
 
 		if (i->Time >= i->Duration) // The animation is done. Call the function one last time with value 1 so it's completed.
 		{
-			i->Function (i->Target, 1); 
+			i->Function(i->Target, 1);
 			i = Animations.erase(i);
 			if (i == Animations.end()) break;
 			else continue;
