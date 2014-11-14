@@ -62,8 +62,10 @@ GraphObjectMan::GraphObjectMan()
 
 GraphObjectMan::~GraphObjectMan()
 {
-	Lua->CallFunction("Cleanup");
-	Lua->RunFunction();
+	if (Lua->CallFunction("Cleanup"))
+	{
+		Lua->RunFunction();
+	}
 	delete Lua;
 	delete Images;
 }
@@ -91,8 +93,8 @@ void GraphObjectMan::Initialize(GString Filename, bool RunScript)
 	if (RunScript)
 		Lua->RunScript(Filename);
 
-	Lua->CallFunction("Init");
-	Lua->RunFunction();
+	if (Lua->CallFunction("Init"))
+		Lua->RunFunction();
 
 	Images->LoadAll();
 }
@@ -183,9 +185,11 @@ void GraphObjectMan::UpdateTargets(double TimeDelta)
 		i++;
 	}
 
-	Lua->CallFunction("Update", 1);
-	Lua->PushArgument(TimeDelta);
-	Lua->RunFunction();
+	if (Lua->CallFunction("Update", 1))
+	{
+		Lua->PushArgument(TimeDelta);
+		Lua->RunFunction();
+	}
 }
 
 void GraphObjectMan::DrawUntilLayer(uint32 Layer)
@@ -215,11 +219,13 @@ LuaManager *GraphObjectMan::GetEnv()
 
 void GraphObjectMan::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
-	Lua->CallFunction("KeyEvent", 3);
-	Lua->PushArgument(key);
-	Lua->PushArgument(code);
-	Lua->PushArgument(isMouseInput);
-	Lua->RunFunction();
+	if (Lua->CallFunction("KeyEvent", 3))
+	{
+		Lua->PushArgument(key);
+		Lua->PushArgument(code);
+		Lua->PushArgument(isMouseInput);
+		Lua->RunFunction();
+	}
 }
 
 ImageList* GraphObjectMan::GetImageList()

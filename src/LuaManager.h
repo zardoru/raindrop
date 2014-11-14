@@ -18,7 +18,7 @@ class LuaManager
 
 	lua_State* State;
 	void GetGlobal(GString VarName);
-	int func_args, func_results; bool func_input;
+	int func_args, func_results; bool func_input; bool func_err;
 
 public:
 

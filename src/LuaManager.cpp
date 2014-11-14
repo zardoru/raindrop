@@ -330,10 +330,11 @@ bool LuaManager::RunFunction()
 #else
 		wprintf(L"lua call error: %s\n", Utility::Widen(reason).c_str());
 #endif
-
+		func_err = true;
 		return false;
 	}
 
+	func_err = false;
 	return true;
 }
 
@@ -346,6 +347,8 @@ float LuaManager::GetFunctionResultF(int StackPos)
 {
 	float Value = -1;
 	
+	if (func_err) return 0;
+
 	if (lua_isnumber(State, -StackPos))
 	{
 		Value = lua_tonumber(State, -StackPos);
