@@ -29,6 +29,11 @@ SongWheel::SongWheel()
 	dotcurModeActive = (Configuration::GetConfigf("dotcurEnabled") != 0);
 }
 
+int SongWheel::GetDifficulty() const
+{
+	return DifficultyIndex;
+}
+
 SongWheel& SongWheel::GetInstance()
 {
 	static SongWheel *WheelInstance = new SongWheel();

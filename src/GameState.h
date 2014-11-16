@@ -29,7 +29,6 @@ class GameState
 	SongDatabase* Database;
 
 	Game::Song *SelectedSong;
-	uint32 DifficultyIndex;
 public:
 
 	GameState();

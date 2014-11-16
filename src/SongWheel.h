@@ -117,7 +117,7 @@ public:
 	// return: the new difficulty index
 	int NextDifficulty();
 	int PrevDifficulty();
-
+	int GetDifficulty() const;
 	void SetDifficulty(uint32 i);
 
 	// Returns the index of the last item the user hovered with the mouse over.
