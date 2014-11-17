@@ -436,7 +436,7 @@ int32 SongWheel::IndexAtPoint(float Y)
 uint32 SongWheel::NormalizedIndexAtPoint(float Y)
 {
 	int32 Idx = IndexAtPoint(Y);
-	if (!Idx) return 0;
+	if (!Idx || !GetNumItems() || (Idx % GetNumItems() == 0) ) return 0;
 
 	while (Idx > 0)
 		Idx -= GetNumItems();
