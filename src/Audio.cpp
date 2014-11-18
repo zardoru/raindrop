@@ -45,7 +45,7 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
 		outputParams.channelCount = 2;
 		outputParams.sampleFormat = paInt16;
 
-		if (!Configuration::GetConfigf("DontUseLowLatency", "Audio"))
+		if (!Configuration::GetConfigf("UseHighLatency", "Audio"))
 			outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultLowOutputLatency;
 		else
 			outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultHighOutputLatency;

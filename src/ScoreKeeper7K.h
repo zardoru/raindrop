@@ -95,6 +95,7 @@ class ScoreKeeper7K {
 		Rank scoring
 	*/
 
+		long long rank_w0_count;
 		long long rank_w1_count;
 		long long rank_w2_count;
 		long long rank_w3_count;
@@ -145,14 +146,18 @@ class ScoreKeeper7K {
 		long long exp_combo;
 		long long exp_combo_pts;
 		long long exp_max_combo_pts;
-
+		
+		long long exp_hit_score;
+		
 		double exp_score;
+
+		double exp3_score;
 
 		void update_exp2(ScoreKeeperJudgment judgment);
 
-		/*
-			o2jam
-		*/
+	/*
+		o2jam
+	*/
 
 		char pills;
 

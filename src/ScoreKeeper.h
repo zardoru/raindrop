@@ -34,6 +34,7 @@ enum ScoreType{
 	ST_JB2 = 22, // jubeat^2 scoring
 
 	ST_EXP = 30, // experimental scoring.
+	ST_EXP3 = 31, // experimental scoring.
 
 	ST_O2JAM = 40, // O2jam scoring.
 

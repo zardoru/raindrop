@@ -277,6 +277,8 @@ int ScoreKeeper7K::getScore(int score_type){
 			return lr2_score;
 		case ST_EXP:
 			return exp_score;
+		case ST_EXP3:
+			return exp3_score;
 		case ST_OSUMANIA:
 			return osu_score;
 		case ST_COMBO:

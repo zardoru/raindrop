@@ -35,6 +35,7 @@ void ScoreKeeper7K::init(){
 
 	score = 0;
 
+	rank_w0_count = 0;
 	rank_w1_count = 0;
 	rank_w2_count = 0;
 	rank_w3_count = 0;
@@ -62,6 +63,9 @@ void ScoreKeeper7K::init(){
 	exp_combo = 0;
 	exp_combo_pts = 0;
 	exp_max_combo_pts = 0;
+	exp_hit_score = 0;
+	exp_score = 0;
+	exp3_score = 0;
 
 	sc_score = 0;
 	sc_sc_score = 0;

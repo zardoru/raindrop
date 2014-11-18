@@ -189,6 +189,7 @@ function Judgment.Run(Delta)
 end
 
 function Judgment.Hit(JudgmentValue, EarlyOrLate)
+
 	Obj.SetTarget(Judgment.Object)
 
 	Judgment.Value = JudgmentValue
@@ -204,7 +205,7 @@ function Judgment.Hit(JudgmentValue, EarlyOrLate)
 	Obj.SetImageSkin("VSRG/" .. Judgment.Table[Judgment.Value])
 
 	if JudgmentValue ~= 5 then
-		if JudgmentValue ~= 0 then
+		if JudgmentValue ~= -1 then
 			Obj.SetScale (Judgment.ScaleHit, Judgment.ScaleHit)
 		else
 			Obj.SetScale (Judgment.Scale, Judgment.Scale)
@@ -217,4 +218,5 @@ function Judgment.Hit(JudgmentValue, EarlyOrLate)
 
 	Obj.SetTarget(Judgment.IndicatorObject)
 	Judgment.EarlyOrLate = EarlyOrLate
+
 end

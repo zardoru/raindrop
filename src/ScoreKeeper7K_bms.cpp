@@ -3,7 +3,7 @@
 
 void ScoreKeeper7K::update_bms(ScoreKeeperJudgment judgment){
 
-	if(!use_w0_for_ex2 && judgment == SKJ_W1 || use_w0_for_ex2 && judgment == SKJ_W0){
+	if(!use_w0_for_ex2 && judgment <= SKJ_W1 || use_w0_for_ex2 && judgment == SKJ_W0){
 		ex_score += 2;
 		bms_dance_pts += 15;
 	}else if(!use_w0_for_ex2 && judgment == SKJ_W2 || use_w0_for_ex2 && judgment == SKJ_W1){
@@ -26,7 +26,7 @@ void ScoreKeeper7K::update_bms(ScoreKeeperJudgment judgment){
 
 void ScoreKeeper7K::update_lr2(ScoreKeeperJudgment judgment){
 
-	if(!use_w0_for_ex2 && judgment == SKJ_W1 || use_w0_for_ex2 && judgment == SKJ_W0){
+	if(!use_w0_for_ex2 && judgment <= SKJ_W1 || use_w0_for_ex2 && judgment == SKJ_W0){
 		lr2_dance_pts += 10;
 	}else if(!use_w0_for_ex2 && judgment == SKJ_W2 || use_w0_for_ex2 && judgment == SKJ_W1){
 		lr2_dance_pts += 5;

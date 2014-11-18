@@ -76,12 +76,20 @@ void ScreenEvaluation7K::PrintCLIResults(ScoreKeeper7K *result){
 		<< "===================\n"
 	;
 
+	ss << std::fixed << std::setprecision(3);
+
+	if(result->getRank() > 10){
+		ss << "  Rank: " << "*" << result->getRank() - 10 << " (" << result->getPercentScore(PST_RANK) << " pts.)\n";
+	}else if(result->getRank() > 0){
+		ss << "  Rank: " << "+" << result->getRank() << " (" << result->getPercentScore(PST_RANK) << " pts.)\n";
+	}else{
+		ss << "  Rank: " << result->getRank() << " (" << result->getPercentScore(PST_RANK) << " pts.)\n";
+	}
+	
 	ss
-		<< std::fixed << std::setprecision(3)
-		<< "  Rank: " << (result->getRank() > 0 ? "+" : "") << result->getRank() << " (" << result->getPercentScore(PST_RANK) << " pts.)\n"
 		<< "\n" << std::setprecision(2)
 		<< "  Accuracy: " << result->getPercentScore(PST_ACC) << "%\n"
-		<< "  Final Score: " << result->getScore(ST_EXP) << "\n"
+		<< "  Final Score: " << result->getScore(ST_EXP3) << "\n"
 		<< "  Max Combo: " << result->getScore(ST_MAX_COMBO) << "\n"
 		<< "\n"
 		<< "  Notes hit: " << result->getPercentScore(PST_NH) << "%\n"
@@ -113,8 +121,7 @@ void ScreenEvaluation7K::PrintCLIResults(ScoreKeeper7K *result){
 
 	std::cerr << ss.str();
 	
-	std::cerr << "Histogram:\n" << std::endl;
-	
-	std::cerr << result->getHistogram();
+	/*std::cerr << "Histogram:\n" << std::endl;
+	std::cerr << result->getHistogram();*/
 
 }

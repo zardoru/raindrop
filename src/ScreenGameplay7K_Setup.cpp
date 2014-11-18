@@ -550,22 +550,26 @@ void ScreenGameplay7K::SetupMechanics()
 			lifebar_type = LT_GROOVE;
 			UsedTimingType = TT_TIME;
 			score_keeper->setLifeTotal(-1);
-			score_keeper->setJudgeRank(2);
+			score_keeper->setJudgeRank(Configuration::GetConfigf("DefaultJudgeRank"));
 		}
 		else
 		{
 			lifebar_type = LT_GROOVE;
 			score_keeper->setLifeTotal(-1);
-			score_keeper->setJudgeRank(2);
+			score_keeper->setJudgeRank(Configuration::GetConfigf("DefaultJudgeRank"));
 		}
 	}
 	else
 	{
 		lifebar_type = LT_GROOVE;
 		score_keeper->setLifeTotal(-1);
-		score_keeper->setJudgeRank(2);
+		score_keeper->setJudgeRank(Configuration::GetConfigf("DefaultJudgeRank"));
 		UsedTimingType = TT_TIME;
 		lifebar_type = LT_GROOVE;
+	}
+	
+	if(Configuration::GetConfigf("AlwaysUseRidiculousTiming")){
+		score_keeper->set_manual_w0(true);
 	}
 
 	/*
