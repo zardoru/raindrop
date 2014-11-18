@@ -7,6 +7,7 @@
 #include "GameWindow.h"
 #include "Song.h"
 #include "SongDatabase.h"
+#include "SongWheel.h"
 
 #include "ImageLoader.h"
 
@@ -21,7 +22,6 @@ GameState::GameState()
 {
 	CurrentSkin = "default";
 	SelectedSong = NULL;
-	DifficultyIndex = 0;
 }
 
 GameState& GameState::GetInstance()
@@ -60,12 +60,12 @@ void GameState::Initialize()
 
 void GameState::SetDifficultyIndex(uint32 Index)
 {
-	DifficultyIndex = Index;
+	SongWheel::GetInstance().SetDifficulty(Index);
 }
 
 uint32 GameState::GetDifficultyIndex() const
 {
-	return DifficultyIndex;
+	return SongWheel::GetInstance().GetDifficulty();
 }
 
 GameWindow* GameState::GetWindow()

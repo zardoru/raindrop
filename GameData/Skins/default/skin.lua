@@ -59,6 +59,152 @@ Lifebar = {
 
 -- 7K mode configuration.
 
+GearStartX = 15
+
+Channels4Sizes = {
+	84,
+	84,
+	84,
+	84
+}
+
+Channels5Sizes = {
+	67,
+	67,
+	67,
+	67,
+	67
+}
+
+Channels6Sizes = {
+	56,
+	56,
+	56,
+	56,
+	56,
+	56
+}
+
+Channels7Sizes = {
+	48,
+	48,
+	48,
+	48,
+	48,
+	48,
+	48
+}
+
+Channels8Sizes = {
+	42,
+	42,
+	42,
+	42,
+	42,
+	42,
+	42,
+	42
+}
+
+Channels9Sizes = {
+	40,
+	40,
+	40,
+	40,
+	40,
+	40,
+	40,
+	40,
+	40
+}
+
+Channels10Sizes = {
+	36,
+	36,
+	36,
+	36,
+	36,
+	36,
+	36,
+	36,
+	36,
+	36
+}
+
+Channels12Sizes = {
+	56,
+	56,
+	56,
+	56,
+	56,
+	56,
+	56,
+	56,
+	56,
+	56,
+	56,
+	56
+}
+
+Channels16Sizes = {
+	42,
+	42,
+	42,
+	42,
+	42,
+	42,
+	42,
+	42,
+	42,
+	42,
+	42,
+	42,
+	42,
+	42,
+	42,
+	42
+}
+
+Channels4Positions = {}
+Channels5Positions = {}
+Channels6Positions = {}
+Channels7Positions = {}
+Channels8Positions = {}
+Channels9Positions = {}
+Channels10Positions = {}
+Channels12Positions = {}
+Channels16Positions = {}
+
+GearWidthByChannels = {}
+
+-- Calculate the positions of lanes based off their sizes and a start position.
+function Sizeup(Pos, Size, Num)
+	local GearWidthChannel = 0
+	
+	for i=1, Num do
+		GearWidthChannel = GearWidthChannel + Size[i]
+	end
+	
+	GearWidthByChannels[Num] = GearWidthChannel
+	
+	Pos[1] = Size[1] / 2 + GearStartX
+	for i=2, Num do
+		Pos[i] = Pos[i-1] + Size[i-1] / 2 + Size[i] / 2
+	end
+end
+
+Sizeup(Channels4Positions, Channels4Sizes, 4)
+Sizeup(Channels5Positions, Channels5Sizes, 5)
+Sizeup(Channels6Positions, Channels6Sizes, 6)
+Sizeup(Channels7Positions, Channels7Sizes, 7)
+Sizeup(Channels8Positions, Channels8Sizes, 8)
+Sizeup(Channels9Positions, Channels9Sizes, 9)
+Sizeup(Channels10Positions, Channels10Sizes, 10)
+Sizeup(Channels12Positions, Channels12Sizes, 12)
+Sizeup(Channels16Positions, Channels16Sizes, 16)
+
+GearWidths = {}
+
 -- Auxiliary variables.
 NoteImage1 = "VSRG/note1.png"
 NoteImage2 = "VSRG/note2.png"
@@ -72,10 +218,6 @@ NoteImageHold4 = "VSRG/note4L.png"
 NoteImageHold5 = "VSRG/note5L.png"
 
 GearHeightCommon = 135
-GearWidth = 336
-GearLaneSize = {}
--- GearStartX = (ScreenWidth - GearWidth) / 2
-GearStartX = 15
 
 -- Gear height.
 GearHeight = GearHeightCommon
@@ -90,15 +232,8 @@ OnMissBGATime = 3
 BarlineOffset = 0
 BarlineX = GearStartX
 
--- This is a default value when it's not found in the ChannelsXX tables.
-BarlineWidth = GearWidth
-
 -- Enable or disable the screen filter in 7K.
 ScreenFilter = 1
-
-for i = 1, 16 do
-	GearLaneSize[i] = GearWidth / i
-end
 
 -- Actually-used-by-dotcur-directly variables.
 
@@ -188,7 +323,8 @@ Channels16 = {
     Key16Binding = 15,
 
     GearHeight = GearHeightCommon,
-    BarlineWidth = GearWidth*2,
+	GearWidth = GearWidthByChannels[16],
+    BarlineWidth = GearWidthByChannels[16],
 
     -- Note Images
     Key1Image = NoteImage3,
@@ -229,41 +365,41 @@ Channels16 = {
     Key16HoldImage = NoteImageHold1,
 
     -- Lane positions
-    Key1X = GearStartX + GearLaneSize[8] / 2,
-    Key2X = GearStartX + GearLaneSize[8] / 2 + GearLaneSize[8],
-    Key3X = GearStartX + GearLaneSize[8] / 2 + GearLaneSize[8] * 2,
-    Key4X = GearStartX + GearLaneSize[8] / 2 + GearLaneSize[8] * 3,
-    Key5X = GearStartX + GearLaneSize[8] / 2 + GearLaneSize[8] * 4,
-    Key6X = GearStartX + GearLaneSize[8] / 2 + GearLaneSize[8] * 5,
-    Key7X = GearStartX + GearLaneSize[8] / 2 + GearLaneSize[8] * 6,
-    Key8X = GearStartX + GearLaneSize[8] / 2 + GearLaneSize[8] * 7,
+    Key1X = Channels16Positions[1],
+    Key2X = Channels16Positions[2],
+    Key3X = Channels16Positions[3],
+    Key4X = Channels16Positions[4],
+    Key5X = Channels16Positions[5],
+    Key6X = Channels16Positions[6],
+    Key7X = Channels16Positions[7],
+    Key8X = Channels16Positions[8],
 
-    Key9X = GearStartX + GearLaneSize[8] / 2 + GearLaneSize[8] * 15,
-    Key10X = GearStartX + GearLaneSize[8] / 2 + GearLaneSize[8] * 8,
-    Key11X = GearStartX + GearLaneSize[8] / 2 + GearLaneSize[8] * 9,
-    Key12X = GearStartX + GearLaneSize[8] / 2 + GearLaneSize[8] * 10,
-    Key13X = GearStartX + GearLaneSize[8] / 2 + GearLaneSize[8] * 11,
-    Key14X = GearStartX + GearLaneSize[8] / 2 + GearLaneSize[8] * 12,
-    Key15X = GearStartX + GearLaneSize[8] / 2 + GearLaneSize[8] * 13,
-    Key16X = GearStartX + GearLaneSize[8] / 2 + GearLaneSize[8] * 14,
+    Key9X = Channels16Positions[16],
+    Key10X = Channels16Positions[10],
+    Key11X = Channels16Positions[11],
+    Key12X = Channels16Positions[12],
+    Key13X = Channels16Positions[13],
+    Key14X = Channels16Positions[14],
+    Key15X = Channels16Positions[15],
+    Key16X = Channels16Positions[9],
 
     -- Lane Widths
-    Key1Width = GearLaneSize[8],
-    Key2Width = GearLaneSize[8],
-    Key3Width = GearLaneSize[8],
-    Key4Width = GearLaneSize[8],
-    Key5Width = GearLaneSize[8],
-    Key6Width = GearLaneSize[8],
-    Key7Width = GearLaneSize[8],
-    Key8Width = GearLaneSize[8],
-    Key9Width = GearLaneSize[8],
-    Key10Width = GearLaneSize[8],
-    Key11Width = GearLaneSize[8],
-    Key12Width = GearLaneSize[8],
-    Key13Width = GearLaneSize[8],
-    Key14Width = GearLaneSize[8],
-    Key15Width = GearLaneSize[8],
-    Key16Width = GearLaneSize[8]
+    Key1Width = Channels16Sizes[1],
+    Key2Width = Channels16Sizes[2],
+    Key3Width = Channels16Sizes[3],
+    Key4Width = Channels16Sizes[4],
+    Key5Width = Channels16Sizes[5],
+    Key6Width = Channels16Sizes[6],
+    Key7Width = Channels16Sizes[7],
+    Key8Width = Channels16Sizes[8],
+    Key9Width = Channels16Sizes[16],
+    Key10Width = Channels16Sizes[10],
+    Key11Width = Channels16Sizes[11],
+    Key12Width = Channels16Sizes[12],
+    Key13Width = Channels16Sizes[13],
+    Key14Width = Channels16Sizes[14],
+    Key15Width = Channels16Sizes[15],
+    Key16Width = Channels16Sizes[9]
 }
 
 -- Channels12 is of course, 5k DP.
@@ -311,8 +447,9 @@ Channels12 = {
     Key11Binding = 12,
     Key12Binding = 13,
     GearHeight = GearHeightCommon,
-    BarlineWidth = GearWidth*2,
-
+    GearWidth = GearWidthByChannels[12],
+    BarlineWidth = GearWidthByChannels[12],
+	
     -- Note Images
     Key1Image = NoteImage3,
     Key2Image = NoteImage1,
@@ -344,38 +481,33 @@ Channels12 = {
     Key12HoldImage = NoteImageHold1,
 
     -- Lane positions
-    Key1X = GearStartX + GearLaneSize[6] / 2,
-    Key2X = GearStartX + GearLaneSize[6] / 2 + GearLaneSize[6],
-    Key3X = GearStartX + GearLaneSize[6] / 2 + GearLaneSize[6] * 2,
-    Key4X = GearStartX + GearLaneSize[6] / 2 + GearLaneSize[6] * 3,
-    Key5X = GearStartX + GearLaneSize[6] / 2 + GearLaneSize[6] * 4,
-    Key6X = GearStartX + GearLaneSize[6] / 2 + GearLaneSize[6] * 5,
+    Key1X = Channels12Positions[1],
+    Key2X = Channels12Positions[2],
+    Key3X = Channels12Positions[3],
+    Key4X = Channels12Positions[4],
+    Key5X = Channels12Positions[5],
+    Key6X = Channels12Positions[6],
 
-    Key7X = GearStartX + GearLaneSize[6] / 2 + GearLaneSize[6] * 6,
-    Key8X = GearStartX + GearLaneSize[6] / 2 + GearLaneSize[6] * 7,
-    Key9X = GearStartX + GearLaneSize[6] / 2 + GearLaneSize[6] * 8,
-    Key10X = GearStartX + GearLaneSize[6] / 2 + GearLaneSize[6] * 9,
-    Key11X = GearStartX + GearLaneSize[6] / 2 + GearLaneSize[6] * 10,
-    Key12X = GearStartX + GearLaneSize[6] / 2 + GearLaneSize[6] * 11,
+    Key7X = Channels12Positions[12],
+    Key8X = Channels12Positions[8],
+    Key9X = Channels12Positions[9],
+    Key10X = Channels12Positions[10],
+    Key11X = Channels12Positions[11],
+    Key12X = Channels12Positions[7],
 
     -- Lane Widths
-    Key1Width = GearLaneSize[6],
-    Key2Width = GearLaneSize[6],
-    Key3Width = GearLaneSize[6],
-    Key4Width = GearLaneSize[6],
-    Key5Width = GearLaneSize[6],
-    Key6Width = GearLaneSize[6],
-    Key7Width = GearLaneSize[6],
-    Key8Width = GearLaneSize[6],
-    Key9Width = GearLaneSize[6],
-    Key10Width = GearLaneSize[6],
-    Key11Width = GearLaneSize[6],
-    Key12Width = GearLaneSize[6],
-    Key13Width = GearLaneSize[6],
-    Key14Width = GearLaneSize[6],
-    Key15Width = GearLaneSize[6],
-    Key16Width = GearLaneSize[6],
-
+    Key1Width = Channels12Sizes[1],
+    Key2Width = Channels12Sizes[2],
+    Key3Width = Channels12Sizes[3],
+    Key4Width = Channels12Sizes[4],
+    Key5Width = Channels12Sizes[5],
+    Key6Width = Channels12Sizes[6],
+    Key7Width = Channels12Sizes[12],
+    Key8Width = Channels12Sizes[8],
+    Key9Width = Channels12Sizes[9],
+    Key10Width = Channels12Sizes[10],
+    Key11Width = Channels12Sizes[11],
+    Key12Width = Channels12Sizes[7]
 }
 -- Channels9 is, by default, pop'n like.
 Channels9 = {
@@ -407,7 +539,10 @@ Channels9 = {
     Key8Binding = 7,
     Key9Binding = 9,
 
-GearHeight = GearHeightCommon,
+	GearHeight = GearHeightCommon,
+	
+	GearWidth = GearWidthByChannels[9],
+    BarlineWidth = GearWidthByChannels[9],
 
     -- Note Images
     Key1Image = NoteImage4,
@@ -432,25 +567,25 @@ GearHeight = GearHeightCommon,
     Key9HoldImage = NoteImageHold4,
 
     -- Lane positions
-    Key1X = GearStartX + GearLaneSize[9] / 2,
-    Key2X = GearStartX + GearLaneSize[9] / 2 + GearLaneSize[9],
-    Key3X = GearStartX + GearLaneSize[9] / 2 + GearLaneSize[9] * 2,
-    Key4X = GearStartX + GearLaneSize[9] / 2 + GearLaneSize[9] * 3,
-    Key5X = GearStartX + GearLaneSize[9] / 2 + GearLaneSize[9] * 4,
-    Key6X = GearStartX + GearLaneSize[9] / 2 + GearLaneSize[9] * 5,
-    Key7X = GearStartX + GearLaneSize[9] / 2 + GearLaneSize[9] * 6,
-    Key8X = GearStartX + GearLaneSize[9] / 2 + GearLaneSize[9] * 7,
-    Key9X = GearStartX + GearLaneSize[9] / 2 + GearLaneSize[9] * 8,
+    Key1X = Channels9Positions[1],
+    Key2X = Channels9Positions[2],
+    Key3X = Channels9Positions[3],
+    Key4X = Channels9Positions[4],
+    Key5X = Channels9Positions[5],
+    Key6X = Channels9Positions[6],
+    Key7X = Channels9Positions[7],
+    Key8X = Channels9Positions[8],
+    Key9X = Channels9Positions[9],
     -- Lane Widths
-    Key1Width = GearLaneSize[9],
-    Key2Width = GearLaneSize[9],
-    Key3Width = GearLaneSize[9],
-    Key4Width = GearLaneSize[9],
-    Key5Width = GearLaneSize[9],
-    Key6Width = GearLaneSize[9],
-    Key7Width = GearLaneSize[9],
-    Key8Width = GearLaneSize[9],
-    Key9Width = GearLaneSize[9]
+    Key1Width = Channels9Sizes[1],
+    Key2Width = Channels9Sizes[2],
+    Key3Width = Channels9Sizes[3],
+    Key4Width = Channels9Sizes[4],
+    Key5Width = Channels9Sizes[5],
+    Key6Width = Channels9Sizes[6],
+    Key7Width = Channels9Sizes[7],
+    Key8Width = Channels9Sizes[8],
+    Key9Width = Channels9Sizes[9],
 
 }
 
@@ -484,6 +619,9 @@ Channels8 = {
     Key8Binding = 7,
 
     GearHeight = GearHeightCommon,
+	
+	GearWidth = GearWidthByChannels[8],
+    BarlineWidth = GearWidthByChannels[8],
 
     -- Note Images
     Key1Image = NoteImage5,
@@ -506,24 +644,24 @@ Channels8 = {
     Key8HoldImage = NoteImageHold4,
 
     -- Lane positions
-    Key1X = GearStartX + GearLaneSize[8] / 2,
-    Key2X = GearStartX + GearLaneSize[8] / 2 + GearLaneSize[8],
-    Key3X = GearStartX + GearLaneSize[8] / 2 + GearLaneSize[8] * 2,
-    Key4X = GearStartX + GearLaneSize[8] / 2 + GearLaneSize[8] * 3,
-    Key5X = GearStartX + GearLaneSize[8] / 2 + GearLaneSize[8] * 4,
-    Key6X = GearStartX + GearLaneSize[8] / 2 + GearLaneSize[8] * 5,
-    Key7X = GearStartX + GearLaneSize[8] / 2 + GearLaneSize[8] * 6,
-    Key8X = GearStartX + GearLaneSize[8] / 2 + GearLaneSize[8] * 7,
+    Key1X = Channels8Positions[1],
+    Key2X = Channels8Positions[2],
+    Key3X = Channels8Positions[3],
+    Key4X = Channels8Positions[4],
+    Key5X = Channels8Positions[5],
+    Key6X = Channels8Positions[6],
+    Key7X = Channels8Positions[7],
+    Key8X = Channels8Positions[8],
 
     -- Lane Widths
-    Key1Width = GearLaneSize[8],
-    Key2Width = GearLaneSize[8],
-    Key3Width = GearLaneSize[8],
-    Key4Width = GearLaneSize[8],
-    Key5Width = GearLaneSize[8],
-    Key6Width = GearLaneSize[8],
-    Key7Width = GearLaneSize[8],
-    Key8Width = GearLaneSize[8]
+    Key1Width = Channels8Sizes[1],
+    Key2Width = Channels8Sizes[2],
+    Key3Width = Channels8Sizes[3],
+    Key4Width = Channels8Sizes[4],
+    Key5Width = Channels8Sizes[5],
+    Key6Width = Channels8Sizes[6],
+    Key7Width = Channels8Sizes[7],
+    Key8Width = Channels8Sizes[8]
 }
 
 -- 7 Channels. By default, it's o2jam-like.
@@ -552,6 +690,9 @@ Channels7 = {
     Key7Binding = 7,
 
     GearHeight = GearHeightCommon,
+	
+	GearWidth = GearWidthByChannels[7],
+    BarlineWidth = GearWidthByChannels[7],
 
     -- Note Images
     Key1Image = NoteImage4,
@@ -572,25 +713,25 @@ Channels7 = {
     Key7HoldImage = NoteImageHold4,
 
     -- Lane positions
-    Key1X = GearStartX + GearLaneSize[7] / 2,
-    Key2X = GearStartX + GearLaneSize[7] / 2 + GearLaneSize[7],
-    Key3X = GearStartX + GearLaneSize[7] / 2 + GearLaneSize[7] * 2,
-    Key4X = GearStartX + GearLaneSize[7] / 2 + GearLaneSize[7] * 3,
-    Key5X = GearStartX + GearLaneSize[7] / 2 + GearLaneSize[7] * 4,
-    Key6X = GearStartX + GearLaneSize[7] / 2 + GearLaneSize[7] * 5,
-    Key7X = GearStartX + GearLaneSize[7] / 2 + GearLaneSize[7] * 6,
+    Key1X = Channels7Positions[1],
+    Key2X = Channels7Positions[2],
+    Key3X = Channels7Positions[3],
+    Key4X = Channels7Positions[4],
+    Key5X = Channels7Positions[5],
+    Key6X = Channels7Positions[6],
+    Key7X = Channels7Positions[7],
 
     -- Lane Widths
-    Key1Width = GearLaneSize[7],
-    Key2Width = GearLaneSize[7],
-    Key3Width = GearLaneSize[7],
-    Key4Width = GearLaneSize[7],
-    Key5Width = GearLaneSize[7],
-    Key6Width = GearLaneSize[7],
-    Key7Width = GearLaneSize[7]
+    Key1Width = Channels7Sizes[1],
+    Key2Width = Channels7Sizes[2],
+    Key3Width = Channels7Sizes[3],
+    Key4Width = Channels7Sizes[4],
+    Key5Width = Channels7Sizes[5],
+    Key6Width = Channels7Sizes[6],
+    Key7Width = Channels7Sizes[7],
 }
 
--- 6 Channels. By default, it's BMS-like.
+-- 6 Channels. By default, it's solo-like.
 Channels6 = {
     Key1 = C4,
     Key2 = C1,
@@ -623,19 +764,21 @@ Channels6 = {
     Key4HoldImage = NoteImageHold2,
     Key5HoldImage = NoteImageHold1,
     Key6HoldImage = NoteImageHold4,
-    Key1Width = GearLaneSize[6],
-    Key2Width = GearLaneSize[6],
-    Key3Width = GearLaneSize[6],
-    Key4Width = GearLaneSize[6],
-    Key5Width = GearLaneSize[6],
-    Key6Width = GearLaneSize[6],
-    Key1X = GearStartX + GearLaneSize[6] / 2,
-    Key2X = GearStartX + GearLaneSize[6] / 2 + GearLaneSize[6],
-    Key3X = GearStartX + GearLaneSize[6] / 2 + GearLaneSize[6] * 2,
-    Key4X = GearStartX + GearLaneSize[6] / 2 + GearLaneSize[6] * 3,
-    Key5X = GearStartX + GearLaneSize[6] / 2 + GearLaneSize[6] * 4,
-    Key6X = GearStartX + GearLaneSize[6] / 2 + GearLaneSize[6] * 5,
-    Key7X = GearStartX + GearLaneSize[6] / 2 + GearLaneSize[6] * 6,
+    Key1Width = Channels6Sizes[1],
+    Key2Width = Channels6Sizes[2],
+    Key3Width = Channels6Sizes[3],
+    Key4Width = Channels6Sizes[4],
+    Key5Width = Channels6Sizes[5],
+    Key6Width = Channels6Sizes[6],
+    Key1X = Channels6Positions[1],
+    Key2X = Channels6Positions[2],
+    Key3X = Channels6Positions[3],
+    Key4X = Channels6Positions[4],
+    Key5X = Channels6Positions[5],
+    Key6X = Channels6Positions[6],
+	
+	GearWidth = GearWidthByChannels[6],
+    BarlineWidth = GearWidthByChannels[6]
 }
 
 
@@ -667,16 +810,18 @@ Channels5 = {
 	Key3HoldImage = NoteImageHold3,
 	Key4HoldImage = NoteImageHold2,
 	Key5HoldImage = NoteImageHold1,
-	Key1Width = GearLaneSize[5],
-	Key2Width = GearLaneSize[5],
-	Key3Width = GearLaneSize[5],
-	Key4Width = GearLaneSize[5],
-	Key5Width = GearLaneSize[5],
-	Key1X = GearStartX + GearLaneSize[5] / 2,
-	Key2X = GearStartX + GearLaneSize[5] / 2 + GearLaneSize[5],
-	Key3X = GearStartX + GearLaneSize[5] / 2 + GearLaneSize[5] * 2,
-	Key4X = GearStartX + GearLaneSize[5] / 2 + GearLaneSize[5] * 3,
-	Key5X = GearStartX + GearLaneSize[5] / 2 + GearLaneSize[5] * 4,
+	Key1Width = Channels5Sizes[1],
+	Key2Width = Channels5Sizes[2],
+	Key3Width = Channels5Sizes[3],
+	Key4Width = Channels5Sizes[4],
+	Key5Width = Channels5Sizes[5],
+	Key1X = Channels5Positions[1],
+	Key2X = Channels5Positions[2],
+	Key3X = Channels5Positions[3],
+	Key4X = Channels5Positions[4],
+	Key5X = Channels5Positions[5],
+	GearWidth = GearWidthByChannels[5],
+    BarlineWidth = GearWidthByChannels[5]
 }
 
 -- 4 Channels. By default, it's DJMax-like.
@@ -702,12 +847,15 @@ Channels4 = {
     Key2HoldImage = NoteImageHold2,
     Key3HoldImage = NoteImageHold2,
     Key4HoldImage = NoteImageHold1,
-    Key1Width = GearLaneSize[4],
-    Key2Width = GearLaneSize[4],
-    Key3Width = GearLaneSize[4],
-    Key4Width = GearLaneSize[4],
-    Key1X = GearStartX + GearLaneSize[4] / 2,
-    Key2X = GearStartX + GearLaneSize[4] / 2 + GearLaneSize[4],
-    Key3X = GearStartX + GearLaneSize[4] / 2 + GearLaneSize[4] * 2,
-    Key4X = GearStartX + GearLaneSize[4] / 2 + GearLaneSize[4] * 3,
+    Key1Width = Channels4Sizes[1],
+    Key2Width = Channels4Sizes[2],
+    Key3Width = Channels4Sizes[3],
+    Key4Width = Channels4Sizes[4],
+    Key1X = Channels4Positions[1],
+    Key2X = Channels4Positions[2],
+    Key3X = Channels4Positions[3],
+    Key4X = Channels4Positions[4],
+	GearWidth = GearWidthByChannels[4],
+    BarlineWidth = GearWidthByChannels[4]
 }
+

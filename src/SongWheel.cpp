@@ -29,6 +29,11 @@ SongWheel::SongWheel()
 	dotcurModeActive = (Configuration::GetConfigf("dotcurEnabled") != 0);
 }
 
+int SongWheel::GetDifficulty() const
+{
+	return DifficultyIndex;
+}
+
 SongWheel& SongWheel::GetInstance()
 {
 	static SongWheel *WheelInstance = new SongWheel();
@@ -431,6 +436,8 @@ int32 SongWheel::IndexAtPoint(float Y)
 uint32 SongWheel::NormalizedIndexAtPoint(float Y)
 {
 	int32 Idx = IndexAtPoint(Y);
+	if (!Idx || !GetNumItems() || (Idx % GetNumItems() == 0) ) return 0;
+
 	while (Idx > 0)
 		Idx -= GetNumItems();
 	while (Idx < 0)

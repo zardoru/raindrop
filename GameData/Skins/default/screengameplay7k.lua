@@ -2,14 +2,10 @@ game_require("textureatlas.lua")
 skin_require("Global/AnimationFunctions.lua")
 
 -- Set up constants for everyone
-GearStartX = GetConfigF("GearStartX", "")
-GearWidth = GetConfigF("GearWidth", "")
-GearHeight = GetConfigF("GearHeight", "")
 ChannelSpace = "Channels" .. Channels
-
-if Channels == 16 or Channels == 12 then -- DP styles
-	GearWidth = GearWidth * 2
-end
+GearStartX = GetConfigF("GearStartX", "")
+GearWidth = GetConfigF("GearWidth", ChannelSpace)
+GearHeight = GetConfigF("GearHeight", "")
 
 skin_require("VSRG/Explosions.lua")
 skin_require("VSRG/ComboDisplay.lua")
