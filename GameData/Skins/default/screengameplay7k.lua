@@ -7,10 +7,6 @@ GearStartX = GetConfigF("GearStartX", "")
 GearWidth = GetConfigF("GearWidth", ChannelSpace)
 GearHeight = GetConfigF("GearHeight", "")
 
-if Channels == 16 or Channels == 12 then -- DP styles
-	GearWidth = GearWidth * 2
-end
-
 skin_require("VSRG/Explosions.lua")
 skin_require("VSRG/ComboDisplay.lua")
 skin_require("VSRG/KeyLightning.lua")
