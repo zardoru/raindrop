@@ -2,6 +2,7 @@
 #include "Audio.h"
 #include "Configuration.h"
 #include <cstdio>
+#include <math.h>
 
 #include <portaudio.h>
 #include <pa_ringbuffer.h>
@@ -23,6 +24,9 @@ float VolumeSFX = 1;
 float VolumeMusic = 1; 
 bool UseThreadedDecoder = false;
 
+bool Compress;
+bool Normalize;
+
 #ifdef WIN32
 bool UseWasapi = false;
 PaDeviceIndex DefaultWasapiDevice;
@@ -41,7 +45,7 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
 		outputParams.channelCount = 2;
 		outputParams.sampleFormat = paInt16;
 
-		if (!Configuration::GetConfigf("DontUseLowLatency"))
+		if (!Configuration::GetConfigf("DontUseLowLatency", "Audio"))
 			outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultLowOutputLatency;
 		else
 			outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultHighOutputLatency;
@@ -60,7 +64,7 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
 			StreamInfo.hostApiType = paWASAPI;
 			StreamInfo.size = sizeof(PaWasapiStreamInfo);
 			StreamInfo.version = 1;
-			if (!Configuration::GetConfigf("WasapiDontUseExclusiveMode"))
+			if (!Configuration::GetConfigf("WasapiDontUseExclusiveMode", "Audio"))
 			{
 				StreamInfo.threadPriority = eThreadPriorityProAudio;
 				StreamInfo.flags = paWinWasapiExclusive;
@@ -291,6 +295,26 @@ public:
 	private:
 		short ts[BUFF_SIZE*2];
 		int tsF[BUFF_SIZE*2];
+
+		// compress using the logarithmic DRC 
+		// described at http://www.voegler.eu/pub/audio/digital-audio-mixing-and-normalization.html
+		int SampleClamp(int s1)
+		{
+			float range = (int)0x7FFF;
+			float t = 0.5; // threshold
+
+			if (abs(s1) > t*range) {
+				float nsamp = float(s1) / range; // Normalize the sample within the sint16 range..
+				float sign = nsamp / abs(nsamp);
+				float logbase = 5.71144; // Depends on the threshold.
+				float threslog = log(1 + logbase * (abs(nsamp) - t) / (2 - t));
+				float baselog = log(1 + logbase);
+				float ir = sign * (t + (1 - t)*threslog / baselog);
+				float mix = ir * range;
+				return mix;
+			}
+			else return s1;
+		}
 	public:
 
 	void CopyOut(char* out, int samples)
@@ -323,8 +347,6 @@ public:
 			}
 		}
 
-		double MixFactor = 0.85 / sqrt((double)Voices);
-
 		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
 		{
 			if ((*i)->IsPlaying())
@@ -333,7 +355,7 @@ public:
 				(*i)->Read(ts, samples);
 
 				for (int i = 0; i < count; i++)
-					tsF[i] += ts[i];
+					tsF[i] = Compress ? SampleClamp(ts[i] + tsF[i]) : ts[i] + tsF[i];
 			}
 		}
 
@@ -345,13 +367,35 @@ public:
 				(*i)->Read(ts, samples);
 
 				for (int i = 0; i < count; i++)
-					tsF[i] += ts[i];
+					tsF[i] = Compress ? SampleClamp(ts[i] + tsF[i]) : ts[i] + tsF[i];
+			}
+		}
+
+
+
+		if (Normalize)
+		{
+			// find peaks
+			int peak = 0;
+			for (int i = 0; i < count; i++)
+			{
+				peak = max(peak, abs(tsF[i]));
+			}
+
+			// do the normalization
+			int limit = 0x7FFF;
+			float peakRatio = float(peak) / limit;
+			if (peakRatio >= 1) // ok then normalize if we're going to be clipping
+			{
+				for (int i = 0; i < count; i++)
+				{
+					tsF[i] /= peakRatio;
+				}
 			}
 		}
 
 		for (int i = 0; i < count; i++)
 		{
-			tsF[i] *= MixFactor;
 			((short*)out)[i] = tsF[i];
 		}
 
@@ -426,11 +470,14 @@ void InitAudio()
 	if (Err != 0) // Couldn't get audio, bail out
 		return;
 
+	Compress = (Configuration::GetConfigf("Compress", "Audio") != 0);
+	Normalize = (Configuration::GetConfigf("Normalize", "Audio") != 0);;
+
 #ifdef WIN32
-	UseWasapi = (Configuration::GetConfigf("UseWasapi") != 0);
+	UseWasapi = (Configuration::GetConfigf("UseWasapi", "Audio") != 0);
 #endif
 
-	UseThreadedDecoder = (Configuration::GetConfigf("UseThreadedDecoder") != 0);
+	UseThreadedDecoder = (Configuration::GetConfigf("UseThreadedDecoder", "Audio") != 0);
 
 	GetAudioInfo();
 
