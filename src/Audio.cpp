@@ -2,6 +2,7 @@
 #include "Audio.h"
 #include "Configuration.h"
 #include <cstdio>
+#include <math.h>
 
 #include <portaudio.h>
 #include <pa_ringbuffer.h>
@@ -291,6 +292,25 @@ public:
 	private:
 		short ts[BUFF_SIZE*2];
 		int tsF[BUFF_SIZE*2];
+
+		// clamp using the DRC described at http://www.voegler.eu/pub/audio/digital-audio-mixing-and-normalization.html
+		int SampleClamp(int s1)
+		{
+			float range = (int)0x7FFF;
+			float t = 0.6; // threshold
+
+			if (abs(s1) > t*range) {
+				float nsamp = float(s1) / range; // Normalize the sample within the sint16 range..
+				float sign = nsamp / abs(nsamp);
+				float logbase = 7.483; // Depends on the threshold.
+				float threslog = log(1 + logbase * (abs(nsamp) - t) / (2 - t));
+				float baselog = log(1 + logbase);
+				float ir = sign * (t + (1 - t)*threslog / baselog);
+				float mix = ir * range;
+				return mix;
+			}
+			else return s1;
+		}
 	public:
 
 	void CopyOut(char* out, int samples)
@@ -323,8 +343,6 @@ public:
 			}
 		}
 
-		double MixFactor = 0.85 / sqrt((double)Voices);
-
 		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
 		{
 			if ((*i)->IsPlaying())
@@ -333,7 +351,7 @@ public:
 				(*i)->Read(ts, samples);
 
 				for (int i = 0; i < count; i++)
-					tsF[i] += ts[i];
+					tsF[i] = SampleClamp(ts[i] + tsF[i]);
 			}
 		}
 
@@ -345,13 +363,14 @@ public:
 				(*i)->Read(ts, samples);
 
 				for (int i = 0; i < count; i++)
-					tsF[i] += ts[i];
+					tsF[i] = SampleClamp(ts[i] + tsF[i]);
 			}
 		}
 
+
+
 		for (int i = 0; i < count; i++)
 		{
-			tsF[i] *= MixFactor;
 			((short*)out)[i] = tsF[i];
 		}
 
