@@ -305,7 +305,7 @@ public:
 				float logbase = 7.483; // Depends on the threshold.
 				float threslog = log(1 + logbase * (abs(nsamp) - t) / (2 - t));
 				float baselog = log(1 + logbase);
-				float ir = sign * (t + (1 - t)*threslog / baselog);
+				float ir = sign * (t + (1 - t)*threslog / baselog * 0.90);
 				float mix = ir * range;
 				return mix;
 			}
