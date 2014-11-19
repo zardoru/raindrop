@@ -368,6 +368,9 @@ bool ScreenSelectMusic::Run(double Delta)
 {
 	if (IsTransitioning)
 	{
+		if (PreviewStream && PreviewStream->IsPlaying())
+			PreviewStream->Stop();
+
 		if (TransitionTime <= 0)
 		{
 			if (RunNested(Delta))
@@ -388,20 +391,20 @@ bool ScreenSelectMusic::Run(double Delta)
 			PlayLoops();
 			Objects->DoEvent("OnRestore");
 		}
-	}
 
-	PreviewWaitTime -= Delta;
-	if (PreviewWaitTime <= 0)
-	{
-		if (PreviousPreview != ToPreview)
-			PlayPreview();
-
-		if (PreviewStream && PreviewStream->IsPlaying())
-			StopLoops();
-		else
+		PreviewWaitTime -= Delta;
+		if (PreviewWaitTime <= 0)
 		{
-			if (!SwitchBackGuiPending)
-				PlayLoops();
+			if (PreviousPreview != ToPreview)
+				PlayPreview();
+
+			if (PreviewStream && PreviewStream->IsPlaying())
+				StopLoops();
+			else
+			{
+				if (!SwitchBackGuiPending)
+					PlayLoops();
+			}
 		}
 	}
 
