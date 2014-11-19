@@ -5,6 +5,7 @@
 
 #include "GameGlobal.h"
 #include "GameState.h"
+#include "Logging.h"
 #include "Screen.h"
 #include "GameWindow.h"
 #include "ImageLoader.h"
@@ -23,6 +24,7 @@
 #include "ScreenEdit.h"
 #include "LuaManager.h"
 #include "LuaBridge.h"
+#include "SongDatabase.h"
 
 #include "SongWheel.h"
 
@@ -69,6 +71,10 @@ void SetupWheelLua(LuaManager* Man)
 ScreenSelectMusic::ScreenSelectMusic()
 {
 	Font = NULL;
+	PreviewStream = NULL;
+
+	PreviousPreview = (Game::Song*)0xFFFFFFFF;
+	ToPreview = NULL;
 
 	Game::SongWheel * Wheel = &Game::SongWheel::GetInstance();
 	Wheel->Initialize(0, 0, GameState::GetInstance().GetSongDatabase());
@@ -195,6 +201,7 @@ void ScreenSelectMusic::LoadThreadInitialization()
 void ScreenSelectMusic::Cleanup()
 {
 	delete Objects;
+	MixerRemoveStream(PreviewStream);
 	StopLoops();
 }
 
@@ -243,6 +250,8 @@ void ScreenSelectMusic::OnSongSelect(Game::Song* MySong, uint8 difindex)
 	if (IsTransitioning)
 		return;
 
+	if (PreviewStream) PreviewStream->Stop();
+
 	IsTransitioning = true;
 
 	SelectSnd->Play();
@@ -284,6 +293,74 @@ void ScreenSelectMusic::OnSongChange(Game::Song* MySong, uint8 difindex)
 		GameState::GetInstance().SetSelectedSong(MySong);
 		GameState::GetInstance().SetDifficultyIndex(0);
 		Objects->DoEvent("OnSongChange");
+		
+		PreviewWaitTime = 1;
+	}
+
+	ToPreview = MySong;
+}
+
+void ScreenSelectMusic::PlayPreview()
+{
+	// Do the song preview thing.
+	SongDatabase* DB = GameState::GetInstance().GetSongDatabase();
+	float StartTime;
+	GString PreviewFile;
+
+	if (ToPreview == NULL)
+	{
+		if (PreviewStream != NULL)
+			PreviewStream->Stop();
+		return;
+	}
+
+	DB->GetPreviewInfo(ToPreview->ID, PreviewFile, StartTime);
+
+	if (PreviewFile.length() > 0)
+	{
+		if (PreviewStream)
+		{
+			PreviewStream->Stop();
+			MixerRemoveStream(PreviewStream);
+			delete PreviewStream;
+			PreviewStream = NULL;
+		}
+
+		if (!PreviewStream)
+		{
+			Directory SDir = ToPreview->SongDirectory;
+			PreviewStream = new AudioStream();
+
+			if (PreviewStream->Open((SDir / PreviewFile).c_path()))
+			{
+				PreviewStream->Play();
+				PreviewStream->SeekTime(StartTime);
+				PreviewStream->SetLoop(true);
+				MixerAddStream(PreviewStream);
+			}
+		}
+	}
+
+	PreviousPreview = ToPreview;
+}
+
+void ScreenSelectMusic::PlayLoops()
+{
+	if (LoopTotal)
+	{
+		bool PlayingAlready = false;
+		for (int i = 0; i < LoopTotal; i++)
+		{
+			PlayingAlready = Loops[i]->IsPlaying();
+			if (PlayingAlready) break;
+		}
+
+		if (!PlayingAlready)
+		{
+			int rn = rand() % LoopTotal;
+			Loops[rn]->SeekTime(0);
+			Loops[rn]->Play();
+		}
 	}
 }
 
@@ -308,14 +385,23 @@ bool ScreenSelectMusic::Run(double Delta)
 		if (SwitchBackGuiPending)
 		{
 			SwitchBackGuiPending = false;
-			if (LoopTotal)
-			{
-				int rn = rand() % LoopTotal;
-				Loops[rn]->SeekTime(0);
-				Loops[rn]->Play();
-			}
-
+			PlayLoops();
 			Objects->DoEvent("OnRestore");
+		}
+	}
+
+	PreviewWaitTime -= Delta;
+	if (PreviewWaitTime <= 0)
+	{
+		if (PreviousPreview != ToPreview)
+			PlayPreview();
+
+		if (PreviewStream && PreviewStream->IsPlaying())
+			StopLoops();
+		else
+		{
+			if (!SwitchBackGuiPending)
+				PlayLoops();
 		}
 	}
 

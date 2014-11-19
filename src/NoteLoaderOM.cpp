@@ -53,7 +53,9 @@ struct OsuLoadInfo
 bool ReadGeneral (GString line, OsuLoadInfo* Info)
 {
 	GString Command = line.substr(0, line.find_first_of(" ")); // Lines are Information:<space>Content
-	GString Content = line.substr(line.find_first_of(" ") + 1, line.length() - line.find_first_of(" "));
+	GString Content = line.substr(line.find_first_of(":") + 1);
+
+	Content = Content.substr(Content.find_first_not_of(" "));
 
 	if (Command == "AudioFilename:")
 	{
@@ -68,6 +70,7 @@ bool ReadGeneral (GString line, OsuLoadInfo* Info)
 			printf("Audio filename found: %s\n", Content.c_str());
 #endif
 			Info->OsuSong->SongFilename = Content;
+			Info->OsuSong->SongPreviewSource = Content;
 		}
 	}else if (Command == "Mode:")
 	{
@@ -77,6 +80,14 @@ bool ReadGeneral (GString line, OsuLoadInfo* Info)
 	{
 		boost::algorithm::to_lower(Content);
 		Info->DefaultSampleset = Content;
+	}
+	else if (Command == "PreviewTime:")
+	{
+		if (Content != "-1")
+		{
+			if (Info->OsuSong->PreviewTime == 0)
+				Info->OsuSong->PreviewTime = latof(Content) / 1000;
+		}
 	}
 
 	return true;
@@ -126,7 +137,7 @@ void ReadDifficulty (GString line, OsuLoadInfo* Info)
 		Info->Diff->Channels = atoi(Content.c_str());
 
 		for (int i = 0; i < Info->Diff->Channels; i++) // Push a single measure
-			Info->Diff->Measures.push_back(Measure());
+			Info->Diff->Data->Measures.push_back(Measure());
 	}else if (Command == "SliderMultiplier")
 	{
 		Info->SliderVelocity = latof(Content.c_str()) * 100;
@@ -153,6 +164,7 @@ void ReadEvents (GString line, OsuLoadInfo* Info)
 		{
 			boost::replace_all(Spl[2], "\"", "");
 			Info->OsuSong->BackgroundFilename = Spl[2];
+			Info->Diff->Data->StageFile = Spl[2];
 		}else if (Spl[0] == "5" || Spl[0] == "Sample")
 		{
 			boost::replace_all(Spl[3], "\"", "");
@@ -169,7 +181,7 @@ void ReadEvents (GString line, OsuLoadInfo* Info)
 			New.Time = Time;
 			New.Sound = Evt;
 
-			Info->Diff->BGMEvents.push_back(New);
+			Info->Diff->Data->BGMEvents.push_back(New);
 		}
 	}
 }
@@ -193,7 +205,7 @@ void ReadTiming (GString line, OsuLoadInfo* Info)
 
 		Time.Value = -100 / OldValue;
 
-		Info->Diff->SpeedChanges.push_back(Time);
+		Info->Diff->Data->SpeedChanges.push_back(Time);
 	}
 
 	int Sampleset = -1;
@@ -439,10 +451,10 @@ void ReadObjects (GString line, OsuLoadInfo* Info)
 
 		float Multiplier = 1;
 
-		if (Info->Diff->SpeedChanges.size())
+		if (Info->Diff->Data->SpeedChanges.size())
 		{
-			if (startTime >= Info->Diff->SpeedChanges.at(0).Time)
-				Multiplier = SectionValue(Info->Diff->SpeedChanges, startTime);
+			if (startTime >= Info->Diff->Data->SpeedChanges.at(0).Time)
+				Multiplier = SectionValue(Info->Diff->Data->SpeedChanges, startTime);
 		}
 
 		float finalSize = sliderLength * sliderRepeats * Multiplier;
@@ -476,7 +488,7 @@ void ReadObjects (GString line, OsuLoadInfo* Info)
 	}
 
 	Info->Diff->TotalObjects++;
-	Info->Diff->Measures[0].MeasureNotes[Track].push_back(Note);
+	Info->Diff->Data->Measures[0].MeasureNotes[Track].push_back(Note);
 
 	Info->Diff->Duration = max(max (Note.StartTime, Note.EndTime), Info->Diff->Duration);
 }
@@ -498,7 +510,8 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 	Info.Diff = Diff;
 	Info.last_sound_index = 1;
 
-	Diff->TimingInfo = Info.TimingInfo;
+	Diff->Data = new VSRG::DifficultyLoadInfo;
+	Diff->Data->TimingInfo = Info.TimingInfo;
 
 	// osu! stores bpm information as the time in ms that a beat lasts.
 	Diff->BPMType = VSRG::Difficulty::BT_Beatspace;
@@ -606,8 +619,8 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 			i->Time -= Diff->Offset;
 		}
 
-		for (TimingData::iterator i = Diff->SpeedChanges.begin();
-			i != Diff->SpeedChanges.end();
+		for (TimingData::iterator i = Diff->Data->SpeedChanges.begin();
+			i != Diff->Data->SpeedChanges.end();
 			i++)
 		{
 			i->Time -= Diff->Offset;

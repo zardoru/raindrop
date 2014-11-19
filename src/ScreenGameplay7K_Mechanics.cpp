@@ -37,10 +37,6 @@ void ScreenGameplay7K::RecalculateEffects()
 		MultiplierChanged = true;
 	}
 
-/*
-		for (int i = 0; i < Channels; i++)
-			noteEffectsMatrix[i] = glm::translate(glm::mat4(), glm::vec3(cos(CurrentBeat * PI / 4) * 30, 0, 0) ) / ** glm::rotate(glm::mat4(), 360 * CurrentBeat, glm::vec3(0,0,1) )*/;
-
 	if (Upscroll)
 		SpeedMultiplier = - (SpeedMultiplierUser + waveEffect + beatScrollEffect);
 	else
@@ -54,13 +50,15 @@ void ScreenGameplay7K::HitNote (double TimeOff, uint32 Lane, bool IsHold, bool I
 
 	UpdateScriptScoreVariables();
 
-	Animations->GetEnv()->CallFunction("HitEvent", 5);
-	Animations->GetEnv()->PushArgument(Judgment);
-	Animations->GetEnv()->PushArgument(TimeOff);
-	Animations->GetEnv()->PushArgument((int)Lane + 1);
-	Animations->GetEnv()->PushArgument(IsHold);
-	Animations->GetEnv()->PushArgument(IsHoldRelease);
-	Animations->GetEnv()->RunFunction();
+	if (Animations->GetEnv()->CallFunction("HitEvent", 5))
+	{
+		Animations->GetEnv()->PushArgument(Judgment);
+		Animations->GetEnv()->PushArgument(TimeOff);
+		Animations->GetEnv()->PushArgument((int)Lane + 1);
+		Animations->GetEnv()->PushArgument(IsHold);
+		Animations->GetEnv()->PushArgument(IsHoldRelease);
+		Animations->GetEnv()->RunFunction();
+	}
 
 	if (score_keeper->getMaxNotes() == score_keeper->getScore(ST_NOTES_HIT))
 		Animations->DoEvent("OnFullComboEvent");
@@ -78,11 +76,13 @@ void ScreenGameplay7K::MissNote (double TimeOff, uint32 Lane, bool IsHold, bool 
 
 	UpdateScriptScoreVariables();
 
-	Animations->GetEnv()->CallFunction("MissEvent", 3);
-	Animations->GetEnv()->PushArgument(TimeOff);
-	Animations->GetEnv()->PushArgument((int)Lane + 1);
-	Animations->GetEnv()->PushArgument(IsHold);
-	Animations->GetEnv()->RunFunction();
+	if (Animations->GetEnv()->CallFunction("MissEvent", 3))
+	{
+		Animations->GetEnv()->PushArgument(TimeOff);
+		Animations->GetEnv()->PushArgument((int)Lane + 1);
+		Animations->GetEnv()->PushArgument(IsHold);
+		Animations->GetEnv()->RunFunction();
+	}
 }
 
 

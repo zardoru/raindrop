@@ -117,10 +117,10 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 		return;
 
 	for (uint32 i = 0; i < Measure; i++)
-		Beat += CurrentDiff->Measures.at(Measure).MeasureLength;
+		Beat += CurrentDiff->Data->Measures.at(Measure).MeasureLength;
 
 	float Time = TimeAtBeat(CurrentDiff->Timing, CurrentDiff->Offset, Beat)
-		+ StopTimeAtBeat(CurrentDiff->StopsTiming, Beat);
+		+ StopTimeAtBeat(CurrentDiff->Data->StopsTiming, Beat);
 
 	// Disable all notes before the current measure.
 	for (uint32 k = 0; k < CurrentDiff->Channels; k++)
@@ -349,7 +349,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 		}
 	}
 
-	BGMEvents = CurrentDiff->BGMEvents;
+	BGMEvents = CurrentDiff->Data->BGMEvents;
 	return true;
 }
 
@@ -425,22 +425,22 @@ bool ScreenGameplay7K::ProcessSong()
 
 bool ScreenGameplay7K::LoadBMPs()
 {
-	if (Configuration::GetConfigf("DisableBMP") == 0 && CurrentDiff->BMPEvents)
+	if (Configuration::GetConfigf("DisableBMP") == 0 && CurrentDiff->Data->BMPEvents)
 	{
-		if (CurrentDiff->BMPEvents->BMPList.size())
+		if (CurrentDiff->Data->BMPEvents->BMPList.size())
 			Log::Printf("Loading BMPs...\n");
 
-		for (std::map<int, GString>::iterator i = CurrentDiff->BMPEvents->BMPList.begin(); 
-			i != CurrentDiff->BMPEvents->BMPList.end(); i++)
+		for (std::map<int, GString>::iterator i = CurrentDiff->Data->BMPEvents->BMPList.begin();
+			i != CurrentDiff->Data->BMPEvents->BMPList.end(); i++)
 			BMPs.AddToListIndex(i->second, MySong->SongDirectory, i->first);
 
 		// We don't need this any more.
-		CurrentDiff->BMPEvents->BMPList.clear();
+		CurrentDiff->Data->BMPEvents->BMPList.clear();
 
-		BMPEvents = CurrentDiff->BMPEvents->BMPEventsLayerBase;
-		BMPEventsMiss = CurrentDiff->BMPEvents->BMPEventsLayerMiss;
-		BMPEventsLayer = CurrentDiff->BMPEvents->BMPEventsLayer;
-		BMPEventsLayer2 = CurrentDiff->BMPEvents->BMPEventsLayer2;
+		BMPEvents = CurrentDiff->Data->BMPEvents->BMPEventsLayerBase;
+		BMPEventsMiss = CurrentDiff->Data->BMPEvents->BMPEventsLayerMiss;
+		BMPEventsLayer = CurrentDiff->Data->BMPEvents->BMPEventsLayer;
+		BMPEventsLayer2 = CurrentDiff->Data->BMPEvents->BMPEventsLayer2;
 	}
 
 	return true;
@@ -502,11 +502,10 @@ void ScreenGameplay7K::ChangeNoteTimeToBeats()
 	{
 		for (std::vector<VSRG::TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); m++)
 		{
-			VSRG::NoteData &dt = m->GetNotedata();
-			double beatStart = IntegrateToTime(BPS, dt.StartTime);
-			double beatEnd = IntegrateToTime(BPS, dt.EndTime);
-			dt.StartTime = beatStart;
-			dt.EndTime = beatEnd;
+			double beatStart = IntegrateToTime(BPS, m->GetDataStartTime());
+			double beatEnd = IntegrateToTime(BPS, m->GetDataEndTime());
+			m->GetDataStartTime() = beatStart;
+			m->GetDataEndTime() = beatEnd;
 		}
 	}
 }
@@ -517,34 +516,35 @@ void ScreenGameplay7K::SetupMechanics()
 	// This must be done before setLifeTotal in order for it to work.
 	score_keeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
 	
-	if (CurrentDiff->TimingInfo)
+	if (CurrentDiff->Data->TimingInfo)
 	{
-		if (CurrentDiff->TimingInfo->GetType() == VSRG::TI_BMS)
+		VSRG::CustomTimingInfo * TimingInfo = CurrentDiff->Data->TimingInfo;
+		if (TimingInfo->GetType() == VSRG::TI_BMS)
 		{
-			VSRG::BmsTimingInfo *Info = static_cast<VSRG::BmsTimingInfo*> (CurrentDiff->TimingInfo);
+			VSRG::BmsTimingInfo *Info = static_cast<VSRG::BmsTimingInfo*> (TimingInfo);
 			score_keeper->setLifeTotal(Info->life_total);
 			score_keeper->setJudgeRank(Info->judge_rank);
 			UsedTimingType = TT_TIME;
 			lifebar_type = LT_GROOVE;
 		}
-		else if (CurrentDiff->TimingInfo->GetType() == VSRG::TI_OSUMANIA)
+		else if (TimingInfo->GetType() == VSRG::TI_OSUMANIA)
 		{
-			VSRG::OsuManiaTimingInfo *Info = static_cast<VSRG::OsuManiaTimingInfo*> (CurrentDiff->TimingInfo);
+			VSRG::OsuManiaTimingInfo *Info = static_cast<VSRG::OsuManiaTimingInfo*> (TimingInfo);
 			score_keeper->setODWindows(Info->OD);
 			lifebar_type = LT_STEPMANIA;
 			scoring_type = ST_OSUMANIA;
 			UsedTimingType = TT_TIME;
 		}
-		else if (CurrentDiff->TimingInfo->GetType() == VSRG::TI_O2JAM)
+		else if (TimingInfo->GetType() == VSRG::TI_O2JAM)
 		{
-			VSRG::O2JamTimingInfo *O2Info = (VSRG::O2JamTimingInfo*) CurrentDiff->TimingInfo;
+			VSRG::O2JamTimingInfo *O2Info = (VSRG::O2JamTimingInfo*) TimingInfo;
 			lifebar_type = LT_O2JAM;
 			UsedTimingType = TT_BEATS;
 			scoring_type = ST_O2JAM;
 			score_keeper->setJudgeRank(-100); // Special constant to notify beat based timing.
 			score_keeper->setO2LifebarRating(O2Info->Difficulty);
 		}
-		else if (CurrentDiff->TimingInfo->GetType() == VSRG::TI_STEPMANIA)
+		else if (TimingInfo->GetType() == VSRG::TI_STEPMANIA)
 		{
 			// lifebar_type = LT_STEPMANIA;
 			lifebar_type = LT_GROOVE;

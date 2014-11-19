@@ -1,8 +1,9 @@
+#include <math.h>
+
 #include "Global.h"
 #include "Audio.h"
 #include "Configuration.h"
-#include <cstdio>
-#include <math.h>
+#include "Logging.h"
 
 #include <portaudio.h>
 #include <pa_ringbuffer.h>
@@ -20,6 +21,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
+
 float VolumeSFX = 1;
 float VolumeMusic = 1; 
 bool UseThreadedDecoder = false;
@@ -95,13 +97,13 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
 
 	if (Err)
 	{
-		wprintf(L"%ls\n", Utility::Widen(Pa_GetErrorText(Err)).c_str());
-		wprintf(L"Device Selected %d\n", Device);
+		Log::Logf("%ls\n", Utility::Widen(Pa_GetErrorText(Err)).c_str());
+		Log::Logf("Device Selected %d\n", Device);
 	}
 #ifdef LINUX
 	else
 	{
-		wprintf(L"Audio: Enabling real time scheduling\n");
+		Log::Logf(L"Audio: Enabling real time scheduling\n");
 		PaAlsa_EnableRealtimeScheduling( mStream, true );
 	}	
 #endif
@@ -174,7 +176,7 @@ public:
 			if (!Stream)
 			{
 				// This was a Wasapi problem. Retry without it.
-				wprintf(L"Problem initializing WASAPI. Falling back to default API.");
+				Log::Logf("Problem initializing WASAPI. Falling back to default API.");
 				UseWasapi = false;
 				OpenStream( &Stream, Pa_GetDefaultOutputDevice(), 44100, (void*) this, Latency, Mix );
 			}
@@ -194,7 +196,7 @@ public:
 			Pa_StartStream( Stream );
 			boost::this_thread::sleep(boost::posix_time::millisec(16));
 			Latency = Pa_GetStreamInfo(Stream)->outputLatency;
-			wprintf(L"AUDIO: Latency after opening stream = %f \n", Latency);
+			Log::Logf("AUDIO: Latency after opening stream = %f \n", Latency);
 		}
 
 		ConstFactor = 1.0;
@@ -371,7 +373,7 @@ public:
 			}
 		}
 
-
+		mut2.unlock();
 
 		if (Normalize)
 		{
@@ -398,8 +400,6 @@ public:
 		{
 			((short*)out)[i] = tsF[i];
 		}
-
-		mut2.unlock();
 
 		if (StreamVoices)
 		{
@@ -434,12 +434,12 @@ void GetAudioInfo()
 {
 	PaHostApiIndex ApiCount = Pa_GetHostApiCount();
 
-	wprintf(L"AUDIO: The default API is %d\n", Pa_GetDefaultHostApi());
+	Log::Logf("AUDIO: The default API is %d\n", Pa_GetDefaultHostApi());
 
 	for (PaHostApiIndex i = 0; i < ApiCount; i++)
 	{
 		const PaHostApiInfo* Index = Pa_GetHostApiInfo(i);
-		wprintf(L"(%d) %s: %d (%d)\n", i, Utility::Widen(Index->name).c_str(), Index->defaultOutputDevice, Index->type);
+		Log::Logf("(%d) %s: %d (%d)\n", i, Utility::Widen(Index->name).c_str(), Index->defaultOutputDevice, Index->type);
 
 #ifdef WIN32
 		if (Index->type == paWASAPI)
@@ -449,16 +449,16 @@ void GetAudioInfo()
 #endif
 	}
 
-	wprintf(L"\nAUDIO: The audio devices are\n");
+	Log::Logf("\nAUDIO: The audio devices are\n");
 	
 	PaDeviceIndex DevCount = Pa_GetDeviceCount();
 	for (PaDeviceIndex i = 0; i < DevCount; i++)
 	{
 		const PaDeviceInfo *Info = Pa_GetDeviceInfo(i);
-		wprintf(L"(%d): %s\n", i, Utility::Widen(Info->name).c_str());
-		wprintf(L"\thighLat: %f, lowLat: %f\n", Info->defaultHighOutputLatency, Info->defaultLowOutputLatency);
-		wprintf(L"\tsampleRate: %f, hostApi: %d\n", Info->defaultSampleRate, Info->hostApi);
-		wprintf(L"\tmaxchannels: %d\n", Info->maxOutputChannels);
+		Log::Logf("(%d): %s\n", i, Utility::Widen(Info->name).c_str());
+		Log::Logf("\thighLat: %f, lowLat: %f\n", Info->defaultHighOutputLatency, Info->defaultLowOutputLatency);
+		Log::Logf("\tsampleRate: %f, hostApi: %d\n", Info->defaultSampleRate, Info->hostApi);
+		Log::Logf("\tmaxchannels: %d\n", Info->maxOutputChannels);
 	}
 }
 

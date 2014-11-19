@@ -151,9 +151,9 @@ VSRG::Song* LoadSong7KFromFilename(Directory Filename, Directory Prefix, VSRG::S
 	{
 		if (Ext == LoadersVSRG[i].Ext)
 		{
-			Log::Printf("Load %s from disk...", Filename.c_path());
+			Log::Logf("Load %s from disk...", Filename.c_path());
 			LoadersVSRG[i].LoadFunc (fn_f, Prefix, Sng);
-			Log::Printf(" ok\n");
+			Log::Logf(" ok\n");
 		}
 	}
 
@@ -234,11 +234,23 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 		std::map<GString, VSRG::Song*> bmsk;
 		VSRG::Song *BMSSong = new VSRG::Song;
 
-		// We want to group charts with the same title together.
+		// Every OJN gets its own Song object.
+		VSRG::Song *OJNSong = new VSRG::Song;
+		OJNSong->SongDirectory = SongDirectory;
+
+		// osu!mania charts are packed together, with FTB charts.
+		VSRG::Song *osuSong = new VSRG::Song;
+		osuSong->SongDirectory = SongDirectory;
+
+		// Stepmania charts get their own song objects too.
+		VSRG::Song *smSong = new VSRG::Song;
+		smSong->SongDirectory = SongDirectory;
+
 		for (auto i = Listing.begin(); i != Listing.end(); i++)
 		{
 			std::wstring Ext = Utility::Widen(Directory(*i).GetExtension());
 			
+			// We want to group charts with the same title together.
 			if (ValidBMSExtension(Ext))
 			{
 				BMSSong->SongDirectory = SongDirectory;
@@ -262,21 +274,6 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 					
 				BMSSong = new VSRG::Song;
 			}
-		}
-
-		for (auto i = bmsk.begin();
-			i != bmsk.end(); i++)
-		{
-			VSRGUpdateDatabaseDifficulties(DB, i->second);
-			PushVSRGSong(VecOut, i->second);
-		}
-
-		// Every OJN gets its own Song object.
-		VSRG::Song *OJNSong = new VSRG::Song;
-		OJNSong->SongDirectory = SongDirectory;
-		for (auto i = Listing.begin(); i != Listing.end(); i++)
-		{
-			std::wstring Ext = Utility::Widen(Directory(*i).GetExtension());
 
 			if (Ext == L"ojn")
 			{
@@ -286,32 +283,9 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 				OJNSong = new VSRG::Song;
 				OJNSong->SongDirectory = SongDirectory;
 			}
-		}
-
-		VSRGUpdateDatabaseDifficulties(DB, OJNSong);
-		PushVSRGSong(VecOut, OJNSong);
-
-		
-		// osu!mania charts are packed together, with FTB charts.
-		VSRG::Song *osuSong = new VSRG::Song;
-		osuSong->SongDirectory = SongDirectory;
-		for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
-		{
-			std::wstring Ext = Utility::Widen(Directory(*i).GetExtension());
 
 			if (Ext == L"osu" || Ext == L"fcf")
 				LoadSong7KFromFilename(*i, SongDirectory, osuSong);
-		}
-
-		VSRGUpdateDatabaseDifficulties(DB, osuSong);
-		PushVSRGSong(VecOut, osuSong);
-
-		// Stepmania charts get their own song objects too.
-		VSRG::Song *smSong = new VSRG::Song;
-		smSong->SongDirectory = SongDirectory;
-		for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
-		{
-			std::wstring Ext = Utility::Widen(Directory(*i).GetExtension());
 
 			if (Ext == L"sm")
 			{
@@ -322,6 +296,20 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 				smSong->SongDirectory = SongDirectory;
 			}
 		}
+
+		// PushVSRGSong() handles the cleanup.
+		for (auto i = bmsk.begin();
+			i != bmsk.end(); i++)
+		{
+			VSRGUpdateDatabaseDifficulties(DB, i->second);
+			PushVSRGSong(VecOut, i->second);
+		}
+
+		VSRGUpdateDatabaseDifficulties(DB, OJNSong);
+		PushVSRGSong(VecOut, OJNSong);
+
+		VSRGUpdateDatabaseDifficulties(DB, osuSong);
+		PushVSRGSong(VecOut, osuSong);
 
 		VSRGUpdateDatabaseDifficulties(DB, smSong);
 		PushVSRGSong(VecOut, smSong);
@@ -354,12 +342,12 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 			i++)
 		{
 			VSRG::Song *New = new VSRG::Song;
-			Log::Printf("Song ID %d load from cache...", *i);
+			Log::Logf("Song ID %d load from cache...", *i);
 			DB->GetSongInformation7K(*i, New);
 			New->SongDirectory = SongDirectory;
 
 			PushVSRGSong(VecOut, New);
-			Log::Printf(" ok\n");
+			Log::Logf(" ok\n");
 		}
 	}
 }

@@ -123,7 +123,7 @@ bool LoadTracksSM(Song *Out, Difficulty *Diff, GString line)
 			for (int32 m = 0; m < MeasureFractions; m++) /* m = current fraction */
 			{
 				double Beat = i * 4.0 + m * 4.0 / (double)MeasureFractions; /* Current beat */
-				double StopsTime = StopTimeAtBeat(Diff->StopsTiming, Beat);
+				double StopsTime = StopTimeAtBeat(Diff->Data->StopsTiming, Beat);
 				double Time = TimeAtBeat(Diff->Timing, Diff->Offset, Beat) + StopsTime;
 				/* For every track of the fraction */
 				for (int k = 0; k < Keys; k++) /* k = current track */
@@ -168,7 +168,7 @@ bool LoadTracksSM(Song *Out, Difficulty *Diff, GString line)
 			}
 		}
 
-		Diff->Measures.push_back(Msr);
+		Diff->Data->Measures.push_back(Msr);
 	}
 
 	/* 
@@ -208,9 +208,12 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 #endif
 	}
 
+	GString Banner;
+
 	Out->SongDirectory = prefix + "/";
 	Diff->Offset = 0;
 	Diff->Duration = 0;
+	Diff->Data = new VSRG::DifficultyLoadInfo;
 
 	GString line;
 	while (filein)
@@ -286,8 +289,19 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 				Out->SongFilename = CommandContents;
 			else
 				Out->SongFilename = Utility::SJIStoU8(CommandContents);
+
+			Out->SongPreviewSource = Out->SongFilename;
 		}
 
+		OnCommand(#SAMPLESTART)
+		{
+			Out->PreviewTime = latof(CommandContents);
+		}
+
+		OnCommand(#BANNER)
+		{
+			Banner = CommandContents;
+		}
 		OnCommand(#OFFSET)
 		{
 			std::stringstream str (CommandContents);
@@ -309,12 +323,13 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 		OnCommand(#NOTES)
 		{
 			Diff->Timing = BPMData;
-			Diff->StopsTiming = StopsData;
+			Diff->Data->StopsTiming = StopsData;
 			Diff->Offset = -Offset;
 			Diff->Duration = 0;
 			Diff->Filename = filename;
 			Diff->BPMType = VSRG::Difficulty::BT_Beat;
-			Diff->TimingInfo = new VSRG::StepmaniaTimingInfo;
+			Diff->Data->TimingInfo = new VSRG::StepmaniaTimingInfo;
+			Diff->Data->StageFile = Banner;
 
 			if (LoadTracksSM(Out, Diff, line))
 			{

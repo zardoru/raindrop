@@ -132,6 +132,9 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 		Calculate BPS. The algorithm is basically the same as VSpeeds.
 		BPS time is calculated applying the offset.
 	*/
+	assert(Data != NULL);
+
+	TimingData &StopsTiming = Data->StopsTiming;
 
 	BPS.clear();
 
@@ -213,7 +216,10 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 
 void Difficulty::ProcessSpeedVariations(TimingData& BPS, TimingData& VerticalSpeeds, double Drift)
 {
+	assert(Data != NULL);
+
 	TimingData tVSpeeds = VerticalSpeeds; // We need this to store what values to change
+	TimingData &SpeedChanges = Data->SpeedChanges;
 
 	std::sort( SpeedChanges.begin(), SpeedChanges.end(), tSort );
 
@@ -313,6 +319,8 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 		position = sum(speed_i * duration_i) + speed_current * (time_current - speed_start_time)
 	*/
 
+	assert(Data != NULL);
+
 	int ApplyDriftVirtual = Configuration::GetConfigf("UseAudioCompensationKeysounds");
 	int ApplyDriftDecoder = Configuration::GetConfigf("UseAudioCompensationNonKeysounded");
 	double rDrift = Drift;
@@ -342,8 +350,8 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 		int MIdx = 0;
 
 		/* For each measure of this channel */
-		for (std::vector<VSRG::Measure>::iterator Msr = Measures.begin();
-			Msr != Measures.end();
+		for (std::vector<VSRG::Measure>::iterator Msr = Data->Measures.begin();
+			Msr != Data->Measures.end();
 			Msr++)
 		{
 			/* For each note in the measure... */
@@ -389,21 +397,21 @@ void Difficulty::GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSp
 {
 	float Last = 0;
 
-	Out.reserve(Measures.size());
+	assert(Data != NULL);
+	Out.reserve(Data->Measures.size());
 
-	for (std::vector<VSRG::Measure>::iterator Msr = Measures.begin();
-		Msr != Measures.end();
+	for (std::vector<VSRG::Measure>::iterator Msr = Data->Measures.begin();
+		Msr != Data->Measures.end();
 		Msr++)
 	{
 		float PositionOut = 0;
 
 		if (BPMType == BT_Beat)
 		{
-			PositionOut = IntegrateToTime(VerticalSpeeds, TimeAtBeat(Timing, Offset, Last) + StopTimeAtBeat(StopsTiming, Last));
+			PositionOut = IntegrateToTime(VerticalSpeeds, TimeAtBeat(Timing, Offset, Last) + StopTimeAtBeat(Data->StopsTiming, Last));
 		}
 		else
 		{
-			// PositionOut = IntegrateToTime(VerticalSpeeds, /* ???? */);
 		}
 
 		Out.push_back(PositionOut);
@@ -413,30 +421,20 @@ void Difficulty::GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSp
 
 void Difficulty::Destroy()
 {
-	// Do the swap to try and force memory release.
-	TimingData S1, S2, S3;
+	if (Data)
+	{
+		delete Data->TimingInfo;
+		delete Data->BMPEvents;
+		delete Data;
+		Data = NULL;
+	}
 	
-	std::vector<AutoplaySound> BGM;
+	Timing.clear();
+	Timing.shrink_to_fit();
 
-	Timing.swap(S1);
-	SpeedChanges.swap(S2);
-	StopsTiming.swap(S3);
-	BGMEvents.swap(BGM);
-	
-	Author.clear();
-	Filename.clear();
+	Author.clear(); Author.shrink_to_fit();
+
+	Filename.clear(); Filename.shrink_to_fit();
+
 	SoundList.clear();
-
-	delete TimingInfo;
-	delete BMPEvents;
-	TimingInfo = NULL;
-	BMPEvents = NULL;
-
-	DestroyNotes();
-}
-
-void Difficulty::DestroyNotes()
-{
-	VSRG::MeasureVector MV;
-	Measures.swap(MV);
 }

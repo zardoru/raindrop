@@ -28,34 +28,46 @@ namespace VSRG
 		uint16 Sound; // Do we really need more than 65536 sounds?
 		uint8 NoteKind; // To be used with ENoteKind.
 
-		struct {
-			char FractionKind : 4;
-			char EnabledHitFlags : 4;
-		};
-
 		NoteData() {
 			StartTime = EndTime = 0;
 			Sound = 0;
 			NoteKind = NK_NORMAL;
-			EnabledHitFlags = EnabledFlag | HeadEnabledFlag;
 		}
 	};
 
 	class TrackNote
 	{
 	private:
-		// 24 bytes
-		NoteData Data;
+		// 16 bytes
+		double StartTime, EndTime;
 
 		// 8 bytes
 		float b_pos;
 		float b_pos_holdend;
 
+		// 2 bytes
+		uint16 Sound; // Do we really need more than 65536 sounds?
+
+		// 2 bytes
+		uint8 NoteKind; // To be used with ENoteKind.
+
+		struct {
+			char FractionKind : 4;
+			char EnabledHitFlags : 4;
+		};
+
+		// With this structure, we'll get 8 spare bytes we can use for whatever.
+
 	public:
 		TrackNote();
 
 		void AssignNotedata(const NoteData &Data);
-		NoteData &GetNotedata();
+		
+		double &GetDataStartTime();
+		double &GetDataEndTime();
+		uint16 &GetDataSound();
+		uint8  GetDataNoteKind();
+		uint8  GetDataFractionKind();
 
 		void AssignPosition(float Position, float endPosition = 0);
 		void AssignFraction(double frc); // frc = fraction of a beat

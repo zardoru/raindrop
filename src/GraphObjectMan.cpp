@@ -10,13 +10,16 @@ void CreateLuaInterface(LuaManager *AnimLua);
 bool LuaAnimation(LuaManager* Lua, GString Func, GraphObject2D* Target, float Frac)
 {
 	Lua->RegisterStruct( "Target", (void*)Target );
-	Lua->CallFunction(Func.c_str(), 1, 1);
-	Lua->PushArgument(Frac);
+	if (Lua->CallFunction(Func.c_str(), 1, 1))
+	{
+		Lua->PushArgument(Frac);
 
-	if (Lua->RunFunction())
-		return Lua->GetFunctionResult() > 0;
-	else
-		return false;
+		if (Lua->RunFunction())
+			return Lua->GetFunctionResult() > 0;
+		else
+			return false;
+	}
+	else return false;
 }
 
 void GraphObjectMan::StopAnimationsForTarget(GraphObject2D* Target)

@@ -297,7 +297,7 @@ void CalculateBMP (BmsLoadInfo *Info, std::vector<AutoplayBMP> &BMPEvents, int C
 			{
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first);
 				int BMP = ev->Event;
-				double Time = TimeAtBeat(Info->difficulty->Timing, 0, Beat) + StopTimeAtBeat(Info->difficulty->StopsTiming, Beat);
+				double Time = TimeAtBeat(Info->difficulty->Timing, 0, Beat) + StopTimeAtBeat(Info->difficulty->Data->StopsTiming, Beat);
 
 				AutoplayBMP New;
 				New.BMP = BMP;
@@ -376,7 +376,7 @@ void CalculateStops(BmsLoadInfo *Info)
 				New.Time = Beat;
 				New.Value = StopDuration;
 
-				Info->difficulty->StopsTiming.push_back(New);
+				Info->difficulty->Data->StopsTiming.push_back(New);
 			}
 		}
 	}
@@ -484,7 +484,7 @@ void measureCalculateSide(BmsLoadInfo *Info, MeasureList::iterator &i, int Track
 
 				double Beat = ev->Fraction * Msr.MeasureLength + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
 
-				double Time = TimeAtBeat(Info->difficulty->Timing, 0, Beat) + StopTimeAtBeat(Info->difficulty->StopsTiming, Beat);
+				double Time = TimeAtBeat(Info->difficulty->Timing, 0, Beat) + StopTimeAtBeat(Info->difficulty->Data->StopsTiming, Beat);
 
 				Info->difficulty->Duration = std::max((double)Info->difficulty->Duration, Time);
 
@@ -537,7 +537,7 @@ degradetonote:
 
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
 
-				double Time = TimeAtBeat(Info->difficulty->Timing, 0, Beat) + StopTimeAtBeat(Info->difficulty->StopsTiming, Beat);
+				double Time = TimeAtBeat(Info->difficulty->Timing, 0, Beat) + StopTimeAtBeat(Info->difficulty->Data->StopsTiming, Beat);
 
 				if (Info->startTime[Track] == -1)
 				{
@@ -584,16 +584,16 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 	}
 
 	// insert it into the difficulty structure
-	Info->difficulty->Measures.push_back(Msr);
+	Info->difficulty->Data->Measures.push_back(Msr);
 
 	for (uint8 k = 0; k < MAX_CHANNELS; k++)
 	{
 		// Our old pointers are invalid by now since the Msr structures are going to go out of scope
 		// Which means we must renew them, and that's better done here.
 
-		MeasureVector::reverse_iterator q = Info->difficulty->Measures.rbegin();
+		MeasureVector::reverse_iterator q = Info->difficulty->Data->Measures.rbegin();
 		
-		while (q != Info->difficulty->Measures.rend())
+		while (q != Info->difficulty->Data->Measures.rend())
 		{
 			if ((*q).MeasureNotes[k].size()) {
 				Info->LastNotes[k] = &((*q).MeasureNotes[k].back());
@@ -614,7 +614,7 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 
 			double Beat = ev->Fraction * Msr.MeasureLength + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
 
-			double Time = TimeAtBeat(Info->difficulty->Timing, 0, Beat) + StopTimeAtBeat(Info->difficulty->StopsTiming, Beat);
+			double Time = TimeAtBeat(Info->difficulty->Timing, 0, Beat) + StopTimeAtBeat(Info->difficulty->Data->StopsTiming, Beat);
 
 			AutoplaySound New;
 			New.Time = Time;
@@ -622,10 +622,10 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 
 			// printf("Event %i, %f, %f..\n", Event, Beat, Time);
 
-			Info->difficulty->BGMEvents.push_back(New);
+			Info->difficulty->Data->BGMEvents.push_back(New);
 		}
 
-		std::sort(Info->difficulty->BGMEvents.begin(), Info->difficulty->BGMEvents.end(), evsort);
+		std::sort(Info->difficulty->Data->BGMEvents.begin(), Info->difficulty->Data->BGMEvents.end(), evsort);
 	}
 }
 
@@ -774,7 +774,7 @@ void CompileBMS(BmsLoadInfo *Info)
 		CalculateBMP(Info, BMP->BMPEventsLayerMiss, CHANNEL_BGAPOOR);
 		CalculateBMP(Info, BMP->BMPEventsLayer, CHANNEL_BGALAYER);
 		CalculateBMP(Info, BMP->BMPEventsLayer2, CHANNEL_BGALAYER2);
-		Info->difficulty->BMPEvents = BMP;
+		Info->difficulty->Data->BMPEvents = BMP;
 	}
 
 	Info->difficulty->Channels = AutodetectChannelCount(Info);
@@ -954,9 +954,10 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 
 	Difficulty *Diff = new Difficulty();
 	BmsLoadInfo *Info = new BmsLoadInfo();
+	DifficultyLoadInfo *LInfo = new DifficultyLoadInfo();
 
 	Diff->Filename = filename;
-
+	Diff->Data = LInfo;
 	Info->song = Out;
 	Info->difficulty = Diff;
 
@@ -978,7 +979,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 	Diff->IsVirtual = true;
 
 	VSRG::BmsTimingInfo *TimingInfo = new VSRG::BmsTimingInfo;
-	Diff->TimingInfo = TimingInfo;
+	Diff->Data->TimingInfo = TimingInfo;
 
 	/*
 		BMS files are separated always one file, one difficulty, so it'd make sense
@@ -1070,7 +1071,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 
 			OnCommand(#STAGEFILE)
 			{
-				Out->BackgroundFilename = CommandContents;
+				Diff->Data->StageFile = CommandContents;
 			}
 
 			OnCommand(#LNOBJ)
@@ -1109,7 +1110,12 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 
 			OnCommand(#BACKBMP)
 			{
-				Out->BackgroundFilename = CommandContents;
+				Diff->Data->StageFile = CommandContents;
+			}
+
+			OnCommand(#PREVIEW)
+			{
+				Out->SongPreviewSource = CommandContents;
 			}
 
 			OnCommand(#TOTAL)
@@ -1184,7 +1190,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 
 	if (Info->HasBMPEvents)
 	{
-		Diff->BMPEvents->BMPList = Info->BMP;
+		Diff->Data->BMPEvents->BMPList = Info->BMP;
 	}
 
 	// First try to find a suiting subtitle

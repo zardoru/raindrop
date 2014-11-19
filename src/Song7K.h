@@ -100,7 +100,7 @@ namespace VSRG
 		std::vector<AutoplayBMP> BMPEventsLayerMiss;
 	};
 
-	struct Difficulty : public Game::Song::Difficulty
+	struct DifficultyLoadInfo
 	{
 		// Contains stops data.
 		TimingData StopsTiming;
@@ -117,6 +117,23 @@ namespace VSRG
 		// Autoplay BMP
 		BMPEventsDetail *BMPEvents;
 
+		// Timing Info
+		CustomTimingInfo* TimingInfo;
+
+		// Background/foreground to show when loading.
+		GString StageFile;
+
+		DifficultyLoadInfo()
+		{
+			BMPEvents = NULL;
+			TimingInfo = NULL;
+		}
+	};
+
+	struct Difficulty : public Game::Song::Difficulty
+	{
+		DifficultyLoadInfo* Data;
+
 		enum EBt
 		{
 			BT_Beat,
@@ -132,16 +149,6 @@ namespace VSRG
 		void ProcessVSpeeds(TimingData& BPS, TimingData& VSpeeds, double SpeedConstant);
 		void ProcessSpeedVariations(TimingData& BPS, TimingData& VSpeeds, double Drift);
 	public:
-	
-		CustomTimingInfo* TimingInfo;
-
-		Difficulty() {
-			IsVirtual = false;
-			Channels = 0;
-			Level = 0;
-			TimingInfo = NULL;
-			BMPEvents = NULL;
-		};
 
 		// Get processed data for use on ScreenGameplay7K.
 		void Process(VectorTN NotesOut, TimingData &BPS, TimingData& VerticalSpeeds, float Drift = 0, double SpeedConstant = 0);
@@ -152,8 +159,15 @@ namespace VSRG
 		// Destroy all information that can be loaded from cache
 		void Destroy();
 
-		// Destroy notes data, since it's unnecesary once the difficulty is processed.
-		void DestroyNotes();
+		Difficulty() {
+			IsVirtual = false;
+			Channels = 0;
+			Level = 0;
+		};
+
+		~Difficulty() {
+			Destroy();
+		};
 	};
 
 

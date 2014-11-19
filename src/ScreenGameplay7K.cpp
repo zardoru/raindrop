@@ -69,10 +69,12 @@ double ScreenGameplay7K::GetSongTime()
 
 void ScreenGameplay7K::GearKeyEvent(uint32 Lane, bool KeyDown)
 {
-	Animations->GetEnv()->CallFunction("GearKeyEvent", 2);
-	Animations->GetEnv()->PushArgument((int)Lane);
-	Animations->GetEnv()->PushArgument(KeyDown);
-	Animations->GetEnv()->RunFunction();
+	if (Animations->GetEnv()->CallFunction("GearKeyEvent", 2))
+	{
+		Animations->GetEnv()->PushArgument((int)Lane);
+		Animations->GetEnv()->PushArgument(KeyDown);
+		Animations->GetEnv()->RunFunction();
+	}
 
 	if (KeyDown)
 		Keys[Lane].SetImage( GearLaneImageDown[Lane], false );
@@ -325,7 +327,6 @@ void ScreenGameplay7K::UpdateSongTime(float Delta)
 
 bool ScreenGameplay7K::Run(double Delta)
 {
-
 	if (Next)
 		return RunNested(Delta);
 
@@ -363,7 +364,7 @@ bool ScreenGameplay7K::Run(double Delta)
 	Render();
 
 	if (Delta > 0.1)
-		Log::Printf("%f: delta = %f\n", GetScreenTime(), Delta);
+		Log::Logf("ScreenGameplay7K: Delay@[ST%.03f/RST:%.03f] = %f\n", GetScreenTime(), SongTime, Delta);
 
 	return Running;
 }

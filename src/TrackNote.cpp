@@ -6,6 +6,7 @@ using namespace VSRG;
 
 TrackNote::TrackNote()
 {
+	EnabledHitFlags = EnabledFlag | HeadEnabledFlag;
 }
 
 TrackNote::~TrackNote()
@@ -14,7 +15,10 @@ TrackNote::~TrackNote()
 
 void TrackNote::AssignNotedata(const VSRG::NoteData &Notedata)
 {
-	Data = Notedata;
+	StartTime = Notedata.StartTime;
+	EndTime = Notedata.EndTime;
+	Sound = Notedata.Sound;
+	NoteKind = Notedata.NoteKind;
 }
 
 int GetFractionKindBeat(double frac);
@@ -22,7 +26,7 @@ int GetFractionKindBeat(double frac);
 /* calculate the beat snap for this fraction */
 void TrackNote::AssignFraction(double frac)
 {
-	Data.FractionKind = GetFractionKindBeat(frac);
+	FractionKind = GetFractionKindBeat(frac);
 }
 
 Mat4 TrackNote::GetHoldPositionMatrix(const float &trackPosition) const
@@ -45,7 +49,7 @@ void TrackNote::AssignPosition(float Position, float endPosition)
 
 bool TrackNote::IsHold() const
 {
-	return Data.EndTime != 0;
+	return EndTime != 0;
 }
 
 Mat4 TrackNote::GetHoldEndMatrix() const
@@ -65,51 +69,51 @@ float TrackNote::GetVertical() const
 
 void TrackNote::AddTime(double Time)
 {
-	Data.StartTime += Time;
+	StartTime += Time;
 
 	if (IsHold())
-		Data.EndTime += Time;
+		EndTime += Time;
 }
 
 double TrackNote::GetTimeFinal() const
 {
-	return max(Data.StartTime, Data.EndTime);
+	return max(StartTime, EndTime);
 }
 
 double TrackNote::GetStartTime() const
 {
-	return Data.StartTime;
+	return StartTime;
 }
 
 bool TrackNote::IsEnabled() const
 {
-	return Data.EnabledHitFlags & EnabledFlag;
+	return EnabledHitFlags & EnabledFlag;
 }
 
 bool TrackNote::IsHeadEnabled() const
 {
-	return (Data.EnabledHitFlags & HeadEnabledFlag) != 0;
+	return (EnabledHitFlags & HeadEnabledFlag) != 0;
 }
 
 void TrackNote::Disable()
 {
-	Data.EnabledHitFlags &= ~EnabledFlag;
+	EnabledHitFlags &= ~EnabledFlag;
 	DisableHead();
 }
 
 void TrackNote::DisableHead()
 {
-	Data.EnabledHitFlags &= ~HeadEnabledFlag;
+	EnabledHitFlags &= ~HeadEnabledFlag;
 }
 
 void TrackNote::Hit()
 {
-	Data.EnabledHitFlags |= WasHitFlag;
+	EnabledHitFlags |= WasHitFlag;
 }
 
 bool TrackNote::WasNoteHit() const
 {
-	return (Data.EnabledHitFlags & WasHitFlag) != 0;
+	return (EnabledHitFlags & WasHitFlag) != 0;
 }
 
 float TrackNote::GetVerticalHold() const
@@ -119,15 +123,35 @@ float TrackNote::GetVerticalHold() const
 
 int TrackNote::GetSound() const
 {
-	return Data.Sound;
+	return Sound;
 }
 
 int TrackNote::GetFracKind() const
 {
-	return Data.FractionKind;
+	return FractionKind;
 }
 
-NoteData &TrackNote::GetNotedata()
+double &TrackNote::GetDataStartTime()
 {
-	return Data;
+	return StartTime;
+}
+
+double &TrackNote::GetDataEndTime()
+{
+	return EndTime;
+}
+
+uint16 &TrackNote::GetDataSound()
+{
+	return Sound;
+}
+
+uint8  TrackNote::GetDataNoteKind()
+{
+	return NoteKind;
+}
+
+uint8  TrackNote::GetDataFractionKind()
+{
+	return FractionKind;
 }

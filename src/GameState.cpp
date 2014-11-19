@@ -101,12 +101,21 @@ SongDatabase* GameState::GetSongDatabase()
 
 GString GameState::GetFallbackSkinFile(Directory Name)
 {
-	return DirectoryPrefix + SkinsPrefix + GString("default/") + Name.path();
+	GString SkinFallback = Configuration::GetSkinConfigs("Fallback");
+
+	// Actually, how many levels of fallback recursion should we allow?
+	if (SkinFallback.length() == 0)
+		SkinFallback = "default";
+	SkinFallback += "/";
+
+	return DirectoryPrefix + SkinsPrefix + SkinFallback + Name.path();
 }
 
 Image* GameState::GetSkinImage(Directory Path)
 {
-	return ImageLoader::Load(GetSkinFile(Path));
+	if (Path.path().length())
+		return ImageLoader::Load(GetSkinFile(Path));
+	else return NULL;
 }
 
 bool GameState::SkinSupportsChannelCount(int Count)

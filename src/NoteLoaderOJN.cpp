@@ -176,7 +176,7 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 	FixOJNEvents(Info);
 
 	// Then we need to have just as many measures going out as we've got in here.
-	Out->Measures.reserve(Info->Measures.size());
+	Out->Data->Measures.reserve(Info->Measures.size());
 
 
 	// First of all, we need to process BPM changes and fractional measures.
@@ -186,10 +186,10 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 	{
 		float MeasureBaseBeat = BeatForMeasure(Info, CurrentMeasure);
 
-		Out->Measures.push_back(VSRG::Measure());
+		Out->Data->Measures.push_back(VSRG::Measure());
 
 		// All fractional measure events were already handled at read time.
-		Out->Measures[CurrentMeasure].MeasureLength = Measure->Len;
+		Out->Data->Measures[CurrentMeasure].MeasureLength = Measure->Len;
 
 		for (std::vector<OjnInternalEvent>::iterator Evt = Measure->Events.begin();
 			Evt != Measure->Events.end();
@@ -262,7 +262,7 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 
 					Snd.Sound = Evt->iValue;
 					Snd.Time = Time;
-					Out->BGMEvents.push_back(Snd);
+					Out->Data->BGMEvents.push_back(Snd);
 				}
 				else // A note! In this case, we already 'normalized' O2Jam channels into raindrop channels.
 				{
@@ -279,7 +279,7 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 						Out->TotalNotes++;
 						Out->TotalObjects++;
 						Out->TotalScoringObjects++;
-						Out->Measures[CurrentMeasure].MeasureNotes[Evt->Channel].push_back(Note);
+						Out->Data->Measures[CurrentMeasure].MeasureNotes[Evt->Channel].push_back(Note);
 						break;
 					case 2:
 						Out->TotalScoringObjects++;
@@ -293,7 +293,7 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 						Note.StartTime = PendingLNs[Evt->Channel];
 						Note.EndTime = Time;
 						Note.Sound = PendingLNSound[Evt->Channel];
-						Out->Measures[CurrentMeasure].MeasureNotes[Evt->Channel].push_back(Note);
+						Out->Data->Measures[CurrentMeasure].MeasureNotes[Evt->Channel].push_back(Note);
 						break;
 					}
 				}
@@ -348,11 +348,13 @@ void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::
 	Out->SongAuthor = vArtist;
 	Out->SongName = vName;
 	Out->SongFilename = Head.ojm_file;
+
 	for (int i = 0; i < 3; i++)
 	{
 		OjnLoadInfo Info;
 		VSRG::Difficulty *Diff = new VSRG::Difficulty();
 		VSRG::O2JamTimingInfo *TInfo = new VSRG::O2JamTimingInfo;
+		VSRG::DifficultyLoadInfo *LInfo = new VSRG::DifficultyLoadInfo;
 
 		switch (i)
 		{
@@ -367,9 +369,11 @@ void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::
 			break;
 		}
 
+		Diff->Data = LInfo;
 		Diff->Level = Head.level[i];
-		Diff->TimingInfo = TInfo;
+		Diff->Data->TimingInfo = TInfo;
 		Diff->Author = Noter;
+		Diff->Data->StageFile = Directory(filename).Filename();
 
 		Info.S = Out;
 		filein.seekg(Head.note_offset[i]);

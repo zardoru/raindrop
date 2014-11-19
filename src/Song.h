@@ -81,10 +81,13 @@ namespace Game
 		/* Relative Paths */
 		GString SongFilename, BackgroundFilename;
 
-		/* When != 0 will look for this file and try and load it */
-		GString SongFileSource;
+		/* Song Audio for Preview*/
+		GString SongPreviewSource;
 
-		Song() { ID = -1;  };
+		/* Time to start preview */
+		float PreviewTime;
+
+		Song() { ID = -1; PreviewTime = 0; };
 		virtual ~Song() {};
 	};
 

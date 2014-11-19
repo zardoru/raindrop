@@ -174,17 +174,17 @@ int SongWheel::PrevDifficulty()
 
 int SongWheel::NextDifficulty()
 {
-	if (!CurrentList->IsDirectory(GetCursorIndex()))
+	if (!CurrentList->IsDirectory(SelectedItem))
 	{
 		DifficultyIndex++;
-		if (CurrentList->GetSongEntry(GetCursorIndex())->Mode == MODE_VSRG)
+		if (CurrentList->GetSongEntry(SelectedItem)->Mode == MODE_VSRG)
 		{
-			if (DifficultyIndex >= ((VSRG::Song*)CurrentList->GetSongEntry(GetCursorIndex()))->Difficulties.size())
+			if (DifficultyIndex >= ((VSRG::Song*)CurrentList->GetSongEntry(SelectedItem))->Difficulties.size())
 				DifficultyIndex = 0;
 		}
 		else
 		{
-			if (DifficultyIndex >= ((dotcur::Song*)CurrentList->GetSongEntry(GetCursorIndex()))->Difficulties.size())
+			if (DifficultyIndex >= ((dotcur::Song*)CurrentList->GetSongEntry(SelectedItem))->Difficulties.size())
 				DifficultyIndex = 0;
 		}
 	}
@@ -419,6 +419,7 @@ void SongWheel::SetSelectedItem(uint32 Item)
 	{
 		SelectedItem = Item;
 		GameState::GetInstance().SetSelectedSong(GetSelectedSong());
+		OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
 	}
 	else if (!CurrentList->IsDirectory(Item))
 		OnSongConfirm(CurrentList->GetSongEntry(Item), DifficultyIndex);

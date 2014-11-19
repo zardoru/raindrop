@@ -21,12 +21,16 @@ namespace GUI
 }
 
 class GraphObjectMan;
+class AudioStream;
 
 class ScreenSelectMusic : public Screen
 {
 	double Time;
 	double TransitionTime;
+	double PreviewWaitTime;
 
+	Game::Song* ToPreview;
+	Game::Song* PreviousPreview;
 	GraphObject2D Background;
 	BitmapFont* Font;
 
@@ -34,12 +38,16 @@ class ScreenSelectMusic : public Screen
 
 	GUI::Button *UpBtn, *BackBtn, *AutoBtn;
 
+	AudioStream *PreviewStream;
+
 	bool SwitchBackGuiPending;
 
 	bool OptionUpscroll;
 
 	bool IsTransitioning;
 	
+	void PlayPreview();
+	void PlayLoops();
 	void StopLoops();
 
 	float GetListHorizontalTransformation(const float Y);

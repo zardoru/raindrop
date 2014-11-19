@@ -1,5 +1,7 @@
 #ifdef MP3_ENABLED
+
 #include "Global.h"
+#include "Logging.h"
 #include "Audio.h"
 #include "AudioSourceMP3.h"
 
@@ -68,10 +70,31 @@ bool AudioSourceMP3::Open(const char* Filename)
 uint32 AudioSourceMP3::Read(short* buffer, size_t count)
 {
 	size_t ret;
-	int res = mpg123_read(mHandle, (unsigned char*)buffer, count * sizeof(short), &ret);
+	size_t toRead = count * sizeof(short);
 
-	if (res == MPG123_DONE)
-		mIsDataLeft = false;
+	if (toRead == 0)
+		return 0;
+
+	int res = mpg123_read(mHandle, (unsigned char*)buffer, toRead, &ret);
+
+	if (res == MPG123_DONE || ret < toRead)
+	{
+		if (!mSourceLoop)
+			mIsDataLeft = false;
+		else
+		{
+			Seek(0);
+
+			int place = 0;
+			if (res > 0)
+			{
+				count -= ret / sizeof(short);
+				place = ret / sizeof(short);
+			}
+
+			Read(buffer + place, count);
+		}
+	}
 
 	// according to mpg123_read documentation, ret is the amount of bytes read. We want to return samples read.
 	return ret / sizeof(short);
@@ -80,7 +103,15 @@ uint32 AudioSourceMP3::Read(short* buffer, size_t count)
 void AudioSourceMP3::Seek(float Time)
 {
 	mIsDataLeft = true;
-	mpg123_seek(mHandle, mRate * Time * mChannels, SEEK_SET);
+	off_t place = mRate * Time;
+	int res = mpg123_seek(mHandle, place, SEEK_SET);
+	if (res < 0 || res < place)
+	{
+		Log::Printf("Error seeking stream at %f (tried %d, got %d)\n", Time, place, res);
+	}
+
+	if (place > mLen)
+		Log::Printf("Attempt to seek after the stream's end.\n");
 }
 
 size_t AudioSourceMP3::GetLength()

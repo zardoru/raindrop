@@ -94,8 +94,8 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 		out << "\n\n[HitObjects]\n";
 
 		// Then, objects.
-		for (VSRG::MeasureVector::iterator k = (*i)->Measures.begin();
-			k != (*i)->Measures.end();
+		for (VSRG::MeasureVector::iterator k = (*i)->Data->Measures.begin();
+			k != (*i)->Data->Measures.end();
 			k++)
 		{
 			for (uint8 n = 0; n < (*i)->Channels; n++)
