@@ -323,6 +323,7 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 		OnCommand(#NOTES)
 		{
 			Diff->Timing = BPMData;
+			Diff->Data = new VSRG::DifficultyLoadInfo;
 			Diff->Data->StopsTiming = StopsData;
 			Diff->Offset = -Offset;
 			Diff->Duration = 0;
