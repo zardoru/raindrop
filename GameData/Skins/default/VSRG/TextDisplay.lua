@@ -76,7 +76,19 @@ function UpdateTextObjects()
 		pre_char = "+";
 		if PacemakerValue < 0 then
 			pre_char = "-";
+			pacemaker2.Red = 1
+			pacemaker2.Green = 0
+			pacemaker2.Blue = 0
+		elseif PaceMakerValue > 0 then
+			pacemaker2.Red = 0.45
+			pacemaker2.Green = 0.45
+			pacemaker2.Blue = 0
+		else
+			pacemaker2.Red = 1
+			pacemaker2.Green = 1
+			pacemaker2.Blue = 1
 		end
+		
 		pacemaker2.Text = string.format("%s%04d", pre_char, math.abs(PacemakerValue));
 	end
 
