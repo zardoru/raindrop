@@ -163,6 +163,7 @@ namespace VSRG
 			IsVirtual = false;
 			Channels = 0;
 			Level = 0;
+			Data = NULL;
 		};
 
 		~Difficulty() {
