@@ -27,6 +27,8 @@ SongWheel::SongWheel()
 	CurrentVerticalDisplacement = 0;
 	VSRGModeActive = (Configuration::GetConfigf("VSRGEnabled") != 0);
 	dotcurModeActive = (Configuration::GetConfigf("dotcurEnabled") != 0);
+
+	IsHovering = false;
 }
 
 int SongWheel::GetDifficulty() const
@@ -262,7 +264,10 @@ void SongWheel::GoUp()
 	boost::mutex::scoped_lock lock (*mLoadMutex);
 
 	if (CurrentList->HasParentDirectory())
+	{
 		CurrentList = CurrentList->GetParentDirectory();
+		OnDirectoryChange();
+	}
 }
 
 bool SongWheel::HandleScrollInput(const double dx, const double dy)
@@ -309,7 +314,17 @@ void SongWheel::Update(float Delta)
 	float Transformed = TransformHorizontal(mpos.y);
 	if (InWheelBounds(mpos))
 	{
+		IsHovering = true;
 		CursorPos = IndexAtPoint(mpos.y);
+	}
+	else
+	{
+		if (IsHovering)
+		{
+			IsHovering = false;
+			if (OnItemHoverLeave)
+				OnItemHoverLeave(GetCursorIndex(), CurrentList->GetEntryTitle(GetCursorIndex()), NULL);
+		}
 	}
 
 	// Hey we've got a new cursor position, update.
@@ -420,6 +435,9 @@ void SongWheel::SetSelectedItem(uint32 Item)
 		SelectedItem = Item;
 		GameState::GetInstance().SetSelectedSong(GetSelectedSong());
 		OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
+
+		if (CurrentList->IsDirectory(Item))
+			OnDirectoryChange();
 	}
 	else if (!CurrentList->IsDirectory(Item))
 		OnSongConfirm(CurrentList->GetSongEntry(Item), DifficultyIndex);

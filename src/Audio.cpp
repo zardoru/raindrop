@@ -206,13 +206,10 @@ public:
 	{
 		do
 		{
-
 				WaitForRingbufferSpace = true;
 
 				if (Threaded)
-				{
 					mut.lock();
-				}
 
 
 				for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
@@ -239,17 +236,14 @@ public:
 
 	void AppendMusic(SoundStream* Stream)
 	{
-		if (Threaded)
-					mut.lock();
+		mut.lock();
 		Streams.push_back(Stream);
-		if (Threaded)
-					mut.unlock();
+		mut.unlock();
 	}
 
 	void RemoveMusic(SoundStream *Stream)
 	{
-		if (Threaded)
-					mut.lock();
+		mut.lock();
 		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end();)
 		{
 			if ((*i) == Stream)
@@ -263,8 +257,7 @@ public:
 
 			i++;
 		}
-		if (Threaded)
-				mut.unlock();
+		mut.unlock();
 	}
 
 	void AddSound(SoundSample* Sample)
@@ -328,7 +321,7 @@ public:
 		memset(out, 0, count * sizeof(short));
 		memset(tsF, 0, sizeof(tsF));
 
-		// mut.lock();
+		mut.lock();
 		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
 		{
 			if ((*i)->IsPlaying())
@@ -338,7 +331,7 @@ public:
 			}
 		}
 
-		// mut.unlock();
+		mut.unlock();
 
 		mut2.lock();
 		for (std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); i++)
@@ -348,7 +341,9 @@ public:
 				Voices++;
 			}
 		}
+		mut2.unlock();
 
+		mut.lock();
 		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
 		{
 			if ((*i)->IsPlaying())
@@ -360,7 +355,9 @@ public:
 					tsF[i] = Compress ? SampleClamp(ts[i] + tsF[i]) : ts[i] + tsF[i];
 			}
 		}
+		mut.unlock();
 
+		mut2.lock();
 		for (std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); i++)
 		{
 			if ((*i)->IsPlaying())
@@ -372,8 +369,8 @@ public:
 					tsF[i] = Compress ? SampleClamp(ts[i] + tsF[i]) : ts[i] + tsF[i];
 			}
 		}
-
 		mut2.unlock();
+		
 
 		if (Normalize)
 		{

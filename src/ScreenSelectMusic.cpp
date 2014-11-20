@@ -52,6 +52,7 @@ void SetupWheelLua(LuaManager* Man)
 		.addFunction("PrevDifficulty", &SongWheel::PrevDifficulty)
 		.addFunction("SetDifficulty", &SongWheel::SetDifficulty)
 		.addFunction("GetCursorIndex", &SongWheel::GetCursorIndex)
+		.addFunction("SetCursorIndex", &SongWheel::SetCursorIndex)
 		.addFunction("SetSelectedItem", &SongWheel::SetSelectedItem)
 		.addFunction("GetSelectedItem", &SongWheel::GetSelectedItem)
 		.addFunction("GetNumItems", &SongWheel::GetNumItems)
@@ -96,8 +97,10 @@ ScreenSelectMusic::ScreenSelectMusic()
 
 	Game::ItemNotification ItClickNotif(bind(&ScreenSelectMusic::OnItemClick, this, _1, _2, _3));
 	Game::ItemNotification ItHoverNotif(bind(&ScreenSelectMusic::OnItemHover, this, _1, _2, _3));
+	Game::ItemNotification ItHoverLeaveNotif(bind(&ScreenSelectMusic::OnItemHoverLeave, this, _1, _2, _3));
 	Wheel->OnItemClick = ItClickNotif;
 	Wheel->OnItemHover = ItHoverNotif;
+	Wheel->OnItemHoverLeave = ItHoverLeaveNotif;
 
 	Wheel->TransformItem = bind(&ScreenSelectMusic::TransformItem, this, _1, _2, _3);
 
@@ -524,6 +527,17 @@ void ScreenSelectMusic::OnItemClick(uint32 Index, GString Line, Game::Song* Sele
 void ScreenSelectMusic::OnItemHover(uint32 Index, GString Line, Game::Song* Selected)
 {
 	if (Objects->GetEnv()->CallFunction("OnItemHover", 3))
+	{
+		luabridge::push(Objects->GetEnv()->GetState(), Index);
+		luabridge::push(Objects->GetEnv()->GetState(), Line);
+		luabridge::push(Objects->GetEnv()->GetState(), Selected);
+		Objects->GetEnv()->RunFunction();
+	}
+}
+
+void ScreenSelectMusic::OnItemHoverLeave(uint32 Index, GString Line, Game::Song* Selected)
+{
+	if (Objects->GetEnv()->CallFunction("OnItemHoverLeave", 3))
 	{
 		luabridge::push(Objects->GetEnv()->GetState(), Index);
 		luabridge::push(Objects->GetEnv()->GetState(), Line);

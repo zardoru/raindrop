@@ -59,6 +59,7 @@ class ScreenSelectMusic : public Screen
 	void OnDirectoryChange();
 	void OnItemClick(uint32 Index, GString Line, Game::Song* Selected);
 	void OnItemHover(uint32 Index, GString Line, Game::Song* Selected);
+	void OnItemHoverLeave(uint32 Index, GString Line, Game::Song* Selected);
 
 	void TransformItem(GraphObject2D* Item, Game::Song* Song, bool IsSelected);
 	void SwitchUpscroll(bool NewUpscroll);

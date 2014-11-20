@@ -80,6 +80,7 @@ private:
 	bool IsInitialized; 
 	bool dotcurModeActive;
 	bool VSRGModeActive;
+	bool IsHovering;
 
 	uint8 DifficultyIndex;
 
@@ -91,6 +92,7 @@ public:
 
 	ItemNotification OnItemClick;
 	ItemNotification OnItemHover;
+	ItemNotification OnItemHoverLeave;
 
 	SongNotification OnSongConfirm;
 	SongNotification OnSongTentativeSelect;

@@ -57,6 +57,11 @@ end
 function OnItemHover(Index, Line, Selected)
 end
 
+function OnItemHoverLeave(Index, Line, Selected)
+	local idx = Wheel:IndexAtPoint(ScreenHeight/2)
+	Wheel:SetCursorIndex(idx)
+end
+
 function OnItemClick(Index, Line, Selected)
 	Wheel:SetSelectedItem(Index)
 	Wheel.PendingY = (Wheel:NormalizedIndexAtPoint(ScreenHeight/2) - Index) * Wheel:GetItemHeight()
@@ -90,13 +95,27 @@ function InBackground(frac)
 	return 1
 end
 
+function BlackSlide(frac)
+	Obj.SetSize(ScreenWidth * frac, ScreenHeight)
+	Obj.SetAlpha(1)
+	return 1
+end
+
+function BlackSlideOut(frac)
+	BlackSlide(1-frac)
+	return 1
+end
+
 -- Screen Events
 function OnSelect()
-	TransformX = ScreenWidth + 80
-	return 2
+	TransformX = ScreenWidth + 250
+	Engine:AddAnimation(Black, "BlackSlide", EaseOut, 1, 0)	
+	return 1
 end
 
 function OnRestore()
+	Engine:AddAnimation(Black, "BlackSlideOut", EaseOut, 0.25, 0)
+
 	TransformX =  ScreenWidth * 15/20
 	CurrentTX = ScreenWidth	
 	BgAlpha = 0
@@ -110,6 +129,10 @@ function OnRestore()
 	Obj.AddAnimation( "InBackground", 0.5, 0, EaseOut )
 end
 
+function OnDirectoryChange()
+	TransformX =  ScreenWidth * 15/20
+	CurrentTX = ScreenWidth	+ 250
+end
 
 -- ButtonEvents
 function DirUpBtnClick()
@@ -143,7 +166,6 @@ function BackBtnHoverLeave()
 end
 
 function Init()
-
 	BackgroundAnimation:Init()
 
 	Banner = Obj.CreateTarget()
@@ -163,6 +185,14 @@ function Init()
 	dd.Y = 348
 	dd.X = 120
 	Engine:AddTarget(dd)
+	
+	Black = Object2D()
+	Black.Image = "Global/filter.png"
+	Black.Width = ScreenWidth
+	Black.Height = ScreenHeight
+	Black.Alpha = 0
+	Black.Z = 31
+	Engine:AddTarget(Black)
 end
 
 function updText()
@@ -178,7 +208,7 @@ function updText()
 					author = " by " .. author
 				end
 
-				dd.Text = "Selected " .. diff.Name .. author ..
+				dd.Text = "Selected " .. diff.Name .. author .. string.format(" (%d of %d)", Global.DifficultyIndex+1, s7k.DifficultyCount) ..
 					"\nChannels: " .. diff.Channels .. 
 					"\nSong by " .. s7k.Author ..
 					"\nLevel " .. diff.Level .. 
@@ -208,6 +238,7 @@ function Update(Delta)
 	if lastIndex ~= idx then
 	    lastIndex = idx
 		if lastIndex ~= Wheel:GetSelectedItem() then
+			Wheel:SetCursorIndex(idx)
 			Wheel:SetSelectedItem(idx)
 		end
 	end
