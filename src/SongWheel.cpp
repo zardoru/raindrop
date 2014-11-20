@@ -154,17 +154,17 @@ uint32 SongWheel::GetCursorIndex()
 int SongWheel::PrevDifficulty()
 {
 	uint8 max_index = 0;
-	if (!CurrentList->IsDirectory(GetCursorIndex()))
+	if (!CurrentList->IsDirectory(SelectedItem))
 	{
 		DifficultyIndex--;
 		max_index = 0;
-		if (CurrentList->GetSongEntry(GetCursorIndex())->Mode == MODE_VSRG)
+		if (CurrentList->GetSongEntry(SelectedItem)->Mode == MODE_VSRG)
 		{
-			max_index = ((VSRG::Song*)CurrentList->GetSongEntry(GetCursorIndex()))->Difficulties.size() - 1;
+			max_index = ((VSRG::Song*)CurrentList->GetSongEntry(SelectedItem))->Difficulties.size() - 1;
 		}
 		else
 		{
-			max_index = ((dotcur::Song*)CurrentList->GetSongEntry(GetCursorIndex()))->Difficulties.size() - 1;
+			max_index = ((dotcur::Song*)CurrentList->GetSongEntry(SelectedItem))->Difficulties.size() - 1;
 		}
 	}
 
@@ -199,9 +199,9 @@ bool SongWheel::InWheelBounds(Vec2 Pos)
 
 void SongWheel::SetDifficulty(uint32 i)
 {
-	if (!CurrentList->IsDirectory(GetCursorIndex()))
+	if (!CurrentList->IsDirectory(SelectedItem))
 	{
-		size_t maxIndex = ((VSRG::Song*)CurrentList->GetSongEntry(GetCursorIndex()))->Difficulties.size();
+		size_t maxIndex = ((VSRG::Song*)CurrentList->GetSongEntry(SelectedItem))->Difficulties.size();
 
 		if (maxIndex)
 			DifficultyIndex = Clamp(i, (uint32)0, (uint32)(maxIndex - 1));

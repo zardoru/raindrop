@@ -79,10 +79,10 @@ function UpdateTextObjects()
 			pacemaker2.Red = 1
 			pacemaker2.Green = 0
 			pacemaker2.Blue = 0
-		elseif PaceMakerValue > 0 then
+		elseif PacemakerValue > 0 then
 			pacemaker2.Red = 0.45
 			pacemaker2.Green = 0.45
-			pacemaker2.Blue = 0
+			pacemaker2.Blue = 1
 		else
 			pacemaker2.Red = 1
 			pacemaker2.Green = 1
