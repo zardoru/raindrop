@@ -103,7 +103,7 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
 #ifdef LINUX
 	else
 	{
-		Log::Logf(L"Audio: Enabling real time scheduling\n");
+		Log::Logf("Audio: Enabling real time scheduling\n");
 		PaAlsa_EnableRealtimeScheduling( mStream, true );
 	}	
 #endif
