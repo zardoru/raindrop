@@ -236,7 +236,10 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 						OnItemClick(Idx, CurrentList->GetEntryTitle(Idx), CurrentList->GetSongEntry(Idx));
 
 					if (CurrentList->IsDirectory(Idx))
+					{
 						CurrentList = CurrentList->GetListEntry(Idx);
+						if (OnDirectoryChange) OnDirectoryChange();
+					}
 				}
 				return true;
 			}
@@ -435,9 +438,6 @@ void SongWheel::SetSelectedItem(uint32 Item)
 		SelectedItem = Item;
 		GameState::GetInstance().SetSelectedSong(GetSelectedSong());
 		OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
-
-		if (CurrentList->IsDirectory(Item))
-			OnDirectoryChange();
 	}
 	else if (!CurrentList->IsDirectory(Item))
 		OnSongConfirm(CurrentList->GetSongEntry(Item), DifficultyIndex);
