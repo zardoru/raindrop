@@ -516,7 +516,7 @@ void ScreenGameplay7K::SetupMechanics()
 	// This must be done before setLifeTotal in order for it to work.
 	score_keeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
 	
-	if (CurrentDiff->Data->TimingInfo)
+	if (Configuration::GetConfigf("AlwaysUseRaindropMechanics") == 0 && CurrentDiff->Data->TimingInfo)
 	{
 		VSRG::CustomTimingInfo * TimingInfo = CurrentDiff->Data->TimingInfo;
 		if (TimingInfo->GetType() == VSRG::TI_BMS)
@@ -555,6 +555,7 @@ void ScreenGameplay7K::SetupMechanics()
 		else
 		{
 			lifebar_type = LT_GROOVE;
+			UsedTimingType = TT_TIME;
 			score_keeper->setLifeTotal(-1);
 			score_keeper->setJudgeRank(Configuration::GetConfigf("DefaultJudgeRank"));
 		}
