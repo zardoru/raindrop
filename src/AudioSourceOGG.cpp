@@ -50,7 +50,7 @@ AudioSourceOGG::~AudioSourceOGG()
 
 bool AudioSourceOGG::Open(const char* Filename)
 {
-#ifndef WIN32
+#if !(defined WIN32) || (defined MINGW)
 	int32 retv = ov_fopen(Filename, &mOggFile);
 #else
 	FILE* fp = _wfopen(Utility::Widen(Filename).c_str(), L"rb");

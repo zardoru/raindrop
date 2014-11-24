@@ -5,17 +5,22 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
-#include <boost/cstdint.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 
 using boost::function;
 using boost::bind;
+
+#ifndef HAS_STDINT
+#include <boost/cstdint.hpp>
 using boost::uint32_t;
 using boost::int32_t;
 using boost::int16_t;
 using boost::uint16_t;
 using boost::uint8_t;
+#else
+#include <stdint.h>
+#endif
 
 typedef glm::vec2 Vec2;
 typedef glm::mat4 Mat4;

@@ -17,7 +17,7 @@ class Line
 public:
 	Line();
 
-	void SetColor(float _R, float _G, float _B, float _A);
+	void SetColor(float R, float G, float B, float A);
 	void SetLocation(const Vec2 &p1, const Vec2 &p2);
 	void Render();
 };

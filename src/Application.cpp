@@ -144,7 +144,7 @@ void Application::Init()
 
 	ParseArgs();
 
-#ifdef WIN32
+#if (defined WIN32) && !(defined MINGW)
 	SetConsoleOutputCP(CP_UTF8);
 	_setmode(_fileno(stdout), _O_U8TEXT); 
 #else

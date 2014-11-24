@@ -1,3 +1,7 @@
+#ifdef WIN32
+#include <windows.h>
+#endif
+
 #include "Global.h"
 #include <GL/glew.h>
 #include <map>

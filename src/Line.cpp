@@ -11,12 +11,12 @@ Line::Line()
 	y2 = 100;
 }
 
-void Line::SetColor(float _R, float _G, float _B, float _A)
+void Line::SetColor(float iR, float iG, float iB, float iA)
 {
-	R = _R;
-	G = _G;
-	B = _B;
-	A = _A;
+	R = iR;
+	G = iG;
+	B = iB;
+	A = iA;
 }
 
 void Line::SetLocation(const Vec2 &p1, const Vec2 &p2)

@@ -3,7 +3,11 @@
 #ifndef MP3FILESRC_H_
 #define MP3FILESRC_H_
 
+#ifndef MINGW
 #include <mpg123.h>
+#else
+#include <mpg123mingw.h>
+#endif
 
 class AudioSourceMP3 : public AudioDataSource
 {

@@ -1,6 +1,8 @@
 #ifdef WIN32
 #include <Windows.h>
+#ifndef MINGW
 #include <direct.h>
+#endif
 #else
 #include <iconv.h>
 #endif
@@ -23,7 +25,7 @@ namespace Utility {
 	void DebugBreak()
 	{
 #ifndef NDEBUG
-#ifdef WIN32
+#if (defined WIN32) && !(defined MINGW)
 		__asm int 3
 #else
 		raise(SIGTRAP);
@@ -65,7 +67,7 @@ namespace Utility {
 
 	bool FileExists(GString Fn)
 	{
-#ifndef WIN32
+#if !(defined WIN32) || (defined MINGW)
 		struct stat st;
 		return (stat(Fn.c_str(), &st) != -1);
 #else
@@ -136,7 +138,7 @@ namespace Utility {
 		struct stat st;
 		if (stat(path.c_str(), &st))
 		{
-#ifdef WIN32
+#if (defined WIN32) && !(defined MINGW)
 			_mkdir(path.c_str());
 #else
 			mkdir(path.c_str(), S_IWUSR);
