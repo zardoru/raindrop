@@ -17,7 +17,6 @@ class GraphObject2D : public Transformation, public Drawable
 {
 	static VBO *mBuffer;
 	static bool IsInitialized;
-	glm::mat4x4 Matrix;
 
 private: // Transformations
 	void Cleanup();

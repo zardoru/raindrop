@@ -32,6 +32,7 @@ class SceneManager
 	ImageList *Images;
 	std::vector<GraphObject2D*> Objects;
 	std::vector <Animation> Animations;
+	bool mFrameSkip;
 public:
 	SceneManager();
 	~SceneManager();

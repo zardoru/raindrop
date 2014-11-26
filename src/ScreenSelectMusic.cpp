@@ -144,7 +144,7 @@ void ScreenSelectMusic::MainThreadInitialization()
 
 	EventAnimationFunction OnUpClick (bind(LuaEvt, LuaM, "DirUpBtnClick", _1));
 	EventAnimationFunction OnUpHover(bind(LuaEvt, LuaM, "DirUpBtnHover", _1));
-	EventAnimationFunction OnUpHoverLeave(bind(LuaEvt, LuaM, "DirUpHoverLeave", _1));
+	EventAnimationFunction OnUpHoverLeave(bind(LuaEvt, LuaM, "DirUpBtnHoverLeave", _1));
 	UpBtn->OnClick = OnUpClick;
 	UpBtn->OnHover = OnUpHover;
 	UpBtn->OnLeave = OnUpHoverLeave;
@@ -457,11 +457,14 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 		return;
 	}
 
+	if (UpBtn->HandleInput(key, code, isMouseInput))
+	{
+		Game::SongWheel::GetInstance().GoUp();
+		return;
+	}
+
 	if (Game::SongWheel::GetInstance().HandleInput(key, code, isMouseInput))
 		return;
-
-	if (UpBtn->HandleInput(key, code, isMouseInput))
-		Game::SongWheel::GetInstance().GoUp();
 
 	Objects->HandleInput(key, code, isMouseInput);
 

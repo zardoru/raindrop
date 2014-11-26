@@ -61,6 +61,7 @@ SceneManager::SceneManager()
 
 	CreateLuaInterface(Lua);
 	Images = new ImageList(true);
+	mFrameSkip = true;
 }
 
 SceneManager::~SceneManager()
@@ -152,6 +153,12 @@ void SceneManager::DrawTargets(double TimeDelta)
 
 void SceneManager::UpdateTargets(double TimeDelta)
 {
+	if (mFrameSkip)
+	{
+		mFrameSkip = false;
+		return;
+	}
+
 	for (auto i = Animations.begin();
 		i != Animations.end();)
 	{
