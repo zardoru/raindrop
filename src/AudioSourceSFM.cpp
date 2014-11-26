@@ -52,6 +52,7 @@ bool AudioSourceSFM::Open(const char* Filename)
 		return false;
 	}
 
+	sf_command(mWavFile, SFC_SET_SCALE_FLOAT_INT_READ, NULL, SF_TRUE);
 	mIsDataLeft = true;
 	return true;
 }
