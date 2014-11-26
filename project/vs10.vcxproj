@@ -165,6 +165,7 @@
   <ItemGroup>
     <ClCompile Include="..\ext-src\lua.c" />
     <ClCompile Include="..\ext-src\pa_ringbuffer.c" />
+    <ClCompile Include="..\ext-src\sha256.cpp" />
     <ClCompile Include="..\ext-src\SOIL\image_DXT.c" />
     <ClCompile Include="..\ext-src\SOIL\image_helper.c" />
     <ClCompile Include="..\ext-src\SOIL\SOIL.c" />
@@ -195,7 +196,7 @@
     <ClCompile Include="..\src\GameObject.cpp" />
     <ClCompile Include="..\src\GameWindow.cpp" />
     <ClCompile Include="..\src\GraphObject2D.cpp" />
-    <ClCompile Include="..\src\GraphObjectMan.cpp" />
+    <ClCompile Include="..\src\SceneManager.cpp" />
     <ClCompile Include="..\src\GuiButton.cpp" />
     <ClCompile Include="..\src\GuiTextPrompt.cpp" />
     <ClCompile Include="..\src\Image.cpp" />
@@ -239,6 +240,7 @@
     <ClCompile Include="..\src\SongTiming.cpp" />
     <ClCompile Include="..\src\SongWheel.cpp" />
     <ClCompile Include="..\src\TrackNote.cpp" />
+    <ClCompile Include="..\src\Transformation.cpp" />
     <ClCompile Include="..\src\TruetypeFont.cpp" />
     <ClCompile Include="..\src\Utility.cpp" />
   </ItemGroup>
@@ -247,6 +249,7 @@
     <ClInclude Include="..\ext-src\luaconf.h" />
     <ClInclude Include="..\ext-src\lualib.h" />
     <ClInclude Include="..\ext-src\pa_ringbuffer.h" />
+    <ClInclude Include="..\ext-src\sha256.h" />
     <ClInclude Include="..\ext-src\SOIL\image_DXT.h" />
     <ClInclude Include="..\ext-src\SOIL\image_helper.h" />
     <ClInclude Include="..\ext-src\SOIL\SOIL.h" />
@@ -268,6 +271,7 @@
     <ClInclude Include="..\src\Configuration.h" />
     <ClInclude Include="..\src\Converter.h" />
     <ClInclude Include="..\src\Directory.h" />
+    <ClInclude Include="..\src\Drawable.h" />
     <ClInclude Include="..\src\Font.h" />
     <ClInclude Include="..\src\GameObject.h" />
     <ClInclude Include="..\src\GameGlobal.h" />
@@ -276,7 +280,7 @@
     <ClInclude Include="..\src\GameWindow.h" />
     <ClInclude Include="..\src\GraphicalString.h" />
     <ClInclude Include="..\src\GraphObject2D.h" />
-    <ClInclude Include="..\src\GraphObjectMan.h" />
+    <ClInclude Include="..\src\SceneManager.h" />
     <ClInclude Include="..\src\GuiButton.h" />
     <ClInclude Include="..\src\GuiTextPrompt.h" />
     <ClInclude Include="..\src\Image.h" />
@@ -308,6 +312,7 @@
     <ClInclude Include="..\src\SongWheel.h" />
     <ClInclude Include="..\src\GuiSwitchPanel.h" />
     <ClInclude Include="..\src\TrackNote.h" />
+    <ClInclude Include="..\src\Transformation.h" />
     <ClInclude Include="..\src\TruetypeFont.h" />
     <ClInclude Include="..\src\VBO.h" />
     <ClInclude Include="..\src\AudioSourceSFM.h" />

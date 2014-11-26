@@ -7,7 +7,7 @@
 
 class AudioStream;
 class Image;
-class GraphObjectMan;
+class SceneManager;
 class ScoreKeeper7K;
 class Line;
 class AudioSourceOJM;
@@ -98,7 +98,7 @@ private:
 	Image*  NoteImagesHoldHead[VSRG::MAX_CHANNELS];
 	Image*  NoteImagesHoldTail[VSRG::MAX_CHANNELS];
 
-	GraphObjectMan *Animations;
+	SceneManager *Animations;
 
 	AudioStream *Music;
 	AudioSourceOJM *OJMAudio;

@@ -20,7 +20,7 @@ namespace GUI
 	class Button;
 }
 
-class GraphObjectMan;
+class SceneManager;
 class AudioStream;
 
 class ScreenSelectMusic : public Screen
@@ -34,7 +34,7 @@ class ScreenSelectMusic : public Screen
 	GraphObject2D Background;
 	BitmapFont* Font;
 
-	GraphObjectMan *Objects;
+	SceneManager *Objects;
 
 	GUI::Button *UpBtn, *BackBtn, *AutoBtn;
 

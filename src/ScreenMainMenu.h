@@ -4,13 +4,13 @@
 #include "GuiButton.h"
 #include "Line.h"
 
-class GraphObjectMan;
+class SceneManager;
 
 class ScreenMainMenu : public Screen
 {
 	GUI::Button PlayBtn, EditBtn, OptionsBtn, ExitBtn;
 
-	GraphObjectMan * Objects;
+	SceneManager * Objects;
 
 	GraphObject2D Background;
 public:

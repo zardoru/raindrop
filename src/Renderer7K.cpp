@@ -17,7 +17,7 @@
 #include "Image.h"
 #include "ImageLoader.h"
 #include "ImageList.h"
-#include "GraphObjectMan.h"
+#include "SceneManager.h"
 #include "BitmapFont.h"
 
 #include "ScreenGameplay7K.h"

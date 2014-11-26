@@ -6,7 +6,7 @@
 
 #include "LuaManager.h"
 #include "GraphObject2D.h"
-#include "GraphObjectMan.h"
+#include "SceneManager.h"
 #include "ImageList.h"
 
 #include "ScoreKeeper7K.h"

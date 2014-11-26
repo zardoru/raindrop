@@ -290,6 +290,11 @@ void SongWheel::Update(float Delta)
 
 	Time += Delta;
 
+	if (!IsLoading() && mLoadThread)
+	{
+		delete mLoadThread; mLoadThread = NULL;
+	}
+
 	if (!CurrentList)
 		return;
 	
@@ -507,4 +512,18 @@ void SongWheel::SetDeltaY(float PD)
 float SongWheel::GetTransformedY() const
 {
 	return shownListY;
+}
+
+bool SongWheel::IsLoading()
+{
+	if (mLoadThread)
+	{
+		if (!mLoadThread->timed_join(boost::posix_time::milliseconds(0))) // Not complete
+			return true;
+		else
+		{
+			return false;
+		}
+	}
+	else return false;
 }

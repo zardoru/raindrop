@@ -70,23 +70,6 @@ void GraphObject2D::InitVBO()
 	mBuffer->AssignData(QuadPositions);
 }
 
-void GraphObject2D::UpdateMatrix()
-{
-	if (DirtyMatrix)
-	{
-		Mat4 posMatrix =	glm::scale(
-		glm::rotate(
-			glm::translate(
-					    Mat4(1.0f), 
-					    glm::vec3(mPosition.x, mPosition.y, z_order)), 
-					mRotation, glm::vec3(0,0,1)
-				   ), glm::vec3(mScale.x*mWidth, mScale.y*mHeight, 1));
-
-		Matrix = posMatrix;
-		DirtyMatrix = false;
-	}
-}
-
 void GraphObject2D::UpdateTexture()
 {
 	if (!UvBuffer)
@@ -135,8 +118,6 @@ void GraphObject2D::Render()
 
 	if (Alpha == 0) return;
 
-	UpdateMatrix();
-
 	if (BlendingMode == MODE_ADD)
 	{
 		glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
@@ -149,7 +130,8 @@ void GraphObject2D::Render()
 	}
 
 	// Assign our matrix.
-	WindowFrame.SetUniform(U_MVP,  &(Matrix[0][0]));
+	Mat4 Mat = GetMatrix();
+	WindowFrame.SetUniform(U_MVP,  &(Mat[0][0]));
 
 	// Set the color.
 	WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha);

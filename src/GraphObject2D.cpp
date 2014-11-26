@@ -9,11 +9,7 @@ bool GraphObject2D::IsInitialized = false;
 void GraphObject2D::Construct(bool doInitTexture)
 {
 	SetCropToWholeImage();
-	mWidth = mHeight = 0;
-
-	mPosition = Vec2(0, 0);
-	SetScale(1);
-	mRotation = 0;
+	
 	Lighten = false;
 	LightenFactor = 1.0f;
 	BlackToTransparent = false;
@@ -23,11 +19,8 @@ void GraphObject2D::Construct(bool doInitTexture)
 	Red = Blue = Green = 1.0;
 	Alpha = 1.0;
 
-	z_order = 0;
-
 	Centered = false;
 	ColorInvert = false;
-	DirtyMatrix = true;
 	DirtyTexture = true;
 	DoTextureCleanup = true;
 	AffectedByLightning = false;
@@ -87,9 +80,7 @@ void GraphObject2D::SetImage(Image* image, bool ChangeSize)
 		if (ChangeSize)
 		{
 			SetCropToWholeImage();
-			mWidth = image->w;
-			mHeight = image->h;
-			DirtyMatrix = true;
+			SetSize(image->w, image->h);
 		}
 	}
 }
@@ -117,124 +108,6 @@ void GraphObject2D::SetCropToWholeImage()
 	DirtyTexture = true;
 }
 
-// Scale
-void GraphObject2D::SetScale(Vec2 Scale)
-{
-	mScale = Scale;
-	DirtyMatrix = true;
-}
-
-void GraphObject2D::SetScale(float Scale)
-{
-	SetScaleX(Scale);
-	SetScaleY(Scale);
-}
-
-void GraphObject2D::SetScaleX(float ScaleX)
-{
-	mScale.x = ScaleX;
-	DirtyMatrix = true;
-}
-
-void GraphObject2D::SetScaleY(float ScaleY)
-{
-	mScale.y = ScaleY;
-	DirtyMatrix = true;
-}
-
-Vec2 GraphObject2D::GetScale() const
-{
-	return mScale;
-}
-
-// Position
-void GraphObject2D::SetPosition(Vec2 Pos)
-{
-	mPosition = Pos;
-	DirtyMatrix = true;
-}
-
-void GraphObject2D::SetPosition(float pX, float pY)
-{
-	SetPositionX(pX);
-	SetPositionY(pY);
-}
-
-void GraphObject2D::SetPositionX(float pX)
-{
-	mPosition.x = pX;
-	DirtyMatrix = true;
-}
-
-void GraphObject2D::SetPositionY(float pY)
-{
-	mPosition.y = pY;
-	DirtyMatrix = true;
-}
-
-void GraphObject2D::AddPosition(float pX, float pY)
-{
-	mPosition.x += pX;
-	mPosition.y += pY;
-	DirtyMatrix = true;
-}
-
-void GraphObject2D::AddPosition(Vec2 pos)
-{
-	mPosition += pos;
-	DirtyMatrix = true;
-}
-
-Vec2 GraphObject2D::GetPosition() const
-{
-	return mPosition;
-}
-
-// Size
-void GraphObject2D::SetSize(Vec2 Size)
-{
-	mWidth = Size.x;
-	mHeight = Size.y;
-	DirtyMatrix = true;
-}
-
-void GraphObject2D::SetSize(float Size)
-{
-	SetSize(Vec2(Size, Size));
-}
-
-void GraphObject2D::SetSize(float W, float H)
-{
-	SetSize(Vec2(W, H));
-}
-
-void GraphObject2D::SetWidth(uint32 W)
-{
-	mWidth = W;
-	DirtyMatrix = true;
-}
-
-void GraphObject2D::SetHeight(uint32 H)
-{
-	mHeight = H;
-	DirtyMatrix = true;
-}
-
-Vec2 GraphObject2D::GetSize() const
-{
-	return Vec2(mWidth, mHeight);
-}
-
-float GraphObject2D::GetWidth() const
-{
-	return mWidth;
-}
-
-float GraphObject2D::GetHeight() const
-{
-	return mHeight;
-}
-
 void GraphObject2D::SetCrop(Vec2 Crop1, Vec2 Crop2)
 {
 	mCrop_x1 = Crop1.x;
@@ -258,42 +131,10 @@ void GraphObject2D::SetCrop2(Vec2 Crop2)
 	DirtyTexture = true;
 }
 
-// Rotation
-void GraphObject2D::SetRotation(float Rot)
-{
-	mRotation = Rot;
-	DirtyMatrix = true;
-}
-
-
-float GraphObject2D::GetRotation() const
-{
-	return mRotation;
-}
-
-void GraphObject2D::AddRotation(float Rot)
-{
-	mRotation += Rot;
-
-	if (mRotation >= 360)
-		mRotation -= 360;
-	DirtyMatrix = true;
-}
 
 void GraphObject2D::Invalidate()
 {
 	IsInitialized = false;
-}
-
-uint32 GraphObject2D::GetZ() const
-{
-	return z_order;
-}
-
-void GraphObject2D::SetZ(uint32 Z)
-{
-	z_order = Z;
-	DirtyMatrix = true;
 }
 
 Image* GraphObject2D::GetImage()
@@ -309,37 +150,6 @@ void GraphObject2D::BindTopLeftVBO()
 void GraphObject2D::BindTextureVBO()
 {
 	UvBuffer->Bind();
-}
-
-const glm::mat4 &GraphObject2D::GetMatrix()
-{
-	UpdateMatrix();
-	return Matrix;
-}
-
-bool GraphObject2D::ShouldUpdateMatrix() const
-{
-	return DirtyMatrix;
-}
-
-float GraphObject2D::GetScaleX() const
-{
-	return mScale.x;
-}
-
-float GraphObject2D::GetScaleY() const
-{
-	return mScale.y;
-}
-
-float GraphObject2D::GetPositionX() const
-{
-	return mPosition.x;
-}
-
-float GraphObject2D::GetPositionY() const
-{
-	return mPosition.y;
 }
 
 GString GraphObject2D::GetImageFilename() const

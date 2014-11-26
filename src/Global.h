@@ -52,6 +52,7 @@ namespace Utility
 	void CheckDir (GString Dirname);
 	int GetLMT(GString Path);
 	void RemoveFilenameIllegalCharacters(GString &S, bool removeSlash = false);
+	GString getSha256ForFile(GString Filename);
 }
 
 

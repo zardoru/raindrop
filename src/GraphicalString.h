@@ -8,7 +8,6 @@ class GraphicalString : public GraphObject2D
 public:
 	GraphicalString();
 	void SetText(GString _Text);
-	void SetColour(float red, float green, float blue);
 	GString GetText() const;
 	void SetFont(Font* _Font);
 	Font* GetFont() const;

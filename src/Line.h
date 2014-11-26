@@ -1,9 +1,11 @@
 #ifndef LINE_H_
 #define LINE_H_
 
+#include "Drawable.h"
+
 class VBO;
 
-class Line 
+class Line : public Drawable
 {
 	VBO *lnvbo;
 

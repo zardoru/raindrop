@@ -146,6 +146,8 @@ public:
 
 	float GetItemHeight();
 
+	bool IsLoading();
+
 	void Update(float Delta);
 	void Render();
 };

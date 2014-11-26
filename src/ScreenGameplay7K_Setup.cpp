@@ -16,7 +16,7 @@
 
 
 #include "LuaManager.h"
-#include "GraphObjectMan.h"
+#include "SceneManager.h"
 
 #include "ScoreKeeper7K.h"
 #include "TrackNote.h"
@@ -170,7 +170,7 @@ void ScreenGameplay7K::Init(VSRG::Song* S, int DifficultyIndex, const ScreenGame
 	Preloaded = Param.Preloaded;
 	Auto = Param.Auto;
 
-	Animations = new GraphObjectMan();
+	Animations = new SceneManager();
 	score_keeper = new ScoreKeeper7K();
 	UpdateScriptScoreVariables();
 }

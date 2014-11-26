@@ -91,14 +91,8 @@
     <ClCompile Include="..\src\Rendering.cpp">
       <Filter>Source\backend\render</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\GraphObjectMan.cpp">
-      <Filter>Source\backend\other</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Screen.cpp">
-      <Filter>Source\backend\other</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Utility.cpp">
-      <Filter>Source\backend\other</Filter>
+      <Filter>Source\backend\structure</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ScreenLoading.cpp">
       <Filter>Source\game global\screens</Filter>
@@ -235,6 +229,18 @@
     <ClCompile Include="..\src\ScoreKeeper7K_o2jam.cpp">
       <Filter>Source\vsrg\gameplay</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\SceneManager.cpp">
+      <Filter>Source\backend\structure</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Transformation.cpp">
+      <Filter>Source\backend\structure</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext-src\sha256.cpp">
+      <Filter>Source\libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Utility.cpp">
+      <Filter>Source\backend</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">
@@ -310,10 +316,7 @@
       <Filter>Source\backend\lua</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Screen.h">
-      <Filter>Source\backend\other</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\GraphObjectMan.h">
-      <Filter>Source\backend\other</Filter>
+      <Filter>Source\backend\structure</Filter>
     </ClInclude>
     <ClInclude Include="..\src\ScreenSelectMusic.h">
       <Filter>Source\game global\screens</Filter>
@@ -441,6 +444,18 @@
     <ClInclude Include="..\src\ScreenGameplay7K_Mechanics.h">
       <Filter>Source\vsrg\gameplay</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\SceneManager.h">
+      <Filter>Source\backend\structure</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Transformation.h">
+      <Filter>Source\backend\structure</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Drawable.h">
+      <Filter>Source\backend\structure</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ext-src\sha256.h">
+      <Filter>Source\libraries</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -503,9 +518,6 @@
     <Filter Include="Source\backend\lua">
       <UniqueIdentifier>{bbfaaf09-f4a3-4219-a896-c60616c8ad7f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\backend\other">
-      <UniqueIdentifier>{b6179f2f-8e96-413f-930e-671459c7b05e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\game global\screens">
       <UniqueIdentifier>{b9fe9eea-fefc-47ad-aa57-650da1c43ac8}</UniqueIdentifier>
     </Filter>
@@ -532,6 +544,9 @@
     </Filter>
     <Filter Include="Source\lua">
       <UniqueIdentifier>{e0e66626-2faf-4c1f-8981-416451e59282}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\backend\structure">
+      <UniqueIdentifier>{b6179f2f-8e96-413f-930e-671459c7b05e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

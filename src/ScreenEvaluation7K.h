@@ -5,7 +5,7 @@
 
 class BitmapFont;
 class ScoreKeeper7K;
-class GraphObjectMan;
+class SceneManager;
 
 class ScreenEvaluation7K : public Screen
 {
@@ -13,7 +13,7 @@ class ScreenEvaluation7K : public Screen
 	BitmapFont* Font;
 	GString DisplayResult;
 	ScoreKeeper7K *Score;
-	GraphObjectMan *Objects;
+	SceneManager *Objects;
 public:
 	ScreenEvaluation7K(Screen *Parent);
 	void Init(ScoreKeeper7K *Result);

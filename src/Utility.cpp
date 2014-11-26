@@ -10,9 +10,11 @@
 #include <csignal>
 #include <sys/stat.h>
 #include <clocale>
+#include <fstream>
 
 #include "Global.h"
 #include "Logging.h"
+#include "sha256.h"
 
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/classification.hpp>
@@ -168,6 +170,27 @@ namespace Utility {
 		boost::replace_all(S, "*", "");
 		if (removeSlash)
 			boost::replace_all(S, "/", "");
+	}
+
+	GString getSha256ForFile(GString Filename)
+	{
+		SHA256 SHA;
+		std::ifstream InStream(Filename.c_str());
+		unsigned char tmpbuf[256];
+		unsigned char Out[64];
+
+		SHA.init();
+
+		while (!InStream.eof())
+		{
+			InStream.read((char*)tmpbuf, 256);
+			size_t cnt = InStream.gcount();
+
+			SHA.update(tmpbuf, cnt);
+		}
+
+		SHA.final(Out);
+		return GString((char*)Out);
 	}
 
 } // namespace Utility

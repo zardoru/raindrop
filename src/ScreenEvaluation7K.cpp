@@ -8,7 +8,7 @@
 #include "ImageLoader.h"
 #include "Audio.h"
 #include "ScoreKeeper7K.h"
-#include "GraphObjectMan.h"
+#include "SceneManager.h"
 #include "LuaManager.h"
 
 #include <iostream>
@@ -28,7 +28,7 @@ void ScreenEvaluation7K::Init(ScoreKeeper7K *Result)
 	
 	Score = Result;
 
-	Objects = new GraphObjectMan;
+	Objects = new SceneManager;
 	SetupScorekeeper7KLuaInterface(Objects->GetEnv()->GetState());
 	SetScorekeeper7KInstance(Objects->GetEnv()->GetState(), Result);
 	GameState::GetInstance().InitializeLua(Objects->GetEnv()->GetState());

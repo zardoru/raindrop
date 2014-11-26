@@ -51,6 +51,7 @@ void SetupWheelLua(LuaManager* Man)
 		.addFunction("NextDifficulty", &SongWheel::NextDifficulty)
 		.addFunction("PrevDifficulty", &SongWheel::PrevDifficulty)
 		.addFunction("SetDifficulty", &SongWheel::SetDifficulty)
+		.addFunction("IsLoading", &SongWheel::IsLoading)
 		.addFunction("GetCursorIndex", &SongWheel::GetCursorIndex)
 		.addFunction("SetCursorIndex", &SongWheel::SetCursorIndex)
 		.addFunction("SetSelectedItem", &SongWheel::SetSelectedItem)
@@ -194,7 +195,7 @@ void ScreenSelectMusic::LoadThreadInitialization()
 
 	ImageLoader::LoadFromManifest(Manifest, 1, GameState::GetInstance().GetSkinPrefix());
 
-	Objects = new GraphObjectMan;
+	Objects = new SceneManager;
 	SetupWheelLua(Objects->GetEnv());
 	Objects->Preload( GameState::GetInstance().GetSkinFile("screenselectmusic.lua"), "Preload" );
 

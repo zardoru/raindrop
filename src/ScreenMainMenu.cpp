@@ -52,7 +52,7 @@ void ScreenMainMenu::Init()
 {
 	Running = true;
 
-	Objects = new GraphObjectMan();
+	Objects = new SceneManager();
 	MainMenuLua = Objects->GetEnv();
 
 	Objects->AddTarget(&Background);

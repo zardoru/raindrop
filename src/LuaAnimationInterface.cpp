@@ -5,13 +5,14 @@
 #include "ImageLoader.h"
 #include "GraphObject2D.h"
 #include "LuaManager.h"
-#include "GraphObjectMan.h"
+#include "SceneManager.h"
 #include "Configuration.h"
 #include "LuaBridge.h"
 
 #include "Font.h"
 #include "TruetypeFont.h"
 #include "BitmapFont.h"
+#include "Line.h"
 
 #include "GraphicalString.h"
 
@@ -132,7 +133,7 @@ namespace LuaAnimFuncs
 
 	int CreateTarget(lua_State *L)
 	{
-		GraphObjectMan * Manager = GetObjectFromState<GraphObjectMan>(L, "GOMAN");
+		SceneManager * Manager = GetObjectFromState<SceneManager>(L, "GOMAN");
 		GraphObject2D *Target = new GraphObject2D;
 		GraphObject2D **RetVal = (GraphObject2D**)lua_newuserdata(L, sizeof(GraphObject2D **));
 		*RetVal = Target;
@@ -297,7 +298,7 @@ namespace LuaAnimFuncs
 	// Lua Animation stuff: Move these onto their own file eventually.
 	int AddLuaAnimation(lua_State* L)
 	{
-		GraphObjectMan* GoMan = GetObjectFromState<GraphObjectMan> (L, "GOMAN");
+		SceneManager* GoMan = GetObjectFromState<SceneManager> (L, "GOMAN");
 		GraphObject2D* Target = GetObjectFromState<GraphObject2D> (L, "Target");
 		GString Name = luaL_checkstring(L, 1);
 		float Duration = luaL_checknumber(L, 2);
@@ -310,7 +311,7 @@ namespace LuaAnimFuncs
 
 	int LuaStopAnimationsForTarget(lua_State *L)
 	{
-		GraphObjectMan* GoMan = GetObjectFromState<GraphObjectMan> (L, "GOMAN");
+		SceneManager* GoMan = GetObjectFromState<SceneManager> (L, "GOMAN");
 		GraphObject2D* Target = GetObjectFromState<GraphObject2D> (L, "Target");
 
 		GoMan->StopAnimationsForTarget(Target);
@@ -390,7 +391,21 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 #define v(x) addData(#x, &GraphObject2D::x)
 
 	luabridge::getGlobalNamespace(AnimLua->GetState())
-		.beginClass <GraphObject2D>("Object2D")
+		.beginClass <Transformation>("Transformation")
+		.addConstructor<void(*) ()>()
+		.addProperty("Z", &Transformation::GetZ, &Transformation::SetZ)
+		.addProperty("Rotation", &Transformation::GetRotation, &Transformation::SetRotation)
+		.addProperty("Width", &Transformation::GetWidth, &Transformation::SetWidth)
+		.addProperty("Height", &Transformation::GetHeight, &Transformation::SetHeight)
+		.addProperty("ScaleX", &Transformation::GetScaleX, &Transformation::SetScaleX)
+		.addProperty("ScaleY", &Transformation::GetScaleY, &Transformation::SetScaleY)
+		.addProperty("X", &Transformation::GetPositionX, &Transformation::SetPositionX)
+		.addProperty("Y", &Transformation::GetPositionY, &Transformation::SetPositionY)
+		.addFunction("SetChainTransformation", &Transformation::ChainTransformation)
+		.endClass();
+
+	luabridge::getGlobalNamespace(AnimLua->GetState())
+		.deriveClass <GraphObject2D, Transformation>("Object2D")
 		.addConstructor<void(*) ()>()
 		.v(Centered)
 		.v(Lighten)
@@ -401,24 +416,28 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 		.v(Red)
 		.v(Blue)
 		.v(Green)
-		.p(Rotation)
-		.p(Z)
-		.p(Width)
-		.p(Height)
-		.p(ScaleX)
-		.p(ScaleY)
 		.p(BlendMode)
 		.f(SetCropByPixels)
-		.addProperty("X", &GraphObject2D::GetPositionX, &GraphObject2D::SetPositionX)
-		.addProperty("Y", &GraphObject2D::GetPositionY, &GraphObject2D::SetPositionY)
 		.addProperty("Image", GetImage, SetImage) // Special for setting image.
-		.endClass()
-		.beginClass <GraphObjectMan> ("GraphObjMan")
-		.addFunction("AddAnimation", &GraphObjectMan::AddLuaAnimation)
-		.addFunction("AddTarget", &GraphObjectMan::AddTarget)
+		.endClass();
+	
+	/*
+	luabridge::getGlobalNamespace(AnimLua->GetState())
+		.beginClass <Line>("Line2D")
+		.addConstructor<void(*) ()>()
+		.addFunction("SetColor", &Line::SetColor)
+		.addFunction("SetLocation", &Line::SetLocation)
+		.endClass();
+		*/
+
+	luabridge::getGlobalNamespace(AnimLua->GetState())
+		.beginClass <SceneManager> ("GraphObjMan")
+		.addFunction("AddAnimation", &SceneManager::AddLuaAnimation)
+		.addFunction("AddTarget", &SceneManager::AddTarget)
+		.addFunction("Sort", &SceneManager::Sort)
 		.endClass();
 
-	luabridge::push(AnimLua->GetState(), GetObjectFromState<GraphObjectMan>(AnimLua->GetState(), "GOMAN"));
+	luabridge::push(AnimLua->GetState(), GetObjectFromState<SceneManager>(AnimLua->GetState(), "GOMAN"));
 	lua_setglobal(AnimLua->GetState(), "Engine");
 #undef f
 #undef p
