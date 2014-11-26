@@ -326,7 +326,7 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 
 bool AudioStream::Open(const char* Filename)
 {
-	mSource = SourceFromExt(Filename);
+	mSource = SourceFromExt(RearrangeFilename(Filename));
 
 	if (mSource && mSource->IsValid())
 	{
