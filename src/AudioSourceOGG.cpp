@@ -69,7 +69,10 @@ bool AudioSourceOGG::Open(const char* Filename)
 		mIsValid = true;
 		mIsDataLeft = true;
 	}else
+	{
 		mIsValid = false;
+		Log::Printf("Failure loading ogg file: %s (%d)\n", Filename, retv);
+	}
 
 	return mIsValid;
 }
