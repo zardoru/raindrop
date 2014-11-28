@@ -114,7 +114,7 @@ void ScreenGameplay7K::SetupLua()
 	lua_setglobal(Animations->GetEnv()->GetState(), "Game");
 
 	SetupScriptConstants();
-	UpdateScriptScoreVariables();
+	// UpdateScriptScoreVariables();
 	UpdateScriptVariables();
 
 	Animations->Preload(GameState::GetInstance().GetSkinFile("screengameplay7k.lua"), "Preload");

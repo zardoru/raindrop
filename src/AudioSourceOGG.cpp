@@ -61,7 +61,7 @@ bool AudioSourceOGG::Open(const char* Filename)
 	dFILENAME = Filename;
 #endif
 
-	if (retv == 0)
+	if (retv == 0 && fp)
 	{
 		info = ov_info(&mOggFile, -1);
 		comment = ov_comment(&mOggFile, -1);

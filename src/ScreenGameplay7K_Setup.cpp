@@ -279,7 +279,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 	{
 		Music = new AudioStream();
 		Music->SetPitch(Speed);
-		if (Music->Open((MySong->SongDirectory + MySong->SongFilename).c_str()))
+		if (MySong->SongFilename.length() && Music->Open((MySong->SongDirectory + MySong->SongFilename).c_str()))
 		{
 			MixerAddStream(Music);
 		}
