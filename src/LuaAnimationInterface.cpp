@@ -406,7 +406,11 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 		.endClass();
 
 	luabridge::getGlobalNamespace(AnimLua->GetState())
+#ifdef WIN32
 		.beginClass <GraphObject2D>("Object2D")
+#else
+		.deriveClass<GraphObject2D, Transformation>("Object2D")
+#endif
 		.addConstructor<void(*) ()>()
 		.v(Centered)
 		.v(Lighten)
@@ -418,6 +422,10 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 		.v(Blue)
 		.v(Green)
 		.p(BlendMode)
+		/* There's some weird code generation stuff going on so we need to add a few conditions per-compiler, it seems.
+		 Basically, whenever you use a transformation function on windows without declaring it explicitly on the Go2D class
+		 it plain won't call the functions. Odd stuff. */
+#ifdef WIN32 
 		.addProperty("Z", &Transformation::GetZ, &Transformation::SetZ)
 		.addProperty("Layer", &Transformation::GetZ, &Transformation::SetZ)
 		.addProperty("Rotation", &Transformation::GetRotation, &Transformation::SetRotation)
@@ -427,6 +435,7 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 		.addProperty("ScaleY", &Transformation::GetScaleY, &Transformation::SetScaleY)
 		.addProperty("X", &Transformation::GetPositionX, &Transformation::SetPositionX)
 		.addProperty("Y", &Transformation::GetPositionY, &Transformation::SetPositionY)
+#endif
 		.addFunction("SetChainTransformation", &Transformation::ChainTransformation)
 		.f(SetCropByPixels)
 		.addProperty("Image", GetImage, SetImage) // Special for setting image.
