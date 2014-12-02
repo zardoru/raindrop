@@ -53,9 +53,11 @@ function Init()
 	BG.X = ScreenWidth / 2
 	BG.Y = ScreenHeight / 2
 	
-	local Ratio = ScreenHeight / BG.Height
-	BG.ScaleX = Ratio
-	BG.ScaleY = Ratio
+	local HRatio = ScreenHeight / BG.Height
+	local VRatio = ScreenWidth / BG.Width
+	
+	BG.ScaleX = math.min(HRatio, VRatio)
+	BG.ScaleY = math.min(HRatio, VRatio)
 	BG.Layer = 10
 	BG.Alpha = 0
 	

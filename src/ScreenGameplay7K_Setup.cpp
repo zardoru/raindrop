@@ -355,11 +355,29 @@ bool ScreenGameplay7K::LoadSongAudio()
 
 bool ScreenGameplay7K::ProcessSong()
 {
+	if (AudioCompensation)
+		TimeCompensation = MixerGetLatency();
+
 	double DesiredDefaultSpeed = Configuration::GetSkinConfigf("DefaultSpeedUnits");
 	double Drift = TimeCompensation;
 
 	ESpeedType Type = (ESpeedType)(int)Configuration::GetSkinConfigf("DefaultSpeedKind");
 	double SpeedConstant = 0; // Unless set, assume we're using speed changes
+
+	int ApplyDriftVirtual = Configuration::GetConfigf("UseAudioCompensationKeysounds");
+	int ApplyDriftDecoder = Configuration::GetConfigf("UseAudioCompensationNonKeysounded");
+	double rDrift = Drift;
+
+	if ((!ApplyDriftVirtual && CurrentDiff->IsVirtual) || (!ApplyDriftDecoder && !CurrentDiff->IsVirtual))
+		Drift = 0;
+	else
+		Drift = rDrift;
+
+	if (!CurrentDiff->IsVirtual) // Apply only on non-keysounded files..
+		TimeCompensation += Configuration::GetConfigf("Offset7K");
+
+	Log::Logf("TimeCompensation: %f (Latency: %f / Offset: %f)\n", TimeCompensation, MixerGetLatency(), CurrentDiff->Offset);
+
 
 	/*
  * 		There are three kinds of speed modifiers:
@@ -377,8 +395,6 @@ bool ScreenGameplay7K::ProcessSong()
 		Log::Printf("Error loading chart: No timing data.\n");
 		return false;
 	}
-
-	TimeCompensation += Configuration::GetConfigf("Offset7K");
 
 	Log::Printf("Processing song... ");
 
@@ -612,9 +628,6 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		MixerAddSample(FailSnd);
 	else
 		delete FailSnd;
-
-	if (AudioCompensation)
-		TimeCompensation = MixerGetLatency();
 
 	if (!LoadChartData() || !LoadSongAudio() || !ProcessSong() || !LoadBMPs())
 	{

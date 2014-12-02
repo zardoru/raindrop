@@ -268,7 +268,7 @@ void Difficulty::ProcessSpeedVariations(TimingData& BPS, TimingData& VerticalSpe
 			Theorically, if there were a VSpeed change after this one (such as a BPM change) we've got to modify them 
 			if they're between this and the next speed change.
 
-			Apparently, this behaviour is a "bug" since osu!mania reset SV changes
+			Apparently, this behaviour is a "bug" since osu!mania resets SV changes
 			after a BPM change.
 		*/
 
@@ -320,15 +320,6 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 	*/
 
 	assert(Data != NULL);
-
-	int ApplyDriftVirtual = Configuration::GetConfigf("UseAudioCompensationKeysounds");
-	int ApplyDriftDecoder = Configuration::GetConfigf("UseAudioCompensationNonKeysounded");
-	double rDrift = Drift;
-
-	if ((!ApplyDriftVirtual && IsVirtual) || (!ApplyDriftDecoder && !IsVirtual))
-		Drift = 0;
-	else
-		Drift = rDrift;
 
 	ProcessBPS(BPS, Drift);
 	ProcessVSpeeds(BPS, VerticalSpeeds, SpeedConstant);
@@ -408,7 +399,7 @@ void Difficulty::GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSp
 
 		if (BPMType == BT_Beat)
 		{
-			PositionOut = IntegrateToTime(VerticalSpeeds, TimeAtBeat(Timing, Offset, Last) + StopTimeAtBeat(Data->StopsTiming, Last));
+			PositionOut = IntegrateToTime(VerticalSpeeds, TimeAtBeat(Timing, Offset, Last) + StopTimeAtBeat(Data->StopsTiming, Last) + Drift);
 		}
 		else
 		{
@@ -429,11 +420,8 @@ void Difficulty::Destroy()
 		Data = NULL;
 	}
 	
-	Timing.clear();
-	Timing.shrink_to_fit();
-
+	Timing.clear(); Timing.shrink_to_fit();
 	Author.clear(); Author.shrink_to_fit();
-
 	Filename.clear(); Filename.shrink_to_fit();
 
 	SoundList.clear();
