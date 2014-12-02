@@ -1081,28 +1081,35 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 
 			OnCommand(#DIFFICULTY)
 			{
-				int Kind = atoi(CommandContents.c_str());
 				GString dName;
-
-				switch (Kind)
+				if (Utility::IsNumeric(CommandContents.c_str()))
 				{
-				case 1:
-					dName = "Beginner";
-					break;
-				case 2:
-					dName = "Normal";
-					break;
-				case 3:
-					dName = "Hard";
-					break;
-				case 4:
-					dName = "Another";
-					break;
-				case 5:
-					dName = "Another+";
-					break;
-				default:
-					dName = "???";
+					int Kind = atoi(CommandContents.c_str());
+
+					switch (Kind)
+					{
+					case 1:
+						dName = "Beginner";
+						break;
+					case 2:
+						dName = "Normal";
+						break;
+					case 3:
+						dName = "Hard";
+						break;
+					case 4:
+						dName = "Another";
+						break;
+					case 5:
+						dName = "Another+";
+						break;
+					default:
+						dName = "???";
+					}
+				}
+				else
+				{
+					dName = CommandContents;
 				}
 
 				Diff->Name = dName;

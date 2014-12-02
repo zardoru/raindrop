@@ -28,6 +28,7 @@ SongWheel::SongWheel()
 	VSRGModeActive = (Configuration::GetConfigf("VSRGEnabled") != 0);
 	dotcurModeActive = (Configuration::GetConfigf("dotcurEnabled") != 0);
 
+	CurrentList = NULL;
 	IsHovering = false;
 }
 
@@ -201,7 +202,7 @@ bool SongWheel::InWheelBounds(Vec2 Pos)
 
 void SongWheel::SetDifficulty(uint32 i)
 {
-	if (!CurrentList->IsDirectory(SelectedItem))
+	if (CurrentList && !CurrentList->IsDirectory(SelectedItem))
 	{
 		size_t maxIndex = ((VSRG::Song*)CurrentList->GetSongEntry(SelectedItem))->Difficulties.size();
 
