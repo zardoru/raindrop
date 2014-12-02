@@ -1,11 +1,12 @@
-IntroDuration = 0.6
-ExitDuration = 0.6
+IntroDuration = 0.25
+ExitDuration = 0.25
 Acceleration = 0
 
 pfrac = 0
 
 function UpdateIntro(frac)
 	dFrac = frac - pfrac
+	pfrac = frac
 	
 	frac =  1 - math.pow(1 - frac, 2)
 	
@@ -16,13 +17,27 @@ function UpdateIntro(frac)
 	w, h = Obj.GetSize()
 	Obj.SetPosition(w * frac, ScreenHeight - h)
 	
+	local alpha = frac * 4
+	if alpha > 1 then alpha = 1 end
+	
+	BG.Alpha = alpha
+	
 	Delta = dFrac * IntroDuration
 	Update(Delta)
 end
 
 function UpdateExit(frac)
+	dFrac = frac - pfrac
+	pfrac = frac
+	
 	UpdateIntro(1-frac)
-	Update(0.016)
+	
+	local alpha = frac - 0.75
+	if alpha < 0 then alpha = 0 else alpha = 4 * alpha end
+	
+	BG.Alpha = alpha
+	Delta = dFrac * ExitDuration
+	Update(Delta)
 end
 
 function Init()
@@ -42,6 +57,15 @@ function Init()
 	Obj.SetCentered(1)
 	wb = Obj.GetSize()
 	Obj.SetPosition((w - w/2 - wb/2), ScreenHeight - h)
+	
+	BG = Object2D()
+	BG.Image = "STAGEFILE" -- special constant
+	BG.Centered = 1
+	BG.X = ScreenWidth / 2
+	BG.Y = ScreenHeight / 2
+	BG.Alpha = 0
+	
+	Engine:AddTarget(BG)
 end
 
 function Cleanup()

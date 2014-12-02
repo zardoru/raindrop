@@ -27,6 +27,7 @@ SongWheel::SongWheel()
 	CurrentVerticalDisplacement = 0;
 	VSRGModeActive = (Configuration::GetConfigf("VSRGEnabled") != 0);
 	dotcurModeActive = (Configuration::GetConfigf("dotcurEnabled") != 0);
+	DifficultyIndex = 0;
 
 	CurrentList = NULL;
 	IsHovering = false;

@@ -15,16 +15,19 @@ class Image
 
 	void Destroy();
 	void CreateTexture();
-	void SetTextureData(ImageData *Data);
 public:
 	Image(unsigned int texture, int w, int h);
 	Image();
 	~Image();
+	
 	void Bind();
-
 	void Assign(Directory Filename);
+	void SetTextureData(ImageData *Data);
+
+	// Utilitarian
 	static void ForceRebind();
 
+	// Data
 	GString fname;
 	int w, h;
 	unsigned int texture;

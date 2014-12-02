@@ -84,6 +84,7 @@ void Image::Assign(Directory Filename)
 		Ret = ImageLoader::GetDataForImage(Filename);
 		SetTextureData(&Ret);
 		fname = Filename;
+		free(Ret.Data);
 	}
 }
 
@@ -127,6 +128,8 @@ void ImageLoader::DeleteImage(Image* &ToDelete)
 Image* ImageLoader::InsertImage(GString Name, ImageData *imgData)
 {
 	Image* I;
+
+	if (!imgData || imgData->Data == NULL) return NULL;
 	
 	if (Textures.find(Name) == Textures.end())
 		I = (Textures[Name] = new Image());
@@ -147,7 +150,7 @@ ImageData ImageLoader::GetDataForImage(GString filename)
 
 	if (!out.Data)
 	{
-		Log::Printf("Could not load image \"%s\". (%s)\n", Utility::Widen(filename).c_str(), SOIL_last_result());
+		Log::Printf("Could not load image \"%s\". (%s)\n", filename.c_str(), SOIL_last_result());
 	}
 
 	return out;

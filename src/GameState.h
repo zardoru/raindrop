@@ -28,6 +28,8 @@ class GameState
 	GString CurrentSkin;
 	SongDatabase* Database;
 
+	Image* StageImage;
+	Image* SongBG;
 	Game::Song *SelectedSong;
 public:
 

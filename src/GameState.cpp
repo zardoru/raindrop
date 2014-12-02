@@ -10,6 +10,7 @@
 #include "SongWheel.h"
 
 #include "ImageLoader.h"
+#include "Song7K.h"
 
 #define DirectoryPrefix GString("GameData/")
 #define SkinsPrefix GString("Skins/")
@@ -22,6 +23,9 @@ GameState::GameState()
 {
 	CurrentSkin = "default";
 	SelectedSong = NULL;
+
+	SongBG = new Image();
+	StageImage = new Image();
 }
 
 GameState& GameState::GetInstance()
@@ -43,6 +47,7 @@ void GameState::SetSelectedSong(Game::Song* Song)
 GString GameState::GetSkinFile(Directory Name)
 {
 	GString Orig = GetSkinPrefix() + Name.path();
+
 	if (Utility::FileExists(Orig))
 	{
 		return Orig;
@@ -113,6 +118,47 @@ GString GameState::GetFallbackSkinFile(Directory Name)
 
 Image* GameState::GetSkinImage(Directory Path)
 {
+	/* Special paths */
+	if (Path.path() == "STAGEFILE")
+	{
+		if (SelectedSong)
+		{
+			if (SelectedSong->Mode == MODE_VSRG)
+			{
+				VSRG::Song *Song = static_cast<VSRG::Song*>(SelectedSong);
+
+				if (Song->Difficulties.size() > GetDifficultyIndex())
+				{
+					GString File = Database->GetStageFile(Song->Difficulties.at(GetDifficultyIndex())->ID);
+					Directory toLoad;
+
+					// Oh so it's loaded and it's not in the database, fine.
+					if (File.length() == 0 && Song->Difficulties.at(GetDifficultyIndex())->Data)
+						File = Song->Difficulties.at(GetDifficultyIndex())->Data->StageFile;
+
+					toLoad = SelectedSong->SongDirectory / File.c_str();
+					StageImage->Assign(toLoad);
+					return StageImage;
+				}
+				else return NULL; // Oh okay, no difficulty assigned.
+			}
+			else // Stage file not supported for DC songs yet
+				return NULL; 
+		}
+		else return NULL;
+	}
+	else if (Path.path() == "SONGBG")
+	{
+		if (SelectedSong)
+		{
+			Directory toLoad = SelectedSong->SongDirectory / SelectedSong->BackgroundFilename.c_str();
+			SongBG->Assign(toLoad);
+			return SongBG;
+		}
+		else return NULL;
+	}
+
+	/* Regular paths */
 	if (Path.path().length())
 		return ImageLoader::Load(GetSkinFile(Path));
 	else return NULL;
