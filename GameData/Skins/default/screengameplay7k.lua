@@ -1,5 +1,6 @@
 game_require("textureatlas.lua")
 skin_require("Global/AnimationFunctions.lua")
+skin_require("Global/FadeInScreen.lua")
 
 -- Set up constants for everyone
 ChannelSpace = "Channels" .. Channels
@@ -105,6 +106,8 @@ BgAlpha = 0
 function Init()
 	AnimatedObjects.Init()
 	DrawTextObjects()
+	ScreenFade.Init()
+	ScreenFade.Out()
 
 	Obj.SetTarget(ScreenBackground)
 	Obj.SetAlpha(0)

@@ -17,8 +17,7 @@ private:
 	static std::map<GString, Image*> Textures;
 	static std::map<GString, UploadData> PendingUploads;
 
-	static unsigned int UploadToGPU(unsigned char* Data, unsigned int Width, unsigned int Height);
-	static Image*		InsertImage(GString Name, unsigned int Texture, int Width, int Height);
+	static Image*		InsertImage(GString Name, ImageData *imgData);
 public:
 	
 	ImageLoader();
@@ -33,6 +32,7 @@ public:
 	static void   AddToPending (const char* Filename);
 	static void   LoadFromManifest(char** Manifest, int Count, GString Prefix = "");
 	static void   UpdateTextures();
+	static ImageData GetDataForImage(GString filename);
 
 	/* On-the-spot, main thread loading or reloading. */
 	static Image* Load(GString filename);

@@ -455,6 +455,7 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 		.addFunction("AddAnimation", &SceneManager::AddLuaAnimation)
 		.addFunction("AddTarget", &SceneManager::AddTarget)
 		.addFunction("Sort", &SceneManager::Sort)
+		.addFunction("StopAnimation", &SceneManager::StopAnimationsForTarget)
 		.endClass();
 
 	luabridge::push(AnimLua->GetState(), GetObjectFromState<SceneManager>(AnimLua->GetState(), "GOMAN"));

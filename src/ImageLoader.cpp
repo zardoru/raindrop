@@ -3,6 +3,7 @@
 #endif
 
 #include "Global.h"
+#include "Logging.h"
 #include <GL/glew.h>
 #include <map>
 
@@ -15,6 +16,76 @@
 boost::mutex LoadMutex;
 std::map<GString, Image*> ImageLoader::Textures;
 std::map<GString, ImageLoader::UploadData> ImageLoader::PendingUploads;
+
+void Image::CreateTexture()
+{
+	if (texture == -1 || !IsValid)
+	{
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+
+		LastBound = this;
+		IsValid = true;
+	}
+}
+
+void Image::Bind()
+{
+	if (IsValid && texture != -1 && TextureAssigned)
+	{
+		if (LastBound != this)
+		{
+			glBindTexture(GL_TEXTURE_2D, texture);
+			LastBound = this;
+		}
+	}
+}
+
+void Image::Destroy() // Called at destruction time
+{
+	if (IsValid && texture != -1)
+		glDeleteTextures(1, &texture);
+}
+
+void Image::SetTextureData(ImageData *Data)
+{
+	CreateTexture(); // Make sure our texture exists.
+	Bind();
+
+	if (!TextureAssigned) // We haven't set any data to this texture yet
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Data->Width, Data->Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Data->Data);
+		TextureAssigned = true;
+
+		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
+	else // We did, so let's update instead.
+	{
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, Data->Width, Data->Height, GL_RGBA, GL_UNSIGNED_BYTE, Data->Data);
+	}
+
+	w = Data->Width;
+	h = Data->Height;
+}
+
+void Image::Assign(Directory Filename)
+{
+	if (!IsValid || texture == -1)
+	{
+		ImageData Ret;
+		CreateTexture();
+
+		Ret = ImageLoader::GetDataForImage(Filename);
+		SetTextureData(&Ret);
+		fname = Filename;
+	}
+}
 
 ImageLoader::ImageLoader()
 {
@@ -35,12 +106,12 @@ void ImageLoader::InvalidateAll()
 
 void ImageLoader::UnloadAll()
 {
+	InvalidateAll();
+
 	for (std::map<GString, Image*>::iterator i = Textures.begin(); i != Textures.end(); i++)
 	{
 		glDeleteTextures(1, &i->second->texture);
 	}
-
-	InvalidateAll();
 }
 
 void ImageLoader::DeleteImage(Image* &ToDelete)
@@ -48,50 +119,38 @@ void ImageLoader::DeleteImage(Image* &ToDelete)
 	if (ToDelete)
 	{
 		Textures.erase(Textures.find(ToDelete->fname));
-		if (ToDelete->IsValid)
-			glDeleteTextures(1, &ToDelete->texture);
 		delete ToDelete;
 		ToDelete = NULL;
 	}
 }
 
-GLuint ImageLoader::UploadToGPU(unsigned char* Data, unsigned int Width, unsigned int Height)
+Image* ImageLoader::InsertImage(GString Name, ImageData *imgData)
 {
-	GLuint texture;
-	glGenTextures(1, &texture);
+	Image* I;
+	
+	if (Textures.find(Name) == Textures.end())
+		I = (Textures[Name] = new Image());
+	else
+		I = Textures[Name];
 
-
-	glBindTexture(GL_TEXTURE_2D, texture);
-
-	glTexParameteri( GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Data);
-
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-
-	return texture;
+	I->SetTextureData(imgData);
+	I->fname = Name;
+	
+	return I;
 }
 
-Image* ImageLoader::InsertImage(GString Name, unsigned int Texture, int Width, int Height)
+ImageData ImageLoader::GetDataForImage(GString filename)
 {
-	if (Textures.find(Name) == Textures.end())
+	ImageData out;
+	int channels;
+	out.Data = SOIL_load_image(filename.c_str(), &out.Width, &out.Height, &channels, SOIL_LOAD_RGBA);
+
+	if (!out.Data)
 	{
-		Image* I = (Textures[Name] = new Image(Texture, Width, Height));
-		I->IsValid = true;
-		I->fname = Name;
-		return I;
+		Log::Printf("Could not load image \"%s\". (%s)\n", Utility::Widen(filename).c_str(), SOIL_last_result());
 	}
 
-	/* else */
-	Textures[Name]->texture = Texture;
-	Textures[Name]->w = Width;
-	Textures[Name]->h = Height;
-	Textures[Name]->IsValid = true;
-	return Textures[Name];
+	return out;
 }
 
 
@@ -103,21 +162,10 @@ Image* ImageLoader::Load(GString filename)
 	}
 	else
 	{	
-		int width, height, channels;
-		GLuint texture;
-		unsigned char *image = SOIL_load_image(filename.c_str(), &width, &height, &channels,  SOIL_LOAD_RGBA);
+		ImageData ImgData = GetDataForImage(filename);
+		Image* Ret = InsertImage(filename, &ImgData);
 
-		if (!image)
-		{
-			wprintf(L"Could not load image \"%s\".\n", Utility::Widen(filename).c_str());
-			return NULL;
-		}
-
-		texture = UploadToGPU(image, width, height);
-
-		SOIL_free_image_data(image);
-		
-		Image* Ret = InsertImage(filename, texture, width, height);
+		free(ImgData.Data);
 		Image::LastBound = Ret;
 
 		return Ret;
@@ -155,9 +203,12 @@ void ImageLoader::UpdateTextures()
 	{
 		for (std::map<GString, UploadData>::iterator i = PendingUploads.begin(); i != PendingUploads.end(); i++)
 		{
-			unsigned int Texture = UploadToGPU(i->second.Data, i->second.Width, i->second.Height);
+			ImageData imgData;
+			imgData.Data = i->second.Data;
+			imgData.Width = i->second.Width;
+			imgData.Height = i->second.Height;
 
-			Image::LastBound = InsertImage(i->first, Texture, i->second.Width, i->second.Height);
+			Image::LastBound = InsertImage(i->first, &imgData);
 
 			SOIL_free_image_data(i->second.Data);
 		}

@@ -3,6 +3,7 @@
 #include "GraphObject2D.h"
 #include "ScreenLoading.h"
 #include "ImageLoader.h"
+#include "LuaManager.h"
 #include "GameWindow.h"
 
 
@@ -18,7 +19,13 @@ ScreenLoading::ScreenLoading(Screen *Parent, Screen *_Next)
 	LoadThread = NULL;
 	Running = true;
 	
-	Animation.Initialize(GameState::GetInstance().GetSkinFile("screenloading.lua"));
+	Animation.Preload(GameState::GetInstance().GetSkinFile("screenloading.lua"), "Preload");
+	Animation.Initialize("", false);
+
+	IntroDuration = max(Animation.GetEnv()->GetGlobalD("IntroDuration"), 0.0);
+	ExitDuration = max(Animation.GetEnv()->GetGlobalD("ExitDuration"), 0.0);
+	
+	ChangeState(StateIntro);
 }
 
 void ScreenLoading::Init()
@@ -26,6 +33,35 @@ void ScreenLoading::Init()
 	LoadThread = new boost::thread(LoadFunction, Next);
 	WindowFrame.SetLightMultiplier(0.8f);
 	WindowFrame.SetLightPosition(glm::vec3(0,-0.5,1));
+}
+
+bool ScreenLoading::RunIntro(float Fraction)
+{
+	LuaManager *Lua = Animation.GetEnv();
+	if (Lua->CallFunction("UpdateIntro", 1))
+	{
+		Lua->PushArgument(Fraction);
+		Lua->RunFunction();
+	}
+
+	Animation.DrawFromLayer(0);
+	return true;
+}
+
+bool ScreenLoading::RunExit(float Fraction)
+{
+	LuaManager *Lua = Animation.GetEnv();
+	if (Lua->CallFunction("UpdateExit", 1))
+	{
+		Lua->PushArgument(Fraction);
+		Lua->RunFunction();
+	}
+
+	if (Fraction == 1)
+		ChangeState(StateRunning);
+
+	Animation.DrawFromLayer(0);
+	return true;
 }
 
 bool ScreenLoading::Run(double TimeDelta)
@@ -42,6 +78,7 @@ bool ScreenLoading::Run(double TimeDelta)
 		WindowFrame.SetLightMultiplier(1);
 		WindowFrame.SetLightPosition(glm::vec3(0,0,1));
 		Next->MainThreadInitialization();
+		ChangeState(StateExit);
 	}
 	boost::this_thread::sleep(boost::posix_time::millisec(16));
 	return Running;

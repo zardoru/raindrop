@@ -33,6 +33,12 @@ void Screen::MainThreadInitialization()
 	// virtual
 }
 
+void Screen::ChangeState(Screen::EScreenState NewState)
+{
+	ScreenState = NewState;
+	TransitionTime = 0;
+}
+
 bool Screen::IsScreenRunning()
 {
 	return Running;
@@ -76,10 +82,10 @@ bool Screen::Update(float delta)
 	if (ScreenState == StateIntro)
 	{
 		float Frac;
-		IntroTime += delta;
+		TransitionTime += delta;
 
-		if (IntroTime < IntroDuration)
-			Frac = Clamp (IntroTime / IntroDuration, 0.0, 1.0);
+		if (TransitionTime < IntroDuration)
+			Frac = Clamp(TransitionTime / IntroDuration, 0.0, 1.0);
 		else
 		{
 			Frac = 1;
@@ -91,9 +97,9 @@ bool Screen::Update(float delta)
 	{
 		float Frac;
 
-		ExitTime += delta;
-		if (IntroTime < IntroDuration)
-			Frac = Clamp (ExitTime / ExitDuration, 0.0, 1.0);
+		TransitionTime += delta;
+		if (TransitionTime < ExitDuration)
+			Frac = Clamp(TransitionTime / ExitDuration, 0.0, 1.0);
 		else
 		{
 			Frac = 1;

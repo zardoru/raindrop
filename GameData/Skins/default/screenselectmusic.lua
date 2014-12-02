@@ -1,4 +1,5 @@
 skin_require("Global/Background.lua")
+skin_require("Global/FadeInScreen.lua")
 
 floor = math.floor
 
@@ -95,26 +96,15 @@ function InBackground(frac)
 	return 1
 end
 
-function BlackSlide(frac)
-	Obj.SetSize(ScreenWidth * frac, ScreenHeight)
-	Obj.SetAlpha(1)
-	return 1
-end
-
-function BlackSlideOut(frac)
-	BlackSlide(1-frac)
-	return 1
-end
-
 -- Screen Events
 function OnSelect()
 	TransformX = ScreenWidth + 250
-	Engine:AddAnimation(Black, "BlackSlide", EaseOut, 1, 0)	
+	ScreenFade.In()
 	return 1
 end
 
 function OnRestore()
-	Engine:AddAnimation(Black, "BlackSlideOut", EaseOut, 0.25, 0)
+	ScreenFade.Out()
 
 	TransformX =  ScreenWidth * 15/20
 	CurrentTX = ScreenWidth	
@@ -167,6 +157,7 @@ end
 
 function Init()
 	BackgroundAnimation:Init()
+	ScreenFade.Init()
 
 	Banner = Obj.CreateTarget()
 	Obj.SetTarget(Banner)
@@ -185,14 +176,6 @@ function Init()
 	dd.Y = 348
 	dd.X = 120
 	Engine:AddTarget(dd)
-	
-	Black = Object2D()
-	Black.Image = "Global/filter.png"
-	Black.Width = ScreenWidth
-	Black.Height = ScreenHeight
-	Black.Alpha = 0
-	Black.Z = 31
-	Engine:AddTarget(Black)
 end
 
 function updText()

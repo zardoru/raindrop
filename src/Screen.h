@@ -6,19 +6,20 @@ class Screen
 {
 private:
 	double ScreenTime; // How long has it been open?
+protected:
 
 	enum EScreenState {
 		StateIntro,
 		StateRunning,
 		StateExit
 	}ScreenState;
-protected:
 
 	double GetScreenTime();
 	Screen *Parent;
 	bool Running; // Is this screen active?
 
-	double IntroTime, ExitTime;
+	void ChangeState(EScreenState NewState);
+	double TransitionTime;
 	double IntroDuration, ExitDuration;
 
 public:

@@ -1,5 +1,29 @@
-
+IntroDuration = 0.6
+ExitDuration = 0.6
 Acceleration = 0
+
+pfrac = 0
+
+function UpdateIntro(frac)
+	dFrac = frac - pfrac
+	
+	frac =  1 - math.pow(1 - frac, 2)
+	
+	Obj.SetTarget(targBadge)
+	Obj.SetScale(frac, frac)
+	
+	Obj.SetTarget(targLogo)
+	w, h = Obj.GetSize()
+	Obj.SetPosition(w * frac, ScreenHeight - h)
+	
+	Delta = dFrac * IntroDuration
+	Update(Delta)
+end
+
+function UpdateExit(frac)
+	UpdateIntro(1-frac)
+	Update(0.016)
+end
 
 function Init()
 	Acceleration = 0
@@ -11,15 +35,13 @@ function Init()
 
 	Obj.SetImageSkin("Loading/loading.png")
 	w, h = Obj.GetSize()
-	Obj.SetPosition(w, ScreenHeight - h)
 	Obj.SetCentered(1)
 
 	Obj.SetTarget(targBadge)
 	Obj.SetImageSkin("Loading/loadingbadge.png")
 	Obj.SetCentered(1)
 	wb = Obj.GetSize()
-	Obj.SetPosition(w - w/2 - wb/2, ScreenHeight - h)
-
+	Obj.SetPosition((w - w/2 - wb/2), ScreenHeight - h)
 end
 
 function Cleanup()

@@ -95,15 +95,6 @@ void GraphObject2D::UpdateTexture()
 	DirtyTexture = false;
 }
 
-void Image::Bind()
-{
-	if (LastBound != this)
-	{
-		glBindTexture(GL_TEXTURE_2D, texture);
-		LastBound = this;
-	}
-}
-
 void GraphObject2D::Render()
 {
 	

@@ -12,6 +12,10 @@ class ScreenLoading : public Screen
 public:
 	ScreenLoading(Screen *Parent, Screen *_Next);
 	void Init();
+
+	bool RunIntro(float Fraction);
+	bool RunExit(float Fraction);
+
 	bool Run(double TimeDelta);
 	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	void HandleScrollInput(double xOff, double yOff);

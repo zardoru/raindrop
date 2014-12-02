@@ -452,7 +452,7 @@ void GetAudioInfo()
 	for (PaDeviceIndex i = 0; i < DevCount; i++)
 	{
 		const PaDeviceInfo *Info = Pa_GetDeviceInfo(i);
-		Log::Logf("(%d): %s\n", i, Utility::Widen(Info->name).c_str());
+		Log::Logf("(%d): %ls\n", i, Utility::Widen(Info->name).c_str());
 		Log::Logf("\thighLat: %f, lowLat: %f\n", Info->defaultHighOutputLatency, Info->defaultLowOutputLatency);
 		Log::Logf("\tsampleRate: %f, hostApi: %d\n", Info->defaultSampleRate, Info->hostApi);
 		Log::Logf("\tmaxchannels: %d\n", Info->maxOutputChannels);

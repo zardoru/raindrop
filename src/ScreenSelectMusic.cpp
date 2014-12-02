@@ -205,8 +205,16 @@ void ScreenSelectMusic::LoadThreadInitialization()
 void ScreenSelectMusic::Cleanup()
 {
 	delete Objects;
-	MixerRemoveStream(PreviewStream);
+	
+	if (PreviewStream)
+	{
+		MixerRemoveStream(PreviewStream);
+		delete PreviewStream;
+	}
+
 	StopLoops();
+
+	GameState::GetInstance().SetSelectedSong(NULL);
 }
 
 float ScreenSelectMusic::GetListPendingVerticalTransformation(const float Y)
