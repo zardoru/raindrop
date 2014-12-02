@@ -21,8 +21,8 @@ public:
 	~Image();
 	
 	void Bind();
-	void Assign(Directory Filename);
-	void SetTextureData(ImageData *Data);
+	void Assign(Directory Filename, bool Regenerate = false);
+	void SetTextureData(ImageData *Data, bool Reassign = false);
 
 	// Utilitarian
 	static void ForceRebind();

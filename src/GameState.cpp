@@ -139,7 +139,7 @@ Image* GameState::GetSkinImage(Directory Path)
 					toLoad = SelectedSong->SongDirectory / File.c_str();
 					if (File.length() && Utility::FileExists(toLoad.path()))
 					{
-						StageImage->Assign(toLoad);
+						StageImage->Assign(toLoad, true);
 						return StageImage;
 					}
 					else return NULL;
@@ -159,7 +159,7 @@ Image* GameState::GetSkinImage(Directory Path)
 
 			if (SelectedSong->BackgroundFilename.length() && Utility::FileExists(toLoad.path()))
 			{
-				SongBG->Assign(toLoad);
+				SongBG->Assign(toLoad, true);
 				return SongBG;
 			}
 			else return NULL;

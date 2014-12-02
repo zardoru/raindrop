@@ -47,12 +47,17 @@ void Image::Destroy() // Called at destruction time
 		glDeleteTextures(1, &texture);
 }
 
-void Image::SetTextureData(ImageData *Data)
+void Image::SetTextureData(ImageData *Data, bool Reassign)
 {
 	CreateTexture(); // Make sure our texture exists.
 	Bind();
 
-	if (!TextureAssigned) // We haven't set any data to this texture yet
+	if (Data->Data == NULL && !Reassign)
+	{
+		return;
+	}
+
+	if (!TextureAssigned || Reassign) // We haven't set any data to this texture yet, or we want to regenerate storage
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Data->Width, Data->Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Data->Data);
 		TextureAssigned = true;
@@ -74,13 +79,13 @@ void Image::SetTextureData(ImageData *Data)
 	h = Data->Height;
 }
 
-void Image::Assign(Directory Filename)
+void Image::Assign(Directory Filename, bool Regenerate)
 {
 	ImageData Ret;
 	CreateTexture();
 
 	Ret = ImageLoader::GetDataForImage(Filename);
-	SetTextureData(&Ret);
+	SetTextureData(&Ret, Regenerate);
 	fname = Filename;
 	free(Ret.Data);
 }

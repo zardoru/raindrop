@@ -17,27 +17,14 @@ function UpdateIntro(frac)
 	w, h = Obj.GetSize()
 	Obj.SetPosition(w * frac, ScreenHeight - h)
 	
-	local alpha = frac * 4
-	if alpha > 1 then alpha = 1 end
-	
-	BG.Alpha = alpha
+	BG.Alpha = frac
 	
 	Delta = dFrac * IntroDuration
 	Update(Delta)
 end
 
 function UpdateExit(frac)
-	dFrac = frac - pfrac
-	pfrac = frac
-	
 	UpdateIntro(1-frac)
-	
-	local alpha = frac - 0.75
-	if alpha < 0 then alpha = 0 else alpha = 4 * alpha end
-	
-	BG.Alpha = alpha
-	Delta = dFrac * ExitDuration
-	Update(Delta)
 end
 
 function Init()
@@ -51,18 +38,25 @@ function Init()
 	Obj.SetImageSkin("Loading/loading.png")
 	w, h = Obj.GetSize()
 	Obj.SetCentered(1)
+	Obj.SetZ(16)
 
 	Obj.SetTarget(targBadge)
 	Obj.SetImageSkin("Loading/loadingbadge.png")
 	Obj.SetCentered(1)
 	wb = Obj.GetSize()
 	Obj.SetPosition((w - w/2 - wb/2), ScreenHeight - h)
+	Obj.SetZ(16)
 	
 	BG = Object2D()
 	BG.Image = "STAGEFILE" -- special constant
 	BG.Centered = 1
 	BG.X = ScreenWidth / 2
 	BG.Y = ScreenHeight / 2
+	
+	local Ratio = ScreenHeight / BG.Height
+	BG.ScaleX = Ratio
+	BG.ScaleY = Ratio
+	BG.Layer = 10
 	BG.Alpha = 0
 	
 	Engine:AddTarget(BG)
