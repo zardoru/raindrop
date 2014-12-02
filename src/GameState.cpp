@@ -137,8 +137,12 @@ Image* GameState::GetSkinImage(Directory Path)
 						File = Song->Difficulties.at(GetDifficultyIndex())->Data->StageFile;
 
 					toLoad = SelectedSong->SongDirectory / File.c_str();
-					StageImage->Assign(toLoad);
-					return StageImage;
+					if (File.length() && Utility::FileExists(toLoad.path()))
+					{
+						StageImage->Assign(toLoad);
+						return StageImage;
+					}
+					else return NULL;
 				}
 				else return NULL; // Oh okay, no difficulty assigned.
 			}
@@ -152,8 +156,13 @@ Image* GameState::GetSkinImage(Directory Path)
 		if (SelectedSong)
 		{
 			Directory toLoad = SelectedSong->SongDirectory / SelectedSong->BackgroundFilename.c_str();
-			SongBG->Assign(toLoad);
-			return SongBG;
+
+			if (SelectedSong->BackgroundFilename.length() && Utility::FileExists(toLoad.path()))
+			{
+				SongBG->Assign(toLoad);
+				return SongBG;
+			}
+			else return NULL;
 		}
 		else return NULL;
 	}
