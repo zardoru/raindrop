@@ -355,26 +355,25 @@ bool ScreenGameplay7K::LoadSongAudio()
 
 bool ScreenGameplay7K::ProcessSong()
 {
-	if (AudioCompensation)
-		TimeCompensation = MixerGetLatency();
+	TimeCompensation = 0;
 
 	double DesiredDefaultSpeed = Configuration::GetSkinConfigf("DefaultSpeedUnits");
-	double Drift = TimeCompensation;
 
 	ESpeedType Type = (ESpeedType)(int)Configuration::GetSkinConfigf("DefaultSpeedKind");
 	double SpeedConstant = 0; // Unless set, assume we're using speed changes
 
 	int ApplyDriftVirtual = Configuration::GetConfigf("UseAudioCompensationKeysounds");
 	int ApplyDriftDecoder = Configuration::GetConfigf("UseAudioCompensationNonKeysounded");
-	double rDrift = Drift;
-
-	if ((!ApplyDriftVirtual && CurrentDiff->IsVirtual) || (!ApplyDriftDecoder && !CurrentDiff->IsVirtual))
-		Drift = 0;
-	else
-		Drift = rDrift;
+	
+	if (AudioCompensation &&  // Apply drift is enabled and:
+		((ApplyDriftVirtual && CurrentDiff->IsVirtual) ||  // We want to apply it to a keysounded file and it's virtual
+		(ApplyDriftDecoder && !CurrentDiff->IsVirtual))) // or we want to apply it to a non-keysounded file and it's not virtual
+		TimeCompensation += MixerGetLatency();
 
 	if (!CurrentDiff->IsVirtual) // Apply only on non-keysounded files..
 		TimeCompensation += Configuration::GetConfigf("Offset7K");
+
+	double Drift = TimeCompensation;
 
 	Log::Logf("TimeCompensation: %f (Latency: %f / Offset: %f)\n", TimeCompensation, MixerGetLatency(), CurrentDiff->Offset);
 
@@ -499,7 +498,7 @@ void ScreenGameplay7K::SetupAfterLoadingVariables()
 
 	if (BarlineEnabled)
 	{
-		CurrentDiff->GetMeasureLines(MeasureBarlines, VSpeeds, TimeCompensation);
+		CurrentDiff->GetMeasureLines(MeasureBarlines, VSpeeds);
 
 		int UpscrollMod = Upscroll ? -1 : 1;
 		BarlineOffset = BarlineOffsetKind == 0 ? NoteHeight * UpscrollMod / 2 : 0;

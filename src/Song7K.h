@@ -154,7 +154,7 @@ namespace VSRG
 		void Process(VectorTN NotesOut, TimingData &BPS, TimingData& VerticalSpeeds, float Drift = 0, double SpeedConstant = 0);
 
 		// The floats are in vertical units; like the notes' vertical position.
-		void GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSpeeds, float Drift);
+		void GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSpeeds);
 
 		// Destroy all information that can be loaded from cache
 		void Destroy();

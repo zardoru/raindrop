@@ -359,8 +359,8 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 				NewNote.AssignNotedata(CurrentNote);
 				NewNote.AddTime(Drift);
 
-				float VerticalPosition = IntegrateToTime(VerticalSpeeds, CurrentNote.StartTime + Drift);
-				float HoldEndPosition = IntegrateToTime(VerticalSpeeds, CurrentNote.EndTime + Drift);
+				float VerticalPosition = IntegrateToTime(VerticalSpeeds, CurrentNote.StartTime);
+				float HoldEndPosition = IntegrateToTime(VerticalSpeeds, CurrentNote.EndTime);
 
 				// if upscroll change minus for plus as well as matrix at screengameplay7k
 				if (!CurrentNote.EndTime)
@@ -370,7 +370,7 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 
 				// Okay, now we want to know what fraction of a beat we're dealing with
 				// this way we can display colored (a la Stepmania) notes.
-				double cBeat = BeatAtTime(BPS, CurrentNote.StartTime, Offset + Drift);
+				double cBeat = BeatAtTime(BPS, CurrentNote.StartTime, Offset);
 				double iBeat = floor(cBeat);
 				double dBeat = cBeat - iBeat;
 
@@ -384,7 +384,7 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 	}
 }
 
-void Difficulty::GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSpeeds, float Drift)
+void Difficulty::GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSpeeds)
 {
 	float Last = 0;
 
@@ -397,9 +397,9 @@ void Difficulty::GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSp
 	{
 		float PositionOut = 0;
 
-		if (BPMType == BT_Beat)
+		if (BPMType == BT_Beat) // VerticalSpeeds already has drift applied, so we don't need to apply it again here.
 		{
-			PositionOut = IntegrateToTime(VerticalSpeeds, TimeAtBeat(Timing, Offset, Last) + StopTimeAtBeat(Data->StopsTiming, Last) + Drift);
+			PositionOut = IntegrateToTime(VerticalSpeeds, TimeAtBeat(Timing, Offset, Last) + StopTimeAtBeat(Data->StopsTiming, Last));
 		}
 		else
 		{
