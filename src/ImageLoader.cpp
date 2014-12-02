@@ -76,16 +76,13 @@ void Image::SetTextureData(ImageData *Data)
 
 void Image::Assign(Directory Filename)
 {
-	if (!IsValid || texture == -1)
-	{
-		ImageData Ret;
-		CreateTexture();
+	ImageData Ret;
+	CreateTexture();
 
-		Ret = ImageLoader::GetDataForImage(Filename);
-		SetTextureData(&Ret);
-		fname = Filename;
-		free(Ret.Data);
-	}
+	Ret = ImageLoader::GetDataForImage(Filename);
+	SetTextureData(&Ret);
+	fname = Filename;
+	free(Ret.Data);
 }
 
 ImageLoader::ImageLoader()

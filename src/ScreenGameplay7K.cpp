@@ -181,8 +181,7 @@ void DoBMPEventList (GraphObject2D &Obj, std::vector<AutoplayBMP> &Events, Image
 		if (b->Time <= SongTime)
 		{
 			Image* Img = Images.GetFromIndex(b->BMP);
-			if (Img != NULL)
-				Obj.SetImage(Img, false);
+			Obj.SetImage(Img, false);
 
 			b = Events.erase(b);
 			if (b == Events.end()) break;

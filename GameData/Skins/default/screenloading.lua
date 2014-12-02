@@ -1,5 +1,5 @@
-IntroDuration = 0.25
-ExitDuration = 0.25
+IntroDuration = 0.35
+ExitDuration = 0.35
 Acceleration = 0
 
 pfrac = 0

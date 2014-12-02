@@ -1201,10 +1201,16 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 	}
 
 	// First try to find a suiting subtitle
-	Out->SongName = GetSubtitles(Out->SongName, Subs);
+	GString NewTitle = GetSubtitles(Out->SongName, Subs);
 	if (Diff->Name.length() == 0)
 	{
 		Diff->Name = DifficultyNameFromSubtitles(Subs);
+	}
+
+	// If we've got a title that's usuable then why not use it.
+	if (NewTitle.length() > 0)
+	{
+		Out->SongName = NewTitle.substr(0, NewTitle.find_last_not_of(" ")+1);
 	}
 
 	// Okay, we didn't find a fitting subtitle, let's try something else.
