@@ -1,3 +1,5 @@
+skin_require("Loading/phrases.lua")
+
 IntroDuration = 0.35
 ExitDuration = 0.35
 Acceleration = 0
@@ -19,6 +21,7 @@ function UpdateIntro(frac)
 	
 	BG.Alpha = frac
 	
+	Phrases.Fade(frac)
 	Delta = dFrac * IntroDuration
 	Update(Delta)
 end
@@ -62,6 +65,7 @@ function Init()
 	BG.Alpha = 0
 	
 	Engine:AddTarget(BG)
+	Phrases.Init()
 end
 
 function Cleanup()
