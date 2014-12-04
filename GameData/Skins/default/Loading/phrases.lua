@@ -1,6 +1,23 @@
 Phrases = {
 	Content = {
 		"That guy is saltier than the dead sea.",
+		"not even kaiden yet",
+		"a noodle soup a day and your skills won't decay",
+		"hey girl im kaiden want to go out",
+		"now with more drops, sadly rain does not produce dubstep.",
+		"i dropped out of school to play music games",
+		"tropical storm more like tropical fart",
+		"protip: dolphins are not capable of playing music games, let alone make music for them.",
+		"did you hear about this cool game called beatmani?",
+		"to be honest, it's not ez to dj.",
+		"at least we won't lose our source code.",
+		"less woosh more drop",
+		"studies show that certain rhythm game communities contain more cancerous and autistic people than other communities.",
+		"hot new bonefir remix knife party",
+		"i'll only date you if you're kaiden",
+		"it's called overjoy because the people who plays those charts are masochists",
+		"studies show that combo-based scoring is the biggest factor of broken equipment in the rhythm game community",
+		"YOU GET 200 GOLD CROWNS! IT IS EXTRAORDINARY!! YOU ARE THE TRUE TATSUJIN",
 		"ayy lmao",
 		"nice meme",
 		"S P A C E  T I M E",
@@ -51,26 +68,43 @@ Phrases = {
 		"You'll full combo it this time.",
 		"You're gonna carry that weight.",
 		"fappables/duck.gif",
-		"16 hours of B.O. blocko power!"
+		"16 hours of B.O. blocko power!",
+		"how can there be 714 bpm if theres only 60 seconds in a minute?",
+		"Far East Nightbird (Twitch remix)",
+		"Just hold on. You'll be fine, I promise. Everyday.",
+		"2spooky"
 	}
 }
 
 function Phrases.Init()
-	PhraseFont = Fonts.TruetypeFont(Obj.GetSkinFile("font.ttf"), 30);
+	Phrases.VSize = 22
+	PhraseFont = Fonts.TruetypeFont(Obj.GetSkinFile("font.ttf"), Phrases.VSize);
 	Phrases.Text = StringObject2D()
 	Phrases.Text.Font = PhraseFont
 	
 	local selected = Phrases.Content[math.random(#Phrases.Content)]
-	print (selected)
 	Phrases.Text.Text = selected
-	Phrases.Text.Layer = 14
+	Phrases.Text.Layer = 12
 	Phrases.Text.Alpha = 0
-	Phrases.Text.Rotation = 90
-	Phrases.Text.X = 80
+	Phrases.Text.Rotation = 0
+	Phrases.Text.X = 0
+	Phrases.Text.Y = -Phrases.VSize
 	
+	Phrases.BG = Object2D()
+	Phrases.BG.Image = "Global/filter.png"
+	Phrases.BG.Height = 30
+	Phrases.BG.Layer = 11
+	Phrases.BG.Width = ScreenWidth
+	Phrases.BG.X = 0
+	
+	Engine:AddTarget(Phrases.BG)
 	Engine:AddTarget(Phrases.Text)
 end
 
 function Phrases.Fade(frac)
 	Phrases.Text.Alpha = frac
+	Phrases.Text.Y = -Phrases.VSize + Phrases.VSize * frac
+	
+	Phrases.BG.Alpha = frac
+	Phrases.BG.Y = -Phrases.BG.Height + Phrases.BG.Height * frac
 end
