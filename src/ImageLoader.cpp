@@ -44,11 +44,17 @@ void Image::Bind()
 void Image::Destroy() // Called at destruction time
 {
 	if (IsValid && texture != -1)
+	{
 		glDeleteTextures(1, &texture);
+		IsValid = false;
+		texture = -1;
+	}
 }
 
 void Image::SetTextureData(ImageData *Data, bool Reassign)
 {
+	if (Reassign) Destroy();
+
 	CreateTexture(); // Make sure our texture exists.
 	Bind();
 
