@@ -31,7 +31,7 @@ void Image::CreateTexture()
 
 void Image::Bind()
 {
-	if (IsValid && texture != -1 && TextureAssigned)
+	if (IsValid && texture != -1)
 	{
 		if (LastBound != this)
 		{
@@ -59,7 +59,6 @@ void Image::SetTextureData(ImageData *Data, bool Reassign)
 
 	if (!TextureAssigned || Reassign) // We haven't set any data to this texture yet, or we want to regenerate storage
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Data->Width, Data->Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Data->Data);
 		TextureAssigned = true;
 
 		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
@@ -69,6 +68,7 @@ void Image::SetTextureData(ImageData *Data, bool Reassign)
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Data->Width, Data->Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Data->Data);
 	}
 	else // We did, so let's update instead.
 	{
