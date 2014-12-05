@@ -14,6 +14,28 @@
 
 #include <boost/algorithm/string.hpp>
 
+// Buffer -> buffer to convert to stereo (interleaved) cnt -> current samples max_len -> Maximum samples
+void monoToStereo(short* Buffer, size_t cnt, size_t max_len)
+{
+	if (cnt <= max_len/2) // We're within boundaries.
+	{
+		// Okay, we have to transform all the samples from 0, 1, 2, 3...
+		// to 0, 2, 4, 6... We start at the end so we don't have anything to overwrite.
+		// We also need, after that is done, to copy all samples 0, 2, 4, 6 into 1, 3, 5, 7 and so on.
+		// So interleave them...
+		for (int i = cnt - 1; i >= 0; i--)
+		{
+			Buffer[i * 2] = Buffer[i];
+		}
+
+		// Now copy 0 into 1, 2 into 3, and so on.
+		for (int i = 1; i < cnt * 2; i += 2)
+		{
+			Buffer[i] = Buffer[i - 1];
+		}
+	}
+}
+
 AudioDataSource* SourceFromExt(Directory Filename)
 {
 	AudioDataSource *Ret = NULL;
@@ -259,7 +281,7 @@ AudioStream::AudioStream()
 	mIsLooping = false;
 	mSource = NULL;
 	mData = NULL;
-	tmpBuffer = new short[BUFF_SIZE];
+	tmpBuffer = NULL;
 }
 
 AudioStream::~AudioStream()
@@ -269,6 +291,9 @@ AudioStream::~AudioStream()
 
 	if (mData)
 		delete[] mData;
+
+	if (tmpBuffer)
+		delete tmpBuffer;
 }
 
 uint32 AudioStream::Read(short* buffer, size_t count)
@@ -282,6 +307,9 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 		mIsPlaying = false;
 		return 0;
 	}
+
+	if (Channels == 1) // We just want half the samples.
+		toRead >>= 1;
 	
 	if (PaUtil_GetRingBufferReadAvailable(&mRingBuf) < toRead || !mIsPlaying)
 	{
@@ -291,31 +319,46 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 
 	if (mIsPlaying)
 	{
-		// This is what our destination rate will be
-		double origRate = mSource->GetRate();
+		if (mSource->GetRate() != 44100.0) // Alright, we'll need to resample. Let's just do that.
+		{
+			// This is what our destination rate will be
+			double origRate = mSource->GetRate();
 
-		// This is what our destination rate is.
-		double resRate = 44100.0 / mPitch;
-		
-		// This is how many samples we want to read from the source buffer
-		size_t scount = ceil(origRate * toRead / resRate); 
+			// This is what our destination rate is.
+			double resRate = 44100.0 / mPitch;
 
-		cnt = PaUtil_ReadRingBuffer(&mRingBuf, tmpBuffer, scount);
-		// cnt now contains how many samples we actually read... 
+			// This is how many samples we want to read from the source buffer
+			size_t scount = ceil(origRate * toRead / resRate);
 
-		// This is how many resulting samples we can output with what we read...
-		outcnt = (cnt * resRate / origRate);
+			cnt = PaUtil_ReadRingBuffer(&mRingBuf, tmpBuffer, scount);
+			// cnt now contains how many samples we actually read... 
 
-		soxr_io_spec_t sis;
-		sis.flags = 0;
-		sis.itype = SOXR_INT16_I;
-		sis.otype = SOXR_INT16_I;
-		sis.scale = 1;
+			if (Channels == 1)
+				monoToStereo(tmpBuffer, cnt, BUFF_SIZE);
 
-		soxr_oneshot(origRate, resRate, Channels,
-			tmpBuffer, cnt / Channels, NULL,
-			buffer, outcnt / Channels, NULL,
-			&sis, NULL, NULL);
+			// This is how many resulting samples we can output with what we read...
+			outcnt = (cnt * resRate / origRate);
+
+			soxr_io_spec_t sis;
+			sis.flags = 0;
+			sis.itype = SOXR_INT16_I;
+			sis.otype = SOXR_INT16_I;
+			sis.scale = 1;
+
+			soxr_oneshot(origRate, resRate, Channels,
+				tmpBuffer, cnt / Channels, NULL,
+				buffer, outcnt / Channels, NULL,
+				&sis, NULL, NULL);
+		}
+		else
+		{
+			cnt = PaUtil_ReadRingBuffer(&mRingBuf, buffer, toRead);
+
+			if (Channels == 1)
+				monoToStereo(buffer, cnt, BUFF_SIZE);
+
+			outcnt = cnt;
+		}
 
 		mStreamTime += (double)(cnt/Channels) / (double)mSource->GetRate();
 		mPlaybackTime = mStreamTime - MixerGetLatency();
@@ -332,6 +375,10 @@ bool AudioStream::Open(const char* Filename)
 	if (mSource && mSource->IsValid())
 	{
 		Channels = mSource->GetChannels();
+		
+		if (mSource->GetRate() != 44100) // Okay, we'll rearrange a buffer to store resampling stuff meanwhile.
+			tmpBuffer = new short[BUFF_SIZE]; 
+		
 
 		mBufferSize = BUFF_SIZE;
 
