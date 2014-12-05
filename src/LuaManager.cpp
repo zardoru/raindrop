@@ -123,7 +123,7 @@ GString LuaManager::GetGlobalS(GString VariableName, GString Default)
 	
 	GetGlobal(VariableName);
 	
-	if (lua_isstring(State, -1))
+	if (!lua_isnil(State, -1) && lua_isstring(State, -1))
 	{
 		rval = lua_tostring(State, -1);
 	}else

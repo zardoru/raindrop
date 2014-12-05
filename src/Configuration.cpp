@@ -42,9 +42,11 @@ GString GetConfsInt(GString Name, GString Namespace, LuaManager &L)
 	GString Retval;
 	if (Namespace.length())
 	{
-		L.UseArray(Namespace);
-		Retval = L.GetFieldS(Name);
-		L.Pop();
+		if (L.UseArray(Namespace))
+		{
+			Retval = L.GetFieldS(Name);
+			L.Pop();
+		}
 	}else
 		Retval = L.GetGlobalS(Name);
 
@@ -53,12 +55,14 @@ GString GetConfsInt(GString Name, GString Namespace, LuaManager &L)
 
 double GetConffInt(GString Name, GString Namespace, LuaManager &L)
 {
-	double Retval;
+	double Retval = 0;
 	if (Namespace.length())
 	{
-		L.UseArray(Namespace);
-		Retval = L.GetFieldD(Name, 0);
-		L.Pop();
+		if (L.UseArray(Namespace))
+		{
+			Retval = L.GetFieldD(Name, 0);
+			L.Pop();
+		}
 	}else
 		Retval = L.GetGlobalD(Name, 0);
 
