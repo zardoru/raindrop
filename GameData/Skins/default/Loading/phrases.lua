@@ -26,6 +26,8 @@ Phrases = {
 		"dude nice",
 		"You know what it is, bitch.",
 		"You're a master of karate and friendship for everyone!",
+		"\"your face is buggy\" - peppy",
+		"holy firetruck",
 		"CHAMPION OF THE ssssssssssssssssssssSUN",
 		"what a dumb ass nightingale",
 		"C H A O S M A I D  G U Y",
@@ -72,7 +74,25 @@ Phrases = {
 		"how can there be 714 bpm if theres only 60 seconds in a minute?",
 		"Far East Nightbird (Twitch remix)",
 		"Just hold on. You'll be fine, I promise. Everyday.",
-		"2spooky"
+		"2spooky",
+		"i'm not a kaiden i'm a ninja gaiden",
+		"did you seriously pay peppy 4$ to upload a fucking thomas the tank engine dump",
+		"\"mania is a pile of unmanageblae shit i'm not fixing it\" - peppy",
+		"Korean Mmorpg",
+		"I had a SV change trauma this SV change requires my no response in flying ball towards me",
+		"Re:apparantly wearing a fedora improves sightreading???",
+		"\"How does your osu have all notes go to one place?\"",
+		"Fuga Fuuuga Fuuuuuckga Fuuuuuuuuckga Darkstar PAZO light TRASH ACE WOOD HELL",
+		"JESUS WON'T COME TO SAVE YOU IN RHYTHM GAME HELL SON",
+		"slapping colorful hamburgers is one of my many hobbies",
+		"our park isn't very sunny in fact its raining",
+		"big colorful buttons",
+		"\"did you seirously pay peppy $4 to upload a fucking dump chart for the thomas and friends theme\" - fullerene-",
+		"\"I'LL NEVER PLAY 'BEAT-BEAT REVELATION' AGAIN!\"",
+		"What is SOWS? I tried to Google it but all I get is pictures of female pigs",
+		"To Abcdullah: your cheating is obvious, doing 100.00% on lv.26-28 maps from the first attempt is cheating, admit it.",
+		"konmai",
+		"haha facerolling"
 	}
 }
 

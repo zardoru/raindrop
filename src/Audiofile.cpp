@@ -81,6 +81,7 @@ AudioSample::AudioSample()
 AudioSample::~AudioSample()
 {
 	if (mData) delete mData;
+	mData = NULL;
 }
 
 bool AudioSample::Open(AudioDataSource* Src)

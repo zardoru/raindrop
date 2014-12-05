@@ -54,7 +54,10 @@ bool AudioSourceOGG::Open(const char* Filename)
 	int32 retv = ov_fopen(Filename, &mOggFile);
 #else
 	FILE* fp = _wfopen(Utility::Widen(Filename).c_str(), L"rb");
-	int32 retv = ov_open_callbacks((void*)fp, &mOggFile, NULL, 0, fileInterfaceOgg);
+	int32 retv = -1;
+
+	if (fp)
+		retv = ov_open_callbacks((void*)fp, &mOggFile, NULL, 0, fileInterfaceOgg);
 #endif
 
 #ifndef NDEBUG
