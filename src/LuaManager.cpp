@@ -125,7 +125,8 @@ GString LuaManager::GetGlobalS(GString VariableName, GString Default)
 	
 	if (!lua_isnil(State, -1) && lua_isstring(State, -1))
 	{
-		rval = lua_tostring(State, -1);
+		const char* s = lua_tostring(State, -1);
+		rval = s ? s : "";
 	}else
 	{
 		// Pop();
