@@ -29,7 +29,9 @@ SongWheel::SongWheel()
 	dotcurModeActive = (Configuration::GetConfigf("dotcurEnabled") != 0);
 	DifficultyIndex = 0;
 
+	ListRoot = NULL;
 	CurrentList = NULL;
+
 	IsHovering = false;
 }
 
@@ -44,15 +46,12 @@ SongWheel& SongWheel::GetInstance()
 	return *WheelInstance;
 }
 
-void SongWheel::Initialize(float Start, float End, SongDatabase* Database)
+void SongWheel::Initialize(float Start, float End, SongDatabase* Database, bool IsGraphical)
 {
 	DB = Database;
 
 	if (IsInitialized)
 		return;
-
-	ListRoot = NULL;
-	CurrentList = NULL;
 
 	ScrollSpeed = 90;
 	SelectedItem = 0;
@@ -60,23 +59,23 @@ void SongWheel::Initialize(float Start, float End, SongDatabase* Database)
 	OldCursorPos = 0;
 	Time = 0;
 	DisplacementSpeed = 2;
+	if (IsGraphical)
+	{
+		Item = new GraphObject2D;
+		Item->SetImage(GameState::GetInstance().GetSkinImage("item.png"));
+		ItemHeight = Item->GetHeight();
+		Item->SetZ(16);
 
-	Item = new GraphObject2D;
-	Item->SetImage(GameState::GetInstance().GetSkinImage("item.png"));
-	ItemHeight = Item->GetHeight();
-	Item->SetZ(16);
+		ItemTextOffset = Vec2(Configuration::GetSkinConfigf("X", "ItemTextOffset"), Configuration::GetSkinConfigf("Y", "ItemTextOffset"));
 
-	ItemTextOffset = Vec2(Configuration::GetSkinConfigf("X", "ItemTextOffset"), Configuration::GetSkinConfigf("Y", "ItemTextOffset"));
+		double FSize = Configuration::GetSkinConfigf("Size", "WheelFont");
+		GString fname = Configuration::GetSkinConfigs("Font", "WheelFont");
+		mTFont = new TruetypeFont(GameState::GetInstance().GetSkinFile(fname), FSize);
+	}
 
 	IsInitialized = true;
 	DifficultyIndex = 0;
 
-	//mFont = new BitmapFont();
-	//mFont->LoadSkinFontImage("font-wheel.tga", Vec2(10, 20), Vec2(32, 32), Vec2(10,20), 32);
-
-	double FSize = Configuration::GetSkinConfigf("Size", "WheelFont");
-	GString fname = Configuration::GetSkinConfigs("Font", "WheelFont");
-	mTFont = new TruetypeFont(GameState::GetInstance().GetSkinFile(fname), FSize);
 	ReloadSongs();
 }
 
@@ -119,13 +118,19 @@ public:
 	}
 };
 
-void SongWheel::ReloadSongs()
+void SongWheel::Join()
 {
 	if (mLoadThread)
 	{
 		mLoadThread->join();
 		delete mLoadThread;
 	}
+}
+
+
+void SongWheel::ReloadSongs()
+{
+	Join();
 
 	delete ListRoot;
 

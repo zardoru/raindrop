@@ -109,7 +109,9 @@ public:
 	static SongWheel& GetInstance();
 
 	void GoUp();
-	void Initialize(float Start, float End, SongDatabase* Database);
+	void Initialize(float Start, float End, SongDatabase* Database, bool IsGraphical = true);
+
+	void Join();
 
 	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	bool HandleScrollInput(const double dx, const double dy);

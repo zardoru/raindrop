@@ -175,22 +175,26 @@ namespace Utility {
 	GString getSha256ForFile(GString Filename)
 	{
 		SHA256 SHA;
+#ifndef WIN32
 		std::ifstream InStream(Filename.c_str());
+#else
+		std::ifstream InStream(Utility::Widen(Filename).c_str());
+#endif
 		unsigned char tmpbuf[256];
 		unsigned char Out[64];
 
-		SHA.init();
+		if (!InStream.is_open())
+			return "";
 
 		while (!InStream.eof())
 		{
 			InStream.read((char*)tmpbuf, 256);
 			size_t cnt = InStream.gcount();
 
-			SHA.update(tmpbuf, cnt);
+			SHA.add(tmpbuf, cnt);
 		}
 
-		SHA.final(Out);
-		return GString((char*)Out);
+		return GString(SHA.getHash());
 	}
 
 } // namespace Utility

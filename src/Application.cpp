@@ -225,7 +225,9 @@ void Application::Run()
 	}else if (RunMode == MODE_GENCACHE)
 	{
 		Log::Printf("Generating cache...\n");
-		Game::SongWheel::GetInstance().ReloadSongs();
+		Game::GameState::GetInstance().Initialize();
+		Game::SongWheel::GetInstance().Initialize(0, 0, Game::GameState::GetInstance().GetSongDatabase(), false);
+		Game::SongWheel::GetInstance().Join();
 
 		RunLoop = false;
 	}
