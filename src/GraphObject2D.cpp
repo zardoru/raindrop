@@ -31,12 +31,12 @@ void GraphObject2D::Construct(bool doInitTexture)
 	Initialize(doInitTexture);
 }
 
-GraphObject2D::GraphObject2D(bool ShouldInitTexture) 
+GraphObject2D::GraphObject2D(bool ShouldInitTexture) : Transformation()
 {
 	Construct(ShouldInitTexture);
 }
 
-GraphObject2D::GraphObject2D()
+GraphObject2D::GraphObject2D() : Transformation()
 {
 	Construct(true);
 }

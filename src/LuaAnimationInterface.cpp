@@ -383,12 +383,108 @@ void LoadBmFont(BitmapFont* B, GString Fn, float CellWidth, float CellHeight, fl
 	B->LoadSkinFontImage(Fn.c_str(), Size, CellSize, Size, startChar);
 }
 
+// We need these to be able to work with gcc.
+// Adding these directly does not work. Inheriting them from Transformation does not work. We're left only with this.
+struct O2DProxy
+{
+	static uint32 getZ(GraphObject2D const* obj)
+	{
+		return obj->GetZ();
+	}
+
+	static float getScaleX(GraphObject2D const* obj)
+	{
+		return obj->GetScaleX();
+	}
+
+	static float getScaleY(GraphObject2D const* obj)
+	{
+		return obj->GetScaleY();
+	}
+
+	static float getWidth(GraphObject2D const* obj)
+	{
+		return obj->GetWidth();
+	}
+
+	static float getHeight(GraphObject2D const* obj)
+	{
+		return obj->GetHeight();
+	}
+
+	static float getX(GraphObject2D const* obj)
+	{
+		return obj->GetPositionX();
+	}
+
+	static float getY(GraphObject2D const* obj)
+	{
+		return obj->GetPositionY();
+	}
+
+	static float getRotation(GraphObject2D const* obj)
+	{
+		return obj->GetRotation();
+	}
+
+	static Transformation getChainTransformation(GraphObject2D const* obj)
+	{
+		return Transformation();
+	}
+
+	static void setZ(GraphObject2D *obj, uint32 nZ)
+	{
+		obj->SetZ(nZ);
+	}
+
+	static void setHeight(GraphObject2D *obj, float param)
+	{
+		obj->SetHeight(param);
+	}
+
+	static void setWidth(GraphObject2D *obj, float param)
+	{
+		obj->SetWidth(param);
+	}
+
+	static void setScaleY(GraphObject2D *obj, float param)
+	{
+		obj->SetScaleY(param);
+	}
+
+	static void setScaleX(GraphObject2D *obj, float param)
+	{
+		obj->SetScaleX(param);
+	}
+
+	static void setRotation(GraphObject2D *obj, float param)
+	{
+		obj->SetRotation(param);
+	}
+
+	static void setX(GraphObject2D *obj, float param)
+	{
+		obj->SetPositionX(param);
+	}
+
+	static void setY(GraphObject2D *obj, float param)
+	{
+		obj->SetPositionY(param);
+	}
+
+	static void setChainTransformation(GraphObject2D *obj, Transformation* param)
+	{
+		obj->ChainTransformation(param);
+	}
+};
+
 // New lua interface.
 void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 {
 #define f(x) addFunction(#x, &GraphObject2D::x)
 #define p(x) addProperty(#x, &GraphObject2D::Get##x, &GraphObject2D::Set##x)
 #define v(x) addData(#x, &GraphObject2D::x)
+#define q(x) addProperty(#x, &O2DProxy::get##x, &O2DProxy::set##x)
 
 	luabridge::getGlobalNamespace(AnimLua->GetState())
 		.beginClass <Transformation>("Transformation")
@@ -406,11 +502,7 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 		.endClass();
 
 	luabridge::getGlobalNamespace(AnimLua->GetState())
-#ifdef WIN32
-		.beginClass <GraphObject2D>("Object2D")
-#else
 		.deriveClass<GraphObject2D, Transformation>("Object2D")
-#endif
 		.addConstructor<void(*) ()>()
 		.v(Centered)
 		.v(Lighten)
@@ -422,22 +514,17 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 		.v(Blue)
 		.v(Green)
 		.p(BlendMode)
-		/* There's some weird code generation stuff going on so we need to add a few conditions per-compiler, it seems.
-		 Basically, whenever you use a transformation function on windows without declaring it explicitly on the Go2D class
-		 it plain won't call the functions. Odd stuff. */
-#ifdef WIN32 
-		.addProperty("Z", &Transformation::GetZ, &Transformation::SetZ)
-		.addProperty("Layer", &Transformation::GetZ, &Transformation::SetZ)
-		.addProperty("Rotation", &Transformation::GetRotation, &Transformation::SetRotation)
-		.addProperty("Width", &Transformation::GetWidth, &Transformation::SetWidth)
-		.addProperty("Height", &Transformation::GetHeight, &Transformation::SetHeight)
-		.addProperty("ScaleX", &Transformation::GetScaleX, &Transformation::SetScaleX)
-		.addProperty("ScaleY", &Transformation::GetScaleY, &Transformation::SetScaleY)
-		.addProperty("X", &Transformation::GetPositionX, &Transformation::SetPositionX)
-		.addProperty("Y", &Transformation::GetPositionY, &Transformation::SetPositionY)
-#endif
-		.addFunction("SetChainTransformation", &Transformation::ChainTransformation)
 		.f(SetCropByPixels)
+		.q(Z)
+		.addProperty("Layer", &O2DProxy::getZ, &O2DProxy::setZ)
+		.q(ScaleX)
+		.q(ScaleY)
+		.q(Rotation)
+		.q(Width)
+		.q(Height)
+		.q(X)
+		.q(Y)
+		.q(ChainTransformation)
 		.addProperty("Image", GetImage, SetImage) // Special for setting image.
 		.endClass();
 	
