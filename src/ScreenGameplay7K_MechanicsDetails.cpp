@@ -168,7 +168,7 @@ bool O2JamMechanics::OnPressLane(double SongBeat, VSRG::TrackNote* m, uint32 Lan
 	double dev = (SongBeat - m->GetStartTime());
 	double tD = abs(dev);
 
-	if (tD < score_keeper->getMissCutoff()) // If the note was hit inside judging range
+	if (tD < score_keeper->getJudgmentWindow(SKJ_W3)) // If the note was hit inside judging range
 	{
 		m->Hit();
 			
