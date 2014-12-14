@@ -2,7 +2,7 @@
 #include <map>
 
 #include "utf8.h"
-#include "Global.h"
+#include "GameGlobal.h"
 #include "Logging.h"
 #include "Song7K.h"
 #include "NoteLoader7K.h"

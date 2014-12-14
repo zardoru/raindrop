@@ -125,6 +125,21 @@ enum EHiddenMode {
 	HIDDENMODE_FLASHLIGHT = 3
 } ;
 
+namespace VSRG {
+
+	// note type: 3 bits
+	enum ENoteKind {
+		NK_NORMAL,
+		NK_FAKE,
+		NK_MINE,
+		NK_LIFT,
+		NK_ROLL, // subtype of hold
+		NK_TOTAL
+	};
+
+	const uint8 MAX_CHANNELS = 16;
+}
+
 // Vertical Space for a Measure.
 const float MeasureBaseSpacing = 0.4f * ScreenHeightDefault;
 

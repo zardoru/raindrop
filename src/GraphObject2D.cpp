@@ -4,7 +4,15 @@
 #include "VBO.h"
 #include "Image.h"
 
-bool GraphObject2D::IsInitialized = false;
+GraphObject2D::GraphObject2D(bool ShouldInitTexture) : Transformation()
+{
+	Construct(ShouldInitTexture);
+}
+
+GraphObject2D::GraphObject2D() : Transformation()
+{
+	Construct(true);
+}
 
 void GraphObject2D::Construct(bool doInitTexture)
 {
@@ -22,7 +30,7 @@ void GraphObject2D::Construct(bool doInitTexture)
 	Centered = false;
 	ColorInvert = false;
 	DirtyTexture = true;
-	DoTextureCleanup = true;
+	DoTextureCleanup = doInitTexture;
 	AffectedByLightning = false;
 
 	mImage = NULL;
@@ -31,14 +39,12 @@ void GraphObject2D::Construct(bool doInitTexture)
 	Initialize(doInitTexture);
 }
 
-GraphObject2D::GraphObject2D(bool ShouldInitTexture) : Transformation()
+void GraphObject2D::Initialize(bool ShouldInitTexture)
 {
-	Construct(ShouldInitTexture);
-}
+	UvBuffer = NULL;
 
-GraphObject2D::GraphObject2D() : Transformation()
-{
-	Construct(true);
+	if (ShouldInitTexture)
+		UpdateTexture();
 }
 
 GraphObject2D::~GraphObject2D()
@@ -48,29 +54,13 @@ GraphObject2D::~GraphObject2D()
 
 void GraphObject2D::SetBlendMode(int Mode)
 {
-	BlendingMode = (rBlendMode)Mode;
+	BlendingMode = (RBlendMode)Mode;
 }
 
 int GraphObject2D::GetBlendMode() const
 {
 	return BlendingMode;
 }
-
-void GraphObject2D::Initialize(bool ShouldInitTexture)
-{
-	UvBuffer = NULL;
-
-	if (!IsInitialized)
-	{
-		mBuffer = new VBO(VBO::Static, 8);
-		InitVBO();
-		IsInitialized = true;
-	}
-
-	if (ShouldInitTexture)
-		UpdateTexture();
-}
-
 
 void GraphObject2D::SetImage(Image* image, bool ChangeSize)
 {
@@ -134,17 +124,12 @@ void GraphObject2D::SetCrop2(Vec2 Crop2)
 
 void GraphObject2D::Invalidate()
 {
-	IsInitialized = false;
+	// stub
 }
 
 Image* GraphObject2D::GetImage()
 {
 	return mImage;
-}
-
-void GraphObject2D::BindTopLeftVBO()
-{
-	mBuffer->Bind();
 }
 
 void GraphObject2D::BindTextureVBO()

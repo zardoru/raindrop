@@ -2,6 +2,8 @@ Phrases = {
 	Content = {
 		"That guy is saltier than the dead sea.",
 		"i have opinions: the movie",
+		"communication is beautiful",
+		"TRUST. BELIEVE. SUCCEED.",
 		"not even kaiden yet",
 		"a noodle soup a day and your skills won't decay",
 		"hey girl im kaiden want to go out",

@@ -26,6 +26,7 @@ public:
 
 	// Utilitarian
 	static void ForceRebind();
+	static void BindNull(); // Or, basically unbind.
 
 	// Data
 	GString fname;

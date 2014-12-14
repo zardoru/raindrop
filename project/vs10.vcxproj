@@ -192,6 +192,7 @@
     <ClCompile Include="..\src\Line.cpp" />
     <ClCompile Include="..\src\Logging.cpp" />
     <ClCompile Include="..\src\NoteLoaderOJN.cpp" />
+    <ClCompile Include="..\src\Noteskin.cpp" />
     <ClCompile Include="..\src\raindrop.cpp" />
     <ClCompile Include="..\src\GameObject.cpp" />
     <ClCompile Include="..\src\GameWindow.cpp" />
@@ -280,6 +281,8 @@
     <ClInclude Include="..\src\GameWindow.h" />
     <ClInclude Include="..\src\GraphicalString.h" />
     <ClInclude Include="..\src\GraphObject2D.h" />
+    <ClInclude Include="..\src\Noteskin.h" />
+    <ClInclude Include="..\src\Rendering.h" />
     <ClInclude Include="..\src\SceneManager.h" />
     <ClInclude Include="..\src\GuiButton.h" />
     <ClInclude Include="..\src\GuiTextPrompt.h" />

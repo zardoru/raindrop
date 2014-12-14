@@ -241,6 +241,9 @@
     <ClCompile Include="..\src\Utility.cpp">
       <Filter>Source\backend</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Noteskin.cpp">
+      <Filter>Source\vsrg\gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">
@@ -455,6 +458,12 @@
     </ClInclude>
     <ClInclude Include="..\ext-src\sha256.h">
       <Filter>Source\libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Noteskin.h">
+      <Filter>Source\vsrg\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Rendering.h">
+      <Filter>Source\backend\render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

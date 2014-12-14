@@ -291,7 +291,7 @@ namespace LuaAnimFuncs
 		int B = luaL_checknumber(L, 1);
 		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
 
-		Target->SetBlendMode((rBlendMode)B);
+		Target->SetBlendMode((RBlendMode)B);
 		return 0;
 	}
 

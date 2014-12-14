@@ -1,29 +1,21 @@
 #ifndef GraphObject2D_H
 #define GraphObject2D_H
 
+#include "Rendering.h"
 #include "Transformation.h"
 #include "Drawable.h"
 
 class VBO;
 class Image;
 
-enum rBlendMode
-{
-	MODE_ADD,
-	MODE_ALPHA,
-};
-
 class GraphObject2D : public Transformation, public Drawable
 {
-	static VBO *mBuffer;
-	static bool IsInitialized;
-
 private: // Transformations
 	void Cleanup();
 
 	bool DirtyTexture;
 	
-	rBlendMode BlendingMode;
+	RBlendMode BlendingMode;
 
 	// These crop variables define where to crop the image.
 
@@ -31,7 +23,7 @@ private: // Transformations
 	* crop_x1 and crop_y1 define the top-left corner of the crop rectangle.
 	* crop_x2 and crop_y2 define the bottom-right corner of the crop rectangle.
 	* 
-	* These coordinates are in pixels.
+	* These coordinates are in fractions.
 	*/
 
 	float mCrop_x1, mCrop_y1;
@@ -68,7 +60,6 @@ public:
 	Image* GetImage();
 	GString GetImageFilename() const;
 
-	virtual void InitVBO();
 	virtual void Initialize(bool ShouldInitTexture);
 
 	void SetBlendMode(int Mode);
@@ -85,7 +76,6 @@ public:
 	virtual void Render(); // found in backend.cpp
 	virtual void Invalidate();
 
-	static void BindTopLeftVBO();
 	void BindTextureVBO();
 };
 

@@ -1,7 +1,7 @@
 #include <fstream>
 #include <map>
 
-#include "Global.h"
+#include "GameGlobal.h"
 #include "Directory.h"
 #include "Song7K.h"
 #include "Converter.h"

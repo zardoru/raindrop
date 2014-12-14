@@ -29,6 +29,12 @@ void Image::CreateTexture()
 	}
 }
 
+void Image::BindNull()
+{
+	glBindTexture(GL_TEXTURE_2D, 0);
+	LastBound = NULL;
+}
+
 void Image::Bind()
 {
 	if (IsValid && texture != -1)

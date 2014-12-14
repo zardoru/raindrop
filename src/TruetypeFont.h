@@ -10,7 +10,6 @@ class TruetypeFont : public Font
 	stbtt_fontinfo* info;
 	unsigned char* data;
 	size_t offs;
-	uint32 tex;
 	bool IsValid;
 	float scale;
 	float realscale;

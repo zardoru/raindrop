@@ -1,3 +1,6 @@
+#ifndef GLOBAL_H_
+#define GLOBAL_H_
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <string>
@@ -8,29 +11,39 @@
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 
+#if (defined _MSC_VER) && (_MSC_VER < 1800)
+#error "You require Visual Studio 2013 to compile this application."
+#endif
+
 using boost::function;
 using boost::bind;
 
-#ifndef HAS_STDINT
+// Use stdint if available.
+#if !(defined HAS_STDINT) && ( !(defined _MSC_VER) || (_MSC_VER < 1800) )
 #include <boost/cstdint.hpp>
 using boost::uint32_t;
-using boost::int32_t;
-using boost::int16_t;
 using boost::uint16_t;
 using boost::uint8_t;
+using boost::int32_t;
+using boost::int16_t;
+using boost::int8_t;
 #else
 #include <stdint.h>
 #endif
 
 typedef glm::vec2 Vec2;
+typedef glm::vec3 Vec3;
 typedef glm::mat4 Mat4;
 
 
 typedef uint32_t uint32;
-typedef int32_t int32;
-typedef uint16_t int16;
 typedef uint16_t uint16;
 typedef uint8_t uint8;
+
+typedef int32_t int32;
+typedef int16_t int16;
+typedef int8_t int8;
+
 #define GString std::string
 
 extern float *PInfinity;
@@ -38,6 +51,43 @@ extern float *PInfinity;
 #define Infinity *PInfinity
 
 #define M_PI	 3.14159265358979323846
+
+template 
+<class T>
+struct TAABB {
+	union {
+		struct { T X, Y; } P1;
+		struct { T X1, Y1; }; // Topleft point
+	};
+
+	union {
+		struct { T X, Y; } P2;
+		struct { T X2, Y2; }; // Bottomright point
+	};
+};
+
+typedef TAABB<float> AABB;
+typedef TAABB<double> AABBd;
+
+template
+<class T>
+struct TColorRGB {
+	union {
+		struct { T R, G, B, A; };
+		struct { T Red, Green, Blue, Alpha; };
+	};
+};
+
+typedef TColorRGB<float> ColorRGB;
+typedef TColorRGB<double> ColorRGBd;
+
+namespace Color {
+	extern const ColorRGB White;
+	extern const ColorRGB Black;
+	extern const ColorRGB Red;
+	extern const ColorRGB Green;
+	extern const ColorRGB Blue;
+}
 
 namespace Utility
 {
@@ -113,4 +163,6 @@ using std::min;
 #ifdef WIN32
 #pragma warning (disable: 4244)
 #pragma warning (disable: 4996) // deprecation
+#endif
+
 #endif

@@ -9,15 +9,6 @@ namespace VSRG
 	const unsigned char WasHitFlag = 1 << 1;
 	const unsigned char HeadEnabledFlag = 1 << 2;
 
-	// note type: 3 bits
-	enum ENoteKind {
-		NK_NORMAL,
-		NK_FAKE,
-		NK_MINE,
-		NK_LIFT,
-		NK_ROLL // subtype of hold
-	};
-
 	// REMEMBER WE MUST BE 8-BYTE ALIGNED. It's either 16, 24 or 32...
 	// note data: 20 bytes
 	// Going to be 24 bytes on its own with alignment...

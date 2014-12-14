@@ -8,9 +8,12 @@
 #include "Global.h"
 
 #include "GameWindow.h"
-#include "Rendering.h"
 #include "VBO.h"
 #include "GraphObject2D.h"
+#include "Transformation.h"
+
+#include "Rendering.h"
+
 #include "Line.h"
 #include "Image.h"
 #include "ImageLoader.h"
@@ -20,7 +23,14 @@
 #include "BitmapFont.h"
 #include "utf8.h"
 
-VBO* GraphObject2D::mBuffer;
+VBO* QuadBuffer = NULL;
+VBO* TextureBuffer = NULL;
+
+const ColorRGB White = { 1, 1, 1, 1 };
+const ColorRGB Black = { 0, 0, 0, 1 };
+const ColorRGB Red = { 1, 0, 0, 1 };
+const ColorRGB Green = { 0, 1, 0, 1 };
+const ColorRGB Blue = { 0, 0, 1, 1 };
 
 float QuadPositions[8] =
 	{
@@ -41,41 +51,152 @@ float QuadPositions[8] =
 		0,
 	};
 
-float QuadPositionsTX[8] =
+
+void SetBlendingMode(RBlendMode Mode)
+{
+	if (Mode == MODE_ADD)
 	{
-				// tr
-		1,
-		0,
+		glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	}
+	else if (Mode == MODE_ALPHA)
+	{
+		glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
+}
 
-		// br
-		1,
-		1,
+void SetPrimitiveQuadVBO()
+{
+	QuadBuffer->Bind();
+	glVertexAttribPointer(WindowFrame.EnableAttribArray(A_POSITION), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+	glVertexAttribPointer(WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+}
 
-		// bl
-		0,
-		1,
+void SetTexturedQuadVBO(VBO *TexQuad)
+{
+	QuadBuffer->Bind();
+	glVertexAttribPointer(WindowFrame.EnableAttribArray(A_POSITION), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+	TexQuad->Bind();
+	glVertexAttribPointer(WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+}
 
-		// tl
-		0,
-		0,
+void FinalizeDraw()
+{
+	WindowFrame.DisableAttribArray(A_POSITION);
+	WindowFrame.DisableAttribArray(A_UV);
+}
+
+void SetShaderParameters(bool InvertColor,
+	bool UseGlobalLight, bool Centered, bool UseSecondTransformationMatrix,
+	bool BlackToTransparent, bool ReplaceColor,
+	int8 HiddenMode)
+{
+	WindowFrame.SetUniform(U_INVERT, InvertColor);
+	WindowFrame.SetUniform(U_LIGHT, UseGlobalLight);
+
+	if (HiddenMode == -1)
+		WindowFrame.SetUniform(U_HIDDEN, 0); // not affected by hidden lightning
+	else
+		WindowFrame.SetUniform(U_HIDDEN, HiddenMode); // Assume the other related parameters are already set.
+
+	WindowFrame.SetUniform(U_REPCOLOR, ReplaceColor);
+	WindowFrame.SetUniform(U_BTRANSP, BlackToTransparent);
+
+	WindowFrame.SetUniform(U_TRANSL, UseSecondTransformationMatrix);
+	WindowFrame.SetUniform(U_CENTERED, Centered);
+}
+
+void DrawTexturedQuad(Image* ToDraw, const AABB& TextureCrop, const Transformation& QuadTransformation, 
+	const RBlendMode &Mode, const ColorRGB &InColor)
+{
+	if (ToDraw)
+		ToDraw->Bind();
+	else return;
+
+	WindowFrame.SetUniform(U_COLOR, InColor.Red, InColor.Green, InColor.Blue, InColor.Alpha);
+
+	SetBlendingMode(Mode);
+
+
+	float CropPositions[8] = {
+		// topright
+		TextureCrop.P2.X / (float)ToDraw->w,
+		TextureCrop.P1.Y / (float)ToDraw->h,
+		// bottom right
+		TextureCrop.P2.X / (float)ToDraw->w,
+		TextureCrop.P2.Y / (float)ToDraw->h,
+		// bottom left
+		TextureCrop.P1.X / (float)ToDraw->w,
+		TextureCrop.P2.Y / (float)ToDraw->h,
+		// topleft
+		TextureCrop.P1.X / (float)ToDraw->w,
+		TextureCrop.P1.Y / (float)ToDraw->h,
 	};
 
-void GraphObject2D::InitVBO()
-{
-	// since shaders are already loaded from graphman's init functions..
-	// we'll deal with what we need to deal.
-	// Our initial quad.
+	TextureBuffer->AssignData(CropPositions);
+	SetTexturedQuadVBO(TextureBuffer);
 
-	mBuffer->Validate();
-	mBuffer->AssignData(QuadPositions);
+	DoQuadDraw();
+
+	FinalizeDraw();
+}
+
+void DoQuadDraw()
+{
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+}
+
+void DrawPrimitiveQuad(Transformation &QuadTransformation, const RBlendMode &Mode, const ColorRGB &Color)
+{
+	Image::BindNull();
+	WindowFrame.SetUniform(U_COLOR, Color.Red, Color.Green, Color.Blue, Color.Alpha);
+
+	SetBlendingMode(Mode);
+
+	Mat4 Mat = QuadTransformation.GetMatrix();
+	WindowFrame.SetUniform(U_MVP, &(Mat[0][0]));
+
+	// Assign position attrib. pointer
+	SetPrimitiveQuadVBO();
+	DoQuadDraw();
+	FinalizeDraw();
+
+	Image::ForceRebind();
+}
+
+void InitializeRender()
+{
+	static bool Initialized = false;
+	if (!Initialized)
+	{
+		QuadBuffer = new VBO(VBO::Static, sizeof(QuadPositions) / sizeof(float));
+		QuadBuffer->Validate();
+		QuadBuffer->AssignData(QuadPositions);
+
+		TextureBuffer = new VBO(VBO::Static, sizeof(QuadPositions) / sizeof(float));
+		TextureBuffer->Validate();
+		TextureBuffer->AssignData(QuadPositions);
+		Initialized = true;
+	}
 }
 
 void GraphObject2D::UpdateTexture()
 {
+	if (!DirtyTexture)
+		return;
+
+	if (!DoTextureCleanup) // We must not own a UV buffer.
+	{
+		DirtyTexture = false;
+		return;
+	}
+
 	if (!UvBuffer)
 		UvBuffer = new VBO(VBO::Dynamic, 8);
 
 	UvBuffer->Validate();
+
 	float CropPositions[8] = { // 2 for each vertex and a uniform for z order
 	// topright
 		mCrop_x2,
@@ -97,63 +218,38 @@ void GraphObject2D::UpdateTexture()
 
 void GraphObject2D::Render()
 {
-	
 	if (mImage)
 	{
 		mImage->Bind();
 	}else
 		return;
 
-	if (DirtyTexture)
-		UpdateTexture();
+	UpdateTexture();
 
 	if (Alpha == 0) return;
 
-	if (BlendingMode == MODE_ADD)
-	{
-		glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	}
-	else if (BlendingMode == MODE_ALPHA)
-	{
-		glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	}
+	SetBlendingMode(BlendingMode);
 
 	// Assign our matrix.
+	SetShaderParameters(ColorInvert, AffectedByLightning, Centered, false, BlackToTransparent);
+	
 	Mat4 Mat = GetMatrix();
 	WindowFrame.SetUniform(U_MVP,  &(Mat[0][0]));
 
 	// Set the color.
 	WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha);
-	WindowFrame.SetUniform(U_INVERT, ColorInvert);
-	WindowFrame.SetUniform(U_LIGHT, AffectedByLightning);
-	WindowFrame.SetUniform(U_HIDDEN, 0); // not affected by hidden lightning
-	WindowFrame.SetUniform(U_REPCOLOR, false);
-	WindowFrame.SetUniform(U_BTRANSP, BlackToTransparent);
 
-	WindowFrame.SetUniform(U_TRANSL, false);
-	WindowFrame.SetUniform(U_CENTERED, Centered);
-
-	// Assign position attrib. pointer
-	mBuffer->Bind();
-	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_POSITION), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
-
-	// assign vertex UVs
-	UvBuffer->Bind();
-	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
-
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	SetTexturedQuadVBO(UvBuffer);
+	DoQuadDraw();
 
 	if (Lighten)
 	{
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha * LightenFactor);
-		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		DoQuadDraw();
 	}
 
-	WindowFrame.DisableAttribArray(A_POSITION);
-	WindowFrame.DisableAttribArray(A_UV);
+	FinalizeDraw();
 }
 
 void GraphObject2D::Cleanup()
@@ -168,12 +264,11 @@ void TruetypeFont::SetupTexture()
 {
 	Texform = new VBO (VBO::Dynamic, 8);
 	Texform->Validate();
-	Texform->AssignData(QuadPositionsTX);
+	Texform->AssignData(QuadPositions);
 }
 
 void TruetypeFont::Render(GString In, const Vec2 &Position, const Mat4 &Transform)
 {
-
 	const char* Text = In.c_str(); 
 	int Line = 0;
 	glm::vec3 vOffs (Position.x, Position.y + scale, 16);
@@ -181,29 +276,12 @@ void TruetypeFont::Render(GString In, const Vec2 &Position, const Mat4 &Transfor
 	if (!IsValid)
 		return;
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	SetBlendingMode(MODE_ALPHA);
 
-	glBindTexture(GL_TEXTURE_2D, tex);
-
-	// Set the color.
+	SetShaderParameters(false, false, false, false, false, true);
 	WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha);
-	WindowFrame.SetUniform(U_INVERT, false);
-	WindowFrame.SetUniform(U_LIGHT, false);
-	WindowFrame.SetUniform(U_HIDDEN, 0);
-	WindowFrame.SetUniform(U_REPCOLOR, true);
-	WindowFrame.SetUniform(U_BTRANSP, false);
-
-	WindowFrame.SetUniform(U_TRANSL, false);
-	WindowFrame.SetUniform(U_CENTERED, false);
-
-	// Assign position attrib. pointer
-	GraphObject2D::BindTopLeftVBO();
-	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_POSITION), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
-
-	// assign vertex UVs
-	GraphObject2D::BindTopLeftVBO();
-	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
-
+	SetPrimitiveQuadVBO();
+	
 	utf8::iterator<const char*> it (Text, Text, Text + In.length());
 	utf8::iterator<const char*> itend(Text + In.length(), Text, Text + In.length());
 	for (; it != itend; it++)
@@ -242,7 +320,7 @@ void TruetypeFont::Render(GString In, const Vec2 &Position, const Mat4 &Transfor
 
 		WindowFrame.SetUniform(U_MVP,  &(dx[0][0]));
 
-		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		DoQuadDraw();
 
 		utf8::iterator<const char*> next = it;
 		next++;
@@ -255,8 +333,7 @@ void TruetypeFont::Render(GString In, const Vec2 &Position, const Mat4 &Transfor
 		}
 	}
 
-	WindowFrame.DisableAttribArray(A_POSITION);
-	WindowFrame.DisableAttribArray(A_UV);
+	FinalizeDraw();
 	Image::ForceRebind();
 
 }
@@ -305,16 +382,9 @@ void Line::Render()
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// Set the color.
+	SetShaderParameters(false, false, false, false, false, true);
+
 	WindowFrame.SetUniform(U_COLOR, R, G, B, A);
-	WindowFrame.SetUniform(U_INVERT, false);
-	WindowFrame.SetUniform(U_LIGHT, false);
-	WindowFrame.SetUniform(U_HIDDEN, 0);
-	WindowFrame.SetUniform(U_REPCOLOR, true);
-	WindowFrame.SetUniform(U_BTRANSP, false);
-
-	WindowFrame.SetUniform(U_TRANSL, false);
-	WindowFrame.SetUniform(U_CENTERED, false);
-
 	WindowFrame.SetUniform(U_MVP, &(Identity[0][0]));
 
 	// Assign position attrib. pointer
@@ -348,19 +418,13 @@ void BitmapFont::Render(GString St, const Vec2 &Position, const Mat4 &Transform)
 		Font->IsValid = true;
 	}
 
+	SetShaderParameters(false, false, false);
 	WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha);
-	WindowFrame.SetUniform(U_INVERT, false);
-	WindowFrame.SetUniform(U_LIGHT, false);
-	WindowFrame.SetUniform(U_HIDDEN, 0);
-	WindowFrame.SetUniform(U_REPCOLOR, false);
-	WindowFrame.SetUniform(U_BTRANSP, false);
-
-	WindowFrame.SetUniform(U_TRANSL, false);
-	WindowFrame.SetUniform(U_CENTERED, false);
-
+	
 	Font->Bind();
+	
 	// Assign position attrib. pointer
-	GraphObject2D::BindTopLeftVBO();
+	QuadBuffer->Bind();
 	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_POSITION), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
 	for (;*Text != '\0'; Text++)
@@ -386,7 +450,7 @@ void BitmapFont::Render(GString St, const Vec2 &Position, const Mat4 &Transform)
 		glVertexAttribPointer( WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
 
 		// Do the rendering!
-		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		DoQuadDraw();
 		
 		WindowFrame.DisableAttribArray(A_UV);
 

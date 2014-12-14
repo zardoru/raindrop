@@ -3,8 +3,6 @@
 
 namespace VSRG
 {
-	const uint8 MAX_CHANNELS = 16;
-
 	struct Measure
 	{
 		std::vector<NoteData> MeasureNotes[MAX_CHANNELS];

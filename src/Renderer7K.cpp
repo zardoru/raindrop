@@ -70,14 +70,10 @@ void ScreenGameplay7K::DrawMeasures()
 	if (BarlineEnabled)
 		DrawBarlines(rPos);
 
-	// Set the color.
-	WindowFrame.SetUniform(U_INVERT, false); // Color invert
-	WindowFrame.SetUniform(U_LIGHT, false); // Affected by lightning
-	WindowFrame.SetUniform(U_REPCOLOR, false);
+	// Set some parameters...
+	SetShaderParameters(false, false, true, true, false, false, RealHiddenMode);
 
 	// Sudden = 1, Hidden = 2, flashlight = 3 (Defined in the shader)
-	WindowFrame.SetUniform(U_HIDDEN, RealHiddenMode); // Affected by hidden lightning?
-
 	if (RealHiddenMode)
 	{
 		WindowFrame.SetUniform(U_HIDLOW, HideClampLow);
@@ -86,15 +82,8 @@ void ScreenGameplay7K::DrawMeasures()
 		WindowFrame.SetUniform(U_HIDSUM, HideClampSum);
 	}
 
-	WindowFrame.SetUniform(U_TRANSL, true); // use extra matrices
-	WindowFrame.SetUniform(U_CENTERED, true); // center vertexes
-
 	WindowFrame.SetUniform(U_SMULT, SpeedMultiplier);
-
-	GraphObject2D::BindTopLeftVBO();
-	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_POSITION), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
-
-	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
+	SetPrimitiveQuadVBO();
 
 	/* todo: instancing */
 	for (uint32 k = 0; k < CurrentDiff->Channels; k++)
@@ -161,7 +150,7 @@ void ScreenGameplay7K::DrawMeasures()
 
 				WindowFrame.SetUniform(U_TRANM, &(m->GetHoldPositionMatrix(LanePositions[k]))[0][0]);
 				WindowFrame.SetUniform(U_SIM, &(m->GetHoldBodyMatrix(LaneWidth[k], MultAbs))[0][0]);
-				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+				DoQuadDraw();
 			}
 
 
