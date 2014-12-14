@@ -340,7 +340,8 @@ void CalculateBPMs(BmsLoadInfo *Info)
 				double BPM;
 				if (Info->BPMs.find(ev->Event) != Info->BPMs.end())
 					BPM = Info->BPMs[ev->Event];
-				else continue;
+				else 
+					continue;
 
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first);
 
@@ -367,7 +368,10 @@ void CalculateStops(BmsLoadInfo *Info)
 			for (BMSEventList::iterator ev = i->second.Events[CHANNEL_STOPS].begin(); ev != i->second.Events[CHANNEL_STOPS].end(); ev++)
 			{
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first);
-				double StopDuration = Info->Stops[ev->Event] / 48 * spb (SectionValue(Info->difficulty->Timing, Beat)); // A value of 1 is... a 192nd of the measure? Or a 192nd of a beat? Or (192 / (4 * meter)) * spb? I'm not sure...
+				double StopTimeBeats = Info->Stops[ev->Event] / 48;
+				double SectionValueStop = SectionValue(Info->difficulty->Timing, Beat);
+				double SPBSection = spb(SectionValueStop);
+				double StopDuration = StopTimeBeats * SPBSection; // A value of 1 is... a 192nd of the measure? Or a 192nd of a beat? Or (192 / (4 * meter)) * spb? I'm not sure...
 
 				TimingSegment New;
 				New.Time = Beat;

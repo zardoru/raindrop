@@ -9,9 +9,9 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/foreach.hpp>
 
-uint32 SectionIndex(const TimingData &Timing, float Beat)
+int SectionIndex(const TimingData &Timing, double Beat)
 {
-	uint32 Index = 0;
+	int Index = -1;
 	for (TimingData::const_iterator i = Timing.begin(); i != Timing.end(); i++)
 	{
 		if ( Beat >= i->Time )
@@ -22,17 +22,24 @@ uint32 SectionIndex(const TimingData &Timing, float Beat)
 	return Index;
 }
 
-double SectionValue(const TimingData &Timing, float Beat)
+double SectionValue(const TimingData &Timing, double Beat)
 {
 	if (Beat < Timing[0].Time)
 		return Timing[0].Value;
 	else
-		return Timing[SectionIndex(Timing,Beat)-1].Value;
+	{
+		int Index = SectionIndex(Timing, Beat);
+#ifndef NDEBUG
+		if (Index < 0)
+			Utility::DebugBreak();
+#endif
+		return Timing[Index].Value;
+	}
 }
 
-double TimeAtBeat(const TimingData &Timing, float Offset, float Beat)
+double TimeAtBeat(const TimingData &Timing, float Offset, double Beat)
 {
-	uint32 CurrentIndex = SectionIndex(Timing, Beat);
+	uint32 CurrentIndex = SectionIndex(Timing, Beat) + 1;
 	double Time = Offset;
 
 	if (Beat == 0) return Time;
@@ -100,7 +107,7 @@ void LoadTimingList(TimingData &Timing, GString line, bool AllowZeros)
 	}
 }
 
-double StopTimeAtBeat(const TimingData &StopsTiming, float Beat)
+double StopTimeAtBeat(const TimingData &StopsTiming, double Beat)
 {
 	double Time = 0;
 
@@ -115,10 +122,15 @@ double StopTimeAtBeat(const TimingData &StopsTiming, float Beat)
 	return Time;
 }
 
-double IntegrateToTime(const TimingData &Timing, float Time, float Drift)
+double IntegrateToTime(const TimingData &Timing, double Time, float Drift)
 {
-	uint32 Section = SectionIndex(Timing, Time) - 1;
+	int Section = SectionIndex(Timing, Time);
 	double Out = 0;
+
+#ifndef NDEBUG
+	if (Section == -1)
+		Utility::DebugBreak();
+#endif
 
 	if (Time < Timing[0].Time) // In this case, Section will hold an invalid value.
 	{
@@ -134,7 +146,7 @@ double IntegrateToTime(const TimingData &Timing, float Time, float Drift)
 	return Out;
 }
 
-double BeatAtTime(const TimingData &Timing, float Time, float Offset)
+double BeatAtTime(const TimingData &Timing, double Time, float Offset)
 {
 	double sDelta = Timing[0].Value * Offset;
 	return IntegrateToTime(Timing, Time) - sDelta;
