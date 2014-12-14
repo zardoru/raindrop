@@ -845,7 +845,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 		WaitingTime = 0;
 
 
-	CurrentBeat = BeatAtTime(BPS, -WaitingTime, CurrentDiff->Offset + TimeCompensation);
+	CurrentBeat = IntegrateToTime(BPS, -WaitingTime);
 	Animations->GetImageList()->ForceFetch();
 
 	BMPs.LoadAll();

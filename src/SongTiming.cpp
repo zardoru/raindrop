@@ -127,15 +127,10 @@ double IntegrateToTime(const TimingData &Timing, double Time, float Drift)
 	int Section = SectionIndex(Timing, Time);
 	double Out = 0;
 
-#ifndef NDEBUG
-	if (Section == -1)
-		Utility::DebugBreak();
-#endif
-
-	if (Time < Timing[0].Time) // In this case, Section will hold an invalid value.
+	if (Section == -1) // Time is behind all.
 	{
 		Out = - (Timing[0].Time - Time) * Timing[0].Value;
-	}else
+	}else // Time comes after first entry.
 	{
 		for (uint32 i = 0; i < Section; i++)
 			Out += (Timing[i+1].Time - Timing[i].Time) * Timing[i].Value;
@@ -144,12 +139,6 @@ double IntegrateToTime(const TimingData &Timing, double Time, float Drift)
 	}
 
 	return Out;
-}
-
-double BeatAtTime(const TimingData &Timing, double Time, float Offset)
-{
-	double sDelta = Timing[0].Value * Offset;
-	return IntegrateToTime(Timing, Time) - sDelta;
 }
 
 double QuantizeFractionBeat(float Frac)

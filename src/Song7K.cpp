@@ -75,7 +75,7 @@ void Difficulty::ProcessVSpeeds(TimingData& BPS, TimingData& VerticalSpeeds, dou
 			VerticalSpeed = 0;
 
 		VSpeed.Value = VerticalSpeed;
-		VSpeed.Time = Time->Time;
+		VSpeed.Time = Time->Time; // We blindly take the BPS time that had offset and drift applied.
 
 		VerticalSpeeds.push_back(VSpeed);
 	}
@@ -130,7 +130,7 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 {
 	/* 
 		Calculate BPS. The algorithm is basically the same as VSpeeds.
-		BPS time is calculated applying the offset.
+		BPS time is calculated applying the offset and drift.
 	*/
 	assert(Data != NULL);
 
@@ -162,8 +162,8 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 		Time++)
 	{
 		TimingSegment Seg;
-		float TValue = TimeAtBeat(Timing, Offset + Drift, Time->Time) + StopTimeAtBeat(StopsTiming, Time->Time);
-		float TValueN = TimeAtBeat(Timing, Offset + Drift, Time->Time) + StopTimeAtBeat(StopsTiming, Time->Time) + Time->Value;
+		double TValue = TimeAtBeat(Timing, Offset + Drift, Time->Time) + StopTimeAtBeat(StopsTiming, Time->Time);
+		double TValueN = TimeAtBeat(Timing, Offset + Drift, Time->Time) + StopTimeAtBeat(StopsTiming, Time->Time) + Time->Value;
 
 		/* Initial Stop */
 		Seg.Time = TValue;
@@ -172,7 +172,7 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 		/* First, eliminate collisions. */
 		for (TimingData::iterator k = BPS.begin(); k != BPS.end();)
 		{
-			if ( abs(k->Time - TValue) < 0.000001 ) /* Too close? Remove the collision, leaving only the 0 in front. */
+			if ( k->Time == TValue ) /* Equal? Remove the collision, leaving only the 0 in front. */
 			{
 				k = BPS.erase(k);
 
@@ -184,15 +184,17 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 			k++;
 		}
 
+		// Okay, the collision is out. Let's push our 0-speeder.
 		BPS.push_back(Seg);
 
-		float speedRestore = bps(SectionValue(Timing, Time->Time));
+		// Now we find what bps to restore to.
+		float bpsRestore = bps(SectionValue(Timing, Time->Time));
 
 		for (TimingData::iterator k = BPS.begin(); k != BPS.end(); )
 		{
-			if (k->Time > TValue && k->Time < TValueN)
+			if (k->Time > TValue && k->Time <= TValueN) // So wait, there's BPM changes in between? Holy shit.
 			{
-				speedRestore = k->Value; /* This is the last speed change in the interval that the stop lasts. We'll use it. */
+				bpsRestore = k->Value; /* This is the last speed change in the interval that the stop lasts. We'll use it. */
 
 				/* Eliminate this since we're not going to use it. */
 				k = BPS.erase(k);
@@ -207,7 +209,7 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 
 		/* Restored speed after stop */
 		Seg.Time = TValueN;
-		Seg.Value = speedRestore;
+		Seg.Value = bpsRestore;
 		BPS.push_back(Seg);
 	}
 
@@ -370,7 +372,7 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 
 				// Okay, now we want to know what fraction of a beat we're dealing with
 				// this way we can display colored (a la Stepmania) notes.
-				double cBeat = BeatAtTime(BPS, CurrentNote.StartTime, Offset);
+				double cBeat = IntegrateToTime(BPS, CurrentNote.StartTime, Offset);
 				double iBeat = floor(cBeat);
 				double dBeat = cBeat - iBeat;
 

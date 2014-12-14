@@ -32,7 +32,7 @@ void ScreenGameplay7K::SetupScriptConstants()
 	L->SetGlobal("Auto", Auto);
 	L->SetGlobal("AccuracyHitMS", score_keeper->getMissCutoff());
 	L->SetGlobal("SongDuration", CurrentDiff->Duration);
-	L->SetGlobal("SongDurationBeats", BeatAtTime(BPS, CurrentDiff->Duration, CurrentDiff->Offset + TimeCompensation));
+	L->SetGlobal("SongDurationBeats", IntegrateToTime(BPS, CurrentDiff->Duration));
 	L->SetGlobal("WaitingTime", WaitingTime);
 	L->SetGlobal("Beat", CurrentBeat);
 	L->SetGlobal("Lifebar", score_keeper->getLifebarAmount(LT_GROOVE));

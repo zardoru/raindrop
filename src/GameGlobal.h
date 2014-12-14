@@ -140,8 +140,8 @@ namespace VSRG {
 	const uint8 MAX_CHANNELS = 16;
 }
 
-// Vertical Space for a Measure.
-const float MeasureBaseSpacing = 0.4f * ScreenHeightDefault;
+// Vertical Space for a Measure. A single 4/4 measure takes all of the playing field. Increasing this will decrease multiplier resolution.
+const float MeasureBaseSpacing = 0.8f * ScreenHeightDefault;
 
 /* Program itself consts */
 #define RAINDROP_WINDOWTITLE "raindrop ver: "

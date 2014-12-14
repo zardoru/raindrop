@@ -342,6 +342,7 @@ bool ScreenGameplay7K::Run(double Delta)
 		if (GameTime >= WaitingTime)
 		{
 			UpdateSongTime(Delta);
+			
 			CurrentVertical = IntegrateToTime(VSpeeds, SongTime);
 
 			RunAutoEvents();
@@ -352,7 +353,8 @@ bool ScreenGameplay7K::Run(double Delta)
 			SongTime = -(WaitingTime - GameTime);
 			CurrentVertical = IntegrateToTime(VSpeeds, SongTime);
 		}
-	}
+	}else
+		CurrentVertical = IntegrateToTime(VSpeeds, -WaitingTime);
 
 	RecalculateEffects();
 	RecalculateMatrix();

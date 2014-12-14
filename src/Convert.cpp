@@ -157,7 +157,7 @@ void ConvertToSMTiming(VSRG::Song *Sng, Directory PathOut)
 			break;
 		}
 
-		double Beat = QuantizeBeat(BeatAtTime(BPS, Time + Diff->Offset, 0));
+		double Beat = QuantizeBeat(IntegrateToTime(BPS, Time + Diff->Offset, 0));
 
 		out << Beat << "=" << Value;
 

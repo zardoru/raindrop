@@ -29,8 +29,6 @@ double IntegrateToTime(const TimingData &Timing, double Time, float Drift = 0);
 */
 double StopTimeAtBeat(const TimingData &StopsTiming, double Beat);
 
-double BeatAtTime(const TimingData &Timing, double Time, float Offset);
-
 #define DifficultyDuration(MySong, Diff) \
 	(Diff.Measures.size()) ? \
 		TimeAtBeat(Diff.Timing, Diff.Offset, Diff.Measures.size() * MySong.MeasureLength); : \
