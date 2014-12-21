@@ -4,7 +4,9 @@
 #include "GameGlobal.h"
 #include "Directory.h"
 #include "Song7K.h"
+#include <stdio.h>
 #include "Converter.h"
+#include "Logging.h"
 
 int TrackToXPos(int totaltracks, int track)
 {
@@ -19,12 +21,25 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 		i != Sng->Difficulties.end();
 		i++)
 	{
-		std::stringstream ss;
+		char vf[1024];
 		TimingData BPS;
 		TimingData VSpeeds;
 
-		ss << PathOut.path() << "/" << Sng->SongAuthor << " - " << Sng->SongName << " [" << (*i)->Name << "] (" << Author << ").osu\0";
-		std::ofstream out (ss.str().c_str());
+#ifndef WIN32
+		snprintf
+#else
+		_snprintf
+#endif
+			(vf, 1024, "%s/%s - %s [%s] (%s).osu", PathOut.c_path(), Sng->SongAuthor.c_str(), Sng->SongName.c_str(), (*i)->Name.c_str(), Author.c_str());
+		GString Str = vf;
+		Utility::RemoveFilenameIllegalCharacters(Str);
+		std::ofstream out (Str.c_str());
+
+		if (!out.is_open())
+		{
+			Log::Printf("Unable to open file %s for writing.\n", vf);
+			return;
+		}
 
 		(*i)->Process(NULL, BPS, VSpeeds, 0, 0);
 

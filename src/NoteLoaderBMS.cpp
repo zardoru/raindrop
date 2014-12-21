@@ -204,6 +204,7 @@ struct BmsLoadInfo
 	bool IsPMS;
 
 	bool HasBMPEvents;
+	bool UsesTwoSides;
 
 	BmsLoadInfo()
 	{
@@ -219,6 +220,7 @@ struct BmsLoadInfo
 		HasBMPEvents = false;
 		Skip = false;
 		CurrentNestedLevel = 0;
+		UsesTwoSides = false;
 
 		memset (RandomStack, 0, sizeof(RandomStack));
 	}
@@ -479,6 +481,8 @@ void measureCalculateSide(BmsLoadInfo *Info, MeasureList::iterator &i, int Track
 			else
 				Track = translateTrackPMS(curChannel, startChannel) + TrackOffset;
 
+			if (!(Track >= 0 && Track < MAX_CHANNELS)) Utility::DebugBreak();
+
 			if (Info->LNObj)
 				std::sort(i->second.Events[curChannel].begin(), i->second.Events[curChannel].end(), evtSort);
 
@@ -703,14 +707,8 @@ int AutodetectChannelCount(BmsLoadInfo *Info)
 		}
 	}
 
-	// This means, Side B offset starts from here.
-	// If the last index was 7 for instance, and the first was 0, our side B offset would be 8, first channel of second side.
-	// If the last index was 5 and the first was 0, side B offset would be 6.
-	// While other cases would really not make much sense, they're theorically supported, anyway.
-	Info->SideBOffset = LastIndex - FirstIndex + 1;
-
 	// Use that information to add the p2 side right next to the p1 side and have a continuous thing.
-	AutodetectChannelCountSide(Info, LastIndex+1, usedChannelsB, startChannelP2, startChannelLNP2, startChannelMinesP2, startChannelInvisibleP2);
+	AutodetectChannelCountSide(Info, 0, usedChannelsB, startChannelP2, startChannelLNP2, startChannelMinesP2, startChannelInvisibleP2);
 
 	// Correct if second side starts at an offset different from zero.
 	int sideBIndex = -1;
@@ -724,19 +722,20 @@ int AutodetectChannelCount(BmsLoadInfo *Info)
 
 	// We found where it starts; append that starting point to the end of the left side.
 
-	if (sideBIndex > 0)
+	if (sideBIndex >= 0)
 	{
 		for (int i = LastIndex+1; i < MAX_CHANNELS; i++)
 		{
-			int idx2 = i - 1 + (sideBIndex - Info->SideBOffset);
+			int startSideB = (sideBIndex - Info->SideBOffset) + 1;
 
-			if (idx2 >= MAX_CHANNELS) break;
-
-			usedChannels[i] |= usedChannelsB[idx2];
+			usedChannels[i] |= usedChannelsB[i-LastIndex-1];
 		}
 	}
 
-	/* Find boundaries for used channels */
+	if (FirstIndex >= 0 && sideBIndex >= 0)
+		Info->UsesTwoSides = true; // This means, when working with the second side, add the offset to the current track.
+
+	/* Find new boundaries for used channels. This means the first channel will be the Lower Bound. */
 	for (int i = 0; i < MAX_CHANNELS; i++)
 	{
 		if (usedChannels[i] != 0)
@@ -748,10 +747,14 @@ int AutodetectChannelCount(BmsLoadInfo *Info)
 		}
 	}
 
-	
-
 	// We pick the range of channels we're going to use.
 	int Range = Info->UpperBound - Info->LowerBound + 1;
+
+	// This means, Side B offset starts from here.
+	// If the last index was 7 for instance, and the first was 0, our side B offset would be 8, first channel of second side.
+	// If the last index was 5 and the first was 0, side B offset would be 6.
+	// While other cases would really not make much sense, they're theorically supported, anyway.
+	Info->SideBOffset = LastIndex + 1;
 
 	// We modify it for completey unused key modes to not appear..
 	if (Range < 4) // 1, 2, 3
@@ -798,7 +801,10 @@ bool InterpStatement(GString Command, GString Contents, BmsLoadInfo *Info)
 	// Starting off with the basics.
 
 	do {
-		if (Command == "#RANDOM")
+		if (Command == "#SETRANDOM")
+		{
+			Info->RandomStack[Info->CurrentNestedLevel] = atoi(Contents.c_str());
+		}else if (Command == "#RANDOM")
 		{
 			IsControlFlowCommand = true;
 
