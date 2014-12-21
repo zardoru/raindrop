@@ -7,7 +7,7 @@ HitLightning.Times = {}
 HitLightning.Height = 250
 
 HitLightning.Enabled = GetConfigF("DisableHitlightning", "") ~= 0
-HitLightning.Animate = GetConfigF("DisableHitlightningAnimation", "") ~= 0
+HitLightning.Animate = GetConfigF("DisableHitlightningAnimation", "")
 
 HitLightning.Pressed = {}
 HitLightning.Position = {}
@@ -65,6 +65,10 @@ function HitLightning.LanePress(Lane, IsKeyDown, SetRed)
 		HitLightning.OffTime[Lane+1] = CurrentSPB / 1.5
 	end
 
+	if HitLightning.OffTime[Lane+1] > 3 then
+		HitLightning.OffTime[Lane+1] = 3
+	end	
+
 	if IsKeyDown == 0 then
 		HitLightning.Times[Lane+1] = 0
 		HitLightning.Pressed[Lane+1] = 0
@@ -86,23 +90,29 @@ function HitLightning.Run(Delta)
 		Obj.SetTarget(HitLightning[i])
 
 		if HitLightning.Pressed[i] == 0 then
+			if HitLightning.Times[i] <= HitLightning.OffTime[i] then
+				if HitLightning.Animate == 1 then
+					local Lerping = math.pow(HitLightning.Times[i] / HitLightning.OffTime[i], 2)
+					local Additive
+					Obj.SetScale(1 - Lerping, 1 + 1.5 * Lerping)
 
-			if HitLightning.Times[i] <= HitLightning.OffTime[i] and HitLightning.Animate ~= 0 then
+					Additive = HitLightning.Height / 2 * 1.5 * Lerping
 
-				local Lerping = math.pow(HitLightning.Times[i] / HitLightning.OffTime[i], 2)
+					if Upscroll ~= 0 then
+						Additive = Additive * -1
+					end
 
-				Obj.SetScale(1 - Lerping, 1 + 1.5 * Lerping)
+					Obj.SetPosition( HitLightning.Position[i].x, HitLightning.Position[i].y - Additive)
+					Obj.SetAlpha( 1 - Lerping )
+				elseif HitLightning.Animate == 2 then
+					local Lerping = math.pow(HitLightning.Times[i] / HitLightning.OffTime[i], 2)
+					local Additive = 0
 
-				local Additive = 0
-
-				Additive = HitLightning.Height / 2 * 1.5 * Lerping
-
-				if Upscroll ~= 0 then
-					Additive = Additive * -1
+					Additive = HitLightning.Height / 2 * Lerping
+					Obj.SetScale(1, 1 - Lerping)
+					Obj.SetPosition( HitLightning.Position[i].x, HitLightning.Position[i].y + Additive)
+					Obj.SetAlpha(1)
 				end
-
-				Obj.SetPosition( HitLightning.Position[i].x, HitLightning.Position[i].y - Additive)
-				Obj.SetAlpha( 1 - Lerping )
 			else
 				Obj.SetAlpha( 0 )
 			end

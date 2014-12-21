@@ -142,6 +142,7 @@ struct BMSMeasure
 using namespace VSRG;
 
 typedef std::map<int, GString> FilenameListIndex;
+typedef std::map<int, bool> FilenameUsedIndex;
 typedef std::map<int, double> BpmListIndex;
 typedef std::vector<NoteData> NoteVector;
 typedef std::map<int, BMSMeasure> MeasureList;
@@ -169,6 +170,8 @@ struct BmsLoadInfo
 {
 	FilenameListIndex Sounds;
 	FilenameListIndex BMP;
+
+	FilenameUsedIndex UsedSounds;
 
 	BpmListIndex BPMs;
 	BpmListIndex Stops;
@@ -496,6 +499,7 @@ degradetonote:
 
 					Note.StartTime = Time;
 					Note.Sound = ev->Event;
+					Info->UsedSounds[ev->Event] = true;
 					
 					Info->difficulty->TotalScoringObjects++;
 					Info->difficulty->TotalNotes++;
@@ -553,6 +557,7 @@ degradetonote:
 					Note.EndTime = Time;
 
 					Note.Sound = ev->Event;
+					Info->UsedSounds[ev->Event] = true;
 
 					Info->difficulty->TotalScoringObjects += 2;
 					Info->difficulty->TotalHolds++;
@@ -621,7 +626,7 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 			New.Time = Time;
 			New.Sound = Event;
 
-			// printf("Event %i, %f, %f..\n", Event, Beat, Time);
+			Info->UsedSounds[New.Sound] = true;
 
 			Info->difficulty->Data->BGMEvents.push_back(New);
 		}
@@ -1194,7 +1199,15 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 
 	/* When all's said and done, "compile" the bms. */
 	CompileBMS(Info);
-	Diff->SoundList = Info->Sounds;
+
+	/* Copy only used sounds to the sound list */
+	for (auto i = Info->Sounds.begin(); i != Info->Sounds.end(); i++)
+	{
+		if (Info->UsedSounds.find(i->first) != Info->UsedSounds.end() && Info->UsedSounds[i->first]) // This sound is used.
+		{
+			Diff->SoundList[i->first] = i->second;
+		}
+	}
 
 	if (Info->HasBMPEvents)
 	{
