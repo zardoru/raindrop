@@ -359,7 +359,8 @@ void CalculateBPMs(BmsLoadInfo *Info)
 		}
 	}
 
-	std::sort(Info->difficulty->Timing.begin(), Info->difficulty->Timing.end(), ts_sort);
+	// Make sure ExBPM events are in front using stable_sort.
+	std::stable_sort(Info->difficulty->Timing.begin(), Info->difficulty->Timing.end(), ts_sort);
 }
 
 
