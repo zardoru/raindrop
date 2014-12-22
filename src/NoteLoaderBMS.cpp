@@ -348,6 +348,8 @@ void CalculateBPMs(BmsLoadInfo *Info)
 				else 
 					continue;
 
+				if (BPM == 0) continue; // ignore 0 events
+
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first);
 
 				TimingSegment New;
