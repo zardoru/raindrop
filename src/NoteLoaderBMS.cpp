@@ -1010,8 +1010,8 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 	bool IsU8 = false;
 	char* TestU8 = new char[1025];
 
-	filein.read(TestU8, 1024);
-	TestU8[1024] = 0;
+	int cnt = filein.readsome(TestU8, 1024);
+	TestU8[cnt] = 0;
 
 	// Sonorous UTF-8 extension
 	IsU8 = ShouldUseU8(TestU8);
