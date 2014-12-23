@@ -11,6 +11,7 @@ class Application
 
 	enum
 	{
+		MODE_NULL,
 		MODE_PLAY,
 		MODE_CONVERT,
 		MODE_GENCACHE,

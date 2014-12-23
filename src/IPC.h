@@ -26,4 +26,5 @@ namespace IPC {
 	void SetupMessageQueue();
 	void SendMessageToQueue(const Message *Msg);
 	Message PopMessageFromQueue();
+	void RemoveQueue();
 }

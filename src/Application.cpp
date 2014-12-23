@@ -135,7 +135,10 @@ void Application::ParseArgs()
 			case 'S':
 				RunMode = MODE_STOPPREVIEW;
 				break;
-
+			case 'R':
+				RunMode = MODE_NULL;
+				IPC::RemoveQueue();
+				break;
 			default:
 				continue;
 
@@ -180,7 +183,10 @@ void Application::Init()
 		InitAudio();
 		Game = NULL;
 	}else
-		DoRun = true;
+	{
+		if (RunMode != MODE_NULL)
+			DoRun = true;
+	}
 
 	Log::Printf("Total Initialization Time: %fs\n", glfwGetTime() - T1);
 }

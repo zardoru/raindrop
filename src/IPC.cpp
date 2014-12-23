@@ -51,11 +51,18 @@ namespace IPC {
 		}
 	}
 
+	void RemoveQueue()
+	{
+		SetupMessageQueue();
+		if (mque)
+			mque->remove(PROCESS_QUEUE_NAME);
+	}
+
 	void SendMessageToQueue(const Message *Msg)
 	{
 		if (mque)
 		{
-			mque->send(Msg, sizeof(Message), 0);
+			mque->try_send(Msg, sizeof(Message), 0);
 		}
 	}
 
