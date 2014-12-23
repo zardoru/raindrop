@@ -162,13 +162,24 @@ void Application::Init()
 
 	Configuration::Initialize();
 
-	if (RunMode == MODE_PLAY || RunMode == MODE_VSRGPREVIEW)
+	bool Setup = false;
+
+	if (RunMode == MODE_PLAY)
+		Setup = true;
+	if (RunMode == MODE_VSRGPREVIEW)
+	{
+		if (IPC::IsInstanceAlreadyRunning())
+			Setup = false;
+		else
+			Setup = true;
+	}
+
+	if (Setup)
 	{
 		DoRun = WindowFrame.AutoSetupWindow(this);
 		InitAudio();
 		Game = NULL;
-	}
-	else
+	}else
 		DoRun = true;
 
 	Log::Printf("Total Initialization Time: %fs\n", glfwGetTime() - T1);
@@ -254,7 +265,7 @@ void Application::Run()
 			IPC::Message Msg;
 			Msg.MessageKind = IPC::Message::MSG_STARTFROMMEASURE;
 			Msg.Param = Measure;
-			strncpy(Msg.Path, InFile.c_path(), sizeof(IPC::Message::Path));
+			strncpy(Msg.Path, InFile.c_path(), 256);
 
 			IPC::SendMessageToQueue(&Msg);
 			RunLoop = false;
