@@ -34,7 +34,7 @@ public:
 	bool IsScreenRunning();
 	bool RunNested(float delta);
 	bool Update(float delta);
-
+	void Close();
 
 	Screen* GetTop();
 

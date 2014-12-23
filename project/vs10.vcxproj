@@ -109,8 +109,8 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>BOOST_NO_EXCEPTION;_STLP_NO_EXCEPTIONS;WIN32;NDEBUG;MP3_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ExceptionHandling>false</ExceptionHandling>
+      <PreprocessorDefinitions>WIN32;NDEBUG;MP3_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Sync</ExceptionHandling>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -189,6 +189,7 @@
     <ClCompile Include="..\src\GameState.cpp" />
     <ClCompile Include="..\src\GameStateLua.cpp" />
     <ClCompile Include="..\src\GraphicalString.cpp" />
+    <ClCompile Include="..\src\IPC.cpp" />
     <ClCompile Include="..\src\Line.cpp" />
     <ClCompile Include="..\src\Logging.cpp" />
     <ClCompile Include="..\src\NoteLoaderOJN.cpp" />
@@ -281,6 +282,7 @@
     <ClInclude Include="..\src\GameWindow.h" />
     <ClInclude Include="..\src\GraphicalString.h" />
     <ClInclude Include="..\src\GraphObject2D.h" />
+    <ClInclude Include="..\src\IPC.h" />
     <ClInclude Include="..\src\Noteskin.h" />
     <ClInclude Include="..\src\Rendering.h" />
     <ClInclude Include="..\src\SceneManager.h" />

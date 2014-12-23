@@ -26,6 +26,8 @@
 #include "ScreenLoading.h"
 #include "Converter.h"
 
+#include "IPC.h"
+
 #include "SongLoader.h"
 #include "SongWheel.h"
 
@@ -47,7 +49,7 @@ Application::Application(int argc, char *argv[])
 	Author = "raindrop";
 	srand(time(0));
 
-	Log::Printf("sizeof VSRG::Difficulty: %d, sizeof TimingData: %d\n", sizeof(VSRG::Song), sizeof(TimingData));
+	Log::Printf("sizeof VSRG::Difficulty: %d, sizeof TimingData: %d\n", sizeof(VSRG::Difficulty), sizeof(TimingData));
 }
 
 inline bool ValidArg(int count, int req, int i)
@@ -130,6 +132,10 @@ void Application::ParseArgs()
 				Auto = true;
 				continue;
 
+			case 'S':
+				RunMode = MODE_STOPPREVIEW;
+				break;
+
 			default:
 				continue;
 
@@ -168,6 +174,65 @@ void Application::Init()
 	Log::Printf("Total Initialization Time: %fs\n", glfwGetTime() - T1);
 }
 
+void Application::SetupPreviewMode()
+{
+	// Load the song.
+	VSRG::Song* Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), NULL);
+
+	if (!Sng || !Sng->Difficulties.size())
+	{
+		Log::Printf("File %s could not be loaded for preview. (%d/%d)\n", InFile.c_path(), (long long int)Sng, Sng ? Sng->Difficulties.size() : 0);
+		return;
+	}
+
+	// Avoid a crash...
+	GameState::GetInstance().SetSelectedSong(Sng);
+	GameState::GetInstance().SetDifficultyIndex(difIndex);
+
+	// Create loading screen and gameplay screen.
+	ScreenGameplay7K *SGame = new ScreenGameplay7K();
+	ScreenLoading *LoadScreen = new ScreenLoading(NULL, SGame);
+
+	// Set them up.
+	Sng->SongDirectory = InFile.ParentDirectory().path() + "/";
+
+	ScreenGameplay7K::Parameters Param;
+	Param.Upscroll = Upscroll;
+	Param.StartMeasure = Measure;
+	Param.Preloaded = true;
+	Param.Auto = Auto;
+	
+	SGame->Init(Sng, difIndex, Param);
+	LoadScreen->Init();
+
+	Game = LoadScreen;
+}
+
+bool Application::PollIPC()
+{
+	IPC::Message Msg = IPC::PopMessageFromQueue();
+	switch (Msg.MessageKind)
+	{
+	case IPC::Message::MSG_STARTFROMMEASURE:
+		Measure = Msg.Param;
+		InFile = GString(Msg.Path);
+		Game->Close();
+		delete Game;
+
+		SetupPreviewMode();
+
+		return true;
+		break;
+	case IPC::Message::MSG_STOP:
+		Game->Close();
+		return true;
+		break;
+	case IPC::Message::MSG_NULL:
+	default:
+		return false;
+	}
+}
+
 void Application::Run()
 {
 	double T1 = glfwGetTime();
@@ -183,32 +248,24 @@ void Application::Run()
 
 	}else if (RunMode == MODE_VSRGPREVIEW)
 	{
-		VSRG::Song* Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), NULL);
-
-		if (!Sng || !Sng->Difficulties.size())
+		if (IPC::IsInstanceAlreadyRunning())
 		{
-			Log::Printf("File %s could not be loaded for preview. (%d/%d)\n", InFile.c_path(), (long long int)Sng, Sng? Sng->Difficulties.size() : 0);
-			return;
+			// So okay then, we'll send a message telling the existing process to restart with this file, at this time.
+			IPC::Message Msg;
+			Msg.MessageKind = IPC::Message::MSG_STARTFROMMEASURE;
+			Msg.Param = Measure;
+			strncpy(Msg.Path, InFile.c_path(), sizeof(IPC::Message::Path));
+
+			IPC::SendMessageToQueue(&Msg);
+			RunLoop = false;
 		}
+		else
+		{
+			SetupPreviewMode();
 
-		GameState::GetInstance().SetSelectedSong(Sng);
-		GameState::GetInstance().SetDifficultyIndex(difIndex);
-
-		ScreenGameplay7K *SGame = new ScreenGameplay7K();
-		ScreenLoading *LoadScreen = new ScreenLoading(NULL, SGame);
-
-		Sng->SongDirectory = InFile.ParentDirectory().path() + "/";
-
-		ScreenGameplay7K::Parameters Param;
-		Param.Upscroll = Upscroll;
-		Param.StartMeasure = Measure;
-		Param.Preloaded = true;
-		Param.Auto = Auto;
-
-		SGame->Init (Sng, difIndex, Param);
-		LoadScreen->Init();
-
-		Game = LoadScreen;
+			// Set up the message queue. We need this if we're in preview mode to be able to control raindrop from the command line.
+			IPC::SetupMessageQueue();
+		}
 	}else if (RunMode == MODE_CONVERT)
 	{
 		VSRG::Song* Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), NULL);
@@ -231,6 +288,19 @@ void Application::Run()
 
 		RunLoop = false;
 	}
+	else if (RunMode == MODE_STOPPREVIEW)
+	{
+		if (IPC::IsInstanceAlreadyRunning())
+		{
+			// So okay then, we'll send a message telling the existing process to restart with this file, at this time.
+			IPC::Message Msg;
+			Msg.MessageKind = IPC::Message::MSG_STOP;
+
+			IPC::SendMessageToQueue(&Msg);
+		}
+
+		RunLoop = false;
+	}
 
 	Log::Printf("Time: %fs\n", glfwGetTime() - T1);
 
@@ -248,13 +318,15 @@ void Application::Run()
 
 		WindowFrame.ClearWindow();
 
+		if (RunMode == MODE_VSRGPREVIEW) // Run IPC Message Queue Querying.
+			if (PollIPC()) continue;
+
 		Game->Update(delta);
 
 		MixerUpdate();
 		WindowFrame.SwapBuffers();
 		oldTime = newTime;
 	}
-
 }
 
 void Application::HandleInput(int32 key, KeyEventType code, bool isMouseInput)

@@ -23,6 +23,14 @@ Screen::Screen(Screen *_Parent)
 
 Screen::~Screen() {}
 
+void Screen::Close()
+{
+	Cleanup();
+	Running = false;
+	if (Next)
+		Next->Close();
+}
+
 void Screen::LoadThreadInitialization()
 {
 	// virtual

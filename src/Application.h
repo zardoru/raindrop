@@ -14,7 +14,8 @@ class Application
 		MODE_PLAY,
 		MODE_CONVERT,
 		MODE_GENCACHE,
-		MODE_VSRGPREVIEW
+		MODE_VSRGPREVIEW,
+		MODE_STOPPREVIEW
 	}RunMode;
 
 	void ParseArgs();
@@ -33,6 +34,9 @@ class Application
 	GString Author;
 
 	bool Upscroll;
+
+	void SetupPreviewMode();
+	bool PollIPC();
 
 
 public:

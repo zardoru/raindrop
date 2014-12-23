@@ -244,6 +244,9 @@
     <ClCompile Include="..\src\Noteskin.cpp">
       <Filter>Source\vsrg\gameplay</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\IPC.cpp">
+      <Filter>Source\game global</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">
@@ -464,6 +467,9 @@
     </ClInclude>
     <ClInclude Include="..\src\Rendering.h">
       <Filter>Source\backend\render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\IPC.h">
+      <Filter>Source\game global</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
