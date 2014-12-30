@@ -29,10 +29,13 @@ using namespace VSRG;
 
 struct HitsoundSectionData
 {
-	float Time;
 	int Sampleset;
 	int Volume;
 	int Custom;
+	int IsInherited;
+	double Time;
+	double BPM;
+	double MeasureLen;
 };
 
 struct OsuLoadInfo
@@ -46,6 +49,8 @@ struct OsuLoadInfo
 	std::vector<HitsoundSectionData> HitsoundSections;
 	Difficulty *Diff;
 	GString DefaultSampleset;
+
+	std::vector<NoteData> Notes[MAX_CHANNELS];
 };
 
 /* osu!mania loader. credits to wanwan159, woc2006, Zorori and the author of AIBat for helping me understand this. */
@@ -188,6 +193,7 @@ void ReadEvents (GString line, OsuLoadInfo* Info)
 
 void ReadTiming (GString line, OsuLoadInfo* Info)
 {
+	bool IsInherited;
 	SplitResult Spl;
 	boost::split(Spl, line, boost::is_any_of(","));
 
@@ -197,7 +203,10 @@ void ReadTiming (GString line, OsuLoadInfo* Info)
 	Time.Value = latof(Spl[1].c_str());
 
 	if (Spl[6] == "1") // Non-inherited section
+	{
 		Info->Diff->Timing.push_back(Time);
+		IsInherited = false;
+	}
 	else
 	{
 		// An inherited section would be added to a velocity changes vector which would later alter speeds.
@@ -206,10 +215,19 @@ void ReadTiming (GString line, OsuLoadInfo* Info)
 		Time.Value = -100 / OldValue;
 
 		Info->Diff->Data->SpeedChanges.push_back(Time);
+		IsInherited = true;
 	}
 
 	int Sampleset = -1;
 	int Custom = 0;
+	double MeasureLen = 4;
+	double BPM = 120; 
+
+	if (Spl.size() > 1)
+		BPM = 60000 / latof(Spl[1].c_str());
+
+	if (Spl.size() > 2)
+		MeasureLen = latof(Spl[2].c_str());
 
 	if (Spl.size() > 3)
 		Sampleset = atoi(Spl[3].c_str());
@@ -218,9 +236,12 @@ void ReadTiming (GString line, OsuLoadInfo* Info)
 		Custom = atoi(Spl[4].c_str());
 
 	HitsoundSectionData SecData;
+	SecData.BPM = BPM;
+	SecData.MeasureLen = MeasureLen;
 	SecData.Time = Time.Time;
 	SecData.Sampleset = Sampleset;
 	SecData.Custom = Custom;
+	SecData.IsInherited = IsInherited;
 
 	Info->HitsoundSections.push_back(SecData);
 }
@@ -488,9 +509,94 @@ void ReadObjects (GString line, OsuLoadInfo* Info)
 	}
 
 	Info->Diff->TotalObjects++;
-	Info->Diff->Data->Measures[0].MeasureNotes[Track].push_back(Note);
+	Info->Notes[Track].push_back(Note);
 
 	Info->Diff->Duration = max(max (Note.StartTime, Note.EndTime), Info->Diff->Duration);
+}
+
+bool hSort(const HitsoundSectionData &A, const HitsoundSectionData &B)
+{
+	return A.Time < B.Time;
+}
+
+void MeasurizeFromTimingData(OsuLoadInfo *Info)
+{
+	// Keep them at the order they are declared so they don't affect the applied hitsounds.
+	std::stable_sort(Info->HitsoundSections.begin(), Info->HitsoundSections.end(), hSort);
+
+	for (auto i = Info->HitsoundSections.begin(); i != Info->HitsoundSections.end(); i++)
+	{
+		double TotalMeasuresThisSection;
+		double SectionDurationInBeats;
+
+		auto NextSect = i + 1;	
+
+		if (i->IsInherited) // Skip inherited sections.
+			continue;
+
+		while (NextSect != Info->HitsoundSections.end() && NextSect->IsInherited) // Find first non-inherited section after this one.
+			NextSect++;
+
+		if (NextSect != Info->HitsoundSections.end()) // Okay, we've got it!
+		{
+			SectionDurationInBeats = bps (i->BPM) * (NextSect->Time - i->Time);
+		}
+		else
+		{
+			SectionDurationInBeats = bps(i->BPM) * (Info->Diff->Duration - i->Time);
+		}
+
+		TotalMeasuresThisSection = SectionDurationInBeats / i->MeasureLen;
+
+		double Fraction = TotalMeasuresThisSection - floor(TotalMeasuresThisSection);
+		int Whole = floor(TotalMeasuresThisSection);
+
+		// Add the measures.
+		for (int k = 0; k < Whole; k++)
+		{
+			VSRG::Measure Msr;
+			Msr.MeasureLength = i->MeasureLen;
+			Info->Diff->Data->Measures.push_back(Msr);
+		}
+
+		if (Fraction > DBL_EPSILON)
+		{
+			VSRG::Measure Msr;
+			Msr.MeasureLength = Fraction;
+			Info->Diff->Data->Measures.push_back(Msr);
+		}
+	}
+}
+
+void PushNotesToMeasures(OsuLoadInfo *Info)
+{
+	TimingData BPS;
+	Info->Diff->ProcessBPS(BPS, 0);
+
+	for (int k = 0; k < MAX_CHANNELS; k++)
+	{
+		for (auto i = Info->Notes[k].begin(); i != Info->Notes[k].end(); i++)
+		{
+			double Beat = IntegrateToTime(BPS, i->StartTime);
+			double CurrentBeat = 0; // Lower bound of this measure
+
+			for (auto m = Info->Diff->Data->Measures.begin(); m != Info->Diff->Data->Measures.end(); m++)
+			{
+				double NextBeat = std::numeric_limits<double>::infinity();
+				auto nextm = m + 1;
+
+				if (nextm != Info->Diff->Data->Measures.end()) // Higher bound of this measure
+					NextBeat = CurrentBeat + m->MeasureLength;
+
+				if (Beat >= CurrentBeat && Beat < NextBeat) // Within bounds
+				{
+					m->MeasureNotes[k].push_back(*i); // Add this note to this measure.
+				}
+
+				CurrentBeat += m->MeasureLength;
+			}
+		}
+	}
 }
 
 void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *Out)
@@ -630,6 +736,12 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 		{
 			Diff->SoundList[i->second] = i->first;
 		}
+
+		// Okay then, convert timing data into a measure-based format raindrop can use.
+		MeasurizeFromTimingData(&Info);
+
+		// Then copy notes into these measures.
+		PushNotesToMeasures(&Info);
 
 		Diff->Level = Diff->TotalScoringObjects / Diff->Duration;
 		Out->Difficulties.push_back(Diff);

@@ -181,7 +181,7 @@ void ScreenGameplay7K::DrawMeasures()
 					NoteImagesHoldTail[k]->Bind();
 
 				WindowFrame.SetUniform(U_TRANM, &(m->GetHoldEndMatrix())[0][0]);
-				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+				DoQuadDraw();
 			}
 
 			// Assign our matrix - encore
@@ -201,7 +201,7 @@ void ScreenGameplay7K::DrawMeasures()
 			if (m->IsHold())
 				if (NoteImagesHoldHead[k]) NoteImagesHoldHead[k]->Bind();
 
-			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+			DoQuadDraw();
 		}
 
 		next_key: (void)0;

@@ -6,7 +6,7 @@ namespace VSRG
 	struct Measure
 	{
 		std::vector<NoteData> MeasureNotes[MAX_CHANNELS];
-		float MeasureLength; // In beats. 4 by default.
+		double MeasureLength; // In beats. 4 by default.
 
 		Measure() {
 			MeasureLength = 4;
@@ -143,13 +143,13 @@ namespace VSRG
 		unsigned char Channels;
 		bool IsVirtual;
 
-		void ProcessBPS(TimingData& BPS, double Drift);
 		void ProcessVSpeeds(TimingData& BPS, TimingData& VSpeeds, double SpeedConstant);
 		void ProcessSpeedVariations(TimingData& BPS, TimingData& VSpeeds, double Drift);
 	public:
 
 		// Get processed data for use on ScreenGameplay7K.
 		void Process(VectorTN NotesOut, TimingData &BPS, TimingData& VerticalSpeeds, float Drift = 0, double SpeedConstant = 0);
+		void ProcessBPS(TimingData& BPS, double Drift);
 
 		// The floats are in vertical units; like the notes' vertical position.
 		void GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSpeeds);

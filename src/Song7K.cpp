@@ -386,9 +386,23 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 	}
 }
 
+void BPStoSPB(TimingData &BPS)
+{
+	TimingData BPSCopy = BPS;
+	for (auto i = BPS.begin(); i != BPS.end(); i++)
+	{
+		double valueBPS = i->Value;
+		i->Value = 1 / valueBPS;
+		i->Time = IntegrateToTime(BPSCopy, i->Time); // Find time in beats based off beats in time
+	}
+}
+
 void Difficulty::GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSpeeds)
 {
-	float Last = 0;
+	double Last = 0;
+	TimingData SPB;
+	ProcessBPS(SPB, 0);
+	BPStoSPB(SPB);
 
 	assert(Data != NULL);
 	Out.reserve(Data->Measures.size());
@@ -403,8 +417,12 @@ void Difficulty::GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSp
 		{
 			PositionOut = IntegrateToTime(VerticalSpeeds, TimeAtBeat(Timing, Offset, Last) + StopTimeAtBeat(Data->StopsTiming, Last));
 		}
-		else
+		else if (BPMType == BT_Beatspace)
 		{
+			double TargetTime = 0;
+
+			TargetTime = IntegrateToTime(SPB, Last) + Offset;
+			PositionOut = IntegrateToTime(VerticalSpeeds, TargetTime);
 		}
 
 		Out.push_back(PositionOut);
