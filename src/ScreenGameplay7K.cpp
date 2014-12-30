@@ -351,10 +351,15 @@ bool ScreenGameplay7K::Run(double Delta)
 		}else
 		{
 			SongTime = -(WaitingTime - GameTime);
+			CurrentBeat = IntegrateToTime(BPS, SongTime);
 			CurrentVertical = IntegrateToTime(VSpeeds, SongTime);
 		}
-	}else
+	}
+	else
+	{
 		CurrentVertical = IntegrateToTime(VSpeeds, -WaitingTime);
+		CurrentBeat = IntegrateToTime(BPS, SongTime);
+	}
 
 	RecalculateEffects();
 	RecalculateMatrix();

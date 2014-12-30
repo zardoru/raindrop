@@ -397,7 +397,7 @@ void BPStoSPB(TimingData &BPS)
 	}
 }
 
-void Difficulty::GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSpeeds)
+void Difficulty::GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSpeeds, double WaitTime)
 {
 	double Last = 0;
 	TimingData SPB;
@@ -406,6 +406,21 @@ void Difficulty::GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSp
 
 	assert(Data != NULL);
 	Out.reserve(Data->Measures.size());
+
+	// Add lines before offset, and during waiting time...
+	double BPS = BPSFromTimingKind(Timing[0].Value, BPMType);
+	double PreTime = WaitTime + Offset;
+	double PreTimeBeats = BPS * PreTime;
+	int TotMeasures = PreTimeBeats / Data->Measures[0].MeasureLength;
+	double MeasureTime = 1 / BPS * Data->Measures[0].MeasureLength;
+	
+	for (int i = 0; i < TotMeasures; i++)
+	{
+		float PositionOut;
+		PositionOut = IntegrateToTime(VerticalSpeeds, Offset - MeasureTime * i);
+		Out.push_back(PositionOut);
+	}
+
 
 	for (std::vector<VSRG::Measure>::iterator Msr = Data->Measures.begin();
 		Msr != Data->Measures.end();

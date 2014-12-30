@@ -580,6 +580,12 @@ void PushNotesToMeasures(OsuLoadInfo *Info)
 			double Beat = IntegrateToTime(BPS, i->StartTime);
 			double CurrentBeat = 0; // Lower bound of this measure
 
+			if (Beat < 0)
+			{
+				Info->Diff->Data->Measures[0].MeasureNotes[k].push_back(*i);
+				continue;
+			}
+
 			for (auto m = Info->Diff->Data->Measures.begin(); m != Info->Diff->Data->Measures.end(); m++)
 			{
 				double NextBeat = std::numeric_limits<double>::infinity();

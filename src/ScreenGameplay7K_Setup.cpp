@@ -498,7 +498,7 @@ void ScreenGameplay7K::SetupAfterLoadingVariables()
 
 	if (BarlineEnabled)
 	{
-		CurrentDiff->GetMeasureLines(MeasureBarlines, VSpeeds);
+		CurrentDiff->GetMeasureLines(MeasureBarlines, VSpeeds, WaitingTime);
 
 		int UpscrollMod = Upscroll ? -1 : 1;
 		BarlineOffset = BarlineOffsetKind == 0 ? NoteHeight * UpscrollMod / 2 : 0;
