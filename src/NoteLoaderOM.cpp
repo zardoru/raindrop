@@ -562,7 +562,7 @@ void MeasurizeFromTimingData(OsuLoadInfo *Info)
 		if (Fraction > DBL_EPSILON)
 		{
 			VSRG::Measure Msr;
-			Msr.MeasureLength = Fraction;
+			Msr.MeasureLength = Fraction * i->MeasureLen;
 			Info->Diff->Data->Measures.push_back(Msr);
 		}
 	}
