@@ -123,7 +123,7 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 						<< (Note->EndTime ? "128" : "1") << ",0,";
 					if (Note->EndTime)
 						out << int(Note->EndTime * 1000.0) << ",";
-					out << "1:0:0";
+					out << "1:0:0:100";
 
 					if (Note->Sound)
 						out << ":" << ( Note->Sound ? ((*i)->SoundList.find(Note->Sound) != (*i)->SoundList.end() ? (*i)->SoundList[Note->Sound].c_str() : "" ) : "");
