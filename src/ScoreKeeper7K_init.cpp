@@ -6,6 +6,7 @@ void ScoreKeeper7K::init(){
 	use_w0 = false; // don't use Ridiculous by default.
 	use_w0_for_ex2 = false;
 	
+	rank_pts = 0;
 	use_bbased = false;
 	
 	pacemaker_texts[PMT_F] = "F" ;

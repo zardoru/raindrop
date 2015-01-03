@@ -176,7 +176,7 @@ namespace Engine { namespace RocketInterface {
 	
 	bool FileSystemInterface::Seek(Rocket::Core::FileHandle file, long offset, int origin)
 	{
-		return fseek((FILE*)file, offset, origin);
+		return fseek((FILE*)file, offset, origin) != 0;
 	}
 
 	

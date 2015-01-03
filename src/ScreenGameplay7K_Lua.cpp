@@ -108,7 +108,8 @@ void ScreenGameplay7K::SetupLua()
 		.f(GetUserMultiplier)
 		.f(GetCurrentBeat)
 		.f(IsFailEnabled)
-		.f(IsAutoEnabled);
+		.f(IsAutoEnabled)
+		.addProperty("SpeedMultiplier", &ScreenGameplay7K::GetUserMultiplier, &ScreenGameplay7K::SetUserMultiplier);
 		
 	luabridge::push(Animations->GetEnv()->GetState(), this);
 	lua_setglobal(Animations->GetEnv()->GetState(), "Game");

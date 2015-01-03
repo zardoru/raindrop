@@ -202,10 +202,12 @@ public:
 	bool IsAutoEnabled();
 	bool IsFailEnabled();
 	float GetCurrentBeat();
-	float GetUserMultiplier();
+	float GetUserMultiplier() const;
 	float GetCurrentVerticalSpeed();
 	float GetCurrentVertical();
 	double GetSongTime();
+
+	void SetUserMultiplier(float Multip);
 
 	struct Parameters {
 		// If true, use upscroll

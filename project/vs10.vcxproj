@@ -54,12 +54,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>../ext-libs/libRocket/Include;../ext-src/SOIL;../ext-src;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../</IncludePath>
-    <LibraryPath>../ext-libs/libRocket/Build/Release;..\ext-libs\Debug;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>../ext-libs/libRocket/Build/Debug;..\ext-libs\Debug;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug NoIters|Win32'">
-    <IncludePath>../ext-libs/libRocket/Include;../ext-src/SOIL;../ext-src;../ext-libs/libmpg123;$(WindowsSdkDir)include;$(FrameworkSDKDir)include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../</IncludePath>
-    <LibraryPath>../ext-libs/libRocket/Build/Release;..\ext-libs\Debug;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>../ext-libs/libRocket/Include;../ext-src/SOIL;../ext-src;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../;$(IncludePath)</IncludePath>
+    <LibraryPath>../ext-libs/libRocket/Build/Debug;..\ext-libs\Debug;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -90,13 +90,13 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_HAS_ITERATOR_DEBUGGING=0;MP3_ENABLED;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NIDEBUG;MP3_ENABLED;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>rocketcore.lib;libsndfile-1.lib;libmpg123.lib;Vorbis_d.lib;portaudio_x86.lib;Ogg_d.lib;GLFW3.lib;glew32d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>rocketcontrols.lib;rocketdebugger.lib;rocketcore.lib;libsoxr.lib;libsndfile-1.lib;libmpg123.lib;Vorbis_d.lib;portaudio_x86.lib;Ogg_d.lib;GLFW3.lib;glew32d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AllowIsolation>true</AllowIsolation>
       <EnableUAC>true</EnableUAC>

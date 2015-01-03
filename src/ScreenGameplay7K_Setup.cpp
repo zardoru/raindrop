@@ -49,7 +49,12 @@ ScreenGameplay7K::ScreenGameplay7K()
 	RealHiddenMode = HIDDENMODE_NONE;
 	HideClampSum = 0;
 
+#if (defined WIN32) && (!defined NDEBUG)
+	Auto = true;
+#else
 	Auto = false;
+#endif
+
 	perfect_auto = true;
 
 	lifebar_type = LT_GROOVE;

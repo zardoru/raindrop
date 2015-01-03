@@ -39,7 +39,7 @@ float ScreenGameplay7K::GetCurrentBeat()
 	return CurrentBeat;
 }
 
-float ScreenGameplay7K::GetUserMultiplier()
+float ScreenGameplay7K::GetUserMultiplier() const
 {
 	return SpeedMultiplierUser;
 }
@@ -64,6 +64,12 @@ double ScreenGameplay7K::GetSongTime()
 		usedTime = SongTime;
 
 	return usedTime;
+}
+
+void ScreenGameplay7K::SetUserMultiplier(float Multip)
+{
+	if (SongTime <= 0 || !Active)
+		SpeedMultiplierUser = Multip;
 }
 
 
