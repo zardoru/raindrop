@@ -247,6 +247,9 @@
     <ClCompile Include="..\src\IPC.cpp">
       <Filter>Source\game global</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\RaindropRocketInterface.cpp">
+      <Filter>Source\backend\librocket</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">
@@ -471,6 +474,9 @@
     <ClInclude Include="..\src\IPC.h">
       <Filter>Source\game global</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\RaindropRocketInterface.h">
+      <Filter>Source\backend\librocket</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -562,6 +568,9 @@
     </Filter>
     <Filter Include="Source\backend\structure">
       <UniqueIdentifier>{b6179f2f-8e96-413f-930e-671459c7b05e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\backend\librocket">
+      <UniqueIdentifier>{954588fe-fdcc-4ebd-bd04-a3fb1e750ab3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

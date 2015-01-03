@@ -327,6 +327,11 @@ Vec2 GameWindow::GetRelativeMPos()
 	return Vec2 (outx, outy);
 }
 
+float GameWindow::GetWindowVScale()
+{
+	return SizeRatio;
+}
+
 bool GameWindow::SetupWindow()
 {
 	GLenum err;

@@ -2,6 +2,17 @@
 #define Image_H
 
 struct ImageData {
+	enum {
+		WM_CLAMP_TO_EDGE,
+		WM_REPEAT
+	} WrapMode;
+
+	enum {
+		SM_LINEAR,
+		SM_NEAREST,
+		SM_MIPMAP
+	} ScalingMode;
+
 	GString Filename;
 	int Width, Height;
 	unsigned char* Data;

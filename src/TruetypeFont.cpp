@@ -30,11 +30,13 @@ TruetypeFont::TruetypeFont(Directory Filename, float Scale)
 	ifs.read((char*)data, offs);
 
 	IsValid = (stbtt_InitFont(info, data, stbtt_GetFontOffsetForIndex(data, 0)) != 0);
+	windowscale = 0;
 
 	if (IsValid)
 	{
 		SetupTexture();
-		realscale = stbtt_ScaleForPixelHeight(info, scale);
+		UpdateWindowScale();
+
 		WindowFrame.AddTTF(this);
 	}
 }
@@ -47,6 +49,21 @@ TruetypeFont::~TruetypeFont()
 	ReleaseTextures();
 }
 
+void TruetypeFont::UpdateWindowScale()
+{
+	if (windowscale == WindowFrame.GetWindowVScale())
+		return;
+
+	float oldscale = windowscale;
+	windowscale = WindowFrame.GetWindowVScale();
+
+	float oldrealscale = realscale;
+	realscale = stbtt_ScaleForPixelHeight(info, scale * windowscale);
+#ifdef VERBOSE_DEBUG
+	wprintf(L"change scale %f -> %f, realscale %f -> %f\n", oldscale, windowscale, oldrealscale, realscale);
+#endif
+}
+
 void TruetypeFont::Invalidate()
 {
 	for (std::map <int, codepdata>::iterator i = Texes.begin();
@@ -57,18 +74,38 @@ void TruetypeFont::Invalidate()
 	}
 }
 
+void TruetypeFont::CheckCodepoint(int cp)
+{
+	if (Texes.find(cp) != Texes.end())
+	{
+		if (Texes[cp].scl != windowscale)
+		{
+#ifdef VERBOSE_DEBUG
+			wprintf(L"releasing %d\n", cp);
+#endif
+			ReleaseCodepoint(cp); // force regeneration if scale changed
+		}
+	}
+}
+
+
+
 TruetypeFont::codepdata &TruetypeFont::GetTexFromCodepoint(int cp)
 {
 	if (Texes.find(cp) == Texes.end())
 	{
 		codepdata newcp;
 		int w, h, xofs, yofs;
-		newcp.tex = stbtt_GetCodepointBitmap (info, 0, realscale, cp, &w, &h, &xofs, &yofs);
+#ifdef VERBOSE_DEBUG
+		wprintf(L"generating %d\n", cp);
+#endif
+		newcp.tex = stbtt_GetCodepointBitmap(info, 0, realscale, cp, &w, &h, &xofs, &yofs);
 		newcp.xofs = xofs;
 		newcp.yofs = yofs;
 		newcp.w = w;
 		newcp.h = h;
 		newcp.gltx = 0;
+		newcp.scl = WindowFrame.GetWindowVScale();
 		Texes[cp] = newcp;
 
 		return Texes[cp];

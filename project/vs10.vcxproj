@@ -53,18 +53,18 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>../ext-src/SOIL;../ext-src;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../</IncludePath>
-    <LibraryPath>..\ext-libs\Debug;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>../ext-libs/libRocket/Include;../ext-src/SOIL;../ext-src;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../</IncludePath>
+    <LibraryPath>../ext-libs/libRocket/Build/Release;..\ext-libs\Debug;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug NoIters|Win32'">
-    <IncludePath>../ext-src/SOIL;../ext-src;../ext-libs/libmpg123;$(WindowsSdkDir)include;$(FrameworkSDKDir)include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../</IncludePath>
-    <LibraryPath>..\ext-libs\Debug;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>../ext-libs/libRocket/Include;../ext-src/SOIL;../ext-src;../ext-libs/libmpg123;$(WindowsSdkDir)include;$(FrameworkSDKDir)include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../</IncludePath>
+    <LibraryPath>../ext-libs/libRocket/Build/Release;..\ext-libs\Debug;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>../ext-src/SOIL;../ext-src;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../</IncludePath>
-    <LibraryPath>..\ext-libs\Release;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>../ext-libs/libRocket/Include;../ext-src/SOIL;../ext-src;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../</IncludePath>
+    <LibraryPath>../ext-libs/libRocket/Build/Release;..\ext-libs\Release;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release NoSTLport|Win32'">
     <LibraryPath>..\ext-libs\Release;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
@@ -79,7 +79,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libsoxr.lib;libsndfile-1.lib;libmpg123.lib;Vorbis_d.lib;portaudio_x86.lib;Ogg_d.lib;GLFW3.lib;glew32d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>rocketcontrols.lib;rocketdebugger.lib;rocketcore.lib;libsoxr.lib;libsndfile-1.lib;libmpg123.lib;Vorbis_d.lib;portaudio_x86.lib;Ogg_d.lib;GLFW3.lib;glew32d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AllowIsolation>true</AllowIsolation>
       <EnableUAC>true</EnableUAC>
@@ -96,7 +96,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libsndfile-1.lib;libmpg123.lib;Vorbis_d.lib;portaudio_x86.lib;Ogg_d.lib;GLFW3.lib;glew32d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>rocketcore.lib;libsndfile-1.lib;libmpg123.lib;Vorbis_d.lib;portaudio_x86.lib;Ogg_d.lib;GLFW3.lib;glew32d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AllowIsolation>true</AllowIsolation>
       <EnableUAC>true</EnableUAC>
@@ -198,6 +198,7 @@
     <ClCompile Include="..\src\GameObject.cpp" />
     <ClCompile Include="..\src\GameWindow.cpp" />
     <ClCompile Include="..\src\GraphObject2D.cpp" />
+    <ClCompile Include="..\src\RaindropRocketInterface.cpp" />
     <ClCompile Include="..\src\SceneManager.cpp" />
     <ClCompile Include="..\src\GuiButton.cpp" />
     <ClCompile Include="..\src\GuiTextPrompt.cpp" />
@@ -284,6 +285,7 @@
     <ClInclude Include="..\src\GraphObject2D.h" />
     <ClInclude Include="..\src\IPC.h" />
     <ClInclude Include="..\src\Noteskin.h" />
+    <ClInclude Include="..\src\RaindropRocketInterface.h" />
     <ClInclude Include="..\src\Rendering.h" />
     <ClInclude Include="..\src\SceneManager.h" />
     <ClInclude Include="..\src\GuiButton.h" />

@@ -14,6 +14,8 @@ class TruetypeFont : public Font
 	float scale;
 	float realscale;
 
+	float windowscale;
+
 	struct codepdata
 	{
 		unsigned char* tex;
@@ -22,13 +24,17 @@ class TruetypeFont : public Font
 		int yofs;
 		int w;
 		int h;
+		float scl;
 	};
 	
 	std::map<int, codepdata> Texes;
 	VBO *Texform;
 	void SetupTexture();
 	codepdata& GetTexFromCodepoint(int cp);
+	void CheckCodepoint(int cp);
+	void ReleaseCodepoint(int cp);
 	void ReleaseTextures();
+	void UpdateWindowScale();
 
 public:
 	TruetypeFont(Directory Filename, float Scale);

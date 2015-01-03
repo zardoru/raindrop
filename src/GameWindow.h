@@ -44,6 +44,7 @@ class GameWindow
 	friend void MouseInputFunc (GLFWwindow*, int32 key, int32 code, int32 modk);
 	friend void ScrollFunc( GLFWwindow*, double xOff, double yOff );
 	friend void MouseMoveFunc (GLFWwindow*,double newx, double newy);
+
 	Vec2 size;
 	Vec2 matrixSize, Viewport;
 	Mat4 projection;
@@ -83,6 +84,8 @@ public:
 
 	Mat4 GetMatrixProjection();
 	Mat4 GetMatrixProjectionInverse();
+
+	float GetWindowVScale();
 
 	// returns the mouse position relative to the matrix and window size
 	Vec2 GetRelativeMPos();

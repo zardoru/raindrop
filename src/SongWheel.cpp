@@ -346,7 +346,6 @@ void SongWheel::Update(float Delta)
 	if (OldCursorPos != CursorPos)
 	{
 		OldCursorPos = CursorPos;
-		DifficultyIndex = 0;
 		if (OnItemHover)
 		{
 			Game::Song* Notify = GetSelectedSong();

@@ -267,6 +267,16 @@ void TruetypeFont::SetupTexture()
 	Texform->AssignData(QuadPositions);
 }
 
+void TruetypeFont::ReleaseCodepoint(int cp)
+{
+	if (Texes.find(cp) != Texes.end())
+	{
+		free(Texes[cp].tex);
+		glDeleteTextures(1, &Texes[cp].gltx);
+		Texes.erase(cp);
+	}
+}
+
 void TruetypeFont::Render(GString In, const Vec2 &Position, const Mat4 &Transform)
 {
 	const char* Text = In.c_str(); 
@@ -275,6 +285,8 @@ void TruetypeFont::Render(GString In, const Vec2 &Position, const Mat4 &Transfor
 
 	if (!IsValid)
 		return;
+
+	UpdateWindowScale();
 
 	SetBlendingMode(MODE_ALPHA);
 
@@ -286,6 +298,7 @@ void TruetypeFont::Render(GString In, const Vec2 &Position, const Mat4 &Transfor
 	utf8::iterator<const char*> itend(Text + In.length(), Text, Text + In.length());
 	for (; it != itend; it++)
 	{
+		CheckCodepoint(*it); // Force a regeneration of this if necessary
 		codepdata &cp = GetTexFromCodepoint(*it);
 		unsigned char* tx = cp.tex;
 		glm::vec3 trans = vOffs + glm::vec3(cp.xofs, cp.yofs, 0);
@@ -313,6 +326,9 @@ void TruetypeFont::Render(GString In, const Vec2 &Position, const Mat4 &Transfor
 
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, cp.w, cp.h, 0, GL_ALPHA, GL_UNSIGNED_BYTE, tx);
 		}else
@@ -344,7 +360,7 @@ void TruetypeFont::ReleaseTextures()
 		i != Texes.end();
 		i++)
 	{
-		delete i->second.tex;
+		free (i->second.tex);
 		glDeleteTextures(1, &i->second.gltx);
 	}
 
