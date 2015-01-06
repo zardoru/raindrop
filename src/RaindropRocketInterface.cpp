@@ -1,6 +1,11 @@
+#include <Rocket/Core.h>
 #include <Rocket/Core/SystemInterface.h>
 #include <Rocket/Core/FileInterface.h>
 #include <Rocket/Core/RenderInterface.h>
+#include <Rocket/Controls.h>
+#include <Rocket/Core/Lua/Interpreter.h>
+#include <Rocket/Controls/Lua/Controls.h>
+#include <Rocket/Debugger.h>
 
 #include <GL/GLEW.h>
 #include <GLFW/glfw3.h>
@@ -40,6 +45,13 @@ namespace Engine { namespace RocketInterface {
 		float r, g, b, a;
 	};
 
+	void RenderInterface::RenderGeometry(Rocket::Core::Vertex* vertices, int num_vertices, int* indices, int num_indices, Rocket::Core::TextureHandle texture, const Rocket::Core::Vector2f& translation)
+	{
+		Rocket::Core::CompiledGeometryHandle Handle = CompileGeometry(vertices, num_vertices, indices, num_indices, texture);
+		RenderCompiledGeometry(Handle, translation);
+		ReleaseCompiledGeometry(Handle);
+	}
+
 	// Called by Rocket when it wants to compile geometry it believes will be static for the forseeable future.
 	Rocket::Core::CompiledGeometryHandle RenderInterface::CompileGeometry(Rocket::Core::Vertex* vertices, int num_vertices, int* indices, int num_indices, Rocket::Core::TextureHandle texture)
 	{
@@ -63,11 +75,13 @@ namespace Engine { namespace RocketInterface {
 		Handle->vert = new VBO(VBO::Static, num_vertices * 2); // x/y
 		Handle->uv = new VBO(VBO::Static, num_vertices * 2); // u/v
 		Handle->color = new VBO(VBO::Static, num_vertices * 4); // r/g/b/a
-		
+		Handle->indices = new VBO(VBO::Static, num_indices, sizeof(int), VBO::IndexBuffer);
+
 		// assign them data
-		Handle->vert->AssignData((float*)posv.data()); // address of first member should be enough
-		Handle->uv->AssignData((float*)uvv.data());
-		Handle->color->AssignData((float*)colv.data());
+		Handle->vert->AssignData(posv.data()); // address of first member should be enough
+		Handle->uv->AssignData(uvv.data());
+		Handle->color->AssignData(colv.data());
+		Handle->indices->AssignData(indices);
 
 		// assign texture
 		Handle->tex = (Image*) texture;
@@ -75,10 +89,6 @@ namespace Engine { namespace RocketInterface {
 		// give it some useful data
 		Handle->num_vertices = num_vertices;
 		Handle->num_indices = num_indices;
-
-		// copy indices in here
-		Handle->indices = new int[num_indices];
-		memcpy(Handle->indices, indices, num_indices * sizeof(int));
 
 		// we're done
 		return (Rocket::Core::CompiledGeometryHandle) Handle;
@@ -88,8 +98,9 @@ namespace Engine { namespace RocketInterface {
 	void RenderInterface::RenderCompiledGeometry(Rocket::Core::CompiledGeometryHandle geometry, const Rocket::Core::Vector2f& translation)
 	{
 		InternalGeometryHandle *Handle = (InternalGeometryHandle*) geometry;
-		Mat4 tMatrix = glm::translate(Mat4(), Vec3(translation.x, translation.y, 31));
+		Mat4 tMatrix = glm::translate(Mat4(), Vec3(translation.x, translation.y, 0));
 		
+		glDisable(GL_DEPTH_TEST);
 		SetShaderParameters(false, false, false);
 		WindowFrame.SetUniform(U_COLOR, 1, 1, 1, 1);
 		WindowFrame.SetUniform(U_MVP, &(tMatrix[0][0])); 
@@ -104,12 +115,14 @@ namespace Engine { namespace RocketInterface {
 		Handle->uv->Bind();
 		glVertexAttribPointer(WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
 
-		// missing: colour VBO
+		Handle->indices->Bind();
+		glDrawElements(GL_TRIANGLES, Handle->num_indices, GL_UNSIGNED_INT, 0);
 
-		glDrawElements(GL_TRIANGLES, Handle->num_indices, GL_UNSIGNED_INT, Handle->indices);
+		// missing: colour VBO
 
 		WindowFrame.DisableAttribArray(A_POSITION);
 		WindowFrame.DisableAttribArray(A_UV);
+		glEnable(GL_DEPTH_TEST);
 	}
 
 	// Called by Rocket when it wants to release application-compiled geometry.
@@ -119,6 +132,7 @@ namespace Engine { namespace RocketInterface {
 		delete Handle->vert;
 		delete Handle->uv;
 		delete Handle->color;
+		delete Handle->indices;
 		delete Handle; // texture is handled by rocket
 	}
 
@@ -130,6 +144,9 @@ namespace Engine { namespace RocketInterface {
 		Image *Ret = new Image();
 
 		texture_handle = (Rocket::Core::TextureHandle) Ret;
+
+		texture_dimensions.x = Data.Width;
+		texture_dimensions.y = Data.Height;
 
 		return GenerateTexture(texture_handle, Data.Data, Rocket::Core::Vector2i(Data.Width, Data.Height));
 	}
@@ -184,5 +201,27 @@ namespace Engine { namespace RocketInterface {
 	{
 		return ftell((FILE*)file);
 	}
+} 
 
-} }
+	void SetupRocket()
+	{
+		Rocket::Core::SetFileInterface(new Engine::RocketInterface::FileSystemInterface);
+		Rocket::Core::SetRenderInterface(new Engine::RocketInterface::RenderInterface);
+		Rocket::Core::SetSystemInterface(new Engine::RocketInterface::SystemInterface);
+
+		Rocket::Core::Initialise();
+		Rocket::Controls::Initialise();
+		Rocket::Core::Lua::Interpreter::Initialise();
+		// Rocket::Controls::Lua::RegisterTypes(Rocket::Core::Lua::Interpreter::GetLuaState());
+
+		Rocket::Core::FontDatabase::LoadFontFace("font.ttf");
+
+		GameState::GetInstance().InitializeLua(Rocket::Core::Lua::Interpreter::GetLuaState());
+	}
+
+	void SetupRocketLua(void* State)
+	{
+		Rocket::Core::Lua::Interpreter::RegisterCoreTypes((lua_State*)State);
+		Rocket::Controls::Lua::RegisterTypes((lua_State*)State);
+	}
+}

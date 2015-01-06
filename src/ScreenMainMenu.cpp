@@ -22,6 +22,7 @@ TruetypeFont* TTFO = NULL;
 
 ScreenMainMenu::ScreenMainMenu(Screen *Parent) : Screen(Parent)
 {
+	ctx = NULL;
 }
 
 void PlayBtnHover(GraphObject2D *obj)
@@ -84,6 +85,9 @@ void ScreenMainMenu::Init()
 		MMSelectSnd->Open((GameState::GetInstance().GetSkinFile("select.ogg")).c_str());
 		MixerAddSample(MMSelectSnd);
 	}
+
+	ctx = Rocket::Core::CreateContext("mainmenu", Rocket::Core::Vector2i(ScreenWidth, ScreenHeight));
+	ctx->LoadDocument("mainmenu.rml")->Show();
 }
 
 void ScreenMainMenu::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
@@ -128,13 +132,15 @@ bool ScreenMainMenu::Run (double Delta)
 	if (RunNested(Delta))
 		return true;
 
+	ctx->Update();
+
 	PlayBtn.Run(Delta);
 	ExitBtn.Run(Delta);
 	
 	TTFO->Render (GString("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop"), Vec2(0, 0));
 	Objects->DrawTargets(Delta);
 
-	// MainMenuFont->DisplayText("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop", Vec2(0, 0));
+	ctx->Render();
 
 	return Running;
 }

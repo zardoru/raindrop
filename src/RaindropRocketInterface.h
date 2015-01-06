@@ -11,7 +11,7 @@ namespace RocketInterface {
 		To Do: multiple-inherit from raindrop's own system and fileinterface 
 		instead of implementing it all here.
 	*/ 
-	class FileSystemInterface : Rocket::Core::FileInterface { 
+	class FileSystemInterface : public Rocket::Core::FileInterface { 
 	public:
 		// Opens a file.
 		Rocket::Core::FileHandle Open(const Rocket::Core::String& path);
@@ -29,19 +29,19 @@ namespace RocketInterface {
 		size_t Tell(Rocket::Core::FileHandle file);
 	};
 
-	class SystemInterface : Rocket::Core::SystemInterface {
+	class SystemInterface : public Rocket::Core::SystemInterface {
 	public:
 		float GetElapsedTime();
 	};
 
-	class RenderInterface : Rocket::Core::RenderInterface {
+	class RenderInterface : public Rocket::Core::RenderInterface {
 
 		struct InternalGeometryHandle {
 			VBO *vert;
 			VBO *uv;
 			VBO *color;
+			VBO *indices;
 			Image* tex;
-			int *indices;
 			int num_indices, num_vertices;
 		};
 
@@ -79,6 +79,9 @@ namespace RocketInterface {
 		void ReleaseTexture(Rocket::Core::TextureHandle texture_handle);
 	};
 }
+
+void SetupRocket();
+void SetupRocketLua(void* State);
 
 }
 

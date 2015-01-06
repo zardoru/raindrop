@@ -99,7 +99,7 @@ bool goPredicate(const GraphObject2D *A, const GraphObject2D *B)
 
 void SceneManager::Sort()
 {
-	std::sort(Objects.begin(), Objects.end(), goPredicate);
+	std::stable_sort(Objects.begin(), Objects.end(), goPredicate);
 }
 
 void SceneManager::Initialize(GString Filename, bool RunScript)

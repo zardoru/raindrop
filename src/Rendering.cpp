@@ -477,16 +477,19 @@ void BitmapFont::Render(GString St, const Vec2 &Position, const Mat4 &Transform)
 }
 
 uint32 VBO::LastBound = 0;
+uint32 VBO::LastBoundIndex = 0;
 
-VBO::VBO(Type T, uint32 Elements)
+VBO::VBO(Type T, uint32 Elements, uint32 Size, IdxKind Kind)
 {
 	InternalVBO = 0;
 	IsValid = false;
 	mType = T;
+	mKind = Kind;
 	WindowFrame.AddVBO(this);
 
 	ElementCount = Elements;
-	VboData = new float[ElementCount];
+	ElementSize = Size;
+	VboData = new char[ElementSize * ElementCount];
 }
 
 VBO::~VBO()
@@ -523,29 +526,64 @@ void VBO::Validate()
 	}
 }
 
-void VBO::AssignData(float* Data)
+unsigned int UpTypeForKind(VBO::Type mType)
 {
-	unsigned int UpType;
+	auto UpType = 0;
 
-	if (mType == Stream)
+	if (mType == VBO::Stream)
 		UpType = GL_STREAM_DRAW;
-	else if(mType == Dynamic)
+	else if (mType == VBO::Dynamic)
 		UpType = GL_DYNAMIC_DRAW;
-	else if (mType == Static)
+	else if (mType == VBO::Static)
 		UpType = GL_STATIC_DRAW;
 
-	memmove(VboData, Data, sizeof(float) * ElementCount);
+	return UpType;
+}
+
+unsigned int BufTypeForKind(VBO::IdxKind mKind)
+{
+	unsigned int BufType;
+
+	if (mKind == VBO::ArrayBuffer)
+		BufType = GL_ARRAY_BUFFER;
+	else if (mKind == VBO::IndexBuffer)
+		BufType = GL_ELEMENT_ARRAY_BUFFER;
+	return BufType;
+}
+
+void VBO::AssignData(void* Data)
+{
+	unsigned int UpType;
+	unsigned int BufType;
+
+	UpType = UpTypeForKind(mType);
+	BufType = BufTypeForKind(mKind);
+
+	memmove(VboData, Data, ElementSize * ElementCount);
+
+	if (!IsValid)
+	{
+		glGenBuffers(1, &InternalVBO);
+		IsValid = true;
+	}
+
 	Bind();
-	// glBufferData(GL_ARRAY_BUFFER, sizeof(float) * ElementCount, NULL, UpType);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * ElementCount, VboData, UpType);
+	glBufferData(BufType, ElementSize * ElementCount, VboData, UpType);
 }
 
 
 void VBO::Bind()
 {
-	if (LastBound != InternalVBO)
+	assert(IsValid);
+
+	if (mKind == ArrayBuffer && LastBound != InternalVBO)
 	{
-		glBindBuffer(GL_ARRAY_BUFFER, InternalVBO);
+		glBindBuffer(BufTypeForKind(mKind), InternalVBO);
 		LastBound = InternalVBO;
+	}
+	else if (mKind == IndexBuffer && LastBoundIndex != InternalVBO)
+	{
+		glBindBuffer(BufTypeForKind(mKind), InternalVBO);
+		LastBoundIndex = InternalVBO;
 	}
 }

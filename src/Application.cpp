@@ -27,6 +27,7 @@
 #include "Converter.h"
 
 #include "IPC.h"
+#include "RaindropRocketInterface.h"
 
 #include "SongLoader.h"
 #include "SongWheel.h"
@@ -48,8 +49,6 @@ Application::Application(int argc, char *argv[])
 	Measure = 0;
 	Author = "raindrop";
 	srand(time(0));
-
-	Log::Printf("sizeof VSRG::Difficulty: %d, sizeof TimingData: %d\n", sizeof(VSRG::Difficulty), sizeof(TimingData));
 }
 
 inline bool ValidArg(int count, int req, int i)
@@ -168,7 +167,9 @@ void Application::Init()
 	bool Setup = false;
 
 	if (RunMode == MODE_PLAY)
+	{
 		Setup = true;
+	}
 	if (RunMode == MODE_VSRGPREVIEW)
 	{
 		if (IPC::IsInstanceAlreadyRunning())
@@ -181,6 +182,7 @@ void Application::Init()
 	{
 		DoRun = WindowFrame.AutoSetupWindow(this);
 		InitAudio();
+		Engine::SetupRocket();
 		Game = NULL;
 	}else
 	{

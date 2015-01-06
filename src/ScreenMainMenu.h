@@ -2,6 +2,7 @@
 #define SCREEN_MAINMENU_H_
 
 #include "GuiButton.h"
+#include <Rocket/Core.h>
 #include "Line.h"
 
 class SceneManager;
@@ -9,6 +10,8 @@ class SceneManager;
 class ScreenMainMenu : public Screen
 {
 	GUI::Button PlayBtn, EditBtn, OptionsBtn, ExitBtn;
+
+	Rocket::Core::Context* ctx;
 
 	SceneManager * Objects;
 

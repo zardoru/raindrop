@@ -13,23 +13,32 @@ public:
 		Stream
 	};
 
+	enum IdxKind
+	{
+		ArrayBuffer,
+		IndexBuffer
+	};
+
 private:
 	/* GLuint */ uint32 InternalVBO;
 	static uint32 LastBound;
+	static uint32 LastBoundIndex;
 	bool IsValid;
 	Type mType;
-	float *VboData;
+	void *VboData;
+	IdxKind mKind;
 	uint32 ElementCount;
+	uint32 ElementSize;
 public:
-	VBO(Type T, uint32 Elements);
+	VBO(Type T, uint32 Elements, uint32 Size = sizeof(float), IdxKind Kind = ArrayBuffer);
 	~VBO();
 	void Invalidate();
 	void Validate();
 	void Bind();
 	uint32 GetElementCount();
 
-	/* expects array of size 12 */
-	void AssignData(float *Data);
+	/* Size must be valid with parameters given to VBO. */
+	void AssignData(void *Data);
 };
 
 #endif
