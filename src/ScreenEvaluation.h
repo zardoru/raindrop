@@ -20,7 +20,7 @@ public:
 	void Init(EvaluationData _Data, GString SongAuthor, GString SongTitle);
 	bool Run(double Delta);
 	void Cleanup();
-	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);
+	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 };
 
 #endif

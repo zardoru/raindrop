@@ -108,7 +108,7 @@ void ScreenGameplay7K::TranslateKey(KeyType K, bool KeyDown)
 	}
 }
 
-void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+bool ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
 	/*
 	 In here we should use the input arrangements depending on
@@ -118,11 +118,8 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 	*/
 
 	/* Handle nested screens. */
-	if (Next && Next->IsScreenRunning())
-	{
-		Next->HandleInput(key, code, isMouseInput);
-		return;
-	}
+	if (Screen::HandleInput(key, code, isMouseInput))
+		return true;
 
 	Animations->HandleInput(key, code, isMouseInput);
 
@@ -165,6 +162,8 @@ void ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 		if (!Auto && BindingsManager::TranslateKey7K(key) != KT_Unknown)
 			TranslateKey(BindingsManager::TranslateKey7K(key), false);
 	}
+
+	return true;
 }
 
 int DigitCount (float n)
@@ -260,11 +259,26 @@ void ScreenGameplay7K::CheckShouldEndScreen()
 	// Okay then, so it's a pass?
 	if (SongTime > CurrentDiff->Duration && !stage_failed)
 	{
-		if (!SongFinished)
+		double curBPS = SectionValue(BPS, SongTime);
+		double cutoffspb = 1 / curBPS;
+		double cutoffTime;
+
+		if (score_keeper->usesO2()) // beat-based judgements
+			cutoffTime = cutoffspb * score_keeper->getMissCutoff();
+		else // time-based judgments
+			cutoffTime = score_keeper->getMissCutoff() / 1000.0;
+
+		// we need to make sure we trigger this AFTER all notes could've possibly been judged
+		// note to self: songtime will always be positive since duration is always positive.
+		// cutofftime is unlikely to ever be negative.
+		if (SongTime - CurrentDiff->Duration > cutoffTime) 
 		{
-			SongFinished = true; // Reached the end!
-			Animations->DoEvent("OnSongFinishedEvent", 1);
-			SuccessTime = Clamp(Animations->GetEnv()->GetFunctionResultF(), 0.0f, 30.0f);
+			if (!SongFinished)
+			{
+				SongFinished = true; // Reached the end!
+				Animations->DoEvent("OnSongFinishedEvent", 1);
+				SuccessTime = Clamp(Animations->GetEnv()->GetFunctionResultF(), 0.0f, 30.0f);
+			}
 		}
 	}
 

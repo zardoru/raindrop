@@ -69,8 +69,8 @@ public:
 	void MainThreadInitialization();
 	bool Run(double Delta);
 	void Cleanup();
-	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);
-	void HandleScrollInput(double xOff, double yOff);
+	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
+	bool HandleScrollInput(double xOff, double yOff);
 };
 
 #endif

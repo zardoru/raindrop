@@ -232,6 +232,7 @@ class ScoreKeeper7K {
 		void set_timing_windows();
 		
 		// miss thresholds; notes hit outside here count as misses.
+		// units are in ms
 		double miss_threshold;
 		double earlymiss_threshold;
 

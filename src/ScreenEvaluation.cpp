@@ -79,10 +79,12 @@ void ScreenEvaluation::Init(EvaluationData _Data, GString SongAuthor, GString So
 }
 
 
-void ScreenEvaluation::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+bool ScreenEvaluation::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
 	if ((BindingsManager::TranslateKey(key) == KT_Escape || BindingsManager::TranslateKey(key) == KT_Select) && code == KE_Press)
 		Running = false;
+
+	return true;
 }
 
 void ScreenEvaluation::Cleanup()

@@ -13,7 +13,7 @@ void LoadFunction(void* pScreen)
 	S->LoadThreadInitialization();
 }
 
-ScreenLoading::ScreenLoading(Screen *Parent, Screen *_Next)
+ScreenLoading::ScreenLoading(Screen *Parent, Screen *_Next) : Animation("ScreenLoading")
 {
 	Next = _Next;
 	LoadThread = NULL;
@@ -84,17 +84,25 @@ bool ScreenLoading::Run(double TimeDelta)
 	return Running;
 }
 
-void ScreenLoading::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+bool ScreenLoading::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
 	if (!LoadThread)
+	{
 		if (Next)
-			Next->HandleInput(key, code, isMouseInput);
+			return Next->HandleInput(key, code, isMouseInput);
+	}
+
+	return false;
 }
 
-void ScreenLoading::HandleScrollInput(double xOff, double yOff)
+bool ScreenLoading::HandleScrollInput(double xOff, double yOff)
 {
 	if (!LoadThread)
-		Next->HandleScrollInput(xOff, yOff);
+	{
+		return Next->HandleScrollInput(xOff, yOff);
+	}
+	
+	return Screen::HandleScrollInput(xOff, yOff);
 }
 
 void ScreenLoading::Cleanup()

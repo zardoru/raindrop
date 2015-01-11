@@ -28,7 +28,8 @@ void ScreenEvaluation7K::Init(ScoreKeeper7K *Result)
 	
 	Score = Result;
 
-	Objects = new SceneManager;
+	Objects = new SceneManager("ScreenEvaluation7K");
+
 	SetupScorekeeper7KLuaInterface(Objects->GetEnv()->GetState());
 	SetScorekeeper7KInstance(Objects->GetEnv()->GetState(), Result);
 	GameState::GetInstance().InitializeLua(Objects->GetEnv()->GetState());
@@ -45,10 +46,12 @@ void ScreenEvaluation7K::Init(ScoreKeeper7K *Result)
 }
 
 
-void ScreenEvaluation7K::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+bool ScreenEvaluation7K::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
 	if ((BindingsManager::TranslateKey(key) == KT_Escape || BindingsManager::TranslateKey(key) == KT_Select) && code == KE_Press)
 		Running = false;
+
+	return true;
 }
 
 void ScreenEvaluation7K::Cleanup()

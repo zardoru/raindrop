@@ -2,7 +2,6 @@
 #define SCREEN_MAINMENU_H_
 
 #include "GuiButton.h"
-#include <Rocket/Core.h>
 #include "Line.h"
 
 class SceneManager;
@@ -11,16 +10,14 @@ class ScreenMainMenu : public Screen
 {
 	GUI::Button PlayBtn, EditBtn, OptionsBtn, ExitBtn;
 
-	Rocket::Core::Context* ctx;
-
 	SceneManager * Objects;
 
 	GraphObject2D Background;
 public:
 	ScreenMainMenu(Screen *Parent);
 	void Init();
-	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);
-	void HandleScrollInput(double xOff, double yOff);
+	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
+	bool HandleScrollInput(double xOff, double yOff);
 	bool Run (double Delta);
 	void Cleanup();
 };

@@ -92,7 +92,7 @@ public:
 
 	int32 GetMeasure();
 	virtual bool Run(double Delta);
-	virtual void HandleInput(int32 key, KeyEventType code, bool isMouseInput);
+	virtual bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	Vec2 GetScreenOffset(float alignment);
 	virtual void Cleanup();
 	void RemoveTrash();

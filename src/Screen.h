@@ -44,8 +44,8 @@ public:
 	virtual bool RunIntro(float Fraction);
 	virtual bool RunExit(float Fraction);
 	virtual bool Run(double delta) = 0;
-	virtual void HandleInput(int32 key, KeyEventType state, bool isMouseInput);
-	virtual void HandleScrollInput(double xOff, double yOff);
+	virtual bool HandleInput(int32 key, KeyEventType state, bool isMouseInput);
+	virtual bool HandleScrollInput(double xOff, double yOff);
 
 	// We need to set up graphics again? This gets called.
 	virtual void Invalidate();

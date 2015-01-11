@@ -15,6 +15,8 @@
 #include "ScreenSelectMusic.h"
 #include "LuaManager.h"
 
+#include "RaindropRocketInterface.h"
+
 SoundSample *MMSelectSnd = NULL;
 BitmapFont* MainMenuFont = NULL;
 LuaManager* MainMenuLua = NULL;
@@ -22,7 +24,6 @@ TruetypeFont* TTFO = NULL;
 
 ScreenMainMenu::ScreenMainMenu(Screen *Parent) : Screen(Parent)
 {
-	ctx = NULL;
 }
 
 void PlayBtnHover(GraphObject2D *obj)
@@ -53,7 +54,7 @@ void ScreenMainMenu::Init()
 {
 	Running = true;
 
-	Objects = new SceneManager();
+	Objects = new SceneManager("ScreenMainMenu");
 	MainMenuLua = Objects->GetEnv();
 
 	Objects->AddTarget(&Background);
@@ -63,6 +64,9 @@ void ScreenMainMenu::Init()
 	Objects->AddTarget(&EditBtn);
 	Objects->AddLuaTarget(&PlayBtn, "PlayButton");
 	Objects->AddLuaTarget(&ExitBtn, "ExitButton");
+
+	Engine::SetupRocketLua(Objects->GetEnv()->GetState());
+
 	Objects->Initialize(GameState::GetInstance().GetSkinFile("mainmenu.lua"));
 
 	if (!TTFO)
@@ -85,18 +89,12 @@ void ScreenMainMenu::Init()
 		MMSelectSnd->Open((GameState::GetInstance().GetSkinFile("select.ogg")).c_str());
 		MixerAddSample(MMSelectSnd);
 	}
-
-	ctx = Rocket::Core::CreateContext("mainmenu", Rocket::Core::Vector2i(ScreenWidth, ScreenHeight));
-	ctx->LoadDocument("mainmenu.rml")->Show();
 }
 
-void ScreenMainMenu::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+bool ScreenMainMenu::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
-	if (Next && Next->IsScreenRunning())
-	{
-		Next->HandleInput(key, code, isMouseInput);
-		return;
-	}
+	if (Screen::HandleInput(key, code, isMouseInput))
+		return true;
 
 	if (PlayBtn.HandleInput(key, code, isMouseInput))
 	{
@@ -105,7 +103,7 @@ void ScreenMainMenu::HandleInput(int32 key, KeyEventType code, bool isMouseInput
 		ScreenLoading *LoadScreen = new ScreenLoading(this, new ScreenSelectMusic());
 		LoadScreen->Init();
 		Next = LoadScreen;
-		return;
+		return true;
 	}
 	else if(EditBtn.HandleInput(key, code, isMouseInput))
 	{
@@ -119,12 +117,13 @@ void ScreenMainMenu::HandleInput(int32 key, KeyEventType code, bool isMouseInput
 	{
 		Running = false;
 	}
+
+	return false;
 }
 
-void ScreenMainMenu::HandleScrollInput(double xOff, double yOff)
+bool ScreenMainMenu::HandleScrollInput(double xOff, double yOff)
 {
-	if (Next)
-		Next->HandleScrollInput(xOff, yOff);
+	return Screen::HandleScrollInput(xOff, yOff);
 }
 
 bool ScreenMainMenu::Run (double Delta)
@@ -132,15 +131,11 @@ bool ScreenMainMenu::Run (double Delta)
 	if (RunNested(Delta))
 		return true;
 
-	ctx->Update();
-
 	PlayBtn.Run(Delta);
 	ExitBtn.Run(Delta);
 	
 	TTFO->Render (GString("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop"), Vec2(0, 0));
 	Objects->DrawTargets(Delta);
-
-	ctx->Render();
 
 	return Running;
 }

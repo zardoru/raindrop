@@ -6,8 +6,10 @@ HitLightning.Times = {}
 
 HitLightning.Height = 250
 
+function LightFunction () if GetConfigF("DisableHitlightningAnimation", "") == 1 then return 0 else return 1 end end
+
 HitLightning.Enabled = GetConfigF("DisableHitlightning", "") ~= 0
-HitLightning.Animate = GetConfigF("DisableHitlightningAnimation", "")
+HitLightning.Animate = LightFunction()
 
 HitLightning.Pressed = {}
 HitLightning.Position = {}

@@ -7,6 +7,12 @@ class GraphObject2D;
 class LuaManager;
 class ImageList;
 
+namespace Rocket {
+	namespace Core {
+		class Context;
+	}
+}
+
 struct Animation {
 	function <bool (GraphObject2D* Target, float Fraction)> Function;
 
@@ -33,8 +39,11 @@ class SceneManager
 	std::vector<GraphObject2D*> Objects;
 	std::vector <Animation> Animations;
 	bool mFrameSkip;
+
+	Rocket::Core::Context* ctx;
+
 public:
-	SceneManager();
+	SceneManager(const char* ScreenName);
 	~SceneManager();
 
 	void Preload(GString Filename, GString ArrayName);
@@ -57,7 +66,8 @@ public:
 	void DrawUntilLayer(uint32 Layer);
 	void DrawFromLayer(uint32 Layer);
 
-	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);
+	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
+
 };
 
 #endif

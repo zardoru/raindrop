@@ -127,9 +127,21 @@ bool Screen::RunIntro(float Fraction) { return true; }
 
 bool Screen::RunExit(float Fraction) {	return false; }
 
-void Screen::HandleInput(int32 key, KeyEventType state, bool isMouseInput) { /* stub */ }
+bool Screen::HandleInput(int32 key, KeyEventType state, bool isMouseInput) 
+{ 
+	if (Next && Next->IsScreenRunning())
+		return Next->HandleInput(key, state, isMouseInput);
 
-void Screen::HandleScrollInput(double xOff, double yOff) { /* stub */ }
+	return false;
+}
+
+bool Screen::HandleScrollInput(double xOff, double yOff) 
+{
+	if (Next && Next->IsScreenRunning())
+		return Next->HandleScrollInput(xOff, yOff);
+
+	return false;
+}
 
 void Screen::Cleanup() { /* stub */ }
 

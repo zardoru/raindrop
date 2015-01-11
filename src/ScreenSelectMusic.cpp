@@ -195,7 +195,7 @@ void ScreenSelectMusic::LoadThreadInitialization()
 
 	ImageLoader::LoadFromManifest(Manifest, 1, GameState::GetInstance().GetSkinPrefix());
 
-	Objects = new SceneManager;
+	Objects = new SceneManager("ScreenSelectMusic");
 	SetupWheelLua(Objects->GetEnv());
 	Objects->Preload( GameState::GetInstance().GetSkinFile("screenselectmusic.lua"), "Preload" );
 
@@ -456,23 +456,22 @@ void ScreenSelectMusic::SwitchUpscroll(bool NewUpscroll)
 	Objects->GetEnv()->SetGlobal("Upscroll", OptionUpscroll);
 }
 
-void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+bool ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
 	if (Next)
 	{
 		if (TransitionTime <= 0)
-			Next->HandleInput(key, code, isMouseInput);
-		return;
+			return Next->HandleInput(key, code, isMouseInput);
 	}
 
 	if (UpBtn->HandleInput(key, code, isMouseInput))
 	{
 		Game::SongWheel::GetInstance().GoUp();
-		return;
+		return true;
 	}
 
 	if (Game::SongWheel::GetInstance().HandleInput(key, code, isMouseInput))
-		return;
+		return true;
 
 	Objects->HandleInput(key, code, isMouseInput);
 
@@ -494,19 +493,21 @@ void ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 			break;
 		}
 	}
+
+	return false;
 }
 
-void ScreenSelectMusic::HandleScrollInput(double xOff, double yOff)
+bool ScreenSelectMusic::HandleScrollInput(double xOff, double yOff)
 {
 	if (Next)
 	{
 		if (TransitionTime <= 0)
-			Next->HandleScrollInput(xOff, yOff);
+			return Next->HandleScrollInput(xOff, yOff);
 		else
-			return;
+			return true;
 	}
 
-	Game::SongWheel::GetInstance().HandleScrollInput(xOff, yOff);
+	return Game::SongWheel::GetInstance().HandleScrollInput(xOff, yOff);
 }
 
 void ScreenSelectMusic::TransformItem(GraphObject2D* Item, Game::Song* Song, bool IsSelected)

@@ -59,6 +59,7 @@ void TruetypeFont::UpdateWindowScale()
 
 	float oldrealscale = realscale;
 	realscale = stbtt_ScaleForPixelHeight(info, scale * windowscale);
+	virtualscale = stbtt_ScaleForPixelHeight(info, scale);
 #ifdef VERBOSE_DEBUG
 	wprintf(L"change scale %f -> %f, realscale %f -> %f\n", oldscale, windowscale, oldrealscale, realscale);
 #endif
@@ -100,14 +101,20 @@ TruetypeFont::codepdata &TruetypeFont::GetTexFromCodepoint(int cp)
 		wprintf(L"generating %d\n", cp);
 #endif
 		newcp.tex = stbtt_GetCodepointBitmap(info, 0, realscale, cp, &w, &h, &xofs, &yofs);
+		newcp.gltx = 0;
+		newcp.scl = WindowFrame.GetWindowVScale();
+		newcp.tw = w;
+		newcp.th = h;
+		
+		// get size etc.. for how it'd be if the screen weren't resized
+		void * tx = stbtt_GetCodepointBitmap(info, 0, virtualscale, cp, &w, &h, &xofs, &yofs);
 		newcp.xofs = xofs;
 		newcp.yofs = yofs;
 		newcp.w = w;
 		newcp.h = h;
-		newcp.gltx = 0;
-		newcp.scl = WindowFrame.GetWindowVScale();
-		Texes[cp] = newcp;
 
+		free(tx);
+		Texes[cp] = newcp;
 		return Texes[cp];
 	}else
 	{

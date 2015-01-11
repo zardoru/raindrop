@@ -1,9 +1,13 @@
+#include <Rocket/Core.h>
+
 #include "GameGlobal.h"
 #include "GameState.h"
 #include "GraphObject2D.h"
 #include "LuaManager.h"
 #include "SceneManager.h"
 #include "ImageList.h"
+
+#include "RaindropRocketInterface.h"
 
 void CreateLuaInterface(LuaManager *AnimLua);
 
@@ -53,7 +57,7 @@ void SceneManager::AddLuaAnimation (GraphObject2D* Target, const GString &FuncNa
 	Animations.push_back(Anim);
 }
 
-SceneManager::SceneManager()
+SceneManager::SceneManager(const char* ScreenName)
 {
 	Animations.reserve(10);
 	Lua = new LuaManager;
@@ -62,6 +66,13 @@ SceneManager::SceneManager()
 	CreateLuaInterface(Lua);
 	Images = new ImageList(true);
 	mFrameSkip = true;
+
+	ctx = Rocket::Core::CreateContext(ScreenName, Rocket::Core::Vector2i(ScreenWidth, ScreenHeight));
+	if (!ctx)
+		ctx = Rocket::Core::GetContext(ScreenName);
+
+	Rocket::Core::ElementDocument *Doc = ctx->LoadDocument(ScreenName + Rocket::Core::String(".rml"));
+	if (Doc) Doc->Show();
 }
 
 SceneManager::~SceneManager()
@@ -70,6 +81,10 @@ SceneManager::~SceneManager()
 	{
 		Lua->RunFunction();
 	}
+
+	if (ctx->GetReferenceCount() > 0)
+		ctx->RemoveReference();
+
 	delete Lua;
 	delete Images;
 }
@@ -149,6 +164,8 @@ void SceneManager::DrawTargets(double TimeDelta)
 	{
 		(*i)->Render();
 	}
+
+	ctx->Render();
 }
 
 void SceneManager::UpdateTargets(double TimeDelta)
@@ -215,6 +232,8 @@ void SceneManager::UpdateTargets(double TimeDelta)
 		Lua->PushArgument(TimeDelta);
 		Lua->RunFunction();
 	}
+
+	ctx->Update();
 }
 
 void SceneManager::DrawUntilLayer(uint32 Layer)
@@ -242,7 +261,7 @@ LuaManager *SceneManager::GetEnv()
 	return Lua;
 }
 
-void SceneManager::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+bool SceneManager::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
 	if (Lua->CallFunction("KeyEvent", 3))
 	{
@@ -251,6 +270,8 @@ void SceneManager::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 		Lua->PushArgument(isMouseInput);
 		Lua->RunFunction();
 	}
+
+	return true;
 }
 
 ImageList* SceneManager::GetImageList()

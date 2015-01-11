@@ -17,8 +17,8 @@ public:
 	bool RunExit(float Fraction);
 
 	bool Run(double TimeDelta);
-	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);
-	void HandleScrollInput(double xOff, double yOff);
+	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
+	bool HandleScrollInput(double xOff, double yOff);
 	void Cleanup();
 };
 

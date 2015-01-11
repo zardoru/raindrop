@@ -330,7 +330,7 @@ void TruetypeFont::Render(GString In, const Vec2 &Position, const Mat4 &Transfor
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, cp.w, cp.h, 0, GL_ALPHA, GL_UNSIGNED_BYTE, tx);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, cp.tw, cp.th, 0, GL_ALPHA, GL_UNSIGNED_BYTE, tx);
 		}else
 			glBindTexture(GL_TEXTURE_2D, cp.gltx);
 
@@ -345,7 +345,7 @@ void TruetypeFont::Render(GString In, const Vec2 &Position, const Mat4 &Transfor
 			float aW = stbtt_GetCodepointKernAdvance(info, *it, *next);
 			int bW;
 			stbtt_GetCodepointHMetrics(info, *it, &bW, NULL);
-			vOffs.x += aW * realscale + bW * realscale;
+			vOffs.x += aW * virtualscale + bW * virtualscale;
 		}
 	}
 

@@ -125,7 +125,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>libsoxr.lib;libsndfile-1.lib;libmpg123.lib;portaudio_x86.lib;opengl32.lib;Ogg.lib;Vorbis.lib;glfw3.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>rocketcontrolslua.lib;rocketcorelua.lib;rocketcontrols.lib;rocketdebugger.lib;rocketcore.lib;libsoxr.lib;libsndfile-1.lib;libmpg123.lib;Vorbis.lib;portaudio_x86.lib;Ogg.lib;GLFW3.lib;glew32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>

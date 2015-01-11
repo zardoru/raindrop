@@ -55,7 +55,7 @@ public:
 	ScreenEdit (Screen * Parent);
 	void Init(dotcur::Song *Other);
 	void StartPlaying(int32 _Measure);
-	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);
+	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	bool Run (double Delta);
 	void Cleanup();
 };

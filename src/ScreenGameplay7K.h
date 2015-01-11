@@ -248,7 +248,7 @@ public:
 	void Cleanup();
 
 	bool Run(double Delta);
-	void HandleInput(int32 key, KeyEventType code, bool isMouseInput);
+	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 };
 
 #endif

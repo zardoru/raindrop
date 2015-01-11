@@ -331,13 +331,10 @@ void ScreenGameplay::RunMeasure(float delta)
 	}
 }
 
-void ScreenGameplay::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+bool ScreenGameplay::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
-	if (Next && Next->IsScreenRunning())
-	{
-		Next->HandleInput(key, code, isMouseInput);
-		return;
-	}
+	if (Screen::HandleInput(key, code, isMouseInput))
+		return true;
 
 	/* Notes */
 	if (Measure < CurrentDiff->Measures.size() && // if measure is playable
@@ -388,7 +385,7 @@ void ScreenGameplay::HandleInput(int32 key, KeyEventType code, bool isMouseInput
 					break;
 				}
 			}
-			return;
+			return true;
 		}
 	}
 
@@ -401,7 +398,7 @@ void ScreenGameplay::HandleInput(int32 key, KeyEventType code, bool isMouseInput
 		case 'R':
 			Cleanup();
 			Init(MySong, 0);
-			return;
+			return true;
 #endif
 		case 'A': // Autoplay
 			IsAutoplaying = !IsAutoplaying;
@@ -429,7 +426,10 @@ void ScreenGameplay::HandleInput(int32 key, KeyEventType code, bool isMouseInput
 				IsPaused = !IsPaused;
 			}
 		}
+		return true;
 	}
+
+	return false;
 }
 
 void ScreenGameplay::seekTime(float Time)

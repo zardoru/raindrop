@@ -222,6 +222,6 @@ namespace Engine { namespace RocketInterface {
 	void SetupRocketLua(void* State)
 	{
 		Rocket::Core::Lua::Interpreter::RegisterCoreTypes((lua_State*)State);
-		Rocket::Controls::Lua::RegisterTypes((lua_State*)State);
+		//Rocket::Controls::Lua::RegisterTypes((lua_State*)State);
 	}
 }

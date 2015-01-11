@@ -1,6 +1,8 @@
 #ifndef RROCKETI_H_
 #define RROCKETI_H_
 
+#include <Rocket/Core.h>
+
 class VBO;
 
 namespace Engine {

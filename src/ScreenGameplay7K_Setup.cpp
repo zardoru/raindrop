@@ -175,7 +175,7 @@ void ScreenGameplay7K::Init(VSRG::Song* S, int DifficultyIndex, const ScreenGame
 	Preloaded = Param.Preloaded;
 	Auto = Param.Auto;
 
-	Animations = new SceneManager();
+	Animations = new SceneManager("ScreenGameplay7K");
 	score_keeper = new ScoreKeeper7K();
 	UpdateScriptScoreVariables();
 }

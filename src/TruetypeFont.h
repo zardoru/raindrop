@@ -12,6 +12,7 @@ class TruetypeFont : public Font
 	size_t offs;
 	bool IsValid;
 	float scale;
+	float virtualscale;
 	float realscale;
 
 	float windowscale;
@@ -22,9 +23,11 @@ class TruetypeFont : public Font
 		uint32 gltx;
 		int xofs;
 		int yofs;
+		float scl;
 		int w;
 		int h;
-		float scl;
+		int tw;
+		int th;
 	};
 	
 	std::map<int, codepdata> Texes;

@@ -208,7 +208,7 @@ void ScreenEdit::OnMouseRelease(KeyType tkey)
 		HeldObject = NULL;
 }
 
-void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+bool ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
 	KeyType tkey = BindingsManager::TranslateKey(key);
 
@@ -216,14 +216,14 @@ void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 		if (key == 'P') // pressed p?
 		{
 			SwitchPreviewMode();
-			return;
+			return true;
 		}
 
 	// Playing mode input
 	if (EditScreenState == Playing)
 	{
 		ScreenGameplay::HandleInput(key, code, isMouseInput);
-		return;
+		return true;
 	}
 
 	// Editor mode input
@@ -235,20 +235,20 @@ void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 		int R = OffsetPrompt.HandleInput(key, code, isMouseInput);
 
 		if (R == 1)
-			return;
+			return true;
 		else if (R == 2)
 		{
 			if (Utility::IsNumeric(OffsetPrompt.GetContents().c_str()))
 			{
 				CurrentDiff->Offset = atof(OffsetPrompt.GetContents().c_str());
 			}
-			return;
+			return true;
 		}
 
 		R = BPMPrompt.HandleInput(key, code, isMouseInput);
 
 		if (R == 1)
-			return;
+			return true;
 		else if (R == 2)
 		{
 			if (Utility::IsNumeric(BPMPrompt.GetContents().c_str()))
@@ -256,7 +256,7 @@ void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 				CurrentDiff->Timing[0].Value = atof(BPMPrompt.GetContents().c_str());
 				MySong->Process(false);
 			}
-			return;
+			return true;
 		}
 
 
@@ -264,21 +264,21 @@ void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 		{
 			switch (tkey)
 			{
-			case KT_Right:              IncreaseCurrentFraction(); return;
-			case KT_Left:               DecreaseCurrentFraction(); return;
-			case KT_Escape:             Running = false; return;
-			case KT_FractionDec:        if (CurrentDiff->Measures.size()) DecreaseTotalFraction(); return;
-			case KT_FractionInc:        if (CurrentDiff->Measures.size()) IncreaseTotalFraction(); return;
-			case KT_GridDec:            GridCellSize--; return;
-			case KT_GridInc:            GridCellSize++; return;
-			case KT_SwitchOffsetPrompt: OffsetPrompt.SwitchOpen(); return;
-			case KT_SwitchBPMPrompt:	BPMPrompt.SwitchOpen(); return;
+			case KT_Right:              IncreaseCurrentFraction(); return true;
+			case KT_Left:               DecreaseCurrentFraction(); return true;
+			case KT_Escape:             Running = false; return true;
+			case KT_FractionDec:        if (CurrentDiff->Measures.size()) DecreaseTotalFraction(); return true;
+			case KT_FractionInc:        if (CurrentDiff->Measures.size()) IncreaseTotalFraction(); return true;
+			case KT_GridDec:            GridCellSize--; return true;
+			case KT_GridInc:            GridCellSize++; return true;
+			case KT_SwitchOffsetPrompt: OffsetPrompt.SwitchOpen(); return true;
+			case KT_SwitchBPMPrompt:	BPMPrompt.SwitchOpen(); return true;
 			}
 
 			switch (key)
 			{
-			case 'S': SaveChart(); return;
-			case 'M': CurrentDiff->Measures[Measure].clear(); return;
+			case 'S': SaveChart(); return true;
+			case 'M': CurrentDiff->Measures[Measure].clear(); return true;
 			case 'Q': 
 				if (Mode == Select)
 					Mode = Normal;
@@ -286,25 +286,25 @@ void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 					Mode = Hold;
 				else
 					Mode = Select;
-				return;
+				return true;
 			case 'T':
 				InsertMeasure();
-				return;
+				return true;
 			case 'X':
 				if (Measure+1 < CurrentDiff->Measures.size())
 				{
 					Measure++;
 					CurrentFraction = 0;
 				}
-				return;
+				return true;
 			case 'Z':
 				if (Measure > 0)
 				{
 					Measure--;
 					CurrentFraction = 0;
 				}
-				return;
-			case 'G': GridEnabled = !GridEnabled; return;
+				return true;
+			case 'G': GridEnabled = !GridEnabled; return true;
 			}
 		}
 	}else // mouse input
@@ -318,6 +318,8 @@ void ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 		}
 
 	}
+
+	return false;
 }
 
 void ScreenEdit::RunGhostObject()
