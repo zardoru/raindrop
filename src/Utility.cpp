@@ -214,7 +214,7 @@ double latof(GString s)
 
 	if (s.find_first_of(point) == GString::npos)
 	{
-		char toFind;
+		char toFind = '.';
 		if (point == ',') toFind = '.';
 		else if (point == '.') toFind = ',';
 

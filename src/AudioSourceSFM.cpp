@@ -22,12 +22,15 @@ AudioSourceSFM::~AudioSourceSFM()
 {
 	if (mWavFile)
 		sf_close(mWavFile);
-	if (info)
-		delete info;
+
+	delete info;
 }
 
 bool AudioSourceSFM::Open(const char* Filename)
 {
+	if (info) // we're already in use
+		return false;
+
 	info = new SF_INFO;
 	info->format = 0;
 
@@ -59,7 +62,7 @@ bool AudioSourceSFM::Open(const char* Filename)
 
 uint32 AudioSourceSFM::Read(short* buffer, size_t count)
 {
-	uint32 read;
+	uint32 read = 0;
 	if (mWavFile)
 	{
 		read = sf_read_short(mWavFile, buffer, count);

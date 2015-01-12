@@ -56,13 +56,14 @@ float ScreenGameplay7K::GetCurrentVertical()
 
 double ScreenGameplay7K::GetSongTime()
 {
-	double usedTime;
+	double usedTime = -1;
 
 	if (UsedTimingType == TT_BEATS)
 		usedTime = CurrentBeat;
 	else if (UsedTimingType == TT_TIME)
 		usedTime = SongTime;
 
+	assert(usedTime != -1);
 	return usedTime;
 }
 

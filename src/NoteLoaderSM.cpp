@@ -42,7 +42,8 @@ GString RemoveComments(const GString Str)
 	GString Result;
 	int k = 0;
 	int AwatingEOL = 0;
-	for (uint32 i = 0; i < Str.length()-1; i++)
+	ptrdiff_t len = Str.length() - 1;
+	for (ptrdiff_t i = 0; i < len; i++)
 	{
 		if (AwatingEOL)
 		{
@@ -112,21 +113,21 @@ bool LoadTracksSM(Song *Out, Difficulty *Diff, GString line)
 	double KeyBeat[16]; // heh
 	
 	/* For each measure of the song */
-	for (uint32 i = 0; i < MeasureText.size(); i++) /* i = current measure */
+	for (ptrdiff_t i = 0; i < MeasureText.size(); i++) /* i = current measure */
 	{
-		int MeasureFractions = MeasureText[i].length() / Keys;
+		ptrdiff_t MeasureFractions = MeasureText[i].length() / Keys;
 		Measure Msr;
 
 		if (MeasureText[i].length())
 		{
 			/* For each fraction of the measure*/
-			for (int32 m = 0; m < MeasureFractions; m++) /* m = current fraction */
+			for (ptrdiff_t m = 0; m < MeasureFractions; m++) /* m = current fraction */
 			{
 				double Beat = i * 4.0 + m * 4.0 / (double)MeasureFractions; /* Current beat */
 				double StopsTime = StopTimeAtBeat(Diff->Data->StopsTiming, Beat);
 				double Time = TimeAtBeat(Diff->Timing, Diff->Offset, Beat) + StopsTime;
 				/* For every track of the fraction */
-				for (int k = 0; k < Keys; k++) /* k = current track */
+				for (ptrdiff_t k = 0; k < Keys; k++) /* k = current track */
 				{
 					NoteData Note;
 					
@@ -162,7 +163,7 @@ bool LoadTracksSM(Song *Out, Difficulty *Diff, GString line)
 
 					Diff->Duration = max(max (Note.StartTime, Note.EndTime), Diff->Duration);
 
-					if (MeasureText[i].length())
+					if (MeasureText[i].length() > 0)
 						MeasureText[i].erase(0, 1);
 				}
 			}
@@ -190,7 +191,7 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 
 	TimingData BPMData;
 	TimingData StopsData; 
-	double Offset;
+	double Offset = 0;
 
 	Difficulty *Diff = new Difficulty();
 

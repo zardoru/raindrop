@@ -170,7 +170,7 @@ bool sortTiming(const TimingSegment& A, const TimingSegment& B)
 
 void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 {
-	int CurrentMeasure = 0;
+	ptrdiff_t CurrentMeasure = 0;
 
 	// First, we sort and clear up invalid events.
 	FixOJNEvents(Info);
@@ -180,9 +180,9 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 
 
 	// First of all, we need to process BPM changes and fractional measures.
-	for (std::vector<OjnMeasure>::iterator Measure = Info->Measures.begin(); 
+	for (auto Measure = Info->Measures.begin(); 
 		Measure != Info->Measures.end(); 
-		Measure++)
+		++Measure)
 	{
 		float MeasureBaseBeat = BeatForMeasure(Info, CurrentMeasure);
 
@@ -193,7 +193,7 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 
 		for (std::vector<OjnInternalEvent>::iterator Evt = Measure->Events.begin();
 			Evt != Measure->Events.end();
-			Evt++)
+			++Evt)
 		{
 			if (Evt->Channel != BPM_CHANNEL) continue; // These are the only ones we directly handle.
 			float Beat = MeasureBaseBeat + Evt->Fraction * 4;
@@ -235,17 +235,18 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 
 	// Now, we can process notes and long notes.
 	CurrentMeasure = 0;
-	float PendingLNs[7];
-	float PendingLNSound[7];
-	for (std::vector<OjnMeasure>::iterator Measure = Info->Measures.begin();
+	float PendingLNs[7] = {};
+	float PendingLNSound[7] = {};
+
+	for (auto Measure = Info->Measures.begin();
 		Measure != Info->Measures.end();
-		Measure++)
+		++Measure)
 	{
 		float MeasureBaseBeat = BeatForMeasure(Info, CurrentMeasure);
 
-		for (std::vector<OjnInternalEvent>::iterator Evt = Measure->Events.begin();
+		for (auto Evt = Measure->Events.begin();
 			Evt != Measure->Events.end();
-			Evt++)
+			++Evt)
 		{
 			if (Evt->Channel == BPM_CHANNEL) continue;
 			else

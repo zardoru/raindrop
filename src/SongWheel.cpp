@@ -106,7 +106,7 @@ public:
 		Log::Printf("Started loading songs..\n");
 		DB->StartTransaction();
 
-		for (std::map<GString, GString>::iterator i = Directories.begin();
+		for (auto i = Directories.begin();
 			i != Directories.end();
 			i++)
 		{

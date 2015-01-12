@@ -234,7 +234,7 @@ GString CommandSubcontents (const GString Command, const GString Line)
 
 void ParseEvents(BmsLoadInfo *Info, const int Measure, const int BmsChannel, const GString Command)
 {
-	int CommandLength = Command.length() / 2;
+	size_t CommandLength = Command.length() / 2;
 
 	if (BmsChannel != CHANNEL_METER)
 	{
@@ -245,7 +245,7 @@ void ParseEvents(BmsLoadInfo *Info, const int Measure, const int BmsChannel, con
 			|| BmsChannel == CHANNEL_BGALAYER2 || BmsChannel == CHANNEL_BGAPOOR)
 			Info->HasBMPEvents = true;
 
-		for (int i = 0; i < CommandLength; i++)
+		for (ptrdiff_t i = 0; i < CommandLength; i++)
 		{
 			const char *EventPtr = (Command.c_str() + i*2);
 			char CharEvent [3];
@@ -294,11 +294,11 @@ int ts_sort( const TimingSegment &A, const TimingSegment &B )
 
 void CalculateBMP (BmsLoadInfo *Info, std::vector<AutoplayBMP> &BMPEvents, int Channel)
 {
-	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
+	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); ++i)
 	{
 		if (i->second.Events.find(Channel) != i->second.Events.end())
 		{
-			for (BMSEventList::iterator ev = i->second.Events[Channel].begin(); ev != i->second.Events[Channel].end(); ev++)
+			for (BMSEventList::iterator ev = i->second.Events[Channel].begin(); ev != i->second.Events[Channel].end(); ++ev)
 			{
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first);
 				int BMP = ev->Event;
@@ -617,7 +617,7 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 		next_chan:;
 	}
 
-	if (i->second.Events[CHANNEL_BGM].size()) // There are some BGM events?
+	if (i->second.Events[CHANNEL_BGM].size() != 0) // There are some BGM events?
 	{
 		for (BMSEventList::iterator ev = i->second.Events[CHANNEL_BGM].begin(); ev != i->second.Events[CHANNEL_BGM].end(); ev++)
 		{
@@ -868,7 +868,7 @@ bool ShouldUseU8(const char* Line)
 			IsU8 = true;
 			for (int i = 0; i < 1024; i++)
 			{
-				if (Line[i] && 0x80) // high bit is set
+				if (Line[i] & 0x80) // high bit is set
 				{
 					IsU8 = false;
 					break;
@@ -881,7 +881,7 @@ bool ShouldUseU8(const char* Line)
 	return IsU8;
 }
 
-bool isany(char x, const char* p, int len)
+bool isany(char x, const char* p, ptrdiff_t len)
 {
 	for (int i = 0; i < len; i++)
 		if (x == p[i]) return true;
@@ -910,7 +910,7 @@ GString GetSubtitles(GString SLine, std::vector<GString> &Out)
 			{
 				Paren.pop();
 				Out.push_back(CurrentParse);
-				CurrentParse = "";
+				CurrentParse.clear();
 			}
 		}
 		else
@@ -1018,7 +1018,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 
 	// Sonorous UTF-8 extension
 	IsU8 = ShouldUseU8(TestU8);
-	delete TestU8;
+	delete[] TestU8;
 	filein.seekg(0);
 
 	while (filein)
@@ -1166,7 +1166,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 			{
 				GString IndexStr = CommandSubcontents("#BMP", command);
 				int Index = fromBase36(IndexStr.c_str());
-				Info->BMP[Index] = CommandContents.c_str();
+				Info->BMP[Index] = CommandContents;
 			}
 
 			OnCommandSub(#BPM)

@@ -15,7 +15,7 @@ class AudioSourceMP3 : public AudioDataSource
 	uint32 mRate;
 	int mEncoding;
 	int mChannels;
-	uint32 mLen;
+	size_t mLen;
 
 	bool mIsValid;
 	bool mIsDataLeft;

@@ -49,7 +49,7 @@ void ScreenGameplay7K::DrawBarlines(float rPos)
 {
 	for (std::vector<float>::iterator i = MeasureBarlines.begin();
 		i != MeasureBarlines.end();
-		i++)
+		++i)
 	{
 		float realV = rPos - (*i) * SpeedMultiplier + BarlineOffset;
 		if (realV > 0 && realV < ScreenWidth)
@@ -88,7 +88,7 @@ void ScreenGameplay7K::DrawMeasures()
 	/* todo: instancing */
 	for (uint32 k = 0; k < CurrentDiff->Channels; k++)
 	{
-		for (std::vector<TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); m++)
+		for (std::vector<TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); ++m)
 		{
 			if (!m->IsEnabled())
 				if (!m->IsHold())
@@ -96,7 +96,7 @@ void ScreenGameplay7K::DrawMeasures()
 
 			// Is there a better way to do this that doesn't involve recalculating this eeeeeevery note?
 			float Vertical = (m->GetVertical() * SpeedMultiplier + rPos) ;
-			float VerticalHold;
+			float VerticalHold = 0;
 
 			bool InScreen = true; 
 

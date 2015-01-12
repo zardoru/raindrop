@@ -483,7 +483,7 @@ void ReadObjects (GString line, OsuLoadInfo* Info)
 		float bpm = (60000.0 / SectionValue(Info->Diff->Timing, startTime));
 		float finalLength = beatDuration * spb(bpm);
 
-		if (startTime > finalLength + startTime)
+		if (0 > finalLength)
 			printf("o!m loader warning: object at track %d has startTime > endTime (%f and %f)\n", Track, startTime, finalLength + startTime);
 
 		Note.StartTime = startTime;
@@ -647,9 +647,10 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 
 	std::getline(filein, Line);
 	int version;
-	sscanf(Line.c_str(), "osu file format v%d", &version);
-
-	if (version < 11) // why
+	int cnt = sscanf(Line.c_str(), "osu file format v%d", &version);
+	
+	// "osu file format v"
+	if (cnt <= 17 || version < 11) // why
 	{
 		delete Diff;
 		return;

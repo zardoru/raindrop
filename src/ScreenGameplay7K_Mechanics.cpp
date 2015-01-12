@@ -120,7 +120,7 @@ void ScreenGameplay7K::RunMeasures()
 
 	for (uint16 k = 0; k < CurrentDiff->Channels; k++)
 	{
-		for (std::vector<TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); m++)	{
+		for (auto m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); ++m)	{
 
 			// Keysound update to closest note.
 			if (CurrentDiff->IsVirtual)	{
@@ -135,7 +135,7 @@ void ScreenGameplay7K::RunMeasures()
 				}
 			}
 
-
+			// Autoplay
 			if (Auto) {
 				double TimeThreshold = usedTime + 0.008; // latest time a note can activate.
 				if ( m->GetStartTime() <= TimeThreshold)
@@ -186,7 +186,7 @@ void ScreenGameplay7K::ReleaseLane(uint32 Lane, float Time)
 
 	if(stage_failed) return; // don't judge any more after stage is failed.
 
-	for (std::vector<TrackNote>::iterator m = NotesByChannel[Lane].begin(); m != NotesByChannel[Lane].end(); m++)
+	for (auto m = NotesByChannel[Lane].begin(); m != NotesByChannel[Lane].end(); ++m)
 	{
 		if (MechanicsSet->OnReleaseLane(Time, &(*m), Lane)) // Are we done judging..?
 			break;
@@ -204,7 +204,7 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 
 	lastClosest[Lane] = MsDisplayMargin;
 
-	for (std::vector<TrackNote>::iterator m = NotesByChannel[Lane].begin(); m != NotesByChannel[Lane].end(); m++)
+	for (auto m = NotesByChannel[Lane].begin(); m != NotesByChannel[Lane].end(); ++m)
 	{
 		double dev = (SongTime - m->GetStartTime()) * 1000;
 		double tD = abs(dev);

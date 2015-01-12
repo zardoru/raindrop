@@ -157,9 +157,9 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 		return;
 
 	/* Here on, just working with stops. */
-	for(TimingData::iterator Time = StopsTiming.begin();
+	for(auto Time = StopsTiming.begin();
 		Time != StopsTiming.end();
-		Time++)
+		++Time)
 	{
 		TimingSegment Seg;
 		double TValue = TimeAtBeat(Timing, Offset + Drift, Time->Time) + StopTimeAtBeat(StopsTiming, Time->Time);
@@ -348,8 +348,8 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 			Msr++)
 		{
 			/* For each note in the measure... */
-			size_t total_notes = Msr->MeasureNotes[KeyIndex].size();
-			for (uint32 Note = 0; Note < total_notes; Note++)
+			ptrdiff_t total_notes = Msr->MeasureNotes[KeyIndex].size();
+			for (ptrdiff_t Note = 0; Note < total_notes; Note++)
 			{
 				/*
 					Calculate position. (Change this to TrackNote instead of processing?)

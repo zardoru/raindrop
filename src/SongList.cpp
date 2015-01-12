@@ -15,7 +15,7 @@ SongList::~SongList()
 {
 	for (std::vector<ListEntry>::iterator i = mChildren.begin();
 		i != mChildren.end();
-		i++)
+		++i)
 	{
 		if (i->Kind == ListEntry::Directory)
 		{
@@ -59,7 +59,7 @@ void SongList::AddNamedDirectory(boost::mutex &loadMutex, SongLoader *Loader, Di
 
 	for (std::vector<GString>::iterator i = Listing.begin();
 		i != Listing.end();
-		i++)
+		++i)
 	{
 		if (*i == "." || *i == "..") continue;
 
@@ -101,7 +101,7 @@ void SongList::AddNamedDirectory(boost::mutex &loadMutex, SongLoader *Loader, Di
 
 				for (std::vector<VSRG::Song*>::iterator j = Songs7K.begin();
 					j != Songs7K.end();
-					j++)
+					++j)
 				{
 					NewList->AddSong(*j);
 				}

@@ -296,7 +296,7 @@ void TruetypeFont::Render(GString In, const Vec2 &Position, const Mat4 &Transfor
 	
 	utf8::iterator<const char*> it (Text, Text, Text + In.length());
 	utf8::iterator<const char*> itend(Text + In.length(), Text, Text + In.length());
-	for (; it != itend; it++)
+	for (; it != itend; ++it)
 	{
 		CheckCodepoint(*it); // Force a regeneration of this if necessary
 		codepdata &cp = GetTexFromCodepoint(*it);
@@ -542,7 +542,7 @@ unsigned int UpTypeForKind(VBO::Type mType)
 
 unsigned int BufTypeForKind(VBO::IdxKind mKind)
 {
-	unsigned int BufType;
+	unsigned int BufType = GL_ARRAY_BUFFER;
 
 	if (mKind == VBO::ArrayBuffer)
 		BufType = GL_ARRAY_BUFFER;

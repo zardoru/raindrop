@@ -85,8 +85,7 @@ void ScreenGameplay7K::Cleanup()
 {
 	CurrentDiff->Destroy();
 
-	if (LoadedSong)
-		delete LoadedSong;
+	delete LoadedSong;
 
 	if (Music)
 	{
@@ -696,7 +695,7 @@ void ScreenGameplay7K::SetupGear()
 		LaneWidth[i] = Configuration::GetSkinConfigf(str, nstr);
 
 		float ChanBarlineWidth;
-		sprintf(str, "BarlineWidth", i + 1);
+		sprintf(str, "BarlineWidth");
 		ChanBarlineWidth = Configuration::GetSkinConfigf(str, nstr);
 		if (ChanBarlineWidth)
 			BarlineWidth = ChanBarlineWidth;

@@ -42,7 +42,7 @@ AudioDataSource* SourceFromExt(Directory Filename)
 	GString Ext = Filename.GetExtension();
 
 	if (Filename.path().length() == 0 || Ext.length() == 0) {
-		wprintf(L"Invalid filename. (%s) (%s)\n", Filename.c_path(), Ext.c_str());
+		wprintf(L"Invalid filename. (%s) (%s)\n", Utility::Widen(Filename).c_str(), Utility::Widen(Ext).c_str());
 		return NULL;
 	}
 
@@ -102,7 +102,7 @@ AudioSample::AudioSample()
 
 AudioSample::~AudioSample()
 {
-	if (mData) delete mData;
+	delete mData;
 	mData = NULL;
 }
 
@@ -242,8 +242,7 @@ bool AudioSample::Open(const char* Filename)
 
 	bool Success = Open(Src);
 
-	if (Src)
-		delete Src;
+	delete Src;
 	return Success;
 }
 
@@ -286,14 +285,9 @@ AudioStream::AudioStream()
 
 AudioStream::~AudioStream()
 {
-	if (mSource)
-		delete mSource;
-
-	if (mData)
-		delete[] mData;
-
-	if (tmpBuffer)
-		delete tmpBuffer;
+	delete mSource;
+	delete[] mData;
+	delete tmpBuffer;
 }
 
 uint32 AudioStream::Read(short* buffer, size_t count)

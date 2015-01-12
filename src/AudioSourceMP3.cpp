@@ -85,7 +85,7 @@ uint32 AudioSourceMP3::Read(short* buffer, size_t count)
 		{
 			Seek(0);
 
-			int place = 0;
+			size_t place = 0;
 			if (res > 0)
 			{
 				count -= ret / sizeof(short);

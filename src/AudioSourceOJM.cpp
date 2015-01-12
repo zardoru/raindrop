@@ -105,7 +105,7 @@ sf_count_t seekM30(sf_count_t offs, int whence, void* p)
 sf_count_t readM30(void* ptr, sf_count_t count, void* p)
 {
 	SFM30 *state = (SFM30*)p;
-	int toRead = min((unsigned int)count, (unsigned int)(state->DataLength - state->Offset));
+	size_t toRead = min((size_t)count, (size_t)(state->DataLength - state->Offset));
 
 	if (state->Offset >= state->DataLength)
 		return 0;
@@ -249,7 +249,7 @@ void omc_rearrange(char* buf_io, size_t len)
 		key++;
 	}
 
-	delete buf_encoded;
+	delete[] buf_encoded;
 }
 
 void omc_xor(char* buf, size_t len, int &acc_keybyte, int &acc_counter)
@@ -277,7 +277,7 @@ void omc_xor(char* buf, size_t len, int &acc_keybyte, int &acc_counter)
 void NamiXOR(char* buffer, size_t length)
 {
 	char NAMI[] = { 0x6E, 0x61, 0x6D, 0x69 };
-	for (uint32 i = 0; i + 3 < length; i += 4)
+	for (ptrdiff_t i = 0; i + 3 < length; i += 4)
 	{
 		buffer[i] ^= NAMI[0];
 		buffer[i+1] ^= NAMI[1];
@@ -289,7 +289,7 @@ void NamiXOR(char* buffer, size_t length)
 void F412XOR(char* buffer, size_t length)
 {
 	char F412[] = { 0x30, 0x34, 0x31, 0x32 };
-	for (uint32 i = 0; i + 3 < length; i += 4)
+	for (ptrdiff_t i = 0; i + 3 < length; i += 4)
 	{
 		buffer[i] ^= F412[0];
 		buffer[i + 1] ^= F412[1];
@@ -380,14 +380,14 @@ void AudioSourceOJM::parseM30()
 			NewSample->Open(this);
 			TemporaryState.Enabled = 0;
 		}
-		delete SampleData;
+		delete[] SampleData;
 		ov_clear(&vf);
 		
 		MixerAddSample(NewSample);
 		Arr[OJMIndex] = NewSample;
 	}
 
-	delete Buffer;
+	delete[] Buffer;
 }
 
 void AudioSourceOJM::parseOMC()
@@ -456,7 +456,7 @@ void AudioSourceOJM::parseOMC()
 		NewSample->Open(this);
 		TemporaryState.Enabled = false;
 
-		delete Buffer;
+		delete[] Buffer;
 
 		Arr[SampleID] = NewSample;
 		MixerAddSample(NewSample);
@@ -498,7 +498,7 @@ void AudioSourceOJM::parseOMC()
 
 		ov_clear(&vf);
 
-		delete Buffer;
+		delete[] Buffer;
 
 		Arr[SampleID] = NewSample;
 		MixerAddSample(NewSample);

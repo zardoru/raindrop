@@ -54,7 +54,7 @@ bool AudioSourceOGG::Open(const char* Filename)
 	int32 retv = ov_fopen(Filename, &mOggFile);
 #else
 	FILE* fp = _wfopen(Utility::Widen(Filename).c_str(), L"rb");
-	int32 retv = -1;
+	int retv = -1;
 
 	if (fp)
 		retv = ov_open_callbacks((void*)fp, &mOggFile, NULL, 0, fileInterfaceOgg);
@@ -86,8 +86,9 @@ bool AudioSourceOGG::Open(const char* Filename)
 
 uint32 AudioSourceOGG::Read(short* buffer, size_t count)
 {
-	int32 size;
-	int32 read = 0, sect;
+	size_t size;
+	size_t read = 0;
+	int sect;
 
 	if (!mIsValid)
 		return 0;
@@ -102,7 +103,7 @@ uint32 AudioSourceOGG::Read(short* buffer, size_t count)
 	}
 
 	/* read from ogg vorbis file */
-	int32 res = 1;
+	size_t res = 1;
 	while (read < size)
 	{
 		res = ov_read(&mOggFile, (char*)buffer+read, size - read, 0, 2, 1, &sect);
@@ -182,7 +183,7 @@ GString GetOggTitle(GString file)
 			boost::split(splitvec, user_comment, boost::is_any_of("="));
 			if (splitvec[0] == "TITLE")
 			{
-				result = splitvec[1].c_str();
+				result = splitvec[1];
 				break;
 			}
 		}
