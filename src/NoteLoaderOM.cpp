@@ -650,7 +650,7 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 	int cnt = sscanf(Line.c_str(), "osu file format v%d", &version);
 	
 	// "osu file format v"
-	if (cnt <= 17 || version < 11) // why
+	if (cnt != 1 || version < 11) // why
 	{
 		delete Diff;
 		return;

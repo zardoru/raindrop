@@ -181,7 +181,6 @@ namespace Utility {
 		std::ifstream InStream(Utility::Widen(Filename).c_str());
 #endif
 		unsigned char tmpbuf[256];
-		unsigned char Out[64];
 
 		if (!InStream.is_open())
 			return "";

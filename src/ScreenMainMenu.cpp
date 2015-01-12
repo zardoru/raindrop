@@ -65,8 +65,6 @@ void ScreenMainMenu::Init()
 	Objects->AddLuaTarget(&PlayBtn, "PlayButton");
 	Objects->AddLuaTarget(&ExitBtn, "ExitButton");
 
-	Engine::SetupRocketLua(Objects->GetEnv()->GetState());
-
 	Objects->Initialize(GameState::GetInstance().GetSkinFile("mainmenu.lua"));
 
 	if (!TTFO)
