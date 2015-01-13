@@ -13,17 +13,18 @@ void LoadFunction(void* pScreen)
 	S->LoadThreadInitialization();
 }
 
-ScreenLoading::ScreenLoading(Screen *Parent, Screen *_Next) : Animation("ScreenLoading")
+ScreenLoading::ScreenLoading(Screen *Parent, Screen *_Next)
 {
 	Next = _Next;
 	LoadThread = NULL;
 	Running = true;
 	
-	Animation.Preload(GameState::GetInstance().GetSkinFile("screenloading.lua"), "Preload");
-	Animation.Initialize("", false);
+	Animation = new SceneManager("ScreenLoading");
+	Animation->Preload(GameState::GetInstance().GetSkinFile("screenloading.lua"), "Preload");
+	Animation->Initialize("", false);
 
-	IntroDuration = max(Animation.GetEnv()->GetGlobalD("IntroDuration"), 0.0);
-	ExitDuration = max(Animation.GetEnv()->GetGlobalD("ExitDuration"), 0.0);
+	IntroDuration = max(Animation->GetEnv()->GetGlobalD("IntroDuration"), 0.0);
+	ExitDuration = max(Animation->GetEnv()->GetGlobalD("ExitDuration"), 0.0);
 	
 	ChangeState(StateIntro);
 }
@@ -37,30 +38,36 @@ void ScreenLoading::Init()
 
 bool ScreenLoading::RunIntro(float Fraction)
 {
-	LuaManager *Lua = Animation.GetEnv();
+	LuaManager *Lua = Animation->GetEnv();
 	if (Lua->CallFunction("UpdateIntro", 1))
 	{
 		Lua->PushArgument(Fraction);
 		Lua->RunFunction();
 	}
 
-	Animation.DrawFromLayer(0);
+	Animation->DrawFromLayer(0);
 	return true;
 }
 
 bool ScreenLoading::RunExit(float Fraction)
 {
-	LuaManager *Lua = Animation.GetEnv();
+	LuaManager *Lua = Animation->GetEnv();
+
+	if (Fraction == 1)
+	{
+		delete Animation;
+		Animation = NULL;
+		ChangeState(StateRunning);
+		return true;
+	}
+
 	if (Lua->CallFunction("UpdateExit", 1))
 	{
 		Lua->PushArgument(Fraction);
 		Lua->RunFunction();
 	}
 
-	if (Fraction == 1)
-		ChangeState(StateRunning);
-
-	Animation.DrawFromLayer(0);
+	Animation->DrawFromLayer(0);
 	return true;
 }
 
@@ -69,7 +76,9 @@ bool ScreenLoading::Run(double TimeDelta)
 	if (!LoadThread)
 		return (Running = RunNested(TimeDelta));
 
-	Animation.DrawTargets(TimeDelta);
+	if (!Animation) return Running;
+
+	Animation->DrawTargets(TimeDelta);
 
 	if (LoadThread->timed_join(boost::posix_time::seconds(0)))
 	{

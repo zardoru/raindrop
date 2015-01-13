@@ -7,7 +7,7 @@
 
 class ScreenLoading : public Screen
 {
-	SceneManager Animation;
+	SceneManager* Animation;
 	boost::thread *LoadThread;
 public:
 	ScreenLoading(Screen *Parent, Screen *_Next);
