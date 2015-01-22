@@ -295,7 +295,7 @@ void InputFunc (GLFWwindow*, int32 key, int32 scancode, int32 code, int32 modk)
 
 void MouseInputFunc (GLFWwindow*, int32 key, int32 code, int32 modk)
 {
-	if (ToKeyEventType(code) != KE_None) // Ignore GLFW_REPEAT events
+ 	if (ToKeyEventType(code) != KE_None) // Ignore GLFW_REPEAT events
 		WindowFrame.Parent->HandleInput(key, ToKeyEventType(code), true);
 }
 

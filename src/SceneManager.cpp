@@ -1,4 +1,6 @@
 #include <Rocket/Core.h>
+#include <Rocket/Core/Lua/Interpreter.h>
+#include <GLFW/glfw3.h>
 
 #include "GameGlobal.h"
 #include "GameState.h"
@@ -6,10 +8,138 @@
 #include "LuaManager.h"
 #include "SceneManager.h"
 #include "ImageList.h"
+#include "Logging.h"
+#include "GameWindow.h"
 
 #include "RaindropRocketInterface.h"
 
 void CreateLuaInterface(LuaManager *AnimLua);
+
+std::map<int, Rocket::Core::Input::KeyIdentifier> key_identifier_map;
+
+void assignKeyMap()
+{
+	static bool initialized = false;
+	if (initialized) return;
+
+	// Assign individual values.
+	key_identifier_map['A'] = Rocket::Core::Input::KI_A;
+	key_identifier_map['B'] = Rocket::Core::Input::KI_B;
+	key_identifier_map['C'] = Rocket::Core::Input::KI_C;
+	key_identifier_map['D'] = Rocket::Core::Input::KI_D;
+	key_identifier_map['E'] = Rocket::Core::Input::KI_E;
+	key_identifier_map['F'] = Rocket::Core::Input::KI_F;
+	key_identifier_map['G'] = Rocket::Core::Input::KI_G;
+	key_identifier_map['H'] = Rocket::Core::Input::KI_H;
+	key_identifier_map['I'] = Rocket::Core::Input::KI_I;
+	key_identifier_map['J'] = Rocket::Core::Input::KI_J;
+	key_identifier_map['K'] = Rocket::Core::Input::KI_K;
+	key_identifier_map['L'] = Rocket::Core::Input::KI_L;
+	key_identifier_map['M'] = Rocket::Core::Input::KI_M;
+	key_identifier_map['N'] = Rocket::Core::Input::KI_N;
+	key_identifier_map['O'] = Rocket::Core::Input::KI_O;
+	key_identifier_map['P'] = Rocket::Core::Input::KI_P;
+	key_identifier_map['Q'] = Rocket::Core::Input::KI_Q;
+	key_identifier_map['R'] = Rocket::Core::Input::KI_R;
+	key_identifier_map['S'] = Rocket::Core::Input::KI_S;
+	key_identifier_map['T'] = Rocket::Core::Input::KI_T;
+	key_identifier_map['U'] = Rocket::Core::Input::KI_U;
+	key_identifier_map['V'] = Rocket::Core::Input::KI_V;
+	key_identifier_map['W'] = Rocket::Core::Input::KI_W;
+	key_identifier_map['X'] = Rocket::Core::Input::KI_X;
+	key_identifier_map['Y'] = Rocket::Core::Input::KI_Y;
+	key_identifier_map['Z'] = Rocket::Core::Input::KI_Z;
+
+	key_identifier_map['0'] = Rocket::Core::Input::KI_0;
+	key_identifier_map['1'] = Rocket::Core::Input::KI_1;
+	key_identifier_map['2'] = Rocket::Core::Input::KI_2;
+	key_identifier_map['3'] = Rocket::Core::Input::KI_3;
+	key_identifier_map['4'] = Rocket::Core::Input::KI_4;
+	key_identifier_map['5'] = Rocket::Core::Input::KI_5;
+	key_identifier_map['6'] = Rocket::Core::Input::KI_6;
+	key_identifier_map['7'] = Rocket::Core::Input::KI_7;
+	key_identifier_map['8'] = Rocket::Core::Input::KI_8;
+	key_identifier_map['9'] = Rocket::Core::Input::KI_9;
+
+	key_identifier_map[GLFW_KEY_BACKSPACE] = Rocket::Core::Input::KI_BACK;
+	key_identifier_map[GLFW_KEY_TAB] = Rocket::Core::Input::KI_TAB;
+
+	key_identifier_map[GLFW_KEY_ENTER] = Rocket::Core::Input::KI_RETURN;
+
+	key_identifier_map[GLFW_KEY_PAUSE] = Rocket::Core::Input::KI_PAUSE;
+	key_identifier_map[GLFW_KEY_CAPS_LOCK] = Rocket::Core::Input::KI_CAPITAL;
+
+	key_identifier_map[GLFW_KEY_ESCAPE] = Rocket::Core::Input::KI_ESCAPE;
+
+	key_identifier_map[GLFW_KEY_SPACE] = Rocket::Core::Input::KI_SPACE;
+	key_identifier_map[GLFW_KEY_END] = Rocket::Core::Input::KI_END;
+	key_identifier_map[GLFW_KEY_HOME] = Rocket::Core::Input::KI_HOME;
+	key_identifier_map[GLFW_KEY_LEFT] = Rocket::Core::Input::KI_LEFT;
+	key_identifier_map[GLFW_KEY_UP] = Rocket::Core::Input::KI_UP;
+	key_identifier_map[GLFW_KEY_RIGHT] = Rocket::Core::Input::KI_RIGHT;
+	key_identifier_map[GLFW_KEY_DOWN] = Rocket::Core::Input::KI_DOWN;
+	key_identifier_map[GLFW_KEY_INSERT] = Rocket::Core::Input::KI_INSERT;
+	key_identifier_map[GLFW_KEY_DELETE] = Rocket::Core::Input::KI_DELETE;
+
+	key_identifier_map[GLFW_KEY_KP_0] = Rocket::Core::Input::KI_NUMPAD0;
+	key_identifier_map[GLFW_KEY_KP_1] = Rocket::Core::Input::KI_NUMPAD1;
+	key_identifier_map[GLFW_KEY_KP_2] = Rocket::Core::Input::KI_NUMPAD2;
+	key_identifier_map[GLFW_KEY_KP_3] = Rocket::Core::Input::KI_NUMPAD3;
+	key_identifier_map[GLFW_KEY_KP_4] = Rocket::Core::Input::KI_NUMPAD4;
+	key_identifier_map[GLFW_KEY_KP_5] = Rocket::Core::Input::KI_NUMPAD5;
+	key_identifier_map[GLFW_KEY_KP_6] = Rocket::Core::Input::KI_NUMPAD6;
+	key_identifier_map[GLFW_KEY_KP_7] = Rocket::Core::Input::KI_NUMPAD7;
+	key_identifier_map[GLFW_KEY_KP_8] = Rocket::Core::Input::KI_NUMPAD8;
+	key_identifier_map[GLFW_KEY_KP_9] = Rocket::Core::Input::KI_NUMPAD9;
+	key_identifier_map[GLFW_KEY_KP_MULTIPLY] = Rocket::Core::Input::KI_MULTIPLY;
+	key_identifier_map[GLFW_KEY_KP_ADD] = Rocket::Core::Input::KI_ADD;
+	key_identifier_map[GLFW_KEY_KP_SUBTRACT] = Rocket::Core::Input::KI_SUBTRACT;
+	key_identifier_map[GLFW_KEY_KP_DECIMAL] = Rocket::Core::Input::KI_DECIMAL;
+	key_identifier_map[GLFW_KEY_KP_DIVIDE] = Rocket::Core::Input::KI_DIVIDE;
+	key_identifier_map[GLFW_KEY_F1] = Rocket::Core::Input::KI_F1;
+	key_identifier_map[GLFW_KEY_F2] = Rocket::Core::Input::KI_F2;
+	key_identifier_map[GLFW_KEY_F3] = Rocket::Core::Input::KI_F3;
+	key_identifier_map[GLFW_KEY_F4] = Rocket::Core::Input::KI_F4;
+	key_identifier_map[GLFW_KEY_F5] = Rocket::Core::Input::KI_F5;
+	key_identifier_map[GLFW_KEY_F6] = Rocket::Core::Input::KI_F6;
+	key_identifier_map[GLFW_KEY_F7] = Rocket::Core::Input::KI_F7;
+	key_identifier_map[GLFW_KEY_F8] = Rocket::Core::Input::KI_F8;
+	key_identifier_map[GLFW_KEY_F9] = Rocket::Core::Input::KI_F9;
+	key_identifier_map[GLFW_KEY_F10] = Rocket::Core::Input::KI_F10;
+	key_identifier_map[GLFW_KEY_F11] = Rocket::Core::Input::KI_F11;
+	key_identifier_map[GLFW_KEY_F12] = Rocket::Core::Input::KI_F12;
+	key_identifier_map[GLFW_KEY_F13] = Rocket::Core::Input::KI_F13;
+	key_identifier_map[GLFW_KEY_F14] = Rocket::Core::Input::KI_F14;
+	key_identifier_map[GLFW_KEY_F15] = Rocket::Core::Input::KI_F15;
+	key_identifier_map[GLFW_KEY_F16] = Rocket::Core::Input::KI_F16;
+	key_identifier_map[GLFW_KEY_F17] = Rocket::Core::Input::KI_F17;
+	key_identifier_map[GLFW_KEY_F18] = Rocket::Core::Input::KI_F18;
+	key_identifier_map[GLFW_KEY_F19] = Rocket::Core::Input::KI_F19;
+	key_identifier_map[GLFW_KEY_F20] = Rocket::Core::Input::KI_F20;
+	key_identifier_map[GLFW_KEY_F21] = Rocket::Core::Input::KI_F21;
+	key_identifier_map[GLFW_KEY_F22] = Rocket::Core::Input::KI_F22;
+	key_identifier_map[GLFW_KEY_F23] = Rocket::Core::Input::KI_F23;
+	key_identifier_map[GLFW_KEY_F24] = Rocket::Core::Input::KI_F24;
+
+	key_identifier_map[GLFW_KEY_NUM_LOCK] = Rocket::Core::Input::KI_NUMLOCK;
+	key_identifier_map[GLFW_KEY_SCROLL_LOCK] = Rocket::Core::Input::KI_SCROLL;
+
+	key_identifier_map[GLFW_KEY_LEFT_SHIFT] = Rocket::Core::Input::KI_LSHIFT;
+	key_identifier_map[GLFW_KEY_LEFT_CONTROL] = Rocket::Core::Input::KI_LCONTROL;
+	key_identifier_map[GLFW_KEY_MENU] = Rocket::Core::Input::KI_LMENU;
+
+	initialized = true;
+}
+
+class RocketContextObject : public Drawable2D {
+public:
+	Rocket::Core::Context * ctx;
+	void Render()
+	{
+		if (ctx)
+			ctx->Render();
+	}
+};
 
 bool LuaAnimation(LuaManager* Lua, GString Func, GraphObject2D* Target, float Frac)
 {
@@ -28,7 +158,7 @@ bool LuaAnimation(LuaManager* Lua, GString Func, GraphObject2D* Target, float Fr
 
 void SceneManager::StopAnimationsForTarget(GraphObject2D* Target)
 {
-	for (std::vector<Animation>::iterator i = Animations.begin();
+	for (auto i = Animations.begin();
 		i != Animations.end();
 		)
 	{
@@ -57,7 +187,7 @@ void SceneManager::AddLuaAnimation (GraphObject2D* Target, const GString &FuncNa
 	Animations.push_back(Anim);
 }
 
-SceneManager::SceneManager(const char* ScreenName)
+SceneManager::SceneManager(const char* ScreenName, bool initUI)
 {
 	Animations.reserve(10);
 	Lua = new LuaManager;
@@ -67,12 +197,48 @@ SceneManager::SceneManager(const char* ScreenName)
 	Images = new ImageList(true);
 	mFrameSkip = true;
 
-	ctx = Rocket::Core::CreateContext(ScreenName, Rocket::Core::Vector2i(ScreenWidth, ScreenHeight));
-	if (!ctx)
-		ctx = Rocket::Core::GetContext(ScreenName);
+	ctx = NULL;
+	obctx = NULL;
+	mScreenName = ScreenName;
 
-	Rocket::Core::ElementDocument *Doc = ctx->LoadDocument(ScreenName + Rocket::Core::String(".rml"));
-	if (Doc) Doc->Show();
+	assignKeyMap();
+
+	if (initUI)
+		InitializeUI();
+}
+
+void SceneManager::InitializeUI()
+{
+	RocketContextObject *Obj = new RocketContextObject();
+
+	// Set up context
+	ctx = Rocket::Core::CreateContext(mScreenName.c_str(), Rocket::Core::Vector2i(ScreenWidth, ScreenHeight));
+	if (!ctx)
+		ctx = Rocket::Core::GetContext(mScreenName.c_str());
+
+	Obj->ctx = ctx;
+	obctx = Obj;
+
+	// Now set up document
+	GString FName = mScreenName + GString(".rml");
+
+	Rocket::Core::ElementDocument *Doc = ctx->LoadDocument(FName.c_str());
+	if (Doc)
+		Doc->Show();
+	else
+		Log::Printf("ScreenManager(): %s not found.\n", FName.c_str());
+
+	ManagedObjects.push_back(obctx);
+	Objects.push_back(obctx);
+	SetUILayer(0);
+
+	ctx->LoadMouseCursor("cursor.rml");	
+}
+
+void SceneManager::RunUIScript(GString Filename)
+{
+	lua_State* L = Rocket::Core::Lua::Interpreter::GetLuaState();
+	luaL_dofile(L, GameState::GetInstance().GetSkinFile(Filename).c_str());
 }
 
 SceneManager::~SceneManager()
@@ -82,11 +248,23 @@ SceneManager::~SceneManager()
 		Lua->RunFunction();
 	}
 
-	if (ctx->GetReferenceCount() > 0)
+	// Remove all managed drawable objects.
+	for (auto i : ManagedObjects)
+		delete i;
+
+	ManagedObjects.clear();
+
+	if (ctx && ctx->GetReferenceCount() > 0)
 		ctx->RemoveReference();
 
 	delete Lua;
 	delete Images;
+}
+
+void SceneManager::SetUILayer(uint32 Layer)
+{
+	obctx->SetZ(Layer);
+	Sort();
 }
 
 void SceneManager::Preload(GString Filename, GString Arrname)
@@ -107,14 +285,29 @@ void SceneManager::Preload(GString Filename, GString Arrname)
 	}
 }
 
-bool goPredicate(const GraphObject2D *A, const GraphObject2D *B)
-{
-	return A->GetZ() < B->GetZ();
-}
-
 void SceneManager::Sort()
 {
-	std::stable_sort(Objects.begin(), Objects.end(), goPredicate);
+	std::stable_sort(Objects.begin(), Objects.end(), 
+		[](const Drawable2D *A, const Drawable2D *B)->bool  { return A->GetZ() < B->GetZ(); });
+}
+
+GraphObject2D* SceneManager::CreateObject()
+{
+	GraphObject2D* Out = new GraphObject2D;
+	ManagedObjects.push_back(Out);
+	AddTarget(Out);
+	return Out;
+}
+
+bool SceneManager::IsManagedObject(Drawable2D *Obj)
+{
+	for (auto i: ManagedObjects)
+	{
+		if (Obj == i)
+			return true;
+	}
+
+	return false;
 }
 
 void SceneManager::Initialize(GString Filename, bool RunScript)
@@ -144,15 +337,47 @@ void SceneManager::AddLuaTarget(GraphObject2D *Targ, GString Varname)
 	lua_setglobal(L, Varname.c_str());
 }
 
+void SceneManager::StopManagingObject(Drawable2D *Obj)
+{
+	for (auto i = ManagedObjects.begin(); i != ManagedObjects.end(); ++i)
+	{
+		if (Obj == *i)
+		{
+			ManagedObjects.erase(i);
+			return;
+		}
+	}
+}
+
+void SceneManager::RemoveManagedObject(Drawable2D *Obj)
+{
+	for (auto i = ManagedObjects.begin(); i != ManagedObjects.end(); ++i)
+	{
+		if (*i == Obj)
+		{
+			delete *i;
+			ManagedObjects.erase(i);
+			return;
+		}
+	}
+}
+
 void SceneManager::RemoveTarget(GraphObject2D *Targ)
 {
-	for (std::vector<GraphObject2D*>::iterator i = Objects.begin(); i != Objects.end(); i++)
+	StopManagingObject(Targ);
+
+	for (auto i = Objects.begin(); i != Objects.end(); )
 	{
 		if (*i == Targ)
+		{
 			Objects.erase(i);
+			continue;
+		}
 
 		if (i == Objects.end())
 			break;
+
+		++i;
 	}
 }
 
@@ -160,12 +385,7 @@ void SceneManager::DrawTargets(double TimeDelta)
 {
 	UpdateTargets(TimeDelta);
 
-	for (std::vector<GraphObject2D*>::iterator i = Objects.begin(); i != Objects.end(); i++)
-	{
-		(*i)->Render();
-	}
-
-	ctx->Render();
+	DrawFromLayer(0);
 }
 
 void SceneManager::UpdateTargets(double TimeDelta)
@@ -233,12 +453,18 @@ void SceneManager::UpdateTargets(double TimeDelta)
 		Lua->RunFunction();
 	}
 
-	ctx->Update();
+	if (ctx)
+	{
+		Vec2 nMousePos = GameState::GetInstance().GetWindow()->GetRelativeMPos();
+		ctx->ProcessMouseMove(nMousePos.x, nMousePos.y, 0);
+
+		ctx->Update();
+	}
 }
 
 void SceneManager::DrawUntilLayer(uint32 Layer)
 {
-	for (std::vector<GraphObject2D*>::iterator i = Objects.begin(); i != Objects.end(); i++)
+	for (auto i = Objects.begin(); i != Objects.end(); ++i)
 	{
 		if (*i == NULL){ /* throw an error */ continue; }
 		if ((*i)->GetZ() <= Layer)
@@ -248,13 +474,17 @@ void SceneManager::DrawUntilLayer(uint32 Layer)
 
 void SceneManager::DrawFromLayer(uint32 Layer)
 {
-	for (std::vector<GraphObject2D*>::iterator i = Objects.begin(); i != Objects.end(); i++)
+	for (auto i = Objects.begin(); i != Objects.end(); ++i)
 	{
 		if ((*i)->GetZ() >= Layer)
 			(*i)->Render();
 	}
 }
 
+void InitializeUI()
+{
+
+}
 
 LuaManager *SceneManager::GetEnv()
 {
@@ -271,7 +501,38 @@ bool SceneManager::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 		Lua->RunFunction();
 	}
 
+	if (isMouseInput)
+	{
+		if (code == KE_Press)
+		{
+			if (ctx)
+				ctx->ProcessMouseButtonDown(key, 0);
+		}
+		else if (code == KE_Release)
+		{
+			if (ctx)
+				ctx->ProcessMouseButtonUp(key, 0);
+		}
+	}
+	else {
+		if (code == KE_Press)
+		{
+			if (ctx)
+				ctx->ProcessKeyDown(key_identifier_map[key], 0);
+		}
+		else
+		{
+			if (ctx)
+				ctx->ProcessKeyUp(key_identifier_map[key], 0);
+		}
+	}
+
 	return true;
+}
+
+bool SceneManager::HandleTextInput(int codepoint)
+{
+	return ctx->ProcessTextInput(codepoint);
 }
 
 ImageList* SceneManager::GetImageList()

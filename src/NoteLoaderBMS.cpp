@@ -1084,6 +1084,17 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 				continue;
 			}
 
+			OnCommand(#MUSIC)
+			{
+				Out->SongFilename = CommandContents;
+				Diff->IsVirtual = false;
+			}
+
+			OnCommand(#OFFSET)
+			{
+				Diff->Offset = latof(CommandContents.c_str());
+			}
+
 			OnCommand(#STAGEFILE)
 			{
 				Diff->Data->StageFile = CommandContents;

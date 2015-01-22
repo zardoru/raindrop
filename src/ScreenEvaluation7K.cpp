@@ -29,6 +29,7 @@ void ScreenEvaluation7K::Init(ScoreKeeper7K *Result)
 	Score = Result;
 
 	Objects = new SceneManager("ScreenEvaluation7K");
+	Objects->InitializeUI();
 
 	SetupScorekeeper7KLuaInterface(Objects->GetEnv()->GetState());
 	SetScorekeeper7KInstance(Objects->GetEnv()->GetState(), Result);

@@ -4,12 +4,12 @@
 #include "VBO.h"
 #include "Image.h"
 
-GraphObject2D::GraphObject2D(bool ShouldInitTexture) : Transformation()
+GraphObject2D::GraphObject2D(bool ShouldInitTexture) : Drawable2D()
 {
 	Construct(ShouldInitTexture);
 }
 
-GraphObject2D::GraphObject2D() : Transformation()
+GraphObject2D::GraphObject2D() : Drawable2D()
 {
 	Construct(true);
 }

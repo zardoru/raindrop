@@ -10,6 +10,7 @@
 #include <GL/GLEW.h>
 #include <GLFW/glfw3.h>
 #include "GameGlobal.h"
+#include "Logging.h"
 #include "GameState.h"
 #include "VBO.h"
 #include "Rendering.h"
@@ -101,12 +102,14 @@ namespace Engine { namespace RocketInterface {
 		Mat4 tMatrix = glm::translate(Mat4(), Vec3(translation.x, translation.y, 0));
 		
 		glDisable(GL_DEPTH_TEST);
+		glDepthMask(GL_FALSE);
 		SetShaderParameters(false, false, false);
 		WindowFrame.SetUniform(U_COLOR, 1, 1, 1, 1);
 		WindowFrame.SetUniform(U_MVP, &(tMatrix[0][0])); 
 		
 		// bind texture
-		Handle->tex->Bind();
+		if (Handle->tex)
+			Handle->tex->Bind();
 
 		// bind VBOs
 		Handle->vert->Bind();
@@ -123,6 +126,7 @@ namespace Engine { namespace RocketInterface {
 		WindowFrame.DisableAttribArray(A_POSITION);
 		WindowFrame.DisableAttribArray(A_UV);
 		glEnable(GL_DEPTH_TEST);
+		glDepthMask(GL_TRUE);
 	}
 
 	// Called by Rocket when it wants to release application-compiled geometry.
@@ -141,10 +145,6 @@ namespace Engine { namespace RocketInterface {
 		const Rocket::Core::String& source)
 	{
 		ImageData Data = ImageLoader::GetDataForImage(GameState::GetInstance().GetSkinFile(source.CString()));
-		Image *Ret = new Image();
-
-		texture_handle = (Rocket::Core::TextureHandle) Ret;
-
 		texture_dimensions.x = Data.Width;
 		texture_dimensions.y = Data.Height;
 
@@ -155,12 +155,14 @@ namespace Engine { namespace RocketInterface {
 		const Rocket::Core::byte* source,
 		const Rocket::Core::Vector2i& source_dimensions)
 	{
-		Image* Ret = (Image*)texture_handle;
+		Image* Ret = new Image;
 		ImageData Data;
 		Data.Data = (unsigned char*)source;
 		Data.Width = source_dimensions.x;
 		Data.Height = source_dimensions.y;
 		Ret->SetTextureData(&Data);
+
+		texture_handle = (Rocket::Core::TextureHandle) Ret;
 		return Data.Data != NULL;
 	}
 
@@ -171,12 +173,14 @@ namespace Engine { namespace RocketInterface {
 	
 	Rocket::Core::FileHandle FileSystemInterface::Open(const Rocket::Core::String& path)
 	{
-		Rocket::Core::String npath = Rocket::Core::String((GameState::GetInstance().GetSkinPrefix() + path.CString()).c_str());
-#ifdef WIN32
-		return (Rocket::Core::FileHandle) _wfopen(Utility::Widen(npath.CString()).c_str(), L"r");
-#else
-		return (Rocket::Core::FileHandle) fopen(npath.CString(), "r");
-#endif
+		GString npath = GameState::GetInstance().GetSkinPrefix() + path.CString();
+
+		FILE* F = fopen(npath.c_str(), "r");
+
+		if (!F)
+			Log::Printf("%s NOT FOUND!\n", npath.c_str());
+
+		return (Rocket::Core::FileHandle) F;
 	}
 	
 	void FileSystemInterface::Close(Rocket::Core::FileHandle file)
@@ -214,7 +218,8 @@ namespace Engine { namespace RocketInterface {
 		Rocket::Core::Lua::Interpreter::Initialise();
 		// Rocket::Controls::Lua::RegisterTypes(Rocket::Core::Lua::Interpreter::GetLuaState());
 
-		Rocket::Core::FontDatabase::LoadFontFace("font.ttf");
+		Rocket::Core::FontDatabase::LoadFontFace("font.ttf", "default", 
+			Rocket::Core::Font::STYLE_NORMAL, Rocket::Core::Font::WEIGHT_NORMAL);
 
 		GameState::GetInstance().InitializeLua(Rocket::Core::Lua::Interpreter::GetLuaState());
 	}

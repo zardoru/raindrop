@@ -142,6 +142,8 @@ void ScreenSelectMusic::MainThreadInitialization()
 	LuaManager* LuaM = Objects->GetEnv();
 	UpBtn = new GUI::Button;
 
+	Objects->InitializeUI();
+
 	EventAnimationFunction OnUpClick (bind(LuaEvt, LuaM, "DirUpBtnClick", _1));
 	EventAnimationFunction OnUpHover(bind(LuaEvt, LuaM, "DirUpBtnHover", _1));
 	EventAnimationFunction OnUpHoverLeave(bind(LuaEvt, LuaM, "DirUpBtnHoverLeave", _1));

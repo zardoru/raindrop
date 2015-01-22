@@ -134,12 +134,11 @@ namespace LuaAnimFuncs
 	int CreateTarget(lua_State *L)
 	{
 		SceneManager * Manager = GetObjectFromState<SceneManager>(L, "GOMAN");
-		GraphObject2D *Target = new GraphObject2D;
+		GraphObject2D *Target = Manager->CreateObject();
 		GraphObject2D **RetVal = (GraphObject2D**)lua_newuserdata(L, sizeof(GraphObject2D **));
 		*RetVal = Target;
 		luaL_getmetatable(L, GraphObject2DMetatable);
 		lua_setmetatable(L, -2);
-		Manager->AddTarget(Target);
 		return 1;
 	}
 
@@ -154,7 +153,9 @@ namespace LuaAnimFuncs
 	int CleanTarget(lua_State *L)
 	{
 		GraphObject2D *Target = *GetUserObject<GraphObject2D*>(L, 1, GraphObject2DMetatable);
-		delete Target;
+		SceneManager * Manager = GetObjectFromState<SceneManager>(L, "GOMAN");
+
+		Manager->RemoveManagedObject(Target);
 		return 0;
 	}
 
@@ -318,6 +319,14 @@ namespace LuaAnimFuncs
 		return 0;
 	}
 
+	int SetUILayer(lua_State *L)
+	{
+		uint32 Layer = luaL_checkinteger(L, 1);
+		SceneManager* GoMan = GetObjectFromState<SceneManager>(L, "GOMAN");
+		GoMan->SetUILayer(Layer);
+		return 0;
+	}
+
 	static const struct luaL_Reg GraphObjectLib[] =
 	{
 		{ "SetRotation", SetRotation },
@@ -351,6 +360,7 @@ namespace LuaAnimFuncs
 		{ "ClearAnimations", LuaStopAnimationsForTarget },
 		{ "SetLighten", SetLighten },
 		{ "SetLightenFactor", SetLightenFactor },
+		{ "SetUILayer", SetUILayer },
 		{ NULL, NULL }
 	};
 }
@@ -543,6 +553,8 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 		.addFunction("AddTarget", &SceneManager::AddTarget)
 		.addFunction("Sort", &SceneManager::Sort)
 		.addFunction("StopAnimation", &SceneManager::StopAnimationsForTarget)
+		.addFunction("SetUILayer", &SceneManager::SetUILayer)
+		.addFunction("RunUIScript", &SceneManager::RunUIScript)
 		.endClass();
 
 	luabridge::push(AnimLua->GetState(), GetObjectFromState<SceneManager>(AnimLua->GetState(), "GOMAN"));

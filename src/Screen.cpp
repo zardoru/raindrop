@@ -23,6 +23,13 @@ Screen::Screen(Screen *_Parent)
 
 Screen::~Screen() {}
 
+bool Screen::HandleTextInput(int codepoint)
+{
+	if (Next)
+		return Next->HandleTextInput(codepoint);
+	else return false;
+}
+
 void Screen::Close()
 {
 	Cleanup();

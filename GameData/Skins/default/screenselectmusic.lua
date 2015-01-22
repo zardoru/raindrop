@@ -96,10 +96,32 @@ function InBackground(frac)
 	return 1
 end
 
+function OutBanner(frac)
+	return InBanner(1-frac)
+end
+
+function OutUpBtn(frac)
+	return InUpBtn(1-frac)
+end 
+
+function OutBackground(frac)
+	return InBackground(frac)
+end
+
 -- Screen Events
 function OnSelect()
 	TransformX = ScreenWidth + 250
 	ScreenFade.In()
+	
+	Obj.SetTarget(DirUpButton)
+	Obj.AddAnimation( "OutUpBtn", 0.5, 0, EaseOut )
+
+	Obj.SetTarget(Banner)
+	Obj.AddAnimation( "OutBanner", 0.5, 0, EaseOut )
+
+	Obj.SetTarget(ScreenBackground)
+	Obj.AddAnimation( "OutBackground", 0.5, 0, EaseOut )
+	
 	return 1
 end
 
@@ -176,6 +198,10 @@ function Init()
 	dd.Y = 348
 	dd.X = 120
 	Engine:AddTarget(dd)
+	
+	Wheel.ScrollSpeed = Wheel:GetItemHeight()
+	
+	Obj.SetUILayer(30)
 end
 
 function updText()
@@ -198,6 +224,8 @@ function updText()
 					" (" .. string.format("%.02f", nps) .. " nps)"
 
 			end
+		else
+			dd.Text = "dotcur mode song";
 		end
 	else
 		dd.Text = ""

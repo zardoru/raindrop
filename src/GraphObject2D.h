@@ -8,7 +8,14 @@
 class VBO;
 class Image;
 
-class GraphObject2D : public Transformation, public Drawable
+class Drawable2D : public Transformation, public Drawable
+{
+public:
+	virtual ~Drawable2D() {};
+	// Stub
+};
+
+class GraphObject2D : public Drawable2D
 {
 private: // Transformations
 	void Cleanup();

@@ -46,6 +46,7 @@ public:
 	virtual bool Run(double delta) = 0;
 	virtual bool HandleInput(int32 key, KeyEventType state, bool isMouseInput);
 	virtual bool HandleScrollInput(double xOff, double yOff);
+	virtual bool HandleTextInput(int codepoint);
 
 	// We need to set up graphics again? This gets called.
 	virtual void Invalidate();

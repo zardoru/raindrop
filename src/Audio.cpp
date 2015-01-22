@@ -212,7 +212,7 @@ public:
 					mut.lock();
 
 
-				for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
+				for(auto i = Streams.begin(); i != Streams.end(); ++i)
 				{
 					if ((*i)->IsPlaying())
 					{
@@ -322,7 +322,7 @@ public:
 		memset(tsF, 0, sizeof(tsF));
 
 		mut.lock();
-		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
+		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); ++i)
 		{
 			if ((*i)->IsPlaying())
 			{
@@ -334,7 +334,7 @@ public:
 		mut.unlock();
 
 		mut2.lock();
-		for (std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); i++)
+		for (std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); ++i)
 		{
 			if ((*i)->IsPlaying())
 			{
@@ -344,7 +344,7 @@ public:
 		mut2.unlock();
 
 		mut.lock();
-		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); i++)
+		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); ++i)
 		{
 			if ((*i)->IsPlaying())
 			{
@@ -358,7 +358,7 @@ public:
 		mut.unlock();
 
 		mut2.lock();
-		for (std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); i++)
+		for (std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); ++i)
 		{
 			if ((*i)->IsPlaying())
 			{
