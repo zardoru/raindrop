@@ -287,11 +287,6 @@ static double BeatForMeasure(BmsLoadInfo *Info, const int Measure)
 	return Beat;
 }
 
-int ts_sort( const TimingSegment &A, const TimingSegment &B )
-{
-	return A.Time < B.Time;
-}
-
 void CalculateBMP (BmsLoadInfo *Info, std::vector<AutoplayBMP> &BMPEvents, int Channel)
 {
 	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); ++i)
@@ -362,7 +357,10 @@ void CalculateBPMs(BmsLoadInfo *Info)
 	}
 
 	// Make sure ExBPM events are in front using stable_sort.
-	std::stable_sort(Info->difficulty->Timing.begin(), Info->difficulty->Timing.end(), ts_sort);
+	std::stable_sort(Info->difficulty->Timing.begin(), Info->difficulty->Timing.end(), 
+		[](const TimingSegment &A, const TimingSegment &B)	{
+		return A.Time < B.Time;
+	});
 }
 
 
@@ -495,7 +493,7 @@ void measureCalculateSide(BmsLoadInfo *Info, MeasureList::iterator &i, int Track
 
 				double Beat = ev->Fraction * Msr.MeasureLength + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
 
-				double Time = TimeAtBeat(Info->difficulty->Timing, 0, Beat) + StopTimeAtBeat(Info->difficulty->Data->StopsTiming, Beat);
+				double Time = TimeAtBeat(Info->difficulty->Timing, Info->difficulty->Offset, Beat) + StopTimeAtBeat(Info->difficulty->Data->StopsTiming, Beat);
 
 				Info->difficulty->Duration = std::max((double)Info->difficulty->Duration, Time);
 
@@ -549,7 +547,7 @@ degradetonote:
 
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
 
-				double Time = TimeAtBeat(Info->difficulty->Timing, 0, Beat) + StopTimeAtBeat(Info->difficulty->Data->StopsTiming, Beat);
+				double Time = TimeAtBeat(Info->difficulty->Timing, Info->difficulty->Offset, Beat) + StopTimeAtBeat(Info->difficulty->Data->StopsTiming, Beat);
 
 				if (Info->startTime[Track] == -1)
 				{
@@ -584,6 +582,7 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 	Measure Msr;
 
 	Msr.MeasureLength = 4 * i->second.BeatDuration;
+	// Log::Printf("Measure len %f (mult %f)\n", Msr.MeasureLength, i->second.BeatDuration);
 
 	// see both sides, p1 and p2
 	if (!Info->IsPMS) // or BME-type PMS
@@ -625,9 +624,9 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 
 			if (!Event) continue; // UNUSABLE event
 
-			double Beat = ev->Fraction * Msr.MeasureLength + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
+			double Beat = ev->Fraction * Msr.MeasureLength + BeatForMeasure(Info, i->first);
 
-			double Time = TimeAtBeat(Info->difficulty->Timing, 0, Beat) + StopTimeAtBeat(Info->difficulty->Data->StopsTiming, Beat);
+			double Time = TimeAtBeat(Info->difficulty->Timing, Info->difficulty->Offset, Beat) + StopTimeAtBeat(Info->difficulty->Data->StopsTiming, Beat);
 
 			AutoplaySound New;
 			New.Time = Time;
@@ -1088,11 +1087,18 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 			{
 				Out->SongFilename = CommandContents;
 				Diff->IsVirtual = false;
+				if (!Out->SongPreviewSource.length()) // it's unset
+					Out->SongPreviewSource = CommandContents;
 			}
 
 			OnCommand(#OFFSET)
 			{
 				Diff->Offset = latof(CommandContents.c_str());
+			}
+
+			OnCommand(#PREVIEWPOINT)
+			{
+				Out->PreviewTime = latof(CommandContents.c_str());
 			}
 
 			OnCommand(#STAGEFILE)
@@ -1166,6 +1172,11 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 				TimingInfo->judge_rank = latof(CommandContents);
 			}
 
+			OnCommand(#MAKER)
+			{
+				Diff->Author = CommandContents;
+			}
+
 			OnCommandSub(#WAV)
 			{
 				GString IndexStr = CommandSubcontents("#WAV", command);
@@ -1178,6 +1189,11 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 				GString IndexStr = CommandSubcontents("#BMP", command);
 				int Index = fromBase36(IndexStr.c_str());
 				Info->BMP[Index] = CommandContents;
+
+				if (Index == 1)
+				{
+					Out->BackgroundFilename = CommandContents;
+				}
 			}
 
 			OnCommandSub(#BPM)

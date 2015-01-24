@@ -404,7 +404,15 @@ void Difficulty::GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSp
 	ProcessBPS(SPB, 0);
 	BPStoSPB(SPB);
 
-	assert(Data != NULL);
+	if (!Data)
+		return;
+
+	if (!Timing.size())
+		return;
+
+	if (!Data->Measures.size())
+		return;
+
 	Out.reserve(Data->Measures.size());
 
 	// Add lines before offset, and during waiting time...

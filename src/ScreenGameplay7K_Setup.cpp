@@ -115,15 +115,24 @@ void ScreenGameplay7K::Cleanup()
 
 void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 {
-	float Beat = 0;
+	double Beat = 0;
 
 	if (!Measure)
+	{
+		Active = true;
 		return;
+	}
 
 	for (uint32 i = 0; i < Measure; i++)
-		Beat += CurrentDiff->Data->Measures.at(Measure).MeasureLength;
+	{
+		double Length = CurrentDiff->Data->Measures[i].MeasureLength;
+		Beat += Length;
+		// Log::Printf("Adding measure %d (%f): %f -> %f\n", i, Length, Beat - Length, Beat);
+	}
 
-	float Time = TimeAtBeat(CurrentDiff->Timing, CurrentDiff->Offset, Beat)
+	Log::Logf("Warping to measure measure %d at beat %f.\n", Measure, Beat);
+
+	double Time = TimeAtBeat(CurrentDiff->Timing, CurrentDiff->Offset, Beat)
 		+ StopTimeAtBeat(CurrentDiff->Data->StopsTiming, Beat);
 
 	// Disable all notes before the current measure.
@@ -142,7 +151,7 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 	}
 
 	// Remove non-played objects
-	for (std::vector<AutoplaySound>::iterator s = BGMEvents.begin(); s != BGMEvents.end();)
+	for (auto s = BGMEvents.begin(); s != BGMEvents.end();)
 	{
 		if (s->Time <= Time)
 		{
@@ -156,7 +165,11 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 	SongTime = SongTimeReal = Time;
 
 	if (Music)
+	{
+		Log::Printf("Setting stream to time %f.\n", Time);
+		SongOldTime = -1;
 		Music->SeekTime(Time);
+	}
 
 	Active = true;
 }
@@ -285,6 +298,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 		Music->SetPitch(Speed);
 		if (MySong->SongFilename.length() && Music->Open((MySong->SongDirectory + MySong->SongFilename).c_str()))
 		{
+			Log::Printf("Stream for %s succesfully opened.\n", MySong->SongFilename.c_str());
 			MixerAddStream(Music);
 		}
 		else
