@@ -282,6 +282,9 @@ void Application::Run()
 		{
 			SetupPreviewMode();
 
+			if (!Game)
+				return;
+
 			// Set up the message queue. We need this if we're in preview mode to be able to control raindrop from the command line.
 			IPC::SetupMessageQueue();
 		}

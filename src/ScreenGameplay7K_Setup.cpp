@@ -119,6 +119,9 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 {
 	double Beat = 0;
 
+	if (Measure == -1) // Run from within.
+		return;
+
 	if (!Measure)
 	{
 		Active = true;
@@ -129,7 +132,6 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 	{
 		double Length = CurrentDiff->Data->Measures[i].MeasureLength;
 		Beat += Length;
-		// Log::Printf("Adding measure %d (%f): %f -> %f\n", i, Length, Beat - Length, Beat);
 	}
 
 	Log::Logf("Warping to measure measure %d at beat %f.\n", Measure, Beat);

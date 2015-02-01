@@ -31,7 +31,6 @@ void ScreenEvaluation7K::Init(ScoreKeeper7K *Result)
 	Objects = new SceneManager("ScreenEvaluation7K");
 	Objects->InitializeUI();
 
-	SetupScorekeeper7KLuaInterface(Objects->GetEnv()->GetState());
 	SetScorekeeper7KInstance(Objects->GetEnv()->GetState(), Result);
 	GameState::GetInstance().InitializeLua(Objects->GetEnv()->GetState());
 
