@@ -245,7 +245,7 @@ void ParseEvents(BmsLoadInfo *Info, const int Measure, const int BmsChannel, con
 			|| BmsChannel == CHANNEL_BGALAYER2 || BmsChannel == CHANNEL_BGAPOOR)
 			Info->HasBMPEvents = true;
 
-		for (ptrdiff_t i = 0; i < CommandLength; i++)
+		for (size_t i = 0; i < CommandLength; i++)
 		{
 			const char *EventPtr = (Command.c_str() + i*2);
 			char CharEvent [3];

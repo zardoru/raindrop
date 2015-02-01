@@ -16,6 +16,7 @@ namespace VSRG
 
 class SongDatabase;
 class Image;
+class ScoreKeeper7K;
 
 struct lua_State;
 
@@ -31,6 +32,7 @@ class GameState
 	Image* StageImage;
 	Image* SongBG;
 	Game::Song *SelectedSong;
+	ScoreKeeper7K *SKeeper7K;
 public:
 
 	GameState();
@@ -54,6 +56,9 @@ public:
 	Game::Song *GetSelectedSong();
 	void SetDifficultyIndex(uint32 DifficultyIndex);
 	uint32 GetDifficultyIndex() const;
+
+	ScoreKeeper7K *GetScorekeeper7K();
+	void SetScorekeeper7K(ScoreKeeper7K *Other);
 
 	GString GetSkinFile(Directory Name);
 	GString GetFallbackSkinFile(Directory Name);

@@ -11,6 +11,8 @@
 #include "SongDC.h"
 #include "SongDatabase.h"
 
+#include "ScoreKeeper7K.h"
+
 enum OBJTYPE {
 	OB_HOLDS,
 	OB_NOTES,
@@ -73,6 +75,8 @@ dotcur::Song* toSongDC(Game::Song* Sng)
 
 void GameState::InitializeLua(lua_State *L)
 {
+	SetupScorekeeper7KLuaInterface(L);
+
 	luabridge::getGlobalNamespace(L)
 		.beginClass <Game::Song>("Song")
 		.addData("Title", &Game::Song::SongName, false)
@@ -122,6 +126,7 @@ void GameState::InitializeLua(lua_State *L)
 		.beginClass <GameState> ("GameState")
 		.addFunction("GetSelectedSong", &GameState::GetSelectedSong)
 		.addProperty("DifficultyIndex", &GameState::GetDifficultyIndex, &GameState::SetDifficultyIndex)
+		.addFunction("GetScorekeeper7K", &GameState::GetScorekeeper7K)
 		.endClass()
 		.addFunction("toSong7K", toSong7K)
 		.addFunction("toSongDC", toSongDC);

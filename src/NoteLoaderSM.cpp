@@ -113,7 +113,7 @@ bool LoadTracksSM(Song *Out, Difficulty *Diff, GString line)
 	double KeyBeat[16]; // heh
 	
 	/* For each measure of the song */
-	for (ptrdiff_t i = 0; i < MeasureText.size(); i++) /* i = current measure */
+	for (size_t i = 0; i < MeasureText.size(); i++) /* i = current measure */
 	{
 		ptrdiff_t MeasureFractions = MeasureText[i].length() / Keys;
 		Measure Msr;

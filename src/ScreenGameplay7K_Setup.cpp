@@ -107,6 +107,8 @@ void ScreenGameplay7K::Cleanup()
 	MixerRemoveSample(MissSnd);
 	MixerRemoveSample(FailSnd);
 
+	GameState::GetInstance().SetScorekeeper7K(nullptr);
+
 	delete MissSnd;
 	delete FailSnd;
 	delete Animations;
@@ -189,6 +191,7 @@ void ScreenGameplay7K::Init(VSRG::Song* S, int DifficultyIndex, const ScreenGame
 
 	Animations = new SceneManager("ScreenGameplay7K");
 	score_keeper = new ScoreKeeper7K();
+	GameState::GetInstance().SetScorekeeper7K(score_keeper);
 	UpdateScriptScoreVariables();
 }
 

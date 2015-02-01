@@ -23,9 +23,7 @@ GameState::GameState()
 {
 	CurrentSkin = "default";
 	SelectedSong = NULL;
-
-	SongBG = new Image();
-	StageImage = new Image();
+	SKeeper7K = NULL;
 }
 
 GameState& GameState::GetInstance()
@@ -61,6 +59,9 @@ GString GameState::GetSkinFile(Directory Name)
 void GameState::Initialize()
 {
 	Database = new SongDatabase("rd.db");
+
+	SongBG = new Image();
+	StageImage = new Image();
 }
 
 void GameState::SetDifficultyIndex(uint32 Index)
@@ -178,4 +179,14 @@ bool GameState::SkinSupportsChannelCount(int Count)
 	char nstr[256];
 	sprintf(nstr, "Channels%d", Count);
 	return Configuration::ListExists(nstr);
+}
+
+ScoreKeeper7K *GameState::GetScorekeeper7K()
+{
+	return SKeeper7K;
+}
+
+void GameState::SetScorekeeper7K(ScoreKeeper7K *Other)
+{
+	SKeeper7K = Other;
 }
