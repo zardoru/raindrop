@@ -353,9 +353,9 @@ void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::
 	for (int i = 0; i < 3; i++)
 	{
 		OjnLoadInfo Info;
-		VSRG::Difficulty *Diff = new VSRG::Difficulty();
-		VSRG::O2JamTimingInfo *TInfo = new VSRG::O2JamTimingInfo;
-		VSRG::DifficultyLoadInfo *LInfo = new VSRG::DifficultyLoadInfo;
+		std::shared_ptr<VSRG::Difficulty> Diff (new VSRG::Difficulty());
+		std::shared_ptr<VSRG::O2JamTimingInfo> TInfo (new VSRG::O2JamTimingInfo);
+		std::shared_ptr<VSRG::DifficultyLoadInfo> LInfo (new VSRG::DifficultyLoadInfo);
 
 		switch (i)
 		{
@@ -448,7 +448,7 @@ void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::
 		}
 
 		// Process Info... then push back difficulty.
-		ProcessOJNEvents(&Info, Diff);
+		ProcessOJNEvents(&Info, Diff.get());
 		Out->Difficulties.push_back(Diff);
 	}
 }

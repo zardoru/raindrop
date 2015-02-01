@@ -293,61 +293,78 @@ void TruetypeFont::Render(GString In, const Vec2 &Position, const Mat4 &Transfor
 	SetShaderParameters(false, false, false, false, false, true);
 	WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha);
 	SetPrimitiveQuadVBO();
-	
-	utf8::iterator<const char*> it (Text, Text, Text + In.length());
-	utf8::iterator<const char*> itend(Text + In.length(), Text, Text + In.length());
-	for (; it != itend; ++it)
-	{
-		CheckCodepoint(*it); // Force a regeneration of this if necessary
-		codepdata &cp = GetTexFromCodepoint(*it);
-		unsigned char* tx = cp.tex;
-		glm::vec3 trans = vOffs + glm::vec3(cp.xofs, cp.yofs, 0);
-		glm::mat4 dx;
 
-		if (*it == 10) // utf-32 line feed
+	try {
+		utf8::iterator<const char*> it(Text, Text, Text + In.length());
+		utf8::iterator<const char*> itend(Text + In.length(), Text, Text + In.length());
+		for (; it != itend; ++it)
 		{
-			Line++;
-			vOffs.x = Position.x;
-			vOffs.y = Position.y + scale * (Line+1);
-			continue;
-		}
+			CheckCodepoint(*it); // Force a regeneration of this if necessary
+			codepdata &cp = GetTexFromCodepoint(*it);
+			unsigned char* tx = cp.tex;
+			glm::vec3 trans = vOffs + glm::vec3(cp.xofs, cp.yofs, 0);
+			glm::mat4 dx;
 
-		dx = Transform * glm::translate(Mat4(), trans) * glm::scale(Mat4(), glm::vec3(cp.w, cp.h, 1));
-		
-		// do the actual draw?
-		if (cp.gltx == 0)
-		{
-			glGenTextures(1, &cp.gltx);
-			glBindTexture(GL_TEXTURE_2D, cp.gltx);
+			if (*it == 10) // utf-32 line feed
+			{
+				Line++;
+				vOffs.x = Position.x;
+				vOffs.y = Position.y + scale * (Line + 1);
+				continue;
+			}
 
-			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+			dx = Transform * glm::translate(Mat4(), trans) * glm::scale(Mat4(), glm::vec3(cp.w, cp.h, 1));
 
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+			// do the actual draw?
+			if (cp.gltx == 0)
+			{
+				glGenTextures(1, &cp.gltx);
+				glBindTexture(GL_TEXTURE_2D, cp.gltx);
 
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, cp.tw, cp.th, 0, GL_ALPHA, GL_UNSIGNED_BYTE, tx);
-		}else
-			glBindTexture(GL_TEXTURE_2D, cp.gltx);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-		WindowFrame.SetUniform(U_MVP,  &(dx[0][0]));
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-		DoQuadDraw();
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, cp.tw, cp.th, 0, GL_ALPHA, GL_UNSIGNED_BYTE, tx);
+			}
+			else
+				glBindTexture(GL_TEXTURE_2D, cp.gltx);
 
-		utf8::iterator<const char*> next = it;
-		next++;
-		if (next != itend)
-		{
-			float aW = stbtt_GetCodepointKernAdvance(info, *it, *next);
-			int bW;
-			stbtt_GetCodepointHMetrics(info, *it, &bW, NULL);
-			vOffs.x += aW * virtualscale + bW * virtualscale;
+			WindowFrame.SetUniform(U_MVP, &(dx[0][0]));
+
+			DoQuadDraw();
+
+			utf8::iterator<const char*> next = it;
+			next++;
+			if (next != itend)
+			{
+				float aW = stbtt_GetCodepointKernAdvance(info, *it, *next);
+				int bW;
+				stbtt_GetCodepointHMetrics(info, *it, &bW, NULL);
+				vOffs.x += aW * virtualscale + bW * virtualscale;
+			}
 		}
 	}
+#ifndef NDEBUG
+	catch (utf8::exception &ex)
+	{
+
+		Utility::DebugBreak();
+		Log::Logf("Invalid UTF-8 string %s was passed. Error type: %s\n", ex.what());
+
+	}
+#else
+	catch (...)
+	{
+		// nothing
+	}
+#endif
 
 	FinalizeDraw();
 	Image::ForceRebind();

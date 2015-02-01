@@ -51,7 +51,7 @@ void NoteLoaderFTB::LoadMetadata(GString filename, GString prefix, Song *Out)
 
 void NoteLoaderFTB::LoadObjectsFromFile(GString filename, GString prefix, Song *Out)
 {
-	Difficulty *Diff = new Difficulty();
+	std::shared_ptr<VSRG::Difficulty> Diff (new Difficulty());
 	Measure Msr;
 
 #if (!defined _WIN32) || (defined STLP)
@@ -65,7 +65,6 @@ void NoteLoaderFTB::LoadObjectsFromFile(GString filename, GString prefix, Song *
 	if (!filein.is_open())
 	{
 failed:
-		delete Diff;
 		return;
 	}
 

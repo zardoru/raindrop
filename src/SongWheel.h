@@ -36,9 +36,9 @@ class LuaManager;
 namespace Game 
 {
 
-	typedef boost::function<void (Game::Song*, uint8)> SongNotification;
-	typedef boost::function<void(uint32, GString, Game::Song*)> ItemNotification;
-	typedef boost::function<void(GraphObject2D*, Game::Song*, bool)> ItemTransformFunction;
+	typedef boost::function<void (shared_ptr<Game::Song>, uint8)> SongNotification;
+	typedef boost::function<void(uint32, GString, shared_ptr<Game::Song>)> ItemNotification;
+	typedef boost::function<void(GraphObject2D*, shared_ptr<Game::Song>, bool)> ItemTransformFunction;
 	typedef boost::function <float (float)> ListTransformFunction;
 	typedef boost::function<void()> DirectoryChangeNotifyFunction;
 
@@ -115,7 +115,7 @@ public:
 
 	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	bool HandleScrollInput(const double dx, const double dy);
-	Game::Song* GetSelectedSong();
+	shared_ptr<Game::Song> GetSelectedSong();
 	void ReloadSongs();
 
 	// return: the new difficulty index

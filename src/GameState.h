@@ -52,7 +52,7 @@ public:
 	Image* GetSkinImage(Directory Image);
 	bool SkinSupportsChannelCount(int Count);
 
-	void SetSelectedSong(Game::Song* Song);
+	void SetSelectedSong(Game::Song *Song);
 	Game::Song *GetSelectedSong();
 	void SetDifficultyIndex(uint32 DifficultyIndex);
 	uint32 GetDifficultyIndex() const;
@@ -75,7 +75,7 @@ using Game::GameState;
 void LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*> &VecOut );
 
 // This loads the whole of the song.
-VSRG::Song* LoadSong7KFromFilename(Directory Filename, Directory Prefix, VSRG::Song *Sng);
+shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory Prefix, VSRG::Song *Sng);
 
 // Loads the whole of the song.
 void LoadSongDCFromDir( Directory songPath, std::vector<dotcur::Song*> &VecOut );

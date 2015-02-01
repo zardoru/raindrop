@@ -380,7 +380,7 @@ void SongDatabase::GetSongInformation7K (int ID, VSRG::Song* Out)
 	SC(sqlite3_bind_int(st_GetDiffInfo, 1, ID));
 	while (sqlite3_step(st_GetDiffInfo) != SQLITE_DONE)
 	{
-		VSRG::Difficulty * Diff = new VSRG::Difficulty;
+		std::shared_ptr<VSRG::Difficulty> Diff (new VSRG::Difficulty);
 
 		// diffid associated data
 		Diff->ID = sqlite3_column_int(st_GetDiffInfo, 0);

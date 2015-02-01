@@ -184,8 +184,8 @@ struct BmsLoadInfo
 		Measures[Measure].Events[Channel].Stuff
 	*/
 	MeasureList Measures; 
-	Song* song;
-	Difficulty *difficulty;
+	VSRG::Song* song;
+	std::shared_ptr<VSRG::Difficulty> difficulty;
 
 	int LowerBound, UpperBound;
 	
@@ -966,9 +966,9 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 	std::ifstream filein(Utility::Widen(filename).c_str());
 #endif
 
-	Difficulty *Diff = new Difficulty();
-	BmsLoadInfo *Info = new BmsLoadInfo();
-	DifficultyLoadInfo *LInfo = new DifficultyLoadInfo();
+	std::shared_ptr<Difficulty> Diff (new Difficulty());
+	std::shared_ptr<BmsLoadInfo> Info (new BmsLoadInfo());
+	std::shared_ptr<DifficultyLoadInfo> LInfo (new DifficultyLoadInfo());
 
 	Diff->Filename = filename;
 	Diff->Data = LInfo;
@@ -984,15 +984,13 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 	if (!filein.is_open())
 	{
 		Log::Printf("NoteLoaderBMS: Couldn't open file %s!", filename.c_str());
-		delete Diff;
-		delete Info;
 		return;
 	}
 
 	srand(time(0));
 	Diff->IsVirtual = true;
 
-	VSRG::BmsTimingInfo *TimingInfo = new VSRG::BmsTimingInfo;
+	std::shared_ptr<VSRG::BmsTimingInfo> TimingInfo = std::make_shared<VSRG::BmsTimingInfo>();
 	Diff->Data->TimingInfo = TimingInfo;
 
 	/*
@@ -1038,10 +1036,14 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 #define OnCommandSub(x) if(command.substr(0, strlen(#x)) == #x)
 
 		GString CommandContents = Line.substr(Line.find_first_of(" ") + 1);
+		GString tmp;
 		if (!IsU8)
 			CommandContents = Utility::SJIStoU8(CommandContents);
 
-		if (InterpStatement(command, CommandContents, Info)) 
+		utf8::replace_invalid(CommandContents.begin(), CommandContents.end(), std::back_inserter(tmp));
+		CommandContents = tmp;
+
+		if (InterpStatement(command, CommandContents, Info.get())) 
 		{
 
 			OnCommand(#GENRE)
@@ -1227,14 +1229,14 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 				int Measure = atoi(MainCommand.substr(0,3).c_str());
 				int Channel = fromBase36(MainCommand.substr(3,2).c_str());
 
-				ParseEvents(Info, Measure, Channel, MeasureCommand);
+				ParseEvents(Info.get(), Measure, Channel, MeasureCommand);
 			}
 
 		}
 	}
 
 	/* When all's said and done, "compile" the bms. */
-	CompileBMS(Info);
+	CompileBMS(Info.get());
 
 	/* Copy only used sounds to the sound list */
 	for (auto i = Info->Sounds.begin(); i != Info->Sounds.end(); i++)
@@ -1285,6 +1287,5 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 	}
 
 	Out->Difficulties.push_back(Diff);
-	delete Info;
 }
 

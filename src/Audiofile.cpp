@@ -23,13 +23,13 @@ void monoToStereo(short* Buffer, size_t cnt, size_t max_len)
 		// to 0, 2, 4, 6... We start at the end so we don't have anything to overwrite.
 		// We also need, after that is done, to copy all samples 0, 2, 4, 6 into 1, 3, 5, 7 and so on.
 		// So interleave them...
-		for (int i = cnt - 1; i >= 0; i--)
+		for (size_t i = cnt - 1; i >= 0; i--)
 		{
 			Buffer[i * 2] = Buffer[i];
 		}
 
 		// Now copy 0 into 1, 2 into 3, and so on.
-		for (int i = 1; i < cnt * 2; i += 2)
+		for (size_t i = 1; i < cnt * 2; i += 2)
 		{
 			Buffer[i] = Buffer[i - 1];
 		}

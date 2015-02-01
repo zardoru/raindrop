@@ -196,7 +196,7 @@ void Application::Init()
 void Application::SetupPreviewMode()
 {
 	// Load the song.
-	VSRG::Song* Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), NULL);
+	shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), NULL);
 
 	if (!Sng || !Sng->Difficulties.size())
 	{
@@ -205,7 +205,7 @@ void Application::SetupPreviewMode()
 	}
 
 	// Avoid a crash...
-	GameState::GetInstance().SetSelectedSong(Sng);
+	GameState::GetInstance().SetSelectedSong(Sng.get());
 	GameState::GetInstance().SetDifficultyIndex(difIndex);
 
 	// Create loading screen and gameplay screen.
@@ -290,14 +290,14 @@ void Application::Run()
 		}
 	}else if (RunMode == MODE_CONVERT)
 	{
-		VSRG::Song* Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), NULL);
+		shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), NULL);
 
 		if (Sng && Sng->Difficulties.size()) 
 		{
 			if (ConvertMode == CONV_OM) // for now this is the default
-				ConvertToOM (Sng, OutFile.path(), Author);
+				ConvertToOM (Sng.get(), OutFile.path(), Author);
 			else
-				ConvertToSMTiming(Sng, OutFile.path());
+				ConvertToSMTiming(Sng.get(), OutFile.path());
 		}
 
 		RunLoop = false;

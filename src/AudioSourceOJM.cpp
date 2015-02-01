@@ -277,7 +277,7 @@ void omc_xor(char* buf, size_t len, int &acc_keybyte, int &acc_counter)
 void NamiXOR(char* buffer, size_t length)
 {
 	char NAMI[] = { 0x6E, 0x61, 0x6D, 0x69 };
-	for (ptrdiff_t i = 0; i + 3 < length; i += 4)
+	for (size_t i = 0; i + 3 < length; i += 4)
 	{
 		buffer[i] ^= NAMI[0];
 		buffer[i+1] ^= NAMI[1];
@@ -289,7 +289,7 @@ void NamiXOR(char* buffer, size_t length)
 void F412XOR(char* buffer, size_t length)
 {
 	char F412[] = { 0x30, 0x34, 0x31, 0x32 };
-	for (ptrdiff_t i = 0; i + 3 < length; i += 4)
+	for (size_t i = 0; i + 3 < length; i += 4)
 	{
 		buffer[i] ^= F412[0];
 		buffer[i + 1] ^= F412[1];
@@ -605,7 +605,7 @@ bool AudioSourceOJM::Open(const char* f)
 
 uint32 AudioSourceOJM::Read(short* buffer, size_t count)
 {
-	int read = 0;
+	size_t read = 0;
 	if (TemporaryState.Enabled == 0)
 		return 0;
 
@@ -613,7 +613,7 @@ uint32 AudioSourceOJM::Read(short* buffer, size_t count)
 		read = sf_read_short((SNDFILE*)TemporaryState.File, buffer, count);
 	else if (TemporaryState.Enabled == OJM_OGG)
 	{
-		size_t size = (count*sizeof(short));
+		size_t size = count * sizeof(short);
 		while (read < size)
 		{
 			int sect;

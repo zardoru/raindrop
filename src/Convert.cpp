@@ -17,7 +17,7 @@ int TrackToXPos(int totaltracks, int track)
 
 void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 {
-	for (std::vector<VSRG::Difficulty*>::iterator i = Sng->Difficulties.begin(); 
+	for (auto i = Sng->Difficulties.begin(); 
 		i != Sng->Difficulties.end();
 		i++)
 	{
@@ -140,7 +140,7 @@ void ConvertToSMTiming(VSRG::Song *Sng, Directory PathOut)
 {
 	std::stringstream ss;
 	TimingData BPS, VSpeeds;
-	VSRG::Difficulty* Diff = Sng->Difficulties[0];
+	VSRG::Difficulty* Diff = Sng->Difficulties[0].get();
 	Diff->Process (NULL, BPS, VSpeeds);
 
 	std::ofstream out (PathOut.c_path());

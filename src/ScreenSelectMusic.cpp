@@ -75,14 +75,16 @@ ScreenSelectMusic::ScreenSelectMusic()
 	Font = NULL;
 	PreviewStream = NULL;
 
-	PreviousPreview = (Game::Song*)0xFFFFFFFF;
-	ToPreview = NULL;
+	PreviousPreview = make_shared<Game::Song> ();
+	ToPreview = nullptr;
 
-	Game::SongWheel * Wheel = &Game::SongWheel::GetInstance();
+	using Game::SongWheel;
+
+	SongWheel * Wheel = &Game::SongWheel::GetInstance();
 	Wheel->Initialize(0, 0, GameState::GetInstance().GetSongDatabase());
 
-	boost::function<void(Game::Song*, uint8)> SongNotifyFunc(bind(&ScreenSelectMusic::OnSongChange, this, _1, _2));
-	boost::function<void(Game::Song*, uint8)> SongNotifySelectFunc(bind(&ScreenSelectMusic::OnSongSelect, this, _1, _2));
+	Game::SongNotification SongNotifyFunc(bind(&ScreenSelectMusic::OnSongChange, this, _1, _2));
+	Game::SongNotification SongNotifySelectFunc(bind(&ScreenSelectMusic::OnSongSelect, this, _1, _2));
 	Wheel->OnSongTentativeSelect = SongNotifyFunc;
 	Wheel->OnSongConfirm = SongNotifySelectFunc;
 
@@ -256,7 +258,7 @@ float ScreenSelectMusic::GetListHorizontalTransformation(const float Y)
 		return 0;
 }
 
-void ScreenSelectMusic::OnSongSelect(Game::Song* MySong, uint8 difindex)
+void ScreenSelectMusic::OnSongSelect(shared_ptr<Game::Song> MySong, uint8 difindex)
 {
 	// Handle a recently selected song
 	ScreenLoading *LoadNext = NULL;
@@ -272,7 +274,7 @@ void ScreenSelectMusic::OnSongSelect(Game::Song* MySong, uint8 difindex)
 	if (MySong->Mode == MODE_DOTCUR)
 	{
 		ScreenGameplay *DotcurGame = new ScreenGameplay(this);
-		DotcurGame->Init(static_cast<dotcur::Song*>(MySong), difindex);
+		DotcurGame->Init(static_cast<dotcur::Song*>(MySong.get()), difindex);
 
 		LoadNext = new ScreenLoading(this, DotcurGame);
 	}else
@@ -282,7 +284,7 @@ void ScreenSelectMusic::OnSongSelect(Game::Song* MySong, uint8 difindex)
 
 		Param.StartMeasure = -1;
 		Param.Upscroll = OptionUpscroll;
-		VSRGGame->Init(static_cast<VSRG::Song*>(MySong), difindex, Param);
+		VSRGGame->Init(dynamic_pointer_cast<VSRG::Song>(MySong), difindex, Param);
 
 		LoadNext = new ScreenLoading(this, VSRGGame);
 	}
@@ -291,7 +293,7 @@ void ScreenSelectMusic::OnSongSelect(Game::Song* MySong, uint8 difindex)
 	Next = LoadNext;
 	StopLoops();
 
-	GameState::GetInstance().SetSelectedSong(MySong);
+	GameState::GetInstance().SetSelectedSong(MySong.get());
 
 	Objects->DoEvent("OnSelect", 1);
 	TransitionTime = Objects->GetEnv()->GetFunctionResultF();
@@ -299,13 +301,13 @@ void ScreenSelectMusic::OnSongSelect(Game::Song* MySong, uint8 difindex)
 	SwitchBackGuiPending = true;
 }
 
-void ScreenSelectMusic::OnSongChange(Game::Song* MySong, uint8 difindex)
+void ScreenSelectMusic::OnSongChange(shared_ptr<Game::Song> MySong, uint8 difindex)
 {
 	ClickSnd->Play();
 
 	if (MySong)
 	{
-		GameState::GetInstance().SetSelectedSong(MySong);
+		GameState::GetInstance().SetSelectedSong(MySong.get());
 		GameState::GetInstance().SetDifficultyIndex(0);
 		Objects->DoEvent("OnSongChange");
 		
@@ -513,7 +515,7 @@ bool ScreenSelectMusic::HandleScrollInput(double xOff, double yOff)
 	return Game::SongWheel::GetInstance().HandleScrollInput(xOff, yOff);
 }
 
-void ScreenSelectMusic::TransformItem(GraphObject2D* Item, Game::Song* Song, bool IsSelected)
+void ScreenSelectMusic::TransformItem(GraphObject2D* Item, shared_ptr<Game::Song> Song, bool IsSelected)
 {
 	if (Objects->GetEnv()->CallFunction("TransformItem", 3))
 	{
@@ -529,7 +531,7 @@ void ScreenSelectMusic::OnDirectoryChange()
 	Objects->DoEvent("OnDirectoryChange");
 }
 
-void ScreenSelectMusic::OnItemClick(uint32 Index, GString Line, Game::Song* Selected)
+void ScreenSelectMusic::OnItemClick(uint32 Index, GString Line, shared_ptr<Game::Song> Selected)
 {
 	if (Objects->GetEnv()->CallFunction("OnItemClick", 3))
 	{
@@ -540,7 +542,7 @@ void ScreenSelectMusic::OnItemClick(uint32 Index, GString Line, Game::Song* Sele
 	}
 }
 
-void ScreenSelectMusic::OnItemHover(uint32 Index, GString Line, Game::Song* Selected)
+void ScreenSelectMusic::OnItemHover(uint32 Index, GString Line, shared_ptr<Game::Song> Selected)
 {
 	if (Objects->GetEnv()->CallFunction("OnItemHover", 3))
 	{
@@ -551,7 +553,7 @@ void ScreenSelectMusic::OnItemHover(uint32 Index, GString Line, Game::Song* Sele
 	}
 }
 
-void ScreenSelectMusic::OnItemHoverLeave(uint32 Index, GString Line, Game::Song* Selected)
+void ScreenSelectMusic::OnItemHoverLeave(uint32 Index, GString Line, shared_ptr<Game::Song> Selected)
 {
 	if (Objects->GetEnv()->CallFunction("OnItemHoverLeave", 3))
 	{

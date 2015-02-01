@@ -35,10 +35,10 @@ private:
 	std::vector<AutoplaySound>   BGMEvents;
 	std::vector<float>			 MeasureBarlines;
 
-	VSRG::Difficulty *CurrentDiff;
-	VSRG::Song       *MySong;
-	VSRG::Song		 *LoadedSong;
-	TimingType		 UsedTimingType;
+	VSRG::Difficulty				*CurrentDiff;
+	shared_ptr<VSRG::Song>			 MySong;
+	shared_ptr<VSRG::Song>			 LoadedSong;
+	TimingType						 UsedTimingType;
 
 	ImageList				 BMPs;
 	std::vector<AutoplayBMP> BMPEvents;
@@ -242,7 +242,7 @@ public:
 	};
 
 	ScreenGameplay7K();
-	void Init(VSRG::Song *S, int DifficultyIndex, const Parameters &Param);
+	void Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const Parameters &Param);
 	void LoadThreadInitialization();
 	void MainThreadInitialization();
 	void Cleanup();

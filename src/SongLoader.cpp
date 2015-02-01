@@ -110,7 +110,7 @@ bool ValidBMSExtension(std::wstring Ext)
 	return false;
 }
 
-VSRG::Song* LoadSong7KFromFilename(Directory Filename, Directory Prefix, VSRG::Song *Sng)
+std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory Prefix, VSRG::Song *Sng)
 {
 	bool AllocSong = false;
 	if (!Sng)
@@ -125,7 +125,7 @@ VSRG::Song* LoadSong7KFromFilename(Directory Filename, Directory Prefix, VSRG::S
 	if (Filename.path().find_first_of('.') == std::wstring::npos || !VSRGValidExtension(Ext))
 	{
 		if (AllocSong) delete Sng;
-		return NULL;
+		return nullptr;
 	}
 
 	std::wstring fn;
@@ -154,10 +154,14 @@ VSRG::Song* LoadSong7KFromFilename(Directory Filename, Directory Prefix, VSRG::S
 			Log::Logf("Load %s from disk...", Filename.c_path());
 			LoadersVSRG[i].LoadFunc (fn_f, Prefix, Sng);
 			Log::Logf(" ok\n");
+			break;
 		}
 	}
 
-	return Sng;
+	if (AllocSong)
+		return shared_ptr<VSRG::Song>(Sng);
+	else
+		return nullptr;
 }
 
 void VSRGUpdateDatabaseDifficulties(SongDatabase* DB, VSRG::Song *New)
@@ -171,11 +175,11 @@ void VSRGUpdateDatabaseDifficulties(SongDatabase* DB, VSRG::Song *New)
 	ID = DB->GetSongIDForFile(New->Difficulties.at(0)->Filename, New);
 
 	// Do the update, with the either new or old difficulty.
-	for (std::vector<VSRG::Difficulty*>::iterator k = New->Difficulties.begin();
+	for (auto k = New->Difficulties.begin();
 		k != New->Difficulties.end();
 		k++)
 	{
-		DB->AddDifficulty(ID, (*k)->Filename, *k, MODE_VSRG);
+		DB->AddDifficulty(ID, (*k)->Filename, k->get(), MODE_VSRG);
 		(*k)->Destroy();
 	}
 }
@@ -184,8 +188,6 @@ void PushVSRGSong(std::vector<VSRG::Song*> &VecOut, VSRG::Song* Sng)
 {
 	if (Sng->Difficulties.size())
 		VecOut.push_back(Sng);
-	else
-		delete Sng;
 }
 
 void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*> &VecOut )
@@ -255,7 +257,15 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 			{
 				BMSSong->SongDirectory = SongDirectory;
 
-				LoadSong7KFromFilename(*i, SongDirectory, BMSSong);
+				try {
+					LoadSong7KFromFilename(*i, SongDirectory, BMSSong);
+				} catch (std::exception &ex)
+				{
+					Log::Logf("\nSongLoader::LoadSong7KFromDir(): Exception \"%s\" occurred while loading file \"%s\"\n", 
+						ex.what(), i->c_str());
+					Utility::DebugBreak();
+				}
+				
 
 				if (bmsk.find(BMSSong->SongName) != bmsk.end()) // We found a chart with the same title already.
 				{
@@ -379,9 +389,9 @@ void SongLoader::GetSongList7K(std::vector<VSRG::Song*> &OutVec, Directory Dir)
 	}
 }
 
-VSRG::Song* SongLoader::LoadFromMeta(const VSRG::Song* Meta, VSRG::Difficulty* &CurrentDiff, Directory *FilenameOut)
+std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const VSRG::Song* Meta, VSRG::Difficulty* &CurrentDiff, Directory *FilenameOut)
 {
-	VSRG::Song* Out;
+	std::shared_ptr<VSRG::Song> Out;
 
 	GString fn = DB->GetDifficultyFilename(CurrentDiff->ID);
 	*FilenameOut = fn;
@@ -394,24 +404,21 @@ VSRG::Song* SongLoader::LoadFromMeta(const VSRG::Song* Meta, VSRG::Difficulty* &
 
 	/* Find out Difficulty IDs to the recently loaded song's difficulty! */
 	bool DifficultyFound = false;
-	for (std::vector<VSRG::Difficulty*>::iterator k = Out->Difficulties.begin();
+	for (auto k = Out->Difficulties.begin();
 		k != Out->Difficulties.end();
 		k++)
 	{
-		DB->AddDifficulty(Meta->ID, (*k)->Filename, *k, MODE_VSRG);
+		DB->AddDifficulty(Meta->ID, (*k)->Filename, k->get(), MODE_VSRG);
 		if ((*k)->ID == CurrentDiff->ID) // We've got a match; move onward.
 		{
-			CurrentDiff = *k;
+			CurrentDiff = k->get();
 			DifficultyFound = true;
 			break; // We're done here, we've found the difficulty we were trying to load
 		}
 	}
 
 	if (!DifficultyFound)
-	{
-		delete Out;
-		Out = NULL;
-	}
+		return nullptr;
 
 	return Out;
 }

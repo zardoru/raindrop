@@ -13,25 +13,9 @@ SongList::SongList (SongList* Parent)
 
 SongList::~SongList()
 {
-	for (std::vector<ListEntry>::iterator i = mChildren.begin();
-		i != mChildren.end();
-		++i)
-	{
-		if (i->Kind == ListEntry::Directory)
-		{
-			SongList* toDelete = static_cast<SongList*>(i->Data);
-			delete toDelete;
-		}else
-		{
-			Game::Song* toDelete = static_cast<Game::Song*>(i->Data);
-
-			// Virtual destructor, so we can safely delete.
-			delete toDelete;
-		}
-	}
 }
 
-void SongList::AddSong(Game::Song* Song)
+void SongList::AddSong(shared_ptr<Game::Song> Song)
 {
 	ListEntry NewEntry;
 	NewEntry.Kind = ListEntry::Song;
@@ -49,7 +33,7 @@ void SongList::AddNamedDirectory(boost::mutex &loadMutex, SongLoader *Loader, Di
 
 	NewEntry.EntryName = Name;
 	NewEntry.Kind = ListEntry::Directory;
-	NewEntry.Data = NewList;
+	NewEntry.Data = shared_ptr<void>(NewList);
 
 	std::vector<VSRG::Song*> Songs7K;
 	std::vector<dotcur::Song*> SongsDC;
@@ -99,11 +83,11 @@ void SongList::AddNamedDirectory(boost::mutex &loadMutex, SongLoader *Loader, Di
 			{
 				boost::mutex::scoped_lock lock(loadMutex);
 
-				for (std::vector<VSRG::Song*>::iterator j = Songs7K.begin();
+				for (auto j = Songs7K.begin();
 					j != Songs7K.end();
 					++j)
 				{
-					NewList->AddSong(*j);
+					NewList->AddSong( shared_ptr<Game::Song>(*j) );
 				}
 
 				Songs7K.clear();
@@ -114,11 +98,11 @@ void SongList::AddNamedDirectory(boost::mutex &loadMutex, SongLoader *Loader, Di
 			{
 				boost::mutex::scoped_lock lock(loadMutex);
 
-				for (std::vector<dotcur::Song*>::iterator j = SongsDC.begin();
+				for (auto j = SongsDC.begin();
 					j != SongsDC.end();
 					j++)
 				{
-					NewList->AddSong(*j);
+					NewList->AddSong(shared_ptr<Game::Song>(*j));
 				}
 
 				SongsDC.clear();
@@ -134,11 +118,6 @@ void SongList::AddNamedDirectory(boost::mutex &loadMutex, SongLoader *Loader, Di
 				}
 			}
 		}
-	}
-
-	if (!EntryWasPushed)
-	{
-		delete NewList;
 	}
 }
 
@@ -164,10 +143,10 @@ void SongList::AddVirtualDirectory(GString NewEntryName, Game::Song* List, int C
 	ListEntry NewEntry;
 	NewEntry.EntryName = NewEntryName;
 	NewEntry.Kind = ListEntry::Directory;
-	NewEntry.Data = NewList;
+	NewEntry.Data = shared_ptr <void> (NewList);
 
 	for (int i = 0; i < Count; i++)
-		NewList->AddSong(&List[Count]);
+		NewList->AddSong(shared_ptr<Game::Song> (&List[Count]));
 
 	mChildren.push_back(NewEntry);
 }
@@ -182,13 +161,13 @@ bool SongList::IsDirectory(unsigned int Entry)
 SongList* SongList::GetListEntry(unsigned int Entry)
 {
 	assert(IsDirectory(Entry));
-	return static_cast<SongList*> (mChildren[Entry].Data);
+	return static_cast<SongList*> (mChildren[Entry].Data.get());
 }
 
-Game::Song* SongList::GetSongEntry(unsigned int Entry)
+shared_ptr<Game::Song> SongList::GetSongEntry(unsigned int Entry)
 {
 	if (!IsDirectory(Entry))
-		return static_cast<Game::Song*> (mChildren[Entry].Data);
+		return static_pointer_cast<Game::Song> (mChildren[Entry].Data);
 	else
 		return NULL;
 }
@@ -201,7 +180,10 @@ GString SongList::GetEntryTitle(unsigned int Entry)
 	if (mChildren[Entry].Kind == ListEntry::Directory)
 		return mChildren[Entry].EntryName;
 	else
-		return ((Game::Song*)mChildren[Entry].Data)->SongName;
+	{
+		shared_ptr<Game::Song> Song = static_pointer_cast<Game::Song>(mChildren[Entry].Data);
+		return Song->SongName;
+	}
 }
 
 unsigned int SongList::GetNumEntries()

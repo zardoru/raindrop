@@ -193,7 +193,7 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 	TimingData StopsData; 
 	double Offset = 0;
 
-	Difficulty *Diff = new Difficulty();
+	shared_ptr<VSRG::Difficulty> Diff = make_shared<VSRG::Difficulty>();
 
 	// Stepmania uses beat-based locations for stops and BPM.
 	Diff->BPMType = VSRG::Difficulty::BT_Beat;
@@ -214,7 +214,7 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 	Out->SongDirectory = prefix + "/";
 	Diff->Offset = 0;
 	Diff->Duration = 0;
-	Diff->Data = new VSRG::DifficultyLoadInfo;
+	Diff->Data = make_shared<VSRG::DifficultyLoadInfo>();
 
 	GString line;
 	while (filein)
@@ -324,23 +324,21 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 		OnCommand(#NOTES)
 		{
 			Diff->Timing = BPMData;
-			Diff->Data = new VSRG::DifficultyLoadInfo;
+			Diff->Data = make_shared<VSRG::DifficultyLoadInfo>();
 			Diff->Data->StopsTiming = StopsData;
 			Diff->Offset = -Offset;
 			Diff->Duration = 0;
 			Diff->Filename = filename;
 			Diff->BPMType = VSRG::Difficulty::BT_Beat;
-			Diff->Data->TimingInfo = new VSRG::StepmaniaTimingInfo;
+			Diff->Data->TimingInfo = make_shared<VSRG::StepmaniaTimingInfo> ();
 			Diff->Data->StageFile = Banner;
 
-			if (LoadTracksSM(Out, Diff, line))
+			if (LoadTracksSM(Out, Diff.get(), line))
 			{
 				Out->Difficulties.push_back(Diff);
-				Diff = new Difficulty();
+				Diff = make_shared<VSRG::Difficulty> ();
 			}
 
 		}
 	}
-
-	delete Diff;
 }

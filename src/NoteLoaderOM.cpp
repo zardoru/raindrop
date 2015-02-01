@@ -44,10 +44,10 @@ struct OsuLoadInfo
 	int Version;
 	int last_sound_index;
 	VSRG::Song *OsuSong;
-	VSRG::OsuManiaTimingInfo *TimingInfo;
+	std::shared_ptr<VSRG::OsuManiaTimingInfo> TimingInfo;
 	std::map <GString, int> Sounds;
 	std::vector<HitsoundSectionData> HitsoundSections;
-	Difficulty *Diff;
+	std::shared_ptr<VSRG::Difficulty> Diff;
 	GString DefaultSampleset;
 
 	std::vector<NoteData> Notes[MAX_CHANNELS];
@@ -613,16 +613,16 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 	std::ifstream filein (Utility::Widen(filename).c_str());
 #endif
 
-	Difficulty *Diff = new Difficulty();
+	std::shared_ptr<VSRG::Difficulty> Diff = std::make_shared<VSRG::Difficulty>();
 	OsuLoadInfo Info;
 
-	Info.TimingInfo = new VSRG::OsuManiaTimingInfo;
+	Info.TimingInfo = std::make_shared<VSRG::OsuManiaTimingInfo>();
 	Info.OsuSong = Out;
 	Info.SliderVelocity = 1.4;
 	Info.Diff = Diff;
 	Info.last_sound_index = 1;
 
-	Diff->Data = new VSRG::DifficultyLoadInfo;
+	Diff->Data = std::make_shared<VSRG::DifficultyLoadInfo>();
 	Diff->Data->TimingInfo = Info.TimingInfo;
 
 	// osu! stores bpm information as the time in ms that a beat lasts.
@@ -630,10 +630,8 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 	Out->SongDirectory = prefix;
 
 	if (!filein.is_open())
-	{
-		delete Diff;
 		return;
-	}
+	
 
 	Diff->Filename = filename;
 	Out->SongDirectory = prefix + "/";
@@ -651,10 +649,7 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 	
 	// "osu file format v"
 	if (cnt != 1 || version < 11) // why
-	{
-		delete Diff;
 		return;
-	}
 
 	Info.Version = version;
 
@@ -708,7 +703,6 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 		{
 		case RGeneral: if (!ReadGeneral(Line, &Info))  // don't load charts that we can't work with
 					   {
-						   delete Diff; 
 						   return;
 					   } 
 					   break;
@@ -752,6 +746,5 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 
 		Diff->Level = Diff->TotalScoringObjects / Diff->Duration;
 		Out->Difficulties.push_back(Diff);
-	}else
-		delete Diff; // metadata-only difficulty
+	}
 }

@@ -116,7 +116,7 @@ namespace VSRG
 		BMPEventsDetail *BMPEvents;
 
 		// Timing Info
-		CustomTimingInfo* TimingInfo;
+		std::shared_ptr<CustomTimingInfo> TimingInfo;
 
 		// Background/foreground to show when loading.
 		GString StageFile;
@@ -130,7 +130,7 @@ namespace VSRG
 
 	struct Difficulty : public Game::Song::Difficulty
 	{
-		DifficultyLoadInfo* Data;
+		std::shared_ptr<DifficultyLoadInfo> Data;
 
 		enum EBt
 		{
@@ -174,7 +174,7 @@ namespace VSRG
 	class Song : public Game::Song
 	{
 	public:
-		std::vector<VSRG::Difficulty*> Difficulties;
+		std::vector<std::shared_ptr<VSRG::Difficulty>> Difficulties;
 
 		Song();
 		~Song();

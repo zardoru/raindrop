@@ -29,8 +29,8 @@ class ScreenSelectMusic : public Screen
 	double TransitionTime;
 	double PreviewWaitTime;
 
-	Game::Song* ToPreview;
-	Game::Song* PreviousPreview;
+	shared_ptr<Game::Song> ToPreview;
+	shared_ptr<Game::Song> PreviousPreview;
 	GraphObject2D Background;
 	BitmapFont* Font;
 
@@ -53,15 +53,15 @@ class ScreenSelectMusic : public Screen
 	float GetListHorizontalTransformation(const float Y);
 	float GetListVerticalTransformation(const float Y);
 	float GetListPendingVerticalTransformation(const float Y);
-	void OnSongChange(Game::Song* MySong, uint8 difindex);
-	void OnSongSelect(Game::Song* MySong, uint8 difindex);
+	void OnSongChange(shared_ptr<Game::Song> MySong, uint8 difindex);
+	void OnSongSelect(shared_ptr<Game::Song> MySong, uint8 difindex);
 
 	void OnDirectoryChange();
-	void OnItemClick(uint32 Index, GString Line, Game::Song* Selected);
-	void OnItemHover(uint32 Index, GString Line, Game::Song* Selected);
-	void OnItemHoverLeave(uint32 Index, GString Line, Game::Song* Selected);
+	void OnItemClick(uint32 Index, GString Line, shared_ptr<Game::Song> Selected);
+	void OnItemHover(uint32 Index, GString Line, shared_ptr<Game::Song> Selected);
+	void OnItemHoverLeave(uint32 Index, GString Line, shared_ptr<Game::Song> Selected);
 
-	void TransformItem(GraphObject2D* Item, Game::Song* Song, bool IsSelected);
+	void TransformItem(GraphObject2D* Item, shared_ptr<Game::Song> Song, bool IsSelected);
 	void SwitchUpscroll(bool NewUpscroll);
 public:
 	ScreenSelectMusic();

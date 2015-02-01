@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
+#include <memory>
 
 #if (defined _MSC_VER) && (_MSC_VER < 1800)
 #error "You require Visual Studio 2013 to compile this application."
@@ -21,6 +22,11 @@
 
 using boost::function;
 using boost::bind;
+
+using std::shared_ptr;
+using std::make_shared;
+using std::dynamic_pointer_cast;
+using std::static_pointer_cast;
 
 // Use stdint if available.
 #if !(defined HAS_STDINT) && ( !(defined _MSC_VER) || (_MSC_VER < 1800) )

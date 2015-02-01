@@ -20,12 +20,6 @@ Song::Song()
 
 Song::~Song()
 {
-	for (std::vector<VSRG::Difficulty*>::iterator i = Difficulties.begin();
-		i != Difficulties.end();
-		i++)
-	{
-		delete *i;
-	}
 }
 
 VSRG::Difficulty* Song::GetDifficulty(uint32 i)
@@ -33,7 +27,7 @@ VSRG::Difficulty* Song::GetDifficulty(uint32 i)
 	if (i >= Difficulties.size())
 		return NULL;
 	else
-		return Difficulties.at(i);
+		return Difficulties.at(i).get();
 }
 
 int tSort(const TimingSegment &i, const TimingSegment &j)
@@ -457,10 +451,10 @@ void Difficulty::Destroy()
 {
 	if (Data)
 	{
-		delete Data->TimingInfo;
+		Data->TimingInfo.reset();
 		delete Data->BMPEvents;
-		delete Data;
-		Data = NULL;
+		Data.reset();
+		Data = nullptr;
 	}
 	
 	Timing.clear(); Timing.shrink_to_fit();

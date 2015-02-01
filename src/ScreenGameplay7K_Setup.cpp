@@ -85,8 +85,6 @@ void ScreenGameplay7K::Cleanup()
 {
 	CurrentDiff->Destroy();
 
-	delete LoadedSong;
-
 	if (Music)
 	{
 		MixerRemoveStream(Music);
@@ -179,10 +177,10 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 }
 
 
-void ScreenGameplay7K::Init(VSRG::Song* S, int DifficultyIndex, const ScreenGameplay7K::Parameters &Param)
+void ScreenGameplay7K::Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const ScreenGameplay7K::Parameters &Param)
 {
 	MySong = S;
-	CurrentDiff = S->Difficulties[DifficultyIndex];
+	CurrentDiff = S->Difficulties[DifficultyIndex].get();
 
 	Upscroll = Param.Upscroll;
 	StartMeasure = Param.StartMeasure;
@@ -276,7 +274,7 @@ bool ScreenGameplay7K::LoadChartData()
 		Directory FN;
 
 		Log::Printf("Loading Chart...");
-		LoadedSong = Loader.LoadFromMeta(MySong, CurrentDiff, &FN);
+		LoadedSong = Loader.LoadFromMeta(MySong.get(), CurrentDiff, &FN);
 
 		if (LoadedSong == NULL)
 		{
@@ -556,7 +554,7 @@ void ScreenGameplay7K::SetupMechanics()
 	
 	if (Configuration::GetConfigf("AlwaysUseRaindropMechanics") == 0 && CurrentDiff->Data->TimingInfo)
 	{
-		VSRG::CustomTimingInfo * TimingInfo = CurrentDiff->Data->TimingInfo;
+		VSRG::CustomTimingInfo * TimingInfo = CurrentDiff->Data->TimingInfo.get();
 		if (TimingInfo->GetType() == VSRG::TI_BMS)
 		{
 			VSRG::BmsTimingInfo *Info = static_cast<VSRG::BmsTimingInfo*> (TimingInfo);
@@ -628,7 +626,7 @@ void ScreenGameplay7K::SetupMechanics()
 		ChangeNoteTimeToBeats();
 	}
 
-	MechanicsSet->Setup(MySong, CurrentDiff, score_keeper);
+	MechanicsSet->Setup(MySong.get(), CurrentDiff, score_keeper);
 	MechanicsSet->HitNotify = bind(&ScreenGameplay7K::HitNote, this, _1, _2, _3, _4);
 	MechanicsSet->MissNotify = bind(&ScreenGameplay7K::MissNote, this, _1, _2, _3, _4, _5);
 	MechanicsSet->IsLaneKeyDown = bind(&ScreenGameplay7K::GetGearLaneState, this, _1);
@@ -862,7 +860,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 
 	CalculateHiddenConstants();
 
-	if (!StartMeasure)
+	if (!StartMeasure || StartMeasure == -1)
 		WaitingTime = abs(std::min(-WaitingTime, CurrentDiff->Offset - 1.5));
 	else
 		WaitingTime = 0;
