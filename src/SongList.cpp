@@ -158,10 +158,10 @@ bool SongList::IsDirectory(unsigned int Entry)
 	return mChildren[Entry].Kind == ListEntry::Directory;
 }
 
-SongList* SongList::GetListEntry(unsigned int Entry)
+shared_ptr<SongList> SongList::GetListEntry(unsigned int Entry)
 {
 	assert(IsDirectory(Entry));
-	return static_cast<SongList*> (mChildren[Entry].Data.get());
+	return static_pointer_cast<SongList> (mChildren[Entry].Data);
 }
 
 shared_ptr<Game::Song> SongList::GetSongEntry(unsigned int Entry)

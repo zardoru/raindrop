@@ -33,6 +33,7 @@ public:
 	static void   LoadFromManifest(char** Manifest, int Count, GString Prefix = "");
 	static void   UpdateTextures();
 	static ImageData GetDataForImage(GString filename);
+	static ImageData GetDataForImageFromMemory(const unsigned char *const buffer, size_t len);
 
 	/* On-the-spot, main thread loading or reloading. */
 	static Image* Load(GString filename);

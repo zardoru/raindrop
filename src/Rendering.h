@@ -25,6 +25,7 @@ void SetShaderParameters(bool InvertColor,
 void SetPrimitiveQuadVBO();
 void FinalizeDraw();
 void DoQuadDraw();
+void SetBlendingMode(RBlendMode Mode);
 void SetTexturedQuadVBO(VBO *TexQuad);
 void DrawTexturedQuad(Image* ToDraw, const AABB& TextureCrop, const Transformation& QuadTransformation, const RBlendMode &Mode = MODE_ALPHA, const ColorRGB &InColor = Color::White);
 void DrawPrimitiveQuad(Transformation &QuadTransformation, const RBlendMode &Mode = MODE_ALPHA, const ColorRGB &InColor = Color::White);

@@ -6,9 +6,11 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
 
-TruetypeFont::TruetypeFont(Directory Filename, float Scale)
+#include "utf8.h"
+
+TruetypeFont::TruetypeFont(GString Filename, float Scale)
 {
-	std::ifstream ifs (Filename.c_path(), std::ios::binary);
+	std::ifstream ifs (Filename.c_str(), std::ios::binary);
 	
 	if (!ifs.is_open())
 	{
@@ -120,4 +122,27 @@ TruetypeFont::codepdata &TruetypeFont::GetTexFromCodepoint(int cp)
 	{
 		return Texes[cp];
 	}
+}
+
+float TruetypeFont::GetHorizontalLength(const char *In)
+{
+	const char* Text = In;
+	size_t len = strlen(In);
+	float Out = 0;
+
+	try {
+		utf8::iterator<const char*> it(Text, Text, Text + len);
+		utf8::iterator<const char*> itend(Text + len, Text, Text + len);
+		for (; it != itend; ++it)
+		{
+			CheckCodepoint(*it); // Force a regeneration of this if necessary
+			codepdata &cp = GetTexFromCodepoint(*it);
+			Out += cp.w + cp.xofs;
+		}
+	}
+	catch (...)
+	{
+	}
+
+	return Out;
 }

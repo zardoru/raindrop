@@ -59,7 +59,7 @@ private:
 
 	SongDatabase* DB;
 
-	SongList* ListRoot;
+	shared_ptr<SongList> ListRoot;
 	SongList* CurrentList;
 
 	float CurrentVerticalDisplacement;

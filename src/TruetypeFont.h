@@ -40,8 +40,10 @@ class TruetypeFont : public Font
 	void UpdateWindowScale();
 
 public:
-	TruetypeFont(Directory Filename, float Scale);
+	TruetypeFont(GString Filename, float Scale);
 	~TruetypeFont();
+	float GetHorizontalLength(const char *Text);
+
 	void Invalidate();
-	void Render(GString Text, const Vec2 &Position, const Mat4 &Transform = Mat4());
+	void Render(const GString &Text, const Vec2 &Position, const Mat4 &Transform = Mat4());
 };

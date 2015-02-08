@@ -16,6 +16,7 @@ enum RendererLocats
 {
 	A_POSITION,
 	A_UV,
+	A_COLOR,
 	U_MVP,
 	U_TRANM,
 	U_SIM,

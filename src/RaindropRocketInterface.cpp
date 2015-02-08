@@ -103,6 +103,8 @@ namespace Engine { namespace RocketInterface {
 		
 		glDisable(GL_DEPTH_TEST);
 		glDepthMask(GL_FALSE);
+		SetBlendingMode(MODE_ALPHA);
+
 		SetShaderParameters(false, false, false);
 		WindowFrame.SetUniform(U_COLOR, 1, 1, 1, 1);
 		WindowFrame.SetUniform(U_MVP, &(tMatrix[0][0])); 
@@ -118,13 +120,14 @@ namespace Engine { namespace RocketInterface {
 		Handle->uv->Bind();
 		glVertexAttribPointer(WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
 
+		Handle->color->Bind();
+		glVertexAttribPointer(WindowFrame.EnableAttribArray(A_COLOR), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
+
 		Handle->indices->Bind();
 		glDrawElements(GL_TRIANGLES, Handle->num_indices, GL_UNSIGNED_INT, 0);
 
-		// missing: colour VBO
+		FinalizeDraw();
 
-		WindowFrame.DisableAttribArray(A_POSITION);
-		WindowFrame.DisableAttribArray(A_UV);
 		glEnable(GL_DEPTH_TEST);
 		glDepthMask(GL_TRUE);
 	}

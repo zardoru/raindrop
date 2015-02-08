@@ -12,6 +12,7 @@
 #include "GameWindow.h"
 
 #include "RaindropRocketInterface.h"
+#include "TruetypeFont.h"
 
 void CreateLuaInterface(LuaManager *AnimLua);
 
@@ -207,6 +208,13 @@ SceneManager::SceneManager(const char* ScreenName, bool initUI)
 		InitializeUI();
 }
 
+TruetypeFont* SceneManager::CreateTTF(const char* Dir, float Size)
+{
+	TruetypeFont *Ret = new TruetypeFont(Dir, Size);
+	ManagedFonts.push_back(Ret);
+	return Ret;
+}
+
 void SceneManager::InitializeUI()
 {
 	RocketContextObject *Obj = new RocketContextObject();
@@ -252,7 +260,11 @@ SceneManager::~SceneManager()
 	for (auto i : ManagedObjects)
 		delete i;
 
+	for (auto i : ManagedFonts)
+		delete i;
+
 	ManagedObjects.clear();
+	ManagedFonts.clear();
 
 	if (ctx && ctx->GetReferenceCount() > 0)
 		ctx->RemoveReference();

@@ -520,7 +520,7 @@ void ScreenSelectMusic::TransformItem(GraphObject2D* Item, shared_ptr<Game::Song
 	if (Objects->GetEnv()->CallFunction("TransformItem", 3))
 	{
 		luabridge::push(Objects->GetEnv()->GetState(), Item);
-		luabridge::push(Objects->GetEnv()->GetState(), Song);
+		luabridge::push(Objects->GetEnv()->GetState(), Song.get());
 		luabridge::push(Objects->GetEnv()->GetState(), IsSelected);
 		Objects->GetEnv()->RunFunction();
 	}
@@ -537,7 +537,7 @@ void ScreenSelectMusic::OnItemClick(uint32 Index, GString Line, shared_ptr<Game:
 	{
 		luabridge::push(Objects->GetEnv()->GetState(), Index);
 		luabridge::push(Objects->GetEnv()->GetState(), Line);
-		luabridge::push(Objects->GetEnv()->GetState(), Selected);
+		luabridge::push(Objects->GetEnv()->GetState(), Selected.get());
 		Objects->GetEnv()->RunFunction();
 	}
 }
@@ -548,7 +548,7 @@ void ScreenSelectMusic::OnItemHover(uint32 Index, GString Line, shared_ptr<Game:
 	{
 		luabridge::push(Objects->GetEnv()->GetState(), Index);
 		luabridge::push(Objects->GetEnv()->GetState(), Line);
-		luabridge::push(Objects->GetEnv()->GetState(), Selected);
+		luabridge::push(Objects->GetEnv()->GetState(), Selected.get());
 		Objects->GetEnv()->RunFunction();
 	}
 }
@@ -559,7 +559,7 @@ void ScreenSelectMusic::OnItemHoverLeave(uint32 Index, GString Line, shared_ptr<
 	{
 		luabridge::push(Objects->GetEnv()->GetState(), Index);
 		luabridge::push(Objects->GetEnv()->GetState(), Line);
-		luabridge::push(Objects->GetEnv()->GetState(), Selected);
+		luabridge::push(Objects->GetEnv()->GetState(), Selected.get());
 		Objects->GetEnv()->RunFunction();
 	}
 }

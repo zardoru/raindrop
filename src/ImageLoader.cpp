@@ -75,11 +75,44 @@ void Image::SetTextureData(ImageData *Data, bool Reassign)
 
 		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		GLint param;
+		switch (Data->WrapMode)
+		{
+		case ImageData::WM_CLAMP_TO_EDGE:
+			param = GL_CLAMP_TO_EDGE;
+			break;
+		case ImageData::WM_REPEAT:
+			param = GL_REPEAT;
+			break;
+		default:
+			param = GL_CLAMP_TO_EDGE;
+		}
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, param);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, param);
+
+		GLint minparam;
+		switch (Data->ScalingMode)
+		{
+		case ImageData::SM_LINEAR:
+			minparam = GL_LINEAR;
+			param = GL_LINEAR;
+			break;
+		case ImageData::SM_MIPMAP:
+			minparam = GL_LINEAR_MIPMAP_LINEAR;
+			param = GL_LINEAR;
+			break;
+		case ImageData::SM_NEAREST:
+			minparam = GL_NEAREST;
+			param = GL_NEAREST;
+			break;
+		default:
+			minparam = GL_LINEAR_MIPMAP_LINEAR;
+			param = GL_LINEAR;
+		}
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minparam);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, param);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Data->Width, Data->Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Data->Data);
 	}
 	else // We did, so let's update instead.
@@ -91,12 +124,16 @@ void Image::SetTextureData(ImageData *Data, bool Reassign)
 	h = Data->Height;
 }
 
-void Image::Assign(Directory Filename, bool Regenerate)
+void Image::Assign(Directory Filename, ImageData::EScalingMode ScaleMode ,
+	ImageData::EWrapMode WrapMode, 
+	bool Regenerate)
 {
 	ImageData Ret;
 	CreateTexture();
 
 	Ret = ImageLoader::GetDataForImage(Filename);
+	Ret.ScalingMode = ScaleMode;
+	Ret.WrapMode = WrapMode;
 	SetTextureData(&Ret, Regenerate);
 	fname = Filename;
 	free(Ret.Data);
@@ -166,6 +203,18 @@ ImageData ImageLoader::GetDataForImage(GString filename)
 	{
 		Log::Printf("Could not load image \"%s\". (%s)\n", filename.c_str(), SOIL_last_result());
 	}
+
+	return out;
+}
+
+ImageData ImageLoader::GetDataForImageFromMemory(const unsigned char* const buffer, size_t len)
+{
+	ImageData out;
+	int channels;
+	out.Data = SOIL_load_image_from_memory(buffer, len, &out.Width, &out.Height, &channels, SOIL_LOAD_RGBA);
+
+	if (!out.Data)
+		Log::Printf("Could not load image from memory: %s\n", SOIL_last_result());
 
 	return out;
 }

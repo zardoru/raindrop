@@ -83,11 +83,11 @@ class LoadThread
 {
 	boost::mutex* mLoadMutex;
 	SongDatabase* DB;
-	SongList* ListRoot;
+	shared_ptr<SongList> ListRoot;
 	bool VSRGActive;
 	bool DCActive;
 public:
-	LoadThread(boost::mutex* m, SongDatabase* d, SongList* r, bool va, bool da)
+	LoadThread(boost::mutex* m, SongDatabase* d, shared_ptr<SongList> r, bool va, bool da)
 		: mLoadMutex(m),
 		DB(d),
 		ListRoot(r),
@@ -132,10 +132,10 @@ void SongWheel::ReloadSongs()
 {
 	Join();
 
-	delete ListRoot;
+	ListRoot.reset();
 
-	ListRoot = new SongList();
-	CurrentList = ListRoot;
+	ListRoot = make_shared<SongList>();
+	CurrentList = ListRoot.get();
 
 	if (!mLoadMutex)
 		mLoadMutex = new boost::mutex;
@@ -249,8 +249,16 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 
 					if (CurrentList->IsDirectory(Idx))
 					{
-						CurrentList = CurrentList->GetListEntry(Idx);
+						CurrentList = CurrentList->GetListEntry(Idx).get();
+
 						if (OnDirectoryChange) OnDirectoryChange();
+
+						if (GetSelectedSong()) {
+							GameState::GetInstance().SetSelectedSong(GetSelectedSong().get());
+							GameState::GetInstance().SetDifficultyIndex(0);
+							DifficultyIndex = 0;
+							OnSongTentativeSelect(GetSelectedSong(), 0);
+						}
 					}
 				}
 				return true;

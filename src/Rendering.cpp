@@ -23,8 +23,11 @@
 #include "BitmapFont.h"
 #include "utf8.h"
 
+#include "Logging.h"
+
 VBO* QuadBuffer = NULL;
 VBO* TextureBuffer = NULL;
+VBO* ColorBuffer = NULL;
 
 const ColorRGB White = { 1, 1, 1, 1 };
 const ColorRGB Black = { 0, 0, 0, 1 };
@@ -33,23 +36,25 @@ const ColorRGB Green = { 0, 1, 0, 1 };
 const ColorRGB Blue = { 0, 0, 1, 1 };
 
 float QuadPositions[8] =
-	{
-		// tr
-		1,
-		0,
+{
+	// tr
+	1, 0,
+	// br
+	1, 1,
+	// bl
+	0, 1,
+	// tl
+	0, 0,
+};
 
-		// br
-		1,
-		1,
-
-		// bl
-		0,
-		1,
-
-		// tl
-		0,
-		0,
-	};
+float QuadColours[16] = 
+{
+	// R G B A
+	1, 1, 1, 1,
+	1, 1, 1, 1,
+	1, 1, 1, 1,
+	1, 1, 1, 1
+};
 
 
 void SetBlendingMode(RBlendMode Mode)
@@ -71,6 +76,8 @@ void SetPrimitiveQuadVBO()
 	QuadBuffer->Bind();
 	glVertexAttribPointer(WindowFrame.EnableAttribArray(A_POSITION), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
 	glVertexAttribPointer(WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+	ColorBuffer->Bind();
+	glVertexAttribPointer(WindowFrame.EnableAttribArray(A_COLOR), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
 }
 
 void SetTexturedQuadVBO(VBO *TexQuad)
@@ -79,12 +86,15 @@ void SetTexturedQuadVBO(VBO *TexQuad)
 	glVertexAttribPointer(WindowFrame.EnableAttribArray(A_POSITION), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
 	TexQuad->Bind();
 	glVertexAttribPointer(WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+	ColorBuffer->Bind();
+	glVertexAttribPointer(WindowFrame.EnableAttribArray(A_COLOR), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
 }
 
 void FinalizeDraw()
 {
 	WindowFrame.DisableAttribArray(A_POSITION);
 	WindowFrame.DisableAttribArray(A_UV);
+	WindowFrame.DisableAttribArray(A_COLOR);
 }
 
 void SetShaderParameters(bool InvertColor,
@@ -177,6 +187,10 @@ void InitializeRender()
 		TextureBuffer = new VBO(VBO::Static, sizeof(QuadPositions) / sizeof(float));
 		TextureBuffer->Validate();
 		TextureBuffer->AssignData(QuadPositions);
+
+		ColorBuffer = new VBO(VBO::Static, sizeof(QuadColours) / sizeof(float));
+		ColorBuffer->Validate();
+		ColorBuffer->AssignData(QuadColours);
 		Initialized = true;
 	}
 }
@@ -277,7 +291,7 @@ void TruetypeFont::ReleaseCodepoint(int cp)
 	}
 }
 
-void TruetypeFont::Render(GString In, const Vec2 &Position, const Mat4 &Transform)
+void TruetypeFont::Render(const GString &In, const Vec2 &Position, const Mat4 &Transform)
 {
 	const char* Text = In.c_str(); 
 	int Line = 0;
@@ -328,8 +342,8 @@ void TruetypeFont::Render(GString In, const Vec2 &Position, const Mat4 &Transfor
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 				glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, cp.tw, cp.th, 0, GL_ALPHA, GL_UNSIGNED_BYTE, tx);
 			}
@@ -432,9 +446,9 @@ void Line::Render()
 	glEnable(GL_DEPTH_TEST);
 }
 
-void BitmapFont::Render(GString St, const Vec2 &Position, const Mat4 &Transform)
+void BitmapFont::Render(const GString &In, const Vec2 &Position, const Mat4 &Transform)
 {
-	const char* Text = St.c_str();
+	const char* Text = In.c_str();
 	int32 Character = 0, Line = 0;
 	/* OpenGL Code Ahead */
 
@@ -459,6 +473,9 @@ void BitmapFont::Render(GString St, const Vec2 &Position, const Mat4 &Transform)
 	// Assign position attrib. pointer
 	QuadBuffer->Bind();
 	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_POSITION), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0 );
+
+	ColorBuffer->Bind();
+	glVertexAttribPointer(WindowFrame.EnableAttribArray(A_COLOR), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
 
 	for (;*Text != '\0'; Text++)
 	{
@@ -491,6 +508,7 @@ void BitmapFont::Render(GString St, const Vec2 &Position, const Mat4 &Transform)
 	}
 
 	WindowFrame.DisableAttribArray(A_POSITION);
+	WindowFrame.DisableAttribArray(A_COLOR);
 }
 
 uint32 VBO::LastBound = 0;

@@ -81,6 +81,11 @@ function TransformItem(Item, Song, IsSelected)
 	end
 end
 
+function OnSongChange(Song, Diff)
+	print "Song changed"
+	updText(1)
+end
+
 function InBanner(frac)
 	Obj.SetPosition( 0, -192 * (1-frac) )
 	return 1
@@ -193,6 +198,8 @@ function Init()
 
 	font = Fonts.TruetypeFont(Obj.GetSkinFile("font.ttf"), 24)
 	
+	if font == nil then print "nil font" end
+	
 	dd = StringObject2D()
 	dd.Font = font
 	dd.Y = 348
@@ -204,12 +211,15 @@ function Init()
 	Obj.SetUILayer(30)
 end
 
-function updText()
+function updText(t)
 	local sng = Global:GetSelectedSong()
+	if t then print "updating text"; print (sng) end
 	if sng then
 		local s7k = toSong7K(sng)
+		if t then print (s7k) end
 		if s7k then
 			local diff = s7k:GetDifficulty(Global.DifficultyIndex)
+			if t then print (diff) end
 			if diff then
 				local author = diff.Author
 				local nps = diff.Objects / diff.Duration
@@ -253,6 +263,5 @@ function Update(Delta)
 			Wheel:SetSelectedItem(idx)
 		end
 	end
-	
 	updText()
 end

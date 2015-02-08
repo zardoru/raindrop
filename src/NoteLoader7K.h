@@ -24,6 +24,7 @@ namespace NoteLoaderOM
 	void LoadObjectsFromFile(GString filename, GString prefix, VSRG::Song *Out);
 }
 
+const char *LoadOJNCover(GString filename, size_t &read);
 namespace NoteLoaderOJN
 {
 	void LoadObjectsFromFile(GString filename, GString prefix, VSRG::Song *Out);

@@ -11,10 +11,14 @@ acc2 = StringObject2D();
 
 function DrawTextObjects()
 
-	fnt1 = Fonts.TruetypeFont(Obj.GetSkinFile("font.ttf"), 20);
-	fnt2 = Fonts.TruetypeFont(Obj.GetSkinFile("font.ttf"), 40);
+	fnt1 = Fonts.LoadTruetypeFont(Obj.GetSkinFile("font.ttf"), 20);
+	fnt2 = Fonts.LoadTruetypeFont(Obj.GetSkinFile("font.ttf"), 40);
 	fntB = Fonts.BitmapFont()
 	Fonts.LoadBitmapFont(fntB, "font.tga", 8, 16, 6, 15, 0);
+	
+	if fnt == nil then
+		print("nil font")
+	end
 
 	pacemaker1.Text = "";
 	pacemaker1.Font = fnt1;

@@ -17,11 +17,11 @@ struct ListEntry
 
 class SongList
 {
-	SongList *mParent;
+	SongList* mParent;
 	std::vector<ListEntry> mChildren;
 
 public:
-	SongList (SongList* Parent = NULL);
+	SongList (SongList *Parent = NULL);
 	~SongList();
 
 	void AddNamedDirectory(boost::mutex &loadMutex, SongLoader *Loader, Directory Dir, GString Name, bool VSRGActive, bool DotcurActive);
@@ -31,7 +31,7 @@ public:
 
 	// if false, it's a song
 	bool IsDirectory(unsigned int Entry);
-	SongList* GetListEntry(unsigned int Entry);
+	shared_ptr<SongList> GetListEntry(unsigned int Entry);
 	shared_ptr<Game::Song> GetSongEntry(unsigned int Entry);
 
 	GString GetEntryTitle(unsigned int Entry);

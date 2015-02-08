@@ -105,11 +105,6 @@ static double BeatForMeasure(OjnLoadInfo *Info, int Measure)
 	return Out;
 }
 
-bool OrderOJNEventsPredicate (const OjnInternalEvent A, const OjnInternalEvent B)
-{
-	return A.Fraction < B.Fraction;
-}
-
 // Based off the O2JAM method at 
 // https://github.com/open2jamorg/open2jam/blob/master/parsers/src/org/open2jam/parsers/EventList.java
 void FixOJNEvents(OjnLoadInfo *Info)
@@ -128,7 +123,9 @@ void FixOJNEvents(OjnLoadInfo *Info)
 		float MeasureBaseBeat = BeatForMeasure(Info, CurrentMeasure);
 
 		// Sort events. This is very important, since we assume events are sorted!
-		std::sort(Measure->Events.begin(), Measure->Events.end(), OrderOJNEventsPredicate);
+		std::sort(Measure->Events.begin(), Measure->Events.end(), 
+			[&](const OjnInternalEvent A, const OjnInternalEvent B) -> bool 
+			{ return A.Fraction < B.Fraction; });
 
 		for (evtIter Evt = Measure->Events.begin();
 			Evt != Measure->Events.end();
@@ -161,11 +158,6 @@ void FixOJNEvents(OjnLoadInfo *Info)
 
 		CurrentMeasure++;
 	}
-}
-
-bool sortTiming(const TimingSegment& A, const TimingSegment& B)
-{
-	return A.Time < B.Time;
 }
 
 void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
@@ -229,7 +221,9 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 
 		// Since events and measures are ordered already, there's no need to sort
 		// timing data unless we insert new information.
-		std::sort(Out->Timing.begin(), Out->Timing.end(), sortTiming);
+		std::sort(Out->Timing.begin(), Out->Timing.end(), 
+			[&] (const TimingSegment& A, const TimingSegment& B) -> bool 
+			{ return A.Time < B.Time; });
 	}
 
 
@@ -304,6 +298,55 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 	}
 }
 
+
+
+bool IsValidOJN(std::ifstream &filein, GString filename, OjnHeader *Head)
+{
+	if (!filein)
+	{
+		Log::Printf("NoteLoaderOJN: %s could not be opened\n", filename.c_str());
+		return false;
+	}
+
+	filein.read((char*)Head, sizeof(OjnHeader));
+
+	if (!filein)
+	{
+		if (filein.eofbit)
+			Log::Printf("NoteLoaderOJN: EOF reached before header could be read\n");
+		return false;
+	}
+
+	if (strcmp(Head->signature, "ojn"))
+	{
+		Log::Printf("NoteLoaderOJN: %s is not an ojn file.\n");
+		return false;
+	}
+
+	return true;
+}
+
+const char *LoadOJNCover(GString filename, size_t &read)
+{
+#if (!defined _WIN32)
+	std::ifstream filein(filename.c_str());
+#else
+	std::ifstream filein(Utility::Widen(filename).c_str(), std::ios::binary | std::ios::in);
+#endif
+	OjnHeader Head;
+	char* out;
+
+	if (!IsValidOJN(filein, filename, &Head))
+		return false;
+
+	out = new char[Head.cover_size];
+
+	filein.seekg(Head.cover_offset);
+	read = filein.readsome(out, Head.cover_size);
+
+	return out;
+}
+
 void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::Song *Out)
 {
 #if (!defined _WIN32)
@@ -311,28 +354,10 @@ void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::
 #else
 	std::ifstream filein(Utility::Widen(filename).c_str(), std::ios::binary | std::ios::in);
 #endif
-
-	if (!filein)
-	{
-		Log::Printf("NoteLoaderOJN: %s could not be opened\n", filename.c_str());
-		return;
-	}
-
 	OjnHeader Head;
-	filein.read((char*)&Head, sizeof(OjnHeader));
 
-	if (!filein)
-	{
-		if (filein.eofbit)
-			Log::Printf("NoteLoaderOJN: EOF reached before header could be read\n");
+	if (!IsValidOJN(filein, filename, &Head))
 		return;
-	}
-
-	if (strcmp(Head.signature, "ojn"))
-	{
-		Log::Printf("NoteLoaderOJN: %s is not an ojn file.\n");
-		return;
-	}
 
 	GString vArtist;
 	GString vName;

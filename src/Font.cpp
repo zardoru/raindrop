@@ -1,9 +1,11 @@
 #include "Global.h"
 #include "Font.h"
+#include "Logging.h"
 
 Font::Font() :
 	Red(1), Green(1), Blue(1), Alpha(1)
 {
+	Log::Printf("Warning: Base font created.\n");
 }
 
 void Font::SetColor(float _Red, float _Green, float _Blue)
@@ -23,7 +25,12 @@ void Font::Invalidate()
 	/* stub */
 }
 
-void Font::Render(GString Text, const Vec2 &Position, const Mat4& Transform)
+void Font::Render(const GString &Text, const Vec2 &Position, const Mat4& Transform)
 {
 	/* stub */
+}
+
+float Font::GetHorizontalLength(const char* Text)
+{
+	return 0; // stub
 }

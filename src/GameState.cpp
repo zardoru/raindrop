@@ -12,6 +12,8 @@
 #include "ImageLoader.h"
 #include "Song7K.h"
 
+#include "NoteLoader7K.h"
+
 #define DirectoryPrefix GString("GameData/")
 #define SkinsPrefix GString("Skins/")
 #define SongsPrefix GString("Songs")
@@ -138,9 +140,19 @@ Image* GameState::GetSkinImage(Directory Path)
 						File = Song->Difficulties.at(GetDifficultyIndex())->Data->StageFile;
 
 					toLoad = SelectedSong->SongDirectory / File.c_str();
+
+					// ojn files use their cover inside the very ojn
+					if (Directory(File).GetExtension() == "ojn")
+					{
+						size_t read;
+						const unsigned char* buf = (const unsigned char*)LoadOJNCover(toLoad, read);
+						ImageData data = ImageLoader::GetDataForImageFromMemory(buf, read);
+						StageImage->SetTextureData(&data, true);
+					}
+
 					if (File.length() && Utility::FileExists(toLoad.path()))
 					{
-						StageImage->Assign(toLoad, true);
+						StageImage->Assign(toLoad, ImageData::SM_DEFAULT, ImageData::WM_DEFAULT, true);
 						return StageImage;
 					}
 					else return NULL;
@@ -160,7 +172,7 @@ Image* GameState::GetSkinImage(Directory Path)
 
 			if (SelectedSong->BackgroundFilename.length() && Utility::FileExists(toLoad.path()))
 			{
-				SongBG->Assign(toLoad, true);
+				SongBG->Assign(toLoad, ImageData::SM_DEFAULT, ImageData::WM_DEFAULT, true);
 				return SongBG;
 			}
 			else return NULL;

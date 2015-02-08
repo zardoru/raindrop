@@ -12,7 +12,6 @@
 SoundSample *HitSnd = NULL;
 SoundSample *HoldReleaseSnd = NULL;
 bool GameObjectTexInitialized = false;
-VBO *GameObjectUVvbo = NULL;
 
 GameObject::GameObject() : GraphObject2D(false)
 {
@@ -47,21 +46,13 @@ GameObject::GameObject() : GraphObject2D(false)
 		MixerAddSample(HoldReleaseSnd);
 	}
 
-	if (GameObjectTexInitialized)
-		UvBuffer = GameObjectUVvbo;
+	UvBuffer = TextureBuffer;
 
 	ColorInvert = false;
 }
 
 void GameObject::GlobalInit()
 {
-	if (!GameObjectTexInitialized)
-	{
-		GameObject O;
-		O.UpdateTexture();
-		GameObjectUVvbo = O.UvBuffer;
-		GameObjectTexInitialized = true;
-	}
 }
 
 void GameObject::Animate(float delta, float songTime)
@@ -259,12 +250,11 @@ void GameObject::Assign(double Duration, uint32 _Measure, double _MeasureFractio
 	Fraction = _MeasureFraction;
 }
 
-/* Assume GraphObject2D was already invalidated*/ 
+/* Assume GraphObject2D was already invalidated */ 
 void GameObject::Invalidate()
 {
 	UvBuffer->Invalidate();
 	UpdateTexture();
-	GameObjectUVvbo = UvBuffer;
 }
 
 double GameObject::GetFraction() const

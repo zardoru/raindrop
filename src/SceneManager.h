@@ -8,6 +8,7 @@ class GraphObject2D;
 class LuaManager;
 class ImageList;
 class RocketContextObject;
+class TruetypeFont;
 
 namespace Rocket {
 	namespace Core {
@@ -40,6 +41,7 @@ class SceneManager
 	ImageList *Images;
 	std::vector<Drawable2D*> Objects;
 	std::vector<Drawable2D*> ManagedObjects;
+	std::vector<TruetypeFont*> ManagedFonts;
 	std::vector <Animation> Animations;
 	bool mFrameSkip;
 	GString mScreenName;
@@ -69,6 +71,8 @@ public:
 	void AddLuaTargetArray(GraphObject2D *Targ, GString Varname, GString Arrname);
 	void RemoveTarget(GraphObject2D *Targ);
 	void DrawTargets(double TimeDelta);
+
+	TruetypeFont* CreateTTF(const char* Dir, float Size);
 
 	void Sort();
 

@@ -2,20 +2,29 @@
 #define Image_H
 
 struct ImageData {
-	enum {
+	enum EWrapMode {
 		WM_CLAMP_TO_EDGE,
-		WM_REPEAT
+		WM_REPEAT,
+		WM_DEFAULT = WM_CLAMP_TO_EDGE
 	} WrapMode;
 
-	enum {
+	enum EScalingMode {
 		SM_LINEAR,
 		SM_NEAREST,
-		SM_MIPMAP
+		SM_MIPMAP,
+		SM_DEFAULT = SM_MIPMAP
 	} ScalingMode;
 
 	GString Filename;
 	int Width, Height;
 	unsigned char* Data;
+
+	ImageData() {
+		WrapMode = WM_DEFAULT;
+		ScalingMode = SM_DEFAULT;
+		Width = 0; Height = 0; 
+		Data = nullptr;
+	}
 };
 
 class Image
@@ -32,7 +41,10 @@ public:
 	~Image();
 	
 	void Bind();
-	void Assign(Directory Filename, bool Regenerate = false);
+	void Assign(Directory Filename, 
+		ImageData::EScalingMode ScaleMode = ImageData::SM_DEFAULT, 
+		ImageData::EWrapMode WrapMode = ImageData::WM_DEFAULT,
+		bool Regenerate = false);
 	void SetTextureData(ImageData *Data, bool Reassign = false);
 
 	// Utilitarian
