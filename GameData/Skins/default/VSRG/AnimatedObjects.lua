@@ -1,6 +1,7 @@
 
 ProgressTick = { Image = "VSRG/progress_tick.png" }
 Pulse = { Image = "VSRG/pulse_ver.png", Height = 200 }
+Jambar = { ImageBG = "VSRG/jfill_bg.jpg", ImageFG = "VSRG/jfill_fg.jpg", Width = 512 }
 MissHighlight = {}
 
 function ProgressTick.Init()
@@ -111,5 +112,61 @@ function MissHighlight.OnMiss(Lane)
 	if CurrentSPB ~= math.huge then
 		MissHighlight.Time[Lane] = CurrentSPB / 2
 	end
+end
 
+function Jambar.Init()
+	if ScoreKeeper:usesO2() == false then
+		return
+	end
+
+	Jambar.BarBG = Object2D()
+	Jambar.BarFG = Object2D()
+	
+	Jambar.BarBG.Image = Jambar.ImageBG;
+	Jambar.BarFG.Image = Jambar.ImageFG;
+	
+	Jambar.BarBG.Z = 20
+	Jambar.BarFG.Z = 21
+	
+	Jambar.BarBG.Centered = 1
+	Jambar.BarFG.Centered = 1
+	Jambar.BarBG.X = ScreenWidth / 2
+	Jambar.BarFG.X = ScreenWidth / 2
+	
+	Jambar.BarBG.Y = ScreenHeight - Jambar.BarBG.Height
+	Jambar.BarFG.Y = ScreenHeight - Jambar.BarFG.Height
+		
+	Jambar.OldRem = 0
+		
+	Engine:AddTarget(Jambar.BarBG)
+	Engine:AddTarget(Jambar.BarFG)
+end
+
+function Jambar.Run(Delta)
+	if ScoreKeeper:usesO2() == false then
+		return
+	end
+	
+	-- Percentage from 0 to 1 of cool combo
+	local targetRem = 1 - (15 - ScoreKeeper:getCoolCombo() % 15) / 15
+	local deltaRem = (targetRem - Jambar.OldRem) * Delta * 50
+	
+	if deltaRem < 0 then 
+		deltaRem = (targetRem - Jambar.OldRem) -- Jump to it.
+	end
+	
+	Jambar.BarFG.Width = Jambar.OldRem * Jambar.Width + deltaRem * Jambar.Width
+	Jambar.BarFG.Lighten = true
+	Jambar.BarFG.LightenFactor = (1 - (Beat - math.floor(Beat))) * 0.5
+	
+	local Center = Jambar.Width / 2
+	local Offset = Jambar.OldRem * Jambar.Width / 2 + deltaRem * Jambar.Width / 2
+	Jambar.BarFG:SetCropByPixels( Center - Offset, Center + Offset, 0, Jambar.BarFG.Height )
+	Jambar.OldRem = Jambar.OldRem + deltaRem
+end
+
+function Jambar.Cleanup()
+	if ScoreKeeper:usesO2() == false then
+		return
+	end
 end

@@ -438,9 +438,14 @@ void Line::Render()
 	lnvbo->Bind();
 	glVertexAttribPointer( WindowFrame.EnableAttribArray(A_POSITION), 2, GL_FLOAT, GL_FALSE, 0, 0 );
 
+	ColorBuffer->Bind();
+	glVertexAttribPointer(WindowFrame.EnableAttribArray(A_COLOR), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
+
 	glDrawArrays(GL_LINES, 0, 2);
 
 	WindowFrame.DisableAttribArray(A_POSITION);
+	WindowFrame.DisableAttribArray(A_COLOR);
+
 	Image::ForceRebind();
 
 	glEnable(GL_DEPTH_TEST);

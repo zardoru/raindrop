@@ -148,6 +148,7 @@ Image* GameState::GetSkinImage(Directory Path)
 						const unsigned char* buf = (const unsigned char*)LoadOJNCover(toLoad, read);
 						ImageData data = ImageLoader::GetDataForImageFromMemory(buf, read);
 						StageImage->SetTextureData(&data, true);
+						delete[] buf;
 					}
 
 					if (File.length() && Utility::FileExists(toLoad.path()))

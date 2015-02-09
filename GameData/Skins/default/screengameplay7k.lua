@@ -70,7 +70,8 @@ AnimatedObjects = {
 		Lifebar,
 		MissHighlight,
 		Judgment,
-		Explosions
+		Explosions,
+		Jambar
 	},
 
 	-- Internal functions for automating stuff.
