@@ -68,7 +68,7 @@ function DoSuccessAnimation()
 	Black.Alpha = 0
 	Black.Width = ScreenWidth
 	Black.Height = ScreenHeight
-	Black.Z = 30
+	Black.Z = 29
 
 	StageClear = Engine:CreateObject()
 	StageClear.Image = "VSRG/stageclear.png"
@@ -84,6 +84,7 @@ function DoSuccessAnimation()
 		DoFullComboAnimation()
 	end
 
+	Engine:Sort()
 	Engine:AddAnimation(StageClear, "ZoomVertIn", EaseOut, 0.75, 3)
 	Engine:AddAnimation(StageClear, "ZoomVertOut", EaseNone, 1, 4)
 end
@@ -174,5 +175,6 @@ function DoFailAnimation()
 	BE.FnB.Z = 31
 	BE.FnC.Z = 31
 
+	Engine:Sort()
 	Engine:AddAnimation(BE.FnA, "FailBurst", EaseOut, 0.7, 0.33 * 0.75)
 end
