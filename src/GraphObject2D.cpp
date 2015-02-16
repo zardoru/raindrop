@@ -4,6 +4,8 @@
 #include "VBO.h"
 #include "Image.h"
 
+void Drawable2D::Render() {}
+
 GraphObject2D::GraphObject2D(bool ShouldInitTexture) : Drawable2D()
 {
 	Construct(ShouldInitTexture);

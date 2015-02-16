@@ -260,8 +260,8 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 							OnSongTentativeSelect(GetSelectedSong(), 0);
 						}
 					}
+					return true;
 				}
-				return true;
 			}
 		}
 

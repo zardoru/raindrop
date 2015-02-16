@@ -9,6 +9,8 @@
 #include <map>
 #include <vector>
 
+#include <boost/algorithm/string.hpp>
+
 #include "GameGlobal.h"
 #include "Logging.h"
 #include "BindingsManager.h"
@@ -122,7 +124,7 @@ int controllerToUse;
 bool JoystickEnabled;
 
 //True is pressed, false is released
-bool controllerButtonState[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = {0};
+bool controllerButtonState[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = { 0 };
 //The first member of this array should never be accessed; it's there to make reading some of the code easier.
 
 struct sk_s
@@ -131,20 +133,48 @@ struct sk_s
 	int boundkey;
 };
 
-sk_s StaticSpecialKeys [] = // only add if someone actually needs more
+sk_s StaticSpecialKeys[] = // only add if someone actually needs more
 {
-	{"LShift", GLFW_KEY_LEFT_SHIFT},
-	{"RShift", GLFW_KEY_RIGHT_SHIFT},
-	{"Enter", GLFW_KEY_ENTER},
-	{"LCtrl", GLFW_KEY_LEFT_CONTROL},
-	{"RCtrl", GLFW_KEY_RIGHT_CONTROL},
-	{"LAlt", GLFW_KEY_LEFT_ALT},
-	{"RAlt", GLFW_KEY_RIGHT_ALT},
-	{"Tab", GLFW_KEY_TAB},
-	{"BSPC", GLFW_KEY_BACKSPACE}
+	{ "LShift", GLFW_KEY_LEFT_SHIFT },
+	{ "RShift", GLFW_KEY_RIGHT_SHIFT },
+	{ "Enter", GLFW_KEY_ENTER },
+	{ "LCtrl", GLFW_KEY_LEFT_CONTROL },
+	{ "RCtrl", GLFW_KEY_RIGHT_CONTROL },
+	{ "LAlt", GLFW_KEY_LEFT_ALT },
+	{ "RAlt", GLFW_KEY_RIGHT_ALT },
+	{ "Tab", GLFW_KEY_TAB },
+	{ "BSPC", GLFW_KEY_BACKSPACE },
+	{ "F1", GLFW_KEY_F1 },
+	{ "F2", GLFW_KEY_F2 },
+	{ "F3", GLFW_KEY_F3 },
+	{ "F4", GLFW_KEY_F4 },
+	{ "F5", GLFW_KEY_F5 },
+	{ "F6", GLFW_KEY_F6 },
+	{ "F7", GLFW_KEY_F7 },
+	{ "F8", GLFW_KEY_F8 },
+	{ "F9", GLFW_KEY_F9 },
+	{ "F10", GLFW_KEY_F10 },
+	{ "F11", GLFW_KEY_F11 },
+	{ "F12", GLFW_KEY_F12 },
+	{ "Supr", GLFW_KEY_DELETE },
+	{ "End", GLFW_KEY_END },
+	{ "Home", GLFW_KEY_HOME },
+	{ "Insert", GLFW_KEY_INSERT },
+	{ "PrintScreen", GLFW_KEY_PRINT_SCREEN },
+	{ "PageDown", GLFW_KEY_PAGE_DOWN },
+	{ "PageUp", GLFW_KEY_PAGE_UP },
+	{ "Pause", GLFW_KEY_PAUSE },
+	{ "Escape", GLFW_KEY_ESCAPE },
+	{ "UpArrow", GLFW_KEY_UP },
+	{ "DownArrow", GLFW_KEY_DOWN },
+	{ "LeftArrow", GLFW_KEY_LEFT },
+	{ "RightArrow", GLFW_KEY_RIGHT },
+	{ "Space", GLFW_KEY_SPACE },
+	{ "Enter", GLFW_KEY_ENTER },
+	{ "Backspace", GLFW_KEY_BACKSPACE }
 };
 
-const int NUM_OF_STATIC_SPECIAL_KEYS = 9; //make sure to match the above array
+const int NUM_OF_STATIC_SPECIAL_KEYS = sizeof StaticSpecialKeys / sizeof sk_s; //make sure to match the above array
 
 std::vector<sk_s> SpecialKeys;
 
@@ -152,7 +182,9 @@ int KeyTranslate(GString K)
 {
 	for (uint32 i = 0; i < SpecialKeys.size(); i++)
 	{
-		if (K == SpecialKeys.at(i).keyGString)
+		GString Key = boost::to_lower_copy(K);
+		GString Target = boost::to_lower_copy(GString(SpecialKeys.at(i).keyGString));
+		if (Key == Target)
 			return SpecialKeys.at(i).boundkey;
 	}
 
@@ -167,16 +199,87 @@ int KeyTranslate(GString K)
 		return 0;
 }
 
+struct defaultKeys_s {
+	int key;
+	KeyType command;
+} defaultKeys[] = {
+	{ GLFW_KEY_ESCAPE, KT_Escape },
+	{ GLFW_KEY_UP, KT_Up },
+	{ GLFW_KEY_DOWN, KT_Down },
+	{ GLFW_KEY_LEFT, KT_Left },
+	{ GLFW_KEY_RIGHT, KT_Right },
+	{ GLFW_KEY_SPACE, KT_Select },
+	{ GLFW_KEY_ENTER, KT_Enter },
+	{ GLFW_KEY_BACKSPACE, KT_BSPC },
+	{ GLFW_MOUSE_BUTTON_LEFT, KT_Select },
+	{ GLFW_MOUSE_BUTTON_RIGHT, KT_SelectRight },
+	{ 'Z', KT_GameplayClick },
+	{ 'X', KT_GameplayClick }
+};
+
+const int DEFAULT_KEYS_COUNT = sizeof defaultKeys / sizeof defaultKeys_s;
+
+// Must match KeyType structure.
+char* KeytypeNames[] = {
+	"unknown",
+	"escape",
+	"select",
+	"enter",
+	"bspc",
+	"select2",
+	"up",
+	"down",
+	"left",
+	"right",
+	"reload",
+	"debug",
+	"hit",
+	"click"
+};
+
+int getIndexForKeytype(const char* key)
+{
+	for (int i = 0; i < sizeof KeytypeNames / sizeof(char*); i++)
+	{
+		GString lowkey = boost::to_lower_copy(GString(key));
+		GString lowname = boost::to_lower_copy(GString(KeytypeNames[i]));
+		if (lowkey == lowname)
+			return i;
+	}
+
+	return -1;
+}
+
+GString getNameForKeytype(KeyType K)
+{
+	if (K < sizeof KeytypeNames / sizeof(char*))
+		return KeytypeNames[K];
+	else
+		return Utility::IntToStr(K);
+}
+
+GString getNameForUntranslatedKey(int K)
+{
+	for (int i = 0; i < NUM_OF_STATIC_SPECIAL_KEYS; i++)
+	{
+		if (StaticSpecialKeys[i].boundkey == K)
+			return StaticSpecialKeys[i].keyGString;
+	}
+
+	return Utility::IntToStr(K);
+}
+
 void BindingsManager::Initialize()
 {
-	for(int i = 0; i < NUM_OF_STATIC_SPECIAL_KEYS; i++)
+	SpecialKeys.clear();
+	for (int i = 0; i < NUM_OF_STATIC_SPECIAL_KEYS; i++)
 		SpecialKeys.push_back(StaticSpecialKeys[i]);
 
 
 	//controllerToUse = 1; should use this if the user entered garbage data (anything that isn't a number)
-	controllerToUse = (int) Configuration::GetConfigf("ControllerNumber") - 1;
+	controllerToUse = (int)Configuration::GetConfigf("ControllerNumber") - 1;
 
-	if (glfwJoystickPresent(controllerToUse)) 
+	if (glfwJoystickPresent(controllerToUse))
 	{
 		int numOfButtons;
 		glfwGetJoystickButtons(controllerToUse, &numOfButtons);
@@ -193,35 +296,59 @@ void BindingsManager::Initialize()
 	}
 
 	JoystickEnabled = (glfwJoystickPresent(GLFW_JOYSTICK_1) == GL_TRUE);
-	
-	ScanFunction[GLFW_KEY_ESCAPE] = KT_Escape;
-	ScanFunction[GLFW_KEY_F4] = KT_GoToEditMode;
-	ScanFunction[GLFW_KEY_UP] = KT_Up;
-	ScanFunction[GLFW_KEY_DOWN] = KT_Down;
-	ScanFunction[GLFW_KEY_RIGHT] = KT_Right;
-	ScanFunction[GLFW_KEY_LEFT] = KT_Left;
-	ScanFunction[GLFW_KEY_SPACE] = KT_Select;
-	ScanFunction[GLFW_KEY_ENTER] = KT_Enter;
-	ScanFunction[GLFW_KEY_BACKSPACE] = KT_BSPC;
-	ScanFunction[GLFW_MOUSE_BUTTON_LEFT] = KT_Select;
-	ScanFunction[GLFW_MOUSE_BUTTON_RIGHT] = KT_SelectRight;
-	ScanFunction['Z'] = KT_GameplayClick;
-	ScanFunction['X'] = KT_GameplayClick;
-	ScanFunction[GLFW_KEY_F1] = KT_FractionDec;
-	ScanFunction[GLFW_KEY_F2] = KT_FractionInc;
-	ScanFunction[GLFW_KEY_TAB] = KT_ChangeMode;
-	ScanFunction[GLFW_KEY_F5] = KT_GridDec;
-	ScanFunction[GLFW_KEY_F6] = KT_GridInc;
-	ScanFunction[GLFW_KEY_F7] = KT_SwitchOffsetPrompt;
-	ScanFunction[GLFW_KEY_F8] = KT_SwitchBPMPrompt;
 
-	for (int i = 0; i < 16; i++)
+	
+	std::map <GString, GString> fields;
+	Configuration::GetConfigListS("SystemKeys", fields, "");
+
+	// key = function
+	// e.g. Z = gameclick, X = gameclick
+	for (auto i = fields.begin(); i != fields.end(); i++)
+	{
+		// transform special name into keytype index
+		int idx = getIndexForKeytype(i->second.c_str());
+
+		// ah it's valid
+		if (idx != -1)
+		{
+			// get the key in either int or name or char format and save that into the key -> command translator
+			int Key = KeyTranslate(i->first.c_str());
+
+			if (Key) // a valid key, probably
+				ScanFunction[Key] = (KeyType)idx;
+		}
+	}
+	
+	// fill missing default keys after it's done
+	for (int i = 0; i < DEFAULT_KEYS_COUNT; i++)
+	{
+		if (ScanFunction.find(defaultKeys[i].key) == ScanFunction.end())
+		{
+			// fill the key -> command translation
+			ScanFunction[defaultKeys[i].key] = defaultKeys[i].command;
+
+			// write it out to the config file
+			GString charOut;
+			if (defaultKeys[i].key <= 255 && isgraph(defaultKeys[i].key)) // we're not setting like, gibberish
+			{
+				charOut = Utility::CharToStr(defaultKeys[i].key);
+			}
+			else
+			{
+				charOut = getNameForUntranslatedKey(defaultKeys[i].key);
+			}
+
+			Configuration::SetConfig(charOut, getNameForKeytype(defaultKeys[i].command), "SystemKeys");
+		}
+	}
+
+	for (int i = 0; i < VSRG::MAX_CHANNELS; i++)
 	{
 		char KGString[256];
-		sprintf(KGString, "Key%d", i+1);
+		sprintf(KGString, "Key%d", i + 1);
 
 		int Binding = KeyTranslate(Configuration::GetConfigs(KGString, "Keys7K"));
-		
+
 		if (Binding)
 			ScanFunction7K[Binding] = (KeyType)(KT_Key1 + i);
 	}
@@ -233,7 +360,7 @@ KeyType BindingsManager::TranslateKey(int32 Scan)
 	{
 		return ScanFunction[Scan];
 	}
-	
+
 	return KT_Unknown;
 }
 
@@ -243,7 +370,7 @@ KeyType BindingsManager::TranslateKey7K(int32 Scan)
 	{
 		return ScanFunction7K[Scan];
 	}
-	
+
 	return KT_Unknown;
 }
 
@@ -289,7 +416,7 @@ void ResizeFunc(GLFWwindow*, int32 width, int32 height)
 	WindowFrame.SizeRatio = HeightRatio;
 }
 
-void InputFunc (GLFWwindow*, int32 key, int32 scancode, int32 code, int32 modk)
+void InputFunc(GLFWwindow*, int32 key, int32 scancode, int32 code, int32 modk)
 {
 	if (ToKeyEventType(code) != KE_None) // Ignore GLFW_REPEAT events
 		WindowFrame.Parent->HandleInput(key, ToKeyEventType(code), false);
@@ -298,18 +425,18 @@ void InputFunc (GLFWwindow*, int32 key, int32 scancode, int32 code, int32 modk)
 		WindowFrame.FullscreenSwitchbackPending = true;
 }
 
-void MouseInputFunc (GLFWwindow*, int32 key, int32 code, int32 modk)
+void MouseInputFunc(GLFWwindow*, int32 key, int32 code, int32 modk)
 {
- 	if (ToKeyEventType(code) != KE_None) // Ignore GLFW_REPEAT events
+	if (ToKeyEventType(code) != KE_None) // Ignore GLFW_REPEAT events
 		WindowFrame.Parent->HandleInput(key, ToKeyEventType(code), true);
 }
 
-void ScrollFunc( GLFWwindow*, double xOff, double yOff )
+void ScrollFunc(GLFWwindow*, double xOff, double yOff)
 {
 	WindowFrame.Parent->HandleScrollInput(xOff, yOff);
 }
 
-void MouseMoveFunc (GLFWwindow*,double newx, double newy)
+void MouseMoveFunc(GLFWwindow*, double newx, double newy)
 {
 }
 
@@ -329,7 +456,7 @@ Vec2 GameWindow::GetRelativeMPos()
 	glfwGetCursorPos(wnd, &mousex, &mousey);
 	float outx = (mousex - Viewport.x) / SizeRatio;
 	float outy = matrixSize.y * mousey / size.y;
-	return Vec2 (outx, outy);
+	return Vec2(outx, outy);
 }
 
 float GameWindow::GetWindowVScale()
@@ -345,14 +472,14 @@ bool GameWindow::SetupWindow()
 	// we have an opengl context, try opening up glew
 	if ((err = glewInit()) != GLEW_OK)
 	{
-		Log::Logf( "glew failed initialization: %s", glewGetErrorString(err));
+		Log::Logf("glew failed initialization: %s", glewGetErrorString(err));
 		return false;
 	}
 
 	BindingsManager::Initialize();
 
 	glEnable(GL_BLEND);
-	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	// glEnable(GL_CULL_FACE);
 	glEnable(GL_LINE_SMOOTH);
 	// glCullFace(GL_BACK);
@@ -366,7 +493,7 @@ bool GameWindow::SetupWindow()
 
 	if (VSync)
 		glfwSwapInterval(1);
-	
+
 	projection = glm::ortho<float>(0.0, matrixSize.x, matrixSize.y, 0.0, -32.0, 0.0);
 	projectionInverse = glm::inverse(projection);
 
@@ -425,7 +552,7 @@ bool GameWindow::AutoSetupWindow(Application* _parent)
 		Log::Logf("Failure to initialize window.\n");
 		return false;
 	}
-	
+
 	return SetupWindow();
 }
 
@@ -441,7 +568,8 @@ void GameWindow::AssignSize()
 
 		size.x = mode->width;
 		size.y = mode->height;
-	}else
+	}
+	else
 	{
 		size.x = WindowWidth;
 		size.y = WindowHeight;
@@ -455,13 +583,13 @@ void GameWindow::SwapBuffers()
 
 	glfwSwapBuffers(wnd);
 	glfwPollEvents();
-	
+
 	int buttonArraySize = 0;
-	if(JoystickEnabled) {
+	if (JoystickEnabled) {
 		const unsigned char *buttonArray = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &buttonArraySize);
-		if(buttonArraySize > 0) {
+		if (buttonArraySize > 0) {
 			for (int i = 0; i < buttonArraySize; i++) {
-				for(uint32 j = 0; j < SpecialKeys.size(); j++) {
+				for (uint32 j = 0; j < SpecialKeys.size(); j++) {
 					/* Matches the pressed button to its entry in the SpecialKeys vector. */
 					int thisKeyNumber = SpecialKeys[j].boundkey - 1000;
 					if (i + 1 == thisKeyNumber) {
@@ -483,14 +611,15 @@ void GameWindow::SwapBuffers()
 		{
 			glfwDestroyWindow(wnd);
 			wnd = glfwCreateWindow(size.x, size.y, RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, NULL, NULL);
-		}else
+		}
+		else
 		{
 			AssignSize();
 
 			glfwDestroyWindow(wnd);
 			wnd = glfwCreateWindow(size.x, size.y, RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, glfwGetPrimaryMonitor(), NULL);
 		}
-		
+
 		AttribLocs.clear();
 		UniformLocs.clear();
 		SetupWindow();
@@ -550,7 +679,8 @@ void GameWindow::SetVisibleCursor(bool Visible)
 	if (Visible)
 	{
 		glfwSetInputMode(wnd, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-	}else
+	}
+	else
 		glfwSetInputMode(wnd, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 }
 
@@ -563,34 +693,35 @@ bool GameWindow::SetupShaders()
 		glGenVertexArrays(1, &defaultVao);
 		glBindVertexArray(defaultVao);
 	}
-	
 
-	defaultVertexShader = glCreateShader( GL_VERTEX_SHADER );
-	glShaderSource( defaultVertexShader, 1, &vertShader, NULL );
-	glCompileShader( defaultVertexShader );
 
-	defaultFragShader = glCreateShader( GL_FRAGMENT_SHADER );
-	glShaderSource( defaultFragShader, 1, &fragShader, NULL );
-	glCompileShader( defaultFragShader );
+	defaultVertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(defaultVertexShader, 1, &vertShader, NULL);
+	glCompileShader(defaultVertexShader);
+
+	defaultFragShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(defaultFragShader, 1, &fragShader, NULL);
+	glCompileShader(defaultFragShader);
 
 
 	GLint status;
 	char buffer[512];
 
-	glGetShaderiv( defaultVertexShader, GL_COMPILE_STATUS, &status );
-	
-	glGetShaderInfoLog( defaultVertexShader, 512, NULL, buffer );
+	glGetShaderiv(defaultVertexShader, GL_COMPILE_STATUS, &status);
+
+	glGetShaderInfoLog(defaultVertexShader, 512, NULL, buffer);
 
 	if (status != GL_TRUE)
-	{	
+	{
 		Log::Logf("Vertex Shader Error: %s\n", buffer);
 		return false;
-	}else
+	}
+	else
 		Log::Logf("Vertex Shader Status: %s\n", buffer);
 
-	glGetShaderiv( defaultFragShader, GL_COMPILE_STATUS, &status );
+	glGetShaderiv(defaultFragShader, GL_COMPILE_STATUS, &status);
 
-	glGetShaderInfoLog( defaultFragShader, 512, NULL, buffer );
+	glGetShaderInfoLog(defaultFragShader, 512, NULL, buffer);
 
 	if (status != GL_TRUE)
 	{
@@ -600,8 +731,8 @@ bool GameWindow::SetupShaders()
 	else Log::Logf("Fragment Shader Status: %s\n", buffer);
 
 	defaultShaderProgram = glCreateProgram();
-	glAttachShader( defaultShaderProgram, defaultVertexShader );
-	glAttachShader( defaultShaderProgram, defaultFragShader );
+	glAttachShader(defaultShaderProgram, defaultVertexShader);
+	glAttachShader(defaultShaderProgram, defaultFragShader);
 
 	// glBindFragDataLocation( defaultShaderProgram, 0, "outColor" );
 
@@ -609,7 +740,7 @@ bool GameWindow::SetupShaders()
 
 	// Use our recently compiled program.
 	glUseProgram(defaultShaderProgram);
-	
+
 	// setup our projection matrix
 	GLuint MatrixID = glGetUniformLocation(defaultShaderProgram, "projection");
 	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &projection[0][0]);
@@ -642,32 +773,32 @@ bool GameWindow::SetupShaders()
 	uniforms[U_REPCOLOR] = glGetUniformLocation(defaultShaderProgram, "replaceColor");
 	uniforms[U_BTRANSP] = glGetUniformLocation(defaultShaderProgram, "BlackToTransparent");
 
-	SetLightPosition(glm::vec3(0,0,1));
+	SetLightPosition(glm::vec3(0, 0, 1));
 	SetLightMultiplier(1);
 	return true;
 }
 
-void GameWindow::SetUniform(uint32 Uniform, int i) 
+void GameWindow::SetUniform(uint32 Uniform, int i)
 {
 	glUniform1i(uniforms[Uniform], i);
 }
 
-void GameWindow::SetUniform(uint32 Uniform, float A, float B, float C, float D) 
+void GameWindow::SetUniform(uint32 Uniform, float A, float B, float C, float D)
 {
 	glUniform4f(uniforms[Uniform], A, B, C, D);
 }
 
-void GameWindow::SetUniform(uint32 Uniform, glm::vec3 Pos) 
+void GameWindow::SetUniform(uint32 Uniform, glm::vec3 Pos)
 {
 	glUniform3f(uniforms[Uniform], Pos.x, Pos.y, Pos.z);
 }
 
-void GameWindow::SetUniform(uint32 Uniform, float F) 
+void GameWindow::SetUniform(uint32 Uniform, float F)
 {
 	glUniform1f(uniforms[Uniform], F);
 }
 
-void GameWindow::SetUniform(uint32 Uniform, float *Matrix4x4) 
+void GameWindow::SetUniform(uint32 Uniform, float *Matrix4x4)
 {
 	glUniformMatrix4fv(uniforms[Uniform], 1, GL_FALSE, Matrix4x4);
 }
@@ -678,19 +809,19 @@ int GameWindow::EnableAttribArray(uint32 Attrib)
 	return uniforms[Attrib];
 }
 
-int GameWindow::DisableAttribArray(uint32 Attrib) 
+int GameWindow::DisableAttribArray(uint32 Attrib)
 {
 	glDisableVertexAttribArray(uniforms[Attrib]);
 	return uniforms[Attrib];
 }
 
 
-void GameWindow::SetLightPosition(glm::vec3 Position) 
+void GameWindow::SetLightPosition(glm::vec3 Position)
 {
 	SetUniform(U_LPOS, Position);
 }
 
-void GameWindow::SetLightMultiplier(float Multiplier) 
+void GameWindow::SetLightMultiplier(float Multiplier)
 {
 	SetUniform(U_LMUL, Multiplier);
 }

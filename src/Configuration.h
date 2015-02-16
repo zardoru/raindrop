@@ -16,7 +16,7 @@ namespace Configuration
 	double CfgScreenHeight();
 	double CfgScreenWidth();
 
-	// void SetConfig(GString Name, GString Value, GString Namespace = "");
+	void SetConfig(GString Name, GString Value, GString Namespace = "");
 	// void SetConfig(GString Name, float Value, GString Namespace = "");
 	/// void SaveConfig();
 	void Cleanup();

@@ -27,6 +27,7 @@ using std::shared_ptr;
 using std::make_shared;
 using std::dynamic_pointer_cast;
 using std::static_pointer_cast;
+using std::vector;
 
 // Use stdint if available.
 #if !(defined HAS_STDINT) && ( !(defined _MSC_VER) || (_MSC_VER < 1800) )
@@ -113,6 +114,8 @@ namespace Utility
 	int GetLMT(GString Path);
 	void RemoveFilenameIllegalCharacters(GString &S, bool removeSlash = false);
 	GString getSha256ForFile(GString Filename);
+	GString IntToStr(int num);
+	GString CharToStr(char c);
 }
 
 

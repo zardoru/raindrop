@@ -113,14 +113,14 @@ function Phrases.Init()
 	Phrases.Text.X = 0
 	Phrases.Text.Y = -Phrases.VSize
 	
-	Phrases.BG = Object2D()
+	Phrases.BG = Engine:CreateObject()
+
 	Phrases.BG.Image = "Global/filter.png"
 	Phrases.BG.Height = 30
 	Phrases.BG.Layer = 11
 	Phrases.BG.Width = ScreenWidth
 	Phrases.BG.X = 0
 	
-	Engine:AddTarget(Phrases.BG)
 	Engine:AddTarget(Phrases.Text)
 end
 

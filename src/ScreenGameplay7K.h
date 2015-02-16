@@ -130,6 +130,7 @@ private:
 	bool Upscroll;
 	bool NoFail;
 	bool Active;
+	bool ForceActivation;
 	bool DoPlay;
 	bool Preloaded;
 	bool PlayReactiveSounds;
@@ -193,6 +194,8 @@ private:
 	void PlayKeysound(uint32 Index);
 	void SetLaneHoldState(uint32 Lane, bool NewState);
 
+	void Activate();
+
 	// true if holding down key
 	bool GetGearLaneState(uint32 Lane);
 
@@ -209,40 +212,8 @@ public:
 
 	void SetUserMultiplier(float Multip);
 
-	struct Parameters {
-		// If true, use upscroll
-		bool Upscroll;
-
-		// If true, enable Wave
-		bool Wave;
-
-		// If true, assume difficulty is already loaded and is not just metadata
-		bool Preloaded;
-
-		// Fail disabled if true.
-		bool NoFail;
-
-		// Auto mode enabled if true.
-		bool Auto;
-
-		// Selected hidden mode
-		EHiddenMode HiddenMode;
-
-		// Selected starting measure
-		uint32 StartMeasure;
-
-		Parameters() {
-			Upscroll = false;
-			Wave = false;
-			Preloaded = false;
-			Auto = false;
-			HiddenMode = HIDDENMODE_NONE;
-			StartMeasure = 0;
-		}
-	};
-
 	ScreenGameplay7K();
-	void Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const Parameters &Param);
+	void Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const GameParameters &Param);
 	void LoadThreadInitialization();
 	void MainThreadInitialization();
 	void Cleanup();

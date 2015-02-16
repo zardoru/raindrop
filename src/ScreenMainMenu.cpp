@@ -116,7 +116,7 @@ bool ScreenMainMenu::HandleInput(int32 key, KeyEventType code, bool isMouseInput
 		Running = false;
 	}
 
-	return false;
+	return Objects->HandleInput(key, code, isMouseInput);
 }
 
 bool ScreenMainMenu::HandleScrollInput(double xOff, double yOff)

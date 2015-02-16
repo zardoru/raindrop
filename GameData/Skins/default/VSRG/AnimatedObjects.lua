@@ -1,6 +1,6 @@
 
 ProgressTick = { Image = "VSRG/progress_tick.png" }
-Pulse = { Image = "VSRG/pulse_ver.png", Height = 200 }
+Pulse = { Image = "VSRG/pulse_ver.png", Height = 100 }
 Jambar = { ImageBG = "VSRG/jfill_bg.jpg", ImageFG = "VSRG/jfill_fg.jpg", Width = 512 }
 MissHighlight = {}
 
@@ -60,7 +60,15 @@ end
 
 function Pulse.Run(Delta)
 	if Active ~= 0 then
-		Obj.SetAlpha(1 - (Beat - math.floor(Beat)))
+		local BeatNth = 2
+		local BeatMultiplied = Beat * BeatNth
+		local NthOfBeat = 1
+		
+		if math.floor(BeatMultiplied) % BeatNth == 0 then
+			NthOfBeat = BeatMultiplied - math.floor(BeatMultiplied)
+		end
+		
+		Obj.SetAlpha(1 - NthOfBeat)
 	else
 		Obj.SetAlpha(0)
 	end
@@ -119,8 +127,8 @@ function Jambar.Init()
 		return
 	end
 
-	Jambar.BarBG = Object2D()
-	Jambar.BarFG = Object2D()
+	Jambar.BarBG = Engine:CreateObject()
+	Jambar.BarFG = Engine:CreateObject()
 	
 	Jambar.BarBG.Image = Jambar.ImageBG;
 	Jambar.BarFG.Image = Jambar.ImageFG;

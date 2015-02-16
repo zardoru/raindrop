@@ -112,6 +112,7 @@ function Init()
 
 	Obj.SetTarget(ScreenBackground)
 	Obj.SetAlpha(0)
+	Engine:Sort()
 end
 
 function Cleanup()

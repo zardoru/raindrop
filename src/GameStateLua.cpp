@@ -73,6 +73,11 @@ dotcur::Song* toSongDC(Game::Song* Sng)
 		return NULL;
 }
 
+GameParameters* GameState::GetParameters()
+{
+	return &Params;
+}
+
 void GameState::InitializeLua(lua_State *L)
 {
 	SetupScorekeeper7KLuaInterface(L);
@@ -123,10 +128,21 @@ void GameState::InitializeLua(lua_State *L)
 		.endClass();
 
 	luabridge::getGlobalNamespace(L)
+		.beginClass <GameParameters>("GameParameters")
+		.addData("Upscroll", &GameParameters::Upscroll)
+		.addData("Wave", &GameParameters::Wave)
+		.addData("NoFail", &GameParameters::NoFail)
+		.addData("Autoplay", &GameParameters::Auto)
+		.addData("HiddenMode", &GameParameters::HiddenMode)
+		.addData("Rate", &GameParameters::Rate)
+		.endClass();
+
+	luabridge::getGlobalNamespace(L)
 		.beginClass <GameState> ("GameState")
 		.addFunction("GetSelectedSong", &GameState::GetSelectedSong)
 		.addProperty("DifficultyIndex", &GameState::GetDifficultyIndex, &GameState::SetDifficultyIndex)
 		.addFunction("GetScorekeeper7K", &GameState::GetScorekeeper7K)
+		.addFunction("GetParameters", &GameState::GetParameters)
 		.endClass()
 		.addFunction("toSong7K", toSong7K)
 		.addFunction("toSongDC", toSongDC);

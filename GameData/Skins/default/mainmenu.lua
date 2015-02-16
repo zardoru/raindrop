@@ -58,21 +58,19 @@ function Init()
 
 	targBlack = Obj.CreateTarget()
 
-	targBadge = Object2D ()
+	targBadge = Engine:CreateObject()
 	targBadge.Image = "MainMenu/BACKs.png"
 	targBadge.X = ScreenWidth / 2
 	targBadge.Y = ScreenHeight / 4
 	targBadge.Centered = 1
 	
-	targLogo = Object2D ()
+	targLogo = Engine:CreateObject() 
 	targLogo.Image = "MainMenu/FRONTs.png"
 	targLogo.X = ScreenWidth / 2
 	targLogo.Y = ScreenHeight / 4
 	targLogo.Centered = 1
 	targLogo.Alpha = 0
 
-	Engine:AddTarget(targBadge)
-	Engine:AddTarget(targLogo)
 	Engine:AddAnimation(targBadge, "BadgeZoomIn", EaseOut, 0.4, 0)
 	Engine:AddAnimation(targLogo, "LogoFadeIn", EaseNone, 0.4, 1.9)
 

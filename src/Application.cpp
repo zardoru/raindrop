@@ -215,7 +215,7 @@ void Application::SetupPreviewMode()
 	// Set them up.
 	Sng->SongDirectory = InFile.ParentDirectory().path() + "/";
 
-	ScreenGameplay7K::Parameters Param;
+	GameParameters Param;
 	Param.Upscroll = Upscroll;
 	Param.StartMeasure = Measure;
 	Param.Preloaded = true;

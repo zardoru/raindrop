@@ -33,6 +33,7 @@ class GameState
 	Image* SongBG;
 	Game::Song *SelectedSong;
 	ScoreKeeper7K *SKeeper7K;
+	GameParameters Params;
 public:
 
 	GameState();
@@ -65,6 +66,8 @@ public:
 
 	SongDatabase* GetSongDatabase();
 	static GameWindow* GetWindow();
+
+	GameParameters* GetParameters();
 };
 }
 

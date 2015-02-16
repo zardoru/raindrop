@@ -122,6 +122,7 @@ void Image::SetTextureData(ImageData *Data, bool Reassign)
 
 	w = Data->Width;
 	h = Data->Height;
+	fname = Data->Filename;
 }
 
 void Image::Assign(Directory Filename, ImageData::EScalingMode ScaleMode ,

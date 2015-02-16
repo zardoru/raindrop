@@ -513,7 +513,6 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 
 	luabridge::getGlobalNamespace(AnimLua->GetState())
 		.deriveClass<GraphObject2D, Transformation>("Object2D")
-		.addConstructor<void(*) ()>()
 		.v(Centered)
 		.v(Lighten)
 		.v(LightenFactor)
@@ -555,6 +554,7 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 		.addFunction("StopAnimation", &SceneManager::StopAnimationsForTarget)
 		.addFunction("SetUILayer", &SceneManager::SetUILayer)
 		.addFunction("RunUIScript", &SceneManager::RunUIScript)
+		.addFunction("CreateObject", &SceneManager::CreateObject)
 		.endClass();
 
 	luabridge::push(AnimLua->GetState(), GetObjectFromState<SceneManager>(AnimLua->GetState(), "GOMAN"));

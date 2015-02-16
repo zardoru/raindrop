@@ -149,6 +149,8 @@ Image* GameState::GetSkinImage(Directory Path)
 						ImageData data = ImageLoader::GetDataForImageFromMemory(buf, read);
 						StageImage->SetTextureData(&data, true);
 						delete[] buf;
+
+						return StageImage;
 					}
 
 					if (File.length() && Utility::FileExists(toLoad.path()))

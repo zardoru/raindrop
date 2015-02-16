@@ -122,7 +122,7 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 
 	if (!Measure)
 	{
-		Active = true;
+		ForceActivation = true;
 		return;
 	}
 
@@ -177,7 +177,7 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 }
 
 
-void ScreenGameplay7K::Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const ScreenGameplay7K::Parameters &Param)
+void ScreenGameplay7K::Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const GameParameters &Param)
 {
 	MySong = S;
 	CurrentDiff = S->Difficulties[DifficultyIndex].get();
@@ -185,9 +185,15 @@ void ScreenGameplay7K::Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const
 	Upscroll = Param.Upscroll;
 	StartMeasure = Param.StartMeasure;
 	waveEffectEnabled = Param.Wave;
-	SelectedHiddenMode = Param.HiddenMode;
+	SelectedHiddenMode = (EHiddenMode)(int)Clamp((int)Param.HiddenMode, (int)HIDDENMODE_NONE, (int)HIDDENMODE_FLASHLIGHT);
 	Preloaded = Param.Preloaded;
 	Auto = Param.Auto;
+	Speed = Param.Rate;
+
+	ForceActivation = false;
+
+	if (Auto)
+		StartMeasure = 0;
 
 	Animations = new SceneManager("ScreenGameplay7K");
 	score_keeper = new ScoreKeeper7K();

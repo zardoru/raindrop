@@ -1,0 +1,47 @@
+<rml>
+
+	<head> 
+	
+		<style>
+		
+		#autobtn {
+			display: inline-block;
+			width: 256px;
+			height: 64px;
+			margin-top: 10px;
+			background-decorator: image;
+			background-image: SongSelect/auto_btn_unselected.png;
+		}
+		
+		#autobtnac {
+			display: inline-block;
+			width: 256px;
+			height: 64px;
+			margin-top: 10px;
+			background-decorator: image;
+			background-image: SongSelect/auto_btn_selected.png;
+		}
+		
+		</style>
+		
+		<script>
+			function activateAuto(elem)
+				if elem.id == "autobtn" then
+					elem.id = "autobtnac"
+					Global:GetParameters().Autoplay = 1
+				else
+					elem.id = "autobtn"
+					Global:GetParameters().Autoplay = 0
+				end
+			end
+		
+		</script>
+	
+	</head>
+	
+	<body>
+		<img src="SongSelect/ssbanner.png"/> <br/>
+		<button id="autobtn" onmousedown="activateAuto(element)"/>
+	</body>
+
+</rml>

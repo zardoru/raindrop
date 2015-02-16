@@ -50,7 +50,7 @@ function Init()
 	Obj.SetPosition((w - w/2 - wb/2), ScreenHeight - h)
 	Obj.SetZ(16)
 	
-	BG = Object2D()
+	BG = Engine:CreateObject()
 	BG.Image = "STAGEFILE" -- special constant
 	BG.Centered = 1
 	BG.X = ScreenWidth / 2
@@ -64,7 +64,6 @@ function Init()
 	BG.Layer = 10
 	BG.Alpha = 0
 	
-	Engine:AddTarget(BG)
 	Phrases.Init()
 end
 

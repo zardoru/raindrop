@@ -121,9 +121,6 @@ function OnSelect()
 	Obj.SetTarget(DirUpButton)
 	Obj.AddAnimation( "OutUpBtn", 0.5, 0, EaseOut )
 
-	Obj.SetTarget(Banner)
-	Obj.AddAnimation( "OutBanner", 0.5, 0, EaseOut )
-
 	Obj.SetTarget(ScreenBackground)
 	Obj.AddAnimation( "OutBackground", 0.5, 0, EaseOut )
 	
@@ -138,9 +135,6 @@ function OnRestore()
 	BgAlpha = 0
 	Obj.SetTarget(DirUpButton)
 	Obj.AddAnimation( "InUpBtn", 0.5, 0, EaseOut )
-
-	Obj.SetTarget(Banner)
-	Obj.AddAnimation( "InBanner", 0.5, 0, EaseOut )
 
 	Obj.SetTarget(ScreenBackground)
 	Obj.AddAnimation( "InBackground", 0.5, 0, EaseOut )
@@ -185,41 +179,31 @@ end
 function Init()
 	BackgroundAnimation:Init()
 	ScreenFade.Init()
-
-	Banner = Obj.CreateTarget()
-	Obj.SetTarget(Banner)
-	Obj.SetImageSkin("SongSelect/ssbanner.png")
-	Obj.SetZ(18)
-
+	
 	Obj.SetTarget(DirUpButton)
 	Obj.SetImageSkin("SongSelect/up.png")
 	Obj.SetCentered(1)
 	Obj.SetZ(18)
 
 	font = Fonts.TruetypeFont(Obj.GetSkinFile("font.ttf"), 24)
-	
-	if font == nil then print "nil font" end
-	
+		
 	dd = StringObject2D()
 	dd.Font = font
 	dd.Y = 348
 	dd.X = 120
-	Engine:AddTarget(dd)
 	
 	Wheel.ScrollSpeed = Wheel:GetItemHeight()
 	
+	Engine:AddTarget(dd)
 	Obj.SetUILayer(30)
 end
 
 function updText(t)
 	local sng = Global:GetSelectedSong()
-	if t then print "updating text"; print (sng) end
 	if sng then
 		local s7k = toSong7K(sng)
-		if t then print (s7k) end
 		if s7k then
 			local diff = s7k:GetDifficulty(Global.DifficultyIndex)
-			if t then print (diff) end
 			if diff then
 				local author = diff.Author
 				local nps = diff.Objects / diff.Duration
@@ -243,7 +227,6 @@ function updText(t)
 end
 
 function Cleanup()
-	Obj.CleanTarget(Banner)
 end
 
 lastIndex = -1

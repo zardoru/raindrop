@@ -135,6 +135,20 @@ namespace Utility {
 #endif
 	}
 
+	GString IntToStr(int num)
+	{
+		std::stringstream k;
+		k << num;
+		return k.str();
+	}
+
+	GString CharToStr(char c)
+	{
+		std::stringstream k;
+		k << c;
+		return k.str();
+	}
+
 	void CheckDir(GString path)
 	{
 		struct stat st;

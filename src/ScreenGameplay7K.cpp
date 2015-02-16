@@ -109,6 +109,16 @@ void ScreenGameplay7K::TranslateKey(KeyType K, bool KeyDown)
 	}
 }
 
+void ScreenGameplay7K::Activate()
+{
+	if (!Active)
+	{
+		Animations->DoEvent("OnActivateEvent");
+	}
+
+	Active = true;
+}
+
 bool ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
 	/*
@@ -133,10 +143,7 @@ bool ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 			break;
 		case KT_Enter:
 			if (!Active)
-			{
-				Active = true;
-				Animations->DoEvent("OnActivateEvent");
-			}
+				Activate();
 			break;
 		case KT_FractionInc:
 			SpeedMultiplierUser += 0.25;
@@ -145,13 +152,6 @@ bool ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 		case KT_FractionDec:
 			SpeedMultiplierUser -= 0.25;
 			MultiplierChanged = true;
-			break;
-		case KT_GoToEditMode:
-			if (!Active)
-			{
-				Auto = !Auto;
-				Animations->GetEnv()->SetGlobal("Auto", Auto);
-			}
 			break;
 		}
 
@@ -352,6 +352,12 @@ bool ScreenGameplay7K::Run(double Delta)
 
 	if (!DoPlay)
 		return false;
+
+	if (ForceActivation)
+	{
+		Activate();
+		ForceActivation = false;
+	}
 
 	if (Active)
 	{

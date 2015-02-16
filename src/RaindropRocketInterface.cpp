@@ -148,10 +148,17 @@ namespace Engine { namespace RocketInterface {
 		const Rocket::Core::String& source)
 	{
 		ImageData Data = ImageLoader::GetDataForImage(GameState::GetInstance().GetSkinFile(source.CString()));
+		Data.Filename = GameState::GetInstance().GetSkinFile(source.CString());
 		texture_dimensions.x = Data.Width;
 		texture_dimensions.y = Data.Height;
 
-		return GenerateTexture(texture_handle, Data.Data, Rocket::Core::Vector2i(Data.Width, Data.Height));
+		if (!Data.Data) return false;
+
+		GenerateTexture(texture_handle, Data.Data, Rocket::Core::Vector2i(Data.Width, Data.Height));
+		Image* Ret = (Image*)texture_handle;
+		Ret->fname = Data.Filename;
+
+		return true;
 	}
 
 	bool RenderInterface::GenerateTexture(Rocket::Core::TextureHandle& texture_handle,
@@ -176,12 +183,9 @@ namespace Engine { namespace RocketInterface {
 	
 	Rocket::Core::FileHandle FileSystemInterface::Open(const Rocket::Core::String& path)
 	{
-		GString npath = GameState::GetInstance().GetSkinPrefix() + path.CString();
+		GString npath = GameState::GetInstance().GetSkinFile(path.CString());
 
 		FILE* F = fopen(npath.c_str(), "r");
-
-		if (!F)
-			Log::Printf("%s NOT FOUND!\n", npath.c_str());
 
 		return (Rocket::Core::FileHandle) F;
 	}

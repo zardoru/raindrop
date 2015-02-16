@@ -13,6 +13,8 @@ LuaManager *SkinCfgLua;
 CSimpleIniA *Config;
 int IsWidescreen;
 
+const GString GlobalNamespace = "Global";
+
 void Configuration::Initialize()
 {
 	Config = new CSimpleIniA;
@@ -71,7 +73,7 @@ double GetConffInt(GString Name, GString Namespace, LuaManager &L)
 
 GString Configuration::GetConfigs(GString Name, GString Namespace)
 {
-	GString g = "Global";
+	GString g = GlobalNamespace;
 	if (Namespace.length()) g = Namespace;
 	GString out;
 	if (Config->GetValue(g.c_str(), Name.c_str()))
@@ -81,9 +83,17 @@ GString Configuration::GetConfigs(GString Name, GString Namespace)
 	return out;
 }
 
+void Configuration::SetConfig(GString Name, GString Value, GString Namespace)
+{
+	GString g = GlobalNamespace;
+	if (Namespace.length()) g = Namespace;
+
+	Config->SetValue(g.c_str(), Name.c_str(), Value.c_str());
+}
+
 float  Configuration::GetConfigf(GString Name, GString Namespace)
 {
-	GString g = "Global";
+	GString g = GlobalNamespace;
 	double out;
 	if (Namespace.length()) g = Namespace;
 	if (Config->GetDoubleValue(g.c_str(), Name.c_str(), -10000) == -10000)
@@ -111,7 +121,7 @@ void Configuration::GetConfigListS(GString Name, std::map<GString, GString> &Out
 	CSimpleIniA::TNamesDepend List;
 	Config->GetAllKeys(Name.c_str(), List);
 
-	if (!List.size())
+	if (!List.size() && DefaultKeyName != "")
 		Config->SetValue(Name.c_str(), DefaultKeyName.c_str(), "");
 
 	for (CSimpleIniA::TNamesDepend::iterator i = List.begin();

@@ -179,7 +179,7 @@ void SceneManager::AddLuaAnimation (GraphObject2D* Target, const GString &FuncNa
 	int Easing, float Duration, float Delay)
 {
 	Animation Anim;
-	Anim.Function = boost::bind(LuaAnimation, Lua, FuncName, _1, _2);
+	Anim.Function = bind(LuaAnimation, Lua, FuncName, _1, _2);
 	Anim.Easing = (Animation::EEaseType)Easing;
 	Anim.Duration = Duration;
 	Anim.Target = Target;
@@ -199,6 +199,7 @@ SceneManager::SceneManager(const char* ScreenName, bool initUI)
 	mFrameSkip = true;
 
 	ctx = NULL;
+	Doc = NULL;
 	obctx = NULL;
 	mScreenName = ScreenName;
 
@@ -228,13 +229,7 @@ void SceneManager::InitializeUI()
 	obctx = Obj;
 
 	// Now set up document
-	GString FName = mScreenName + GString(".rml");
-
-	Rocket::Core::ElementDocument *Doc = ctx->LoadDocument(FName.c_str());
-	if (Doc)
-		Doc->Show();
-	else
-		Log::Printf("ScreenManager(): %s not found.\n", FName.c_str());
+	ReloadUI();
 
 	ManagedObjects.push_back(obctx);
 	Objects.push_back(obctx);
@@ -281,6 +276,8 @@ void SceneManager::SetUILayer(uint32 Layer)
 
 void SceneManager::Preload(GString Filename, GString Arrname)
 {
+	mInitScript = Filename;
+
 	Lua->RunScript(Filename);
 
 	if (Lua->UseArray(Arrname))
@@ -307,7 +304,7 @@ GraphObject2D* SceneManager::CreateObject()
 {
 	GraphObject2D* Out = new GraphObject2D;
 	ManagedObjects.push_back(Out);
-	AddTarget(Out);
+	AddTarget(Out, true); // Destroy on reload
 	return Out;
 }
 
@@ -324,6 +321,9 @@ bool SceneManager::IsManagedObject(Drawable2D *Obj)
 
 void SceneManager::Initialize(GString Filename, bool RunScript)
 {
+	if (!mInitScript.length() && Filename.length())
+		mInitScript = Filename;
+
 	if (RunScript)
 		Lua->RunScript(Filename);
 
@@ -333,9 +333,13 @@ void SceneManager::Initialize(GString Filename, bool RunScript)
 	Images->LoadAll();
 }
 
-void SceneManager::AddTarget(GraphObject2D *Targ)
+void SceneManager::AddTarget(GraphObject2D *Targ, bool IsExternal)
 {
 	Objects.push_back(Targ);
+
+	if (IsExternal)
+		ExternalObjects.push_back(Targ);
+
 	Sort();
 }
 
@@ -367,6 +371,7 @@ void SceneManager::RemoveManagedObject(Drawable2D *Obj)
 	{
 		if (*i == Obj)
 		{
+			RemoveTarget(*i);
 			delete *i;
 			ManagedObjects.erase(i);
 			return;
@@ -374,15 +379,34 @@ void SceneManager::RemoveManagedObject(Drawable2D *Obj)
 	}
 }
 
-void SceneManager::RemoveTarget(GraphObject2D *Targ)
+void SceneManager::RemoveManagedObjects()
 {
-	StopManagingObject(Targ);
+	for (auto i: ManagedObjects)
+	{
+		RemoveTarget(i);
+		delete i;
+	}
 
+	ManagedObjects.clear();
+}
+
+void SceneManager::RemoveExternalObjects()
+{
+	for (auto i : ExternalObjects)
+	{
+		RemoveTarget(i);
+	}
+
+	ExternalObjects.clear();
+}
+
+void SceneManager::RemoveTarget(Drawable2D *Targ)
+{
 	for (auto i = Objects.begin(); i != Objects.end(); )
 	{
 		if (*i == Targ)
 		{
-			Objects.erase(i);
+			i = Objects.erase(i);
 			continue;
 		}
 
@@ -474,13 +498,46 @@ void SceneManager::UpdateTargets(double TimeDelta)
 	}
 }
 
+void SceneManager::ReloadUI()
+{
+	if (!ctx) return;
+
+	ctx->UnloadAllDocuments();
+
+	GString FName = mScreenName + GString(".rml");
+
+	Doc = ctx->LoadDocument(FName.c_str());
+	if (Doc)
+	{
+		Log::Printf("%s succesfully loaded.\n", FName.c_str());
+		Doc->Show();
+	}
+}
+
+
+/* This function right now is broken beyond repair. Don't mind it. */
+void SceneManager::ReloadScripts()
+{
+	GString InitScript = mInitScript;
+	this->~SceneManager();
+	new (this) SceneManager(mScreenName.c_str(), false);
+
+	Initialize(InitScript);
+}
+
+void SceneManager::ReloadAll()
+{
+	ReloadUI();
+	ReloadScripts();
+}
+
 void SceneManager::DrawUntilLayer(uint32 Layer)
 {
-	for (auto i = Objects.begin(); i != Objects.end(); ++i)
+	for (auto i: Objects)
 	{
-		if (*i == NULL){ /* throw an error */ continue; }
-		if ((*i)->GetZ() <= Layer)
-			(*i)->Render();
+		if (i == NULL){ /* throw an error */ continue; }
+		if (i->GetZ() <= Layer)
+			i->Render();
 	}
 }
 
@@ -491,11 +548,6 @@ void SceneManager::DrawFromLayer(uint32 Layer)
 		if ((*i)->GetZ() >= Layer)
 			(*i)->Render();
 	}
-}
-
-void InitializeUI()
-{
-
 }
 
 LuaManager *SceneManager::GetEnv()
@@ -531,6 +583,9 @@ bool SceneManager::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 		{
 			if (ctx)
 				ctx->ProcessKeyDown(key_identifier_map[key], 0);
+
+			if (BindingsManager::TranslateKey(key) == KT_ReloadScreenScripts)
+				ReloadUI();
 		}
 		else
 		{

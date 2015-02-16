@@ -13,13 +13,13 @@ BackgroundAnimation = {
 }
 
 function BackgroundAnimation.Init(self)
-	self.Drops = Object2D()
-	self.Drops2 = Object2D()
-	self.Blue = Object2D()
-	self.Rain = Object2D()
-	self.Rain2 = Object2D()
-	self.Fog = Object2D()
-	self.Fog2 = Object2D()
+	self.Drops = Engine:CreateObject()
+	self.Drops2 = Engine:CreateObject()
+	self.Blue = Engine:CreateObject()
+	self.Rain = Engine:CreateObject()
+	self.Rain2 = Engine:CreateObject()
+	self.Fog = Engine:CreateObject()
+	self.Fog2 = Engine:CreateObject()
 
 	self.Drops2Time = self.DropsTotalTime/2
 	self.Rain2Time = self.RainTotalTime/2
@@ -51,14 +51,6 @@ function BackgroundAnimation.Init(self)
 	self.Blue.Alpha = 0.2
 	self.Fog.Alpha = 0.2
 	self.Fog2.Alpha = 0.2
-
-	Engine:AddTarget(self.Drops)
-	Engine:AddTarget(self.Drops2)
-	Engine:AddTarget(self.Blue)
-	Engine:AddTarget(self.Rain)
-	Engine:AddTarget(self.Rain2)
-	-- Engine:AddTarget(self.Fog)
-	-- Engine:AddTarget(self.Fog2)
 end
 
 function BackgroundAnimation.UpdateObjects(self)

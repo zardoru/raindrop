@@ -69,14 +69,14 @@ enum KeyType
 	KT_Enter,
 	KT_BSPC,
 	KT_SelectRight,
-	KT_GoToEditMode,
 	KT_Up,
 	KT_Down,
 	KT_Left,
 	KT_Right,
+	KT_ReloadScreenScripts,
+	KT_Debug,
 
 	// raindrop specific
-	KT_Hit,
 	KT_GameplayClick,
 
 	// Editor specific
@@ -107,6 +107,9 @@ enum KeyType
 	KT_Key16
 };
 
+extern char* KeytypeNames[];
+
+
 /* vsrg constants */
 
 enum ESpeedType {
@@ -122,7 +125,7 @@ enum EHiddenMode {
 	HIDDENMODE_NONE = 0,
 	HIDDENMODE_SUDDEN = 1,
 	HIDDENMODE_HIDDEN = 2,
-	HIDDENMODE_FLASHLIGHT = 3
+	HIDDENMODE_FLASHLIGHT = 3,
 } ;
 
 namespace VSRG {
@@ -139,6 +142,43 @@ namespace VSRG {
 
 	const uint8 MAX_CHANNELS = 16;
 }
+
+struct GameParameters {
+	// If true, use upscroll
+	int Upscroll;
+
+	// If true, enable Wave
+	int Wave;
+
+	// If true, assume difficulty is already loaded and is not just metadata
+	int Preloaded;
+
+	// Fail disabled if true.
+	int NoFail;
+
+	// Auto mode enabled if true.
+	int Auto;
+
+	// Selected hidden mode
+	int HiddenMode;
+
+	// Music speed
+	float Rate;
+
+	// Selected starting measure
+	int32 StartMeasure;
+
+	GameParameters() {
+		Upscroll = false;
+		Wave = false;
+		Preloaded = false;
+		Auto = false;
+		NoFail = false;
+		HiddenMode = HIDDENMODE_NONE;
+		StartMeasure = -1;
+		Rate = 1;
+	}
+};
 
 // Vertical Space for a Measure. A single 4/4 measure takes all of the playing field. Increasing this will decrease multiplier resolution.
 const float MeasureBaseSpacing = 0.8f * ScreenHeightDefault;

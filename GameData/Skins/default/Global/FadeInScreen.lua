@@ -21,8 +21,8 @@ end
 ScreenFade = {}
 
 function ScreenFade.Init()
-	Black1 = Object2D()
-	Black2 = Object2D()
+	Black1 = Engine:CreateObject()
+	Black2 = Engine:CreateObject()
 	
 	Black1.Image = "Global/filter.png"
 	Black2.Image = "Global/filter.png"
@@ -46,9 +46,6 @@ function ScreenFade.Init()
 	Black2.Height = ScreenHeight/2
 	Black1.Z = 31
 	Black2.Z = 31
-	
-	Engine:AddTarget(Black1)
-	Engine:AddTarget(Black2)
 	
 	IFadeInA1 = invert(FadeInA1)
 	IFadeInA2 = invert(FadeInA2)

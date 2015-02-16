@@ -13,6 +13,7 @@ class TruetypeFont;
 namespace Rocket {
 	namespace Core {
 		class Context;
+		class ElementDocument;
 	}
 }
 
@@ -39,20 +40,31 @@ class SceneManager
 {
 	LuaManager *Lua;
 	ImageList *Images;
-	std::vector<Drawable2D*> Objects;
-	std::vector<Drawable2D*> ManagedObjects;
-	std::vector<TruetypeFont*> ManagedFonts;
-	std::vector <Animation> Animations;
+	vector<Drawable2D*> Objects;
+	vector<Drawable2D*> ManagedObjects;
+	vector<Drawable2D*> ExternalObjects;
+	vector<TruetypeFont*> ManagedFonts;
+	vector <Animation> Animations;
 	bool mFrameSkip;
 	GString mScreenName;
+	GString mInitScript;
 
 	Rocket::Core::Context* ctx;
+	Rocket::Core::ElementDocument *Doc;
 	RocketContextObject* obctx;
 public:
 	SceneManager(const char* ScreenName, bool initGUI = false);
 	~SceneManager();
 
+	void RemoveManagedObjects();
+	void RemoveExternalObjects();
+
 	void InitializeUI();
+
+	void ReloadScripts();
+	void ReloadUI();
+	void ReloadAll();
+
 	void RunUIScript(GString Filename);
 	void RunUIFunction(GString Funcname);
 	void SetUILayer(uint32 Layer);
@@ -66,10 +78,10 @@ public:
 	void DoEvent(GString EventName, int Return = 0);
 	void AddLuaAnimation (GraphObject2D* Target, const GString &FName, int Easing, float Duration, float Delay);
 	void StopAnimationsForTarget(GraphObject2D* Target);
-	void AddTarget(GraphObject2D *Targ);
+	void AddTarget(GraphObject2D *Targ, bool IsExternal = false);
 	void AddLuaTarget(GraphObject2D *Targ, GString Varname);
 	void AddLuaTargetArray(GraphObject2D *Targ, GString Varname, GString Arrname);
-	void RemoveTarget(GraphObject2D *Targ);
+	void RemoveTarget(Drawable2D *Targ);
 	void DrawTargets(double TimeDelta);
 
 	TruetypeFont* CreateTTF(const char* Dir, float Size);
