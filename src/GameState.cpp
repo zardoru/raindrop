@@ -26,6 +26,7 @@ GameState::GameState()
 	CurrentSkin = "default";
 	SelectedSong = NULL;
 	SKeeper7K = NULL;
+	Params = make_shared<GameParameters>();
 }
 
 GameState& GameState::GetInstance()

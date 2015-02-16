@@ -75,7 +75,7 @@ dotcur::Song* toSongDC(Game::Song* Sng)
 
 GameParameters* GameState::GetParameters()
 {
-	return &Params;
+	return Params.get();
 }
 
 void GameState::InitializeLua(lua_State *L)

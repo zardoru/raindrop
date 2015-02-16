@@ -2,6 +2,7 @@
 #define GAMESTATE_H_
 
 class GameWindow;
+struct GameParameters;
 
 namespace dotcur
 {
@@ -33,7 +34,7 @@ class GameState
 	Image* SongBG;
 	Game::Song *SelectedSong;
 	ScoreKeeper7K *SKeeper7K;
-	GameParameters Params;
+	shared_ptr<GameParameters> Params;
 public:
 
 	GameState();
