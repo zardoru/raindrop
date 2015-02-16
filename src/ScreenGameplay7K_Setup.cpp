@@ -189,6 +189,7 @@ void ScreenGameplay7K::Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const
 	Preloaded = Param.Preloaded;
 	Auto = Param.Auto;
 	Speed = Param.Rate;
+	NoFail = Param.NoFail;
 
 	ForceActivation = false;
 
