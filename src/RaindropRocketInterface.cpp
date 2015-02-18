@@ -64,8 +64,8 @@ namespace Engine { namespace RocketInterface {
 		{
 			pointf p = { vertices[i].position.x, vertices[i].position.y };
 			pointf u = { vertices[i].tex_coord.x, vertices[i].tex_coord.y };
-			colf   c = { vertices[i].colour.red / 255.0, vertices[i].colour.green / 255.0, 
-				vertices[i].colour.blue / 255.0, vertices[i].colour.alpha / 255.0 }; // normalize to float
+			colf   c = { (float)(vertices[i].colour.red / 255.0), (float)(vertices[i].colour.green / 255.0),
+				(float)(vertices[i].colour.blue / 255.0), (float)(vertices[i].colour.alpha / 255.0) }; // normalize to float
 			posv.push_back(p);
 			uvv.push_back(u);
 			colv.push_back(c);
