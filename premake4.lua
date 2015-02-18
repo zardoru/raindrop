@@ -20,6 +20,8 @@ releaselibs = {
 	"glew32", "Ogg", "vorbis"
 }
 
+libsearchdirs = {}
+
 if os.is "windows" then
 	-- These are only for windows.
 	sdefines[#sdefines+1] = "WIN32"
@@ -70,6 +72,25 @@ if os.is "macosx" then
 		"deps/ext-src/"
 	}
 
+	libsearchdirs = {
+		"/usr/local/lib"
+	}
+
+	-- On OS X, the naming of some libraries is incorrect.
+	-- Also, gotta tell clang the specific libraries to link against.
+	releaselibs = {
+		"glew",
+		"glfw3",
+		"portaudio",
+		"rocketcontrols",
+		"rocketcore",
+		"rocketcorelua",
+		"rocketcontrolslua",
+		"sndfile",
+		"mpg123",
+		"lua"
+	}
+
 	debuglibs = releaselibs
 	plat = {"native", "x64"}
 end
@@ -85,6 +106,7 @@ solution "raindrop-sln"
 		links ({ "glfw3", mp3lib, sndfilelib, soxrlib, portaudiolib })
 		includedirs ("ext-src")
 		includedirs (includelist)
+        libdirs (libsearchdirs)
 		defines (sdefines)
 
 		configuration "with-mp3"
@@ -103,6 +125,7 @@ solution "raindrop-sln"
 
 		configuration { "macosx" }
 			buildoptions { "-std=c++11" }
+			linkoptions { "-framework OpenGL" }
 		
 		configuration "Debug"
 			kind "consoleapp"
