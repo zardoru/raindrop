@@ -123,8 +123,8 @@ namespace VSRG
 
 		DifficultyLoadInfo()
 		{
-			BMPEvents = NULL;
-			TimingInfo = NULL;
+			BMPEvents = nullptr;
+			TimingInfo = nullptr;
 		}
 	};
 
@@ -161,7 +161,7 @@ namespace VSRG
 			IsVirtual = false;
 			Channels = 0;
 			Level = 0;
-			Data = NULL;
+			Data = nullptr;
 		};
 
 		~Difficulty() {
@@ -174,7 +174,7 @@ namespace VSRG
 	class Song : public Game::Song
 	{
 	public:
-		std::vector<std::shared_ptr<VSRG::Difficulty>> Difficulties;
+		std::vector<std::shared_ptr<VSRG::Difficulty> > Difficulties;
 
 		Song();
 		~Song();
