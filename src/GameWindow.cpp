@@ -174,7 +174,7 @@ sk_s StaticSpecialKeys[] = // only add if someone actually needs more
 	{ "Backspace", GLFW_KEY_BACKSPACE }
 };
 
-const int NUM_OF_STATIC_SPECIAL_KEYS = sizeof StaticSpecialKeys / sizeof sk_s; //make sure to match the above array
+const int NUM_OF_STATIC_SPECIAL_KEYS = sizeof (StaticSpecialKeys) / sizeof (sk_s); //make sure to match the above array
 
 std::vector<sk_s> SpecialKeys;
 
@@ -217,7 +217,7 @@ struct defaultKeys_s {
 	{ 'X', KT_GameplayClick }
 };
 
-const int DEFAULT_KEYS_COUNT = sizeof defaultKeys / sizeof defaultKeys_s;
+const int DEFAULT_KEYS_COUNT = sizeof(defaultKeys) / sizeof(defaultKeys_s);
 
 // Must match KeyType structure.
 char* KeytypeNames[] = {
