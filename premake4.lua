@@ -55,6 +55,25 @@ if os.is "linux" then
 	plat = {"native", "x32", "x64"}
 end
 
+if os.is "macosx" then
+	-- This is mostly a copy of the linux stuff above.
+	-- There aren't many differences between the two, but the subtle ones usually cause the most grief.
+	sdefines[#sdefines+1] = "DARWIN"
+	sdefines[#sdefines+1] = "HAS_STDINT"
+	mp3lib = "mpg123"
+	sndfilelib = "sndfile"
+	portaudiolib = "portaudio"
+	soxrlib = "soxr"
+
+	includelist = {
+		"/usr/local/include",
+		"deps/ext-src/"
+	}
+
+	debuglibs = releaselibs
+	plat = {"native", "x64"}
+end
+
 solution "raindrop-sln"
 	configurations { "Debug", "Release" }
 	platforms (plat)
@@ -80,6 +99,9 @@ solution "raindrop-sln"
 			buildoptions { "-std=c++11" }
 		
 		configuration { "linux" }
+			buildoptions { "-std=c++11" }
+
+		configuration { "macosx" }
 			buildoptions { "-std=c++11" }
 		
 		configuration "Debug"
