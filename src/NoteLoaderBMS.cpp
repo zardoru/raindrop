@@ -211,10 +211,10 @@ struct BmsLoadInfo
 		for (int k = 0; k < MAX_CHANNELS; k++)
 		{
 			startTime[k] = -1;
-			LastNotes[k] = NULL;
+			LastNotes[k] = nullptr;
 		}
-		difficulty = NULL;
-		song = NULL;
+		difficulty = nullptr;
+		song = nullptr;
 		LNObj = 0;
 		IsPMS = false;
 		HasBMPEvents = false;

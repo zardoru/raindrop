@@ -88,7 +88,11 @@ if os.is "macosx" then
 		"rocketcontrolslua",
 		"sndfile",
 		"mpg123",
-		"lua"
+		"lua",
+		"iconv",
+		"boost_thread-mt",
+		"boost_system",
+		"vorbisfile"
 	}
 
 	debuglibs = releaselibs
@@ -101,7 +105,7 @@ solution "raindrop-sln"
 	
 	project "raindrop"
 		language "C++"
-		files { "src/*.cpp", "ext-src/*.c", "ext-src/SOIL/*.c", "ext-src/*.cpp" }
+		files { "src/*.cpp", "deps/ext-src/*.c", "deps/ext-src/SOIL/*.c", "deps/ext-src/*.cpp" }
 		
 		links ({ "glfw3", mp3lib, sndfilelib, soxrlib, portaudiolib })
 		includedirs ("ext-src")
@@ -125,7 +129,11 @@ solution "raindrop-sln"
 
 		configuration { "macosx" }
 			buildoptions { "-std=c++11" }
-			linkoptions { "-framework OpenGL" }
+			linkoptions {
+				"-framework OpenGL",
+				"-framework CoreFoundation",
+				"-stdlib=libc++"
+			}
 		
 		configuration "Debug"
 			kind "consoleapp"
