@@ -200,7 +200,7 @@ void Application::SetupPreviewMode()
 
 	if (!Sng || !Sng->Difficulties.size())
 	{
-		Log::Printf("File %s could not be loaded for preview. (%d/%d)\n", InFile.c_path(), (long long int)Sng, Sng ? Sng->Difficulties.size() : 0);
+		Log::Printf("File %s could not be loaded for preview. (%d/%d)\n", InFile.c_path(), (long long int)Sng.get(), Sng ? Sng->Difficulties.size() : 0);
 		return;
 	}
 
