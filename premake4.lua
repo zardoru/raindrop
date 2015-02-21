@@ -69,7 +69,7 @@ if os.is "macosx" then
 
 	includelist = {
 		"/usr/local/include",
-		"deps/ext-src/"
+		"ext-src/"
 	}
 
 	libsearchdirs = {
