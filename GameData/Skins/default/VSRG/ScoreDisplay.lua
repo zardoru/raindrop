@@ -1,10 +1,14 @@
-ScoreDisplay = {}
+ScoreDisplay = ScoreDisplay or {}
 
 ScoreDisplay.Digits = {}
 ScoreDisplay.DigitWidth = 30
 ScoreDisplay.Sheet = "VSRG/combosheet.csv"
 ScoreDisplay.DigitHeight = 30
 ScoreDisplay.DigitCount = 9
+ScoreDisplay.W = ScoreDisplay.DigitWidth * ScoreDisplay.DigitCount
+ScoreDisplay.H = ScoreDisplay.DigitHeight
+ScoreDisplay.X = ScreenWidth - ScoreDisplay.W -- Topleft
+ScoreDisplay.Y = ScreenHeight - ScoreDisplay.H
 ScoreDisplay.Targets = {}
 ScoreDisplay.Images = {}
 
@@ -26,7 +30,8 @@ function ScoreDisplay.Init()
 	for i = 1, ScoreDisplay.DigitCount do
 		ScoreDisplay.Targets[i] = Obj.CreateTarget()
 		Obj.SetTarget(ScoreDisplay.Targets[i])
-		Obj.SetPosition(ScreenWidth - ScoreDisplay.DigitWidth * i, ScreenHeight - ScoreDisplay.DigitHeight)
+		Obj.SetPosition(ScoreDisplay.X + ScoreDisplay.W - ScoreDisplay.DigitWidth * i, 
+							ScoreDisplay.Y + ScoreDisplay.H - ScoreDisplay.DigitHeight)
 		Obj.SetImageSkin("VSRG/"..ScoreDisplay.Atlas.File)
 		Obj.SetSize(ScoreDisplay.DigitWidth, ScoreDisplay.DigitHeight)
 
@@ -39,11 +44,10 @@ function ScoreDisplay.Init()
 end
 
 function ScoreDisplay.Run(Delta)
-	ScoreDisplay.DisplayScore = math.min((ScoreDisplay.Score - ScoreDisplay.DisplayScore) * Delta * 100 + ScoreDisplay.DisplayScore, ScoreDisplay.Score)
-
+	ScoreDisplay.DisplayScore = math.min((ScoreDisplay.Score - ScoreDisplay.DisplayScore) * Delta * 70 + ScoreDisplay.DisplayScore, ScoreDisplay.Score)
 	ScoreDisplay.Digits = {}
 
-	local TCombo = math.floor(ScoreDisplay.DisplayScore)
+	local TCombo = math.ceil(ScoreDisplay.DisplayScore)
 	local tdig = 0
 
 	while TCombo >= 1 do

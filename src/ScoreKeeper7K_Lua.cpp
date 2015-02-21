@@ -18,6 +18,7 @@ void SetupScorekeeper7KLuaInterface(void* state)
 		.addFunction("getScore", &ScoreKeeper7K::getScore)
 		.addFunction("getPercentScore", &ScoreKeeper7K::getPercentScore)
 		.addFunction("getRank", &ScoreKeeper7K::getRank)
+		.addFunction("getBMRank", &ScoreKeeper7K::getBMRank)
 		.addFunction("usesO2", &ScoreKeeper7K::usesO2)
 		.addFunction("getPills", &ScoreKeeper7K::getPills)
 		.addFunction("getCoolCombo", &ScoreKeeper7K::getCoolCombo)
@@ -36,6 +37,7 @@ void SetupScorekeeper7KLuaInterface(void* state)
 	cns(ST_DP);
 	cns(ST_EX);
 	cns(ST_EXP);
+	cns(ST_EXP3);
 	cns(ST_IIDX);
 	cns(ST_JB2);
 	cns(ST_LR2);
@@ -57,6 +59,14 @@ void SetupScorekeeper7KLuaInterface(void* state)
 	cns(LT_STEPMANIA);
 	cns(LT_NORECOV);
 	cns(LT_BATTERY);
+	cns(PMT_AAA);
+	cns(PMT_AA);
+	cns(PMT_A);
+	cns(PMT_B);
+	cns(PMT_C);
+	cns(PMT_D);
+	cns(PMT_E);
+	cns(PMT_F);
 }
 
 
