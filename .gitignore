@@ -1,0 +1,13 @@
+# General ignores.
+ext-src
+ext-libs
+
+# Windows ignores.
+
+# Linux ignores.
+
+# Mac ignores.
+project/Xcode/obj
+project/Xcode/build
+*.xcuserdatad
+.DS_Store
