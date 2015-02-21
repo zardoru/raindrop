@@ -16,9 +16,6 @@ function DrawTextObjects()
 	fntB = Fonts.BitmapFont()
 	Fonts.LoadBitmapFont(fntB, "font.tga", 8, 16, 6, 15, 0);
 	
-	if fnt == nil then
-		print("nil font")
-	end
 
 	pacemaker1.Text = "";
 	pacemaker1.Font = fnt1;
@@ -57,7 +54,12 @@ function DrawTextObjects()
 
 	sng = toSong7K(Global:GetSelectedSong())
 	diff = sng:GetDifficulty(Global.DifficultyIndex)
-	author.Text = string.format("\n%s by %s\nChart: %s by %s", sng.Title, sng.Author, diff.Name, diff.Author)
+	if diff.Author ~= "" then
+		difftxt = string.format("%s by %s", diff.Name, diff.Author)
+	else
+		difftxt = string.format("%s", diff.Name)
+	end
+	author.Text = string.format("\n%s by %s\nChart: %s", sng.Title, sng.Author, difftxt)
 
 	-- Engine:AddTarget(acc1);
 	-- Engine:AddTarget(acc2);

@@ -62,7 +62,7 @@ class ScoreKeeper7K {
 		std::map<PacemakerType, std::string> pacemaker_texts;
 
 		int getRank(); // returns a number from -9 to 9
-
+		int getBMRank(); // returns PMT_xxx according to EXScore Rank
 
 		uint8 getPills();
 		int getCoolCombo();

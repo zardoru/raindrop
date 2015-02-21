@@ -38,4 +38,37 @@ void ScoreKeeper7K::update_lr2(ScoreKeeperJudgment judgment){
 
 }
 
+int ScoreKeeper7K::getBMRank()
+{
+	float thresholds[] = { 8.0 / 9.0, 7.0 / 9.0, 6.0 / 9.0, 
+		5.0 / 9.0, 4.0 / 9.0, 3.0 / 9.0, 2.0 / 9.0, 1.0 / 9.0, 
+		0, -std::numeric_limits<float>::infinity() };
+
+	double exps = getPercentScore(PST_EX);
+	int rank_index = 9;
+
+	for (int i = 0; i < sizeof(thresholds) / sizeof(float); i++)
+	{
+		if (exps > thresholds[i] * 100)
+		{
+			rank_index = i;
+			break;
+		}
+	}
+
+	switch (rank_index)
+	{
+	case 0: return PMT_AAA;
+	case 1: return PMT_AA;
+	case 2: return PMT_A;
+	case 3: return PMT_B;
+	case 4: return PMT_C;
+	case 5: return PMT_D;
+	case 6: return PMT_E;
+	case 7: 
+	default:
+		return PMT_F;
+	}
+}
+
 
