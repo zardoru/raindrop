@@ -190,6 +190,8 @@ function Init()
 	BackgroundAnimation:Init()
 	ScreenFade.Init()
 	
+	-- testbox()
+	
 	Obj.SetTarget(DirUpButton)
 	Obj.SetImageSkin("SongSelect/up.png")
 	Obj.SetCentered(1)
