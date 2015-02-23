@@ -1,5 +1,6 @@
 skin_require("Global/Background.lua")
 skin_require("Global/FadeInScreen.lua")
+game_require("box.lua")
 
 floor = math.floor
 
@@ -175,6 +176,15 @@ end
 function BackBtnHoverLeave()
 
 end
+
+--[[
+function testbox()
+	tboxtransform = Transformation()
+	tboxtransform.X = 300
+	tboxtransform.Y = 200
+	testBox = Box:Create({Transform = tboxtransform, Width = 200, Height = 200})
+end
+]]
 
 function Init()
 	BackgroundAnimation:Init()
