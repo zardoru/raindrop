@@ -7,6 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		81163DC31AAB1C5500F793C1 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 81163DC21AAB1C5500F793C1 /* CoreVideo.framework */; };
+		81163DC51AAB1C5B00F793C1 /* libsoxr.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 81163DC41AAB1C5B00F793C1 /* libsoxr.a */; };
+		81163DC91AAB1CA700F793C1 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 81163DC81AAB1CA700F793C1 /* AppKit.framework */; };
+		81163DCB1AAB1CC500F793C1 /* libsndfile.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 81163DCA1AAB1CC500F793C1 /* libsndfile.a */; };
+		81163DCD1AAB1D0900F793C1 /* libvorbisfile.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 81163DCC1AAB1D0900F793C1 /* libvorbisfile.a */; };
+		81163DCF1AAB1D1500F793C1 /* libvorbis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 81163DCE1AAB1D1500F793C1 /* libvorbis.a */; };
+		81163DD11AAB1D3000F793C1 /* libFLAC.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 81163DD01AAB1D3000F793C1 /* libFLAC.a */; };
+		81163DD31AAB1D4200F793C1 /* libogg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 81163DD21AAB1D4200F793C1 /* libogg.a */; };
+		81163DD51AAB1D5F00F793C1 /* libvorbisenc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 81163DD41AAB1D5F00F793C1 /* libvorbisenc.a */; };
+		81163DDA1AAB1D9400F793C1 /* libRocketControls.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 81163DD61AAB1D9400F793C1 /* libRocketControls.a */; };
+		81163DDB1AAB1D9400F793C1 /* libRocketControlsLua.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 81163DD71AAB1D9400F793C1 /* libRocketControlsLua.a */; };
+		81163DDC1AAB1D9400F793C1 /* libRocketCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 81163DD81AAB1D9400F793C1 /* libRocketCore.a */; };
+		81163DDD1AAB1D9400F793C1 /* libRocketCoreLua.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 81163DD91AAB1D9400F793C1 /* libRocketCoreLua.a */; };
+		81163DDF1AAB1DBF00F793C1 /* libfreetype.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 81163DDE1AAB1DBF00F793C1 /* libfreetype.a */; };
 		811BD3351A9A8F3B0096377A /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 816660F01A98430A00A6AD6C /* OpenGL.framework */; };
 		811BD3421A9A921B0096377A /* libportaudio.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 811BD3401A9A920F0096377A /* libportaudio.a */; };
 		811BD3441A9A92400096377A /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 811BD3431A9A92400096377A /* CoreAudio.framework */; };
@@ -115,6 +129,22 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		81163DC01AAB1C3700F793C1 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		81163DC21AAB1C5500F793C1 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		81163DC41AAB1C5B00F793C1 /* libsoxr.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsoxr.a; path = "../../../ext-libs/Release/libsoxr.a"; sourceTree = "<group>"; };
+		81163DC61AAB1C8C00F793C1 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		81163DC81AAB1CA700F793C1 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		81163DCA1AAB1CC500F793C1 /* libsndfile.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsndfile.a; path = "../../../ext-libs/Release/libsndfile.a"; sourceTree = "<group>"; };
+		81163DCC1AAB1D0900F793C1 /* libvorbisfile.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvorbisfile.a; path = ../../../../../../usr/local/Cellar/libvorbis/1.3.4/lib/libvorbisfile.a; sourceTree = "<group>"; };
+		81163DCE1AAB1D1500F793C1 /* libvorbis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvorbis.a; path = ../../../../../../usr/local/Cellar/libvorbis/1.3.4/lib/libvorbis.a; sourceTree = "<group>"; };
+		81163DD01AAB1D3000F793C1 /* libFLAC.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libFLAC.a; path = ../../../../../../usr/local/Cellar/flac/1.3.1/lib/libFLAC.a; sourceTree = "<group>"; };
+		81163DD21AAB1D4200F793C1 /* libogg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libogg.a; path = ../../../../../../usr/local/Cellar/libogg/1.3.2/lib/libogg.a; sourceTree = "<group>"; };
+		81163DD41AAB1D5F00F793C1 /* libvorbisenc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvorbisenc.a; path = ../../../../../../usr/local/Cellar/libvorbis/1.3.4/lib/libvorbisenc.a; sourceTree = "<group>"; };
+		81163DD61AAB1D9400F793C1 /* libRocketControls.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libRocketControls.a; path = ../../../../../../usr/local/lib/libRocketControls.a; sourceTree = "<group>"; };
+		81163DD71AAB1D9400F793C1 /* libRocketControlsLua.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libRocketControlsLua.a; path = ../../../../../../usr/local/lib/libRocketControlsLua.a; sourceTree = "<group>"; };
+		81163DD81AAB1D9400F793C1 /* libRocketCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libRocketCore.a; path = ../../../../../../usr/local/lib/libRocketCore.a; sourceTree = "<group>"; };
+		81163DD91AAB1D9400F793C1 /* libRocketCoreLua.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libRocketCoreLua.a; path = ../../../../../../usr/local/lib/libRocketCoreLua.a; sourceTree = "<group>"; };
+		81163DDE1AAB1DBF00F793C1 /* libfreetype.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfreetype.a; path = ../../../../../../usr/local/Cellar/freetype/2.5.3_1/lib/libfreetype.a; sourceTree = "<group>"; };
 		811BD3401A9A920F0096377A /* libportaudio.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libportaudio.a; path = "../../../ext-libs/Release/libportaudio.a"; sourceTree = "<group>"; };
 		811BD3431A9A92400096377A /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		811BD3451A9A925B0096377A /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
@@ -519,11 +549,25 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				81163DDF1AAB1DBF00F793C1 /* libfreetype.a in Frameworks */,
+				81163DDA1AAB1D9400F793C1 /* libRocketControls.a in Frameworks */,
+				81163DDB1AAB1D9400F793C1 /* libRocketControlsLua.a in Frameworks */,
+				81163DDC1AAB1D9400F793C1 /* libRocketCore.a in Frameworks */,
+				81163DDD1AAB1D9400F793C1 /* libRocketCoreLua.a in Frameworks */,
+				811BD3421A9A921B0096377A /* libportaudio.a in Frameworks */,
+				81163DD51AAB1D5F00F793C1 /* libvorbisenc.a in Frameworks */,
+				81163DD31AAB1D4200F793C1 /* libogg.a in Frameworks */,
+				81163DD11AAB1D3000F793C1 /* libFLAC.a in Frameworks */,
+				81163DCF1AAB1D1500F793C1 /* libvorbis.a in Frameworks */,
+				81163DCD1AAB1D0900F793C1 /* libvorbisfile.a in Frameworks */,
+				81163DC91AAB1CA700F793C1 /* AppKit.framework in Frameworks */,
+				81163DC31AAB1C5500F793C1 /* CoreVideo.framework in Frameworks */,
 				811BD3471A9A925B0096377A /* AudioToolbox.framework in Frameworks */,
+				81163DCB1AAB1CC500F793C1 /* libsndfile.a in Frameworks */,
 				811BD34A1A9A92B70096377A /* libglfw3.a in Frameworks */,
+				81163DC51AAB1C5B00F793C1 /* libsoxr.a in Frameworks */,
 				811BD3481A9A925B0096377A /* AudioUnit.framework in Frameworks */,
 				811BD3441A9A92400096377A /* CoreAudio.framework in Frameworks */,
-				811BD3421A9A921B0096377A /* libportaudio.a in Frameworks */,
 				815A9D0E1AAB0F7700B96F5D /* libmpg123.a in Frameworks */,
 				811BD3351A9A8F3B0096377A /* OpenGL.framework in Frameworks */,
 			);
@@ -535,6 +579,20 @@
 		1399315C2F815A6531A17830 /* raindrop */ = {
 			isa = PBXGroup;
 			children = (
+				81163DDE1AAB1DBF00F793C1 /* libfreetype.a */,
+				81163DD61AAB1D9400F793C1 /* libRocketControls.a */,
+				81163DD71AAB1D9400F793C1 /* libRocketControlsLua.a */,
+				81163DD81AAB1D9400F793C1 /* libRocketCore.a */,
+				81163DD91AAB1D9400F793C1 /* libRocketCoreLua.a */,
+				81163DD41AAB1D5F00F793C1 /* libvorbisenc.a */,
+				81163DD21AAB1D4200F793C1 /* libogg.a */,
+				81163DD01AAB1D3000F793C1 /* libFLAC.a */,
+				81163DCE1AAB1D1500F793C1 /* libvorbis.a */,
+				81163DCC1AAB1D0900F793C1 /* libvorbisfile.a */,
+				81163DC81AAB1CA700F793C1 /* AppKit.framework */,
+				81163DC61AAB1C8C00F793C1 /* CoreFoundation.framework */,
+				81163DC21AAB1C5500F793C1 /* CoreVideo.framework */,
+				81163DC01AAB1C3700F793C1 /* CoreGraphics.framework */,
 				811BD3451A9A925B0096377A /* AudioToolbox.framework */,
 				811BD3461A9A925B0096377A /* AudioUnit.framework */,
 				811BD3431A9A92400096377A /* CoreAudio.framework */,
@@ -804,7 +862,9 @@
 		816661461A988B6000A6AD6C /* Dependencies */ = {
 			isa = PBXGroup;
 			children = (
+				81163DC41AAB1C5B00F793C1 /* libsoxr.a */,
 				815A9D0D1AAB0F7700B96F5D /* libmpg123.a */,
+				81163DCA1AAB1CC500F793C1 /* libsndfile.a */,
 				811BD3401A9A920F0096377A /* libportaudio.a */,
 				811BD3491A9A92B70096377A /* libglfw3.a */,
 				816660F01A98430A00A6AD6C /* OpenGL.framework */,
@@ -1539,7 +1599,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					"../../ext-src/**",
-					"../../ext-libs/**",
+					"../../ext-libs/include/**",
 					/usr/local/include,
 				);
 				INFOPLIST_FILE = Raindrop/Info.plist;
@@ -1550,6 +1610,9 @@
 					/usr/local/Cellar/libvorbis/1.3.4/lib,
 					/usr/local/Cellar/libsndfile/1.0.25/lib,
 					"/Users/geenz/Devel/raindrop/ext-libs/Release",
+					/usr/local/Cellar/flac/1.3.1/lib,
+					/usr/local/Cellar/libogg/1.3.2/lib,
+					/usr/local/Cellar/freetype/2.5.3_1/lib,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = YES;
@@ -1618,7 +1681,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					"../../ext-src/**",
-					"../../ext-libs/**",
+					"../../ext-libs/include/**",
 					/usr/local/include,
 				);
 				INFOPLIST_FILE = Raindrop/Info.plist;
@@ -1629,6 +1692,9 @@
 					/usr/local/Cellar/libvorbis/1.3.4/lib,
 					/usr/local/Cellar/libsndfile/1.0.25/lib,
 					"/Users/geenz/Devel/raindrop/ext-libs/Release",
+					/usr/local/Cellar/flac/1.3.1/lib,
+					/usr/local/Cellar/libogg/1.3.2/lib,
+					/usr/local/Cellar/freetype/2.5.3_1/lib,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = YES;
@@ -1692,7 +1758,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					"../../ext-src/**",
-					"../../ext-libs/**",
+					"../../ext-libs/include/**",
 					/usr/local/include,
 				);
 				INFOPLIST_FILE = Raindrop/Info.plist;
@@ -1703,6 +1769,9 @@
 					/usr/local/Cellar/libvorbis/1.3.4/lib,
 					/usr/local/Cellar/libsndfile/1.0.25/lib,
 					"/Users/geenz/Devel/raindrop/ext-libs/Release",
+					/usr/local/Cellar/flac/1.3.1/lib,
+					/usr/local/Cellar/libogg/1.3.2/lib,
+					/usr/local/Cellar/freetype/2.5.3_1/lib,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -1766,7 +1835,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					"../../ext-src/**",
-					"../../ext-libs/**",
+					"../../ext-libs/include/**",
 					/usr/local/include,
 				);
 				INFOPLIST_FILE = Raindrop/Info.plist;
@@ -1777,6 +1846,9 @@
 					/usr/local/Cellar/libvorbis/1.3.4/lib,
 					/usr/local/Cellar/libsndfile/1.0.25/lib,
 					"/Users/geenz/Devel/raindrop/ext-libs/Release",
+					/usr/local/Cellar/flac/1.3.1/lib,
+					/usr/local/Cellar/libogg/1.3.2/lib,
+					/usr/local/Cellar/freetype/2.5.3_1/lib,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
