@@ -454,6 +454,13 @@ Vec2 GameWindow::GetRelativeMPos()
 {
 	double mousex, mousey;
 	glfwGetCursorPos(wnd, &mousex, &mousey);
+    
+#ifdef DARWIN
+    int sizey = 0;
+    glfwGetWindowSize(wnd, nullptr, &sizey);
+    mousey = size.y - mousey;
+#endif
+    
 	float outx = (mousex - Viewport.x) / SizeRatio;
 	float outy = matrixSize.y * mousey / size.y;
 	return Vec2(outx, outy);
@@ -552,7 +559,15 @@ bool GameWindow::AutoSetupWindow(Application* _parent)
 		Log::Logf("Failure to initialize window.\n");
 		return false;
 	}
-
+    
+#ifdef DARWIN
+    // This is a temporary hack for OS X where our size isn't getting initialized to the correct values.
+    int outx = 0;
+    int outy = 0;
+    glfwGetWindowSize(wnd, &outx, &outy);
+    ResizeFunc(wnd, outx, outy);
+#endif
+    
 	return SetupWindow();
 }
 
