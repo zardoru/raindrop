@@ -90,6 +90,9 @@ public:
 
 	// returns the mouse position relative to the matrix and window size
 	Vec2 GetRelativeMPos();
+    
+    // returns the mouse position relative to the window.
+    Vec2 GetWindowMPos();
 
 	// returns the size of the window
 	Vec2 GetWindowSize() const;

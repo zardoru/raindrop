@@ -454,16 +454,16 @@ Vec2 GameWindow::GetRelativeMPos()
 {
 	double mousex, mousey;
 	glfwGetCursorPos(wnd, &mousex, &mousey);
-    
-#ifdef DARWIN
-    int sizey = 0;
-    glfwGetWindowSize(wnd, nullptr, &sizey);
-    mousey = size.y - mousey;
-#endif
-    
 	float outx = (mousex - Viewport.x) / SizeRatio;
 	float outy = matrixSize.y * mousey / size.y;
 	return Vec2(outx, outy);
+}
+
+Vec2 GameWindow::GetWindowMPos()
+{
+    double mousex, mousey;
+    glfwGetCursorPos(wnd, &mousex, &mousey);
+    return Vec2(mousex, mousey);
 }
 
 float GameWindow::GetWindowVScale()

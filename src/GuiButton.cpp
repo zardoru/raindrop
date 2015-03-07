@@ -78,7 +78,7 @@ void Button::HoverUpdate(bool IsHovering)
 
 void Button::Run(double delta)
 {
-    transformReverse = glm::inverse(GetMatrix());
+    transformReverse = GetMatrix()._inverse();
 
 	if (MouseInBoundaries(transformReverse, Centered))
 		HoverUpdate(true);
