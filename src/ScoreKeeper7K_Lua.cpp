@@ -22,6 +22,8 @@ void SetupScorekeeper7KLuaInterface(void* state)
 		.addFunction("usesO2", &ScoreKeeper7K::usesO2)
 		.addFunction("getPills", &ScoreKeeper7K::getPills)
 		.addFunction("getCoolCombo", &ScoreKeeper7K::getCoolCombo)
+		.addFunction("getTotalNotes", &ScoreKeeper7K::getTotalNotes)
+		.addFunction("getMaxNotes", &ScoreKeeper7K::getMaxNotes)
 		.endClass();
 
 #define cns(x) lua_pushinteger(L,x); lua_setglobal(L, #x);

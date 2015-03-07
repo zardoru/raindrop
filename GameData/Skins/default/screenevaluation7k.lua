@@ -103,6 +103,33 @@ function SetupJudgmentsDisplay()
 	Engine:AddTarget(JudgeStr)
 end
 
+function SetSongTitle()
+	Filter = Engine:CreateObject()
+	Filter.Image = "Global/filter.png"
+	Filter.X = 0
+	Filter.Y = ScreenHeight - 30
+	Filter.Width = ScreenWidth
+	Filter.Height = 40
+	
+	TitleText = StringObject2D()
+	
+	sng = toSong7K(Global:GetSelectedSong())
+	diff = sng:GetDifficulty(Global.DifficultyIndex)
+	if diff.Author ~= "" then
+		difftxt = string.format("%s by %s", diff.Name, diff.Author)
+	else
+		difftxt = string.format("%s", diff.Name)
+	end
+	
+	TitleText.Text = string.format ("%s by %s (Chart: %s)", Global:GetSelectedSong().Title, Global:GetSelectedSong().Author, difftxt)
+	TitleText.Font = EvalFont
+	
+	TitleText.Y = ScreenHeight - 40
+	TitleText.X = ScreenWidth / 2 - EvalFont:GetLength(TitleText.Text) / 2
+	
+	Engine:AddTarget(TitleText)
+end
+
 function Init()
 	
 	SetupFonts()
@@ -120,6 +147,7 @@ function Init()
 	
 	Engine:AddTarget(scoreStr)
 	
+	SetSongTitle()
 	ScreenFade.Init()
 	ScreenFade.Out()
 	

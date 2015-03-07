@@ -10,9 +10,10 @@ Lifebar = {
 
 Judgment = {
 
-	FadeoutTime = 2,
-	FadeoutDuration = 0.5,
+	FadeoutTime = 1,
+	FadeoutDuration = 0.25,
 	Speed = 15,
+	Tilt = 7, -- in degrees
 
 	Scale = 0.20,
 	ScaleHit = 0.30,
@@ -119,6 +120,7 @@ function Judgment.Init()
 	Obj.SetScale (Judgment.Scale, Judgment.Scale)
 	Obj.SetPosition (Judgment.Position.x, Judgment.Position.y)
 
+	Judgment.LastAlternation = 0
 	Judgment.Time = Judgment.FadeoutTime
 
 	Judgment.IndicatorObject = Obj.CreateTarget()
@@ -135,6 +137,10 @@ function Judgment.Cleanup()
 end
 
 function Judgment.Run(Delta)
+	local ComboPercent = ScoreKeeper:getScore(ST_COMBO) / ScoreKeeper:getMaxNotes()
+	local AAAThreshold = 8.0 / 9.0
+	local ComboLerp = math.min(ComboPercent, AAAThreshold) / AAAThreshold
+	
 	if Active ~= 0 then
 		local AlphaRatio
 		Judgment.Time = Judgment.Time + Delta
@@ -166,10 +172,17 @@ function Judgment.Run(Delta)
 		local w, h = Obj.GetSize()
 
 		Obj.SetAlpha(AlphaRatio)
+				
+		if Judgment.LastAlternation == 0 then
+			Obj.SetRotation(Judgment.Tilt * ComboLerp)
+		else
+			Obj.SetRotation(-Judgment.Tilt * ComboLerp)
+		end
 
 		Obj.SetTarget (Judgment.IndicatorObject)
 
 		if Judgment.Value ~= 1 and Judgment.ShowTimingIndicator == 1 then -- not a "flawless"
+			
 			Obj.SetAlpha(AlphaRatio)
 
 			local NewRatio = FinalScale / Judgment.Scale
@@ -202,8 +215,14 @@ function Judgment.Hit(JudgmentValue, EarlyOrLate)
 		Obj.SetLighten(0)
 	end
 
+	if Judgment.LastAlternation == 0 then
+		Judgment.LastAlternation = 1
+	else 
+		Judgment.LastAlternation = 0
+	end
+	
 	Obj.SetImageSkin("VSRG/" .. Judgment.Table[Judgment.Value])
-
+	
 	if JudgmentValue ~= 5 then
 		if JudgmentValue ~= -1 then
 			Obj.SetScale (Judgment.ScaleHit, Judgment.ScaleHit)
