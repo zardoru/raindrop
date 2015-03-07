@@ -174,7 +174,7 @@ sk_s StaticSpecialKeys[] = // only add if someone actually needs more
 	{ "Backspace", GLFW_KEY_BACKSPACE }
 };
 
-const int NUM_OF_STATIC_SPECIAL_KEYS = sizeof StaticSpecialKeys / sizeof sk_s; //make sure to match the above array
+const int NUM_OF_STATIC_SPECIAL_KEYS = sizeof (StaticSpecialKeys) / sizeof (sk_s); //make sure to match the above array
 
 std::vector<sk_s> SpecialKeys;
 
@@ -217,7 +217,7 @@ struct defaultKeys_s {
 	{ 'X', KT_GameplayClick }
 };
 
-const int DEFAULT_KEYS_COUNT = sizeof defaultKeys / sizeof defaultKeys_s;
+const int DEFAULT_KEYS_COUNT = sizeof(defaultKeys) / sizeof(defaultKeys_s);
 
 // Must match KeyType structure.
 char* KeytypeNames[] = {
@@ -454,6 +454,13 @@ Vec2 GameWindow::GetRelativeMPos()
 {
 	double mousex, mousey;
 	glfwGetCursorPos(wnd, &mousex, &mousey);
+    
+#ifdef DARWIN
+    int sizey = 0;
+    glfwGetWindowSize(wnd, nullptr, &sizey);
+    mousey = size.y - mousey;
+#endif
+    
 	float outx = (mousex - Viewport.x) / SizeRatio;
 	float outy = matrixSize.y * mousey / size.y;
 	return Vec2(outx, outy);
@@ -552,7 +559,15 @@ bool GameWindow::AutoSetupWindow(Application* _parent)
 		Log::Logf("Failure to initialize window.\n");
 		return false;
 	}
-
+    
+#ifdef DARWIN
+    // This is a temporary hack for OS X where our size isn't getting initialized to the correct values.
+    int outx = 0;
+    int outy = 0;
+    glfwGetWindowSize(wnd, &outx, &outy);
+    ResizeFunc(wnd, outx, outy);
+#endif
+    
 	return SetupWindow();
 }
 

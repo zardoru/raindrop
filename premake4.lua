@@ -20,6 +20,8 @@ releaselibs = {
 	"glew32", "Ogg", "vorbis"
 }
 
+libsearchdirs = {}
+
 if os.is "windows" then
 	-- These are only for windows.
 	sdefines[#sdefines+1] = "WIN32"
@@ -55,17 +57,60 @@ if os.is "linux" then
 	plat = {"native", "x32", "x64"}
 end
 
+if os.is "macosx" then
+	-- This is mostly a copy of the linux stuff above.
+	-- There aren't many differences between the two, but the subtle ones usually cause the most grief.
+	sdefines[#sdefines+1] = "DARWIN"
+	sdefines[#sdefines+1] = "HAS_STDINT"
+	mp3lib = "mpg123"
+	sndfilelib = "sndfile"
+	portaudiolib = "portaudio"
+	soxrlib = "soxr"
+
+	includelist = {
+		"/usr/local/include",
+		"ext-src/"
+	}
+
+	libsearchdirs = {
+		"/usr/local/lib"
+	}
+
+	-- On OS X, the naming of some libraries is incorrect.
+	-- Also, gotta tell clang the specific libraries to link against.
+	releaselibs = {
+		"glew",
+		"glfw3",
+		"portaudio",
+		"rocketcontrols",
+		"rocketcore",
+		"rocketcorelua",
+		"rocketcontrolslua",
+		"sndfile",
+		"mpg123",
+		"lua",
+		"iconv",
+		"boost_thread-mt",
+		"boost_system",
+		"vorbisfile"
+	}
+
+	debuglibs = releaselibs
+	plat = {"native", "x64"}
+end
+
 solution "raindrop-sln"
 	configurations { "Debug", "Release" }
 	platforms (plat)
 	
 	project "raindrop"
 		language "C++"
-		files { "src/*.cpp", "ext-src/*.c", "ext-src/SOIL/*.c", "ext-src/*.cpp" }
+		files { "src/*.cpp", "deps/ext-src/*.c", "deps/ext-src/SOIL/*.c", "deps/ext-src/*.cpp" }
 		
 		links ({ "glfw3", mp3lib, sndfilelib, soxrlib, portaudiolib })
 		includedirs ("ext-src")
 		includedirs (includelist)
+        libdirs (libsearchdirs)
 		defines (sdefines)
 
 		configuration "with-mp3"
@@ -81,6 +126,14 @@ solution "raindrop-sln"
 		
 		configuration { "linux" }
 			buildoptions { "-std=c++11" }
+
+		configuration { "macosx" }
+			buildoptions { "-std=c++11" }
+			linkoptions {
+				"-framework OpenGL",
+				"-framework CoreFoundation",
+				"-stdlib=libc++"
+			}
 		
 		configuration "Debug"
 			kind "consoleapp"

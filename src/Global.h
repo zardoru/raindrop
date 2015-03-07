@@ -61,7 +61,9 @@ extern float *PInfinity;
 
 #define Infinity *PInfinity
 
+#ifndef DARWIN
 #define M_PI	 3.14159265358979323846
+#endif
 
 template 
 <class T>

@@ -337,7 +337,7 @@ const char *LoadOJNCover(GString filename, size_t &read)
 	char* out;
 
 	if (!IsValidOJN(filein, filename, &Head))
-		return false;
+		return "";
 
 	out = new char[Head.cover_size];
 
