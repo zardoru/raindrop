@@ -3,6 +3,8 @@
 #ifndef MINGW
 #include <direct.h>
 #endif
+#elif defined(DARWIN)
+#include <CoreFoundation/CoreFoundation.h>
 #else
 #include <iconv.h>
 #endif
@@ -114,6 +116,15 @@ namespace Utility {
 		len = WideCharToMultiByte(CP_UTF8, 0, u16s, len, mbs, 2048, NULL, NULL);
 		mbs[len] = 0;
 		return GString(mbs);
+#elif defined(DARWIN)
+        CFStringRef str;
+        str = CFStringCreateWithCString(NULL, Line.c_str(), kCFStringEncodingShiftJIS);
+        CFMutableStringRef mstr = CFStringCreateMutableCopy(NULL, 0, str);
+        char * buff = new char[Line.size()];
+        CFStringGetCString(str, buff, Line.size(), kCFStringEncodingUTF8);
+        CFRelease(mstr);
+        
+        return GString(buff);
 #else
 		iconv_t conv;
 		char** out = &buf;

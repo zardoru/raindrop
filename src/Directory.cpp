@@ -160,7 +160,7 @@ std::vector<GString>& Directory::ListDirectory(std::vector<GString>& Vec, DirTyp
 	{
 		while ((dir = readdir(d)) != NULL)
 		{
-			if (dir->d_type == DT_REG || dir->d_type == DT_DIR && T == FS_DIR)
+			if (dir->d_type == DT_REG || (dir->d_type == DT_DIR && T == FS_DIR))
 			{
 				GString fname = dir->d_name;
 				
