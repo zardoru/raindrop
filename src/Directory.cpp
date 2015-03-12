@@ -94,6 +94,18 @@ GString Directory::GetExtension() const
 GString Directory::path() const { return curpath; }
 const char* Directory::c_path() const { return curpath.c_str(); }
 
+void Directory::ReplaceExtension(GString newExtension) {
+    GString s = GetExtension();
+    
+    size_t i = curpath.find(s);
+    
+    if (i != GString::npos) {
+        curpath.erase(i, s.length());
+    }
+    
+    curpath += newExtension;
+}
+
 std::vector<GString>& Directory::ListDirectory(std::vector<GString>& Vec, DirType T, const char* ext, bool Recursive)
 {
 
