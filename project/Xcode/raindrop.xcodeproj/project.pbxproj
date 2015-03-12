@@ -20,13 +20,13 @@
 		81163DDB1AAB1D9400F793C1 /* libRocketControlsLua.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 81163DD71AAB1D9400F793C1 /* libRocketControlsLua.a */; };
 		81163DDC1AAB1D9400F793C1 /* libRocketCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 81163DD81AAB1D9400F793C1 /* libRocketCore.a */; };
 		81163DDD1AAB1D9400F793C1 /* libRocketCoreLua.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 81163DD91AAB1D9400F793C1 /* libRocketCoreLua.a */; };
-		81163DDF1AAB1DBF00F793C1 /* libfreetype.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 81163DDE1AAB1DBF00F793C1 /* libfreetype.a */; };
 		811BD3351A9A8F3B0096377A /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 816660F01A98430A00A6AD6C /* OpenGL.framework */; };
 		811BD3421A9A921B0096377A /* libportaudio.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 811BD3401A9A920F0096377A /* libportaudio.a */; };
 		811BD3441A9A92400096377A /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 811BD3431A9A92400096377A /* CoreAudio.framework */; };
 		811BD3471A9A925B0096377A /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 811BD3451A9A925B0096377A /* AudioToolbox.framework */; };
 		811BD3481A9A925B0096377A /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 811BD3461A9A925B0096377A /* AudioUnit.framework */; };
 		811BD34A1A9A92B70096377A /* libglfw3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 811BD3491A9A92B70096377A /* libglfw3.a */; };
+		815A8BF71AABACC50083C11D /* libiconv.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 816AA6F41AABA04A00DC7D59 /* libiconv.dylib */; };
 		815A9D0E1AAB0F7700B96F5D /* libmpg123.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 815A9D0D1AAB0F7700B96F5D /* libmpg123.a */; };
 		816660A41A9841FF00A6AD6C /* ActorBarline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81B2CB071A983D510082F478 /* ActorBarline.cpp */; };
 		816660A51A9841FF00A6AD6C /* ActorJudgment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81B2CB091A983D510082F478 /* ActorJudgment.cpp */; };
@@ -113,6 +113,7 @@
 		816661431A988AB100A6AD6C /* SOIL.c in Sources */ = {isa = PBXBuildFile; fileRef = 8166612E1A988AB100A6AD6C /* SOIL.c */; };
 		816661441A988AB100A6AD6C /* stb_image_aug.c in Sources */ = {isa = PBXBuildFile; fileRef = 816661301A988AB100A6AD6C /* stb_image_aug.c */; };
 		816661451A988AB100A6AD6C /* sqlite3.c in Sources */ = {isa = PBXBuildFile; fileRef = 816661351A988AB100A6AD6C /* sqlite3.c */; };
+		816AA6FB1AABA3CD00DC7D59 /* libfreetype.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 816AA6FA1AABA3CD00DC7D59 /* libfreetype.a */; };
 		81D75E2F1A98A0E000B185FA /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 81D75E2E1A98A0E000B185FA /* Images.xcassets */; };
 /* End PBXBuildFile section */
 
@@ -400,6 +401,11 @@
 		816662181A988C2600A6AD6C /* stage-lifeb-s.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "stage-lifeb-s.png"; sourceTree = "<group>"; };
 		816662191A988C2600A6AD6C /* stage-lifeb.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "stage-lifeb.png"; sourceTree = "<group>"; };
 		8166621A1A988C2600A6AD6C /* stage-right.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "stage-right.png"; sourceTree = "<group>"; };
+		816AA6F41AABA04A00DC7D59 /* libiconv.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.dylib; path = usr/lib/libiconv.dylib; sourceTree = SDKROOT; };
+		816AA6F61AABA19D00DC7D59 /* libiconv.2.4.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.2.4.0.dylib; path = usr/lib/libiconv.2.4.0.dylib; sourceTree = SDKROOT; };
+		816AA6F81AABA3A500DC7D59 /* libiconv.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libiconv.a; path = "../../ext-libs/Release/libiconv.a"; sourceTree = "<group>"; };
+		816AA6FA1AABA3CD00DC7D59 /* libfreetype.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfreetype.a; path = ../../../../../../usr/local/lib/libfreetype.a; sourceTree = "<group>"; };
+		816AA6FC1AABA75100DC7D59 /* libicucore.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.dylib; path = usr/lib/libicucore.dylib; sourceTree = SDKROOT; };
 		81B2CB071A983D510082F478 /* ActorBarline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ActorBarline.cpp; sourceTree = "<group>"; };
 		81B2CB081A983D510082F478 /* ActorBarline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ActorBarline.h; sourceTree = "<group>"; };
 		81B2CB091A983D510082F478 /* ActorJudgment.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ActorJudgment.cpp; sourceTree = "<group>"; };
@@ -549,7 +555,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				81163DDF1AAB1DBF00F793C1 /* libfreetype.a in Frameworks */,
+				815A8BF71AABACC50083C11D /* libiconv.dylib in Frameworks */,
+				816AA6FB1AABA3CD00DC7D59 /* libfreetype.a in Frameworks */,
 				81163DDA1AAB1D9400F793C1 /* libRocketControls.a in Frameworks */,
 				81163DDB1AAB1D9400F793C1 /* libRocketControlsLua.a in Frameworks */,
 				81163DDC1AAB1D9400F793C1 /* libRocketCore.a in Frameworks */,
@@ -579,6 +586,11 @@
 		1399315C2F815A6531A17830 /* raindrop */ = {
 			isa = PBXGroup;
 			children = (
+				816AA6FC1AABA75100DC7D59 /* libicucore.dylib */,
+				816AA6FA1AABA3CD00DC7D59 /* libfreetype.a */,
+				816AA6F81AABA3A500DC7D59 /* libiconv.a */,
+				816AA6F61AABA19D00DC7D59 /* libiconv.2.4.0.dylib */,
+				816AA6F41AABA04A00DC7D59 /* libiconv.dylib */,
 				81163DDE1AAB1DBF00F793C1 /* libfreetype.a */,
 				81163DD61AAB1D9400F793C1 /* libRocketControls.a */,
 				81163DD71AAB1D9400F793C1 /* libRocketControlsLua.a */,
@@ -1250,7 +1262,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "OUTPUT_DIR=${BUILT_PRODUCTS_DIR}\nmkdir -p \"${OUTPUT_DIR}/Raindrop.app/Contents/Resources/GameData\"\ncp -R ../../GameData \"${OUTPUT_DIR}/Raindrop.app/Contents/Resources/\"";
+			shellScript = "OUTPUT_DIR=${BUILT_PRODUCTS_DIR}\nmkdir -p \"${OUTPUT_DIR}/Raindrop.app/Contents/Resources/GameData\"\nmkdir -p \"${OUTPUT_DIR}/Raindrop.app/Contents/Resources/Songs\"\ncp -R ../../GameData \"${OUTPUT_DIR}/Raindrop.app/Contents/Resources/\"\n\ncp -R ../../Songs \"${OUTPUT_DIR}/Raindrop.app/Contents/Resources/\"";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1627,7 +1639,6 @@
 					"-lrocketcorelua",
 					"-lrocketcontrolslua",
 					"-llua",
-					"-liconv",
 					"-lboost_thread-mt",
 					"-lboost_system",
 					"-lvorbisfile",
@@ -1709,7 +1720,6 @@
 					"-lrocketcorelua",
 					"-lrocketcontrolslua",
 					"-llua",
-					"-liconv",
 					"-lboost_thread-mt",
 					"-lboost_system",
 					"-lvorbisfile",
@@ -1750,6 +1760,12 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					DARWIN,
+					HAS_STDINT,
+					NDEBUG,
+					SI_SUPPORT_IOSTREAMS,
+				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -1786,7 +1802,6 @@
 					"-lrocketcorelua",
 					"-lrocketcontrolslua",
 					"-llua",
-					"-liconv",
 					"-lboost_thread-mt",
 					"-lboost_system",
 					"-lvorbisfile",
@@ -1863,7 +1878,6 @@
 					"-lrocketcorelua",
 					"-lrocketcontrolslua",
 					"-llua",
-					"-liconv",
 					"-lboost_thread-mt",
 					"-lboost_system",
 					"-lvorbisfile",
