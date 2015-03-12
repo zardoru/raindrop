@@ -3,8 +3,6 @@
 #ifndef MINGW
 #include <direct.h>
 #endif
-#elif defined(DARWIN)
-#include <CoreFoundation/CoreFoundation.h>
 #else
 #include <iconv.h>
 #endif
@@ -105,32 +103,38 @@ namespace Utility {
 		return GString(mbs);
 	}
 
-	char* buf = (char*)malloc(2048);
+    const short MAX_STRING_SIZE = 2048;
 
 	GString SJIStoU8 (GString Line)
 	{
 #ifdef WIN32
-		wchar_t u16s[2048];
-		char mbs[2048];
-		size_t len = MultiByteToWideChar(932, 0, Line.c_str(), Line.length(), u16s, 2048);
-		len = WideCharToMultiByte(CP_UTF8, 0, u16s, len, mbs, 2048, NULL, NULL);
+		wchar_t u16s[MAX_STRING_SIZE];
+		char mbs[MAX_STRING_SIZE];
+		size_t len = MultiByteToWideChar(932, 0, Line.c_str(), Line.length(), u16s, MAX_STRING_SIZE);
+		len = WideCharToMultiByte(CP_UTF8, 0, u16s, len, mbs, MAX_STRING_SIZE, NULL, NULL);
 		mbs[len] = 0;
 		return GString(mbs);
 #elif defined(DARWIN)
-        CFStringRef str;
-        str = CFStringCreateWithCString(NULL, Line.c_str(), kCFStringEncodingShiftJIS);
-        CFMutableStringRef mstr = CFStringCreateMutableCopy(NULL, 0, str);
-        char * buff = new char[Line.size()];
-        CFStringGetCString(str, buff, Line.size(), kCFStringEncodingUTF8);
-        CFRelease(mstr);
+        // Note: for OS X/Darwin/More than likely most BSD variants, iconv behaves a bit differently.
+        iconv_t conv;
+        char buf[MAX_STRING_SIZE];
+        char* out = buf;
+        size_t srcLength = Line.length();
+        size_t dstLength = MAX_STRING_SIZE;
+        const char* in = Line.c_str();
         
-        return GString(buff);
+        conv = iconv_open("UTF-8", "SHIFT_JIS");
+        iconv(conv, (char**)&in, &srcLength, (char**)&out, &dstLength);
+        iconv_close(conv);
+        // We have to use buf instead of out here.  For whatever reason, iconv on Darwin doesn't get us what we would expect if we just use out.
+        return GString(buf);
 #else
+        char buf[MAX_STRING_SIZE];
 		iconv_t conv;
 		char** out = &buf;
 		const char* in = Line.c_str();
 		size_t BytesLeftSrc = Line.length();
-		size_t BytesLeftDst = 2048;
+		size_t BytesLeftDst = MAX_STRING_SIZE;
 
 		conv = iconv_open("UTF-8", "SHIFT_JIS");
 		bool success = (iconv(conv, (char **)&in, &BytesLeftSrc, out, &BytesLeftDst) > -1);
