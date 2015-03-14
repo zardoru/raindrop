@@ -194,6 +194,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 {
 	std::vector<GString> Listing;
 
+	songPath.Normalize();
 	songPath.ListDirectory(Listing, Directory::FS_REG);
 
 	Directory SongDirectory = songPath.path() + "/";
@@ -223,9 +224,12 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 	/* First we need to see whether these file need to be renewed.*/
 	for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{
-		std::wstring Ext = Utility::Widen(Directory(*i).GetExtension());
+		Directory File = *i;
+		File.Normalize();
 
-		if ( VSRGValidExtension(Ext) && DB->CacheNeedsRenewal(SongDirectory / *i) )
+		std::wstring Ext = Utility::Widen(File.GetExtension());
+
+		if ( VSRGValidExtension(Ext) && DB->CacheNeedsRenewal(SongDirectory / File.path()) )
 			RenewCache = true;
 	}
 
@@ -248,9 +252,12 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 		VSRG::Song *smSong = new VSRG::Song;
 		smSong->SongDirectory = SongDirectory;
 
-		for (auto i = Listing.begin(); i != Listing.end(); i++)
+		for (auto i: Listing)
 		{
-			std::wstring Ext = Utility::Widen(Directory(*i).GetExtension());
+			Directory File = i;
+			File.Normalize();
+
+			std::wstring Ext = Utility::Widen(File.GetExtension());
 			
 			// We want to group charts with the same title together.
 			if (ValidBMSExtension(Ext))
@@ -258,11 +265,11 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 				BMSSong->SongDirectory = SongDirectory;
 
 				try {
-					LoadSong7KFromFilename(*i, SongDirectory, BMSSong);
+					LoadSong7KFromFilename(File, SongDirectory, BMSSong);
 				} catch (std::exception &ex)
 				{
 					Log::Logf("\nSongLoader::LoadSong7KFromDir(): Exception \"%s\" occurred while loading file \"%s\"\n", 
-						ex.what(), i->c_str());
+						ex.what(), File.c_path());
 					Utility::DebugBreak();
 				}
 				
@@ -287,7 +294,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 
 			if (Ext == L"ojn")
 			{
-				LoadSong7KFromFilename(*i, SongDirectory, OJNSong);
+				LoadSong7KFromFilename(File, SongDirectory, OJNSong);
 				VSRGUpdateDatabaseDifficulties(DB, OJNSong);
 				PushVSRGSong(VecOut, OJNSong);
 				OJNSong = new VSRG::Song;
@@ -295,11 +302,11 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 			}
 
 			if (Ext == L"osu" || Ext == L"fcf")
-				LoadSong7KFromFilename(*i, SongDirectory, osuSong);
+				LoadSong7KFromFilename(File, SongDirectory, osuSong);
 
 			if (Ext == L"sm")
 			{
-				LoadSong7KFromFilename(*i, SongDirectory, smSong);
+				LoadSong7KFromFilename(File, SongDirectory, smSong);
 				VSRGUpdateDatabaseDifficulties(DB, smSong);
 				PushVSRGSong(VecOut, smSong);
 				smSong = new VSRG::Song;
@@ -330,13 +337,16 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 		int ID = -1;
 		std::vector<int> IDList;
 
-		for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
+		for (auto i: Listing)
 		{
-			std::wstring Ext = Utility::Widen(Directory(*i).GetExtension());
+			Directory File = i;
+			File.Normalize();
+
+			std::wstring Ext = Utility::Widen(File.GetExtension());
 			if (VSRGValidExtension(Ext))
 			{
-				assert(!DB->CacheNeedsRenewal(SongDirectory / *i));
-				int CurrentID = DB->GetSongIDForFile(SongDirectory / *i, NULL);
+				assert(!DB->CacheNeedsRenewal(SongDirectory / File.path()));
+				int CurrentID = DB->GetSongIDForFile(SongDirectory / File.path(), NULL);
 				if (CurrentID != ID)
 				{
 					ID = CurrentID;
@@ -347,9 +357,9 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 
 		// So now we have our list with song IDs that are present on the current directory.
 		// Time to load from cache.
-		for (std::vector<int>::iterator i = IDList.begin();
+		for (auto i = IDList.begin();
 			i != IDList.end();
-			i++)
+			++i)
 		{
 			VSRG::Song *New = new VSRG::Song;
 			Log::Logf("Song ID %d load from cache...", *i);

@@ -31,9 +31,9 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 		_snprintf
 #endif
 			(vf, 1024, "%s/%s - %s [%s] (%s).osu", PathOut.c_path(), Sng->SongAuthor.c_str(), Sng->SongName.c_str(), (*i)->Name.c_str(), Author.c_str());
-		GString Str = vf;
-		Utility::RemoveFilenameIllegalCharacters(Str);
-		std::ofstream out (Str.c_str());
+		Directory Str = vf;
+		Str.Normalize();
+		std::ofstream out (Str.c_path());
 
 		if (!out.is_open())
 		{

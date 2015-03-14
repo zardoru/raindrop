@@ -114,7 +114,6 @@ namespace Utility
 	GString SJIStoU8(GString Line);
 	void CheckDir (GString Dirname);
 	int GetLMT(GString Path);
-	void RemoveFilenameIllegalCharacters(GString &S, bool removeSlash = false);
 	GString getSha256ForFile(GString Filename);
 	GString IntToStr(int num);
 	GString CharToStr(char c);

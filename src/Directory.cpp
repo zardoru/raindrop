@@ -7,6 +7,8 @@
 #include "Global.h"
 #include "Directory.h"
 
+#include <boost/algorithm/string.hpp>
+
 Directory::Directory()
 {
 	
@@ -46,6 +48,35 @@ Directory Directory::ParentDirectory()
 		}
 	}
 	return Directory(GString(".")); // if there is no slash, then the root directory has been reached.
+}
+
+void Directory::Normalize()
+{
+	boost::replace_all(curpath, "<", "");
+	boost::replace_all(curpath, ">", "");
+	boost::replace_all(curpath, ":", "");
+	boost::replace_all(curpath, "\"", "");
+	boost::replace_all(curpath, "|", "");
+	boost::replace_all(curpath, "?", "");
+	boost::replace_all(curpath, "*", "");
+	boost::replace_all(curpath, "\\", "/");
+
+	GString newCurPath;
+
+	// remove all redundant slashes
+	char last = 0;
+	for (auto i = curpath.begin(); i != curpath.end(); ++i)
+	{
+		if (last == '/' && *i == '/')
+		{
+			continue;
+		}
+
+		last = *i;
+		newCurPath += *i;
+	}
+
+	curpath = newCurPath;
 }
 
 Directory operator/(Directory parent, GString subpath)

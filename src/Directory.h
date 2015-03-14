@@ -21,6 +21,8 @@ public:
 	bool operator==(GString) const;
 	operator GString() const;
 
+
+	void Normalize();
 	Directory ParentDirectory();
 	Directory Filename();
 	

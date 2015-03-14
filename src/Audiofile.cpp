@@ -214,12 +214,13 @@ bool AudioSample::IsPlaying()
 GString RearrangeFilename(const char* Fn)
 {
 	GString Ret;
-
-	if (Utility::FileExists(Fn))
+	Directory File = Fn;
+	File.Normalize();
+	if (Utility::FileExists(File.c_path()))
 		return Fn;
 	else
 	{
-		GString Ext = Directory(Fn).GetExtension();
+		GString Ext = File.GetExtension();
 		boost::algorithm::to_lower(Ext);
 
 		if (strstr(Ext.c_str(), "wav"))
@@ -228,7 +229,7 @@ GString RearrangeFilename(const char* Fn)
 			Ret = Utility::RemoveExtension(Fn) + ".wav";
 
 		if (!Utility::FileExists(Ret))
-			return Fn;
+			return File.c_path();
 		else
 			return Ret;
 	}

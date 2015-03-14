@@ -1,13 +1,7 @@
 #ifndef LuaManager_H
 #define LuaManager_H
 
-extern "C" {
-
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-
-}
+#include "lua.hpp"
 
 #include "Directory.h"
 
