@@ -328,9 +328,6 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 			cnt = PaUtil_ReadRingBuffer(&mRingBuf, tmpBuffer, scount);
 			// cnt now contains how many samples we actually read... 
 
-			if (Channels == 1)
-				monoToStereo(tmpBuffer, cnt, BUFF_SIZE);
-
 			// This is how many resulting samples we can output with what we read...
 			outcnt = (cnt * resRate / origRate);
 
@@ -340,10 +337,15 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 			sis.otype = SOXR_INT16_I;
 			sis.scale = 1;
 
+			size_t done;
+
 			soxr_oneshot(origRate, resRate, Channels,
 				tmpBuffer, cnt / Channels, NULL,
-				buffer, outcnt / Channels, NULL,
+				buffer, outcnt / Channels, &done,
 				&sis, NULL, NULL);
+
+			if (Channels == 1)
+				monoToStereo(tmpBuffer, cnt, BUFF_SIZE);
 		}
 		else
 		{

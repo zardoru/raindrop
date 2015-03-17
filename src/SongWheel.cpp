@@ -260,8 +260,10 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 							GameState::GetInstance().SetSelectedSong(GetSelectedSong().get());
 							GameState::GetInstance().SetDifficultyIndex(0);
 							DifficultyIndex = 0;
-							OnSongTentativeSelect(GetSelectedSong(), 0);
 						}
+
+						// Null possible only to potentially stop previews.
+						OnSongTentativeSelect(GetSelectedSong(), 0);
 					}
 					return true;
 				}
@@ -389,7 +391,7 @@ void SongWheel::DisplayItem(int32 ListItem, Vec2 Position)
 		}
 
 		if (TransformItem)
-			TransformItem(Item, Song, IsSelected); // third arg: 'IsSelected'
+			TransformItem(Item, Song, IsSelected);
 
 		// Render the objects.
 		Item->Render();

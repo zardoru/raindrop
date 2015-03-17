@@ -3,7 +3,15 @@ ext-src
 ext-libs
 
 # Windows ignores.
-
+project/debug
+project/release
+*.dll
+project/config.ini
+*.suo
+*.user
+*sdf
+project/log.txt
+project/*.db
 # Linux ignores.
 
 # Mac ignores.
