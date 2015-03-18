@@ -1103,6 +1103,11 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 				Out->PreviewTime = latof(CommandContents.c_str());
 			}
 
+			OnCommand(#PREVIEWTIME)
+			{
+				Out->PreviewTime = latof(CommandContents.c_str());
+			}
+
 			OnCommand(#STAGEFILE)
 			{
 				Diff->Data->StageFile = CommandContents;

@@ -331,7 +331,7 @@ class BMSConverter {
 
 		OutFile << endl << "-- STOPs" << endl;
 		for (size_t i = 0; i < CurrentBMS->Stops.size(); i++){
-			OutFile << "#BPM" << ToBase36(i + 1) << " " << CurrentBMS->Stops[i] << endl;
+			OutFile << "#STOP" << ToBase36(i + 1) << " " << CurrentBMS->Stops[i] << endl;
 		}
 	}
 
@@ -348,15 +348,11 @@ class BMSConverter {
 		});
 
 		vector<int> rowified; 
-		bool BoundaryHack = false;
-		int BoundaryIndex = 0;
 		rowified.resize(VecLCM);
 
 		// Now that we have LCM units we can easily just place the objects exactly as we want to output them.
 		for (auto Obj : Out){ // We convert to a fraction that fits with the LCM.
 			int rNum = Obj.Sect.Num * VecLCM / Obj.Sect.Den;
-			// XXX: Ugly hack. Sometimes notes that shouldn't be part of this measure end up in it!
-
 			rowified[rNum] = Obj.Evt;
 		}
 
@@ -416,18 +412,25 @@ class BMSConverter {
 	void WriteMeasures()
 	{
 		int Measure = 0;
+		using std::endl;
 		for (auto M : CurrentBMS->Measures){
 			if (M.bmsLength != 1)
-				OutFile << boost::format("#%03d02:%f") % Measure % M.bmsLength << std::endl;
-			WriteVectorToMeasureChannel(M.BGMEvents, Measure, 3);
+				OutFile << boost::format("#%03d02:%f") % Measure % M.bmsLength << endl;
+
+			OutFile << "-- BGM - Measure " << Measure << endl;
+			WriteVectorToMeasureChannel(M.BGMEvents, Measure, 1);
+
+			OutFile << "-- BPM" << endl;
 			WriteVectorToMeasureChannel(M.BPMEvents, Measure, 8); // lol just exbpm. who cares anyway
 
+			OutFile << "-- OBJ" << endl;
 			for (int i = 0; i < CurrentDifficulty->Channels; i++)
 			{
 				WriteVectorToMeasureChannel(M.Objects[i], Measure, GetChannel(i));
 				WriteVectorToMeasureChannel(M.LNObjects[i], Measure, GetLNChannel(i));
 			}
 
+			OutFile << "-- STOPS" << endl;
 			WriteVectorToMeasureChannel(M.StopEvents, Measure, 9);
 			Measure++;
 		}

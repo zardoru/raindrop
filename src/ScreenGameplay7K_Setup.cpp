@@ -193,7 +193,7 @@ void ScreenGameplay7K::Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const
 
 	ForceActivation = false;
 
-	if (Auto)
+	if (Param.StartMeasure == -1 && Auto)
 		StartMeasure = 0;
 
 	Animations = new SceneManager("ScreenGameplay7K");

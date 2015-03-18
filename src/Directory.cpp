@@ -50,16 +50,18 @@ Directory Directory::ParentDirectory()
 	return Directory(GString(".")); // if there is no slash, then the root directory has been reached.
 }
 
-void Directory::Normalize()
+void Directory::Normalize(bool RemoveIllegal)
 {
-	boost::replace_all(curpath, "<", "");
-	boost::replace_all(curpath, ">", "");
-	boost::replace_all(curpath, ":", "");
-	boost::replace_all(curpath, "\"", "");
-	boost::replace_all(curpath, "|", "");
-	boost::replace_all(curpath, "?", "");
-	boost::replace_all(curpath, "*", "");
-	boost::replace_all(curpath, "\\", "/");
+	if (RemoveIllegal) {
+		boost::replace_all(curpath, "<", "");
+		boost::replace_all(curpath, ">", "");
+		boost::replace_all(curpath, ":", "");
+		boost::replace_all(curpath, "\"", "");
+		boost::replace_all(curpath, "|", "");
+		boost::replace_all(curpath, "?", "");
+		boost::replace_all(curpath, "*", "");
+		boost::replace_all(curpath, "\\", "/");
+	}
 
 	GString newCurPath;
 

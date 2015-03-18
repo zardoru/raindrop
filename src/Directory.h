@@ -22,7 +22,7 @@ public:
 	operator GString() const;
 
 
-	void Normalize();
+	void Normalize(bool RemoveIllegal = false);
 	Directory ParentDirectory();
 	Directory Filename();
 	

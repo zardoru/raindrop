@@ -197,7 +197,6 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 {
 	std::vector<GString> Listing;
 
-	songPath.Normalize();
 	songPath.ListDirectory(Listing, Directory::FS_REG);
 
 	Directory SongDirectory = songPath.path() + "/";
