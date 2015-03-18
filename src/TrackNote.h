@@ -37,7 +37,7 @@ namespace VSRG
 		float b_pos_holdend;
 
 		// 2 bytes
-		uint16 Sound; // Do we really need more than 65536 sounds?
+		uint16 Sound; 
 
 		// 2 bytes
 		uint8 NoteKind; // To be used with ENoteKind.

@@ -368,7 +368,8 @@ void LuaManager::NewMetatable(GString MtName)
 
 void LuaManager::RegisterLibrary(GString Libname, const luaL_Reg *Reg)
 {
-	luaL_register(State, Libname.c_str(), Reg);
+	luaL_newlib(State, Reg);
+	lua_setglobal(State, Libname.c_str());
 }
 
 lua_State* LuaManager::GetState()

@@ -250,6 +250,9 @@
     <ClCompile Include="..\src\RaindropRocketInterface.cpp">
       <Filter>Source\backend\librocket</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\ConvertToBMS.cpp">
+      <Filter>Source\vsrg\converting</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">

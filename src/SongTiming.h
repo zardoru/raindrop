@@ -1,8 +1,8 @@
 /* SongDC Timing functions. */
 
 /* Song Timing */
-inline float spb(float bpm) { return 60 / bpm; } // Return seconds per beat.
-inline float bps(float bpm) { return bpm / 60; } // Return beats per second.
+inline double spb(double bpm) { return 60 / bpm; } // Return seconds per beat.
+inline double bps(double bpm) { return bpm / 60; } // Return beats per second.
 
 /* Assume these are sorted. */
 // Return the vector's index Beat resides in.

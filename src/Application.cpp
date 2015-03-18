@@ -295,7 +295,9 @@ void Application::Run()
 		if (Sng && Sng->Difficulties.size()) 
 		{
 			if (ConvertMode == CONV_OM) // for now this is the default
-				ConvertToOM (Sng.get(), OutFile.path(), Author);
+				ConvertToOM(Sng.get(), OutFile.path(), Author);
+			else if (ConvertMode == CONV_BMS)
+				ConvertToBMS(Sng.get(), OutFile.path());
 			else
 				ConvertToSMTiming(Sng.get(), OutFile.path());
 		}

@@ -182,3 +182,8 @@ void ConvertToSMTiming(VSRG::Song *Sng, Directory PathOut)
 
 	out << ";";
 }
+
+void ExportToBMS(VSRG::Song *Sng, Directory PathOut);
+void ConvertToBMS(VSRG::Song *Sng, Directory PathOut) {
+	ExportToBMS(Sng, PathOut);
+}

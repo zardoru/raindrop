@@ -337,15 +337,17 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 			sis.otype = SOXR_INT16_I;
 			sis.scale = 1;
 
-			size_t done;
+			size_t odone;
 
 			soxr_oneshot(origRate, resRate, Channels,
 				tmpBuffer, cnt / Channels, NULL,
-				buffer, outcnt / Channels, &done,
+				buffer, outcnt / Channels, &odone,
 				&sis, NULL, NULL);
 
 			if (Channels == 1)
-				monoToStereo(tmpBuffer, cnt, BUFF_SIZE);
+				monoToStereo(tmpBuffer, odone, BUFF_SIZE);
+
+			outcnt = odone;
 		}
 		else
 		{

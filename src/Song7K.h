@@ -5,7 +5,7 @@ namespace VSRG
 {
 	struct Measure
 	{
-		std::vector<NoteData> MeasureNotes[MAX_CHANNELS];
+		vector<NoteData> MeasureNotes[MAX_CHANNELS];
 		double MeasureLength; // In beats. 4 by default.
 
 		Measure() {

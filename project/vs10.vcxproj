@@ -184,6 +184,7 @@
     <ClCompile Include="..\src\BitmapFont.cpp" />
     <ClCompile Include="..\src\Configuration.cpp" />
     <ClCompile Include="..\src\Convert.cpp" />
+    <ClCompile Include="..\src\ConvertToBMS.cpp" />
     <ClCompile Include="..\src\Directory.cpp" />
     <ClCompile Include="..\src\Font.cpp" />
     <ClCompile Include="..\src\GameState.cpp" />

@@ -577,7 +577,7 @@ void PushNotesToMeasures(OsuLoadInfo *Info)
 	{
 		for (auto i = Info->Notes[k].begin(); i != Info->Notes[k].end(); i++)
 		{
-			double Beat = IntegrateToTime(BPS, i->StartTime);
+			double Beat = QuantizeBeat(IntegrateToTime(BPS, i->StartTime));
 			double CurrentBeat = 0; // Lower bound of this measure
 
 			if (Beat < 0)
@@ -597,6 +597,7 @@ void PushNotesToMeasures(OsuLoadInfo *Info)
 				if (Beat >= CurrentBeat && Beat < NextBeat) // Within bounds
 				{
 					m->MeasureNotes[k].push_back(*i); // Add this note to this measure.
+					break; // Stop looking for a measure.
 				}
 
 				CurrentBeat += m->MeasureLength;
