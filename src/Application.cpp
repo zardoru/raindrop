@@ -106,6 +106,8 @@ void Application::ParseArgs()
 						ConvertMode = CONV_SM;
 					else if (Mode == "bms")
 						ConvertMode = CONV_BMS;
+					else if (Mode == "uqbms")
+						ConvertMode = CONV_UQBMS;
 					i++;
 				}
 
@@ -252,6 +254,9 @@ bool Application::PollIPC()
 	}
 }
 
+
+void ExportToBMSUnquantized(VSRG::Song* Source, Directory PathOut);
+
 void Application::Run()
 {
 	double T1 = glfwGetTime();
@@ -298,8 +303,15 @@ void Application::Run()
 				ConvertToOM(Sng.get(), OutFile.path(), Author);
 			else if (ConvertMode == CONV_BMS)
 				ConvertToBMS(Sng.get(), OutFile.path());
+			else if (ConvertMode == CONV_UQBMS)
+				ExportToBMSUnquantized(Sng.get(), OutFile.path());
 			else
 				ConvertToSMTiming(Sng.get(), OutFile.path());
+		}
+		else
+		{
+			if (Sng) Log::Printf("No notes or timing were loaded.\n");
+			else Log::Printf("Failure loading file at all.\n");
 		}
 
 		RunLoop = false;

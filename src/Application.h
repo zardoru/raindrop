@@ -26,6 +26,7 @@ class Application
 	// VSRG-Specific
 	enum {
 		CONV_BMS,
+		CONV_UQBMS,
 		CONV_SM,
 		CONV_OM
 	} ConvertMode;

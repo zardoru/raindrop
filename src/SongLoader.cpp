@@ -140,6 +140,9 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory
 			pref += "/";
 	}
 
+	if (q == 0 && pref[q] == '.')
+		pref += "/";
+
 	fn = Utility::Widen(Filename);
 	sp = Utility::Widen(pref);
 	
@@ -151,7 +154,7 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory
 	{
 		if (Ext == LoadersVSRG[i].Ext)
 		{
-			Log::Logf("Load %s from disk...", Filename.c_path());
+			Log::Logf("Load %s from disk...", fn_f.c_str());
 			LoadersVSRG[i].LoadFunc (fn_f, Prefix, Sng);
 			Log::Logf(" ok\n");
 			break;

@@ -141,17 +141,17 @@ double IntegrateToTime(const TimingData &Timing, double Time, float Drift)
 	return Out;
 }
 
-double QuantizeFractionBeat(float Frac)
+double QuantizeFractionBeat(double Frac)
 {
 	return double (min (48.0, floor(Frac * 49.0))) / 48.0;
 }
 
-double QuantizeFractionMeasure (float Frac)
+double QuantizeFractionMeasure(double Frac)
 {
 	return  (min (192.0, floor(Frac * 193.0))) / 192.0;
 }
 
-double QuantizeBeat(float Beat)
+double QuantizeBeat(double Beat)
 {
 	double dec = QuantizeFractionBeat(Beat - floor(Beat));
 	return dec + floor(Beat);

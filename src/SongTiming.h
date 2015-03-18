@@ -42,10 +42,10 @@ void LoadTimingList(TimingData &Timing, GString line, bool AllowZeros = false);
 
 
 // Quantizes fraction to a beat's maximum resolution (1/48th of a beat)
-double QuantizeFractionBeat(float Frac);
+double QuantizeFractionBeat(double Frac);
 
 // Quantizes fraction to a measure's maximum resolution (1/192nd of a measure)
-double QuantizeFractionMeasure (float Frac);
+double QuantizeFractionMeasure(double Frac);
 
 // Quantizes beat to a beat's maximum resolution (1/48th of a beat)
-double QuantizeBeat (float Beat);
+double QuantizeBeat(double Beat);
