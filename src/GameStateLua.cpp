@@ -37,7 +37,10 @@ struct songHelper
 	template <class T>
 	static GString getDifficultyAuthor(T const *Diff)
 	{
-		return GameState::GetInstance().GetSongDatabase()->GetArtistForDifficulty(Diff->ID);
+		GString candidate = GameState::GetInstance().GetSongDatabase()->GetArtistForDifficulty(Diff->ID);
+		if (!candidate.length())
+			candidate = Diff->Author;
+		return candidate;
 	}
 
 	template <class T>

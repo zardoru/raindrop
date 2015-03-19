@@ -261,20 +261,28 @@ class BMSConverter {
 			for (int K = 0; K < CurrentDifficulty->Channels; K++) {
 				for (auto N : M.MeasureNotes[K]) {
 					double StartBeat = QuantizeFunction(IntegrateToTime(CurrentBMS->BPS, N.StartTime));
+
+					if (StartBeat < 0) {
+						Log::Printf("Object at negative beat (%f), discarded\n", StartBeat);
+						continue;
+					}
+
 					if (N.EndTime == 0){ // Non-hold. Emit channels 11-...
 
 						int MeasureForEvent = MeasureForBeat(StartBeat);
 						ResizeMeasures(MeasureForEvent);
 
-						CurrentBMS->Measures[MeasureForEvent].Objects[K].push_back({ FractionForMeasure(MeasureForEvent, StartBeat), N.Sound });
+						int Snd = N.Sound ? N.Sound : 1;
+						CurrentBMS->Measures[MeasureForEvent].Objects[K].push_back({ FractionForMeasure(MeasureForEvent, StartBeat), Snd });
 					} else { // Hold. Emit channels 51-...
 						double EndBeat = QuantizeFunction(IntegrateToTime(CurrentBMS->BPS, N.EndTime));
 						int MeasureForEvent = MeasureForBeat(StartBeat);
 						int MeasureForEventEnd = MeasureForBeat(EndBeat);
 						ResizeMeasures(MeasureForEvent);
 
-						CurrentBMS->Measures[MeasureForEvent].LNObjects[K].push_back({ FractionForMeasure(MeasureForEvent, StartBeat), N.Sound });
-						CurrentBMS->Measures[MeasureForEventEnd].LNObjects[K].push_back({ FractionForMeasure(MeasureForEventEnd, EndBeat), N.Sound });
+						int Snd = N.Sound ? N.Sound : 1;
+						CurrentBMS->Measures[MeasureForEvent].LNObjects[K].push_back({ FractionForMeasure(MeasureForEvent, StartBeat), Snd });
+						CurrentBMS->Measures[MeasureForEventEnd].LNObjects[K].push_back({ FractionForMeasure(MeasureForEventEnd, EndBeat), Snd });
 					}
 				}
 			}
