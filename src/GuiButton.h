@@ -1,14 +1,14 @@
 #ifndef GUI_BUTTON_H_
 #define GUI_BUTTON_H_
 
-#include "GraphObject2D.h"
+#include "Sprite.h"
 
-typedef function<void(GraphObject2D*)> EventAnimationFunction;
+typedef function<void(Sprite*)> EventAnimationFunction;
 
 namespace GUI
 {
 
-class Button : public GraphObject2D
+class Button : public Sprite
 {
 	Mat4 transformReverse;
 

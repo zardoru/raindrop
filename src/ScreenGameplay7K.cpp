@@ -8,14 +8,14 @@
 #include "Screen.h"
 #include "Audio.h"
 #include "ImageLoader.h"
-#include "GraphObject2D.h"
+#include "Sprite.h"
 #include "Line.h"
 #include "BitmapFont.h"
 #include "GameWindow.h"
 #include "ImageList.h"
 
 #include "LuaManager.h"
-#include "SceneManager.h"
+#include "SceneEnvironment.h"
 
 #include "ScoreKeeper7K.h"
 #include "ScreenGameplay7K.h"
@@ -180,7 +180,7 @@ int DigitCount (float n)
 	return digits;
 }
 
-void DoBMPEventList (GraphObject2D &Obj, std::vector<AutoplayBMP> &Events, ImageList &Images, double SongTime)
+void DoBMPEventList (Sprite &Obj, std::vector<AutoplayBMP> &Events, ImageList &Images, double SongTime)
 {
 	for (auto b = Events.begin(); b != Events.end();)
 	{

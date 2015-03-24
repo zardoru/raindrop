@@ -8,14 +8,14 @@
 #include "Screen.h"
 #include "Audio.h"
 #include "ImageLoader.h"
-#include "GraphObject2D.h"
+#include "Sprite.h"
 #include "Line.h"
 #include "BitmapFont.h"
 #include "GameWindow.h"
 #include "ImageList.h"
 
 #include "LuaManager.h"
-#include "SceneManager.h"
+#include "SceneEnvironment.h"
 
 #include "ScoreKeeper7K.h"
 #include "ScreenGameplay7K.h"

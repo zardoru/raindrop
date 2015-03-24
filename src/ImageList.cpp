@@ -5,7 +5,7 @@
 #include "Image.h"
 #include "ImageList.h"
 #include "ImageLoader.h"
-#include "GraphObject2D.h"
+#include "Sprite.h"
 
 #include <boost/algorithm/string/replace.hpp>
 
@@ -106,7 +106,7 @@ Image* ImageList::GetFromIndex(int Index)
 
 void ImageList::ForceFetch()
 {
-	GraphObject2D Fill;
+	Sprite Fill;
 
 	// Draw as black.
 	Fill.Red = Fill.Blue = Fill.Green = 0;

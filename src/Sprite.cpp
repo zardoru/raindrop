@@ -1,22 +1,22 @@
 #include "Global.h"
-#include "GraphObject2D.h"
+#include "Sprite.h"
 
 #include "VBO.h"
 #include "Image.h"
 
 void Drawable2D::Render() {}
 
-GraphObject2D::GraphObject2D(bool ShouldInitTexture) : Drawable2D()
+Sprite::Sprite(bool ShouldInitTexture) : Drawable2D()
 {
 	Construct(ShouldInitTexture);
 }
 
-GraphObject2D::GraphObject2D() : Drawable2D()
+Sprite::Sprite() : Drawable2D()
 {
 	Construct(true);
 }
 
-void GraphObject2D::Construct(bool doInitTexture)
+void Sprite::Construct(bool doInitTexture)
 {
 	SetCropToWholeImage();
 	
@@ -41,7 +41,7 @@ void GraphObject2D::Construct(bool doInitTexture)
 	Initialize(doInitTexture);
 }
 
-void GraphObject2D::Initialize(bool ShouldInitTexture)
+void Sprite::Initialize(bool ShouldInitTexture)
 {
 	UvBuffer = NULL;
 
@@ -49,22 +49,22 @@ void GraphObject2D::Initialize(bool ShouldInitTexture)
 		UpdateTexture();
 }
 
-GraphObject2D::~GraphObject2D()
+Sprite::~Sprite()
 {
 	Cleanup();
 }
 
-void GraphObject2D::SetBlendMode(int Mode)
+void Sprite::SetBlendMode(int Mode)
 {
 	BlendingMode = (RBlendMode)Mode;
 }
 
-int GraphObject2D::GetBlendMode() const
+int Sprite::GetBlendMode() const
 {
 	return BlendingMode;
 }
 
-void GraphObject2D::SetImage(Image* image, bool ChangeSize)
+void Sprite::SetImage(Image* image, bool ChangeSize)
 {
 	mImage = image;
 	if (image)
@@ -77,7 +77,7 @@ void GraphObject2D::SetImage(Image* image, bool ChangeSize)
 	}
 }
 
-void GraphObject2D::SetCropByPixels(int32 x1, int32 x2, int32 y1, int32 y2)
+void Sprite::SetCropByPixels(int32 x1, int32 x2, int32 y1, int32 y2)
 {
 	if (mImage)
 	{
@@ -91,7 +91,7 @@ void GraphObject2D::SetCropByPixels(int32 x1, int32 x2, int32 y1, int32 y2)
 	}
 }
 
-void GraphObject2D::SetCropToWholeImage()
+void Sprite::SetCropToWholeImage()
 {
 	mCrop_x1 = 0;
 	mCrop_x2 = 1;
@@ -100,7 +100,7 @@ void GraphObject2D::SetCropToWholeImage()
 	DirtyTexture = true;
 }
 
-void GraphObject2D::SetCrop(Vec2 Crop1, Vec2 Crop2)
+void Sprite::SetCrop(Vec2 Crop1, Vec2 Crop2)
 {
 	mCrop_x1 = Crop1.x;
 	mCrop_y1 = Crop1.y;
@@ -109,14 +109,14 @@ void GraphObject2D::SetCrop(Vec2 Crop1, Vec2 Crop2)
 	DirtyTexture = true;
 }
 
-void GraphObject2D::SetCrop1(Vec2 Crop1)
+void Sprite::SetCrop1(Vec2 Crop1)
 {
 	mCrop_x1 = Crop1.x;
 	mCrop_y1 = Crop1.y;
 	DirtyTexture = true;
 }
 
-void GraphObject2D::SetCrop2(Vec2 Crop2)
+void Sprite::SetCrop2(Vec2 Crop2)
 {
 	mCrop_x2 = Crop2.x;
 	mCrop_y2 = Crop2.y;
@@ -124,22 +124,22 @@ void GraphObject2D::SetCrop2(Vec2 Crop2)
 }
 
 
-void GraphObject2D::Invalidate()
+void Sprite::Invalidate()
 {
 	// stub
 }
 
-Image* GraphObject2D::GetImage()
+Image* Sprite::GetImage()
 {
 	return mImage;
 }
 
-void GraphObject2D::BindTextureVBO()
+void Sprite::BindTextureVBO()
 {
 	UvBuffer->Bind();
 }
 
-GString GraphObject2D::GetImageFilename() const
+GString Sprite::GetImageFilename() const
 {
 	if (mImage)
 		return mImage->fname;

@@ -1,7 +1,7 @@
 #ifndef ACTOR_LIFEBAR_H_
 #define ACTOR_LIFEBAR_H_
 
-class ActorLifebar : public GraphObject2D
+class ActorLifebar : public Sprite
 {
 	float pending_health, time;
 public:

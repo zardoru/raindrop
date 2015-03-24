@@ -1,7 +1,7 @@
 #ifndef ACTOR_JUDGEMENT_H_
 #define ACTOR_JUDGEMENT_H_
 
-class ActorJudgment : public GraphObject2D
+class ActorJudgment : public Sprite
 {
 	float AnimTime;
 public:

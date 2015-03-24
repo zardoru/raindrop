@@ -20,7 +20,7 @@
 #include "Application.h"
 #include "GameWindow.h"
 #include "ImageLoader.h"
-#include "GraphObject2D.h"
+#include "Sprite.h"
 #include "GameObject.h"
 #include "VBO.h"
 #include "TruetypeFont.h"

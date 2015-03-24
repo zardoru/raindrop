@@ -2,9 +2,9 @@
 #ifndef GOBJ_H_
 #define GOBJ_H_
 
-#include "GraphObject2D.h"
+#include "Sprite.h"
 
-class GameObject : public GraphObject2D
+class GameObject : public Sprite
 {
 private:
 	friend class ScreenEdit;

@@ -4,7 +4,7 @@
 #include <limits>
 
 class Drawable2D;
-class GraphObject2D;
+class Sprite;
 class LuaManager;
 class ImageList;
 class RocketContextObject;
@@ -18,7 +18,7 @@ namespace Rocket {
 }
 
 struct Animation {
-	function <bool (GraphObject2D* Target, float Fraction)> Function;
+	function <bool (Sprite* Target, float Fraction)> Function;
 
 	float Time, Duration, Delay;
 	enum EEaseType {
@@ -27,7 +27,7 @@ struct Animation {
 		EaseOut
 	} Easing;
 
-	GraphObject2D* Target;
+	Sprite* Target;
 
 	Animation() {
 		Time = Delay = 0;
@@ -36,7 +36,7 @@ struct Animation {
 	}
 };
 
-class SceneManager
+class SceneEnvironment
 {
 	LuaManager *Lua;
 	ImageList *Images;
@@ -53,8 +53,8 @@ class SceneManager
 	Rocket::Core::ElementDocument *Doc;
 	RocketContextObject* obctx;
 public:
-	SceneManager(const char* ScreenName, bool initGUI = false);
-	~SceneManager();
+	SceneEnvironment(const char* ScreenName, bool initGUI = false);
+	~SceneEnvironment();
 
 	void RemoveManagedObjects();
 	void RemoveExternalObjects();
@@ -73,14 +73,14 @@ public:
 	LuaManager *GetEnv();
 	ImageList* GetImageList();
 
-	GraphObject2D* CreateObject();
+	Sprite* CreateObject();
 
 	void DoEvent(GString EventName, int Return = 0);
-	void AddLuaAnimation (GraphObject2D* Target, const GString &FName, int Easing, float Duration, float Delay);
-	void StopAnimationsForTarget(GraphObject2D* Target);
-	void AddTarget(GraphObject2D *Targ, bool IsExternal = false);
-	void AddLuaTarget(GraphObject2D *Targ, GString Varname);
-	void AddLuaTargetArray(GraphObject2D *Targ, GString Varname, GString Arrname);
+	void AddLuaAnimation (Sprite* Target, const GString &FName, int Easing, float Duration, float Delay);
+	void StopAnimationsForTarget(Sprite* Target);
+	void AddTarget(Sprite *Targ, bool IsExternal = false);
+	void AddLuaTarget(Sprite *Targ, GString Varname);
+	void AddLuaTargetArray(Sprite *Targ, GString Varname, GString Arrname);
 	void RemoveTarget(Drawable2D *Targ);
 	void DrawTargets(double TimeDelta);
 

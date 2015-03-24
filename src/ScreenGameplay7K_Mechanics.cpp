@@ -5,8 +5,8 @@
 #include "GameWindow.h"
 
 #include "LuaManager.h"
-#include "GraphObject2D.h"
-#include "SceneManager.h"
+#include "Sprite.h"
+#include "SceneEnvironment.h"
 #include "ImageList.h"
 
 #include "ScoreKeeper7K.h"

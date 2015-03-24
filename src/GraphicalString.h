@@ -1,7 +1,7 @@
 #ifndef GGString_H_
 #define GGString_H_
 
-class GraphicalString : public GraphObject2D
+class GraphicalString : public Sprite
 {
 	GString mText;
 	Font* mFont;

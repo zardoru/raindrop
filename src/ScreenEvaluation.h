@@ -8,7 +8,7 @@ class BitmapFont;
 class ScreenEvaluation : public Screen
 {
 	EvaluationData Results;
-	GraphObject2D Background;
+	Sprite Background;
 	BitmapFont* Font;
 
 	GString ResultsGString, ResultsNumerical;

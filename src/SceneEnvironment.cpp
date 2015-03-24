@@ -4,9 +4,9 @@
 
 #include "GameGlobal.h"
 #include "GameState.h"
-#include "GraphObject2D.h"
+#include "Sprite.h"
 #include "LuaManager.h"
-#include "SceneManager.h"
+#include "SceneEnvironment.h"
 #include "ImageList.h"
 #include "Logging.h"
 #include "GameWindow.h"
@@ -142,7 +142,7 @@ public:
 	}
 };
 
-bool LuaAnimation(LuaManager* Lua, GString Func, GraphObject2D* Target, float Frac)
+bool LuaAnimation(LuaManager* Lua, GString Func, Sprite* Target, float Frac)
 {
 	Lua->RegisterStruct( "Target", (void*)Target );
 	if (Lua->CallFunction(Func.c_str(), 1, 1))
@@ -157,7 +157,7 @@ bool LuaAnimation(LuaManager* Lua, GString Func, GraphObject2D* Target, float Fr
 	else return false;
 }
 
-void SceneManager::StopAnimationsForTarget(GraphObject2D* Target)
+void SceneEnvironment::StopAnimationsForTarget(Sprite* Target)
 {
 	for (auto i = Animations.begin();
 		i != Animations.end();
@@ -175,7 +175,7 @@ void SceneManager::StopAnimationsForTarget(GraphObject2D* Target)
 }
 
 
-void SceneManager::AddLuaAnimation (GraphObject2D* Target, const GString &FuncName, 
+void SceneEnvironment::AddLuaAnimation (Sprite* Target, const GString &FuncName, 
 	int Easing, float Duration, float Delay)
 {
 	Animation Anim;
@@ -188,7 +188,7 @@ void SceneManager::AddLuaAnimation (GraphObject2D* Target, const GString &FuncNa
 	Animations.push_back(Anim);
 }
 
-SceneManager::SceneManager(const char* ScreenName, bool initUI)
+SceneEnvironment::SceneEnvironment(const char* ScreenName, bool initUI)
 {
 	Animations.reserve(10);
 	Lua = new LuaManager;
@@ -209,14 +209,14 @@ SceneManager::SceneManager(const char* ScreenName, bool initUI)
 		InitializeUI();
 }
 
-TruetypeFont* SceneManager::CreateTTF(const char* Dir, float Size)
+TruetypeFont* SceneEnvironment::CreateTTF(const char* Dir, float Size)
 {
 	TruetypeFont *Ret = new TruetypeFont(Dir, Size);
 	ManagedFonts.push_back(Ret);
 	return Ret;
 }
 
-void SceneManager::InitializeUI()
+void SceneEnvironment::InitializeUI()
 {
 	RocketContextObject *Obj = new RocketContextObject();
 
@@ -238,13 +238,13 @@ void SceneManager::InitializeUI()
 	ctx->LoadMouseCursor("cursor.rml");	
 }
 
-void SceneManager::RunUIScript(GString Filename)
+void SceneEnvironment::RunUIScript(GString Filename)
 {
 	lua_State* L = Rocket::Core::Lua::Interpreter::GetLuaState();
 	luaL_dofile(L, GameState::GetInstance().GetSkinFile(Filename).c_str());
 }
 
-SceneManager::~SceneManager()
+SceneEnvironment::~SceneEnvironment()
 {
 	if (Lua->CallFunction("Cleanup"))
 	{
@@ -268,13 +268,13 @@ SceneManager::~SceneManager()
 	delete Images;
 }
 
-void SceneManager::SetUILayer(uint32 Layer)
+void SceneEnvironment::SetUILayer(uint32 Layer)
 {
 	obctx->SetZ(Layer);
 	Sort();
 }
 
-void SceneManager::Preload(GString Filename, GString Arrname)
+void SceneEnvironment::Preload(GString Filename, GString Arrname)
 {
 	mInitScript = Filename;
 
@@ -294,21 +294,21 @@ void SceneManager::Preload(GString Filename, GString Arrname)
 	}
 }
 
-void SceneManager::Sort()
+void SceneEnvironment::Sort()
 {
 	std::stable_sort(Objects.begin(), Objects.end(), 
 		[](const Drawable2D *A, const Drawable2D *B)->bool  { return A->GetZ() < B->GetZ(); });
 }
 
-GraphObject2D* SceneManager::CreateObject()
+Sprite* SceneEnvironment::CreateObject()
 {
-	GraphObject2D* Out = new GraphObject2D;
+	Sprite* Out = new Sprite;
 	ManagedObjects.push_back(Out);
 	AddTarget(Out, true); // Destroy on reload
 	return Out;
 }
 
-bool SceneManager::IsManagedObject(Drawable2D *Obj)
+bool SceneEnvironment::IsManagedObject(Drawable2D *Obj)
 {
 	for (auto i: ManagedObjects)
 	{
@@ -319,7 +319,7 @@ bool SceneManager::IsManagedObject(Drawable2D *Obj)
 	return false;
 }
 
-void SceneManager::Initialize(GString Filename, bool RunScript)
+void SceneEnvironment::Initialize(GString Filename, bool RunScript)
 {
 	if (!mInitScript.length() && Filename.length())
 		mInitScript = Filename;
@@ -333,7 +333,7 @@ void SceneManager::Initialize(GString Filename, bool RunScript)
 	Images->LoadAll();
 }
 
-void SceneManager::AddTarget(GraphObject2D *Targ, bool IsExternal)
+void SceneEnvironment::AddTarget(Sprite *Targ, bool IsExternal)
 {
 	Objects.push_back(Targ);
 
@@ -343,17 +343,17 @@ void SceneManager::AddTarget(GraphObject2D *Targ, bool IsExternal)
 	Sort();
 }
 
-void SceneManager::AddLuaTarget(GraphObject2D *Targ, GString Varname)
+void SceneEnvironment::AddLuaTarget(Sprite *Targ, GString Varname)
 {
 	lua_State *L = Lua->GetState();
-	GraphObject2D **RetVal = (GraphObject2D**) lua_newuserdata(L, sizeof(GraphObject2D **));
+	Sprite **RetVal = (Sprite**) lua_newuserdata(L, sizeof(Sprite **));
 	*RetVal = Targ;
-	luaL_getmetatable(L, "Sys.GraphObject2D");
+	luaL_getmetatable(L, "Sys.Sprite");
 	lua_setmetatable(L, -2);
 	lua_setglobal(L, Varname.c_str());
 }
 
-void SceneManager::StopManagingObject(Drawable2D *Obj)
+void SceneEnvironment::StopManagingObject(Drawable2D *Obj)
 {
 	for (auto i = ManagedObjects.begin(); i != ManagedObjects.end(); ++i)
 	{
@@ -365,7 +365,7 @@ void SceneManager::StopManagingObject(Drawable2D *Obj)
 	}
 }
 
-void SceneManager::RemoveManagedObject(Drawable2D *Obj)
+void SceneEnvironment::RemoveManagedObject(Drawable2D *Obj)
 {
 	for (auto i = ManagedObjects.begin(); i != ManagedObjects.end(); ++i)
 	{
@@ -379,7 +379,7 @@ void SceneManager::RemoveManagedObject(Drawable2D *Obj)
 	}
 }
 
-void SceneManager::RemoveManagedObjects()
+void SceneEnvironment::RemoveManagedObjects()
 {
 	for (auto i: ManagedObjects)
 	{
@@ -390,7 +390,7 @@ void SceneManager::RemoveManagedObjects()
 	ManagedObjects.clear();
 }
 
-void SceneManager::RemoveExternalObjects()
+void SceneEnvironment::RemoveExternalObjects()
 {
 	for (auto i : ExternalObjects)
 	{
@@ -400,7 +400,7 @@ void SceneManager::RemoveExternalObjects()
 	ExternalObjects.clear();
 }
 
-void SceneManager::RemoveTarget(Drawable2D *Targ)
+void SceneEnvironment::RemoveTarget(Drawable2D *Targ)
 {
 	for (auto i = Objects.begin(); i != Objects.end(); )
 	{
@@ -417,14 +417,14 @@ void SceneManager::RemoveTarget(Drawable2D *Targ)
 	}
 }
 
-void SceneManager::DrawTargets(double TimeDelta)
+void SceneEnvironment::DrawTargets(double TimeDelta)
 {
 	UpdateTargets(TimeDelta);
 
 	DrawFromLayer(0);
 }
 
-void SceneManager::UpdateTargets(double TimeDelta)
+void SceneEnvironment::UpdateTargets(double TimeDelta)
 {
 	if (mFrameSkip)
 	{
@@ -498,7 +498,7 @@ void SceneManager::UpdateTargets(double TimeDelta)
 	}
 }
 
-void SceneManager::ReloadUI()
+void SceneEnvironment::ReloadUI()
 {
 	if (!ctx) return;
 
@@ -516,22 +516,22 @@ void SceneManager::ReloadUI()
 
 
 /* This function right now is broken beyond repair. Don't mind it. */
-void SceneManager::ReloadScripts()
+void SceneEnvironment::ReloadScripts()
 {
 	GString InitScript = mInitScript;
-	this->~SceneManager();
-	new (this) SceneManager(mScreenName.c_str(), false);
+	this->~SceneEnvironment();
+	new (this) SceneEnvironment(mScreenName.c_str(), false);
 
 	Initialize(InitScript);
 }
 
-void SceneManager::ReloadAll()
+void SceneEnvironment::ReloadAll()
 {
 	ReloadUI();
 	ReloadScripts();
 }
 
-void SceneManager::DrawUntilLayer(uint32 Layer)
+void SceneEnvironment::DrawUntilLayer(uint32 Layer)
 {
 	for (auto i: Objects)
 	{
@@ -541,7 +541,7 @@ void SceneManager::DrawUntilLayer(uint32 Layer)
 	}
 }
 
-void SceneManager::DrawFromLayer(uint32 Layer)
+void SceneEnvironment::DrawFromLayer(uint32 Layer)
 {
 	for (auto i = Objects.begin(); i != Objects.end(); ++i)
 	{
@@ -550,12 +550,12 @@ void SceneManager::DrawFromLayer(uint32 Layer)
 	}
 }
 
-LuaManager *SceneManager::GetEnv()
+LuaManager *SceneEnvironment::GetEnv()
 {
 	return Lua;
 }
 
-bool SceneManager::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+bool SceneEnvironment::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
 	if (Lua->CallFunction("KeyEvent", 3))
 	{
@@ -597,17 +597,17 @@ bool SceneManager::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 	return true;
 }
 
-bool SceneManager::HandleTextInput(int codepoint)
+bool SceneEnvironment::HandleTextInput(int codepoint)
 {
 	return ctx->ProcessTextInput(codepoint);
 }
 
-ImageList* SceneManager::GetImageList()
+ImageList* SceneEnvironment::GetImageList()
 {
 	return Images;
 }
 
-void SceneManager::DoEvent(GString EventName, int Return)
+void SceneEnvironment::DoEvent(GString EventName, int Return)
 {
 	if (Lua->CallFunction(EventName.c_str(), 0, Return))
 		Lua->RunFunction();

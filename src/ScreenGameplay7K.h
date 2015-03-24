@@ -7,7 +7,7 @@
 
 class AudioStream;
 class Image;
-class SceneManager;
+class SceneEnvironment;
 class ScoreKeeper7K;
 class Line;
 class AudioSourceOJM;
@@ -20,13 +20,13 @@ class ScreenGameplay7K : public Screen
 private:
 
 	VSRGMechanics *MechanicsSet;
-	GraphObject2D Keys[VSRG::MAX_CHANNELS];
-	GraphObject2D Background;
+	Sprite Keys[VSRG::MAX_CHANNELS];
+	Sprite Background;
 
 	// BGA stuff.
-	GraphObject2D LayerMiss;
-	GraphObject2D Layer1;
-	GraphObject2D Layer2;
+	Sprite LayerMiss;
+	Sprite Layer1;
+	Sprite Layer2;
 
 	TimingData       VSpeeds;
 	TimingData		 BPS;
@@ -98,7 +98,7 @@ private:
 	Image*  NoteImagesHoldHead[VSRG::MAX_CHANNELS];
 	Image*  NoteImagesHoldTail[VSRG::MAX_CHANNELS];
 
-	SceneManager *Animations;
+	SceneEnvironment *Animations;
 
 	AudioStream *Music;
 	AudioSourceOJM *OJMAudio;

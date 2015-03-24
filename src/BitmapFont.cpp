@@ -1,7 +1,7 @@
 #include "Global.h"
 #include "GameState.h"
 #include "LuaManager.h"
-#include "GraphObject2D.h"
+#include "Sprite.h"
 #include "BitmapFont.h"
 #include "ImageLoader.h"
 #include "Directory.h"

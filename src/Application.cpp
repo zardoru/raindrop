@@ -14,7 +14,7 @@
 #include "Audio.h"
 #include "Directory.h"
 #include "Application.h"
-#include "GraphObject2D.h"
+#include "Sprite.h"
 #include "BitmapFont.h"
 #include "ImageLoader.h"
 #include "GameWindow.h"

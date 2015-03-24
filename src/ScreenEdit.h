@@ -33,7 +33,7 @@ class ScreenEdit : public ScreenGameplay
 		Normal,
 		Hold
 	}Mode; 
-	GraphObject2D GhostObject;
+	Sprite GhostObject;
 
 	bool  GridEnabled;
 	int32 GridCellSize; // ScreenSize / GridCellSize

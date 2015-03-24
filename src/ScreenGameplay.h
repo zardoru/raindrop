@@ -58,7 +58,7 @@ private: // shit only screengameplay needs
 	uint32 Combo;
 	BitmapFont MyFont;
 	BitmapFont SongInfo;
-	GraphObject2D ReadySign;
+	Sprite ReadySign;
 
 	// Notes
 	std::vector<GameObject> NotesHeld, AnimateOnly;
@@ -72,7 +72,7 @@ private: // shit only screengameplay needs
 	// Actors
 	ActorLifebar Lifebar;
 	ActorJudgment aJudgment;
-	GraphObject2D MarkerA, MarkerB, Cursor, Background;
+	Sprite MarkerA, MarkerB, Cursor, Background;
 	EvaluationData Evaluation;
 	
 	double SongTime, SongDelta;

@@ -16,7 +16,7 @@ namespace VSRG
 }
 
 class BitmapFont;
-class GraphObject2D;
+class Sprite;
 class SongList;
 class SongDatabase;
 class TruetypeFont;
@@ -38,7 +38,7 @@ namespace Game
 
 	typedef boost::function<void (shared_ptr<Game::Song>, uint8)> SongNotification;
 	typedef boost::function<void(uint32, GString, shared_ptr<Game::Song>)> ItemNotification;
-	typedef boost::function<void(GraphObject2D*, shared_ptr<Game::Song>, bool)> ItemTransformFunction;
+	typedef boost::function<void(Sprite*, shared_ptr<Game::Song>, bool)> ItemTransformFunction;
 	typedef boost::function <float (float)> ListTransformFunction;
 	typedef boost::function<void()> DirectoryChangeNotifyFunction;
 
@@ -66,7 +66,7 @@ private:
 	float PendingVerticalDisplacement;
 	float shownListY;
 
-	GraphObject2D* Item;
+	Sprite* Item;
 	
 	Vec2 ItemTextOffset;
 

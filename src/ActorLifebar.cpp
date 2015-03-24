@@ -1,12 +1,12 @@
 #include "GameGlobal.h"
 #include "GameState.h"
 #include "Configuration.h"
-#include "GraphObject2D.h"
+#include "Sprite.h"
 #include "ActorLifebar.h"
 #include "ImageLoader.h"
 #include "GameWindow.h"
 
-ActorLifebar::ActorLifebar() : GraphObject2D()
+ActorLifebar::ActorLifebar() : Sprite()
 {
 	Health = 50; // Out of 100!
 	pending_health = 0;

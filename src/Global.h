@@ -102,6 +102,42 @@ namespace Color {
 	extern const ColorRGB Blue;
 }
 
+template <class T>
+struct Fraction {
+	T Num;
+	T Den;
+
+	Fraction()
+	{
+		Num = Den = 1;
+	}
+
+	template <class K>
+	Fraction(K num, K den) {
+		Num = num;
+		Den = den;
+	}
+
+	void fromDouble(double in)
+	{
+		double d = 0;
+		Num = 0;
+		Den = 1;
+		while (d != in)
+		{
+			if (d < in)
+				Num++;
+			else if (d > in)
+				Den++;
+			d = (double)Num / Den;
+		}
+	}
+};
+
+typedef Fraction<long long> LFraction;
+typedef Fraction<int> IFraction;
+
+
 namespace Utility
 {
 	void DebugBreak();
@@ -167,6 +203,7 @@ inline T clamp_to_interval(const T& value, const T& target, const T& interval)
 	return output;
 }
 
+int LCM(const vector<int> &Set);
 double latof(GString s);
 
 using std::max;

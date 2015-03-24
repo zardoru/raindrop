@@ -4,15 +4,15 @@
 #include "GuiButton.h"
 #include "Line.h"
 
-class SceneManager;
+class SceneEnvironment;
 
 class ScreenMainMenu : public Screen
 {
 	GUI::Button PlayBtn, EditBtn, OptionsBtn, ExitBtn;
 
-	SceneManager * Objects;
+	SceneEnvironment * Objects;
 
-	GraphObject2D Background;
+	Sprite Background;
 public:
 	ScreenMainMenu(Screen *Parent);
 	void Init();

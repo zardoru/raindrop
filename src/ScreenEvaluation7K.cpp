@@ -1,6 +1,6 @@
 #include "GameGlobal.h"
 #include "GameState.h"
-#include "GraphObject2D.h"
+#include "Sprite.h"
 #include "Configuration.h"
 #include "BitmapFont.h"
 #include "ScreenEvaluation7K.h"
@@ -8,7 +8,7 @@
 #include "ImageLoader.h"
 #include "Audio.h"
 #include "ScoreKeeper7K.h"
-#include "SceneManager.h"
+#include "SceneEnvironment.h"
 #include "LuaManager.h"
 
 #include <iostream>
@@ -28,7 +28,7 @@ void ScreenEvaluation7K::Init(ScoreKeeper7K *Result)
 	
 	Score = Result;
 
-	Objects = new SceneManager("ScreenEvaluation7K");
+	Objects = new SceneEnvironment("ScreenEvaluation7K");
 	Objects->InitializeUI();
 
 	GameState::GetInstance().InitializeLua(Objects->GetEnv()->GetState());

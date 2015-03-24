@@ -9,7 +9,7 @@
 
 #include "GameWindow.h"
 #include "VBO.h"
-#include "GraphObject2D.h"
+#include "Sprite.h"
 #include "Transformation.h"
 
 #include "Rendering.h"
@@ -195,7 +195,7 @@ void InitializeRender()
 	}
 }
 
-void GraphObject2D::UpdateTexture()
+void Sprite::UpdateTexture()
 {
 	if (!DirtyTexture)
 		return;
@@ -230,7 +230,7 @@ void GraphObject2D::UpdateTexture()
 	DirtyTexture = false;
 }
 
-void GraphObject2D::Render()
+void Sprite::Render()
 {
 	if (mImage)
 	{
@@ -266,7 +266,7 @@ void GraphObject2D::Render()
 	FinalizeDraw();
 }
 
-void GraphObject2D::Cleanup()
+void Sprite::Cleanup()
 {
 	if (DoTextureCleanup)
 	{

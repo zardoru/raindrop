@@ -3,9 +3,9 @@
 
 #include "Image.h"
 #include "ImageLoader.h"
-#include "GraphObject2D.h"
+#include "Sprite.h"
 #include "LuaManager.h"
-#include "SceneManager.h"
+#include "SceneEnvironment.h"
 #include "Configuration.h"
 #include "LuaBridge.h"
 
@@ -18,11 +18,11 @@
 
 namespace LuaAnimFuncs
 {
-	const char * GraphObject2DMetatable = "Sys.GraphObject2D";
+	const char * SpriteMetatable = "Sys.Sprite";
 
 	int SetRotation(lua_State *L)
 	{
-		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		Sprite *Target = GetObjectFromState<Sprite>(L, "Target");
 		double rot = luaL_checknumber(L, 1);
 		Target->SetRotation(rot);
 		return 0;
@@ -30,14 +30,14 @@ namespace LuaAnimFuncs
 
 	int GetRotation(lua_State *L)
 	{
-		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		Sprite *Target = GetObjectFromState<Sprite>(L, "Target");
 		lua_pushnumber(L, Target->GetRotation());
 		return 1;
 	}
 
 	int Rotate(lua_State *L)
 	{
-		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		Sprite *Target = GetObjectFromState<Sprite>(L, "Target");
 		double delta = luaL_checknumber(L, 1);
 		Target->AddRotation(delta);
 		return 0;
@@ -45,7 +45,7 @@ namespace LuaAnimFuncs
 
 	int Move(lua_State *L)
 	{
-		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		Sprite *Target = GetObjectFromState<Sprite>(L, "Target");
 		double x = luaL_checknumber(L, 1), y = luaL_checknumber(L, 2);
 		Target->AddPosition(Vec2(x, y));
 		return 0;
@@ -53,7 +53,7 @@ namespace LuaAnimFuncs
 
 	int SetAbsolutePosition(lua_State *L)
 	{
-		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		Sprite *Target = GetObjectFromState<Sprite>(L, "Target");
 		Vec2 NewPos(luaL_checknumber(L, 1), luaL_checknumber(L, 2));
 		Target->SetPosition(NewPos);
 		return 0;
@@ -61,7 +61,7 @@ namespace LuaAnimFuncs
 
 	int GetAbsolutePosition(lua_State *L)
 	{
-		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		Sprite *Target = GetObjectFromState<Sprite>(L, "Target");
 		lua_pushnumber(L, Target->GetPosition().x);
 		lua_pushnumber(L, Target->GetPosition().y);
 		return 2;
@@ -69,7 +69,7 @@ namespace LuaAnimFuncs
 
 	int CropByPixels(lua_State *L)
 	{
-		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		Sprite *Target = GetObjectFromState<Sprite>(L, "Target");
 		int x1 = luaL_checknumber(L, 1), y1 = luaL_checknumber(L, 2);
 		int x2 = luaL_checknumber(L, 3), y2 = luaL_checknumber(L, 4);
 		Target->SetCropByPixels(x1, x2, y1, y2);
@@ -78,7 +78,7 @@ namespace LuaAnimFuncs
 
 	int SetScale(lua_State *L)
 	{
-		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		Sprite *Target = GetObjectFromState<Sprite>(L, "Target");
 		double scalex = luaL_checknumber(L, 1), scaley = luaL_checknumber(L, 2);
 		Target->SetScale(Vec2(scalex, scaley));
 		return 0;
@@ -86,7 +86,7 @@ namespace LuaAnimFuncs
 
 	int GetScale(lua_State *L)
 	{
-		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		Sprite *Target = GetObjectFromState<Sprite>(L, "Target");
 		lua_pushnumber(L, Target->GetScale().x);
 		lua_pushnumber(L, Target->GetScale().y);
 		return 2;
@@ -94,7 +94,7 @@ namespace LuaAnimFuncs
 
 	int SetImage(lua_State *L)
 	{
-		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		Sprite *Target = GetObjectFromState<Sprite>(L, "Target");
 		GString iName = luaL_checkstring(L, 1);
 		Target->SetImage(ImageLoader::Load(iName));
 		return 0;
@@ -102,7 +102,7 @@ namespace LuaAnimFuncs
 
 	int SetImageSkin(lua_State *L)
 	{
-		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		Sprite *Target = GetObjectFromState<Sprite>(L, "Target");
 		GString iName = luaL_checkstring(L, 1);
 		Target->SetImage(GameState::GetInstance().GetSkinImage(iName));
 		return 0;
@@ -110,7 +110,7 @@ namespace LuaAnimFuncs
 
 	int GetSize(lua_State *L)
 	{
-		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		Sprite *Target = GetObjectFromState<Sprite>(L, "Target");
 		lua_pushnumber(L, Target->GetWidth());
 		lua_pushnumber(L, Target->GetHeight());
 		return 2;
@@ -118,7 +118,7 @@ namespace LuaAnimFuncs
 
 	int SetAlpha(lua_State *L)
 	{
-		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		Sprite *Target = GetObjectFromState<Sprite>(L, "Target");
 		double alpha = luaL_checknumber(L, 1);
 		Target->Alpha = alpha;
 		return 0;
@@ -126,25 +126,25 @@ namespace LuaAnimFuncs
 
 	int GetAlpha(lua_State *L)
 	{
-		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		Sprite *Target = GetObjectFromState<Sprite>(L, "Target");
 		lua_pushnumber(L, Target->Alpha);
 		return 1;
 	}
 
 	int CreateTarget(lua_State *L)
 	{
-		SceneManager * Manager = GetObjectFromState<SceneManager>(L, "GOMAN");
-		GraphObject2D *Target = Manager->CreateObject();
-		GraphObject2D **RetVal = (GraphObject2D**)lua_newuserdata(L, sizeof(GraphObject2D **));
+		SceneEnvironment * Manager = GetObjectFromState<SceneEnvironment>(L, "GOMAN");
+		Sprite *Target = Manager->CreateObject();
+		Sprite **RetVal = (Sprite**)lua_newuserdata(L, sizeof(Sprite **));
 		*RetVal = Target;
-		luaL_getmetatable(L, GraphObject2DMetatable);
+		luaL_getmetatable(L, SpriteMetatable);
 		lua_setmetatable(L, -2);
 		return 1;
 	}
 
 	int SetTarget(lua_State *L)
 	{
-		GraphObject2D *Target = *GetUserObject<GraphObject2D*>(L, 1, GraphObject2DMetatable);
+		Sprite *Target = *GetUserObject<Sprite*>(L, 1, SpriteMetatable);
 		LuaManager *Lua = GetObjectFromState<LuaManager>(L, "Luaman");
 		Lua->RegisterStruct("Target", Target);
 		return 0;
@@ -152,8 +152,8 @@ namespace LuaAnimFuncs
 
 	int CleanTarget(lua_State *L)
 	{
-		GraphObject2D *Target = *GetUserObject<GraphObject2D*>(L, 1, GraphObject2DMetatable);
-		SceneManager * Manager = GetObjectFromState<SceneManager>(L, "GOMAN");
+		Sprite *Target = *GetUserObject<Sprite*>(L, 1, SpriteMetatable);
+		SceneEnvironment * Manager = GetObjectFromState<SceneEnvironment>(L, "GOMAN");
 
 		Manager->RemoveManagedObject(Target);
 		return 0;
@@ -180,14 +180,14 @@ namespace LuaAnimFuncs
 
 	int GetZ(lua_State *L)
 	{
-		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		Sprite *Target = GetObjectFromState<Sprite>(L, "Target");
 		lua_pushnumber(L, Target->GetZ());
 		return 1;
 	}
 
 	int SetZ(lua_State *L)
 	{
-		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		Sprite *Target = GetObjectFromState<Sprite>(L, "Target");
 		uint32 Z = luaL_checknumber(L, 1);
 		Target->SetZ(Z);
 		return 0;
@@ -195,7 +195,7 @@ namespace LuaAnimFuncs
 
 	int SetCentered(lua_State *L)
 	{
-		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		Sprite *Target = GetObjectFromState<Sprite>(L, "Target");
 		uint32 Cen = luaL_checknumber(L, 1);
 		Target->Centered = (Cen != 0);
 		return 0;
@@ -203,7 +203,7 @@ namespace LuaAnimFuncs
 
 	int SetSize(lua_State *L)
 	{
-		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		Sprite *Target = GetObjectFromState<Sprite>(L, "Target");
 		double W = luaL_checknumber(L, 1);
 		double H = luaL_checknumber(L, 2);
 		Target->SetSize(W, H);
@@ -212,7 +212,7 @@ namespace LuaAnimFuncs
 
 	int SetColorInvert(lua_State *L)
 	{
-		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		Sprite *Target = GetObjectFromState<Sprite>(L, "Target");
 		uint32 Cen = luaL_checknumber(L, 1);
 		Target->ColorInvert = (Cen != 0);
 		return 0;
@@ -220,7 +220,7 @@ namespace LuaAnimFuncs
 
 	int SetAffectedbyLightning(lua_State *L)
 	{
-		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		Sprite *Target = GetObjectFromState<Sprite>(L, "Target");
 		uint32 Cen = luaL_checknumber(L, 1);
 		Target->AffectedByLightning = (Cen != 0);
 		return 0;
@@ -242,7 +242,7 @@ namespace LuaAnimFuncs
 
 	int SetColor(lua_State *L)
 	{
-		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		Sprite *Target = GetObjectFromState<Sprite>(L, "Target");
 		double R = luaL_checknumber(L, 1), G = luaL_checknumber(L, 2), B = luaL_checknumber(L, 3);
 
 		Target->Red = R;
@@ -253,7 +253,7 @@ namespace LuaAnimFuncs
 
 	int SetLighten(lua_State *L)
 	{
-		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		Sprite *Target = GetObjectFromState<Sprite>(L, "Target");
 		int Lighten = luaL_checkinteger(L, 1);
 		Target->Lighten = (Lighten != 0);
 		return 0;
@@ -261,7 +261,7 @@ namespace LuaAnimFuncs
 
 	int SetLightenFactor(lua_State *L)
 	{
-		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		Sprite *Target = GetObjectFromState<Sprite>(L, "Target");
 		float LightenFactor = luaL_checknumber(L, 1);
 		Target->LightenFactor = LightenFactor;
 		return 0;
@@ -290,7 +290,7 @@ namespace LuaAnimFuncs
 	int SetBlendMode(lua_State *L)
 	{
 		int B = luaL_checknumber(L, 1);
-		GraphObject2D *Target = GetObjectFromState<GraphObject2D>(L, "Target");
+		Sprite *Target = GetObjectFromState<Sprite>(L, "Target");
 
 		Target->SetBlendMode((RBlendMode)B);
 		return 0;
@@ -299,8 +299,8 @@ namespace LuaAnimFuncs
 	// Lua Animation stuff: Move these onto their own file eventually.
 	int AddLuaAnimation(lua_State* L)
 	{
-		SceneManager* GoMan = GetObjectFromState<SceneManager> (L, "GOMAN");
-		GraphObject2D* Target = GetObjectFromState<GraphObject2D> (L, "Target");
+		SceneEnvironment* GoMan = GetObjectFromState<SceneEnvironment> (L, "GOMAN");
+		Sprite* Target = GetObjectFromState<Sprite> (L, "Target");
 		GString Name = luaL_checkstring(L, 1);
 		float Duration = luaL_checknumber(L, 2);
 		float Delay = luaL_checknumber(L, 3);
@@ -312,8 +312,8 @@ namespace LuaAnimFuncs
 
 	int LuaStopAnimationsForTarget(lua_State *L)
 	{
-		SceneManager* GoMan = GetObjectFromState<SceneManager> (L, "GOMAN");
-		GraphObject2D* Target = GetObjectFromState<GraphObject2D> (L, "Target");
+		SceneEnvironment* GoMan = GetObjectFromState<SceneEnvironment> (L, "GOMAN");
+		Sprite* Target = GetObjectFromState<Sprite> (L, "Target");
 
 		GoMan->StopAnimationsForTarget(Target);
 		return 0;
@@ -322,7 +322,7 @@ namespace LuaAnimFuncs
 	int SetUILayer(lua_State *L)
 	{
 		uint32 Layer = luaL_checkinteger(L, 1);
-		SceneManager* GoMan = GetObjectFromState<SceneManager>(L, "GOMAN");
+		SceneEnvironment* GoMan = GetObjectFromState<SceneEnvironment>(L, "GOMAN");
 		GoMan->SetUILayer(Layer);
 		return 0;
 	}
@@ -366,22 +366,22 @@ namespace LuaAnimFuncs
 }
 
 // Wrapper functions
-void SetImage(GraphObject2D *O, GString dir)
+void SetImage(Sprite *O, GString dir)
 {
 	O->SetImage(GameState::GetInstance().GetSkinImage(dir));
 }
 
-GString GetImage(const GraphObject2D *O)
+GString GetImage(const Sprite *O)
 {
 	return O->GetImageFilename();
 }
 
-void AddPosition(GraphObject2D *O, float px, float py)
+void AddPosition(Sprite *O, float px, float py)
 {
 	O->AddPosition(px, py);
 }
 
-void SetPosition(GraphObject2D *O, float px, float py)
+void SetPosition(Sprite *O, float px, float py)
 {
 	O->SetPosition(px, py);
 }
@@ -397,92 +397,92 @@ void LoadBmFont(BitmapFont* B, GString Fn, float CellWidth, float CellHeight, fl
 // Adding these directly does not work. Inheriting them from Transformation does not work. We're left only with this.
 struct O2DProxy
 {
-	static uint32 getZ(GraphObject2D const* obj)
+	static uint32 getZ(Sprite const* obj)
 	{
 		return obj->GetZ();
 	}
 
-	static float getScaleX(GraphObject2D const* obj)
+	static float getScaleX(Sprite const* obj)
 	{
 		return obj->GetScaleX();
 	}
 
-	static float getScaleY(GraphObject2D const* obj)
+	static float getScaleY(Sprite const* obj)
 	{
 		return obj->GetScaleY();
 	}
 
-	static float getWidth(GraphObject2D const* obj)
+	static float getWidth(Sprite const* obj)
 	{
 		return obj->GetWidth();
 	}
 
-	static float getHeight(GraphObject2D const* obj)
+	static float getHeight(Sprite const* obj)
 	{
 		return obj->GetHeight();
 	}
 
-	static float getX(GraphObject2D const* obj)
+	static float getX(Sprite const* obj)
 	{
 		return obj->GetPositionX();
 	}
 
-	static float getY(GraphObject2D const* obj)
+	static float getY(Sprite const* obj)
 	{
 		return obj->GetPositionY();
 	}
 
-	static float getRotation(GraphObject2D const* obj)
+	static float getRotation(Sprite const* obj)
 	{
 		return obj->GetRotation();
 	}
 
-	static Transformation getChainTransformation(GraphObject2D const* obj)
+	static Transformation getChainTransformation(Sprite const* obj)
 	{
 		return Transformation();
 	}
 
-	static void setZ(GraphObject2D *obj, uint32 nZ)
+	static void setZ(Sprite *obj, uint32 nZ)
 	{
 		obj->SetZ(nZ);
 	}
 
-	static void setHeight(GraphObject2D *obj, float param)
+	static void setHeight(Sprite *obj, float param)
 	{
 		obj->SetHeight(param);
 	}
 
-	static void setWidth(GraphObject2D *obj, float param)
+	static void setWidth(Sprite *obj, float param)
 	{
 		obj->SetWidth(param);
 	}
 
-	static void setScaleY(GraphObject2D *obj, float param)
+	static void setScaleY(Sprite *obj, float param)
 	{
 		obj->SetScaleY(param);
 	}
 
-	static void setScaleX(GraphObject2D *obj, float param)
+	static void setScaleX(Sprite *obj, float param)
 	{
 		obj->SetScaleX(param);
 	}
 
-	static void setRotation(GraphObject2D *obj, float param)
+	static void setRotation(Sprite *obj, float param)
 	{
 		obj->SetRotation(param);
 	}
 
-	static void setX(GraphObject2D *obj, float param)
+	static void setX(Sprite *obj, float param)
 	{
 		obj->SetPositionX(param);
 	}
 
-	static void setY(GraphObject2D *obj, float param)
+	static void setY(Sprite *obj, float param)
 	{
 		obj->SetPositionY(param);
 	}
 
-	static void setChainTransformation(GraphObject2D *obj, Transformation* param)
+	static void setChainTransformation(Sprite *obj, Transformation* param)
 	{
 		obj->ChainTransformation(param);
 	}
@@ -491,9 +491,9 @@ struct O2DProxy
 // New lua interface.
 void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 {
-#define f(x) addFunction(#x, &GraphObject2D::x)
-#define p(x) addProperty(#x, &GraphObject2D::Get##x, &GraphObject2D::Set##x)
-#define v(x) addData(#x, &GraphObject2D::x)
+#define f(x) addFunction(#x, &Sprite::x)
+#define p(x) addProperty(#x, &Sprite::Get##x, &Sprite::Set##x)
+#define v(x) addData(#x, &Sprite::x)
 #define q(x) addProperty(#x, &O2DProxy::get##x, &O2DProxy::set##x)
 
 	luabridge::getGlobalNamespace(AnimLua->GetState())
@@ -512,7 +512,7 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 		.endClass();
 
 	luabridge::getGlobalNamespace(AnimLua->GetState())
-		.deriveClass<GraphObject2D, Transformation>("Object2D")
+		.deriveClass<Sprite, Transformation>("Object2D")
 		.v(Centered)
 		.v(Lighten)
 		.v(LightenFactor)
@@ -547,17 +547,17 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 		*/
 
 	luabridge::getGlobalNamespace(AnimLua->GetState())
-		.beginClass <SceneManager> ("GraphObjMan")
-		.addFunction("AddAnimation", &SceneManager::AddLuaAnimation)
-		.addFunction("AddTarget", &SceneManager::AddTarget)
-		.addFunction("Sort", &SceneManager::Sort)
-		.addFunction("StopAnimation", &SceneManager::StopAnimationsForTarget)
-		.addFunction("SetUILayer", &SceneManager::SetUILayer)
-		.addFunction("RunUIScript", &SceneManager::RunUIScript)
-		.addFunction("CreateObject", &SceneManager::CreateObject)
+		.beginClass <SceneEnvironment> ("GraphObjMan")
+		.addFunction("AddAnimation", &SceneEnvironment::AddLuaAnimation)
+		.addFunction("AddTarget", &SceneEnvironment::AddTarget)
+		.addFunction("Sort", &SceneEnvironment::Sort)
+		.addFunction("StopAnimation", &SceneEnvironment::StopAnimationsForTarget)
+		.addFunction("SetUILayer", &SceneEnvironment::SetUILayer)
+		.addFunction("RunUIScript", &SceneEnvironment::RunUIScript)
+		.addFunction("CreateObject", &SceneEnvironment::CreateObject)
 		.endClass();
 
-	luabridge::push(AnimLua->GetState(), GetObjectFromState<SceneManager>(AnimLua->GetState(), "GOMAN"));
+	luabridge::push(AnimLua->GetState(), GetObjectFromState<SceneEnvironment>(AnimLua->GetState(), "GOMAN"));
 	lua_setglobal(AnimLua->GetState(), "Engine");
 #undef f
 #undef p
@@ -581,7 +581,7 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 		.endNamespace();
 
 	luabridge::getGlobalNamespace(AnimLua->GetState())
-		.deriveClass<GraphicalString, GraphObject2D>("StringObject2D")
+		.deriveClass<GraphicalString, Sprite>("StringObject2D")
 		.addConstructor <void(*) ()>()
 		.addProperty("Font", &GraphicalString::GetFont, &GraphicalString::SetFont)
 		.addProperty ("Text", &GraphicalString::GetText, &GraphicalString::SetText)
@@ -593,7 +593,7 @@ void CreateLuaInterface(LuaManager *AnimLua)
 {
 	CreateNewLuaAnimInterface(AnimLua);
 
-	AnimLua->NewMetatable(LuaAnimFuncs::GraphObject2DMetatable);
+	AnimLua->NewMetatable(LuaAnimFuncs::SpriteMetatable);
 	AnimLua->Register(LuaAnimFuncs::Require, "skin_require");
 	AnimLua->Register(LuaAnimFuncs::FallbackRequire, "fallback_require");
 	AnimLua->Register(LuaAnimFuncs::GetSkinConfigF, "GetConfigF");

@@ -5,7 +5,7 @@
 
 #define BLUE_CONSTANT (200.0 / 255.0)
 
-ActorBarline::ActorBarline(ScreenGameplay *_Parent) : GraphObject2D()
+ActorBarline::ActorBarline(ScreenGameplay *_Parent) : Sprite()
 {
 	Parent = _Parent;
 	Centered = true;

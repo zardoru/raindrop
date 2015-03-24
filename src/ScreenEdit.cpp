@@ -21,7 +21,7 @@ double Fracs[] = {
 	48,
 	64,
 	96,
-	192,
+	192
 };
 
 ScreenEdit::ScreenEdit(Screen *Parent)

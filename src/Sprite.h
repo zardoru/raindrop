@@ -1,5 +1,5 @@
-#ifndef GraphObject2D_H
-#define GraphObject2D_H
+#ifndef Sprite_H
+#define Sprite_H
 
 #include "Rendering.h"
 #include "Transformation.h"
@@ -16,7 +16,7 @@ public:
 	// Stub
 };
 
-class GraphObject2D : public Drawable2D
+class Sprite : public Drawable2D
 {
 private: // Transformations
 	void Cleanup();
@@ -46,9 +46,9 @@ protected:
 	void UpdateTexture();
 public:
 	
-	GraphObject2D(bool ShouldInitTexture);
-	GraphObject2D();
-	~GraphObject2D();
+	Sprite(bool ShouldInitTexture);
+	Sprite();
+	~Sprite();
 	
 	// color and other transformations
 	float Alpha;

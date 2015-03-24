@@ -1,6 +1,6 @@
 #include "Global.h"
 #include "GameState.h"
-#include "GraphObject2D.h"
+#include "Sprite.h"
 #include "ScreenLoading.h"
 #include "ImageLoader.h"
 #include "LuaManager.h"
@@ -19,7 +19,7 @@ ScreenLoading::ScreenLoading(Screen *Parent, Screen *_Next)
 	LoadThread = NULL;
 	Running = true;
 	
-	Animation = new SceneManager("ScreenLoading");
+	Animation = new SceneEnvironment("ScreenLoading");
 	Animation->Preload(GameState::GetInstance().GetSkinFile("screenloading.lua"), "Preload");
 	Animation->Initialize("", false);
 

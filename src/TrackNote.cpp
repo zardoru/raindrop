@@ -1,5 +1,5 @@
 #include "GameGlobal.h"
-#include "GraphObject2D.h"
+#include "Sprite.h"
 #include "TrackNote.h"
 
 using namespace VSRG;

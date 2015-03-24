@@ -1,6 +1,6 @@
 #include "GameGlobal.h"
 #include "GameState.h"
-#include "GraphObject2D.h"
+#include "Sprite.h"
 #include "ActorJudgment.h"
 #include "ImageLoader.h"
 

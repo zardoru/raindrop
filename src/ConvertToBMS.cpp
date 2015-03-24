@@ -3,178 +3,52 @@
 #include "Logging.h"
 #include "Song7K.h"
 
-#include <boost/math/common_factor.hpp>
 #include <boost/format.hpp>
 
-// lcm of a set of integers
-int LCM(vector<int> Set) {
-	int current = Set.at(0);
-
-	for (size_t i = 1; i < Set.size(); i++) {
-		current = boost::math::lcm(current, Set[i]);
-	}
-	return current;
-}
-
-double PassThrough(double D){
-	return D;
-}
-
-class BMSConverter {
-
-	function <double(double)> QuantizeFunction;
-
-	template <class T>
-	struct Fraction {
-		T Num;
-		T Den;
-
-		Fraction()
-		{
-			Num = Den = 1;
-		}
-
-		template <class K>
-		Fraction(K num, K den) {
-			Num = num;
-			Den = den;
-		}
-
-		void fromDouble(double in)
-		{
-			double d = 0;
-			Num = 0;
-			Den = 1;
-			while (d != in)
-			{
-				if (d < in)
-					Num++;
-				else if (d > in)
-					Den++;
-				d = (double)Num / Den;
-			}
-		}
-	};
-	
-	typedef Fraction<long long> LFraction;
-	typedef Fraction<int> IFraction;
-
-	struct OutObj{
-		IFraction Sect;
-		int Evt;
-	};
-
-	struct Measure{
-		vector<OutObj> Objects[VSRG::MAX_CHANNELS];
-		vector<OutObj> LNObjects[VSRG::MAX_CHANNELS];
-		vector<OutObj> BPMEvents;
-		vector<OutObj> StopEvents;
-		vector<OutObj> BGMEvents;
-
-		double bmsLength;
-
-		Measure() {
-			bmsLength = 1;
-		}
-
-		static int GetRowCount(const vector<OutObj> &In){
-			// literally the only hard part of this
-			// We have to find the LCM of the set of fractions given by the Fraction of all objects in the vector.
-			std::vector <int> Denominators;
-
-			// Find all different denominators.
-			for (auto i : In) {
-				for (auto k : Denominators)
-				{
-					if (i.Sect.Den == k)
-						goto next_object;
-				}
-
-				Denominators.push_back(i.Sect.Den);
-			next_object:;
-			}
-
-			if (Denominators.size() == 1) return Denominators.at(0);
-
-			// Now get the LCM.
-			return LCM(Denominators);
-		}
-	};
-
-	struct BMSFile {
-		vector<Measure> Measures;
-		TimingData BPS;
-		vector<double> BPMs;
-		vector<int> Stops;
-	} *CurrentBMS;
-
-	VSRG::Difficulty *CurrentDifficulty;
+class BMSConverter : public VSRG::RowifiedDifficulty {
 	VSRG::Song *Song;
 
-	std::vector<double> MeasureAccomulation;
 	std::stringstream OutFile;
 
-	void CalculateMeasureAccomulation() {
-		double Acom = 0;
+	struct TimingMeasure {
+		vector<Event> BPMEvents;
+		vector<Event> StopEvents;
+	};
 
-		MeasureAccomulation.clear();
-		for (auto M : CurrentDifficulty->Data->Measures){
-			MeasureAccomulation.push_back(QuantizeFunction(Acom));
-			Acom += M.MeasureLength;
+	vector<TimingMeasure> TimingMeasures;
+	vector<double> BPMs;
+	vector<int> Stops;
+
+	void ResizeTimingMeasures(size_t NewMaxIndex) {
+		if (TimingMeasures.size() < NewMaxIndex + 1) {
+			TimingMeasures.resize(NewMaxIndex + 1);
 		}
-	}
-
-	IFraction FractionForMeasure(int Measure, double Beat)
-	{
-		double mStart = MeasureAccomulation[Measure];
-		double mLen = CurrentDifficulty->Data->Measures[Measure].MeasureLength;
-		LFraction Frac;
-		Frac.fromDouble(QuantizeFractionMeasure((Beat - mStart) / mLen));
-		return IFraction{ Frac.Num, Frac.Den };
-	}
-
-	int MeasureForBeat(double Beat)
-	{
-		int Measure = -1;
-		for (auto i : MeasureAccomulation)
-		{
-			if (Beat >= i)
-			{
-				Measure += 1;
-			}
-			else return Measure;
-		}
-
-		assert(0);
-	}
-
-	void ResizeMeasures(size_t NewMaxIndex) {
-		if (CurrentBMS->Measures.size() < NewMaxIndex+1)
-			CurrentBMS->Measures.resize(NewMaxIndex + 1);
 	}
 
 	void CalculateTimingPoints()
 	{
 		/*
-		 Group all different BPM changes that are different.
-		 Use that index as the event value. When outputting, check if result can be represented as an integer in base 16.
-		 If it can, output as BPM, otherwise, as EXBPM.
+		Group all different BPM changes that are different.
+		Use that index as the event value. When outputting, check if result can be represented as an integer in base 16.
+		If it can, output as BPM, otherwise, as EXBPM.
 
-		 Assumptions: There are no BPS events before time 0.
+		Or don't. Whatever.
+
+		Assumptions: There are no BPS events before time 0.
 		*/
-		for (auto T : CurrentBMS->BPS)
+		for (auto T : BPS)
 		{
 			assert(T.Time >= 0);
 			if (T.Value != 0) // Not a stop.
 			{
-				double Beat = QuantizeFunction(IntegrateToTime(CurrentBMS->BPS, T.Time));
+				double Beat = QuantizeFunction(IntegrateToTime(BPS, T.Time));
 				double BPM = 60 * T.Value;
 
 				int index = -1;
 
 				// Check redundant BPMs.
-				for (size_t i = 0; i < CurrentBMS->BPMs.size(); i++) {
-					if (CurrentBMS->BPMs[i] == BPM) {
+				for (size_t i = 0; i < BPMs.size(); i++) {
+					if (BPMs[i] == BPM) {
 						index = i;
 						break;
 					}
@@ -182,40 +56,30 @@ class BMSConverter {
 
 				// Didn't find it. Push it.
 				if (index == -1) {
-					CurrentBMS->BPMs.push_back(BPM);
-					index = CurrentBMS->BPMs.size() - 1;
+					BPMs.push_back(BPM);
+					index = BPMs.size() - 1;
 				}
 
 				// Create new event at measure.
 				int MeasureForEvent = MeasureForBeat(Beat);
-				ResizeMeasures(MeasureForEvent); // Make sure we've got space on the measures vector
-				CurrentBMS->Measures[MeasureForEvent].BPMEvents.push_back({ FractionForMeasure(MeasureForEvent, Beat), index+1 });
+				ResizeTimingMeasures(MeasureForEvent); // Make sure we've got space on the measures vector
+				TimingMeasures[MeasureForEvent].BPMEvents.push_back({ FractionForMeasure(MeasureForEvent, Beat), index + 1 });
 			}
-		}
-
-		int MeasureNum = 0;
-		for (auto M : CurrentDifficulty->Data->Measures) {
-			double bmsMult = M.MeasureLength / 4; // 4 * x = mlen, x = mlen / 4
-
-			ResizeMeasures(MeasureNum);
-			CurrentBMS->Measures[MeasureNum].bmsLength = bmsMult;
-
-			MeasureNum++;
 		}
 	}
 
 	void CalculateStops()
 	{
-		for (auto T = CurrentBMS->BPS.begin(); T != CurrentBMS->BPS.end(); ++T)
+		for (auto T = BPS.begin(); T != BPS.end(); ++T)
 		{
 			assert(T->Time >= 0);
 			if (T->Value == 0) // A stop.
 			{
 				auto RestBPM = T + 1;
-				double Beat = QuantizeFunction(IntegrateToTime(CurrentBMS->BPS, T->Time));
+				double Beat = QuantizeFunction(IntegrateToTime(BPS, T->Time));
 				// By song processing law, any stop is followed by a restoration of the original BPM.
 				double Duration = RestBPM->Time - T->Time;
-				double BPSatStop = RestBPM->Value; 
+				double BPSatStop = RestBPM->Value;
 				// We need to know how long in beats this stop lasts for BPSatStop.
 				double StopBMSDurationBeats = BPSatStop * Duration;
 				// Now the duration in BMS stops..
@@ -224,8 +88,8 @@ class BMSConverter {
 				int index = -1;
 
 				// Check redundant stops.
-				for (size_t i = 0; i < CurrentBMS->Stops.size(); i++) {
-					if (CurrentBMS->Stops[i] == StopDurationBMS) {
+				for (size_t i = 0; i < Stops.size(); i++) {
+					if (Stops[i] == StopDurationBMS) {
 						index = i;
 						break;
 					}
@@ -233,65 +97,17 @@ class BMSConverter {
 
 				// Didn't find it. Push it.
 				if (index == -1) {
-					CurrentBMS->Stops.push_back(StopDurationBMS);
-					index = CurrentBMS->BPMs.size() - 1;
+					Stops.push_back(StopDurationBMS);
+					index = BPMs.size() - 1;
 				}
 
 				int MeasureForEvent = MeasureForBeat(Beat);
-				ResizeMeasures(MeasureForEvent);
-				CurrentBMS->Measures[MeasureForEvent].StopEvents.push_back({ FractionForMeasure(MeasureForEvent, Beat), index+1 });
+				ResizeTimingMeasures(MeasureForEvent);
+				TimingMeasures[MeasureForEvent].StopEvents.push_back({ FractionForMeasure(MeasureForEvent, Beat), index + 1 });
 			}
 		}
 	}
 
-	void CalculateBGMEvents()
-	{
-		for (auto BGM : CurrentDifficulty->Data->BGMEvents) {
-			double Beat = QuantizeFunction(IntegrateToTime(CurrentBMS->BPS, BGM.Time));
-
-			int MeasureForEvent = MeasureForBeat(Beat);
-			ResizeMeasures(MeasureForEvent);
-			CurrentBMS->Measures[MeasureForEvent].BGMEvents.push_back({ FractionForMeasure(MeasureForEvent, Beat), BGM.Sound });
-		}
-	}
-
-	void CalculateObjects()
-	{
-		for (auto M : CurrentDifficulty->Data->Measures) {
-			for (int K = 0; K < CurrentDifficulty->Channels; K++) {
-				for (auto N : M.MeasureNotes[K]) {
-					double StartBeat = QuantizeFunction(IntegrateToTime(CurrentBMS->BPS, N.StartTime));
-
-					if (StartBeat < 0) {
-						Log::Printf("Object at negative beat (%f), discarded\n", StartBeat);
-						continue;
-					}
-
-					if (N.EndTime == 0){ // Non-hold. Emit channels 11-...
-
-						int MeasureForEvent = MeasureForBeat(StartBeat);
-						ResizeMeasures(MeasureForEvent);
-
-						int Snd = N.Sound ? N.Sound : 1;
-						CurrentBMS->Measures[MeasureForEvent].Objects[K].push_back({ FractionForMeasure(MeasureForEvent, StartBeat), Snd });
-					} else { // Hold. Emit channels 51-...
-						double EndBeat = QuantizeFunction(IntegrateToTime(CurrentBMS->BPS, N.EndTime));
-						int MeasureForEvent = MeasureForBeat(StartBeat);
-						int MeasureForEventEnd = MeasureForBeat(EndBeat);
-						ResizeMeasures(MeasureForEvent);
-
-						int Snd = N.Sound ? N.Sound : 1;
-						CurrentBMS->Measures[MeasureForEvent].LNObjects[K].push_back({ FractionForMeasure(MeasureForEvent, StartBeat), Snd });
-						CurrentBMS->Measures[MeasureForEventEnd].LNObjects[K].push_back({ FractionForMeasure(MeasureForEventEnd, EndBeat), Snd });
-					}
-				}
-			}
-		}
-	}
-
-	double GetStartingBPM() {
-		return CurrentBMS->BPS[0].Value * 60;
-	}
 
 	GString ToBase36(int n) {
 		char pt[32] = {0};
@@ -313,42 +129,42 @@ class BMSConverter {
 	void WriteHeader()
 	{
 		using std::endl;
-		OutFile << "-- " << RAINDROP_VERSIONTEXT << " converter to BMS" << endl;
+		OutFile << "-- " << RAINDROP_WINDOWTITLE << RAINDROP_VERSIONTEXT << " converter to BMS" << endl;
 		OutFile << "-- HEADER" << endl;
 		OutFile << "#ARTIST " << Song->SongAuthor << endl;
 		OutFile << "#TITLE " << Song->SongName << endl;
 		OutFile << "#MUSIC " << Song->SongFilename << endl;
-		OutFile << "#OFFSET " << CurrentDifficulty->Offset << endl;
+		OutFile << "#OFFSET " << Parent->Offset << endl;
 		OutFile << "#BPM " << GetStartingBPM() << endl;
-		OutFile << "#PREVIEWTIME " << Song->PreviewTime << endl;
-		OutFile << "#STAGEFILE " << CurrentDifficulty->Data->StageFile << endl;
-		OutFile << "#DIFFICULTY " << CurrentDifficulty->Name << endl;
+		OutFile << "#PREVIEWPOINT " << Song->PreviewTime << endl;
+		OutFile << "#STAGEFILE " << Parent->Data->StageFile << endl;
+		OutFile << "#DIFFICULTY " << Parent->Name << endl;
 		OutFile << "#PREVIEW " << Song->SongPreviewSource << endl;
-		OutFile << "#PLAYLEVEL " << CurrentDifficulty->Level << endl;
-		OutFile << "#MAKER " << CurrentDifficulty->Author << endl;
+		OutFile << "#PLAYLEVEL " << Parent->Level << endl;
+		OutFile << "#MAKER " << Parent->Author << endl;
 
 		OutFile << endl << "-- WAVs" << endl;
-		for (auto i : CurrentDifficulty->SoundList){
+		for (auto i : Parent->SoundList){
 			OutFile << "#WAV" << ToBase36(i.first) << " " << i.second << endl;
 		}
 
 		OutFile << endl << "-- BPMs" << endl;
-		for (size_t i = 0; i < CurrentBMS->BPMs.size(); i++){
-			OutFile << "#EXBPM" << ToBase36(i + 1) << " " << CurrentBMS->BPMs[i] << endl;
+		for (size_t i = 0; i < BPMs.size(); i++){
+			OutFile << "#BPM" << ToBase36(i + 1) << " " << BPMs[i] << endl;
 		}
 
 		OutFile << endl << "-- STOPs" << endl;
-		for (size_t i = 0; i < CurrentBMS->Stops.size(); i++){
-			OutFile << "#STOP" << ToBase36(i + 1) << " " << CurrentBMS->Stops[i] << endl;
+		for (size_t i = 0; i < Stops.size(); i++){
+			OutFile << "#STOP" << ToBase36(i + 1) << " " << Stops[i] << endl;
 		}
 	}
 
-	void WriteVectorToMeasureChannel(vector<OutObj> &Out, int Measure, int Channel) 
+	void WriteVectorToMeasureChannel(vector<Event> &Out, int Measure, int Channel) 
 	{
 		if (Out.size() == 0) return; // Nothing to write.
 
-		int VecLCM = Measure::GetRowCount(Out);
-		std::sort(Out.begin(), Out.end(), [](const OutObj& A, const OutObj&B)
+		int VecLCM = GetRowCount(Out);
+		std::sort(Out.begin(), Out.end(), [](const Event& A, const Event&B)
 			-> bool {
 			double dA = (double)A.Sect.Num / A.Sect.Den;
 			double dB = (double)B.Sect.Num / B.Sect.Den;
@@ -358,8 +174,8 @@ class BMSConverter {
 		vector<int> rowified; 
 		rowified.resize(VecLCM);
 
-		// Now that we have LCM units we can easily just place the objects exactly as we want to output them.
-		for (auto Obj : Out){ // We convert to a fraction that fits with the LCM.
+		// Now that we have the LCM we can easily just place the objects exactly as we want to output them.
+		for (auto Obj : Out) { // We convert to a fraction that fits with the LCM.
 			int rNum = Obj.Sect.Num * VecLCM / Obj.Sect.Den;
 			rowified[rNum] = Obj.Evt;
 		}
@@ -419,27 +235,38 @@ class BMSConverter {
 
 	void WriteMeasures()
 	{
-		int Measure = 0;
+		uint32 Measure = 0;
 		using std::endl;
-		for (auto M : CurrentBMS->Measures){
-			if (M.bmsLength != 1)
-				OutFile << boost::format("#%03d02:%f") % Measure % M.bmsLength << endl;
+		for (auto M : Measures){
+			if (Parent->Data->Measures[Measure].MeasureLength != 4)
+			{
+				double bmsLength = Parent->Data->Measures[Measure].MeasureLength / 4;
+				OutFile << boost::format("#%03d02:%f") % Measure % bmsLength << endl;
+			}
 
 			OutFile << "-- BGM - Measure " << Measure << endl;
 			WriteVectorToMeasureChannel(M.BGMEvents, Measure, 1);
 
-			OutFile << "-- BPM" << endl;
-			WriteVectorToMeasureChannel(M.BPMEvents, Measure, 8); // lol just exbpm. who cares anyway
+			if (Measure < TimingMeasures.size()) {
+
+				if (TimingMeasures[Measure].BPMEvents.size()) {
+					OutFile << "-- BPM" << endl;
+					WriteVectorToMeasureChannel(TimingMeasures[Measure].BPMEvents, Measure, 8); // lol just exbpm. who cares anyway
+				}
+
+				if (TimingMeasures[Measure].StopEvents.size()) {
+					OutFile << "-- STOPS" << endl;
+					WriteVectorToMeasureChannel(TimingMeasures[Measure].StopEvents, Measure, 9);
+				}
+			}
 
 			OutFile << "-- OBJ" << endl;
-			for (int i = 0; i < CurrentDifficulty->Channels; i++)
+			for (int i = 0; i < Parent->Channels; i++)
 			{
 				WriteVectorToMeasureChannel(M.Objects[i], Measure, GetChannel(i));
 				WriteVectorToMeasureChannel(M.LNObjects[i], Measure, GetLNChannel(i));
 			}
 
-			OutFile << "-- STOPS" << endl;
-			WriteVectorToMeasureChannel(M.StopEvents, Measure, 9);
 			Measure++;
 		}
 	}
@@ -452,54 +279,45 @@ class BMSConverter {
 
 public:
 
-	BMSConverter(bool Quantize)
+	BMSConverter(bool Quantize, VSRG::Difficulty *Source, VSRG::Song *Song) 
+		: RowifiedDifficulty(Source, Quantize, true)
 	{
-		if (Quantize)
-			QuantizeFunction = bind(QuantizeBeat, _1);
-		else
-			QuantizeFunction = bind(PassThrough, _1);
+		this->Song = Song;
+		CalculateTimingPoints();
+		CalculateStops();
 	}
 
-	void Convert(VSRG::Song* Source, Directory PathOut)
+	void Output(Directory PathOut)
 	{
-		if (!Source) throw std::runtime_error("Source file unreadable.");
+		Directory Sn = Song->SongName;
+		Sn.Normalize(true);
 
-		Song = Source;
+		GString name = (boost::format("%1%/ %4% (%2%) - %3%.bms") % PathOut.c_path() % Parent->Name % Parent->Author % Sn.c_path()).str();
+		std::ofstream out(name.c_str());
 
-		for (auto Difficulty : Source->Difficulties) {
-			BMSFile bms;
-			GString name = (boost::format("%1%/%2%-%3%.bms") % PathOut.c_path() % Difficulty->Name % Difficulty->Author).str();
-			std::ofstream out(name.c_str());
-
-			if (!out.is_open())
-				Log::Printf("failed to open file %s", Utility::Widen(name).c_str());
+		if (!out.is_open())
+			Log::Printf("failed to open file %s", Utility::Widen(name).c_str());
 			
-			CurrentBMS = &bms;
-			CurrentDifficulty = Difficulty.get();
-
-			Difficulty->Process(NULL, CurrentBMS->BPS, TimingData()); // We need the BPS from here.
-			CalculateMeasureAccomulation();
-			CalculateTimingPoints();
-			CalculateStops();
-			CalculateBGMEvents();
-			CalculateObjects();
-
-			WriteBMSOutput();
-			out << OutFile.str();
-			OutFile = std::stringstream();
-		}
+		WriteBMSOutput();
+		out << OutFile.str();
 	}
 };
+
+void ConvertBMSAll(VSRG::Song *Source, Directory PathOut, bool Quantize)
+{
+	for (auto Diff : Source->Difficulties){
+		BMSConverter Conv(Quantize, Diff.get(), Source);
+		Conv.Output(PathOut);
+	}
+}
 
 
 void ExportToBMS(VSRG::Song* Source, Directory PathOut)
 {
-	BMSConverter Conv(true);
-	Conv.Convert(Source, PathOut);
+	ConvertBMSAll(Source, PathOut, true);
 }
 
 void ExportToBMSUnquantized(VSRG::Song* Source, Directory PathOut)
 {
-	BMSConverter Conv(false);
-	Conv.Convert(Source, PathOut);
+	ConvertBMSAll(Source, PathOut, false);
 }

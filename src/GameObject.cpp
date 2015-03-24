@@ -1,6 +1,6 @@
 #include "GameGlobal.h"
 #include "GameState.h"
-#include "GraphObject2D.h"
+#include "Sprite.h"
 #include "VBO.h"
 #include "GameObject.h"
 #include "ImageLoader.h"
@@ -13,7 +13,7 @@ SoundSample *HitSnd = NULL;
 SoundSample *HoldReleaseSnd = NULL;
 bool GameObjectTexInitialized = false;
 
-GameObject::GameObject() : GraphObject2D(false)
+GameObject::GameObject() : Sprite(false)
 {
 	SetImage(GameState::GetInstance().GetSkinImage("hitcircle.png"));
 	Centered = true; // use the object's center instead of top-left
@@ -250,7 +250,7 @@ void GameObject::Assign(double Duration, uint32 _Measure, double _MeasureFractio
 	Fraction = _MeasureFraction;
 }
 
-/* Assume GraphObject2D was already invalidated */ 
+/* Assume Sprite was already invalidated */ 
 void GameObject::Invalidate()
 {
 	UvBuffer->Invalidate();

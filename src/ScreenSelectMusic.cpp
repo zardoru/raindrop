@@ -11,7 +11,7 @@
 #include "ImageLoader.h"
 #include "Audio.h"
 #include "Configuration.h"
-#include "GraphObject2D.h"
+#include "Sprite.h"
 #include "GuiButton.h"
 #include "ImageList.h"
 
@@ -36,7 +36,7 @@ AudioStream	**Loops;
 
 int LoopTotal;
 
-void LuaEvt(LuaManager* LuaMan, GString Func, GraphObject2D* Obj)
+void LuaEvt(LuaManager* LuaMan, GString Func, Sprite* Obj)
 {
 	LuaMan->CallFunction(Func.c_str());
 	LuaMan->RunFunction();
@@ -199,7 +199,7 @@ void ScreenSelectMusic::LoadThreadInitialization()
 
 	ImageLoader::LoadFromManifest(Manifest, 1, GameState::GetInstance().GetSkinPrefix());
 
-	Objects = new SceneManager("ScreenSelectMusic");
+	Objects = new SceneEnvironment("ScreenSelectMusic");
 	SetupWheelLua(Objects->GetEnv());
 	Objects->Preload( GameState::GetInstance().GetSkinFile("screenselectmusic.lua"), "Preload" );
 
@@ -513,7 +513,7 @@ bool ScreenSelectMusic::HandleScrollInput(double xOff, double yOff)
 	return Game::SongWheel::GetInstance().HandleScrollInput(xOff, yOff);
 }
 
-void ScreenSelectMusic::TransformItem(GraphObject2D* Item, shared_ptr<Game::Song> Song, bool IsSelected)
+void ScreenSelectMusic::TransformItem(Sprite* Item, shared_ptr<Game::Song> Song, bool IsSelected)
 {
 	if (Objects->GetEnv()->CallFunction("TransformItem", 3))
 	{

@@ -7,7 +7,7 @@
 #include "GameWindow.h"
 #include "SongLoader.h"
 #include "SongWheel.h"
-#include "GraphObject2D.h"
+#include "Sprite.h"
 #include "ImageLoader.h"
 #include "BitmapFont.h"
 #include "TruetypeFont.h"
@@ -61,7 +61,7 @@ void SongWheel::Initialize(float Start, float End, SongDatabase* Database, bool 
 	DisplacementSpeed = 2;
 	if (IsGraphical)
 	{
-		Item = new GraphObject2D;
+		Item = new Sprite;
 		Item->SetImage(GameState::GetInstance().GetSkinImage("item.png"));
 		ItemHeight = Item->GetHeight();
 		Item->SetZ(16);

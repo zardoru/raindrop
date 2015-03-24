@@ -2,12 +2,12 @@
 #define SCREEN_LD_H_
 
 #include "Screen.h"
-#include "SceneManager.h"
+#include "SceneEnvironment.h"
 #include <boost/thread/thread.hpp>
 
 class ScreenLoading : public Screen
 {
-	SceneManager* Animation;
+	SceneEnvironment* Animation;
 	boost::thread *LoadThread;
 public:
 	ScreenLoading(Screen *Parent, Screen *_Next);

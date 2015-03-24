@@ -7,7 +7,16 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
-#include <boost/foreach.hpp>
+#include <boost/math/common_factor.hpp>
+
+int LCM(const vector<int> &Set) {
+	int current = Set.at(0);
+
+	for (size_t i = 1; i < Set.size(); i++) {
+		current = boost::math::lcm(current, Set[i]);
+	}
+	return current;
+}
 
 int SectionIndex(const TimingData &Timing, double Beat)
 {
@@ -87,7 +96,7 @@ void LoadTimingList(TimingData &Timing, GString line, bool AllowZeros)
 	// Remove whitespace.
 	boost::replace_all(ListGString, "\n", "");
 	boost::split(SplitResult, ListGString, boost::is_any_of(",")); // Separate List of BPMs.
-	BOOST_FOREACH(GString ValueGString, SplitResult)
+	for (auto ValueGString: SplitResult)
 	{
 		std::vector< GString > SplitResultPair;
 		boost::split(SplitResultPair, ValueGString, boost::is_any_of("=")); // Separate Time=Value pairs.

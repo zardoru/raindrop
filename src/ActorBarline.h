@@ -3,7 +3,7 @@
 
 class ScreenGameplay;
 
-class ActorBarline : public GraphObject2D
+class ActorBarline : public Sprite
 {
 	ScreenGameplay* Parent;
 	float AnimationTime, AnimationProgress;

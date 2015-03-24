@@ -8,7 +8,7 @@
 #include "Screen.h"
 #include "Audio.h"
 #include "ImageLoader.h"
-#include "GraphObject2D.h"
+#include "Sprite.h"
 #include "Line.h"
 #include "BitmapFont.h"
 #include "GameWindow.h"
@@ -16,7 +16,7 @@
 
 
 #include "LuaManager.h"
-#include "SceneManager.h"
+#include "SceneEnvironment.h"
 
 #include "ScoreKeeper7K.h"
 #include "TrackNote.h"
@@ -196,7 +196,7 @@ void ScreenGameplay7K::Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const
 	if (Param.StartMeasure == -1 && Auto)
 		StartMeasure = 0;
 
-	Animations = new SceneManager("ScreenGameplay7K");
+	Animations = new SceneEnvironment("ScreenGameplay7K");
 	score_keeper = new ScoreKeeper7K();
 	GameState::GetInstance().SetScorekeeper7K(score_keeper);
 	UpdateScriptScoreVariables();

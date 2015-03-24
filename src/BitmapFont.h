@@ -9,7 +9,7 @@ class LuaManager;
 class BitmapFont : public Font
 {
 	Image *Font;
-	GraphObject2D CharPosition[258];
+	Sprite CharPosition[258];
 	Vec2 CharSize, CellSize, RenderSize;
 	unsigned char StartingCharacter;
 

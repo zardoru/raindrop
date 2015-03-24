@@ -170,11 +170,50 @@ namespace VSRG
 	};
 
 
+	class RowifiedDifficulty {
+	public:
+		struct Event {
+			IFraction Sect;
+			int Evt;
+		};
+
+		struct Measure {
+			vector<Event> Objects[VSRG::MAX_CHANNELS];
+			vector<Event> LNObjects[VSRG::MAX_CHANNELS];
+			vector<Event> BGMEvents;
+		};
+
+	protected:
+		function <double(double)> QuantizeFunction;
+		int GetRowCount(const vector<Event> &In);
+
+		void CalculateMeasureAccomulation();
+		IFraction FractionForMeasure(int Measure, double Beat);
+
+		int MeasureForBeat(double Beat);
+		void ResizeMeasures(size_t NewMaxIndex);
+
+		void CalculateBGMEvents();
+		void CalculateObjects();
+		
+		vector<double> MeasureAccomulation;
+		vector<Measure> Measures;
+		TimingData BPS;
+
+		Difficulty *Parent;
+
+		RowifiedDifficulty(Difficulty *Source, bool Quantize, bool CalculateAll);
+
+		friend class Song;
+	public:
+		double GetStartingBPM();
+	};
+
 	/* 7K Song */
 	class Song : public Game::Song
 	{
 	public:
-		std::vector<std::shared_ptr<VSRG::Difficulty> > Difficulties;
+		vector<shared_ptr<VSRG::Difficulty> > Difficulties;
 
 		Song();
 		~Song();

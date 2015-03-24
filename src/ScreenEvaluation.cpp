@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "GameGlobal.h"
 #include "GameState.h"
-#include "GraphObject2D.h"
+#include "Sprite.h"
 #include "BitmapFont.h"
 #include "ScreenEvaluation.h"
 #include "GameWindow.h"

@@ -5,7 +5,7 @@
 #include "ImageLoader.h"
 #include "Audio.h"
 #include "GameWindow.h"
-#include "GraphObject2D.h"
+#include "Sprite.h"
 #include "BitmapFont.h"
 #include "TruetypeFont.h"
 
@@ -26,25 +26,25 @@ ScreenMainMenu::ScreenMainMenu(Screen *Parent) : Screen(Parent)
 {
 }
 
-void PlayBtnHover(GraphObject2D *obj)
+void PlayBtnHover(Sprite *obj)
 {
 	MainMenuLua->CallFunction("PlayBtnHover");
 	MainMenuLua->RunFunction();
 }
 
-void PlayBtnLeave(GraphObject2D *obj)
+void PlayBtnLeave(Sprite *obj)
 {
 	MainMenuLua->CallFunction("PlayBtnHoverLeave");
 	MainMenuLua->RunFunction();
 }
 
-void ExitBtnHover(GraphObject2D *obj)
+void ExitBtnHover(Sprite *obj)
 {
 	MainMenuLua->CallFunction("ExitBtnHover");
 	MainMenuLua->RunFunction();
 }
 
-void ExitBtnLeave(GraphObject2D *obj)
+void ExitBtnLeave(Sprite *obj)
 {
 	MainMenuLua->CallFunction("ExitBtnHoverLeave");
 	MainMenuLua->RunFunction();
@@ -54,7 +54,7 @@ void ScreenMainMenu::Init()
 {
 	Running = true;
 
-	Objects = new SceneManager("ScreenMainMenu");
+	Objects = new SceneEnvironment("ScreenMainMenu");
 	MainMenuLua = Objects->GetEnv();
 
 	Objects->AddTarget(&Background);

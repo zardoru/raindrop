@@ -1,6 +1,6 @@
 #include "GameGlobal.h"
 #include "Screen.h"
-#include "GraphObject2D.h"
+#include "Sprite.h"
 #include "ImageList.h"
 
 #include <map>

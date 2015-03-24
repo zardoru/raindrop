@@ -1,6 +1,6 @@
 #include "GameGlobal.h"
 #include "Image.h"
-#include "GraphObject2D.h"
+#include "Sprite.h"
 #include "BitmapFont.h"
 #include "GuiTextPrompt.h"
 

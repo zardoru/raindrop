@@ -121,9 +121,6 @@
     <ClCompile Include="..\src\ImageLoader.cpp">
       <Filter>Source\backend\render\textures</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\GraphObject2D.cpp">
-      <Filter>Source\backend\render\objects</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\ImageList.cpp">
       <Filter>Source\backend\render\textures</Filter>
     </ClCompile>
@@ -229,9 +226,6 @@
     <ClCompile Include="..\src\ScoreKeeper7K_o2jam.cpp">
       <Filter>Source\vsrg\gameplay</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\SceneManager.cpp">
-      <Filter>Source\backend\structure</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Transformation.cpp">
       <Filter>Source\backend\structure</Filter>
     </ClCompile>
@@ -252,6 +246,15 @@
     </ClCompile>
     <ClCompile Include="..\src\ConvertToBMS.cpp">
       <Filter>Source\vsrg\converting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Sprite.cpp">
+      <Filter>Source\backend\render\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SceneEnvironment.cpp">
+      <Filter>Source\backend\structure</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\RowifiedDifficulty7K.cpp">
+      <Filter>Source\vsrg\internal</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -360,9 +363,6 @@
     <ClInclude Include="..\src\Image.h">
       <Filter>Source\backend\render\textures</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\GraphObject2D.h">
-      <Filter>Source\backend\render\objects</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\VBO.h">
       <Filter>Source\backend\render\objects</Filter>
     </ClInclude>
@@ -456,9 +456,6 @@
     <ClInclude Include="..\src\ScreenGameplay7K_Mechanics.h">
       <Filter>Source\vsrg\gameplay</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\SceneManager.h">
-      <Filter>Source\backend\structure</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Transformation.h">
       <Filter>Source\backend\structure</Filter>
     </ClInclude>
@@ -479,6 +476,12 @@
     </ClInclude>
     <ClInclude Include="..\src\RaindropRocketInterface.h">
       <Filter>Source\backend\librocket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Sprite.h">
+      <Filter>Source\backend\render\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SceneEnvironment.h">
+      <Filter>Source\backend\structure</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

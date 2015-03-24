@@ -5,15 +5,15 @@
 
 class BitmapFont;
 class ScoreKeeper7K;
-class SceneManager;
+class SceneEnvironment;
 
 class ScreenEvaluation7K : public Screen
 {
-	GraphObject2D Background;
+	Sprite Background;
 	BitmapFont* Font;
 	GString DisplayResult;
 	ScoreKeeper7K *Score;
-	SceneManager *Objects;
+	SceneEnvironment *Objects;
 public:
 	ScreenEvaluation7K(Screen *Parent);
 	void Init(ScoreKeeper7K *Result);

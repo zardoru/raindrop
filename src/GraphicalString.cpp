@@ -1,10 +1,10 @@
 #include "Global.h"
-#include "GraphObject2D.h"
+#include "Sprite.h"
 #include "Font.h"
 #include "GraphicalString.h"
 
 GraphicalString::GraphicalString()
-	: GraphObject2D(false),
+	: Sprite(false),
 	mFont(NULL)
 {
 	SetSize(1); // Default size, so it doesn't scale to 0

@@ -20,7 +20,7 @@ namespace GUI
 	class Button;
 }
 
-class SceneManager;
+class SceneEnvironment;
 class AudioStream;
 
 class ScreenSelectMusic : public Screen
@@ -31,10 +31,10 @@ class ScreenSelectMusic : public Screen
 
 	shared_ptr<Game::Song> ToPreview;
 	shared_ptr<Game::Song> PreviousPreview;
-	GraphObject2D Background;
+	Sprite Background;
 	BitmapFont* Font;
 
-	SceneManager *Objects;
+	SceneEnvironment *Objects;
 
 	GUI::Button *UpBtn, *BackBtn, *AutoBtn;
 
@@ -61,7 +61,7 @@ class ScreenSelectMusic : public Screen
 	void OnItemHover(uint32 Index, GString Line, shared_ptr<Game::Song> Selected);
 	void OnItemHoverLeave(uint32 Index, GString Line, shared_ptr<Game::Song> Selected);
 
-	void TransformItem(GraphObject2D* Item, shared_ptr<Game::Song> Song, bool IsSelected);
+	void TransformItem(Sprite* Item, shared_ptr<Game::Song> Song, bool IsSelected);
 	void SwitchUpscroll(bool NewUpscroll);
 public:
 	ScreenSelectMusic();
