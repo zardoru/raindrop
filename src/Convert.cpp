@@ -32,7 +32,7 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 #endif
 			(vf, 1024, "%s/%s - %s [%s] (%s).osu", PathOut.c_path(), Sng->SongAuthor.c_str(), Sng->SongName.c_str(), (*i)->Name.c_str(), Author.c_str());
 		Directory Str = vf;
-		Str.Normalize();
+		Str.Normalize(true);
 		std::ofstream out (Str.c_path());
 
 		if (!out.is_open())
@@ -49,7 +49,7 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 			<< "[General]\n"
 			<< "AudioFilename: " << ((*i)->IsVirtual ? "virtual" : Sng->SongFilename) << "\n"
 			<< "AudioLeadIn: 1500\n"
-			//<< "PreviewTime: " << (*i)->PreviewTime << "\n"
+			<< "PreviewTime: " << Sng->PreviewTime << "\n"
 			<< "Countdown: 0\n"
 			<< "SampleSet: None\n"
 			<< "StackLeniency: 0.7\n"
@@ -89,7 +89,16 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 			<< "// Background and Video events\n"
 			<< "0,0,\"" << Sng->BackgroundFilename << "\"\n"
 			<< "// Storyboard Layer 0 (Background)\n// Storyboard Layer 1 (Fail)\n// Storyboard Layer 2 (Pass)\n"
-			<< "// Storyboard Layer 3 (Foreground)\n// Storyboard Sound Samples\n// Background Colour Transformations\n"
+			<< "// Storyboard Layer 3 (Foreground)\n// Storyboard Sound Samples\n";
+			
+		// Write BGM events here.
+		for (auto BGM : (*i)->Data->BGMEvents) {
+			GString sndf = (*i)->SoundList[BGM.Sound];
+			out << "5," << BGM.Time * 1000 << ",0,\"" << sndf << "\"" << std::endl;
+		}
+
+		out
+			<< "// Background Colour Transformations\n"
 			<< "3,100,163,162,255\n\n";
 
 		out.flush();
@@ -109,7 +118,7 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 		out << "\n\n[HitObjects]\n";
 
 		// Then, objects.
-		for (VSRG::MeasureVector::iterator k = (*i)->Data->Measures.begin();
+		for (auto k = (*i)->Data->Measures.begin();
 			k != (*i)->Data->Measures.end();
 			k++)
 		{

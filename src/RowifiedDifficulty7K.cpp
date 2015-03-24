@@ -9,14 +9,16 @@ static double PassThrough(double D){
 }
 
 RowifiedDifficulty::RowifiedDifficulty(Difficulty *Source, bool Quantize, bool CalculateAll)
+	: Quantizing(Quantize), Parent(Source)
 {
 	assert(Source != nullptr);
-	Parent = Source;
 
 	if (Quantize)
 		QuantizeFunction = function<double(double)>(QuantizeBeat, _1);
 	else
 		QuantizeFunction = function<double(double)>(PassThrough, _1);
+
+	Source->ProcessBPS(BPS, 0);
 
 	CalculateMeasureAccomulation();
 
@@ -25,6 +27,11 @@ RowifiedDifficulty::RowifiedDifficulty(Difficulty *Source, bool Quantize, bool C
 		CalculateBGMEvents();
 		CalculateObjects();
 	}
+}
+
+bool RowifiedDifficulty::IsQuantized()
+{
+	return Quantizing;
 }
 
 void RowifiedDifficulty::CalculateMeasureAccomulation() 
@@ -44,9 +51,14 @@ IFraction RowifiedDifficulty::FractionForMeasure(int Measure, double Beat)
 {
 	double mStart = MeasureAccomulation[Measure];
 	double mLen = QuantizeFunction(Parent->Data->Measures[Measure].MeasureLength);
-	double mFrac = QuantizeFunction((Beat - mStart)) / mLen;
+	double mFrac = (Beat - mStart) / mLen;
 	LFraction Frac;
-	Frac.fromDouble(mFrac);
+
+	if (!IsQuantized())
+		Frac.fromDouble(mFrac);
+	else
+		Frac.fromDouble(QuantizeFractionMeasure(mFrac));
+
 	return IFraction{ Frac.Num, Frac.Den };
 }
 
@@ -103,7 +115,7 @@ void RowifiedDifficulty::CalculateObjects()
 					double EndBeat = QuantizeFunction(IntegrateToTime(BPS, N.EndTime));
 					int MeasureForEvent = MeasureForBeat(StartBeat);
 					int MeasureForEventEnd = MeasureForBeat(EndBeat);
-					ResizeMeasures(MeasureForEvent);
+					ResizeMeasures(MeasureForEventEnd);
 
 					int Snd = N.Sound ? N.Sound : 1;
 					Measures[MeasureForEvent].LNObjects[K].push_back({ FractionForMeasure(MeasureForEvent, StartBeat), Snd });

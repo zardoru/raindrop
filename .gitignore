@@ -1,7 +1,9 @@
 # General ignores.
 ext-src
 ext-libs
-
+*.bms
+*.osu
+*.sm
 # Windows ignores.
 project/debug
 project/release

@@ -183,6 +183,10 @@ namespace VSRG
 			vector<Event> BGMEvents;
 		};
 
+	private:
+		bool Quantizing;
+		vector<double> MeasureAccomulation;
+
 	protected:
 		function <double(double)> QuantizeFunction;
 		int GetRowCount(const vector<Event> &In);
@@ -196,7 +200,6 @@ namespace VSRG
 		void CalculateBGMEvents();
 		void CalculateObjects();
 		
-		vector<double> MeasureAccomulation;
 		vector<Measure> Measures;
 		TimingData BPS;
 
@@ -207,6 +210,7 @@ namespace VSRG
 		friend class Song;
 	public:
 		double GetStartingBPM();
+		bool IsQuantized();
 	};
 
 	/* 7K Song */
