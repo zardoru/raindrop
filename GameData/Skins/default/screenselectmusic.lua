@@ -83,48 +83,13 @@ function TransformItem(Item, Song, IsSelected)
 end
 
 function OnSongChange(Song, Diff)
-	print "Song changed"
 	updText(1)
-end
-
-function InBanner(frac)
-	Obj.SetPosition( 0, -192 * (1-frac) )
-	return 1
-end
-
-function InUpBtn(frac)
-	Obj.SetPosition( ScreenWidth / 2, ScreenHeight + 60 - 81.5 * frac )
-	return 1
-end
-
-function InBackground(frac)
-	Obj.SetAlpha(frac)
-	return 1
-end
-
-function OutBanner(frac)
-	return InBanner(1-frac)
-end
-
-function OutUpBtn(frac)
-	return InUpBtn(1-frac)
-end 
-
-function OutBackground(frac)
-	return InBackground(frac)
 end
 
 -- Screen Events
 function OnSelect()
 	TransformX = ScreenWidth + 250
 	ScreenFade.In()
-	
-	Obj.SetTarget(DirUpButton)
-	Obj.AddAnimation( "OutUpBtn", 0.5, 0, EaseOut )
-
-	Obj.SetTarget(ScreenBackground)
-	Obj.AddAnimation( "OutBackground", 0.5, 0, EaseOut )
-	
 	return 1
 end
 
@@ -134,11 +99,6 @@ function OnRestore()
 	TransformX =  ScreenWidth * 15/20
 	CurrentTX = ScreenWidth	
 	BgAlpha = 0
-	Obj.SetTarget(DirUpButton)
-	Obj.AddAnimation( "InUpBtn", 0.5, 0, EaseOut )
-
-	Obj.SetTarget(ScreenBackground)
-	Obj.AddAnimation( "InBackground", 0.5, 0, EaseOut )
 end
 
 function OnDirectoryChange()
@@ -156,13 +116,11 @@ function KeyEvent(k, c, m)
 end
 
 function DirUpBtnHover()
-	Obj.SetTarget(DirUpButton)
-	Obj.SetImageSkin("SongSelect/up_h.png")
+	DirUpButton.Image = "SongSelect/up_h.png"
 end
 
 function DirUpBtnHoverLeave()
-	Obj.SetTarget(DirUpButton)
-	Obj.SetImageSkin("SongSelect/up.png")
+	DirUpButton.Image = "SongSelect/up.png"
 end
 
 function BackBtnClick()
@@ -192,12 +150,13 @@ function Init()
 	
 	-- testbox()
 	
-	Obj.SetTarget(DirUpButton)
-	Obj.SetImageSkin("SongSelect/up.png")
-	Obj.SetCentered(1)
-	Obj.SetZ(18)
+	DirUpButton.Image = "SongSelect/up.png"
+	DirUpButton.Centered = 1
+	DirUpButton.X = ScreenWidth/2
+	DirUpButton.Y = ScreenHeight - DirUpButton.Height/2
+	DirUpButton.Layer = 18
 
-	font = Fonts.TruetypeFont(Obj.GetSkinFile("font.ttf"), 24)
+	font = Fonts.TruetypeFont(GetSkinFile("font.ttf"), 24)
 		
 	dd = StringObject2D()
 	dd.Font = font
@@ -207,10 +166,10 @@ function Init()
 	Wheel.ScrollSpeed = Wheel:GetItemHeight()
 	
 	Engine:AddTarget(dd)
-	Obj.SetUILayer(30)
+	Engine:SetUILayer(30)
 end
 
-function updText(t)
+function updText()
 	local sng = Global:GetSelectedSong()
 	if sng then
 		local s7k = toSong7K(sng)
@@ -258,5 +217,4 @@ function Update(Delta)
 			Wheel:SetSelectedItem(idx)
 		end
 	end
-	updText()
 end

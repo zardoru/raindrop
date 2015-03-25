@@ -14,6 +14,8 @@
 #include "RaindropRocketInterface.h"
 #include "TruetypeFont.h"
 
+#include <LuaBridge.h>
+
 void CreateLuaInterface(LuaManager *AnimLua);
 
 std::map<int, Rocket::Core::Input::KeyIdentifier> key_identifier_map;
@@ -346,10 +348,7 @@ void SceneEnvironment::AddTarget(Sprite *Targ, bool IsExternal)
 void SceneEnvironment::AddLuaTarget(Sprite *Targ, GString Varname)
 {
 	lua_State *L = Lua->GetState();
-	Sprite **RetVal = (Sprite**) lua_newuserdata(L, sizeof(Sprite **));
-	*RetVal = Targ;
-	luaL_getmetatable(L, "Sys.Sprite");
-	lua_setmetatable(L, -2);
+	luabridge::push(L, Targ);
 	lua_setglobal(L, Varname.c_str());
 }
 

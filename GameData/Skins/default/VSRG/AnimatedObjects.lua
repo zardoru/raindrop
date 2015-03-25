@@ -5,57 +5,50 @@ Jambar = { ImageBG = "VSRG/jfill_bg.jpg", ImageFG = "VSRG/jfill_fg.jpg", Width =
 MissHighlight = {}
 
 function ProgressTick.Init()
-	ProgressTick.Object = Obj.CreateTarget()
+	ProgressTick.Object = Engine:CreateObject()
 
 	-- When not active, Beat <= 0.
 	ProgressTick.BeatOffs = -Beat
 
-	Obj.SetTarget(ProgressTick.Object)
-	Obj.SetImageSkin(ProgressTick.Image)
-	Obj.SetPosition( GearStartX - 5 - 16, 0 )
-	Obj.SetZ(25)
-end
-
-function ProgressTick.Cleanup()
-	Obj.CleanTarget(ProgressTick.Object)
+	ProgressTick.Object.Image = ProgressTick.Image
+	ProgressTick.X = GearStartX - 5 - 16
+	ProgressTick.Layer = 25
 end
 
 function ProgressTick.Run(Delta)
 	if Active ~= 0 then
 		local Ratio = (Beat + ProgressTick.BeatOffs) / (SongDurationBeats + ProgressTick.BeatOffs)
 		if SongTime > 0 then
-			Obj.SetAlpha(1)
-			Obj.SetPosition( GearStartX - 5 - 16, Ratio * (ScreenHeight - 16) )
+			ProgressTick.Alpha = 1
+			ProgressTick.Y = Ratio * (ScreenHeight - 16)
 		else
-			Obj.SetAlpha(1 - SongTime / -1.5, 2)
-			Obj.SetPosition( GearStartX - 5 - 16, (ScreenHeight - 16) * math.pow(SongTime / -1.5, 2) )
+			ProgressTick.Alpha = 1 - SongTime / -1.5
+			ProgressTick.Y = (ScreenHeight - 16) * math.pow(SongTime / -1.5, 2)
 		end
 	else
-		Obj.SetAlpha( 0 )
+		ProgressTick.Alpha = 0
 	end
 end
 
 function Pulse.Init()
-	Pulse.Object = Obj.CreateTarget()
+	Pulse.Object = Engine:CreateObject()
 
-	Obj.SetTarget(Pulse.Object)
-	Obj.SetImageSkin(Pulse.Image)
-	Obj.SetBlendMode(BlendAdd)
+	Pulse.Object.Image = Pulse.Image
+	Pulse.Object.BlendMode = BlendAdd
 
 	if Upscroll ~= 0 then
-		Obj.SetRotation(180)
-		Obj.SetPosition(GearStartX + GearWidth, GearHeight + Pulse.Height )
+		Pulse.Object.Rotation = (180)
+		Pulse.Object.X = GearStartX + GearWidth
+		Pulse.Object.Y = GearHeight + Pulse.Height
 	else
-		Obj.SetPosition(GearStartX, ScreenHeight - GearHeight - Pulse.Height )
+		Pulse.Object.X = GearStartX
+		Pulse.Object.Y = ScreenHeight - GearHeight - Pulse.Height
 	end
 
-	Obj.SetSize(GearWidth, Pulse.Height)
-	Obj.SetZ(11)
-	Obj.SetAlpha(0)
-end
-
-function Pulse.Cleanup()
-	Obj.CleanTarget(Pulse.Object)
+	Pulse.Object.Width = GearWidth
+	Pulse.Object.Height = Pulse.Height
+	Pulse.Object.Layer = 11
+	Pulse.Object.Alpha = 0
 end
 
 function Pulse.Run(Delta)
@@ -68,9 +61,9 @@ function Pulse.Run(Delta)
 			NthOfBeat = BeatMultiplied - math.floor(BeatMultiplied)
 		end
 		
-		Obj.SetAlpha(1 - NthOfBeat)
+		Pulse.Object.Alpha = (1 - NthOfBeat)
 	else
-		Obj.SetAlpha(0)
+		Pulse.Object.Alpha = 0
 	end
 end
 
@@ -80,14 +73,15 @@ function MissHighlight.Init()
 	MissHighlight.CurrentTime = {}
 
 	for i=0, Channels do
-		MissHighlight[i] = Obj.CreateTarget()
-		Obj.SetTarget(MissHighlight[i])
-		Obj.SetCentered(1)
-		Obj.SetImageSkin("VSRG/miss_highlight.png")
-		Obj.SetPosition(GetConfigF("Key"..i.."X", ChannelSpace), ScreenHeight/2)
-		Obj.SetSize(GetConfigF("Key"..i.."Width", ChannelSpace), ScreenHeight)
-		Obj.SetAlpha(0)
-		Obj.SetZ(15)
+		MissHighlight[i] = Engine:CreateObject()
+		MissHighlight[i].Centered = 1
+		MissHighlight[i].Image = ("VSRG/miss_highlight.png")
+		MissHighlight[i].X = GetConfigF("Key"..i.."X", ChannelSpace)
+		MissHighlight[i].Y = ScreenHeight/2
+		MissHighlight[i].Width = GetConfigF("Key"..i.."Width", ChannelSpace)
+		MissHighlight[i].Height = ScreenHeight
+		MissHighlight[i].Alpha = 0
+		MissHighlight[i].Layer = 15
 		
 		MissHighlight.Time[i] = 1 
 		MissHighlight.CurrentTime[i] = 1
@@ -96,21 +90,14 @@ end
 
 function MissHighlight.Run(Delta)
 	for i=0, Channels do
-		Obj.SetTarget(MissHighlight[i])
 		MissHighlight.CurrentTime[i] = MissHighlight.CurrentTime[i] + Delta
 		
 		if MissHighlight.CurrentTime[i] < MissHighlight.Time[i] then
 			local Lerp = 1 - MissHighlight.CurrentTime[i] / MissHighlight.Time[i]
-			Obj.SetAlpha(Lerp)
+			MissHighlight[i].Alpha = Lerp
 		else
-			Obj.SetAlpha(0)
+			MissHighlight[i].Alpha = 0
 		end
-	end
-end
-
-function MissHighlight.Cleanup()
-	for i=0, Channels do
-		Obj.CleanTarget(MissHighlight[i])
 	end
 end
 
@@ -118,7 +105,7 @@ function MissHighlight.OnMiss(Lane)
 	MissHighlight.CurrentTime[Lane] = 0
 
 	if CurrentSPB ~= math.huge then
-		MissHighlight.Time[Lane] = CurrentSPB / 2
+		MissHighlight.Time[Lane] = CurrentSPB / 4
 	end
 end
 
@@ -145,9 +132,6 @@ function Jambar.Init()
 	Jambar.BarFG.Y = ScreenHeight - Jambar.BarFG.Height
 		
 	Jambar.OldRem = 0
-		
-	Engine:AddTarget(Jambar.BarBG)
-	Engine:AddTarget(Jambar.BarFG)
 end
 
 function Jambar.Run(Delta)
@@ -171,10 +155,4 @@ function Jambar.Run(Delta)
 	local Offset = Jambar.OldRem * Jambar.Width / 2 + deltaRem * Jambar.Width / 2
 	Jambar.BarFG:SetCropByPixels( Center - Offset, Center + Offset, 0, Jambar.BarFG.Height )
 	Jambar.OldRem = Jambar.OldRem + deltaRem
-end
-
-function Jambar.Cleanup()
-	if ScoreKeeper:usesO2() == false then
-		return
-	end
 end

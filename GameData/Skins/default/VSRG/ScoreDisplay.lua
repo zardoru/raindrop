@@ -25,26 +25,27 @@ function ScoreDisplay.Init()
 		ScoreDisplay.Images[i] = ScoreDisplay.SetName(i)
 	end
 
-	ScoreDisplay.Atlas = TextureAtlas:new(Obj.GetSkinFile(ScoreDisplay.Sheet))
+	ScoreDisplay.Atlas = TextureAtlas:new(GetSkinFile(ScoreDisplay.Sheet))
 
 	for i = 1, ScoreDisplay.DigitCount do
-		ScoreDisplay.Targets[i] = Obj.CreateTarget()
-		Obj.SetTarget(ScoreDisplay.Targets[i])
-		Obj.SetPosition(ScoreDisplay.X + ScoreDisplay.W - ScoreDisplay.DigitWidth * i, 
-							ScoreDisplay.Y + ScoreDisplay.H - ScoreDisplay.DigitHeight)
-		Obj.SetImageSkin("VSRG/"..ScoreDisplay.Atlas.File)
-		Obj.SetSize(ScoreDisplay.DigitWidth, ScoreDisplay.DigitHeight)
+		ScoreDisplay.Targets[i] = Engine:CreateObject()
+
+		ScoreDisplay.Targets[i].X = ScoreDisplay.X + ScoreDisplay.W - ScoreDisplay.DigitWidth * i
+		ScoreDisplay.Targets[i].Y = ScoreDisplay.Y + ScoreDisplay.H - ScoreDisplay.DigitHeight
+		ScoreDisplay.Targets[i].Image = ("VSRG/"..ScoreDisplay.Atlas.File)
+		ScoreDisplay.Targets[i].Width = ScoreDisplay.DigitWidth
+		ScoreDisplay.Targets[i].Height = ScoreDisplay.DigitHeight
 
 		local Tab = ScoreDisplay.Atlas.Sprites[ScoreDisplay.Images[1]]
 
-		Obj.CropByPixels(Tab.x, Tab.y, Tab.x+Tab.w, Tab.y+Tab.h)
+		ScoreDisplay.Targets[i]:SetCropByPixels(Tab.x, Tab.x+Tab.w, Tab.y+Tab.h, Tab.y)
 
-		Obj.SetAlpha(1)
+		ScoreDisplay.Targets[i].Alpha = (1)
 	end
 end
 
 function ScoreDisplay.Run(Delta)
-	ScoreDisplay.DisplayScore = math.min((ScoreDisplay.Score - ScoreDisplay.DisplayScore) * Delta * 70 + ScoreDisplay.DisplayScore, ScoreDisplay.Score)
+	ScoreDisplay.DisplayScore = math.min((ScoreDisplay.Score - ScoreDisplay.DisplayScore) * Delta * 40 + ScoreDisplay.DisplayScore, ScoreDisplay.Score)
 	ScoreDisplay.Digits = {}
 
 	local TCombo = math.ceil(ScoreDisplay.DisplayScore)
@@ -57,36 +58,20 @@ function ScoreDisplay.Run(Delta)
 	end
 
 	for i=1, tdig do
-		Obj.SetTarget(ScoreDisplay.Targets[i])
-
 		local Tab = ScoreDisplay.Atlas.Sprites[ScoreDisplay.Images[ScoreDisplay.Digits[i]+1]]
-		Obj.CropByPixels(Tab.x, Tab.y, Tab.x+Tab.w, Tab.y+Tab.h)
-		Obj.SetSize(ScoreDisplay.DigitWidth, ScoreDisplay.DigitHeight)
-		Obj.SetAlpha(1)
-
+		ScoreDisplay.Targets[i]:SetCropByPixels(Tab.x, Tab.x+Tab.w, Tab.y, Tab.y+Tab.h)
+		ScoreDisplay.Targets[i].Alpha = (1)
 	end
 
 	for i=tdig+1, ScoreDisplay.DigitCount do
-
-		Obj.SetTarget(ScoreDisplay.Targets[i])
-
 		local Tab = ScoreDisplay.Atlas.Sprites[ScoreDisplay.Images[1]]
 
-		Obj.CropByPixels(Tab.x, Tab.y, Tab.x+Tab.w, Tab.y+Tab.h)
-		Obj.SetSize(ScoreDisplay.DigitWidth, ScoreDisplay.DigitHeight)
-		Obj.SetAlpha(1)
+		ScoreDisplay.Targets[i]:SetCropByPixels(Tab.x, Tab.x+Tab.w, Tab.y+Tab.h, Tab.y)
+		ScoreDisplay.Targets[i].Alpha = (1)
 	end
 
 end
 
 function ScoreDisplay.Update()
 	ScoreDisplay.Score = SCScore
-end
-
-function ScoreDisplay.Cleanup()
-
-	for i = 1, ScoreDisplay.DigitCount do
-		Obj.CleanTarget(ScoreDisplay.Targets[i])
-	end
-
 end

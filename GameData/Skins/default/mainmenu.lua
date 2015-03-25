@@ -6,57 +6,57 @@ Preload = {
 }
 
 function InBackground(frac)
-	Obj.SetAlpha( 1 - frac )
+	targBlack.Alpha = 1 - frac
 	return 1
 end
 
 function PlayBtnHover()
-	Obj.SetTarget(PlayButton)
-	Obj.SetImageSkin("MainMenu/playh.png")
-	Obj.SetSize(256, 153)
+	PlayButton.Image = "MainMenu/playh.png";
+	PlayButton.Width = 256
+	PlayButton.Height = 153
 end
 
 function PlayBtnHoverLeave()
-	Obj.SetTarget(PlayButton)
-	Obj.SetImageSkin("MainMenu/play.png")
-	Obj.SetSize(256, 153)
+	PlayButton.Image = "MainMenu/play.png";
+	PlayButton.Width = 256
+	PlayButton.Height = 153
 end
 
 function ExitBtnHover()
-	Obj.SetTarget(ExitButton)
-	Obj.SetImageSkin("MainMenu/quith.png")
-	Obj.SetSize(256, 153)
+	ExitButton.Image = "MainMenu/quith.png"
+	ExitButton.Width = 256
+	ExitButton.Height = 153
 end
 
 function ExitBtnHoverLeave()
-	Obj.SetTarget(ExitButton)
-	Obj.SetImageSkin("MainMenu/quit.png")
-	Obj.SetSize(256, 153)
+	ExitButton.Image = "MainMenu/quit.png"
+	ExitButton.Width = 256
+	ExitButton.Height = 153
 end
 
 function BadgeZoomIn(frac)
-	Obj.SetAlpha(frac)
-	Obj.SetScale(frac, frac)
+	targBadge.Alpha = frac
+	targBadge:SetScale(frac)
 	return 1
 end
 
 function LogoFadeIn(frac)
-	Obj.SetAlpha(frac)
+	targLogo.Alpha = frac
 	return 1
 end
 
 function BumpIn(frac)
 	local S = 0.5 * (1 - frac) + 1
-	Obj.SetScale (S, S)
-	Obj.SetLighten (frac and 1)
-	Obj.SetLightenFactor(0.5 * (1 - frac))
+	targBadge:SetScale (S)
+	targBadge.Lighten = (frac and 1)
+	targBadge.LightenFactor = 0.5 * (1 - frac)
 	return 1
 end
 
 function Init()
 	BackgroundAnimation:Init()
 
-	targBlack = Obj.CreateTarget()
+	targBlack = Engine:CreateObject()
 
 	targBadge = Engine:CreateObject()
 	targBadge.Image = "MainMenu/BACKs.png"
@@ -72,35 +72,25 @@ function Init()
 	targLogo.Alpha = 0
 
 	Engine:AddAnimation(targBadge, "BadgeZoomIn", EaseOut, 0.4, 0)
+	Engine:AddAnimation(targBadge, "BumpIn", EaseIn, 0.35, 2.3)
 	Engine:AddAnimation(targLogo, "LogoFadeIn", EaseNone, 0.4, 1.9)
 
+	PlayBtnHoverLeave()
+	PlayButton.Y = ScreenHeight - 153 * 2 - 40
+	PlayButton.Layer = 18
 
-	Engine:AddAnimation(targBadge, "BumpIn", EaseIn, 0.35, 2.3)
-	-- Engine:AddAnimation(targLogo, "BumpIn", EaseOut, 0.15, 2.3)
-
-
-	Obj.SetTarget(PlayButton)
-	Obj.SetImageSkin("MainMenu/play.png")
-	Obj.SetSize(256, 153)
-
-
-	Obj.SetPosition (0, ScreenHeight - 153 * 2 - 40)
-
-	Obj.SetTarget(ExitButton)
-	Obj.SetImageSkin("MainMenu/quit.png")
-	Obj.SetSize(256, 153)
-
-	Obj.SetPosition (0, ScreenHeight - 153)
-
-	Obj.SetTarget(targBlack)
-	Obj.SetImageSkin("Global/filter.png")
-	Obj.SetSize(ScreenWidth, ScreenHeight)
-	Obj.SetAlpha(1)
-	Obj.AddAnimation("InBackground", 0.35, 2.3, EaseOut)
+	ExitBtnHoverLeave()
+	ExitButton.Y = ScreenHeight - 153
+	ExitButton.Layer = 18
+	
+	targBlack.Image = "Global/filter.png"
+	targBlack.Width = ScreenWidth
+	targBlack.Height = ScreenHeight
+	targBlack.Alpha = 1
+	Engine:AddAnimation(targBlack, "InBackground", EaseOut, 0.35, 2.3)
 end
 
 function Cleanup()
-	Obj.CleanTarget(targLogo)
 end
 
 badgeRotSpeed = 1080

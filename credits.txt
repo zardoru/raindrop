@@ -6,7 +6,6 @@ Felipe Rojas Pacheco (darkbluecat): Music.
 Okan Dilek (Aethral): Music. Sound effects.
 Joe Zeng (Dragonaire): Scoring Code. Pokemono font. Pacemaker.
 David (Lyntle): Logo, Graphics
-Justin (Inorizushi): Sounds.
 Ecco (Dolphin): BMS testing
 Joel Wong (PROGUY): focusjam skin elements
 Takeda Singen: Graphics

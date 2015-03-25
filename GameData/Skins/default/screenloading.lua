@@ -10,14 +10,13 @@ function UpdateIntro(frac)
 	dFrac = frac - pfrac
 	pfrac = frac
 	
+	targBadge:SetScale(frac)
+	
 	frac =  1 - math.pow(1 - frac, 2)
 	
-	Obj.SetTarget(targBadge)
-	Obj.SetScale(frac, frac)
-	
-	Obj.SetTarget(targLogo)
-	w, h = Obj.GetSize()
-	Obj.SetPosition(w * frac, ScreenHeight - h)
+
+	targLogo.X = targLogo.Width * frac
+	targLogo.Y = ScreenHeight - targLogo.Height
 	
 	BG.Alpha = frac
 	
@@ -32,23 +31,24 @@ end
 
 function Init()
 	Acceleration = 0
+	
+	targLogo =  Engine:CreateObject()
+	targLogo.Image = "Loading/loading.png"
+	w = targLogo.Width
+	h = targLogo.Height
+	targLogo.Centered = 1
+	targLogo.Layer = 16
 
-	targBadge = Obj.CreateTarget()
-	targLogo = Obj.CreateTarget()
-
-	Obj.SetTarget(targLogo)
-
-	Obj.SetImageSkin("Loading/loading.png")
-	w, h = Obj.GetSize()
-	Obj.SetCentered(1)
-	Obj.SetZ(16)
-
-	Obj.SetTarget(targBadge)
-	Obj.SetImageSkin("Loading/loadingbadge.png")
-	Obj.SetCentered(1)
-	wb = Obj.GetSize()
-	Obj.SetPosition((w - w/2 - wb/2), ScreenHeight - h)
-	Obj.SetZ(16)
+	targBadge = Engine:CreateObject()
+	
+	targBadge.Image = "Loading/loadingbadge.png"
+	targBadge.Centered = 1
+	targBadge.Width = 64
+	targBadge.Height = 64
+	wb = targBadge.Width
+	targBadge.X = (w - w/2 - wb/2)
+	targBadge.Y = ScreenHeight - h
+	targBadge.Layer = 16
 	
 	BG = Engine:CreateObject()
 	BG.Image = "STAGEFILE" -- special constant
@@ -68,17 +68,13 @@ function Init()
 end
 
 function Cleanup()
-	Obj.CleanTarget(targLogo)
-	Obj.CleanTarget(targBadge)
 end
 
 function Update(Delta)
 	Acceleration = Acceleration + Delta
-	Obj.SetTarget(targLogo)
 
 	local Bump = Acceleration - math.floor(Acceleration)
-	Obj.SetScale(1.1 - 0.1 * Bump , 1.1 - 0.1 * Bump)
+	targLogo:SetScale(1.1 - 0.1 * Bump)
 
-	Obj.SetTarget(targBadge)
-	Obj.Rotate(6)
+	targBadge.Rotation = targBadge.Rotation + (6)
 end

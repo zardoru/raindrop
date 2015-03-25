@@ -22,18 +22,19 @@ function Explosions.HoldName (i)
 end
 
 -- Internal functions
-function ObjectPosition(Atlas, i, Scale)
-	Obj.SetImageSkin("VSRG/"..Atlas.File)
-	Obj.SetCentered(1)
-	Obj.SetPosition(GetConfigF("Key"..i.."X", ChannelSpace), JudgmentLineY)
+function ObjectPosition(Obj, Atlas, i, Scale)
+	Obj.Image = ("VSRG/"..Atlas.File)
+	Obj.Centered = (1)
+	Obj.X = GetConfigF("Key"..i.."X", ChannelSpace)
+	Obj.Y = JudgmentLineY
 
 	if Upscroll ~= 0 then
-		Obj.SetRotation(180)
+		Obj.Rotation = (180)
 	end
 
-	Obj.SetZ(28)
-	Obj.SetBlendMode(0) -- Add
-	Obj.SetScale(Scale, Scale)
+	Obj.Layer = (28)
+	Obj.BlendMode = BlendAdd -- Add
+	Obj:SetScale(Scale)
 end
 
 function Explosions.Init()
@@ -52,8 +53,8 @@ function Explosions.Init()
 	Explosions.HoldDuration = Explosions.HoldFrameTime * Explosions.HoldFrames
 
 
-	Explosions.HitAtlas = TextureAtlas:new(Obj.GetSkinFile(Explosions.HitSheet))
-	Explosions.HoldAtlas = TextureAtlas:new(Obj.GetSkinFile(Explosions.HoldSheet))
+	Explosions.HitAtlas = TextureAtlas:new(GetSkinFile(Explosions.HitSheet))
+	Explosions.HoldAtlas = TextureAtlas:new(GetSkinFile(Explosions.HoldSheet))
 
 	for i = 1, Explosions.HitFrames do
 		Explosions.HitImages[i] = Explosions.HitName(i)
@@ -65,34 +66,24 @@ function Explosions.Init()
 
 	for i = 1, Channels do
 		-- Regular explosions
-		Explosions.HitTargets[i] = Obj.CreateTarget()
+		Explosions.HitTargets[i] = Engine:CreateObject()
 
-		Obj.SetTarget(Explosions.HitTargets[i])
-		ObjectPosition(Explosions.HitAtlas, i, Explosions.HitScale)
+		ObjectPosition(Explosions.HitTargets[i], Explosions.HitAtlas, i, Explosions.HitScale)
 
 		Explosions.HitTime[i] = Explosions.HitFrameTime * Explosions.HitFrames
 		Explosions.HitColorize[i] = 0
 
 		-- Hold explosions
-		Explosions.HoldTargets[i] = Obj.CreateTarget()
+		Explosions.HoldTargets[i] = Engine:CreateObject()
 
-		Obj.SetTarget(Explosions.HoldTargets[i])
-		ObjectPosition(Explosions.HoldAtlas, i, Explosions.HoldScale)
+		ObjectPosition(Explosions.HoldTargets[i], Explosions.HoldAtlas, i, Explosions.HoldScale)
 		Explosions.HoldTime[i] = Explosions.HoldDuration
-	end
-end
-
-function Explosions.Cleanup()
-	for i = 1, Channels do
-		Obj.CleanTarget(Explosions.HitTargets[i])
-		Obj.CleanTarget(Explosions.HoldTargets[i])
 	end
 end
 
 function Explosions.Run(Delta)
 
 	for i = 1, Channels do
-		Obj.SetTarget(Explosions.HitTargets[i])
 		Explosions.HitTime[i] = Explosions.HitTime[i] + Delta
 
 		-- Calculate frame
@@ -100,26 +91,29 @@ function Explosions.Run(Delta)
 
 		if Frame > Explosions.HitFrames or 
 			(Explosions.HitColorize[i] ~= 0 and Explosions.MissShow == 0) then
-			Obj.SetAlpha(0)
+			Explosions.HitTargets[i].Alpha = (0)
 		else
-			Obj.SetAlpha(1)
+			Explosions.HitTargets[i].Alpha = (1)
 
 			-- Assign size and stuff according to texture atlas
 			local Tab = Explosions.HitAtlas.Sprites[Explosions.HitImages[math.floor(Frame)]]
 
-			Obj.CropByPixels(Tab.x, Tab.y, Tab.x+Tab.w, Tab.y+Tab.h)
-			Obj.SetSize(Tab.w, Tab.h)
+			Explosions.HitTargets[i]:SetCropByPixels(Tab.x, Tab.x+Tab.w, Tab.y+Tab.h, Tab.y)
+			Explosions.HitTargets[i].Width = Tab.w
+			Explosions.HitTargets[i].Height = Tab.h
 
 			-- Colorize the explosion red?
 			if Explosions.HitColorize[i] ~= 0 then
-				Obj.SetColor(1.2, 0.2, 0.2)
+				Explosions.HitTargets[i].Red = 1.2
+				Explosions.HitTargets[i].Green = 0.2
+				Explosions.HitTargets[i].Blue = 0.2
 			else
-				Obj.SetColor(1, 1, 1)
+				Explosions.HitTargets[i].Red = 1
+				Explosions.HitTargets[i].Green = 1
+				Explosions.HitTargets[i].Blue = 1
 			end
 
 		end
-
-		Obj.SetTarget(Explosions.HoldTargets[i])
 
 		Explosions.HoldTime[i] = Explosions.HoldTime[i] + Delta
 
@@ -131,13 +125,14 @@ function Explosions.Run(Delta)
 		Frame = Explosions.HoldTime[i] / Explosions.HoldFrameTime + 1
 
 		if HeldKeys[i] == 0 then
-			Obj.SetAlpha(0)
+			Explosions.HoldTargets[i].Alpha = (0)
 		else
-			Obj.SetAlpha(1)
+			Explosions.HoldTargets[i].Alpha = (1)
 			local Tab = Explosions.HoldAtlas.Sprites[Explosions.HoldImages[math.floor(Frame)]]
 
-			Obj.CropByPixels(Tab.x, Tab.y, Tab.x + Tab.w, Tab.y + Tab.h)
-			Obj.SetSize(Tab.w, Tab.h)
+			Explosions.HoldTargets[i]:SetCropByPixels(Tab.x, Tab.x + Tab.w, Tab.y + Tab.h, Tab.y)
+			Explosions.HoldTargets[i].Width = Tab.w
+			Explosions.HoldTargets[i].Height = Tab.h
 
 		end
 

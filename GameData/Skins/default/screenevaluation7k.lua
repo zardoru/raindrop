@@ -20,8 +20,6 @@ function GetRankImage()
 		return "C"
 	elseif scorerank == PMT_D then
 		return "D"
-	elseif scorerank == PMT_E then
-		return "E"
 	else
 		return "F"
 	end

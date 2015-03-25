@@ -38,16 +38,17 @@ Judgment = {
 
 function Lifebar.Init()
 
-	Lifebar.Margin = Obj.CreateTarget()
-	Lifebar.Fill = Obj.CreateTarget()
-	Lifebar.Fill2 = Obj.CreateTarget()
+	Lifebar.Margin = Engine:CreateObject()
+	Lifebar.Fill = Engine:CreateObject()
+	Lifebar.Fill2 = Engine:CreateObject()
 
-	Obj.SetTarget(Lifebar.Margin)
-	Obj.SetImageSkin(Lifebar.MarginFile)
-	Obj.SetZ(25)
-	Obj.SetCentered(1)
+	Lifebar.Margin.Image = (Lifebar.MarginFile)
+	Lifebar.Margin.Layer = 25
+	Lifebar.Margin.Centered = 1
 
-	w, h = Obj.GetSize()
+	local w = Lifebar.Margin.Width
+	local h = Lifebar.Margin.Height
+	
 
 	Lifebar.Position = { 
 		x = GearStartX + GearWidth + 42,
@@ -59,22 +60,21 @@ function Lifebar.Init()
 		y = ScreenHeight
 	}
 
-	Obj.SetPosition(Lifebar.CurrentPosition.x, Lifebar.CurrentPosition.y)
+	Lifebar.Margin.X = Lifebar.CurrentPosition.x
+	Lifebar.Margin.Y = Lifebar.Position.y
+	
+	Lifebar.Fill.Image = Lifebar.FillFile
+	Lifebar.Fill.Width = Lifebar.Width
+	Lifebar.Fill.Height = Lifebar.FillSize
+	Lifebar.Fill.Layer = 26
+	Lifebar.Fill.Centered = 1
 
-	Obj.SetTarget(Lifebar.Fill)
-	Obj.SetImageSkin(Lifebar.FillFile)
-	Obj.SetSize(Lifebar.Width, Lifebar.FillSize)
-	Obj.SetZ(26)
-	Obj.SetCentered(1)
-
-	Obj.SetTarget(Lifebar.Fill2)
-	Obj.SetImageSkin(Lifebar.FillFile)
-	Obj.SetZ(26)
-	Obj.SetCentered(1)
-	Obj.SetBlendMode(0)
+	Lifebar.Fill2.Image = Lifebar.FillFile
+	Lifebar.Fill2.Layer = 26
+	Lifebar.Fill2.Centered = 1
+	Lifebar.Fill2.BlendMode = BlendAdd
 
 	Lifebar.Display = 0
-
 end
 
 function Lifebar.Cleanup()
@@ -97,43 +97,37 @@ function Lifebar.Run(Delta)
 
 	Lifebar.CurrentPosition = Lifebar.Position
 
-	Obj.SetTarget(Lifebar.Fill)
-	Obj.SetScale( 1, Lifebar.Display )
-	Obj.SetPosition( Lifebar.CurrentPosition.x, NewYFixed );
-	Obj.CropByPixels( 0, Lifebar.FillSize - Lifebar.FillSize * Lifebar.Display, Lifebar.Width, Lifebar.FillSize )
+	Lifebar.Fill.ScaleY = Lifebar.Display 
+	Lifebar.Fill.X = Lifebar.Position.x
+	Lifebar.Fill.Y = NewYFixed
+	Lifebar.Fill:SetCropByPixels( 0, Lifebar.Width, Lifebar.FillSize - Lifebar.FillSize * Lifebar.Display, Lifebar.FillSize )
 
-	Obj.SetTarget(Lifebar.Fill2)
-	Obj.SetScale( 1, Display )
-	Obj.SetPosition( Lifebar.CurrentPosition.x, NewY );
-	Obj.CropByPixels( 0, Lifebar.FillSize - Lifebar.FillSize * Display, Lifebar.Width, Lifebar.FillSize )
-	Obj.SetAlpha ( DP * LifebarValue )
-
-	Obj.SetTarget(Lifebar.Margin)
-	Obj.SetPosition( Lifebar.CurrentPosition.x, Lifebar.CurrentPosition.y )
+	Lifebar.Fill2.ScaleY = Display 
+	Lifebar.Fill2.X = Lifebar.Position.x
+	Lifebar.Fill2.Y = NewY
+	Lifebar.Fill2:SetCropByPixels( 0, Lifebar.Width, Lifebar.FillSize - Lifebar.FillSize * Display, Lifebar.FillSize )
+	Lifebar.Fill2.Alpha = ( DP * LifebarValue )
 end
 
 function Judgment.Init()
-	Judgment.Object = Obj.CreateTarget()
-	Obj.SetTarget(Judgment.Object)
-	Obj.SetZ(24)
-	Obj.SetCentered(1)
-	Obj.SetScale (Judgment.Scale, Judgment.Scale)
-	Obj.SetPosition (Judgment.Position.x, Judgment.Position.y)
+	Judgment.Object = Engine:CreateObject()
+	
+	Judgment.Object.Layer = 24
+	Judgment.Object.Centered = 1
+	Judgment.Object:SetScale(Judgment.Scale)
+	Judgment.Object.X = Judgment.Position.x
+	Judgment.Object.Y = Judgment.Position.y
 
 	Judgment.LastAlternation = 0
 	Judgment.Time = Judgment.FadeoutTime
 
-	Judgment.IndicatorObject = Obj.CreateTarget()
-	Obj.SetTarget(Judgment.IndicatorObject)
-	Obj.SetImageSkin("VSRG/" .. Judgment.TimingIndicator)
-	Obj.SetZ(24)
-	Obj.SetCentered(1)
-	Obj.SetScale(Judgment.Scale, Judgment.Scale)
-	Obj.SetAlpha(0)
-end
-
-function Judgment.Cleanup()
-	Obj.CleanTarget(Judgment.Object)
+	Judgment.IndicatorObject = Engine:CreateObject()
+	
+	Judgment.IndicatorObject.Image = ("VSRG/" .. Judgment.TimingIndicator)
+	Judgment.IndicatorObject.Layer = 24
+	Judgment.IndicatorObject.Centered = 1
+	Judgment.IndicatorObject:SetScale(Judgment.Scale)
+	Judgment.IndicatorObject.Alpha = 0
 end
 
 function Judgment.Run(Delta)
@@ -145,13 +139,12 @@ function Judgment.Run(Delta)
 		local AlphaRatio
 		Judgment.Time = Judgment.Time + Delta
 
-		Obj.SetTarget(Judgment.Object)
-		local OldJudgeScale = Obj.GetScale()
+		local OldJudgeScale = Judgment.Object.ScaleX
 
 		local DeltaScale = (Judgment.Scale - OldJudgeScale) * Delta * Judgment.Speed
 		local FinalScale = OldJudgeScale + DeltaScale
 
-		Obj.SetScale (FinalScale, FinalScale)
+		Judgment.Object:SetScale (FinalScale)
 
 		if Judgment.Time > Judgment.FadeoutTime then
 			local Time = Judgment.Time - Judgment.FadeoutTime
@@ -169,50 +162,47 @@ function Judgment.Run(Delta)
 			AlphaRatio = 1
 		end
 		
-		local w, h = Obj.GetSize()
+		local w = Judgment.Object.Width
+		local h = Judgment.Object.Height
 
-		Obj.SetAlpha(AlphaRatio)
+		Judgment.Object.Alpha = (AlphaRatio)
 				
 		if Judgment.LastAlternation == 0 then
-			Obj.SetRotation(Judgment.Tilt * ComboLerp)
+			Judgment.Object.Rotation = (Judgment.Tilt * ComboLerp)
 		else
-			Obj.SetRotation(-Judgment.Tilt * ComboLerp)
+			Judgment.Object.Rotation = (-Judgment.Tilt * ComboLerp)
 		end
-
-		Obj.SetTarget (Judgment.IndicatorObject)
 
 		if Judgment.Value ~= 1 and Judgment.ShowTimingIndicator == 1 then -- not a "flawless"
 			
-			Obj.SetAlpha(AlphaRatio)
+			Judgment.IndicatorObject.Alpha = (AlphaRatio)
 
 			local NewRatio = FinalScale / Judgment.Scale
-			Obj.SetScale(NewRatio, NewRatio)
+			Judgment.IndicatorObject:SetScale(NewRatio)
 
 			if Judgment.EarlyOrLate == 1 then -- early
-				Obj.SetPosition (Judgment.Position.x - w/2 * FinalScale - 20, Judgment.Position.y)
+				Judgment.IndicatorObject.X = Judgment.Position.x - w/2 * FinalScale - 20
 			else 
 				if Judgment.EarlyOrLate == 2 then -- late
-					Obj.SetPosition (Judgment.Position.x + w/2 * FinalScale + 20, Judgment.Position.y)
+					Judgment.IndicatorObject.X = Judgment.Position.x + w/2 * FinalScale + 20
 				end
 			end
 		else
-			Obj.SetAlpha(0)
+			Judgment.IndicatorObject.Alpha = 0
 		end
 	end
 end
 
 function Judgment.Hit(JudgmentValue, EarlyOrLate)
 
-	Obj.SetTarget(Judgment.Object)
-
 	Judgment.Value = JudgmentValue
 
 	if Judgment.Value == 0 then
-		Obj.SetLighten(1)
-		Obj.SetLightenFactor(1.5)
+		Judgment.Object.Lighten = (1)
+		Judgment.Object.LightenFactor = (1.5)
 		Judgment.Value = 1
 	else
-		Obj.SetLighten(0)
+		Judgment.Object.Lighten = 0
 	end
 
 	if Judgment.LastAlternation == 0 then
@@ -221,21 +211,18 @@ function Judgment.Hit(JudgmentValue, EarlyOrLate)
 		Judgment.LastAlternation = 0
 	end
 	
-	Obj.SetImageSkin("VSRG/" .. Judgment.Table[Judgment.Value])
+	Judgment.Object.Image = ("VSRG/" .. Judgment.Table[Judgment.Value])
 	
 	if JudgmentValue ~= 5 then
 		if JudgmentValue ~= -1 then
-			Obj.SetScale (Judgment.ScaleHit, Judgment.ScaleHit)
+			Judgment.Object:SetScale (Judgment.ScaleHit)
 		else
-			Obj.SetScale (Judgment.Scale, Judgment.Scale)
+			Judgment.Object:SetScale (Judgment.Scale)
 		end
 	else
-		Obj.SetScale (Judgment.ScaleMiss, Judgment.ScaleMiss)
+		Judgment.Object:SetScale (Judgment.ScaleMiss)
 	end
 
 	Judgment.Time = 0
-
-	Obj.SetTarget(Judgment.IndicatorObject)
 	Judgment.EarlyOrLate = EarlyOrLate
-
 end

@@ -1,0 +1,16 @@
+<rml>
+	<head>
+		<style>
+			body
+			{				
+				width: 32;
+				height: 32;
+				<!-- Add a simple image decorator onto the body element. -->
+				cursor-decorator: image;
+				cursor-image: cursor_rdh.png;
+			}
+		</style>
+	</head>
+	<body>
+	</body>
+</rml>

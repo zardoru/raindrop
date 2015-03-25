@@ -84,25 +84,15 @@ AnimatedObjects = {
 	Run = function (Delta)
 		for i = 1, #AnimatedObjects.List do
 			if AnimatedObjects.List[i].Run ~= nil then
-				if AnimatedObjects.List[i].Object ~= nil then
-					Obj.SetTarget(AnimatedObjects.List[i].Object)
-				end
-
 				AnimatedObjects.List[i].Run(Delta)
 			end
-		end
-	end,
-
-	Cleanup = function ()
-		for i = 1, #AnimatedObjects.List do
-			AnimatedObjects.List[i].Cleanup()
 		end
 	end
 }
 
 BgAlpha = 0
 
--- You can only call Obj.CreateTarget, LoadImage and LoadSkin during and after Init is called
+-- You can only call Engine:CreateObject, LoadImage and LoadSkin during and after Init is called
 -- Not on preload time.
 function Init()
 	AnimatedObjects.Init()
@@ -110,18 +100,13 @@ function Init()
 	ScreenFade.Init()
 	ScreenFade.Out()
 
-	Obj.SetTarget(ScreenBackground)
-	Obj.SetAlpha(0)
+	ScreenBackground.Alpha = (0)
 	Engine:Sort()
 end
 
 function Cleanup()
-
 	-- When exiting the screen, this function is called.
 	-- It's important to clean all targets or memory will be leaked.
-
-	AnimatedObjects.Cleanup()
-	AutoAnimation.Cleanup()	
 end
 
 function OnFullComboEvent()
@@ -135,15 +120,13 @@ function OnFailureEvent()
 end
 
 function BackgroundFadeIn(frac)
-	Obj.SetAlpha(frac)
+	ScreenBackground.Alpha = frac
 	return 1
 end
 
 -- When 'enter' is pressed and the game starts, this function is called.
 function OnActivateEvent()
-
-	Obj.SetTarget(ScreenBackground)
-	Obj.AddAnimation("BackgroundFadeIn", 1, 0, EaseNone)
+	Engine:AddAnimation(ScreenBackground, "BackgroundFadeIn", EaseNone, 1, 0)
 
 	if Auto ~= 0 then
 		AutoAnimation.Init()

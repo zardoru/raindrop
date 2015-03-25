@@ -567,6 +567,8 @@ bool GameWindow::AutoSetupWindow(Application* _parent)
     glfwGetWindowSize(wnd, &outx, &outy);
     ResizeFunc(wnd, outx, outy);
 #endif
+
+	SetVisibleCursor(Configuration::GetSkinConfigf("ShowCursor") != 0);
     
 	return SetupWindow();
 }

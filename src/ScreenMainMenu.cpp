@@ -66,6 +66,7 @@ void ScreenMainMenu::Init()
 	Objects->AddLuaTarget(&ExitBtn, "ExitButton");
 
 	Objects->Initialize(GameState::GetInstance().GetSkinFile("mainmenu.lua"));
+	Objects->InitializeUI();
 
 	if (!TTFO)
 		TTFO = new TruetypeFont(GameState::GetInstance().GetSkinFile("font.ttf"), 16);

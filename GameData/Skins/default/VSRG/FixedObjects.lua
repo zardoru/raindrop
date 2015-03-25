@@ -8,64 +8,43 @@ function Filter.Init()
 		return
 	end
 
-	Filter.Object = Obj.CreateTarget()
+	Filter.Object = Engine:CreateObject()
 
-	Obj.SetTarget(Filter.Object)
-
-	Obj.SetImageSkin(Filter.Image)
-	Obj.SetPosition(GearStartX, 0)
-	Obj.SetSize(GearWidth, ScreenHeight)
-	Obj.SetAlpha(1)
-	Obj.SetZ(1)
-end
-
-function Filter.Cleanup()
-	if GetConfigF("ScreenFilter", "") ~= 0 then
-		Obj.CleanTarget(Filter.Object)
-	end
+	Filter.Object.Image = (Filter.Image)
+	Filter.Object.X = GearStartX
+	Filter.Object.Width = GearWidth
+	Filter.Object.Height = ScreenHeight
+	Filter.Object.Alpha = 1
+	Filter.Object.Layer = 1
 end
 
 
 function JudgeLine.Init()
-	JudgeLine.Object = Obj.CreateTarget()
+	JudgeLine.Object = Engine:CreateObject()
 	JudgeLine.Size = { w = GearWidth, h = GetConfigF("NoteHeight", "") }
 
-	Obj.SetTarget(JudgeLine.Object)
-	Obj.SetImageSkin(JudgeLine.Image)
-	Obj.SetCentered(1)
+	JudgeLine.Object.Image = JudgeLine.Image
+	JudgeLine.Object.Centered = 1
 
-	if Upscroll ~= 0 then
-		Obj.SetPosition (GearStartX + GearWidth / 2, JudgmentLineY)
-	else
-		Obj.SetPosition (GearStartX + GearWidth / 2, JudgmentLineY)
-	end
-
-	Obj.SetSize(JudgeLine.Size.w, JudgeLine.Size.h)
-	Obj.SetZ(12)
-end
-
-function JudgeLine.Cleanup()
-	Obj.CleanTarget (JudgeLine.Object)
+	JudgeLine.Object.X = GearStartX + GearWidth / 2
+	JudgeLine.Object.Y = JudgmentLineY
+	
+	JudgeLine.Object.Width = JudgeLine.Size.w
+	JudgeLine.Object.Height = JudgeLine.Size.h
+	JudgeLine.Object.Layer = 12
 end
 
 function StageLines.Init()
-	StageLines.Left = Obj.CreateTarget()
-	StageLines.Right = Obj.CreateTarget()
+	StageLines.Left = Engine:CreateObject()
+	StageLines.Right = Engine:CreateObject()
+	
+	StageLines.Left.Image = (StageLines.ImageLeft)
+	StageLines.Left.X = GearStartX - StageLines.Left.Width
+	StageLines.Left.Height = ScreenHeight
+	StageLines.Left.Layer = 20
 
-	Obj.SetTarget(StageLines.Left)
-	Obj.SetImageSkin(StageLines.ImageLeft)
-	Obj.SetPosition(GearStartX - Obj.GetSize(), 0)
-	Obj.SetSize(Obj.GetSize(), ScreenHeight)
-	Obj.SetZ(20)
-
-	Obj.SetTarget(StageLines.Right)
-	Obj.SetImageSkin(StageLines.ImageRight)
-	Obj.SetPosition(GearStartX + GearWidth, 0)
-	Obj.SetSize(Obj.GetSize(), ScreenHeight)
-	Obj.SetZ(20)
-end
-
-function StageLines.Cleanup()
-	Obj.CleanTarget (StageLines.Left)
-	Obj.CleanTarget (StageLines.Right)
+	StageLines.Right.Image = (StageLines.ImageRight)
+	StageLines.Right.X = (GearStartX + GearWidth)
+	StageLines.Right.Height = ScreenHeight
+	StageLines.Right.Layer = 20
 end

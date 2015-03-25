@@ -101,7 +101,7 @@ Phrases = {
 
 function Phrases.Init()
 	Phrases.VSize = 22
-	PhraseFont = Fonts.TruetypeFont(Obj.GetSkinFile("font.ttf"), Phrases.VSize);
+	PhraseFont = Fonts.TruetypeFont(GetSkinFile("font.ttf"), Phrases.VSize);
 	Phrases.Text = StringObject2D()
 	Phrases.Text.Font = PhraseFont
 	

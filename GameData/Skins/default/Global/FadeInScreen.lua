@@ -1,12 +1,14 @@
 function FadeInA1(frac)
-	Obj.SetPosition(ScreenWidth/2, ScreenHeight/4 * frac)
-	Obj.SetScale(1, frac)
+	Black1.X = ScreenWidth/2 
+	Black1.Y = ScreenHeight/4 * frac
+	Black1.ScaleY = frac
 	return 1
 end
 
 function FadeInA2(frac)
-	Obj.SetPosition(ScreenWidth/2, ScreenHeight - (ScreenHeight/4) * frac)
-	Obj.SetScale(1, frac)
+	Black2.X = ScreenWidth/2
+	Black2.Y = ScreenHeight - (ScreenHeight/4) * frac
+	Black2.ScaleY = frac
 	return 1
 end
 

@@ -4,6 +4,8 @@ ext-libs
 *.bms
 *.osu
 *.sm
+*.db
+Songs
 # Windows ignores.
 project/debug
 project/release
@@ -12,6 +14,7 @@ project/config.ini
 *.suo
 *.user
 *sdf
+*.exe
 project/log.txt
 project/*.db
 # Linux ignores.

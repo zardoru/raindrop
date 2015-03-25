@@ -28,32 +28,33 @@ function HitLightning.Init()
 	end
 
 	for i=1, Channels do
-		HitLightning[i] = Obj.CreateTarget()
+		HitLightning[i] = Engine:CreateObject()
 
 		HitLightning.OffTime[i] = 1
-
-		Obj.SetTarget(HitLightning[i])
-		Obj.SetImageSkin(HitLightning.Image)
-		Obj.SetCentered(1)
-		Obj.SetBlendMode(BlendAdd)
-
-		Obj.SetSize(GetConfigF("Key" .. i .. "Width", ChannelSpace), HitLightning.Height)
+		
+		HitLightning[i].Image = HitLightning.Image
+		HitLightning[i].Centered = 1
+		HitLightning[i].BlendMode = BlendAdd
+		
+		HitLightning[i].Width = GetConfigF("Key" .. i .. "Width", ChannelSpace)
+		HitLightning[i].Height = HitLightning.Height
 
 		local scrollY = 0
 		local scrollX = 0
 		if Upscroll ~= 0 then
 			scrollX = GetConfigF("Key" .. i .. "X", ChannelSpace);
 			scrollY = GearHeight +  HitLightning.Height / 2
-			Obj.SetRotation(180)
+			HitLightning[i].Rotation = (180)
 		else
 			scrollX = GetConfigF("Key" .. i .. "X", ChannelSpace);
 			scrollY = ScreenHeight - GearHeight - HitLightning.Height / 2
 		end
 
 		HitLightning.Position[i] = { x = scrollX, y = scrollY }
-		Obj.SetPosition(scrollX, scrollY)
-		Obj.SetZ(15)
-		Obj.SetAlpha(0)
+		HitLightning[i].X = scrollX
+		HitLightning[i].Y = scrollY
+		HitLightning[i].Layer = 15
+		HitLightning[i].Alpha = 0
 	end
 end
 
@@ -89,14 +90,13 @@ function HitLightning.Run(Delta)
 
 		HitLightning.Times[i] = HitLightning.Times[i] + Delta
 
-		Obj.SetTarget(HitLightning[i])
-
 		if HitLightning.Pressed[i] == 0 then
 			if HitLightning.Times[i] <= HitLightning.OffTime[i] then
 				if HitLightning.Animate == 1 then
 					local Lerping = math.pow(HitLightning.Times[i] / HitLightning.OffTime[i], 2)
 					local Additive
-					Obj.SetScale(1 - Lerping, 1 + 1.5 * Lerping)
+					HitLightning[i].ScaleX = 1 - Lerping
+					HitLightning[i].ScaleY = 1 + 1.5 * Lerping
 
 					Additive = HitLightning.Height / 2 * 1.5 * Lerping
 
@@ -104,39 +104,26 @@ function HitLightning.Run(Delta)
 						Additive = Additive * -1
 					end
 
-					Obj.SetPosition( HitLightning.Position[i].x, HitLightning.Position[i].y - Additive)
-					Obj.SetAlpha( 1 - Lerping )
+					HitLightning[i].Y = HitLightning.Position[i].y - Additive
+					HitLightning[i].Alpha = ( 1 - Lerping )
 				elseif HitLightning.Animate == 2 then
 					local Lerping = math.pow(HitLightning.Times[i] / HitLightning.OffTime[i], 2)
 					local Additive = 0
 
 					Additive = HitLightning.Height / 2 * Lerping
-					Obj.SetScale(1, 1 - Lerping)
-					Obj.SetPosition( HitLightning.Position[i].x, HitLightning.Position[i].y + Additive)
-					Obj.SetAlpha(1)
+					HitLightning[i].ScaleY = 1 - Lerping
+					HitLightning[i].Y = HitLightning.Position[i].y + Additive
+					HitLightning[i].Alpha = 1
 				end
 			else
-				Obj.SetAlpha( 0 )
+				HitLightning[i].Alpha = 0
 			end
 
 		else
-			Obj.SetTarget(HitLightning[i])
-			Obj.SetScale( 1, 1 )
-			Obj.SetPosition( HitLightning.Position[i].x, HitLightning.Position[i].y)
-			Obj.SetAlpha ( 1 )
+			HitLightning[i]:SetScale(1)
+			HitLightning[i].Alpha = 1
+			HitLightning[i].Y = HitLightning.Position[i].y
 		end
 
 	end
-end
-
-function HitLightning.Cleanup()
-
-	if HitLightningEnabled == 0 then
-		return
-	end
-
-	for i=1, Channels do
-		Obj.CleanTarget(HitLightning[i])
-	end
-
 end

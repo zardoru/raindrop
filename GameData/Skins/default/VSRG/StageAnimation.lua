@@ -7,9 +7,9 @@ SuccessAnimation = {
 }
 
 function fcnot2f(frac)
-	Obj.SetAlpha(1 - frac)
-	Obj.SetScale(1 + frac * 1.5, 1 + frac * 1.5)
-	Obj.SetLightenFactor(0.3 * (1 - frac))
+	fcnotify2.Alpha = (1 - frac)
+	fcnotify2:SetScale(1 + frac * 1.5)
+	fcnotify2.LightenFactor = (0.3 * (1 - frac))
 	return 1
 end
 
@@ -47,18 +47,18 @@ function DoFullComboAnimation()
 end
 
 function FadeInBlack(frac)
-	Obj.SetAlpha(frac)
+	Black.Alpha = (frac)
 	return 1
 end
 
 function ZoomVertIn(frac)
-	Obj.SetAlpha(frac)
-	Obj.SetScale(frac, frac)
+	StageClear.Alpha = (frac)
+	StageClear:SetScale(frac)
 	return 1
 end
 
 function ZoomVertOut(frac)
-	Obj.SetAlpha(1 - frac)
+	StageClear.Alpha = (1 - frac)
 	return 1
 end
 
@@ -119,8 +119,7 @@ function FailAnim(frac)
 	FailNotif.ScaleY = sc
 	FailNotif.ScaleX = sc
 	
-	Obj.SetTarget(ScreenBackground)
-	Obj.SetAlpha(1 - frac)
+	ScreenBackground.Alpha = 1 - frac
 
 	return 1
 end

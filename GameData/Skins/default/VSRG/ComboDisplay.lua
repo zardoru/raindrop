@@ -49,36 +49,28 @@ ComboDisplay.ExNotifyObject = nil
 
 function ComboDisplay.Init()
 
-	ComboDisplay.Atlas = TextureAtlas:new(Obj.GetSkinFile("VSRG/combosheet.csv"))
+	ComboDisplay.Atlas = TextureAtlas:new(GetSkinFile("VSRG/combosheet.csv"))
 
 	for i = 1, 6 do -- Drawing targets
-		ComboDisplay.Targets[i] = Obj.CreateTarget()
-		Obj.SetTarget(ComboDisplay.Targets[i])
-		Obj.SetImageSkin("VSRG/"..ComboDisplay.Atlas.File)
-		Obj.SetCentered(1)
-		Obj.SetZ(24)
-		Obj.SetAlpha(0)
+		ComboDisplay.Targets[i] = Engine:CreateObject()
+		ComboDisplay.Targets[i].Image = ("VSRG/"..ComboDisplay.Atlas.File)
+		ComboDisplay.Targets[i].Centered = (1)
+		ComboDisplay.Targets[i].Layer = (24)
+		ComboDisplay.Targets[i].Alpha = 0
 	end
 
 	for i = 1, 10 do -- Digit images
 		ComboDisplay.Images[i] = ComboDisplay.SetName(i)
 	end
 
-	ComboDisplay.ExNotifyObject = Obj.CreateTarget()
-	Obj.SetTarget(ComboDisplay.ExNotifyObject)
-	Obj.SetCentered(1)
-	Obj.SetZ(24)
-	Obj.SetAlpha(0)
-	Obj.SetImageSkin(ComboDisplay.ExNotifyImg)
+	ComboDisplay.ExNotifyObject = Engine:CreateObject()
+	ComboDisplay.ExNotifyObject.Centered = (1)
+	ComboDisplay.ExNotifyObject.Layer = (24)
+	ComboDisplay.ExNotifyObject.Alpha =(0)
+	ComboDisplay.ExNotifyObject.Image = (ComboDisplay.ExNotifyImg)
 
 	ComboDisplay.ExNotifyCurTime = 0
 
-end
-
-function ComboDisplay.Cleanup()
-	for i = 1, 6 do
-		Obj.CleanTarget(ComboDisplay.Targets[i])
-	end
 end
 
 function ComboDisplay.Update()
@@ -106,18 +98,19 @@ function ComboDisplay.Update()
 
 	for i = 1, 6 do
 		local NewPosition = { x = Position.x + DisplaySize - (i-1) * Size.w, y = Position.y }
-		Obj.SetTarget(ComboDisplay.Targets[i])
 
 		if i < ActDig then
 			local Tab = ComboDisplay.Atlas.Sprites[ComboDisplay.Images[ComboDisplay.Digits[i]+1]]
 
-			Obj.CropByPixels(Tab.x, Tab.y, Tab.x+Tab.w, Tab.y+Tab.h)
-			Obj.SetSize(Size.w, Size.h)
-			Obj.SetAlpha(1)
+			ComboDisplay.Targets[i]:SetCropByPixels(Tab.x, Tab.x+Tab.w, Tab.y, Tab.y+Tab.h)
+			ComboDisplay.Targets[i].Width = Size.w
+			ComboDisplay.Targets[i].Height = Size.h
+			ComboDisplay.Targets[i].Alpha = (1)
 
-			Obj.SetPosition(NewPosition.x, NewPosition.y)
+			ComboDisplay.Targets[i].X = NewPosition.x
+			ComboDisplay.Targets[i].Y = NewPosition.y
 		else
-			Obj.SetAlpha(0)
+			ComboDisplay.Targets[i].Alpha = 0
 		end
 	end
 end
@@ -148,27 +141,26 @@ function ComboDisplay.Run(Delta)
 
 	local Ratio = 1 - (Beat - math.floor(Beat))
 
-	Obj.SetTarget(ComboDisplay.ExNotifyObject)
-
 	-- the +2 at the topright
 	if #ComboDisplay.Digits ~= 0 then
 		
 		if ComboDisplay.BumpColor ~= 0 then
 
-			Obj.SetPosition(ComboDisplay.ExNotifyPos.x, ComboDisplay.ExNotifyPos.y)
+			ComboDisplay.ExNotifyObject.X = ComboDisplay.ExNotifyPos.x
+			ComboDisplay.ExNotifyObject.Y = ComboDisplay.ExNotifyPos.y
 
 			local Factor = 1 + ComboDisplay.ExNotifyExtraBump * Ratio			
-			Obj.SetScale(Factor, Factor)
+			ComboDisplay.ExNotifyObject:SetScale(Factor)
 		
 		else -- Time only runs if we're not at an "AWESOME" hit.
 			ComboDisplay.ExNotifyCurTime = ComboDisplay.ExNotifyCurTime + Delta
 		end
 
 		local Ratio = math.max(1 - ComboDisplay.ExNotifyCurTime / ComboDisplay.ExNotifyTime, 0)
-		Obj.SetAlpha (Ratio)
+		ComboDisplay.ExNotifyObject.Alpha = (Ratio)
 
 	else
-		Obj.SetAlpha(0)
+		ComboDisplay.ExNotifyObject.Alpha = 0
 	end
 
 	local RebootHT = 0
@@ -203,8 +195,6 @@ function ComboDisplay.Run(Delta)
 	end
 
 	for i= 1, 6 do
-
-		Obj.SetTarget(ComboDisplay.Targets[i])
 		local scaleX = 1
 		local scaleY = 1
 		local usedScale
@@ -223,12 +213,17 @@ function ComboDisplay.Run(Delta)
 			scaleY = usedScale
 		end
 		
-		Obj.SetScale (scaleX, scaleY)
+		ComboDisplay.Targets[i].ScaleX = scaleX
+		ComboDisplay.Targets[i].ScaleY = scaleY
 
 		if ComboDisplay.BumpColor ~= 0 then
-			Obj.SetColor(1, 2.5, 2.5)
+			ComboDisplay.Targets[i].Red = 1
+			ComboDisplay.Targets[i].Green = 2.5 
+			ComboDisplay.Targets[i].Blue = 2.5
 		else
-			Obj.SetColor(1, 1, 1)
+			ComboDisplay.Targets[i].Red = 1
+			ComboDisplay.Targets[i].Green = 1
+			ComboDisplay.Targets[i].Blue = 1
 		end
 	
 	end
