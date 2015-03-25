@@ -3,7 +3,7 @@ skin_require ("Global/FadeInScreen.lua")
 skin_require ("VSRG/ScoreDisplay.lua")
 
 function SetupFonts()
-	EvalFont = Fonts.TruetypeFont(Obj.GetSkinFile("font.ttf"), 30);
+	EvalFont = Fonts.TruetypeFont(GetSkinFile("font.ttf"), 30);
 end
 
 function GetRankImage()

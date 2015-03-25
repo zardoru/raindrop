@@ -24,7 +24,7 @@ function DoFullComboAnimation()
 	fcnotify.ScaleX = scalef
 	fcnotify.ScaleY = scalef
 	fcnotify.Centered = 1
-	fcanim = getMoveFunction(fcnotify.X, ScreenHeight + fcnotify.Height/2 * scalef, fcnotify.X, ScreenHeight*3/4)
+	fcanim = getMoveFunction(fcnotify.X, ScreenHeight + fcnotify.Height/2 * scalef, fcnotify.X, ScreenHeight*3/4, fcnotify)
 
 	fcnotify2 = Engine:CreateObject()
 	fcnotify2.Image = "VSRG/fullcombo.png"
@@ -39,7 +39,7 @@ function DoFullComboAnimation()
 	fcnotify2.BlendMode = BlendAdd
 	fcnotify2.Lighten = 1
 
-	fcnotfade = getFadeFunction(1, 0)
+	fcnotfade = getFadeFunction(1, 0, fcnotify)
 
 	Engine:AddAnimation(fcnotify, "fcanim", EaseOut, 0.75, 3)
 	Engine:AddAnimation(fcnotify2, "fcnot2f", EaseOut, 0.25, 0.75 + 3)
