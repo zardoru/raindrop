@@ -1,12 +1,16 @@
 #ifndef ISCREEN_H_
 #define ISCREEN_H_
 
+class SceneEnvironment;
+
 // Interface.
 class Screen
 {
 private:
 	double ScreenTime; // How long has it been open?
 protected:
+
+	SceneEnvironment *Animations;
 
 	enum EScreenState {
 		StateIntro,
@@ -21,13 +25,11 @@ protected:
 	void ChangeState(EScreenState NewState);
 	double TransitionTime;
 	double IntroDuration, ExitDuration;
-
-public:
-
 	Screen *Next;
 
-	Screen ();
-	Screen (Screen * _Parent);
+public:
+	Screen (GString Name);
+	Screen (GString Name, Screen * _Parent);
 	virtual ~Screen ();
 
 	// Nesting screens.
@@ -41,9 +43,16 @@ public:
 	// Screen implementation.
 	virtual void LoadThreadInitialization();
 	virtual void MainThreadInitialization();
-	virtual bool RunIntro(float Fraction);
-	virtual bool RunExit(float Fraction);
+	virtual bool RunIntro(float Fraction, float Delta);
+	virtual bool RunExit(float Fraction, float Delta);
 	virtual bool Run(double delta) = 0;
+
+	virtual void OnIntroBegin();
+	virtual void OnIntroEnd();
+	virtual void OnRunningBegin();
+	virtual void OnExitBegin();
+	virtual void OnExitEnd();
+
 	virtual bool HandleInput(int32 key, KeyEventType state, bool isMouseInput);
 	virtual bool HandleScrollInput(double xOff, double yOff);
 	virtual bool HandleTextInput(int codepoint);

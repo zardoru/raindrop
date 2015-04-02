@@ -4,16 +4,11 @@ IntroDuration = 0.35
 ExitDuration = 0.35
 Acceleration = 0
 
-pfrac = 0
 
-function UpdateIntro(frac)
-	dFrac = frac - pfrac
-	pfrac = frac
-	
+function UpdateIntro(frac, delta)
 	targBadge:SetScale(frac)
 	
 	frac =  1 - math.pow(1 - frac, 2)
-	
 
 	targLogo.X = targLogo.Width * frac
 	targLogo.Y = ScreenHeight - targLogo.Height
@@ -21,12 +16,11 @@ function UpdateIntro(frac)
 	BG.Alpha = frac
 	
 	Phrases.Fade(frac)
-	Delta = dFrac * IntroDuration
-	Update(Delta)
+	Update(delta)
 end
 
-function UpdateExit(frac)
-	UpdateIntro(1-frac)
+function UpdateExit(frac, delta)
+	UpdateIntro(1-frac, delta)
 end
 
 function Init()

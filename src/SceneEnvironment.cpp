@@ -146,10 +146,10 @@ public:
 
 bool LuaAnimation(LuaManager* Lua, GString Func, Sprite* Target, float Frac)
 {
-	Lua->RegisterStruct( "Target", (void*)Target );
-	if (Lua->CallFunction(Func.c_str(), 1, 1))
+	if (Lua->CallFunction(Func.c_str(), 2, 1))
 	{
 		Lua->PushArgument(Frac);
+		luabridge::push(Lua->GetState(), Target);
 
 		if (Lua->RunFunction())
 			return Lua->GetFunctionResult() > 0;
@@ -177,15 +177,50 @@ void SceneEnvironment::StopAnimationsForTarget(Sprite* Target)
 }
 
 
+void SceneEnvironment::RunIntro(float Fraction, float Delta)
+{
+	if (Lua->CallFunction("UpdateIntro", 2))
+	{
+		Lua->PushArgument(Fraction);
+		Lua->PushArgument(Delta);
+		Lua->RunFunction();
+	}
+
+	DrawFromLayer(0);
+}
+void SceneEnvironment::RunExit(float Fraction, float Delta)
+{
+	if (Lua->CallFunction("UpdateExit", 2))
+	{
+		Lua->PushArgument(Fraction);
+		Lua->PushArgument(Delta);
+		Lua->RunFunction();
+	}
+
+	DrawFromLayer(0);
+}
+
+float SceneEnvironment::GetIntroDuration()
+{
+	return max(Lua->GetGlobalD("IntroDuration"), 0.0);
+}
+
+float SceneEnvironment::GetExitDuration()
+{
+	return max(Lua->GetGlobalD("ExitDuration"), 0.0);
+}
+
+
+
 void SceneEnvironment::AddLuaAnimation (Sprite* Target, const GString &FuncName, 
 	int Easing, float Duration, float Delay)
 {
 	Animation Anim;
-	Anim.Function = bind(LuaAnimation, Lua, FuncName, _1, _2);
+	Anim.Function = bind(LuaAnimation, Lua, FuncName, Target, _1);
 	Anim.Easing = (Animation::EEaseType)Easing;
 	Anim.Duration = Duration;
-	Anim.Target = Target;
 	Anim.Delay = Delay;
+	Anim.Target = Target;
 
 	Animations.push_back(Anim);
 }
@@ -451,7 +486,7 @@ void SceneEnvironment::UpdateTargets(double TimeDelta)
 
 		if (i->Time >= i->Duration) // The animation is done. Call the function one last time with value 1 so it's completed.
 		{
-			i->Function(i->Target, 1);
+			i->Function(1);
 			i = Animations.erase(i);
 			if (i == Animations.end()) break;
 			else continue;
@@ -472,7 +507,7 @@ void SceneEnvironment::UpdateTargets(double TimeDelta)
 			frac = i->Time / i->Duration;
 		}
 
-		if (!i->Function (i->Target, frac)) // Says the animation is over?
+		if (!i->Function (frac)) // Says the animation is over?
 		{
 			i = Animations.erase(i);
 			if (i == Animations.end()) break;

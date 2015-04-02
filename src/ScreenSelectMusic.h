@@ -34,8 +34,6 @@ class ScreenSelectMusic : public Screen
 	Sprite Background;
 	BitmapFont* Font;
 
-	SceneEnvironment *Objects;
-
 	GUI::Button *UpBtn, *BackBtn, *AutoBtn;
 
 	AudioStream *PreviewStream;

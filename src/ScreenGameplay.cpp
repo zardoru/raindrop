@@ -10,7 +10,7 @@
 #define ComboSizeY 48
 
 ScreenGameplay::ScreenGameplay(Screen *Parent) :
-	Screen(Parent),
+	Screen("ScreenGameplay", Parent),
 	Barline(this)
 {
 	Running = true;

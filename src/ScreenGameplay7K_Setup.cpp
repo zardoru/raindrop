@@ -27,7 +27,7 @@
 
 #include "AudioSourceOJM.h"
 
-ScreenGameplay7K::ScreenGameplay7K()
+ScreenGameplay7K::ScreenGameplay7K() : Screen("ScreenGameplay7K")
 {
 	SpeedMultiplier = 0;
 	SongOldTime = -1;

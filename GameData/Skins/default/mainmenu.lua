@@ -5,8 +5,8 @@ Preload = {
 	"MainMenu/quit.png"
 }
 
-IntroDuration = 0.5
-ExitDuration = IntroDuration
+IntroDuration = 0.25
+ExitDuration = 0.5
 function PlayBtnHover()
 	PlayButton.Image = "MainMenu/playh.png";
 	PlayButton.Width = 256
@@ -31,47 +31,33 @@ function ExitBtnHoverLeave()
 	ExitButton.Height = 153
 end
 
-function unlp(ul, cur, val)
-	local fdelta = cur - ul
-	
-	ul = cur
-	return { newLast = ul, tDelta = fdelta * val }
-end
-
-uilast = 0
-function UpdateIntro(p)
+function UpdateIntro(p, delta)
 	local S = math.sin(-5 * math.pi * (p + 1)) * math.pow(2, -10 * p) + 1
 	targBadge.Y = ScreenHeight/2*(S) - targBadge.Height
 	targLogo.Y = targBadge.Y
-	
-	local tx = unlp (uilast, p, IntroDuration)
-	uilast = tx.newLast
-	Update(tx.tDelta)
-	
-	if p == 1 then
-		uilast = 0
-	end
+	Update(delta)
 end
 
-uelast = 0
-cumul = 0
-function UpdateExit(p)
-	local ease = p*p
-	local tx = unlp(uelast, p, ExitDuration)
-	uelast = tx.newLast 
-	
-	BGAIn(ease)
-	UpdateIntro(1-p)
-	Update(tx.tDelta)
+function OnRunningBegin()
+	ScreenFade.Out()
+end
 
-	if p == 1 then
-		uelast = 0
-	end
+function OnIntroBegin()
+end
+
+function OnExitBegin()
+	ScreenFade.In()
+end
+
+function UpdateExit(p, delta)
+	local ease = p*p
+	UpdateIntro(1-p)
+	print (delta)
+	Update(delta)
 end
 
 function Init()
 	ScreenFade:Init()
-	ScreenFade.Out()
 	
 	targBadge = Engine:CreateObject()
 	targBadge.Image = "MainMenu/BACKs.png"

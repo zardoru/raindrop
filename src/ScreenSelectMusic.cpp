@@ -70,7 +70,7 @@ void SetupWheelLua(LuaManager* Man)
 	lua_setglobal(L, "Wheel");
 }	
 
-ScreenSelectMusic::ScreenSelectMusic()
+ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic")
 {
 	Font = NULL;
 	PreviewStream = NULL;
@@ -141,10 +141,10 @@ ScreenSelectMusic::ScreenSelectMusic()
 
 void ScreenSelectMusic::MainThreadInitialization()
 {	
-	LuaManager* LuaM = Objects->GetEnv();
+	LuaManager* LuaM = Animations->GetEnv();
 	UpBtn = new GUI::Button;
 
-	Objects->InitializeUI();
+	Animations->InitializeUI();
 
 	EventAnimationFunction OnUpClick (bind(LuaEvt, LuaM, "DirUpBtnClick", _1));
 	EventAnimationFunction OnUpHover(bind(LuaEvt, LuaM, "DirUpBtnHover", _1));
@@ -164,16 +164,16 @@ void ScreenSelectMusic::MainThreadInitialization()
 
 	AutoBtn = NULL;
 
-	Objects->AddLuaTarget(BackBtn, "BackButton");
-	Objects->AddLuaTarget(UpBtn, "DirUpButton");
-	// Objects->AddLuaTarget(UpBtn, "AutoButton");
-	Objects->AddTarget(BackBtn);
-	Objects->AddTarget(UpBtn);
-	// Objects->AddTarget(AutoBtn);
+	Animations->AddLuaTarget(BackBtn, "BackButton");
+	Animations->AddLuaTarget(UpBtn, "DirUpButton");
+	// Animations->AddLuaTarget(UpBtn, "AutoButton");
+	Animations->AddTarget(BackBtn);
+	Animations->AddTarget(UpBtn);
+	// Animations->AddTarget(AutoBtn);
 
-	Objects->Initialize();
+	Animations->Initialize();
 
-	GameState::GetInstance().InitializeLua(Objects->GetEnv()->GetState());
+	GameState::GetInstance().InitializeLua(Animations->GetEnv()->GetState());
 
 	SwitchUpscroll(false);
 
@@ -184,7 +184,7 @@ void ScreenSelectMusic::MainThreadInitialization()
 
 	WindowFrame.SetLightMultiplier(1);
 	Background.AffectedByLightning = true;
-	Objects->AddLuaTarget(&Background, "ScreenBackground");
+	Animations->AddLuaTarget(&Background, "ScreenBackground");
 }
 
 void ScreenSelectMusic::LoadThreadInitialization()
@@ -199,16 +199,16 @@ void ScreenSelectMusic::LoadThreadInitialization()
 
 	ImageLoader::LoadFromManifest(Manifest, 1, GameState::GetInstance().GetSkinPrefix());
 
-	Objects = new SceneEnvironment("ScreenSelectMusic");
-	SetupWheelLua(Objects->GetEnv());
-	Objects->Preload( GameState::GetInstance().GetSkinFile("screenselectmusic.lua"), "Preload" );
+	Animations = new SceneEnvironment("ScreenSelectMusic");
+	SetupWheelLua(Animations->GetEnv());
+	Animations->Preload( GameState::GetInstance().GetSkinFile("screenselectmusic.lua"), "Preload" );
 
 	Time = 0;
 }
 
 void ScreenSelectMusic::Cleanup()
 {
-	delete Objects;
+	delete Animations;
 	
 	if (PreviewStream)
 	{
@@ -223,7 +223,7 @@ void ScreenSelectMusic::Cleanup()
 
 float ScreenSelectMusic::GetListPendingVerticalTransformation(const float Y)
 {
-	LuaManager *Lua = Objects->GetEnv();
+	LuaManager *Lua = Animations->GetEnv();
 	if (Lua->CallFunction("TransformPendingVertical", 1, 1))
 	{
 		Lua->PushArgument(Y);
@@ -235,7 +235,7 @@ float ScreenSelectMusic::GetListPendingVerticalTransformation(const float Y)
 
 float ScreenSelectMusic::GetListVerticalTransformation(const float Y)
 {
-	LuaManager *Lua = Objects->GetEnv();
+	LuaManager *Lua = Animations->GetEnv();
 	if (Lua->CallFunction("TransformListVertical", 1, 1))
 	{
 		Lua->PushArgument(Y);
@@ -247,7 +247,7 @@ float ScreenSelectMusic::GetListVerticalTransformation(const float Y)
 
 float ScreenSelectMusic::GetListHorizontalTransformation(const float Y)
 {
-	LuaManager *Lua = Objects->GetEnv();
+	LuaManager *Lua = Animations->GetEnv();
 	if (Lua->CallFunction("TransformListHorizontal", 1, 1))
 	{
 		Lua->PushArgument(Y);
@@ -293,8 +293,8 @@ void ScreenSelectMusic::OnSongSelect(shared_ptr<Game::Song> MySong, uint8 difind
 
 	GameState::GetInstance().SetSelectedSong(MySong.get());
 
-	Objects->DoEvent("OnSelect", 1);
-	TransitionTime = Objects->GetEnv()->GetFunctionResultF();
+	Animations->DoEvent("OnSelect", 1);
+	TransitionTime = Animations->GetEnv()->GetFunctionResultF();
 
 	SwitchBackGuiPending = true;
 }
@@ -306,7 +306,7 @@ void ScreenSelectMusic::OnSongChange(shared_ptr<Game::Song> MySong, uint8 difind
 	if (MySong)
 	{
 		GameState::GetInstance().SetSelectedSong(MySong.get());
-		Objects->DoEvent("OnSongChange");
+		Animations->DoEvent("OnSongChange");
 		
 		PreviewWaitTime = 1;
 	}
@@ -403,7 +403,7 @@ bool ScreenSelectMusic::Run(double Delta)
 		{
 			SwitchBackGuiPending = false;
 			PlayLoops();
-			Objects->DoEvent("OnRestore");
+			Animations->DoEvent("OnRestore");
 		}
 
 		PreviewWaitTime -= Delta;
@@ -432,13 +432,13 @@ bool ScreenSelectMusic::Run(double Delta)
 	WindowFrame.SetLightMultiplier(sin(Time) * 0.2 + 1);
 
 	Background.Render();
-	Objects->UpdateTargets(Delta);
+	Animations->UpdateTargets(Delta);
 
-	Objects->DrawUntilLayer(16);
+	Animations->DrawUntilLayer(16);
 
 	Game::SongWheel::GetInstance().Render();
 
-	Objects->DrawFromLayer(16);
+	Animations->DrawFromLayer(16);
 
 	return Running;
 }	
@@ -455,7 +455,7 @@ void ScreenSelectMusic::StopLoops()
 void ScreenSelectMusic::SwitchUpscroll(bool NewUpscroll)
 {
 	OptionUpscroll = NewUpscroll;
-	Objects->GetEnv()->SetGlobal("Upscroll", OptionUpscroll);
+	Animations->GetEnv()->SetGlobal("Upscroll", OptionUpscroll);
 }
 
 bool ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
@@ -475,7 +475,7 @@ bool ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 	if (Game::SongWheel::GetInstance().HandleInput(key, code, isMouseInput))
 		return true;
 
-	Objects->HandleInput(key, code, isMouseInput);
+	Animations->HandleInput(key, code, isMouseInput);
 
 	if (code == KE_Press)
 	{
@@ -514,49 +514,49 @@ bool ScreenSelectMusic::HandleScrollInput(double xOff, double yOff)
 
 void ScreenSelectMusic::TransformItem(Sprite* Item, shared_ptr<Game::Song> Song, bool IsSelected)
 {
-	if (Objects->GetEnv()->CallFunction("TransformItem", 3))
+	if (Animations->GetEnv()->CallFunction("TransformItem", 3))
 	{
-		luabridge::push(Objects->GetEnv()->GetState(), Item);
-		luabridge::push(Objects->GetEnv()->GetState(), Song.get());
-		luabridge::push(Objects->GetEnv()->GetState(), IsSelected);
-		Objects->GetEnv()->RunFunction();
+		luabridge::push(Animations->GetEnv()->GetState(), Item);
+		luabridge::push(Animations->GetEnv()->GetState(), Song.get());
+		luabridge::push(Animations->GetEnv()->GetState(), IsSelected);
+		Animations->GetEnv()->RunFunction();
 	}
 }
 
 void ScreenSelectMusic::OnDirectoryChange()
 {
-	Objects->DoEvent("OnDirectoryChange");
+	Animations->DoEvent("OnDirectoryChange");
 }
 
 void ScreenSelectMusic::OnItemClick(uint32 Index, GString Line, shared_ptr<Game::Song> Selected)
 {
-	if (Objects->GetEnv()->CallFunction("OnItemClick", 3))
+	if (Animations->GetEnv()->CallFunction("OnItemClick", 3))
 	{
-		luabridge::push(Objects->GetEnv()->GetState(), Index);
-		luabridge::push(Objects->GetEnv()->GetState(), Line);
-		luabridge::push(Objects->GetEnv()->GetState(), Selected.get());
-		Objects->GetEnv()->RunFunction();
+		luabridge::push(Animations->GetEnv()->GetState(), Index);
+		luabridge::push(Animations->GetEnv()->GetState(), Line);
+		luabridge::push(Animations->GetEnv()->GetState(), Selected.get());
+		Animations->GetEnv()->RunFunction();
 	}
 }
 
 void ScreenSelectMusic::OnItemHover(uint32 Index, GString Line, shared_ptr<Game::Song> Selected)
 {
-	if (Objects->GetEnv()->CallFunction("OnItemHover", 3))
+	if (Animations->GetEnv()->CallFunction("OnItemHover", 3))
 	{
-		luabridge::push(Objects->GetEnv()->GetState(), Index);
-		luabridge::push(Objects->GetEnv()->GetState(), Line);
-		luabridge::push(Objects->GetEnv()->GetState(), Selected.get());
-		Objects->GetEnv()->RunFunction();
+		luabridge::push(Animations->GetEnv()->GetState(), Index);
+		luabridge::push(Animations->GetEnv()->GetState(), Line);
+		luabridge::push(Animations->GetEnv()->GetState(), Selected.get());
+		Animations->GetEnv()->RunFunction();
 	}
 }
 
 void ScreenSelectMusic::OnItemHoverLeave(uint32 Index, GString Line, shared_ptr<Game::Song> Selected)
 {
-	if (Objects->GetEnv()->CallFunction("OnItemHoverLeave", 3))
+	if (Animations->GetEnv()->CallFunction("OnItemHoverLeave", 3))
 	{
-		luabridge::push(Objects->GetEnv()->GetState(), Index);
-		luabridge::push(Objects->GetEnv()->GetState(), Line);
-		luabridge::push(Objects->GetEnv()->GetState(), Selected.get());
-		Objects->GetEnv()->RunFunction();
+		luabridge::push(Animations->GetEnv()->GetState(), Index);
+		luabridge::push(Animations->GetEnv()->GetState(), Line);
+		luabridge::push(Animations->GetEnv()->GetState(), Selected.get());
+		Animations->GetEnv()->RunFunction();
 	}
 }

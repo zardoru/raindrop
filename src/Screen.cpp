@@ -1,7 +1,8 @@
 #include "Global.h"
+#include "SceneEnvironment.h"
 #include "Screen.h"
 
-Screen::Screen() 
+Screen::Screen(GString Name) 
 {  
 	Parent = NULL;
 	Running = false;
@@ -9,9 +10,10 @@ Screen::Screen()
 	ScreenTime = 0;
 	IntroDuration = 0;
 	ScreenState = StateRunning;
+	Animations = new SceneEnvironment(Name.c_str());
 }
 
-Screen::Screen(Screen *_Parent)
+Screen::Screen(GString Name, Screen *_Parent)
 {
 	Parent = _Parent;
 	Running = false;
@@ -19,6 +21,7 @@ Screen::Screen(Screen *_Parent)
 	ScreenTime = 0;
 	IntroDuration = 0;
 	ScreenState = StateRunning;
+	Animations = new SceneEnvironment(Name.c_str());
 }
 
 Screen::~Screen() {}
@@ -51,6 +54,18 @@ void Screen::MainThreadInitialization()
 void Screen::ChangeState(Screen::EScreenState NewState)
 {
 	ScreenState = NewState;
+
+	switch (NewState) {
+	case StateIntro:
+		OnIntroBegin();
+		break;
+	case StateExit:
+		OnExitBegin();
+		break;
+	default:
+		break;
+	}
+
 	TransitionTime = 0;
 }
 
@@ -107,7 +122,7 @@ bool Screen::Update(float delta)
 			ScreenState = StateRunning;
 		}
 
-		return RunIntro(Frac);
+		return RunIntro(Frac, delta);
 	}else if (ScreenState == StateExit)
 	{
 		float Frac;
@@ -125,15 +140,32 @@ bool Screen::Update(float delta)
 			StateExit can still go back to the "StateRunning" state
 			This way it can be used for transitions.
 		*/
-		return RunExit(Frac); 
+		return RunExit(Frac, delta); 
 	}else
 		return Run(delta);
 }
 
-bool Screen::RunIntro(float Fraction) { return true; }
 
-bool Screen::RunExit(float Fraction) {	return false; }
+// todo: do not repeat this (screenloading.cpp)
+bool Screen::RunIntro(float Fraction, float Delta)
+{
+	Animations->RunIntro(Fraction, Delta);
 
+	if (Fraction == 1)
+		OnIntroEnd();
+
+	return Running;
+}
+
+bool Screen::RunExit(float Fraction, float Delta)
+{
+	Animations->RunExit(Fraction, Delta);
+
+	if (Fraction == 1)
+		OnExitEnd();
+
+	return Running;
+}
 bool Screen::HandleInput(int32 key, KeyEventType state, bool isMouseInput) 
 { 
 	if (Next && Next->IsScreenRunning())
@@ -148,6 +180,30 @@ bool Screen::HandleScrollInput(double xOff, double yOff)
 		return Next->HandleScrollInput(xOff, yOff);
 
 	return false;
+}
+void Screen::OnIntroBegin()
+{
+	Animations->DoEvent("OnIntroBegin");
+}
+
+void Screen::OnIntroEnd()
+{
+	Animations->DoEvent("OnIntroEnd");
+}
+
+void Screen::OnExitBegin()
+{
+	Animations->DoEvent("OnExitBegin");
+}
+
+void Screen::OnExitEnd()
+{
+	Animations->DoEvent("OnExitEnd");
+}
+
+void Screen::OnRunningBegin()
+{
+	Animations->DoEvent("OnRunningBegin");
 }
 
 void Screen::Cleanup() { /* stub */ }

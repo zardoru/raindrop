@@ -18,7 +18,7 @@ namespace Rocket {
 }
 
 struct Animation {
-	function <bool (Sprite* Target, float Fraction)> Function;
+	function <bool (float Fraction)> Function;
 
 	float Time, Duration, Delay;
 	enum EEaseType {
@@ -91,6 +91,12 @@ public:
 	void UpdateTargets(double TimeDelta);
 	void DrawUntilLayer(uint32 Layer);
 	void DrawFromLayer(uint32 Layer);
+
+	void RunIntro(float Fraction, float Delta);
+	void RunExit(float Fraction, float Delta);
+
+	float GetIntroDuration();
+	float GetExitDuration();
 
 	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	bool HandleTextInput(int codepoint);

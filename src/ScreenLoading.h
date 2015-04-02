@@ -7,14 +7,12 @@
 
 class ScreenLoading : public Screen
 {
-	SceneEnvironment* Animation;
 	boost::thread *LoadThread;
 public:
 	ScreenLoading(Screen *Parent, Screen *_Next);
 	void Init();
 
-	bool RunIntro(float Fraction);
-	bool RunExit(float Fraction);
+	void OnExitEnd();
 
 	bool Run(double TimeDelta);
 	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);

@@ -13,18 +13,17 @@ void LoadFunction(void* pScreen)
 	S->LoadThreadInitialization();
 }
 
-ScreenLoading::ScreenLoading(Screen *Parent, Screen *_Next)
+ScreenLoading::ScreenLoading(Screen *Parent, Screen *_Next) : Screen("ScreenLoading", Parent)
 {
 	Next = _Next;
 	LoadThread = NULL;
 	Running = true;
-	
-	Animation = new SceneEnvironment("ScreenLoading");
-	Animation->Preload(GameState::GetInstance().GetSkinFile("screenloading.lua"), "Preload");
-	Animation->Initialize("", false);
 
-	IntroDuration = max(Animation->GetEnv()->GetGlobalD("IntroDuration"), 0.0);
-	ExitDuration = max(Animation->GetEnv()->GetGlobalD("ExitDuration"), 0.0);
+	Animations->Preload(GameState::GetInstance().GetSkinFile("screenloading.lua"), "Preload");
+	Animations->Initialize("", false);
+
+	IntroDuration = max(Animations->GetEnv()->GetGlobalD("IntroDuration"), 0.0);
+	ExitDuration = max(Animations->GetEnv()->GetGlobalD("ExitDuration"), 0.0);
 	
 	ChangeState(StateIntro);
 }
@@ -36,39 +35,12 @@ void ScreenLoading::Init()
 	WindowFrame.SetLightPosition(glm::vec3(0,-0.5,1));
 }
 
-bool ScreenLoading::RunIntro(float Fraction)
+void ScreenLoading::OnExitEnd()
 {
-	LuaManager *Lua = Animation->GetEnv();
-	if (Lua->CallFunction("UpdateIntro", 1))
-	{
-		Lua->PushArgument(Fraction);
-		Lua->RunFunction();
-	}
-
-	Animation->DrawFromLayer(0);
-	return true;
-}
-
-bool ScreenLoading::RunExit(float Fraction)
-{
-	LuaManager *Lua = Animation->GetEnv();
-
-	if (Fraction == 1)
-	{
-		delete Animation;
-		Animation = NULL;
-		ChangeState(StateRunning);
-		return true;
-	}
-
-	if (Lua->CallFunction("UpdateExit", 1))
-	{
-		Lua->PushArgument(Fraction);
-		Lua->RunFunction();
-	}
-
-	Animation->DrawFromLayer(0);
-	return true;
+	Screen::OnExitEnd();
+	delete Animations;
+	Animations = NULL;
+	ChangeState(StateRunning);
 }
 
 bool ScreenLoading::Run(double TimeDelta)
@@ -76,9 +48,9 @@ bool ScreenLoading::Run(double TimeDelta)
 	if (!LoadThread)
 		return (Running = RunNested(TimeDelta));
 
-	if (!Animation) return Running;
+	if (!Animations) return Running;
 
-	Animation->DrawTargets(TimeDelta);
+	Animations->DrawTargets(TimeDelta);
 
 	if (LoadThread->timed_join(boost::posix_time::seconds(0)))
 	{

@@ -169,7 +169,6 @@ int SongWheel::PrevDifficulty()
 	if (!CurrentList->IsDirectory(SelectedItem))
 	{
 		DifficultyIndex--;
-		max_index = 0;
 		if (CurrentList->GetSongEntry(SelectedItem)->Mode == MODE_VSRG)
 		{
 			shared_ptr<VSRG::Song> Song = static_pointer_cast<VSRG::Song> (CurrentList->GetSongEntry(SelectedItem));
@@ -180,9 +179,13 @@ int SongWheel::PrevDifficulty()
 			shared_ptr<dotcur::Song> Song = static_pointer_cast<dotcur::Song> (CurrentList->GetSongEntry(SelectedItem));
 			max_index = Song->Difficulties.size() - 1;
 		}
+		
+		DifficultyIndex = min(max_index, DifficultyIndex);
+		OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
 	}
+	else
+		DifficultyIndex = 0;
 
-	DifficultyIndex = min(max_index, DifficultyIndex);
 	return DifficultyIndex;
 }
 

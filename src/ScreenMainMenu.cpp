@@ -22,7 +22,7 @@ BitmapFont* MainMenuFont = NULL;
 LuaManager* MainMenuLua = NULL;
 TruetypeFont* TTFO = NULL;
 
-ScreenMainMenu::ScreenMainMenu(Screen *Parent) : Screen(Parent)
+ScreenMainMenu::ScreenMainMenu(Screen *Parent) : Screen("ScreenMainMenu", Parent)
 {
 	TNext = nullptr;
 }
@@ -55,22 +55,21 @@ void ScreenMainMenu::Init()
 {
 	Running = true;
 
-	Objects = new SceneEnvironment("ScreenMainMenu");
-	MainMenuLua = Objects->GetEnv();
+	MainMenuLua = Animations->GetEnv();
 
-	Objects->AddTarget(&Background);
-	Objects->AddTarget(&PlayBtn);
-	Objects->AddTarget(&ExitBtn);
-	Objects->AddTarget(&OptionsBtn);
-	Objects->AddTarget(&EditBtn);
-	Objects->AddLuaTarget(&PlayBtn, "PlayButton");
-	Objects->AddLuaTarget(&ExitBtn, "ExitButton");
+	Animations->AddTarget(&Background);
+	Animations->AddTarget(&PlayBtn);
+	Animations->AddTarget(&ExitBtn);
+	Animations->AddTarget(&OptionsBtn);
+	Animations->AddTarget(&EditBtn);
+	Animations->AddLuaTarget(&PlayBtn, "PlayButton");
+	Animations->AddLuaTarget(&ExitBtn, "ExitButton");
 
-	Objects->Initialize(GameState::GetInstance().GetSkinFile("mainmenu.lua"));
-	Objects->InitializeUI();
+	Animations->Initialize(GameState::GetInstance().GetSkinFile("mainmenu.lua"));
+	Animations->InitializeUI();
 
-	IntroDuration = max(Objects->GetEnv()->GetGlobalD("IntroDuration"), 0.0);
-	ExitDuration = max(Objects->GetEnv()->GetGlobalD("ExitDuration"), 0.0);
+	IntroDuration = Animations->GetIntroDuration();
+	ExitDuration = Animations->GetIntroDuration();
 
 	ChangeState(StateIntro);
 
@@ -124,47 +123,12 @@ bool ScreenMainMenu::HandleInput(int32 key, KeyEventType code, bool isMouseInput
 		Running = false;
 	}
 
-	return Objects->HandleInput(key, code, isMouseInput);
+	return Animations->HandleInput(key, code, isMouseInput);
 }
 
 bool ScreenMainMenu::HandleScrollInput(double xOff, double yOff)
 {
 	return Screen::HandleScrollInput(xOff, yOff);
-}
-
-// todo: do not repeat this (screenloading.cpp)
-bool ScreenMainMenu::RunIntro(float Fraction)
-{
-	LuaManager *Lua = Objects->GetEnv();
-	if (Lua->CallFunction("UpdateIntro", 1))
-	{
-		Lua->PushArgument(Fraction);
-		Lua->RunFunction();
-	}
-
-	Objects->DrawFromLayer(0);
-	return true;
-}
-
-bool ScreenMainMenu::RunExit(float Fraction)
-{
-	LuaManager *Lua = Objects->GetEnv();
-
-	if (Fraction == 1)
-	{
-		Next = TNext;
-		ChangeState(StateRunning);
-		return true;
-	}
-
-	if (Lua->CallFunction("UpdateExit", 1))
-	{
-		Lua->PushArgument(Fraction);
-		Lua->RunFunction();
-	}
-
-	Objects->DrawFromLayer(0);
-	return true;
 }
 
 bool ScreenMainMenu::Run (double Delta)
@@ -176,12 +140,20 @@ bool ScreenMainMenu::Run (double Delta)
 	ExitBtn.Run(Delta);
 	
 	TTFO->Render (GString("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop"), Vec2(0, 0));
-	Objects->DrawTargets(Delta);
+	Animations->DrawTargets(Delta);
 
 	return Running;
 }
 
+void ScreenMainMenu::OnExitEnd()
+{
+	Screen::OnExitEnd();
+
+	Next = TNext;
+	ChangeState(StateRunning);
+}
+
 void ScreenMainMenu::Cleanup()
 {
-	delete Objects;
 }
+
