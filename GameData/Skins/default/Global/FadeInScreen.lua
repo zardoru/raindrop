@@ -1,14 +1,11 @@
-function FadeInA1(frac)
-	Black1.X = ScreenWidth/2 
-	Black1.Y = ScreenHeight/4 * frac
-	Black1.ScaleY = frac
-	return 1
+if ScreenFade then
+	return
 end
 
-function FadeInA2(frac)
-	Black2.X = ScreenWidth/2
-	Black2.Y = ScreenHeight - (ScreenHeight/4) * frac
-	Black2.ScaleY = frac
+skin_require("Global/Background.lua")
+
+function FadeInA1(frac)
+	ScreenFade.Black.Alpha = frac
 	return 1
 end
 
@@ -20,10 +17,19 @@ function invert(f, frac)
 	return newf
 end
 
-ScreenFade = {}
+ScreenFade = { Duration = 0.1 }
 
 function ScreenFade.Init()
-	Black1 = Engine:CreateObject()
+	BackgroundAnimation:Init()
+	ScreenFade.Black = Engine:CreateObject()
+	ScreenFade.Black.Image = "Global/filter.png"
+	ScreenFade.Black.Width = ScreenWidth
+	ScreenFade.Black.Height = ScreenHeight
+	ScreenFade.Black.Alpha = 0
+	ScreenFade.Black.Layer = 31
+	IFadeInA1 = invert(FadeInA1)
+	return
+	--[["Black1 = Engine:CreateObject()
 	Black2 = Engine:CreateObject()
 	
 	Black1.Image = "Global/filter.png"
@@ -51,18 +57,38 @@ function ScreenFade.Init()
 	
 	IFadeInA1 = invert(FadeInA1)
 	IFadeInA2 = invert(FadeInA2)
+	]]
 end
 
-function ScreenFade.In()
+function ScreenFade.In(nobg)
+	local Delay = 0
+	Engine:StopAnimation(ScreenFade.Black)
+	
+	if not nobg then
+		BackgroundAnimation:In()
+		Delay = BackgroundAnimation.Duration
+	end
+	
+	Engine:AddAnimation(Black1, "FadeInA1", EaseNone, ScreenFade.Duration, Delay)
+	return --[[ Lines beyond are previous implementation.
 	Engine:StopAnimation(Black1)
 	Engine:StopAnimation(Black2)
 	Engine:AddAnimation(Black1, "FadeInA1", EaseNone, 0.2, 0)
 	Engine:AddAnimation(Black2, "FadeInA2", EaseNone, 0.2, 0)
+	]]
 end
 
-function ScreenFade.Out()
+function ScreenFade.Out(nobg)
+	Engine:StopAnimation(ScreenFade.Black)
+	Engine:AddAnimation(Black1, "IFadeInA1", EaseNone, ScreenFade.Duration, 0)
+	if not nobg then
+		BackgroundAnimation:Out()
+	end
+	
+	return --[[
 	Engine:StopAnimation(Black1)
 	Engine:StopAnimation(Black2)
 	Engine:AddAnimation(Black1, "IFadeInA1", EaseNone, 0.2, 0)
 	Engine:AddAnimation(Black2, "IFadeInA2", EaseNone, 0.2, 0)
+	]]
 end

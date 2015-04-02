@@ -98,7 +98,7 @@ function Init()
 	AnimatedObjects.Init()
 	DrawTextObjects()
 	ScreenFade.Init()
-	ScreenFade.Out()
+	ScreenFade.Out(true)
 
 	ScreenBackground.Alpha = (0)
 	Engine:Sort()

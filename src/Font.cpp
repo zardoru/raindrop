@@ -5,7 +5,6 @@
 Font::Font() :
 	Red(1), Green(1), Blue(1), Alpha(1)
 {
-	Log::Printf("Warning: Base font created.\n");
 }
 
 void Font::SetColor(float _Red, float _Green, float _Blue)

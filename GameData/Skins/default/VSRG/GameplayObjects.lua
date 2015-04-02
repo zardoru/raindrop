@@ -10,14 +10,15 @@ Lifebar = {
 
 Judgment = {
 
-	FadeoutTime = 1,
-	FadeoutDuration = 0.25,
-	Speed = 15,
+	FadeoutTime = 0.5,
+	FadeoutDuration = 0.15,
+	Speed = 25,
 	Tilt = 7, -- in degrees
 
 	Scale = 0.20,
-	ScaleHit = 0.30,
+	ScaleHit = 0.28,
 	ScaleMiss = 0.12,
+	ScaleExtra = 0.1,
 
 	Position = {
 		x = GearWidth/2 + GearStartX,
@@ -128,20 +129,26 @@ function Judgment.Init()
 	Judgment.IndicatorObject.Centered = 1
 	Judgment.IndicatorObject:SetScale(Judgment.Scale)
 	Judgment.IndicatorObject.Alpha = 0
+	Judgment.IndicatorObject.Y = Judgment.Object.Y
 end
 
-function Judgment.Run(Delta)
+function GetComboLerp()
 	local ComboPercent = ScoreKeeper:getScore(ST_COMBO) / ScoreKeeper:getMaxNotes()
 	local AAAThreshold = 8.0 / 9.0
 	local ComboLerp = math.min(ComboPercent, AAAThreshold) / AAAThreshold
+	return ComboLerp
+end
+
+function Judgment.Run(Delta)
+	local ComboLerp = GetComboLerp()
 	
 	if Active ~= 0 then
 		local AlphaRatio
 		Judgment.Time = Judgment.Time + Delta
 
 		local OldJudgeScale = Judgment.Object.ScaleX
-
-		local DeltaScale = (Judgment.Scale - OldJudgeScale) * Delta * Judgment.Speed
+		local ScaleLerpAAA = ComboLerp * Judgment.ScaleExtra
+		local DeltaScale = (Judgment.Scale + ScaleLerpAAA - OldJudgeScale) * Delta * Judgment.Speed
 		local FinalScale = OldJudgeScale + DeltaScale
 
 		Judgment.Object:SetScale (FinalScale)
@@ -203,6 +210,7 @@ function Judgment.Hit(JudgmentValue, EarlyOrLate)
 		Judgment.Value = 1
 	else
 		Judgment.Object.Lighten = 0
+		Judgment.Object.LightenFactor = 0
 	end
 
 	if Judgment.LastAlternation == 0 then
@@ -215,7 +223,8 @@ function Judgment.Hit(JudgmentValue, EarlyOrLate)
 	
 	if JudgmentValue ~= 5 then
 		if JudgmentValue ~= -1 then
-			Judgment.Object:SetScale (Judgment.ScaleHit)
+			local CLerp = GetComboLerp()
+			Judgment.Object:SetScale (Judgment.ScaleHit + CLerp * Judgment.ScaleExtra)
 		else
 			Judgment.Object:SetScale (Judgment.Scale)
 		end

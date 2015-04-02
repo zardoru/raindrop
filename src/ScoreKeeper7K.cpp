@@ -23,7 +23,7 @@ void ScoreKeeper7K::setAccMax(double ms){
 
 void ScoreKeeper7K::setMaxNotes(int notes){
 
-	max_notes = notes;
+	max_notes = max(notes, 1);
 
 	if(notes < 10) bms_max_combo_pts = notes * (notes + 1) / 2;
 	else bms_max_combo_pts = 55 + (notes - 10) * 10;
@@ -145,7 +145,7 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms){
 
 	if (ms <= judgment_time[SKJ_W1]){ // only COOLs restore o2jam lifebar
 		lifebar_o2jam = min(1.0, lifebar_o2jam + lifebar_o2jam_increment);
-	} else if (ms > judgment_time[SKJ_W2]) // BADs get some HP from you, 
+	} else if (ms > judgment_time[SKJ_W1]) // BADs get some HP from you, 
 		lifebar_o2jam = max(0.0, lifebar_o2jam - lifebar_o2jam_decrement / 6.0);
 	
 	// std::cerr << ms << " " << judgment << " " << life_increment[judgment] << std::endl;

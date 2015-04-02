@@ -1,4 +1,5 @@
 game_require("textureatlas.lua")
+skin_require ("Global/Background.lua")
 skin_require ("Global/FadeInScreen.lua")
 skin_require ("VSRG/ScoreDisplay.lua")
 
@@ -35,14 +36,14 @@ function SetupRank()
 	
 	-- resize to something acceptable
 	if RankPic.X < RankPic.Width / 2 then
-		local Rat = (RankPic.Width / 2) / (ScreenWidth / 2)
-		RankPic.ScaleX = Rat
-		RankPic.ScaleY = Rat
+		local Rat = (ScreenWidth / 2) / (RankPic.Width)
+		RankPic:SetScale(Rat)
+		RankPic.X = ScreenWidth / 2 - RankPic.Width / 2 * Rat
 	end
 	
 	RankStr = StringObject2D()
 	RankStr.Text = "rank"
-	RankStr.X = ScreenWidth / 2 - RankPic.Width / 2 - EvalFont:GetLength("rank") / 2
+	RankStr.X = RankPic.X - EvalFont:GetLength("rank") / 2
 	RankStr.Y = ScreenHeight / 2 + RankPic.Height / 2 + 10
 	RankStr.Font = EvalFont
 	
@@ -69,7 +70,6 @@ function SetupJudgmentsDisplay()
 			fmtext = fmtext .. string.format("Flawless: %04d\nSweet: %04d\nNice: %04d\nWeak: %04d\nMiss: %04d", w1, w2, w3, w4, w5)
 		else
 			local p = ScoreKeeper:getPills()
-			local rem = 15 - ScoreKeeper:getCoolCombo() % 15
 			Score = Global:GetScorekeeper7K():getScore(ST_O2JAM)
 			fmtext = fmtext .. string.format("Flawless: %04d\nSweet: %04d\nNice: %04d\nMiss: %04d", w1, w2, w3, w5, p, rem)
 		end
@@ -130,6 +130,7 @@ end
 
 function Init()
 	
+	BackgroundAnimation:Init()
 	SetupFonts()
 	SetupRank()
 	SetupJudgmentsDisplay()

@@ -40,6 +40,7 @@ AudioDataSource* SourceFromExt(Directory Filename)
 {
 	AudioDataSource *Ret = NULL;
 	GString Ext = Filename.GetExtension();
+	Filename.Normalize();
 
 	if (Filename.path().length() == 0 || Ext.length() == 0) {
 		wprintf(L"Invalid filename. (%s) (%s)\n", Utility::Widen(Filename).c_str(), Utility::Widen(Ext).c_str());

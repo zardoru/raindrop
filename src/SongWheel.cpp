@@ -203,6 +203,8 @@ int SongWheel::NextDifficulty()
 			if (DifficultyIndex >= Song->Difficulties.size())
 				DifficultyIndex = 0;
 		}
+
+		OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
 	}
 
 	return DifficultyIndex;
@@ -217,13 +219,17 @@ void SongWheel::SetDifficulty(uint32 i)
 {
 	if (CurrentList && !CurrentList->IsDirectory(SelectedItem))
 	{
-		shared_ptr<VSRG::Song> Song = static_pointer_cast<VSRG::Song> (CurrentList->GetSongEntry(SelectedItem));
+		shared_ptr<VSRG::Song> Song = static_pointer_cast<VSRG::Song> (GetSelectedSong());
 		size_t maxIndex = Song->Difficulties.size();
+		size_t oldDI = DifficultyIndex;
 
 		if (maxIndex)
 			DifficultyIndex = Clamp(i, (uint32)0, (uint32)(maxIndex - 1));
 		else
 			DifficultyIndex = 0;
+
+		if (DifficultyIndex != oldDI)
+			OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
 	}
 }
 
@@ -364,6 +370,7 @@ void SongWheel::Update(float Delta)
 	if (OldCursorPos != CursorPos)
 	{
 		OldCursorPos = CursorPos;
+		DifficultyIndex = 0;
 		if (OnItemHover)
 		{
 			shared_ptr<Game::Song> Notify = GetSelectedSong();

@@ -57,6 +57,7 @@ function TransformListVertical(LY)
 end
 
 function OnItemHover(Index, Line, Selected)
+	updText()
 end
 
 function OnItemHoverLeave(Index, Line, Selected)
@@ -82,8 +83,9 @@ function TransformItem(Item, Song, IsSelected)
 	end
 end
 
+-- This recieves song and difficulty changes.
 function OnSongChange(Song, Diff)
-	updText(1)
+	updText()
 end
 
 -- Screen Events

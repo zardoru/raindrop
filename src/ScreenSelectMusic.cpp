@@ -306,7 +306,6 @@ void ScreenSelectMusic::OnSongChange(shared_ptr<Game::Song> MySong, uint8 difind
 	if (MySong)
 	{
 		GameState::GetInstance().SetSelectedSong(MySong.get());
-		GameState::GetInstance().SetDifficultyIndex(0);
 		Objects->DoEvent("OnSongChange");
 		
 		PreviewWaitTime = 1;
