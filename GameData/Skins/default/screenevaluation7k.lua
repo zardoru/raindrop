@@ -119,11 +119,12 @@ function SetSongTitle()
 		difftxt = string.format("%s", diff.Name)
 	end
 	
-	TitleText.Text = string.format ("%s by %s (Chart: %s)", Global:GetSelectedSong().Title, Global:GetSelectedSong().Author, difftxt)
+	local Text = string.format ("%s by %s (Chart: %s)", Global:GetSelectedSong().Title, Global:GetSelectedSong().Author, difftxt)
+	TitleText.Text = Text
 	TitleText.Font = EvalFont
 	
 	TitleText.Y = ScreenHeight - 40
-	TitleText.X = ScreenWidth / 2 - EvalFont:GetLength(TitleText.Text) / 2
+	TitleText.X = ScreenWidth / 2 - EvalFont:GetLength(Text) / 2
 	
 	Engine:AddTarget(TitleText)
 end

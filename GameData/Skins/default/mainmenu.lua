@@ -1,15 +1,12 @@
-skin_require("Global/Background.lua")
+skin_require("Global/FadeInScreen.lua")
 
 Preload = {
 	"MainMenu/play.png",
 	"MainMenu/quit.png"
 }
 
-function InBackground(frac)
-	targBlack.Alpha = 1 - frac
-	return 1
-end
-
+IntroDuration = 0.5
+ExitDuration = IntroDuration
 function PlayBtnHover()
 	PlayButton.Image = "MainMenu/playh.png";
 	PlayButton.Width = 256
@@ -34,30 +31,48 @@ function ExitBtnHoverLeave()
 	ExitButton.Height = 153
 end
 
-function BadgeZoomIn(frac)
-	targBadge.Alpha = frac
-	targBadge:SetScale(frac)
-	return 1
+function unlp(ul, cur, val)
+	local fdelta = cur - ul
+	
+	ul = cur
+	return { newLast = ul, tDelta = fdelta * val }
 end
 
-function LogoFadeIn(frac)
-	targLogo.Alpha = frac
-	return 1
+uilast = 0
+function UpdateIntro(p)
+	local S = math.sin(-5 * math.pi * (p + 1)) * math.pow(2, -10 * p) + 1
+	targBadge.Y = ScreenHeight/2*(S) - targBadge.Height
+	targLogo.Y = targBadge.Y
+	
+	local tx = unlp (uilast, p, IntroDuration)
+	uilast = tx.newLast
+	Update(tx.tDelta)
+	
+	if p == 1 then
+		uilast = 0
+	end
 end
 
-function BumpIn(frac)
-	local S = 0.5 * (1 - frac) + 1
-	targBadge:SetScale (S)
-	targBadge.Lighten = (frac and 1)
-	targBadge.LightenFactor = 0.5 * (1 - frac)
-	return 1
+uelast = 0
+cumul = 0
+function UpdateExit(p)
+	local ease = p*p
+	local tx = unlp(uelast, p, ExitDuration)
+	uelast = tx.newLast 
+	
+	BGAIn(ease)
+	UpdateIntro(1-p)
+	Update(tx.tDelta)
+
+	if p == 1 then
+		uelast = 0
+	end
 end
 
 function Init()
-	BackgroundAnimation:Init()
-
-	targBlack = Engine:CreateObject()
-
+	ScreenFade:Init()
+	ScreenFade.Out()
+	
 	targBadge = Engine:CreateObject()
 	targBadge.Image = "MainMenu/BACKs.png"
 	targBadge.X = ScreenWidth / 2
@@ -69,11 +84,7 @@ function Init()
 	targLogo.X = ScreenWidth / 2
 	targLogo.Y = ScreenHeight / 4
 	targLogo.Centered = 1
-	targLogo.Alpha = 0
-
-	Engine:AddAnimation(targBadge, "BadgeZoomIn", EaseOut, 0.4, 0)
-	Engine:AddAnimation(targBadge, "BumpIn", EaseIn, 0.35, 2.3)
-	Engine:AddAnimation(targLogo, "LogoFadeIn", EaseNone, 0.4, 1.9)
+	targLogo.Alpha = 1
 
 	PlayBtnHoverLeave()
 	PlayButton.Y = ScreenHeight - 153 * 2 - 40
@@ -82,12 +93,6 @@ function Init()
 	ExitBtnHoverLeave()
 	ExitButton.Y = ScreenHeight - 153
 	ExitButton.Layer = 18
-	
-	targBlack.Image = "Global/filter.png"
-	targBlack.Width = ScreenWidth
-	targBlack.Height = ScreenHeight
-	targBlack.Alpha = 1
-	Engine:AddAnimation(targBlack, "InBackground", EaseOut, 0.35, 2.3)
 end
 
 function Cleanup()
@@ -96,7 +101,6 @@ end
 badgeRotSpeed = 1080
 
 function Update(Delta)
-	BackgroundAnimation:Update(Delta)
 
 	badgeRotSpeed = math.max(badgeRotSpeed - Delta * 240, 120)
 	targBadge.Rotation = targBadge.Rotation - badgeRotSpeed * Delta

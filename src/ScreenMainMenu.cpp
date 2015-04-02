@@ -24,6 +24,7 @@ TruetypeFont* TTFO = NULL;
 
 ScreenMainMenu::ScreenMainMenu(Screen *Parent) : Screen(Parent)
 {
+	TNext = nullptr;
 }
 
 void PlayBtnHover(Sprite *obj)
@@ -68,6 +69,11 @@ void ScreenMainMenu::Init()
 	Objects->Initialize(GameState::GetInstance().GetSkinFile("mainmenu.lua"));
 	Objects->InitializeUI();
 
+	IntroDuration = max(Objects->GetEnv()->GetGlobalD("IntroDuration"), 0.0);
+	ExitDuration = max(Objects->GetEnv()->GetGlobalD("ExitDuration"), 0.0);
+
+	ChangeState(StateIntro);
+
 	if (!TTFO)
 		TTFO = new TruetypeFont(GameState::GetInstance().GetSkinFile("font.ttf"), 16);
 
@@ -101,7 +107,8 @@ bool ScreenMainMenu::HandleInput(int32 key, KeyEventType code, bool isMouseInput
 		MMSelectSnd->Play();
 		ScreenLoading *LoadScreen = new ScreenLoading(this, new ScreenSelectMusic());
 		LoadScreen->Init();
-		Next = LoadScreen;
+		TNext = LoadScreen;
+		ChangeState(StateExit);
 		return true;
 	}
 	else if(EditBtn.HandleInput(key, code, isMouseInput))
@@ -123,6 +130,41 @@ bool ScreenMainMenu::HandleInput(int32 key, KeyEventType code, bool isMouseInput
 bool ScreenMainMenu::HandleScrollInput(double xOff, double yOff)
 {
 	return Screen::HandleScrollInput(xOff, yOff);
+}
+
+// todo: do not repeat this (screenloading.cpp)
+bool ScreenMainMenu::RunIntro(float Fraction)
+{
+	LuaManager *Lua = Objects->GetEnv();
+	if (Lua->CallFunction("UpdateIntro", 1))
+	{
+		Lua->PushArgument(Fraction);
+		Lua->RunFunction();
+	}
+
+	Objects->DrawFromLayer(0);
+	return true;
+}
+
+bool ScreenMainMenu::RunExit(float Fraction)
+{
+	LuaManager *Lua = Objects->GetEnv();
+
+	if (Fraction == 1)
+	{
+		Next = TNext;
+		ChangeState(StateRunning);
+		return true;
+	}
+
+	if (Lua->CallFunction("UpdateExit", 1))
+	{
+		Lua->PushArgument(Fraction);
+		Lua->RunFunction();
+	}
+
+	Objects->DrawFromLayer(0);
+	return true;
 }
 
 bool ScreenMainMenu::Run (double Delta)
