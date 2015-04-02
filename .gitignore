@@ -24,3 +24,4 @@ project/Xcode/obj
 project/Xcode/build
 *.xcuserdatad
 .DS_Store
+log.txt

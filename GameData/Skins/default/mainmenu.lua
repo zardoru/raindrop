@@ -39,10 +39,10 @@ function UpdateIntro(p, delta)
 end
 
 function OnRunningBegin()
-	ScreenFade.Out()
 end
 
 function OnIntroBegin()
+	ScreenFade.Out()
 end
 
 function OnExitBegin()
@@ -51,7 +51,7 @@ end
 
 function UpdateExit(p, delta)
 	local ease = p*p
-	UpdateIntro(1-p)
+	UpdateIntro(1-p, delta)
 	print (delta)
 	Update(delta)
 end

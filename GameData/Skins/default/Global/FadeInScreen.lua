@@ -82,12 +82,9 @@ function ScreenFade.Out(nobg)
 	Engine:StopAnimation(ScreenFade.Black)
 	Engine:AddAnimation(nil, "IFadeInA1", EaseNone, ScreenFade.Duration, 0)
 	
-	print (nobg)
 	if not nobg then
 		BackgroundAnimation:Out()
 	end
-	
-	print "LULZ"
 	
 	return --[[
 	Engine:StopAnimation(Black1)
