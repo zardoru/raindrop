@@ -59,10 +59,11 @@ AudioDataSource* SourceFromExt(Directory Filename)
 	else if (strstr(xt, "ogg"))
 		Ret = new AudioSourceOGG();
 
-	if (Ret)
-		Ret->Open(Filename.c_path());
-	else
+    if (Ret) {
+        Ret->Open(Filename.c_path());
+    } else {
 		wprintf(L"extension %ls has no audiosource associated\n", Utility::Widen(Ext).c_str());
+    }
 
 	return Ret;
 }

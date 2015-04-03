@@ -28,6 +28,9 @@ public:
 	
 	GString GetExtension() const;
 	GString path() const;
+    
+    void ReplaceExtension(GString newExtension);
+    
 	const char* c_path() const;
 	std::vector<GString>& ListDirectory(std::vector<GString>& Vec, DirType T = FS_REG, const char* ext = NULL, bool Recursive = false);
 	

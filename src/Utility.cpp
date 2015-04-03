@@ -115,6 +115,7 @@ namespace Utility {
 		mbs[len] = 0;
 		return GString(mbs);
 #elif defined(DARWIN)
+        std::replace(Line.begin(), Line.end(), '\\', '/');
         // Note: for OS X/Darwin/More than likely most BSD variants, iconv behaves a bit differently.
         iconv_t conv;
         char buf[MAX_STRING_SIZE];
@@ -129,6 +130,7 @@ namespace Utility {
         // We have to use buf instead of out here.  For whatever reason, iconv on Darwin doesn't get us what we would expect if we just use out.
         return GString(buf);
 #else
+        std::replace(Line.begin(), Line.end(), '\\', '/');
         char buf[MAX_STRING_SIZE];
 		iconv_t conv;
 		char** out = &buf;
