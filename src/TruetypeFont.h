@@ -30,6 +30,7 @@ class TruetypeFont : public Font
 		int th;
 	};
 	
+	GString filename;
 	std::map<int, codepdata> Texes;
 	VBO *Texform;
 	void SetupTexture();

@@ -30,6 +30,8 @@ void Configuration::Initialize()
 	SkinCfgLua->SetGlobal("ScreenWidth", ScreenWidth);
 	SkinCfgLua->SetGlobal("ScreenHeight", ScreenHeight);
 	SkinCfgLua->RunScript(GameState::GetInstance().GetSkinFile("skin.lua"));
+
+	LoadTextureParameters();
 }
 
 void Configuration::Cleanup()

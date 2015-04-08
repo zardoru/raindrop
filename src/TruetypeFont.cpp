@@ -28,6 +28,8 @@ TruetypeFont::TruetypeFont(GString Filename, float Scale)
 	data = new unsigned char[offs];
 	info = new stbtt_fontinfo;
 
+	filename = Filename;
+
 	// read data
 	ifs.read((char*)data, offs);
 
