@@ -4,6 +4,7 @@
 
 #include "Global.h"
 #include "Logging.h"
+#include "Configuration.h"
 #include <GL/glew.h>
 #include <map>
 
@@ -72,8 +73,11 @@ void Image::SetTextureData(ImageData *Data, bool Reassign)
 	if (!TextureAssigned || Reassign) // We haven't set any data to this texture yet, or we want to regenerate storage
 	{
 		TextureAssigned = true;
+		Directory Dir = Data->Filename;
+		Dir = Dir.Filename();
 
-		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+		if (!Configuration::TextureParameterExists(Dir, "gen-mipmap") || Configuration::GetTextureParameter(Dir, "gen-mipmap") == "true")
+			glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
 
 		GLint param;
 		switch (Data->WrapMode)
@@ -88,8 +92,27 @@ void Image::SetTextureData(ImageData *Data, bool Reassign)
 			param = GL_CLAMP_TO_EDGE;
 		}
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, param);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, param);
+		GLint wrapS = param, wrapT = param;
+		if (Configuration::GetTextureParameter(Dir, "wrap-s") == "clamp-edge")
+			wrapS = GL_CLAMP_TO_EDGE;
+		else if (Configuration::GetTextureParameter(Dir, "wrap-s") == "repeat")
+			wrapS = GL_REPEAT;
+		else if (Configuration::GetTextureParameter(Dir, "wrap-s") == "clamp-border")
+			wrapS = GL_CLAMP_TO_BORDER;
+		else if (Configuration::GetTextureParameter(Dir, "wrap-s") == "repeat-mirrored")
+			wrapS = GL_MIRRORED_REPEAT;
+
+		if (Configuration::GetTextureParameter(Dir, "wrap-t") == "clamp-edge")
+			wrapT = GL_CLAMP_TO_EDGE;
+		else if (Configuration::GetTextureParameter(Dir, "wrap-t") == "repeat")
+			wrapT = GL_REPEAT;
+		else if (Configuration::GetTextureParameter(Dir, "wrap-t") == "clamp-border")
+			wrapT = GL_CLAMP_TO_BORDER;
+		else if (Configuration::GetTextureParameter(Dir, "wrap-t") == "repeat-mirrored")
+			wrapT = GL_MIRRORED_REPEAT;
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
 
 		GLint minparam;
 		switch (Data->ScalingMode)
@@ -111,8 +134,36 @@ void Image::SetTextureData(ImageData *Data, bool Reassign)
 			param = GL_LINEAR;
 		}
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minparam);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, param);
+		GLint minp = minparam, maxp = param;
+		if (Configuration::GetTextureParameter(Dir, "minfilter") == "linear")
+			minp = GL_LINEAR;
+		else if (Configuration::GetTextureParameter(Dir, "minfilter") == "nearest")
+			minp = GL_NEAREST;
+		else if (Configuration::GetTextureParameter(Dir, "minfilter") == "linear-mipmap-linear")
+			minp = GL_LINEAR_MIPMAP_LINEAR;
+		else if (Configuration::GetTextureParameter(Dir, "minfilter") == "linear-mipmap-nearest")
+			minp = GL_LINEAR_MIPMAP_NEAREST;
+		else if (Configuration::GetTextureParameter(Dir, "minfilter") == "nearest-mipmap-nearest")
+			minp = GL_NEAREST_MIPMAP_NEAREST;
+		else if (Configuration::GetTextureParameter(Dir, "minfilter") == "nearest-mipmap-linear")
+			minp = GL_NEAREST_MIPMAP_LINEAR;
+
+		if (Configuration::GetTextureParameter(Dir, "maxfilter") == "linear")
+			maxp = GL_LINEAR;
+		else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "nearest")
+			maxp = GL_NEAREST;
+		else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "linear-mipmap-linear")
+			maxp = GL_LINEAR_MIPMAP_LINEAR;
+		else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "linear-mipmap-nearest")
+			maxp = GL_LINEAR_MIPMAP_NEAREST;
+		else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "nearest-mipmap-nearest")
+			maxp = GL_NEAREST_MIPMAP_NEAREST;
+		else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "nearest-mipmap-linear")
+			maxp = GL_NEAREST_MIPMAP_LINEAR;
+
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minp);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, maxp);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Data->Width, Data->Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Data->Data);
 	}
 	else // We did, so let's update instead.
@@ -125,7 +176,7 @@ void Image::SetTextureData(ImageData *Data, bool Reassign)
 	fname = Data->Filename;
 }
 
-void Image::Assign(Directory Filename, ImageData::EScalingMode ScaleMode ,
+void Image::Assign(Directory Filename, ImageData::EScalingMode ScaleMode,
 	ImageData::EWrapMode WrapMode, 
 	bool Regenerate)
 {
@@ -199,6 +250,7 @@ ImageData ImageLoader::GetDataForImage(GString filename)
 	ImageData out;
 	int channels;
 	out.Data = SOIL_load_image(filename.c_str(), &out.Width, &out.Height, &channels, SOIL_LOAD_RGBA);
+	out.Filename = filename;
 
 	if (!out.Data)
 	{

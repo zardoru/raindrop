@@ -256,6 +256,9 @@
     <ClCompile Include="..\src\RowifiedDifficulty7K.cpp">
       <Filter>Source\vsrg\internal</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\TextureConfig.cpp">
+      <Filter>Source\backend\cfg</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">

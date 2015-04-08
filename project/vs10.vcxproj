@@ -244,6 +244,7 @@
     <ClCompile Include="..\src\SongLoader.cpp" />
     <ClCompile Include="..\src\SongTiming.cpp" />
     <ClCompile Include="..\src\SongWheel.cpp" />
+    <ClCompile Include="..\src\TextureConfig.cpp" />
     <ClCompile Include="..\src\TrackNote.cpp" />
     <ClCompile Include="..\src\Transformation.cpp" />
     <ClCompile Include="..\src\TruetypeFont.cpp" />

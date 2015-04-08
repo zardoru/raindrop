@@ -13,6 +13,11 @@ namespace Configuration
 	void GetConfigListS(GString Name, std::map<GString, GString> &Out, GString DefaultKeyName);
 	bool ListExists(GString Name);
 
+	bool HasTextureParameters(GString filename);
+	void LoadTextureParameters();
+	GString GetTextureParameter(GString filename, GString parameter);
+	bool TextureParameterExists(GString filename, GString parameter);
+
 	double CfgScreenHeight();
 	double CfgScreenWidth();
 
