@@ -145,11 +145,11 @@ bool ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 			if (!Active)
 				Activate();
 			break;
-		case KT_FractionInc:
+		case KT_Right:
 			SpeedMultiplierUser += 0.25;
 			MultiplierChanged = true;
 			break;
-		case KT_FractionDec:
+		case KT_Left:
 			SpeedMultiplierUser -= 0.25;
 			MultiplierChanged = true;
 			break;
