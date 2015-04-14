@@ -146,9 +146,8 @@ void ScreenMainMenu::OnExitEnd()
 {
 	Screen::OnExitEnd();
 
-	ScreenLoading *LoadScreen = new ScreenLoading(this, new ScreenSelectMusic());
-	LoadScreen->Init();
-	Next = LoadScreen;
+	Next = new ScreenSelectMusic();
+	Next->Init();
 	ChangeState(StateRunning);
 	Animations->DoEvent("OnRestore");
 }

@@ -199,7 +199,6 @@ void ScreenSelectMusic::LoadThreadInitialization()
 
 	ImageLoader::LoadFromManifest(Manifest, 1, GameState::GetInstance().GetSkinPrefix());
 
-	Animations = new SceneEnvironment("ScreenSelectMusic");
 	SetupWheelLua(Animations->GetEnv());
 	Animations->Preload( GameState::GetInstance().GetSkinFile("screenselectmusic.lua"), "Preload" );
 
@@ -207,9 +206,7 @@ void ScreenSelectMusic::LoadThreadInitialization()
 }
 
 void ScreenSelectMusic::Cleanup()
-{
-	delete Animations;
-	
+{	
 	if (PreviewStream)
 	{
 		MixerRemoveStream(PreviewStream);

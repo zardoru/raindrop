@@ -20,29 +20,25 @@ ScreenEvaluation7K::ScreenEvaluation7K(Screen *Parent) :
 	Screen("ScreenEvaluation7K", Parent)
 {
 	Running = true;
-	Font = NULL;
 }
 
 void ScreenEvaluation7K::Init(ScoreKeeper7K *Result)
 {
-	
 	Score = Result;
 
-	Objects = new SceneEnvironment("ScreenEvaluation7K");
-	Objects->InitializeUI();
+	Animations->InitializeUI();
 
-	GameState::GetInstance().InitializeLua(Objects->GetEnv()->GetState());
-	SetScorekeeper7KInstance(Objects->GetEnv()->GetState(), Result);
+	GameState::GetInstance().InitializeLua(Animations->GetEnv()->GetState());
+	SetScorekeeper7KInstance(Animations->GetEnv()->GetState(), Result);
 
-	Objects->Initialize(GameState::GetInstance().GetSkinFile("screenevaluation7k.lua"));
+	Animations->Initialize(GameState::GetInstance().GetSkinFile("screenevaluation7k.lua"));
 
-	Background.SetImage(GameState::GetInstance().GetSkinImage(Configuration::GetSkinConfigs("EvaluationBackground7K")));
-	Background.AffectedByLightning = true;
-	Background.Centered = 1;
-	Background.SetPosition( ScreenWidth / 2, ScreenHeight / 2 );
+	IntroDuration = Animations->GetIntroDuration();
+	ExitDuration = Animations->GetExitDuration();
+
+	ChangeState(StateIntro);
 
 	PrintCLIResults(Result);
-
 }
 
 
@@ -56,16 +52,11 @@ bool ScreenEvaluation7K::HandleInput(int32 key, KeyEventType code, bool isMouseI
 
 void ScreenEvaluation7K::Cleanup()
 {
-	delete Objects;
 }
 
 bool ScreenEvaluation7K::Run(double Delta)
 {
-	WindowFrame.SetLightMultiplier(sin(GetScreenTime()) * 0.2 + 1);
-
-	Background.Render();
-
-	Objects->DrawTargets(Delta);
+	Animations->DrawTargets(Delta);
 	return Running;
 }
 

@@ -98,8 +98,6 @@ private:
 	Image*  NoteImagesHoldHead[VSRG::MAX_CHANNELS];
 	Image*  NoteImagesHoldTail[VSRG::MAX_CHANNELS];
 
-	SceneEnvironment *Animations;
-
 	AudioStream *Music;
 	AudioSourceOJM *OJMAudio;
 	SoundSample *MissSnd;

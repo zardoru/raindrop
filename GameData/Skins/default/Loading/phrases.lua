@@ -95,7 +95,8 @@ Phrases = {
 		"What is SOWS? I tried to Google it but all I get is pictures of female pigs",
 		"To Abcdullah: your cheating is obvious, doing 100.00% on lv.26-28 maps from the first attempt is cheating, admit it.",
 		"konmai",
-		"haha facerolling"
+		"haha facerolling",
+		"now with more bms!"
 	}
 }
 

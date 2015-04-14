@@ -9,11 +9,8 @@ class SceneEnvironment;
 
 class ScreenEvaluation7K : public Screen
 {
-	Sprite Background;
-	BitmapFont* Font;
 	GString DisplayResult;
 	ScoreKeeper7K *Score;
-	SceneEnvironment *Objects;
 public:
 	ScreenEvaluation7K(Screen *Parent);
 	void Init(ScoreKeeper7K *Result);

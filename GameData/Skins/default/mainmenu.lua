@@ -55,6 +55,8 @@ end
 function UpdateExit(p, delta)
 	local ease = p*p
 	UpdateIntro(1-p, delta)
+	FadeInA1(ease)
+	BGAIn(ease)
 	Update(delta)
 end
 

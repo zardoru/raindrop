@@ -10,7 +10,7 @@ Screen::Screen(GString Name)
 	ScreenTime = 0;
 	IntroDuration = 0;
 	ScreenState = StateRunning;
-	Animations = new SceneEnvironment(Name.c_str());
+	Animations = make_shared<SceneEnvironment>(Name.c_str());
 }
 
 Screen::Screen(GString Name, Screen *_Parent)
@@ -21,7 +21,7 @@ Screen::Screen(GString Name, Screen *_Parent)
 	ScreenTime = 0;
 	IntroDuration = 0;
 	ScreenState = StateRunning;
-	Animations = new SceneEnvironment(Name.c_str());
+	Animations = make_shared<SceneEnvironment>(Name.c_str());
 }
 
 Screen::~Screen() {}
@@ -145,8 +145,12 @@ bool Screen::Update(float delta)
 		return Run(delta);
 }
 
+void Screen::Init()
+{
+	LoadThreadInitialization();
+	MainThreadInitialization();
+}
 
-// todo: do not repeat this (screenloading.cpp)
 bool Screen::RunIntro(float Fraction, float Delta)
 {
 	Animations->RunIntro(Fraction, Delta);

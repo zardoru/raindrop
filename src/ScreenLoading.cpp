@@ -46,8 +46,7 @@ void ScreenLoading::OnExitEnd()
 	WindowFrame.SetLightMultiplier(1);
 	WindowFrame.SetLightPosition(glm::vec3(0, 0, 1));
 
-	delete Animations;
-	Animations = NULL;
+	Animations.reset();
 	ChangeState(StateRunning);
 }
 

@@ -10,7 +10,7 @@ private:
 	double ScreenTime; // How long has it been open?
 protected:
 
-	SceneEnvironment *Animations;
+	shared_ptr<SceneEnvironment> Animations;
 
 	enum EScreenState {
 		StateIntro,
@@ -31,6 +31,8 @@ public:
 	Screen (GString Name);
 	Screen (GString Name, Screen * _Parent);
 	virtual ~Screen ();
+
+	void Init();
 
 	// Nesting screens.
 	bool IsScreenRunning();
