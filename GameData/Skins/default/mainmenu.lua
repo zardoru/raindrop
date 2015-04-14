@@ -5,8 +5,8 @@ Preload = {
 	"MainMenu/quit.png"
 }
 
-IntroDuration = 0.25
-ExitDuration = 0.5
+IntroDuration = 0.5
+ExitDuration = 2.3
 function PlayBtnHover()
 	PlayButton.Image = "MainMenu/playh.png";
 	PlayButton.Width = 256
@@ -41,18 +41,20 @@ end
 function OnRunningBegin()
 end
 
+function OnRestore()
+	ScreenFade.Out()
+end
+
 function OnIntroBegin()
 	ScreenFade.Out()
 end
 
 function OnExitBegin()
-	ScreenFade.In()
 end
 
 function UpdateExit(p, delta)
 	local ease = p*p
 	UpdateIntro(1-p, delta)
-	print (delta)
 	Update(delta)
 end
 

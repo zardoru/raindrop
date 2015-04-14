@@ -12,6 +12,7 @@ public:
 	ScreenLoading(Screen *Parent, Screen *_Next);
 	void Init();
 
+	void OnIntroBegin();
 	void OnExitEnd();
 
 	bool Run(double TimeDelta);

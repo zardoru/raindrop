@@ -28,16 +28,24 @@ ScreenLoading::ScreenLoading(Screen *Parent, Screen *_Next) : Screen("ScreenLoad
 	ChangeState(StateIntro);
 }
 
+void ScreenLoading::OnIntroBegin()
+{
+	WindowFrame.SetLightMultiplier(0.8f);
+	WindowFrame.SetLightPosition(glm::vec3(0, -0.5, 1));
+}
+
 void ScreenLoading::Init()
 {
 	LoadThread = new boost::thread(LoadFunction, Next);
-	WindowFrame.SetLightMultiplier(0.8f);
-	WindowFrame.SetLightPosition(glm::vec3(0,-0.5,1));
 }
 
 void ScreenLoading::OnExitEnd()
 {
 	Screen::OnExitEnd();
+
+	WindowFrame.SetLightMultiplier(1);
+	WindowFrame.SetLightPosition(glm::vec3(0, 0, 1));
+
 	delete Animations;
 	Animations = NULL;
 	ChangeState(StateRunning);
@@ -56,8 +64,6 @@ bool ScreenLoading::Run(double TimeDelta)
 	{
 		delete LoadThread;
 		LoadThread = NULL;
-		WindowFrame.SetLightMultiplier(1);
-		WindowFrame.SetLightPosition(glm::vec3(0,0,1));
 		Next->MainThreadInitialization();
 		ChangeState(StateExit);
 	}

@@ -104,9 +104,6 @@ bool ScreenMainMenu::HandleInput(int32 key, KeyEventType code, bool isMouseInput
 	{
 		/* Use a screen loading to load selectmusic screen. */
 		MMSelectSnd->Play();
-		ScreenLoading *LoadScreen = new ScreenLoading(this, new ScreenSelectMusic());
-		LoadScreen->Init();
-		TNext = LoadScreen;
 		ChangeState(StateExit);
 		return true;
 	}
@@ -149,8 +146,11 @@ void ScreenMainMenu::OnExitEnd()
 {
 	Screen::OnExitEnd();
 
-	Next = TNext;
+	ScreenLoading *LoadScreen = new ScreenLoading(this, new ScreenSelectMusic());
+	LoadScreen->Init();
+	Next = LoadScreen;
 	ChangeState(StateRunning);
+	Animations->DoEvent("OnRestore");
 }
 
 void ScreenMainMenu::Cleanup()
