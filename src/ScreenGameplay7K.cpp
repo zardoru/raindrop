@@ -54,6 +54,18 @@ float ScreenGameplay7K::GetCurrentVertical()
 	return CurrentVertical;
 }
 
+double ScreenGameplay7K::GetWarpedSongTime()
+{
+	double T = SongTime;
+	for (auto k = Warps.begin(); k != Warps.end(); k++)
+	{
+		if (k->Time <= T)
+			T += k->Value;
+	}
+
+	return T;
+}
+
 double ScreenGameplay7K::GetSongTime()
 {
 	double usedTime = -1;
@@ -61,7 +73,7 @@ double ScreenGameplay7K::GetSongTime()
 	if (UsedTimingType == TT_BEATS)
 		usedTime = CurrentBeat;
 	else if (UsedTimingType == TT_TIME)
-		usedTime = SongTime;
+		usedTime = GetWarpedSongTime();
 
 	assert(usedTime != -1);
 	return usedTime;
@@ -341,7 +353,7 @@ void ScreenGameplay7K::UpdateSongTime(float Delta)
 	}
 
 	// Update current beat
-	CurrentBeat = IntegrateToTime(BPS, SongTime);
+	CurrentBeat = IntegrateToTime(BPS, GetWarpedSongTime());
 }
 
 
@@ -370,7 +382,7 @@ bool ScreenGameplay7K::Run(double Delta)
 		{
 			UpdateSongTime(Delta);
 			
-			CurrentVertical = IntegrateToTime(VSpeeds, SongTime);
+			CurrentVertical = IntegrateToTime(VSpeeds, GetWarpedSongTime());
 
 			RunAutoEvents();
 			RunMeasures();

@@ -93,6 +93,7 @@ void LoadTimingList(TimingData &Timing, GString line, bool AllowZeros)
 	std::vector< GString > SplitResult;
 	TimingSegment Segment;
 
+	Timing.clear();
 	// Remove whitespace.
 	boost::replace_all(ListGString, "\n", "");
 	boost::split(SplitResult, ListGString, boost::is_any_of(",")); // Separate List of BPMs.

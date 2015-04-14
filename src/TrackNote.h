@@ -74,6 +74,8 @@ namespace VSRG
 		bool IsEnabled() const;
 		bool IsHeadEnabled() const;
 		bool WasNoteHit() const;
+		bool IsJudgable() const;
+		bool IsVisible() const;
 		int GetSound() const;
 		Mat4 GetMatrix() const;
 		Mat4 GetHoldPositionMatrix(const float &trackPosition) const;

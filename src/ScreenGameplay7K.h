@@ -30,6 +30,7 @@ private:
 
 	TimingData       VSpeeds;
 	TimingData		 BPS;
+	TimingData		 Warps;
 	VSRG::VectorTN   NotesByChannel;
 	std::map <int, SoundSample*> Keysounds;
 	std::vector<AutoplaySound>   BGMEvents;
@@ -207,6 +208,7 @@ public:
 	float GetCurrentVerticalSpeed();
 	float GetCurrentVertical();
 	double GetSongTime();
+	double GetWarpedSongTime();
 
 	void SetUserMultiplier(float Multip);
 

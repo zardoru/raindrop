@@ -17,10 +17,11 @@ struct loaderVSRGEntry_t {
 	{ L"bme",  NoteLoaderBMS::LoadObjectsFromFile },
 	{ L"bml",  NoteLoaderBMS::LoadObjectsFromFile },
 	{ L"pms",  NoteLoaderBMS::LoadObjectsFromFile },
-	{ L"sm",   NoteLoaderSM::LoadObjectsFromFile },
-	{ L"osu",  NoteLoaderOM::LoadObjectsFromFile },
+	{ L"sm",   NoteLoaderSM::LoadObjectsFromFile  },
+	{ L"osu",  NoteLoaderOM::LoadObjectsFromFile  },
 	{ L"fcf",  NoteLoaderFTB::LoadObjectsFromFile },
-	{ L"ojn",  NoteLoaderOJN::LoadObjectsFromFile }
+	{ L"ojn",  NoteLoaderOJN::LoadObjectsFromFile },
+	{ L"ssc",  NoteLoaderSSC::LoadObjectsFromFile }
 };
 
 SongLoader::SongLoader(SongDatabase* Database)
@@ -254,13 +255,13 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 		VSRG::Song *smSong = new VSRG::Song;
 		smSong->SongDirectory = SongDirectory;
 
-		for (auto i: Listing)
+		for (auto i : Listing)
 		{
 			Directory File = i;
 			File.Normalize();
 
 			std::wstring Ext = Utility::Widen(File.GetExtension());
-			
+
 			// We want to group charts with the same title together.
 			if (ValidBMSExtension(Ext))
 			{
@@ -268,13 +269,14 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 
 				try {
 					LoadSong7KFromFilename(File, SongDirectory, BMSSong);
-				} catch (std::exception &ex)
+				}
+				catch (std::exception &ex)
 				{
-					Log::Logf("\nSongLoader::LoadSong7KFromDir(): Exception \"%s\" occurred while loading file \"%s\"\n", 
+					Log::Logf("\nSongLoader::LoadSong7KFromDir(): Exception \"%s\" occurred while loading file \"%s\"\n",
 						ex.what(), File.c_path());
 					Utility::DebugBreak();
 				}
-				
+
 
 				if (bmsk.find(BMSSong->SongName) != bmsk.end()) // We found a chart with the same title already.
 				{
@@ -290,7 +292,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 				{
 					bmsk[BMSSong->SongName] = BMSSong;
 				}
-					
+
 				BMSSong = new VSRG::Song;
 			}
 
@@ -306,7 +308,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 			if (Ext == L"osu" || Ext == L"fcf")
 				LoadSong7KFromFilename(File, SongDirectory, osuSong);
 
-			if (Ext == L"sm")
+			if (Ext == L"sm" || Ext == L"ssc")
 			{
 				LoadSong7KFromFilename(File, SongDirectory, smSong);
 				VSRGUpdateDatabaseDifficulties(DB, smSong);

@@ -43,6 +43,7 @@ GString RemoveComments(const GString Str)
 	int k = 0;
 	int AwatingEOL = 0;
 	ptrdiff_t len = Str.length() - 1;
+
 	for (ptrdiff_t i = 0; i < len; i++)
 	{
 		if (AwatingEOL)
@@ -67,7 +68,99 @@ GString RemoveComments(const GString Str)
 			}
 		}
 	}
+
+	boost::replace_all(Result, "\n", "");
+	boost::replace_all(Result, "\r", "");
+	boost::replace_all(Result, " ", "");
+
 	return Result;
+}
+
+// See if Time is within a warp section. We use this after already having calculated the warp times.
+bool CalculateIfInWarpSection(Difficulty* Diff, double Time)
+{
+	for (auto Warp : Diff->Data->Warps)
+	{
+		double LowerBound = Warp.Time;
+		double HigherBound = Warp.Time + Warp.Value;
+		if (Time >= LowerBound && Time < HigherBound)
+			return true;
+	}
+
+	return false;
+}
+
+void LoadNotesSM(Song *Out, Difficulty *Diff, SplitResult &MeasureText)
+{
+	/* Hold data */
+	int Keys = Diff->Channels;
+	double KeyStartTime[16];
+	double KeyBeat[16]; // heh
+
+	/* For each measure of the song */
+	for (size_t i = 0; i < MeasureText.size(); i++) /* i = current measure */
+	{
+		ptrdiff_t MeasureFractions = MeasureText[i].length() / Keys;
+		Measure Msr;
+
+		if (MeasureText[i].length())
+		{
+			/* For each fraction of the measure*/
+			for (ptrdiff_t m = 0; m < MeasureFractions; m++) /* m = current fraction */
+			{
+				double Beat = i * 4.0 + m * 4.0 / (double)MeasureFractions; /* Current beat */
+				double StopsTime = StopTimeAtBeat(Diff->Data->StopsTiming, Beat);
+				double Time = TimeAtBeat(Diff->Timing, Diff->Offset, Beat) + StopsTime;
+				bool InWarpSection = CalculateIfInWarpSection(Diff, Time); 
+
+				/* For every track of the fraction */
+				for (ptrdiff_t k = 0; k < Keys; k++) /* k = current track */
+				{
+					NoteData Note;
+
+					if (InWarpSection)
+						Note.NoteKind = NK_FAKE;
+
+					switch (MeasureText[i].at(0))
+					{
+					case '1': /* Taps */
+						Note.StartTime = Time;
+
+						Diff->TotalNotes++;
+						Diff->TotalObjects++;
+						Diff->TotalScoringObjects++;
+
+						Msr.MeasureNotes[k].push_back(Note);
+						break;
+					case '2': /* Holds */
+					case '4':
+						KeyStartTime[k] = Time;
+						KeyBeat[k] /*heh*/ = Beat;
+						Diff->TotalScoringObjects++;
+						break;
+					case '3': /* Hold releases */
+						Note.StartTime = KeyStartTime[k];
+						Note.EndTime = Time;
+
+						Diff->TotalHolds++;
+						Diff->TotalObjects++;
+						Diff->TotalScoringObjects++;
+						Msr.MeasureNotes[k].push_back(Note);
+						break;
+					default:
+						break;
+					}
+
+					Diff->Duration = max(max(Note.StartTime, Note.EndTime), Diff->Duration);
+
+					if (MeasureText[i].length() > 0)
+						MeasureText[i].erase(0, 1);
+				}
+			}
+		}
+
+		Diff->Data->Measures.push_back(Msr);
+	}
 }
 
 bool LoadTracksSM(Song *Out, Difficulty *Diff, GString line)
@@ -77,9 +170,6 @@ bool LoadTracksSM(Song *Out, Difficulty *Diff, GString line)
 
 	/* Remove newlines and comments */
 	CommandContents = RemoveComments(CommandContents);
-	boost::replace_all(CommandContents, "\n", "");
-	boost::replace_all(CommandContents, "\r", "");
-	boost::replace_all(CommandContents, " ", "");
 
 	/* Split contents */
 	boost::split(Mainline, CommandContents, boost::is_any_of(":"));
@@ -108,69 +198,7 @@ bool LoadTracksSM(Song *Out, Difficulty *Diff, GString line)
 	SplitResult MeasureText;
 	boost::split(MeasureText, NoteGString, boost::is_any_of(","));
 
-	/* Hold data */
-	double KeyStartTime[16];
-	double KeyBeat[16]; // heh
-	
-	/* For each measure of the song */
-	for (size_t i = 0; i < MeasureText.size(); i++) /* i = current measure */
-	{
-		ptrdiff_t MeasureFractions = MeasureText[i].length() / Keys;
-		Measure Msr;
-
-		if (MeasureText[i].length())
-		{
-			/* For each fraction of the measure*/
-			for (ptrdiff_t m = 0; m < MeasureFractions; m++) /* m = current fraction */
-			{
-				double Beat = i * 4.0 + m * 4.0 / (double)MeasureFractions; /* Current beat */
-				double StopsTime = StopTimeAtBeat(Diff->Data->StopsTiming, Beat);
-				double Time = TimeAtBeat(Diff->Timing, Diff->Offset, Beat) + StopsTime;
-				/* For every track of the fraction */
-				for (ptrdiff_t k = 0; k < Keys; k++) /* k = current track */
-				{
-					NoteData Note;
-					
-					switch (MeasureText[i].at(0))
-					{
-					case '1': /* Taps */
-						Note.StartTime = Time;
-
-						Diff->TotalNotes++;
-						Diff->TotalObjects++;
-						Diff->TotalScoringObjects++;
-
-						Msr.MeasureNotes[k].push_back(Note);
-						break;
-					case '2': /* Holds */
-					case '4':
-						KeyStartTime[k] = Time;
-						KeyBeat[k] /*heh*/ = Beat;
-						Diff->TotalScoringObjects++;
-						break;
-					case '3': /* Hold releases */
-						Note.StartTime = KeyStartTime[k];
-						Note.EndTime = Time;
-						
-						Diff->TotalHolds++;
-						Diff->TotalObjects++;
-						Diff->TotalScoringObjects++;
-						Msr.MeasureNotes[k].push_back(Note);
-						break;
-					default:
-						break;
-					}
-
-					Diff->Duration = max(max (Note.StartTime, Note.EndTime), Diff->Duration);
-
-					if (MeasureText[i].length() > 0)
-						MeasureText[i].erase(0, 1);
-				}
-			}
-		}
-
-		Diff->Data->Measures.push_back(Msr);
-	}
+	LoadNotesSM(Out, Diff, MeasureText);
 
 	/* 
 		Through here we can make a few assumptions.
@@ -179,6 +207,230 @@ bool LoadTracksSM(Song *Out, Difficulty *Diff, GString line)
 		->Measures are internally ordered
 	*/
 	return true;
+}
+#define OnCommand(x) if(command == #x || command == #x + GString(":"))
+#define _OnCommand(x) else if(command == #x || command == #x + GString(":"))
+
+void DoCommonSMCommands(GString command, GString CommandContents, Song* Out)
+{
+	OnCommand(#TITLE)
+	{
+		if (utf8::is_valid(CommandContents.begin(), CommandContents.end()))
+		{
+#ifdef WIN32
+			Out->SongName = CommandContents;
+#else
+			Out->SongName = CommandContents;
+			try {
+				std::vector<int> cp;
+				utf8::utf8to16(CommandContents.begin(), CommandContents.end(), std::back_inserter(cp));
+			}
+			catch (utf8::not_enough_room &e) {
+				Out->SongName = Utility::SJIStoU8(CommandContents);
+			}
+#endif
+		}
+		else
+			Out->SongName = Utility::SJIStoU8(CommandContents);
+	}
+
+	_OnCommand(#ARTIST)
+	{
+		if (utf8::is_valid(CommandContents.begin(), CommandContents.end()))
+		{
+#ifdef WIN32
+			Out->SongAuthor = CommandContents;
+#else
+			Out->SongAuthor = CommandContents;
+			try {
+				std::vector<int> cp;
+				utf8::utf8to16(CommandContents.begin(), CommandContents.end(), std::back_inserter(cp));
+			}
+			catch (utf8::not_enough_room &e) {
+				Out->SongAuthor = Utility::SJIStoU8(CommandContents);
+			}
+#endif
+		}
+		else
+			Out->SongAuthor = Utility::SJIStoU8(CommandContents);
+	}
+
+	_OnCommand(#BACKGROUND)
+	{
+		Out->BackgroundFilename = CommandContents;
+	}
+
+	_OnCommand(#MUSIC)
+	{
+		if (utf8::is_valid(CommandContents.begin(), CommandContents.end()))
+			Out->SongFilename = CommandContents;
+		else
+			Out->SongFilename = Utility::SJIStoU8(CommandContents);
+
+		Out->SongPreviewSource = Out->SongFilename;
+	}
+
+	_OnCommand(#SAMPLESTART)
+	{
+		Out->PreviewTime = latof(CommandContents);
+	}
+}
+
+TimingData CalculateRaindropWarpData(VSRG::Difficulty* Diff, const TimingData& Warps)
+{
+	TimingData Ret;
+	for (auto Warp : Warps)
+	{
+		// Since we use real song time instead of warped time to calculate warped time
+		// no need for worry about having to align these.
+		double Time = TimeAtBeat(Diff->Timing, Diff->Offset, Warp.Time) +
+			StopTimeAtBeat(Diff->Data->StopsTiming, Warp.Time); 
+
+		double Value = Warp.Value * 60 / SectionValue(Diff->Timing, Warp.Time);
+		TimingSegment New;
+		New.Time = Time;
+		New.Value = Value;
+
+		Ret.push_back(New);
+	}
+
+	return Ret;
+}
+
+void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *Out)
+{
+#if (!defined _WIN32) || (defined STLP)
+	std::ifstream filein(filename.c_str());
+#else
+	std::ifstream filein(Utility::Widen(filename).c_str());
+#endif
+
+	TimingData BPMData;
+	TimingData StopsData;
+	TimingData WarpsData;
+	double Offset = 0;
+
+	shared_ptr<VSRG::Difficulty> Diff = nullptr;
+
+	if (!filein.is_open())
+	{
+#ifndef NDEBUG
+		std::stringstream serr;
+		serr << "couldn't open \"" << filename << "\" for reading";
+		throw; // std::exception(serr.str().c_str());
+#else
+		return;
+#endif
+	}
+
+	GString Banner;
+
+	Out->SongDirectory = prefix + "/";
+
+	GString line;
+	while (filein)
+	{
+		std::getline(filein, line, ';');
+
+		if (line.length() < 3)
+			continue;
+
+		GString command;
+		size_t iHash = line.find_first_of("#");
+		size_t iColon = line.find_first_of(":");
+		if (iHash != GString::npos && iColon != GString::npos)
+			command = line.substr(iHash, iColon - iHash);
+		else
+			continue;
+
+		boost::replace_all(command, "\n", "");
+
+		GString CommandContents = line.substr(line.find_first_of(":") + 1);
+
+		OnCommand(#NOTEDATA)
+		{
+			Diff = make_shared<VSRG::Difficulty>();
+		}
+
+		DoCommonSMCommands(command, CommandContents, Out);
+		
+		OnCommand(#OFFSET)
+		{
+			std::stringstream str(CommandContents);
+			str >> Offset;
+		}
+
+		OnCommand(#BPMS)
+		{
+			LoadTimingList(BPMData, line);
+		}
+
+		OnCommand(#STOPS)
+		{
+			LoadTimingList(StopsData, line);
+		}
+
+		OnCommand(#BANNER)
+		{
+			Banner = CommandContents;
+		}
+
+		OnCommand(#WARPS)
+		{
+			LoadTimingList(WarpsData, CommandContents);
+		}
+
+		// Notedata only here
+
+		if (!Diff) continue;
+
+		OnCommand(#CREDIT)
+		{
+			Diff->Author = CommandContents;
+		}
+
+		OnCommand(#METER)
+		{
+			std::stringstream str(CommandContents);
+			str >> Diff->Level;
+		}
+
+		OnCommand(#DIFFICULTY)
+		{
+			Diff->Name = CommandContents;
+		}
+
+		OnCommand(#CHARTSTYLE)
+		{
+			Diff->Name += " " + CommandContents;
+		}
+
+		OnCommand(#STEPSTYPE)
+		{
+			Diff->Channels = GetTracksByMode(CommandContents);
+		}
+
+		OnCommand(#NOTES)
+		{
+			Diff->BPMType = VSRG::Difficulty::BT_Beat;
+			Diff->Timing = BPMData;
+			Diff->Data = make_shared<VSRG::DifficultyLoadInfo>();
+			Diff->Data->StopsTiming = StopsData;
+			Diff->Offset = -Offset;
+			Diff->Duration = 0;
+			Diff->Filename = filename;
+			Diff->BPMType = VSRG::Difficulty::BT_Beat;
+			Diff->Data->TimingInfo = make_shared<VSRG::StepmaniaTimingInfo>();
+			Diff->Data->StageFile = Banner;
+			Diff->Data->Warps = CalculateRaindropWarpData(Diff.get(), WarpsData);
+
+			CommandContents = RemoveComments(CommandContents);
+			SplitResult Measures;
+			boost::split(Measures, CommandContents, boost::is_any_of(","));
+			LoadNotesSM(Out, Diff.get(), Measures);
+			Out->Difficulties.push_back(Diff);
+		}
+	}
 }
 
 void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *Out)
@@ -234,75 +486,10 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 
 		boost::replace_all(command, "\n", "");
 
-#define OnCommand(x) if(command == #x || command == #x + GString(":"))
-
 		GString CommandContents = line.substr(line.find_first_of(":") + 1);
 		
-
-		OnCommand(#TITLE)
-		{
-			if (utf8::is_valid(CommandContents.begin(), CommandContents.end()))
-			{
-#ifdef WIN32
-				Out->SongName = CommandContents;
-#else
-				Out->SongName = CommandContents;
-				try {
-					std::vector<int> cp;
-					utf8::utf8to16 (CommandContents.begin(), CommandContents.end(), std::back_inserter(cp));
-				}catch (utf8::not_enough_room &e) {
-					Out->SongName = Utility::SJIStoU8(CommandContents);
-				}
-#endif
-			}
-			else
-				Out->SongName = Utility::SJIStoU8(CommandContents);
-		}
-
-		OnCommand(#ARTIST)
-		{
-			if (utf8::is_valid(CommandContents.begin(), CommandContents.end()))
-			{
-#ifdef WIN32
-				Out->SongAuthor = CommandContents;
-#else
-				Out->SongAuthor = CommandContents;
-				try {
-					std::vector<int> cp;
-					utf8::utf8to16 (CommandContents.begin(), CommandContents.end(), std::back_inserter(cp));
-				}catch (utf8::not_enough_room &e) {
-					Out->SongAuthor = Utility::SJIStoU8(CommandContents);
-				}
-#endif
-			}
-			else
-				Out->SongAuthor = Utility::SJIStoU8(CommandContents);
-		}
-
-		OnCommand(#BACKGROUND)
-		{
-			Out->BackgroundFilename = CommandContents;
-		}
-
-		OnCommand(#MUSIC)
-		{
-			if (utf8::is_valid(CommandContents.begin(), CommandContents.end()))
-				Out->SongFilename = CommandContents;
-			else
-				Out->SongFilename = Utility::SJIStoU8(CommandContents);
-
-			Out->SongPreviewSource = Out->SongFilename;
-		}
-
-		OnCommand(#SAMPLESTART)
-		{
-			Out->PreviewTime = latof(CommandContents);
-		}
-
-		OnCommand(#BANNER)
-		{
-			Banner = CommandContents;
-		}
+		DoCommonSMCommands(command, CommandContents, Out);
+		
 		OnCommand(#OFFSET)
 		{
 			std::stringstream str (CommandContents);

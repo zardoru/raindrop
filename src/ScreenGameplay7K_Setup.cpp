@@ -461,6 +461,8 @@ bool ScreenGameplay7K::ProcessSong()
 
 	}else
 		CurrentDiff->Process(NotesByChannel, BPS, VSpeeds, Drift); // Regular processing
+
+	Warps = CurrentDiff->Data->Warps;
 	return true;
 }
 

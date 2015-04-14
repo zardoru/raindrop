@@ -155,3 +155,13 @@ uint8  TrackNote::GetDataFractionKind()
 {
 	return FractionKind;
 }
+
+bool TrackNote::IsJudgable() const
+{
+	return NoteKind != NK_INVISIBLE && NoteKind != NK_FAKE;
+}
+
+bool TrackNote::IsVisible() const
+{
+	return NoteKind != NK_INVISIBLE;
+}

@@ -88,8 +88,11 @@ void ScreenGameplay7K::DrawMeasures()
 	/* todo: instancing */
 	for (uint32 k = 0; k < CurrentDiff->Channels; k++)
 	{
-		for (std::vector<TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); ++m)
+		for (auto m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); ++m)
 		{
+			if (!m->IsVisible())
+				continue;
+
 			if (!m->IsEnabled())
 				if (!m->IsHold())
 					continue;
@@ -185,8 +188,9 @@ void ScreenGameplay7K::DrawMeasures()
 			}
 
 			// Assign our matrix - encore
-			if ( (!m->IsHold() && (Vertical < JudgmentLinePos && Upscroll || Vertical >= JudgmentLinePos && !Upscroll))
-				|| (m->IsHold() && (Vertical > VerticalHold && Upscroll || Vertical < VerticalHold && !Upscroll)) )
+			if ( ((!m->IsHold() && (Vertical < JudgmentLinePos && Upscroll || Vertical >= JudgmentLinePos && !Upscroll))
+				|| (m->IsHold() && (Vertical > VerticalHold && Upscroll || Vertical < VerticalHold && !Upscroll)))
+				&& m->IsJudgable())
 			{
 
 				// As long as it's not judged, we'll keep it in place 

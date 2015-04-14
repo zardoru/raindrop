@@ -135,6 +135,9 @@ void ScreenGameplay7K::RunMeasures()
 				}
 			}
 
+			if (!m->IsJudgable())
+				continue;
+
 			// Autoplay
 			if (Auto) {
 				double TimeThreshold = usedTime + 0.008; // latest time a note can activate.

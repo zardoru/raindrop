@@ -106,6 +106,9 @@ namespace VSRG
 		// For speed changes, as obvious as it sounds.
 		TimingData SpeedChanges;
 
+		// At Time, warp Value seconds forward.
+		TimingData Warps;
+
 		// Notes (Up to MAX_CHANNELS tracks)
 		MeasureVector Measures;
 

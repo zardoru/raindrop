@@ -137,6 +137,7 @@ namespace VSRG {
 		NK_MINE,
 		NK_LIFT,
 		NK_ROLL, // subtype of hold
+		NK_INVISIBLE,
 		NK_TOTAL
 	};
 

@@ -8,6 +8,11 @@ namespace NoteLoaderSM
 	void LoadObjectsFromFile(GString filename, GString prefix, VSRG::Song *Out);
 }
 
+namespace NoteLoaderSSC
+{
+	void LoadObjectsFromFile(GString filename, GString prefix, VSRG::Song *Out);
+}
+
 namespace NoteLoaderFTB
 {
 	void LoadMetadata(GString filename, GString prefix, VSRG::Song *Out);
