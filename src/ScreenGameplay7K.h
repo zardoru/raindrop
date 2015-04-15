@@ -57,6 +57,7 @@ private:
 	double GearHeightFinal;
 	double SongTime, SongTimeReal;
 	double SongOldTime;
+	double WarpedSongTime;
 	double CurrentVertical;
 	double WaitingTime;
 	double ErrorTolerance;

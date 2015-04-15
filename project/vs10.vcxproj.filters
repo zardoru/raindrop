@@ -25,12 +25,6 @@
     <ClCompile Include="..\src\NoteLoaderOM.cpp">
       <Filter>Source\vsrg\internal</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ScoreKeeper7K_init.cpp">
-      <Filter>Source\vsrg\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ScoreKeeper7K.cpp">
-      <Filter>Source\vsrg\gameplay</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\ScreenEdit.cpp">
       <Filter>Source\dotcur\editor</Filter>
     </ClCompile>
@@ -169,23 +163,11 @@
     <ClCompile Include="..\src\SongLoader.cpp">
       <Filter>Source\game global\song interface</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ScoreKeeper7K_bms.cpp">
-      <Filter>Source\vsrg\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ScoreKeeper7K_osu.cpp">
-      <Filter>Source\vsrg\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ScoreKeeper7K_rank.cpp">
-      <Filter>Source\vsrg\gameplay</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Application.cpp">
       <Filter>Source\game global</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Line.cpp">
       <Filter>Source\backend\render\objects</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ScoreKeeper7K_experimental.cpp">
-      <Filter>Source\vsrg\gameplay</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ScreenGameplay7K_Setup.cpp">
       <Filter>Source\vsrg\gameplay</Filter>
@@ -223,9 +205,6 @@
     <ClCompile Include="..\src\GameStateLua.cpp">
       <Filter>Source\lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ScoreKeeper7K_o2jam.cpp">
-      <Filter>Source\vsrg\gameplay</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Transformation.cpp">
       <Filter>Source\backend\structure</Filter>
     </ClCompile>
@@ -258,6 +237,27 @@
     </ClCompile>
     <ClCompile Include="..\src\TextureConfig.cpp">
       <Filter>Source\backend\cfg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScoreKeeper7K.cpp">
+      <Filter>Source\vsrg\gameplay\Scorekeeper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScoreKeeper7K_bms.cpp">
+      <Filter>Source\vsrg\gameplay\Scorekeeper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScoreKeeper7K_experimental.cpp">
+      <Filter>Source\vsrg\gameplay\Scorekeeper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScoreKeeper7K_init.cpp">
+      <Filter>Source\vsrg\gameplay\Scorekeeper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScoreKeeper7K_o2jam.cpp">
+      <Filter>Source\vsrg\gameplay\Scorekeeper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScoreKeeper7K_osu.cpp">
+      <Filter>Source\vsrg\gameplay\Scorekeeper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScoreKeeper7K_rank.cpp">
+      <Filter>Source\vsrg\gameplay\Scorekeeper</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -580,6 +580,9 @@
     </Filter>
     <Filter Include="Source\backend\librocket">
       <UniqueIdentifier>{954588fe-fdcc-4ebd-bd04-a3fb1e750ab3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\vsrg\gameplay\Scorekeeper">
+      <UniqueIdentifier>{f417bca7-f730-4e6e-8816-1084e8d5dc83}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

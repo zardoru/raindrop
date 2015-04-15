@@ -126,9 +126,11 @@ void LoadNotesSM(Song *Out, Difficulty *Diff, SplitResult &MeasureText)
 					case '1': /* Taps */
 						Note.StartTime = Time;
 
-						Diff->TotalNotes++;
-						Diff->TotalObjects++;
-						Diff->TotalScoringObjects++;
+						if (!InWarpSection) {
+							Diff->TotalNotes++;
+							Diff->TotalObjects++;
+							Diff->TotalScoringObjects++;
+						}
 
 						Msr.MeasureNotes[k].push_back(Note);
 						break;
@@ -136,15 +138,19 @@ void LoadNotesSM(Song *Out, Difficulty *Diff, SplitResult &MeasureText)
 					case '4':
 						KeyStartTime[k] = Time;
 						KeyBeat[k] /*heh*/ = Beat;
-						Diff->TotalScoringObjects++;
+						
+						if (!InWarpSection)
+							Diff->TotalScoringObjects++;
 						break;
 					case '3': /* Hold releases */
 						Note.StartTime = KeyStartTime[k];
 						Note.EndTime = Time;
 
-						Diff->TotalHolds++;
-						Diff->TotalObjects++;
-						Diff->TotalScoringObjects++;
+						if (!InWarpSection) {
+							Diff->TotalHolds++;
+							Diff->TotalObjects++;
+							Diff->TotalScoringObjects++;
+						}
 						Msr.MeasureNotes[k].push_back(Note);
 						break;
 					default:

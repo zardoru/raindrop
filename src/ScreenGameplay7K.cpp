@@ -46,7 +46,7 @@ float ScreenGameplay7K::GetUserMultiplier() const
 
 float ScreenGameplay7K::GetCurrentVerticalSpeed()
 {
-	return SectionValue(VSpeeds, SongTime);
+	return SectionValue(VSpeeds, WarpedSongTime);
 }
 
 float ScreenGameplay7K::GetCurrentVertical()
@@ -73,7 +73,7 @@ double ScreenGameplay7K::GetSongTime()
 	if (UsedTimingType == TT_BEATS)
 		usedTime = CurrentBeat;
 	else if (UsedTimingType == TT_TIME)
-		usedTime = GetWarpedSongTime();
+		usedTime = WarpedSongTime;
 
 	assert(usedTime != -1);
 	return usedTime;
@@ -270,9 +270,9 @@ void ScreenGameplay7K::CheckShouldEndScreen()
 	}
 
 	// Okay then, so it's a pass?
-	if (SongTime > CurrentDiff->Duration && !stage_failed)
+	if (WarpedSongTime > CurrentDiff->Duration && !stage_failed)
 	{
-		double curBPS = SectionValue(BPS, SongTime);
+		double curBPS = SectionValue(BPS, WarpedSongTime);
 		double cutoffspb = 1 / curBPS;
 		double cutoffTime;
 
@@ -284,7 +284,7 @@ void ScreenGameplay7K::CheckShouldEndScreen()
 		// we need to make sure we trigger this AFTER all notes could've possibly been judged
 		// note to self: songtime will always be positive since duration is always positive.
 		// cutofftime is unlikely to ever be negative.
-		if (SongTime - CurrentDiff->Duration > cutoffTime) 
+		if (WarpedSongTime - CurrentDiff->Duration > cutoffTime)
 		{
 			if (!SongFinished)
 			{
@@ -353,7 +353,8 @@ void ScreenGameplay7K::UpdateSongTime(float Delta)
 	}
 
 	// Update current beat
-	CurrentBeat = IntegrateToTime(BPS, GetWarpedSongTime());
+	WarpedSongTime = GetWarpedSongTime();
+	CurrentBeat = IntegrateToTime(BPS, WarpedSongTime);
 }
 
 
@@ -382,7 +383,7 @@ bool ScreenGameplay7K::Run(double Delta)
 		{
 			UpdateSongTime(Delta);
 			
-			CurrentVertical = IntegrateToTime(VSpeeds, GetWarpedSongTime());
+			CurrentVertical = IntegrateToTime(VSpeeds, WarpedSongTime);
 
 			RunAutoEvents();
 			RunMeasures();
@@ -391,6 +392,7 @@ bool ScreenGameplay7K::Run(double Delta)
 		{
 			SongTime = -(WaitingTime - GameTime);
 			CurrentBeat = IntegrateToTime(BPS, SongTime);
+			WarpedSongTime = SongTime;
 			CurrentVertical = IntegrateToTime(VSpeeds, SongTime);
 		}
 	}

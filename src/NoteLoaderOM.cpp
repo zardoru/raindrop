@@ -197,6 +197,8 @@ void ReadTiming (GString line, OsuLoadInfo* Info)
 	SplitResult Spl;
 	boost::split(Spl, line, boost::is_any_of(","));
 
+	if (Spl.size() < 2)
+		return;
 
 	TimingSegment Time;
 	Time.Time = latof(Spl[0].c_str()) / 1000.0;
