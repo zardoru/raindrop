@@ -46,7 +46,7 @@ double SectionValue(const TimingData &Timing, double Beat)
 	}
 }
 
-double TimeAtBeat(const TimingData &Timing, float Offset, double Beat)
+double TimeAtBeat(const TimingData &Timing, float Offset, double Beat, bool Abs)
 {
 	uint32 CurrentIndex = SectionIndex(Timing, Beat) + 1;
 	double Time = Offset;
@@ -55,19 +55,22 @@ double TimeAtBeat(const TimingData &Timing, float Offset, double Beat)
 
 	for (uint32 i = 0; i < CurrentIndex; i++)
 	{	
+		double SPB = spb(Timing[i].Value);
+		if (Abs) SPB = abs(SPB);
+
 		if (i+1 < CurrentIndex) // Get how long the current timing goes.
 		{
-			float BeatDurationOfSectionI = Timing[i+1].Time - Timing[i].Time; // Section lasts this much.
-			float SectionDuration = BeatDurationOfSectionI * spb ( Timing[i].Value );
+			double BeatDurationOfSectionI = Timing[i+1].Time - Timing[i].Time; // Section lasts this much.
+			double SectionDuration = BeatDurationOfSectionI * SPB;
 
 			if (Beat < Timing[i+1].Time && Beat > Timing[i].Time)
 			{
 				// If this is our interval, stop summing time of previous intervals before this one
-				SectionDuration = (Beat - Timing[i].Time) * spb ( Timing[i].Value );
+				SectionDuration = (Beat - Timing[i].Time) * SPB;
 			}
 			Time += SectionDuration;
 		}else
-			Time += (Beat - Timing[i].Time) * spb ( Timing[i].Value );
+			Time += (Beat - Timing[i].Time) * SPB;
 	}
 	return Time;
 }

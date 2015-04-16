@@ -16,7 +16,7 @@ double SectionValue(const TimingData &Timing, double Beat);
 /*
 	Find the time at Beat given a constant function defined in intervals by Timing
 */
-double TimeAtBeat(const TimingData &Timing, float Offset, double Beat);
+double TimeAtBeat(const TimingData &Timing, float Offset, double Beat, bool Abs = false);
 
 /*
 	Find the antiderivative of an interval defined function through the Timing variable

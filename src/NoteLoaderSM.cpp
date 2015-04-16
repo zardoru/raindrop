@@ -15,7 +15,7 @@
 
 #include "ScoreKeeper.h"
 
-/* Stepmania uses a format with a lot of information, so we'll start with the basics*/
+/* Stepmania/SSC loader. Lacks delays and speeds for now. As well as keysounds. */
 
 using namespace VSRG;
 using namespace NoteLoaderSM;
@@ -110,7 +110,7 @@ void LoadNotesSM(Song *Out, Difficulty *Diff, SplitResult &MeasureText)
 			{
 				double Beat = i * 4.0 + m * 4.0 / (double)MeasureFractions; /* Current beat */
 				double StopsTime = StopTimeAtBeat(Diff->Data->StopsTiming, Beat);
-				double Time = TimeAtBeat(Diff->Timing, Diff->Offset, Beat) + StopsTime;
+				double Time = TimeAtBeat(Diff->Timing, Diff->Offset, Beat, true) + StopsTime;
 				bool InWarpSection = CalculateIfInWarpSection(Diff, Time); 
 
 				/* For every track of the fraction */
@@ -282,6 +282,7 @@ void DoCommonSMCommands(GString command, GString CommandContents, Song* Out)
 	}
 }
 
+// Convert SSC warps into Raindrop warps.
 TimingData CalculateRaindropWarpData(VSRG::Difficulty* Diff, const TimingData& Warps)
 {
 	TimingData Ret;
@@ -439,6 +440,84 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 	}
 }
 
+// Convert all negative stops to warps.
+void CleanStopsData(Difficulty* Diff)
+{
+	TimingData tmpWarps;
+	TimingData &Stops = Diff->Data->StopsTiming;
+
+	for (auto i = Stops.begin(); i != Stops.end(); )
+	{
+		if (i->Value < 0) // Warpahead.
+		{
+			tmpWarps.push_back(*i);
+			i = Stops.erase(i);
+			if (i == Stops.end()) break;
+			else continue;
+		}
+		++i;
+	}
+
+	for (auto Warp: tmpWarps)
+	{
+		double Time = TimeAtBeat(Diff->Timing, Diff->Offset, Warp.Time, true) +
+			StopTimeAtBeat(Diff->Data->StopsTiming, Warp.Time);
+
+		TimingSegment New;
+		New.Time = Time;
+		New.Value = Warp.Value;
+		Diff->Data->Warps.push_back(New);
+	}
+}
+
+// We need stops to already be warps by this point. Like with the other times, no need to account for the warps themselves.
+void WarpifyTiming(Difficulty* Diff)
+{
+	for (auto i = Diff->Timing.begin(); i != Diff->Timing.end(); i++)
+	{
+		if (i->Value < 0)
+		{
+			i->Value = -i->Value;
+
+			auto k = i + 1;
+			if (k == Diff->Timing.end()) break;
+			else
+			{
+				// for all negative sections between i and the next positive section 
+				// add up their duration in seconds
+				double warpDuration = spb(i->Value) * (k->Time - i->Time);
+				double warpDurationBeats = (k->Time - i->Time);
+				while (k->Value < 0)
+				{
+					k++;
+					if (k != Diff->Timing.end())
+					{
+						// add the duration of section k, if there's one to determine it.
+						auto p = k + 1;
+						if (p != Diff->Timing.end())
+						{
+							warpDuration += spb(abs(k->Value)) * (p->Time - k->Time);
+							warpDurationBeats += p->Time - k->Time;
+						}
+					}
+				}
+				// Now since W = DurationInBeats(Dn) + TimeToBeatsAtBPM(DurationInTime(Dn), NextPositiveBPM)
+				// DurationInBeats is warpDurationBeats, DurationInTime is warpDuration. k->Value is NextPositiveBPM
+				double warpTime = TimeAtBeat(Diff->Timing, Diff->Offset, i->Time, true) + StopTimeAtBeat(Diff->Data->StopsTiming, i->Time);
+				
+				TimingSegment New;
+				New.Time = warpTime;
+				New.Value = (warpDurationBeats + warpDuration * bps(k->Value)) * spb(k->Value);
+				
+				Diff->Data->Warps.push_back(New);
+				// And now that we're done, there's no need to check the negative BPMs inbetween this one and the next positive BPM, so...
+				i = k;
+				if (i == Diff->Timing.end()) break;
+			}
+		}
+	}
+}
+
 void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *Out)
 {
 #if (!defined _WIN32) || (defined STLP)
@@ -525,6 +604,8 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 			Diff->BPMType = VSRG::Difficulty::BT_Beat;
 			Diff->Data->TimingInfo = make_shared<VSRG::StepmaniaTimingInfo> ();
 			Diff->Data->StageFile = Banner;
+			CleanStopsData(Diff.get());
+			WarpifyTiming(Diff.get());
 
 			if (LoadTracksSM(Out, Diff.get(), line))
 			{
