@@ -507,7 +507,7 @@ void WarpifyTiming(Difficulty* Diff)
 				
 				TimingSegment New;
 				New.Time = warpTime;
-				New.Value = (warpDurationBeats + warpDuration * bps(k->Value)) * spb(k->Value);
+				New.Value = warpDuration * 2;
 				
 				Diff->Data->Warps.push_back(New);
 				// And now that we're done, there's no need to check the negative BPMs inbetween this one and the next positive BPM, so...
