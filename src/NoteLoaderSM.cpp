@@ -465,7 +465,7 @@ void CleanStopsData(Difficulty* Diff)
 
 		TimingSegment New;
 		New.Time = Time;
-		New.Value = Warp.Value;
+		New.Value = -Warp.Value;
 		Diff->Data->Warps.push_back(New);
 	}
 }
