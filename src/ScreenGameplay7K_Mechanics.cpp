@@ -191,6 +191,7 @@ void ScreenGameplay7K::ReleaseLane(uint32 Lane, float Time)
 
 	for (auto m = NotesByChannel[Lane].begin(); m != NotesByChannel[Lane].end(); ++m)
 	{
+		if (!m->IsJudgable()) continue;
 		if (MechanicsSet->OnReleaseLane(Time, &(*m), Lane)) // Are we done judging..?
 			break;
 	}
@@ -216,6 +217,9 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 
 		if (lastClosest[Lane] >= MsDisplayMargin)
 			lastClosest[Lane] = 0;
+
+		if (!m->IsJudgable())
+			continue;
 
 		if (MechanicsSet->OnPressLane(Time, &(*m), Lane))
 		{
