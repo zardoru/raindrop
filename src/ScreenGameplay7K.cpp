@@ -252,6 +252,7 @@ void ScreenGameplay7K::CheckShouldEndScreen()
 	if (score_keeper->isStageFailed(lifebar_type) && !stage_failed && !NoFail)
 	{
 		// We make sure we don't trigger this twice.
+stageFailed:
 		stage_failed = true;
 		score_keeper->failStage();
 		FailSnd->Play();
@@ -288,9 +289,12 @@ void ScreenGameplay7K::CheckShouldEndScreen()
 		{
 			if (!SongFinished)
 			{
+				if (score_keeper->isStageFailed(lifebar_type) && !NoFail)
+					goto stageFailed; // No, don't trigger SongFinished. It wasn't a pass.
+
 				SongFinished = true; // Reached the end!
 				Animations->DoEvent("OnSongFinishedEvent", 1);
-				SuccessTime = Clamp(Animations->GetEnv()->GetFunctionResultF(), 0.0f, 30.0f);
+				SuccessTime = Clamp(Animations->GetEnv()->GetFunctionResultF(), 3.0f, 30.0f);
 			}
 		}
 	}
