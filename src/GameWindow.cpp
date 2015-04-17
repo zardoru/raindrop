@@ -400,17 +400,15 @@ GameWindow::GameWindow()
 	wnd = NULL;
 }
 
-void ResizeFunc(GLFWwindow*, int32 width, int32 height)
+void ResizeFunc(GLFWwindow* wnd, int32 width, int32 height)
 {
 	float HeightRatio = (float)height / WindowFrame.GetMatrixSize().y;
 
-	WindowFrame.Viewport.x = width / 2 - WindowFrame.GetMatrixSize().x * HeightRatio / 2;
-	WindowFrame.Viewport.y = 0;
-
 	double mwidth = WindowFrame.GetMatrixSize().x * HeightRatio;
-	glViewport(WindowFrame.Viewport.x, 0, mwidth, height);
+	glViewport(0, 0, mwidth, height);
+	glfwSetWindowSize(wnd, mwidth, height);
 
-	WindowFrame.size.x = width;
+	WindowFrame.size.x = mwidth;
 	WindowFrame.size.y = height;
 
 	WindowFrame.SizeRatio = HeightRatio;

@@ -382,7 +382,7 @@ public:
 			}
 
 			// do the normalization
-			int limit = 0x7FFF;
+			int limit = 0x7FFF + 1;
 			float peakRatio = float(peak) / limit;
 			if (peakRatio >= 1) // ok then normalize if we're going to be clipping
 			{

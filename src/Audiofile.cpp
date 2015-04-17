@@ -17,21 +17,19 @@
 // Buffer -> buffer to convert to stereo (interleaved) cnt -> current samples max_len -> Maximum samples
 void monoToStereo(short* Buffer, size_t cnt, size_t max_len)
 {
+	if (!cnt)
+		return;
+
 	if (cnt <= max_len/2) // We're within boundaries.
 	{
 		// Okay, we have to transform all the samples from 0, 1, 2, 3...
 		// to 0, 2, 4, 6... We start at the end so we don't have anything to overwrite.
 		// We also need, after that is done, to copy all samples 0, 2, 4, 6 into 1, 3, 5, 7 and so on.
 		// So interleave them...
-		for (size_t i = cnt - 1; i >= 0; i--)
+		for (int i = cnt + 1; i >= 0; i--)
 		{
+			Buffer[i * 2 + 1] = Buffer[i];
 			Buffer[i * 2] = Buffer[i];
-		}
-
-		// Now copy 0 into 1, 2 into 3, and so on.
-		for (size_t i = 1; i < cnt * 2; i += 2)
-		{
-			Buffer[i] = Buffer[i - 1];
 		}
 	}
 }
@@ -330,7 +328,7 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 			// cnt now contains how many samples we actually read... 
 
 			// This is how many resulting samples we can output with what we read...
-			outcnt = (cnt * resRate / origRate);
+			outcnt = floor(cnt * resRate / origRate);
 
 			soxr_io_spec_t sis;
 			sis.flags = 0;
@@ -340,13 +338,17 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 
 			size_t odone;
 
-			soxr_oneshot(origRate, resRate, Channels,
-				tmpBuffer, cnt / Channels, NULL,
-				buffer, outcnt / Channels, &odone,
-				&sis, NULL, NULL);
-
+			int Channels = (*this).Channels;
 			if (Channels == 1)
-				monoToStereo(tmpBuffer, odone, BUFF_SIZE);
+			{
+				Channels = 2;
+				monoToStereo(tmpBuffer, cnt, BUFF_SIZE);
+			}
+
+			soxr_oneshot(origRate, resRate, Channels,
+				tmpBuffer, cnt, NULL,
+				buffer, outcnt, &odone,
+				&sis, NULL, NULL);
 
 			outcnt = odone;
 		}

@@ -5,6 +5,7 @@ ext-libs
 *.osu
 *.sm
 *.db
+TEST
 Songs
 # Windows ignores.
 project/debug
@@ -25,3 +26,4 @@ project/Xcode/build
 *.xcuserdatad
 .DS_Store
 log.txt
+TEST/CRASH/background - color.jpg
