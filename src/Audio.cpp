@@ -376,14 +376,19 @@ public:
 		{
 			// find peaks
 			int peak = 0;
+			int minpeak = 0;
 			for (int i = 0; i < count; i++)
 			{
-				peak = max(peak, abs(tsF[i]));
+				peak = max(peak, tsF[i]);
+				minpeak = min(minpeak, tsF[i]);
 			}
 
 			// do the normalization
-			int limit = 0x7FFF + 1;
-			float peakRatio = float(peak) / limit;
+			int limit = 0x7FFF;
+			double peakHighRatio = double(peak) / limit;
+			double peakLowRatio = double(minpeak) / -(limit + 1); // minpeak is negative
+			double peakRatio = max(peakHighRatio, peakLowRatio); // so we've got to normalize around the highest value above the threshold
+
 			if (peakRatio >= 1) // ok then normalize if we're going to be clipping
 			{
 				for (int i = 0; i < count; i++)
