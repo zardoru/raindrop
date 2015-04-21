@@ -404,6 +404,7 @@ bool ScreenGameplay7K::Run(double Delta)
 	{
 		CurrentVertical = IntegrateToTime(VSpeeds, -WaitingTime);
 		CurrentBeat = IntegrateToTime(BPS, SongTime);
+		WarpedSongTime = -WaitingTime;
 	}
 
 	RecalculateEffects();

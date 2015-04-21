@@ -146,7 +146,7 @@ void LoadNotesSM(Song *Out, Difficulty *Diff, SplitResult &MeasureText)
 						Note.StartTime = KeyStartTime[k];
 						Note.EndTime = Time;
 
-						if (!InWarpSection) {
+						if (!CalculateIfInWarpSection(Diff, KeyStartTime[k])) {
 							Diff->TotalHolds++;
 							Diff->TotalObjects++;
 							Diff->TotalScoringObjects++;

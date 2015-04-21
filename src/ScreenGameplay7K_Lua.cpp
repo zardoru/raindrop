@@ -61,7 +61,7 @@ void ScreenGameplay7K::UpdateScriptVariables()
 
 	L->FinalizeArray("HeldKeys");
 
-	float CurBPS = SectionValue(BPS, GetWarpedSongTime());
+	float CurBPS = SectionValue(BPS, WarpedSongTime);
 	L->SetGlobal("CurrentSPB", 1 / CurBPS);
 	L->SetGlobal("CurrentBPM", 60 * CurBPS);
 }

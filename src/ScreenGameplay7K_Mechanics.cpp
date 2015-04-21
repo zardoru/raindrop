@@ -124,7 +124,7 @@ void ScreenGameplay7K::RunMeasures()
 
 			// Keysound update to closest note.
 			if (CurrentDiff->IsVirtual)	{
-				if (m->IsEnabled())
+				if (m->IsEnabled() && m->IsJudgable())
 				{
 					if ((abs(usedTime - m->GetTimeFinal()) < timeClosest[k]))
 					{

@@ -148,6 +148,7 @@ namespace VSRG
 
 		void ProcessVSpeeds(TimingData& BPS, TimingData& VSpeeds, double SpeedConstant);
 		void ProcessSpeedVariations(TimingData& BPS, TimingData& VSpeeds, double Drift);
+		double GetWarpAmountAtTime(double Time);
 	public:
 
 		// Get processed data for use on ScreenGameplay7K.

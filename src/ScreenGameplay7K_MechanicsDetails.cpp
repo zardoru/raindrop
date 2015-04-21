@@ -15,10 +15,26 @@ void VSRGMechanics::Setup(VSRG::Song *Song, VSRG::Difficulty *Difficulty, ScoreK
 	score_keeper = scoreKeeper;
 }
 
+void VSRGMechanics::SetWarpedAmount(double amt)
+{
+	wAmt = amt;
+}
+
+double VSRGMechanics::GetWarpedAmount()
+{
+	return wAmt;
+}
+
+RaindropMechanics::RaindropMechanics(bool forcedRelease)
+{
+	this->forcedRelease = forcedRelease;
+}
+
 bool RaindropMechanics::OnUpdate(double SongTime, VSRG::TrackNote* m, uint32 Lane)
 {
 	uint32 k = Lane;
 	/* We have to check for all gameplay conditions for this note. */
+	SongTime -= GetWarpedAmount();
 
 	// Condition A: Hold tail outside accuracy cutoff (can't be hit any longer),
 	// note wasn't hit at the head and it's a hold
@@ -46,13 +62,32 @@ bool RaindropMechanics::OnUpdate(double SongTime, VSRG::TrackNote* m, uint32 Lan
 		}
 
 	} // Condition C: Hold head was hit, but hold tail was not released.
-	else if ((SongTime - m->GetTimeFinal()) * 1000 > score_keeper->getMissCutoff() &&
-		m->IsHold() && m->WasNoteHit() && m->IsEnabled())
+	else if (m->IsHold() && m->IsEnabled())
 	{
-		MissNotify (abs(SongTime - m->GetTimeFinal()) * 1000, k, m->IsHold(), true, false);
+		if ((SongTime - m->GetTimeFinal()) * 1000 > score_keeper->getMissCutoff() && forcedRelease)
+		{
+			MissNotify(abs(SongTime - m->GetTimeFinal()) * 1000, k, m->IsHold(), true, false);
 
-		SetLaneHoldingState(k, false);
-		m->Disable();
+			SetLaneHoldingState(k, false);
+			m->Disable();
+		}
+		else
+		{
+			if (SongTime - m->GetTimeFinal() > 0 && !forcedRelease)
+			{
+				if (IsLaneKeyDown(Lane))
+				{
+					HitNotify(0, k, true, true);
+				}
+				else
+				{
+					MissNotify(score_keeper->getMissCutoff(), k, m->IsHold(), true, false);
+				}
+
+				SetLaneHoldingState(k, false);
+				m->Disable();
+			}
+		}
 	} // Condition D: Hold head was hit, but was released early was already handled at ReleaseLane so no need to be redundant here.
 
 	return false;
@@ -62,6 +97,8 @@ bool RaindropMechanics::OnPressLane(double SongTime, VSRG::TrackNote* m, uint32 
 {
 	if (!m->IsEnabled())
 		return false;
+
+	SongTime -= GetWarpedAmount();
 
 	double dev = (SongTime - m->GetStartTime()) * 1000;
 	double tD = abs(dev);
@@ -78,11 +115,9 @@ bool RaindropMechanics::OnPressLane(double SongTime, VSRG::TrackNote* m, uint32 
 		{
 			MissNotify(dev, Lane, m->IsHold(), m->IsHold(), true);
 		}
-		else{
+		else {
 			m->Hit();
 			HitNotify(dev, Lane, m->IsHold(), false);
-
-			PlayNoteSoundEvent(m->GetSound());
 
 			if (m->IsHold())
 				SetLaneHoldingState(Lane, true);
@@ -90,6 +125,7 @@ bool RaindropMechanics::OnPressLane(double SongTime, VSRG::TrackNote* m, uint32 
 				m->Disable();
 		}
 
+		PlayNoteSoundEvent(m->GetSound());
 		return true;
 	}
 
@@ -98,6 +134,7 @@ bool RaindropMechanics::OnPressLane(double SongTime, VSRG::TrackNote* m, uint32 
 
 bool RaindropMechanics::OnReleaseLane(double SongTime, VSRG::TrackNote* m, uint32 Lane)
 {
+	SongTime -= GetWarpedAmount();
 	if (m->IsHold() && m->WasNoteHit() && m->IsEnabled()) /* We hit the hold's head and we've not released it early already */
 	{
 		double dev = (SongTime - m->GetTimeFinal()) * 1000;
@@ -105,14 +142,16 @@ bool RaindropMechanics::OnReleaseLane(double SongTime, VSRG::TrackNote* m, uint3
 
 		if (tD < score_keeper->getJudgmentWindow(SKJ_W3)) /* Released in time */
 		{
-			HitNotify(dev, Lane, m->IsHold(), true);
+			// Only consider it a timed thing if releasing it is forced.
+			HitNotify(forcedRelease ? dev : 0, Lane, true, true);
 			SetLaneHoldingState(Lane, false);
 			m->Disable();
 		}
 		else /* Released off time */
 		{
 			// early misses for hold notes always count as regular misses.
-			MissNotify(dev, Lane, m->IsHold(), false, false);
+			// they don't break combo when we're not doing forced releases. 
+			MissNotify(dev, Lane, true, false, false);
 
 			m->Disable();
 			SetLaneHoldingState(Lane, false);

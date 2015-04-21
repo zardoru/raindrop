@@ -16,12 +16,13 @@ public:
 	typedef function<void(double, uint32, bool, bool)> HitEvent;
 	typedef function<void(double, uint32, bool, bool, bool)> MissEvent;
 	typedef function<void(uint32)> KeysoundEvent;
+	double wAmt;
 
 protected:
 	VSRG::Song *CurrentSong;
 	VSRG::Difficulty *CurrentDifficulty;
 	ScoreKeeper7K *score_keeper;
-
+	double GetWarpedAmount();
 public:
 
 	// These HAVE to be set before anything else is called.
@@ -31,6 +32,7 @@ public:
 	HitEvent HitNotify;
 	MissEvent MissNotify;
 
+	void SetWarpedAmount(double amt);
 	virtual void Setup(VSRG::Song *Song, VSRG::Difficulty *Difficulty, ScoreKeeper7K *scoreKeeper);
 
 	// If returns true, don't judge any more notes.
@@ -47,7 +49,9 @@ public:
 
 class RaindropMechanics : public VSRGMechanics
 {
+	bool forcedRelease;
 public:
+	RaindropMechanics(bool forcedRelease);
 	bool OnUpdate(double SongTime, VSRG::TrackNote* Note, uint32 Lane);
 	bool OnPressLane(double SongTime, VSRG::TrackNote* Note, uint32 Lane);
 	bool OnReleaseLane(double SongTime, VSRG::TrackNote* Note, uint32 Lane);
@@ -65,29 +69,5 @@ public:
 
 	TimingType GetTimingKind();
 };
-
-/*
-class BMSMechanics : public VSRGMechanics
-{
-public:
-	bool OnUpdate(double SongTime, VSRG::TrackNote* Note, uint32 Lane);
-	bool OnPressLane(double SongTime, VSRG::TrackNote* Note, uint32 Lane);
-	bool OnReleaseLane(double SongTime, VSRG::TrackNote* Note, uint32 Lane);
-
-	TimingType GetTimingKind();
-};
-*/
-
-/*
-class StepmaniaMechanics : public VSRGMechanics
-{
-public:
-	bool OnUpdate(double SongTime, VSRG::TrackNote* Note, uint32 Lane);
-	bool OnPressLane(double SongTime, VSRG::TrackNote* Note, uint32 Lane);
-	bool OnReleaseLane(double SongTime, VSRG::TrackNote* Note, uint32 Lane);
-
-	TimingType GetTimingKind();
-};
-*/
 
 #endif

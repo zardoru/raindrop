@@ -322,6 +322,18 @@ void Difficulty::ProcessSpeedVariations(TimingData& BPS, TimingData& VerticalSpe
 	std::sort(VerticalSpeeds.begin(), VerticalSpeeds.end(), tSort);
 }
 
+double Difficulty::GetWarpAmountAtTime(double Time)
+{
+	double wAmt = 0;
+	for (auto warp : Data->Warps)
+	{
+		if (warp.Time < Time)
+			wAmt += warp.Value;
+	}
+
+	return wAmt;
+}
+
 void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& VerticalSpeeds, float Drift, double SpeedConstant)
 {
 	/* 
@@ -395,6 +407,7 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 				double dBeat = cBeat - iBeat;
 
 				NewNote.AssignFraction(dBeat);
+
 				NotesOut[KeyIndex].push_back(NewNote);
 			}
 

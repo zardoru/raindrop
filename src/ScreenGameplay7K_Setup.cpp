@@ -555,7 +555,8 @@ void ScreenGameplay7K::ChangeNoteTimeToBeats()
 
 void ScreenGameplay7K::SetupMechanics()
 {
-	
+	bool bmsOrStepmania = false;
+
 	// This must be done before setLifeTotal in order for it to work.
 	score_keeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
 	
@@ -569,6 +570,7 @@ void ScreenGameplay7K::SetupMechanics()
 			score_keeper->setJudgeRank(Info->judge_rank);
 			UsedTimingType = TT_TIME;
 			lifebar_type = LT_GROOVE;
+			bmsOrStepmania = true;
 		}
 		else if (TimingInfo->GetType() == VSRG::TI_OSUMANIA)
 		{
@@ -594,6 +596,7 @@ void ScreenGameplay7K::SetupMechanics()
 			UsedTimingType = TT_TIME;
 			score_keeper->setLifeTotal(-1);
 			score_keeper->setJudgeRank(Configuration::GetConfigf("DefaultJudgeRank"));
+			bmsOrStepmania = true;
 		}
 		else
 		{
@@ -624,7 +627,8 @@ void ScreenGameplay7K::SetupMechanics()
 	if (UsedTimingType == TT_TIME)
 	{
 		Log::Printf("Using raindrop mechanics set!\n");
-		MechanicsSet = new RaindropMechanics;
+		// Only forced release if not a bms or a stepmania chart.
+		MechanicsSet = new RaindropMechanics(!bmsOrStepmania);
 	}
 	else if (UsedTimingType == TT_BEATS)
 	{
@@ -854,6 +858,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 		lastClosest[i] = 0;
 
 		HeldKey[i] = NULL;
+		GearIsPressed[i] = 0;
 	}
 
 	NoteImage = GameState::GetInstance().GetSkinImage("note.png");
