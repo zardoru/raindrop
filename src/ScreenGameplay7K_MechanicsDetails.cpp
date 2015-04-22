@@ -15,15 +15,6 @@ void VSRGMechanics::Setup(VSRG::Song *Song, VSRG::Difficulty *Difficulty, ScoreK
 	score_keeper = scoreKeeper;
 }
 
-void VSRGMechanics::SetWarpedAmount(double amt)
-{
-	wAmt = amt;
-}
-
-double VSRGMechanics::GetWarpedAmount()
-{
-	return wAmt;
-}
 
 RaindropMechanics::RaindropMechanics(bool forcedRelease)
 {
@@ -34,7 +25,6 @@ bool RaindropMechanics::OnUpdate(double SongTime, VSRG::TrackNote* m, uint32 Lan
 {
 	uint32 k = Lane;
 	/* We have to check for all gameplay conditions for this note. */
-	SongTime -= GetWarpedAmount();
 
 	// Condition A: Hold tail outside accuracy cutoff (can't be hit any longer),
 	// note wasn't hit at the head and it's a hold
@@ -98,8 +88,6 @@ bool RaindropMechanics::OnPressLane(double SongTime, VSRG::TrackNote* m, uint32 
 	if (!m->IsEnabled())
 		return false;
 
-	SongTime -= GetWarpedAmount();
-
 	double dev = (SongTime - m->GetStartTime()) * 1000;
 	double tD = abs(dev);
 
@@ -134,7 +122,6 @@ bool RaindropMechanics::OnPressLane(double SongTime, VSRG::TrackNote* m, uint32 
 
 bool RaindropMechanics::OnReleaseLane(double SongTime, VSRG::TrackNote* m, uint32 Lane)
 {
-	SongTime -= GetWarpedAmount();
 	if (m->IsHold() && m->WasNoteHit() && m->IsEnabled()) /* We hit the hold's head and we've not released it early already */
 	{
 		double dev = (SongTime - m->GetTimeFinal()) * 1000;
