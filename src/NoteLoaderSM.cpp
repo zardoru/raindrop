@@ -28,9 +28,13 @@ int GetTracksByMode(GString mode)
 	ModeType(kb7-single, 7);
 	ModeType(dance-single, 4);
 	ModeType(dance-solo, 6);
+	ModeType(dance-couple, 8);
+	ModeType(dance-threepanel, 3);
 	ModeType(dance-double, 8);
 	ModeType(pump-single, 5);
 	ModeType(pump-double, 10);
+	ModeType(pump-halfdouble, 6);
+
 	// Utility::DebugBreak();
 	return 0;
 }
@@ -96,6 +100,8 @@ void LoadNotesSM(Song *Out, Difficulty *Diff, SplitResult &MeasureText)
 	int Keys = Diff->Channels;
 	double KeyStartTime[16];
 	double KeyBeat[16]; // heh
+	if (!Keys)
+		return;
 
 	/* For each measure of the song */
 	for (size_t i = 0; i < MeasureText.size(); i++) /* i = current measure */
@@ -357,6 +363,7 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 		OnCommand(#NOTEDATA)
 		{
 			Diff = make_shared<VSRG::Difficulty>();
+			Diff->Data = make_shared<VSRG::DifficultyLoadInfo>();
 		}
 
 		DoCommonSMCommands(command, CommandContents, Out);
@@ -369,12 +376,18 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 
 		OnCommand(#BPMS)
 		{
-			LoadTimingList(BPMData, line);
+			if (!Diff)
+				LoadTimingList(BPMData, line);
+			else
+				LoadTimingList(Diff->Timing, line);
 		}
 
 		OnCommand(#STOPS)
 		{
-			LoadTimingList(StopsData, line);
+			if (!Diff)
+				LoadTimingList(StopsData, line);
+			else
+				LoadTimingList(Diff->Data->StopsTiming, line);
 		}
 
 		OnCommand(#BANNER)
@@ -384,7 +397,10 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 
 		OnCommand(#WARPS)
 		{
-			LoadTimingList(WarpsData, CommandContents);
+			if (!Diff)
+				LoadTimingList(WarpsData, CommandContents);
+			else
+				LoadTimingList(Diff->Data->Warps, CommandContents);
 		}
 
 		// Notedata only here
@@ -420,16 +436,23 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 		OnCommand(#NOTES)
 		{
 			Diff->BPMType = VSRG::Difficulty::BT_Beat;
-			Diff->Timing = BPMData;
-			Diff->Data = make_shared<VSRG::DifficultyLoadInfo>();
-			Diff->Data->StopsTiming = StopsData;
+			if (!Diff->Timing.size())
+				Diff->Timing = BPMData;
+			
+			if (!Diff->Data->StopsTiming.size())
+				Diff->Data->StopsTiming = StopsData;
+
+			if (!Diff->Data->Warps.size())
+				Diff->Data->Warps = WarpsData;
+
 			Diff->Offset = -Offset;
 			Diff->Duration = 0;
 			Diff->Filename = filename;
 			Diff->BPMType = VSRG::Difficulty::BT_Beat;
 			Diff->Data->TimingInfo = make_shared<VSRG::StepmaniaTimingInfo>();
 			Diff->Data->StageFile = Banner;
-			Diff->Data->Warps = CalculateRaindropWarpData(Diff.get(), WarpsData);
+
+			Diff->Data->Warps = CalculateRaindropWarpData(Diff.get(), Diff->Data->Warps);
 
 			CommandContents = RemoveComments(CommandContents);
 			SplitResult Measures;
