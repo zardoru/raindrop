@@ -108,6 +108,8 @@ void Application::ParseArgs()
 						ConvertMode = CONV_BMS;
 					else if (Mode == "uqbms")
 						ConvertMode = CONV_UQBMS;
+					else if (Mode == "nps")
+						ConvertMode = CONV_NPS;
 					i++;
 				}
 
@@ -305,6 +307,8 @@ void Application::Run()
 				ConvertToBMS(Sng.get(), OutFile.path());
 			else if (ConvertMode == CONV_UQBMS)
 				ExportToBMSUnquantized(Sng.get(), OutFile.path());
+			else if (ConvertMode == CONV_NPS)
+				ConvertToNPSGraph(Sng.get(), OutFile.path());
 			else
 				ConvertToSMTiming(Sng.get(), OutFile.path());
 		}

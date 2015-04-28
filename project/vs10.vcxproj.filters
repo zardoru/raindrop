@@ -259,6 +259,9 @@
     <ClCompile Include="..\src\ScoreKeeper7K_rank.cpp">
       <Filter>Source\vsrg\gameplay\Scorekeeper</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\NPSGraph.cpp">
+      <Filter>Source\vsrg\converting</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">

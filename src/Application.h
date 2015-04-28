@@ -28,7 +28,8 @@ class Application
 		CONV_BMS,
 		CONV_UQBMS,
 		CONV_SM,
-		CONV_OM
+		CONV_OM,
+		CONV_NPS
 	} ConvertMode;
 
 	int Measure;
