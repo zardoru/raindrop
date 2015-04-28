@@ -408,6 +408,7 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 
 				NewNote.AssignFraction(dBeat);
 
+				NewNote.AddTime(-GetWarpAmountAtTime(CurrentNote.StartTime));
 				NotesOut[KeyIndex].push_back(NewNote);
 			}
 

@@ -153,6 +153,7 @@ void LoadNotesSM(Song *Out, Difficulty *Diff, SplitResult &MeasureText)
 						Note.EndTime = Time;
 
 						if (!CalculateIfInWarpSection(Diff, KeyStartTime[k])) {
+							Note.NoteKind = NK_NORMAL; // Un-fake it.
 							Diff->TotalHolds++;
 							Diff->TotalObjects++;
 							Diff->TotalScoringObjects++;

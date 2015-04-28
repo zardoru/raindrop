@@ -73,7 +73,7 @@ double ScreenGameplay7K::GetSongTime()
 	if (UsedTimingType == TT_BEATS)
 		usedTime = CurrentBeat;
 	else if (UsedTimingType == TT_TIME)
-		usedTime = WarpedSongTime;
+		usedTime = SongTime;
 
 	assert(usedTime != -1);
 	return usedTime;
