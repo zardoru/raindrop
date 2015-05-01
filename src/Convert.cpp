@@ -49,7 +49,7 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 			<< "[General]\n"
 			<< "AudioFilename: " << ((*i)->IsVirtual ? "virtual" : Sng->SongFilename) << "\n"
 			<< "AudioLeadIn: 1500\n"
-			<< "PreviewTime: " << Sng->PreviewTime << "\n"
+			<< "PreviewTime: " << (int)Sng->PreviewTime * 1000 << "\n"
 			<< "Countdown: 0\n"
 			<< "SampleSet: None\n"
 			<< "StackLeniency: 0.7\n"
@@ -112,6 +112,14 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 			t++)
 		{
 			out << t->Time * 1000 << "," << 1000 / (t->Value ? t->Value : 0.00001) << ",4,1,0,15,1,0\n";
+			out.flush();
+		}
+
+		for (TimingData::iterator t = (*i)->Data->SpeedChanges.begin();
+			t != (*i)->Data->SpeedChanges.end();
+			t++)
+		{
+			out << (t->Time + (*i)->Offset) * 1000 << "," << - 100/(t->Value ? t->Value : 0.00001) << ",4,1,0,15,0,0\n";
 			out.flush();
 		}
 
