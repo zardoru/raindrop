@@ -168,6 +168,6 @@ void ConvertToNPSGraph(VSRG::Song *Sng, Directory PathOut)
 		double interv = CfgValNPS("IntervalTime", 1);
 		double margin = CfgValNPS("PeakMargin", 1.2);
 
-		out << NPSGraph(Sng).GetSVGText(i, interv);
+		out << NPSGraph(Sng).GetSVGText(i, interv, margin);
 	}
 }

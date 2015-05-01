@@ -311,6 +311,28 @@ TimingData CalculateRaindropWarpData(VSRG::Difficulty* Diff, const TimingData& W
 	return Ret;
 }
 
+// DRY etc I'll see it later.
+TimingData CalculateRaindropSCData(VSRG::Difficulty* Diff, const TimingData& SCd)
+{
+	TimingData Ret;
+	for (auto SC : SCd)
+	{
+		// No need to align these either, but since offset is applied at processing time for speed change
+		// we need to set the offset at 0.
+		double Time = TimeAtBeat(Diff->Timing, 0, SC.Time) +
+			StopTimeAtBeat(Diff->Data->StopsTiming, SC.Time); 
+		double Value = SC.Value;
+
+		TimingSegment New;
+		New.Time = Time;
+		New.Value = Value;
+
+		Ret.push_back(New);
+	}
+
+	return Ret;
+}
+
 void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *Out)
 {
 #if (!defined _WIN32) || (defined STLP)
@@ -322,6 +344,7 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 	TimingData BPMData;
 	TimingData StopsData;
 	TimingData WarpsData;
+	TimingData ScrollData;
 	double Offset = 0;
 
 	shared_ptr<VSRG::Difficulty> Diff = nullptr;
@@ -404,6 +427,14 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 				LoadTimingList(Diff->Data->Warps, CommandContents);
 		}
 
+		OnCommand(#SCROLLS)
+		{
+			if (!Diff)
+				LoadTimingList(ScrollData, CommandContents);
+			else
+				LoadTimingList(Diff->Data->SpeedChanges, CommandContents);
+		}
+
 		// Notedata only here
 
 		if (!Diff) continue;
@@ -446,6 +477,9 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 			if (!Diff->Data->Warps.size())
 				Diff->Data->Warps = WarpsData;
 
+			if (!Diff->Data->SpeedChanges.size())
+				Diff->Data->SpeedChanges = ScrollData;
+
 			Diff->Offset = -Offset;
 			Diff->Duration = 0;
 			Diff->Filename = filename;
@@ -454,6 +488,7 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 			Diff->Data->StageFile = Banner;
 
 			Diff->Data->Warps = CalculateRaindropWarpData(Diff.get(), Diff->Data->Warps);
+			Diff->Data->SpeedChanges = CalculateRaindropSCData(Diff.get(), Diff->Data->SpeedChanges);
 
 			CommandContents = RemoveComments(CommandContents);
 			SplitResult Measures;
