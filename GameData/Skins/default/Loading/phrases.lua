@@ -21,9 +21,11 @@ Phrases = {
 		"it's called overjoy because the people who plays those charts are masochists",
 		"studies show that combo-based scoring is the biggest factor of broken equipment in the rhythm game community",
 		"YOU GET 200 GOLD CROWNS! IT IS EXTRAORDINARY!! YOU ARE THE TRUE TATSUJIN",
-		"ayy lmao",
 		"nice meme",
 		"S P A C E  T I M E",
+		"End Time.",
+		"I'm sending out a message, a message so sincere..",
+		"A message so sincere.. I need you more."
 		"You gonna finish that ice cream sandwich?",
 		"TWO DEE ECKS GOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOLD",
 		"dude nice",
@@ -49,7 +51,6 @@ Phrases = {
 		"hi spy",
 		"hi arcwin",
 		"protip: to be overjoy you just have to avoid missing",
-		"have you visited theaquila today?",
 		"Find us at http://vsrg.club !",
 		"\"Eating children is part of our lives.\"",
 		"Don't you put it in your mouth.",
@@ -96,6 +97,14 @@ Phrases = {
 		"To Abcdullah: your cheating is obvious, doing 100.00% on lv.26-28 maps from the first attempt is cheating, admit it.",
 		"konmai",
 		"haha facerolling",
+		"But the one in front of the gun lives forever.",
+		"children of the sky..",
+		"Open up you heart, no, peace, love for everyone",
+		"Come on, everybody in the universe, come on",
+		"I thought I was doing the most when somebody said to me...",
+		"when somebody said to me...",
+		"World, hold on! Instead of messing with our future, Tell me no more lies",
+		"If you ever meet your inner child, don’t cry. Tell them everything is gonna be alright",
 		"now with more bms!"
 	}
 }
