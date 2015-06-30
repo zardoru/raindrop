@@ -16,6 +16,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
+#include <glm/gtc/matrix_transform.inl>
 
 using namespace VSRG;
 

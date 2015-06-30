@@ -4,6 +4,8 @@
 #include "Song7K.h"
 #include "ScoreKeeper.h"
 #include "ScreenGameplay7K_Mechanics.h"
+#include "BackgroundAnimation.h"
+#include <filesystem>
 
 class AudioStream;
 class Image;
@@ -21,31 +23,20 @@ private:
 
 	VSRGMechanics *MechanicsSet;
 	Sprite Keys[VSRG::MAX_CHANNELS];
-	Sprite Background;
-
-	// BGA stuff.
-	Sprite LayerMiss;
-	Sprite Layer1;
-	Sprite Layer2;
 
 	TimingData       VSpeeds;
 	TimingData		 BPS;
 	TimingData		 Warps;
 	VSRG::VectorTN   NotesByChannel;
 	std::map <int, SoundSample*> Keysounds;
-	std::vector<AutoplaySound>   BGMEvents;
-	std::vector<float>			 MeasureBarlines;
+	vector<AutoplaySound>   BGMEvents;
+	vector<float>			 MeasureBarlines;
 
 	VSRG::Difficulty				*CurrentDiff;
 	shared_ptr<VSRG::Song>			 MySong;
 	shared_ptr<VSRG::Song>			 LoadedSong;
 	TimingType						 UsedTimingType;
 
-	ImageList				 BMPs;
-	std::vector<AutoplayBMP> BMPEvents;
-	std::vector<AutoplayBMP> BMPEventsMiss;
-	std::vector<AutoplayBMP> BMPEventsLayer;
-	std::vector<AutoplayBMP> BMPEventsLayer2;
 	Line* Barline;
 
 	double BarlineOffset;
@@ -142,7 +133,7 @@ private:
 
 	bool    InterpolateTime;
 	bool    AudioCompensation;
-
+	shared_ptr<BackgroundAnimation> BGA;
 	/*
 		Optimizations will come in later.
 		See Renderer7K.cpp.

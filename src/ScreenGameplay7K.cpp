@@ -2,17 +2,11 @@
 #include <iostream>
 
 #include "GameGlobal.h"
-#include "GameState.h"
 #include "Logging.h"
-#include "SongLoader.h"
 #include "Screen.h"
 #include "Audio.h"
-#include "ImageLoader.h"
 #include "Sprite.h"
-#include "Line.h"
-#include "BitmapFont.h"
 #include "GameWindow.h"
-#include "ImageList.h"
 
 #include "LuaManager.h"
 #include "SceneEnvironment.h"
@@ -20,7 +14,6 @@
 #include "ScoreKeeper7K.h"
 #include "ScreenGameplay7K.h"
 #include "ScreenEvaluation7K.h"
-#include "SongDatabase.h"
 
 using namespace VSRG;
 
@@ -56,8 +49,9 @@ float ScreenGameplay7K::GetCurrentVertical()
 
 double ScreenGameplay7K::GetWarpedSongTime()
 {
-	double T = SongTime;
-	for (auto k = Warps.begin(); k != Warps.end(); k++)
+	// We can't use lower_bound; Every warp changes the time we actually compare.
+	auto T = SongTime;
+	for (auto k = Warps.begin(); k != Warps.end(); ++k)
 	{
 		if (k->Time <= T)
 			T += k->Value;
@@ -124,9 +118,7 @@ void ScreenGameplay7K::TranslateKey(KeyType K, bool KeyDown)
 void ScreenGameplay7K::Activate()
 {
 	if (!Active)
-	{
 		Animations->DoEvent("OnActivateEvent");
-	}
 
 	Active = true;
 }
@@ -179,71 +171,23 @@ bool ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 	return true;
 }
 
-int DigitCount (float n)
-{
-	int digits = 0;
-
-	while (n >= 1)
-	{
-		n /= 10;
-		digits++;
-	}
-
-	return digits;
-}
-
-void DoBMPEventList (Sprite &Obj, std::vector<AutoplayBMP> &Events, ImageList &Images, double SongTime)
-{
-	for (auto b = Events.begin(); b != Events.end();)
-	{
-		if (b->Time <= SongTime)
-		{
-			Image* Img = Images.GetFromIndex(b->BMP);
-			Obj.SetImage(Img, false);
-
-			b = Events.erase(b);
-			if (b == Events.end()) break;
-			else continue;
-		}
-
-		b++;
-	}
-}
-
 void ScreenGameplay7K::RunAutoEvents()
 {
 	if (!stage_failed)
 	{
 		// Play BGM events.
-		for (auto s = BGMEvents.begin(); s != BGMEvents.end();)
+		auto i = BGMEvents.begin();
+		auto s = std::upper_bound(BGMEvents.begin(), BGMEvents.end(), SongTime);
+		while (i != s)
 		{
-			if (s->Time <= SongTime)
-			{
-				if (Keysounds[s->Sound])
-				{
-					Keysounds[s->Sound]->SeekTime(SongTime - s->Time);
-					Keysounds[s->Sound]->Play();
-				}
-				s = BGMEvents.erase(s);
-				if (s == BGMEvents.end()) break;
-				else continue;
-			}
+			if (Keysounds[i->Sound]) Keysounds[i->Sound]->Play();
 
-			s++;
+			i = BGMEvents.erase(i);
+			s = std::lower_bound(BGMEvents.begin(), BGMEvents.end(), SongTime);
 		}
 	}
 
-	// Play BMP Base Events
-	DoBMPEventList(Background, BMPEvents, BMPs, SongTime);
-
-	// BMP Miss layer events
-	DoBMPEventList(LayerMiss, BMPEventsMiss, BMPs, SongTime);
-
-	// BMP Layer1 events
-	DoBMPEventList(Layer1, BMPEventsLayer, BMPs, SongTime);
-
-	// BMP Layer 2 events.
-	DoBMPEventList(Layer2, BMPEventsLayer2, BMPs, SongTime);
+	BGA->SetAnimationTime(SongTime);
 }
 
 void ScreenGameplay7K::CheckShouldEndScreen()
@@ -259,7 +203,7 @@ stageFailed:
 
 		// We stop all audio..
 		Music->Stop();
-		for (std::map<int, SoundSample*>::iterator i = Keysounds.begin(); i != Keysounds.end(); i++)
+		for (auto i = Keysounds.begin(); i != Keysounds.end(); ++i)
 		{
 			if (i->second)
 				i->second->Stop();

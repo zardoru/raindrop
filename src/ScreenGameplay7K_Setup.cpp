@@ -26,6 +26,7 @@
 #include "SongDatabase.h"
 
 #include "AudioSourceOJM.h"
+#include "BackgroundAnimation.h"
 
 ScreenGameplay7K::ScreenGameplay7K() : Screen("ScreenGameplay7K")
 {
@@ -190,6 +191,7 @@ void ScreenGameplay7K::Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const
 	Speed = Param.Rate;
 	NoFail = Param.NoFail;
 
+	BGA = BackgroundAnimation::CreateBGAFromSong(DifficultyIndex, *S);
 	ForceActivation = false;
 
 	if (Param.StartMeasure == -1 && Auto)
@@ -272,6 +274,7 @@ void ScreenGameplay7K::CalculateHiddenConstants()
 
 bool ScreenGameplay7K::LoadChartData()
 {
+	uint8_t index = 0;
 	if (!Preloaded)
 	{
 		// The difficulty details are destroyed; which means we should load this from its original file.
@@ -279,9 +282,9 @@ bool ScreenGameplay7K::LoadChartData()
 		Directory FN;
 
 		Log::Printf("Loading Chart...");
-		LoadedSong = Loader.LoadFromMeta(MySong.get(), CurrentDiff, &FN);
+		LoadedSong = Loader.LoadFromMeta(MySong.get(), CurrentDiff, &FN, index);
 
-		if (LoadedSong == NULL)
+		if (LoadedSong == nullptr)
 		{
 			Log::Printf("Failure to load chart. (Filename: %s)\n", FN.path().c_str());
 			return false;
@@ -295,6 +298,8 @@ bool ScreenGameplay7K::LoadChartData()
 		*/
 	}
 
+	BGA = BackgroundAnimation::CreateBGAFromSong(index, *MySong);
+
 	return true;
 }
 
@@ -304,7 +309,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 	{
 		Music = new AudioStream();
 		Music->SetPitch(Speed);
-		if (MySong->SongFilename.length() && Music->Open((MySong->SongDirectory + MySong->SongFilename).c_str()))
+		if (MySong->SongFilename.length() && Music->Open((MySong->SongDirectory / MySong->SongFilename).c_path()))
 		{
 			Log::Printf("Stream for %s succesfully opened.\n", MySong->SongFilename.c_str());
 			MixerAddStream(Music);
@@ -314,13 +319,13 @@ bool ScreenGameplay7K::LoadSongAudio()
 			if (!CurrentDiff->IsVirtual)
 			{
 				// Caveat: Try to autodetect an mp3/ogg file.
-				std::vector<GString> DirCnt;
-				Directory SngDir = MySong->SongDirectory;
+				vector<GString> DirCnt;
+				auto SngDir = MySong->SongDirectory;
 
 				SngDir.ListDirectory(DirCnt, Directory::FS_REG);
-				for (std::vector<GString>::iterator i = DirCnt.begin();
+				for (auto i = DirCnt.begin();
 					i != DirCnt.end();
-					i++)
+					++i)
 				{
 					if (Directory(*i).GetExtension() == "mp3" || Directory(*i).GetExtension() == "ogg")
 						if ( Music->Open( (SngDir / *i ).c_path()) )
@@ -331,7 +336,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 				}
 
 				delete Music;
-				Music = NULL;
+				Music = nullptr;
 
 				Log::Printf("Unable to load song (Path: %s)\n", MySong->SongFilename.c_str());
 				DoPlay = false;
@@ -345,7 +350,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 	{
 		Log::Printf("Loading OJM.\n");
 		OJMAudio = new AudioSourceOJM;
-		OJMAudio->Open((MySong->SongDirectory + MySong->SongFilename).c_str());
+		OJMAudio->Open((MySong->SongDirectory / MySong->SongFilename).c_path());
 
 		for (int i = 0; i < 2000; i++)
 		{
@@ -358,7 +363,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 	else if (CurrentDiff->SoundList.size())
 	{
 		Log::Printf("Loading samples... ");
-		for (std::map<int, GString>::iterator i = CurrentDiff->SoundList.begin(); i != CurrentDiff->SoundList.end(); i++)
+		for (auto i = CurrentDiff->SoundList.begin(); i != CurrentDiff->SoundList.end(); i++)
 		{
 			Keysounds[i->first] = new SoundSample();
 
@@ -471,19 +476,9 @@ bool ScreenGameplay7K::LoadBMPs()
 	if (Configuration::GetConfigf("DisableBMP") == 0 && CurrentDiff->Data->BMPEvents)
 	{
 		if (CurrentDiff->Data->BMPEvents->BMPList.size())
-			Log::Printf("Loading BMPs...\n");
+			Log::Printf("Loading BMPs...\n");;
 
-		for (std::map<int, GString>::iterator i = CurrentDiff->Data->BMPEvents->BMPList.begin();
-			i != CurrentDiff->Data->BMPEvents->BMPList.end(); i++)
-			BMPs.AddToListIndex(i->second, MySong->SongDirectory, i->first);
-
-		// We don't need this any more.
-		CurrentDiff->Data->BMPEvents->BMPList.clear();
-
-		BMPEvents = CurrentDiff->Data->BMPEvents->BMPEventsLayerBase;
-		BMPEventsMiss = CurrentDiff->Data->BMPEvents->BMPEventsLayerMiss;
-		BMPEventsLayer = CurrentDiff->Data->BMPEvents->BMPEventsLayer;
-		BMPEventsLayer2 = CurrentDiff->Data->BMPEvents->BMPEventsLayer2;
+		BGA->Load();
 	}
 
 	return true;
@@ -675,6 +670,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		return;
 	}
 
+	BGA->Load();
 	SetupMechanics();
 
 	SetupAfterLoadingVariables();
@@ -746,60 +742,6 @@ void ScreenGameplay7K::SetupGear()
 		Barline = new Line();
 }
 
-void ScreenGameplay7K::SetupBackground()
-{
-	Image* BackgroundImage = ImageLoader::Load(MySong->SongDirectory + MySong->BackgroundFilename);
-
-	if (BackgroundImage)
-		Background.SetImage(BackgroundImage);
-	else
-	{
-		// Caveat 2: Try to automatically load background.
-		std::vector<GString> DirCnt;
-		Directory SngDir = MySong->SongDirectory;
-
-		SngDir.ListDirectory(DirCnt, Directory::FS_REG);
-		for (std::vector<GString>::iterator i = DirCnt.begin();
-			i != DirCnt.end();
-			i++)
-		{
-			GString ext = Directory(*i).GetExtension();
-			if (strstr(i->c_str(), "bg") && (ext == "jpg" || ext == "png"))
-				if (BackgroundImage = ImageLoader::Load(MySong->SongDirectory + *i))
-					break;
-		}
-
-		if (!BackgroundImage)
-			Background.SetImage(GameState::GetInstance().GetSkinImage(Configuration::GetSkinConfigs("DefaultGameplay7KBackground")));
-		else
-			Background.SetImage(BackgroundImage);
-	}
-
-	Background.SetZ(0);
-	Background.AffectedByLightning = true;
-
-	if (Background.GetImage())
-	{
-		float SizeRatio = ScreenHeight / Background.GetHeight();
-		Background.SetScale(SizeRatio);
-		Background.Centered = true;
-		Background.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
-	}
-
-	Layer1.Centered = Layer2.Centered = LayerMiss.Centered = true;
-	float LW = Background.GetWidth(), LH = Background.GetHeight();
-	float Scale = Background.GetScale().x;
-	Layer1.SetSize(LW, LH); Layer2.SetSize(LW, LH); LayerMiss.SetSize(LW, LH);
-	Layer1.BlackToTransparent = Layer2.BlackToTransparent = true;
-	Layer1.SetScale(Scale); Layer2.SetScale(Scale); LayerMiss.SetScale(Scale);
-	Layer1.SetZ(0); Layer2.SetZ(0); LayerMiss.SetZ(0);
-	Layer1.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
-	Layer2.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
-	LayerMiss.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
-	LayerMiss.SetImage(BMPs.GetFromIndex(0));
-}
-
-
 void ScreenGameplay7K::MainThreadInitialization()
 {
 	SetupGear();
@@ -818,7 +760,6 @@ void ScreenGameplay7K::MainThreadInitialization()
 
 	for (int i = 0; i < CurrentDiff->Channels; i++)
 	{
-		std::stringstream ss;
 		char cstr[256];
 
 		/* Assign per-lane bindings. */
@@ -862,7 +803,6 @@ void ScreenGameplay7K::MainThreadInitialization()
 	}
 
 	NoteImage = GameState::GetInstance().GetSkinImage("note.png");
-	SetupBackground();
 
 	WindowFrame.SetLightMultiplier(0.75f);
 
@@ -880,8 +820,6 @@ void ScreenGameplay7K::MainThreadInitialization()
 
 	CurrentBeat = IntegrateToTime(BPS, -WaitingTime);
 	Animations->GetImageList()->ForceFetch();
-
-	BMPs.LoadAll();
-// 	BMPs.ForceFetch();
+	BGA->Validate();
 	Running = true;
 }

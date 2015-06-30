@@ -431,7 +431,7 @@ int SongDatabase::GetSongIDForFile(Directory File, VSRG::Song* In)
 		assert(In); // Okay, this is a query isn't it? Why doesn't the song exist?
 		// Okay then, insert the song.
 		// So now the latest entry is what we're going to insert difficulties and files into.
-		SC(sqlite3_bind_text(st_SngInsertQuery, 1, In->SongDirectory.c_str(), In->SongDirectory.length(), SQLITE_STATIC));
+		SC(sqlite3_bind_text(st_SngInsertQuery, 1, In->SongDirectory.path().c_str(), In->SongDirectory.path().length(), SQLITE_STATIC));
 		SC(sqlite3_bind_text(st_SngInsertQuery, 2, In->SongName.c_str(), In->SongName.length(), SQLITE_STATIC));
 		SC(sqlite3_bind_text(st_SngInsertQuery, 3, In->SongAuthor.c_str(), In->SongAuthor.length(), SQLITE_STATIC));
 		SC(sqlite3_bind_text(st_SngInsertQuery, 4, In->SongFilename.c_str(), In->SongFilename.length(), SQLITE_STATIC));

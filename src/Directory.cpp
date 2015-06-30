@@ -121,7 +121,9 @@ Directory Directory::Filename()
 
 GString Directory::GetExtension() const
 {
-	return curpath.substr(curpath.find_last_of(".")+1);
+	auto out = curpath.substr(curpath.find_last_of(".")+1);
+	boost::to_lower(out);
+	return out;
 }
 
 GString Directory::path() const { return curpath; }

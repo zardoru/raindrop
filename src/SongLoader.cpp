@@ -403,7 +403,7 @@ void SongLoader::GetSongList7K(std::vector<VSRG::Song*> &OutVec, Directory Dir)
 	}
 }
 
-std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const VSRG::Song* Meta, VSRG::Difficulty* &CurrentDiff, Directory *FilenameOut)
+std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const VSRG::Song* Meta, VSRG::Difficulty* &CurrentDiff, Directory *FilenameOut, uint8_t &Index)
 {
 	std::shared_ptr<VSRG::Song> Out;
 
@@ -416,11 +416,12 @@ std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const VSRG::Song* Meta, VSR
 	Out->SongDirectory = Meta->SongDirectory;
 	
 
+	Index = 0;
 	/* Find out Difficulty IDs to the recently loaded song's difficulty! */
 	bool DifficultyFound = false;
 	for (auto k = Out->Difficulties.begin();
 		k != Out->Difficulties.end();
-		k++)
+		++k)
 	{
 		DB->AddDifficulty(Meta->ID, (*k)->Filename, k->get(), MODE_VSRG);
 		if ((*k)->ID == CurrentDiff->ID) // We've got a match; move onward.
@@ -429,6 +430,7 @@ std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const VSRG::Song* Meta, VSR
 			DifficultyFound = true;
 			break; // We're done here, we've found the difficulty we were trying to load
 		}
+		Index++;
 	}
 
 	if (!DifficultyFound)

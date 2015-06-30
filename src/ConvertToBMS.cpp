@@ -1,4 +1,5 @@
 #include <fstream>
+#include <sstream>
 #include "GameGlobal.h"
 #include "Logging.h"
 #include "Song7K.h"

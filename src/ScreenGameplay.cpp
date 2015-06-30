@@ -6,6 +6,8 @@
 #include "ImageLoader.h"
 #include "Audio.h"
 
+#include <sstream>
+
 #define ComboSizeX 24
 #define ComboSizeY 48
 
@@ -111,7 +113,7 @@ void ScreenGameplay::MainThreadInitialization()
 	MarkerB.SetImage(GameState::GetInstance().GetSkinImage("barline_marker.png"));
 	GameplayObjectImage = GameState::GetInstance().GetSkinImage("hitcircle.png");
 
-	Image* BackgroundImage = ImageLoader::Load(MySong->SongDirectory + "/" + MySong->BackgroundFilename);
+	Image* BackgroundImage = ImageLoader::Load(MySong->SongDirectory / MySong->BackgroundFilename);
 
 	if (BackgroundImage)
 		Background.SetImage(BackgroundImage);
@@ -222,7 +224,7 @@ void ScreenGameplay::LoadThreadInitialization()
 	{
 		Music = new AudioStream();
 
-		if (!Music || !Music->Open( (MySong->SongDirectory + "/" + MySong->SongFilename) .c_str()))
+		if (!Music || !Music->Open( (MySong->SongDirectory / MySong->SongFilename).c_path() ))
 		{
 			// we can't use exceptions because they impact the framerate. What can we do?
 			// throw std::exception( (boost::format ("couldn't open song %s") % MySong->SongFilename).str().c_str() );

@@ -1,6 +1,7 @@
 #include "Global.h"
 #include "ScoreKeeper7K.h"
 
+#include <sstream>
 #include <iostream>
 #include <iomanip>
 #include <map>

@@ -4,6 +4,7 @@
 #include "GameWindow.h"
 #include "ImageLoader.h"
 #include "Audio.h"
+#include <sstream>
 
 SoundSample *SavedSound = NULL;
 
@@ -159,7 +160,7 @@ void ScreenEdit::SaveChart()
 {
 	GString DefaultPath = MySong->ChartFilename.length() ? MySong->ChartFilename : "chart.dcf";
 	MySong->Repack();
-	MySong->Save((MySong->SongDirectory + GString("/") + DefaultPath).c_str());
+	MySong->Save((MySong->SongDirectory / DefaultPath).c_path());
 	SavedSound->Play();
 	MySong->Process();
 }

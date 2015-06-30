@@ -163,9 +163,6 @@
     <ClCompile Include="..\src\SongLoader.cpp">
       <Filter>Source\game global\song interface</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Application.cpp">
-      <Filter>Source\game global</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Line.cpp">
       <Filter>Source\backend\render\objects</Filter>
     </ClCompile>
@@ -261,6 +258,12 @@
     </ClCompile>
     <ClCompile Include="..\src\NPSGraph.cpp">
       <Filter>Source\vsrg\converting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\BackgroundAnimation.cpp">
+      <Filter>Source\game global\BGA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Application.cpp">
+      <Filter>Source\game global\song interface</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -489,6 +492,9 @@
     <ClInclude Include="..\src\SceneEnvironment.h">
       <Filter>Source\backend\structure</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\BackgroundAnimation.h">
+      <Filter>Source\game global\BGA</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -586,6 +592,9 @@
     </Filter>
     <Filter Include="Source\vsrg\gameplay\Scorekeeper">
       <UniqueIdentifier>{f417bca7-f730-4e6e-8816-1084e8d5dc83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\game global\BGA">
+      <UniqueIdentifier>{ba96faec-7b30-4f99-acc8-b14687e2dd44}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

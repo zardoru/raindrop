@@ -537,7 +537,7 @@ void MeasurizeFromTimingData(OsuLoadInfo *Info)
 			continue;
 
 		while (NextSect != Info->HitsoundSections.end() && NextSect->IsInherited) // Find first non-inherited section after this one.
-			NextSect++;
+			++NextSect;
 
 		if (NextSect != Info->HitsoundSections.end()) // Okay, we've got it!
 		{
@@ -608,6 +608,60 @@ void PushNotesToMeasures(OsuLoadInfo *Info)
 	}
 }
 
+void Offsetize(std::shared_ptr<VSRG::Difficulty> Diff)
+{
+	Diff->Offset = Diff->Timing.begin()->Time;
+
+	for (TimingData::iterator i = Diff->Timing.begin();
+	     i != Diff->Timing.end();
+	     i++)
+	{
+		i->Time -= Diff->Offset;
+	}
+
+	for (TimingData::iterator i = Diff->Data->SpeedChanges.begin();
+	     i != Diff->Data->SpeedChanges.end();
+	     i++)
+	{
+		i->Time -= Diff->Offset;
+	}
+}
+
+enum osuReadingMode
+{
+	RNotKnown,
+	RGeneral,
+	RMetadata,
+	RDifficulty,
+	REvents,
+	RTiming,
+	RHitobjects
+};
+
+void SetReadingMode(std::string& Line, osuReadingMode& ReadingMode)
+{
+	if (Line == "[General]")
+	{
+		ReadingMode = RGeneral;
+	}else if (Line == "[Metadata]")
+	{
+		ReadingMode = RMetadata;
+	}else if (Line == "[Difficulty]")
+	{
+		ReadingMode = RDifficulty;
+	}else if (Line == "[Events]")
+	{
+		ReadingMode = REvents;
+	}else if (Line == "[TimingPoints]")
+	{
+		ReadingMode = RTiming;
+	}else if (Line == "[HitObjects]")
+	{
+		ReadingMode = RHitobjects;
+	}else if (Line[0] == '[')
+		ReadingMode = RNotKnown;
+}
+
 void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *Out)
 {
 #if (!defined _WIN32) || (defined STLP)
@@ -615,6 +669,9 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 #else
 	std::ifstream filein (Utility::Widen(filename).c_str());
 #endif
+
+	if (!filein.is_open())
+		return;
 
 	std::shared_ptr<VSRG::Difficulty> Diff = std::make_shared<VSRG::Difficulty>();
 	OsuLoadInfo Info;
@@ -631,10 +688,6 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 	// osu! stores bpm information as the time in ms that a beat lasts.
 	Diff->BPMType = VSRG::Difficulty::BT_Beatspace;
 	Out->SongDirectory = prefix;
-
-	if (!filein.is_open())
-		return;
-	
 
 	Diff->Filename = filename;
 	Out->SongDirectory = prefix + "/";
@@ -656,16 +709,7 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 
 	Info.Version = version;
 
-	enum 
-	{
-		RNotKnown,
-		RGeneral,
-		RMetadata,
-		RDifficulty,
-		REvents,
-		RTiming,
-		RHitobjects
-	} ReadingMode = RNotKnown, ReadingModeOld = RNotKnown;
+	osuReadingMode ReadingMode = RNotKnown, ReadingModeOld = RNotKnown;
 
 	while (filein)
 	{
@@ -675,26 +719,7 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 		if (!Line.length())
 			continue;
 
-		if (Line == "[General]")
-		{
-			ReadingMode = RGeneral;
-		}else if (Line == "[Metadata]")
-		{
-			ReadingMode = RMetadata;
-		}else if (Line == "[Difficulty]")
-		{
-			ReadingMode = RDifficulty;
-		}else if (Line == "[Events]")
-		{
-			ReadingMode = REvents;
-		}else if (Line == "[TimingPoints]")
-		{
-			ReadingMode = RTiming;
-		}else if (Line == "[HitObjects]")
-		{
-			ReadingMode = RHitobjects;
-		}else if (Line[0] == '[')
-			ReadingMode = RNotKnown;
+		SetReadingMode(Line, ReadingMode);
 
 		if (ReadingMode != ReadingModeOld || ReadingMode == RNotKnown) // Skip this line since it changed modes, or it's not a valid section yet
 		{
@@ -720,21 +745,7 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 
 	if (Diff->TotalObjects) 
 	{
-		Diff->Offset = Diff->Timing.begin()->Time;
-
-		for (TimingData::iterator i = Diff->Timing.begin();
-			i != Diff->Timing.end();
-			i++)
-		{
-			i->Time -= Diff->Offset;
-		}
-
-		for (TimingData::iterator i = Diff->Data->SpeedChanges.begin();
-			i != Diff->Data->SpeedChanges.end();
-			i++)
-		{
-			i->Time -= Diff->Offset;
-		}
+		Offsetize(Diff);
 
 		for (std::map<GString, int>::iterator i = Info.Sounds.begin(); i != Info.Sounds.end(); i++)
 		{

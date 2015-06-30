@@ -493,7 +493,7 @@ bool ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 		}
 	}
 
-	return false;
+	return true;
 }
 
 bool ScreenSelectMusic::HandleScrollInput(double xOff, double yOff)

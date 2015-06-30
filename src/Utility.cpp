@@ -16,6 +16,7 @@
 #include "Logging.h"
 #include "sha256.h"
 
+#include <sstream>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/classification.hpp>
 

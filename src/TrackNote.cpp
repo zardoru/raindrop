@@ -1,6 +1,7 @@
 #include "GameGlobal.h"
 #include "Sprite.h"
 #include "TrackNote.h"
+#include <glm/gtc/matrix_transform.inl>
 
 using namespace VSRG;
 

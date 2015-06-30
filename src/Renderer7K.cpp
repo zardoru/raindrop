@@ -28,12 +28,7 @@ static Mat4 identity;
 
 void ScreenGameplay7K::Render()
 {
-	Background.Render();
-	Layer1.Render();
-	Layer2.Render();
-
-	if (MissTime > 0)
-		LayerMiss.Render();
+	BGA->Render();
 
 	Animations->DrawUntilLayer(13);
 

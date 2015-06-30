@@ -25,7 +25,7 @@ Phrases = {
 		"S P A C E  T I M E",
 		"End Time.",
 		"I'm sending out a message, a message so sincere..",
-		"A message so sincere.. I need you more."
+		"A message so sincere.. I need you more.",
 		"You gonna finish that ice cream sandwich?",
 		"TWO DEE ECKS GOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOLD",
 		"dude nice",

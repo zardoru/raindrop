@@ -38,7 +38,7 @@ void ScreenEvaluation7K::Init(ScoreKeeper7K *Result)
 
 	ChangeState(StateIntro);
 
-	PrintCLIResults(Result);
+	// PrintCLIResults(Result);
 }
 
 
@@ -59,7 +59,7 @@ bool ScreenEvaluation7K::Run(double Delta)
 	Animations->DrawTargets(Delta);
 	return Running;
 }
-
+/*
 void ScreenEvaluation7K::PrintCLIResults(ScoreKeeper7K *result){
 	
 	std::stringstream ss;
@@ -115,7 +115,8 @@ void ScreenEvaluation7K::PrintCLIResults(ScoreKeeper7K *result){
 
 	std::cerr << ss.str();
 	
-	/*std::cerr << "Histogram:\n" << std::endl;
-	std::cerr << result->getHistogram();*/
+	//std::cerr << "Histogram:\n" << std::endl;
+	//std::cerr << result->getHistogram();
 
 }
+*/

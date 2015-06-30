@@ -1,6 +1,7 @@
 #include "GameGlobal.h"
 #include "Song7K.h"
 
+#include <sstream>
 #include <fstream>
 #include <boost/format.hpp>
 

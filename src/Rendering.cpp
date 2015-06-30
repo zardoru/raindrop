@@ -24,6 +24,7 @@
 #include "utf8.h"
 
 #include "Logging.h"
+#include <glm/gtc/matrix_transform.inl>
 
 VBO* QuadBuffer = NULL;
 VBO* TextureBuffer = NULL;

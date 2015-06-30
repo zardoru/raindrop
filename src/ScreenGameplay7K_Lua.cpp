@@ -37,7 +37,7 @@ void ScreenGameplay7K::SetupScriptConstants()
 	L->SetGlobal("Beat", CurrentBeat);
 	L->SetGlobal("Lifebar", score_keeper->getLifebarAmount(LT_GROOVE));
 
-	Animations->AddLuaTarget(&Background, "ScreenBackground");
+	//Animations->AddLuaTarget(&Background, "ScreenBackground");
 }
 
 // Called every frame, before the lua update event
