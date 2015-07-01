@@ -7,26 +7,19 @@
 #include "SongLoader.h"
 #include "Screen.h"
 #include "Audio.h"
-#include "ImageLoader.h"
-#include "Sprite.h"
-#include "Line.h"
-#include "BitmapFont.h"
 #include "GameWindow.h"
 #include "ImageList.h"
 
-
-#include "LuaManager.h"
 #include "SceneEnvironment.h"
 
 #include "ScoreKeeper7K.h"
 #include "TrackNote.h"
 #include "ScreenGameplay7K.h"
 #include "ScreenGameplay7K_Mechanics.h"
-#include "ScreenEvaluation7K.h"
-#include "SongDatabase.h"
 
 #include "AudioSourceOJM.h"
 #include "BackgroundAnimation.h"
+#include "Noteskin.h"
 
 ScreenGameplay7K::ScreenGameplay7K() : Screen("ScreenGameplay7K")
 {
@@ -140,7 +133,7 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 	// Disable all notes before the current measure.
 	for (uint32 k = 0; k < CurrentDiff->Channels; k++)
 	{
-		for (std::vector<VSRG::TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); )
+		for (auto m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); )
 		{
 			if (m->GetStartTime() < Time)
 			{
@@ -192,6 +185,7 @@ void ScreenGameplay7K::Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const
 	NoFail = Param.NoFail;
 
 	BGA = BackgroundAnimation::CreateBGAFromSong(DifficultyIndex, *S);
+	Noteskin::SetupNoteskin(false, CurrentDiff->Channels);
 	ForceActivation = false;
 
 	if (Param.StartMeasure == -1 && Auto)
@@ -363,7 +357,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 	else if (CurrentDiff->SoundList.size())
 	{
 		Log::Printf("Loading samples... ");
-		for (auto i = CurrentDiff->SoundList.begin(); i != CurrentDiff->SoundList.end(); i++)
+		for (auto i = CurrentDiff->SoundList.begin(); i != CurrentDiff->SoundList.end(); ++i)
 		{
 			Keysounds[i->first] = new SoundSample();
 
@@ -441,9 +435,9 @@ bool ScreenGameplay7K::ProcessSong()
 		if (Type == SPEEDTYPE_MMOD) // mmod
 		{
 			double max = 0; // Find the highest speed
-			for (TimingData::iterator i = VSpeeds.begin();
+			for (auto i = VSpeeds.begin();
 				i != VSpeeds.end();
-				i++)
+				++i)
 			{
 				max = std::max(max, abs(i->Value));
 			}
@@ -484,40 +478,15 @@ bool ScreenGameplay7K::LoadBMPs()
 	return true;
 }
 
-void ScreenGameplay7K::SetupAfterLoadingVariables()
+void ScreenGameplay7K::SetupBarline()
 {
-		// Get Noteheight
-	NoteHeight = Configuration::GetSkinConfigf("NoteHeight");
+	BarlineEnabled = Noteskin::IsBarlineEnabled();
+	BarlineOffsetKind = Noteskin::GetBarlineOffset();
+	BarlineX = Noteskin::GetBarlineStartX();
+	BarlineWidth = Noteskin::GetBarlineWidth();
 
-	if (!NoteHeight)
-		NoteHeight = 10;
-
-	// Get Gear Height
-	char str[256];
-	char nstr[256];
-
-	sprintf(nstr, "Channels%d", CurrentDiff->Channels);
-
-	sprintf(str, "GearHeight");
-	GearHeightFinal = Configuration::GetSkinConfigf(str, nstr);
-
-	/* Initial object distance */
-	if (!Upscroll)
-		JudgmentLinePos = float(ScreenHeight) - GearHeightFinal;
-	else
-		JudgmentLinePos = GearHeightFinal;
-
-	JudgmentLinePos += (Upscroll ? NoteHeight/2 : -NoteHeight/2);
-	CurrentVertical = IntegrateToTime (VSpeeds, -WaitingTime);
-	CurrentBeat = IntegrateToTime(BPS, 0);
-
-	RecalculateMatrix();
-	MultiplierChanged = true;
-
-	BarlineEnabled = (Configuration::GetSkinConfigf("BarlineEnabled") != 0);
-	BarlineOffsetKind = Configuration::GetSkinConfigf("BarlineOffset");
-	BarlineX = Configuration::GetSkinConfigf("BarlineX");
-	BarlineWidth = Configuration::GetSkinConfigf("BarlineWidth");
+	if (BarlineWidth == 0)
+		BarlineEnabled = false;
 
 	if (BarlineEnabled)
 	{
@@ -526,6 +495,25 @@ void ScreenGameplay7K::SetupAfterLoadingVariables()
 		int UpscrollMod = Upscroll ? -1 : 1;
 		BarlineOffset = BarlineOffsetKind == 0 ? NoteHeight * UpscrollMod / 2 : 0;
 	}
+}
+
+void ScreenGameplay7K::SetupAfterLoadingVariables()
+{
+	GearHeightFinal = Noteskin::GetJudgmentY();
+
+	/* Initial object distance */
+	if (!Upscroll)
+		JudgmentLinePos = float(ScreenHeight) - GearHeightFinal;
+	else
+		JudgmentLinePos = GearHeightFinal;
+
+	CurrentVertical = IntegrateToTime (VSpeeds, -WaitingTime);
+	CurrentBeat = IntegrateToTime(BPS, 0);
+
+	RecalculateMatrix();
+	MultiplierChanged = true;
+
+	SetupBarline();
 
 	ErrorTolerance = Configuration::GetConfigf("ErrorTolerance");
 
@@ -682,70 +670,14 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	AssignMeasure(StartMeasure);
 
 	// We're done with the data stored in the difficulties that aren't the one we're using. Clear it up.
-	for (auto i = MySong->Difficulties.begin(); i != MySong->Difficulties.end(); i++)
+	for (auto i = MySong->Difficulties.begin(); i != MySong->Difficulties.end(); ++i)
 	{
 		(*i)->Destroy();
 	}
 }
 
-void ScreenGameplay7K::SetupGear()
-{
-	using namespace Configuration;
-	char str[256];
-	char cstr[256];
-	char nstr[256];
-
-	if (!GameState::GetInstance().SkinSupportsChannelCount(CurrentDiff->Channels))
-	{
-		Log::Printf("Unsupported skin key count: %d", CurrentDiff->Channels);
-		DoPlay = false;
-		return;
-	}
-
-	sprintf(nstr, "Channels%d", CurrentDiff->Channels);
-
-	for (int i = 0; i < CurrentDiff->Channels; i++)
-	{
-		sprintf(cstr, "Key%d", i + 1);
-		GearLaneImage[i] = GameState::GetInstance().GetSkinImage(GetSkinConfigs(cstr, nstr));
-
-		sprintf(cstr, "Key%dDown", i + 1);
-		GearLaneImageDown[i] = GameState::GetInstance().GetSkinImage(GetSkinConfigs(cstr, nstr));
-
-		sprintf(str, "Key%dX", i+1);
-		LanePositions[i] = Configuration::GetSkinConfigf(str, nstr);
-
-		sprintf(str, "Key%dWidth", i+1);
-		LaneWidth[i] = Configuration::GetSkinConfigf(str, nstr);
-
-		float ChanBarlineWidth;
-		sprintf(str, "BarlineWidth");
-		ChanBarlineWidth = Configuration::GetSkinConfigf(str, nstr);
-		if (ChanBarlineWidth)
-			BarlineWidth = ChanBarlineWidth;
-
-		Keys[i].SetImage ( GearLaneImage[i] );
-		Keys[i].SetSize( LaneWidth[i], GearHeightFinal );
-		Keys[i].Centered = true;
-
-		float UMod = (Upscroll? -1:1);
-
-		Keys[i].SetPosition( LanePositions[i], JudgmentLinePos + UMod * GearHeightFinal/2 + UMod * NoteHeight/2);
-
-		if (Upscroll)
-			Keys[i].SetRotation(180);
-
-		Keys[i].SetZ(15);
-	}
-
-	if (BarlineEnabled)
-		Barline = new Line();
-}
-
 void ScreenGameplay7K::MainThreadInitialization()
 {
-	SetupGear();
-
 	if (!DoPlay) // Failure to load something important?
 	{
 		Running = false;
@@ -755,54 +687,13 @@ void ScreenGameplay7K::MainThreadInitialization()
 	PlayReactiveSounds = (CurrentDiff->IsVirtual || !(Configuration::GetConfigf("DisableHitsounds")));
 	MsDisplayMargin = (Configuration::GetSkinConfigf("HitErrorDisplayLimiter"));
 
-	char nstr[256];
-	sprintf(nstr, "Channels%d", CurrentDiff->Channels);
-
 	for (int i = 0; i < CurrentDiff->Channels; i++)
 	{
-		char cstr[256];
-
-		/* Assign per-lane bindings. */
-		sprintf(cstr, "Key%dBinding", i+1);
-
-		int Binding = Configuration::GetSkinConfigf(cstr, nstr);
-		GearBindings[Binding - 1] = i;
-
-		/* Note image */
-		sprintf(cstr, "Key%dImage", i+1);
-
-		GString Filename = Configuration::GetSkinConfigs(cstr, nstr);
-		NoteImages[i] = GameState::GetInstance().GetSkinImage(Filename);
-
-		/* Hold head image */
-		sprintf(cstr, "Key%dHoldHeadImage", i+1);
-
-		Filename = Configuration::GetSkinConfigs(cstr, nstr);
-		NoteImagesHoldHead[i] = GameState::GetInstance().GetSkinImage(Filename);
-		if (!NoteImagesHoldHead[i])
-			NoteImagesHoldHead[i] = NoteImages[i];
-
-		/* Hold tail image */
-		sprintf(cstr, "Key%dHoldTailImage", i+1);
-
-		Filename = Configuration::GetSkinConfigs(cstr, nstr);
-		NoteImagesHoldTail[i] = GameState::GetInstance().GetSkinImage(Filename);
-		if (!NoteImagesHoldTail[i])
-			NoteImagesHoldTail[i] = NoteImages[i];
-
-		/* Hold body image */
-		sprintf(cstr, "Key%dHoldImage", i+1);
-
-		Filename = Configuration::GetSkinConfigs(cstr, nstr);
-		NoteImagesHold[i] = GameState::GetInstance().GetSkinImage(Filename);
-
 		lastClosest[i] = 0;
 
 		HeldKey[i] = NULL;
 		GearIsPressed[i] = 0;
 	}
-
-	NoteImage = GameState::GetInstance().GetSkinImage("note.png");
 
 	WindowFrame.SetLightMultiplier(0.75f);
 

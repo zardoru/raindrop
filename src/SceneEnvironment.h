@@ -105,4 +105,6 @@ public:
 	void RemoveManagedObject(Drawable2D *Obj);
 };
 
+void DefineSpriteInterface(LuaManager* anim_lua);
+
 #endif

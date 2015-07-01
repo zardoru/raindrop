@@ -36,17 +36,16 @@ function HitLightning.Init()
 		HitLightning[i].Centered = 1
 		HitLightning[i].BlendMode = BlendAdd
 		
-		HitLightning[i].Width = GetConfigF("Key" .. i .. "Width", ChannelSpace)
+		HitLightning[i].Width = Noteskin[Channels]["Key"..i.."Width"]
 		HitLightning[i].Height = HitLightning.Height
 
 		local scrollY = 0
 		local scrollX = 0
+		scrollX = Noteskin[Channels]["Key" .. i .. "X"]
 		if Upscroll ~= 0 then
-			scrollX = GetConfigF("Key" .. i .. "X", ChannelSpace);
 			scrollY = GearHeight +  HitLightning.Height / 2
 			HitLightning[i].Rotation = (180)
 		else
-			scrollX = GetConfigF("Key" .. i .. "X", ChannelSpace);
 			scrollY = ScreenHeight - GearHeight - HitLightning.Height / 2
 		end
 

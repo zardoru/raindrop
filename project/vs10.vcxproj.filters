@@ -263,7 +263,7 @@
       <Filter>Source\game global\BGA</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Application.cpp">
-      <Filter>Source\game global\song interface</Filter>
+      <Filter>Source\game global</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

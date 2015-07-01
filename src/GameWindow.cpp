@@ -16,12 +16,10 @@
 #include "BindingsManager.h"
 #include "Configuration.h"
 #include "Screen.h"
-#include "Directory.h"
 #include "Application.h"
 #include "GameWindow.h"
 #include "ImageLoader.h"
 #include "Sprite.h"
-#include "GameObject.h"
 #include "VBO.h"
 #include "TruetypeFont.h"
 #include <glm/gtc/matrix_transform.hpp>
@@ -49,10 +47,8 @@ const char* vertShader = "#version 120\n"
 "		k_pos = k_pos + vec3(-0.5, -0.5, 0);\n"
 "	}\n"
 "	if (useTranslate){\n"
-"		mat4 m = tranM;\n" // m = note position k = position
-"		m[3][1] *= sMult;\n"
-"		gl_Position = projection * m * mvp * siM * vec4(k_pos, 1);\n"
-"		Pos_world = (projection * m * mvp * siM * vec4(k_pos.xyz, 1)).xyz;\n"
+"		gl_Position = projection * mvp * siM * vec4(k_pos, 1);\n"
+"		Pos_world = (projection * mvp * siM * vec4(k_pos.xyz, 1)).xyz;\n"
 "	}else{\n"
 "		gl_Position = projection * mvp * vec4(k_pos.xyz, 1);\n"
 "		Pos_world = (projection * mvp * vec4(k_pos.xyz, 1)).xyz;\n"
@@ -848,7 +844,7 @@ void GameWindow::AddVBO(VBO *V)
 
 void GameWindow::RemoveVBO(VBO *V)
 {
-	for (std::vector<VBO*>::iterator i = VBOList.begin(); i != VBOList.end(); i++)
+	for (auto i = VBOList.begin(); i != VBOList.end(); ++i)
 	{
 		if (*i == V)
 		{

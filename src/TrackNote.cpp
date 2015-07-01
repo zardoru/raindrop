@@ -14,6 +14,16 @@ TrackNote::~TrackNote()
 {
 }
 
+float TrackNote::GetHoldSize()
+{
+	return abs((b_pos_holdend - b_pos));
+}
+
+float TrackNote::GetHoldEndVertical()
+{
+	return b_pos_holdend;
+}
+
 void TrackNote::AssignNotedata(const VSRG::NoteData &Notedata)
 {
 	StartTime = Notedata.StartTime;
@@ -34,12 +44,6 @@ Mat4 TrackNote::GetHoldPositionMatrix(const float &trackPosition) const
 {
 	float VerticalHoldBodyPos = b_pos + (b_pos_holdend - b_pos) / 2;
 	return glm::translate(Mat4(), glm::vec3(trackPosition, VerticalHoldBodyPos, 14));
-}
-
-Mat4 TrackNote::GetHoldBodyMatrix(const float &noteWidth, const float &speedMultiplier) const
-{
-	float VertHBS = abs((b_pos_holdend - b_pos));
-	return glm::scale(Mat4(), glm::vec3(noteWidth, VertHBS * speedMultiplier, 1)) * glm::translate(Mat4(), glm::vec3());
 }
 
 void TrackNote::AssignPosition(float Position, float endPosition)

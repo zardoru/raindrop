@@ -3,16 +3,7 @@
 
 #include "GameGlobal.h"
 #include "GameState.h"
-#include "Logging.h"
-#include "SongLoader.h"
 #include "Screen.h"
-#include "Audio.h"
-#include "ImageLoader.h"
-#include "Sprite.h"
-#include "Line.h"
-#include "BitmapFont.h"
-#include "GameWindow.h"
-#include "ImageList.h"
 
 #include "LuaManager.h"
 #include "SceneEnvironment.h"
@@ -36,8 +27,6 @@ void ScreenGameplay7K::SetupScriptConstants()
 	L->SetGlobal("WaitingTime", WaitingTime);
 	L->SetGlobal("Beat", CurrentBeat);
 	L->SetGlobal("Lifebar", score_keeper->getLifebarAmount(LT_GROOVE));
-
-	//Animations->AddLuaTarget(&Background, "ScreenBackground");
 }
 
 // Called every frame, before the lua update event

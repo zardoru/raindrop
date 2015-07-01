@@ -91,6 +91,8 @@ namespace VSRG
 		int GetFracKind() const;
 
 		~TrackNote();
+		float GetHoldSize();
+		float GetHoldEndVertical();
 	};
 
 }

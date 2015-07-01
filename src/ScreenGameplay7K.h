@@ -22,7 +22,6 @@ class ScreenGameplay7K : public Screen
 private:
 
 	VSRGMechanics *MechanicsSet;
-	Sprite Keys[VSRG::MAX_CHANNELS];
 
 	TimingData       VSpeeds;
 	TimingData		 BPS;
@@ -66,8 +65,6 @@ private:
     EHiddenMode SelectedHiddenMode;
 
     Mat4             PositionMatrix;
-    Mat4             PositionMatrixJudgment;
-    Mat4             NoteMatrix[VSRG::MAX_CHANNELS];
 
     float            SpeedMultiplier;
     uint32           StartMeasure;
@@ -79,17 +76,7 @@ private:
     int              BarlineOffsetKind;
 
 	LifeType         lifebar_type;		 
-	ScoreType        scoring_type;		 
-
-	/* Graphics */
-	Image*  NoteImage;
-	Image*  NoteImageHold;
-	Image*  GearLaneImage[VSRG::MAX_CHANNELS];
-	Image*  GearLaneImageDown[VSRG::MAX_CHANNELS];
-	Image*  NoteImages[VSRG::MAX_CHANNELS];
-	Image*  NoteImagesHold[VSRG::MAX_CHANNELS];
-	Image*  NoteImagesHoldHead[VSRG::MAX_CHANNELS];
-	Image*  NoteImagesHoldTail[VSRG::MAX_CHANNELS];
+	ScoreType        scoring_type;
 
 	AudioStream *Music;
 	AudioSourceOJM *OJMAudio;
@@ -154,6 +141,7 @@ private:
 	bool LoadChartData();
 	bool LoadSongAudio();
 	bool LoadBMPs();
+	void SetupBarline();
 	bool ProcessSong();
 
 	void SetupAfterLoadingVariables();

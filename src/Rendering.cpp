@@ -231,8 +231,33 @@ void Sprite::UpdateTexture()
 	DirtyTexture = false;
 }
 
+void Sprite::RenderMinimalSetup()
+{
+	if (Alpha == 0) return;
+
+	if (mImage)
+	{
+		mImage->Bind();
+	}
+	else
+		return;
+
+	UpdateTexture();
+
+	SetBlendingMode(BlendingMode);
+
+	UvBuffer->Bind();
+	glVertexAttribPointer(WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+
+	// Set the color.
+	WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha);
+	DoQuadDraw();
+}
+
 void Sprite::Render()
 {
+	if (Alpha == 0) return;
+
 	if (mImage)
 	{
 		mImage->Bind();
@@ -240,8 +265,6 @@ void Sprite::Render()
 		return;
 
 	UpdateTexture();
-
-	if (Alpha == 0) return;
 
 	SetBlendingMode(BlendingMode);
 
@@ -388,7 +411,7 @@ void TruetypeFont::Render(const GString &In, const Vec2 &Position, const Mat4 &T
 
 void TruetypeFont::ReleaseTextures()
 {
-	for (std::map <int, codepdata>::iterator i = Texes.begin();
+	for (auto i = Texes.begin();
 		i != Texes.end();
 		i++)
 	{

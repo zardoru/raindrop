@@ -81,7 +81,8 @@ public:
 	void SetCropToWholeImage();
 	void SetCropByPixels(int32 x1, int32 x2, int32 y1, int32 y2);
 
-	virtual void Render(); // found in backend.cpp
+	virtual void Render() override;
+	void RenderMinimalSetup();
 	virtual void Invalidate();
 
 	void BindTextureVBO();

@@ -49,7 +49,7 @@ Song::~Song()
 VSRG::Difficulty* Song::GetDifficulty(uint32 i)
 {
 	if (i >= Difficulties.size())
-		return NULL;
+		return nullptr;
 	else
 		return Difficulties.at(i).get();
 }
@@ -78,7 +78,7 @@ void Difficulty::ProcessVSpeeds(TimingData& BPS, TimingData& VerticalSpeeds, dou
 	}
 
 	// Calculate velocity at time based on BPM at time
-	for (TimingData::iterator Time = BPS.begin();
+	for (auto Time = BPS.begin();
 		Time != BPS.end();
 		Time++)
 	{
@@ -101,7 +101,7 @@ void Difficulty::ProcessVSpeeds(TimingData& BPS, TimingData& VerticalSpeeds, dou
 	// Let first speed be not-null.
 	if (VerticalSpeeds.size() && VerticalSpeeds[0].Value == 0)
 	{
-		for (TimingData::iterator i = VerticalSpeeds.begin(); 
+		for (auto i = VerticalSpeeds.begin(); 
 			i != VerticalSpeeds.end();
 			i++)
 		{
@@ -156,7 +156,7 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 
 	BPS.clear();
 
-	for(TimingData::iterator Time = Timing.begin();
+	for(auto Time = Timing.begin();
 		Time != Timing.end();
 		Time++)
 	{
@@ -188,7 +188,7 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 		Seg.Value = 0;
 
 		/* First, eliminate collisions. */
-		for (TimingData::iterator k = BPS.begin(); k != BPS.end();)
+		for (auto k = BPS.begin(); k != BPS.end();)
 		{
 			if ( k->Time == TValue ) /* Equal? Remove the collision, leaving only the 0 in front. */
 			{
@@ -256,7 +256,7 @@ void Difficulty::ProcessSpeedVariations(TimingData& BPS, TimingData& VerticalSpe
 			modify it to be this value * factor
 		*/
 
-		for(TimingData::iterator Time = VerticalSpeeds.begin();
+		for(auto Time = VerticalSpeeds.begin();
 			Time != VerticalSpeeds.end();
 			Time++)
 		{
@@ -296,7 +296,7 @@ void Difficulty::ProcessSpeedVariations(TimingData& BPS, TimingData& VerticalSpe
 			goto next_speed;
 
 		// We're not an osu!mania chart, so it's time to do what should be done.
-		for(TimingData::iterator Time = VerticalSpeeds.begin();
+		for(auto Time = VerticalSpeeds.begin();
 			Time != VerticalSpeeds.end();
 			Time++)
 		{
@@ -373,13 +373,13 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 		int MIdx = 0;
 
 		/* For each measure of this channel */
-		for (std::vector<VSRG::Measure>::iterator Msr = Data->Measures.begin();
+		for (auto Msr = Data->Measures.begin();
 			Msr != Data->Measures.end();
 			Msr++)
 		{
 			/* For each note in the measure... */
 			ptrdiff_t total_notes = Msr->MeasureNotes[KeyIndex].size();
-			for (ptrdiff_t Note = 0; Note < total_notes; Note++)
+			for (auto Note = 0; Note < total_notes; Note++)
 			{
 				/*
 					Calculate position. (Change this to TrackNote instead of processing?)
@@ -462,7 +462,7 @@ void Difficulty::GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSp
 	}
 
 
-	for (std::vector<VSRG::Measure>::iterator Msr = Data->Measures.begin();
+	for (auto Msr = Data->Measures.begin();
 		Msr != Data->Measures.end();
 		Msr++)
 	{

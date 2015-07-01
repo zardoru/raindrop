@@ -88,11 +88,6 @@ void ScreenGameplay7K::GearKeyEvent(uint32 Lane, bool KeyDown)
 		Animations->GetEnv()->PushArgument(KeyDown);
 		Animations->GetEnv()->RunFunction();
 	}
-
-	if (KeyDown)
-		Keys[Lane].SetImage( GearLaneImageDown[Lane], false );
-	else
-		Keys[Lane].SetImage( GearLaneImage[Lane], false );
 }
 
 void ScreenGameplay7K::TranslateKey(KeyType K, bool KeyDown)

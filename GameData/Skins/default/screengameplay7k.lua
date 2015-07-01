@@ -3,10 +3,11 @@ skin_require("Global/AnimationFunctions.lua")
 skin_require("Global/FadeInScreen.lua")
 
 -- Set up constants for everyone
-ChannelSpace = "Channels" .. Channels
-GearStartX = GetConfigF("GearStartX", "")
-GearWidth = GetConfigF("GearWidth", ChannelSpace)
-GearHeight = GetConfigF("GearHeight", "")
+
+skin_require("noteskin_defs.lua")
+GearWidth = Noteskin[Channels].GearWidth
+GearHeight = GearHeightCommon
+
 
 skin_require("VSRG/Explosions.lua")
 skin_require("VSRG/ComboDisplay.lua")
@@ -18,7 +19,6 @@ skin_require("VSRG/AutoplayAnimation.lua")
 skin_require("VSRG/GameplayObjects.lua")
 skin_require("VSRG/StageAnimation.lua")
 skin_require("VSRG/TextDisplay.lua")
-
 
 -- All of these will be loaded in the loading screen instead of
 -- in the main thread once loading is over.
@@ -100,7 +100,7 @@ function Init()
 	ScreenFade.Init()
 	ScreenFade.Out(true)
 
-	ScreenBackground.Alpha = (0)
+	-- ScreenBackground.Alpha = (0)
 	Engine:Sort()
 end
 
@@ -120,13 +120,13 @@ function OnFailureEvent()
 end
 
 function BackgroundFadeIn(frac)
-	ScreenBackground.Alpha = frac
+	-- ScreenBackground.Alpha = frac
 	return 1
 end
 
 -- When 'enter' is pressed and the game starts, this function is called.
 function OnActivateEvent()
-	Engine:AddAnimation(ScreenBackground, "BackgroundFadeIn", EaseNone, 1, 0)
+	-- Engine:AddAnimation(ScreenBackground, "BackgroundFadeIn", EaseNone, 1, 0)
 
 	if Auto ~= 0 then
 		AutoAnimation.Init()

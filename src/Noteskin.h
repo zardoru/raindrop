@@ -1,21 +1,24 @@
 #ifndef NOTESKIN_H_
 #define NOTESKIN_H_
 
-class Image;
 class LuaManager;
 
-// Structure not yet final. 
 class Noteskin
 {
-	float  NoteHeight;
-	Image* GearImage[VSRG::MAX_CHANNELS];
-	Image* KeyImage[VSRG::MAX_CHANNELS];
-	AABB NoteCrop[VSRG::MAX_CHANNELS];
-	Transformation NoteTransformation[VSRG::NK_TOTAL][VSRG::MAX_CHANNELS];
-	LuaManager *NoteskinLua;
+	static shared_ptr<LuaManager> NoteskinLua;
 public:
-	Noteskin(GString Name);
-	void Update(float Delta);
+	static void SetupNoteskin(bool SpecialStyle, int Lanes);
+	static void Update(float Delta);
+
+	static void DrawNote(int Lane, VSRG::TrackNote &T, float Location);
+	static void DrawHoldHead(int Lane, float Location);
+	static void DrawHoldTail(int Lane, float Location);
+	static void DrawHoldBody(int Lane, float Location, float Size);
+	static float GetBarlineWidth();
+	static double GetBarlineStartX();
+	static double GetBarlineOffset();
+	static bool IsBarlineEnabled();
+	static double GetJudgmentY();
 };
 
 #endif

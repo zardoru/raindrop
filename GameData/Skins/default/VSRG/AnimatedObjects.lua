@@ -72,24 +72,27 @@ function MissHighlight.Init()
 	MissHighlight.Time = {}
 	MissHighlight.CurrentTime = {}
 
-	for i=0, Channels do
+	for i=1, Channels do
 		MissHighlight[i] = Engine:CreateObject()
 		MissHighlight[i].Centered = 1
 		MissHighlight[i].Image = ("VSRG/miss_highlight.png")
-		MissHighlight[i].X = GetConfigF("Key"..i.."X", ChannelSpace)
+		print ("got here lol " .. i)
+		MissHighlight[i].X = Noteskin[Channels]["Key" .. i .. "X"]
 		MissHighlight[i].Y = ScreenHeight/2
-		MissHighlight[i].Width = GetConfigF("Key"..i.."Width", ChannelSpace)
+		print "got here ye"
+		MissHighlight[i].Width = Noteskin[Channels]["Key" .. i .. "Width"]
 		MissHighlight[i].Height = ScreenHeight
 		MissHighlight[i].Alpha = 0
 		MissHighlight[i].Layer = 15
 		
+		print "got here"
 		MissHighlight.Time[i] = 1 
 		MissHighlight.CurrentTime[i] = 1
 	end
 end
 
 function MissHighlight.Run(Delta)
-	for i=0, Channels do
+	for i=1, Channels do
 		MissHighlight.CurrentTime[i] = MissHighlight.CurrentTime[i] + Delta
 		
 		if MissHighlight.CurrentTime[i] < MissHighlight.Time[i] then
