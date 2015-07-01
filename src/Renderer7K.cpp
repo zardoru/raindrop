@@ -38,7 +38,7 @@ void ScreenGameplay7K::DrawBarlines(float rPos)
 	}
 }
 
-bool ShouldDrawNoteInScreen(TrackNote& T, float SpeedMultiplier, float FieldDisplacement, float &Vertical, float& VerticalHold, float &VerticalHoldEnd, bool Upscroll)
+bool ShouldDrawNoteInScreen(TrackNote& T, float SpeedMultiplier, float FieldDisplacement, float &Vertical, float &VerticalHoldEnd, bool Upscroll)
 {
 	if (!T.IsVisible())
 		return false;
@@ -48,16 +48,14 @@ bool ShouldDrawNoteInScreen(TrackNote& T, float SpeedMultiplier, float FieldDisp
 			return false;
 
 	Vertical = (T.GetVertical() * SpeedMultiplier + FieldDisplacement);
-	VerticalHold = 0;
 	if (T.IsHold())
 	{
-		VerticalHold = (T.GetVerticalHold() * SpeedMultiplier + FieldDisplacement);
 		VerticalHoldEnd = (T.GetHoldEndVertical() * SpeedMultiplier + FieldDisplacement);
 
 		if (Upscroll)
-			return IntervalsIntersect(0, ScreenHeight, Vertical, VerticalHold);
+			return IntervalsIntersect(0, ScreenHeight, Vertical, VerticalHoldEnd);
 		else
-			return IntervalsIntersect(0, ScreenHeight, VerticalHold, Vertical);
+			return IntervalsIntersect(0, ScreenHeight, VerticalHoldEnd, Vertical);
 	}
 	
 	if (Upscroll)
@@ -101,9 +99,9 @@ void ScreenGameplay7K::DrawMeasures()
 		{
 			// Is there a better way to do this that doesn't involve recalculating this every note?
 			float Vertical = 0;
-			float VerticalHold = 0, VerticalHoldEnd;
+			float VerticalHoldEnd;
 
-			if (!ShouldDrawNoteInScreen(*m, SpeedMultiplier, FieldDisplacement, Vertical, VerticalHold, VerticalHoldEnd, Upscroll))
+			if (!ShouldDrawNoteInScreen(*m, SpeedMultiplier, FieldDisplacement, Vertical, VerticalHoldEnd, Upscroll))
 				continue; /* If this is not visible, we move on to the next note. */
 
 			// Assign our matrix.
@@ -112,11 +110,11 @@ void ScreenGameplay7K::DrawMeasures()
 			// We draw the body first, so that way the heads get drawn on top
 			if (m->IsHold())
 			{
-				Noteskin::DrawHoldBody(k, VerticalHold, m->GetHoldSize() * SpeedMultiplier);
+				Noteskin::DrawHoldBody(k, (VerticalHoldEnd + Vertical) / 2, m->GetHoldSize() * SpeedMultiplier);
 				Noteskin::DrawHoldTail(k, VerticalHoldEnd);
 				
 				// LR2 style keep-on-the-judgment-line
-				if ( (Vertical > VerticalHold && Upscroll || Vertical < VerticalHold && !Upscroll) && m->IsJudgable() )
+				if ( (Vertical > VerticalHoldEnd && Upscroll || Vertical < VerticalHoldEnd && !Upscroll) && m->IsJudgable() )
 					Noteskin::DrawHoldHead(k, JudgmentLinePos);
 				else
 					Noteskin::DrawHoldHead(k, Vertical);

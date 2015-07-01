@@ -76,16 +76,13 @@ function MissHighlight.Init()
 		MissHighlight[i] = Engine:CreateObject()
 		MissHighlight[i].Centered = 1
 		MissHighlight[i].Image = ("VSRG/miss_highlight.png")
-		print ("got here lol " .. i)
 		MissHighlight[i].X = Noteskin[Channels]["Key" .. i .. "X"]
 		MissHighlight[i].Y = ScreenHeight/2
-		print "got here ye"
 		MissHighlight[i].Width = Noteskin[Channels]["Key" .. i .. "Width"]
 		MissHighlight[i].Height = ScreenHeight
 		MissHighlight[i].Alpha = 0
 		MissHighlight[i].Layer = 15
 		
-		print "got here"
 		MissHighlight.Time[i] = 1 
 		MissHighlight.CurrentTime[i] = 1
 	end

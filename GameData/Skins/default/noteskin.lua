@@ -3,6 +3,7 @@ skin_require("noteskin_defs.lua")
 normalNotes = {}
 holdBodies = {}
 
+offset = NoteHeight / 2
 function setNoteStuff(note, i)
 	note.Width = Noteskin[Lanes]['Key' .. i .. 'Width']
 	note.X = Noteskin[Lanes]['Key' .. i .. 'X']
@@ -34,13 +35,13 @@ end
 
 function drawNormalInternal(lane, loc)
 		local note = normalNotes[lane + 1]
-		note.Y = loc
+		note.Y = loc - offset
 		Render(note)
 end
 
 function drawHoldBodyInternal(lane, loc, size)
 	local note = holdBodies[lane + 1]
-	note.Y = loc + size / 2
+	note.Y = loc - offset
 	note.Height = size
 	Render(note)
 end

@@ -1,5 +1,4 @@
 #include "GameGlobal.h"
-#include "Sprite.h"
 #include "TrackNote.h"
 #include <glm/gtc/matrix_transform.inl>
 
@@ -14,7 +13,7 @@ TrackNote::~TrackNote()
 {
 }
 
-float TrackNote::GetHoldSize()
+float TrackNote::GetHoldSize() const
 {
 	return abs((b_pos_holdend - b_pos));
 }
@@ -123,7 +122,7 @@ bool TrackNote::WasNoteHit() const
 
 float TrackNote::GetVerticalHold() const
 {
-	return b_pos_holdend;
+	return b_pos + GetHoldSize() / 2;
 }
 
 int TrackNote::GetSound() const
