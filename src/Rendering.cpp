@@ -231,16 +231,25 @@ void Sprite::UpdateTexture()
 	DirtyTexture = false;
 }
 
-void Sprite::RenderMinimalSetup()
+bool Sprite::ShouldDraw()
 {
-	if (Alpha == 0) return;
+	if (Alpha == 0)
+		return false;
 
 	if (mImage)
 	{
 		mImage->Bind();
 	}
 	else
-		return;
+		return false;
+
+	return true;
+}
+
+bool Sprite::RenderMinimalSetup()
+{
+	if (!ShouldDraw())
+		return false;
 
 	UpdateTexture();
 
@@ -252,16 +261,25 @@ void Sprite::RenderMinimalSetup()
 	// Set the color.
 	WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha);
 	DoQuadDraw();
+
+	DrawLighten();
+
+	return true;
+}
+
+void Sprite::DrawLighten()
+{
+	if (Lighten)
+	{
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		WindowFrame.SetUniform(U_COLOR, Red * LightenFactor, Green * LightenFactor, Blue * LightenFactor, Alpha * LightenFactor);
+		DoQuadDraw();
+	}
 }
 
 void Sprite::Render()
 {
-	if (Alpha == 0) return;
-
-	if (mImage)
-	{
-		mImage->Bind();
-	}else
+	if (!ShouldDraw())
 		return;
 
 	UpdateTexture();
@@ -280,12 +298,7 @@ void Sprite::Render()
 	SetTexturedQuadVBO(UvBuffer);
 	DoQuadDraw();
 
-	if (Lighten)
-	{
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha * LightenFactor);
-		DoQuadDraw();
-	}
+	DrawLighten();
 
 	FinalizeDraw();
 }

@@ -44,6 +44,7 @@ protected:
 	VBO *UvBuffer;
 	bool DoTextureCleanup;
 	void UpdateTexture();
+	bool ShouldDraw();
 public:
 	
 	Sprite(bool ShouldInitTexture);
@@ -82,7 +83,8 @@ public:
 	void SetCropByPixels(int32 x1, int32 x2, int32 y1, int32 y2);
 
 	virtual void Render() override;
-	void RenderMinimalSetup();
+	bool RenderMinimalSetup();
+	void DrawLighten();
 	virtual void Invalidate();
 
 	void BindTextureVBO();

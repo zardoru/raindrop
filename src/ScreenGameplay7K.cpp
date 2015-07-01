@@ -5,8 +5,7 @@
 #include "Logging.h"
 #include "Screen.h"
 #include "Audio.h"
-#include "Sprite.h"
-#include "GameWindow.h"
+
 
 #include "LuaManager.h"
 #include "SceneEnvironment.h"
@@ -14,6 +13,7 @@
 #include "ScoreKeeper7K.h"
 #include "ScreenGameplay7K.h"
 #include "ScreenEvaluation7K.h"
+#include "Noteskin.h"
 
 using namespace VSRG;
 
@@ -151,6 +151,8 @@ bool ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 		case KT_Left:
 			SpeedMultiplierUser -= 0.25;
 			MultiplierChanged = true;
+			break;
+		default:
 			break;
 		}
 
@@ -346,8 +348,8 @@ bool ScreenGameplay7K::Run(double Delta)
 		WarpedSongTime = -WaitingTime;
 	}
 
+	Noteskin::Update(SongTime, CurrentBeat);
 	RecalculateEffects();
-	RecalculateMatrix();
 
 	UpdateScriptVariables();
 

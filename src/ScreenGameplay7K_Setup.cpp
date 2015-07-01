@@ -20,6 +20,7 @@
 #include "AudioSourceOJM.h"
 #include "BackgroundAnimation.h"
 #include "Noteskin.h"
+#include "Line.h"
 
 ScreenGameplay7K::ScreenGameplay7K() : Screen("ScreenGameplay7K")
 {
@@ -72,6 +73,7 @@ ScreenGameplay7K::ScreenGameplay7K() : Screen("ScreenGameplay7K")
 	SuccessTime = 0;
 	LoadedSong = NULL;
 	Active = false;
+	Barline = nullptr;
 }
 
 
@@ -708,6 +710,8 @@ void ScreenGameplay7K::MainThreadInitialization()
 	else
 		WaitingTime = 0;
 
+	if (BarlineEnabled)
+		Barline = make_shared<Line>();
 
 	CurrentBeat = IntegrateToTime(BPS, -WaitingTime);
 	Animations->GetImageList()->ForceFetch();

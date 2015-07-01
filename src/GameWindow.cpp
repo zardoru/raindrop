@@ -844,6 +844,8 @@ void GameWindow::AddVBO(VBO *V)
 
 void GameWindow::RemoveVBO(VBO *V)
 {
+	if (!VBOList.size()) return;
+
 	for (auto i = VBOList.begin(); i != VBOList.end(); ++i)
 	{
 		if (*i == V)

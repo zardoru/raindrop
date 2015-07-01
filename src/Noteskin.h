@@ -8,7 +8,7 @@ class Noteskin
 	static shared_ptr<LuaManager> NoteskinLua;
 public:
 	static void SetupNoteskin(bool SpecialStyle, int Lanes);
-	static void Update(float Delta);
+	static void Update(float Delta, float CurrentBeat);
 
 	static void DrawNote(int Lane, VSRG::TrackNote &T, float Location);
 	static void DrawHoldHead(int Lane, float Location);

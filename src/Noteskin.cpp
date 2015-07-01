@@ -36,13 +36,14 @@ void Noteskin::SetupNoteskin(bool SpecialStyle, int Lanes)
 	NoteskinLua->RunScript(GameState::GetInstance().GetSkinFile("noteskin.lua"));
 }
 
-void Noteskin::Update(float Delta)
+void Noteskin::Update(float Delta, float CurrentBeat)
 {
 	assert(NoteskinLua != nullptr);
 
-	if (NoteskinLua->CallFunction("Update", 1))
+	if (NoteskinLua->CallFunction("Update", 2))
 	{
 		NoteskinLua->PushArgument(Delta);
+		NoteskinLua->PushArgument(CurrentBeat);
 		NoteskinLua->RunFunction();
 	}
 }

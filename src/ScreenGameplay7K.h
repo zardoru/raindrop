@@ -5,7 +5,6 @@
 #include "ScoreKeeper.h"
 #include "ScreenGameplay7K_Mechanics.h"
 #include "BackgroundAnimation.h"
-#include <filesystem>
 
 class AudioStream;
 class Image;
@@ -36,7 +35,7 @@ private:
 	shared_ptr<VSRG::Song>			 LoadedSong;
 	TimingType						 UsedTimingType;
 
-	Line* Barline;
+	shared_ptr<Line> Barline;
 
 	double BarlineOffset;
 	double BarlineX;
