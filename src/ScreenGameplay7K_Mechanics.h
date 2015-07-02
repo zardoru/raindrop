@@ -18,9 +18,11 @@ public:
 	typedef function<void(uint32)> KeysoundEvent;
 
 protected:
+	virtual ~VSRGMechanics() = default;
+
 	VSRG::Song *CurrentSong;
 	VSRG::Difficulty *CurrentDifficulty;
-	ScoreKeeper7K *score_keeper;
+	shared_ptr<ScoreKeeper7K> score_keeper;
 
 public:
 
@@ -31,7 +33,7 @@ public:
 	HitEvent HitNotify;
 	MissEvent MissNotify;
 
-	virtual void Setup(VSRG::Song *Song, VSRG::Difficulty *Difficulty, ScoreKeeper7K *scoreKeeper);
+	virtual void Setup(VSRG::Song *Song, VSRG::Difficulty *Difficulty, shared_ptr<ScoreKeeper7K> scoreKeeper);
 
 	// If returns true, don't judge any more notes.
 	virtual bool OnUpdate(double SongTime, VSRG::TrackNote* Note, uint32 Lane) = 0;
@@ -50,22 +52,22 @@ class RaindropMechanics : public VSRGMechanics
 	bool forcedRelease;
 public:
 	RaindropMechanics(bool forcedRelease);
-	bool OnUpdate(double SongTime, VSRG::TrackNote* Note, uint32 Lane);
-	bool OnPressLane(double SongTime, VSRG::TrackNote* Note, uint32 Lane);
-	bool OnReleaseLane(double SongTime, VSRG::TrackNote* Note, uint32 Lane);
+	bool OnUpdate(double SongTime, VSRG::TrackNote* Note, uint32 Lane) override;
+	bool OnPressLane(double SongTime, VSRG::TrackNote* Note, uint32 Lane) override;
+	bool OnReleaseLane(double SongTime, VSRG::TrackNote* Note, uint32 Lane) override;
 
-	TimingType GetTimingKind();
+	TimingType GetTimingKind() override;
 };
 
 class O2JamMechanics : public VSRGMechanics
 {
 public:
 
-	bool OnUpdate(double SongBeat, VSRG::TrackNote* Note, uint32 Lane);
-	bool OnPressLane(double SongBeat, VSRG::TrackNote* Note, uint32 Lane);
-	bool OnReleaseLane(double SongBeat, VSRG::TrackNote* Note, uint32 Lane);
+	bool OnUpdate(double SongBeat, VSRG::TrackNote* Note, uint32 Lane) override;
+	bool OnPressLane(double SongBeat, VSRG::TrackNote* Note, uint32 Lane) override;
+	bool OnReleaseLane(double SongBeat, VSRG::TrackNote* Note, uint32 Lane) override;
 
-	TimingType GetTimingKind();
+	TimingType GetTimingKind() override;
 };
 
 #endif

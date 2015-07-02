@@ -110,20 +110,29 @@ void ScreenGameplay7K::DrawMeasures()
 			// We draw the body first, so that way the heads get drawn on top
 			if (m->IsHold())
 			{
-				Noteskin::DrawHoldBody(k, (VerticalHoldEnd + Vertical) / 2, m->GetHoldSize() * SpeedMultiplier);
-				Noteskin::DrawHoldTail(k, VerticalHoldEnd);
+				float Pos = (VerticalHoldEnd + Vertical) / 2;
+				float Size = m->GetHoldSize() * SpeedMultiplier;
+				int Level = 1;
+
+				if (m->IsEnabled() && m->WasNoteHit())
+					Level = 2;
+				if (!m->IsEnabled())
+					Level = 0;
+
+				Noteskin::DrawHoldBody(k, Pos, Size, Level);
+				Noteskin::DrawHoldTail(*m, k, VerticalHoldEnd);
 				
 				// LR2 style keep-on-the-judgment-line
 				if ( (Vertical > VerticalHoldEnd && Upscroll || Vertical < VerticalHoldEnd && !Upscroll) && m->IsJudgable() )
-					Noteskin::DrawHoldHead(k, JudgmentLinePos);
+					Noteskin::DrawHoldHead(*m, k, JudgmentLinePos);
 				else
-					Noteskin::DrawHoldHead(k, Vertical);
+					Noteskin::DrawHoldHead(*m, k, Vertical);
 			} else
 			{
 				if ((Vertical < JudgmentLinePos && Upscroll || Vertical >= JudgmentLinePos && !Upscroll) && m->IsJudgable())
-					Noteskin::DrawNote(k, *m, JudgmentLinePos);
+					Noteskin::DrawNote(*m, k, JudgmentLinePos);
 				else
-					Noteskin::DrawNote(k, *m, Vertical);
+					Noteskin::DrawNote(*m, k, Vertical);
 			}
 		}
 	}

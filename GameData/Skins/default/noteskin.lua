@@ -33,17 +33,32 @@ function Update(delta, beat)
 	end 
 end 
 
-function drawNormalInternal(lane, loc)
-		local note = normalNotes[lane + 1]
-		note.Y = loc - offset
-		Render(note)
+function drawNormalInternal(lane, loc, frac)
+	local note = normalNotes[lane + 1]
+	note.Y = loc - offset
+	Render(note)
 end
 
-function drawHoldBodyInternal(lane, loc, size)
+function drawHoldBodyInternal(lane, loc, size, active_level)
 	local note = holdBodies[lane + 1]
 	note.Y = loc - offset
 	note.Height = size
+	
+	if active_level == 0 then
+		note.Red = 0.5
+		note.Blue = 0.5
+		note.Green = 0.5
+	else
+		note.Red = 1
+		note.Blue = 1
+		note.Green = 1
+	end
+	
 	Render(note)
+end
+
+function drawMineInternal(lane, loc, frac)
+	
 end
 
 -- From now on, only engine variables are being set.

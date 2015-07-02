@@ -116,7 +116,7 @@ namespace VSRG
 		std::vector<AutoplaySound> BGMEvents;
 
 		// Autoplay BMP
-		BMPEventsDetail *BMPEvents;
+		shared_ptr<BMPEventsDetail> BMPEvents;
 
 		// Timing Info
 		std::shared_ptr<CustomTimingInfo> TimingInfo;

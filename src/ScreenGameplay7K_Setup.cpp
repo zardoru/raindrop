@@ -105,7 +105,6 @@ void ScreenGameplay7K::Cleanup()
 
 	delete MissSnd;
 	delete FailSnd;
-	delete score_keeper;
 }
 
 void ScreenGameplay7K::AssignMeasure(uint32 Measure)
@@ -187,14 +186,14 @@ void ScreenGameplay7K::Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const
 	NoFail = Param.NoFail;
 
 	BGA = BackgroundAnimation::CreateBGAFromSong(DifficultyIndex, *S);
-	Noteskin::SetupNoteskin(false, CurrentDiff->Channels);
+	Noteskin::SetupNoteskin(false, CurrentDiff->Channels, this);
 	ForceActivation = false;
 
 	if (Param.StartMeasure == -1 && Auto)
 		StartMeasure = 0;
 
-	score_keeper = new ScoreKeeper7K();
-	GameState::GetInstance().SetScorekeeper7K(score_keeper);
+	ScoreKeeper = make_shared<ScoreKeeper7K>();
+	GameState::GetInstance().SetScorekeeper7K(ScoreKeeper);
 	UpdateScriptScoreVariables();
 }
 
@@ -467,15 +466,10 @@ bool ScreenGameplay7K::ProcessSong()
 	return true;
 }
 
-bool ScreenGameplay7K::LoadBMPs()
+bool ScreenGameplay7K::LoadBGA()
 {
-	if (Configuration::GetConfigf("DisableBMP") == 0 && CurrentDiff->Data->BMPEvents)
-	{
-		if (CurrentDiff->Data->BMPEvents->BMPList.size())
-			Log::Printf("Loading BMPs...\n");;
-
+	if (Configuration::GetConfigf("DisableBGA") == 0)
 		BGA->Load();
-	}
 
 	return true;
 }
@@ -525,9 +519,9 @@ void ScreenGameplay7K::SetupAfterLoadingVariables()
 
 void ScreenGameplay7K::ChangeNoteTimeToBeats()
 {
-	for (uint32 k = 0; k < CurrentDiff->Channels; k++)
+	for (uint8_t k = 0; k < CurrentDiff->Channels; k++)
 	{
-		for (std::vector<VSRG::TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); m++)
+		for (auto m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); ++m)
 		{
 			double beatStart = IntegrateToTime(BPS, m->GetDataStartTime());
 			double beatEnd = IntegrateToTime(BPS, m->GetDataEndTime());
@@ -542,7 +536,7 @@ void ScreenGameplay7K::SetupMechanics()
 	bool bmsOrStepmania = false;
 
 	// This must be done before setLifeTotal in order for it to work.
-	score_keeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
+	ScoreKeeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
 	
 	if (Configuration::GetConfigf("AlwaysUseRaindropMechanics") == 0 && CurrentDiff->Data->TimingInfo)
 	{
@@ -550,8 +544,8 @@ void ScreenGameplay7K::SetupMechanics()
 		if (TimingInfo->GetType() == VSRG::TI_BMS)
 		{
 			VSRG::BmsTimingInfo *Info = static_cast<VSRG::BmsTimingInfo*> (TimingInfo);
-			score_keeper->setLifeTotal(Info->life_total);
-			score_keeper->setJudgeRank(Info->judge_rank);
+			ScoreKeeper->setLifeTotal(Info->life_total);
+			ScoreKeeper->setJudgeRank(Info->judge_rank);
 			UsedTimingType = TT_TIME;
 			lifebar_type = LT_GROOVE;
 			bmsOrStepmania = true;
@@ -559,48 +553,48 @@ void ScreenGameplay7K::SetupMechanics()
 		else if (TimingInfo->GetType() == VSRG::TI_OSUMANIA)
 		{
 			VSRG::OsuManiaTimingInfo *Info = static_cast<VSRG::OsuManiaTimingInfo*> (TimingInfo);
-			score_keeper->setODWindows(Info->OD);
+			ScoreKeeper->setODWindows(Info->OD);
 			lifebar_type = LT_STEPMANIA;
 			scoring_type = ST_OSUMANIA;
 			UsedTimingType = TT_TIME;
 		}
 		else if (TimingInfo->GetType() == VSRG::TI_O2JAM)
 		{
-			VSRG::O2JamTimingInfo *O2Info = (VSRG::O2JamTimingInfo*) TimingInfo;
+			VSRG::O2JamTimingInfo *O2Info = static_cast<VSRG::O2JamTimingInfo*>(TimingInfo);
 			lifebar_type = LT_O2JAM;
 			UsedTimingType = TT_BEATS;
 			scoring_type = ST_O2JAM;
-			score_keeper->setJudgeRank(-100); // Special constant to notify beat based timing.
-			score_keeper->setO2LifebarRating(O2Info->Difficulty);
+			ScoreKeeper->setJudgeRank(-100); // Special constant to notify beat based timing.
+			ScoreKeeper->setO2LifebarRating(O2Info->Difficulty);
 		}
 		else if (TimingInfo->GetType() == VSRG::TI_STEPMANIA)
 		{
 			// lifebar_type = LT_STEPMANIA;
 			lifebar_type = LT_GROOVE;
 			UsedTimingType = TT_TIME;
-			score_keeper->setLifeTotal(-1);
-			score_keeper->setJudgeRank(Configuration::GetConfigf("DefaultJudgeRank"));
+			ScoreKeeper->setLifeTotal(-1);
+			ScoreKeeper->setJudgeRank(Configuration::GetConfigf("DefaultJudgeRank"));
 			bmsOrStepmania = true;
 		}
 		else
 		{
 			lifebar_type = LT_GROOVE;
 			UsedTimingType = TT_TIME;
-			score_keeper->setLifeTotal(-1);
-			score_keeper->setJudgeRank(Configuration::GetConfigf("DefaultJudgeRank"));
+			ScoreKeeper->setLifeTotal(-1);
+			ScoreKeeper->setJudgeRank(Configuration::GetConfigf("DefaultJudgeRank"));
 		}
 	}
 	else
 	{
 		lifebar_type = LT_GROOVE;
-		score_keeper->setLifeTotal(-1);
-		score_keeper->setJudgeRank(Configuration::GetConfigf("DefaultJudgeRank"));
+		ScoreKeeper->setLifeTotal(-1);
+		ScoreKeeper->setJudgeRank(Configuration::GetConfigf("DefaultJudgeRank"));
 		UsedTimingType = TT_TIME;
 		lifebar_type = LT_GROOVE;
 	}
 	
 	if(Configuration::GetConfigf("AlwaysUseRidiculousTiming")){
-		score_keeper->set_manual_w0(true);
+		ScoreKeeper->set_manual_w0(true);
 	}
 
 	/*
@@ -621,7 +615,7 @@ void ScreenGameplay7K::SetupMechanics()
 		ChangeNoteTimeToBeats();
 	}
 
-	MechanicsSet->Setup(MySong.get(), CurrentDiff, score_keeper);
+	MechanicsSet->Setup(MySong.get(), CurrentDiff, ScoreKeeper);
 	MechanicsSet->HitNotify = bind(&ScreenGameplay7K::HitNote, this, _1, _2, _3, _4);
 	MechanicsSet->MissNotify = bind(&ScreenGameplay7K::MissNote, this, _1, _2, _3, _4, _5);
 	MechanicsSet->IsLaneKeyDown = bind(&ScreenGameplay7K::GetGearLaneState, this, _1);
@@ -653,7 +647,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 			delete FailSnd;
 	}
 
-	if (!LoadChartData() || !LoadSongAudio() || !ProcessSong() || !LoadBMPs())
+	if (!LoadChartData() || !LoadSongAudio() || !ProcessSong() || !LoadBGA())
 	{
 		DoPlay = false;
 		return;
@@ -663,7 +657,12 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	SetupMechanics();
 
 	SetupAfterLoadingVariables();
-	SetupLua();
+	
+	SetupLua(Animations->GetEnv());
+	SetupScriptConstants();
+	UpdateScriptVariables();
+
+	Animations->Preload(GameState::GetInstance().GetSkinFile("screengameplay7k.lua"), "Preload");
 	Log::Printf("Done.\n");
 
 	DoPlay = true;

@@ -477,7 +477,7 @@ void Difficulty::GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSp
 		{
 			double TargetTime = 0;
 
-			TargetTime = IntegrateToTime(SPB, Last);
+			TargetTime = IntegrateToTime(SPB, Last) + Offset;
 			PositionOut = IntegrateToTime(VerticalSpeeds, TargetTime);
 		}
 
@@ -489,12 +489,7 @@ void Difficulty::GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSp
 void Difficulty::Destroy()
 {
 	if (Data)
-	{
-		Data->TimingInfo.reset();
-		delete Data->BMPEvents;
-		Data.reset();
 		Data = nullptr;
-	}
 	
 	Timing.clear(); Timing.shrink_to_fit();
 	Author.clear(); Author.shrink_to_fit();

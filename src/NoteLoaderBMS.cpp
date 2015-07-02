@@ -759,13 +759,13 @@ int AutodetectChannelCount(BmsLoadInfo *Info)
 void CompileBMS(BmsLoadInfo *Info)
 {
 	/* To be done. */
-	MeasureList &m = Info->Measures;
+	auto& m = Info->Measures;
 	CalculateBPMs(Info);
 	CalculateStops(Info);
 
 	if (Info->HasBMPEvents)
 	{
-		BMPEventsDetail *BMP = new BMPEventsDetail;
+		shared_ptr<BMPEventsDetail> BMP = make_shared < BMPEventsDetail >();
 		CalculateBMP(Info, BMP->BMPEventsLayerBase, CHANNEL_BGABASE);
 		CalculateBMP(Info, BMP->BMPEventsLayerMiss, CHANNEL_BGAPOOR);
 		CalculateBMP(Info, BMP->BMPEventsLayer, CHANNEL_BGALAYER);
@@ -777,7 +777,7 @@ void CompileBMS(BmsLoadInfo *Info)
 	if (Info->difficulty->Channels == 9) // Assume pop'n
 		Info->IsPMS = true;
 	
-	for (MeasureList::iterator i = m.begin(); i != m.end(); i++)
+	for (auto i = m.begin(); i != m.end(); ++i)
 		measureCalculate(Info, i);
 }
 

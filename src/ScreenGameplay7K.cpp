@@ -138,7 +138,10 @@ bool ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 		switch (BindingsManager::TranslateKey(key))
 		{
 		case KT_Escape:
-			Running = false;
+			if (SongFinished)
+				SuccessTime = -1;
+			else
+				Running = false;
 			break;
 		case KT_Enter:
 			if (!Active)
@@ -190,12 +193,12 @@ void ScreenGameplay7K::RunAutoEvents()
 void ScreenGameplay7K::CheckShouldEndScreen()
 {
 	// Run failure first; make sure it has priority over checking whether it's a pass or not.
-	if (score_keeper->isStageFailed(lifebar_type) && !stage_failed && !NoFail)
+	if (ScoreKeeper->isStageFailed(lifebar_type) && !stage_failed && !NoFail)
 	{
 		// We make sure we don't trigger this twice.
 stageFailed:
 		stage_failed = true;
-		score_keeper->failStage();
+		ScoreKeeper->failStage();
 		FailSnd->Play();
 
 		// We stop all audio..
@@ -218,10 +221,10 @@ stageFailed:
 		double cutoffspb = 1 / curBPS;
 		double cutoffTime;
 
-		if (score_keeper->usesO2()) // beat-based judgements
-			cutoffTime = cutoffspb * score_keeper->getMissCutoff();
+		if (ScoreKeeper->usesO2()) // beat-based judgements
+			cutoffTime = cutoffspb * ScoreKeeper->getMissCutoff();
 		else // time-based judgments
-			cutoffTime = score_keeper->getMissCutoff() / 1000.0;
+			cutoffTime = ScoreKeeper->getMissCutoff() / 1000.0;
 
 		// we need to make sure we trigger this AFTER all notes could've possibly been judged
 		// note to self: songtime will always be positive since duration is always positive.
@@ -230,7 +233,7 @@ stageFailed:
 		{
 			if (!SongFinished)
 			{
-				if (score_keeper->isStageFailed(lifebar_type) && !NoFail)
+				if (ScoreKeeper->isStageFailed(lifebar_type) && !NoFail)
 					goto stageFailed; // No, don't trigger SongFinished. It wasn't a pass.
 
 				SongFinished = true; // Reached the end!
@@ -244,7 +247,7 @@ stageFailed:
 	if (SuccessTime < 0 && SongFinished)
 	{
 		ScreenEvaluation7K *Eval = new ScreenEvaluation7K(this);
-		Eval->Init(score_keeper);
+		Eval->Init(ScoreKeeper.get());
 		Next = Eval;
 	}
 
@@ -255,8 +258,8 @@ stageFailed:
 
 			if (Configuration::GetSkinConfigf("GoToSongSelectOnFailure") == 0)
 			{
-				ScreenEvaluation7K *Eval = new ScreenEvaluation7K(this);
-				Eval->Init(score_keeper);
+				auto Eval = new ScreenEvaluation7K(this);
+				Eval->Init(ScoreKeeper.get());
 				Next = Eval;
 			}
 			else

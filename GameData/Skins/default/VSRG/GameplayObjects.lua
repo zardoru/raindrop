@@ -1,7 +1,7 @@
 
 
 Lifebar = {
-	FillSize = 367,
+	FillSize = 500,
 	MarginFile = "VSRG/stage-lifeb.png",
 	FillFile = "VSRG/stage-lifeb-s.png",
 	Width = 50,
@@ -46,13 +46,14 @@ function Lifebar.Init()
 	Lifebar.Margin.Image = (Lifebar.MarginFile)
 	Lifebar.Margin.Layer = 25
 	Lifebar.Margin.Centered = 1
+	-- Lifebar.Margin.Width = Lifebar.Width
 
 	local w = Lifebar.Margin.Width
 	local h = Lifebar.Margin.Height
 	
 
 	Lifebar.Position = { 
-		x = GearStartX + GearWidth + 42,
+		x = GearStartX + GearWidth + Lifebar.Width / 2 + 8,
 		y = ScreenHeight - h / 2
 	}
 
@@ -63,7 +64,7 @@ function Lifebar.Init()
 
 	Lifebar.Margin.X = Lifebar.CurrentPosition.x
 	Lifebar.Margin.Y = Lifebar.Position.y
-	
+
 	Lifebar.Fill.Image = Lifebar.FillFile
 	Lifebar.Fill.Width = Lifebar.Width
 	Lifebar.Fill.Height = Lifebar.FillSize
@@ -74,7 +75,7 @@ function Lifebar.Init()
 	Lifebar.Fill2.Layer = 26
 	Lifebar.Fill2.Centered = 1
 	Lifebar.Fill2.BlendMode = BlendAdd
-
+	Lifebar.Fill2.Width = Lifebar.Fill.Width
 	Lifebar.Display = 0
 end
 
@@ -99,12 +100,12 @@ function Lifebar.Run(Delta)
 	Lifebar.CurrentPosition = Lifebar.Position
 
 	Lifebar.Fill.ScaleY = Lifebar.Display 
-	Lifebar.Fill.X = Lifebar.Position.x
+	Lifebar.Fill.X = Lifebar.Position.x - 2
 	Lifebar.Fill.Y = NewYFixed
 	Lifebar.Fill:SetCropByPixels( 0, Lifebar.Width, Lifebar.FillSize - Lifebar.FillSize * Lifebar.Display, Lifebar.FillSize )
 
 	Lifebar.Fill2.ScaleY = Display 
-	Lifebar.Fill2.X = Lifebar.Position.x
+	Lifebar.Fill2.X = Lifebar.Fill.X
 	Lifebar.Fill2.Y = NewY
 	Lifebar.Fill2:SetCropByPixels( 0, Lifebar.Width, Lifebar.FillSize - Lifebar.FillSize * Display, Lifebar.FillSize )
 	Lifebar.Fill2.Alpha = ( DP * LifebarValue )

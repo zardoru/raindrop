@@ -197,12 +197,12 @@ bool GameState::SkinSupportsChannelCount(int Count)
 	return Configuration::ListExists(nstr);
 }
 
-ScoreKeeper7K *GameState::GetScorekeeper7K()
+shared_ptr<ScoreKeeper7K> GameState::GetScorekeeper7K()
 {
 	return SKeeper7K;
 }
 
-void GameState::SetScorekeeper7K(ScoreKeeper7K *Other)
+void GameState::SetScorekeeper7K(shared_ptr<ScoreKeeper7K> Other)
 {
 	SKeeper7K = Other;
 }

@@ -43,7 +43,7 @@ void ScreenGameplay7K::RecalculateEffects()
 
 void ScreenGameplay7K::HitNote (double TimeOff, uint32 Lane, bool IsHold, bool IsHoldRelease)
 {
-	int Judgment = score_keeper->hitNote(TimeOff);
+	int Judgment = ScoreKeeper->hitNote(TimeOff);
 
 	UpdateScriptScoreVariables();
 
@@ -57,13 +57,13 @@ void ScreenGameplay7K::HitNote (double TimeOff, uint32 Lane, bool IsHold, bool I
 		Animations->GetEnv()->RunFunction();
 	}
 
-	if (score_keeper->getMaxNotes() == score_keeper->getScore(ST_NOTES_HIT))
+	if (ScoreKeeper->getMaxNotes() == ScoreKeeper->getScore(ST_NOTES_HIT))
 		Animations->DoEvent("OnFullComboEvent");
 }
 
 void ScreenGameplay7K::MissNote (double TimeOff, uint32 Lane, bool IsHold, bool auto_hold_miss, bool early_miss)
 {
-	score_keeper->missNote(auto_hold_miss, early_miss);
+	ScoreKeeper->missNote(auto_hold_miss, early_miss);
 
 	if (IsHold)
 		HeldKey[Lane] = false;

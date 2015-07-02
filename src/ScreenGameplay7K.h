@@ -14,6 +14,7 @@ class Line;
 class AudioSourceOJM;
 class VSRGMechanics;
 class SoundSample;
+class LuaManager;
 
 class ScreenGameplay7K : public Screen
 {
@@ -82,7 +83,7 @@ private:
 	SoundSample *MissSnd;
 	SoundSample *FailSnd;
 
-	ScoreKeeper7K* score_keeper;
+	shared_ptr<ScoreKeeper7K> ScoreKeeper;
 
 	EHiddenMode		 RealHiddenMode;
 	float            HideClampLow, HideClampHigh, HideClampFactor;
@@ -125,10 +126,8 @@ private:
 		See Renderer7K.cpp.
 	*/
 
-	void SetupGear();
-
 	void SetupScriptConstants();
-	void SetupLua();
+	void SetupLua(LuaManager* Env);
 	void SetupMechanics();
 	void UpdateScriptVariables();
 	void UpdateScriptScoreVariables();
@@ -139,7 +138,7 @@ private:
 	// Done in loading thread
 	bool LoadChartData();
 	bool LoadSongAudio();
-	bool LoadBMPs();
+	bool LoadBGA();
 	void SetupBarline();
 	bool ProcessSong();
 
@@ -177,6 +176,7 @@ private:
 	// true if holding down key
 	bool GetGearLaneState(uint32 Lane);
 
+	friend class Noteskin;
 public:
 
 	// Functions for data.

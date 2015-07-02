@@ -9,8 +9,12 @@
 #include <LuaBridge.h>
 #include "GameWindow.h"
 
+#include "Screen.h"
+#include "ScreenGameplay7K.h"
+
 bool CanRender = false;
 shared_ptr<LuaManager> Noteskin::NoteskinLua = nullptr;
+ScreenGameplay7K* Noteskin::Parent = nullptr;
 
 void lua_Render(Sprite *S)
 {
@@ -22,10 +26,16 @@ void lua_Render(Sprite *S)
 	}
 }
 
-void Noteskin::SetupNoteskin(bool SpecialStyle, int Lanes)
+void Noteskin::SetupNoteskin(bool SpecialStyle, int Lanes, ScreenGameplay7K* Parent)
 {
 	CanRender = false;
+
+	assert(Parent != nullptr);
+	Noteskin::Parent = Parent;
+
 	NoteskinLua = make_shared<LuaManager>();
+
+	Parent->SetupLua(NoteskinLua.get());
 	DefineSpriteInterface(NoteskinLua.get());
 
 	luabridge::getGlobalNamespace(NoteskinLua->GetState())
@@ -48,7 +58,7 @@ void Noteskin::Update(float Delta, float CurrentBeat)
 	}
 }
 
-void Noteskin::DrawNote(int Lane, VSRG::TrackNote& T, float Location)
+void Noteskin::DrawNote(VSRG::TrackNote& T, int Lane, float Location)
 {
 	const char* CallFunc = nullptr;
 
@@ -78,10 +88,11 @@ void Noteskin::DrawNote(int Lane, VSRG::TrackNote& T, float Location)
 	// We didn't get a name to call. Odd.
 
 	CanRender = true;
-	if (NoteskinLua->CallFunction(CallFunc, 2))
+	if (NoteskinLua->CallFunction(CallFunc, 3))
 	{
 		NoteskinLua->PushArgument(Lane);
 		NoteskinLua->PushArgument(Location);
+		NoteskinLua->PushArgument(T.GetFracKind());
 		NoteskinLua->RunFunction();
 	}
 	CanRender = false;
@@ -117,47 +128,50 @@ double Noteskin::GetJudgmentY()
 	return NoteskinLua->GetGlobalD("JudgmentLineY");
 }
 
-void Noteskin::DrawHoldHead(int Lane, float Location)
+void Noteskin::DrawHoldHead(VSRG::TrackNote &T, int Lane, float Location)
 {
 	assert(NoteskinLua != nullptr);
 
-	if (!NoteskinLua->CallFunction("DrawHoldHead", 2))
-		if (!NoteskinLua->CallFunction("DrawNormal", 2))
+	if (!NoteskinLua->CallFunction("DrawHoldHead", 3))
+		if (!NoteskinLua->CallFunction("DrawNormal", 3))
 			return;
 
 	CanRender = true;
 	NoteskinLua->PushArgument(Lane);
 	NoteskinLua->PushArgument(Location);
+	NoteskinLua->PushArgument(T.GetFracKind());
 	NoteskinLua->RunFunction();
 	CanRender = false;
 }
 
-void Noteskin::DrawHoldTail(int Lane, float Location)
+void Noteskin::DrawHoldTail(VSRG::TrackNote& T, int Lane, float Location)
 {
 	assert(NoteskinLua != nullptr);
 
-	if (!NoteskinLua->CallFunction("DrawHoldTail", 2))
-		if (!NoteskinLua->CallFunction("DrawNormal", 2))
+	if (!NoteskinLua->CallFunction("DrawHoldTail", 3))
+		if (!NoteskinLua->CallFunction("DrawNormal", 3))
 			return;
 
 	CanRender = true;
 	NoteskinLua->PushArgument(Lane);
 	NoteskinLua->PushArgument(Location);
+	NoteskinLua->PushArgument(T.GetFracKind());
 	NoteskinLua->RunFunction();
 	CanRender = false;
 }
 
-void Noteskin::DrawHoldBody(int Lane, float Location, float Size)
+void Noteskin::DrawHoldBody(int Lane, float Location, float Size, int ActiveLevel)
 {
 	assert(NoteskinLua != nullptr);
 
-	if (!NoteskinLua->CallFunction("DrawHoldBody", 3))
+	if (!NoteskinLua->CallFunction("DrawHoldBody", 4))
 			return;
 
 	CanRender = true;
 	NoteskinLua->PushArgument(Lane);
 	NoteskinLua->PushArgument(Location);
 	NoteskinLua->PushArgument(Size);
+	NoteskinLua->PushArgument(ActiveLevel);
 	NoteskinLua->RunFunction();
 	CanRender = false;
 }

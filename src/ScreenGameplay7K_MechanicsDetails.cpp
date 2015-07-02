@@ -8,7 +8,7 @@
 #include "ScoreKeeper7K.h"
 #include "ScreenGameplay7K_Mechanics.h"
 
-void VSRGMechanics::Setup(VSRG::Song *Song, VSRG::Difficulty *Difficulty, ScoreKeeper7K *scoreKeeper)
+void VSRGMechanics::Setup(VSRG::Song *Song, VSRG::Difficulty *Difficulty, shared_ptr<ScoreKeeper7K> scoreKeeper)
 {
 	CurrentSong = Song;
 	CurrentDifficulty = Difficulty;
