@@ -245,7 +245,7 @@ void Difficulty::ProcessSpeedVariations(TimingData& BPS, TimingData& VerticalSpe
 
 	for(TimingData::const_iterator Change = SpeedChanges.begin();
 			Change != SpeedChanges.end();
-			Change++)
+	    ++Change)
 	{
 		TimingData::const_iterator NextChange = (Change+1);
 		double ChangeTime = Change->Time + Drift + Offset;
@@ -256,23 +256,26 @@ void Difficulty::ProcessSpeedVariations(TimingData& BPS, TimingData& VerticalSpe
 			modify it to be this value * factor
 		*/
 
+		bool MoveOn = false;
 		for(auto Time = VerticalSpeeds.begin();
 			Time != VerticalSpeeds.end();
-			Time++)
+		    ++Time)
 		{
 			if ( abs(ChangeTime - Time->Time) < 0.00001)
 			{
 				Time->Value *= Change->Value;
-				goto next_speed;
+				MoveOn = true;
 			}
 		}
+
+		if (MoveOn) continue;
 
 		/* 
 			There are no collisions- insert a new speed at this time
 		*/
 
 		if (ChangeTime < 0)
-			goto next_speed;
+			continue;
 
 		float SpeedValue;
 		SpeedValue = SectionValue(tVSpeeds, ChangeTime) * Change->Value;
@@ -293,12 +296,12 @@ void Difficulty::ProcessSpeedVariations(TimingData& BPS, TimingData& VerticalSpe
 		*/
 
 		if (BPMType == VSRG::Difficulty::BT_Beatspace) // Okay, we're an osu!mania chart, leave the resetting.
-			goto next_speed;
+			continue;
 
 		// We're not an osu!mania chart, so it's time to do what should be done.
 		for(auto Time = VerticalSpeeds.begin();
 			Time != VerticalSpeeds.end();
-			Time++)
+		    ++Time)
 		{
 			if (Time->Time > ChangeTime)
 			{
@@ -315,8 +318,6 @@ void Difficulty::ProcessSpeedVariations(TimingData& BPS, TimingData& VerticalSpe
 				}
 			}
 		}
-
-		next_speed: (void)0;
 	}
 
 	std::sort(VerticalSpeeds.begin(), VerticalSpeeds.end(), tSort);
@@ -420,8 +421,8 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 
 void BPStoSPB(TimingData &BPS)
 {
-	TimingData BPSCopy = BPS;
-	for (auto i = BPS.begin(); i != BPS.end(); i++)
+	auto BPSCopy = BPS;
+	for (auto i = BPS.begin(); i != BPS.end(); ++i)
 	{
 		double valueBPS = i->Value;
 		i->Value = 1 / valueBPS;
@@ -464,7 +465,7 @@ void Difficulty::GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSp
 
 	for (auto Msr = Data->Measures.begin();
 		Msr != Data->Measures.end();
-		Msr++)
+		++Msr)
 	{
 		float PositionOut = 0;
 
@@ -476,7 +477,7 @@ void Difficulty::GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSp
 		{
 			double TargetTime = 0;
 
-			TargetTime = IntegrateToTime(SPB, Last) + Offset;
+			TargetTime = IntegrateToTime(SPB, Last);
 			PositionOut = IntegrateToTime(VerticalSpeeds, TargetTime);
 		}
 

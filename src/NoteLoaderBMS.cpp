@@ -317,16 +317,10 @@ void CalculateBPMs(BmsLoadInfo *Info)
 		{
 			for (BMSEventList::iterator ev = i->second.Events[CHANNEL_BPM].begin(); ev != i->second.Events[CHANNEL_BPM].end(); ev++)
 			{
-				double BPM;
-				BPM = fromBase16(tob36(ev->Event).c_str());
-
+				double BPM = fromBase16(tob36(ev->Event).c_str());
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first);
 
-				TimingSegment New;
-				New.Time = Beat;
-				New.Value = BPM;
-
-				Info->difficulty->Timing.push_back(New);
+				Info->difficulty->Timing.push_back(TimingSegment(Beat, BPM));
 			}
 		}
 	}
@@ -346,12 +340,7 @@ void CalculateBPMs(BmsLoadInfo *Info)
 				if (BPM == 0) continue; // ignore 0 events
 
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first);
-
-				TimingSegment New;
-				New.Time = Beat;
-				New.Value = BPM;
-
-				Info->difficulty->Timing.push_back(New);
+				Info->difficulty->Timing.push_back(TimingSegment(Beat, BPM));
 			}
 		}
 	}
@@ -377,13 +366,9 @@ void CalculateStops(BmsLoadInfo *Info)
 				double StopTimeBeats = Info->Stops[ev->Event] / 48;
 				double SectionValueStop = SectionValue(Info->difficulty->Timing, Beat);
 				double SPBSection = spb(SectionValueStop);
-				double StopDuration = StopTimeBeats * SPBSection; // A value of 1 is... a 192nd of the measure? Or a 192nd of a beat? Or (192 / (4 * meter)) * spb? I'm not sure...
+				double StopDuration = StopTimeBeats * SPBSection; // A value of 1 is... a 48th of a beat.
 
-				TimingSegment New;
-				New.Time = Beat;
-				New.Value = StopDuration;
-
-				Info->difficulty->Data->StopsTiming.push_back(New);
+				Info->difficulty->Data->StopsTiming.push_back(TimingSegment(Beat, StopDuration));
 			}
 		}
 	}

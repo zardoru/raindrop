@@ -189,13 +189,10 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 		{
 			if (Evt->Channel != BPM_CHANNEL) continue; // These are the only ones we directly handle.
 			float Beat = MeasureBaseBeat + Evt->Fraction * 4;
-			TimingSegment Segment;
+			TimingSegment Segment(Beat, Evt->fValue);
 
 			// 0 values must be ignored.
 			if (Evt->fValue == 0) continue;
-
-			Segment.Time = Beat;
-			Segment.Value = Evt->fValue;
 
 			if (Out->Timing.size())
 			{
@@ -214,9 +211,7 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 	// A few of the charts already have set BPMs at beat 0, so we only need to add information if it's missing.
 	if (Out->Timing.size() == 0 || Out->Timing[0].Time > 0)
 	{
-		TimingSegment Seg;
-		Seg.Time = 0;
-		Seg.Value = Info->BPM;
+		TimingSegment Seg(0, Info->BPM);
 		Out->Timing.push_back(Seg);
 
 		// Since events and measures are ordered already, there's no need to sort

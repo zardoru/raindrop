@@ -20,11 +20,16 @@ struct TimeBased
 	{
 		return Time;
 	}
+
+	TimeBased(U val) : Time(val) {};
+	TimeBased() = default;
 };
 
 struct TimingSegment : public TimeBased<TimingSegment, double>
 {
 	double Value; // in bpm
+	TimingSegment(double T, double V) : TimeBased(T), Value(V) {};
+	TimingSegment() : TimingSegment(0, 0) {};
 };
 
 typedef std::vector<TimingSegment> TimingData;
@@ -38,10 +43,6 @@ struct AutoplayBMP : public TimeBased<AutoplayBMP, float>
 {
 	int BMP;
 };
-
-
-
-
 
 enum ModeType
 {

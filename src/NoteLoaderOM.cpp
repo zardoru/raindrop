@@ -11,8 +11,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
-#include <boost/foreach.hpp>
-#include <boost/algorithm/string/split.hpp>
 
 typedef std::vector<GString> SplitResult;
 
@@ -34,7 +32,7 @@ struct HitsoundSectionData
 	int Custom;
 	int IsInherited;
 	double Time;
-	double BPM;
+	double Value;
 	double MeasureLen;
 };
 
@@ -140,9 +138,6 @@ void ReadDifficulty (GString line, OsuLoadInfo* Info)
 	if (Command == "CircleSize")
 	{
 		Info->Diff->Channels = atoi(Content.c_str());
-
-		for (int i = 0; i < Info->Diff->Channels; i++) // Push a single measure
-			Info->Diff->Data->Measures.push_back(Measure());
 	}else if (Command == "SliderMultiplier")
 	{
 		Info->SliderVelocity = latof(Content.c_str()) * 100;
@@ -193,6 +188,7 @@ void ReadEvents (GString line, OsuLoadInfo* Info)
 
 void ReadTiming (GString line, OsuLoadInfo* Info)
 {
+	double Value;
 	bool IsInherited;
 	SplitResult Spl;
 	boost::split(Spl, line, boost::is_any_of(","));
@@ -205,28 +201,19 @@ void ReadTiming (GString line, OsuLoadInfo* Info)
 	Time.Value = latof(Spl[1].c_str());
 
 	if (Spl[6] == "1") // Non-inherited section
-	{
-		Info->Diff->Timing.push_back(Time);
 		IsInherited = false;
-	}
-	else
-	{
-		// An inherited section would be added to a velocity changes vector which would later alter speeds.
-		double OldValue = Time.Value;
-
-		Time.Value = -100 / OldValue;
-
-		Info->Diff->Data->SpeedChanges.push_back(Time);
+	else // An inherited section would be added to a velocity changes vector which would later alter speeds.
 		IsInherited = true;
-	}
 
 	int Sampleset = -1;
 	int Custom = 0;
 	double MeasureLen = 4;
-	double BPM = 120; 
 
-	if (Spl.size() > 1)
-		BPM = 60000 / latof(Spl[1].c_str());
+	// We already set the value
+	if (Spl.size() > 1 && !IsInherited)
+		Value = 60000 / latof(Spl[1].c_str());
+	else
+		Value = -100 / latof(Spl[1].c_str());
 
 	if (Spl.size() > 2)
 		MeasureLen = latof(Spl[2].c_str());
@@ -238,7 +225,7 @@ void ReadTiming (GString line, OsuLoadInfo* Info)
 		Custom = atoi(Spl[4].c_str());
 
 	HitsoundSectionData SecData;
-	SecData.BPM = BPM;
+	SecData.Value = Value;
 	SecData.MeasureLen = MeasureLen;
 	SecData.Time = Time.Time;
 	SecData.Sampleset = Sampleset;
@@ -526,12 +513,12 @@ void MeasurizeFromTimingData(OsuLoadInfo *Info)
 	// Keep them at the order they are declared so they don't affect the applied hitsounds.
 	std::stable_sort(Info->HitsoundSections.begin(), Info->HitsoundSections.end(), hSort);
 
-	for (auto i = Info->HitsoundSections.begin(); i != Info->HitsoundSections.end(); i++)
+	for (auto i = Info->HitsoundSections.begin(); i != Info->HitsoundSections.end(); ++i)
 	{
 		double TotalMeasuresThisSection;
 		double SectionDurationInBeats;
 
-		auto NextSect = i + 1;	
+		auto NextSect = i + 1;
 
 		if (i->IsInherited) // Skip inherited sections.
 			continue;
@@ -541,27 +528,27 @@ void MeasurizeFromTimingData(OsuLoadInfo *Info)
 
 		if (NextSect != Info->HitsoundSections.end()) // Okay, we've got it!
 		{
-			SectionDurationInBeats = bps (i->BPM) * (NextSect->Time - i->Time);
+			SectionDurationInBeats = bps (i->Value) * (NextSect->Time - i->Time);
 		}
 		else
 		{
-			SectionDurationInBeats = bps(i->BPM) * (Info->Diff->Duration - i->Time);
+			SectionDurationInBeats = bps(i->Value) * (Info->Diff->Duration - i->Time);
 		}
 
 		TotalMeasuresThisSection = SectionDurationInBeats / i->MeasureLen;
 
-		double Fraction = TotalMeasuresThisSection - floor(TotalMeasuresThisSection);
-		int Whole = floor(TotalMeasuresThisSection);
+		auto Whole = floor(TotalMeasuresThisSection);
+		auto Fraction = TotalMeasuresThisSection - Whole;
 
 		// Add the measures.
-		for (int k = 0; k < Whole; k++)
+		for (auto k = 0; k < Whole; k++)
 		{
 			VSRG::Measure Msr;
 			Msr.MeasureLength = i->MeasureLen;
 			Info->Diff->Data->Measures.push_back(Msr);
 		}
 
-		if (Fraction > DBL_EPSILON)
+		if (Fraction > 0)
 		{
 			VSRG::Measure Msr;
 			Msr.MeasureLength = Fraction * i->MeasureLen;
@@ -608,20 +595,14 @@ void PushNotesToMeasures(OsuLoadInfo *Info)
 	}
 }
 
-void Offsetize(std::shared_ptr<VSRG::Difficulty> Diff)
+void Offsetize(OsuLoadInfo *Info)
 {
-	Diff->Offset = Diff->Timing.begin()->Time;
+	shared_ptr<VSRG::Difficulty> Diff = Info->Diff;
+	Diff->Offset = Info->HitsoundSections[0].Time;
 
-	for (TimingData::iterator i = Diff->Timing.begin();
-	     i != Diff->Timing.end();
-	     i++)
-	{
-		i->Time -= Diff->Offset;
-	}
-
-	for (TimingData::iterator i = Diff->Data->SpeedChanges.begin();
-	     i != Diff->Data->SpeedChanges.end();
-	     i++)
+	for (auto i = Info->HitsoundSections.begin();
+		 i != Info->HitsoundSections.end();
+	     ++i)
 	{
 		i->Time -= Diff->Offset;
 	}
@@ -660,6 +641,17 @@ void SetReadingMode(std::string& Line, osuReadingMode& ReadingMode)
 		ReadingMode = RHitobjects;
 	}else if (Line[0] == '[')
 		ReadingMode = RNotKnown;
+}
+
+void CopyTimingData(OsuLoadInfo* Info)
+{
+	for (auto S: Info->HitsoundSections)
+	{
+		if (S.IsInherited)
+			Info->Diff->Data->SpeedChanges.push_back(TimingSegment(S.Time, S.Value));
+		else
+			Info->Diff->Timing.push_back(TimingSegment(S.Time, 60000 / S.Value));
+	}
 }
 
 void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *Out)
@@ -745,19 +737,22 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 
 	if (Diff->TotalObjects) 
 	{
-		Offsetize(Diff);
-
-		for (std::map<GString, int>::iterator i = Info.Sounds.begin(); i != Info.Sounds.end(); i++)
-		{
-			Diff->SoundList[i->second] = i->first;
-		}
+		// Calculate an alleged offset
+		Offsetize(&Info);
 
 		// Okay then, convert timing data into a measure-based format raindrop can use.
 		MeasurizeFromTimingData(&Info);
 
+		CopyTimingData(&Info);
+
 		// Then copy notes into these measures.
 		PushNotesToMeasures(&Info);
 
+		// Copy all sounds we registered
+		for (auto i = Info.Sounds.begin(); i != Info.Sounds.end(); ++i)
+			Diff->SoundList[i->second] = i->first;
+		
+		// Calculate level as NPS
 		Diff->Level = Diff->TotalScoringObjects / Diff->Duration;
 		Out->Difficulties.push_back(Diff);
 	}

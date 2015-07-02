@@ -483,7 +483,7 @@ bool ScreenGameplay7K::LoadBMPs()
 void ScreenGameplay7K::SetupBarline()
 {
 	BarlineEnabled = Noteskin::IsBarlineEnabled();
-	BarlineOffsetKind = Noteskin::GetBarlineOffset();
+	BarlineOffset = Noteskin::GetBarlineOffset();
 	BarlineX = Noteskin::GetBarlineStartX();
 	BarlineWidth = Noteskin::GetBarlineWidth();
 
@@ -495,7 +495,6 @@ void ScreenGameplay7K::SetupBarline()
 		CurrentDiff->GetMeasureLines(MeasureBarlines, VSpeeds, WaitingTime);
 
 		int UpscrollMod = Upscroll ? -1 : 1;
-		BarlineOffset = BarlineOffsetKind == 0 ? NoteHeight * UpscrollMod / 2 : 0;
 	}
 }
 
