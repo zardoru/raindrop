@@ -102,7 +102,7 @@ void ScreenGameplay7K::DrawMeasures()
 			float VerticalHoldEnd;
 
 			if (!ShouldDrawNoteInScreen(*m, SpeedMultiplier, FieldDisplacement, Vertical, VerticalHoldEnd, Upscroll))
-				continue; /* If this is not visible, we move on to the next note. */
+				continue; // If this is not visible, we move on to the next note. 
 
 			// Assign our matrix.
 			WindowFrame.SetUniform(U_MVP, &id[0][0]);

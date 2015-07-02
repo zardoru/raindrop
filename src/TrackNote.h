@@ -2,6 +2,7 @@
 
 #ifndef TAPNOTE_H_
 #define TAPNOTE_H_
+#include "Song.h"
 
 namespace VSRG
 {
@@ -26,11 +27,11 @@ namespace VSRG
 		}
 	};
 
-	class TrackNote
+	class TrackNote : public TimeBased<TrackNote, double>
 	{
 	private:
-		// 16 bytes
-		double StartTime, EndTime;
+		// 16 bytes (Implied 4 with inherited TimeBased)
+		double EndTime;
 
 		// 8 bytes
 		float b_pos;

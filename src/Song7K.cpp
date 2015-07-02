@@ -59,9 +59,9 @@ int tSort(const TimingSegment &i, const TimingSegment &j)
 	return i.Time < j.Time;
 }
 
-int nSort (const TrackNote &i, const TrackNote &j)
+int nSort (const NoteData &i, const NoteData &j)
 {
-	return i.GetStartTime() < j.GetStartTime();
+	return i.StartTime < j.StartTime;
 }
 
 void Difficulty::ProcessVSpeeds(TimingData& BPS, TimingData& VerticalSpeeds, double SpeedConstant)
@@ -376,10 +376,12 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 		/* For each measure of this channel */
 		for (auto Msr = Data->Measures.begin();
 			Msr != Data->Measures.end();
-			Msr++)
+			++Msr)
 		{
 			/* For each note in the measure... */
 			ptrdiff_t total_notes = Msr->MeasureNotes[KeyIndex].size();
+			std::sort(Msr->MeasureNotes[KeyIndex].begin(), Msr->MeasureNotes[KeyIndex].end(), nSort);
+
 			for (auto Note = 0; Note < total_notes; Note++)
 			{
 				/*
@@ -413,7 +415,6 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 				NotesOut[KeyIndex].push_back(NewNote);
 			}
 
-			std::sort(NotesOut[KeyIndex].begin(), NotesOut[KeyIndex].end(), nSort);
 			MIdx++;
 		}
 	}

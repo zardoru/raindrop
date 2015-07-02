@@ -54,6 +54,7 @@ end
 function SetupJudgmentsDisplay()
 	JudgeStr = StringObject2D()
 	JudgeStr.Font = EvalFont
+	print ("Attempting to get SK7K")
 	ScoreKeeper = Global:GetScorekeeper7K()
 	
 	w0 = ScoreKeeper:getJudgmentCount(SKJ_W0)

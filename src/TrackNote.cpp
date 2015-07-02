@@ -25,7 +25,7 @@ float TrackNote::GetHoldEndVertical()
 
 void TrackNote::AssignNotedata(const VSRG::NoteData &Notedata)
 {
-	StartTime = Notedata.StartTime;
+	Time = Notedata.StartTime;
 	EndTime = Notedata.EndTime;
 	Sound = Notedata.Sound;
 	NoteKind = Notedata.NoteKind;
@@ -73,7 +73,7 @@ float TrackNote::GetVertical() const
 
 void TrackNote::AddTime(double Time)
 {
-	StartTime += Time;
+	Time += Time;
 
 	if (IsHold())
 		EndTime += Time;
@@ -81,12 +81,12 @@ void TrackNote::AddTime(double Time)
 
 double TrackNote::GetTimeFinal() const
 {
-	return max(StartTime, EndTime);
+	return max(Time, EndTime);
 }
 
 double TrackNote::GetStartTime() const
 {
-	return StartTime;
+	return Time;
 }
 
 bool TrackNote::IsEnabled() const
@@ -137,7 +137,7 @@ int TrackNote::GetFracKind() const
 
 double &TrackNote::GetDataStartTime()
 {
-	return StartTime;
+	return Time;
 }
 
 double &TrackNote::GetDataEndTime()

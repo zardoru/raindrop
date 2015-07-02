@@ -26,7 +26,7 @@ private:
 	TimingData       VSpeeds;
 	TimingData		 BPS;
 	TimingData		 Warps;
-	VSRG::VectorTN   NotesByChannel;
+	VSRG::VectorTN  NotesByChannel;
 	std::map <int, SoundSample*> Keysounds;
 	vector<AutoplaySound>   BGMEvents;
 	vector<float>			 MeasureBarlines;

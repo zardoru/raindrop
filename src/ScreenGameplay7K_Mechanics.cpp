@@ -117,19 +117,22 @@ void ScreenGameplay7K::RunMeasures()
 
 	for (uint16 k = 0; k < CurrentDiff->Channels; k++)
 	{
-		for (auto m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); ++m)	{
+		auto Start = NotesByChannel[k].begin();
+		auto End = NotesByChannel[k].end();
+		for (auto m = Start; m != End; ++m)	{
 
 			// Keysound update to closest note.
-			if (CurrentDiff->IsVirtual)	{
-				if (m->IsEnabled() && m->IsJudgable())
+			if (m->IsEnabled() && m->IsJudgable())
+			{
+				if ((abs(usedTime - m->GetTimeFinal()) < timeClosest[k]))
 				{
-					if ((abs(usedTime - m->GetTimeFinal()) < timeClosest[k]))
-					{
+					if (CurrentDiff->IsVirtual)
 						PlaySounds[k] = m->GetSound();
-						timeClosest[k] = abs(usedTime - m->GetTimeFinal());
-					}else
-						break; // In other words, we're getting further away.
+
+					timeClosest[k] = abs(usedTime - m->GetTimeFinal());
 				}
+				else
+					break; // In other words, we're getting further away.
 			}
 
 			if (!m->IsJudgable())
@@ -138,7 +141,7 @@ void ScreenGameplay7K::RunMeasures()
 			// Autoplay
 			if (Auto) {
 				double TimeThreshold = usedTime + 0.008; // latest time a note can activate.
-				if ( m->GetStartTime() <= TimeThreshold)
+				if (m->GetStartTime() <= TimeThreshold)
 				{
 					if (m->IsEnabled()) {
 						if (m->IsHold())
@@ -151,18 +154,21 @@ void ScreenGameplay7K::RunMeasures()
 									if (perfect_auto) ReleaseLane(k, m->GetTimeFinal());
 									else ReleaseLane(k, hit_time);
 								}
-							}else{
+							}
+							else{
 								double hit_time = clamp_to_interval(usedTime, m->GetStartTime(), 0.008);
-								if(perfect_auto) JudgeLane(k, m->GetStartTime());
+								if (perfect_auto) JudgeLane(k, m->GetStartTime());
 								else JudgeLane(k, hit_time);
 							}
-						}else
+						}
+						else
 						{
 							double hit_time = clamp_to_interval(usedTime, m->GetStartTime(), 0.008);
-							if(perfect_auto){
+							if (perfect_auto){
 								JudgeLane(k, m->GetStartTime());
 								ReleaseLane(k, m->GetTimeFinal());
-							}else{
+							}
+							else{
 								JudgeLane(k, hit_time);
 								ReleaseLane(k, hit_time);
 							}
@@ -172,9 +178,9 @@ void ScreenGameplay7K::RunMeasures()
 			}
 
 
-			if(stage_failed) continue; // don't check for judgments after stage has failed.
+			if (stage_failed) continue; // don't check for judgments after stage has failed.
 
-			if (MechanicsSet->OnUpdate(usedTime, &(*m), k))
+			if (MechanicsSet->OnUpdate(usedTime, &(*m), k)) // Triggered a judgment.
 				break;
 		} // end for notes
 	} // end for channels
@@ -186,7 +192,16 @@ void ScreenGameplay7K::ReleaseLane(uint32 Lane, float Time)
 
 	if(stage_failed) return; // don't judge any more after stage is failed.
 
-	for (auto m = NotesByChannel[Lane].begin(); m != NotesByChannel[Lane].end(); ++m)
+	double timeLower = Time - ScoreKeeper->getMissCutoff();
+	double timeHigher = Time + ScoreKeeper->getEarlyMissCutoff();
+
+	// We're mostly using these for hold release times, so...
+	auto cmp = [&](const TrackNote& A, const double T) -> bool { return A.GetTimeFinal() < T; };
+	auto cmpup = [&](const double T, const TrackNote& A) -> bool { return T < A.GetTimeFinal(); };
+	auto Start = std::lower_bound(NotesByChannel[Lane].begin(), NotesByChannel[Lane].end(), timeLower, cmp);
+	auto End = std::upper_bound(NotesByChannel[Lane].begin(), NotesByChannel[Lane].end(), timeHigher, cmpup);
+
+	for (auto m = Start; m != End; ++m)
 	{
 		if (!m->IsJudgable()) continue;
 		if (MechanicsSet->OnReleaseLane(Time, &(*m), Lane)) // Are we done judging..?
@@ -201,11 +216,17 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 	if ( (!Music && !CurrentDiff->IsVirtual) || !Active || stage_failed)
 		return;
 
+	double timeLower = Time - ScoreKeeper->getMissCutoff();
+	double timeHigher = Time + ScoreKeeper->getEarlyMissCutoff();
+
+	auto Start = std::lower_bound(NotesByChannel[Lane].begin(), NotesByChannel[Lane].end(), timeLower);
+	auto End = std::upper_bound(NotesByChannel[Lane].begin(), NotesByChannel[Lane].end(), timeHigher);
+
 	bool notJudged = true;
 
 	lastClosest[Lane] = MsDisplayMargin;
 
-	for (auto m = NotesByChannel[Lane].begin(); m != NotesByChannel[Lane].end(); ++m)
+	for (auto m = Start; m != End; ++m)
 	{
 		double dev = (SongTime - m->GetStartTime()) * 1000;
 		double tD = abs(dev);

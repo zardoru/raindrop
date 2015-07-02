@@ -59,7 +59,8 @@ public:
 	void SetDifficultyIndex(uint32 DifficultyIndex);
 	uint32 GetDifficultyIndex() const;
 
-	shared_ptr<ScoreKeeper7K> GetScorekeeper7K();
+	// Note: Returning a shared_ptr causes lua to fail an assertion, since shared_ptr is not registered.
+	ScoreKeeper7K* GetScorekeeper7K();
 	void SetScorekeeper7K(shared_ptr<ScoreKeeper7K> Other);
 
 	GString GetSkinFile(Directory Name);
