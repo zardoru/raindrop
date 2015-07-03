@@ -31,6 +31,7 @@ bool RaindropMechanics::OnUpdate(double SongTime, VSRG::TrackNote* m, uint32 Lan
 	if ((SongTime - m->GetTimeFinal()) > 0 && !m->WasNoteHit() && m->IsHold()) {
 		// ^ no need for delays here.
 		// remove hold notes that were never hit.
+		m->MakeInvisible();
 		MissNotify(abs(SongTime - m->GetTimeFinal()) * 1000, k, m->IsHold(), true, false);
 		m->Hit();
 	} // Condition B: Regular note or hold head outside cutoff, wasn't hit and it's enabled.
@@ -41,6 +42,7 @@ bool RaindropMechanics::OnUpdate(double SongTime, VSRG::TrackNote* m, uint32 Lan
 
 		// only remove tap notes from judgment; hold notes might be activated before the tail later.
 		if (!(m->IsHold())){
+			m->MakeInvisible();
 			m->Disable();
 		}
 		else{
@@ -54,8 +56,10 @@ bool RaindropMechanics::OnUpdate(double SongTime, VSRG::TrackNote* m, uint32 Lan
 	} // Condition C: Hold head was hit, but hold tail was not released.
 	else if (m->IsHold() && m->IsEnabled())
 	{
+		// Condition C-1: Forced release is enabled
 		if ((SongTime - m->GetTimeFinal()) * 1000 > score_keeper->getMissCutoff() && forcedRelease)
 		{
+			m->FailHit();
 			MissNotify(abs(SongTime - m->GetTimeFinal()) * 1000, k, m->IsHold(), true, false);
 
 			SetLaneHoldingState(k, false);
@@ -63,6 +67,7 @@ bool RaindropMechanics::OnUpdate(double SongTime, VSRG::TrackNote* m, uint32 Lan
 		}
 		else
 		{
+			// Condition C-2: Forced release is not enabled
 			if (SongTime - m->GetTimeFinal() > 0 && !forcedRelease)
 			{
 				if (IsLaneKeyDown(Lane))
@@ -110,7 +115,10 @@ bool RaindropMechanics::OnPressLane(double SongTime, VSRG::TrackNote* m, uint32 
 			if (m->IsHold())
 				SetLaneHoldingState(Lane, true);
 			else
+			{
 				m->Disable();
+				m->MakeInvisible();
+			}
 		}
 
 		PlayNoteSoundEvent(m->GetSound());
@@ -203,7 +211,13 @@ bool O2JamMechanics::OnPressLane(double SongBeat, VSRG::TrackNote* m, uint32 Lan
 		if (m->IsHold())
 			SetLaneHoldingState(Lane, true);
 		else
+		{
 			m->Disable();
+
+			// BADs stay visible.
+			if (tD < score_keeper->getJudgmentWindow(SKJ_W2))
+				m->MakeInvisible();
+		}
 
 		PlayNoteSoundEvent(m->GetSound());
 
@@ -222,12 +236,14 @@ bool O2JamMechanics::OnUpdate(double SongBeat, VSRG::TrackNote* m, uint32 Lane)
 	// note wasn't hit at the head and it's a hold
 	if (tD > 0 && !m->WasNoteHit() && m->IsHold()) {
 		// remove hold notes that were never hit.
+		m->FailHit();
 		MissNotify(abs(tD), k, m->IsHold(), true, false);
 		m->Hit();
 		m->Disable();
 	} // Condition B: Regular note or hold head outside cutoff, wasn't hit and it's enabled.
 	else if (tHead > score_keeper->getMissCutoff() && !m->WasNoteHit() && m->IsEnabled())
 	{
+		m->FailHit();
 		MissNotify(abs(tD), k, m->IsHold(), false, false);
 
 		// remove from judgment completely
@@ -237,6 +253,7 @@ bool O2JamMechanics::OnUpdate(double SongBeat, VSRG::TrackNote* m, uint32 Lane)
 	else if (tD > score_keeper->getMissCutoff() &&
 		m->IsHold() && m->WasNoteHit() && m->IsEnabled())
 	{
+		m->FailHit();
 		MissNotify(abs(tD), k, m->IsHold(), true, false);
 
 		SetLaneHoldingState(k, false);

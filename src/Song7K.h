@@ -1,8 +1,6 @@
 #include "Song.h"
 #include "TrackNote.h"
 
-#include <list>
-
 namespace VSRG
 {
 	struct Measure
@@ -17,7 +15,7 @@ namespace VSRG
 
 	typedef vector<Measure> MeasureVector;
 
-	typedef std::list<TrackNote> VectorTN[MAX_CHANNELS];
+	typedef vector<TrackNote> VectorTN[MAX_CHANNELS];
 
 	enum TimingInfoType {
 		TI_NONE,

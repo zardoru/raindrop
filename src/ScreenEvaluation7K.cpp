@@ -11,10 +11,6 @@
 #include "SceneEnvironment.h"
 #include "LuaManager.h"
 
-#include <iostream>
-#include <iomanip>
-
-AudioStream *ScreenEvaluation7KMusic = NULL;
 
 ScreenEvaluation7K::ScreenEvaluation7K(Screen *Parent) :
 	Screen("ScreenEvaluation7K", Parent)

@@ -59,11 +59,6 @@ int tSort(const TimingSegment &i, const TimingSegment &j)
 	return i.Time < j.Time;
 }
 
-int nSort (const NoteData &i, const NoteData &j)
-{
-	return i.StartTime < j.StartTime;
-}
-
 void Difficulty::ProcessVSpeeds(TimingData& BPS, TimingData& VerticalSpeeds, double SpeedConstant)
 {
 	VerticalSpeeds.clear();
@@ -80,7 +75,7 @@ void Difficulty::ProcessVSpeeds(TimingData& BPS, TimingData& VerticalSpeeds, dou
 	// Calculate velocity at time based on BPM at time
 	for (auto Time = BPS.begin();
 		Time != BPS.end();
-		Time++)
+		++Time)
 	{
 		float VerticalSpeed;
 		TimingSegment VSpeed;
@@ -380,14 +375,13 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 		{
 			/* For each note in the measure... */
 			ptrdiff_t total_notes = Msr->MeasureNotes[KeyIndex].size();
-			std::sort(Msr->MeasureNotes[KeyIndex].begin(), Msr->MeasureNotes[KeyIndex].end(), nSort);
 
 			for (auto Note = 0; Note < total_notes; Note++)
 			{
 				/*
 					Calculate position. (Change this to TrackNote instead of processing?)
 					issue is not having the speed change data there.
-					*/
+				*/
 				NoteData &CurrentNote = (*Msr).MeasureNotes[KeyIndex][Note];
 				TrackNote NewNote;
 
@@ -411,12 +405,19 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 
 				NewNote.AssignFraction(dBeat);
 
-				NewNote.AddTime(-GetWarpAmountAtTime(CurrentNote.StartTime));
+				double Wamt = -GetWarpAmountAtTime(CurrentNote.StartTime);
+				NewNote.AddTime(Wamt);
 				NotesOut[KeyIndex].push_back(NewNote);
 			}
 
 			MIdx++;
 		}
+
+		// done with the channel - sort it
+		std::sort(NotesOut[KeyIndex].begin(), NotesOut[KeyIndex].end(), [](const TrackNote &i, const TrackNote &j) -> bool
+		{
+			return i.GetStartTime() < j.GetStartTime();
+		});
 	}
 }
 

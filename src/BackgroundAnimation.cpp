@@ -77,6 +77,8 @@ public:
 		Layer1->ChainTransformation(this);
 		Layer2->ChainTransformation(this);
 
+		LayerMiss->BlackToTransparent = Layer1->BlackToTransparent = Layer2->BlackToTransparent = true;
+
 		Layer0->SetImage(List.GetFromIndex(0), false);
 
 		SetWidth(ScreenWidth);
@@ -87,9 +89,11 @@ public:
 
 	void SetLayerImage(Sprite *sprite, vector<AutoplayBMP> &events_layer, double time)
 	{
-		auto bmp = std::lower_bound(events_layer.begin(), events_layer.end(), time);
+		auto bmp = std::upper_bound(events_layer.begin(), events_layer.end(), time);
 		if (bmp != events_layer.end())
 			sprite->SetImage(List.GetFromIndex(bmp->BMP), false);
+		else
+			sprite->SetImage(nullptr, false);
 	}
 
 	void SetAnimationTime(double Time) override

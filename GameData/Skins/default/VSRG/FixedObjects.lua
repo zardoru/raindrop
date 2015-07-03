@@ -21,13 +21,13 @@ end
 
 function JudgeLine.Init()
 	JudgeLine.Object = Engine:CreateObject()
-	JudgeLine.Size = { w = GearWidth, h = GetConfigF("NoteHeight", "") }
+	JudgeLine.Size = { w = GearWidth, h = NoteHeight }
 
 	JudgeLine.Object.Image = JudgeLine.Image
 	JudgeLine.Object.Centered = 1
 
 	JudgeLine.Object.X = GearStartX + GearWidth / 2
-	JudgeLine.Object.Y = JudgmentLineY
+	JudgeLine.Object.Y = JudgmentLineY - NoteHeight / 2
 	
 	JudgeLine.Object.Width = JudgeLine.Size.w
 	JudgeLine.Object.Height = JudgeLine.Size.h
@@ -41,7 +41,7 @@ function StageLines.Init()
 	StageLines.Left.Image = (StageLines.ImageLeft)
 	StageLines.Left.X = GearStartX - StageLines.Left.Width
 	StageLines.Left.Height = ScreenHeight
-	StageLines.Left.Layer = 20
+	StageLines.Left.Layer = 16
 
 	StageLines.Right.Image = (StageLines.ImageRight)
 	StageLines.Right.X = (GearStartX + GearWidth)

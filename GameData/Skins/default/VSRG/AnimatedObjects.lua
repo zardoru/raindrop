@@ -8,16 +8,16 @@ function ProgressTick.Init()
 	ProgressTick.Object = Engine:CreateObject()
 
 	-- When not active, Beat <= 0.
-	ProgressTick.BeatOffs = -Beat
+	ProgressTick.BeatOffs = 0
 
 	ProgressTick.Object.Image = ProgressTick.Image
-	ProgressTick.X = GearStartX - 5 - 16
-	ProgressTick.Layer = 25
+	ProgressTick.X = GearStartX
+	ProgressTick.Layer = 16
 end
 
 function ProgressTick.Run(Delta)
 	if Active ~= 0 then
-		local Ratio = (Beat + ProgressTick.BeatOffs) / (SongDurationBeats + ProgressTick.BeatOffs)
+		local Ratio = (Game:GetSongTime() + ProgressTick.BeatOffs) / (SongDuration)
 		if SongTime > 0 then
 			ProgressTick.Alpha = 1
 			ProgressTick.Y = Ratio * (ScreenHeight - 16)
@@ -25,6 +25,7 @@ function ProgressTick.Run(Delta)
 			ProgressTick.Alpha = 1 - SongTime / -1.5
 			ProgressTick.Y = (ScreenHeight - 16) * math.pow(SongTime / -1.5, 2)
 		end
+		
 	else
 		ProgressTick.Alpha = 0
 	end

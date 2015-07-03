@@ -23,6 +23,21 @@ float TrackNote::GetHoldEndVertical()
 	return b_pos_holdend;
 }
 
+void TrackNote::FailHit()
+{
+	EnabledHitFlags |= FailedHitFlag;
+}
+
+void TrackNote::MakeInvisible()
+{
+	EnabledHitFlags |= InvisibleFlag;
+}
+
+bool TrackNote::FailedHit() const
+{
+	return (EnabledHitFlags & FailedHitFlag) != 0;
+}
+
 void TrackNote::AssignNotedata(const VSRG::NoteData &Notedata)
 {
 	Time = Notedata.StartTime;
@@ -39,12 +54,6 @@ void TrackNote::AssignFraction(double frac)
 	FractionKind = GetFractionKindBeat(frac);
 }
 
-Mat4 TrackNote::GetHoldPositionMatrix(const float &trackPosition) const
-{
-	float VerticalHoldBodyPos = b_pos + (b_pos_holdend - b_pos) / 2;
-	return glm::translate(Mat4(), glm::vec3(trackPosition, VerticalHoldBodyPos, 14));
-}
-
 void TrackNote::AssignPosition(float Position, float endPosition)
 {
 	b_pos = Position;
@@ -56,16 +65,6 @@ bool TrackNote::IsHold() const
 	return EndTime != 0;
 }
 
-Mat4 TrackNote::GetHoldEndMatrix() const
-{
-	return glm::translate(Mat4(), glm::vec3(0, b_pos_holdend, 0));
-}
-
-Mat4 TrackNote::GetMatrix() const
-{
-	return glm::translate(Mat4(), glm::vec3(0, b_pos, 0));
-}
-
 float TrackNote::GetVertical() const
 {
 	return b_pos;
@@ -73,7 +72,7 @@ float TrackNote::GetVertical() const
 
 void TrackNote::AddTime(double Time)
 {
-	Time += Time;
+	this->Time += Time;
 
 	if (IsHold())
 		EndTime += Time;
@@ -167,5 +166,5 @@ bool TrackNote::IsJudgable() const
 
 bool TrackNote::IsVisible() const
 {
-	return NoteKind != NK_INVISIBLE;
+	return NoteKind != NK_INVISIBLE && !(EnabledHitFlags & InvisibleFlag);
 }

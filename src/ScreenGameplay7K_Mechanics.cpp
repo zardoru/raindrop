@@ -29,19 +29,19 @@ void ScreenGameplay7K::RecalculateEffects()
 {
 	if (waveEffectEnabled)
 	{
-		float cs = sin (CurrentBeat * M_PI / 4);
+		float cs = sin(CurrentBeat * M_PI / 4);
 		waveEffect = cs * 0.35 * min(SpeedMultiplierUser, 2.0f);
 		MultiplierChanged = true;
 	}
 
 	if (Upscroll)
-		SpeedMultiplier = - (SpeedMultiplierUser + waveEffect + beatScrollEffect);
+		SpeedMultiplier = -(SpeedMultiplierUser + waveEffect + beatScrollEffect);
 	else
 		SpeedMultiplier = SpeedMultiplierUser + waveEffect + beatScrollEffect;
 }
 
 
-void ScreenGameplay7K::HitNote (double TimeOff, uint32 Lane, bool IsHold, bool IsHoldRelease)
+void ScreenGameplay7K::HitNote(double TimeOff, uint32 Lane, bool IsHold, bool IsHoldRelease)
 {
 	int Judgment = ScoreKeeper->hitNote(TimeOff);
 
@@ -61,7 +61,7 @@ void ScreenGameplay7K::HitNote (double TimeOff, uint32 Lane, bool IsHold, bool I
 		Animations->DoEvent("OnFullComboEvent");
 }
 
-void ScreenGameplay7K::MissNote (double TimeOff, uint32 Lane, bool IsHold, bool auto_hold_miss, bool early_miss)
+void ScreenGameplay7K::MissNote(double TimeOff, uint32 Lane, bool IsHold, bool auto_hold_miss, bool early_miss)
 {
 	ScoreKeeper->missNote(auto_hold_miss, early_miss);
 
@@ -105,7 +105,6 @@ bool ScreenGameplay7K::GetGearLaneState(uint32 Lane)
 {
 	return GearIsPressed[Lane] != 0;
 }
-
 void ScreenGameplay7K::RunMeasures()
 {
 	double timeClosest[VSRG::MAX_CHANNELS];
@@ -117,9 +116,9 @@ void ScreenGameplay7K::RunMeasures()
 
 	for (uint16 k = 0; k < CurrentDiff->Channels; k++)
 	{
-		auto Start = NotesByChannel[k].begin();
-		auto End = NotesByChannel[k].end();
-		for (auto m = Start; m != End; ++m)	{
+		for (auto m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); ++m)	{
+			if (!m->IsJudgable())
+				continue;
 
 			// Keysound update to closest note.
 			if (m->IsEnabled() && m->IsJudgable())
@@ -128,15 +127,14 @@ void ScreenGameplay7K::RunMeasures()
 				{
 					if (CurrentDiff->IsVirtual)
 						PlaySounds[k] = m->GetSound();
-
 					timeClosest[k] = abs(usedTime - m->GetTimeFinal());
 				}
 				else
 					break; // In other words, we're getting further away.
 			}
 
-			if (!m->IsJudgable())
-				continue;
+
+
 
 			// Autoplay
 			if (Auto) {
@@ -180,7 +178,7 @@ void ScreenGameplay7K::RunMeasures()
 
 			if (stage_failed) continue; // don't check for judgments after stage has failed.
 
-			if (MechanicsSet->OnUpdate(usedTime, &(*m), k)) // Triggered a judgment.
+			if (MechanicsSet->OnUpdate(usedTime, &(*m), k))
 				break;
 		} // end for notes
 	} // end for channels
@@ -190,7 +188,7 @@ void ScreenGameplay7K::ReleaseLane(uint32 Lane, float Time)
 {
 	GearKeyEvent(Lane, false);
 
-	if(stage_failed) return; // don't judge any more after stage is failed.
+	if (stage_failed) return; // don't judge any more after stage is failed.
 
 	double timeLower = Time - ScoreKeeper->getMissCutoff();
 	double timeHigher = Time + ScoreKeeper->getEarlyMissCutoff();
@@ -213,11 +211,11 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 {
 	GearKeyEvent(Lane, true);
 
-	if ( (!Music && !CurrentDiff->IsVirtual) || !Active || stage_failed)
+	if ((!Music && !CurrentDiff->IsVirtual) || !Active || stage_failed)
 		return;
 
-	double timeLower = Time - ScoreKeeper->getMissCutoff();
-	double timeHigher = Time + ScoreKeeper->getEarlyMissCutoff();
+	double timeLower = (Time - (ScoreKeeper->usesO2() ? ScoreKeeper->getMissCutoff() : (ScoreKeeper->getMissCutoff() / 1000.0)));
+	double timeHigher = (Time + (ScoreKeeper->usesO2() ? ScoreKeeper->getEarlyMissCutoff() : (ScoreKeeper->getEarlyMissCutoff() / 1000.0)));
 
 	auto Start = std::lower_bound(NotesByChannel[Lane].begin(), NotesByChannel[Lane].end(), timeLower);
 	auto End = std::upper_bound(NotesByChannel[Lane].begin(), NotesByChannel[Lane].end(), timeHigher);

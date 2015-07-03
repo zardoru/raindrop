@@ -43,10 +43,6 @@ bool ShouldDrawNoteInScreen(TrackNote& T, float SpeedMultiplier, float FieldDisp
 	if (!T.IsVisible())
 		return false;
 
-	if (!T.IsEnabled())
-		if (!T.IsHold())
-			return false;
-
 	Vertical = (T.GetVertical() * SpeedMultiplier + FieldDisplacement);
 	if (T.IsHold())
 	{
@@ -114,9 +110,9 @@ void ScreenGameplay7K::DrawMeasures()
 				float Size = m->GetHoldSize() * SpeedMultiplier;
 				int Level = 1;
 
-				if (m->IsEnabled() && m->WasNoteHit())
+				if (!m->IsEnabled() && !m->FailedHit())
 					Level = 2;
-				if (!m->IsEnabled())
+				if (!m->IsEnabled() && m->FailedHit())
 					Level = 0;
 
 				Noteskin::DrawHoldBody(k, Pos, Size, Level);
