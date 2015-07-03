@@ -6,12 +6,12 @@ struct TimeBased
 {
 	U Time;
 
-	inline bool operator< (T &rhs)
+	inline bool operator< (const T &rhs)
 	{
 		return Time < rhs.Time;
 	}
 
-	inline bool operator>(T &rhs)
+	inline bool operator>(const T &rhs)
 	{
 		return Time > rhs.Time;
 	}

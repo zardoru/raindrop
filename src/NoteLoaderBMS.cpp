@@ -10,8 +10,6 @@
 #include "utf8.h"
 
 #include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
 
 /*
 	Source for implemented commands:
@@ -33,52 +31,6 @@
 
 	Since most information is in japanese it's likely the implementation won't be perfect at the start.
 */
-
-
-		/*
-		switch (BmsChannel)
-		{
-		case 1:
-			// BGM change.
-			break;
-		case 3:
-			// BPM change.
-
-			break;
-		case 9:
-			// Stop event.
-			break;
-		default:
-
-			/* 
-				Since we're working with constants..
-				All in base 36
-				(11 to 1Z visible p1 notes)
-				(21 to 2Z visible p2 notes
-				(31 to 3Z invisible p1 notes)
-				(41 to 4Z invisible p2 notes)
-			*/
-		/*
-			if (BmsChannel >= 37 && BmsChannel <= 71)
-			{
-				// Player 1
-			}
-
-			/* 
-			
-				51 to 5Z p1 longnotes
-				61 to 6Z p2 longnotes
-
-			*/
-
-		/*
-			if (BmsChannel >= 181 && BmsChannel <= 215)
-			{
-				// Player 1 Longnote
-			}
-
-			*/
-
 
 /* literally pasted from wikipedia */
 GString tob36(long unsigned int value)
@@ -208,7 +160,7 @@ struct BmsLoadInfo
 
 	BmsLoadInfo()
 	{
-		for (int k = 0; k < MAX_CHANNELS; k++)
+		for (auto k = 0; k < MAX_CHANNELS; k++)
 		{
 			startTime[k] = -1;
 			LastNotes[k] = nullptr;
@@ -226,19 +178,18 @@ struct BmsLoadInfo
 	}
 };
 
-GString CommandSubcontents (const GString Command, const GString Line)
+GString CommandSubcontents (const GString &Command, const GString &Line)
 {
 	uint32 len = Command.length();
 	return Line.substr(len);
 }
 
-void ParseEvents(BmsLoadInfo *Info, const int Measure, const int BmsChannel, const GString Command)
+void ParseEvents(BmsLoadInfo *Info, const int Measure, const int BmsChannel, const GString &Command)
 {
-	size_t CommandLength = Command.length() / 2;
+	auto CommandLength = Command.length() / 2;
 
 	if (BmsChannel != CHANNEL_METER)
 	{
-		size_t cSize = Info->Measures[Measure].Events[BmsChannel].size();
 		Info->Measures[Measure].Events[BmsChannel].reserve(CommandLength);
 
 		if (BmsChannel == CHANNEL_BGABASE || BmsChannel == CHANNEL_BGALAYER
@@ -247,10 +198,10 @@ void ParseEvents(BmsLoadInfo *Info, const int Measure, const int BmsChannel, con
 
 		for (size_t i = 0; i < CommandLength; i++)
 		{
-			const char *EventPtr = (Command.c_str() + i*2);
+			auto EventPtr = (Command.c_str() + i*2);
 			char CharEvent [3];
 			int Event;
-			double Fraction = (double)i / (double)CommandLength;
+			double Fraction = double(i) / CommandLength;
 
 			strncpy(CharEvent, EventPtr, 2); // Obtuse, but functional.
 			CharEvent[2] = 0;
@@ -287,7 +238,7 @@ static double BeatForMeasure(BmsLoadInfo *Info, const int Measure)
 	return Beat;
 }
 
-void CalculateBMP (BmsLoadInfo *Info, std::vector<AutoplayBMP> &BMPEvents, int Channel)
+void CalculateBMP (BmsLoadInfo *Info, vector<AutoplayBMP> &BMPEvents, int Channel)
 {
 	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); ++i)
 	{
@@ -311,11 +262,11 @@ void CalculateBMP (BmsLoadInfo *Info, std::vector<AutoplayBMP> &BMPEvents, int C
 
 void CalculateBPMs(BmsLoadInfo *Info)
 {
-	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
+	for (auto i = Info->Measures.begin(); i != Info->Measures.end(); ++i)
 	{
 		if (i->second.Events.find(CHANNEL_BPM) != i->second.Events.end()) // there are bms events in here, get chopping
 		{
-			for (BMSEventList::iterator ev = i->second.Events[CHANNEL_BPM].begin(); ev != i->second.Events[CHANNEL_BPM].end(); ev++)
+			for (BMSEventList::iterator ev = i->second.Events[CHANNEL_BPM].begin(); ev != i->second.Events[CHANNEL_BPM].end(); ++ev)
 			{
 				double BPM = fromBase16(tob36(ev->Event).c_str());
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first);
@@ -325,11 +276,11 @@ void CalculateBPMs(BmsLoadInfo *Info)
 		}
 	}
 
-	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
+	for (auto i = Info->Measures.begin(); i != Info->Measures.end(); ++i)
 	{
 		if (i->second.Events.find(CHANNEL_EXBPM) != i->second.Events.end())
 		{
-			for (BMSEventList::iterator ev = i->second.Events[CHANNEL_EXBPM].begin(); ev != i->second.Events[CHANNEL_EXBPM].end(); ev++)
+			for (auto ev = i->second.Events[CHANNEL_EXBPM].begin(); ev != i->second.Events[CHANNEL_EXBPM].end(); ++ev)
 			{
 				double BPM;
 				if (Info->BPMs.find(ev->Event) != Info->BPMs.end())
@@ -346,21 +297,19 @@ void CalculateBPMs(BmsLoadInfo *Info)
 	}
 
 	// Make sure ExBPM events are in front using stable_sort.
-	std::stable_sort(Info->difficulty->Timing.begin(), Info->difficulty->Timing.end(), 
-		[](const TimingSegment &A, const TimingSegment &B)	{
-		return A.Time < B.Time;
-	});
+	auto cmp = [](const TimingSegment &A, const TimingSegment &B) -> bool { return A.Time < B.Time; };
+	std::stable_sort(Info->difficulty->Timing.begin(), Info->difficulty->Timing.end(), cmp);
 }
 
 
 
 void CalculateStops(BmsLoadInfo *Info)
 {
-	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
+	for (auto i = Info->Measures.begin(); i != Info->Measures.end(); ++i)
 	{
 		if (i->second.Events.find(CHANNEL_STOPS) != i->second.Events.end())
 		{
-			for (BMSEventList::iterator ev = i->second.Events[CHANNEL_STOPS].begin(); ev != i->second.Events[CHANNEL_STOPS].end(); ev++)
+			for (auto ev = i->second.Events[CHANNEL_STOPS].begin(); ev != i->second.Events[CHANNEL_STOPS].end(); ++ev)
 			{
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first);
 				double StopTimeBeats = Info->Stops[ev->Event] / 48;
@@ -472,7 +421,7 @@ void measureCalculateSide(BmsLoadInfo *Info, MeasureList::iterator &i, int Track
 			if (Info->LNObj)
 				std::sort(i->second.Events[curChannel].begin(), i->second.Events[curChannel].end(), evtSort);
 
-			for (BMSEventList::iterator ev = i->second.Events[curChannel].begin(); ev != i->second.Events[curChannel].end(); ev++)
+			for (auto ev = i->second.Events[curChannel].begin(); ev != i->second.Events[curChannel].end(); ++ev)
 			{
 				if (!ev->Event || Track >= usedChannels) continue; // UNUSABLE event
 
@@ -480,7 +429,7 @@ void measureCalculateSide(BmsLoadInfo *Info, MeasureList::iterator &i, int Track
 
 				double Time = TimeAtBeat(Info->difficulty->Timing, Info->difficulty->Offset, Beat) + StopTimeAtBeat(Info->difficulty->Data->StopsTiming, Beat);
 
-				Info->difficulty->Duration = std::max((double)Info->difficulty->Duration, Time);
+				Info->difficulty->Duration = std::max(double(Info->difficulty->Duration), Time);
 
 				if (!Info->LNObj || (Info->LNObj != ev->Event))
 				{
@@ -505,7 +454,7 @@ degradetonote:
 						Info->difficulty->TotalHolds++;
 						Info->difficulty->TotalScoringObjects++;
 						Info->LastNotes[Track]->EndTime = Time;
-						Info->LastNotes[Track] = NULL;
+						Info->LastNotes[Track] = nullptr;
 					}
 					else
 						goto degradetonote;
@@ -526,7 +475,7 @@ degradetonote:
 			else
 				Track = translateTrackPMS(curChannel, startChannelLN) + TrackOffset;
 
-			for (BMSEventList::iterator ev = i->second.Events[curChannel].begin(); ev != i->second.Events[curChannel].end(); ev++)
+			for (auto ev = i->second.Events[curChannel].begin(); ev != i->second.Events[curChannel].end(); ++ev)
 			{
 				if (Track >= usedChannels || Track < 0) continue;
 
@@ -541,7 +490,7 @@ degradetonote:
 				{
 					NoteData Note;
 
-					Info->difficulty->Duration = std::max((double)Info->difficulty->Duration, Time);
+					Info->difficulty->Duration = std::max(double(Info->difficulty->Duration), Time);
 
 					Note.StartTime = Info->startTime[Track];
 					Note.EndTime = Time;
@@ -567,7 +516,6 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 	Measure Msr;
 
 	Msr.MeasureLength = 4 * i->second.BeatDuration;
-	// Log::Printf("Measure len %f (mult %f)\n", Msr.MeasureLength, i->second.BeatDuration);
 
 	// see both sides, p1 and p2
 	if (!Info->IsPMS) // or BME-type PMS
@@ -588,7 +536,7 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 		// Our old pointers are invalid by now since the Msr structures are going to go out of scope
 		// Which means we must renew them, and that's better done here.
 
-		MeasureVector::reverse_iterator q = Info->difficulty->Data->Measures.rbegin();
+		auto q = Info->difficulty->Data->Measures.rbegin();
 		
 		while (q != Info->difficulty->Data->Measures.rend())
 		{
@@ -596,14 +544,14 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 				Info->LastNotes[k] = &((*q).MeasureNotes[k].back());
 				goto next_chan;
 			}
-			q++;
+			++q;
 		}
 		next_chan:;
 	}
 
 	if (i->second.Events[CHANNEL_BGM].size() != 0) // There are some BGM events?
 	{
-		for (BMSEventList::iterator ev = i->second.Events[CHANNEL_BGM].begin(); ev != i->second.Events[CHANNEL_BGM].end(); ev++)
+		for (auto ev = i->second.Events[CHANNEL_BGM].begin(); ev != i->second.Events[CHANNEL_BGM].end(); ++ev)
 		{
 			int Event = ev->Event;
 
@@ -622,13 +570,13 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 			Info->difficulty->Data->BGMEvents.push_back(New);
 		}
 
-		std::sort(Info->difficulty->Data->BGMEvents.begin(), Info->difficulty->Data->BGMEvents.end(), evsort);
+		std::sort(Info->difficulty->Data->BGMEvents.begin(), Info->difficulty->Data->BGMEvents.end());
 	}
 }
 
 void AutodetectChannelCountSide(BmsLoadInfo *Info, int offset, int usedChannels[MAX_CHANNELS], int startChannel, int startChannelLN, int startChannelMines, int startChannelInvisible)
 {
-	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); i++)
+	for (auto i = Info->Measures.begin(); i != Info->Measures.end(); ++i)
 	{
 		// normal channels
 		for (int curChannel = startChannel; curChannel <= (startChannel + MAX_CHANNELS - offset); curChannel++)
@@ -843,7 +791,6 @@ bool InterpStatement(GString Command, GString Contents, BmsLoadInfo *Info)
 bool ShouldUseU8(const char* Line)
 {
 	bool IsU8 = false;
-	int i = strstr(Line, "\x0A") - Line;
 
 	if (!utf8::starts_with_bom(Line, Line + 1024))
 	{
@@ -907,13 +854,13 @@ GString GetSubtitles(GString SLine, std::vector<GString> &Out)
 	return SLine.substr(0, SLine.find_first_of(EntryChars));
 }
 
-GString DifficultyNameFromSubtitles(std::vector<GString> &Subs)
+GString DifficultyNameFromSubtitles(vector<GString> &Subs)
 {
-	for (std::vector<GString>::iterator i = Subs.begin();
+	for (auto i = Subs.begin();
 		i != Subs.end();
-		i++)
+	     ++i)
 	{
-		GString Current = *i;
+		auto Current = *i;
 		boost::to_lower(Current);
 		const char* s = Current.c_str();
 
@@ -972,7 +919,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 		return;
 	}
 
-	srand(time(0));
+	srand(time(nullptr));
 	Diff->IsVirtual = true;
 
 	std::shared_ptr<VSRG::BmsTimingInfo> TimingInfo = std::make_shared<VSRG::BmsTimingInfo>();
@@ -990,7 +937,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 		And that's what we're going to try to do.
 	*/
 
-	std::vector<GString> Subs; // Subtitle list
+	vector<GString> Subs; // Subtitle list
 	GString Line;
 	bool IsU8 = false;
 	char* TestU8 = new char[1025];

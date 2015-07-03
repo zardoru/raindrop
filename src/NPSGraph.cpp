@@ -155,10 +155,10 @@ public:
 
 void ConvertToNPSGraph(VSRG::Song *Sng, Directory PathOut)
 {
-	for (int i = 0; i < Sng->Difficulties.size(); i++)
+	for (auto i = 0; i < Sng->Difficulties.size(); i++)
 	{
 		std::ofstream out;
-		VSRG::Difficulty *Diff = Sng->GetDifficulty(i);
+		auto Diff = Sng->GetDifficulty(i);
 		Directory Sn = Sng->SongName;
 		Sn.Normalize(true);
 

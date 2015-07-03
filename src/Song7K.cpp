@@ -1,9 +1,7 @@
 #include <map>
-#include <fstream>
 
 #include "GameGlobal.h"
 #include "Song7K.h"
-#include "Configuration.h"
 #include <algorithm>
 
 using namespace VSRG;
@@ -11,30 +9,6 @@ using namespace VSRG;
 TimingInfoType CustomTimingInfo::GetType()
 {
 	return Type;
-}
-
-int RowifiedDifficulty::GetRowCount(const vector<RowifiedDifficulty::Event> &In)
-{
-	// literally the only hard part of this
-	// We have to find the LCM of the set of fractions given by the Fraction of all objects in the vector.
-	std::vector <int> Denominators;
-
-	// Find all different denominators.
-	for (auto i : In) {
-		for (auto k : Denominators)
-		{
-			if (i.Sect.Den == k)
-				goto next_object;
-		}
-
-		Denominators.push_back(i.Sect.Den);
-	next_object:;
-	}
-
-	if (Denominators.size() == 1) return Denominators.at(0);
-
-	// Now get the LCM.
-	return LCM(Denominators);
 }
 
 Song::Song()
@@ -52,11 +26,6 @@ VSRG::Difficulty* Song::GetDifficulty(uint32 i)
 		return nullptr;
 	else
 		return Difficulties.at(i).get();
-}
-
-int tSort(const TimingSegment &i, const TimingSegment &j)
-{
-	return i.Time < j.Time;
 }
 
 void Difficulty::ProcessVSpeeds(TimingData& BPS, TimingData& VerticalSpeeds, double SpeedConstant)
@@ -98,7 +67,7 @@ void Difficulty::ProcessVSpeeds(TimingData& BPS, TimingData& VerticalSpeeds, dou
 	{
 		for (auto i = VerticalSpeeds.begin(); 
 			i != VerticalSpeeds.end();
-			i++)
+		     ++i)
 		{
 			if (i->Value != 0)
 				VerticalSpeeds[0].Value = i->Value;
@@ -153,7 +122,7 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 
 	for(auto Time = Timing.begin();
 		Time != Timing.end();
-		Time++)
+	    ++Time)
 	{
 		TimingSegment Seg;
 		
@@ -164,7 +133,7 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 	}
 
 	/* Sort for justice */
-	std::sort(BPS.begin(), BPS.end(), tSort);
+	std::sort(BPS.begin(), BPS.end());
 
 	if (!StopsTiming.size() || BPMType != VSRG::Difficulty::BT_Beat) // Stops only supported in Beat mode.
 		return;
@@ -194,7 +163,7 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 				else continue;
 			}
 
-			k++;
+			++k;
 		}
 
 		// Okay, the collision is out. Let's push our 0-speeder.
@@ -226,7 +195,7 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 		BPS.push_back(Seg);
 	}
 
-	std::sort(BPS.begin(), BPS.end(), tSort);
+	std::sort(BPS.begin(), BPS.end());
 }
 
 void Difficulty::ProcessSpeedVariations(TimingData& BPS, TimingData& VerticalSpeeds, double Drift)
@@ -236,7 +205,7 @@ void Difficulty::ProcessSpeedVariations(TimingData& BPS, TimingData& VerticalSpe
 	TimingData tVSpeeds = VerticalSpeeds; // We need this to store what values to change
 	TimingData &SpeedChanges = Data->SpeedChanges;
 
-	std::sort( SpeedChanges.begin(), SpeedChanges.end(), tSort );
+	std::sort( SpeedChanges.begin(), SpeedChanges.end() );
 
 	for(TimingData::const_iterator Change = SpeedChanges.begin();
 			Change != SpeedChanges.end();
@@ -315,7 +284,7 @@ void Difficulty::ProcessSpeedVariations(TimingData& BPS, TimingData& VerticalSpe
 		}
 	}
 
-	std::sort(VerticalSpeeds.begin(), VerticalSpeeds.end(), tSort);
+	std::sort(VerticalSpeeds.begin(), VerticalSpeeds.end());
 }
 
 double Difficulty::GetWarpAmountAtTime(double Time)
