@@ -45,19 +45,9 @@ bool ShouldDrawNoteInScreen(TrackNote& T, float SpeedMultiplier, float FieldDisp
 
 	Vertical = (T.GetVertical() * SpeedMultiplier + FieldDisplacement);
 	if (T.IsHold())
-	{
 		VerticalHoldEnd = (T.GetHoldEndVertical() * SpeedMultiplier + FieldDisplacement);
 
-		if (Upscroll)
-			return IntervalsIntersect(0, ScreenHeight, Vertical, VerticalHoldEnd);
-		else
-			return IntervalsIntersect(0, ScreenHeight, VerticalHoldEnd, Vertical);
-	}
-	
-	if (Upscroll)
-		return Vertical < ScreenHeight;
-	else
-		return Vertical > 0;
+	return true;
 }
 
 Mat4 id;
@@ -91,7 +81,40 @@ void ScreenGameplay7K::DrawMeasures()
 
 	for (uint32 k = 0; k < CurrentDiff->Channels; k++)
 	{
-		for (auto m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); ++m)
+		/* Find the location of the first/next visible regular note */
+		auto StartPred = [&](const TrackNote &A, double _) -> bool {
+			auto Vert = A.GetVertical() * SpeedMultiplier + FieldDisplacement;
+			return Vert > _;
+		};
+
+		auto Start = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), ScreenHeight, StartPred);
+
+		// Locate the first hold that we can draw in this range
+		auto rStart = std::reverse_iterator<vector<TrackNote>::iterator>(Start);
+		for (auto i = rStart; i != NotesByChannel[k].rend(); ++i)
+		{
+			TrackNote &T = *i;
+			if (i->IsHold() && i->IsVisible()) {
+				auto Vert = i->GetVertical() * SpeedMultiplier + FieldDisplacement;
+				auto VertEnd = i->GetHoldEndVertical() * SpeedMultiplier + FieldDisplacement;
+				if (IntervalsIntersect(0, ScreenHeight, min(Vert, VertEnd), max(Vert, VertEnd)))
+				{
+					Start = i.base() - 1;
+					break;
+				}
+			}
+		}
+
+		// Find the note that is out of the drawing range
+		auto EndPred = [&](double _, const TrackNote &A)->bool {
+			auto Vert = A.GetVertical() * SpeedMultiplier + FieldDisplacement;
+			return _ > Vert;
+		};
+
+		auto End = std::upper_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), 0, EndPred);
+		
+		// Now, draw it.
+		for (auto m = Start; m != End; ++m)
 		{
 			// Is there a better way to do this that doesn't involve recalculating this every note?
 			float Vertical = 0;
