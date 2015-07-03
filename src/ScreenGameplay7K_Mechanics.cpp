@@ -190,16 +190,7 @@ void ScreenGameplay7K::ReleaseLane(uint32 Lane, float Time)
 
 	if (stage_failed) return; // don't judge any more after stage is failed.
 
-	double timeLower = Time - ScoreKeeper->getMissCutoff();
-	double timeHigher = Time + ScoreKeeper->getEarlyMissCutoff();
-
-	// We're mostly using these for hold release times, so...
-	auto cmp = [&](const TrackNote& A, const double T) -> bool { return A.GetTimeFinal() < T; };
-	auto cmpup = [&](const double T, const TrackNote& A) -> bool { return T < A.GetTimeFinal(); };
-	auto Start = std::lower_bound(NotesByChannel[Lane].begin(), NotesByChannel[Lane].end(), timeLower, cmp);
-	auto End = std::upper_bound(NotesByChannel[Lane].begin(), NotesByChannel[Lane].end(), timeHigher, cmpup);
-
-	for (auto m = Start; m != End; ++m)
+	for (auto m = NotesByChannel[Lane].begin(); m != NotesByChannel[Lane].end(); ++m)
 	{
 		if (!m->IsJudgable()) continue;
 		if (MechanicsSet->OnReleaseLane(Time, &(*m), Lane)) // Are we done judging..?

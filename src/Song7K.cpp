@@ -414,10 +414,7 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 		}
 
 		// done with the channel - sort it
-		std::sort(NotesOut[KeyIndex].begin(), NotesOut[KeyIndex].end(), [](const TrackNote &i, const TrackNote &j) -> bool
-		{
-			return i.GetStartTime() < j.GetStartTime();
-		});
+		std::sort(NotesOut[KeyIndex].begin(), NotesOut[KeyIndex].end());
 	}
 }
 
