@@ -190,6 +190,27 @@ void ScreenGameplay7K::ReleaseLane(uint32 Lane, float Time)
 
 	if (stage_failed) return; // don't judge any more after stage is failed.
 
+	auto Start = NotesByChannel[Lane].begin();
+	auto End = NotesByChannel[Lane].end();
+
+	// Use this optimization when we can make sure vertical properly aligns up with time.
+	if (!Warps.size()) {
+		// In comparison to the regular compare function, since end times are what matter with holds (or lift events, where start == end)
+		// this does the job as it should instead of comparing start times where hold tails would be completely ignored.
+		auto LboundFunc = [](const TrackNote &A, const double &B) -> bool {
+			return A.GetTimeFinal() < B;
+		};
+		auto HboundFunc = [](const double &A, const TrackNote &B) -> bool {
+			return A < B.GetTimeFinal();
+		};
+
+		auto timeLower = (Time - (ScoreKeeper->usesO2() ? ScoreKeeper->getMissCutoff() : (ScoreKeeper->getMissCutoff() / 1000.0)));
+		auto timeHigher = (Time + (ScoreKeeper->usesO2() ? ScoreKeeper->getEarlyMissCutoff() : (ScoreKeeper->getEarlyMissCutoff() / 1000.0)));
+
+		Start = std::lower_bound(NotesByChannel[Lane].begin(), NotesByChannel[Lane].end(), timeLower, LboundFunc);
+		End = std::upper_bound(NotesByChannel[Lane].begin(), NotesByChannel[Lane].end(), timeHigher, HboundFunc);
+	}
+
 	for (auto m = NotesByChannel[Lane].begin(); m != NotesByChannel[Lane].end(); ++m)
 	{
 		if (!m->IsJudgable()) continue;
@@ -205,15 +226,17 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 	if ((!Music && !CurrentDiff->IsVirtual) || !Active || stage_failed)
 		return;
 
-	/*double timeLower = (Time - (ScoreKeeper->usesO2() ? ScoreKeeper->getMissCutoff() : (ScoreKeeper->getMissCutoff() / 1000.0)));
-	double timeHigher = (Time + (ScoreKeeper->usesO2() ? ScoreKeeper->getEarlyMissCutoff() : (ScoreKeeper->getEarlyMissCutoff() / 1000.0)));
-
-	auto Start = std::lower_bound(NotesByChannel[Lane].begin(), NotesByChannel[Lane].end(), timeLower);
-	auto End = std::upper_bound(NotesByChannel[Lane].begin(), NotesByChannel[Lane].end(), timeHigher);
-	*/
-
 	auto Start = NotesByChannel[Lane].begin();
 	auto End = NotesByChannel[Lane].end();
+
+	// Use this optimization when we can make sure vertical properly aligns up with time, as with ReleaseLane.
+	if (!Warps.size()) {
+		auto timeLower = (Time - (ScoreKeeper->usesO2() ? ScoreKeeper->getMissCutoff() : (ScoreKeeper->getMissCutoff() / 1000.0)));
+		auto timeHigher = (Time + (ScoreKeeper->usesO2() ? ScoreKeeper->getEarlyMissCutoff() : (ScoreKeeper->getEarlyMissCutoff() / 1000.0)));
+
+		Start = std::lower_bound(NotesByChannel[Lane].begin(), NotesByChannel[Lane].end(), timeLower);
+		End = std::upper_bound(NotesByChannel[Lane].begin(), NotesByChannel[Lane].end(), timeHigher);
+	}
 
 	bool notJudged = true;
 
