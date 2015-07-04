@@ -199,7 +199,11 @@ void LuaManager::NewArray()
 bool LuaManager::UseArray(GString VariableName)
 {
 	GetGlobal(VariableName);
-	return lua_istable(State, -1);
+	if (lua_istable(State, -1))
+		return true;
+	
+	Pop();
+	return false;
 }
 
 void LuaManager::SetFieldI(int index, int Value)
