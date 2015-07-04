@@ -362,6 +362,7 @@ bool ScreenGameplay7K::Run(double Delta)
 	UpdateScriptVariables();
 
 	Animations->UpdateTargets(Delta);
+	BGA->Update(Delta);
 	Render();
 
 	if (Delta > 0.1)

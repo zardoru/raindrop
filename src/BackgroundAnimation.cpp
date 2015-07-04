@@ -47,6 +47,7 @@ public:
 		this->Difficulty = Difficulty;
 		this->Song = Song;
 		Validated = false;
+		MissTime = 0;
 	}
 	
 	void Load() override
@@ -84,7 +85,8 @@ public:
 		std::sort(EventsLayer1.begin(), EventsLayer1.end());
 		std::sort(EventsLayer2.begin(), EventsLayer2.end());
 
-		Layer0->SetImage(List.GetFromIndex(0), false);
+		LayerMiss->SetImage(List.GetFromIndex(0), false);
+		Layer0->SetImage(List.GetFromIndex(1), false);
 
 		SetWidth(ScreenWidth);
 		SetHeight(ScreenHeight);
@@ -94,7 +96,7 @@ public:
 
 	void SetLayerImage(Sprite *sprite, vector<AutoplayBMP> &events_layer, double time)
 	{
-		auto bmp = std::upper_bound(events_layer.begin(), events_layer.end(), time);
+		auto bmp = std::lower_bound(events_layer.begin(), events_layer.end(), time);
 		if (bmp != events_layer.end())
 			sprite->SetImage(List.GetFromIndex(bmp->BMP), false);
 		else
@@ -111,12 +113,27 @@ public:
 		SetLayerImage(Layer2.get(), EventsLayer2, Time);
 	}
 
+	int MissTime;
+
 	void Render() override
 	{
 		Layer0->Render();
-		LayerMiss->Render();
+
+		if (MissTime > 0)
+			LayerMiss->Render();
+
 		Layer1->Render();
 		Layer2->Render();
+	}
+
+	void OnMiss() override
+	{
+		MissTime = Configuration::GetSkinConfigf("OnMissBGATime");
+	}
+
+	void Update(float Delta) override
+	{
+		MissTime -= Delta;
 	}
 };
 
@@ -176,11 +193,27 @@ shared_ptr<BackgroundAnimation> CreateBGAforDotcur(dotcur::Song &input, uint8_t 
 	return make_shared<StaticBackground>(input.BackgroundFilename);
 }
 
+void BackgroundAnimation::SetAnimationTime(double Time)
+{
+}
+
 void BackgroundAnimation::Load()
 {
 }
 
 void BackgroundAnimation::Validate()
+{
+}
+
+void BackgroundAnimation::Update(float Delta)
+{
+}
+
+void BackgroundAnimation::OnHit()
+{
+}
+
+void BackgroundAnimation::OnMiss()
 {
 }
 

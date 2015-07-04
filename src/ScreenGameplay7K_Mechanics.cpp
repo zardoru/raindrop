@@ -57,6 +57,8 @@ void ScreenGameplay7K::HitNote(double TimeOff, uint32 Lane, bool IsHold, bool Is
 		Animations->GetEnv()->RunFunction();
 	}
 
+	BGA->OnHit();
+
 	if (ScoreKeeper->getMaxNotes() == ScoreKeeper->getScore(ST_NOTES_HIT))
 		Animations->DoEvent("OnFullComboEvent");
 }
@@ -80,6 +82,8 @@ void ScreenGameplay7K::MissNote(double TimeOff, uint32 Lane, bool IsHold, bool a
 		Animations->GetEnv()->PushArgument(IsHold);
 		Animations->GetEnv()->RunFunction();
 	}
+
+	BGA->OnMiss();
 }
 
 

@@ -1,5 +1,7 @@
 skin_require("noteskin_defs.lua")
 
+-- All notes have their origin centered.
+
 normalNotes = {}
 holdBodies = {}
 
@@ -38,6 +40,7 @@ function drawNormalInternal(lane, loc, frac)
 	Render(note)
 end
 
+-- 1 is enabled. 2 is being pressed. 0 is failed.
 function drawHoldBodyInternal(lane, loc, size, active_level)
 	local note = holdBodies[lane + 1]
 	note.Y = loc
@@ -57,7 +60,7 @@ function drawHoldBodyInternal(lane, loc, size, active_level)
 end
 
 function drawMineInternal(lane, loc, frac)
-	
+	-- stub while mines are accounted in the scoring system.
 end
 
 -- From now on, only engine variables are being set.
@@ -67,6 +70,10 @@ BarlineOffset = NoteHeight / 2
 BarlineStartX = GearStartX
 BarlineWidth = Noteskin[Lanes].BarlineWidth
 JudgmentLineY = Noteskin[Lanes].GearHeight
+
+-- How many extra units do you require so that the whole bounding box is accounted
+-- when determining whether to show this note or not.
+NoteScreenSize = NoteHeight / 2
 
 DrawNormal = drawNormalInternal
 DrawFake = drawNormalInternal
