@@ -40,7 +40,7 @@ function drawNormalInternal(lane, loc, frac)
 	Render(note)
 end
 
--- 1 is enabled. 2 is being pressed. 0 is failed.
+-- 1 is enabled. 2 is being pressed. 0 is failed. 3 is succesful hit.
 function drawHoldBodyInternal(lane, loc, size, active_level)
 	local note = holdBodies[lane + 1]
 	note.Y = loc
@@ -56,7 +56,9 @@ function drawHoldBodyInternal(lane, loc, size, active_level)
 		note.Green = 1
 	end
 	
-	Render(note)
+	if active_level != 3 then
+		Render(note)
+	end
 end
 
 function drawMineInternal(lane, loc, frac)

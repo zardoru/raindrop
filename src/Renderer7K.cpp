@@ -124,31 +124,55 @@ void ScreenGameplay7K::DrawMeasures()
 			// Assign our matrix.
 			WindowFrame.SetUniform(U_MVP, &id[0][0]);
 
+
+			float JPos;
+
+			// LR2 style keep-on-the-judgment-line
+			bool AboveLine = Vertical < JudgmentLinePos;
+			if (!(AboveLine ^ IsUpscrolling()) && m->IsJudgable())
+				JPos = JudgmentLinePos;
+			else
+				JPos = Vertical;
+
 			// We draw the body first, so that way the heads get drawn on top
 			if (m->IsHold())
 			{
-				float Pos = (VerticalHoldEnd + Vertical) / 2;
-				float Size = m->GetHoldSize() * SpeedMultiplier;
-				int Level = 1;
+				int Level = -1;
 
-				if (!m->IsEnabled() && !m->FailedHit())
-					Level = 2;
+				if (m->IsEnabled() && !m->FailedHit())
+					Level = 1;
 				if (!m->IsEnabled() && m->FailedHit())
 					Level = 0;
+				if (m->IsEnabled() && m->WasNoteHit() && !m->FailedHit())
+					Level = 2;
+				if (!m->IsEnabled() && m->WasNoteHit() && !m->FailedHit())
+					Level = 3;
+
+				float Pos; 
+				float Size; 
+				// If we're being hit and..
+				if (Noteskin::DecreaseHoldSizeWhenBeingHit() && Level == 2)
+				{
+					Pos = (VerticalHoldEnd + JPos) / 2;
+					Size = VerticalHoldEnd - JPos;
+				}else // We were failed, not being hit or were already hit
+				{
+					Pos = (VerticalHoldEnd + Vertical) / 2;
+					Size = VerticalHoldEnd - Vertical;
+				}
 
 				Noteskin::DrawHoldBody(k, Pos, Size, Level);
 				Noteskin::DrawHoldTail(*m, k, VerticalHoldEnd);
 				
-				// LR2 style keep-on-the-judgment-line
-				if ( (Vertical > JudgmentLinePos && IsUpscrolling() || Vertical > JudgmentLinePos && !IsUpscrolling()) && m->IsJudgable() )
-					Noteskin::DrawHoldHead(*m, k, JudgmentLinePos);
+
+				if (Noteskin::AllowDanglingHeads())
+					Noteskin::DrawHoldHead(*m, k, JPos);
 				else
 					Noteskin::DrawHoldHead(*m, k, Vertical);
 			} else
 			{
-				bool AboveLine = Vertical < JudgmentLinePos;
-				if ((AboveLine && IsUpscrolling()) || (!AboveLine && !IsUpscrolling()) && m->IsJudgable())
-					Noteskin::DrawNote(*m, k, JudgmentLinePos);
+				if (Noteskin::AllowDanglingHeads())
+					Noteskin::DrawNote(*m, k, JPos);
 				else
 					Noteskin::DrawNote(*m, k, Vertical);
 			}

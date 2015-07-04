@@ -16,6 +16,8 @@ bool CanRender = false;
 shared_ptr<LuaManager> Noteskin::NoteskinLua = nullptr;
 ScreenGameplay7K* Noteskin::Parent = nullptr;
 double Noteskin::NoteScreenSize = 0;
+bool Noteskin::DecreaseHoldSizeWhenBeingHit = true;
+bool Noteskin::DanglingHeads = true;
 
 void lua_Render(Sprite *S)
 {
@@ -46,6 +48,8 @@ void Noteskin::SetupNoteskin(bool SpecialStyle, int Lanes, ScreenGameplay7K* Par
 	NoteskinLua->SetGlobal("Lanes", Lanes);
 	NoteskinLua->RunScript(GameState::GetInstance().GetSkinFile("noteskin.lua"));
 
+	DecreaseHoldSizeWhenBeingHit = (NoteskinLua->GetGlobalD("DecreaseHoldSizeWhenBeingHit") != 0);
+	DanglingHeads = (NoteskinLua->GetGlobalD("DanglingHeads") != 0);
 	NoteScreenSize = NoteskinLua->GetGlobalD("NoteScreenSize");
 }
 
@@ -166,6 +170,11 @@ void Noteskin::DrawHoldTail(VSRG::TrackNote& T, int Lane, float Location)
 double Noteskin::GetNoteOffset()
 {
 	return NoteScreenSize;
+}
+
+bool Noteskin::AllowDanglingHeads()
+{
+	return DanglingHeads;
 }
 
 void Noteskin::DrawHoldBody(int Lane, float Location, float Size, int ActiveLevel)

@@ -9,6 +9,8 @@ class Noteskin
 	static shared_ptr<LuaManager> NoteskinLua;
 	static ScreenGameplay7K* Parent;
 	static double NoteScreenSize;
+	static bool DanglingHeads;
+	static bool DecreaseHoldSizeWhenBeingHit;
 public:
 	static void SetupNoteskin(bool SpecialStyle, int Lanes, ScreenGameplay7K *Parent);
 	static void Update(float Delta, float CurrentBeat);
@@ -23,6 +25,7 @@ public:
 	static void DrawHoldHead(VSRG::TrackNote& T, int Lane, float Location);
 	static void DrawHoldTail(VSRG::TrackNote& T, int Lane, float Location);
 	static double GetNoteOffset();
+	bool AllowDanglingHeads();
 };
 
 #endif
