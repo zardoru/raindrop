@@ -79,6 +79,11 @@ public:
 
 		LayerMiss->BlackToTransparent = Layer1->BlackToTransparent = Layer2->BlackToTransparent = true;
 
+		std::sort(EventsLayer0.begin(), EventsLayer0.end());
+		std::sort(EventsLayerMiss.begin(), EventsLayerMiss.end());
+		std::sort(EventsLayer1.begin(), EventsLayer1.end());
+		std::sort(EventsLayer2.begin(), EventsLayer2.end());
+
 		Layer0->SetImage(List.GetFromIndex(0), false);
 
 		SetWidth(ScreenWidth);

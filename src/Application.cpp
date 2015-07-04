@@ -176,9 +176,11 @@ void Application::Init()
 	}
 	if (RunMode == MODE_VSRGPREVIEW)
 	{
+#ifdef NDEBUG
 		if (IPC::IsInstanceAlreadyRunning())
 			Setup = false;
 		else
+#endif
 			Setup = true;
 	}
 

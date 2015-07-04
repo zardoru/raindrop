@@ -205,11 +205,15 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 	if ((!Music && !CurrentDiff->IsVirtual) || !Active || stage_failed)
 		return;
 
-	double timeLower = (Time - (ScoreKeeper->usesO2() ? ScoreKeeper->getMissCutoff() : (ScoreKeeper->getMissCutoff() / 1000.0)));
+	/*double timeLower = (Time - (ScoreKeeper->usesO2() ? ScoreKeeper->getMissCutoff() : (ScoreKeeper->getMissCutoff() / 1000.0)));
 	double timeHigher = (Time + (ScoreKeeper->usesO2() ? ScoreKeeper->getEarlyMissCutoff() : (ScoreKeeper->getEarlyMissCutoff() / 1000.0)));
 
 	auto Start = std::lower_bound(NotesByChannel[Lane].begin(), NotesByChannel[Lane].end(), timeLower);
 	auto End = std::upper_bound(NotesByChannel[Lane].begin(), NotesByChannel[Lane].end(), timeHigher);
+	*/
+
+	auto Start = NotesByChannel[Lane].begin();
+	auto End = NotesByChannel[Lane].end();
 
 	bool notJudged = true;
 

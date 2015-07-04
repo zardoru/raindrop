@@ -362,9 +362,9 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 
 				// if upscroll change minus for plus as well as matrix at screengameplay7k
 				if (!CurrentNote.EndTime)
-					NewNote.AssignPosition(-VerticalPosition);
+					NewNote.AssignPosition(VerticalPosition);
 				else
-					NewNote.AssignPosition(-VerticalPosition, -HoldEndPosition);
+					NewNote.AssignPosition(VerticalPosition, HoldEndPosition);
 
 				// Okay, now we want to know what fraction of a beat we're dealing with
 				// this way we can display colored (a la Stepmania) notes.
@@ -383,7 +383,7 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 		}
 
 		// done with the channel - sort it
-		std::sort(NotesOut[KeyIndex].begin(), NotesOut[KeyIndex].end());
+		std::stable_sort(NotesOut[KeyIndex].begin(), NotesOut[KeyIndex].end(), [](const VSRG::TrackNote &A, const VSRG::TrackNote &B) -> bool { return A.GetVertical() < B.GetVertical(); });
 	}
 }
 

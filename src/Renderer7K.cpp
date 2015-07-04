@@ -29,7 +29,7 @@ void ScreenGameplay7K::DrawBarlines(float rPos)
 		i != MeasureBarlines.end();
 		++i)
 	{
-		float realV = rPos - (*i) * SpeedMultiplier + BarlineOffset;
+		float realV = rPos - (*i) * abs(SpeedMultiplier) + BarlineOffset;
 		if (realV > 0 && realV < ScreenWidth)
 		{
 			Barline->SetLocation (Vec2(BarlineX, realV), Vec2(BarlineX + BarlineWidth, realV));
@@ -43,9 +43,9 @@ bool ShouldDrawNoteInScreen(TrackNote& T, float SpeedMultiplier, float FieldDisp
 	if (!T.IsVisible())
 		return false;
 
-	Vertical = (T.GetVertical() * SpeedMultiplier + FieldDisplacement);
+	Vertical = (FieldDisplacement - T.GetVertical() * SpeedMultiplier);
 	if (T.IsHold())
-		VerticalHoldEnd = (T.GetHoldEndVertical() * SpeedMultiplier + FieldDisplacement);
+		VerticalHoldEnd = (FieldDisplacement - T.GetHoldEndVertical() * SpeedMultiplier);
 
 	return true;
 }
@@ -54,9 +54,10 @@ Mat4 id;
 
 void ScreenGameplay7K::DrawMeasures()
 {
+	float Mult = abs(SpeedMultiplier);
 	float FieldDisplacement;
 
-	FieldDisplacement = CurrentVertical * SpeedMultiplier + JudgmentLinePos;
+	FieldDisplacement = CurrentVertical * Mult + JudgmentLinePos;
 
 	if (BarlineEnabled)
 		DrawBarlines(FieldDisplacement);
@@ -75,7 +76,6 @@ void ScreenGameplay7K::DrawMeasures()
 
 	WindowFrame.SetUniform(U_SIM, &id[0][0]);
 	WindowFrame.SetUniform(U_TRANM, &id[0][0]);
-	WindowFrame.SetUniform(U_SMULT, SpeedMultiplier);
 
 	SetPrimitiveQuadVBO();
 
@@ -83,8 +83,8 @@ void ScreenGameplay7K::DrawMeasures()
 	{
 		/* Find the location of the first/next visible regular note */
 		auto StartPred = [&](const TrackNote &A, double _) -> bool {
-			auto Vert = A.GetVertical() * SpeedMultiplier + FieldDisplacement;
-			return Vert > _;
+			auto Vert = FieldDisplacement - A.GetVertical() * Mult;
+			return _ < Vert;
 		};
 
 		auto Start = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), ScreenHeight, StartPred);
@@ -93,10 +93,9 @@ void ScreenGameplay7K::DrawMeasures()
 		auto rStart = std::reverse_iterator<vector<TrackNote>::iterator>(Start);
 		for (auto i = rStart; i != NotesByChannel[k].rend(); ++i)
 		{
-			TrackNote &T = *i;
 			if (i->IsHold() && i->IsVisible()) {
-				auto Vert = i->GetVertical() * SpeedMultiplier + FieldDisplacement;
-				auto VertEnd = i->GetHoldEndVertical() * SpeedMultiplier + FieldDisplacement;
+				auto Vert = FieldDisplacement - i->GetVertical() * Mult;
+				auto VertEnd = FieldDisplacement - i->GetHoldEndVertical() * Mult;
 				if (IntervalsIntersect(0, ScreenHeight, min(Vert, VertEnd), max(Vert, VertEnd)))
 				{
 					Start = i.base() - 1;
@@ -106,21 +105,15 @@ void ScreenGameplay7K::DrawMeasures()
 		}
 
 		// Find the note that is out of the drawing range
-		auto EndPred = [&](double _, const TrackNote &A)->bool {
-			auto Vert = A.GetVertical() * SpeedMultiplier + FieldDisplacement;
-			return _ > Vert;
-		};
-
-		auto End = std::upper_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), 0, EndPred);
+		auto End = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), 0, StartPred);
 		
-		// Now, draw it.
+		// Now, draw them.
 		for (auto m = Start; m != End; ++m)
 		{
-			// Is there a better way to do this that doesn't involve recalculating this every note?
 			float Vertical = 0;
 			float VerticalHoldEnd;
 
-			if (!ShouldDrawNoteInScreen(*m, SpeedMultiplier, FieldDisplacement, Vertical, VerticalHoldEnd, Upscroll))
+			if (!ShouldDrawNoteInScreen(*m, Mult, FieldDisplacement, Vertical, VerticalHoldEnd, Upscroll))
 				continue; // If this is not visible, we move on to the next note. 
 
 			// Assign our matrix.
