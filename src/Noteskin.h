@@ -8,6 +8,7 @@ class Noteskin
 {
 	static shared_ptr<LuaManager> NoteskinLua;
 	static ScreenGameplay7K* Parent;
+	static double NoteScreenSize;
 public:
 	static void SetupNoteskin(bool SpecialStyle, int Lanes, ScreenGameplay7K *Parent);
 	static void Update(float Delta, float CurrentBeat);
@@ -21,6 +22,7 @@ public:
 	static double GetJudgmentY();
 	static void DrawHoldHead(VSRG::TrackNote& T, int Lane, float Location);
 	static void DrawHoldTail(VSRG::TrackNote& T, int Lane, float Location);
+	static double GetNoteOffset();
 };
 
 #endif

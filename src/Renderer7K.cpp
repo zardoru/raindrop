@@ -80,9 +80,9 @@ void ScreenGameplay7K::DrawMeasures()
 		
 		// Signs are switched. Doesn't begin by the first note closest to the lower edge, but the one closest to the higher edge.
 		if (!IsUpscrolling())
-			Start = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), ScreenHeight, LocPredicate);
+			Start = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), ScreenHeight + Noteskin::GetNoteOffset(), LocPredicate);
 		else
-			Start = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), 0, LocPredicate);
+			Start = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), 0 - Noteskin::GetNoteOffset(), LocPredicate);
 
 		// Locate the first hold that we can draw in this range
 		auto rStart = std::reverse_iterator<vector<TrackNote>::iterator>(Start);
@@ -104,9 +104,9 @@ void ScreenGameplay7K::DrawMeasures()
 
 		// As before. Top becomes bottom, bottom becomes top.
 		if (!IsUpscrolling())
-			End = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), 0, LocPredicate);
+			End = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), 0 - Noteskin::GetNoteOffset(), LocPredicate);
 		else
-			End = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), ScreenHeight, LocPredicate);
+			End = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), ScreenHeight + Noteskin::GetNoteOffset(), LocPredicate);
 		
 		// Now, draw them.
 		for (auto m = Start; m != End; ++m)

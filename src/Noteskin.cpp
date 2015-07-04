@@ -15,6 +15,7 @@
 bool CanRender = false;
 shared_ptr<LuaManager> Noteskin::NoteskinLua = nullptr;
 ScreenGameplay7K* Noteskin::Parent = nullptr;
+double Noteskin::NoteScreenSize = 0;
 
 void lua_Render(Sprite *S)
 {
@@ -44,6 +45,8 @@ void Noteskin::SetupNoteskin(bool SpecialStyle, int Lanes, ScreenGameplay7K* Par
 	NoteskinLua->SetGlobal("SpecialStyle", SpecialStyle);
 	NoteskinLua->SetGlobal("Lanes", Lanes);
 	NoteskinLua->RunScript(GameState::GetInstance().GetSkinFile("noteskin.lua"));
+
+	NoteScreenSize = NoteskinLua->GetGlobalD("NoteScreenSize");
 }
 
 void Noteskin::Update(float Delta, float CurrentBeat)
@@ -158,6 +161,11 @@ void Noteskin::DrawHoldTail(VSRG::TrackNote& T, int Lane, float Location)
 	NoteskinLua->PushArgument(T.GetFracKind());
 	NoteskinLua->RunFunction();
 	CanRender = false;
+}
+
+double Noteskin::GetNoteOffset()
+{
+	return NoteScreenSize;
 }
 
 void Noteskin::DrawHoldBody(int Lane, float Location, float Size, int ActiveLevel)
