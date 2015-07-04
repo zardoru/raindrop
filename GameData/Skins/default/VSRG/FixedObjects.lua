@@ -27,7 +27,7 @@ function JudgeLine.Init()
 	JudgeLine.Object.Centered = 1
 
 	JudgeLine.Object.X = GearStartX + GearWidth / 2
-	JudgeLine.Object.Y = JudgmentLineY - NoteHeight / 2
+	JudgeLine.Object.Y = JudgmentLineY
 	
 	JudgeLine.Object.Width = JudgeLine.Size.w
 	JudgeLine.Object.Height = JudgeLine.Size.h

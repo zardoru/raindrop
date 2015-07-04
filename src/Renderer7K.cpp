@@ -23,13 +23,13 @@ void ScreenGameplay7K::Render()
 	Animations->DrawFromLayer(14);
 }
 
-void ScreenGameplay7K::DrawBarlines(float rPos)
+using glm::sign;
+
+void ScreenGameplay7K::DrawBarlines()
 {
-	for (auto i = MeasureBarlines.begin();
-		i != MeasureBarlines.end();
-		++i)
+	for (auto i: MeasureBarlines)
 	{
-		float realV = rPos - (*i) * abs(SpeedMultiplier) + BarlineOffset;
+		float realV = (CurrentVertical - i) * SpeedMultiplier + BarlineOffset * sign(SpeedMultiplier) + JudgmentLinePos;
 		if (realV > 0 && realV < ScreenWidth)
 		{
 			Barline->SetLocation (Vec2(BarlineX, realV), Vec2(BarlineX + BarlineWidth, realV));
@@ -38,29 +38,12 @@ void ScreenGameplay7K::DrawBarlines(float rPos)
 	}
 }
 
-bool ShouldDrawNoteInScreen(TrackNote& T, float SpeedMultiplier, float FieldDisplacement, float &Vertical, float &VerticalHoldEnd, bool Upscroll)
-{
-	if (!T.IsVisible())
-		return false;
-
-	Vertical = (FieldDisplacement - T.GetVertical() * SpeedMultiplier);
-	if (T.IsHold())
-		VerticalHoldEnd = (FieldDisplacement - T.GetHoldEndVertical() * SpeedMultiplier);
-
-	return true;
-}
-
 Mat4 id;
 
 void ScreenGameplay7K::DrawMeasures()
 {
-	float Mult = abs(SpeedMultiplier);
-	float FieldDisplacement;
-
-	FieldDisplacement = CurrentVertical * Mult + JudgmentLinePos;
-
 	if (BarlineEnabled)
-		DrawBarlines(FieldDisplacement);
+		DrawBarlines();
 
 	// Set some parameters...
 	SetShaderParameters(false, false, true, true, false, false, RealHiddenMode);
@@ -81,21 +64,33 @@ void ScreenGameplay7K::DrawMeasures()
 
 	for (uint32 k = 0; k < CurrentDiff->Channels; k++)
 	{
-		/* Find the location of the first/next visible regular note */
-		auto StartPred = [&](const TrackNote &A, double _) -> bool {
-			auto Vert = FieldDisplacement - A.GetVertical() * Mult;
-			return _ < Vert;
+		auto Locate = [&](float StaticVert) -> float {
+			return (CurrentVertical - StaticVert) * SpeedMultiplier + JudgmentLinePos;
 		};
 
-		auto Start = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), ScreenHeight, StartPred);
+		/* Find the location of the first/next visible regular note */
+		auto LocPredicate = [&](const TrackNote &A, double _) -> bool {
+			if (!IsUpscrolling())
+				return _ < Locate(A.GetVertical());
+			else // Signs are switched. We need to preserve the same order. 
+				return _ > Locate(A.GetVertical());
+		};
+
+		std::vector<TrackNote>::iterator Start;
+		
+		// Signs are switched. Doesn't begin by the first note closest to the lower edge, but the one closest to the higher edge.
+		if (!IsUpscrolling())
+			Start = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), ScreenHeight, LocPredicate);
+		else
+			Start = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), 0, LocPredicate);
 
 		// Locate the first hold that we can draw in this range
 		auto rStart = std::reverse_iterator<vector<TrackNote>::iterator>(Start);
 		for (auto i = rStart; i != NotesByChannel[k].rend(); ++i)
 		{
 			if (i->IsHold() && i->IsVisible()) {
-				auto Vert = FieldDisplacement - i->GetVertical() * Mult;
-				auto VertEnd = FieldDisplacement - i->GetHoldEndVertical() * Mult;
+				auto Vert = Locate(i->GetVertical());
+				auto VertEnd = Locate(i->GetHoldEndVertical());
 				if (IntervalsIntersect(0, ScreenHeight, min(Vert, VertEnd), max(Vert, VertEnd)))
 				{
 					Start = i.base() - 1;
@@ -105,7 +100,13 @@ void ScreenGameplay7K::DrawMeasures()
 		}
 
 		// Find the note that is out of the drawing range
-		auto End = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), 0, StartPred);
+		std::vector<TrackNote>::iterator End;
+
+		// As before. Top becomes bottom, bottom becomes top.
+		if (!IsUpscrolling())
+			End = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), 0, LocPredicate);
+		else
+			End = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), ScreenHeight, LocPredicate);
 		
 		// Now, draw them.
 		for (auto m = Start; m != End; ++m)
@@ -113,9 +114,13 @@ void ScreenGameplay7K::DrawMeasures()
 			float Vertical = 0;
 			float VerticalHoldEnd;
 
-			if (!ShouldDrawNoteInScreen(*m, Mult, FieldDisplacement, Vertical, VerticalHoldEnd, Upscroll))
-				continue; // If this is not visible, we move on to the next note. 
+			// Don't attempt drawing this object if not visible.
+			if (!m->IsVisible())
+				continue;
 
+			Vertical = Locate(m->GetVertical());
+			VerticalHoldEnd = Locate(m->GetHoldEndVertical());
+			
 			// Assign our matrix.
 			WindowFrame.SetUniform(U_MVP, &id[0][0]);
 
@@ -135,13 +140,14 @@ void ScreenGameplay7K::DrawMeasures()
 				Noteskin::DrawHoldTail(*m, k, VerticalHoldEnd);
 				
 				// LR2 style keep-on-the-judgment-line
-				if ( (Vertical > VerticalHoldEnd && Upscroll || Vertical < VerticalHoldEnd && !Upscroll) && m->IsJudgable() )
+				if ( (Vertical > JudgmentLinePos && IsUpscrolling() || Vertical > JudgmentLinePos && !IsUpscrolling()) && m->IsJudgable() )
 					Noteskin::DrawHoldHead(*m, k, JudgmentLinePos);
 				else
 					Noteskin::DrawHoldHead(*m, k, Vertical);
 			} else
 			{
-				if ((Vertical < JudgmentLinePos && Upscroll || Vertical >= JudgmentLinePos && !Upscroll) && m->IsJudgable())
+				bool AboveLine = Vertical < JudgmentLinePos;
+				if ((AboveLine && IsUpscrolling()) || (!AboveLine && !IsUpscrolling()) && m->IsJudgable())
 					Noteskin::DrawNote(*m, k, JudgmentLinePos);
 				else
 					Noteskin::DrawNote(*m, k, Vertical);

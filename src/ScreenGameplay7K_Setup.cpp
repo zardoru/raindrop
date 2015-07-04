@@ -485,11 +485,7 @@ void ScreenGameplay7K::SetupBarline()
 		BarlineEnabled = false;
 
 	if (BarlineEnabled)
-	{
 		CurrentDiff->GetMeasureLines(MeasureBarlines, VSpeeds, WaitingTime);
-
-		int UpscrollMod = Upscroll ? -1 : 1;
-	}
 }
 
 void ScreenGameplay7K::SetupAfterLoadingVariables()
@@ -497,11 +493,8 @@ void ScreenGameplay7K::SetupAfterLoadingVariables()
 	GearHeightFinal = Noteskin::GetJudgmentY();
 
 	/* Initial object distance */
-	if (!Upscroll)
-		JudgmentLinePos = float(ScreenHeight) - GearHeightFinal;
-	else
-		JudgmentLinePos = GearHeightFinal;
-
+	JudgmentLinePos = float(ScreenHeight) - GearHeightFinal;
+	
 	CurrentVertical = IntegrateToTime (VSpeeds, -WaitingTime);
 	CurrentBeat = IntegrateToTime(BPS, 0);
 

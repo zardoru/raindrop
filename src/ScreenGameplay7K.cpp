@@ -110,6 +110,11 @@ void ScreenGameplay7K::TranslateKey(KeyType K, bool KeyDown)
 	}
 }
 
+bool ScreenGameplay7K::IsUpscrolling()
+{
+	return SpeedMultiplierUser < 0 || Upscroll;
+}
+
 void ScreenGameplay7K::Activate()
 {
 	if (!Active)

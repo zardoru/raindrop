@@ -154,7 +154,7 @@ private:
 	void HitNote (double TimeOff, uint32 Lane, bool IsHold, bool IsHoldRelease = false);
 	void MissNote (double TimeOff, uint32 Lane, bool IsHold, bool auto_hold_miss, bool early_miss);
 
-	void DrawBarlines(float rPos);
+	void DrawBarlines();
 	void DrawMeasures();
 
 	void GearKeyEvent(uint32 Lane, bool KeyDown);
@@ -182,6 +182,7 @@ public:
 	// Functions for data.
 	bool IsAutoEnabled();
 	bool IsFailEnabled();
+	bool IsUpscrolling();
 	float GetCurrentBeat();
 	float GetUserMultiplier() const;
 	float GetCurrentVerticalSpeed();

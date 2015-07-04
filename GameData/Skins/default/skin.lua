@@ -58,19 +58,16 @@ Lifebar = {
 }
 
 -- 7K mode configuration.
-
-
 -- Time that the 'miss' layer will be shown on BMS when a miss occurs.
 OnMissBGATime = 3
 
--- Enable or disable the screen filter in 7K.
-ScreenFilter = 1
+-- Set screen filter transparency on 7K.
+ScreenFilter = 0.7
 
 -- show up to 9999 ms off
 HitErrorDisplayLimiter = 999
-DefaultSpeedUnits = 1000
 
 -- 1 is first after processing SV, 1 is mmod, 2 is cmod, anything else is default.
--- default: first before processing SV
+-- default: first speed before processing SV
 DefaultSpeedKind = -1
-
+DefaultSpeedUnits = 1000

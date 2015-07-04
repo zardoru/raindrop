@@ -3,7 +3,6 @@ skin_require("noteskin_defs.lua")
 normalNotes = {}
 holdBodies = {}
 
-offset = NoteHeight / 2
 function setNoteStuff(note, i)
 	note.Width = Noteskin[Lanes]['Key' .. i .. 'Width']
 	note.X = Noteskin[Lanes]['Key' .. i .. 'X']
@@ -35,13 +34,13 @@ end
 
 function drawNormalInternal(lane, loc, frac)
 	local note = normalNotes[lane + 1]
-	note.Y = loc - offset
+	note.Y = loc
 	Render(note)
 end
 
 function drawHoldBodyInternal(lane, loc, size, active_level)
 	local note = holdBodies[lane + 1]
-	note.Y = loc - offset
+	note.Y = loc
 	note.Height = size
 	
 	if active_level == 0 then
@@ -64,7 +63,7 @@ end
 -- From now on, only engine variables are being set.
 -- Barline
 BarlineEnabled = 1
-BarlineOffset = 0
+BarlineOffset = NoteHeight / 2
 BarlineStartX = GearStartX
 BarlineWidth = Noteskin[Lanes].BarlineWidth
 JudgmentLineY = Noteskin[Lanes].GearHeight
