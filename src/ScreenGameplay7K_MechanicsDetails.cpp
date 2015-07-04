@@ -180,7 +180,7 @@ bool O2JamMechanics::OnReleaseLane(double SongBeat, VSRG::TrackNote* m, uint32 L
 			SetLaneHoldingState(Lane, false);
 			m->Disable();
 		}
-		else /* Released off time */
+		else /* Released off time (early since Late is managed by the OnUpdate function.) */
 		{
 			MissNotify(dev, Lane, m->IsHold(), false, false);
 
