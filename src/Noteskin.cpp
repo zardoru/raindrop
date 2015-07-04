@@ -95,11 +95,12 @@ void Noteskin::DrawNote(VSRG::TrackNote& T, int Lane, float Location)
 	// We didn't get a name to call. Odd.
 
 	CanRender = true;
-	if (NoteskinLua->CallFunction(CallFunc, 3))
+	if (NoteskinLua->CallFunction(CallFunc, 4))
 	{
 		NoteskinLua->PushArgument(Lane);
 		NoteskinLua->PushArgument(Location);
 		NoteskinLua->PushArgument(T.GetFracKind());
+		NoteskinLua->PushArgument(0);
 		NoteskinLua->RunFunction();
 	}
 	CanRender = false;
@@ -135,34 +136,36 @@ double Noteskin::GetJudgmentY()
 	return NoteskinLua->GetGlobalD("JudgmentLineY");
 }
 
-void Noteskin::DrawHoldHead(VSRG::TrackNote &T, int Lane, float Location)
+void Noteskin::DrawHoldHead(VSRG::TrackNote &T, int Lane, float Location, int ActiveLevel)
 {
 	assert(NoteskinLua != nullptr);
 
-	if (!NoteskinLua->CallFunction("DrawHoldHead", 3))
-		if (!NoteskinLua->CallFunction("DrawNormal", 3))
+	if (!NoteskinLua->CallFunction("DrawHoldHead", 4))
+		if (!NoteskinLua->CallFunction("DrawNormal", 4))
 			return;
 
 	CanRender = true;
 	NoteskinLua->PushArgument(Lane);
 	NoteskinLua->PushArgument(Location);
 	NoteskinLua->PushArgument(T.GetFracKind());
+	NoteskinLua->PushArgument(ActiveLevel);
 	NoteskinLua->RunFunction();
 	CanRender = false;
 }
 
-void Noteskin::DrawHoldTail(VSRG::TrackNote& T, int Lane, float Location)
+void Noteskin::DrawHoldTail(VSRG::TrackNote& T, int Lane, float Location, int ActiveLevel)
 {
 	assert(NoteskinLua != nullptr);
 
-	if (!NoteskinLua->CallFunction("DrawHoldTail", 3))
-		if (!NoteskinLua->CallFunction("DrawNormal", 3))
+	if (!NoteskinLua->CallFunction("DrawHoldTail", 4))
+		if (!NoteskinLua->CallFunction("DrawNormal", 4))
 			return;
 
 	CanRender = true;
 	NoteskinLua->PushArgument(Lane);
 	NoteskinLua->PushArgument(Location);
 	NoteskinLua->PushArgument(T.GetFracKind());
+	NoteskinLua->PushArgument(ActiveLevel);
 	NoteskinLua->RunFunction();
 	CanRender = false;
 }

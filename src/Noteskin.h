@@ -22,8 +22,8 @@ public:
 	static double GetBarlineOffset();
 	static bool IsBarlineEnabled();
 	static double GetJudgmentY();
-	static void DrawHoldHead(VSRG::TrackNote& T, int Lane, float Location);
-	static void DrawHoldTail(VSRG::TrackNote& T, int Lane, float Location);
+	static void DrawHoldHead(VSRG::TrackNote& T, int Lane, float Location, int ActiveLevel);
+	static void DrawHoldTail(VSRG::TrackNote& T, int Lane, float Location, int ActiveLevel);
 	static double GetNoteOffset();
 	static bool AllowDanglingHeads();
 	static bool ShouldDecreaseHoldSizeWhenBeingHit();

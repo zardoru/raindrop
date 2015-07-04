@@ -137,16 +137,17 @@ void ScreenGameplay7K::DrawMeasures()
 			// We draw the body first, so that way the heads get drawn on top
 			if (m->IsHold())
 			{
+				enum : int {Failed, Active, BeingHit, SuccesfullyHit};
 				int Level = -1;
 
 				if (m->IsEnabled() && !m->FailedHit())
-					Level = 1;
+					Level = Active;
 				if (!m->IsEnabled() && m->FailedHit())
-					Level = 0;
+					Level = Failed;
 				if (m->IsEnabled() && m->WasNoteHit() && !m->FailedHit())
-					Level = 2;
+					Level = BeingHit;
 				if (!m->IsEnabled() && m->WasNoteHit() && !m->FailedHit())
-					Level = 3;
+					Level = SuccesfullyHit;
 
 				float Pos; 
 				float Size; 
@@ -162,13 +163,13 @@ void ScreenGameplay7K::DrawMeasures()
 				}
 
 				Noteskin::DrawHoldBody(k, Pos, Size, Level);
-				Noteskin::DrawHoldTail(*m, k, VerticalHoldEnd);
+				Noteskin::DrawHoldTail(*m, k, VerticalHoldEnd, Level);
 				
 
 				if (Noteskin::AllowDanglingHeads())
-					Noteskin::DrawHoldHead(*m, k, JPos);
+					Noteskin::DrawHoldHead(*m, k, JPos, Level);
 				else
-					Noteskin::DrawHoldHead(*m, k, Vertical);
+					Noteskin::DrawHoldHead(*m, k, Vertical, Level);
 			} else
 			{
 				if (Noteskin::AllowDanglingHeads())

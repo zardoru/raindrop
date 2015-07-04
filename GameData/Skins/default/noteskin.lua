@@ -34,10 +34,13 @@ function Update(delta, beat)
 	end 
 end 
 
-function drawNormalInternal(lane, loc, frac)
+function drawNormalInternal(lane, loc, frac, active_level)
 	local note = normalNotes[lane + 1]
 	note.Y = loc
-	Render(note)
+	
+	if active_level ~= 3 then
+		Render(note)
+	end
 end
 
 -- 1 is enabled. 2 is being pressed. 0 is failed. 3 is succesful hit.
@@ -56,7 +59,7 @@ function drawHoldBodyInternal(lane, loc, size, active_level)
 		note.Green = 1
 	end
 	
-	if active_level != 3 then
+	if active_level ~= 3 then
 		Render(note)
 	end
 end
@@ -72,6 +75,8 @@ BarlineOffset = NoteHeight / 2
 BarlineStartX = GearStartX
 BarlineWidth = Noteskin[Lanes].BarlineWidth
 JudgmentLineY = Noteskin[Lanes].GearHeight
+DecreaseHoldSizeWhenBeingHit = 1
+DanglingHeads = 1
 
 -- How many extra units do you require so that the whole bounding box is accounted
 -- when determining whether to show this note or not.
