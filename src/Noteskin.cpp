@@ -177,6 +177,11 @@ bool Noteskin::AllowDanglingHeads()
 	return DanglingHeads;
 }
 
+bool Noteskin::ShouldDecreaseHoldSizeWhenBeingHit()
+{
+	return DecreaseHoldSizeWhenBeingHit;
+}
+
 void Noteskin::DrawHoldBody(int Lane, float Location, float Size, int ActiveLevel)
 {
 	assert(NoteskinLua != nullptr);

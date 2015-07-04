@@ -25,7 +25,8 @@ public:
 	static void DrawHoldHead(VSRG::TrackNote& T, int Lane, float Location);
 	static void DrawHoldTail(VSRG::TrackNote& T, int Lane, float Location);
 	static double GetNoteOffset();
-	bool AllowDanglingHeads();
+	static bool AllowDanglingHeads();
+	static bool ShouldDecreaseHoldSizeWhenBeingHit();
 };
 
 #endif

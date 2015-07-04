@@ -151,7 +151,7 @@ void ScreenGameplay7K::DrawMeasures()
 				float Pos; 
 				float Size; 
 				// If we're being hit and..
-				if (Noteskin::DecreaseHoldSizeWhenBeingHit() && Level == 2)
+				if (Noteskin::ShouldDecreaseHoldSizeWhenBeingHit() && Level == 2)
 				{
 					Pos = (VerticalHoldEnd + JPos) / 2;
 					Size = VerticalHoldEnd - JPos;
