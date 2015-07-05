@@ -222,9 +222,12 @@ void ScreenGameplay7K::ReleaseLane(uint32 Lane, float Time)
 		}
 
 		End = std::upper_bound(NotesByChannel[Lane].begin(), NotesByChannel[Lane].end(), timeHigher, HboundFunc);
+
+		if (End != NotesByChannel[Lane].end())
+			++End;
 	}
 
-	for (auto m = NotesByChannel[Lane].begin(); m != NotesByChannel[Lane].end(); ++m)
+	for (auto m = Start; m != End; ++m)
 	{
 		if (!m->IsJudgable()) continue;
 		if (MechanicsSet->OnReleaseLane(Time, &(*m), Lane)) // Are we done judging..?

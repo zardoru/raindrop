@@ -90,13 +90,12 @@ void ScreenGameplay7K::GearKeyEvent(uint32 Lane, bool KeyDown)
 	}
 }
 
-void ScreenGameplay7K::TranslateKey(KeyType K, bool KeyDown)
+void ScreenGameplay7K::TranslateKey(int32 Index, bool KeyDown)
 {
-	int Index = K - KT_Key1; /* Bound key */
-	int GearIndex = GearBindings[Index]; /* Binding this key to a lane */
-
-	if (Index >= MAX_CHANNELS || Index < 0)
+	if (Index < 0)
 		return;
+
+	int GearIndex = GearBindings[Index]; /* Binding this key to a lane */
 
 	if (GearIndex >= MAX_CHANNELS || GearIndex < 0)
 		return;

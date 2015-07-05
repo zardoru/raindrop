@@ -112,7 +112,7 @@ const char* fragShader = "#version 120\n"
 "}\n";
 
 std::map<int32, KeyType> BindingsManager::ScanFunction;
-std::map<int32, KeyType> BindingsManager::ScanFunction7K;
+std::map<int32, int32> BindingsManager::ScanFunction7K;
 
 const int NUM_OF_USED_CONTROLLER_BUTTONS = 9;
 
@@ -338,15 +338,15 @@ void BindingsManager::Initialize()
 		}
 	}
 
-	for (int i = 0; i < VSRG::MAX_CHANNELS; i++)
+	int i = 1;
+	std::map<GString, GString> Keys;
+	Configuration::GetConfigListS("Keys7K", Keys, "");
+
+	for (auto v : Keys)
 	{
-		char KGString[256];
-		sprintf(KGString, "Key%d", i + 1);
-
-		int Binding = KeyTranslate(Configuration::GetConfigs(KGString, "Keys7K"));
-
+		int Binding = KeyTranslate(v.first);
 		if (Binding)
-			ScanFunction7K[Binding] = (KeyType)(KT_Key1 + i);
+			ScanFunction7K[Binding] = floor(latof(v.second));
 	}
 }
 
@@ -360,14 +360,14 @@ KeyType BindingsManager::TranslateKey(int32 Scan)
 	return KT_Unknown;
 }
 
-KeyType BindingsManager::TranslateKey7K(int32 Scan)
+int32 BindingsManager::TranslateKey7K(int32 Scan)
 {
 	if (ScanFunction7K.find(Scan) != ScanFunction7K.end())
 	{
 		return ScanFunction7K[Scan];
 	}
 
-	return KT_Unknown;
+	return -1;
 }
 
 

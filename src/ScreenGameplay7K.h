@@ -69,11 +69,11 @@ private:
     float            SpeedMultiplier;
     uint32           StartMeasure;
 
-    int              GearBindings[VSRG::MAX_CHANNELS];
-	int              GearIsPressed[VSRG::MAX_CHANNELS];
-    int              lastClosest[VSRG::MAX_CHANNELS];
-    int              PlaySounds[VSRG::MAX_CHANNELS];
-    int              BarlineOffsetKind;
+    std::map<int, int> GearBindings;
+	int                GearIsPressed[VSRG::MAX_CHANNELS];
+    int                lastClosest[VSRG::MAX_CHANNELS];
+    int                PlaySounds[VSRG::MAX_CHANNELS];
+    int                BarlineOffsetKind;
 
 	LifeType         lifebar_type;		 
 	ScoreType        scoring_type;
@@ -144,9 +144,6 @@ private:
 
 	void SetupAfterLoadingVariables();
 
-	// Done in main thread, after the loading thread
-	void SetupBackground();
-
 	void RecalculateMatrix();
 	void RecalculateEffects();
 	void RunMeasures();
@@ -160,7 +157,7 @@ private:
 	void GearKeyEvent(uint32 Lane, bool KeyDown);
 	void JudgeLane(uint32 Lane, float Time);
 	void ReleaseLane(uint32 Lane, float Time);
-	void TranslateKey(KeyType K, bool KeyDown);
+	void TranslateKey(int32 K, bool KeyDown);
 	void AssignMeasure(uint32 Measure);
 	void RunAutoEvents();
 	void CheckShouldEndScreen();

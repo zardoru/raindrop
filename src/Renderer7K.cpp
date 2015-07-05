@@ -144,6 +144,8 @@ void ScreenGameplay7K::DrawMeasures()
 					Level = Active;
 				if (!m->IsEnabled() && m->FailedHit())
 					Level = Failed;
+				if (!m->IsEnabled() && !m->FailedHit() && !m->WasNoteHit())
+					Level = Failed;
 				if (m->IsEnabled() && m->WasNoteHit() && !m->FailedHit())
 					Level = BeingHit;
 				if (!m->IsEnabled() && m->WasNoteHit() && !m->FailedHit())

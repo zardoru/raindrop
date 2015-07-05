@@ -669,6 +669,8 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	}
 }
 
+#include <boost/algorithm/string.hpp>
+
 void ScreenGameplay7K::MainThreadInitialization()
 {
 	if (!DoPlay) // Failure to load something important?
@@ -680,9 +682,18 @@ void ScreenGameplay7K::MainThreadInitialization()
 	PlayReactiveSounds = (CurrentDiff->IsVirtual || !(Configuration::GetConfigf("DisableHitsounds")));
 	MsDisplayMargin = (Configuration::GetSkinConfigf("HitErrorDisplayLimiter"));
 
+
+	GString KeyProfile = Configuration::GetConfigs("KeyProfile" + Utility::IntToStr(CurrentDiff->Channels));
+	GString value = Configuration::GetConfigs("Keys", KeyProfile);
+	vector<GString> res;
+	boost::split(res, value, boost::is_any_of(","));
+
 	for (int i = 0; i < CurrentDiff->Channels; i++)
 	{
 		lastClosest[i] = 0;
+
+		if (i <= res.size())
+			GearBindings[(int)latof(res[i])] = i;
 
 		HeldKey[i] = NULL;
 		GearIsPressed[i] = 0;

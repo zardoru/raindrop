@@ -145,7 +145,8 @@ bool RaindropMechanics::OnReleaseLane(double SongTime, VSRG::TrackNote* m, uint3
 		else /* Released off time */
 		{
 			// early misses for hold notes always count as regular misses.
-			// they don't break combo when we're not doing forced releases. 
+			// they don't break combo when we're not doing forced releases.
+			m->FailHit();
 			MissNotify(dev, Lane, true, false, false);
 
 			m->Disable();
@@ -182,6 +183,7 @@ bool O2JamMechanics::OnReleaseLane(double SongBeat, VSRG::TrackNote* m, uint32 L
 		}
 		else /* Released off time (early since Late is managed by the OnUpdate function.) */
 		{
+			m->FailHit();
 			MissNotify(dev, Lane, m->IsHold(), false, false);
 
 			m->Disable();
