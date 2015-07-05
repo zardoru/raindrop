@@ -1,4 +1,4 @@
-skin_require("noteskin_defs.lua")
+game_require("noteskin_defs.lua")
 
 -- All notes have their origin centered.
 

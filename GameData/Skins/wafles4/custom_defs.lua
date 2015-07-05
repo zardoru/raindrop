@@ -28,7 +28,7 @@ end
 Sizeup(Channels4Positions, Channels4Sizes, 4)
 
 -- Note height.
-NoteHeight = 100
+NoteHeight = NoteHeight or 100
 
 -- Only 4 channels supported in wafles4.
 Channels4 = {
@@ -45,5 +45,5 @@ Channels4 = {
     BarlineWidth = GearWidthByChannels[4]
 }
 
-Noteskin = {}
+Noteskin = Noteskin or {}
 Noteskin[4] = Channels4
