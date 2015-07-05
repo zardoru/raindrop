@@ -7,6 +7,8 @@ function Filter.Init()
 	if GetConfigF("ScreenFilter", "") == 0 then
 		return
 	end
+	
+	FilterVal = GetConfigF("ScreenFilter", "")
 
 	Filter.Object = Engine:CreateObject()
 
@@ -14,7 +16,7 @@ function Filter.Init()
 	Filter.Object.X = GearStartX
 	Filter.Object.Width = GearWidth
 	Filter.Object.Height = ScreenHeight
-	Filter.Object.Alpha = 1
+	Filter.Object.Alpha = FilterVal
 	Filter.Object.Layer = 1
 end
 

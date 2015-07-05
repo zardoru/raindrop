@@ -154,7 +154,8 @@ void ScreenGameplay7K::DrawMeasures()
 				float Pos; 
 				float Size; 
 				// If we're being hit and..
-				if (Noteskin::ShouldDecreaseHoldSizeWhenBeingHit() && Level == 2)
+				bool DCS = Noteskin::ShouldDecreaseHoldSizeWhenBeingHit() && Level == 2;
+				if (DCS)
 				{
 					Pos = (VerticalHoldEnd + JPos) / 2;
 					Size = VerticalHoldEnd - JPos;
@@ -168,7 +169,7 @@ void ScreenGameplay7K::DrawMeasures()
 				Noteskin::DrawHoldTail(*m, k, VerticalHoldEnd, Level);
 				
 
-				if (Noteskin::AllowDanglingHeads())
+				if (Noteskin::AllowDanglingHeads() || DCS)
 					Noteskin::DrawHoldHead(*m, k, JPos, Level);
 				else
 					Noteskin::DrawHoldHead(*m, k, Vertical, Level);

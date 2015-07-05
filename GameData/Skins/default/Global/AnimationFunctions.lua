@@ -21,3 +21,7 @@ function getFadeFunction(sF, eF, obj)
 		return 1
 	end
 end
+
+function lerp(current, start, finish, startval, endval)
+	return (current - start) * (endval - startval) / (finish - start) + startval
+end

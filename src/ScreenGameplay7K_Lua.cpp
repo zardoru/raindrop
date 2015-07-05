@@ -97,6 +97,7 @@ void ScreenGameplay7K::SetupLua(LuaManager* Env)
 		.f(GetCurrentBeat)
 		.f(IsFailEnabled)
 		.f(IsAutoEnabled)
+		.f(IsUpscrolling)
 		.addProperty("SpeedMultiplier", &ScreenGameplay7K::GetUserMultiplier, &ScreenGameplay7K::SetUserMultiplier);
 		
 	luabridge::push(Env->GetState(), this);

@@ -368,9 +368,9 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 
 				// Okay, now we want to know what fraction of a beat we're dealing with
 				// this way we can display colored (a la Stepmania) notes.
-				double cBeat = IntegrateToTime(BPS, CurrentNote.StartTime, Offset);
+				double cBeat = IntegrateToTime(BPS, CurrentNote.StartTime);
 				double iBeat = floor(cBeat);
-				double dBeat = cBeat - iBeat;
+				double dBeat = (cBeat - iBeat);
 
 				NewNote.AssignFraction(dBeat);
 

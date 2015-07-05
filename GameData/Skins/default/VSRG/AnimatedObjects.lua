@@ -40,10 +40,10 @@ function Pulse.Init()
 	if Upscroll ~= 0 then
 		Pulse.Object.Rotation = (180)
 		Pulse.Object.X = GearStartX + GearWidth
-		Pulse.Object.Y = GearHeight + Pulse.Height
+		Pulse.Object.Y = JudgmentLineY + Pulse.Height
 	else
 		Pulse.Object.X = GearStartX
-		Pulse.Object.Y = ScreenHeight - GearHeight - Pulse.Height
+		Pulse.Object.Y = JudgmentLineY - Pulse.Height
 	end
 
 	Pulse.Object.Width = GearWidth

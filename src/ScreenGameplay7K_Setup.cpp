@@ -493,8 +493,11 @@ void ScreenGameplay7K::SetupAfterLoadingVariables()
 	GearHeightFinal = Noteskin::GetJudgmentY();
 
 	/* Initial object distance */
-	JudgmentLinePos = float(ScreenHeight) - GearHeightFinal;
-	
+	if (!Upscroll)
+		JudgmentLinePos = float(ScreenHeight) - GearHeightFinal;
+	else
+		JudgmentLinePos = GearHeightFinal;
+
 	CurrentVertical = IntegrateToTime (VSpeeds, -WaitingTime);
 	CurrentBeat = IntegrateToTime(BPS, 0);
 

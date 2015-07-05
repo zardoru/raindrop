@@ -87,6 +87,14 @@ AnimatedObjects = {
 				AnimatedObjects.List[i].Run(Delta)
 			end
 		end
+	end,
+	
+	GearKeyEvent = function (Lane, IsKeyDown)
+		for i = 1, #AnimatedObjects.List do
+			if AnimatedObjects.List[i].GearKeyEvent ~= nil then
+				AnimatedObjects.List[i].GearKeyEvent(Lane, IsKeyDown)
+			end
+		end
 	end
 }
 
@@ -189,6 +197,7 @@ function GearKeyEvent (Lane, IsKeyDown)
 		return
 	end
 
+	AnimatedObjects.GearKeyEvent(Lane, IsKeyDown)
 	HitLightning.LanePress(Lane, IsKeyDown)
 end
 

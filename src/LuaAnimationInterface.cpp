@@ -15,6 +15,7 @@
 #include "Line.h"
 
 #include "GraphicalString.h"
+#include "Logging.h"
 
 namespace LuaAnimFuncs
 {
@@ -77,6 +78,8 @@ namespace LuaAnimFuncs
 void SetImage(Sprite *O, GString dir)
 {
 	O->SetImage(GameState::GetInstance().GetSkinImage(dir));
+	if (O->GetImage() == nullptr)
+		Log::Printf("File %s could not be loaded.\n", dir.c_str());
 }
 
 GString GetImage(const Sprite *O)

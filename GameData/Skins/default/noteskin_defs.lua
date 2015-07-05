@@ -134,7 +134,7 @@ function Sizeup(Pos, Size, Num)
 	
 	for i=1, Num do
 		GearWidthChannel = GearWidthChannel + Size[i]
-	end
+	end 
 	
 	GearWidthByChannels[Num] = GearWidthChannel
 	
@@ -793,3 +793,5 @@ Noteskin[8] = Channels8
 Noteskin[9] = Channels9
 Noteskin[12] = Channels12 
 Noteskin[16] = Channels16
+
+skin_require("custom_defs.lua")
