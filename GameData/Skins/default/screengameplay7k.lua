@@ -4,7 +4,11 @@ skin_require("Global/FadeInScreen.lua")
 
 -- Set up constants for everyone
 
-skin_require("noteskin_defs.lua")
+game_require("noteskin_defs.lua")
+print ("#######################")
+for k, v in pairs(Noteskin) do
+	print(k, v)
+end
 GearWidth = Noteskin[Channels].GearWidth
 GearHeight = GearHeightCommon
 
@@ -77,13 +81,15 @@ AnimatedObjects = {
 	-- Internal functions for automating stuff.
 	Init = function ()
 		for i = 1, #AnimatedObjects.List do
-			AnimatedObjects.List[i].Init()
+			if AnimatedObjects.List[i] then 
+				AnimatedObjects.List[i].Init()
+			end
 		end
 	end,
 
 	Run = function (Delta)
 		for i = 1, #AnimatedObjects.List do
-			if AnimatedObjects.List[i].Run ~= nil then
+			if AnimatedObjects.List[i] and AnimatedObjects.List[i].Run ~= nil then
 				AnimatedObjects.List[i].Run(Delta)
 			end
 		end
@@ -91,7 +97,7 @@ AnimatedObjects = {
 	
 	GearKeyEvent = function (Lane, IsKeyDown)
 		for i = 1, #AnimatedObjects.List do
-			if AnimatedObjects.List[i].GearKeyEvent ~= nil then
+			if AnimatedObjects.List[i] and AnimatedObjects.List[i].GearKeyEvent ~= nil then
 				AnimatedObjects.List[i].GearKeyEvent(Lane, IsKeyDown)
 			end
 		end
