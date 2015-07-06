@@ -35,7 +35,7 @@ public:
 	void* GetStruct(GString Key);
 	bool RunScript(Directory file);
 	bool RunScript(GString Filename);
-	bool RunGString(GString sGString);
+	bool RunString(GString sGString);
 
 	// Global variables
 

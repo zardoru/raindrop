@@ -23,7 +23,7 @@ Directory GetSongBackground(Game::Song &Song)
 			return SngDir / i;
 	}
 
-	return "";
+	return Configuration::GetSkinConfigs("DefaultBackground");
 }
 
 class BMSBackground : public BackgroundAnimation
@@ -113,7 +113,7 @@ public:
 		SetLayerImage(Layer2.get(), EventsLayer2, Time);
 	}
 
-	int MissTime;
+	float MissTime;
 
 	void Render() override
 	{
@@ -190,7 +190,7 @@ shared_ptr<BackgroundAnimation> CreateBGAforVSRG(VSRG::Song &input, uint8_t Diff
 
 shared_ptr<BackgroundAnimation> CreateBGAforDotcur(dotcur::Song &input, uint8_t DifficultyIndex)
 {
-	return make_shared<StaticBackground>(input.BackgroundFilename);
+	return make_shared<StaticBackground>(GetSongBackground(input));
 }
 
 void BackgroundAnimation::SetAnimationTime(double Time)

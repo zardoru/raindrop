@@ -12,7 +12,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 
-typedef std::vector<GString> SplitResult;
+typedef vector<GString> SplitResult;
 
 using namespace VSRG;
 
@@ -25,16 +25,25 @@ using namespace VSRG;
 #define HITSOUND_FINISH 4
 #define HITSOUND_CLAP 8
 
+#define NOTE_SLIDER 2
+#define NOTE_HOLD 128
+#define NOTE_NORMAL 1
+
 struct HitsoundSectionData
 {
 	int Sampleset;
-	int Volume;
+	int Volume; // In %
 	int Custom;
-	int IsInherited;
-	double Time;
-	double Value;
-	double MeasureLen;
+	int IsInherited; 
+	double Time; // In Seconds
+	double Value; // BPM or Multiplier
+	double MeasureLen; // In quarter notes
 };
+
+bool operator <(const HitsoundSectionData& lhs, const HitsoundSectionData& rhs)
+{
+	return lhs.Time < rhs.Time;
+}
 
 struct OsuLoadInfo
 {
@@ -48,7 +57,61 @@ struct OsuLoadInfo
 	std::shared_ptr<VSRG::Difficulty> Diff;
 	GString DefaultSampleset;
 
+	bool ReadAModeTag;
+
 	std::vector<NoteData> Notes[MAX_CHANNELS];
+
+	double GetBeatspaceAt(double T)
+	{
+		double Ret;
+		if (HitsoundSections.size())
+		{
+			auto Current = HitsoundSections.begin();
+			while (Current != HitsoundSections.end() && (Current->Time > T || Current->IsInherited))
+				++Current;
+
+			if (Current == HitsoundSections.end())
+			{
+				Current = HitsoundSections.begin();
+				while (Current != HitsoundSections.end() && Current->IsInherited)
+					++Current;
+
+				if (Current == HitsoundSections.end())
+					throw std::runtime_error("No uninherited timing points were found!");
+				else
+					Ret = Current->Value;
+			} else
+				Ret = Current->Value;
+		} else 
+			throw std::runtime_error("No timing points found on this osu! file.");
+
+		return Ret;
+	}
+
+	OsuLoadInfo()
+	{
+		ReadAModeTag = false;
+	}
+
+	float GetSliderMultiplierAt(double T)
+	{
+		double Ret = 1;
+		if (HitsoundSections.size())
+		{
+			auto Current = HitsoundSections.begin();
+			while (Current != HitsoundSections.end() && (Current->Time >= T || !Current->IsInherited))
+				++Current;
+
+			// So, we're at a valid SV mult section, the time is correct
+			if (Current == HitsoundSections.end())
+				return 1;
+			else
+				Ret = Current->Value;
+		}
+
+		return Ret;
+		
+	}
 };
 
 /* osu!mania loader. credits to wanwan159, woc2006, Zorori and the author of AIBat for helping me understand this. */
@@ -77,8 +140,9 @@ bool ReadGeneral (GString line, OsuLoadInfo* Info)
 		}
 	}else if (Command == "Mode:")
 	{
+		Info->ReadAModeTag = true;
 		if (Content != "3") // It's not a osu!mania chart, so we can't use it.
-			return false; // (What if we wanted to support taiko though?)
+			return false;
 	}else if (Command == "SampleSet:")
 	{
 		boost::algorithm::to_lower(Content);
@@ -198,7 +262,6 @@ void ReadTiming (GString line, OsuLoadInfo* Info)
 
 	TimingSegment Time;
 	Time.Time = latof(Spl[0].c_str()) / 1000.0;
-	Time.Value = latof(Spl[1].c_str());
 
 	if (Spl[6] == "1") // Non-inherited section
 		IsInherited = false;
@@ -235,18 +298,14 @@ void ReadTiming (GString line, OsuLoadInfo* Info)
 	Info->HitsoundSections.push_back(SecData);
 }
 
-int GetInterval(float Position, int Channels)
+int GetTrackFromPosition(float Position, int Channels)
 {
 	float Step = 512.0 / Channels;
 
-	return (int)(Position / Step);
+	return static_cast<int>(Position / Step);
 }
 
-#define NOTE_SLIDER 2
-#define NOTE_HOLD 128
-#define NOTE_NORMAL 1
-
-GString SamplesetToGString(int Sampleset)
+GString SamplesetFromConstant(int Sampleset)
 {
 	switch (Sampleset)
 	{
@@ -266,6 +325,8 @@ GString SamplesetToGString(int Sampleset)
 	We don't have those, we don't use those, those are an osu!-ism
 	so the sounds are not going to be 100% osu!-correct
 	but they're going to be correct enough for virtual-mode charts to be accurate.
+
+	SampleSetAddition is an abomination on a VSRG - so it's only left in for informative purposes.
 */
 GString GetSampleFilename(OsuLoadInfo *Info, SplitResult &Spl, int NoteType, int Hitsound, float Time)
 {
@@ -323,7 +384,7 @@ GString GetSampleFilename(OsuLoadInfo *Info, SplitResult &Spl, int NoteType, int
 	if (SampleSet)
 	{
 		// translate sampleset int into samplesetGString
-		SampleSetGString = SamplesetToGString(SampleSet);
+		SampleSetGString = SamplesetFromConstant(SampleSet);
 	}else
 	{
 		// get sampleset GString from sampleset active at starttime
@@ -340,7 +401,7 @@ GString GetSampleFilename(OsuLoadInfo *Info, SplitResult &Spl, int NoteType, int
 		if (SampleSet == -1)
 			SampleSetGString = Info->DefaultSampleset;
 		else
-			SampleSetGString = SamplesetToGString(Sampleset);
+			SampleSetGString = SamplesetFromConstant(Sampleset);
 	}
 
 	if (!CustomSample)
@@ -401,7 +462,7 @@ void ReadObjects (GString line, OsuLoadInfo* Info)
 	SplitResult Spl;
 	boost::split(Spl, line, boost::is_any_of(","));
 
-	int Track = GetInterval(latof(Spl[0].c_str()), Info->Diff->Channels);
+	int Track = GetTrackFromPosition(latof(Spl[0].c_str()), Info->Diff->Channels);
 	int Hitsound;
 	NoteData Note;
 
@@ -459,17 +520,11 @@ void ReadObjects (GString line, OsuLoadInfo* Info)
 		float sliderRepeats = latof(Spl[6].c_str());
 		float sliderLength = latof(Spl[7].c_str());
 
-		float Multiplier = 1;
-
-		if (Info->Diff->Data->SpeedChanges.size())
-		{
-			if (startTime >= Info->Diff->Data->SpeedChanges.at(0).Time)
-				Multiplier = SectionValue(Info->Diff->Data->SpeedChanges, startTime);
-		}
+		float Multiplier = Info->GetSliderMultiplierAt(startTime);
 
 		float finalSize = sliderLength * sliderRepeats * Multiplier;
 		float beatDuration = (finalSize / Info->SliderVelocity); 
-		float bpm = (60000.0 / SectionValue(Info->Diff->Timing, startTime));
+		float bpm = (60000.0 / Info->GetBeatspaceAt(startTime));
 		float finalLength = beatDuration * spb(bpm);
 
 		if (0 > finalLength)
@@ -503,15 +558,10 @@ void ReadObjects (GString line, OsuLoadInfo* Info)
 	Info->Diff->Duration = max(max (Note.StartTime, Note.EndTime), Info->Diff->Duration);
 }
 
-bool hSort(const HitsoundSectionData &A, const HitsoundSectionData &B)
-{
-	return A.Time < B.Time;
-}
-
 void MeasurizeFromTimingData(OsuLoadInfo *Info)
 {
 	// Keep them at the order they are declared so they don't affect the applied hitsounds.
-	std::stable_sort(Info->HitsoundSections.begin(), Info->HitsoundSections.end(), hSort);
+	std::stable_sort(Info->HitsoundSections.begin(), Info->HitsoundSections.end());
 
 	for (auto i = Info->HitsoundSections.begin(); i != Info->HitsoundSections.end(); ++i)
 	{
@@ -564,7 +614,7 @@ void PushNotesToMeasures(OsuLoadInfo *Info)
 
 	for (int k = 0; k < MAX_CHANNELS; k++)
 	{
-		for (auto i = Info->Notes[k].begin(); i != Info->Notes[k].end(); i++)
+		for (auto i = Info->Notes[k].begin(); i != Info->Notes[k].end(); ++i)
 		{
 			double Beat = QuantizeBeat(IntegrateToTime(BPS, i->StartTime));
 			double CurrentBeat = 0; // Lower bound of this measure
@@ -575,7 +625,7 @@ void PushNotesToMeasures(OsuLoadInfo *Info)
 				continue;
 			}
 
-			for (auto m = Info->Diff->Data->Measures.begin(); m != Info->Diff->Data->Measures.end(); m++)
+			for (auto m = Info->Diff->Data->Measures.begin(); m != Info->Diff->Data->Measures.end(); ++m)
 			{
 				double NextBeat = std::numeric_limits<double>::infinity();
 				auto nextm = m + 1;
@@ -715,6 +765,11 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 
 		if (ReadingMode != ReadingModeOld || ReadingMode == RNotKnown) // Skip this line since it changed modes, or it's not a valid section yet
 		{
+			if (ReadingModeOld == RTiming)
+				std::stable_sort(Info.HitsoundSections.begin(), Info.HitsoundSections.end());
+			if (ReadingModeOld == RGeneral)
+				if (!Info.ReadAModeTag)
+					return;
 			ReadingModeOld = ReadingMode;
 			continue;
 		}
