@@ -71,7 +71,6 @@ void ScreenEdit::Init(dotcur::Song *Other)
 	{
 		SavedSound = new SoundSample();
 		SavedSound->Open((GameState::GetInstance().GetSkinFile("save.ogg")).c_str());
-		MixerAddSample(SavedSound);
 	}
 
 	OffsetPrompt.SetPrompt("Please insert offset.");

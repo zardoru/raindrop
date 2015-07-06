@@ -208,10 +208,8 @@ stageFailed:
 		// We stop all audio..
 		Music->Stop();
 		for (auto i = Keysounds.begin(); i != Keysounds.end(); ++i)
-		{
 			if (i->second)
 				i->second->Stop();
-		}
 
 		// Run stage failed animation.
 		Animations->DoEvent("OnFailureEvent", 1);

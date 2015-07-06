@@ -36,14 +36,12 @@ GameObject::GameObject() : Sprite(false)
 	{
 		HitSnd = new SoundSample();
 		HitSnd->Open((GameState::GetInstance().GetSkinFile("hit.ogg")).c_str());
-		MixerAddSample(HitSnd);
 	}
 
 	if (!HoldReleaseSnd)
 	{
 		HoldReleaseSnd  = new SoundSample();
 		HoldReleaseSnd->Open((GameState::GetInstance().GetSkinFile("holdfinish.ogg")).c_str());
-		MixerAddSample(HoldReleaseSnd);
 	}
 
 	UvBuffer = TextureBuffer;

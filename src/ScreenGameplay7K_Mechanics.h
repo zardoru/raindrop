@@ -18,13 +18,14 @@ public:
 	typedef function<void(uint32)> KeysoundEvent;
 
 protected:
-	virtual ~VSRGMechanics() = default;
 
 	VSRG::Song *CurrentSong;
 	VSRG::Difficulty *CurrentDifficulty;
 	shared_ptr<ScoreKeeper7K> score_keeper;
 
 public:
+
+	virtual ~VSRGMechanics() = default;
 
 	// These HAVE to be set before anything else is called.
 	function <bool(uint32)> IsLaneKeyDown;

@@ -112,11 +112,9 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic")
 		LoopTotal = 0;
 		SelectSnd = new SoundSample();
 		SelectSnd->Open((GameState::GetInstance().GetSkinFile("select.ogg")).c_str());
-		MixerAddSample(SelectSnd);
 
 		ClickSnd = new SoundSample();
 		ClickSnd->Open((GameState::GetInstance().GetSkinFile("click.ogg")).c_str());
-		MixerAddSample(ClickSnd);
 		
 		LoopTotal = Configuration::GetSkinConfigf("LoopTotal");
 
@@ -129,7 +127,6 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic")
 			Loops[i]->Open(GameState::GetInstance().GetSkinFile(str.str()).c_str());
 			Loops[i]->Stop();
 			Loops[i]->SetLoop(true);
-			MixerAddStream(Loops[i]);
 		}
 	}
 
@@ -208,14 +205,11 @@ void ScreenSelectMusic::LoadThreadInitialization()
 void ScreenSelectMusic::Cleanup()
 {	
 	if (PreviewStream)
-	{
-		MixerRemoveStream(PreviewStream);
 		delete PreviewStream;
-	}
 
 	StopLoops();
 
-	GameState::GetInstance().SetSelectedSong(NULL);
+	GameState::GetInstance().SetSelectedSong(nullptr);
 }
 
 float ScreenSelectMusic::GetListPendingVerticalTransformation(const float Y)
@@ -258,7 +252,7 @@ float ScreenSelectMusic::GetListHorizontalTransformation(const float Y)
 void ScreenSelectMusic::OnSongSelect(shared_ptr<Game::Song> MySong, uint8 difindex)
 {
 	// Handle a recently selected song
-	ScreenLoading *LoadNext = NULL;
+	ScreenLoading *LoadNext = nullptr;
 
 	if (IsTransitioning)
 		return;
@@ -332,7 +326,6 @@ void ScreenSelectMusic::PlayPreview()
 		if (PreviewStream)
 		{
 			PreviewStream->Stop();
-			MixerRemoveStream(PreviewStream);
 			delete PreviewStream;
 			PreviewStream = NULL;
 		}
@@ -347,7 +340,6 @@ void ScreenSelectMusic::PlayPreview()
 				PreviewStream->Play();
 				PreviewStream->SeekTime(StartTime);
 				PreviewStream->SetLoop(true);
-				MixerAddStream(PreviewStream);
 			}
 		}
 	}

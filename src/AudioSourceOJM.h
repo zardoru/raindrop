@@ -12,7 +12,7 @@ class AudioSourceOJM : public AudioDataSource
 		void* File;
 	} TemporaryState;
 
-	SoundSample* Arr[2000];
+	shared_ptr<SoundSample> Arr[2000];
 	std::ifstream *ifile;
 	void parseM30();
 	void parseOMC();
@@ -21,7 +21,7 @@ public:
 	AudioSourceOJM();
 	~AudioSourceOJM();
 	bool Open(const char* Filename);
-	SoundSample* GetFromIndex(int Index);
+	shared_ptr<SoundSample> GetFromIndex(int Index);
 	void Seek(float Time);
 	uint32 Read(short* buffer, size_t count);
 

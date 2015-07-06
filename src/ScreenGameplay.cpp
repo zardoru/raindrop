@@ -42,7 +42,6 @@ void ScreenGameplay::Cleanup()
 	// Deleting the song's notes is ScreenSelectMusic's (or fileman's) job.
 	if (Music != NULL)
 	{
-		MixerRemoveStream(Music);
 		delete Music;
 		Music = NULL;
 	}
@@ -226,12 +225,9 @@ void ScreenGameplay::LoadThreadInitialization()
 
 		if (!Music || !Music->Open( (MySong->SongDirectory / MySong->SongFilename).c_path() ))
 		{
-			// we can't use exceptions because they impact the framerate. What can we do?
 			// throw std::exception( (boost::format ("couldn't open song %s") % MySong->SongFilename).str().c_str() );
-		}else
-			MixerAddStream(Music);
+		}
 		
-		// MixerAddStream(Music);
 		seekTime(0);
 	}
 

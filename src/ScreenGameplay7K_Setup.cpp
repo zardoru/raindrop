@@ -26,9 +26,9 @@ ScreenGameplay7K::ScreenGameplay7K() : Screen("ScreenGameplay7K")
 {
 	SpeedMultiplier = 0;
 	SongOldTime = -1;
-	Music = NULL;
-	MissSnd = NULL;
-	FailSnd = NULL;
+	Music = nullptr;
+	MissSnd = nullptr;
+	FailSnd = nullptr;
 	GameTime = 0;
 	Speed = 1;
 
@@ -54,8 +54,6 @@ ScreenGameplay7K::ScreenGameplay7K() : Screen("ScreenGameplay7K")
 
 	lifebar_type = LT_GROOVE;
 	scoring_type = ST_IIDX;
-
-	OJMAudio = NULL;
 	
 	SpeedMultiplierUser = 4;
 	SongFinished = false;
@@ -71,7 +69,7 @@ ScreenGameplay7K::ScreenGameplay7K() : Screen("ScreenGameplay7K")
 
 	MissTime = 0;
 	SuccessTime = 0;
-	LoadedSong = NULL;
+	LoadedSong = nullptr;
 	Active = false;
 	Barline = nullptr;
 }
@@ -79,30 +77,12 @@ ScreenGameplay7K::ScreenGameplay7K() : Screen("ScreenGameplay7K")
 
 void ScreenGameplay7K::Cleanup()
 {
-	CurrentDiff->Destroy();
-
 	if (Music)
-	{
-		MixerRemoveStream(Music);
 		Music->Stop();
-	}
-
-	if (OJMAudio)
-		delete OJMAudio;
-	else
-	{
-		for (std::map<int, SoundSample*>::iterator i = Keysounds.begin(); i != Keysounds.end(); i++)
-		{
-			MixerRemoveSample(i->second);
-			delete i->second;
-		}
-	}
-
-	MixerRemoveSample(MissSnd);
-	MixerRemoveSample(FailSnd);
 
 	GameState::GetInstance().SetScorekeeper7K(nullptr);
 
+	delete MechanicsSet;
 	delete MissSnd;
 	delete FailSnd;
 }
@@ -121,10 +101,8 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 	}
 
 	for (uint32 i = 0; i < Measure; i++)
-	{
-		double Length = CurrentDiff->Data->Measures[i].MeasureLength;
-		Beat += Length;
-	}
+		Beat += CurrentDiff->Data->Measures[i].MeasureLength;
+	
 
 	Log::Logf("Warping to measure measure %d at beat %f.\n", Measure, Beat);
 
@@ -142,7 +120,7 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 				if (m == NotesByChannel[k].end()) break;
 				else continue;
 			}
-			m++;
+			++m;
 		}
 	}
 
@@ -174,7 +152,7 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 void ScreenGameplay7K::Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const GameParameters &Param)
 {
 	MySong = S;
-	CurrentDiff = S->Difficulties[DifficultyIndex].get();
+	CurrentDiff = S->Difficulties[DifficultyIndex];
 
 	Upscroll = Param.Upscroll;
 	StartMeasure = Param.StartMeasure;
@@ -302,12 +280,11 @@ bool ScreenGameplay7K::LoadSongAudio()
 {
 	if (!Music)
 	{
-		Music = new AudioStream();
+		Music = make_shared<AudioStream>();
 		Music->SetPitch(Speed);
 		if (MySong->SongFilename.length() && Music->Open((MySong->SongDirectory / MySong->SongFilename).c_path()))
 		{
 			Log::Printf("Stream for %s succesfully opened.\n", MySong->SongFilename.c_str());
-			MixerAddStream(Music);
 		}
 		else
 		{
@@ -324,13 +301,9 @@ bool ScreenGameplay7K::LoadSongAudio()
 				{
 					if (Directory(*i).GetExtension() == "mp3" || Directory(*i).GetExtension() == "ogg")
 						if ( Music->Open( (SngDir / *i ).c_path()) )
-						{
-							MixerAddStream(Music);
 							return true;
-						}
 				}
 
-				delete Music;
 				Music = nullptr;
 
 				Log::Printf("Unable to load song (Path: %s)\n", MySong->SongFilename.c_str());
@@ -344,12 +317,12 @@ bool ScreenGameplay7K::LoadSongAudio()
 	if (strstr(MySong->SongFilename.c_str(), ".ojm"))
 	{
 		Log::Printf("Loading OJM.\n");
-		OJMAudio = new AudioSourceOJM;
+		OJMAudio = make_shared<AudioSourceOJM>();
 		OJMAudio->Open((MySong->SongDirectory / MySong->SongFilename).c_path());
 
 		for (int i = 0; i < 2000; i++)
 		{
-			SoundSample *Snd = OJMAudio->GetFromIndex(i);
+			shared_ptr<SoundSample> Snd = OJMAudio->GetFromIndex(i);
 
 			if (i != NULL)
 				Keysounds[i] = Snd;
@@ -360,17 +333,15 @@ bool ScreenGameplay7K::LoadSongAudio()
 		Log::Printf("Loading samples... ");
 		for (auto i = CurrentDiff->SoundList.begin(); i != CurrentDiff->SoundList.end(); ++i)
 		{
-			Keysounds[i->first] = new SoundSample();
+			Keysounds[i->first] = make_shared<SoundSample>();
 
 #ifdef WIN32
 			std::wstring sd = Utility::Widen(MySong->SongDirectory) + L"/" + Utility::Widen(i->second);
 
-			if (Keysounds[i->first]->Open(Utility::Narrow(sd).c_str()))
-				MixerAddSample(Keysounds[i->first]);
+			Keysounds[i->first]->Open(Utility::Narrow(sd).c_str());
 
 #else
-			if (Keysounds[i->first]->Open((MySong->SongDirectory + "/" + i->second).c_str()))
-				MixerAddSample(Keysounds[i->first]);
+			Keysounds[i->first]->Open((MySong->SongDirectory + "/" + i->second).c_str());
 #endif
 		}
 	}
@@ -611,7 +582,7 @@ void ScreenGameplay7K::SetupMechanics()
 		ChangeNoteTimeToBeats();
 	}
 
-	MechanicsSet->Setup(MySong.get(), CurrentDiff, ScoreKeeper);
+	MechanicsSet->Setup(MySong.get(), CurrentDiff.get(), ScoreKeeper);
 	MechanicsSet->HitNotify = bind(&ScreenGameplay7K::HitNote, this, _1, _2, _3, _4);
 	MechanicsSet->MissNotify = bind(&ScreenGameplay7K::MissNote, this, _1, _2, _3, _4, _5);
 	MechanicsSet->IsLaneKeyDown = bind(&ScreenGameplay7K::GetGearLaneState, this, _1);
@@ -628,18 +599,14 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	if (Utility::FileExists(MissSndFile))
 	{
 		MissSnd = new SoundSample();
-		if (MissSnd->Open(MissSndFile.c_str()))
-			MixerAddSample(MissSnd);
-		else
+		if (!MissSnd->Open(MissSndFile.c_str()))
 			delete MissSnd;
 	}
 
 	if (Utility::FileExists(FailSndFile))
 	{
 		FailSnd = new SoundSample();
-		if (FailSnd->Open(FailSndFile.c_str()))
-			MixerAddSample(FailSnd);
-		else
+		if (!FailSnd->Open(FailSndFile.c_str()))
 			delete FailSnd;
 	}
 
@@ -676,16 +643,6 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 void ScreenGameplay7K::MainThreadInitialization()
 {
-	if (!DoPlay) // Failure to load something important?
-	{
-		Running = false;
-		return;
-	}
-
-	PlayReactiveSounds = (CurrentDiff->IsVirtual || !(Configuration::GetConfigf("DisableHitsounds")));
-	MsDisplayMargin = (Configuration::GetSkinConfigf("HitErrorDisplayLimiter"));
-
-
 	GString KeyProfile = Configuration::GetConfigs("KeyProfile" + Utility::IntToStr(CurrentDiff->Channels));
 	GString value = Configuration::GetConfigs("Keys", KeyProfile);
 	vector<GString> res;
@@ -695,12 +652,27 @@ void ScreenGameplay7K::MainThreadInitialization()
 	{
 		lastClosest[i] = 0;
 
-		if (i <= res.size())
+		if (i < res.size())
 			GearBindings[(int)latof(res[i])] = i;
+		else
+		{
+			Log::Printf("Mising bindings starting from lane " + Utility::IntToStr(i) + " using profile " + KeyProfile);
+			DoPlay = false;
+			break;
+		}
 
 		HeldKey[i] = NULL;
 		GearIsPressed[i] = 0;
 	}
+
+	if (!DoPlay) // Failure to load something important?
+	{
+		Running = false;
+		return;
+	}
+
+	PlayReactiveSounds = (CurrentDiff->IsVirtual || !(Configuration::GetConfigf("DisableHitsounds")));
+	MsDisplayMargin = (Configuration::GetSkinConfigf("HitErrorDisplayLimiter"));
 
 	WindowFrame.SetLightMultiplier(0.75f);
 

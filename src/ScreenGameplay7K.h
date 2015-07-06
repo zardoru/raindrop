@@ -27,11 +27,11 @@ private:
 	TimingData		 BPS;
 	TimingData		 Warps;
 	VSRG::VectorTN  NotesByChannel;
-	std::map <int, SoundSample*> Keysounds;
+	std::map <int, shared_ptr<SoundSample>> Keysounds;
 	vector<AutoplaySound>   BGMEvents;
 	vector<float>			 MeasureBarlines;
 
-	VSRG::Difficulty				*CurrentDiff;
+	shared_ptr<VSRG::Difficulty>	 CurrentDiff;
 	shared_ptr<VSRG::Song>			 MySong;
 	shared_ptr<VSRG::Song>			 LoadedSong;
 	TimingType						 UsedTimingType;
@@ -78,8 +78,8 @@ private:
 	LifeType         lifebar_type;		 
 	ScoreType        scoring_type;
 
-	AudioStream *Music;
-	AudioSourceOJM *OJMAudio;
+	shared_ptr<AudioStream> Music;
+	shared_ptr<AudioSourceOJM> OJMAudio;
 	SoundSample *MissSnd;
 	SoundSample *FailSnd;
 
