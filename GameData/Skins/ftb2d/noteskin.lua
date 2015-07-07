@@ -51,17 +51,13 @@ function drawHoldBodyInternal(lane, loc, size, active_level)
 	note.Y = loc
 	note.Height = size
 	
-	if active_level == 0 then
-		note.Red = 0.5
-		note.Blue = 0.5
-		note.Green = 0.5
+	if active_level == 2 then
+		note.LightenFactor = 1
 	else
-		note.Red = 1
-		note.Blue = 1
-		note.Green = 1
+		note.LightenFactor = 0
 	end
 	
-	if active_level ~= 3 then
+	if active_level ~= 3 and active_level ~= 0 then
 		Render(note)
 	end
 end

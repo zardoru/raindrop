@@ -31,6 +31,7 @@ ExplosionColorAtlas = TextureAtlas:new(GetSkinFile("assets/colexplosion.csv"))
 KeyArray = {}
 KeyHold = {}
 Judgments = {}
+Key = {}
 
 Colours = {
 	{255, 0, 204},
@@ -39,6 +40,37 @@ Colours = {
 	{0, 203, 255}
 }
 Layout = {1, 2, 3, 4, 3, 2, 1}
+
+function MakeKeys(i)
+		KeyHold[i] = Engine:CreateObject()
+		obj = KeyHold[i]
+		obj.Image = "assets/keyhold.png"
+		obj.Height = 60
+		obj.Width = 40
+		obj.Centered = 1
+		obj.X = Noteskin[7]["Key" .. i .. "X"]
+		obj.Y = JudgmentLineY + obj.Height / 2 + 5
+		obj.Layer = 16
+		obj.Alpha = 1
+		
+		Key[i] = Engine:CreateObject()
+		obj = Key[i]
+		obj.Image = "Global/white.png"
+		obj.Height = 60
+		obj.Width = 40
+		obj.Centered = 1
+		obj.X = Noteskin[7]["Key" .. i .. "X"]
+		obj.Y = JudgmentLineY + obj.Height / 2 + 5
+		obj.Layer = 16
+		obj.Alpha = 1
+		obj.Lighten = 1
+		obj.LightenFactor = 0
+		
+		obj.Red = Colours[Layout[i]][1] / 255
+		obj.Green = Colours[Layout[i]][2] / 255
+		obj.Blue = Colours[Layout[i]][3] / 255
+		
+end
 
 function Init()
 	ScreenFade.Init()
@@ -59,7 +91,10 @@ function Init()
 	HealthBar.Image = "assets/hp_fill.png"
 	HealthBar.Width = 280
 	HealthBar.Height = 60
-	HealthBar.Layer = 21
+	HealthBar.Layer = 19
+	HealthBar.Lighten = 1
+	HealthBar.LightenFactor = 2
+	HealthBar.ScaleX = 0
 	
 	SongPosition = Engine:CreateObject()
 	SongPosition.Image = "assets/songpercent.png"
@@ -91,6 +126,11 @@ function Init()
 		obj.Centered = 1
 		obj.Layer = 20
 		obj.Alpha = 0
+		obj.BlendMode = BlendAdd
+		
+		obj.Red = Colours[Layout[i]][1] / 255
+		obj.Green = Colours[Layout[i]][2] / 255
+		obj.Blue = Colours[Layout[i]][3] / 255
 		
 		Lightning[i] = FrameInterpolator:New("assets/lightning.csv", 0.4)
 		obj = Lightning[i].Object
@@ -98,28 +138,16 @@ function Init()
 		obj.Width = GearWidth / 7
 		obj.X = Noteskin[7]["Key" .. i .. "X"] - obj.Width / 2
 		obj.Y = 0
-		obj.Layer = 19
+		obj.Layer = 24
 		obj.Alpha = 0
 		
 		obj.Red = Colours[Layout[i]][1] / 255
 		obj.Green = Colours[Layout[i]][2] / 255
-		obj.Blue = Colours[Layout[i]][3] / 255 
+		obj.Blue = Colours[Layout[i]][3] / 255
+		
 		KeyArray[i] = 0
 		
-		KeyHold[i] = Engine:CreateObject()
-		obj = KeyHold[i]
-		obj.Image = "assets/keyhold.png"
-		obj.Height = 60
-		obj.Width = GearWidth / 7
-		obj.Centered = 0
-		obj.X = Noteskin[7]["Key" .. i .. "X"]
-		obj.Y = JudgmentLineY + obj.Height / 2
-		obj.Layer = 20
-		obj.Alpha = 1
-		
-		obj.Red = Colours[Layout[i]][1] / 255
-		obj.Green = Colours[Layout[i]][2] / 255
-		obj.Blue = Colours[Layout[i]][3] / 255
+		MakeKeys(i)
 		
 		Judgments[i] = Engine:CreateObject()
 		obj = Judgments[i]
@@ -160,7 +188,7 @@ end
 
 function Judgment(frac, targ)
 	targ.Alpha = 1 - frac
-	targ.Y = JudgmentLineY - 70 + 70 * frac
+	targ.Y = JudgmentLineY - 100 * frac
 	return 1
 end
 
@@ -170,13 +198,12 @@ function JUDGE(JudgmentValue, Lane)
 		JudgmentValue = 1
 	end
 	
-	print (JudgmentValue)
 	JudgmentAtlas:SetObjectCrop(Judgments[Lane], map[JudgmentValue] .. ".png")
 	Engine:AddAnimation(Judgments[Lane], "Judgment", EaseIn, 0.4, 0)
 end
 
 function HitEvent(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease)
-	Engine:AddAnimation(Explosions[Lane].EffectExplosion.Object, "Explode", EaseNone, 0.15, 0)
+	Engine:AddAnimation(Explosions[Lane].EffectExplosion.Object, "Explode", EaseNone, 0.25, 0)
 	Explosions[Lane].EffectExplosion.CurrentTime = 0
 	
 	JUDGE(JudgmentValue, Lane)
@@ -195,6 +222,11 @@ function GearKeyEvent (Lane, IsKeyDown)
 	Lightning[Lane + 1].Object.Alpha = 1
 	Lightning[Lane + 1].CurrentTime = 0
 
+	if IsKeyDown == 1 then 
+		Key[Lane + 1].LightenFactor = 1
+	else
+		Key[Lane + 1].LightenFactor = 0
+	end
 end
 
 -- Called when the song is over.
@@ -207,9 +239,11 @@ function Update(Delta)
 	local beatEffect = Beat - math.floor(Beat)
 	Glow:SetFraction(beatEffect)
 	
-	HealthBar.ScaleX = LifebarValue
+	local dLifebar = LifebarValue - HealthBar.ScaleX
+	HealthBar.ScaleX = HealthBar.ScaleX + dLifebar * Delta
 	HealthBar.Green = LifebarValue
 	HealthBar.Blue = LifebarValue
+	
 	
 	local SongPercentage = Game:GetSongTime() / SongDuration
 	
