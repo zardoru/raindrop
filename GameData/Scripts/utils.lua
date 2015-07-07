@@ -22,18 +22,17 @@ function AutoadjustBackground(params)
 	Background.Y = y
 	
 	print ("Width/Height: ", Background.Width, Background.Height)
-	local HRatio = h / Background.Height
-	local VRatio = w / Background.Width
+	local VRatio = h / Background.Height
 	
-	Background.ScaleX = math.min(HRatio, VRatio)
-	Background.ScaleY = math.min(HRatio, VRatio)
+	Background.ScaleX = VRatio
+	Background.ScaleY = VRatio
 	
 	local modWidth = Background.ScaleX * Background.Width
+	local modHeight = Background.ScaleY * Background.Height
 	
 	-- Center in box.
-	if modWidth < w then
-		Background.X = x + w / 2 - modWidth / 2
-	end
+	Background.X = x + w / 2 - modWidth / 2
+	Background.Y = y + h / 2 - modHeight / 2
 	
 	print ("Background proportions: ", Background.ScaleX, Background.ScaleY)
 end
