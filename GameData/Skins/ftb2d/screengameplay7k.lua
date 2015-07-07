@@ -2,6 +2,7 @@ game_require("textureatlas.lua")
 game_require("frame_interpolator.lua")
 game_require("fixed_objects.lua")
 game_require("noteskin_defs.lua")
+game_require("utils.lua")
 
 skin_require("Global/AnimationFunctions.lua")
 skin_require("Global/FadeInScreen.lua")
@@ -73,16 +74,19 @@ function MakeKeys(i)
 end
 
 function Init()
+	AutoadjustBackground()
 	ScreenFade.Init()
 	ScreenFade.Out(true)
 
+	CreateText()
+	
 	Glow = FrameInterpolator:New("assets/glow.csv")
 	
 	Glow.TotalFrames = 35
 	Glow.Object.X = GearStartX
 	Glow.Object.Y = ScreenHeight - GearWidth + 25
 	Glow.Object.Height = 20
-	Glow.Object.Width = GearWidth
+	Glow.Object.Width = 280
 	Glow.Object.Layer = 20
 	
 	HealthBar = Engine:CreateObject()
@@ -99,16 +103,16 @@ function Init()
 	SongPosition = Engine:CreateObject()
 	SongPosition.Image = "assets/songpercent.png"
 	SongPosition.Height = 768
-	SongPosition.Width = 5
-	SongPosition.X = 32
+	SongPosition.Width = 3
+	SongPosition.X = 37
 	SongPosition.Y = ScreenHeight
 	SongPosition.Layer = 21
 	
 	Flair = Engine:CreateObject()
 	Flair.Image = "assets/flair.png"
 	Flair.Height = 768
-	Flair.Width = 5
-	Flair.X = 323
+	Flair.Width = 3
+	Flair.X = 320
 	Flair.Y = ScreenHeight
 	Flair.Layer = 22
 	
@@ -126,7 +130,6 @@ function Init()
 		obj.Centered = 1
 		obj.Layer = 20
 		obj.Alpha = 0
-		obj.BlendMode = BlendAdd
 		
 		obj.Red = Colours[Layout[i]][1] / 255
 		obj.Green = Colours[Layout[i]][2] / 255
@@ -161,6 +164,8 @@ function Init()
 		obj.X = Noteskin[7]["Key" .. i .. "X"]
 		obj.Y = JudgmentLineY - obj.Height / 2
 	end
+	
+	
 	
 	FixedObjects.CreateFromCSV("ftb.csv")
 	Engine:Sort()
@@ -234,6 +239,70 @@ function OnSongFinishedEvent()
 	return 0
 end
 
+function CreateText()
+	miniFont = Fonts.TruetypeFont(GetSkinFile("ftb_font.ttf"), 16)
+	largeFont = Fonts.TruetypeFont(GetSkinFile("ftb_font.ttf"), 36)
+	xlFont = Fonts.TruetypeFont(GetSkinFile("ftb_font.ttf"), 61)
+	
+	print "Creating text."
+	lblCombo = StringObject2D()
+	lblCombo.Font = miniFont
+	lblCombo.Text = "Combo"
+	lblCombo.X = 45
+	lblCombo.Y = 665
+	Engine:AddTarget(lblCombo)
+	lblCombo.Layer = 14
+	
+	
+	lblmaxCombo = StringObject2D()
+	lblmaxCombo.Font = miniFont
+	lblmaxCombo.Text = "MAX COMBO"
+	lblmaxCombo.X = 230
+	lblmaxCombo.Y = 665
+	Engine:AddTarget(lblmaxCombo)
+	
+	lblmaxCombo.Layer = 14
+	
+	lblcurCombo = StringObject2D()
+	lblcurCombo.Font = largeFont
+	lblcurCombo.X = 45
+	lblcurCombo.Y = 665
+	lblcurCombo.Layer = 14
+	Engine:AddTarget(lblcurCombo)
+	
+	lblcurMaxCombo = StringObject2D()
+	lblcurMaxCombo.Font = largeFont
+	lblcurMaxCombo.Text = "0"
+	lblcurMaxCombo.Y = 665
+	lblcurMaxCombo.Layer = 14
+	Engine:AddTarget(lblcurMaxCombo)
+	
+	lblScore = StringObject2D()
+	lblScore.Font = xlFont
+	lblScore.Y = 680
+	lblScore.X = 45
+	lblScore.Layer = 14
+	Engine:AddTarget(lblScore)
+	
+	lblstScore = StringObject2D()
+	lblstScore.Font = miniFont
+	lblstScore.Text = "score"
+	lblstScore.Y = 740
+	lblstScore.X = 155
+	lblstScore.Layer = 14
+	
+	Engine:AddTarget(lblstScore)
+end
+
+function UpdateText()
+	lblcurCombo.Text = ScoreKeeper:getScore(ST_COMBO)
+	lblcurMaxCombo.Text = ScoreKeeper:getScore(ST_MAX_COMBO)
+	lblcurMaxCombo.X = 312 - largeFont:GetLength(lblcurMaxCombo.Text)
+	
+	lblScore.Text = string.format("%08d", SCScore)
+	lblScore.X = 188 - largeFont:GetLength(lblScore.Text)
+end
+
 function Update(Delta)
 	-- Executed every frame.
 	local beatEffect = Beat - math.floor(Beat)
@@ -244,15 +313,18 @@ function Update(Delta)
 	HealthBar.Green = LifebarValue
 	HealthBar.Blue = LifebarValue
 	
+	UpdateText()
 	
 	local SongPercentage = Game:GetSongTime() / SongDuration
 	
 	SongPosition.Y = ScreenHeight - ScreenHeight * SongPercentage
 	SongPosition.ScaleY = SongPercentage
+	SongPosition:SetCropByPixels(0, 4, 404 - 404 * SongPercentage, 404)
 	
 	local Acc = ScoreKeeper:getTotalNotes() / ScoreKeeper:getMaxNotes()
 	Flair.Y = ScreenHeight - ScreenHeight * Acc
 	Flair.ScaleY = Acc
+	Flair:SetCropByPixels(0, 4, 404 - 404 * Acc, 404)
 	
 	for i=1,7 do 
 		Explosions[i].EffectExplosion:Update(Delta)

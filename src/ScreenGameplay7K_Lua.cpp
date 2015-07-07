@@ -27,6 +27,9 @@ void ScreenGameplay7K::SetupScriptConstants()
 	L->SetGlobal("WaitingTime", WaitingTime);
 	L->SetGlobal("Beat", CurrentBeat);
 	L->SetGlobal("Lifebar", ScoreKeeper->getLifebarAmount(LT_GROOVE));
+
+	luabridge::push(L->GetState(), &BGA->GetTransformation());
+	lua_setglobal(L->GetState(), "Background");
 }
 
 // Called every frame, before the lua update event

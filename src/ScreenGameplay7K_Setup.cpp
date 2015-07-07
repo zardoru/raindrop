@@ -676,8 +676,6 @@ void ScreenGameplay7K::MainThreadInitialization()
 
 	WindowFrame.SetLightMultiplier(0.75f);
 
-	Animations->Initialize("", false);
-
 	memset(PlaySounds, 0, sizeof(PlaySounds));
 
 	CalculateHiddenConstants();
@@ -693,5 +691,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 	CurrentBeat = IntegrateToTime(BPS, -WaitingTime);
 	Animations->GetImageList()->ForceFetch();
 	BGA->Validate();
+
+	Animations->Initialize("", false);
 	Running = true;
 }

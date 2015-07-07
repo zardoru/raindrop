@@ -1,14 +1,11 @@
 game_require("textureatlas.lua")
+game_require("utils.lua")
 skin_require("Global/AnimationFunctions.lua")
 skin_require("Global/FadeInScreen.lua")
 
 -- Set up constants for everyone
 
 game_require("noteskin_defs.lua")
-print ("#######################")
-for k, v in pairs(Noteskin) do
-	print(k, v)
-end
 GearWidth = Noteskin[Channels].GearWidth
 GearHeight = GearHeightCommon
 
@@ -109,6 +106,7 @@ BgAlpha = 0
 -- You can only call Engine:CreateObject, LoadImage and LoadSkin during and after Init is called
 -- Not on preload time.
 function Init()
+	AutoadjustBackground()
 	AnimatedObjects.Init()
 	DrawTextObjects()
 	ScreenFade.Init()

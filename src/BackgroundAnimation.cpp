@@ -6,6 +6,7 @@
 #include "SongDC.h"
 #include "ImageLoader.h"
 #include "ImageList.h"
+#include "Logging.h"
 
 Directory GetSongBackground(Game::Song &Song)
 {
@@ -42,7 +43,7 @@ class BMSBackground : public BackgroundAnimation
 	bool Validated;
 
 public:
-	BMSBackground(VSRG::Difficulty* Difficulty, VSRG::Song* Song)
+	BMSBackground(VSRG::Difficulty* Difficulty, VSRG::Song* Song) : BackgroundAnimation()
 	{
 		this->Difficulty = Difficulty;
 		this->Song = Song;
@@ -73,23 +74,29 @@ public:
 		Layer1 = make_shared<Sprite>();
 		Layer2 = make_shared<Sprite>();
 
-		Layer0->ChainTransformation(this);
-		LayerMiss->ChainTransformation(this);
-		Layer1->ChainTransformation(this);
-		Layer2->ChainTransformation(this);
+		Layer0->ChainTransformation(&Transform);
+		LayerMiss->ChainTransformation(&Transform);
+		Layer1->ChainTransformation(&Transform);
+		Layer2->ChainTransformation(&Transform);
 
-		LayerMiss->BlackToTransparent = Layer1->BlackToTransparent = Layer2->BlackToTransparent = true;
+		Layer0->SetZ(0);
+		Layer1->SetZ(0);
+		LayerMiss->SetZ(0);
+		Layer2->SetZ(0);
+
+		Layer1->BlackToTransparent = Layer2->BlackToTransparent = true;
+
+
+		LayerMiss->SetImage(List.GetFromIndex(0), false);
+		Layer0->SetImage(List.GetFromIndex(1), false);
 
 		std::sort(EventsLayer0.begin(), EventsLayer0.end());
 		std::sort(EventsLayerMiss.begin(), EventsLayerMiss.end());
 		std::sort(EventsLayer1.begin(), EventsLayer1.end());
 		std::sort(EventsLayer2.begin(), EventsLayer2.end());
 
-		LayerMiss->SetImage(List.GetFromIndex(0), false);
-		Layer0->SetImage(List.GetFromIndex(1), false);
-
-		SetWidth(ScreenWidth);
-		SetHeight(ScreenHeight);
+		Transform.SetWidth(256);
+		Transform.SetHeight(256);
 
 		Validated = true;
 	}
@@ -99,8 +106,6 @@ public:
 		auto bmp = std::lower_bound(events_layer.begin(), events_layer.end(), time);
 		if (bmp != events_layer.end())
 			sprite->SetImage(List.GetFromIndex(bmp->BMP), false);
-		else
-			sprite->SetImage(nullptr, false);
 	}
 
 	void SetAnimationTime(double Time) override
@@ -118,12 +123,11 @@ public:
 	void Render() override
 	{
 		Layer0->Render();
+		Layer1->Render();
+		Layer2->Render();
 
 		if (MissTime > 0)
 			LayerMiss->Render();
-
-		Layer1->Render();
-		Layer2->Render();
 	}
 
 	void OnMiss() override
@@ -143,8 +147,9 @@ class StaticBackground : public BackgroundAnimation
 	ImageList List;
 public:
 	StaticBackground(GString Filename)
-		: List()
+		: BackgroundAnimation(), List()
 	{
+		Log::Printf("Using static background: %s\n", Filename.c_str());
 		List.AddToListIndex(Filename, "", 0);
 	}
 
@@ -154,11 +159,12 @@ public:
 	{
 		if (!Background)
 		{
+			auto pt = List.GetFromIndex(0);
 			Background = make_shared<Sprite>();
-			Background->SetImage(List.GetFromIndex(0), false);
-			Background->ChainTransformation(this);
-			SetWidth(ScreenWidth);
-			SetHeight(ScreenHeight);
+			Background->SetImage(pt, false);
+			Background->ChainTransformation(&Transform);
+			Transform.SetWidth(pt ? pt->w : 0);
+			Transform.SetHeight(pt ? pt->h : 0);
 		}
 	}
 
@@ -215,6 +221,15 @@ void BackgroundAnimation::OnHit()
 
 void BackgroundAnimation::OnMiss()
 {
+}
+
+void BackgroundAnimation::Render()
+{
+}
+
+Transformation& BackgroundAnimation::GetTransformation()
+{
+	return Transform;
 }
 
 shared_ptr<BackgroundAnimation> BackgroundAnimation::CreateBGAFromSong(uint8_t DifficultyIndex, Game::Song& Input, bool LoadNow)
