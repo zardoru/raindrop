@@ -1,13 +1,17 @@
+game_require("utils.lua")
+
 TextureAtlas = {}
 TextureAtlas.__index = TextureAtlas
 
-function SetCropToAtlas(Atlas, Sprite)
-	local Tab = Atlas.Sprites[Sprite]
-
-	Obj.CropByPixels(Tab.x, Tab.y, Tab.x + Tab.w, Tab.y + Tab.h)
+function TextureAtlas:SetObjectCrop(Object, Sprite)
+	local Tab = self.Sprites[Sprite]
+	if Tab ~= nil then
+		Object:SetCropByPixels(Tab.x, Tab.x + Tab.w, Tab.y, Tab.y + Tab.h)
+	end
 end
 
-function AssignFrames(Atlas, Filename)
+function TextureAtlas:AssignFrames(Filename)
+	local Atlas = self
 	local File = io.open(Filename)
 
 	if File ~= nil then
@@ -17,14 +21,12 @@ function AssignFrames(Atlas, Filename)
 				Atlas.File = line;
 				Atlas.Sprites = {}
 			else
-				local restable = {}
-				local i = 1
-				for k in string.gmatch(line, "([^,]+)") do
-					restable[i] = k
-					i = i + 1
-				end
+				local restable = split(line)
 
-				Sprite = {x = restable[2], y = restable[3], w = restable[4], h = restable[5]}
+				Sprite = {x = tonumber(restable[2]), 
+							y = tonumber(restable[3]), 
+							w = tonumber(restable[4]), 
+							h = tonumber(restable[5])}
 
 				Atlas.Sprites[restable[1]] = Sprite
 			end
@@ -39,6 +41,6 @@ end
 function TextureAtlas:new(filename)
 	local NewAtlas = {}
 	setmetatable(NewAtlas, TextureAtlas)
-	AssignFrames(NewAtlas, filename)
+	NewAtlas:AssignFrames(filename)
 	return NewAtlas
 end
