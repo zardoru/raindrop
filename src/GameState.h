@@ -33,7 +33,7 @@ class GameState
 	Image* StageImage;
 	Image* SongBG;
 	Game::Song *SelectedSong;
-	ScoreKeeper7K *SKeeper7K;
+	shared_ptr<ScoreKeeper7K> SKeeper7K;
 	shared_ptr<GameParameters> Params;
 public:
 
@@ -59,8 +59,9 @@ public:
 	void SetDifficultyIndex(uint32 DifficultyIndex);
 	uint32 GetDifficultyIndex() const;
 
-	ScoreKeeper7K *GetScorekeeper7K();
-	void SetScorekeeper7K(ScoreKeeper7K *Other);
+	// Note: Returning a shared_ptr causes lua to fail an assertion, since shared_ptr is not registered.
+	ScoreKeeper7K* GetScorekeeper7K();
+	void SetScorekeeper7K(shared_ptr<ScoreKeeper7K> Other);
 
 	GString GetSkinFile(Directory Name);
 	GString GetFallbackSkinFile(Directory Name);

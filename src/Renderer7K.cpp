@@ -1,57 +1,35 @@
-#ifdef WIN32
-#include <windows.h>
-#endif
-
-#include <GL/glew.h>
-#include <glm/gtc/type_ptr.hpp>
-
 #include "GameGlobal.h"
 #include "Screen.h"
-#include "Audio.h"
 
 #include "GameWindow.h"
 #include "Rendering.h"
-#include "VBO.h"
 #include "Sprite.h"
 #include "Line.h"
-#include "Image.h"
-#include "ImageLoader.h"
-#include "ImageList.h"
 #include "SceneEnvironment.h"
-#include "BitmapFont.h"
 
 #include "ScreenGameplay7K.h"
+#include "Noteskin.h"
 
 using namespace VSRG;
 
-static Mat4 identity;
-
 void ScreenGameplay7K::Render()
 {
-	Background.Render();
-	Layer1.Render();
-	Layer2.Render();
-
-	if (MissTime > 0)
-		LayerMiss.Render();
+	BGA->Render();
 
 	Animations->DrawUntilLayer(13);
 
 	DrawMeasures();
 
-	for (int32 i = 0; i < CurrentDiff->Channels; i++)
-		Keys[i].Render();
-
 	Animations->DrawFromLayer(14);
 }
 
-void ScreenGameplay7K::DrawBarlines(float rPos)
+using glm::sign;
+
+void ScreenGameplay7K::DrawBarlines()
 {
-	for (std::vector<float>::iterator i = MeasureBarlines.begin();
-		i != MeasureBarlines.end();
-		++i)
+	for (auto i: MeasureBarlines)
 	{
-		float realV = rPos - (*i) * SpeedMultiplier + BarlineOffset;
+		float realV = (CurrentVertical - i) * SpeedMultiplier + BarlineOffset * sign(SpeedMultiplier) + JudgmentLinePos;
 		if (realV > 0 && realV < ScreenWidth)
 		{
 			Barline->SetLocation (Vec2(BarlineX, realV), Vec2(BarlineX + BarlineWidth, realV));
@@ -60,15 +38,12 @@ void ScreenGameplay7K::DrawBarlines(float rPos)
 	}
 }
 
+Mat4 id;
+
 void ScreenGameplay7K::DrawMeasures()
 {
-	float rPos;
-	float MultAbs = abs(SpeedMultiplier);
-
-	rPos = CurrentVertical * SpeedMultiplier + JudgmentLinePos;
-
 	if (BarlineEnabled)
-		DrawBarlines(rPos);
+		DrawBarlines();
 
 	// Set some parameters...
 	SetShaderParameters(false, false, true, true, false, false, RealHiddenMode);
@@ -82,133 +57,133 @@ void ScreenGameplay7K::DrawMeasures()
 		WindowFrame.SetUniform(U_HIDSUM, HideClampSum);
 	}
 
-	WindowFrame.SetUniform(U_SMULT, SpeedMultiplier);
+	WindowFrame.SetUniform(U_SIM, &id[0][0]);
+	WindowFrame.SetUniform(U_TRANM, &id[0][0]);
+
 	SetPrimitiveQuadVBO();
 
-	/* todo: instancing */
 	for (uint32 k = 0; k < CurrentDiff->Channels; k++)
 	{
-		for (auto m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); ++m)
+		auto Locate = [&](float StaticVert) -> float {
+			return (CurrentVertical - StaticVert) * SpeedMultiplier + JudgmentLinePos;
+		};
+
+		/* Find the location of the first/next visible regular note */
+		auto LocPredicate = [&](const TrackNote &A, double _) -> bool {
+			if (!IsUpscrolling())
+				return _ < Locate(A.GetVertical());
+			else // Signs are switched. We need to preserve the same order. 
+				return _ > Locate(A.GetVertical());
+		};
+
+		std::vector<TrackNote>::iterator Start;
+		
+		// Signs are switched. Doesn't begin by the first note closest to the lower edge, but the one closest to the higher edge.
+		if (!IsUpscrolling())
+			Start = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), ScreenHeight + Noteskin::GetNoteOffset(), LocPredicate);
+		else
+			Start = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), 0 - Noteskin::GetNoteOffset(), LocPredicate);
+
+		// Locate the first hold that we can draw in this range
+		auto rStart = std::reverse_iterator<vector<TrackNote>::iterator>(Start);
+		for (auto i = rStart; i != NotesByChannel[k].rend(); ++i)
 		{
+			if (i->IsHold() && i->IsVisible()) {
+				auto Vert = Locate(i->GetVertical());
+				auto VertEnd = Locate(i->GetHoldEndVertical());
+				if (IntervalsIntersect(0, ScreenHeight, min(Vert, VertEnd), max(Vert, VertEnd)))
+				{
+					Start = i.base() - 1;
+					break;
+				}
+			}
+		}
+
+		// Find the note that is out of the drawing range
+		std::vector<TrackNote>::iterator End;
+
+		// As before. Top becomes bottom, bottom becomes top.
+		if (!IsUpscrolling())
+			End = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), 0 - Noteskin::GetNoteOffset(), LocPredicate);
+		else
+			End = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), ScreenHeight + Noteskin::GetNoteOffset(), LocPredicate);
+		
+		// Now, draw them.
+		for (auto m = Start; m != End; ++m)
+		{
+			float Vertical = 0;
+			float VerticalHoldEnd;
+
+			// Don't attempt drawing this object if not visible.
 			if (!m->IsVisible())
 				continue;
 
-			if (!m->IsEnabled())
-				if (!m->IsHold())
-					continue;
-
-			// Is there a better way to do this that doesn't involve recalculating this eeeeeevery note?
-			float Vertical = (m->GetVertical() * SpeedMultiplier + rPos) ;
-			float VerticalHold = 0;
-
-			bool InScreen = true; 
-
-			if (m->IsHold())
-			{
-				VerticalHold = (m->GetVerticalHold() * SpeedMultiplier + rPos);
-
-				if (Upscroll)
-					InScreen = IntervalsIntersect(0, ScreenHeight, Vertical, VerticalHold);
-				else
-					InScreen = IntervalsIntersect(0, ScreenHeight, VerticalHold, Vertical);
-			}
-			else
-			{
-
-				if (Upscroll)
-					InScreen = Vertical < ScreenHeight;
-				else
-					InScreen = Vertical > 0;
-			}
-
-
-			if (!InScreen)
-				continue; /* If this is not visible, we move on to the next note. */
-
+			Vertical = Locate(m->GetVertical());
+			VerticalHoldEnd = Locate(m->GetHoldEndVertical());
+			
 			// Assign our matrix.
-			WindowFrame.SetUniform(U_MVP, &PositionMatrix[0][0]);
+			WindowFrame.SetUniform(U_MVP, &id[0][0]);
+
+
+			float JPos;
+
+			// LR2 style keep-on-the-judgment-line
+			bool AboveLine = Vertical < JudgmentLinePos;
+			if (!(AboveLine ^ IsUpscrolling()) && m->IsJudgable())
+				JPos = JudgmentLinePos;
+			else
+				JPos = Vertical;
 
 			// We draw the body first, so that way the heads get drawn on top
 			if (m->IsHold())
 			{
-				if (NoteImagesHold[k])
-					NoteImagesHold[k]->Bind();
-				else
+				enum : int {Failed, Active, BeingHit, SuccesfullyHit};
+				int Level = -1;
+
+				if (m->IsEnabled() && !m->FailedHit())
+					Level = Active;
+				if (!m->IsEnabled() && m->FailedHit())
+					Level = Failed;
+				if (!m->IsEnabled() && !m->FailedHit() && !m->WasNoteHit())
+					Level = Failed;
+				if (m->IsEnabled() && m->WasNoteHit() && !m->FailedHit())
+					Level = BeingHit;
+				if (!m->IsEnabled() && m->WasNoteHit() && !m->FailedHit())
+					Level = SuccesfullyHit;
+
+				float Pos; 
+				float Size; 
+				// If we're being hit and..
+				bool DCS = Noteskin::ShouldDecreaseHoldSizeWhenBeingHit() && Level == 2;
+				if (DCS)
 				{
-					if (NoteImage)
-						NoteImage->Bind();
-					else
-						continue;
+					Pos = (VerticalHoldEnd + JPos) / 2;
+					Size = VerticalHoldEnd - JPos;
+				}else // We were failed, not being hit or were already hit
+				{
+					Pos = (VerticalHoldEnd + Vertical) / 2;
+					Size = VerticalHoldEnd - Vertical;
 				}
 
-				if (m->IsEnabled())
-					WindowFrame.SetUniform(U_COLOR, 1, 1, 1, 1);
+				Noteskin::DrawHoldBody(k, Pos, Size, Level);
+				Noteskin::DrawHoldTail(*m, k, VerticalHoldEnd, Level);
+				
+
+				if (Noteskin::AllowDanglingHeads() || DCS)
+					Noteskin::DrawHoldHead(*m, k, JPos, Level);
 				else
-					WindowFrame.SetUniform(U_COLOR, 0.5, 0.5, 0.5, 1);
-
-				WindowFrame.SetUniform(U_TRANM, &(m->GetHoldPositionMatrix(LanePositions[k]))[0][0]);
-				WindowFrame.SetUniform(U_SIM, &(m->GetHoldBodyMatrix(LaneWidth[k], MultAbs))[0][0]);
-				DoQuadDraw();
-			}
-
-
-			// Use the lane's note image
-
-			if (!m->IsHold())
+					Noteskin::DrawHoldHead(*m, k, Vertical, Level);
+			} else
 			{
-				if (NoteImages[k])
-					NoteImages[k]->Bind();
+				if (Noteskin::AllowDanglingHeads())
+					Noteskin::DrawNote(*m, k, JPos);
 				else
-				{
-					if (NoteImage)
-						NoteImage->Bind();
-					else
-						continue;
-				}
+					Noteskin::DrawNote(*m, k, Vertical);
 			}
-
-
-			// Assign the note matrix
-			WindowFrame.SetUniform(U_SIM, &(NoteMatrix[k])[0][0]);
-			WindowFrame.SetUniform(U_COLOR, 1, 1, 1, 1);
-
-			// Draw Hold tail
-			if (m->IsHold())
-			{
-				if (NoteImagesHoldTail[k])
-					NoteImagesHoldTail[k]->Bind();
-
-				WindowFrame.SetUniform(U_TRANM, &(m->GetHoldEndMatrix())[0][0]);
-				DoQuadDraw();
-			}
-
-			// Assign our matrix - encore
-			if ( ((!m->IsHold() && (Vertical < JudgmentLinePos && Upscroll || Vertical >= JudgmentLinePos && !Upscroll))
-				|| (m->IsHold() && (Vertical > VerticalHold && Upscroll || Vertical < VerticalHold && !Upscroll)))
-				&& m->IsJudgable())
-			{
-
-				// As long as it's not judged, we'll keep it in place 
-				WindowFrame.SetUniform(U_MVP, &PositionMatrixJudgment[0][0]);
-				WindowFrame.SetUniform(U_TRANM, &(identity)[0][0]);
-			}else
-			{
-				// Otherwise scroll normally
-				WindowFrame.SetUniform(U_TRANM, &(m->GetMatrix())[0][0]);
-			}
-
-			if (m->IsHold())
-				if (NoteImagesHoldHead[k]) NoteImagesHoldHead[k]->Bind();
-
-			DoQuadDraw();
 		}
-
-		next_key: (void)0;
 	}
 
 	/* Clean up */
 	MultiplierChanged = false;
-	
-	WindowFrame.DisableAttribArray(A_POSITION);
-	WindowFrame.DisableAttribArray(A_UV);
+	FinalizeDraw();
 }

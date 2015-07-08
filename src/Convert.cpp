@@ -140,7 +140,7 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 						<< (Note->EndTime ? "128" : "1") << ",0,";
 					if (Note->EndTime)
 						out << int(Note->EndTime * 1000.0) << ",";
-					out << "1:0:0:100";
+					out << "1:0:0:0";
 
 					if (Note->Sound)
 						out << ":" << ( Note->Sound ? ((*i)->SoundList.find(Note->Sound) != (*i)->SoundList.end() ? (*i)->SoundList[Note->Sound].c_str() : "" ) : "");
@@ -155,10 +155,9 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 
 void ConvertToSMTiming(VSRG::Song *Sng, Directory PathOut)
 {
-	std::stringstream ss;
 	TimingData BPS, VSpeeds;
 	VSRG::Difficulty* Diff = Sng->Difficulties[0].get();
-	Diff->Process (NULL, BPS, VSpeeds);
+	Diff->Process (nullptr, BPS, VSpeeds);
 
 	std::ofstream out (PathOut.c_path());
 
@@ -167,9 +166,9 @@ void ConvertToSMTiming(VSRG::Song *Sng, Directory PathOut)
 
 	out << "#BPMS:";
 
-	for (TimingData::iterator i = Diff->Timing.begin();
+	for (auto i = Diff->Timing.begin();
 		i != Diff->Timing.end();
-		i++)
+		++i)
 	{
 		double Time = 0;
 		double Value = 0;

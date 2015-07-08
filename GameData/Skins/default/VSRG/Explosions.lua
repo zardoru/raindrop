@@ -25,7 +25,7 @@ end
 function ObjectPosition(Obj, Atlas, i, Scale)
 	Obj.Image = ("VSRG/"..Atlas.File)
 	Obj.Centered = (1)
-	Obj.X = GetConfigF("Key"..i.."X", ChannelSpace)
+	Obj.X = Noteskin[Channels]["Key"..i.."X"]
 	Obj.Y = JudgmentLineY
 
 	if Upscroll ~= 0 then

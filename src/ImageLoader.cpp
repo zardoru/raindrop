@@ -338,16 +338,18 @@ void ImageLoader::UpdateTextures()
 
 	if (Textures.size())
 	{
-		for (std::map<GString, Image*>::iterator i = Textures.begin(); i != Textures.end(); i++)
+		for (std::map<GString, Image*>::iterator i = Textures.begin(); i != Textures.end();)
 		{
 			if (i->second->IsValid) /* all of them are valid */
 				break;
 
 			if (Load(i->first) == NULL) // If we failed loading it no need to try every. single. time.
 			{
-				Textures.erase(i--);
-				if (i == Textures.end()) break;
+				i = Textures.erase(i);
+				continue;
 			}
+
+			++i;
 		}
 	}
 }

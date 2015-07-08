@@ -7,33 +7,28 @@
 #include "SongLoader.h"
 #include "Screen.h"
 #include "Audio.h"
-#include "ImageLoader.h"
-#include "Sprite.h"
-#include "Line.h"
-#include "BitmapFont.h"
 #include "GameWindow.h"
 #include "ImageList.h"
 
-
-#include "LuaManager.h"
 #include "SceneEnvironment.h"
 
 #include "ScoreKeeper7K.h"
 #include "TrackNote.h"
 #include "ScreenGameplay7K.h"
 #include "ScreenGameplay7K_Mechanics.h"
-#include "ScreenEvaluation7K.h"
-#include "SongDatabase.h"
 
 #include "AudioSourceOJM.h"
+#include "BackgroundAnimation.h"
+#include "Noteskin.h"
+#include "Line.h"
 
 ScreenGameplay7K::ScreenGameplay7K() : Screen("ScreenGameplay7K")
 {
 	SpeedMultiplier = 0;
 	SongOldTime = -1;
-	Music = NULL;
-	MissSnd = NULL;
-	FailSnd = NULL;
+	Music = nullptr;
+	MissSnd = nullptr;
+	FailSnd = nullptr;
 	GameTime = 0;
 	Speed = 1;
 
@@ -59,8 +54,6 @@ ScreenGameplay7K::ScreenGameplay7K() : Screen("ScreenGameplay7K")
 
 	lifebar_type = LT_GROOVE;
 	scoring_type = ST_IIDX;
-
-	OJMAudio = NULL;
 	
 	SpeedMultiplierUser = 4;
 	SongFinished = false;
@@ -76,40 +69,22 @@ ScreenGameplay7K::ScreenGameplay7K() : Screen("ScreenGameplay7K")
 
 	MissTime = 0;
 	SuccessTime = 0;
-	LoadedSong = NULL;
+	LoadedSong = nullptr;
 	Active = false;
+	Barline = nullptr;
 }
 
 
 void ScreenGameplay7K::Cleanup()
 {
-	CurrentDiff->Destroy();
-
 	if (Music)
-	{
-		MixerRemoveStream(Music);
 		Music->Stop();
-	}
-
-	if (OJMAudio)
-		delete OJMAudio;
-	else
-	{
-		for (std::map<int, SoundSample*>::iterator i = Keysounds.begin(); i != Keysounds.end(); i++)
-		{
-			MixerRemoveSample(i->second);
-			delete i->second;
-		}
-	}
-
-	MixerRemoveSample(MissSnd);
-	MixerRemoveSample(FailSnd);
 
 	GameState::GetInstance().SetScorekeeper7K(nullptr);
 
+	delete MechanicsSet;
 	delete MissSnd;
 	delete FailSnd;
-	delete score_keeper;
 }
 
 void ScreenGameplay7K::AssignMeasure(uint32 Measure)
@@ -126,10 +101,8 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 	}
 
 	for (uint32 i = 0; i < Measure; i++)
-	{
-		double Length = CurrentDiff->Data->Measures[i].MeasureLength;
-		Beat += Length;
-	}
+		Beat += CurrentDiff->Data->Measures[i].MeasureLength;
+	
 
 	Log::Logf("Warping to measure measure %d at beat %f.\n", Measure, Beat);
 
@@ -139,7 +112,7 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 	// Disable all notes before the current measure.
 	for (uint32 k = 0; k < CurrentDiff->Channels; k++)
 	{
-		for (std::vector<VSRG::TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); )
+		for (auto m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); )
 		{
 			if (m->GetStartTime() < Time)
 			{
@@ -147,7 +120,7 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 				if (m == NotesByChannel[k].end()) break;
 				else continue;
 			}
-			m++;
+			++m;
 		}
 	}
 
@@ -179,7 +152,7 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 void ScreenGameplay7K::Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const GameParameters &Param)
 {
 	MySong = S;
-	CurrentDiff = S->Difficulties[DifficultyIndex].get();
+	CurrentDiff = S->Difficulties[DifficultyIndex];
 
 	Upscroll = Param.Upscroll;
 	StartMeasure = Param.StartMeasure;
@@ -190,13 +163,15 @@ void ScreenGameplay7K::Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const
 	Speed = Param.Rate;
 	NoFail = Param.NoFail;
 
+	BGA = BackgroundAnimation::CreateBGAFromSong(DifficultyIndex, *S);
+	Noteskin::SetupNoteskin(false, CurrentDiff->Channels, this);
 	ForceActivation = false;
 
 	if (Param.StartMeasure == -1 && Auto)
 		StartMeasure = 0;
 
-	score_keeper = new ScoreKeeper7K();
-	GameState::GetInstance().SetScorekeeper7K(score_keeper);
+	ScoreKeeper = make_shared<ScoreKeeper7K>();
+	GameState::GetInstance().SetScorekeeper7K(ScoreKeeper);
 	UpdateScriptScoreVariables();
 }
 
@@ -272,6 +247,7 @@ void ScreenGameplay7K::CalculateHiddenConstants()
 
 bool ScreenGameplay7K::LoadChartData()
 {
+	uint8_t index = 0;
 	if (!Preloaded)
 	{
 		// The difficulty details are destroyed; which means we should load this from its original file.
@@ -279,9 +255,9 @@ bool ScreenGameplay7K::LoadChartData()
 		Directory FN;
 
 		Log::Printf("Loading Chart...");
-		LoadedSong = Loader.LoadFromMeta(MySong.get(), CurrentDiff, &FN);
+		LoadedSong = Loader.LoadFromMeta(MySong.get(), CurrentDiff, &FN, index);
 
-		if (LoadedSong == NULL)
+		if (LoadedSong == nullptr)
 		{
 			Log::Printf("Failure to load chart. (Filename: %s)\n", FN.path().c_str());
 			return false;
@@ -295,6 +271,8 @@ bool ScreenGameplay7K::LoadChartData()
 		*/
 	}
 
+	BGA = BackgroundAnimation::CreateBGAFromSong(index, *MySong);
+
 	return true;
 }
 
@@ -302,36 +280,31 @@ bool ScreenGameplay7K::LoadSongAudio()
 {
 	if (!Music)
 	{
-		Music = new AudioStream();
+		Music = make_shared<AudioStream>();
 		Music->SetPitch(Speed);
-		if (MySong->SongFilename.length() && Music->Open((MySong->SongDirectory + MySong->SongFilename).c_str()))
+		if (MySong->SongFilename.length() && Music->Open((MySong->SongDirectory / MySong->SongFilename).c_path()))
 		{
 			Log::Printf("Stream for %s succesfully opened.\n", MySong->SongFilename.c_str());
-			MixerAddStream(Music);
 		}
 		else
 		{
 			if (!CurrentDiff->IsVirtual)
 			{
 				// Caveat: Try to autodetect an mp3/ogg file.
-				std::vector<GString> DirCnt;
-				Directory SngDir = MySong->SongDirectory;
+				vector<GString> DirCnt;
+				auto SngDir = MySong->SongDirectory;
 
 				SngDir.ListDirectory(DirCnt, Directory::FS_REG);
-				for (std::vector<GString>::iterator i = DirCnt.begin();
+				for (auto i = DirCnt.begin();
 					i != DirCnt.end();
-					i++)
+					++i)
 				{
 					if (Directory(*i).GetExtension() == "mp3" || Directory(*i).GetExtension() == "ogg")
 						if ( Music->Open( (SngDir / *i ).c_path()) )
-						{
-							MixerAddStream(Music);
 							return true;
-						}
 				}
 
-				delete Music;
-				Music = NULL;
+				Music = nullptr;
 
 				Log::Printf("Unable to load song (Path: %s)\n", MySong->SongFilename.c_str());
 				DoPlay = false;
@@ -344,12 +317,12 @@ bool ScreenGameplay7K::LoadSongAudio()
 	if (strstr(MySong->SongFilename.c_str(), ".ojm"))
 	{
 		Log::Printf("Loading OJM.\n");
-		OJMAudio = new AudioSourceOJM;
-		OJMAudio->Open((MySong->SongDirectory + MySong->SongFilename).c_str());
+		OJMAudio = make_shared<AudioSourceOJM>();
+		OJMAudio->Open((MySong->SongDirectory / MySong->SongFilename).c_path());
 
 		for (int i = 0; i < 2000; i++)
 		{
-			SoundSample *Snd = OJMAudio->GetFromIndex(i);
+			shared_ptr<SoundSample> Snd = OJMAudio->GetFromIndex(i);
 
 			if (i != NULL)
 				Keysounds[i] = Snd;
@@ -358,19 +331,17 @@ bool ScreenGameplay7K::LoadSongAudio()
 	else if (CurrentDiff->SoundList.size())
 	{
 		Log::Printf("Loading samples... ");
-		for (std::map<int, GString>::iterator i = CurrentDiff->SoundList.begin(); i != CurrentDiff->SoundList.end(); i++)
+		for (auto i = CurrentDiff->SoundList.begin(); i != CurrentDiff->SoundList.end(); ++i)
 		{
-			Keysounds[i->first] = new SoundSample();
+			Keysounds[i->first] = make_shared<SoundSample>();
 
 #ifdef WIN32
 			std::wstring sd = Utility::Widen(MySong->SongDirectory) + L"/" + Utility::Widen(i->second);
 
-			if (Keysounds[i->first]->Open(Utility::Narrow(sd).c_str()))
-				MixerAddSample(Keysounds[i->first]);
+			Keysounds[i->first]->Open(Utility::Narrow(sd).c_str());
 
 #else
-			if (Keysounds[i->first]->Open((MySong->SongDirectory + "/" + i->second).c_str()))
-				MixerAddSample(Keysounds[i->first]);
+			Keysounds[i->first]->Open((MySong->SongDirectory + "/" + i->second).c_str());
 #endif
 		}
 	}
@@ -436,9 +407,9 @@ bool ScreenGameplay7K::ProcessSong()
 		if (Type == SPEEDTYPE_MMOD) // mmod
 		{
 			double max = 0; // Find the highest speed
-			for (TimingData::iterator i = VSpeeds.begin();
+			for (auto i = VSpeeds.begin();
 				i != VSpeeds.end();
-				i++)
+				++i)
 			{
 				max = std::max(max, abs(i->Value));
 			}
@@ -466,45 +437,31 @@ bool ScreenGameplay7K::ProcessSong()
 	return true;
 }
 
-bool ScreenGameplay7K::LoadBMPs()
+bool ScreenGameplay7K::LoadBGA()
 {
-	if (Configuration::GetConfigf("DisableBMP") == 0 && CurrentDiff->Data->BMPEvents)
-	{
-		if (CurrentDiff->Data->BMPEvents->BMPList.size())
-			Log::Printf("Loading BMPs...\n");
-
-		for (std::map<int, GString>::iterator i = CurrentDiff->Data->BMPEvents->BMPList.begin();
-			i != CurrentDiff->Data->BMPEvents->BMPList.end(); i++)
-			BMPs.AddToListIndex(i->second, MySong->SongDirectory, i->first);
-
-		// We don't need this any more.
-		CurrentDiff->Data->BMPEvents->BMPList.clear();
-
-		BMPEvents = CurrentDiff->Data->BMPEvents->BMPEventsLayerBase;
-		BMPEventsMiss = CurrentDiff->Data->BMPEvents->BMPEventsLayerMiss;
-		BMPEventsLayer = CurrentDiff->Data->BMPEvents->BMPEventsLayer;
-		BMPEventsLayer2 = CurrentDiff->Data->BMPEvents->BMPEventsLayer2;
-	}
+	if (Configuration::GetConfigf("DisableBGA") == 0)
+		BGA->Load();
 
 	return true;
 }
 
+void ScreenGameplay7K::SetupBarline()
+{
+	BarlineEnabled = Noteskin::IsBarlineEnabled();
+	BarlineOffset = Noteskin::GetBarlineOffset();
+	BarlineX = Noteskin::GetBarlineStartX();
+	BarlineWidth = Noteskin::GetBarlineWidth();
+
+	if (BarlineWidth == 0)
+		BarlineEnabled = false;
+
+	if (BarlineEnabled)
+		CurrentDiff->GetMeasureLines(MeasureBarlines, VSpeeds, WaitingTime);
+}
+
 void ScreenGameplay7K::SetupAfterLoadingVariables()
 {
-		// Get Noteheight
-	NoteHeight = Configuration::GetSkinConfigf("NoteHeight");
-
-	if (!NoteHeight)
-		NoteHeight = 10;
-
-	// Get Gear Height
-	char str[256];
-	char nstr[256];
-
-	sprintf(nstr, "Channels%d", CurrentDiff->Channels);
-
-	sprintf(str, "GearHeight");
-	GearHeightFinal = Configuration::GetSkinConfigf(str, nstr);
+	GearHeightFinal = Noteskin::GetJudgmentY();
 
 	/* Initial object distance */
 	if (!Upscroll)
@@ -512,25 +469,13 @@ void ScreenGameplay7K::SetupAfterLoadingVariables()
 	else
 		JudgmentLinePos = GearHeightFinal;
 
-	JudgmentLinePos += (Upscroll ? NoteHeight/2 : -NoteHeight/2);
 	CurrentVertical = IntegrateToTime (VSpeeds, -WaitingTime);
 	CurrentBeat = IntegrateToTime(BPS, 0);
 
 	RecalculateMatrix();
 	MultiplierChanged = true;
 
-	BarlineEnabled = (Configuration::GetSkinConfigf("BarlineEnabled") != 0);
-	BarlineOffsetKind = Configuration::GetSkinConfigf("BarlineOffset");
-	BarlineX = Configuration::GetSkinConfigf("BarlineX");
-	BarlineWidth = Configuration::GetSkinConfigf("BarlineWidth");
-
-	if (BarlineEnabled)
-	{
-		CurrentDiff->GetMeasureLines(MeasureBarlines, VSpeeds, WaitingTime);
-
-		int UpscrollMod = Upscroll ? -1 : 1;
-		BarlineOffset = BarlineOffsetKind == 0 ? NoteHeight * UpscrollMod / 2 : 0;
-	}
+	SetupBarline();
 
 	ErrorTolerance = Configuration::GetConfigf("ErrorTolerance");
 
@@ -541,9 +486,9 @@ void ScreenGameplay7K::SetupAfterLoadingVariables()
 
 void ScreenGameplay7K::ChangeNoteTimeToBeats()
 {
-	for (uint32 k = 0; k < CurrentDiff->Channels; k++)
+	for (uint8_t k = 0; k < CurrentDiff->Channels; k++)
 	{
-		for (std::vector<VSRG::TrackNote>::iterator m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); m++)
+		for (auto m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); ++m)
 		{
 			double beatStart = IntegrateToTime(BPS, m->GetDataStartTime());
 			double beatEnd = IntegrateToTime(BPS, m->GetDataEndTime());
@@ -558,7 +503,7 @@ void ScreenGameplay7K::SetupMechanics()
 	bool bmsOrStepmania = false;
 
 	// This must be done before setLifeTotal in order for it to work.
-	score_keeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
+	ScoreKeeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
 	
 	if (Configuration::GetConfigf("AlwaysUseRaindropMechanics") == 0 && CurrentDiff->Data->TimingInfo)
 	{
@@ -566,8 +511,8 @@ void ScreenGameplay7K::SetupMechanics()
 		if (TimingInfo->GetType() == VSRG::TI_BMS)
 		{
 			VSRG::BmsTimingInfo *Info = static_cast<VSRG::BmsTimingInfo*> (TimingInfo);
-			score_keeper->setLifeTotal(Info->life_total);
-			score_keeper->setJudgeRank(Info->judge_rank);
+			ScoreKeeper->setLifeTotal(Info->life_total);
+			ScoreKeeper->setJudgeRank(Info->judge_rank);
 			UsedTimingType = TT_TIME;
 			lifebar_type = LT_GROOVE;
 			bmsOrStepmania = true;
@@ -575,48 +520,48 @@ void ScreenGameplay7K::SetupMechanics()
 		else if (TimingInfo->GetType() == VSRG::TI_OSUMANIA)
 		{
 			VSRG::OsuManiaTimingInfo *Info = static_cast<VSRG::OsuManiaTimingInfo*> (TimingInfo);
-			score_keeper->setODWindows(Info->OD);
+			ScoreKeeper->setODWindows(Info->OD);
 			lifebar_type = LT_STEPMANIA;
 			scoring_type = ST_OSUMANIA;
 			UsedTimingType = TT_TIME;
 		}
 		else if (TimingInfo->GetType() == VSRG::TI_O2JAM)
 		{
-			VSRG::O2JamTimingInfo *O2Info = (VSRG::O2JamTimingInfo*) TimingInfo;
+			VSRG::O2JamTimingInfo *O2Info = static_cast<VSRG::O2JamTimingInfo*>(TimingInfo);
 			lifebar_type = LT_O2JAM;
 			UsedTimingType = TT_BEATS;
 			scoring_type = ST_O2JAM;
-			score_keeper->setJudgeRank(-100); // Special constant to notify beat based timing.
-			score_keeper->setO2LifebarRating(O2Info->Difficulty);
+			ScoreKeeper->setJudgeRank(-100); // Special constant to notify beat based timing.
+			ScoreKeeper->setO2LifebarRating(O2Info->Difficulty);
 		}
 		else if (TimingInfo->GetType() == VSRG::TI_STEPMANIA)
 		{
 			// lifebar_type = LT_STEPMANIA;
 			lifebar_type = LT_GROOVE;
 			UsedTimingType = TT_TIME;
-			score_keeper->setLifeTotal(-1);
-			score_keeper->setJudgeRank(Configuration::GetConfigf("DefaultJudgeRank"));
+			ScoreKeeper->setLifeTotal(-1);
+			ScoreKeeper->setJudgeRank(Configuration::GetConfigf("DefaultJudgeRank"));
 			bmsOrStepmania = true;
 		}
 		else
 		{
 			lifebar_type = LT_GROOVE;
 			UsedTimingType = TT_TIME;
-			score_keeper->setLifeTotal(-1);
-			score_keeper->setJudgeRank(Configuration::GetConfigf("DefaultJudgeRank"));
+			ScoreKeeper->setLifeTotal(-1);
+			ScoreKeeper->setJudgeRank(Configuration::GetConfigf("DefaultJudgeRank"));
 		}
 	}
 	else
 	{
 		lifebar_type = LT_GROOVE;
-		score_keeper->setLifeTotal(-1);
-		score_keeper->setJudgeRank(Configuration::GetConfigf("DefaultJudgeRank"));
+		ScoreKeeper->setLifeTotal(-1);
+		ScoreKeeper->setJudgeRank(Configuration::GetConfigf("DefaultJudgeRank"));
 		UsedTimingType = TT_TIME;
 		lifebar_type = LT_GROOVE;
 	}
 	
 	if(Configuration::GetConfigf("AlwaysUseRidiculousTiming")){
-		score_keeper->set_manual_w0(true);
+		ScoreKeeper->set_manual_w0(true);
 	}
 
 	/*
@@ -637,7 +582,7 @@ void ScreenGameplay7K::SetupMechanics()
 		ChangeNoteTimeToBeats();
 	}
 
-	MechanicsSet->Setup(MySong.get(), CurrentDiff, score_keeper);
+	MechanicsSet->Setup(MySong.get(), CurrentDiff.get(), ScoreKeeper);
 	MechanicsSet->HitNotify = bind(&ScreenGameplay7K::HitNote, this, _1, _2, _3, _4);
 	MechanicsSet->MissNotify = bind(&ScreenGameplay7K::MissNote, this, _1, _2, _3, _4, _5);
 	MechanicsSet->IsLaneKeyDown = bind(&ScreenGameplay7K::GetGearLaneState, this, _1);
@@ -654,31 +599,33 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	if (Utility::FileExists(MissSndFile))
 	{
 		MissSnd = new SoundSample();
-		if (MissSnd->Open(MissSndFile.c_str()))
-			MixerAddSample(MissSnd);
-		else
+		if (!MissSnd->Open(MissSndFile.c_str()))
 			delete MissSnd;
 	}
 
 	if (Utility::FileExists(FailSndFile))
 	{
 		FailSnd = new SoundSample();
-		if (FailSnd->Open(FailSndFile.c_str()))
-			MixerAddSample(FailSnd);
-		else
+		if (!FailSnd->Open(FailSndFile.c_str()))
 			delete FailSnd;
 	}
 
-	if (!LoadChartData() || !LoadSongAudio() || !ProcessSong() || !LoadBMPs())
+	if (!LoadChartData() || !LoadSongAudio() || !ProcessSong() || !LoadBGA())
 	{
 		DoPlay = false;
 		return;
 	}
 
+	BGA->Load();
 	SetupMechanics();
 
 	SetupAfterLoadingVariables();
-	SetupLua();
+	
+	SetupLua(Animations->GetEnv());
+	SetupScriptConstants();
+	UpdateScriptVariables();
+
+	Animations->Preload(GameState::GetInstance().GetSkinFile("screengameplay7k.lua"), "Preload");
 	Log::Printf("Done.\n");
 
 	DoPlay = true;
@@ -686,123 +633,37 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	AssignMeasure(StartMeasure);
 
 	// We're done with the data stored in the difficulties that aren't the one we're using. Clear it up.
-	for (auto i = MySong->Difficulties.begin(); i != MySong->Difficulties.end(); i++)
+	for (auto i = MySong->Difficulties.begin(); i != MySong->Difficulties.end(); ++i)
 	{
 		(*i)->Destroy();
 	}
 }
 
-void ScreenGameplay7K::SetupGear()
-{
-	using namespace Configuration;
-	char str[256];
-	char cstr[256];
-	char nstr[256];
-
-	if (!GameState::GetInstance().SkinSupportsChannelCount(CurrentDiff->Channels))
-	{
-		Log::Printf("Unsupported skin key count: %d", CurrentDiff->Channels);
-		DoPlay = false;
-		return;
-	}
-
-	sprintf(nstr, "Channels%d", CurrentDiff->Channels);
-
-	for (int i = 0; i < CurrentDiff->Channels; i++)
-	{
-		sprintf(cstr, "Key%d", i + 1);
-		GearLaneImage[i] = GameState::GetInstance().GetSkinImage(GetSkinConfigs(cstr, nstr));
-
-		sprintf(cstr, "Key%dDown", i + 1);
-		GearLaneImageDown[i] = GameState::GetInstance().GetSkinImage(GetSkinConfigs(cstr, nstr));
-
-		sprintf(str, "Key%dX", i+1);
-		LanePositions[i] = Configuration::GetSkinConfigf(str, nstr);
-
-		sprintf(str, "Key%dWidth", i+1);
-		LaneWidth[i] = Configuration::GetSkinConfigf(str, nstr);
-
-		float ChanBarlineWidth;
-		sprintf(str, "BarlineWidth");
-		ChanBarlineWidth = Configuration::GetSkinConfigf(str, nstr);
-		if (ChanBarlineWidth)
-			BarlineWidth = ChanBarlineWidth;
-
-		Keys[i].SetImage ( GearLaneImage[i] );
-		Keys[i].SetSize( LaneWidth[i], GearHeightFinal );
-		Keys[i].Centered = true;
-
-		float UMod = (Upscroll? -1:1);
-
-		Keys[i].SetPosition( LanePositions[i], JudgmentLinePos + UMod * GearHeightFinal/2 + UMod * NoteHeight/2);
-
-		if (Upscroll)
-			Keys[i].SetRotation(180);
-
-		Keys[i].SetZ(15);
-	}
-
-	if (BarlineEnabled)
-		Barline = new Line();
-}
-
-void ScreenGameplay7K::SetupBackground()
-{
-	Image* BackgroundImage = ImageLoader::Load(MySong->SongDirectory + MySong->BackgroundFilename);
-
-	if (BackgroundImage)
-		Background.SetImage(BackgroundImage);
-	else
-	{
-		// Caveat 2: Try to automatically load background.
-		std::vector<GString> DirCnt;
-		Directory SngDir = MySong->SongDirectory;
-
-		SngDir.ListDirectory(DirCnt, Directory::FS_REG);
-		for (std::vector<GString>::iterator i = DirCnt.begin();
-			i != DirCnt.end();
-			i++)
-		{
-			GString ext = Directory(*i).GetExtension();
-			if (strstr(i->c_str(), "bg") && (ext == "jpg" || ext == "png"))
-				if (BackgroundImage = ImageLoader::Load(MySong->SongDirectory + *i))
-					break;
-		}
-
-		if (!BackgroundImage)
-			Background.SetImage(GameState::GetInstance().GetSkinImage(Configuration::GetSkinConfigs("DefaultGameplay7KBackground")));
-		else
-			Background.SetImage(BackgroundImage);
-	}
-
-	Background.SetZ(0);
-	Background.AffectedByLightning = true;
-
-	if (Background.GetImage())
-	{
-		float SizeRatio = ScreenHeight / Background.GetHeight();
-		Background.SetScale(SizeRatio);
-		Background.Centered = true;
-		Background.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
-	}
-
-	Layer1.Centered = Layer2.Centered = LayerMiss.Centered = true;
-	float LW = Background.GetWidth(), LH = Background.GetHeight();
-	float Scale = Background.GetScale().x;
-	Layer1.SetSize(LW, LH); Layer2.SetSize(LW, LH); LayerMiss.SetSize(LW, LH);
-	Layer1.BlackToTransparent = Layer2.BlackToTransparent = true;
-	Layer1.SetScale(Scale); Layer2.SetScale(Scale); LayerMiss.SetScale(Scale);
-	Layer1.SetZ(0); Layer2.SetZ(0); LayerMiss.SetZ(0);
-	Layer1.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
-	Layer2.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
-	LayerMiss.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
-	LayerMiss.SetImage(BMPs.GetFromIndex(0));
-}
-
+#include <boost/algorithm/string.hpp>
 
 void ScreenGameplay7K::MainThreadInitialization()
 {
-	SetupGear();
+	GString KeyProfile = Configuration::GetConfigs("KeyProfile" + Utility::IntToStr(CurrentDiff->Channels));
+	GString value = Configuration::GetConfigs("Keys", KeyProfile);
+	vector<GString> res;
+	boost::split(res, value, boost::is_any_of(","));
+
+	for (int i = 0; i < CurrentDiff->Channels; i++)
+	{
+		lastClosest[i] = 0;
+
+		if (i < res.size())
+			GearBindings[(int)latof(res[i])] = i;
+		else
+		{
+			Log::Printf("Mising bindings starting from lane " + Utility::IntToStr(i) + " using profile " + KeyProfile);
+			DoPlay = false;
+			break;
+		}
+
+		HeldKey[i] = NULL;
+		GearIsPressed[i] = 0;
+	}
 
 	if (!DoPlay) // Failure to load something important?
 	{
@@ -813,60 +674,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 	PlayReactiveSounds = (CurrentDiff->IsVirtual || !(Configuration::GetConfigf("DisableHitsounds")));
 	MsDisplayMargin = (Configuration::GetSkinConfigf("HitErrorDisplayLimiter"));
 
-	char nstr[256];
-	sprintf(nstr, "Channels%d", CurrentDiff->Channels);
-
-	for (int i = 0; i < CurrentDiff->Channels; i++)
-	{
-		std::stringstream ss;
-		char cstr[256];
-
-		/* Assign per-lane bindings. */
-		sprintf(cstr, "Key%dBinding", i+1);
-
-		int Binding = Configuration::GetSkinConfigf(cstr, nstr);
-		GearBindings[Binding - 1] = i;
-
-		/* Note image */
-		sprintf(cstr, "Key%dImage", i+1);
-
-		GString Filename = Configuration::GetSkinConfigs(cstr, nstr);
-		NoteImages[i] = GameState::GetInstance().GetSkinImage(Filename);
-
-		/* Hold head image */
-		sprintf(cstr, "Key%dHoldHeadImage", i+1);
-
-		Filename = Configuration::GetSkinConfigs(cstr, nstr);
-		NoteImagesHoldHead[i] = GameState::GetInstance().GetSkinImage(Filename);
-		if (!NoteImagesHoldHead[i])
-			NoteImagesHoldHead[i] = NoteImages[i];
-
-		/* Hold tail image */
-		sprintf(cstr, "Key%dHoldTailImage", i+1);
-
-		Filename = Configuration::GetSkinConfigs(cstr, nstr);
-		NoteImagesHoldTail[i] = GameState::GetInstance().GetSkinImage(Filename);
-		if (!NoteImagesHoldTail[i])
-			NoteImagesHoldTail[i] = NoteImages[i];
-
-		/* Hold body image */
-		sprintf(cstr, "Key%dHoldImage", i+1);
-
-		Filename = Configuration::GetSkinConfigs(cstr, nstr);
-		NoteImagesHold[i] = GameState::GetInstance().GetSkinImage(Filename);
-
-		lastClosest[i] = 0;
-
-		HeldKey[i] = NULL;
-		GearIsPressed[i] = 0;
-	}
-
-	NoteImage = GameState::GetInstance().GetSkinImage("note.png");
-	SetupBackground();
-
 	WindowFrame.SetLightMultiplier(0.75f);
-
-	Animations->Initialize("", false);
 
 	memset(PlaySounds, 0, sizeof(PlaySounds));
 
@@ -877,11 +685,13 @@ void ScreenGameplay7K::MainThreadInitialization()
 	else
 		WaitingTime = 0;
 
+	if (BarlineEnabled)
+		Barline = make_shared<Line>();
 
 	CurrentBeat = IntegrateToTime(BPS, -WaitingTime);
 	Animations->GetImageList()->ForceFetch();
+	BGA->Validate();
 
-	BMPs.LoadAll();
-// 	BMPs.ForceFetch();
+	Animations->Initialize("", false);
 	Running = true;
 }

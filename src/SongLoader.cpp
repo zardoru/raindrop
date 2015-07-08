@@ -29,7 +29,7 @@ SongLoader::SongLoader(SongDatabase* Database)
 	DB = Database;
 }
 
-void SongLoader::LoadSongDCFromDir( Directory songPath, std::vector<dotcur::Song*> &VecOut )
+void SongLoader::LoadSongDCFromDir( Directory songPath, vector<dotcur::Song*> &VecOut )
 {
 
 	bool FoundDCF = false;
@@ -188,7 +188,7 @@ void VSRGUpdateDatabaseDifficulties(SongDatabase* DB, VSRG::Song *New)
 	}
 }
 
-void PushVSRGSong(std::vector<VSRG::Song*> &VecOut, VSRG::Song* Sng)
+void PushVSRGSong(vector<VSRG::Song*> &VecOut, VSRG::Song* Sng)
 {
 	if (Sng->Difficulties.size())
 		VecOut.push_back(Sng);
@@ -377,7 +377,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 }
 
 
-void SongLoader::GetSongListDC(std::vector<dotcur::Song*> &OutVec, Directory Dir)
+void SongLoader::GetSongListDC(vector<dotcur::Song*> &OutVec, Directory Dir)
 {
 	std::vector <GString> Listing;
 
@@ -390,7 +390,7 @@ void SongLoader::GetSongListDC(std::vector<dotcur::Song*> &OutVec, Directory Dir
 	}
 }
 
-void SongLoader::GetSongList7K(std::vector<VSRG::Song*> &OutVec, Directory Dir)
+void SongLoader::GetSongList7K(vector<VSRG::Song*> &OutVec, Directory Dir)
 {
 	std::vector <GString> Listing;
 
@@ -403,32 +403,32 @@ void SongLoader::GetSongList7K(std::vector<VSRG::Song*> &OutVec, Directory Dir)
 	}
 }
 
-std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const VSRG::Song* Meta, VSRG::Difficulty* &CurrentDiff, Directory *FilenameOut)
+std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const VSRG::Song* Meta, shared_ptr<VSRG::Difficulty> &CurrentDiff, Directory *FilenameOut, uint8_t &Index)
 {
-	std::shared_ptr<VSRG::Song> Out;
+	shared_ptr<VSRG::Song> Out;
 
 	GString fn = DB->GetDifficultyFilename(CurrentDiff->ID);
 	*FilenameOut = fn;
 
-	Out = LoadSong7KFromFilename(fn, "", NULL);
+	Out = LoadSong7KFromFilename(fn, "", nullptr);
 
 	// Copy relevant data
 	Out->SongDirectory = Meta->SongDirectory;
 	
 
+	Index = 0;
 	/* Find out Difficulty IDs to the recently loaded song's difficulty! */
 	bool DifficultyFound = false;
-	for (auto k = Out->Difficulties.begin();
-		k != Out->Difficulties.end();
-		k++)
+	for (auto k: Out->Difficulties)
 	{
-		DB->AddDifficulty(Meta->ID, (*k)->Filename, k->get(), MODE_VSRG);
-		if ((*k)->ID == CurrentDiff->ID) // We've got a match; move onward.
+		DB->AddDifficulty(Meta->ID, k->Filename, k.get(), MODE_VSRG);
+		if (k->ID == CurrentDiff->ID) // We've got a match; move onward.
 		{
-			CurrentDiff = k->get();
+			CurrentDiff = k;
 			DifficultyFound = true;
 			break; // We're done here, we've found the difficulty we were trying to load
 		}
+		Index++;
 	}
 
 	if (!DifficultyFound)

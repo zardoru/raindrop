@@ -1,12 +1,14 @@
 game_require("textureatlas.lua")
+game_require("utils.lua")
 skin_require("Global/AnimationFunctions.lua")
 skin_require("Global/FadeInScreen.lua")
 
 -- Set up constants for everyone
-ChannelSpace = "Channels" .. Channels
-GearStartX = GetConfigF("GearStartX", "")
-GearWidth = GetConfigF("GearWidth", ChannelSpace)
-GearHeight = GetConfigF("GearHeight", "")
+
+game_require("noteskin_defs.lua")
+GearWidth = Noteskin[Channels].GearWidth
+GearHeight = GearHeightCommon
+
 
 skin_require("VSRG/Explosions.lua")
 skin_require("VSRG/ComboDisplay.lua")
@@ -18,7 +20,6 @@ skin_require("VSRG/AutoplayAnimation.lua")
 skin_require("VSRG/GameplayObjects.lua")
 skin_require("VSRG/StageAnimation.lua")
 skin_require("VSRG/TextDisplay.lua")
-
 
 -- All of these will be loaded in the loading screen instead of
 -- in the main thread once loading is over.
@@ -77,14 +78,24 @@ AnimatedObjects = {
 	-- Internal functions for automating stuff.
 	Init = function ()
 		for i = 1, #AnimatedObjects.List do
-			AnimatedObjects.List[i].Init()
+			if AnimatedObjects.List[i] then 
+				AnimatedObjects.List[i].Init()
+			end
 		end
 	end,
 
 	Run = function (Delta)
 		for i = 1, #AnimatedObjects.List do
-			if AnimatedObjects.List[i].Run ~= nil then
+			if AnimatedObjects.List[i] and AnimatedObjects.List[i].Run ~= nil then
 				AnimatedObjects.List[i].Run(Delta)
+			end
+		end
+	end,
+	
+	GearKeyEvent = function (Lane, IsKeyDown)
+		for i = 1, #AnimatedObjects.List do
+			if AnimatedObjects.List[i] and AnimatedObjects.List[i].GearKeyEvent ~= nil then
+				AnimatedObjects.List[i].GearKeyEvent(Lane, IsKeyDown)
 			end
 		end
 	end
@@ -95,12 +106,13 @@ BgAlpha = 0
 -- You can only call Engine:CreateObject, LoadImage and LoadSkin during and after Init is called
 -- Not on preload time.
 function Init()
+	AutoadjustBackground()
 	AnimatedObjects.Init()
 	DrawTextObjects()
 	ScreenFade.Init()
 	ScreenFade.Out(true)
 
-	ScreenBackground.Alpha = (0)
+	-- ScreenBackground.Alpha = (0)
 	Engine:Sort()
 end
 
@@ -120,13 +132,13 @@ function OnFailureEvent()
 end
 
 function BackgroundFadeIn(frac)
-	ScreenBackground.Alpha = frac
+	-- ScreenBackground.Alpha = frac
 	return 1
 end
 
 -- When 'enter' is pressed and the game starts, this function is called.
 function OnActivateEvent()
-	Engine:AddAnimation(ScreenBackground, "BackgroundFadeIn", EaseNone, 1, 0)
+	-- Engine:AddAnimation(ScreenBackground, "BackgroundFadeIn", EaseNone, 1, 0)
 
 	if Auto ~= 0 then
 		AutoAnimation.Init()
@@ -189,6 +201,7 @@ function GearKeyEvent (Lane, IsKeyDown)
 		return
 	end
 
+	AnimatedObjects.GearKeyEvent(Lane, IsKeyDown)
 	HitLightning.LanePress(Lane, IsKeyDown)
 end
 

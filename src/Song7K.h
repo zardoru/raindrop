@@ -13,9 +13,9 @@ namespace VSRG
 		}
 	};
 
-	typedef std::vector<Measure> MeasureVector;
+	typedef vector<Measure> MeasureVector;
 
-	typedef std::vector<TrackNote> VectorTN[MAX_CHANNELS];
+	typedef vector<TrackNote> VectorTN[MAX_CHANNELS];
 
 	enum TimingInfoType {
 		TI_NONE,
@@ -116,7 +116,7 @@ namespace VSRG
 		std::vector<AutoplaySound> BGMEvents;
 
 		// Autoplay BMP
-		BMPEventsDetail *BMPEvents;
+		shared_ptr<BMPEventsDetail> BMPEvents;
 
 		// Timing Info
 		std::shared_ptr<CustomTimingInfo> TimingInfo;

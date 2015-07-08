@@ -119,8 +119,6 @@ function FailAnim(frac)
 	FailNotif.ScaleY = sc
 	FailNotif.ScaleX = sc
 	
-	ScreenBackground.Alpha = 1 - frac
-
 	return 1
 end
 

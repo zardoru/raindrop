@@ -73,7 +73,7 @@ bool LuaManager::RunScript(GString Filename)
 	return true;
 }
 
-bool LuaManager::RunGString(GString string)
+bool LuaManager::RunString(GString string)
 {
 	int errload = 0, errcall = 0;
 	
@@ -107,10 +107,6 @@ int LuaManager::GetGlobalI(GString VariableName, int Default)
 	if (lua_isnumber(State, -1))
 	{
 		rval = lua_tonumber(State, -1);
-	}else
-	{ 
-		// Pop();
-		// throw LuaTypeException(VariableName, "int");
 	}
 
 	Pop();
@@ -127,10 +123,6 @@ GString LuaManager::GetGlobalS(GString VariableName, GString Default)
 	{
 		const char* s = lua_tostring(State, -1);
 		rval = s ? s : "";
-	}else
-	{
-		// Pop();
-		// throw LuaTypeException(VariableName, "GString");
 	}
 
 	Pop();
@@ -140,14 +132,11 @@ GString LuaManager::GetGlobalS(GString VariableName, GString Default)
 double LuaManager::GetGlobalD(GString VariableName, double Default)
 {
 	double rval = Default;
+	
 	GetGlobal(VariableName);
 	if (lua_isnumber(State, -1))
 	{
 		rval = lua_tonumber(State, -1);
-	}else
-	{ 
-		// Pop();
-		// throw LuaTypeException(VariableName, "double");
 	}
 
 	Pop();
@@ -199,7 +188,11 @@ void LuaManager::NewArray()
 bool LuaManager::UseArray(GString VariableName)
 {
 	GetGlobal(VariableName);
-	return lua_istable(State, -1);
+	if (lua_istable(State, -1))
+		return true;
+	
+	Pop();
+	return false;
 }
 
 void LuaManager::SetFieldI(int index, int Value)

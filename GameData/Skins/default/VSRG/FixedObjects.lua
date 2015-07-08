@@ -7,6 +7,8 @@ function Filter.Init()
 	if GetConfigF("ScreenFilter", "") == 0 then
 		return
 	end
+	
+	FilterVal = GetConfigF("ScreenFilter", "")
 
 	Filter.Object = Engine:CreateObject()
 
@@ -14,14 +16,14 @@ function Filter.Init()
 	Filter.Object.X = GearStartX
 	Filter.Object.Width = GearWidth
 	Filter.Object.Height = ScreenHeight
-	Filter.Object.Alpha = 1
+	Filter.Object.Alpha = FilterVal
 	Filter.Object.Layer = 1
 end
 
 
 function JudgeLine.Init()
 	JudgeLine.Object = Engine:CreateObject()
-	JudgeLine.Size = { w = GearWidth, h = GetConfigF("NoteHeight", "") }
+	JudgeLine.Size = { w = GearWidth, h = NoteHeight }
 
 	JudgeLine.Object.Image = JudgeLine.Image
 	JudgeLine.Object.Centered = 1
@@ -41,7 +43,7 @@ function StageLines.Init()
 	StageLines.Left.Image = (StageLines.ImageLeft)
 	StageLines.Left.X = GearStartX - StageLines.Left.Width
 	StageLines.Left.Height = ScreenHeight
-	StageLines.Left.Layer = 20
+	StageLines.Left.Layer = 16
 
 	StageLines.Right.Image = (StageLines.ImageRight)
 	StageLines.Right.X = (GearStartX + GearWidth)

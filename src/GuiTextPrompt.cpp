@@ -1,6 +1,6 @@
+#include <boost/format.hpp>
+
 #include "GameGlobal.h"
-#include "Image.h"
-#include "Sprite.h"
 #include "BitmapFont.h"
 #include "GuiTextPrompt.h"
 
@@ -62,10 +62,9 @@ void TextPrompt::Render()
 {
 	if (mOpen)
 	{
-		std::stringstream ss;
-		ss << mPromptText << "\n\n" << mBufferText << "_" << "\n\n" << "Press Enter To Confirm or Escape to Abort";
+		GString str = (boost::format("%s\n\n%s_\n\nPress Enter to Confirm or Escape to Abort") % mPromptText % mBufferText).str();
 		if (mPromptFont)
-			mPromptFont->Render(ss.str(), Vec2(100,200)); // todo: change position
+			mPromptFont->Render(str, Vec2(100,200)); // todo: change position
 	}
 }
 

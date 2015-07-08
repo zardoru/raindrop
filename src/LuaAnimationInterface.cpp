@@ -15,6 +15,7 @@
 #include "Line.h"
 
 #include "GraphicalString.h"
+#include "Logging.h"
 
 namespace LuaAnimFuncs
 {
@@ -77,6 +78,8 @@ namespace LuaAnimFuncs
 void SetImage(Sprite *O, GString dir)
 {
 	O->SetImage(GameState::GetInstance().GetSkinImage(dir));
+	if (O->GetImage() == nullptr)
+		Log::Printf("File %s could not be loaded.\n", dir.c_str());
 }
 
 GString GetImage(const Sprite *O)
@@ -206,15 +209,17 @@ struct O2DProxy
 	}
 };
 
-// New lua interface.
-void CreateNewLuaAnimInterface(LuaManager *AnimLua)
+void DefineSpriteInterface(LuaManager* anim_lua)
 {
+	anim_lua->Register(LuaAnimFuncs::Require, "skin_require");
+	anim_lua->Register(LuaAnimFuncs::FallbackRequire, "fallback_require");
+
 #define f(x) addFunction(#x, &Sprite::x)
 #define p(x) addProperty(#x, &Sprite::Get##x, &Sprite::Set##x)
 #define v(x) addData(#x, &Sprite::x)
 #define q(x) addProperty(#x, &O2DProxy::get##x, &O2DProxy::set##x)
 
-	luabridge::getGlobalNamespace(AnimLua->GetState())
+	luabridge::getGlobalNamespace(anim_lua->GetState())
 		.beginClass <Transformation>("Transformation")
 		.addConstructor<void(*) ()>()
 		.addProperty("Z", &Transformation::GetZ, &Transformation::SetZ)
@@ -229,8 +234,9 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 		.addFunction("SetChainTransformation", &Transformation::ChainTransformation)
 		.endClass();
 
-	luabridge::getGlobalNamespace(AnimLua->GetState())
+	luabridge::getGlobalNamespace(anim_lua->GetState())
 		.deriveClass<Sprite, Transformation>("Object2D")
+		.addConstructor<void(*) ()>()
 		.v(Centered)
 		.v(Lighten)
 		.v(LightenFactor)
@@ -256,6 +262,12 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 		.q(ChainTransformation)
 		.addProperty("Image", GetImage, SetImage) // Special for setting image.
 		.endClass();
+}
+
+// New lua interface.
+void CreateNewLuaAnimInterface(LuaManager *AnimLua)
+{
+	DefineSpriteInterface(AnimLua);
 	
 	/*
 	luabridge::getGlobalNamespace(AnimLua->GetState())
@@ -314,8 +326,6 @@ void CreateLuaInterface(LuaManager *AnimLua)
 	CreateNewLuaAnimInterface(AnimLua);
 
 	AnimLua->NewMetatable(LuaAnimFuncs::SpriteMetatable);
-	AnimLua->Register(LuaAnimFuncs::Require, "skin_require");
-	AnimLua->Register(LuaAnimFuncs::FallbackRequire, "fallback_require");
 	AnimLua->Register(LuaAnimFuncs::GetSkinConfigF, "GetConfigF");
 	AnimLua->Register(LuaAnimFuncs::GetSkinConfigS, "GetConfigS");
 	AnimLua->Register(LuaAnimFuncs::GetSkinDirectory, "GetSkinDirectory");

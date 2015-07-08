@@ -2,6 +2,7 @@
 #define BITMAPFONT_H_
 
 #include "Font.h"
+#include "Sprite.h"
 #include "Image.h"
 
 class LuaManager;

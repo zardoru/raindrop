@@ -96,13 +96,17 @@ AudioSample::AudioSample()
 	mIsPlaying = false;
 	mIsValid = false;
 	mIsLooping = false;
-	mData = NULL;
+	mData = nullptr;
+
+	MixerAddSample(this);
 }
 
 AudioSample::~AudioSample()
 {
+	MixerRemoveSample(this);
+
 	delete mData;
-	mData = NULL;
+	mData = nullptr;
 }
 
 bool AudioSample::Open(AudioDataSource* Src)
@@ -281,10 +285,14 @@ AudioStream::AudioStream()
 	mSource = NULL;
 	mData = NULL;
 	tmpBuffer = NULL;
+
+	MixerAddStream(this);
 }
 
 AudioStream::~AudioStream()
 {
+	MixerRemoveStream(this);
+
 	delete mSource;
 	delete[] mData;
 	delete tmpBuffer;

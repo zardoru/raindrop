@@ -8,16 +8,16 @@ function ProgressTick.Init()
 	ProgressTick.Object = Engine:CreateObject()
 
 	-- When not active, Beat <= 0.
-	ProgressTick.BeatOffs = -Beat
+	ProgressTick.BeatOffs = 0
 
 	ProgressTick.Object.Image = ProgressTick.Image
-	ProgressTick.X = GearStartX - 5 - 16
-	ProgressTick.Layer = 25
+	ProgressTick.X = GearStartX
+	ProgressTick.Layer = 16
 end
 
 function ProgressTick.Run(Delta)
 	if Active ~= 0 then
-		local Ratio = (Beat + ProgressTick.BeatOffs) / (SongDurationBeats + ProgressTick.BeatOffs)
+		local Ratio = (Game:GetSongTime() + ProgressTick.BeatOffs) / (SongDuration)
 		if SongTime > 0 then
 			ProgressTick.Alpha = 1
 			ProgressTick.Y = Ratio * (ScreenHeight - 16)
@@ -25,6 +25,7 @@ function ProgressTick.Run(Delta)
 			ProgressTick.Alpha = 1 - SongTime / -1.5
 			ProgressTick.Y = (ScreenHeight - 16) * math.pow(SongTime / -1.5, 2)
 		end
+		
 	else
 		ProgressTick.Alpha = 0
 	end
@@ -39,10 +40,10 @@ function Pulse.Init()
 	if Upscroll ~= 0 then
 		Pulse.Object.Rotation = (180)
 		Pulse.Object.X = GearStartX + GearWidth
-		Pulse.Object.Y = GearHeight + Pulse.Height
+		Pulse.Object.Y = JudgmentLineY + Pulse.Height
 	else
 		Pulse.Object.X = GearStartX
-		Pulse.Object.Y = ScreenHeight - GearHeight - Pulse.Height
+		Pulse.Object.Y = JudgmentLineY - Pulse.Height
 	end
 
 	Pulse.Object.Width = GearWidth
@@ -72,13 +73,13 @@ function MissHighlight.Init()
 	MissHighlight.Time = {}
 	MissHighlight.CurrentTime = {}
 
-	for i=0, Channels do
+	for i=1, Channels do
 		MissHighlight[i] = Engine:CreateObject()
 		MissHighlight[i].Centered = 1
 		MissHighlight[i].Image = ("VSRG/miss_highlight.png")
-		MissHighlight[i].X = GetConfigF("Key"..i.."X", ChannelSpace)
+		MissHighlight[i].X = Noteskin[Channels]["Key" .. i .. "X"]
 		MissHighlight[i].Y = ScreenHeight/2
-		MissHighlight[i].Width = GetConfigF("Key"..i.."Width", ChannelSpace)
+		MissHighlight[i].Width = Noteskin[Channels]["Key" .. i .. "Width"]
 		MissHighlight[i].Height = ScreenHeight
 		MissHighlight[i].Alpha = 0
 		MissHighlight[i].Layer = 15
@@ -89,7 +90,7 @@ function MissHighlight.Init()
 end
 
 function MissHighlight.Run(Delta)
-	for i=0, Channels do
+	for i=1, Channels do
 		MissHighlight.CurrentTime[i] = MissHighlight.CurrentTime[i] + Delta
 		
 		if MissHighlight.CurrentTime[i] < MissHighlight.Time[i] then

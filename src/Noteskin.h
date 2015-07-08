@@ -1,21 +1,32 @@
 #ifndef NOTESKIN_H_
 #define NOTESKIN_H_
 
-class Image;
+class ScreenGameplay7K;
 class LuaManager;
 
-// Structure not yet final. 
 class Noteskin
 {
-	float  NoteHeight;
-	Image* GearImage[VSRG::MAX_CHANNELS];
-	Image* KeyImage[VSRG::MAX_CHANNELS];
-	AABB NoteCrop[VSRG::MAX_CHANNELS];
-	Transformation NoteTransformation[VSRG::NK_TOTAL][VSRG::MAX_CHANNELS];
-	LuaManager *NoteskinLua;
+	static shared_ptr<LuaManager> NoteskinLua;
+	static ScreenGameplay7K* Parent;
+	static double NoteScreenSize;
+	static bool DanglingHeads;
+	static bool DecreaseHoldSizeWhenBeingHit;
 public:
-	Noteskin(GString Name);
-	void Update(float Delta);
+	static void SetupNoteskin(bool SpecialStyle, int Lanes, ScreenGameplay7K *Parent);
+	static void Update(float Delta, float CurrentBeat);
+
+	static void DrawNote(VSRG::TrackNote &T, int Lane, float Location);
+	static void DrawHoldBody(int Lane, float Location, float Size, int ActiveLevel);
+	static float GetBarlineWidth();
+	static double GetBarlineStartX();
+	static double GetBarlineOffset();
+	static bool IsBarlineEnabled();
+	static double GetJudgmentY();
+	static void DrawHoldHead(VSRG::TrackNote& T, int Lane, float Location, int ActiveLevel);
+	static void DrawHoldTail(VSRG::TrackNote& T, int Lane, float Location, int ActiveLevel);
+	static double GetNoteOffset();
+	static bool AllowDanglingHeads();
+	static bool ShouldDecreaseHoldSizeWhenBeingHit();
 };
 
 #endif

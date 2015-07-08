@@ -1,6 +1,7 @@
 #include "GameGlobal.h"
 #include "Song7K.h"
 
+#include <sstream>
 #include <fstream>
 #include <boost/format.hpp>
 
@@ -70,7 +71,7 @@ public:
 
 		out << "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n";
 
-		int ptIdx = 0;
+		auto ptIdx = 0;
 		float ImageHeight = CfgValNPS("GraphHeight", 300);
 		float GraphYOffset = CfgValNPS("GraphYOffs", 50);
 		float GraphXOffset = CfgValNPS("GraphXOffs", 100);
@@ -105,8 +106,8 @@ public:
 		out << boost::format("\t<line x1 = \"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" style = \"stroke:rgb(0,0,0);stroke-width:4\"/>\n")
 			% TL.x % TL.y % BL.x % BL.y;
 
-		int ptAmt = 5;
-		for (int i = 1; i <= ptAmt; i++)
+		auto ptAmt = 5;
+		for (auto i = 1; i <= ptAmt; i++)
 		{
 			float X = (BL.x - GraphXOffset / 2);
 			float Y = (BL.y - i * (ImageHeight / ptAmt / peakMargin));
@@ -154,10 +155,10 @@ public:
 
 void ConvertToNPSGraph(VSRG::Song *Sng, Directory PathOut)
 {
-	for (int i = 0; i < Sng->Difficulties.size(); i++)
+	for (auto i = 0; i < Sng->Difficulties.size(); i++)
 	{
 		std::ofstream out;
-		VSRG::Difficulty *Diff = Sng->GetDifficulty(i);
+		auto Diff = Sng->GetDifficulty(i);
 		Directory Sn = Sng->SongName;
 		Sn.Normalize(true);
 
@@ -166,7 +167,7 @@ void ConvertToNPSGraph(VSRG::Song *Sng, Directory PathOut)
 		out.open(name.c_str());
 
 		double interv = CfgValNPS("IntervalTime", 1);
-		double margin = CfgValNPS("PeakMargin", 1.2);
+		double margin = CfgValNPS("PeakMargin", 1.2f);
 
 		out << NPSGraph(Sng).GetSVGText(i, interv, margin);
 	}

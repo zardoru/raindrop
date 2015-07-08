@@ -27,3 +27,4 @@ project/Xcode/build
 .DS_Store
 log.txt
 TEST/CRASH/background - color.jpg
+*.ssc

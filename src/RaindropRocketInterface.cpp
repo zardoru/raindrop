@@ -7,6 +7,8 @@
 #include <Rocket/Controls/Lua/Controls.h>
 #include <Rocket/Debugger.h>
 
+#include <glm/gtx/matrix_operation.hpp>
+
 #include <GL/GLEW.h>
 #include <GLFW/glfw3.h>
 #include "GameGlobal.h"
@@ -17,6 +19,7 @@
 #include "ImageLoader.h"
 #include "GameWindow.h"
 #include "RaindropRocketInterface.h"
+#include <glm/gtc/matrix_transform.inl>
 
 namespace Engine { namespace RocketInterface {
 

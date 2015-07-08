@@ -25,6 +25,9 @@
 		</style>
 		
 		<script>
+			Global:GetParameters().HiddenMode = 0
+			Global:GetParameters().Upscroll = 0
+		
 			function activateAuto(elem)
 				if elem.id == "autobtn" then
 					elem.id = "autobtnac"

@@ -198,7 +198,7 @@ int GetFractionKindMeasure(double frac)
 int GetFractionKindBeat(double frac)
 {
 	int fracKind;
-	int Row = QuantizeFractionBeat (frac);
+	int Row = QuantizeFractionBeat (frac) * 48.0;
 
 	FRACKIND(1, 48);
 

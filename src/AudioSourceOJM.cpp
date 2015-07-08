@@ -301,20 +301,10 @@ void F412XOR(char* buffer, size_t length)
 AudioSourceOJM::AudioSourceOJM()
 {
 	TemporaryState.Enabled = false;
-	for (int i = 0; i < 2000; i++)
-		Arr[i] = NULL;
 }
 
 AudioSourceOJM::~AudioSourceOJM()
 {
-	for (int i = 0; i < 2000; i++)
-	{
-		if (Arr[i])
-		{
-			MixerRemoveSample(Arr[i]);
-			delete Arr[i];
-		}
-	}
 }
 
 OJMContainerKind GetContainerKind(const char* sig)
@@ -362,7 +352,7 @@ void AudioSourceOJM::parseM30()
 			F412XOR(SampleData, Entry.sample_size);
 
 		// Sample data is done. Now the bits that are specific to raindrop..
-		SoundSample* NewSample = new SoundSample;
+		shared_ptr<SoundSample> NewSample = make_shared<SoundSample>();
 
 		SFM30 ToLoad;
 		ToLoad.Buffer = SampleData;
@@ -381,9 +371,9 @@ void AudioSourceOJM::parseM30()
 			TemporaryState.Enabled = 0;
 		}
 		delete[] SampleData;
+		
 		ov_clear(&vf);
 		
-		MixerAddSample(NewSample);
 		Arr[OJMIndex] = NewSample;
 	}
 
@@ -449,7 +439,7 @@ void AudioSourceOJM::parseOMC()
 		ToLoad.Buffer = Buffer;
 		ToLoad.DataLength = WavHead.chunk_size;
 
-		SoundSample* NewSample = new SoundSample;
+		shared_ptr<SoundSample> NewSample = make_shared<SoundSample>();
 		TemporaryState.File = (SNDFILE*)sf_open_virtual(&M30Interface, SFM_READ, &Info, &ToLoad);
 		TemporaryState.Info = &Info;
 		TemporaryState.Enabled = OJM_WAV;
@@ -459,7 +449,6 @@ void AudioSourceOJM::parseOMC()
 		delete[] Buffer;
 
 		Arr[SampleID] = NewSample;
-		MixerAddSample(NewSample);
 		SampleID++;
 	}
 
@@ -482,14 +471,14 @@ void AudioSourceOJM::parseOMC()
 
 		ifile->read(Buffer, OggHead.sample_size);
 
-		SoundSample* NewSample = new SoundSample;
+		shared_ptr<SoundSample> NewSample = shared_ptr<SoundSample>();
 
 		SFM30 ToLoad;
 		ToLoad.Buffer = Buffer;
 		ToLoad.DataLength = OggHead.sample_size;
 
 		OggVorbis_File vf;
-		ov_open_callbacks(&ToLoad, &vf, NULL, 0, M30InterfaceOgg);
+		ov_open_callbacks(&ToLoad, &vf, nullptr, 0, M30InterfaceOgg);
 		TemporaryState.File = &vf;
 		TemporaryState.Info = vf.vi;
 		TemporaryState.Enabled = OJM_OGG;
@@ -501,7 +490,6 @@ void AudioSourceOJM::parseOMC()
 		delete[] Buffer;
 
 		Arr[SampleID] = NewSample;
-		MixerAddSample(NewSample);
 		SampleID++;
 	}
 }
@@ -547,7 +535,7 @@ void AudioSourceOJM::Seek(float Time)
 	return;
 }
 
-SoundSample* AudioSourceOJM::GetFromIndex(int index)
+shared_ptr<SoundSample> AudioSourceOJM::GetFromIndex(int index)
 {
 	return Arr[index-1];
 }

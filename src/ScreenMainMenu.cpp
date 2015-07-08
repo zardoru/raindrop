@@ -91,7 +91,6 @@ void ScreenMainMenu::Init()
 	{
 		MMSelectSnd = new SoundSample();
 		MMSelectSnd->Open((GameState::GetInstance().GetSkinFile("select.ogg")).c_str());
-		MixerAddSample(MMSelectSnd);
 	}
 }
 

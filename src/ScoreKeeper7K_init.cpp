@@ -129,13 +129,13 @@ void ScoreKeeper7K::set_timing_windows(){
 	miss_threshold = 250;
 	earlymiss_threshold = 1250;
 
-	for (int i = 0; i < sizeof(JudgmentValues)/sizeof(double); i++)
+	for (auto i = 0; i < sizeof(JudgmentValues)/sizeof(double); i++)
 		judgment_time[i] = JudgmentValues[i] * judge_window_scale;
 
-	for (int i = 0; i < 9; i++)
+	for (auto i = 0; i < 9; i++)
 		judgment_amt[i] = 0;
 
-	for (int i = -127; i < 128; ++i)
+	for (auto i = -127; i < 128; ++i)
 		histogram[i+127] = 0;
 
 }

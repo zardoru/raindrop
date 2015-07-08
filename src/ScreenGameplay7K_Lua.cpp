@@ -3,16 +3,7 @@
 
 #include "GameGlobal.h"
 #include "GameState.h"
-#include "Logging.h"
-#include "SongLoader.h"
 #include "Screen.h"
-#include "Audio.h"
-#include "ImageLoader.h"
-#include "Sprite.h"
-#include "Line.h"
-#include "BitmapFont.h"
-#include "GameWindow.h"
-#include "ImageList.h"
 
 #include "LuaManager.h"
 #include "SceneEnvironment.h"
@@ -30,14 +21,15 @@ void ScreenGameplay7K::SetupScriptConstants()
 	L->SetGlobal("Channels", CurrentDiff->Channels);
 	L->SetGlobal("JudgmentLineY", JudgmentLinePos);
 	L->SetGlobal("Auto", Auto);
-	L->SetGlobal("AccuracyHitMS", score_keeper->getMissCutoff());
+	L->SetGlobal("AccuracyHitMS", ScoreKeeper->getMissCutoff());
 	L->SetGlobal("SongDuration", CurrentDiff->Duration);
 	L->SetGlobal("SongDurationBeats", IntegrateToTime(BPS, CurrentDiff->Duration));
 	L->SetGlobal("WaitingTime", WaitingTime);
 	L->SetGlobal("Beat", CurrentBeat);
-	L->SetGlobal("Lifebar", score_keeper->getLifebarAmount(LT_GROOVE));
+	L->SetGlobal("Lifebar", ScoreKeeper->getLifebarAmount(LT_GROOVE));
 
-	Animations->AddLuaTarget(&Background, "ScreenBackground");
+	luabridge::push(L->GetState(), &BGA->GetTransformation());
+	lua_setglobal(L->GetState(), "Background");
 }
 
 // Called every frame, before the lua update event
@@ -70,20 +62,20 @@ void ScreenGameplay7K::UpdateScriptVariables()
 void ScreenGameplay7K::UpdateScriptScoreVariables()
 {
 	LuaManager *L = Animations->GetEnv();
-	L->SetGlobal("Combo", score_keeper->getScore(ST_COMBO));
-	L->SetGlobal("MaxCombo", score_keeper->getScore(ST_MAX_COMBO));
-	L->SetGlobal("Accuracy", score_keeper->getPercentScore(PST_ACC));
-	L->SetGlobal("SCScore", score_keeper->getScore(scoring_type));
-	L->SetGlobal("EXScore", score_keeper->getScore(ST_EX));
+	L->SetGlobal("Combo", ScoreKeeper->getScore(ST_COMBO));
+	L->SetGlobal("MaxCombo", ScoreKeeper->getScore(ST_MAX_COMBO));
+	L->SetGlobal("Accuracy", ScoreKeeper->getPercentScore(PST_ACC));
+	L->SetGlobal("SCScore", ScoreKeeper->getScore(scoring_type));
+	L->SetGlobal("EXScore", ScoreKeeper->getScore(ST_EX));
 
-	std::pair<GString, int> autopacemaker = score_keeper->getAutoRankPacemaker();
+	std::pair<GString, int> autopacemaker = ScoreKeeper->getAutoRankPacemaker();
 	L->SetGlobal("PacemakerText", autopacemaker.first);
 	L->SetGlobal("PacemakerValue", autopacemaker.second);
 
 	L->SetGlobal("AccText", "ACC:");
-	L->SetGlobal("AccValue", score_keeper->getPercentScore(PST_EX));
+	L->SetGlobal("AccValue", ScoreKeeper->getPercentScore(PST_EX));
 
-	double lifebar_amount = score_keeper->getLifebarAmount(lifebar_type);
+	double lifebar_amount = ScoreKeeper->getLifebarAmount(lifebar_type);
 	L->SetGlobal("LifebarValue", lifebar_amount);
 	if (lifebar_type == LT_GROOVE || lifebar_type == LT_EASY)
 		L->SetGlobal("LifebarDisplay", max(2, int(floor(lifebar_amount * 50) * 2)));
@@ -93,13 +85,13 @@ void ScreenGameplay7K::UpdateScriptScoreVariables()
 }
 
 // Called before the script is executed at all.
-void ScreenGameplay7K::SetupLua()
+void ScreenGameplay7K::SetupLua(LuaManager* Env)
 {
-	GameState::GetInstance().InitializeLua(Animations->GetEnv()->GetState());
-	SetScorekeeper7KInstance((void*)Animations->GetEnv()->GetState(), score_keeper);
+	GameState::GetInstance().InitializeLua(Env->GetState());
+	SetScorekeeper7KInstance(static_cast<void*>(Env->GetState()), ScoreKeeper.get());
 
 #define f(x) addFunction(#x, &ScreenGameplay7K::x)
-	luabridge::getGlobalNamespace(Animations->GetEnv()->GetState())
+	luabridge::getGlobalNamespace(Env->GetState())
 		.beginClass <ScreenGameplay7K>("ScreenGameplay7K")
 		.f(GetSongTime)
 		.f(GetCurrentVertical)
@@ -108,14 +100,9 @@ void ScreenGameplay7K::SetupLua()
 		.f(GetCurrentBeat)
 		.f(IsFailEnabled)
 		.f(IsAutoEnabled)
+		.f(IsUpscrolling)
 		.addProperty("SpeedMultiplier", &ScreenGameplay7K::GetUserMultiplier, &ScreenGameplay7K::SetUserMultiplier);
 		
-	luabridge::push(Animations->GetEnv()->GetState(), this);
-	lua_setglobal(Animations->GetEnv()->GetState(), "Game");
-
-	SetupScriptConstants();
-	// UpdateScriptScoreVariables();
-	UpdateScriptVariables();
-
-	Animations->Preload(GameState::GetInstance().GetSkinFile("screengameplay7k.lua"), "Preload");
+	luabridge::push(Env->GetState(), this);
+	lua_setglobal(Env->GetState(), "Game");
 }

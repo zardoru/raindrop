@@ -1,6 +1,6 @@
 #include "GameGlobal.h"
-#include "Sprite.h"
 #include "TrackNote.h"
+#include <glm/gtc/matrix_transform.inl>
 
 using namespace VSRG;
 
@@ -13,9 +13,34 @@ TrackNote::~TrackNote()
 {
 }
 
+float TrackNote::GetHoldSize() const
+{
+	return abs((b_pos_holdend - b_pos));
+}
+
+float TrackNote::GetHoldEndVertical()
+{
+	return b_pos_holdend;
+}
+
+void TrackNote::FailHit()
+{
+	EnabledHitFlags |= FailedHitFlag;
+}
+
+void TrackNote::MakeInvisible()
+{
+	EnabledHitFlags |= InvisibleFlag;
+}
+
+bool TrackNote::FailedHit() const
+{
+	return (EnabledHitFlags & FailedHitFlag) != 0;
+}
+
 void TrackNote::AssignNotedata(const VSRG::NoteData &Notedata)
 {
-	StartTime = Notedata.StartTime;
+	Time = Notedata.StartTime;
 	EndTime = Notedata.EndTime;
 	Sound = Notedata.Sound;
 	NoteKind = Notedata.NoteKind;
@@ -29,18 +54,6 @@ void TrackNote::AssignFraction(double frac)
 	FractionKind = GetFractionKindBeat(frac);
 }
 
-Mat4 TrackNote::GetHoldPositionMatrix(const float &trackPosition) const
-{
-	float VerticalHoldBodyPos = b_pos + (b_pos_holdend - b_pos) / 2;
-	return glm::translate(Mat4(), glm::vec3(trackPosition, VerticalHoldBodyPos, 14));
-}
-
-Mat4 TrackNote::GetHoldBodyMatrix(const float &noteWidth, const float &speedMultiplier) const
-{
-	float VertHBS = abs((b_pos_holdend - b_pos));
-	return glm::scale(Mat4(), glm::vec3(noteWidth, VertHBS * speedMultiplier, 1)) * glm::translate(Mat4(), glm::vec3());
-}
-
 void TrackNote::AssignPosition(float Position, float endPosition)
 {
 	b_pos = Position;
@@ -52,16 +65,6 @@ bool TrackNote::IsHold() const
 	return EndTime != 0;
 }
 
-Mat4 TrackNote::GetHoldEndMatrix() const
-{
-	return glm::translate(Mat4(), glm::vec3(0, b_pos_holdend, 0));
-}
-
-Mat4 TrackNote::GetMatrix() const
-{
-	return glm::translate(Mat4(), glm::vec3(0, b_pos, 0));
-}
-
 float TrackNote::GetVertical() const
 {
 	return b_pos;
@@ -69,7 +72,7 @@ float TrackNote::GetVertical() const
 
 void TrackNote::AddTime(double Time)
 {
-	StartTime += Time;
+	this->Time += Time;
 
 	if (IsHold())
 		EndTime += Time;
@@ -77,12 +80,12 @@ void TrackNote::AddTime(double Time)
 
 double TrackNote::GetTimeFinal() const
 {
-	return max(StartTime, EndTime);
+	return max(Time, EndTime);
 }
 
 double TrackNote::GetStartTime() const
 {
-	return StartTime;
+	return Time;
 }
 
 bool TrackNote::IsEnabled() const
@@ -118,7 +121,7 @@ bool TrackNote::WasNoteHit() const
 
 float TrackNote::GetVerticalHold() const
 {
-	return b_pos_holdend;
+	return b_pos + GetHoldSize() / 2;
 }
 
 int TrackNote::GetSound() const
@@ -133,7 +136,7 @@ int TrackNote::GetFracKind() const
 
 double &TrackNote::GetDataStartTime()
 {
-	return StartTime;
+	return Time;
 }
 
 double &TrackNote::GetDataEndTime()
@@ -163,5 +166,5 @@ bool TrackNote::IsJudgable() const
 
 bool TrackNote::IsVisible() const
 {
-	return NoteKind != NK_INVISIBLE;
+	return NoteKind != NK_INVISIBLE && !(EnabledHitFlags & InvisibleFlag);
 }

@@ -1,9 +1,7 @@
 #include <map>
-#include <fstream>
 
 #include "GameGlobal.h"
 #include "Song7K.h"
-#include "Configuration.h"
 #include <algorithm>
 
 using namespace VSRG;
@@ -11,30 +9,6 @@ using namespace VSRG;
 TimingInfoType CustomTimingInfo::GetType()
 {
 	return Type;
-}
-
-int RowifiedDifficulty::GetRowCount(const vector<RowifiedDifficulty::Event> &In)
-{
-	// literally the only hard part of this
-	// We have to find the LCM of the set of fractions given by the Fraction of all objects in the vector.
-	std::vector <int> Denominators;
-
-	// Find all different denominators.
-	for (auto i : In) {
-		for (auto k : Denominators)
-		{
-			if (i.Sect.Den == k)
-				goto next_object;
-		}
-
-		Denominators.push_back(i.Sect.Den);
-	next_object:;
-	}
-
-	if (Denominators.size() == 1) return Denominators.at(0);
-
-	// Now get the LCM.
-	return LCM(Denominators);
 }
 
 Song::Song()
@@ -49,19 +23,9 @@ Song::~Song()
 VSRG::Difficulty* Song::GetDifficulty(uint32 i)
 {
 	if (i >= Difficulties.size())
-		return NULL;
+		return nullptr;
 	else
 		return Difficulties.at(i).get();
-}
-
-int tSort(const TimingSegment &i, const TimingSegment &j)
-{
-	return i.Time < j.Time;
-}
-
-int nSort (const TrackNote &i, const TrackNote &j)
-{
-	return i.GetStartTime() < j.GetStartTime();
 }
 
 void Difficulty::ProcessVSpeeds(TimingData& BPS, TimingData& VerticalSpeeds, double SpeedConstant)
@@ -78,9 +42,9 @@ void Difficulty::ProcessVSpeeds(TimingData& BPS, TimingData& VerticalSpeeds, dou
 	}
 
 	// Calculate velocity at time based on BPM at time
-	for (TimingData::iterator Time = BPS.begin();
+	for (auto Time = BPS.begin();
 		Time != BPS.end();
-		Time++)
+		++Time)
 	{
 		float VerticalSpeed;
 		TimingSegment VSpeed;
@@ -101,9 +65,9 @@ void Difficulty::ProcessVSpeeds(TimingData& BPS, TimingData& VerticalSpeeds, dou
 	// Let first speed be not-null.
 	if (VerticalSpeeds.size() && VerticalSpeeds[0].Value == 0)
 	{
-		for (TimingData::iterator i = VerticalSpeeds.begin(); 
+		for (auto i = VerticalSpeeds.begin(); 
 			i != VerticalSpeeds.end();
-			i++)
+		     ++i)
 		{
 			if (i->Value != 0)
 				VerticalSpeeds[0].Value = i->Value;
@@ -156,9 +120,9 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 
 	BPS.clear();
 
-	for(TimingData::iterator Time = Timing.begin();
+	for(auto Time = Timing.begin();
 		Time != Timing.end();
-		Time++)
+	    ++Time)
 	{
 		TimingSegment Seg;
 		
@@ -169,7 +133,7 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 	}
 
 	/* Sort for justice */
-	std::sort(BPS.begin(), BPS.end(), tSort);
+	std::sort(BPS.begin(), BPS.end());
 
 	if (!StopsTiming.size() || BPMType != VSRG::Difficulty::BT_Beat) // Stops only supported in Beat mode.
 		return;
@@ -188,7 +152,7 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 		Seg.Value = 0;
 
 		/* First, eliminate collisions. */
-		for (TimingData::iterator k = BPS.begin(); k != BPS.end();)
+		for (auto k = BPS.begin(); k != BPS.end();)
 		{
 			if ( k->Time == TValue ) /* Equal? Remove the collision, leaving only the 0 in front. */
 			{
@@ -199,7 +163,7 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 				else continue;
 			}
 
-			k++;
+			++k;
 		}
 
 		// Okay, the collision is out. Let's push our 0-speeder.
@@ -231,7 +195,7 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 		BPS.push_back(Seg);
 	}
 
-	std::sort(BPS.begin(), BPS.end(), tSort);
+	std::sort(BPS.begin(), BPS.end());
 }
 
 void Difficulty::ProcessSpeedVariations(TimingData& BPS, TimingData& VerticalSpeeds, double Drift)
@@ -241,11 +205,11 @@ void Difficulty::ProcessSpeedVariations(TimingData& BPS, TimingData& VerticalSpe
 	TimingData tVSpeeds = VerticalSpeeds; // We need this to store what values to change
 	TimingData &SpeedChanges = Data->SpeedChanges;
 
-	std::sort( SpeedChanges.begin(), SpeedChanges.end(), tSort );
+	std::sort( SpeedChanges.begin(), SpeedChanges.end() );
 
 	for(TimingData::const_iterator Change = SpeedChanges.begin();
 			Change != SpeedChanges.end();
-			Change++)
+	    ++Change)
 	{
 		TimingData::const_iterator NextChange = (Change+1);
 		double ChangeTime = Change->Time + Drift + Offset;
@@ -256,23 +220,26 @@ void Difficulty::ProcessSpeedVariations(TimingData& BPS, TimingData& VerticalSpe
 			modify it to be this value * factor
 		*/
 
-		for(TimingData::iterator Time = VerticalSpeeds.begin();
+		bool MoveOn = false;
+		for(auto Time = VerticalSpeeds.begin();
 			Time != VerticalSpeeds.end();
-			Time++)
+		    ++Time)
 		{
 			if ( abs(ChangeTime - Time->Time) < 0.00001)
 			{
 				Time->Value *= Change->Value;
-				goto next_speed;
+				MoveOn = true;
 			}
 		}
+
+		if (MoveOn) continue;
 
 		/* 
 			There are no collisions- insert a new speed at this time
 		*/
 
 		if (ChangeTime < 0)
-			goto next_speed;
+			continue;
 
 		float SpeedValue;
 		SpeedValue = SectionValue(tVSpeeds, ChangeTime) * Change->Value;
@@ -293,12 +260,12 @@ void Difficulty::ProcessSpeedVariations(TimingData& BPS, TimingData& VerticalSpe
 		*/
 
 		if (BPMType == VSRG::Difficulty::BT_Beatspace) // Okay, we're an osu!mania chart, leave the resetting.
-			goto next_speed;
+			continue;
 
 		// We're not an osu!mania chart, so it's time to do what should be done.
-		for(TimingData::iterator Time = VerticalSpeeds.begin();
+		for(auto Time = VerticalSpeeds.begin();
 			Time != VerticalSpeeds.end();
-			Time++)
+		    ++Time)
 		{
 			if (Time->Time > ChangeTime)
 			{
@@ -315,11 +282,9 @@ void Difficulty::ProcessSpeedVariations(TimingData& BPS, TimingData& VerticalSpe
 				}
 			}
 		}
-
-		next_speed: (void)0;
 	}
 
-	std::sort(VerticalSpeeds.begin(), VerticalSpeeds.end(), tSort);
+	std::sort(VerticalSpeeds.begin(), VerticalSpeeds.end());
 }
 
 double Difficulty::GetWarpAmountAtTime(double Time)
@@ -373,18 +338,19 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 		int MIdx = 0;
 
 		/* For each measure of this channel */
-		for (std::vector<VSRG::Measure>::iterator Msr = Data->Measures.begin();
+		for (auto Msr = Data->Measures.begin();
 			Msr != Data->Measures.end();
-			Msr++)
+			++Msr)
 		{
 			/* For each note in the measure... */
 			ptrdiff_t total_notes = Msr->MeasureNotes[KeyIndex].size();
-			for (ptrdiff_t Note = 0; Note < total_notes; Note++)
+
+			for (auto Note = 0; Note < total_notes; Note++)
 			{
 				/*
 					Calculate position. (Change this to TrackNote instead of processing?)
 					issue is not having the speed change data there.
-					*/
+				*/
 				NoteData &CurrentNote = (*Msr).MeasureNotes[KeyIndex][Note];
 				TrackNote NewNote;
 
@@ -396,32 +362,35 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 
 				// if upscroll change minus for plus as well as matrix at screengameplay7k
 				if (!CurrentNote.EndTime)
-					NewNote.AssignPosition(-VerticalPosition);
+					NewNote.AssignPosition(VerticalPosition);
 				else
-					NewNote.AssignPosition(-VerticalPosition, -HoldEndPosition);
+					NewNote.AssignPosition(VerticalPosition, HoldEndPosition);
 
 				// Okay, now we want to know what fraction of a beat we're dealing with
 				// this way we can display colored (a la Stepmania) notes.
-				double cBeat = IntegrateToTime(BPS, CurrentNote.StartTime, Offset);
+				double cBeat = IntegrateToTime(BPS, CurrentNote.StartTime);
 				double iBeat = floor(cBeat);
-				double dBeat = cBeat - iBeat;
+				double dBeat = (cBeat - iBeat);
 
 				NewNote.AssignFraction(dBeat);
 
-				NewNote.AddTime(-GetWarpAmountAtTime(CurrentNote.StartTime));
+				double Wamt = -GetWarpAmountAtTime(CurrentNote.StartTime);
+				NewNote.AddTime(Wamt);
 				NotesOut[KeyIndex].push_back(NewNote);
 			}
 
-			std::sort(NotesOut[KeyIndex].begin(), NotesOut[KeyIndex].end(), nSort);
 			MIdx++;
 		}
+
+		// done with the channel - sort it
+		std::stable_sort(NotesOut[KeyIndex].begin(), NotesOut[KeyIndex].end(), [](const VSRG::TrackNote &A, const VSRG::TrackNote &B) -> bool { return A.GetVertical() < B.GetVertical(); });
 	}
 }
 
 void BPStoSPB(TimingData &BPS)
 {
-	TimingData BPSCopy = BPS;
-	for (auto i = BPS.begin(); i != BPS.end(); i++)
+	auto BPSCopy = BPS;
+	for (auto i = BPS.begin(); i != BPS.end(); ++i)
 	{
 		double valueBPS = i->Value;
 		i->Value = 1 / valueBPS;
@@ -462,9 +431,9 @@ void Difficulty::GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSp
 	}
 
 
-	for (std::vector<VSRG::Measure>::iterator Msr = Data->Measures.begin();
+	for (auto Msr = Data->Measures.begin();
 		Msr != Data->Measures.end();
-		Msr++)
+		++Msr)
 	{
 		float PositionOut = 0;
 
@@ -488,12 +457,7 @@ void Difficulty::GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSp
 void Difficulty::Destroy()
 {
 	if (Data)
-	{
-		Data->TimingInfo.reset();
-		delete Data->BMPEvents;
-		Data.reset();
 		Data = nullptr;
-	}
 	
 	Timing.clear(); Timing.shrink_to_fit();
 	Author.clear(); Author.shrink_to_fit();

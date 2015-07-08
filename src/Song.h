@@ -1,23 +1,46 @@
 #ifndef SONG_H_
 #define SONG_H_
 
-struct TimingSegment
+template <class T, class U>
+struct TimeBased
 {
-	double Time; // in beats
+	U Time;
+
+	inline bool operator< (const T &rhs)
+	{
+		return Time < rhs.Time;
+	}
+
+	inline bool operator>(const T &rhs)
+	{
+		return Time > rhs.Time;
+	}
+
+	inline operator U()
+	{
+		return Time;
+	}
+
+	TimeBased(U val) : Time(val) {};
+	TimeBased() = default;
+};
+
+struct TimingSegment : public TimeBased<TimingSegment, double>
+{
 	double Value; // in bpm
+	TimingSegment(double T, double V) : TimeBased(T), Value(V) {};
+	TimingSegment() : TimingSegment(0, 0) {};
 };
 
 typedef std::vector<TimingSegment> TimingData;
 
-struct AutoplaySound
+struct AutoplaySound : public TimeBased<AutoplaySound, float>
 {
-	float Time;
 	int Sound;
 };
 
-struct AutoplayBMP
+struct AutoplayBMP : public TimeBased<AutoplayBMP, float>
 {
-	float Time;
 	int BMP;
 };
 
@@ -76,7 +99,7 @@ namespace Game
 		GString SongAuthor;
 
 		/* Directory where files are contained */
-		GString SongDirectory;
+		Directory SongDirectory;
 
 		/* Relative Paths */
 		GString SongFilename, BackgroundFilename;

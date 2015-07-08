@@ -2,17 +2,10 @@
 #include <iostream>
 
 #include "GameGlobal.h"
-#include "GameState.h"
 #include "Logging.h"
-#include "SongLoader.h"
 #include "Screen.h"
 #include "Audio.h"
-#include "ImageLoader.h"
-#include "Sprite.h"
-#include "Line.h"
-#include "BitmapFont.h"
-#include "GameWindow.h"
-#include "ImageList.h"
+
 
 #include "LuaManager.h"
 #include "SceneEnvironment.h"
@@ -20,7 +13,7 @@
 #include "ScoreKeeper7K.h"
 #include "ScreenGameplay7K.h"
 #include "ScreenEvaluation7K.h"
-#include "SongDatabase.h"
+#include "Noteskin.h"
 
 using namespace VSRG;
 
@@ -56,8 +49,9 @@ float ScreenGameplay7K::GetCurrentVertical()
 
 double ScreenGameplay7K::GetWarpedSongTime()
 {
-	double T = SongTime;
-	for (auto k = Warps.begin(); k != Warps.end(); k++)
+	// We can't use lower_bound; Every warp changes the time we actually compare.
+	auto T = SongTime;
+	for (auto k = Warps.begin(); k != Warps.end(); ++k)
 	{
 		if (k->Time <= T)
 			T += k->Value;
@@ -94,20 +88,14 @@ void ScreenGameplay7K::GearKeyEvent(uint32 Lane, bool KeyDown)
 		Animations->GetEnv()->PushArgument(KeyDown);
 		Animations->GetEnv()->RunFunction();
 	}
-
-	if (KeyDown)
-		Keys[Lane].SetImage( GearLaneImageDown[Lane], false );
-	else
-		Keys[Lane].SetImage( GearLaneImage[Lane], false );
 }
 
-void ScreenGameplay7K::TranslateKey(KeyType K, bool KeyDown)
+void ScreenGameplay7K::TranslateKey(int32 Index, bool KeyDown)
 {
-	int Index = K - KT_Key1; /* Bound key */
-	int GearIndex = GearBindings[Index]; /* Binding this key to a lane */
-
-	if (Index >= MAX_CHANNELS || Index < 0)
+	if (Index < 0)
 		return;
+
+	int GearIndex = GearBindings[Index]; /* Binding this key to a lane */
 
 	if (GearIndex >= MAX_CHANNELS || GearIndex < 0)
 		return;
@@ -121,12 +109,15 @@ void ScreenGameplay7K::TranslateKey(KeyType K, bool KeyDown)
 	}
 }
 
+bool ScreenGameplay7K::IsUpscrolling()
+{
+	return SpeedMultiplierUser < 0 || Upscroll;
+}
+
 void ScreenGameplay7K::Activate()
 {
 	if (!Active)
-	{
 		Animations->DoEvent("OnActivateEvent");
-	}
 
 	Active = true;
 }
@@ -151,7 +142,10 @@ bool ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 		switch (BindingsManager::TranslateKey(key))
 		{
 		case KT_Escape:
-			Running = false;
+			if (SongFinished)
+				SuccessTime = -1;
+			else
+				Running = false;
 			break;
 		case KT_Enter:
 			if (!Active)
@@ -164,6 +158,8 @@ bool ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 		case KT_Left:
 			SpeedMultiplierUser -= 0.25;
 			MultiplierChanged = true;
+			break;
+		default:
 			break;
 		}
 
@@ -179,91 +175,41 @@ bool ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 	return true;
 }
 
-int DigitCount (float n)
-{
-	int digits = 0;
-
-	while (n >= 1)
-	{
-		n /= 10;
-		digits++;
-	}
-
-	return digits;
-}
-
-void DoBMPEventList (Sprite &Obj, std::vector<AutoplayBMP> &Events, ImageList &Images, double SongTime)
-{
-	for (auto b = Events.begin(); b != Events.end();)
-	{
-		if (b->Time <= SongTime)
-		{
-			Image* Img = Images.GetFromIndex(b->BMP);
-			Obj.SetImage(Img, false);
-
-			b = Events.erase(b);
-			if (b == Events.end()) break;
-			else continue;
-		}
-
-		b++;
-	}
-}
-
 void ScreenGameplay7K::RunAutoEvents()
 {
 	if (!stage_failed)
 	{
 		// Play BGM events.
-		for (auto s = BGMEvents.begin(); s != BGMEvents.end();)
+		auto i = BGMEvents.begin();
+		auto s = std::upper_bound(BGMEvents.begin(), BGMEvents.end(), SongTime);
+		while (i != s)
 		{
-			if (s->Time <= SongTime)
-			{
-				if (Keysounds[s->Sound])
-				{
-					Keysounds[s->Sound]->SeekTime(SongTime - s->Time);
-					Keysounds[s->Sound]->Play();
-				}
-				s = BGMEvents.erase(s);
-				if (s == BGMEvents.end()) break;
-				else continue;
-			}
+			if (Keysounds[i->Sound]) Keysounds[i->Sound]->Play();
 
-			s++;
+			i = BGMEvents.erase(i);
+			s = std::lower_bound(BGMEvents.begin(), BGMEvents.end(), SongTime);
 		}
 	}
 
-	// Play BMP Base Events
-	DoBMPEventList(Background, BMPEvents, BMPs, SongTime);
-
-	// BMP Miss layer events
-	DoBMPEventList(LayerMiss, BMPEventsMiss, BMPs, SongTime);
-
-	// BMP Layer1 events
-	DoBMPEventList(Layer1, BMPEventsLayer, BMPs, SongTime);
-
-	// BMP Layer 2 events.
-	DoBMPEventList(Layer2, BMPEventsLayer2, BMPs, SongTime);
+	BGA->SetAnimationTime(SongTime);
 }
 
 void ScreenGameplay7K::CheckShouldEndScreen()
 {
 	// Run failure first; make sure it has priority over checking whether it's a pass or not.
-	if (score_keeper->isStageFailed(lifebar_type) && !stage_failed && !NoFail)
+	if (ScoreKeeper->isStageFailed(lifebar_type) && !stage_failed && !NoFail)
 	{
 		// We make sure we don't trigger this twice.
 stageFailed:
 		stage_failed = true;
-		score_keeper->failStage();
+		ScoreKeeper->failStage();
 		FailSnd->Play();
 
 		// We stop all audio..
 		Music->Stop();
-		for (std::map<int, SoundSample*>::iterator i = Keysounds.begin(); i != Keysounds.end(); i++)
-		{
+		for (auto i = Keysounds.begin(); i != Keysounds.end(); ++i)
 			if (i->second)
 				i->second->Stop();
-		}
 
 		// Run stage failed animation.
 		Animations->DoEvent("OnFailureEvent", 1);
@@ -277,10 +223,10 @@ stageFailed:
 		double cutoffspb = 1 / curBPS;
 		double cutoffTime;
 
-		if (score_keeper->usesO2()) // beat-based judgements
-			cutoffTime = cutoffspb * score_keeper->getMissCutoff();
+		if (ScoreKeeper->usesO2()) // beat-based judgements
+			cutoffTime = cutoffspb * ScoreKeeper->getMissCutoff();
 		else // time-based judgments
-			cutoffTime = score_keeper->getMissCutoff() / 1000.0;
+			cutoffTime = ScoreKeeper->getMissCutoff() / 1000.0;
 
 		// we need to make sure we trigger this AFTER all notes could've possibly been judged
 		// note to self: songtime will always be positive since duration is always positive.
@@ -289,7 +235,7 @@ stageFailed:
 		{
 			if (!SongFinished)
 			{
-				if (score_keeper->isStageFailed(lifebar_type) && !NoFail)
+				if (ScoreKeeper->isStageFailed(lifebar_type) && !NoFail)
 					goto stageFailed; // No, don't trigger SongFinished. It wasn't a pass.
 
 				SongFinished = true; // Reached the end!
@@ -303,7 +249,7 @@ stageFailed:
 	if (SuccessTime < 0 && SongFinished)
 	{
 		ScreenEvaluation7K *Eval = new ScreenEvaluation7K(this);
-		Eval->Init(score_keeper);
+		Eval->Init(ScoreKeeper.get());
 		Next = Eval;
 	}
 
@@ -314,8 +260,8 @@ stageFailed:
 
 			if (Configuration::GetSkinConfigf("GoToSongSelectOnFailure") == 0)
 			{
-				ScreenEvaluation7K *Eval = new ScreenEvaluation7K(this);
-				Eval->Init(score_keeper);
+				auto Eval = new ScreenEvaluation7K(this);
+				Eval->Init(ScoreKeeper.get());
 				Next = Eval;
 			}
 			else
@@ -407,12 +353,13 @@ bool ScreenGameplay7K::Run(double Delta)
 		WarpedSongTime = -WaitingTime;
 	}
 
+	Noteskin::Update(SongTime, CurrentBeat);
 	RecalculateEffects();
-	RecalculateMatrix();
 
 	UpdateScriptVariables();
 
 	Animations->UpdateTargets(Delta);
+	BGA->Update(Delta);
 	Render();
 
 	if (Delta > 0.1)

@@ -4,6 +4,7 @@
 #include "Song7K.h"
 #include "ScoreKeeper.h"
 #include "ScreenGameplay7K_Mechanics.h"
+#include "BackgroundAnimation.h"
 
 class AudioStream;
 class Image;
@@ -13,6 +14,7 @@ class Line;
 class AudioSourceOJM;
 class VSRGMechanics;
 class SoundSample;
+class LuaManager;
 
 class ScreenGameplay7K : public Screen
 {
@@ -20,33 +22,21 @@ class ScreenGameplay7K : public Screen
 private:
 
 	VSRGMechanics *MechanicsSet;
-	Sprite Keys[VSRG::MAX_CHANNELS];
-	Sprite Background;
-
-	// BGA stuff.
-	Sprite LayerMiss;
-	Sprite Layer1;
-	Sprite Layer2;
 
 	TimingData       VSpeeds;
 	TimingData		 BPS;
 	TimingData		 Warps;
-	VSRG::VectorTN   NotesByChannel;
-	std::map <int, SoundSample*> Keysounds;
-	std::vector<AutoplaySound>   BGMEvents;
-	std::vector<float>			 MeasureBarlines;
+	VSRG::VectorTN  NotesByChannel;
+	std::map <int, shared_ptr<SoundSample>> Keysounds;
+	vector<AutoplaySound>   BGMEvents;
+	vector<float>			 MeasureBarlines;
 
-	VSRG::Difficulty				*CurrentDiff;
+	shared_ptr<VSRG::Difficulty>	 CurrentDiff;
 	shared_ptr<VSRG::Song>			 MySong;
 	shared_ptr<VSRG::Song>			 LoadedSong;
 	TimingType						 UsedTimingType;
 
-	ImageList				 BMPs;
-	std::vector<AutoplayBMP> BMPEvents;
-	std::vector<AutoplayBMP> BMPEventsMiss;
-	std::vector<AutoplayBMP> BMPEventsLayer;
-	std::vector<AutoplayBMP> BMPEventsLayer2;
-	Line* Barline;
+	shared_ptr<Line> Barline;
 
 	double BarlineOffset;
 	double BarlineX;
@@ -75,37 +65,25 @@ private:
     EHiddenMode SelectedHiddenMode;
 
     Mat4             PositionMatrix;
-    Mat4             PositionMatrixJudgment;
-    Mat4             NoteMatrix[VSRG::MAX_CHANNELS];
 
     float            SpeedMultiplier;
     uint32           StartMeasure;
 
-    int              GearBindings[VSRG::MAX_CHANNELS];
-	int              GearIsPressed[VSRG::MAX_CHANNELS];
-    int              lastClosest[VSRG::MAX_CHANNELS];
-    int              PlaySounds[VSRG::MAX_CHANNELS];
-    int              BarlineOffsetKind;
+    std::map<int, int> GearBindings;
+	int                GearIsPressed[VSRG::MAX_CHANNELS];
+    int                lastClosest[VSRG::MAX_CHANNELS];
+    int                PlaySounds[VSRG::MAX_CHANNELS];
+    int                BarlineOffsetKind;
 
 	LifeType         lifebar_type;		 
-	ScoreType        scoring_type;		 
+	ScoreType        scoring_type;
 
-	/* Graphics */
-	Image*  NoteImage;
-	Image*  NoteImageHold;
-	Image*  GearLaneImage[VSRG::MAX_CHANNELS];
-	Image*  GearLaneImageDown[VSRG::MAX_CHANNELS];
-	Image*  NoteImages[VSRG::MAX_CHANNELS];
-	Image*  NoteImagesHold[VSRG::MAX_CHANNELS];
-	Image*  NoteImagesHoldHead[VSRG::MAX_CHANNELS];
-	Image*  NoteImagesHoldTail[VSRG::MAX_CHANNELS];
-
-	AudioStream *Music;
-	AudioSourceOJM *OJMAudio;
+	shared_ptr<AudioStream> Music;
+	shared_ptr<AudioSourceOJM> OJMAudio;
 	SoundSample *MissSnd;
 	SoundSample *FailSnd;
 
-	ScoreKeeper7K* score_keeper;
+	shared_ptr<ScoreKeeper7K> ScoreKeeper;
 
 	EHiddenMode		 RealHiddenMode;
 	float            HideClampLow, HideClampHigh, HideClampFactor;
@@ -142,16 +120,14 @@ private:
 
 	bool    InterpolateTime;
 	bool    AudioCompensation;
-
+	shared_ptr<BackgroundAnimation> BGA;
 	/*
 		Optimizations will come in later.
 		See Renderer7K.cpp.
 	*/
 
-	void SetupGear();
-
 	void SetupScriptConstants();
-	void SetupLua();
+	void SetupLua(LuaManager* Env);
 	void SetupMechanics();
 	void UpdateScriptVariables();
 	void UpdateScriptScoreVariables();
@@ -162,13 +138,11 @@ private:
 	// Done in loading thread
 	bool LoadChartData();
 	bool LoadSongAudio();
-	bool LoadBMPs();
+	bool LoadBGA();
+	void SetupBarline();
 	bool ProcessSong();
 
 	void SetupAfterLoadingVariables();
-
-	// Done in main thread, after the loading thread
-	void SetupBackground();
 
 	void RecalculateMatrix();
 	void RecalculateEffects();
@@ -177,13 +151,13 @@ private:
 	void HitNote (double TimeOff, uint32 Lane, bool IsHold, bool IsHoldRelease = false);
 	void MissNote (double TimeOff, uint32 Lane, bool IsHold, bool auto_hold_miss, bool early_miss);
 
-	void DrawBarlines(float rPos);
+	void DrawBarlines();
 	void DrawMeasures();
 
 	void GearKeyEvent(uint32 Lane, bool KeyDown);
 	void JudgeLane(uint32 Lane, float Time);
 	void ReleaseLane(uint32 Lane, float Time);
-	void TranslateKey(KeyType K, bool KeyDown);
+	void TranslateKey(int32 K, bool KeyDown);
 	void AssignMeasure(uint32 Measure);
 	void RunAutoEvents();
 	void CheckShouldEndScreen();
@@ -199,11 +173,13 @@ private:
 	// true if holding down key
 	bool GetGearLaneState(uint32 Lane);
 
+	friend class Noteskin;
 public:
 
 	// Functions for data.
 	bool IsAutoEnabled();
 	bool IsFailEnabled();
+	bool IsUpscrolling();
 	float GetCurrentBeat();
 	float GetUserMultiplier() const;
 	float GetCurrentVerticalSpeed();
