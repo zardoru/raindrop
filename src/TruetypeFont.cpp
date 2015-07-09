@@ -7,11 +7,15 @@
 #include "stb_truetype.h"
 
 #include "utf8.h"
+#include "Logging.h"
 
 TruetypeFont::TruetypeFont(GString Filename, float Scale)
 {
 	std::ifstream ifs (Filename.c_str(), std::ios::binary);
 	
+	info = nullptr;
+	data = nullptr;
+
 	if (!ifs.is_open())
 	{
 		IsValid = false;
@@ -38,11 +42,12 @@ TruetypeFont::TruetypeFont(GString Filename, float Scale)
 
 	if (IsValid)
 	{
-		SetupTexture();
 		UpdateWindowScale();
 
 		WindowFrame.AddTTF(this);
 	}
+	else
+		Log::Printf("Failure loading TTF file %s.\n", Filename.c_str());
 }
 
 TruetypeFont::~TruetypeFont()
@@ -104,20 +109,26 @@ TruetypeFont::codepdata &TruetypeFont::GetTexFromCodepoint(int cp)
 #ifdef VERBOSE_DEBUG
 		wprintf(L"generating %d\n", cp);
 #endif
-		newcp.tex = stbtt_GetCodepointBitmap(info, 0, realscale, cp, &w, &h, &xofs, &yofs);
-		newcp.gltx = 0;
-		newcp.scl = WindowFrame.GetWindowVScale();
-		newcp.tw = w;
-		newcp.th = h;
+		if (IsValid)
+		{
+			newcp.tex = stbtt_GetCodepointBitmap(info, 0, realscale, cp, &w, &h, &xofs, &yofs);
+			newcp.gltx = 0;
+			newcp.scl = WindowFrame.GetWindowVScale();
+			newcp.tw = w;
+			newcp.th = h;
 		
-		// get size etc.. for how it'd be if the screen weren't resized
-		void * tx = stbtt_GetCodepointBitmap(info, 0, virtualscale, cp, &w, &h, &xofs, &yofs);
-		newcp.xofs = xofs;
-		newcp.yofs = yofs;
-		newcp.w = w;
-		newcp.h = h;
+			// get size etc.. for how it'd be if the screen weren't resized
+			void * tx = stbtt_GetCodepointBitmap(info, 0, virtualscale, cp, &w, &h, &xofs, &yofs);
+			newcp.xofs = xofs;
+			newcp.yofs = yofs;
+			newcp.w = w;
+			newcp.h = h;
 
-		free(tx);
+			free(tx);
+		}
+		else
+			memset(&newcp, 0, sizeof(codepdata));
+
 		Texes[cp] = newcp;
 		return Texes[cp];
 	}else
@@ -132,6 +143,8 @@ float TruetypeFont::GetHorizontalLength(const char *In)
 	size_t len = strlen(In);
 	float Out = 0;
 
+	if (!IsValid) return 0;
+
 	try {
 		utf8::iterator<const char*> it(Text, Text, Text + len);
 		utf8::iterator<const char*> itend(Text + len, Text, Text + len);
@@ -139,7 +152,18 @@ float TruetypeFont::GetHorizontalLength(const char *In)
 		{
 			CheckCodepoint(*it); // Force a regeneration of this if necessary
 			codepdata &cp = GetTexFromCodepoint(*it);
-			Out += cp.w + cp.xofs;
+
+			auto it_nx = it;
+			++it_nx;
+			if (it_nx != itend)
+			{
+				float aW = stbtt_GetCodepointKernAdvance(info, *it, *it_nx);
+				int bW;
+				stbtt_GetCodepointHMetrics(info, *it, &bW, NULL);
+				Out += aW * virtualscale + bW * virtualscale;
+			}
+			else
+				Out += cp.w;
 		}
 	}
 	catch (...)

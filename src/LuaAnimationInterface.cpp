@@ -213,6 +213,7 @@ struct O2DProxy
 
 void DefineSpriteInterface(LuaManager* anim_lua)
 {
+	anim_lua->AppendPath("./?;./?.lua");
 	anim_lua->AppendPath(GameState::GetInstance().GetScriptsDirectory() + "?");
 	anim_lua->AppendPath(GameState::GetInstance().GetScriptsDirectory() + "?.lua");
 

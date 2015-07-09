@@ -14,6 +14,7 @@
 #include "SongList.h"
 
 #include "SongDatabase.h"
+#include <glm/gtc/matrix_transform.inl>
 
 using namespace Game;
 
@@ -407,7 +408,7 @@ void SongWheel::DisplayItem(int32 ListItem, Vec2 Position)
 		Item->Render();
 		
 		if (Text.length())
-			mTFont->Render(Text, Position + ItemTextOffset);
+			mTFont->Render(Text, Position + ItemTextOffset, glm::translate(Mat4(), Vec3(0, 0, Item->GetZ())));
 	}
 }
 

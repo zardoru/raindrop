@@ -1,3 +1,8 @@
+if Channels > 7 then
+	fallback_require("screengameplay7k")
+	return
+end
+
 game_require("TextureAtlas")
 game_require("FrameInterpolator")
 game_require("FixedObjects")
@@ -12,32 +17,39 @@ GearWidth = 275
 GearHeight = GearHeightCommon
 
 -- All of these will be loaded in the loading screen instead of
--- in the main thread once loading is over.
+-- in the main thread, and will also be unloaded at the end.
 Preload = {
 	"assets/explosion.png",
 	"assets/field.png",
 	"assets/glow.png",
 	"assets/judge.png",
-	"assets/layout.png",
 	"assets/belowbelowfield.png",
 	"assets/lightning.png",
 	"assets/field_limit.png",
 	"assets/hp_l.png",
 	"assets/hp_r.png",
 	"assets/hp_fill.png",
-	"VSRG/note1.png",
-	"VSRG/note1L.png",
-	"VSRG/note2.png",
-	"VSRG/note2L.png",
-	"VSRG/note3.png",
-	"VSRG/note3L.png"
+	"assets/notes.png",
+	"assets/holds.png",
+	"assets/flair.png",
+	"assets/hp_bottom.png",
+	"assets/keyhold.png",
+	"assets/songpercent.png"
 }
 
 JudgmentAtlas = TextureAtlas:new(GetSkinFile("assets/judge.csv"))
 ExplosionColorAtlas = TextureAtlas:new(GetSkinFile("assets/colexplosion.csv"))
+
+-- Status of a lane being pressed or not.
 KeyArray = {}
+
+-- Key overlay.
 KeyHold = {}
+
+-- Judgments.
 Judgments = {}
+
+-- The keys themselves.
 Key = {}
 
 Colours = {
@@ -96,32 +108,17 @@ function Init()
 	Glow.Object.Width = 280
 	Glow.Object.Layer = 20
 	
-	HealthBar = Engine:CreateObject()
-	HealthBar.X = 40
-	HealthBar.Y = 600
-	HealthBar.Image = "assets/hp_fill.png"
-	HealthBar.Width = 280
-	HealthBar.Height = 60
-	HealthBar.Layer = 19
+	print "Creating fixed objects."
+	FixedObjects.CreateFromCSV("ftb.csv")
+	
+	HealthBar = Sprites['hp_fill']
 	HealthBar.Lighten = 1
 	HealthBar.LightenFactor = 2
 	HealthBar.ScaleX = 0
 	
-	SongPosition = Engine:CreateObject()
-	SongPosition.Image = "assets/songpercent.png"
-	SongPosition.Height = 768
-	SongPosition.Width = 3
-	SongPosition.X = 37
-	SongPosition.Y = ScreenHeight
-	SongPosition.Layer = 21
+	SongPosition = Sprites["songpercent"]
 	
-	Flair = Engine:CreateObject()
-	Flair.Image = "assets/flair.png"
-	Flair.Height = 768
-	Flair.Width = 3
-	Flair.X = 320
-	Flair.Y = ScreenHeight
-	Flair.Layer = 22
+	Flair = Sprites["flair"]
 	
 	print "Creating explosions and lightning."
 	Explosions = {}
@@ -172,8 +169,7 @@ function Init()
 		obj.X = Noteskin[7]["Key" .. i .. "X"]
 		obj.Y = JudgmentLineY - obj.Height / 2
 	end
-	print "Creating fixed objects."
-	FixedObjects.CreateFromCSV("ftb.csv")
+	
 	Engine:Sort()
 end
 
@@ -192,7 +188,6 @@ function OnActivateEvent()
 end
 
 function Explode(frac, targ)
-	targ.Alpha = 1 - frac
 	targ:SetScale(1 + frac * 2.5)
 	return 1
 end
@@ -203,6 +198,7 @@ function Judgment(frac, targ)
 	return 1
 end
 
+-- The judgments are in inverted order, so yup.
 map = {5, 4, 3, 2, 1}
 function JUDGE(JudgmentValue, Lane)
 	if JudgmentValue == 0 then 
@@ -257,7 +253,7 @@ function CreateText()
 	lblCombo.X = 45
 	lblCombo.Y = 665
 	Engine:AddTarget(lblCombo)
-	lblCombo.Layer = 14
+	lblCombo.Layer = 24
 	
 	
 	lblmaxCombo = StringObject2D()
@@ -267,27 +263,27 @@ function CreateText()
 	lblmaxCombo.Y = 665
 	Engine:AddTarget(lblmaxCombo)
 	
-	lblmaxCombo.Layer = 14
+	lblmaxCombo.Layer = 24
 	
 	lblcurCombo = StringObject2D()
 	lblcurCombo.Font = largeFont
 	lblcurCombo.X = 45
 	lblcurCombo.Y = 665
-	lblcurCombo.Layer = 14
+	lblcurCombo.Layer = 24
 	Engine:AddTarget(lblcurCombo)
 	
 	lblcurMaxCombo = StringObject2D()
 	lblcurMaxCombo.Font = largeFont
 	lblcurMaxCombo.Text = "0"
 	lblcurMaxCombo.Y = 665
-	lblcurMaxCombo.Layer = 14
+	lblcurMaxCombo.Layer = 24
 	Engine:AddTarget(lblcurMaxCombo)
 	
 	lblScore = StringObject2D()
 	lblScore.Font = xlFont
 	lblScore.Y = 680
 	lblScore.X = 45
-	lblScore.Layer = 14
+	lblScore.Layer = 24
 	Engine:AddTarget(lblScore)
 	
 	lblstScore = StringObject2D()
@@ -295,7 +291,7 @@ function CreateText()
 	lblstScore.Text = "score"
 	lblstScore.Y = 740
 	lblstScore.X = 155
-	lblstScore.Layer = 14
+	lblstScore.Layer = 24
 	
 	Engine:AddTarget(lblstScore)
 end
@@ -306,7 +302,9 @@ function UpdateText()
 	lblcurMaxCombo.X = 312 - largeFont:GetLength(lblcurMaxCombo.Text)
 	
 	lblScore.Text = string.format("%08d", SCScore)
-	lblScore.X = 188 - largeFont:GetLength(lblScore.Text)
+	local len = xlFont:GetLength(lblScore.Text)
+	lblScore.X = 42 + math.abs(GearWidth - len) / 2
+	
 end
 
 function Update(Delta)

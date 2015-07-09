@@ -1,4 +1,9 @@
-game_require("noteskin_defs")
+if Lanes > 7 then
+	fallback_require("noteskin")
+	return
+end
+
+skin_require("custom_defs")
 game_require("TextureAtlas")
 -- All notes have their origin centered.
 

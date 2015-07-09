@@ -311,13 +311,6 @@ void Sprite::Cleanup()
 	}
 }
 
-void TruetypeFont::SetupTexture()
-{
-	Texform = new VBO (VBO::Dynamic, 8);
-	Texform->Validate();
-	Texform->AssignData(QuadPositions);
-}
-
 void TruetypeFont::ReleaseCodepoint(int cp)
 {
 	if (Texes.find(cp) != Texes.end())
@@ -332,7 +325,7 @@ void TruetypeFont::Render(const GString &In, const Vec2 &Position, const Mat4 &T
 {
 	const char* Text = In.c_str(); 
 	int Line = 0;
-	glm::vec3 vOffs (Position.x, Position.y + scale, 16);
+	glm::vec3 vOffs (Position.x, Position.y + scale, 0);
 
 	if (!IsValid)
 		return;
@@ -428,11 +421,11 @@ void TruetypeFont::ReleaseTextures()
 		i != Texes.end();
 		i++)
 	{
-		free (i->second.tex);
-		glDeleteTextures(1, &i->second.gltx);
+		if (i->second.tex)
+			free (i->second.tex);
+		if (i->second.gltx)
+			glDeleteTextures(1, &i->second.gltx);
 	}
-
-	delete Texform;
 }
 
 void Line::UpdateVBO()

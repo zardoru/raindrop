@@ -16,6 +16,7 @@
 #include "LuaManager.h"
 
 #include "RaindropRocketInterface.h"
+#include <glm/gtc/matrix_transform.inl>
 
 SoundSample *MMSelectSnd = NULL;
 BitmapFont* MainMenuFont = NULL;
@@ -135,7 +136,7 @@ bool ScreenMainMenu::Run (double Delta)
 	PlayBtn.Run(Delta);
 	ExitBtn.Run(Delta);
 	
-	TTFO->Render (GString("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop"), Vec2(0, 0));
+	TTFO->Render (GString("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop"), Vec2(0, 0), glm::translate(Mat4(), Vec3(0, 0, 16)));
 	Animations->DrawTargets(Delta);
 
 	return Running;

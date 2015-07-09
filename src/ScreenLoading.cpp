@@ -19,6 +19,8 @@ ScreenLoading::ScreenLoading(Screen *Parent, Screen *_Next) : Screen("ScreenLoad
 	LoadThread = NULL;
 	Running = true;
 
+	GameState::GetInstance().InitializeLua(Animations->GetEnv()->GetState());
+
 	Animations->Preload(GameState::GetInstance().GetSkinFile("screenloading.lua"), "Preload");
 	Animations->Initialize("", false);
 

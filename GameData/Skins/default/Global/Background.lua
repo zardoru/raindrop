@@ -3,7 +3,7 @@ if BackgroundAnimation then
 	return
 end
 
-BackgroundAnimation = {Duration = 0.35}
+BackgroundAnimation = {Duration = 0.25}
 
 function BackgroundAnimation.Init(self)
 	if self.Initialized then
@@ -40,7 +40,7 @@ function BackgroundAnimation:In()
 end
 
 function BackgroundAnimation:Out()
-	Engine:AddAnimation(self.Pink, "BGAOut", EaseOut, BackgroundAnimation.Duration, ScreenFade.Duration)
+	Engine:AddAnimation(self.Pink, "BGAOut", EaseOut, BackgroundAnimation.Duration, 0)
 end
 
 function BackgroundAnimation.UpdateObjects(self)

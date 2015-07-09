@@ -17,7 +17,7 @@ function invert(f, frac)
 	return newf
 end
 
-ScreenFade = { Duration = 0.1 }
+ScreenFade = { Duration = 0.45 }
 
 function ScreenFade.Init()
 	BackgroundAnimation:Init()

@@ -32,7 +32,6 @@ class TruetypeFont : public Font
 	
 	GString filename;
 	std::map<int, codepdata> Texes;
-	VBO *Texform;
 	void SetupTexture();
 	codepdata& GetTexFromCodepoint(int cp);
 	void CheckCodepoint(int cp);
