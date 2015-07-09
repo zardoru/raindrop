@@ -2,7 +2,7 @@ if ScreenFade then
 	return
 end
 
-skin_require("Global/Background.lua")
+skin_require "Global/Background"
 
 function FadeInA1(frac)
 	ScreenFade.Black.Alpha = frac

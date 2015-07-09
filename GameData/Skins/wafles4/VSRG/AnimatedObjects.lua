@@ -1,4 +1,4 @@
-fallback_require("VSRG/AnimatedObjects.lua")
+fallback_require("VSRG/AnimatedObjects")
 
 if Channels == 4 then
 	Pulse = nil

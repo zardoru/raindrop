@@ -1,4 +1,4 @@
-fallback_require("VSRG/ScoreDisplay.lua")
+fallback_require("VSRG/ScoreDisplay")
 
 ScoreDisplay.DigitWidth = 40
 ScoreDisplay.DigitHeight = 47

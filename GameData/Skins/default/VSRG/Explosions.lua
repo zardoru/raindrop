@@ -11,6 +11,11 @@ Explosions.HoldFrames = 40
 Explosions.HoldScale = 1
 Explosions.HoldSheet = "VSRG/holdsheet.csv"
 
+Explosions.KeysSheet = "VSRG/keys.csv"
+
+-- Yeah, yeah. This doesn't belong here.
+Explosions.Keys = {}
+
 Explosions.MissShow = 1
 
 function Explosions.HitName (i)
@@ -51,10 +56,14 @@ function Explosions.Init()
 	Explosions.HoldTime = {}
 	Explosions.HoldFrameTime = 1/Explosions.HoldFramerate
 	Explosions.HoldDuration = Explosions.HoldFrameTime * Explosions.HoldFrames
+	
+	Explosions.KeysUp = {}
+	Explosions.KeysDown = {}
 
 
 	Explosions.HitAtlas = TextureAtlas:new(GetSkinFile(Explosions.HitSheet))
 	Explosions.HoldAtlas = TextureAtlas:new(GetSkinFile(Explosions.HoldSheet))
+	Explosions.KeyAtlas = TextureAtlas:new(GetSkinFile(Explosions.KeysSheet))
 
 	for i = 1, Explosions.HitFrames do
 		Explosions.HitImages[i] = Explosions.HitName(i)
@@ -78,6 +87,36 @@ function Explosions.Init()
 
 		ObjectPosition(Explosions.HoldTargets[i], Explosions.HoldAtlas, i, Explosions.HoldScale)
 		Explosions.HoldTime[i] = Explosions.HoldDuration
+		
+		-- Keys
+		Explosions.Keys[i] = Engine:CreateObject()
+		local obj = Explosions.Keys[i]
+		obj.Centered = 1
+		obj.X = Noteskin[Channels]["Key" .. i .. "X"]
+		obj.Image = Explosions.KeyAtlas.File
+		obj.Layer = 27
+		Explosions.KeysUp[i] = Noteskin[Channels]["Key" .. i]
+		Explosions.KeysDown[i] = Noteskin[Channels]["Key" .. i .. "Down"]
+		
+		Explosions.KeyAtlas:SetObjectCrop(obj, Explosions.KeysUp[i])
+		
+		obj.Width = Noteskin[Channels]["Key" .. i .. "Width"]
+		obj.Height = Noteskin[Channels].GearHeight
+		
+		if Upscroll == 1 then
+			obj.Y = JudgmentLineY - obj.Height / 2
+		else
+			obj.Y = JudgmentLineY + obj.Height / 2
+		end
+	end
+end
+
+function Explosions.GearKeyEvent(i, IsKeyDown)
+	i = i + 1
+	if IsKeyDown == 1 then
+		Explosions.KeyAtlas:SetObjectCrop(Explosions.Keys[i], Explosions.KeysDown[i])
+	else 
+		Explosions.KeyAtlas:SetObjectCrop(Explosions.Keys[i], Explosions.KeysUp[i])
 	end
 end
 
@@ -98,6 +137,10 @@ function Explosions.Run(Delta)
 			-- Assign size and stuff according to texture atlas
 			local Tab = Explosions.HitAtlas.Sprites[Explosions.HitImages[math.floor(Frame)]]
 
+			if not Tab then 
+				print (Explosions.HitImages[math.floor(Frame)])
+			end
+			
 			Explosions.HitTargets[i]:SetCropByPixels(Tab.x, Tab.x+Tab.w, Tab.y+Tab.h, Tab.y)
 			Explosions.HitTargets[i].Width = Tab.w
 			Explosions.HitTargets[i].Height = Tab.h

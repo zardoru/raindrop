@@ -301,7 +301,7 @@ public:
 			if (abs(s1) > t*range) {
 				float nsamp = float(s1) / range; // Normalize the sample within the sint16 range..
 				float sign = nsamp / abs(nsamp);
-				float logbase = 5.71144; // Depends on the threshold.
+				float logbase = 5.71144f; // Depends on the threshold.
 				float threslog = log(1 + logbase * (abs(nsamp) - t) / (2 - t));
 				float baselog = log(1 + logbase);
 				float ir = sign * (t + (1 - t)*threslog / baselog);

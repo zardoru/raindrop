@@ -1,5 +1,5 @@
 if Channels ~= 4 then
-	fallback_require("VSRG/Explosions.lua")
+	fallback_require("VSRG/Explosions")
 	return
 end
 

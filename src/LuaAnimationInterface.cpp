@@ -42,14 +42,16 @@ namespace LuaAnimFuncs
 	int Require(lua_State *L)
 	{
 		LuaManager *Lua = GetObjectFromState<LuaManager>(L, "Luaman");
-		lua_pushboolean(L, Lua->RunScript(GameState::GetInstance().GetSkinFile(luaL_checkstring(L, 1))));
+		GString Request = luaL_checkstring(L, 1);
+		GString File = GameState::GetInstance().GetSkinScriptFile(Request.c_str());
+		lua_pushboolean(L, Lua->Require(File));
 		return 1;
 	}
 
 	int FallbackRequire(lua_State *L)
 	{
 		LuaManager *Lua = GetObjectFromState<LuaManager>(L, "Luaman");
-		lua_pushboolean(L, Lua->RunScript(GameState::GetInstance().GetFallbackSkinFile(luaL_checkstring(L, 1))));
+		lua_pushboolean(L, Lua->Require(GameState::GetInstance().GetFallbackSkinFile(luaL_checkstring(L, 1))));
 		return 1;
 	}
 
@@ -211,8 +213,33 @@ struct O2DProxy
 
 void DefineSpriteInterface(LuaManager* anim_lua)
 {
+	anim_lua->AppendPath(GameState::GetInstance().GetScriptsDirectory() + "?");
+	anim_lua->AppendPath(GameState::GetInstance().GetScriptsDirectory() + "?.lua");
+
+	anim_lua->AppendPath(GameState::GetInstance().GetSkinPrefix() + "?");
+	anim_lua->AppendPath(GameState::GetInstance().GetSkinPrefix() + "?.lua");
+
+
+	// anim_lua->AppendPath(GameState::GetFallbackSkinPrefix());
 	anim_lua->Register(LuaAnimFuncs::Require, "skin_require");
 	anim_lua->Register(LuaAnimFuncs::FallbackRequire, "fallback_require");
+
+	anim_lua->NewMetatable(LuaAnimFuncs::SpriteMetatable);
+	anim_lua->Register(LuaAnimFuncs::GetSkinConfigF, "GetConfigF");
+	anim_lua->Register(LuaAnimFuncs::GetSkinConfigS, "GetConfigS");
+	anim_lua->Register(LuaAnimFuncs::GetSkinDirectory, "GetSkinDirectory");
+	anim_lua->Register(LuaAnimFuncs::GetSkinFile, "GetSkinFile");
+
+	anim_lua->SetGlobal("ScreenHeight", ScreenHeight);
+	anim_lua->SetGlobal("ScreenWidth", ScreenWidth);
+
+	// Animation constants
+	anim_lua->SetGlobal("EaseNone", Animation::EaseLinear);
+	anim_lua->SetGlobal("EaseIn", Animation::EaseIn);
+	anim_lua->SetGlobal("EaseOut", Animation::EaseOut);
+
+	anim_lua->SetGlobal("BlendAdd", (int)MODE_ADD);
+	anim_lua->SetGlobal("BlendAlpha", (int)MODE_ALPHA);
 
 #define f(x) addFunction(#x, &Sprite::x)
 #define p(x) addProperty(#x, &Sprite::Get##x, &Sprite::Set##x)
@@ -324,21 +351,4 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 void CreateLuaInterface(LuaManager *AnimLua)
 {
 	CreateNewLuaAnimInterface(AnimLua);
-
-	AnimLua->NewMetatable(LuaAnimFuncs::SpriteMetatable);
-	AnimLua->Register(LuaAnimFuncs::GetSkinConfigF, "GetConfigF");
-	AnimLua->Register(LuaAnimFuncs::GetSkinConfigS, "GetConfigS");
-	AnimLua->Register(LuaAnimFuncs::GetSkinDirectory, "GetSkinDirectory");
-	AnimLua->Register(LuaAnimFuncs::GetSkinFile, "GetSkinFile");
-	
-	AnimLua->SetGlobal("ScreenHeight", ScreenHeight);
-	AnimLua->SetGlobal("ScreenWidth", ScreenWidth);
-
-	// Animation constants
-	AnimLua->SetGlobal("EaseNone", Animation::EaseLinear);
-	AnimLua->SetGlobal("EaseIn", Animation::EaseIn);
-	AnimLua->SetGlobal("EaseOut", Animation::EaseOut);
-
-	AnimLua->SetGlobal("BlendAdd", (int)MODE_ADD);
-	AnimLua->SetGlobal("BlendAlpha", (int)MODE_ALPHA);
 }

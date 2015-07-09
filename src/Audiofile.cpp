@@ -301,7 +301,7 @@ AudioStream::~AudioStream()
 uint32 AudioStream::Read(short* buffer, size_t count)
 {
 	size_t cnt;
-	size_t toRead = count; // Count is the amount of s16 samples.
+	ring_buffer_size_t toRead = count; // Count is the amount of s16 samples.
 	size_t outcnt;
 
 	if (!mSource || !mSource->IsValid())

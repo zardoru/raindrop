@@ -1,4 +1,4 @@
-game_require("utils.lua")
+game_require "utils"
 
 TextureAtlas = {}
 TextureAtlas.__index = TextureAtlas
@@ -23,7 +23,7 @@ function TextureAtlas:AssignFrames(Filename)
 			else
 				local restable = split(line)
 
-				Sprite = {x = tonumber(restable[2]), 
+				Sprite = {  x = tonumber(restable[2]), 
 							y = tonumber(restable[3]), 
 							w = tonumber(restable[4]), 
 							h = tonumber(restable[5])}

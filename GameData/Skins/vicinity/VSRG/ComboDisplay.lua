@@ -1,4 +1,4 @@
-fallback_require("VSRG/ComboDisplay.lua")
+fallback_require("VSRG/ComboDisplay")
 
 ComboDisplay.BumpHorizontally = 0
 ComboDisplay.DigitWidth = 41

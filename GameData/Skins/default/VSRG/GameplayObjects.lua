@@ -5,7 +5,9 @@ Lifebar = {
 	MarginFile = "VSRG/stage-lifeb.png",
 	FillFile = "VSRG/stage-lifeb-s.png",
 	Width = 50,
-	Speed = 10
+	FillWidth = 50,
+	Speed = 10,
+	FillOffset = -2
 }
 
 Judgment = {
@@ -66,7 +68,7 @@ function Lifebar.Init()
 	Lifebar.Margin.Y = Lifebar.Position.y
 
 	Lifebar.Fill.Image = Lifebar.FillFile
-	Lifebar.Fill.Width = Lifebar.Width
+	Lifebar.Fill.Width = Lifebar.FillWidth
 	Lifebar.Fill.Height = Lifebar.FillSize
 	Lifebar.Fill.Layer = 26
 	Lifebar.Fill.Centered = 1
@@ -100,12 +102,12 @@ function Lifebar.Run(Delta)
 	Lifebar.CurrentPosition = Lifebar.Position
 
 	Lifebar.Fill.ScaleY = Lifebar.Display 
-	Lifebar.Fill.X = Lifebar.Position.x - 2
+	Lifebar.Fill.X = Lifebar.Position.x + Lifebar.FillOffset
 	Lifebar.Fill.Y = NewYFixed
 	Lifebar.Fill:SetCropByPixels( 0, Lifebar.Width, Lifebar.FillSize - Lifebar.FillSize * Lifebar.Display, Lifebar.FillSize )
 
 	Lifebar.Fill2.ScaleY = Display 
-	Lifebar.Fill2.X = Lifebar.Fill.X
+	Lifebar.Fill2.X = Lifebar.Position.x + Lifebar.FillOffset
 	Lifebar.Fill2.Y = NewY
 	Lifebar.Fill2:SetCropByPixels( 0, Lifebar.Width, Lifebar.FillSize - Lifebar.FillSize * Display, Lifebar.FillSize )
 	Lifebar.Fill2.Alpha = ( DP * LifebarValue )

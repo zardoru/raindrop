@@ -1,11 +1,11 @@
-game_require("textureatlas.lua")
-game_require("frame_interpolator.lua")
-game_require("fixed_objects.lua")
-game_require("noteskin_defs.lua")
-game_require("utils.lua")
+game_require("TextureAtlas")
+game_require("FrameInterpolator")
+game_require("FixedObjects")
+skin_require("custom_defs")
+game_require("utils")
+game_require("AnimationFunctions")
 
-skin_require("Global/AnimationFunctions.lua")
-skin_require("Global/FadeInScreen.lua")
+skin_require("Global/FadeInScreen")
 -- Set up constants for everyone
 
 GearWidth = 275
@@ -24,7 +24,13 @@ Preload = {
 	"assets/field_limit.png",
 	"assets/hp_l.png",
 	"assets/hp_r.png",
-	"assets/hp_fill.png"
+	"assets/hp_fill.png",
+	"VSRG/note1.png",
+	"VSRG/note1L.png",
+	"VSRG/note2.png",
+	"VSRG/note2L.png",
+	"VSRG/note3.png",
+	"VSRG/note3L.png"
 }
 
 JudgmentAtlas = TextureAtlas:new(GetSkinFile("assets/judge.csv"))
@@ -80,6 +86,7 @@ function Init()
 
 	CreateText()
 	
+	print "Creating animated objects"
 	Glow = FrameInterpolator:New("assets/glow.csv")
 	
 	Glow.TotalFrames = 35
@@ -116,6 +123,7 @@ function Init()
 	Flair.Y = ScreenHeight
 	Flair.Layer = 22
 	
+	print "Creating explosions and lightning."
 	Explosions = {}
 	Lightning = {}
 	for i=1, 7 do
@@ -164,9 +172,7 @@ function Init()
 		obj.X = Noteskin[7]["Key" .. i .. "X"]
 		obj.Y = JudgmentLineY - obj.Height / 2
 	end
-	
-	
-	
+	print "Creating fixed objects."
 	FixedObjects.CreateFromCSV("ftb.csv")
 	Engine:Sort()
 end

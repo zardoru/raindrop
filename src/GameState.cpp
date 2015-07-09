@@ -21,12 +21,49 @@
 
 using namespace Game;
 
+bool GameState::FileExistsOnSkin(const char* Filename, const char* Skin)
+{
+	Directory path(Skin);
+	path = path / Filename;
+
+	return Utility::FileExists(path);
+}
+
 GameState::GameState()
 {
 	CurrentSkin = "default";
 	SelectedSong = NULL;
 	SKeeper7K = NULL;
 	Params = make_shared<GameParameters>();
+}
+
+GString GameState::GetFallbackSkin()
+{
+	GString SkinFallback = Configuration::GetSkinConfigs("Fallback");
+
+	// Actually, how many levels of fallback recursion should we allow?
+	if (SkinFallback.length() == 0)
+		SkinFallback = "default";
+	SkinFallback += "/";
+
+	return SkinFallback;
+}
+
+GString GameState::GetSkinScriptFile(const char* Filename)
+{
+	GString Fn = Filename;
+
+	if (Fn.find(".lua") == GString::npos)
+	{
+		Fn += ".lua";
+	}
+
+	if (FileExistsOnSkin(Fn.c_str(), GetSkinPrefix().c_str()))
+	{
+		return (Filename);
+	}
+
+	return GetFallbackSkinFile(Filename);
 }
 
 GameState& GameState::GetInstance()
@@ -110,13 +147,7 @@ SongDatabase* GameState::GetSongDatabase()
 
 GString GameState::GetFallbackSkinFile(Directory Name)
 {
-	GString SkinFallback = Configuration::GetSkinConfigs("Fallback");
-
-	// Actually, how many levels of fallback recursion should we allow?
-	if (SkinFallback.length() == 0)
-		SkinFallback = "default";
-	SkinFallback += "/";
-
+	GString SkinFallback = GetFallbackSkin();
 	return DirectoryPrefix + SkinsPrefix + SkinFallback + Name.path();
 }
 

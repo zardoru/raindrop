@@ -1,5 +1,5 @@
-game_require("noteskin_defs.lua")
-game_require("textureatlas.lua")
+game_require("noteskin_defs")
+game_require("TextureAtlas")
 -- All notes have their origin centered.
 
 normalNotes = {}

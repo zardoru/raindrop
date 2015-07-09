@@ -18,6 +18,7 @@ class LuaManager
 
 	lua_State* State;
 	void GetGlobal(GString VarName);
+
 	int func_args, func_results; bool func_input; bool func_err;
 
 public:
@@ -36,6 +37,9 @@ public:
 	bool RunScript(Directory file);
 	bool RunScript(GString Filename);
 	bool RunString(GString sGString);
+
+	// Do a "require" call with Filename as the argument. This leaves a value on the stack!
+	bool Require(GString Filename);
 
 	// Global variables
 
@@ -79,6 +83,7 @@ public:
 	void SetFieldI(int index, int Value);
 	void SetFieldD(int index, double Value);
 	void SetFieldS(int index, GString Value);
+	void SetFieldS(GString name, GString Value);
 
 	int GetFieldI(GString Key, int Default = -1);
 	double GetFieldD(GString Key, double Default = -1);
@@ -93,7 +98,7 @@ public:
 	GString NextGString();
 	
 	void FinalizeArray(GString ArrayName); // saves the new array with this name
-
+	void AppendPath(GString Path);
 	// TODO: Table variables
 
 };

@@ -35,13 +35,14 @@ class GameState
 	Game::Song *SelectedSong;
 	shared_ptr<ScoreKeeper7K> SKeeper7K;
 	shared_ptr<GameParameters> Params;
+
+	bool FileExistsOnSkin(const char* Filename, const char* Skin);
 public:
 
 	GameState();
-
-	static void GetSongListDC(std::vector<dotcur::Song*> &OutVec, Directory Dir);
-	static void GetSongList7K(std::vector<VSRG::Song*> &OutVec, Directory Dir);
-
+	GString GetFallbackSkin();
+	GString GetSkinScriptFile(const char* Filename);
+	
 	static GameState &GetInstance();
 	void Initialize();
 

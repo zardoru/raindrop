@@ -1,31 +1,30 @@
-game_require("textureatlas.lua")
-game_require("utils.lua")
-skin_require("Global/AnimationFunctions.lua")
-skin_require("Global/FadeInScreen.lua")
+game_require "TextureAtlas"
+game_require "utils"
+game_require "AnimationFunctions"
+skin_require "Global/FadeInScreen"
 
 -- Set up constants for everyone
 
-game_require("noteskin_defs.lua")
+game_require "noteskin_defs"
 GearWidth = Noteskin[Channels].GearWidth
 GearHeight = GearHeightCommon
 
 
-skin_require("VSRG/Explosions.lua")
-skin_require("VSRG/ComboDisplay.lua")
-skin_require("VSRG/KeyLightning.lua")
-skin_require("VSRG/FixedObjects.lua")
-skin_require("VSRG/AnimatedObjects.lua")
-skin_require("VSRG/ScoreDisplay.lua")
-skin_require("VSRG/AutoplayAnimation.lua")
-skin_require("VSRG/GameplayObjects.lua")
-skin_require("VSRG/StageAnimation.lua")
-skin_require("VSRG/TextDisplay.lua")
+skin_require "VSRG/Explosions"
+skin_require "VSRG/ComboDisplay"
+skin_require "VSRG/KeyLightning"
+skin_require "VSRG/FixedObjects"
+skin_require "VSRG/AnimatedObjects"
+skin_require "VSRG/ScoreDisplay"
+skin_require "VSRG/AutoplayAnimation"
+skin_require "VSRG/GameplayObjects"
+skin_require "VSRG/StageAnimation"
+skin_require "VSRG/TextDisplay"
 
 -- All of these will be loaded in the loading screen instead of
 -- in the main thread once loading is over.
 Preload = {
 	"VSRG/judgeline.png",
-	"VSRG/filter.png",
 	"VSRG/stage-left.png",
 	"VSRG/stage-right.png",
 	"VSRG/pulse_ver.png",
@@ -42,12 +41,6 @@ Preload = {
 	"VSRG/note1L.png",
 	"VSRG/note2L.png",
 	"VSRG/note3L.png",
-	"VSRG/key1.png",
-	"VSRG/key2.png",
-	"VSRG/key3.png",
-	"VSRG/key1d.png",
-	"VSRG/key2d.png",
-	"VSRG/key3d.png",
 	"VSRG/judge-perfect.png",
 	"VSRG/judge-excellent.png",
 	"VSRG/judge-good.png",

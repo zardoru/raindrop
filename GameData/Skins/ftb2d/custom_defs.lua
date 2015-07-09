@@ -1,3 +1,4 @@
+require "utils"
 
 GearStartX = 40
 
@@ -49,4 +50,5 @@ Channels7 = {
     Key7Width = Channels7Sizes[7],
 }
 
+Noteskin = Noteskin or {}
 Noteskin[7] = Channels7

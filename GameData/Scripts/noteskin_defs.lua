@@ -1,3 +1,5 @@
+require "utils"
+
 -- Auxiliary variables.
 NoteImage1 = "VSRG/note1.png"
 NoteImage2 = "VSRG/note2.png"
@@ -126,23 +128,8 @@ Channels10Positions = {}
 Channels12Positions = {}
 Channels16Positions = {}
 
-GearWidthByChannels = {}
+GearWidths = {}
 
--- Calculate the positions of lanes based off their sizes and a start position.
-function Sizeup(Pos, Size, Num)
-	local GearWidthChannel = 0
-	
-	for i=1, Num do
-		GearWidthChannel = GearWidthChannel + Size[i]
-	end 
-	
-	GearWidthByChannels[Num] = GearWidthChannel
-	
-	Pos[1] = Size[1] / 2 + GearStartX
-	for i=2, Num do
-		Pos[i] = Pos[i-1] + Size[i-1] / 2 + Size[i] / 2
-	end
-end
 
 Sizeup(Channels4Positions, Channels4Sizes, 4)
 Sizeup(Channels5Positions, Channels5Sizes, 5)
@@ -154,20 +141,6 @@ Sizeup(Channels10Positions, Channels10Sizes, 10)
 Sizeup(Channels12Positions, Channels12Sizes, 12)
 Sizeup(Channels16Positions, Channels16Sizes, 16)
 
-GearWidths = {}
-
--- Auxiliary variables.
-NoteImage1 = "VSRG/note1.png"
-NoteImage2 = "VSRG/note2.png"
-NoteImage3 = "VSRG/note3.png"
-NoteImage4 = "VSRG/note4.png"
-NoteImage5 = "VSRG/note5.png"
-NoteImageHold1 = "VSRG/note1L.png"
-NoteImageHold2 = "VSRG/note2L.png"
-NoteImageHold3 = "VSRG/note3L.png"
-NoteImageHold4 = "VSRG/note4L.png"
-NoteImageHold5 = "VSRG/note5L.png"
-
 GearHeightCommon = 135
 
 -- Note height.
@@ -177,16 +150,16 @@ NoteHeight = 16
 -- Lane X positions are always centered.
 --
 
-C1 = "VSRG/key1.png"
-C1D = "VSRG/key1d.png"
-C2 = "VSRG/key2.png"
-C2D = "VSRG/key2d.png"
-C3 = "VSRG/key3.png"
-C3D = "VSRG/key3d.png"
-C4 = "VSRG/key4.png"
-C4D = "VSRG/key4d.png"
-C5 = "VSRG/key5.png"
-C5D = "VSRG/key5d.png"
+C1 = "key1.png"
+C1D = "key1d.png"
+C2 = "key2.png"
+C2D = "key2d.png"
+C3 = "key3.png"
+C3D = "key3d.png"
+C4 = "key4.png"
+C4D = "key4d.png"
+C5 = "key5.png"
+C5D = "key5d.png"
 
 -- Channels16 is, of course, DP.
 Channels16 = {
@@ -794,4 +767,4 @@ Noteskin[9] = Channels9
 Noteskin[12] = Channels12 
 Noteskin[16] = Channels16
 
-skin_require("custom_defs.lua")
+skin_require "custom_defs"

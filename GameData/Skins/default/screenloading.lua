@@ -1,4 +1,4 @@
-skin_require("Loading/phrases.lua")
+skin_require "Loading/phrases"
 
 IntroDuration = 0.35
 ExitDuration = 0.35

@@ -1,4 +1,3 @@
-
 if Upscroll == 0 then
 	cY = ScreenHeight/4
 else

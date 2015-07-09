@@ -170,8 +170,8 @@ DrawHoldBody = drawHoldBodyInternal
 end
 
 if Lanes == 4 then
-	skin_require("custom_defs.lua")
+	skin_require("custom_defs")
 	DoWafles()
 else
-	fallback_require("noteskin.lua")
+	fallback_require("noteskin")
 end

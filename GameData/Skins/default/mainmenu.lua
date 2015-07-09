@@ -1,4 +1,4 @@
-skin_require("Global/FadeInScreen.lua")
+skin_require "Global/FadeInScreen"
 
 Preload = {
 	"MainMenu/play.png",

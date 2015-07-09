@@ -1,7 +1,7 @@
-game_require("textureatlas.lua")
-skin_require ("Global/Background.lua")
-skin_require ("Global/FadeInScreen.lua")
-skin_require ("VSRG/ScoreDisplay.lua")
+game_require "TextureAtlas"
+skin_require "Global/Background"
+skin_require "Global/FadeInScreen"
+skin_require "VSRG/ScoreDisplay"
 
 function SetupFonts()
 	EvalFont = Fonts.TruetypeFont(GetSkinFile("font.ttf"), 30);
