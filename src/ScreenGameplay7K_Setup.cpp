@@ -536,11 +536,10 @@ void ScreenGameplay7K::SetupMechanics()
 		}
 		else if (TimingInfo->GetType() == VSRG::TI_STEPMANIA)
 		{
-			// lifebar_type = LT_STEPMANIA;
-			lifebar_type = LT_GROOVE;
+			lifebar_type = LT_STEPMANIA;
 			UsedTimingType = TT_TIME;
 			ScoreKeeper->setLifeTotal(-1);
-			ScoreKeeper->setJudgeRank(Configuration::GetConfigf("DefaultJudgeRank"));
+			ScoreKeeper->setSMJ4Windows();
 			bmsOrStepmania = true;
 		}
 		else

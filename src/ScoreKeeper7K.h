@@ -26,6 +26,7 @@ class ScoreKeeper7K {
 		void setJudgeScale(double scale);
 
 		void setODWindows(int od);
+		void setSMJ4Windows();
 
 		void setAccMin(double ms);
 		void setAccMax(double ms);

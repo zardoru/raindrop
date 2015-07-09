@@ -163,6 +163,17 @@ void ScoreKeeper7K::setODWindows(int od){
 
 }
 
+void ScoreKeeper7K::setSMJ4Windows()
+{
+	// Ridiculous is included: J7 Marvelous.
+	double JudgmentValues[] = { 11.25, 22.5, 45, 90, 135, 180 };
+
+	miss_threshold = 180;
+	earlymiss_threshold = 180;
+	for (int i = 0; i < sizeof(JudgmentValues) / sizeof(double); i++)
+		judgment_time[i] = JudgmentValues[i];
+
+}
 
 void ScoreKeeper7K::set_manual_w0(bool on){ use_w0 = on; } // make a config option
 
