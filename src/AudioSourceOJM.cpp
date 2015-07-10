@@ -471,7 +471,7 @@ void AudioSourceOJM::parseOMC()
 
 		ifile->read(Buffer, OggHead.sample_size);
 
-		shared_ptr<SoundSample> NewSample = shared_ptr<SoundSample>();
+		shared_ptr<SoundSample> NewSample = make_shared<SoundSample>();
 
 		SFM30 ToLoad;
 		ToLoad.Buffer = Buffer;
