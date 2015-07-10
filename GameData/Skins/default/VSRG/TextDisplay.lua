@@ -21,11 +21,13 @@ function DrawTextObjects()
 	pacemaker1.Font = fnt1;
 	pacemaker1.X = Judgment.Position.x - 65;
 	pacemaker1.Y = Judgment.Position.y + 20;
+  pacemaker1.Layer = Judgment.Object.Layer;
 
 	pacemaker2.Text = "";
 	pacemaker2.Font = fnt1;
 	pacemaker2.X = Judgment.Position.x - 20;
 	pacemaker2.Y = Judgment.Position.y + 20;
+  pacemaker2.Layer = Judgment.Object.Layer;
 
 	lifebar.Text = "0";
 	lifebar.Font = fnt2;

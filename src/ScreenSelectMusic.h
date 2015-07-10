@@ -49,6 +49,7 @@ class ScreenSelectMusic : public Screen
 	void StopLoops();
 
 	float GetListHorizontalTransformation(const float Y);
+	void StartGameplayScreen();
 	float GetListVerticalTransformation(const float Y);
 	float GetListPendingVerticalTransformation(const float Y);
 	void OnSongChange(shared_ptr<Game::Song> MySong, uint8 difindex);

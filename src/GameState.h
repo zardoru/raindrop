@@ -32,7 +32,7 @@ class GameState
 
 	Image* StageImage;
 	Image* SongBG;
-	Game::Song *SelectedSong;
+	shared_ptr<Game::Song> SelectedSong;
 	shared_ptr<ScoreKeeper7K> SKeeper7K;
 	shared_ptr<GameParameters> Params;
 
@@ -42,7 +42,7 @@ public:
 	GameState();
 	GString GetFallbackSkin();
 	GString GetSkinScriptFile(const char* Filename);
-	
+	shared_ptr<Game::Song> GetSelectedSongShared();
 	static GameState &GetInstance();
 	void Initialize();
 
@@ -55,7 +55,7 @@ public:
 	Image* GetSkinImage(Directory Image);
 	bool SkinSupportsChannelCount(int Count);
 
-	void SetSelectedSong(Game::Song *Song);
+	void SetSelectedSong(shared_ptr<Game::Song> Song);
 	Game::Song *GetSelectedSong();
 	void SetDifficultyIndex(uint32 DifficultyIndex);
 	uint32 GetDifficultyIndex() const;

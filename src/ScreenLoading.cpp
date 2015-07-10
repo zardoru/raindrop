@@ -9,14 +9,14 @@
 
 void LoadFunction(void* pScreen)
 {
-	Screen *S = (Screen*)pScreen;
+	auto S = static_cast<Screen*>(pScreen);
 	S->LoadThreadInitialization();
 }
 
 ScreenLoading::ScreenLoading(Screen *Parent, Screen *_Next) : Screen("ScreenLoading", Parent)
 {
 	Next = _Next;
-	LoadThread = NULL;
+	LoadThread = nullptr;
 	Running = true;
 
 	GameState::GetInstance().InitializeLua(Animations->GetEnv()->GetState());

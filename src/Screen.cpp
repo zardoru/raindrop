@@ -22,6 +22,7 @@ Screen::Screen(GString Name, Screen *_Parent)
 	IntroDuration = 0;
 	ScreenState = StateRunning;
 	Animations = make_shared<SceneEnvironment>(Name.c_str());
+	SkipThisFrame = true;
 }
 
 Screen::~Screen() {}
@@ -108,6 +109,12 @@ double Screen::GetScreenTime()
 bool Screen::Update(float delta)
 {
 	ScreenTime += delta;
+
+	if (SkipThisFrame)
+	{
+		SkipThisFrame = false;
+		return true;
+	}
 
 	if (ScreenState == StateIntro)
 	{

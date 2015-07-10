@@ -159,14 +159,10 @@ void ScreenSelectMusic::MainThreadInitialization()
 	BackBtn->OnHover = OnBackHover;
 	BackBtn->OnLeave = OnBackHoverLeave;
 
-	AutoBtn = NULL;
-
 	Animations->AddLuaTarget(BackBtn, "BackButton");
 	Animations->AddLuaTarget(UpBtn, "DirUpButton");
-	// Animations->AddLuaTarget(UpBtn, "AutoButton");
 	Animations->AddTarget(BackBtn);
 	Animations->AddTarget(UpBtn);
-	// Animations->AddTarget(AutoBtn);
 
 	Animations->Initialize();
 
@@ -191,7 +187,7 @@ void ScreenSelectMusic::LoadThreadInitialization()
 	SwitchBackGuiPending = true;
 	char* Manifest[] =
 	{
-		(char*)Configuration::GetSkinConfigs("SelectMusicBackground").c_str(),
+		const_cast<char*>(Configuration::GetSkinConfigs("SelectMusicBackground").c_str()),
 	};
 
 	ImageLoader::LoadFromManifest(Manifest, 1, GameState::GetInstance().GetSkinPrefix());
@@ -249,19 +245,12 @@ float ScreenSelectMusic::GetListHorizontalTransformation(const float Y)
 		return 0;
 }
 
-void ScreenSelectMusic::OnSongSelect(shared_ptr<Game::Song> MySong, uint8 difindex)
+void ScreenSelectMusic::StartGameplayScreen()
 {
-	// Handle a recently selected song
 	ScreenLoading *LoadNext = nullptr;
+	shared_ptr<Game::Song> MySong = GameState::GetInstance().GetSelectedSongShared();
+	uint8 difindex = GameState::GetInstance().GetDifficultyIndex();
 
-	if (IsTransitioning)
-		return;
-
-	if (PreviewStream) PreviewStream->Stop();
-
-	IsTransitioning = true;
-
-	SelectSnd->Play();
 	if (MySong->Mode == MODE_DOTCUR)
 	{
 		ScreenGameplay *DotcurGame = new ScreenGameplay(this);
@@ -273,16 +262,32 @@ void ScreenSelectMusic::OnSongSelect(shared_ptr<Game::Song> MySong, uint8 difind
 		ScreenGameplay7K *VSRGGame = new ScreenGameplay7K();
 		
 		VSRGGame->Init(dynamic_pointer_cast<VSRG::Song>(MySong), 
-			difindex, *GameState::GetInstance().GetParameters());
+		               difindex, *GameState::GetInstance().GetParameters());
 
 		LoadNext = new ScreenLoading(this, VSRGGame);
 	}
 
 	LoadNext->Init();
 	Next = LoadNext;
+}
+
+void ScreenSelectMusic::OnSongSelect(shared_ptr<Game::Song> MySong, uint8 difindex)
+{
+	// Handle a recently selected song
+
+	if (IsTransitioning)
+		return;
+
+	if (PreviewStream) PreviewStream->Stop();
+
+	IsTransitioning = true;
+
+	SelectSnd->Play();
+
 	StopLoops();
 
-	GameState::GetInstance().SetSelectedSong(MySong.get());
+	GameState::GetInstance().SetSelectedSong(MySong);
+	GameState::GetInstance().SetDifficultyIndex(difindex);
 
 	Animations->DoEvent("OnSelect", 1);
 	TransitionTime = Animations->GetEnv()->GetFunctionResultF();
@@ -296,7 +301,7 @@ void ScreenSelectMusic::OnSongChange(shared_ptr<Game::Song> MySong, uint8 difind
 
 	if (MySong)
 	{
-		GameState::GetInstance().SetSelectedSong(MySong.get());
+		GameState::GetInstance().SetSelectedSong(MySong);
 		Animations->DoEvent("OnSongChange");
 		
 		PreviewWaitTime = 1;
@@ -312,9 +317,9 @@ void ScreenSelectMusic::PlayPreview()
 	float StartTime;
 	GString PreviewFile;
 
-	if (ToPreview == NULL)
+	if (ToPreview == nullptr)
 	{
-		if (PreviewStream != NULL)
+		if (PreviewStream != nullptr)
 			PreviewStream->Stop();
 		return;
 	}
@@ -327,7 +332,7 @@ void ScreenSelectMusic::PlayPreview()
 		{
 			PreviewStream->Stop();
 			delete PreviewStream;
-			PreviewStream = NULL;
+			PreviewStream = nullptr;
 		}
 
 		if (!PreviewStream)
@@ -374,7 +379,7 @@ bool ScreenSelectMusic::Run(double Delta)
 		if (PreviewStream && PreviewStream->IsPlaying())
 			PreviewStream->Stop();
 
-		if (TransitionTime <= 0)
+		if (TransitionTime < 0)
 		{
 			if (RunNested(Delta))
 				return true;
@@ -384,7 +389,13 @@ bool ScreenSelectMusic::Run(double Delta)
 			}
 		}
 		else
+		{
+			// We're going to cross the threshold. Fire up the next screen.
+			if (TransitionTime - Delta <= 0)
+				StartGameplayScreen();
+
 			TransitionTime -= Delta;
+		}
 	}
 	else
 	{
@@ -449,11 +460,11 @@ void ScreenSelectMusic::SwitchUpscroll(bool NewUpscroll)
 
 bool ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
+	if (TransitionTime > 0 && IsTransitioning)
+		return true;
+
 	if (Next)
-	{
-		if (TransitionTime <= 0)
-			return Next->HandleInput(key, code, isMouseInput);
-	}
+		return Next->HandleInput(key, code, isMouseInput);
 
 	if (UpBtn->HandleInput(key, code, isMouseInput))
 	{

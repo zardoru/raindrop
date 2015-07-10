@@ -32,8 +32,8 @@ bool GameState::FileExistsOnSkin(const char* Filename, const char* Skin)
 GameState::GameState()
 {
 	CurrentSkin = "default";
-	SelectedSong = NULL;
-	SKeeper7K = NULL;
+	SelectedSong = nullptr;
+	SKeeper7K = nullptr;
 	Params = make_shared<GameParameters>();
 }
 
@@ -66,6 +66,11 @@ GString GameState::GetSkinScriptFile(const char* Filename)
 	return GetFallbackSkinFile(Filename);
 }
 
+shared_ptr<Game::Song> GameState::GetSelectedSongShared()
+{
+	return SelectedSong;
+}
+
 GameState& GameState::GetInstance()
 {
 	static GameState* StateInstance = new GameState;
@@ -74,10 +79,10 @@ GameState& GameState::GetInstance()
 
 Game::Song *GameState::GetSelectedSong()
 {
-	return SelectedSong;
+	return SelectedSong.get();
 }
 
-void GameState::SetSelectedSong(Game::Song* Song)
+void GameState::SetSelectedSong(shared_ptr<Game::Song> Song)
 {
 	SelectedSong = Song;
 }
@@ -160,7 +165,7 @@ Image* GameState::GetSkinImage(Directory Path)
 		{
 			if (SelectedSong->Mode == MODE_VSRG)
 			{
-				VSRG::Song *Song = static_cast<VSRG::Song*>(SelectedSong);
+				VSRG::Song *Song = static_cast<VSRG::Song*>(SelectedSong.get());
 
 				if (Song->Difficulties.size() > GetDifficultyIndex())
 				{
@@ -177,7 +182,7 @@ Image* GameState::GetSkinImage(Directory Path)
 					if (Directory(File).GetExtension() == "ojn")
 					{
 						size_t read;
-						const unsigned char* buf = (const unsigned char*)LoadOJNCover(toLoad, read);
+						const unsigned char* buf = reinterpret_cast<const unsigned char*>(LoadOJNCover(toLoad, read));
 						ImageData data = ImageLoader::GetDataForImageFromMemory(buf, read);
 						StageImage->SetTextureData(&data, true);
 						delete[] buf;
@@ -190,14 +195,14 @@ Image* GameState::GetSkinImage(Directory Path)
 						StageImage->Assign(toLoad, ImageData::SM_DEFAULT, ImageData::WM_DEFAULT, true);
 						return StageImage;
 					}
-					else return NULL;
+					else return nullptr;
 				}
-				else return NULL; // Oh okay, no difficulty assigned.
+				else return nullptr; // Oh okay, no difficulty assigned.
 			}
 			else // Stage file not supported for DC songs yet
-				return NULL; 
+				return nullptr; 
 		}
-		else return NULL;
+		else return nullptr;
 	}
 	else if (Path.path() == "SONGBG")
 	{
@@ -210,15 +215,15 @@ Image* GameState::GetSkinImage(Directory Path)
 				SongBG->Assign(toLoad, ImageData::SM_DEFAULT, ImageData::WM_DEFAULT, true);
 				return SongBG;
 			}
-			else return NULL;
+			else return nullptr;
 		}
-		else return NULL;
+		else return nullptr;
 	}
 
 	/* Regular paths */
 	if (Path.path().length())
 		return ImageLoader::Load(GetSkinFile(Path));
-	else return NULL;
+	else return nullptr;
 }
 
 bool GameState::SkinSupportsChannelCount(int Count)

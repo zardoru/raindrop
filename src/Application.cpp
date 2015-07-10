@@ -189,7 +189,7 @@ void Application::Init()
 		DoRun = WindowFrame.AutoSetupWindow(this);
 		InitAudio();
 		Engine::SetupRocket();
-		Game = NULL;
+		Game = nullptr;
 	}else
 	{
 		if (RunMode != MODE_NULL)
@@ -202,7 +202,7 @@ void Application::Init()
 void Application::SetupPreviewMode()
 {
 	// Load the song.
-	shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), NULL);
+	shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), nullptr);
 
 	if (!Sng || !Sng->Difficulties.size())
 	{
@@ -211,12 +211,12 @@ void Application::SetupPreviewMode()
 	}
 
 	// Avoid a crash...
-	GameState::GetInstance().SetSelectedSong(Sng.get());
+	GameState::GetInstance().SetSelectedSong(Sng);
 	GameState::GetInstance().SetDifficultyIndex(difIndex);
 
 	// Create loading screen and gameplay screen.
 	ScreenGameplay7K *SGame = new ScreenGameplay7K();
-	ScreenLoading *LoadScreen = new ScreenLoading(NULL, SGame);
+	ScreenLoading *LoadScreen = new ScreenLoading(nullptr, SGame);
 
 	// Set them up.
 	Sng->SongDirectory = InFile.ParentDirectory().path() + "/";
@@ -280,7 +280,7 @@ void Application::Run()
 		}
 
 		Game = new ScreenMainMenu(NULL);
-		((ScreenMainMenu*)Game)->Init();
+		static_cast<ScreenMainMenu*>(Game)->Init();
 
 	}else if (RunMode == MODE_VSRGPREVIEW)
 	{

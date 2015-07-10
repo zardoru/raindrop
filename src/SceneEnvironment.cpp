@@ -179,6 +179,12 @@ void SceneEnvironment::StopAnimationsForTarget(Sprite* Target)
 
 void SceneEnvironment::RunIntro(float Fraction, float Delta)
 {
+	if (mFrameSkip)
+	{
+		mFrameSkip = false;
+		return;
+	}
+
 	if (Lua->CallFunction("UpdateIntro", 2))
 	{
 		Lua->PushArgument(Fraction);
@@ -190,6 +196,12 @@ void SceneEnvironment::RunIntro(float Fraction, float Delta)
 }
 void SceneEnvironment::RunExit(float Fraction, float Delta)
 {
+	if (mFrameSkip)
+	{
+		mFrameSkip = false;
+		return;
+	}
+
 	if (Lua->CallFunction("UpdateExit", 2))
 	{
 		Lua->PushArgument(Fraction);

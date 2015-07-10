@@ -21,6 +21,7 @@ protected:
 	double GetScreenTime();
 	Screen *Parent;
 	bool Running; // Is this screen active?
+	bool SkipThisFrame;
 
 	void ChangeState(EScreenState NewState);
 	double TransitionTime;
