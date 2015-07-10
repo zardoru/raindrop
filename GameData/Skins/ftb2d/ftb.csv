@@ -1,5 +1,5 @@
 Global/filter.png,filter,40,0,280,768,0,0
-assets/field.png,field_bg,40,0,280,540,12,0
+assets/field.png,field_bg,40,0,280,540,0,0
 assets/hp_bottom.png,hp_bottom,40,600,280,60,18,0
 assets/hp_l.png,hp_left,37,600,3,60,19,0
 assets/hp_r.png,hp_right,320,600,3,60,19,0

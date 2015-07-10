@@ -7,7 +7,7 @@ Sprites = {}
 function FixedObjects.CreateObjectFromParameters(tbl, constants)
 	local Object = Engine:CreateObject()
 		
-	print("Create object " .. tbl[2])
+	print("Create object " .. tbl[2] .. " Layer " .. tbl[7])
 		
 	local name = tbl[2]
 	Object.Image = constants[tbl[1]] or tbl[1] or 0

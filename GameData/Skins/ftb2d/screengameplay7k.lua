@@ -133,7 +133,7 @@ function Init()
 		obj.X = Noteskin[7]["Key" .. i .. "X"]
 		obj.Y = JudgmentLineY
 		obj.Centered = 1
-		obj.Layer = 20
+		obj.Layer = 21
 		obj.Alpha = 0
 		
 		obj.Red = Colours[Layout[i]][1] / 255
@@ -189,6 +189,7 @@ end
 
 function Explode(frac, targ)
 	targ:SetScale(1 + frac * 2.5)
+  targ.Alpha = 1 - frac
 	return 1
 end
 
@@ -210,10 +211,12 @@ function JUDGE(JudgmentValue, Lane)
 end
 
 function HitEvent(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease)
-	Engine:AddAnimation(Explosions[Lane].EffectExplosion.Object, "Explode", EaseNone, 0.25, 0)
-	Explosions[Lane].EffectExplosion.CurrentTime = 0
+  local MapLane = Noteskin[Channels].Map[Lane]
+  
+	Engine:AddAnimation(Explosions[MapLane].EffectExplosion.Object, "Explode", EaseNone, 0.25, 0)
+	Explosions[MapLane].EffectExplosion.CurrentTime = 0
 	
-	JUDGE(JudgmentValue, Lane)
+	JUDGE(JudgmentValue, MapLane)
 end
 
 function MissEvent(TimeOff, Lane, IsHold)
@@ -224,15 +227,17 @@ function KeyEvent(Key, Code, IsMouseInput)
 end
 
 function GearKeyEvent (Lane, IsKeyDown)
-	KeyArray[Lane + 1] = IsKeyDown
+  local MapLane = Noteskin[Channels].Map[Lane + 1]
+  
+	KeyArray[MapLane] = IsKeyDown
 	
-	Lightning[Lane + 1].Object.Alpha = 1
-	Lightning[Lane + 1].CurrentTime = 0
+	Lightning[MapLane].Object.Alpha = 1
+	Lightning[MapLane].CurrentTime = 0
 
 	if IsKeyDown == 1 then 
-		Key[Lane + 1].LightenFactor = 1
+		Key[MapLane].LightenFactor = 1
 	else
-		Key[Lane + 1].LightenFactor = 0
+		Key[MapLane].LightenFactor = 0
 	end
 end
 

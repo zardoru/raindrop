@@ -22,9 +22,10 @@ function setNoteStuff(note, i)
 end
 
 for i=1,Lanes do
+  local MapLane = Noteskin[Lanes].Map[i]
 	normalNotes[i] = Object2D()
 	local note = normalNotes[i]
-	local image = Noteskin[Lanes]['Key' .. i .. 'Image'] .. ".png"
+	local image = Noteskin[7]['Key' .. MapLane .. 'Image'] .. ".png"
 	note.Image = Atlas.File
 	Atlas:SetObjectCrop(note, image)
 	setNoteStuff(note, i)
@@ -32,7 +33,7 @@ for i=1,Lanes do
 	holdBodies[i] = Object2D()
 	note = holdBodies[i]
 	
-	image = Noteskin[Lanes]['Key' .. i .. 'Image'] .. ".png"
+	image = Noteskin[7]['Key' .. MapLane .. 'Image'] .. ".png"
 	note.Image = AtlasHolds.File
 	AtlasHolds:SetObjectCrop(note, image)
 	setNoteStuff(note, i)
