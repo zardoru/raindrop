@@ -320,11 +320,11 @@ bool ScreenGameplay7K::LoadSongAudio()
 		OJMAudio = make_shared<AudioSourceOJM>();
 		OJMAudio->Open((MySong->SongDirectory / MySong->SongFilename).c_path());
 
-		for (int i = 0; i < 2000; i++)
+		for (int i = 1; i <= 2000; i++)
 		{
 			shared_ptr<SoundSample> Snd = OJMAudio->GetFromIndex(i);
 
-			if (i != NULL)
+			if (Snd != NULL)
 				Keysounds[i] = Snd;
 		}
 	}
