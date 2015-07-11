@@ -484,7 +484,7 @@ bool GameWindow::SetupWindow()
 	// glEnable(GL_CULL_FACE);
 	glEnable(GL_LINE_SMOOTH);
 	// glCullFace(GL_BACK);
-	glFrontFace(GL_CW);
+	// glFrontFace(GL_CW);
 	// glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);

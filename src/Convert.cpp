@@ -115,8 +115,8 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 			out.flush();
 		}
 
-		for (TimingData::iterator t = (*i)->Data->SpeedChanges.begin();
-			t != (*i)->Data->SpeedChanges.end();
+		for (TimingData::iterator t = (*i)->Data->Scrolls.begin();
+			t != (*i)->Data->Scrolls.end();
 			t++)
 		{
 			out << (t->Time + (*i)->Offset) * 1000 << "," << - 100/(t->Value ? t->Value : 0.00001) << ",4,1,0,15,0,0\n";

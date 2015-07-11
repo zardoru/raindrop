@@ -203,12 +203,12 @@ void Difficulty::ProcessSpeedVariations(TimingData& BPS, TimingData& VerticalSpe
 	assert(Data != NULL);
 
 	TimingData tVSpeeds = VerticalSpeeds; // We need this to store what values to change
-	TimingData &SpeedChanges = Data->SpeedChanges;
+	TimingData &Scrolls = Data->Scrolls;
 
-	std::sort( SpeedChanges.begin(), SpeedChanges.end() );
+	std::sort( Scrolls.begin(), Scrolls.end() );
 
-	for(TimingData::const_iterator Change = SpeedChanges.begin();
-			Change != SpeedChanges.end();
+	for(TimingData::const_iterator Change = Scrolls.begin();
+			Change != Scrolls.end();
 	    ++Change)
 	{
 		TimingData::const_iterator NextChange = (Change+1);
@@ -269,10 +269,10 @@ void Difficulty::ProcessSpeedVariations(TimingData& BPS, TimingData& VerticalSpe
 		{
 			if (Time->Time > ChangeTime)
 			{
-				// Two options, between two speed changes, or the last one. Second case, NextChange == SpeedChanges.end().
+				// Two options, between two speed changes, or the last one. Second case, NextChange == Scrolls.end().
 				// Otherwise, just move on
 				// Last speed change
-				if (NextChange == SpeedChanges.end())
+				if (NextChange == Scrolls.end())
 				{
 					Time->Value = Change->Value * SectionValue(tVSpeeds, Time->Time);
 				}else

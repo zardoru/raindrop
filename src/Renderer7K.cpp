@@ -68,46 +68,51 @@ void ScreenGameplay7K::DrawMeasures()
 			return (CurrentVertical - StaticVert) * SpeedMultiplier + JudgmentLinePos;
 		};
 
-		/* Find the location of the first/next visible regular note */
-		auto LocPredicate = [&](const TrackNote &A, double _) -> bool {
-			if (!IsUpscrolling())
-				return _ < Locate(A.GetVertical());
-			else // Signs are switched. We need to preserve the same order. 
-				return _ > Locate(A.GetVertical());
-		};
+		vector<TrackNote>::iterator Start = NotesByChannel[k].begin();
+		vector<TrackNote>::iterator End = NotesByChannel[k].end();
 
-		std::vector<TrackNote>::iterator Start;
-		
-		// Signs are switched. Doesn't begin by the first note closest to the lower edge, but the one closest to the higher edge.
-		if (!IsUpscrolling())
-			Start = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), ScreenHeight + Noteskin::GetNoteOffset(), LocPredicate);
-		else
-			Start = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), 0 - Noteskin::GetNoteOffset(), LocPredicate);
-
-		// Locate the first hold that we can draw in this range
-		auto rStart = std::reverse_iterator<vector<TrackNote>::iterator>(Start);
-		for (auto i = rStart; i != NotesByChannel[k].rend(); ++i)
+		if (!HasNegativeScroll)
 		{
-			if (i->IsHold() && i->IsVisible()) {
-				auto Vert = Locate(i->GetVertical());
-				auto VertEnd = Locate(i->GetHoldEndVertical());
-				if (IntervalsIntersect(0, ScreenHeight, min(Vert, VertEnd), max(Vert, VertEnd)))
-				{
-					Start = i.base() - 1;
-					break;
+
+			/* Find the location of the first/next visible regular note */
+			auto LocPredicate = [&](const TrackNote &A, double _) -> bool {
+				if (!IsUpscrolling())
+					return _ < Locate(A.GetVertical());
+				else // Signs are switched. We need to preserve the same order. 
+					return _ > Locate(A.GetVertical());
+			};
+
+			// Signs are switched. Doesn't begin by the first note closest to the lower edge, but the one closest to the higher edge.
+			if (!IsUpscrolling())
+				Start = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), ScreenHeight + Noteskin::GetNoteOffset(), LocPredicate);
+			else
+				Start = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), 0 - Noteskin::GetNoteOffset(), LocPredicate);
+
+			// Locate the first hold that we can draw in this range
+			auto rStart = std::reverse_iterator<vector<TrackNote>::iterator>(Start);
+			for (auto i = rStart; i != NotesByChannel[k].rend(); ++i)
+			{
+				if (i->IsHold() && i->IsVisible()) {
+					auto Vert = Locate(i->GetVertical());
+					auto VertEnd = Locate(i->GetHoldEndVertical());
+					if (IntervalsIntersect(0, ScreenHeight, min(Vert, VertEnd), max(Vert, VertEnd)))
+					{
+						Start = i.base() - 1;
+						break;
+					}
 				}
 			}
+
+			// Find the note that is out of the drawing range
+
+			// As before. Top becomes bottom, bottom becomes top.
+			if (!IsUpscrolling())
+				End = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), 0 - Noteskin::GetNoteOffset(), LocPredicate);
+			else
+				End = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), ScreenHeight + Noteskin::GetNoteOffset(), LocPredicate);
+
 		}
 
-		// Find the note that is out of the drawing range
-		std::vector<TrackNote>::iterator End;
-
-		// As before. Top becomes bottom, bottom becomes top.
-		if (!IsUpscrolling())
-			End = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), 0 - Noteskin::GetNoteOffset(), LocPredicate);
-		else
-			End = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), ScreenHeight + Noteskin::GetNoteOffset(), LocPredicate);
-		
 		// Now, draw them.
 		for (auto m = Start; m != End; ++m)
 		{
@@ -120,6 +125,25 @@ void ScreenGameplay7K::DrawMeasures()
 
 			Vertical = Locate(m->GetVertical());
 			VerticalHoldEnd = Locate(m->GetHoldEndVertical());
+
+
+			// Old check method that doesn't rely on a correct vertical ordering.
+			if (HasNegativeScroll)
+			{
+				if (m->IsHold())
+				{					
+					if (!IntervalsIntersect(0, ScreenHeight, min(Vertical, VerticalHoldEnd), max(Vertical, VerticalHoldEnd))) continue;
+
+				} else
+				{
+					if (Upscroll)
+					{
+						if (!(Vertical < ScreenHeight)) continue;
+					}
+						else
+							if (!(Vertical > 0)) continue;
+				}
+			}
 			
 			// Assign our matrix.
 			WindowFrame.SetUniform(U_MVP, &id[0][0]);

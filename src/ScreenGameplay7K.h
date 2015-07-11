@@ -23,9 +23,11 @@ private:
 
 	VSRGMechanics *MechanicsSet;
 
-	TimingData       VSpeeds;
-	TimingData		 BPS;
-	TimingData		 Warps;
+	bool HasNegativeScroll;
+	TimingData         VSpeeds;
+	TimingData		   BPS;
+	TimingData		   Warps;
+	VSRG::VectorSpeeds Speeds;
 	VSRG::VectorTN  NotesByChannel;
 	std::map <int, shared_ptr<SoundSample>> Keysounds;
 	vector<AutoplaySound>   BGMEvents;

@@ -137,7 +137,7 @@ double StopTimeAtBeat(const TimingData &StopsTiming, double Beat)
 
 double IntegrateToTime(const TimingData &Timing, double Time, float Drift)
 {
-	int Section = SectionIndex(Timing, Time);
+	auto Section = SectionIndex(Timing, Time);
 	double Out = 0;
 
 	if (Section == -1) // Time is behind all.
@@ -145,7 +145,7 @@ double IntegrateToTime(const TimingData &Timing, double Time, float Drift)
 		Out = - (Timing[0].Time - Time) * Timing[0].Value;
 	}else // Time comes after first entry.
 	{
-		for (uint32 i = 0; i < Section; i++)
+		for (auto i = 0; i < Section; i++)
 			Out += (Timing[i+1].Time - Timing[i].Time) * Timing[i].Value;
 
 		Out += (Time - Timing[Section].Time + Drift) * Timing[Section].Value;

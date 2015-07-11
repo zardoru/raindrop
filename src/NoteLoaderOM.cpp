@@ -698,7 +698,7 @@ void CopyTimingData(OsuLoadInfo* Info)
 	for (auto S: Info->HitsoundSections)
 	{
 		if (S.IsInherited)
-			Info->Diff->Data->SpeedChanges.push_back(TimingSegment(S.Time, S.Value));
+			Info->Diff->Data->Scrolls.push_back(TimingSegment(S.Time, S.Value));
 		else
 			Info->Diff->Timing.push_back(TimingSegment(S.Time, 60000 / S.Value));
 	}

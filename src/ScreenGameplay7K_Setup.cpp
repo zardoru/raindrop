@@ -434,6 +434,14 @@ bool ScreenGameplay7K::ProcessSong()
 		CurrentDiff->Process(NotesByChannel, BPS, VSpeeds, Drift); // Regular processing
 
 	Warps = CurrentDiff->Data->Warps;
+	Speeds = CurrentDiff->Data->Speeds;
+
+	// Toggle whether we can use our guarantees for optimizations or not at rendering time.
+	HasNegativeScroll = false;
+
+	for (auto S : Speeds) if (S.Value < 0) HasNegativeScroll = true;
+	for (auto S : VSpeeds) if (S.Value < 0) HasNegativeScroll = true;
+
 	return true;
 }
 

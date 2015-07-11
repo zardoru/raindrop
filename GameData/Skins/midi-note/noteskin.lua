@@ -87,6 +87,9 @@ function drawHoldTailInternal(lane, loc, frac, active_level)
 	
 	if active_level == 2 then
 		note = holdTailsActive[lane + 1]
+    note.LightenFactor = 1
+  else
+    note.LightenFactor = 0
 	end
 	
 	if Game:IsUpscrolling() then

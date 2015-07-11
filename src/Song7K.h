@@ -13,7 +13,15 @@ namespace VSRG
 		}
 	};
 
-	typedef vector<Measure> MeasureVector;
+	struct SpeedSection : TimeBased<SpeedSection, float>
+	{
+		float Duration;
+		float Value;
+	};
+
+	typedef vector<SpeedSection> VectorSpeeds;
+
+	typedef vector<Measure> VectorMeasure;
 
 	typedef vector<TrackNote> VectorTN[MAX_CHANNELS];
 
@@ -103,23 +111,26 @@ namespace VSRG
 		// Contains stops data.
 		TimingData StopsTiming;
 
-		// For speed changes, as obvious as it sounds.
-		TimingData SpeedChanges;
+		// For scroll changes, as obvious as it sounds.
+		TimingData Scrolls;
 
 		// At Time, warp Value seconds forward.
 		TimingData Warps;
 
 		// Notes (Up to MAX_CHANNELS tracks)
-		MeasureVector Measures;
+		VectorMeasure Measures;
+
+		// For Speed changes.
+		VectorSpeeds Speeds;
 
 		// Autoplay Sounds
-		std::vector<AutoplaySound> BGMEvents;
+		vector<AutoplaySound> BGMEvents;
 
 		// Autoplay BMP
 		shared_ptr<BMPEventsDetail> BMPEvents;
 
 		// Timing Info
-		std::shared_ptr<CustomTimingInfo> TimingInfo;
+		shared_ptr<CustomTimingInfo> TimingInfo;
 
 		// Background/foreground to show when loading.
 		GString StageFile;

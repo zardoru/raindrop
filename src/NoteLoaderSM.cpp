@@ -21,6 +21,14 @@ using namespace VSRG;
 using namespace NoteLoaderSM;
 typedef std::vector<GString> SplitResult;
 
+struct StepmaniaSpeed
+{
+	float Time, Duration, Value;
+	enum ModeType : int {Beats, Seconds} Mode;
+};
+
+typedef vector<StepmaniaSpeed> SpeedData;
+
 #define ModeType(m,keys) if(mode==#m) return keys;
 
 int GetTracksByMode(GString mode)
@@ -81,7 +89,7 @@ GString RemoveComments(const GString Str)
 }
 
 // See if Time is within a warp section. We use this after already having calculated the warp times.
-bool CalculateIfInWarpSection(Difficulty* Diff, double Time)
+bool IsTimeWithinWarp(Difficulty* Diff, double Time)
 {
 	for (auto Warp : Diff->Data->Warps)
 	{
@@ -117,7 +125,7 @@ void LoadNotesSM(Song *Out, Difficulty *Diff, SplitResult &MeasureText)
 				double Beat = i * 4.0 + m * 4.0 / (double)MeasureFractions; /* Current beat */
 				double StopsTime = StopTimeAtBeat(Diff->Data->StopsTiming, Beat);
 				double Time = TimeAtBeat(Diff->Timing, Diff->Offset, Beat, true) + StopsTime;
-				bool InWarpSection = CalculateIfInWarpSection(Diff, Time); 
+				bool InWarpSection = IsTimeWithinWarp(Diff, Time); 
 
 				/* For every track of the fraction */
 				for (ptrdiff_t k = 0; k < Keys; k++) /* k = current track */
@@ -152,7 +160,7 @@ void LoadNotesSM(Song *Out, Difficulty *Diff, SplitResult &MeasureText)
 						Note.StartTime = KeyStartTime[k];
 						Note.EndTime = Time;
 
-						if (!CalculateIfInWarpSection(Diff, KeyStartTime[k])) {
+						if (!IsTimeWithinWarp(Diff, KeyStartTime[k])) {
 							Note.NoteKind = NK_NORMAL; // Un-fake it.
 							Diff->TotalHolds++;
 							Diff->TotalObjects++;
@@ -160,6 +168,11 @@ void LoadNotesSM(Song *Out, Difficulty *Diff, SplitResult &MeasureText)
 						}
 						Msr.MeasureNotes[k].push_back(Note);
 						break;
+					case 'F':
+						Note.StartTime = Time;
+						Note.NoteKind = NK_FAKE;
+
+						Msr.MeasureNotes[k].push_back(Note);
 					default:
 						break;
 					}
@@ -333,6 +346,62 @@ TimingData CalculateRaindropSCData(VSRG::Difficulty* Diff, const TimingData& SCd
 	return Ret;
 }
 
+// Transform the time data from beats to seconds
+VSRG::VectorSpeeds CalculateRaindropScrolls(VSRG::Difficulty *Diff, const SpeedData& In)
+{
+	VSRG::VectorSpeeds Ret;
+
+	for (auto scroll : In)
+	{
+		double Time = TimeAtBeat(Diff->Timing, 0, scroll.Time) +
+			StopTimeAtBeat(Diff->Data->StopsTiming, scroll.Time);
+		double TimeEnd;
+		
+		if (scroll.Mode == StepmaniaSpeed::Beats)
+		{
+			TimeEnd = TimeAtBeat(Diff->Timing, 0, scroll.Time + scroll.Duration) +
+				StopTimeAtBeat(Diff->Data->StopsTiming, scroll.Time + scroll.Duration);
+		}else
+			TimeEnd = TimeAtBeat(Diff->Timing, 0, scroll.Time) +
+			StopTimeAtBeat(Diff->Data->StopsTiming, scroll.Time) + scroll.Duration;
+
+		VSRG::SpeedSection newscroll;
+		newscroll.Time = Time;
+		newscroll.Duration = TimeEnd - Time;
+		newscroll.Value = scroll.Value;
+
+		Ret.push_back(newscroll);
+	}
+
+	return Ret;
+}
+
+SpeedData ParseScrolls(GString line)
+{
+	SplitResult ScrollLines;
+	SpeedData Ret;
+
+	boost::split(ScrollLines, line, boost::is_any_of(","));
+	for (auto segment: ScrollLines)
+	{
+		SplitResult data;
+		boost::split(data, segment, boost::is_any_of("="));
+
+		if (data.size() == 4)
+		{
+			StepmaniaSpeed newscroll;
+			newscroll.Time = latof(data[0]);
+			newscroll.Value = latof(data[1]);
+			newscroll.Duration = latof(data[2]);
+			newscroll.Mode = StepmaniaSpeed::ModeType(int(latof(data[3])));
+
+			Ret.push_back(newscroll);
+		}
+	}
+
+	return Ret;
+}
+
 void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *Out)
 {
 #if (!defined _WIN32) || (defined STLP)
@@ -345,6 +414,8 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 	TimingData StopsData;
 	TimingData WarpsData;
 	TimingData ScrollData;
+	SpeedData speedData;
+	SpeedData diffSpeedData;
 	double Offset = 0;
 
 	shared_ptr<VSRG::Difficulty> Diff = nullptr;
@@ -388,6 +459,7 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 		{
 			Diff = make_shared<VSRG::Difficulty>();
 			Diff->Data = make_shared<VSRG::DifficultyLoadInfo>();
+			diffSpeedData.clear(); // Clear this in particular since we're using a temp for diffs unlike the rest of the data.
 		}
 
 		DoCommonSMCommands(command, CommandContents, Out);
@@ -432,7 +504,15 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 			if (!Diff)
 				LoadTimingList(ScrollData, CommandContents);
 			else
-				LoadTimingList(Diff->Data->SpeedChanges, CommandContents);
+				LoadTimingList(Diff->Data->Scrolls, CommandContents);
+		}
+
+		OnCommand(#SPEEDS)
+		{
+			if (!Diff)
+				speedData = ParseScrolls(CommandContents);
+			else
+				diffSpeedData = ParseScrolls(CommandContents);
 		}
 
 		// Notedata only here
@@ -477,8 +557,13 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 			if (!Diff->Data->Warps.size())
 				Diff->Data->Warps = WarpsData;
 
-			if (!Diff->Data->SpeedChanges.size())
-				Diff->Data->SpeedChanges = ScrollData;
+			if (!Diff->Data->Scrolls.size())
+				Diff->Data->Scrolls = ScrollData;
+
+			if (!diffSpeedData.size())
+				Diff->Data->Speeds = CalculateRaindropScrolls(Diff.get(), speedData);
+			else
+				Diff->Data->Speeds = CalculateRaindropScrolls(Diff.get(), diffSpeedData);
 
 			Diff->Offset = -Offset;
 			Diff->Duration = 0;
@@ -488,7 +573,7 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 			Diff->Data->StageFile = Banner;
 
 			Diff->Data->Warps = CalculateRaindropWarpData(Diff.get(), Diff->Data->Warps);
-			Diff->Data->SpeedChanges = CalculateRaindropSCData(Diff.get(), Diff->Data->SpeedChanges);
+			Diff->Data->Scrolls = CalculateRaindropSCData(Diff.get(), Diff->Data->Scrolls);
 
 			CommandContents = RemoveComments(CommandContents);
 			SplitResult Measures;

@@ -13,8 +13,6 @@
 #include "ScreenGameplay7K.h"
 #include "ScreenGameplay7K_Mechanics.h"
 
-#include <iostream>
-#include <iomanip>
 #include <cmath>
 #include <glm/gtc/matrix_transform.inl>
 
@@ -34,10 +32,41 @@ void ScreenGameplay7K::RecalculateEffects()
 		MultiplierChanged = true;
 	}
 
+	// Calculate current speed value to apply.
+	auto CurrentTime = GetWarpedSongTime();
+	auto speedIter = std::lower_bound(Speeds.begin(), Speeds.end(), CurrentTime);
+	double previousValue = 1;
+	double currentValue = 1;
+	double speedTime = CurrentTime;
+	double duration = 1;
+
+	if (speedIter != Speeds.begin() && speedIter != Speeds.end())
+		--speedIter;
+
+	// Do we have a valid speed?
+	if (speedIter != Speeds.begin() && speedIter != Speeds.end())
+	{
+		auto prevSpeed = speedIter - 1;
+		previousValue = prevSpeed->Value;
+		currentValue = speedIter->Value;
+		duration = speedIter->Duration;
+		speedTime = speedIter->Time;
+	}
+
+	if (speedIter == Speeds.begin() && speedIter != Speeds.end())
+	{
+		currentValue = previousValue = speedIter->Value;
+	}
+
+	auto speedProgress = Clamp((CurrentTime - speedTime) / duration, 0.0, 1.0);
+	auto lerpedMultiplier = speedProgress * (currentValue - previousValue) + previousValue;
+
 	if (Upscroll)
 		SpeedMultiplier = -(SpeedMultiplierUser + waveEffect + beatScrollEffect);
 	else
 		SpeedMultiplier = SpeedMultiplierUser + waveEffect + beatScrollEffect;
+
+	SpeedMultiplier *= lerpedMultiplier;
 }
 
 
@@ -198,7 +227,7 @@ void ScreenGameplay7K::ReleaseLane(uint32 Lane, float Time)
 	auto End = NotesByChannel[Lane].end();
 
 	// Use this optimization when we can make sure vertical properly aligns up with time.
-	if (!Warps.size()) {
+	if (!Warps.size() && !HasNegativeScroll) {
 		// In comparison to the regular compare function, since end times are what matter with holds (or lift events, where start == end)
 		// this does the job as it should instead of comparing start times where hold tails would be completely ignored.
 		auto LboundFunc = [](const TrackNote &A, const double &B) -> bool {
@@ -246,7 +275,7 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 	auto End = NotesByChannel[Lane].end();
 
 	// Use this optimization when we can make sure vertical properly aligns up with time, as with ReleaseLane.
-	if (!Warps.size()) {
+	if (!Warps.size() && !HasNegativeScroll) {
 		auto timeLower = (Time - (ScoreKeeper->usesO2() ? ScoreKeeper->getMissCutoff() : (ScoreKeeper->getMissCutoff() / 1000.0)));
 		auto timeHigher = (Time + (ScoreKeeper->usesO2() ? ScoreKeeper->getEarlyMissCutoff() : (ScoreKeeper->getEarlyMissCutoff() / 1000.0)));
 

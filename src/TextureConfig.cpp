@@ -24,7 +24,7 @@ class cfgMap{
 private:
 	int line; int linepos;
 	string input;
-	ptrdiff_t offset;
+	size_t offset;
 	tokenList tokout;
 
 	void incoffs() {
