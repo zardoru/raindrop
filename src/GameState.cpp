@@ -34,6 +34,7 @@ GameState::GameState()
 	CurrentSkin = "default";
 	SelectedSong = nullptr;
 	SKeeper7K = nullptr;
+	Database = nullptr;
 	Params = make_shared<GameParameters>();
 }
 
@@ -103,10 +104,13 @@ GString GameState::GetSkinFile(Directory Name)
 
 void GameState::Initialize()
 {
-	Database = new SongDatabase("rd.db");
+	if (!Database)
+	{
+		Database = new SongDatabase("rd.db");
 
-	SongBG = new Image();
-	StageImage = new Image();
+		SongBG = new Image();
+		StageImage = new Image();
+	}
 }
 
 void GameState::SetDifficultyIndex(uint32 Index)

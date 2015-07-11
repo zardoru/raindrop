@@ -173,6 +173,14 @@ void Application::Init()
 	if (RunMode == MODE_PLAY)
 	{
 		Setup = true;
+
+		if (Configuration::GetConfigf("Preload"))
+		{
+			Log::Printf("Preloading songs...");
+			Game::SongWheel::GetInstance().Initialize(0, 0, Game::GameState::GetInstance().GetSongDatabase(), false);
+			Game::SongWheel::GetInstance().Join();
+		}
+
 	}
 	if (RunMode == MODE_VSRGPREVIEW)
 	{
@@ -271,14 +279,6 @@ void Application::Run()
 
 	if (RunMode == MODE_PLAY)
 	{
-		if (Configuration::GetConfigf("Preload"))
-		{
-			Log::Printf("Preloading songs...");
-			Game::GameState::GetInstance().Initialize();
-			Game::SongWheel::GetInstance().Initialize(0, 0, Game::GameState::GetInstance().GetSongDatabase(), false);
-			Game::SongWheel::GetInstance().Join();
-		}
-
 		Game = new ScreenMainMenu(NULL);
 		static_cast<ScreenMainMenu*>(Game)->Init();
 
