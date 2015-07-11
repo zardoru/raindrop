@@ -14,11 +14,11 @@ skin_require "VSRG/Explosions"
 skin_require "VSRG/ComboDisplay"
 skin_require "VSRG/KeyLightning"
 skin_require "VSRG/FixedObjects"
-skin_require "VSRG/AnimatedObjects"
 skin_require "VSRG/ScoreDisplay"
 skin_require "VSRG/AutoplayAnimation"
 skin_require "VSRG/GameplayObjects"
 skin_require "VSRG/StageAnimation"
+skin_require "VSRG/AnimatedObjects"
 skin_require "VSRG/TextDisplay"
 
 -- All of these will be loaded in the loading screen instead of
@@ -35,12 +35,7 @@ Preload = {
 	"VSRG/combosheet.png",
 	"VSRG/explsheet.png",
 	"VSRG/holdsheet.png",
-	"VSRG/note1.png",
-	"VSRG/note2.png",
-	"VSRG/note3.png",
-	"VSRG/note1L.png",
-	"VSRG/note2L.png",
-	"VSRG/note3L.png",
+	"VSRG/jam_bar.png",
 	"VSRG/judge-perfect.png",
 	"VSRG/judge-excellent.png",
 	"VSRG/judge-good.png",

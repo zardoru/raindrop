@@ -1,7 +1,7 @@
 
 ProgressTick = { Image = "VSRG/progress_tick.png" }
 Pulse = { Image = "VSRG/pulse_ver.png", Height = 100 }
-Jambar = { ImageBG = "VSRG/jfill_bg.jpg", ImageFG = "VSRG/jfill_fg.jpg", Width = 512 }
+Jambar = { ImageFG = "VSRG/jam_bar.png" }
 MissHighlight = {}
 
 function ProgressTick.Init()
@@ -11,23 +11,23 @@ function ProgressTick.Init()
 	ProgressTick.BeatOffs = 0
 
 	ProgressTick.Object.Image = ProgressTick.Image
-	ProgressTick.X = GearStartX
-	ProgressTick.Layer = 16
+	ProgressTick.Object.X = -8
+	ProgressTick.Object.Layer = 18
 end
 
 function ProgressTick.Run(Delta)
 	if Active ~= 0 then
-		local Ratio = (Game:GetSongTime() + ProgressTick.BeatOffs) / (SongDuration)
+    local dur = SongDurationBeats
+		local Ratio = (Beat + ProgressTick.BeatOffs) / dur
 		if SongTime > 0 then
-			ProgressTick.Alpha = 1
-			ProgressTick.Y = Ratio * (ScreenHeight - 16)
+			ProgressTick.Object.Alpha = 1
+			ProgressTick.Object.Y = Ratio * (ScreenHeight - 16)
 		else
-			ProgressTick.Alpha = 1 - SongTime / -1.5
-			ProgressTick.Y = (ScreenHeight - 16) * math.pow(SongTime / -1.5, 2)
+			ProgressTick.Object.Alpha = 1 - SongTime / -1.5
+			ProgressTick.Object.Y = (ScreenHeight - 16) * math.pow(SongTime / -1.5, 2)
 		end
-		
 	else
-		ProgressTick.Alpha = 0
+		ProgressTick.Object.Alpha = 0
 	end
 end
 
@@ -111,49 +111,37 @@ function MissHighlight.OnMiss(Lane)
 end
 
 function Jambar.Init()
-	if ScoreKeeper:usesO2() == false then
-		return
-	end
+  Jambar.Width = Lifebar.Margin.Width
+  Jambar.Height = 335
 
-	Jambar.BarBG = Engine:CreateObject()
 	Jambar.BarFG = Engine:CreateObject()
 	
-	Jambar.BarBG.Image = Jambar.ImageBG;
 	Jambar.BarFG.Image = Jambar.ImageFG;
 	
-	Jambar.BarBG.Z = 20
-	Jambar.BarFG.Z = 21
-	
-	Jambar.BarBG.Centered = 1
 	Jambar.BarFG.Centered = 1
-	Jambar.BarBG.X = ScreenWidth / 2
-	Jambar.BarFG.X = ScreenWidth / 2
-	
-	Jambar.BarBG.Y = ScreenHeight - Jambar.BarBG.Height
-	Jambar.BarFG.Y = ScreenHeight - Jambar.BarFG.Height
-		
-	Jambar.OldRem = 0
+	Jambar.BarFG.X = Lifebar.Margin.X
+  Jambar.BarFG.Y = Lifebar.Margin.Y
+  Jambar.BarFG.Layer = Lifebar.Margin.Layer
+	Jambar.BarFG.Width = Jambar.Width
+  Jambar.BarFG.Height = Jambar.Height
+  Jambar.BarFG.Lighten = 1
 end
 
 function Jambar.Run(Delta)
-	if ScoreKeeper:usesO2() == false then
+	local targetRem
+  if ScoreKeeper:usesO2() == false then
+    
 		return
+  else
+    targetRem = 1 - (15 - (ScoreKeeper:getCoolCombo() % 15 + 1)) / 15
 	end
 	
-	-- Percentage from 0 to 1 of cool combo
-	local targetRem = 1 - (15 - ScoreKeeper:getCoolCombo() % 15) / 15
-	local deltaRem = (targetRem - Jambar.OldRem) * Delta * 50
+  -- Percentage from 0 to 1 of cool combo
+
+  Jambar.BarFG.LightenFactor = (1 - (Beat - math.floor(Beat)))
 	
-	if deltaRem < 0 then 
-		deltaRem = (targetRem - Jambar.OldRem) -- Jump to it.
-	end
-	
-	Jambar.BarFG.Width = Jambar.OldRem * Jambar.Width + deltaRem * Jambar.Width
-	Jambar.BarFG.Lighten = true
-	Jambar.BarFG.LightenFactor = (1 - (Beat - math.floor(Beat))) * 0.5
-	
-	local Center = Jambar.Width / 2
-	local Offset = Jambar.OldRem * Jambar.Width / 2 + deltaRem * Jambar.Width / 2
-	Jambar.BarFG:SetCropByPixels( Center - Offset, Center + Offset, 0, Jambar.BarFG.Height )
-	Jambar.OldRem = Jambar.OldRem + deltaRem
+  local Offset = targetRem * Jambar.Height
+  Jambar.BarFG.ScaleY = targetRem
+  Jambar.BarFG.Y = ScreenHeight - Offset / 2
+  Jambar.BarFG:SetCropByPixels( 0, Jambar.Width, Jambar.BarFG.Height - Offset, Jambar.BarFG.Height )
 end

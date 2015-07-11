@@ -82,9 +82,6 @@ function Lifebar.Init()
 end
 
 function Lifebar.Cleanup()
-	Obj.CleanTarget(Lifebar.Margin)
-	Obj.CleanTarget(Lifebar.Fill)
-	Obj.CleanTarget(Lifebar.Fill2)
 end
 
 function Lifebar.Run(Delta)
