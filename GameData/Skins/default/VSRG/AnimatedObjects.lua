@@ -111,9 +111,6 @@ function MissHighlight.OnMiss(Lane)
 end
 
 function Jambar.Init()
-  if ScoreKeeper:usesO2() == false then
-		return
-  end
   Jambar.Width = Lifebar.Margin.Width
   Jambar.Height = 335
 
