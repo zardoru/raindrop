@@ -10,6 +10,8 @@ Ecco (Dolphin): BMS testing
 Joel Wong (PROGUY): focusjam skin elements
 Vince F. (Takeda Shingen): Graphics
 Ryotaka Matsumoto: Music
+Midiman: midi-note noteskin
+wafles: wafles4 noteskin
 NuclearFej: Controller support.
 NimaVisual: Logo Font
 

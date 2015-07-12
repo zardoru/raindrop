@@ -11,6 +11,7 @@ release
 # Windows ignores.
 project/debug
 project/release
+project/release_xp
 *.dll
 project/config.ini
 *.suo

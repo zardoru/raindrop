@@ -1,1 +1,0 @@
-raindrop -i %1 -o . -g om
