@@ -111,6 +111,9 @@ function MissHighlight.OnMiss(Lane)
 end
 
 function Jambar.Init()
+  if ScoreKeeper:usesO2() == false then
+	return
+  end
   Jambar.Width = Lifebar.Margin.Width
   Jambar.Height = 335
 
@@ -128,13 +131,12 @@ function Jambar.Init()
 end
 
 function Jambar.Run(Delta)
-	local targetRem
+  local targetRem
   if ScoreKeeper:usesO2() == false then
-    
-		return
+	return
   else
     targetRem = 1 - (15 - (ScoreKeeper:getCoolCombo() % 15 + 1)) / 15
-	end
+  end
 	
   -- Percentage from 0 to 1 of cool combo
 
