@@ -73,7 +73,6 @@ private:
     uint32           StartMeasure;
 
     std::map<int, int> GearBindings;
-	int                GearIsPressed[VSRG::MAX_CHANNELS];
     int                lastClosest[VSRG::MAX_CHANNELS];
     int                PlaySounds[VSRG::MAX_CHANNELS];
     int                BarlineOffsetKind;
@@ -103,6 +102,7 @@ private:
 
 	float  CurrentBeat;
 
+	bool GearIsPressed[VSRG::MAX_CHANNELS];
 	bool stage_failed;
 	bool beatScrollEffectEnabled;
 	bool waveEffectEnabled;
@@ -118,8 +118,8 @@ private:
 	bool BarlineEnabled;
 	bool SongFinished;
 
-	bool             HeldKey[VSRG::MAX_CHANNELS];
-	bool			 MultiplierChanged;
+	bool HeldKey[VSRG::MAX_CHANNELS];
+	bool MultiplierChanged;
 
 	bool    InterpolateTime;
 	bool    AudioCompensation;

@@ -659,12 +659,14 @@ void ScreenGameplay7K::MainThreadInitialization()
 			GearBindings[static_cast<int>(latof(res[i]))] = i;
 		else
 		{
-			Log::Printf("Mising bindings starting from lane " + Utility::IntToStr(i) + " using profile " + KeyProfile);
-			DoPlay = false;
-			break;
+			if (!Auto) {
+				Log::Printf("Mising bindings starting from lane " + Utility::IntToStr(i) + " using profile " + KeyProfile);
+				DoPlay = false;
+				break;
+			}
 		}
 
-		HeldKey[i] = NULL;
+		HeldKey[i] = false;
 		GearIsPressed[i] = 0;
 	}
 

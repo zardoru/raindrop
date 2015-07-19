@@ -1,5 +1,4 @@
 #include <fstream>
-#include <map>
 
 #include "utf8.h"
 #include "GameGlobal.h"
@@ -114,8 +113,6 @@ void FixOJNEvents(OjnLoadInfo *Info)
 
 	for (auto Measure: Info->Measures)
 	{
-		float MeasureBaseBeat = BeatForMeasure(Info, CurrentMeasure);
-
 		// Sort events. This is very important, since we assume events are sorted!
 		sort(Measure.Events.begin(), Measure.Events.end(), 
 			[&](const OjnInternalEvent A, const OjnInternalEvent B) -> bool 

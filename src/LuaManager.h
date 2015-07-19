@@ -47,8 +47,8 @@ public:
 	double GetGlobalD(GString VariableName, double Default = -1);
 	GString GetGlobalS(GString VariableName, GString Default = GString());
 
-	void SetGlobal(GString VariableName, GString Value);
-	void SetGlobal(GString VariableName, double Value);
+	void SetGlobal(const GString &VariableName, const GString &Value);
+	void SetGlobal(const GString &VariableName, const double &Value);
 
 	lua_State* GetState();
 

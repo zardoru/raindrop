@@ -88,9 +88,9 @@ void GameState::SetSelectedSong(shared_ptr<Game::Song> Song)
 	SelectedSong = Song;
 }
 
-GString GameState::GetSkinFile(Directory Name)
+GString GameState::GetSkinFile(const GString &Name)
 {
-	GString Orig = GetSkinPrefix() + Name.path();
+	GString Orig = GetSkinPrefix() + Name;
 
 	if (Utility::FileExists(Orig))
 	{
@@ -154,16 +154,16 @@ SongDatabase* GameState::GetSongDatabase()
 	return Database;
 }
 
-GString GameState::GetFallbackSkinFile(Directory Name)
+GString GameState::GetFallbackSkinFile(const GString &Name)
 {
 	GString SkinFallback = GetFallbackSkin();
-	return DirectoryPrefix + SkinsPrefix + SkinFallback + Name.path();
+	return DirectoryPrefix + SkinsPrefix + SkinFallback + Name;
 }
 
-Image* GameState::GetSkinImage(Directory Path)
+Image* GameState::GetSkinImage(const GString& Path)
 {
 	/* Special paths */
-	if (Path.path() == "STAGEFILE")
+	if (Path == "STAGEFILE")
 	{
 		if (SelectedSong)
 		{
@@ -208,7 +208,7 @@ Image* GameState::GetSkinImage(Directory Path)
 		}
 		else return nullptr;
 	}
-	else if (Path.path() == "SONGBG")
+	else if (Path == "SONGBG")
 	{
 		if (SelectedSong)
 		{
@@ -225,7 +225,7 @@ Image* GameState::GetSkinImage(Directory Path)
 	}
 
 	/* Regular paths */
-	if (Path.path().length())
+	if (Path.length())
 		return ImageLoader::Load(GetSkinFile(Path));
 	else return nullptr;
 }

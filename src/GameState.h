@@ -52,7 +52,7 @@ public:
 	GString GetSkinPrefix();
 	GString GetScriptsDirectory();
 	void SetSkin(GString NextSkin);
-	Image* GetSkinImage(Directory Image);
+	Image* GetSkinImage(const GString& Image);
 	bool SkinSupportsChannelCount(int Count);
 
 	void SetSelectedSong(shared_ptr<Game::Song> Song);
@@ -64,8 +64,8 @@ public:
 	ScoreKeeper7K* GetScorekeeper7K();
 	void SetScorekeeper7K(shared_ptr<ScoreKeeper7K> Other);
 
-	GString GetSkinFile(Directory Name);
-	GString GetFallbackSkinFile(Directory Name);
+	GString GetSkinFile(const GString &Name);
+	GString GetFallbackSkinFile(const GString &Name);
 
 	SongDatabase* GetSongDatabase();
 	static GameWindow* GetWindow();

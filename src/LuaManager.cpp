@@ -170,13 +170,13 @@ double LuaManager::GetGlobalD(GString VariableName, double Default)
 	return rval;
 }
 
-void LuaManager::SetGlobal(GString VariableName, GString Value)
+void LuaManager::SetGlobal(const GString &VariableName, const GString &Value)
 {
 	lua_pushstring(State, Value.c_str());
 	lua_setglobal(State, VariableName.c_str());
 }
 
-void LuaManager::SetGlobal(GString VariableName, double Value)
+void LuaManager::SetGlobal(const GString &VariableName, const double &Value)
 {
 	lua_pushnumber(State, Value);
 	lua_setglobal(State, VariableName.c_str());
