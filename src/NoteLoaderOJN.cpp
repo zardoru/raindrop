@@ -109,50 +109,42 @@ static double BeatForMeasure(OjnLoadInfo *Info, int Measure)
 // https://github.com/open2jamorg/open2jam/blob/master/parsers/src/org/open2jam/parsers/EventList.java
 void FixOJNEvents(OjnLoadInfo *Info)
 {
-	int CurrentMeasure = 0;
-	typedef std::vector<OjnInternalEvent>::iterator evtIter;
-	OjnInternalEvent *prevIter[7];
+	auto CurrentMeasure = 0;
+	OjnInternalEvent *prevIter[7] = { nullptr };
 
-	for (int i = 0; i < 7; i++) prevIter[i] = NULL;
-
-
-	for (std::vector<OjnMeasure>::iterator Measure = Info->Measures.begin();
-		Measure != Info->Measures.end();
-		Measure++)
+	for (auto Measure: Info->Measures)
 	{
 		float MeasureBaseBeat = BeatForMeasure(Info, CurrentMeasure);
 
 		// Sort events. This is very important, since we assume events are sorted!
-		std::sort(Measure->Events.begin(), Measure->Events.end(), 
+		sort(Measure.Events.begin(), Measure.Events.end(), 
 			[&](const OjnInternalEvent A, const OjnInternalEvent B) -> bool 
 			{ return A.Fraction < B.Fraction; });
 
-		for (evtIter Evt = Measure->Events.begin();
-			Evt != Measure->Events.end();
-			Evt++)
+		for (auto&& Evt: Measure.Events)
 		{
-			if (Evt->Channel < AUTOPLAY_CHANNEL)
+			if (Evt.Channel < AUTOPLAY_CHANNEL)
 			{
-				if (prevIter[Evt->Channel]) // There is a previous event
+				if (prevIter[Evt.Channel]) // There is a previous event
 				{
-					if (prevIter[Evt->Channel]->noteKind == 2 && 
-						(Evt->noteKind == 0 || Evt->noteKind == 2)) // This note or hold head is in between holds
+					if (prevIter[Evt.Channel]->noteKind == 2 && 
+						(Evt.noteKind == 0 || Evt.noteKind == 2)) // This note or hold head is in between holds
 					{
-						Evt->Channel = AUTOPLAY_CHANNEL;
-						Evt->noteKind = 0;
+						Evt.Channel = AUTOPLAY_CHANNEL;
+						Evt.noteKind = 0;
 						continue;
 					}
 
-					if (prevIter[Evt->Channel]->noteKind != 2 && // Hold tail without ongoing hold
-						Evt->noteKind == 3)
+					if (prevIter[Evt.Channel]->noteKind != 2 && // Hold tail without ongoing hold
+						Evt.noteKind == 3)
 					{
-						Evt->Channel = AUTOPLAY_CHANNEL;
-						Evt->noteKind = 0;
+						Evt.Channel = AUTOPLAY_CHANNEL;
+						Evt.noteKind = 0;
 						continue;
 					}
 				}
 
-				prevIter[Evt->Channel] = &(*Evt);
+				prevIter[Evt.Channel] = &(Evt);
 			}
 		}
 
@@ -172,32 +164,31 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 
 
 	// First of all, we need to process BPM changes and fractional measures.
-	for (auto Measure = Info->Measures.begin(); 
-		Measure != Info->Measures.end(); 
-		++Measure)
+	for (auto Measure: Info->Measures)
 	{
 		float MeasureBaseBeat = BeatForMeasure(Info, CurrentMeasure);
 
 		Out->Data->Measures.push_back(VSRG::Measure());
 
 		// All fractional measure events were already handled at read time.
-		Out->Data->Measures[CurrentMeasure].MeasureLength = Measure->Len;
+		Out->Data->Measures[CurrentMeasure].MeasureLength = Measure.Len;
 
-		for (std::vector<OjnInternalEvent>::iterator Evt = Measure->Events.begin();
-			Evt != Measure->Events.end();
-			++Evt)
+		for (auto Evt: Measure.Events)
 		{
-			if (Evt->Channel != BPM_CHANNEL) continue; // These are the only ones we directly handle.
-			float Beat = MeasureBaseBeat + Evt->Fraction * 4;
-			TimingSegment Segment(Beat, Evt->fValue);
+			if (Evt.Channel != BPM_CHANNEL) continue; // These are the only ones we directly handle.
+
+			/* We calculate beat multiplying fraction by 4 instead of the measure's length, 
+			because o2jam's measure fractions don't compress the notes inside. */
+			auto Beat = MeasureBaseBeat + Evt.Fraction * 4;
+			TimingSegment Segment(Beat, Evt.fValue);
 
 			// 0 values must be ignored.
-			if (Evt->fValue == 0) continue;
+			if (Evt.fValue == 0) continue;
 
 			if (Out->Timing.size())
 			{
 				// For some reason, a few BPMs are redundant. Since our events are sorted, there's no need for worry..
-				if (Out->Timing.back().Value == Evt->fValue) // ... We already have this BPM.
+				if (Out->Timing.back().Value == Evt.fValue) // ... We already have this BPM.
 					continue;
 			}
 
@@ -216,41 +207,35 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 
 		// Since events and measures are ordered already, there's no need to sort
 		// timing data unless we insert new information.
-		std::sort(Out->Timing.begin(), Out->Timing.end(), 
-			[&] (const TimingSegment& A, const TimingSegment& B) -> bool 
-			{ return A.Time < B.Time; });
+		sort(Out->Timing.begin(), Out->Timing.end());
 	}
 
 
 	// Now, we can process notes and long notes.
 	CurrentMeasure = 0;
-	float PendingLNs[7] = {};
-	float PendingLNSound[7] = {};
+	float PendingLNs[7] = {0};
+	float PendingLNSound[7] = {0};
 
-	for (auto Measure = Info->Measures.begin();
-		Measure != Info->Measures.end();
-		++Measure)
+	for (auto Measure : Info->Measures)
 	{
 		float MeasureBaseBeat = BeatForMeasure(Info, CurrentMeasure);
 
-		for (auto Evt = Measure->Events.begin();
-			Evt != Measure->Events.end();
-			++Evt)
+		for (auto Evt : Measure.Events)
 		{
-			if (Evt->Channel == BPM_CHANNEL) continue;
+			if (Evt.Channel == BPM_CHANNEL) continue;
 			else
 			{
-				float Beat = MeasureBaseBeat + Evt->Fraction * Measure->Len;
+				auto Beat = MeasureBaseBeat + Evt.Fraction * 4;
 				float Time = TimeAtBeat(Out->Timing, 0, Beat);
 
-				if (Evt->noteKind % 8 > 3) // Okay... This is obscure. Big thanks to open2jam.
-					Evt->iValue += 1000;
+				if (Evt.noteKind % 8 > 3) // Okay... This is obscure. Big thanks to open2jam.
+					Evt.iValue += 1000;
 
-				if (Evt->Channel == AUTOPLAY_CHANNEL) // Ah, autoplay audio.
+				if (Evt.Channel == AUTOPLAY_CHANNEL) // Ah, autoplay audio.
 				{
 					AutoplaySound Snd;
 
-					Snd.Sound = Evt->iValue;
+					Snd.Sound = Evt.iValue;
 					Snd.Time = Time;
 					Out->Data->BGMEvents.push_back(Snd);
 				}
@@ -258,32 +243,32 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 				{
 					VSRG::NoteData Note;
 
-					if (Evt->Channel >= 7) continue; // Who knows... A buffer overflow may be possible.
+					if (Evt.Channel >= 7) continue; // Who knows... A buffer overflow may be possible.
 
 					Note.StartTime = Time;
-					Note.Sound = Evt->iValue;
+					Note.Sound = Evt.iValue;
 
-					switch (Evt->noteKind)
+					switch (Evt.noteKind)
 					{
 					case 0:
 						Out->TotalNotes++;
 						Out->TotalObjects++;
 						Out->TotalScoringObjects++;
-						Out->Data->Measures[CurrentMeasure].MeasureNotes[Evt->Channel].push_back(Note);
+						Out->Data->Measures[CurrentMeasure].MeasureNotes[Evt.Channel].push_back(Note);
 						break;
 					case 2:
 						Out->TotalScoringObjects++;
-						PendingLNs[Evt->Channel] = Time;
-						PendingLNSound[Evt->Channel] = Evt->iValue;
+						PendingLNs[Evt.Channel] = Time;
+						PendingLNSound[Evt.Channel] = Evt.iValue;
 						break;
 					case 3:
 						Out->TotalObjects++;
 						Out->TotalHolds++;
 						Out->TotalScoringObjects++;
-						Note.StartTime = PendingLNs[Evt->Channel];
+						Note.StartTime = PendingLNs[Evt.Channel];
 						Note.EndTime = Time;
-						Note.Sound = PendingLNSound[Evt->Channel];
-						Out->Data->Measures[CurrentMeasure].MeasureNotes[Evt->Channel].push_back(Note);
+						Note.Sound = PendingLNSound[Evt.Channel];
+						Out->Data->Measures[CurrentMeasure].MeasureNotes[Evt.Channel].push_back(Note);
 						break;
 					}
 				}
@@ -303,7 +288,7 @@ bool IsValidOJN(std::ifstream &filein, GString filename, OjnHeader *Head)
 		return false;
 	}
 
-	filein.read((char*)Head, sizeof(OjnHeader));
+	filein.read(reinterpret_cast<char*>(Head), sizeof(OjnHeader));
 
 	if (!filein)
 	{
@@ -370,12 +355,12 @@ void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::
 	Out->SongName = vName;
 	Out->SongFilename = Head.ojm_file;
 
-	for (int i = 0; i < 3; i++)
+	for (auto i = 0; i < 3; i++)
 	{
 		OjnLoadInfo Info;
-		std::shared_ptr<VSRG::Difficulty> Diff (new VSRG::Difficulty());
-		std::shared_ptr<VSRG::O2JamTimingInfo> TInfo (new VSRG::O2JamTimingInfo);
-		std::shared_ptr<VSRG::DifficultyLoadInfo> LInfo (new VSRG::DifficultyLoadInfo);
+		shared_ptr<VSRG::Difficulty> Diff (new VSRG::Difficulty());
+		shared_ptr<VSRG::O2JamTimingInfo> TInfo (new VSRG::O2JamTimingInfo);
+		shared_ptr<VSRG::DifficultyLoadInfo> LInfo (new VSRG::DifficultyLoadInfo);
 
 		switch (i)
 		{
@@ -409,30 +394,30 @@ void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::
 		Info.BPM = Head.bpm;
 
 		Info.Measures.reserve(Head.measure_count[i]);
-		for (int k = 0; k <= Head.measure_count[i]; k++)
+		for (auto k = 0; k <= Head.measure_count[i]; k++)
 			Info.Measures.push_back(OjnMeasure());
 
 		/* 
 			The implications of this structure are interesting.
 			Measures may be unordered; but events may not, if only there's one package per channel per measure.
 		*/
-		for (int package = 0; package < Head.package_count[i]; package++)
+		for (auto package = 0; package < Head.package_count[i]; package++)
 		{
 			OjnPackage PackageHeader;
-			filein.read((char*)&PackageHeader, sizeof(OjnPackage));
+			filein.read(reinterpret_cast<char*>(&PackageHeader), sizeof(OjnPackage));
 
-			for (int cevt = 0; cevt < PackageHeader.events; cevt++)
+			for (auto cevt = 0; cevt < PackageHeader.events; cevt++)
 			{
-				float Fraction = (float)cevt / (float)PackageHeader.events;
+				auto Fraction = float(cevt) / float(PackageHeader.events);
 				OjnEvent Event;
 				OjnInternalEvent IEvt;
 
-				filein.read((char*)&Event, sizeof(OjnEvent));
+				filein.read(reinterpret_cast<char*>(&Event), sizeof(OjnEvent));
 
 				switch (PackageHeader.channel)
 				{
 				case 0: // Fractional measure
-					Info.Measures[PackageHeader.measure].Len *= Event.floatValue;
+					Info.Measures[PackageHeader.measure].Len = 4 * Event.floatValue;
 					break;
 				case 1: // BPM change
 					IEvt.fValue = Event.floatValue;

@@ -118,7 +118,7 @@ void ScreenGameplay7K::MissNote(double TimeOff, uint32 Lane, bool IsHold, bool a
 
 void ScreenGameplay7K::PlayLaneKeysound(uint32 Lane)
 {
-	if (Keysounds.find(PlaySounds[Lane]) != Keysounds.end() && PlayReactiveSounds)
+	if (Keysounds.find(PlaySounds[Lane]) != Keysounds.end() && Keysounds[PlaySounds[Lane]] && PlayReactiveSounds)
 		Keysounds[PlaySounds[Lane]]->Play();
 }
 
