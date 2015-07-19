@@ -124,7 +124,7 @@ void ScreenGameplay7K::PlayLaneKeysound(uint32 Lane)
 
 void ScreenGameplay7K::PlayKeysound(uint32 Index)
 {
-	if (Keysounds.find(Index) != Keysounds.end() && PlayReactiveSounds)
+	if (Keysounds.find(Index) != Keysounds.end() && PlayReactiveSounds && Keysounds[Index])
 		Keysounds[Index]->Play();
 }
 

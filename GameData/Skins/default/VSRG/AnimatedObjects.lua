@@ -106,14 +106,11 @@ function MissHighlight.OnMiss(Lane)
 	MissHighlight.CurrentTime[Lane] = 0
 
 	if CurrentSPB ~= math.huge then
-		MissHighlight.Time[Lane] = CurrentSPB / 4
+		MissHighlight.Time[Lane] = math.min(CurrentSPB / 4, 1)
 	end
 end
 
 function Jambar.Init()
-  if ScoreKeeper:usesO2() == false then
-	return
-  end
   Jambar.Width = Lifebar.Margin.Width
   Jambar.Height = 335
 
@@ -123,7 +120,6 @@ function Jambar.Init()
 	
 	Jambar.BarFG.Centered = 1
 	Jambar.BarFG.X = Lifebar.Margin.X
-  Jambar.BarFG.Y = Lifebar.Margin.Y
   Jambar.BarFG.Layer = Lifebar.Margin.Layer
 	Jambar.BarFG.Width = Jambar.Width
   Jambar.BarFG.Height = Jambar.Height
@@ -133,7 +129,7 @@ end
 function Jambar.Run(Delta)
   local targetRem
   if ScoreKeeper:usesO2() == false then
-	return
+    targetRem = ScoreKeeper:getTotalNotes() / ScoreKeeper:getMaxNotes()
   else
     targetRem = 1 - (15 - (ScoreKeeper:getCoolCombo() % 15 + 1)) / 15
   end

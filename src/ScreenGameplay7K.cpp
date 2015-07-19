@@ -180,14 +180,10 @@ void ScreenGameplay7K::RunAutoEvents()
 	if (!stage_failed)
 	{
 		// Play BGM events.
-		auto i = BGMEvents.begin();
-		auto s = std::upper_bound(BGMEvents.begin(), BGMEvents.end(), SongTime);
-		while (i != s)
+		while (BGMEvents.size() && BGMEvents.front().Time <= SongTime)
 		{
-			if (Keysounds.find(i->Sound) != Keysounds.end() && Keysounds[i->Sound]) Keysounds[i->Sound]->Play();
-
-			i = BGMEvents.erase(i);
-			s = std::lower_bound(BGMEvents.begin(), BGMEvents.end(), SongTime);
+			if (Keysounds[BGMEvents.front().Sound]) Keysounds[BGMEvents.front().Sound]->Play();
+			BGMEvents.pop();
 		}
 	}
 

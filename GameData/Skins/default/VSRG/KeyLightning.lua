@@ -64,7 +64,7 @@ function HitLightning.LanePress(Lane, IsKeyDown, SetRed)
 	end
 
 	if CurrentSPB ~= math.huge then
-		HitLightning.OffTime[Lane+1] = CurrentSPB / 1.5
+		HitLightning.OffTime[Lane+1] = math.min(CurrentSPB / 1.5, 1)
 	end
 
 	if HitLightning.OffTime[Lane+1] > 3 then

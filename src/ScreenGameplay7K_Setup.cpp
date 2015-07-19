@@ -125,15 +125,9 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 	}
 
 	// Remove non-played objects
-	for (auto s = BGMEvents.begin(); s != BGMEvents.end();)
+	while (BGMEvents.size() && BGMEvents.front() <= Time)
 	{
-		if (s->Time <= Time)
-		{
-			s = BGMEvents.erase(s);
-			if (s == BGMEvents.end()) break;
-			else continue;
-		}
-		s++;
+		BGMEvents.pop();
 	}
 
 	SongTime = SongTimeReal = Time;
@@ -346,7 +340,9 @@ bool ScreenGameplay7K::LoadSongAudio()
 		}
 	}
 
-	BGMEvents = CurrentDiff->Data->BGMEvents;
+	sort(CurrentDiff->Data->BGMEvents.begin(), CurrentDiff->Data->BGMEvents.end());
+	for (auto s : CurrentDiff->Data->BGMEvents)
+		BGMEvents.push(s);
 	return true;
 }
 
@@ -655,12 +651,12 @@ void ScreenGameplay7K::MainThreadInitialization()
 	vector<GString> res;
 	boost::split(res, value, boost::is_any_of(","));
 
-	for (int i = 0; i < CurrentDiff->Channels; i++)
+	for (auto i = 0; i < CurrentDiff->Channels; i++)
 	{
 		lastClosest[i] = 0;
 
 		if (i < res.size())
-			GearBindings[(int)latof(res[i])] = i;
+			GearBindings[static_cast<int>(latof(res[i]))] = i;
 		else
 		{
 			Log::Printf("Mising bindings starting from lane " + Utility::IntToStr(i) + " using profile " + KeyProfile);

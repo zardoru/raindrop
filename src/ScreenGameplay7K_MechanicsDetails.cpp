@@ -256,7 +256,7 @@ bool O2JamMechanics::OnUpdate(double SongBeat, VSRG::TrackNote* m, uint32 Lane)
 		m->IsHold() && m->WasNoteHit() && m->IsEnabled())
 	{
 		m->FailHit();
-		MissNotify(abs(tD), k, m->IsHold(), true, false);
+		MissNotify(abs(tD), k, m->IsHold(), false, false);
 
 		SetLaneHoldingState(k, false);
 		m->Disable();

@@ -1,6 +1,7 @@
 #ifndef SG7K_H_
 #define SG7K_H_
 
+#include <queue>
 #include "Song7K.h"
 #include "ScoreKeeper.h"
 #include "ScreenGameplay7K_Mechanics.h"
@@ -30,7 +31,7 @@ private:
 	VSRG::VectorSpeeds Speeds;
 	VSRG::VectorTN  NotesByChannel;
 	std::map <int, shared_ptr<SoundSample>> Keysounds;
-	vector<AutoplaySound>   BGMEvents;
+	std::queue<AutoplaySound>   BGMEvents;
 	vector<float>			 MeasureBarlines;
 
 	shared_ptr<VSRG::Difficulty>	 CurrentDiff;

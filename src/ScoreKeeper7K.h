@@ -218,6 +218,7 @@ class ScoreKeeper7K {
 		double lifebar_o2jam;
 		double lifebar_o2jam_increment;
 		double lifebar_o2jam_decrement;
+		double lifebar_o2jam_decrement_bad;
 
 		double lifebar_stepmania;
 		double lifebar_stepmania_miss_decrement;
