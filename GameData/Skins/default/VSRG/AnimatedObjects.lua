@@ -76,7 +76,7 @@ function MissHighlight.Init()
 	for i=1, Channels do
 		MissHighlight[i] = Engine:CreateObject()
 		MissHighlight[i].Centered = 1
-		MissHighlight[i].Image = ("VSRG/miss_highlight.png")
+		MissHighlight[i].Image = "VSRG/miss_highlight.png"
 		MissHighlight[i].X = Noteskin[Channels]["Key" .. i .. "X"]
 		MissHighlight[i].Y = ScreenHeight/2
 		MissHighlight[i].Width = Noteskin[Channels]["Key" .. i .. "Width"]

@@ -36,11 +36,7 @@ Preload = {
 	"VSRG/explsheet.png",
 	"VSRG/holdsheet.png",
 	"VSRG/jam_bar.png",
-	"VSRG/judge-perfect.png",
-	"VSRG/judge-excellent.png",
-	"VSRG/judge-good.png",
-	"VSRG/judge-bad.png",
-	"VSRG/judge-miss.png",
+	"VSRG/judgement.png",
 	"VSRG/auto.png"
 }
 

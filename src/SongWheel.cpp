@@ -21,17 +21,17 @@ using namespace Game;
 SongWheel::SongWheel()
 {
 	IsInitialized = false;
-	mFont = NULL;
+	mFont = nullptr;
 	PendingVerticalDisplacement = 0;
-	mLoadMutex = NULL;
-	mLoadThread = NULL;
+	mLoadMutex = nullptr;
+	mLoadThread = nullptr;
 	CurrentVerticalDisplacement = 0;
 	VSRGModeActive = (Configuration::GetConfigf("VSRGEnabled") != 0);
 	dotcurModeActive = (Configuration::GetConfigf("dotcurEnabled") != 0);
 	DifficultyIndex = 0;
 
-	ListRoot = NULL;
-	CurrentList = NULL;
+	ListRoot = nullptr;
+	CurrentList = nullptr;
 
 	IsHovering = false;
 }
@@ -43,14 +43,12 @@ int SongWheel::GetDifficulty() const
 
 SongWheel& SongWheel::GetInstance()
 {
-	static SongWheel *WheelInstance = new SongWheel();
+	static auto WheelInstance = new SongWheel();
 	return *WheelInstance;
 }
 
 void SongWheel::Initialize(float Start, float End, SongDatabase* Database, bool IsGraphical)
 {
-	DB = Database;
-
 	if (IsInitialized)
 		return;
 
@@ -80,7 +78,7 @@ void SongWheel::Initialize(float Start, float End, SongDatabase* Database, bool 
 	IsInitialized = true;
 	DifficultyIndex = 0;
 
-	ReloadSongs();
+	ReloadSongs(Database);
 }
 
 class LoadThread
@@ -132,11 +130,12 @@ void SongWheel::Join()
 }
 
 
-void SongWheel::ReloadSongs()
+void SongWheel::ReloadSongs(SongDatabase* Database)
 {
+	DB = Database;
 	Join();
 
-	ListRoot.reset();
+	ListRoot = nullptr;
 
 	ListRoot = make_shared<SongList>();
 	CurrentList = ListRoot.get();
@@ -272,7 +271,7 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 							DifficultyIndex = 0;
 						}
 
-						// Null possible only to potentially stop previews.
+						// nullptr possible only to potentially stop previews.
 						OnSongTentativeSelect(GetSelectedSong(), 0);
 					}
 					return true;
@@ -327,7 +326,7 @@ void SongWheel::Update(float Delta)
 
 	if (!IsLoading() && mLoadThread)
 	{
-		delete mLoadThread; mLoadThread = NULL;
+		delete mLoadThread; mLoadThread = nullptr;
 	}
 
 	if (!CurrentList)
@@ -366,7 +365,7 @@ void SongWheel::Update(float Delta)
 		{
 			IsHovering = false;
 			if (OnItemHoverLeave)
-				OnItemHoverLeave(GetCursorIndex(), CurrentList->GetEntryTitle(GetCursorIndex()), NULL);
+				OnItemHoverLeave(GetCursorIndex(), CurrentList->GetEntryTitle(GetCursorIndex()), nullptr);
 		}
 	}
 
@@ -389,7 +388,7 @@ void SongWheel::DisplayItem(int32 ListItem, Vec2 Position)
 	{
 		bool IsDirectory = true;
 		bool IsSelected = false;
-		shared_ptr<Game::Song> Song = NULL;
+		shared_ptr<Game::Song> Song = nullptr;
 		GString Text;
 
 		Item->SetPosition(Position);
@@ -477,7 +476,7 @@ int32 SongWheel::IndexAtPoint(float Y)
 {
 	float posy = Y;
 	posy -= shownListY;
-	posy -= (int)posy % (int)ItemHeight;
+	posy -= int(posy) % int(ItemHeight);
 	posy = (posy / ItemHeight);
 	return floor(posy);
 }

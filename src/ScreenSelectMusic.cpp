@@ -1,5 +1,5 @@
 #include <sstream>
-#include <iomanip>
+
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
@@ -13,7 +13,6 @@
 #include "Configuration.h"
 #include "Sprite.h"
 #include "GuiButton.h"
-#include "ImageList.h"
 
 #include "Song.h"
 #include "ScreenSelectMusic.h"
@@ -72,8 +71,8 @@ void SetupWheelLua(LuaManager* Man)
 
 ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic")
 {
-	Font = NULL;
-	PreviewStream = NULL;
+	Font = nullptr;
+	PreviewStream = nullptr;
 
 	PreviousPreview = make_shared<Game::Song> ();
 	ToPreview = nullptr;

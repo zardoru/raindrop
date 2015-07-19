@@ -116,7 +116,7 @@ public:
 	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	bool HandleScrollInput(const double dx, const double dy);
 	shared_ptr<Game::Song> GetSelectedSong();
-	void ReloadSongs();
+	void ReloadSongs(SongDatabase* Database);
 
 	// return: the new difficulty index
 	int NextDifficulty();

@@ -64,7 +64,7 @@ bool ScreenLoading::Run(double TimeDelta)
 	if (LoadThread->timed_join(boost::posix_time::seconds(0)))
 	{
 		delete LoadThread;
-		LoadThread = NULL;
+		LoadThread = nullptr;
 		Next->MainThreadInitialization();
 		ChangeState(StateExit);
 	}

@@ -39,8 +39,7 @@ Judgment = {
 	ShowTimingIndicator = 1
 }
 
-function Lifebar.Init()
-
+function Lifebar.Init()	
 	Lifebar.Margin = Engine:CreateObject()
 	Lifebar.Fill = Engine:CreateObject()
 	Lifebar.Fill2 = Engine:CreateObject()
@@ -111,16 +110,19 @@ function Lifebar.Run(Delta)
 end
 
 function Judgment.Init()
+	Judgment.Atlas = TextureAtlas:new(GetSkinFile("VSRG/judgment.csv"))
 	Judgment.Object = Engine:CreateObject()
 	
 	Judgment.Object.Layer = 24
 	Judgment.Object.Centered = 1
 	Judgment.Object:SetScale(Judgment.Scale)
+	Judgment.Object.Image = Judgment.Atlas.File
 	Judgment.Object.X = Judgment.Position.x
 	Judgment.Object.Y = Judgment.Position.y
-
+	Judgment.Object.Alpha = 0
+	
 	Judgment.LastAlternation = 0
-	Judgment.Time = Judgment.FadeoutTime
+	Judgment.Time = Judgment.FadeoutTime + Judgment.FadeoutDuration
 
 	Judgment.IndicatorObject = Engine:CreateObject()
 	
@@ -149,7 +151,7 @@ function Judgment.Run(Delta)
 		local OldJudgeScale = Judgment.Object.ScaleX
 		local ScaleLerpAAA = ComboLerp * Judgment.ScaleExtra
 		local DeltaScale = (Judgment.Scale + ScaleLerpAAA - OldJudgeScale) * Delta * Judgment.Speed
-		local FinalScale = OldJudgeScale + DeltaScale
+		local FinalScale = math.max(0, OldJudgeScale + DeltaScale)
 
 		Judgment.Object:SetScale (FinalScale)
 
@@ -219,7 +221,9 @@ function Judgment.Hit(JudgmentValue, EarlyOrLate)
 		Judgment.LastAlternation = 0
 	end
 	
-	Judgment.Object.Image = ("VSRG/" .. Judgment.Table[Judgment.Value])
+	Judgment.Atlas:SetObjectCrop(Judgment.Object, Judgment.Table[Judgment.Value])
+	Judgment.Object.Height = Judgment.Atlas.Sprites[Judgment.Table[Judgment.Value]].h
+	Judgment.Object.Width = Judgment.Atlas.Sprites[Judgment.Table[Judgment.Value]].w
 	
 	if JudgmentValue ~= 5 then
 		if JudgmentValue ~= -1 then
