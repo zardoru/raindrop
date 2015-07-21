@@ -76,14 +76,14 @@ IFraction RowifiedDifficulty::FractionForMeasure(int Measure, double Beat)
 	double mStart = MeasureAccomulation[Measure];
 	double mLen = QuantizeFunction(Parent->Data->Measures[Measure].MeasureLength);
 	double mFrac = (Beat - mStart) / mLen;
-	LFraction Frac;
+	IFraction Frac;
 
 	if (!IsQuantized())
 		Frac.fromDouble(mFrac);
 	else
 		Frac.fromDouble(QuantizeFractionMeasure(mFrac));
 
-	return IFraction{ Frac.Num, Frac.Den };
+	return Frac;
 }
 
 int RowifiedDifficulty::MeasureForBeat(double Beat)

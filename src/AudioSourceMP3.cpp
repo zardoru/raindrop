@@ -103,7 +103,7 @@ uint32 AudioSourceMP3::Read(short* buffer, size_t count)
 void AudioSourceMP3::Seek(float Time)
 {
 	mIsDataLeft = true;
-	size_t place = mRate * Time;
+	int place = mRate * Time;
 	int res = mpg123_seek(mHandle, place, SEEK_SET);
 	if (res < 0 || res < place)
 	{

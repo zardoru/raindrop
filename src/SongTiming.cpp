@@ -4,31 +4,18 @@
 #include "Song.h"
 
 #include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/math/common_factor.hpp>
+#include <numeric>
 
 int LCM(const vector<int> &Set) {
-	int current = Set.at(0);
-
-	for (size_t i = 1; i < Set.size(); i++) {
-		current = boost::math::lcm(current, Set[i]);
-	}
-	return current;
+	return std::accumulate(Set.begin() + 1, Set.end(), *Set.begin(), boost::math::lcm<int>);
 }
 
 int SectionIndex(const TimingData &Timing, double Beat)
 {
-	int Index = -1;
-	for (TimingData::const_iterator i = Timing.begin(); i != Timing.end(); i++)
-	{
-		if ( Beat >= i->Time )
-			Index++;
-		else
-			break;
-	}
-	return Index;
+	return std::upper_bound(Timing.begin(), Timing.end(), Beat) - Timing.begin() - 1;
 }
 
 double SectionValue(const TimingData &Timing, double Beat)
@@ -56,7 +43,9 @@ double TimeAtBeat(const TimingData &Timing, float Offset, double Beat, bool Abs)
 	for (uint32 i = 0; i < CurrentIndex; i++)
 	{	
 		double SPB = spb(Timing[i].Value);
-		if (Abs) SPB = abs(SPB);
+
+		// This behaviour is used whenever we're dealing with a beats-based system that skips negative beats, that is to say, stepmania for instance...
+		if (Abs) SPB = abs(SPB); 
 
 		if (i+1 < CurrentIndex) // Get how long the current timing goes.
 		{

@@ -77,16 +77,16 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 			if (T->Value == 0) // A stop.
 			{
 				auto RestBPM = T + 1;
-				double Beat = QuantizeFunction(IntegrateToTime(BPS, T->Time));
+				auto Beat = QuantizeFunction(IntegrateToTime(BPS, T->Time));
 				// By song processing law, any stop is followed by a restoration of the original BPM.
-				double Duration = RestBPM->Time - T->Time;
-				double BPSatStop = RestBPM->Value;
+				auto Duration = RestBPM->Time - T->Time;
+				auto BPSatStop = RestBPM->Value;
 				// We need to know how long in beats this stop lasts for BPSatStop.
-				double StopBMSDurationBeats = BPSatStop * Duration;
+				auto StopBMSDurationBeats = BPSatStop * Duration;
 				// Now the duration in BMS stops..
 				int StopDurationBMS = round(StopBMSDurationBeats * 48.0);
 
-				int index = -1;
+				auto index = -1;
 
 				// Check redundant stops.
 				for (size_t i = 0; i < Stops.size(); i++) {
@@ -164,11 +164,11 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 	{
 		if (Out.size() == 0) return; // Nothing to write.
 
-		int VecLCM = GetRowCount(Out);
-		std::sort(Out.begin(), Out.end(), [](const Event& A, const Event&B)
+		auto VecLCM = GetRowCount(Out);
+		sort(Out.begin(), Out.end(), [](const Event& A, const Event&B)
 			-> bool {
-			double dA = (double)A.Sect.Num / A.Sect.Den;
-			double dB = (double)B.Sect.Num / B.Sect.Den;
+			     auto dA = double(A.Sect.Num) / A.Sect.Den;
+			     auto dB = double(B.Sect.Num) / B.Sect.Den;
 			return dA < dB;
 		});
 
@@ -177,7 +177,7 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 
 		// Now that we have the LCM we can easily just place the objects exactly as we want to output them.
 		for (auto Obj : Out) { // We convert to a fraction that fits with the LCM.
-			int rNum = Obj.Sect.Num * VecLCM / Obj.Sect.Den;
+			auto rNum = Obj.Sect.Num * VecLCM / Obj.Sect.Den;
 			rowified[rNum] = Obj.Evt;
 		}
 

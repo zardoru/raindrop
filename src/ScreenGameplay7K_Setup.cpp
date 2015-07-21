@@ -651,7 +651,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 	vector<GString> res;
 	boost::split(res, value, boost::is_any_of(","));
 
-	for (auto i = 0; i < CurrentDiff->Channels; i++)
+	for (unsigned i = 0; i < CurrentDiff->Channels; i++)
 	{
 		lastClosest[i] = 0;
 

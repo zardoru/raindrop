@@ -10,16 +10,14 @@
 
 int TrackToXPos(int totaltracks, int track)
 {
-	double base = (512.0/totaltracks);
-	double minus = (256.0/totaltracks);
+	auto base = (512.0/totaltracks);
+	auto minus = (256.0/totaltracks);
 	return (base * (track + 1) - minus);
 }
 
 void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 {
-	for (auto i = Sng->Difficulties.begin(); 
-		i != Sng->Difficulties.end();
-		i++)
+	for (auto Difficulty : Sng->Difficulties)
 	{
 		char vf[1024];
 		TimingData BPS;
@@ -30,7 +28,7 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 #else
 		_snprintf
 #endif
-			(vf, 1024, "%s/%s - %s [%s] (%s).osu", PathOut.c_path(), Sng->SongAuthor.c_str(), Sng->SongName.c_str(), (*i)->Name.c_str(), Author.c_str());
+			(vf, 1024, "%s/%s - %s [%s] (%s).osu", PathOut.c_path(), Sng->SongAuthor.c_str(), Sng->SongName.c_str(), Difficulty->Name.c_str(), Author.c_str());
 		Directory Str = vf;
 		Str.Normalize(true);
 		std::ofstream out (Str.c_path());
@@ -41,15 +39,15 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 			return;
 		}
 
-		(*i)->Process(NULL, BPS, VSpeeds, 0, 0);
+		Difficulty->Process(nullptr, BPS, VSpeeds, 0, 0);
 
 		// First, convert metadata.
 		out 
 			<< "osu file format v11\n\n"
 			<< "[General]\n"
-			<< "AudioFilename: " << ((*i)->IsVirtual ? "virtual" : Sng->SongFilename) << "\n"
+			<< "AudioFilename: " << (Difficulty->IsVirtual ? "virtual" : Sng->SongFilename) << "\n"
 			<< "AudioLeadIn: 1500\n"
-			<< "PreviewTime: " << (int)Sng->PreviewTime * 1000 << "\n"
+			<< "PreviewTime: " << int(Sng->PreviewTime) * 1000 << "\n"
 			<< "Countdown: 0\n"
 			<< "SampleSet: None\n"
 			<< "StackLeniency: 0.7\n"
@@ -72,7 +70,7 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 			<< "Artist: " << Sng->SongAuthor << "\n"
 			<< "ArtistUnicode: " << Sng->SongAuthor << "\n"
 			<< "Creator: " << Author << "\n"
-			<< "Version: " << (*i)->Name << "\n"
+			<< "Version: " << Difficulty->Name << "\n"
 			<< "Source: \nTags: \nBeatmapID:0\nBeatmapSetID:-1\n\n";
 
 		out.flush();
@@ -80,7 +78,7 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 		out
 			<< "[Difficulty]\n"
 			<< "HPDrainRate: 7\n"
-			<< "CircleSize: " << (int)(*i)->Channels << "\n"
+			<< "CircleSize: " << int(Difficulty->Channels) << "\n"
 			<< "OverallDifficulty: 7\n"
 			<< "ApproachRate: 9\n"
 			<< "SliderMultiplier: 1.4\n"
@@ -92,9 +90,9 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 			<< "// Storyboard Layer 3 (Foreground)\n// Storyboard Sound Samples\n";
 			
 		// Write BGM events here.
-		for (auto BGM : (*i)->Data->BGMEvents) {
-			GString sndf = (*i)->SoundList[BGM.Sound];
-			out << "5," << BGM.Time * 1000 << ",0,\"" << sndf << "\"" << std::endl;
+		for (auto BGM : Difficulty->Data->BGMEvents) {
+			auto sndf = Difficulty->SoundList[BGM.Sound];
+			out << "5," << BGM.Time * 1000 << ",0,\"" << sndf << "\",100" << std::endl;
 		}
 
 		out
@@ -107,43 +105,35 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 		out << "[TimingPoints]\n";
 
 
-		for (TimingData::iterator t = BPS.begin(); 
-			t != BPS.end();
-			t++)
+		for (auto t : BPS)
 		{
-			out << t->Time * 1000 << "," << 1000 / (t->Value ? t->Value : 0.00001) << ",4,1,0,15,1,0\n";
+			out << t.Time * 1000 << "," << 1000 / (t.Value ? t.Value : 0.00001) << ",4,1,0,15,1,0\n";
 			out.flush();
 		}
 
-		for (TimingData::iterator t = (*i)->Data->Scrolls.begin();
-			t != (*i)->Data->Scrolls.end();
-			t++)
+		for (auto t : Difficulty->Data->Scrolls)
 		{
-			out << (t->Time + (*i)->Offset) * 1000 << "," << - 100/(t->Value ? t->Value : 0.00001) << ",4,1,0,15,0,0\n";
+			out << (t.Time + Difficulty->Offset) * 1000 << "," << - 100/(t.Value ? t.Value : 0.00001) << ",4,1,0,15,0,0\n";
 			out.flush();
 		}
 
 		out << "\n\n[HitObjects]\n";
 
 		// Then, objects.
-		for (auto k = (*i)->Data->Measures.begin();
-			k != (*i)->Data->Measures.end();
-			k++)
+		for (auto k : Difficulty->Data->Measures)
 		{
-			for (uint8 n = 0; n < (*i)->Channels; n++)
+			for (uint8 n = 0; n < Difficulty->Channels; n++)
 			{
-				for (std::vector<VSRG::NoteData>::iterator Note = k->MeasureNotes[n].begin();
-					Note != k->MeasureNotes[n].end();
-					Note++)
+				for (auto Note : k.MeasureNotes[n])
 				{
-					out << TrackToXPos((*i)->Channels, n) << ",0," << int(Note->StartTime * 1000.0) << ","
-						<< (Note->EndTime ? "128" : "1") << ",0,";
-					if (Note->EndTime)
-						out << int(Note->EndTime * 1000.0) << ",";
-					out << "1:0:0:0";
+					out << TrackToXPos(Difficulty->Channels, n) << ",0," << int(Note.StartTime * 1000.0) << ","
+						<< (Note.EndTime ? "128" : "1") << ",0,";
+					if (Note.EndTime)
+						out << int(Note.EndTime * 1000.0) << ",";
+					out << "1:0:0:0:";
 
-					if (Note->Sound)
-						out << ":" << ( Note->Sound ? ((*i)->SoundList.find(Note->Sound) != (*i)->SoundList.end() ? (*i)->SoundList[Note->Sound].c_str() : "" ) : "");
+					if (Note.Sound)
+						out << (Difficulty->SoundList.find(Note.Sound) != Difficulty->SoundList.end() ? Difficulty->SoundList[Note.Sound] : "" );
 
 					out << "\n";
 					out.flush();

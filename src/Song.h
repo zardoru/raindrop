@@ -32,6 +32,10 @@ struct TimingSegment : public TimeBased<TimingSegment, double>
 	TimingSegment() : TimingSegment(0, 0) {};
 };
 
+inline bool operator<(double Beat, const TimingSegment &in) {
+	return Beat < in.Time;
+}
+
 typedef std::vector<TimingSegment> TimingData;
 
 struct AutoplaySound : public TimeBased<AutoplaySound, float>
