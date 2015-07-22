@@ -352,15 +352,15 @@ bool ScoreKeeper7K::isStageFailed(int lifebar_amount_type){
 		case LT_EASY:
 			return total_notes == max_notes && lifebar_easy < 0.80;
 		case LT_SURVIVAL:
-			return lifebar_survival == 0.0;
+			return lifebar_survival <= 0.0;
 		case LT_EXHARD:
-			return lifebar_exhard == 0.0;
+			return lifebar_exhard <= 0.0;
 		case LT_DEATH:
-			return lifebar_death == 0.0;
+			return lifebar_death <= 0.0;
 		case LT_STEPMANIA:
-			return lifebar_stepmania == 0.0;
+			return lifebar_stepmania <= 0.0;
 		case LT_O2JAM:
-			return lifebar_o2jam == 0.0;
+			return lifebar_o2jam <= 0.0;
 		default:
 			return false;
 	}
