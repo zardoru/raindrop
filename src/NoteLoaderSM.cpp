@@ -502,9 +502,9 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 		OnCommand(#SCROLLS)
 		{
 			if (!Diff)
-				LoadTimingList(ScrollData, CommandContents);
+				LoadTimingList(ScrollData, CommandContents, true);
 			else
-				LoadTimingList(Diff->Data->Scrolls, CommandContents);
+				LoadTimingList(Diff->Data->Scrolls, CommandContents, true);
 		}
 
 		OnCommand(#SPEEDS)

@@ -363,7 +363,7 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 			outcnt = cnt;
 		}
 
-		mStreamTime += (double)(cnt/Channels) / (double)mSource->GetRate();
+		mStreamTime += double(cnt/Channels) / mSource->GetRate();
 		mPlaybackTime = mStreamTime - MixerGetLatency();
 	}else
 		return 0;
