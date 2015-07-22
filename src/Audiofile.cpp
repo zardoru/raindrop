@@ -321,13 +321,14 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 
 	if (mIsPlaying)
 	{
-		if (mSource->GetRate() != 44100.0) // Alright, we'll need to resample. Let's just do that.
+		if (mSource->GetRate() != 44100.0 || mPitch != 1) // Alright, we'll need to resample. Let's just do that.
 		{
 			// This is what our destination rate will be
 			double origRate = mSource->GetRate();
 
 			// This is what our destination rate is.
 			double resRate = 44100.0 / mPitch;
+			double RateRatio = resRate / origRate;
 
 			// This is how many samples we want to read from the source buffer
 			size_t scount = ceil(origRate * toRead / resRate);
@@ -346,6 +347,8 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 			{
 				monoToStereo(mResampleBuffer, cnt, BUFF_SIZE);
 			}
+
+			soxr_set_io_ratio(mResampler, 1 / RateRatio, cnt / 2);
 
 			soxr_process(mResampler, 
 						mResampleBuffer, cnt / Channels, nullptr, 
@@ -379,19 +382,17 @@ bool AudioStream::Open(const char* Filename)
 	{
 		Channels = mSource->GetChannels();
 		
-		if (mSource->GetRate() != 44100) // Okay, we'll rearrange a buffer to store resampling stuff meanwhile.
-		{
-			mResampleBuffer = new short[BUFF_SIZE];
+		
+		mResampleBuffer = new short[BUFF_SIZE];
 
-
-			soxr_io_spec_t sis;
-			sis.flags = 0;
-			sis.itype = SOXR_INT16_I;
-			sis.otype = SOXR_INT16_I;
-			sis.scale = 1;
-
-			mResampler = soxr_create(mSource->GetRate(), 44100, 2, nullptr, &sis, nullptr, nullptr);
-		}
+		soxr_io_spec_t sis;
+		sis.flags = 0;
+		sis.itype = SOXR_INT16_I;
+		sis.otype = SOXR_INT16_I;
+		sis.scale = 1;
+		soxr_quality_spec_t q_spec = soxr_quality_spec(SOXR_HQ, SOXR_VR);
+		mResampler = soxr_create(mSource->GetRate(), 44100, 2, nullptr, &sis, &q_spec, nullptr);
+		
 		
 
 		mBufferSize = BUFF_SIZE;
