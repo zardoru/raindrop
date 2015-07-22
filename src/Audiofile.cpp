@@ -344,19 +344,14 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 			int Channels = (*this).Channels;
 			if (Channels == 1)
 			{
-				Channels = 2;
 				monoToStereo(mResampleBuffer, cnt, BUFF_SIZE);
-			}
-			else {
-				cnt /= 2;
-				outcnt /= 2;
 			}
 
 			soxr_process(mResampler, 
-						mResampleBuffer, cnt, nullptr, 
-						buffer, outcnt, &odone);
+						mResampleBuffer, cnt / Channels, nullptr, 
+						buffer, outcnt / Channels, &odone);
 
-			outcnt = odone * Channels;
+			outcnt = odone;
 		}
 		else
 		{
@@ -368,7 +363,7 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 			outcnt = cnt;
 		}
 
-		mStreamTime += (double)cnt / (double)mSource->GetRate();
+		mStreamTime += (double)(cnt/Channels) / (double)mSource->GetRate();
 		mPlaybackTime = mStreamTime - MixerGetLatency();
 	}else
 		return 0;
