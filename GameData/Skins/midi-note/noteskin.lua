@@ -125,12 +125,9 @@ end
 -- 1 is enabled. 2 is being pressed. 0 is failed. 3 is succesful hit.
 function drawHoldBodyInternal(lane, loc, size, active_level)
 	function do_draw(lane, loc, size, active_level)
-		local note;
+		local note = holdBodiesInactive[lane + 1];
 	
-		if active_level == 0 then
-			note = holdBodiesInactive[lane + 1]
-			note.LightenFactor = 0
-		else
+		if active_level ~= 0 then  
 			note = holdBodiesActive[lane + 1]
 		end 
 		

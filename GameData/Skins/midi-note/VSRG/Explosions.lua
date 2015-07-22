@@ -80,28 +80,31 @@ function Explosions.Run(Delta)
 		if Explosions.Time[Lane] < Explosions.Duration then
 			-- local newScale = lerp(Explosions.Time[Lane], 0, Explosions.Duration, 0.5, 3)
 			Explosions.Sprites[Lane].Alpha = lerp(Explosions.Time[Lane], 0, Explosions.Duration, 1, 0)
+      Explosions.Sprites[Lane].LightenFactor = lerp(Explosions.Time[Lane], 0, Explosions.Duration, 4, 0)
 		else
 			Explosions.Sprites[Lane].Alpha = 0
 		end
 		
 		if Explosions.GearTime[Lane] < Explosions.KeyupDuration then
 			local newScale = lerp(Explosions.GearTime[Lane], 0, Explosions.KeyupDuration, 0.5, 1)
-			Explosions.Receptors[Lane].ScaleX = newScale
-			Explosions.Receptors[Lane].ScaleY = newScale
+			Explosions.Receptors[Lane]:SetScale(newScale)
+			Explosions.ReceptorFlash[Lane]:SetScale(newScale)
 		else
 			Explosions.Receptors[Lane]:SetScale(1)
+      Explosions.ReceptorFlash[Lane]:SetScale(1)
 		end
     
     local l = Explosions.HoldFlash[Lane]
     if Explosions.FlashTime[Lane] < Explosions.DurationHoldEnd then
       l.Alpha = lerp(Explosions.FlashTime[Lane], 0, Explosions.DurationHoldEnd, 1, 0)
+      l.LightenFactor = lerp(Explosions.FlashTime[Lane], 0, Explosions.DurationHoldEnd, 4, 0)
     else
       l.Alpha = 0
     end
     
     local Bt = math.floor(Game:GetCurrentBeat() * 8) % 8
     if Bt == 0 then
-      Explosions.ReceptorFlash[Lane].Alpha = 1
+      Explosions.ReceptorFlash[Lane].Alpha = 0.4
     else
       Explosions.ReceptorFlash[Lane].Alpha = 0
     end

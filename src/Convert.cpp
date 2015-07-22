@@ -92,7 +92,7 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 		// Write BGM events here.
 		for (auto BGM : Difficulty->Data->BGMEvents) {
 			auto sndf = Difficulty->SoundList[BGM.Sound];
-			out << "5," << BGM.Time * 1000 << ",0,\"" << sndf << "\",100" << std::endl;
+			out << "5," << int(round(BGM.Time * 1000)) << ",0,\"" << sndf << "\",100" << std::endl;
 		}
 
 		out

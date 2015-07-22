@@ -284,7 +284,7 @@ AudioStream::AudioStream()
 	mIsLooping = false;
 	mSource = NULL;
 	mData = NULL;
-	tmpBuffer = NULL;
+	mResampleBuffer = NULL;
 
 	MixerAddStream(this);
 }
@@ -295,7 +295,7 @@ AudioStream::~AudioStream()
 
 	delete mSource;
 	delete[] mData;
-	delete tmpBuffer;
+	delete mResampleBuffer;
 }
 
 uint32 AudioStream::Read(short* buffer, size_t count)
@@ -332,17 +332,12 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 			// This is how many samples we want to read from the source buffer
 			size_t scount = ceil(origRate * toRead / resRate);
 
-			cnt = PaUtil_ReadRingBuffer(&mRingBuf, tmpBuffer, scount);
+			cnt = PaUtil_ReadRingBuffer(&mRingBuf, mResampleBuffer, scount);
 			// cnt now contains how many samples we actually read... 
 
 			// This is how many resulting samples we can output with what we read...
 			outcnt = floor(cnt * resRate / origRate);
 
-			soxr_io_spec_t sis;
-			sis.flags = 0;
-			sis.itype = SOXR_INT16_I;
-			sis.otype = SOXR_INT16_I;
-			sis.scale = 1;
 
 			size_t odone;
 
@@ -350,15 +345,18 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 			if (Channels == 1)
 			{
 				Channels = 2;
-				monoToStereo(tmpBuffer, cnt, BUFF_SIZE);
+				monoToStereo(mResampleBuffer, cnt, BUFF_SIZE);
+			}
+			else {
+				cnt /= 2;
+				outcnt /= 2;
 			}
 
-			soxr_oneshot(origRate, resRate, Channels,
-				tmpBuffer, cnt, NULL,
-				buffer, outcnt, &odone,
-				&sis, NULL, NULL);
+			soxr_process(mResampler, 
+						mResampleBuffer, cnt, nullptr, 
+						buffer, outcnt, &odone);
 
-			outcnt = odone;
+			outcnt = odone * Channels;
 		}
 		else
 		{
@@ -370,7 +368,7 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 			outcnt = cnt;
 		}
 
-		mStreamTime += (double)(cnt/Channels) / (double)mSource->GetRate();
+		mStreamTime += (double)cnt / (double)mSource->GetRate();
 		mPlaybackTime = mStreamTime - MixerGetLatency();
 	}else
 		return 0;
@@ -387,7 +385,18 @@ bool AudioStream::Open(const char* Filename)
 		Channels = mSource->GetChannels();
 		
 		if (mSource->GetRate() != 44100) // Okay, we'll rearrange a buffer to store resampling stuff meanwhile.
-			tmpBuffer = new short[BUFF_SIZE]; 
+		{
+			mResampleBuffer = new short[BUFF_SIZE];
+
+
+			soxr_io_spec_t sis;
+			sis.flags = 0;
+			sis.itype = SOXR_INT16_I;
+			sis.otype = SOXR_INT16_I;
+			sis.scale = 1;
+
+			mResampler = soxr_create(mSource->GetRate(), 44100, 2, nullptr, &sis, nullptr, nullptr);
+		}
 		
 
 		mBufferSize = BUFF_SIZE;

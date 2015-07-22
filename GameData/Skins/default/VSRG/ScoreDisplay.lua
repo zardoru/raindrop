@@ -32,7 +32,7 @@ function ScoreDisplay.Init()
 
 		ScoreDisplay.Targets[i].X = ScoreDisplay.X + ScoreDisplay.W - ScoreDisplay.DigitWidth * i
 		ScoreDisplay.Targets[i].Y = ScoreDisplay.Y + ScoreDisplay.H - ScoreDisplay.DigitHeight
-		ScoreDisplay.Targets[i].Image = ("VSRG/"..ScoreDisplay.Atlas.File)
+		ScoreDisplay.Targets[i].Image = "VSRG/"..ScoreDisplay.Atlas.File
 		ScoreDisplay.Targets[i].Width = ScoreDisplay.DigitWidth
 		ScoreDisplay.Targets[i].Height = ScoreDisplay.DigitHeight
 

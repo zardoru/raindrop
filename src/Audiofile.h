@@ -2,6 +2,7 @@
 #define AUDIOFILE_H_
 
 #include <pa_ringbuffer.h>
+#include <soxr.h>
 
 class AudioDataSource 
 {
@@ -34,6 +35,7 @@ protected:
 	bool mIsLooping;
 	double mPitch;
 public:
+	virtual ~Sound() = default;
 	virtual uint32 Read(short* buffer, size_t count) = 0;
 	virtual bool Open(const char* Filename) = 0;
 	virtual void Play() = 0;
@@ -84,12 +86,12 @@ private:
 	AudioDataSource* mSource;
 	unsigned int     mBufferSize;
 	short*			 mData;
-	short*			 tmpBuffer;
+	short*			 mResampleBuffer;
 	double			 mStreamTime;
 	double			 mPlaybackTime;
 
 	bool			 mIsPlaying;
-	
+	soxr_t			 mResampler;
 
 public:
 	AudioStream();

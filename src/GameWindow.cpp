@@ -605,7 +605,7 @@ void GameWindow::SwapBuffers()
 					int thisKeyNumber = SpecialKeys[j].boundkey - 1000;
 					if (i + 1 == thisKeyNumber) {
 						/* Only processes the button push/release if the state has changed. */
-						if ((bool)buttonArray[i] != controllerButtonState[thisKeyNumber]) {
+						if ((buttonArray[i] != 0) != controllerButtonState[thisKeyNumber]) {
 							WindowFrame.Parent->HandleInput(SpecialKeys[j].boundkey, ToKeyEventType(buttonArray[i]), false);
 							controllerButtonState[thisKeyNumber] = !controllerButtonState[thisKeyNumber];
 						}

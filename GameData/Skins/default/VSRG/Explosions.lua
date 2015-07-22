@@ -105,6 +105,7 @@ function Explosions.Init()
 		
 		if Upscroll == 1 then
 			obj.Y = JudgmentLineY - obj.Height / 2
+      obj.Rotation = 180
 		else
 			obj.Y = JudgmentLineY + obj.Height / 2
 		end
