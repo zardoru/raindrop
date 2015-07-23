@@ -80,7 +80,7 @@ bool ScreenLoading::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 			return Next->HandleInput(key, code, isMouseInput);
 	}
 
-	return false;
+	return true;
 }
 
 bool ScreenLoading::HandleScrollInput(double xOff, double yOff)
