@@ -36,13 +36,13 @@ void monoToStereo(short* Buffer, size_t cnt, size_t max_len)
 
 AudioDataSource* SourceFromExt(Directory Filename)
 {
-	AudioDataSource *Ret = NULL;
+	AudioDataSource *Ret = nullptr;
 	GString Ext = Filename.GetExtension();
 	Filename.Normalize();
 
 	if (Filename.path().length() == 0 || Ext.length() == 0) {
 		wprintf(L"Invalid filename. (%s) (%s)\n", Utility::Widen(Filename).c_str(), Utility::Widen(Ext).c_str());
-		return NULL;
+		return nullptr;
 	}
 
 	boost::algorithm::to_lower(Ext);
@@ -155,7 +155,7 @@ bool AudioSample::Open(AudioDataSource* Src)
 			size_t size = size_t(double(mBufferSize * ResamplingRate + .5));
 			short* mDataNew = new short[size];
 
-			spc.e = 0;
+			spc.e = nullptr;
 			spc.itype = SOXR_INT16_I;
 			spc.otype = SOXR_INT16_I;
 			spc.scale = 1;
@@ -164,7 +164,7 @@ bool AudioSample::Open(AudioDataSource* Src)
 			soxr_oneshot(mRate, 44100, Channels,
 				mData, mBufferSize / Channels, &done,
 				mDataNew, size / Channels, &doneb,
-				&spc, NULL, NULL);
+				&spc, nullptr, nullptr);
 
 			delete mData;
 			mBufferSize = size;
@@ -191,11 +191,8 @@ uint32 AudioSample::Read(short* buffer, size_t count)
 		uint32 ReadAmount = min(bufferLeft, count);
 
 		if (mCounter < mBufferSize)
-		{	
-			int diff = 0;
-
+		{
 			memcpy(buffer, mData+mCounter, ReadAmount * sizeof(short));
-
 			mCounter += ReadAmount;
 		}else
 		{
@@ -282,9 +279,10 @@ AudioStream::AudioStream()
 	mPitch = 1;
 	mIsPlaying = false;
 	mIsLooping = false;
-	mSource = NULL;
-	mData = NULL;
-	mResampleBuffer = NULL;
+	mSource = nullptr;
+	mData = nullptr;
+	mResampleBuffer = nullptr;
+	mResampler = nullptr;
 
 	MixerAddStream(this);
 }
@@ -293,6 +291,7 @@ AudioStream::~AudioStream()
 {
 	MixerRemoveStream(this);
 
+	soxr_delete(mResampler);
 	delete mSource;
 	delete[] mData;
 	delete mResampleBuffer;
@@ -438,7 +437,7 @@ double AudioStream::GetPlayedTime()
 
 void AudioStream::SeekSample(uint32 Sample)
 {
-	mSource->Seek((float)Sample / (float)mSource->GetRate());
+	mSource->Seek(float(Sample) / mSource->GetRate());
 }
 
 void AudioStream::Stop()

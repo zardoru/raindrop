@@ -1,32 +1,17 @@
 <rml>
-
 	<head> 
-	
-		<style>
-		
-		#autobtn {
-			display: inline-block;
-			width: 256px;
-			height: 64px;
-			margin-top: 10px;
-			background-decorator: image;
-			background-image: SongSelect/auto_btn_unselected.png;
-		}
-		
-		#autobtnac {
-			display: inline-block;
-			width: 256px;
-			height: 64px;
-			margin-top: 10px;
-			background-decorator: image;
-			background-image: SongSelect/auto_btn_selected.png;
-		}
-		
-		</style>
-		
+		<link type="text/css" href="raindrop.css"/>
 		<script>
-			Global:GetParameters().HiddenMode = 0
-			Global:GetParameters().Upscroll = 1
+			function onload(element)
+				print ("OnLoad document ScreenSelectMusic", element)
+				Global:GetParameters().HiddenMode = 0
+				Global:GetParameters().Upscroll = 0
+				Global:GetParameters().NoFail = 0
+				Global:GetParameters().Rate = 1
+				Global:GetParameters().Auto = 0
+				Global:GetParameters().Wave = 0
+			end
+			
 		
 			function activateAuto(elem)
 				if elem.id == "autobtn" then
@@ -37,14 +22,27 @@
 					Global:GetParameters().Autoplay = 0
 				end
 			end
+			
+			-- checked is nil or not nil depending on whatever it is.
+			-- it also is on attributes rather than on the element itself (!)
+			function changesetting(setting, val)
+				val = (val.attributes.checked ~= nil) and 1 or 0
+				if setting == "upscroll" then
+					Global:GetParameters().Upscroll = val
+				elseif setting == "nofail" then
+					Global:GetParameters().NoFail = val
+				end
+			end
 		
 		</script>
 	
 	</head>
 	
-	<body>
+	<body onload="onload(element)">
 		<img src="SongSelect/ssbanner.png"/> <br/>
-		<button id="autobtn" onmousedown="activateAuto(element)"/>
+		<button id="autobtn" onmousedown="activateAuto(element)"/> <br/>
+		<input type="checkbox" id="upscroll" onchange="changesetting(element.id, element)" /> Upscroll <br/>
+		<input type="checkbox" id="nofail" onchange="changesetting(element.id, element)"/> Failure Disabled <br/>
 	</body>
 
 </rml>

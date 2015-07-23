@@ -1,0 +1,44 @@
+body {
+	font-family: default;
+	font-size: 20;
+}
+
+input.checkbox
+{
+	icon-decorator: image;
+	icon-image: Global/checkbox.png;
+}
+
+input.checkbox:hover
+{
+	icon-image: Global/checkbox_h.png;
+}
+
+input.checkbox:checked
+{
+	icon-image: Global/checkbox_s.png;
+}
+
+input.checkbox:checked:hover
+{
+	icon-image: Global/checkbox_sh.png;
+}
+
+#autobtn {
+	display: inline-block;
+	width: 256px;
+	height: 64px;
+	margin-top: 10px;
+	background-decorator: image;
+	background-image: SongSelect/auto_btn_unselected.png;
+}
+
+#autobtnac {
+	display: inline-block;
+	width: 256px;
+	height: 64px;
+	margin-top: 10px;
+	background-decorator: image;
+	background-image: SongSelect/auto_btn_selected.png;
+}
+
