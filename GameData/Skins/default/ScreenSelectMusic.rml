@@ -10,6 +10,7 @@
 				Global:GetParameters().Rate = 1
 				Global:GetParameters().Auto = 0
 				Global:GetParameters().Wave = 0
+				Global:GetParameters().Random = 0
 			end
 			
 		
@@ -31,6 +32,8 @@
 					Global:GetParameters().Upscroll = val
 				elseif setting == "nofail" then
 					Global:GetParameters().NoFail = val
+				elseif setting == "random" then
+					Global:GetParameters().Random = val
 				end
 			end
 		
@@ -43,6 +46,7 @@
 		<button id="autobtn" onmousedown="activateAuto(element)"/> <br/>
 		<input type="checkbox" id="upscroll" onchange="changesetting(element.id, element)" /> Upscroll <br/>
 		<input type="checkbox" id="nofail" onchange="changesetting(element.id, element)"/> Failure Disabled <br/>
+		<input type="checkbox" id="random" onchange="changesetting(element.id, element)"/> Random <br/>
 	</body>
 
 </rml>

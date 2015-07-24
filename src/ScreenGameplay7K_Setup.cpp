@@ -22,6 +22,8 @@
 #include "Noteskin.h"
 #include "Line.h"
 
+#include "NoteTransformations.h"
+
 ScreenGameplay7K::ScreenGameplay7K() : Screen("ScreenGameplay7K")
 {
 	SpeedMultiplier = 0;
@@ -61,6 +63,7 @@ ScreenGameplay7K::ScreenGameplay7K() : Screen("ScreenGameplay7K")
 	CurrentVertical = 0;
 	SongTime = SongTimeReal = 0;
 	beatScrollEffect = 0;
+	Random = 0;
 
 	AudioCompensation = (Configuration::GetConfigf("AudioCompensation") != 0);
 	TimeCompensation = 0;
@@ -156,6 +159,7 @@ void ScreenGameplay7K::Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const
 	Auto = Param.Auto;
 	Speed = Param.Rate;
 	NoFail = Param.NoFail;
+	Random = Param.Random;
 
 	BGA = BackgroundAnimation::CreateBGAFromSong(DifficultyIndex, *S);
 	Noteskin::SetupNoteskin(false, CurrentDiff->Channels, this);
@@ -438,6 +442,7 @@ bool ScreenGameplay7K::ProcessSong()
 	for (auto S : Speeds) if (S.Value < 0) HasNegativeScroll = true;
 	for (auto S : VSpeeds) if (S.Value < 0) HasNegativeScroll = true;
 
+	if (Random) NoteTransform::Randomize(NotesByChannel, CurrentDiff->Channels);
 	return true;
 }
 

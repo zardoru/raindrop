@@ -138,6 +138,7 @@ void GameState::InitializeLua(lua_State *L)
 		.addData("Autoplay", &GameParameters::Auto)
 		.addData("HiddenMode", &GameParameters::HiddenMode)
 		.addData("Rate", &GameParameters::Rate)
+		.addData("Random", &GameParameters::Random)
 		.endClass();
 
 	luabridge::getGlobalNamespace(L)

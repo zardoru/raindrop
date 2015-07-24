@@ -265,6 +265,9 @@
     <ClCompile Include="..\src\Renderer7K.cpp">
       <Filter>Source\vsrg\gameplay</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\NoteTransformations.cpp">
+      <Filter>Source\vsrg\gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">
@@ -494,6 +497,9 @@
     </ClInclude>
     <ClInclude Include="..\src\BackgroundAnimation.h">
       <Filter>Source\game global\BGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\NoteTransformations.h">
+      <Filter>Source\vsrg\gameplay</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

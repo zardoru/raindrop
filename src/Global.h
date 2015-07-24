@@ -210,8 +210,9 @@ using std::min;
 #include "Directory.h"
 
 #ifdef WIN32
-#pragma warning (disable: 4244)
+#pragma warning (disable: 4244) // possible loss of data
 #pragma warning (disable: 4996) // deprecation
+#pragma warning (disable: 4800) // cast from bool to int
 #endif
 
 #endif

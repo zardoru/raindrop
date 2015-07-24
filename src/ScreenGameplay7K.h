@@ -124,6 +124,7 @@ private:
 	bool    InterpolateTime;
 	bool    AudioCompensation;
 	shared_ptr<BackgroundAnimation> BGA;
+	int Random;
 	/*
 		Optimizations will come in later.
 		See Renderer7K.cpp.

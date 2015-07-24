@@ -166,6 +166,9 @@ struct GameParameters {
 	// Music speed
 	float Rate;
 
+	// Randomizing mode -> 0 = Disabled, 1 = Per-Lane, 2 = Panic (unimplemented)
+	int Random;
+
 	// Selected starting measure
 	int32 StartMeasure;
 
