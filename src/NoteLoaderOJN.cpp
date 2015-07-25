@@ -277,7 +277,7 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 
 
 
-bool IsValidOJN(std::ifstream &filein, GString filename, OjnHeader *Head)
+bool IsValidOJN(std::fstream &filein, GString filename, OjnHeader *Head)
 {
 	if (!filein)
 	{
@@ -306,9 +306,9 @@ bool IsValidOJN(std::ifstream &filein, GString filename, OjnHeader *Head)
 const char *LoadOJNCover(GString filename, size_t &read)
 {
 #if (!defined _WIN32)
-	std::ifstream filein(filename.c_str());
+	std::fstream filein(filename.c_str());
 #else
-	std::ifstream filein(Utility::Widen(filename).c_str(), std::ios::binary | std::ios::in);
+	std::fstream filein(Utility::Widen(filename).c_str(), std::ios::binary | std::ios::in);
 #endif
 	OjnHeader Head;
 	char* out;
@@ -318,8 +318,9 @@ const char *LoadOJNCover(GString filename, size_t &read)
 
 	out = new char[Head.cover_size];
 
-	filein.seekg(Head.cover_offset);
-	read = filein.readsome(out, Head.cover_size);
+	filein.seekg(Head.cover_offset, std::ios::beg);
+	filein.read(out, Head.cover_size);
+	read = Head.cover_size;
 
 	return out;
 }
@@ -327,9 +328,9 @@ const char *LoadOJNCover(GString filename, size_t &read)
 void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::Song *Out)
 {
 #if (!defined _WIN32)
-	std::ifstream filein(filename.c_str());
+	std::fstream filein(filename.c_str());
 #else
-	std::ifstream filein(Utility::Widen(filename).c_str(), std::ios::binary | std::ios::in);
+	std::fstream filein(Utility::Widen(filename).c_str(), std::ios::binary | std::ios::in);
 #endif
 	OjnHeader Head;
 

@@ -19,6 +19,7 @@ So while the code itself is fairly simple it has quite an amount of dependencies
 * libsndfile
 * glm
 * librocket
+* freeimage
 
 Building is basically setting up the include and library directories to all these libraries (for Visual Studio 2013) after compiling them for this toolset and once that's done you open the main project and fire up your f7 key.
 

@@ -133,16 +133,16 @@ void DrawTexturedQuad(Image* ToDraw, const AABB& TextureCrop, const Transformati
 	float CropPositions[8] = {
 		// topright
 		TextureCrop.P2.X / (float)ToDraw->w,
-		TextureCrop.P1.Y / (float)ToDraw->h,
+		TextureCrop.P2.Y / (float)ToDraw->h,
 		// bottom right
 		TextureCrop.P2.X / (float)ToDraw->w,
-		TextureCrop.P2.Y / (float)ToDraw->h,
+		TextureCrop.P1.Y / (float)ToDraw->h,
 		// bottom left
 		TextureCrop.P1.X / (float)ToDraw->w,
-		TextureCrop.P2.Y / (float)ToDraw->h,
+		TextureCrop.P1.Y / (float)ToDraw->h,
 		// topleft
 		TextureCrop.P1.X / (float)ToDraw->w,
-		TextureCrop.P1.Y / (float)ToDraw->h,
+		TextureCrop.P2.Y / (float)ToDraw->h,
 	};
 
 	TextureBuffer->AssignData(CropPositions);

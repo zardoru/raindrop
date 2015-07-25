@@ -79,7 +79,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>rocketcorelua.lib;rocketcontrolslua.lib;rocketcontrols.lib;rocketdebugger.lib;rocketcore.lib;libsoxr.lib;libsndfile-1.lib;libmpg123.lib;Vorbis_d.lib;portaudio_x86.lib;Ogg_d.lib;GLFW3.lib;glew32d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freeimage.lib;rocketcorelua.lib;rocketcontrolslua.lib;rocketcontrols.lib;rocketdebugger.lib;rocketcore.lib;libsoxr.lib;libsndfile-1.lib;libmpg123.lib;Vorbis_d.lib;portaudio_x86.lib;Ogg_d.lib;GLFW3.lib;glew32d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AllowIsolation>true</AllowIsolation>
       <EnableUAC>true</EnableUAC>
@@ -125,7 +125,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>rocketcontrols.lib;rocketcorelua.lib;rocketcore.lib;libsoxr.lib;libsndfile-1.lib;libmpg123.lib;Vorbis.lib;portaudio_x86.lib;Ogg.lib;GLFW3.lib;glew32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freeimage.lib;rocketcontrols.lib;rocketcorelua.lib;rocketcore.lib;libsoxr.lib;libsndfile-1.lib;libmpg123.lib;Vorbis.lib;portaudio_x86.lib;Ogg.lib;GLFW3.lib;glew32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -166,10 +166,6 @@
     <ClCompile Include="..\ext-src\lua.c" />
     <ClCompile Include="..\ext-src\pa_ringbuffer.c" />
     <ClCompile Include="..\ext-src\sha256.cpp" />
-    <ClCompile Include="..\ext-src\SOIL\image_DXT.c" />
-    <ClCompile Include="..\ext-src\SOIL\image_helper.c" />
-    <ClCompile Include="..\ext-src\SOIL\SOIL.c" />
-    <ClCompile Include="..\ext-src\SOIL\stb_image_aug.c" />
     <ClCompile Include="..\ext-src\sqlite3.c" />
     <ClCompile Include="..\src\ActorBarline.cpp" />
     <ClCompile Include="..\src\ActorJudgment.cpp" />
@@ -259,12 +255,6 @@
     <ClInclude Include="..\ext-src\lualib.h" />
     <ClInclude Include="..\ext-src\pa_ringbuffer.h" />
     <ClInclude Include="..\ext-src\sha256.h" />
-    <ClInclude Include="..\ext-src\SOIL\image_DXT.h" />
-    <ClInclude Include="..\ext-src\SOIL\image_helper.h" />
-    <ClInclude Include="..\ext-src\SOIL\SOIL.h" />
-    <ClInclude Include="..\ext-src\SOIL\stbi_DDS_aug.h" />
-    <ClInclude Include="..\ext-src\SOIL\stbi_DDS_aug_c.h" />
-    <ClInclude Include="..\ext-src\SOIL\stb_image_aug.h" />
     <ClInclude Include="..\ext-src\sqlite3.h" />
     <ClInclude Include="..\src\ActorBarline.h" />
     <ClInclude Include="..\src\ActorJudgment.h" />

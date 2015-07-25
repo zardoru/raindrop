@@ -136,18 +136,6 @@
     <ClCompile Include="..\ext-src\sqlite3.c">
       <Filter>Source\libraries</Filter>
     </ClCompile>
-    <ClCompile Include="..\ext-src\SOIL\image_DXT.c">
-      <Filter>Source\libraries</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ext-src\SOIL\image_helper.c">
-      <Filter>Source\libraries</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ext-src\SOIL\SOIL.c">
-      <Filter>Source\libraries</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ext-src\SOIL\stb_image_aug.c">
-      <Filter>Source\libraries</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\SongDatabase.cpp">
       <Filter>Source\game global\game status</Filter>
     </ClCompile>
@@ -403,24 +391,6 @@
       <Filter>Source\libraries</Filter>
     </ClInclude>
     <ClInclude Include="..\ext-src\sqlite3.h">
-      <Filter>Source\libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ext-src\SOIL\image_DXT.h">
-      <Filter>Source\libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ext-src\SOIL\image_helper.h">
-      <Filter>Source\libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ext-src\SOIL\SOIL.h">
-      <Filter>Source\libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ext-src\SOIL\stb_image_aug.h">
-      <Filter>Source\libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ext-src\SOIL\stbi_DDS_aug.h">
-      <Filter>Source\libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ext-src\SOIL\stbi_DDS_aug_c.h">
       <Filter>Source\libraries</Filter>
     </ClInclude>
     <ClInclude Include="..\src\SongDatabase.h">

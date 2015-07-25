@@ -160,11 +160,12 @@ bool AudioSample::Open(AudioDataSource* Src)
 			spc.otype = SOXR_INT16_I;
 			spc.scale = 1;
 			spc.flags = 0;
+			soxr_quality_spec_t q_spec = soxr_quality_spec(SOXR_VHQ, SOXR_VR);
 
 			soxr_oneshot(mRate, 44100, Channels,
 				mData, mBufferSize / Channels, &done,
 				mDataNew, size / Channels, &doneb,
-				&spc, nullptr, nullptr);
+				&spc, &q_spec, nullptr);
 
 			delete mData;
 			mBufferSize = size;
@@ -389,7 +390,7 @@ bool AudioStream::Open(const char* Filename)
 		sis.itype = SOXR_INT16_I;
 		sis.otype = SOXR_INT16_I;
 		sis.scale = 1;
-		soxr_quality_spec_t q_spec = soxr_quality_spec(SOXR_HQ, SOXR_VR);
+		soxr_quality_spec_t q_spec = soxr_quality_spec(SOXR_VHQ, SOXR_VR);
 		mResampler = soxr_create(mSource->GetRate(), 44100, 2, nullptr, &sis, &q_spec, nullptr);
 		
 		

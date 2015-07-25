@@ -180,6 +180,7 @@ struct GameParameters {
 		NoFail = false;
 		HiddenMode = HIDDENMODE_NONE;
 		StartMeasure = -1;
+		Random = 0;
 		Rate = 1;
 	}
 };
