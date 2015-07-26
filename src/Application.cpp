@@ -177,7 +177,7 @@ void Application::Init()
 		if (Configuration::GetConfigf("Preload"))
 		{
 			Log::Printf("Preloading songs...");
-			Game::SongWheel::GetInstance().ReloadSongs(Game::GameState::GetInstance().GetSongDatabase());
+			Game::SongWheel::GetInstance().LoadSongsOnce(Game::GameState::GetInstance().GetSongDatabase());
 			Game::SongWheel::GetInstance().Join();
 		}
 

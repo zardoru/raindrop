@@ -82,6 +82,7 @@ private:
 	bool VSRGModeActive;
 	bool IsHovering;
 
+	bool LoadedSongsOnce;
 	uint8 DifficultyIndex;
 
 	// We need to find the start and the end indices of what we want to display.
@@ -117,6 +118,7 @@ public:
 	bool HandleScrollInput(const double dx, const double dy);
 	shared_ptr<Game::Song> GetSelectedSong();
 	void ReloadSongs(SongDatabase* Database);
+	void LoadSongsOnce(SongDatabase* Database);
 
 	// return: the new difficulty index
 	int NextDifficulty();

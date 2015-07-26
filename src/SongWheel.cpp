@@ -32,7 +32,7 @@ SongWheel::SongWheel()
 
 	ListRoot = nullptr;
 	CurrentList = nullptr;
-
+	LoadedSongsOnce = false;
 	IsHovering = false;
 }
 
@@ -78,7 +78,7 @@ void SongWheel::Initialize(float Start, float End, SongDatabase* Database, bool 
 	IsInitialized = true;
 	DifficultyIndex = 0;
 
-	ReloadSongs(Database);
+	LoadSongsOnce(Database);
 }
 
 class LoadThread
@@ -147,6 +147,13 @@ void SongWheel::ReloadSongs(SongDatabase* Database)
 	mLoadThread = new boost::thread(&LoadThread::Load, L);
 }
 
+void SongWheel::LoadSongsOnce(SongDatabase* Database)
+{
+	if (!LoadedSongsOnce) LoadedSongsOnce = true;
+	else return;
+	ReloadSongs(Database);
+}
+
 uint32 SongWheel::GetCursorIndex()
 {
 	size_t Size;
@@ -171,12 +178,12 @@ int SongWheel::PrevDifficulty()
 		DifficultyIndex--;
 		if (CurrentList->GetSongEntry(SelectedItem)->Mode == MODE_VSRG)
 		{
-			shared_ptr<VSRG::Song> Song = static_pointer_cast<VSRG::Song> (CurrentList->GetSongEntry(SelectedItem));
+			auto Song = static_pointer_cast<VSRG::Song> (CurrentList->GetSongEntry(SelectedItem));
 			max_index = Song->Difficulties.size() - 1;
 		}
 		else
 		{
-			shared_ptr<dotcur::Song> Song = static_pointer_cast<dotcur::Song> (CurrentList->GetSongEntry(SelectedItem));
+			auto Song = static_pointer_cast<dotcur::Song> (CurrentList->GetSongEntry(SelectedItem));
 			max_index = Song->Difficulties.size() - 1;
 		}
 		
@@ -196,13 +203,13 @@ int SongWheel::NextDifficulty()
 		DifficultyIndex++;
 		if (CurrentList->GetSongEntry(SelectedItem)->Mode == MODE_VSRG)
 		{
-			shared_ptr<VSRG::Song> Song = static_pointer_cast<VSRG::Song> (CurrentList->GetSongEntry(SelectedItem));
+			auto Song = static_pointer_cast<VSRG::Song> (CurrentList->GetSongEntry(SelectedItem));
 			if (DifficultyIndex >= Song->Difficulties.size())
 				DifficultyIndex = 0;
 		}
 		else
 		{
-			shared_ptr<dotcur::Song> Song = static_pointer_cast<dotcur::Song> (CurrentList->GetSongEntry(SelectedItem));
+			auto Song = static_pointer_cast<dotcur::Song> (CurrentList->GetSongEntry(SelectedItem));
 			if (DifficultyIndex >= Song->Difficulties.size())
 				DifficultyIndex = 0;
 		}
@@ -222,12 +229,12 @@ void SongWheel::SetDifficulty(uint32 i)
 {
 	if (CurrentList && !CurrentList->IsDirectory(SelectedItem))
 	{
-		shared_ptr<VSRG::Song> Song = static_pointer_cast<VSRG::Song> (GetSelectedSong());
+		auto Song = static_pointer_cast<VSRG::Song> (GetSelectedSong());
 		size_t maxIndex = Song->Difficulties.size();
 		size_t oldDI = DifficultyIndex;
 
 		if (maxIndex)
-			DifficultyIndex = Clamp(i, (uint32)0, (uint32)(maxIndex - 1));
+			DifficultyIndex = Clamp(i, uint32(0), uint32(maxIndex - 1));
 		else
 			DifficultyIndex = 0;
 
@@ -242,7 +249,8 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 	{
 		switch (BindingsManager::TranslateKey(key))
 		{
-
+		default:
+			break;
 		case KT_Up:
 			CursorPos--;
 			return true;
