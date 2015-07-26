@@ -2,6 +2,7 @@
 #define SG7K_H_
 
 #include <queue>
+#include "Audio.h"
 #include "Song7K.h"
 #include "ScoreKeeper.h"
 #include "ScreenGameplay7K_Mechanics.h"
@@ -14,7 +15,6 @@ class ScoreKeeper7K;
 class Line;
 class AudioSourceOJM;
 class VSRGMechanics;
-class SoundSample;
 class LuaManager;
 
 class ScreenGameplay7K : public Screen
@@ -82,8 +82,8 @@ private:
 
 	shared_ptr<AudioStream> Music;
 	shared_ptr<AudioSourceOJM> OJMAudio;
-	SoundSample *MissSnd;
-	SoundSample *FailSnd;
+	SoundSample MissSnd;
+	SoundSample FailSnd;
 
 	shared_ptr<ScoreKeeper7K> ScoreKeeper;
 

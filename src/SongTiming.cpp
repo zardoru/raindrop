@@ -20,6 +20,8 @@ int SectionIndex(const TimingData &Timing, double Beat)
 
 double SectionValue(const TimingData &Timing, double Beat)
 {
+	if (!Timing.size()) return -1;
+
 	if (Beat < Timing[0].Time)
 		return Timing[0].Value;
 	else

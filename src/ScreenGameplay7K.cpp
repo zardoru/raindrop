@@ -199,7 +199,7 @@ void ScreenGameplay7K::CheckShouldEndScreen()
 stageFailed:
 		stage_failed = true;
 		ScoreKeeper->failStage();
-		FailSnd->Play();
+		FailSnd.Play();
 
 		// We stop all audio..
 		Music->Stop();

@@ -7,6 +7,7 @@
 #include "ImageLoader.h"
 #include "Sprite.h"
 
+#include <boost/thread.hpp>
 #include <boost/algorithm/string/replace.hpp>
 
 ImageList::ImageList(bool ReleaseAtDestruction)
@@ -31,7 +32,7 @@ void ImageList::AddToList(const GString Filename, const GString Prefix)
 	if (Images.find(ResFilename) == Images.end())
 	{
 		ImageLoader::AddToPending(ResFilename.c_str());
-		Images[ResFilename] = NULL;
+		Images[ResFilename] = nullptr;
 	}
 }
 
@@ -44,8 +45,8 @@ void ImageList::AddToListIndex(const GString Filename, const GString Prefix, int
 	if (ImagesIndex.find(Index) == ImagesIndex.end())
 	{
 		ImageLoader::AddToPending(ResFilename.c_str());
-		Images[ResFilename] = NULL;
-		ImagesIndex[Index] = NULL;
+		Images[ResFilename] = nullptr;
+		ImagesIndex[Index] = nullptr;
 		ImagesIndexPending[Index] = ResFilename;
 	}
 
@@ -53,7 +54,7 @@ void ImageList::AddToListIndex(const GString Filename, const GString Prefix, int
 
 void ImageList::Destroy()
 {
-	for (std::map<GString, Image*>::iterator i = Images.begin(); i != Images.end(); i++)
+	for (auto i = Images.begin(); i != Images.end(); ++i)
 		ImageLoader::DeleteImage(i->second);
 }
 
@@ -68,21 +69,23 @@ void ImageList::AddToList(const uint32 Count, const GString *Filename, const GSt
 bool ImageList::LoadAll()
 {
 	bool WereErrors = false;
-	for (std::map<GString, Image*>::iterator i = Images.begin(); i != Images.end(); i++)
+	for (auto i = Images.begin(); i != Images.end(); ++i)
 	{
 		i->second = ImageLoader::Load(i->first);
-		if (i->second == NULL)
+		if (i->second == nullptr)
 			WereErrors = true;
+		boost::this_thread::interruption_point();
 	}
 
-	for (std::map<int, GString>::iterator i = ImagesIndexPending.begin(); i != ImagesIndexPending.end(); i++)
+	for (auto i = ImagesIndexPending.begin(); i != ImagesIndexPending.end();)
 	{
 		ImagesIndex[i->first] = ImageLoader::Load(i->second);
-		if (ImagesIndex[i->first] == NULL)
+		if (ImagesIndex[i->first] == nullptr)
 			WereErrors = true;
-	}
 
-	ImagesIndexPending.clear();
+		i = ImagesIndexPending.erase(i);
+		boost::this_thread::interruption_point();
+	}
 
 	return WereErrors;
 }
@@ -108,13 +111,13 @@ void ImageList::ForceFetch()
 {
 	Sprite Fill;
 
-	// Draw as black.
-	Fill.Red = Fill.Blue = Fill.Green = 0;
-	Fill.Alpha = 0.0001f;
-
-	for (std::map<GString, Image*>::iterator i = Images.begin(); i != Images.end(); i++)
+	for (auto i = Images.begin(); i != Images.end(); ++i)
 	{
-		Fill.SetImage (i->second);
+		Fill.SetImage (i->second, false);
+
+		// Draw as black.
+		Fill.Red = Fill.Blue = Fill.Green = 0;
+		Fill.Alpha = 0.0001f;
 		Fill.Render();
 	}
 }

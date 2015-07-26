@@ -8,6 +8,7 @@
 class ScreenLoading : public Screen
 {
 	boost::thread *LoadThread;
+	bool ThreadInterrupted;
 public:
 	ScreenLoading(Screen *Parent, Screen *_Next);
 	void Init();

@@ -1,5 +1,6 @@
 #include <cmath>
 #include <fstream>
+#include <boost/thread.hpp>
 
 #include "GameGlobal.h"
 #include "GameState.h"
@@ -29,8 +30,7 @@ ScreenGameplay7K::ScreenGameplay7K() : Screen("ScreenGameplay7K")
 	SpeedMultiplier = 0;
 	SongOldTime = -1;
 	Music = nullptr;
-	MissSnd = nullptr;
-	FailSnd = nullptr;
+	MechanicsSet = nullptr;
 	GameTime = 0;
 	Speed = 1;
 
@@ -86,8 +86,6 @@ void ScreenGameplay7K::Cleanup()
 	GameState::GetInstance().SetScorekeeper7K(nullptr);
 
 	delete MechanicsSet;
-	delete MissSnd;
-	delete FailSnd;
 }
 
 void ScreenGameplay7K::AssignMeasure(uint32 Measure)
@@ -322,7 +320,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 		{
 			shared_ptr<SoundSample> Snd = OJMAudio->GetFromIndex(i);
 
-			if (Snd != NULL)
+			if (Snd != nullptr)
 				Keysounds[i] = Snd;
 		}
 	}
@@ -341,6 +339,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 #else
 			Keysounds[i->first]->Open((MySong->SongDirectory + "/" + i->second).c_str());
 #endif
+			boost::this_thread::interruption_point();
 		}
 	}
 
@@ -604,19 +603,9 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	GString MissSndFile = (GameState::GetInstance().GetSkinFile("miss.ogg"));
 	GString FailSndFile = (GameState::GetInstance().GetSkinFile("stage_failed.ogg"));
 
-	if (Utility::FileExists(MissSndFile))
-	{
-		MissSnd = new SoundSample();
-		if (!MissSnd->Open(MissSndFile.c_str()))
-			delete MissSnd;
-	}
+	MissSnd.Open(MissSndFile.c_str());
 
-	if (Utility::FileExists(FailSndFile))
-	{
-		FailSnd = new SoundSample();
-		if (!FailSnd->Open(FailSndFile.c_str()))
-			delete FailSnd;
-	}
+	FailSnd.Open(FailSndFile.c_str());
 
 	if (!LoadChartData() || !LoadSongAudio() || !ProcessSong() || !LoadBGA())
 	{

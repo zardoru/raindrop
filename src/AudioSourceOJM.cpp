@@ -4,6 +4,7 @@
 #include <ogg/ogg.h>
 #include <vorbis/vorbisfile.h>
 #include <fstream>
+#include <boost/thread.hpp>
 
 
 #include "Global.h"
@@ -72,19 +73,19 @@ struct SFM30
 
 	SFM30()
 	{
-		DataLength = 0; Buffer = NULL; Offset = 0;
+		DataLength = 0; Buffer = nullptr; Offset = 0;
 	}
 };
 
 sf_count_t getFileLenM30(void* p)
 {
-	SFM30 *state = (SFM30*)p;
+	auto state = static_cast<SFM30*>(p);
 	return state->DataLength;
 }
 
 sf_count_t seekM30(sf_count_t offs, int whence, void* p)
 {
-	SFM30 *state = (SFM30*)p;
+	auto state = static_cast<SFM30*>(p);
 
 	switch (whence)
 	{
@@ -104,8 +105,8 @@ sf_count_t seekM30(sf_count_t offs, int whence, void* p)
 
 sf_count_t readM30(void* ptr, sf_count_t count, void* p)
 {
-	SFM30 *state = (SFM30*)p;
-	size_t toRead = min((size_t)count, (size_t)(state->DataLength - state->Offset));
+	auto state = static_cast<SFM30*>(p);
+	auto toRead = min(size_t(count), size_t(state->DataLength - state->Offset));
 
 	if (state->Offset >= state->DataLength)
 		return 0;
@@ -120,14 +121,14 @@ sf_count_t readM30(void* ptr, sf_count_t count, void* p)
 
 sf_count_t tellM30(void* p)
 {
-	SFM30 *state = (SFM30*)p;
+	auto state = static_cast<SFM30*>(p);
 	return min(state->Offset, state->DataLength);
 }
 
 size_t readM30OGG(void* ptr, size_t size, size_t nmemb, void* p)
 {
-	SFM30 *state = (SFM30*)p;
-	int toRead = min((unsigned int)(size*nmemb), (unsigned int)(state->DataLength - state->Offset));
+	auto state = static_cast<SFM30*>(p);
+	int toRead = min(unsigned int(size*nmemb), unsigned int(state->DataLength - state->Offset));
 
 	if (state->Offset >= state->DataLength)
 		return 0;
@@ -142,7 +143,7 @@ size_t readM30OGG(void* ptr, size_t size, size_t nmemb, void* p)
 
 int seekM30OGG(void* p, ogg_int64_t offs, int whence)
 {
-	SFM30 *state = (SFM30*)p;
+	auto state = static_cast<SFM30*>(p);
 
 	switch (whence)
 	{
@@ -162,7 +163,7 @@ int seekM30OGG(void* p, ogg_int64_t offs, int whence)
 
 long tellM30OGG(void* p)
 {
-	SFM30 *state = (SFM30*)p;
+	auto state = static_cast<SFM30*>(p);
 	return state->Offset;
 }
 
@@ -254,7 +255,7 @@ void omc_rearrange(char* buf_io, size_t len)
 
 void omc_xor(char* buf, size_t len, int &acc_keybyte, int &acc_counter)
 {
-	int tmp = 0;
+	int tmp;
 	char this_byte = 0;
 
 	for (size_t i = 0; i < len; i++)
@@ -322,7 +323,7 @@ void AudioSourceOJM::parseM30()
 	M30Header Head;
 	size_t sizeLeft;
 	char* Buffer;
-	ifile->read((char*)&Head, sizeof(M30Header));
+	ifile->read(reinterpret_cast<char*>(&Head), sizeof(M30Header));
 
 	Buffer = new char[Head.payload_size];
 	sizeLeft = Head.payload_size;
@@ -333,7 +334,7 @@ void AudioSourceOJM::parseM30()
 			break; // wrong number of samples
 
 		M30Entry Entry;
-		ifile->read((char*)&Entry, sizeof(M30Entry));
+		ifile->read(reinterpret_cast<char*>(&Entry), sizeof(M30Entry));
 		sizeLeft -= sizeof(M30Entry);
 
 		sizeLeft -= Entry.sample_size;
@@ -360,7 +361,7 @@ void AudioSourceOJM::parseM30()
 		
 		OggVorbis_File vf;
 
-		ov_open_callbacks(&ToLoad, &vf, NULL, 0, M30InterfaceOgg);
+		ov_open_callbacks(&ToLoad, &vf, nullptr, 0, M30InterfaceOgg);
 		TemporaryState.File = &vf;
 		TemporaryState.Info = vf.vi;
 
@@ -387,14 +388,16 @@ void AudioSourceOJM::parseOMC()
 	int acc_counter = 0;
 	int Offset = 20;
 	int SampleID = 0;
-	ifile->read((char*)&Head, sizeof(OMC_header));
+	ifile->read(reinterpret_cast<char*>(&Head), sizeof(OMC_header));
 
 
 	// Parse WAV data first
 	while (Offset < Head.ogg_start)
 	{
+		boost::this_thread::interruption_point();
+
 		OMC_WAV_header WavHead;
-		ifile->read((char*)&WavHead, sizeof(OMC_WAV_header));
+		ifile->read(reinterpret_cast<char*>(&WavHead), sizeof(OMC_WAV_header));
 
 		Offset += sizeof(OMC_WAV_header) + WavHead.chunk_size;
 
@@ -439,8 +442,8 @@ void AudioSourceOJM::parseOMC()
 		ToLoad.Buffer = Buffer;
 		ToLoad.DataLength = WavHead.chunk_size;
 
-		shared_ptr<SoundSample> NewSample = make_shared<SoundSample>();
-		TemporaryState.File = (SNDFILE*)sf_open_virtual(&M30Interface, SFM_READ, &Info, &ToLoad);
+		auto NewSample = make_shared<SoundSample>();
+		TemporaryState.File = sf_open_virtual(&M30Interface, SFM_READ, &Info, &ToLoad);
 		TemporaryState.Info = &Info;
 		TemporaryState.Enabled = OJM_WAV;
 		NewSample->Open(this);
@@ -456,8 +459,10 @@ void AudioSourceOJM::parseOMC()
 
 	while (Offset < Head.fsize)
 	{
+		boost::this_thread::interruption_point();
+
 		OMC_OGG_header OggHead;
-		ifile->read((char*)&OggHead, sizeof(OMC_OGG_header));
+		ifile->read(reinterpret_cast<char*>(&OggHead), sizeof(OMC_OGG_header));
 
 		Offset += sizeof(OMC_OGG_header) + OggHead.sample_size;
 
@@ -471,7 +476,7 @@ void AudioSourceOJM::parseOMC()
 
 		ifile->read(Buffer, OggHead.sample_size);
 
-		shared_ptr<SoundSample> NewSample = make_shared<SoundSample>();
+		auto NewSample = make_shared<SoundSample>();
 
 		SFM30 ToLoad;
 		ToLoad.Buffer = Buffer;
@@ -503,12 +508,12 @@ size_t AudioSourceOJM::GetLength()
 {
 	if (TemporaryState.Enabled == OJM_WAV)
 	{
-		SF_INFO *Info = (SF_INFO*)TemporaryState.Info;
+		auto Info = static_cast<SF_INFO*>(TemporaryState.Info);
 		return Info->frames;
 	}
 	else if (TemporaryState.Enabled == OJM_OGG)
 	{
-		return ov_pcm_total((OggVorbis_File*)TemporaryState.File, -1);
+		return ov_pcm_total(static_cast<OggVorbis_File*>(TemporaryState.File), -1);
 	}
 	else
 		return 0;
@@ -518,12 +523,12 @@ uint32 AudioSourceOJM::GetRate()
 {
 	if (TemporaryState.Enabled == OJM_WAV)
 	{
-		SF_INFO *Info = (SF_INFO*)TemporaryState.Info;
+		SF_INFO *Info = static_cast<SF_INFO*>(TemporaryState.Info);
 		return Info->samplerate;
 	}
 	else if (TemporaryState.Enabled == OJM_OGG)
 	{
-		vorbis_info *vi = (vorbis_info*)TemporaryState.Info;
+		auto vi = static_cast<vorbis_info*>(TemporaryState.Info);
 		return vi->rate;
 	}
 	else
@@ -544,12 +549,12 @@ uint32 AudioSourceOJM::GetChannels()
 {
 	if (TemporaryState.Enabled == OJM_WAV)
 	{
-		SF_INFO *Info = (SF_INFO*)TemporaryState.Info;
+		auto Info = static_cast<SF_INFO*>(TemporaryState.Info);
 		return Info->channels;
 	}
 	else if (TemporaryState.Enabled == OJM_OGG)
 	{
-		vorbis_info *vi = (vorbis_info*)TemporaryState.Info;
+		auto vi = static_cast<vorbis_info*>(TemporaryState.Info);
 		return vi->channels;
 	}
 	else
@@ -598,19 +603,24 @@ uint32 AudioSourceOJM::Read(short* buffer, size_t count)
 		return 0;
 
 	if (TemporaryState.Enabled == OJM_WAV)
-		read = sf_read_short((SNDFILE*)TemporaryState.File, buffer, count);
+		read = sf_read_short(static_cast<SNDFILE*>(TemporaryState.File), buffer, count);
 	else if (TemporaryState.Enabled == OJM_OGG)
 	{
-		size_t size = count * sizeof(short);
+		auto size = count * sizeof(short);
 		while (read < size)
 		{
 			int sect;
-			int res = ov_read((OggVorbis_File*)TemporaryState.File, (char*)buffer + read, size - read, 0, 2, 1, &sect);
+			int res = ov_read(static_cast<OggVorbis_File*>(TemporaryState.File), reinterpret_cast<char*>(buffer) + read, size - read, 0, 2, 1, &sect);
 
 			if (res > 0)
 				read += res;
-			if (res == 0)
+			if (res <= 0)
+			{
+				if (res < 0) Log::Printf("Error loading ogg (%d)\n", res);
 				break;
+			}
+
+			boost::this_thread::interruption_point();
 		}
 
 		if (read < size)

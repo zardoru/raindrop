@@ -1,16 +1,21 @@
-#include "Global.h"
+#include "GameGlobal.h"
 #include "GameState.h"
-#include "Sprite.h"
 #include "ScreenLoading.h"
-#include "ImageLoader.h"
 #include "LuaManager.h"
 #include "GameWindow.h"
+#include "BindingsManager.h"
+#include "Logging.h"
 
 
 void LoadFunction(void* pScreen)
 {
-	auto S = static_cast<Screen*>(pScreen);
-	S->LoadThreadInitialization();
+	try {
+		auto S = static_cast<Screen*>(pScreen);
+		S->LoadThreadInitialization();
+	} catch (std::exception &e)
+	{
+		Log::Printf("Exception occurred while loading: %s\n", e.what());
+	}
 }
 
 ScreenLoading::ScreenLoading(Screen *Parent, Screen *_Next) : Screen("ScreenLoading", Parent)
@@ -18,6 +23,7 @@ ScreenLoading::ScreenLoading(Screen *Parent, Screen *_Next) : Screen("ScreenLoad
 	Next = _Next;
 	LoadThread = nullptr;
 	Running = true;
+	ThreadInterrupted = false;
 
 	GameState::GetInstance().InitializeLua(Animations->GetEnv()->GetState());
 
@@ -49,6 +55,11 @@ void ScreenLoading::OnExitEnd()
 	WindowFrame.SetLightPosition(glm::vec3(0, 0, 1));
 
 	Animations.reset();
+
+	// Close the screen we're loading if we asked to interrupt its loading.
+	if (ThreadInterrupted)
+		Next->Close();
+
 	ChangeState(StateRunning);
 }
 
@@ -57,18 +68,18 @@ bool ScreenLoading::Run(double TimeDelta)
 	if (!LoadThread)
 		return (Running = RunNested(TimeDelta));
 
-	if (!Animations) return Running;
+	if (!Animations) return false;
 
 	Animations->DrawTargets(TimeDelta);
 
-	if (LoadThread->timed_join(boost::posix_time::seconds(0)))
+	if (LoadThread->timed_join(boost::posix_time::millisec(16)))
 	{
 		delete LoadThread;
 		LoadThread = nullptr;
 		Next->MainThreadInitialization();
 		ChangeState(StateExit);
 	}
-	boost::this_thread::sleep(boost::posix_time::millisec(16));
+
 	return Running;
 }
 
@@ -78,6 +89,16 @@ bool ScreenLoading::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 	{
 		if (Next)
 			return Next->HandleInput(key, code, isMouseInput);
+		return true;
+	}
+
+	if (code == KE_Release)
+	{
+		if (BindingsManager::TranslateKey(key) == KT_Escape)
+		{
+			LoadThread->interrupt();
+			ThreadInterrupted = true;
+		}
 	}
 
 	return true;
