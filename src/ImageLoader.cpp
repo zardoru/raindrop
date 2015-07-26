@@ -169,7 +169,7 @@ void Image::SetTextureData(ImageData *ImgInfo, bool Reassign)
 	}
 	else // We did, so let's update instead.
 	{
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ImgInfo->Width, ImgInfo->Height, GL_RGBA, GL_UNSIGNED_BYTE, ImgInfo->Data);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ImgInfo->Width, ImgInfo->Height, GL_BGRA, GL_UNSIGNED_BYTE, ImgInfo->Data);
 	}
 
 	w = ImgInfo->Width;
