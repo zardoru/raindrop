@@ -356,19 +356,10 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 
 				NewNote.AssignNotedata(CurrentNote);
 				
-				// Okay, now we want to know what fraction of a beat we're dealing with
-				// this way we can display colored (a la Stepmania) notes.
-				// We should do this before changing time by drift.
-				double cBeat = IntegrateToTime(BPS, CurrentNote.StartTime);
-				double iBeat = floor(cBeat);
-				double dBeat = (cBeat - iBeat);
-
-				NewNote.AssignFraction(dBeat);
-				
 				NewNote.AddTime(Drift);
 
-				float VerticalPosition = IntegrateToTime(VerticalSpeeds, CurrentNote.StartTime);
-				float HoldEndPosition = IntegrateToTime(VerticalSpeeds, CurrentNote.EndTime);
+				float VerticalPosition = IntegrateToTime(VerticalSpeeds, NewNote.GetStartTime());
+				float HoldEndPosition = IntegrateToTime(VerticalSpeeds, NewNote.GetTimeFinal());
 
 				// if upscroll change minus for plus as well as matrix at screengameplay7k
 				if (!CurrentNote.EndTime)
@@ -376,6 +367,14 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 				else
 					NewNote.AssignPosition(VerticalPosition, HoldEndPosition);
 
+				// Okay, now we want to know what fraction of a beat we're dealing with
+				// this way we can display colored (a la Stepmania) notes.
+				// We should do this before changing time by drift.
+				double cBeat = IntegrateToTime(BPS, NewNote.GetStartTime());
+				double iBeat = floor(cBeat);
+				double dBeat = (cBeat - iBeat);
+
+				NewNote.AssignFraction(dBeat);
 
 				double Wamt = -GetWarpAmountAtTime(CurrentNote.StartTime);
 				NewNote.AddTime(Wamt);
