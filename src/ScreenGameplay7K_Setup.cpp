@@ -435,6 +435,11 @@ bool ScreenGameplay7K::ProcessSong()
 	Warps = CurrentDiff->Data->Warps;
 	Speeds = CurrentDiff->Data->Speeds;
 
+	for (auto&& w : Warps)
+		w.Time += Drift;
+	for (auto&& s : Speeds)
+		s.Time += Drift;
+
 	// Toggle whether we can use our guarantees for optimizations or not at rendering time.
 	HasNegativeScroll = false;
 
