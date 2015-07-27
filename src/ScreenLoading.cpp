@@ -92,7 +92,7 @@ bool ScreenLoading::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 		return true;
 	}
 
-	if (code == KE_Release)
+	if (code == KE_RELEASE)
 	{
 		if (BindingsManager::TranslateKey(key) == KT_Escape)
 		{

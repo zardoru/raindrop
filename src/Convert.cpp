@@ -164,11 +164,11 @@ void ConvertToSMTiming(VSRG::Song *Sng, Directory PathOut)
 		double Value = 0;
 		switch (Diff->BPMType)
 		{
-		case VSRG::Difficulty::BT_Beat:
+		case VSRG::Difficulty::BT_BEAT:
 			Time = i->Time;
 			Value = i->Value;
 			break;
-		case VSRG::Difficulty::BT_Beatspace:
+		case VSRG::Difficulty::BT_BEATSPACE:
 			Time = i->Time;
 			Value = 60000 / i->Value;
 			break;

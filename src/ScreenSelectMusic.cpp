@@ -476,7 +476,7 @@ bool ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseIn
 
 	Animations->HandleInput(key, code, isMouseInput);
 
-	if (code == KE_Press)
+	if (code == KE_PRESS)
 	{
 		switch (BindingsManager::TranslateKey(key))
 		{

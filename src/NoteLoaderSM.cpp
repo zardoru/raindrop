@@ -547,7 +547,7 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 
 		OnCommand(#NOTES)
 		{
-			Diff->BPMType = VSRG::Difficulty::BT_Beat;
+			Diff->BPMType = VSRG::Difficulty::BT_BEAT;
 			if (!Diff->Timing.size())
 				Diff->Timing = BPMData;
 			
@@ -568,7 +568,7 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 			Diff->Offset = -Offset;
 			Diff->Duration = 0;
 			Diff->Filename = filename;
-			Diff->BPMType = VSRG::Difficulty::BT_Beat;
+			Diff->BPMType = VSRG::Difficulty::BT_BEAT;
 			Diff->Data->TimingInfo = make_shared<VSRG::StepmaniaTimingInfo>();
 			Diff->Data->StageFile = Banner;
 
@@ -677,7 +677,7 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 	shared_ptr<VSRG::Difficulty> Diff = make_shared<VSRG::Difficulty>();
 
 	// Stepmania uses beat-based locations for stops and BPM.
-	Diff->BPMType = VSRG::Difficulty::BT_Beat;
+	Diff->BPMType = VSRG::Difficulty::BT_BEAT;
 
 	if (!filein.is_open())
 	{
@@ -745,7 +745,7 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 			Diff->Offset = -Offset;
 			Diff->Duration = 0;
 			Diff->Filename = filename;
-			Diff->BPMType = VSRG::Difficulty::BT_Beat;
+			Diff->BPMType = VSRG::Difficulty::BT_BEAT;
 			Diff->Data->TimingInfo = make_shared<VSRG::StepmaniaTimingInfo> ();
 			Diff->Data->StageFile = Banner;
 			CleanStopsData(Diff.get());

@@ -26,6 +26,7 @@ using std::make_shared;
 using std::dynamic_pointer_cast;
 using std::static_pointer_cast;
 using std::vector;
+using std::map;
 
 // Use stdint if available.
 #if !(defined HAS_STDINT) && ( !(defined _MSC_VER) || (_MSC_VER < 1800) )
@@ -123,11 +124,9 @@ struct Fraction {
 		Den = 1;
 		while (d != in)
 		{
-			if (d < in)
-				Num++;
-			else if (d > in)
-				Den++;
-			d = (double)Num / Den;
+			if (d < in)	++Num;
+			else if (d > in) ++Den;
+			d = static_cast<double>(Num) / Den;
 		}
 	}
 };
@@ -148,7 +147,7 @@ namespace Utility
 	GString SJIStoU8(GString Line);
 	void CheckDir (GString Dirname);
 	int GetLMT(GString Path);
-	GString getSha256ForFile(GString Filename);
+	GString GetSha256ForFile(GString Filename);
 	GString IntToStr(int num);
 	GString CharToStr(char c);
 }
@@ -156,9 +155,9 @@ namespace Utility
 
 enum KeyEventType
 {
-	KE_None,
-	KE_Press,
-	KE_Release
+	KE_NONE,
+	KE_PRESS,
+	KE_RELEASE
 };
 
 template <class T>

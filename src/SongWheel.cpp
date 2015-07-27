@@ -245,7 +245,7 @@ void SongWheel::SetDifficulty(uint32 i)
 
 bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
-	if (code == KE_Press)
+	if (code == KE_PRESS)
 	{
 		switch (BindingsManager::TranslateKey(key))
 		{

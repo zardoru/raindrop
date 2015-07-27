@@ -342,14 +342,12 @@ uint32 AudioStream::Read(short* buffer, size_t count)
 
 			size_t odone;
 
-			int Channels = (*this).Channels;
-			if (Channels == 1)
-			{
+			if (Channels == 1) // Turn mono audio to stereo audio.
 				monoToStereo(mResampleBuffer, cnt, BUFF_SIZE);
-			}
 
 			soxr_set_io_ratio(mResampler, 1 / RateRatio, cnt / 2);
 
+			// The count that soxr asks for I think, is frames, not samples. Thus, the division by channels.
 			soxr_process(mResampler, 
 						mResampleBuffer, cnt / Channels, nullptr, 
 						buffer, outcnt / Channels, &odone);

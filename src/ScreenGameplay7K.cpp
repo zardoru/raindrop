@@ -137,7 +137,7 @@ bool ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 
 	Animations->HandleInput(key, code, isMouseInput);
 
-	if (code == KE_Press)
+	if (code == KE_PRESS)
 	{
 		switch (BindingsManager::TranslateKey(key))
 		{

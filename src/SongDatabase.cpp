@@ -144,7 +144,7 @@ int SongDatabase::InsertFilename(Directory Fn)
 		// Update the last-modified-time of this file, and its hash if it has changed.
 		if (lmt != lastLmt)
 		{
-			GString Hash = Utility::getSha256ForFile(Fn);
+			GString Hash = Utility::GetSha256ForFile(Fn);
 			SC(sqlite3_bind_int(st_UpdateLMT, 1, lastLmt));
 			SC(sqlite3_bind_text(st_UpdateLMT, 2, Hash.c_str(), Hash.length(), SQLITE_STATIC));
 			SC(sqlite3_bind_text(st_UpdateLMT, 3, Fn.c_path(), Fn.path().length(), SQLITE_STATIC));
@@ -153,7 +153,7 @@ int SongDatabase::InsertFilename(Directory Fn)
 		}
 	}else
 	{
-		GString Hash = Utility::getSha256ForFile(Fn);
+		GString Hash = Utility::GetSha256ForFile(Fn);
 
 		// There's no entry, got to insert it.
 		SC(sqlite3_bind_text(st_FilenameInsertQuery, 1, Fn.c_path(), Fn.path().length(), SQLITE_STATIC));
@@ -394,7 +394,7 @@ void SongDatabase::GetSongInformation7K (int ID, VSRG::Song* Out)
 		Diff->Channels = sqlite3_column_int(st_GetDiffInfo, 8);
 
 		int colInt = sqlite3_column_int(st_GetDiffInfo, 10);
-		Diff->BPMType = (VSRG::Difficulty::EBt)colInt;
+		Diff->BPMType = (VSRG::Difficulty::ETimingType)colInt;
 
 		// We don't include author information to force querying it from the database.
 		// Diff->Author

@@ -614,19 +614,19 @@ bool SceneEnvironment::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 
 	if (isMouseInput)
 	{
-		if (code == KE_Press)
+		if (code == KE_PRESS)
 		{
 			if (ctx)
 				ctx->ProcessMouseButtonDown(key, 0);
 		}
-		else if (code == KE_Release)
+		else if (code == KE_RELEASE)
 		{
 			if (ctx)
 				ctx->ProcessMouseButtonUp(key, 0);
 		}
 	}
 	else {
-		if (code == KE_Press)
+		if (code == KE_PRESS)
 		{
 			if (ctx)
 				ctx->ProcessKeyDown(key_identifier_map[key], 0);

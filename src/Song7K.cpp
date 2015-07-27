@@ -78,14 +78,14 @@ void Difficulty::ProcessVSpeeds(TimingData& BPS, TimingData& VerticalSpeeds, dou
 double TimeFromTimingKind(const TimingData &Timing, 
 	const TimingData &StopsTiming,
 	const TimingSegment& S, 
-	VSRG::Difficulty::EBt TimingType, 
+	VSRG::Difficulty::ETimingType TimingType, 
 	float Offset, 
 	float Drift)
 {
-	if (TimingType == VSRG::Difficulty::BT_Beat) // Time is in Beats
+	if (TimingType == VSRG::Difficulty::BT_BEAT) // Time is in Beats
 	{
 		return TimeAtBeat(Timing, Drift + Offset, S.Time) + StopTimeAtBeat(StopsTiming, S.Time);
-	}else if (TimingType == VSRG::Difficulty::BT_MS || TimingType == VSRG::Difficulty::BT_Beatspace) // Time is in MS
+	}else if (TimingType == VSRG::Difficulty::BT_MS || TimingType == VSRG::Difficulty::BT_BEATSPACE) // Time is in MS
 	{
 		return S.Time + Drift + Offset;
 	}
@@ -94,12 +94,12 @@ double TimeFromTimingKind(const TimingData &Timing,
 	return 0;
 }
 
-double BPSFromTimingKind(float Value, VSRG::Difficulty::EBt TimingType)
+double BPSFromTimingKind(float Value, VSRG::Difficulty::ETimingType TimingType)
 {
-	if (TimingType == VSRG::Difficulty::BT_Beat || TimingType == VSRG::Difficulty::BT_MS) // Time is in Beats
+	if (TimingType == VSRG::Difficulty::BT_BEAT || TimingType == VSRG::Difficulty::BT_MS) // Time is in Beats
 	{
 		return bps (Value);
-	}else if ( TimingType == VSRG::Difficulty::BT_Beatspace ) // Time in MS, and not using bpm, but ms per beat.
+	}else if ( TimingType == VSRG::Difficulty::BT_BEATSPACE ) // Time in MS, and not using bpm, but ms per beat.
 	{
 		return bps (60000.0 / Value);
 	}
@@ -135,7 +135,7 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 	/* Sort for justice */
 	std::sort(BPS.begin(), BPS.end());
 
-	if (!StopsTiming.size() || BPMType != VSRG::Difficulty::BT_Beat) // Stops only supported in Beat mode.
+	if (!StopsTiming.size() || BPMType != VSRG::Difficulty::BT_BEAT) // Stops only supported in Beat mode.
 		return;
 
 	/* Here on, just working with stops. */
@@ -259,7 +259,7 @@ void Difficulty::ProcessSpeedVariations(TimingData& BPS, TimingData& VerticalSpe
 			after a BPM change.
 		*/
 
-		if (BPMType == VSRG::Difficulty::BT_Beatspace) // Okay, we're an osu!mania chart, leave the resetting.
+		if (BPMType == VSRG::Difficulty::BT_BEATSPACE) // Okay, we're an osu!mania chart, leave the resetting.
 			continue;
 
 		// We're not an osu!mania chart, so it's time to do what should be done.
@@ -400,11 +400,11 @@ void BPStoSPB(TimingData &BPS)
 	}
 }
 
-void Difficulty::GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSpeeds, double WaitTime)
+void Difficulty::GetMeasureLines(vector<float> &Out, TimingData& VerticalSpeeds, double WaitTime, double Drift)
 {
 	double Last = 0;
 	TimingData SPB;
-	ProcessBPS(SPB, 0);
+	ProcessBPS(SPB, Drift);
 	BPStoSPB(SPB);
 
 	if (!Data)
@@ -420,39 +420,35 @@ void Difficulty::GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSp
 
 	// Add lines before offset, and during waiting time...
 	double BPS = BPSFromTimingKind(Timing[0].Value, BPMType);
-	double PreTime = WaitTime + Offset;
+	double PreTime = WaitTime + Offset + Drift;
 	double PreTimeBeats = BPS * PreTime;
 	int TotMeasures = PreTimeBeats / Data->Measures[0].MeasureLength;
 	double MeasureTime = 1 / BPS * Data->Measures[0].MeasureLength;
 	
-	for (int i = 0; i < TotMeasures; i++)
+	for (auto i = 0; i < TotMeasures; i++)
 	{
 		float PositionOut;
-		PositionOut = IntegrateToTime(VerticalSpeeds, Offset - MeasureTime * i);
+		PositionOut = IntegrateToTime(VerticalSpeeds, Drift + Offset - MeasureTime * i);
 		Out.push_back(PositionOut);
 	}
 
-
-	for (auto Msr = Data->Measures.begin();
-		Msr != Data->Measures.end();
-		++Msr)
+	// Add 
+	for (auto Msr : Data->Measures)
 	{
 		float PositionOut = 0;
 
-		if (BPMType == BT_Beat) // VerticalSpeeds already has drift applied, so we don't need to apply it again here.
+		if (BPMType == BT_BEAT) // VerticalSpeeds already has drift applied, so we don't need to apply it again here.
 		{
 			PositionOut = IntegrateToTime(VerticalSpeeds, TimeAtBeat(Timing, Offset, Last) + StopTimeAtBeat(Data->StopsTiming, Last));
 		}
-		else if (BPMType == BT_Beatspace)
+		else if (BPMType == BT_BEATSPACE)
 		{
-			double TargetTime = 0;
-
-			TargetTime = IntegrateToTime(SPB, Last) + Offset;
+			auto TargetTime = IntegrateToTime(SPB, Last) + Offset + Drift;
 			PositionOut = IntegrateToTime(VerticalSpeeds, TargetTime);
 		}
 
 		Out.push_back(PositionOut);
-		Last += Msr->MeasureLength;
+		Last += Msr.MeasureLength;
 	}
 }
 

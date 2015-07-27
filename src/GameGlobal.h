@@ -122,10 +122,10 @@ enum ESpeedType {
 
 // The values here must be consistent with the shaders!
 enum EHiddenMode {
-	HIDDENMODE_NONE = 0,
-	HIDDENMODE_SUDDEN = 1,
-	HIDDENMODE_HIDDEN = 2,
-	HIDDENMODE_FLASHLIGHT = 3,
+	HM_NONE,
+	HM_SUDDEN,
+	HM_HIDDEN,
+	HM_FLASHLIGHT,
 } ;
 
 namespace VSRG {
@@ -178,7 +178,7 @@ struct GameParameters {
 		Preloaded = false;
 		Auto = false;
 		NoFail = false;
-		HiddenMode = HIDDENMODE_NONE;
+		HiddenMode = HM_NONE;
 		StartMeasure = -1;
 		Random = 0;
 		Rate = 1;
@@ -190,7 +190,7 @@ const float MeasureBaseSpacing = 0.8f * ScreenHeightDefault;
 
 /* Program itself consts */
 #define RAINDROP_WINDOWTITLE "raindrop ver: "
-#define RAINDROP_VERSION "0.260"
+#define RAINDROP_VERSION "0.270"
 #ifdef NDEBUG
 #define RAINDROP_BUILDTYPE " "
 #else

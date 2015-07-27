@@ -17,6 +17,15 @@
 // http://open2jam.wordpress.com/the-ojm-documentation/
 // A lot of the code is just a carbon copy of OJMDumper, just C++.
 
+/*
+	For whoever decides to dig this code:
+	While yes, it's mostly a carbon copy of OJMDumper, the additions here load the wav/ogg files using
+	the libsndfile and vorbisfile libraries; thus a memory IO interface is first defined
+	then used when the bits specific to raindrop's loading code happens.
+
+	Furthermore, it does have of the bugfixes that open2jam later introduces instead of merely just using ojmdumper's code.
+*/
+
 struct M30Header
 {
 	int32 file_format_version;
@@ -353,7 +362,7 @@ void AudioSourceOJM::parseM30()
 			F412XOR(SampleData, Entry.sample_size);
 
 		// Sample data is done. Now the bits that are specific to raindrop..
-		shared_ptr<SoundSample> NewSample = make_shared<SoundSample>();
+		auto NewSample = make_shared<SoundSample>();
 
 		SFM30 ToLoad;
 		ToLoad.Buffer = SampleData;
@@ -523,7 +532,7 @@ uint32 AudioSourceOJM::GetRate()
 {
 	if (TemporaryState.Enabled == OJM_WAV)
 	{
-		SF_INFO *Info = static_cast<SF_INFO*>(TemporaryState.Info);
+		auto Info = static_cast<SF_INFO*>(TemporaryState.Info);
 		return Info->samplerate;
 	}
 	else if (TemporaryState.Enabled == OJM_OGG)
@@ -537,7 +546,7 @@ uint32 AudioSourceOJM::GetRate()
 
 void AudioSourceOJM::Seek(float Time)
 {
-	return;
+	// Unused. 
 }
 
 shared_ptr<SoundSample> AudioSourceOJM::GetFromIndex(int index)
@@ -571,13 +580,14 @@ bool AudioSourceOJM::Open(const char* f)
 {
 	char sig[4];
 
-	ifile = new std::ifstream(f, std::ios::binary);
+	ifile = make_shared<std::ifstream>(f, std::ios::binary);
 
-	if (!*ifile)
+	if (!ifile->is_open())
 	{
 		Log::Printf("AudioSourceOJM: unable to load %s.\n", f);
 		return false;
 	}
+
 	ifile->read(sig, 4);
 
 	switch (GetContainerKind(sig))

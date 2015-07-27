@@ -343,7 +343,7 @@ bool ScreenGameplay::HandleInput(int32 key, KeyEventType code, bool isMouseInput
 
 		if (CursorZooming)
 		{
-			if (code == KE_Press)
+			if (code == KE_PRESS)
 				Cursor.SetScale(0.85f);
 			else
 				Cursor.SetScale(1);
@@ -373,7 +373,7 @@ bool ScreenGameplay::HandleInput(int32 key, KeyEventType code, bool isMouseInput
 				i++)
 			{
 				// See if something's going on with the hold.
-				if ((Val = i->Hit(SongTime, mpos, code != KE_Release, IsAutoplaying, key)) != None)
+				if ((Val = i->Hit(SongTime, mpos, code != KE_RELEASE, IsAutoplaying, key)) != None)
 				{
 					// Judge accordingly..
 					Lifebar.HitJudgment(Val);
@@ -388,7 +388,7 @@ bool ScreenGameplay::HandleInput(int32 key, KeyEventType code, bool isMouseInput
 	}
 
 	/* Functions */
-	if (code == KE_Press)
+	if (code == KE_PRESS)
 	{
 		switch (key)
 		{
@@ -573,7 +573,7 @@ bool ScreenGameplay::JudgeVector(std::vector<GameObject>& Vec, int code, int key
 			i++)
 		{
 			// See if it's a hit.
-			if ((Val = i->Hit(SongTime, TappingMode ? i->GetPosition() : mpos, code != KE_Release, IsAutoplaying, key)) != None)
+			if ((Val = i->Hit(SongTime, TappingMode ? i->GetPosition() : mpos, code != KE_RELEASE, IsAutoplaying, key)) != None)
 			{
 				// Judge accordingly.
 				Lifebar.HitJudgment(Val);

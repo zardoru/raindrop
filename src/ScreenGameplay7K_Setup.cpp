@@ -42,8 +42,8 @@ ScreenGameplay7K::ScreenGameplay7K() : Screen("ScreenGameplay7K")
 
 	NoFail = true;
 
-	SelectedHiddenMode = HIDDENMODE_NONE; // No Hidden
-	RealHiddenMode = HIDDENMODE_NONE;
+	SelectedHiddenMode = HM_NONE; // No Hidden
+	RealHiddenMode = HM_NONE;
 	HideClampSum = 0;
 
 #if (defined WIN32) && (!defined NDEBUG)
@@ -152,7 +152,7 @@ void ScreenGameplay7K::Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const
 	Upscroll = Param.Upscroll;
 	StartMeasure = Param.StartMeasure;
 	waveEffectEnabled = Param.Wave;
-	SelectedHiddenMode = (EHiddenMode)(int)Clamp((int)Param.HiddenMode, (int)HIDDENMODE_NONE, (int)HIDDENMODE_FLASHLIGHT);
+	SelectedHiddenMode = (EHiddenMode)(int)Clamp((int)Param.HiddenMode, (int)HM_NONE, (int)HM_FLASHLIGHT);
 	Preloaded = Param.Preloaded;
 	Auto = Param.Auto;
 	Speed = Param.Rate;
@@ -204,8 +204,8 @@ void ScreenGameplay7K::CalculateHiddenConstants()
 			}
 
 			// Invert Hidden Mode.
-			if (SelectedHiddenMode == HIDDENMODE_SUDDEN) RealHiddenMode = HIDDENMODE_HIDDEN;
-			else if (SelectedHiddenMode == HIDDENMODE_HIDDEN) RealHiddenMode = HIDDENMODE_SUDDEN;
+			if (SelectedHiddenMode == HM_SUDDEN) RealHiddenMode = HM_HIDDEN;
+			else if (SelectedHiddenMode == HM_HIDDEN) RealHiddenMode = HM_SUDDEN;
 			else RealHiddenMode = SelectedHiddenMode;
 		}else
 		{
@@ -227,7 +227,7 @@ void ScreenGameplay7K::CalculateHiddenConstants()
 			RealHiddenMode = SelectedHiddenMode;
 		}
 
-		if (SelectedHiddenMode == HIDDENMODE_FLASHLIGHT) // Flashlight
+		if (SelectedHiddenMode == HM_FLASHLIGHT) // Flashlight
 		{
 			HideClampLow = Center - FlashlightRatio;
 			HideClampHigh = Center + FlashlightRatio;
@@ -469,7 +469,7 @@ void ScreenGameplay7K::SetupBarline()
 		BarlineEnabled = false;
 
 	if (BarlineEnabled)
-		CurrentDiff->GetMeasureLines(MeasureBarlines, VSpeeds, WaitingTime);
+		CurrentDiff->GetMeasureLines(MeasureBarlines, VSpeeds, WaitingTime, TimeCompensation);
 }
 
 void ScreenGameplay7K::SetupAfterLoadingVariables()
@@ -520,10 +520,10 @@ void ScreenGameplay7K::SetupMechanics()
 	
 	if (Configuration::GetConfigf("AlwaysUseRaindropMechanics") == 0 && CurrentDiff->Data->TimingInfo)
 	{
-		VSRG::CustomTimingInfo * TimingInfo = CurrentDiff->Data->TimingInfo.get();
+		auto TimingInfo = CurrentDiff->Data->TimingInfo.get();
 		if (TimingInfo->GetType() == VSRG::TI_BMS)
 		{
-			VSRG::BmsTimingInfo *Info = static_cast<VSRG::BmsTimingInfo*> (TimingInfo);
+			auto Info = static_cast<VSRG::BmsTimingInfo*> (TimingInfo);
 			ScoreKeeper->setLifeTotal(Info->life_total);
 			ScoreKeeper->setJudgeRank(Info->judge_rank);
 			UsedTimingType = TT_TIME;
@@ -532,7 +532,7 @@ void ScreenGameplay7K::SetupMechanics()
 		}
 		else if (TimingInfo->GetType() == VSRG::TI_OSUMANIA)
 		{
-			VSRG::OsuManiaTimingInfo *Info = static_cast<VSRG::OsuManiaTimingInfo*> (TimingInfo);
+			auto Info = static_cast<VSRG::OsuManiaTimingInfo*> (TimingInfo);
 			ScoreKeeper->setODWindows(Info->OD);
 			lifebar_type = LT_STEPMANIA;
 			scoring_type = ST_OSUMANIA;
@@ -540,7 +540,7 @@ void ScreenGameplay7K::SetupMechanics()
 		}
 		else if (TimingInfo->GetType() == VSRG::TI_O2JAM)
 		{
-			VSRG::O2JamTimingInfo *O2Info = static_cast<VSRG::O2JamTimingInfo*>(TimingInfo);
+			auto O2Info = static_cast<VSRG::O2JamTimingInfo*>(TimingInfo);
 			lifebar_type = LT_O2JAM;
 			UsedTimingType = TT_BEATS;
 			scoring_type = ST_O2JAM;

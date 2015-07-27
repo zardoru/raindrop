@@ -202,7 +202,7 @@ namespace Utility {
 			boost::replace_all(S, "/", "");
 	}
 
-	GString getSha256ForFile(GString Filename)
+	GString GetSha256ForFile(GString Filename)
 	{
 		SHA256 SHA;
 #ifndef WIN32

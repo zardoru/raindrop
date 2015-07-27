@@ -99,11 +99,11 @@ namespace VSRG
 	};
 
 	struct BMPEventsDetail {
-		std::map<int, GString> BMPList;
-		std::vector<AutoplayBMP> BMPEventsLayerBase;
-		std::vector<AutoplayBMP> BMPEventsLayer;
-		std::vector<AutoplayBMP> BMPEventsLayer2;
-		std::vector<AutoplayBMP> BMPEventsLayerMiss;
+		map<int, GString> BMPList;
+		vector<AutoplayBMP> BMPEventsLayerBase;
+		vector<AutoplayBMP> BMPEventsLayer;
+		vector<AutoplayBMP> BMPEventsLayer2;
+		vector<AutoplayBMP> BMPEventsLayerMiss;
 	};
 
 	struct DifficultyLoadInfo
@@ -135,22 +135,24 @@ namespace VSRG
 		// Background/foreground to show when loading.
 		GString StageFile;
 
+		// Whether this difficulty uses the scratch channel (being channel/index 0 always used for this)
+		bool SpecialStyle;
+
 		DifficultyLoadInfo()
 		{
-			BMPEvents = nullptr;
-			TimingInfo = nullptr;
+			SpecialStyle = false;
 		}
 	};
 
-	struct Difficulty : public Game::Song::Difficulty
+	struct Difficulty : Game::Song::Difficulty
 	{
-		std::shared_ptr<DifficultyLoadInfo> Data;
+		shared_ptr<DifficultyLoadInfo> Data;
 
-		enum EBt
+		enum ETimingType
 		{
-			BT_Beat,
-			BT_MS,
-			BT_Beatspace
+			BT_BEAT, // beat based timing
+			BT_MS, // millisecond based timing
+			BT_BEATSPACE // osu! ms/beat timing
 		} BPMType;
 
 		int Level;
@@ -167,7 +169,7 @@ namespace VSRG
 		void ProcessBPS(TimingData& BPS, double Drift);
 
 		// The floats are in vertical units; like the notes' vertical position.
-		void GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSpeeds, double WaitTime = 0);
+		void GetMeasureLines(vector<float> &Out, TimingData& VerticalSpeeds, double WaitTime, double Drift);
 
 		// Destroy all information that can be loaded from cache
 		void Destroy();

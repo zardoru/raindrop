@@ -1,5 +1,4 @@
 #include <fstream>
-#include <map>
 #include <stdlib.h>
 
 #include "GameGlobal.h"
@@ -50,16 +49,16 @@ struct OsuLoadInfo
 	double SliderVelocity;
 	int Version;
 	int last_sound_index;
-	VSRG::Song *OsuSong;
-	std::shared_ptr<VSRG::OsuManiaTimingInfo> TimingInfo;
-	std::map <GString, int> Sounds;
-	std::vector<HitsoundSectionData> HitsoundSections;
-	std::shared_ptr<VSRG::Difficulty> Diff;
+	Song *OsuSong;
+	shared_ptr<VSRG::OsuManiaTimingInfo> TimingInfo;
+	map <GString, int> Sounds;
+	vector<HitsoundSectionData> HitsoundSections;
+	shared_ptr<VSRG::Difficulty> Diff;
 	GString DefaultSampleset;
 
 	bool ReadAModeTag;
 
-	std::vector<NoteData> Notes[MAX_CHANNELS];
+	vector<NoteData> Notes[MAX_CHANNELS];
 
 	double GetBeatspaceAt(double T)
 	{
@@ -135,6 +134,7 @@ bool ReadGeneral (GString line, OsuLoadInfo* Info)
 #ifdef VERBOSE_DEBUG
 			printf("Audio filename found: %s\n", Content.c_str());
 #endif
+			boost::algorithm::trim(Content);
 			Info->OsuSong->SongFilename = Content;
 			Info->OsuSong->SongPreviewSource = Content;
 		}
@@ -146,6 +146,7 @@ bool ReadGeneral (GString line, OsuLoadInfo* Info)
 	}else if (Command == "SampleSet:")
 	{
 		boost::algorithm::to_lower(Content);
+		boost::algorithm::trim(Content);
 		Info->DefaultSampleset = Content;
 	}
 	else if (Command == "PreviewTime:")
@@ -169,6 +170,7 @@ void ReadMetadata (GString line, OsuLoadInfo* Info)
 	printf("Command found: %s | Contents: %s\n", Command.c_str(), Content.c_str());
 #endif
 
+	boost::algorithm::trim(Content);
 	if (Command == "Title")
 	{
 		Info->OsuSong->SongName = Content;
@@ -647,7 +649,7 @@ void PushNotesToMeasures(OsuLoadInfo *Info)
 
 void Offsetize(OsuLoadInfo *Info)
 {
-	shared_ptr<VSRG::Difficulty> Diff = Info->Diff;
+	auto Diff = Info->Diff;
 	Diff->Offset = Info->HitsoundSections[0].Time;
 
 	for (auto i = Info->HitsoundSections.begin();
@@ -669,7 +671,7 @@ enum osuReadingMode
 	RHitobjects
 };
 
-void SetReadingMode(std::string& Line, osuReadingMode& ReadingMode)
+void SetReadingMode(GString& Line, osuReadingMode& ReadingMode)
 {
 	if (Line == "[General]")
 	{
@@ -715,7 +717,7 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 	if (!filein.is_open())
 		return;
 
-	std::shared_ptr<VSRG::Difficulty> Diff = std::make_shared<VSRG::Difficulty>();
+	shared_ptr<VSRG::Difficulty> Diff = make_shared<VSRG::Difficulty>();
 	OsuLoadInfo Info;
 
 	Info.TimingInfo = std::make_shared<VSRG::OsuManiaTimingInfo>();
@@ -728,7 +730,7 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 	Diff->Data->TimingInfo = Info.TimingInfo;
 
 	// osu! stores bpm information as the time in ms that a beat lasts.
-	Diff->BPMType = VSRG::Difficulty::BT_Beatspace;
+	Diff->BPMType = VSRG::Difficulty::BT_BEATSPACE;
 	Out->SongDirectory = prefix;
 
 	Diff->Filename = filename;

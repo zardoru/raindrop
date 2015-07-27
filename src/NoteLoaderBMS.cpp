@@ -911,7 +911,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 		Info->IsPMS = true;
 
 	// BMS uses beat-based locations for stops and BPM. (Though the beat must be calculated.)
-	Diff->BPMType = VSRG::Difficulty::BT_Beat;
+	Diff->BPMType = VSRG::Difficulty::BT_BEAT;
 
 	if (!filein.is_open())
 	{

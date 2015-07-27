@@ -374,12 +374,12 @@ int32 BindingsManager::TranslateKey7K(int32 Scan)
 
 KeyEventType ToKeyEventType(int32 code)
 {
-	KeyEventType KE = KE_None;
+	KeyEventType KE = KE_NONE;
 
 	if (code == GLFW_PRESS)
-		KE = KE_Press;
+		KE = KE_PRESS;
 	else if (code == GLFW_RELEASE)
-		KE = KE_Release;
+		KE = KE_RELEASE;
 	// Ignore GLFW_REPEAT events
 
 	return KE;
@@ -412,7 +412,7 @@ void ResizeFunc(GLFWwindow* wnd, int32 width, int32 height)
 
 void InputFunc(GLFWwindow*, int32 key, int32 scancode, int32 code, int32 modk)
 {
-	if (ToKeyEventType(code) != KE_None) // Ignore GLFW_REPEAT events
+	if (ToKeyEventType(code) != KE_NONE) // Ignore GLFW_REPEAT events
 		WindowFrame.Parent->HandleInput(key, ToKeyEventType(code), false);
 
 	if (key == GLFW_KEY_ENTER && code == GLFW_PRESS && (modk & GLFW_MOD_ALT))
@@ -421,7 +421,7 @@ void InputFunc(GLFWwindow*, int32 key, int32 scancode, int32 code, int32 modk)
 
 void MouseInputFunc(GLFWwindow*, int32 key, int32 code, int32 modk)
 {
-	if (ToKeyEventType(code) != KE_None) // Ignore GLFW_REPEAT events
+	if (ToKeyEventType(code) != KE_NONE) // Ignore GLFW_REPEAT events
 		WindowFrame.Parent->HandleInput(key, ToKeyEventType(code), true);
 }
 

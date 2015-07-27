@@ -321,8 +321,15 @@ public:
 		memset(out, 0, count * sizeof(short));
 		memset(tsF, 0, sizeof(tsF));
 
+		/*
+			Yes, mutexes. In general, practice states to not use them to avoid priority inversion
+			which is of course, extremely important on this context if we're getting low latency audio.
+			Nevertheless, the only moment in which the mutex is triggered is when you add or remove a sample from the mixer.
+			The only way it will happen is that someone's making new samples every other frame.
+		*/
+
 		mut.lock();
-		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); ++i)
+		for(auto i = Streams.begin(); i != Streams.end(); ++i)
 		{
 			if ((*i)->IsPlaying())
 			{
@@ -334,7 +341,7 @@ public:
 		mut.unlock();
 
 		mut2.lock();
-		for (std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); ++i)
+		for (auto i = Samples.begin(); i != Samples.end(); ++i)
 		{
 			if ((*i)->IsPlaying())
 			{
@@ -344,7 +351,7 @@ public:
 		mut2.unlock();
 
 		mut.lock();
-		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end(); ++i)
+		for(auto i = Streams.begin(); i != Streams.end(); ++i)
 		{
 			if ((*i)->IsPlaying())
 			{
@@ -358,7 +365,7 @@ public:
 		mut.unlock();
 
 		mut2.lock();
-		for (std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); ++i)
+		for (auto i = Samples.begin(); i != Samples.end(); ++i)
 		{
 			if ((*i)->IsPlaying())
 			{
@@ -400,7 +407,7 @@ public:
 
 		for (int i = 0; i < count; i++)
 		{
-			((short*)out)[i] = tsF[i];
+			reinterpret_cast<short*>(out)[i] = tsF[i];
 		}
 
 		if (StreamVoices)
@@ -441,7 +448,7 @@ void GetAudioInfo()
 	for (PaHostApiIndex i = 0; i < ApiCount; i++)
 	{
 		const PaHostApiInfo* Index = Pa_GetHostApiInfo(i);
-		Log::Logf("(%d) %s: %d (%d)\n", i, Utility::Widen(Index->name).c_str(), Index->defaultOutputDevice, Index->type);
+		Log::Logf("(%d) %s: %d (%d)\n", i, Index->name, Index->defaultOutputDevice, Index->type);
 
 #ifdef WIN32
 		if (Index->type == paWASAPI)
@@ -457,7 +464,7 @@ void GetAudioInfo()
 	for (PaDeviceIndex i = 0; i < DevCount; i++)
 	{
 		const PaDeviceInfo *Info = Pa_GetDeviceInfo(i);
-		Log::Logf("(%d): %ls\n", i, Utility::Widen(Info->name).c_str());
+		Log::Logf("(%d): %s\n", i, Info->name);
 		Log::Logf("\thighLat: %f, lowLat: %f\n", Info->defaultHighOutputLatency, Info->defaultLowOutputLatency);
 		Log::Logf("\tsampleRate: %f, hostApi: %d\n", Info->defaultSampleRate, Info->hostApi);
 		Log::Logf("\tmaxchannels: %d\n", Info->maxOutputChannels);

@@ -43,13 +43,13 @@ bool Button::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 {
 	if (isMouseInput && BindingsManager::TranslateKey(key) == KT_Select)
 	{
-		if (MouseInBoundaries (transformReverse, Centered) &&  code == KE_Press)
+		if (MouseInBoundaries (transformReverse, Centered) &&  code == KE_PRESS)
 		{
 			if (OnClick) OnClick(this);
 			PressedDown = true;
 		}
 
-		if (code == KE_Release && PressedDown)
+		if (code == KE_RELEASE && PressedDown)
 		{
 			if (OnRelease) OnRelease(this);
 			PressedDown = false;

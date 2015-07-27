@@ -125,10 +125,6 @@ private:
 	bool    AudioCompensation;
 	shared_ptr<BackgroundAnimation> BGA;
 	int Random;
-	/*
-		Optimizations will come in later.
-		See Renderer7K.cpp.
-	*/
 
 	void SetupScriptConstants();
 	void SetupLua(LuaManager* Env);

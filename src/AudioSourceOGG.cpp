@@ -57,7 +57,7 @@ bool AudioSourceOGG::Open(const char* Filename)
 	int retv = -1;
 
 	if (fp)
-		retv = ov_open_callbacks((void*)fp, &mOggFile, NULL, 0, fileInterfaceOgg);
+		retv = ov_open_callbacks(static_cast<void*>(fp), &mOggFile, NULL, 0, fileInterfaceOgg);
 #endif
 
 #ifndef NDEBUG

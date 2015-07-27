@@ -87,7 +87,7 @@ struct OjnMeasure
 class OjnLoadInfo
 {
 public:
-	std::vector<OjnMeasure> Measures;
+	vector<OjnMeasure> Measures;
 	VSRG::Song* S;
 	float BPM;
 };
@@ -383,7 +383,7 @@ void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::
 		filein.seekg(Head.note_offset[i]);
 
 		// O2Jam files use Beat-Based notation.
-		Diff->BPMType = VSRG::Difficulty::BT_Beat;
+		Diff->BPMType = VSRG::Difficulty::BT_BEAT;
 		Diff->Duration = Head.time[i];
 		Diff->Name = DifficultyNames[i];
 		Diff->Channels = 7;

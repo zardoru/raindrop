@@ -260,7 +260,7 @@ bool ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 		}
 
 
-		if (code == KE_Press)
+		if (code == KE_PRESS)
 		{
 			switch (tkey)
 			{
@@ -311,9 +311,9 @@ bool ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 	{
 		if (EditScreenState == Editing)
 		{
-			if (code == KE_Press)
+			if (code == KE_PRESS)
 				OnMousePress(tkey);
-			if (code == KE_Release)
+			if (code == KE_RELEASE)
 				OnMouseRelease(tkey);
 		}
 

@@ -13,7 +13,7 @@ class AudioSourceOJM : public AudioDataSource
 	} TemporaryState;
 
 	shared_ptr<SoundSample> Arr[2000];
-	std::ifstream *ifile;
+	shared_ptr<std::ifstream> ifile;
 	void parseM30();
 	void parseOMC();
 
