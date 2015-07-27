@@ -126,6 +126,7 @@ void SongWheel::Join()
 	{
 		mLoadThread->join();
 		delete mLoadThread;
+		mLoadThread = nullptr;
 	}
 }
 

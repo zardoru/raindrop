@@ -439,7 +439,7 @@ void Difficulty::GetMeasureLines(vector<float> &Out, TimingData& VerticalSpeeds,
 
 		if (BPMType == BT_BEAT) // VerticalSpeeds already has drift applied, so we don't need to apply it again here.
 		{
-			PositionOut = IntegrateToTime(VerticalSpeeds, TimeAtBeat(Timing, Offset, Last) + StopTimeAtBeat(Data->StopsTiming, Last));
+			PositionOut = IntegrateToTime(VerticalSpeeds, Drift + TimeAtBeat(Timing, Offset, Last) + StopTimeAtBeat(Data->StopsTiming, Last));
 		}
 		else if (BPMType == BT_BEATSPACE)
 		{
