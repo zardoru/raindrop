@@ -401,19 +401,19 @@ bool ScreenGameplay7K::ProcessSong()
 			SpeedConstant = DesiredDefaultSpeed;
 		}
 
-		CurrentDiff->Process(NotesByChannel, BPS, VSpeeds, Drift, SpeedConstant);
+		CurrentDiff->GetPlayableData(NotesByChannel, BPS, VSpeeds, Warps, Drift, SpeedConstant);
 
 		if (Type == SPEEDTYPE_MMOD) // mmod
 		{
-			double max = 0; // Find the highest speed
+			double speed_max = 0; // Find the highest speed
 			for (auto i = VSpeeds.begin();
 				i != VSpeeds.end();
 				++i)
 			{
-				max = std::max(max, abs(i->Value));
+				speed_max = max(speed_max, abs(i->Value));
 			}
 
-			double Ratio = DesiredDefaultSpeed / max; // How much above or below are we from the maximum speed?
+			double Ratio = DesiredDefaultSpeed / speed_max; // How much above or below are we from the maximum speed?
 			SpeedMultiplierUser = Ratio;
 		}else if (Type == SPEEDTYPE_FIRST) // We use this case as default. The logic is "Not a CMod, Not a MMod, then use first, the default.
 		{
@@ -430,10 +430,10 @@ bool ScreenGameplay7K::ProcessSong()
 		}
 
 	}else
-		CurrentDiff->Process(NotesByChannel, BPS, VSpeeds, Drift); // Regular processing
+		CurrentDiff->GetPlayableData(NotesByChannel, BPS, VSpeeds, Warps, Drift); // Regular processing
 
-	Warps = CurrentDiff->Data->Warps;
-	Speeds = CurrentDiff->Data->Speeds;
+	if (Type != SPEEDTYPE_CMOD)
+		Speeds = CurrentDiff->Data->Speeds;
 
 	for (auto&& w : Warps)
 		w.Time += Drift;
@@ -446,7 +446,7 @@ bool ScreenGameplay7K::ProcessSong()
 	for (auto S : Speeds) if (S.Value < 0) HasNegativeScroll = true;
 	for (auto S : VSpeeds) if (S.Value < 0) HasNegativeScroll = true;
 
-	if (Random) NoteTransform::Randomize(NotesByChannel, CurrentDiff->Channels);
+	if (Random) NoteTransform::Randomize(NotesByChannel, CurrentDiff->Channels, CurrentDiff->Data->Turntable);
 	return true;
 }
 
@@ -456,20 +456,6 @@ bool ScreenGameplay7K::LoadBGA()
 		BGA->Load();
 
 	return true;
-}
-
-void ScreenGameplay7K::SetupBarline()
-{
-	BarlineEnabled = Noteskin::IsBarlineEnabled();
-	BarlineOffset = Noteskin::GetBarlineOffset();
-	BarlineX = Noteskin::GetBarlineStartX();
-	BarlineWidth = Noteskin::GetBarlineWidth();
-
-	if (BarlineWidth == 0)
-		BarlineEnabled = false;
-
-	if (BarlineEnabled)
-		CurrentDiff->GetMeasureLines(MeasureBarlines, VSpeeds, WaitingTime, TimeCompensation);
 }
 
 void ScreenGameplay7K::SetupAfterLoadingVariables()
@@ -488,7 +474,7 @@ void ScreenGameplay7K::SetupAfterLoadingVariables()
 	RecalculateMatrix();
 	MultiplierChanged = true;
 
-	SetupBarline();
+	CurrentDiff->GetMeasureLines(MeasureBarlines, VSpeeds, WaitingTime, TimeCompensation);
 
 	ErrorTolerance = Configuration::GetConfigf("ErrorTolerance");
 
@@ -689,7 +675,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 	else
 		WaitingTime = 0;
 
-	if (BarlineEnabled)
+	if (Noteskin::IsBarlineEnabled())
 		Barline = make_shared<Line>();
 
 	CurrentBeat = IntegrateToTime(BPS, -WaitingTime);

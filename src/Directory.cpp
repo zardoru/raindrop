@@ -129,7 +129,7 @@ GString Directory::GetExtension() const
 GString Directory::path() const { return curpath; }
 const char* Directory::c_path() const { return curpath.c_str(); }
 
-std::vector<GString>& Directory::ListDirectory(std::vector<GString>& Vec, DirType T, const char* ext, bool Recursive)
+vector<GString>& Directory::ListDirectory(vector<GString>& Vec, DirType T, const char* ext, bool Recursive)
 {
 
 #ifdef _WIN32
@@ -141,9 +141,14 @@ std::vector<GString>& Directory::ListDirectory(std::vector<GString>& Vec, DirTyp
 
 	memset(tmp, 0, sizeof(wchar_t) * MAX_PATH);
 
-	std::wstring Wide = Utility::Widen(curpath) + L"/*";
+	std::wstring Wide;
+	
+	if (ext == nullptr)
+		Wide = Utility::Widen(curpath) + L"/*";
+	else
+		Wide = Utility::Widen(curpath) + L"/*." + Utility::Widen(ext);
 
-	hFind = FindFirstFile((LPCWSTR)Wide.c_str(), &ffd);
+	hFind = FindFirstFile(LPCWSTR(Wide.c_str()), &ffd);
 
 	do {
 
@@ -157,20 +162,7 @@ std::vector<GString>& Directory::ListDirectory(std::vector<GString>& Vec, DirTyp
 			if (fname == L"." || fname == L"..")
 				continue;
 
-			if (ext)
-			{
-				mbstowcs(tmp, ext, MAX_PATH);
-				if (fname.substr(fname.find_last_of(L".")+1) == std::wstring(tmp)) 
-				{
-					Vec.push_back(Utility::Narrow(fname));
-				}
-			}
-
-			if (!ext)
-			{
-				Vec.push_back(Utility::Narrow(fname));
-			}
-
+			Vec.push_back(Utility::Narrow(fname));
 		}else
 		{
 			wcstombs(tmpmbs, ffd.cFileName, MAX_PATH);

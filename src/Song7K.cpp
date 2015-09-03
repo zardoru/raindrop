@@ -133,7 +133,7 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 	}
 
 	/* Sort for justice */
-	std::sort(BPS.begin(), BPS.end());
+	sort(BPS.begin(), BPS.end());
 
 	if (!StopsTiming.size() || BPMType != VSRG::Difficulty::BT_BEAT) // Stops only supported in Beat mode.
 		return;
@@ -172,7 +172,7 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 		// Now we find what bps to restore to.
 		float bpsRestore = bps(SectionValue(Timing, Time->Time));
 
-		for (TimingData::iterator k = BPS.begin(); k != BPS.end(); )
+		for (auto k = BPS.begin(); k != BPS.end(); )
 		{
 			if (k->Time > TValue && k->Time <= TValueN) // So wait, there's BPM changes in between? Holy shit.
 			{
@@ -183,10 +183,10 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 
 				if (k == BPS.end())
 					break;
-				else continue;
+				continue;
 			}
 
-			k++;
+			++k;
 		}
 
 		/* Restored speed after stop */
@@ -299,7 +299,20 @@ double Difficulty::GetWarpAmountAtTime(double Time)
 	return wAmt;
 }
 
-void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& VerticalSpeeds, float Drift, double SpeedConstant)
+bool Difficulty::IsWarpingAt(double start_time)
+{
+	auto it = std::lower_bound(Data->Warps.begin(), Data->Warps.end(), start_time);
+	if (it != Data->Warps.end())
+		return it->Time + it->Value > start_time;
+	else
+		return false;
+}
+
+void Difficulty::GetPlayableData(VectorTN NotesOut, 
+	TimingData& BPS, 
+	TimingData& VerticalSpeeds, 
+	TimingData& Warps,
+	float Drift, double SpeedConstant)
 {
 	/* 
 		We'd like to build the notes' position from 0 to infinity, 
@@ -316,7 +329,7 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 		position = sum(speed_i * duration_i) + speed_current * (time_current - speed_start_time)
 	*/
 
-	assert(Data != NULL);
+	assert(Data != nullptr);
 
 	ProcessBPS(BPS, Drift);
 	ProcessVSpeeds(BPS, VerticalSpeeds, SpeedConstant);
@@ -324,6 +337,8 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 	if (!SpeedConstant) // If there is a speed constant having speed changes is not what we want
 		ProcessSpeedVariations(BPS, VerticalSpeeds, Drift);
 
+	if (SpeedConstant) Warps.clear();
+	else Warps = Data->Warps;
 
 	// From here on, we'll just copy the notes out. Otherwise, just leave the processed data.
 	if (!NotesOut)
@@ -378,14 +393,20 @@ void Difficulty::Process(VectorTN NotesOut, TimingData &BPS, TimingData& Vertica
 
 				double Wamt = -GetWarpAmountAtTime(CurrentNote.StartTime);
 				NewNote.AddTime(Wamt);
-				NotesOut[KeyIndex].push_back(NewNote);
+
+				if (!SpeedConstant || (NewNote.IsJudgable() && !IsWarpingAt(CurrentNote.StartTime)))
+					NotesOut[KeyIndex].push_back(NewNote);
 			}
 
 			MIdx++;
 		}
 
 		// done with the channel - sort it
-		std::stable_sort(NotesOut[KeyIndex].begin(), NotesOut[KeyIndex].end(), [](const VSRG::TrackNote &A, const VSRG::TrackNote &B) -> bool { return A.GetVertical() < B.GetVertical(); });
+		std::stable_sort(NotesOut[KeyIndex].begin(), NotesOut[KeyIndex].end(), 
+			[](const TrackNote &A, const TrackNote &B) -> bool 
+		{ 
+			return A.GetVertical() < B.GetVertical(); 
+		});
 	}
 }
 

@@ -225,7 +225,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 	*/
 
 	/* First we need to see whether these file need to be renewed.*/
-	for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
+	for (auto i = Listing.begin(); i != Listing.end(); ++i)
 	{
 		Directory File = *i;
 		File.Normalize();
@@ -320,7 +320,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 
 		// PushVSRGSong() handles the cleanup.
 		for (auto i = bmsk.begin();
-			i != bmsk.end(); i++)
+			i != bmsk.end(); ++i)
 		{
 			VSRGUpdateDatabaseDifficulties(DB, i->second);
 			PushVSRGSong(VecOut, i->second);
@@ -350,7 +350,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 			if (VSRGValidExtension(Ext))
 			{
 				assert(!DB->CacheNeedsRenewal(SongDirectory / File.path()));
-				int CurrentID = DB->GetSongIDForFile(SongDirectory / File.path(), NULL);
+				int CurrentID = DB->GetSongIDForFile(SongDirectory / File.path(), nullptr);
 				if (CurrentID != ID)
 				{
 					ID = CurrentID;
@@ -382,7 +382,7 @@ void SongLoader::GetSongListDC(vector<dotcur::Song*> &OutVec, Directory Dir)
 	std::vector <GString> Listing;
 
 	Dir.ListDirectory(Listing, Directory::FS_DIR);
-	for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
+	for (auto i = Listing.begin(); i != Listing.end(); ++i)
 	{ 
 		Log::Printf("%ls... ", Utility::Widen(*i).c_str());
 		LoadSongDCFromDir(Dir.path() + "/" + *i, OutVec);
@@ -392,10 +392,10 @@ void SongLoader::GetSongListDC(vector<dotcur::Song*> &OutVec, Directory Dir)
 
 void SongLoader::GetSongList7K(vector<VSRG::Song*> &OutVec, Directory Dir)
 {
-	std::vector <GString> Listing;
+	vector <GString> Listing;
 
 	Dir.ListDirectory(Listing, Directory::FS_DIR);
-	for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
+	for (auto i = Listing.begin(); i != Listing.end(); ++i)
 	{ 
 		Log::Printf("%ls... ", Utility::Widen(*i).c_str());
 		LoadSong7KFromDir(Dir.path() + "/" + *i, OutVec);

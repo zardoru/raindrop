@@ -10,6 +10,7 @@
 #include "utf8.h"
 
 #include <boost/algorithm/string.hpp>
+#include <regex>
 
 /*
 	Source for implemented commands:
@@ -49,12 +50,12 @@ GString tob36(long unsigned int value)
 
 int fromBase36(const char *txt)
 {
-	return strtoul(txt, NULL, 36);
+	return strtoul(txt, nullptr, 36);
 }
 
 int fromBase16(const char *txt)
 {
-	return strtoul(txt, NULL, 16);
+	return strtoul(txt, nullptr, 16);
 }
 
 int chanScratch = fromBase36("16");
@@ -75,14 +76,19 @@ struct BMSEvent
 {
 	int Event;
 	float Fraction;
+
+	bool operator<(const BMSEvent &rhs)
+	{
+		return Fraction < rhs.Fraction;
+	}
 };
 
-typedef std::vector<BMSEvent> BMSEventList;
+typedef vector<BMSEvent> BMSEventList;
 
 struct BMSMeasure
 {
 	// first argument is channel, second is event list
-	std::map<int, BMSEventList> Events;
+	map<int, BMSEventList> Events;
 	float BeatDuration;
 
 	BMSMeasure()
@@ -93,11 +99,11 @@ struct BMSMeasure
 
 using namespace VSRG;
 
-typedef std::map<int, GString> FilenameListIndex;
-typedef std::map<int, bool> FilenameUsedIndex;
-typedef std::map<int, double> BpmListIndex;
-typedef std::vector<NoteData> NoteVector;
-typedef std::map<int, BMSMeasure> MeasureList;
+typedef map<int, GString> FilenameListIndex;
+typedef map<int, bool> FilenameUsedIndex;
+typedef map<int, double> BpmListIndex;
+typedef vector<NoteData> NoteVector;
+typedef map<int, BMSMeasure> MeasureList;
 
 // End channels are usually xZ where X is the start (1, 2, 3 all the way to Z)
 
@@ -136,8 +142,8 @@ struct BmsLoadInfo
 		Measures[Measure].Events[Channel].Stuff
 	*/
 	MeasureList Measures; 
-	VSRG::Song* song;
-	std::shared_ptr<VSRG::Difficulty> difficulty;
+	Song* song;
+	shared_ptr<Difficulty> difficulty;
 
 	int LowerBound, UpperBound;
 	
@@ -157,6 +163,7 @@ struct BmsLoadInfo
 
 	bool HasBMPEvents;
 	bool UsesTwoSides;
+	bool IsSpecialStyle; // Uses the turntable?
 
 	BmsLoadInfo()
 	{
@@ -173,7 +180,7 @@ struct BmsLoadInfo
 		Skip = false;
 		CurrentNestedLevel = 0;
 		UsesTwoSides = false;
-
+		IsSpecialStyle = false;
 		memset (RandomStack, 0, sizeof(RandomStack));
 	}
 };
@@ -240,11 +247,11 @@ static double BeatForMeasure(BmsLoadInfo *Info, const int Measure)
 
 void CalculateBMP (BmsLoadInfo *Info, vector<AutoplayBMP> &BMPEvents, int Channel)
 {
-	for (MeasureList::iterator i = Info->Measures.begin(); i != Info->Measures.end(); ++i)
+	for (auto i = Info->Measures.begin(); i != Info->Measures.end(); ++i)
 	{
 		if (i->second.Events.find(Channel) != i->second.Events.end())
 		{
-			for (BMSEventList::iterator ev = i->second.Events[Channel].begin(); ev != i->second.Events[Channel].end(); ++ev)
+			for (auto ev = i->second.Events[Channel].begin(); ev != i->second.Events[Channel].end(); ++ev)
 			{
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first);
 				int BMP = ev->Event;
@@ -266,7 +273,7 @@ void CalculateBPMs(BmsLoadInfo *Info)
 	{
 		if (i->second.Events.find(CHANNEL_BPM) != i->second.Events.end()) // there are bms events in here, get chopping
 		{
-			for (BMSEventList::iterator ev = i->second.Events[CHANNEL_BPM].begin(); ev != i->second.Events[CHANNEL_BPM].end(); ++ev)
+			for (auto ev = i->second.Events[CHANNEL_BPM].begin(); ev != i->second.Events[CHANNEL_BPM].end(); ++ev)
 			{
 				double BPM = fromBase16(tob36(ev->Event).c_str());
 				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first);
@@ -390,16 +397,6 @@ int translateTrackPMS(int Channel, int relativeTo)
 
 void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i);
 
-int evsort(const AutoplaySound &i, const AutoplaySound &j)
-{
-	return i.Time < j.Time;
-}
-
-int evtSort(const BMSEvent &A, const BMSEvent &B)
-{
-	return A.Fraction < B.Fraction;
-}
-
 void measureCalculateSide(BmsLoadInfo *Info, MeasureList::iterator &i, int TrackOffset, int startChannel, int startChannelLN, int startChannelMines, int startChannelInvisible, Measure &Msr)
 {
 	int usedChannels = Info->difficulty->Channels;
@@ -419,17 +416,16 @@ void measureCalculateSide(BmsLoadInfo *Info, MeasureList::iterator &i, int Track
 			if (!(Track >= 0 && Track < MAX_CHANNELS)) Utility::DebugBreak();
 
 			if (Info->LNObj)
-				std::sort(i->second.Events[curChannel].begin(), i->second.Events[curChannel].end(), evtSort);
+				sort(i->second.Events[curChannel].begin(), i->second.Events[curChannel].end());
 
 			for (auto ev = i->second.Events[curChannel].begin(); ev != i->second.Events[curChannel].end(); ++ev)
 			{
 				if (!ev->Event || Track >= usedChannels) continue; // UNUSABLE event
 
-				double Beat = ev->Fraction * Msr.MeasureLength + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
-
+				double Beat = ev->Fraction * Msr.MeasureLength + BeatForMeasure(Info, i->first); 
 				double Time = TimeAtBeat(Info->difficulty->Timing, Info->difficulty->Offset, Beat) + StopTimeAtBeat(Info->difficulty->Data->StopsTiming, Beat);
 
-				Info->difficulty->Duration = std::max(double(Info->difficulty->Duration), Time);
+				Info->difficulty->Duration = max(double(Info->difficulty->Duration), Time);
 
 				if (!Info->LNObj || (Info->LNObj != ev->Event))
 				{
@@ -479,8 +475,7 @@ degradetonote:
 			{
 				if (Track >= usedChannels || Track < 0) continue;
 
-				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first); // 4 = measure length in beats. todo: calculate appropietly!
-
+				double Beat = ev->Fraction * 4 * i->second.BeatDuration + BeatForMeasure(Info, i->first);
 				double Time = TimeAtBeat(Info->difficulty->Timing, Info->difficulty->Offset, Beat) + StopTimeAtBeat(Info->difficulty->Data->StopsTiming, Beat);
 
 				if (Info->startTime[Track] == -1)
@@ -490,7 +485,7 @@ degradetonote:
 				{
 					NoteData Note;
 
-					Info->difficulty->Duration = std::max(double(Info->difficulty->Duration), Time);
+					Info->difficulty->Duration = max(double(Info->difficulty->Duration), Time);
 
 					Note.StartTime = Info->startTime[Track];
 					Note.EndTime = Time;
@@ -570,7 +565,7 @@ void measureCalculate(BmsLoadInfo *Info, MeasureList::iterator &i)
 			Info->difficulty->Data->BGMEvents.push_back(New);
 		}
 
-		std::sort(Info->difficulty->Data->BGMEvents.begin(), Info->difficulty->Data->BGMEvents.end());
+		sort(Info->difficulty->Data->BGMEvents.begin(), Info->difficulty->Data->BGMEvents.end());
 	}
 }
 
@@ -586,9 +581,13 @@ void AutodetectChannelCountSide(BmsLoadInfo *Info, int offset, int usedChannels[
 				int offs;
 				
 				if (!Info->IsPMS)
-					offs = translateTrackBME(curChannel, startChannel)+offset;
+					offs = translateTrackBME(curChannel, startChannel) + offset;
 				else
-					offs = translateTrackPMS(curChannel, startChannel)+offset;
+				{
+					offs = translateTrackPMS(curChannel, startChannel) + offset;
+					if (curChannel - startChannel == 5) // Turntable is going.
+						Info->IsSpecialStyle = true;
+				}
 
 				if (offs < MAX_CHANNELS) // A few BMSes use the foot pedal, so we need to not overflow the array.
 					usedChannels[offs] = 1;
@@ -603,9 +602,13 @@ void AutodetectChannelCountSide(BmsLoadInfo *Info, int offset, int usedChannels[
 				int offs;
 				
 				if (!Info->IsPMS)
-					offs = translateTrackBME(curChannel, startChannelLN)+offset;
+					offs = translateTrackBME(curChannel, startChannelLN) + offset;
 				else
-					offs = translateTrackPMS(curChannel, startChannelLN)+offset;
+				{
+					offs = translateTrackPMS(curChannel, startChannelLN) + offset;
+					if (curChannel - startChannel == 5) // 16 - 11 = 5
+						Info->IsSpecialStyle = true;
+				}
 
 				if (offs < MAX_CHANNELS)
 					usedChannels[offs] = 1;
@@ -713,7 +716,7 @@ void CompileBMS(BmsLoadInfo *Info)
 
 	if (Info->HasBMPEvents)
 	{
-		shared_ptr<BMPEventsDetail> BMP = make_shared < BMPEventsDetail >();
+		auto BMP = make_shared < BMPEventsDetail >();
 		CalculateBMP(Info, BMP->BMPEventsLayerBase, CHANNEL_BGABASE);
 		CalculateBMP(Info, BMP->BMPEventsLayerMiss, CHANNEL_BGAPOOR);
 		CalculateBMP(Info, BMP->BMPEventsLayer, CHANNEL_BGALAYER);
@@ -727,6 +730,11 @@ void CompileBMS(BmsLoadInfo *Info)
 	
 	for (auto i = m.begin(); i != m.end(); ++i)
 		measureCalculate(Info, i);
+
+	// Check turntable on 5/7 key singles or doubles key count
+	if (Info->difficulty->Channels == 6 || Info->difficulty->Channels == 8 ||
+		Info->difficulty->Channels == 12 || Info->difficulty->Channels == 16)
+		Info->difficulty->Data->Turntable = Info->IsSpecialStyle;
 }
 
 bool InterpStatement(GString Command, GString Contents, BmsLoadInfo *Info)
@@ -795,17 +803,7 @@ bool ShouldUseU8(const char* Line)
 	if (!utf8::starts_with_bom(Line, Line + 1024))
 	{
 		if (utf8::is_valid(Line, Line + 1024))
-		{
 			IsU8 = true;
-			for (int i = 0; i < 1024; i++)
-			{
-				if (Line[i] & 0x80) // high bit is set
-				{
-					IsU8 = false;
-					break;
-				}
-			}
-		}
 	}
 	else
 		IsU8 = true;
@@ -898,9 +896,10 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 	std::ifstream filein(Utility::Widen(filename).c_str());
 #endif
 
-	std::shared_ptr<Difficulty> Diff (new Difficulty());
-	std::shared_ptr<BmsLoadInfo> Info (new BmsLoadInfo());
-	std::shared_ptr<DifficultyLoadInfo> LInfo (new DifficultyLoadInfo());
+	shared_ptr<Difficulty> Diff (new Difficulty());
+	shared_ptr<BmsLoadInfo> Info (new BmsLoadInfo());
+	shared_ptr<DifficultyLoadInfo> LInfo (new DifficultyLoadInfo());
+	std::regex DataDeclaration("(\\d{3})([a-zA-Z0-9]{2})");
 
 	Diff->Filename = filename;
 	Diff->Data = LInfo;
@@ -911,7 +910,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 		Info->IsPMS = true;
 
 	// BMS uses beat-based locations for stops and BPM. (Though the beat must be calculated.)
-	Diff->BPMType = VSRG::Difficulty::BT_BEAT;
+	Diff->BPMType = Difficulty::BT_BEAT;
 
 	if (!filein.is_open())
 	{
@@ -922,7 +921,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 	srand(time(nullptr));
 	Diff->IsVirtual = true;
 
-	std::shared_ptr<VSRG::BmsTimingInfo> TimingInfo = std::make_shared<VSRG::BmsTimingInfo>();
+	shared_ptr<BmsTimingInfo> TimingInfo = make_shared<BmsTimingInfo>();
 	Diff->Data->TimingInfo = TimingInfo;
 
 	/*
@@ -952,7 +951,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 
 	while (filein)
 	{
-		std::getline(filein, Line);
+		getline(filein, Line);
 
 		boost::replace_all(Line, "\r", "");
 
@@ -1160,11 +1159,12 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 			/* Else... */
 			GString MeasureCommand = Line.substr(Line.find_first_of(":")+1);
 			GString MainCommand = Line.substr(1, 5);
+			std::smatch sm;
 
-			if (Utility::IsNumeric(MainCommand.c_str())) // We've got work to do.
+			if (regex_match(MainCommand.cbegin(), MainCommand.cend(), sm, DataDeclaration)) // We've got work to do.
 			{
-				int Measure = atoi(MainCommand.substr(0,3).c_str());
-				int Channel = fromBase36(MainCommand.substr(3,2).c_str());
+				int Measure = atoi(sm[1].str().c_str());
+				int Channel = fromBase36(sm[2].str().c_str());
 
 				ParseEvents(Info.get(), Measure, Channel, MeasureCommand);
 			}

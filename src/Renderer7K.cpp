@@ -29,10 +29,10 @@ void ScreenGameplay7K::DrawBarlines()
 {
 	for (auto i: MeasureBarlines)
 	{
-		float realV = (CurrentVertical - i) * SpeedMultiplier + BarlineOffset * sign(SpeedMultiplier) + JudgmentLinePos;
+		float realV = (CurrentVertical - i) * SpeedMultiplier + Noteskin::GetBarlineOffset() * sign(SpeedMultiplier) + JudgmentLinePos;
 		if (realV > 0 && realV < ScreenWidth)
 		{
-			Barline->SetLocation (Vec2(BarlineX, realV), Vec2(BarlineX + BarlineWidth, realV));
+			Barline->SetLocation (Vec2(Noteskin::GetBarlineStartX(), realV), Vec2(Noteskin::GetBarlineStartX() + Noteskin::GetBarlineWidth(), realV));
 			Barline->Render();
 		}
 	}
@@ -42,7 +42,7 @@ Mat4 id;
 
 void ScreenGameplay7K::DrawMeasures()
 {
-	if (BarlineEnabled)
+	if (Noteskin::IsBarlineEnabled())
 		DrawBarlines();
 
 	// Set some parameters...

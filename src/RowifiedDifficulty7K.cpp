@@ -29,11 +29,11 @@ RowifiedDifficulty::RowifiedDifficulty(Difficulty *Source, bool Quantize, bool C
 	}
 }
 
-int RowifiedDifficulty::GetRowCount(const vector<RowifiedDifficulty::Event> &In)
+int RowifiedDifficulty::GetRowCount(const vector<Event> &In)
 {
 	// literally the only hard part of this
 	// We have to find the LCM of the set of fractions given by the Fraction of all objects in the vector.
-	std::vector <int> Denominators;
+	vector <int> Denominators;
 
 	// Find all different denominators.
 	for (auto i : In) {
@@ -88,15 +88,13 @@ IFraction RowifiedDifficulty::FractionForMeasure(int Measure, double Beat)
 
 int RowifiedDifficulty::MeasureForBeat(double Beat)
 {
-	int Measure = -1;
-	for (auto i : MeasureAccomulation)
-	{
-		if (Beat >= i)
-			Measure += 1;
-		else return Measure;
-	}
-
-	throw std::runtime_error("Beat beyond last measure.");
+	auto it = upper_bound(MeasureAccomulation.begin(), MeasureAccomulation.end(), Beat);
+	auto Measure = it - MeasureAccomulation.begin() - 1;
+	
+	if (Measure < MeasureAccomulation.size() && Measure >= 0)
+		return Measure;
+	
+	throw std::runtime_error("Beat outside of bounds.");
 }
 
 void RowifiedDifficulty::ResizeMeasures(size_t NewMaxIndex) {

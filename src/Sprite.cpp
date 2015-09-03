@@ -24,7 +24,7 @@ void Sprite::Construct(bool doInitTexture)
 	LightenFactor = 1.0f;
 	BlackToTransparent = false;
 
-	BlendingMode = MODE_ALPHA;
+	BlendingMode = BLEND_ALPHA;
 
 	Red = Blue = Green = 1.0;
 	Alpha = 1.0;
@@ -56,7 +56,7 @@ Sprite::~Sprite()
 
 void Sprite::SetBlendMode(int Mode)
 {
-	BlendingMode = (RBlendMode)Mode;
+	BlendingMode = (EBlendMode)Mode;
 }
 
 int Sprite::GetBlendMode() const

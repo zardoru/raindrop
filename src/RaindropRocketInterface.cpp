@@ -106,7 +106,7 @@ namespace Engine { namespace RocketInterface {
 		
 		glDisable(GL_DEPTH_TEST);
 		glDepthMask(GL_FALSE);
-		SetBlendingMode(MODE_ALPHA);
+		SetBlendingMode(BLEND_ALPHA);
 
 		SetShaderParameters(false, false, false);
 		WindowFrame.SetUniform(U_COLOR, 1, 1, 1, 1);

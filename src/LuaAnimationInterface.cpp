@@ -239,8 +239,8 @@ void DefineSpriteInterface(LuaManager* anim_lua)
 	anim_lua->SetGlobal("EaseIn", Animation::EaseIn);
 	anim_lua->SetGlobal("EaseOut", Animation::EaseOut);
 
-	anim_lua->SetGlobal("BlendAdd", (int)MODE_ADD);
-	anim_lua->SetGlobal("BlendAlpha", (int)MODE_ALPHA);
+	anim_lua->SetGlobal("BlendAdd", (int)BLEND_ADD);
+	anim_lua->SetGlobal("BlendAlpha", (int)BLEND_ALPHA);
 
 #define f(x) addFunction(#x, &Sprite::x)
 #define p(x) addProperty(#x, &Sprite::Get##x, &Sprite::Set##x)

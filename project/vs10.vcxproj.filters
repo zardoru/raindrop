@@ -471,6 +471,9 @@
     <ClInclude Include="..\src\NoteTransformations.h">
       <Filter>Source\vsrg\gameplay</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\osuBackgroundAnimation.h">
+      <Filter>Source\game global\BGA</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">

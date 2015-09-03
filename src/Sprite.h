@@ -23,7 +23,7 @@ private: // Transformations
 
 	bool DirtyTexture;
 	
-	RBlendMode BlendingMode;
+	EBlendMode BlendingMode;
 
 	// These crop variables define where to crop the image.
 

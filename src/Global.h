@@ -27,6 +27,10 @@ using std::dynamic_pointer_cast;
 using std::static_pointer_cast;
 using std::vector;
 using std::map;
+using std::sort;
+using std::stable_sort;
+using std::lower_bound;
+using std::upper_bound;
 
 // Use stdint if available.
 #if !(defined HAS_STDINT) && ( !(defined _MSC_VER) || (_MSC_VER < 1800) )
@@ -54,7 +58,7 @@ typedef int32_t int32;
 typedef int16_t int16;
 typedef int8_t int8;
 
-#define GString std::string
+typedef std::string GString;
 
 extern float *PInfinity;
 

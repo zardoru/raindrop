@@ -24,7 +24,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v120_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug NoIters|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -280,6 +280,7 @@
     <ClInclude Include="..\src\GameWindow.h" />
     <ClInclude Include="..\src\GraphicalString.h" />
     <ClInclude Include="..\src\NoteTransformations.h" />
+    <ClInclude Include="..\src\osuBackgroundAnimation.h" />
     <ClInclude Include="..\src\Sprite.h" />
     <ClInclude Include="..\src\IPC.h" />
     <ClInclude Include="..\src\Noteskin.h" />

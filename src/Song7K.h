@@ -136,11 +136,11 @@ namespace VSRG
 		GString StageFile;
 
 		// Whether this difficulty uses the scratch channel (being channel/index 0 always used for this)
-		bool SpecialStyle;
+		bool Turntable;
 
 		DifficultyLoadInfo()
 		{
-			SpecialStyle = false;
+			Turntable = false;
 		}
 	};
 
@@ -164,8 +164,13 @@ namespace VSRG
 		double GetWarpAmountAtTime(double Time);
 	public:
 
+		bool IsWarpingAt(double start_time);
 		// Get processed data for use on ScreenGameplay7K.
-		void Process(VectorTN NotesOut, TimingData &BPS, TimingData& VerticalSpeeds, float Drift = 0, double SpeedConstant = 0);
+		void GetPlayableData(VectorTN NotesOut, 
+							TimingData& BPS, 
+							TimingData& VerticalSpeeds,
+							TimingData& Warps,
+							float Drift = 0, double SpeedConstant = 0);
 		void ProcessBPS(TimingData& BPS, double Drift);
 
 		// The floats are in vertical units; like the notes' vertical position.

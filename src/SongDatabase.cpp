@@ -9,7 +9,6 @@
 char *DatabaseQuery =
   "CREATE TABLE IF NOT EXISTS [songdb] (\
   [id] INTEGER, \
-  [directory] varchar(260), \
   [songtitle] varchar(260), \
   [songauthor] varchar(260), \
   [songfilename] varchar(260), \
@@ -38,9 +37,13 @@ CREATE TABLE IF NOT EXISTS [diffdb] (\
   [bpmtype] INT,\
   [level] INT,\
   [author] VARCHAR(256),\
-  [stagefile] varchar(260)); ";
+  [stagefile] varchar(260));\
+    CREATE INDEX IF NOT EXISTS song_index ON songfiledb(filename);\
+	  CREATE INDEX IF NOT EXISTS diff_index ON diffdb(songid);\
+	  CREATE INDEX IF NOT EXISTS songid_index ON songdb(id);\
+  ";
 
-const char* InsertSongQuery = "INSERT INTO songdb VALUES (NULL,?,?,?,?,?,?,?,?)";
+const char* InsertSongQuery = "INSERT INTO songdb VALUES (NULL,?,?,?,?,?,?,?)";
 const char* InsertDifficultyQuery = "INSERT INTO diffdb VALUES (?,NULL,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 const char* GetFilenameIDQuery = "SELECT id, lastmodified FROM songfiledb WHERE filename=?";
 const char* InsertFilenameQuery = "INSERT INTO songfiledb VALUES (NULL,?,?,?)";
@@ -431,14 +434,13 @@ int SongDatabase::GetSongIDForFile(Directory File, VSRG::Song* In)
 		assert(In); // Okay, this is a query isn't it? Why doesn't the song exist?
 		// Okay then, insert the song.
 		// So now the latest entry is what we're going to insert difficulties and files into.
-		SC(sqlite3_bind_text(st_SngInsertQuery, 1, In->SongDirectory.path().c_str(), In->SongDirectory.path().length(), SQLITE_STATIC));
-		SC(sqlite3_bind_text(st_SngInsertQuery, 2, In->SongName.c_str(), In->SongName.length(), SQLITE_STATIC));
-		SC(sqlite3_bind_text(st_SngInsertQuery, 3, In->SongAuthor.c_str(), In->SongAuthor.length(), SQLITE_STATIC));
-		SC(sqlite3_bind_text(st_SngInsertQuery, 4, In->SongFilename.c_str(), In->SongFilename.length(), SQLITE_STATIC));
-		SC(sqlite3_bind_text(st_SngInsertQuery, 5, In->BackgroundFilename.c_str(), In->BackgroundFilename.length(), SQLITE_STATIC));
-		SC(sqlite3_bind_int(st_SngInsertQuery, 6, In->Mode));
-		SC(sqlite3_bind_text(st_SngInsertQuery, 7, In->SongPreviewSource.c_str(), In->SongPreviewSource.length(), SQLITE_STATIC));
-		SC(sqlite3_bind_double(st_SngInsertQuery, 8, In->PreviewTime));
+		SC(sqlite3_bind_text(st_SngInsertQuery, 1, In->SongName.c_str(), In->SongName.length(), SQLITE_STATIC));
+		SC(sqlite3_bind_text(st_SngInsertQuery, 2, In->SongAuthor.c_str(), In->SongAuthor.length(), SQLITE_STATIC));
+		SC(sqlite3_bind_text(st_SngInsertQuery, 3, In->SongFilename.c_str(), In->SongFilename.length(), SQLITE_STATIC));
+		SC(sqlite3_bind_text(st_SngInsertQuery, 4, In->BackgroundFilename.c_str(), In->BackgroundFilename.length(), SQLITE_STATIC));
+		SC(sqlite3_bind_int(st_SngInsertQuery, 5, In->Mode));
+		SC(sqlite3_bind_text(st_SngInsertQuery, 6, In->SongPreviewSource.c_str(), In->SongPreviewSource.length(), SQLITE_STATIC));
+		SC(sqlite3_bind_double(st_SngInsertQuery, 7, In->PreviewTime));
 
 		SCS(sqlite3_step(st_SngInsertQuery));
 		SC(sqlite3_reset(st_SngInsertQuery));

@@ -155,7 +155,11 @@ bool ReadGeneral (GString line, OsuLoadInfo* Info)
 		{
 			if (Info->OsuSong->PreviewTime == 0)
 				Info->OsuSong->PreviewTime = latof(Content) / 1000;
-		}
+		}																							
+	} else if (Command == "SpecialStyle:")
+	{
+		if (Content == "1")
+			Info->Diff->Data->Turntable = true;
 	}
 
 	return true;
@@ -557,7 +561,7 @@ void ReadObjects (GString line, OsuLoadInfo* Info)
 	Info->Diff->TotalObjects++;
 	Info->Notes[Track].push_back(Note);
 
-	Info->Diff->Duration = max(max (Note.StartTime, Note.EndTime), Info->Diff->Duration);
+	Info->Diff->Duration = max(max (Note.StartTime, Note.EndTime)+1, Info->Diff->Duration);
 }
 
 void MeasurizeFromTimingData(OsuLoadInfo *Info)
@@ -717,20 +721,20 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 	if (!filein.is_open())
 		return;
 
-	shared_ptr<VSRG::Difficulty> Diff = make_shared<VSRG::Difficulty>();
+	auto Diff = make_shared<Difficulty>();
 	OsuLoadInfo Info;
 
-	Info.TimingInfo = std::make_shared<VSRG::OsuManiaTimingInfo>();
+	Info.TimingInfo = make_shared<OsuManiaTimingInfo>();
 	Info.OsuSong = Out;
 	Info.SliderVelocity = 1.4;
 	Info.Diff = Diff;
 	Info.last_sound_index = 1;
 
-	Diff->Data = std::make_shared<VSRG::DifficultyLoadInfo>();
+	Diff->Data = make_shared<DifficultyLoadInfo>();
 	Diff->Data->TimingInfo = Info.TimingInfo;
 
 	// osu! stores bpm information as the time in ms that a beat lasts.
-	Diff->BPMType = VSRG::Difficulty::BT_BEATSPACE;
+	Diff->BPMType = Difficulty::BT_BEATSPACE;
 	Out->SongDirectory = prefix;
 
 	Diff->Filename = filename;
@@ -743,7 +747,7 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 
 	GString Line;
 
-	std::getline(filein, Line);
+	getline(filein, Line);
 	int version;
 	int cnt = sscanf(Line.c_str(), "osu file format v%d", &version);
 	
@@ -757,7 +761,7 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 
 	while (filein)
 	{
-		std::getline(filein, Line);
+		getline(filein, Line);
 		boost::replace_all(Line, "\r", "");
 
 		if (!Line.length())
@@ -768,7 +772,7 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 		if (ReadingMode != ReadingModeOld || ReadingMode == RNotKnown) // Skip this line since it changed modes, or it's not a valid section yet
 		{
 			if (ReadingModeOld == RTiming)
-				std::stable_sort(Info.HitsoundSections.begin(), Info.HitsoundSections.end());
+				stable_sort(Info.HitsoundSections.begin(), Info.HitsoundSections.end());
 			if (ReadingModeOld == RGeneral)
 				if (!Info.ReadAModeTag)
 					return;
@@ -806,8 +810,8 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 		PushNotesToMeasures(&Info);
 
 		// Copy all sounds we registered
-		for (auto i = Info.Sounds.begin(); i != Info.Sounds.end(); ++i)
-			Diff->SoundList[i->second] = i->first;
+		for (auto i : Info.Sounds)
+			Diff->SoundList[i.second] = i.first;
 		
 		// Calculate level as NPS
 		Diff->Level = Diff->TotalScoringObjects / Diff->Duration;

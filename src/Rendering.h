@@ -4,11 +4,11 @@
 #include "Global.h"
 #include "Transformation.h"
 
-enum RBlendMode
+enum EBlendMode
 {
-	MODE_ADD,
-	MODE_ALPHA,
-	MODE_MULTIPLY
+	BLEND_ADD,
+	BLEND_ALPHA,
+	BLEND_MULTIPLY
 };
 
 class Image;
@@ -25,9 +25,9 @@ void SetShaderParameters(bool InvertColor,
 void SetPrimitiveQuadVBO();
 void FinalizeDraw();
 void DoQuadDraw();
-void SetBlendingMode(RBlendMode Mode);
+void SetBlendingMode(EBlendMode Mode);
 void SetTexturedQuadVBO(VBO *TexQuad);
-void DrawTexturedQuad(Image* ToDraw, const AABB& TextureCrop, const Transformation& QuadTransformation, const RBlendMode &Mode = MODE_ALPHA, const ColorRGB &InColor = Color::White);
-void DrawPrimitiveQuad(Transformation &QuadTransformation, const RBlendMode &Mode = MODE_ALPHA, const ColorRGB &InColor = Color::White);
+void DrawTexturedQuad(Image* ToDraw, const AABB& TextureCrop, const Transformation& QuadTransformation, const EBlendMode &Mode = BLEND_ALPHA, const ColorRGB &InColor = Color::White);
+void DrawPrimitiveQuad(Transformation &QuadTransformation, const EBlendMode &Mode = BLEND_ALPHA, const ColorRGB &InColor = Color::White);
 
 #endif

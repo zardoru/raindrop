@@ -284,8 +284,14 @@ public:
 		: RowifiedDifficulty(Source, Quantize, true)
 	{
 		this->Song = Song;
-		CalculateTimingPoints();
-		CalculateStops();
+
+		try {
+			CalculateTimingPoints();
+			CalculateStops();
+		} catch (std::exception &e)
+		{
+			Log::Printf("Error while converting timing data: %s\n", e.what());
+		}
 	}
 
 	void Output(Directory PathOut)
@@ -294,13 +300,23 @@ public:
 		Sn.Normalize(true);
 
 		GString name = (boost::format("%1%/ %4% (%2%) - %3%.bms") % PathOut.c_path() % Parent->Name % Parent->Author % Sn.c_path()).str();
+
+#ifndef _WIN32
 		std::ofstream out(name.c_str());
+#else
+		std::ofstream out(Utility::Widen(name).c_str());
+#endif
 
 		if (!out.is_open())
 			Log::Printf("failed to open file %s", Utility::Widen(name).c_str());
 			
-		WriteBMSOutput();
-		out << OutFile.str();
+		try {
+			WriteBMSOutput();
+			out << OutFile.str();
+		} catch (std::exception &e)
+		{
+			Log::Printf("Error while converting: %s\n", e.what());
+		}
 	}
 };
 

@@ -26,9 +26,9 @@
 #include "Logging.h"
 #include <glm/gtc/matrix_transform.inl>
 
-VBO* QuadBuffer = NULL;
-VBO* TextureBuffer = NULL;
-VBO* ColorBuffer = NULL;
+VBO* QuadBuffer = nullptr;
+VBO* TextureBuffer = nullptr;
+VBO* ColorBuffer = nullptr;
 
 const ColorRGB White = { 1, 1, 1, 1 };
 const ColorRGB Black = { 0, 0, 0, 1 };
@@ -58,14 +58,14 @@ float QuadColours[16] =
 };
 
 
-void SetBlendingMode(RBlendMode Mode)
+void SetBlendingMode(EBlendMode Mode)
 {
-	if (Mode == MODE_ADD)
+	if (Mode == BLEND_ADD)
 	{
 		glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	}
-	else if (Mode == MODE_ALPHA)
+	else if (Mode == BLEND_ALPHA)
 	{
 		glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -119,7 +119,7 @@ void SetShaderParameters(bool InvertColor,
 }
 
 void DrawTexturedQuad(Image* ToDraw, const AABB& TextureCrop, const Transformation& QuadTransformation, 
-	const RBlendMode &Mode, const ColorRGB &InColor)
+	const EBlendMode &Mode, const ColorRGB &InColor)
 {
 	if (ToDraw)
 		ToDraw->Bind();
@@ -158,7 +158,7 @@ void DoQuadDraw()
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-void DrawPrimitiveQuad(Transformation &QuadTransformation, const RBlendMode &Mode, const ColorRGB &Color)
+void DrawPrimitiveQuad(Transformation &QuadTransformation, const EBlendMode &Mode, const ColorRGB &Color)
 {
 	Image::BindNull();
 	WindowFrame.SetUniform(U_COLOR, Color.Red, Color.Green, Color.Blue, Color.Alpha);
@@ -332,7 +332,7 @@ void TruetypeFont::Render(const GString &In, const Vec2 &Position, const Mat4 &T
 
 	UpdateWindowScale();
 
-	SetBlendingMode(MODE_ALPHA);
+	SetBlendingMode(BLEND_ALPHA);
 
 	SetShaderParameters(false, false, false, false, false, true);
 	WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha);

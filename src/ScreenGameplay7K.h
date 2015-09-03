@@ -42,8 +42,6 @@ private:
 	shared_ptr<Line> Barline;
 
 	double BarlineOffset;
-	double BarlineX;
-	double BarlineWidth;
 	double NoteHeight;
 	double LanePositions[VSRG::MAX_CHANNELS];
 	double LaneWidth[VSRG::MAX_CHANNELS];
@@ -115,7 +113,6 @@ private:
 	bool DoPlay;
 	bool Preloaded;
 	bool PlayReactiveSounds;
-	bool BarlineEnabled;
 	bool SongFinished;
 
 	bool HeldKey[VSRG::MAX_CHANNELS];

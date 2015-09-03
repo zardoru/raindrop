@@ -8,11 +8,19 @@
 #include "Converter.h"
 #include "Logging.h"
 
+#include <boost/algorithm/string.hpp>
+
 int TrackToXPos(int totaltracks, int track)
 {
 	auto base = (512.0/totaltracks);
 	auto minus = (256.0/totaltracks);
 	return (base * (track + 1) - minus);
+}
+
+void RemoveSlashes(GString &str)
+{
+	boost::replace_all(str, "/", "");
+	boost::replace_all(str, "\\", "");
 }
 
 void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
@@ -21,14 +29,23 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 	{
 		char vf[1024];
 		TimingData BPS;
-		TimingData VSpeeds;
+		TimingData VSpeeds, Warps;
+		GString Author = Sng->SongAuthor;
+		GString Name  = Sng->SongName;
+		GString DName = Difficulty->Name;
+		GString Charter = Author;
+
+		RemoveSlashes(Author);
+		RemoveSlashes(Name);
+		RemoveSlashes(DName);
+		RemoveSlashes(Charter);
 
 #ifndef WIN32
 		snprintf
 #else
 		_snprintf
 #endif
-			(vf, 1024, "%s/%s - %s [%s] (%s).osu", PathOut.c_path(), Sng->SongAuthor.c_str(), Sng->SongName.c_str(), Difficulty->Name.c_str(), Author.c_str());
+			(vf, 1024, "%s/%s - %s [%s] (%s).osu", PathOut.c_path(), Author.c_str(), Name.c_str(), DName.c_str(), Charter.c_str());
 		Directory Str = vf;
 		Str.Normalize(true);
 		std::ofstream out (Str.c_path());
@@ -39,7 +56,7 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 			return;
 		}
 
-		Difficulty->Process(nullptr, BPS, VSpeeds, 0, 0);
+		Difficulty->GetPlayableData(nullptr, BPS, VSpeeds, Warps, 0);
 
 		// First, convert metadata.
 		out 
@@ -126,6 +143,8 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 			{
 				for (auto Note : k.MeasureNotes[n])
 				{
+					if (Difficulty->IsWarpingAt(Note.StartTime)) continue;
+
 					out << TrackToXPos(Difficulty->Channels, n) << ",0," << int(Note.StartTime * 1000.0) << ","
 						<< (Note.EndTime ? "128" : "1") << ",0,";
 					if (Note.EndTime)
@@ -145,9 +164,9 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 
 void ConvertToSMTiming(VSRG::Song *Sng, Directory PathOut)
 {
-	TimingData BPS, VSpeeds;
+	TimingData BPS, VSpeeds, Warps;
 	VSRG::Difficulty* Diff = Sng->Difficulties[0].get();
-	Diff->Process (nullptr, BPS, VSpeeds);
+	Diff->GetPlayableData (nullptr, BPS, VSpeeds, Warps);
 
 	std::ofstream out (PathOut.c_path());
 
