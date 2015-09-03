@@ -30,3 +30,6 @@ project/Xcode/build
 log.txt
 TEST/CRASH/background - color.jpg
 *.ssc
+*.pms
+*.bat
+config.ini
