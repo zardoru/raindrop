@@ -154,6 +154,9 @@ namespace Utility
 	GString GetSha256ForFile(GString Filename);
 	GString IntToStr(int num);
 	GString CharToStr(char c);
+
+	// boost::split makes way too many allocations, so here's a home-cooked version
+	vector<GString> TokenSplit(const GString &str, const GString &token = ",");
 }
 
 

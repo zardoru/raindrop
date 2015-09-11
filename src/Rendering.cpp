@@ -256,7 +256,7 @@ bool Sprite::RenderMinimalSetup()
 	SetBlendingMode(BlendingMode);
 
 	UvBuffer->Bind();
-	glVertexAttribPointer(WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+	glVertexAttribPointer(WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
 
 	// Set the color.
 	WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha);

@@ -81,7 +81,7 @@ failed:
 		if (Line[0] == '#' || Line.length() == 0)
 			continue;
 
-		boost::split(LineContents, Line, boost::is_any_of(" "));
+		LineContents = Utility::TokenSplit(Line, " ");
 
 		if (LineContents.at(0) == "BPM")
 		{

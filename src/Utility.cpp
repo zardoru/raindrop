@@ -165,6 +165,23 @@ namespace Utility {
 		return k.str();
 	}
 
+	vector<GString> TokenSplit(const GString& str, const GString &token)
+	{
+		vector<GString> ret;
+		size_t len = str.length();
+		auto it = &str[0];
+		auto next = strpbrk(str.c_str(), token.c_str()); // next token instance
+		for (; next != nullptr; next = strpbrk(it, token.c_str()))
+		{
+			ret.push_back(GString(it, next));
+			it = next + 1;
+		}
+
+		if (it != next && len)
+			ret.push_back(GString(it, &str[len]));
+		return ret;
+	}
+
 	void CheckDir(GString path)
 	{
 		struct stat st;

@@ -21,7 +21,7 @@ float _ScreenDifference()
 void LoadNotes(Song* Out, Difficulty * Diff, GString line)
 {
 	// get the object GString (all between a colon and a semicolon.
-	GString objectGString = line.substr(line.find_first_of(":") + 1);
+	GString objectString = line.substr(line.find_first_of(":") + 1);
 	std::vector< GString > splitvec;
 	bool invert = false;
 
@@ -29,11 +29,11 @@ void LoadNotes(Song* Out, Difficulty * Diff, GString line)
 	Diff->TotalNotes = Diff->TotalHolds = Diff->TotalObjects = 0;
 
 	// Remove whitespace.
-	boost::replace_all(objectGString, "\n", "");
-	boost::replace_all(objectGString, "\r", "");
+	boost::replace_all(objectString, "\n", "");
+	boost::replace_all(objectString, "\r", "");
 	// boost::replace_all(objectGString, "M", ""); // mirror flags
 
-	boost::split(splitvec, objectGString, boost::is_any_of(",")); // Separate measures!
+	splitvec = Utility::TokenSplit(objectString); // Separate measures!
 	BOOST_FOREACH(GString objectlist, splitvec) // for each measure
 	{
 		std::vector< GString > splitobjects;

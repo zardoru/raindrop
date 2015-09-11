@@ -633,8 +633,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 {
 	GString KeyProfile = Configuration::GetConfigs("KeyProfile" + Utility::IntToStr(CurrentDiff->Channels));
 	GString value = Configuration::GetConfigs("Keys", KeyProfile);
-	vector<GString> res;
-	boost::split(res, value, boost::is_any_of(","));
+	vector<GString> res = Utility::TokenSplit(value);
 
 	for (unsigned i = 0; i < CurrentDiff->Channels; i++)
 	{

@@ -35,15 +35,15 @@ void Sprite::Construct(bool doInitTexture)
 	DoTextureCleanup = doInitTexture;
 	AffectedByLightning = false;
 
-	mImage = NULL;
-	UvBuffer = NULL;
+	mImage = nullptr;
+	UvBuffer = nullptr;
 
 	Initialize(doInitTexture);
 }
 
 void Sprite::Initialize(bool ShouldInitTexture)
 {
-	UvBuffer = NULL;
+	UvBuffer = nullptr;
 
 	if (ShouldInitTexture)
 		UpdateTexture();
@@ -66,12 +66,12 @@ int Sprite::GetBlendMode() const
 
 void Sprite::SetImage(Image* image, bool ChangeSize)
 {
-	mImage = image;
-	if (image)
+	if (mImage != image)
 	{
-		if (ChangeSize)
+		mImage = image;
+		if (image)
 		{
-			if (image->w != GetWidth() && image->h != GetHeight())
+			if (ChangeSize)
 			{
 				SetCropToWholeImage();
 				SetSize(image->w, image->h);
@@ -96,15 +96,11 @@ void Sprite::SetCropByPixels(int32 x1, int32 x2, int32 y1, int32 y2)
 
 void Sprite::SetCropToWholeImage()
 {
-	if (mCrop_x1 != 0 && mCrop_x2 != 1
-		&& mCrop_y1 != 0 && mCrop_y2 != 1)
-	{
-		mCrop_x1 = 0;
-		mCrop_x2 = 1;
-		mCrop_y1 = 0;
-		mCrop_y2 = 1;
-		DirtyTexture = true;
-	}
+	mCrop_x1 = 0;
+	mCrop_x2 = 1;
+	mCrop_y1 = 0;
+	mCrop_y2 = 1;
+	DirtyTexture = true;
 }
 
 void Sprite::SetCrop(Vec2 Crop1, Vec2 Crop2)

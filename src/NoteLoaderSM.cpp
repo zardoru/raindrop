@@ -198,7 +198,7 @@ bool LoadTracksSM(Song *Out, Difficulty *Diff, GString line)
 	CommandContents = RemoveComments(CommandContents);
 
 	/* Split contents */
-	boost::split(Mainline, CommandContents, boost::is_any_of(":"));
+	Mainline = Utility::TokenSplit(CommandContents, ":");
 
 	if (Mainline.size() < 6) // No, like HELL I'm loading this.
 	{
@@ -209,7 +209,7 @@ bool LoadTracksSM(Song *Out, Difficulty *Diff, GString line)
 	}
 
 	/* What we'll work with */
-	GString NoteGString = Mainline[5];
+	GString NoteString = Mainline[5];
 	int Keys = GetTracksByMode(Mainline[0]);
 
 	if (!Keys)
@@ -221,8 +221,7 @@ bool LoadTracksSM(Song *Out, Difficulty *Diff, GString line)
 	
 	/* Now we should have our notes within NoteGString. 
 	We'll split them by measure using , as a separator.*/
-	SplitResult MeasureText;
-	boost::split(MeasureText, NoteGString, boost::is_any_of(","));
+	SplitResult MeasureText = Utility::TokenSplit(NoteString);
 
 	LoadNotesSM(Out, Diff, MeasureText);
 
@@ -381,11 +380,11 @@ SpeedData ParseScrolls(GString line)
 	SplitResult ScrollLines;
 	SpeedData Ret;
 
-	boost::split(ScrollLines, line, boost::is_any_of(","));
+	ScrollLines = Utility::TokenSplit(line);
+
 	for (auto segment: ScrollLines)
 	{
-		SplitResult data;
-		boost::split(data, segment, boost::is_any_of("="));
+		SplitResult data = Utility::TokenSplit(segment, "=");
 
 		if (data.size() == 4)
 		{
@@ -576,8 +575,7 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 			Diff->Data->Scrolls = CalculateRaindropSCData(Diff.get(), Diff->Data->Scrolls);
 
 			CommandContents = RemoveComments(CommandContents);
-			SplitResult Measures;
-			boost::split(Measures, CommandContents, boost::is_any_of(","));
+			SplitResult Measures = Utility::TokenSplit(CommandContents);
 			LoadNotesSM(Out, Diff.get(), Measures);
 			Out->Difficulties.push_back(Diff);
 		}

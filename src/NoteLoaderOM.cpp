@@ -225,8 +225,7 @@ void ReadDifficulty (GString line, OsuLoadInfo* Info)
 
 void ReadEvents (GString line, OsuLoadInfo* Info)
 {
-	SplitResult Spl;
-	boost::split(Spl, line, boost::is_any_of(","));
+	SplitResult Spl = Utility::TokenSplit(line);
 
 	if (Spl.size() > 1)
 	{
@@ -260,8 +259,7 @@ void ReadTiming (GString line, OsuLoadInfo* Info)
 {
 	double Value;
 	bool IsInherited;
-	SplitResult Spl;
-	boost::split(Spl, line, boost::is_any_of(","));
+	SplitResult Spl = Utility::TokenSplit(line);
 
 	if (Spl.size() < 2)
 		return;
@@ -465,8 +463,7 @@ GString GetSampleFilename(OsuLoadInfo *Info, SplitResult &Spl, int NoteType, int
 
 void ReadObjects (GString line, OsuLoadInfo* Info)
 {
-	SplitResult Spl;
-	boost::split(Spl, line, boost::is_any_of(","));
+	SplitResult Spl = Utility::TokenSplit(line);
 
 	int Track = GetTrackFromPosition(latof(Spl[0].c_str()), Info->Diff->Channels);
 	int Hitsound;
@@ -485,7 +482,7 @@ void ReadObjects (GString line, OsuLoadInfo* Info)
 		splitType = 4;
 	
 	if (splitType != 4) // only 5 entries
-		boost::split(Spl2, Spl[splitType], boost::is_any_of(":"));
+		Spl2 = Utility::TokenSplit(Spl[splitType], ":");
 
 
 	double startTime = latof(Spl[2].c_str()) / 1000.0;
