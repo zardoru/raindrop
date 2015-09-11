@@ -18,6 +18,7 @@ ComboDisplay = {
 	BumpFactor = 1.3,
 	BumpVertically = 1,
 	BumpHorizontally = 1,
+	HeightAddition = -20,
 	HoldBumpFactor = 1.2,
 	ExNotifyImg = "VSRG/combo_bonus.png",
 	ExNotifyTime = 0.34,
@@ -96,7 +97,10 @@ function ComboDisplay.Update()
 	}
 
 	for i = 1, 6 do
-		local NewPosition = { x = Position.x + DisplaySize - (i-1) * Size.w, y = Position.y }
+		local NewPosition = { 
+			x = Position.x + DisplaySize - (i-1) * Size.w, 
+			y = Position.y + ComboDisplay.HeightAddition * (1 -ComboDisplay.BumpTime / ComboDisplay.BumpTotalTime)
+		}
 
 		if i < ActDig then
 			local Tab = ComboDisplay.Atlas.Sprites[ComboDisplay.Images[ComboDisplay.Digits[i]+1]]
@@ -124,15 +128,12 @@ function ComboDisplay.Hit(Kind)
 		ComboDisplay.ExNotifyCurTime = 0
 	end
 
-	ComboDisplay.Update()
-
 end
 
 function ComboDisplay.Miss()
 
 	ComboDisplay.BumpTime = 0
 	ComboDisplay.BumpKind = BumpMiss
-	ComboDisplay.Update()
 
 end
 
@@ -224,8 +225,8 @@ function ComboDisplay.Run(Delta)
 			ComboDisplay.Targets[i].Green = 1
 			ComboDisplay.Targets[i].Blue = 1
 		end
-	
 	end
 
+	ComboDisplay.Update()
 end
 

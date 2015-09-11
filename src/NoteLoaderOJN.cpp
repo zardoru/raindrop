@@ -109,7 +109,7 @@ static double BeatForMeasure(OjnLoadInfo *Info, int Measure)
 void FixOJNEvents(OjnLoadInfo *Info)
 {
 	auto CurrentMeasure = 0;
-	OjnInternalEvent *prevIter[7] = { nullptr };
+	OjnInternalEvent prevIter[7] = {-1, -1, -1, -1};
 
 	for (auto Measure: Info->Measures)
 	{
@@ -118,30 +118,30 @@ void FixOJNEvents(OjnLoadInfo *Info)
 			[&](const OjnInternalEvent A, const OjnInternalEvent B) -> bool 
 			{ return A.Fraction < B.Fraction; });
 
-		for (auto&& Evt: Measure.Events)
+		for (auto Evt = Measure.Events.begin(); Evt != Measure.Events.end(); ++Evt)
 		{
-			if (Evt.Channel < AUTOPLAY_CHANNEL)
+			if (Evt->Channel < AUTOPLAY_CHANNEL)
 			{
-				if (prevIter[Evt.Channel]) // There is a previous event
+				if (prevIter[Evt->Channel].Channel != -1) // There is a previous event
 				{
-					if (prevIter[Evt.Channel]->noteKind == 2 && 
-						(Evt.noteKind == 0 || Evt.noteKind == 2)) // This note or hold head is in between holds
+					if (prevIter[Evt->Channel].noteKind == 2 && 
+						(Evt->noteKind == 0 || Evt->noteKind == 2)) // This note or hold head is in between holds
 					{
-						Evt.Channel = AUTOPLAY_CHANNEL;
-						Evt.noteKind = 0;
+						Evt->Channel = AUTOPLAY_CHANNEL;
+						Evt->noteKind = 0;
 						continue;
 					}
 
-					if (prevIter[Evt.Channel]->noteKind != 2 && // Hold tail without ongoing hold
-						Evt.noteKind == 3)
+					if (prevIter[Evt->Channel].noteKind != 2 && // Hold tail without ongoing hold
+						Evt->noteKind == 3)
 					{
-						Evt.Channel = AUTOPLAY_CHANNEL;
-						Evt.noteKind = 0;
+						Evt->Channel = AUTOPLAY_CHANNEL;
+						Evt->noteKind = 0;
 						continue;
 					}
 				}
 
-				prevIter[Evt.Channel] = &(Evt);
+				prevIter[Evt->Channel] = *Evt;
 			}
 		}
 

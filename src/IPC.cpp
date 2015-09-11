@@ -23,6 +23,9 @@ namespace IPC {
 		{
 			delete mque;
 			mque = new message_queue(open_only, PROCESS_QUEUE_NAME);
+#ifndef NDEBUG
+			message_queue_is_ours = true; // debug builds ALWAYS GET THE QUEUE
+#endif
 		} 
 	}
 

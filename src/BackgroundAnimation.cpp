@@ -90,10 +90,10 @@ public:
 		LayerMiss->SetImage(List.GetFromIndex(0), false);
 		Layer0->SetImage(List.GetFromIndex(1), false);
 
-		std::sort(EventsLayer0.begin(), EventsLayer0.end());
-		std::sort(EventsLayerMiss.begin(), EventsLayerMiss.end());
-		std::sort(EventsLayer1.begin(), EventsLayer1.end());
-		std::sort(EventsLayer2.begin(), EventsLayer2.end());
+		sort(EventsLayer0.begin(), EventsLayer0.end());
+		sort(EventsLayerMiss.begin(), EventsLayerMiss.end());
+		sort(EventsLayer1.begin(), EventsLayer1.end());
+		sort(EventsLayer2.begin(), EventsLayer2.end());
 
 		Transform.SetWidth(256);
 		Transform.SetHeight(256);
@@ -103,9 +103,17 @@ public:
 
 	void SetLayerImage(Sprite *sprite, vector<AutoplayBMP> &events_layer, double time)
 	{
-		auto bmp = std::lower_bound(events_layer.begin(), events_layer.end(), time);
+		auto bmp = lower_bound(events_layer.begin(), events_layer.end(), time);
 		if (bmp != events_layer.end())
-			sprite->SetImage(List.GetFromIndex(bmp->BMP), false);
+		{
+			if (bmp != events_layer.begin())
+			{
+				bmp = bmp - 1;
+				sprite->SetImage(List.GetFromIndex(bmp->BMP), false);
+			}
+		}
+		else
+			sprite->SetImage(nullptr, false);
 	}
 
 	void SetAnimationTime(double Time) override

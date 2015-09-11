@@ -18,7 +18,7 @@ Judgment = {
 	Tilt = 7, -- in degrees
 
 	Scale = 0.20,
-	ScaleHit = 0.28,
+	ScaleHit = 0.08,
 	ScaleMiss = 0.12,
 	ScaleExtra = 0.1,
 
