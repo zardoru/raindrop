@@ -14,6 +14,10 @@ NoteImageHold5 = "VSRG/note5L.png"
 
 GearStartX = 15
 
+Channels1Sizes = {
+	84
+}
+
 Channels4Sizes = {
 	84,
 	84,
@@ -118,6 +122,7 @@ Channels16Sizes = {
 	42
 }
 
+Channels1Positions = {}
 Channels4Positions = {}
 Channels5Positions = {}
 Channels6Positions = {}
@@ -130,7 +135,7 @@ Channels16Positions = {}
 
 GearWidths = {}
 
-
+Sizeup(Channels1Positions, Channels1Sizes, 1)
 Sizeup(Channels4Positions, Channels4Sizes, 4)
 Sizeup(Channels5Positions, Channels5Sizes, 5)
 Sizeup(Channels6Positions, Channels6Sizes, 6)
@@ -757,7 +762,21 @@ Channels4 = {
     BarlineWidth = GearWidthByChannels[4]
 }
 
+Channels1 = {
+	Key1 = C3,
+	Key1Down = C3D,
+	GearHeight = GearHeightCommon,
+	Key1Binding = 3,
+	Key1Image = NoteImage3,
+	Key1HoldImage = NoteImageHold3,
+	Key1Width = Channels1Sizes[1],
+	Key1X = Channels1Positions[1],
+	GearWidth = GearWidthByChannels[1],
+	BarlineWidth = GearWidthByChannels[1]
+}
+
 Noteskin = {}
+Noteskin[1] = Channels1 -- Yes, I'm completely serious. 
 Noteskin[4] = Channels4
 Noteskin[5] = Channels5
 Noteskin[6] = Channels6 
