@@ -307,7 +307,6 @@ bool ScreenGameplay7K::LoadSongAudio()
 				Music = nullptr;
 
 				Log::Printf("Unable to load song (Path: %s)\n", MySong->SongFilename.c_str());
-				DoPlay = false;
 				return false; // Quit; couldn't find audio for a chart that requires it.
 			}
 		}
@@ -597,11 +596,6 @@ void ScreenGameplay7K::LoadThreadInitialization()
 {
 	GString MissSndFile = (GameState::GetInstance().GetSkinFile("miss.ogg"));
 	GString FailSndFile = (GameState::GetInstance().GetSkinFile("stage_failed.ogg"));
-
-	// Something went wrong before we started loading?
-	// Bail out.
-	if (!DoPlay)
-		return;
 
 	MissSnd.Open(MissSndFile.c_str());
 
