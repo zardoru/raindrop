@@ -76,8 +76,8 @@ ScreenGameplay7K::ScreenGameplay7K() : Screen("ScreenGameplay7K")
 	Active = false;
 	Barline = nullptr;
 
-	// Play unless something goes wrong (later checks)
-	DoPlay = true;
+	// Don't play unless everything goes right (later checks)
+	DoPlay = false;
 }
 
 
@@ -631,6 +631,8 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	// We're done with the data stored in the difficulties that aren't the one we're using. Clear it up.
 	for (auto i = MySong->Difficulties.begin(); i != MySong->Difficulties.end(); ++i)
 		(*i)->Destroy();
+
+	DoPlay = true;
 }
 
 #include <boost/algorithm/string.hpp>
