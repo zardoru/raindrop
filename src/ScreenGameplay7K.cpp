@@ -95,6 +95,9 @@ void ScreenGameplay7K::TranslateKey(int32 Index, bool KeyDown)
 	if (Index < 0)
 		return;
 
+	if (GearBindings.find(Index) == GearBindings.end())
+		return;
+
 	int GearIndex = GearBindings[Index]; /* Binding this key to a lane */
 
 	if (GearIndex >= MAX_CHANNELS || GearIndex < 0)

@@ -34,17 +34,18 @@ void ScreenGameplay7K::RecalculateEffects()
 
 	// Calculate current speed value to apply.
 	auto CurrentTime = GetWarpedSongTime();
-	auto speedIter = std::lower_bound(Speeds.begin(), Speeds.end(), CurrentTime);
+	auto speedIter = lower_bound(Speeds.begin(), Speeds.end(), CurrentTime);
 	double previousValue = 1;
 	double currentValue = 1;
 	double speedTime = CurrentTime;
 	double duration = 1;
 
-	if (speedIter != Speeds.begin() && speedIter != Speeds.end())
+	// The result of lower_bound comes after the current speed to apply.
+	if (speedIter != Speeds.begin())
 		--speedIter;
 
-	// Do we have a valid speed?
-	if (speedIter != Speeds.begin() && speedIter != Speeds.end())
+	// Do we have a speed that has a value to interpolate from?
+	if (speedIter != Speeds.begin())
 	{
 		auto prevSpeed = speedIter - 1;
 		previousValue = prevSpeed->Value;
@@ -52,10 +53,10 @@ void ScreenGameplay7K::RecalculateEffects()
 		duration = speedIter->Duration;
 		speedTime = speedIter->Time;
 	}
-
-	if (speedIter == Speeds.begin() && speedIter != Speeds.end())
+	else // Oh, we don't?
 	{
-		currentValue = previousValue = speedIter->Value;
+		if (speedIter != Speeds.end())
+			currentValue = previousValue = speedIter->Value;
 	}
 
 	auto speedProgress = Clamp((CurrentTime - speedTime) / duration, 0.0, 1.0);

@@ -10,8 +10,6 @@ game_require("TextureAtlas")
 normalNotes = {}
 holdBodies = {}
 
-Atlas = TextureAtlas:new("GameData/Skins/ftb2d/assets/notes.csv")
-AtlasHolds = TextureAtlas:new("Gamedata/Skins/ftb2d/assets/holds.csv")
 function setNoteStuff(note, i)
 	note.Width = Noteskin[Lanes]['Key' .. i .. 'Width']
 	note.X = Noteskin[Lanes]['Key' .. i .. 'X']
@@ -21,22 +19,26 @@ function setNoteStuff(note, i)
 	note.LightenFactor = 0
 end
 
-for i=1,Lanes do
-  local MapLane = Noteskin[Lanes].Map[i]
-	normalNotes[i] = Object2D()
-	local note = normalNotes[i]
-	local image = Noteskin[7]['Key' .. MapLane .. 'Image'] .. ".png"
-	note.Image = Atlas.File
-	Atlas:SetObjectCrop(note, image)
-	setNoteStuff(note, i)
-	
-	holdBodies[i] = Object2D()
-	note = holdBodies[i]
-	
-	image = Noteskin[7]['Key' .. MapLane .. 'Image'] .. ".png"
-	note.Image = AtlasHolds.File
-	AtlasHolds:SetObjectCrop(note, image)
-	setNoteStuff(note, i)
+function Init()
+	Atlas = TextureAtlas:new("GameData/Skins/ftb2d/assets/notes.csv")
+	AtlasHolds = TextureAtlas:new("Gamedata/Skins/ftb2d/assets/holds.csv")
+	for i=1,Lanes do
+	  local MapLane = Noteskin[Lanes].Map[i]
+		normalNotes[i] = Object2D()
+		local note = normalNotes[i]
+		local image = Noteskin[7]['Key' .. MapLane .. 'Image'] .. ".png"
+		note.Image = Atlas.File
+		Atlas:SetObjectCrop(note, image)
+		setNoteStuff(note, i)
+		
+		holdBodies[i] = Object2D()
+		note = holdBodies[i]
+		
+		image = Noteskin[7]['Key' .. MapLane .. 'Image'] .. ".png"
+		note.Image = AtlasHolds.File
+		AtlasHolds:SetObjectCrop(note, image)
+		setNoteStuff(note, i)
+	end
 end
 
 function Update(delta, beat)
@@ -92,5 +94,5 @@ DrawLift = drawNormalInternal
 DrawMine = drawMineInternal
 
 DrawHoldHead = drawNormalInternal
-DrawHoldTail = function (a,b,c,d) end
+DrawHoldTail = nil
 DrawHoldBody = drawHoldBodyInternal

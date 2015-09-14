@@ -12,8 +12,10 @@ class Noteskin
 	static bool DanglingHeads;
 	static bool DecreaseHoldSizeWhenBeingHit;
 public:
+	static void Validate();
 	static void SetupNoteskin(bool SpecialStyle, int Lanes, ScreenGameplay7K *Parent);
 	static void Update(float Delta, float CurrentBeat);
+	static void Cleanup();
 
 	static void DrawNote(VSRG::TrackNote &T, int Lane, float Location);
 	static void DrawHoldBody(int Lane, float Location, float Size, int ActiveLevel);

@@ -29,6 +29,17 @@ void lua_Render(Sprite *S)
 	}
 }
 
+void Noteskin::Validate()
+{
+	assert(NoteskinLua != nullptr);
+	if (NoteskinLua->CallFunction("Init"))
+		NoteskinLua->RunFunction();
+
+	DecreaseHoldSizeWhenBeingHit = (NoteskinLua->GetGlobalD("DecreaseHoldSizeWhenBeingHit") != 0);
+	DanglingHeads = (NoteskinLua->GetGlobalD("DanglingHeads") != 0);
+	NoteScreenSize = NoteskinLua->GetGlobalD("NoteScreenSize");
+}
+
 void Noteskin::SetupNoteskin(bool SpecialStyle, int Lanes, ScreenGameplay7K* Parent)
 {
 	CanRender = false;
@@ -36,6 +47,8 @@ void Noteskin::SetupNoteskin(bool SpecialStyle, int Lanes, ScreenGameplay7K* Par
 	assert(Parent != nullptr);
 	Noteskin::Parent = Parent;
 
+	// we need a clean state if we're being called from a different thread (to destroy objects properly)
+	assert(NoteskinLua == nullptr); 
 	NoteskinLua = make_shared<LuaManager>();
 
 	Parent->SetupLua(NoteskinLua.get());
@@ -47,10 +60,6 @@ void Noteskin::SetupNoteskin(bool SpecialStyle, int Lanes, ScreenGameplay7K* Par
 	NoteskinLua->SetGlobal("SpecialStyle", SpecialStyle);
 	NoteskinLua->SetGlobal("Lanes", Lanes);
 	NoteskinLua->RunScript(GameState::GetInstance().GetSkinFile("noteskin.lua"));
-
-	DecreaseHoldSizeWhenBeingHit = (NoteskinLua->GetGlobalD("DecreaseHoldSizeWhenBeingHit") != 0);
-	DanglingHeads = (NoteskinLua->GetGlobalD("DanglingHeads") != 0);
-	NoteScreenSize = NoteskinLua->GetGlobalD("NoteScreenSize");
 }
 
 void Noteskin::Update(float Delta, float CurrentBeat)
@@ -63,6 +72,11 @@ void Noteskin::Update(float Delta, float CurrentBeat)
 		NoteskinLua->PushArgument(CurrentBeat);
 		NoteskinLua->RunFunction();
 	}
+}
+
+void Noteskin::Cleanup()
+{
+	NoteskinLua = nullptr;
 }
 
 void Noteskin::DrawNote(VSRG::TrackNote& T, int Lane, float Location)

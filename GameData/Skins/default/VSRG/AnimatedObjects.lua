@@ -11,7 +11,7 @@ function ProgressTick.Init()
 	ProgressTick.BeatOffs = 0
 
 	ProgressTick.Object.Image = ProgressTick.Image
-	ProgressTick.Object.X = -8
+	ProgressTick.Object.X = GearStartX - 20
 	ProgressTick.Object.Layer = 18
 end
 

@@ -75,6 +75,9 @@ ScreenGameplay7K::ScreenGameplay7K() : Screen("ScreenGameplay7K")
 	LoadedSong = nullptr;
 	Active = false;
 	Barline = nullptr;
+
+	// Play unless something goes wrong (later checks)
+	DoPlay = true;
 }
 
 
@@ -84,6 +87,7 @@ void ScreenGameplay7K::Cleanup()
 		Music->Stop();
 
 	GameState::GetInstance().SetScorekeeper7K(nullptr);
+	Noteskin::Cleanup();
 
 	delete MechanicsSet;
 }
@@ -160,7 +164,6 @@ void ScreenGameplay7K::Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const
 	Random = Param.Random;
 
 	BGA = BackgroundAnimation::CreateBGAFromSong(DifficultyIndex, *S);
-	Noteskin::SetupNoteskin(false, CurrentDiff->Channels, this);
 	ForceActivation = false;
 
 	if (Param.StartMeasure == -1 && Auto)
@@ -169,6 +172,7 @@ void ScreenGameplay7K::Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const
 	ScoreKeeper = make_shared<ScoreKeeper7K>();
 	GameState::GetInstance().SetScorekeeper7K(ScoreKeeper);
 	UpdateScriptScoreVariables();
+
 }
 
 
@@ -460,7 +464,7 @@ bool ScreenGameplay7K::LoadBGA()
 
 void ScreenGameplay7K::SetupAfterLoadingVariables()
 {
-	GearHeightFinal = Noteskin::GetJudgmentY();
+	auto GearHeightFinal = Noteskin::GetJudgmentY();
 
 	/* Initial object distance */
 	if (!Upscroll)
@@ -594,6 +598,11 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	GString MissSndFile = (GameState::GetInstance().GetSkinFile("miss.ogg"));
 	GString FailSndFile = (GameState::GetInstance().GetSkinFile("stage_failed.ogg"));
 
+	// Something went wrong before we started loading?
+	// Bail out.
+	if (!DoPlay)
+		return;
+
 	MissSnd.Open(MissSndFile.c_str());
 
 	FailSnd.Open(FailSndFile.c_str());
@@ -604,19 +613,17 @@ void ScreenGameplay7K::LoadThreadInitialization()
 		return;
 	}
 
-	BGA->Load();
 	SetupMechanics();
+	Noteskin::SetupNoteskin(CurrentDiff->Data->Turntable, CurrentDiff->Channels, this);
 
-	SetupAfterLoadingVariables();
 	
 	SetupLua(Animations->GetEnv());
+	SetupAfterLoadingVariables();
 	SetupScriptConstants();
 	UpdateScriptVariables();
 
 	Animations->Preload(GameState::GetInstance().GetSkinFile("screengameplay7k.lua"), "Preload");
 	Log::Printf("Done.\n");
-
-	DoPlay = true;
 
 	AssignMeasure(StartMeasure);
 
@@ -634,6 +641,8 @@ void ScreenGameplay7K::MainThreadInitialization()
 	GString KeyProfile = Configuration::GetConfigs("KeyProfile" + Utility::IntToStr(CurrentDiff->Channels));
 	GString value = Configuration::GetConfigs("Keys", KeyProfile);
 	vector<GString> res = Utility::TokenSplit(value);
+
+	Noteskin::Validate();
 
 	for (unsigned i = 0; i < CurrentDiff->Channels; i++)
 	{
@@ -659,6 +668,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 		Running = false;
 		return;
 	}
+
 
 	PlayReactiveSounds = (CurrentDiff->IsVirtual || !(Configuration::GetConfigf("DisableHitsounds")));
 	MsDisplayMargin = (Configuration::GetSkinConfigf("HitErrorDisplayLimiter"));

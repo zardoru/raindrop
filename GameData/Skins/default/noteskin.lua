@@ -14,16 +14,18 @@ function setNoteStuff(note, i)
 	note.LightenFactor = 0
 end
 
-for i=1,Lanes do
-	normalNotes[i] = Object2D()
-	local note = normalNotes[i]
-	note.Image = Noteskin[Lanes]['Key' .. i .. 'Image']
-	setNoteStuff(note, i)
-	
-	holdBodies[i] = Object2D()
-	note = holdBodies[i]
-	note.Image = Noteskin[Lanes]['Key' .. i .. 'HoldImage']
-	setNoteStuff(note, i)
+function Init()
+	for i=1,Lanes do
+		normalNotes[i] = Object2D()
+		local note = normalNotes[i]
+		note.Image = Noteskin[Lanes]['Key' .. i .. 'Image']
+		setNoteStuff(note, i)
+		
+		holdBodies[i] = Object2D()
+		note = holdBodies[i]
+		note.Image = Noteskin[Lanes]['Key' .. i .. 'HoldImage']
+		setNoteStuff(note, i)
+	end
 end
 
 function Update(delta, beat)

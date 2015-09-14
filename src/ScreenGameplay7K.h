@@ -45,7 +45,6 @@ private:
 	double NoteHeight;
 	double LanePositions[VSRG::MAX_CHANNELS];
 	double LaneWidth[VSRG::MAX_CHANNELS];
-	double GearHeightFinal;
 	double SongTime, SongTimeReal;
 	double SongOldTime;
 	double WarpedSongTime;

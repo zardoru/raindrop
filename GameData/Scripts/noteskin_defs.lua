@@ -12,7 +12,7 @@ NoteImageHold3 = "VSRG/note3L.png"
 NoteImageHold4 = "VSRG/note4L.png"
 NoteImageHold5 = "VSRG/note5L.png"
 
-GearStartX = 15
+GearStartX = 80
 
 Channels1Sizes = {
 	84
