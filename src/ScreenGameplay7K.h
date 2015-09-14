@@ -121,7 +121,7 @@ private:
 	bool    AudioCompensation;
 	shared_ptr<BackgroundAnimation> BGA;
 	int Random;
-
+	bool TurntableEnabled;
 	void SetupScriptConstants();
 	void SetupLua(LuaManager* Env);
 	void SetupMechanics();
@@ -188,6 +188,7 @@ public:
 	ScreenGameplay7K();
 	void Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const GameParameters &Param);
 	void LoadThreadInitialization();
+	bool BindKeysToLanes(bool UseTurntable);
 	void MainThreadInitialization();
 	void Cleanup();
 

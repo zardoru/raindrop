@@ -614,6 +614,7 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	}
 
 	SetupMechanics();
+	TurntableEnabled = CurrentDiff->Data->Turntable;
 	Noteskin::SetupNoteskin(CurrentDiff->Data->Turntable, CurrentDiff->Channels, this);
 
 	
@@ -629,20 +630,24 @@ void ScreenGameplay7K::LoadThreadInitialization()
 
 	// We're done with the data stored in the difficulties that aren't the one we're using. Clear it up.
 	for (auto i = MySong->Difficulties.begin(); i != MySong->Difficulties.end(); ++i)
-	{
 		(*i)->Destroy();
-	}
 }
 
 #include <boost/algorithm/string.hpp>
 
-void ScreenGameplay7K::MainThreadInitialization()
+bool ScreenGameplay7K::BindKeysToLanes(bool UseTurntable)
 {
-	GString KeyProfile = Configuration::GetConfigs("KeyProfile" + Utility::IntToStr(CurrentDiff->Channels));
-	GString value = Configuration::GetConfigs("Keys", KeyProfile);
-	vector<GString> res = Utility::TokenSplit(value);
+	GString KeyProfile;
+	GString value;
+	vector<GString> res;
 
-	Noteskin::Validate();
+	if (UseTurntable)
+		KeyProfile = Configuration::GetConfigs("KeyProfileSpecial" + Utility::IntToStr(CurrentDiff->Channels));
+	else
+		KeyProfile = Configuration::GetConfigs("KeyProfile" + Utility::IntToStr(CurrentDiff->Channels));
+
+	value = Configuration::GetConfigs("Keys", KeyProfile);
+	res = Utility::TokenSplit(value);
 
 	for (unsigned i = 0; i < CurrentDiff->Channels; i++)
 	{
@@ -654,8 +659,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 		{
 			if (!Auto) {
 				Log::Printf("Mising bindings starting from lane " + Utility::IntToStr(i) + " using profile " + KeyProfile);
-				DoPlay = false;
-				break;
+				return false;
 			}
 		}
 
@@ -663,12 +667,22 @@ void ScreenGameplay7K::MainThreadInitialization()
 		GearIsPressed[i] = 0;
 	}
 
+	return true;
+}
+
+void ScreenGameplay7K::MainThreadInitialization()
+{
+	if (!BindKeysToLanes(TurntableEnabled))
+		if (!BindKeysToLanes(!TurntableEnabled))
+			DoPlay = false;
+
 	if (!DoPlay) // Failure to load something important?
 	{
 		Running = false;
 		return;
 	}
 
+	Noteskin::Validate();
 
 	PlayReactiveSounds = (CurrentDiff->IsVirtual || !(Configuration::GetConfigf("DisableHitsounds")));
 	MsDisplayMargin = (Configuration::GetSkinConfigf("HitErrorDisplayLimiter"));

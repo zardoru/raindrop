@@ -581,13 +581,16 @@ void AutodetectChannelCountSide(BmsLoadInfo *Info, int offset, int usedChannels[
 				int offs;
 				
 				if (!Info->IsPMS)
-					offs = translateTrackBME(curChannel, startChannel) + offset;
-				else
 				{
-					offs = translateTrackPMS(curChannel, startChannel) + offset;
+					offs = translateTrackBME(curChannel, startChannel) + offset;
 					if (curChannel - startChannel == 5) // Turntable is going.
 						Info->IsSpecialStyle = true;
 				}
+				else
+				{
+					offs = translateTrackPMS(curChannel, startChannel) + offset;
+				}
+
 
 				if (offs < MAX_CHANNELS) // A few BMSes use the foot pedal, so we need to not overflow the array.
 					usedChannels[offs] = 1;
@@ -602,12 +605,14 @@ void AutodetectChannelCountSide(BmsLoadInfo *Info, int offset, int usedChannels[
 				int offs;
 				
 				if (!Info->IsPMS)
+				{
 					offs = translateTrackBME(curChannel, startChannelLN) + offset;
+					if (curChannel - startChannel == 5)
+						Info->IsSpecialStyle = true;
+				}
 				else
 				{
 					offs = translateTrackPMS(curChannel, startChannelLN) + offset;
-					if (curChannel - startChannel == 5) // 16 - 11 = 5
-						Info->IsSpecialStyle = true;
 				}
 
 				if (offs < MAX_CHANNELS)
