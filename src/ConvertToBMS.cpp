@@ -307,10 +307,12 @@ public:
 		std::ofstream out(Utility::Widen(name).c_str());
 #endif
 
-		if (!out.is_open())
-			Log::Printf("failed to open file %s", Utility::Widen(name).c_str());
 			
 		try {
+			if (!out.is_open())
+				throw std::exception( (boost::format("failed to open file %s") % Utility::Widen(name).c_str()).str().c_str() );
+			if (BPS.size() == 0) 
+				throw std::exception("There are no timing points!");
 			WriteBMSOutput();
 			out << OutFile.str();
 		} catch (std::exception &e)

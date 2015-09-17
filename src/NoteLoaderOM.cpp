@@ -10,6 +10,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
+#include <regex>
 
 typedef vector<GString> SplitResult;
 
@@ -714,6 +715,7 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 #else
 	std::ifstream filein (Utility::Widen(filename).c_str());
 #endif
+	std::regex versionfmt("osu file format v(\\d+)");
 
 	if (!filein.is_open())
 		return;
@@ -745,12 +747,19 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 	GString Line;
 
 	getline(filein, Line);
-	int version;
-	int cnt = sscanf(Line.c_str(), "osu file format v%d", &version);
-	
+	int version = -1;
+	std::smatch sm;
+
+	// "search" was picked instead of "match" since a line can have a bunch of 
+	// junk before the version declaration
+	if (regex_search(Line.cbegin(), Line.cend(), sm, versionfmt))
+		version = atoi(sm[1].str().c_str());
+	else
+		throw std::exception("Invalid .osu file.");
+
 	// "osu file format v"
-	if (cnt != 1 || version < 11) // why
-		return;
+	if (version < 11) // why
+		throw std::exception("Unsupported osu! file version (< 11)");
 
 	Info.Version = version;
 
