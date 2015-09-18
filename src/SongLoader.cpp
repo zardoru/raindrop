@@ -54,7 +54,7 @@ void SongLoader::LoadSongDCFromDir( Directory songPath, vector<dotcur::Song*> &V
 	// If we didn't find any chart, add this song to the list as edit-only.
 	if (!FoundDCF && (Configuration::GetConfigf("OggListing") != 0))
 	{
-		dotcur::Song *NewS = NULL;
+		dotcur::Song *NewS = nullptr;
 		GString PotentialBG, PotentialBGRelative;
 
 		Listing.clear();
@@ -156,8 +156,13 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory
 		if (Ext == LoadersVSRG[i].Ext)
 		{
 			Log::Logf("Load %s from disk...", fn_f.c_str());
-			LoadersVSRG[i].LoadFunc (fn_f, Prefix, Sng);
-			Log::Logf(" ok\n");
+			try {
+				LoadersVSRG[i].LoadFunc(fn_f, Prefix, Sng);
+				Log::Logf(" ok\n");
+			} catch (std::exception &e)
+			{
+				Log::Printf("Failure loading %s: %s.\n", fn_f.c_str(), e.what());
+			}				  
 			break;
 		}
 	}

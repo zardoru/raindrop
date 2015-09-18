@@ -6,10 +6,7 @@
 #include "Song7K.h"
 #include "NoteLoader7K.h"
 
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
+#include <boost/format.hpp>
 #include <regex>
 
 typedef vector<GString> SplitResult;
@@ -208,7 +205,7 @@ void ReadDifficulty (GString line, OsuLoadInfo* Info)
 	// We ignore everything but the key count!
 	if (Command == "CircleSize")
 	{
-		Info->Diff->Channels = atoi(Content.c_str());
+		Info->Diff->Channels = lexical_cast<int>(Content.c_str());
 	}else if (Command == "SliderMultiplier")
 	{
 		Info->SliderVelocity = latof(Content.c_str()) * 100;
@@ -232,12 +229,12 @@ void ReadEvents (GString line, OsuLoadInfo* Info)
 	{
 		if (Spl[0] == "0" && Spl[1] == "0")
 		{
-			boost::replace_all(Spl[2], "\"", "");
+			replace_all(Spl[2], "\"", "");
 			Info->OsuSong->BackgroundFilename = Spl[2];
 			Info->Diff->Data->StageFile = Spl[2];
 		}else if (Spl[0] == "5" || Spl[0] == "Sample")
 		{
-			boost::replace_all(Spl[3], "\"", "");
+			replace_all(Spl[3], "\"", "");
 
 			if (Info->Sounds.find(Spl[3]) == Info->Sounds.end())
 			{
@@ -287,10 +284,10 @@ void ReadTiming (GString line, OsuLoadInfo* Info)
 		MeasureLen = latof(Spl[2].c_str());
 
 	if (Spl.size() > 3)
-		Sampleset = atoi(Spl[3].c_str());
+		Sampleset = lexical_cast<int>(Spl[3].c_str());
 
 	if (Spl.size() > 4)
-		Custom = atoi(Spl[4].c_str());
+		Custom = lexical_cast<int>(Spl[4].c_str());
 
 	HitsoundSectionData SecData;
 	SecData.Value = Value;
@@ -758,8 +755,8 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 		throw std::exception("Invalid .osu file.");
 
 	// "osu file format v"
-	if (version < 11) // why
-		throw std::exception("Unsupported osu! file version (< 11)");
+	if (version < 10) // why
+		throw std::exception((boost::format("Unsupported osu! file version (%d < 10)") % version).str().c_str());
 
 	Info.Version = version;
 

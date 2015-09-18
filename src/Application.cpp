@@ -309,6 +309,7 @@ void Application::Run()
 	{
 		shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), NULL);
 
+
 		if (Sng && Sng->Difficulties.size()) 
 		{
 			if (ConvertMode == CONV_OM) // for now this is the default

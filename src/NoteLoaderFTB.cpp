@@ -99,8 +99,7 @@ failed:
 		*/
 
 			NoteData Note;
-			SplitResult NoteInfo;
-			boost::split(NoteInfo, LineContents.at(0), boost::is_any_of("-"));
+			auto NoteInfo = Utility::TokenSplit(LineContents.at(0), "-");
 			if (NoteInfo.size() > 1)
 			{
 				Note.StartTime = latof(NoteInfo.at(0).c_str()) / 1000.0;

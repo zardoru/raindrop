@@ -95,6 +95,16 @@ public:
 		sort(EventsLayer1.begin(), EventsLayer1.end());
 		sort(EventsLayer2.begin(), EventsLayer2.end());
 
+		// Add BMP 0 as default value for layer 0. I was opting for a
+		// if() at SetLayerImage time, but we're microoptimizing for branch mishits.
+		if (EventsLayerMiss.size() == 0 || (EventsLayerMiss.size() > 0 && EventsLayerMiss[0].Time > 0))
+		{
+			AutoplayBMP bmp;
+			bmp.Time = 0;
+			bmp.BMP = 0;
+			EventsLayerMiss.push_back(bmp);
+		}
+
 		Transform.SetWidth(256);
 		Transform.SetHeight(256);
 
@@ -104,13 +114,10 @@ public:
 	void SetLayerImage(Sprite *sprite, vector<AutoplayBMP> &events_layer, double time)
 	{
 		auto bmp = lower_bound(events_layer.begin(), events_layer.end(), time);
-		if (bmp != events_layer.end())
+		if (bmp != events_layer.begin())
 		{
-			if (bmp != events_layer.begin())
-			{
-				bmp = bmp - 1;
-				sprite->SetImage(List.GetFromIndex(bmp->BMP), false);
-			}
+			bmp = bmp - 1;
+			sprite->SetImage(List.GetFromIndex(bmp->BMP), false);
 		}
 		else
 			sprite->SetImage(nullptr, false);

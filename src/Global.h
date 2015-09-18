@@ -12,6 +12,8 @@
 #include <algorithm>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 #include <memory>
 
 #if (defined _MSC_VER) && (_MSC_VER < 1800)
@@ -20,6 +22,9 @@
 
 using boost::function;
 using boost::bind;
+using boost::lexical_cast;
+using boost::replace_all;
+using boost::algorithm::trim;
 
 using std::shared_ptr;
 using std::make_shared;

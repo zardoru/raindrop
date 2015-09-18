@@ -50,7 +50,7 @@ void LoadNotes(Song* Out, Difficulty * Diff, GString line)
 		if ( objectlist[0] == 'M')
 		{
 			invert = true;
-			boost::replace_all(objectlist, "M", "");
+			replace_all(objectlist, "M", "");
 		}
 
 		boost::split(splitobjects, objectlist, boost::is_any_of("{}"), boost::algorithm::token_compress_on);
