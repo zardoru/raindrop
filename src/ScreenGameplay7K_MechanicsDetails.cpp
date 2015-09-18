@@ -135,7 +135,14 @@ bool RaindropMechanics::OnReleaseLane(double SongTime, VSRG::TrackNote* m, uint3
 		double dev = (SongTime - m->GetTimeFinal()) * 1000;
 		double tD = abs(dev);
 
-		if (tD < score_keeper->getJudgmentWindow(SKJ_W3)) /* Released in time */
+		double releaseWindow;
+
+		if (forcedRelease)
+			releaseWindow = score_keeper->getJudgmentWindow(SKJ_W3);
+		else
+			releaseWindow = 250; // 250 ms
+
+		if (tD < releaseWindow) /* Released in time */
 		{
 			// Only consider it a timed thing if releasing it is forced.
 			HitNotify(forcedRelease ? dev : 0, Lane, true, true);
