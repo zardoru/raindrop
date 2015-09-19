@@ -103,6 +103,7 @@ public:
 	bool IsManagedObject(Drawable2D *Obj);
 	void StopManagingObject(Drawable2D *Obj);
 	void RemoveManagedObject(Drawable2D *Obj);
+	void HandleScrollInput(double x_off, double y_off);
 };
 
 void DefineSpriteInterface(LuaManager* anim_lua);

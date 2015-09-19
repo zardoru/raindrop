@@ -2,8 +2,7 @@
 	<head> 
 		<link type="text/css" href="raindrop.css"/>
 		<script>
-			function onload(element)
-				print ("OnLoad document ScreenSelectMusic", element)
+			function onload()
 				Global:GetParameters().HiddenMode = 0
 				Global:GetParameters().Upscroll = 0
 				Global:GetParameters().NoFail = 0
@@ -41,12 +40,17 @@
 	
 	</head>
 	
-	<body onload="onload(element)">
+	<body>
+		<!--
 		<img src="SongSelect/ssbanner.png"/> <br/>
 		<button id="autobtn" onmousedown="activateAuto(element)"/> <br/>
+		<div style="position: fixed; right: 0">
 		<input type="checkbox" id="upscroll" onchange="changesetting(element.id, element)" /> Upscroll <br/>
 		<input type="checkbox" id="nofail" onchange="changesetting(element.id, element)"/> Failure Disabled <br/>
 		<input type="checkbox" id="random" onchange="changesetting(element.id, element)"/> Random <br/>
+		</div>
+		-->
 	</body>
+	<script>onload()</script>
 
 </rml>

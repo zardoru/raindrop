@@ -426,6 +426,16 @@ void SceneEnvironment::RemoveManagedObject(Drawable2D *Obj)
 	}
 }
 
+void SceneEnvironment::HandleScrollInput(double x_off, double y_off)
+{
+	if (Lua->CallFunction("ScrollEvent", 2))
+	{
+		Lua->PushArgument(x_off);
+		Lua->PushArgument(y_off);
+		Lua->RunFunction();
+	}
+}
+
 void SceneEnvironment::RemoveManagedObjects()
 {
 	for (auto i: ManagedObjects)

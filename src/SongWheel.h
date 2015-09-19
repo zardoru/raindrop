@@ -2,7 +2,6 @@
 #ifndef SONGWHEEL_H_
 #define SONGWHEEL_H_
 
-#include <boost/function.hpp>
 #include <boost/thread.hpp>
 
 namespace dotcur
@@ -21,6 +20,7 @@ class SongList;
 class SongDatabase;
 class TruetypeFont;
 class LuaManager;
+class GraphicalString;
 
 /*
 	The flow of the wheel is as follows.
@@ -36,11 +36,12 @@ class LuaManager;
 namespace Game 
 {
 
-	typedef boost::function<void (shared_ptr<Game::Song>, uint8)> SongNotification;
-	typedef boost::function<void(uint32, GString, shared_ptr<Game::Song>)> ItemNotification;
-	typedef boost::function<void(Sprite*, shared_ptr<Game::Song>, bool)> ItemTransformFunction;
-	typedef boost::function <float (float)> ListTransformFunction;
-	typedef boost::function<void()> DirectoryChangeNotifyFunction;
+	typedef function<void (shared_ptr<Song>, uint8)> SongNotification;
+	typedef function<void(uint32, GString, shared_ptr<Song>)> ItemNotification;
+	typedef function<void(int, shared_ptr<Song>, bool, int32)> ItemTransformFunction;
+	typedef function<void(int, shared_ptr<Song>, bool, int32, GString)> StringTransformFunction;
+	typedef function <float (float)> ListTransformFunction;
+	typedef function<void()> DirectoryChangeNotifyFunction;
 
 class SongWheel
 {
@@ -52,8 +53,6 @@ private:
 	uint32 SelectedItem;
 	int StartIndex, EndIndex;
 
-	TruetypeFont* mTFont;
-	BitmapFont* mFont;
 	boost::mutex* mLoadMutex;
 	boost::thread* mLoadThread;
 
@@ -66,14 +65,13 @@ private:
 	float PendingVerticalDisplacement;
 	float shownListY;
 
-	Sprite* Item;
+	map<int, Sprite*> Sprites;
+	map<int, GraphicalString*> Strings;
 	
-	Vec2 ItemTextOffset;
-
 	float ItemHeight;
 	float Time;
 	float DisplacementSpeed;
-
+	float ItemWidth;
 	void DisplayItem(int32 ListItem, Vec2 Position);
 	bool InWheelBounds(Vec2 Pos);
 
@@ -102,23 +100,29 @@ public:
 	ListTransformFunction TransformListY;
 	ListTransformFunction TransformPendingDisplacement;
 
-	ItemTransformFunction TransformItem;
+	ItemTransformFunction TransformItem;								 
+	StringTransformFunction TransformString;
 
 	float ScrollSpeed;
 
 	// Singleton
 	static SongWheel& GetInstance();
 
+	void CleanItems();
+
 	void GoUp();
-	void Initialize(float Start, float End, SongDatabase* Database, bool IsGraphical = true);
+	void Initialize(SongDatabase* Database);
 
 	void Join();
 
 	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	bool HandleScrollInput(const double dx, const double dy);
-	shared_ptr<Game::Song> GetSelectedSong();
+	shared_ptr<Song> GetSelectedSong();
 	void ReloadSongs(SongDatabase* Database);
 	void LoadSongsOnce(SongDatabase* Database);
+
+	int AddSprite(Sprite* Item);
+	int AddText(GraphicalString* Str);
 
 	// return: the new difficulty index
 	int NextDifficulty();
@@ -127,15 +131,18 @@ public:
 	void SetDifficulty(uint32 i);
 
 	// Returns the index of the last item the user hovered with the mouse over.
-	uint32 GetCursorIndex();
-	void SetCursorIndex(int32 Index);
+	int GetCursorIndex() const;
+	void SetCursorIndex(int Index);
 
 	void  SetFont(Directory FontDirectory);
 	void  SetItemHeight(float Height);
 
+	void SetItemWidth(float width);
+	float GetItemWidth() const;
+
 	void  SetSelectedItem(uint32 Item);
 	int32 GetSelectedItem();
-	int32 GetNumItems();
+	int32 GetNumItems() const;
 
 	float GetListY() const;
 	void SetListY(float newLY);
@@ -148,7 +155,7 @@ public:
 	int32 IndexAtPoint(float Y);
 	uint32 NormalizedIndexAtPoint(float Y);
 
-	float GetItemHeight();
+	float GetItemHeight() const;
 
 	bool IsLoading();
 
