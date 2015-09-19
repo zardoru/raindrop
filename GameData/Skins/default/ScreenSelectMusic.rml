@@ -57,7 +57,8 @@
 		Upscroll <input type="checkbox" id="upscroll" onchange="changesetting(element.id, element)" /> <br/>
 		Failure Disabled <input type="checkbox" id="nofail" onchange="changesetting(element.id, element)"/> <br/>
 		Random <input type="checkbox" id="random" onchange="changesetting(element.id, element)"/> <br/>
-		Rate <br/><input type="text" id="rate" onchange="changerate(element.attributes.value)"/>
+		<input type="text" id="rate" onchange="changerate(element.attributes.value)"/> <br/>
+		rate
 		</div>
 	</body>
 	<script>
