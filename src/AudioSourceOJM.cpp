@@ -499,6 +499,7 @@ void AudioSourceOJM::parseOMC()
 		TemporaryState.File = &vf;
 		TemporaryState.Info = vf.vi;
 		TemporaryState.Enabled = OJM_OGG;
+		NewSample->SetPitch(Speed);
 		NewSample->Open(this);
 		TemporaryState.Enabled = false;
 
