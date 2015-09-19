@@ -31,7 +31,7 @@ bool Screen::HandleTextInput(int codepoint)
 {
 	if (Next)
 		return Next->HandleTextInput(codepoint);
-	else return false;
+	return Animations->HandleTextInput(codepoint);
 }
 
 void Screen::Close()

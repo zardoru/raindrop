@@ -559,6 +559,13 @@ void SceneEnvironment::ReloadUI()
 {
 	if (!ctx) return;
 
+	if (Doc)
+	{
+		ctx->UnloadDocument(Doc);
+		Doc->Close();
+		Rocket::Core::Factory::ClearStyleSheetCache();
+		Doc->RemoveReference();
+	}
 	ctx->UnloadAllDocuments();
 
 	GString FName = mScreenName + GString(".rml");
@@ -656,7 +663,9 @@ bool SceneEnvironment::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 
 bool SceneEnvironment::HandleTextInput(int codepoint)
 {
-	return ctx->ProcessTextInput(codepoint);
+	if (ctx)
+		return ctx->ProcessTextInput(codepoint);
+	else return false;
 }
 
 ImageList* SceneEnvironment::GetImageList()

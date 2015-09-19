@@ -317,6 +317,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 	{
 		Log::Printf("Loading OJM.\n");
 		OJMAudio = make_shared<AudioSourceOJM>();
+		OJMAudio->SetPitch(Speed);
 		OJMAudio->Open((MySong->SongDirectory / MySong->SongFilename).c_path());
 
 		for (int i = 1; i <= 2000; i++)
@@ -337,9 +338,11 @@ bool ScreenGameplay7K::LoadSongAudio()
 #ifdef WIN32
 			std::wstring sd = Utility::Widen(MySong->SongDirectory) + L"/" + Utility::Widen(i->second);
 
+			Keysounds[i->first]->SetPitch(Speed);
 			Keysounds[i->first]->Open(Utility::Narrow(sd).c_str());
 
 #else
+			Keysounds[i->first]->SetPitch(Speed);
 			Keysounds[i->first]->Open((MySong->SongDirectory + "/" + i->second).c_str());
 #endif
 			boost::this_thread::interruption_point();

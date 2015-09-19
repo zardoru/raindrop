@@ -401,3 +401,8 @@ void Application::Close()
 	WindowFrame.Cleanup();
 	Configuration::Cleanup();
 }
+
+void Application::HandleTextInput(unsigned cp)
+{
+	Game->HandleTextInput(cp);
+}

@@ -146,11 +146,12 @@ bool AudioSample::Open(AudioDataSource* Src)
 			Channels = 2;
 		}
 
-		if (mRate != 44100) // mixer_constant.. in the future, allow changing this destination sample rate.
+		if (mRate != 44100 || mPitch != 1) // mixer_constant.. in the future, allow changing this destination sample rate.
 		{
 			size_t done;
 			size_t doneb;
-			double ResamplingRate = 44100.0 / mRate;
+			double DstRate = 44100.0 / mPitch;
+			double ResamplingRate = DstRate / mRate;
 			soxr_io_spec_t spc;
 			size_t size = size_t(double(mBufferSize * ResamplingRate + .5));
 			short* mDataNew = new short[size];
@@ -162,7 +163,7 @@ bool AudioSample::Open(AudioDataSource* Src)
 			spc.flags = 0;
 			soxr_quality_spec_t q_spec = soxr_quality_spec(SOXR_VHQ, SOXR_VR);
 
-			soxr_oneshot(mRate, 44100, Channels,
+			soxr_oneshot(mRate, DstRate, Channels,
 				mData, mBufferSize / Channels, &done,
 				mDataNew, size / Channels, &doneb,
 				&spc, &q_spec, nullptr);

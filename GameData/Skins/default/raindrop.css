@@ -1,6 +1,17 @@
 body {
 	font-family: default;
-	font-size: 20;
+	font-size: 24;
+	text-align: right;
+	top: 6%;
+	right: 3%;
+}
+
+h1
+{
+	font-size: 28;
+    darken-font-effect: shadow;
+    darken-offset: 1px 1px;
+    darken-color: grey;
 }
 
 input.checkbox
@@ -24,21 +35,12 @@ input.checkbox:checked:hover
 	icon-image: Global/checkbox_sh.png;
 }
 
-#autobtn {
-	display: inline-block;
-	width: 256px;
-	height: 64px;
-	margin-top: 10px;
-	background-decorator: image;
-	background-image: SongSelect/auto_btn_unselected.png;
+input.text {
+	padding: 10px 10px 10px;
+	background: black;
 }
 
-#autobtnac {
-	display: inline-block;
-	width: 256px;
-	height: 64px;
-	margin-top: 10px;
-	background-decorator: image;
-	background-image: SongSelect/auto_btn_selected.png;
+.dbox {
+	background: red;
+	padding-top: 6px;
 }
-

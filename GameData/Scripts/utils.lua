@@ -9,6 +9,20 @@ function split(line)
 	return restable
 end
 
+floor = math.floor
+ceil = math.ceil
+sin = math.sin
+cos = math.cos
+
+function clamp (v, mn, mx)
+    return math.min(math.max(v, mn), mx)
+end
+
+function sign(x)
+    if x == 0 then return 0 end
+    if x > 0 then return 1 else return -1 end
+end
+
 GearWidthByChannels = {}
 
 -- Calculate the positions of lanes based off their sizes and a start position.
@@ -35,11 +49,13 @@ function AutoadjustBackground(params)
 	local h = params.h or ScreenHeight
 	local oldWidth = Background.Width
 	local oldHeight = Background.Height
+	local Background = Background or params.Background
+	
+	if not Background then return end
 	
 	Background.X = x
 	Background.Y = y
-	
-	print ("Width/Height: ", Background.Width, Background.Height)
+
 	local VRatio = h / Background.Height
 	
 	Background.ScaleX = VRatio
@@ -51,6 +67,4 @@ function AutoadjustBackground(params)
 	-- Center in box.
 	Background.X = x + w / 2 - modWidth / 2
 	Background.Y = y + h / 2 - modHeight / 2
-	
-	print ("Background proportions: ", Background.ScaleX, Background.ScaleY)
 end

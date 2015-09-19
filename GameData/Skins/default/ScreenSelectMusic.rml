@@ -26,6 +26,7 @@
 			-- checked is nil or not nil depending on whatever it is.
 			-- it also is on attributes rather than on the element itself (!)
 			function changesetting(setting, val)
+				val.style.margin_left = 80
 				val = (val.attributes.checked ~= nil) and 1 or 0
 				if setting == "upscroll" then
 					Global:GetParameters().Upscroll = val
@@ -33,6 +34,15 @@
 					Global:GetParameters().NoFail = val
 				elseif setting == "random" then
 					Global:GetParameters().Random = val
+				elseif setting == "auto" then
+					Global:GetParameters().Autoplay = val
+				end
+			end
+			function changerate(v)
+				rt = tonumber(v)
+				print(rt)
+				if rt and rt > 0 then
+					Global:GetParameters().Rate = rt
 				end
 			end
 		
@@ -41,16 +51,16 @@
 	</head>
 	
 	<body>
-		<!--
-		<img src="SongSelect/ssbanner.png"/> <br/>
-		<button id="autobtn" onmousedown="activateAuto(element)"/> <br/>
-		<div style="position: fixed; right: 0">
-		<input type="checkbox" id="upscroll" onchange="changesetting(element.id, element)" /> Upscroll <br/>
-		<input type="checkbox" id="nofail" onchange="changesetting(element.id, element)"/> Failure Disabled <br/>
-		<input type="checkbox" id="random" onchange="changesetting(element.id, element)"/> Random <br/>
+		<div class="dbox">
+		<h1> Play Options </h1><br/>
+		Autoplay <input type="checkbox" id="auto" onchange="changesetting(element.id, element)" /> <br/>
+		Upscroll <input type="checkbox" id="upscroll" onchange="changesetting(element.id, element)" /> <br/>
+		Failure Disabled <input type="checkbox" id="nofail" onchange="changesetting(element.id, element)"/> <br/>
+		Random <input type="checkbox" id="random" onchange="changesetting(element.id, element)"/> <br/>
+		Rate <br/><input type="text" id="rate" onchange="changerate(element.attributes.value)"/>
 		</div>
-		-->
 	</body>
-	<script>onload()</script>
-
+	<script>
+		onload()
+	</script>
 </rml>

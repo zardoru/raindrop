@@ -1,7 +1,6 @@
+game_require "utils"
 skin_require "Global/Background"
 skin_require "Global/FadeInScreen"
-
-floor = math.floor
 
 -- Wheel item size
 ItemWidth = 600
@@ -14,27 +13,9 @@ TransformX = 0
 CurrentTX = -26
 WheelSpeed = 900
 
-
-function clamp (v, mn, mx)
-    if v < mn then 
-	   return mn
-	else 
-	   if v > mx then  
-	    return mx
-	   else 
-	    return v
-	   end
-	end
-end
-
 -- List transformation
 function TransformListHorizontal(Y)
   return CurrentTX
-end
-
-function sign(x)
-    if x == 0 then return 0 end
-    if x > 0 then return 1 else return -1 end
 end
 
 Wheel.ListY = 0
@@ -182,12 +163,13 @@ function Init()
 	strLevel = StringObject2D()
 
 	wheelfont = Fonts.TruetypeFont(GetSkinFile("font.ttf"), 30)
-	infofont = Fonts.TruetypeFont(GetSkinFile("font.ttf"), 15)
+	infofont = Fonts.TruetypeFont(GetSkinFile("font.ttf"), 18)
 
 	strName.Font = wheelfont
 	strArtist.Font = font
 	strDuration.Font = infofont
 	strLevel.Font = infofont
+	
 	-- Transform these strings according to what they are
 	WheelItemStrings[Wheel:AddString(strName)] = function(Song, IsSelected, Index, Txt)
 		strName.X = strName.X + 10
@@ -211,13 +193,33 @@ function Init()
 		end
 	end
 	WheelItemStrings[Wheel:AddString(strDuration)] = function(Song, IsSelected, Index, Txt)
-
+		if Song then
+			local sng = toSong7K(Song)
+			if not sng then
+				sng = toSongDC(Song)
+			end
+			if IsSelected then
+				strDuration.Text = floor(sng:GetDifficulty(Global.DifficultyIndex).Duration) .. " seconds"
+			else
+				strDuration.Text = floor(sng:GetDifficulty(0).Duration) .. " seconds"
+			end
+		else
+			strDuration.Text = ""
+		end
+		strDuration.X = strDuration.X + ItemWidth - infofont:GetLength(strDuration.Text) - 20
+		strDuration.Y = strDuration.Y + 10
 	end
 	WheelItemStrings[Wheel:AddString(strLevel)] = function(Song, IsSelected, Index, Txt)
-
+		
 	end
 
 	Engine:AddTarget(dd)
+
+	sbar = Engine:CreateObject()
+	sbar.Image = "Global/white.png"
+	sbar.Height = ScreenHeight
+	sbar.Width = 5
+	sbar.Y = 0
 	Engine:SetUILayer(30)
 end
 
@@ -259,6 +261,8 @@ end
 function Update(Delta)
 	BackgroundAnimation:Update(Delta)
 	CurrentTX = clamp(CurrentTX + (TransformX - CurrentTX) * Delta * 8, WheelExitX, WheelX)
+
+	sbar.X = CurrentTX + ItemWidth
 
 	Time = Time - Delta
 	
