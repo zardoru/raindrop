@@ -76,7 +76,7 @@ struct OjnMeasure
 {
 	float Len;
 
-	std::vector<OjnInternalEvent> Events;
+	vector<OjnInternalEvent> Events;
 
 	OjnMeasure()
 	{

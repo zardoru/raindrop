@@ -7,7 +7,6 @@
 namespace NoteTransform {
 	void Randomize(VSRG::VectorTN &Notes, int ChannelCount, bool RespectScratch)
 	{
-		vector<int> chan_index;
 		int si;
 
 		if (RespectScratch)
@@ -23,9 +22,6 @@ namespace NoteTransform {
 				rv = di(dev) % i; // Only can swap with earlier element, and it's the i-th position, not index, so let's % it.
 			return rv;
 		});
-
-		for (auto k = si; k < chan_index.size(); k++)
-			swap(Notes[k], Notes[chan_index[k-1]]);
 	}
 
 	void Mirror(VSRG::VectorTN &Notes, int ChannelCount, bool RespectScratch)

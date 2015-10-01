@@ -68,6 +68,7 @@ void Screen::ChangeState(Screen::EScreenState NewState)
 	}
 
 	TransitionTime = 0;
+	SkipThisFrame = true;
 }
 
 bool Screen::IsScreenRunning()

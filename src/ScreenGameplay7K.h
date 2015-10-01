@@ -22,7 +22,7 @@ class ScreenGameplay7K : public Screen
 
 private:
 
-	VSRGMechanics *MechanicsSet;
+	shared_ptr<VSRGMechanics> MechanicsSet;
 
 	bool HasNegativeScroll;
 	TimingData         VSpeeds;

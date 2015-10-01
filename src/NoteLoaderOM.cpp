@@ -59,6 +59,7 @@ struct OsuLoadInfo
 	bool ReadAModeTag;
 
 	vector<NoteData> Notes[MAX_CHANNELS];
+	int Line;
 
 	double GetBeatspaceAt(double T)
 	{
@@ -90,6 +91,7 @@ struct OsuLoadInfo
 	OsuLoadInfo()
 	{
 		ReadAModeTag = false;
+		Line = 0;
 	}
 
 	float GetSliderMultiplierAt(double T)
@@ -203,6 +205,7 @@ void ReadDifficulty (GString line, OsuLoadInfo* Info)
 {
 	GString Command = line.substr(0, line.find_first_of(":")); // Lines are Information:Content
 	GString Content = line.substr(line.find_first_of(":") + 1, line.length() - line.find_first_of(":"));
+	trim(Content);
 
 	// We ignore everything but the key count!
 	if (Command == "CircleSize")
@@ -529,7 +532,7 @@ void ReadObjects (GString line, OsuLoadInfo* Info)
 		float finalLength = beatDuration * spb(bpm);
 
 		if (0 > finalLength)
-			printf("o!m loader warning: object at track %d has startTime > endTime (%f and %f)\n", Track, startTime, finalLength + startTime);
+			Log::LogPrintf("Line %d: o!m loader warning: object at track %d has startTime > endTime (%f and %f)\n", Info->Line, Track, startTime, finalLength + startTime);
 
 		Note.StartTime = startTime;
 		Note.EndTime = finalLength + startTime;
@@ -762,62 +765,70 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 
 	osuReadingMode ReadingMode = RNotKnown, ReadingModeOld = RNotKnown;
 
-	while (filein)
-	{
-		getline(filein, Line);
-		boost::replace_all(Line, "\r", "");
-
-		if (!Line.length())
-			continue;
-
-		SetReadingMode(Line, ReadingMode);
-
-		if (ReadingMode != ReadingModeOld || ReadingMode == RNotKnown) // Skip this line since it changed modes, or it's not a valid section yet
+	try {
+		while (filein)
 		{
-			if (ReadingModeOld == RTiming)
-				stable_sort(Info.HitsoundSections.begin(), Info.HitsoundSections.end());
-			if (ReadingModeOld == RGeneral)
-				if (!Info.ReadAModeTag)
-					throw std::exception("Not an osu!mania chart.");
-			ReadingModeOld = ReadingMode;
-			continue;
+			Info.Line++;
+			getline(filein, Line);
+			replace_all(Line, "\r", "");
+
+			if (!Line.length())
+				continue;
+
+			SetReadingMode(Line, ReadingMode);
+
+			if (ReadingMode != ReadingModeOld || ReadingMode == RNotKnown) // Skip this line since it changed modes, or it's not a valid section yet
+			{
+				if (ReadingModeOld == RTiming)
+					stable_sort(Info.HitsoundSections.begin(), Info.HitsoundSections.end());
+				if (ReadingModeOld == RGeneral)
+					if (!Info.ReadAModeTag)
+						throw std::exception("Not an osu!mania chart.");
+				ReadingModeOld = ReadingMode;
+				continue;
+			}
+
+			switch (ReadingMode)
+			{
+			case RGeneral: 
+				if (!ReadGeneral(Line, &Info))  // don't load charts that we can't work with
+				{
+					throw std::exception("osu! file unusable on raindrop.");
+				}
+						   break;
+			case RMetadata: ReadMetadata(Line, &Info); break;
+			case RDifficulty: ReadDifficulty(Line, &Info); break;
+			case REvents: ReadEvents(Line, &Info); break;
+			case RTiming: ReadTiming(Line, &Info); break;
+			case RHitobjects: ReadObjects(Line, &Info); break;
+			default: break;
+			}
 		}
 
-		switch (ReadingMode)
+		if (Diff->TotalObjects)
 		{
-		case RGeneral: if (!ReadGeneral(Line, &Info))  // don't load charts that we can't work with
-					   {
-						   throw std::exception("osu! file unusable on raindrop.");
-					   } 
-					   break;
-		case RMetadata: ReadMetadata(Line, &Info); break;
-		case RDifficulty: ReadDifficulty(Line, &Info); break;
-		case REvents: ReadEvents(Line, &Info); break;
-		case RTiming: ReadTiming(Line, &Info); break;
-		case RHitobjects: ReadObjects(Line, &Info); break;
-		default: break;
+			// Calculate an alleged offset
+			Offsetize(&Info);
+
+			// Okay then, convert timing data into a measure-based format raindrop can use.
+			MeasurizeFromTimingData(&Info);
+
+			CopyTimingData(&Info);
+
+			// Then copy notes into these measures.
+			PushNotesToMeasures(&Info);
+
+			// Copy all sounds we registered
+			for (auto i : Info.Sounds)
+				Diff->SoundList[i.second] = i.first;
+
+			// Calculate level as NPS
+			Diff->Level = Diff->TotalScoringObjects / Diff->Duration;
+			Out->Difficulties.push_back(Diff);
 		}
-	}
-
-	if (Diff->TotalObjects) 
+	} catch (std::exception &e)
 	{
-		// Calculate an alleged offset
-		Offsetize(&Info);
-
-		// Okay then, convert timing data into a measure-based format raindrop can use.
-		MeasurizeFromTimingData(&Info);
-
-		CopyTimingData(&Info);
-
-		// Then copy notes into these measures.
-		PushNotesToMeasures(&Info);
-
-		// Copy all sounds we registered
-		for (auto i : Info.Sounds)
-			Diff->SoundList[i.second] = i.first;
-		
-		// Calculate level as NPS
-		Diff->Level = Diff->TotalScoringObjects / Diff->Duration;
-		Out->Difficulties.push_back(Diff);
+		// rethrow with line info
+		throw std::exception((boost::format("Line %d: %s") % Info.Line % e.what()).str().c_str());
 	}
 }

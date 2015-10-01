@@ -111,7 +111,7 @@ bool ValidBMSExtension(std::wstring Ext)
 	return false;
 }
 
-std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory Prefix, VSRG::Song *Sng)
+shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory Prefix, VSRG::Song *Sng)
 {
 	bool AllocSong = false;
 	if (!Sng)
@@ -161,7 +161,7 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory
 				Log::Logf(" ok\n");
 			} catch (std::exception &e)
 			{
-				Log::Printf("Failure loading %s: %s.\n", fn_f.c_str(), e.what());
+				Log::LogPrintf("Failure loading %s: %s\n", fn_f.c_str(), e.what());
 			}				  
 			break;
 		}
@@ -169,8 +169,7 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory
 
 	if (AllocSong)
 		return shared_ptr<VSRG::Song>(Sng);
-	else
-		return nullptr;
+	return nullptr;
 }
 
 void VSRGUpdateDatabaseDifficulties(SongDatabase* DB, VSRG::Song *New)
@@ -186,7 +185,7 @@ void VSRGUpdateDatabaseDifficulties(SongDatabase* DB, VSRG::Song *New)
 	// Do the update, with the either new or old difficulty.
 	for (auto k = New->Difficulties.begin();
 		k != New->Difficulties.end();
-		k++)
+		++k)
 	{
 		DB->AddDifficulty(ID, (*k)->Filename, k->get(), MODE_VSRG);
 		(*k)->Destroy();
@@ -197,11 +196,13 @@ void PushVSRGSong(vector<VSRG::Song*> &VecOut, VSRG::Song* Sng)
 {
 	if (Sng->Difficulties.size())
 		VecOut.push_back(Sng);
+	else
+		delete Sng;
 }
 
-void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*> &VecOut )
+void SongLoader::LoadSong7KFromDir( Directory songPath, vector<VSRG::Song*> &VecOut )
 {
-	std::vector<GString> Listing;
+	vector<GString> Listing;
 
 	songPath.ListDirectory(Listing, Directory::FS_REG);
 
@@ -216,7 +217,6 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 	*/
 
 	bool RenewCache = false;
-	bool DoReload = false;
 
 	/*
 		We want the following:
@@ -245,7 +245,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 	if (RenewCache)
 	{
 		// First, pack BMS charts together.
-		std::map<GString, VSRG::Song*> bmsk;
+		map<GString, VSRG::Song*> bmsk;
 		VSRG::Song *BMSSong = new VSRG::Song;
 
 		// Every OJN gets its own Song object.
@@ -344,7 +344,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 	{
 		// We need to get the song IDs for every file; it's guaranteed that they exist, in theory.
 		int ID = -1;
-		std::vector<int> IDList;
+		vector<int> IDList;
 
 		for (auto i: Listing)
 		{

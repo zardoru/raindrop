@@ -6,10 +6,15 @@
 #include "Logging.h"
 
 
-#ifdef DEBUG
-static void Log::DebugPrintf(GString Format, ...)
+#ifndef NDEBUG
+void Log::DebugPrintf(GString Format, ...)
 {
-
+	LogPrintf(Format);
+}
+#else
+void Log::DebugPrintf(GString Format, ...)
+{
+	// stub
 }
 #endif
 
@@ -33,4 +38,15 @@ void Log::Logf(GString Format, ...)
 	va_end(vl);
 	logf << Buffer;
 	logf.flush();
+}
+
+void Log::LogPrintf(GString str, ...)
+{
+	char Buffer[2048];
+	va_list vl;
+	va_start(vl,str);
+	vsnprintf(Buffer, 2048, str.c_str(), vl);
+	va_end(vl);
+	Printf(Buffer);
+	Logf(Buffer);
 }

@@ -46,7 +46,7 @@ int GetTracksByMode(GString mode)
 			return v.tracks;
 	}
 
-	Log::Printf("Unknown track mode: %s, skipping difficulty\n", mode.c_str());
+	Log::LogPrintf("Unknown track mode: %s, skipping difficulty\n", mode.c_str());
 	return 0;
 }
 
@@ -313,7 +313,7 @@ TimingData CalculateRaindropWarpData(VSRG::Difficulty* Diff, const TimingData& W
 	{
 		// Since we use real song time instead of warped time to calculate warped time
 		// no need for worry about having to align these.
-		double Time = TimeAtBeat(Diff->Timing, Diff->Offset, Warp.Time) +
+		double Time = TimeAtBeat(Diff->Timing, Diff->Offset, Warp.Time, true) +
 			StopTimeAtBeat(Diff->Data->StopsTiming, Warp.Time);
 
 		double Value = Warp.Value * 60 / SectionValue(Diff->Timing, Warp.Time);
@@ -335,7 +335,7 @@ TimingData CalculateRaindropSCData(VSRG::Difficulty* Diff, const TimingData& SCd
 	{
 		// No need to align these either, but since offset is applied at processing time for speed change
 		// we need to set the offset at 0.
-		double Time = TimeAtBeat(Diff->Timing, 0, SC.Time) +
+		double Time = TimeAtBeat(Diff->Timing, 0, SC.Time, true) +
 			StopTimeAtBeat(Diff->Data->StopsTiming, SC.Time);
 		double Value = SC.Value;
 
@@ -356,17 +356,17 @@ VSRG::VectorSpeeds CalculateRaindropScrolls(VSRG::Difficulty *Diff, const SpeedD
 
 	for (auto scroll : In)
 	{
-		double Time = TimeAtBeat(Diff->Timing, 0, scroll.Time) +
+		double Time = TimeAtBeat(Diff->Timing, 0, scroll.Time, true) +
 			StopTimeAtBeat(Diff->Data->StopsTiming, scroll.Time);
 		double TimeEnd;
 
 		if (scroll.Mode == StepmaniaSpeed::Beats)
 		{
-			TimeEnd = TimeAtBeat(Diff->Timing, 0, scroll.Time + scroll.Duration) +
+			TimeEnd = TimeAtBeat(Diff->Timing, 0, scroll.Time + scroll.Duration, true) +
 				StopTimeAtBeat(Diff->Data->StopsTiming, scroll.Time + scroll.Duration);
 		}
 		else
-			TimeEnd = TimeAtBeat(Diff->Timing, 0, scroll.Time) +
+			TimeEnd = TimeAtBeat(Diff->Timing, 0, scroll.Time, true) +
 			StopTimeAtBeat(Diff->Data->StopsTiming, scroll.Time) + scroll.Duration;
 
 		VSRG::SpeedSection newscroll;
@@ -582,12 +582,11 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 		}
 	}
 }
-
 // Convert all negative stops to warps.
 void CleanStopsData(Difficulty* Diff)
 {
 	TimingData tmpWarps;
-	auto &Stops = Diff->Data->StopsTiming;
+	TimingData &Stops = Diff->Data->StopsTiming;
 
 	for (auto i = Stops.begin(); i != Stops.end();)
 	{
@@ -606,7 +605,10 @@ void CleanStopsData(Difficulty* Diff)
 		double Time = TimeAtBeat(Diff->Timing, Diff->Offset, Warp.Time, true) +
 			StopTimeAtBeat(Diff->Data->StopsTiming, Warp.Time);
 
-		Diff->Data->Warps.push_back(TimingSegment(Time, -Warp.Value));
+		TimingSegment New;
+		New.Time = Time;
+		New.Value = -Warp.Value;
+		Diff->Data->Warps.push_back(New);
 	}
 }
 
@@ -617,30 +619,37 @@ void WarpifyTiming(Difficulty* Diff)
 	{
 		if (i->Value < 0)
 		{
-			auto currentSection = i;
+			auto k = i;
+			if (k == Diff->Timing.end()) break;
 
 			// for all negative sections between i and the next positive section 
 			// add up their duration in seconds
 			double warpDuration = 0;
 			double warpDurationBeats = 0;
-			while (currentSection != Diff->Timing.end() && currentSection->Value < 0) { // is still a negative section
-				// add the duration of section k, if there's one to determine it.
-				auto negativeSectionEnd = currentSection + 1;
-				if (negativeSectionEnd != Diff->Timing.end()) {
-					warpDuration += spb(abs(currentSection->Value)) * (negativeSectionEnd->Time - currentSection->Time);
-					warpDurationBeats += negativeSectionEnd->Time - currentSection->Time;
+			while (k->Value < 0)
+			{
+				if (k != Diff->Timing.end())
+				{
+					// add the duration of section k, if there's one to determine it.
+					auto p = k + 1;
+					if (p != Diff->Timing.end())
+					{
+						warpDuration += spb(abs(k->Value)) * (p->Time - k->Time);
+						warpDurationBeats += p->Time - k->Time;
+					}
+					k->Value = -k->Value;
 				}
-				++currentSection;
+				else break;
+				++k;
 			}
+				// Now since W = DurationInBeats(Dn) + TimeToBeatsAtBPM(DurationInTime(Dn), NextPositiveBPM)
+				// DurationInBeats is warpDurationBeats, DurationInTime is warpDuration. k->Value is NextPositiveBPM
+				double warpTime = TimeAtBeat(Diff->Timing, Diff->Offset, i->Time, true) + StopTimeAtBeat(Diff->Data->StopsTiming, i->Time);
 
-			// Now since W = DurationInBeats(Dn) + TimeToBeatsAtBPM(DurationInTime(Dn), NextPositiveBPM)
-			// DurationInBeats is warpDurationBeats, DurationInTime is warpDuration. k->Value is NextPositiveBPM
-			auto warpTime = TimeAtBeat(Diff->Timing, Diff->Offset, i->Time, true) + StopTimeAtBeat(Diff->Data->StopsTiming, i->Time);
-			Diff->Data->Warps.push_back(TimingSegment (warpTime, warpDuration * 2));
-
-			// And now that we're done, there's no need to check the negative BPMs inbetween this one and the next positive BPM, so...
-			i = currentSection;
-			if (i == Diff->Timing.end()) break;
+				Diff->Data->Warps.push_back(TimingSegment(warpTime, warpDuration * 2));
+				// And now that we're done, there's no need to check the negative BPMs inbetween this one and the next positive BPM, so...
+				i = k;
+				if (i == Diff->Timing.end()) break;
 		}
 	}
 }

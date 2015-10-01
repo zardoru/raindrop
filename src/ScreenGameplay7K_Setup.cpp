@@ -88,8 +88,6 @@ void ScreenGameplay7K::Cleanup()
 
 	GameState::GetInstance().SetScorekeeper7K(nullptr);
 	Noteskin::Cleanup();
-
-	delete MechanicsSet;
 }
 
 void ScreenGameplay7K::AssignMeasure(uint32 Measure)
@@ -577,12 +575,12 @@ void ScreenGameplay7K::SetupMechanics()
 	{
 		Log::Printf("Using raindrop mechanics set!\n");
 		// Only forced release if not a bms or a stepmania chart.
-		MechanicsSet = new RaindropMechanics(!bmsOrStepmania);
+		MechanicsSet = make_shared<RaindropMechanics>(!bmsOrStepmania);
 	}
 	else if (UsedTimingType == TT_BEATS)
 	{
 		Log::Printf("Using o2jam mechanics set!\n");
-		MechanicsSet = new O2JamMechanics;
+		MechanicsSet = make_shared<O2JamMechanics>();
 		ChangeNoteTimeToBeats();
 	}
 
