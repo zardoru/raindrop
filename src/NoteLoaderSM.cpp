@@ -619,28 +619,27 @@ void WarpifyTiming(Difficulty* Diff)
 	{
 		if (i->Value < 0)
 		{
-			auto k = i;
-			if (k == Diff->Timing.end()) break;
+			auto currentSection = i;
 
 			// for all negative sections between i and the next positive section 
 			// add up their duration in seconds
 			double warpDuration = 0;
 			double warpDurationBeats = 0;
-			while (k->Value < 0)
+			while (currentSection->Value < 0)
 			{
-				if (k != Diff->Timing.end())
+				if (currentSection != Diff->Timing.end())
 				{
 					// add the duration of section k, if there's one to determine it.
-					auto p = k + 1;
-					if (p != Diff->Timing.end())
+					auto nextSection = currentSection + 1;
+					if (nextSection != Diff->Timing.end())
 					{
-						warpDuration += spb(abs(k->Value)) * (p->Time - k->Time);
-						warpDurationBeats += p->Time - k->Time;
+						warpDuration += spb(abs(currentSection->Value)) * (nextSection->Time - currentSection->Time);
+						warpDurationBeats += nextSection->Time - currentSection->Time;
 					}
-					k->Value = -k->Value;
+					currentSection->Value = -currentSection->Value;
 				}
 				else break;
-				++k;
+				++currentSection;
 			}
 				// Now since W = DurationInBeats(Dn) + TimeToBeatsAtBPM(DurationInTime(Dn), NextPositiveBPM)
 				// DurationInBeats is warpDurationBeats, DurationInTime is warpDuration. k->Value is NextPositiveBPM
@@ -648,7 +647,7 @@ void WarpifyTiming(Difficulty* Diff)
 
 				Diff->Data->Warps.push_back(TimingSegment(warpTime, warpDuration * 2));
 				// And now that we're done, there's no need to check the negative BPMs inbetween this one and the next positive BPM, so...
-				i = k;
+				i = currentSection;
 				if (i == Diff->Timing.end()) break;
 		}
 	}

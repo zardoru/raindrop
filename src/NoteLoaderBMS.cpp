@@ -185,7 +185,7 @@ struct BmsLoadInfo
 	double TimeForObj(int Measure, double Fraction)
 	{
 		double Beat = BeatForObj(Measure, Fraction);
-		double Time = TimeAtBeat(difficulty->Timing, 0, Beat) + StopTimeAtBeat(difficulty->Data->StopsTiming, Beat);
+		double Time = TimeAtBeat(difficulty->Timing, difficulty->Offset, Beat) + StopTimeAtBeat(difficulty->Data->StopsTiming, Beat);
 
 		assert(difficulty != nullptr);
 		return Time;
