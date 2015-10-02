@@ -282,8 +282,8 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, vector<VSRG::Song*> &Vec
 					Utility::DebugBreak();
 				}
 
-
-				if (bmsk.find(BMSSong->SongName) != bmsk.end()) // We found a chart with the same title already.
+				// We found a chart with the same title (and subtitle) already.
+				if (bmsk.find(BMSSong->SongName) != bmsk.end() && bmsk[BMSSong->SongName]->Subtitle == BMSSong->Subtitle)
 				{
 					VSRG::Song *oldSng = bmsk[BMSSong->SongName];
 

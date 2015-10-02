@@ -161,6 +161,7 @@ function Init()
 	strArtist = StringObject2D()
 	strDuration = StringObject2D()
 	strLevel = StringObject2D()
+	strSubtitle = StringObject2D()
 
 	wheelfont = Fonts.TruetypeFont(GetSkinFile("font.ttf"), 30)
 	infofont = Fonts.TruetypeFont(GetSkinFile("font.ttf"), 18)
@@ -169,6 +170,7 @@ function Init()
 	strArtist.Font = font
 	strDuration.Font = infofont
 	strLevel.Font = infofont
+	strSubtitle.Font = infofont 
 	
 	-- Transform these strings according to what they are
 	WheelItemStrings[Wheel:AddString(strName)] = function(Song, IsSelected, Index, Txt)
@@ -180,10 +182,10 @@ function Init()
 		end
 	end
 	WheelItemStrings[Wheel:AddString(strArtist)] = function(Song, IsSelected, Index, Txt)
-		strArtist.X = strArtist.X + 25
-		strArtist.Y = strArtist.Y + 32
+		strArtist.X = strArtist.X + 10
+		strArtist.Y = strArtist.Y + 45
 		if Song then
-			strArtist.Text = Song.Author
+			strArtist.Text = "by " .. Song.Author
 			strArtist.Blue = 0.3
 			strArtist.Green = 0.7
 		else
@@ -211,6 +213,16 @@ function Init()
 	end
 	WheelItemStrings[Wheel:AddString(strLevel)] = function(Song, IsSelected, Index, Txt)
 		
+	end
+
+	WheelItemStrings[Wheel:AddString(strSubtitle)] = function(Song, IsSelected, Index, Txt)
+		strSubtitle.X = strSubtitle.X + 10
+		strSubtitle.Y = strSubtitle.Y + 30
+		if Song then
+			strSubtitle.Text = Song.Subtitle
+		else
+			strSubtitle.Text = ""
+		end
 	end
 
 	Engine:AddTarget(dd)
@@ -271,9 +283,11 @@ function Update(Delta)
 	ScreenHeight / 2 - Wheel:GetItemHeight()/2)
 	Wheel.PendingY = SelectedSongCenterY - Wheel.ListY 
 	Wheel.ScrollSpeed = -math.abs(Wheel.PendingY) / 0.25
-	local deltaWheel = Wheel.ScrollSpeed * sign(Wheel.PendingY) * Delta
 
-	if math.abs(Wheel.PendingY) < 5 then
+	-- don't overshoot
+	local deltaWheel = sign(Wheel.PendingY) * math.min(Wheel.ScrollSpeed * Delta, math.abs(SelectedSongCenterY - Wheel.ListY))
+
+	if math.abs(Wheel.PendingY) < 1 then
 		Wheel.ListY = Wheel.ListY + Wheel.PendingY
 		Wheel.PendingY = 0
 	else

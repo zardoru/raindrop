@@ -79,7 +79,7 @@ namespace Game
 			uint32 TotalObjects;
 			uint32 TotalScoringObjects;
 
-			std::map<int, GString> SoundList;
+			map<int, GString> SoundList;
 
 			int ID;
 
@@ -113,6 +113,12 @@ namespace Game
 
 		/* Time to start preview */
 		float PreviewTime;
+
+		// Song subtitles
+		GString Subtitle;
+
+		// Song genre
+		GString Genre;
 
 		Song() { ID = -1; PreviewTime = 0; };
 		virtual ~Song() {};

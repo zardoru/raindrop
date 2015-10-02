@@ -1,10 +1,9 @@
 #include <fstream>
 #include <map>
 #include <ctime>
-#include <stack>
+#include <set>
 
 #include "GameGlobal.h"
-#include "Logging.h"
 #include "Song7K.h"
 #include "NoteLoader7K.h"
 #include "utf8.h"
@@ -828,69 +827,57 @@ bool isany(char x, const char* p, ptrdiff_t len)
 }
 
 // Returns: Out: a vector with all the subtitles, GString: The title without the subtitles.
-GString GetSubtitles(GString SLine, std::vector<GString> &Out)
+GString GetSubtitles(GString SLine, std::set<GString> &Out)
 {
-	const char* EntryChars = "({[";
-	const char* ExitChars = ")}]";
-	const char* Line = SLine.c_str();
-	size_t len = SLine.length();
-
-	GString CurrentParse;
-	std::stack<char> Paren;
-
-	for (size_t i = 0; i < len; i++)
+	std::regex sub_reg("([~(\\[<\"].*?[\\]\\)~>\"])");
+	std::smatch m;
+	GString matchL = SLine;
+	while (regex_search(matchL, m, sub_reg))
 	{
-		if (isany(Line[i], EntryChars, 3))
-			Paren.push(Line[i]);
-		else if (isany(Line[i], ExitChars, 3))
-		{
-			if (Paren.size())
-			{
-				Paren.pop();
-				Out.push_back(CurrentParse);
-				CurrentParse.clear();
-			}
-		}
-		else
-		{
-			if (Paren.size())
-				CurrentParse += Line[i];
-		}
+		Out.insert(m[1]);
+		matchL = m.suffix();
 	}
-
-	return SLine.substr(0, SLine.find_first_of(EntryChars));
+	
+	GString ret = regex_replace(SLine, sub_reg, "");
+	trim(ret);
+	return ret;
 }
 
-GString DifficultyNameFromSubtitles(vector<GString> &Subs)
+GString DifficultyNameFromSubtitles(std::set<GString> &Subs)
 {
+	GString candidate;
 	for (auto i = Subs.begin();
 		i != Subs.end();
-	     ++i)
+		++i)
 	{
 		auto Current = *i;
 		boost::to_lower(Current);
 		const char* s = Current.c_str();
 
-		if (strstr(s, "another"))
-			return "Another";
-		if (strstr(s, "ex"))
-			return "EX";
-		if (strstr(s, "hyper"))
-			return "Hyper";
-		if (strstr(s, "hard"))
-			return "Hyper";
-		if (strstr(s, "normal"))
-			return "Normal";
-		if (strstr(s, "light"))
-			return "Light";
-		if (strstr(s, "beginner"))
-			return "Beginner";
-	}
+		if (strstr(s, "another")) {
+			candidate = "Another";
+		}
+		if (strstr(s, "ex")) {
+			candidate = "EX";
+		}
+		if (strstr(s, "hyper") || strstr(s, "hard")) {
+			candidate = "Hyper";
+		}
+		if (strstr(s, "normal") || strstr(s, "5key") || strstr(s, "7key") || strstr(s, "10key")) {
+			candidate = "Normal";
+		}
+		if (strstr(s, "light")) {
+			candidate = "Light";
+		}
+		if (strstr(s, "beginner")) {
+			candidate = "Beginner";
+		}
 
-	if (Subs.size()) // Okay then, join them together.
-	{
-		GString sub = boost::join(Subs, " / ");
-		return sub;
+		if (candidate.length())
+		{
+			Subs.erase(i);
+			return candidate;
+		}
 	}
 
 	// Oh, we failed then..
@@ -942,7 +929,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 		And that's what we're going to try to do.
 	*/
 
-	vector<GString> Subs; // Subtitle list
+	std::set<GString> Subs; // Subtitle list
 	GString Line;
 	bool IsU8 = false;
 	char* TestU8 = new char[1025];
@@ -990,7 +977,7 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 
 			OnCommand(#SUBTITLE)
 			{
-				Subs.push_back(CommandContents);
+				Subs.insert(CommandContents);
 			}
 
 			OnCommand(#TITLE)
@@ -1009,7 +996,19 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 				size_t np = Out->SongAuthor.find_first_not_of(" ");
 
 				if (np != GString::npos)
-					Out->SongAuthor = Out->SongAuthor.substr(np);
+				{
+					GString author = Out->SongAuthor.substr(np);
+					std::regex chart_author_regex("\\s*\\/\\s*obj\\.?\\s*[:_]?\\s*(.*)");
+					std::smatch sm;
+					if (regex_search(author, sm, chart_author_regex))
+					{
+						Diff->Author = sm[1];
+						// remove the obj. sentence
+						author = regex_replace(author, chart_author_regex, "\0");
+					}
+
+					Out->SongAuthor = author;
+				}
 			}
 
 			OnCommand(#BPM)
@@ -1121,6 +1120,12 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 				Diff->Author = CommandContents;
 			}
 
+			OnCommand(#SUBTITLE)
+			{
+				trim(CommandContents);
+				Subs.insert(CommandContents);
+			}
+
 			OnCommandSub(#WAV)
 			{
 				GString IndexStr = CommandSubcontents("#WAV", command);
@@ -1200,6 +1205,12 @@ void NoteLoaderBMS::LoadObjectsFromFile(GString filename, GString prefix, Song *
 	// If we've got a title that's usuable then why not use it.
 	if (NewTitle.length() > 0)
 		Out->SongName = NewTitle.substr(0, NewTitle.find_last_not_of(" ")+1);
+
+	if (Subs.size() > 1)
+		Out->Subtitle = boost::join(Subs, " ");
+	else if (Subs.size() == 1)
+		Out->Subtitle = *Subs.begin();
+		
 
 	// Okay, we didn't find a fitting subtitle, let's try something else.
 	// Get actual filename instead of full path.

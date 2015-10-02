@@ -263,6 +263,27 @@ void DoCommonSMCommands(GString command, GString CommandContents, Song* Out)
 			Out->SongName = Utility::SJIStoU8(CommandContents);
 	}
 
+	_OnCommand(#SUBTITLE)
+	{
+		if (utf8::is_valid(CommandContents.begin(), CommandContents.end()))
+		{
+#ifdef WIN32
+			Out->Subtitle = CommandContents;
+#else
+			Out->Subtitle = CommandContents;
+			try {
+				std::vector<int> cp;
+				utf8::utf8to16(CommandContents.begin(), CommandContents.end(), std::back_inserter(cp));
+			}
+			catch (utf8::not_enough_room &e) {
+				Out->Subtitle = Utility::SJIStoU8(CommandContents);
+			}
+#endif
+		}
+		else
+			Out->SongAuthor = Utility::SJIStoU8(CommandContents);
+	}
+
 	_OnCommand(#ARTIST)
 	{
 		if (utf8::is_valid(CommandContents.begin(), CommandContents.end()))
@@ -283,6 +304,7 @@ void DoCommonSMCommands(GString command, GString CommandContents, Song* Out)
 		else
 			Out->SongAuthor = Utility::SJIStoU8(CommandContents);
 	}
+	
 
 	_OnCommand(#BACKGROUND)
 	{
@@ -369,7 +391,7 @@ VSRG::VectorSpeeds CalculateRaindropScrolls(VSRG::Difficulty *Diff, const SpeedD
 			TimeEnd = TimeAtBeat(Diff->Timing, 0, scroll.Time, true) +
 			StopTimeAtBeat(Diff->Data->StopsTiming, scroll.Time) + scroll.Duration;
 
-		VSRG::SpeedSection newscroll;
+		SpeedSection newscroll;
 		newscroll.Time = Time;
 		newscroll.Duration = TimeEnd - Time;
 		newscroll.Value = scroll.Value;
@@ -455,8 +477,8 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 
 		OnCommand(#NOTEDATA)
 		{
-			Diff = make_shared<VSRG::Difficulty>();
-			Diff->Data = make_shared<VSRG::DifficultyLoadInfo>();
+			Diff = make_shared<Difficulty>();
+			Diff->Data = make_shared<DifficultyLoadInfo>();
 			diffSpeedData.clear(); // Clear this in particular since we're using a temp for diffs unlike the rest of the data.
 		}
 
@@ -568,8 +590,8 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 			Diff->Offset = -Offset;
 			Diff->Duration = 0;
 			Diff->Filename = filename;
-			Diff->BPMType = VSRG::Difficulty::BT_BEAT;
-			Diff->Data->TimingInfo = make_shared<VSRG::StepmaniaTimingInfo>();
+			Diff->BPMType = Difficulty::BT_BEAT;
+			Diff->Data->TimingInfo = make_shared<StepmaniaTimingInfo>();
 			Diff->Data->StageFile = Banner;
 
 			Diff->Data->Warps = CalculateRaindropWarpData(Diff.get(), Diff->Data->Warps);
