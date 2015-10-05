@@ -283,9 +283,10 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, vector<VSRG::Song*> &Vec
 				}
 
 				// We found a chart with the same title (and subtitle) already.
-				if (bmsk.find(BMSSong->SongName) != bmsk.end() && bmsk[BMSSong->SongName]->Subtitle == BMSSong->Subtitle)
+				GString key = BMSSong->SongName + BMSSong->Subtitle;
+				if (bmsk.find(key) != bmsk.end())
 				{
-					VSRG::Song *oldSng = bmsk[BMSSong->SongName];
+					VSRG::Song *oldSng = bmsk[key];
 
 					if (BMSSong->Difficulties.size()) // BMS charts don't have more than one difficulty anyway.
 						oldSng->Difficulties.push_back(BMSSong->Difficulties[0]);
@@ -295,7 +296,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, vector<VSRG::Song*> &Vec
 				}
 				else // Ah then, don't delete it.
 				{
-					bmsk[BMSSong->SongName] = BMSSong;
+					bmsk[key] = BMSSong;
 				}
 
 				BMSSong = new VSRG::Song;
