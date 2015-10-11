@@ -186,10 +186,10 @@ namespace NoteLoaderBMSON{
 
 					if (lane < 0) continue; // for slice purposes?
 
-					if (lane > Chart->Channels)
+					const int l2rc[] = { 0, 1, 2, 3, 4, 5, 6, 7, 0, 8, 9, 10, 11, 12, 13, 14, 15 };
+					if (lane > VSRG::MAX_CHANNELS && l2rc[lane] >= Chart->Channels)
 						throw std::exception("lane out of bounds");
 
-					const int l2rc[] = { 0, 1, 2, 3, 4, 5, 6, 7, 0, 8, 9, 10, 11, 12, 13, 14, 15 };
 					VSRG::NoteData Note;
 					Note.Sound = sound_index;
 					Note.AudioStart = st;

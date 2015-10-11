@@ -370,8 +370,14 @@ bool ScreenGameplay7K::ProcessSong()
 		(ApplyDriftDecoder && !CurrentDiff->IsVirtual))) // or we want to apply it to a non-keysounded file and it's not virtual
 		TimeCompensation += MixerGetLatency();
 
-	if (!CurrentDiff->IsVirtual) // Apply only on non-keysounded files..
-		TimeCompensation += Configuration::GetConfigf("Offset7K");
+	TimeCompensation += Configuration::GetConfigf("Offset7K");
+
+	if (CurrentDiff->IsVirtual)
+		TimeCompensation += Configuration::GetConfigf("OffsetKeysounded");
+	else
+		TimeCompensation += Configuration::GetConfigf("OffsetNonKeysounded");
+
+	JudgeOffset = Configuration::GetConfigf("JudgeOffsetMS") / 1000;
 
 	double Drift = TimeCompensation;
 

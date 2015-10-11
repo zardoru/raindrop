@@ -65,9 +65,9 @@ double ScreenGameplay7K::GetSongTime()
 	double usedTime = -1;
 
 	if (UsedTimingType == TT_BEATS)
-		usedTime = CurrentBeat;
+		usedTime = IntegrateToTime(BPS, SongTime + JudgeOffset);
 	else if (UsedTimingType == TT_TIME)
-		usedTime = SongTime;
+		usedTime = SongTime + JudgeOffset;
 
 	assert(usedTime != -1);
 	return usedTime;

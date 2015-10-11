@@ -122,6 +122,7 @@ private:
 	shared_ptr<BackgroundAnimation> BGA;
 	int Random;
 	bool TurntableEnabled;
+	float JudgeOffset;
 	void SetupScriptConstants();
 	void SetupLua(LuaManager* Env);
 	void SetupMechanics();
