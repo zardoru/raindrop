@@ -143,7 +143,7 @@ namespace NoteLoaderBMSON{
 				{
 					int lane = (*note)["x"].asInt();
 					double beat = (*note)["y"].asDouble() / resolution;
-					int len = (*note)["l"].asInt();
+					double endbeat = ((*note)["y"].asDouble() + (*note)["l"].asDouble()) / resolution;
 					bool noreset = (*note)["c"].asBool();
 
 					double st = 0, et = std::numeric_limits<double>::infinity();
@@ -196,6 +196,9 @@ namespace NoteLoaderBMSON{
 					Note.AudioEnd = et;
 					Note.StartTime = TimeForObj(beat);
 
+					if (endbeat != beat)
+						Note.EndTime = TimeForObj(endbeat);
+
 					int Measure = MeasureForBeat(beat);
 					if (Measure >= Chart->Data->Measures.size())
 						Chart->Data->Measures.resize(Measure + 1);
@@ -234,7 +237,7 @@ namespace NoteLoaderBMSON{
 		{
 			Chart->Filename = fn;
 			if (Chart->Name.length() == 0)
-				Chart->Name = Utility::RemoveExtension(fn);
+				Chart->Name = Utility::RemoveExtension(Directory(fn).Filename().path());
 		}
 
 		void DoLoad()
