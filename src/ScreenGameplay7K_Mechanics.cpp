@@ -119,14 +119,23 @@ void ScreenGameplay7K::MissNote(double TimeOff, uint32 Lane, bool IsHold, bool a
 
 void ScreenGameplay7K::PlayLaneKeysound(uint32 Lane)
 {
-	if (Keysounds.find(PlaySounds[Lane]) != Keysounds.end() && Keysounds[PlaySounds[Lane]] && PlayReactiveSounds)
-		Keysounds[PlaySounds[Lane]]->Play();
+	TrackNote *TN = CurrentKeysounds[Lane];
+	if (!TN) return;
+
+	if (Keysounds.find(TN->GetSound()) != Keysounds.end() && Keysounds[TN->GetSound()] && PlayReactiveSounds)
+	{
+		Keysounds[TN->GetSound()]->Slice(TN->GetAudioStart(), TN->GetAudioEnd());
+		Keysounds[TN->GetSound()]->Play();
+	}
 }
 
-void ScreenGameplay7K::PlayKeysound(uint32 Index)
+void ScreenGameplay7K::PlayKeysound(TrackNote* TN)
 {
-	if (Keysounds.find(Index) != Keysounds.end() && PlayReactiveSounds && Keysounds[Index])
-		Keysounds[Index]->Play();
+	if (Keysounds.find(TN->GetSound()) != Keysounds.end() && PlayReactiveSounds && Keysounds[TN->GetSound()])
+	{
+		Keysounds[TN->GetSound()]->Slice(TN->GetAudioStart(), TN->GetAudioEnd());
+		Keysounds[TN->GetSound()]->Play();
+	}
 }
 
 void ScreenGameplay7K::SetLaneHoldState(uint32 Lane, bool NewState)
@@ -160,7 +169,7 @@ void ScreenGameplay7K::RunMeasures()
 				if ((abs(usedTime - m->GetTimeFinal()) < timeClosest[k]))
 				{
 					if (CurrentDiff->IsVirtual)
-						PlaySounds[k] = m->GetSound();
+						CurrentKeysounds[k] = &(*m);
 					timeClosest[k] = abs(usedTime - m->GetTimeFinal());
 				}
 				else

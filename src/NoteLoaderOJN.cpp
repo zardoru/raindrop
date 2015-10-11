@@ -168,7 +168,7 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 		Out->Data->Measures.push_back(VSRG::Measure());
 
 		// All fractional measure events were already handled at read time.
-		Out->Data->Measures[CurrentMeasure].MeasureLength = Measure.Len;
+		Out->Data->Measures[CurrentMeasure].Length = Measure.Len;
 
 		for (auto Evt: Measure.Events)
 		{
@@ -251,7 +251,7 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 						Out->TotalNotes++;
 						Out->TotalObjects++;
 						Out->TotalScoringObjects++;
-						Out->Data->Measures[CurrentMeasure].MeasureNotes[Evt.Channel].push_back(Note);
+						Out->Data->Measures[CurrentMeasure].Notes[Evt.Channel].push_back(Note);
 						break;
 					case 2:
 						Out->TotalScoringObjects++;
@@ -265,7 +265,7 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 						Note.StartTime = PendingLNs[Evt.Channel];
 						Note.EndTime = Time;
 						Note.Sound = PendingLNSound[Evt.Channel];
-						Out->Data->Measures[CurrentMeasure].MeasureNotes[Evt.Channel].push_back(Note);
+						Out->Data->Measures[CurrentMeasure].Notes[Evt.Channel].push_back(Note);
 						break;
 					}
 				}

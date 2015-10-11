@@ -98,6 +98,8 @@ AudioSample::AudioSample()
 	mIsLooping = false;
 	mData = nullptr;
 
+	mAudioStart = 0;
+	mAudioEnd = std::numeric_limits<float>::infinity();
 	MixerAddSample(this);
 }
 
@@ -171,11 +173,14 @@ bool AudioSample::Open(AudioDataSource* Src)
 			delete mData;
 			mBufferSize = size;
 			mData = mDataNew;
+			mRate = 44100;
 		}
 
 		mCounter = 0;
 		mIsValid = true;
 		mByteSize = mBufferSize * sizeof(short);
+
+		mAudioEnd = (float(mBufferSize) / (float(mRate) * Channels));
 
 		return true;
 	}
@@ -189,10 +194,11 @@ uint32 AudioSample::Read(short* buffer, size_t count)
 
 	if (mIsValid)
 	{
-		size_t bufferLeft = mBufferSize-mCounter;
+		size_t limit = (mRate * Channels * mAudioEnd);
+		size_t bufferLeft = limit - mCounter;
 		uint32 ReadAmount = min(bufferLeft, count);
 
-		if (mCounter < mBufferSize)
+		if (mCounter < limit)
 		{
 			memcpy(buffer, mData+mCounter, ReadAmount * sizeof(short));
 			mCounter += ReadAmount;
@@ -211,6 +217,13 @@ uint32 AudioSample::Read(short* buffer, size_t count)
 bool AudioSample::IsPlaying()
 {
 	return mIsPlaying;
+}
+
+void AudioSample::Slice(float audio_start, float audio_end)
+{
+	float audioDuration = float(mBufferSize) / (float(mRate) * Channels);
+	mAudioStart = Clamp(audio_start, 0.0f, audioDuration);
+	mAudioEnd = Clamp(audio_end, mAudioStart, audioDuration);
 }
 
 GString RearrangeFilename(const char* Fn)
@@ -252,7 +265,7 @@ bool AudioSample::Open(const char* Filename)
 void AudioSample::Play()
 {
 	mIsPlaying = true;
-	mCounter = 0;
+	mCounter = mAudioStart * mRate * Channels;
 }
 
 void AudioSample::SeekTime(float Second)

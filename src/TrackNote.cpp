@@ -28,6 +28,16 @@ void TrackNote::FailHit()
 	EnabledHitFlags |= FailedHitFlag;
 }
 
+float TrackNote::GetAudioStart()
+{
+	return AudioStart;
+}
+
+float TrackNote::GetAudioEnd()
+{
+	return AudioEnd;
+}
+
 void TrackNote::MakeInvisible()
 {
 	EnabledHitFlags |= InvisibleFlag;
@@ -44,6 +54,8 @@ void TrackNote::AssignNotedata(const VSRG::NoteData &Notedata)
 	EndTime = Notedata.EndTime;
 	Sound = Notedata.Sound;
 	NoteKind = Notedata.NoteKind;
+	AudioStart = Notedata.AudioStart;
+	AudioEnd = Notedata.AudioEnd;
 }
 
 int GetFractionKindBeat(double frac);

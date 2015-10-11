@@ -35,4 +35,9 @@ namespace NoteLoaderOJN
 	void LoadObjectsFromFile(GString filename, GString prefix, VSRG::Song *Out);
 }
 
+namespace NoteLoaderBMSON
+{
+	void LoadObjectsFromFile(GString filename, GString prefix, VSRG::Song *Out);
+}
+
 #endif

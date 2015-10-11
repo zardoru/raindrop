@@ -128,7 +128,7 @@ void LoadNotesSM(Song *Out, Difficulty *Diff, vector<GString> &MeasureText)
 			for (ptrdiff_t m = 0; m < MeasureFractions; m++) /* m = current fraction */
 			{
 				double Beat = i * 4.0 + m * 4.0 / (double)MeasureFractions; /* Current beat */
-				double StopsTime = StopTimeAtBeat(Diff->Data->StopsTiming, Beat);
+				double StopsTime = StopTimeAtBeat(Diff->Data->Stops, Beat);
 				double Time = TimeAtBeat(Diff->Timing, Diff->Offset, Beat, true) + StopsTime;
 				bool InWarpSection = IsTimeWithinWarp(Diff, Time);
 
@@ -151,7 +151,7 @@ void LoadNotesSM(Song *Out, Difficulty *Diff, vector<GString> &MeasureText)
 							Diff->TotalScoringObjects++;
 						}
 
-						Msr.MeasureNotes[k].push_back(Note);
+						Msr.Notes[k].push_back(Note);
 						break;
 					case '2': /* Holds */
 					case '4':
@@ -171,13 +171,13 @@ void LoadNotesSM(Song *Out, Difficulty *Diff, vector<GString> &MeasureText)
 							Diff->TotalObjects++;
 							Diff->TotalScoringObjects++;
 						}
-						Msr.MeasureNotes[k].push_back(Note);
+						Msr.Notes[k].push_back(Note);
 						break;
 					case 'F':
 						Note.StartTime = Time;
 						Note.NoteKind = NK_FAKE;
 
-						Msr.MeasureNotes[k].push_back(Note);
+						Msr.Notes[k].push_back(Note);
 					default:
 						break;
 					}
@@ -336,7 +336,7 @@ TimingData CalculateRaindropWarpData(VSRG::Difficulty* Diff, const TimingData& W
 		// Since we use real song time instead of warped time to calculate warped time
 		// no need for worry about having to align these.
 		double Time = TimeAtBeat(Diff->Timing, Diff->Offset, Warp.Time, true) +
-			StopTimeAtBeat(Diff->Data->StopsTiming, Warp.Time);
+			StopTimeAtBeat(Diff->Data->Stops, Warp.Time);
 
 		double Value = Warp.Value * 60 / SectionValue(Diff->Timing, Warp.Time);
 		TimingSegment New;
@@ -358,7 +358,7 @@ TimingData CalculateRaindropSCData(VSRG::Difficulty* Diff, const TimingData& SCd
 		// No need to align these either, but since offset is applied at processing time for speed change
 		// we need to set the offset at 0.
 		double Time = TimeAtBeat(Diff->Timing, 0, SC.Time, true) +
-			StopTimeAtBeat(Diff->Data->StopsTiming, SC.Time);
+			StopTimeAtBeat(Diff->Data->Stops, SC.Time);
 		double Value = SC.Value;
 
 		TimingSegment New;
@@ -379,17 +379,17 @@ VSRG::VectorSpeeds CalculateRaindropScrolls(VSRG::Difficulty *Diff, const SpeedD
 	for (auto scroll : In)
 	{
 		double Time = TimeAtBeat(Diff->Timing, 0, scroll.Time, true) +
-			StopTimeAtBeat(Diff->Data->StopsTiming, scroll.Time);
+			StopTimeAtBeat(Diff->Data->Stops, scroll.Time);
 		double TimeEnd;
 
 		if (scroll.Mode == StepmaniaSpeed::Beats)
 		{
 			TimeEnd = TimeAtBeat(Diff->Timing, 0, scroll.Time + scroll.Duration, true) +
-				StopTimeAtBeat(Diff->Data->StopsTiming, scroll.Time + scroll.Duration);
+				StopTimeAtBeat(Diff->Data->Stops, scroll.Time + scroll.Duration);
 		}
 		else
 			TimeEnd = TimeAtBeat(Diff->Timing, 0, scroll.Time, true) +
-			StopTimeAtBeat(Diff->Data->StopsTiming, scroll.Time) + scroll.Duration;
+			StopTimeAtBeat(Diff->Data->Stops, scroll.Time) + scroll.Duration;
 
 		SpeedSection newscroll;
 		newscroll.Time = Time;
@@ -503,7 +503,7 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 			if (!Diff)
 				LoadTimingList(StopsData, line);
 			else
-				LoadTimingList(Diff->Data->StopsTiming, line);
+				LoadTimingList(Diff->Data->Stops, line);
 		}
 
 		_OnCommand(#BANNER)
@@ -573,8 +573,8 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 			if (!Diff->Timing.size())
 				Diff->Timing = BPMData;
 
-			if (!Diff->Data->StopsTiming.size())
-				Diff->Data->StopsTiming = StopsData;
+			if (!Diff->Data->Stops.size())
+				Diff->Data->Stops = StopsData;
 
 			if (!Diff->Data->Warps.size())
 				Diff->Data->Warps = WarpsData;
@@ -608,7 +608,7 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 void CleanStopsData(Difficulty* Diff)
 {
 	TimingData tmpWarps;
-	TimingData &Stops = Diff->Data->StopsTiming;
+	TimingData &Stops = Diff->Data->Stops;
 
 	for (auto i = Stops.begin(); i != Stops.end();)
 	{
@@ -625,7 +625,7 @@ void CleanStopsData(Difficulty* Diff)
 	for (auto Warp : tmpWarps)
 	{
 		double Time = TimeAtBeat(Diff->Timing, Diff->Offset, Warp.Time, true) +
-			StopTimeAtBeat(Diff->Data->StopsTiming, Warp.Time);
+			StopTimeAtBeat(Diff->Data->Stops, Warp.Time);
 
 		TimingSegment New;
 		New.Time = Time;
@@ -665,7 +665,7 @@ void WarpifyTiming(Difficulty* Diff)
 			}
 				// Now since W = DurationInBeats(Dn) + TimeToBeatsAtBPM(DurationInTime(Dn), NextPositiveBPM)
 				// DurationInBeats is warpDurationBeats, DurationInTime is warpDuration. k->Value is NextPositiveBPM
-				double warpTime = TimeAtBeat(Diff->Timing, Diff->Offset, i->Time, true) + StopTimeAtBeat(Diff->Data->StopsTiming, i->Time);
+				double warpTime = TimeAtBeat(Diff->Timing, Diff->Offset, i->Time, true) + StopTimeAtBeat(Diff->Data->Stops, i->Time);
 
 				Diff->Data->Warps.push_back(TimingSegment(warpTime, warpDuration * 2));
 				// And now that we're done, there's no need to check the negative BPMs inbetween this one and the next positive BPM, so...
@@ -754,7 +754,7 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 		{
 			Diff->Timing = BPMData;
 			Diff->Data = make_shared<VSRG::DifficultyLoadInfo>();
-			Diff->Data->StopsTiming = StopsData;
+			Diff->Data->Stops = StopsData;
 			Diff->Offset = -Offset;
 			Diff->Duration = 0;
 			Diff->Filename = filename;

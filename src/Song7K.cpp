@@ -116,7 +116,7 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
 	*/
 	assert(Data != NULL);
 
-	TimingData &StopsTiming = Data->StopsTiming;
+	TimingData &StopsTiming = Data->Stops;
 
 	BPS.clear();
 
@@ -358,7 +358,7 @@ void Difficulty::GetPlayableData(VectorTN NotesOut,
 			++Msr)
 		{
 			/* For each note in the measure... */
-			ptrdiff_t total_notes = Msr->MeasureNotes[KeyIndex].size();
+			ptrdiff_t total_notes = Msr->Notes[KeyIndex].size();
 
 			for (auto Note = 0; Note < total_notes; Note++)
 			{
@@ -366,7 +366,7 @@ void Difficulty::GetPlayableData(VectorTN NotesOut,
 					Calculate position. (Change this to TrackNote instead of processing?)
 					issue is not having the speed change data there.
 				*/
-				NoteData &CurrentNote = (*Msr).MeasureNotes[KeyIndex][Note];
+				NoteData &CurrentNote = (*Msr).Notes[KeyIndex][Note];
 				TrackNote NewNote;
 
 				NewNote.AssignNotedata(CurrentNote);
@@ -443,8 +443,8 @@ void Difficulty::GetMeasureLines(vector<float> &Out, TimingData& VerticalSpeeds,
 	double BPS = BPSFromTimingKind(Timing[0].Value, BPMType);
 	double PreTime = WaitTime + Offset + Drift;
 	double PreTimeBeats = BPS * PreTime;
-	int TotMeasures = PreTimeBeats / Data->Measures[0].MeasureLength;
-	double MeasureTime = 1 / BPS * Data->Measures[0].MeasureLength;
+	int TotMeasures = PreTimeBeats / Data->Measures[0].Length;
+	double MeasureTime = 1 / BPS * Data->Measures[0].Length;
 	
 	for (auto i = 0; i < TotMeasures; i++)
 	{
@@ -460,7 +460,7 @@ void Difficulty::GetMeasureLines(vector<float> &Out, TimingData& VerticalSpeeds,
 
 		if (BPMType == BT_BEAT) // VerticalSpeeds already has drift applied, so we don't need to apply it again here.
 		{
-			PositionOut = IntegrateToTime(VerticalSpeeds, Drift + TimeAtBeat(Timing, Offset, Last) + StopTimeAtBeat(Data->StopsTiming, Last));
+			PositionOut = IntegrateToTime(VerticalSpeeds, Drift + TimeAtBeat(Timing, Offset, Last) + StopTimeAtBeat(Data->Stops, Last));
 		}
 		else if (BPMType == BT_BEATSPACE)
 		{
@@ -469,7 +469,7 @@ void Difficulty::GetMeasureLines(vector<float> &Out, TimingData& VerticalSpeeds,
 		}
 
 		Out.push_back(PositionOut);
-		Last += Msr.MeasureLength;
+		Last += Msr.Length;
 	}
 }
 

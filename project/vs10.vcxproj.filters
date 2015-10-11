@@ -256,6 +256,12 @@
     <ClCompile Include="..\src\NoteTransformations.cpp">
       <Filter>Source\vsrg\gameplay</Filter>
     </ClCompile>
+    <ClCompile Include="..\ext-src\jsoncpp.cpp">
+      <Filter>Source\libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\NoteLoaderBMSON.cpp">
+      <Filter>Source\vsrg\internal</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">
@@ -578,5 +584,8 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="app.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
 </Project>

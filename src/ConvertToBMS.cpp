@@ -239,9 +239,9 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 		uint32 Measure = 0;
 		using std::endl;
 		for (auto M : Measures){
-			if (Parent->Data->Measures[Measure].MeasureLength != 4)
+			if (Parent->Data->Measures[Measure].Length != 4)
 			{
-				double bmsLength = Parent->Data->Measures[Measure].MeasureLength / 4;
+				double bmsLength = Parent->Data->Measures[Measure].Length / 4;
 				OutFile << boost::format("#%03d02:%f") % Measure % bmsLength << endl;
 			}
 

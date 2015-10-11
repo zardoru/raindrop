@@ -16,6 +16,7 @@ public:
 	typedef function<void(double, uint32, bool, bool)> HitEvent;
 	typedef function<void(double, uint32, bool, bool, bool)> MissEvent;
 	typedef function<void(uint32)> KeysoundEvent;
+	typedef function<void(VSRG::TrackNote*)> NoteSoundEvent;
 
 protected:
 
@@ -30,7 +31,8 @@ public:
 	// These HAVE to be set before anything else is called.
 	function <bool(uint32)> IsLaneKeyDown;
 	function <void(uint32, bool)> SetLaneHoldingState;
-	KeysoundEvent PlayLaneSoundEvent, PlayNoteSoundEvent;
+	KeysoundEvent PlayLaneSoundEvent;
+	NoteSoundEvent PlayNoteSoundEvent;
 	HitEvent HitNotify;
 	MissEvent MissNotify;
 

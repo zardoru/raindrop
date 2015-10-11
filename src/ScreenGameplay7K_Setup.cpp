@@ -104,13 +104,13 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 	}
 
 	for (uint32 i = 0; i < Measure; i++)
-		Beat += CurrentDiff->Data->Measures[i].MeasureLength;
+		Beat += CurrentDiff->Data->Measures[i].Length;
 	
 
 	Log::Logf("Warping to measure measure %d at beat %f.\n", Measure, Beat);
 
 	double Time = TimeAtBeat(CurrentDiff->Timing, CurrentDiff->Offset, Beat)
-		+ StopTimeAtBeat(CurrentDiff->Data->StopsTiming, Beat);
+		+ StopTimeAtBeat(CurrentDiff->Data->Stops, Beat);
 
 	// Disable all notes before the current measure.
 	for (uint32 k = 0; k < CurrentDiff->Channels; k++)
@@ -513,9 +513,9 @@ void ScreenGameplay7K::SetupMechanics()
 		auto TimingInfo = CurrentDiff->Data->TimingInfo.get();
 		if (TimingInfo->GetType() == VSRG::TI_BMS)
 		{
-			auto Info = static_cast<VSRG::BmsTimingInfo*> (TimingInfo);
-			ScoreKeeper->setLifeTotal(Info->life_total);
-			ScoreKeeper->setJudgeRank(Info->judge_rank);
+			auto Info = static_cast<VSRG::BMSTimingInfo*> (TimingInfo);
+			ScoreKeeper->setLifeTotal(Info->GaugeTotal);
+			ScoreKeeper->setJudgeRank(Info->JudgeRank);
 			UsedTimingType = TT_TIME;
 			lifebar_type = LT_GROOVE;
 			bmsOrStepmania = true;
@@ -686,7 +686,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 
 	WindowFrame.SetLightMultiplier(0.75f);
 
-	memset(PlaySounds, 0, sizeof(PlaySounds));
+	memset(CurrentKeysounds, 0, sizeof(CurrentKeysounds));
 
 	CalculateHiddenConstants();
 

@@ -13,15 +13,16 @@ struct loaderVSRGEntry_t {
 	const wchar_t* Ext;
 	void (*LoadFunc) (GString filename, GString prefix, VSRG::Song* Out);
 } LoadersVSRG [] = {
-	{ L"bms",  NoteLoaderBMS::LoadObjectsFromFile },
-	{ L"bme",  NoteLoaderBMS::LoadObjectsFromFile },
-	{ L"bml",  NoteLoaderBMS::LoadObjectsFromFile },
-	{ L"pms",  NoteLoaderBMS::LoadObjectsFromFile },
-	{ L"sm",   NoteLoaderSM::LoadObjectsFromFile  },
-	{ L"osu",  NoteLoaderOM::LoadObjectsFromFile  },
-	{ L"fcf",  NoteLoaderFTB::LoadObjectsFromFile },
-	{ L"ojn",  NoteLoaderOJN::LoadObjectsFromFile },
-	{ L"ssc",  NoteLoaderSSC::LoadObjectsFromFile }
+	{ L"bms",   NoteLoaderBMS::LoadObjectsFromFile },
+	{ L"bme",   NoteLoaderBMS::LoadObjectsFromFile },
+	{ L"bml",   NoteLoaderBMS::LoadObjectsFromFile },
+	{ L"pms",   NoteLoaderBMS::LoadObjectsFromFile },
+	{ L"sm",    NoteLoaderSM::LoadObjectsFromFile  },
+	{ L"osu",   NoteLoaderOM::LoadObjectsFromFile  },
+	{ L"fcf",   NoteLoaderFTB::LoadObjectsFromFile },
+	{ L"ojn",   NoteLoaderOJN::LoadObjectsFromFile },
+	{ L"ssc",   NoteLoaderSSC::LoadObjectsFromFile },
+	{ L"bmson", NoteLoaderBMSON::LoadObjectsFromFile }
 };
 
 SongLoader::SongLoader(SongDatabase* Database)
@@ -268,7 +269,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, vector<VSRG::Song*> &Vec
 			std::wstring Ext = Utility::Widen(File.GetExtension());
 
 			// We want to group charts with the same title together.
-			if (ValidBMSExtension(Ext))
+			if (ValidBMSExtension(Ext) || Ext == L"bmson")
 			{
 				BMSSong->SongDirectory = SongDirectory;
 
@@ -417,6 +418,7 @@ std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const VSRG::Song* Meta, sha
 	*FilenameOut = fn;
 
 	Out = LoadSong7KFromFilename(fn, "", nullptr);
+	if (!Out) return nullptr;
 
 	// Copy relevant data
 	Out->SongDirectory = Meta->SongDirectory;

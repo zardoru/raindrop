@@ -598,14 +598,14 @@ void MeasurizeFromTimingData(OsuLoadInfo *Info)
 		for (auto k = 0; k < Whole; k++)
 		{
 			Measure Msr;
-			Msr.MeasureLength = i->MeasureLen;
+			Msr.Length = i->MeasureLen;
 			Info->Diff->Data->Measures.push_back(Msr);
 		}
 
 		if (Fraction > 0)
 		{
 			Measure Msr;
-			Msr.MeasureLength = Fraction * i->MeasureLen;
+			Msr.Length = Fraction * i->MeasureLen;
 			Info->Diff->Data->Measures.push_back(Msr);
 		}
 	}
@@ -625,7 +625,7 @@ void PushNotesToMeasures(OsuLoadInfo *Info)
 
 			if (Beat < 0)
 			{
-				Info->Diff->Data->Measures[0].MeasureNotes[k].push_back(*i);
+				Info->Diff->Data->Measures[0].Notes[k].push_back(*i);
 				continue;
 			}
 
@@ -635,15 +635,15 @@ void PushNotesToMeasures(OsuLoadInfo *Info)
 				auto nextm = m + 1;
 
 				if (nextm != Info->Diff->Data->Measures.end()) // Higher bound of this measure
-					NextBeat = CurrentBeat + m->MeasureLength;
+					NextBeat = CurrentBeat + m->Length;
 
 				if (Beat >= CurrentBeat && Beat < NextBeat) // Within bounds
 				{
-					m->MeasureNotes[k].push_back(*i); // Add this note to this measure.
+					m->Notes[k].push_back(*i); // Add this note to this measure.
 					break; // Stop looking for a measure.
 				}
 
-				CurrentBeat += m->MeasureLength;
+				CurrentBeat += m->Length;
 			}
 		}
 	}
