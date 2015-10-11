@@ -22,7 +22,7 @@ class ScreenGameplay7K : public Screen
 
 private:
 
-	VSRGMechanics *MechanicsSet;
+	shared_ptr<VSRGMechanics> MechanicsSet;
 
 	bool HasNegativeScroll;
 	TimingData         VSpeeds;
@@ -69,9 +69,9 @@ private:
     float            SpeedMultiplier;
     uint32           StartMeasure;
 
-    std::map<int, int> GearBindings;
+    map<int, int> GearBindings;
     int                lastClosest[VSRG::MAX_CHANNELS];
-    int                PlaySounds[VSRG::MAX_CHANNELS];
+    VSRG::TrackNote*   CurrentKeysounds[VSRG::MAX_CHANNELS];
     int                BarlineOffsetKind;
 
 	LifeType         lifebar_type;		 
@@ -161,7 +161,7 @@ private:
 	void Render();
 
 	void PlayLaneKeysound(uint32 Lane);
-	void PlayKeysound(uint32 Index);
+	void PlayKeysound(VSRG::TrackNote* Note);
 	void SetLaneHoldState(uint32 Lane, bool NewState);
 
 	void Activate();

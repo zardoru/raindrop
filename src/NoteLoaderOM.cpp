@@ -35,6 +35,8 @@ struct HitsoundSectionData
 	double Time; // In Seconds
 	double Value; // BPM or Multiplier
 	double MeasureLen; // In quarter notes
+	// bool Kiai;
+	bool Omit;
 };
 
 bool operator <(const HitsoundSectionData& lhs, const HitsoundSectionData& rhs)
@@ -57,6 +59,7 @@ struct OsuLoadInfo
 	bool ReadAModeTag;
 
 	vector<NoteData> Notes[MAX_CHANNELS];
+	int Line;
 
 	double GetBeatspaceAt(double T)
 	{
@@ -88,6 +91,7 @@ struct OsuLoadInfo
 	OsuLoadInfo()
 	{
 		ReadAModeTag = false;
+		Line = 0;
 	}
 
 	float GetSliderMultiplierAt(double T)
@@ -132,7 +136,7 @@ bool ReadGeneral (GString line, OsuLoadInfo* Info)
 #ifdef VERBOSE_DEBUG
 			printf("Audio filename found: %s\n", Content.c_str());
 #endif
-			boost::algorithm::trim(Content);
+			trim(Content);
 			Info->OsuSong->SongFilename = Content;
 			Info->OsuSong->SongPreviewSource = Content;
 		}
@@ -144,7 +148,7 @@ bool ReadGeneral (GString line, OsuLoadInfo* Info)
 	}else if (Command == "SampleSet:")
 	{
 		boost::algorithm::to_lower(Content);
-		boost::algorithm::trim(Content);
+		trim(Content);
 		Info->DefaultSampleset = Content;
 	}
 	else if (Command == "PreviewTime:")
@@ -165,8 +169,8 @@ bool ReadGeneral (GString line, OsuLoadInfo* Info)
 
 void ReadMetadata (GString line, OsuLoadInfo* Info)
 {
-	GString Command = line.substr(0, line.find_first_of(":")); // Lines are Information:Content
-	GString Content = line.substr(line.find_first_of(":") + 1, line.length() - line.find_first_of(":"));
+	auto Command = line.substr(0, line.find_first_of(":")); // Lines are Information:Content
+	auto Content = line.substr(line.find_first_of(":") + 1, line.length() - line.find_first_of(":"));
 
 #ifdef VERBOSE_DEBUG
 	printf("Command found: %s | Contents: %s\n", Command.c_str(), Content.c_str());
@@ -201,6 +205,7 @@ void ReadDifficulty (GString line, OsuLoadInfo* Info)
 {
 	GString Command = line.substr(0, line.find_first_of(":")); // Lines are Information:Content
 	GString Content = line.substr(line.find_first_of(":") + 1, line.length() - line.find_first_of(":"));
+	trim(Content);
 
 	// We ignore everything but the key count!
 	if (Command == "CircleSize")
@@ -223,7 +228,7 @@ void ReadDifficulty (GString line, OsuLoadInfo* Info)
 
 void ReadEvents (GString line, OsuLoadInfo* Info)
 {
-	SplitResult Spl = Utility::TokenSplit(line);
+	auto Spl = Utility::TokenSplit(line);
 
 	if (Spl.size() > 1)
 	{
@@ -257,13 +262,10 @@ void ReadTiming (GString line, OsuLoadInfo* Info)
 {
 	double Value;
 	bool IsInherited;
-	SplitResult Spl = Utility::TokenSplit(line);
+	auto Spl = Utility::TokenSplit(line);
 
 	if (Spl.size() < 2)
 		return;
-
-	TimingSegment Time;
-	Time.Time = latof(Spl[0].c_str()) / 1000.0;
 
 	if (Spl[6] == "1") // Non-inherited section
 		IsInherited = false;
@@ -292,10 +294,11 @@ void ReadTiming (GString line, OsuLoadInfo* Info)
 	HitsoundSectionData SecData;
 	SecData.Value = Value;
 	SecData.MeasureLen = MeasureLen;
-	SecData.Time = Time.Time;
+	SecData.Time = latof(Spl[0].c_str()) / 1000.0;
 	SecData.Sampleset = Sampleset;
 	SecData.Custom = Custom;
 	SecData.IsInherited = IsInherited;
+	SecData.Omit = false; // adjust if taiko bar omission is up
 
 	Info->HitsoundSections.push_back(SecData);
 }
@@ -461,7 +464,7 @@ GString GetSampleFilename(OsuLoadInfo *Info, SplitResult &Spl, int NoteType, int
 
 void ReadObjects (GString line, OsuLoadInfo* Info)
 {
-	SplitResult Spl = Utility::TokenSplit(line);
+	auto Spl = Utility::TokenSplit(line);
 
 	int Track = GetTrackFromPosition(latof(Spl[0].c_str()), Info->Diff->Channels);
 	int Hitsound;
@@ -529,7 +532,7 @@ void ReadObjects (GString line, OsuLoadInfo* Info)
 		float finalLength = beatDuration * spb(bpm);
 
 		if (0 > finalLength)
-			printf("o!m loader warning: object at track %d has startTime > endTime (%f and %f)\n", Track, startTime, finalLength + startTime);
+			Log::LogPrintf("Line %d: o!m loader warning: object at track %d has startTime > endTime (%f and %f)\n", Info->Line, Track, startTime, finalLength + startTime);
 
 		Note.StartTime = startTime;
 		Note.EndTime = finalLength + startTime;
@@ -562,7 +565,7 @@ void ReadObjects (GString line, OsuLoadInfo* Info)
 void MeasurizeFromTimingData(OsuLoadInfo *Info)
 {
 	// Keep them at the order they are declared so they don't affect the applied hitsounds.
-	std::stable_sort(Info->HitsoundSections.begin(), Info->HitsoundSections.end());
+	stable_sort(Info->HitsoundSections.begin(), Info->HitsoundSections.end());
 
 	for (auto i = Info->HitsoundSections.begin(); i != Info->HitsoundSections.end(); ++i)
 	{
@@ -571,7 +574,7 @@ void MeasurizeFromTimingData(OsuLoadInfo *Info)
 
 		auto NextSect = i + 1;
 
-		if (i->IsInherited) // Skip inherited sections.
+		if (i->IsInherited || i->Omit) // Skip inherited sections.
 			continue;
 
 		while (NextSect != Info->HitsoundSections.end() && NextSect->IsInherited) // Find first non-inherited section after this one.
@@ -594,15 +597,15 @@ void MeasurizeFromTimingData(OsuLoadInfo *Info)
 		// Add the measures.
 		for (auto k = 0; k < Whole; k++)
 		{
-			VSRG::Measure Msr;
-			Msr.MeasureLength = i->MeasureLen;
+			Measure Msr;
+			Msr.Length = i->MeasureLen;
 			Info->Diff->Data->Measures.push_back(Msr);
 		}
 
 		if (Fraction > 0)
 		{
-			VSRG::Measure Msr;
-			Msr.MeasureLength = Fraction * i->MeasureLen;
+			Measure Msr;
+			Msr.Length = Fraction * i->MeasureLen;
 			Info->Diff->Data->Measures.push_back(Msr);
 		}
 	}
@@ -622,7 +625,7 @@ void PushNotesToMeasures(OsuLoadInfo *Info)
 
 			if (Beat < 0)
 			{
-				Info->Diff->Data->Measures[0].MeasureNotes[k].push_back(*i);
+				Info->Diff->Data->Measures[0].Notes[k].push_back(*i);
 				continue;
 			}
 
@@ -632,15 +635,15 @@ void PushNotesToMeasures(OsuLoadInfo *Info)
 				auto nextm = m + 1;
 
 				if (nextm != Info->Diff->Data->Measures.end()) // Higher bound of this measure
-					NextBeat = CurrentBeat + m->MeasureLength;
+					NextBeat = CurrentBeat + m->Length;
 
 				if (Beat >= CurrentBeat && Beat < NextBeat) // Within bounds
 				{
-					m->MeasureNotes[k].push_back(*i); // Add this note to this measure.
+					m->Notes[k].push_back(*i); // Add this note to this measure.
 					break; // Stop looking for a measure.
 				}
 
-				CurrentBeat += m->MeasureLength;
+				CurrentBeat += m->Length;
 			}
 		}
 	}
@@ -715,7 +718,7 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 	std::regex versionfmt("osu file format v(\\d+)");
 
 	if (!filein.is_open())
-		return;
+		throw std::exception("Could not open file.");
 
 	auto Diff = make_shared<Difficulty>();
 	OsuLoadInfo Info;
@@ -762,62 +765,70 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 
 	osuReadingMode ReadingMode = RNotKnown, ReadingModeOld = RNotKnown;
 
-	while (filein)
-	{
-		getline(filein, Line);
-		boost::replace_all(Line, "\r", "");
-
-		if (!Line.length())
-			continue;
-
-		SetReadingMode(Line, ReadingMode);
-
-		if (ReadingMode != ReadingModeOld || ReadingMode == RNotKnown) // Skip this line since it changed modes, or it's not a valid section yet
+	try {
+		while (filein)
 		{
-			if (ReadingModeOld == RTiming)
-				stable_sort(Info.HitsoundSections.begin(), Info.HitsoundSections.end());
-			if (ReadingModeOld == RGeneral)
-				if (!Info.ReadAModeTag)
-					return;
-			ReadingModeOld = ReadingMode;
-			continue;
+			Info.Line++;
+			getline(filein, Line);
+			replace_all(Line, "\r", "");
+
+			if (!Line.length())
+				continue;
+
+			SetReadingMode(Line, ReadingMode);
+
+			if (ReadingMode != ReadingModeOld || ReadingMode == RNotKnown) // Skip this line since it changed modes, or it's not a valid section yet
+			{
+				if (ReadingModeOld == RTiming)
+					stable_sort(Info.HitsoundSections.begin(), Info.HitsoundSections.end());
+				if (ReadingModeOld == RGeneral)
+					if (!Info.ReadAModeTag)
+						throw std::exception("Not an osu!mania chart.");
+				ReadingModeOld = ReadingMode;
+				continue;
+			}
+
+			switch (ReadingMode)
+			{
+			case RGeneral: 
+				if (!ReadGeneral(Line, &Info))  // don't load charts that we can't work with
+				{
+					throw std::exception("osu! file unusable on raindrop.");
+				}
+						   break;
+			case RMetadata: ReadMetadata(Line, &Info); break;
+			case RDifficulty: ReadDifficulty(Line, &Info); break;
+			case REvents: ReadEvents(Line, &Info); break;
+			case RTiming: ReadTiming(Line, &Info); break;
+			case RHitobjects: ReadObjects(Line, &Info); break;
+			default: break;
+			}
 		}
 
-		switch (ReadingMode)
+		if (Diff->TotalObjects)
 		{
-		case RGeneral: if (!ReadGeneral(Line, &Info))  // don't load charts that we can't work with
-					   {
-						   return;
-					   } 
-					   break;
-		case RMetadata: ReadMetadata(Line, &Info); break;
-		case RDifficulty: ReadDifficulty(Line, &Info); break;
-		case REvents: ReadEvents(Line, &Info); break;
-		case RTiming: ReadTiming(Line, &Info); break;
-		case RHitobjects: ReadObjects(Line, &Info); break;
-		default: break;
+			// Calculate an alleged offset
+			Offsetize(&Info);
+
+			// Okay then, convert timing data into a measure-based format raindrop can use.
+			MeasurizeFromTimingData(&Info);
+
+			CopyTimingData(&Info);
+
+			// Then copy notes into these measures.
+			PushNotesToMeasures(&Info);
+
+			// Copy all sounds we registered
+			for (auto i : Info.Sounds)
+				Diff->SoundList[i.second] = i.first;
+
+			// Calculate level as NPS
+			Diff->Level = Diff->TotalScoringObjects / Diff->Duration;
+			Out->Difficulties.push_back(Diff);
 		}
-	}
-
-	if (Diff->TotalObjects) 
+	} catch (std::exception &e)
 	{
-		// Calculate an alleged offset
-		Offsetize(&Info);
-
-		// Okay then, convert timing data into a measure-based format raindrop can use.
-		MeasurizeFromTimingData(&Info);
-
-		CopyTimingData(&Info);
-
-		// Then copy notes into these measures.
-		PushNotesToMeasures(&Info);
-
-		// Copy all sounds we registered
-		for (auto i : Info.Sounds)
-			Diff->SoundList[i.second] = i.first;
-		
-		// Calculate level as NPS
-		Diff->Level = Diff->TotalScoringObjects / Diff->Duration;
-		Out->Difficulties.push_back(Diff);
+		// rethrow with line info
+		throw std::exception((boost::format("Line %d: %s") % Info.Line % e.what()).str().c_str());
 	}
 }

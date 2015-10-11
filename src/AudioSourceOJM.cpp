@@ -311,6 +311,7 @@ void F412XOR(char* buffer, size_t length)
 AudioSourceOJM::AudioSourceOJM()
 {
 	TemporaryState.Enabled = false;
+	Speed = 1;
 }
 
 AudioSourceOJM::~AudioSourceOJM()
@@ -377,6 +378,7 @@ void AudioSourceOJM::parseM30()
 		if (vf.vi)
 		{
 			TemporaryState.Enabled = OJM_OGG;
+			NewSample->SetPitch(Speed);
 			NewSample->Open(this);
 			TemporaryState.Enabled = 0;
 		}
@@ -455,6 +457,7 @@ void AudioSourceOJM::parseOMC()
 		TemporaryState.File = sf_open_virtual(&M30Interface, SFM_READ, &Info, &ToLoad);
 		TemporaryState.Info = &Info;
 		TemporaryState.Enabled = OJM_WAV;
+		NewSample->SetPitch(Speed);
 		NewSample->Open(this);
 		TemporaryState.Enabled = false;
 
@@ -496,6 +499,7 @@ void AudioSourceOJM::parseOMC()
 		TemporaryState.File = &vf;
 		TemporaryState.Info = vf.vi;
 		TemporaryState.Enabled = OJM_OGG;
+		NewSample->SetPitch(Speed);
 		NewSample->Open(this);
 		TemporaryState.Enabled = false;
 
@@ -511,6 +515,11 @@ void AudioSourceOJM::parseOMC()
 bool AudioSourceOJM::HasDataLeft()
 {
 	return TemporaryState.Enabled != 0;
+}
+
+void AudioSourceOJM::SetPitch(double speed)
+{
+	Speed = speed;
 }
 
 size_t AudioSourceOJM::GetLength()

@@ -1,95 +1,71 @@
+game_require "utils"
 skin_require "Global/Background"
 skin_require "Global/FadeInScreen"
 
-floor = math.floor
+-- Wheel item size
+ItemWidth = 600
+ItemHeight = 76.8
 
 -- Wheel transformation
-TransformX =  ScreenWidth * 15/20
-CurrentTX = ScreenWidth
-WheelSpeed = 12
-GDelta = 0
-
-function clamp (v, mn, mx)
-    if v < mn then 
-	   return mn
-	else 
-	   if v > mx then  
-	    return mx
-	   else 
-	    return v
-	   end
-	end
-end
+WheelX = 0
+WheelExitX = -600
+TransformX = 0
+CurrentTX = -26
+WheelSpeed = 900
 
 -- List transformation
 function TransformListHorizontal(Y)
-  return ((Y*Y - 768*Y) / (1055)) + CurrentTX
-end
-
-function sign(x)
-    if x == 0 then return 0 end
-    if x > 0 then return 1 else return -1 end
+  return CurrentTX
 end
 
 Wheel.ListY = 0
 Wheel.PendingY = 0
-Wheel.ScrollSpeed = 30
+Wheel.ScrollSpeed = WheelSpeed
+Wheel.ItemHeight = 76.8
+Wheel.ItemWidth = ItemWidth
 LastSign = 0
 Time = 0
 
 function TransformPendingVertical(V)
-	LastSign = sign(V)
-	Time = 0.25
-	return V * GDelta * WheelSpeed
+	return 0
 end
 
 function TransformListVertical(LY)  
-
-	local Middle = math.ceil(LY) + (ScreenHeight / 4 / Wheel:GetItemHeight())
-	local D = Middle % Wheel:GetItemHeight()
-	
-	Middle = Middle - D
-	
-	-- Okay, so Middle is the place where we want to lock ourselves, but..
-
-  return LY + (LY - Middle) * clamp(1 - Time / 0.25, 0, 1)
+  	return LY
 end
-
 function OnItemHover(Index, Line, Selected)
 	updText()
 end
 
 function OnItemHoverLeave(Index, Line, Selected)
-	local idx = Wheel:IndexAtPoint(ScreenHeight/2)
-	Wheel:SetCursorIndex(idx)
+	Wheel.CursorIndex = Wheel:GetSelectedItem()
 end
 
 function OnItemClick(Index, Line, Selected)
 	Wheel:SetSelectedItem(Index)
-	Wheel.PendingY = (Wheel:NormalizedIndexAtPoint(ScreenHeight/2) - Index) * Wheel:GetItemHeight()
 end
 
-function TransformItem(Item, Song, IsSelected)
-	if IsSelected == true then
-		Item.Image = "itemS.png"
-	else
-	    local Idx = Wheel:NormalizedIndexAtPoint(Item.Y)
-		if Idx == Wheel:GetCursorIndex() then
-			Item.Image = "itemH.png"
-		else
-			Item.Image = "item.png"
-		end
-	end
+
+-- This gets called for every item - ideally you dispatch for every item.
+WheelItems = {}
+function TransformItem(Item, Song, IsSelected, Index)
+	WheelItems[Item](Song, IsSelected, Index);	
+end
+
+WheelItemStrings = {}
+function TransformString(Item, Song, IsSelected, Index, Txt)
+	WheelItemStrings[Item](Song, IsSelected, Index, Txt);	
 end
 
 -- This recieves song and difficulty changes.
 function OnSongChange(Song, Diff)
 	updText()
+	Wheel.CursorIndex = Wheel:GetSelectedItem()
 end
 
 -- Screen Events
 function OnSelect()
-	TransformX = ScreenWidth + 250
+	TransformX = WheelExitX 
 	ScreenFade.In()
 	return 1
 end
@@ -97,19 +73,17 @@ end
 function OnRestore()
 	ScreenFade.Out()
 
-	TransformX =  ScreenWidth * 15/20
-	CurrentTX = ScreenWidth	
+	TransformX = WheelX
 	BgAlpha = 0
 end
 
 function OnDirectoryChange()
-	TransformX =  ScreenWidth * 15/20
-	CurrentTX = ScreenWidth	+ 250
+	TransformX = WheelX
 end
 
 -- ButtonEvents
 function DirUpBtnClick()
-	CurrentTX = ScreenWidth
+	CurrentTX = WheelExitX
 end
 
 function KeyEvent(k, c, m)
@@ -151,11 +125,113 @@ function Init()
 	dd = StringObject2D()
 	dd.Font = font
 	dd.Y = 348
-	dd.X = 120
+	dd.X = 820
 	
-	Wheel.ScrollSpeed = Wheel:GetItemHeight()
+	WheelBackground = Object2D()
+	WheelBackground.Image = "Global/white.png"
+	WheelBackground.Width = ItemWidth
+	WheelBackground.Height = ItemHeight
+
+	WheelItems[Wheel:AddSprite(WheelBackground)] = function(Song, IsSelected, Index)
+		if IsSelected == true and Song then
+			WheelBackground.Red = 0.1
+			WheelBackground.Green = 0.3
+			WheelBackground.Blue = 0.7
+		else
+			if Index == Wheel.CursorIndex then
+				WheelBackground.Red = 0.05
+				WheelBackground.Green = 0.15
+				WheelBackground.Blue = 0.35
+			else
+				local Nrm = Index % 2
+				if Nrm == 0 then
+					WheelBackground.Red = 0
+					WheelBackground.Green = 0
+					WheelBackground.Blue = 0
+				else
+					WheelBackground.Red = 0.2
+					WheelBackground.Green = 0.2
+					WheelBackground.Blue = 0.2
+				end
+			end
+		end
+	end
+
+	strName = StringObject2D()
+	strArtist = StringObject2D()
+	strDuration = StringObject2D()
+	strLevel = StringObject2D()
+	strSubtitle = StringObject2D()
+
+	wheelfont = Fonts.TruetypeFont(GetSkinFile("font.ttf"), 30)
+	infofont = Fonts.TruetypeFont(GetSkinFile("font.ttf"), 18)
+
+	strName.Font = wheelfont
+	strArtist.Font = font
+	strDuration.Font = infofont
+	strLevel.Font = infofont
+	strSubtitle.Font = infofont 
 	
+	-- Transform these strings according to what they are
+	WheelItemStrings[Wheel:AddString(strName)] = function(Song, IsSelected, Index, Txt)
+		strName.X = strName.X + 10
+		if Song then
+			strName.Text = Song.Title
+		else
+		    strName.Text = Txt
+		end
+	end
+	WheelItemStrings[Wheel:AddString(strArtist)] = function(Song, IsSelected, Index, Txt)
+		strArtist.X = strArtist.X + 10
+		strArtist.Y = strArtist.Y + 45
+		if Song then
+			strArtist.Text = "by " .. Song.Author
+			strArtist.Blue = 0.3
+			strArtist.Green = 0.7
+		else
+			strArtist.Text = "directory..."
+			strArtist.Blue = 0.3
+			strArtist.Green = 0.3
+		end
+	end
+	WheelItemStrings[Wheel:AddString(strDuration)] = function(Song, IsSelected, Index, Txt)
+		if Song then
+			local sng = toSong7K(Song)
+			if not sng then
+				sng = toSongDC(Song)
+			end
+			if IsSelected then
+				strDuration.Text = floor(sng:GetDifficulty(Global.DifficultyIndex).Duration) .. " seconds"
+			else
+				strDuration.Text = floor(sng:GetDifficulty(0).Duration) .. " seconds"
+			end
+		else
+			strDuration.Text = ""
+		end
+		strDuration.X = strDuration.X + ItemWidth - infofont:GetLength(strDuration.Text) - 20
+		strDuration.Y = strDuration.Y + 10
+	end
+	WheelItemStrings[Wheel:AddString(strLevel)] = function(Song, IsSelected, Index, Txt)
+		
+	end
+
+	WheelItemStrings[Wheel:AddString(strSubtitle)] = function(Song, IsSelected, Index, Txt)
+		strSubtitle.X = strSubtitle.X + 10
+		strSubtitle.Y = strSubtitle.Y + 30
+		if Song then
+			strSubtitle.Text = Song.Subtitle
+		else
+			strSubtitle.Text = ""
+		end
+	end
+
 	Engine:AddTarget(dd)
+
+	sbar = Engine:CreateObject()
+	sbar.Image = "Global/white.png"
+	sbar.Height = ScreenHeight
+	sbar.Width = 5
+	sbar.Y = 0
 	Engine:SetUILayer(30)
 end
 
@@ -190,21 +266,33 @@ end
 function Cleanup()
 end
 
-lastIndex = -1
+function ScrollEvent(xoff, yoff)
+	Wheel:SetSelectedItem(Wheel:GetSelectedItem() - yoff)
+end
 
 function Update(Delta)
-	GDelta = Delta
 	BackgroundAnimation:Update(Delta)
-	CurrentTX = CurrentTX + (TransformX - CurrentTX) * Delta * 8
+	CurrentTX = clamp(CurrentTX + (TransformX - CurrentTX) * Delta * 8, WheelExitX, WheelX)
+
+	sbar.X = CurrentTX + ItemWidth
 
 	Time = Time - Delta
 	
-	local idx = Wheel:NormalizedIndexAtPoint(ScreenHeight/2)
-	if lastIndex ~= idx then
-	    lastIndex = idx
-		if lastIndex ~= Wheel:GetSelectedItem() then
-			Wheel:SetCursorIndex(idx)
-			Wheel:SetSelectedItem(idx)
-		end
+
+	local SelectedSongCenterY = math.floor(-Wheel:GetSelectedItem() * Wheel:GetItemHeight() + 
+	ScreenHeight / 2 - Wheel:GetItemHeight()/2)
+	Wheel.PendingY = SelectedSongCenterY - Wheel.ListY 
+	Wheel.ScrollSpeed = -math.abs(Wheel.PendingY) / 0.25
+
+	-- don't overshoot
+	local deltaWheel = sign(Wheel.PendingY) * math.min(Wheel.ScrollSpeed * Delta, math.abs(SelectedSongCenterY - Wheel.ListY))
+
+	if math.abs(Wheel.PendingY) < 1 then
+		Wheel.ListY = Wheel.ListY + Wheel.PendingY
+		Wheel.PendingY = 0
+	else
+		Wheel.ListY = Wheel.ListY - deltaWheel
+		Wheel.PendingY = Wheel.PendingY - deltaWheel
 	end
+
 end

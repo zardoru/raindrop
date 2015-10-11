@@ -1,5 +1,6 @@
 #include "GameGlobal.h"
 #include "GameState.h"
+#include "Logging.h"
 #include "Sprite.h"
 #include "TrackNote.h"
 #include "Noteskin.h"
@@ -29,9 +30,15 @@ void lua_Render(Sprite *S)
 	}
 }
 
+#ifndef WIN32
+#define LUACHECK(x) if (NoteskinLua == nullptr) {Log::Logf("%s: Noteskin state is invalid - no lua.\n", __func__); return x;}
+#else
+#define LUACHECK(x) if (NoteskinLua == nullptr) {Log::DebugPrintf("%s: Noteskin state is invalid - no lua.\n", __FUNCTION__); return x;}
+#endif
+
 void Noteskin::Validate()
 {
-	assert(NoteskinLua != nullptr);
+	LUACHECK();
 	if (NoteskinLua->CallFunction("Init"))
 		NoteskinLua->RunFunction();
 
@@ -64,7 +71,7 @@ void Noteskin::SetupNoteskin(bool SpecialStyle, int Lanes, ScreenGameplay7K* Par
 
 void Noteskin::Update(float Delta, float CurrentBeat)
 {
-	assert(NoteskinLua != nullptr);
+	LUACHECK();
 
 	if (NoteskinLua->CallFunction("Update", 2))
 	{
@@ -83,7 +90,7 @@ void Noteskin::DrawNote(VSRG::TrackNote& T, int Lane, float Location)
 {
 	const char* CallFunc = nullptr;
 
-	assert(NoteskinLua != nullptr);
+	LUACHECK();
 
 	switch (T.GetDataNoteKind())
 	{
@@ -122,37 +129,37 @@ void Noteskin::DrawNote(VSRG::TrackNote& T, int Lane, float Location)
 
 float Noteskin::GetBarlineWidth()
 {
-	assert(NoteskinLua != nullptr);
+	LUACHECK(0);
 	return NoteskinLua->GetGlobalD("BarlineWidth");
 }
 
 double Noteskin::GetBarlineStartX()
 {
-	assert(NoteskinLua != nullptr);
+	LUACHECK(0);
 	return NoteskinLua->GetGlobalD("BarlineStartX");
 }
 
 double Noteskin::GetBarlineOffset()
 {
-	assert(NoteskinLua != nullptr);
+	LUACHECK(0);
 	return NoteskinLua->GetGlobalD("BarlineOffset");
 }
 
 bool Noteskin::IsBarlineEnabled()
 {
-	assert(NoteskinLua != nullptr);
+	LUACHECK(false);
 	return NoteskinLua->GetGlobalD("BarlineEnabled") != 0;
 }
 
 double Noteskin::GetJudgmentY()
 {
-	assert(NoteskinLua != nullptr);
+	LUACHECK(0);
 	return NoteskinLua->GetGlobalD("JudgmentLineY");
 }
 
 void Noteskin::DrawHoldHead(VSRG::TrackNote &T, int Lane, float Location, int ActiveLevel)
 {
-	assert(NoteskinLua != nullptr);
+	LUACHECK();
 
 	if (!NoteskinLua->CallFunction("DrawHoldHead", 4))
 		if (!NoteskinLua->CallFunction("DrawNormal", 4))
@@ -169,7 +176,7 @@ void Noteskin::DrawHoldHead(VSRG::TrackNote &T, int Lane, float Location, int Ac
 
 void Noteskin::DrawHoldTail(VSRG::TrackNote& T, int Lane, float Location, int ActiveLevel)
 {
-	assert(NoteskinLua != nullptr);
+	LUACHECK();
 
 	if (!NoteskinLua->CallFunction("DrawHoldTail", 4))
 		if (!NoteskinLua->CallFunction("DrawNormal", 4))
@@ -201,7 +208,7 @@ bool Noteskin::ShouldDecreaseHoldSizeWhenBeingHit()
 
 void Noteskin::DrawHoldBody(int Lane, float Location, float Size, int ActiveLevel)
 {
-	assert(NoteskinLua != nullptr);
+	LUACHECK();
 
 	if (!NoteskinLua->CallFunction("DrawHoldBody", 4))
 			return;

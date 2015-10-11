@@ -14,16 +14,6 @@ DefaultGameplay7KBackground = DefaultBackground
 -- Amount of .ogg BGM loops. this will be calculated automatically in the future.
 LoopTotal = 8
 
-WheelFont = {
-	Font = "font.ttf",
-	Size = 26
-}
-
-ItemTextOffset = {
-	X = 15,
-	Y = -3
-}
-
 -- Gameplay
 
 --[[ Considerations.
@@ -59,7 +49,7 @@ Lifebar = {
 
 -- 7K mode configuration.
 -- Time that the 'miss' layer will be shown on BMS when a miss occurs.
-OnMissBGATime = 3
+OnMissBGATime = 0.5
 
 -- Set screen filter transparency on 7K.
 ScreenFilter = 0.7

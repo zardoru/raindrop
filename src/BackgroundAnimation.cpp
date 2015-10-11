@@ -20,7 +20,7 @@ Directory GetSongBackground(Game::Song &Song)
 	for (auto i: DirCnt)
 	{
 		GString ext = Directory(i).GetExtension();
-		if (i.find("bg") && (ext == "jpg" || ext == "png"))
+		if (i.find("bg") != GString::npos && (ext == "jpg" || ext == "png"))
 			return SngDir / i;
 	}
 
@@ -203,7 +203,7 @@ shared_ptr<BackgroundAnimation> CreateBGAforVSRG(VSRG::Song &input, uint8_t Diff
 		if (Diff->Data && Diff->Data->BMPEvents)
 			return make_shared<BMSBackground>(Diff, &input);
 		else
-			return make_shared<StaticBackground>(input.SongDirectory / input.BackgroundFilename);
+			return make_shared<StaticBackground>(GetSongBackground(input));
 	}
 
 	return nullptr;

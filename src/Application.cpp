@@ -334,7 +334,7 @@ void Application::Run()
 	{
 		Log::Printf("Generating cache...\n");
 		Game::GameState::GetInstance().Initialize();
-		Game::SongWheel::GetInstance().Initialize(0, 0, Game::GameState::GetInstance().GetSongDatabase(), false);
+		Game::SongWheel::GetInstance().Initialize(Game::GameState::GetInstance().GetSongDatabase());
 		Game::SongWheel::GetInstance().Join();
 
 		RunLoop = false;
@@ -400,4 +400,9 @@ void Application::Close()
 
 	WindowFrame.Cleanup();
 	Configuration::Cleanup();
+}
+
+void Application::HandleTextInput(unsigned cp)
+{
+	Game->HandleTextInput(cp);
 }

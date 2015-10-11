@@ -121,7 +121,7 @@ bool RaindropMechanics::OnPressLane(double SongTime, VSRG::TrackNote* m, uint32 
 			}
 		}
 
-		PlayNoteSoundEvent(m->GetSound());
+		PlayNoteSoundEvent(m);
 		return true;
 	}
 
@@ -228,7 +228,7 @@ bool O2JamMechanics::OnPressLane(double SongBeat, VSRG::TrackNote* m, uint32 Lan
 				m->MakeInvisible();
 		}
 
-		PlayNoteSoundEvent(m->GetSound());
+		PlayNoteSoundEvent(m);
 
 		return true;
 	}

@@ -11,6 +11,7 @@ char *DatabaseQuery =
   [id] INTEGER, \
   [songtitle] varchar(260), \
   [songauthor] varchar(260), \
+  [subtitle] varchar(260), \
   [songfilename] varchar(260), \
   [songbackground] varchar(260), \
   [mode] INT, \
@@ -43,14 +44,14 @@ CREATE TABLE IF NOT EXISTS [diffdb] (\
 	  CREATE INDEX IF NOT EXISTS songid_index ON songdb(id);\
   ";
 
-const char* InsertSongQuery = "INSERT INTO songdb VALUES (NULL,?,?,?,?,?,?,?)";
+const char* InsertSongQuery = "INSERT INTO songdb VALUES (NULL,?,?,?,?,?,?,?,?)";
 const char* InsertDifficultyQuery = "INSERT INTO diffdb VALUES (?,NULL,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 const char* GetFilenameIDQuery = "SELECT id, lastmodified FROM songfiledb WHERE filename=?";
 const char* InsertFilenameQuery = "INSERT INTO songfiledb VALUES (NULL,?,?,?)";
 const char* GetDiffNameQuery = "SELECT name FROM diffdb \
 							 WHERE (diffdb.fileid = (SELECT songfiledb.id FROM songfiledb WHERE filename=?))";
 const char* GetLMTQuery = "SELECT lastmodified FROM songfiledb WHERE filename=?";
-const char* GetSongInfo = "SELECT songtitle, songauthor, songfilename, songbackground, mode, previewtime FROM songdb WHERE id=?";
+const char* GetSongInfo = "SELECT songtitle, songauthor, songfilename, subtitle, songbackground, mode, previewtime FROM songdb WHERE id=?";
 const char* GetDiffInfo = "SELECT diffid, name, objcount, scoreobjectcount, holdcount, notecount, duration, isvirtual, \
 						  keys, fileid, bpmtype, level FROM diffdb WHERE songid=?";
 const char* GetFileInfo = "SELECT filename, lastmodified FROM songfiledb WHERE id=?";
@@ -369,10 +370,11 @@ void SongDatabase::GetSongInformation7K (int ID, VSRG::Song* Out)
 	Out->SongName = (char*)sqlite3_column_text(st_GetSongInfo, 0);
 	Out->SongAuthor = (char*)sqlite3_column_text(st_GetSongInfo, 1);
 	Out->SongFilename = (char*)sqlite3_column_text(st_GetSongInfo, 2);
-	Out->BackgroundFilename = (char*)sqlite3_column_text(st_GetSongInfo, 3);
+	Out->Subtitle = (char*)sqlite3_column_text(st_GetSongInfo, 3);
+	Out->BackgroundFilename = (char*)sqlite3_column_text(st_GetSongInfo, 4);
 	Out->ID = ID;
-	int mode = sqlite3_column_int(st_GetSongInfo, 4);
-	Out->PreviewTime = sqlite3_column_double(st_GetSongInfo, 5);
+	int mode = sqlite3_column_int(st_GetSongInfo, 5);
+	Out->PreviewTime = sqlite3_column_double(st_GetSongInfo, 6);
 
 	SC(sqlite3_reset(st_GetSongInfo));
 
@@ -436,11 +438,12 @@ int SongDatabase::GetSongIDForFile(Directory File, VSRG::Song* In)
 		// So now the latest entry is what we're going to insert difficulties and files into.
 		SC(sqlite3_bind_text(st_SngInsertQuery, 1, In->SongName.c_str(), In->SongName.length(), SQLITE_STATIC));
 		SC(sqlite3_bind_text(st_SngInsertQuery, 2, In->SongAuthor.c_str(), In->SongAuthor.length(), SQLITE_STATIC));
-		SC(sqlite3_bind_text(st_SngInsertQuery, 3, In->SongFilename.c_str(), In->SongFilename.length(), SQLITE_STATIC));
-		SC(sqlite3_bind_text(st_SngInsertQuery, 4, In->BackgroundFilename.c_str(), In->BackgroundFilename.length(), SQLITE_STATIC));
-		SC(sqlite3_bind_int(st_SngInsertQuery, 5, In->Mode));
-		SC(sqlite3_bind_text(st_SngInsertQuery, 6, In->SongPreviewSource.c_str(), In->SongPreviewSource.length(), SQLITE_STATIC));
-		SC(sqlite3_bind_double(st_SngInsertQuery, 7, In->PreviewTime));
+		SC(sqlite3_bind_text(st_SngInsertQuery, 3, In->Subtitle.c_str(), In->Subtitle.length(), SQLITE_STATIC));
+		SC(sqlite3_bind_text(st_SngInsertQuery, 4, In->SongFilename.c_str(), In->SongFilename.length(), SQLITE_STATIC));
+		SC(sqlite3_bind_text(st_SngInsertQuery, 5, In->BackgroundFilename.c_str(), In->BackgroundFilename.length(), SQLITE_STATIC));
+		SC(sqlite3_bind_int(st_SngInsertQuery, 6, In->Mode));
+		SC(sqlite3_bind_text(st_SngInsertQuery, 7, In->SongPreviewSource.c_str(), In->SongPreviewSource.length(), SQLITE_STATIC));
+		SC(sqlite3_bind_double(st_SngInsertQuery, 8, In->PreviewTime));
 
 		SCS(sqlite3_step(st_SngInsertQuery));
 		SC(sqlite3_reset(st_SngInsertQuery));

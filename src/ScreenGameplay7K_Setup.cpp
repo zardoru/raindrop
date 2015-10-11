@@ -88,8 +88,6 @@ void ScreenGameplay7K::Cleanup()
 
 	GameState::GetInstance().SetScorekeeper7K(nullptr);
 	Noteskin::Cleanup();
-
-	delete MechanicsSet;
 }
 
 void ScreenGameplay7K::AssignMeasure(uint32 Measure)
@@ -106,13 +104,13 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 	}
 
 	for (uint32 i = 0; i < Measure; i++)
-		Beat += CurrentDiff->Data->Measures[i].MeasureLength;
+		Beat += CurrentDiff->Data->Measures[i].Length;
 	
 
 	Log::Logf("Warping to measure measure %d at beat %f.\n", Measure, Beat);
 
 	double Time = TimeAtBeat(CurrentDiff->Timing, CurrentDiff->Offset, Beat)
-		+ StopTimeAtBeat(CurrentDiff->Data->StopsTiming, Beat);
+		+ StopTimeAtBeat(CurrentDiff->Data->Stops, Beat);
 
 	// Disable all notes before the current measure.
 	for (uint32 k = 0; k < CurrentDiff->Channels; k++)
@@ -317,6 +315,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 	{
 		Log::Printf("Loading OJM.\n");
 		OJMAudio = make_shared<AudioSourceOJM>();
+		OJMAudio->SetPitch(Speed);
 		OJMAudio->Open((MySong->SongDirectory / MySong->SongFilename).c_path());
 
 		for (int i = 1; i <= 2000; i++)
@@ -337,9 +336,11 @@ bool ScreenGameplay7K::LoadSongAudio()
 #ifdef WIN32
 			std::wstring sd = Utility::Widen(MySong->SongDirectory) + L"/" + Utility::Widen(i->second);
 
+			Keysounds[i->first]->SetPitch(Speed);
 			Keysounds[i->first]->Open(Utility::Narrow(sd).c_str());
 
 #else
+			Keysounds[i->first]->SetPitch(Speed);
 			Keysounds[i->first]->Open((MySong->SongDirectory + "/" + i->second).c_str());
 #endif
 			boost::this_thread::interruption_point();
@@ -512,9 +513,9 @@ void ScreenGameplay7K::SetupMechanics()
 		auto TimingInfo = CurrentDiff->Data->TimingInfo.get();
 		if (TimingInfo->GetType() == VSRG::TI_BMS)
 		{
-			auto Info = static_cast<VSRG::BmsTimingInfo*> (TimingInfo);
-			ScoreKeeper->setLifeTotal(Info->life_total);
-			ScoreKeeper->setJudgeRank(Info->judge_rank);
+			auto Info = static_cast<VSRG::BMSTimingInfo*> (TimingInfo);
+			ScoreKeeper->setLifeTotal(Info->GaugeTotal);
+			ScoreKeeper->setJudgeRank(Info->JudgeRank);
 			UsedTimingType = TT_TIME;
 			lifebar_type = LT_GROOVE;
 			bmsOrStepmania = true;
@@ -574,12 +575,12 @@ void ScreenGameplay7K::SetupMechanics()
 	{
 		Log::Printf("Using raindrop mechanics set!\n");
 		// Only forced release if not a bms or a stepmania chart.
-		MechanicsSet = new RaindropMechanics(!bmsOrStepmania);
+		MechanicsSet = make_shared<RaindropMechanics>(!bmsOrStepmania);
 	}
 	else if (UsedTimingType == TT_BEATS)
 	{
 		Log::Printf("Using o2jam mechanics set!\n");
-		MechanicsSet = new O2JamMechanics;
+		MechanicsSet = make_shared<O2JamMechanics>();
 		ChangeNoteTimeToBeats();
 	}
 
@@ -685,7 +686,7 @@ void ScreenGameplay7K::MainThreadInitialization()
 
 	WindowFrame.SetLightMultiplier(0.75f);
 
-	memset(PlaySounds, 0, sizeof(PlaySounds));
+	memset(CurrentKeysounds, 0, sizeof(CurrentKeysounds));
 
 	CalculateHiddenConstants();
 

@@ -27,7 +27,7 @@ class NPSGraph {
 		int out = 0;
 		for (auto m : In->Data->Measures) {
 			for (int k = 0; k < In->Channels; k++) {
-				for (auto note : m.MeasureNotes[k])	{
+				for (auto note : m.Notes[k])	{
 					if (note.StartTime >= timeStart || (note.EndTime >= timeStart && note.EndTime) ) {
 						if (note.StartTime < timeEnd || (note.EndTime < timeEnd && note.EndTime)) {
 							out++;

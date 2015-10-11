@@ -1,6 +1,8 @@
 #ifndef GGString_H_
 #define GGString_H_
 
+class Font;
+
 class GraphicalString : public Sprite
 {
 	GString mText;
@@ -12,7 +14,7 @@ public:
 	void SetFont(Font* _Font);
 	Font* GetFont() const;
 
-	void Render();
+	void Render() override;
 };
 
 #endif

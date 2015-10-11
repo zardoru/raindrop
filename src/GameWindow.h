@@ -45,6 +45,7 @@ class GameWindow
 	friend void MouseInputFunc (GLFWwindow*, int32 key, int32 code, int32 modk);
 	friend void ScrollFunc( GLFWwindow*, double xOff, double yOff );
 	friend void MouseMoveFunc (GLFWwindow*,double newx, double newy);
+	friend void CharInputFunc(GLFWwindow*, unsigned int);
 
 	Vec2 size;
 	Vec2 matrixSize, Viewport;

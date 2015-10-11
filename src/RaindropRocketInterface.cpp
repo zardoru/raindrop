@@ -107,14 +107,16 @@ namespace Engine { namespace RocketInterface {
 		glDisable(GL_DEPTH_TEST);
 		glDepthMask(GL_FALSE);
 		SetBlendingMode(BLEND_ALPHA);
-
-		SetShaderParameters(false, false, false);
-		WindowFrame.SetUniform(U_COLOR, 1, 1, 1, 1);
-		WindowFrame.SetUniform(U_MVP, &(tMatrix[0][0])); 
 		
 		// bind texture
 		if (Handle->tex)
 			Handle->tex->Bind();
+		else
+			glBindTexture(GL_TEXTURE_2D, 0);
+
+		SetShaderParameters(false, false, false, false, false, Handle->tex == nullptr);
+		WindowFrame.SetUniform(U_COLOR, 1, 1, 1, 1);
+		WindowFrame.SetUniform(U_MVP, &(tMatrix[0][0])); 
 
 		// bind VBOs
 		Handle->vert->Bind();
@@ -219,9 +221,9 @@ namespace Engine { namespace RocketInterface {
 
 	void SetupRocket()
 	{
-		Rocket::Core::SetFileInterface(new Engine::RocketInterface::FileSystemInterface);
-		Rocket::Core::SetRenderInterface(new Engine::RocketInterface::RenderInterface);
-		Rocket::Core::SetSystemInterface(new Engine::RocketInterface::SystemInterface);
+		SetFileInterface(new Engine::RocketInterface::FileSystemInterface);
+		SetRenderInterface(new Engine::RocketInterface::RenderInterface);
+		SetSystemInterface(new Engine::RocketInterface::SystemInterface);
 
 		Rocket::Core::Initialise();
 		Rocket::Controls::Initialise();

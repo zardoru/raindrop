@@ -51,8 +51,6 @@ void SetupWheelLua(LuaManager* Man)
 		.addFunction("PrevDifficulty", &SongWheel::PrevDifficulty)
 		.addFunction("SetDifficulty", &SongWheel::SetDifficulty)
 		.addFunction("IsLoading", &SongWheel::IsLoading)
-		.addFunction("GetCursorIndex", &SongWheel::GetCursorIndex)
-		.addFunction("SetCursorIndex", &SongWheel::SetCursorIndex)
 		.addFunction("SetSelectedItem", &SongWheel::SetSelectedItem)
 		.addFunction("GetSelectedItem", &SongWheel::GetSelectedItem)
 		.addFunction("GetNumItems", &SongWheel::GetNumItems)
@@ -60,12 +58,18 @@ void SetupWheelLua(LuaManager* Man)
 		.addFunction("IndexAtPoint", &SongWheel::IndexAtPoint)
 		.addFunction("NormalizedIndexAtPoint", &SongWheel::NormalizedIndexAtPoint)
 		.addFunction("GetTransformedY", &SongWheel::GetTransformedY)
+		.addFunction("GoUp", &SongWheel::GoUp)
+		.addFunction("AddSprite", &SongWheel::AddSprite)
+		.addFunction("AddString", &SongWheel::AddText)
 		.addProperty("ListY", &SongWheel::GetListY, &SongWheel::SetListY)
+		.addProperty("CursorIndex", &SongWheel::GetCursorIndex, &SongWheel::SetCursorIndex)
 		.addProperty("PendingY", &SongWheel::GetDeltaY, &SongWheel::SetDeltaY)
+		.addProperty("ItemHeight", &SongWheel::GetItemHeight, &SongWheel::SetItemHeight)
+		.addProperty("ItemWidth", &SongWheel::GetItemWidth, &SongWheel::SetItemWidth)
 		.addData("ScrollSpeed", &SongWheel::ScrollSpeed)
 		.endClass();
 
-	luabridge::push(L, &Game::SongWheel::GetInstance());
+	luabridge::push(L, &SongWheel::GetInstance());
 	lua_setglobal(L, "Wheel");
 }	
 
@@ -80,7 +84,7 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic")
 	using Game::SongWheel;
 
 	SongWheel * Wheel = &Game::SongWheel::GetInstance();
-	Wheel->Initialize(0, 0, GameState::GetInstance().GetSongDatabase());
+	Wheel->Initialize(GameState::GetInstance().GetSongDatabase());
 
 	Game::SongNotification SongNotifyFunc(bind(&ScreenSelectMusic::OnSongChange, this, _1, _2));
 	Game::SongNotification SongNotifySelectFunc(bind(&ScreenSelectMusic::OnSongSelect, this, _1, _2));
@@ -104,7 +108,8 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic")
 	Wheel->OnItemHover = ItHoverNotif;
 	Wheel->OnItemHoverLeave = ItHoverLeaveNotif;
 
-	Wheel->TransformItem = bind(&ScreenSelectMusic::TransformItem, this, _1, _2, _3);
+	Wheel->TransformItem = bind(&ScreenSelectMusic::TransformItem, this, _1, _2, _3, _4);
+	Wheel->TransformString = bind(&ScreenSelectMusic::TransformString, this, _1, _2, _3, _4, _5);
 
 	if (!SelectSnd)
 	{
@@ -184,12 +189,6 @@ void ScreenSelectMusic::LoadThreadInitialization()
 	Running = true;
 
 	SwitchBackGuiPending = true;
-	char* Manifest[] =
-	{
-		const_cast<char*>(Configuration::GetSkinConfigs("SelectMusicBackground").c_str()),
-	};
-
-	ImageLoader::LoadFromManifest(Manifest, 1, GameState::GetInstance().GetSkinPrefix());
 
 	SetupWheelLua(Animations->GetEnv());
 	Animations->Preload( GameState::GetInstance().GetSkinFile("screenselectmusic.lua"), "Preload" );
@@ -205,6 +204,7 @@ void ScreenSelectMusic::Cleanup()
 	StopLoops();
 
 	GameState::GetInstance().SetSelectedSong(nullptr);
+	Game::SongWheel::GetInstance().CleanItems();
 }
 
 float ScreenSelectMusic::GetListPendingVerticalTransformation(const float Y)
@@ -508,16 +508,33 @@ bool ScreenSelectMusic::HandleScrollInput(double xOff, double yOff)
 			return true;
 	}
 
+	Animations->HandleScrollInput(xOff, yOff);
+
 	return Game::SongWheel::GetInstance().HandleScrollInput(xOff, yOff);
 }
 
-void ScreenSelectMusic::TransformItem(Sprite* Item, shared_ptr<Game::Song> Song, bool IsSelected)
+
+void ScreenSelectMusic::TransformItem(int Item, shared_ptr<Game::Song> Song, bool IsSelected, int Index)
 {
-	if (Animations->GetEnv()->CallFunction("TransformItem", 3))
+	if (Animations->GetEnv()->CallFunction("TransformItem", 4))
 	{
 		luabridge::push(Animations->GetEnv()->GetState(), Item);
 		luabridge::push(Animations->GetEnv()->GetState(), Song.get());
 		luabridge::push(Animations->GetEnv()->GetState(), IsSelected);
+		luabridge::push(Animations->GetEnv()->GetState(), Index);
+		Animations->GetEnv()->RunFunction();
+	}
+}
+
+void ScreenSelectMusic::TransformString(int Item, shared_ptr<Game::Song> Song, bool IsSelected, int Index, GString text)
+{
+	if (Animations->GetEnv()->CallFunction("TransformString", 5))
+	{
+		luabridge::push(Animations->GetEnv()->GetState(), Item);
+		luabridge::push(Animations->GetEnv()->GetState(), Song.get());
+		luabridge::push(Animations->GetEnv()->GetState(), IsSelected);
+		luabridge::push(Animations->GetEnv()->GetState(), Index);
+		luabridge::push(Animations->GetEnv()->GetState(), text.c_str());
 		Animations->GetEnv()->RunFunction();
 	}
 }

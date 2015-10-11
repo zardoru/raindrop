@@ -13,15 +13,16 @@ struct loaderVSRGEntry_t {
 	const wchar_t* Ext;
 	void (*LoadFunc) (GString filename, GString prefix, VSRG::Song* Out);
 } LoadersVSRG [] = {
-	{ L"bms",  NoteLoaderBMS::LoadObjectsFromFile },
-	{ L"bme",  NoteLoaderBMS::LoadObjectsFromFile },
-	{ L"bml",  NoteLoaderBMS::LoadObjectsFromFile },
-	{ L"pms",  NoteLoaderBMS::LoadObjectsFromFile },
-	{ L"sm",   NoteLoaderSM::LoadObjectsFromFile  },
-	{ L"osu",  NoteLoaderOM::LoadObjectsFromFile  },
-	{ L"fcf",  NoteLoaderFTB::LoadObjectsFromFile },
-	{ L"ojn",  NoteLoaderOJN::LoadObjectsFromFile },
-	{ L"ssc",  NoteLoaderSSC::LoadObjectsFromFile }
+	{ L"bms",   NoteLoaderBMS::LoadObjectsFromFile },
+	{ L"bme",   NoteLoaderBMS::LoadObjectsFromFile },
+	{ L"bml",   NoteLoaderBMS::LoadObjectsFromFile },
+	{ L"pms",   NoteLoaderBMS::LoadObjectsFromFile },
+	{ L"sm",    NoteLoaderSM::LoadObjectsFromFile  },
+	{ L"osu",   NoteLoaderOM::LoadObjectsFromFile  },
+	{ L"fcf",   NoteLoaderFTB::LoadObjectsFromFile },
+	{ L"ojn",   NoteLoaderOJN::LoadObjectsFromFile },
+	{ L"ssc",   NoteLoaderSSC::LoadObjectsFromFile },
+	{ L"bmson", NoteLoaderBMSON::LoadObjectsFromFile }
 };
 
 SongLoader::SongLoader(SongDatabase* Database)
@@ -111,7 +112,7 @@ bool ValidBMSExtension(std::wstring Ext)
 	return false;
 }
 
-std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory Prefix, VSRG::Song *Sng)
+shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory Prefix, VSRG::Song *Sng)
 {
 	bool AllocSong = false;
 	if (!Sng)
@@ -161,7 +162,7 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory
 				Log::Logf(" ok\n");
 			} catch (std::exception &e)
 			{
-				Log::Printf("Failure loading %s: %s.\n", fn_f.c_str(), e.what());
+				Log::LogPrintf("Failure loading %s: %s\n", fn_f.c_str(), e.what());
 			}				  
 			break;
 		}
@@ -169,8 +170,7 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory
 
 	if (AllocSong)
 		return shared_ptr<VSRG::Song>(Sng);
-	else
-		return nullptr;
+	return nullptr;
 }
 
 void VSRGUpdateDatabaseDifficulties(SongDatabase* DB, VSRG::Song *New)
@@ -186,7 +186,7 @@ void VSRGUpdateDatabaseDifficulties(SongDatabase* DB, VSRG::Song *New)
 	// Do the update, with the either new or old difficulty.
 	for (auto k = New->Difficulties.begin();
 		k != New->Difficulties.end();
-		k++)
+		++k)
 	{
 		DB->AddDifficulty(ID, (*k)->Filename, k->get(), MODE_VSRG);
 		(*k)->Destroy();
@@ -197,11 +197,13 @@ void PushVSRGSong(vector<VSRG::Song*> &VecOut, VSRG::Song* Sng)
 {
 	if (Sng->Difficulties.size())
 		VecOut.push_back(Sng);
+	else
+		delete Sng;
 }
 
-void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*> &VecOut )
+void SongLoader::LoadSong7KFromDir( Directory songPath, vector<VSRG::Song*> &VecOut )
 {
-	std::vector<GString> Listing;
+	vector<GString> Listing;
 
 	songPath.ListDirectory(Listing, Directory::FS_REG);
 
@@ -216,7 +218,6 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 	*/
 
 	bool RenewCache = false;
-	bool DoReload = false;
 
 	/*
 		We want the following:
@@ -245,7 +246,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 	if (RenewCache)
 	{
 		// First, pack BMS charts together.
-		std::map<GString, VSRG::Song*> bmsk;
+		map<GString, VSRG::Song*> bmsk;
 		VSRG::Song *BMSSong = new VSRG::Song;
 
 		// Every OJN gets its own Song object.
@@ -268,7 +269,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 			std::wstring Ext = Utility::Widen(File.GetExtension());
 
 			// We want to group charts with the same title together.
-			if (ValidBMSExtension(Ext))
+			if (ValidBMSExtension(Ext) || Ext == L"bmson")
 			{
 				BMSSong->SongDirectory = SongDirectory;
 
@@ -282,10 +283,11 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 					Utility::DebugBreak();
 				}
 
-
-				if (bmsk.find(BMSSong->SongName) != bmsk.end()) // We found a chart with the same title already.
+				// We found a chart with the same title (and subtitle) already.
+				GString key = BMSSong->SongName + BMSSong->Subtitle;
+				if (bmsk.find(key) != bmsk.end())
 				{
-					VSRG::Song *oldSng = bmsk[BMSSong->SongName];
+					VSRG::Song *oldSng = bmsk[key];
 
 					if (BMSSong->Difficulties.size()) // BMS charts don't have more than one difficulty anyway.
 						oldSng->Difficulties.push_back(BMSSong->Difficulties[0]);
@@ -295,7 +297,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 				}
 				else // Ah then, don't delete it.
 				{
-					bmsk[BMSSong->SongName] = BMSSong;
+					bmsk[key] = BMSSong;
 				}
 
 				BMSSong = new VSRG::Song;
@@ -344,7 +346,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 	{
 		// We need to get the song IDs for every file; it's guaranteed that they exist, in theory.
 		int ID = -1;
-		std::vector<int> IDList;
+		vector<int> IDList;
 
 		for (auto i: Listing)
 		{
@@ -416,6 +418,7 @@ std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const VSRG::Song* Meta, sha
 	*FilenameOut = fn;
 
 	Out = LoadSong7KFromFilename(fn, "", nullptr);
+	if (!Out) return nullptr;
 
 	// Copy relevant data
 	Out->SongDirectory = Meta->SongDirectory;

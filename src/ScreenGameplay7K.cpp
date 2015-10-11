@@ -185,7 +185,11 @@ void ScreenGameplay7K::RunAutoEvents()
 		// Play BGM events.
 		while (BGMEvents.size() && BGMEvents.front().Time <= SongTime)
 		{
-			if (Keysounds[BGMEvents.front().Sound]) Keysounds[BGMEvents.front().Sound]->Play();
+			if (Keysounds[BGMEvents.front().Sound])
+			{
+				Keysounds[BGMEvents.front().Sound]->Slice(BGMEvents.front().AudioStart, BGMEvents.front().AudioEnd);
+				Keysounds[BGMEvents.front().Sound]->Play();
+			}
 			BGMEvents.pop();
 		}
 	}

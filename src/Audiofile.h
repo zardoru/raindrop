@@ -58,6 +58,7 @@ private:
 	uint32	 mByteSize;
 	uint32   mBufferSize;
 	uint32   mCounter;
+	float    mAudioStart, mAudioEnd;
 	short*   mData;
 	bool	 mValid;
 	bool	 mIsPlaying;
@@ -75,6 +76,7 @@ public:
 	void Stop();
 
 	bool IsPlaying();
+	void Slice(float audio_start, float audio_end);
 };
 
 class AudioStream : public Sound

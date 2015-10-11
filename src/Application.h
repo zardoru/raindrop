@@ -52,4 +52,5 @@ public:
 	void Init();
 	void Run();
 	void Close();
+	void HandleTextInput(unsigned cp);
 };

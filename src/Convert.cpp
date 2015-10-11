@@ -141,7 +141,7 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 		{
 			for (uint8 n = 0; n < Difficulty->Channels; n++)
 			{
-				for (auto Note : k.MeasureNotes[n])
+				for (auto Note : k.Notes[n])
 				{
 					if (Difficulty->IsWarpingAt(Note.StartTime)) continue;
 

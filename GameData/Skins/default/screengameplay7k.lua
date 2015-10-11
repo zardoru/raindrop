@@ -22,7 +22,7 @@ skin_require "VSRG/AnimatedObjects"
 skin_require "VSRG/TextDisplay"
 
 -- All of these will be loaded in the loading screen instead of
--- in the main thread once loading is over.
+-- in the main thread.
 Preload = {
 	"VSRG/judgeline.png",
 	"VSRG/stage-left.png",
@@ -36,8 +36,14 @@ Preload = {
 	"VSRG/explsheet.png",
 	"VSRG/holdsheet.png",
 	"VSRG/jam_bar.png",
-	"VSRG/judgement.png",
-	"VSRG/auto.png"
+	"VSRG/judgment.png",
+	"VSRG/auto.png",
+	"VSRG/hitlightning.png",
+	"VSRG/hiterror.png",
+	"VSRG/miss_highlight.png",
+	"VSRG/keys.png",
+	"VSRG/fullcombo.png",
+	"VSRG/stageclear.png"
 }
 
 -- A convenience class to handle events and such.
