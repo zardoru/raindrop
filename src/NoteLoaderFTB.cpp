@@ -119,7 +119,7 @@ failed:
 			Diff->TotalObjects++;
 
 			Diff->Duration = max(max(Note.StartTime, Note.EndTime), Diff->Duration);
-			Msr.MeasureNotes[Track-1].push_back(Note);
+			Msr.Notes[Track-1].push_back(Note);
 		}
 	}
 

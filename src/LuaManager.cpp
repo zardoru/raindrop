@@ -356,6 +356,8 @@ bool LuaManager::CallFunction(const char* Name, int Arguments, int Results)
 
 bool LuaManager::RunFunction()
 {
+	if (!func_input)
+		return false;
 	func_input = false;
 	int errc = lua_pcall(State, func_args, func_results, 0);
 

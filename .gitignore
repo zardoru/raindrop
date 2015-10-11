@@ -34,3 +34,4 @@ TEST/CRASH/background - color.jpg
 *.pms
 *.bat
 config.ini
+*.swp

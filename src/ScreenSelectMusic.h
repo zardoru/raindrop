@@ -60,7 +60,8 @@ class ScreenSelectMusic : public Screen
 	void OnItemHover(uint32 Index, GString Line, shared_ptr<Game::Song> Selected);
 	void OnItemHoverLeave(uint32 Index, GString Line, shared_ptr<Game::Song> Selected);
 
-	void TransformItem(Sprite* Item, shared_ptr<Game::Song> Song, bool IsSelected);
+	void TransformItem(int Item, shared_ptr<Game::Song> Song, bool IsSelected, int ListItem);
+	void TransformString(int Item, shared_ptr<Game::Song> Song, bool IsSelected, int ListItem, GString text);
 	void SwitchUpscroll(bool NewUpscroll);
 public:
 	ScreenSelectMusic();

@@ -426,6 +426,16 @@ void SceneEnvironment::RemoveManagedObject(Drawable2D *Obj)
 	}
 }
 
+void SceneEnvironment::HandleScrollInput(double x_off, double y_off)
+{
+	if (Lua->CallFunction("ScrollEvent", 2))
+	{
+		Lua->PushArgument(x_off);
+		Lua->PushArgument(y_off);
+		Lua->RunFunction();
+	}
+}
+
 void SceneEnvironment::RemoveManagedObjects()
 {
 	for (auto i: ManagedObjects)
@@ -549,6 +559,13 @@ void SceneEnvironment::ReloadUI()
 {
 	if (!ctx) return;
 
+	if (Doc)
+	{
+		ctx->UnloadDocument(Doc);
+		Doc->Close();
+		Rocket::Core::Factory::ClearStyleSheetCache();
+		Doc->RemoveReference();
+	}
 	ctx->UnloadAllDocuments();
 
 	GString FName = mScreenName + GString(".rml");
@@ -646,7 +663,9 @@ bool SceneEnvironment::HandleInput(int32 key, KeyEventType code, bool isMouseInp
 
 bool SceneEnvironment::HandleTextInput(int codepoint)
 {
-	return ctx->ProcessTextInput(codepoint);
+	if (ctx)
+		return ctx->ProcessTextInput(codepoint);
+	else return false;
 }
 
 ImageList* SceneEnvironment::GetImageList()

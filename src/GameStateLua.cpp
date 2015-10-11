@@ -1,5 +1,4 @@
 #include "GameGlobal.h"
-#include <map>
 
 #include "LuaManager.h"
 #include "LuaBridge.h"
@@ -89,6 +88,7 @@ void GameState::InitializeLua(lua_State *L)
 		.beginClass <Game::Song>("Song")
 		.addData("Title", &Game::Song::SongName, false)
 		.addData("Author", &Game::Song::SongAuthor, false)
+		.addData("Subtitle", &Game::Song::Subtitle, false)
 		.addData("ID", &Game::Song::ID, false)
 		.addData("Mode", &Game::Song::Mode, false)
 		.endClass();

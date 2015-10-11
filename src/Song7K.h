@@ -5,11 +5,11 @@ namespace VSRG
 {
 	struct Measure
 	{
-		vector<NoteData> MeasureNotes[MAX_CHANNELS];
-		double MeasureLength; // In beats. 4 by default.
+		vector<NoteData> Notes[MAX_CHANNELS];
+		double Length; // In beats. 4 by default.
 
 		Measure() {
-			MeasureLength = 4;
+			Length = 4;
 		}
 	};
 
@@ -47,17 +47,21 @@ namespace VSRG
 		TimingInfoType GetType();
 	};
 
-	class BmsTimingInfo : public CustomTimingInfo
+	class BMSTimingInfo : public CustomTimingInfo
 	{
 	public:
-		int judge_rank;
-		float life_total;
+		int JudgeRank;
+		float GaugeTotal;
 
-		BmsTimingInfo()
+		// Whether this uses BMSON features.
+		bool IsBMSON;
+
+		BMSTimingInfo()
 		{
 			Type = TI_BMS;
-			judge_rank = 3;
-			life_total = -1;
+			JudgeRank = 3;
+			GaugeTotal = -1;
+			IsBMSON = false;
 		}
 	};
 
@@ -109,7 +113,7 @@ namespace VSRG
 	struct DifficultyLoadInfo
 	{
 		// Contains stops data.
-		TimingData StopsTiming;
+		TimingData Stops;
 
 		// For scroll changes, as obvious as it sounds.
 		TimingData Scrolls;

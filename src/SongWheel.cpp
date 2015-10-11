@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "GameGlobal.h"
 #include "GameState.h"
 #include "Logging.h"
@@ -6,11 +5,9 @@
 #include "Song7K.h"
 #include "GameWindow.h"
 #include "SongLoader.h"
-#include "SongWheel.h"
+#include "GraphicalString.h"
 #include "Sprite.h"
-#include "ImageLoader.h"
-#include "BitmapFont.h"
-#include "TruetypeFont.h"
+#include "SongWheel.h"
 #include "SongList.h"
 
 #include "SongDatabase.h"
@@ -21,7 +18,6 @@ using namespace Game;
 SongWheel::SongWheel()
 {
 	IsInitialized = false;
-	mFont = nullptr;
 	PendingVerticalDisplacement = 0;
 	mLoadMutex = nullptr;
 	mLoadThread = nullptr;
@@ -47,10 +43,19 @@ SongWheel& SongWheel::GetInstance()
 	return *WheelInstance;
 }
 
-void SongWheel::Initialize(float Start, float End, SongDatabase* Database, bool IsGraphical)
+void SongWheel::CleanItems()
+{
+	Strings.clear();
+	Sprites.clear();
+}
+
+void SongWheel::Initialize(SongDatabase* Database)
 {
 	if (IsInitialized)
+	{
+		CleanItems();
 		return;
+	}
 
 	ScrollSpeed = 90;
 	SelectedItem = 0;
@@ -58,22 +63,6 @@ void SongWheel::Initialize(float Start, float End, SongDatabase* Database, bool 
 	OldCursorPos = 0;
 	Time = 0;
 	DisplacementSpeed = 2;
-	if (IsGraphical)
-	{
-		Item = new Sprite;
-		Item->SetImage(GameState::GetInstance().GetSkinImage("item.png"));
-		ItemHeight = Item->GetHeight();
-		Item->SetZ(16);
-
-		ItemTextOffset = Vec2(Configuration::GetSkinConfigf("X", "ItemTextOffset"), Configuration::GetSkinConfigf("Y", "ItemTextOffset"));
-
-		double FSize = Configuration::GetSkinConfigf("Size", "WheelFont");
-		GString fname = Configuration::GetSkinConfigs("Font", "WheelFont");
-        if (fname != "")
-        {
-            mTFont = new TruetypeFont(GameState::GetInstance().GetSkinFile(fname), FSize);
-        }
-	}
 
 	IsInitialized = true;
 	DifficultyIndex = 0;
@@ -100,7 +89,7 @@ public:
 
 	void Load()
 	{
-		std::map<GString, GString> Directories;
+		map<GString, GString> Directories;
 		Configuration::GetConfigListS("SongDirectories", Directories, "Songs");
 
 		SongLoader Loader (DB);
@@ -110,7 +99,7 @@ public:
 
 		for (auto i = Directories.begin();
 			i != Directories.end();
-			i++)
+			++i)
 		{
 			ListRoot->AddNamedDirectory (*mLoadMutex, &Loader, i->second, i->first, VSRGActive, DCActive);
 		}
@@ -155,7 +144,21 @@ void SongWheel::LoadSongsOnce(SongDatabase* Database)
 	ReloadSongs(Database);
 }
 
-uint32 SongWheel::GetCursorIndex()
+int SongWheel::AddSprite(Sprite* Item)
+{
+	int size = Sprites.size() + 1;
+	Sprites[size] = Item;
+	return size;
+}
+
+int SongWheel::AddText(GraphicalString* Str)
+{
+	int size = Strings.size() + 1;
+	Strings[size] = Str;
+	return size;
+}
+
+int SongWheel::GetCursorIndex() const
 {
 	size_t Size;
 	Size = GetNumItems();
@@ -165,10 +168,10 @@ uint32 SongWheel::GetCursorIndex()
 		int ret = CursorPos % (int)Size;
 		while (ret < 0)
 			ret += Size;
-		return (uint32)ret;
+		return ret;
 	}
-	else
-		return 0;
+
+	return 0;
 }
 
 int SongWheel::PrevDifficulty()
@@ -223,7 +226,7 @@ int SongWheel::NextDifficulty()
 
 bool SongWheel::InWheelBounds(Vec2 Pos)
 {
-	return Pos.x > TransformHorizontal(Pos.y) && Pos.x < TransformHorizontal(Pos.y) + Item->GetWidth();
+	return Pos.x > TransformHorizontal(Pos.y) && Pos.x < TransformHorizontal(Pos.y) + ItemWidth;
 }
 
 void SongWheel::SetDifficulty(uint32 i)
@@ -260,7 +263,7 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 			return true;
 		case KT_Select:
 			Vec2 mpos = GameState::GetWindow()->GetRelativeMPos();
-			uint32 Idx = GetCursorIndex();
+			int32 Idx = GetCursorIndex();
 			if (Idx < CurrentList->GetNumEntries())
 			{
 				if (InWheelBounds(mpos) || !isMouseInput)
@@ -318,7 +321,6 @@ void SongWheel::GoUp()
 
 bool SongWheel::HandleScrollInput(const double dx, const double dy)
 {
-	PendingVerticalDisplacement += dy * ScrollSpeed;
 	return true;
 }
 
@@ -395,13 +397,9 @@ void SongWheel::DisplayItem(int32 ListItem, Vec2 Position)
 {
 	if (Position.y > -ItemHeight && Position.y < ScreenHeight)
 	{
-		bool IsDirectory = true;
 		bool IsSelected = false;
-		shared_ptr<Game::Song> Song = nullptr;
+		shared_ptr<Song> Song = nullptr;
 		GString Text;
-
-		Item->SetPosition(Position);
-
 		if (ListItem != -1)
 		{
 			Song = CurrentList->GetSongEntry(ListItem);
@@ -409,14 +407,24 @@ void SongWheel::DisplayItem(int32 ListItem, Vec2 Position)
 			IsSelected = (ListItem == SelectedItem);
 		}
 
-		if (TransformItem)
-			TransformItem(Item, Song, IsSelected);
+		for (auto Item = Sprites.begin(); Item != Sprites.end(); ++Item) {
+			Item->second->SetPosition(Position);
+					  
+			if (TransformItem)
+				TransformItem(Item->first, Song, IsSelected, ListItem);
 
-		// Render the objects.
-		Item->Render();
-		
-		if (Text.length())
-			mTFont->Render(Text, Position + ItemTextOffset, glm::translate(Mat4(), Vec3(0, 0, Item->GetZ())));
+			// Render the objects.
+			Item->second->Render();
+		}
+
+		for (auto Item = Strings.begin(); Item != Strings.end(); Item++) {
+			Item->second->SetPosition(Position);
+
+			if (TransformString)
+				TransformString(Item->first, Song, IsSelected, ListItem, Text);
+
+			Item->second->Render();
+		}
 	}
 }
 
@@ -463,6 +471,21 @@ int32 SongWheel::GetSelectedItem()
 	return SelectedItem;
 }
 
+void SongWheel::SetItemHeight(float Height)
+{
+	ItemHeight = Height;
+}
+
+void SongWheel::SetItemWidth(float width)
+{
+	ItemWidth = width;
+}
+
+float SongWheel::GetItemWidth() const
+{
+	return ItemWidth;
+}
+
 void SongWheel::SetSelectedItem(uint32 Item)
 {
 	if (!CurrentList)
@@ -485,9 +508,9 @@ int32 SongWheel::IndexAtPoint(float Y)
 {
 	float posy = Y;
 	posy -= shownListY;
-	posy -= int(posy) % int(ItemHeight);
+	posy -= fmod(posy, ItemHeight);
 	posy = (posy / ItemHeight);
-	return floor(posy);
+	return round(posy);
 }
 
 uint32 SongWheel::NormalizedIndexAtPoint(float Y)
@@ -495,14 +518,14 @@ uint32 SongWheel::NormalizedIndexAtPoint(float Y)
 	int32 Idx = IndexAtPoint(Y);
 	if (!Idx || !GetNumItems() || (Idx % GetNumItems() == 0) ) return 0;
 
-	while (Idx > 0)
+	while (Idx > GetNumItems())
 		Idx -= GetNumItems();
 	while (Idx < 0)
 		Idx += GetNumItems();
 	return Idx;
 }
 
-int32 SongWheel::GetNumItems()
+int32 SongWheel::GetNumItems() const
 {
 	if (!CurrentList)
 		return 0;
@@ -512,12 +535,12 @@ int32 SongWheel::GetNumItems()
 	}
 }
 
-void SongWheel::SetCursorIndex(int32 Index)
+void SongWheel::SetCursorIndex(int Index)
 {
 	CursorPos = Index;
 }
 
-float SongWheel::GetItemHeight()
+float SongWheel::GetItemHeight() const
 {
 	return ItemHeight;
 }

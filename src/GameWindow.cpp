@@ -465,6 +465,11 @@ float GameWindow::GetWindowVScale()
 	return SizeRatio;
 }
 
+void CharInputFunc(GLFWwindow*, unsigned int cp)
+{
+	WindowFrame.Parent->HandleTextInput(cp);
+}
+
 bool GameWindow::SetupWindow()
 {
 	GLenum err;
@@ -510,6 +515,7 @@ bool GameWindow::SetupWindow()
 	glfwSetMouseButtonCallback(wnd, MouseInputFunc);
 	glfwSetCursorPosCallback(wnd, MouseMoveFunc);
 	glfwSetScrollCallback(wnd, ScrollFunc);
+	glfwSetCharCallback(wnd, CharInputFunc);
 
 	ResizeFunc(wnd, size.x, size.y);
 

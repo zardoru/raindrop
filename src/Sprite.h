@@ -12,7 +12,7 @@ class Drawable2D : public Transformation, public Drawable
 {
 public:
 	virtual ~Drawable2D() {};
-	virtual void Render();
+	virtual void Render() override;
 	// Stub
 };
 

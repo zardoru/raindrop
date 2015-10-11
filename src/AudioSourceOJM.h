@@ -17,6 +17,7 @@ class AudioSourceOJM : public AudioDataSource
 	void parseM30();
 	void parseOMC();
 
+	double Speed;
 public:
 	AudioSourceOJM();
 	~AudioSourceOJM();
@@ -30,4 +31,5 @@ public:
 	uint32 GetChannels(); // Returns channels of audio
 	bool IsValid();
 	bool HasDataLeft();
+	void SetPitch(double speed);
 };
