@@ -233,7 +233,7 @@ namespace NoteLoaderBMSON{
 		void SetFilename(GString fn)
 		{
 			Chart->Filename = fn;
-			if (Chart->Name.length == 0)
+			if (Chart->Name.length() == 0)
 				Chart->Name = Utility::RemoveExtension(fn);
 		}
 
