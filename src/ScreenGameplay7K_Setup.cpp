@@ -591,12 +591,12 @@ void ScreenGameplay7K::SetupMechanics()
 	}
 
 	MechanicsSet->Setup(MySong.get(), CurrentDiff.get(), ScoreKeeper);
-	MechanicsSet->HitNotify = bind(&ScreenGameplay7K::HitNote, this, _1, _2, _3, _4);
-	MechanicsSet->MissNotify = bind(&ScreenGameplay7K::MissNote, this, _1, _2, _3, _4, _5);
-	MechanicsSet->IsLaneKeyDown = bind(&ScreenGameplay7K::GetGearLaneState, this, _1);
-	MechanicsSet->SetLaneHoldingState = bind(&ScreenGameplay7K::SetLaneHoldState, this, _1, _2);
-	MechanicsSet->PlayLaneSoundEvent = bind(&ScreenGameplay7K::PlayLaneKeysound, this, _1);
-	MechanicsSet->PlayNoteSoundEvent = bind(&ScreenGameplay7K::PlayKeysound, this, _1);
+	MechanicsSet->HitNotify = bind(&ScreenGameplay7K::HitNote, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+	MechanicsSet->MissNotify = bind(&ScreenGameplay7K::MissNote, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
+	MechanicsSet->IsLaneKeyDown = bind(&ScreenGameplay7K::GetGearLaneState, this, std::placeholders::_1);
+	MechanicsSet->SetLaneHoldingState = bind(&ScreenGameplay7K::SetLaneHoldState, this, std::placeholders::_1, std::placeholders::_2);
+	MechanicsSet->PlayLaneSoundEvent = bind(&ScreenGameplay7K::PlayLaneKeysound, this, std::placeholders::_1);
+	MechanicsSet->PlayNoteSoundEvent = bind(&ScreenGameplay7K::PlayKeysound, this, std::placeholders::_1);
 }
 
 void ScreenGameplay7K::LoadThreadInitialization()

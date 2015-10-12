@@ -10,8 +10,7 @@
 #include <map>
 #include <vector>
 #include <algorithm>
-#include <boost/function.hpp>
-#include <boost/bind.hpp>
+#include <functional>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <memory>
@@ -20,8 +19,9 @@
 #error "You require Visual Studio 2013 to compile this application."
 #endif
 
-using boost::function;
-using boost::bind;
+using std::function;
+using std::bind;
+using namespace std::placeholders;
 using boost::lexical_cast;
 using boost::replace_all;
 using boost::algorithm::trim;

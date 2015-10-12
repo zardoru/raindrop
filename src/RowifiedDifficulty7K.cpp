@@ -14,9 +14,9 @@ RowifiedDifficulty::RowifiedDifficulty(Difficulty *Source, bool Quantize, bool C
 	assert(Source != nullptr);
 
 	if (Quantize)
-		QuantizeFunction = function<double(double)>(QuantizeBeat, _1);
+		QuantizeFunction = bind(QuantizeBeat, _1);
 	else
-		QuantizeFunction = function<double(double)>(PassThrough, _1);
+		QuantizeFunction = bind(PassThrough, _1);
 
 	Source->ProcessBPS(BPS, 0);
 

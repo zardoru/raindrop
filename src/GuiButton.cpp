@@ -6,7 +6,6 @@ using namespace GUI;
 
 Button::Button()
 {
-	OnRelease = OnClick = OnLeave = OnHover = NULL;
 	PressedDown = false;
 	Hovering = false;
 }
