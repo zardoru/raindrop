@@ -1,24 +1,21 @@
 #ifndef SCREEN_LD_H_
 #define SCREEN_LD_H_
 
-#include "Screen.h"
-#include "SceneEnvironment.h"
-#include <boost/thread/thread.hpp>
-
 class ScreenLoading : public Screen
 {
-	boost::thread *LoadThread;
+	thread *LoadThread;
 	bool ThreadInterrupted;
+	atomic<bool> FinishedLoading;
 public:
 	ScreenLoading(Screen *Parent, Screen *_Next);
-	void Init();
+	void Init() override;
 
-	void OnIntroBegin();
-	void OnExitEnd();
+	void OnIntroBegin() override;
+	void OnExitEnd() override;
 
-	bool Run(double TimeDelta);
-	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
-	bool HandleScrollInput(double xOff, double yOff);
+	bool Run(double TimeDelta) override;
+	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput) override;
+	bool HandleScrollInput(double xOff, double yOff) override;
 	void Cleanup();
 };
 

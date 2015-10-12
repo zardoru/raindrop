@@ -4,6 +4,7 @@
 #include "GameState.h"
 #include "Logging.h"
 #include "Screen.h"
+#include "SceneEnvironment.h"
 #include "GameWindow.h"
 #include "ImageLoader.h"
 #include "Audio.h"
@@ -137,7 +138,7 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic")
 	TransitionTime = 0;
 }
 
-void ScreenSelectMusic::MainThreadInitialization()
+void ScreenSelectMusic::InitializeResources()
 {	
 	LuaManager* LuaM = Animations->GetEnv();
 	UpBtn = new GUI::Button;
@@ -181,7 +182,7 @@ void ScreenSelectMusic::MainThreadInitialization()
 	Animations->AddLuaTarget(&Background, "ScreenBackground");
 }
 
-void ScreenSelectMusic::LoadThreadInitialization()
+void ScreenSelectMusic::LoadResources()
 {
 	Running = true;
 

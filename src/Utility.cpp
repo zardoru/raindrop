@@ -208,15 +208,15 @@ namespace Utility {
 	void RemoveFilenameIllegalCharacters(GString &S, bool removeSlash)
 	{
 		// size_t len = strlen(fn);
-		boost::replace_all(S, "<", "");
-		boost::replace_all(S, ">", "");
-		boost::replace_all(S, ":", "");
-		boost::replace_all(S, "\"", "");
-		boost::replace_all(S, "|", "");
-		boost::replace_all(S, "?", "");
-		boost::replace_all(S, "*", "");
+		replace_all(S, "<", "");
+		replace_all(S, ">", "");
+		replace_all(S, ":", "");
+		replace_all(S, "\"", "");
+		replace_all(S, "|", "");
+		replace_all(S, "?", "");
+		replace_all(S, "*", "");
 		if (removeSlash)
-			boost::replace_all(S, "/", "");
+			replace_all(S, "/", "");
 	}
 
 	GString GetSha256ForFile(GString Filename)

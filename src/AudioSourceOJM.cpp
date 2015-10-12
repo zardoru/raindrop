@@ -4,8 +4,6 @@
 #include <ogg/ogg.h>
 #include <vorbis/vorbisfile.h>
 #include <fstream>
-#include <boost/thread.hpp>
-
 
 #include "Global.h"
 #include "Logging.h"
@@ -78,11 +76,11 @@ struct SFM30
 {
 	size_t DataLength;
 	size_t Offset;
-	char* Buffer;
+	vector<char> Buffer;
 
 	SFM30()
 	{
-		DataLength = 0; Buffer = nullptr; Offset = 0;
+		DataLength = 0; Offset = 0;
 	}
 };
 
@@ -121,7 +119,7 @@ sf_count_t readM30(void* ptr, sf_count_t count, void* p)
 		return 0;
 	else
 	{
-		memcpy(ptr, state->Buffer + state->Offset, toRead);
+		memcpy(ptr, &state->Buffer[0] + state->Offset, toRead);
 		state->Offset += toRead;
 	}
 
@@ -143,7 +141,7 @@ size_t readM30OGG(void* ptr, size_t size, size_t nmemb, void* p)
 		return 0;
 	else
 	{
-		memcpy(ptr, state->Buffer + state->Offset, toRead);
+		memcpy(ptr, &state->Buffer[0] + state->Offset, toRead);
 		state->Offset += toRead;
 	}
 
@@ -247,19 +245,17 @@ void omc_rearrange(char* buf_io, size_t len)
 {
 	int key = ((len % 17) << 4) + (len % 17);
 	int block_size = len / 17;
-	char *buf_encoded = new char[len];
-	memcpy(buf_encoded, buf_io, len);
+	vector<char> buf_encoded (len);
+	memcpy(&buf_encoded[0], buf_io, len);
 
 	for (int block = 0; block < 17; block++)
 	{
 		int block_start_encoded = block_size * block;	// Where is the start of the enconded block
 		int block_start_plain = block_size * REARRANGE_TABLE[key];	// Where the final plain block will be
-		memcpy(buf_io + block_start_plain, buf_encoded + block_start_encoded, block_size);
+		memcpy(buf_io + block_start_plain, (&buf_encoded[0]) + block_start_encoded, block_size);
 
 		key++;
 	}
-
-	delete[] buf_encoded;
 }
 
 void omc_xor(char* buf, size_t len, int &acc_keybyte, int &acc_counter)
@@ -308,7 +304,7 @@ void F412XOR(char* buffer, size_t length)
 	}
 }
 
-AudioSourceOJM::AudioSourceOJM()
+AudioSourceOJM::AudioSourceOJM(Interruptible* parent) : Interruptible(parent)
 {
 	TemporaryState.Enabled = false;
 	Speed = 1;
@@ -332,10 +328,9 @@ void AudioSourceOJM::parseM30()
 {
 	M30Header Head;
 	size_t sizeLeft;
-	char* Buffer;
 	ifile->read(reinterpret_cast<char*>(&Head), sizeof(M30Header));
 
-	Buffer = new char[Head.payload_size];
+	vector<char> Buffer(Head.payload_size);
 	sizeLeft = Head.payload_size;
 
 	for (int i = 0; i < Head.sample_count; i++)
@@ -354,19 +349,19 @@ void AudioSourceOJM::parseM30()
 			OJMIndex += 1000;
 		else if (Entry.codec_code != 5) continue; // Unknown sample id type.
 
-		char* SampleData = new char[Entry.sample_size];
-		ifile->read(SampleData, Entry.sample_size);
+		vector<char> SampleData (Entry.sample_size);
+		ifile->read(&SampleData[0], Entry.sample_size);
 		
 		if (Head.encryption_flag & 16)
-			NamiXOR(SampleData, Entry.sample_size);
+			NamiXOR(&SampleData[0], Entry.sample_size);
 		else if (Head.encryption_flag & 32)
-			F412XOR(SampleData, Entry.sample_size);
+			F412XOR(&SampleData[0], Entry.sample_size);
 
 		// Sample data is done. Now the bits that are specific to raindrop..
 		auto NewSample = make_shared<SoundSample>();
 
 		SFM30 ToLoad;
-		ToLoad.Buffer = SampleData;
+		ToLoad.Buffer = move(SampleData);
 		ToLoad.DataLength = Entry.sample_size;
 		
 		OggVorbis_File vf;
@@ -382,14 +377,11 @@ void AudioSourceOJM::parseM30()
 			NewSample->Open(this);
 			TemporaryState.Enabled = 0;
 		}
-		delete[] SampleData;
 		
 		ov_clear(&vf);
 		
 		Arr[OJMIndex] = NewSample;
 	}
-
-	delete[] Buffer;
 }
 
 void AudioSourceOJM::parseOMC()
@@ -405,7 +397,7 @@ void AudioSourceOJM::parseOMC()
 	// Parse WAV data first
 	while (Offset < Head.ogg_start)
 	{
-		boost::this_thread::interruption_point();
+		CheckInterruption();
 
 		OMC_WAV_header WavHead;
 		ifile->read(reinterpret_cast<char*>(&WavHead), sizeof(OMC_WAV_header));
@@ -418,11 +410,11 @@ void AudioSourceOJM::parseOMC()
 			continue;
 		}
 
-		char *Buffer = new char[WavHead.chunk_size];
-		ifile->read(Buffer, WavHead.chunk_size);
+		vector<char> Buffer (WavHead.chunk_size);
+		ifile->read(&Buffer[0], WavHead.chunk_size);
 
-		omc_rearrange(Buffer, WavHead.chunk_size);
-		omc_xor(Buffer, WavHead.chunk_size, acc_keybyte, acc_counter);
+		omc_rearrange(&Buffer[0], WavHead.chunk_size);
+		omc_xor(&Buffer[0], WavHead.chunk_size, acc_keybyte, acc_counter);
 
 		int ifmt;
 
@@ -450,7 +442,7 @@ void AudioSourceOJM::parseOMC()
 		Info.channels = WavHead.num_channels;
 
 		SFM30 ToLoad;
-		ToLoad.Buffer = Buffer;
+		ToLoad.Buffer = move(Buffer);
 		ToLoad.DataLength = WavHead.chunk_size;
 
 		auto NewSample = make_shared<SoundSample>();
@@ -461,8 +453,6 @@ void AudioSourceOJM::parseOMC()
 		NewSample->Open(this);
 		TemporaryState.Enabled = false;
 
-		delete[] Buffer;
-
 		Arr[SampleID] = NewSample;
 		SampleID++;
 	}
@@ -471,7 +461,7 @@ void AudioSourceOJM::parseOMC()
 
 	while (Offset < Head.fsize)
 	{
-		boost::this_thread::interruption_point();
+		CheckInterruption();
 
 		OMC_OGG_header OggHead;
 		ifile->read(reinterpret_cast<char*>(&OggHead), sizeof(OMC_OGG_header));
@@ -484,9 +474,9 @@ void AudioSourceOJM::parseOMC()
 			continue;
 		}
 
-		char *Buffer = new char[OggHead.sample_size];
+		vector<char> Buffer (OggHead.sample_size);
 
-		ifile->read(Buffer, OggHead.sample_size);
+		ifile->read(&Buffer[0], OggHead.sample_size);
 
 		auto NewSample = make_shared<SoundSample>();
 
@@ -504,8 +494,6 @@ void AudioSourceOJM::parseOMC()
 		TemporaryState.Enabled = false;
 
 		ov_clear(&vf);
-
-		delete[] Buffer;
 
 		Arr[SampleID] = NewSample;
 		SampleID++;
@@ -529,12 +517,12 @@ size_t AudioSourceOJM::GetLength()
 		auto Info = static_cast<SF_INFO*>(TemporaryState.Info);
 		return Info->frames;
 	}
-	else if (TemporaryState.Enabled == OJM_OGG)
+	if (TemporaryState.Enabled == OJM_OGG)
 	{
 		return ov_pcm_total(static_cast<OggVorbis_File*>(TemporaryState.File), -1);
 	}
-	else
-		return 0;
+	
+	return 0;
 }
 
 uint32 AudioSourceOJM::GetRate()
@@ -570,13 +558,14 @@ uint32 AudioSourceOJM::GetChannels()
 		auto Info = static_cast<SF_INFO*>(TemporaryState.Info);
 		return Info->channels;
 	}
-	else if (TemporaryState.Enabled == OJM_OGG)
+	
+	if (TemporaryState.Enabled == OJM_OGG)
 	{
 		auto vi = static_cast<vorbis_info*>(TemporaryState.Info);
 		return vi->channels;
 	}
-	else
-		return 0;
+	
+	return 0;
 }
 
 
@@ -639,7 +628,7 @@ uint32 AudioSourceOJM::Read(short* buffer, size_t count)
 				break;
 			}
 
-			boost::this_thread::interruption_point();
+			CheckInterruption();
 		}
 
 		if (read < size)

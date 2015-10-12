@@ -1,7 +1,5 @@
 #include <cmath>
 #include <fstream>
-#include <boost/thread.hpp>
-
 #include "GameGlobal.h"
 #include "GameState.h"
 #include "Logging.h"
@@ -161,7 +159,7 @@ void ScreenGameplay7K::Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const
 	NoFail = Param.NoFail;
 	Random = Param.Random;
 
-	BGA = BackgroundAnimation::CreateBGAFromSong(DifficultyIndex, *S);
+	BGA = BackgroundAnimation::CreateBGAFromSong(DifficultyIndex, *S, this);
 	ForceActivation = false;
 
 	if (Param.StartMeasure == -1 && Auto)
@@ -269,7 +267,7 @@ bool ScreenGameplay7K::LoadChartData()
 		*/
 	}
 
-	BGA = BackgroundAnimation::CreateBGAFromSong(index, *MySong);
+	BGA = BackgroundAnimation::CreateBGAFromSong(index, *MySong, this);
 
 	return true;
 }
@@ -314,7 +312,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 	if (strstr(MySong->SongFilename.c_str(), ".ojm"))
 	{
 		Log::Printf("Loading OJM.\n");
-		OJMAudio = make_shared<AudioSourceOJM>();
+		OJMAudio = make_shared<AudioSourceOJM>(this);
 		OJMAudio->SetPitch(Speed);
 		OJMAudio->Open((MySong->SongDirectory / MySong->SongFilename).c_path());
 
@@ -343,7 +341,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 			Keysounds[i->first]->SetPitch(Speed);
 			Keysounds[i->first]->Open((MySong->SongDirectory + "/" + i->second).c_str());
 #endif
-			boost::this_thread::interruption_point();
+			CheckInterruption();
 		}
 	}
 
@@ -599,7 +597,7 @@ void ScreenGameplay7K::SetupMechanics()
 	MechanicsSet->PlayNoteSoundEvent = bind(&ScreenGameplay7K::PlayKeysound, this, std::placeholders::_1);
 }
 
-void ScreenGameplay7K::LoadThreadInitialization()
+void ScreenGameplay7K::LoadResources()
 {
 	GString MissSndFile = (GameState::GetInstance().GetSkinFile("miss.ogg"));
 	GString FailSndFile = (GameState::GetInstance().GetSkinFile("stage_failed.ogg"));
@@ -636,8 +634,6 @@ void ScreenGameplay7K::LoadThreadInitialization()
 	DoPlay = true;
 }
 
-#include <boost/algorithm/string.hpp>
-
 bool ScreenGameplay7K::BindKeysToLanes(bool UseTurntable)
 {
 	GString KeyProfile;
@@ -673,7 +669,7 @@ bool ScreenGameplay7K::BindKeysToLanes(bool UseTurntable)
 	return true;
 }
 
-void ScreenGameplay7K::MainThreadInitialization()
+void ScreenGameplay7K::InitializeResources()
 {
 	if (!BindKeysToLanes(TurntableEnabled))
 		if (!BindKeysToLanes(!TurntableEnabled))

@@ -7,10 +7,14 @@
 
 #include <glm/glm.hpp>
 #include <string>
+#include <atomic>
 #include <map>
 #include <vector>
 #include <algorithm>
 #include <functional>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <memory>
@@ -19,8 +23,13 @@
 #error "You require Visual Studio 2013 to compile this application."
 #endif
 
+using std::atomic;
 using std::function;
 using std::bind;
+using std::thread;
+using std::mutex;
+using std::unique_lock;
+using std::condition_variable;
 using namespace std::placeholders;
 using boost::lexical_cast;
 using boost::replace_all;

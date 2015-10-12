@@ -1,16 +1,18 @@
 #pragma once
 
+#include "Interruptible.h"
 #include "Sprite.h"
 
 namespace Game{
 	class Song;
 }
 
-class BackgroundAnimation
+class BackgroundAnimation : public Interruptible
 {
 protected:
 	Transformation Transform;
 public:
+	BackgroundAnimation(Interruptible* parent = nullptr);
 	virtual ~BackgroundAnimation() = default;
 	virtual void SetAnimationTime(double Time);
 	virtual void Load();
@@ -23,5 +25,5 @@ public:
 
 	Transformation& GetTransformation();
 	/* Can only be called from main thread! */
-	static shared_ptr<BackgroundAnimation> CreateBGAFromSong(uint8_t DifficultyIndex, Game::Song& Input, bool LoadNow = false);
+	static shared_ptr<BackgroundAnimation> CreateBGAFromSong(uint8_t DifficultyIndex, Game::Song& Input, Interruptible* context, bool LoadNow = false);
 };

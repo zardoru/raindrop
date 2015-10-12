@@ -24,7 +24,7 @@ void SongList::AddSong(shared_ptr<Game::Song> Song)
 	mChildren.push_back(NewEntry);
 }
 
-void SongList::AddNamedDirectory(boost::mutex &loadMutex, SongLoader *Loader, Directory Dir, GString Name, bool VSRGActive, bool DotcurActive)
+void SongList::AddNamedDirectory(mutex &loadMutex, SongLoader *Loader, Directory Dir, GString Name, bool VSRGActive, bool DotcurActive)
 {
 	bool EntryWasPushed = false;
 	SongList* NewList = new SongList(this);
@@ -57,7 +57,7 @@ void SongList::AddNamedDirectory(boost::mutex &loadMutex, SongLoader *Loader, Di
 		{
 			if (!EntryWasPushed)
 			{
-				boost::mutex::scoped_lock lock(loadMutex);
+				unique_lock<mutex> lock(loadMutex);
 				mChildren.push_back(NewEntry);
 				EntryWasPushed = true;
 			}
@@ -66,7 +66,7 @@ void SongList::AddNamedDirectory(boost::mutex &loadMutex, SongLoader *Loader, Di
 
 
 			{
-				boost::mutex::scoped_lock lock(loadMutex);
+				unique_lock<mutex> lock(loadMutex);
 				if (!NewList->GetNumEntries())
 				{
 					if (mChildren.size())
@@ -81,7 +81,7 @@ void SongList::AddNamedDirectory(boost::mutex &loadMutex, SongLoader *Loader, Di
 
 			if (Songs7K.size())
 			{
-				boost::mutex::scoped_lock lock(loadMutex);
+				unique_lock<mutex> lock(loadMutex);
 
 				for (auto j = Songs7K.begin();
 					j != Songs7K.end();
@@ -96,7 +96,7 @@ void SongList::AddNamedDirectory(boost::mutex &loadMutex, SongLoader *Loader, Di
 
 			if (SongsDC.size())
 			{
-				boost::mutex::scoped_lock lock(loadMutex);
+				unique_lock<mutex> lock(loadMutex);
 
 				for (auto j = SongsDC.begin();
 					j != SongsDC.end();
@@ -112,7 +112,7 @@ void SongList::AddNamedDirectory(boost::mutex &loadMutex, SongLoader *Loader, Di
 			{
 				if (!EntryWasPushed)
 				{
-					boost::mutex::scoped_lock lock(loadMutex);
+					unique_lock<mutex> lock(loadMutex);
 					mChildren.push_back(NewEntry);
 					EntryWasPushed = true;
 				}
@@ -121,7 +121,7 @@ void SongList::AddNamedDirectory(boost::mutex &loadMutex, SongLoader *Loader, Di
 	}
 }
 
-void SongList::AddDirectory(boost::mutex &loadMutex, SongLoader *Loader, Directory Dir, bool VSRGActive, bool DotcurActive)
+void SongList::AddDirectory(mutex &loadMutex, SongLoader *Loader, Directory Dir, bool VSRGActive, bool DotcurActive)
 {
 	int idx = Dir.path().find_last_of('/') + 1;
 	GString path;

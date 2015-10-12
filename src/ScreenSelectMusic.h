@@ -1,8 +1,6 @@
 #ifndef SCREENSELECTMUSIC_H_
 #define SCREENSELECTMUSIC_H_
 
-#include <boost/thread.hpp>
-
 class BitmapFont;
 
 namespace dotcur
@@ -65,12 +63,12 @@ class ScreenSelectMusic : public Screen
 	void SwitchUpscroll(bool NewUpscroll);
 public:
 	ScreenSelectMusic();
-	void LoadThreadInitialization();
-	void MainThreadInitialization();
-	bool Run(double Delta);
-	void Cleanup();
-	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
-	bool HandleScrollInput(double xOff, double yOff);
+	void LoadResources() override;
+	void InitializeResources() override;
+	bool Run(double Delta) override;
+	void Cleanup() override;
+	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput) override;
+	bool HandleScrollInput(double xOff, double yOff) override;
 };
 
 #endif

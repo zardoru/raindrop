@@ -42,12 +42,12 @@ void Screen::Close()
 		Next->Close();
 }
 
-void Screen::LoadThreadInitialization()
+void Screen::LoadResources()
 {
 	// virtual
 }
 
-void Screen::MainThreadInitialization()
+void Screen::InitializeResources()
 {
 	// virtual
 }
@@ -155,8 +155,8 @@ bool Screen::Update(float delta)
 
 void Screen::Init()
 {
-	LoadThreadInitialization();
-	MainThreadInitialization();
+	LoadResources();
+	InitializeResources();
 }
 
 bool Screen::RunIntro(float Fraction, float Delta)

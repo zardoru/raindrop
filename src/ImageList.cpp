@@ -7,10 +7,13 @@
 #include "ImageLoader.h"
 #include "Sprite.h"
 
-#include <boost/thread.hpp>
-#include <boost/algorithm/string/replace.hpp>
-
 ImageList::ImageList(bool ReleaseAtDestruction)
+{
+	ShouldDeleteAtDestruction = ReleaseAtDestruction;
+}
+
+ImageList::ImageList(Interruptible *Parent, bool ReleaseAtDestruction)
+	: Interruptible(Parent)
 {
 	ShouldDeleteAtDestruction = ReleaseAtDestruction;
 }
@@ -27,7 +30,7 @@ void ImageList::AddToList(const GString Filename, const GString Prefix)
 {
 	GString ResFilename = Directory(Prefix) / Filename;
 
-	boost::replace_all (ResFilename, "//", "/");
+	replace_all (ResFilename, "//", "/");
 
 	if (Images.find(ResFilename) == Images.end())
 	{
@@ -40,7 +43,7 @@ void ImageList::AddToListIndex(const GString Filename, const GString Prefix, int
 {
 	GString ResFilename = Directory(Prefix) / Filename;
 
-	boost::replace_all (ResFilename, "//", "/");
+	replace_all (ResFilename, "//", "/");
 
 	if (ImagesIndex.find(Index) == ImagesIndex.end())
 	{
@@ -74,7 +77,7 @@ bool ImageList::LoadAll()
 		i->second = ImageLoader::Load(i->first);
 		if (i->second == nullptr)
 			WereErrors = true;
-		boost::this_thread::interruption_point();
+		CheckInterruption();
 	}
 
 	for (auto i = ImagesIndexPending.begin(); i != ImagesIndexPending.end();)
@@ -84,7 +87,7 @@ bool ImageList::LoadAll()
 			WereErrors = true;
 
 		i = ImagesIndexPending.erase(i);
-		boost::this_thread::interruption_point();
+		CheckInterruption();
 	}
 
 	return WereErrors;

@@ -180,7 +180,7 @@ void ScreenGameplay::ResetNotes()
 	}
 }
 
-void ScreenGameplay::LoadThreadInitialization()
+void ScreenGameplay::LoadResources()
 {
 	char* SkinFiles [] =
 	{

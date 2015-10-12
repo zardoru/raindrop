@@ -2,20 +2,23 @@
 
 // A front-end to ImageLoader that unloads all images added to the list on destruction.
 
+#include "Interruptible.h"
+
 /*
 	In particular, allows a manifest of filenames to be passed to it and control when it loads those images.
 */
-class ImageList {
+class ImageList : public Interruptible {
 
-	std::map <GString, Image*> Images;
+	map <GString, Image*> Images;
 
-	std::map <int, GString> ImagesIndexPending;
-	std::map <int, Image*> ImagesIndex;
+	map <int, GString> ImagesIndexPending;
+	map <int, Image*> ImagesIndex;
 	bool ShouldDeleteAtDestruction;
 
 public:
 
 	ImageList(bool ReleaseAtDestruction = true);
+	ImageList(Interruptible *parent, bool ReleaseAtDestruction = true);
 	~ImageList();
 
 	void Destroy();
