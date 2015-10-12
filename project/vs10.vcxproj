@@ -57,8 +57,8 @@
     <NuGetPackageImportStamp>f39747c7</NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>../ext-libs/libRocket/Include;../ext-src/SOIL;../ext-src;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../</IncludePath>
-    <LibraryPath>../ext-libs/libRocket/Build/Debug;..\ext-libs\Debug;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>../ext-libs/libRocket/Include;../ext-src/SOIL;../ext-src;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;C:\Libraries\boost_1_59_0\;../</IncludePath>
+    <LibraryPath>../ext-libs/libRocket/Build/Debug;..\ext-libs\Debug;../ext-libs/boost/stage/lib;C:\Libraries\boost_1_59_0\stage\lib;$(LibraryPath)</LibraryPath>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug NoIters|Win32'">
@@ -67,8 +67,8 @@
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>../ext-libs/libRocket/Include;../ext-src/SOIL;../ext-src;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;../</IncludePath>
-    <LibraryPath>../ext-libs/libRocket/Build/Release;..\ext-libs\Release;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>../ext-libs/libRocket/Include;../ext-src/SOIL;../ext-src;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;..\ext-libs\include;../ext-libs/boost;C:\Libraries\boost_1_59_0;../</IncludePath>
+    <LibraryPath>../ext-libs/libRocket/Build/Release;..\ext-libs\Release;../ext-libs/boost/stage/lib;C:\Libraries\boost_1_59_0\stage\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release NoSTLport|Win32'">
     <LibraryPath>..\ext-libs\Release;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
