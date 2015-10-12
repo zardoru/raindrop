@@ -1,6 +1,5 @@
 # General ignores.
-ext-src
-ext-libs
+ext-libs/boost
 *.bms
 *.osu
 *.sm
