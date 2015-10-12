@@ -10,7 +10,7 @@ A cytus-like mode is implemented and a flexible VSRG engine is, too. It supports
 * osu!mania
 * stepmania 3.9/5.0 (.sm/.ssc, with warps support, though no keysounds or delays.)
 
-For several of these, the major mechanis varying between them are coded into raindrop, and are activated depending on the chart format.
+For several of these, the major mechanics varying between them are coded into raindrop, and are activated depending on the chart format.
 raindrop is built using OpenGL/PortAudio and most if not all are freely licensed libraries, while raindrop itself is licensed under the GPLv3.
 
 Dependencies
@@ -33,8 +33,8 @@ You may use libmpg123 to get MP3 support on either platform. It is included by d
 Building on Windows
 =====
 All dependencies are included in ext-libs, with only one major, important exception: boost. 
-The solution included for building raindrop on windows assumes a functioning boost is located under ext-libs/boost. 
-Symlinking it is highly recommended.
+The solution will attempt to grab boost from NuGet the first time around. 
+Try grabbing it globally before the vs2013 solution does, locally. You've been warned.
 
 Building on Linux
 =====

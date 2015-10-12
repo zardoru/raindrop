@@ -12,6 +12,7 @@ Starter Pack
 project/debug
 project/release
 project/release_xp
+project/packages
 *.dll
 project/config.ini
 *.suo
@@ -28,7 +29,6 @@ project/Xcode/build
 *.xcuserdatad
 .DS_Store
 log.txt
-TEST/CRASH/background - color.jpg
 *.ssc
 *.pms
 *.bat
