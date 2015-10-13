@@ -162,11 +162,11 @@ public:
 		PaUtil_InitializeRingBuffer(&RingBuf, sizeof(int16), BUFF_SIZE, RingbufData);
 
 		Threaded = StartThread;
-		Stream = NULL;
+		Stream = nullptr;
 
 		if (StartThread)
 		{
-			std::thread (&PaMixer::Run, this);
+			thread (&PaMixer::Run, this).detach();
 		}
 #ifdef WIN32
 		if (UseWasapi)
@@ -222,7 +222,7 @@ public:
 
 				if (Threaded)
 				{
-					std::unique_lock<std::mutex> lock (rbufmux);
+					unique_lock<mutex> lock (rbufmux);
 					mut.unlock();
 
 					while (WaitForRingbufferSpace)

@@ -1,15 +1,12 @@
 #include "GameGlobal.h"
 #include "SongDC.h"
 #include "NoteLoaderDC.h"
+#include <sstream>
 
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/foreach.hpp>
 #include <fstream>
 
 /* Note Loader for the .dcf format. Heavily inspired by Stepmania. */
+/* Even for dotcur, I wouldn't use this anymore, I just keep it for historical purposes. I'd use bmson. */
 
 using namespace dotcur;
 
@@ -29,12 +26,10 @@ void LoadNotes(Song* Out, Difficulty * Diff, GString line)
 	Diff->TotalNotes = Diff->TotalHolds = Diff->TotalObjects = 0;
 
 	// Remove whitespace.
-	boost::replace_all(objectString, "\n", "");
-	boost::replace_all(objectString, "\r", "");
-	// boost::replace_all(objectGString, "M", ""); // mirror flags
+	Utility::ReplaceAll(objectString, "[\n\r]", "");
 
 	splitvec = Utility::TokenSplit(objectString); // Separate measures!
-	BOOST_FOREACH(GString objectlist, splitvec) // for each measure
+	for(GString objectlist: splitvec) // for each measure
 	{
 		std::vector< GString > splitobjects;
 		Measure Msr;
@@ -50,27 +45,27 @@ void LoadNotes(Song* Out, Difficulty * Diff, GString line)
 		if ( objectlist[0] == 'M')
 		{
 			invert = true;
-			replace_all(objectlist, "M", "");
+			Utility::ReplaceAll(objectlist, "M", "");
 		}
 
-		boost::split(splitobjects, objectlist, boost::is_any_of("{}"), boost::algorithm::token_compress_on);
+		splitobjects = Utility::TokenSplit(objectlist, "{}", true);
 		size_t SoSize = 0;
 		size_t CurObj = 0;
 
-		BOOST_FOREACH (GString object_description, splitobjects) // Count total valid objects
+		for(GString object_description: splitobjects) // Count total valid objects
 		{
 			if (object_description.length() != 0)
 				SoSize += 1;
 		}
 
-		BOOST_FOREACH (GString object_description, splitobjects) // For all objects in measure
+		for(GString object_description: splitobjects) // For all objects in measure
 		{
 			std::vector< GString > object_parameters;
 
 			if (object_description.length() == 0) // we must have at least a plain "0"
 				continue;
 
-			boost::split(object_parameters, object_description, boost::is_any_of(" :"));
+			object_parameters = Utility::TokenSplit(object_description, " :");
 			if (object_parameters.size() > 0) // We got a position
 			{
 				int32 xpos = 0;
@@ -78,18 +73,18 @@ void LoadNotes(Song* Out, Difficulty * Diff, GString line)
 				int32 sound = 0;
 
 				if (object_parameters[0].length() > 0) // does it have length?
-					xpos = boost::lexical_cast<float> (object_parameters[0].c_str()); // assign it
+					xpos = latof (object_parameters[0].c_str()); // assign it
 				
 
 				if (object_parameters.size() > 1) // We got a hold note parameter
 				{
 					if (object_parameters[1].length() > 0) // length?
-						hold_duration = boost::lexical_cast<float> (object_parameters[1].c_str()); // load it in
+						hold_duration = latof (object_parameters[1].c_str()); // load it in
 
 					if (object_parameters.size() > 2) // We got a sound parameter
 					{
 						if (object_parameters[2].length() > 0) // got a valid sound?
-							sound = boost::lexical_cast<int32> (object_parameters[2].c_str()); // cast it in
+							sound = latof (object_parameters[2].c_str()); // cast it in
 					}
 				}
 
@@ -141,13 +136,7 @@ Song* NoteLoader::LoadObjectsFromFile(GString filename, GString prefix)
 
 	if (!filein.is_open())
 	{
-#ifndef NDEBUG
-		std::stringstream serr;
-		serr << "couldn't open \"" << filename << "\" for reading";
-		throw; // std::exception(serr.str().c_str());
-#else
-		return NULL;
-#endif
+		throw std::exception(Utility::Format("Unable to open %s for reading!", filename.c_str()).c_str());
 	}
 
 	Out->SongDirectory = prefix;
@@ -212,12 +201,9 @@ Song* NoteLoader::LoadObjectsFromFile(GString filename, GString prefix)
 
 		OnCommand(#SOUNDS)
 		{
-			std::vector<GString> SoundList;
+			vector<GString> SoundList;
 			GString CmdLine = CommandContents;
-			boost::split(SoundList, CmdLine, boost::is_any_of(","));
-
-			for (unsigned int i = 1; i <= SoundList.size(); i++) // Copy in
-				Diff->SoundList[i] = SoundList[i-1];
+			// Diff->SoundList = Utility::TokenSplit(CmdLine, ",");
 		}
 
 		// Then, the charts.

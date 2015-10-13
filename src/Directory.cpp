@@ -7,8 +7,6 @@
 #include "Global.h"
 #include "Directory.h"
 
-#include <boost/algorithm/string.hpp>
-
 Directory::Directory()
 {
 	
@@ -53,14 +51,8 @@ Directory Directory::ParentDirectory()
 void Directory::Normalize(bool RemoveIllegal)
 {
 	if (RemoveIllegal) {
-		boost::replace_all(curpath, "<", "");
-		boost::replace_all(curpath, ">", "");
-		boost::replace_all(curpath, ":", "");
-		boost::replace_all(curpath, "\"", "");
-		boost::replace_all(curpath, "|", "");
-		boost::replace_all(curpath, "?", "");
-		boost::replace_all(curpath, "*", "");
-		boost::replace_all(curpath, "\\", "/");
+		Utility::RemoveFilenameIllegalCharacters(curpath, false);
+		Utility::ReplaceAll(curpath, "\\\\", "/");
 	}
 
 	GString newCurPath;
@@ -122,7 +114,7 @@ Directory Directory::Filename()
 GString Directory::GetExtension() const
 {
 	auto out = curpath.substr(curpath.find_last_of(".")+1);
-	boost::to_lower(out);
+	Utility::ToLower(out);
 	return out;
 }
 

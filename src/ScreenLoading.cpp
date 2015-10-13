@@ -20,9 +20,9 @@ public:
 		try {
 			mScreen->LoadResources();
 		}
-		catch (InterruptedException &e)
+		catch (InterruptedException &)
 		{
-			Log::Printf("Thread was interrupted.");
+			Log::Printf("Thread was interrupted.\n");
 		}catch(std::exception &e)
 		{
 			Log::LogPrintf("Exception while loading: %s\n", e.what());
@@ -87,12 +87,14 @@ bool ScreenLoading::Run(double TimeDelta)
 
 	if (FinishedLoading)
 	{
+		LoadThread->join();
 		delete LoadThread;
 		LoadThread = nullptr;
 		Next->InitializeResources();
 		ChangeState(StateExit);
 	}
 
+	std::this_thread::sleep_for(std::chrono::milliseconds(16));
 	return Running;
 }
 

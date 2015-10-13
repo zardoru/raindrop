@@ -1,5 +1,3 @@
-#include <boost/format.hpp>
-
 #include "GameGlobal.h"
 #include "BitmapFont.h"
 #include "GuiTextPrompt.h"
@@ -8,7 +6,7 @@ using namespace GUI;
 
 TextPrompt::TextPrompt()
 {
-	mPromptFont = NULL;
+	mPromptFont = nullptr;
 	mOpen = false;
 }
 
@@ -62,7 +60,7 @@ void TextPrompt::Render()
 {
 	if (mOpen)
 	{
-		GString str = (boost::format("%s\n\n%s_\n\nPress Enter to Confirm or Escape to Abort") % mPromptText % mBufferText).str();
+		GString str = Utility::Format("%s\n\n%s_\n\nPress Enter to Confirm or Escape to Abort", mPromptText, mBufferText);
 		if (mPromptFont)
 			mPromptFont->Render(str, Vec2(100,200)); // todo: change position
 	}

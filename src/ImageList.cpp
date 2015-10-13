@@ -28,26 +28,25 @@ ImageList::~ImageList()
 
 void ImageList::AddToList(const GString Filename, const GString Prefix)
 {
-	GString ResFilename = Directory(Prefix) / Filename;
-
-	replace_all (ResFilename, "//", "/");
+	Directory ResFilename = Directory(Prefix) / Filename;
+	ResFilename.Normalize(true);
 
 	if (Images.find(ResFilename) == Images.end())
 	{
-		ImageLoader::AddToPending(ResFilename.c_str());
+		ImageLoader::AddToPending(ResFilename.c_path());
 		Images[ResFilename] = nullptr;
 	}
 }
 
 void ImageList::AddToListIndex(const GString Filename, const GString Prefix, int Index)
 {
-	GString ResFilename = Directory(Prefix) / Filename;
+	Directory ResFilename = Directory(Prefix) / Filename;
 
-	replace_all (ResFilename, "//", "/");
+	ResFilename.Normalize(true);
 
 	if (ImagesIndex.find(Index) == ImagesIndex.end())
 	{
-		ImageLoader::AddToPending(ResFilename.c_str());
+		ImageLoader::AddToPending(ResFilename.c_path());
 		Images[ResFilename] = nullptr;
 		ImagesIndex[Index] = nullptr;
 		ImagesIndexPending[Index] = ResFilename;

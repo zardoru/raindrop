@@ -4,8 +4,6 @@
 #include <unordered_set>
 #include <regex>
 
-#include <boost/algorithm/string.hpp>
-
 #include "GameGlobal.h"
 #include "Song7K.h"
 #include "utf8.h"
@@ -654,7 +652,6 @@ namespace NoteLoaderBMS{
 			}
 
 			LNObj = 0;
-			IsPMS = false;
 			HasBMPEvents = false;
 			Skip = false;
 			CurrentNestedLevel = 0;
@@ -798,8 +795,6 @@ namespace NoteLoaderBMS{
 			}
 
 			Chart->Channels = AutodetectChannelCount();
-			if (Chart->Channels == 9) // Assume pop'n
-				IsPMS = true;
 
 			for (auto i = m.begin(); i != m.end(); ++i)
 				CalculateMeasure(i);
@@ -896,7 +891,7 @@ namespace NoteLoaderBMS{
 		}
 
 		GString ret = regex_replace(SLine, sub_reg, "");
-		trim(ret);
+		Utility::Trim(ret);
 		return ret;
 	}
 
@@ -908,7 +903,7 @@ namespace NoteLoaderBMS{
 			++i)
 		{
 			auto Current = *i;
-			boost::to_lower(Current);
+			Utility::ToLower(Current);
 			const char* s = Current.c_str();
 
 			if (strstr(s, "another")) {
@@ -952,7 +947,7 @@ namespace NoteLoaderBMS{
 		shared_ptr<Difficulty> Diff(new Difficulty());
 		shared_ptr<DifficultyLoadInfo> LInfo(new DifficultyLoadInfo());
 		std::regex DataDeclaration("(\\d{3})([a-zA-Z0-9]{2})");
-		bool IsPMS;
+		bool IsPMS = false;
 
 		Diff->Filename = filename;
 		Diff->Data = LInfo;
@@ -997,18 +992,17 @@ namespace NoteLoaderBMS{
 		{
 			getline(filein, Line);
 
-			replace_all(Line, "\r", "");
+			Utility::ReplaceAll(Line, "[\r\n]", "");
 
 			if (Line.length() == 0 || Line[0] != '#')
 				continue;
 
 			GString command = Line.substr(Line.find_first_of("#"), Line.find_first_of(" ") - Line.find_first_of("#"));
 
-			boost::to_upper(command);
-			replace_all(command, "\n", "");
+			Utility::ToLower(command);
 
-#define OnCommand(x) if(command == #x)
-#define OnCommandSub(x) if(command.substr(0, strlen(#x)) == #x)
+#define OnCommand(x) if(command == Utility::ToLower(GString(#x)))
+#define OnCommandSub(x) if(command.substr(0, strlen(#x)) == Utility::ToLower(GString(#x)))
 
 			GString CommandContents = Line.substr(Line.find_first_of(" ") + 1);
 			GString tmp;
@@ -1172,7 +1166,7 @@ namespace NoteLoaderBMS{
 
 				OnCommand(#SUBTITLE)
 				{
-					trim(CommandContents);
+					Utility::Trim(CommandContents);
 					Subs.insert(CommandContents);
 				}
 
@@ -1245,7 +1239,7 @@ namespace NoteLoaderBMS{
 			Out->SongName = NewTitle.substr(0, NewTitle.find_last_not_of(" ") + 1);
 
 		if (Subs.size() > 1)
-			Out->Subtitle = boost::join(Subs, " ");
+			Out->Subtitle = Utility::Join(Subs, " ");
 		else if (Subs.size() == 1)
 			Out->Subtitle = *Subs.begin();
 

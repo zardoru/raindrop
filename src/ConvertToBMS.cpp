@@ -4,8 +4,6 @@
 #include "Logging.h"
 #include "Song7K.h"
 
-#include <boost/format.hpp>
-
 class BMSConverter : public VSRG::RowifiedDifficulty {
 	VSRG::Song *Song;
 
@@ -181,7 +179,7 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 			rowified[rNum] = Obj.Evt;
 		}
 
-		OutFile << boost::format("#%03d%s:") % Measure % ToBase36(Channel);
+		OutFile << Utility::Format("#%03d%s:", Measure, ToBase36(Channel));
 		for (auto val : rowified){
 			OutFile << ToBase36(val);
 		}
@@ -242,7 +240,7 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 			if (Parent->Data->Measures[Measure].Length != 4)
 			{
 				double bmsLength = Parent->Data->Measures[Measure].Length / 4;
-				OutFile << boost::format("#%03d02:%f") % Measure % bmsLength << endl;
+				OutFile << Utility::Format("#%03d02:%f", Measure, bmsLength) << endl;
 			}
 
 			OutFile << "-- BGM - Measure " << Measure << endl;
@@ -299,7 +297,7 @@ public:
 		Directory Sn = Song->SongName;
 		Sn.Normalize(true);
 
-		GString name = (boost::format("%1%/ %4% (%2%) - %3%.bms") % PathOut.c_path() % Parent->Name % Parent->Author % Sn.c_path()).str();
+		GString name = Utility::Format("%s/ %s (%s) - %s.bms", PathOut.c_path(), Sn.c_path(), Parent->Name, Parent->Author);
 
 #ifndef _WIN32
 		std::ofstream out(name.c_str());
@@ -310,7 +308,7 @@ public:
 			
 		try {
 			if (!out.is_open())
-				throw std::exception( (boost::format("failed to open file %s") % Utility::Widen(name).c_str()).str().c_str() );
+				throw std::exception( (Utility::Format("failed to open file %S", name).c_str() ) );
 			if (BPS.size() == 0) 
 				throw std::exception("There are no timing points!");
 			WriteBMSOutput();

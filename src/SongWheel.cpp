@@ -341,7 +341,8 @@ void SongWheel::Update(float Delta)
 
 	if (!IsLoading() && mLoadThread)
 	{
-		delete mLoadThread; mLoadThread = nullptr;
+		delete mLoadThread;
+		mLoadThread = nullptr;
 	}
 
 	if (!CurrentList)

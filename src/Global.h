@@ -15,8 +15,7 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
+#include <cctype>
 #include <memory>
 
 #if (defined _MSC_VER) && (_MSC_VER < 1800)
@@ -31,9 +30,6 @@ using std::mutex;
 using std::unique_lock;
 using std::condition_variable;
 using namespace std::placeholders;
-using boost::lexical_cast;
-using boost::replace_all;
-using boost::algorithm::trim;
 
 using std::shared_ptr;
 using std::make_shared;
@@ -47,17 +43,7 @@ using std::lower_bound;
 using std::upper_bound;
 
 // Use stdint if available.
-#if !(defined HAS_STDINT) && ( !(defined _MSC_VER) || (_MSC_VER < 1800) )
-#include <boost/cstdint.hpp>
-using boost::uint32_t;
-using boost::uint16_t;
-using boost::uint8_t;
-using boost::int32_t;
-using boost::int16_t;
-using boost::int8_t;
-#else
 #include <stdint.h>
-#endif
 
 typedef glm::vec2 Vec2;
 typedef glm::vec3 Vec3;
@@ -168,11 +154,33 @@ namespace Utility
 	GString GetSha256ForFile(GString Filename);
 	GString IntToStr(int num);
 	GString CharToStr(char c);
+	void RemoveFilenameIllegalCharacters(GString &S, bool removeSlash);
 
-	// boost::split makes way too many allocations, so here's a home-cooked version
-	vector<GString> TokenSplit(const GString &str, const GString &token = ",");
+	GString Format(GString str, ...);
+
+
+	vector<GString> TokenSplit(const GString &str, const GString &token = ",", bool compress = false);
+
+	GString Trim(GString& str);
+	GString ReplaceAll(GString& str, const GString& seq, const GString what);
+	GString ToLower(GString& str); // Caveat: only for ascii purposes.
+
+	template <class T>
+	GString Join(const T& iterable, const GString& seq)
+	{
+		GString ret;
+		for (auto s = iterable.begin(); s != iterable.end(); ++s)
+		{
+			auto next = s; ++next;
+			if (next != iterable.end())
+				ret += *s + seq;
+			else
+				ret += *s;
+		}
+
+		return ret;
+	}
 }
-
 
 enum KeyEventType
 {

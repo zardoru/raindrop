@@ -9,8 +9,6 @@
 #include <map>
 #include <vector>
 
-#include <boost/algorithm/string.hpp>
-
 #include "GameGlobal.h"
 #include "Logging.h"
 #include "BindingsManager.h"
@@ -125,7 +123,7 @@ bool controllerButtonState[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = { 0 };
 
 struct sk_s
 {
-	char keyGString[32];
+	char KeyString[32];
 	int boundkey;
 };
 
@@ -178,8 +176,8 @@ int KeyTranslate(GString K)
 {
 	for (uint32 i = 0; i < SpecialKeys.size(); i++)
 	{
-		GString Key = boost::to_lower_copy(K);
-		GString Target = boost::to_lower_copy(GString(SpecialKeys.at(i).keyGString));
+		GString Key = K; Utility::ToLower(Key);
+		GString Target = GString(SpecialKeys.at(i).KeyString);  Utility::ToLower(Target);
 		if (Key == Target)
 			return SpecialKeys.at(i).boundkey;
 	}
@@ -237,8 +235,8 @@ int getIndexForKeytype(const char* key)
 {
 	for (int i = 0; i < sizeof KeytypeNames / sizeof(char*); i++)
 	{
-		GString lowkey = boost::to_lower_copy(GString(key));
-		GString lowname = boost::to_lower_copy(GString(KeytypeNames[i]));
+		GString lowkey = GString(key); Utility::ToLower(lowkey);
+		GString lowname = GString(KeytypeNames[i]); Utility::ToLower(lowname);
 		if (lowkey == lowname)
 			return i;
 	}
@@ -259,7 +257,7 @@ GString getNameForUntranslatedKey(int K)
 	for (int i = 0; i < NUM_OF_STATIC_SPECIAL_KEYS; i++)
 	{
 		if (StaticSpecialKeys[i].boundkey == K)
-			return StaticSpecialKeys[i].keyGString;
+			return StaticSpecialKeys[i].KeyString;
 	}
 
 	return Utility::IntToStr(K);
@@ -284,7 +282,7 @@ void BindingsManager::Initialize()
 				char name[32];
 				sprintf(name, "Controller%d", i);
 				sk_s thisButton;
-				strcpy(thisButton.keyGString, name);
+				strcpy(thisButton.KeyString, name);
 				thisButton.boundkey = 1000 + i;
 				SpecialKeys.push_back(thisButton);
 			}

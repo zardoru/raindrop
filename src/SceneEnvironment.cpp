@@ -15,7 +15,6 @@
 #include "TruetypeFont.h"
 
 #include <LuaBridge.h>
-#include <boost/algorithm/string/case_conv.hpp>
 
 void CreateLuaInterface(LuaManager *AnimLua);
 
@@ -680,7 +679,7 @@ void SceneEnvironment::DoEvent(GString EventName, int Return)
 
 	
 	if (Doc) {
-		boost::algorithm::to_lower(EventName);
+		Utility::ToLower(EventName);
 		Doc->DispatchEvent(EventName.c_str(), Rocket::Core::Dictionary());
 	}
 }
