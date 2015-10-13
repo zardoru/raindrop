@@ -42,7 +42,6 @@ using std::stable_sort;
 using std::lower_bound;
 using std::upper_bound;
 
-// Use stdint if available.
 #include <stdint.h>
 
 typedef glm::vec2 Vec2;

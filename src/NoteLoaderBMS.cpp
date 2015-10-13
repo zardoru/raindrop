@@ -720,11 +720,11 @@ namespace NoteLoaderBMS{
 			// Starting off with the basics.
 
 			do {
-				if (Command == "#SETRANDOM")
+				if (Command == "#setrandom")
 				{
 					RandomStack[CurrentNestedLevel] = atoi(Contents.c_str());
 				}
-				else if (Command == "#RANDOM")
+				else if (Command == "#random")
 				{
 					IsControlFlowCommand = true;
 
@@ -739,7 +739,7 @@ namespace NoteLoaderBMS{
 					RandomStack[CurrentNestedLevel] = rand() % Limit + 1;
 
 				}
-				else if (Command == "#IF")
+				else if (Command == "#if")
 				{
 					IsControlFlowCommand = true;
 					CurrentNestedLevel++;
@@ -758,7 +758,7 @@ namespace NoteLoaderBMS{
 					}
 
 				}
-				else if (Command == "#ENDIF")
+				else if (Command == "#endif")
 				{
 					IsControlFlowCommand = true;
 					CurrentNestedLevel--;
