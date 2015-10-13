@@ -17,8 +17,7 @@
 #include "sha256.h"
 
 #include <sstream>
-#include <boost/algorithm/string/replace.hpp>
-#include <boost/algorithm/string/classification.hpp>
+#include <regex>
 
 int InfinityMask = 0x7F800000;
 float *PInfinity = (float*)&InfinityMask;
@@ -165,7 +164,22 @@ namespace Utility {
 		return k.str();
 	}
 
-	vector<GString> TokenSplit(const GString& str, const GString &token)
+	GString Format(GString str, ...)
+	{
+		char r[2];
+		int bfsize;
+		va_list vl;
+		va_start(vl,str);
+		bfsize = vsnprintf(r, 2, str.c_str(), vl);
+
+		vector<char> fmt(bfsize);
+		vsnprintf(&fmt[0], bfsize, str.c_str(), vl);
+		va_end(vl);
+
+		return GString(fmt.data());
+	}
+
+	vector<GString> TokenSplit(const GString& str, const GString &token, bool compress)
 	{
 		vector<GString> ret;
 		size_t len = str.length();
@@ -173,13 +187,31 @@ namespace Utility {
 		auto next = strpbrk(str.c_str(), token.c_str()); // next token instance
 		for (; next != nullptr; next = strpbrk(it, token.c_str()))
 		{
-			ret.push_back(GString(it, next));
+			if (!compress || it - next != 0)
+				ret.push_back(GString(it, next));
 			it = next + 1;
 		}
 
 		if (it != next && len)
 			ret.push_back(GString(it, &str[len]));
 		return ret;
+	}
+
+	GString Trim(GString& str)
+	{
+		std::regex trimreg("^\\s*(.*?)\\s*$");
+		return str = regex_replace(str, trimreg, "$1");
+	}
+
+	GString ReplaceAll(GString& str, const GString& seq, const GString what)
+	{
+		return str = regex_replace(str, std::regex(seq), what);
+	}
+
+	GString ToLower(GString& str)
+	{
+		transform(str.begin(), str.end(), str.begin(), ::tolower);
+		return str;
 	}
 
 	void CheckDir(GString path)
@@ -208,15 +240,9 @@ namespace Utility {
 	void RemoveFilenameIllegalCharacters(GString &S, bool removeSlash)
 	{
 		// size_t len = strlen(fn);
-		boost::replace_all(S, "<", "");
-		boost::replace_all(S, ">", "");
-		boost::replace_all(S, ":", "");
-		boost::replace_all(S, "\"", "");
-		boost::replace_all(S, "|", "");
-		boost::replace_all(S, "?", "");
-		boost::replace_all(S, "*", "");
+		ReplaceAll(S, "[<>:\\|?*]", "");
 		if (removeSlash)
-			boost::replace_all(S, "/", "");
+			ReplaceAll(S, "/", "");
 	}
 
 	GString GetSha256ForFile(GString Filename)
@@ -244,15 +270,6 @@ namespace Utility {
 	}
 
 } // namespace Utility
-
-#ifdef NDEBUG
-namespace boost
-{
-void throw_exception(std::exception const&)
-{
-}
-}
-#endif
 
 double latof(GString s)
 {

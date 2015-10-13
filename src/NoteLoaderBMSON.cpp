@@ -42,7 +42,7 @@ namespace NoteLoaderBMSON{
 			auto meta = root["info"];
 			song->SongName = NoteLoaderBMS::GetSubtitles(meta["title"].asString(), subtitles);
 			song->SongAuthor = meta["artist"].asString();
-			song->Subtitle = boost::join(subtitles, " ");
+			song->Subtitle = Utility::Join(subtitles, " ");
 
 			Chart->Timing.push_back(TimingSegment(0, meta["initBPM"].asDouble()));
 			Chart->Level = meta["level"].asInt();

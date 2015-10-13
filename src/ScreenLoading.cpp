@@ -1,22 +1,35 @@
 #include "GameGlobal.h"
 #include "GameState.h"
-#include "ScreenLoading.h"
+#include "Screen.h"
+#include "SceneEnvironment.h"
 #include "LuaManager.h"
+#include "ScreenLoading.h"
 #include "GameWindow.h"
 #include "BindingsManager.h"
 #include "Logging.h"
 
 
-void LoadFunction(void* pScreen)
-{
-	try {
-		auto S = static_cast<Screen*>(pScreen);
-		S->LoadThreadInitialization();
-	} catch (std::exception &e)
+class LoadScreenThread{
+	atomic<bool>& mFinished;
+	Screen* mScreen;
+public:
+	LoadScreenThread(atomic<bool>& status, Screen* screen) : mFinished(status), mScreen(screen) {};
+	void DoLoad()
 	{
-		Log::Printf("Exception occurred while loading: %s\n", e.what());
+		mFinished = false;
+		try {
+			mScreen->LoadResources();
+		}
+		catch (InterruptedException &)
+		{
+			Log::Printf("Thread was interrupted.\n");
+		}catch(std::exception &e)
+		{
+			Log::LogPrintf("Exception while loading: %s\n", e.what());
+		}
+		mFinished = true;
 	}
-}
+};
 
 ScreenLoading::ScreenLoading(Screen *Parent, Screen *_Next) : Screen("ScreenLoading", Parent)
 {
@@ -44,7 +57,7 @@ void ScreenLoading::OnIntroBegin()
 
 void ScreenLoading::Init()
 {
-	LoadThread = new boost::thread(LoadFunction, Next);
+	LoadThread = new thread(&LoadScreenThread::DoLoad, LoadScreenThread(FinishedLoading, Next));
 }
 
 void ScreenLoading::OnExitEnd()
@@ -72,14 +85,16 @@ bool ScreenLoading::Run(double TimeDelta)
 
 	Animations->DrawTargets(TimeDelta);
 
-	if (LoadThread->timed_join(boost::posix_time::millisec(16)))
+	if (FinishedLoading)
 	{
+		LoadThread->join();
 		delete LoadThread;
 		LoadThread = nullptr;
-		Next->MainThreadInitialization();
+		Next->InitializeResources();
 		ChangeState(StateExit);
 	}
 
+	std::this_thread::sleep_for(std::chrono::milliseconds(16));
 	return Running;
 }
 
@@ -96,7 +111,7 @@ bool ScreenLoading::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 	{
 		if (BindingsManager::TranslateKey(key) == KT_Escape)
 		{
-			LoadThread->interrupt();
+			Next->RequestInterrupt();
 			ThreadInterrupted = true;
 		}
 	}

@@ -1,10 +1,11 @@
 #ifndef ISCREEN_H_
 #define ISCREEN_H_
 
+#include "Interruptible.h"
 class SceneEnvironment;
 
 // Interface.
-class Screen
+class Screen : public Interruptible
 {
 private:
 	double ScreenTime; // How long has it been open?
@@ -33,19 +34,20 @@ public:
 	Screen (GString Name, Screen * _Parent);
 	virtual ~Screen ();
 
-	void Init();
+	virtual void Init();
 
 	// Nesting screens.
 	bool IsScreenRunning();
 	bool RunNested(float delta);
 	bool Update(float delta);
+
 	void Close();
 
 	Screen* GetTop();
 
 	// Screen implementation.
-	virtual void LoadThreadInitialization();
-	virtual void MainThreadInitialization();
+	virtual void LoadResources(); // could, or not, be called from main thread.
+	virtual void InitializeResources(); // must be called from main thread - assume it always is
 	virtual bool RunIntro(float Fraction, float Delta);
 	virtual bool RunExit(float Fraction, float Delta);
 	virtual bool Run(double delta) = 0;

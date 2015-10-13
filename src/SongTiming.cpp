@@ -3,19 +3,26 @@
 #include "Global.h"
 #include "Song.h"
 
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/math/common_factor.hpp>
 #include <numeric>
 
+int gcd(int a, int b)
+{
+	if (b == 0) return a;
+	else return gcd(b, a % b);
+}
+
+int lcm(int a, int b)
+{
+	return a * b / gcd(a, b);
+}
+
 int LCM(const vector<int> &Set) {
-	return std::accumulate(Set.begin() + 1, Set.end(), *Set.begin(), boost::math::lcm<int>);
+	return accumulate(Set.begin() + 1, Set.end(), *Set.begin(), lcm);
 }
 
 int SectionIndex(const TimingData &Timing, double Beat)
 {
-	return std::upper_bound(Timing.begin(), Timing.end(), Beat) - Timing.begin() - 1;
+	return upper_bound(Timing.begin(), Timing.end(), Beat) - Timing.begin() - 1;
 }
 
 double SectionValue(const TimingData &Timing, double Beat)
@@ -72,7 +79,7 @@ void GetTimingChangesInInterval(const TimingData &Timing,
 {
 	Out.clear();
 
-	for (TimingData::const_iterator i = Timing.begin(); i != Timing.end(); i++)
+	for (TimingData::const_iterator i = Timing.begin(); i != Timing.end(); ++i)
 	{
 		if (i->Time >= PointA && i->Time < PointB)
 		{
@@ -89,7 +96,7 @@ void LoadTimingList(TimingData &Timing, GString line, bool AllowZeros)
 
 	Timing.clear();
 	// Remove whitespace.
-	boost::replace_all(ListString, "\n", "");
+	Utility::ReplaceAll(ListString, "\n", "");
 	SplitResult = Utility::TokenSplit(ListString); // Separate List of BPMs.
 	for (auto ValueString: SplitResult)
 	{ // Separate Time=Value pairs.

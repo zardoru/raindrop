@@ -3,8 +3,6 @@
 
 #include <sstream>
 #include <fstream>
-#include <boost/format.hpp>
-
 float CfgValNPS(GString name, float defaultvalue)
 {
 	float ret = Configuration::GetConfigf(name, "NPS");
@@ -94,17 +92,17 @@ public:
 
 		float avgNPS = Song->GetDifficulty(diffIndex)->TotalScoringObjects / Song->GetDifficulty(diffIndex)->Duration;
 
-		out << boost::format("<text x=\"%d\" y=\"%d\" fill=\"black\">%s - %s (%s) by %s (Max NPS: %.2f/Avg NPS: %.2f)</text>\n")
-			% 20 % 20
-			% Song->SongName % Song->SongAuthor % Song->GetDifficulty(diffIndex)->Name % DiffAuth
-			% (peakf / intervalduration)
-			% avgNPS;
+		out << Utility::Format("<text x=\"%d\" y=\"%d\" fill=\"black\">%s - %s (%s) by %s (Max NPS: %.2f/Avg NPS: %.2f)</text>\n",
+			20, 20,
+			Song->SongName, Song->SongAuthor, Song->GetDifficulty(diffIndex)->Name, DiffAuth,
+			peakf / intervalduration,
+			avgNPS);
 
-		out << boost::format("\t<line x1 = \"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" style = \"stroke:rgb(0,0,0);stroke-width:4\"/>\n")
-			% BL.x % BL.y % BR.x % BR.y;
+		out << Utility::Format("\t<line x1 = \"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" style = \"stroke:rgb(0,0,0);stroke-width:4\"/>\n",
+			BL.x, BL.y, BR.x, BR.y);
 
-		out << boost::format("\t<line x1 = \"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" style = \"stroke:rgb(0,0,0);stroke-width:4\"/>\n")
-			% TL.x % TL.y % BL.x % BL.y;
+		out << Utility::Format("\t<line x1 = \"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" style = \"stroke:rgb(0,0,0);stroke-width:4\"/>\n",
+			TL.x, TL.y, BL.x, BL.y);
 
 		auto ptAmt = 5;
 		for (auto i = 1; i <= ptAmt; i++)
@@ -112,14 +110,11 @@ public:
 			float X = (BL.x - GraphXOffset / 2);
 			float Y = (BL.y - i * (ImageHeight / ptAmt / peakMargin));
 			float Value = (peakf * i / ptAmt / intervalduration);
-			out << boost::format("\t<text x=\"%d\" y=\"%d\" fill=\"black\">%.2f</text>\n")
-				% X
-				% Y
-				% Value;
+			out << Utility::Format("\t<text x=\"%d\" y=\"%d\" fill=\"black\">%.2f</text>\n",
+				X, Y, Value);
 
-			out << boost::format("\t<line x1 = \"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" style = \"stroke:rgb(0,0,0);stroke-width:0.5\"/>\n")
-				% X % Y
-				% (GraphXOffset + RealGraphWidth) % Y;
+			out << Utility::Format("\t<line x1 = \"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" style = \"stroke:rgb(0,0,0);stroke-width:0.5\"/>\n",
+				X, Y, GraphXOffset + RealGraphWidth, Y);
 		}
 
 		for (auto point : dataPoints)
@@ -141,8 +136,8 @@ public:
 			x2 = IntervalWidth * (ptIdx + 1) * XRatio + GraphXOffset;
 			y2 = ImageHeight - ImageHeight * relFreqNext  + GraphYOffset;
 
-			out << (boost::format("\t<line x1 = \"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" style = \"stroke:rgb(255,0,0);stroke-width:2\"/>\n")
-					% x1 % y1 % x2 % y2).str();
+			out << Utility::Format("\t<line x1 = \"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" style = \"stroke:rgb(255,0,0);stroke-width:2\"/>\n",
+				x1, y1, x2, y2);
 
 
 			ptIdx++;
@@ -162,7 +157,7 @@ void ConvertToNPSGraph(VSRG::Song *Sng, Directory PathOut)
 		Directory Sn = Sng->SongName;
 		Sn.Normalize(true);
 
-		GString name = (boost::format("%1%/ %4% (%2%) - %3%.svg") % PathOut.c_path() % Diff->Name % Diff->Author % Sn.c_path()).str();
+		GString name = Utility::Format("%s/ %s (%s) - %s.svg", PathOut.c_path(), Sn.c_path(), Diff->Name, Diff->Author);
 
 		out.open(name.c_str());
 

@@ -180,7 +180,7 @@ void ScreenGameplay::ResetNotes()
 	}
 }
 
-void ScreenGameplay::LoadThreadInitialization()
+void ScreenGameplay::LoadResources()
 {
 	char* SkinFiles [] =
 	{
@@ -225,7 +225,7 @@ void ScreenGameplay::LoadThreadInitialization()
 
 		if (!Music || !Music->Open( (MySong->SongDirectory / MySong->SongFilename).c_path() ))
 		{
-			// throw std::exception( (boost::format ("couldn't open song %s") % MySong->SongFilename).str().c_str() );
+			throw std::exception( (Utility::Format("couldn't open song %s", MySong->SongFilename).c_str() ) );
 		}
 		
 		seekTime(0);

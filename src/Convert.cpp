@@ -8,19 +8,11 @@
 #include "Converter.h"
 #include "Logging.h"
 
-#include <boost/algorithm/string.hpp>
-
 int TrackToXPos(int totaltracks, int track)
 {
 	auto base = (512.0/totaltracks);
 	auto minus = (256.0/totaltracks);
 	return (base * (track + 1) - minus);
-}
-
-void RemoveSlashes(GString &str)
-{
-	boost::replace_all(str, "/", "");
-	boost::replace_all(str, "\\", "");
 }
 
 void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
@@ -35,18 +27,12 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 		GString DName = Difficulty->Name;
 		GString Charter = Author;
 
-		RemoveSlashes(Author);
-		RemoveSlashes(Name);
-		RemoveSlashes(DName);
-		RemoveSlashes(Charter);
+		Utility::RemoveFilenameIllegalCharacters(Author, true);
+		Utility::RemoveFilenameIllegalCharacters(Name, true);
+		Utility::RemoveFilenameIllegalCharacters(DName, true);
+		Utility::RemoveFilenameIllegalCharacters(Charter, true);
 
-#ifndef WIN32
-		snprintf
-#else
-		_snprintf
-#endif
-			(vf, 1024, "%s/%s - %s [%s] (%s).osu", PathOut.c_path(), Author.c_str(), Name.c_str(), DName.c_str(), Charter.c_str());
-		Directory Str = vf;
+		Directory Str = Utility::Format("%s/%s - %s [%s] (%s).osu", PathOut.c_path(), Author.c_str(), Name.c_str(), DName.c_str(), Charter.c_str());
 		Str.Normalize(true);
 		std::ofstream out (Str.c_path());
 

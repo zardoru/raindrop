@@ -1,13 +1,9 @@
 #include <fstream>
-#include <map>
 
 #include "GameGlobal.h"
 #include "Song7K.h"
 #include "NoteLoader7K.h"
 
-
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
 
 using namespace VSRG;
 
@@ -18,8 +14,6 @@ using namespace VSRG;
 	and you require at least a single BPM to calculate speed properly. And that's it, set the duration
 	of the chart and the loading is done.
 */
-
-typedef std::vector<GString> SplitResult;
 
 void NoteLoaderFTB::LoadMetadata(GString filename, GString prefix, Song *Out)
 {
@@ -37,9 +31,9 @@ void NoteLoaderFTB::LoadMetadata(GString filename, GString prefix, Song *Out)
 	GString Title;
 	GString musName;
 
-	std::getline(filein, musName);
-	std::getline(filein, Title);
-	std::getline(filein, Author);
+	getline(filein, musName);
+	getline(filein, Title);
+	getline(filein, Author);
 
 	Out->SongFilename = musName;
 	Out->SongName = Title;
@@ -51,7 +45,7 @@ void NoteLoaderFTB::LoadMetadata(GString filename, GString prefix, Song *Out)
 
 void NoteLoaderFTB::LoadObjectsFromFile(GString filename, GString prefix, Song *Out)
 {
-	std::shared_ptr<VSRG::Difficulty> Diff (new Difficulty());
+	shared_ptr<VSRG::Difficulty> Diff (new Difficulty());
 	Measure Msr;
 
 #if (!defined _WIN32) || (defined STLP)
@@ -74,14 +68,13 @@ failed:
 
 	while (filein)
 	{
-		SplitResult LineContents;
 		GString Line;
 		std::getline(filein, Line);
 
 		if (Line[0] == '#' || Line.length() == 0)
 			continue;
 
-		LineContents = Utility::TokenSplit(Line, " ");
+		auto LineContents = Utility::TokenSplit(Line, " ");
 
 		if (LineContents.at(0) == "BPM")
 		{
@@ -125,16 +118,13 @@ failed:
 
 	filein.close();
 
+	// Offsetize
 	if (Diff->Timing.size())
 	{
 		Diff->Offset = Diff->Timing.begin()->Time;
 
-		for (TimingData::iterator i = Diff->Timing.begin();
-			i != Diff->Timing.end();
-			i++)
-		{
-			i->Time -= Diff->Offset;
-		}
+		for (auto i : Diff->Timing)
+			i.Time -= Diff->Offset;
 	}
 	else
 		goto failed;

@@ -6,7 +6,6 @@
 #include "Song7K.h"
 #include "NoteLoader7K.h"
 
-#include <boost/format.hpp>
 #include <regex>
 
 typedef vector<GString> SplitResult;
@@ -136,7 +135,7 @@ bool ReadGeneral (GString line, OsuLoadInfo* Info)
 #ifdef VERBOSE_DEBUG
 			printf("Audio filename found: %s\n", Content.c_str());
 #endif
-			trim(Content);
+			Utility::Trim(Content);
 			Info->OsuSong->SongFilename = Content;
 			Info->OsuSong->SongPreviewSource = Content;
 		}
@@ -147,8 +146,7 @@ bool ReadGeneral (GString line, OsuLoadInfo* Info)
 			return false;
 	}else if (Command == "SampleSet:")
 	{
-		boost::algorithm::to_lower(Content);
-		trim(Content);
+		Utility::ToLower(Content); Utility::Trim(Content);
 		Info->DefaultSampleset = Content;
 	}
 	else if (Command == "PreviewTime:")
@@ -176,7 +174,7 @@ void ReadMetadata (GString line, OsuLoadInfo* Info)
 	printf("Command found: %s | Contents: %s\n", Command.c_str(), Content.c_str());
 #endif
 
-	boost::algorithm::trim(Content);
+	Utility::Trim(Content);
 	if (Command == "Title")
 	{
 		Info->OsuSong->SongName = Content;
@@ -205,12 +203,12 @@ void ReadDifficulty (GString line, OsuLoadInfo* Info)
 {
 	GString Command = line.substr(0, line.find_first_of(":")); // Lines are Information:Content
 	GString Content = line.substr(line.find_first_of(":") + 1, line.length() - line.find_first_of(":"));
-	trim(Content);
+	Utility::Trim(Content);
 
 	// We ignore everything but the key count!
 	if (Command == "CircleSize")
 	{
-		Info->Diff->Channels = lexical_cast<int>(Content.c_str());
+		Info->Diff->Channels = atoi(Content.c_str());
 	}else if (Command == "SliderMultiplier")
 	{
 		Info->SliderVelocity = latof(Content.c_str()) * 100;
@@ -234,12 +232,12 @@ void ReadEvents (GString line, OsuLoadInfo* Info)
 	{
 		if (Spl[0] == "0" && Spl[1] == "0")
 		{
-			replace_all(Spl[2], "\"", "");
+			Utility::ReplaceAll(Spl[2], "\"", "");
 			Info->OsuSong->BackgroundFilename = Spl[2];
 			Info->Diff->Data->StageFile = Spl[2];
 		}else if (Spl[0] == "5" || Spl[0] == "Sample")
 		{
-			replace_all(Spl[3], "\"", "");
+			Utility::ReplaceAll(Spl[3], "\"", "");
 
 			if (Info->Sounds.find(Spl[3]) == Info->Sounds.end())
 			{
@@ -286,10 +284,10 @@ void ReadTiming (GString line, OsuLoadInfo* Info)
 		MeasureLen = latof(Spl[2].c_str());
 
 	if (Spl.size() > 3)
-		Sampleset = lexical_cast<int>(Spl[3].c_str());
+		Sampleset = atoi(Spl[3].c_str());
 
 	if (Spl.size() > 4)
-		Custom = lexical_cast<int>(Spl[4].c_str());
+		Custom = atoi(Spl[4].c_str());
 
 	HitsoundSectionData SecData;
 	SecData.Value = Value;
@@ -423,11 +421,7 @@ GString GetSampleFilename(OsuLoadInfo *Info, SplitResult &Spl, int NoteType, int
 	GString CustomSampleGString;
 
 	if (CustomSample)
-	{
-		std::stringstream ss;
-		ss << CustomSample;
-		CustomSampleGString = ss.str();
-	}
+		CustomSampleGString = Utility::IntToStr(CustomSample);
 
 	GString HitsoundGString;
 
@@ -759,7 +753,7 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 
 	// "osu file format v"
 	if (version < 10) // why
-		throw std::exception((boost::format("Unsupported osu! file version (%d < 10)") % version).str().c_str());
+		throw std::exception(Utility::Format("Unsupported osu! file version (%d < 10)", version).c_str());
 
 	Info.Version = version;
 
@@ -770,7 +764,7 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 		{
 			Info.Line++;
 			getline(filein, Line);
-			replace_all(Line, "\r", "");
+			Utility::ReplaceAll(Line, "\r", "");
 
 			if (!Line.length())
 				continue;
@@ -829,6 +823,6 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 	} catch (std::exception &e)
 	{
 		// rethrow with line info
-		throw std::exception((boost::format("Line %d: %s") % Info.Line % e.what()).str().c_str());
+		throw std::exception(Utility::Format("Line %d: %s", Info.Line, e.what()).c_str());
 	}
 }

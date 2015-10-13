@@ -43,7 +43,7 @@ class BMSBackground : public BackgroundAnimation
 	bool Validated;
 
 public:
-	BMSBackground(VSRG::Difficulty* Difficulty, VSRG::Song* Song) : BackgroundAnimation()
+	BMSBackground(Interruptible* parent, VSRG::Difficulty* Difficulty, VSRG::Song* Song) : BackgroundAnimation(parent), List(this)
 	{
 		this->Difficulty = Difficulty;
 		this->Song = Song;
@@ -161,8 +161,8 @@ class StaticBackground : public BackgroundAnimation
 	shared_ptr<Sprite> Background;
 	ImageList List;
 public:
-	StaticBackground(GString Filename)
-		: BackgroundAnimation(), List()
+	StaticBackground(Interruptible* parent, GString Filename)
+		: BackgroundAnimation(parent), List(this)
 	{
 		Log::Printf("Using static background: %s\n", Filename.c_str());
 		List.AddToListIndex(Filename, "", 0);
@@ -195,15 +195,15 @@ public:
 	}
 };
 
-shared_ptr<BackgroundAnimation> CreateBGAforVSRG(VSRG::Song &input, uint8_t DifficultyIndex)
+shared_ptr<BackgroundAnimation> CreateBGAforVSRG(VSRG::Song &input, uint8_t DifficultyIndex, Interruptible *context)
 {
 	VSRG::Difficulty* Diff;
 	if (Diff = input.GetDifficulty(DifficultyIndex))
 	{
 		if (Diff->Data && Diff->Data->BMPEvents)
-			return make_shared<BMSBackground>(Diff, &input);
+			return make_shared<BMSBackground>(context, Diff, &input);
 		else
-			return make_shared<StaticBackground>(GetSongBackground(input));
+			return make_shared<StaticBackground>(context, GetSongBackground(input));
 	}
 
 	return nullptr;
@@ -211,7 +211,11 @@ shared_ptr<BackgroundAnimation> CreateBGAforVSRG(VSRG::Song &input, uint8_t Diff
 
 shared_ptr<BackgroundAnimation> CreateBGAforDotcur(dotcur::Song &input, uint8_t DifficultyIndex)
 {
-	return make_shared<StaticBackground>(GetSongBackground(input));
+	return make_shared<StaticBackground>(nullptr, GetSongBackground(input));
+}
+
+BackgroundAnimation::BackgroundAnimation(Interruptible* parent) : Interruptible(parent)
+{
 }
 
 void BackgroundAnimation::SetAnimationTime(double Time)
@@ -247,14 +251,14 @@ Transformation& BackgroundAnimation::GetTransformation()
 	return Transform;
 }
 
-shared_ptr<BackgroundAnimation> BackgroundAnimation::CreateBGAFromSong(uint8_t DifficultyIndex, Game::Song& Input, bool LoadNow)
+shared_ptr<BackgroundAnimation> BackgroundAnimation::CreateBGAFromSong(uint8_t DifficultyIndex, Game::Song& Input, Interruptible* context, bool LoadNow)
 {
 	shared_ptr<BackgroundAnimation> ret = nullptr;
 
 	switch (Input.Mode)
 	{
 	case MODE_VSRG:
-		ret = CreateBGAforVSRG(static_cast<VSRG::Song&> (Input), DifficultyIndex);
+		ret = CreateBGAforVSRG(static_cast<VSRG::Song&> (Input), DifficultyIndex, context);
 		break;
 	case MODE_DOTCUR:
 		ret = CreateBGAforDotcur(static_cast<dotcur::Song&> (Input), DifficultyIndex);
@@ -263,5 +267,10 @@ shared_ptr<BackgroundAnimation> BackgroundAnimation::CreateBGAFromSong(uint8_t D
 		break;
 	}
 
+	if (LoadNow)
+	{
+		ret->Load();
+		ret->Validate();
+	}
 	return ret;
 }

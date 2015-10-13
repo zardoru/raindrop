@@ -188,9 +188,9 @@ public:
 
 	ScreenGameplay7K();
 	void Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const GameParameters &Param);
-	void LoadThreadInitialization();
+	void LoadResources();
 	bool BindKeysToLanes(bool UseTurntable);
-	void MainThreadInitialization();
+	void InitializeResources();
 	void Cleanup();
 
 	bool Run(double Delta);

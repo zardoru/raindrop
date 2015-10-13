@@ -2,7 +2,8 @@
 #ifndef SONGWHEEL_H_
 #define SONGWHEEL_H_
 
-#include <boost/thread.hpp>
+#include <thread>
+#include <mutex>
 
 namespace dotcur
 {
@@ -53,8 +54,9 @@ private:
 	uint32 SelectedItem;
 	int StartIndex, EndIndex;
 
-	boost::mutex* mLoadMutex;
-	boost::thread* mLoadThread;
+	mutex* mLoadMutex;
+	thread* mLoadThread;
+	atomic<bool> mLoading;
 
 	SongDatabase* DB;
 
@@ -134,7 +136,6 @@ public:
 	int GetCursorIndex() const;
 	void SetCursorIndex(int Index);
 
-	void  SetFont(Directory FontDirectory);
 	void  SetItemHeight(float Height);
 
 	void SetItemWidth(float width);

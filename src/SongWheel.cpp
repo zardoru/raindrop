@@ -72,19 +72,22 @@ void SongWheel::Initialize(SongDatabase* Database)
 
 class LoadThread
 {
-	boost::mutex* mLoadMutex;
+	mutex* mLoadMutex;
 	SongDatabase* DB;
 	shared_ptr<SongList> ListRoot;
 	bool VSRGActive;
 	bool DCActive;
+	atomic<bool>& isLoading;
 public:
-	LoadThread(boost::mutex* m, SongDatabase* d, shared_ptr<SongList> r, bool va, bool da)
+	LoadThread(mutex* m, SongDatabase* d, shared_ptr<SongList> r, bool va, bool da, atomic<bool>& loadingstatus)
 		: mLoadMutex(m),
 		DB(d),
 		ListRoot(r),
 		VSRGActive(va),
-		DCActive(da)
+		DCActive(da),
+		isLoading(loadingstatus)
 	{
+		isLoading = true;
 	}
 
 	void Load()
@@ -106,6 +109,7 @@ public:
 
 		DB->EndTransaction();
 		Log::Printf("Finished reloading songs.\n");
+		isLoading = false;
 	}
 };
 
@@ -131,10 +135,10 @@ void SongWheel::ReloadSongs(SongDatabase* Database)
 	CurrentList = ListRoot.get();
 
 	if (!mLoadMutex)
-		mLoadMutex = new boost::mutex;
+		mLoadMutex = new mutex;
 
-	LoadThread L(mLoadMutex, DB, ListRoot, VSRGModeActive, dotcurModeActive);
-	mLoadThread = new boost::thread(&LoadThread::Load, L);
+	LoadThread L(mLoadMutex, DB, ListRoot, VSRGModeActive, dotcurModeActive, mLoading);
+	mLoadThread = new thread(&LoadThread::Load, L);
 }
 
 void SongWheel::LoadSongsOnce(SongDatabase* Database)
@@ -310,7 +314,7 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 
 void SongWheel::GoUp()
 {
-	boost::mutex::scoped_lock lock (*mLoadMutex);
+	unique_lock<mutex> lock (*mLoadMutex);
 
 	if (CurrentList->HasParentDirectory())
 	{
@@ -337,7 +341,8 @@ void SongWheel::Update(float Delta)
 
 	if (!IsLoading() && mLoadThread)
 	{
-		delete mLoadThread; mLoadThread = nullptr;
+		delete mLoadThread;
+		mLoadThread = nullptr;
 	}
 
 	if (!CurrentList)
@@ -441,7 +446,7 @@ void SongWheel::CalculateIndices()
 void SongWheel::Render()
 {
 	int Index = GetCursorIndex();
-	boost::mutex::scoped_lock lock (*mLoadMutex);
+	unique_lock<mutex> lock (*mLoadMutex);
 	int Cur = 0;
 	int Max = CurrentList->GetNumEntries();
 
@@ -574,12 +579,7 @@ bool SongWheel::IsLoading()
 {
 	if (mLoadThread)
 	{
-		if (!mLoadThread->timed_join(boost::posix_time::milliseconds(0))) // Not complete
-			return true;
-		else
-		{
-			return false;
-		}
+		return mLoading;
 	}
 	else return false;
 }

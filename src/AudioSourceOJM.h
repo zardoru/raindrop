@@ -1,6 +1,8 @@
 struct SF_INFO;
 
-class AudioSourceOJM : public AudioDataSource
+#include "Interruptible.h"
+
+class AudioSourceOJM : public AudioDataSource, Interruptible
 {
 	static const int OJM_OGG = 1;
 	static const int OJM_WAV = 2;
@@ -19,7 +21,7 @@ class AudioSourceOJM : public AudioDataSource
 
 	double Speed;
 public:
-	AudioSourceOJM();
+	AudioSourceOJM(Interruptible* Parent = nullptr);
 	~AudioSourceOJM();
 	bool Open(const char* Filename);
 	shared_ptr<SoundSample> GetFromIndex(int Index);

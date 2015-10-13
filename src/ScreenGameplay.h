@@ -98,7 +98,7 @@ public:
 	void RemoveTrash();
 
 	/* What we call from the ScreenLoading thread! */
-	void LoadThreadInitialization();
+	void LoadResources();
 	void MainThreadInitialization();
 };
 

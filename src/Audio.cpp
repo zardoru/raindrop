@@ -17,10 +17,10 @@
 #include <pa_linux_alsa.h>
 #endif
 
-#include <boost/thread/condition.hpp>
-#include <boost/thread/thread.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/locks.hpp>
+#include <thread>
+#include <condition_variable>
+#include <mutex>
+#include <chrono>
 
 float VolumeSFX = 1;
 float VolumeMusic = 1; 
@@ -140,8 +140,8 @@ class PaMixer
 	int SizeAvailable;
 	bool Threaded, WaitForRingbufferSpace;
 
-	boost::mutex mut, mut2, rbufmux;
-	boost::condition ringbuffer_has_space;
+	std::mutex mut, mut2, rbufmux;
+	std::condition_variable ringbuffer_has_space;
 
 	PaMixer(){};
 public:
@@ -162,11 +162,11 @@ public:
 		PaUtil_InitializeRingBuffer(&RingBuf, sizeof(int16), BUFF_SIZE, RingbufData);
 
 		Threaded = StartThread;
-		Stream = NULL;
+		Stream = nullptr;
 
 		if (StartThread)
 		{
-			boost::thread (&PaMixer::Run, this);
+			thread (&PaMixer::Run, this).detach();
 		}
 #ifdef WIN32
 		if (UseWasapi)
@@ -194,7 +194,7 @@ public:
 		if (Stream)
 		{
 			Pa_StartStream( Stream );
-			boost::this_thread::sleep(boost::posix_time::millisec(16));
+			std::this_thread::sleep_for(std::chrono::milliseconds(16));
 			Latency = Pa_GetStreamInfo(Stream)->outputLatency;
 			Log::Logf("AUDIO: Latency after opening stream = %f \n", Latency);
 		}
@@ -222,7 +222,7 @@ public:
 
 				if (Threaded)
 				{
-					boost::unique_lock<boost::mutex> lock (rbufmux);
+					unique_lock<mutex> lock (rbufmux);
 					mut.unlock();
 
 					while (WaitForRingbufferSpace)
@@ -244,7 +244,7 @@ public:
 	void RemoveMusic(SoundStream *Stream)
 	{
 		mut.lock();
-		for(std::vector<SoundStream*>::iterator i = Streams.begin(); i != Streams.end();)
+		for(auto i = Streams.begin(); i != Streams.end();)
 		{
 			if ((*i) == Stream)
 			{
@@ -255,7 +255,7 @@ public:
 					break;
 			}
 
-			i++;
+			++i;
 		}
 		mut.unlock();
 	}
@@ -270,7 +270,7 @@ public:
 	void RemoveSound(SoundSample* Sample)
 	{
 		mut2.lock();
-		for(std::vector<SoundSample*>::iterator i = Samples.begin(); i != Samples.end(); )
+		for(auto i = Samples.begin(); i != Samples.end(); )
 		{
 			if ((*i) == Sample)
 			{
@@ -281,7 +281,7 @@ public:
 				else continue;
 			}
 
-			i++;
+			++i;
 		}
 
 		mut2.unlock();

@@ -3,9 +3,7 @@
 
 #include <fstream>
 #include <algorithm>
-#include <boost/foreach.hpp>
 
-using std::vector;
 using namespace dotcur;
 
 Song::Song()
@@ -19,10 +17,10 @@ Song::~Song()
 {
 }
 
-dotcur::Difficulty* Song::GetDifficulty(uint32 i)
+Difficulty* Song::GetDifficulty(uint32 i)
 {
 	if (i >= Difficulties.size())
-		return NULL;
+		return nullptr;
 	else
 		return Difficulties.at(i);
 }

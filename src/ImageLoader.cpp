@@ -6,17 +6,16 @@
 #include "Logging.h"
 #include "Configuration.h"
 #include <GL/glew.h>
-#include <map>
 
 #include "Image.h"
 #include "ImageLoader.h"
 #include <FreeImage.h>
 
-#include <boost/thread/mutex.hpp>
+#include <mutex>
 
-boost::mutex LoadMutex;
-std::map<GString, Image*> ImageLoader::Textures;
-std::map<GString, ImageLoader::UploadData> ImageLoader::PendingUploads;
+std::mutex LoadMutex;
+map<GString, Image*> ImageLoader::Textures;
+map<GString, ImageLoader::UploadData> ImageLoader::PendingUploads;
 
 void Image::CreateTexture()
 {

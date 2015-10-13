@@ -12,8 +12,6 @@
 #include "AudioSourceMP3.h"
 #endif
 
-#include <boost/algorithm/string.hpp>
-
 // Buffer -> buffer to convert to stereo (interleaved) cnt -> current samples max_len -> Maximum samples
 void monoToStereo(short* Buffer, size_t cnt, size_t max_len)
 {
@@ -45,7 +43,7 @@ AudioDataSource* SourceFromExt(Directory Filename)
 		return nullptr;
 	}
 
-	boost::algorithm::to_lower(Ext);
+	Utility::ToLower(Ext);
 
 	const char* xt = Ext.c_str();
 	if (strstr(xt, "wav") || strstr(xt, "flac"))
@@ -236,7 +234,7 @@ GString RearrangeFilename(const char* Fn)
 	else
 	{
 		GString Ext = File.GetExtension();
-		boost::algorithm::to_lower(Ext);
+		Utility::ToLower(Ext);
 
 		if (strstr(Ext.c_str(), "wav"))
 			Ret = Utility::RemoveExtension(Fn) + ".ogg";

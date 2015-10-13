@@ -1,12 +1,10 @@
 #include <sstream>
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
-
 #include "GameGlobal.h"
 #include "GameState.h"
 #include "Logging.h"
 #include "Screen.h"
+#include "SceneEnvironment.h"
 #include "GameWindow.h"
 #include "ImageLoader.h"
 #include "Audio.h"
@@ -86,14 +84,14 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic")
 	SongWheel * Wheel = &Game::SongWheel::GetInstance();
 	Wheel->Initialize(GameState::GetInstance().GetSongDatabase());
 
-	Game::SongNotification SongNotifyFunc(bind(&ScreenSelectMusic::OnSongChange, this, _1, _2));
-	Game::SongNotification SongNotifySelectFunc(bind(&ScreenSelectMusic::OnSongSelect, this, _1, _2));
+	Game::SongNotification SongNotifyFunc(bind(&ScreenSelectMusic::OnSongChange, this, std::placeholders::_1, std::placeholders::_2));
+	Game::SongNotification SongNotifySelectFunc(bind(&ScreenSelectMusic::OnSongSelect, this, std::placeholders::_1, std::placeholders::_2));
 	Wheel->OnSongTentativeSelect = SongNotifyFunc;
 	Wheel->OnSongConfirm = SongNotifySelectFunc;
 
-	Game::ListTransformFunction TransformHFunc(bind(&ScreenSelectMusic::GetListHorizontalTransformation, this, _1));
-	Game::ListTransformFunction TransformVFunc(bind(&ScreenSelectMusic::GetListVerticalTransformation, this, _1));
-	Game::ListTransformFunction TransformPVert(bind(&ScreenSelectMusic::GetListPendingVerticalTransformation, this, _1));
+	Game::ListTransformFunction TransformHFunc(bind(&ScreenSelectMusic::GetListHorizontalTransformation, this, std::placeholders::_1));
+	Game::ListTransformFunction TransformVFunc(bind(&ScreenSelectMusic::GetListVerticalTransformation, this, std::placeholders::_1));
+	Game::ListTransformFunction TransformPVert(bind(&ScreenSelectMusic::GetListPendingVerticalTransformation, this, std::placeholders::_1));
 	Wheel->TransformHorizontal = TransformHFunc;
 	Wheel->TransformListY = TransformVFunc;
 	Wheel->TransformPendingDisplacement = TransformPVert;
@@ -101,15 +99,15 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic")
 	Game::DirectoryChangeNotifyFunction DirChangeNotif(bind(&ScreenSelectMusic::OnDirectoryChange, this));
 	Wheel->OnDirectoryChange = DirChangeNotif;
 
-	Game::ItemNotification ItClickNotif(bind(&ScreenSelectMusic::OnItemClick, this, _1, _2, _3));
-	Game::ItemNotification ItHoverNotif(bind(&ScreenSelectMusic::OnItemHover, this, _1, _2, _3));
-	Game::ItemNotification ItHoverLeaveNotif(bind(&ScreenSelectMusic::OnItemHoverLeave, this, _1, _2, _3));
+	Game::ItemNotification ItClickNotif(bind(&ScreenSelectMusic::OnItemClick, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+	Game::ItemNotification ItHoverNotif(bind(&ScreenSelectMusic::OnItemHover, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+	Game::ItemNotification ItHoverLeaveNotif(bind(&ScreenSelectMusic::OnItemHoverLeave, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 	Wheel->OnItemClick = ItClickNotif;
 	Wheel->OnItemHover = ItHoverNotif;
 	Wheel->OnItemHoverLeave = ItHoverLeaveNotif;
 
-	Wheel->TransformItem = bind(&ScreenSelectMusic::TransformItem, this, _1, _2, _3, _4);
-	Wheel->TransformString = bind(&ScreenSelectMusic::TransformString, this, _1, _2, _3, _4, _5);
+	Wheel->TransformItem = bind(&ScreenSelectMusic::TransformItem, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+	Wheel->TransformString = bind(&ScreenSelectMusic::TransformString, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
 
 	if (!SelectSnd)
 	{
@@ -140,25 +138,25 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic")
 	TransitionTime = 0;
 }
 
-void ScreenSelectMusic::MainThreadInitialization()
+void ScreenSelectMusic::InitializeResources()
 {	
 	LuaManager* LuaM = Animations->GetEnv();
 	UpBtn = new GUI::Button;
 
 	Animations->InitializeUI();
 
-	EventAnimationFunction OnUpClick (bind(LuaEvt, LuaM, "DirUpBtnClick", _1));
-	EventAnimationFunction OnUpHover(bind(LuaEvt, LuaM, "DirUpBtnHover", _1));
-	EventAnimationFunction OnUpHoverLeave(bind(LuaEvt, LuaM, "DirUpBtnHoverLeave", _1));
+	EventAnimationFunction OnUpClick (bind(LuaEvt, LuaM, "DirUpBtnClick",std::placeholders:: _1));
+	EventAnimationFunction OnUpHover(bind(LuaEvt, LuaM, "DirUpBtnHover", std::placeholders::_1));
+	EventAnimationFunction OnUpHoverLeave(bind(LuaEvt, LuaM, "DirUpBtnHoverLeave", std::placeholders::_1));
 	UpBtn->OnClick = OnUpClick;
 	UpBtn->OnHover = OnUpHover;
 	UpBtn->OnLeave = OnUpHoverLeave;
 
 	BackBtn = new GUI::Button;
 
-	EventAnimationFunction OnBackClick(bind(LuaEvt, LuaM, "BackBtnClick", _1));
-	EventAnimationFunction OnBackHover(bind(LuaEvt, LuaM, "BackBtnHover", _1));
-	EventAnimationFunction OnBackHoverLeave(bind(LuaEvt, LuaM, "BackBtnHoverLeave", _1));
+	EventAnimationFunction OnBackClick(bind(LuaEvt, LuaM, "BackBtnClick", std::placeholders::_1));
+	EventAnimationFunction OnBackHover(bind(LuaEvt, LuaM, "BackBtnHover", std::placeholders::_1));
+	EventAnimationFunction OnBackHoverLeave(bind(LuaEvt, LuaM, "BackBtnHoverLeave", std::placeholders::_1));
 	BackBtn->OnClick = OnBackClick;
 	BackBtn->OnHover = OnBackHover;
 	BackBtn->OnLeave = OnBackHoverLeave;
@@ -184,7 +182,7 @@ void ScreenSelectMusic::MainThreadInitialization()
 	Animations->AddLuaTarget(&Background, "ScreenBackground");
 }
 
-void ScreenSelectMusic::LoadThreadInitialization()
+void ScreenSelectMusic::LoadResources()
 {
 	Running = true;
 

@@ -262,6 +262,9 @@
     <ClCompile Include="..\src\NoteLoaderBMSON.cpp">
       <Filter>Source\vsrg\internal</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Interruptible.cpp">
+      <Filter>Source\backend\structure</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">
@@ -479,6 +482,9 @@
     </ClInclude>
     <ClInclude Include="..\src\osuBackgroundAnimation.h">
       <Filter>Source\game global\BGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Interruptible.h">
+      <Filter>Source\backend\structure</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

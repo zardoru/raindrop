@@ -6,9 +6,6 @@
 #include "utf8.h"
 #include "Logging.h"
 
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
-
 /* Stepmania/SSC loader. Lacks delays and speeds for now. As well as keysounds. */
 
 using namespace VSRG;
@@ -86,10 +83,7 @@ GString RemoveComments(const GString Str)
 		}
 	}
 
-	boost::replace_all(Result, "\n", "");
-	boost::replace_all(Result, "\r", "");
-	boost::replace_all(Result, " ", "");
-
+	Utility::ReplaceAll(Result, "[\\n\\r ]", "");
 	return Result;
 }
 
@@ -445,11 +439,7 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 	shared_ptr<VSRG::Difficulty> Diff = nullptr;
 
 	if (!filein.is_open())
-	{
-		std::stringstream serr;
-		serr << "couldn't open \"" << filename << "\" for reading";
-		throw std::exception(serr.str().c_str());
-	}
+		throw std::exception(Utility::Format("couldn't open %s for reading", filename.c_str()).c_str());
 
 	GString Banner;
 
@@ -471,7 +461,7 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 		else
 			continue;
 
-		replace_all(command, "\n", "");
+		Utility::ReplaceAll(command, "\n", "");
 
 		GString CommandContents = line.substr(line.find_first_of(":") + 1);
 
@@ -486,8 +476,7 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 
 		OnCommand(#OFFSET)
 		{
-			std::stringstream str(CommandContents);
-			str >> Offset;
+			Offset = latof(CommandContents);
 		}
 
 		_OnCommand(#BPMS)
@@ -546,8 +535,7 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 
 		_OnCommand(#METER)
 		{
-			std::stringstream str(CommandContents);
-			str >> Diff->Level;
+			Diff->Level = atoi(CommandContents.c_str());
 		}
 
 		_OnCommand(#DIFFICULTY)
@@ -693,15 +681,7 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 	Diff->BPMType = VSRG::Difficulty::BT_BEAT;
 
 	if (!filein.is_open())
-	{
-#ifndef NDEBUG
-		std::stringstream serr;
-		serr << "couldn't open \"" << filename << "\" for reading";
-		throw; // std::exception(serr.str().c_str());
-#else
-		return;
-#endif
-	}
+		throw std::exception(Utility::Format("couldn't open %s for reading").c_str());
 
 	GString Banner;
 
@@ -726,7 +706,7 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 		else
 			continue;
 
-		boost::replace_all(command, "\n", "");
+		Utility::ReplaceAll(command, "\n", "");
 
 		GString CommandContents = line.substr(line.find_first_of(":") + 1);
 
@@ -734,8 +714,7 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 
 		OnCommand(#OFFSET)
 		{
-			std::stringstream str(CommandContents);
-			str >> Offset;
+			Offset = latof(CommandContents);
 		}
 
 		OnCommand(#BPMS)
