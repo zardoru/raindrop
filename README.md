@@ -13,6 +13,9 @@ A cytus-like mode is implemented and a flexible VSRG engine is, too. It supports
 For several of these, the major mechanics varying between them are coded into raindrop, and are activated depending on the chart format.
 raindrop is built using OpenGL/PortAudio and most if not all are freely licensed libraries, while raindrop itself is licensed under the GPLv3.
 
+[![Build status](https://ci.appveyor.com/api/projects/status/muhxwis6usx75hhn?svg=true)](https://ci.appveyor.com/project/zardoru/raindrop)
+
+
 Dependencies
 =====
 The dependencies of the project right now are:
