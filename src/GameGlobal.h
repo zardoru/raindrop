@@ -190,7 +190,7 @@ const float MeasureBaseSpacing = 0.8f * ScreenHeightDefault;
 
 /* Program itself consts */
 #define RAINDROP_WINDOWTITLE "raindrop ver: "
-#define RAINDROP_VERSION "0.280"
+#define RAINDROP_VERSION "0.285"
 #ifdef NDEBUG
 #define RAINDROP_BUILDTYPE " "
 #else

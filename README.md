@@ -31,7 +31,7 @@ The dependencies of the project right now are:
 * libmpg123 (optional, but recommended)
 
 The rest of the dependencies are included in source code form in ext-src.
-You may use libmpg123 to get MP3 support on either platform. It is included by default in ext-libs for windows.
+You may use libmpg123 to get MP3 support on either platform. It is included by default in ext-libs for windows, along with all dlls required to run raindrop.
 
 Building on Windows
 =====

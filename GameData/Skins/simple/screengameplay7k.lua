@@ -74,6 +74,7 @@ BombTime = 0.4
 
 function GenText()
 	NumFont = Fonts.TruetypeFont(GetSkinFile("VeraMono.ttf"), 45 * YR)
+	TitleFont = Fonts.TruetypeFont(GetSkinFile("font.ttf"), 15 * YR)
 	BPMText = StringObject2D()
 	BPMText.X = 95 * XR
 	BPMText.Y = 660 * YR
@@ -86,8 +87,24 @@ function GenText()
 	HPText.Font = NumFont
 	HPText.Layer = 21
 	
+	TitleText = StringObject2D()
+	TitleText.X = 455 * XR
+	TitleText.Y = 5 * YR
+	TitleText.Font = TitleFont
+	TitleText.Layer = 21
+	
+	sng = toSong7K(Global:GetSelectedSong())
+	diff = sng:GetDifficulty(Global.DifficultyIndex)
+	if diff.Author ~= "" then
+		difftxt = string.format("%s by %s", diff.Name, diff.Author)
+	else
+		difftxt = string.format("%s", diff.Name)
+	end
+	TitleText.Text = string.format("%s\n%s\n%s", sng.Title, sng.Author, difftxt)
+	
 	Engine:AddTarget(BPMText)
 	Engine:AddTarget(HPText)
+	Engine:AddTarget(TitleText)
 end
 
 function Init()
