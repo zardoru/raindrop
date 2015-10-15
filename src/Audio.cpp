@@ -45,7 +45,7 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
 
 		outputParams.device = Device;
 		outputParams.channelCount = 2;
-		outputParams.sampleFormat = paInt16;
+		outputParams.sampleFormat = paFloat32;
 
 		if (!Configuration::GetConfigf("UseHighLatency", "Audio"))
 			outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultLowOutputLatency;
@@ -93,7 +93,7 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
 	dLatency = outputParams.suggestedLatency;
 
 	// fire up portaudio
-	PaError Err = Pa_OpenStream(mStream, NULL, &outputParams, Rate, 0, paClipOff + paDitherOff, Callback, (void*)Sound);
+	PaError Err = Pa_OpenStream(mStream, NULL, &outputParams, Rate, 0, paClipOff, Callback, (void*)Sound);
 
 	if (Err)
 	{
@@ -407,7 +407,7 @@ public:
 
 		for (int i = 0; i < count; i++)
 		{
-			reinterpret_cast<short*>(out)[i] = tsF[i];
+			reinterpret_cast<float*>(out)[i] = float(tsF[i]) / std::numeric_limits<short>::max();
 		}
 
 		if (StreamVoices)

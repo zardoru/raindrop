@@ -166,13 +166,19 @@ namespace Utility {
 
 	GString Format(GString str, ...)
 	{
-		char r[2];
+		char r[1024];
 		int bfsize;
 		va_list vl;
 		va_start(vl,str);
-		bfsize = vsnprintf(r, 2, str.c_str(), vl);
+		bfsize = vsnprintf(r, 1024, str.c_str(), vl);
+		if (bfsize < 0)
+		{
+			Utility::DebugBreak();
+			va_end(vl);
+			return "";
+		}
 
-		vector<char> fmt(bfsize);
+		vector<char> fmt(bfsize + 1);
 		vsnprintf(&fmt[0], bfsize, str.c_str(), vl);
 		va_end(vl);
 

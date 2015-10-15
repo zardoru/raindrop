@@ -9,6 +9,7 @@ ScoreDisplay.W = ScoreDisplay.DigitWidth * ScoreDisplay.DigitCount
 ScoreDisplay.H = ScoreDisplay.DigitHeight
 ScoreDisplay.X = ScreenWidth - ScoreDisplay.W -- Topleft
 ScoreDisplay.Y = ScreenHeight - ScoreDisplay.H
+ScoreDisplay.Layer = 20
 ScoreDisplay.Targets = {}
 ScoreDisplay.Images = {}
 
@@ -35,6 +36,7 @@ function ScoreDisplay.Init()
 		ScoreDisplay.Targets[i].Image = "VSRG/"..ScoreDisplay.Atlas.File
 		ScoreDisplay.Targets[i].Width = ScoreDisplay.DigitWidth
 		ScoreDisplay.Targets[i].Height = ScoreDisplay.DigitHeight
+		ScoreDisplay.Targets[i].Layer = ScoreDisplay.Layer
 
 		local Tab = ScoreDisplay.Atlas.Sprites[ScoreDisplay.Images[1]]
 
