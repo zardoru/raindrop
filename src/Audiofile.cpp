@@ -264,10 +264,10 @@ shared_ptr<AudioSample> AudioSample::CopySlice()
 
 void AudioSample::Mix(AudioSample& Other)
 {
-	size_t start = Clamp(size_t(mAudioStart * mRate * Channels), size_t(0), mData->size());
-	size_t end = Clamp(size_t(mAudioEnd * mRate * Channels), start, mData->size());
-	size_t startB = Clamp(size_t(Other.mAudioStart * Other.mRate * Other.Channels), size_t(0), Other.mData->size());
-	size_t endB = Clamp(size_t(Other.mAudioEnd * Other.mRate * Other.Channels), startB, Other.mData->size());
+	size_t start = Clamp(size_t(mAudioStart * mRate * Channels), size_t(0), mData->size() - 1);
+	size_t end = Clamp(size_t(mAudioEnd * mRate * Channels), start, mData->size() - 1);
+	size_t startB = Clamp(size_t(Other.mAudioStart * Other.mRate * Other.Channels), size_t(0), Other.mData->size() - 1);
+	size_t endB = Clamp(size_t(Other.mAudioEnd * Other.mRate * Other.Channels), startB, Other.mData->size() - 1);
 	auto buf = make_shared<vector<float>>(max(endB - startB, end - start));
 
 	for (size_t i = 0; i < buf->size(); i++)

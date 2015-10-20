@@ -344,8 +344,10 @@ bool ScreenGameplay7K::LoadSongAudio()
 						// load basic sound
 						if (!audio[sounds.first].IsValid())
 						{
-							if(!audio[sounds.first].Open((dir / slicedata.AudioFiles[sounds.first]).c_path()))
+							Directory path = (dir / slicedata.AudioFiles[sounds.first]);
+							if (!audio[sounds.first].Open(path.c_path()))
 								throw std::exception(Utility::Format("Unable to load %s.", slicedata.AudioFiles[sounds.first]).c_str());
+							else Log::Printf("BMSON: Load sound %s\n", path.c_path());
 						}
 
 						audio[sounds.first].Slice(sounds.second.Start, sounds.second.End);

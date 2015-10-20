@@ -377,6 +377,8 @@ namespace NoteLoaderBMSON{
 
 			// Add this slice as an object or to an existing object
 			double note_time = (*note)["y"].asDouble() / resolution;
+			int note_pulse = (*note)["y"].asInt();
+			int note_x = (*note)["x"].asInt();
 			int lane = GetMappedLane(*note);
 
 			// is there a note already at this line, at this time?
@@ -394,22 +396,7 @@ namespace NoteLoaderBMSON{
 			} else // there's no note on this lane or at this time
 			{
 				int wav = current_wav;
-
-				// a: slice is the same? reuse the wav
-				for (auto &slice: Slices.Slices)
-				{
-					// we have a slice on this wav that's the same sound as what we're slicing
-					if (slice.second.find(sound_index) != slice.second.end())
-					{
-						// check if we um, are using the exact same slice's start and end time
-						auto &info = slice.second.find(sound_index)->second;
-						if (info.Start == st && info.End == et) 
-						{ // yep the slice is the same
-							wav = slice.first;
-							break;
-						}
-					}
-				}
+				// a: TODO: find good criteria to reuse slice
 
 				// b: the slice is different (wav == current_wav is true)
 				if (wav == current_wav)
