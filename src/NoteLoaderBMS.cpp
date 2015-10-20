@@ -1042,7 +1042,7 @@ namespace NoteLoaderBMS{
 					if (np != GString::npos)
 					{
 						GString author = Out->SongAuthor.substr(np); // I have a feeling this regex will keep growing
-						std::regex chart_author_regex("\\s*[\\/_]?\\s*(?:obj|note)\\.?\\s*[:_]?\\s*(.*)");
+						std::regex chart_author_regex("\\s*[\\/_]?\\s*(?:obj|note)\\.?\\s*[:_]?\\s*(.*)", std::regex::icase);
 						std::smatch sm;
 						if (regex_search(author, sm, chart_author_regex))
 						{

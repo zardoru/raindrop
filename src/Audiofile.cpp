@@ -325,6 +325,7 @@ bool AudioSample::Open(const char* Filename)
 
 void AudioSample::Play()
 {
+	if (!IsValid()) return;
 	mIsPlaying = true;
 	SeekTime(mAudioStart);
 }
