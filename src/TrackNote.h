@@ -13,31 +13,27 @@ namespace VSRG
 	const unsigned char InvisibleFlag = 1 << 4;
 
 	// REMEMBER WE MUST BE 8-BYTE ALIGNED. It's either 16, 24 or 32...
-	// note data: 35 bytes
-	// Going to be 40 bytes on its own with alignment...
+	// note data: 28 bytes
+	// Going to be 32 bytes on its own with alignment...
 	struct NoteData
 	{
 		// start time and end time are 8 bytes each - 16 bytes.
 		double StartTime, EndTime;
-		double AudioStart, AudioEnd;
-		uint16 Sound; // Do we really need more than 65536 sounds?
+		uint32 Sound; // Do we really need more than this?
 		uint8 NoteKind; // To be used with ENoteKind.
 
 		NoteData() {
 			StartTime = EndTime = 0;
 			Sound = 0;
 			NoteKind = NK_NORMAL;
-			AudioStart = 0;
-			AudioEnd = std::numeric_limits<double>::infinity();
 		}
 	};
 
 	class TrackNote : public TimeBased<TrackNote, double>
 	{
 	private:
-		// 32 bytes (Implied 4 with inherited TimeBased)
+		// 16 bytes (Implied 8 with inherited TimeBased)
 		double EndTime;
-		double AudioStart, AudioEnd;
 
 		// 8 bytes
 		float b_pos;
@@ -51,7 +47,7 @@ namespace VSRG
 		uint8 FractionKind;
 		uint8 EnabledHitFlags;
 		
-		// 48 bytes aligned
+		// 32 bytes aligned
 	public:
 		TrackNote();
 
@@ -144,8 +140,6 @@ namespace VSRG
 
 		// Make this note invisible - That is to say, make no attempt at drawing it.
 		void MakeInvisible();
-		float GetAudioStart();
-		float GetAudioEnd();
 	};
 
 }

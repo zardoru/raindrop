@@ -604,21 +604,26 @@ bool AudioSourceOJM::Open(const char* f)
 	return true;
 }
 
-uint32 AudioSourceOJM::Read(short* buffer, size_t count)
+uint32 AudioSourceOJM::Read(float* buffer, size_t count)
 {
+	vector<short> temp_buf(count);
 	size_t read = 0;
 	if (TemporaryState.Enabled == 0)
 		return 0;
 
 	if (TemporaryState.Enabled == OJM_WAV)
-		read = sf_read_short(static_cast<SNDFILE*>(TemporaryState.File), buffer, count);
+	{
+		read = sf_read_short(static_cast<SNDFILE*>(TemporaryState.File), temp_buf.data(), count);
+
+		CheckInterruption();
+	}
 	else if (TemporaryState.Enabled == OJM_OGG)
 	{
 		auto size = count * sizeof(short);
 		while (read < size)
 		{
 			int sect;
-			int res = ov_read(static_cast<OggVorbis_File*>(TemporaryState.File), reinterpret_cast<char*>(buffer) + read, size - read, 0, 2, 1, &sect);
+			int res = ov_read(static_cast<OggVorbis_File*>(TemporaryState.File), reinterpret_cast<char*>(temp_buf.data()) + read, size - read, 0, 2, 1, &sect);
 
 			if (res > 0)
 				read += res;
@@ -632,10 +637,14 @@ uint32 AudioSourceOJM::Read(short* buffer, size_t count)
 		}
 
 		if (read < size)
-		{
 			Log::Printf("AudioSourceOJM: PCM count differs from what's reported! (%d out of %d)\n", read, size);
-		}
 	}
+
+	// like yeah, okay, std::transform is valid and all but why
+	std::transform(temp_buf.data(), temp_buf.data() + read / sizeof(short), buffer, 
+		[](short v) -> float { 
+		return float(v) / std::numeric_limits<short>::max(); 
+	});
 
 	return read; // We /KNOW/ we won't be overreading.
 }

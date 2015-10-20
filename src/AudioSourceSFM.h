@@ -14,14 +14,14 @@ public:
 	AudioSourceSFM();
 	~AudioSourceSFM();
 
-	bool Open(const char* Filename);
-	uint32 Read(short* buffer, size_t count);
-	void Seek(float Time);
-	size_t GetLength();
-	uint32 GetRate();
-	uint32 GetChannels();
-	bool IsValid();
-	bool HasDataLeft();
+	bool Open(const char* Filename) override;
+	uint32 Read(float* buffer, size_t count) override;
+	void Seek(float Time) override;
+	size_t GetLength() override;
+	uint32 GetRate() override;
+	uint32 GetChannels() override;
+	bool IsValid() override;
+	bool HasDataLeft() override;
 };
 
 

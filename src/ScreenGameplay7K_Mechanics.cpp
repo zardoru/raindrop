@@ -123,19 +123,13 @@ void ScreenGameplay7K::PlayLaneKeysound(uint32 Lane)
 	if (!TN) return;
 
 	if (Keysounds.find(TN->GetSound()) != Keysounds.end() && Keysounds[TN->GetSound()] && PlayReactiveSounds)
-	{
-		Keysounds[TN->GetSound()]->Slice(TN->GetAudioStart(), TN->GetAudioEnd());
 		Keysounds[TN->GetSound()]->Play();
-	}
 }
 
 void ScreenGameplay7K::PlayKeysound(TrackNote* TN)
 {
 	if (Keysounds.find(TN->GetSound()) != Keysounds.end() && PlayReactiveSounds && Keysounds[TN->GetSound()])
-	{
-		Keysounds[TN->GetSound()]->Slice(TN->GetAudioStart(), TN->GetAudioEnd());
 		Keysounds[TN->GetSound()]->Play();
-	}
 }
 
 void ScreenGameplay7K::SetLaneHoldState(uint32 Lane, bool NewState)

@@ -58,9 +58,6 @@
     <ClCompile Include="..\src\AudioSourceMP3.cpp">
       <Filter>Source\backend\audio</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\AudioSourceOGG.cpp">
-      <Filter>Source\backend\audio</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\AudioSourceSFM.cpp">
       <Filter>Source\backend\audio</Filter>
     </ClCompile>
@@ -265,6 +262,9 @@
     <ClCompile Include="..\src\Interruptible.cpp">
       <Filter>Source\backend\structure</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\AudioSourceOGG.cpp">
+      <Filter>Source\backend\audio</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">
@@ -313,9 +313,6 @@
       <Filter>Source\backend\audio</Filter>
     </ClInclude>
     <ClInclude Include="..\src\AudioSourceMP3.h">
-      <Filter>Source\backend\audio</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\AudioSourceOGG.h">
       <Filter>Source\backend\audio</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Configuration.h">
@@ -485,6 +482,9 @@
     </ClInclude>
     <ClInclude Include="..\src\Interruptible.h">
       <Filter>Source\backend\structure</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AudioSourceOGG.h">
+      <Filter>Source\backend\audio</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

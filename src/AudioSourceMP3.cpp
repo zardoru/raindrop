@@ -17,14 +17,14 @@ AudioSourceMP3::AudioSourceMP3()
 		mpg123_initialized = true;
 	}
 
-	mHandle = mpg123_new(NULL, &err);
+	mHandle = mpg123_new(nullptr, &err);
 	mpg123_format_none(mHandle);
 	mIsValid = false;
 	mIsDataLeft = false;
 }
 
 AudioSourceMP3::~AudioSourceMP3()
-{ 
+{
 	mpg123_close(mHandle);
 	mpg123_delete(mHandle);
 }
@@ -67,43 +67,44 @@ bool AudioSourceMP3::Open(const char* Filename)
 	return false;
 }
 
-uint32 AudioSourceMP3::Read(short* buffer, size_t count)
+uint32 AudioSourceMP3::Read(float* buffer, size_t count)
 {
-	size_t ret;
-	auto toRead = count * sizeof(short);
+	size_t actuallyread;
+	auto toRead = count * sizeof(short); // # of bytes to actually read
 
 	if (toRead == 0)
 		return 0;
 
-	auto res = mpg123_read(mHandle, reinterpret_cast<unsigned char*>(buffer), toRead, &ret);
+	if (varr.size() < count)
+		varr.resize(count);
 
-	if (res == MPG123_DONE || ret < toRead)
+	// read # bytes into varr.
+
+	auto res = mpg123_read(mHandle, reinterpret_cast<unsigned char*>(varr.data()), toRead, &actuallyread);
+	size_t additive = 0;
+
+	while (mSourceLoop && actuallyread < toRead)
 	{
-		if (!mSourceLoop)
-			mIsDataLeft = false;
-		else
-		{
+		if (res == MPG123_DONE)
 			Seek(0);
 
-			size_t place = 0;
-			if (res > 0)
-			{
-				count -= ret / sizeof(short);
-				place = ret / sizeof(short);
-			}
+		count -= actuallyread / sizeof(short);
 
-			Read(buffer + place, count);
-		}
+		res = mpg123_read(mHandle, reinterpret_cast<unsigned char*>(varr.data()) + actuallyread, count, &additive);
+		actuallyread += additive;
 	}
 
+	for (size_t i = 0; i < count; i++)
+		buffer[i] = varr[i] / float(std::numeric_limits<short>::max());
+
 	// according to mpg123_read documentation, ret is the amount of bytes read. We want to return samples read.
-	return ret / sizeof(short);
+	return actuallyread / sizeof(short);
 }
 
 void AudioSourceMP3::Seek(float Time)
 {
 	mIsDataLeft = true;
-	int place = mRate * Time;
+	size_t place = mRate * Time;
 	int res = mpg123_seek(mHandle, place, SEEK_SET);
 	if (res < 0 || res < place)
 	{
@@ -120,12 +121,12 @@ size_t AudioSourceMP3::GetLength()
 }
 
 uint32 AudioSourceMP3::GetRate()
-{ 
+{
 	return mRate;
 }
 
 uint32 AudioSourceMP3::GetChannels()
-{ 
+{
 	return mChannels;
 }
 

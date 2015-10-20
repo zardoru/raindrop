@@ -41,6 +41,7 @@ using std::sort;
 using std::stable_sort;
 using std::lower_bound;
 using std::upper_bound;
+using std::unique_ptr;
 
 #include <stdint.h>
 

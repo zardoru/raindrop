@@ -142,6 +142,9 @@ namespace VSRG
 		// Whether this difficulty uses the scratch channel (being channel/index 0 always used for this)
 		bool Turntable;
 
+		// Audio slicing data
+		SliceContainer SliceData;
+
 		DifficultyLoadInfo()
 		{
 			Turntable = false;

@@ -444,8 +444,11 @@ void ScreenSelectMusic::StopLoops()
 {
 	for (int i = 0; i < LoopTotal; i++)
 	{
-		Loops[i]->SeekTime(0);
-		Loops[i]->Stop();
+		if (Loops[i]->IsPlaying())
+		{
+			Loops[i]->SeekTime(0);
+			Loops[i]->Stop();
+		}
 	}
 }
 

@@ -270,9 +270,9 @@
     <ClInclude Include="..\src\Application.h" />
     <ClInclude Include="..\src\Audio.h" />
     <ClInclude Include="..\src\Audiofile.h" />
+    <ClInclude Include="..\src\AudioSourceOGG.h" />
     <ClInclude Include="..\src\AudioSourceOJM.h" />
     <ClInclude Include="..\src\AudioSourceMP3.h" />
-    <ClInclude Include="..\src\AudioSourceOGG.h" />
     <ClInclude Include="..\src\BackgroundAnimation.h" />
     <ClInclude Include="..\src\BindingsManager.h" />
     <ClInclude Include="..\src\BitmapFont.h" />

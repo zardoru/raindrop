@@ -25,7 +25,7 @@ struct TimeBased
 	TimeBased() = default;
 };
 
-struct TimingSegment : public TimeBased<TimingSegment, double>
+struct TimingSegment : public TimeBased < TimingSegment, double >
 {
 	double Value; // in bpm
 	TimingSegment(double T, double V) : TimeBased(T), Value(V) {};
@@ -36,19 +36,17 @@ inline bool operator<(double Beat, const TimingSegment &in) {
 	return Beat < in.Time;
 }
 
-typedef std::vector<TimingSegment> TimingData;
+typedef vector<TimingSegment> TimingData;
 
-struct AutoplaySound : public TimeBased<AutoplaySound, float>
+struct AutoplaySound : public TimeBased < AutoplaySound, float >
 {
 	int Sound;
-	float AudioStart, AudioEnd;
 
-	AutoplaySound() : TimeBased(0), Sound(0), AudioStart(0), AudioEnd(std::numeric_limits<double>::infinity()) {};
-	AutoplaySound(float T, int V) : TimeBased(T), Sound(V), AudioStart(0), AudioEnd(std::numeric_limits<double>::infinity()) {};
-	AutoplaySound(float T, int V, float as, float ae) : TimeBased(T), Sound(V), AudioStart(as), AudioEnd(ae) {};
+	AutoplaySound() : TimeBased(0), Sound(0) {};
+	AutoplaySound(float T, int V) : TimeBased(T), Sound(V) {}
 };
 
-struct AutoplayBMP : public TimeBased<AutoplayBMP, float>
+struct AutoplayBMP : public TimeBased < AutoplayBMP, float >
 {
 	int BMP;
 };
@@ -57,6 +55,17 @@ enum ModeType
 {
 	MODE_DOTCUR,
 	MODE_VSRG
+};
+
+struct SliceInfo
+{
+	double Start, End;
+};
+
+struct SliceContainer
+{
+	map<int, GString> AudioFiles; // int := snd index, GString := file 
+	map<int, map<int, SliceInfo>> Slices; // 1st int := wav index, 2nd int := snd index, Slice Info, where to cut for 2nd int for wav 1st int
 };
 
 namespace Game

@@ -17,7 +17,7 @@ public:
 	AudioDataSource();
 	virtual ~AudioDataSource();
 	virtual bool Open(const char* Filename) = 0;
-	virtual uint32 Read(short* buffer, size_t count) = 0; // count is in samples.
+	virtual uint32 Read(float* buffer, size_t count) = 0; // count is in samples.
 	virtual void Seek(float Time) = 0;
 	virtual size_t GetLength() = 0; // Always returns total frames.
 	virtual uint32 GetRate() = 0; // Returns sampling rate of audio
@@ -36,7 +36,7 @@ protected:
 	double mPitch;
 public:
 	virtual ~Sound() = default;
-	virtual uint32 Read(short* buffer, size_t count) = 0;
+	virtual uint32 Read(float* buffer, size_t count) = 0;
 	virtual bool Open(const char* Filename) = 0;
 	virtual void Play() = 0;
 	virtual bool IsPlaying() = 0;
@@ -52,43 +52,43 @@ public:
 
 class AudioSample : public Sound
 {
-private:
-
 	uint32	 mRate;
 	uint32	 mByteSize;
-	uint32   mBufferSize;
 	uint32   mCounter;
 	float    mAudioStart, mAudioEnd;
-	short*   mData;
+	shared_ptr<vector<float> >   mData;
 	bool	 mValid;
 	bool	 mIsPlaying;
 	bool	 mIsValid;
 
 public:
 	AudioSample();
+	AudioSample(AudioSample& Other);
+	AudioSample(AudioSample &&Other);
 	~AudioSample();
-	uint32 Read(short* buffer, size_t count);
-	bool Open(const char* Filename);
+	uint32 Read(float* buffer, size_t count) override;
+	bool Open(const char* Filename) override;
 	bool Open(AudioDataSource* Source);
-	void Play();
-	void SeekTime(float Second);
-	void SeekSample(uint32 Sample);
-	void Stop();
+	void Play() override;
+	void SeekTime(float Second) override;
+	void SeekSample(uint32 Sample) override;
+	void Stop() override;
 
-	bool IsPlaying();
+	bool IsPlaying() override;
 	void Slice(float audio_start, float audio_end);
+	shared_ptr<AudioSample> CopySlice();
+	void Mix(AudioSample& Other);
+	bool IsValid();
 };
 
 class AudioStream : public Sound
 {
-private:
-	
 	PaUtilRingBuffer mRingBuf;
 
-	AudioDataSource* mSource;
+	unique_ptr<AudioDataSource> mSource;
 	unsigned int     mBufferSize;
-	short*			 mData;
-	short*			 mResampleBuffer;
+	vector<float>	 mData;
+	vector<float>	 mResampleBuffer;
 	double			 mStreamTime;
 	double			 mPlaybackTime;
 
@@ -99,19 +99,19 @@ public:
 	AudioStream();
 	~AudioStream();
 
-	uint32 Read(short* buffer, size_t count);
-	bool Open(const char* Filename);
-	void Play();
-	void SeekTime(float Second);
-	void SeekSample(uint32 Sample);
-	void Stop();
+	uint32 Read(float* buffer, size_t count) override;
+	bool Open(const char* Filename) override;
+	void Play() override;
+	void SeekTime(float Second) override;
+	void SeekSample(uint32 Sample) override;
+	void Stop() override;
 
 	double GetStreamedTime();
 	double GetPlayedTime();
 	uint32 GetRate();
 
 	uint32 Update();
-	bool IsPlaying();
+	bool IsPlaying() override;
 
 };
 

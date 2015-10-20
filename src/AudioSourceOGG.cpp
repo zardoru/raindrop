@@ -1,8 +1,13 @@
 #include "Global.h"
+#include "Audio.h"
 #include "Audiofile.h"
 #include "AudioSourceOGG.h"
 #include "Logging.h"
 
+/*
+	you may ask, "why do you use libogg directly instead of libsoundfile?"
+	and I can only respond - ogg on libsoundfile is broken as shit.
+*/
 
 size_t readOGG(void* ptr, size_t size, size_t nmemb, void* p)
 {
@@ -36,10 +41,11 @@ ov_callbacks fileInterfaceOgg = {
 
 
 AudioSourceOGG::AudioSourceOGG()
-{ 
+{
 	mIsValid = false;
 	mSourceLoop = false;
 	mIsDataLeft = false;
+	varr.resize(BUFF_SIZE);
 }
 
 AudioSourceOGG::~AudioSourceOGG()
@@ -57,7 +63,7 @@ bool AudioSourceOGG::Open(const char* Filename)
 	int retv = -1;
 
 	if (fp)
-		retv = ov_open_callbacks(static_cast<void*>(fp), &mOggFile, NULL, 0, fileInterfaceOgg);
+		retv = ov_open_callbacks(static_cast<void*>(fp), &mOggFile, nullptr, 0, fileInterfaceOgg);
 #endif
 
 #ifndef NDEBUG
@@ -75,7 +81,8 @@ bool AudioSourceOGG::Open(const char* Filename)
 
 		mIsValid = true;
 		mIsDataLeft = true;
-	}else
+	}
+	else
 	{
 		mIsValid = false;
 		Log::Printf("Failure loading ogg file: %s (%d)\n", Filename, retv);
@@ -84,7 +91,7 @@ bool AudioSourceOGG::Open(const char* Filename)
 	return mIsValid;
 }
 
-uint32 AudioSourceOGG::Read(short* buffer, size_t count)
+uint32 AudioSourceOGG::Read(float* buffer, size_t count)
 {
 	size_t size;
 	size_t read = 0;
@@ -93,7 +100,10 @@ uint32 AudioSourceOGG::Read(short* buffer, size_t count)
 	if (!mIsValid)
 		return 0;
 
-	size = count*sizeof(uint16);
+	if (varr.size() < count)
+		varr.resize(count);
+
+	size = count*sizeof(short);
 
 	if (mSeekTime >= 0)
 	{
@@ -106,7 +116,7 @@ uint32 AudioSourceOGG::Read(short* buffer, size_t count)
 	size_t res = 1;
 	while (read < size)
 	{
-		res = ov_read(&mOggFile, (char*)buffer+read, size - read, 0, 2, 1, &sect);
+		res = ov_read(&mOggFile, (char*)varr.data() + read, size - read, 0, 2, 1, &sect);
 
 		if (res > 0)
 			read += res;
@@ -124,7 +134,7 @@ uint32 AudioSourceOGG::Read(short* buffer, size_t count)
 				return 0;
 			}
 		}
-		else 
+		else
 		{
 			Log::Printf("AudioSourceOGG: Error while reading OGG source (%d)\n", res);
 			mIsDataLeft = false;
@@ -132,31 +142,36 @@ uint32 AudioSourceOGG::Read(short* buffer, size_t count)
 		}
 	}
 
+	std::transform(varr.data(), varr.data() + read / sizeof(short), buffer,
+		[](short v) -> float {
+		return float(v) / std::numeric_limits<short>::max();
+	});
+
 	return read / sizeof(short);
 }
 
 void AudioSourceOGG::Seek(float Time)
-{ 
+{
 	mSeekTime = Time;
 }
 
 size_t AudioSourceOGG::GetLength()
-{ 
+{
 	return ov_pcm_total(&mOggFile, -1);
 }
 
 uint32 AudioSourceOGG::GetRate()
-{ 
+{
 	return info->rate;
 }
 
 uint32 AudioSourceOGG::GetChannels()
-{ 
+{
 	return info->channels;
 }
 
 bool AudioSourceOGG::IsValid()
-{ 
+{
 	return mIsValid;
 }
 

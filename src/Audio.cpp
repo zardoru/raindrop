@@ -25,8 +25,6 @@
 float VolumeSFX = 1;
 float VolumeMusic = 1; 
 bool UseThreadedDecoder = false;
-
-bool Compress;
 bool Normalize;
 
 #ifdef WIN32
@@ -138,10 +136,11 @@ class PaMixer
 	double ConstFactor;
 
 	int SizeAvailable;
-	bool Threaded, WaitForRingbufferSpace;
+	bool Threaded;
+	atomic<bool> WaitForRingbufferSpace;
 
-	std::mutex mut, mut2, rbufmux;
-	std::condition_variable ringbuffer_has_space;
+	mutex mut, mut2, rbufmux;
+	condition_variable ringbuffer_has_space;
 
 	PaMixer(){};
 public:
@@ -155,11 +154,11 @@ public:
 
 	void Initialize(bool StartThread)
 	{
-		RingbufData = new char[BUFF_SIZE*sizeof(int16)];
+		RingbufData = new char[BUFF_SIZE*sizeof(float)];
 
 		WaitForRingbufferSpace = false;
 
-		PaUtil_InitializeRingBuffer(&RingBuf, sizeof(int16), BUFF_SIZE, RingbufData);
+		PaUtil_InitializeRingBuffer(&RingBuf, sizeof(float), BUFF_SIZE, RingbufData);
 
 		Threaded = StartThread;
 		Stream = nullptr;
@@ -262,14 +261,14 @@ public:
 
 	void AddSound(SoundSample* Sample)
 	{
-		mut2.lock();
+		mut.lock();
 		Samples.push_back(Sample);
-		mut2.unlock();
+		mut.unlock();
 	}
 
 	void RemoveSound(SoundSample* Sample)
 	{
-		mut2.lock();
+		mut.lock();
 		for(auto i = Samples.begin(); i != Samples.end(); )
 		{
 			if ((*i) == Sample)
@@ -284,133 +283,52 @@ public:
 			++i;
 		}
 
-		mut2.unlock();
+		mut.unlock();
 	}
 
 	private:
-		short ts[BUFF_SIZE*2];
-		int tsF[BUFF_SIZE*2];
+		float ts[BUFF_SIZE*2];
+		float tsF[BUFF_SIZE*2];
 
-		// compress using the logarithmic DRC 
-		// described at http://www.voegler.eu/pub/audio/digital-audio-mixing-and-normalization.html
-		int SampleClamp(int s1)
-		{
-			float range = (int)0x7FFF;
-			float t = 0.5; // threshold
-
-			if (abs(s1) > t*range) {
-				float nsamp = float(s1) / range; // Normalize the sample within the sint16 range..
-				float sign = nsamp / abs(nsamp);
-				float logbase = 5.71144f; // Depends on the threshold.
-				float threslog = log(1 + logbase * (abs(nsamp) - t) / (2 - t));
-				float baselog = log(1 + logbase);
-				float ir = sign * (t + (1 - t)*threslog / baselog);
-				float mix = ir * range;
-				return mix;
-			}
-			else return s1;
-		}
 	public:
 
-	void CopyOut(char* out, int samples)
+	void CopyOut(float * out, int samples)
 	{
-		int Voices = 0;
-		int StreamVoices = 0;
 		int count = samples;
-		
-		memset(out, 0, count * sizeof(short));
-		memset(tsF, 0, sizeof(tsF));
 
-		/*
-			Yes, mutexes. In general, practice states to not use them to avoid priority inversion
-			which is of course, extremely important on this context if we're getting low latency audio.
-			Nevertheless, the only moment in which the mutex is triggered is when you add or remove a sample from the mixer.
-			The only way it will happen is that someone's making new samples every other frame.
-		*/
+		memset(out, 0, samples * sizeof(float));
 
+		bool streaming = false;
 		mut.lock();
 		for(auto i = Streams.begin(); i != Streams.end(); ++i)
 		{
-			if ((*i)->IsPlaying())
-			{
-				StreamVoices++;
-				Voices++;
-			}
+			size_t read = (*i)->Read(ts, samples);
+
+			streaming |= (*i)->IsPlaying();
+			for (size_t k = 0; k < read; k++)
+				out[k] += ts[k];
 		}
 
-		mut.unlock();
-
-		mut2.lock();
 		for (auto i = Samples.begin(); i != Samples.end(); ++i)
 		{
-			if ((*i)->IsPlaying())
-			{
-				Voices++;
-			}
-		}
-		mut2.unlock();
+			size_t read = (*i)->Read(ts, samples);
 
-		mut.lock();
-		for(auto i = Streams.begin(); i != Streams.end(); ++i)
-		{
-			if ((*i)->IsPlaying())
-			{
-				memset(ts, 0, sizeof(ts));
-				(*i)->Read(ts, samples);
-
-				for (int i = 0; i < count; i++)
-					tsF[i] = Compress ? SampleClamp(ts[i] + tsF[i]) : ts[i] + tsF[i];
-			}
+			for (size_t k = 0; k < read; k++)
+				out[k] += ts[k];
 		}
 		mut.unlock();
-
-		mut2.lock();
-		for (auto i = Samples.begin(); i != Samples.end(); ++i)
-		{
-			if ((*i)->IsPlaying())
-			{
-				memset(ts, 0, sizeof(ts));
-				(*i)->Read(ts, samples);
-
-				for (int i = 0; i < count; i++)
-					tsF[i] = Compress ? SampleClamp(ts[i] + tsF[i]) : ts[i] + tsF[i];
-			}
-		}
-		mut2.unlock();
-		
 
 		if (Normalize)
 		{
-			// find peaks
-			int peak = 0;
-			int minpeak = 0;
+			float peak = 1.0;
 			for (int i = 0; i < count; i++)
-			{
-				peak = max(peak, tsF[i]);
-				minpeak = min(minpeak, tsF[i]);
-			}
+				peak = max(peak, abs(out[i]));
 
-			// do the normalization
-			int limit = 0x7FFF;
-			double peakHighRatio = double(peak) / limit;
-			double peakLowRatio = double(minpeak) / -(limit + 1); // minpeak is negative
-			double peakRatio = max(peakHighRatio, peakLowRatio); // so we've got to normalize around the highest value above the threshold
-
-			if (peakRatio >= 1) // ok then normalize if we're going to be clipping
-			{
-				for (int i = 0; i < count; i++)
-				{
-					tsF[i] /= peakRatio;
-				}
-			}
+			for (int i = 0; i < count; i++)
+				out[i] /= peak;
 		}
-
-		for (int i = 0; i < count; i++)
-		{
-			reinterpret_cast<float*>(out)[i] = float(tsF[i]) / std::numeric_limits<short>::max();
-		}
-
-		if (StreamVoices)
+		
+		if (streaming)
 		{
 			WaitForRingbufferSpace = false;
 			ringbuffer_has_space.notify_one();
@@ -431,7 +349,7 @@ public:
 int Mix(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags, void *userData)
 {
 	PaMixer *Mix = (PaMixer*)userData;
-	Mix->CopyOut((char*)output, frameCount * 2);
+	Mix->CopyOut((float*)output, frameCount * 2);
 	return 0;
 }
 
@@ -471,6 +389,7 @@ void GetAudioInfo()
 	}
 }
 
+
 void InitAudio()
 {
 #ifndef NO_AUDIO
@@ -479,12 +398,11 @@ void InitAudio()
 	if (Err != 0) // Couldn't get audio, bail out
 		return;
 
-	Compress = (Configuration::GetConfigf("Compress", "Audio") != 0);
-	Normalize = (Configuration::GetConfigf("Normalize", "Audio") != 0);;
-
 #ifdef WIN32
 	UseWasapi = (Configuration::GetConfigf("UseWasapi", "Audio") != 0);
 #endif
+
+	Normalize = (Configuration::GetConfigf("Normalize", "Audio") != 0);
 
 	UseThreadedDecoder = (Configuration::GetConfigf("UseThreadedDecoder", "Audio") != 0);
 

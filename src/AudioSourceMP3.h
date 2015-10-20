@@ -19,18 +19,19 @@ class AudioSourceMP3 : public AudioDataSource
 
 	bool mIsValid;
 	bool mIsDataLeft;
+	vector<short> varr;
 
 public:
 	AudioSourceMP3();
 	~AudioSourceMP3();
-	bool Open(const char* Filename);
-	uint32 Read(short* buffer, size_t count);
-	void Seek(float Time);
-	size_t GetLength(); // Always returns total samples. Frames = Length/Channels.
-	uint32 GetRate(); // Returns sampling rate of audio
-	uint32 GetChannels(); // Returns channels of audio
-	bool IsValid();
-	bool HasDataLeft();
+	bool Open(const char* Filename) override;
+	uint32 Read(float* buffer, size_t count) override;
+	void Seek(float Time) override;
+	size_t GetLength() override; // Always returns total samples. Frames = Length/Channels.
+	uint32 GetRate() override; // Returns sampling rate of audio
+	uint32 GetChannels() override; // Returns channels of audio
+	bool IsValid() override;
+	bool HasDataLeft() override;
 };
 
 #endif

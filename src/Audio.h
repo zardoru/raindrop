@@ -5,7 +5,7 @@
 
 void InitAudio();
 
-#define BUFF_SIZE 4096
+#define BUFF_SIZE 8192
 
 #define SoundStream AudioStream
 #define SoundSample	AudioSample

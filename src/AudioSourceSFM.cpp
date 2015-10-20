@@ -13,9 +13,10 @@
 
 AudioSourceSFM::AudioSourceSFM()
 {
-	mWavFile = NULL;
-	info = NULL;
+	mWavFile = nullptr;
+	info = nullptr;
 	mIsDataLeft = false;
+	mFlen = 0;
 }
 
 AudioSourceSFM::~AudioSourceSFM()
@@ -47,6 +48,7 @@ bool AudioSourceSFM::Open(const char* Filename)
 
 	mRate		= info->samplerate;
 	mChannels   = info->channels;
+	mFlen = info->frames * info->channels;
 
 	int err = 0;
 	if (!mWavFile || (err = sf_error(mWavFile)))
@@ -55,23 +57,23 @@ bool AudioSourceSFM::Open(const char* Filename)
 		return false;
 	}
 
-	sf_command(mWavFile, SFC_SET_SCALE_FLOAT_INT_READ, NULL, SF_TRUE);
+	// sf_command(mWavFile, SFC_SET_SCALE_FLOAT_INT_READ, NULL, SF_TRUE);
 	mIsDataLeft = true;
 	return true;
 }
 
-uint32 AudioSourceSFM::Read(short* buffer, size_t count)
+uint32 AudioSourceSFM::Read(float* buffer, size_t count)
 {
 	uint32 read = 0;
 	if (mWavFile)
 	{
-		read = sf_read_short(mWavFile, buffer, count);
+		read = sf_read_float(mWavFile, buffer, count);
 		int remaining = count - read;
 
-		while (mSourceLoop && (remaining > 0))
+		while (mSourceLoop && (remaining > 0) && read)
 		{
 			Seek(0);
-			read += sf_read_short(mWavFile, (short*)(buffer) + (read), remaining);
+			read += sf_read_float(mWavFile, static_cast<float*>(buffer) + (read), remaining);
 			remaining -= read;
 		}
 
@@ -88,7 +90,9 @@ void AudioSourceSFM::Seek(float Time)
 	if (mWavFile)
 	{
 		mIsDataLeft = true;
-		sf_seek(mWavFile, Time * mRate, SEEK_SET);
+
+		if (Time * mRate <= mFlen && info->seekable)
+			sf_seek(mWavFile, Time * mRate, SEEK_SET);
 	}
 }
 
@@ -109,7 +113,7 @@ uint32 AudioSourceSFM::GetChannels()
 
 bool AudioSourceSFM::IsValid()
 {
-	return mWavFile != NULL;
+	return mWavFile != nullptr;
 }
 
 bool AudioSourceSFM::HasDataLeft()
