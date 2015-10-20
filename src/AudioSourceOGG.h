@@ -14,13 +14,12 @@ class AudioSourceOGG : public AudioDataSource
 
 	bool mIsValid;
 	bool mIsDataLeft;
-	vector<short> varr;
 
 public:
 	AudioSourceOGG();
 	~AudioSourceOGG();
 	bool Open(const char* Filename) override;
-	uint32 Read(float* buffer, size_t count) override;
+	uint32 Read(short* buffer, size_t count) override;
 	void Seek(float Time) override;
 	size_t GetLength() override; // Always returns total samples. Frames = Length/Channels.
 	uint32 GetRate() override; // Returns sampling rate of audio

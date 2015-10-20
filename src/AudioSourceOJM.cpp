@@ -604,7 +604,7 @@ bool AudioSourceOJM::Open(const char* f)
 	return true;
 }
 
-uint32 AudioSourceOJM::Read(float* buffer, size_t count)
+uint32 AudioSourceOJM::Read(short* buffer, size_t count)
 {
 	vector<short> temp_buf(count);
 	size_t read = 0;
@@ -639,12 +639,6 @@ uint32 AudioSourceOJM::Read(float* buffer, size_t count)
 		if (read < size)
 			Log::Printf("AudioSourceOJM: PCM count differs from what's reported! (%d out of %d)\n", read, size);
 	}
-
-	// like yeah, okay, std::transform is valid and all but why
-	std::transform(temp_buf.data(), temp_buf.data() + read / sizeof(short), buffer, 
-		[](short v) -> float { 
-		return float(v) / std::numeric_limits<short>::max(); 
-	});
 
 	return read; // We /KNOW/ we won't be overreading.
 }

@@ -185,8 +185,8 @@ void ScreenGameplay7K::RunAutoEvents()
 		// Play BGM events.
 		while (BGMEvents.size() && BGMEvents.front().Time <= SongTime)
 		{
-			if (Keysounds[BGMEvents.front().Sound])
-				Keysounds[BGMEvents.front().Sound]->Play();
+			for (auto &&s: Keysounds[BGMEvents.front().Sound])
+				if (s) s->Play();
 			BGMEvents.pop();
 		}
 	}
@@ -208,8 +208,9 @@ stageFailed:
 		// We stop all audio..
 		Music->Stop();
 		for (auto i = Keysounds.begin(); i != Keysounds.end(); ++i)
-			if (i->second)
-				i->second->Stop();
+			for (auto &&s: i->second)
+				if (s)
+					s->Stop();
 
 		// Run stage failed animation.
 		Animations->DoEvent("OnFailureEvent", 1);

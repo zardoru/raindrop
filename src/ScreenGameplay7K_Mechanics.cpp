@@ -122,14 +122,16 @@ void ScreenGameplay7K::PlayLaneKeysound(uint32 Lane)
 	TrackNote *TN = CurrentKeysounds[Lane];
 	if (!TN) return;
 
-	if (Keysounds.find(TN->GetSound()) != Keysounds.end() && Keysounds[TN->GetSound()] && PlayReactiveSounds)
-		Keysounds[TN->GetSound()]->Play();
+	if (Keysounds.find(TN->GetSound()) != Keysounds.end() && PlayReactiveSounds)
+		for (auto &&s : Keysounds[TN->GetSound()])
+			if (s) s->Play();
 }
 
 void ScreenGameplay7K::PlayKeysound(TrackNote* TN)
 {
-	if (Keysounds.find(TN->GetSound()) != Keysounds.end() && PlayReactiveSounds && Keysounds[TN->GetSound()])
-		Keysounds[TN->GetSound()]->Play();
+	if (Keysounds.find(TN->GetSound()) != Keysounds.end() && PlayReactiveSounds)
+		for (auto &&s : Keysounds[TN->GetSound()])
+			if (s) s->Play();
 }
 
 void ScreenGameplay7K::SetLaneHoldState(uint32 Lane, bool NewState)

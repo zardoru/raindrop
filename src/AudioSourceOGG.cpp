@@ -5,8 +5,8 @@
 #include "Logging.h"
 
 /*
-	you may ask, "why do you use libogg directly instead of libsoundfile?"
-	and I can only respond - ogg on libsoundfile is broken as shit.
+	you may ask, "why do you use libogg directly instead of libsndfile?"
+	and I can only respond - ogg on libsndfile is broken as hell.
 */
 
 size_t readOGG(void* ptr, size_t size, size_t nmemb, void* p)
@@ -45,7 +45,6 @@ AudioSourceOGG::AudioSourceOGG()
 	mIsValid = false;
 	mSourceLoop = false;
 	mIsDataLeft = false;
-	varr.resize(BUFF_SIZE);
 }
 
 AudioSourceOGG::~AudioSourceOGG()
@@ -91,7 +90,7 @@ bool AudioSourceOGG::Open(const char* Filename)
 	return mIsValid;
 }
 
-uint32 AudioSourceOGG::Read(float* buffer, size_t count)
+uint32 AudioSourceOGG::Read(short* buffer, size_t count)
 {
 	size_t size;
 	size_t read = 0;
@@ -99,9 +98,6 @@ uint32 AudioSourceOGG::Read(float* buffer, size_t count)
 
 	if (!mIsValid)
 		return 0;
-
-	if (varr.size() < count)
-		varr.resize(count);
 
 	size = count*sizeof(short);
 
@@ -116,7 +112,7 @@ uint32 AudioSourceOGG::Read(float* buffer, size_t count)
 	size_t res = 1;
 	while (read < size)
 	{
-		res = ov_read(&mOggFile, (char*)varr.data() + read, size - read, 0, 2, 1, &sect);
+		res = ov_read(&mOggFile, (char*)buffer + read, size - read, 0, 2, 1, &sect);
 
 		if (res > 0)
 			read += res;
@@ -126,7 +122,6 @@ uint32 AudioSourceOGG::Read(float* buffer, size_t count)
 			if (mSourceLoop)
 			{
 				ov_time_seek(&mOggFile, 0);
-				continue;
 			}
 			else
 			{
@@ -141,11 +136,6 @@ uint32 AudioSourceOGG::Read(float* buffer, size_t count)
 			return 0;
 		}
 	}
-
-	std::transform(varr.data(), varr.data() + read / sizeof(short), buffer,
-		[](short v) -> float {
-		return float(v) / std::numeric_limits<short>::max();
-	});
 
 	return read / sizeof(short);
 }

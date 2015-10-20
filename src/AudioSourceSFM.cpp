@@ -62,18 +62,18 @@ bool AudioSourceSFM::Open(const char* Filename)
 	return true;
 }
 
-uint32 AudioSourceSFM::Read(float* buffer, size_t count)
+uint32 AudioSourceSFM::Read(short* buffer, size_t count)
 {
 	uint32 read = 0;
 	if (mWavFile)
 	{
-		read = sf_read_float(mWavFile, buffer, count);
+		read = sf_read_short(mWavFile, buffer, count);
 		int remaining = count - read;
 
 		while (mSourceLoop && (remaining > 0) && read)
 		{
 			Seek(0);
-			read += sf_read_float(mWavFile, static_cast<float*>(buffer) + (read), remaining);
+			read += sf_read_short(mWavFile, static_cast<short*>(buffer) + (read), remaining);
 			remaining -= read;
 		}
 

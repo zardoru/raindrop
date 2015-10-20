@@ -30,7 +30,7 @@ private:
 	TimingData		   Warps;
 	VSRG::VectorSpeeds Speeds;
 	VSRG::VectorTN  NotesByChannel;
-	std::map <int, shared_ptr<SoundSample>> Keysounds;
+	std::map <int, vector<shared_ptr<SoundSample>> > Keysounds;
 	std::queue<AutoplaySound>   BGMEvents;
 	vector<float>			 MeasureBarlines;
 

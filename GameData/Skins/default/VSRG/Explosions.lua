@@ -104,10 +104,10 @@ function Explosions.Init()
 		obj.Height = Noteskin[Channels].GearHeight
 		
 		if Upscroll == 1 then
-			obj.Y = JudgmentLineY - obj.Height / 2
-      obj.Rotation = 180
+			obj.Y = JudgmentLineY - obj.Height / 2 - NoteHeight / 2
+			obj.Rotation = 180
 		else
-			obj.Y = JudgmentLineY + obj.Height / 2
+			obj.Y = JudgmentLineY + obj.Height / 2 + NoteHeight / 2
 		end
 	end
 end

@@ -15,7 +15,7 @@ public:
 	~AudioSourceSFM();
 
 	bool Open(const char* Filename) override;
-	uint32 Read(float* buffer, size_t count) override;
+	uint32 Read(short* buffer, size_t count) override;
 	void Seek(float Time) override;
 	size_t GetLength() override;
 	uint32 GetRate() override;

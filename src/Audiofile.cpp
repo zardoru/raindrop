@@ -13,12 +13,13 @@
 #endif
 
 // Buffer -> buffer to convert to stereo (interleaved) cnt -> current samples max_len -> Maximum samples
-void monoToStereo(float* Buffer, size_t cnt, size_t max_len)
+template<class T>
+void monoToStereo(T* Buffer, size_t cnt, size_t max_len)
 {
 	if (!cnt)
 		return;
 
-	if (cnt <= max_len/2) // We're within boundaries.
+	if (cnt <= max_len / 2) // We're within boundaries.
 	{
 		// Okay, we have to transform all the samples from 0, 1, 2, 3...
 		// to 0, 2, 4, 6... We start at the end so we don't have anything to overwrite.
@@ -112,7 +113,6 @@ AudioSample::AudioSample(AudioSample& Other)
 	mData = Other.mData;
 	mCounter = 0;
 	Channels = Other.Channels;
-	mByteSize = Other.mByteSize;
 	mIsPlaying = false;
 	MixerAddSample(this);
 }
@@ -129,7 +129,6 @@ AudioSample::AudioSample(AudioSample&& Other)
 	mData = Other.mData;
 	mCounter = 0;
 	Channels = Other.Channels;
-	mByteSize = Other.mByteSize;
 	mIsPlaying = false;
 	MixerAddSample(this);
 }
@@ -149,7 +148,7 @@ bool AudioSample::Open(AudioDataSource* Src)
 		if (!mSampleCount) // Huh what why?
 			return false;
 
-		mData = make_shared<vector<float>> (mSampleCount);
+		mData = make_shared<vector<short>>(mSampleCount);
 		size_t total = Src->Read(mData->data(), mSampleCount);
 
 		if (total < mSampleCount) // Oh, odd. Oh well.
@@ -160,7 +159,7 @@ bool AudioSample::Open(AudioDataSource* Src)
 		if (Channels == 1) // Mono? We'll need to duplicate information for both channels.
 		{
 			size_t size = mSampleCount * 2;
-			auto mDataNew = make_shared<vector<float>> (size);
+			auto mDataNew = make_shared<vector<short>>(size);
 
 			for (size_t i = 0, j = 0; i < mSampleCount; i++, j += 2)
 			{
@@ -181,11 +180,11 @@ bool AudioSample::Open(AudioDataSource* Src)
 			double ResamplingRate = DstRate / mRate;
 			soxr_io_spec_t spc;
 			size_t size = size_t(ceil(mSampleCount * ResamplingRate));
-			shared_ptr<vector<float>> mDataNew = make_shared<vector<float>> (size);
+			auto mDataNew = make_shared<vector<short>>(size);
 
 			spc.e = nullptr;
-			spc.itype = SOXR_FLOAT32_I;
-			spc.otype = SOXR_FLOAT32_I;
+			spc.itype = SOXR_INT16_I;
+			spc.otype = SOXR_INT16_I;
 			spc.scale = 1;
 			spc.flags = 0;
 			soxr_quality_spec_t q_spec = soxr_quality_spec(SOXR_VHQ, SOXR_VR);
@@ -202,7 +201,6 @@ bool AudioSample::Open(AudioDataSource* Src)
 
 		mCounter = 0;
 		mIsValid = true;
-		mByteSize = mSampleCount * sizeof(short);
 
 		mAudioEnd = (float(mSampleCount) / (float(mRate) * Channels));
 
@@ -224,16 +222,22 @@ uint32 AudioSample::Read(float* buffer, size_t count)
 
 		if (mCounter < limit)
 		{
-			memcpy(buffer, &(*mData)[0]+mCounter, ReadAmount * sizeof(float));
+			std::transform(mData->begin() + mCounter, mData->begin() + mCounter + ReadAmount, buffer,
+				[](const short &s) -> float
+			{
+				return float(s) / std::numeric_limits<short>::max();
+			});
 			mCounter += ReadAmount;
-		}else
+		}
+		else
 		{
 			mIsPlaying = false;
 			// memset(buffer, 0, count * sizeof(float));
 		}
 
 		return ReadAmount;
-	}else
+	}
+	else
 		return 0;
 
 }
@@ -261,31 +265,32 @@ shared_ptr<AudioSample> AudioSample::CopySlice()
 	shared_ptr<AudioSample> out = make_shared<AudioSample>(*this);
 	return out;
 }
-
+/*
 void AudioSample::Mix(AudioSample& Other)
 {
-	size_t start = Clamp(size_t(mAudioStart * mRate * Channels), size_t(0), mData->size() - 1);
-	size_t end = Clamp(size_t(mAudioEnd * mRate * Channels), start, mData->size() - 1);
-	size_t startB = Clamp(size_t(Other.mAudioStart * Other.mRate * Other.Channels), size_t(0), Other.mData->size() - 1);
-	size_t endB = Clamp(size_t(Other.mAudioEnd * Other.mRate * Other.Channels), startB, Other.mData->size() - 1);
-	auto buf = make_shared<vector<float>>(max(endB - startB, end - start));
+size_t start = Clamp(size_t(mAudioStart * mRate * Channels), size_t(0), mData->size() - 1);
+size_t end = Clamp(size_t(mAudioEnd * mRate * Channels), start, mData->size() - 1);
+size_t startB = Clamp(size_t(Other.mAudioStart * Other.mRate * Other.Channels), size_t(0), Other.mData->size() - 1);
+size_t endB = Clamp(size_t(Other.mAudioEnd * Other.mRate * Other.Channels), startB, Other.mData->size() - 1);
+auto buf = make_shared<vector<float>>(max(endB - startB, end - start));
 
-	for (size_t i = 0; i < buf->size(); i++)
-	{
-		size_t ai = start + i;
-		size_t bi = startB + i;
-		if (bi < Other.mData->size() && ai < mData->size())
-			(*buf)[i] = (*Other.mData)[bi] + (*mData)[ai];
-		if (bi >= Other.mData->size() && ai < mData->size())
-			(*buf)[i] = (*mData)[ai];
-		if (bi < Other.mData->size() && ai >= mData->size())
-			(*buf)[i] = (*Other.mData)[bi];
-	}
-
-	mAudioStart = 0;
-	mAudioEnd = float(buf->size()) / (mRate * Channels);
-	mData = buf;
+for (size_t i = 0; i < buf->size(); i++)
+{
+size_t ai = start + i;
+size_t bi = startB + i;
+if (bi < Other.mData->size() && ai < mData->size())
+(*buf)[i] = (*Other.mData)[bi] + (*mData)[ai];
+if (bi >= Other.mData->size() && ai < mData->size())
+(*buf)[i] = (*mData)[ai];
+if (bi < Other.mData->size() && ai >= mData->size())
+(*buf)[i] = (*Other.mData)[bi];
 }
+
+mAudioStart = 0;
+mAudioEnd = float(buf->size()) / (mRate * Channels);
+mData = buf;
+}
+*/
 
 bool AudioSample::IsValid()
 {
@@ -319,7 +324,7 @@ GString RearrangeFilename(const char* Fn)
 bool AudioSample::Open(const char* Filename)
 {
 	GString FilenameFixed = RearrangeFilename(Filename);
-	unique_ptr<AudioDataSource> Src = SourceFromExt (FilenameFixed);
+	unique_ptr<AudioDataSource> Src = SourceFromExt(FilenameFixed);
 	return Open(Src.get());
 }
 
@@ -383,61 +388,54 @@ uint32 AudioStream::Read(float* buffer, size_t count)
 
 	if (Channels == 1) // We just want half the samples.
 		toRead >>= 1;
-	
+
 	if (PaUtil_GetRingBufferReadAvailable(&mRingBuf) < toRead || !mIsPlaying)
 		toRead = PaUtil_GetRingBufferReadAvailable(&mRingBuf);
 
 	if (mIsPlaying)
 	{
-		if (mSource->GetRate() != 44100.0 || mPitch != 1) // Alright, we'll need to resample. Let's just do that.
+		// This is what our destination rate will be
+		double origRate = mSource->GetRate();
+
+		// This is what our destination rate is.
+		double resRate = 44100.0 / mPitch;
+		double RateRatio = resRate / origRate;
+
+		// This is how many samples we want to read from the source buffer
+		size_t scount = ceil(origRate * toRead / resRate);
+
+		cnt = PaUtil_ReadRingBuffer(&mRingBuf, mResampleBuffer.data(), scount);
+		// cnt now contains how many samples we actually read... 
+
+		// This is how many resulting samples we can output with what we read...
+		outcnt = floor(cnt * resRate / origRate);
+
+		size_t odone;
+
+		if (Channels == 1) // Turn mono audio to stereo audio.
+			monoToStereo(mResampleBuffer.data(), cnt, BUFF_SIZE);
+
+		soxr_set_io_ratio(mResampler, 1 / RateRatio, cnt / 2);
+
+		// The count that soxr asks for I think, is frames, not samples. Thus, the division by channels.
+		soxr_process(mResampler,
+			mResampleBuffer.data(), cnt / Channels, nullptr,
+			mOutputBuffer.data(), outcnt / Channels, &odone);
+
+		outcnt = odone;
+
+		// * 2 from * Channels since we mono -> stereo mono signals.
+		std::transform(mOutputBuffer.data(), mOutputBuffer.data() + outcnt * 2, buffer, [](const short &s) -> float
 		{
-			// This is what our destination rate will be
-			double origRate = mSource->GetRate();
+			return float(s) / std::numeric_limits<short>::max();
+		});
 
-			// This is what our destination rate is.
-			double resRate = 44100.0 / mPitch;
-			double RateRatio = resRate / origRate;
-
-			// This is how many samples we want to read from the source buffer
-			size_t scount = ceil(origRate * toRead / resRate);
-
-			cnt = PaUtil_ReadRingBuffer(&mRingBuf, mResampleBuffer.data(), scount);
-			// cnt now contains how many samples we actually read... 
-
-			// This is how many resulting samples we can output with what we read...
-			outcnt = floor(cnt * resRate / origRate);
-
-
-			size_t odone;
-
-			if (Channels == 1) // Turn mono audio to stereo audio.
-				monoToStereo(mResampleBuffer.data(), cnt, BUFF_SIZE);
-
-			soxr_set_io_ratio(mResampler, 1 / RateRatio, cnt / 2);
-
-			// The count that soxr asks for I think, is frames, not samples. Thus, the division by channels.
-			soxr_process(mResampler, 
-						mResampleBuffer.data(), cnt / Channels, nullptr, 
-						buffer, outcnt / Channels, &odone);
-
-			outcnt = odone;
-		}
-		else
-		{
-			cnt = PaUtil_ReadRingBuffer(&mRingBuf, buffer, toRead);
-
-			if (Channels == 1)
-				monoToStereo(buffer, cnt, BUFF_SIZE);
-
-			outcnt = cnt;
-		}
-
-		mStreamTime += double(cnt/Channels) / mSource->GetRate();
+		mStreamTime += double(cnt / Channels) / mSource->GetRate();
 		mPlaybackTime = mStreamTime - MixerGetLatency();
-	}else
-		return 0;
+		return outcnt * 2;
+	}
 
-	return outcnt;
+	return 0;
 }
 
 bool AudioStream::Open(const char* Filename)
@@ -447,28 +445,29 @@ bool AudioStream::Open(const char* Filename)
 	if (mSource && mSource->IsValid())
 	{
 		Channels = mSource->GetChannels();
-		
-		
+
 		mResampleBuffer.resize(BUFF_SIZE);
+		mOutputBuffer.resize(BUFF_SIZE);
 
 		soxr_io_spec_t sis;
 		sis.flags = 0;
-		sis.itype = SOXR_FLOAT32_I;
-		sis.otype = SOXR_FLOAT32_I;
+		sis.itype = SOXR_INT16_I;
+		sis.otype = SOXR_INT16_I;
 		sis.scale = 1;
 		soxr_quality_spec_t q_spec = soxr_quality_spec(SOXR_VHQ, SOXR_VR);
 		mResampler = soxr_create(mSource->GetRate(), 44100, 2, nullptr, &sis, &q_spec, nullptr);
-		
+
 		mBufferSize = BUFF_SIZE;
 		mData.resize(mBufferSize);
-		PaUtil_InitializeRingBuffer(&mRingBuf, sizeof(float), mBufferSize, mData.data());
+		PaUtil_InitializeRingBuffer(&mRingBuf, sizeof(short), mBufferSize, mData.data());
 
 		mStreamTime = mPlaybackTime = 0;
-		
+
 		SeekTime(0);
 
 		return true;
-	}else
+	}
+	else
 		return false;
 }
 
@@ -511,7 +510,7 @@ void AudioStream::Stop()
 
 uint32 AudioStream::Update()
 {
-	float tbuf[BUFF_SIZE];
+	short tbuf[BUFF_SIZE];
 	uint32 eCount = PaUtil_GetRingBufferWriteAvailable(&mRingBuf);
 	uint32 ReadTotal;
 
@@ -522,7 +521,8 @@ uint32 AudioStream::Update()
 	if (ReadTotal = mSource->Read(tbuf, eCount))
 	{
 		PaUtil_WriteRingBuffer(&mRingBuf, tbuf, ReadTotal);
-	}else
+	}
+	else
 	{
 		if (!PaUtil_GetRingBufferReadAvailable(&mRingBuf) && !mSource->HasDataLeft())
 			mIsPlaying = false;

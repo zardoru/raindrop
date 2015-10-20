@@ -321,7 +321,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 			shared_ptr<SoundSample> Snd = OJMAudio->GetFromIndex(i);
 
 			if (Snd != nullptr)
-				Keysounds[i] = Snd;
+				Keysounds[i].push_back(Snd);
 		}
 	}
 	else if (CurrentDiff->SoundList.size() || CurrentDiff->Data->TimingInfo->GetType() == VSRG::TI_BMS)
@@ -334,6 +334,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 			bool isBMSON = ((VSRG::BMSTimingInfo*)CurrentDiff->Data->TimingInfo.get())->IsBMSON;
 			if (isBMSON)
 			{
+				int wavs = 0;
 				map<int, SoundSample> audio;
 				auto &slicedata = CurrentDiff->Data->SliceData;
 				// do bmson loading
@@ -351,28 +352,29 @@ bool ScreenGameplay7K::LoadSongAudio()
 						}
 
 						audio[sounds.first].Slice(sounds.second.Start, sounds.second.End);
-						if (!Keysounds[wav.first])
-						{
-							Keysounds[wav.first] = audio[sounds.first].CopySlice();
-						}
-						else
-							Keysounds[wav.first]->Mix(audio[sounds.first]);
+						Keysounds[wav.first].push_back(audio[sounds.first].CopySlice());
+						wavs++;
 					}
+
+					Keysounds[wav.first].shrink_to_fit();
 				}
+
+				Log::Printf("BMSON: Generated %d sound objects.\n", wavs);
 			}
 		}
 
 		for (auto i = CurrentDiff->SoundList.begin(); i != CurrentDiff->SoundList.end(); ++i)
 		{
-			Keysounds[i->first] = make_shared<SoundSample>();
+			auto ks = make_shared<SoundSample>();
 
-			Keysounds[i->first]->SetPitch(Speed);
+			ks->SetPitch(Speed);
 #ifdef WIN32
 			std::wstring sd = Utility::Widen(MySong->SongDirectory) + L"/" + Utility::Widen(i->second);
-			Keysounds[i->first]->Open(Utility::Narrow(sd).c_str());
+			ks->Open(Utility::Narrow(sd).c_str());
 #else
-			Keysounds[i->first]->Open((MySong->SongDirectory + "/" + i->second).c_str());
+			ks->Open((MySong->SongDirectory + "/" + i->second).c_str());
 #endif
+			Keysounds[i->first].push_back(ks);
 			CheckInterruption();
 		}
 	}

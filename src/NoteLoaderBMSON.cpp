@@ -147,6 +147,9 @@ namespace NoteLoaderBMSON{
 
 			song->BackgroundFilename = meta["back_image"].asString();
 
+			for (auto &s : meta["subtitles"])
+				subtitles.insert(s.asString());
+
 			if (version == UNSPECIFIED_VERSION)
 				Chart->Timing.push_back(TimingSegment(0, meta["initBPM"].asDouble()));
 			else if (version == VERSION_1)
@@ -169,6 +172,7 @@ namespace NoteLoaderBMSON{
 				resolution = abs(meta["resolution"].asDouble());
 
 			// DEFEXRANK?
+
 
 			int jRank;
 			

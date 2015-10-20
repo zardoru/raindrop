@@ -17,7 +17,7 @@ public:
 	AudioDataSource();
 	virtual ~AudioDataSource();
 	virtual bool Open(const char* Filename) = 0;
-	virtual uint32 Read(float* buffer, size_t count) = 0; // count is in samples.
+	virtual uint32 Read(short* buffer, size_t count) = 0; // count is in samples.
 	virtual void Seek(float Time) = 0;
 	virtual size_t GetLength() = 0; // Always returns total frames.
 	virtual uint32 GetRate() = 0; // Returns sampling rate of audio
@@ -53,10 +53,9 @@ public:
 class AudioSample : public Sound
 {
 	uint32	 mRate;
-	uint32	 mByteSize;
 	uint32   mCounter;
 	float    mAudioStart, mAudioEnd;
-	shared_ptr<vector<float> >   mData;
+	shared_ptr<vector<short> >   mData;
 	bool	 mValid;
 	bool	 mIsPlaying;
 	bool	 mIsValid;
@@ -77,7 +76,7 @@ public:
 	bool IsPlaying() override;
 	void Slice(float audio_start, float audio_end);
 	shared_ptr<AudioSample> CopySlice();
-	void Mix(AudioSample& Other);
+	// void Mix(AudioSample& Other);
 	bool IsValid();
 };
 
@@ -87,8 +86,9 @@ class AudioStream : public Sound
 
 	unique_ptr<AudioDataSource> mSource;
 	unsigned int     mBufferSize;
-	vector<float>	 mData;
-	vector<float>	 mResampleBuffer;
+	vector<short>	 mData;
+	vector<short>	 mResampleBuffer;
+	vector<short>	 mOutputBuffer;
 	double			 mStreamTime;
 	double			 mPlaybackTime;
 

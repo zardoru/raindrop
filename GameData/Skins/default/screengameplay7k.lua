@@ -8,7 +8,11 @@ skin_require "Global/FadeInScreen"
 game_require "noteskin_defs"
 GearWidth = Noteskin[Channels].GearWidth
 GearHeight = GearHeightCommon
-
+if Upscroll ~= 0 then
+	UpscrollMod = -1
+else
+	UpscrollMod = 1
+end
 
 skin_require "VSRG/Explosions"
 skin_require "VSRG/ComboDisplay"

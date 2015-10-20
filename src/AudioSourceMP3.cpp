@@ -67,7 +67,7 @@ bool AudioSourceMP3::Open(const char* Filename)
 	return false;
 }
 
-uint32 AudioSourceMP3::Read(float* buffer, size_t count)
+uint32 AudioSourceMP3::Read(short* buffer, size_t count)
 {
 	size_t actuallyread;
 	auto toRead = count * sizeof(short); // # of bytes to actually read
@@ -75,12 +75,9 @@ uint32 AudioSourceMP3::Read(float* buffer, size_t count)
 	if (toRead == 0)
 		return 0;
 
-	if (varr.size() < count)
-		varr.resize(count);
-
 	// read # bytes into varr.
 
-	auto res = mpg123_read(mHandle, reinterpret_cast<unsigned char*>(varr.data()), toRead, &actuallyread);
+	auto res = mpg123_read(mHandle, (unsigned char*)buffer, toRead, &actuallyread);
 	size_t additive = 0;
 
 	while (mSourceLoop && actuallyread < toRead)
@@ -90,12 +87,9 @@ uint32 AudioSourceMP3::Read(float* buffer, size_t count)
 
 		count -= actuallyread / sizeof(short);
 
-		res = mpg123_read(mHandle, reinterpret_cast<unsigned char*>(varr.data()) + actuallyread, count, &additive);
+		res = mpg123_read(mHandle, reinterpret_cast<unsigned char*>(buffer) + actuallyread, count, &additive);
 		actuallyread += additive;
 	}
-
-	for (size_t i = 0; i < count; i++)
-		buffer[i] = varr[i] / float(std::numeric_limits<short>::max());
 
 	// according to mpg123_read documentation, ret is the amount of bytes read. We want to return samples read.
 	return actuallyread / sizeof(short);

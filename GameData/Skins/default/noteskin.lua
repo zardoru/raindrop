@@ -76,7 +76,7 @@ BarlineEnabled = 1
 BarlineOffset = NoteHeight / 2
 BarlineStartX = GearStartX
 BarlineWidth = Noteskin[Lanes].BarlineWidth
-JudgmentLineY = Noteskin[Lanes].GearHeight
+JudgmentLineY = Noteskin[Lanes].GearHeight + NoteHeight / 2
 DecreaseHoldSizeWhenBeingHit = 1
 DanglingHeads = 1
 

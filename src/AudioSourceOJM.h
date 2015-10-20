@@ -26,7 +26,7 @@ public:
 	bool Open(const char* Filename) override;
 	shared_ptr<SoundSample> GetFromIndex(int Index);
 	void Seek(float Time) override;
-	uint32 Read(float* buffer, size_t count) override;
+	uint32 Read(short* buffer, size_t count) override;
 
 	size_t GetLength() override; // Always returns total samples. Frames = Length/Channels.
 	uint32 GetRate() override; // Returns sampling rate of audio
