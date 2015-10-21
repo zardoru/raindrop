@@ -212,12 +212,7 @@ public:
 
 
 				for(auto i = Streams.begin(); i != Streams.end(); ++i)
-				{
-					if ((*i)->IsPlaying())
-					{
-						(*i)->Update();
-					}
-				}
+					(*i)->Update();
 
 				if (Threaded)
 				{
