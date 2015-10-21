@@ -281,7 +281,11 @@ public:
 		mut.unlock();
 	}
 
-	private:
+	double GetStreamTime()
+	{
+		return Pa_GetStreamTime(Stream);
+	}
+private:
 		float ts[BUFF_SIZE*2];
 		float tsF[BUFF_SIZE*2];
 
@@ -468,5 +472,14 @@ double MixerGetFactor()
 	return PaMixer::GetInstance().GetFactor();
 #else
 	return 0;
+#endif
+}
+
+double MixerGetTime()
+{
+#ifndef NO_AUDIO
+	return PaMixer::GetInstance().GetStreamTime();
+#else
+	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now()).count() / 1000.0;
 #endif
 }

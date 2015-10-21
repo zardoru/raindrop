@@ -89,6 +89,7 @@ class AudioStream : public Sound
 	vector<short>	 mData;
 	vector<short>	 mResampleBuffer;
 	vector<short>	 mOutputBuffer;
+	short			 tbuf[8192];
 	double			 mStreamTime;
 	double			 mPlaybackTime;
 

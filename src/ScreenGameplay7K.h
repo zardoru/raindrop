@@ -58,6 +58,7 @@ private:
 	double SuccessTime;
 	double MsDisplayMargin;
 	double Speed;
+	double AudioStart, AudioOldTime;
 
 	/* User Variables */
     float       SpeedMultiplierUser;

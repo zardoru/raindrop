@@ -44,6 +44,8 @@ ScreenGameplay7K::ScreenGameplay7K() : Screen("ScreenGameplay7K")
 	RealHiddenMode = HM_NONE;
 	HideClampSum = 0;
 
+	AudioStart = 0;
+
 #if (defined WIN32) && (!defined NDEBUG)
 	Auto = true;
 #else

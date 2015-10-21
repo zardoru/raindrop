@@ -779,6 +779,7 @@ namespace NoteLoaderBMS{
 		{
 			/* To be done. */
 			auto& m = Measures;
+			if (m.size() == 0) return; // what
 			CalculateBeatAccomulation();
 
 			CalculateBPMs();

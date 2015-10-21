@@ -278,6 +278,8 @@ void ScreenGameplay7K::UpdateSongTime(float Delta)
 	{
 		if (Music)
 			Music->Play();
+		AudioStart = MixerGetTime();
+		AudioOldTime = AudioStart;
 		if (!StartMeasure)
 		{
 			SongOldTime = 0;
@@ -293,15 +295,19 @@ void ScreenGameplay7K::UpdateSongTime(float Delta)
 	// Update for the next delta.
 	SongOldTime = SongTimeReal;
 
-	// Run interpolation, if enabled.
-	if (Music && Music->IsPlaying() && !CurrentDiff->IsVirtual)
-	{
-		double SongDelta = Music->GetStreamedTime() - SongOldTime;
-		SongTimeReal += SongDelta;
+	// Run interpolation
+	double CurrAudioTime = MixerGetTime();
+	double SongDelta;
+	if (Music && Music->IsPlaying())
+		SongDelta = Music->GetStreamedTime() - SongOldTime;
+	else
+		SongDelta = CurrAudioTime - AudioOldTime;
 
-		if ( (SongDelta > 0.001 && abs(SongTime - SongTimeReal) * 1000 > ErrorTolerance) || !InterpolateTime ) // Significant delta with a x ms difference? We're pretty off..
-			SongTime = SongTimeReal;
-	}
+	AudioOldTime = CurrAudioTime;
+	SongTimeReal += SongDelta;
+
+	if ( (SongDelta > 0.001 && abs(SongTime - SongTimeReal) * 1000 > ErrorTolerance) || !InterpolateTime ) // Significant delta with a x ms difference? We're pretty off..
+		SongTime = SongTimeReal;
 
 	// Update current beat
 	WarpedSongTime = GetWarpedSongTime();

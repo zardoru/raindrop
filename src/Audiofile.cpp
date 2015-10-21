@@ -510,7 +510,6 @@ void AudioStream::Stop()
 
 uint32 AudioStream::Update()
 {
-	short tbuf[BUFF_SIZE];
 	uint32 eCount = PaUtil_GetRingBufferWriteAvailable(&mRingBuf);
 	uint32 ReadTotal;
 
