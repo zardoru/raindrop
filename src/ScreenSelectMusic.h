@@ -34,7 +34,7 @@ class ScreenSelectMusic : public Screen
 
 	GUI::Button *UpBtn, *BackBtn, *AutoBtn;
 
-	AudioStream *PreviewStream;
+	shared_ptr<AudioStream> PreviewStream;
 
 	bool SwitchBackGuiPending;
 

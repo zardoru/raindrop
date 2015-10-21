@@ -209,9 +209,10 @@ public:
 			WaitForRingbufferSpace = true;
 
 			{
-				unique_lock<mutex>(mut2);
+				mut2.lock();
 				for (auto i = Streams.begin(); i != Streams.end(); ++i)
 					(*i)->Update();
+				mut2.unlock();
 			}
 
 			if (Threaded)
@@ -229,15 +230,17 @@ public:
 
 	void AppendMusic(SoundStream* Stream)
 	{
-		unique_lock<mutex>(mut2);
-		unique_lock<mutex>(mut);
+		mut2.lock();
+		mut.lock();
 		Streams.push_back(Stream);
+		mut.unlock();
+		mut2.unlock();
 	}
 
 	void RemoveMusic(SoundStream *Stream)
 	{
-		unique_lock<mutex>(mut2);
-		unique_lock<mutex>(mut);
+		mut2.lock();
+		mut.lock();
 		for (auto i = Streams.begin(); i != Streams.end();)
 		{
 			if ((*i) == Stream)
@@ -251,19 +254,23 @@ public:
 
 			++i;
 		}
+		mut.unlock();
+		mut2.unlock();
 	}
 
 	void AddSound(SoundSample* Sample)
 	{
-		unique_lock<mutex>(mut2);
-		unique_lock<mutex>(mut);
+		mut2.lock();
+		mut.lock();
 		Samples.push_back(Sample);
+		mut.unlock();
+		mut2.unlock();
 	}
 
 	void RemoveSound(SoundSample* Sample)
 	{
-		unique_lock<mutex>(mut2);
-		unique_lock<mutex>(mut);
+		mut2.lock();
+		mut.lock();
 		for (auto i = Samples.begin(); i != Samples.end();)
 		{
 			if ((*i) == Sample)
@@ -277,6 +284,8 @@ public:
 
 			++i;
 		}
+		mut.unlock();
+		mut2.unlock();
 	}
 
 	double GetStreamTime()
@@ -297,7 +306,7 @@ public:
 
 		bool streaming = false;
 		{
-			unique_lock<mutex>(mut);
+			mut.lock();
 			for (auto i = Streams.begin(); i != Streams.end(); ++i)
 			{
 				size_t read = (*i)->Read(ts, samples);
@@ -314,6 +323,7 @@ public:
 				for (size_t k = 0; k < read; k++)
 					out[k] += ts[k];
 			}
+			mut.unlock();
 		}
 
 		if (Normalize)

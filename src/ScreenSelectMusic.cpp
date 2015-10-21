@@ -197,7 +197,7 @@ void ScreenSelectMusic::LoadResources()
 void ScreenSelectMusic::Cleanup()
 {	
 	if (PreviewStream)
-		delete PreviewStream;
+		PreviewStream = nullptr;
 
 	StopLoops();
 
@@ -328,14 +328,13 @@ void ScreenSelectMusic::PlayPreview()
 		if (PreviewStream)
 		{
 			PreviewStream->Stop();
-			delete PreviewStream;
 			PreviewStream = nullptr;
 		}
 
 		if (!PreviewStream)
 		{
 			Directory SDir = ToPreview->SongDirectory;
-			PreviewStream = new AudioStream();
+			PreviewStream = make_shared<AudioStream>();
 
 			if (PreviewStream->Open((SDir / PreviewFile).c_path()))
 			{
