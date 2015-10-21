@@ -49,6 +49,8 @@ struct AutoplaySound : public TimeBased < AutoplaySound, float >
 struct AutoplayBMP : public TimeBased < AutoplayBMP, float >
 {
 	int BMP;
+	AutoplayBMP() : TimeBased(0), BMP(0) {};
+	AutoplayBMP(float T, int V) : TimeBased(T), BMP(V) {};
 };
 
 enum ModeType

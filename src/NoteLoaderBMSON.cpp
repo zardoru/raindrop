@@ -7,6 +7,8 @@
 #include <regex>
 #include "Logging.h"
 
+// All non-standard exceptions are marked with NSE.
+
 namespace NoteLoaderBMS
 {
 	GString GetSubtitles(GString SLine, std::unordered_set<GString> &Out);
@@ -14,8 +16,8 @@ namespace NoteLoaderBMS
 
 namespace NoteLoaderBMSON{
 
-	const char* UNSPECIFIED_VERSION = "v0.21";
-	const char* VERSION_1 = "v1.0";
+	const char* UNSPECIFIED_VERSION = "0.21";
+	const char* VERSION_1 = "1.0.0";
 
 	// Beat = locate / resolution. 
 	const double BMSON_DEFAULT_RESOLUTION = 240.0;
@@ -170,6 +172,8 @@ namespace NoteLoaderBMSON{
 
 			if (!meta["resolution"].isNull())
 				resolution = abs(meta["resolution"].asDouble());
+
+			if (resolution == 0) resolution = BMSON_DEFAULT_RESOLUTION; // NSE
 
 			// DEFEXRANK?
 
@@ -436,12 +440,20 @@ namespace NoteLoaderBMSON{
 			}
 		}
 
+		GString CleanFilename(GString nam)
+		{
+			nam = regex_replace(nam, std::regex("\\.\\./?"), "");
+			// remove C:/... or / or C:\...
+
+			nam = regex_replace(nam, std::regex("^\\s*(.:)?[/\\\\]"), "");
+
+			return nam;
+		}
+
 		void AddGlobalSliceSound(GString nam, int sound_index)
 		{
 			// remove ".."
-			nam = regex_replace(nam, std::regex("\\.\\./?"), "");
-			// remove C:/... or / or C:\...
-			nam = regex_replace(nam, std::regex("^\\s*(.:)?[/\\\\]"), "");
+			nam = CleanFilename(nam);
 
 			// Add to index
 			Slices.AudioFiles[sound_index] = nam;
@@ -467,11 +479,21 @@ namespace NoteLoaderBMSON{
 
 		void LoadBGA()
 		{
-			// stub until examples come from wosderge
-			if (!root["bga"].isNull())
+			if (version != VERSION_1) return; // BGA unsupported on version 0.21
+			auto out = make_shared<VSRG::BMPEventsDetail>();
+
+			auto& bga = root["bga"];
+			if (!bga.isNull())
 			{
-				if (!root["bga"]["bgaHeader"][0].isNull())
-					song->BackgroundFilename = root["bga"]["bgaHeader"][0]["name"].asString();
+				for (auto &bgi: bga["bga_header"])
+					out->BMPList[bgi["id"].asInt()] = CleanFilename(bgi["name"].asString());
+
+				for (auto &bg0 : bga["bga_notes"])
+					out->BMPEventsLayerBase.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
+				for (auto &bg0 : bga["layer_notes"])
+					out->BMPEventsLayer.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
+				for (auto &bg0 : bga["poor_notes"])
+					out->BMPEventsLayerMiss.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
 			}
 		}
 	public:
@@ -544,10 +566,15 @@ namespace NoteLoaderBMSON{
 			Chart->Data->TimingInfo = TimingInfo = make_shared<VSRG::BMSTimingInfo>();
 			TimingInfo->IsBMSON = true;
 
-			if (root["version"].isNull())
+			if (!root.isMember("version")) // NSE (check member to be == 1.0.0 for VERSION_1!)
 				version = UNSPECIFIED_VERSION;
 			else
-				version = VERSION_1;
+			{
+				if (!root["version"].isNull() && root["version"].asString() == VERSION_1)
+					version = VERSION_1;
+				else
+					throw std::exception(Utility::Format("Unknown BMSON version (%s)", root["version"].asString()).c_str());
+			}
 
 			LoadMeta();
 			LoadMeasureLengths();
