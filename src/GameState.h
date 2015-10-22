@@ -35,14 +35,15 @@ class GameState
 	shared_ptr<Game::Song> SelectedSong;
 	shared_ptr<ScoreKeeper7K> SKeeper7K;
 	shared_ptr<GameParameters> Params;
+	map<GString, vector<GString>> Fallback; // 2nd is 1st's fallback
 
 	bool FileExistsOnSkin(const char* Filename, const char* Skin);
 public:
 
 	GameState();
-	GString GetFallbackSkin();
-	GString GetSkinScriptFile(const char* Filename);
+	GString GetSkinScriptFile(const char* Filename, const GString& Skin);
 	shared_ptr<Game::Song> GetSelectedSongShared();
+	GString GetFirstFallbackSkin();
 	static GameState &GetInstance();
 	void Initialize();
 
@@ -50,10 +51,12 @@ public:
 
 	GString GetDirectoryPrefix();
 	GString GetSkinPrefix();
+	GString GetSkinPrefix(const GString &skin);
 	GString GetScriptsDirectory();
 	void SetSkin(GString NextSkin);
 	Image* GetSkinImage(const GString& Image);
 	bool SkinSupportsChannelCount(int Count);
+	GString GetSkin();
 
 	void SetSelectedSong(shared_ptr<Game::Song> Song);
 	Game::Song *GetSelectedSong();
@@ -64,6 +67,7 @@ public:
 	ScoreKeeper7K* GetScorekeeper7K();
 	void SetScorekeeper7K(shared_ptr<ScoreKeeper7K> Other);
 
+	GString GetSkinFile(const GString &Name, const GString &Skin);
 	GString GetSkinFile(const GString &Name);
 	GString GetFallbackSkinFile(const GString &Name);
 

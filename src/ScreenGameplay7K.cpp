@@ -280,7 +280,7 @@ void ScreenGameplay7K::UpdateSongTime(float Delta)
 			Music->Play();
 		AudioStart = MixerGetTime();
 		AudioOldTime = AudioStart;
-		if (!StartMeasure)
+		if (StartMeasure <= 0)
 		{
 			SongOldTime = 0;
 			SongTimeReal = 0;

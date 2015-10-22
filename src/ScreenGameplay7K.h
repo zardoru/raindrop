@@ -68,7 +68,7 @@ private:
     Mat4             PositionMatrix;
 
     float            SpeedMultiplier;
-    uint32           StartMeasure;
+    int				 StartMeasure;
 
     map<int, int> GearBindings;
     int                lastClosest[VSRG::MAX_CHANNELS];

@@ -24,7 +24,7 @@ using namespace Game;
 bool GameState::FileExistsOnSkin(const char* Filename, const char* Skin)
 {
 	Directory path(Skin);
-	path = path / Filename;
+	path = DirectoryPrefix / (SkinsPrefix / path / Filename);
 
 	return Utility::FileExists(path);
 }
@@ -36,40 +36,49 @@ GameState::GameState()
 	SKeeper7K = nullptr;
 	Database = nullptr;
 	Params = make_shared<GameParameters>();
+
+	// TODO: circular references are possible :(
+	Directory SkinsDir(DirectoryPrefix + SkinsPrefix);
+	vector<GString> listing;
+	SkinsDir.ListDirectory(listing, Directory::FS_DIR);
+	for (auto s : listing)
+	{
+		std::ifstream fallback;
+		fallback.open((SkinsDir / s.c_str() / "fallback").c_path());
+		if (fallback.is_open() && s != "default")
+		{
+			GString ln;
+			while (getline(fallback, ln))
+				if (Utility::ToLower(ln) != Utility::ToLower(s))
+				{
+					Directory dir(ln); dir.Normalize(true);
+					Fallback[s].push_back(dir);
+				}
+		}
+		if (!Fallback[s].size()) Fallback[s].push_back("default");
+
+	}
 }
 
-GString GameState::GetFallbackSkin()
-{
-	GString SkinFallback = Configuration::GetSkinConfigs("Fallback");
-
-	// Actually, how many levels of fallback recursion should we allow?
-	if (SkinFallback.length() == 0)
-		SkinFallback = "default";
-	SkinFallback += "/";
-
-	return SkinFallback;
-}
-
-GString GameState::GetSkinScriptFile(const char* Filename)
+GString GameState::GetSkinScriptFile(const char* Filename, const GString& skin)
 {
 	GString Fn = Filename;
 
 	if (Fn.find(".lua") == GString::npos)
-	{
 		Fn += ".lua";
-	}
 
-	if (FileExistsOnSkin(Fn.c_str(), GetSkinPrefix().c_str()))
-	{
-		return (Filename);
-	}
-
-	return GetFallbackSkinFile(Filename);
+	// Since dots are interpreted as "look into this directory", we want to eliminate the extra .lua for require purposes.
+	return Utility::RemoveExtension(GetSkinFile(Fn, skin));
 }
 
 shared_ptr<Game::Song> GameState::GetSelectedSongShared()
 {
 	return SelectedSong;
+}
+
+GString GameState::GetFirstFallbackSkin()
+{
+	return Fallback[GetSkin()][0];
 }
 
 GameState& GameState::GetInstance()
@@ -78,7 +87,7 @@ GameState& GameState::GetInstance()
 	return *StateInstance;
 }
 
-Game::Song *GameState::GetSelectedSong()
+Song *GameState::GetSelectedSong()
 {
 	return SelectedSong.get();
 }
@@ -88,18 +97,28 @@ void GameState::SetSelectedSong(shared_ptr<Game::Song> Song)
 	SelectedSong = Song;
 }
 
-GString GameState::GetSkinFile(const GString &Name)
+GString GameState::GetSkinFile(const GString &Name, const GString &Skin)
 {
-	GString Orig = GetSkinPrefix() + Name;
+	GString Test = GetSkinPrefix(Skin) + Name;
 
-	if (Utility::FileExists(Orig))
+	if (Utility::FileExists(Test))
+		return Test;
+
+	if (Fallback.find(Skin) != Fallback.end())
 	{
-		return Orig;
+		for (auto &s : Fallback[Skin])
+		{
+			if (FileExistsOnSkin(Name.c_str(), s.c_str()))
+				return GetSkinFile(Name, s);
+		}
 	}
-	else
-	{
-		return GetFallbackSkinFile(Name);
-	}
+
+	return Test;
+}
+
+GString GameState::GetSkinFile(const GString& Name)
+{
+	return GetSkinFile(Name, GetSkin());
 }
 
 void GameState::Initialize()
@@ -136,7 +155,12 @@ GString GameState::GetDirectoryPrefix()
 GString GameState::GetSkinPrefix()
 {
 	// I wonder if a directory transversal is possible. Or useful, for that matter.
-	return DirectoryPrefix + SkinsPrefix + CurrentSkin + "/";
+	return GetSkinPrefix(GetSkin());
+}
+
+GString GameState::GetSkinPrefix(const GString& skin)
+{
+	return DirectoryPrefix + SkinsPrefix + skin + "/";
 }
 
 void GameState::SetSkin(GString Skin)
@@ -156,8 +180,16 @@ SongDatabase* GameState::GetSongDatabase()
 
 GString GameState::GetFallbackSkinFile(const GString &Name)
 {
-	GString SkinFallback = GetFallbackSkin();
-	return DirectoryPrefix + SkinsPrefix + SkinFallback + Name;
+	GString Skin = GetSkin();
+
+	if (Fallback.find(Skin) != Fallback.end())
+	{
+		for (auto s : Fallback[Skin])
+		if (FileExistsOnSkin(Name.c_str(), s.c_str()))
+			return GetSkinFile(Name, s);
+	}
+
+	return GetSkinPrefix() + Name;
 }
 
 Image* GameState::GetSkinImage(const GString& Path)
@@ -204,7 +236,7 @@ Image* GameState::GetSkinImage(const GString& Path)
 				else return nullptr; // Oh okay, no difficulty assigned.
 			}
 			else // Stage file not supported for DC songs yet
-				return nullptr; 
+				return nullptr;
 		}
 		else return nullptr;
 	}
@@ -226,7 +258,7 @@ Image* GameState::GetSkinImage(const GString& Path)
 
 	/* Regular paths */
 	if (Path.length())
-		return ImageLoader::Load(GetSkinFile(Path));
+		return ImageLoader::Load(GetSkinFile(Path, GetSkin()));
 	else return nullptr;
 }
 
@@ -235,6 +267,11 @@ bool GameState::SkinSupportsChannelCount(int Count)
 	char nstr[256];
 	sprintf(nstr, "Channels%d", Count);
 	return Configuration::ListExists(nstr);
+}
+
+GString GameState::GetSkin()
+{
+	return CurrentSkin;
 }
 
 ScoreKeeper7K* GameState::GetScorekeeper7K()

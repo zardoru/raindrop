@@ -43,7 +43,7 @@ namespace LuaAnimFuncs
 	{
 		LuaManager *Lua = GetObjectFromState<LuaManager>(L, "Luaman");
 		GString Request = luaL_checkstring(L, 1);
-		GString File = GameState::GetInstance().GetSkinScriptFile(Request.c_str());
+		GString File = GameState::GetInstance().GetSkinScriptFile(Request.c_str(), GameState::GetInstance().GetSkin());
 		lua_pushboolean(L, Lua->Require(File));
 		return 1;
 	}
@@ -51,7 +51,18 @@ namespace LuaAnimFuncs
 	int FallbackRequire(lua_State *L)
 	{
 		LuaManager *Lua = GetObjectFromState<LuaManager>(L, "Luaman");
-		lua_pushboolean(L, Lua->Require(GameState::GetInstance().GetFallbackSkinFile(luaL_checkstring(L, 1))));
+		GString file = luaL_checkstring(L, 1);
+		GString skin = GameState::GetInstance().GetFirstFallbackSkin();
+		if (lua_isstring(L, 2) && lua_tostring(L, 2))
+			skin = luaL_checkstring(L, 2);
+		
+		if (skin == GameState::GetInstance().GetSkin())
+		{
+			lua_pushboolean(L, 0);
+			return 1;
+		}
+
+		lua_pushboolean(L, Lua->Require(GameState::GetInstance().GetSkinScriptFile(file.c_str(), skin)));
 		return 1;
 	}
 
@@ -63,7 +74,7 @@ namespace LuaAnimFuncs
 
 	int GetSkinFile(lua_State *L)
 	{
-		GString Out = GameState::GetInstance().GetSkinFile(GString(luaL_checkstring(L, 1)));
+		GString Out = GameState::GetInstance().GetSkinFile(GString(luaL_checkstring(L, 1)), GameState::GetInstance().GetSkin());
 		lua_pushstring(L, Out.c_str());
 		return 1;
 	}
