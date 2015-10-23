@@ -31,6 +31,7 @@
 
 #include "SongLoader.h"
 #include "SongWheel.h"
+#include "ScreenCustom.h"
 
 bool Auto = false;
 bool DoRun = false;
@@ -142,6 +143,13 @@ void Application::ParseArgs()
 				RunMode = MODE_NULL;
 				IPC::RemoveQueue();
 				break;
+			case 'L':
+				if (ValidArg, Args.Argc, 1, i)
+				{
+					RunMode = MODE_CUSTOMSCREEN;
+					InFile = Directory(Args.Argv[i + 1]);
+				}
+				break;
 			default:
 				continue;
 
@@ -191,6 +199,9 @@ void Application::Init()
 #endif
 			Setup = true;
 	}
+
+	if (RunMode == MODE_CUSTOMSCREEN)
+		Setup = true;
 
 	if (Setup)
 	{
@@ -279,7 +290,7 @@ void Application::Run()
 
 	if (RunMode == MODE_PLAY)
 	{
-		Game = new ScreenMainMenu(NULL);
+		Game = new ScreenMainMenu(nullptr);
 		static_cast<ScreenMainMenu*>(Game)->Init();
 
 	}else if (RunMode == MODE_VSRGPREVIEW)
@@ -351,6 +362,11 @@ void Application::Run()
 		}
 
 		RunLoop = false;
+	} else if (RunMode == MODE_CUSTOMSCREEN)
+	{
+		Log::Printf("Initializing custom, ad-hoc screen...\n");
+		ScreenCustom *scr = new ScreenCustom(GameState::GetInstance().GetSkinFile(InFile));
+		Game = scr;
 	}
 
 	Log::Printf("Time: %fs\n", glfwGetTime() - T1);

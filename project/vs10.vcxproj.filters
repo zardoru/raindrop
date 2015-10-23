@@ -265,6 +265,9 @@
     <ClCompile Include="..\src\AudioSourceOGG.cpp">
       <Filter>Source\backend\audio</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\ScreenCustom.cpp">
+      <Filter>Source\game global\screens</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorLifebar.h">
@@ -485,6 +488,9 @@
     </ClInclude>
     <ClInclude Include="..\src\AudioSourceOGG.h">
       <Filter>Source\backend\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScreenCustom.h">
+      <Filter>Source\game global\screens</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

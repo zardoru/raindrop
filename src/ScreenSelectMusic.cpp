@@ -113,10 +113,10 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic")
 	{
 		LoopTotal = 0;
 		SelectSnd = new SoundSample();
-		SelectSnd->Open((GameState::GetInstance().GetSkinFile("select.ogg")).c_str());
+		SelectSnd->Open((GameState::GetInstance().GetSkinFile("select.wav")).c_str());
 
 		ClickSnd = new SoundSample();
-		ClickSnd->Open((GameState::GetInstance().GetSkinFile("click.ogg")).c_str());
+		ClickSnd->Open((GameState::GetInstance().GetSkinFile("click.wav")).c_str());
 		
 		LoopTotal = Configuration::GetSkinConfigf("LoopTotal");
 

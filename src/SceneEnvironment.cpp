@@ -598,7 +598,7 @@ void SceneEnvironment::DrawUntilLayer(uint32 Layer)
 {
 	for (auto i: Objects)
 	{
-		if (i == NULL){ /* throw an error */ continue; }
+		if (i == nullptr){ /* throw an error */ continue; }
 		if (i->GetZ() <= Layer)
 			i->Render();
 	}
