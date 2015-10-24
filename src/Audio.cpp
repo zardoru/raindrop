@@ -92,7 +92,7 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
 	dLatency = outputParams.suggestedLatency;
 
 	// fire up portaudio
-	PaError Err = Pa_OpenStream(mStream, NULL, &outputParams, Rate, 0, paClipOff, Callback, (void*)Sound);
+	PaError Err = Pa_OpenStream(mStream, NULL, &outputParams, Rate, 0, 0, Callback, (void*)Sound);
 
 	if (Err)
 	{
@@ -326,16 +326,6 @@ public:
 			mut.unlock();
 		}
 
-		if (Normalize)
-		{
-			float peak = 1.0;
-			for (int i = 0; i < count; i++)
-				peak = max(peak, abs(out[i]));
-
-			for (int i = 0; i < count; i++)
-				out[i] /= peak;
-		}
-
 		if (streaming)
 		{
 			WaitForRingbufferSpace = false;
@@ -410,7 +400,7 @@ void InitAudio()
 	UseWasapi = (Configuration::GetConfigf("UseWasapi", "Audio") != 0);
 #endif
 
-	Normalize = (Configuration::GetConfigf("Normalize", "Audio") != 0);
+	// Normalize = (Configuration::GetConfigf("Normalize", "Audio") != 0);
 
 	UseThreadedDecoder = (Configuration::GetConfigf("UseThreadedDecoder", "Audio") != 0);
 
