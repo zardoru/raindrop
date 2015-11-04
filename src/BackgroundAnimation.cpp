@@ -41,7 +41,7 @@ class BMSBackground : public BackgroundAnimation
 	VSRG::Song* Song;
 	VSRG::Difficulty* Difficulty;
 	bool Validated;
-
+	bool BlackToTransparent;
 public:
 	BMSBackground(Interruptible* parent, VSRG::Difficulty* Difficulty, VSRG::Song* Song) : BackgroundAnimation(parent), List(this)
 	{
@@ -49,6 +49,14 @@ public:
 		this->Song = Song;
 		Validated = false;
 		MissTime = 0;
+
+		bool BtoT = false;
+		if (Difficulty->Data->TimingInfo->GetType() == VSRG::TI_BMS)
+		{
+			if (!dynamic_pointer_cast<VSRG::BMSTimingInfo>(Difficulty->Data->TimingInfo)->IsBMSON)
+				BtoT = true;
+		}
+		BlackToTransparent = BtoT;
 	}
 	
 	void Load() override
@@ -84,7 +92,7 @@ public:
 		LayerMiss->SetZ(0);
 		Layer2->SetZ(0);
 
-		Layer1->BlackToTransparent = Layer2->BlackToTransparent = true;
+		Layer1->BlackToTransparent = Layer2->BlackToTransparent = BlackToTransparent;
 
 
 		LayerMiss->SetImage(List.GetFromIndex(0), false);

@@ -61,7 +61,7 @@ ScreenGameplay7K::ScreenGameplay7K() : Screen("ScreenGameplay7K")
 	SongFinished = false;
 
 	CurrentVertical = 0;
-	SongTime = SongTimeReal = 0;
+	SongTime = 0;
 	beatScrollEffect = 0;
 	Random = 0;
 

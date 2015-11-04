@@ -2,14 +2,14 @@ assets/stage_back.png,back,0,0,1280,720,1
 assets/stage.png,stage,0,0,1280,720,18
 assets/life.png,health,61,582,352,29,19
 assets/tt.png,tt,65,535,24,24,19
-assets/btt.png,beam_k1,Key1XB,BeamY,Key1Width,344,14
-assets/bk1.png,beam_k2,Key2XB,BeamY,Key2Width,344,14
-assets/bk2.png,beam_k3,Key3XB,BeamY,Key3Width,344,14
-assets/bk1.png,beam_k4,Key4XB,BeamY,Key4Width,344,14
-assets/bk2.png,beam_k5,Key5XB,BeamY,Key5Width,344,14
-assets/bk1.png,beam_k6,Key6XB,BeamY,Key6Width,344,14
-assets/bk2.png,beam_k7,Key7XB,BeamY,Key7Width,344,14
-assets/bk1.png,beam_k8,Key8XB,BeamY,Key8Width,344,14
+assets/btt.png,beam_k1,Key1X,BeamY,Key1Width,344,14
+assets/bk1.png,beam_k2,Key2X,BeamY,Key2Width,344,14
+assets/bk2.png,beam_k3,Key3X,BeamY,Key3Width,344,14
+assets/bk1.png,beam_k4,Key4X,BeamY,Key4Width,344,14
+assets/bk2.png,beam_k5,Key5X,BeamY,Key5Width,344,14
+assets/bk1.png,beam_k6,Key6X,BeamY,Key6Width,344,14
+assets/bk2.png,beam_k7,Key7X,BeamY,Key7Width,344,14
+assets/bk1.png,beam_k8,Key8X,BeamY,Key8Width,344,14
 assets/ak1.png,l1,134,499,34,50,19
 assets/ak2.png,l2,180,491,26,45,19
 assets/ak1.png,l3,218,499,34,50,19
@@ -26,3 +26,4 @@ assets/bomb.png,bomb_k6,Key6X,485,60,60,20
 assets/bomb.png,bomb_k7,Key7X,485,60,60,20
 assets/bomb.png,bomb_k8,Key8X,485,60,60,20
 assets/progress_tick.png,tick,26,62,12,18,20
+VSRG/pulse_ver.png,pulse,Key1XB,0,GearWidth,70,14

@@ -26,6 +26,7 @@ Channels8Positions = {}
 Sizeup(Channels8Positions, Channels8Sizes, 8, 3) -- 3px padding
 
 Channels8 = {
+	GearStartX = GearStartX,
 	GearWidth = GearWidthByChannels[8],
     BarlineWidth = GearWidthByChannels[8],
 	BeamY = 139,

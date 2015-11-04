@@ -47,8 +47,8 @@ namespace NoteLoaderBMSON{
 		vector<int> mappings;
 	} BmsonLayouts[] = {
 		{ "beat-7k", 8, { 1, 2, 3, 4, 5, 6, 7, 0 } },
-		{ "beat-5k", 6, { 1, 2, 3, 4, 5, 0 } },
-		{ "beat-10k", 12, { 1, 2, 3, 4, 5, 0, 7, 8, 9, 10, 11, 6 } },
+		{ "beat-5k", 6, { 1, 2, 3, 4, 5, -1, -1, 0 } },
+		{ "beat-10k", 12, { 1, 2, 3, 4, 5, -1, -1, 0, 7, 8, 9, 10, 11, -1, -1, 6 } },
 		{ "beat-14k", 16, { 1, 2, 3, 4, 5, 6, 7, 0, 9, 10, 11, 12, 13, 14, 15, 8 } },
 		{ "popn-5k", 5, { 0, 1, 2, 3, 4 } },
 		{ "popn-9k", 9, { 0, 1, 2, 3, 4, 5, 6, 7, 8 } }
@@ -103,8 +103,8 @@ namespace NoteLoaderBMSON{
 				return;
 			}
 
-
-			if (regex_search(values.asString(), sm, generic_keys)) {
+			GString s = values.asCString();
+			if (regex_search(s, sm, generic_keys)) {
 				int chans = atoi(sm[1].str().c_str());
 				if (chans <= VSRG::MAX_CHANNELS)
 				{
@@ -115,7 +115,7 @@ namespace NoteLoaderBMSON{
 				}
 			}
 
-			if (regex_search(values.asString(), sm, special_keys)) {
+			if (regex_search(s, sm, special_keys)) {
 				int chans = atoi(sm[1].str().c_str());
 				if (chans <= VSRG::MAX_CHANNELS)
 				{

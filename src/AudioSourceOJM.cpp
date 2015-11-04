@@ -640,5 +640,6 @@ uint32 AudioSourceOJM::Read(short* buffer, size_t count)
 			Log::Printf("AudioSourceOJM: PCM count differs from what's reported! (%d out of %d)\n", read, size);
 	}
 
+	std::copy(temp_buf.begin(), temp_buf.end(), buffer);
 	return read; // We /KNOW/ we won't be overreading.
 }

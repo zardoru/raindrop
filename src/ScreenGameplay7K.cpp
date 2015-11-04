@@ -303,11 +303,17 @@ void ScreenGameplay7K::UpdateSongTime(float Delta)
 	else
 		SongDelta = CurrAudioTime - AudioOldTime;
 
+	double TempOld = AudioOldTime;
 	AudioOldTime = CurrAudioTime;
 	SongTimeReal += SongDelta;
 
-	if ( (SongDelta > 0.001 && abs(SongTime - SongTimeReal) * 1000 > ErrorTolerance) || !InterpolateTime ) // Significant delta with a x ms difference? We're pretty off..
+	if ((SongDelta > 0.001 && abs(SongTime - SongTimeReal) * 1000 > ErrorTolerance) || !InterpolateTime) // Significant delta with a x ms difference? We're pretty off..
+	{
+		if (ErrorTolerance)
+		Log::LogPrintf("Audio Desync: delta = %f difference = %f ms. Real song time %f (expected %f) Audio current time: %f (old = %f)\n",
+			SongDelta, abs(SongTime - SongTimeReal) * 1000, SongTimeReal, SongTime, CurrAudioTime, TempOld);
 		SongTime = SongTimeReal;
+	}
 
 	// Update current beat
 	WarpedSongTime = GetWarpedSongTime();

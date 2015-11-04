@@ -143,10 +143,12 @@ function Init()
 		
 		Lightning[i].Object = Sprites["beam_k" .. i]
 		Lightning[i].Object.BlendMode = BlendAdd
-		Lightning[i].Object.Alpha = 0
+		Lightning[i].Object.Alpha = 1
+		Lightning[i].Object.Centered = 1
+		Lightning[i].Object.Y = Lightning[i].Object.Y + Lightning[i].Object.Height / 2
 		
 		Lightning[i].Update = function(self, delta)
-			self.Object.Alpha = self.CurrentTime / LightingTime
+			self.Object.ScaleX = 1 - math.pow(1 - self.CurrentTime / LightingTime, 2)
 			self.CurrentTime = max(self.CurrentTime - delta, 0)
 		end
 			
@@ -173,6 +175,11 @@ function Init()
 	HP.ScaleX = LifebarValue
 	HP:SetCropByPixels(0, 352 * LifebarValue, 0, 29)
 	Engine:Sort()
+	
+	Pulse = Sprites["pulse"]
+	Pulse.Y = 485 * YR - Pulse.Height
+	Pulse.Lighten = 1
+	Pulse.BlendMode = BlendAdd
 end
 
 function Cleanup()
@@ -239,10 +246,17 @@ function Update(Delta)
 	
 	local SongPercentage = Game:GetSongTime() / SongDuration
 	
-	SongPosition.Y = 62 + 384 * SongPercentage * XR
+	if Game:GetSongTime() < 0 then
+		SongPercentage = math.pow(SongTime / -1.5, 2)
+	end
+	
+	SongPosition.Y = 62 + 380 * SongPercentage * XR
 	
 	HP.ScaleX = math.ceil(LifebarValue * 50) / 50
 	HP:SetCropByPixels(0, 352 * math.ceil(LifebarValue * 50) / 50, 0, 29)
+	
+	Pulse.Alpha = 1 - clamp(beatEffect, 0.5, 1)
+	Pulse.LightenFactor = 1 - beatEffect
 	
 	if KeyArray[1] == 0 then
 		tabletick.Rotation = Beat * 360
