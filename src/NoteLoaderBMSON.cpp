@@ -604,10 +604,15 @@ namespace NoteLoaderBMSON{
 				version = UNSPECIFIED_VERSION;
 			else
 			{
-				if (!root["version"].isNull() && root["version"].asString() == VERSION_1)
-					version = VERSION_1;
+				if (!root["version"].isNull())
+				{
+					if (root["version"].asString() == VERSION_1)
+						version = VERSION_1;
+					else
+						throw std::exception(Utility::Format("Unknown BMSON version (%s)", root["version"].asString().c_str()).c_str());
+				}
 				else
-					throw std::exception(Utility::Format("Unknown BMSON version (%s)", root["version"].asString()).c_str());
+					throw std::exception("NULL bmson version - rejecting file.");
 			}
 
 			LoadMeta();
