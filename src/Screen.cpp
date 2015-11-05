@@ -4,7 +4,7 @@
 
 Screen::Screen(GString Name) 
 {  
-	Parent = NULL;
+	Parent = nullptr;
 	Running = false;
 	Next = 0;
 	ScreenTime = 0;
@@ -13,7 +13,7 @@ Screen::Screen(GString Name)
 	Animations = make_shared<SceneEnvironment>(Name.c_str());
 }
 
-Screen::Screen(GString Name, Screen *_Parent)
+Screen::Screen(GString Name, shared_ptr<Screen> _Parent)
 {
 	Parent = _Parent;
 	Running = false;
@@ -87,8 +87,7 @@ bool Screen::RunNested(float delta)
 	{
 		// It's not null- so we'll delete it.
 		Next->Cleanup();
-		delete Next;
-		Next = 0;
+		Next = nullptr;
 		return false;
 	}
 

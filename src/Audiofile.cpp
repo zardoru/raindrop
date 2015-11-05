@@ -364,6 +364,8 @@ AudioStream::AudioStream()
 	mSource = nullptr;
 	mResampler = nullptr;
 
+	mStreamTime = 0;
+
 	MixerAddStream(this);
 }
 
@@ -478,7 +480,8 @@ bool AudioStream::IsPlaying()
 
 void AudioStream::Play()
 {
-	mIsPlaying = true;
+	if (mSource && mSource->IsValid())
+		mIsPlaying = true;
 }
 
 void AudioStream::SeekTime(float Second)

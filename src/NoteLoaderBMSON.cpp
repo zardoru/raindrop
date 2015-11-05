@@ -54,6 +54,14 @@ namespace NoteLoaderBMSON{
 		{ "popn-9k", 9, { 0, 1, 2, 3, 4, 5, 6, 7, 8 } }
 	};
 
+	struct BmsonObject
+	{
+		int x;
+		double y;
+		double l;
+		bool c;
+	};
+
 	class BMSONLoader {
 		Json::Value root;
 		std::ifstream &input;
@@ -200,14 +208,14 @@ namespace NoteLoaderBMSON{
 		double FindLastNoteBeat()
 		{
 			double last_y = -std::numeric_limits<double>::infinity();
-			Json::Value sc;
+			Json::Value *sc;
 			GetSoundChannels(sc);
-			for (auto &&s: sc)
+			for (auto &&s: *sc)
 			{
 				auto notes = s["notes"];
 				for (auto &&note: notes)
 				{
-					last_y = std::max(note["y"].asDouble(), last_y);
+					last_y = max(note["y"].asDouble(), last_y);
 				}
 			}
 
@@ -334,17 +342,17 @@ namespace NoteLoaderBMSON{
 			return Measure;
 		}
 
-		void GetSoundChannels(Json::Value& snd_channel)
+		void GetSoundChannels(Json::Value* &snd_channel)
 		{
 			if (version == UNSPECIFIED_VERSION)
-				snd_channel = root["soundChannel"];
+				snd_channel = &root["soundChannel"];
 			else
-				snd_channel = root["sound_channels"];
+				snd_channel = &root["sound_channels"];
 		}
 
-		int GetMappedLane(Json::Value& values)
+		int GetMappedLane(BmsonObject& note)
 		{
-			int lane = values["x"].asInt() - 1;
+			int lane = note.x - 1;
 			if (lane < 0)
 				return lane;
 			if (lane < mappings.size())
@@ -352,13 +360,11 @@ namespace NoteLoaderBMSON{
 			throw std::exception(Utility::Format("x = %d out of bounds for mode hint", lane).c_str());
 		}
 
-		int Slice(int sound_index, double &last_time, Json::Value& notes, Json::Value::iterator& note)
+		int Slice(int sound_index, double &last_time, vector<BmsonObject>& notes, vector<BmsonObject>::iterator& note)
 		{
 			double st = 0, et = std::numeric_limits<double>::infinity();
-			bool noreset = (*note)["c"].asBool();
-			auto next = note;
-			++next;
-			if (noreset)
+			auto next = note + 1;
+			if (note->c)
 			{
 				if (note != notes.begin())
 				{
@@ -369,7 +375,7 @@ namespace NoteLoaderBMSON{
 				// if the next is the last note, use what remains of the audio, else
 				// use the time between this and the next note as the end cue point
 				if (next != notes.end())
-					last_time = et = st + TimeForObj((*next)["y"].asDouble() / resolution) - TimeForObj((*note)["y"].asDouble() / resolution);
+					last_time = et = st + TimeForObj(next->y / resolution) - TimeForObj(note->y / resolution);
 			}
 			else
 			{
@@ -378,18 +384,17 @@ namespace NoteLoaderBMSON{
 				// otherwise, use the entire audio
 				if (next != notes.end())
 				{
-					double duration = TimeForObj((*next)["y"].asDouble() / resolution) - TimeForObj((*note)["y"].asDouble() / resolution);
+					double duration = TimeForObj(next->y / resolution) - TimeForObj(note->y / resolution);
 					last_time = et = duration;
 				}
 			}
 
 			// Add this slice as an object or to an existing object
-			double note_time = (*note)["y"].asDouble() / resolution;
-			int note_pulse = (*note)["y"].asInt();
-			int note_x = (*note)["x"].asInt();
+			double note_time = note->y / resolution;
 			int lane = GetMappedLane(*note);
 
 			// is there a note already at this line, at this time?
+			// (:mix-note)
 			if (Notes[lane].find(note_time) != Notes[lane].end())
 			{
 				// get the slices for the wav of this note, add this sound's slice to it
@@ -424,11 +429,11 @@ namespace NoteLoaderBMSON{
 			}
 		}
 
-		void AddObject(int sound_index, Json::Value::iterator& note, int wav_index)
+		void AddObject(int sound_index, vector<BmsonObject>::iterator& note, int wav_index)
 		{
 			int lane = GetMappedLane(*note);
-			double beat = (*note)["y"].asDouble() / resolution;
-			double len = (*note)["l"].asDouble() / resolution;
+			double beat = note->y / resolution;
+			double len = note->l / resolution;
 
 			if (lane < -1) // only for slice purposes?
 				return;
@@ -459,20 +464,50 @@ namespace NoteLoaderBMSON{
 			Slices.AudioFiles[sound_index] = nam;
 		}
 
+		void JoinBGMSlices(vector<BmsonObject> &objs)
+		{
+			for (auto obj = objs.begin(); obj != objs.end(); )
+			{
+				if (obj->x == 0)
+				{
+					// BGM track? No need to have them separated, join them.
+					auto ni = obj + 1;
+
+					// It's a BGM track and it doesn't restart audio?
+					while (ni != objs.end() && ni->x == 0 && ni->c) {
+						ni = objs.erase(ni);
+					}
+
+					obj = ni;
+					continue;
+				}
+
+				++obj;
+			}
+		}
+
 		void LoadNotes()
 		{
 			int sound_index = 1;
-			Json::Value snd_channel;
+			Json::Value *snd_channel;
 			GetSoundChannels(snd_channel);
 
-			for (auto audio = snd_channel.begin(); audio != snd_channel.end(); ++audio)
+			for (auto audio = snd_channel->begin(); audio != snd_channel->end(); ++audio)
 			{
 				double last_time = 0;
 				AddGlobalSliceSound((*audio)["name"].asString(), sound_index);
 
+				vector<BmsonObject> objs;
+
 				auto notes = (*audio)["notes"];
-				for (auto note = notes.begin(); note != notes.end(); ++note)
-					Slice(sound_index, last_time, notes, note);
+				for (auto &note: notes)
+					objs.push_back(BmsonObject{note["x"].asInt(), note["y"].asDouble(), note["l"].asDouble(), note["c"].asBool()});
+
+				stable_sort(objs.begin(), objs.end(), [](const BmsonObject& l, const BmsonObject& r) -> bool { return l.y < r.y; });
+				JoinBGMSlices(objs);
+
+				for (auto note = objs.begin(); note != objs.end(); ++note)
+					Slice(sound_index, last_time, objs, note);
 				sound_index += 1;
 			}
 		}
@@ -556,7 +591,6 @@ namespace NoteLoaderBMSON{
 					Chart->Duration = max(max(Chart->Duration, new_note.StartTime), new_note.EndTime);
 				}
 			}
-			
 		}
 
 		void DoLoad()

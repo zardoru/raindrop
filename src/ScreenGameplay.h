@@ -43,8 +43,8 @@ protected: // shit the edit screen needs
 
 	AudioStream *Music;
 
-	std::vector <std::vector<GameObject> > NotesInMeasure;
-	void DrawVector(std::vector<GameObject>& Vec, float TimeDelta);
+	vector <vector<GameObject> > NotesInMeasure;
+	void DrawVector(vector<GameObject>& Vec, float TimeDelta);
 	void ResetNotes();
 
 	bool CursorZooming, CursorCentered;
@@ -61,7 +61,7 @@ private: // shit only screengameplay needs
 	Sprite ReadySign;
 
 	// Notes
-	std::vector<GameObject> NotesHeld, AnimateOnly;
+	vector<GameObject> NotesHeld, AnimateOnly;
 
 	// Game Data
 	// MeasureTime is the time the current measure will last.
@@ -86,7 +86,7 @@ private: // shit only screengameplay needs
 
 	Image* GameplayObjectImage;
 public:
-	ScreenGameplay(Screen *Parent);
+	ScreenGameplay();
 
 	virtual void Init(dotcur::Song *OtherSong, uint32 DifficultyIndex);
 

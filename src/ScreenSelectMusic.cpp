@@ -244,24 +244,24 @@ float ScreenSelectMusic::GetListHorizontalTransformation(const float Y)
 
 void ScreenSelectMusic::StartGameplayScreen()
 {
-	ScreenLoading *LoadNext = nullptr;
+	shared_ptr<ScreenLoading> LoadNext;
 	shared_ptr<Game::Song> MySong = GameState::GetInstance().GetSelectedSongShared();
 	uint8 difindex = GameState::GetInstance().GetDifficultyIndex();
 
 	if (MySong->Mode == MODE_DOTCUR)
 	{
-		ScreenGameplay *DotcurGame = new ScreenGameplay(this);
+		auto DotcurGame = make_shared<ScreenGameplay>();
 		DotcurGame->Init(static_cast<dotcur::Song*>(MySong.get()), difindex);
 
-		LoadNext = new ScreenLoading(this, DotcurGame);
+		LoadNext = make_shared<ScreenLoading>(DotcurGame);
 	}else
 	{
-		ScreenGameplay7K *VSRGGame = new ScreenGameplay7K();
+		auto VSRGGame = make_shared<ScreenGameplay7K>();
 		
 		VSRGGame->Init(dynamic_pointer_cast<VSRG::Song>(MySong), 
 		               difindex, *GameState::GetInstance().GetParameters());
 
-		LoadNext = new ScreenLoading(this, VSRGGame);
+		LoadNext = make_shared<ScreenLoading>(VSRGGame);
 	}
 
 	LoadNext->Init();

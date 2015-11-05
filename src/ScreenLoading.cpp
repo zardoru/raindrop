@@ -31,7 +31,7 @@ public:
 	}
 };
 
-ScreenLoading::ScreenLoading(Screen *Parent, Screen *_Next) : Screen("ScreenLoading", Parent)
+ScreenLoading::ScreenLoading(shared_ptr<Screen> _Next) : Screen("ScreenLoading", nullptr)
 {
 	Next = _Next;
 	LoadThread = nullptr;
@@ -57,7 +57,7 @@ void ScreenLoading::OnIntroBegin()
 
 void ScreenLoading::Init()
 {
-	LoadThread = new thread(&LoadScreenThread::DoLoad, LoadScreenThread(FinishedLoading, Next));
+	LoadThread = make_shared<thread>(&LoadScreenThread::DoLoad, LoadScreenThread(FinishedLoading, Next.get()));
 }
 
 void ScreenLoading::OnExitEnd()
@@ -88,7 +88,6 @@ bool ScreenLoading::Run(double TimeDelta)
 	if (FinishedLoading)
 	{
 		LoadThread->join();
-		delete LoadThread;
 		LoadThread = nullptr;
 		Next->InitializeResources();
 		ChangeState(StateExit);

@@ -249,7 +249,7 @@ stageFailed:
 	// Okay then, the song's done, and the success animation is done too. Time to evaluate.
 	if (SuccessTime < 0 && SongFinished)
 	{
-		ScreenEvaluation7K *Eval = new ScreenEvaluation7K(this);
+		auto Eval = make_shared<ScreenEvaluation7K>();
 		Eval->Init(ScoreKeeper.get());
 		Next = Eval;
 	}
@@ -261,7 +261,7 @@ stageFailed:
 
 			if (Configuration::GetSkinConfigf("GoToSongSelectOnFailure") == 0)
 			{
-				auto Eval = new ScreenEvaluation7K(this);
+				auto Eval = make_shared<ScreenEvaluation7K>();
 				Eval->Init(ScoreKeeper.get());
 				Next = Eval;
 			}
@@ -297,7 +297,7 @@ void ScreenGameplay7K::UpdateSongTime(float Delta)
 
 	// Run interpolation
 	double CurrAudioTime = MixerGetTime();
-	double SongDelta;
+	double SongDelta = 0;
 	if (Music && Music->IsPlaying())
 		SongDelta = Music->GetStreamedTime() - SongOldTime;
 	else
@@ -307,9 +307,10 @@ void ScreenGameplay7K::UpdateSongTime(float Delta)
 	AudioOldTime = CurrAudioTime;
 	SongTimeReal += SongDelta;
 
-	if ((SongDelta > 0.001 && abs(SongTime - SongTimeReal) * 1000 > ErrorTolerance) || !InterpolateTime) // Significant delta with a x ms difference? We're pretty off..
+	bool AboveTolerance = abs(SongTime - SongTimeReal) * 1000 > ErrorTolerance;
+	if ((SongDelta != 0 && AboveTolerance) || !InterpolateTime) // Significant delta with a x ms difference? We're pretty off..
 	{
-		if (ErrorTolerance)
+		if (ErrorTolerance && InterpolateTime)
 		Log::LogPrintf("Audio Desync: delta = %f difference = %f ms. Real song time %f (expected %f) Audio current time: %f (old = %f)\n",
 			SongDelta, abs(SongTime - SongTimeReal) * 1000, SongTimeReal, SongTime, CurrAudioTime, TempOld);
 		SongTime = SongTimeReal;

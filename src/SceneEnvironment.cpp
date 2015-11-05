@@ -228,7 +228,7 @@ void SceneEnvironment::AddLuaAnimation (Sprite* Target, const GString &FuncName,
 	int Easing, float Duration, float Delay)
 {
 	Animation Anim;
-	Anim.Function = bind(LuaAnimation, Lua, FuncName, Target, _1);
+	Anim.Function = bind(LuaAnimation, Lua.get(), FuncName, Target, _1);
 	Anim.Easing = (Animation::EEaseType)Easing;
 	Anim.Duration = Duration;
 	Anim.Delay = Delay;
@@ -240,11 +240,11 @@ void SceneEnvironment::AddLuaAnimation (Sprite* Target, const GString &FuncName,
 SceneEnvironment::SceneEnvironment(const char* ScreenName, bool initUI)
 {
 	Animations.reserve(10);
-	Lua = new LuaManager;
+	Lua = make_shared<LuaManager>();
 	Lua->RegisterStruct("GOMAN", this);
 
-	CreateLuaInterface(Lua);
-	Images = new ImageList(true);
+	CreateLuaInterface(Lua.get());
+	Images = make_shared<ImageList>(true);
 	mFrameSkip = true;
 
 	ctx = NULL;
@@ -312,9 +312,6 @@ SceneEnvironment::~SceneEnvironment()
 
 	if (ctx && ctx->GetReferenceCount() > 0)
 		ctx->RemoveReference();
-
-	delete Lua;
-	delete Images;
 }
 
 void SceneEnvironment::SetUILayer(uint32 Layer)
@@ -615,7 +612,7 @@ void SceneEnvironment::DrawFromLayer(uint32 Layer)
 
 LuaManager *SceneEnvironment::GetEnv()
 {
-	return Lua;
+	return Lua.get();
 }
 
 bool SceneEnvironment::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
@@ -669,7 +666,7 @@ bool SceneEnvironment::HandleTextInput(int codepoint)
 
 ImageList* SceneEnvironment::GetImageList()
 {
-	return Images;
+	return Images.get();
 }
 
 void SceneEnvironment::DoEvent(GString EventName, int Return)

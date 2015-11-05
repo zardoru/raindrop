@@ -234,8 +234,8 @@ void Application::SetupPreviewMode()
 	GameState::GetInstance().SetDifficultyIndex(difIndex);
 
 	// Create loading screen and gameplay screen.
-	ScreenGameplay7K *SGame = new ScreenGameplay7K();
-	ScreenLoading *LoadScreen = new ScreenLoading(nullptr, SGame);
+	auto SGame = make_shared<ScreenGameplay7K>();
+	ScreenLoading *LoadScreen = new ScreenLoading(SGame);
 
 	// Set them up.
 	Sng->SongDirectory = InFile.ParentDirectory().path() + "/";
@@ -290,7 +290,7 @@ void Application::Run()
 
 	if (RunMode == MODE_PLAY)
 	{
-		Game = new ScreenMainMenu(nullptr);
+		Game = new ScreenMainMenu();
 		static_cast<ScreenMainMenu*>(Game)->Init();
 
 	}else if (RunMode == MODE_VSRGPREVIEW)

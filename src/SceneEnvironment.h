@@ -32,14 +32,14 @@ struct Animation {
 	Animation() {
 		Time = Delay = 0;
 		Duration = std::numeric_limits<float>::infinity();
-		Target = NULL;
+		Target = nullptr;
 	}
 };
 
 class SceneEnvironment
 {
-	LuaManager *Lua;
-	ImageList *Images;
+	shared_ptr<LuaManager> Lua;
+	shared_ptr<ImageList> Images;
 	vector<Drawable2D*> Objects;
 	vector<Drawable2D*> ManagedObjects;
 	vector<Drawable2D*> ExternalObjects;

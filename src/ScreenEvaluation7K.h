@@ -12,7 +12,7 @@ class ScreenEvaluation7K : public Screen
 	GString DisplayResult;
 	ScoreKeeper7K *Score;
 public:
-	ScreenEvaluation7K(Screen *Parent);
+	ScreenEvaluation7K();
 	void Init(ScoreKeeper7K *Result);
 	bool Run(double Delta);
 	void Cleanup();

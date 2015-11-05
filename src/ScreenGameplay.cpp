@@ -11,8 +11,8 @@
 #define ComboSizeX 24
 #define ComboSizeY 48
 
-ScreenGameplay::ScreenGameplay(Screen *Parent) :
-	Screen("ScreenGameplay", Parent),
+ScreenGameplay::ScreenGameplay() :
+	Screen("ScreenGameplay", nullptr),
 	Barline(this)
 {
 	Running = true;
@@ -533,7 +533,7 @@ bool ScreenGameplay::Run(double TimeDelta)
 
 	if (ShouldChangeScreenAtEnd && Measure >= CurrentDiff->Measures.size())
 	{
-		ScreenEvaluation *Eval = new ScreenEvaluation(this);
+		auto Eval = make_shared<ScreenEvaluation>();
 		Eval->Init(Evaluation, MySong->SongAuthor, MySong->SongName);
 		Next = Eval;
 		Music->Stop();

@@ -13,7 +13,7 @@ class ScreenMainMenu : public Screen
 	Screen *TNext;
 	Sprite Background;
 public:
-	ScreenMainMenu(Screen *Parent);
+	ScreenMainMenu();
 	void Init();
 	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	bool HandleScrollInput(double xOff, double yOff);

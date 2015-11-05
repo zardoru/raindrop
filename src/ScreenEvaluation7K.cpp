@@ -12,8 +12,8 @@
 #include "LuaManager.h"
 
 
-ScreenEvaluation7K::ScreenEvaluation7K(Screen *Parent) :
-	Screen("ScreenEvaluation7K", Parent)
+ScreenEvaluation7K::ScreenEvaluation7K() :
+	Screen("ScreenEvaluation7K", nullptr)
 {
 	Running = true;
 }

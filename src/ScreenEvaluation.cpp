@@ -10,8 +10,8 @@
 
 AudioStream *ScreenEvaluationMusic = NULL;
 
-ScreenEvaluation::ScreenEvaluation(Screen *Parent) :
-	Screen("ScreenEvaluation", Parent)
+ScreenEvaluation::ScreenEvaluation() :
+	Screen("ScreenEvaluation", nullptr)
 {
 	Running = true;
 	Font = NULL;

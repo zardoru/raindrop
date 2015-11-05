@@ -24,7 +24,7 @@ BitmapFont* MainMenuFont = NULL;
 LuaManager* MainMenuLua = NULL;
 TruetypeFont* TTFO = NULL;
 
-ScreenMainMenu::ScreenMainMenu(Screen *Parent) : Screen("ScreenMainMenu", Parent)
+ScreenMainMenu::ScreenMainMenu() : Screen("ScreenMainMenu", nullptr)
 {
 	TNext = nullptr;
 }
@@ -147,7 +147,7 @@ void ScreenMainMenu::OnExitEnd()
 {
 	Screen::OnExitEnd();
 
-	Next = new ScreenSelectMusic();
+	Next = make_shared<ScreenSelectMusic>();
 	Next->Init();
 	ChangeState(StateRunning);
 	Animations->DoEvent("OnRestore");

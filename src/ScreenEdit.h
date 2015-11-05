@@ -52,12 +52,12 @@ class ScreenEdit : public ScreenGameplay
 	void RunGhostObject();
 	void DrawInformation();
 public:
-	ScreenEdit (Screen * Parent);
+	ScreenEdit ();
 	void Init(dotcur::Song *Other);
 	void StartPlaying(int32 _Measure);
-	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
-	bool Run (double Delta);
-	void Cleanup();
+	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput) override;
+	bool Run (double Delta) override;
+	void Cleanup() override;
 };
 
 #endif

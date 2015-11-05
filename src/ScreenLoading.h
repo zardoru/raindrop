@@ -3,11 +3,11 @@
 
 class ScreenLoading : public Screen
 {
-	thread *LoadThread;
+	shared_ptr<thread> LoadThread;
 	bool ThreadInterrupted;
 	atomic<bool> FinishedLoading;
 public:
-	ScreenLoading(Screen *Parent, Screen *_Next);
+	ScreenLoading(shared_ptr<Screen> _Next);
 	void Init() override;
 
 	void OnIntroBegin() override;

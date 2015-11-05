@@ -20,18 +20,18 @@ protected:
 	}ScreenState;
 
 	double GetScreenTime();
-	Screen *Parent;
+	shared_ptr<Screen> Parent;
 	bool Running; // Is this screen active?
 	bool SkipThisFrame;
 
 	void ChangeState(EScreenState NewState);
 	double TransitionTime;
 	double IntroDuration, ExitDuration;
-	Screen *Next;
+	shared_ptr<Screen> Next;
 
 public:
 	Screen (GString Name);
-	Screen (GString Name, Screen * _Parent);
+	Screen (GString Name, shared_ptr<Screen> _Parent);
 	virtual ~Screen ();
 
 	virtual void Init();
