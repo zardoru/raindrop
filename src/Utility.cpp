@@ -243,10 +243,14 @@ namespace Utility {
 		else return 0;
 	}
 
-	void RemoveFilenameIllegalCharacters(GString &S, bool removeSlash)
+	void RemoveFilenameIllegalCharacters(GString &S, bool removeSlash, bool noAbsolute)
 	{
 		// size_t len = strlen(fn);
-		ReplaceAll(S, "[<>:\\|?*]", "");
+		if (!noAbsolute)
+			ReplaceAll(S, "[<>\\|?*]", "");
+		else
+			ReplaceAll(S, "[<>\\|?*]", "");
+
 		if (removeSlash)
 			ReplaceAll(S, "/", "");
 	}

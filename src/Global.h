@@ -154,7 +154,7 @@ namespace Utility
 	GString GetSha256ForFile(GString Filename);
 	GString IntToStr(int num);
 	GString CharToStr(char c);
-	void RemoveFilenameIllegalCharacters(GString &S, bool removeSlash);
+	void RemoveFilenameIllegalCharacters(GString &S, bool removeSlash, bool noAbsolute = true);
 
 	GString Format(GString str, ...);
 

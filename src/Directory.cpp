@@ -51,7 +51,7 @@ Directory Directory::ParentDirectory()
 void Directory::Normalize(bool RemoveIllegal)
 {
 	if (RemoveIllegal) {
-		Utility::RemoveFilenameIllegalCharacters(curpath, false);
+		Utility::RemoveFilenameIllegalCharacters(curpath, false, false);
 		Utility::ReplaceAll(curpath, "\\\\", "/");
 	}
 
