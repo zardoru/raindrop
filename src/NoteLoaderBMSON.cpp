@@ -54,6 +54,16 @@ namespace NoteLoaderBMSON{
 		{ "popn-9k", 9, { 0, 1, 2, 3, 4, 5, 6, 7, 8 } }
 	};
 
+	class BMSONException : public std::exception
+	{
+	public:
+		BMSONException(const GString &what) :
+			std::exception(what.c_str())
+		{
+			// stub
+		}
+	};
+
 	struct BmsonObject
 	{
 		int x;
@@ -145,7 +155,7 @@ namespace NoteLoaderBMSON{
 			}
 
 			// Okay then, didn't match anything...
-			throw std::exception(Utility::Format("Unknown mode hint: \"%s\"", values.asString().c_str()).c_str());
+			throw BMSONException(Utility::Format("Unknown mode hint: \"%s\"", values.asString().c_str()).c_str());
 		}
 
 		void LoadMeta()
@@ -163,7 +173,13 @@ namespace NoteLoaderBMSON{
 			if (version == UNSPECIFIED_VERSION)
 				Chart->Timing.push_back(TimingSegment(0, meta["initBPM"].asDouble()));
 			else if (version == VERSION_1)
+			{
+				if (!meta.isMember("init_bpm"))
+					throw BMSONException("Unspecified init_bpm!");
+				if (meta["init_bpm"].isNull())
+					throw BMSONException("NULL init_bpm!");
 				Chart->Timing.push_back(TimingSegment(0, meta["init_bpm"].asDouble()));
+			}
 
 			Chart->Level = meta["level"].asInt();
 
@@ -171,6 +187,9 @@ namespace NoteLoaderBMSON{
 
 			if (!meta["chart_name"].isNull())
 				Chart->Name = meta["chart_name"].asString();
+
+			if (!meta["eyecatch_image"].isNull())
+				Chart->Data->StageFile = meta["eyecatch_image"].asString();
 
 			Chart->BPMType = VSRG::Difficulty::BT_BEAT;
 
@@ -181,11 +200,11 @@ namespace NoteLoaderBMSON{
 			if (!meta["resolution"].isNull())
 				resolution = abs(meta["resolution"].asDouble());
 
-			if (resolution == 0) resolution = BMSON_DEFAULT_RESOLUTION; // NSE
+			if (resolution == 0) resolution = BMSON_DEFAULT_RESOLUTION;
+
+			song->SongPreviewSource = meta["preview_music"].asString();
 
 			// DEFEXRANK?
-
-
 			int jRank;
 			
 			Json::Value jr;
@@ -357,7 +376,7 @@ namespace NoteLoaderBMSON{
 				return lane;
 			if (lane < mappings.size())
 				return mappings[lane];
-			throw std::exception(Utility::Format("x = %d out of bounds for mode hint", lane).c_str());
+			throw BMSONException(Utility::Format("x = %d out of bounds for mode hint", lane).c_str());
 		}
 
 		int Slice(int sound_index, double &last_time, vector<BmsonObject>& notes, vector<BmsonObject>::iterator& note)
@@ -609,10 +628,10 @@ namespace NoteLoaderBMSON{
 					if (root["version"].asString() == VERSION_1)
 						version = VERSION_1;
 					else
-						throw std::exception(Utility::Format("Unknown BMSON version (%s)", root["version"].asString().c_str()).c_str());
+						throw BMSONException(Utility::Format("Unknown BMSON version (%s)", root["version"].asString().c_str()).c_str());
 				}
 				else
-					throw std::exception("NULL bmson version - rejecting file.");
+					throw BMSONException("NULL bmson version - rejecting file.");
 			}
 
 			LoadMeta();

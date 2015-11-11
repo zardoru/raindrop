@@ -250,8 +250,8 @@ bool AudioSample::IsPlaying()
 void AudioSample::Slice(float audio_start, float audio_end)
 {
 	float audioDuration = float(mData->size()) / (float(mRate) * Channels);
-	mAudioStart = Clamp(audio_start, 0.0f, audioDuration);
-	mAudioEnd = Clamp(audio_end, mAudioStart, audioDuration);
+	mAudioStart = Clamp(float(audio_start / mPitch), 0.0f, audioDuration);
+	mAudioEnd = Clamp(float(audio_end / mPitch), mAudioStart, audioDuration);
 }
 
 shared_ptr<AudioSample> AudioSample::CopySlice()

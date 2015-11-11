@@ -301,7 +301,7 @@ void ScreenGameplay7K::UpdateSongTime(float Delta)
 	if (Music && Music->IsPlaying())
 		SongDelta = Music->GetStreamedTime() - SongOldTime;
 	else
-		SongDelta = CurrAudioTime - AudioOldTime;
+		SongDelta = (CurrAudioTime - AudioOldTime) * Speed;
 
 	double TempOld = AudioOldTime;
 	AudioOldTime = CurrAudioTime;
