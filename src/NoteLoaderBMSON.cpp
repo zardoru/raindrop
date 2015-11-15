@@ -150,6 +150,7 @@ namespace NoteLoaderBMSON{
 				if (values.asString() == layout.hint)
 				{
 					Chart->Channels = layout.keys;
+					mappings = layout.mappings;
 					return;
 				}
 			}

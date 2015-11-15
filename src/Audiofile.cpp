@@ -12,6 +12,17 @@
 #include "AudioSourceMP3.h"
 #endif
 
+template<class T>
+void s16tof32(const T& iterable_start, const T& iterable_end, float* output)
+{
+	for (auto s = iterable_start; s != iterable_end; ++s)
+	{
+		if (*s < 0) *output = -float(*s) / std::numeric_limits<short>::min();
+		else *output = float(*s) / std::numeric_limits<short>::max();
+		output++;
+	}
+}
+
 // Buffer -> buffer to convert to stereo (interleaved) cnt -> current samples max_len -> Maximum samples
 template<class T>
 void monoToStereo(T* Buffer, size_t cnt, size_t max_len)
@@ -222,11 +233,7 @@ uint32 AudioSample::Read(float* buffer, size_t count)
 
 		if (mCounter < limit)
 		{
-			std::transform(mData->begin() + mCounter, mData->begin() + mCounter + ReadAmount, buffer,
-				[](const short &s) -> float
-			{
-				return float(s) / std::numeric_limits<short>::max();
-			});
+			s16tof32(mData->begin() + mCounter, mData->begin() + mCounter + ReadAmount, buffer);
 			mCounter += ReadAmount;
 		}
 		else
@@ -427,10 +434,7 @@ uint32 AudioStream::Read(float* buffer, size_t count)
 		outcnt = odone;
 
 		// * 2 from * Channels since we mono -> stereo mono signals.
-		std::transform(mOutputBuffer.data(), mOutputBuffer.data() + outcnt * 2, buffer, [](const short &s) -> float
-		{
-			return float(s) / std::numeric_limits<short>::max();
-		});
+		s16tof32(mOutputBuffer.begin(), mOutputBuffer.begin() + odone * 2, buffer);
 
 		mStreamTime += double(cnt / Channels) / mSource->GetRate();
 		mPlaybackTime = mStreamTime - MixerGetLatency();
