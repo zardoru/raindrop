@@ -80,6 +80,8 @@ uint32 AudioSourceMP3::Read(short* buffer, size_t count)
 	auto res = mpg123_read(mHandle, (unsigned char*)buffer, toRead, &actuallyread);
 	size_t additive = 0;
 
+	if (actuallyread == 0) return 0; // Huh.
+
 	while (mSourceLoop && actuallyread < toRead)
 	{
 		if (res == MPG123_DONE)
