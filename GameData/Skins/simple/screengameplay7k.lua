@@ -70,7 +70,7 @@ Lightning = {}
 LightingTime = 0.25
 
 Bomb = {}
-BombTime = 0.4
+BombTime = 0.2
 
 function GenText()
 	NumFont = Fonts.TruetypeFont(GetSkinFile("VeraMono.ttf"), 45 * YR)
@@ -164,9 +164,8 @@ function Init()
 			else
 				self.Object.Alpha = 2 * lerp
 			end
-			self.Object.ScaleX = (lerp) * 2
-			self.Object.ScaleY = (lerp) * 2
-			self.Object.Rotation = 360 * 2 * lerp
+			self.Object.ScaleX = (1 - lerp) * 2
+			self.Object.ScaleY = (1 - lerp) * 2
 			self.CurrentTime = max(self.CurrentTime - delta, 0)
 		end
 	end
@@ -244,13 +243,13 @@ function Update(Delta)
 	-- Executed every frame.
 	local beatEffect = Beat - math.floor(Beat)
 	
-	local SongPercentage = Game:GetSongTime() / SongDuration
+	local SongPercentage = Game:GetSongTime() / (SongDuration + 3)
 	
 	if Game:GetSongTime() < 0 then
 		SongPercentage = math.pow(SongTime / -1.5, 2)
 	end
 	
-	SongPosition.Y = 62 + 380 * SongPercentage * XR
+	SongPosition.Y = 62 + 383 * SongPercentage * XR
 	
 	HP.ScaleX = math.ceil(LifebarValue * 50) / 50
 	HP:SetCropByPixels(0, 352 * math.ceil(LifebarValue * 50) / 50, 0, 29)
