@@ -2,16 +2,7 @@
 	<head> 
 		<link type="text/css" href="raindrop.css"/>
 		<script>
-			function onload()
-				Global:GetParameters().HiddenMode = 0
-				Global:GetParameters().Upscroll = 0
-				Global:GetParameters().NoFail = 0
-				Global:GetParameters().Rate = 1
-				Global:GetParameters().Auto = 0
-				Global:GetParameters().Wave = 0
-				Global:GetParameters().Random = 0
-			end
-			
+			Global:GetParameters().HiddenMode = 0
 		
 			function activateAuto(elem)
 				if elem.id == "autobtn" then
@@ -40,7 +31,6 @@
 			end
 			function changerate(v)
 				rt = tonumber(v)
-				print(rt)
 				if rt and rt > 0 then
 					Global:GetParameters().Rate = rt
 				end

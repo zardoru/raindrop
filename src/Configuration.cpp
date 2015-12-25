@@ -1,5 +1,7 @@
 #include "GameGlobal.h"
 #include "Configuration.h"
+
+#define SI_CONVERT_GENERIC
 #include "SimpleIni.h"
 #include "GameState.h"
 

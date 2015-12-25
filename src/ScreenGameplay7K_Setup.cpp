@@ -194,7 +194,8 @@ void ScreenGameplay7K::CalculateHiddenConstants()
 		{
 			Center = -(( ((ScreenHeight - JudgmentLinePos) / 2 + JudgmentLinePos) / ScreenHeight)*2 - 1);
 
-			AdjustmentSize = -( ((ScreenHeight - JudgmentLinePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
+			// AdjustmentSize = -( ((ScreenHeight - JudgmentLinePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
+			AdjustmentSize = 0.1;
 
 			if (SelectedHiddenMode == 2)
 			{
@@ -214,7 +215,8 @@ void ScreenGameplay7K::CalculateHiddenConstants()
 		{
 			Center = -((JudgmentLinePos / 2 / ScreenHeight)*2 - 1);
 
-			AdjustmentSize = -( ((JudgmentLinePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
+			AdjustmentSize = 0.1;
+			// AdjustmentSize = -( ((JudgmentLinePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
 
 			// Hidden/Sudden
 			if (SelectedHiddenMode == 2)
@@ -345,6 +347,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 				{
 					for (auto sounds : wav.second)
 					{
+						CheckInterruption();
 						// load basic sound
 						if (!audio[sounds.first].IsValid())
 						{
@@ -629,12 +632,12 @@ void ScreenGameplay7K::SetupMechanics()
 	}
 
 	MechanicsSet->Setup(MySong.get(), CurrentDiff.get(), ScoreKeeper);
-	MechanicsSet->HitNotify = bind(&ScreenGameplay7K::HitNote, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-	MechanicsSet->MissNotify = bind(&ScreenGameplay7K::MissNote, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
-	MechanicsSet->IsLaneKeyDown = bind(&ScreenGameplay7K::GetGearLaneState, this, std::placeholders::_1);
-	MechanicsSet->SetLaneHoldingState = bind(&ScreenGameplay7K::SetLaneHoldState, this, std::placeholders::_1, std::placeholders::_2);
-	MechanicsSet->PlayLaneSoundEvent = bind(&ScreenGameplay7K::PlayLaneKeysound, this, std::placeholders::_1);
-	MechanicsSet->PlayNoteSoundEvent = bind(&ScreenGameplay7K::PlayKeysound, this, std::placeholders::_1);
+	MechanicsSet->HitNotify = bind(&ScreenGameplay7K::HitNote, this, _1, _2, _3, _4);
+	MechanicsSet->MissNotify = bind(&ScreenGameplay7K::MissNote, this, _1, _2, _3, _4, _5);
+	MechanicsSet->IsLaneKeyDown = bind(&ScreenGameplay7K::GetGearLaneState, this, _1);
+	MechanicsSet->SetLaneHoldingState = bind(&ScreenGameplay7K::SetLaneHoldState, this, _1, _2);
+	MechanicsSet->PlayLaneSoundEvent = bind(&ScreenGameplay7K::PlayLaneKeysound, this, _1);
+	MechanicsSet->PlayNoteSoundEvent = bind(&ScreenGameplay7K::PlayKeysound, this, _1);
 }
 
 void ScreenGameplay7K::LoadResources()

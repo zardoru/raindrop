@@ -45,13 +45,14 @@ namespace NoteLoaderBMSON{
 		const char* hint;
 		int keys;
 		vector<int> mappings;
+		bool turntable;
 	} BmsonLayouts[] = {
-		{ "beat-7k", 8, { 1, 2, 3, 4, 5, 6, 7, 0 } },
-		{ "beat-5k", 6, { 1, 2, 3, 4, 5, -1, -1, 0 } },
-		{ "beat-10k", 12, { 1, 2, 3, 4, 5, -1, -1, 0, 7, 8, 9, 10, 11, -1, -1, 6 } },
-		{ "beat-14k", 16, { 1, 2, 3, 4, 5, 6, 7, 0, 9, 10, 11, 12, 13, 14, 15, 8 } },
-		{ "popn-5k", 5, { 0, 1, 2, 3, 4 } },
-		{ "popn-9k", 9, { 0, 1, 2, 3, 4, 5, 6, 7, 8 } }
+		{ "beat-7k", 8, { 1, 2, 3, 4, 5, 6, 7, 0 }, true },
+		{ "beat-5k", 6, { 1, 2, 3, 4, 5, -1, -1, 0 }, true },
+		{ "beat-10k", 12, { 1, 2, 3, 4, 5, -1, -1, 0, 7, 8, 9, 10, 11, -1, -1, 6 }, true },
+		{ "beat-14k", 16, { 1, 2, 3, 4, 5, 6, 7, 0, 9, 10, 11, 12, 13, 14, 15, 8 }, true },
+		{ "popn-5k", 5, { 0, 1, 2, 3, 4 }, false },
+		{ "popn-9k", 9, { 0, 1, 2, 3, 4, 5, 6, 7, 8 }, false }
 	};
 
 	class BMSONException : public std::exception
@@ -151,6 +152,7 @@ namespace NoteLoaderBMSON{
 				{
 					Chart->Channels = layout.keys;
 					mappings = layout.mappings;
+					Chart->Data->Turntable = layout.turntable;
 					return;
 				}
 			}

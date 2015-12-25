@@ -148,7 +148,7 @@ function Init()
 		Lightning[i].Object.Y = Lightning[i].Object.Y + Lightning[i].Object.Height / 2
 		
 		Lightning[i].Update = function(self, delta)
-			self.Object.ScaleX = 1 - math.pow(1 - self.CurrentTime / LightingTime, 2)
+			self.Object.ScaleX = 1 - math.pow(1 - self.CurrentTime / LightingTime, 0.75)
 			self.CurrentTime = max(self.CurrentTime - delta, 0)
 		end
 			

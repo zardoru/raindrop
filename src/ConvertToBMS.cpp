@@ -179,7 +179,7 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 			rowified[rNum] = Obj.Evt;
 		}
 
-		OutFile << Utility::Format("#%03d%s:", Measure, ToBase36(Channel));
+		OutFile << Utility::Format("#%03d%s:", Measure, ToBase36(Channel).c_str());
 		for (auto val : rowified){
 			OutFile << ToBase36(val);
 		}
@@ -297,7 +297,8 @@ public:
 		Directory Sn = Song->SongName;
 		Sn.Normalize(true);
 
-		GString name = Utility::Format("%s/ %s (%s) - %s.bms", PathOut.c_path(), Sn.c_path(), Parent->Name, Parent->Author);
+		GString name = Utility::Format("%s/%s (%s) - %s.bms", 
+			PathOut.c_path(), Sn.c_path(), Parent->Name.c_str(), Parent->Author.c_str());
 
 #ifndef _WIN32
 		std::ofstream out(name.c_str());
@@ -308,7 +309,7 @@ public:
 			
 		try {
 			if (!out.is_open())
-				throw std::exception( (Utility::Format("failed to open file %S", name).c_str() ) );
+				throw std::exception( (Utility::Format("failed to open file %s", name.c_str()).c_str() ) );
 			if (BPS.size() == 0) 
 				throw std::exception("There are no timing points!");
 			WriteBMSOutput();
