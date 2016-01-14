@@ -33,15 +33,15 @@ end
 function TransformListVertical(LY)  
   	return LY
 end
-function OnItemHover(Index, Line, Selected)
+function OnItemHover(Index, BoundIndex, Line, Selected)
 	updText()
 end
 
-function OnItemHoverLeave(Index, Line, Selected)
+function OnItemHoverLeave(Index, BoundIndex, Line, Selected)
 	Wheel.CursorIndex = Wheel:GetSelectedItem()
 end
 
-function OnItemClick(Index, Line, Selected)
+function OnItemClick(Index, BoundIndex, Line, Selected)
 	Wheel:SetSelectedItem(Index)
 end
 
@@ -138,7 +138,7 @@ function Init()
 			WheelBackground.Green = 0.3
 			WheelBackground.Blue = 0.7
 		else
-			if Index == Wheel.CursorIndex then
+			if Index == Wheel.ListIndex then
 				WheelBackground.Red = 0.05
 				WheelBackground.Green = 0.15
 				WheelBackground.Blue = 0.35

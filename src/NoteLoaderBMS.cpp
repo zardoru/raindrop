@@ -1216,7 +1216,7 @@ namespace NoteLoaderBMS{
 				GString MainCommand = Line.substr(1, 5);
 				std::smatch sm;
 
-				if (regex_match(MainCommand.cbegin(), MainCommand.cend(), sm, DataDeclaration)) // We've got work to do.
+				if (regex_match(MainCommand, sm, DataDeclaration)) // We've got work to do.
 				{
 					int Measure = atoi(sm[1].str().c_str());
 					int Channel = fromBase36(sm[2].str().c_str());

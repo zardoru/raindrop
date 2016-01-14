@@ -72,7 +72,7 @@ uint32 AudioSourceMP3::Read(short* buffer, size_t count)
 	size_t actuallyread;
 	auto toRead = count * sizeof(short); // # of bytes to actually read
 
-	if (toRead == 0)
+	if (toRead == 0 || !IsValid())
 		return 0;
 
 	// read # bytes into varr.
@@ -128,7 +128,18 @@ uint32 AudioSourceMP3::GetChannels()
 
 bool AudioSourceMP3::IsValid()
 {
-	return mIsValid;
+	if (!mIsValid) return false;
+
+	auto err = mHandle ? mpg123_errcode(mHandle) : MPG123_OK;
+	auto isValidMp3Stream = (err == MPG123_OK || 
+							 err == MPG123_DONE || 
+							 err == MPG123_ERR_READER); // This third one is because valid streams throw off this error.
+	if (!isValidMp3Stream) {
+		Log::Printf("Mp3 Decoder error: %s\n", mpg123_strerror(mHandle));
+		mIsValid = false;
+	}
+
+	return mHandle && isValidMp3Stream;
 }
 
 bool AudioSourceMP3::HasDataLeft()

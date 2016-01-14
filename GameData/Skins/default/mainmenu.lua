@@ -5,7 +5,7 @@ Preload = {
 	"MainMenu/quit.png"
 }
 
-IntroDuration = 0.5
+IntroDuration = 0.3
 ExitDuration = 2.3
 function PlayBtnHover()
 	PlayButton.Image = "MainMenu/playh.png";
@@ -36,9 +36,11 @@ function UpdateIntro(p, delta)
 	targBadge.Y = ScreenHeight/2*(S) - targBadge.Height
 	targLogo.Y = targBadge.Y
 	Update(delta)
+	BGAOut(p*p)
 end
 
 function OnRunningBegin()
+	ScreenFade.Out()
 end
 
 function OnRestore()
@@ -46,7 +48,7 @@ function OnRestore()
 end
 
 function OnIntroBegin()
-	ScreenFade.Out()
+	Engine:SetUILayer(31)
 end
 
 function OnExitBegin()
@@ -57,32 +59,34 @@ function UpdateExit(p, delta)
 	UpdateIntro(1-p, delta)
 	FadeInA1(ease)
 	BGAIn(ease)
-	Update(delta)
 end
 
 function Init()
 	ScreenFade:Init()
-	
-	targBadge = Engine:CreateObject()
-	targBadge.Image = "MainMenu/BACKs.png"
-	targBadge.X = ScreenWidth / 2
-	targBadge.Y = ScreenHeight / 4
-	targBadge.Centered = 1
-	
+		
 	targLogo = Engine:CreateObject() 
 	targLogo.Image = "MainMenu/FRONTs.png"
 	targLogo.X = ScreenWidth / 2
 	targLogo.Y = ScreenHeight / 4
 	targLogo.Centered = 1
 	targLogo.Alpha = 1
+	targLogo.Layer = 31
 
+	targBadge = Engine:CreateObject()
+	targBadge.Image = "MainMenu/BACKs.png"
+	targBadge.X = ScreenWidth / 2
+	targBadge.Y = ScreenHeight / 4
+	targBadge.Centered = 1
+	targBadge.Layer = 31
+	
 	PlayBtnHoverLeave()
 	PlayButton.Y = ScreenHeight - 153 * 2 - 40
-	PlayButton.Layer = 18
+	PlayButton.Layer = 12
 
 	ExitBtnHoverLeave()
 	ExitButton.Y = ScreenHeight - 153
-	ExitButton.Layer = 18
+	ExitButton.Layer = 12
+	-- Rocket UI not initialized yet...
 end
 
 function Cleanup()

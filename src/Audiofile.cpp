@@ -46,7 +46,7 @@ void monoToStereo(T* Buffer, size_t cnt, size_t max_len)
 
 unique_ptr<AudioDataSource> SourceFromExt(Directory Filename)
 {
-	AudioDataSource *Ret = nullptr;
+	unique_ptr<AudioDataSource> Ret = nullptr;
 	GString Ext = Filename.GetExtension();
 	Filename.Normalize();
 
@@ -59,20 +59,23 @@ unique_ptr<AudioDataSource> SourceFromExt(Directory Filename)
 
 	const char* xt = Ext.c_str();
 	if (strstr(xt, "wav") || strstr(xt, "flac"))
-		Ret = new AudioSourceSFM();
+		Ret = std::make_unique<AudioSourceSFM>();
 #ifdef MP3_ENABLED
 	else if (strstr(xt, "mp3"))
-		Ret = new AudioSourceMP3();
+		Ret = std::make_unique<AudioSourceMP3>();
 #endif
 	else if (strstr(xt, "ogg"))
-		Ret = new AudioSourceOGG();
+		Ret = std::make_unique<AudioSourceOGG>();
 
 	if (Ret)
 		Ret->Open(Filename.c_path());
 	else
+	{
 		wprintf(L"extension %ls has no audiosource associated\n", Utility::Widen(Ext).c_str());
+		return nullptr;
+	}
 
-	return unique_ptr<AudioDataSource>(Ret);
+	return Ret;
 }
 
 void Sound::SetPitch(double Pitch)
@@ -372,6 +375,7 @@ AudioStream::AudioStream()
 	mResampler = nullptr;
 
 	mStreamTime = 0;
+	mRingBuf = { 0 };
 
 	MixerAddStream(this);
 }
@@ -416,6 +420,8 @@ uint32 AudioStream::Read(float* buffer, size_t count)
 		cnt = PaUtil_ReadRingBuffer(&mRingBuf, mResampleBuffer.data(), scount);
 		// cnt now contains how many samples we actually read... 
 
+		if (!cnt) return 0; // ????
+
 		// This is how many resulting samples we can output with what we read...
 		outcnt = floor(cnt * resRate / origRate);
 
@@ -448,8 +454,9 @@ bool AudioStream::Open(const char* Filename)
 {
 	mSource = SourceFromExt(RearrangeFilename(Filename));
 
-	if (mSource && mSource->IsValid())
+	if (mSource)
 	{
+
 		Channels = mSource->GetChannels();
 
 		mResampleBuffer.resize(BUFF_SIZE);
@@ -465,6 +472,7 @@ bool AudioStream::Open(const char* Filename)
 
 		mBufferSize = BUFF_SIZE;
 		mData.resize(mBufferSize);
+		assert(mData.size() == mBufferSize);
 		PaUtil_InitializeRingBuffer(&mRingBuf, sizeof(short), mBufferSize, mData.data());
 
 		mStreamTime = mPlaybackTime = 0;
@@ -473,8 +481,8 @@ bool AudioStream::Open(const char* Filename)
 
 		return true;
 	}
-	else
-		return false;
+
+	return false;
 }
 
 bool AudioStream::IsPlaying()
@@ -520,7 +528,7 @@ uint32 AudioStream::Update()
 	uint32 eCount = PaUtil_GetRingBufferWriteAvailable(&mRingBuf);
 	uint32 ReadTotal;
 
-	if (!mSource) return 0;
+	if (!mSource || !mSource->IsValid()) return 0;
 
 	mSource->SetLooping(IsLooping());
 

@@ -59,6 +59,7 @@ void SongWheel::Initialize(SongDatabase* Database)
 
 	ScrollSpeed = 90;
 	SelectedItem = 0;
+	SelectedListItem = 0;
 	CursorPos = 0;
 	OldCursorPos = 0;
 	Time = 0;
@@ -267,19 +268,21 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 			return true;
 		case KT_Select:
 			Vec2 mpos = GameState::GetWindow()->GetRelativeMPos();
-			int32 Idx = GetCursorIndex();
-			if (Idx < CurrentList->GetNumEntries())
+			int32 boundIndex = GetCursorIndex();
+			int32 Idx = GetListCursorIndex();
+			if (boundIndex != CurrentList->GetNumEntries()) // There's entries!
 			{
 				if (InWheelBounds(mpos) || !isMouseInput)
 				{
 					if (OnItemClick)
-						OnItemClick(Idx, CurrentList->GetEntryTitle(Idx), CurrentList->GetSongEntry(Idx));
+						OnItemClick(Idx, boundIndex, CurrentList->GetEntryTitle(boundIndex), CurrentList->GetSongEntry(boundIndex));
 
-					if (CurrentList->IsDirectory(Idx))
+					if (CurrentList->IsDirectory(boundIndex))
 					{
-						CurrentList = CurrentList->GetListEntry(Idx).get();
+						CurrentList = CurrentList->GetListEntry(boundIndex).get();
 
-						if (OnDirectoryChange) OnDirectoryChange();
+						if (OnDirectoryChange) 
+							OnDirectoryChange();
 
 						if (GetSelectedSong()) {
 							GameState::GetInstance().SetSelectedSong(GetSelectedSong());
@@ -341,6 +344,7 @@ void SongWheel::Update(float Delta)
 
 	if (!IsLoading() && mLoadThread)
 	{
+		mLoadThread->join();
 		delete mLoadThread;
 		mLoadThread = nullptr;
 	}
@@ -381,7 +385,8 @@ void SongWheel::Update(float Delta)
 		{
 			IsHovering = false;
 			if (OnItemHoverLeave)
-				OnItemHoverLeave(GetCursorIndex(), CurrentList->GetEntryTitle(GetCursorIndex()), nullptr);
+				OnItemHoverLeave(GetCursorIndex(), GetListCursorIndex(),
+									CurrentList->GetEntryTitle(GetCursorIndex()), nullptr);
 		}
 	}
 
@@ -393,12 +398,13 @@ void SongWheel::Update(float Delta)
 		if (OnItemHover)
 		{
 			shared_ptr<Game::Song> Notify = GetSelectedSong();
-			OnItemHover(GetCursorIndex(), CurrentList->GetEntryTitle(GetCursorIndex()), Notify);
+			OnItemHover(GetCursorIndex(), GetListCursorIndex(),
+						CurrentList->GetEntryTitle(GetCursorIndex()), Notify);
 		}
 	}
 }
 
-void SongWheel::DisplayItem(int32 ListItem, Vec2 Position)
+void SongWheel::DisplayItem(int32 ListItem, int32 ListPosition, Vec2 Position)
 {
 	if (Position.y > -ItemHeight && Position.y < ScreenHeight)
 	{
@@ -409,24 +415,24 @@ void SongWheel::DisplayItem(int32 ListItem, Vec2 Position)
 		{
 			Song = CurrentList->GetSongEntry(ListItem);
 			Text = CurrentList->GetEntryTitle(ListItem);
-			IsSelected = (ListItem == SelectedItem);
+			IsSelected = (ListPosition == SelectedListItem);
 		}
 
 		for (auto Item = Sprites.begin(); Item != Sprites.end(); ++Item) {
 			Item->second->SetPosition(Position);
 					  
 			if (TransformItem)
-				TransformItem(Item->first, Song, IsSelected, ListItem);
+				TransformItem(Item->first, Song, IsSelected, ListPosition);
 
 			// Render the objects.
 			Item->second->Render();
 		}
 
-		for (auto Item = Strings.begin(); Item != Strings.end(); Item++) {
+		for (auto Item = Strings.begin(); Item != Strings.end(); ++Item) {
 			Item->second->SetPosition(Position);
 
 			if (TransformString)
-				TransformString(Item->first, Song, IsSelected, ListItem, Text);
+				TransformString(Item->first, Song, IsSelected, ListPosition, Text);
 
 			Item->second->Render();
 		}
@@ -465,15 +471,15 @@ void SongWheel::Render()
 			while (RealIndex < 0) // Loop over..
 				RealIndex += Max;
 
-			DisplayItem(RealIndex, Position);
+			DisplayItem(RealIndex, Cur, Position);
 		}else
-			DisplayItem(-1, Position);
+			DisplayItem(-1, Cur, Position);
 	}
 }
 
 int32 SongWheel::GetSelectedItem()
 {
-	return SelectedItem;
+	return SelectedListItem;
 }
 
 void SongWheel::SetItemHeight(float Height)
@@ -491,16 +497,24 @@ float SongWheel::GetItemWidth() const
 	return ItemWidth;
 }
 
-void SongWheel::SetSelectedItem(uint32 Item)
+void SongWheel::SetSelectedItem(int32 Item)
 {
 	if (!CurrentList)
 		return;
 
-	if (CurrentList->GetNumEntries() <= Item)
+	if (CurrentList->GetNumEntries() == 0)
 		return;
 
-	if (SelectedItem != Item)
+	int32 OldListIndex = SelectedListItem;
+	SelectedListItem = Item;
+
+	// Get a bound item index
+	while (Item < 0) Item += CurrentList->GetNumEntries();
+	Item %= CurrentList->GetNumEntries();
+
+	if (OldListIndex != SelectedListItem)
 	{
+		// Set bound item index to this.
 		SelectedItem = Item;
 		GameState::GetInstance().SetSelectedSong(GetSelectedSong());
 		OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
@@ -513,9 +527,9 @@ int32 SongWheel::IndexAtPoint(float Y)
 {
 	float posy = Y;
 	posy -= shownListY;
-	posy -= fmod(posy, ItemHeight);
+	// posy -= abs(fmod(posy, ItemHeight));
 	posy = (posy / ItemHeight);
-	return round(posy);
+	return floor(posy);
 }
 
 uint32 SongWheel::NormalizedIndexAtPoint(float Y)
@@ -543,6 +557,11 @@ int32 SongWheel::GetNumItems() const
 void SongWheel::SetCursorIndex(int Index)
 {
 	CursorPos = Index;
+}
+
+int SongWheel::GetListCursorIndex() const
+{
+	return CursorPos;
 }
 
 float SongWheel::GetItemHeight() const

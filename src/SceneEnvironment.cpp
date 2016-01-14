@@ -316,7 +316,10 @@ SceneEnvironment::~SceneEnvironment()
 
 void SceneEnvironment::SetUILayer(uint32 Layer)
 {
-	obctx->SetZ(Layer);
+	if (obctx)
+		obctx->SetZ(Layer);
+	else
+		Log::Printf("Warning: SetUILayer called, but context hasn't been initialized yet.\n");
 	Sort();
 }
 

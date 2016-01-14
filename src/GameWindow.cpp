@@ -531,10 +531,16 @@ Mat4 GameWindow::GetMatrixProjectionInverse()
 	return projectionInverse;
 }
 
+void glfwError(int c, const char* s)
+{
+	Log::LogPrintf("GLFW Error %d: %s\n", c, s);
+}
 
 bool GameWindow::AutoSetupWindow(Application* _parent)
 {
 	Parent = _parent;
+
+	glfwSetErrorCallback(glfwError);
 
 	// todo: enum modes
 	if (!glfwInit())

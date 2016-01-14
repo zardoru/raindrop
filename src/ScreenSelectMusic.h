@@ -54,9 +54,9 @@ class ScreenSelectMusic : public Screen
 	void OnSongSelect(shared_ptr<Game::Song> MySong, uint8 difindex);
 
 	void OnDirectoryChange();
-	void OnItemClick(uint32 Index, GString Line, shared_ptr<Game::Song> Selected);
-	void OnItemHover(uint32 Index, GString Line, shared_ptr<Game::Song> Selected);
-	void OnItemHoverLeave(uint32 Index, GString Line, shared_ptr<Game::Song> Selected);
+	void OnItemClick(int32 Index, uint32 boundIndex, GString Line, shared_ptr<Game::Song> Selected);
+	void OnItemHover(int32 Index, uint32 boundIndex, GString Line, shared_ptr<Game::Song> Selected);
+	void OnItemHoverLeave(int32 Index, uint32 boundIndex, GString Line, shared_ptr<Game::Song> Selected);
 
 	void TransformItem(int Item, shared_ptr<Game::Song> Song, bool IsSelected, int ListItem);
 	void TransformString(int Item, shared_ptr<Game::Song> Song, bool IsSelected, int ListItem, GString text);

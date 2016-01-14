@@ -38,9 +38,9 @@ namespace Game
 {
 
 	typedef function<void (shared_ptr<Song>, uint8)> SongNotification;
-	typedef function<void(uint32, GString, shared_ptr<Song>)> ItemNotification;
-	typedef function<void(int, shared_ptr<Song>, bool, int32)> ItemTransformFunction;
-	typedef function<void(int, shared_ptr<Song>, bool, int32, GString)> StringTransformFunction;
+	typedef function<void(int32, uint32, GString, shared_ptr<Song>)> ItemNotification;
+	typedef function<void(int32, shared_ptr<Song>, bool, int32)> ItemTransformFunction;
+	typedef function<void(int32, shared_ptr<Song>, bool, int32, GString)> StringTransformFunction;
 	typedef function <float (float)> ListTransformFunction;
 	typedef function<void()> DirectoryChangeNotifyFunction;
 
@@ -51,7 +51,7 @@ private:
 	SongWheel();
 
 	int32 CursorPos, OldCursorPos;
-	uint32 SelectedItem;
+	int32 SelectedItem, SelectedListItem;
 	int StartIndex, EndIndex;
 
 	mutex* mLoadMutex;
@@ -74,7 +74,7 @@ private:
 	float Time;
 	float DisplacementSpeed;
 	float ItemWidth;
-	void DisplayItem(int32 ListItem, Vec2 Position);
+	void DisplayItem(int32 ListItem, int32 ItemPosition, Vec2 Position);
 	bool InWheelBounds(Vec2 Pos);
 
 	bool IsInitialized; 
@@ -136,12 +136,15 @@ public:
 	int GetCursorIndex() const;
 	void SetCursorIndex(int Index);
 
+	// Returns the item index the mouse is currently hovering over.
+	int GetListCursorIndex() const;
+
 	void  SetItemHeight(float Height);
 
 	void SetItemWidth(float width);
 	float GetItemWidth() const;
 
-	void  SetSelectedItem(uint32 Item);
+	void  SetSelectedItem(int32 Item);
 	int32 GetSelectedItem();
 	int32 GetNumItems() const;
 

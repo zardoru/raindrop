@@ -45,6 +45,7 @@ AudioSourceOGG::AudioSourceOGG()
 	mIsValid = false;
 	mSourceLoop = false;
 	mIsDataLeft = false;
+	mSeekTime = -1;
 }
 
 AudioSourceOGG::~AudioSourceOGG()

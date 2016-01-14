@@ -64,6 +64,7 @@ void SetupWheelLua(LuaManager* Man)
 		.addProperty("PendingY", &SongWheel::GetDeltaY, &SongWheel::SetDeltaY)
 		.addProperty("ItemHeight", &SongWheel::GetItemHeight, &SongWheel::SetItemHeight)
 		.addProperty("ItemWidth", &SongWheel::GetItemWidth, &SongWheel::SetItemWidth)
+		.addProperty("ListIndex", &SongWheel::GetListCursorIndex)
 		.addData("ScrollSpeed", &SongWheel::ScrollSpeed)
 		.endClass();
 
@@ -84,14 +85,14 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic")
 	SongWheel * Wheel = &Game::SongWheel::GetInstance();
 	Wheel->Initialize(GameState::GetInstance().GetSongDatabase());
 
-	Game::SongNotification SongNotifyFunc(bind(&ScreenSelectMusic::OnSongChange, this, std::placeholders::_1, std::placeholders::_2));
-	Game::SongNotification SongNotifySelectFunc(bind(&ScreenSelectMusic::OnSongSelect, this, std::placeholders::_1, std::placeholders::_2));
+	Game::SongNotification SongNotifyFunc(bind(&ScreenSelectMusic::OnSongChange, this, _1, _2));
+	Game::SongNotification SongNotifySelectFunc(bind(&ScreenSelectMusic::OnSongSelect, this, _1, _2));
 	Wheel->OnSongTentativeSelect = SongNotifyFunc;
 	Wheel->OnSongConfirm = SongNotifySelectFunc;
 
-	Game::ListTransformFunction TransformHFunc(bind(&ScreenSelectMusic::GetListHorizontalTransformation, this, std::placeholders::_1));
-	Game::ListTransformFunction TransformVFunc(bind(&ScreenSelectMusic::GetListVerticalTransformation, this, std::placeholders::_1));
-	Game::ListTransformFunction TransformPVert(bind(&ScreenSelectMusic::GetListPendingVerticalTransformation, this, std::placeholders::_1));
+	Game::ListTransformFunction TransformHFunc(bind(&ScreenSelectMusic::GetListHorizontalTransformation, this, _1));
+	Game::ListTransformFunction TransformVFunc(bind(&ScreenSelectMusic::GetListVerticalTransformation, this, _1));
+	Game::ListTransformFunction TransformPVert(bind(&ScreenSelectMusic::GetListPendingVerticalTransformation, this, _1));
 	Wheel->TransformHorizontal = TransformHFunc;
 	Wheel->TransformListY = TransformVFunc;
 	Wheel->TransformPendingDisplacement = TransformPVert;
@@ -99,15 +100,15 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic")
 	Game::DirectoryChangeNotifyFunction DirChangeNotif(bind(&ScreenSelectMusic::OnDirectoryChange, this));
 	Wheel->OnDirectoryChange = DirChangeNotif;
 
-	Game::ItemNotification ItClickNotif(bind(&ScreenSelectMusic::OnItemClick, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-	Game::ItemNotification ItHoverNotif(bind(&ScreenSelectMusic::OnItemHover, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-	Game::ItemNotification ItHoverLeaveNotif(bind(&ScreenSelectMusic::OnItemHoverLeave, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+	Game::ItemNotification ItClickNotif(bind(&ScreenSelectMusic::OnItemClick, this, _1, _2, _3, _4));
+	Game::ItemNotification ItHoverNotif(bind(&ScreenSelectMusic::OnItemHover, this, _1, _2, _3, _4));
+	Game::ItemNotification ItHoverLeaveNotif(bind(&ScreenSelectMusic::OnItemHoverLeave, this, _1, _2, _3, _4));
 	Wheel->OnItemClick = ItClickNotif;
 	Wheel->OnItemHover = ItHoverNotif;
 	Wheel->OnItemHoverLeave = ItHoverLeaveNotif;
 
-	Wheel->TransformItem = bind(&ScreenSelectMusic::TransformItem, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-	Wheel->TransformString = bind(&ScreenSelectMusic::TransformString, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
+	Wheel->TransformItem = bind(&ScreenSelectMusic::TransformItem, this, _1, _2, _3, _4);
+	Wheel->TransformString = bind(&ScreenSelectMusic::TransformString, this, _1, _2, _3, _4, _5);
 
 	if (!SelectSnd)
 	{
@@ -344,6 +345,13 @@ void ScreenSelectMusic::PlayPreview()
 			}
 		}
 	}
+	else
+	{
+		if (PreviewStream) {
+			PreviewStream->Stop();
+			PreviewStream = nullptr;
+		}
+	}
 
 	PreviousPreview = ToPreview;
 }
@@ -544,33 +552,36 @@ void ScreenSelectMusic::OnDirectoryChange()
 	Animations->DoEvent("OnDirectoryChange");
 }
 
-void ScreenSelectMusic::OnItemClick(uint32 Index, GString Line, shared_ptr<Game::Song> Selected)
+void ScreenSelectMusic::OnItemClick(int32 Index, uint32 boundIndex, GString Line, shared_ptr<Game::Song> Selected)
 {
-	if (Animations->GetEnv()->CallFunction("OnItemClick", 3))
+	if (Animations->GetEnv()->CallFunction("OnItemClick", 4))
 	{
 		luabridge::push(Animations->GetEnv()->GetState(), Index);
+		luabridge::push(Animations->GetEnv()->GetState(), boundIndex);
 		luabridge::push(Animations->GetEnv()->GetState(), Line);
 		luabridge::push(Animations->GetEnv()->GetState(), Selected.get());
 		Animations->GetEnv()->RunFunction();
 	}
 }
 
-void ScreenSelectMusic::OnItemHover(uint32 Index, GString Line, shared_ptr<Game::Song> Selected)
+void ScreenSelectMusic::OnItemHover(int32 Index, uint32 boundIndex, GString Line, shared_ptr<Game::Song> Selected)
 {
-	if (Animations->GetEnv()->CallFunction("OnItemHover", 3))
+	if (Animations->GetEnv()->CallFunction("OnItemHover", 4))
 	{
 		luabridge::push(Animations->GetEnv()->GetState(), Index);
+		luabridge::push(Animations->GetEnv()->GetState(), boundIndex);
 		luabridge::push(Animations->GetEnv()->GetState(), Line);
 		luabridge::push(Animations->GetEnv()->GetState(), Selected.get());
 		Animations->GetEnv()->RunFunction();
 	}
 }
 
-void ScreenSelectMusic::OnItemHoverLeave(uint32 Index, GString Line, shared_ptr<Game::Song> Selected)
+void ScreenSelectMusic::OnItemHoverLeave(int32 Index, uint32 boundIndex, GString Line, shared_ptr<Game::Song> Selected)
 {
-	if (Animations->GetEnv()->CallFunction("OnItemHoverLeave", 3))
+	if (Animations->GetEnv()->CallFunction("OnItemHoverLeave", 4))
 	{
 		luabridge::push(Animations->GetEnv()->GetState(), Index);
+		luabridge::push(Animations->GetEnv()->GetState(), boundIndex);
 		luabridge::push(Animations->GetEnv()->GetState(), Line);
 		luabridge::push(Animations->GetEnv()->GetState(), Selected.get());
 		Animations->GetEnv()->RunFunction();

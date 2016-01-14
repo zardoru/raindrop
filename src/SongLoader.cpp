@@ -356,7 +356,8 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, vector<VSRG::Song*> &Vec
 			std::wstring Ext = Utility::Widen(File.GetExtension());
 			if (VSRGValidExtension(Ext))
 			{
-				assert(!DB->CacheNeedsRenewal(SongDirectory / File.path()));
+				bool cacheRenew = DB->CacheNeedsRenewal(SongDirectory / File.path());
+				assert(!cacheRenew);
 				int CurrentID = DB->GetSongIDForFile(SongDirectory / File.path(), nullptr);
 				if (CurrentID != ID)
 				{

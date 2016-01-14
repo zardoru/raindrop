@@ -21,6 +21,8 @@
 #include "GameState.h"
 #include "ImageList.h"
 
+#include <chrono>
+
 #include "ScreenMainMenu.h"
 #include "ScreenGameplay7K.h"
 #include "ScreenLoading.h"
@@ -160,7 +162,8 @@ void Application::ParseArgs()
 
 void Application::Init()
 {
-	double T1 = glfwGetTime();
+	typedef std::chrono::high_resolution_clock Clock;
+	auto t1 = Clock::now();
 
 	ParseArgs();
 
@@ -215,7 +218,7 @@ void Application::Init()
 			DoRun = true;
 	}
 
-	Log::Printf("Total Initialization Time: %fs\n", glfwGetTime() - T1);
+	Log::Printf("Total Initialization Time: %fs\n", std::chrono::duration_cast<std::chrono::microseconds>(Clock::now() - t1).count() / 1000000.0);
 }
 
 void Application::SetupPreviewMode()
