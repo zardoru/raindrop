@@ -78,7 +78,7 @@ uint32 AudioSourceMP3::Read(short* buffer, size_t count)
 	// read # bytes into varr.
 
 	auto res = mpg123_read(mHandle, (unsigned char*)buffer, toRead, &actuallyread);
-	size_t additive = 0;
+	size_t last_read = actuallyread;
 
 	if (actuallyread == 0) return 0; // Huh.
 
@@ -87,10 +87,10 @@ uint32 AudioSourceMP3::Read(short* buffer, size_t count)
 		if (res == MPG123_DONE)
 			Seek(0);
 
-		count -= actuallyread / sizeof(short);
+		count -= last_read / sizeof(short);
 
-		res = mpg123_read(mHandle, reinterpret_cast<unsigned char*>(buffer) + actuallyread, count, &additive);
-		actuallyread += additive;
+		res = mpg123_read(mHandle, reinterpret_cast<unsigned char*>(buffer) + actuallyread, count, &last_read);
+		actuallyread += last_read;
 	}
 
 	// according to mpg123_read documentation, ret is the amount of bytes read. We want to return samples read.
