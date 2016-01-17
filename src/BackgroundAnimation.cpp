@@ -128,7 +128,12 @@ public:
 			sprite->SetImage(List.GetFromIndex(bmp->BMP), false);
 		}
 		else
-			sprite->SetImage(nullptr, false);
+		{
+			if (bmp != events_layer.end())
+				sprite->SetImage(List.GetFromIndex(bmp->BMP), false);
+			else
+				sprite->SetImage(nullptr, false);
+		}
 	}
 
 	void SetAnimationTime(double Time) override

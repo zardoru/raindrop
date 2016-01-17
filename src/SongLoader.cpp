@@ -134,6 +134,7 @@ shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory Pref
 	std::wstring sp;
 	std::string pref = Prefix.path();
 
+	// Append a / at the end.
 	int q = pref.length() - 1;
 	if (q > 0)
 	{
@@ -142,6 +143,7 @@ shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory Pref
 			pref += "/";
 	}
 
+	// If the directory is just a dot, add an extra / at the end
 	if (q == 0 && pref[q] == '.')
 		pref += "/";
 
@@ -238,7 +240,17 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, vector<VSRG::Song*> &Vec
 
 		std::wstring Ext = Utility::Widen(File.GetExtension());
 
-		if ( VSRGValidExtension(Ext) && DB->CacheNeedsRenewal(SongDirectory / File.path()) )
+		/*
+			Some people leave nameless, blank .bms files on their folder.
+			This causes the cache to do a full reload, so we check if
+			we should just ignore this file.
+			It'll be loaded in any case, but not considered for cache.
+		*/
+		std::string Fname = Utility::RemoveExtension(File.Filename());
+
+		if ( VSRGValidExtension(Ext) && 
+			Fname.length() &&
+			DB->CacheNeedsRenewal(SongDirectory / File.path()) )
 			RenewCache = true;
 	}
 

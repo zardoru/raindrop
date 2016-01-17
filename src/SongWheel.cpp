@@ -276,23 +276,6 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 				{
 					if (OnItemClick)
 						OnItemClick(Idx, boundIndex, CurrentList->GetEntryTitle(boundIndex), CurrentList->GetSongEntry(boundIndex));
-
-					if (CurrentList->IsDirectory(boundIndex))
-					{
-						CurrentList = CurrentList->GetListEntry(boundIndex).get();
-
-						if (OnDirectoryChange) 
-							OnDirectoryChange();
-
-						if (GetSelectedSong()) {
-							GameState::GetInstance().SetSelectedSong(GetSelectedSong());
-							GameState::GetInstance().SetDifficultyIndex(0);
-							DifficultyIndex = 0;
-						}
-
-						// nullptr possible only to potentially stop previews.
-						OnSongTentativeSelect(GetSelectedSong(), 0);
-					}
 					return true;
 				}
 			}
@@ -477,7 +460,7 @@ void SongWheel::Render()
 	}
 }
 
-int32 SongWheel::GetSelectedItem()
+int32 SongWheel::GetSelectedItem() const
 {
 	return SelectedListItem;
 }
@@ -512,15 +495,10 @@ void SongWheel::SetSelectedItem(int32 Item)
 	while (Item < 0) Item += CurrentList->GetNumEntries();
 	Item %= CurrentList->GetNumEntries();
 
-	if (OldListIndex != SelectedListItem)
-	{
-		// Set bound item index to this.
-		SelectedItem = Item;
-		GameState::GetInstance().SetSelectedSong(GetSelectedSong());
-		OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
-	}
-	else if (!CurrentList->IsDirectory(Item))
-		OnSongConfirm(CurrentList->GetSongEntry(Item), DifficultyIndex);
+	// Set bound item index to this.
+	SelectedItem = Item;
+	GameState::GetInstance().SetSelectedSong(GetSelectedSong());
+	OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
 }
 
 int32 SongWheel::IndexAtPoint(float Y)
@@ -554,9 +532,34 @@ int32 SongWheel::GetNumItems() const
 	}
 }
 
+bool SongWheel::IsItemDirectory(int32 Item)
+{
+	if (CurrentList->GetNumEntries())
+	{
+		while (Item < 0) Item += CurrentList->GetNumEntries();
+		Item %= CurrentList->GetNumEntries();
+		return CurrentList->IsDirectory(Item);
+	}
+
+	return false;
+}
+
 void SongWheel::SetCursorIndex(int Index)
 {
 	CursorPos = Index;
+}
+
+void SongWheel::ConfirmSelection()
+{
+	if (!CurrentList->IsDirectory(SelectedItem))
+	{
+		OnSongConfirm(GetSelectedSong(), DifficultyIndex);
+	} else
+	{
+		CurrentList = CurrentList->GetListEntry(SelectedItem).get();
+		SetSelectedItem(SelectedListItem); // Update our selected item to new bounderies.
+		OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
+	}
 }
 
 int SongWheel::GetListCursorIndex() const

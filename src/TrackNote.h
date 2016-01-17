@@ -140,6 +140,7 @@ namespace VSRG
 
 		// Make this note invisible - That is to say, make no attempt at drawing it.
 		void MakeInvisible();
+		void RemoveSound();
 	};
 
 }

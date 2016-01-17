@@ -34,6 +34,11 @@ void TrackNote::MakeInvisible()
 	EnabledHitFlags |= InvisibleFlag;
 }
 
+void TrackNote::RemoveSound()
+{
+	Sound = 0;
+}
+
 bool TrackNote::FailedHit() const
 {
 	return (EnabledHitFlags & FailedHitFlag) != 0;

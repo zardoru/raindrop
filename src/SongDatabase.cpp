@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS [diffdb] (\
   [author] VARCHAR(256),\
   [stagefile] varchar(260));\
     CREATE INDEX IF NOT EXISTS song_index ON songfiledb(filename);\
-	  CREATE INDEX IF NOT EXISTS diff_index ON diffdb(songid);\
+	  CREATE INDEX IF NOT EXISTS diff_index ON diffdb(diffid, songid, fileid);\
 	  CREATE INDEX IF NOT EXISTS songid_index ON songdb(id);\
   ";
 

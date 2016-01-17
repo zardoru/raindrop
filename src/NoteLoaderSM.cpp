@@ -732,13 +732,13 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 		OnCommand(#NOTES)
 		{
 			Diff->Timing = BPMData;
-			Diff->Data = make_shared<VSRG::DifficultyLoadInfo>();
+			Diff->Data = make_shared<DifficultyLoadInfo>();
 			Diff->Data->Stops = StopsData;
 			Diff->Offset = -Offset;
 			Diff->Duration = 0;
 			Diff->Filename = filename;
-			Diff->BPMType = VSRG::Difficulty::BT_BEAT;
-			Diff->Data->TimingInfo = make_shared<VSRG::StepmaniaTimingInfo>();
+			Diff->BPMType = Difficulty::BT_BEAT;
+			Diff->Data->TimingInfo = make_shared<StepmaniaTimingInfo>();
 			Diff->Data->StageFile = Banner;
 			CleanStopsData(Diff.get());
 			WarpifyTiming(Diff.get());
@@ -746,7 +746,7 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 			if (LoadTracksSM(Out, Diff.get(), line))
 			{
 				Out->Difficulties.push_back(Diff);
-				Diff = make_shared<VSRG::Difficulty>();
+				Diff = make_shared<Difficulty>();
 			}
 
 		}

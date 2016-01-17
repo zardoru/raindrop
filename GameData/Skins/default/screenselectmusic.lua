@@ -38,11 +38,19 @@ function OnItemHover(Index, BoundIndex, Line, Selected)
 end
 
 function OnItemHoverLeave(Index, BoundIndex, Line, Selected)
-	Wheel.CursorIndex = Wheel:GetSelectedItem()
+	Wheel.CursorIndex = Wheel.SelectedIndex
 end
 
-function OnItemClick(Index, BoundIndex, Line, Selected)
-	Wheel:SetSelectedItem(Index)
+function OnItemClick(Index, BoundIndex, Line, Song)
+	print (Index, BoundIndex, Line, Song, Wheel.ListIndex, Wheel.SelectedIndex)
+	if Wheel.CursorIndex ~= Wheel.SelectedIndex then -- The item that is to be selected is not the selected item
+		Wheel.SelectedIndex = Index
+		if Wheel:IsItemDirectory(Index) then -- Not a song.
+			Wheel:ConfirmSelection() -- Go into directories inmediately
+		end
+	else
+		Wheel:ConfirmSelection()
+	end
 end
 
 
@@ -60,7 +68,7 @@ end
 -- This recieves song and difficulty changes.
 function OnSongChange(Song, Diff)
 	updText()
-	Wheel.CursorIndex = Wheel:GetSelectedItem()
+	Wheel.CursorIndex = Wheel.SelectedIndex
 end
 
 -- Screen Events
@@ -75,6 +83,7 @@ function OnRestore()
 
 	TransformX = WheelX
 	BgAlpha = 0
+	Wheel.SelectedIndex = Wheel.SelectedIndex -- force OnSongChange event
 end
 
 function OnDirectoryChange()
@@ -133,7 +142,7 @@ function Init()
 	WheelBackground.Height = ItemHeight
 
 	WheelItems[Wheel:AddSprite(WheelBackground)] = function(Song, IsSelected, Index)
-		if IsSelected == true and Song then
+		if IsSelected == true then
 			WheelBackground.Red = 0.1
 			WheelBackground.Green = 0.3
 			WheelBackground.Blue = 0.7
@@ -267,7 +276,8 @@ function Cleanup()
 end
 
 function ScrollEvent(xoff, yoff)
-	Wheel:SetSelectedItem(Wheel:GetSelectedItem() - yoff)
+	Wheel.SelectedIndex = Wheel.SelectedIndex - yoff
+	Wheel.CursorIndex = Wheel.SelectedIndex
 end
 
 function Update(Delta)
@@ -279,8 +289,8 @@ function Update(Delta)
 	Time = Time - Delta
 	
 
-	local SelectedSongCenterY = math.floor(-Wheel:GetSelectedItem() * Wheel:GetItemHeight() + 
-	ScreenHeight / 2 - Wheel:GetItemHeight()/2)
+	local SelectedSongCenterY = math.floor(-Wheel.SelectedIndex * Wheel.ItemHeight + 
+	ScreenHeight / 2 - Wheel.ItemHeight/2)
 	Wheel.PendingY = SelectedSongCenterY - Wheel.ListY 
 	Wheel.ScrollSpeed = -math.abs(Wheel.PendingY) / 0.25
 

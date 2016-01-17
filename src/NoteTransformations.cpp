@@ -29,7 +29,18 @@ namespace NoteTransform {
 		int k;
 		if (RespectScratch) k = 1; else k = 0;
 		for (int v = ChannelCount - 1 ; k < ChannelCount / 2; k++, v--)
-			swap(Notes[k], Notes[ChannelCount - k]);
+			swap(Notes[k], Notes[v]);
 	}
 
+	void MoveKeysoundsToBGM(unsigned char channels, VSRG::VectorTN notes_by_channel, vector<AutoplaySound> bg_ms)
+	{
+		for (int k = 0; k < channels; k++)
+		{
+			for (auto&& n : notes_by_channel[k])
+			{
+				bg_ms.push_back(AutoplaySound { float(n.GetStartTime()), n.GetSound() });
+				n.RemoveSound();
+			}
+		}
+	}
 }

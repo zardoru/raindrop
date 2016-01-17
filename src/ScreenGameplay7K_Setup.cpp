@@ -162,7 +162,6 @@ void ScreenGameplay7K::Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const
 	NoFail = Param.NoFail;
 	Random = Param.Random;
 
-	BGA = BackgroundAnimation::CreateBGAFromSong(DifficultyIndex, *S, this);
 	ForceActivation = false;
 
 	if (Param.StartMeasure == -1 && Auto)
@@ -388,9 +387,6 @@ bool ScreenGameplay7K::LoadSongAudio()
 		}
 	}
 
-	sort(CurrentDiff->Data->BGMEvents.begin(), CurrentDiff->Data->BGMEvents.end());
-	for (auto s : CurrentDiff->Data->BGMEvents)
-		BGMEvents.push(s);
 	return true;
 }
 
@@ -498,6 +494,16 @@ bool ScreenGameplay7K::ProcessSong()
 	for (auto S : VSpeeds) if (S.Value < 0) HasNegativeScroll = true;
 
 	if (Random) NoteTransform::Randomize(NotesByChannel, CurrentDiff->Channels, CurrentDiff->Data->Turntable);
+
+	// Load up BGM events
+	vector<AutoplaySound> BGMs = CurrentDiff->Data->BGMEvents;
+	if (Configuration::GetConfigf("DisableKeysounds")) 
+		NoteTransform::MoveKeysoundsToBGM(CurrentDiff->Channels, NotesByChannel, BGMs);
+
+	sort(BGMs.begin(), BGMs.end());
+	for (auto s : CurrentDiff->Data->BGMEvents)
+		BGMEvents.push(s);
+
 	return true;
 }
 

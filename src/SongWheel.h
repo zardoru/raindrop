@@ -136,6 +136,8 @@ public:
 	int GetCursorIndex() const;
 	void SetCursorIndex(int Index);
 
+	void ConfirmSelection();
+
 	// Returns the item index the mouse is currently hovering over.
 	int GetListCursorIndex() const;
 
@@ -144,9 +146,13 @@ public:
 	void SetItemWidth(float width);
 	float GetItemWidth() const;
 
+	// These give and set the global, infinite wheel item.
+	// When wanting to use the bound index, read from SelectedItem, not these.
 	void  SetSelectedItem(int32 Item);
-	int32 GetSelectedItem();
+	int32 GetSelectedItem() const;
 	int32 GetNumItems() const;
+
+	bool IsItemDirectory(int32 Item);
 
 	float GetListY() const;
 	void SetListY(float newLY);
