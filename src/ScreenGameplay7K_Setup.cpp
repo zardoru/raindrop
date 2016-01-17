@@ -501,7 +501,7 @@ bool ScreenGameplay7K::ProcessSong()
 		NoteTransform::MoveKeysoundsToBGM(CurrentDiff->Channels, NotesByChannel, BGMs);
 
 	sort(BGMs.begin(), BGMs.end());
-	for (auto s : CurrentDiff->Data->BGMEvents)
+	for (auto &s : BGMs)
 		BGMEvents.push(s);
 
 	return true;

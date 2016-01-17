@@ -42,14 +42,14 @@ function OnItemHoverLeave(Index, BoundIndex, Line, Selected)
 end
 
 function OnItemClick(Index, BoundIndex, Line, Song)
-	print (Index, BoundIndex, Line, Song, Wheel.ListIndex, Wheel.SelectedIndex)
-	if Wheel.CursorIndex ~= Wheel.SelectedIndex then -- The item that is to be selected is not the selected item
+	print (Index, BoundIndex, Line, Song, Wheel.ListIndex, Wheel.SelectedIndex, Wheel.CursorIndex)
+	if Song and (Index == Wheel.SelectedIndex) then
+		Wheel:ConfirmSelection()
+	else
 		Wheel.SelectedIndex = Index
-		if Wheel:IsItemDirectory(Index) then -- Not a song.
+		if not Song then
 			Wheel:ConfirmSelection() -- Go into directories inmediately
 		end
-	else
-		Wheel:ConfirmSelection()
 	end
 end
 
