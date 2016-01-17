@@ -434,7 +434,7 @@ void Line::UpdateVBO()
 	{
 		if (!lnvbo)
 		{
-			lnvbo = new VBO(VBO::Dynamic, 4);
+			lnvbo = new VBO(VBO::Stream, 4);
 		}
 
 		lnvbo->Validate();
@@ -625,6 +625,7 @@ void VBO::AssignData(void* Data)
 {
 	unsigned int UpType;
 	unsigned int BufType;
+	bool RegenBuffer = false;
 
 	UpType = UpTypeForKind(mType);
 	BufType = BufTypeForKind(mKind);
@@ -635,10 +636,14 @@ void VBO::AssignData(void* Data)
 	{
 		glGenBuffers(1, &InternalVBO);
 		IsValid = true;
+		RegenBuffer = true;
 	}
 
 	Bind();
-	glBufferData(BufType, ElementSize * ElementCount, VboData, UpType);
+	if (RegenBuffer)
+		glBufferData(BufType, ElementSize * ElementCount, VboData, UpType);
+	else
+		glBufferSubData(BufType, 0, ElementSize * ElementCount, VboData);
 }
 
 
