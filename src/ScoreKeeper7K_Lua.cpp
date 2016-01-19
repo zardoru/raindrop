@@ -23,6 +23,10 @@ void SetupScorekeeper7KLuaInterface(void* state)
 		.addFunction("getPills", &ScoreKeeper7K::getPills)
 		.addFunction("getCoolCombo", &ScoreKeeper7K::getCoolCombo)
 		.addFunction("getTotalNotes", &ScoreKeeper7K::getTotalNotes)
+		.addFunction("getHistogramPointCount", &ScoreKeeper7K::getHistogramPointCount)
+		.addFunction("getHistogramPoint", &ScoreKeeper7K::getHistogramPoint)
+		.addFunction("getHistogramHighestPoint", &ScoreKeeper7K::getHistogramHighestPoint)
+		.addFunction("getAvgHit", &ScoreKeeper7K::getAvgHit)
 		.addFunction("getMaxNotes", &ScoreKeeper7K::getMaxNotes)
 		.endClass();
 

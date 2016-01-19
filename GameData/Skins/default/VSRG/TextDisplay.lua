@@ -138,6 +138,7 @@ function UpdateTextObjects()
 	fmtext = fmtext .. string.format("\nMaxCombo: %d", ScoreKeeper:getScore(ST_MAX_COMBO))
 	fmtext = fmtext .. string.format("\nBPM: %d", CurrentBPM)
 	fmtext = fmtext .. string.format("\nTime: %f", Game:GetSongTime())
+  fmtext = fmtext .. string.format("\nAvg. Hit (ms): %f", ScoreKeeper:getAvgHit())
 
 
 	judgments.Text = fmtext

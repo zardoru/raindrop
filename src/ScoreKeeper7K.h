@@ -5,249 +5,256 @@
 
 class ScoreKeeper7K {
 
-	public:
+public:
 
-		ScoreKeeper7K();
-		ScoreKeeper7K(double judge_window_scale);
+	ScoreKeeper7K();
+	ScoreKeeper7K(double judge_window_scale);
 
-		~ScoreKeeper7K();
+	~ScoreKeeper7K();
 
-		void init();
+	void init();
 
-		void setMaxNotes(int notes);
-		void setLifeTotal(double total);
-		void setLifeIncrements(double* increments, int inc_n);
-		void setMissDecrement(double decrement);
-		void setEarlyMissDecrement(double decrement);
-		
-		void setO2LifebarRating(int difficulty);
+	void setMaxNotes(int notes);
+	void setLifeTotal(double total);
+	void setLifeIncrements(double* increments, int inc_n);
+	void setMissDecrement(double decrement);
+	void setEarlyMissDecrement(double decrement);
 
-		void setJudgeRank(int rank);
-		void setJudgeScale(double scale);
+	void setO2LifebarRating(int difficulty);
 
-		void setODWindows(int od);
-		void setSMJ4Windows();
+	void setJudgeRank(int rank);
+	void setJudgeScale(double scale);
 
-		void setAccMin(double ms);
-		void setAccMax(double ms);
-		
-		// accessor functions
+	void setODWindows(int od);
+	void setSMJ4Windows();
 
-		int getMaxNotes();
-		int getTotalNotes();
+	void setAccMin(double ms);
+	void setAccMax(double ms);
 
-		int getJudgmentCount(int Judge);
-		std::string getHistogram();
+	// accessor functions
 
-		ScoreKeeperJudgment hitNote(double ms);
-		void missNote(bool auto_hold_miss, bool early_miss);
+	int getMaxNotes();
+	int getTotalNotes();
 
-		double getAccMax();
+	int getJudgmentCount(int Judge);
+	std::string getHistogram();
+	int getHistogramPoint(int point);
+	int getHistogramPointCount();
+	int getHistogramHighestPoint();
+	double getAvgHit();
 
-		double getJudgmentWindow(int judgment);
-		double getMissCutoff();
-		double getEarlyMissCutoff();
+	ScoreKeeperJudgment hitNote(double ms);
+	void missNote(bool auto_hold_miss, bool early_miss);
 
-		int getScore(int score_type);
-		float getPercentScore(int score_type);
+	double getAccMax();
 
-		int getLifebarUnits(int lifebar_unit_type);
-		float getLifebarAmount(int lifebar_amount_type);
+	double getJudgmentWindow(int judgment);
+	double getMissCutoff();
+	double getEarlyMissCutoff();
 
-		bool isStageFailed(int lifebar_amount_type);
-		void failStage();
+	int getScore(int score_type);
+	float getPercentScore(int score_type);
 
-		int getPacemakerDiff(PacemakerType pmt);
-		std::pair<std::string, int> getAutoPacemaker();
-		std::pair<std::string, int> getAutoRankPacemaker();
-		std::map<PacemakerType, std::string> pacemaker_texts;
+	int getLifebarUnits(int lifebar_unit_type);
+	float getLifebarAmount(int lifebar_amount_type);
 
-		int getRank(); // returns a number from -9 to 9
-		int getBMRank(); // returns PMT_xxx according to EXScore Rank
+	bool isStageFailed(int lifebar_amount_type);
+	void failStage();
 
-		uint8 getPills();
-		int getCoolCombo();
-		
-		void set_manual_w0(bool);
-		bool usesW0();
-		bool usesO2();
-		
-		void reset();
+	int getPacemakerDiff(PacemakerType pmt);
+	std::pair<std::string, int> getAutoPacemaker();
+	std::pair<std::string, int> getAutoRankPacemaker();
+	map<PacemakerType, std::string> pacemaker_texts;
 
-	private:
 
-		void set_beat_timing_windows();
+	int getRank(); // returns a number from -9 to 9
+	int getBMRank(); // returns PMT_xxx according to EXScore Rank
 
-		bool use_w0; // whether or not to use ridiculous timing.
-		bool use_w0_for_ex2; // whether or not to require ridiculous for 2 EX score.
+	uint8 getPills();
+	int getCoolCombo();
 
-		// o2jam-specific variable
-		bool use_bbased;
-		
+	void set_manual_w0(bool);
+	bool usesW0();
+	bool usesO2();
+
+	void reset();
+
+private:
+
+	void set_beat_timing_windows();
+
+	bool use_w0; // whether or not to use ridiculous timing.
+	bool use_w0_for_ex2; // whether or not to require ridiculous for 2 EX score.
+
+	double avg_hit;
+
+	// o2jam-specific variable
+	bool use_bbased;
+
 	/*
 		Standard scoring.
-	*/
+		*/
 
-		double score; // standard score.
-		double sc_score;
-		double sc_sc_score;
+	double score; // standard score.
+	double sc_score;
+	double sc_sc_score;
 
 	/*
 		Rank scoring
-	*/
+		*/
 
-		long long rank_w0_count;
-		long long rank_w1_count;
-		long long rank_w2_count;
-		long long rank_w3_count;
+	long long rank_w0_count;
+	long long rank_w1_count;
+	long long rank_w2_count;
+	long long rank_w3_count;
 
-		long long rank_pts; // rank scoring
+	long long rank_pts; // rank scoring
 
-		void update_ranks(ScoreKeeperJudgment judgment);
+	void update_ranks(ScoreKeeperJudgment judgment);
 
-		long long max_notes;
+	long long max_notes;
 
 	/*
 		BMS scoring
-	*/
+		*/
 
-		long long ex_score;
+	long long ex_score;
 
-		long long bms_combo;
-		long long bms_combo_pts;
-		long long bms_max_combo_pts;
+	long long bms_combo;
+	long long bms_combo_pts;
+	long long bms_max_combo_pts;
 
-		long long bms_dance_pts;
-		long long bms_score;
+	long long bms_dance_pts;
+	long long bms_score;
 
-		long long lr2_dance_pts;
-		long long lr2_score;
+	long long lr2_dance_pts;
+	long long lr2_score;
 
-		void update_bms(ScoreKeeperJudgment judgment);
-		void update_lr2(ScoreKeeperJudgment judgment);
-		
+	void update_bms(ScoreKeeperJudgment judgment);
+	void update_lr2(ScoreKeeperJudgment judgment);
+
 	/*
 		osu!
-	*/
-		
-		long long osu_points;
-		long long osu_accuracy;
-		int bonus_counter;
-		double osu_bonus_points;
+		*/
 
-		double osu_score;
-		
-		void update_osu(ScoreKeeperJudgment judgment);
+	long long osu_points;
+	long long osu_accuracy;
+	int bonus_counter;
+	double osu_bonus_points;
+
+	double osu_score;
+
+	void update_osu(ScoreKeeperJudgment judgment);
 
 
 	/*
 		experimental
-	*/
+		*/
 
-		long long exp_combo;
-		long long exp_combo_pts;
-		long long exp_max_combo_pts;
-		
-		long long exp_hit_score;
-		
-		double exp_score;
+	long long exp_combo;
+	long long exp_combo_pts;
+	long long exp_max_combo_pts;
 
-		double exp3_score;
+	long long exp_hit_score;
 
-		void update_exp2(ScoreKeeperJudgment judgment);
+	double exp_score;
+
+	double exp3_score;
+
+	void update_exp2(ScoreKeeperJudgment judgment);
 
 	/*
 		o2jam
-	*/
+		*/
 
-		char pills;
+	char pills;
 
-		long long coolcombo;
-		long long o2_score;
-		long long jams;
-		long long jam_jchain;
+	long long coolcombo;
+	long long o2_score;
+	long long jams;
+	long long jam_jchain;
 
-		void update_o2(ScoreKeeperJudgment judgment);
-		int getO2Judge(ScoreKeeperJudgment j);
+	void update_o2(ScoreKeeperJudgment judgment);
+	int getO2Judge(ScoreKeeperJudgment j);
 
 	/*
 		misc.
-	*/
+		*/
 
-		long long notes_hit; // notes hit %.
-		long long total_notes;
-
-
-		long long dp_score; // DDR dance-point scoring
-		long long dp_dp_score;
+	long long notes_hit; // notes hit %.
+	long long total_notes;
 
 
-		long long combo;
-		long long max_combo;
-
-		double total_sqdev; // accuracy scoring
-		double accuracy;
-
-		double accuracy_percent(double var);
+	long long dp_score; // DDR dance-point scoring
+	long long dp_dp_score;
 
 
+	long long combo;
+	long long max_combo;
 
-		// lifebar data.
+	double total_sqdev; // accuracy scoring
+	double accuracy;
 
-		double lifebar_total;
+	double accuracy_percent(double var);
 
 
-		double lifebar_groove;
-		double lifebar_groove_increment;
-		double lifebar_groove_decrement;
 
-		double lifebar_survival;
-		double lifebar_survival_increment;
-		double lifebar_survival_decrement;
+	// lifebar data.
 
-		double lifebar_exhard;
-		double lifebar_exhard_increment;
-		double lifebar_exhard_decrement;
+	double lifebar_total;
 
-		double lifebar_death;
 
-		double lifebar_easy;
-		double lifebar_easy_increment;
-		double lifebar_easy_decrement;
+	double lifebar_groove;
+	double lifebar_groove_increment;
+	double lifebar_groove_decrement;
 
-		double lifebar_o2jam;
-		double lifebar_o2jam_increment;
-		double lifebar_o2jam_decrement;
-		double lifebar_o2jam_decrement_bad;
+	double lifebar_survival;
+	double lifebar_survival_increment;
+	double lifebar_survival_decrement;
 
-		double lifebar_stepmania;
-		double lifebar_stepmania_miss_decrement;
-		double lifebar_stepmania_earlymiss_decrement;
+	double lifebar_exhard;
+	double lifebar_exhard_increment;
+	double lifebar_exhard_decrement;
 
-		// judgment information
-		double judgment_time[9];
-		double judgment_amt[9];
-		double judge_window_scale;
+	double lifebar_death;
 
-		double life_increment[9];
-		
-		void set_timing_windows();
-		
-		// miss thresholds; notes hit outside here count as misses.
-		// units are in ms
-		double miss_threshold;
-		double earlymiss_threshold;
+	double lifebar_easy;
+	double lifebar_easy_increment;
+	double lifebar_easy_decrement;
 
-		double histogram[255]; // records from -127 to +127 ms.
+	double lifebar_o2jam;
+	double lifebar_o2jam_increment;
+	double lifebar_o2jam_decrement;
+	double lifebar_o2jam_decrement_bad;
 
-		// no-recovery modes.
-		double lifebar_battery;
+	double lifebar_stepmania;
+	double lifebar_stepmania_miss_decrement;
+	double lifebar_stepmania_earlymiss_decrement;
 
-		long long lifebar_battery_lives;
+	// judgment information
+	double judgment_time[9];
+	double judgment_amt[9];
+	double judge_window_scale;
 
-		// scoring parameters.
-		double ACC_MIN, ACC_MIN_SQ;
-		double ACC_MAX, ACC_MAX_SQ;
+	double life_increment[9];
+
+	void set_timing_windows();
+
+	// miss thresholds; notes hit outside here count as misses.
+	// units are in ms
+	double miss_threshold;
+	double earlymiss_threshold;
+
+	double histogram[255]; // records from -127 to +127 ms.
+
+	// no-recovery modes.
+	double lifebar_battery;
+
+	long long lifebar_battery_lives;
+
+	// scoring parameters.
+	double ACC_MIN, ACC_MIN_SQ;
+	double ACC_MAX, ACC_MAX_SQ;
 
 };
 

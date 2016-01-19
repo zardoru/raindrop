@@ -1,6 +1,7 @@
 game_require "TextureAtlas"
 game_require "utils"
 game_require "AnimationFunctions"
+game_require "Histogram"
 skin_require "Global/FadeInScreen"
 
 -- Set up constants for everyone
@@ -106,6 +107,14 @@ function Init()
 	ScreenFade.Init()
 	ScreenFade.Out(true)
 
+
+  histogram = Histogram:new()
+  histogram:SetPosition(ScreenWidth - 255, ScreenHeight - 100 - ScoreDisplay.DigitHeight)
+  histogram:SetColor(30 / 255, 50 / 255, 200 / 255)
+  hist_bg = histogram:SetBackground("Global/white.png")
+  hist_bg.Red = 0.2
+  hist_bg.Green = 0.2
+  hist_bg.Blue = 0.2
 	-- ScreenBackground.Alpha = (0)
 	Engine:Sort()
 end
@@ -161,6 +170,7 @@ function HitEvent(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease)
 		Judgment.Hit(JudgmentValue, EarlyOrLate)
 	end
 
+  histogram:UpdatePoints()
 	ScoreDisplay.Update()
 end
 
@@ -179,6 +189,7 @@ function MissEvent(TimeOff, Lane, IsHold)
 
 	Judgment.Hit(5, EarlyOrLate)
 
+  histogram:UpdatePoints()
 	ScoreDisplay.Update()
 	ComboDisplay.Miss()
 	MissHighlight.OnMiss(Lane)

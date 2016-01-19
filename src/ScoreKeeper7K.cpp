@@ -5,6 +5,7 @@
 #include <iostream>
 #include <iomanip>
 #include <map>
+#include <numeric>
 
 ScoreKeeper7K::~ScoreKeeper7K(){  }
 
@@ -45,17 +46,20 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms){
 
 // hit notes
 
+	avg_hit *= total_notes;
 	++total_notes;
+	avg_hit += ms;
+	avg_hit /= total_notes;
 
 	// std::cerr << use_bbased << " " << ms << " ";
 
 	if(use_bbased) {
 		if(abs(ms * 150) < 128){
-			++histogram[(int)(ms * 150) + 127];
+			++histogram[static_cast<int>(round(ms * 150)) + 127];
 		}
 	}else{
 		if(abs(ms) < 128){
-			++histogram[(int)ms + 127];
+			++histogram[static_cast<int>(round(ms)) + 127];
 		}	
 	}
 
@@ -261,7 +265,29 @@ GString ScoreKeeper7K::getHistogram(){
 
 }
 
+int ScoreKeeper7K::getHistogramPoint(int point)
+{
+	int msCount = sizeof(histogram) / sizeof(double) / 2;
+	if (abs(point) > msCount) return 0;
+	return histogram[point + msCount];
+}
 
+int ScoreKeeper7K::getHistogramPointCount()
+{
+	return sizeof(histogram) / sizeof(double);
+}
+
+int ScoreKeeper7K::getHistogramHighestPoint()
+{
+	return std::accumulate(&histogram[0], histogram + getHistogramPointCount(), 1.0, [](double a, double b) -> double {
+		return std::max(a, b);
+	});
+}
+
+double ScoreKeeper7K::getAvgHit()
+{
+	return avg_hit;
+}
 
 /* actual score functions. */
 
@@ -306,7 +332,10 @@ float ScoreKeeper7K::getPercentScore(int percent_score_type){
 		case PST_ACC:
 			return accuracy;
 		case PST_NH:
-			return double(notes_hit) / double(total_notes) * 100.0;
+			if (total_notes)
+				return double(notes_hit) / double(total_notes) * 100.0;
+			else
+				return 100;
 		case PST_OSU:
 			return double(osu_accuracy) / double(total_notes) / 3.0;
 		default:

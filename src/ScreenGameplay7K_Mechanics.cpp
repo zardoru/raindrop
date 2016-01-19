@@ -295,7 +295,7 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 
 	for (auto m = Start; m != End; ++m)
 	{
-		double dev = (SongTime - m->GetStartTime()) * 1000;
+		double dev = (Time - m->GetStartTime()) * 1000;
 		double tD = abs(dev);
 
 		lastClosest[Lane] = min(tD, (double)lastClosest[Lane]);

@@ -1,4 +1,5 @@
 game_require "TextureAtlas"
+game_require "Histogram"
 skin_require "Global/Background"
 skin_require "Global/FadeInScreen"
 skin_require "VSRG/ScoreDisplay"
@@ -78,10 +79,10 @@ function SetupJudgmentsDisplay()
 		fmtext = fmtext .. string.format("Flawless*: %04d\nFlawless: %04d\nSweet: %04d\nNice: %04d\nOK: %04d\nMiss: %04d", w0, w1, w2, w3, w4, w5)
 	end
 	
-	print (ScoreDisplay.Score)
 	fmtext = fmtext .. string.format("\nMax Combo: %d", ScoreKeeper:getScore(ST_MAX_COMBO))
 	fmtext = fmtext .. string.format("\nNotes hit: %d%%", ScoreKeeper:getPercentScore(PST_NH))
 	fmtext = fmtext .. string.format("\nAccuracy: %d%%", ScoreKeeper:getPercentScore(PST_ACC))
+	fmtext = fmtext .. string.format("\nAverage hit (ms): %.2f" , ScoreKeeper:getAvgHit())
 	fmtext = fmtext .. "\nraindrop rank: "
 	
 	if ScoreKeeper:getRank() > 0 then
@@ -129,6 +130,23 @@ function SetSongTitle()
 	Engine:AddTarget(TitleText)
 end
 
+function SetupHistogram()
+	histogram = Histogram:new()
+	histogram:SetPosition(ScreenWidth / 2 - 255 / 2, 20)
+	histogram:SetColor(30 / 255, 50 / 255, 200 / 255)
+	hist_bg = histogram:SetBackground("Global/white.png")
+	hist_bg.Red = 0.2
+	hist_bg.Green = 0.2
+	hist_bg.Blue = 0.2
+	
+	hStr = StringObject2D()
+	hStr.Font = EvalFont
+	hStr.X = histogram.X
+	hStr.Y = histogram.Y + histogram.Height
+	hStr.Text = "histogram"
+	Engine:AddTarget(hStr)
+end
+
 function Init()
 	
 	BackgroundAnimation:Init()
@@ -148,9 +166,9 @@ function Init()
 	Engine:AddTarget(scoreStr)
 	
 	SetSongTitle()
+	SetupHistogram()
 	ScreenFade.Init()
 	ScreenFade.Out()
-	
 end
 
 function Cleanup()

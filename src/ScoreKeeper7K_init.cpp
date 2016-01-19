@@ -8,6 +8,7 @@ void ScoreKeeper7K::init(){
 	
 	rank_pts = 0;
 	use_bbased = false;
+	avg_hit = 0;
 	
 	pacemaker_texts[PMT_F] = "F" ;
 	pacemaker_texts[PMT_E] = "E" ;

@@ -194,7 +194,7 @@ void ScreenGameplay7K::CalculateHiddenConstants()
 			Center = -(( ((ScreenHeight - JudgmentLinePos) / 2 + JudgmentLinePos) / ScreenHeight)*2 - 1);
 
 			// AdjustmentSize = -( ((ScreenHeight - JudgmentLinePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
-			AdjustmentSize = 0.1;
+			AdjustmentSize = 0.1f;
 
 			if (SelectedHiddenMode == 2)
 			{
@@ -214,7 +214,7 @@ void ScreenGameplay7K::CalculateHiddenConstants()
 		{
 			Center = -((JudgmentLinePos / 2 / ScreenHeight)*2 - 1);
 
-			AdjustmentSize = 0.1;
+			AdjustmentSize = 0.1f;
 			// AdjustmentSize = -( ((JudgmentLinePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
 
 			// Hidden/Sudden
