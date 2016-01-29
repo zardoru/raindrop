@@ -244,6 +244,8 @@ void ScoreKeeper7K::setJudgeRank(int rank){
 			judge_window_scale = 1.00; break;
 		case 3:
 			judge_window_scale = 1.50; break;
+		case 4:
+			judge_window_scale = 2.00; break;
 	}
 	set_timing_windows();
 }
