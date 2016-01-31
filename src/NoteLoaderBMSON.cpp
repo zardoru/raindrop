@@ -5,6 +5,7 @@
 #include "GameGlobal.h"
 #include "Song7K.h"
 #include <regex>
+#include <string>
 #include "Logging.h"
 
 // All non-standard exceptions are marked with NSE.
@@ -92,11 +93,12 @@ namespace NoteLoaderBMSON{
 
 		GString GetSubartist(const char string[6])
 		{
-			std::regex sreg(Utility::Format("\\s*%s\\s*:\\s*(.*?)\\s*$", string));
-			for (auto s : root["info"]["subartists"])
+            std::regex sreg(Utility::Format("\\s*%s\\s*:\\s*(.*?)\\s*$", string));
+			for (const auto& s : root["info"]["subartists"])
 			{
 				std::smatch sm;
-				if (regex_search(s.asString(), sm, sreg))
+                auto str = s.asString();
+				if (regex_search(str, sm, sreg))
 				{
 					return sm[1];
 				}
