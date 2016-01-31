@@ -1,5 +1,6 @@
 # General ignores.
 ext-libs/boost
+config.ini
 *.bms
 *.osu
 *.sm
@@ -8,19 +9,19 @@ TEST
 Songs
 release
 Starter Pack
+
 # Windows ignores.
 project/debug
 project/release
 project/release_xp
 project/packages
+project/log.txt
 *.dll
-project/config.ini
 *.suo
 *.user
-*sdf
+*.sdf
 *.exe
-project/log.txt
-project/*.db
+
 # Linux ignores.
 
 # Mac ignores.
@@ -32,5 +33,4 @@ log.txt
 *.ssc
 *.pms
 *.bat
-config.ini
 *.swp
