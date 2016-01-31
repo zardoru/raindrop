@@ -1,5 +1,4 @@
-#ifndef GUI_TEXTPROMPT_H_
-#define GUI_TEXTPROMPT_H_
+#pragma once
 
 class BitmapFont;
 
@@ -27,4 +26,3 @@ public:
 };
 
 }
-#endif

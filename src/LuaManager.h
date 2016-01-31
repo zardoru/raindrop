@@ -1,5 +1,4 @@
-#ifndef LuaManager_H
-#define LuaManager_H
+#pragma once
 
 extern "C" {
 
@@ -75,7 +74,7 @@ public:
 	 then call FinalizeArray if you are done with it and your call 
 	 for working with it was newarray() 
 	 also these are tables but we work with them differently than how we would do tables.
-    */
+	*/
 
 	void NewArray();
 	bool UseArray(GString VariableName); // returns true if the array exists
@@ -107,8 +106,8 @@ template <class T>
 T* GetObjectFromState(lua_State* L, GString ObjectName)
 {
 	lua_pushstring(L, ObjectName.c_str());
-    lua_gettable(L, LUA_REGISTRYINDEX);
-    return (T*)lua_touserdata(L, -1);
+	lua_gettable(L, LUA_REGISTRYINDEX);
+	return (T*)lua_touserdata(L, -1);
 }
 
 template<class T>
@@ -118,5 +117,3 @@ T* GetUserObject(lua_State *L, int Parameter, const char* MetatableName)
 	luaL_argcheck(L, ud != NULL, 1, "Expected object of different type!");
 	return ud;
 }
-
-#endif

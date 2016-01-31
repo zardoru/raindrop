@@ -1,5 +1,4 @@
-#ifndef AUDIO_H_
-#define AUDIO_H_
+#pragma once
 
 #include "Audiofile.h"
 
@@ -20,5 +19,3 @@ void MixerUpdate();
 double MixerGetLatency();
 double MixerGetFactor();
 double MixerGetTime();
-
-#endif // AUDIO_H_

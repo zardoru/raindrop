@@ -1,5 +1,4 @@
-#ifndef FONT_H_
-#define FONT_H_
+#pragma once
 
 class Font {
 protected:
@@ -14,5 +13,3 @@ public:
 	virtual void Invalidate();
 	virtual void Render(const GString &Text, const Vec2 &Position, const Mat4& Transform = Mat4());
 };
-
-#endif

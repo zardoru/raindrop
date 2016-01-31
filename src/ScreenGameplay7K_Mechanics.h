@@ -1,5 +1,4 @@
-#ifndef SG7KMECHS_H_
-#define SG7KMECHS_H_
+#pragma once
 
 class ScoreKeeper7K;
 
@@ -72,5 +71,3 @@ public:
 
 	TimingType GetTimingKind() override;
 };
-
-#endif

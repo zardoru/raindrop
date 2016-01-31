@@ -1,3 +1,5 @@
+#pragma once
+
 /*
 	Raindrop IPC facilities. Mainly for use with VSRG preview-mode.
 */

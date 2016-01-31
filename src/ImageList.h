@@ -1,4 +1,4 @@
-
+#pragma once
 
 // A front-end to ImageLoader that unloads all images added to the list on destruction.
 

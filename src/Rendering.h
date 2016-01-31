@@ -1,5 +1,4 @@
-#ifndef RENDERING_H_
-#define RENDERING_H_
+#pragma once
 
 #include "Global.h"
 #include "Transformation.h"
@@ -29,5 +28,3 @@ void SetBlendingMode(EBlendMode Mode);
 void SetTexturedQuadVBO(VBO *TexQuad);
 void DrawTexturedQuad(Image* ToDraw, const AABB& TextureCrop, const Transformation& QuadTransformation, const EBlendMode &Mode = BLEND_ALPHA, const ColorRGB &InColor = Color::White);
 void DrawPrimitiveQuad(Transformation &QuadTransformation, const EBlendMode &Mode = BLEND_ALPHA, const ColorRGB &InColor = Color::White);
-
-#endif

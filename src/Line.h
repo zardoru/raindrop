@@ -1,5 +1,4 @@
-#ifndef LINE_H_
-#define LINE_H_
+#pragma once
 
 #include "Drawable.h"
 
@@ -23,5 +22,3 @@ public:
 	void SetLocation(const Vec2 &p1, const Vec2 &p2);
 	void Render();
 };
-
-#endif

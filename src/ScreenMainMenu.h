@@ -1,5 +1,4 @@
-#ifndef SCREEN_MAINMENU_H_
-#define SCREEN_MAINMENU_H_
+#pragma once
 
 #include "GuiButton.h"
 #include "Line.h"
@@ -23,5 +22,3 @@ public:
 	bool Run (double Delta);
 	void Cleanup();
 };
-
-#endif

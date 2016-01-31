@@ -1,5 +1,4 @@
-#ifndef Directory_H
-#define Directory_H
+#pragma once
 
 class Directory
 {
@@ -38,5 +37,3 @@ private:
 
 extern Directory operator/(Directory, GString);
 extern Directory operator/(GString, Directory);
-
-#endif

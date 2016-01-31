@@ -1,5 +1,4 @@
-#ifndef BINDINGS_MANAGER_H_
-#define BINDINGS_MANAGER_H_
+#pragma once
 
 #include <map>
 
@@ -14,5 +13,3 @@ public:
 	static KeyType TranslateKey(int32 Scan);
 	static int32 TranslateKey7K(int32 Scan);
 };
-
-#endif

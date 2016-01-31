@@ -1,5 +1,4 @@
-#ifndef RROCKETI_H_
-#define RROCKETI_H_
+#pragma once
 
 #include <Rocket/Core.h>
 
@@ -86,5 +85,3 @@ void SetupRocket();
 void SetupRocketLua(void* State);
 
 }
-
-#endif

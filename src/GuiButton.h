@@ -1,5 +1,4 @@
-#ifndef GUI_BUTTON_H_
-#define GUI_BUTTON_H_
+#pragma once
 
 #include "Sprite.h"
 
@@ -31,5 +30,3 @@ public:
 };
 
 }
-
-#endif

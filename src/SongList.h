@@ -1,5 +1,4 @@
-#ifndef SONGLIST_H_
-#define SONGLIST_H_
+#pragma once
 
 class SongLoader;
 
@@ -39,5 +38,3 @@ public:
 	bool HasParentDirectory();
 	SongList* GetParentDirectory();
 };
-
-#endif

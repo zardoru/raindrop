@@ -1,5 +1,4 @@
-#ifndef SCR_EDIT_H_
-#define SCR_EDIT_H_
+#pragma once
 
 #include "ScreenGameplay.h"
 #include "GuiTextPrompt.h"
@@ -59,5 +58,3 @@ public:
 	bool Run (double Delta) override;
 	void Cleanup() override;
 };
-
-#endif

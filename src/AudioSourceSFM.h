@@ -1,5 +1,4 @@
-#ifndef WAVFILESRC_H_
-#define WAVFILESRC_H_
+#pragma once
 
 class AudioSourceSFM : public AudioDataSource
 {
@@ -23,6 +22,3 @@ public:
 	bool IsValid() override;
 	bool HasDataLeft() override;
 };
-
-
-#endif

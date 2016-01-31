@@ -1,5 +1,4 @@
-#ifndef ScoreKeeper_H
-#define ScoreKeeper_H
+#pragma once
 
 enum ScoreKeeperJudgment{
 
@@ -112,6 +111,3 @@ enum PacemakerType{
 	PMT_F = 35,
 
 };
-
-
-#endif

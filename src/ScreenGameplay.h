@@ -1,5 +1,4 @@
-#ifndef SCREEN_GP_H_
-#define SCREEN_GP_H_
+#pragma once
 
 #include <vector>
 #include "Screen.h"
@@ -101,5 +100,3 @@ public:
 	void LoadResources();
 	void MainThreadInitialization();
 };
-
-#endif

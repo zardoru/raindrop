@@ -1,7 +1,4 @@
-/* Handle seriously boring stuff. */
-
-#ifndef GraphMan_H_
-#define GraphMan_H_
+#pragma once
 
 #include <list>
 #include <map>
@@ -91,9 +88,9 @@ public:
 
 	// returns the mouse position relative to the matrix and window size
 	Vec2 GetRelativeMPos();
-    
-    // returns the mouse position relative to the window.
-    Vec2 GetWindowMPos();
+	
+	// returns the mouse position relative to the window.
+	Vec2 GetWindowMPos();
 
 	// returns the size of the window
 	Vec2 GetWindowSize() const;
@@ -122,5 +119,3 @@ public:
 };
 
 extern GameWindow WindowFrame;
-
-#endif

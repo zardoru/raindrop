@@ -1,5 +1,4 @@
-#ifndef SCREEN_LD_H_
-#define SCREEN_LD_H_
+#pragma once
 
 class ScreenLoading : public Screen
 {
@@ -18,5 +17,3 @@ public:
 	bool HandleScrollInput(double xOff, double yOff) override;
 	void Cleanup();
 };
-
-#endif

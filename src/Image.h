@@ -1,5 +1,4 @@
-#ifndef Image_H
-#define Image_H
+#pragma once
 
 struct ImageData {
 	enum EWrapMode {
@@ -57,5 +56,3 @@ public:
 	unsigned int texture;
 	bool IsValid;
 };
-
-#endif

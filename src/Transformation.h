@@ -1,5 +1,4 @@
-#ifndef TRANSFORMATION_H_
-#define TRANSFORMATION_H_
+#pragma once
 
 class Transformation {
 	Mat4   mMatrix;
@@ -59,5 +58,3 @@ public:
 
 	const glm::mat4 &GetMatrix();
 };
-
-#endif

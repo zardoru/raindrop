@@ -1,5 +1,4 @@
-#ifndef LOGGING_H_
-#define LOGGING_H_
+#pragma once
 
 namespace Log
 {
@@ -9,5 +8,3 @@ namespace Log
 	void Logf(GString Format, ...);
 	void LogPrintf(GString str, ...);
 };
-
-#endif

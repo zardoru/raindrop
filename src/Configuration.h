@@ -1,5 +1,4 @@
-#ifndef CMAN_H_
-#define CMAN_H_
+#pragma once
 
 #include <map>
 
@@ -29,5 +28,3 @@ namespace Configuration
 
 #define ScreenHeight Configuration::CfgScreenHeight()
 #define ScreenWidth Configuration::CfgScreenWidth()
-
-#endif

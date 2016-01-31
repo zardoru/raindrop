@@ -1,5 +1,4 @@
-#ifndef SG7K_H_
-#define SG7K_H_
+#pragma once
 
 #include <queue>
 #include "Audio.h"
@@ -61,19 +60,19 @@ private:
 	double AudioStart, AudioOldTime;
 
 	/* User Variables */
-    float       SpeedMultiplierUser;
+	float       SpeedMultiplierUser;
 
-    EHiddenMode SelectedHiddenMode;
+	EHiddenMode SelectedHiddenMode;
 
-    Mat4             PositionMatrix;
+	Mat4             PositionMatrix;
 
-    float            SpeedMultiplier;
-    int				 StartMeasure;
+	float            SpeedMultiplier;
+	int				 StartMeasure;
 
-    map<int, int> GearBindings;
-    int                lastClosest[VSRG::MAX_CHANNELS];
-    VSRG::TrackNote*   CurrentKeysounds[VSRG::MAX_CHANNELS];
-    int                BarlineOffsetKind;
+	map<int, int> GearBindings;
+	int                lastClosest[VSRG::MAX_CHANNELS];
+	VSRG::TrackNote*   CurrentKeysounds[VSRG::MAX_CHANNELS];
+	int                BarlineOffsetKind;
 
 	LifeType         lifebar_type;		 
 	ScoreType        scoring_type;
@@ -197,5 +196,3 @@ public:
 	bool Run(double Delta);
 	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 };
-
-#endif

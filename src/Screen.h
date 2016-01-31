@@ -1,5 +1,4 @@
-#ifndef ISCREEN_H_
-#define ISCREEN_H_
+#pragma once
 
 #include "Interruptible.h"
 class SceneEnvironment;
@@ -70,5 +69,3 @@ public:
 	virtual void Cleanup();
 
 };
-
-#endif

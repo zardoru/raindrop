@@ -1,5 +1,4 @@
-#ifndef NOTESKIN_H_
-#define NOTESKIN_H_
+#pragma once
 
 class ScreenGameplay7K;
 class LuaManager;
@@ -30,5 +29,3 @@ public:
 	static bool AllowDanglingHeads();
 	static bool ShouldDecreaseHoldSizeWhenBeingHit();
 };
-
-#endif

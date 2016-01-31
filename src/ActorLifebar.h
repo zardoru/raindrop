@@ -1,5 +1,4 @@
-#ifndef ACTOR_LIFEBAR_H_
-#define ACTOR_LIFEBAR_H_
+#pragma once
 
 class ActorLifebar : public Sprite
 {
@@ -12,5 +11,3 @@ public:
 	void Run (double delta);
 	void UpdateHealth();
 };
-
-#endif

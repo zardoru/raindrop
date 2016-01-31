@@ -1,5 +1,4 @@
-#ifndef GOM_H_
-#define GOM_H_
+#pragma once
 
 #include <limits>
 
@@ -107,5 +106,3 @@ public:
 };
 
 void DefineSpriteInterface(LuaManager* anim_lua);
-
-#endif

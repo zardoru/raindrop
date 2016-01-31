@@ -1,6 +1,4 @@
-
-#ifndef GOBJ_H_
-#define GOBJ_H_
+#pragma once
 
 #include "Sprite.h"
 
@@ -39,6 +37,4 @@ public:
 	bool ShouldRemove();
 };
 
-typedef std::vector<GameObject> GameObjectVector;
-
-#endif
+using GameObjectVector = std::vector<GameObject>;

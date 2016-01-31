@@ -1,3 +1,5 @@
+#pragma once
+
 struct SF_INFO;
 
 #include "Interruptible.h"

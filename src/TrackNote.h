@@ -1,7 +1,5 @@
+#pragma once
 
-
-#ifndef TAPNOTE_H_
-#define TAPNOTE_H_
 #include "Song.h"
 
 namespace VSRG
@@ -144,4 +142,3 @@ namespace VSRG
 	};
 
 }
-#endif

@@ -1,5 +1,4 @@
-#ifndef BITMAPFONT_H_
-#define BITMAPFONT_H_
+#pragma once
 
 #include "Font.h"
 #include "Sprite.h"
@@ -24,5 +23,3 @@ public:
 	void SetAffectedByLightning(bool Lightning);
 	BitmapFont *FromLua(LuaManager* Lua, GString TableName);
 };
-
-#endif

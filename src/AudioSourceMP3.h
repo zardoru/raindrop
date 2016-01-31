@@ -1,7 +1,6 @@
-#ifdef MP3_ENABLED
+#pragma once
 
-#ifndef MP3FILESRC_H_
-#define MP3FILESRC_H_
+#ifdef MP3_ENABLED
 
 #ifndef MINGW
 #include <mpg123.h>
@@ -32,7 +31,5 @@ public:
 	bool IsValid() override;
 	bool HasDataLeft() override;
 };
-
-#endif
 
 #endif

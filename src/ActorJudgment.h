@@ -1,5 +1,4 @@
-#ifndef ACTOR_JUDGEMENT_H_
-#define ACTOR_JUDGEMENT_H_
+#pragma once
 
 class ActorJudgment : public Sprite
 {
@@ -10,5 +9,3 @@ public:
 	void ChangeJudgment(Judgment New);
 	void Run (double delta);
 };
-
-#endif

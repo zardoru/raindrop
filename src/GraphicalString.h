@@ -1,5 +1,4 @@
-#ifndef GGString_H_
-#define GGString_H_
+#pragma once
 
 class Font;
 
@@ -16,5 +15,3 @@ public:
 
 	void Render() override;
 };
-
-#endif

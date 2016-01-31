@@ -1,5 +1,4 @@
-#ifndef NLSM_H_
-#define NLSM_H_
+#pragma once
 
 #include "Song.h"
 
@@ -39,5 +38,3 @@ namespace NoteLoaderBMSON
 {
 	void LoadObjectsFromFile(GString filename, GString prefix, VSRG::Song *Out);
 }
-
-#endif

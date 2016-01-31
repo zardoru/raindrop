@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Song.h"
 #include "TrackNote.h"
 

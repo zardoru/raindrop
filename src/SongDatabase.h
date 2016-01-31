@@ -1,5 +1,4 @@
-#ifndef SONGDATABASE_H_
-#define SONGDATABASE_H_
+#pragma once
 
 struct sqlite3;
 struct sqlite3_stmt;
@@ -60,7 +59,3 @@ public:
 	void StartTransaction();
 	void EndTransaction();
 };
-
-#else
-#error "SongDatabase.h included twice"
-#endif

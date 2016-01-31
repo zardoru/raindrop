@@ -1,5 +1,4 @@
-#ifndef GAMESTATE_H_
-#define GAMESTATE_H_
+#pragma once
 
 class GameWindow;
 struct GameParameters;
@@ -89,7 +88,3 @@ shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory Pref
 
 // Loads the whole of the song.
 void LoadSongDCFromDir( Directory songPath, std::vector<dotcur::Song*> &VecOut );
-
-#else
-#error "GameState.h included twice."
-#endif

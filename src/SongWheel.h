@@ -1,6 +1,4 @@
-
-#ifndef SONGWHEEL_H_
-#define SONGWHEEL_H_
+#pragma once
 
 #include <thread>
 #include <mutex>
@@ -174,5 +172,3 @@ public:
 };
 
 }
-
-#endif

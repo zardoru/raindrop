@@ -1,3 +1,5 @@
+#pragma once
+
 /* SongDC Timing functions. */
 
 /* Song Timing */

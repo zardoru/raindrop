@@ -1,5 +1,4 @@
-#ifndef VBO_H_
-#define VBO_H_
+#pragma once
 
 /* Fixed 2D VBO of 6 points. To be expanded upon later. */
 class VBO
@@ -40,5 +39,3 @@ public:
 	/* Size must be valid with parameters given to VBO. */
 	void AssignData(void *Data);
 };
-
-#endif

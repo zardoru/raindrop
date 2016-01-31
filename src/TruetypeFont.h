@@ -1,3 +1,4 @@
+#pragma once
 
 #include "Font.h"
 #include <map>

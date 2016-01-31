@@ -1,5 +1,4 @@
-#ifndef SCREEN_EVALUATION7K_H_
-#define SCREEN_EVALUATION7K_H_
+#pragma once
 
 #include "Screen.h"
 
@@ -19,5 +18,3 @@ public:
 	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	void PrintCLIResults(ScoreKeeper7K *result);
 };
-
-#endif

@@ -1,8 +1,6 @@
+#pragma once
+
 #include "Global.h"
-
-#ifndef GAMEGLOBAL_H_
-#define GAMEGLOBAL_H_
-
 /* Matrix size constants */
 
 // 4:3
@@ -202,5 +200,3 @@ const float MeasureBaseSpacing = 0.8f * ScreenHeightDefault;
 
 #include "BindingsManager.h"
 #include "Configuration.h"
-
-#endif

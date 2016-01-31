@@ -1,5 +1,4 @@
-#ifndef SCREEN_EVALUATION_H_
-#define SCREEN_EVALUATION_H_
+#pragma once
 
 #include "Screen.h"
 
@@ -22,5 +21,3 @@ public:
 	void Cleanup() override;
 	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput) override;
 };
-
-#endif

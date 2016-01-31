@@ -1,5 +1,4 @@
-#ifndef AUDIOFILE_H_
-#define AUDIOFILE_H_
+#pragma once
 
 #include <pa_ringbuffer.h>
 #include <soxr.h>
@@ -115,5 +114,3 @@ public:
 	bool IsPlaying() override;
 
 };
-
-#endif

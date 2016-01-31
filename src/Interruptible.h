@@ -1,4 +1,5 @@
 #pragma once
+
 #include <exception>
 
 class InterruptedException : std::exception

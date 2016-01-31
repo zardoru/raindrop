@@ -1,5 +1,4 @@
-#ifndef SCREENSELECTMUSIC_H_
-#define SCREENSELECTMUSIC_H_
+#pragma once
 
 class BitmapFont;
 
@@ -70,5 +69,3 @@ public:
 	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput) override;
 	bool HandleScrollInput(double xOff, double yOff) override;
 };
-
-#endif

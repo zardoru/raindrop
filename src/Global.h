@@ -1,5 +1,4 @@
-#ifndef GLOBAL_H_
-#define GLOBAL_H_
+#pragma once
 
 #ifdef NIDEBUG
 #undef _HAS_ITERATOR_DEBUGGING
@@ -241,6 +240,4 @@ using std::min;
 #pragma warning (disable: 4244) // possible loss of data
 #pragma warning (disable: 4996) // deprecation
 #pragma warning (disable: 4800) // cast from bool to int
-#endif
-
 #endif

@@ -1,5 +1,4 @@
-#ifndef ImageLoader_H
-#define ImageLoader_H
+#pragma once
 
 #include <map>
 #include "Image.h"
@@ -38,5 +37,3 @@ public:
 	/* On-the-spot, main thread loading or reloading. */
 	static Image* Load(GString filename);
 };
-
-#endif

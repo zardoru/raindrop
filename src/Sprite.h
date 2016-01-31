@@ -1,5 +1,4 @@
-#ifndef Sprite_H
-#define Sprite_H
+#pragma once
 
 #include "Rendering.h"
 #include "Transformation.h"
@@ -89,5 +88,3 @@ public:
 
 	void BindTextureVBO();
 };
-
-#endif

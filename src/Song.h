@@ -1,5 +1,4 @@
-#ifndef SONG_H_
-#define SONG_H_
+#pragma once
 
 template <class T, class U>
 struct TimeBased
@@ -143,5 +142,3 @@ namespace Game
 }
 
 #include "SongTiming.h"
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef SLOADER_H_
-#define SLOADER_H_
+#pragma once
 
 class SongDatabase;
 
@@ -16,5 +15,3 @@ public:
 	void GetSongList7K(std::vector<VSRG::Song*> &OutVec, Directory Dir);
 	std::shared_ptr<VSRG::Song> LoadFromMeta(const VSRG::Song* Meta, shared_ptr<VSRG::Difficulty>& CurrentDiff, Directory* FilenameOut, uint8_t& Index);
 };
-
-#endif

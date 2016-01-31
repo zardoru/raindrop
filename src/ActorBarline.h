@@ -1,5 +1,4 @@
-#ifndef ACTOR_BARLINE_H_
-#define ACTOR_BARLINE_H_
+#pragma once
 
 class ScreenGameplay;
 
@@ -12,5 +11,3 @@ public:
 	void Run(double TimeDelta, double Ratio);
 	void Init(float Offset);
 };
-
-#endif

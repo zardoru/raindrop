@@ -1,5 +1,4 @@
-#ifndef OGGFILESRC_H_
-#define OGGFILESRC_H_
+#pragma once
 
 #include <vorbis/vorbisfile.h>
 #include <ogg/ogg.h>
@@ -27,5 +26,3 @@ public:
 	bool IsValid() override;
 	bool HasDataLeft() override;
 };
-
-#endif
