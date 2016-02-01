@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "GameGlobal.h"
 #include "Configuration.h"
 
@@ -6,8 +8,6 @@
 #include "GameState.h"
 
 #include "LuaManager.h"
-
-#include <iostream>
 
 using namespace Configuration;
 

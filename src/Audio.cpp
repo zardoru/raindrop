@@ -1,26 +1,9 @@
-#include <math.h>
+#include "pch.h"
 
 #include "Global.h"
 #include "Audio.h"
 #include "Configuration.h"
 #include "Logging.h"
-
-#include <portaudio.h>
-#include <pa_ringbuffer.h>
-
-#ifdef WIN32
-#include <pa_win_wasapi.h>
-#include <pa_win_ds.h>
-#endif
-
-#ifdef LINUX
-#include <pa_linux_alsa.h>
-#endif
-
-#include <thread>
-#include <condition_variable>
-#include <mutex>
-#include <chrono>
 
 float VolumeSFX = 1;
 float VolumeMusic = 1;

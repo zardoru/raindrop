@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Font.h"
-#include <map>
 
 struct stbtt_fontinfo;
 class VBO;

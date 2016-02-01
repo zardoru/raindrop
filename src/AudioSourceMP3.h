@@ -2,12 +2,6 @@
 
 #ifdef MP3_ENABLED
 
-#ifndef MINGW
-#include <mpg123.h>
-#else
-#include <mpg123mingw.h>
-#endif
-
 class AudioSourceMP3 : public AudioDataSource
 {
 	mpg123_handle *mHandle;

@@ -1,9 +1,5 @@
 #pragma once
 
-#include <list>
-#include <map>
-#include <vector>
-
 class VBO;
 class Application;
 class TruetypeFont;

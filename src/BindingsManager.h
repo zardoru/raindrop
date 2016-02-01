@@ -1,7 +1,5 @@
 #pragma once
 
-#include <map>
-
 class BindingsManager
 {
 	static std::map<int32, KeyType> ScanFunction;

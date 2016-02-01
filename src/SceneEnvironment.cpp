@@ -1,6 +1,4 @@
-#include <Rocket/Core.h>
-#include <Rocket/Core/Lua/Interpreter.h>
-#include <GLFW/glfw3.h>
+#include "pch.h"
 
 #include "GameGlobal.h"
 #include "GameState.h"
@@ -13,8 +11,6 @@
 
 #include "RaindropRocketInterface.h"
 #include "TruetypeFont.h"
-
-#include <LuaBridge.h>
 
 void CreateLuaInterface(LuaManager *AnimLua);
 

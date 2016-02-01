@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "GameGlobal.h"
 #include "Screen.h"
 #include "Audio.h"
@@ -13,7 +15,6 @@
 #include "ScreenGameplay7K.h"
 #include "ScreenGameplay7K_Mechanics.h"
 
-#include <cmath>
 #include <glm/gtc/matrix_transform.inl>
 
 using namespace VSRG;

@@ -1,9 +1,7 @@
-#include <map>
+#include "pch.h"
 
 #include "Global.h"
 #include "Song.h"
-
-#include <numeric>
 
 int gcd(int a, int b)
 {

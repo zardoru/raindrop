@@ -1,6 +1,5 @@
 
-#include <sndfile.h>
-#include <soxr.h>
+#include "pch.h"
 
 #include "Global.h"
 #include "Audio.h"

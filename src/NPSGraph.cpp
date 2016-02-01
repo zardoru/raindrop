@@ -1,8 +1,8 @@
+#include "pch.h"
+
 #include "GameGlobal.h"
 #include "Song7K.h"
 
-#include <sstream>
-#include <fstream>
 float CfgValNPS(GString name, float defaultvalue)
 {
 	float ret = Configuration::GetConfigf(name, "NPS");

@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "GameGlobal.h"
 #include "GameWindow.h"
 #include "GuiButton.h"
@@ -77,7 +79,7 @@ void Button::HoverUpdate(bool IsHovering)
 
 void Button::Run(double delta)
 {
-    transformReverse = GetMatrix()._inverse();
+	transformReverse = GetMatrix()._inverse();
 
 	if (MouseInBoundaries(transformReverse, Centered))
 		HoverUpdate(true);

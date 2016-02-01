@@ -1,4 +1,4 @@
-#ifdef MP3_ENABLED
+#include "pch.h"
 
 #include "Global.h"
 #include "Logging.h"
@@ -146,5 +146,3 @@ bool AudioSourceMP3::HasDataLeft()
 {
 	return mIsDataLeft;
 }
-
-#endif

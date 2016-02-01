@@ -1,8 +1,4 @@
-#ifdef _WIN32
-#include <Windows.h>
-#else
-#include <dirent.h>
-#endif
+#include "pch.h"
 
 #include "Global.h"
 #include "Directory.h"

@@ -1,9 +1,8 @@
+#include "pch.h"
+
 #include "GameGlobal.h"
 #include "SongDC.h"
 #include "NoteLoaderDC.h"
-#include <sstream>
-
-#include <fstream>
 
 /* Note Loader for the .dcf format. Heavily inspired by Stepmania. */
 /* Even for dotcur, I wouldn't use this anymore, I just keep it for historical purposes. I'd use bmson. */

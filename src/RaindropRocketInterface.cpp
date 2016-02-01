@@ -1,16 +1,5 @@
-#include <Rocket/Core.h>
-#include <Rocket/Core/SystemInterface.h>
-#include <Rocket/Core/FileInterface.h>
-#include <Rocket/Core/RenderInterface.h>
-#include <Rocket/Controls.h>
-#include <Rocket/Core/Lua/Interpreter.h>
-#include <Rocket/Controls/Lua/Controls.h>
-#include <Rocket/Debugger.h>
+#include "pch.h"
 
-#include <glm/gtx/matrix_operation.hpp>
-
-#include <GL/GLEW.h>
-#include <GLFW/glfw3.h>
 #include "GameGlobal.h"
 #include "Logging.h"
 #include "GameState.h"
@@ -19,6 +8,8 @@
 #include "ImageLoader.h"
 #include "GameWindow.h"
 #include "RaindropRocketInterface.h"
+
+#include <glm/gtx/matrix_operation.hpp>
 #include <glm/gtc/matrix_transform.inl>
 
 namespace Engine { namespace RocketInterface {

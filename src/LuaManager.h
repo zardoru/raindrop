@@ -1,15 +1,5 @@
 #pragma once
 
-extern "C" {
-
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-
-}
-
-#include "Directory.h"
-
 int LuaPanic(lua_State* State);
 
 class LuaManager

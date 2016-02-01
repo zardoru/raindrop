@@ -1,8 +1,7 @@
+#include "pch.h"
+
 #include "Global.h"
-
 #include "ScoreKeeper7K.h"
-
-#include <cmath>
 
 void ScoreKeeper7K::update_osu(ScoreKeeperJudgment judgment){
 	

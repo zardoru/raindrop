@@ -1,3 +1,5 @@
+//#if 0
+
 #pragma once
 
 class Directory
@@ -37,3 +39,5 @@ private:
 
 extern Directory operator/(Directory, GString);
 extern Directory operator/(GString, Directory);
+
+//#endif

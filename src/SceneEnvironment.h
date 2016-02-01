@@ -1,7 +1,5 @@
 #pragma once
 
-#include <limits>
-
 class Drawable2D;
 class Sprite;
 class LuaManager;

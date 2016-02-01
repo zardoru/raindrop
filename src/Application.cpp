@@ -1,11 +1,4 @@
-#ifdef WIN32
-#include <io.h>
-#include <fcntl.h>
-#include <Windows.h>
-#endif
-
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include "pch.h"
 
 #include "GameGlobal.h"
 #include "Logging.h"
@@ -20,8 +13,6 @@
 #include "GameWindow.h"
 #include "GameState.h"
 #include "ImageList.h"
-
-#include <chrono>
 
 #include "ScreenMainMenu.h"
 #include "ScreenGameplay7K.h"

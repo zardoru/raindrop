@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "GameGlobal.h"
 #include "BitmapFont.h"
 #include "GuiTextPrompt.h"

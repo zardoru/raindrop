@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "GameGlobal.h"
 #include "GameState.h"
 #include "ScreenGameplay.h"
@@ -5,8 +7,6 @@
 #include "GameWindow.h"
 #include "ImageLoader.h"
 #include "Audio.h"
-
-#include <sstream>
 
 #define ComboSizeX 24
 #define ComboSizeY 48

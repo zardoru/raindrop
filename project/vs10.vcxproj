@@ -78,6 +78,8 @@
       <PreprocessorDefinitions>_ITERATOR_DEBUG_LEVEL=0;BOOST_DATE_TIME_NO_LIB;MP3_ENABLED;_STLP_DEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -166,11 +168,26 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\ext-src\jsoncpp.cpp" />
-    <ClCompile Include="..\ext-src\lua.c" />
-    <ClCompile Include="..\ext-src\pa_ringbuffer.c" />
-    <ClCompile Include="..\ext-src\sha256.cpp" />
-    <ClCompile Include="..\ext-src\sqlite3.c" />
+    <ClCompile Include="..\ext-src\jsoncpp.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\ext-src\lua.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\ext-src\pa_ringbuffer.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\ext-src\sha256.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\ext-src\sqlite3.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\src\ActorBarline.cpp" />
     <ClCompile Include="..\src\ActorJudgment.cpp" />
     <ClCompile Include="..\src\ActorLifebar.cpp" />
@@ -200,6 +217,9 @@
     <ClCompile Include="..\src\Noteskin.cpp" />
     <ClCompile Include="..\src\NoteTransformations.cpp" />
     <ClCompile Include="..\src\NPSGraph.cpp" />
+    <ClCompile Include="..\src\pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\src\raindrop.cpp" />
     <ClCompile Include="..\src\GameObject.cpp" />
     <ClCompile Include="..\src\GameWindow.cpp" />
@@ -289,6 +309,7 @@
     <ClInclude Include="..\src\Interruptible.h" />
     <ClInclude Include="..\src\NoteTransformations.h" />
     <ClInclude Include="..\src\osuBackgroundAnimation.h" />
+    <ClInclude Include="..\src\pch.h" />
     <ClInclude Include="..\src\ScreenCustom.h" />
     <ClInclude Include="..\src\Sprite.h" />
     <ClInclude Include="..\src\IPC.h" />

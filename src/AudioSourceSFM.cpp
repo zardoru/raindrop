@@ -1,11 +1,5 @@
+#include "pch.h"
 
-#ifdef WIN32
-#include <Windows.h>
-#define ENABLE_SNDFILE_WINDOWS_PROTOTYPES 1
-#endif
-
-#include <cstdio>
-#include <sndfile.h>
 #include "Global.h"
 #include "Audio.h"
 #include "Audiofile.h"

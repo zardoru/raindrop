@@ -1,8 +1,7 @@
+#include "pch.h"
+
 #include "GameGlobal.h"
 #include "SongDC.h"
-
-#include <fstream>
-#include <algorithm>
 
 using namespace dotcur;
 

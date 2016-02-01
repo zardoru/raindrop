@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "GameGlobal.h"
 #include "GameState.h"
 #include "Logging.h"
@@ -7,7 +9,6 @@
 #include "SceneEnvironment.h"
 
 #include "LuaManager.h"
-#include <LuaBridge.h>
 #include "GameWindow.h"
 
 #include "Screen.h"

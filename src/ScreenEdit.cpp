@@ -1,10 +1,11 @@
+#include "pch.h"
+
 #include "GameGlobal.h"
 #include "GameState.h"
 #include "ScreenEdit.h"
 #include "GameWindow.h"
 #include "ImageLoader.h"
 #include "Audio.h"
-#include <sstream>
 
 SoundSample *SavedSound = NULL;
 

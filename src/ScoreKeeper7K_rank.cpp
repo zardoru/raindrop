@@ -1,6 +1,7 @@
+#include "pch.h"
+
 #include "Global.h"
 #include "ScoreKeeper7K.h"
-
 
 void ScoreKeeper7K::update_ranks(ScoreKeeperJudgment judgment){
 

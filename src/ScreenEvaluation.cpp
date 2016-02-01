@@ -1,4 +1,5 @@
-#include <stdio.h>
+#include "pch.h"
+
 #include "GameGlobal.h"
 #include "GameState.h"
 #include "Sprite.h"

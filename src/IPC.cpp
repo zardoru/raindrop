@@ -1,6 +1,5 @@
-#include <boost/interprocess/ipc/message_queue.hpp>
+#include "pch.h"
 
-#include <cstdlib>
 #include "IPC.h"
 
 using namespace boost::interprocess;

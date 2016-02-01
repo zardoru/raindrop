@@ -1,9 +1,4 @@
-#include <cstdio>
-#include <map>
-#include <sndfile.h>
-#include <ogg/ogg.h>
-#include <vorbis/vorbisfile.h>
-#include <fstream>
+#include "pch.h"
 
 #include "Global.h"
 #include "Logging.h"

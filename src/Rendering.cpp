@@ -1,9 +1,4 @@
-#ifdef WIN32
-#include <windows.h>
-#endif
-
-#include <GL/glew.h>
-#include <glm/gtc/type_ptr.hpp>
+#include "pch.h"
 
 #include "Global.h"
 

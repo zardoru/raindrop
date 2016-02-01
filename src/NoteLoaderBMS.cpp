@@ -1,13 +1,8 @@
-#include <fstream>
-#include <map>
-#include <ctime>
-#include <unordered_set>
-#include <regex>
+#include "pch.h"
 
 #include "GameGlobal.h"
 #include "Song7K.h"
 #include "utf8.h"
-
 
 /*
 	Source for implemented commands:

@@ -1,10 +1,10 @@
+#include "pch.h"
+
 #include "GameGlobal.h"
 #include "Logging.h"
 
 #include "Song7K.h"
 #include "SongDatabase.h"
-
-#include <sqlite3.h>
 
 char *DatabaseQuery =
   "CREATE TABLE IF NOT EXISTS [songdb] (\

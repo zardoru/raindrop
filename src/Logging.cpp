@@ -1,10 +1,7 @@
-#include <stdarg.h>
-#include <stdio.h>
-#include <fstream>
+#include "pch.h"
 
 #include "Global.h"
 #include "Logging.h"
-
 
 #ifndef NDEBUG
 void Log::DebugPrintf(GString Format, ...)

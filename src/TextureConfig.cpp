@@ -1,11 +1,8 @@
+#include "pch.h"
+
 #include "GameGlobal.h"
 #include "Logging.h"
 #include "GameState.h"
-#include <string>
-#include <memory>
-#include <vector>
-#include <map>
-#include <fstream>
 
 using std::string;
 using std::map;

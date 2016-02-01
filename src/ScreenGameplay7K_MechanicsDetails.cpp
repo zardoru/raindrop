@@ -1,9 +1,10 @@
+#include "pch.h"
+
 #include "GameGlobal.h"
 #include "Screen.h"
 #include "Sprite.h"
 #include "ImageList.h"
 
-#include <map>
 #include "ScreenGameplay7K.h"
 #include "ScoreKeeper7K.h"
 #include "ScreenGameplay7K_Mechanics.h"

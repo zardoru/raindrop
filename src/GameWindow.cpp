@@ -1,13 +1,4 @@
-#ifdef WIN32
-#include <windows.h>
-#endif
-
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <stdio.h>
-#include <iostream>
-#include <map>
-#include <vector>
+#include "pch.h"
 
 #include "GameGlobal.h"
 #include "Logging.h"
@@ -453,9 +444,9 @@ Vec2 GameWindow::GetRelativeMPos()
 
 Vec2 GameWindow::GetWindowMPos()
 {
-    double mousex, mousey;
-    glfwGetCursorPos(wnd, &mousex, &mousey);
-    return Vec2(mousex, mousey);
+	double mousex, mousey;
+	glfwGetCursorPos(wnd, &mousex, &mousey);
+	return Vec2(mousex, mousey);
 }
 
 float GameWindow::GetWindowVScale()
@@ -563,17 +554,17 @@ bool GameWindow::AutoSetupWindow(Application* _parent)
 		Log::Logf("Failure to initialize window.\n");
 		return false;
 	}
-    
+	
 #ifdef DARWIN
-    // This is a temporary hack for OS X where our size isn't getting initialized to the correct values.
-    int outx = 0;
-    int outy = 0;
-    glfwGetWindowSize(wnd, &outx, &outy);
-    ResizeFunc(wnd, outx, outy);
+	// This is a temporary hack for OS X where our size isn't getting initialized to the correct values.
+	int outx = 0;
+	int outy = 0;
+	glfwGetWindowSize(wnd, &outx, &outy);
+	ResizeFunc(wnd, outx, outy);
 #endif
 
 	SetVisibleCursor(Configuration::GetSkinConfigf("ShowCursor") != 0);
-    
+	
 	return SetupWindow();
 }
 

@@ -1,23 +1,8 @@
-#ifdef WIN32
-#include <Windows.h>
-#ifndef MINGW
-#include <direct.h>
-#endif
-#else
-#include <iconv.h>
-#endif
-
-#include <csignal>
-#include <sys/stat.h>
-#include <clocale>
-#include <fstream>
+#include "pch.h"
 
 #include "Global.h"
 #include "Logging.h"
 #include "sha256.h"
-
-#include <sstream>
-#include <regex>
 
 int InfinityMask = 0x7F800000;
 float *PInfinity = (float*)&InfinityMask;
@@ -103,7 +88,7 @@ namespace Utility {
 		return GString(mbs);
 	}
 
-    const short MAX_STRING_SIZE = 2048;
+	const short MAX_STRING_SIZE = 2048;
 
 	GString SJIStoU8 (GString Line)
 	{
@@ -115,21 +100,21 @@ namespace Utility {
 		mbs[len] = 0;
 		return GString(mbs);
 #elif defined(DARWIN)
-        // Note: for OS X/Darwin/More than likely most BSD variants, iconv behaves a bit differently.
-        iconv_t conv;
-        char buf[MAX_STRING_SIZE];
-        char* out = buf;
-        size_t srcLength = Line.length();
-        size_t dstLength = MAX_STRING_SIZE;
-        const char* in = Line.c_str();
-        
-        conv = iconv_open("UTF-8", "SHIFT_JIS");
-        iconv(conv, (char**)&in, &srcLength, (char**)&out, &dstLength);
-        iconv_close(conv);
-        // We have to use buf instead of out here.  For whatever reason, iconv on Darwin doesn't get us what we would expect if we just use out.
-        return GString(buf);
+		// Note: for OS X/Darwin/More than likely most BSD variants, iconv behaves a bit differently.
+		iconv_t conv;
+		char buf[MAX_STRING_SIZE];
+		char* out = buf;
+		size_t srcLength = Line.length();
+		size_t dstLength = MAX_STRING_SIZE;
+		const char* in = Line.c_str();
+		
+		conv = iconv_open("UTF-8", "SHIFT_JIS");
+		iconv(conv, (char**)&in, &srcLength, (char**)&out, &dstLength);
+		iconv_close(conv);
+		// We have to use buf instead of out here.  For whatever reason, iconv on Darwin doesn't get us what we would expect if we just use out.
+		return GString(buf);
 #else
-        char buf[MAX_STRING_SIZE];
+		char buf[MAX_STRING_SIZE];
 		iconv_t conv;
 		char** out = &buf;
 		const char* in = Line.c_str();

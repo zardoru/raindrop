@@ -1,8 +1,5 @@
 #pragma once
 
-#include <vorbis/vorbisfile.h>
-#include <ogg/ogg.h>
-
 class AudioSourceOGG : public AudioDataSource
 {
 	OggVorbis_File mOggFile;

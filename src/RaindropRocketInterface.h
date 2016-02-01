@@ -1,7 +1,5 @@
 #pragma once
 
-#include <Rocket/Core.h>
-
 class VBO;
 
 namespace Engine {

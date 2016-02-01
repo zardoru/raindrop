@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "GameGlobal.h"
 #include "GameState.h"
 #include "Sprite.h"
@@ -10,7 +12,6 @@
 #include "ScoreKeeper7K.h"
 #include "SceneEnvironment.h"
 #include "LuaManager.h"
-
 
 ScreenEvaluation7K::ScreenEvaluation7K() :
 	Screen("ScreenEvaluation7K", nullptr)

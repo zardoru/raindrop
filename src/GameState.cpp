@@ -1,6 +1,4 @@
-#include <stdarg.h>
-#include <stdio.h>
-#include <fstream>
+#include "pch.h"
 
 #include "GameGlobal.h"
 #include "GameState.h"

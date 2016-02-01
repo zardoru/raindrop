@@ -1,5 +1,4 @@
-#include <cmath>
-#include <fstream>
+#include "pch.h"
 
 #include "GameGlobal.h"
 #include "GameState.h"

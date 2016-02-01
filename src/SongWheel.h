@@ -1,8 +1,5 @@
 #pragma once
 
-#include <thread>
-#include <mutex>
-
 namespace dotcur
 {
 	class Song;

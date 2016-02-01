@@ -1,17 +1,11 @@
-#ifdef WIN32
-#include <windows.h>
-#endif
+#include "pch.h"
 
 #include "Global.h"
 #include "Logging.h"
 #include "Configuration.h"
-#include <GL/glew.h>
 
 #include "Image.h"
 #include "ImageLoader.h"
-#include <FreeImage.h>
-
-#include <mutex>
 
 std::mutex LoadMutex;
 map<GString, Image*> ImageLoader::Textures;

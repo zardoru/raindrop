@@ -1,11 +1,9 @@
-#include <cmath>
-#include <iostream>
+#include "pch.h"
 
 #include "GameGlobal.h"
 #include "Logging.h"
 #include "Screen.h"
 #include "Audio.h"
-
 
 #include "LuaManager.h"
 #include "SceneEnvironment.h"

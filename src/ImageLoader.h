@@ -1,6 +1,5 @@
 #pragma once
 
-#include <map>
 #include "Image.h"
 
 class ImageLoader

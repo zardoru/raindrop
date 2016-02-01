@@ -1,12 +1,9 @@
-#include <fstream>
-#include <stdlib.h>
+#include "pch.h"
 
 #include "GameGlobal.h"
 #include "Logging.h"
 #include "Song7K.h"
 #include "NoteLoader7K.h"
-
-#include <regex>
 
 typedef vector<GString> SplitResult;
 

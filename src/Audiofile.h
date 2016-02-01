@@ -1,8 +1,5 @@
 #pragma once
 
-#include <pa_ringbuffer.h>
-#include <soxr.h>
-
 class AudioDataSource 
 {
 protected:

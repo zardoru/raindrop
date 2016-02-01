@@ -1,11 +1,7 @@
+#include "pch.h"
+
 #include "Global.h"
 #include "ScoreKeeper7K.h"
-
-#include <sstream>
-#include <iostream>
-#include <iomanip>
-#include <map>
-#include <numeric>
 
 ScoreKeeper7K::~ScoreKeeper7K(){  }
 

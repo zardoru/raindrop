@@ -1,7 +1,5 @@
 #pragma once
 
-#include <map>
-
 namespace Configuration
 {
 	void Initialize();
