@@ -326,18 +326,23 @@ float ScoreKeeper7K::getPercentScore(int percent_score_type){
 
 	switch(percent_score_type){
 		case PST_RANK:
-			return double(rank_pts) / double(total_notes) * 100.0;
+			if (total_notes)
+				return double(rank_pts) / double(total_notes) * 100.0;
+			return 100;
 		case PST_EX:
-			return double(ex_score) / double(total_notes * 2) * 100.0;
+			if (total_notes)
+				return double(ex_score) / double(total_notes * 2) * 100.0;
+			return 100;
 		case PST_ACC:
 			return accuracy;
 		case PST_NH:
 			if (total_notes)
 				return double(notes_hit) / double(total_notes) * 100.0;
-			else
-				return 100;
+			return 100;
 		case PST_OSU:
-			return double(osu_accuracy) / double(total_notes) / 3.0;
+			if (total_notes)
+				return double(osu_accuracy) / double(total_notes) / 3.0;
+			return 100;
 		default:
 			return 0;
 	}

@@ -37,6 +37,8 @@ class GameState
 	shared_ptr<GameParameters> Params;
 	map<GString, vector<GString>> Fallback; // 2nd is 1st's fallback
 
+	int CurrentGaugeType;
+
 	bool FileExistsOnSkin(const char* Filename, const char* Skin);
 public:
 
@@ -70,6 +72,9 @@ public:
 	GString GetSkinFile(const GString &Name, const GString &Skin);
 	GString GetSkinFile(const GString &Name);
 	GString GetFallbackSkinFile(const GString &Name);
+
+	void SetCurrentGaugeType(int GaugeType);
+	int GetCurrentGaugeType() const;
 
 	SongDatabase* GetSongDatabase();
 	static GameWindow* GetWindow();

@@ -61,6 +61,9 @@ const double SCORE_MAX = 100000000;
 
 enum LifeType{
 
+	LT_AUTO = 0, // Only for GameParameters
+	// actual groove type should be set by playing field from chart
+
 	LT_GROOVE = 1, // Beatmania default lifebar
 
 	LT_SURVIVAL = 2, // Beatmania hard mode
@@ -74,7 +77,6 @@ enum LifeType{
 	LT_O2JAM = 8,
 
 	LT_BATTERY = 11, // DDR battery mode.
-
 };
 
 

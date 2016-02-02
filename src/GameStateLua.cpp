@@ -139,6 +139,7 @@ void GameState::InitializeLua(lua_State *L)
 		.addData("HiddenMode", &GameParameters::HiddenMode)
 		.addData("Rate", &GameParameters::Rate)
 		.addData("Random", &GameParameters::Random)
+		.addData("GaugeType", &GameParameters::GaugeType)
 		.endClass();
 
 	luabridge::getGlobalNamespace(L)
@@ -147,6 +148,7 @@ void GameState::InitializeLua(lua_State *L)
 		.addProperty("DifficultyIndex", &GameState::GetDifficultyIndex, &GameState::SetDifficultyIndex)
 		.addFunction("GetScorekeeper7K", &GameState::GetScorekeeper7K)
 		.addFunction("GetParameters", &GameState::GetParameters)
+		.addProperty("CurrentGaugeType", &GameState::GetCurrentGaugeType)
 		.endClass()
 		.addFunction("toSong7K", toSong7K)
 		.addFunction("toSongDC", toSongDC);

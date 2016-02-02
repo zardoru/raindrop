@@ -28,6 +28,7 @@ void SetupScorekeeper7KLuaInterface(void* state)
 		.addFunction("getHistogramHighestPoint", &ScoreKeeper7K::getHistogramHighestPoint)
 		.addFunction("getAvgHit", &ScoreKeeper7K::getAvgHit)
 		.addFunction("getMaxNotes", &ScoreKeeper7K::getMaxNotes)
+		.addFunction("isStageFailed", &ScoreKeeper7K::isStageFailed)
 		.endClass();
 
 #define cns(x) lua_pushinteger(L,x); lua_setglobal(L, #x);

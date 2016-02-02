@@ -192,6 +192,16 @@ GString GameState::GetFallbackSkinFile(const GString &Name)
 	return GetSkinPrefix() + Name;
 }
 
+void GameState::SetCurrentGaugeType(int GaugeType)
+{
+	this->CurrentGaugeType = GaugeType;
+}
+
+int GameState::GetCurrentGaugeType() const
+{
+	return CurrentGaugeType;
+}
+
 Image* GameState::GetSkinImage(const GString& Path)
 {
 	/* Special paths */

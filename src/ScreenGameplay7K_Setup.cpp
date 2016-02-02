@@ -161,6 +161,7 @@ void ScreenGameplay7K::Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const
 	Speed = Param.Rate;
 	NoFail = Param.NoFail;
 	Random = Param.Random;
+	RequestedLifebar = (LifeType)(int)Clamp((int)Param.GaugeType, (int)LT_AUTO, (int)LT_O2JAM);
 
 	ForceActivation = false;
 
@@ -615,7 +616,7 @@ void ScreenGameplay7K::SetupMechanics()
 		lifebar_type = LT_GROOVE;
 	}
 	
-	if(Configuration::GetConfigf("AlwaysUseRidiculousTiming")){
+	if(Configuration::GetConfigf("AlwaysUseRidiculousTiming")) {
 		ScoreKeeper->set_manual_w0(true);
 	}
 
@@ -623,6 +624,11 @@ void ScreenGameplay7K::SetupMechanics()
 		If we're on TT_BEATS we've got to recalculate all note positions to beats, 
 		and use mechanics that use TT_BEATS as its timing type.
 	*/
+
+	if (RequestedLifebar != LT_AUTO)
+		lifebar_type = RequestedLifebar;
+
+	GameState::GetInstance().SetCurrentGaugeType(lifebar_type);
 
 	if (UsedTimingType == TT_TIME)
 	{

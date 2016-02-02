@@ -124,6 +124,7 @@ private:
 	int Random;
 	bool TurntableEnabled;
 	float JudgeOffset;
+	LifeType RequestedLifebar;
 	void SetupScriptConstants();
 	void SetupLua(LuaManager* Env);
 	void SetupMechanics();

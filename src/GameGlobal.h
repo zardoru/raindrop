@@ -144,6 +144,8 @@ namespace VSRG {
 	const uint8 MAX_CHANNELS = 16;
 }
 
+#include "ScoreKeeper.h"
+
 struct GameParameters {
 	// If true, use upscroll
 	int Upscroll;
@@ -172,6 +174,9 @@ struct GameParameters {
 	// Selected starting measure
 	int32 StartMeasure;
 
+	// Gauge type
+	int32 GaugeType;
+
 	GameParameters() {
 		Upscroll = false;
 		Wave = false;
@@ -182,6 +187,7 @@ struct GameParameters {
 		StartMeasure = -1;
 		Random = 0;
 		Rate = 1;
+		GaugeType = LT_AUTO;
 	}
 };
 
