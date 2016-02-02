@@ -731,7 +731,7 @@ namespace NoteLoaderBMS{
 					assert(CurrentNestedLevel < 16);
 					assert(Limit > 1);
 
-					RandomStack[CurrentNestedLevel] = rand() % Limit + 1;
+					RandomStack[CurrentNestedLevel] = (uint32) std::randint(0, Limit);
 
 				}
 				else if (Command == "#if")
@@ -956,8 +956,6 @@ namespace NoteLoaderBMS{
 
 		if (!filein.is_open())
 			throw std::exception(("NoteLoaderBMS: Couldn't open file " + filename + "!").c_str());
-
-		srand(time(nullptr));
 
 		/*
 			BMS files are separated always one file, one difficulty, so it'd make sense
@@ -1285,8 +1283,6 @@ namespace NoteLoaderBMS{
 		if (!filein.is_open()) {
 			throw std::exception(("NoteLoaderBMS: Couldn't open file " + filename.string() + "!").c_str());
 		}
-
-		srand(time(nullptr));
 
 		/*
 		BMS files are separated always one file, one difficulty, so it'd make sense

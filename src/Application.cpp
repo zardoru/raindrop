@@ -36,7 +36,6 @@ Application::Application(int argc, char *argv[])
 	RunMode = MODE_PLAY;
 	Upscroll = false;
 	difIndex = 0;
-	srand(time(0));
 
 	ParseArgs(argc, argv);
 }
@@ -47,18 +46,30 @@ void Application::ParseArgs(int argc, char **argv)
 
 	po::options_description desc("Allowed options");
 	desc.add_options()
-		("help,?", "show help message")
-		("preview,p", "Preview File")
-		("input,i", po::value<std::filesystem::path>(), "Input File")
-		("output,o", po::value<std::filesystem::path>(), "Output File")
-		("gencache,c", "Generate Cache")
-		("format,g", po::value<std::string>(), "Target Format")
-		("measure,m", po::value<unsigned>()->default_value(0), "Measure")
-		("a,author", po::value<std::string>()->default_value("raindrop"), "Author")
-		("A,A", "Auto")
-		("S,S", "Stop Preview Instance")
-		("R,R", "Release IPC Pool")
-		("L,L", po::value<std::filesystem::path>(), "Load Custom Scene")
+		("help,?",
+			"show help message")
+		("preview,p",
+			"Preview File")
+		("input,i", po::value<std::filesystem::path>(),
+			"Input File")
+		("output,o", po::value<std::filesystem::path>(),
+			"Output File")
+		("gencache,c",
+			"Generate Cache")
+		("format,g", po::value<std::string>(),
+			"Target Format")
+		("measure,m", po::value<unsigned>()->default_value(0),
+			"Measure")
+		("author,a", po::value<std::string>()->default_value("raindrop"),
+			"Author")
+		("A,A",
+			"Auto")
+		("S,S",
+			"Stop Preview Instance")
+		("R,R",
+			"Release IPC Pool")
+		("L,L", po::value<std::filesystem::path>(),
+			"Load Custom Scene")
 		;
 
 	po::variables_map vm;
@@ -134,7 +145,7 @@ void Application::ParseArgs(int argc, char **argv)
 
 void Application::Init()
 {
-	typedef std::chrono::high_resolution_clock Clock;
+	using Clock = std::chrono::high_resolution_clock;
 	auto t1 = Clock::now();
 
 #if (defined WIN32) && !(defined MINGW)

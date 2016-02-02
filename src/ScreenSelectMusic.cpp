@@ -370,7 +370,7 @@ void ScreenSelectMusic::PlayLoops()
 
 		if (!PlayingAlready)
 		{
-			int rn = rand() % LoopTotal;
+			int rn = std::randint(0, LoopTotal);
 			Loops[rn]->SeekTime(0);
 			Loops[rn]->Play();
 		}
