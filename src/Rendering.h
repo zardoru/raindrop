@@ -1,13 +1,12 @@
 #pragma once
 
-
 #include "Transformation.h"
 
 enum EBlendMode
 {
-	BLEND_ADD,
-	BLEND_ALPHA,
-	BLEND_MULTIPLY
+    BLEND_ADD,
+    BLEND_ALPHA,
+    BLEND_MULTIPLY
 };
 
 class Image;
@@ -16,10 +15,10 @@ extern VBO* QuadBuffer;
 extern VBO* TextureBuffer;
 
 void InitializeRender();
-void SetShaderParameters(bool InvertColor, 
-	bool UseGlobalLight, bool Centered, bool UseSecondTransformationMatrix = false, 
-	bool BlackToTransparent = false, bool ReplaceColor = false,
-	int8_t HiddenMode = -1);
+void SetShaderParameters(bool InvertColor,
+    bool UseGlobalLight, bool Centered, bool UseSecondTransformationMatrix = false,
+    bool BlackToTransparent = false, bool ReplaceColor = false,
+    int8_t HiddenMode = -1);
 
 void SetPrimitiveQuadVBO();
 void FinalizeDraw();

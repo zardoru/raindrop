@@ -5,255 +5,253 @@
 
 namespace VSRG
 {
-	struct Measure
-	{
-		std::vector<NoteData> Notes[MAX_CHANNELS];
-		double Length; // In beats. 4 by default.
+    struct Measure
+    {
+        std::vector<NoteData> Notes[MAX_CHANNELS];
+        double Length; // In beats. 4 by default.
 
-		Measure() {
-			Length = 4;
-		}
-	};
+        Measure() {
+            Length = 4;
+        }
+    };
 
-	struct SpeedSection : TimeBased<SpeedSection, float>
-	{
-		float Duration;
-		float Value;
-	};
+    struct SpeedSection : TimeBased<SpeedSection, float>
+    {
+        float Duration;
+        float Value;
+    };
 
-	typedef std::vector<SpeedSection> VectorSpeeds;
+    typedef std::vector<SpeedSection> VectorSpeeds;
 
-	typedef std::vector<Measure> VectorMeasure;
+    typedef std::vector<Measure> VectorMeasure;
 
-	typedef std::vector<TrackNote> VectorTN[MAX_CHANNELS];
+    typedef std::vector<TrackNote> VectorTN[MAX_CHANNELS];
 
-	enum TimingInfoType {
-		TI_NONE,
-		TI_BMS,
-		TI_OSUMANIA,
-		TI_O2JAM,
-		TI_STEPMANIA
-	};
+    enum TimingInfoType {
+        TI_NONE,
+        TI_BMS,
+        TI_OSUMANIA,
+        TI_O2JAM,
+        TI_STEPMANIA
+    };
 
-	class CustomTimingInfo {
-	protected:
-		TimingInfoType Type;
-	public:
-		CustomTimingInfo()
-		{
-			Type = TI_NONE;
-		}
+    class CustomTimingInfo {
+    protected:
+        TimingInfoType Type;
+    public:
+        CustomTimingInfo()
+        {
+            Type = TI_NONE;
+        }
 
-		virtual ~CustomTimingInfo() {}
+        virtual ~CustomTimingInfo() {}
 
-		TimingInfoType GetType();
-	};
+        TimingInfoType GetType();
+    };
 
-	class BMSTimingInfo : public CustomTimingInfo
-	{
-	public:
-		int JudgeRank;
-		float GaugeTotal;
+    class BMSTimingInfo : public CustomTimingInfo
+    {
+    public:
+        int JudgeRank;
+        float GaugeTotal;
 
-		// Whether this uses BMSON features.
-		bool IsBMSON;
+        // Whether this uses BMSON features.
+        bool IsBMSON;
 
-		BMSTimingInfo()
-		{
-			Type = TI_BMS;
-			JudgeRank = 3;
-			GaugeTotal = -1;
-			IsBMSON = false;
-		}
-	};
+        BMSTimingInfo()
+        {
+            Type = TI_BMS;
+            JudgeRank = 3;
+            GaugeTotal = -1;
+            IsBMSON = false;
+        }
+    };
 
-	class OsuManiaTimingInfo : public CustomTimingInfo
-	{
-	public:
-		float HP, OD;
-		OsuManiaTimingInfo()
-		{
-			Type = TI_OSUMANIA;
-			HP = 5;
-			OD = 5;
-		}
-	};
+    class OsuManiaTimingInfo : public CustomTimingInfo
+    {
+    public:
+        float HP, OD;
+        OsuManiaTimingInfo()
+        {
+            Type = TI_OSUMANIA;
+            HP = 5;
+            OD = 5;
+        }
+    };
 
-	class O2JamTimingInfo : public CustomTimingInfo
-	{
-	public:
-		enum {
-			O2_EX,
-			O2_NX,
-			O2_HX
-		} Difficulty;
+    class O2JamTimingInfo : public CustomTimingInfo
+    {
+    public:
+        enum {
+            O2_EX,
+            O2_NX,
+            O2_HX
+        } Difficulty;
 
-		O2JamTimingInfo()
-		{
-			Type = TI_O2JAM;
-			Difficulty = O2_HX;
-		}
-	};
+        O2JamTimingInfo()
+        {
+            Type = TI_O2JAM;
+            Difficulty = O2_HX;
+        }
+    };
 
-	class StepmaniaTimingInfo : public CustomTimingInfo
-	{
-	public:
-		StepmaniaTimingInfo()
-		{
-			Type = TI_STEPMANIA;
-		}
-	};
+    class StepmaniaTimingInfo : public CustomTimingInfo
+    {
+    public:
+        StepmaniaTimingInfo()
+        {
+            Type = TI_STEPMANIA;
+        }
+    };
 
-	struct BMPEventsDetail {
-		std::map<int, std::string> BMPList;
-		std::vector<AutoplayBMP> BMPEventsLayerBase;
-		std::vector<AutoplayBMP> BMPEventsLayer;
-		std::vector<AutoplayBMP> BMPEventsLayer2;
-		std::vector<AutoplayBMP> BMPEventsLayerMiss;
-	};
+    struct BMPEventsDetail {
+        std::map<int, std::string> BMPList;
+        std::vector<AutoplayBMP> BMPEventsLayerBase;
+        std::vector<AutoplayBMP> BMPEventsLayer;
+        std::vector<AutoplayBMP> BMPEventsLayer2;
+        std::vector<AutoplayBMP> BMPEventsLayerMiss;
+    };
 
-	struct DifficultyLoadInfo
-	{
-		// Contains stops data.
-		TimingData Stops;
+    struct DifficultyLoadInfo
+    {
+        // Contains stops data.
+        TimingData Stops;
 
-		// For scroll changes, as obvious as it sounds.
-		TimingData Scrolls;
+        // For scroll changes, as obvious as it sounds.
+        TimingData Scrolls;
 
-		// At Time, warp Value seconds forward.
-		TimingData Warps;
+        // At Time, warp Value seconds forward.
+        TimingData Warps;
 
-		// Notes (Up to MAX_CHANNELS tracks)
-		VectorMeasure Measures;
+        // Notes (Up to MAX_CHANNELS tracks)
+        VectorMeasure Measures;
 
-		// For Speed changes.
-		VectorSpeeds Speeds;
+        // For Speed changes.
+        VectorSpeeds Speeds;
 
-		// Autoplay Sounds
-		std::vector<AutoplaySound> BGMEvents;
+        // Autoplay Sounds
+        std::vector<AutoplaySound> BGMEvents;
 
-		// Autoplay BMP
-		std::shared_ptr<BMPEventsDetail> BMPEvents;
+        // Autoplay BMP
+        std::shared_ptr<BMPEventsDetail> BMPEvents;
 
-		// Timing Info
-		std::shared_ptr<CustomTimingInfo> TimingInfo;
+        // Timing Info
+        std::shared_ptr<CustomTimingInfo> TimingInfo;
 
-		// Background/foreground to show when loading.
-		std::string StageFile;
+        // Background/foreground to show when loading.
+        std::string StageFile;
 
-		// Whether this difficulty uses the scratch channel (being channel/index 0 always used for this)
-		bool Turntable;
+        // Whether this difficulty uses the scratch channel (being channel/index 0 always used for this)
+        bool Turntable;
 
-		// Audio slicing data
-		SliceContainer SliceData;
+        // Audio slicing data
+        SliceContainer SliceData;
 
-		DifficultyLoadInfo()
-		{
-			Turntable = false;
-		}
-	};
+        DifficultyLoadInfo()
+        {
+            Turntable = false;
+        }
+    };
 
-	struct Difficulty : Game::Song::Difficulty
-	{
-		std::shared_ptr<DifficultyLoadInfo> Data;
+    struct Difficulty : Game::Song::Difficulty
+    {
+        std::shared_ptr<DifficultyLoadInfo> Data;
 
-		enum ETimingType
-		{
-			BT_BEAT, // beat based timing
-			BT_MS, // millisecond based timing
-			BT_BEATSPACE // osu! ms/beat timing
-		} BPMType;
+        enum ETimingType
+        {
+            BT_BEAT, // beat based timing
+            BT_MS, // millisecond based timing
+            BT_BEATSPACE // osu! ms/beat timing
+        } BPMType;
 
-		int Level;
-		unsigned char Channels;
-		bool IsVirtual;
+        int Level;
+        unsigned char Channels;
+        bool IsVirtual;
 
-		void ProcessVSpeeds(TimingData& BPS, TimingData& VSpeeds, double SpeedConstant);
-		void ProcessSpeedVariations(TimingData& BPS, TimingData& VSpeeds, double Drift);
-		double GetWarpAmountAtTime(double Time);
-	public:
+        void ProcessVSpeeds(TimingData& BPS, TimingData& VSpeeds, double SpeedConstant);
+        void ProcessSpeedVariations(TimingData& BPS, TimingData& VSpeeds, double Drift);
+        double GetWarpAmountAtTime(double Time);
+    public:
 
-		bool IsWarpingAt(double start_time);
-		// Get processed data for use on ScreenGameplay7K.
-		void GetPlayableData(VectorTN NotesOut, 
-							TimingData& BPS, 
-							TimingData& VerticalSpeeds,
-							TimingData& Warps,
-							float Drift = 0, double SpeedConstant = 0);
-		void ProcessBPS(TimingData& BPS, double Drift);
+        bool IsWarpingAt(double start_time);
+        // Get processed data for use on ScreenGameplay7K.
+        void GetPlayableData(VectorTN NotesOut,
+            TimingData& BPS,
+            TimingData& VerticalSpeeds,
+            TimingData& Warps,
+            float Drift = 0, double SpeedConstant = 0);
+        void ProcessBPS(TimingData& BPS, double Drift);
 
-		// The floats are in vertical units; like the notes' vertical position.
-		void GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSpeeds, double WaitTime, double Drift);
+        // The floats are in vertical units; like the notes' vertical position.
+        void GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSpeeds, double WaitTime, double Drift);
 
-		// Destroy all information that can be loaded from cache
-		void Destroy();
+        // Destroy all information that can be loaded from cache
+        void Destroy();
 
-		Difficulty() {
-			IsVirtual = false;
-			Channels = 0;
-			Level = 0;
-			Data = nullptr;
-		};
+        Difficulty() {
+            IsVirtual = false;
+            Channels = 0;
+            Level = 0;
+            Data = nullptr;
+        };
 
-		~Difficulty() {
-			Destroy();
-		};
-	};
+        ~Difficulty() {
+            Destroy();
+        };
+    };
 
+    class RowifiedDifficulty {
+    public:
+        struct Event {
+            IFraction Sect;
+            int Evt;
+        };
 
-	class RowifiedDifficulty {
-	public:
-		struct Event {
-			IFraction Sect;
-			int Evt;
-		};
+        struct Measure {
+            std::vector<Event> Objects[VSRG::MAX_CHANNELS];
+            std::vector<Event> LNObjects[VSRG::MAX_CHANNELS];
+            std::vector<Event> BGMEvents;
+        };
 
-		struct Measure {
-			std::vector<Event> Objects[VSRG::MAX_CHANNELS];
-			std::vector<Event> LNObjects[VSRG::MAX_CHANNELS];
-			std::vector<Event> BGMEvents;
-		};
+    private:
+        bool Quantizing;
+        std::vector<double> MeasureAccomulation;
 
-	private:
-		bool Quantizing;
-		std::vector<double> MeasureAccomulation;
+    protected:
+        std::function <double(double)> QuantizeFunction;
+        int GetRowCount(const std::vector<Event> &In);
 
-	protected:
-		std::function <double(double)> QuantizeFunction;
-		int GetRowCount(const std::vector<Event> &In);
+        void CalculateMeasureAccomulation();
+        IFraction FractionForMeasure(int Measure, double Beat);
 
-		void CalculateMeasureAccomulation();
-		IFraction FractionForMeasure(int Measure, double Beat);
+        int MeasureForBeat(double Beat);
+        void ResizeMeasures(size_t NewMaxIndex);
 
-		int MeasureForBeat(double Beat);
-		void ResizeMeasures(size_t NewMaxIndex);
+        void CalculateBGMEvents();
+        void CalculateObjects();
 
-		void CalculateBGMEvents();
-		void CalculateObjects();
-		
-		std::vector<Measure> Measures;
-		TimingData BPS;
+        std::vector<Measure> Measures;
+        TimingData BPS;
 
-		Difficulty *Parent;
+        Difficulty *Parent;
 
-		RowifiedDifficulty(Difficulty *Source, bool Quantize, bool CalculateAll);
+        RowifiedDifficulty(Difficulty *Source, bool Quantize, bool CalculateAll);
 
-		friend class Song;
-	public:
-		double GetStartingBPM();
-		bool IsQuantized();
-	};
+        friend class Song;
+    public:
+        double GetStartingBPM();
+        bool IsQuantized();
+    };
 
-	/* 7K Song */
-	class Song : public Game::Song
-	{
-	public:
-		std::vector<std::shared_ptr<VSRG::Difficulty> > Difficulties;
+    /* 7K Song */
+    class Song : public Game::Song
+    {
+    public:
+        std::vector<std::shared_ptr<VSRG::Difficulty> > Difficulties;
 
-		Song();
-		~Song();
+        Song();
+        ~Song();
 
-		VSRG::Difficulty* GetDifficulty(uint32_t i);
-	};
-
+        VSRG::Difficulty* GetDifficulty(uint32_t i);
+    };
 }

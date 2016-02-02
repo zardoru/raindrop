@@ -23,12 +23,12 @@ bool Noteskin::DanglingHeads = true;
 
 void lua_Render(Sprite *S)
 {
-	if (CanRender)
-	{
-		Mat4 mt = S->GetMatrix();
-		WindowFrame.SetUniform(U_SIM, &mt[0][0]);
-		S->RenderMinimalSetup();
-	}
+    if (CanRender)
+    {
+        Mat4 mt = S->GetMatrix();
+        WindowFrame.SetUniform(U_SIM, &mt[0][0]);
+        S->RenderMinimalSetup();
+    }
 }
 
 #ifndef WIN32
@@ -39,186 +39,186 @@ void lua_Render(Sprite *S)
 
 void Noteskin::Validate()
 {
-	LUACHECK();
-	if (NoteskinLua->CallFunction("Init"))
-		NoteskinLua->RunFunction();
+    LUACHECK();
+    if (NoteskinLua->CallFunction("Init"))
+        NoteskinLua->RunFunction();
 
-	DecreaseHoldSizeWhenBeingHit = (NoteskinLua->GetGlobalD("DecreaseHoldSizeWhenBeingHit") != 0);
-	DanglingHeads = (NoteskinLua->GetGlobalD("DanglingHeads") != 0);
-	NoteScreenSize = NoteskinLua->GetGlobalD("NoteScreenSize");
+    DecreaseHoldSizeWhenBeingHit = (NoteskinLua->GetGlobalD("DecreaseHoldSizeWhenBeingHit") != 0);
+    DanglingHeads = (NoteskinLua->GetGlobalD("DanglingHeads") != 0);
+    NoteScreenSize = NoteskinLua->GetGlobalD("NoteScreenSize");
 }
 
 void Noteskin::SetupNoteskin(bool SpecialStyle, int Lanes, ScreenGameplay7K* Parent)
 {
-	CanRender = false;
+    CanRender = false;
 
-	assert(Parent != nullptr);
-	Noteskin::Parent = Parent;
+    assert(Parent != nullptr);
+    Noteskin::Parent = Parent;
 
-	// we need a clean state if we're being called from a different thread (to destroy objects properly)
-	assert(NoteskinLua == nullptr); 
-	NoteskinLua = std::make_shared<LuaManager>();
+    // we need a clean state if we're being called from a different thread (to destroy objects properly)
+    assert(NoteskinLua == nullptr);
+    NoteskinLua = std::make_shared<LuaManager>();
 
-	Parent->SetupLua(NoteskinLua.get());
-	DefineSpriteInterface(NoteskinLua.get());
+    Parent->SetupLua(NoteskinLua.get());
+    DefineSpriteInterface(NoteskinLua.get());
 
-	luabridge::getGlobalNamespace(NoteskinLua->GetState())
-		.addFunction("Render", lua_Render);
+    luabridge::getGlobalNamespace(NoteskinLua->GetState())
+        .addFunction("Render", lua_Render);
 
-	NoteskinLua->SetGlobal("SpecialStyle", SpecialStyle);
-	NoteskinLua->SetGlobal("Lanes", Lanes);
-	NoteskinLua->RunScript(GameState::GetInstance().GetSkinFile("noteskin.lua"));
+    NoteskinLua->SetGlobal("SpecialStyle", SpecialStyle);
+    NoteskinLua->SetGlobal("Lanes", Lanes);
+    NoteskinLua->RunScript(GameState::GetInstance().GetSkinFile("noteskin.lua"));
 }
 
 void Noteskin::Update(float Delta, float CurrentBeat)
 {
-	LUACHECK();
+    LUACHECK();
 
-	if (NoteskinLua->CallFunction("Update", 2))
-	{
-		NoteskinLua->PushArgument(Delta);
-		NoteskinLua->PushArgument(CurrentBeat);
-		NoteskinLua->RunFunction();
-	}
+    if (NoteskinLua->CallFunction("Update", 2))
+    {
+        NoteskinLua->PushArgument(Delta);
+        NoteskinLua->PushArgument(CurrentBeat);
+        NoteskinLua->RunFunction();
+    }
 }
 
 void Noteskin::Cleanup()
 {
-	NoteskinLua = nullptr;
+    NoteskinLua = nullptr;
 }
 
 void Noteskin::DrawNote(VSRG::TrackNote& T, int Lane, float Location)
 {
-	const char* CallFunc = nullptr;
+    const char* CallFunc = nullptr;
 
-	LUACHECK();
+    LUACHECK();
 
-	switch (T.GetDataNoteKind())
-	{
-	case VSRG::ENoteKind::NK_NORMAL:
-		CallFunc = "DrawNormal";
-		break;
-	case VSRG::ENoteKind::NK_FAKE:
-		CallFunc = "DrawFake";
-		break;
-	case VSRG::ENoteKind::NK_INVISIBLE:
-		return; // Undrawable
-	case VSRG::ENoteKind::NK_LIFT:
-		CallFunc = "DrawLift";
-		break;
-	case VSRG::ENoteKind::NK_MINE:
-		CallFunc = "DrawMine";
-		break;
-	case VSRG::ENoteKind::NK_ROLL:
-		return; // Unimplemented
-	}
+    switch (T.GetDataNoteKind())
+    {
+    case VSRG::ENoteKind::NK_NORMAL:
+        CallFunc = "DrawNormal";
+        break;
+    case VSRG::ENoteKind::NK_FAKE:
+        CallFunc = "DrawFake";
+        break;
+    case VSRG::ENoteKind::NK_INVISIBLE:
+        return; // Undrawable
+    case VSRG::ENoteKind::NK_LIFT:
+        CallFunc = "DrawLift";
+        break;
+    case VSRG::ENoteKind::NK_MINE:
+        CallFunc = "DrawMine";
+        break;
+    case VSRG::ENoteKind::NK_ROLL:
+        return; // Unimplemented
+    }
 
-	assert(CallFunc != nullptr);
-	// We didn't get a name to call. Odd.
+    assert(CallFunc != nullptr);
+    // We didn't get a name to call. Odd.
 
-	CanRender = true;
-	if (NoteskinLua->CallFunction(CallFunc, 4))
-	{
-		NoteskinLua->PushArgument(Lane);
-		NoteskinLua->PushArgument(Location);
-		NoteskinLua->PushArgument(T.GetFracKind());
-		NoteskinLua->PushArgument(0);
-		NoteskinLua->RunFunction();
-	}
-	CanRender = false;
+    CanRender = true;
+    if (NoteskinLua->CallFunction(CallFunc, 4))
+    {
+        NoteskinLua->PushArgument(Lane);
+        NoteskinLua->PushArgument(Location);
+        NoteskinLua->PushArgument(T.GetFracKind());
+        NoteskinLua->PushArgument(0);
+        NoteskinLua->RunFunction();
+    }
+    CanRender = false;
 }
 
 float Noteskin::GetBarlineWidth()
 {
-	LUACHECK(0);
-	return NoteskinLua->GetGlobalD("BarlineWidth");
+    LUACHECK(0);
+    return NoteskinLua->GetGlobalD("BarlineWidth");
 }
 
 double Noteskin::GetBarlineStartX()
 {
-	LUACHECK(0);
-	return NoteskinLua->GetGlobalD("BarlineStartX");
+    LUACHECK(0);
+    return NoteskinLua->GetGlobalD("BarlineStartX");
 }
 
 double Noteskin::GetBarlineOffset()
 {
-	LUACHECK(0);
-	return NoteskinLua->GetGlobalD("BarlineOffset");
+    LUACHECK(0);
+    return NoteskinLua->GetGlobalD("BarlineOffset");
 }
 
 bool Noteskin::IsBarlineEnabled()
 {
-	LUACHECK(false);
-	return NoteskinLua->GetGlobalD("BarlineEnabled") != 0;
+    LUACHECK(false);
+    return NoteskinLua->GetGlobalD("BarlineEnabled") != 0;
 }
 
 double Noteskin::GetJudgmentY()
 {
-	LUACHECK(0);
-	return NoteskinLua->GetGlobalD("JudgmentLineY");
+    LUACHECK(0);
+    return NoteskinLua->GetGlobalD("JudgmentLineY");
 }
 
 void Noteskin::DrawHoldHead(VSRG::TrackNote &T, int Lane, float Location, int ActiveLevel)
 {
-	LUACHECK();
+    LUACHECK();
 
-	if (!NoteskinLua->CallFunction("DrawHoldHead", 4))
-		if (!NoteskinLua->CallFunction("DrawNormal", 4))
-			return;
+    if (!NoteskinLua->CallFunction("DrawHoldHead", 4))
+        if (!NoteskinLua->CallFunction("DrawNormal", 4))
+            return;
 
-	CanRender = true;
-	NoteskinLua->PushArgument(Lane);
-	NoteskinLua->PushArgument(Location);
-	NoteskinLua->PushArgument(T.GetFracKind());
-	NoteskinLua->PushArgument(ActiveLevel);
-	NoteskinLua->RunFunction();
-	CanRender = false;
+    CanRender = true;
+    NoteskinLua->PushArgument(Lane);
+    NoteskinLua->PushArgument(Location);
+    NoteskinLua->PushArgument(T.GetFracKind());
+    NoteskinLua->PushArgument(ActiveLevel);
+    NoteskinLua->RunFunction();
+    CanRender = false;
 }
 
 void Noteskin::DrawHoldTail(VSRG::TrackNote& T, int Lane, float Location, int ActiveLevel)
 {
-	LUACHECK();
+    LUACHECK();
 
-	if (!NoteskinLua->CallFunction("DrawHoldTail", 4))
-		if (!NoteskinLua->CallFunction("DrawNormal", 4))
-			return;
+    if (!NoteskinLua->CallFunction("DrawHoldTail", 4))
+        if (!NoteskinLua->CallFunction("DrawNormal", 4))
+            return;
 
-	CanRender = true;
-	NoteskinLua->PushArgument(Lane);
-	NoteskinLua->PushArgument(Location);
-	NoteskinLua->PushArgument(T.GetFracKind());
-	NoteskinLua->PushArgument(ActiveLevel);
-	NoteskinLua->RunFunction();
-	CanRender = false;
+    CanRender = true;
+    NoteskinLua->PushArgument(Lane);
+    NoteskinLua->PushArgument(Location);
+    NoteskinLua->PushArgument(T.GetFracKind());
+    NoteskinLua->PushArgument(ActiveLevel);
+    NoteskinLua->RunFunction();
+    CanRender = false;
 }
 
 double Noteskin::GetNoteOffset()
 {
-	return NoteScreenSize;
+    return NoteScreenSize;
 }
 
 bool Noteskin::AllowDanglingHeads()
 {
-	return DanglingHeads;
+    return DanglingHeads;
 }
 
 bool Noteskin::ShouldDecreaseHoldSizeWhenBeingHit()
 {
-	return DecreaseHoldSizeWhenBeingHit;
+    return DecreaseHoldSizeWhenBeingHit;
 }
 
 void Noteskin::DrawHoldBody(int Lane, float Location, float Size, int ActiveLevel)
 {
-	LUACHECK();
+    LUACHECK();
 
-	if (!NoteskinLua->CallFunction("DrawHoldBody", 4))
-			return;
+    if (!NoteskinLua->CallFunction("DrawHoldBody", 4))
+        return;
 
-	CanRender = true;
-	NoteskinLua->PushArgument(Lane);
-	NoteskinLua->PushArgument(Location);
-	NoteskinLua->PushArgument(Size);
-	NoteskinLua->PushArgument(ActiveLevel);
-	NoteskinLua->RunFunction();
-	CanRender = false;
+    CanRender = true;
+    NoteskinLua->PushArgument(Lane);
+    NoteskinLua->PushArgument(Location);
+    NoteskinLua->PushArgument(Size);
+    NoteskinLua->PushArgument(ActiveLevel);
+    NoteskinLua->RunFunction();
+    CanRender = false;
 }

@@ -1,6 +1,5 @@
 #include "pch.h"
 
-
 #include "ScoreKeeper7K.h"
 
 /*
@@ -24,29 +23,31 @@ Also, the point combo resets to 0 if a note is missed.
 
 */
 
-void ScoreKeeper7K::update_exp2(ScoreKeeperJudgment judgment){
+void ScoreKeeper7K::update_exp2(ScoreKeeperJudgment judgment) {
+    if (!use_w0_for_ex2 && judgment <= SKJ_W1 || use_w0_for_ex2 && judgment == SKJ_W0) {
+        exp_combo += 4;
+        exp_hit_score += 2;
+    }
+    else if (!use_w0_for_ex2 && judgment == SKJ_W2 || use_w0_for_ex2 && judgment == SKJ_W1) {
+        exp_combo += 3;
+        exp_hit_score += 2;
+    }
+    else if (!use_w0_for_ex2 && judgment == SKJ_W3 || use_w0_for_ex2 && judgment == SKJ_W2) {
+        exp_combo += 2;
+        exp_hit_score += 1;
+    }
+    else if (use_w0_for_ex2 && judgment == SKJ_W3) {
+        exp_combo = 1;
+        exp_hit_score += 1;
+    }
+    else {
+        exp_combo = 0;
+    }
 
-	if(!use_w0_for_ex2 && judgment <= SKJ_W1 || use_w0_for_ex2 && judgment == SKJ_W0){
-		exp_combo += 4;
-		exp_hit_score += 2;
-	}else if(!use_w0_for_ex2 && judgment == SKJ_W2 || use_w0_for_ex2 && judgment == SKJ_W1){
-		exp_combo += 3;
-		exp_hit_score += 2;
-	}else if(!use_w0_for_ex2 && judgment == SKJ_W3 || use_w0_for_ex2 && judgment == SKJ_W2){
-		exp_combo += 2;
-		exp_hit_score += 1;
-	}else if(use_w0_for_ex2 && judgment == SKJ_W3){
-		exp_combo = 1;
-		exp_hit_score += 1;
-	}else{
-		exp_combo = 0;
-	}
+    exp_combo_pts += exp_combo;
 
-	exp_combo_pts += exp_combo;
+    if (exp_combo > 96) exp_combo = 96;
 
-	if(exp_combo > 96) exp_combo = 96;
-
-	exp_score = 1.2e6 * exp_combo_pts / exp_max_combo_pts;
-	exp3_score = 0.8e6 * exp_combo_pts / exp_max_combo_pts + 0.1e6 * exp_hit_score / max_notes;
-
+    exp_score = 1.2e6 * exp_combo_pts / exp_max_combo_pts;
+    exp3_score = 0.8e6 * exp_combo_pts / exp_max_combo_pts + 0.1e6 * exp_hit_score / max_notes;
 }

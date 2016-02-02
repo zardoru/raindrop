@@ -201,7 +201,6 @@ struct Fraction {
 using LFraction = Fraction<long long>;
 using IFraction = Fraction<int>;
 
-
 namespace Utility
 {
     void DebugBreak();
@@ -220,7 +219,6 @@ namespace Utility
     void RemoveFilenameIllegalCharacters(std::string &S, bool removeSlash, bool noAbsolute = true);
 
     std::string Format(std::string str, ...);
-
 
     std::vector<std::string> TokenSplit(const std::string &str, const std::string &token = ",", bool compress = false);
 

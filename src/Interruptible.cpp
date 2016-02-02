@@ -4,28 +4,28 @@
 
 Interruptible::Interruptible()
 {
-	Parent = nullptr;
-	InterruptRequested = false;
+    Parent = nullptr;
+    InterruptRequested = false;
 }
 
 Interruptible::Interruptible(Interruptible* parent)
 {
-	Parent = parent;
-	InterruptRequested = false;
+    Parent = parent;
+    InterruptRequested = false;
 }
 
 void Interruptible::RequestInterrupt()
 {
-	InterruptRequested = true;
+    InterruptRequested = true;
 }
 
 bool Interruptible::IsInterruptRequested()
 {
-	return InterruptRequested;
+    return InterruptRequested;
 }
 
 void Interruptible::CheckInterruption()
 {
-	if (IsInterruptRequested() || (Parent && Parent->IsInterruptRequested()))
-		throw InterruptedException();
+    if (IsInterruptRequested() || (Parent && Parent->IsInterruptRequested()))
+        throw InterruptedException();
 }

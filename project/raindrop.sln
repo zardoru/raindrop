@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "raindrop", "vs10.vcxproj", "{F065A22E-9B7B-4B5C-972F-2C8E30859D96}"
 EndProject
@@ -16,13 +16,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{046BC8
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug NoIters|Win32 = Debug NoIters|Win32
 		Debug|Win32 = Debug|Win32
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F065A22E-9B7B-4B5C-972F-2C8E30859D96}.Debug NoIters|Win32.ActiveCfg = Debug NoIters|Win32
-		{F065A22E-9B7B-4B5C-972F-2C8E30859D96}.Debug NoIters|Win32.Build.0 = Debug NoIters|Win32
 		{F065A22E-9B7B-4B5C-972F-2C8E30859D96}.Debug|Win32.ActiveCfg = Debug|Win32
 		{F065A22E-9B7B-4B5C-972F-2C8E30859D96}.Debug|Win32.Build.0 = Debug|Win32
 		{F065A22E-9B7B-4B5C-972F-2C8E30859D96}.Release|Win32.ActiveCfg = Release|Win32

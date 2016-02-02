@@ -2,9 +2,6 @@
 
 namespace GUI
 {
-
-class SwitchPanel {
-
-};
-
+    class SwitchPanel {
+    };
 }

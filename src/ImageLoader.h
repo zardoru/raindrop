@@ -6,33 +6,33 @@ class ImageLoader
 {
 private:
 
-	struct UploadData
-	{
-		void *Data;
-		int Width, Height;
-	};
+    struct UploadData
+    {
+        void *Data;
+        int Width, Height;
+    };
 
-	static std::map<std::string, Image*> Textures;
-	static std::map<std::string, UploadData> PendingUploads;
+    static std::map<std::string, Image*> Textures;
+    static std::map<std::string, UploadData> PendingUploads;
 
-	static Image*		InsertImage(std::string Name, ImageData *imgData);
+    static Image*		InsertImage(std::string Name, ImageData *imgData);
 public:
-	
-	ImageLoader();
-	~ImageLoader();
-	
-	static void   InvalidateAll();
-	static void   UnloadAll();
 
-	static void   DeleteImage(Image* &ToDelete);
+    ImageLoader();
+    ~ImageLoader();
 
-	/* For multi-threaded loading. */
-	static void   AddToPending (const char* Filename);
-	static void   LoadFromManifest(char** Manifest, int Count, std::string Prefix = "");
-	static void   UpdateTextures();
-	static ImageData GetDataForImage(std::string filename);
-	static ImageData GetDataForImageFromMemory(const unsigned char *const buffer, size_t len);
+    static void   InvalidateAll();
+    static void   UnloadAll();
 
-	/* On-the-spot, main thread loading or reloading. */
-	static Image* Load(std::string filename);
+    static void   DeleteImage(Image* &ToDelete);
+
+    /* For multi-threaded loading. */
+    static void   AddToPending(const char* Filename);
+    static void   LoadFromManifest(char** Manifest, int Count, std::string Prefix = "");
+    static void   UpdateTextures();
+    static ImageData GetDataForImage(std::string filename);
+    static ImageData GetDataForImageFromMemory(const unsigned char *const buffer, size_t len);
+
+    /* On-the-spot, main thread loading or reloading. */
+    static Image* Load(std::string filename);
 };

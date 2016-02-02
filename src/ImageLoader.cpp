@@ -1,6 +1,5 @@
 #include "pch.h"
 
-
 #include "Logging.h"
 #include "Configuration.h"
 
@@ -13,176 +12,175 @@ std::map<std::string, ImageLoader::UploadData> ImageLoader::PendingUploads;
 
 void Image::CreateTexture()
 {
-	if (texture == -1 || !IsValid)
-	{
-		glGenTextures(1, &texture);
-		glBindTexture(GL_TEXTURE_2D, texture);
+    if (texture == -1 || !IsValid)
+    {
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
 
-		LastBound = this;
-		IsValid = true;
-	}
+        LastBound = this;
+        IsValid = true;
+    }
 }
 
 void Image::BindNull()
 {
-	glBindTexture(GL_TEXTURE_2D, 0);
-	LastBound = NULL;
+    glBindTexture(GL_TEXTURE_2D, 0);
+    LastBound = NULL;
 }
 
 void Image::Bind()
 {
-	if (IsValid && texture != -1)
-	{
-		if (LastBound != this)
-		{
-			glBindTexture(GL_TEXTURE_2D, texture);
-			LastBound = this;
-		}
-	}
+    if (IsValid && texture != -1)
+    {
+        if (LastBound != this)
+        {
+            glBindTexture(GL_TEXTURE_2D, texture);
+            LastBound = this;
+        }
+    }
 }
 
 void Image::Destroy() // Called at destruction time
 {
-	if (IsValid && texture != -1)
-	{
-		glDeleteTextures(1, &texture);
-		IsValid = false;
-		texture = -1;
-	}
+    if (IsValid && texture != -1)
+    {
+        glDeleteTextures(1, &texture);
+        IsValid = false;
+        texture = -1;
+    }
 }
 
 void Image::SetTextureData(ImageData *ImgInfo, bool Reassign)
 {
-	if (Reassign) Destroy();
+    if (Reassign) Destroy();
 
-	CreateTexture(); // Make sure our texture exists.
-	Bind();
+    CreateTexture(); // Make sure our texture exists.
+    Bind();
 
-	if (ImgInfo->Data == nullptr && !Reassign)
-	{
-		return;
-	}
+    if (ImgInfo->Data == nullptr && !Reassign)
+    {
+        return;
+    }
 
-	if (!TextureAssigned || Reassign) // We haven't set any data to this texture yet, or we want to regenerate storage
-	{
-		TextureAssigned = true;
-		Directory Dir = ImgInfo->Filename;
-		Dir = Dir.Filename();
+    if (!TextureAssigned || Reassign) // We haven't set any data to this texture yet, or we want to regenerate storage
+    {
+        TextureAssigned = true;
+        Directory Dir = ImgInfo->Filename;
+        Dir = Dir.Filename();
 
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-		if (!Configuration::TextureParameterExists(Dir, "gen-mipmap") || Configuration::GetTextureParameter(Dir, "gen-mipmap") == "true")
-			glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+        if (!Configuration::TextureParameterExists(Dir, "gen-mipmap") || Configuration::GetTextureParameter(Dir, "gen-mipmap") == "true")
+            glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
 
-		GLint param;
-		switch (ImgInfo->WrapMode)
-		{
-		case ImageData::WM_CLAMP_TO_EDGE:
-			param = GL_CLAMP_TO_EDGE;
-			break;
-		case ImageData::WM_REPEAT:
-			param = GL_REPEAT;
-			break;
-		default:
-			param = GL_CLAMP_TO_EDGE;
-		}
+        GLint param;
+        switch (ImgInfo->WrapMode)
+        {
+        case ImageData::WM_CLAMP_TO_EDGE:
+            param = GL_CLAMP_TO_EDGE;
+            break;
+        case ImageData::WM_REPEAT:
+            param = GL_REPEAT;
+            break;
+        default:
+            param = GL_CLAMP_TO_EDGE;
+        }
 
-		GLint wrapS = param, wrapT = param;
-		if (Configuration::GetTextureParameter(Dir, "wrap-s") == "clamp-edge")
-			wrapS = GL_CLAMP_TO_EDGE;
-		else if (Configuration::GetTextureParameter(Dir, "wrap-s") == "repeat")
-			wrapS = GL_REPEAT;
-		else if (Configuration::GetTextureParameter(Dir, "wrap-s") == "clamp-border")
-			wrapS = GL_CLAMP_TO_BORDER;
-		else if (Configuration::GetTextureParameter(Dir, "wrap-s") == "repeat-mirrored")
-			wrapS = GL_MIRRORED_REPEAT;
+        GLint wrapS = param, wrapT = param;
+        if (Configuration::GetTextureParameter(Dir, "wrap-s") == "clamp-edge")
+            wrapS = GL_CLAMP_TO_EDGE;
+        else if (Configuration::GetTextureParameter(Dir, "wrap-s") == "repeat")
+            wrapS = GL_REPEAT;
+        else if (Configuration::GetTextureParameter(Dir, "wrap-s") == "clamp-border")
+            wrapS = GL_CLAMP_TO_BORDER;
+        else if (Configuration::GetTextureParameter(Dir, "wrap-s") == "repeat-mirrored")
+            wrapS = GL_MIRRORED_REPEAT;
 
-		if (Configuration::GetTextureParameter(Dir, "wrap-t") == "clamp-edge")
-			wrapT = GL_CLAMP_TO_EDGE;
-		else if (Configuration::GetTextureParameter(Dir, "wrap-t") == "repeat")
-			wrapT = GL_REPEAT;
-		else if (Configuration::GetTextureParameter(Dir, "wrap-t") == "clamp-border")
-			wrapT = GL_CLAMP_TO_BORDER;
-		else if (Configuration::GetTextureParameter(Dir, "wrap-t") == "repeat-mirrored")
-			wrapT = GL_MIRRORED_REPEAT;
+        if (Configuration::GetTextureParameter(Dir, "wrap-t") == "clamp-edge")
+            wrapT = GL_CLAMP_TO_EDGE;
+        else if (Configuration::GetTextureParameter(Dir, "wrap-t") == "repeat")
+            wrapT = GL_REPEAT;
+        else if (Configuration::GetTextureParameter(Dir, "wrap-t") == "clamp-border")
+            wrapT = GL_CLAMP_TO_BORDER;
+        else if (Configuration::GetTextureParameter(Dir, "wrap-t") == "repeat-mirrored")
+            wrapT = GL_MIRRORED_REPEAT;
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
 
-		GLint minparam;
-		switch (ImgInfo->ScalingMode)
-		{
-		case ImageData::SM_LINEAR:
-			minparam = GL_LINEAR;
-			param = GL_LINEAR;
-			break;
-		case ImageData::SM_MIPMAP:
-			minparam = GL_LINEAR_MIPMAP_LINEAR;
-			param = GL_LINEAR;
-			break;
-		case ImageData::SM_NEAREST:
-			minparam = GL_NEAREST;
-			param = GL_NEAREST;
-			break;
-		default:
-			minparam = GL_LINEAR_MIPMAP_LINEAR;
-			param = GL_LINEAR;
-		}
+        GLint minparam;
+        switch (ImgInfo->ScalingMode)
+        {
+        case ImageData::SM_LINEAR:
+            minparam = GL_LINEAR;
+            param = GL_LINEAR;
+            break;
+        case ImageData::SM_MIPMAP:
+            minparam = GL_LINEAR_MIPMAP_LINEAR;
+            param = GL_LINEAR;
+            break;
+        case ImageData::SM_NEAREST:
+            minparam = GL_NEAREST;
+            param = GL_NEAREST;
+            break;
+        default:
+            minparam = GL_LINEAR_MIPMAP_LINEAR;
+            param = GL_LINEAR;
+        }
 
-		GLint minp = minparam, maxp = param;
-		if (Configuration::GetTextureParameter(Dir, "minfilter") == "linear")
-			minp = GL_LINEAR;
-		else if (Configuration::GetTextureParameter(Dir, "minfilter") == "nearest")
-			minp = GL_NEAREST;
-		else if (Configuration::GetTextureParameter(Dir, "minfilter") == "linear-mipmap-linear")
-			minp = GL_LINEAR_MIPMAP_LINEAR;
-		else if (Configuration::GetTextureParameter(Dir, "minfilter") == "linear-mipmap-nearest")
-			minp = GL_LINEAR_MIPMAP_NEAREST;
-		else if (Configuration::GetTextureParameter(Dir, "minfilter") == "nearest-mipmap-nearest")
-			minp = GL_NEAREST_MIPMAP_NEAREST;
-		else if (Configuration::GetTextureParameter(Dir, "minfilter") == "nearest-mipmap-linear")
-			minp = GL_NEAREST_MIPMAP_LINEAR;
+        GLint minp = minparam, maxp = param;
+        if (Configuration::GetTextureParameter(Dir, "minfilter") == "linear")
+            minp = GL_LINEAR;
+        else if (Configuration::GetTextureParameter(Dir, "minfilter") == "nearest")
+            minp = GL_NEAREST;
+        else if (Configuration::GetTextureParameter(Dir, "minfilter") == "linear-mipmap-linear")
+            minp = GL_LINEAR_MIPMAP_LINEAR;
+        else if (Configuration::GetTextureParameter(Dir, "minfilter") == "linear-mipmap-nearest")
+            minp = GL_LINEAR_MIPMAP_NEAREST;
+        else if (Configuration::GetTextureParameter(Dir, "minfilter") == "nearest-mipmap-nearest")
+            minp = GL_NEAREST_MIPMAP_NEAREST;
+        else if (Configuration::GetTextureParameter(Dir, "minfilter") == "nearest-mipmap-linear")
+            minp = GL_NEAREST_MIPMAP_LINEAR;
 
-		if (Configuration::GetTextureParameter(Dir, "maxfilter") == "linear")
-			maxp = GL_LINEAR;
-		else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "nearest")
-			maxp = GL_NEAREST;
-		else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "linear-mipmap-linear")
-			maxp = GL_LINEAR_MIPMAP_LINEAR;
-		else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "linear-mipmap-nearest")
-			maxp = GL_LINEAR_MIPMAP_NEAREST;
-		else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "nearest-mipmap-nearest")
-			maxp = GL_NEAREST_MIPMAP_NEAREST;
-		else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "nearest-mipmap-linear")
-			maxp = GL_NEAREST_MIPMAP_LINEAR;
+        if (Configuration::GetTextureParameter(Dir, "maxfilter") == "linear")
+            maxp = GL_LINEAR;
+        else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "nearest")
+            maxp = GL_NEAREST;
+        else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "linear-mipmap-linear")
+            maxp = GL_LINEAR_MIPMAP_LINEAR;
+        else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "linear-mipmap-nearest")
+            maxp = GL_LINEAR_MIPMAP_NEAREST;
+        else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "nearest-mipmap-nearest")
+            maxp = GL_NEAREST_MIPMAP_NEAREST;
+        else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "nearest-mipmap-linear")
+            maxp = GL_NEAREST_MIPMAP_LINEAR;
 
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minp);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, maxp);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ImgInfo->Width, ImgInfo->Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ImgInfo->Data);
+    }
+    else // We did, so let's update instead.
+    {
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ImgInfo->Width, ImgInfo->Height, GL_RGBA, GL_UNSIGNED_BYTE, ImgInfo->Data);
+    }
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minp);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, maxp);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ImgInfo->Width, ImgInfo->Height, 0, GL_BGRA, GL_UNSIGNED_BYTE, ImgInfo->Data);
-	}
-	else // We did, so let's update instead.
-	{
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ImgInfo->Width, ImgInfo->Height, GL_BGRA, GL_UNSIGNED_BYTE, ImgInfo->Data);
-	}
-
-	w = ImgInfo->Width;
-	h = ImgInfo->Height;
-	fname = ImgInfo->Filename;
+    w = ImgInfo->Width;
+    h = ImgInfo->Height;
+    fname = ImgInfo->Filename;
 }
 
 void Image::Assign(Directory Filename, ImageData::EScalingMode ScaleMode,
-	ImageData::EWrapMode WrapMode, 
-	bool Regenerate)
+    ImageData::EWrapMode WrapMode,
+    bool Regenerate)
 {
-	ImageData Ret;
-	CreateTexture();
+    ImageData Ret;
+    CreateTexture();
 
-	Ret = ImageLoader::GetDataForImage(Filename);
-	Ret.ScalingMode = ScaleMode;
-	Ret.WrapMode = WrapMode;
-	SetTextureData(&Ret, Regenerate);
-	fname = Filename;
-	free(Ret.Data);
+    Ret = ImageLoader::GetDataForImage(Filename);
+    Ret.ScalingMode = ScaleMode;
+    Ret.WrapMode = WrapMode;
+    SetTextureData(&Ret, Regenerate);
+    fname = Filename;
+    free(Ret.Data);
 }
 
 ImageLoader::ImageLoader()
@@ -191,73 +189,73 @@ ImageLoader::ImageLoader()
 
 ImageLoader::~ImageLoader()
 {
-	// unload ALL the images.
+    // unload ALL the images.
 }
 
 void ImageLoader::InvalidateAll()
 {
-	for (auto i = Textures.begin(); i != Textures.end(); ++i)
-	{
-		i->second->IsValid = false;
-	}
+    for (auto i = Textures.begin(); i != Textures.end(); ++i)
+    {
+        i->second->IsValid = false;
+    }
 }
 
 void ImageLoader::UnloadAll()
 {
-	InvalidateAll();
+    InvalidateAll();
 
-	for (auto i = Textures.begin(); i != Textures.end(); i++)
-	{
-		glDeleteTextures(1, &i->second->texture);
-	}
+    for (auto i = Textures.begin(); i != Textures.end(); i++)
+    {
+        glDeleteTextures(1, &i->second->texture);
+    }
 }
 
 void ImageLoader::DeleteImage(Image* &ToDelete)
 {
-	if (ToDelete)
-	{
-		Textures.erase(Textures.find(ToDelete->fname));
-		delete ToDelete;
-		ToDelete = nullptr;
-	}
+    if (ToDelete)
+    {
+        Textures.erase(Textures.find(ToDelete->fname));
+        delete ToDelete;
+        ToDelete = nullptr;
+    }
 }
 
 Image* ImageLoader::InsertImage(std::string Name, ImageData *imgData)
 {
-	Image* I;
+    Image* I;
 
-	if (!imgData || imgData->Data == nullptr) return nullptr;
-	
-	if (Textures.find(Name) == Textures.end())
-		I = (Textures[Name] = new Image());
-	else
-		I = Textures[Name];
+    if (!imgData || imgData->Data == nullptr) return nullptr;
 
-	I->SetTextureData(imgData);
-	I->fname = Name;
-	
-	return I;
+    if (Textures.find(Name) == Textures.end())
+        I = (Textures[Name] = new Image());
+    else
+        I = Textures[Name];
+
+    I->SetTextureData(imgData);
+    I->fname = Name;
+
+    return I;
 }
 
 void* memdup(const void* d, size_t s) {
-	void* p;
-	p = malloc(s);
-	if (p) memcpy(p, d, s);
-	return p;
+    void* p;
+    p = malloc(s);
+    if (p) memcpy(p, d, s);
+    return p;
 }
 
 ImageData ImageLoader::GetDataForImage(std::string filename)
 {
 #if 1
-	using namespace boost::gil;
+    using namespace boost::gil;
 
-	auto file = std::ifstream{ filename, std::ios::binary };
-	if (!file.is_open()) {
-		Log::Printf("Could not open file \"%s\".\n", filename);
-		return{};
-	}
+    auto file = std::ifstream{ filename, std::ios::binary };
+    if (!file.is_open()) {
+        Log::Printf("Could not open file \"%s\".\n", filename);
+        return{};
+    }
 
-	bgra8_image_t gil;
+    rgba8_image_t gil;
     try {
         read_and_convert_image(file, gil, png_tag());
     }
@@ -266,153 +264,151 @@ ImageData ImageLoader::GetDataForImage(std::string filename)
         Log::Printf("Could not load image \"%s\".\n", filename.c_str());
         return{};
     }
-	
-	auto v = view(gil);
-	using pixel = decltype(v)::value_type;
-	auto data = new pixel[v.width() * v.height()];
-	copy_pixels(v, interleaved_view(v.width(), v.height(), data,
-		v.width() * sizeof(pixel)));
 
-	ImageData out;
-	out.Data = data;
-	out.Filename = filename;
-	out.Width = v.width();
-	out.Height = v.height();
+    auto v = view(gil);
+    using pixel = decltype(v)::value_type;
+    auto data = new pixel[v.width() * v.height()];
+    copy_pixels(v, interleaved_view(v.width(), v.height(), data,
+        v.width() * sizeof(pixel)));
 
-	return out;
+    ImageData out;
+    out.Data = data;
+    out.Filename = filename;
+    out.Width = v.width();
+    out.Height = v.height();
+
+    return out;
 #endif
 
 #if 0
-	auto img = FreeImage_Load(FreeImage_GetFileType(filename.c_str()), filename.c_str());	
-	if (!img)
-	{
-		Log::Printf("Could not load image \"%s\".\n", filename.c_str());
-		return {};
-	}
+    auto img = FreeImage_Load(FreeImage_GetFileType(filename.c_str()), filename.c_str());
+    if (!img)
+    {
+        Log::Printf("Could not load image \"%s\".\n", filename.c_str());
+        return{};
+    }
 
-	auto bit32 = FreeImage_ConvertTo32Bits(img);
-	FreeImage_Unload(img);
+    auto bit32 = FreeImage_ConvertTo32Bits(img);
+    FreeImage_Unload(img);
 
     FreeImage_FlipVertical(bit32);
-	
-	ImageData out;
-	auto len = FreeImage_GetPitch(bit32) * FreeImage_GetHeight(bit32);
-	out.Data = memdup(FreeImage_GetBits(bit32), len);
-	out.Filename = filename;
-	out.Width = FreeImage_GetWidth(bit32);
-	out.Height = FreeImage_GetHeight(bit32);
-	
-	FreeImage_Unload(bit32);
-	
-	return out;
+
+    ImageData out;
+    auto len = FreeImage_GetPitch(bit32) * FreeImage_GetHeight(bit32);
+    out.Data = memdup(FreeImage_GetBits(bit32), len);
+    out.Filename = filename;
+    out.Width = FreeImage_GetWidth(bit32);
+    out.Height = FreeImage_GetHeight(bit32);
+
+    FreeImage_Unload(bit32);
+
+    return out;
 #endif
 }
 
 ImageData ImageLoader::GetDataForImageFromMemory(const unsigned char* const buffer, size_t len)
 {
-	DebugBreak();
+    DebugBreak();
 
-	ImageData out;
-	auto hndl = FreeImage_OpenMemory(const_cast<unsigned char*>(buffer), len);
-	auto bmp = FreeImage_LoadFromMemory(FreeImage_GetFileTypeFromMemory(hndl, len), hndl);
+    ImageData out;
+    auto hndl = FreeImage_OpenMemory(const_cast<unsigned char*>(buffer), len);
+    auto bmp = FreeImage_LoadFromMemory(FreeImage_GetFileTypeFromMemory(hndl, len), hndl);
 
-	if (!bmp) return out; // ERROR!?
+    if (!bmp) return out; // ERROR!?
 
-	auto bit32 = FreeImage_ConvertTo32Bits(bmp);
-	FreeImage_Unload(bmp);
+    auto bit32 = FreeImage_ConvertTo32Bits(bmp);
+    FreeImage_Unload(bmp);
 
     FreeImage_FlipVertical(bit32);
-	auto imglen = FreeImage_GetPitch(bit32) * FreeImage_GetHeight(bit32);
+    auto imglen = FreeImage_GetPitch(bit32) * FreeImage_GetHeight(bit32);
 
-	out.Data = static_cast<unsigned char*>(memdup(FreeImage_GetBits(bit32), imglen));
-	out.Width = FreeImage_GetWidth(bit32);
-	out.Height = FreeImage_GetHeight(bit32);
+    out.Data = static_cast<unsigned char*>(memdup(FreeImage_GetBits(bit32), imglen));
+    out.Width = FreeImage_GetWidth(bit32);
+    out.Height = FreeImage_GetHeight(bit32);
 
-	FreeImage_CloseMemory(hndl);
-	FreeImage_Unload(bit32);
-	return out;
+    FreeImage_CloseMemory(hndl);
+    FreeImage_Unload(bit32);
+    return out;
 }
-
 
 Image* ImageLoader::Load(std::string filename)
 {
-	if ( Textures.find(filename) != Textures.end() && Textures[filename]->IsValid)
-	{
-		return Textures[filename];
-	}
-	else
-	{	
-		ImageData ImgData = GetDataForImage(filename);
-		Image* Ret = InsertImage(filename, &ImgData);
+    if (Textures.find(filename) != Textures.end() && Textures[filename]->IsValid)
+    {
+        return Textures[filename];
+    }
+    else
+    {
+        ImageData ImgData = GetDataForImage(filename);
+        Image* Ret = InsertImage(filename, &ImgData);
 
-		free(ImgData.Data);
-		Image::LastBound = Ret;
+        free(ImgData.Data);
+        Image::LastBound = Ret;
 
-		return Ret;
-	}
-	return 0;
+        return Ret;
+    }
+    return 0;
 }
 
 void ImageLoader::AddToPending(const char* Filename)
 {
-	UploadData New;
-	if (Textures.find(Filename) == Textures.end())
-	{
-		auto d = GetDataForImage(Filename);
-		New.Data = d.Data;
-		New.Width = d.Width;
-		New.Height = d.Height;
-		LoadMutex.lock();
-		PendingUploads.insert( std::pair<char*, UploadData>((char*)Filename, New) );
-		LoadMutex.unlock();
-	}
+    UploadData New;
+    if (Textures.find(Filename) == Textures.end())
+    {
+        auto d = GetDataForImage(Filename);
+        New.Data = d.Data;
+        New.Width = d.Width;
+        New.Height = d.Height;
+        LoadMutex.lock();
+        PendingUploads.insert(std::pair<char*, UploadData>((char*)Filename, New));
+        LoadMutex.unlock();
+    }
 }
 
 /* For multi-threaded loading. */
 void ImageLoader::LoadFromManifest(char** Manifest, int Count, std::string Prefix)
 {
-	for (int i = 0; i < Count; i++)
-	{
-		const char* FinalFilename = (Prefix + Manifest[i]).c_str();
-		AddToPending(FinalFilename);
-	}
+    for (int i = 0; i < Count; i++)
+    {
+        const char* FinalFilename = (Prefix + Manifest[i]).c_str();
+        AddToPending(FinalFilename);
+    }
 }
-	
-	
+
 void ImageLoader::UpdateTextures()
 {
-	if (PendingUploads.size() && LoadMutex.try_lock())
-	{
-		for (auto i = PendingUploads.begin(); i != PendingUploads.end(); i++)
-		{
-			ImageData imgData;
-			imgData.Data = i->second.Data;
-			imgData.Width = i->second.Width;
-			imgData.Height = i->second.Height;
+    if (PendingUploads.size() && LoadMutex.try_lock())
+    {
+        for (auto i = PendingUploads.begin(); i != PendingUploads.end(); i++)
+        {
+            ImageData imgData;
+            imgData.Data = i->second.Data;
+            imgData.Width = i->second.Width;
+            imgData.Height = i->second.Height;
 
-			Image::LastBound = InsertImage(i->first, &imgData);
+            Image::LastBound = InsertImage(i->first, &imgData);
 
-			free(imgData.Data);
-		}
+            free(imgData.Data);
+        }
 
-		PendingUploads.clear();
-		LoadMutex.unlock();
-	}
+        PendingUploads.clear();
+        LoadMutex.unlock();
+    }
 
-	if (Textures.size())
-	{
-		for (auto i = Textures.begin(); i != Textures.end();)
-		{
-			if (i->second->IsValid) /* all of them are valid */
-				break;
+    if (Textures.size())
+    {
+        for (auto i = Textures.begin(); i != Textures.end();)
+        {
+            if (i->second->IsValid) /* all of them are valid */
+                break;
 
-			if (Load(i->first) == nullptr) // If we failed loading it no need to try every. single. time.
-			{
-				i = Textures.erase(i);
-				continue;
-			}
+            if (Load(i->first) == nullptr) // If we failed loading it no need to try every. single. time.
+            {
+                i = Textures.erase(i);
+                continue;
+            }
 
-			++i;
-		}
-	}
+            ++i;
+        }
+    }
 }
