@@ -4,11 +4,6 @@ class Application
 {
 	double oldTime;
 	Screen *Game;
-	
-	struct {
-		int Argc;
-		char **Argv;
-	} Args;
 
 	enum
 	{
@@ -21,12 +16,12 @@ class Application
 		MODE_CUSTOMSCREEN
 	}RunMode;
 
-	void ParseArgs();
+	void ParseArgs(int, char **);
 
 	Directory InFile, OutFile;
 	
 	// VSRG-Specific
-	enum {
+	enum class CONVERTMODE {
 		CONV_BMS,
 		CONV_UQBMS,
 		CONV_SM,

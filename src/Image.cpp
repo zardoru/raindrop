@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "Global.h"
+
 #include "Image.h"
 
 Image* Image::LastBound = NULL;

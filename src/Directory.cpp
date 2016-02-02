@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "Global.h"
+
 #include "Directory.h"
 
 Directory::Directory()

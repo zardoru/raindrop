@@ -55,9 +55,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\ext-libs\include;..\ext-src;..\ext-libs\boost;..\ext-libs\libRocket\Include;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;$(UniversalCRT_IncludePath);C:\Libraries\boost_1_60_0\;../</IncludePath>
-    <LibraryPath>../ext-libs/libRocket/Build/Debug;..\ext-libs\Debug;../ext-libs/boost/stage/lib;C:\Libraries\boost_1_60_0\stage\lib;$(LibraryPath)</LibraryPath>
-    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>..\;..\ext-libs\include;..\ext-src;..\ext-libs\boost;..\ext-libs\libRocket\Include;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;$(UniversalCRT_IncludePath)</IncludePath>
+    <LibraryPath>..\ext-libs\libRocket\Build\Debug;..\ext-libs\Debug;..\ext-libs\boost\stage\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug NoIters|Win32'">
     <IncludePath>..\ext-libs\include;..\ext-src;..\ext-libs\boost;..\ext-libs\libRocket\Include;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;$(UniversalCRT_IncludePath);../;$(IncludePath)</IncludePath>
@@ -73,21 +72,14 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_ITERATOR_DEBUG_LEVEL=0;BOOST_DATE_TIME_NO_LIB;MP3_ENABLED;_STLP_DEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>BOOST_DATE_TIME_NO_LIB;MP3_ENABLED;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>freeimage.lib;rocketcorelua.lib;rocketcontrolslua.lib;rocketcontrols.lib;rocketdebugger.lib;rocketcore.lib;libmpg123.lib;portaudio_x86.lib;soxr.lib;libsndfile-1.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;GLFW3.lib;glew32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AllowIsolation>true</AllowIsolation>
-      <EnableUAC>true</EnableUAC>
-      <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug NoIters|Win32'">
@@ -277,12 +269,6 @@
     <ClCompile Include="..\src\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\ext-src\lua.h" />
-    <ClInclude Include="..\ext-src\luaconf.h" />
-    <ClInclude Include="..\ext-src\lualib.h" />
-    <ClInclude Include="..\ext-src\pa_ringbuffer.h" />
-    <ClInclude Include="..\ext-src\sha256.h" />
-    <ClInclude Include="..\ext-src\sqlite3.h" />
     <ClInclude Include="..\src\ActorBarline.h" />
     <ClInclude Include="..\src\ActorJudgment.h" />
     <ClInclude Include="..\src\ActorLifebar.h" />
@@ -303,7 +289,6 @@
     <ClInclude Include="..\src\GameObject.h" />
     <ClInclude Include="..\src\GameGlobal.h" />
     <ClInclude Include="..\src\GameState.h" />
-    <ClInclude Include="..\src\Global.h" />
     <ClInclude Include="..\src\GameWindow.h" />
     <ClInclude Include="..\src\GraphicalString.h" />
     <ClInclude Include="..\src\Interruptible.h" />

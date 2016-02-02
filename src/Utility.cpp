@@ -1,6 +1,5 @@
 #include "pch.h"
 
-#include "Global.h"
 #include "Logging.h"
 #include "sha256.h"
 

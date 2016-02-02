@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "Global.h"
+
 #include "Line.h"
 
 Line::Line()

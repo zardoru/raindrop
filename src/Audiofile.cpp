@@ -1,7 +1,6 @@
 
 #include "pch.h"
 
-#include "Global.h"
 #include "Audio.h"
 #include "Audiofile.h"
 #include "AudioSourceSFM.h"

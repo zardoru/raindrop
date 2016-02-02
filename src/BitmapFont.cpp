@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "Global.h"
+
 #include "GameState.h"
 #include "LuaManager.h"
 #include "Sprite.h"

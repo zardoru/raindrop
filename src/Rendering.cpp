@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "Global.h"
+
 
 #include "GameWindow.h"
 #include "VBO.h"

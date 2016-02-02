@@ -1265,4 +1265,335 @@ namespace NoteLoaderBMS{
 		Out->Difficulties.push_back(Diff);
 	}
 
+	void LoadObjectsFromFile(const std::filesystem::path& filename, Song *Out)
+	{
+		shared_ptr<Difficulty> Diff(new Difficulty());
+		shared_ptr<DifficultyLoadInfo> LInfo(new DifficultyLoadInfo());
+		std::regex DataDeclaration("(\\d{3})([a-zA-Z0-9]{2})");
+		bool IsPMS = false;
+
+		Diff->Filename = filename.string().c_str();
+		Diff->Data = LInfo;
+
+		if (filename.extension() == L".pms") {
+			IsPMS = true;
+		}
+
+		shared_ptr<BMSLoader> Info = make_shared<BMSLoader>(Out, Diff, IsPMS);
+
+		std::ifstream filein(filename);
+		if (!filein.is_open()) {
+			throw std::exception(("NoteLoaderBMS: Couldn't open file " + filename.string() + "!").c_str());
+		}
+
+		srand(time(nullptr));
+
+		/*
+		BMS files are separated always one file, one difficulty, so it'd make sense
+		that every BMS 'set' might have different timing information per chart.
+		While BMS specifies no 'set' support it's usually implied using folders.
+
+		The default BME specifies is 8 channels when #PLAYER is unset, however
+		the modern BMS standard specifies to ignore #PLAYER and try to figure it out
+		from the amount of used channels.
+
+		And that's what we're going to try to do.
+		*/
+
+		std::unordered_set<GString> Subs; // Subtitle list
+		GString Line;
+		bool IsU8;
+		char* TestU8 = new char[1025];
+
+		int cnt = filein.readsome(TestU8, 1024);
+		TestU8[cnt] = 0;
+
+		// Sonorous UTF-8 extension
+		IsU8 = ShouldUseU8(TestU8);
+		delete[] TestU8;
+		filein.seekg(0);
+
+		while (filein)
+		{
+			getline(filein, Line);
+
+			Utility::ReplaceAll(Line, "[\r\n]", "");
+
+			if (Line.length() == 0 || Line[0] != '#')
+				continue;
+
+			GString command = Line.substr(Line.find_first_of("#"), Line.find_first_of(" ") - Line.find_first_of("#"));
+
+			Utility::ToLower(command);
+
+#define OnCommand(x) if(command == Utility::ToLower(GString(#x)))
+#define OnCommandSub(x) if(command.substr(0, strlen(#x)) == Utility::ToLower(GString(#x)))
+
+			GString CommandContents = Line.substr(Line.find_first_of(" ") + 1);
+			GString tmp;
+			if (!IsU8)
+				CommandContents = Utility::SJIStoU8(CommandContents);
+
+			utf8::replace_invalid(CommandContents.begin(), CommandContents.end(), back_inserter(tmp));
+			CommandContents = tmp;
+
+			if (Info->InterpStatement(command, CommandContents))
+			{
+				OnCommand(#GENRE)
+				{
+					// stub
+				}
+
+				OnCommand(#SUBTITLE)
+				{
+					Subs.insert(CommandContents);
+				}
+
+				OnCommand(#TITLE)
+				{
+					Out->SongName = CommandContents;
+					// ltrim the GString
+					size_t np = Out->SongName.find_first_not_of(" ");
+					if (np != GString::npos)
+						Out->SongName = Out->SongName.substr(np);
+				}
+
+				OnCommand(#ARTIST)
+				{
+					Out->SongAuthor = CommandContents;
+
+					size_t np = Out->SongAuthor.find_first_not_of(" ");
+
+					if (np != GString::npos)
+					{
+						GString author = Out->SongAuthor.substr(np); // I have a feeling this regex will keep growing
+						std::regex chart_author_regex("\\s*[\\/_]?\\s*(?:obj|note)\\.?\\s*[:_]?\\s*(.*)", std::regex::icase);
+						std::smatch sm;
+						if (regex_search(author, sm, chart_author_regex))
+						{
+							Diff->Author = sm[1];
+							// remove the obj. sentence
+							author = regex_replace(author, chart_author_regex, "\0");
+						}
+
+						Out->SongAuthor = author;
+					}
+				}
+
+				OnCommand(#BPM)
+				{
+					TimingSegment Seg;
+					Seg.Time = 0;
+					Seg.Value = latof(CommandContents.c_str());
+					Diff->Timing.push_back(Seg);
+
+					continue;
+				}
+
+				OnCommand(#MUSIC)
+				{
+					Out->SongFilename = CommandContents;
+					Diff->IsVirtual = false;
+					if (!Out->SongPreviewSource.length()) // it's unset
+						Out->SongPreviewSource = CommandContents;
+				}
+
+				OnCommand(#OFFSET)
+				{
+					Diff->Offset = latof(CommandContents.c_str());
+				}
+
+				OnCommand(#PREVIEWPOINT)
+				{
+					Out->PreviewTime = latof(CommandContents.c_str());
+				}
+
+				OnCommand(#PREVIEWTIME)
+				{
+					Out->PreviewTime = latof(CommandContents.c_str());
+				}
+
+				OnCommand(#STAGEFILE)
+				{
+					Diff->Data->StageFile = CommandContents;
+				}
+
+				OnCommand(#LNOBJ)
+				{
+					Info->SetLNObject(fromBase36(CommandContents.c_str()));
+				}
+
+				OnCommand(#DIFFICULTY)
+				{
+					GString dName;
+					if (Utility::IsNumeric(CommandContents.c_str()))
+					{
+						int Kind = atoi(CommandContents.c_str());
+
+						switch (Kind)
+						{
+						case 1:
+							dName = "Beginner";
+							break;
+						case 2:
+							dName = "Normal";
+							break;
+						case 3:
+							dName = "Hard";
+							break;
+						case 4:
+							dName = "Another";
+							break;
+						case 5:
+							dName = "Another+";
+							break;
+						default:
+							dName = "???";
+						}
+					}
+					else
+					{
+						dName = CommandContents;
+					}
+
+					Diff->Name = dName;
+				}
+
+				OnCommand(#BACKBMP)
+				{
+					Diff->Data->StageFile = CommandContents;
+				}
+
+				OnCommand(#PREVIEW)
+				{
+					Out->SongPreviewSource = CommandContents;
+				}
+
+				OnCommand(#TOTAL)
+				{
+					Info->SetTotal(latof(CommandContents));
+				}
+
+				OnCommand(#PLAYLEVEL)
+				{
+					Diff->Level = atoi(CommandContents.c_str());
+				}
+
+				OnCommand(#RANK)
+				{
+					Info->SetJudgeRank(latof(CommandContents));
+				}
+
+				OnCommand(#MAKER)
+				{
+					Diff->Author = CommandContents;
+				}
+
+				OnCommand(#SUBTITLE)
+				{
+					Utility::Trim(CommandContents);
+					Subs.insert(CommandContents);
+				}
+
+				OnCommandSub(#WAV)
+				{
+					GString IndexStr = CommandSubcontents("#WAV", command);
+					int Index = fromBase36(IndexStr.c_str());
+					Info->SetSound(Index, CommandContents);
+				}
+
+				OnCommandSub(#BMP)
+				{
+					GString IndexStr = CommandSubcontents("#BMP", command);
+					int Index = fromBase36(IndexStr.c_str());
+					Info->SetBMP(Index, CommandContents);
+
+					if (Index == 1)
+					{
+						Out->BackgroundFilename = CommandContents;
+					}
+				}
+
+				OnCommandSub(#BPM)
+				{
+					GString IndexStr = CommandSubcontents("#BPM", command);
+					int Index = fromBase36(IndexStr.c_str());
+					Info->SetBPM(Index, latof(CommandContents.c_str()));
+				}
+
+				OnCommandSub(#STOP)
+				{
+					GString IndexStr = CommandSubcontents("#STOP", command);
+					int Index = fromBase36(IndexStr.c_str());
+					Info->SetStop(Index, latof(CommandContents.c_str()));
+				}
+
+				OnCommandSub(#EXBPM)
+				{
+					GString IndexStr = CommandSubcontents("#EXBPM", command);
+					int Index = fromBase36(IndexStr.c_str());
+					Info->SetBPM(Index, latof(CommandContents.c_str()));
+				}
+
+				/* Else... */
+				GString MeasureCommand = Line.substr(Line.find_first_of(":") + 1);
+				GString MainCommand = Line.substr(1, 5);
+				std::smatch sm;
+
+				if (regex_match(MainCommand, sm, DataDeclaration)) // We've got work to do.
+				{
+					int Measure = atoi(sm[1].str().c_str());
+					int Channel = fromBase36(sm[2].str().c_str());
+
+					Info->ParseEvents(Measure, Channel, MeasureCommand);
+				}
+
+			}
+		}
+
+		/* When all's said and done, "compile" the bms. */
+		Info->CompileBMS();
+
+		// First try to find a suiting subtitle
+		GString NewTitle = GetSubtitles(Out->SongName, Subs);
+		if (Diff->Name.length() == 0)
+			Diff->Name = DifficultyNameFromSubtitles(Subs);
+
+		// If we've got a title that's usuable then why not use it.
+		if (NewTitle.length() > 0)
+			Out->SongName = NewTitle.substr(0, NewTitle.find_last_not_of(" ") + 1);
+
+		if (Subs.size() > 1)
+			Out->Subtitle = Utility::Join(Subs, " ");
+		else if (Subs.size() == 1)
+			Out->Subtitle = *Subs.begin();
+
+		Diff->Name = "test";
+
+#if 0
+		// Okay, we didn't find a fitting subtitle, let's try something else.
+		// Get actual filename instead of full path.
+		filename = Utility::RelativeToPath(filename);
+		if (Diff->Name.length() == 0)
+		{
+			size_t startBracket = filename.find_first_of("[");
+			size_t endBracket = filename.find_last_of("]");
+
+			if (startBracket != GString::npos && endBracket != GString::npos)
+				Diff->Name = filename.substr(startBracket + 1, endBracket - startBracket - 1);
+
+			// No brackets? Okay then, let's use the filename.
+			if (Diff->Name.length() == 0)
+			{
+				size_t last_slash = filename.find_last_of("/");
+				size_t last_dslash = filename.find_last_of("\\");
+				size_t last_dir = max(last_slash != GString::npos ? last_slash : 0, last_dslash != GString::npos ? last_dslash : 0);
+				Diff->Name = filename.substr(last_dir + 1, filename.length() - last_dir - 5);
+			}
+		}
+#endif
+
+		Out->Difficulties.push_back(Diff);
+	}
+
 }

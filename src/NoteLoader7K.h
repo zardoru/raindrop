@@ -21,6 +21,7 @@ namespace NoteLoaderFTB
 namespace NoteLoaderBMS
 {
 	void LoadObjectsFromFile(GString filename, GString prefix, VSRG::Song *Out);
+	void LoadObjectsFromFile(const std::filesystem::path&, VSRG::Song *Out);
 }
 
 namespace NoteLoaderOM

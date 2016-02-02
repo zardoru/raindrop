@@ -137,6 +137,23 @@ void Configuration::GetConfigListS(GString Name, std::map<GString, GString> &Out
 	}
 }
 
+void Configuration::GetConfigListS(GString Name, std::map<GString, std::filesystem::path> &Out, GString DefaultKeyName)
+{
+	CSimpleIniA::TNamesDepend List;
+	Config->GetAllKeys(Name.c_str(), List);
+
+	if (!List.size() && DefaultKeyName != "")
+		Config->SetValue(Name.c_str(), DefaultKeyName.c_str(), "");
+
+	for (CSimpleIniA::TNamesDepend::iterator i = List.begin();
+	i != List.end();
+		i++)
+	{
+		if (Config->GetValue(Name.c_str(), i->pItem))
+			Out[GString(i->pItem)] = Config->GetValue(Name.c_str(), i->pItem);
+	}
+}
+
 bool Configuration::ListExists(GString Name)
 {
 	lua_State *L = SkinCfgLua->GetState();

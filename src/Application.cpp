@@ -33,130 +33,109 @@ Application::Application(int argc, char *argv[])
 {
 	oldTime = 0;
 	Game = NULL;
-
 	RunMode = MODE_PLAY;
-	Args.Argc = argc;
-	Args.Argv = argv;
-
 	Upscroll = false;
 	difIndex = 0;
-	Measure = 0;
-	Author = "raindrop";
 	srand(time(0));
+
+	ParseArgs(argc, argv);
 }
 
-inline bool ValidArg(int count, int req, int i)
+void Application::ParseArgs(int argc, char **argv)
 {
-	return (i + req) < count;
-}
+	namespace po = boost::program_options;
 
-void Application::ParseArgs()
-{
-	for (int i = 1; i < Args.Argc; i++)
-	{
-		Log::Printf("%d: %ls\n", i, Utility::Widen(Args.Argv[i]).c_str());
+	po::options_description desc("Allowed options");
+	desc.add_options()
+		("help,?", "show help message")
+		("preview,p", "Preview File")
+		("input,i", po::value<std::filesystem::path>(), "Input File")
+		("output,o", po::value<std::filesystem::path>(), "Output File")
+		("gencache,c", "Generate Cache")
+		("format,g", po::value<std::string>(), "Target Format")
+		("measure,m", po::value<unsigned>()->default_value(0), "Measure")
+		("a,author", po::value<std::string>()->default_value("raindrop"), "Author")
+		("A,A", "Auto")
+		("S,S", "Stop Preview Instance")
+		("R,R", "Release IPC Pool")
+		("L,L", po::value<std::filesystem::path>(), "Load Custom Scene")
+		;
+
+	po::variables_map vm;
+	try {
+		po::store(po::parse_command_line(argc, argv, desc), vm);
+	}
+	catch (...) {
+		std::cout << "unknown / incompatible option supplied" << std::endl;
+		return;
+	}
+	po::notify(vm);
+
+	if (vm.count("help")) {
+		std::cout << desc << std::endl;
+		return;
 	}
 
-	for (int i = 1; i < Args.Argc; i++)
-	{
-		if (Args.Argv[i][0] == '-')
-		{
-			switch (Args.Argv[i][1])
-			{
-			case 'p': // Preview file (VSRG preview mode)
-				RunMode = MODE_VSRGPREVIEW;
-				continue;
-
-			case 'i': // Infile (convert mode/preview file)
-				if (ValidArg(Args.Argc, 1, i))
-				{
-					InFile = Directory(Args.Argv[i+1]);
-					i++;
-				}
-
-				continue;
-			case 'o': // Outfile (convert mode)
-
-				RunMode = MODE_CONVERT;
-
-				if (ValidArg(Args.Argc, 1, i))
-				{
-					OutFile = Directory(Args.Argv[i+1]);
-					i++;
-				}
-
-				continue;
-			case 'c': // Generate cache
-				RunMode = MODE_GENCACHE;
-				continue;
-			case 'g': // Mode to convert to
-
-				if (ValidArg(Args.Argc, 1, i))
-				{
-					GString Mode = Args.Argv[i+1];
-					if (Mode == "om")
-						ConvertMode = CONV_OM;
-					else if (Mode == "sm")
-						ConvertMode = CONV_SM;
-					else if (Mode == "bms")
-						ConvertMode = CONV_BMS;
-					else if (Mode == "uqbms")
-						ConvertMode = CONV_UQBMS;
-					else if (Mode == "nps")
-						ConvertMode = CONV_NPS;
-					i++;
-				}
-
-				continue;
-			case 'm': // Measure selected for preview
-				if (ValidArg(Args.Argc, 1, i))
-				{
-					Measure = atoi (Args.Argv[i+1]);
-					i++;
-				} 
-				continue;
-			case 'a':
-
-				if (ValidArg(Args.Argc, 1, i))
-				{
-					Author = Args.Argv[i+2];
-					i++;
-				} 
-
-				continue;
-
-			case 'A':
-				Auto = true;
-				continue;
-
-			case 'S':
-				RunMode = MODE_STOPPREVIEW;
-				break;
-			case 'R':
-				RunMode = MODE_NULL;
-				IPC::RemoveQueue();
-				break;
-			case 'L':
-				if (ValidArg, Args.Argc, 1, i)
-				{
-					RunMode = MODE_CUSTOMSCREEN;
-					InFile = Directory(Args.Argv[i + 1]);
-				}
-				break;
-			default:
-				continue;
-
-			}
-		}
+	if (vm.count("preview")) {
+		RunMode = MODE_VSRGPREVIEW;
 	}
+
+	if (vm.count("input")) {
+		InFile = Directory(vm["input"].as<std::filesystem::path>().string());
+	}
+
+	if (vm.count("output")) {
+		RunMode = MODE_CONVERT;
+		OutFile = Directory(vm["output"].as<std::filesystem::path>().string());
+	}
+
+	if (vm.count("gencache")) {
+		RunMode = MODE_GENCACHE;
+	}
+
+	if (vm.count("format")) {
+		ConvertMode = std::map<std::string, CONVERTMODE> {
+			{ "om", CONVERTMODE::CONV_OM },
+			{ "sm", CONVERTMODE::CONV_SM },
+			{ "bms", CONVERTMODE::CONV_BMS },
+			{ "uqbms", CONVERTMODE::CONV_UQBMS },
+			{ "nps", CONVERTMODE::CONV_NPS }
+		}.at(vm["format"].as<std::string>());
+	}
+
+	if (vm.count("measure")) {
+		Measure = vm["measure"].as<unsigned>();
+	}
+
+	if (vm.count("a")) {
+		Author = vm["a"].as<std::string>();
+	}
+
+	if (vm.count("A")) {
+		Auto = true;
+	}
+
+	if (vm.count("S")) {
+		RunMode = MODE_STOPPREVIEW;
+	}
+
+	if (vm.count("R")) {
+		RunMode = MODE_NULL;
+		IPC::RemoveQueue();
+	}
+
+	if (vm.count("L")) {
+		RunMode = MODE_CUSTOMSCREEN;
+		InFile = Directory(vm["L"].as<std::filesystem::path>().string());
+	}
+
+	return;
 }
 
 void Application::Init()
 {
 	typedef std::chrono::high_resolution_clock Clock;
 	auto t1 = Clock::now();
-
-	ParseArgs();
 
 #if (defined WIN32) && !(defined MINGW)
 	SetConsoleOutputCP(CP_UTF8);
@@ -317,13 +296,13 @@ void Application::Run()
 
 		if (Sng && Sng->Difficulties.size()) 
 		{
-			if (ConvertMode == CONV_OM) // for now this is the default
+			if (ConvertMode == CONVERTMODE::CONV_OM) // for now this is the default
 				ConvertToOM(Sng.get(), OutFile.path(), Author);
-			else if (ConvertMode == CONV_BMS)
+			else if (ConvertMode == CONVERTMODE::CONV_BMS)
 				ConvertToBMS(Sng.get(), OutFile.path());
-			else if (ConvertMode == CONV_UQBMS)
+			else if (ConvertMode == CONVERTMODE::CONV_UQBMS)
 				ExportToBMSUnquantized(Sng.get(), OutFile.path());
-			else if (ConvertMode == CONV_NPS)
+			else if (ConvertMode == CONVERTMODE::CONV_NPS)
 				ConvertToNPSGraph(Sng.get(), OutFile.path());
 			else
 				ConvertToSMTiming(Sng.get(), OutFile.path());

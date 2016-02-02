@@ -1,6 +1,5 @@
 #include "pch.h"
 
-#include "Global.h"
 #include "Audio.h"
 #include "Configuration.h"
 #include "Logging.h"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Global.h"
+
 /* Matrix size constants */
 
 // 4:3

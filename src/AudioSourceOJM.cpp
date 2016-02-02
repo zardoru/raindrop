@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "Global.h"
+
 #include "Logging.h"
 #include "Audio.h"
 #include "AudioSourceOJM.h"

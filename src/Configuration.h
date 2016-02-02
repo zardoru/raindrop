@@ -8,6 +8,7 @@ namespace Configuration
 	GString GetSkinConfigs(GString Name, GString Namespace = "");
 	double  GetSkinConfigf(GString Name, GString Namespace = "");
 	void GetConfigListS(GString Name, std::map<GString, GString> &Out, GString DefaultKeyName);
+    void GetConfigListS(GString, std::map<GString, std::filesystem::path>&, GString);
 	bool ListExists(GString Name);
 
 	bool HasTextureParameters(GString filename);

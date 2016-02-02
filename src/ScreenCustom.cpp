@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "Global.h"
+
 #include "ScreenCustom.h"
 #include "SceneEnvironment.h"
 

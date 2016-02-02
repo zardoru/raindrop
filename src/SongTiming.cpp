@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "Global.h"
+
 #include "Song.h"
 
 int gcd(int a, int b)

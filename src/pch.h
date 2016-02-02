@@ -50,6 +50,7 @@ namespace std {
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <codecvt>
 #include <condition_variable>
 #include <exception>
 #include <fstream>
@@ -80,13 +81,14 @@ namespace std {
 #include <cstdlib>
 #include <ctime>
 
-#include <boost/interprocess/ipc/message_queue.hpp>
+#include <boost\program_options.hpp>
+#include <boost\interprocess\ipc\message_queue.hpp>
 
-#include <Rocket/Core.h>
-#include <Rocket/Controls.h>
-#include <Rocket/Debugger.h>
-#include <Rocket/Core/Lua/Interpreter.h>
-#include <Rocket/Controls/Lua/Controls.h>
+#include <Rocket\Core.h>
+#include <Rocket\Controls.h>
+#include <Rocket\Debugger.h>
+#include <Rocket\Core\Lua\Interpreter.h>
+#include <Rocket\Controls\Lua\Controls.h>
 
 #include <FreeImage.h>
 
@@ -97,19 +99,19 @@ extern "C" {
 #include "lauxlib.h"
 }
 
-#include <json/json.h>
+#include <json\json.h>
 
-#include <GL/glew.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <GLFW/glfw3.h>
+#include <GL\glew.h>
+#include <glm\glm.hpp>
+#include <glm\gtc\type_ptr.hpp>
+#include <GLFW\glfw3.h>
 
 #include <sqlite3.h>
 
-#include <sys/stat.h>
+#include <sys\stat.h>
 
-#include <ogg/ogg.h>
-#include <vorbis/vorbisfile.h>
+#include <ogg\ogg.h>
+#include <vorbis\vorbisfile.h>
 
 #include <portaudio.h>
 #include <pa_ringbuffer.h>

@@ -96,7 +96,10 @@ public:
 	void Load()
 	{
 		map<GString, GString> Directories;
+        map<GString, std::filesystem::path> Directories2;
+
 		Configuration::GetConfigListS("SongDirectories", Directories, "Songs");
+        Configuration::GetConfigListS("SongDirectories", Directories2, "Songs");
 
 		SongLoader Loader (DB);
 

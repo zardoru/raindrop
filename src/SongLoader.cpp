@@ -18,6 +18,7 @@ struct loaderVSRGEntry_t {
 	{ L"bms",   NoteLoaderBMS::LoadObjectsFromFile },
 	{ L"bme",   NoteLoaderBMS::LoadObjectsFromFile },
 	{ L"bml",   NoteLoaderBMS::LoadObjectsFromFile },
+    { L".bml",  NoteLoaderBMS::LoadObjectsFromFile },
 	{ L"pms",   NoteLoaderBMS::LoadObjectsFromFile },
 	{ L"sm",    NoteLoaderSM::LoadObjectsFromFile  },
 	{ L"osu",   NoteLoaderOM::LoadObjectsFromFile  },
@@ -25,6 +26,14 @@ struct loaderVSRGEntry_t {
 	{ L"ojn",   NoteLoaderOJN::LoadObjectsFromFile },
 	{ L"ssc",   NoteLoaderSSC::LoadObjectsFromFile },
 	{ L"bmson", NoteLoaderBMSON::LoadObjectsFromFile }
+};
+
+struct loaderVSRGEntry2_t {
+    const wchar_t* Ext;
+    void(*LoadFunc) (const std::filesystem::path&, VSRG::Song* Out);
+} LoadersVSRG2[] = {
+    { L"bml",   NoteLoaderBMS::LoadObjectsFromFile },
+    { L".bml",  NoteLoaderBMS::LoadObjectsFromFile }
 };
 
 SongLoader::SongLoader(SongDatabase* Database)
@@ -114,8 +123,52 @@ bool ValidBMSExtension(std::wstring Ext)
 	return false;
 }
 
+shared_ptr<VSRG::Song> LoadSong7KFromFilename(const std::filesystem::path& filename, VSRG::Song *Sng)
+{
+
+    if (!filename.has_extension()) {
+        return nullptr;
+    }
+
+    bool AllocSong = false;
+    if (!Sng)
+    {
+        AllocSong = true;
+        Sng = new VSRG::Song();
+    }
+
+    auto pref = filename.parent_path().string().c_str();
+    Sng->SongDirectory = Directory(pref);
+
+    for (int i = 0; i < sizeof(LoadersVSRG2) / sizeof(loaderVSRGEntry_t); i++)
+    {
+        if (filename.extension() == LoadersVSRG2[i].Ext)
+        {
+            Log::Logf("Load %s from disk...", filename.string().c_str());
+            try {
+                LoadersVSRG2[i].LoadFunc(filename, Sng);
+                Log::Logf(" ok\n");
+            }
+            catch (std::exception &e)
+            {
+                Log::LogPrintf("Failure loading %s: %s\n", filename.string().c_str(), e.what());
+            }
+            break;
+        }
+    }
+
+    if (AllocSong)
+        return shared_ptr<VSRG::Song>(Sng);
+    return nullptr;
+}
+
 shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory Prefix, VSRG::Song *Sng)
 {
+    auto filename = std::filesystem::path{ Filename.path() };
+    auto directory = std::filesystem::path{ Prefix.path() };
+
+    return LoadSong7KFromFilename(directory / filename, Sng);
+
 	bool AllocSong = false;
 	if (!Sng)
 	{
@@ -160,7 +213,7 @@ shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory Pref
 	{
 		if (Ext == LoadersVSRG[i].Ext)
 		{
-			Log::Logf("Load %s from disk...", fn_f.c_str());
+			Log::LogPrintf("Load %s from disk...", fn_f.c_str());
 			try {
 				LoadersVSRG[i].LoadFunc(fn_f, Prefix, Sng);
 				Log::Logf(" ok\n");
@@ -257,6 +310,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, vector<VSRG::Song*> &Vec
 	}
 
 	// Files were modified- we have to reload the charts.
+	RenewCache = true; // TESTING
 	if (RenewCache)
 	{
 		// First, pack BMS charts together.
@@ -397,7 +451,6 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, vector<VSRG::Song*> &Vec
 		}
 	}
 }
-
 
 void SongLoader::GetSongListDC(vector<dotcur::Song*> &OutVec, Directory Dir)
 {

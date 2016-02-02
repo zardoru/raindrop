@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "Global.h"
+
 #include "Sprite.h"
 #include "Font.h"
 #include "GraphicalString.h"
