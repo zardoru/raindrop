@@ -20,7 +20,7 @@ class TruetypeFont : public Font
 	struct codepdata
 	{
 		unsigned char* tex;
-		uint32 gltx;
+		uint32_t gltx;
 		int xofs;
 		int yofs;
 		float scl;

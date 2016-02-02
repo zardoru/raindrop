@@ -100,8 +100,8 @@ const char* fragShader = "#version 120\n"
 "    gl_FragColor *= colorfrag;\n"
 "}\n";
 
-std::map<int32, KeyType> BindingsManager::ScanFunction;
-std::map<int32, int32> BindingsManager::ScanFunction7K;
+std::map<int32_t, KeyType> BindingsManager::ScanFunction;
+std::map<int32_t, int32_t> BindingsManager::ScanFunction7K;
 
 const int NUM_OF_USED_CONTROLLER_BUTTONS = 9;
 
@@ -165,7 +165,7 @@ std::vector<sk_s> SpecialKeys;
 
 int KeyTranslate(GString K)
 {
-	for (uint32 i = 0; i < SpecialKeys.size(); i++)
+	for (auto i = 0U; i < SpecialKeys.size(); i++)
 	{
 		GString Key = K; Utility::ToLower(Key);
 		GString Target = GString(SpecialKeys.at(i).KeyString);  Utility::ToLower(Target);
@@ -339,7 +339,7 @@ void BindingsManager::Initialize()
 	}
 }
 
-KeyType BindingsManager::TranslateKey(int32 Scan)
+KeyType BindingsManager::TranslateKey(int32_t Scan)
 {
 	if (ScanFunction.find(Scan) != ScanFunction.end())
 	{
@@ -349,7 +349,7 @@ KeyType BindingsManager::TranslateKey(int32 Scan)
 	return KT_Unknown;
 }
 
-int32 BindingsManager::TranslateKey7K(int32 Scan)
+int32_t BindingsManager::TranslateKey7K(int32_t Scan)
 {
 	if (ScanFunction7K.find(Scan) != ScanFunction7K.end())
 	{
@@ -361,7 +361,7 @@ int32 BindingsManager::TranslateKey7K(int32 Scan)
 
 
 
-KeyEventType ToKeyEventType(int32 code)
+KeyEventType ToKeyEventType(int32_t code)
 {
 	KeyEventType KE = KE_NONE;
 
@@ -385,7 +385,7 @@ GameWindow::GameWindow()
 	wnd = NULL;
 }
 
-void ResizeFunc(GLFWwindow* wnd, int32 width, int32 height)
+void ResizeFunc(GLFWwindow* wnd, int32_t width, int32_t height)
 {
 	float HeightRatio = (float)height / WindowFrame.GetMatrixSize().y;
 
@@ -399,7 +399,7 @@ void ResizeFunc(GLFWwindow* wnd, int32 width, int32 height)
 	WindowFrame.SizeRatio = HeightRatio;
 }
 
-void InputFunc(GLFWwindow*, int32 key, int32 scancode, int32 code, int32 modk)
+void InputFunc(GLFWwindow*, int32_t key, int32_t scancode, int32_t code, int32_t modk)
 {
 	if (ToKeyEventType(code) != KE_NONE) // Ignore GLFW_REPEAT events
 		WindowFrame.Parent->HandleInput(key, ToKeyEventType(code), false);
@@ -408,7 +408,7 @@ void InputFunc(GLFWwindow*, int32 key, int32 scancode, int32 code, int32 modk)
 		WindowFrame.FullscreenSwitchbackPending = true;
 }
 
-void MouseInputFunc(GLFWwindow*, int32 key, int32 code, int32 modk)
+void MouseInputFunc(GLFWwindow*, int32_t key, int32_t code, int32_t modk)
 {
 	if (ToKeyEventType(code) != KE_NONE) // Ignore GLFW_REPEAT events
 		WindowFrame.Parent->HandleInput(key, ToKeyEventType(code), true);
@@ -601,7 +601,7 @@ void GameWindow::SwapBuffers()
 		const unsigned char *buttonArray = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &buttonArraySize);
 		if (buttonArraySize > 0) {
 			for (int i = 0; i < buttonArraySize; i++) {
-				for (uint32 j = 0; j < SpecialKeys.size(); j++) {
+				for (uint32_t j = 0; j < SpecialKeys.size(); j++) {
 					/* Matches the pressed button to its entry in the SpecialKeys vector. */
 					int thisKeyNumber = SpecialKeys[j].boundkey - 1000;
 					if (i + 1 == thisKeyNumber) {
@@ -660,17 +660,17 @@ void GameWindow::ClearWindow()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-int32 GameWindow::GetDefaultFragShader() const
+int32_t GameWindow::GetDefaultFragShader() const
 {
 	return defaultFragShader;
 }
 
-int32 GameWindow::GetDefaultVertexShader() const
+int32_t GameWindow::GetDefaultVertexShader() const
 {
 	return defaultVertexShader;
 }
 
-int32 GameWindow::GetShaderProgram() const
+int32_t GameWindow::GetShaderProgram() const
 {
 	return defaultShaderProgram;
 }
@@ -790,38 +790,38 @@ bool GameWindow::SetupShaders()
 	return true;
 }
 
-void GameWindow::SetUniform(uint32 Uniform, int i)
+void GameWindow::SetUniform(uint32_t Uniform, int i)
 {
 	glUniform1i(uniforms[Uniform], i);
 }
 
-void GameWindow::SetUniform(uint32 Uniform, float A, float B, float C, float D)
+void GameWindow::SetUniform(uint32_t Uniform, float A, float B, float C, float D)
 {
 	glUniform4f(uniforms[Uniform], A, B, C, D);
 }
 
-void GameWindow::SetUniform(uint32 Uniform, glm::vec3 Pos)
+void GameWindow::SetUniform(uint32_t Uniform, glm::vec3 Pos)
 {
 	glUniform3f(uniforms[Uniform], Pos.x, Pos.y, Pos.z);
 }
 
-void GameWindow::SetUniform(uint32 Uniform, float F)
+void GameWindow::SetUniform(uint32_t Uniform, float F)
 {
 	glUniform1f(uniforms[Uniform], F);
 }
 
-void GameWindow::SetUniform(uint32 Uniform, float *Matrix4x4)
+void GameWindow::SetUniform(uint32_t Uniform, float *Matrix4x4)
 {
 	glUniformMatrix4fv(uniforms[Uniform], 1, GL_FALSE, Matrix4x4);
 }
 
-int GameWindow::EnableAttribArray(uint32 Attrib)
+int GameWindow::EnableAttribArray(uint32_t Attrib)
 {
 	glEnableVertexAttribArray(uniforms[Attrib]);
 	return uniforms[Attrib];
 }
 
-int GameWindow::DisableAttribArray(uint32 Attrib)
+int GameWindow::DisableAttribArray(uint32_t Attrib)
 {
 	glDisableVertexAttribArray(uniforms[Attrib]);
 	return uniforms[Attrib];

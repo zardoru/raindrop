@@ -4,17 +4,17 @@
 /* Matrix size constants */
 
 // 4:3
-const uint16 ScreenWidthDefault = 1024;
-const uint16 ScreenHeightDefault = 768;
+const uint16_t ScreenWidthDefault = 1024;
+const uint16_t ScreenHeightDefault = 768;
 
 // 16:9
-const uint16 ScreenWidthWidescreen = 1360;
-const uint16 ScreenHeightWidescreen = 768;
+const uint16_t ScreenWidthWidescreen = 1360;
+const uint16_t ScreenHeightWidescreen = 768;
 
 /* raindrop  .cur mode Consts */
-const uint16 PlayfieldWidth          = 800;
-const uint16 PlayfieldHeight         = 600;
-const int16  ScreenOffset            = 80;
+const uint16_t PlayfieldWidth          = 800;
+const uint16_t PlayfieldHeight         = 600;
+const int16_t  ScreenOffset            = 80;
 const float  CircleSize              = 80.0f;
 
 const float	 LeniencyHitTime         = 0.135f;
@@ -42,17 +42,17 @@ enum Judgment
 
 struct EvaluationData
 {
-	uint32 MaxCombo;
-	uint32 NumNG;
-	uint32 NumOK;
-	uint32 NumMisses;
-	uint32 NumBads;
-	uint32 NumGreats;
-	uint32 NumPerfects;
-	uint32 NumExcellents;
+	uint32_t MaxCombo;
+	uint32_t NumNG;
+	uint32_t NumOK;
+	uint32_t NumMisses;
+	uint32_t NumBads;
+	uint32_t NumGreats;
+	uint32_t NumPerfects;
+	uint32_t NumExcellents;
 
 	// Scoring
-	uint32 totalNotes;
+	uint32_t totalNotes;
 	double dpScore;
 	double dpScoreSquare;
 };
@@ -139,7 +139,7 @@ namespace VSRG {
 		NK_TOTAL
 	};
 
-	const uint8 MAX_CHANNELS = 16;
+	const uint8_t MAX_CHANNELS = 16;
 }
 
 struct GameParameters {
@@ -168,7 +168,7 @@ struct GameParameters {
 	int Random;
 
 	// Selected starting measure
-	int32 StartMeasure;
+	int32_t StartMeasure;
 
 	GameParameters() {
 		Upscroll = false;

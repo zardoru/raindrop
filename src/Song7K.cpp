@@ -19,7 +19,7 @@ Song::~Song()
 {
 }
 
-VSRG::Difficulty* Song::GetDifficulty(uint32 i)
+VSRG::Difficulty* Song::GetDifficulty(uint32_t i)
 {
 	if (i >= Difficulties.size())
 		return nullptr;

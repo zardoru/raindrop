@@ -17,7 +17,7 @@ void ScoreKeeper7K::update_bms(ScoreKeeperJudgment judgment){
 		bms_combo = -1;
 	}
 
-	bms_combo = min(10LL, bms_combo + 1);
+	bms_combo = std::min(10LL, bms_combo + 1);
 	bms_combo_pts += bms_combo;
 
 	bms_score =

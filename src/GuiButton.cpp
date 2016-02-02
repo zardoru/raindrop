@@ -40,7 +40,7 @@ bool MouseInBoundaries(const Mat4 &Inverse, bool Centered)
 }
 
 
-bool Button::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+bool Button::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
 {
 	if (isMouseInput && BindingsManager::TranslateKey(key) == KT_Select)
 	{

@@ -7,7 +7,7 @@ namespace VSRG
 {
 	struct Measure
 	{
-        std::vector<NoteData> Notes[MAX_CHANNELS];
+		std::vector<NoteData> Notes[MAX_CHANNELS];
 		double Length; // In beats. 4 by default.
 
 		Measure() {
@@ -130,13 +130,13 @@ namespace VSRG
 		VectorSpeeds Speeds;
 
 		// Autoplay Sounds
-        std::vector<AutoplaySound> BGMEvents;
+		std::vector<AutoplaySound> BGMEvents;
 
 		// Autoplay BMP
-        std::shared_ptr<BMPEventsDetail> BMPEvents;
+		std::shared_ptr<BMPEventsDetail> BMPEvents;
 
 		// Timing Info
-        std::shared_ptr<CustomTimingInfo> TimingInfo;
+		std::shared_ptr<CustomTimingInfo> TimingInfo;
 
 		// Background/foreground to show when loading.
 		GString StageFile;
@@ -155,7 +155,7 @@ namespace VSRG
 
 	struct Difficulty : Game::Song::Difficulty
 	{
-        std::shared_ptr<DifficultyLoadInfo> Data;
+		std::shared_ptr<DifficultyLoadInfo> Data;
 
 		enum ETimingType
 		{
@@ -216,10 +216,10 @@ namespace VSRG
 
 	private:
 		bool Quantizing;
-        std::vector<double> MeasureAccomulation;
+		std::vector<double> MeasureAccomulation;
 
 	protected:
-        std::function <double(double)> QuantizeFunction;
+		std::function <double(double)> QuantizeFunction;
 		int GetRowCount(const std::vector<Event> &In);
 
 		void CalculateMeasureAccomulation();
@@ -231,7 +231,7 @@ namespace VSRG
 		void CalculateBGMEvents();
 		void CalculateObjects();
 		
-        std::vector<Measure> Measures;
+		std::vector<Measure> Measures;
 		TimingData BPS;
 
 		Difficulty *Parent;
@@ -248,12 +248,12 @@ namespace VSRG
 	class Song : public Game::Song
 	{
 	public:
-        std::vector<std::shared_ptr<VSRG::Difficulty> > Difficulties;
+		std::vector<std::shared_ptr<VSRG::Difficulty> > Difficulties;
 
 		Song();
 		~Song();
 
-		VSRG::Difficulty* GetDifficulty(uint32 i);
+		VSRG::Difficulty* GetDifficulty(uint32_t i);
 	};
 
 }

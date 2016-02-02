@@ -32,10 +32,10 @@ class GraphicalString;
 namespace Game 
 {
 
-	typedef std::function<void (std::shared_ptr<Song>, uint8)> SongNotification;
-	typedef std::function<void(int32, uint32, GString, std::shared_ptr<Song>)> ItemNotification;
-	typedef std::function<void(int32, std::shared_ptr<Song>, bool, int32)> ItemTransformFunction;
-	typedef std::function<void(int32, std::shared_ptr<Song>, bool, int32, GString)> StringTransformFunction;
+	typedef std::function<void (std::shared_ptr<Song>, uint8_t)> SongNotification;
+	typedef std::function<void(int32_t, uint32_t, GString, std::shared_ptr<Song>)> ItemNotification;
+	typedef std::function<void(int32_t, std::shared_ptr<Song>, bool, int32_t)> ItemTransformFunction;
+	typedef std::function<void(int32_t, std::shared_ptr<Song>, bool, int32_t, GString)> StringTransformFunction;
 	typedef std::function <float (float)> ListTransformFunction;
 	typedef std::function<void()> DirectoryChangeNotifyFunction;
 
@@ -45,8 +45,8 @@ private:
 	friend class ScreenSelectMusic;
 	SongWheel();
 
-	int32 CursorPos, OldCursorPos;
-	int32 SelectedItem, SelectedListItem;
+	int32_t CursorPos, OldCursorPos;
+	int32_t SelectedItem, SelectedListItem;
 	int StartIndex, EndIndex;
 
 	std::mutex* mLoadMutex;
@@ -69,7 +69,7 @@ private:
 	float Time;
 	float DisplacementSpeed;
 	float ItemWidth;
-	void DisplayItem(int32 ListItem, int32 ItemPosition, Vec2 Position);
+	void DisplayItem(int32_t ListItem, int32_t ItemPosition, Vec2 Position);
 	bool InWheelBounds(Vec2 Pos);
 
 	bool IsInitialized; 
@@ -78,7 +78,7 @@ private:
 	bool IsHovering;
 
 	bool LoadedSongsOnce;
-	uint8 DifficultyIndex;
+	uint8_t DifficultyIndex;
 
 	// We need to find the start and the end indices of what we want to display.
 	void CalculateIndices();
@@ -112,7 +112,7 @@ public:
 
 	void Join();
 
-	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
+	bool HandleInput(int32_t key, KeyEventType code, bool isMouseInput);
 	bool HandleScrollInput(const double dx, const double dy);
     std::shared_ptr<Song> GetSelectedSong();
 	void ReloadSongs(SongDatabase* Database);
@@ -125,7 +125,7 @@ public:
 	int NextDifficulty();
 	int PrevDifficulty();
 	int GetDifficulty() const;
-	void SetDifficulty(uint32 i);
+	void SetDifficulty(uint32_t i);
 
 	// Returns the index of the last item the user hovered with the mouse over.
 	int GetCursorIndex() const;
@@ -143,11 +143,11 @@ public:
 
 	// These give and set the global, infinite wheel item.
 	// When wanting to use the bound index, read from SelectedItem, not these.
-	void  SetSelectedItem(int32 Item);
-	int32 GetSelectedItem() const;
-	int32 GetNumItems() const;
+	void  SetSelectedItem(int32_t Item);
+	int32_t GetSelectedItem() const;
+	int32_t GetNumItems() const;
 
-	bool IsItemDirectory(int32 Item);
+	bool IsItemDirectory(int32_t Item);
 
 	float GetListY() const;
 	void SetListY(float newLY);
@@ -157,8 +157,8 @@ public:
 
 	float GetTransformedY() const;
 
-	int32 IndexAtPoint(float Y);
-	uint32 NormalizedIndexAtPoint(float Y);
+	int32_t IndexAtPoint(float Y);
+	uint32_t NormalizedIndexAtPoint(float Y);
 
 	float GetItemHeight() const;
 

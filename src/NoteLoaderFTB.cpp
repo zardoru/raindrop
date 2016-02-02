@@ -44,7 +44,7 @@ void NoteLoaderFTB::LoadMetadata(GString filename, GString prefix, Song *Out)
 
 void NoteLoaderFTB::LoadObjectsFromFile(GString filename, GString prefix, Song *Out)
 {
-    std::shared_ptr<VSRG::Difficulty> Diff (new Difficulty());
+	std::shared_ptr<VSRG::Difficulty> Diff (new Difficulty());
 	Measure Msr;
 
 #if (!defined _WIN32) || (defined STLP)
@@ -110,7 +110,7 @@ failed:
 			int Track = atoi(LineContents[2].c_str()); // Always > 1
 			Diff->TotalObjects++;
 
-			Diff->Duration = max(max(Note.StartTime, Note.EndTime), Diff->Duration);
+			Diff->Duration = std::max(std::max(Note.StartTime, Note.EndTime), Diff->Duration);
 			Msr.Notes[Track-1].push_back(Note);
 		}
 	}

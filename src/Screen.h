@@ -57,7 +57,7 @@ public:
 	virtual void OnExitBegin();
 	virtual void OnExitEnd();
 
-	virtual bool HandleInput(int32 key, KeyEventType state, bool isMouseInput);
+	virtual bool HandleInput(int32_t key, KeyEventType state, bool isMouseInput);
 	virtual bool HandleScrollInput(double xOff, double yOff);
 	virtual bool HandleTextInput(int codepoint);
 

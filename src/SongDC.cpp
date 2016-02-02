@@ -16,7 +16,7 @@ Song::~Song()
 {
 }
 
-Difficulty* Song::GetDifficulty(uint32 i)
+Difficulty* Song::GetDifficulty(uint32_t i)
 {
 	if (i >= Difficulties.size())
 		return nullptr;
@@ -32,7 +32,7 @@ void CalculateBarlineRatios(Song &MySong, Difficulty &Diff)
 
 	Ratios.clear();
 
-	for (uint32 Measure = 0; Measure < Diff.Measures.size(); Measure++)
+	for (uint32_t Measure = 0; Measure < Diff.Measures.size(); Measure++)
 	{
 		double CurrentBeat = Measure * MySong.MeasureLength;
 		double NextBeat = (Measure+1) * MySong.MeasureLength;
@@ -134,10 +134,10 @@ void Song::Process(bool CalculateXPos)
 {
 	for(std::vector<dotcur::Difficulty*>::iterator Diff = Difficulties.begin(); Diff != Difficulties.end(); Diff++ )
 	{
-		int32 CurrentMeasure = 0;
+		int32_t CurrentMeasure = 0;
 		for(auto Msr = (*Diff)->Measures.begin(); Msr != (*Diff)->Measures.end(); Msr++)
 		{
-			uint32 CurNote = 0;
+			uint32_t CurNote = 0;
 
 			std::sort(Msr->begin(), Msr->end(), noteSort);
 
@@ -151,7 +151,7 @@ void Song::Process(bool CalculateXPos)
 
 				it->startTime = TimeAtBeat((*Diff)->Timing, (*Diff)->Offset, it->beat);
 
-				(*Diff)->Duration = max(it->startTime, (*Diff)->Duration);
+				(*Diff)->Duration = std::max(it->startTime, (*Diff)->Duration);
 
 				double frac = it->Fraction;
 
@@ -172,7 +172,7 @@ void Song::Process(bool CalculateXPos)
 
 				if (it->endTime > 0)
 				{
-					(*Diff)->Duration = max(it->endTime, (*Diff)->Duration);
+					(*Diff)->Duration = std::max(it->endTime, (*Diff)->Duration);
 					it->Green = 0.5;
 				}
 
@@ -221,7 +221,7 @@ bool Song::Save(const char* Filename)
 		{
 			Out << "#BPM:";
 
-			for (uint32 k = 0; k < (*i)->Timing.size(); k++)
+			for (uint32_t k = 0; k < (*i)->Timing.size(); k++)
 			{
 				Out << (*i)->Timing[k].Time << "=" << (*i)->Timing[k].Value;
 				if (k+1 < (*i)->Timing.size())
@@ -248,7 +248,7 @@ bool Song::Save(const char* Filename)
 			std::sort(m->begin(), m->end(), noteSort);
 
 			// get lowest fraction that is valid
-			for (uint32 n = 0; n != m->size(); n++)
+			for (uint32_t n = 0; n != m->size(); n++)
 			{
 				GameObject &G = (*m)[n];
 				if (G.GetPosition().x != 0)
@@ -266,7 +266,7 @@ bool Song::Save(const char* Filename)
 			// limit would be 1, -1 to account for the previous note so it doesn't get filled
 			// if it weren't it's going to add one so the limit isn't below what we expect
 			int prevRow = -mAdvance; 
-			for (uint32 n = 0; n != m->size(); n++)
+			for (uint32_t n = 0; n != m->size(); n++)
 			{
 				if ((*m)[n].GetPosition().x == 0)
 					continue;

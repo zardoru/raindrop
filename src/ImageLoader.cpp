@@ -250,8 +250,6 @@ ImageData ImageLoader::GetDataForImage(GString filename)
 {
 	ImageData out;
 	FIBITMAP *img = FreeImage_Load(FreeImage_GetFileType(filename.c_str()), filename.c_str());
-
-	DebugBreak();
 	
 	if (!img)
 	{

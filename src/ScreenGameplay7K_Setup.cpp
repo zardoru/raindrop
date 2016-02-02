@@ -91,7 +91,7 @@ void ScreenGameplay7K::Cleanup()
 	Noteskin::Cleanup();
 }
 
-void ScreenGameplay7K::AssignMeasure(uint32 Measure)
+void ScreenGameplay7K::AssignMeasure(uint32_t Measure)
 {
 	double Beat = 0;
 
@@ -104,7 +104,7 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 		return;
 	}
 
-	for (uint32 i = 0; i < Measure; i++)
+	for (auto i = 0U; i < Measure; i++)
 		Beat += CurrentDiff->Data->Measures[i].Length;
 	
 
@@ -114,7 +114,7 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 		+ StopTimeAtBeat(CurrentDiff->Data->Stops, Beat);
 
 	// Disable all notes before the current measure.
-	for (uint32 k = 0; k < CurrentDiff->Channels; k++)
+	for (auto k = 0U; k < CurrentDiff->Channels; k++)
 	{
 		for (auto m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); )
 		{
@@ -457,7 +457,7 @@ bool ScreenGameplay7K::ProcessSong()
 				i != VSpeeds.end();
 				++i)
 			{
-				speed_max = max(speed_max, abs(i->Value));
+				speed_max = std::max(speed_max, abs(i->Value));
 			}
 
 			double Ratio = DesiredDefaultSpeed / speed_max; // How much above or below are we from the maximum speed?

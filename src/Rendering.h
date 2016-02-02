@@ -19,7 +19,7 @@ void InitializeRender();
 void SetShaderParameters(bool InvertColor, 
 	bool UseGlobalLight, bool Centered, bool UseSecondTransformationMatrix = false, 
 	bool BlackToTransparent = false, bool ReplaceColor = false,
-	int8 HiddenMode = -1);
+	int8_t HiddenMode = -1);
 
 void SetPrimitiveQuadVBO();
 void FinalizeDraw();

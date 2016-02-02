@@ -78,7 +78,7 @@ void ScreenGameplay7K::SetUserMultiplier(float Multip)
 }
 
 
-void ScreenGameplay7K::GearKeyEvent(uint32 Lane, bool KeyDown)
+void ScreenGameplay7K::GearKeyEvent(uint32_t Lane, bool KeyDown)
 {
 	if (Animations->GetEnv()->CallFunction("GearKeyEvent", 2))
 	{
@@ -88,7 +88,7 @@ void ScreenGameplay7K::GearKeyEvent(uint32 Lane, bool KeyDown)
 	}
 }
 
-void ScreenGameplay7K::TranslateKey(int32 Index, bool KeyDown)
+void ScreenGameplay7K::TranslateKey(int32_t Index, bool KeyDown)
 {
 	if (Index < 0)
 		return;
@@ -123,7 +123,7 @@ void ScreenGameplay7K::Activate()
 	Active = true;
 }
 
-bool ScreenGameplay7K::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+bool ScreenGameplay7K::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
 {
 	/*
 	 In here we should use the input arrangements depending on

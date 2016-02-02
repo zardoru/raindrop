@@ -16,8 +16,8 @@ namespace Configuration
 	GString GetTextureParameter(GString filename, GString parameter);
 	bool TextureParameterExists(GString filename, GString parameter);
 
-	double CfgScreenHeight();
-	double CfgScreenWidth();
+    uint32_t CfgScreenHeight();
+    uint32_t CfgScreenWidth();
 
 	void SetConfig(GString Name, GString Value, GString Namespace = "");
 	// void SetConfig(GString Name, float Value, GString Namespace = "");

@@ -210,9 +210,9 @@ namespace NoteLoaderBMS{
 		int LNObj;
 		int SideBOffset;
 
-		uint32 RandomStack[16]; // Up to 16 nested levels.
-		uint8 CurrentNestedLevel;
-		uint8 SkipNestedLevel;
+		uint32_t RandomStack[16]; // Up to 16 nested levels.
+		uint8_t CurrentNestedLevel;
+		uint8_t SkipNestedLevel;
 		bool Skip;
 
 		bool IsPMS;
@@ -330,7 +330,7 @@ namespace NoteLoaderBMS{
 			int usedChannels = Chart->Channels;
 
 			// Standard events
-			for (uint8 curChannel = startChannel; curChannel <= (startChannel + MAX_CHANNELS); curChannel++)
+			for (auto curChannel = startChannel; curChannel <= (startChannel + MAX_CHANNELS); curChannel++)
 			{
 				if (i->second.Events.find(curChannel) != i->second.Events.end()) // there are bms events for this channel.
 				{
@@ -344,7 +344,7 @@ namespace NoteLoaderBMS{
 					if (!(Track >= 0 && Track < MAX_CHANNELS)) Utility::DebugBreak();
 
 					if (LNObj)
-						sort(i->second.Events[curChannel].begin(), i->second.Events[curChannel].end());
+						std::sort(i->second.Events[curChannel].begin(), i->second.Events[curChannel].end());
 
 					for (auto ev = i->second.Events[curChannel].begin(); ev != i->second.Events[curChannel].end(); ++ev)
 					{
@@ -352,7 +352,7 @@ namespace NoteLoaderBMS{
 
 						double Time = TimeForObj(i->first, ev->Fraction);
 
-						Chart->Duration = max(double(Chart->Duration), Time);
+						Chart->Duration = std::max(double(Chart->Duration), Time);
 
 						if (!LNObj || (LNObj != ev->Event))
 						{
@@ -388,7 +388,7 @@ namespace NoteLoaderBMS{
 			}
 
 			// LN events
-			for (uint8 curChannel = startChannelLN; curChannel <= (startChannelLN + MAX_CHANNELS); curChannel++)
+			for (auto curChannel = startChannelLN; curChannel <= (startChannelLN + MAX_CHANNELS); curChannel++)
 			{
 				if (i->second.Events.find(curChannel) != i->second.Events.end()) // there are bms events for this channel.
 				{
@@ -413,7 +413,7 @@ namespace NoteLoaderBMS{
 						{
 							NoteData Note;
 
-							Chart->Duration = max(double(Chart->Duration), Time);
+							Chart->Duration = std::max(double(Chart->Duration), Time);
 
 							Note.StartTime = startTime[Track];
 							Note.EndTime = Time;
@@ -455,7 +455,7 @@ namespace NoteLoaderBMS{
 			// insert it into the difficulty structure
 			Chart->Data->Measures.push_back(Msr);
 
-			for (uint8 k = 0; k < MAX_CHANNELS; k++)
+			for (auto k = 0U; k < MAX_CHANNELS; k++)
 			{
 				// Our old pointers are invalid by now since the Msr structures are going to go out of scope
 				// Which means we must renew them, and that's better done here.
@@ -731,7 +731,7 @@ namespace NoteLoaderBMS{
 					assert(CurrentNestedLevel < 16);
 					assert(Limit > 1);
 
-					RandomStack[CurrentNestedLevel] = (uint32) std::randint(0, Limit);
+					RandomStack[CurrentNestedLevel] = std::randint(0, Limit);
 
 				}
 				else if (Command == "#if")
@@ -848,7 +848,7 @@ namespace NoteLoaderBMS{
 
 	GString CommandSubcontents(const GString &Command, const GString &Line)
 	{
-		uint32 len = Command.length();
+		auto len = Command.length();
 		return Line.substr(len);
 	}
 
@@ -1254,7 +1254,7 @@ namespace NoteLoaderBMS{
 			{
 				size_t last_slash = filename.find_last_of("/");
 				size_t last_dslash = filename.find_last_of("\\");
-				size_t last_dir = max(last_slash != GString::npos ? last_slash : 0, last_dslash != GString::npos ? last_dslash : 0);
+				size_t last_dir = std::max(last_slash != GString::npos ? last_slash : 0, last_dslash != GString::npos ? last_dslash : 0);
 				Diff->Name = filename.substr(last_dir + 1, filename.length() - last_dir - 5);
 			}
 		}

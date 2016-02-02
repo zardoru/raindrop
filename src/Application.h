@@ -43,7 +43,7 @@ public:
 
 	Application(int argc, char *argv[]);
 
-	void HandleInput(int32 key, KeyEventType state, bool isMouseInput);
+	void HandleInput(int32_t key, KeyEventType state, bool isMouseInput);
 	void HandleScrollInput(double xOff, double yOff);
 
 	void Init();

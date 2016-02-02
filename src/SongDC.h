@@ -32,7 +32,7 @@ namespace dotcur {
 		double		LeadInTime;
 		int			MeasureLength;
 
-		dotcur::Difficulty* GetDifficulty(uint32 i);
+		dotcur::Difficulty* GetDifficulty(uint32_t i);
 		void Process(bool CalculateXPos = true);
 		void Repack();
 		bool Save(const char* Filename);

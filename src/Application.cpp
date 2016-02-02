@@ -205,7 +205,7 @@ void Application::Init()
 void Application::SetupPreviewMode()
 {
 	// Load the song.
-    std::shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), nullptr);
+	std::shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), nullptr);
 
 	if (!Sng || !Sng->Difficulties.size())
 	{
@@ -302,7 +302,7 @@ void Application::Run()
 		}
 	}else if (RunMode == MODE_CONVERT)
 	{
-        std::shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), NULL);
+		std::shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), NULL);
 
 
 		if (Sng && Sng->Difficulties.size()) 
@@ -380,7 +380,7 @@ void Application::Run()
 	}
 }
 
-void Application::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+void Application::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
 {
 	Game->HandleInput(key, code, isMouseInput);
 }

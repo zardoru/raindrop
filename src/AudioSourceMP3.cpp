@@ -66,7 +66,7 @@ bool AudioSourceMP3::Open(const char* Filename)
 	return false;
 }
 
-uint32 AudioSourceMP3::Read(short* buffer, size_t count)
+uint32_t AudioSourceMP3::Read(short* buffer, size_t count)
 {
 	size_t actuallyread;
 	auto toRead = count * sizeof(short); // # of bytes to actually read
@@ -115,12 +115,12 @@ size_t AudioSourceMP3::GetLength()
 	return mLen;
 }
 
-uint32 AudioSourceMP3::GetRate()
+uint32_t AudioSourceMP3::GetRate()
 {
 	return mRate;
 }
 
-uint32 AudioSourceMP3::GetChannels()
+uint32_t AudioSourceMP3::GetChannels()
 {
 	return mChannels;
 }

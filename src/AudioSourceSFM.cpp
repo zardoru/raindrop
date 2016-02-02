@@ -56,9 +56,9 @@ bool AudioSourceSFM::Open(const char* Filename)
 	return true;
 }
 
-uint32 AudioSourceSFM::Read(short* buffer, size_t count)
+uint32_t AudioSourceSFM::Read(short* buffer, size_t count)
 {
-	uint32 read = 0;
+	auto read = 0U;
 	if (mWavFile)
 	{
 		read = sf_read_short(mWavFile, buffer, count);
@@ -95,12 +95,12 @@ size_t AudioSourceSFM::GetLength()
 	return info->frames;
 }
 
-uint32 AudioSourceSFM::GetRate()
+uint32_t AudioSourceSFM::GetRate()
 {
 	return mRate;
 }
 
-uint32 AudioSourceSFM::GetChannels()
+uint32_t AudioSourceSFM::GetChannels()
 {
 	return mChannels;
 }

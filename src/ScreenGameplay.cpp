@@ -165,7 +165,7 @@ void ScreenGameplay::ResetNotes()
 {
 	BarlineRatios = CurrentDiff->BarlineRatios;
 	NotesInMeasure.resize(CurrentDiff->Measures.size());
-	for (uint32 i = 0; i < CurrentDiff->Measures.size(); i++)
+	for (auto i = 0U; i < CurrentDiff->Measures.size(); i++)
 	{
 		NotesInMeasure[i] = CurrentDiff->Measures[i];
 		for (std::vector<GameObject>::iterator k = NotesInMeasure[i].begin(); k != NotesInMeasure[i].end(); k++)
@@ -249,13 +249,13 @@ void ScreenGameplay::LoadResources()
 		CursorSize = 60;
 }
 
-void ScreenGameplay::Init(dotcur::Song *OtherSong, uint32 DifficultyIndex)
+void ScreenGameplay::Init(dotcur::Song *OtherSong, uint32_t DifficultyIndex)
 {
 	MySong = OtherSong;
 	CurrentDiff = MySong->Difficulties[DifficultyIndex];
 }
 
-int32 ScreenGameplay::GetMeasure()
+int32_t ScreenGameplay::GetMeasure()
 {
 	return Measure;
 }
@@ -329,7 +329,7 @@ void ScreenGameplay::RunMeasure(float delta)
 	}
 }
 
-bool ScreenGameplay::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+bool ScreenGameplay::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
 {
 	if (Screen::HandleInput(key, code, isMouseInput))
 		return true;
@@ -672,7 +672,7 @@ void ScreenGameplay::RenderObjects(float TimeDelta, bool drawPlayable)
 	MyFont.Render(str.str(), Vec2(textX, 0));
 
 	std::stringstream str2;
-	str2 << int32(1000000.0 * Evaluation.dpScoreSquare / (Evaluation.totalNotes * (Evaluation.totalNotes + 1)));
+	str2 << int32_t(1000000.0 * Evaluation.dpScoreSquare / (Evaluation.totalNotes * (Evaluation.totalNotes + 1)));
 	textX = GetScreenOffset(0.5).x - (str2.str().length() * ComboSizeX / 2);
 	MyFont.Render(str2.str(), Vec2(textX, 720));
 

@@ -17,8 +17,8 @@ namespace VSRG
 	{
 		// start time and end time are 8 bytes each - 16 bytes.
 		double StartTime, EndTime;
-		uint32 Sound; // Do we really need more than this?
-		uint8 NoteKind; // To be used with ENoteKind.
+		uint32_t Sound; // Do we really need more than this?
+		uint8_t NoteKind; // To be used with ENoteKind.
 
 		NoteData() {
 			StartTime = EndTime = 0;
@@ -38,12 +38,12 @@ namespace VSRG
 		float b_pos_holdend;
 
 		// 2 bytes
-		uint16 Sound; 
+		uint16_t Sound;
 
 		// 3 bytes
-		uint8 NoteKind; // To be used with ENoteKind.
-		uint8 FractionKind;
-		uint8 EnabledHitFlags;
+		uint8_t NoteKind; // To be used with ENoteKind.
+		uint8_t FractionKind;
+		uint8_t EnabledHitFlags;
 		
 		// 32 bytes aligned
 	public:
@@ -59,13 +59,13 @@ namespace VSRG
 		double &GetDataEndTime();
 
 		// Get what sound this note has. (Redundant)
-		uint16 &GetDataSound();
+		uint16_t &GetDataSound();
 
 		// Get the kind of head this note has.
-		uint8  GetDataNoteKind();
+		uint8_t  GetDataNoteKind();
 
 		// Get what fraction of a beat this note belongs to.
-		uint8  GetDataFractionKind();
+		uint8_t  GetDataFractionKind();
 
 		// Set this note's position on the vertical track.
 		void AssignPosition(float Position, float endPosition = 0);

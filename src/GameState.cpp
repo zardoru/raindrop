@@ -130,12 +130,12 @@ void GameState::Initialize()
 	}
 }
 
-void GameState::SetDifficultyIndex(uint32 Index)
+void GameState::SetDifficultyIndex(uint32_t Index)
 {
 	SongWheel::GetInstance().SetDifficulty(Index);
 }
 
-uint32 GameState::GetDifficultyIndex() const
+uint32_t GameState::GetDifficultyIndex() const
 {
 	return SongWheel::GetInstance().GetDifficulty();
 }

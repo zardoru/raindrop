@@ -123,7 +123,7 @@ void LoadBmFont(BitmapFont* B, GString Fn, float CellWidth, float CellHeight, fl
 // Adding these directly does not work. Inheriting them from Transformation does not work. We're left only with this.
 struct O2DProxy
 {
-	static uint32 getZ(Sprite const* obj)
+	static uint32_t getZ(Sprite const* obj)
 	{
 		return obj->GetZ();
 	}
@@ -168,7 +168,7 @@ struct O2DProxy
 		return Transformation();
 	}
 
-	static void setZ(Sprite *obj, uint32 nZ)
+	static void setZ(Sprite *obj, uint32_t nZ)
 	{
 		obj->SetZ(nZ);
 	}

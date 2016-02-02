@@ -42,12 +42,12 @@ double SectionValue(const TimingData &Timing, double Beat)
 
 double TimeAtBeat(const TimingData &Timing, float Offset, double Beat, bool Abs)
 {
-	uint32 CurrentIndex = SectionIndex(Timing, Beat) + 1;
+	uint32_t CurrentIndex = SectionIndex(Timing, Beat) + 1;
 	double Time = Offset;
 
 	if (Beat == 0) return Time;
 
-	for (uint32 i = 0; i < CurrentIndex; i++)
+	for (uint32_t i = 0; i < CurrentIndex; i++)
 	{	
 		double SPB = spb(Timing[i].Value);
 
@@ -121,7 +121,7 @@ double StopTimeAtBeat(const TimingData &StopsTiming, double Beat)
 
 	if (Beat == 0 || !StopsTiming.size()) return Time;
 
-	for (uint32 i = 0; i < StopsTiming.size(); i++)
+	for (uint32_t i = 0; i < StopsTiming.size(); i++)
 	{	
 		if (StopsTiming.at(i).Time < Beat)
 			Time += StopsTiming.at(i).Value;
@@ -153,12 +153,12 @@ double IntegrateToTime(const TimingData &Timing, double Time, float Drift)
 
 double QuantizeFractionBeat(double Frac)
 {
-	return double (min (48.0, floor(Frac * 49.0))) / 48.0;
+	return double (std::min (48.0, floor(Frac * 49.0))) / 48.0;
 }
 
 double QuantizeFractionMeasure(double Frac)
 {
-	return  (min (192.0, floor(Frac * 193.0))) / 192.0;
+	return  (std::min (192.0, floor(Frac * 193.0))) / 192.0;
 }
 
 double QuantizeBeat(double Beat)

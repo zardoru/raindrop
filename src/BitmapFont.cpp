@@ -38,8 +38,8 @@ void BitmapFont::RegenerateCharPositions(Vec2 CellSize)
 	if (!Font)
 		return;
 
-	int32 HCellCount = (int)((float)Font->w / (float)CellSize.x), VCellCount = (int)((float)Font->h/(float)CellSize.y);
-	uint32 Current = StartingCharacter;
+	int32_t HCellCount = (int)((float)Font->w / (float)CellSize.x), VCellCount = (int)((float)Font->h/(float)CellSize.y);
+	uint32_t Current = StartingCharacter;
 
 	for (unsigned short y = 0; y < VCellCount; y++)
 	{

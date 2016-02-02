@@ -29,7 +29,7 @@ void ScreenGameplay7K::RecalculateEffects()
 	if (waveEffectEnabled)
 	{
 		float cs = sin(CurrentBeat * M_PI / 4);
-		waveEffect = cs * 0.35 * min(SpeedMultiplierUser, 2.0f);
+		waveEffect = cs * 0.35 * std::min(SpeedMultiplierUser, 2.0f);
 		MultiplierChanged = true;
 	}
 
@@ -72,7 +72,7 @@ void ScreenGameplay7K::RecalculateEffects()
 }
 
 
-void ScreenGameplay7K::HitNote(double TimeOff, uint32 Lane, bool IsHold, bool IsHoldRelease)
+void ScreenGameplay7K::HitNote(double TimeOff, uint32_t Lane, bool IsHold, bool IsHoldRelease)
 {
 	int Judgment = ScoreKeeper->hitNote(TimeOff);
 
@@ -94,7 +94,7 @@ void ScreenGameplay7K::HitNote(double TimeOff, uint32 Lane, bool IsHold, bool Is
 		Animations->DoEvent("OnFullComboEvent");
 }
 
-void ScreenGameplay7K::MissNote(double TimeOff, uint32 Lane, bool IsHold, bool auto_hold_miss, bool early_miss)
+void ScreenGameplay7K::MissNote(double TimeOff, uint32_t Lane, bool IsHold, bool auto_hold_miss, bool early_miss)
 {
 	ScoreKeeper->missNote(auto_hold_miss, early_miss);
 
@@ -118,7 +118,7 @@ void ScreenGameplay7K::MissNote(double TimeOff, uint32 Lane, bool IsHold, bool a
 }
 
 
-void ScreenGameplay7K::PlayLaneKeysound(uint32 Lane)
+void ScreenGameplay7K::PlayLaneKeysound(uint32_t Lane)
 {
 	TrackNote *TN = CurrentKeysounds[Lane];
 	if (!TN) return;
@@ -135,13 +135,13 @@ void ScreenGameplay7K::PlayKeysound(TrackNote* TN)
 			if (s) s->Play();
 }
 
-void ScreenGameplay7K::SetLaneHoldState(uint32 Lane, bool NewState)
+void ScreenGameplay7K::SetLaneHoldState(uint32_t Lane, bool NewState)
 {
 	HeldKey[Lane] = NewState;
 }
 
 // true if holding down key
-bool ScreenGameplay7K::GetGearLaneState(uint32 Lane)
+bool ScreenGameplay7K::GetGearLaneState(uint32_t Lane)
 {
 	return GearIsPressed[Lane] != 0;
 }
@@ -154,7 +154,7 @@ void ScreenGameplay7K::RunMeasures()
 
 	double usedTime = GetSongTime();
 
-	for (uint16 k = 0; k < CurrentDiff->Channels; k++)
+	for (auto k = 0U; k < CurrentDiff->Channels; k++)
 	{
 		for (auto m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); ++m)	{
 			if (!m->IsJudgable())
@@ -224,7 +224,7 @@ void ScreenGameplay7K::RunMeasures()
 	} // end for channels
 }
 
-void ScreenGameplay7K::ReleaseLane(uint32 Lane, float Time)
+void ScreenGameplay7K::ReleaseLane(uint32_t Lane, float Time)
 {
 	GearKeyEvent(Lane, false);
 
@@ -271,7 +271,7 @@ void ScreenGameplay7K::ReleaseLane(uint32 Lane, float Time)
 	}
 }
 
-void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
+void ScreenGameplay7K::JudgeLane(uint32_t Lane, float Time)
 {
 	GearKeyEvent(Lane, true);
 
@@ -299,7 +299,7 @@ void ScreenGameplay7K::JudgeLane(uint32 Lane, float Time)
 		double dev = (Time - m->GetStartTime()) * 1000;
 		double tD = abs(dev);
 
-		lastClosest[Lane] = min(tD, (double)lastClosest[Lane]);
+		lastClosest[Lane] = std::min(tD, (double)lastClosest[Lane]);
 
 		if (lastClosest[Lane] >= MsDisplayMargin)
 			lastClosest[Lane] = 0;

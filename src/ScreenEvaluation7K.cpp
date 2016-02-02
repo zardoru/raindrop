@@ -39,7 +39,7 @@ void ScreenEvaluation7K::Init(ScoreKeeper7K *Result)
 }
 
 
-bool ScreenEvaluation7K::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+bool ScreenEvaluation7K::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
 {
 	if ((BindingsManager::TranslateKey(key) == KT_Escape || BindingsManager::TranslateKey(key) == KT_Select) && code == KE_PRESS)
 		Running = false;

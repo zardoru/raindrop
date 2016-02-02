@@ -248,7 +248,7 @@ void ScreenSelectMusic::StartGameplayScreen()
 {
     std::shared_ptr<ScreenLoading> LoadNext;
     std::shared_ptr<Game::Song> MySong = GameState::GetInstance().GetSelectedSongShared();
-	uint8 difindex = GameState::GetInstance().GetDifficultyIndex();
+	uint8_t difindex = GameState::GetInstance().GetDifficultyIndex();
 
 	if (MySong->Mode == MODE_DOTCUR)
 	{
@@ -270,7 +270,7 @@ void ScreenSelectMusic::StartGameplayScreen()
 	Next = LoadNext;
 }
 
-void ScreenSelectMusic::OnSongSelect(std::shared_ptr<Game::Song> MySong, uint8 difindex)
+void ScreenSelectMusic::OnSongSelect(std::shared_ptr<Game::Song> MySong, uint8_t difindex)
 {
 	// Handle a recently selected song
 
@@ -294,7 +294,7 @@ void ScreenSelectMusic::OnSongSelect(std::shared_ptr<Game::Song> MySong, uint8 d
 	SwitchBackGuiPending = true;
 }
 
-void ScreenSelectMusic::OnSongChange(std::shared_ptr<Game::Song> MySong, uint8 difindex)
+void ScreenSelectMusic::OnSongChange(std::shared_ptr<Game::Song> MySong, uint8_t difindex)
 {
 	ClickSnd->Play();
 
@@ -466,7 +466,7 @@ void ScreenSelectMusic::SwitchUpscroll(bool NewUpscroll)
 	Animations->GetEnv()->SetGlobal("Upscroll", OptionUpscroll);
 }
 
-bool ScreenSelectMusic::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+bool ScreenSelectMusic::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
 {
 	if (TransitionTime > 0 && IsTransitioning)
 		return true;
@@ -553,7 +553,7 @@ void ScreenSelectMusic::OnDirectoryChange()
 	Animations->DoEvent("OnDirectoryChange");
 }
 
-void ScreenSelectMusic::OnItemClick(int32 Index, uint32 boundIndex, GString Line, std::shared_ptr<Game::Song> Selected)
+void ScreenSelectMusic::OnItemClick(int32_t Index, uint32_t boundIndex, GString Line, std::shared_ptr<Game::Song> Selected)
 {
 	if (Animations->GetEnv()->CallFunction("OnItemClick", 4))
 	{
@@ -565,7 +565,7 @@ void ScreenSelectMusic::OnItemClick(int32 Index, uint32 boundIndex, GString Line
 	}
 }
 
-void ScreenSelectMusic::OnItemHover(int32 Index, uint32 boundIndex, GString Line, std::shared_ptr<Game::Song> Selected)
+void ScreenSelectMusic::OnItemHover(int32_t Index, uint32_t boundIndex, GString Line, std::shared_ptr<Game::Song> Selected)
 {
 	if (Animations->GetEnv()->CallFunction("OnItemHover", 4))
 	{
@@ -577,7 +577,7 @@ void ScreenSelectMusic::OnItemHover(int32 Index, uint32 boundIndex, GString Line
 	}
 }
 
-void ScreenSelectMusic::OnItemHoverLeave(int32 Index, uint32 boundIndex, GString Line, std::shared_ptr<Game::Song> Selected)
+void ScreenSelectMusic::OnItemHoverLeave(int32_t Index, uint32_t boundIndex, GString Line, std::shared_ptr<Game::Song> Selected)
 {
 	if (Animations->GetEnv()->CallFunction("OnItemHoverLeave", 4))
 	{

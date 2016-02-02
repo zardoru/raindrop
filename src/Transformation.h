@@ -4,7 +4,7 @@ class Transformation {
 	Mat4   mMatrix;
 	float  mWidth, mHeight;
 	Vec2   mPosition;
-	uint32 mLayer;
+	uint32_t mLayer;
 
 	Vec2 mScale;
 	float mRotation;
@@ -36,8 +36,8 @@ public:
 	Vec2 GetPosition() const;
 	float GetPositionX() const;
 	float GetPositionY() const;
-	void SetZ(uint32 Z);
-	uint32 GetZ() const;
+	void SetZ(uint32_t Z);
+	uint32_t GetZ() const;
 
 	// Size
 	void SetSize(Vec2 Size);

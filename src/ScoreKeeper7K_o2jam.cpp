@@ -19,7 +19,7 @@ int ScoreKeeper7K::getO2Judge(ScoreKeeperJudgment j)
 	}
 
 	if (coolcombo && coolcombo % 15) // every 15 cools you gain a pill, up to 5.
-		pills = min(pills + 1, 5);
+		pills = std::min(pills + 1, 5);
 
 	return j;
 }
@@ -67,7 +67,7 @@ void ScoreKeeper7K::update_o2(ScoreKeeperJudgment j)
 	}
 
 	o2_score += weight;
-	o2_score = max(static_cast<long long>(0), o2_score);
+	o2_score = std::max(static_cast<long long>(0), o2_score);
 }
 
 void ScoreKeeper7K::setO2LifebarRating(int difficulty)
@@ -107,7 +107,7 @@ int ScoreKeeper7K::getCoolCombo()
 	return coolcombo;
 }
 
-uint8 ScoreKeeper7K::getPills()
+uint8_t ScoreKeeper7K::getPills()
 {
 	return pills;
 }

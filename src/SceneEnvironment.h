@@ -64,7 +64,7 @@ public:
 
 	void RunUIScript(GString Filename);
 	void RunUIFunction(GString Funcname);
-	void SetUILayer(uint32 Layer);
+	void SetUILayer(uint32_t Layer);
 	void Preload(GString Filename, GString ArrayName);
 	void Initialize(GString Filename = "", bool RunScript = true);
 	LuaManager *GetEnv();
@@ -86,8 +86,8 @@ public:
 	void Sort();
 
 	void UpdateTargets(double TimeDelta);
-	void DrawUntilLayer(uint32 Layer);
-	void DrawFromLayer(uint32 Layer);
+	void DrawUntilLayer(uint32_t Layer);
+	void DrawFromLayer(uint32_t Layer);
 
 	void RunIntro(float Fraction, float Delta);
 	void RunExit(float Fraction, float Delta);
@@ -95,7 +95,7 @@ public:
 	float GetIntroDuration();
 	float GetExitDuration();
 
-	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
+	bool HandleInput(int32_t key, KeyEventType code, bool isMouseInput);
 	bool HandleTextInput(int codepoint);
 	bool IsManagedObject(Drawable2D *Obj);
 	void StopManagingObject(Drawable2D *Obj);

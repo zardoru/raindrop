@@ -75,12 +75,12 @@ void SongWheel::Initialize(SongDatabase* Database)
 
 class LoadThread
 {
-    std::mutex* mLoadMutex;
+	std::mutex* mLoadMutex;
 	SongDatabase* DB;
-    std::shared_ptr<SongList> ListRoot;
+	std::shared_ptr<SongList> ListRoot;
 	bool VSRGActive;
 	bool DCActive;
-    std::atomic<bool>& isLoading;
+	std::atomic<bool>& isLoading;
 public:
 	LoadThread(std::mutex* m, SongDatabase* d, std::shared_ptr<SongList> r, bool va, bool da, std::atomic<bool>& loadingstatus)
 		: mLoadMutex(m),
@@ -96,10 +96,10 @@ public:
 	void Load()
 	{
 		std::map<GString, GString> Directories;
-        std::map<GString, std::filesystem::path> Directories2;
+		std::map<GString, std::filesystem::path> Directories2;
 
 		Configuration::GetConfigListS("SongDirectories", Directories, "Songs");
-        Configuration::GetConfigListS("SongDirectories", Directories2, "Songs");
+		Configuration::GetConfigListS("SongDirectories", Directories2, "Songs");
 
 		SongLoader Loader (DB);
 
@@ -186,7 +186,7 @@ int SongWheel::GetCursorIndex() const
 
 int SongWheel::PrevDifficulty()
 {
-	uint8 max_index = 0;
+	uint8_t max_index = 0;
 	if (!CurrentList->IsDirectory(SelectedItem))
 	{
 		DifficultyIndex--;
@@ -201,7 +201,7 @@ int SongWheel::PrevDifficulty()
 			max_index = Song->Difficulties.size() - 1;
 		}
 		
-		DifficultyIndex = min(max_index, DifficultyIndex);
+		DifficultyIndex = std::min(max_index, DifficultyIndex);
 		OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
 	}
 	else
@@ -239,7 +239,7 @@ bool SongWheel::InWheelBounds(Vec2 Pos)
 	return Pos.x > TransformHorizontal(Pos.y) && Pos.x < TransformHorizontal(Pos.y) + ItemWidth;
 }
 
-void SongWheel::SetDifficulty(uint32 i)
+void SongWheel::SetDifficulty(uint32_t i)
 {
 	if (CurrentList && !CurrentList->IsDirectory(SelectedItem))
 	{
@@ -248,7 +248,7 @@ void SongWheel::SetDifficulty(uint32 i)
 		size_t oldDI = DifficultyIndex;
 
 		if (maxIndex)
-			DifficultyIndex = Clamp(i, uint32(0), uint32(maxIndex - 1));
+			DifficultyIndex = Clamp(i, uint32_t(0), uint32_t(maxIndex - 1));
 		else
 			DifficultyIndex = 0;
 
@@ -257,7 +257,7 @@ void SongWheel::SetDifficulty(uint32 i)
 	}
 }
 
-bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+bool SongWheel::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
 {
 	if (code == KE_PRESS)
 	{
@@ -273,8 +273,8 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 			return true;
 		case KT_Select:
 			Vec2 mpos = GameState::GetWindow()->GetRelativeMPos();
-			int32 boundIndex = GetCursorIndex();
-			int32 Idx = GetListCursorIndex();
+			auto boundIndex = GetCursorIndex();
+			auto Idx = GetListCursorIndex();
 			if (boundIndex != CurrentList->GetNumEntries()) // There's entries!
 			{
 				if (InWheelBounds(mpos) || !isMouseInput)
@@ -305,7 +305,7 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 
 void SongWheel::GoUp()
 {
-    std::unique_lock<std::mutex> lock (*mLoadMutex);
+	std::unique_lock<std::mutex> lock (*mLoadMutex);
 
 	if (CurrentList->HasParentDirectory())
 	{
@@ -326,7 +326,7 @@ std::shared_ptr<Game::Song> SongWheel::GetSelectedSong()
 
 void SongWheel::Update(float Delta)
 {
-	uint32 Size = GetNumItems();
+	uint32_t Size = GetNumItems();
 
 	Time += Delta;
 
@@ -385,19 +385,19 @@ void SongWheel::Update(float Delta)
 		DifficultyIndex = 0;
 		if (OnItemHover)
 		{
-            std::shared_ptr<Game::Song> Notify = GetSelectedSong();
+			std::shared_ptr<Game::Song> Notify = GetSelectedSong();
 			OnItemHover(GetCursorIndex(), GetListCursorIndex(),
 						CurrentList->GetEntryTitle(GetCursorIndex()), Notify);
 		}
 	}
 }
 
-void SongWheel::DisplayItem(int32 ListItem, int32 ListPosition, Vec2 Position)
+void SongWheel::DisplayItem(int32_t ListItem, int32_t ListPosition, Vec2 Position)
 {
 	if (Position.y > -ItemHeight && Position.y < ScreenHeight)
 	{
 		bool IsSelected = false;
-        std::shared_ptr<Song> Song = nullptr;
+		std::shared_ptr<Song> Song = nullptr;
 		GString Text;
 		if (ListItem != -1)
 		{
@@ -440,7 +440,7 @@ void SongWheel::CalculateIndices()
 void SongWheel::Render()
 {
 	int Index = GetCursorIndex();
-    std::unique_lock<std::mutex> lock (*mLoadMutex);
+	std::unique_lock<std::mutex> lock (*mLoadMutex);
 	int Cur = 0;
 	int Max = CurrentList->GetNumEntries();
 
@@ -465,7 +465,7 @@ void SongWheel::Render()
 	}
 }
 
-int32 SongWheel::GetSelectedItem() const
+int32_t SongWheel::GetSelectedItem() const
 {
 	return SelectedListItem;
 }
@@ -485,7 +485,7 @@ float SongWheel::GetItemWidth() const
 	return ItemWidth;
 }
 
-void SongWheel::SetSelectedItem(int32 Item)
+void SongWheel::SetSelectedItem(int32_t Item)
 {
 	if (!CurrentList)
 		return;
@@ -493,7 +493,7 @@ void SongWheel::SetSelectedItem(int32 Item)
 	if (CurrentList->GetNumEntries() == 0)
 		return;
 
-	int32 OldListIndex = SelectedListItem;
+	int32_t OldListIndex = SelectedListItem;
 	SelectedListItem = Item;
 
 	// Get a bound item index
@@ -506,7 +506,7 @@ void SongWheel::SetSelectedItem(int32 Item)
 	OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
 }
 
-int32 SongWheel::IndexAtPoint(float Y)
+int32_t SongWheel::IndexAtPoint(float Y)
 {
 	float posy = Y;
 	posy -= shownListY;
@@ -515,9 +515,9 @@ int32 SongWheel::IndexAtPoint(float Y)
 	return floor(posy);
 }
 
-uint32 SongWheel::NormalizedIndexAtPoint(float Y)
+uint32_t SongWheel::NormalizedIndexAtPoint(float Y)
 {
-	int32 Idx = IndexAtPoint(Y);
+	auto Idx = IndexAtPoint(Y);
 	if (!Idx || !GetNumItems() || (Idx % GetNumItems() == 0) ) return 0;
 
 	while (Idx > GetNumItems())
@@ -527,7 +527,7 @@ uint32 SongWheel::NormalizedIndexAtPoint(float Y)
 	return Idx;
 }
 
-int32 SongWheel::GetNumItems() const
+int32_t SongWheel::GetNumItems() const
 {
 	if (!CurrentList)
 		return 0;
@@ -537,7 +537,7 @@ int32 SongWheel::GetNumItems() const
 	}
 }
 
-bool SongWheel::IsItemDirectory(int32 Item)
+bool SongWheel::IsItemDirectory(int32_t Item)
 {
 	if (CurrentList->GetNumEntries())
 	{

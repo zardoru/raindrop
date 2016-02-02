@@ -12,31 +12,31 @@ void ScoreKeeper7K::update_osu(ScoreKeeperJudgment judgment){
 			osu_points += 320;
 			osu_accuracy += 300;
 			osu_bonus_multiplier = 32;
-			bonus_counter = min(100, bonus_counter + 2);
+			bonus_counter = std::min(100, bonus_counter + 2);
 			break;
 		case SKJ_W1:
 			osu_points += 300;
 			osu_accuracy += 300;
 			osu_bonus_multiplier = 32;
-			bonus_counter = min(100, bonus_counter + 1);
+			bonus_counter = std::min(100, bonus_counter + 1);
 			break;
 		case SKJ_W2:
 			osu_points += 200;
 			osu_accuracy += 200;
 			osu_bonus_multiplier = 16;
-			bonus_counter = max(0, bonus_counter - 8);
+			bonus_counter = std::max(0, bonus_counter - 8);
 			break;
 		case SKJ_W3:
 			osu_points += 100;
 			osu_accuracy += 100;
 			osu_bonus_multiplier = 8;
-			bonus_counter = max(0, bonus_counter - 24);
+			bonus_counter = std::max(0, bonus_counter - 24);
 			break;
 		case SKJ_W4:
 			osu_points += 50;
 			osu_accuracy += 50;
 			osu_bonus_multiplier = 4;
-			bonus_counter = max(0, bonus_counter - 44);
+			bonus_counter = std::max(0, bonus_counter - 44);
 			break;
 		case SKJ_MISS:
 			osu_points += 0;

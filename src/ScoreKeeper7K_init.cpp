@@ -194,7 +194,7 @@ ScoreKeeper7K::ScoreKeeper7K(double judge_window_scale){
 void ScoreKeeper7K::setLifeTotal(double total){
 
 	if(total != -1) lifebar_total = total;
-	else lifebar_total = max(260.0, 7.605 * max_notes / (6.5 + 0.01 * max_notes));
+	else lifebar_total = std::max(260.0, 7.605 * max_notes / (6.5 + 0.01 * max_notes));
 
 	// recalculate groove lifebar increments.
 	lifebar_easy_increment = Clamp(lifebar_total / max_notes / 50.0, 0.004, 0.8);

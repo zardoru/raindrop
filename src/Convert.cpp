@@ -123,7 +123,7 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
 		// Then, objects.
 		for (auto k : Difficulty->Data->Measures)
 		{
-			for (uint8 n = 0; n < Difficulty->Channels; n++)
+			for (auto n = 0U; n < Difficulty->Channels; n++)
 			{
 				for (auto Note : k.Notes[n])
 				{

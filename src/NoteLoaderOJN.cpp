@@ -19,29 +19,29 @@ const char *DifficultyNames[] = { "EX", "NX", "HX" };
 
 struct OjnHeader
 {
-	int32 songid;
+	int32_t songid;
 	char signature[4];
 	float encode_version;
-	int32 genre;
+	int32_t genre;
 	float bpm;
-	int16 level[4];
-	int32 event_count[3];
-	int32 note_count[3];
-	int32 measure_count[3];
-	int32 package_count[3];
-	int16 old_encode_version;
-	int16 old_songid;
+	int16_t level[4];
+	int32_t event_count[3];
+	int32_t note_count[3];
+	int32_t measure_count[3];
+	int32_t package_count[3];
+	int16_t old_encode_version;
+	int16_t old_songid;
 	char old_genre[20];
-	int32 bmp_size;
-	int32 old_file_version;
+	int32_t bmp_size;
+	int32_t old_file_version;
 	char title[64];
 	char artist[32];
 	char noter[32];
 	char ojm_file[32];
-	int32 cover_size;
-	int32 time[3];
-	int32 note_offset[3];
-	int32 cover_offset;
+	int32_t cover_size;
+	int32_t time[3];
+	int32_t note_offset[3];
+	int32_t cover_offset;
 };
 
 struct OjnPackage

@@ -166,7 +166,7 @@ bool Configuration::ListExists(GString Name)
 	return Exists;
 }
 
-double Configuration::CfgScreenHeight()
+uint32_t Configuration::CfgScreenHeight()
 {
 	if (IsWidescreen)
 		return ScreenHeightWidescreen;
@@ -174,7 +174,7 @@ double Configuration::CfgScreenHeight()
 		return ScreenHeightDefault;
 }
 
-double Configuration::CfgScreenWidth()
+uint32_t Configuration::CfgScreenWidth()
 {
 	if (IsWidescreen == 1)
 		return ScreenWidthWidescreen;

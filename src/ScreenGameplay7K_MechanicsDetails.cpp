@@ -22,9 +22,9 @@ RaindropMechanics::RaindropMechanics(bool forcedRelease)
 	this->forcedRelease = forcedRelease;
 }
 
-bool RaindropMechanics::OnUpdate(double SongTime, VSRG::TrackNote* m, uint32 Lane)
+bool RaindropMechanics::OnUpdate(double SongTime, VSRG::TrackNote* m, uint32_t Lane)
 {
-	uint32 k = Lane;
+	auto k = Lane;
 	/* We have to check for all gameplay conditions for this note. */
 
 	// Condition A: Hold tail outside accuracy cutoff (can't be hit any longer),
@@ -89,7 +89,7 @@ bool RaindropMechanics::OnUpdate(double SongTime, VSRG::TrackNote* m, uint32 Lan
 	return false;
 }
 
-bool RaindropMechanics::OnPressLane(double SongTime, VSRG::TrackNote* m, uint32 Lane)
+bool RaindropMechanics::OnPressLane(double SongTime, VSRG::TrackNote* m, uint32_t Lane)
 {
 	if (!m->IsEnabled())
 		return false;
@@ -129,7 +129,7 @@ bool RaindropMechanics::OnPressLane(double SongTime, VSRG::TrackNote* m, uint32 
 	return false;
 }
 
-bool RaindropMechanics::OnReleaseLane(double SongTime, VSRG::TrackNote* m, uint32 Lane)
+bool RaindropMechanics::OnReleaseLane(double SongTime, VSRG::TrackNote* m, uint32_t Lane)
 {
 	if (m->IsHold() && m->WasNoteHit() && m->IsEnabled()) /* We hit the hold's head and we've not released it early already */
 	{
@@ -176,7 +176,7 @@ TimingType O2JamMechanics::GetTimingKind()
 	return TT_BEATS;
 }
 
-bool O2JamMechanics::OnReleaseLane(double SongBeat, VSRG::TrackNote* m, uint32 Lane)
+bool O2JamMechanics::OnReleaseLane(double SongBeat, VSRG::TrackNote* m, uint32_t Lane)
 {
 	if (m->IsHold() && m->WasNoteHit() && m->IsEnabled()) /* We hit the hold's head and we've not released it early already */
 	{
@@ -204,7 +204,7 @@ bool O2JamMechanics::OnReleaseLane(double SongBeat, VSRG::TrackNote* m, uint32 L
 }
 
 
-bool O2JamMechanics::OnPressLane(double SongBeat, VSRG::TrackNote* m, uint32 Lane)
+bool O2JamMechanics::OnPressLane(double SongBeat, VSRG::TrackNote* m, uint32_t Lane)
 {
 	if (!m->IsEnabled())
 		return false;
@@ -236,9 +236,9 @@ bool O2JamMechanics::OnPressLane(double SongBeat, VSRG::TrackNote* m, uint32 Lan
 	return false;
 }
 
-bool O2JamMechanics::OnUpdate(double SongBeat, VSRG::TrackNote* m, uint32 Lane)
+bool O2JamMechanics::OnUpdate(double SongBeat, VSRG::TrackNote* m, uint32_t Lane)
 {
-	uint32 k = Lane;
+	auto k = Lane;
 	double tD = SongBeat - m->GetTimeFinal();
 	double tHead = SongBeat - m->GetStartTime();
 

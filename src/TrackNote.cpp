@@ -88,7 +88,7 @@ void TrackNote::AddTime(double Time)
 
 double TrackNote::GetTimeFinal() const
 {
-	return max(Time, EndTime);
+	return std::max(Time, EndTime);
 }
 
 double TrackNote::GetStartTime() const
@@ -152,17 +152,17 @@ double &TrackNote::GetDataEndTime()
 	return EndTime;
 }
 
-uint16 &TrackNote::GetDataSound()
+uint16_t &TrackNote::GetDataSound()
 {
 	return Sound;
 }
 
-uint8  TrackNote::GetDataNoteKind()
+uint8_t  TrackNote::GetDataNoteKind()
 {
 	return NoteKind;
 }
 
-uint8  TrackNote::GetDataFractionKind()
+uint8_t  TrackNote::GetDataFractionKind()
 {
 	return FractionKind;
 }

@@ -210,12 +210,12 @@ void SceneEnvironment::RunExit(float Fraction, float Delta)
 
 float SceneEnvironment::GetIntroDuration()
 {
-	return max(Lua->GetGlobalD("IntroDuration"), 0.0);
+	return std::max(Lua->GetGlobalD("IntroDuration"), 0.0);
 }
 
 float SceneEnvironment::GetExitDuration()
 {
-	return max(Lua->GetGlobalD("ExitDuration"), 0.0);
+	return std::max(Lua->GetGlobalD("ExitDuration"), 0.0);
 }
 
 
@@ -310,7 +310,7 @@ SceneEnvironment::~SceneEnvironment()
 		ctx->RemoveReference();
 }
 
-void SceneEnvironment::SetUILayer(uint32 Layer)
+void SceneEnvironment::SetUILayer(uint32_t Layer)
 {
 	if (obctx)
 		obctx->SetZ(Layer);
@@ -590,7 +590,7 @@ void SceneEnvironment::ReloadAll()
 	ReloadScripts();
 }
 
-void SceneEnvironment::DrawUntilLayer(uint32 Layer)
+void SceneEnvironment::DrawUntilLayer(uint32_t Layer)
 {
 	for (auto i: Objects)
 	{
@@ -600,7 +600,7 @@ void SceneEnvironment::DrawUntilLayer(uint32 Layer)
 	}
 }
 
-void SceneEnvironment::DrawFromLayer(uint32 Layer)
+void SceneEnvironment::DrawFromLayer(uint32_t Layer)
 {
 	for (auto i = Objects.begin(); i != Objects.end(); ++i)
 	{
@@ -614,7 +614,7 @@ LuaManager *SceneEnvironment::GetEnv()
 	return Lua.get();
 }
 
-bool SceneEnvironment::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+bool SceneEnvironment::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
 {
 	if (Lua->CallFunction("KeyEvent", 3))
 	{

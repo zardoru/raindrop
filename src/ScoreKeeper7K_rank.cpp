@@ -11,10 +11,10 @@ void ScoreKeeper7K::update_ranks(ScoreKeeperJudgment judgment){
 	if (!use_w0_for_ex2 && judgment <= SKJ_W2 || use_w0_for_ex2 && judgment <= SKJ_W1) ++rank_w2_count;
 	if (judgment <= SKJ_W3) ++rank_w3_count;
 
-	long long rank_w0_pts = max(rank_w0_count * 2 - total_notes, 0LL);
-	long long rank_w1_pts = max(rank_w1_count * 2 - total_notes, 0LL);
-	long long rank_w2_pts = max(rank_w2_count * 2 - total_notes, 0LL);
-	long long rank_w3_pts = max(rank_w3_count * 2 - total_notes, 0LL);
+	long long rank_w0_pts = std::max(rank_w0_count * 2 - total_notes, 0LL);
+	long long rank_w1_pts = std::max(rank_w1_count * 2 - total_notes, 0LL);
+	long long rank_w2_pts = std::max(rank_w2_count * 2 - total_notes, 0LL);
+	long long rank_w3_pts = std::max(rank_w3_count * 2 - total_notes, 0LL);
 
 	rank_pts = rank_w0_pts + rank_w1_pts + rank_w2_pts + rank_w3_pts;
 

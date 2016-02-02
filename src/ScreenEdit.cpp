@@ -83,7 +83,7 @@ void ScreenEdit::Init(dotcur::Song *Other)
 	BPMPrompt.SetOpen(false);
 }
 
-void ScreenEdit::StartPlaying( int32 _Measure )
+void ScreenEdit::StartPlaying( int32_t _Measure )
 {
 	ScreenGameplay::Init(MySong, 0);
 	ScreenGameplay::ResetNotes();
@@ -209,7 +209,7 @@ void ScreenEdit::OnMouseRelease(KeyType tkey)
 		HeldObject = NULL;
 }
 
-bool ScreenEdit::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+bool ScreenEdit::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
 {
 	KeyType tkey = BindingsManager::TranslateKey(key);
 
@@ -332,8 +332,8 @@ void ScreenEdit::RunGhostObject()
 		GhostObject.SetPositionX(WindowFrame.GetRelativeMPos().x);
 	}else
 	{
-		int32 CellSize = ScreenWidth / GridCellSize;
-		int32 Mod = (int)(WindowFrame.GetRelativeMPos().x - ScreenDifference) % CellSize;
+		auto CellSize = ScreenWidth / GridCellSize;
+		auto Mod = (int)(WindowFrame.GetRelativeMPos().x - ScreenDifference) % CellSize;
 		GhostObject.SetPositionX((int)WindowFrame.GetRelativeMPos().x - Mod);
 	}
 

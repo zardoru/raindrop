@@ -44,7 +44,7 @@ void monoToStereo(T* Buffer, size_t cnt, size_t max_len)
 
 std::unique_ptr<AudioDataSource> SourceFromExt(Directory Filename)
 {
-    std::unique_ptr<AudioDataSource> Ret = nullptr;
+	std::unique_ptr<AudioDataSource> Ret = nullptr;
 	GString Ext = Filename.GetExtension();
 	Filename.Normalize();
 
@@ -96,7 +96,7 @@ bool Sound::IsLooping()
 	return mIsLooping;
 }
 
-uint32 Sound::GetChannels()
+uint32_t Sound::GetChannels()
 {
 	return Channels;
 }
@@ -221,7 +221,7 @@ bool AudioSample::Open(AudioDataSource* Src)
 	return false;
 }
 
-uint32 AudioSample::Read(float* buffer, size_t count)
+uint32_t AudioSample::Read(float* buffer, size_t count)
 {
 	if (!mIsPlaying)
 		return 0;
@@ -230,7 +230,7 @@ uint32 AudioSample::Read(float* buffer, size_t count)
 	{
 		size_t limit = (mRate * Channels * mAudioEnd);
 		size_t bufferLeft = limit - mCounter;
-		uint32 ReadAmount = min(bufferLeft, count);
+		uint32_t ReadAmount = std::min(bufferLeft, count);
 
 		if (mCounter < limit)
 		{
@@ -270,7 +270,7 @@ std::shared_ptr<AudioSample> AudioSample::CopySlice()
 	if (!mAudioEnd) throw std::runtime_error("No buffer available");
 	if (end < start) throw std::runtime_error("warning copy slice: end < start");
 
-    std::shared_ptr<AudioSample> out = std::make_shared<AudioSample>(*this);
+	std::shared_ptr<AudioSample> out = std::make_shared<AudioSample>(*this);
 	return out;
 }
 /*
@@ -332,7 +332,7 @@ GString RearrangeFilename(const char* Fn)
 bool AudioSample::Open(const char* Filename)
 {
 	GString FilenameFixed = RearrangeFilename(Filename);
-    std::unique_ptr<AudioDataSource> Src = SourceFromExt(FilenameFixed);
+	std::unique_ptr<AudioDataSource> Src = SourceFromExt(FilenameFixed);
 	return Open(Src.get());
 }
 
@@ -351,7 +351,7 @@ void AudioSample::SeekTime(float Second)
 		mCounter = mData->size();
 }
 
-void AudioSample::SeekSample(uint32 Sample)
+void AudioSample::SeekSample(uint32_t Sample)
 {
 	mCounter = Sample;
 
@@ -385,7 +385,7 @@ AudioStream::~AudioStream()
 	soxr_delete(mResampler);
 }
 
-uint32 AudioStream::Read(float* buffer, size_t count)
+uint32_t AudioStream::Read(float* buffer, size_t count)
 {
 	size_t cnt;
 	ring_buffer_size_t toRead = count; // Count is the amount of samples.
@@ -511,7 +511,7 @@ double AudioStream::GetPlayedTime()
 	return mPlaybackTime;
 }
 
-void AudioStream::SeekSample(uint32 Sample)
+void AudioStream::SeekSample(uint32_t Sample)
 {
 	mSource->Seek(float(Sample) / mSource->GetRate());
 }
@@ -521,10 +521,10 @@ void AudioStream::Stop()
 	mIsPlaying = false;
 }
 
-uint32 AudioStream::Update()
+uint32_t AudioStream::Update()
 {
-	uint32 eCount = PaUtil_GetRingBufferWriteAvailable(&mRingBuf);
-	uint32 ReadTotal;
+	uint32_t eCount = PaUtil_GetRingBufferWriteAvailable(&mRingBuf);
+	uint32_t ReadTotal;
 
 	if (!mSource || !mSource->IsValid()) return 0;
 
@@ -543,7 +543,7 @@ uint32 AudioStream::Update()
 	return ReadTotal;
 }
 
-uint32 AudioStream::GetRate()
+uint32_t AudioStream::GetRate()
 {
 	return mSource->GetRate();
 }

@@ -22,7 +22,7 @@ typedef std::vector<StepmaniaSpeed> SpeedData;
 struct
 {
 	const char* name;
-	uint8 tracks;
+	uint8_t tracks;
 } ModeTracks [] = {
 	{"kb7-single", 7},
 	{"dance-single", 4},
@@ -176,7 +176,7 @@ void LoadNotesSM(Song *Out, Difficulty *Diff, std::vector<GString> &MeasureText)
 						break;
 					}
 
-					Diff->Duration = max(max(Note.StartTime, Note.EndTime), Diff->Duration);
+					Diff->Duration = std::max(std::max(Note.StartTime, Note.EndTime), Diff->Duration);
 
 					if (MeasureText[i].length() > 0)
 						MeasureText[i].erase(0, 1);

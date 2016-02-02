@@ -24,7 +24,7 @@ public:
 	void Destroy();
 	void AddToList(const GString Filename, const GString Prefix);
 	void AddToListIndex(const GString Filename, const GString Prefix, int Index);
-	void AddToList(const uint32 Count, const GString *Filename, const GString Prefix);
+	void AddToList(const uint32_t Count, const GString *Filename, const GString Prefix);
 	bool LoadAll();
 
 	void ForceFetch();

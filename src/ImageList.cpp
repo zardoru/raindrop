@@ -60,9 +60,9 @@ void ImageList::Destroy()
 		ImageLoader::DeleteImage(i->second);
 }
 
-void ImageList::AddToList(const uint32 Count, const GString *Filename, const GString Prefix)
+void ImageList::AddToList(const uint32_t Count, const GString *Filename, const GString Prefix)
 {
-	for (uint32 i = 0; i < Count; i++)
+	for (uint32_t i = 0; i < Count; i++)
 	{
 		AddToList(Filename[i], Prefix);
 	}

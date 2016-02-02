@@ -130,14 +130,6 @@ using Vec2 = glm::vec2;
 using Vec3 = glm::vec3;
 using Mat4 = glm::mat4;
 
-using uint32 = uint32_t;
-using uint16 = uint16_t;
-using uint8 = uint8_t;
-
-using int32 = int32_t;
-using int16 = int16_t;
-using int8 = int8_t;
-
 using GString = std::string;
 
 extern float *PInfinity;
@@ -311,10 +303,5 @@ inline T clamp_to_interval(const T& value, const T& target, const T& interval)
 
 int LCM(const std::vector<int> &Set);
 double latof(GString s);
-
-using std::max;
-using std::min;
-
-
 
 #include "directory.h"

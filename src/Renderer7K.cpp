@@ -64,7 +64,7 @@ void ScreenGameplay7K::DrawMeasures()
 
 	SetPrimitiveQuadVBO();
 
-	for (uint32 k = 0; k < CurrentDiff->Channels; k++)
+	for (auto k = 0U; k < CurrentDiff->Channels; k++)
 	{
 		auto Locate = [&](float StaticVert) -> float {
 			return (CurrentVertical - StaticVert) * SpeedMultiplier + JudgmentLinePos;
@@ -97,7 +97,7 @@ void ScreenGameplay7K::DrawMeasures()
 				if (i->IsHold() && i->IsVisible()) {
 					auto Vert = Locate(i->GetVertical());
 					auto VertEnd = Locate(i->GetHoldEndVertical());
-					if (IntervalsIntersect(0, ScreenHeight, min(Vert, VertEnd), max(Vert, VertEnd)))
+					if (IntervalsIntersect(0, ScreenHeight, std::min(Vert, VertEnd), std::max(Vert, VertEnd)))
 					{
 						Start = i.base() - 1;
 						break;
@@ -134,7 +134,7 @@ void ScreenGameplay7K::DrawMeasures()
 			{
 				if (m->IsHold())
 				{					
-					if (!IntervalsIntersect(0, ScreenHeight, min(Vertical, VerticalHoldEnd), max(Vertical, VerticalHoldEnd))) continue;
+					if (!IntervalsIntersect(0, ScreenHeight, std::min(Vertical, VerticalHoldEnd), std::max(Vertical, VerticalHoldEnd))) continue;
 
 				} else
 				{

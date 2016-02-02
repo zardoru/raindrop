@@ -14,7 +14,7 @@ class ScreenMainMenu : public Screen
 public:
 	ScreenMainMenu();
 	void Init();
-	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
+	bool HandleInput(int32_t key, KeyEventType code, bool isMouseInput);
 	bool HandleScrollInput(double xOff, double yOff);
 
 	void OnExitEnd();

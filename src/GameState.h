@@ -59,8 +59,8 @@ public:
 
 	void SetSelectedSong(std::shared_ptr<Game::Song> Song);
 	Game::Song *GetSelectedSong();
-	void SetDifficultyIndex(uint32 DifficultyIndex);
-	uint32 GetDifficultyIndex() const;
+	void SetDifficultyIndex(uint32_t DifficultyIndex);
+	uint32_t GetDifficultyIndex() const;
 
 	// Note: Returning a shared_ptr causes lua to fail an assertion, since shared_ptr is not registered.
 	ScoreKeeper7K* GetScorekeeper7K();

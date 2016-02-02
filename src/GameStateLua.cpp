@@ -24,13 +24,13 @@ enum OBJTYPE {
 struct songHelper
 {
 	template <class T>
-	static uint32 getDifficultyCountForSong(T const *Sng)
+	static uint32_t getDifficultyCountForSong(T const *Sng)
 	{
 		return Sng->Difficulties.size();
 	}
 
 	template <class T>
-	static void setDifficultyCountForSong(T *Sng, uint32 v)
+	static void setDifficultyCountForSong(T *Sng, uint32_t v)
 	{
 		return;
 	}
@@ -51,7 +51,7 @@ struct songHelper
 	}
 
 	template <class T, class Q>
-	static Q* getDifficulty(T *Sng, uint32 idx)
+	static Q* getDifficulty(T *Sng, uint32_t idx)
 	{
 		if (idx < 0 || idx >= getDifficultyCountForSong(Sng))
 			return NULL;

@@ -19,22 +19,23 @@ public:
 	};
 
 private:
-	/* GLuint */ uint32 InternalVBO;
-	static uint32 LastBound;
-	static uint32 LastBoundIndex;
+	/* GLuint */
+    uint32_t InternalVBO;
+	static uint32_t LastBound;
+	static uint32_t LastBoundIndex;
 	bool IsValid;
 	Type mType;
 	void *VboData;
 	IdxKind mKind;
-	uint32 ElementCount;
-	uint32 ElementSize;
+	uint32_t ElementCount;
+	uint32_t ElementSize;
 public:
-	VBO(Type T, uint32 Elements, uint32 Size = sizeof(float), IdxKind Kind = ArrayBuffer);
+	VBO(Type T, uint32_t Elements, uint32_t Size = sizeof(float), IdxKind Kind = ArrayBuffer);
 	~VBO();
 	void Invalidate();
 	void Validate();
 	void Bind();
-	uint32 GetElementCount();
+	uint32_t GetElementCount();
 
 	/* Size must be valid with parameters given to VBO. */
 	void AssignData(void *Data);

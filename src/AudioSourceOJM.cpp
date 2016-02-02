@@ -21,12 +21,12 @@
 
 struct M30Header
 {
-	int32 file_format_version;
-	int32 encryption_flag;
-	int32 sample_count;
-	int32 sample_offset;
-	int32 payload_size;
-	int32 padding;
+	int32_t file_format_version;
+	int32_t encryption_flag;
+	int32_t sample_count;
+	int32_t sample_offset;
+	int32_t payload_size;
+	int32_t padding;
 };
 
 
@@ -34,37 +34,37 @@ struct M30Header
 struct M30Entry
 {
 	char  sample_name[32];
-	int32 sample_size;
-	int16 codec_code;
-	int16 codec_code2;
-	int32 music_flag;
-	int16 ref;
-	int16 unk_zero;
-	int32 pcm_samples;
+	int32_t sample_size;
+	int16_t codec_code;
+	int16_t codec_code2;
+	int32_t music_flag;
+	int16_t ref;
+	int16_t unk_zero;
+	int32_t pcm_samples;
 };
 
 struct OMC_header {
-	int32 unk;
-	int32 wav_start;
-	int32 ogg_start;
-	int32 fsize;
+	int32_t unk;
+	int32_t wav_start;
+	int32_t ogg_start;
+	int32_t fsize;
 };
 
 struct OMC_WAV_header {
 	char sample_name[32];
-	int16 audio_format;
-	int16 num_channels;
-	int32 sample_rate;
-	int32 bit_rate;
-	int16 block_align;
-	int16 bits_per_sample;
-	int32 unk_data;
-	int32 chunk_size;
+	int16_t audio_format;
+	int16_t num_channels;
+	int32_t sample_rate;
+	int32_t bit_rate;
+	int16_t block_align;
+	int16_t bits_per_sample;
+	int32_t unk_data;
+	int32_t chunk_size;
 };
 
 struct OMC_OGG_header {
 	char sample_name[32];
-	int32 sample_size;
+	int32_t sample_size;
 };
 
 struct SFM30
@@ -108,7 +108,7 @@ sf_count_t seekM30(sf_count_t offs, int whence, void* p)
 sf_count_t readM30(void* ptr, sf_count_t count, void* p)
 {
 	auto state = static_cast<SFM30*>(p);
-	auto toRead = min(size_t(count), size_t(state->DataLength - state->Offset));
+	auto toRead = std::min(size_t(count), size_t(state->DataLength - state->Offset));
 
 	if (state->Offset >= state->DataLength)
 		return 0;
@@ -124,13 +124,13 @@ sf_count_t readM30(void* ptr, sf_count_t count, void* p)
 sf_count_t tellM30(void* p)
 {
 	auto state = static_cast<SFM30*>(p);
-	return min(state->Offset, state->DataLength);
+	return std::min(state->Offset, state->DataLength);
 }
 
 size_t readM30OGG(void* ptr, size_t size, size_t nmemb, void* p)
 {
 	auto state = static_cast<SFM30*>(p);
-	int toRead = min(unsigned int(size*nmemb), unsigned int(state->DataLength - state->Offset));
+	int toRead = std::min(unsigned int(size*nmemb), unsigned int(state->DataLength - state->Offset));
 
 	if (state->Offset >= state->DataLength)
 		return 0;
@@ -520,7 +520,7 @@ size_t AudioSourceOJM::GetLength()
 	return 0;
 }
 
-uint32 AudioSourceOJM::GetRate()
+uint32_t AudioSourceOJM::GetRate()
 {
 	if (TemporaryState.Enabled == OJM_WAV)
 	{
@@ -546,7 +546,7 @@ std::shared_ptr<SoundSample> AudioSourceOJM::GetFromIndex(int index)
 	return Arr[index-1];
 }
 
-uint32 AudioSourceOJM::GetChannels()
+uint32_t AudioSourceOJM::GetChannels()
 {
 	if (TemporaryState.Enabled == OJM_WAV)
 	{
@@ -599,7 +599,7 @@ bool AudioSourceOJM::Open(const char* f)
 	return true;
 }
 
-uint32 AudioSourceOJM::Read(short* buffer, size_t count)
+uint32_t AudioSourceOJM::Read(short* buffer, size_t count)
 {
     std::vector<short> temp_buf(count);
 	size_t read = 0;

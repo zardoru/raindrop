@@ -46,7 +46,7 @@ void ScreenGameplay7K::UpdateScriptVariables()
 
 	L->NewArray();
 
-	for (uint32 i = 0; i < CurrentDiff->Channels; i++)
+	for (auto i = 0U; i < CurrentDiff->Channels; i++)
 	{
 		L->SetFieldI(i + 1, HeldKey[i]);
 	}
@@ -78,7 +78,7 @@ void ScreenGameplay7K::UpdateScriptScoreVariables()
 	double lifebar_amount = ScoreKeeper->getLifebarAmount(lifebar_type);
 	L->SetGlobal("LifebarValue", lifebar_amount);
 	if (lifebar_type == LT_GROOVE || lifebar_type == LT_EASY)
-		L->SetGlobal("LifebarDisplay", max(2, int(floor(lifebar_amount * 50) * 2)));
+		L->SetGlobal("LifebarDisplay", std::max(2, int(floor(lifebar_amount * 50) * 2)));
 	else
 		L->SetGlobal("LifebarDisplay", int(ceil(lifebar_amount * 50) * 2));
 

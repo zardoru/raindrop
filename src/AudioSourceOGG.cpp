@@ -93,7 +93,7 @@ bool AudioSourceOGG::Open(const char* Filename)
 	return mIsValid;
 }
 
-uint32 AudioSourceOGG::Read(short* buffer, size_t count)
+uint32_t AudioSourceOGG::Read(short* buffer, size_t count)
 {
 	size_t size;
 	size_t read = 0;
@@ -153,12 +153,12 @@ size_t AudioSourceOGG::GetLength()
 	return ov_pcm_total(&mOggFile, -1);
 }
 
-uint32 AudioSourceOGG::GetRate()
+uint32_t AudioSourceOGG::GetRate()
 {
 	return info->rate;
 }
 
-uint32 AudioSourceOGG::GetChannels()
+uint32_t AudioSourceOGG::GetChannels()
 {
 	return info->channels;
 }

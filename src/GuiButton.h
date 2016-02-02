@@ -25,7 +25,7 @@ public:
 
 	Button();
 	// True if clicked!
-	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
+	bool HandleInput(int32_t key, KeyEventType code, bool isMouseInput);
 	void Run(double delta); // We assume this is called BEFORE Render() is.
 };
 

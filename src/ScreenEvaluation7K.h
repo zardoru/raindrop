@@ -15,6 +15,6 @@ public:
 	void Init(ScoreKeeper7K *Result);
 	bool Run(double Delta);
 	void Cleanup();
-	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
+	bool HandleInput(int32_t key, KeyEventType code, bool isMouseInput);
 	void PrintCLIResults(ScoreKeeper7K *result);
 };

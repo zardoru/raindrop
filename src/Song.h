@@ -89,10 +89,10 @@ namespace Game
 			GString Filename;
 			GString Author;
 
-			uint32 TotalNotes;
-			uint32 TotalHolds;
-			uint32 TotalObjects;
-			uint32 TotalScoringObjects;
+			uint32_t TotalNotes;
+			uint32_t TotalHolds;
+			uint32_t TotalObjects;
+			uint32_t TotalScoringObjects;
 
             std::map<int, GString> SoundList;
 

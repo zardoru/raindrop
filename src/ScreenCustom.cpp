@@ -21,7 +21,7 @@ bool ScreenCustom::Run(double Delta)
 	return true;
 }
 
-bool ScreenCustom::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+bool ScreenCustom::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
 {
 	return Animations->HandleInput(key, code, isMouseInput);
 }

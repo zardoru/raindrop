@@ -18,9 +18,9 @@ ScreenEvaluation::ScreenEvaluation() :
 	Font = NULL;
 }
 
-int32 ScreenEvaluation::CalculateScore()
+int32_t ScreenEvaluation::CalculateScore()
 {
-	return int32(1000000.0 * Results.dpScoreSquare / (double)(Results.totalNotes * (Results.totalNotes + 1)));
+	return int32_t(1000000.0 * Results.dpScoreSquare / (double)(Results.totalNotes * (Results.totalNotes + 1)));
 }
 
 void ScreenEvaluation::Init(EvaluationData _Data, GString SongAuthor, GString SongTitle)
@@ -79,7 +79,7 @@ void ScreenEvaluation::Init(EvaluationData _Data, GString SongAuthor, GString So
 }
 
 
-bool ScreenEvaluation::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+bool ScreenEvaluation::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
 {
 	if ((BindingsManager::TranslateKey(key) == KT_Escape || BindingsManager::TranslateKey(key) == KT_Select) && code == KE_PRESS)
 		Running = false;

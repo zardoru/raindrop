@@ -4,9 +4,9 @@ class AudioSourceSFM : public AudioDataSource
 {
 	SNDFILE*  mWavFile;
 	SF_INFO *info;
-	uint32 mChannels;
-	uint32 mRate;
-	uint32 mFlen;
+	uint32_t mChannels;
+	uint32_t mRate;
+	uint32_t mFlen;
 	bool mIsDataLeft;
 
 public:
@@ -14,11 +14,11 @@ public:
 	~AudioSourceSFM();
 
 	bool Open(const char* Filename) override;
-	uint32 Read(short* buffer, size_t count) override;
+	uint32_t Read(short* buffer, size_t count) override;
 	void Seek(float Time) override;
 	size_t GetLength() override;
-	uint32 GetRate() override;
-	uint32 GetChannels() override;
+	uint32_t GetRate() override;
+	uint32_t GetChannels() override;
 	bool IsValid() override;
 	bool HasDataLeft() override;
 };

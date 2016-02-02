@@ -96,7 +96,7 @@ void FinalizeDraw()
 void SetShaderParameters(bool InvertColor,
 	bool UseGlobalLight, bool Centered, bool UseSecondTransformationMatrix,
 	bool BlackToTransparent, bool ReplaceColor,
-	int8 HiddenMode)
+	int8_t HiddenMode)
 {
 	WindowFrame.SetUniform(U_INVERT, InvertColor);
 	WindowFrame.SetUniform(U_LIGHT, UseGlobalLight);
@@ -479,7 +479,7 @@ void Line::Render()
 void BitmapFont::Render(const GString &In, const Vec2 &Position, const Mat4 &Transform)
 {
 	const char* Text = In.c_str();
-	int32 Character = 0, Line = 0;
+	int32_t Character = 0, Line = 0;
 	/* OpenGL Code Ahead */
 
 	if (!Font)
@@ -541,10 +541,10 @@ void BitmapFont::Render(const GString &In, const Vec2 &Position, const Mat4 &Tra
 	WindowFrame.DisableAttribArray(A_COLOR);
 }
 
-uint32 VBO::LastBound = 0;
-uint32 VBO::LastBoundIndex = 0;
+uint32_t VBO::LastBound = 0;
+uint32_t VBO::LastBoundIndex = 0;
 
-VBO::VBO(Type T, uint32 Elements, uint32 Size, IdxKind Kind)
+VBO::VBO(Type T, uint32_t Elements, uint32_t Size, IdxKind Kind)
 {
 	InternalVBO = 0;
 	IsValid = false;
@@ -571,7 +571,7 @@ VBO::~VBO()
 	VboData = NULL;
 }
 
-uint32 VBO::GetElementCount()
+uint32_t VBO::GetElementCount()
 {
 	return ElementCount;
 }

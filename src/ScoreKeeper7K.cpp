@@ -21,7 +21,7 @@ void ScoreKeeper7K::setAccMax(double ms){
 
 void ScoreKeeper7K::setMaxNotes(int notes){
 
-	max_notes = max(notes, 1);
+	max_notes = std::max(notes, 1);
 
 	if(notes < 10) bms_max_combo_pts = notes * (notes + 1) / 2;
 	else bms_max_combo_pts = 55 + (notes - 10) * 10;
@@ -125,33 +125,33 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms){
 
 	if(ms <= judgment_time[SKJ_W3]){
 
-		lifebar_easy = min(1.0, lifebar_easy + lifebar_easy_increment);
-		lifebar_groove = min(1.0, lifebar_groove + lifebar_groove_increment);
+		lifebar_easy = std::min(1.0, lifebar_easy + lifebar_easy_increment);
+		lifebar_groove = std::min(1.0, lifebar_groove + lifebar_groove_increment);
 
 		if(lifebar_survival > 0)
-			lifebar_survival = min(1.0, lifebar_survival + lifebar_survival_increment);
+			lifebar_survival = std::min(1.0, lifebar_survival + lifebar_survival_increment);
 		if(lifebar_exhard > 0)
-			lifebar_exhard = min(1.0, lifebar_exhard + lifebar_exhard_increment);
+			lifebar_exhard = std::min(1.0, lifebar_exhard + lifebar_exhard_increment);
 
 	}else{
 
 		// miss tier 1
-		lifebar_easy = max(0.0, lifebar_easy - lifebar_easy_decrement);
-		lifebar_groove = max(0.0, lifebar_groove - lifebar_groove_decrement);
-		lifebar_survival = max(0.0, lifebar_survival - lifebar_groove_decrement);
-		lifebar_exhard = max(0.0, lifebar_exhard - lifebar_exhard_decrement);
+		lifebar_easy = std::max(0.0, lifebar_easy - lifebar_easy_decrement);
+		lifebar_groove = std::max(0.0, lifebar_groove - lifebar_groove_decrement);
+		lifebar_survival = std::max(0.0, lifebar_survival - lifebar_groove_decrement);
+		lifebar_exhard = std::max(0.0, lifebar_exhard - lifebar_exhard_decrement);
 		
 		lifebar_death = 0;
 	}
 
 	if (ms <= judgment_time[SKJ_W1]){ // only COOLs restore o2jam lifebar
-		lifebar_o2jam = min(1.0, lifebar_o2jam + lifebar_o2jam_increment);
+		lifebar_o2jam = std::min(1.0, lifebar_o2jam + lifebar_o2jam_increment);
 	} else if (ms > judgment_time[SKJ_W2]) // BADs get some HP from you,
-		lifebar_o2jam = max(0.0, lifebar_o2jam - lifebar_o2jam_decrement_bad);
+		lifebar_o2jam = std::max(0.0, lifebar_o2jam - lifebar_o2jam_decrement_bad);
 	
 	// std::cerr << ms << " " << judgment << " " << life_increment[judgment] << std::endl;
 
-	lifebar_stepmania = min(1.0, lifebar_stepmania + life_increment[judgment]);
+	lifebar_stepmania = std::min(1.0, lifebar_stepmania + life_increment[judgment]);
 
 	if(judgment == SKJ_NONE)
 		std::cerr << "Error, invalid judgment: " << ms << "\n";
@@ -195,26 +195,26 @@ void ScoreKeeper7K::missNote(bool auto_hold_miss, bool early_miss){
 		combo = 0;
 
 		// miss tier 2
-		lifebar_easy = max(0.0, lifebar_easy - lifebar_easy_decrement * 3);
-		lifebar_groove = max(0.0, lifebar_groove - lifebar_groove_decrement * 3);
-		lifebar_survival = max(0.0, lifebar_survival - lifebar_survival_decrement * 3);
-		lifebar_exhard = max(0.0, lifebar_exhard - lifebar_exhard_decrement * 3);
+		lifebar_easy = std::max(0.0, lifebar_easy - lifebar_easy_decrement * 3);
+		lifebar_groove = std::max(0.0, lifebar_groove - lifebar_groove_decrement * 3);
+		lifebar_survival = std::max(0.0, lifebar_survival - lifebar_survival_decrement * 3);
+		lifebar_exhard = std::max(0.0, lifebar_exhard - lifebar_exhard_decrement * 3);
 
 		lifebar_death = 0;
 
-		lifebar_stepmania = max(0.0, lifebar_stepmania - lifebar_stepmania_miss_decrement);
+		lifebar_stepmania = std::max(0.0, lifebar_stepmania - lifebar_stepmania_miss_decrement);
 
-		lifebar_o2jam = max(0.0, lifebar_o2jam - lifebar_o2jam_decrement);
+		lifebar_o2jam = std::max(0.0, lifebar_o2jam - lifebar_o2jam_decrement);
 
 	}else if(early_miss){
 
 		// miss tier 1
-		lifebar_easy = max(0.0, lifebar_easy - lifebar_easy_decrement);
-		lifebar_groove = max(0.0, lifebar_groove - lifebar_groove_decrement);
-		lifebar_survival = max(0.0, lifebar_survival - lifebar_survival_decrement);
-		lifebar_exhard = max(0.0, lifebar_exhard - lifebar_exhard_decrement);
+		lifebar_easy = std::max(0.0, lifebar_easy - lifebar_easy_decrement);
+		lifebar_groove = std::max(0.0, lifebar_groove - lifebar_groove_decrement);
+		lifebar_survival = std::max(0.0, lifebar_survival - lifebar_survival_decrement);
+		lifebar_exhard = std::max(0.0, lifebar_exhard - lifebar_exhard_decrement);
 
-		lifebar_stepmania = max(0.0, lifebar_stepmania - lifebar_stepmania_earlymiss_decrement);
+		lifebar_stepmania = std::max(0.0, lifebar_stepmania - lifebar_stepmania_earlymiss_decrement);
 
 	}
 

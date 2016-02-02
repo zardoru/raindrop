@@ -35,7 +35,7 @@ int RowifiedDifficulty::GetRowCount(const std::vector<Event> &In)
 {
 	// literally the only hard part of this
 	// We have to find the LCM of the set of fractions given by the Fraction of all objects in the vector.
-    std::vector <int> Denominators;
+	std::vector <int> Denominators;
 
 	// Find all different denominators.
 	for (auto i : In) {

@@ -13,11 +13,11 @@ class ScreenEvaluation : public Screen
 	GString ResultsGString, ResultsNumerical;
 	GString TitleFormat;
 	
-	int32 CalculateScore();
+	int32_t CalculateScore();
 public:
 	ScreenEvaluation();
 	void Init(EvaluationData _Data, GString SongAuthor, GString SongTitle);
 	bool Run(double Delta) override;
 	void Cleanup() override;
-	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput) override;
+	bool HandleInput(int32_t key, KeyEventType code, bool isMouseInput) override;
 };

@@ -179,7 +179,7 @@ bool Screen::RunExit(float Fraction, float Delta)
 
 	return Running;
 }
-bool Screen::HandleInput(int32 key, KeyEventType state, bool isMouseInput) 
+bool Screen::HandleInput(int32_t key, KeyEventType state, bool isMouseInput)
 { 
 	if (Next && Next->IsScreenRunning())
 		return Next->HandleInput(key, state, isMouseInput);

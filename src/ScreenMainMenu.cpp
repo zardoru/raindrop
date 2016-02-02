@@ -98,7 +98,7 @@ void ScreenMainMenu::Init()
 	}
 }
 
-bool ScreenMainMenu::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+bool ScreenMainMenu::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
 {
 	if (Screen::HandleInput(key, code, isMouseInput))
 		return true;

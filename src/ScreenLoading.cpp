@@ -44,8 +44,8 @@ ScreenLoading::ScreenLoading(std::shared_ptr<Screen> _Next) : Screen("ScreenLoad
 	Animations->Preload(GameState::GetInstance().GetSkinFile("screenloading.lua"), "Preload");
 	Animations->Initialize("", false);
 
-	IntroDuration = max(Animations->GetEnv()->GetGlobalD("IntroDuration"), 0.0);
-	ExitDuration = max(Animations->GetEnv()->GetGlobalD("ExitDuration"), 0.0);
+	IntroDuration = std::max(Animations->GetEnv()->GetGlobalD("IntroDuration"), 0.0);
+	ExitDuration = std::max(Animations->GetEnv()->GetGlobalD("ExitDuration"), 0.0);
 	
 	ChangeState(StateIntro);
 }
@@ -98,7 +98,7 @@ bool ScreenLoading::Run(double TimeDelta)
 	return Running;
 }
 
-bool ScreenLoading::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+bool ScreenLoading::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
 {
 	if (!LoadThread)
 	{

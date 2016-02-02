@@ -178,7 +178,7 @@ Judgment GameObject::Run(double delta, double Time, bool Autoplay)
 	return None;
 }
 
-Judgment GameObject::Hit(double Time, Vec2 mpos, bool KeyDown,  bool Autoplay, int32 Key)
+Judgment GameObject::Hit(double Time, Vec2 mpos, bool KeyDown,  bool Autoplay, int32_t Key)
 {
 	Vec2 dist = mpos - GetPosition();
 	
@@ -243,7 +243,7 @@ bool GameObject::IsHold()
 	return endTime > 0;
 }
 
-void GameObject::Assign(double Duration, uint32 _Measure, double _MeasureFraction)
+void GameObject::Assign(double Duration, uint32_t _Measure, double _MeasureFraction)
 {
 	hold_duration = Duration;
 	Measure = _Measure;

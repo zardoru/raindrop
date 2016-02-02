@@ -166,12 +166,12 @@ void Transformation::AddRotation(float Rot)
 	mDirtyMatrix = true;
 }
 
-uint32 Transformation::GetZ() const
+uint32_t Transformation::GetZ() const
 {
 	return mLayer;
 }
 
-void Transformation::SetZ(uint32 Z)
+void Transformation::SetZ(uint32_t Z)
 {
 	mLayer = Z;
 	mDirtyMatrix = true;

@@ -82,7 +82,7 @@ void Sprite::SetImage(Image* image, bool ChangeSize)
 	}
 }
 
-void Sprite::SetCropByPixels(int32 x1, int32 x2, int32 y1, int32 y2)
+void Sprite::SetCropByPixels(int32_t x1, int32_t x2, int32_t y1, int32_t y2)
 {
 	if (mImage)
 	{

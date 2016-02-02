@@ -16,7 +16,7 @@ TextPrompt::~TextPrompt()
 {
 }
 
-int TextPrompt::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+int TextPrompt::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
 {
 	if (!mOpen)
 		return 0;

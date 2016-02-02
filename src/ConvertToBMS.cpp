@@ -234,7 +234,7 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 
 	void WriteMeasures()
 	{
-		uint32 Measure = 0;
+		uint32_t Measure = 0;
 		using std::endl;
 		for (auto M : Measures){
 			if (Parent->Data->Measures[Measure].Length != 4)

@@ -235,7 +235,7 @@ namespace NoteLoaderBMSON{
 				auto notes = s["notes"];
 				for (auto &&note: notes)
 				{
-					last_y = max(note["y"].asDouble(), last_y);
+					last_y = std::max(note["y"].asDouble(), last_y);
 				}
 			}
 
@@ -608,7 +608,7 @@ namespace NoteLoaderBMSON{
 					Chart->TotalScoringObjects++;
 					Chart->TotalNotes++;
 
-					Chart->Duration = max(max(Chart->Duration, new_note.StartTime), new_note.EndTime);
+					Chart->Duration = std::max(std::max(Chart->Duration, new_note.StartTime), new_note.EndTime);
 				}
 			}
 		}

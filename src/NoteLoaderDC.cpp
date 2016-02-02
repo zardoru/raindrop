@@ -67,9 +67,9 @@ void LoadNotes(Song* Out, Difficulty * Diff, GString line)
 			object_parameters = Utility::TokenSplit(object_description, " :");
 			if (object_parameters.size() > 0) // We got a position
 			{
-				int32 xpos = 0;
+				int32_t xpos = 0;
 				float hold_duration = 0;
-				int32 sound = 0;
+				int32_t sound = 0;
 
 				if (object_parameters[0].length() > 0) // does it have length?
 					xpos = latof (object_parameters[0].c_str()); // assign it

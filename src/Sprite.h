@@ -79,7 +79,7 @@ public:
 	void SetCrop1(Vec2 Crop1);
 	void SetCrop2(Vec2 Crop2);
 	void SetCropToWholeImage();
-	void SetCropByPixels(int32 x1, int32 x2, int32 y1, int32 y2);
+	void SetCropByPixels(int32_t x1, int32_t x2, int32_t y1, int32_t y2);
 
 	virtual void Render() override;
 	bool RenderMinimalSetup();

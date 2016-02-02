@@ -13,9 +13,9 @@ class ScreenEdit : public ScreenGameplay
 	}EditScreenState;
 
 	GUI::TextPrompt OffsetPrompt, BPMPrompt;
-	uint32 CurrentFraction;
-	uint32 CurrentTotalFraction; // basically beat snap
-	uint32 savedMeasure;
+	uint32_t CurrentFraction;
+	uint32_t CurrentTotalFraction; // basically beat snap
+	uint32_t savedMeasure;
 	BitmapFont EditInfo;
 
 	GameObject* HeldObject;
@@ -35,7 +35,7 @@ class ScreenEdit : public ScreenGameplay
 	Sprite GhostObject;
 
 	bool  GridEnabled;
-	int32 GridCellSize; // ScreenSize / GridCellSize
+	int32_t GridCellSize; // ScreenSize / GridCellSize
 	// float GridOffset;
 
 	void DecreaseCurrentFraction();
@@ -53,8 +53,8 @@ class ScreenEdit : public ScreenGameplay
 public:
 	ScreenEdit ();
 	void Init(dotcur::Song *Other);
-	void StartPlaying(int32 _Measure);
-	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput) override;
+	void StartPlaying(int32_t _Measure);
+	bool HandleInput(int32_t key, KeyEventType code, bool isMouseInput) override;
 	bool Run (double Delta) override;
 	void Cleanup() override;
 };

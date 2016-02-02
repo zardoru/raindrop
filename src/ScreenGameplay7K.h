@@ -20,7 +20,7 @@ class ScreenGameplay7K : public Screen
 
 private:
 
-    std::shared_ptr<VSRGMechanics> MechanicsSet;
+	std::shared_ptr<VSRGMechanics> MechanicsSet;
 
 	bool HasNegativeScroll;
 	TimingData         VSpeeds;
@@ -30,14 +30,14 @@ private:
 	VSRG::VectorTN  NotesByChannel;
 	std::map <int, std::vector<std::shared_ptr<SoundSample>> > Keysounds;
 	std::queue<AutoplaySound>   BGMEvents;
-    std::vector<float>			 MeasureBarlines;
+	std::vector<float>			 MeasureBarlines;
 
 	std::shared_ptr<VSRG::Difficulty>	 CurrentDiff;
 	std::shared_ptr<VSRG::Song>			 MySong;
 	std::shared_ptr<VSRG::Song>			 LoadedSong;
 	TimingType						 UsedTimingType;
 
-    std::shared_ptr<Line> Barline;
+	std::shared_ptr<Line> Barline;
 
 	double BarlineOffset;
 	double NoteHeight;
@@ -68,7 +68,7 @@ private:
 	float            SpeedMultiplier;
 	int				 StartMeasure;
 
-    std::map<int, int> GearBindings;
+	std::map<int, int> GearBindings;
 	int                lastClosest[VSRG::MAX_CHANNELS];
 	VSRG::TrackNote*   CurrentKeysounds[VSRG::MAX_CHANNELS];
 	int                BarlineOffsetKind;
@@ -76,12 +76,12 @@ private:
 	LifeType         lifebar_type;		 
 	ScoreType        scoring_type;
 
-    std::shared_ptr<AudioStream> Music;
-    std::shared_ptr<AudioSourceOJM> OJMAudio;
+	std::shared_ptr<AudioStream> Music;
+	std::shared_ptr<AudioSourceOJM> OJMAudio;
 	SoundSample MissSnd;
 	SoundSample FailSnd;
 
-    std::shared_ptr<ScoreKeeper7K> ScoreKeeper;
+	std::shared_ptr<ScoreKeeper7K> ScoreKeeper;
 
 	EHiddenMode		 RealHiddenMode;
 	float            HideClampLow, HideClampHigh, HideClampFactor;
@@ -118,7 +118,7 @@ private:
 
 	bool    InterpolateTime;
 	bool    AudioCompensation;
-    std::shared_ptr<BackgroundAnimation> BGA;
+	std::shared_ptr<BackgroundAnimation> BGA;
 	int Random;
 	bool TurntableEnabled;
 	float JudgeOffset;
@@ -144,30 +144,30 @@ private:
 	void RecalculateEffects();
 	void RunMeasures();
 
-	void HitNote (double TimeOff, uint32 Lane, bool IsHold, bool IsHoldRelease = false);
-	void MissNote (double TimeOff, uint32 Lane, bool IsHold, bool auto_hold_miss, bool early_miss);
+	void HitNote (double TimeOff, uint32_t Lane, bool IsHold, bool IsHoldRelease = false);
+	void MissNote (double TimeOff, uint32_t Lane, bool IsHold, bool auto_hold_miss, bool early_miss);
 
 	void DrawBarlines();
 	void DrawMeasures();
 
-	void GearKeyEvent(uint32 Lane, bool KeyDown);
-	void JudgeLane(uint32 Lane, float Time);
-	void ReleaseLane(uint32 Lane, float Time);
-	void TranslateKey(int32 K, bool KeyDown);
-	void AssignMeasure(uint32 Measure);
+	void GearKeyEvent(uint32_t Lane, bool KeyDown);
+	void JudgeLane(uint32_t Lane, float Time);
+	void ReleaseLane(uint32_t Lane, float Time);
+	void TranslateKey(int32_t K, bool KeyDown);
+	void AssignMeasure(uint32_t Measure);
 	void RunAutoEvents();
 	void CheckShouldEndScreen();
 	void UpdateSongTime(float Delta);
 	void Render();
 
-	void PlayLaneKeysound(uint32 Lane);
+	void PlayLaneKeysound(uint32_t Lane);
 	void PlayKeysound(VSRG::TrackNote* Note);
-	void SetLaneHoldState(uint32 Lane, bool NewState);
+	void SetLaneHoldState(uint32_t Lane, bool NewState);
 
 	void Activate();
 
 	// true if holding down key
-	bool GetGearLaneState(uint32 Lane);
+	bool GetGearLaneState(uint32_t Lane);
 
 	friend class Noteskin;
 public:
@@ -193,5 +193,5 @@ public:
 	void Cleanup();
 
 	bool Run(double Delta);
-	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
+	bool HandleInput(int32_t key, KeyEventType code, bool isMouseInput);
 };

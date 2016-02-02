@@ -15,7 +15,7 @@ protected: // shit the edit screen needs
 	dotcur::Song *MySong;
 	dotcur::Difficulty* CurrentDiff;
 	// Game Data
-	uint32 Measure;
+	uint32_t Measure;
 
 	// the point of this is that we can change the barline's position.
 	float MeasureRatio, RatioPerSecond;
@@ -29,7 +29,7 @@ protected: // shit the edit screen needs
 	void RenderObjects(float TimeDelta, bool drawPlayable = true);
 
 	// Two seconds of pause before actually starting the screen.
-	static const uint32 ScreenPauseTime = 2; 
+	static const uint32_t ScreenPauseTime = 2;
 	
 	// leave this to who will use it
 	void startMusic();
@@ -53,7 +53,7 @@ private: // shit only screengameplay needs
 	// Run the current measure (jic func name isn't obvious enough)
 	void RunMeasure(float delta);
 	void StoreEvaluation(Judgment Eval);
-	uint32 Combo;
+	uint32_t Combo;
 	BitmapFont MyFont;
 	BitmapFont SongInfo;
 	Sprite ReadySign;
@@ -86,11 +86,11 @@ private: // shit only screengameplay needs
 public:
 	ScreenGameplay();
 
-	virtual void Init(dotcur::Song *OtherSong, uint32 DifficultyIndex);
+	virtual void Init(dotcur::Song *OtherSong, uint32_t DifficultyIndex);
 
-	int32 GetMeasure();
+	int32_t GetMeasure();
 	virtual bool Run(double Delta);
-	virtual bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
+	virtual bool HandleInput(int32_t key, KeyEventType code, bool isMouseInput);
 	Vec2 GetScreenOffset(float alignment);
 	virtual void Cleanup();
 	void RemoveTrash();
