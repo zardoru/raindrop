@@ -56,16 +56,16 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>..\ext-libs\include\zlib;..\ext-libs\include\libjpeg-turbo;..\ext-libs\include\libpng;..\ext-libs\include;..\ext-src;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;$(UniversalCRT_IncludePath)</IncludePath>
-    <LibraryPath>..\ext-libs\Debug;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\ext-libs\$(Configuration);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug NoIters|Win32'">
-    <IncludePath>..\ext-libs\include;..\ext-src;..\ext-libs\boost;..\ext-libs\libRocket\Include;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;$(UniversalCRT_IncludePath);../;$(IncludePath)</IncludePath>
-    <LibraryPath>../ext-libs/libRocket/Build/Debug;..\ext-libs\Debug;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\ext-libs\include\zlib;..\ext-libs\include\libjpeg-turbo;..\ext-libs\include\libpng;..\ext-libs\include;..\ext-src;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;$(UniversalCRT_IncludePath)</IncludePath>
+    <LibraryPath>..\ext-libs\$(Configuration);$(LibraryPath)</LibraryPath>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\ext-libs\include\libpng;..\ext-libs\include\libjpeg-turbo;..\ext-libs\include\zlib;..\ext-libs\include;..\ext-src;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;$(UniversalCRT_IncludePath)</IncludePath>
-    <LibraryPath>..\ext-libs\Release;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\ext-libs\include\zlib;..\ext-libs\include\libjpeg-turbo;..\ext-libs\include\libpng;..\ext-libs\include;..\ext-src;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;$(UniversalCRT_IncludePath)</IncludePath>
+    <LibraryPath>..\ext-libs\$(Configuration);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release NoSTLport|Win32'">
     <LibraryPath>..\ext-libs\Release;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
