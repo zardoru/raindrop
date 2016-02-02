@@ -54,6 +54,9 @@ OnMissBGATime = 0.5
 -- Set screen filter transparency on 7K.
 ScreenFilter = 0.7
 
+-- Whether to display the in-game histogram.
+Histogram = 0
+
 -- show up to 9999 ms off
 HitErrorDisplayLimiter = 999
 

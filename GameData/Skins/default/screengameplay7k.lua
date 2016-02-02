@@ -108,13 +108,17 @@ function Init()
 	ScreenFade.Out(true)
 
 
-  histogram = Histogram:new()
-  histogram:SetPosition(ScreenWidth - 255, ScreenHeight - 100 - ScoreDisplay.DigitHeight)
-  histogram:SetColor(30 / 255, 50 / 255, 200 / 255)
-  hist_bg = histogram:SetBackground("Global/white.png")
-  hist_bg.Red = 0.2
-  hist_bg.Green = 0.2
-  hist_bg.Blue = 0.2
+	if GetConfigF("Histogram", "") ~= 0 then
+		histogram = Histogram:new()
+		histogram:SetPosition(ScreenWidth - 255, ScreenHeight - 100 - ScoreDisplay.DigitHeight)
+		histogram:SetColor(30 / 255, 50 / 255, 200 / 255)
+		hist_bg = histogram:SetBackground("Global/white.png")
+		hist_bg.Red = 0.2
+		hist_bg.Green = 0.2
+		hist_bg.Blue = 0.2
+	end
+
+
 	-- ScreenBackground.Alpha = (0)
 	Engine:Sort()
 end
@@ -170,7 +174,9 @@ function HitEvent(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease)
 		Judgment.Hit(JudgmentValue, EarlyOrLate)
 	end
 
-  histogram:UpdatePoints()
+	if histogram then 
+	  	histogram:UpdatePoints()
+	end
 	ScoreDisplay.Update()
 end
 
@@ -189,7 +195,9 @@ function MissEvent(TimeOff, Lane, IsHold)
 
 	Judgment.Hit(5, EarlyOrLate)
 
-  histogram:UpdatePoints()
+	if histogram then 
+	  	histogram:UpdatePoints()
+	end
 	ScoreDisplay.Update()
 	ComboDisplay.Miss()
 	MissHighlight.OnMiss(Lane)
