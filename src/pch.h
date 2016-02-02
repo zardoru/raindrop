@@ -81,6 +81,10 @@ namespace std {
 #include <cstdlib>
 #include <ctime>
 
+// #include <boost\gil\extension\io\bmp_all.hpp>
+// #include <boost\gil\extension\io\png_all.hpp>
+// #include <boost\gil\extension\io\jpeg_all.hpp>
+
 #include <boost\program_options.hpp>
 #include <boost\interprocess\ipc\message_queue.hpp>
 
@@ -121,27 +125,6 @@ extern "C" {
 #include <sndfile.h>
 
 #include <soxr.h>
-
-using std::atomic;
-using std::function;
-using std::bind;
-using std::thread;
-using std::mutex;
-using std::unique_lock;
-using std::condition_variable;
-using namespace std::placeholders;
-
-using std::shared_ptr;
-using std::make_shared;
-using std::dynamic_pointer_cast;
-using std::static_pointer_cast;
-using std::vector;
-using std::map;
-using std::sort;
-using std::stable_sort;
-using std::lower_bound;
-using std::upper_bound;
-using std::unique_ptr;
 
 using Vec2 = glm::vec2;
 using Vec3 = glm::vec3;
@@ -256,7 +239,7 @@ namespace Utility
     GString Format(GString str, ...);
 
 
-    vector<GString> TokenSplit(const GString &str, const GString &token = ",", bool compress = false);
+    std::vector<GString> TokenSplit(const GString &str, const GString &token = ",", bool compress = false);
 
     GString Trim(GString& str);
     GString ReplaceAll(GString& str, const GString& seq, const GString what);
@@ -326,7 +309,7 @@ inline T clamp_to_interval(const T& value, const T& target, const T& interval)
     return output;
 }
 
-int LCM(const vector<int> &Set);
+int LCM(const std::vector<int> &Set);
 double latof(GString s);
 
 using std::max;

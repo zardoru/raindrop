@@ -157,12 +157,12 @@ namespace NoteLoaderBMS{
 		}
 	};
 
-	typedef vector<BMSEvent> BMSEventList;
+	typedef std::vector<BMSEvent> BMSEventList;
 
 	struct BMSMeasure
 	{
 		// first argument is channel, second is event list
-		map<int, BMSEventList> Events;
+        std::map<int, BMSEventList> Events;
 		float BeatDuration;
 
 		BMSMeasure()
@@ -173,11 +173,11 @@ namespace NoteLoaderBMS{
 
 	using namespace VSRG;
 
-	typedef map<int, GString> FilenameListIndex;
-	typedef map<int, bool> FilenameUsedIndex;
-	typedef map<int, double> BpmListIndex;
-	typedef vector<NoteData> NoteVector;
-	typedef map<int, BMSMeasure> MeasureList;
+	typedef std::map<int, GString> FilenameListIndex;
+	typedef std::map<int, bool> FilenameUsedIndex;
+	typedef std::map<int, double> BpmListIndex;
+	typedef std::vector<NoteData> NoteVector;
+	typedef std::map<int, BMSMeasure> MeasureList;
 
 	class BMSLoader
 	{
@@ -198,8 +198,8 @@ namespace NoteLoaderBMS{
 			*/
 		MeasureList Measures;
 		Song* Song;
-		shared_ptr<Difficulty> Chart;
-		vector<double> BeatAccomulation;
+		std::shared_ptr<Difficulty> Chart;
+		std::vector<double> BeatAccomulation;
 
 		int LowerBound, UpperBound;
 
@@ -245,7 +245,7 @@ namespace NoteLoaderBMS{
 			return Time;
 		}
 
-		void CalculateBMP(vector<AutoplayBMP> &BMPEvents, int Channel)
+		void CalculateBMP(std::vector<AutoplayBMP> &BMPEvents, int Channel)
 		{
 			for (auto i = Measures.begin(); i != Measures.end(); ++i)
 			{
@@ -635,10 +635,10 @@ namespace NoteLoaderBMS{
 			return Range;
 		}
 
-		shared_ptr<BMSTimingInfo> TimingInfo;
+        std::shared_ptr<BMSTimingInfo> TimingInfo;
 	public:
 
-		BMSLoader(VSRG::Song* song, shared_ptr<VSRG::Difficulty> diff, bool ispms)
+		BMSLoader(VSRG::Song* song, std::shared_ptr<VSRG::Difficulty> diff, bool ispms)
 		{
 			for (auto k = 0; k < MAX_CHANNELS; k++)
 			{
@@ -661,7 +661,7 @@ namespace NoteLoaderBMS{
 			Chart->BPMType = Difficulty::BT_BEAT;
 			Chart->IsVirtual = true;
 
-			TimingInfo = make_shared<BMSTimingInfo>();
+			TimingInfo = std::make_shared<BMSTimingInfo>();
 			Chart->Data->TimingInfo = TimingInfo;
 		}
 
@@ -782,7 +782,7 @@ namespace NoteLoaderBMS{
 
 			if (HasBMPEvents)
 			{
-				auto BMP = make_shared < BMPEventsDetail >();
+				auto BMP = std::make_shared < BMPEventsDetail >();
 				CalculateBMP(BMP->BMPEventsLayerBase, CHANNEL_BGABASE);
 				CalculateBMP(BMP->BMPEventsLayerMiss, CHANNEL_BGAPOOR);
 				CalculateBMP(BMP->BMPEventsLayer, CHANNEL_BGALAYER);
@@ -940,8 +940,8 @@ namespace NoteLoaderBMS{
 		std::ifstream filein(Utility::Widen(filename).c_str());
 #endif
 
-		shared_ptr<Difficulty> Diff(new Difficulty());
-		shared_ptr<DifficultyLoadInfo> LInfo(new DifficultyLoadInfo());
+		std::shared_ptr<Difficulty> Diff(new Difficulty());
+		std::shared_ptr<DifficultyLoadInfo> LInfo(new DifficultyLoadInfo());
 		std::regex DataDeclaration("(\\d{3})([a-zA-Z0-9]{2})");
 		bool IsPMS = false;
 
@@ -951,7 +951,7 @@ namespace NoteLoaderBMS{
 			IsPMS = true;
 
 
-		shared_ptr<BMSLoader> Info = make_shared<BMSLoader>(Out, Diff, IsPMS);
+        std::shared_ptr<BMSLoader> Info = std::make_shared<BMSLoader>(Out, Diff, IsPMS);
 
 
 		if (!filein.is_open())
@@ -1265,8 +1265,8 @@ namespace NoteLoaderBMS{
 
 	void LoadObjectsFromFile(const std::filesystem::path& filename, Song *Out)
 	{
-		shared_ptr<Difficulty> Diff(new Difficulty());
-		shared_ptr<DifficultyLoadInfo> LInfo(new DifficultyLoadInfo());
+		std::shared_ptr<Difficulty> Diff(new Difficulty());
+		std::shared_ptr<DifficultyLoadInfo> LInfo(new DifficultyLoadInfo());
 		std::regex DataDeclaration("(\\d{3})([a-zA-Z0-9]{2})");
 		bool IsPMS = false;
 
@@ -1277,7 +1277,7 @@ namespace NoteLoaderBMS{
 			IsPMS = true;
 		}
 
-		shared_ptr<BMSLoader> Info = make_shared<BMSLoader>(Out, Diff, IsPMS);
+        std::shared_ptr<BMSLoader> Info = std::make_shared<BMSLoader>(Out, Diff, IsPMS);
 
 		std::ifstream filein(filename);
 		if (!filein.is_open()) {

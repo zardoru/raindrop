@@ -12,30 +12,30 @@ enum TimingType
 class VSRGMechanics
 {
 public:
-	typedef function<void(double, uint32, bool, bool)> HitEvent;
-	typedef function<void(double, uint32, bool, bool, bool)> MissEvent;
-	typedef function<void(uint32)> KeysoundEvent;
-	typedef function<void(VSRG::TrackNote*)> NoteSoundEvent;
+	typedef std::function<void(double, uint32, bool, bool)> HitEvent;
+	typedef std::function<void(double, uint32, bool, bool, bool)> MissEvent;
+	typedef std::function<void(uint32)> KeysoundEvent;
+	typedef std::function<void(VSRG::TrackNote*)> NoteSoundEvent;
 
 protected:
 
 	VSRG::Song *CurrentSong;
 	VSRG::Difficulty *CurrentDifficulty;
-	shared_ptr<ScoreKeeper7K> score_keeper;
+    std::shared_ptr<ScoreKeeper7K> score_keeper;
 
 public:
 
 	virtual ~VSRGMechanics() = default;
 
 	// These HAVE to be set before anything else is called.
-	function <bool(uint32)> IsLaneKeyDown;
-	function <void(uint32, bool)> SetLaneHoldingState;
+	std::function <bool(uint32)> IsLaneKeyDown;
+	std::function <void(uint32, bool)> SetLaneHoldingState;
 	KeysoundEvent PlayLaneSoundEvent;
 	NoteSoundEvent PlayNoteSoundEvent;
 	HitEvent HitNotify;
 	MissEvent MissNotify;
 
-	virtual void Setup(VSRG::Song *Song, VSRG::Difficulty *Difficulty, shared_ptr<ScoreKeeper7K> scoreKeeper);
+	virtual void Setup(VSRG::Song *Song, VSRG::Difficulty *Difficulty, std::shared_ptr<ScoreKeeper7K> scoreKeeper);
 
 	// If returns true, don't judge any more notes.
 	virtual bool OnUpdate(double SongTime, VSRG::TrackNote* Note, uint32 Lane) = 0;

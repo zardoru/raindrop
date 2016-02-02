@@ -147,7 +147,7 @@ void ScreenGameplay7K::AssignMeasure(uint32 Measure)
 }
 
 
-void ScreenGameplay7K::Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const GameParameters &Param)
+void ScreenGameplay7K::Init(std::shared_ptr<VSRG::Song> S, int DifficultyIndex, const GameParameters &Param)
 {
 	MySong = S;
 	CurrentDiff = S->Difficulties[DifficultyIndex];
@@ -167,7 +167,7 @@ void ScreenGameplay7K::Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const
 	if (Param.StartMeasure == -1 && Auto)
 		StartMeasure = 0;
 
-	ScoreKeeper = make_shared<ScoreKeeper7K>();
+	ScoreKeeper = std::make_shared<ScoreKeeper7K>();
 	GameState::GetInstance().SetScorekeeper7K(ScoreKeeper);
 	UpdateScriptScoreVariables();
 
@@ -280,7 +280,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 {
 	if (!Music)
 	{
-		Music = make_shared<AudioStream>();
+		Music = std::make_shared<AudioStream>();
 		Music->SetPitch(Speed);
 		if (MySong->SongFilename.length() && Music->Open((MySong->SongDirectory / MySong->SongFilename).c_path()))
 		{
@@ -291,7 +291,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 			if (!CurrentDiff->IsVirtual)
 			{
 				// Caveat: Try to autodetect an mp3/ogg file.
-				vector<GString> DirCnt;
+                std::vector<GString> DirCnt;
 				auto SngDir = MySong->SongDirectory;
 
 				SngDir.ListDirectory(DirCnt, Directory::FS_REG);
@@ -316,13 +316,13 @@ bool ScreenGameplay7K::LoadSongAudio()
 	if (strstr(MySong->SongFilename.c_str(), ".ojm"))
 	{
 		Log::Printf("Loading OJM.\n");
-		OJMAudio = make_shared<AudioSourceOJM>(this);
+		OJMAudio = std::make_shared<AudioSourceOJM>(this);
 		OJMAudio->SetPitch(Speed);
 		OJMAudio->Open((MySong->SongDirectory / MySong->SongFilename).c_path());
 
 		for (int i = 1; i <= 2000; i++)
 		{
-			shared_ptr<SoundSample> Snd = OJMAudio->GetFromIndex(i);
+            std::shared_ptr<SoundSample> Snd = OJMAudio->GetFromIndex(i);
 
 			if (Snd != nullptr)
 				Keysounds[i].push_back(Snd);
@@ -339,7 +339,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 			if (isBMSON)
 			{
 				int wavs = 0;
-				map<int, SoundSample> audio;
+                std::map<int, SoundSample> audio;
 				auto &slicedata = CurrentDiff->Data->SliceData;
 				// do bmson loading
 				for (auto wav : slicedata.Slices)
@@ -373,7 +373,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 
 		for (auto i = CurrentDiff->SoundList.begin(); i != CurrentDiff->SoundList.end(); ++i)
 		{
-			auto ks = make_shared<SoundSample>();
+			auto ks = std::make_shared<SoundSample>();
 
 			ks->SetPitch(Speed);
 #ifdef WIN32
@@ -496,11 +496,11 @@ bool ScreenGameplay7K::ProcessSong()
 	if (Random) NoteTransform::Randomize(NotesByChannel, CurrentDiff->Channels, CurrentDiff->Data->Turntable);
 
 	// Load up BGM events
-	vector<AutoplaySound> BGMs = CurrentDiff->Data->BGMEvents;
+    std::vector<AutoplaySound> BGMs = CurrentDiff->Data->BGMEvents;
 	if (Configuration::GetConfigf("DisableKeysounds")) 
 		NoteTransform::MoveKeysoundsToBGM(CurrentDiff->Channels, NotesByChannel, BGMs);
 
-	sort(BGMs.begin(), BGMs.end());
+    std::sort(BGMs.begin(), BGMs.end());
 	for (auto &s : BGMs)
 		BGMEvents.push(s);
 
@@ -628,22 +628,22 @@ void ScreenGameplay7K::SetupMechanics()
 	{
 		Log::Printf("Using raindrop mechanics set!\n");
 		// Only forced release if not a bms or a stepmania chart.
-		MechanicsSet = make_shared<RaindropMechanics>(!bmsOrStepmania);
+		MechanicsSet = std::make_shared<RaindropMechanics>(!bmsOrStepmania);
 	}
 	else if (UsedTimingType == TT_BEATS)
 	{
 		Log::Printf("Using o2jam mechanics set!\n");
-		MechanicsSet = make_shared<O2JamMechanics>();
+		MechanicsSet = std::make_shared<O2JamMechanics>();
 		ChangeNoteTimeToBeats();
 	}
 
 	MechanicsSet->Setup(MySong.get(), CurrentDiff.get(), ScoreKeeper);
-	MechanicsSet->HitNotify = bind(&ScreenGameplay7K::HitNote, this, _1, _2, _3, _4);
-	MechanicsSet->MissNotify = bind(&ScreenGameplay7K::MissNote, this, _1, _2, _3, _4, _5);
-	MechanicsSet->IsLaneKeyDown = bind(&ScreenGameplay7K::GetGearLaneState, this, _1);
-	MechanicsSet->SetLaneHoldingState = bind(&ScreenGameplay7K::SetLaneHoldState, this, _1, _2);
-	MechanicsSet->PlayLaneSoundEvent = bind(&ScreenGameplay7K::PlayLaneKeysound, this, _1);
-	MechanicsSet->PlayNoteSoundEvent = bind(&ScreenGameplay7K::PlayKeysound, this, _1);
+	MechanicsSet->HitNotify = std::bind(&ScreenGameplay7K::HitNote, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+	MechanicsSet->MissNotify = std::bind(&ScreenGameplay7K::MissNote, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
+	MechanicsSet->IsLaneKeyDown = std::bind(&ScreenGameplay7K::GetGearLaneState, this, std::placeholders::_1);
+	MechanicsSet->SetLaneHoldingState = std::bind(&ScreenGameplay7K::SetLaneHoldState, this, std::placeholders::_1, std::placeholders::_2);
+	MechanicsSet->PlayLaneSoundEvent = std::bind(&ScreenGameplay7K::PlayLaneKeysound, this, std::placeholders::_1);
+	MechanicsSet->PlayNoteSoundEvent = std::bind(&ScreenGameplay7K::PlayKeysound, this, std::placeholders::_1);
 }
 
 void ScreenGameplay7K::LoadResources()
@@ -687,7 +687,7 @@ bool ScreenGameplay7K::BindKeysToLanes(bool UseTurntable)
 {
 	GString KeyProfile;
 	GString value;
-	vector<GString> res;
+	std::vector<GString> res;
 
 	if (UseTurntable)
 		KeyProfile = Configuration::GetConfigs("KeyProfileSpecial" + Utility::IntToStr(CurrentDiff->Channels));
@@ -747,7 +747,7 @@ void ScreenGameplay7K::InitializeResources()
 		WaitingTime = 0;
 
 	if (Noteskin::IsBarlineEnabled())
-		Barline = make_shared<Line>();
+		Barline = std::make_shared<Line>();
 
 	CurrentBeat = IntegrateToTime(BPS, -WaitingTime);
 	Animations->GetImageList()->ForceFetch();

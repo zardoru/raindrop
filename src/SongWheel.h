@@ -32,12 +32,12 @@ class GraphicalString;
 namespace Game 
 {
 
-	typedef function<void (shared_ptr<Song>, uint8)> SongNotification;
-	typedef function<void(int32, uint32, GString, shared_ptr<Song>)> ItemNotification;
-	typedef function<void(int32, shared_ptr<Song>, bool, int32)> ItemTransformFunction;
-	typedef function<void(int32, shared_ptr<Song>, bool, int32, GString)> StringTransformFunction;
-	typedef function <float (float)> ListTransformFunction;
-	typedef function<void()> DirectoryChangeNotifyFunction;
+	typedef std::function<void (std::shared_ptr<Song>, uint8)> SongNotification;
+	typedef std::function<void(int32, uint32, GString, std::shared_ptr<Song>)> ItemNotification;
+	typedef std::function<void(int32, std::shared_ptr<Song>, bool, int32)> ItemTransformFunction;
+	typedef std::function<void(int32, std::shared_ptr<Song>, bool, int32, GString)> StringTransformFunction;
+	typedef std::function <float (float)> ListTransformFunction;
+	typedef std::function<void()> DirectoryChangeNotifyFunction;
 
 class SongWheel
 {
@@ -49,21 +49,21 @@ private:
 	int32 SelectedItem, SelectedListItem;
 	int StartIndex, EndIndex;
 
-	mutex* mLoadMutex;
-	thread* mLoadThread;
-	atomic<bool> mLoading;
+	std::mutex* mLoadMutex;
+	std::thread* mLoadThread;
+	std::atomic<bool> mLoading;
 
 	SongDatabase* DB;
 
-	shared_ptr<SongList> ListRoot;
+    std::shared_ptr<SongList> ListRoot;
 	SongList* CurrentList;
 
 	float CurrentVerticalDisplacement;
 	float PendingVerticalDisplacement;
 	float shownListY;
 
-	map<int, Sprite*> Sprites;
-	map<int, GraphicalString*> Strings;
+	std::map<int, Sprite*> Sprites;
+	std::map<int, GraphicalString*> Strings;
 	
 	float ItemHeight;
 	float Time;
@@ -114,7 +114,7 @@ public:
 
 	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput);
 	bool HandleScrollInput(const double dx, const double dy);
-	shared_ptr<Song> GetSelectedSong();
+    std::shared_ptr<Song> GetSelectedSong();
 	void ReloadSongs(SongDatabase* Database);
 	void LoadSongsOnce(SongDatabase* Database);
 

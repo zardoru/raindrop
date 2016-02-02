@@ -2,7 +2,7 @@
 
 #include "Sprite.h"
 
-typedef function<void(Sprite*)> EventAnimationFunction;
+using EventAnimationFunction = std::function<void(Sprite*)>;
 
 namespace GUI
 {

@@ -205,7 +205,7 @@ void Application::Init()
 void Application::SetupPreviewMode()
 {
 	// Load the song.
-	shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), nullptr);
+    std::shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), nullptr);
 
 	if (!Sng || !Sng->Difficulties.size())
 	{
@@ -218,7 +218,7 @@ void Application::SetupPreviewMode()
 	GameState::GetInstance().SetDifficultyIndex(difIndex);
 
 	// Create loading screen and gameplay screen.
-	auto SGame = make_shared<ScreenGameplay7K>();
+	auto SGame = std::make_shared<ScreenGameplay7K>();
 	ScreenLoading *LoadScreen = new ScreenLoading(SGame);
 
 	// Set them up.
@@ -302,7 +302,7 @@ void Application::Run()
 		}
 	}else if (RunMode == MODE_CONVERT)
 	{
-		shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), NULL);
+        std::shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), NULL);
 
 
 		if (Sng && Sng->Difficulties.size()) 

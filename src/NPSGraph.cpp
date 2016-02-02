@@ -44,9 +44,9 @@ public:
 		Song = In;
 	}
 
-	vector<int> GetDataPoints(int diffIndex, double intervalduration)
+    std::vector<int> GetDataPoints(int diffIndex, double intervalduration)
 	{
-		vector<int> datapoints;
+        std::vector<int> datapoints;
 		VSRG::Difficulty *Diff = Song->Difficulties.at(diffIndex).get();
 		if (Diff == nullptr) return datapoints;
 
@@ -62,7 +62,7 @@ public:
 	GString GetSVGText(int diffIndex, double intervalduration = 1, double peakMargin = 1.2)
 	{
 		std::stringstream out;
-		vector<int> dataPoints = GetDataPoints(diffIndex, intervalduration);
+        std::vector<int> dataPoints = GetDataPoints(diffIndex, intervalduration);
 		auto peak_it = std::max_element(dataPoints.begin(), dataPoints.end());
 		float peakf = *peak_it;
 		double peak = *peak_it * peakMargin;

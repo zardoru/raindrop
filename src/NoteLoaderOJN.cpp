@@ -76,7 +76,7 @@ struct OjnMeasure
 {
 	float Len;
 
-	vector<OjnInternalEvent> Events;
+    std::vector<OjnInternalEvent> Events;
 
 	OjnMeasure()
 	{
@@ -87,7 +87,7 @@ struct OjnMeasure
 class OjnLoadInfo
 {
 public:
-	vector<OjnMeasure> Measures;
+    std::vector<OjnMeasure> Measures;
 	VSRG::Song* S;
 	float BPM;
 };
@@ -114,7 +114,7 @@ void FixOJNEvents(OjnLoadInfo *Info)
 	for (auto Measure: Info->Measures)
 	{
 		// Sort events. This is very important, since we assume events are sorted!
-		sort(Measure.Events.begin(), Measure.Events.end(), 
+        std::sort(Measure.Events.begin(), Measure.Events.end(),
 			[&](const OjnInternalEvent A, const OjnInternalEvent B) -> bool 
 			{ return A.Fraction < B.Fraction; });
 
@@ -356,9 +356,9 @@ void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::
 	for (auto i = 0; i < 3; i++)
 	{
 		OjnLoadInfo Info;
-		shared_ptr<VSRG::Difficulty> Diff (new VSRG::Difficulty());
-		shared_ptr<VSRG::O2JamTimingInfo> TInfo (new VSRG::O2JamTimingInfo);
-		shared_ptr<VSRG::DifficultyLoadInfo> LInfo (new VSRG::DifficultyLoadInfo);
+		std::shared_ptr<VSRG::Difficulty> Diff (new VSRG::Difficulty());
+		std::shared_ptr<VSRG::O2JamTimingInfo> TInfo (new VSRG::O2JamTimingInfo);
+		std::shared_ptr<VSRG::DifficultyLoadInfo> LInfo (new VSRG::DifficultyLoadInfo);
 
 		switch (i)
 		{

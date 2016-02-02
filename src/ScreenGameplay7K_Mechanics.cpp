@@ -250,7 +250,7 @@ void ScreenGameplay7K::ReleaseLane(uint32 Lane, float Time)
 		Start = std::lower_bound(NotesByChannel[Lane].begin(), NotesByChannel[Lane].end(), timeLower, LboundFunc);
 
 		// Locate the first hold that we can judge in this range (Pending holds. Similar to what was done when drawing.)
-		auto rStart = std::reverse_iterator<vector<TrackNote>::iterator>(Start);
+		auto rStart = std::reverse_iterator<std::vector<TrackNote>::iterator>(Start);
 		for (auto i = rStart; i != NotesByChannel[Lane].rend(); ++i)
 		{
 			if (i->IsHold() && i->IsEnabled() && i->IsJudgable() && i->WasNoteHit() && !i->FailedHit())

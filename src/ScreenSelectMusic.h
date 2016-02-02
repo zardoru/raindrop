@@ -26,14 +26,14 @@ class ScreenSelectMusic : public Screen
 	double TransitionTime;
 	double PreviewWaitTime;
 
-	shared_ptr<Game::Song> ToPreview;
-	shared_ptr<Game::Song> PreviousPreview;
+	std::shared_ptr<Game::Song> ToPreview;
+	std::shared_ptr<Game::Song> PreviousPreview;
 	Sprite Background;
 	BitmapFont* Font;
 
 	GUI::Button *UpBtn, *BackBtn, *AutoBtn;
 
-	shared_ptr<AudioStream> PreviewStream;
+    std::shared_ptr<AudioStream> PreviewStream;
 
 	bool SwitchBackGuiPending;
 
@@ -49,16 +49,16 @@ class ScreenSelectMusic : public Screen
 	void StartGameplayScreen();
 	float GetListVerticalTransformation(const float Y);
 	float GetListPendingVerticalTransformation(const float Y);
-	void OnSongChange(shared_ptr<Game::Song> MySong, uint8 difindex);
-	void OnSongSelect(shared_ptr<Game::Song> MySong, uint8 difindex);
+	void OnSongChange(std::shared_ptr<Game::Song> MySong, uint8 difindex);
+	void OnSongSelect(std::shared_ptr<Game::Song> MySong, uint8 difindex);
 
 	void OnDirectoryChange();
-	void OnItemClick(int32 Index, uint32 boundIndex, GString Line, shared_ptr<Game::Song> Selected);
-	void OnItemHover(int32 Index, uint32 boundIndex, GString Line, shared_ptr<Game::Song> Selected);
-	void OnItemHoverLeave(int32 Index, uint32 boundIndex, GString Line, shared_ptr<Game::Song> Selected);
+	void OnItemClick(int32 Index, uint32 boundIndex, GString Line, std::shared_ptr<Game::Song> Selected);
+	void OnItemHover(int32 Index, uint32 boundIndex, GString Line, std::shared_ptr<Game::Song> Selected);
+	void OnItemHoverLeave(int32 Index, uint32 boundIndex, GString Line, std::shared_ptr<Game::Song> Selected);
 
-	void TransformItem(int Item, shared_ptr<Game::Song> Song, bool IsSelected, int ListItem);
-	void TransformString(int Item, shared_ptr<Game::Song> Song, bool IsSelected, int ListItem, GString text);
+	void TransformItem(int Item, std::shared_ptr<Game::Song> Song, bool IsSelected, int ListItem);
+	void TransformString(int Item, std::shared_ptr<Game::Song> Song, bool IsSelected, int ListItem, GString text);
 	void SwitchUpscroll(bool NewUpscroll);
 public:
 	ScreenSelectMusic();

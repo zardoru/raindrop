@@ -5,7 +5,7 @@
 #include "Song7K.h"
 #include "NoteLoader7K.h"
 
-typedef vector<GString> SplitResult;
+typedef std::vector<GString> SplitResult;
 
 using namespace VSRG;
 
@@ -46,15 +46,15 @@ struct OsuLoadInfo
 	int Version;
 	int last_sound_index;
 	Song *OsuSong;
-	shared_ptr<VSRG::OsuManiaTimingInfo> TimingInfo;
-	map <GString, int> Sounds;
-	vector<HitsoundSectionData> HitsoundSections;
-	shared_ptr<VSRG::Difficulty> Diff;
+	std::shared_ptr<VSRG::OsuManiaTimingInfo> TimingInfo;
+	std::map <GString, int> Sounds;
+	std::vector<HitsoundSectionData> HitsoundSections;
+	std::shared_ptr<VSRG::Difficulty> Diff;
 	GString DefaultSampleset;
 
 	bool ReadAModeTag;
 
-	vector<NoteData> Notes[MAX_CHANNELS];
+    std::vector<NoteData> Notes[MAX_CHANNELS];
 	int Line;
 
 	double GetBeatspaceAt(double T)
@@ -550,13 +550,13 @@ void ReadObjects (GString line, OsuLoadInfo* Info)
 	Info->Diff->TotalObjects++;
 	Info->Notes[Track].push_back(Note);
 
-	Info->Diff->Duration = max(max (Note.StartTime, Note.EndTime)+1, Info->Diff->Duration);
+	Info->Diff->Duration = std::max(std::max (Note.StartTime, Note.EndTime)+1, Info->Diff->Duration);
 }
 
 void MeasurizeFromTimingData(OsuLoadInfo *Info)
 {
 	// Keep them at the order they are declared so they don't affect the applied hitsounds.
-	stable_sort(Info->HitsoundSections.begin(), Info->HitsoundSections.end());
+    std::stable_sort(Info->HitsoundSections.begin(), Info->HitsoundSections.end());
 
 	for (auto i = Info->HitsoundSections.begin(); i != Info->HitsoundSections.end(); ++i)
 	{
@@ -711,16 +711,16 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 	if (!filein.is_open())
 		throw std::exception("Could not open file.");
 
-	auto Diff = make_shared<Difficulty>();
+	auto Diff = std::make_shared<Difficulty>();
 	OsuLoadInfo Info;
 
-	Info.TimingInfo = make_shared<OsuManiaTimingInfo>();
+	Info.TimingInfo = std::make_shared<OsuManiaTimingInfo>();
 	Info.OsuSong = Out;
 	Info.SliderVelocity = 1.4;
 	Info.Diff = Diff;
 	Info.last_sound_index = 1;
 
-	Diff->Data = make_shared<DifficultyLoadInfo>();
+	Diff->Data = std::make_shared<DifficultyLoadInfo>();
 	Diff->Data->TimingInfo = Info.TimingInfo;
 
 	// osu! stores bpm information as the time in ms that a beat lasts.
@@ -771,7 +771,7 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 			if (ReadingMode != ReadingModeOld || ReadingMode == RNotKnown) // Skip this line since it changed modes, or it's not a valid section yet
 			{
 				if (ReadingModeOld == RTiming)
-					stable_sort(Info.HitsoundSections.begin(), Info.HitsoundSections.end());
+                    std::stable_sort(Info.HitsoundSections.begin(), Info.HitsoundSections.end());
 				if (ReadingModeOld == RGeneral)
 					if (!Info.ReadAModeTag)
 						throw std::exception("Not an osu!mania chart.");

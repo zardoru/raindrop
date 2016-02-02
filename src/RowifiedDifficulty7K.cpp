@@ -16,9 +16,9 @@ RowifiedDifficulty::RowifiedDifficulty(Difficulty *Source, bool Quantize, bool C
 	assert(Source != nullptr);
 
 	if (Quantize)
-		QuantizeFunction = bind(QuantizeBeat, _1);
+		QuantizeFunction = std::bind(QuantizeBeat, std::placeholders::_1);
 	else
-		QuantizeFunction = bind(PassThrough, _1);
+		QuantizeFunction = std::bind(PassThrough, std::placeholders::_1);
 
 	Source->ProcessBPS(BPS, 0);
 
@@ -31,11 +31,11 @@ RowifiedDifficulty::RowifiedDifficulty(Difficulty *Source, bool Quantize, bool C
 	}
 }
 
-int RowifiedDifficulty::GetRowCount(const vector<Event> &In)
+int RowifiedDifficulty::GetRowCount(const std::vector<Event> &In)
 {
 	// literally the only hard part of this
 	// We have to find the LCM of the set of fractions given by the Fraction of all objects in the vector.
-	vector <int> Denominators;
+    std::vector <int> Denominators;
 
 	// Find all different denominators.
 	for (auto i : In) {

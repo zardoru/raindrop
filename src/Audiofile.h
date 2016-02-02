@@ -51,7 +51,7 @@ class AudioSample : public Sound
 	uint32	 mRate;
 	uint32   mCounter;
 	float    mAudioStart, mAudioEnd;
-	shared_ptr<vector<short> >   mData;
+	std::shared_ptr<std::vector<short>> mData;
 	bool	 mValid;
 	bool	 mIsPlaying;
 	bool	 mIsValid;
@@ -71,7 +71,7 @@ public:
 
 	bool IsPlaying() override;
 	void Slice(float audio_start, float audio_end);
-	shared_ptr<AudioSample> CopySlice();
+	std::shared_ptr<AudioSample> CopySlice();
 	// void Mix(AudioSample& Other);
 	bool IsValid();
 };
@@ -80,11 +80,11 @@ class AudioStream : public Sound
 {
 	PaUtilRingBuffer mRingBuf;
 
-	unique_ptr<AudioDataSource> mSource;
+    std::unique_ptr<AudioDataSource> mSource;
 	unsigned int     mBufferSize;
-	vector<short>	 mData;
-	vector<short>	 mResampleBuffer;
-	vector<short>	 mOutputBuffer;
+	std::vector<short>	 mData;
+	std::vector<short>	 mResampleBuffer;
+	std::vector<short>	 mOutputBuffer;
 	short			 tbuf[8192];
 	double			 mStreamTime;
 	double			 mPlaybackTime;

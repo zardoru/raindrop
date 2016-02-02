@@ -247,7 +247,7 @@ stageFailed:
 	// Okay then, the song's done, and the success animation is done too. Time to evaluate.
 	if (SuccessTime < 0 && SongFinished)
 	{
-		auto Eval = make_shared<ScreenEvaluation7K>();
+		auto Eval = std::make_shared<ScreenEvaluation7K>();
 		Eval->Init(ScoreKeeper.get());
 		Next = Eval;
 	}
@@ -259,7 +259,7 @@ stageFailed:
 
 			if (Configuration::GetSkinConfigf("GoToSongSelectOnFailure") == 0)
 			{
-				auto Eval = make_shared<ScreenEvaluation7K>();
+				auto Eval = std::make_shared<ScreenEvaluation7K>();
 				Eval->Init(ScoreKeeper.get());
 				Next = Eval;
 			}

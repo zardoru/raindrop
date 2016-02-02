@@ -42,9 +42,9 @@ void monoToStereo(T* Buffer, size_t cnt, size_t max_len)
 	}
 }
 
-unique_ptr<AudioDataSource> SourceFromExt(Directory Filename)
+std::unique_ptr<AudioDataSource> SourceFromExt(Directory Filename)
 {
-	unique_ptr<AudioDataSource> Ret = nullptr;
+    std::unique_ptr<AudioDataSource> Ret = nullptr;
 	GString Ext = Filename.GetExtension();
 	Filename.Normalize();
 
@@ -160,7 +160,7 @@ bool AudioSample::Open(AudioDataSource* Src)
 		if (!mSampleCount) // Huh what why?
 			return false;
 
-		mData = make_shared<vector<short>>(mSampleCount);
+		mData = std::make_shared<std::vector<short>>(mSampleCount);
 		size_t total = Src->Read(mData->data(), mSampleCount);
 
 		if (total < mSampleCount) // Oh, odd. Oh well.
@@ -171,7 +171,7 @@ bool AudioSample::Open(AudioDataSource* Src)
 		if (Channels == 1) // Mono? We'll need to duplicate information for both channels.
 		{
 			size_t size = mSampleCount * 2;
-			auto mDataNew = make_shared<vector<short>>(size);
+			auto mDataNew = std::make_shared<std::vector<short>>(size);
 
 			for (size_t i = 0, j = 0; i < mSampleCount; i++, j += 2)
 			{
@@ -192,7 +192,7 @@ bool AudioSample::Open(AudioDataSource* Src)
 			double ResamplingRate = DstRate / mRate;
 			soxr_io_spec_t spc;
 			size_t size = size_t(ceil(mSampleCount * ResamplingRate));
-			auto mDataNew = make_shared<vector<short>>(size);
+			auto mDataNew = std::make_shared<std::vector<short>>(size);
 
 			spc.e = nullptr;
 			spc.itype = SOXR_INT16_I;
@@ -262,7 +262,7 @@ void AudioSample::Slice(float audio_start, float audio_end)
 	mAudioEnd = Clamp(float(audio_end / mPitch), mAudioStart, audioDuration);
 }
 
-shared_ptr<AudioSample> AudioSample::CopySlice()
+std::shared_ptr<AudioSample> AudioSample::CopySlice()
 {
 	size_t start = Clamp(size_t(mAudioStart * mRate * Channels), size_t(0), mData->size());
 	size_t end = Clamp(size_t(mAudioEnd * mRate * Channels), start, mData->size());
@@ -270,7 +270,7 @@ shared_ptr<AudioSample> AudioSample::CopySlice()
 	if (!mAudioEnd) throw std::runtime_error("No buffer available");
 	if (end < start) throw std::runtime_error("warning copy slice: end < start");
 
-	shared_ptr<AudioSample> out = make_shared<AudioSample>(*this);
+    std::shared_ptr<AudioSample> out = std::make_shared<AudioSample>(*this);
 	return out;
 }
 /*
@@ -332,7 +332,7 @@ GString RearrangeFilename(const char* Fn)
 bool AudioSample::Open(const char* Filename)
 {
 	GString FilenameFixed = RearrangeFilename(Filename);
-	unique_ptr<AudioDataSource> Src = SourceFromExt(FilenameFixed);
+    std::unique_ptr<AudioDataSource> Src = SourceFromExt(FilenameFixed);
 	return Open(Src.get());
 }
 

@@ -75,14 +75,14 @@ void SongWheel::Initialize(SongDatabase* Database)
 
 class LoadThread
 {
-	mutex* mLoadMutex;
+    std::mutex* mLoadMutex;
 	SongDatabase* DB;
-	shared_ptr<SongList> ListRoot;
+    std::shared_ptr<SongList> ListRoot;
 	bool VSRGActive;
 	bool DCActive;
-	atomic<bool>& isLoading;
+    std::atomic<bool>& isLoading;
 public:
-	LoadThread(mutex* m, SongDatabase* d, shared_ptr<SongList> r, bool va, bool da, atomic<bool>& loadingstatus)
+	LoadThread(std::mutex* m, SongDatabase* d, std::shared_ptr<SongList> r, bool va, bool da, std::atomic<bool>& loadingstatus)
 		: mLoadMutex(m),
 		DB(d),
 		ListRoot(r),
@@ -95,8 +95,8 @@ public:
 
 	void Load()
 	{
-		map<GString, GString> Directories;
-        map<GString, std::filesystem::path> Directories2;
+		std::map<GString, GString> Directories;
+        std::map<GString, std::filesystem::path> Directories2;
 
 		Configuration::GetConfigListS("SongDirectories", Directories, "Songs");
         Configuration::GetConfigListS("SongDirectories", Directories2, "Songs");
@@ -137,14 +137,14 @@ void SongWheel::ReloadSongs(SongDatabase* Database)
 
 	ListRoot = nullptr;
 
-	ListRoot = make_shared<SongList>();
+	ListRoot = std::make_shared<SongList>();
 	CurrentList = ListRoot.get();
 
 	if (!mLoadMutex)
-		mLoadMutex = new mutex;
+		mLoadMutex = new std::mutex;
 
 	LoadThread L(mLoadMutex, DB, ListRoot, VSRGModeActive, dotcurModeActive, mLoading);
-	mLoadThread = new thread(&LoadThread::Load, L);
+	mLoadThread = new std::thread(&LoadThread::Load, L);
 }
 
 void SongWheel::LoadSongsOnce(SongDatabase* Database)
@@ -192,12 +192,12 @@ int SongWheel::PrevDifficulty()
 		DifficultyIndex--;
 		if (CurrentList->GetSongEntry(SelectedItem)->Mode == MODE_VSRG)
 		{
-			auto Song = static_pointer_cast<VSRG::Song> (CurrentList->GetSongEntry(SelectedItem));
+			auto Song = std::static_pointer_cast<VSRG::Song> (CurrentList->GetSongEntry(SelectedItem));
 			max_index = Song->Difficulties.size() - 1;
 		}
 		else
 		{
-			auto Song = static_pointer_cast<dotcur::Song> (CurrentList->GetSongEntry(SelectedItem));
+			auto Song = std::static_pointer_cast<dotcur::Song> (CurrentList->GetSongEntry(SelectedItem));
 			max_index = Song->Difficulties.size() - 1;
 		}
 		
@@ -217,13 +217,13 @@ int SongWheel::NextDifficulty()
 		DifficultyIndex++;
 		if (CurrentList->GetSongEntry(SelectedItem)->Mode == MODE_VSRG)
 		{
-			auto Song = static_pointer_cast<VSRG::Song> (CurrentList->GetSongEntry(SelectedItem));
+			auto Song = std::static_pointer_cast<VSRG::Song> (CurrentList->GetSongEntry(SelectedItem));
 			if (DifficultyIndex >= Song->Difficulties.size())
 				DifficultyIndex = 0;
 		}
 		else
 		{
-			auto Song = static_pointer_cast<dotcur::Song> (CurrentList->GetSongEntry(SelectedItem));
+			auto Song = std::static_pointer_cast<dotcur::Song> (CurrentList->GetSongEntry(SelectedItem));
 			if (DifficultyIndex >= Song->Difficulties.size())
 				DifficultyIndex = 0;
 		}
@@ -243,7 +243,7 @@ void SongWheel::SetDifficulty(uint32 i)
 {
 	if (CurrentList && !CurrentList->IsDirectory(SelectedItem))
 	{
-		auto Song = static_pointer_cast<VSRG::Song> (GetSelectedSong());
+		auto Song = std::static_pointer_cast<VSRG::Song> (GetSelectedSong());
 		size_t maxIndex = Song->Difficulties.size();
 		size_t oldDI = DifficultyIndex;
 
@@ -305,7 +305,7 @@ bool SongWheel::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
 
 void SongWheel::GoUp()
 {
-	unique_lock<mutex> lock (*mLoadMutex);
+    std::unique_lock<std::mutex> lock (*mLoadMutex);
 
 	if (CurrentList->HasParentDirectory())
 	{
@@ -319,7 +319,7 @@ bool SongWheel::HandleScrollInput(const double dx, const double dy)
 	return true;
 }
 
-shared_ptr<Game::Song> SongWheel::GetSelectedSong()
+std::shared_ptr<Game::Song> SongWheel::GetSelectedSong()
 {
 	return CurrentList->GetSongEntry(SelectedItem);
 }
@@ -385,7 +385,7 @@ void SongWheel::Update(float Delta)
 		DifficultyIndex = 0;
 		if (OnItemHover)
 		{
-			shared_ptr<Game::Song> Notify = GetSelectedSong();
+            std::shared_ptr<Game::Song> Notify = GetSelectedSong();
 			OnItemHover(GetCursorIndex(), GetListCursorIndex(),
 						CurrentList->GetEntryTitle(GetCursorIndex()), Notify);
 		}
@@ -397,7 +397,7 @@ void SongWheel::DisplayItem(int32 ListItem, int32 ListPosition, Vec2 Position)
 	if (Position.y > -ItemHeight && Position.y < ScreenHeight)
 	{
 		bool IsSelected = false;
-		shared_ptr<Song> Song = nullptr;
+        std::shared_ptr<Song> Song = nullptr;
 		GString Text;
 		if (ListItem != -1)
 		{
@@ -440,7 +440,7 @@ void SongWheel::CalculateIndices()
 void SongWheel::Render()
 {
 	int Index = GetCursorIndex();
-	unique_lock<mutex> lock (*mLoadMutex);
+    std::unique_lock<std::mutex> lock (*mLoadMutex);
 	int Cur = 0;
 	int Max = CurrentList->GetNumEntries();
 

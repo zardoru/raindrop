@@ -112,11 +112,11 @@ void CalculateBarlineRatios(Song &MySong, Difficulty &Diff)
 
 void Song::Repack()
 {
-	for(vector<dotcur::Difficulty*>::iterator Diff = Difficulties.begin(); Diff != Difficulties.end(); Diff++ )
+	for(auto Diff = Difficulties.begin(); Diff != Difficulties.end(); Diff++ )
 	{
-		for(vector<Measure>::iterator Msr = (*Diff)->Measures.begin(); Msr != (*Diff)->Measures.end(); Msr++)
+		for(auto Msr = (*Diff)->Measures.begin(); Msr != (*Diff)->Measures.end(); Msr++)
 		{
-			for (vector<GameObject>::iterator it = Msr->begin(); it != Msr->end(); it++)
+			for (auto it = Msr->begin(); it != Msr->end(); it++)
 			{
 				if (it->GetPosition().x > ScreenDifference)
 					it->SetPositionX(it->GetPosition().x - ScreenDifference);
@@ -135,7 +135,7 @@ void Song::Process(bool CalculateXPos)
 	for(std::vector<dotcur::Difficulty*>::iterator Diff = Difficulties.begin(); Diff != Difficulties.end(); Diff++ )
 	{
 		int32 CurrentMeasure = 0;
-		for(vector<Measure>::iterator Msr = (*Diff)->Measures.begin(); Msr != (*Diff)->Measures.end(); Msr++)
+		for(auto Msr = (*Diff)->Measures.begin(); Msr != (*Diff)->Measures.end(); Msr++)
 		{
 			uint32 CurNote = 0;
 
@@ -240,7 +240,7 @@ bool Song::Save(const char* Filename)
 		int MNum = 0;
 
 		// for each measure of this difficulty
-		for (vector<dotcur::Measure>::iterator m = (*i)->Measures.begin(); m != (*i)->Measures.end(); m++)
+		for (auto m = (*i)->Measures.begin(); m != (*i)->Measures.end(); m++)
 		{
 			dotcur::Measure old = *m; // Copy temporarily
 			int mAdvance = 192;

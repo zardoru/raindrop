@@ -14,8 +14,8 @@ int lcm(int a, int b)
 	return a * b / gcd(a, b);
 }
 
-int LCM(const vector<int> &Set) {
-	return accumulate(Set.begin() + 1, Set.end(), *Set.begin(), lcm);
+int LCM(const std::vector<int> &Set) {
+	return std::accumulate(Set.begin() + 1, Set.end(), *Set.begin(), lcm);
 }
 
 int SectionIndex(const TimingData &Timing, double Beat)
@@ -89,7 +89,7 @@ void GetTimingChangesInInterval(const TimingData &Timing,
 void LoadTimingList(TimingData &Timing, GString line, bool AllowZeros)
 {
 	GString ListString = line.substr(line.find_first_of(":") + 1);
-	vector< GString > SplitResult;
+    std::vector< GString > SplitResult;
 	TimingSegment Segment;
 
 	Timing.clear();
@@ -98,7 +98,7 @@ void LoadTimingList(TimingData &Timing, GString line, bool AllowZeros)
 	SplitResult = Utility::TokenSplit(ListString); // Separate List of BPMs.
 	for (auto ValueString: SplitResult)
 	{ // Separate Time=Value pairs.
-		vector< GString > SplitResultPair = Utility::TokenSplit(ValueString, "=");
+        std::vector< GString > SplitResultPair = Utility::TokenSplit(ValueString, "=");
 
 		if (SplitResultPair.size() == 1) // Assume only one BPM on the whole list.
 		{

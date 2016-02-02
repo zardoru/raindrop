@@ -10,13 +10,13 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 	std::stringstream OutFile;
 
 	struct TimingMeasure {
-		vector<Event> BPMEvents;
-		vector<Event> StopEvents;
+		std::vector<Event> BPMEvents;
+		std::vector<Event> StopEvents;
 	};
 
-	vector<TimingMeasure> TimingMeasures;
-	vector<double> BPMs;
-	vector<int> Stops;
+	std::vector<TimingMeasure> TimingMeasures;
+	std::vector<double> BPMs;
+	std::vector<int> Stops;
 
 	void ResizeTimingMeasures(size_t NewMaxIndex) {
 		if (TimingMeasures.size() < NewMaxIndex + 1) {
@@ -158,19 +158,19 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 		}
 	}
 
-	void WriteVectorToMeasureChannel(vector<Event> &Out, int Measure, int Channel) 
+	void WriteVectorToMeasureChannel(std::vector<Event> &Out, int Measure, int Channel)
 	{
 		if (Out.size() == 0) return; // Nothing to write.
 
 		auto VecLCM = GetRowCount(Out);
-		sort(Out.begin(), Out.end(), [](const Event& A, const Event&B)
+        std::sort(Out.begin(), Out.end(), [](const Event& A, const Event&B)
 			-> bool {
 			     auto dA = double(A.Sect.Num) / A.Sect.Den;
 			     auto dB = double(B.Sect.Num) / B.Sect.Den;
 			return dA < dB;
 		});
 
-		vector<int> rowified; 
+        std::vector<int> rowified;
 		rowified.resize(VecLCM);
 
 		// Now that we have the LCM we can easily just place the objects exactly as we want to output them.

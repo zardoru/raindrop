@@ -41,7 +41,7 @@ SongLoader::SongLoader(SongDatabase* Database)
 	DB = Database;
 }
 
-void SongLoader::LoadSongDCFromDir( Directory songPath, vector<dotcur::Song*> &VecOut )
+void SongLoader::LoadSongDCFromDir( Directory songPath, std::vector<dotcur::Song*> &VecOut )
 {
 
 	bool FoundDCF = false;
@@ -123,7 +123,7 @@ bool ValidBMSExtension(std::wstring Ext)
 	return false;
 }
 
-shared_ptr<VSRG::Song> LoadSong7KFromFilename(const std::filesystem::path& filename, VSRG::Song *Sng)
+std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(const std::filesystem::path& filename, VSRG::Song *Sng)
 {
 
     if (!filename.has_extension()) {
@@ -158,11 +158,11 @@ shared_ptr<VSRG::Song> LoadSong7KFromFilename(const std::filesystem::path& filen
     }
 
     if (AllocSong)
-        return shared_ptr<VSRG::Song>(Sng);
+        return std::shared_ptr<VSRG::Song>(Sng);
     return nullptr;
 }
 
-shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory Prefix, VSRG::Song *Sng)
+std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory Prefix, VSRG::Song *Sng)
 {
     auto filename = std::filesystem::path{ Filename.path() };
     auto directory = std::filesystem::path{ Prefix.path() };
@@ -226,7 +226,7 @@ shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory Pref
 	}
 
 	if (AllocSong)
-		return shared_ptr<VSRG::Song>(Sng);
+		return std::shared_ptr<VSRG::Song>(Sng);
 	return nullptr;
 }
 
@@ -250,7 +250,7 @@ void VSRGUpdateDatabaseDifficulties(SongDatabase* DB, VSRG::Song *New)
 	}
 }
 
-void PushVSRGSong(vector<VSRG::Song*> &VecOut, VSRG::Song* Sng)
+void PushVSRGSong(std::vector<VSRG::Song*> &VecOut, VSRG::Song* Sng)
 {
 	if (Sng->Difficulties.size())
 		VecOut.push_back(Sng);
@@ -258,9 +258,9 @@ void PushVSRGSong(vector<VSRG::Song*> &VecOut, VSRG::Song* Sng)
 		delete Sng;
 }
 
-void SongLoader::LoadSong7KFromDir( Directory songPath, vector<VSRG::Song*> &VecOut )
+void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 {
-	vector<GString> Listing;
+    std::vector<GString> Listing;
 
 	songPath.ListDirectory(Listing, Directory::FS_REG);
 
@@ -314,7 +314,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, vector<VSRG::Song*> &Vec
 	if (RenewCache)
 	{
 		// First, pack BMS charts together.
-		map<GString, VSRG::Song*> bmsk;
+        std::map<GString, VSRG::Song*> bmsk;
 		VSRG::Song *BMSSong = new VSRG::Song;
 
 		// Every OJN gets its own Song object.
@@ -414,7 +414,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, vector<VSRG::Song*> &Vec
 	{
 		// We need to get the song IDs for every file; it's guaranteed that they exist, in theory.
 		int ID = -1;
-		vector<int> IDList;
+        std::vector<int> IDList;
 
 		for (auto i: Listing)
 		{
@@ -452,7 +452,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, vector<VSRG::Song*> &Vec
 	}
 }
 
-void SongLoader::GetSongListDC(vector<dotcur::Song*> &OutVec, Directory Dir)
+void SongLoader::GetSongListDC(std::vector<dotcur::Song*> &OutVec, Directory Dir)
 {
 	std::vector <GString> Listing;
 
@@ -465,9 +465,9 @@ void SongLoader::GetSongListDC(vector<dotcur::Song*> &OutVec, Directory Dir)
 	}
 }
 
-void SongLoader::GetSongList7K(vector<VSRG::Song*> &OutVec, Directory Dir)
+void SongLoader::GetSongList7K(std::vector<VSRG::Song*> &OutVec, Directory Dir)
 {
-	vector <GString> Listing;
+    std::vector <GString> Listing;
 
 	Dir.ListDirectory(Listing, Directory::FS_DIR);
 	for (auto i = Listing.begin(); i != Listing.end(); ++i)
@@ -478,9 +478,9 @@ void SongLoader::GetSongList7K(vector<VSRG::Song*> &OutVec, Directory Dir)
 	}
 }
 
-std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const VSRG::Song* Meta, shared_ptr<VSRG::Difficulty> &CurrentDiff, Directory *FilenameOut, uint8_t &Index)
+std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const VSRG::Song* Meta, std::shared_ptr<VSRG::Difficulty> &CurrentDiff, Directory *FilenameOut, uint8_t &Index)
 {
-	shared_ptr<VSRG::Song> Out;
+    std::shared_ptr<VSRG::Song> Out;
 
 	GString fn = DB->GetDifficultyFilename(CurrentDiff->ID);
 	*FilenameOut = fn;

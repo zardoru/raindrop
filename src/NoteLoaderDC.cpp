@@ -200,7 +200,7 @@ Song* NoteLoader::LoadObjectsFromFile(GString filename, GString prefix)
 
 		OnCommand(#SOUNDS)
 		{
-			vector<GString> SoundList;
+            std::vector<GString> SoundList;
 			GString CmdLine = CommandContents;
 			// Diff->SoundList = Utility::TokenSplit(CmdLine, ",");
 		}

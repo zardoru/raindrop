@@ -64,7 +64,7 @@ public:
 	int getPacemakerDiff(PacemakerType pmt);
 	std::pair<std::string, int> getAutoPacemaker();
 	std::pair<std::string, int> getAutoRankPacemaker();
-	map<PacemakerType, std::string> pacemaker_texts;
+    std::map<PacemakerType, std::string> pacemaker_texts;
 
 
 	int getRank(); // returns a number from -9 to 9

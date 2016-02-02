@@ -25,5 +25,5 @@ public:
 
 	Transformation& GetTransformation();
 	/* Can only be called from main thread! */
-	static shared_ptr<BackgroundAnimation> CreateBGAFromSong(uint8_t DifficultyIndex, Game::Song& Input, Interruptible* context, bool LoadNow = false);
+	static std::shared_ptr<BackgroundAnimation> CreateBGAFromSong(uint8_t DifficultyIndex, Game::Song& Input, Interruptible* context, bool LoadNow = false);
 };

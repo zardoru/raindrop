@@ -117,7 +117,7 @@ GString Directory::GetExtension() const
 GString Directory::path() const { return curpath; }
 const char* Directory::c_path() const { return curpath.c_str(); }
 
-vector<GString>& Directory::ListDirectory(vector<GString>& Vec, DirType T, const char* ext, bool Recursive)
+std::vector<GString>& Directory::ListDirectory(std::vector<GString>& Vec, DirType T, const char* ext, bool Recursive)
 {
 
 #ifdef _WIN32

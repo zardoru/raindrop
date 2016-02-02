@@ -224,7 +224,7 @@ void SceneEnvironment::AddLuaAnimation (Sprite* Target, const GString &FuncName,
 	int Easing, float Duration, float Delay)
 {
 	Animation Anim;
-	Anim.Function = bind(LuaAnimation, Lua.get(), FuncName, Target, _1);
+	Anim.Function = bind(LuaAnimation, Lua.get(), FuncName, Target, std::placeholders::_1);
 	Anim.Easing = (Animation::EEaseType)Easing;
 	Anim.Duration = Duration;
 	Anim.Delay = Delay;
@@ -236,11 +236,11 @@ void SceneEnvironment::AddLuaAnimation (Sprite* Target, const GString &FuncName,
 SceneEnvironment::SceneEnvironment(const char* ScreenName, bool initUI)
 {
 	Animations.reserve(10);
-	Lua = make_shared<LuaManager>();
+	Lua = std::make_shared<LuaManager>();
 	Lua->RegisterStruct("GOMAN", this);
 
 	CreateLuaInterface(Lua.get());
-	Images = make_shared<ImageList>(true);
+	Images = std::make_shared<ImageList>(true);
 	mFrameSkip = true;
 
 	ctx = NULL;

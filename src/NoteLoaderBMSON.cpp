@@ -41,7 +41,7 @@ namespace NoteLoaderBMSON{
 	{
 		const char* hint;
 		int keys;
-		vector<int> mappings;
+        std::vector<int> mappings;
 		bool turntable;
 	} BmsonLayouts[] = {
 		{ "beat-7k", 8, { 1, 2, 3, 4, 5, 6, 7, 0 }, true },
@@ -74,16 +74,16 @@ namespace NoteLoaderBMSON{
 		Json::Value root;
 		std::ifstream &input;
 		VSRG::Song* song;
-		shared_ptr<VSRG::Difficulty> Chart;
-		shared_ptr<VSRG::BMSTimingInfo> TimingInfo;
+        std::shared_ptr<VSRG::Difficulty> Chart;
+        std::shared_ptr<VSRG::BMSTimingInfo> TimingInfo;
 		std::unordered_set<GString> subtitles;
 		GString version;
 		double resolution;
 
 		int current_wav;
-		vector<int> mappings;
+        std::vector<int> mappings;
 
-		map<int, map<double, BmsonNote> > Notes; // int := mapped lane; double := time in beats of obj (for :mix-note)
+        std::map<int, std::map<double, BmsonNote> > Notes; // int := mapped lane; double := time in beats of obj (for :mix-note)
 
 		SliceContainer Slices;
 
@@ -380,7 +380,7 @@ namespace NoteLoaderBMSON{
 			throw BMSONException(Utility::Format("x = %d out of bounds for mode hint", lane).c_str());
 		}
 
-		int Slice(int sound_index, double &last_time, vector<BmsonObject>& notes, vector<BmsonObject>::iterator& note)
+		int Slice(int sound_index, double &last_time, std::vector<BmsonObject>& notes, std::vector<BmsonObject>::iterator& note)
 		{
 			double st = 0, et = std::numeric_limits<double>::infinity();
 			auto next = note + 1;
@@ -449,7 +449,7 @@ namespace NoteLoaderBMSON{
 			}
 		}
 
-		void AddObject(int sound_index, vector<BmsonObject>::iterator& note, int wav_index)
+		void AddObject(int sound_index, std::vector<BmsonObject>::iterator& note, int wav_index)
 		{
 			int lane = GetMappedLane(*note);
 			double beat = note->y / resolution;
@@ -484,7 +484,7 @@ namespace NoteLoaderBMSON{
 			Slices.AudioFiles[sound_index] = nam;
 		}
 
-		void JoinBGMSlices(vector<BmsonObject> &objs)
+		void JoinBGMSlices(std::vector<BmsonObject> &objs)
 		{
 			for (auto obj = objs.begin(); obj != objs.end(); )
 			{
@@ -517,13 +517,13 @@ namespace NoteLoaderBMSON{
 				double last_time = 0;
 				AddGlobalSliceSound((*audio)["name"].asString(), sound_index);
 
-				vector<BmsonObject> objs;
+                std::vector<BmsonObject> objs;
 
 				auto notes = (*audio)["notes"];
 				for (auto &note: notes)
 					objs.push_back(BmsonObject{note["x"].asInt(), note["y"].asDouble(), note["l"].asDouble(), note["c"].asBool()});
 
-				stable_sort(objs.begin(), objs.end(), [](const BmsonObject& l, const BmsonObject& r) -> bool { return l.y < r.y; });
+                std::stable_sort(objs.begin(), objs.end(), [](const BmsonObject& l, const BmsonObject& r) -> bool { return l.y < r.y; });
 				JoinBGMSlices(objs);
 
 				for (auto note = objs.begin(); note != objs.end(); ++note)
@@ -535,7 +535,7 @@ namespace NoteLoaderBMSON{
 		void LoadBGA()
 		{
 			if (version != VERSION_1) return; // BGA unsupported on version 0.21
-			auto out = make_shared<VSRG::BMPEventsDetail>();
+			auto out = std::make_shared<VSRG::BMPEventsDetail>();
 
 			auto& bga = root["bga"];
 			if (!bga.isNull())
@@ -615,9 +615,9 @@ namespace NoteLoaderBMSON{
 
 		void DoLoad()
 		{
-			Chart = make_shared<VSRG::Difficulty>();
-			Chart->Data = make_shared<VSRG::DifficultyLoadInfo>();
-			Chart->Data->TimingInfo = TimingInfo = make_shared<VSRG::BMSTimingInfo>();
+			Chart = std::make_shared<VSRG::Difficulty>();
+			Chart->Data = std::make_shared<VSRG::DifficultyLoadInfo>();
+			Chart->Data->TimingInfo = TimingInfo = std::make_shared<VSRG::BMSTimingInfo>();
 			TimingInfo->IsBMSON = true;
 
 			if (!root.isMember("version")) // NSE (check member to be == 1.0.0 for VERSION_1!)

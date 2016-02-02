@@ -7,12 +7,12 @@
 /*
 	In particular, allows a manifest of filenames to be passed to it and control when it loads those images.
 */
-class ImageList : public Interruptible {
+class ImageList : public Interruptible
+{
 
-	map <GString, Image*> Images;
-
-	map <int, GString> ImagesIndexPending;
-	map <int, Image*> ImagesIndex;
+    std::map <GString, Image*> Images;
+    std::map <int, GString> ImagesIndexPending;
+    std::map <int, Image*> ImagesIndex;
 	bool ShouldDeleteAtDestruction;
 
 public:

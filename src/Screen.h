@@ -10,7 +10,7 @@ private:
 	double ScreenTime; // How long has it been open?
 protected:
 
-	shared_ptr<SceneEnvironment> Animations;
+    std::shared_ptr<SceneEnvironment> Animations;
 
 	enum EScreenState {
 		StateIntro,
@@ -19,18 +19,18 @@ protected:
 	}ScreenState;
 
 	double GetScreenTime();
-	shared_ptr<Screen> Parent;
+    std::shared_ptr<Screen> Parent;
 	bool Running; // Is this screen active?
 	bool SkipThisFrame;
 
 	void ChangeState(EScreenState NewState);
 	double TransitionTime;
 	double IntroDuration, ExitDuration;
-	shared_ptr<Screen> Next;
+    std::shared_ptr<Screen> Next;
 
 public:
 	Screen (GString Name);
-	Screen (GString Name, shared_ptr<Screen> _Parent);
+	Screen (GString Name, std::shared_ptr<Screen> _Parent);
 	virtual ~Screen ();
 
 	virtual void Init();

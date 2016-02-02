@@ -15,7 +15,7 @@
 #include "ScreenGameplay7K.h"
 
 bool CanRender = false;
-shared_ptr<LuaManager> Noteskin::NoteskinLua = nullptr;
+std::shared_ptr<LuaManager> Noteskin::NoteskinLua = nullptr;
 ScreenGameplay7K* Noteskin::Parent = nullptr;
 double Noteskin::NoteScreenSize = 0;
 bool Noteskin::DecreaseHoldSizeWhenBeingHit = true;
@@ -57,7 +57,7 @@ void Noteskin::SetupNoteskin(bool SpecialStyle, int Lanes, ScreenGameplay7K* Par
 
 	// we need a clean state if we're being called from a different thread (to destroy objects properly)
 	assert(NoteskinLua == nullptr); 
-	NoteskinLua = make_shared<LuaManager>();
+	NoteskinLua = std::make_shared<LuaManager>();
 
 	Parent->SetupLua(NoteskinLua.get());
 	DefineSpriteInterface(NoteskinLua.get());

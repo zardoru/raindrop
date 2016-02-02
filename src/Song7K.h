@@ -7,7 +7,7 @@ namespace VSRG
 {
 	struct Measure
 	{
-		vector<NoteData> Notes[MAX_CHANNELS];
+        std::vector<NoteData> Notes[MAX_CHANNELS];
 		double Length; // In beats. 4 by default.
 
 		Measure() {
@@ -21,11 +21,11 @@ namespace VSRG
 		float Value;
 	};
 
-	typedef vector<SpeedSection> VectorSpeeds;
+	typedef std::vector<SpeedSection> VectorSpeeds;
 
-	typedef vector<Measure> VectorMeasure;
+	typedef std::vector<Measure> VectorMeasure;
 
-	typedef vector<TrackNote> VectorTN[MAX_CHANNELS];
+	typedef std::vector<TrackNote> VectorTN[MAX_CHANNELS];
 
 	enum TimingInfoType {
 		TI_NONE,
@@ -105,11 +105,11 @@ namespace VSRG
 	};
 
 	struct BMPEventsDetail {
-		map<int, GString> BMPList;
-		vector<AutoplayBMP> BMPEventsLayerBase;
-		vector<AutoplayBMP> BMPEventsLayer;
-		vector<AutoplayBMP> BMPEventsLayer2;
-		vector<AutoplayBMP> BMPEventsLayerMiss;
+		std::map<int, GString> BMPList;
+		std::vector<AutoplayBMP> BMPEventsLayerBase;
+		std::vector<AutoplayBMP> BMPEventsLayer;
+		std::vector<AutoplayBMP> BMPEventsLayer2;
+		std::vector<AutoplayBMP> BMPEventsLayerMiss;
 	};
 
 	struct DifficultyLoadInfo
@@ -130,13 +130,13 @@ namespace VSRG
 		VectorSpeeds Speeds;
 
 		// Autoplay Sounds
-		vector<AutoplaySound> BGMEvents;
+        std::vector<AutoplaySound> BGMEvents;
 
 		// Autoplay BMP
-		shared_ptr<BMPEventsDetail> BMPEvents;
+        std::shared_ptr<BMPEventsDetail> BMPEvents;
 
 		// Timing Info
-		shared_ptr<CustomTimingInfo> TimingInfo;
+        std::shared_ptr<CustomTimingInfo> TimingInfo;
 
 		// Background/foreground to show when loading.
 		GString StageFile;
@@ -155,7 +155,7 @@ namespace VSRG
 
 	struct Difficulty : Game::Song::Difficulty
 	{
-		shared_ptr<DifficultyLoadInfo> Data;
+        std::shared_ptr<DifficultyLoadInfo> Data;
 
 		enum ETimingType
 		{
@@ -183,7 +183,7 @@ namespace VSRG
 		void ProcessBPS(TimingData& BPS, double Drift);
 
 		// The floats are in vertical units; like the notes' vertical position.
-		void GetMeasureLines(vector<float> &Out, TimingData& VerticalSpeeds, double WaitTime, double Drift);
+		void GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSpeeds, double WaitTime, double Drift);
 
 		// Destroy all information that can be loaded from cache
 		void Destroy();
@@ -209,18 +209,18 @@ namespace VSRG
 		};
 
 		struct Measure {
-			vector<Event> Objects[VSRG::MAX_CHANNELS];
-			vector<Event> LNObjects[VSRG::MAX_CHANNELS];
-			vector<Event> BGMEvents;
+			std::vector<Event> Objects[VSRG::MAX_CHANNELS];
+			std::vector<Event> LNObjects[VSRG::MAX_CHANNELS];
+			std::vector<Event> BGMEvents;
 		};
 
 	private:
 		bool Quantizing;
-		vector<double> MeasureAccomulation;
+        std::vector<double> MeasureAccomulation;
 
 	protected:
-		function <double(double)> QuantizeFunction;
-		int GetRowCount(const vector<Event> &In);
+        std::function <double(double)> QuantizeFunction;
+		int GetRowCount(const std::vector<Event> &In);
 
 		void CalculateMeasureAccomulation();
 		IFraction FractionForMeasure(int Measure, double Beat);
@@ -231,7 +231,7 @@ namespace VSRG
 		void CalculateBGMEvents();
 		void CalculateObjects();
 		
-		vector<Measure> Measures;
+        std::vector<Measure> Measures;
 		TimingData BPS;
 
 		Difficulty *Parent;
@@ -248,7 +248,7 @@ namespace VSRG
 	class Song : public Game::Song
 	{
 	public:
-		vector<shared_ptr<VSRG::Difficulty> > Difficulties;
+        std::vector<std::shared_ptr<VSRG::Difficulty> > Difficulties;
 
 		Song();
 		~Song();

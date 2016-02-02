@@ -17,7 +17,7 @@ struct StepmaniaSpeed
 	enum ModeType : int { Beats, Seconds } Mode;
 };
 
-typedef vector<StepmaniaSpeed> SpeedData;
+typedef std::vector<StepmaniaSpeed> SpeedData;
 
 struct
 {
@@ -101,7 +101,7 @@ bool IsTimeWithinWarp(Difficulty* Diff, double Time)
 	return false;
 }
 
-void LoadNotesSM(Song *Out, Difficulty *Diff, vector<GString> &MeasureText)
+void LoadNotesSM(Song *Out, Difficulty *Diff, std::vector<GString> &MeasureText)
 {
 	/* Hold data */
 	int Keys = Diff->Channels;
@@ -436,7 +436,7 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 	SpeedData diffSpeedData;
 	double Offset = 0;
 
-	shared_ptr<VSRG::Difficulty> Diff = nullptr;
+    std::shared_ptr<VSRG::Difficulty> Diff = nullptr;
 
 	if (!filein.is_open())
 		throw std::exception(Utility::Format("couldn't open %s for reading", filename.c_str()).c_str());
@@ -467,8 +467,8 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 
 		OnCommand(#NOTEDATA)
 		{
-			Diff = make_shared<Difficulty>();
-			Diff->Data = make_shared<DifficultyLoadInfo>();
+			Diff = std::make_shared<Difficulty>();
+			Diff->Data = std::make_shared<DifficultyLoadInfo>();
 			diffSpeedData.clear(); // Clear this in particular since we're using a temp for diffs unlike the rest of the data.
 		}
 
@@ -579,7 +579,7 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 			Diff->Duration = 0;
 			Diff->Filename = filename;
 			Diff->BPMType = Difficulty::BT_BEAT;
-			Diff->Data->TimingInfo = make_shared<StepmaniaTimingInfo>();
+			Diff->Data->TimingInfo = std::make_shared<StepmaniaTimingInfo>();
 			Diff->Data->StageFile = Banner;
 
 			Diff->Data->Warps = CalculateRaindropWarpData(Diff.get(), Diff->Data->Warps);
@@ -675,7 +675,7 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 	TimingData StopsData;
 	double Offset = 0;
 
-	shared_ptr<VSRG::Difficulty> Diff = make_shared<VSRG::Difficulty>();
+    std::shared_ptr<VSRG::Difficulty> Diff = std::make_shared<VSRG::Difficulty>();
 
 	// Stepmania uses beat-based locations for stops and BPM.
 	Diff->BPMType = VSRG::Difficulty::BT_BEAT;
@@ -688,7 +688,7 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 	Out->SongDirectory = prefix + "/";
 	Diff->Offset = 0;
 	Diff->Duration = 0;
-	Diff->Data = make_shared<VSRG::DifficultyLoadInfo>();
+	Diff->Data = std::make_shared<VSRG::DifficultyLoadInfo>();
 
 	GString line;
 	while (filein)
@@ -732,13 +732,13 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 		OnCommand(#NOTES)
 		{
 			Diff->Timing = BPMData;
-			Diff->Data = make_shared<DifficultyLoadInfo>();
+			Diff->Data = std::make_shared<DifficultyLoadInfo>();
 			Diff->Data->Stops = StopsData;
 			Diff->Offset = -Offset;
 			Diff->Duration = 0;
 			Diff->Filename = filename;
 			Diff->BPMType = Difficulty::BT_BEAT;
-			Diff->Data->TimingInfo = make_shared<StepmaniaTimingInfo>();
+			Diff->Data->TimingInfo = std::make_shared<StepmaniaTimingInfo>();
 			Diff->Data->StageFile = Banner;
 			CleanStopsData(Diff.get());
 			WarpifyTiming(Diff.get());
@@ -746,7 +746,7 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 			if (LoadTracksSM(Out, Diff.get(), line))
 			{
 				Out->Difficulties.push_back(Diff);
-				Diff = make_shared<Difficulty>();
+				Diff = std::make_shared<Difficulty>();
 			}
 
 		}

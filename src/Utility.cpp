@@ -162,16 +162,16 @@ namespace Utility {
 			return "";
 		}
 
-		vector<char> fmt(bfsize + 1);
+        std::vector<char> fmt(bfsize + 1);
 		vsnprintf(&fmt[0], bfsize, str.c_str(), vl);
 		va_end(vl);
 
 		return GString(fmt.data());
 	}
 
-	vector<GString> TokenSplit(const GString& str, const GString &token, bool compress)
+    std::vector<GString> TokenSplit(const GString& str, const GString &token, bool compress)
 	{
-		vector<GString> ret;
+        std::vector<GString> ret;
 		size_t len = str.length();
 		auto it = &str[0];
 		auto next = strpbrk(str.c_str(), token.c_str()); // next token instance

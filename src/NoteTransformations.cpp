@@ -31,7 +31,7 @@ namespace NoteTransform {
 			swap(Notes[k], Notes[v]);
 	}
 
-	void MoveKeysoundsToBGM(unsigned char channels, VSRG::VectorTN notes_by_channel, vector<AutoplaySound> &bg_ms)
+	void MoveKeysoundsToBGM(unsigned char channels, VSRG::VectorTN notes_by_channel, std::vector<AutoplaySound> &bg_ms)
 	{
 		for (int k = 0; k < channels; k++)
 		{

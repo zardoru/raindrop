@@ -420,7 +420,7 @@ void BPStoSPB(TimingData &BPS)
 	}
 }
 
-void Difficulty::GetMeasureLines(vector<float> &Out, TimingData& VerticalSpeeds, double WaitTime, double Drift)
+void Difficulty::GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSpeeds, double WaitTime, double Drift)
 {
 	double Last = 0;
 	TimingData SPB;

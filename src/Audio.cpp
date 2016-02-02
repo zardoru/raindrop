@@ -120,10 +120,10 @@ class PaMixer
 
 	int SizeAvailable;
 	bool Threaded;
-	atomic<bool> WaitForRingbufferSpace;
+    std::atomic<bool> WaitForRingbufferSpace;
 
-	mutex mut, mut2, rbufmux;
-	condition_variable ringbuffer_has_space;
+    std::mutex mut, mut2, rbufmux;
+    std::condition_variable ringbuffer_has_space;
 
 	PaMixer(){};
 public:
@@ -148,7 +148,7 @@ public:
 
 		if (StartThread)
 		{
-			thread(&PaMixer::Run, this).detach();
+            std::thread(&PaMixer::Run, this).detach();
 		}
 #ifdef WIN32
 		if (UseWasapi)
@@ -199,7 +199,7 @@ public:
 
 			if (Threaded)
 			{
-				unique_lock<mutex> lock(rbufmux);
+                std::unique_lock<std::mutex> lock(rbufmux);
 
 				while (WaitForRingbufferSpace)
 				{

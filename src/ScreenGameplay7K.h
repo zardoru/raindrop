@@ -20,7 +20,7 @@ class ScreenGameplay7K : public Screen
 
 private:
 
-	shared_ptr<VSRGMechanics> MechanicsSet;
+    std::shared_ptr<VSRGMechanics> MechanicsSet;
 
 	bool HasNegativeScroll;
 	TimingData         VSpeeds;
@@ -28,16 +28,16 @@ private:
 	TimingData		   Warps;
 	VSRG::VectorSpeeds Speeds;
 	VSRG::VectorTN  NotesByChannel;
-	std::map <int, vector<shared_ptr<SoundSample>> > Keysounds;
+	std::map <int, std::vector<std::shared_ptr<SoundSample>> > Keysounds;
 	std::queue<AutoplaySound>   BGMEvents;
-	vector<float>			 MeasureBarlines;
+    std::vector<float>			 MeasureBarlines;
 
-	shared_ptr<VSRG::Difficulty>	 CurrentDiff;
-	shared_ptr<VSRG::Song>			 MySong;
-	shared_ptr<VSRG::Song>			 LoadedSong;
+	std::shared_ptr<VSRG::Difficulty>	 CurrentDiff;
+	std::shared_ptr<VSRG::Song>			 MySong;
+	std::shared_ptr<VSRG::Song>			 LoadedSong;
 	TimingType						 UsedTimingType;
 
-	shared_ptr<Line> Barline;
+    std::shared_ptr<Line> Barline;
 
 	double BarlineOffset;
 	double NoteHeight;
@@ -68,7 +68,7 @@ private:
 	float            SpeedMultiplier;
 	int				 StartMeasure;
 
-	map<int, int> GearBindings;
+    std::map<int, int> GearBindings;
 	int                lastClosest[VSRG::MAX_CHANNELS];
 	VSRG::TrackNote*   CurrentKeysounds[VSRG::MAX_CHANNELS];
 	int                BarlineOffsetKind;
@@ -76,12 +76,12 @@ private:
 	LifeType         lifebar_type;		 
 	ScoreType        scoring_type;
 
-	shared_ptr<AudioStream> Music;
-	shared_ptr<AudioSourceOJM> OJMAudio;
+    std::shared_ptr<AudioStream> Music;
+    std::shared_ptr<AudioSourceOJM> OJMAudio;
 	SoundSample MissSnd;
 	SoundSample FailSnd;
 
-	shared_ptr<ScoreKeeper7K> ScoreKeeper;
+    std::shared_ptr<ScoreKeeper7K> ScoreKeeper;
 
 	EHiddenMode		 RealHiddenMode;
 	float            HideClampLow, HideClampHigh, HideClampFactor;
@@ -118,7 +118,7 @@ private:
 
 	bool    InterpolateTime;
 	bool    AudioCompensation;
-	shared_ptr<BackgroundAnimation> BGA;
+    std::shared_ptr<BackgroundAnimation> BGA;
 	int Random;
 	bool TurntableEnabled;
 	float JudgeOffset;
@@ -186,7 +186,7 @@ public:
 	void SetUserMultiplier(float Multip);
 
 	ScreenGameplay7K();
-	void Init(shared_ptr<VSRG::Song> S, int DifficultyIndex, const GameParameters &Param);
+	void Init(std::shared_ptr<VSRG::Song> S, int DifficultyIndex, const GameParameters &Param);
 	void LoadResources();
 	bool BindKeysToLanes(bool UseTurntable);
 	void InitializeResources();

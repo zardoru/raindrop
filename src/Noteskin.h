@@ -5,7 +5,7 @@ class LuaManager;
 
 class Noteskin
 {
-	static shared_ptr<LuaManager> NoteskinLua;
+	static std::shared_ptr<LuaManager> NoteskinLua;
 	static ScreenGameplay7K* Parent;
 	static double NoteScreenSize;
 	static bool DanglingHeads;

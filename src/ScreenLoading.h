@@ -2,11 +2,11 @@
 
 class ScreenLoading : public Screen
 {
-	shared_ptr<thread> LoadThread;
+    std::shared_ptr<std::thread> LoadThread;
 	bool ThreadInterrupted;
-	atomic<bool> FinishedLoading;
+    std::atomic<bool> FinishedLoading;
 public:
-	ScreenLoading(shared_ptr<Screen> _Next);
+	ScreenLoading(std::shared_ptr<Screen> _Next);
 	void Init() override;
 
 	void OnIntroBegin() override;

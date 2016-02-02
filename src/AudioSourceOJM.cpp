@@ -71,7 +71,7 @@ struct SFM30
 {
 	size_t DataLength;
 	size_t Offset;
-	vector<char> Buffer;
+    std::vector<char> Buffer;
 
 	SFM30()
 	{
@@ -240,7 +240,7 @@ void omc_rearrange(char* buf_io, size_t len)
 {
 	int key = ((len % 17) << 4) + (len % 17);
 	int block_size = len / 17;
-	vector<char> buf_encoded (len);
+    std::vector<char> buf_encoded (len);
 	memcpy(&buf_encoded[0], buf_io, len);
 
 	for (int block = 0; block < 17; block++)
@@ -325,7 +325,7 @@ void AudioSourceOJM::parseM30()
 	size_t sizeLeft;
 	ifile->read(reinterpret_cast<char*>(&Head), sizeof(M30Header));
 
-	vector<char> Buffer(Head.payload_size);
+    std::vector<char> Buffer(Head.payload_size);
 	sizeLeft = Head.payload_size;
 
 	for (int i = 0; i < Head.sample_count; i++)
@@ -344,7 +344,7 @@ void AudioSourceOJM::parseM30()
 			OJMIndex += 1000;
 		else if (Entry.codec_code != 5) continue; // Unknown sample id type.
 
-		vector<char> SampleData (Entry.sample_size);
+        std::vector<char> SampleData (Entry.sample_size);
 		ifile->read(&SampleData[0], Entry.sample_size);
 		
 		if (Head.encryption_flag & 16)
@@ -353,10 +353,10 @@ void AudioSourceOJM::parseM30()
 			F412XOR(&SampleData[0], Entry.sample_size);
 
 		// Sample data is done. Now the bits that are specific to raindrop..
-		auto NewSample = make_shared<SoundSample>();
+		auto NewSample = std::make_shared<SoundSample>();
 
 		SFM30 ToLoad;
-		ToLoad.Buffer = move(SampleData);
+		ToLoad.Buffer = std::move(SampleData);
 		ToLoad.DataLength = Entry.sample_size;
 		
 		OggVorbis_File vf;
@@ -405,7 +405,7 @@ void AudioSourceOJM::parseOMC()
 			continue;
 		}
 
-		vector<char> Buffer (WavHead.chunk_size);
+        std::vector<char> Buffer (WavHead.chunk_size);
 		ifile->read(&Buffer[0], WavHead.chunk_size);
 
 		omc_rearrange(&Buffer[0], WavHead.chunk_size);
@@ -437,10 +437,10 @@ void AudioSourceOJM::parseOMC()
 		Info.channels = WavHead.num_channels;
 
 		SFM30 ToLoad;
-		ToLoad.Buffer = move(Buffer);
+		ToLoad.Buffer = std::move(Buffer);
 		ToLoad.DataLength = WavHead.chunk_size;
 
-		auto NewSample = make_shared<SoundSample>();
+		auto NewSample = std::make_shared<SoundSample>();
 		TemporaryState.File = sf_open_virtual(&M30Interface, SFM_READ, &Info, &ToLoad);
 		TemporaryState.Info = &Info;
 		TemporaryState.Enabled = OJM_WAV;
@@ -469,11 +469,11 @@ void AudioSourceOJM::parseOMC()
 			continue;
 		}
 
-		vector<char> Buffer (OggHead.sample_size);
+        std::vector<char> Buffer (OggHead.sample_size);
 
 		ifile->read(&Buffer[0], OggHead.sample_size);
 
-		auto NewSample = make_shared<SoundSample>();
+		auto NewSample = std::make_shared<SoundSample>();
 
 		SFM30 ToLoad;
 		ToLoad.Buffer = Buffer;
@@ -541,7 +541,7 @@ void AudioSourceOJM::Seek(float Time)
 	// Unused. 
 }
 
-shared_ptr<SoundSample> AudioSourceOJM::GetFromIndex(int index)
+std::shared_ptr<SoundSample> AudioSourceOJM::GetFromIndex(int index)
 {
 	return Arr[index-1];
 }
@@ -573,7 +573,7 @@ bool AudioSourceOJM::Open(const char* f)
 {
 	char sig[4];
 
-	ifile = make_shared<std::ifstream>(f, std::ios::binary);
+	ifile = std::make_shared<std::ifstream>(f, std::ios::binary);
 
 	if (!ifile->is_open())
 	{
@@ -601,7 +601,7 @@ bool AudioSourceOJM::Open(const char* f)
 
 uint32 AudioSourceOJM::Read(short* buffer, size_t count)
 {
-	vector<short> temp_buf(count);
+    std::vector<short> temp_buf(count);
 	size_t read = 0;
 	if (TemporaryState.Enabled == 0)
 		return 0;

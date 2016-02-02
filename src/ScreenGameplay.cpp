@@ -533,7 +533,7 @@ bool ScreenGameplay::Run(double TimeDelta)
 
 	if (ShouldChangeScreenAtEnd && Measure >= CurrentDiff->Measures.size())
 	{
-		auto Eval = make_shared<ScreenEvaluation>();
+		auto Eval = std::make_shared<ScreenEvaluation>();
 		Eval->Init(Evaluation, MySong->SongAuthor, MySong->SongName);
 		Next = Eval;
 		Music->Stop();

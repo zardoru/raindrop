@@ -35,7 +35,7 @@ inline bool operator<(double Beat, const TimingSegment &in) {
 	return Beat < in.Time;
 }
 
-typedef vector<TimingSegment> TimingData;
+typedef std::vector<TimingSegment> TimingData;
 
 struct AutoplaySound : public TimeBased < AutoplaySound, float >
 {
@@ -65,8 +65,8 @@ struct SliceInfo
 
 struct SliceContainer
 {
-	map<int, GString> AudioFiles; // int := snd index, GString := file 
-	map<int, map<int, SliceInfo>> Slices; // 1st int := wav index, 2nd int := snd index, Slice Info, where to cut for 2nd int for wav 1st int
+    std::map<int, GString> AudioFiles; // int := snd index, GString := file 
+    std::map<int, std::map<int, SliceInfo>> Slices; // 1st int := wav index, 2nd int := snd index, Slice Info, where to cut for 2nd int for wav 1st int
 };
 
 namespace Game
@@ -94,7 +94,7 @@ namespace Game
 			uint32 TotalObjects;
 			uint32 TotalScoringObjects;
 
-			map<int, GString> SoundList;
+            std::map<int, GString> SoundList;
 
 			int ID;
 

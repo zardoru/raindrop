@@ -70,8 +70,8 @@ void ScreenGameplay7K::DrawMeasures()
 			return (CurrentVertical - StaticVert) * SpeedMultiplier + JudgmentLinePos;
 		};
 
-		vector<TrackNote>::iterator Start = NotesByChannel[k].begin();
-		vector<TrackNote>::iterator End = NotesByChannel[k].end();
+		auto Start = NotesByChannel[k].begin();
+		auto End = NotesByChannel[k].end();
 
 		if (!HasNegativeScroll)
 		{
@@ -91,7 +91,7 @@ void ScreenGameplay7K::DrawMeasures()
 				Start = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), 0 - Noteskin::GetNoteOffset(), LocPredicate);
 
 			// Locate the first hold that we can draw in this range
-			auto rStart = std::reverse_iterator<vector<TrackNote>::iterator>(Start);
+			auto rStart = std::reverse_iterator<std::vector<TrackNote>::iterator>(Start);
 			for (auto i = rStart; i != NotesByChannel[k].rend(); ++i)
 			{
 				if (i->IsHold() && i->IsVisible()) {

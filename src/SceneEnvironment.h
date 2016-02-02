@@ -15,7 +15,7 @@ namespace Rocket {
 }
 
 struct Animation {
-	function <bool (float Fraction)> Function;
+    std::function <bool (float Fraction)> Function;
 
 	float Time, Duration, Delay;
 	enum EEaseType {
@@ -35,13 +35,13 @@ struct Animation {
 
 class SceneEnvironment
 {
-	shared_ptr<LuaManager> Lua;
-	shared_ptr<ImageList> Images;
-	vector<Drawable2D*> Objects;
-	vector<Drawable2D*> ManagedObjects;
-	vector<Drawable2D*> ExternalObjects;
-	vector<TruetypeFont*> ManagedFonts;
-	vector <Animation> Animations;
+	std::shared_ptr<LuaManager> Lua;
+	std::shared_ptr<ImageList> Images;
+	std::vector<Drawable2D*> Objects;
+	std::vector<Drawable2D*> ManagedObjects;
+	std::vector<Drawable2D*> ExternalObjects;
+	std::vector<TruetypeFont*> ManagedFonts;
+	std::vector <Animation> Animations;
 	bool mFrameSkip;
 	GString mScreenName;
 	GString mInitScript;

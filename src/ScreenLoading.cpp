@@ -11,10 +11,10 @@
 #include "Logging.h"
 
 class LoadScreenThread{
-	atomic<bool>& mFinished;
+    std::atomic<bool>& mFinished;
 	Screen* mScreen;
 public:
-	LoadScreenThread(atomic<bool>& status, Screen* screen) : mFinished(status), mScreen(screen) {};
+	LoadScreenThread(std::atomic<bool>& status, Screen* screen) : mFinished(status), mScreen(screen) {};
 	void DoLoad()
 	{
 		mFinished = false;
@@ -32,7 +32,7 @@ public:
 	}
 };
 
-ScreenLoading::ScreenLoading(shared_ptr<Screen> _Next) : Screen("ScreenLoading", nullptr)
+ScreenLoading::ScreenLoading(std::shared_ptr<Screen> _Next) : Screen("ScreenLoading", nullptr)
 {
 	Next = _Next;
 	LoadThread = nullptr;
@@ -58,7 +58,7 @@ void ScreenLoading::OnIntroBegin()
 
 void ScreenLoading::Init()
 {
-	LoadThread = make_shared<thread>(&LoadScreenThread::DoLoad, LoadScreenThread(FinishedLoading, Next.get()));
+	LoadThread = std::make_shared<std::thread>(&LoadScreenThread::DoLoad, LoadScreenThread(FinishedLoading, Next.get()));
 }
 
 void ScreenLoading::OnExitEnd()

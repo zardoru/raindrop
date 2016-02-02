@@ -12,10 +12,10 @@ Screen::Screen(GString Name)
 	ScreenTime = 0;
 	IntroDuration = 0;
 	ScreenState = StateRunning;
-	Animations = make_shared<SceneEnvironment>(Name.c_str());
+	Animations = std::make_shared<SceneEnvironment>(Name.c_str());
 }
 
-Screen::Screen(GString Name, shared_ptr<Screen> _Parent)
+Screen::Screen(GString Name, std::shared_ptr<Screen> _Parent)
 {
 	Parent = _Parent;
 	Running = false;
@@ -23,7 +23,7 @@ Screen::Screen(GString Name, shared_ptr<Screen> _Parent)
 	ScreenTime = 0;
 	IntroDuration = 0;
 	ScreenState = StateRunning;
-	Animations = make_shared<SceneEnvironment>(Name.c_str());
+	Animations = std::make_shared<SceneEnvironment>(Name.c_str());
 	SkipThisFrame = true;
 }
 

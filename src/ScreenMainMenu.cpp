@@ -149,7 +149,7 @@ void ScreenMainMenu::OnExitEnd()
 {
 	Screen::OnExitEnd();
 
-	Next = make_shared<ScreenSelectMusic>();
+	Next = std::make_shared<ScreenSelectMusic>();
 	Next->Init();
 	ChangeState(StateRunning);
 	Animations->DoEvent("OnRestore");

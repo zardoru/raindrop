@@ -8,8 +8,8 @@
 #include "ImageLoader.h"
 
 std::mutex LoadMutex;
-map<GString, Image*> ImageLoader::Textures;
-map<GString, ImageLoader::UploadData> ImageLoader::PendingUploads;
+std::map<GString, Image*> ImageLoader::Textures;
+std::map<GString, ImageLoader::UploadData> ImageLoader::PendingUploads;
 
 void Image::CreateTexture()
 {
@@ -250,6 +250,8 @@ ImageData ImageLoader::GetDataForImage(GString filename)
 {
 	ImageData out;
 	FIBITMAP *img = FreeImage_Load(FreeImage_GetFileType(filename.c_str()), filename.c_str());
+
+	DebugBreak();
 	
 	if (!img)
 	{
@@ -274,6 +276,8 @@ ImageData ImageLoader::GetDataForImage(GString filename)
 
 ImageData ImageLoader::GetDataForImageFromMemory(const unsigned char* const buffer, size_t len)
 {
+	DebugBreak();
+
 	ImageData out;
 	auto hndl = FreeImage_OpenMemory(const_cast<unsigned char*>(buffer), len);
 	auto bmp = FreeImage_LoadFromMemory(FreeImage_GetFileTypeFromMemory(hndl, len), hndl);

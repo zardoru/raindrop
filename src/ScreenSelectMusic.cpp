@@ -78,7 +78,7 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic")
 	Font = nullptr;
 	PreviewStream = nullptr;
 
-	PreviousPreview = make_shared<Game::Song> ();
+	PreviousPreview = std::make_shared<Game::Song> ();
 	ToPreview = nullptr;
 
 	using Game::SongWheel;
@@ -86,30 +86,30 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic")
 	SongWheel * Wheel = &Game::SongWheel::GetInstance();
 	Wheel->Initialize(GameState::GetInstance().GetSongDatabase());
 
-	Game::SongNotification SongNotifyFunc(bind(&ScreenSelectMusic::OnSongChange, this, _1, _2));
-	Game::SongNotification SongNotifySelectFunc(bind(&ScreenSelectMusic::OnSongSelect, this, _1, _2));
+	Game::SongNotification SongNotifyFunc(std::bind(&ScreenSelectMusic::OnSongChange, this, std::placeholders::_1, std::placeholders::_2));
+	Game::SongNotification SongNotifySelectFunc(std::bind(&ScreenSelectMusic::OnSongSelect, this, std::placeholders::_1, std::placeholders::_2));
 	Wheel->OnSongTentativeSelect = SongNotifyFunc;
 	Wheel->OnSongConfirm = SongNotifySelectFunc;
 
-	Game::ListTransformFunction TransformHFunc(bind(&ScreenSelectMusic::GetListHorizontalTransformation, this, _1));
-	Game::ListTransformFunction TransformVFunc(bind(&ScreenSelectMusic::GetListVerticalTransformation, this, _1));
-	Game::ListTransformFunction TransformPVert(bind(&ScreenSelectMusic::GetListPendingVerticalTransformation, this, _1));
+	Game::ListTransformFunction TransformHFunc(std::bind(&ScreenSelectMusic::GetListHorizontalTransformation, this, std::placeholders::_1));
+	Game::ListTransformFunction TransformVFunc(std::bind(&ScreenSelectMusic::GetListVerticalTransformation, this, std::placeholders::_1));
+	Game::ListTransformFunction TransformPVert(std::bind(&ScreenSelectMusic::GetListPendingVerticalTransformation, this, std::placeholders::_1));
 	Wheel->TransformHorizontal = TransformHFunc;
 	Wheel->TransformListY = TransformVFunc;
 	Wheel->TransformPendingDisplacement = TransformPVert;
 
-	Game::DirectoryChangeNotifyFunction DirChangeNotif(bind(&ScreenSelectMusic::OnDirectoryChange, this));
+	Game::DirectoryChangeNotifyFunction DirChangeNotif(std::bind(&ScreenSelectMusic::OnDirectoryChange, this));
 	Wheel->OnDirectoryChange = DirChangeNotif;
 
-	Game::ItemNotification ItClickNotif(bind(&ScreenSelectMusic::OnItemClick, this, _1, _2, _3, _4));
-	Game::ItemNotification ItHoverNotif(bind(&ScreenSelectMusic::OnItemHover, this, _1, _2, _3, _4));
-	Game::ItemNotification ItHoverLeaveNotif(bind(&ScreenSelectMusic::OnItemHoverLeave, this, _1, _2, _3, _4));
+	Game::ItemNotification ItClickNotif(std::bind(&ScreenSelectMusic::OnItemClick, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
+	Game::ItemNotification ItHoverNotif(std::bind(&ScreenSelectMusic::OnItemHover, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
+	Game::ItemNotification ItHoverLeaveNotif(std::bind(&ScreenSelectMusic::OnItemHoverLeave, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 	Wheel->OnItemClick = ItClickNotif;
 	Wheel->OnItemHover = ItHoverNotif;
 	Wheel->OnItemHoverLeave = ItHoverLeaveNotif;
 
-	Wheel->TransformItem = bind(&ScreenSelectMusic::TransformItem, this, _1, _2, _3, _4);
-	Wheel->TransformString = bind(&ScreenSelectMusic::TransformString, this, _1, _2, _3, _4, _5);
+	Wheel->TransformItem = std::bind(&ScreenSelectMusic::TransformItem, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+	Wheel->TransformString = std::bind(&ScreenSelectMusic::TransformString, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
 
 	if (!SelectSnd)
 	{
@@ -147,18 +147,18 @@ void ScreenSelectMusic::InitializeResources()
 
 	Animations->InitializeUI();
 
-	EventAnimationFunction OnUpClick (bind(LuaEvt, LuaM, "DirUpBtnClick",std::placeholders:: _1));
-	EventAnimationFunction OnUpHover(bind(LuaEvt, LuaM, "DirUpBtnHover", std::placeholders::_1));
-	EventAnimationFunction OnUpHoverLeave(bind(LuaEvt, LuaM, "DirUpBtnHoverLeave", std::placeholders::_1));
+	EventAnimationFunction OnUpClick (std::bind(LuaEvt, LuaM, "DirUpBtnClick",std::placeholders:: _1));
+	EventAnimationFunction OnUpHover(std::bind(LuaEvt, LuaM, "DirUpBtnHover", std::placeholders::_1));
+	EventAnimationFunction OnUpHoverLeave(std::bind(LuaEvt, LuaM, "DirUpBtnHoverLeave", std::placeholders::_1));
 	UpBtn->OnClick = OnUpClick;
 	UpBtn->OnHover = OnUpHover;
 	UpBtn->OnLeave = OnUpHoverLeave;
 
 	BackBtn = new GUI::Button;
 
-	EventAnimationFunction OnBackClick(bind(LuaEvt, LuaM, "BackBtnClick", std::placeholders::_1));
-	EventAnimationFunction OnBackHover(bind(LuaEvt, LuaM, "BackBtnHover", std::placeholders::_1));
-	EventAnimationFunction OnBackHoverLeave(bind(LuaEvt, LuaM, "BackBtnHoverLeave", std::placeholders::_1));
+	EventAnimationFunction OnBackClick(std::bind(LuaEvt, LuaM, "BackBtnClick", std::placeholders::_1));
+	EventAnimationFunction OnBackHover(std::bind(LuaEvt, LuaM, "BackBtnHover", std::placeholders::_1));
+	EventAnimationFunction OnBackHoverLeave(std::bind(LuaEvt, LuaM, "BackBtnHoverLeave", std::placeholders::_1));
 	BackBtn->OnClick = OnBackClick;
 	BackBtn->OnHover = OnBackHover;
 	BackBtn->OnLeave = OnBackHoverLeave;
@@ -246,31 +246,31 @@ float ScreenSelectMusic::GetListHorizontalTransformation(const float Y)
 
 void ScreenSelectMusic::StartGameplayScreen()
 {
-	shared_ptr<ScreenLoading> LoadNext;
-	shared_ptr<Game::Song> MySong = GameState::GetInstance().GetSelectedSongShared();
+    std::shared_ptr<ScreenLoading> LoadNext;
+    std::shared_ptr<Game::Song> MySong = GameState::GetInstance().GetSelectedSongShared();
 	uint8 difindex = GameState::GetInstance().GetDifficultyIndex();
 
 	if (MySong->Mode == MODE_DOTCUR)
 	{
-		auto DotcurGame = make_shared<ScreenGameplay>();
+		auto DotcurGame = std::make_shared<ScreenGameplay>();
 		DotcurGame->Init(static_cast<dotcur::Song*>(MySong.get()), difindex);
 
-		LoadNext = make_shared<ScreenLoading>(DotcurGame);
+		LoadNext = std::make_shared<ScreenLoading>(DotcurGame);
 	}else
 	{
-		auto VSRGGame = make_shared<ScreenGameplay7K>();
+		auto VSRGGame = std::make_shared<ScreenGameplay7K>();
 		
-		VSRGGame->Init(dynamic_pointer_cast<VSRG::Song>(MySong), 
+		VSRGGame->Init(std::dynamic_pointer_cast<VSRG::Song>(MySong), 
 		               difindex, *GameState::GetInstance().GetParameters());
 
-		LoadNext = make_shared<ScreenLoading>(VSRGGame);
+		LoadNext = std::make_shared<ScreenLoading>(VSRGGame);
 	}
 
 	LoadNext->Init();
 	Next = LoadNext;
 }
 
-void ScreenSelectMusic::OnSongSelect(shared_ptr<Game::Song> MySong, uint8 difindex)
+void ScreenSelectMusic::OnSongSelect(std::shared_ptr<Game::Song> MySong, uint8 difindex)
 {
 	// Handle a recently selected song
 
@@ -294,7 +294,7 @@ void ScreenSelectMusic::OnSongSelect(shared_ptr<Game::Song> MySong, uint8 difind
 	SwitchBackGuiPending = true;
 }
 
-void ScreenSelectMusic::OnSongChange(shared_ptr<Game::Song> MySong, uint8 difindex)
+void ScreenSelectMusic::OnSongChange(std::shared_ptr<Game::Song> MySong, uint8 difindex)
 {
 	ClickSnd->Play();
 
@@ -336,7 +336,7 @@ void ScreenSelectMusic::PlayPreview()
 		if (!PreviewStream)
 		{
 			Directory SDir = ToPreview->SongDirectory;
-			PreviewStream = make_shared<AudioStream>();
+			PreviewStream = std::make_shared<AudioStream>();
 
 			if (PreviewStream->Open((SDir / PreviewFile).c_path()))
 			{
@@ -523,7 +523,7 @@ bool ScreenSelectMusic::HandleScrollInput(double xOff, double yOff)
 }
 
 
-void ScreenSelectMusic::TransformItem(int Item, shared_ptr<Game::Song> Song, bool IsSelected, int Index)
+void ScreenSelectMusic::TransformItem(int Item, std::shared_ptr<Game::Song> Song, bool IsSelected, int Index)
 {
 	if (Animations->GetEnv()->CallFunction("TransformItem", 4))
 	{
@@ -535,7 +535,7 @@ void ScreenSelectMusic::TransformItem(int Item, shared_ptr<Game::Song> Song, boo
 	}
 }
 
-void ScreenSelectMusic::TransformString(int Item, shared_ptr<Game::Song> Song, bool IsSelected, int Index, GString text)
+void ScreenSelectMusic::TransformString(int Item, std::shared_ptr<Game::Song> Song, bool IsSelected, int Index, GString text)
 {
 	if (Animations->GetEnv()->CallFunction("TransformString", 5))
 	{
@@ -553,7 +553,7 @@ void ScreenSelectMusic::OnDirectoryChange()
 	Animations->DoEvent("OnDirectoryChange");
 }
 
-void ScreenSelectMusic::OnItemClick(int32 Index, uint32 boundIndex, GString Line, shared_ptr<Game::Song> Selected)
+void ScreenSelectMusic::OnItemClick(int32 Index, uint32 boundIndex, GString Line, std::shared_ptr<Game::Song> Selected)
 {
 	if (Animations->GetEnv()->CallFunction("OnItemClick", 4))
 	{
@@ -565,7 +565,7 @@ void ScreenSelectMusic::OnItemClick(int32 Index, uint32 boundIndex, GString Line
 	}
 }
 
-void ScreenSelectMusic::OnItemHover(int32 Index, uint32 boundIndex, GString Line, shared_ptr<Game::Song> Selected)
+void ScreenSelectMusic::OnItemHover(int32 Index, uint32 boundIndex, GString Line, std::shared_ptr<Game::Song> Selected)
 {
 	if (Animations->GetEnv()->CallFunction("OnItemHover", 4))
 	{
@@ -577,7 +577,7 @@ void ScreenSelectMusic::OnItemHover(int32 Index, uint32 boundIndex, GString Line
 	}
 }
 
-void ScreenSelectMusic::OnItemHoverLeave(int32 Index, uint32 boundIndex, GString Line, shared_ptr<Game::Song> Selected)
+void ScreenSelectMusic::OnItemHoverLeave(int32 Index, uint32 boundIndex, GString Line, std::shared_ptr<Game::Song> Selected)
 {
 	if (Animations->GetEnv()->CallFunction("OnItemHoverLeave", 4))
 	{

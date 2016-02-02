@@ -33,11 +33,11 @@ GameState::GameState()
 	SelectedSong = nullptr;
 	SKeeper7K = nullptr;
 	Database = nullptr;
-	Params = make_shared<GameParameters>();
+	Params = std::make_shared<GameParameters>();
 
 	// TODO: circular references are possible :(
 	Directory SkinsDir(DirectoryPrefix + SkinsPrefix);
-	vector<GString> listing;
+    std::vector<GString> listing;
 	SkinsDir.ListDirectory(listing, Directory::FS_DIR);
 	for (auto s : listing)
 	{
@@ -69,7 +69,7 @@ GString GameState::GetSkinScriptFile(const char* Filename, const GString& skin)
 	return Utility::RemoveExtension(GetSkinFile(Fn, skin));
 }
 
-shared_ptr<Game::Song> GameState::GetSelectedSongShared()
+std::shared_ptr<Game::Song> GameState::GetSelectedSongShared()
 {
 	return SelectedSong;
 }
@@ -90,7 +90,7 @@ Song *GameState::GetSelectedSong()
 	return SelectedSong.get();
 }
 
-void GameState::SetSelectedSong(shared_ptr<Game::Song> Song)
+void GameState::SetSelectedSong(std::shared_ptr<Game::Song> Song)
 {
 	SelectedSong = Song;
 }
@@ -277,7 +277,7 @@ ScoreKeeper7K* GameState::GetScorekeeper7K()
 	return SKeeper7K.get();
 }
 
-void GameState::SetScorekeeper7K(shared_ptr<ScoreKeeper7K> Other)
+void GameState::SetScorekeeper7K(std::shared_ptr<ScoreKeeper7K> Other)
 {
 	SKeeper7K = Other;
 }
