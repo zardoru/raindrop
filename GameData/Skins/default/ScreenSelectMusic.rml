@@ -1,9 +1,9 @@
 <rml>
-	<head> 
+	<head>
 		<link type="text/css" href="raindrop.css"/>
 		<script>
 			Global:GetParameters().HiddenMode = 0
-		
+
 			function activateAuto(elem)
 				if elem.id == "autobtn" then
 					elem.id = "autobtnac"
@@ -13,7 +13,7 @@
 					Global:GetParameters().Autoplay = 0
 				end
 			end
-			
+
 			-- checked is nil or not nil depending on whatever it is.
 			-- it also is on attributes rather than on the element itself (!)
 			function changesetting(setting, val)
@@ -29,17 +29,18 @@
 					Global:GetParameters().Autoplay = val
 				end
 			end
+			
 			function changerate(v)
 				rt = tonumber(v)
 				if rt and rt > 0 then
 					Global:GetParameters().Rate = rt
 				end
 			end
-		
+
 		</script>
-	
+
 	</head>
-	
+
 	<body>
 		<div class="dbox">
 		<h1> Play Options </h1><br/>
