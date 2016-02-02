@@ -13,7 +13,7 @@
 
 struct loaderVSRGEntry_t {
 	const wchar_t* Ext;
-	void (*LoadFunc) (GString filename, GString prefix, VSRG::Song* Out);
+	void (*LoadFunc) (std::string filename, std::string prefix, VSRG::Song* Out);
 } LoadersVSRG [] = {
 	{ L"bms",   NoteLoaderBMS::LoadObjectsFromFile },
 	{ L"bme",   NoteLoaderBMS::LoadObjectsFromFile },
@@ -45,12 +45,12 @@ void SongLoader::LoadSongDCFromDir( Directory songPath, std::vector<dotcur::Song
 {
 
 	bool FoundDCF = false;
-	std::vector<GString> Listing;
+	std::vector<std::string> Listing;
 
 	songPath.ListDirectory(Listing, Directory::FS_REG, "dcf");
 	
 	// First, search for .dcf files.
-	for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
+	for (std::vector<std::string>::iterator i = Listing.begin(); i != Listing.end(); i++)
 	{
 		// found a .dcf- load it.
 		dotcur::Song *New = NoteLoader::LoadObjectsFromFile(songPath.path() + "/" + *i, songPath.path());
@@ -67,14 +67,14 @@ void SongLoader::LoadSongDCFromDir( Directory songPath, std::vector<dotcur::Song
 	if (!FoundDCF && (Configuration::GetConfigf("OggListing") != 0))
 	{
 		dotcur::Song *NewS = nullptr;
-		GString PotentialBG, PotentialBGRelative;
+		std::string PotentialBG, PotentialBGRelative;
 
 		Listing.clear();
 		songPath.ListDirectory(Listing, Directory::FS_REG);
 
-		for (std::vector<GString>::iterator i = Listing.begin(); i != Listing.end(); i++)
+		for (std::vector<std::string>::iterator i = Listing.begin(); i != Listing.end(); i++)
 		{
-			GString Ext = Directory(*i).GetExtension();
+			std::string Ext = Directory(*i).GetExtension();
 			if ( Ext == "ogg" )
 			{
 				bool UsesFilename = false;
@@ -205,7 +205,7 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory
 	fn = Utility::Widen(Filename);
 	sp = Utility::Widen(pref);
 	
-	GString fn_f = Utility::Narrow(sp + fn);
+	std::string fn_f = Utility::Narrow(sp + fn);
 
 	Sng->SongDirectory = Prefix;
 
@@ -260,7 +260,7 @@ void PushVSRGSong(std::vector<VSRG::Song*> &VecOut, VSRG::Song* Sng)
 
 void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*> &VecOut )
 {
-    std::vector<GString> Listing;
+    std::vector<std::string> Listing;
 
 	songPath.ListDirectory(Listing, Directory::FS_REG);
 
@@ -314,7 +314,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 	if (RenewCache)
 	{
 		// First, pack BMS charts together.
-        std::map<GString, VSRG::Song*> bmsk;
+        std::map<std::string, VSRG::Song*> bmsk;
 		VSRG::Song *BMSSong = new VSRG::Song;
 
 		// Every OJN gets its own Song object.
@@ -352,7 +352,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 				}
 
 				// We found a chart with the same title (and subtitle) already.
-				GString key = BMSSong->SongName + BMSSong->Subtitle;
+				std::string key = BMSSong->SongName + BMSSong->Subtitle;
 				if (bmsk.find(key) != bmsk.end())
 				{
 					VSRG::Song *oldSng = bmsk[key];
@@ -454,7 +454,7 @@ void SongLoader::LoadSong7KFromDir( Directory songPath, std::vector<VSRG::Song*>
 
 void SongLoader::GetSongListDC(std::vector<dotcur::Song*> &OutVec, Directory Dir)
 {
-	std::vector <GString> Listing;
+	std::vector <std::string> Listing;
 
 	Dir.ListDirectory(Listing, Directory::FS_DIR);
 	for (auto i = Listing.begin(); i != Listing.end(); ++i)
@@ -467,7 +467,7 @@ void SongLoader::GetSongListDC(std::vector<dotcur::Song*> &OutVec, Directory Dir
 
 void SongLoader::GetSongList7K(std::vector<VSRG::Song*> &OutVec, Directory Dir)
 {
-    std::vector <GString> Listing;
+    std::vector <std::string> Listing;
 
 	Dir.ListDirectory(Listing, Directory::FS_DIR);
 	for (auto i = Listing.begin(); i != Listing.end(); ++i)
@@ -482,7 +482,7 @@ std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const VSRG::Song* Meta, std
 {
     std::shared_ptr<VSRG::Song> Out;
 
-	GString fn = DB->GetDifficultyFilename(CurrentDiff->ID);
+	std::string fn = DB->GetDifficultyFilename(CurrentDiff->ID);
 	*FilenameOut = fn;
 
 	Out = LoadSong7KFromFilename(fn, "", nullptr);

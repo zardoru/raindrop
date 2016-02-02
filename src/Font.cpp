@@ -26,7 +26,7 @@ void Font::Invalidate()
 	/* stub */
 }
 
-void Font::Render(const GString &Text, const Vec2 &Position, const Mat4& Transform)
+void Font::Render(const std::string &Text, const Vec2 &Position, const Mat4& Transform)
 {
 	/* stub */
 }

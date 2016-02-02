@@ -26,7 +26,7 @@ void SongList::AddSong(std::shared_ptr<Game::Song> Song)
 	mChildren.push_back(NewEntry);
 }
 
-void SongList::AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, Directory Dir, GString Name, bool VSRGActive, bool DotcurActive)
+void SongList::AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, Directory Dir, std::string Name, bool VSRGActive, bool DotcurActive)
 {
 	bool EntryWasPushed = false;
 	SongList* NewList = new SongList(this);
@@ -39,11 +39,11 @@ void SongList::AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, Dire
 
 	std::vector<VSRG::Song*> Songs7K;
 	std::vector<dotcur::Song*> SongsDC;
-	std::vector<GString> Listing;
+	std::vector<std::string> Listing;
 
 	Dir.ListDirectory(Listing, Directory::FS_DIR);
 
-	for (std::vector<GString>::iterator i = Listing.begin();
+	for (std::vector<std::string>::iterator i = Listing.begin();
 		i != Listing.end();
 		++i)
 	{
@@ -126,7 +126,7 @@ void SongList::AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, Dire
 void SongList::AddDirectory(std::mutex &loadMutex, SongLoader *Loader, Directory Dir, bool VSRGActive, bool DotcurActive)
 {
 	int idx = Dir.path().find_last_of('/') + 1;
-	GString path;
+	std::string path;
 	if (idx == Dir.path().length() - 1) // it ends with a /
 	{
 		idx = Dir.ParentDirectory().path().find_last_of('/') + 1;
@@ -138,7 +138,7 @@ void SongList::AddDirectory(std::mutex &loadMutex, SongLoader *Loader, Directory
 	AddNamedDirectory(loadMutex, Loader, Dir, path, VSRGActive, DotcurActive);
 }
 
-void SongList::AddVirtualDirectory(GString NewEntryName, Game::Song* List, int Count)
+void SongList::AddVirtualDirectory(std::string NewEntryName, Game::Song* List, int Count)
 {
 	SongList* NewList = new SongList(this);
 
@@ -174,7 +174,7 @@ std::shared_ptr<Game::Song> SongList::GetSongEntry(unsigned int Entry)
 		return NULL;
 }
 
-GString SongList::GetEntryTitle(unsigned int Entry)
+std::string SongList::GetEntryTitle(unsigned int Entry)
 {
 	if (Entry >= mChildren.size())
 		return "";

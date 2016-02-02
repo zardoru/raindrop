@@ -14,7 +14,7 @@ using namespace VSRG;
 	of the chart and the loading is done.
 */
 
-void NoteLoaderFTB::LoadMetadata(GString filename, GString prefix, Song *Out)
+void NoteLoaderFTB::LoadMetadata(std::string filename, std::string prefix, Song *Out)
 {
 #if (!defined _WIN32) || (defined STLP)
 	std::ifstream filein (filename.c_str());
@@ -26,9 +26,9 @@ void NoteLoaderFTB::LoadMetadata(GString filename, GString prefix, Song *Out)
 	if (!filein.is_open())
 		return;
 
-	GString Author;
-	GString Title;
-	GString musName;
+	std::string Author;
+	std::string Title;
+	std::string musName;
 
 	getline(filein, musName);
 	getline(filein, Title);
@@ -42,7 +42,7 @@ void NoteLoaderFTB::LoadMetadata(GString filename, GString prefix, Song *Out)
 	filein.close();
 }
 
-void NoteLoaderFTB::LoadObjectsFromFile(GString filename, GString prefix, Song *Out)
+void NoteLoaderFTB::LoadObjectsFromFile(std::string filename, std::string prefix, Song *Out)
 {
 	std::shared_ptr<VSRG::Difficulty> Diff (new Difficulty());
 	Measure Msr;
@@ -67,7 +67,7 @@ failed:
 
 	while (filein)
 	{
-		GString Line;
+		std::string Line;
 		std::getline(filein, Line);
 
 		if (Line[0] == '#' || Line.length() == 0)

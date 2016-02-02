@@ -74,7 +74,7 @@ const char* sGetStageFile = "SELECT stagefile FROM diffdb WHERE diffid=?";
 #define SC(x) ret=x; if(ret!=SQLITE_OK && ret != SQLITE_DONE) {Log::Printf("sqlite: %ls (code %d)\n",Utility::Widen(sqlite3_errmsg(db)).c_str(), ret); Utility::DebugBreak(); }
 #define SCS(x) ret=x; if(ret!=SQLITE_DONE && ret != SQLITE_ROW) {Log::Printf("sqlite: %ls (code %d)\n",Utility::Widen(sqlite3_errmsg(db)).c_str(), ret); Utility::DebugBreak(); }
 
-SongDatabase::SongDatabase(GString Database)
+SongDatabase::SongDatabase(std::string Database)
 {
 	int ret = sqlite3_open_v2(Database.c_str(), &db, SQLITE_OPEN_FULLMUTEX | SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
 
@@ -148,7 +148,7 @@ int SongDatabase::InsertFilename(Directory Fn)
 		// Update the last-modified-time of this file, and its hash if it has changed.
 		if (lmt != lastLmt)
 		{
-			GString Hash = Utility::GetSha256ForFile(Fn);
+			std::string Hash = Utility::GetSha256ForFile(Fn);
 			SC(sqlite3_bind_int(st_UpdateLMT, 1, lastLmt));
 			SC(sqlite3_bind_text(st_UpdateLMT, 2, Hash.c_str(), Hash.length(), SQLITE_STATIC));
 			SC(sqlite3_bind_text(st_UpdateLMT, 3, Fn.c_path(), Fn.path().length(), SQLITE_STATIC));
@@ -157,7 +157,7 @@ int SongDatabase::InsertFilename(Directory Fn)
 		}
 	}else
 	{
-		GString Hash = Utility::GetSha256ForFile(Fn);
+		std::string Hash = Utility::GetSha256ForFile(Fn);
 
 		// There's no entry, got to insert it.
 		SC(sqlite3_bind_text(st_FilenameInsertQuery, 1, Fn.c_path(), Fn.path().length(), SQLITE_STATIC));
@@ -187,7 +187,7 @@ void SongDatabase::ClearDifficulties(int SongID)
 }
 
 // returns if difficulty exists in the database. And difficulty ID.
-bool SongDatabase::DifficultyExists(int FileID, GString DifficultyName, int *IDOut)
+bool SongDatabase::DifficultyExists(int FileID, std::string DifficultyName, int *IDOut)
 {
 	int ret;
 	SC(sqlite3_bind_int (st_GetDiffIDFile, 1, FileID));
@@ -293,13 +293,13 @@ void SongDatabase::AddDifficulty(int SongID, Directory Filename, Game::Song::Dif
 	Diff->ID = DiffID;
 }
 
-GString SongDatabase::GetDifficultyFilename (int ID)
+std::string SongDatabase::GetDifficultyFilename (int ID)
 {
 	int ret;
 	SC(sqlite3_bind_int(st_GetDiffFilename, 1, ID));
 	SCS(sqlite3_step(st_GetDiffFilename));
 
-	GString out = (char *)sqlite3_column_text(st_GetDiffFilename, 0);
+	std::string out = (char *)sqlite3_column_text(st_GetDiffFilename, 0);
 	SC(sqlite3_reset(st_GetDiffFilename));
 	return out;
 }
@@ -338,10 +338,10 @@ void SongDatabase::EndTransaction()
 	sqlite3_exec(db, "COMMIT;", NULL, NULL, &tail);
 }
 
-GString SongDatabase::GetArtistForDifficulty(int ID)
+std::string SongDatabase::GetArtistForDifficulty(int ID)
 {
 	int rs;
-	GString out;
+	std::string out;
 
 	sqlite3_bind_int(st_GetDiffAuthor, 1, ID);
 	rs = sqlite3_step(st_GetDiffAuthor);
@@ -458,20 +458,20 @@ int SongDatabase::GetSongIDForFile(Directory File, VSRG::Song* In)
 	return Out;
 }
 
-GString SongDatabase::GetStageFile(int DiffID)
+std::string SongDatabase::GetStageFile(int DiffID)
 {
 	int ret;
 	SC(sqlite3_bind_int(st_GetStageFile, 1, DiffID));
 	SCS(sqlite3_step(st_GetStageFile));
 
 	const char* sOut = (const char*)sqlite3_column_text(st_GetStageFile, 0);
-	GString Out = sOut ? sOut : "";
+	std::string Out = sOut ? sOut : "";
 
 	SC(sqlite3_reset(st_GetStageFile));
 	return Out;
 }
 
-void SongDatabase::GetPreviewInfo(int SongID, GString &Filename, float &PreviewStart)
+void SongDatabase::GetPreviewInfo(int SongID, std::string &Filename, float &PreviewStart)
 {
 	int ret;
 	SC(sqlite3_bind_int(st_GetPreviewInfo, 1, SongID));
@@ -480,7 +480,7 @@ void SongDatabase::GetPreviewInfo(int SongID, GString &Filename, float &PreviewS
 	const char* sOut = (const char*)sqlite3_column_text(st_GetPreviewInfo, 0);
 	float fOut = sqlite3_column_double(st_GetPreviewInfo, 1);
 
-	GString Out = sOut ? sOut : "";
+	std::string Out = sOut ? sOut : "";
 
 	SC(sqlite3_reset(st_GetPreviewInfo));
 	Filename = Out;

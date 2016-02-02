@@ -173,17 +173,17 @@ bool AudioSourceOGG::HasDataLeft()
 	return mIsDataLeft;
 }
 
-GString GetOggTitle(GString file)
+std::string GetOggTitle(std::string file)
 {
 	OggVorbis_File f;
-	GString result = "";
+	std::string result = "";
 	if (ov_fopen(file.c_str(), &f) == 0)
 	{
 		vorbis_comment *comment = ov_comment(&f, -1);
 
 		for (int i = 0; i < comment->comments; i++)
 		{
-			GString user_comment = comment->user_comments[i];
+			std::string user_comment = comment->user_comments[i];
 			auto splitvec = Utility::TokenSplit(user_comment, "=");
 			if (splitvec[0] == "TITLE")
 			{

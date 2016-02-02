@@ -25,8 +25,8 @@ namespace LuaAnimFuncs
 
 	int GetSkinConfigF(lua_State *L)
 	{
-		GString Key = luaL_checkstring(L, 1);
-		GString Namespace = luaL_checkstring(L, 2);
+		std::string Key = luaL_checkstring(L, 1);
+		std::string Namespace = luaL_checkstring(L, 2);
 
 		lua_pushnumber(L, Configuration::GetSkinConfigf(Key, Namespace));
 		return 1;
@@ -34,8 +34,8 @@ namespace LuaAnimFuncs
 
 	int GetSkinConfigS(lua_State *L)
 	{
-		GString Key = luaL_checkstring(L, 1);
-		GString Namespace = luaL_checkstring(L, 2);
+		std::string Key = luaL_checkstring(L, 1);
+		std::string Namespace = luaL_checkstring(L, 2);
 
 		lua_pushstring(L, Configuration::GetSkinConfigs(Key, Namespace).c_str());
 		return 1;
@@ -44,8 +44,8 @@ namespace LuaAnimFuncs
 	int Require(lua_State *L)
 	{
 		LuaManager *Lua = GetObjectFromState<LuaManager>(L, "Luaman");
-		GString Request = luaL_checkstring(L, 1);
-		GString File = GameState::GetInstance().GetSkinScriptFile(Request.c_str(), GameState::GetInstance().GetSkin());
+		std::string Request = luaL_checkstring(L, 1);
+		std::string File = GameState::GetInstance().GetSkinScriptFile(Request.c_str(), GameState::GetInstance().GetSkin());
 		lua_pushboolean(L, Lua->Require(File));
 		return 1;
 	}
@@ -53,8 +53,8 @@ namespace LuaAnimFuncs
 	int FallbackRequire(lua_State *L)
 	{
 		LuaManager *Lua = GetObjectFromState<LuaManager>(L, "Luaman");
-		GString file = luaL_checkstring(L, 1);
-		GString skin = GameState::GetInstance().GetFirstFallbackSkin();
+		std::string file = luaL_checkstring(L, 1);
+		std::string skin = GameState::GetInstance().GetFirstFallbackSkin();
 		if (lua_isstring(L, 2) && lua_tostring(L, 2))
 			skin = luaL_checkstring(L, 2);
 		
@@ -76,28 +76,28 @@ namespace LuaAnimFuncs
 
 	int GetSkinFile(lua_State *L)
 	{
-		GString Out = GameState::GetInstance().GetSkinFile(GString(luaL_checkstring(L, 1)), GameState::GetInstance().GetSkin());
+		std::string Out = GameState::GetInstance().GetSkinFile(std::string(luaL_checkstring(L, 1)), GameState::GetInstance().GetSkin());
 		lua_pushstring(L, Out.c_str());
 		return 1;
 	}
 
 	int GetFallbackFile(lua_State *L)
 	{
-		GString Out = GameState::GetInstance().GetFallbackSkinFile(GString(luaL_checkstring(L, 1)));
+		std::string Out = GameState::GetInstance().GetFallbackSkinFile(std::string(luaL_checkstring(L, 1)));
 		lua_pushstring(L, Out.c_str());
 		return 1;
 	}
 }
 
 // Wrapper functions
-void SetImage(Sprite *O, GString dir)
+void SetImage(Sprite *O, std::string dir)
 {
 	O->SetImage(GameState::GetInstance().GetSkinImage(dir));
 	if (O->GetImage() == nullptr)
 		Log::Printf("File %s could not be loaded.\n", dir.c_str());
 }
 
-GString GetImage(const Sprite *O)
+std::string GetImage(const Sprite *O)
 {
 	return O->GetImageFilename();
 }
@@ -112,7 +112,7 @@ void SetPosition(Sprite *O, float px, float py)
 	O->SetPosition(px, py);
 }
 
-void LoadBmFont(BitmapFont* B, GString Fn, float CellWidth, float CellHeight, float CharWidth, float CharHeight, int startChar)
+void LoadBmFont(BitmapFont* B, std::string Fn, float CellWidth, float CellHeight, float CharWidth, float CharHeight, int startChar)
 {
 	Vec2 Size(CharWidth, CharHeight);
 	Vec2 CellSize(CellWidth, CellHeight);
@@ -345,7 +345,7 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 		.addFunction("GetLength", &Font::GetHorizontalLength)
 		.endClass()
 		.deriveClass <TruetypeFont, Font>("TruetypeFont")
-		.addConstructor <void(*) (GString, float)>()
+		.addConstructor <void(*) (std::string, float)>()
 		.endClass()
 		.deriveClass <BitmapFont, Font> ("BitmapFont")
 		.addConstructor<void(*)()>()

@@ -5,7 +5,7 @@
 #include "Song7K.h"
 #include "NoteLoader7K.h"
 
-typedef std::vector<GString> SplitResult;
+typedef std::vector<std::string> SplitResult;
 
 using namespace VSRG;
 
@@ -47,14 +47,14 @@ struct OsuLoadInfo
 	int last_sound_index;
 	Song *OsuSong;
 	std::shared_ptr<VSRG::OsuManiaTimingInfo> TimingInfo;
-	std::map <GString, int> Sounds;
+	std::map <std::string, int> Sounds;
 	std::vector<HitsoundSectionData> HitsoundSections;
 	std::shared_ptr<VSRG::Difficulty> Diff;
-	GString DefaultSampleset;
+	std::string DefaultSampleset;
 
 	bool ReadAModeTag;
 
-    std::vector<NoteData> Notes[MAX_CHANNELS];
+	std::vector<NoteData> Notes[MAX_CHANNELS];
 	int Line;
 
 	double GetBeatspaceAt(double T)
@@ -113,10 +113,10 @@ struct OsuLoadInfo
 
 /* osu!mania loader. credits to wanwan159, woc2006, Zorori and the author of AIBat for helping me understand this. */
 
-bool ReadGeneral (GString line, OsuLoadInfo* Info)
+bool ReadGeneral (std::string line, OsuLoadInfo* Info)
 {
-	GString Command = line.substr(0, line.find_first_of(" ")); // Lines are Information:<space>Content
-	GString Content = line.substr(line.find_first_of(":") + 1);
+	std::string Command = line.substr(0, line.find_first_of(" ")); // Lines are Information:<space>Content
+	std::string Content = line.substr(line.find_first_of(":") + 1);
 
 	Content = Content.substr(Content.find_first_not_of(" "));
 
@@ -162,7 +162,7 @@ bool ReadGeneral (GString line, OsuLoadInfo* Info)
 	return true;
 }
 
-void ReadMetadata (GString line, OsuLoadInfo* Info)
+void ReadMetadata (std::string line, OsuLoadInfo* Info)
 {
 	auto Command = line.substr(0, line.find_first_of(":")); // Lines are Information:Content
 	auto Content = line.substr(line.find_first_of(":") + 1, line.length() - line.find_first_of(":"));
@@ -196,10 +196,10 @@ void ReadMetadata (GString line, OsuLoadInfo* Info)
 	}
 }
 
-void ReadDifficulty (GString line, OsuLoadInfo* Info)
+void ReadDifficulty (std::string line, OsuLoadInfo* Info)
 {
-	GString Command = line.substr(0, line.find_first_of(":")); // Lines are Information:Content
-	GString Content = line.substr(line.find_first_of(":") + 1, line.length() - line.find_first_of(":"));
+	std::string Command = line.substr(0, line.find_first_of(":")); // Lines are Information:Content
+	std::string Content = line.substr(line.find_first_of(":") + 1, line.length() - line.find_first_of(":"));
 	Utility::Trim(Content);
 
 	// We ignore everything but the key count!
@@ -221,7 +221,7 @@ void ReadDifficulty (GString line, OsuLoadInfo* Info)
 
 }
 
-void ReadEvents (GString line, OsuLoadInfo* Info)
+void ReadEvents (std::string line, OsuLoadInfo* Info)
 {
 	auto Spl = Utility::TokenSplit(line);
 
@@ -253,7 +253,7 @@ void ReadEvents (GString line, OsuLoadInfo* Info)
 	}
 }
 
-void ReadTiming (GString line, OsuLoadInfo* Info)
+void ReadTiming (std::string line, OsuLoadInfo* Info)
 {
 	double Value;
 	bool IsInherited;
@@ -305,7 +305,7 @@ int GetTrackFromPosition(float Position, int Channels)
 	return static_cast<int>(Position / Step);
 }
 
-GString SamplesetFromConstant(int Sampleset)
+std::string SamplesetFromConstant(int Sampleset)
 {
 	switch (Sampleset)
 	{
@@ -328,10 +328,10 @@ GString SamplesetFromConstant(int Sampleset)
 
 	SampleSetAddition is an abomination on a VSRG - so it's only left in for informative purposes.
 */
-GString GetSampleFilename(OsuLoadInfo *Info, SplitResult &Spl, int NoteType, int Hitsound, float Time)
+std::string GetSampleFilename(OsuLoadInfo *Info, SplitResult &Spl, int NoteType, int Hitsound, float Time)
 {
 	int SampleSet = 0, SampleSetAddition, CustomSample = 0;
-	GString SampleFilename;
+	std::string SampleFilename;
 
 	if (!Spl.size()) // Handle this properly, eventually.
 		return "normal-hitnormal.wav";
@@ -379,7 +379,7 @@ GString GetSampleFilename(OsuLoadInfo *Info, SplitResult &Spl, int NoteType, int
 		SampleSet = SampleSetAddition = CustomSample = 0;
 	}
 
-	GString SampleSetGString;
+	std::string SampleSetGString;
 
 	if (SampleSet)
 	{
@@ -387,7 +387,7 @@ GString GetSampleFilename(OsuLoadInfo *Info, SplitResult &Spl, int NoteType, int
 		SampleSetGString = SamplesetFromConstant(SampleSet);
 	}else
 	{
-		// get sampleset GString from sampleset active at starttime
+		// get sampleset std::string from sampleset active at starttime
 		int Sampleset = -1;
 
 		for (int i = 0; i < (int)Info->HitsoundSections.size() - (int)1; i++)
@@ -415,12 +415,12 @@ GString GetSampleFilename(OsuLoadInfo *Info, SplitResult &Spl, int NoteType, int
 		}
 	}
 
-	GString CustomSampleGString;
+	std::string CustomSampleGString;
 
 	if (CustomSample)
 		CustomSampleGString = Utility::IntToStr(CustomSample);
 
-	GString HitsoundGString;
+	std::string HitsoundGString;
 
 	if (Hitsound)
 	{
@@ -453,7 +453,7 @@ GString GetSampleFilename(OsuLoadInfo *Info, SplitResult &Spl, int NoteType, int
 	return SampleFilename;
 }
 
-void ReadObjects (GString line, OsuLoadInfo* Info)
+void ReadObjects (std::string line, OsuLoadInfo* Info)
 {
 	auto Spl = Utility::TokenSplit(line);
 
@@ -534,7 +534,7 @@ void ReadObjects (GString line, OsuLoadInfo* Info)
 
 	Hitsound = atoi(Spl[4].c_str());
 
-	GString Sample = GetSampleFilename(Info, Spl2, NoteType, Hitsound, startTime);
+	std::string Sample = GetSampleFilename(Info, Spl2, NoteType, Hitsound, startTime);
 
 	if (Sample.length())
 	{
@@ -556,7 +556,7 @@ void ReadObjects (GString line, OsuLoadInfo* Info)
 void MeasurizeFromTimingData(OsuLoadInfo *Info)
 {
 	// Keep them at the order they are declared so they don't affect the applied hitsounds.
-    std::stable_sort(Info->HitsoundSections.begin(), Info->HitsoundSections.end());
+	std::stable_sort(Info->HitsoundSections.begin(), Info->HitsoundSections.end());
 
 	for (auto i = Info->HitsoundSections.begin(); i != Info->HitsoundSections.end(); ++i)
 	{
@@ -647,7 +647,7 @@ void Offsetize(OsuLoadInfo *Info)
 
 	for (auto i = Info->HitsoundSections.begin();
 		 i != Info->HitsoundSections.end();
-	     ++i)
+		 ++i)
 	{
 		i->Time -= Diff->Offset;
 	}
@@ -664,7 +664,7 @@ enum osuReadingMode
 	RHitobjects
 };
 
-void SetReadingMode(GString& Line, osuReadingMode& ReadingMode)
+void SetReadingMode(std::string& Line, osuReadingMode& ReadingMode)
 {
 	if (Line == "[General]")
 	{
@@ -699,7 +699,7 @@ void CopyTimingData(OsuLoadInfo* Info)
 	}
 }
 
-void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *Out)
+void NoteLoaderOM::LoadObjectsFromFile(std::string filename, std::string prefix, Song *Out)
 {
 #if (!defined _WIN32) || (defined STLP)
 	std::ifstream filein (filename.c_str());
@@ -735,7 +735,7 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 		and a set is implied using folders.
 	*/
 
-	GString Line;
+	std::string Line;
 
 	getline(filein, Line);
 	int version = -1;
@@ -771,7 +771,7 @@ void NoteLoaderOM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 			if (ReadingMode != ReadingModeOld || ReadingMode == RNotKnown) // Skip this line since it changed modes, or it's not a valid section yet
 			{
 				if (ReadingModeOld == RTiming)
-                    std::stable_sort(Info.HitsoundSections.begin(), Info.HitsoundSections.end());
+					std::stable_sort(Info.HitsoundSections.begin(), Info.HitsoundSections.end());
 				if (ReadingModeOld == RGeneral)
 					if (!Info.ReadAModeTag)
 						throw std::exception("Not an osu!mania chart.");

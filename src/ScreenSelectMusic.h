@@ -53,12 +53,12 @@ class ScreenSelectMusic : public Screen
 	void OnSongSelect(std::shared_ptr<Game::Song> MySong, uint8_t difindex);
 
 	void OnDirectoryChange();
-	void OnItemClick(int32_t Index, uint32_t boundIndex, GString Line, std::shared_ptr<Game::Song> Selected);
-	void OnItemHover(int32_t Index, uint32_t boundIndex, GString Line, std::shared_ptr<Game::Song> Selected);
-	void OnItemHoverLeave(int32_t Index, uint32_t boundIndex, GString Line, std::shared_ptr<Game::Song> Selected);
+	void OnItemClick(int32_t Index, uint32_t boundIndex, std::string Line, std::shared_ptr<Game::Song> Selected);
+	void OnItemHover(int32_t Index, uint32_t boundIndex, std::string Line, std::shared_ptr<Game::Song> Selected);
+	void OnItemHoverLeave(int32_t Index, uint32_t boundIndex, std::string Line, std::shared_ptr<Game::Song> Selected);
 
 	void TransformItem(int Item, std::shared_ptr<Game::Song> Song, bool IsSelected, int ListItem);
-	void TransformString(int Item, std::shared_ptr<Game::Song> Song, bool IsSelected, int ListItem, GString text);
+	void TransformString(int Item, std::shared_ptr<Game::Song> Song, bool IsSelected, int ListItem, std::string text);
 	void SwitchUpscroll(bool NewUpscroll);
 public:
 	ScreenSelectMusic();

@@ -3,7 +3,7 @@
 #include "GameGlobal.h"
 #include "Song7K.h"
 
-float CfgValNPS(GString name, float defaultvalue)
+float CfgValNPS(std::string name, float defaultvalue)
 {
 	float ret = Configuration::GetConfigf(name, "NPS");
 	if (!ret) {
@@ -59,7 +59,7 @@ public:
 		return datapoints;
 	}
 
-	GString GetSVGText(int diffIndex, double intervalduration = 1, double peakMargin = 1.2)
+	std::string GetSVGText(int diffIndex, double intervalduration = 1, double peakMargin = 1.2)
 	{
 		std::stringstream out;
         std::vector<int> dataPoints = GetDataPoints(diffIndex, intervalduration);
@@ -85,7 +85,7 @@ public:
 		Vec2 TL(GraphXOffset, GraphYOffset);
 		BR += BL;
 
-		GString DiffAuth = Song->GetDifficulty(diffIndex)->Author;
+		std::string DiffAuth = Song->GetDifficulty(diffIndex)->Author;
 
 		if (!DiffAuth.length())
 			DiffAuth = "an anonymous charter";
@@ -157,7 +157,7 @@ void ConvertToNPSGraph(VSRG::Song *Sng, Directory PathOut)
 		Directory Sn = Sng->SongName;
 		Sn.Normalize(true);
 
-		GString name = Utility::Format("%s/ %s (%s) - %s.svg", PathOut.c_path(), Sn.c_path(), Diff->Name, Diff->Author);
+		std::string name = Utility::Format("%s/ %s (%s) - %s.svg", PathOut.c_path(), Sn.c_path(), Diff->Name, Diff->Author);
 
 		out.open(name.c_str());
 

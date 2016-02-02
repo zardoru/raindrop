@@ -1,5 +1,7 @@
 #pragma once
 
+#define _USE_MATH_DEFINES
+
 #ifdef NIDEBUG
 #undef _HAS_ITERATOR_DEBUGGING
 #endif
@@ -81,10 +83,9 @@ namespace std {
 #include <cstdlib>
 #include <ctime>
 
-// #include <boost\gil\extension\io\bmp_all.hpp>
-// #include <boost\gil\extension\io\png_all.hpp>
-// #include <boost\gil\extension\io\jpeg_all.hpp>
-
+#include <boost\gil\extension\io\bmp_all.hpp>
+#include <boost\gil\extension\io\png_all.hpp>
+#include <boost\gil\extension\io\jpeg_all.hpp>
 #include <boost\program_options.hpp>
 #include <boost\interprocess\ipc\message_queue.hpp>
 
@@ -129,16 +130,6 @@ extern "C" {
 using Vec2 = glm::vec2;
 using Vec3 = glm::vec3;
 using Mat4 = glm::mat4;
-
-using GString = std::string;
-
-extern float *PInfinity;
-
-#define Infinity *PInfinity
-
-#ifndef DARWIN
-#define M_PI 3.14159265358979323846
-#endif
 
 template
 <class T>
@@ -215,32 +206,32 @@ namespace Utility
 {
     void DebugBreak();
     bool IsNumeric(const char* s);
-    GString RelativeToPath(GString Filename);
-    GString RemoveExtension(GString Fn);
-    bool FileExists(GString Filename);
-    std::wstring Widen(GString Line);
-    GString Narrow(std::wstring Line);
-    GString SJIStoU8(GString Line);
-    void CheckDir(GString Dirname);
-    int GetLMT(GString Path);
-    GString GetSha256ForFile(GString Filename);
-    GString IntToStr(int num);
-    GString CharToStr(char c);
-    void RemoveFilenameIllegalCharacters(GString &S, bool removeSlash, bool noAbsolute = true);
+    std::string RelativeToPath(std::string Filename);
+    std::string RemoveExtension(std::string Fn);
+    bool FileExists(std::string Filename);
+    std::wstring Widen(std::string Line);
+    std::string Narrow(std::wstring Line);
+    std::string SJIStoU8(std::string Line);
+    void CheckDir(std::string Dirname);
+    int GetLMT(std::string Path);
+    std::string GetSha256ForFile(std::string Filename);
+    std::string IntToStr(int num);
+    std::string CharToStr(char c);
+    void RemoveFilenameIllegalCharacters(std::string &S, bool removeSlash, bool noAbsolute = true);
 
-    GString Format(GString str, ...);
+    std::string Format(std::string str, ...);
 
 
-    std::vector<GString> TokenSplit(const GString &str, const GString &token = ",", bool compress = false);
+    std::vector<std::string> TokenSplit(const std::string &str, const std::string &token = ",", bool compress = false);
 
-    GString Trim(GString& str);
-    GString ReplaceAll(GString& str, const GString& seq, const GString what);
-    GString ToLower(GString& str); // Caveat: only for ascii purposes.
+    std::string Trim(std::string& str);
+    std::string ReplaceAll(std::string& str, const std::string& seq, const std::string what);
+    std::string ToLower(std::string& str); // Caveat: only for ascii purposes.
 
     template <class T>
-    GString Join(const T& iterable, const GString& seq)
+    std::string Join(const T& iterable, const std::string& seq)
     {
-        GString ret;
+        std::string ret;
         for (auto s = iterable.begin(); s != iterable.end(); ++s)
         {
             auto next = s; ++next;
@@ -302,6 +293,6 @@ inline T clamp_to_interval(const T& value, const T& target, const T& interval)
 }
 
 int LCM(const std::vector<int> &Set);
-double latof(GString s);
+double latof(std::string s);
 
 #include "directory.h"

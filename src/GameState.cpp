@@ -12,10 +12,10 @@
 
 #include "NoteLoader7K.h"
 
-#define DirectoryPrefix GString("GameData/")
-#define SkinsPrefix GString("Skins/")
-#define SongsPrefix GString("Songs")
-#define ScriptsPrefix GString("Scripts/")
+#define DirectoryPrefix std::string("GameData/")
+#define SkinsPrefix std::string("Skins/")
+#define SongsPrefix std::string("Songs")
+#define ScriptsPrefix std::string("Scripts/")
 
 using namespace Game;
 
@@ -37,7 +37,7 @@ GameState::GameState()
 
 	// TODO: circular references are possible :(
 	Directory SkinsDir(DirectoryPrefix + SkinsPrefix);
-    std::vector<GString> listing;
+    std::vector<std::string> listing;
 	SkinsDir.ListDirectory(listing, Directory::FS_DIR);
 	for (auto s : listing)
 	{
@@ -45,7 +45,7 @@ GameState::GameState()
 		fallback.open((SkinsDir / s.c_str() / "fallback").c_path());
 		if (fallback.is_open() && s != "default")
 		{
-			GString ln;
+			std::string ln;
 			while (getline(fallback, ln))
 				if (Utility::ToLower(ln) != Utility::ToLower(s))
 				{
@@ -58,11 +58,11 @@ GameState::GameState()
 	}
 }
 
-GString GameState::GetSkinScriptFile(const char* Filename, const GString& skin)
+std::string GameState::GetSkinScriptFile(const char* Filename, const std::string& skin)
 {
-	GString Fn = Filename;
+	std::string Fn = Filename;
 
-	if (Fn.find(".lua") == GString::npos)
+	if (Fn.find(".lua") == std::string::npos)
 		Fn += ".lua";
 
 	// Since dots are interpreted as "look into this directory", we want to eliminate the extra .lua for require purposes.
@@ -74,7 +74,7 @@ std::shared_ptr<Game::Song> GameState::GetSelectedSongShared()
 	return SelectedSong;
 }
 
-GString GameState::GetFirstFallbackSkin()
+std::string GameState::GetFirstFallbackSkin()
 {
 	return Fallback[GetSkin()][0];
 }
@@ -95,9 +95,9 @@ void GameState::SetSelectedSong(std::shared_ptr<Game::Song> Song)
 	SelectedSong = Song;
 }
 
-GString GameState::GetSkinFile(const GString &Name, const GString &Skin)
+std::string GameState::GetSkinFile(const std::string &Name, const std::string &Skin)
 {
-	GString Test = GetSkinPrefix(Skin) + Name;
+	std::string Test = GetSkinPrefix(Skin) + Name;
 
 	if (Utility::FileExists(Test))
 		return Test;
@@ -114,7 +114,7 @@ GString GameState::GetSkinFile(const GString &Name, const GString &Skin)
 	return Test;
 }
 
-GString GameState::GetSkinFile(const GString& Name)
+std::string GameState::GetSkinFile(const std::string& Name)
 {
 	return GetSkinFile(Name, GetSkin());
 }
@@ -145,28 +145,28 @@ GameWindow* GameState::GetWindow()
 	return &WindowFrame;
 }
 
-GString GameState::GetDirectoryPrefix()
+std::string GameState::GetDirectoryPrefix()
 {
 	return DirectoryPrefix;
 }
 
-GString GameState::GetSkinPrefix()
+std::string GameState::GetSkinPrefix()
 {
 	// I wonder if a directory transversal is possible. Or useful, for that matter.
 	return GetSkinPrefix(GetSkin());
 }
 
-GString GameState::GetSkinPrefix(const GString& skin)
+std::string GameState::GetSkinPrefix(const std::string& skin)
 {
 	return DirectoryPrefix + SkinsPrefix + skin + "/";
 }
 
-void GameState::SetSkin(GString Skin)
+void GameState::SetSkin(std::string Skin)
 {
 	CurrentSkin = Skin;
 }
 
-GString GameState::GetScriptsDirectory()
+std::string GameState::GetScriptsDirectory()
 {
 	return DirectoryPrefix + ScriptsPrefix;
 }
@@ -176,9 +176,9 @@ SongDatabase* GameState::GetSongDatabase()
 	return Database;
 }
 
-GString GameState::GetFallbackSkinFile(const GString &Name)
+std::string GameState::GetFallbackSkinFile(const std::string &Name)
 {
-	GString Skin = GetSkin();
+	std::string Skin = GetSkin();
 
 	if (Fallback.find(Skin) != Fallback.end())
 	{
@@ -190,7 +190,7 @@ GString GameState::GetFallbackSkinFile(const GString &Name)
 	return GetSkinPrefix() + Name;
 }
 
-Image* GameState::GetSkinImage(const GString& Path)
+Image* GameState::GetSkinImage(const std::string& Path)
 {
 	/* Special paths */
 	if (Path == "STAGEFILE")
@@ -203,7 +203,7 @@ Image* GameState::GetSkinImage(const GString& Path)
 
 				if (Song->Difficulties.size() > GetDifficultyIndex())
 				{
-					GString File = Database->GetStageFile(Song->Difficulties.at(GetDifficultyIndex())->ID);
+					std::string File = Database->GetStageFile(Song->Difficulties.at(GetDifficultyIndex())->ID);
 					Directory toLoad;
 
 					// Oh so it's loaded and it's not in the database, fine.
@@ -267,7 +267,7 @@ bool GameState::SkinSupportsChannelCount(int Count)
 	return Configuration::ListExists(nstr);
 }
 
-GString GameState::GetSkin()
+std::string GameState::GetSkin()
 {
 	return CurrentSkin;
 }

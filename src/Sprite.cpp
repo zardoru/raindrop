@@ -144,10 +144,10 @@ void Sprite::BindTextureVBO()
 	UvBuffer->Bind();
 }
 
-GString Sprite::GetImageFilename() const
+std::string Sprite::GetImageFilename() const
 {
 	if (mImage)
 		return mImage->fname;
 	else
-		return GString();
+		return std::string();
 }

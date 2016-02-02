@@ -163,12 +163,12 @@ const int NUM_OF_STATIC_SPECIAL_KEYS = sizeof (StaticSpecialKeys) / sizeof (sk_s
 
 std::vector<sk_s> SpecialKeys;
 
-int KeyTranslate(GString K)
+int KeyTranslate(std::string K)
 {
 	for (auto i = 0U; i < SpecialKeys.size(); i++)
 	{
-		GString Key = K; Utility::ToLower(Key);
-		GString Target = GString(SpecialKeys.at(i).KeyString);  Utility::ToLower(Target);
+		std::string Key = K; Utility::ToLower(Key);
+		std::string Target = std::string(SpecialKeys.at(i).KeyString);  Utility::ToLower(Target);
 		if (Key == Target)
 			return SpecialKeys.at(i).boundkey;
 	}
@@ -226,8 +226,8 @@ int getIndexForKeytype(const char* key)
 {
 	for (int i = 0; i < sizeof KeytypeNames / sizeof(char*); i++)
 	{
-		GString lowkey = GString(key); Utility::ToLower(lowkey);
-		GString lowname = GString(KeytypeNames[i]); Utility::ToLower(lowname);
+		std::string lowkey = std::string(key); Utility::ToLower(lowkey);
+		std::string lowname = std::string(KeytypeNames[i]); Utility::ToLower(lowname);
 		if (lowkey == lowname)
 			return i;
 	}
@@ -235,7 +235,7 @@ int getIndexForKeytype(const char* key)
 	return -1;
 }
 
-GString getNameForKeytype(KeyType K)
+std::string getNameForKeytype(KeyType K)
 {
 	if (K < sizeof KeytypeNames / sizeof(char*))
 		return KeytypeNames[K];
@@ -243,7 +243,7 @@ GString getNameForKeytype(KeyType K)
 		return Utility::IntToStr(K);
 }
 
-GString getNameForUntranslatedKey(int K)
+std::string getNameForUntranslatedKey(int K)
 {
 	for (int i = 0; i < NUM_OF_STATIC_SPECIAL_KEYS; i++)
 	{
@@ -283,7 +283,7 @@ void BindingsManager::Initialize()
 	JoystickEnabled = (glfwJoystickPresent(GLFW_JOYSTICK_1) == GL_TRUE);
 
 	
-	std::map <GString, GString> fields;
+	std::map <std::string, std::string> fields;
 	Configuration::GetConfigListS("SystemKeys", fields, "");
 
 	// key = function
@@ -313,7 +313,7 @@ void BindingsManager::Initialize()
 			ScanFunction[defaultKeys[i].key] = defaultKeys[i].command;
 
 			// write it out to the config file
-			GString charOut;
+			std::string charOut;
 			if (defaultKeys[i].key <= 255 && isgraph(defaultKeys[i].key)) // we're not setting like, gibberish
 			{
 				charOut = Utility::CharToStr(defaultKeys[i].key);
@@ -328,7 +328,7 @@ void BindingsManager::Initialize()
 	}
 
 	int i = 1;
-	std::map<GString, GString> Keys;
+	std::map<std::string, std::string> Keys;
 	Configuration::GetConfigListS("Keys7K", Keys, "");
 
 	for (auto v : Keys)

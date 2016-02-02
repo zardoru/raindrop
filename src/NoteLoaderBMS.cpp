@@ -28,7 +28,7 @@
 namespace NoteLoaderBMS{
 
 	/* literally pasted from wikipedia */
-	GString tob36(long unsigned int value)
+	std::string tob36(long unsigned int value)
 	{
 		const char base36[37] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // off by 1 lol
 		char buffer[14];
@@ -39,7 +39,7 @@ namespace NoteLoaderBMS{
 			buffer[--offset] = base36[value % 36];
 		} while (value /= 36);
 
-		return GString(&buffer[offset]);
+		return std::string(&buffer[offset]);
 	}
 
 	int fromBase36(const char *txt)
@@ -173,7 +173,7 @@ namespace NoteLoaderBMS{
 
 	using namespace VSRG;
 
-	typedef std::map<int, GString> FilenameListIndex;
+	typedef std::map<int, std::string> FilenameListIndex;
 	typedef std::map<int, bool> FilenameUsedIndex;
 	typedef std::map<int, double> BpmListIndex;
 	typedef std::vector<NoteData> NoteVector;
@@ -665,7 +665,7 @@ namespace NoteLoaderBMS{
 			Chart->Data->TimingInfo = TimingInfo;
 		}
 
-		void ParseEvents(const int Measure, const int BmsChannel, const GString &Command)
+		void ParseEvents(const int Measure, const int BmsChannel, const std::string &Command)
 		{
 			auto CommandLength = Command.length() / 2;
 
@@ -708,7 +708,7 @@ namespace NoteLoaderBMS{
 			}
 		}
 
-		bool InterpStatement(GString Command, GString Contents)
+		bool InterpStatement(std::string Command, std::string Contents)
 		{
 			bool IsControlFlowCommand = false;
 
@@ -825,12 +825,12 @@ namespace NoteLoaderBMS{
 			TimingInfo->JudgeRank = judgerank;
 		}
 
-		void SetSound(int index, GString command_contents)
+		void SetSound(int index, std::string command_contents)
 		{
 			Sounds[index] = command_contents;
 		}
 
-		void SetBMP(int index, GString command_contents)
+		void SetBMP(int index, std::string command_contents)
 		{
 			Bitmaps[index] = command_contents;
 		}
@@ -846,7 +846,7 @@ namespace NoteLoaderBMS{
 		}
 	};
 
-	GString CommandSubcontents(const GString &Command, const GString &Line)
+	std::string CommandSubcontents(const std::string &Command, const std::string &Line)
 	{
 		auto len = Command.length();
 		return Line.substr(len);
@@ -874,26 +874,26 @@ namespace NoteLoaderBMS{
 		return false;
 	}
 
-	// Returns: Out: a vector with all the subtitles, GString: The title without the subtitles.
-	GString GetSubtitles(GString SLine, std::unordered_set<GString> &Out)
+	// Returns: Out: a vector with all the subtitles, std::string: The title without the subtitles.
+	std::string GetSubtitles(std::string SLine, std::unordered_set<std::string> &Out)
 	{
 		std::regex sub_reg("([~(\\[<\"].*?[\\]\\)~>\"])");
 		std::smatch m;
-		GString matchL = SLine;
+		std::string matchL = SLine;
 		while (regex_search(matchL, m, sub_reg))
 		{
 			Out.insert(m[1]);
 			matchL = m.suffix();
 		}
 
-		GString ret = regex_replace(SLine, sub_reg, "");
+		std::string ret = regex_replace(SLine, sub_reg, "");
 		Utility::Trim(ret);
 		return ret;
 	}
 
-	GString DifficultyNameFromSubtitles(std::unordered_set<GString> &Subs)
+	std::string DifficultyNameFromSubtitles(std::unordered_set<std::string> &Subs)
 	{
-		GString candidate;
+		std::string candidate;
 		for (auto i = Subs.begin();
 			i != Subs.end();
 			++i)
@@ -932,7 +932,7 @@ namespace NoteLoaderBMS{
 		return "";
 	}
 
-	void LoadObjectsFromFile(GString filename, GString prefix, Song *Out)
+	void LoadObjectsFromFile(std::string filename, std::string prefix, Song *Out)
 	{
 #if (!defined _WIN32)
 		std::ifstream filein(filename.c_str());
@@ -969,8 +969,8 @@ namespace NoteLoaderBMS{
 			And that's what we're going to try to do.
 			*/
 
-		std::unordered_set<GString> Subs; // Subtitle list
-		GString Line;
+		std::unordered_set<std::string> Subs; // Subtitle list
+		std::string Line;
 		bool IsU8;
 		char* TestU8 = new char[1025];
 
@@ -991,15 +991,15 @@ namespace NoteLoaderBMS{
 			if (Line.length() == 0 || Line[0] != '#')
 				continue;
 
-			GString command = Line.substr(Line.find_first_of("#"), Line.find_first_of(" ") - Line.find_first_of("#"));
+			std::string command = Line.substr(Line.find_first_of("#"), Line.find_first_of(" ") - Line.find_first_of("#"));
 
 			Utility::ToLower(command);
 
-#define OnCommand(x) if(command == Utility::ToLower(GString(#x)))
-#define OnCommandSub(x) if(command.substr(0, strlen(#x)) == Utility::ToLower(GString(#x)))
+#define OnCommand(x) if(command == Utility::ToLower(std::string(#x)))
+#define OnCommandSub(x) if(command.substr(0, strlen(#x)) == Utility::ToLower(std::string(#x)))
 
-			GString CommandContents = Line.substr(Line.find_first_of(" ") + 1);
-			GString tmp;
+			std::string CommandContents = Line.substr(Line.find_first_of(" ") + 1);
+			std::string tmp;
 			if (!IsU8)
 				CommandContents = Utility::SJIStoU8(CommandContents);
 
@@ -1021,9 +1021,9 @@ namespace NoteLoaderBMS{
 				OnCommand(#TITLE)
 				{
 					Out->SongName = CommandContents;
-					// ltrim the GString
+					// ltrim the std::string
 					size_t np = Out->SongName.find_first_not_of(" ");
-					if (np != GString::npos)
+					if (np != std::string::npos)
 						Out->SongName = Out->SongName.substr(np);
 				}
 
@@ -1033,9 +1033,9 @@ namespace NoteLoaderBMS{
 
 					size_t np = Out->SongAuthor.find_first_not_of(" ");
 
-					if (np != GString::npos)
+					if (np != std::string::npos)
 					{
-						GString author = Out->SongAuthor.substr(np); // I have a feeling this regex will keep growing
+						std::string author = Out->SongAuthor.substr(np); // I have a feeling this regex will keep growing
 						std::regex chart_author_regex("\\s*[\\/_]?\\s*(?:obj|note)\\.?\\s*[:_]?\\s*(.*)", std::regex::icase);
 						std::smatch sm;
 						if (regex_search(author, sm, chart_author_regex))
@@ -1094,7 +1094,7 @@ namespace NoteLoaderBMS{
 
 				OnCommand(#DIFFICULTY)
 				{
-					GString dName;
+					std::string dName;
 					if (Utility::IsNumeric(CommandContents.c_str()))
 					{
 						int Kind = atoi(CommandContents.c_str());
@@ -1166,14 +1166,14 @@ namespace NoteLoaderBMS{
 
 				OnCommandSub(#WAV)
 				{
-					GString IndexStr = CommandSubcontents("#WAV", command);
+					std::string IndexStr = CommandSubcontents("#WAV", command);
 					int Index = fromBase36(IndexStr.c_str());
 					Info->SetSound(Index, CommandContents);
 				}
 
 				OnCommandSub(#BMP)
 				{
-					GString IndexStr = CommandSubcontents("#BMP", command);
+					std::string IndexStr = CommandSubcontents("#BMP", command);
 					int Index = fromBase36(IndexStr.c_str());
 					Info->SetBMP(Index, CommandContents);
 
@@ -1185,28 +1185,28 @@ namespace NoteLoaderBMS{
 
 				OnCommandSub(#BPM)
 				{
-					GString IndexStr = CommandSubcontents("#BPM", command);
+					std::string IndexStr = CommandSubcontents("#BPM", command);
 					int Index = fromBase36(IndexStr.c_str());
 					Info->SetBPM(Index, latof(CommandContents.c_str()));
 				}
 
 				OnCommandSub(#STOP)
 				{
-					GString IndexStr = CommandSubcontents("#STOP", command);
+					std::string IndexStr = CommandSubcontents("#STOP", command);
 					int Index = fromBase36(IndexStr.c_str());
 					Info->SetStop(Index, latof(CommandContents.c_str()));
 				}
 
 				OnCommandSub(#EXBPM)
 				{
-					GString IndexStr = CommandSubcontents("#EXBPM", command);
+					std::string IndexStr = CommandSubcontents("#EXBPM", command);
 					int Index = fromBase36(IndexStr.c_str());
 					Info->SetBPM(Index, latof(CommandContents.c_str()));
 				}
 
 				/* Else... */
-				GString MeasureCommand = Line.substr(Line.find_first_of(":") + 1);
-				GString MainCommand = Line.substr(1, 5);
+				std::string MeasureCommand = Line.substr(Line.find_first_of(":") + 1);
+				std::string MainCommand = Line.substr(1, 5);
 				std::smatch sm;
 
 				if (regex_match(MainCommand, sm, DataDeclaration)) // We've got work to do.
@@ -1224,7 +1224,7 @@ namespace NoteLoaderBMS{
 		Info->CompileBMS();
 
 		// First try to find a suiting subtitle
-		GString NewTitle = GetSubtitles(Out->SongName, Subs);
+		std::string NewTitle = GetSubtitles(Out->SongName, Subs);
 		if (Diff->Name.length() == 0)
 			Diff->Name = DifficultyNameFromSubtitles(Subs);
 
@@ -1246,7 +1246,7 @@ namespace NoteLoaderBMS{
 			size_t startBracket = filename.find_first_of("[");
 			size_t endBracket = filename.find_last_of("]");
 
-			if (startBracket != GString::npos && endBracket != GString::npos)
+			if (startBracket != std::string::npos && endBracket != std::string::npos)
 				Diff->Name = filename.substr(startBracket + 1, endBracket - startBracket - 1);
 
 			// No brackets? Okay then, let's use the filename.
@@ -1254,7 +1254,7 @@ namespace NoteLoaderBMS{
 			{
 				size_t last_slash = filename.find_last_of("/");
 				size_t last_dslash = filename.find_last_of("\\");
-				size_t last_dir = std::max(last_slash != GString::npos ? last_slash : 0, last_dslash != GString::npos ? last_dslash : 0);
+				size_t last_dir = std::max(last_slash != std::string::npos ? last_slash : 0, last_dslash != std::string::npos ? last_dslash : 0);
 				Diff->Name = filename.substr(last_dir + 1, filename.length() - last_dir - 5);
 			}
 		}
@@ -1296,8 +1296,8 @@ namespace NoteLoaderBMS{
 		And that's what we're going to try to do.
 		*/
 
-		std::unordered_set<GString> Subs; // Subtitle list
-		GString Line;
+		std::unordered_set<std::string> Subs; // Subtitle list
+		std::string Line;
 		bool IsU8;
 		char* TestU8 = new char[1025];
 
@@ -1318,15 +1318,15 @@ namespace NoteLoaderBMS{
 			if (Line.length() == 0 || Line[0] != '#')
 				continue;
 
-			GString command = Line.substr(Line.find_first_of("#"), Line.find_first_of(" ") - Line.find_first_of("#"));
+			std::string command = Line.substr(Line.find_first_of("#"), Line.find_first_of(" ") - Line.find_first_of("#"));
 
 			Utility::ToLower(command);
 
-#define OnCommand(x) if(command == Utility::ToLower(GString(#x)))
-#define OnCommandSub(x) if(command.substr(0, strlen(#x)) == Utility::ToLower(GString(#x)))
+#define OnCommand(x) if(command == Utility::ToLower(std::string(#x)))
+#define OnCommandSub(x) if(command.substr(0, strlen(#x)) == Utility::ToLower(std::string(#x)))
 
-			GString CommandContents = Line.substr(Line.find_first_of(" ") + 1);
-			GString tmp;
+			std::string CommandContents = Line.substr(Line.find_first_of(" ") + 1);
+			std::string tmp;
 			if (!IsU8)
 				CommandContents = Utility::SJIStoU8(CommandContents);
 
@@ -1348,9 +1348,9 @@ namespace NoteLoaderBMS{
 				OnCommand(#TITLE)
 				{
 					Out->SongName = CommandContents;
-					// ltrim the GString
+					// ltrim the std::string
 					size_t np = Out->SongName.find_first_not_of(" ");
-					if (np != GString::npos)
+					if (np != std::string::npos)
 						Out->SongName = Out->SongName.substr(np);
 				}
 
@@ -1360,9 +1360,9 @@ namespace NoteLoaderBMS{
 
 					size_t np = Out->SongAuthor.find_first_not_of(" ");
 
-					if (np != GString::npos)
+					if (np != std::string::npos)
 					{
-						GString author = Out->SongAuthor.substr(np); // I have a feeling this regex will keep growing
+						std::string author = Out->SongAuthor.substr(np); // I have a feeling this regex will keep growing
 						std::regex chart_author_regex("\\s*[\\/_]?\\s*(?:obj|note)\\.?\\s*[:_]?\\s*(.*)", std::regex::icase);
 						std::smatch sm;
 						if (regex_search(author, sm, chart_author_regex))
@@ -1421,7 +1421,7 @@ namespace NoteLoaderBMS{
 
 				OnCommand(#DIFFICULTY)
 				{
-					GString dName;
+					std::string dName;
 					if (Utility::IsNumeric(CommandContents.c_str()))
 					{
 						int Kind = atoi(CommandContents.c_str());
@@ -1493,14 +1493,14 @@ namespace NoteLoaderBMS{
 
 				OnCommandSub(#WAV)
 				{
-					GString IndexStr = CommandSubcontents("#WAV", command);
+					std::string IndexStr = CommandSubcontents("#WAV", command);
 					int Index = fromBase36(IndexStr.c_str());
 					Info->SetSound(Index, CommandContents);
 				}
 
 				OnCommandSub(#BMP)
 				{
-					GString IndexStr = CommandSubcontents("#BMP", command);
+					std::string IndexStr = CommandSubcontents("#BMP", command);
 					int Index = fromBase36(IndexStr.c_str());
 					Info->SetBMP(Index, CommandContents);
 
@@ -1512,28 +1512,28 @@ namespace NoteLoaderBMS{
 
 				OnCommandSub(#BPM)
 				{
-					GString IndexStr = CommandSubcontents("#BPM", command);
+					std::string IndexStr = CommandSubcontents("#BPM", command);
 					int Index = fromBase36(IndexStr.c_str());
 					Info->SetBPM(Index, latof(CommandContents.c_str()));
 				}
 
 				OnCommandSub(#STOP)
 				{
-					GString IndexStr = CommandSubcontents("#STOP", command);
+					std::string IndexStr = CommandSubcontents("#STOP", command);
 					int Index = fromBase36(IndexStr.c_str());
 					Info->SetStop(Index, latof(CommandContents.c_str()));
 				}
 
 				OnCommandSub(#EXBPM)
 				{
-					GString IndexStr = CommandSubcontents("#EXBPM", command);
+					std::string IndexStr = CommandSubcontents("#EXBPM", command);
 					int Index = fromBase36(IndexStr.c_str());
 					Info->SetBPM(Index, latof(CommandContents.c_str()));
 				}
 
 				/* Else... */
-				GString MeasureCommand = Line.substr(Line.find_first_of(":") + 1);
-				GString MainCommand = Line.substr(1, 5);
+				std::string MeasureCommand = Line.substr(Line.find_first_of(":") + 1);
+				std::string MainCommand = Line.substr(1, 5);
 				std::smatch sm;
 
 				if (regex_match(MainCommand, sm, DataDeclaration)) // We've got work to do.
@@ -1551,7 +1551,7 @@ namespace NoteLoaderBMS{
 		Info->CompileBMS();
 
 		// First try to find a suiting subtitle
-		GString NewTitle = GetSubtitles(Out->SongName, Subs);
+		std::string NewTitle = GetSubtitles(Out->SongName, Subs);
 		if (Diff->Name.length() == 0)
 			Diff->Name = DifficultyNameFromSubtitles(Subs);
 
@@ -1575,7 +1575,7 @@ namespace NoteLoaderBMS{
 			size_t startBracket = filename.find_first_of("[");
 			size_t endBracket = filename.find_last_of("]");
 
-			if (startBracket != GString::npos && endBracket != GString::npos)
+			if (startBracket != std::string::npos && endBracket != std::string::npos)
 				Diff->Name = filename.substr(startBracket + 1, endBracket - startBracket - 1);
 
 			// No brackets? Okay then, let's use the filename.
@@ -1583,7 +1583,7 @@ namespace NoteLoaderBMS{
 			{
 				size_t last_slash = filename.find_last_of("/");
 				size_t last_dslash = filename.find_last_of("\\");
-				size_t last_dir = max(last_slash != GString::npos ? last_slash : 0, last_dslash != GString::npos ? last_dslash : 0);
+				size_t last_dir = max(last_slash != std::string::npos ? last_slash : 0, last_dslash != std::string::npos ? last_dslash : 0);
 				Diff->Name = filename.substr(last_dir + 1, filename.length() - last_dir - 5);
 			}
 		}

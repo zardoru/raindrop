@@ -23,12 +23,12 @@ Font* GraphicalString::GetFont() const
 	return mFont;
 }
 
-void GraphicalString::SetText(GString _Text)
+void GraphicalString::SetText(std::string _Text)
 {
 	mText = _Text;
 }
 
-GString GraphicalString::GetText() const
+std::string GraphicalString::GetText() const
 {
 	return mText;
 }

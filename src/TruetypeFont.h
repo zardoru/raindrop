@@ -30,7 +30,7 @@ class TruetypeFont : public Font
 		int th;
 	};
 	
-	GString filename;
+	std::string filename;
 	std::map<int, codepdata> Texes;
 	void SetupTexture();
 	codepdata& GetTexFromCodepoint(int cp);
@@ -40,10 +40,10 @@ class TruetypeFont : public Font
 	void UpdateWindowScale();
 
 public:
-	TruetypeFont(GString Filename, float Scale);
+	TruetypeFont(std::string Filename, float Scale);
 	~TruetypeFont();
 	float GetHorizontalLength(const char *Text);
 
 	void Invalidate();
-	void Render(const GString &Text, const Vec2 &Position, const Mat4 &Transform = Mat4());
+	void Render(const std::string &Text, const Vec2 &Position, const Mat4 &Transform = Mat4());
 };

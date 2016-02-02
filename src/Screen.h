@@ -29,8 +29,8 @@ protected:
     std::shared_ptr<Screen> Next;
 
 public:
-	Screen (GString Name);
-	Screen (GString Name, std::shared_ptr<Screen> _Parent);
+	Screen (std::string Name);
+	Screen (std::string Name, std::shared_ptr<Screen> _Parent);
 	virtual ~Screen ();
 
 	virtual void Init();

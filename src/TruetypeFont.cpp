@@ -10,7 +10,7 @@
 #include "utf8.h"
 #include "Logging.h"
 
-TruetypeFont::TruetypeFont(GString Filename, float Scale)
+TruetypeFont::TruetypeFont(std::string Filename, float Scale)
 {
 	std::ifstream ifs (Filename.c_str(), std::ios::binary);
 	

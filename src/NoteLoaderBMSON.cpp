@@ -8,7 +8,7 @@
 
 namespace NoteLoaderBMS
 {
-	GString GetSubtitles(GString SLine, std::unordered_set<GString> &Out);
+	std::string GetSubtitles(std::string SLine, std::unordered_set<std::string> &Out);
 }
 
 namespace NoteLoaderBMSON{
@@ -41,7 +41,7 @@ namespace NoteLoaderBMSON{
 	{
 		const char* hint;
 		int keys;
-        std::vector<int> mappings;
+		std::vector<int> mappings;
 		bool turntable;
 	} BmsonLayouts[] = {
 		{ "beat-7k", 8, { 1, 2, 3, 4, 5, 6, 7, 0 }, true },
@@ -55,7 +55,7 @@ namespace NoteLoaderBMSON{
 	class BMSONException : public std::exception
 	{
 	public:
-		BMSONException(const GString &what) :
+		BMSONException(const std::string &what) :
 			std::exception(what.c_str())
 		{
 			// stub
@@ -74,20 +74,20 @@ namespace NoteLoaderBMSON{
 		Json::Value root;
 		std::ifstream &input;
 		VSRG::Song* song;
-        std::shared_ptr<VSRG::Difficulty> Chart;
-        std::shared_ptr<VSRG::BMSTimingInfo> TimingInfo;
-		std::unordered_set<GString> subtitles;
-		GString version;
+		std::shared_ptr<VSRG::Difficulty> Chart;
+		std::shared_ptr<VSRG::BMSTimingInfo> TimingInfo;
+		std::unordered_set<std::string> subtitles;
+		std::string version;
 		double resolution;
 
 		int current_wav;
-        std::vector<int> mappings;
+		std::vector<int> mappings;
 
-        std::map<int, std::map<double, BmsonNote> > Notes; // int := mapped lane; double := time in beats of obj (for :mix-note)
+		std::map<int, std::map<double, BmsonNote> > Notes; // int := mapped lane; double := time in beats of obj (for :mix-note)
 
 		SliceContainer Slices;
 
-		GString GetSubartist(const char string[6])
+		std::string GetSubartist(const char string[6])
 		{
 			std::regex sreg(Utility::Format("\\s*%s\\s*:\\s*(.*?)\\s*$", string));
 			for (const auto& s : root["info"]["subartists"])
@@ -120,7 +120,7 @@ namespace NoteLoaderBMSON{
 				return;
 			}
 
-			GString s = values.asCString();
+			std::string s = values.asCString();
 			if (regex_search(s, sm, generic_keys)) {
 				int chans = atoi(sm[1].str().c_str());
 				if (chans <= VSRG::MAX_CHANNELS)
@@ -465,7 +465,7 @@ namespace NoteLoaderBMSON{
 			}
 		}
 
-		GString CleanFilename(GString nam)
+		std::string CleanFilename(std::string nam)
 		{
 			nam = regex_replace(nam, std::regex("\\.\\./?"), "");
 			// remove C:/... or / or C:\...
@@ -475,7 +475,7 @@ namespace NoteLoaderBMSON{
 			return nam;
 		}
 
-		void AddGlobalSliceSound(GString nam, int sound_index)
+		void AddGlobalSliceSound(std::string nam, int sound_index)
 		{
 			// remove ".."
 			nam = CleanFilename(nam);
@@ -517,13 +517,13 @@ namespace NoteLoaderBMSON{
 				double last_time = 0;
 				AddGlobalSliceSound((*audio)["name"].asString(), sound_index);
 
-                std::vector<BmsonObject> objs;
+				std::vector<BmsonObject> objs;
 
 				auto notes = (*audio)["notes"];
 				for (auto &note: notes)
 					objs.push_back(BmsonObject{note["x"].asInt(), note["y"].asDouble(), note["l"].asDouble(), note["c"].asBool()});
 
-                std::stable_sort(objs.begin(), objs.end(), [](const BmsonObject& l, const BmsonObject& r) -> bool { return l.y < r.y; });
+				std::stable_sort(objs.begin(), objs.end(), [](const BmsonObject& l, const BmsonObject& r) -> bool { return l.y < r.y; });
 				JoinBGMSlices(objs);
 
 				for (auto note = objs.begin(); note != objs.end(); ++note)
@@ -562,7 +562,7 @@ namespace NoteLoaderBMSON{
 			current_wav = 1;
 		}
 
-		void SetFilename(GString fn)
+		void SetFilename(std::string fn)
 		{
 			Chart->Filename = fn;
 			if (Chart->Name.length() == 0)
@@ -648,7 +648,7 @@ namespace NoteLoaderBMSON{
 		}
 	};
 
-	void LoadObjectsFromFile(GString filename, GString prefix, VSRG::Song* Out)
+	void LoadObjectsFromFile(std::string filename, std::string prefix, VSRG::Song* Out)
 	{
 #if (!defined _WIN32)
 		std::ifstream filein(filename.c_str());

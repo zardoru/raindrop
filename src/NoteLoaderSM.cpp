@@ -35,7 +35,7 @@ struct
 	{"pump-halfdouble", 6}
 };
 
-int GetTracksByMode(GString mode)
+int GetTracksByMode(std::string mode)
 {
 	for (auto v: ModeTracks)
 	{
@@ -49,9 +49,9 @@ int GetTracksByMode(GString mode)
 
 #undef ModeType
 
-GString RemoveComments(const GString Str)
+std::string RemoveComments(const std::string Str)
 {
-	GString Result;
+	std::string Result;
 	int k = 0;
 	int AwatingEOL = 0;
 	ptrdiff_t len = Str.length() - 1;
@@ -101,7 +101,7 @@ bool IsTimeWithinWarp(Difficulty* Diff, double Time)
 	return false;
 }
 
-void LoadNotesSM(Song *Out, Difficulty *Diff, std::vector<GString> &MeasureText)
+void LoadNotesSM(Song *Out, Difficulty *Diff, std::vector<std::string> &MeasureText)
 {
 	/* Hold data */
 	int Keys = Diff->Channels;
@@ -188,9 +188,9 @@ void LoadNotesSM(Song *Out, Difficulty *Diff, std::vector<GString> &MeasureText)
 	}
 }
 
-bool LoadTracksSM(Song *Out, Difficulty *Diff, GString line)
+bool LoadTracksSM(Song *Out, Difficulty *Diff, std::string line)
 {
-	GString CommandContents = line.substr(line.find_first_of(":") + 1);
+	std::string CommandContents = line.substr(line.find_first_of(":") + 1);
 
 	/* Remove newlines and comments */
 	CommandContents = RemoveComments(CommandContents);
@@ -207,7 +207,7 @@ bool LoadTracksSM(Song *Out, Difficulty *Diff, GString line)
 	}
 
 	/* What we'll work with */
-	GString NoteString = Mainline[5];
+	std::string NoteString = Mainline[5];
 	int Keys = GetTracksByMode(Mainline[0]);
 
 	if (!Keys)
@@ -231,10 +231,10 @@ bool LoadTracksSM(Song *Out, Difficulty *Diff, GString line)
 		*/
 	return true;
 }
-#define OnCommand(x) if(command == #x || command == #x + GString(":"))
-#define _OnCommand(x) else if(command == #x || command == #x + GString(":"))
+#define OnCommand(x) if(command == #x || command == #x + std::string(":"))
+#define _OnCommand(x) else if(command == #x || command == #x + std::string(":"))
 
-void DoCommonSMCommands(GString command, GString CommandContents, Song* Out)
+void DoCommonSMCommands(std::string command, std::string CommandContents, Song* Out)
 {
 	OnCommand(#TITLE)
 	{
@@ -396,7 +396,7 @@ VSRG::VectorSpeeds CalculateRaindropScrolls(VSRG::Difficulty *Diff, const SpeedD
 	return Ret;
 }
 
-SpeedData ParseScrolls(GString line)
+SpeedData ParseScrolls(std::string line)
 {
 	auto ScrollLines = Utility::TokenSplit(line);
 	SpeedData Ret;
@@ -420,7 +420,7 @@ SpeedData ParseScrolls(GString line)
 	return Ret;
 }
 
-void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *Out)
+void NoteLoaderSSC::LoadObjectsFromFile(std::string filename, std::string prefix, Song *Out)
 {
 #if (!defined _WIN32) || (defined STLP)
 	std::ifstream filein(filename.c_str());
@@ -436,16 +436,16 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 	SpeedData diffSpeedData;
 	double Offset = 0;
 
-    std::shared_ptr<VSRG::Difficulty> Diff = nullptr;
+	std::shared_ptr<VSRG::Difficulty> Diff = nullptr;
 
 	if (!filein.is_open())
 		throw std::exception(Utility::Format("couldn't open %s for reading", filename.c_str()).c_str());
 
-	GString Banner;
+	std::string Banner;
 
 	Out->SongDirectory = prefix + "/";
 
-	GString line;
+	std::string line;
 	while (filein)
 	{
 		getline(filein, line, ';');
@@ -453,17 +453,17 @@ void NoteLoaderSSC::LoadObjectsFromFile(GString filename, GString prefix, Song *
 		if (line.length() < 3)
 			continue;
 
-		GString command;
+		std::string command;
 		size_t iHash = line.find_first_of("#");
 		size_t iColon = line.find_first_of(":");
-		if (iHash != GString::npos && iColon != GString::npos)
+		if (iHash != std::string::npos && iColon != std::string::npos)
 			command = line.substr(iHash, iColon - iHash);
 		else
 			continue;
 
 		Utility::ReplaceAll(command, "\n", "");
 
-		GString CommandContents = line.substr(line.find_first_of(":") + 1);
+		std::string CommandContents = line.substr(line.find_first_of(":") + 1);
 
 		OnCommand(#NOTEDATA)
 		{
@@ -663,7 +663,7 @@ void WarpifyTiming(Difficulty* Diff)
 	}
 }
 
-void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *Out)
+void NoteLoaderSM::LoadObjectsFromFile(std::string filename, std::string prefix, Song *Out)
 {
 #if (!defined _WIN32) || (defined STLP)
 	std::ifstream filein (filename.c_str());
@@ -675,7 +675,7 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 	TimingData StopsData;
 	double Offset = 0;
 
-    std::shared_ptr<VSRG::Difficulty> Diff = std::make_shared<VSRG::Difficulty>();
+	std::shared_ptr<VSRG::Difficulty> Diff = std::make_shared<VSRG::Difficulty>();
 
 	// Stepmania uses beat-based locations for stops and BPM.
 	Diff->BPMType = VSRG::Difficulty::BT_BEAT;
@@ -683,14 +683,14 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 	if (!filein.is_open())
 		throw std::exception(Utility::Format("couldn't open %s for reading").c_str());
 
-	GString Banner;
+	std::string Banner;
 
 	Out->SongDirectory = prefix + "/";
 	Diff->Offset = 0;
 	Diff->Duration = 0;
 	Diff->Data = std::make_shared<VSRG::DifficultyLoadInfo>();
 
-	GString line;
+	std::string line;
 	while (filein)
 	{
 		std::getline(filein, line, ';');
@@ -698,17 +698,17 @@ void NoteLoaderSM::LoadObjectsFromFile(GString filename, GString prefix, Song *O
 		if (line.length() < 3)
 			continue;
 
-		GString command;
+		std::string command;
 		size_t iHash = line.find_first_of("#");
 		size_t iColon = line.find_first_of(":");
-		if (iHash != GString::npos && iColon != GString::npos)
+		if (iHash != std::string::npos && iColon != std::string::npos)
 			command = line.substr(iHash, iColon - iHash);
 		else
 			continue;
 
 		Utility::ReplaceAll(command, "\n", "");
 
-		GString CommandContents = line.substr(line.find_first_of(":") + 1);
+		std::string CommandContents = line.substr(line.find_first_of(":") + 1);
 
 		DoCommonSMCommands(command, CommandContents, Out);
 

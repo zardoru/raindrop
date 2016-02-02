@@ -12,7 +12,7 @@
 
 Directory GetSongBackground(Game::Song &Song)
 {
-    std::vector<GString> DirCnt;
+    std::vector<std::string> DirCnt;
 	Directory SngDir = Song.SongDirectory;
 
 	if (Song.BackgroundFilename.length() != 0 && Utility::FileExists(SngDir / Song.BackgroundFilename))
@@ -21,8 +21,8 @@ Directory GetSongBackground(Game::Song &Song)
 	SngDir.ListDirectory(DirCnt, Directory::FS_REG);
 	for (auto i: DirCnt)
 	{
-		GString ext = Directory(i).GetExtension();
-		if (i.find("bg") != GString::npos && (ext == "jpg" || ext == "png"))
+		std::string ext = Directory(i).GetExtension();
+		if (i.find("bg") != std::string::npos && (ext == "jpg" || ext == "png"))
 			return SngDir / i;
 	}
 
@@ -176,7 +176,7 @@ class StaticBackground : public BackgroundAnimation
     std::shared_ptr<Sprite> Background;
 	ImageList List;
 public:
-	StaticBackground(Interruptible* parent, GString Filename)
+	StaticBackground(Interruptible* parent, std::string Filename)
 		: BackgroundAnimation(parent), List(this)
 	{
 		Log::Printf("Using static background: %s\n", Filename.c_str());

@@ -33,9 +33,9 @@ namespace Game
 {
 
 	typedef std::function<void (std::shared_ptr<Song>, uint8_t)> SongNotification;
-	typedef std::function<void(int32_t, uint32_t, GString, std::shared_ptr<Song>)> ItemNotification;
+	typedef std::function<void(int32_t, uint32_t, std::string, std::shared_ptr<Song>)> ItemNotification;
 	typedef std::function<void(int32_t, std::shared_ptr<Song>, bool, int32_t)> ItemTransformFunction;
-	typedef std::function<void(int32_t, std::shared_ptr<Song>, bool, int32_t, GString)> StringTransformFunction;
+	typedef std::function<void(int32_t, std::shared_ptr<Song>, bool, int32_t, std::string)> StringTransformFunction;
 	typedef std::function <float (float)> ListTransformFunction;
 	typedef std::function<void()> DirectoryChangeNotifyFunction;
 

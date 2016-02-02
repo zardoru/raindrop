@@ -31,7 +31,7 @@ class Application
 
 	int Measure;
 	int difIndex;
-	GString Author;
+	std::string Author;
 
 	bool Upscroll;
 

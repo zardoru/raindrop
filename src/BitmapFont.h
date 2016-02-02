@@ -17,9 +17,9 @@ class BitmapFont : public Font
 
 public:
 	BitmapFont();
-	void Render(const GString &Text, const Vec2 &Position, const Mat4& Transform = Mat4());
+	void Render(const std::string &Text, const Vec2 &Position, const Mat4& Transform = Mat4());
 	void LoadFontImage(const char* Name, Vec2 _CharSize, Vec2 _CellSize, Vec2 _RenderSize = Vec2(1,1), char FontStart = 0);
 	void LoadSkinFontImage(const char* Name, Vec2 _CharSize, Vec2 _CellSize, Vec2 _RenderSize = Vec2(1,1), char FontStart = 0);
 	void SetAffectedByLightning(bool Lightning);
-	BitmapFont *FromLua(LuaManager* Lua, GString TableName);
+	BitmapFont *FromLua(LuaManager* Lua, std::string TableName);
 };

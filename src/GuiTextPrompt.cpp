@@ -53,7 +53,7 @@ void TextPrompt::SetFont(BitmapFont* Font)
 		mPromptFont = Font;
 }
 
-void TextPrompt::SetPrompt(GString PromptText)
+void TextPrompt::SetPrompt(std::string PromptText)
 {
 	mPromptText = PromptText;
 }
@@ -62,7 +62,7 @@ void TextPrompt::Render()
 {
 	if (mOpen)
 	{
-		GString str = Utility::Format("%s\n\n%s_\n\nPress Enter to Confirm or Escape to Abort", mPromptText, mBufferText);
+		std::string str = Utility::Format("%s\n\n%s_\n\nPress Enter to Confirm or Escape to Abort", mPromptText, mBufferText);
 		if (mPromptFont)
 			mPromptFont->Render(str, Vec2(100,200)); // todo: change position
 	}
@@ -81,7 +81,7 @@ void TextPrompt::SwitchOpen()
 	SetOpen(!mOpen);
 }
 
-GString TextPrompt::GetContents()
+std::string TextPrompt::GetContents()
 {
 	return mBufferText;
 }

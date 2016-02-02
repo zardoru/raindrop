@@ -10,8 +10,8 @@
 class ImageList : public Interruptible
 {
 
-    std::map <GString, Image*> Images;
-    std::map <int, GString> ImagesIndexPending;
+    std::map <std::string, Image*> Images;
+    std::map <int, std::string> ImagesIndexPending;
     std::map <int, Image*> ImagesIndex;
 	bool ShouldDeleteAtDestruction;
 
@@ -22,19 +22,19 @@ public:
 	~ImageList();
 
 	void Destroy();
-	void AddToList(const GString Filename, const GString Prefix);
-	void AddToListIndex(const GString Filename, const GString Prefix, int Index);
-	void AddToList(const uint32_t Count, const GString *Filename, const GString Prefix);
+	void AddToList(const std::string Filename, const std::string Prefix);
+	void AddToListIndex(const std::string Filename, const std::string Prefix, int Index);
+	void AddToList(const uint32_t Count, const std::string *Filename, const std::string Prefix);
 	bool LoadAll();
 
 	void ForceFetch();
 
 	// Gets image from this filename
-	Image* GetFromFilename(const GString Filename);
+	Image* GetFromFilename(const std::string Filename);
 
 	// Gets image from this index
 	Image* GetFromIndex(int Index);
 
 	// Gets image from SkinPrefix + filename
-	Image* GetFromSkin(const GString Filename);
+	Image* GetFromSkin(const std::string Filename);
 };

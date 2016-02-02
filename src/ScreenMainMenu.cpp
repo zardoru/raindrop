@@ -139,7 +139,7 @@ bool ScreenMainMenu::Run (double Delta)
 	PlayBtn.Run(Delta);
 	ExitBtn.Run(Delta);
 	
-	TTFO->Render (GString("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop"), Vec2(0, 0), glm::translate(Mat4(), Vec3(0, 0, 30)));
+	TTFO->Render (std::string("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop"), Vec2(0, 0), glm::translate(Mat4(), Vec3(0, 0, 30)));
 	Animations->DrawTargets(Delta);
 
 	return Running;

@@ -43,8 +43,8 @@ class SceneEnvironment
 	std::vector<TruetypeFont*> ManagedFonts;
 	std::vector <Animation> Animations;
 	bool mFrameSkip;
-	GString mScreenName;
-	GString mInitScript;
+	std::string mScreenName;
+	std::string mInitScript;
 
 	Rocket::Core::Context* ctx;
 	Rocket::Core::ElementDocument *Doc;
@@ -62,22 +62,22 @@ public:
 	void ReloadUI();
 	void ReloadAll();
 
-	void RunUIScript(GString Filename);
-	void RunUIFunction(GString Funcname);
+	void RunUIScript(std::string Filename);
+	void RunUIFunction(std::string Funcname);
 	void SetUILayer(uint32_t Layer);
-	void Preload(GString Filename, GString ArrayName);
-	void Initialize(GString Filename = "", bool RunScript = true);
+	void Preload(std::string Filename, std::string ArrayName);
+	void Initialize(std::string Filename = "", bool RunScript = true);
 	LuaManager *GetEnv();
 	ImageList* GetImageList();
 
 	Sprite* CreateObject();
 
-	void DoEvent(GString EventName, int Return = 0);
-	void AddLuaAnimation (Sprite* Target, const GString &FName, int Easing, float Duration, float Delay);
+	void DoEvent(std::string EventName, int Return = 0);
+	void AddLuaAnimation (Sprite* Target, const std::string &FName, int Easing, float Duration, float Delay);
 	void StopAnimationsForTarget(Sprite* Target);
 	void AddTarget(Sprite *Targ, bool IsExternal = false);
-	void AddLuaTarget(Sprite *Targ, GString Varname);
-	void AddLuaTargetArray(Sprite *Targ, GString Varname, GString Arrname);
+	void AddLuaTarget(Sprite *Targ, std::string Varname);
+	void AddLuaTargetArray(Sprite *Targ, std::string Varname, std::string Arrname);
 	void RemoveTarget(Drawable2D *Targ);
 	void DrawTargets(double TimeDelta);
 

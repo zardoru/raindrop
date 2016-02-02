@@ -13,7 +13,7 @@ Directory::~Directory()
 	
 }
 
-Directory::Directory(GString subpath)
+Directory::Directory(std::string subpath)
 {
 	curpath = subpath;
 }
@@ -23,12 +23,12 @@ Directory::Directory(const char* path)
 	curpath = path;
 }
 
-void Directory::operator=(GString subpath)
+void Directory::operator=(std::string subpath)
 {
 	curpath = subpath;
 }
 
-bool Directory::operator==(GString subpath) const
+bool Directory::operator==(std::string subpath) const
 {
 	return curpath == subpath;
 }
@@ -41,7 +41,7 @@ Directory Directory::ParentDirectory()
 			return Directory(curpath.substr(0, a));
 		}
 	}
-	return Directory(GString(".")); // if there is no slash, then the root directory has been reached.
+	return Directory(std::string(".")); // if there is no slash, then the root directory has been reached.
 }
 
 void Directory::Normalize(bool RemoveIllegal)
@@ -51,7 +51,7 @@ void Directory::Normalize(bool RemoveIllegal)
 		Utility::ReplaceAll(curpath, "\\\\", "/");
 	}
 
-	GString newCurPath;
+	std::string newCurPath;
 
 	// remove all redundant slashes
 	char last = 0;
@@ -69,11 +69,11 @@ void Directory::Normalize(bool RemoveIllegal)
 	curpath = newCurPath;
 }
 
-Directory operator/(Directory parent, GString subpath)
+Directory operator/(Directory parent, std::string subpath)
 {
 	if(subpath == "..") return parent.ParentDirectory();
 
-	GString newpath;
+	std::string newpath;
 
 	if (!parent.path().length())
 		return subpath;
@@ -88,18 +88,18 @@ Directory operator/(Directory parent, GString subpath)
 	return Directory(newpath);
 }
 
-Directory operator/(GString subpath, Directory parent)
+Directory operator/(std::string subpath, Directory parent)
 {
-	return operator/( Directory(subpath), GString(parent)); // o_O
+	return operator/( Directory(subpath), std::string(parent)); // o_O
 }
 
 Directory Directory::Filename()
 {
 	size_t place;
-	if ((place = curpath.find_last_of('/')) != GString::npos)
+	if ((place = curpath.find_last_of('/')) != std::string::npos)
 	{
 		return curpath.substr(place+1);
-	}else if ((place = curpath.find_last_of('\\')) != GString::npos)
+	}else if ((place = curpath.find_last_of('\\')) != std::string::npos)
 	{
 		return curpath.substr(place+1);
 	}
@@ -107,23 +107,23 @@ Directory Directory::Filename()
 	return curpath;
 }
 
-GString Directory::GetExtension() const
+std::string Directory::GetExtension() const
 {
 	auto out = curpath.substr(curpath.find_last_of(".")+1);
 	Utility::ToLower(out);
 	return out;
 }
 
-GString Directory::path() const { return curpath; }
+std::string Directory::path() const { return curpath; }
 const char* Directory::c_path() const { return curpath.c_str(); }
 
-std::vector<GString>& Directory::ListDirectory(std::vector<GString>& Vec, DirType T, const char* ext, bool Recursive)
+std::vector<std::string>& Directory::ListDirectory(std::vector<std::string>& Vec, DirType T, const char* ext, bool Recursive)
 {
 
 #ifdef _WIN32
 	HANDLE hFind = INVALID_HANDLE_VALUE;
 	WIN32_FIND_DATA ffd;
-	GString DirFind = curpath + "/*";
+	std::string DirFind = curpath + "/*";
 	wchar_t tmp[MAX_PATH];
 	char tmpmbs[MAX_PATH];
 
@@ -155,7 +155,7 @@ std::vector<GString>& Directory::ListDirectory(std::vector<GString>& Vec, DirTyp
 		{
 			wcstombs(tmpmbs, ffd.cFileName, MAX_PATH);
 
-			GString fname = curpath + tmpmbs + "./*";
+			std::string fname = curpath + tmpmbs + "./*";
 
 			if (Recursive)
 			{
@@ -177,17 +177,17 @@ std::vector<GString>& Directory::ListDirectory(std::vector<GString>& Vec, DirTyp
 		{
 			if (dir->d_type == DT_REG || (dir->d_type == DT_DIR && T == FS_DIR))
 			{
-				GString fname = dir->d_name;
+				std::string fname = dir->d_name;
 				
 				// Extension is what we need?
-				if (ext && fname.substr(fname.find_last_of(".")+1) == GString(ext)) 
+				if (ext && fname.substr(fname.find_last_of(".")+1) == std::string(ext)) 
 					Vec.push_back(fname);
 				else if (!ext)
 					Vec.push_back(fname);
 
 			}else if (dir->d_type == DT_DIR)
 			{
-				GString fname = GString(dir->d_name) + "/";
+				std::string fname = std::string(dir->d_name) + "/";
 
 				if (Recursive)
 				{
@@ -203,7 +203,7 @@ std::vector<GString>& Directory::ListDirectory(std::vector<GString>& Vec, DirTyp
 	return Vec;
 }
 
-Directory::operator GString() const
+Directory::operator std::string() const
 {
 	return path();
 }

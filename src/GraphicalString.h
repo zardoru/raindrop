@@ -4,12 +4,12 @@ class Font;
 
 class GraphicalString : public Sprite
 {
-	GString mText;
+	std::string mText;
 	Font* mFont;
 public:
 	GraphicalString();
-	void SetText(GString _Text);
-	GString GetText() const;
+	void SetText(std::string _Text);
+	std::string GetText() const;
 	void SetFont(Font* _Font);
 	Font* GetFont() const;
 

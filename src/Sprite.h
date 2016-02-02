@@ -66,7 +66,7 @@ public:
 
 	void SetImage(Image* image, bool ChangeSize = true);
 	Image* GetImage();
-	GString GetImageFilename() const;
+	std::string GetImageFilename() const;
 
 	virtual void Initialize(bool ShouldInitTexture);
 

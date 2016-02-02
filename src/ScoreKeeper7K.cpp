@@ -244,7 +244,7 @@ double ScoreKeeper7K::getJudgmentWindow(int judgment){
 }
 
 
-GString ScoreKeeper7K::getHistogram(){
+std::string ScoreKeeper7K::getHistogram(){
 
 	std::stringstream ss;
 	
@@ -462,7 +462,7 @@ int ScoreKeeper7K::getPacemakerDiff(PacemakerType pacemaker){
 
 
 
-std::pair<GString, int> ScoreKeeper7K::getAutoPacemaker(){
+std::pair<std::string, int> ScoreKeeper7K::getAutoPacemaker(){
 	
 	PacemakerType pmt;
 	
@@ -485,7 +485,7 @@ std::pair<GString, int> ScoreKeeper7K::getAutoPacemaker(){
 }
 
 
-std::pair<GString, int> ScoreKeeper7K::getAutoRankPacemaker(){
+std::pair<std::string, int> ScoreKeeper7K::getAutoRankPacemaker(){
 	
 	PacemakerType pmt;
 	if (rank_pts < total_notes * 110 / 100)  pmt = PMT_RANK_ZERO;

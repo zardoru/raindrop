@@ -3,9 +3,6 @@
 #include "Logging.h"
 #include "sha256.h"
 
-int InfinityMask = 0x7F800000;
-float *PInfinity = (float*)&InfinityMask;
-
 namespace Utility {
 
 	void DebugBreak()
@@ -36,22 +33,22 @@ namespace Utility {
 		return !k.fail();
 	}
 
-	GString GetExtension(GString Filename)
+	std::string GetExtension(std::string Filename)
 	{
 		return Filename.substr(Filename.find_last_of(".")+1);
 	}
 
-	GString RelativeToPath(GString Filename)
+	std::string RelativeToPath(std::string Filename)
 	{
 		return Filename.substr(Filename.find_last_of("/"));
 	}
 
-	GString RemoveExtension(GString Fn)
+	std::string RemoveExtension(std::string Fn)
 	{
 		return Fn.substr(0, Fn.find_last_of("."));
 	}
 
-	bool FileExists(GString Fn)
+	bool FileExists(std::string Fn)
 	{
 #if !(defined WIN32) || (defined MINGW)
 		struct stat st;
@@ -61,7 +58,7 @@ namespace Utility {
 #endif
 	}
 
-	std::wstring Widen(GString Line)
+	std::wstring Widen(std::string Line)
 	{
 		wchar_t u16s[2048]; // Ought to be enough for everyone.
 
@@ -74,7 +71,7 @@ namespace Utility {
 		return std::wstring(u16s);
 	}
 
-	GString Narrow(std::wstring Line)
+	std::string Narrow(std::wstring Line)
 	{
 		char mbs[2048];
 		
@@ -84,12 +81,12 @@ namespace Utility {
 		memset(mbs, 0, 2048);
 		size_t len = WideCharToMultiByte(CP_UTF8, 0, Line.c_str(), Line.length(), mbs, 2048, NULL, NULL);
 #endif
-		return GString(mbs);
+		return std::string(mbs);
 	}
 
 	const short MAX_STRING_SIZE = 2048;
 
-	GString SJIStoU8 (GString Line)
+	std::string SJIStoU8 (std::string Line)
 	{
 #ifdef WIN32
 		wchar_t u16s[MAX_STRING_SIZE];
@@ -97,7 +94,7 @@ namespace Utility {
 		size_t len = MultiByteToWideChar(932, 0, Line.c_str(), Line.length(), u16s, MAX_STRING_SIZE);
 		len = WideCharToMultiByte(CP_UTF8, 0, u16s, len, mbs, MAX_STRING_SIZE, NULL, NULL);
 		mbs[len] = 0;
-		return GString(mbs);
+		return std::string(mbs);
 #elif defined(DARWIN)
 		// Note: for OS X/Darwin/More than likely most BSD variants, iconv behaves a bit differently.
 		iconv_t conv;
@@ -111,7 +108,7 @@ namespace Utility {
 		iconv(conv, (char**)&in, &srcLength, (char**)&out, &dstLength);
 		iconv_close(conv);
 		// We have to use buf instead of out here.  For whatever reason, iconv on Darwin doesn't get us what we would expect if we just use out.
-		return GString(buf);
+		return std::string(buf);
 #else
 		char buf[MAX_STRING_SIZE];
 		iconv_t conv;
@@ -125,30 +122,30 @@ namespace Utility {
 
 		iconv_close(conv);
 		if (success)
-			return GString(*out);
+			return std::string(*out);
 		else
 		{
 			Log::Printf("Failure converting character sets.");
-			return GString();
+			return std::string();
 		}
 #endif
 	}
 
-	GString IntToStr(int num)
+	std::string IntToStr(int num)
 	{
 		std::stringstream k;
 		k << num;
 		return k.str();
 	}
 
-	GString CharToStr(char c)
+	std::string CharToStr(char c)
 	{
 		std::stringstream k;
 		k << c;
 		return k.str();
 	}
 
-	GString Format(GString str, ...)
+	std::string Format(std::string str, ...)
 	{
 		char r[1024];
 		int bfsize;
@@ -162,49 +159,49 @@ namespace Utility {
 			return "";
 		}
 
-        std::vector<char> fmt(bfsize + 1);
+		std::vector<char> fmt(bfsize + 1);
 		vsnprintf(&fmt[0], bfsize, str.c_str(), vl);
 		va_end(vl);
 
-		return GString(fmt.data());
+		return std::string(fmt.data());
 	}
 
-    std::vector<GString> TokenSplit(const GString& str, const GString &token, bool compress)
+	std::vector<std::string> TokenSplit(const std::string& str, const std::string &token, bool compress)
 	{
-        std::vector<GString> ret;
+		std::vector<std::string> ret;
 		size_t len = str.length();
 		auto it = &str[0];
 		auto next = strpbrk(str.c_str(), token.c_str()); // next token instance
 		for (; next != nullptr; next = strpbrk(it, token.c_str()))
 		{
 			if (!compress || it - next != 0)
-				ret.push_back(GString(it, next));
+				ret.push_back(std::string(it, next));
 			it = next + 1;
 		}
 
 		if (it != next && len)
-			ret.push_back(GString(it, &str[len]));
+			ret.push_back(std::string(it, &str[len]));
 		return ret;
 	}
 
-	GString Trim(GString& str)
+	std::string Trim(std::string& str)
 	{
 		std::regex trimreg("^\\s*(.*?)\\s*$");
 		return str = regex_replace(str, trimreg, "$1");
 	}
 
-	GString ReplaceAll(GString& str, const GString& seq, const GString what)
+	std::string ReplaceAll(std::string& str, const std::string& seq, const std::string what)
 	{
 		return str = regex_replace(str, std::regex(seq), what);
 	}
 
-	GString ToLower(GString& str)
+	std::string ToLower(std::string& str)
 	{
 		transform(str.begin(), str.end(), str.begin(), ::tolower);
 		return str;
 	}
 
-	void CheckDir(GString path)
+	void CheckDir(std::string path)
 	{
 		struct stat st;
 		if (stat(path.c_str(), &st))
@@ -217,7 +214,7 @@ namespace Utility {
 		}
 	}
 
-	int GetLMT(GString Path)
+	int GetLMT(std::string Path)
 	{
 		struct stat st;
 		if (stat(Path.c_str(), &st) != -1)
@@ -227,7 +224,7 @@ namespace Utility {
 		else return 0;
 	}
 
-	void RemoveFilenameIllegalCharacters(GString &S, bool removeSlash, bool noAbsolute)
+	void RemoveFilenameIllegalCharacters(std::string &S, bool removeSlash, bool noAbsolute)
 	{
 		// size_t len = strlen(fn);
 		if (!noAbsolute)
@@ -239,7 +236,7 @@ namespace Utility {
 			ReplaceAll(S, "/", "");
 	}
 
-	GString GetSha256ForFile(GString Filename)
+	std::string GetSha256ForFile(std::string Filename)
 	{
 		SHA256 SHA;
 #ifndef WIN32
@@ -260,23 +257,23 @@ namespace Utility {
 			SHA.add(tmpbuf, cnt);
 		}
 
-		return GString(SHA.getHash());
+		return std::string(SHA.getHash());
 	}
 
 } // namespace Utility
 
-double latof(GString s)
+double latof(std::string s)
 {
 	char point = *localeconv()->decimal_point;
 
-	if (s.find_first_of(point) == GString::npos)
+	if (s.find_first_of(point) == std::string::npos)
 	{
 		char toFind = '.';
 		if (point == ',') toFind = '.';
 		else if (point == '.') toFind = ',';
 
 		size_t idx = s.find_first_of(toFind);
-		if (idx != GString::npos)
+		if (idx != std::string::npos)
 			s[idx] = point;
 	}
 

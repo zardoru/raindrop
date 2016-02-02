@@ -149,7 +149,7 @@ namespace Configuration {
 	void LoadTextureParameters()
 	{
 		std::ifstream istr(GameState::GetInstance().GetSkinFile("texparams.rcf").c_str());
-		GString inp, line;
+		std::string inp, line;
 
 		if (!istr.is_open())
 		{
@@ -170,17 +170,17 @@ namespace Configuration {
 		}
 	}
 
-	bool HasTextureParameters(GString filename)
+	bool HasTextureParameters(std::string filename)
 	{
 		return Values.find(filename) != Values.end();
 	}
 	
-	GString GetTextureParameter(GString filename, GString parameter)
+	std::string GetTextureParameter(std::string filename, std::string parameter)
 	{
 		return Values[filename][parameter];
 	}
 
-	bool TextureParameterExists(GString filename, GString parameter)
+	bool TextureParameterExists(std::string filename, std::string parameter)
 	{
 		return Values[filename].find(parameter) != Values[filename].end();
 	}

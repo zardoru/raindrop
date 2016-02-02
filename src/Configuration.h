@@ -3,24 +3,24 @@
 namespace Configuration
 {
 	void Initialize();
-	GString GetConfigs(GString Name, GString Namespace = "");
-	float  GetConfigf(GString Name, GString Namespace = "");
-	GString GetSkinConfigs(GString Name, GString Namespace = "");
-	double  GetSkinConfigf(GString Name, GString Namespace = "");
-	void GetConfigListS(GString Name, std::map<GString, GString> &Out, GString DefaultKeyName);
-    void GetConfigListS(GString, std::map<GString, std::filesystem::path>&, GString);
-	bool ListExists(GString Name);
+	std::string GetConfigs(std::string Name, std::string Namespace = "");
+	float  GetConfigf(std::string Name, std::string Namespace = "");
+	std::string GetSkinConfigs(std::string Name, std::string Namespace = "");
+	double  GetSkinConfigf(std::string Name, std::string Namespace = "");
+	void GetConfigListS(std::string Name, std::map<std::string, std::string> &Out, std::string DefaultKeyName);
+    void GetConfigListS(std::string, std::map<std::string, std::filesystem::path>&, std::string);
+	bool ListExists(std::string Name);
 
-	bool HasTextureParameters(GString filename);
+	bool HasTextureParameters(std::string filename);
 	void LoadTextureParameters();
-	GString GetTextureParameter(GString filename, GString parameter);
-	bool TextureParameterExists(GString filename, GString parameter);
+	std::string GetTextureParameter(std::string filename, std::string parameter);
+	bool TextureParameterExists(std::string filename, std::string parameter);
 
     uint32_t CfgScreenHeight();
     uint32_t CfgScreenWidth();
 
-	void SetConfig(GString Name, GString Value, GString Namespace = "");
-	// void SetConfig(GString Name, float Value, GString Namespace = "");
+	void SetConfig(std::string Name, std::string Value, std::string Namespace = "");
+	// void SetConfig(std::string Name, float Value, std::string Namespace = "");
 	/// void SaveConfig();
 	void Cleanup();
 }

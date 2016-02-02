@@ -150,7 +150,7 @@ namespace Engine { namespace RocketInterface {
 
 		if (!Data.Data) return false;
 
-		GenerateTexture(texture_handle, Data.Data, Rocket::Core::Vector2i(Data.Width, Data.Height));
+		GenerateTexture(texture_handle, (Rocket::Core::byte*)Data.Data, Rocket::Core::Vector2i(Data.Width, Data.Height));
 		Image* Ret = (Image*)texture_handle;
 		Ret->fname = Data.Filename;
 
@@ -179,7 +179,7 @@ namespace Engine { namespace RocketInterface {
 	
 	Rocket::Core::FileHandle FileSystemInterface::Open(const Rocket::Core::String& path)
 	{
-		GString npath = GameState::GetInstance().GetSkinFile(path.CString());
+		std::string npath = GameState::GetInstance().GetSkinFile(path.CString());
 
 		FILE* F = fopen(npath.c_str(), "r");
 

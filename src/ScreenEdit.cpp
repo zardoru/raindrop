@@ -158,7 +158,7 @@ void ScreenEdit::IncreaseCurrentFraction()
 
 void ScreenEdit::SaveChart()
 {
-	GString DefaultPath = MySong->ChartFilename.length() ? MySong->ChartFilename : "chart.dcf";
+	std::string DefaultPath = MySong->ChartFilename.length() ? MySong->ChartFilename : "chart.dcf";
 	MySong->Repack();
 	MySong->Save((MySong->SongDirectory / DefaultPath).c_path());
 	SavedSound->Play();

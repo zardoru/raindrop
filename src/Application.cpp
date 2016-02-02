@@ -243,7 +243,7 @@ bool Application::PollIPC()
 	{
 	case IPC::Message::MSG_STARTFROMMEASURE:
 		Measure = Msg.Param;
-		InFile = GString(Msg.Path);
+		InFile = std::string(Msg.Path);
 		Game->Close();
 		delete Game;
 

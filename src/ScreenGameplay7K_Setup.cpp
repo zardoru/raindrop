@@ -291,7 +291,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 			if (!CurrentDiff->IsVirtual)
 			{
 				// Caveat: Try to autodetect an mp3/ogg file.
-                std::vector<GString> DirCnt;
+                std::vector<std::string> DirCnt;
 				auto SngDir = MySong->SongDirectory;
 
 				SngDir.ListDirectory(DirCnt, Directory::FS_REG);
@@ -648,8 +648,8 @@ void ScreenGameplay7K::SetupMechanics()
 
 void ScreenGameplay7K::LoadResources()
 {
-	GString MissSndFile = (GameState::GetInstance().GetSkinFile("miss.ogg"));
-	GString FailSndFile = (GameState::GetInstance().GetSkinFile("stage_failed.ogg"));
+	std::string MissSndFile = (GameState::GetInstance().GetSkinFile("miss.ogg"));
+	std::string FailSndFile = (GameState::GetInstance().GetSkinFile("stage_failed.ogg"));
 
 	MissSnd.Open(MissSndFile.c_str());
 
@@ -685,9 +685,9 @@ void ScreenGameplay7K::LoadResources()
 
 bool ScreenGameplay7K::BindKeysToLanes(bool UseTurntable)
 {
-	GString KeyProfile;
-	GString value;
-	std::vector<GString> res;
+	std::string KeyProfile;
+	std::string value;
+	std::vector<std::string> res;
 
 	if (UseTurntable)
 		KeyProfile = Configuration::GetConfigs("KeyProfileSpecial" + Utility::IntToStr(CurrentDiff->Channels));

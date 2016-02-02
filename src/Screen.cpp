@@ -4,7 +4,7 @@
 #include "SceneEnvironment.h"
 #include "Screen.h"
 
-Screen::Screen(GString Name) 
+Screen::Screen(std::string Name) 
 {  
 	Parent = nullptr;
 	Running = false;
@@ -15,7 +15,7 @@ Screen::Screen(GString Name)
 	Animations = std::make_shared<SceneEnvironment>(Name.c_str());
 }
 
-Screen::Screen(GString Name, std::shared_ptr<Screen> _Parent)
+Screen::Screen(std::string Name, std::shared_ptr<Screen> _Parent)
 {
 	Parent = _Parent;
 	Running = false;

@@ -45,7 +45,7 @@ void monoToStereo(T* Buffer, size_t cnt, size_t max_len)
 std::unique_ptr<AudioDataSource> SourceFromExt(Directory Filename)
 {
 	std::unique_ptr<AudioDataSource> Ret = nullptr;
-	GString Ext = Filename.GetExtension();
+	std::string Ext = Filename.GetExtension();
 	Filename.Normalize();
 
 	if (Filename.path().length() == 0 || Ext.length() == 0) {
@@ -305,16 +305,16 @@ bool AudioSample::IsValid()
 	return mData != nullptr && mData->size() != 0;
 }
 
-GString RearrangeFilename(const char* Fn)
+std::string RearrangeFilename(const char* Fn)
 {
-	GString Ret;
+	std::string Ret;
 	Directory File = Fn;
 	File.Normalize();
 	if (Utility::FileExists(File.c_path()))
 		return Fn;
 	else
 	{
-		GString Ext = File.GetExtension();
+		std::string Ext = File.GetExtension();
 		Utility::ToLower(Ext);
 
 		if (strstr(Ext.c_str(), "wav"))
@@ -331,7 +331,7 @@ GString RearrangeFilename(const char* Fn)
 
 bool AudioSample::Open(const char* Filename)
 {
-	GString FilenameFixed = RearrangeFilename(Filename);
+	std::string FilenameFixed = RearrangeFilename(Filename);
 	std::unique_ptr<AudioDataSource> Src = SourceFromExt(FilenameFixed);
 	return Open(Src.get());
 }

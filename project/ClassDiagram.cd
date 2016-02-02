@@ -2926,7 +2926,7 @@
       <FileName>C:\Users\PAVILION\Documents\GitHub\raindrop\src\Global.h</FileName>
     </TypeIdentifier>
   </Typedef>
-  <Typedef Name="GString" Collapsed="true">
+  <Typedef Name="std::string" Collapsed="true">
     <Position X="54.25" Y="21.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>

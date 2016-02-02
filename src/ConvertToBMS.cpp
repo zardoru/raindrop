@@ -108,7 +108,7 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 	}
 
 
-	GString ToBase36(int n) {
+	std::string ToBase36(int n) {
 		char pt[32] = {0};
 		itoa(n, pt, 36);
 		pt[2] = 0;
@@ -297,7 +297,7 @@ public:
 		Directory Sn = Song->SongName;
 		Sn.Normalize(true);
 
-		GString name = Utility::Format("%s/%s (%s) - %s.bms", 
+		std::string name = Utility::Format("%s/%s (%s) - %s.bms", 
 			PathOut.c_path(), Sn.c_path(), Parent->Name.c_str(), Parent->Author.c_str());
 
 #ifndef _WIN32

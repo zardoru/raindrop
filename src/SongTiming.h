@@ -40,7 +40,7 @@ void GetTimingChangesInInterval(const TimingData &Timing,
 	double PointA, double PointB, 
 	TimingData &Out);
 
-void LoadTimingList(TimingData &Timing, GString line, bool AllowZeros = false);
+void LoadTimingList(TimingData &Timing, std::string line, bool AllowZeros = false);
 
 
 // Quantizes fraction to a beat's maximum resolution (1/48th of a beat)

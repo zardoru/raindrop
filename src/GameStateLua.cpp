@@ -36,16 +36,16 @@ struct songHelper
 	}
 
 	template <class T>
-	static GString getDifficultyAuthor(T const *Diff)
+	static std::string getDifficultyAuthor(T const *Diff)
 	{
-		GString candidate = GameState::GetInstance().GetSongDatabase()->GetArtistForDifficulty(Diff->ID);
+		std::string candidate = GameState::GetInstance().GetSongDatabase()->GetArtistForDifficulty(Diff->ID);
 		if (!candidate.length())
 			candidate = Diff->Author;
 		return candidate;
 	}
 
 	template <class T>
-	static void setDifficultyAuthor(T *Diff, GString s)
+	static void setDifficultyAuthor(T *Diff, std::string s)
 	{
 		return;
 	}

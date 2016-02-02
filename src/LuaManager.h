@@ -6,7 +6,7 @@ class LuaManager
 {
 
 	lua_State* State;
-	void GetGlobal(GString VarName);
+	void GetGlobal(std::string VarName);
 
 	int func_args, func_results; bool func_input; bool func_err;
 
@@ -19,32 +19,32 @@ public:
 
 	// All functions here will crash if the lua state is not valid.
 
-	bool Register(lua_CFunction Function, GString FunctionName);
-	bool RegisterStruct(GString Key, void* data, GString MetatableName = GString());
-	void RegisterLibrary(GString arrayname, const luaL_Reg *lib);
-	void* GetStruct(GString Key);
+	bool Register(lua_CFunction Function, std::string FunctionName);
+	bool RegisterStruct(std::string Key, void* data, std::string MetatableName = std::string());
+	void RegisterLibrary(std::string arrayname, const luaL_Reg *lib);
+	void* GetStruct(std::string Key);
 	bool RunScript(Directory file);
-	bool RunScript(GString Filename);
-	bool RunString(GString sGString);
+	bool RunScript(std::string Filename);
+	bool RunString(std::string sGString);
 
 	// Do a "require" call with Filename as the argument. This leaves a value on the stack!
-	bool Require(GString Filename);
+	bool Require(std::string Filename);
 
 	// Global variables
 
-	int GetGlobalI(GString VariableName, int Default = -1);
-	double GetGlobalD(GString VariableName, double Default = -1);
-	GString GetGlobalS(GString VariableName, GString Default = GString());
+	int GetGlobalI(std::string VariableName, int Default = -1);
+	double GetGlobalD(std::string VariableName, double Default = -1);
+	std::string GetGlobalS(std::string VariableName, std::string Default = std::string());
 
-	void SetGlobal(const GString &VariableName, const GString &Value);
-	void SetGlobal(const GString &VariableName, const double &Value);
+	void SetGlobal(const std::string &VariableName, const std::string &Value);
+	void SetGlobal(const std::string &VariableName, const double &Value);
 
 	lua_State* GetState();
 
 	// Function calling
 	void PushArgument(int Value);
 	void PushArgument(double Value);
-	void PushArgument(GString Value);
+	void PushArgument(std::string Value);
 
 	bool CallFunction(const char* Name, int Arguments = 0, int Results = 0);
 	bool RunFunction();
@@ -55,7 +55,7 @@ public:
 	void Pop();
 
 	/* Metatables */
-	void NewMetatable(GString MtName);
+	void NewMetatable(std::string MtName);
 
 	// Arrays
 	/* 
@@ -67,16 +67,16 @@ public:
 	*/
 
 	void NewArray();
-	bool UseArray(GString VariableName); // returns true if the array exists
+	bool UseArray(std::string VariableName); // returns true if the array exists
 	
 	void SetFieldI(int index, int Value);
 	void SetFieldD(int index, double Value);
-	void SetFieldS(int index, GString Value);
-	void SetFieldS(GString name, GString Value);
+	void SetFieldS(int index, std::string Value);
+	void SetFieldS(std::string name, std::string Value);
 
-	int GetFieldI(GString Key, int Default = -1);
-	double GetFieldD(GString Key, double Default = -1);
-	GString GetFieldS(GString Key, GString Default = GString());
+	int GetFieldI(std::string Key, int Default = -1);
+	double GetFieldD(std::string Key, double Default = -1);
+	std::string GetFieldS(std::string Key, std::string Default = std::string());
 
 	// Table iteration
 	void StartIteration ();
@@ -84,16 +84,16 @@ public:
 	bool IterateNext();
 	int NextInt();
 	double NextDouble();
-	GString NextGString();
+	std::string NextGString();
 	
-	void FinalizeArray(GString ArrayName); // saves the new array with this name
-	void AppendPath(GString Path);
+	void FinalizeArray(std::string ArrayName); // saves the new array with this name
+	void AppendPath(std::string Path);
 	// TODO: Table variables
 
 };
 
 template <class T>
-T* GetObjectFromState(lua_State* L, GString ObjectName)
+T* GetObjectFromState(lua_State* L, std::string ObjectName)
 {
 	lua_pushstring(L, ObjectName.c_str());
 	lua_gettable(L, LUA_REGISTRYINDEX);

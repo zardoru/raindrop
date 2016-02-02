@@ -86,10 +86,10 @@ void GetTimingChangesInInterval(const TimingData &Timing,
 	}
 }
 
-void LoadTimingList(TimingData &Timing, GString line, bool AllowZeros)
+void LoadTimingList(TimingData &Timing, std::string line, bool AllowZeros)
 {
-	GString ListString = line.substr(line.find_first_of(":") + 1);
-    std::vector< GString > SplitResult;
+	std::string ListString = line.substr(line.find_first_of(":") + 1);
+    std::vector< std::string > SplitResult;
 	TimingSegment Segment;
 
 	Timing.clear();
@@ -98,7 +98,7 @@ void LoadTimingList(TimingData &Timing, GString line, bool AllowZeros)
 	SplitResult = Utility::TokenSplit(ListString); // Separate List of BPMs.
 	for (auto ValueString: SplitResult)
 	{ // Separate Time=Value pairs.
-        std::vector< GString > SplitResultPair = Utility::TokenSplit(ValueString, "=");
+        std::vector< std::string > SplitResultPair = Utility::TokenSplit(ValueString, "=");
 
 		if (SplitResultPair.size() == 1) // Assume only one BPM on the whole list.
 		{

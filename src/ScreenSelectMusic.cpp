@@ -33,7 +33,7 @@ AudioStream	**Loops;
 
 int LoopTotal;
 
-void LuaEvt(LuaManager* LuaMan, GString Func, Sprite* Obj)
+void LuaEvt(LuaManager* LuaMan, std::string Func, Sprite* Obj)
 {
 	LuaMan->CallFunction(Func.c_str());
 	LuaMan->RunFunction();
@@ -123,10 +123,10 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic")
 		LoopTotal = Configuration::GetSkinConfigf("LoopTotal");
 
 		Loops = new AudioStream*[LoopTotal];
-		for (int i = 0; i < LoopTotal; i++)
+		for (auto i = 0U; i < LoopTotal; ++i)
 		{
 			std::stringstream str;
-			str << "loop" << i+1 << ".ogg";
+			str << "loop" << i + 1 << ".ogg";
 			Loops[i] = new AudioStream();
 			Loops[i]->Open(GameState::GetInstance().GetSkinFile(str.str()).c_str());
 			Loops[i]->Stop();
@@ -246,8 +246,8 @@ float ScreenSelectMusic::GetListHorizontalTransformation(const float Y)
 
 void ScreenSelectMusic::StartGameplayScreen()
 {
-    std::shared_ptr<ScreenLoading> LoadNext;
-    std::shared_ptr<Game::Song> MySong = GameState::GetInstance().GetSelectedSongShared();
+	std::shared_ptr<ScreenLoading> LoadNext;
+	std::shared_ptr<Game::Song> MySong = GameState::GetInstance().GetSelectedSongShared();
 	uint8_t difindex = GameState::GetInstance().GetDifficultyIndex();
 
 	if (MySong->Mode == MODE_DOTCUR)
@@ -261,7 +261,7 @@ void ScreenSelectMusic::StartGameplayScreen()
 		auto VSRGGame = std::make_shared<ScreenGameplay7K>();
 		
 		VSRGGame->Init(std::dynamic_pointer_cast<VSRG::Song>(MySong), 
-		               difindex, *GameState::GetInstance().GetParameters());
+					   difindex, *GameState::GetInstance().GetParameters());
 
 		LoadNext = std::make_shared<ScreenLoading>(VSRGGame);
 	}
@@ -314,7 +314,7 @@ void ScreenSelectMusic::PlayPreview()
 	// Do the song preview thing.
 	SongDatabase* DB = GameState::GetInstance().GetSongDatabase();
 	float StartTime;
-	GString PreviewFile;
+	std::string PreviewFile;
 
 	if (ToPreview == nullptr)
 	{
@@ -361,8 +361,8 @@ void ScreenSelectMusic::PlayLoops()
 {
 	if (LoopTotal)
 	{
-		bool PlayingAlready = false;
-		for (int i = 0; i < LoopTotal; i++)
+		auto PlayingAlready = false;
+		for (auto i = 0U; i < LoopTotal; i++)
 		{
 			PlayingAlready = Loops[i]->IsPlaying();
 			if (PlayingAlready) break;
@@ -370,7 +370,7 @@ void ScreenSelectMusic::PlayLoops()
 
 		if (!PlayingAlready)
 		{
-			int rn = std::randint(0, LoopTotal);
+			auto rn = std::randint(0, LoopTotal - 1);
 			Loops[rn]->SeekTime(0);
 			Loops[rn]->Play();
 		}
@@ -535,7 +535,7 @@ void ScreenSelectMusic::TransformItem(int Item, std::shared_ptr<Game::Song> Song
 	}
 }
 
-void ScreenSelectMusic::TransformString(int Item, std::shared_ptr<Game::Song> Song, bool IsSelected, int Index, GString text)
+void ScreenSelectMusic::TransformString(int Item, std::shared_ptr<Game::Song> Song, bool IsSelected, int Index, std::string text)
 {
 	if (Animations->GetEnv()->CallFunction("TransformString", 5))
 	{
@@ -553,7 +553,7 @@ void ScreenSelectMusic::OnDirectoryChange()
 	Animations->DoEvent("OnDirectoryChange");
 }
 
-void ScreenSelectMusic::OnItemClick(int32_t Index, uint32_t boundIndex, GString Line, std::shared_ptr<Game::Song> Selected)
+void ScreenSelectMusic::OnItemClick(int32_t Index, uint32_t boundIndex, std::string Line, std::shared_ptr<Game::Song> Selected)
 {
 	if (Animations->GetEnv()->CallFunction("OnItemClick", 4))
 	{
@@ -565,7 +565,7 @@ void ScreenSelectMusic::OnItemClick(int32_t Index, uint32_t boundIndex, GString 
 	}
 }
 
-void ScreenSelectMusic::OnItemHover(int32_t Index, uint32_t boundIndex, GString Line, std::shared_ptr<Game::Song> Selected)
+void ScreenSelectMusic::OnItemHover(int32_t Index, uint32_t boundIndex, std::string Line, std::shared_ptr<Game::Song> Selected)
 {
 	if (Animations->GetEnv()->CallFunction("OnItemHover", 4))
 	{
@@ -577,7 +577,7 @@ void ScreenSelectMusic::OnItemHover(int32_t Index, uint32_t boundIndex, GString 
 	}
 }
 
-void ScreenSelectMusic::OnItemHoverLeave(int32_t Index, uint32_t boundIndex, GString Line, std::shared_ptr<Game::Song> Selected)
+void ScreenSelectMusic::OnItemHoverLeave(int32_t Index, uint32_t boundIndex, std::string Line, std::shared_ptr<Game::Song> Selected)
 {
 	if (Animations->GetEnv()->CallFunction("OnItemHoverLeave", 4))
 	{

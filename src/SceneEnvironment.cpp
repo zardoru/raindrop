@@ -140,7 +140,7 @@ public:
 	}
 };
 
-bool LuaAnimation(LuaManager* Lua, GString Func, Sprite* Target, float Frac)
+bool LuaAnimation(LuaManager* Lua, std::string Func, Sprite* Target, float Frac)
 {
 	if (Lua->CallFunction(Func.c_str(), 2, 1))
 	{
@@ -220,7 +220,7 @@ float SceneEnvironment::GetExitDuration()
 
 
 
-void SceneEnvironment::AddLuaAnimation (Sprite* Target, const GString &FuncName, 
+void SceneEnvironment::AddLuaAnimation (Sprite* Target, const std::string &FuncName, 
 	int Easing, float Duration, float Delay)
 {
 	Animation Anim;
@@ -283,7 +283,7 @@ void SceneEnvironment::InitializeUI()
 	ctx->LoadMouseCursor("cursor.rml");	
 }
 
-void SceneEnvironment::RunUIScript(GString Filename)
+void SceneEnvironment::RunUIScript(std::string Filename)
 {
 	lua_State* L = Rocket::Core::Lua::Interpreter::GetLuaState();
 	luaL_dofile(L, GameState::GetInstance().GetSkinFile(Filename).c_str());
@@ -319,7 +319,7 @@ void SceneEnvironment::SetUILayer(uint32_t Layer)
 	Sort();
 }
 
-void SceneEnvironment::Preload(GString Filename, GString Arrname)
+void SceneEnvironment::Preload(std::string Filename, std::string Arrname)
 {
 	mInitScript = Filename;
 
@@ -364,7 +364,7 @@ bool SceneEnvironment::IsManagedObject(Drawable2D *Obj)
 	return false;
 }
 
-void SceneEnvironment::Initialize(GString Filename, bool RunScript)
+void SceneEnvironment::Initialize(std::string Filename, bool RunScript)
 {
 	if (!mInitScript.length() && Filename.length())
 		mInitScript = Filename;
@@ -388,7 +388,7 @@ void SceneEnvironment::AddTarget(Sprite *Targ, bool IsExternal)
 	Sort();
 }
 
-void SceneEnvironment::AddLuaTarget(Sprite *Targ, GString Varname)
+void SceneEnvironment::AddLuaTarget(Sprite *Targ, std::string Varname)
 {
 	lua_State *L = Lua->GetState();
 	luabridge::push(L, Targ);
@@ -563,7 +563,7 @@ void SceneEnvironment::ReloadUI()
 	}
 	ctx->UnloadAllDocuments();
 
-	GString FName = mScreenName + GString(".rml");
+	std::string FName = mScreenName + std::string(".rml");
 
 	Doc = ctx->LoadDocument(FName.c_str());
 	if (Doc)
@@ -577,7 +577,7 @@ void SceneEnvironment::ReloadUI()
 /* This function right now is broken beyond repair. Don't mind it. */
 void SceneEnvironment::ReloadScripts()
 {
-	GString InitScript = mInitScript;
+	std::string InitScript = mInitScript;
 	this->~SceneEnvironment();
 	new (this) SceneEnvironment(mScreenName.c_str(), false);
 
@@ -668,7 +668,7 @@ ImageList* SceneEnvironment::GetImageList()
 	return Images.get();
 }
 
-void SceneEnvironment::DoEvent(GString EventName, int Return)
+void SceneEnvironment::DoEvent(std::string EventName, int Return)
 {
 	if (Lua->CallFunction(EventName.c_str(), 0, Return))
 		Lua->RunFunction();

@@ -13,17 +13,17 @@ int TrackToXPos(int totaltracks, int track)
 	return (base * (track + 1) - minus);
 }
 
-void ConvertToOM(VSRG::Song *Sng, Directory PathOut, GString Author)
+void ConvertToOM(VSRG::Song *Sng, Directory PathOut, std::string Author)
 {
 	for (auto Difficulty : Sng->Difficulties)
 	{
 		char vf[1024];
 		TimingData BPS;
 		TimingData VSpeeds, Warps;
-		GString Author = Sng->SongAuthor;
-		GString Name  = Sng->SongName;
-		GString DName = Difficulty->Name;
-		GString Charter = Author;
+		std::string Author = Sng->SongAuthor;
+		std::string Name  = Sng->SongName;
+		std::string DName = Difficulty->Name;
+		std::string Charter = Author;
 
 		Utility::RemoveFilenameIllegalCharacters(Author, true);
 		Utility::RemoveFilenameIllegalCharacters(Name, true);

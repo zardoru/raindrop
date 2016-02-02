@@ -277,7 +277,7 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 
 
 
-bool IsValidOJN(std::fstream &filein, GString filename, OjnHeader *Head)
+bool IsValidOJN(std::fstream &filein, std::string filename, OjnHeader *Head)
 {
 	if (!filein)
 	{
@@ -303,7 +303,7 @@ bool IsValidOJN(std::fstream &filein, GString filename, OjnHeader *Head)
 	return true;
 }
 
-const char *LoadOJNCover(GString filename, size_t &read)
+const char *LoadOJNCover(std::string filename, size_t &read)
 {
 #if (!defined _WIN32)
 	std::fstream filein(filename.c_str());
@@ -325,7 +325,7 @@ const char *LoadOJNCover(GString filename, size_t &read)
 	return out;
 }
 
-void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::Song *Out)
+void NoteLoaderOJN::LoadObjectsFromFile(std::string filename, std::string prefix, VSRG::Song *Out)
 {
 #if (!defined _WIN32)
 	std::fstream filein(filename.c_str());
@@ -337,9 +337,9 @@ void NoteLoaderOJN::LoadObjectsFromFile(GString filename, GString prefix, VSRG::
 	if (!IsValidOJN(filein, filename, &Head))
 		return;
 
-	GString vArtist;
-	GString vName;
-	GString Noter;
+	std::string vArtist;
+	std::string vName;
+	std::string Noter;
 	/*  
 		These are the only values we display, so we should clean them up so that nobody cries.
 		Of course, the right thing to do would be to iconv these, but unless

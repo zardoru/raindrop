@@ -57,8 +57,8 @@ class GameWindow
 	
 	std::vector<VBO*> VBOList;
 	std::vector<TruetypeFont*> TTFList;
-	std::map<GString, uint32_t> UniformLocs;
-	std::map<GString, uint32_t> AttribLocs;
+	std::map<std::string, uint32_t> UniformLocs;
+	std::map<std::string, uint32_t> AttribLocs;
 	Application* Parent;
 
 	bool FullscreenSwitchbackPending, IsFullscreen;

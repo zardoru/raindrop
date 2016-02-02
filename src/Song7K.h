@@ -105,7 +105,7 @@ namespace VSRG
 	};
 
 	struct BMPEventsDetail {
-		std::map<int, GString> BMPList;
+		std::map<int, std::string> BMPList;
 		std::vector<AutoplayBMP> BMPEventsLayerBase;
 		std::vector<AutoplayBMP> BMPEventsLayer;
 		std::vector<AutoplayBMP> BMPEventsLayer2;
@@ -139,7 +139,7 @@ namespace VSRG
 		std::shared_ptr<CustomTimingInfo> TimingInfo;
 
 		// Background/foreground to show when loading.
-		GString StageFile;
+		std::string StageFile;
 
 		// Whether this difficulty uses the scratch channel (being channel/index 0 always used for this)
 		bool Turntable;

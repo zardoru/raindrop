@@ -9,8 +9,8 @@ class TextPrompt
 {
 private:
 	BitmapFont* mPromptFont;
-	GString		mPromptText;
-	GString		mBufferText;
+	std::string		mPromptText;
+	std::string		mBufferText;
 	bool		mOpen;
 public:
 	TextPrompt();
@@ -18,11 +18,11 @@ public:
 	/* Returns 0 if closed, 1 if handling input and 2 if there's data to get from the prompt. */
 	int HandleInput(int32_t key, KeyEventType code, bool isMouseInput);
 	void SetFont(BitmapFont* Font);
-	void SetPrompt(GString PromptText);
+	void SetPrompt(std::string PromptText);
 	void Render();
 	void SetOpen(bool Open);
 	void SwitchOpen();
-	GString GetContents();
+	std::string GetContents();
 };
 
 }

@@ -95,8 +95,8 @@ public:
 
 	void Load()
 	{
-		std::map<GString, GString> Directories;
-		std::map<GString, std::filesystem::path> Directories2;
+		std::map<std::string, std::string> Directories;
+		std::map<std::string, std::filesystem::path> Directories2;
 
 		Configuration::GetConfigListS("SongDirectories", Directories, "Songs");
 		Configuration::GetConfigListS("SongDirectories", Directories2, "Songs");
@@ -398,7 +398,7 @@ void SongWheel::DisplayItem(int32_t ListItem, int32_t ListPosition, Vec2 Positio
 	{
 		bool IsSelected = false;
 		std::shared_ptr<Song> Song = nullptr;
-		GString Text;
+		std::string Text;
 		if (ListItem != -1)
 		{
 			Song = CurrentList->GetSongEntry(ListItem);

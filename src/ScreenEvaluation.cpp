@@ -23,7 +23,7 @@ int32_t ScreenEvaluation::CalculateScore()
 	return int32_t(1000000.0 * Results.dpScoreSquare / (double)(Results.totalNotes * (Results.totalNotes + 1)));
 }
 
-void ScreenEvaluation::Init(EvaluationData _Data, GString SongAuthor, GString SongTitle)
+void ScreenEvaluation::Init(EvaluationData _Data, std::string SongAuthor, std::string SongTitle)
 {
 	if (!ScreenEvaluationMusic)
 	{
@@ -102,8 +102,8 @@ bool ScreenEvaluation::Run(double Delta)
 	{
 		Font->Render(ResultsGString,        Vec2( ScreenWidth/2 - 110, ScreenHeight/2 - 100 ));
 		Font->Render(ResultsNumerical,     Vec2( ScreenWidth/2, ScreenHeight/2 - 100 ));
-		Font->Render(GString("results screen"),			    Vec2( ScreenWidth/2 - 70, 0 ));
-		Font->Render(GString("press space to continue..."), Vec2( ScreenWidth/2 - 130, ScreenHeight*7/8 ));
+		Font->Render(std::string("results screen"),			    Vec2( ScreenWidth/2 - 70, 0 ));
+		Font->Render(std::string("press space to continue..."), Vec2( ScreenWidth/2 - 130, ScreenHeight*7/8 ));
 		Font->Render(TitleFormat, Vec2( 0, ScreenHeight - 20 ));
 	}
 	return Running;

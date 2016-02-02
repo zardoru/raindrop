@@ -183,7 +183,7 @@ namespace osb
 	class BGASprite : public EventComponent
 	{
 		EOrigin mOrigin;
-		GString mFile;
+		std::string mFile;
 		Vec2 mStartPos;
 		Transformation mTransform;
 		osuBackgroundAnimation *mParent;
@@ -192,9 +192,9 @@ namespace osb
 		EventList::iterator GetEvent(float& Time, EEventType evt);
 		bool IsValidEvent(EventList::iterator& fade_evt, EEventType evt);
 	public:
-		BGASprite(GString file, EOrigin origin, Vec2 start_pos);
+		BGASprite(std::string file, EOrigin origin, Vec2 start_pos);
 		void Setup(float Time, Sprite& sprite);
-		GString GetImageFilename();
+		std::string GetImageFilename();
 
 		void SetParent(osuBackgroundAnimation* parent);
 	}; 
@@ -208,14 +208,14 @@ class osuBackgroundAnimation : public BackgroundAnimation
 	bool mIsWidescreen;
 	vector<shared_ptr<osb::BGASprite>> mSprites;
 	vector<shared_ptr<Sprite>> mDrawObjects;
-	map<GString, int> mFileIndices;
+	map<std::string, int> mFileIndices;
 	ImageList mImageList;
-	void AddImageToList(GString image_filename);
+	void AddImageToList(std::string image_filename);
 	double AnimationTime;
 public:
 	osuBackgroundAnimation(VSRG::Song* song, shared_ptr<osb::SpriteList> existing_sprites);
 	Image* GetImageFromIndex(int m_image_index);
-	int GetIndexFromFilename(GString filename);
+	int GetIndexFromFilename(std::string filename);
 };
 
 shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str);

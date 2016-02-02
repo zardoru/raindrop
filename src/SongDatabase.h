@@ -35,22 +35,22 @@ private:
 
 	// Returns the ID.
 	int InsertFilename(Directory Fn);
-	bool DifficultyExists(int FileID, GString DifficultyName, int *IDOut = NULL);
+	bool DifficultyExists(int FileID, std::string DifficultyName, int *IDOut = NULL);
 public:
 
-	SongDatabase(GString Database);
+	SongDatabase(std::string Database);
 	~SongDatabase();
 
 	void ClearDifficulties(int SongID);
 	bool CacheNeedsRenewal(Directory Dir);
 	void AddDifficulty(int SongID, Directory Filename, Game::Song::Difficulty* Diff, int Mode);
 
-	void GetPreviewInfo(int SongID, GString &Filename, float &PreviewStart);
+	void GetPreviewInfo(int SongID, std::string &Filename, float &PreviewStart);
 
 	// Difficulty information
-	GString GetDifficultyFilename (int DiffID); 
-	GString GetArtistForDifficulty(int DiffID);
-	GString GetStageFile(int DiffID);
+	std::string GetDifficultyFilename (int DiffID); 
+	std::string GetArtistForDifficulty(int DiffID);
+	std::string GetStageFile(int DiffID);
 
 	int GetSongIDForFile(Directory File, VSRG::Song* In);
 

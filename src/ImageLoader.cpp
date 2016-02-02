@@ -8,8 +8,8 @@
 #include "ImageLoader.h"
 
 std::mutex LoadMutex;
-std::map<GString, Image*> ImageLoader::Textures;
-std::map<GString, ImageLoader::UploadData> ImageLoader::PendingUploads;
+std::map<std::string, Image*> ImageLoader::Textures;
+std::map<std::string, ImageLoader::UploadData> ImageLoader::PendingUploads;
 
 void Image::CreateTexture()
 {
@@ -222,7 +222,7 @@ void ImageLoader::DeleteImage(Image* &ToDelete)
 	}
 }
 
-Image* ImageLoader::InsertImage(GString Name, ImageData *imgData)
+Image* ImageLoader::InsertImage(std::string Name, ImageData *imgData)
 {
 	Image* I;
 
@@ -246,30 +246,66 @@ void* memdup(const void* d, size_t s) {
 	return p;
 }
 
-ImageData ImageLoader::GetDataForImage(GString filename)
+ImageData ImageLoader::GetDataForImage(std::string filename)
 {
-	ImageData out;
-	FIBITMAP *img = FreeImage_Load(FreeImage_GetFileType(filename.c_str()), filename.c_str());
+#if 1
+	using namespace boost::gil;
+
+	auto file = std::ifstream{ filename, std::ios::binary };
+	if (!file.is_open()) {
+		Log::Printf("Could not open file \"%s\".\n", filename);
+		return{};
+	}
+
+	bgra8_image_t gil;
+    try {
+        read_and_convert_image(file, gil, png_tag());
+    }
+    // catch (std::ios_base::failure) {}
+    catch (...) {
+        Log::Printf("Could not load image \"%s\".\n", filename.c_str());
+        return{};
+    }
 	
+	auto v = view(gil);
+	using pixel = decltype(v)::value_type;
+	auto data = new pixel[v.width() * v.height()];
+	copy_pixels(v, interleaved_view(v.width(), v.height(), data,
+		v.width() * sizeof(pixel)));
+
+	ImageData out;
+	out.Data = data;
+	out.Filename = filename;
+	out.Width = v.width();
+	out.Height = v.height();
+
+	return out;
+#endif
+
+#if 0
+	auto img = FreeImage_Load(FreeImage_GetFileType(filename.c_str()), filename.c_str());	
 	if (!img)
 	{
 		Log::Printf("Could not load image \"%s\".\n", filename.c_str());
-		return out;
+		return {};
 	}
 
-	FIBITMAP *bit32 = FreeImage_ConvertTo32Bits(img);
-	FreeImage_FlipVertical(bit32);
+	auto bit32 = FreeImage_ConvertTo32Bits(img);
+	FreeImage_Unload(img);
 
+    FreeImage_FlipVertical(bit32);
+	
+	ImageData out;
 	auto len = FreeImage_GetPitch(bit32) * FreeImage_GetHeight(bit32);
-	out.Data = static_cast<unsigned char*>(memdup(FreeImage_GetBits(bit32), len));
+	out.Data = memdup(FreeImage_GetBits(bit32), len);
 	out.Filename = filename;
 	out.Width = FreeImage_GetWidth(bit32);
 	out.Height = FreeImage_GetHeight(bit32);
-
-
-	FreeImage_Unload(img);
+	
 	FreeImage_Unload(bit32);
+	
 	return out;
+#endif
 }
 
 ImageData ImageLoader::GetDataForImageFromMemory(const unsigned char* const buffer, size_t len)
@@ -285,8 +321,9 @@ ImageData ImageLoader::GetDataForImageFromMemory(const unsigned char* const buff
 	auto bit32 = FreeImage_ConvertTo32Bits(bmp);
 	FreeImage_Unload(bmp);
 
-	FreeImage_FlipVertical(bit32);
+    FreeImage_FlipVertical(bit32);
 	auto imglen = FreeImage_GetPitch(bit32) * FreeImage_GetHeight(bit32);
+
 	out.Data = static_cast<unsigned char*>(memdup(FreeImage_GetBits(bit32), imglen));
 	out.Width = FreeImage_GetWidth(bit32);
 	out.Height = FreeImage_GetHeight(bit32);
@@ -297,7 +334,7 @@ ImageData ImageLoader::GetDataForImageFromMemory(const unsigned char* const buff
 }
 
 
-Image* ImageLoader::Load(GString filename)
+Image* ImageLoader::Load(std::string filename)
 {
 	if ( Textures.find(filename) != Textures.end() && Textures[filename]->IsValid)
 	{
@@ -332,7 +369,7 @@ void ImageLoader::AddToPending(const char* Filename)
 }
 
 /* For multi-threaded loading. */
-void ImageLoader::LoadFromManifest(char** Manifest, int Count, GString Prefix)
+void ImageLoader::LoadFromManifest(char** Manifest, int Count, std::string Prefix)
 {
 	for (int i = 0; i < Count; i++)
 	{

@@ -8,7 +8,7 @@ class SceneEnvironment;
 
 class ScreenEvaluation7K : public Screen
 {
-	GString DisplayResult;
+	std::string DisplayResult;
 	ScoreKeeper7K *Score;
 public:
 	ScreenEvaluation7K();

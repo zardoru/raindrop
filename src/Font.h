@@ -11,5 +11,5 @@ public:
 
 	virtual float GetHorizontalLength(const char *Text);
 	virtual void Invalidate();
-	virtual void Render(const GString &Text, const Vec2 &Position, const Mat4& Transform = Mat4());
+	virtual void Render(const std::string &Text, const Vec2 &Position, const Mat4& Transform = Mat4());
 };

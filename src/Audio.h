@@ -9,7 +9,7 @@ void InitAudio();
 #define SoundStream AudioStream
 #define SoundSample	AudioSample
 
-GString GetOggTitle(GString file);
+std::string GetOggTitle(std::string file);
 
 void MixerAddStream(SoundStream *Sound);
 void MixerRemoveStream(SoundStream* Sound);

@@ -27,7 +27,7 @@ namespace dotcur {
 		std::vector<dotcur::Difficulty*> Difficulties;
 
 		/* chart filename*/
-		GString ChartFilename;
+		std::string ChartFilename;
 
 		double		LeadInTime;
 		int			MeasureLength;

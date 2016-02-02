@@ -3,18 +3,18 @@
 #include "Logging.h"
 
 #ifndef NDEBUG
-void Log::DebugPrintf(GString Format, ...)
+void Log::DebugPrintf(std::string Format, ...)
 {
 	LogPrintf(Format);
 }
 #else
-void Log::DebugPrintf(GString Format, ...)
+void Log::DebugPrintf(std::string Format, ...)
 {
 	// stub
 }
 #endif
 
-void Log::Printf(GString Format, ...)
+void Log::Printf(std::string Format, ...)
 {
 	char Buffer[2048];
 	va_list vl;
@@ -24,7 +24,7 @@ void Log::Printf(GString Format, ...)
 	wprintf(L"%ls", Utility::Widen(Buffer).c_str());
 }
 
-void Log::Logf(GString Format, ...)
+void Log::Logf(std::string Format, ...)
 {
 	static std::fstream logf ("log.txt", std::ios::out);
 	char Buffer[2048];
@@ -36,7 +36,7 @@ void Log::Logf(GString Format, ...)
 	logf.flush();
 }
 
-void Log::LogPrintf(GString str, ...)
+void Log::LogPrintf(std::string str, ...)
 {
 	char Buffer[2048];
 	va_list vl;

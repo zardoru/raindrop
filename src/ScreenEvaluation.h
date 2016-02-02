@@ -10,13 +10,13 @@ class ScreenEvaluation : public Screen
 	Sprite Background;
 	BitmapFont* Font;
 
-	GString ResultsGString, ResultsNumerical;
-	GString TitleFormat;
+	std::string ResultsGString, ResultsNumerical;
+	std::string TitleFormat;
 	
 	int32_t CalculateScore();
 public:
 	ScreenEvaluation();
-	void Init(EvaluationData _Data, GString SongAuthor, GString SongTitle);
+	void Init(EvaluationData _Data, std::string SongAuthor, std::string SongTitle);
 	bool Run(double Delta) override;
 	void Cleanup() override;
 	bool HandleInput(int32_t key, KeyEventType code, bool isMouseInput) override;

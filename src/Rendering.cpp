@@ -316,7 +316,7 @@ void TruetypeFont::ReleaseCodepoint(int cp)
 	}
 }
 
-void TruetypeFont::Render(const GString &In, const Vec2 &Position, const Mat4 &Transform)
+void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat4 &Transform)
 {
 	const char* Text = In.c_str(); 
 	int Line = 0;
@@ -476,7 +476,7 @@ void Line::Render()
 	glEnable(GL_DEPTH_TEST);
 }
 
-void BitmapFont::Render(const GString &In, const Vec2 &Position, const Mat4 &Transform)
+void BitmapFont::Render(const std::string &In, const Vec2 &Position, const Mat4 &Transform)
 {
 	const char* Text = In.c_str();
 	int32_t Character = 0, Line = 0;

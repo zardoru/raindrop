@@ -9,7 +9,7 @@ struct ListEntry
 		Song
 	} Kind;
     std::shared_ptr<void> Data;
-	GString EntryName; 
+	std::string EntryName; 
 };
 
 class SongList
@@ -21,9 +21,9 @@ public:
 	SongList (SongList *Parent = nullptr);
 	~SongList();
 
-	void AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, Directory Dir, GString Name, bool VSRGActive, bool DotcurActive);
+	void AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, Directory Dir, std::string Name, bool VSRGActive, bool DotcurActive);
 	void AddDirectory(std::mutex &loadMutex, SongLoader *Loader, Directory Dir, bool VSRGActive, bool DotcurActive);
-	void AddVirtualDirectory(GString NewEntryName, Game::Song* List, int Count);
+	void AddVirtualDirectory(std::string NewEntryName, Game::Song* List, int Count);
 	void AddSong(std::shared_ptr<Game::Song> Song);
 
 	// if false, it's a song
@@ -31,7 +31,7 @@ public:
 	std::shared_ptr<SongList> GetListEntry(unsigned int Entry);
 	std::shared_ptr<Game::Song> GetSongEntry(unsigned int Entry);
 
-	GString GetEntryTitle(unsigned int Entry);
+	std::string GetEntryTitle(unsigned int Entry);
 	unsigned int GetNumEntries();
 
 	void SortAlphabetically();

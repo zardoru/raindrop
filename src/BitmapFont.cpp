@@ -67,7 +67,7 @@ void BitmapFont::SetAffectedByLightning(bool Lightning)
 	}
 }
 
-BitmapFont *BitmapFont::FromLua(LuaManager* Lua, GString TableName)
+BitmapFont *BitmapFont::FromLua(LuaManager* Lua, std::string TableName)
 {
 	BitmapFont* Ret = new BitmapFont();
 

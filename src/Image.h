@@ -14,9 +14,9 @@ struct ImageData {
 		SM_DEFAULT = SM_MIPMAP
 	} ScalingMode;
 
-	GString Filename;
+	std::string Filename;
 	int Width, Height;
-	unsigned char* Data;
+	void *Data;
 
 	ImageData() {
 		WrapMode = WM_DEFAULT;
@@ -51,7 +51,7 @@ public:
 	static void BindNull(); // Or, basically unbind.
 
 	// Data
-	GString fname;
+	std::string fname;
 	int w, h;
 	unsigned int texture;
 	bool IsValid;

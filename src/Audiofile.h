@@ -6,7 +6,7 @@ protected:
 	bool mSourceLoop;
 
 #ifndef NDEBUG
-	GString dFILENAME;
+	std::string dFILENAME;
 #endif
 
 public:

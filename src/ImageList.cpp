@@ -26,7 +26,7 @@ ImageList::~ImageList()
 	Destroy();
 }
 
-void ImageList::AddToList(const GString Filename, const GString Prefix)
+void ImageList::AddToList(const std::string Filename, const std::string Prefix)
 {
 	Directory ResFilename = Directory(Prefix) / Filename;
 	ResFilename.Normalize(true);
@@ -38,7 +38,7 @@ void ImageList::AddToList(const GString Filename, const GString Prefix)
 	}
 }
 
-void ImageList::AddToListIndex(const GString Filename, const GString Prefix, int Index)
+void ImageList::AddToListIndex(const std::string Filename, const std::string Prefix, int Index)
 {
 	Directory ResFilename = Directory(Prefix) / Filename;
 
@@ -60,7 +60,7 @@ void ImageList::Destroy()
 		ImageLoader::DeleteImage(i->second);
 }
 
-void ImageList::AddToList(const uint32_t Count, const GString *Filename, const GString Prefix)
+void ImageList::AddToList(const uint32_t Count, const std::string *Filename, const std::string Prefix)
 {
 	for (uint32_t i = 0; i < Count; i++)
 	{
@@ -93,13 +93,13 @@ bool ImageList::LoadAll()
 }
 
 // Gets image from this filename
-Image* ImageList::GetFromFilename(const GString Filename)
+Image* ImageList::GetFromFilename(const std::string Filename)
 {
 	return Images[Filename];
 }
 
 // Gets image from SkinPrefix + filename
-Image* ImageList::GetFromSkin(const GString Filename)
+Image* ImageList::GetFromSkin(const std::string Filename)
 {
 	return Images[GameState::GetInstance().GetSkinPrefix() + Filename];
 }

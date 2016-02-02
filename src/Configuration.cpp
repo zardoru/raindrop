@@ -15,7 +15,7 @@ LuaManager *SkinCfgLua;
 CSimpleIniA *Config;
 int IsWidescreen;
 
-const GString GlobalNamespace = "Global";
+const std::string GlobalNamespace = "Global";
 
 void Configuration::Initialize()
 {
@@ -43,9 +43,9 @@ void Configuration::Cleanup()
 	delete SkinCfgLua;
 }
 
-GString GetConfsInt(GString Name, GString Namespace, LuaManager &L)
+std::string GetConfsInt(std::string Name, std::string Namespace, LuaManager &L)
 {
-	GString Retval;
+	std::string Retval;
 	if (Namespace.length())
 	{
 		if (L.UseArray(Namespace))
@@ -59,7 +59,7 @@ GString GetConfsInt(GString Name, GString Namespace, LuaManager &L)
 	return Retval;
 }
 
-double GetConffInt(GString Name, GString Namespace, LuaManager &L)
+double GetConffInt(std::string Name, std::string Namespace, LuaManager &L)
 {
 	double Retval = 0;
 	if (Namespace.length())
@@ -75,11 +75,11 @@ double GetConffInt(GString Name, GString Namespace, LuaManager &L)
 	return Retval;
 }
 
-GString Configuration::GetConfigs(GString Name, GString Namespace)
+std::string Configuration::GetConfigs(std::string Name, std::string Namespace)
 {
-	GString g = GlobalNamespace;
+	std::string g = GlobalNamespace;
 	if (Namespace.length()) g = Namespace;
-	GString out;
+	std::string out;
 	if (Config->GetValue(g.c_str(), Name.c_str()))
 		out = Config->GetValue(g.c_str(), Name.c_str());
 	else
@@ -87,17 +87,17 @@ GString Configuration::GetConfigs(GString Name, GString Namespace)
 	return out;
 }
 
-void Configuration::SetConfig(GString Name, GString Value, GString Namespace)
+void Configuration::SetConfig(std::string Name, std::string Value, std::string Namespace)
 {
-	GString g = GlobalNamespace;
+	std::string g = GlobalNamespace;
 	if (Namespace.length()) g = Namespace;
 
 	Config->SetValue(g.c_str(), Name.c_str(), Value.c_str());
 }
 
-float  Configuration::GetConfigf(GString Name, GString Namespace)
+float  Configuration::GetConfigf(std::string Name, std::string Namespace)
 {
-	GString g = GlobalNamespace;
+	std::string g = GlobalNamespace;
 	double out;
 	if (Namespace.length()) g = Namespace;
 	if (Config->GetDoubleValue(g.c_str(), Name.c_str(), -10000) == -10000)
@@ -110,17 +110,17 @@ float  Configuration::GetConfigf(GString Name, GString Namespace)
 	return out;
 }
 
-GString Configuration::GetSkinConfigs(GString Name, GString Namespace)
+std::string Configuration::GetSkinConfigs(std::string Name, std::string Namespace)
 {
 	return GetConfsInt(Name, Namespace, *SkinCfgLua);
 }
 
-double  Configuration::GetSkinConfigf(GString Name, GString Namespace)
+double  Configuration::GetSkinConfigf(std::string Name, std::string Namespace)
 {
 	return GetConffInt(Name, Namespace, *SkinCfgLua);
 }
 
-void Configuration::GetConfigListS(GString Name, std::map<GString, GString> &Out, GString DefaultKeyName)
+void Configuration::GetConfigListS(std::string Name, std::map<std::string, std::string> &Out, std::string DefaultKeyName)
 {
 	CSimpleIniA::TNamesDepend List;
 	Config->GetAllKeys(Name.c_str(), List);
@@ -133,11 +133,11 @@ void Configuration::GetConfigListS(GString Name, std::map<GString, GString> &Out
 		i++)
 	{
 		if (Config->GetValue(Name.c_str(), i->pItem))
-			Out[GString(i->pItem)] = Config->GetValue(Name.c_str(), i->pItem);
+			Out[std::string(i->pItem)] = Config->GetValue(Name.c_str(), i->pItem);
 	}
 }
 
-void Configuration::GetConfigListS(GString Name, std::map<GString, std::filesystem::path> &Out, GString DefaultKeyName)
+void Configuration::GetConfigListS(std::string Name, std::map<std::string, std::filesystem::path> &Out, std::string DefaultKeyName)
 {
 	CSimpleIniA::TNamesDepend List;
 	Config->GetAllKeys(Name.c_str(), List);
@@ -150,11 +150,11 @@ void Configuration::GetConfigListS(GString Name, std::map<GString, std::filesyst
 		i++)
 	{
 		if (Config->GetValue(Name.c_str(), i->pItem))
-			Out[GString(i->pItem)] = Config->GetValue(Name.c_str(), i->pItem);
+			Out[std::string(i->pItem)] = Config->GetValue(Name.c_str(), i->pItem);
 	}
 }
 
-bool Configuration::ListExists(GString Name)
+bool Configuration::ListExists(std::string Name)
 {
 	lua_State *L = SkinCfgLua->GetState();
 	bool Exists;

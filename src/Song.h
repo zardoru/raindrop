@@ -65,7 +65,7 @@ struct SliceInfo
 
 struct SliceContainer
 {
-    std::map<int, GString> AudioFiles; // int := snd index, GString := file 
+    std::map<int, std::string> AudioFiles; // int := snd index, std::string := file 
     std::map<int, std::map<int, SliceInfo>> Slices; // 1st int := wav index, 2nd int := snd index, Slice Info, where to cut for 2nd int for wav 1st int
 };
 
@@ -85,16 +85,16 @@ namespace Game
 			double Duration;
 
 			// Meta
-			GString Name;
-			GString Filename;
-			GString Author;
+			std::string Name;
+			std::string Filename;
+			std::string Author;
 
 			uint32_t TotalNotes;
 			uint32_t TotalHolds;
 			uint32_t TotalObjects;
 			uint32_t TotalScoringObjects;
 
-            std::map<int, GString> SoundList;
+            std::map<int, std::string> SoundList;
 
 			int ID;
 
@@ -112,28 +112,28 @@ namespace Game
 		ModeType Mode;
 
 		/* Song title */
-		GString SongName;
+		std::string SongName;
 
 		/* Song Author */
-		GString SongAuthor;
+		std::string SongAuthor;
 
 		/* Directory where files are contained */
 		Directory SongDirectory;
 
 		/* Relative Paths */
-		GString SongFilename, BackgroundFilename;
+		std::string SongFilename, BackgroundFilename;
 
 		/* Song Audio for Preview*/
-		GString SongPreviewSource;
+		std::string SongPreviewSource;
 
 		/* Time to start preview */
 		float PreviewTime;
 
 		// Song subtitles
-		GString Subtitle;
+		std::string Subtitle;
 
 		// Song genre
-		GString Genre;
+		std::string Genre;
 
 		Song() { ID = -1; PreviewTime = 0; };
 		virtual ~Song() {};
