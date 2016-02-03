@@ -69,6 +69,7 @@ namespace std {
 #include <random>
 #include <regex>
 #include <sstream>
+#include <streambuf>
 #include <string>
 #include <thread>
 #include <unordered_set>
@@ -83,11 +84,12 @@ namespace std {
 #include <cstdlib>
 #include <ctime>
 
+#include <boost\interprocess\ipc\message_queue.hpp>
 #include <boost\gil\extension\io\bmp_all.hpp>
 #include <boost\gil\extension\io\png_all.hpp>
 #include <boost\gil\extension\io\jpeg_all.hpp>
+#include <boost\gil\extension\io\targa_all.hpp>
 #include <boost\program_options.hpp>
-#include <boost\interprocess\ipc\message_queue.hpp>
 
 #include <randint.h>
 
@@ -97,13 +99,11 @@ namespace std {
 #include <Rocket\Core\Lua\Interpreter.h>
 #include <Rocket\Controls\Lua\Controls.h>
 
-#include <FreeImage.h>
-
 #include <LuaBridge.h>
 extern "C" {
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
 }
 
 #include <json\json.h>

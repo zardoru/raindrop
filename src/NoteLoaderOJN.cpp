@@ -388,19 +388,19 @@ void NoteLoaderOJN::LoadObjectsFromFile(std::string filename, std::string prefix
         Info.BPM = Head.bpm;
 
         Info.Measures.reserve(Head.measure_count[i]);
-        for (auto k = 0; k <= Head.measure_count[i]; k++)
-            Info.Measures.push_back(OjnMeasure());
+        for (auto k = 0U; k <= Head.measure_count[i] + 1; ++k)
+            Info.Measures.emplace_back(OjnMeasure{});
 
         /*
             The implications of this structure are interesting.
             Measures may be unordered; but events may not, if only there's one package per channel per measure.
         */
-        for (auto package = 0; package < Head.package_count[i]; package++)
+        for (auto package = 0U; package < Head.package_count[i]; ++package)
         {
             OjnPackage PackageHeader;
             filein.read(reinterpret_cast<char*>(&PackageHeader), sizeof(OjnPackage));
 
-            for (auto cevt = 0; cevt < PackageHeader.events; cevt++)
+            for (auto cevt = 0U; cevt < PackageHeader.events; ++cevt)
             {
                 auto Fraction = float(cevt) / float(PackageHeader.events);
                 OjnEvent Event;

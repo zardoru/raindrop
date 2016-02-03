@@ -124,9 +124,6 @@
     <ClCompile Include="..\src\GameState.cpp">
       <Filter>Source\game global\game status</Filter>
     </ClCompile>
-    <ClCompile Include="..\ext-src\lua.c">
-      <Filter>libraries</Filter>
-    </ClCompile>
     <ClCompile Include="..\ext-src\pa_ringbuffer.c">
       <Filter>libraries</Filter>
     </ClCompile>
@@ -585,5 +582,6 @@
   <ItemGroup>
     <None Include="ClassDiagram.cd" />
     <None Include="packages.config" />
+    <None Include="config.ini" />
   </ItemGroup>
 </Project>

@@ -237,35 +237,46 @@ Image* ImageLoader::InsertImage(std::string Name, ImageData *imgData)
     return I;
 }
 
-void* memdup(const void* d, size_t s) {
-    void* p;
-    p = malloc(s);
-    if (p) memcpy(p, d, s);
-    return p;
-}
-
-ImageData ImageLoader::GetDataForImage(std::string filename)
+template<typename Stream>
+auto open_image(Stream&& in)
 {
-#if 1
     using namespace boost::gil;
 
-    auto file = std::ifstream{ filename, std::ios::binary };
-    if (!file.is_open()) {
-        Log::Printf("Could not open file \"%s\".\n", filename);
-        return{};
-    }
+    rgba8_image_t img;
+    do {
+        try {
+            try {
+                read_and_convert_image(in, img, png_tag());
+                break;
+            }
+            catch (std::ios_base::failure) {}
 
-    rgba8_image_t gil;
-    try {
-        read_and_convert_image(file, gil, png_tag());
-    }
-    // catch (std::ios_base::failure) {}
-    catch (...) {
-        Log::Printf("Could not load image \"%s\".\n", filename.c_str());
-        return{};
-    }
+            in.clear();
+            in.seekg(0);
+            try {
+                read_and_convert_image(in, img, jpeg_tag());
+                break;
+            }
+            catch (std::ios_base::failure) {}
 
-    auto v = view(gil);
+            in.clear();
+            in.seekg(0);
+            try {
+                read_and_convert_image(in, img, targa_tag());
+                break;
+            }
+            catch (std::ios_base::failure) {}
+
+            in.clear();
+            in.seekg(0);
+            read_and_convert_image(in, img, bmp_tag());
+        }
+        catch (...) {
+            Log::Printf("Could not load image");
+        }
+    } while (false);
+
+    auto v = view(img);
     using pixel = decltype(v)::value_type;
     auto data = new pixel[v.width() * v.height()];
     copy_pixels(v, interleaved_view(v.width(), v.height(), data,
@@ -273,61 +284,34 @@ ImageData ImageLoader::GetDataForImage(std::string filename)
 
     ImageData out;
     out.Data = data;
-    out.Filename = filename;
     out.Width = v.width();
     out.Height = v.height();
 
     return out;
-#endif
+}
 
-#if 0
-    auto img = FreeImage_Load(FreeImage_GetFileType(filename.c_str()), filename.c_str());
-    if (!img)
-    {
-        Log::Printf("Could not load image \"%s\".\n", filename.c_str());
+ImageData ImageLoader::GetDataForImage(std::string filename)
+{
+    auto file = std::ifstream{ filename, std::ios::binary };
+    if (!file.is_open()) {
+        Log::Printf("Could not open file \"%s\".\n", filename);
         return{};
     }
 
-    auto bit32 = FreeImage_ConvertTo32Bits(img);
-    FreeImage_Unload(img);
-
-    FreeImage_FlipVertical(bit32);
-
-    ImageData out;
-    auto len = FreeImage_GetPitch(bit32) * FreeImage_GetHeight(bit32);
-    out.Data = memdup(FreeImage_GetBits(bit32), len);
+    auto out = open_image(file);
     out.Filename = filename;
-    out.Width = FreeImage_GetWidth(bit32);
-    out.Height = FreeImage_GetHeight(bit32);
-
-    FreeImage_Unload(bit32);
 
     return out;
-#endif
 }
 
 ImageData ImageLoader::GetDataForImageFromMemory(const unsigned char* const buffer, size_t len)
 {
-    DebugBreak();
+    auto file = std::stringstream{ std::stringstream::in |
+        std::stringstream::out | std::stringstream::binary };
+    file.write((const char*)buffer, len);
 
-    ImageData out;
-    auto hndl = FreeImage_OpenMemory(const_cast<unsigned char*>(buffer), len);
-    auto bmp = FreeImage_LoadFromMemory(FreeImage_GetFileTypeFromMemory(hndl, len), hndl);
+    auto out = open_image(file);
 
-    if (!bmp) return out; // ERROR!?
-
-    auto bit32 = FreeImage_ConvertTo32Bits(bmp);
-    FreeImage_Unload(bmp);
-
-    FreeImage_FlipVertical(bit32);
-    auto imglen = FreeImage_GetPitch(bit32) * FreeImage_GetHeight(bit32);
-
-    out.Data = static_cast<unsigned char*>(memdup(FreeImage_GetBits(bit32), imglen));
-    out.Width = FreeImage_GetWidth(bit32);
-    out.Height = FreeImage_GetHeight(bit32);
-
-    FreeImage_CloseMemory(hndl);
-    FreeImage_Unload(bit32);
     return out;
 }
 

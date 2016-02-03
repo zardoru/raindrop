@@ -20,7 +20,6 @@
 #include "ScreenGameplay7K.h"
 #include "ScreenEdit.h"
 #include "LuaManager.h"
-#include "LuaBridge.h"
 #include "SongDatabase.h"
 
 #include "SongWheel.h"
