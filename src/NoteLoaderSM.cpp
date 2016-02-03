@@ -331,13 +331,9 @@ TimingData CalculateRaindropWarpData(VSRG::Difficulty* Diff, const TimingData& W
 		// no need for worry about having to align these.
 		double Time = TimeAtBeat(Diff->Timing, Diff->Offset, Warp.Time, true) +
 			StopTimeAtBeat(Diff->Data->Stops, Warp.Time);
-
 		double Value = Warp.Value * 60 / SectionValue(Diff->Timing, Warp.Time);
-		TimingSegment New;
-		New.Time = Time;
-		New.Value = Value;
 
-		Ret.push_back(New);
+		Ret.push_back(TimingSegment(Time, Value));
 	}
 
 	return Ret;
@@ -353,13 +349,8 @@ TimingData CalculateRaindropSCData(VSRG::Difficulty* Diff, const TimingData& SCd
 		// we need to set the offset at 0.
 		double Time = TimeAtBeat(Diff->Timing, 0, SC.Time, true) +
 			StopTimeAtBeat(Diff->Data->Stops, SC.Time);
-		double Value = SC.Value;
 
-		TimingSegment New;
-		New.Time = Time;
-		New.Value = Value;
-
-		Ret.push_back(New);
+		Ret.push_back(TimingSegment(Time, SC.Value));
 	}
 
 	return Ret;
@@ -382,8 +373,7 @@ VSRG::VectorSpeeds CalculateRaindropScrolls(VSRG::Difficulty *Diff, const SpeedD
 				StopTimeAtBeat(Diff->Data->Stops, scroll.Time + scroll.Duration);
 		}
 		else
-			TimeEnd = TimeAtBeat(Diff->Timing, 0, scroll.Time, true) +
-			StopTimeAtBeat(Diff->Data->Stops, scroll.Time) + scroll.Duration;
+			TimeEnd = Time + scroll.Duration;
 
 		SpeedSection newscroll;
 		newscroll.Time = Time;

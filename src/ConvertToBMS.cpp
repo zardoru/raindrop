@@ -12,16 +12,38 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 	struct TimingMeasure {
 		vector<Event> BPMEvents;
 		vector<Event> StopEvents;
+		vector<Event> ScrollEvents;
 	};
 
 	vector<TimingMeasure> TimingMeasures;
 	vector<double> BPMs;
 	vector<int> Stops;
+	vector<double> Scrolls;
 
 	void ResizeTimingMeasures(size_t NewMaxIndex) {
 		if (TimingMeasures.size() < NewMaxIndex + 1) {
 			TimingMeasures.resize(NewMaxIndex + 1);
 		}
+	}
+
+	template <class T>
+	int GetIndexForValue(std::vector<T> &vec, T value)
+	{
+		auto index = -1;
+		for (size_t i = 0; i < vec.size(); i++) {
+			if (vec[i] == value) {
+				index = i;
+				break;
+			}
+		}
+
+		// Didn't find it. Push it.
+		if (index == -1) {
+			vec.push_back(value);
+			index = vec.size() - 1;
+		}
+
+		return index;
 	}
 
 	void CalculateTimingPoints()
@@ -43,26 +65,16 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 				double Beat = QuantizeFunction(IntegrateToTime(BPS, T.Time));
 				double BPM = 60 * T.Value;
 
-				int index = -1;
-
 				// Check redundant BPMs.
-				for (size_t i = 0; i < BPMs.size(); i++) {
-					if (BPMs[i] == BPM) {
-						index = i;
-						break;
-					}
-				}
-
-				// Didn't find it. Push it.
-				if (index == -1) {
-					BPMs.push_back(BPM);
-					index = BPMs.size() - 1;
-				}
+				int index = GetIndexForValue(BPMs, BPM);
 
 				// Create new event at measure.
 				int MeasureForEvent = MeasureForBeat(Beat);
 				ResizeTimingMeasures(MeasureForEvent); // Make sure we've got space on the measures vector
-				TimingMeasures[MeasureForEvent].BPMEvents.push_back({ FractionForMeasure(MeasureForEvent, Beat), index + 1 });
+				TimingMeasures[MeasureForEvent].BPMEvents.push_back({ 
+					FractionForMeasure(MeasureForEvent, Beat),
+					index + 1 
+				});
 			}
 		}
 	}
@@ -72,7 +84,7 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 		for (auto T = BPS.begin(); T != BPS.end(); ++T)
 		{
 			assert(T->Time >= 0);
-			if (T->Value == 0) // A stop.
+			if (T->Value <= 0.0001) // A stop.
 			{
 				auto RestBPM = T + 1;
 				auto Beat = QuantizeFunction(IntegrateToTime(BPS, T->Time));
@@ -84,31 +96,39 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 				// Now the duration in BMS stops..
 				int StopDurationBMS = round(StopBMSDurationBeats * 48.0);
 
-				auto index = -1;
-
 				// Check redundant stops.
-				for (size_t i = 0; i < Stops.size(); i++) {
-					if (Stops[i] == StopDurationBMS) {
-						index = i;
-						break;
-					}
-				}
-
-				// Didn't find it. Push it.
-				if (index == -1) {
-					Stops.push_back(StopDurationBMS);
-					index = BPMs.size() - 1;
-				}
+				auto index = GetIndexForValue(Stops, StopDurationBMS);
 
 				int MeasureForEvent = MeasureForBeat(Beat);
 				ResizeTimingMeasures(MeasureForEvent);
-				TimingMeasures[MeasureForEvent].StopEvents.push_back({ FractionForMeasure(MeasureForEvent, Beat), index + 1 });
+				TimingMeasures[MeasureForEvent].StopEvents.push_back({ 
+					FractionForMeasure(MeasureForEvent, Beat), 
+					index + 1 
+				});
 			}
 		}
 	}
 
+	void CalculateScrolls()
+	{
+		for (auto S : Parent->Data->Scrolls)
+		{
+			auto Beat = QuantizeFunction(IntegrateToTime(BPS, S.Time));
+			auto index = GetIndexForValue(Scrolls, S.Value);
 
-	GString ToBase36(int n) {
+			if (Beat < 0) continue;
+
+			int MeasureForEvent = MeasureForBeat(Beat);
+			ResizeTimingMeasures(MeasureForEvent);
+			TimingMeasures[MeasureForEvent].ScrollEvents.push_back({
+				FractionForMeasure(MeasureForEvent, Beat),
+				index + 1
+			});
+		}
+	}
+
+
+	GString ToBMSBase36(int n) {
 		char pt[32] = {0};
 		itoa(n, pt, 36);
 		pt[2] = 0;
@@ -144,21 +164,27 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 
 		OutFile << endl << "-- WAVs" << endl;
 		for (auto i : Parent->SoundList){
-			OutFile << "#WAV" << ToBase36(i.first) << " " << i.second << endl;
+			OutFile << "#WAV" << ToBMSBase36(i.first) << " " << i.second << endl;
 		}
 
 		OutFile << endl << "-- BPMs" << endl;
 		for (size_t i = 0; i < BPMs.size(); i++){
-			OutFile << "#BPM" << ToBase36(i + 1) << " " << BPMs[i] << endl;
+			OutFile << "#BPM" << ToBMSBase36(i + 1) << " " << BPMs[i] << endl;
 		}
 
 		OutFile << endl << "-- STOPs" << endl;
 		for (size_t i = 0; i < Stops.size(); i++){
-			OutFile << "#STOP" << ToBase36(i + 1) << " " << Stops[i] << endl;
+			OutFile << "#STOP" << ToBMSBase36(i + 1) << " " << Stops[i] << endl;
+		}
+
+		OutFile << endl << "-- SCROLLs" << endl;
+		for (size_t i = 0; i < Scrolls.size(); i++)
+		{
+			OutFile << "#SCROLL" << ToBMSBase36(i + 1) << " " << Scrolls[i] << endl;
 		}
 	}
 
-	void WriteVectorToMeasureChannel(vector<Event> &Out, int Measure, int Channel) 
+	void WriteVectorToMeasureChannel(vector<Event> &Out, int Measure, int Channel, bool AllowMultiple = false) 
 	{
 		if (Out.size() == 0) return; // Nothing to write.
 
@@ -170,18 +196,34 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 			return dA < dB;
 		});
 
-		vector<int> rowified; 
-		rowified.resize(VecLCM);
+		vector<vector<int>> rowified; 
 
 		// Now that we have the LCM we can easily just place the objects exactly as we want to output them.
 		for (auto Obj : Out) { // We convert to a fraction that fits with the LCM.
 			auto rNum = Obj.Sect.Num * VecLCM / Obj.Sect.Den;
-			rowified[rNum] = Obj.Evt;
+			bool slotFree = false;
+			for (int i = 0; i < rowified.size(); i++) {
+				if (!rowified[i][rNum] || !AllowMultiple) {
+					rowified[i][rNum] = Obj.Evt;
+					slotFree = true;
+					break;
+				}
+			}
+
+			if (!slotFree) // didn't find an unused slot
+			{
+				vector<int> row(VecLCM, 0);
+				row[rNum] = Obj.Evt;
+				rowified.push_back(row);
+			}
 		}
 
-		OutFile << Utility::Format("#%03d%s:", Measure, ToBase36(Channel).c_str());
-		for (auto val : rowified){
-			OutFile << ToBase36(val);
+		for (auto val : rowified) {
+			OutFile << Utility::Format("#%03d%s:", Measure, ToBMSBase36(Channel).c_str());
+			for (auto r : val) {
+				OutFile << ToBMSBase36(r);
+			}
+			OutFile << std::endl;
 		}
 		OutFile << std::endl;
 	}
@@ -244,7 +286,7 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 			}
 
 			OutFile << "-- BGM - Measure " << Measure << endl;
-			WriteVectorToMeasureChannel(M.BGMEvents, Measure, 1);
+			WriteVectorToMeasureChannel(M.BGMEvents, Measure, 1, true);
 
 			if (Measure < TimingMeasures.size()) {
 
@@ -256,6 +298,12 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 				if (TimingMeasures[Measure].StopEvents.size()) {
 					OutFile << "-- STOPS" << endl;
 					WriteVectorToMeasureChannel(TimingMeasures[Measure].StopEvents, Measure, 9);
+				}
+
+				if (TimingMeasures[Measure].ScrollEvents.size())
+				{
+					OutFile << "-- SCROLLS" << endl;
+					WriteVectorToMeasureChannel(TimingMeasures[Measure].ScrollEvents, Measure, b36toi("SC"));
 				}
 			}
 
@@ -286,6 +334,7 @@ public:
 		try {
 			CalculateTimingPoints();
 			CalculateStops();
+			CalculateScrolls();
 		} catch (std::exception &e)
 		{
 			Log::Printf("Error while converting timing data: %s\n", e.what());

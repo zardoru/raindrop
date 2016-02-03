@@ -138,6 +138,8 @@ struct Fraction {
 typedef Fraction<long long> LFraction;
 typedef Fraction<int> IFraction;
 
+int b36toi(const char *txt);
+int b16toi(const char *txt);
 
 namespace Utility
 {

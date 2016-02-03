@@ -311,8 +311,8 @@ void ScreenGameplay7K::UpdateSongTime(float Delta)
 	if ((SongDelta != 0 && AboveTolerance) || !InterpolateTime) // Significant delta with a x ms difference? We're pretty off..
 	{
 		if (ErrorTolerance && InterpolateTime)
-		Log::LogPrintf("Audio Desync: delta = %f difference = %f ms. Real song time %f (expected %f) Audio current time: %f (old = %f)\n",
-			SongDelta, abs(SongTime - SongTimeReal) * 1000, SongTimeReal, SongTime, CurrAudioTime, TempOld);
+		Log::LogPrintf("Audio Desync: delta = %f ms difference = %f ms. Real song time %f (expected %f) Audio current time: %f (old = %f)\n",
+			SongDelta * 1000, abs(SongTime - SongTimeReal) * 1000, SongTimeReal, SongTime, CurrAudioTime, TempOld);
 		SongTime = SongTimeReal;
 	}
 

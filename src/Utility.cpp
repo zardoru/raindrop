@@ -22,6 +22,17 @@
 int InfinityMask = 0x7F800000;
 float *PInfinity = (float*)&InfinityMask;
 
+int b36toi(const char *txt)
+{
+	return strtoul(txt, nullptr, 36);
+}
+
+int b16toi(const char *txt)
+{
+	return strtoul(txt, nullptr, 16);
+}
+
+
 namespace Utility {
 
 	void DebugBreak()

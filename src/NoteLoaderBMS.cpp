@@ -47,15 +47,6 @@ namespace NoteLoaderBMS{
 		return GString(&buffer[offset]);
 	}
 
-	int fromBase36(const char *txt)
-	{
-		return strtoul(txt, nullptr, 36);
-	}
-
-	int fromBase16(const char *txt)
-	{
-		return strtoul(txt, nullptr, 16);
-	}
 
 	// From base 36 they're 01, 02, 03 and 09.
 	const int CHANNEL_BGM = 1;
@@ -67,20 +58,22 @@ namespace NoteLoaderBMS{
 	const int CHANNEL_EXBPM = 8;
 	const int CHANNEL_STOPS = 9;
 	const int CHANNEL_BGALAYER2 = 10;
-	const int CHANNEL_SCRATCH = fromBase36("16");
+	const int CHANNEL_SCRATCH = b36toi("16");
+	const int CHANNEL_SPEEDS = b36toi("SP");
+	const int CHANNEL_SCROLLS = b36toi("SC");
 
 	// Left side channels
-	const int startChannelP1 = fromBase36("11");
-	const int startChannelLNP1 = fromBase36("51");
-	const int startChannelInvisibleP1 = fromBase36("31");
-	const int startChannelMinesP1 = fromBase36("D1");
+	const int startChannelP1 = b36toi("11");
+	const int startChannelLNP1 = b36toi("51");
+	const int startChannelInvisibleP1 = b36toi("31");
+	const int startChannelMinesP1 = b36toi("D1");
 
 	// Right side channels
-	const int startChannelP2 = fromBase36("21");
-	const int startChannelLNP2 = fromBase36("61");
-	const int startChannelInvisibleP2 = fromBase36("41");
-	const int startChannelMinesP2 = fromBase36("E1");
-	const int RELATIVE_SCRATCH_CHANNEL = fromBase36("16") - fromBase36("11");
+	const int startChannelP2 = b36toi("21");
+	const int startChannelLNP2 = b36toi("61");
+	const int startChannelInvisibleP2 = b36toi("41");
+	const int startChannelMinesP2 = b36toi("E1");
+	const int RELATIVE_SCRATCH_CHANNEL = b36toi("16") - b36toi("11");
 
 	// End channels are usually xZ where X is the start (1, 2, 3 all the way to Z)
 	// The first wav will always be WAV01, not WAV00 since 00 is a reserved value for "nothing"
@@ -193,6 +186,7 @@ namespace NoteLoaderBMS{
 
 		BpmListIndex BPMs;
 		BpmListIndex Stops;
+		BpmListIndex Scrolls;
 
 		/*
 			Used channels will be bound to this list.
@@ -271,7 +265,7 @@ namespace NoteLoaderBMS{
 		void CalculateBPMs()
 		{
 			ForAllEventsInChannel([&](BMSEvent ev, int Measure) {
-						double BPM = fromBase16(tob36(ev.Event).c_str());
+						double BPM = b16toi(tob36(ev.Event).c_str());
 						double Beat = BeatForObj(Measure, ev.Fraction);
 
 						Chart->Timing.push_back(TimingSegment(Beat, BPM));
@@ -661,7 +655,7 @@ namespace NoteLoaderBMS{
 					strncpy(CharEvent, EventPtr, 2); // Obtuse, but functional.
 					CharEvent[2] = 0;
 
-					Event = fromBase36(CharEvent);
+					Event = b36toi(CharEvent);
 
 					if (Event == 0) // Nothing to see here?
 						continue;
@@ -743,6 +737,20 @@ namespace NoteLoaderBMS{
 			return !IsControlFlowCommand && !Skip;
 		}
 
+		void CalculateSpeeds()
+		{
+			
+		}
+
+		void CalculateScrolls()
+		{
+			ForAllEventsInChannel([&](BMSEvent ev, int Measure)
+			{
+				auto Time = TimeForObj(Measure, ev.Fraction);
+				Chart->Data->Scrolls.push_back(TimingSegment (Time, Scrolls[ev.Event]));
+			}, CHANNEL_SCROLLS);
+		}
+
 		void CompileBMS()
 		{
 			/* To be done. */
@@ -752,6 +760,8 @@ namespace NoteLoaderBMS{
 
 			CalculateBPMs();
 			CalculateStops();
+			CalculateScrolls();
+			CalculateSpeeds();
 
 			if (HasBMPEvents)
 			{
@@ -817,6 +827,11 @@ namespace NoteLoaderBMS{
 		{
 			Stops[index] = stopval;
 		}
+
+		void SetScroll(int index, double scrollval)
+		{
+			Scrolls[index] = scrollval;
+		}
 	};
 
 	GString CommandSubcontents(const GString &Command, const GString &Line)
@@ -875,6 +890,9 @@ namespace NoteLoaderBMS{
 			Utility::ToLower(Current);
 			const char* s = Current.c_str();
 
+			if (strstr(s, "normal") || strstr(s, "5key") || strstr(s, "7key") || strstr(s, "10key")) {
+				candidate = "Normal";
+			}
 			if (strstr(s, "another")) {
 				candidate = "Another";
 			}
@@ -883,9 +901,6 @@ namespace NoteLoaderBMS{
 			}
 			if (strstr(s, "hyper") || strstr(s, "hard")) {
 				candidate = "Hyper";
-			}
-			if (strstr(s, "normal") || strstr(s, "5key") || strstr(s, "7key") || strstr(s, "10key")) {
-				candidate = "Normal";
 			}
 			if (strstr(s, "light")) {
 				candidate = "Light";
@@ -983,9 +998,14 @@ namespace NoteLoaderBMS{
 
 			if (Info->InterpStatement(command, CommandContents))
 			{
+				OnCommand(#EXT)
+				{
+					Line = CommandContents;
+				}
+
 				OnCommand(#GENRE)
 				{
-					// stub
+					Out->Genre = CommandContents;
 				}
 
 				OnCommand(#SUBTITLE)
@@ -1064,7 +1084,7 @@ namespace NoteLoaderBMS{
 
 				OnCommand(#LNOBJ)
 				{
-					Info->SetLNObject(fromBase36(CommandContents.c_str()));
+					Info->SetLNObject(b36toi(CommandContents.c_str()));
 				}
 
 				OnCommand(#DIFFICULTY)
@@ -1142,14 +1162,14 @@ namespace NoteLoaderBMS{
 				OnCommandSub(#WAV)
 				{
 					GString IndexStr = CommandSubcontents("#WAV", command);
-					int Index = fromBase36(IndexStr.c_str());
+					int Index = b36toi(IndexStr.c_str());
 					Info->SetSound(Index, CommandContents);
 				}
 
 				OnCommandSub(#BMP)
 				{
 					GString IndexStr = CommandSubcontents("#BMP", command);
-					int Index = fromBase36(IndexStr.c_str());
+					int Index = b36toi(IndexStr.c_str());
 					Info->SetBMP(Index, CommandContents);
 
 					if (Index == 1)
@@ -1161,23 +1181,31 @@ namespace NoteLoaderBMS{
 				OnCommandSub(#BPM)
 				{
 					GString IndexStr = CommandSubcontents("#BPM", command);
-					int Index = fromBase36(IndexStr.c_str());
+					int Index = b36toi(IndexStr.c_str());
 					Info->SetBPM(Index, latof(CommandContents.c_str()));
 				}
 
 				OnCommandSub(#STOP)
 				{
 					GString IndexStr = CommandSubcontents("#STOP", command);
-					int Index = fromBase36(IndexStr.c_str());
+					int Index = b36toi(IndexStr.c_str());
 					Info->SetStop(Index, latof(CommandContents.c_str()));
 				}
 
 				OnCommandSub(#EXBPM)
 				{
 					GString IndexStr = CommandSubcontents("#EXBPM", command);
-					int Index = fromBase36(IndexStr.c_str());
+					int Index = b36toi(IndexStr.c_str());
 					Info->SetBPM(Index, latof(CommandContents.c_str()));
 				}
+
+				OnCommandSub(#SCROLL)
+				{
+					GString IndexStr = CommandSubcontents("#SCROLL", command);
+					int Index = b36toi(IndexStr.c_str());
+					Info->SetScroll(Index, latof(CommandContents.c_str()));
+				}
+
 
 				/* Else... */
 				GString MeasureCommand = Line.substr(Line.find_first_of(":") + 1);
@@ -1187,7 +1215,7 @@ namespace NoteLoaderBMS{
 				if (regex_match(MainCommand, sm, DataDeclaration)) // We've got work to do.
 				{
 					int Measure = atoi(sm[1].str().c_str());
-					int Channel = fromBase36(sm[2].str().c_str());
+					int Channel = b36toi(sm[2].str().c_str());
 
 					Info->ParseEvents(Measure, Channel, MeasureCommand);
 				}

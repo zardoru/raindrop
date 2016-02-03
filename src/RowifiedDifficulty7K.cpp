@@ -94,7 +94,9 @@ int RowifiedDifficulty::MeasureForBeat(double Beat)
 	if (Measure < MeasureAccomulation.size() && Measure >= 0)
 		return Measure;
 	
-	throw std::runtime_error("Beat outside of bounds.");
+	auto s = Utility::Format("Beat %f (Measure %d) outside of bounds (size = %d).", 
+		Beat, Measure, MeasureAccomulation.size());
+	throw std::runtime_error(s);
 }
 
 void RowifiedDifficulty::ResizeMeasures(size_t NewMaxIndex) {

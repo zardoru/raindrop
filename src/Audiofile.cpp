@@ -454,7 +454,7 @@ bool AudioStream::Open(const char* Filename)
 {
 	mSource = SourceFromExt(RearrangeFilename(Filename));
 
-	if (mSource)
+	if (mSource && mSource->IsValid())
 	{
 
 		Channels = mSource->GetChannels();
