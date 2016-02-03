@@ -165,8 +165,6 @@ void ScreenGameplay7K::RunMeasures()
 						CurrentKeysounds[k] = &(*m);
 					timeClosest[k] = abs(usedTime - m->GetTimeFinal());
 				}
-				else
-					break; // In other words, we're getting further away.
 			}
 
 			if (!m->IsJudgable())
