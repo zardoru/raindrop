@@ -156,11 +156,8 @@ void ScreenGameplay7K::RunMeasures()
 	for (uint16 k = 0; k < CurrentDiff->Channels; k++)
 	{
 		for (auto m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); ++m)	{
-			if (!m->IsJudgable())
-				continue;
-
 			// Keysound update to closest note.
-			if (m->IsEnabled() && m->IsJudgable())
+			if (m->IsEnabled())
 			{
 				if ((abs(usedTime - m->GetTimeFinal()) < timeClosest[k]))
 				{
@@ -172,8 +169,8 @@ void ScreenGameplay7K::RunMeasures()
 					break; // In other words, we're getting further away.
 			}
 
-
-
+			if (!m->IsJudgable())
+				continue;
 
 			// Autoplay
 			if (Auto) {

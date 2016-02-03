@@ -36,6 +36,10 @@ inline bool operator<(double Beat, const TimingSegment &in) {
 	return Beat < in.Time;
 }
 
+inline bool operator<(const TimingSegment &A, const TimingSegment &B) {
+	return A.Time < B.Time;
+}
+
 typedef vector<TimingSegment> TimingData;
 
 struct AutoplaySound : public TimeBased < AutoplaySound, float >

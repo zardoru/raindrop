@@ -250,193 +250,175 @@ namespace NoteLoaderBMS{
 			return Time;
 		}
 
-		void CalculateBMP(vector<AutoplayBMP> &BMPEvents, int Channel)
+		void ForAllEventsInChannel(const std::function<void(BMSEvent,int)> &fn, int Channel)
 		{
 			for (auto i = Measures.begin(); i != Measures.end(); ++i)
-			{
-				if (i->second.Events.find(Channel) != i->second.Events.end())
-				{
-					for (auto ev = i->second.Events[Channel].begin(); ev != i->second.Events[Channel].end(); ++ev)
-					{
+				for (auto ev = i->second.Events[Channel].begin(); ev != i->second.Events[Channel].end(); ++ev)
+					fn(*ev, i->first);
+		}
+
+		void CalculateBMP(vector<AutoplayBMP> &BMPEvents, int Channel)
+		{
+			ForAllEventsInChannel([&](BMSEvent ev, int Measure) {
 						AutoplayBMP New;
-						New.BMP = ev->Event;
-						New.Time = TimeForObj(i->first, ev->Fraction);
+						New.BMP = ev.Event;
+						New.Time = TimeForObj(Measure, ev.Fraction);
 
 						BMPEvents.push_back(New);
-					}
-				}
-			}
+			}, Channel);
 		}
 
 		void CalculateBPMs()
 		{
-			for (auto i = Measures.begin(); i != Measures.end(); ++i)
-			{
-				if (i->second.Events.find(CHANNEL_BPM) != i->second.Events.end()) // there are bms events in here, get chopping
-				{
-					for (auto ev = i->second.Events[CHANNEL_BPM].begin(); ev != i->second.Events[CHANNEL_BPM].end(); ++ev)
-					{
-						double BPM = fromBase16(tob36(ev->Event).c_str());
-						double Beat = BeatForObj(i->first, ev->Fraction);
+			ForAllEventsInChannel([&](BMSEvent ev, int Measure) {
+						double BPM = fromBase16(tob36(ev.Event).c_str());
+						double Beat = BeatForObj(Measure, ev.Fraction);
 
 						Chart->Timing.push_back(TimingSegment(Beat, BPM));
-					}
-				}
-			}
+			}, CHANNEL_BPM);
 
-			for (auto i = Measures.begin(); i != Measures.end(); ++i)
-			{
-				if (i->second.Events.find(CHANNEL_EXBPM) != i->second.Events.end())
-				{
-					for (auto ev = i->second.Events[CHANNEL_EXBPM].begin(); ev != i->second.Events[CHANNEL_EXBPM].end(); ++ev)
-					{
-						double BPM;
-						if (BPMs.find(ev->Event) != BPMs.end())
-							BPM = BPMs[ev->Event];
-						else
-							continue;
+			ForAllEventsInChannel([&](BMSEvent ev, int Measure) {
+				double BPM;
+				if (BPMs.find(ev.Event) != BPMs.end())
+					BPM = BPMs[ev.Event];
+				else
+					return;
 
-						if (BPM == 0) continue; // ignore 0 events
+				if (BPM == 0) return; // ignore 0 events
 
-						double Beat = BeatForObj(i->first, ev->Fraction);
-						Chart->Timing.push_back(TimingSegment(Beat, BPM));
-					}
-				}
-			}
+				double Beat = BeatForObj(Measure, ev.Fraction);
+				Chart->Timing.push_back(TimingSegment(Beat, BPM));
+			}, CHANNEL_EXBPM);
 
 			// Make sure ExBPM events are in front using stable_sort.
-			auto cmp = [](const TimingSegment &A, const TimingSegment &B) -> bool { return A.Time < B.Time; };
-			std::stable_sort(Chart->Timing.begin(), Chart->Timing.end(), cmp);
+			std::stable_sort(Chart->Timing.begin(), Chart->Timing.end());
 		}
 
 		void CalculateStops()
 		{
-			for (auto i = Measures.begin(); i != Measures.end(); ++i)
-			{
-				if (i->second.Events.find(CHANNEL_STOPS) != i->second.Events.end())
-				{
-					for (auto ev = i->second.Events[CHANNEL_STOPS].begin(); ev != i->second.Events[CHANNEL_STOPS].end(); ++ev)
-					{
-						double Beat = BeatForObj(i->first, ev->Fraction);
-						double StopTimeBeats = Stops[ev->Event] / 48;
-						double SectionValueStop = SectionValue(Chart->Timing, Beat);
-						double SPBSection = spb(SectionValueStop);
-						double StopDuration = StopTimeBeats * SPBSection; // A value of 1 is... a 48th of a beat.
+			ForAllEventsInChannel([&](BMSEvent ev, int Measure) {
+				double Beat = BeatForObj(Measure, ev.Fraction);
+				double StopTimeBeats = Stops[ev.Event] / 48;
+				double SectionValueStop = SectionValue(Chart->Timing, Beat);
+				double SPBSection = spb(SectionValueStop);
+				double StopDuration = StopTimeBeats * SPBSection; // A value of 1 is... a 48th of a beat.
 
-						Chart->Data->Stops.push_back(TimingSegment(Beat, StopDuration));
-					}
-				}
+				Chart->Data->Stops.push_back(TimingSegment(Beat, StopDuration));
+			}, CHANNEL_STOPS);
+		}
+
+		void ForChannelRangeInMeasure(const std::function<void(BMSEvent, int)> &fn, int startChannel, MeasureList::iterator &i)
+		{
+			for (uint32 channel = startChannel; channel <= (startChannel + MAX_CHANNELS); channel++)
+			{
+				int Track = 0;
+
+				if (!IsPMS)
+					Track = TranslateTrackBME(channel, startChannel) - LowerBound;
+				else
+					Track = TranslateTrackPMS(channel, startChannel);
+
+				if (!(Track >= 0 && Track < MAX_CHANNELS)) Utility::DebugBreak();
+				if (Track >= Chart->Channels || Track < 0) continue;
+
+				for (auto ev = i->second.Events[channel].begin(); ev != i->second.Events[channel].end(); ++ev)
+					fn(*ev, Track);
 			}
 		}
 
 		void CalculateMeasureSide(MeasureList::iterator &i, int TrackOffset, int startChannel, int startChannelLN,
 			int startChannelMines, int startChannelInvisible, Measure &Msr)
 		{
-			int usedChannels = Chart->Channels;
-
 			// Standard events
-			for (uint8 curChannel = startChannel; curChannel <= (startChannel + MAX_CHANNELS); curChannel++)
-			{
-				if (i->second.Events.find(curChannel) != i->second.Events.end()) // there are bms events for this channel.
+			ForChannelRangeInMeasure([&](BMSEvent ev, int Track) {
+				Track += TrackOffset;
+
+				if (!ev.Event || Track >= Chart->Channels) return; // UNUSABLE event
+
+				double Time = TimeForObj(i->first, ev.Fraction);
+
+				Chart->Duration = max(double(Chart->Duration), Time);
+
+				if (!LNObj || (LNObj != ev.Event))
 				{
-					int Track = 0;
+				degradetonote:
+					NoteData Note;
 
-					if (!IsPMS)
-						Track = TranslateTrackBME(curChannel, startChannel) - LowerBound + TrackOffset;
-					else
-						Track = TranslateTrackPMS(curChannel, startChannel) + TrackOffset;
+					Note.StartTime = Time;
+					Note.Sound = ev.Event;
+					UsedSounds[ev.Event] = true;
 
-					if (!(Track >= 0 && Track < MAX_CHANNELS)) Utility::DebugBreak();
+					Chart->TotalScoringObjects++;
+					Chart->TotalNotes++;
+					Chart->TotalObjects++;
 
-					if (LNObj)
-						sort(i->second.Events[curChannel].begin(), i->second.Events[curChannel].end());
-
-					for (auto ev = i->second.Events[curChannel].begin(); ev != i->second.Events[curChannel].end(); ++ev)
-					{
-						if (!ev->Event || Track >= usedChannels) continue; // UNUSABLE event
-
-						double Time = TimeForObj(i->first, ev->Fraction);
-
-						Chart->Duration = max(double(Chart->Duration), Time);
-
-						if (!LNObj || (LNObj != ev->Event))
-						{
-						degradetonote:
-							NoteData Note;
-
-							Note.StartTime = Time;
-							Note.Sound = ev->Event;
-							UsedSounds[ev->Event] = true;
-
-							Chart->TotalScoringObjects++;
-							Chart->TotalNotes++;
-							Chart->TotalObjects++;
-
-							Msr.Notes[Track].push_back(Note);
-							if (Msr.Notes[Track].size())
-								LastNotes[Track] = &Msr.Notes[Track].back();
-						}
-						else if (LNObj && (LNObj == ev->Event))
-						{
-							if (LastNotes[Track])
-							{
-								Chart->TotalHolds++;
-								Chart->TotalScoringObjects++;
-								LastNotes[Track]->EndTime = Time;
-								LastNotes[Track] = nullptr;
-							}
-							else
-								goto degradetonote;
-						}
-					}
+					Msr.Notes[Track].push_back(Note);
+					if (Msr.Notes[Track].size())
+						LastNotes[Track] = &Msr.Notes[Track].back();
 				}
-			}
+				else if (LNObj && (LNObj == ev.Event))
+				{
+					if (LastNotes[Track])
+					{
+						Chart->TotalHolds++;
+						Chart->TotalScoringObjects++;
+						LastNotes[Track]->EndTime = Time;
+						LastNotes[Track] = nullptr;
+					}
+					else
+						goto degradetonote;
+				}
+			}, startChannel, i);
 
 			// LN events
-			for (uint8 curChannel = startChannelLN; curChannel <= (startChannelLN + MAX_CHANNELS); curChannel++)
-			{
-				if (i->second.Events.find(curChannel) != i->second.Events.end()) // there are bms events for this channel.
+			ForChannelRangeInMeasure([&](BMSEvent ev, int Track) {
+				Track += TrackOffset;
+
+				double Time = TimeForObj(i->first, ev.Fraction);
+
+				if (startTime[Track] == -1)
+					startTime[Track] = Time;
+				else
 				{
-					int Track = 0;
+					NoteData Note;
 
-					if (!IsPMS)
-						Track = TranslateTrackBME(curChannel, startChannelLN) - LowerBound + TrackOffset;
-					else
-						Track = TranslateTrackPMS(curChannel, startChannelLN) + TrackOffset;
+					Chart->Duration = max(double(Chart->Duration), Time);
 
-					for (auto ev = i->second.Events[curChannel].begin(); ev != i->second.Events[curChannel].end(); ++ev)
-					{
-						if (Track >= usedChannels || Track < 0) continue;
+					Note.StartTime = startTime[Track];
+					Note.EndTime = Time;
 
-						double Time = TimeForObj(i->first, ev->Fraction);
+					Note.Sound = ev.Event;
+					UsedSounds[ev.Event] = true;
 
-						if (startTime[Track] == -1)
-						{
-							startTime[Track] = Time;
-						}
-						else
-						{
-							NoteData Note;
+					Chart->TotalScoringObjects += 2;
+					Chart->TotalHolds++;
+					Chart->TotalObjects++;
 
-							Chart->Duration = max(double(Chart->Duration), Time);
+					Msr.Notes[Track].push_back(Note);
 
-							Note.StartTime = startTime[Track];
-							Note.EndTime = Time;
-
-							Note.Sound = ev->Event;
-							UsedSounds[ev->Event] = true;
-
-							Chart->TotalScoringObjects += 2;
-							Chart->TotalHolds++;
-							Chart->TotalObjects++;
-
-							Msr.Notes[Track].push_back(Note);
-
-							startTime[Track] = -1;
-						}
-					}
+					startTime[Track] = -1;
 				}
-			}
+			}, startChannelLN, i);
+
+
+			ForChannelRangeInMeasure([&](BMSEvent ev, int Track)
+			{
+				double Time = TimeForObj(i->first, ev.Fraction);
+				NoteData Note;
+				Note.StartTime = Time;
+				Note.Sound = ev.Event; // Mine explosion value.
+				// todo: finish
+
+			}, startChannelMines, i);
+
+			ForChannelRangeInMeasure([&](BMSEvent ev, int Track)
+			{
+				double Time = TimeForObj(i->first, ev.Fraction);
+				NoteData Note;
+				Note.StartTime = Time;
+				Note.Sound = ev.Event; // Sound.
+				Note.NoteKind = NK_INVISIBLE;
+			}, startChannelInvisible, i);
 		}
 
 		void CalculateMeasure(MeasureList::iterator &i)
@@ -501,56 +483,43 @@ namespace NoteLoaderBMS{
 			}
 		}
 
-		void AutodetectChannelCountSide(int offset, int usedChannels[MAX_CHANNELS], int startChannel, int startChannelLN, int startChannelMines, int startChannelInvisible)
+		void AutodetectChannelCountSide(int offset, int usedChannels[MAX_CHANNELS], 
+			int startChannel, int startChannelLN, 
+			int startChannelMines, int startChannelInvisible)
 		{
-			for (auto i = Measures.begin(); i != Measures.end(); ++i)
+			// Actual autodetection
+			auto fn = [&](int sc, MeasureList::iterator &i)
 			{
 				// normal channels
-				for (int curChannel = startChannel; curChannel <= (startChannel + MAX_CHANNELS - offset); curChannel++)
+				for (int curChannel = sc; curChannel <= (sc+ MAX_CHANNELS - offset); curChannel++)
 				{
-					if (i->second.Events.find(curChannel) != i->second.Events.end())
+					if (i->second.Events.find(curChannel) == i->second.Events.end())
+						continue;
+
+					int offs;
+
+					if (!IsPMS)
 					{
-						int offs;
-
-						if (!IsPMS)
-						{
-							offs = TranslateTrackBME(curChannel, startChannel) + offset;
-							if (curChannel - startChannel == RELATIVE_SCRATCH_CHANNEL) // Turntable is going.
-								IsSpecialStyle = true;
-						}
-						else
-						{
-							offs = TranslateTrackPMS(curChannel, startChannel) + offset;
-						}
-
-
-						if (offs < MAX_CHANNELS) // A few BMSes use the foot pedal, so we need to not overflow the array.
-							usedChannels[offs] = 1;
+						offs = TranslateTrackBME(curChannel, sc) + offset;
+						if (curChannel - sc == RELATIVE_SCRATCH_CHANNEL) // Turntable is going.
+							IsSpecialStyle = true;
 					}
-				}
-
-				// LN channels
-				for (int curChannel = startChannelLN; curChannel <= (startChannelLN + MAX_CHANNELS - offset); curChannel++)
-				{
-					if (i->second.Events.find(curChannel) != i->second.Events.end())
+					else
 					{
-						int offs;
-
-						if (!IsPMS)
-						{
-							offs = TranslateTrackBME(curChannel, startChannelLN) + offset;
-							if (curChannel - startChannel == RELATIVE_SCRATCH_CHANNEL)
-								IsSpecialStyle = true;
-						}
-						else
-						{
-							offs = TranslateTrackPMS(curChannel, startChannelLN) + offset;
-						}
-
-						if (offs < MAX_CHANNELS)
-							usedChannels[offs] = 1;
+						offs = TranslateTrackPMS(curChannel, sc) + offset;
 					}
+
+					if (offs < MAX_CHANNELS) // A few BMSes use the foot pedal, so we need to not overflow the array.
+						usedChannels[offs] = 1;
 				}
+			};
+
+			for (auto i = Measures.begin(); i != Measures.end(); ++i)
+			{
+				fn(startChannel, i);
+				fn(startChannelLN, i);
+				fn(startChannelMines, i);
+				fn(startChannelInvisible, i);
 			}
 		}
 
@@ -708,7 +677,6 @@ namespace NoteLoaderBMS{
 			else // Channel 2 is a measure length event.
 			{
 				double Event = latof(Command);
-
 				Measures[Measure].BeatDuration = Event;
 			}
 		}
