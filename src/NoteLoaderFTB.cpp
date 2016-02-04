@@ -56,7 +56,7 @@ void NoteLoaderFTB::LoadObjectsFromFile(std::string filename, std::string prefix
 
     if (!filein.is_open())
     {
-    failed:
+failed:
         return;
     }
 

@@ -243,9 +243,12 @@ auto open_image(Stream&& in)
     using namespace boost::gil;
 
     rgba8_image_t img;
-    do {
-        try {
-            try {
+    do
+    {
+        try
+        {
+            try
+            {
                 read_and_convert_image(in, img, png_tag());
                 break;
             }
@@ -253,7 +256,8 @@ auto open_image(Stream&& in)
 
             in.clear();
             in.seekg(0);
-            try {
+            try
+            {
                 read_and_convert_image(in, img, jpeg_tag());
                 break;
             }
@@ -261,7 +265,8 @@ auto open_image(Stream&& in)
 
             in.clear();
             in.seekg(0);
-            try {
+            try
+            {
                 read_and_convert_image(in, img, targa_tag());
                 break;
             }
@@ -271,7 +276,8 @@ auto open_image(Stream&& in)
             in.seekg(0);
             read_and_convert_image(in, img, bmp_tag());
         }
-        catch (...) {
+        catch (...)
+        {
             Log::Printf("Could not load image");
         }
     } while (false);
@@ -293,7 +299,8 @@ auto open_image(Stream&& in)
 ImageData ImageLoader::GetDataForImage(std::string filename)
 {
     auto file = std::ifstream{ filename, std::ios::binary };
-    if (!file.is_open()) {
+    if (!file.is_open())
+    {
         Log::Printf("Could not open file \"%s\".\n", filename);
         return{};
     }

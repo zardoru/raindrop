@@ -1,6 +1,7 @@
 #pragma once
 
-class Transformation {
+class Transformation
+{
     Mat4   mMatrix;
     float  mWidth, mHeight;
     Vec2   mPosition;

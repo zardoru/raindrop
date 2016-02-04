@@ -33,8 +33,10 @@ bool Directory::operator==(std::string subpath) const
 Directory Directory::ParentDirectory()
 {
     int a = curpath.length();
-    while (--a) {
-        if (curpath[a] == '/' || curpath[a] == '\\') {
+    while (--a)
+    {
+        if (curpath[a] == '/' || curpath[a] == '\\')
+        {
             return Directory(curpath.substr(0, a));
         }
     }
@@ -43,7 +45,8 @@ Directory Directory::ParentDirectory()
 
 void Directory::Normalize(bool RemoveIllegal)
 {
-    if (RemoveIllegal) {
+    if (RemoveIllegal)
+    {
         Utility::RemoveFilenameIllegalCharacters(curpath, false, false);
         Utility::ReplaceAll(curpath, "\\\\", "/");
     }
@@ -135,7 +138,8 @@ std::vector<std::string>& Directory::ListDirectory(std::vector<std::string>& Vec
 
     hFind = FindFirstFile(LPCWSTR(Wide.c_str()), &ffd);
 
-    do {
+    do
+    {
         if (hFind == INVALID_HANDLE_VALUE)
             continue;
 

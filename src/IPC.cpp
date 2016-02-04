@@ -7,14 +7,16 @@ using namespace IPC;
 bool message_queue_is_ours = false;
 message_queue *mque = NULL;
 
-namespace IPC {
+namespace IPC
+{
     const char* PROCESS_QUEUE_NAME = "grdpMsgQue";
 
     void InitializeMessageQueue()
     {
         if (mque) return; // already initialized
 
-        try {
+        try
+        {
             mque = new message_queue(create_only, PROCESS_QUEUE_NAME, 5, sizeof(Message));
             message_queue_is_ours = true;
         }

@@ -332,7 +332,7 @@ bool ScreenGameplay::HandleInput(int32_t key, KeyEventType code, bool isMouseInp
     /* Notes */
     if (Measure < CurrentDiff->Measures.size() && // if measure is playable
         (BindingsManager::TranslateKey(key) == KT_Select || BindingsManager::TranslateKey(key) == KT_SelectRight ||
-            BindingsManager::TranslateKey(key) == KT_GameplayClick)// is mouse input and it's a mouse button..
+        BindingsManager::TranslateKey(key) == KT_GameplayClick)// is mouse input and it's a mouse button..
         )
     {
         if (CursorZooming)
@@ -615,7 +615,8 @@ void ScreenGameplay::RenderObjects(float TimeDelta, bool drawPlayable)
     if (!EditMode)
         Lifebar.Render();
 
-    if (drawPlayable) {
+    if (drawPlayable)
+    {
         DrawVector(NotesHeld, TimeDelta);
         DrawVector(AnimateOnly, TimeDelta);
 

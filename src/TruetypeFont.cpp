@@ -3,10 +3,6 @@
 #include "TruetypeFont.h"
 #include "GameWindow.h"
 
-#define STB_TRUETYPE_IMPLEMENTATION
-#include "stb_truetype.h"
-
-#include "utf8.h"
 #include "Logging.h"
 
 TruetypeFont::TruetypeFont(std::string Filename, float Scale)
@@ -144,7 +140,8 @@ float TruetypeFont::GetHorizontalLength(const char *In)
 
     if (!IsValid) return 0;
 
-    try {
+    try
+    {
         utf8::iterator<const char*> it(Text, Text, Text + len);
         utf8::iterator<const char*> itend(Text + len, Text, Text + len);
         for (; it != itend; ++it)

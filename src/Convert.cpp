@@ -91,7 +91,8 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, std::string Author)
             << "// Storyboard Layer 3 (Foreground)\n// Storyboard Sound Samples\n";
 
         // Write BGM events here.
-        for (auto BGM : Difficulty->Data->BGMEvents) {
+        for (auto BGM : Difficulty->Data->BGMEvents)
+        {
             auto sndf = Difficulty->SoundList[BGM.Sound];
             out << "5," << int(round(BGM.Time * 1000)) << ",0,\"" << sndf << "\",100" << std::endl;
         }
@@ -192,6 +193,7 @@ void ConvertToSMTiming(VSRG::Song *Sng, Directory PathOut)
 }
 
 void ExportToBMS(VSRG::Song *Sng, Directory PathOut);
-void ConvertToBMS(VSRG::Song *Sng, Directory PathOut) {
+void ConvertToBMS(VSRG::Song *Sng, Directory PathOut)
+{
     ExportToBMS(Sng, PathOut);
 }

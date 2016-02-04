@@ -13,7 +13,8 @@ int lcm(int a, int b)
     return a * b / gcd(a, b);
 }
 
-int LCM(const std::vector<int> &Set) {
+int LCM(const std::vector<int> &Set)
+{
     return std::accumulate(Set.begin() + 1, Set.end(), *Set.begin(), lcm);
 }
 

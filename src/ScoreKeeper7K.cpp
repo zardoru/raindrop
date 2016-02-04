@@ -2,23 +2,27 @@
 
 #include "ScoreKeeper7K.h"
 
-ScoreKeeper7K::~ScoreKeeper7K() {  }
+ScoreKeeper7K::~ScoreKeeper7K() {}
 
-double ScoreKeeper7K::accuracy_percent(double var) {
+double ScoreKeeper7K::accuracy_percent(double var)
+{
     return double(ACC_MAX_SQ - var) / (ACC_MAX_SQ - ACC_MIN_SQ) * 100;
 }
 
-void ScoreKeeper7K::setAccMin(double ms) {
+void ScoreKeeper7K::setAccMin(double ms)
+{
     ACC_MIN = ms;
     ACC_MIN_SQ = ms * ms;
 }
 
-void ScoreKeeper7K::setAccMax(double ms) {
+void ScoreKeeper7K::setAccMax(double ms)
+{
     ACC_MAX = ms;
     ACC_MAX_SQ = ms * ms;
 }
 
-void ScoreKeeper7K::setMaxNotes(int notes) {
+void ScoreKeeper7K::setMaxNotes(int notes)
+{
     max_notes = std::max(notes, 1);
 
     if (notes < 10) bms_max_combo_pts = notes * (notes + 1) / 2;
@@ -33,7 +37,8 @@ int ScoreKeeper7K::getMaxNotes() { return max_notes; }
 int ScoreKeeper7K::getTotalNotes() { return total_notes; }
 
 // ms is misleading- since it may very well be beats, but it's fine.
-ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms) {
+ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms)
+{
     // hit notes
 
     avg_hit *= total_notes;
@@ -43,13 +48,17 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms) {
 
     // std::cerr << use_bbased << " " << ms << " ";
 
-    if (use_bbased) {
-        if (abs(ms * 150) < 128) {
+    if (use_bbased)
+    {
+        if (abs(ms * 150) < 128)
+        {
             ++histogram[static_cast<int>(round(ms * 150)) + 127];
         }
     }
-    else {
-        if (abs(ms) < 128) {
+    else
+    {
+        if (abs(ms) < 128)
+        {
             ++histogram[static_cast<int>(round(ms)) + 127];
         }
     }
@@ -64,13 +73,15 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms) {
     else
         jt = judgment_time[SKJ_W3];
 
-    if (ms <= jt) {
+    if (ms <= jt)
+    {
         ++notes_hit;
         ++combo;
         if (combo > max_combo)
             max_combo = combo;
     }
-    else {
+    else
+    {
         combo = 0;
     }
 
@@ -116,7 +127,8 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms) {
 
     // lifebars
 
-    if (ms <= judgment_time[SKJ_W3]) {
+    if (ms <= judgment_time[SKJ_W3])
+    {
         lifebar_easy = std::min(1.0, lifebar_easy + lifebar_easy_increment);
         lifebar_groove = std::min(1.0, lifebar_groove + lifebar_groove_increment);
 
@@ -125,7 +137,8 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms) {
         if (lifebar_exhard > 0)
             lifebar_exhard = std::min(1.0, lifebar_exhard + lifebar_exhard_increment);
     }
-    else {
+    else
+    {
         // miss tier 1
         lifebar_easy = std::max(0.0, lifebar_easy - lifebar_easy_decrement);
         lifebar_groove = std::max(0.0, lifebar_groove - lifebar_groove_decrement);
@@ -135,7 +148,8 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms) {
         lifebar_death = 0;
     }
 
-    if (ms <= judgment_time[SKJ_W1]) { // only COOLs restore o2jam lifebar
+    if (ms <= judgment_time[SKJ_W1])
+    { // only COOLs restore o2jam lifebar
         lifebar_o2jam = std::min(1.0, lifebar_o2jam + lifebar_o2jam_increment);
     }
     else if (ms > judgment_time[SKJ_W2]) // BADs get some HP from you,
@@ -171,7 +185,8 @@ int ScoreKeeper7K::getJudgmentCount(int judgment)
 
 bool ScoreKeeper7K::usesW0() { return use_w0; }
 
-void ScoreKeeper7K::missNote(bool auto_hold_miss, bool early_miss) {
+void ScoreKeeper7K::missNote(bool auto_hold_miss, bool early_miss)
+{
     judgment_amt[SKJ_MISS]++;
 
     if (!early_miss)
@@ -179,7 +194,8 @@ void ScoreKeeper7K::missNote(bool auto_hold_miss, bool early_miss) {
 
     accuracy = accuracy_percent(total_sqdev / total_notes);
 
-    if (!auto_hold_miss && !early_miss) {
+    if (!auto_hold_miss && !early_miss)
+    {
         total_sqdev += getMissCutoff() * getMissCutoff();
         combo = 0;
 
@@ -195,7 +211,8 @@ void ScoreKeeper7K::missNote(bool auto_hold_miss, bool early_miss) {
 
         lifebar_o2jam = std::max(0.0, lifebar_o2jam - lifebar_o2jam_decrement);
     }
-    else if (early_miss) {
+    else if (early_miss)
+    {
         // miss tier 1
         lifebar_easy = std::max(0.0, lifebar_easy - lifebar_easy_decrement);
         lifebar_groove = std::max(0.0, lifebar_groove - lifebar_groove_decrement);
@@ -212,29 +229,35 @@ void ScoreKeeper7K::missNote(bool auto_hold_miss, bool early_miss) {
     update_o2(SKJ_MISS);
 }
 
-double ScoreKeeper7K::getEarlyMissCutoff() {
+double ScoreKeeper7K::getEarlyMissCutoff()
+{
     return earlymiss_threshold;
 }
 
-double ScoreKeeper7K::getMissCutoff() {
+double ScoreKeeper7K::getMissCutoff()
+{
     return miss_threshold;
 }
 
-double ScoreKeeper7K::getAccMax() {
+double ScoreKeeper7K::getAccMax()
+{
     return ACC_MAX;
 }
 
-double ScoreKeeper7K::getJudgmentWindow(int judgment) {
+double ScoreKeeper7K::getJudgmentWindow(int judgment)
+{
     if (judgment >= 9 || judgment < 0) return 0;
     return judgment_time[judgment];
 }
 
-std::string ScoreKeeper7K::getHistogram() {
+std::string ScoreKeeper7K::getHistogram()
+{
     std::stringstream ss;
 
     const int HISTOGRAM_DISPLAY_WIDTH = 15;
 
-    for (int i = 0; i < 255; ++i) {
+    for (int i = 0; i < 255; ++i)
+    {
         int it = (i % HISTOGRAM_DISPLAY_WIDTH) * (255 / HISTOGRAM_DISPLAY_WIDTH) + (i / HISTOGRAM_DISPLAY_WIDTH); // transpose
         ss << std::setw(4) << it - 127 << ": " << std::setw(4) << histogram[it] << " ";
         if (i % HISTOGRAM_DISPLAY_WIDTH == HISTOGRAM_DISPLAY_WIDTH - 1)
@@ -258,7 +281,8 @@ int ScoreKeeper7K::getHistogramPointCount()
 
 int ScoreKeeper7K::getHistogramHighestPoint()
 {
-    return std::accumulate(&histogram[0], histogram + getHistogramPointCount(), 1.0, [](double a, double b) -> double {
+    return std::accumulate(&histogram[0], histogram + getHistogramPointCount(), 1.0, [](double a, double b) -> double
+    {
         return std::max(a, b);
     });
 }
@@ -270,8 +294,10 @@ double ScoreKeeper7K::getAvgHit()
 
 /* actual score functions. */
 
-int ScoreKeeper7K::getScore(int score_type) {
-    switch (score_type) {
+int ScoreKeeper7K::getScore(int score_type)
+{
+    switch (score_type)
+    {
     case ST_SCORE:
         return int(score);
     case ST_EX:
@@ -299,8 +325,10 @@ int ScoreKeeper7K::getScore(int score_type) {
     }
 }
 
-float ScoreKeeper7K::getPercentScore(int percent_score_type) {
-    switch (percent_score_type) {
+float ScoreKeeper7K::getPercentScore(int percent_score_type)
+{
+    switch (percent_score_type)
+    {
     case PST_RANK:
         return double(rank_pts) / double(total_notes) * 100.0;
     case PST_EX:
@@ -319,12 +347,15 @@ float ScoreKeeper7K::getPercentScore(int percent_score_type) {
     }
 }
 
-int ScoreKeeper7K::getLifebarUnits(int lifebar_unit_type) {
+int ScoreKeeper7K::getLifebarUnits(int lifebar_unit_type)
+{
     return 0;
 }
 
-float ScoreKeeper7K::getLifebarAmount(int lifebar_amount_type) {
-    switch (lifebar_amount_type) {
+float ScoreKeeper7K::getLifebarAmount(int lifebar_amount_type)
+{
+    switch (lifebar_amount_type)
+    {
     case LT_EASY:
         return lifebar_easy;
     case LT_GROOVE:
@@ -344,8 +375,10 @@ float ScoreKeeper7K::getLifebarAmount(int lifebar_amount_type) {
     }
 }
 
-bool ScoreKeeper7K::isStageFailed(int lifebar_amount_type) {
-    switch (lifebar_amount_type) {
+bool ScoreKeeper7K::isStageFailed(int lifebar_amount_type)
+{
+    switch (lifebar_amount_type)
+    {
     case LT_GROOVE:
         return total_notes == max_notes && lifebar_groove < 0.80;
     case LT_EASY:
@@ -365,7 +398,8 @@ bool ScoreKeeper7K::isStageFailed(int lifebar_amount_type) {
     }
 }
 
-void ScoreKeeper7K::failStage() {
+void ScoreKeeper7K::failStage()
+{
     total_notes = max_notes;
 
     update_ranks(SKJ_MISS); // rank calculation
@@ -375,8 +409,10 @@ void ScoreKeeper7K::failStage() {
     update_osu(SKJ_MISS);
 }
 
-int ScoreKeeper7K::getPacemakerDiff(PacemakerType pacemaker) {
-    switch (pacemaker) {
+int ScoreKeeper7K::getPacemakerDiff(PacemakerType pacemaker)
+{
+    switch (pacemaker)
+    {
     case PMT_F:
         return ex_score - (total_notes * 2 / 9 + (total_notes * 2 % 9 != 0));
     case PMT_E:
@@ -426,7 +462,8 @@ int ScoreKeeper7K::getPacemakerDiff(PacemakerType pacemaker) {
     return 0;
 }
 
-std::pair<std::string, int> ScoreKeeper7K::getAutoPacemaker() {
+std::pair<std::string, int> ScoreKeeper7K::getAutoPacemaker()
+{
     PacemakerType pmt;
 
     if (ex_score < total_notes * 2 / 9)  pmt = PMT_F;
@@ -446,7 +483,8 @@ std::pair<std::string, int> ScoreKeeper7K::getAutoPacemaker() {
     return std::make_pair(ss.str(), pacemaker);
 }
 
-std::pair<std::string, int> ScoreKeeper7K::getAutoRankPacemaker() {
+std::pair<std::string, int> ScoreKeeper7K::getAutoRankPacemaker()
+{
     PacemakerType pmt;
     if (rank_pts < total_notes * 110 / 100)  pmt = PMT_RANK_ZERO;
     else if (rank_pts < total_notes * 130 / 100)  pmt = PMT_RANK_P1;

@@ -506,14 +506,16 @@ void ReadObjects(std::string line, OsuLoadInfo* Info)
         Note.StartTime = startTime;
         Note.EndTime = endTime;
 
-        if (startTime > endTime) { // Okay then, we'll transform this into a regular note..
+        if (startTime > endTime)
+        { // Okay then, we'll transform this into a regular note..
             Log::Printf("NoteLoaderOM: object at track %d has startTime > endTime (%f and %f)\n", Track, startTime, endTime);
             Note.EndTime = 0;
 
             Info->Diff->TotalScoringObjects += 1;
             Info->Diff->TotalNotes++;
         }
-        else {
+        else
+        {
             Info->Diff->TotalScoringObjects += 2;
             Info->Diff->TotalHolds++;
         }
@@ -777,7 +779,8 @@ void NoteLoaderOM::LoadObjectsFromFile(std::string filename, std::string prefix,
 
     osuReadingMode ReadingMode = RNotKnown, ReadingModeOld = RNotKnown;
 
-    try {
+    try
+    {
         while (filein)
         {
             Info.Line++;

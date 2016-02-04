@@ -100,11 +100,13 @@ void ScreenGameplay7K::TranslateKey(int32_t Index, bool KeyDown)
     if (GearIndex >= MAX_CHANNELS || GearIndex < 0)
         return;
 
-    if (KeyDown) {
+    if (KeyDown)
+    {
         JudgeLane(GearIndex, GetSongTime());
         GearIsPressed[GearIndex] = true;
     }
-    else {
+    else
+    {
         ReleaseLane(GearIndex, GetSongTime());
         GearIsPressed[GearIndex] = false;
     }
@@ -198,7 +200,7 @@ void ScreenGameplay7K::CheckShouldEndScreen()
     if (ScoreKeeper->isStageFailed(lifebar_type) && !stage_failed && !NoFail)
     {
         // We make sure we don't trigger this twice.
-    stageFailed:
+stageFailed:
         stage_failed = true;
         ScoreKeeper->failStage();
         FailSnd.Play();
@@ -255,7 +257,8 @@ void ScreenGameplay7K::CheckShouldEndScreen()
     if (stage_failed)
     {
         MissTime = 10; // Infinite, for as long as it lasts.
-        if (FailureTime <= 0) { // go to evaluation screen, or back to song select depending on the skin
+        if (FailureTime <= 0)
+        { // go to evaluation screen, or back to song select depending on the skin
             if (Configuration::GetSkinConfigf("GoToSongSelectOnFailure") == 0)
             {
                 auto Eval = std::make_shared<ScreenEvaluation7K>();
@@ -310,7 +313,7 @@ void ScreenGameplay7K::UpdateSongTime(float Delta)
     {
         if (ErrorTolerance && InterpolateTime)
             Log::LogPrintf("Audio Desync: delta = %f difference = %f ms. Real song time %f (expected %f) Audio current time: %f (old = %f)\n",
-                SongDelta, abs(SongTime - SongTimeReal) * 1000, SongTimeReal, SongTime, CurrAudioTime, TempOld);
+            SongDelta, abs(SongTime - SongTimeReal) * 1000, SongTimeReal, SongTime, CurrAudioTime, TempOld);
         SongTime = SongTimeReal;
     }
 

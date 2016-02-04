@@ -11,13 +11,11 @@
 #include "Image.h"
 #include "ImageLoader.h"
 
-#include "stb_truetype.h"
 #include "TruetypeFont.h"
 #include "BitmapFont.h"
-#include "utf8.h"
 
 #include "Logging.h"
-#include <glm/gtc/matrix_transform.inl>
+//#include <glm/gtc/matrix_transform.inl>
 
 VBO* QuadBuffer = nullptr;
 VBO* TextureBuffer = nullptr;
@@ -329,7 +327,8 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
     WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha);
     SetPrimitiveQuadVBO();
 
-    try {
+    try
+    {
         utf8::iterator<const char*> it(Text, Text, Text + In.length());
         utf8::iterator<const char*> itend(Text + In.length(), Text, Text + In.length());
         for (; it != itend; ++it)
@@ -500,7 +499,7 @@ void BitmapFont::Render(const std::string &In, const Vec2 &Position, const Mat4 
     ColorBuffer->Bind();
     glVertexAttribPointer(WindowFrame.EnableAttribArray(A_COLOR), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
 
-    for (;*Text != '\0'; Text++)
+    for (; *Text != '\0'; Text++)
     {
         if (*Text == '\n')
         {

@@ -11,7 +11,7 @@
 #include "Sprite.h"
 #include "VBO.h"
 #include "TruetypeFont.h"
-#include <glm/gtc/matrix_transform.hpp>
+//#include <glm/gtc/matrix_transform.hpp>
 
 GameWindow WindowFrame;
 
@@ -184,7 +184,8 @@ int KeyTranslate(std::string K)
         return 0;
 }
 
-struct defaultKeys_s {
+struct defaultKeys_s
+{
     int key;
     KeyType command;
 } defaultKeys[] = {
@@ -267,8 +268,10 @@ void BindingsManager::Initialize()
     {
         int numOfButtons;
         glfwGetJoystickButtons(controllerToUse, &numOfButtons);
-        if (numOfButtons) {
-            for (int i = 1; i <= numOfButtons; i++) {
+        if (numOfButtons)
+        {
+            for (int i = 1; i <= numOfButtons; i++)
+            {
                 char name[32];
                 sprintf(name, "Controller%d", i);
                 sk_s thisButton;
@@ -592,16 +595,22 @@ void GameWindow::SwapBuffers()
     glfwPollEvents();
 
     int buttonArraySize = 0;
-    if (JoystickEnabled) {
+    if (JoystickEnabled)
+    {
         const unsigned char *buttonArray = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &buttonArraySize);
-        if (buttonArraySize > 0) {
-            for (int i = 0; i < buttonArraySize; i++) {
-                for (uint32_t j = 0; j < SpecialKeys.size(); j++) {
+        if (buttonArraySize > 0)
+        {
+            for (int i = 0; i < buttonArraySize; i++)
+            {
+                for (uint32_t j = 0; j < SpecialKeys.size(); j++)
+                {
                     /* Matches the pressed button to its entry in the SpecialKeys vector. */
                     int thisKeyNumber = SpecialKeys[j].boundkey - 1000;
-                    if (i + 1 == thisKeyNumber) {
+                    if (i + 1 == thisKeyNumber)
+                    {
                         /* Only processes the button push/release if the state has changed. */
-                        if ((buttonArray[i] != 0) != controllerButtonState[thisKeyNumber]) {
+                        if ((buttonArray[i] != 0) != controllerButtonState[thisKeyNumber])
+                        {
                             WindowFrame.Parent->HandleInput(SpecialKeys[j].boundkey, ToKeyEventType(buttonArray[i]), false);
                             controllerButtonState[thisKeyNumber] = !controllerButtonState[thisKeyNumber];
                         }

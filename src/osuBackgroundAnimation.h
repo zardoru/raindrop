@@ -2,7 +2,8 @@
 
 class osuBackgroundAnimation;
 
-namespace VSRG {
+namespace VSRG
+{
     class Song;
 }
 

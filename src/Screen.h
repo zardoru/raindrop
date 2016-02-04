@@ -12,7 +12,8 @@ protected:
 
     std::shared_ptr<SceneEnvironment> Animations;
 
-    enum EScreenState {
+    enum EScreenState
+    {
         StateIntro,
         StateRunning,
         StateExit

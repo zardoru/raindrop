@@ -11,7 +11,8 @@ namespace NoteLoaderBMS
     std::string GetSubtitles(std::string SLine, std::unordered_set<std::string> &Out);
 }
 
-namespace NoteLoaderBMSON {
+namespace NoteLoaderBMSON
+{
     const char* UNSPECIFIED_VERSION = "0.21";
     const char* VERSION_1 = "1.0.0";
 
@@ -69,7 +70,8 @@ namespace NoteLoaderBMSON {
         bool c;
     };
 
-    class BMSONLoader {
+    class BMSONLoader
+    {
         Json::Value root;
         std::ifstream &input;
         VSRG::Song* song;
@@ -120,7 +122,8 @@ namespace NoteLoaderBMSON {
             }
 
             std::string s = values.asCString();
-            if (regex_search(s, sm, generic_keys)) {
+            if (regex_search(s, sm, generic_keys))
+            {
                 int chans = atoi(sm[1].str().c_str());
                 if (chans <= VSRG::MAX_CHANNELS)
                 {
@@ -131,7 +134,8 @@ namespace NoteLoaderBMSON {
                 }
             }
 
-            if (regex_search(s, sm, special_keys)) {
+            if (regex_search(s, sm, special_keys))
+            {
                 int chans = atoi(sm[1].str().c_str());
                 if (chans <= VSRG::MAX_CHANNELS)
                 {
@@ -494,7 +498,8 @@ namespace NoteLoaderBMSON {
                     auto ni = obj + 1;
 
                     // It's a BGM track and it doesn't restart audio?
-                    while (ni != objs.end() && ni->x == 0 && ni->c) {
+                    while (ni != objs.end() && ni->x == 0 && ni->c)
+                    {
                         ni = objs.erase(ni);
                     }
 

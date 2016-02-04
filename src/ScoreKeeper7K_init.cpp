@@ -2,7 +2,8 @@
 
 #include "ScoreKeeper7K.h"
 
-void ScoreKeeper7K::init() {
+void ScoreKeeper7K::init()
+{
     use_w0 = false; // don't use Ridiculous by default.
     use_w0_for_ex2 = false;
 
@@ -122,7 +123,8 @@ void ScoreKeeper7K::set_beat_timing_windows()
     earlymiss_threshold = miss_threshold = o2jamTimingAmt[3];
 }
 
-void ScoreKeeper7K::set_timing_windows() {
+void ScoreKeeper7K::set_timing_windows()
+{
     double JudgmentValues[] = { 6.4, 16, 40, 100, 250, 625 };
 
     miss_threshold = 250;
@@ -138,7 +140,8 @@ void ScoreKeeper7K::set_timing_windows() {
         histogram[i + 127] = 0;
 }
 
-void ScoreKeeper7K::setODWindows(int od) {
+void ScoreKeeper7K::setODWindows(int od)
+{
     use_w0 = true; // if chart has OD, use osu!mania scoring.
     use_w0_for_ex2 = true;
 
@@ -171,17 +174,20 @@ void ScoreKeeper7K::setSMJ4Windows()
 
 void ScoreKeeper7K::set_manual_w0(bool on) { use_w0 = on; } // make a config option
 
-ScoreKeeper7K::ScoreKeeper7K() {
+ScoreKeeper7K::ScoreKeeper7K()
+{
     init();
 }
 
-ScoreKeeper7K::ScoreKeeper7K(double judge_window_scale) {
+ScoreKeeper7K::ScoreKeeper7K(double judge_window_scale)
+{
     init();
     this->judge_window_scale = judge_window_scale;
     set_timing_windows();
 }
 
-void ScoreKeeper7K::setLifeTotal(double total) {
+void ScoreKeeper7K::setLifeTotal(double total)
+{
     if (total != -1) lifebar_total = total;
     else lifebar_total = std::max(260.0, 7.605 * max_notes / (6.5 + 0.01 * max_notes));
 
@@ -197,21 +203,26 @@ void ScoreKeeper7K::setLifeTotal(double total) {
     lifebar_exhard_decrement = Clamp(lifebar_total / max_notes / 3.0, 0.03, 0.3);
 }
 
-void ScoreKeeper7K::setLifeIncrements(double* increments, int inc_n) {
-    for (int a = 0; a < inc_n; ++a) {
+void ScoreKeeper7K::setLifeIncrements(double* increments, int inc_n)
+{
+    for (int a = 0; a < inc_n; ++a)
+    {
         life_increment[a] = increments[a];
     }
 }
 
-void ScoreKeeper7K::setMissDecrement(double decrement) {
+void ScoreKeeper7K::setMissDecrement(double decrement)
+{
     lifebar_stepmania_miss_decrement = decrement;
 }
 
-void ScoreKeeper7K::setEarlyMissDecrement(double decrement) {
+void ScoreKeeper7K::setEarlyMissDecrement(double decrement)
+{
     lifebar_stepmania_earlymiss_decrement = decrement;
 }
 
-void ScoreKeeper7K::setJudgeRank(int rank) {
+void ScoreKeeper7K::setJudgeRank(int rank)
+{
     if (rank == -100) // We assume we're dealing with beats-based timing.
     {
         use_bbased = true;
@@ -221,7 +232,8 @@ void ScoreKeeper7K::setJudgeRank(int rank) {
     }
 
     use_bbased = false;
-    switch (rank) {
+    switch (rank)
+    {
     case 0:
         judge_window_scale = 0.50; break;
     case 1:
@@ -234,7 +246,8 @@ void ScoreKeeper7K::setJudgeRank(int rank) {
     set_timing_windows();
 }
 
-void ScoreKeeper7K::setJudgeScale(double scale) {
+void ScoreKeeper7K::setJudgeScale(double scale)
+{
     judge_window_scale = scale;
     set_timing_windows();
 }

@@ -1,6 +1,7 @@
 #pragma once
 
-enum ScoreKeeperJudgment {
+enum ScoreKeeperJudgment
+{
     SKJ_NONE = -1, // no judgment.
 
     SKJ_W0 = 0, // Ridiculous / rainbow 300, for those programs that use it.
@@ -17,7 +18,8 @@ enum ScoreKeeperJudgment {
     SKJ_HOLD_NG = 11, // NG
 };
 
-enum ScoreType {
+enum ScoreType
+{
     ST_SCORE = 1, // raindrop's 7K scoring type.
 
     ST_EX = 2, // EX score
@@ -39,7 +41,8 @@ enum ScoreType {
     ST_NOTES_HIT = 102, // total notes hit
 };
 
-enum PercentScoreType {
+enum PercentScoreType
+{
     PST_RANK = 1, // raindrop rank score
 
     PST_EX = 2, // EX score
@@ -51,7 +54,8 @@ enum PercentScoreType {
 
 const double SCORE_MAX = 100000000;
 
-enum LifeType {
+enum LifeType
+{
     LT_GROOVE = 1, // Beatmania default lifebar
 
     LT_SURVIVAL = 2, // Beatmania hard mode
@@ -68,7 +72,8 @@ enum LifeType {
 };
 
 // Pacemakers.
-enum PacemakerType {
+enum PacemakerType
+{
     PT_NONE = 0,
 
     PMT_A = 1,

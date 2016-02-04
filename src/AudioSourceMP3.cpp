@@ -133,7 +133,8 @@ bool AudioSourceMP3::IsValid()
     auto isValidMp3Stream = (err == MPG123_OK ||
         err == MPG123_DONE ||
         err == MPG123_ERR_READER); // This third one is because valid streams throw off this error.
-    if (!isValidMp3Stream) {
+    if (!isValidMp3Stream)
+    {
         Log::Printf("Mp3 Decoder error: %s\n", mpg123_strerror(mHandle));
         mIsValid = false;
     }

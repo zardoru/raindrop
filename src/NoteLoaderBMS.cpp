@@ -2,7 +2,6 @@
 
 #include "GameGlobal.h"
 #include "Song7K.h"
-#include "utf8.h"
 
 /*
     Source for implemented commands:
@@ -25,7 +24,8 @@
     Since most information is in japanese it's likely the implementation won't be perfect at the start.
     */
 
-namespace NoteLoaderBMS {
+namespace NoteLoaderBMS
+{
     /* literally pasted from wikipedia */
     std::string tob36(long unsigned int value)
     {
@@ -34,7 +34,8 @@ namespace NoteLoaderBMS {
         unsigned int offset = sizeof(buffer);
 
         buffer[--offset] = '\0';
-        do {
+        do
+        {
             buffer[--offset] = base36[value % 36];
         } while (value /= 36);
 
@@ -355,7 +356,7 @@ namespace NoteLoaderBMS {
 
                         if (!LNObj || (LNObj != ev->Event))
                         {
-                        degradetonote:
+degradetonote:
                             NoteData Note;
 
                             Note.StartTime = Time;
@@ -463,13 +464,14 @@ namespace NoteLoaderBMS {
 
                 while (q != Chart->Data->Measures.rend())
                 {
-                    if ((*q).Notes[k].size()) {
+                    if ((*q).Notes[k].size())
+                    {
                         LastNotes[k] = &((*q).Notes[k].back());
                         goto next_chan;
                     }
                     ++q;
                 }
-            next_chan:;
+next_chan:;
             }
 
             if (i->second.Events[CHANNEL_BGM].size() != 0) // There are some BGM events?
@@ -712,7 +714,8 @@ namespace NoteLoaderBMS {
 
             // Starting off with the basics.
 
-            do {
+            do
+            {
                 if (Command == "#setrandom")
                 {
                     RandomStack[CurrentNestedLevel] = atoi(Contents.c_str());
@@ -896,22 +899,28 @@ namespace NoteLoaderBMS {
             Utility::ToLower(Current);
             const char* s = Current.c_str();
 
-            if (strstr(s, "another")) {
+            if (strstr(s, "another"))
+            {
                 candidate = "Another";
             }
-            if (strstr(s, "ex")) {
+            if (strstr(s, "ex"))
+            {
                 candidate = "EX";
             }
-            if (strstr(s, "hyper") || strstr(s, "hard")) {
+            if (strstr(s, "hyper") || strstr(s, "hard"))
+            {
                 candidate = "Hyper";
             }
-            if (strstr(s, "normal") || strstr(s, "5key") || strstr(s, "7key") || strstr(s, "10key")) {
+            if (strstr(s, "normal") || strstr(s, "5key") || strstr(s, "7key") || strstr(s, "10key"))
+            {
                 candidate = "Normal";
             }
-            if (strstr(s, "light")) {
+            if (strstr(s, "light"))
+            {
                 candidate = "Light";
             }
-            if (strstr(s, "beginner")) {
+            if (strstr(s, "beginner"))
+            {
                 candidate = "Beginner";
             }
 
@@ -1262,14 +1271,16 @@ namespace NoteLoaderBMS {
         Diff->Filename = filename.string().c_str();
         Diff->Data = LInfo;
 
-        if (filename.extension() == L".pms") {
+        if (filename.extension() == L".pms")
+        {
             IsPMS = true;
         }
 
         std::shared_ptr<BMSLoader> Info = std::make_shared<BMSLoader>(Out, Diff, IsPMS);
 
         std::ifstream filein(filename);
-        if (!filein.is_open()) {
+        if (!filein.is_open())
+        {
             throw std::exception(("NoteLoaderBMS: Couldn't open file " + filename.string() + "!").c_str());
         }
 

@@ -1,6 +1,7 @@
 #pragma once
 
-class Font {
+class Font
+{
 protected:
     float Red, Green, Blue, Alpha;
 public:

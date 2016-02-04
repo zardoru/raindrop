@@ -4,7 +4,8 @@ class SongLoader;
 
 struct ListEntry
 {
-    enum {
+    enum
+    {
         Directory,
         Song
     } Kind;

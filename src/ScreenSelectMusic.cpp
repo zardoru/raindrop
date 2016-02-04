@@ -348,7 +348,8 @@ void ScreenSelectMusic::PlayPreview()
     }
     else
     {
-        if (PreviewStream) {
+        if (PreviewStream)
+        {
             PreviewStream->Stop();
             PreviewStream = nullptr;
         }

@@ -13,7 +13,7 @@
 #include "SongList.h"
 
 #include "SongDatabase.h"
-#include <glm/gtc/matrix_transform.inl>
+//#include <glm/gtc/matrix_transform.inl>
 
 using namespace Game;
 
@@ -373,7 +373,7 @@ void SongWheel::Update(float Delta)
             IsHovering = false;
             if (OnItemHoverLeave)
                 OnItemHoverLeave(GetCursorIndex(), GetListCursorIndex(),
-                    CurrentList->GetEntryTitle(GetCursorIndex()), nullptr);
+                CurrentList->GetEntryTitle(GetCursorIndex()), nullptr);
         }
     }
 
@@ -405,7 +405,8 @@ void SongWheel::DisplayItem(int32_t ListItem, int32_t ListPosition, Vec2 Positio
             IsSelected = (ListPosition == SelectedListItem);
         }
 
-        for (auto Item = Sprites.begin(); Item != Sprites.end(); ++Item) {
+        for (auto Item = Sprites.begin(); Item != Sprites.end(); ++Item)
+        {
             Item->second->SetPosition(Position);
 
             if (TransformItem)
@@ -415,7 +416,8 @@ void SongWheel::DisplayItem(int32_t ListItem, int32_t ListPosition, Vec2 Positio
             Item->second->Render();
         }
 
-        for (auto Item = Strings.begin(); Item != Strings.end(); ++Item) {
+        for (auto Item = Strings.begin(); Item != Strings.end(); ++Item)
+        {
             Item->second->SetPosition(Position);
 
             if (TransformString)

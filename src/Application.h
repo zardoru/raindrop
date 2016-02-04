@@ -21,7 +21,8 @@ class Application
     Directory InFile, OutFile;
 
     // VSRG-Specific
-    enum class CONVERTMODE {
+    enum class CONVERTMODE
+    {
         CONV_BMS,
         CONV_UQBMS,
         CONV_SM,

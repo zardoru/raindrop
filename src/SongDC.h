@@ -3,7 +3,8 @@
 #include "Song.h"
 #include "GameObject.h"
 
-namespace dotcur {
+namespace dotcur
+{
     typedef std::vector<GameObject> Measure;
 
     struct Difficulty : public Game::Song::Difficulty

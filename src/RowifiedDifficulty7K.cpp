@@ -6,7 +6,8 @@
 
 using namespace VSRG;
 
-static double PassThrough(double D) {
+static double PassThrough(double D)
+{
     return D;
 }
 
@@ -38,7 +39,8 @@ int RowifiedDifficulty::GetRowCount(const std::vector<Event> &In)
     std::vector <int> Denominators;
 
     // Find all different denominators.
-    for (auto i : In) {
+    for (auto i : In)
+    {
         for (auto k : Denominators)
         {
             if (i.Sect.Den == k)
@@ -46,7 +48,7 @@ int RowifiedDifficulty::GetRowCount(const std::vector<Event> &In)
         }
 
         Denominators.push_back(i.Sect.Den);
-    next_object:;
+next_object:;
     }
 
     if (Denominators.size() == 1) return Denominators.at(0);
@@ -67,7 +69,8 @@ void RowifiedDifficulty::CalculateMeasureAccomulation()
     assert(Parent != nullptr);
 
     MeasureAccomulation.clear();
-    for (auto M : Parent->Data->Measures) {
+    for (auto M : Parent->Data->Measures)
+    {
         MeasureAccomulation.push_back(QuantizeFunction(Acom));
         Acom += M.Length;
     }
@@ -99,14 +102,16 @@ int RowifiedDifficulty::MeasureForBeat(double Beat)
     throw std::runtime_error("Beat outside of bounds.");
 }
 
-void RowifiedDifficulty::ResizeMeasures(size_t NewMaxIndex) {
+void RowifiedDifficulty::ResizeMeasures(size_t NewMaxIndex)
+{
     if (Measures.size() < NewMaxIndex + 1)
         Measures.resize(NewMaxIndex + 1);
 }
 
 void RowifiedDifficulty::CalculateBGMEvents()
 {
-    for (auto BGM : Parent->Data->BGMEvents) {
+    for (auto BGM : Parent->Data->BGMEvents)
+    {
         double Beat = QuantizeFunction(IntegrateToTime(BPS, BGM.Time));
 
         int MeasureForEvent = MeasureForBeat(Beat);
@@ -117,24 +122,30 @@ void RowifiedDifficulty::CalculateBGMEvents()
 
 void RowifiedDifficulty::CalculateObjects()
 {
-    for (auto M : Parent->Data->Measures) {
-        for (int K = 0; K < Parent->Channels; K++) {
-            for (auto N : M.Notes[K]) {
+    for (auto M : Parent->Data->Measures)
+    {
+        for (int K = 0; K < Parent->Channels; K++)
+        {
+            for (auto N : M.Notes[K])
+            {
                 double StartBeat = QuantizeFunction(IntegrateToTime(BPS, N.StartTime));
 
-                if (StartBeat < 0) {
+                if (StartBeat < 0)
+                {
                     Log::Printf("Object at negative beat (%f), discarded\n", StartBeat);
                     continue;
                 }
 
-                if (N.EndTime == 0) { // Non-hold. Emit channels 11-...
+                if (N.EndTime == 0)
+                { // Non-hold. Emit channels 11-...
                     int MeasureForEvent = MeasureForBeat(StartBeat);
                     ResizeMeasures(MeasureForEvent);
 
                     int Snd = N.Sound ? N.Sound : 1;
                     Measures[MeasureForEvent].Objects[K].push_back({ FractionForMeasure(MeasureForEvent, StartBeat), Snd });
                 }
-                else { // Hold. Emit channels 51-...
+                else
+                { // Hold. Emit channels 51-...
                     double EndBeat = QuantizeFunction(IntegrateToTime(BPS, N.EndTime));
                     int MeasureForEvent = MeasureForBeat(StartBeat);
                     int MeasureForEventEnd = MeasureForBeat(EndBeat);
@@ -149,6 +160,7 @@ void RowifiedDifficulty::CalculateObjects()
     }
 }
 
-double RowifiedDifficulty::GetStartingBPM() {
+double RowifiedDifficulty::GetStartingBPM()
+{
     return BPS[0].Value * 60;
 }

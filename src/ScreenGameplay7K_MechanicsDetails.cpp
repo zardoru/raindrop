@@ -28,7 +28,8 @@ bool RaindropMechanics::OnUpdate(double SongTime, VSRG::TrackNote* m, uint32_t L
 
     // Condition A: Hold tail outside accuracy cutoff (can't be hit any longer),
     // note wasn't hit at the head and it's a hold
-    if ((SongTime - m->GetTimeFinal()) > 0 && !m->WasNoteHit() && m->IsHold()) {
+    if ((SongTime - m->GetTimeFinal()) > 0 && !m->WasNoteHit() && m->IsHold())
+    {
         // ^ no need for delays here.
         // remove hold notes that were never hit.
         m->MakeInvisible();
@@ -41,13 +42,16 @@ bool RaindropMechanics::OnUpdate(double SongTime, VSRG::TrackNote* m, uint32_t L
         MissNotify(abs(SongTime - m->GetStartTime()) * 1000, k, m->IsHold(), false, false);
 
         // only remove tap notes from judgment; hold notes might be activated before the tail later.
-        if (!(m->IsHold())) {
+        if (!(m->IsHold()))
+        {
             m->MakeInvisible();
             m->Disable();
         }
-        else {
+        else
+        {
             m->DisableHead();
-            if (IsLaneKeyDown(k)) { // if the note was already being held down
+            if (IsLaneKeyDown(k))
+            { // if the note was already being held down
                 m->Hit();
                 SetLaneHoldingState(k, true);
             }
@@ -107,7 +111,8 @@ bool RaindropMechanics::OnPressLane(double SongTime, VSRG::TrackNote* m, uint32_
         {
             MissNotify(dev, Lane, m->IsHold(), m->IsHold(), true);
         }
-        else {
+        else
+        {
             m->Hit();
             HitNotify(dev, Lane, m->IsHold(), false);
 
@@ -241,7 +246,8 @@ bool O2JamMechanics::OnUpdate(double SongBeat, VSRG::TrackNote* m, uint32_t Lane
 
     // Condition A: Hold tail outside accuracy cutoff (can't be hit any longer),
     // note wasn't hit at the head and it's a hold
-    if (tD > 0 && !m->WasNoteHit() && m->IsHold()) {
+    if (tD > 0 && !m->WasNoteHit() && m->IsHold())
+    {
         // remove hold notes that were never hit.
         m->FailHit();
         MissNotify(abs(tD), k, m->IsHold(), true, false);

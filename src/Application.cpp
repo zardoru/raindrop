@@ -47,64 +47,72 @@ void Application::ParseArgs(int argc, char **argv)
     po::options_description desc("Allowed options");
     desc.add_options()
         ("help,?",
-            "show help message")
+        "show help message")
         ("preview,p",
-            "Preview File")
+        "Preview File")
         ("input,i", po::value<std::filesystem::path>(),
-            "Input File")
+        "Input File")
         ("output,o", po::value<std::filesystem::path>(),
-            "Output File")
+        "Output File")
         ("gencache,c",
-            "Generate Cache")
+        "Generate Cache")
         ("format,g", po::value<std::string>(),
-            "Target Format")
+        "Target Format")
         ("measure,m", po::value<unsigned>()->default_value(0),
-            "Measure")
+        "Measure")
         ("author,a", po::value<std::string>()->default_value("raindrop"),
-            "Author")
+        "Author")
         ("A,A",
-            "Auto")
+        "Auto")
         ("S,S",
-            "Stop Preview Instance")
+        "Stop Preview Instance")
         ("R,R",
-            "Release IPC Pool")
+        "Release IPC Pool")
         ("L,L", po::value<std::filesystem::path>(),
-            "Load Custom Scene")
+        "Load Custom Scene")
         ;
 
     po::variables_map vm;
-    try {
+    try
+    {
         po::store(po::parse_command_line(argc, argv, desc), vm);
     }
-    catch (...) {
+    catch (...)
+    {
         std::cout << "unknown / incompatible option supplied" << std::endl;
         return;
     }
     po::notify(vm);
 
-    if (vm.count("help")) {
+    if (vm.count("help"))
+    {
         std::cout << desc << std::endl;
         return;
     }
 
-    if (vm.count("preview")) {
+    if (vm.count("preview"))
+    {
         RunMode = MODE_VSRGPREVIEW;
     }
 
-    if (vm.count("input")) {
+    if (vm.count("input"))
+    {
         InFile = Directory(vm["input"].as<std::filesystem::path>().string());
     }
 
-    if (vm.count("output")) {
+    if (vm.count("output"))
+    {
         RunMode = MODE_CONVERT;
         OutFile = Directory(vm["output"].as<std::filesystem::path>().string());
     }
 
-    if (vm.count("gencache")) {
+    if (vm.count("gencache"))
+    {
         RunMode = MODE_GENCACHE;
     }
 
-    if (vm.count("format")) {
+    if (vm.count("format"))
+    {
         ConvertMode = std::map<std::string, CONVERTMODE>{
             { "om", CONVERTMODE::CONV_OM },
             { "sm", CONVERTMODE::CONV_SM },
@@ -114,28 +122,34 @@ void Application::ParseArgs(int argc, char **argv)
         }.at(vm["format"].as<std::string>());
     }
 
-    if (vm.count("measure")) {
+    if (vm.count("measure"))
+    {
         Measure = vm["measure"].as<unsigned>();
     }
 
-    if (vm.count("a")) {
+    if (vm.count("a"))
+    {
         Author = vm["a"].as<std::string>();
     }
 
-    if (vm.count("A")) {
+    if (vm.count("A"))
+    {
         Auto = true;
     }
 
-    if (vm.count("S")) {
+    if (vm.count("S"))
+    {
         RunMode = MODE_STOPPREVIEW;
     }
 
-    if (vm.count("R")) {
+    if (vm.count("R"))
+    {
         RunMode = MODE_NULL;
         IPC::RemoveQueue();
     }
 
-    if (vm.count("L")) {
+    if (vm.count("L"))
+    {
         RunMode = MODE_CUSTOMSCREEN;
         InFile = Directory(vm["L"].as<std::filesystem::path>().string());
     }

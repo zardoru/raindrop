@@ -322,7 +322,8 @@ bool SongDatabase::CacheNeedsRenewal(Directory Dir)
         bool IsLMTCurrent = (CurLMT == OldLMT); // file was not modified since last time
         NeedsRenewal = !IsLMTCurrent;
     }
-    else {
+    else
+    {
         NeedsRenewal = true;
     }
 

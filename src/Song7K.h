@@ -10,7 +10,8 @@ namespace VSRG
         std::vector<NoteData> Notes[MAX_CHANNELS];
         double Length; // In beats. 4 by default.
 
-        Measure() {
+        Measure()
+        {
             Length = 4;
         }
     };
@@ -27,7 +28,8 @@ namespace VSRG
 
     typedef std::vector<TrackNote> VectorTN[MAX_CHANNELS];
 
-    enum TimingInfoType {
+    enum TimingInfoType
+    {
         TI_NONE,
         TI_BMS,
         TI_OSUMANIA,
@@ -35,7 +37,8 @@ namespace VSRG
         TI_STEPMANIA
     };
 
-    class CustomTimingInfo {
+    class CustomTimingInfo
+    {
     protected:
         TimingInfoType Type;
     public:
@@ -82,7 +85,8 @@ namespace VSRG
     class O2JamTimingInfo : public CustomTimingInfo
     {
     public:
-        enum {
+        enum
+        {
             O2_EX,
             O2_NX,
             O2_HX
@@ -104,7 +108,8 @@ namespace VSRG
         }
     };
 
-    struct BMPEventsDetail {
+    struct BMPEventsDetail
+    {
         std::map<int, std::string> BMPList;
         std::vector<AutoplayBMP> BMPEventsLayerBase;
         std::vector<AutoplayBMP> BMPEventsLayer;
@@ -188,26 +193,31 @@ namespace VSRG
         // Destroy all information that can be loaded from cache
         void Destroy();
 
-        Difficulty() {
+        Difficulty()
+        {
             IsVirtual = false;
             Channels = 0;
             Level = 0;
             Data = nullptr;
         };
 
-        ~Difficulty() {
+        ~Difficulty()
+        {
             Destroy();
         };
     };
 
-    class RowifiedDifficulty {
+    class RowifiedDifficulty
+    {
     public:
-        struct Event {
+        struct Event
+        {
             IFraction Sect;
             int Evt;
         };
 
-        struct Measure {
+        struct Measure
+        {
             std::vector<Event> Objects[VSRG::MAX_CHANNELS];
             std::vector<Event> LNObjects[VSRG::MAX_CHANNELS];
             std::vector<Event> BGMEvents;

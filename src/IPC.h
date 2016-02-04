@@ -4,9 +4,12 @@
     Raindrop IPC facilities. Mainly for use with VSRG preview-mode.
 */
 
-namespace IPC {
-    struct Message {
-        enum EMessageKind {
+namespace IPC
+{
+    struct Message
+    {
+        enum EMessageKind
+        {
             MSG_NULL,
             MSG_STOP,
             MSG_STARTFROMMEASURE

@@ -1,9 +1,9 @@
 #include "pch.h"
 
 #include "Logging.h"
-#include "sha256.h"
 
-namespace Utility {
+namespace Utility
+{
     void DebugBreak()
     {
 #ifndef NDEBUG

@@ -3,7 +3,8 @@
 #include "GameGlobal.h"
 #include "Song7K.h"
 
-namespace NoteTransform {
+namespace NoteTransform
+{
     void Randomize(VSRG::VectorTN &Notes, int ChannelCount, bool RespectScratch)
     {
         int si;
@@ -15,7 +16,8 @@ namespace NoteTransform {
         dev.seed(time(nullptr));
         std::uniform_int_distribution<int> di(si, ChannelCount - 1);
 
-        std::random_shuffle(Notes + si, Notes + ChannelCount, [&](int i) -> int {
+        std::random_shuffle(Notes + si, Notes + ChannelCount, [&](int i) -> int
+        {
             int rv = -1;
             while (rv < si)
                 rv = di(dev) % i; // Only can swap with earlier element, and it's the i-th position, not index, so let's % it.

@@ -11,7 +11,8 @@
 #include "NoteLoader7K.h"
 #include "NoteLoaderDC.h"
 
-struct loaderVSRGEntry_t {
+struct loaderVSRGEntry_t
+{
     const wchar_t* Ext;
     void(*LoadFunc) (std::string filename, std::string prefix, VSRG::Song* Out);
 } LoadersVSRG[] = {
@@ -28,7 +29,8 @@ struct loaderVSRGEntry_t {
     { L"bmson", NoteLoaderBMSON::LoadObjectsFromFile }
 };
 
-struct loaderVSRGEntry2_t {
+struct loaderVSRGEntry2_t
+{
     const wchar_t* Ext;
     void(*LoadFunc) (const std::filesystem::path&, VSRG::Song* Out);
 } LoadersVSRG2[] = {
@@ -124,7 +126,8 @@ bool ValidBMSExtension(std::wstring Ext)
 
 std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(const std::filesystem::path& filename, VSRG::Song *Sng)
 {
-    if (!filename.has_extension()) {
+    if (!filename.has_extension())
+    {
         return nullptr;
     }
 
@@ -143,7 +146,8 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(const std::filesystem::path& 
         if (filename.extension() == LoadersVSRG2[i].Ext)
         {
             Log::Logf("Load %s from disk...", filename.string().c_str());
-            try {
+            try
+            {
                 LoadersVSRG2[i].LoadFunc(filename, Sng);
                 Log::Logf(" ok\n");
             }
@@ -212,7 +216,8 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory
         if (Ext == LoadersVSRG[i].Ext)
         {
             Log::LogPrintf("Load %s from disk...", fn_f.c_str());
-            try {
+            try
+            {
                 LoadersVSRG[i].LoadFunc(fn_f, Prefix, Sng);
                 Log::Logf(" ok\n");
             }
@@ -340,7 +345,8 @@ void SongLoader::LoadSong7KFromDir(Directory songPath, std::vector<VSRG::Song*> 
             {
                 BMSSong->SongDirectory = SongDirectory;
 
-                try {
+                try
+                {
                     LoadSong7KFromFilename(File, SongDirectory, BMSSong);
                 }
                 catch (std::exception &ex)

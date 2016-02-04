@@ -403,7 +403,7 @@ bool ScreenGameplay7K::ProcessSong()
 
     if (AudioCompensation &&  // Apply drift is enabled and:
         ((ApplyDriftVirtual && CurrentDiff->IsVirtual) ||  // We want to apply it to a keysounded file and it's virtual
-            (ApplyDriftDecoder && !CurrentDiff->IsVirtual))) // or we want to apply it to a non-keysounded file and it's not virtual
+        (ApplyDriftDecoder && !CurrentDiff->IsVirtual))) // or we want to apply it to a non-keysounded file and it's not virtual
         TimeCompensation += MixerGetLatency();
 
     TimeCompensation += Configuration::GetConfigf("Offset7K");
@@ -614,7 +614,8 @@ void ScreenGameplay7K::SetupMechanics()
         lifebar_type = LT_GROOVE;
     }
 
-    if (Configuration::GetConfigf("AlwaysUseRidiculousTiming")) {
+    if (Configuration::GetConfigf("AlwaysUseRidiculousTiming"))
+    {
         ScoreKeeper->set_manual_w0(true);
     }
 
@@ -703,7 +704,8 @@ bool ScreenGameplay7K::BindKeysToLanes(bool UseTurntable)
             GearBindings[static_cast<int>(latof(res[i]))] = i;
         else
         {
-            if (!Auto) {
+            if (!Auto)
+            {
                 Log::Printf("Mising bindings starting from lane " + Utility::IntToStr(i) + " using profile " + KeyProfile);
                 return false;
             }

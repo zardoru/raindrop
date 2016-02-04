@@ -1,13 +1,16 @@
 #pragma once
 
-struct ImageData {
-    enum EWrapMode {
+struct ImageData
+{
+    enum EWrapMode
+    {
         WM_CLAMP_TO_EDGE,
         WM_REPEAT,
         WM_DEFAULT = WM_CLAMP_TO_EDGE
     } WrapMode;
 
-    enum EScalingMode {
+    enum EScalingMode
+    {
         SM_LINEAR,
         SM_NEAREST,
         SM_MIPMAP,
@@ -18,7 +21,8 @@ struct ImageData {
     int Width, Height;
     void *Data;
 
-    ImageData() {
+    ImageData()
+    {
         WrapMode = WM_DEFAULT;
         ScalingMode = SM_DEFAULT;
         Width = 0; Height = 0;

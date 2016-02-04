@@ -10,7 +10,8 @@
 #include "BindingsManager.h"
 #include "Logging.h"
 
-class LoadScreenThread {
+class LoadScreenThread
+{
     std::atomic<bool>& mFinished;
     Screen* mScreen;
 public:
@@ -18,7 +19,8 @@ public:
     void DoLoad()
     {
         mFinished = false;
-        try {
+        try
+        {
             mScreen->LoadResources();
         }
         catch (InterruptedException &)

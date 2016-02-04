@@ -107,7 +107,8 @@ extern char* KeytypeNames[];
 
 /* vsrg constants */
 
-enum ESpeedType {
+enum ESpeedType
+{
     SPEEDTYPE_DEFAULT = -1,
     SPEEDTYPE_FIRST,
     SPEEDTYPE_MMOD,
@@ -116,16 +117,19 @@ enum ESpeedType {
 };
 
 // The values here must be consistent with the shaders!
-enum EHiddenMode {
+enum EHiddenMode
+{
     HM_NONE,
     HM_SUDDEN,
     HM_HIDDEN,
     HM_FLASHLIGHT,
 };
 
-namespace VSRG {
+namespace VSRG
+{
     // note type: 3 bits
-    enum ENoteKind {
+    enum ENoteKind
+    {
         NK_NORMAL,
         NK_FAKE,
         NK_MINE,
@@ -138,7 +142,8 @@ namespace VSRG {
     const uint8_t MAX_CHANNELS = 16;
 }
 
-struct GameParameters {
+struct GameParameters
+{
     // If true, use upscroll
     int Upscroll;
 
@@ -166,7 +171,8 @@ struct GameParameters {
     // Selected starting measure
     int32_t StartMeasure;
 
-    GameParameters() {
+    GameParameters()
+    {
         Upscroll = false;
         Wave = false;
         Preloaded = false;

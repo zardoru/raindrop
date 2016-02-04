@@ -7,18 +7,22 @@ class ImageList;
 class RocketContextObject;
 class TruetypeFont;
 
-namespace Rocket {
-    namespace Core {
+namespace Rocket
+{
+    namespace Core
+    {
         class Context;
         class ElementDocument;
     }
 }
 
-struct Animation {
+struct Animation
+{
     std::function <bool(float Fraction)> Function;
 
     float Time, Duration, Delay;
-    enum EEaseType {
+    enum EEaseType
+    {
         EaseLinear,
         EaseIn,
         EaseOut
@@ -26,7 +30,8 @@ struct Animation {
 
     Sprite* Target;
 
-    Animation() {
+    Animation()
+    {
         Time = Delay = 0;
         Duration = std::numeric_limits<float>::infinity();
         Target = nullptr;

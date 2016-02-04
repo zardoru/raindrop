@@ -1,6 +1,7 @@
 #pragma once
 
-class Drawable {
+class Drawable
+{
 public:
     virtual ~Drawable() {};
     virtual void Render() {};

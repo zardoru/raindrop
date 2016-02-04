@@ -17,14 +17,16 @@ typedef shared_ptr<vector<string>> tokenList;
 
 symbolMap Values;
 
-class cfgMap {
+class cfgMap
+{
 private:
     int line; int linepos;
     string input;
     size_t offset;
     tokenList tokout;
 
-    void incoffs() {
+    void incoffs()
+    {
         if (input[offset] == '\n')
         {
             line++; linepos = 0;
@@ -42,7 +44,8 @@ private:
     }
 
     // see if C is a token
-    bool istok(char C) {
+    bool istok(char C)
+    {
         char tokens[] = ",;{}:";
         for (size_t i = 0; i < sizeof(tokens); i++)
             if (C == tokens[i])
@@ -66,7 +69,8 @@ private:
 
         if (offset >= input.length() || istok(input[offset])) throw syntax_error("expected identifier", line, linepos);
 
-        while (offset < input.length() && !isspace(input[offset]) && !istok(input[offset])) {
+        while (offset < input.length() && !isspace(input[offset]) && !istok(input[offset]))
+        {
             tok += input[offset];
             incoffs();
         }
@@ -106,7 +110,8 @@ public:
     {
     public:
         int line; int offs;
-        syntax_error(string err, int ln, int lnoff) : runtime_error(err) {
+        syntax_error(string err, int ln, int lnoff) : runtime_error(err)
+        {
             line = ln; offs = lnoff;
         }
     };
@@ -118,7 +123,8 @@ public:
         line = 1; linepos = 1;
         tokout = make_shared<vector<string>>();
 
-        while (offset < input.length()) {
+        while (offset < input.length())
+        {
             readid();
             match('{');
             assertnoteof();
@@ -135,7 +141,8 @@ public:
         {
             string &sym = (*it);
             it++; it++; // skip {
-            while (*it != "}") {
+            while (*it != "}")
+            {
                 string key = *it; it++; it++; // skip :
                 string val = *it; it++; it++; // skip ;
                 out[sym][key] = val;
@@ -144,7 +151,8 @@ public:
     }
 };
 
-namespace Configuration {
+namespace Configuration
+{
     void LoadTextureParameters()
     {
         std::ifstream istr(GameState::GetInstance().GetSkinFile("texparams.rcf").c_str());
@@ -159,12 +167,14 @@ namespace Configuration {
         while (std::getline(istr, line))
             inp += line;
 
-        try {
+        try
+        {
             cfgMap Map;
             Map.tokenize(inp);
             Map.getMap(Values);
         }
-        catch (cfgMap::syntax_error &err) {
+        catch (cfgMap::syntax_error &err)
+        {
             Log::Printf("Syntax Error (Line %d@%d): %s\n", err.line, err.offs, err.what());
         }
     }

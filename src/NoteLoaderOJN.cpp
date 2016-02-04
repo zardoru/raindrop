@@ -1,6 +1,5 @@
 #include "pch.h"
 
-#include "utf8.h"
 #include "GameGlobal.h"
 #include "Logging.h"
 #include "Song7K.h"
@@ -53,7 +52,8 @@ struct OjnPackage
 
 union OjnEvent
 {
-    struct {
+    struct
+    {
         short noteValue;
         char volume_pan;
         char type;
@@ -66,7 +66,8 @@ struct OjnInternalEvent
     int Channel;
     int noteKind; // undefined if channel is not note or autoplay channel
     float Fraction;
-    union {
+    union
+    {
         float fValue;
         int iValue;
     };
@@ -442,7 +443,7 @@ void NoteLoaderOJN::LoadObjectsFromFile(std::string filename, std::string prefix
                     Info.Measures[PackageHeader.measure].Events.push_back(IEvt);
                     break;
                 }
-            next_event:;
+next_event:;
             }
         }
 

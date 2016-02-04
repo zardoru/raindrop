@@ -3,7 +3,8 @@
 #include "Interruptible.h"
 #include "Sprite.h"
 
-namespace Game {
+namespace Game
+{
     class Song;
 }
 

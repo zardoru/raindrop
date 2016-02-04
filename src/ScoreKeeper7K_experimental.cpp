@@ -23,24 +23,30 @@ Also, the point combo resets to 0 if a note is missed.
 
 */
 
-void ScoreKeeper7K::update_exp2(ScoreKeeperJudgment judgment) {
-    if (!use_w0_for_ex2 && judgment <= SKJ_W1 || use_w0_for_ex2 && judgment == SKJ_W0) {
+void ScoreKeeper7K::update_exp2(ScoreKeeperJudgment judgment)
+{
+    if (!use_w0_for_ex2 && judgment <= SKJ_W1 || use_w0_for_ex2 && judgment == SKJ_W0)
+    {
         exp_combo += 4;
         exp_hit_score += 2;
     }
-    else if (!use_w0_for_ex2 && judgment == SKJ_W2 || use_w0_for_ex2 && judgment == SKJ_W1) {
+    else if (!use_w0_for_ex2 && judgment == SKJ_W2 || use_w0_for_ex2 && judgment == SKJ_W1)
+    {
         exp_combo += 3;
         exp_hit_score += 2;
     }
-    else if (!use_w0_for_ex2 && judgment == SKJ_W3 || use_w0_for_ex2 && judgment == SKJ_W2) {
+    else if (!use_w0_for_ex2 && judgment == SKJ_W3 || use_w0_for_ex2 && judgment == SKJ_W2)
+    {
         exp_combo += 2;
         exp_hit_score += 1;
     }
-    else if (use_w0_for_ex2 && judgment == SKJ_W3) {
+    else if (use_w0_for_ex2 && judgment == SKJ_W3)
+    {
         exp_combo = 1;
         exp_hit_score += 1;
     }
-    else {
+    else
+    {
         exp_combo = 0;
     }
 

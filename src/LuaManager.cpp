@@ -71,7 +71,8 @@ bool LuaManager::RunScript(std::string Filename)
     {
         const char* reason = lua_tostring(State, -1);
 
-        if (reason) {
+        if (reason)
+        {
             Log::Printf("Lua error: %s\n", reason);
             Utility::DebugBreak();
         }

@@ -1,0 +1,334 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{F065A22E-9B7B-4B5C-972F-2C8E30859D96}</ProjectGuid>
+    <RootNamespace>dotcur</RootNamespace>
+    <ProjectName>raindrop</ProjectName>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">.\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v140_xp</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>..\lib\include;..\lib\include\LuaBridge;..\lib\include\lua;..\lib\include\zlib;..\lib\include\libmpg123;..\lib\include\libsndfile;..\lib\include\sqlite3;..\lib\include\stb;..\lib\include\soxr;..\lib\include\libjpeg-turbo;..\lib\include\stdex;..\lib\include\libpng;..\lib\include\portaudio;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;$(UniversalCRT_IncludePath)</IncludePath>
+    <LibraryPath>..\lib\$(Configuration);$(LibraryPath)</LibraryPath>
+    <LibraryWPath />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>..\lib\include;..\lib\include\LuaBridge;..\lib\include\lua;..\lib\include\zlib;..\lib\include\libmpg123;..\lib\include\libsndfile;..\lib\include\sqlite3;..\lib\include\stb;..\lib\include\soxr;..\lib\include\libjpeg-turbo;..\lib\include\stdex;..\lib\include\libpng;..\lib\include\portaudio;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;$(UniversalCRT_IncludePath)</IncludePath>
+    <LibraryPath>..\lib\$(Configuration);$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release NoSTLport|Win32'">
+    <LibraryPath>..\ext-libs\Release;../ext-libs/boost/stage/lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <PreprocessorDefinitions>BOOST_DATE_TIME_NO_LIB;MP3_ENABLED;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>rocketcorelua.lib;rocketcontrolslua.lib;rocketcontrols.lib;rocketdebugger.lib;rocketcore.lib;libmpg123.lib;portaudio_x86.lib;soxr.lib;libsndfile-1.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;glfw3.lib;glew32.lib;opengl32.lib;libpng16.lib;turbojpeg.lib;jpeg-static.lib;kernel32.lib;user32.lib;gdi32.lib;lua52.lib;sqlite3.lib</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>BOOST_DATE_TIME_NO_LIB;WIN32;NDEBUG;MP3_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <StringPooling>true</StringPooling>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <OmitFramePointers>false</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>rocketcorelua.lib;rocketcontrolslua.lib;rocketcontrols.lib;rocketdebugger.lib;rocketcore.lib;libmpg123.lib;portaudio_x86.lib;soxr.lib;libsndfile-1.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;glfw3.lib;glew32.lib;opengl32.lib;libpng16.lib;turbojpeg.lib;jpeg-static.lib;kernel32.lib;user32.lib;gdi32.lib;lua52.lib;sqlite3.lib</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release NoSTLport|Win32'">
+    <ClCompile>
+      <Optimization>Full</Optimization>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release NoSTLport|Win32'">
+    <ClCompile>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release NoSTLport|Win32'">
+    <ClCompile>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release NoSTLport|Win32'">
+    <ClCompile>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <MinimalRebuild>true</MinimalRebuild>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>libsndfile-1.lib;libmpg123.lib;Vorbis.lib;portaudio_x86.lib;Ogg.lib;GLFW3.lib;glew32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug NoSTLPort|Win32'">
+    <Link>
+      <AdditionalDependencies>libsndfile-1.lib;libmpg123.lib;Vorbis_d.lib;portaudio_x86.lib;Ogg_d.lib;GLFW3.lib;glew32d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\ActorBarline.cpp" />
+    <ClCompile Include="..\src\ActorJudgment.cpp" />
+    <ClCompile Include="..\src\ActorLifebar.cpp" />
+    <ClCompile Include="..\src\Application.cpp" />
+    <ClCompile Include="..\src\Audio.cpp" />
+    <ClCompile Include="..\src\Audiofile.cpp" />
+    <ClCompile Include="..\src\AudioSourceMP3.cpp" />
+    <ClCompile Include="..\src\AudioSourceOGG.cpp" />
+    <ClCompile Include="..\src\AudioSourceOJM.cpp" />
+    <ClCompile Include="..\src\AudioSourceSFM.cpp" />
+    <ClCompile Include="..\src\BackgroundAnimation.cpp" />
+    <ClCompile Include="..\src\BitmapFont.cpp" />
+    <ClCompile Include="..\src\Configuration.cpp" />
+    <ClCompile Include="..\src\Convert.cpp" />
+    <ClCompile Include="..\src\ConvertToBMS.cpp" />
+    <ClCompile Include="..\src\Directory.cpp" />
+    <ClCompile Include="..\src\ext\jsoncpp.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\src\ext\pa_ringbuffer.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\src\ext\sha256.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\src\Font.cpp" />
+    <ClCompile Include="..\src\GameState.cpp" />
+    <ClCompile Include="..\src\GameStateLua.cpp" />
+    <ClCompile Include="..\src\GraphicalString.cpp" />
+    <ClCompile Include="..\src\Interruptible.cpp" />
+    <ClCompile Include="..\src\IPC.cpp" />
+    <ClCompile Include="..\src\Line.cpp" />
+    <ClCompile Include="..\src\Logging.cpp" />
+    <ClCompile Include="..\src\NoteLoaderBMSON.cpp" />
+    <ClCompile Include="..\src\NoteLoaderOJN.cpp" />
+    <ClCompile Include="..\src\Noteskin.cpp" />
+    <ClCompile Include="..\src\NoteTransformations.cpp" />
+    <ClCompile Include="..\src\NPSGraph.cpp" />
+    <ClCompile Include="..\src\pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\src\raindrop.cpp" />
+    <ClCompile Include="..\src\GameObject.cpp" />
+    <ClCompile Include="..\src\GameWindow.cpp" />
+    <ClCompile Include="..\src\RowifiedDifficulty7K.cpp" />
+    <ClCompile Include="..\src\ScreenCustom.cpp" />
+    <ClCompile Include="..\src\Sprite.cpp" />
+    <ClCompile Include="..\src\RaindropRocketInterface.cpp" />
+    <ClCompile Include="..\src\SceneEnvironment.cpp" />
+    <ClCompile Include="..\src\GuiButton.cpp" />
+    <ClCompile Include="..\src\GuiTextPrompt.cpp" />
+    <ClCompile Include="..\src\Image.cpp" />
+    <ClCompile Include="..\src\ImageList.cpp" />
+    <ClCompile Include="..\src\ImageLoader.cpp" />
+    <ClCompile Include="..\src\LuaAnimationInterface.cpp" />
+    <ClCompile Include="..\src\LuaManager.cpp" />
+    <ClCompile Include="..\src\NoteLoaderDC.cpp" />
+    <ClCompile Include="..\src\NoteLoaderBMS.cpp" />
+    <ClCompile Include="..\src\NoteLoaderFTB.cpp" />
+    <ClCompile Include="..\src\NoteLoaderOM.cpp" />
+    <ClCompile Include="..\src\NoteLoaderSM.cpp" />
+    <ClCompile Include="..\src\Renderer7K.cpp" />
+    <ClCompile Include="..\src\Rendering.cpp" />
+    <ClCompile Include="..\src\ScoreKeeper7K.cpp" />
+    <ClCompile Include="..\src\ScoreKeeper7K_bms.cpp" />
+    <ClCompile Include="..\src\ScoreKeeper7K_experimental.cpp" />
+    <ClCompile Include="..\src\ScoreKeeper7K_init.cpp" />
+    <ClCompile Include="..\src\ScoreKeeper7K_Lua.cpp" />
+    <ClCompile Include="..\src\ScoreKeeper7K_o2jam.cpp" />
+    <ClCompile Include="..\src\ScoreKeeper7K_osu.cpp" />
+    <ClCompile Include="..\src\ScoreKeeper7K_rank.cpp" />
+    <ClCompile Include="..\src\Screen.cpp" />
+    <ClCompile Include="..\src\ScreenEdit.cpp" />
+    <ClCompile Include="..\src\ScreenEvaluation.cpp" />
+    <ClCompile Include="..\src\ScreenEvaluation7K.cpp" />
+    <ClCompile Include="..\src\ScreenGameplay.cpp" />
+    <ClCompile Include="..\src\ScreenGameplay7K.cpp" />
+    <ClCompile Include="..\src\ScreenGameplay7K_Lua.cpp" />
+    <ClCompile Include="..\src\ScreenGameplay7K_Mechanics.cpp" />
+    <ClCompile Include="..\src\ScreenGameplay7K_MechanicsDetails.cpp" />
+    <ClCompile Include="..\src\ScreenGameplay7K_Setup.cpp" />
+    <ClCompile Include="..\src\ScreenLoading.cpp" />
+    <ClCompile Include="..\src\ScreenMainMenu.cpp" />
+    <ClCompile Include="..\src\ScreenSelectMusic.cpp" />
+    <ClCompile Include="..\src\SongDatabase.cpp" />
+    <ClCompile Include="..\src\SongDC.cpp" />
+    <ClCompile Include="..\src\Song7K.cpp" />
+    <ClCompile Include="..\src\SongList.cpp" />
+    <ClCompile Include="..\src\SongLoader.cpp" />
+    <ClCompile Include="..\src\SongTiming.cpp" />
+    <ClCompile Include="..\src\SongWheel.cpp" />
+    <ClCompile Include="..\src\TextureConfig.cpp" />
+    <ClCompile Include="..\src\TrackNote.cpp" />
+    <ClCompile Include="..\src\Transformation.cpp" />
+    <ClCompile Include="..\src\TruetypeFont.cpp" />
+    <ClCompile Include="..\src\Utility.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\ActorBarline.h" />
+    <ClInclude Include="..\src\ActorJudgment.h" />
+    <ClInclude Include="..\src\ActorLifebar.h" />
+    <ClInclude Include="..\src\Application.h" />
+    <ClInclude Include="..\src\Audio.h" />
+    <ClInclude Include="..\src\Audiofile.h" />
+    <ClInclude Include="..\src\AudioSourceOGG.h" />
+    <ClInclude Include="..\src\AudioSourceOJM.h" />
+    <ClInclude Include="..\src\AudioSourceMP3.h" />
+    <ClInclude Include="..\src\BackgroundAnimation.h" />
+    <ClInclude Include="..\src\BindingsManager.h" />
+    <ClInclude Include="..\src\BitmapFont.h" />
+    <ClInclude Include="..\src\Configuration.h" />
+    <ClInclude Include="..\src\Converter.h" />
+    <ClInclude Include="..\src\Directory.h" />
+    <ClInclude Include="..\src\Drawable.h" />
+    <ClInclude Include="..\src\Font.h" />
+    <ClInclude Include="..\src\GameObject.h" />
+    <ClInclude Include="..\src\GameGlobal.h" />
+    <ClInclude Include="..\src\GameState.h" />
+    <ClInclude Include="..\src\GameWindow.h" />
+    <ClInclude Include="..\src\GraphicalString.h" />
+    <ClInclude Include="..\src\Interruptible.h" />
+    <ClInclude Include="..\src\NoteTransformations.h" />
+    <ClInclude Include="..\src\osuBackgroundAnimation.h" />
+    <ClInclude Include="..\src\pch.h" />
+    <ClInclude Include="..\src\ScreenCustom.h" />
+    <ClInclude Include="..\src\Sprite.h" />
+    <ClInclude Include="..\src\IPC.h" />
+    <ClInclude Include="..\src\Noteskin.h" />
+    <ClInclude Include="..\src\RaindropRocketInterface.h" />
+    <ClInclude Include="..\src\Rendering.h" />
+    <ClInclude Include="..\src\SceneEnvironment.h" />
+    <ClInclude Include="..\src\GuiButton.h" />
+    <ClInclude Include="..\src\GuiTextPrompt.h" />
+    <ClInclude Include="..\src\Image.h" />
+    <ClInclude Include="..\src\ImageList.h" />
+    <ClInclude Include="..\src\ImageLoader.h" />
+    <ClInclude Include="..\src\Line.h" />
+    <ClInclude Include="..\src\Logging.h" />
+    <ClInclude Include="..\src\LuaManager.h" />
+    <ClInclude Include="..\src\NoteLoaderDC.h" />
+    <ClInclude Include="..\src\NoteLoader7K.h" />
+    <ClInclude Include="..\src\ScoreKeeper.h" />
+    <ClInclude Include="..\src\Screen.h" />
+    <ClInclude Include="..\src\ScreenEdit.h" />
+    <ClInclude Include="..\src\ScreenEvaluation.h" />
+    <ClInclude Include="..\src\ScreenEvaluation7K.h" />
+    <ClInclude Include="..\src\ScreenGameplay.h" />
+    <ClInclude Include="..\src\ScreenGameplay7K.h" />
+    <ClInclude Include="..\src\ScreenGameplay7K_Mechanics.h" />
+    <ClInclude Include="..\src\ScreenLoading.h" />
+    <ClInclude Include="..\src\ScreenMainMenu.h" />
+    <ClInclude Include="..\src\ScreenSelectMusic.h" />
+    <ClInclude Include="..\src\Song.h" />
+    <ClInclude Include="..\src\Song7K.h" />
+    <ClInclude Include="..\src\SongDatabase.h" />
+    <ClInclude Include="..\src\SongDC.h" />
+    <ClInclude Include="..\src\SongList.h" />
+    <ClInclude Include="..\src\SongLoader.h" />
+    <ClInclude Include="..\src\SongTiming.h" />
+    <ClInclude Include="..\src\SongWheel.h" />
+    <ClInclude Include="..\src\GuiSwitchPanel.h" />
+    <ClInclude Include="..\src\TrackNote.h" />
+    <ClInclude Include="..\src\Transformation.h" />
+    <ClInclude Include="..\src\TruetypeFont.h" />
+    <ClInclude Include="..\src\VBO.h" />
+    <ClInclude Include="..\src\AudioSourceSFM.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="app.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\.gitignore">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\config.ini">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\LICENSE">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\README">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+    <Import Project="packages\boost.1.60.0.0\build\native\boost.targets" Condition="Exists('packages\boost.1.60.0.0\build\native\boost.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+    <Error Condition="!Exists('packages\boost.1.60.0.0\build\native\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\boost.1.60.0.0\build\native\boost.targets'))" />
+  </Target>
+</Project>

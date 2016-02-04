@@ -130,7 +130,8 @@ void assignKeyMap()
     initialized = true;
 }
 
-class RocketContextObject : public Drawable2D {
+class RocketContextObject : public Drawable2D
+{
 public:
     Rocket::Core::Context * ctx;
     void Render()
@@ -509,7 +510,8 @@ void SceneEnvironment::UpdateTargets(double TimeDelta)
 
         float frac;
 
-        switch (i->Easing) {
+        switch (i->Easing)
+        {
         case Animation::EaseIn:
             frac = pow(i->Time / i->Duration, 2);
             break;
@@ -633,7 +635,8 @@ bool SceneEnvironment::HandleInput(int32_t key, KeyEventType code, bool isMouseI
                 ctx->ProcessMouseButtonUp(key, 0);
         }
     }
-    else {
+    else
+    {
         if (code == KE_PRESS)
         {
             if (ctx)
@@ -669,7 +672,8 @@ void SceneEnvironment::DoEvent(std::string EventName, int Return)
     if (Lua->CallFunction(EventName.c_str(), 0, Return))
         Lua->RunFunction();
 
-    if (Doc) {
+    if (Doc)
+    {
         Utility::ToLower(EventName);
         Doc->DispatchEvent(EventName.c_str(), Rocket::Core::Dictionary());
     }

@@ -6,28 +6,36 @@
 float CfgValNPS(std::string name, float defaultvalue)
 {
     float ret = Configuration::GetConfigf(name, "NPS");
-    if (!ret) {
+    if (!ret)
+    {
         std::stringstream ss;
         ss << defaultvalue;
         Configuration::SetConfig(name, ss.str(), "NPS");
         return defaultvalue;
     }
-    else {
+    else
+    {
         return ret;
     }
 }
 
-class NPSGraph {
+class NPSGraph
+{
     VSRG::Song* Song;
 
     int CountInterval(VSRG::Difficulty* In, double timeStart, double timeEnd)
     {
         int out = 0;
-        for (auto m : In->Data->Measures) {
-            for (int k = 0; k < In->Channels; k++) {
-                for (auto note : m.Notes[k]) {
-                    if (note.StartTime >= timeStart || (note.EndTime >= timeStart && note.EndTime)) {
-                        if (note.StartTime < timeEnd || (note.EndTime < timeEnd && note.EndTime)) {
+        for (auto m : In->Data->Measures)
+        {
+            for (int k = 0; k < In->Channels; k++)
+            {
+                for (auto note : m.Notes[k])
+                {
+                    if (note.StartTime >= timeStart || (note.EndTime >= timeStart && note.EndTime))
+                    {
+                        if (note.StartTime < timeEnd || (note.EndTime < timeEnd && note.EndTime))
+                        {
                             out++;
                         }
                     }

@@ -20,7 +20,8 @@ namespace VSRG
         uint32_t Sound; // Do we really need more than this?
         uint8_t NoteKind; // To be used with ENoteKind.
 
-        NoteData() {
+        NoteData()
+        {
             StartTime = EndTime = 0;
             Sound = 0;
             NoteKind = NK_NORMAL;

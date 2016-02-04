@@ -39,14 +39,16 @@ struct M30Entry
     int32_t pcm_samples;
 };
 
-struct OMC_header {
+struct OMC_header
+{
     int32_t unk;
     int32_t wav_start;
     int32_t ogg_start;
     int32_t fsize;
 };
 
-struct OMC_WAV_header {
+struct OMC_WAV_header
+{
     char sample_name[32];
     int16_t audio_format;
     int16_t num_channels;
@@ -58,7 +60,8 @@ struct OMC_WAV_header {
     int32_t chunk_size;
 };
 
-struct OMC_OGG_header {
+struct OMC_OGG_header
+{
     char sample_name[32];
     int32_t sample_size;
 };

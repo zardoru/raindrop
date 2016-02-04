@@ -14,7 +14,8 @@
 
 #include "ScoreKeeper7K.h"
 
-enum OBJTYPE {
+enum OBJTYPE
+{
     OB_HOLDS,
     OB_NOTES,
     OB_OBJ,
@@ -105,7 +106,7 @@ void GameState::InitializeLua(lua_State *L)
         .addData("Objects", &Game::Song::Difficulty::TotalObjects, false)
         .addData("ScoreObjects", &Game::Song::Difficulty::TotalScoringObjects, false)
         .addProperty("Author", &songHelper::getDifficultyAuthor<Game::Song::Difficulty>,
-            &songHelper::setDifficultyAuthor <Game::Song::Difficulty>)
+        &songHelper::setDifficultyAuthor <Game::Song::Difficulty>)
         .endClass();
 
     luabridge::getGlobalNamespace(L)
@@ -121,14 +122,14 @@ void GameState::InitializeLua(lua_State *L)
     luabridge::getGlobalNamespace(L)
         .deriveClass <VSRG::Song, Game::Song>("Song7K")
         .addProperty("DifficultyCount", &songHelper::getDifficultyCountForSong<VSRG::Song>,
-            &songHelper::setDifficultyCountForSong<VSRG::Song>)
+        &songHelper::setDifficultyCountForSong<VSRG::Song>)
         .addFunction("GetDifficulty", &VSRG::Song::GetDifficulty)
         .endClass();
 
     luabridge::getGlobalNamespace(L)
         .deriveClass <dotcur::Song, Game::Song>("SongDC")
         .addProperty("DifficultyCount", &songHelper::getDifficultyCountForSong<dotcur::Song>,
-            &songHelper::setDifficultyCountForSong<dotcur::Song>)
+        &songHelper::setDifficultyCountForSong<dotcur::Song>)
         // .addFunction("GetDifficulty", &songHelper::getDifficulty<dotcur::Song, dotcur::Difficulty>)
         .endClass();
 

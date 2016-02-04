@@ -66,7 +66,8 @@ void ScreenGameplay7K::DrawMeasures()
 
     for (auto k = 0U; k < CurrentDiff->Channels; k++)
     {
-        auto Locate = [&](float StaticVert) -> float {
+        auto Locate = [&](float StaticVert) -> float
+        {
             return (CurrentVertical - StaticVert) * SpeedMultiplier + JudgmentLinePos;
         };
 
@@ -76,7 +77,8 @@ void ScreenGameplay7K::DrawMeasures()
         if (!HasNegativeScroll)
         {
             /* Find the location of the first/next visible regular note */
-            auto LocPredicate = [&](const TrackNote &A, double _) -> bool {
+            auto LocPredicate = [&](const TrackNote &A, double _) -> bool
+            {
                 if (!IsUpscrolling())
                     return _ < Locate(A.GetVertical());
                 else // Signs are switched. We need to preserve the same order.
@@ -93,7 +95,8 @@ void ScreenGameplay7K::DrawMeasures()
             auto rStart = std::reverse_iterator<std::vector<TrackNote>::iterator>(Start);
             for (auto i = rStart; i != NotesByChannel[k].rend(); ++i)
             {
-                if (i->IsHold() && i->IsVisible()) {
+                if (i->IsHold() && i->IsVisible())
+                {
                     auto Vert = Locate(i->GetVertical());
                     auto VertEnd = Locate(i->GetHoldEndVertical());
                     if (IntervalsIntersect(0, ScreenHeight, std::min(Vert, VertEnd), std::max(Vert, VertEnd)))

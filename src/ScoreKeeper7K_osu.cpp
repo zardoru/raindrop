@@ -2,10 +2,12 @@
 
 #include "ScoreKeeper7K.h"
 
-void ScoreKeeper7K::update_osu(ScoreKeeperJudgment judgment) {
+void ScoreKeeper7K::update_osu(ScoreKeeperJudgment judgment)
+{
     int osu_bonus_multiplier = 0;
 
-    switch (judgment) {
+    switch (judgment)
+    {
     case SKJ_W0:
         osu_points += 320;
         osu_accuracy += 300;

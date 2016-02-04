@@ -1,19 +1,15 @@
 #pragma once
 
-#define _USE_MATH_DEFINES
-
-#ifdef NIDEBUG
-#undef _HAS_ITERATOR_DEBUGGING
-#endif
-
 #if (defined _MSC_VER) && (_MSC_VER < 1800)
-#error "You require Visual Studio 2013 to compile this application."
+#error "You require Visual Studio 2013 or higher to compile this application."
 #endif
 
 #ifdef WIN32
 #pragma warning (disable: 4244) // possible loss of data
 #pragma warning (disable: 4996) // deprecation
 #pragma warning (disable: 4800) // cast from bool to int
+
+#define _USE_MATH_DEFINES
 
 #define ENABLE_SNDFILE_WINDOWS_PROTOTYPES 1
 #include <Windows.h>
@@ -39,16 +35,19 @@
 
 #if _MSC_VER >= 1900
 #include <filesystem>
-namespace std {
+namespace std
+{
     namespace filesystem = experimental::filesystem;
 }
 #else
 #include <boost\filesystem.hpp>
-namespace std {
+namespace std
+{
     namespace filesystem = boost::filesystem;
 }
 #endif
 
+// STL
 #include <algorithm>
 #include <atomic>
 #include <chrono>
@@ -74,7 +73,9 @@ namespace std {
 #include <thread>
 #include <unordered_set>
 #include <vector>
+#include <randint> // C++17 example implementation
 
+// C stdlib
 #include <cctype>
 #include <clocale>
 #include <cmath>
@@ -84,48 +85,46 @@ namespace std {
 #include <cstdlib>
 #include <ctime>
 
-#include <boost\interprocess\ipc\message_queue.hpp>
+// boost
 #include <boost\gil\extension\io\bmp_all.hpp>
 #include <boost\gil\extension\io\png_all.hpp>
 #include <boost\gil\extension\io\jpeg_all.hpp>
 #include <boost\gil\extension\io\targa_all.hpp>
+#include <boost\interprocess\ipc\message_queue.hpp>
 #include <boost\program_options.hpp>
 
-#include <randint.h>
-
-#include <Rocket\Core.h>
+// librocket
 #include <Rocket\Controls.h>
+#include <Rocket\Core.h>
 #include <Rocket\Debugger.h>
 #include <Rocket\Core\Lua\Interpreter.h>
 #include <Rocket\Controls\Lua\Controls.h>
 
-#include <LuaBridge.h>
-extern "C" {
-#include <lua.h>
-#include <lualib.h>
-#include <lauxlib.h>
-}
-
-#include <json\json.h>
-
+// OpenGL
 #include <GL\glew.h>
 #include <glm\glm.hpp>
-#include <glm\gtc\type_ptr.hpp>
+#include <glm\ext.hpp>
 #include <GLFW\glfw3.h>
 
-#include <sqlite3.h>
-
-#include <sys\stat.h>
-
+// audio
+#include <portaudio\portaudio.h>
+#include <soxr.h>
 #include <ogg\ogg.h>
 #include <vorbis\vorbisfile.h>
-
-#include <portaudio.h>
-#include <pa_ringbuffer.h>
-
 #include <sndfile.h>
 
-#include <soxr.h>
+// others
+#include <stb_truetype.h>
+#include <sqlite3.h>
+#include <LuaBridge.h>
+#include <sys\stat.h>
+
+// static libraries
+#include "ext\json\json.h"
+#include "ext\sha256.h"
+#include "ext\pa_ringbuffer.h"
+#include "ext\SimpleIni.h"
+#include "ext\utf8.h"
 
 using Vec2 = glm::vec2;
 using Vec3 = glm::vec3;
@@ -133,13 +132,16 @@ using Mat4 = glm::mat4;
 
 template
 <class T>
-struct TAABB {
-    union {
+struct TAABB
+{
+    union
+    {
         struct { T X, Y; } P1;
         struct { T X1, Y1; }; // Topleft point
     };
 
-    union {
+    union
+    {
         struct { T X, Y; } P2;
         struct { T X2, Y2; }; // Bottomright point
     };
@@ -150,8 +152,10 @@ using AABBd = TAABB<double>;
 
 template
 <class T>
-struct TColorRGB {
-    union {
+struct TColorRGB
+{
+    union
+    {
         struct { T R, G, B, A; };
         struct { T Red, Green, Blue, Alpha; };
     };
@@ -160,7 +164,8 @@ struct TColorRGB {
 using ColorRGB = TColorRGB<float>;
 using ColorRGBd = TColorRGB<double>;
 
-namespace Color {
+namespace Color
+{
     extern const ColorRGB White;
     extern const ColorRGB Black;
     extern const ColorRGB Red;
@@ -169,7 +174,8 @@ namespace Color {
 }
 
 template <class T>
-struct Fraction {
+struct Fraction
+{
     T Num;
     T Den;
 
@@ -179,7 +185,8 @@ struct Fraction {
     }
 
     template <class K>
-    Fraction(K num, K den) {
+    Fraction(K num, K den)
+    {
         Num = num;
         Den = den;
     }

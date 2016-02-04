@@ -3,7 +3,6 @@
 #include "GameGlobal.h"
 #include "Song7K.h"
 #include "NoteLoader7K.h"
-#include "utf8.h"
 #include "Logging.h"
 
 /* Stepmania/SSC loader. Lacks delays and speeds for now. As well as keysounds. */
@@ -139,7 +138,8 @@ void LoadNotesSM(Song *Out, Difficulty *Diff, std::vector<std::string> &MeasureT
                     case '1': /* Taps */
                         Note.StartTime = Time;
 
-                        if (!InWarpSection) {
+                        if (!InWarpSection)
+                        {
                             Diff->TotalNotes++;
                             Diff->TotalObjects++;
                             Diff->TotalScoringObjects++;
@@ -159,7 +159,8 @@ void LoadNotesSM(Song *Out, Difficulty *Diff, std::vector<std::string> &MeasureT
                         Note.StartTime = KeyStartTime[k];
                         Note.EndTime = Time;
 
-                        if (!IsTimeWithinWarp(Diff, KeyStartTime[k])) {
+                        if (!IsTimeWithinWarp(Diff, KeyStartTime[k]))
+                        {
                             Note.NoteKind = NK_NORMAL; // Un-fake it.
                             Diff->TotalHolds++;
                             Diff->TotalObjects++;
@@ -244,11 +245,13 @@ void DoCommonSMCommands(std::string command, std::string CommandContents, Song* 
             Out->SongName = CommandContents;
 #else
             Out->SongName = CommandContents;
-            try {
+            try
+            {
                 std::vector<int> cp;
                 utf8::utf8to16(CommandContents.begin(), CommandContents.end(), std::back_inserter(cp));
             }
-            catch (utf8::not_enough_room &e) {
+            catch (utf8::not_enough_room &e)
+            {
                 Out->SongName = Utility::SJIStoU8(CommandContents);
             }
 #endif
@@ -265,11 +268,13 @@ void DoCommonSMCommands(std::string command, std::string CommandContents, Song* 
             Out->Subtitle = CommandContents;
 #else
             Out->Subtitle = CommandContents;
-            try {
+            try
+            {
                 std::vector<int> cp;
                 utf8::utf8to16(CommandContents.begin(), CommandContents.end(), std::back_inserter(cp));
             }
-            catch (utf8::not_enough_room &e) {
+            catch (utf8::not_enough_room &e)
+            {
                 Out->Subtitle = Utility::SJIStoU8(CommandContents);
             }
 #endif
@@ -286,11 +291,13 @@ void DoCommonSMCommands(std::string command, std::string CommandContents, Song* 
             Out->SongAuthor = CommandContents;
 #else
             Out->SongAuthor = CommandContents;
-            try {
+            try
+            {
                 std::vector<int> cp;
                 utf8::utf8to16(CommandContents.begin(), CommandContents.end(), std::back_inserter(cp));
             }
-            catch (utf8::not_enough_room &e) {
+            catch (utf8::not_enough_room &e)
+            {
                 Out->SongAuthor = Utility::SJIStoU8(CommandContents);
             }
 #endif

@@ -57,7 +57,8 @@ void Screen::ChangeState(Screen::EScreenState NewState)
 {
     ScreenState = NewState;
 
-    switch (NewState) {
+    switch (NewState)
+    {
     case StateIntro:
         OnIntroBegin();
         break;

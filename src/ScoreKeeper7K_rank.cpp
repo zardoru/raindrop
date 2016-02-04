@@ -2,7 +2,8 @@
 
 #include "ScoreKeeper7K.h"
 
-void ScoreKeeper7K::update_ranks(ScoreKeeperJudgment judgment) {
+void ScoreKeeper7K::update_ranks(ScoreKeeperJudgment judgment)
+{
     if (!use_w0_for_ex2 && judgment <= SKJ_W0) ++rank_w0_count;
 
     if (!use_w0_for_ex2 && judgment <= SKJ_W1 || use_w0_for_ex2 && judgment <= SKJ_W0) ++rank_w1_count;
@@ -17,7 +18,8 @@ void ScoreKeeper7K::update_ranks(ScoreKeeperJudgment judgment) {
     rank_pts = rank_w0_pts + rank_w1_pts + rank_w2_pts + rank_w3_pts;
 }
 
-int ScoreKeeper7K::getRank() {
+int ScoreKeeper7K::getRank()
+{
     // find some way to streamline this.
 
     if (rank_pts == total_notes * 400 / 100) return 15;
