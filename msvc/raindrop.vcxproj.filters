@@ -637,10 +637,10 @@
     <None Include="..\LICENSE">
       <Filter>Additional Files</Filter>
     </None>
-    <None Include="packages.config" />
     <None Include="..\README.md">
       <Filter>Additional Files</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="app.rc" />
