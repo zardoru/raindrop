@@ -1,10 +1,8 @@
-#ifndef DRAWABLE_H_
-#define DRAWABLE_H_
+#pragma once
 
-class Drawable {
+class Drawable
+{
 public:
-	virtual ~Drawable() {};
-	virtual void Render() {};
+    virtual ~Drawable() {};
+    virtual void Render() {};
 };
-
-#endif

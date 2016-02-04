@@ -1,11 +1,8 @@
+#include "pch.h"
+
 #include "GameGlobal.h"
 #include "Logging.h"
 #include "GameState.h"
-#include <string>
-#include <memory>
-#include <vector>
-#include <map>
-#include <fstream>
 
 using std::string;
 using std::map;
@@ -20,171 +17,180 @@ typedef shared_ptr<vector<string>> tokenList;
 
 symbolMap Values;
 
-class cfgMap{	
+class cfgMap
+{
 private:
-	int line; int linepos;
-	string input;
-	size_t offset;
-	tokenList tokout;
+    int line; int linepos;
+    string input;
+    size_t offset;
+    tokenList tokout;
 
-	void incoffs() {
-		if (input[offset] == '\n')
-		{
-			line++; linepos = 0;
-		}
+    void incoffs()
+    {
+        if (input[offset] == '\n')
+        {
+            line++; linepos = 0;
+        }
 
-		offset++;
-		linepos++;
-	}
+        offset++;
+        linepos++;
+    }
 
-	// assert we didn't get to the eof
-	void assertnoteof()
-	{
-		if (offset >= input.length())
-			throw syntax_error("unexpected eof", line, linepos);
-	}
+    // assert we didn't get to the eof
+    void assertnoteof()
+    {
+        if (offset >= input.length())
+            throw syntax_error("unexpected eof", line, linepos);
+    }
 
-	// see if C is a token
-	bool istok(char C) {
-		char tokens[] = ",;{}:";
-		for (size_t i = 0; i < sizeof(tokens); i++)
-			if (C == tokens[i])
-				return true;
+    // see if C is a token
+    bool istok(char C)
+    {
+        char tokens[] = ",;{}:";
+        for (size_t i = 0; i < sizeof(tokens); i++)
+            if (C == tokens[i])
+                return true;
 
-		return false;
-	}
+        return false;
+    }
 
-	// skip whitespace
-	void skipws()
-	{
-		while (isspace(input[offset]) && offset < input.length())
-			incoffs();
-	}
+    // skip whitespace
+    void skipws()
+    {
+        while (isspace(input[offset]) && offset < input.length())
+            incoffs();
+    }
 
-	// read a name
-	void readid()
-	{
-		string tok;
-		skipws();
+    // read a name
+    void readid()
+    {
+        string tok;
+        skipws();
 
-		if (offset >= input.length() || istok(input[offset])) throw syntax_error("expected identifier", line, linepos);
+        if (offset >= input.length() || istok(input[offset])) throw syntax_error("expected identifier", line, linepos);
 
-		while (offset < input.length() && !isspace(input[offset]) && !istok(input[offset])) {
-			tok += input[offset];
-			incoffs();
-		}
+        while (offset < input.length() && !isspace(input[offset]) && !istok(input[offset]))
+        {
+            tok += input[offset];
+            incoffs();
+        }
 
-		tokout->push_back(tok);
-	}
+        tokout->push_back(tok);
+    }
 
-	// get to the next non-whitespace that equals tok
-	void match(char tok)
-	{
-		skipws();
-		if (tok != input[offset])
-			throw syntax_error(string("expected ") + tok, line, linepos);
+    // get to the next non-whitespace that equals tok
+    void match(char tok)
+    {
+        skipws();
+        if (tok != input[offset])
+            throw syntax_error(string("expected ") + tok, line, linepos);
 
-		incoffs();
-		char s[2];
-		s[0] = tok; s[1] = 0;
-		tokout->push_back(s);
-	}
+        incoffs();
+        char s[2];
+        s[0] = tok; s[1] = 0;
+        tokout->push_back(s);
+    }
 
-
-	void readstmt()
-	{
-		// xx: yy;
-		skipws();
-		while (input[offset] != '}')
-		{
-			readid(); match(':'); readid(); match(';');
-			skipws();
-		}
-	}
+    void readstmt()
+    {
+        // xx: yy;
+        skipws();
+        while (input[offset] != '}')
+        {
+            readid(); match(':'); readid(); match(';');
+            skipws();
+        }
+    }
 
 public:
 
-	cfgMap() {}
+    cfgMap() {}
 
-	class syntax_error : public runtime_error
-	{
-	public:
-		int line; int offs;
-		syntax_error(string err, int ln, int lnoff) : runtime_error(err) {
-			line = ln; offs = lnoff;
-		}
-	};
+    class syntax_error : public runtime_error
+    {
+    public:
+        int line; int offs;
+        syntax_error(string err, int ln, int lnoff) : runtime_error(err)
+        {
+            line = ln; offs = lnoff;
+        }
+    };
 
-	void tokenize(string input)
-	{
-		this->input = input;
-		offset = 0;
-		line = 1; linepos = 1;
-		tokout = make_shared<vector<string>>();
+    void tokenize(string input)
+    {
+        this->input = input;
+        offset = 0;
+        line = 1; linepos = 1;
+        tokout = make_shared<vector<string>>();
 
-		while (offset < input.length()) {
-			readid();
-			match('{');
-			assertnoteof();
-			readstmt(); // this throws by itself.
-			assertnoteof();
-			match('}');
-			skipws();
-		}
-	}
+        while (offset < input.length())
+        {
+            readid();
+            match('{');
+            assertnoteof();
+            readstmt(); // this throws by itself.
+            assertnoteof();
+            match('}');
+            skipws();
+        }
+    }
 
-	void getMap(symbolMap &out)
-	{
-		for (auto it = tokout->begin(); it != tokout->end(); it++)
-		{
-			string &sym = (*it);
-			it++; it++; // skip { 
-			while (*it != "}") {
-				string key = *it; it++; it++; // skip :
-				string val = *it; it++; it++; // skip ;
-				out[sym][key] = val;
-			}
-		}
-	}
+    void getMap(symbolMap &out)
+    {
+        for (auto it = tokout->begin(); it != tokout->end(); it++)
+        {
+            string &sym = (*it);
+            it++; it++; // skip {
+            while (*it != "}")
+            {
+                string key = *it; it++; it++; // skip :
+                string val = *it; it++; it++; // skip ;
+                out[sym][key] = val;
+            }
+        }
+    }
 };
 
-namespace Configuration {
-	void LoadTextureParameters()
-	{
-		std::ifstream istr(GameState::GetInstance().GetSkinFile("texparams.rcf").c_str());
-		GString inp, line;
+namespace Configuration
+{
+    void LoadTextureParameters()
+    {
+        std::ifstream istr(GameState::GetInstance().GetSkinFile("texparams.rcf").c_str());
+        std::string inp, line;
 
-		if (!istr.is_open())
-		{
-			Log::Printf("Couldn't open texparams.rcf.\n");
-			return;
-		}
+        if (!istr.is_open())
+        {
+            Log::Printf("Couldn't open texparams.rcf.\n");
+            return;
+        }
 
-		while (std::getline(istr, line))
-			inp += line;
+        while (std::getline(istr, line))
+            inp += line;
 
-		try {
-			cfgMap Map;
-			Map.tokenize(inp);
-			Map.getMap(Values);
-		}
-		catch (cfgMap::syntax_error &err) {
-			Log::Printf("Syntax Error (Line %d@%d): %s\n", err.line, err.offs, err.what());
-		}
-	}
+        try
+        {
+            cfgMap Map;
+            Map.tokenize(inp);
+            Map.getMap(Values);
+        }
+        catch (cfgMap::syntax_error &err)
+        {
+            Log::Printf("Syntax Error (Line %d@%d): %s\n", err.line, err.offs, err.what());
+        }
+    }
 
-	bool HasTextureParameters(GString filename)
-	{
-		return Values.find(filename) != Values.end();
-	}
-	
-	GString GetTextureParameter(GString filename, GString parameter)
-	{
-		return Values[filename][parameter];
-	}
+    bool HasTextureParameters(std::string filename)
+    {
+        return Values.find(filename) != Values.end();
+    }
 
-	bool TextureParameterExists(GString filename, GString parameter)
-	{
-		return Values[filename].find(parameter) != Values[filename].end();
-	}
+    std::string GetTextureParameter(std::string filename, std::string parameter)
+    {
+        return Values[filename][parameter];
+    }
+
+    bool TextureParameterExists(std::string filename, std::string parameter)
+    {
+        return Values[filename].find(parameter) != Values[filename].end();
+    }
 }

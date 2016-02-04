@@ -1,39 +1,39 @@
+#pragma once
+
 #include "Song.h"
 #include "GameObject.h"
 
-namespace dotcur {
+namespace dotcur
+{
+    typedef std::vector<GameObject> Measure;
 
-	typedef std::vector<GameObject> Measure;
+    struct Difficulty : public Game::Song::Difficulty
+    {
+        // Notes
+        std::vector<Measure> Measures;
 
+        // Stores the ratio barline should move at a certain time
+        TimingData BarlineRatios;
+    };
 
-	struct Difficulty : public Game::Song::Difficulty
-	{
-		// Notes
-		std::vector<Measure> Measures;
+    /* Dotcur Song */
+    class Song : public Game::Song
+    {
+    public:
+        Song();
+        ~Song();
 
-		// Stores the ratio barline should move at a certain time
-		TimingData BarlineRatios;
-	};
+        std::vector<dotcur::Difficulty*> Difficulties;
 
-	/* Dotcur Song */
-	class Song : public Game::Song
-	{
-	public:
-		Song();
-		~Song();
+        /* chart filename*/
+        std::string ChartFilename;
 
-		std::vector<dotcur::Difficulty*> Difficulties;
+        double		LeadInTime;
+        int			MeasureLength;
 
-		/* chart filename*/
-		GString ChartFilename;
-
-		double		LeadInTime;
-		int			MeasureLength;
-
-		dotcur::Difficulty* GetDifficulty(uint32 i);
-		void Process(bool CalculateXPos = true);
-		void Repack();
-		bool Save(const char* Filename);
-	};
-
+        dotcur::Difficulty* GetDifficulty(uint32_t i);
+        void Process(bool CalculateXPos = true);
+        void Repack();
+        bool Save(const char* Filename);
+    };
 }

@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "GameGlobal.h"
 #include "GameState.h"
 #include "Configuration.h"
@@ -17,7 +19,7 @@
 #include "LuaManager.h"
 
 #include "RaindropRocketInterface.h"
-#include <glm/gtc/matrix_transform.inl>
+//#include <glm/gtc/matrix_transform.inl>
 
 SoundSample *MMSelectSnd = NULL;
 BitmapFont* MainMenuFont = NULL;
@@ -26,134 +28,133 @@ TruetypeFont* TTFO = NULL;
 
 ScreenMainMenu::ScreenMainMenu() : Screen("ScreenMainMenu", nullptr)
 {
-	TNext = nullptr;
+    TNext = nullptr;
 }
 
 void PlayBtnHover(Sprite *obj)
 {
-	MainMenuLua->CallFunction("PlayBtnHover");
-	MainMenuLua->RunFunction();
+    MainMenuLua->CallFunction("PlayBtnHover");
+    MainMenuLua->RunFunction();
 }
 
 void PlayBtnLeave(Sprite *obj)
 {
-	MainMenuLua->CallFunction("PlayBtnHoverLeave");
-	MainMenuLua->RunFunction();
+    MainMenuLua->CallFunction("PlayBtnHoverLeave");
+    MainMenuLua->RunFunction();
 }
 
 void ExitBtnHover(Sprite *obj)
 {
-	MainMenuLua->CallFunction("ExitBtnHover");
-	MainMenuLua->RunFunction();
+    MainMenuLua->CallFunction("ExitBtnHover");
+    MainMenuLua->RunFunction();
 }
 
 void ExitBtnLeave(Sprite *obj)
 {
-	MainMenuLua->CallFunction("ExitBtnHoverLeave");
-	MainMenuLua->RunFunction();
+    MainMenuLua->CallFunction("ExitBtnHoverLeave");
+    MainMenuLua->RunFunction();
 }
 
 void ScreenMainMenu::Init()
 {
-	Running = true;
+    Running = true;
 
-	MainMenuLua = Animations->GetEnv();
+    MainMenuLua = Animations->GetEnv();
 
-	Animations->AddTarget(&Background);
-	Animations->AddTarget(&PlayBtn);
-	Animations->AddTarget(&ExitBtn);
-	Animations->AddTarget(&OptionsBtn);
-	Animations->AddTarget(&EditBtn);
-	Animations->AddLuaTarget(&PlayBtn, "PlayButton");
-	Animations->AddLuaTarget(&ExitBtn, "ExitButton");
+    Animations->AddTarget(&Background);
+    Animations->AddTarget(&PlayBtn);
+    Animations->AddTarget(&ExitBtn);
+    Animations->AddTarget(&OptionsBtn);
+    Animations->AddTarget(&EditBtn);
+    Animations->AddLuaTarget(&PlayBtn, "PlayButton");
+    Animations->AddLuaTarget(&ExitBtn, "ExitButton");
 
-	Animations->Initialize(GameState::GetInstance().GetSkinFile("mainmenu.lua"));
-	Animations->InitializeUI();
+    Animations->Initialize(GameState::GetInstance().GetSkinFile("mainmenu.lua"));
+    Animations->InitializeUI();
 
-	IntroDuration = Animations->GetIntroDuration();
-	ExitDuration = Animations->GetIntroDuration();
+    IntroDuration = Animations->GetIntroDuration();
+    ExitDuration = Animations->GetIntroDuration();
 
-	ChangeState(StateIntro);
+    ChangeState(StateIntro);
 
-	if (!TTFO)
-		TTFO = new TruetypeFont(GameState::GetInstance().GetSkinFile("font.ttf"), 16);
+    if (!TTFO)
+        TTFO = new TruetypeFont(GameState::GetInstance().GetSkinFile("font.ttf"), 16);
 
-	Background.SetImage(GameState::GetInstance().GetSkinImage(Configuration::GetSkinConfigs("MainMenuBackground")));
-	Background.Centered = 1;
-	Background.SetPosition( ScreenWidth / 2, ScreenHeight / 2 );
-	
-	PlayBtn.OnHover = PlayBtnHover;
-	PlayBtn.OnLeave = PlayBtnLeave;
-	ExitBtn.OnHover = ExitBtnHover;
-	ExitBtn.OnLeave = ExitBtnLeave;
+    Background.SetImage(GameState::GetInstance().GetSkinImage(Configuration::GetSkinConfigs("MainMenuBackground")));
+    Background.Centered = 1;
+    Background.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
 
-	Background.AffectedByLightning = true;
+    PlayBtn.OnHover = PlayBtnHover;
+    PlayBtn.OnLeave = PlayBtnLeave;
+    ExitBtn.OnHover = ExitBtnHover;
+    ExitBtn.OnLeave = ExitBtnLeave;
 
-	if (!MMSelectSnd)
-	{
-		MMSelectSnd = new SoundSample();
-		MMSelectSnd->Open((GameState::GetInstance().GetSkinFile("select.ogg")).c_str());
-	}
+    Background.AffectedByLightning = true;
+
+    if (!MMSelectSnd)
+    {
+        MMSelectSnd = new SoundSample();
+        MMSelectSnd->Open((GameState::GetInstance().GetSkinFile("select.ogg")).c_str());
+    }
 }
 
-bool ScreenMainMenu::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+bool ScreenMainMenu::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
 {
-	if (Screen::HandleInput(key, code, isMouseInput))
-		return true;
+    if (Screen::HandleInput(key, code, isMouseInput))
+        return true;
 
-	if (PlayBtn.HandleInput(key, code, isMouseInput))
-	{
-		/* Use a screen loading to load selectmusic screen. */
-		MMSelectSnd->Play();
-		ChangeState(StateExit);
-		return true;
-	}
-	else if(EditBtn.HandleInput(key, code, isMouseInput))
-	{
-		/* Create Select Music screen with Edit parameter = true */
-	}
-	else if(OptionsBtn.HandleInput(key, code, isMouseInput))
-	{
-		/* Create options screen. Run nested. */
-	}
-	else if (ExitBtn.HandleInput(key, code, isMouseInput))
-	{
-		Running = false;
-	}
+    if (PlayBtn.HandleInput(key, code, isMouseInput))
+    {
+        /* Use a screen loading to load selectmusic screen. */
+        MMSelectSnd->Play();
+        ChangeState(StateExit);
+        return true;
+    }
+    else if (EditBtn.HandleInput(key, code, isMouseInput))
+    {
+        /* Create Select Music screen with Edit parameter = true */
+    }
+    else if (OptionsBtn.HandleInput(key, code, isMouseInput))
+    {
+        /* Create options screen. Run nested. */
+    }
+    else if (ExitBtn.HandleInput(key, code, isMouseInput))
+    {
+        Running = false;
+    }
 
-	return Animations->HandleInput(key, code, isMouseInput);
+    return Animations->HandleInput(key, code, isMouseInput);
 }
 
 bool ScreenMainMenu::HandleScrollInput(double xOff, double yOff)
 {
-	return Screen::HandleScrollInput(xOff, yOff);
+    return Screen::HandleScrollInput(xOff, yOff);
 }
 
-bool ScreenMainMenu::Run (double Delta)
+bool ScreenMainMenu::Run(double Delta)
 {
-	if (RunNested(Delta))
-		return true;
+    if (RunNested(Delta))
+        return true;
 
-	PlayBtn.Run(Delta);
-	ExitBtn.Run(Delta);
-	
-	TTFO->Render (GString("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop"), Vec2(0, 0), glm::translate(Mat4(), Vec3(0, 0, 30)));
-	Animations->DrawTargets(Delta);
+    PlayBtn.Run(Delta);
+    ExitBtn.Run(Delta);
 
-	return Running;
+    TTFO->Render(std::string("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop"), Vec2(0, 0), glm::translate(Mat4(), Vec3(0, 0, 30)));
+    Animations->DrawTargets(Delta);
+
+    return Running;
 }
 
 void ScreenMainMenu::OnExitEnd()
 {
-	Screen::OnExitEnd();
+    Screen::OnExitEnd();
 
-	Next = make_shared<ScreenSelectMusic>();
-	Next->Init();
-	ChangeState(StateRunning);
-	Animations->DoEvent("OnRestore");
+    Next = std::make_shared<ScreenSelectMusic>();
+    Next->Init();
+    ChangeState(StateRunning);
+    Animations->DoEvent("OnRestore");
 }
 
 void ScreenMainMenu::Cleanup()
 {
 }
-

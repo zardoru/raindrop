@@ -1,5 +1,4 @@
-#ifndef ISCREEN_H_
-#define ISCREEN_H_
+#pragma once
 
 #include "Interruptible.h"
 class SceneEnvironment;
@@ -8,67 +7,65 @@ class SceneEnvironment;
 class Screen : public Interruptible
 {
 private:
-	double ScreenTime; // How long has it been open?
+    double ScreenTime; // How long has it been open?
 protected:
 
-	shared_ptr<SceneEnvironment> Animations;
+    std::shared_ptr<SceneEnvironment> Animations;
 
-	enum EScreenState {
-		StateIntro,
-		StateRunning,
-		StateExit
-	}ScreenState;
+    enum EScreenState
+    {
+        StateIntro,
+        StateRunning,
+        StateExit
+    }ScreenState;
 
-	double GetScreenTime();
-	shared_ptr<Screen> Parent;
-	bool Running; // Is this screen active?
-	bool SkipThisFrame;
+    double GetScreenTime();
+    std::shared_ptr<Screen> Parent;
+    bool Running; // Is this screen active?
+    bool SkipThisFrame;
 
-	void ChangeState(EScreenState NewState);
-	double TransitionTime;
-	double IntroDuration, ExitDuration;
-	shared_ptr<Screen> Next;
+    void ChangeState(EScreenState NewState);
+    double TransitionTime;
+    double IntroDuration, ExitDuration;
+    std::shared_ptr<Screen> Next;
 
 public:
-	Screen (GString Name);
-	Screen (GString Name, shared_ptr<Screen> _Parent);
-	virtual ~Screen ();
+    Screen(std::string Name);
+    Screen(std::string Name, std::shared_ptr<Screen> _Parent);
+    virtual ~Screen();
 
-	virtual void Init();
+    virtual void Init();
 
-	// Nesting screens.
-	bool IsScreenRunning();
-	bool RunNested(float delta);
-	bool Update(float delta);
+    // Nesting screens.
+    bool IsScreenRunning();
+    bool RunNested(float delta);
+    bool Update(float delta);
 
-	void Close();
+    void Close();
 
-	Screen* GetTop();
+    Screen* GetTop();
 
-	// Screen implementation.
-	virtual void LoadResources(); // could, or not, be called from main thread.
-	virtual void InitializeResources(); // must be called from main thread - assume it always is
-	virtual bool RunIntro(float Fraction, float Delta);
-	virtual bool RunExit(float Fraction, float Delta);
-	virtual bool Run(double delta) = 0;
+    // Screen implementation.
+    virtual void LoadResources(); // could, or not, be called from main thread.
+    virtual void InitializeResources(); // must be called from main thread - assume it always is
+    virtual bool RunIntro(float Fraction, float Delta);
+    virtual bool RunExit(float Fraction, float Delta);
+    virtual bool Run(double delta) = 0;
 
-	virtual void OnIntroBegin();
-	virtual void OnIntroEnd();
-	virtual void OnRunningBegin();
-	virtual void OnExitBegin();
-	virtual void OnExitEnd();
+    virtual void OnIntroBegin();
+    virtual void OnIntroEnd();
+    virtual void OnRunningBegin();
+    virtual void OnExitBegin();
+    virtual void OnExitEnd();
 
-	virtual bool HandleInput(int32 key, KeyEventType state, bool isMouseInput);
-	virtual bool HandleScrollInput(double xOff, double yOff);
-	virtual bool HandleTextInput(int codepoint);
+    virtual bool HandleInput(int32_t key, KeyEventType state, bool isMouseInput);
+    virtual bool HandleScrollInput(double xOff, double yOff);
+    virtual bool HandleTextInput(int codepoint);
 
-	// We need to set up graphics again? This gets called.
-	virtual void Invalidate();
+    // We need to set up graphics again? This gets called.
+    virtual void Invalidate();
 
-	// Implement this if there's anything you want to get done outside of a destructor
-	// like operations that would throw exceptions.
-	virtual void Cleanup();
-
+    // Implement this if there's anything you want to get done outside of a destructor
+    // like operations that would throw exceptions.
+    virtual void Cleanup();
 };
-
-#endif

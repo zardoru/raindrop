@@ -64,13 +64,13 @@ public:
 	int getPacemakerDiff(PacemakerType pmt);
 	std::pair<std::string, int> getAutoPacemaker();
 	std::pair<std::string, int> getAutoRankPacemaker();
-	map<PacemakerType, std::string> pacemaker_texts;
+	std::map<PacemakerType, std::string> pacemaker_texts;
 
 
 	int getRank(); // returns a number from -9 to 9
 	int getBMRank(); // returns PMT_xxx according to EXScore Rank
 
-	uint8 getPills();
+	uint8_t getPills();
 	int getCoolCombo();
 
 	void set_manual_w0(bool);

@@ -1,14 +1,12 @@
-#ifndef RENDERING_H_
-#define RENDERING_H_
+#pragma once
 
-#include "Global.h"
 #include "Transformation.h"
 
 enum EBlendMode
 {
-	BLEND_ADD,
-	BLEND_ALPHA,
-	BLEND_MULTIPLY
+    BLEND_ADD,
+    BLEND_ALPHA,
+    BLEND_MULTIPLY
 };
 
 class Image;
@@ -17,10 +15,10 @@ extern VBO* QuadBuffer;
 extern VBO* TextureBuffer;
 
 void InitializeRender();
-void SetShaderParameters(bool InvertColor, 
-	bool UseGlobalLight, bool Centered, bool UseSecondTransformationMatrix = false, 
-	bool BlackToTransparent = false, bool ReplaceColor = false,
-	int8 HiddenMode = -1);
+void SetShaderParameters(bool InvertColor,
+    bool UseGlobalLight, bool Centered, bool UseSecondTransformationMatrix = false,
+    bool BlackToTransparent = false, bool ReplaceColor = false,
+    int8_t HiddenMode = -1);
 
 void SetPrimitiveQuadVBO();
 void FinalizeDraw();
@@ -29,5 +27,3 @@ void SetBlendingMode(EBlendMode Mode);
 void SetTexturedQuadVBO(VBO *TexQuad);
 void DrawTexturedQuad(Image* ToDraw, const AABB& TextureCrop, const Transformation& QuadTransformation, const EBlendMode &Mode = BLEND_ALPHA, const ColorRGB &InColor = Color::White);
 void DrawPrimitiveQuad(Transformation &QuadTransformation, const EBlendMode &Mode = BLEND_ALPHA, const ColorRGB &InColor = Color::White);
-
-#endif

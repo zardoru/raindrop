@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "GameGlobal.h"
 
 #include "LuaManager.h"
@@ -12,72 +14,73 @@
 
 #include "ScoreKeeper7K.h"
 
-enum OBJTYPE {
-	OB_HOLDS,
-	OB_NOTES,
-	OB_OBJ,
-	OB_SCOBJ
+enum OBJTYPE
+{
+    OB_HOLDS,
+    OB_NOTES,
+    OB_OBJ,
+    OB_SCOBJ
 };
 
 struct songHelper
 {
-	template <class T>
-	static uint32 getDifficultyCountForSong(T const *Sng)
-	{
-		return Sng->Difficulties.size();
-	}
+    template <class T>
+    static uint32_t getDifficultyCountForSong(T const *Sng)
+    {
+        return Sng->Difficulties.size();
+    }
 
-	template <class T>
-	static void setDifficultyCountForSong(T *Sng, uint32 v)
-	{
-		return;
-	}
+    template <class T>
+    static void setDifficultyCountForSong(T *Sng, uint32_t v)
+    {
+        return;
+    }
 
-	template <class T>
-	static GString getDifficultyAuthor(T const *Diff)
-	{
-		GString candidate = GameState::GetInstance().GetSongDatabase()->GetArtistForDifficulty(Diff->ID);
-		if (!candidate.length())
-			candidate = Diff->Author;
-		return candidate;
-	}
+    template <class T>
+    static std::string getDifficultyAuthor(T const *Diff)
+    {
+        std::string candidate = GameState::GetInstance().GetSongDatabase()->GetArtistForDifficulty(Diff->ID);
+        if (!candidate.length())
+            candidate = Diff->Author;
+        return candidate;
+    }
 
-	template <class T>
-	static void setDifficultyAuthor(T *Diff, GString s)
-	{
-		return;
-	}
+    template <class T>
+    static void setDifficultyAuthor(T *Diff, std::string s)
+    {
+        return;
+    }
 
-	template <class T, class Q>
-	static Q* getDifficulty(T *Sng, uint32 idx)
-	{
-		if (idx < 0 || idx >= getDifficultyCountForSong(Sng))
-			return NULL;
+    template <class T, class Q>
+    static Q* getDifficulty(T *Sng, uint32_t idx)
+    {
+        if (idx < 0 || idx >= getDifficultyCountForSong(Sng))
+            return NULL;
 
-		Q* diff = (Q*)Sng->Difficulties[idx];
-		return diff;
-	}
+        Q* diff = (Q*)Sng->Difficulties[idx];
+        return diff;
+    }
 };
 
 VSRG::Song* toSong7K(Game::Song* Sng)
 {
-	if (Sng && Sng->Mode == MODE_VSRG)
-		return (VSRG::Song*) Sng;
-	else
-		return NULL;
+    if (Sng && Sng->Mode == MODE_VSRG)
+        return (VSRG::Song*) Sng;
+    else
+        return NULL;
 }
 
 dotcur::Song* toSongDC(Game::Song* Sng)
 {
-	if (Sng && Sng->Mode == MODE_DOTCUR)
-		return (dotcur::Song*) Sng;
-	else
-		return NULL;
+    if (Sng && Sng->Mode == MODE_DOTCUR)
+        return (dotcur::Song*) Sng;
+    else
+        return NULL;
 }
 
 GameParameters* GameState::GetParameters()
 {
-	return Params.get();
+    return Params.get();
 }
 
 void GameState::InitializeLua(lua_State *L)

@@ -1,18 +1,16 @@
-#ifndef FONT_H_
-#define FONT_H_
+#pragma once
 
-class Font {
+class Font
+{
 protected:
-	float Red, Green, Blue, Alpha;
+    float Red, Green, Blue, Alpha;
 public:
-	Font();
+    Font();
 
-	void SetColor(float _Red, float _Green, float _Blue);
-	void SetAlpha(float _Alpha);
+    void SetColor(float _Red, float _Green, float _Blue);
+    void SetAlpha(float _Alpha);
 
-	virtual float GetHorizontalLength(const char *Text);
-	virtual void Invalidate();
-	virtual void Render(const GString &Text, const Vec2 &Position, const Mat4& Transform = Mat4());
+    virtual float GetHorizontalLength(const char *Text);
+    virtual void Invalidate();
+    virtual void Render(const std::string &Text, const Vec2 &Position, const Mat4& Transform = Mat4());
 };
-
-#endif

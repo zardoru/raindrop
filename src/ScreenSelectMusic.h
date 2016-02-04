@@ -1,21 +1,20 @@
-#ifndef SCREENSELECTMUSIC_H_
-#define SCREENSELECTMUSIC_H_
+#pragma once
 
 class BitmapFont;
 
 namespace dotcur
 {
-	class Song;
+    class Song;
 }
 
 namespace VSRG
 {
-	class Song;
+    class Song;
 }
 
 namespace GUI
 {
-	class Button;
+    class Button;
 }
 
 class SceneEnvironment;
@@ -23,52 +22,50 @@ class AudioStream;
 
 class ScreenSelectMusic : public Screen
 {
-	double Time;
-	double TransitionTime;
-	double PreviewWaitTime;
+    double Time;
+    double TransitionTime;
+    double PreviewWaitTime;
 
-	shared_ptr<Game::Song> ToPreview;
-	shared_ptr<Game::Song> PreviousPreview;
-	Sprite Background;
-	BitmapFont* Font;
+    std::shared_ptr<Game::Song> ToPreview;
+    std::shared_ptr<Game::Song> PreviousPreview;
+    Sprite Background;
+    BitmapFont* Font;
 
-	GUI::Button *UpBtn, *BackBtn, *AutoBtn;
+    GUI::Button *UpBtn, *BackBtn, *AutoBtn;
 
-	shared_ptr<AudioStream> PreviewStream;
+    std::shared_ptr<AudioStream> PreviewStream;
 
-	bool SwitchBackGuiPending;
+    bool SwitchBackGuiPending;
 
-	bool OptionUpscroll;
+    bool OptionUpscroll;
 
-	bool IsTransitioning;
-	
-	void PlayPreview();
-	void PlayLoops();
-	void StopLoops();
+    bool IsTransitioning;
 
-	float GetListHorizontalTransformation(const float Y);
-	void StartGameplayScreen();
-	float GetListVerticalTransformation(const float Y);
-	float GetListPendingVerticalTransformation(const float Y);
-	void OnSongChange(shared_ptr<Game::Song> MySong, uint8 difindex);
-	void OnSongSelect(shared_ptr<Game::Song> MySong, uint8 difindex);
+    void PlayPreview();
+    void PlayLoops();
+    void StopLoops();
 
-	void OnDirectoryChange();
-	void OnItemClick(int32 Index, uint32 boundIndex, GString Line, shared_ptr<Game::Song> Selected);
-	void OnItemHover(int32 Index, uint32 boundIndex, GString Line, shared_ptr<Game::Song> Selected);
-	void OnItemHoverLeave(int32 Index, uint32 boundIndex, GString Line, shared_ptr<Game::Song> Selected);
+    float GetListHorizontalTransformation(const float Y);
+    void StartGameplayScreen();
+    float GetListVerticalTransformation(const float Y);
+    float GetListPendingVerticalTransformation(const float Y);
+    void OnSongChange(std::shared_ptr<Game::Song> MySong, uint8_t difindex);
+    void OnSongSelect(std::shared_ptr<Game::Song> MySong, uint8_t difindex);
 
-	void TransformItem(int Item, shared_ptr<Game::Song> Song, bool IsSelected, int ListItem);
-	void TransformString(int Item, shared_ptr<Game::Song> Song, bool IsSelected, int ListItem, GString text);
-	void SwitchUpscroll(bool NewUpscroll);
+    void OnDirectoryChange();
+    void OnItemClick(int32_t Index, uint32_t boundIndex, std::string Line, std::shared_ptr<Game::Song> Selected);
+    void OnItemHover(int32_t Index, uint32_t boundIndex, std::string Line, std::shared_ptr<Game::Song> Selected);
+    void OnItemHoverLeave(int32_t Index, uint32_t boundIndex, std::string Line, std::shared_ptr<Game::Song> Selected);
+
+    void TransformItem(int Item, std::shared_ptr<Game::Song> Song, bool IsSelected, int ListItem);
+    void TransformString(int Item, std::shared_ptr<Game::Song> Song, bool IsSelected, int ListItem, std::string text);
+    void SwitchUpscroll(bool NewUpscroll);
 public:
-	ScreenSelectMusic();
-	void LoadResources() override;
-	void InitializeResources() override;
-	bool Run(double Delta) override;
-	void Cleanup() override;
-	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput) override;
-	bool HandleScrollInput(double xOff, double yOff) override;
+    ScreenSelectMusic();
+    void LoadResources() override;
+    void InitializeResources() override;
+    bool Run(double Delta) override;
+    void Cleanup() override;
+    bool HandleInput(int32_t key, KeyEventType code, bool isMouseInput) override;
+    bool HandleScrollInput(double xOff, double yOff) override;
 };
-
-#endif

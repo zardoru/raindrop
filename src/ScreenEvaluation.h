@@ -1,5 +1,4 @@
-#ifndef SCREEN_EVALUATION_H_
-#define SCREEN_EVALUATION_H_
+#pragma once
 
 #include "Screen.h"
 
@@ -7,20 +6,18 @@ class BitmapFont;
 
 class ScreenEvaluation : public Screen
 {
-	EvaluationData Results;
-	Sprite Background;
-	BitmapFont* Font;
+    EvaluationData Results;
+    Sprite Background;
+    BitmapFont* Font;
 
-	GString ResultsGString, ResultsNumerical;
-	GString TitleFormat;
-	
-	int32 CalculateScore();
+    std::string ResultsGString, ResultsNumerical;
+    std::string TitleFormat;
+
+    int32_t CalculateScore();
 public:
-	ScreenEvaluation();
-	void Init(EvaluationData _Data, GString SongAuthor, GString SongTitle);
-	bool Run(double Delta) override;
-	void Cleanup() override;
-	bool HandleInput(int32 key, KeyEventType code, bool isMouseInput) override;
+    ScreenEvaluation();
+    void Init(EvaluationData _Data, std::string SongAuthor, std::string SongTitle);
+    bool Run(double Delta) override;
+    void Cleanup() override;
+    bool HandleInput(int32_t key, KeyEventType code, bool isMouseInput) override;
 };
-
-#endif

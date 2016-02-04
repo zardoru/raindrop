@@ -1,5 +1,4 @@
-#ifndef AUDIO_H_
-#define AUDIO_H_
+#pragma once
 
 #include "Audiofile.h"
 
@@ -10,7 +9,7 @@ void InitAudio();
 #define SoundStream AudioStream
 #define SoundSample	AudioSample
 
-GString GetOggTitle(GString file);
+std::string GetOggTitle(std::string file);
 
 void MixerAddStream(SoundStream *Sound);
 void MixerRemoveStream(SoundStream* Sound);
@@ -20,5 +19,3 @@ void MixerUpdate();
 double MixerGetLatency();
 double MixerGetFactor();
 double MixerGetTime();
-
-#endif // AUDIO_H_

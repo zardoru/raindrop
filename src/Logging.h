@@ -1,13 +1,10 @@
-#ifndef LOGGING_H_
-#define LOGGING_H_
+#pragma once
 
 namespace Log
 {
-	void DebugPrintf(GString Format, ...);
+    void DebugPrintf(std::string Format, ...);
 
-	void Printf(GString Format, ...);
-	void Logf(GString Format, ...);
-	void LogPrintf(GString str, ...);
+    void Printf(std::string Format, ...);
+    void Logf(std::string Format, ...);
+    void LogPrintf(std::string str, ...);
 };
-
-#endif

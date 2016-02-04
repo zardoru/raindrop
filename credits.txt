@@ -14,6 +14,7 @@ Midiman: midi-note noteskin
 wafles: wafles4 noteskin
 NuclearFej: Controller support.
 NimaVisual: Logo Font
+Chris Harpum (mechacrash): Refactoring and cleanup
 
 raindrop is licensed under the gplv3.
 the default skin's scripts are public domain.

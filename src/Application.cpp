@@ -1,11 +1,4 @@
-#ifdef WIN32
-#include <io.h>
-#include <fcntl.h>
-#include <Windows.h>
-#endif
-
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include "pch.h"
 
 #include "GameGlobal.h"
 #include "Logging.h"
@@ -20,8 +13,6 @@
 #include "GameWindow.h"
 #include "GameState.h"
 #include "ImageList.h"
-
-#include <chrono>
 
 #include "ScreenMainMenu.h"
 #include "ScreenGameplay7K.h"
@@ -40,388 +31,393 @@ bool DoRun = false;
 
 Application::Application(int argc, char *argv[])
 {
-	oldTime = 0;
-	Game = NULL;
+    oldTime = 0;
+    Game = NULL;
+    RunMode = MODE_PLAY;
+    Upscroll = false;
+    difIndex = 0;
 
-	RunMode = MODE_PLAY;
-	Args.Argc = argc;
-	Args.Argv = argv;
-
-	Upscroll = false;
-	difIndex = 0;
-	Measure = 0;
-	Author = "raindrop";
-	srand(time(0));
+    ParseArgs(argc, argv);
 }
 
-inline bool ValidArg(int count, int req, int i)
+void Application::ParseArgs(int argc, char **argv)
 {
-	return (i + req) < count;
-}
+    namespace po = boost::program_options;
 
-void Application::ParseArgs()
-{
-	for (int i = 1; i < Args.Argc; i++)
-	{
-		Log::Printf("%d: %ls\n", i, Utility::Widen(Args.Argv[i]).c_str());
-	}
+    po::options_description desc("Allowed options");
+    desc.add_options()
+        ("help,?",
+        "show help message")
+        ("preview,p",
+        "Preview File")
+        ("input,i", po::value<std::filesystem::path>(),
+        "Input File")
+        ("output,o", po::value<std::filesystem::path>(),
+        "Output File")
+        ("gencache,c",
+        "Generate Cache")
+        ("format,g", po::value<std::string>(),
+        "Target Format")
+        ("measure,m", po::value<unsigned>()->default_value(0),
+        "Measure")
+        ("author,a", po::value<std::string>()->default_value("raindrop"),
+        "Author")
+        ("A,A",
+        "Auto")
+        ("S,S",
+        "Stop Preview Instance")
+        ("R,R",
+        "Release IPC Pool")
+        ("L,L", po::value<std::filesystem::path>(),
+        "Load Custom Scene")
+        ;
 
-	for (int i = 1; i < Args.Argc; i++)
-	{
-		if (Args.Argv[i][0] == '-')
-		{
-			switch (Args.Argv[i][1])
-			{
-			case 'p': // Preview file (VSRG preview mode)
-				RunMode = MODE_VSRGPREVIEW;
-				continue;
+    po::variables_map vm;
+    try
+    {
+        po::store(po::parse_command_line(argc, argv, desc), vm);
+    }
+    catch (...)
+    {
+        std::cout << "unknown / incompatible option supplied" << std::endl;
+        return;
+    }
+    po::notify(vm);
 
-			case 'i': // Infile (convert mode/preview file)
-				if (ValidArg(Args.Argc, 1, i))
-				{
-					InFile = Directory(Args.Argv[i+1]);
-					i++;
-				}
+    if (vm.count("help"))
+    {
+        std::cout << desc << std::endl;
+        return;
+    }
 
-				continue;
-			case 'o': // Outfile (convert mode)
+    if (vm.count("preview"))
+    {
+        RunMode = MODE_VSRGPREVIEW;
+    }
 
-				RunMode = MODE_CONVERT;
+    if (vm.count("input"))
+    {
+        InFile = Directory(vm["input"].as<std::filesystem::path>().string());
+    }
 
-				if (ValidArg(Args.Argc, 1, i))
-				{
-					OutFile = Directory(Args.Argv[i+1]);
-					i++;
-				}
+    if (vm.count("output"))
+    {
+        RunMode = MODE_CONVERT;
+        OutFile = Directory(vm["output"].as<std::filesystem::path>().string());
+    }
 
-				continue;
-			case 'c': // Generate cache
-				RunMode = MODE_GENCACHE;
-				continue;
-			case 'g': // Mode to convert to
+    if (vm.count("gencache"))
+    {
+        RunMode = MODE_GENCACHE;
+    }
 
-				if (ValidArg(Args.Argc, 1, i))
-				{
-					GString Mode = Args.Argv[i+1];
-					if (Mode == "om")
-						ConvertMode = CONV_OM;
-					else if (Mode == "sm")
-						ConvertMode = CONV_SM;
-					else if (Mode == "bms")
-						ConvertMode = CONV_BMS;
-					else if (Mode == "uqbms")
-						ConvertMode = CONV_UQBMS;
-					else if (Mode == "nps")
-						ConvertMode = CONV_NPS;
-					i++;
-				}
+    if (vm.count("format"))
+    {
+        ConvertMode = std::map<std::string, CONVERTMODE>{
+            { "om", CONVERTMODE::CONV_OM },
+            { "sm", CONVERTMODE::CONV_SM },
+            { "bms", CONVERTMODE::CONV_BMS },
+            { "uqbms", CONVERTMODE::CONV_UQBMS },
+            { "nps", CONVERTMODE::CONV_NPS }
+        }.at(vm["format"].as<std::string>());
+    }
 
-				continue;
-			case 'm': // Measure selected for preview
-				if (ValidArg(Args.Argc, 1, i))
-				{
-					Measure = atoi (Args.Argv[i+1]);
-					i++;
-				} 
-				continue;
-			case 'a':
+    if (vm.count("measure"))
+    {
+        Measure = vm["measure"].as<unsigned>();
+    }
 
-				if (ValidArg(Args.Argc, 1, i))
-				{
-					Author = Args.Argv[i+2];
-					i++;
-				} 
+    if (vm.count("a"))
+    {
+        Author = vm["a"].as<std::string>();
+    }
 
-				continue;
+    if (vm.count("A"))
+    {
+        Auto = true;
+    }
 
-			case 'A':
-				Auto = true;
-				continue;
+    if (vm.count("S"))
+    {
+        RunMode = MODE_STOPPREVIEW;
+    }
 
-			case 'S':
-				RunMode = MODE_STOPPREVIEW;
-				break;
-			case 'R':
-				RunMode = MODE_NULL;
-				IPC::RemoveQueue();
-				break;
-			case 'L':
-				if (ValidArg, Args.Argc, 1, i)
-				{
-					RunMode = MODE_CUSTOMSCREEN;
-					InFile = Directory(Args.Argv[i + 1]);
-				}
-				break;
-			default:
-				continue;
+    if (vm.count("R"))
+    {
+        RunMode = MODE_NULL;
+        IPC::RemoveQueue();
+    }
 
-			}
-		}
-	}
+    if (vm.count("L"))
+    {
+        RunMode = MODE_CUSTOMSCREEN;
+        InFile = Directory(vm["L"].as<std::filesystem::path>().string());
+    }
+
+    return;
 }
 
 void Application::Init()
 {
-	typedef std::chrono::high_resolution_clock Clock;
-	auto t1 = Clock::now();
-
-	ParseArgs();
+    using Clock = std::chrono::high_resolution_clock;
+    auto t1 = Clock::now();
 
 #if (defined WIN32) && !(defined MINGW)
-	SetConsoleOutputCP(CP_UTF8);
-	_setmode(_fileno(stdout), _O_U8TEXT); 
+    SetConsoleOutputCP(CP_UTF8);
+    _setmode(_fileno(stdout), _O_U8TEXT);
 #else
-	setlocale(LC_ALL, "");
+    setlocale(LC_ALL, "");
 #endif
 
-	GameState::GetInstance().Initialize();
-	Log::Printf("Initializing... \n");
+    GameState::GetInstance().Initialize();
+    Log::Printf("Initializing... \n");
 
-	Configuration::Initialize();
+    Configuration::Initialize();
 
-	bool Setup = false;
+    bool Setup = false;
 
-	if (RunMode == MODE_PLAY)
-	{
-		Setup = true;
+    if (RunMode == MODE_PLAY)
+    {
+        Setup = true;
 
-		if (Configuration::GetConfigf("Preload"))
-		{
-			Log::Printf("Preloading songs...");
-			Game::SongWheel::GetInstance().LoadSongsOnce(Game::GameState::GetInstance().GetSongDatabase());
-			Game::SongWheel::GetInstance().Join();
-		}
-
-	}
-	if (RunMode == MODE_VSRGPREVIEW)
-	{
+        if (Configuration::GetConfigf("Preload"))
+        {
+            Log::Printf("Preloading songs...");
+            Game::SongWheel::GetInstance().LoadSongsOnce(Game::GameState::GetInstance().GetSongDatabase());
+            Game::SongWheel::GetInstance().Join();
+        }
+    }
+    if (RunMode == MODE_VSRGPREVIEW)
+    {
 #ifdef NDEBUG
-		if (IPC::IsInstanceAlreadyRunning())
-			Setup = false;
-		else
+        if (IPC::IsInstanceAlreadyRunning())
+            Setup = false;
+        else
 #endif
-			Setup = true;
-	}
+            Setup = true;
+    }
 
-	if (RunMode == MODE_CUSTOMSCREEN)
-		Setup = true;
+    if (RunMode == MODE_CUSTOMSCREEN)
+        Setup = true;
 
-	if (Setup)
-	{
-		DoRun = WindowFrame.AutoSetupWindow(this);
-		InitAudio();
-		Engine::SetupRocket();
-		Game = nullptr;
-	}else
-	{
-		if (RunMode != MODE_NULL)
-			DoRun = true;
-	}
+    if (Setup)
+    {
+        DoRun = WindowFrame.AutoSetupWindow(this);
+        InitAudio();
+        Engine::SetupRocket();
+        Game = nullptr;
+    }
+    else
+    {
+        if (RunMode != MODE_NULL)
+            DoRun = true;
+    }
 
-	Log::Printf("Total Initialization Time: %fs\n", std::chrono::duration_cast<std::chrono::microseconds>(Clock::now() - t1).count() / 1000000.0);
+    Log::Printf("Total Initialization Time: %fs\n", std::chrono::duration_cast<std::chrono::microseconds>(Clock::now() - t1).count() / 1000000.0);
 }
 
 void Application::SetupPreviewMode()
 {
-	// Load the song.
-	shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), nullptr);
+    // Load the song.
+    std::shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), nullptr);
 
-	if (!Sng || !Sng->Difficulties.size())
-	{
-		Log::Printf("File %s could not be loaded for preview. (%d/%d)\n", InFile.c_path(), (long long int)Sng.get(), Sng ? Sng->Difficulties.size() : 0);
-		return;
-	}
+    if (!Sng || !Sng->Difficulties.size())
+    {
+        Log::Printf("File %s could not be loaded for preview. (%d/%d)\n", InFile.c_path(), (long long int)Sng.get(), Sng ? Sng->Difficulties.size() : 0);
+        return;
+    }
 
-	// Avoid a crash...
-	GameState::GetInstance().SetSelectedSong(Sng);
-	GameState::GetInstance().SetDifficultyIndex(difIndex);
+    // Avoid a crash...
+    GameState::GetInstance().SetSelectedSong(Sng);
+    GameState::GetInstance().SetDifficultyIndex(difIndex);
 
-	// Create loading screen and gameplay screen.
-	auto SGame = make_shared<ScreenGameplay7K>();
-	ScreenLoading *LoadScreen = new ScreenLoading(SGame);
+    // Create loading screen and gameplay screen.
+    auto SGame = std::make_shared<ScreenGameplay7K>();
+    ScreenLoading *LoadScreen = new ScreenLoading(SGame);
 
-	// Set them up.
-	Sng->SongDirectory = InFile.ParentDirectory().path() + "/";
+    // Set them up.
+    Sng->SongDirectory = InFile.ParentDirectory().path() + "/";
 
-	GameParameters Param;
-	Param.Upscroll = Upscroll;
-	Param.StartMeasure = Measure;
-	Param.Preloaded = true;
-	Param.Auto = Auto;
-	
-	SGame->Init(Sng, difIndex, Param);
-	LoadScreen->Init();
+    GameParameters Param;
+    Param.Upscroll = Upscroll;
+    Param.StartMeasure = Measure;
+    Param.Preloaded = true;
+    Param.Auto = Auto;
 
-	Game = LoadScreen;
+    SGame->Init(Sng, difIndex, Param);
+    LoadScreen->Init();
+
+    Game = LoadScreen;
 }
 
 bool Application::PollIPC()
 {
-	IPC::Message Msg = IPC::PopMessageFromQueue();
-	switch (Msg.MessageKind)
-	{
-	case IPC::Message::MSG_STARTFROMMEASURE:
-		Measure = Msg.Param;
-		InFile = GString(Msg.Path);
-		Game->Close();
-		delete Game;
+    IPC::Message Msg = IPC::PopMessageFromQueue();
+    switch (Msg.MessageKind)
+    {
+    case IPC::Message::MSG_STARTFROMMEASURE:
+        Measure = Msg.Param;
+        InFile = std::string(Msg.Path);
+        Game->Close();
+        delete Game;
 
-		SetupPreviewMode();
+        SetupPreviewMode();
 
-		return true;
-		break;
-	case IPC::Message::MSG_STOP:
-		Game->Close();
-		return true;
-		break;
-	case IPC::Message::MSG_NULL:
-	default:
-		return false;
-	}
+        return true;
+        break;
+    case IPC::Message::MSG_STOP:
+        Game->Close();
+        return true;
+        break;
+    case IPC::Message::MSG_NULL:
+    default:
+        return false;
+    }
 }
-
 
 void ExportToBMSUnquantized(VSRG::Song* Source, Directory PathOut);
 
 void Application::Run()
 {
-	double T1 = glfwGetTime();
-	bool RunLoop = true;
+    double T1 = glfwGetTime();
+    bool RunLoop = true;
 
-	if (!DoRun)
-		return;
+    if (!DoRun)
+        return;
 
-	if (RunMode == MODE_PLAY)
-	{
-		Game = new ScreenMainMenu();
-		static_cast<ScreenMainMenu*>(Game)->Init();
+    if (RunMode == MODE_PLAY)
+    {
+        Game = new ScreenMainMenu();
+        static_cast<ScreenMainMenu*>(Game)->Init();
+    }
+    else if (RunMode == MODE_VSRGPREVIEW)
+    {
+        if (IPC::IsInstanceAlreadyRunning())
+        {
+            // So okay then, we'll send a message telling the existing process to restart with this file, at this time.
+            IPC::Message Msg;
+            Msg.MessageKind = IPC::Message::MSG_STARTFROMMEASURE;
+            Msg.Param = Measure;
+            strncpy(Msg.Path, InFile.c_path(), 256);
 
-	}else if (RunMode == MODE_VSRGPREVIEW)
-	{
-		if (IPC::IsInstanceAlreadyRunning())
-		{
-			// So okay then, we'll send a message telling the existing process to restart with this file, at this time.
-			IPC::Message Msg;
-			Msg.MessageKind = IPC::Message::MSG_STARTFROMMEASURE;
-			Msg.Param = Measure;
-			strncpy(Msg.Path, InFile.c_path(), 256);
+            IPC::SendMessageToQueue(&Msg);
+            RunLoop = false;
+        }
+        else
+        {
+            SetupPreviewMode();
 
-			IPC::SendMessageToQueue(&Msg);
-			RunLoop = false;
-		}
-		else
-		{
-			SetupPreviewMode();
+            if (!Game)
+                return;
 
-			if (!Game)
-				return;
+            // Set up the message queue. We need this if we're in preview mode to be able to control raindrop from the command line.
+            IPC::SetupMessageQueue();
+        }
+    }
+    else if (RunMode == MODE_CONVERT)
+    {
+        std::shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), NULL);
 
-			// Set up the message queue. We need this if we're in preview mode to be able to control raindrop from the command line.
-			IPC::SetupMessageQueue();
-		}
-	}else if (RunMode == MODE_CONVERT)
-	{
-		shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), NULL);
+        if (Sng && Sng->Difficulties.size())
+        {
+            if (ConvertMode == CONVERTMODE::CONV_OM) // for now this is the default
+                ConvertToOM(Sng.get(), OutFile.path(), Author);
+            else if (ConvertMode == CONVERTMODE::CONV_BMS)
+                ConvertToBMS(Sng.get(), OutFile.path());
+            else if (ConvertMode == CONVERTMODE::CONV_UQBMS)
+                ExportToBMSUnquantized(Sng.get(), OutFile.path());
+            else if (ConvertMode == CONVERTMODE::CONV_NPS)
+                ConvertToNPSGraph(Sng.get(), OutFile.path());
+            else
+                ConvertToSMTiming(Sng.get(), OutFile.path());
+        }
+        else
+        {
+            if (Sng) Log::Printf("No notes or timing were loaded.\n");
+            else Log::Printf("Failure loading file at all.\n");
+        }
 
+        RunLoop = false;
+    }
+    else if (RunMode == MODE_GENCACHE)
+    {
+        Log::Printf("Generating cache...\n");
+        Game::GameState::GetInstance().Initialize();
+        Game::SongWheel::GetInstance().Initialize(Game::GameState::GetInstance().GetSongDatabase());
+        Game::SongWheel::GetInstance().Join();
 
-		if (Sng && Sng->Difficulties.size()) 
-		{
-			if (ConvertMode == CONV_OM) // for now this is the default
-				ConvertToOM(Sng.get(), OutFile.path(), Author);
-			else if (ConvertMode == CONV_BMS)
-				ConvertToBMS(Sng.get(), OutFile.path());
-			else if (ConvertMode == CONV_UQBMS)
-				ExportToBMSUnquantized(Sng.get(), OutFile.path());
-			else if (ConvertMode == CONV_NPS)
-				ConvertToNPSGraph(Sng.get(), OutFile.path());
-			else
-				ConvertToSMTiming(Sng.get(), OutFile.path());
-		}
-		else
-		{
-			if (Sng) Log::Printf("No notes or timing were loaded.\n");
-			else Log::Printf("Failure loading file at all.\n");
-		}
+        RunLoop = false;
+    }
+    else if (RunMode == MODE_STOPPREVIEW)
+    {
+        if (IPC::IsInstanceAlreadyRunning())
+        {
+            // So okay then, we'll send a message telling the existing process to restart with this file, at this time.
+            IPC::Message Msg;
+            Msg.MessageKind = IPC::Message::MSG_STOP;
 
-		RunLoop = false;
-	}else if (RunMode == MODE_GENCACHE)
-	{
-		Log::Printf("Generating cache...\n");
-		Game::GameState::GetInstance().Initialize();
-		Game::SongWheel::GetInstance().Initialize(Game::GameState::GetInstance().GetSongDatabase());
-		Game::SongWheel::GetInstance().Join();
+            IPC::SendMessageToQueue(&Msg);
+        }
 
-		RunLoop = false;
-	}
-	else if (RunMode == MODE_STOPPREVIEW)
-	{
-		if (IPC::IsInstanceAlreadyRunning())
-		{
-			// So okay then, we'll send a message telling the existing process to restart with this file, at this time.
-			IPC::Message Msg;
-			Msg.MessageKind = IPC::Message::MSG_STOP;
+        RunLoop = false;
+    }
+    else if (RunMode == MODE_CUSTOMSCREEN)
+    {
+        Log::Printf("Initializing custom, ad-hoc screen...\n");
+        ScreenCustom *scr = new ScreenCustom(GameState::GetInstance().GetSkinFile(InFile));
+        Game = scr;
+    }
 
-			IPC::SendMessageToQueue(&Msg);
-		}
+    Log::Printf("Time: %fs\n", glfwGetTime() - T1);
 
-		RunLoop = false;
-	} else if (RunMode == MODE_CUSTOMSCREEN)
-	{
-		Log::Printf("Initializing custom, ad-hoc screen...\n");
-		ScreenCustom *scr = new ScreenCustom(GameState::GetInstance().GetSkinFile(InFile));
-		Game = scr;
-	}
+    if (!RunLoop)
+        return;
 
-	Log::Printf("Time: %fs\n", glfwGetTime() - T1);
+    ImageLoader::UpdateTextures();
 
-	if (!RunLoop)
-		return;
+    oldTime = glfwGetTime();
+    while (Game->IsScreenRunning() && !WindowFrame.ShouldCloseWindow())
+    {
+        double newTime = glfwGetTime();
+        double delta = newTime - oldTime;
+        ImageLoader::UpdateTextures();
 
-	ImageLoader::UpdateTextures();
+        WindowFrame.ClearWindow();
 
-	oldTime = glfwGetTime();
-	while (Game->IsScreenRunning() && !WindowFrame.ShouldCloseWindow())
-	{
-		double newTime = glfwGetTime();
-		double delta = newTime - oldTime;
-		ImageLoader::UpdateTextures();
+        if (RunMode == MODE_VSRGPREVIEW) // Run IPC Message Queue Querying.
+            if (PollIPC()) continue;
 
-		WindowFrame.ClearWindow();
+        Game->Update(delta);
 
-		if (RunMode == MODE_VSRGPREVIEW) // Run IPC Message Queue Querying.
-			if (PollIPC()) continue;
-
-		Game->Update(delta);
-
-		MixerUpdate();
-		WindowFrame.SwapBuffers();
-		oldTime = newTime;
-	}
+        MixerUpdate();
+        WindowFrame.SwapBuffers();
+        oldTime = newTime;
+    }
 }
 
-void Application::HandleInput(int32 key, KeyEventType code, bool isMouseInput)
+void Application::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
 {
-	Game->HandleInput(key, code, isMouseInput);
+    Game->HandleInput(key, code, isMouseInput);
 }
 
 void Application::HandleScrollInput(double xOff, double yOff)
 {
-	Game->HandleScrollInput(xOff, yOff);
+    Game->HandleScrollInput(xOff, yOff);
 }
 
 void Application::Close()
 {
-	if (Game)
-	{
-		Game->Cleanup();
-		delete Game;
-	}
+    if (Game)
+    {
+        Game->Cleanup();
+        delete Game;
+    }
 
-	WindowFrame.Cleanup();
-	Configuration::Cleanup();
+    WindowFrame.Cleanup();
+    Configuration::Cleanup();
 }
 
 void Application::HandleTextInput(unsigned cp)
 {
-	Game->HandleTextInput(cp);
+    Game->HandleTextInput(cp);
 }

@@ -1,13 +1,8 @@
-#ifndef SPANEL_H_
-#define SPANEL_H_
+#pragma once
 
 namespace GUI
 {
-
-class SwitchPanel {
-
-};
-
+    class SwitchPanel
+    {
+    };
 }
-
-#endif
