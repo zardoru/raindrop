@@ -1,20 +1,17 @@
-#ifndef GGString_H_
-#define GGString_H_
+#pragma once
 
 class Font;
 
 class GraphicalString : public Sprite
 {
-	GString mText;
-	Font* mFont;
+    std::string mText;
+    Font* mFont;
 public:
-	GraphicalString();
-	void SetText(GString _Text);
-	GString GetText() const;
-	void SetFont(Font* _Font);
-	Font* GetFont() const;
+    GraphicalString();
+    void SetText(std::string _Text);
+    std::string GetText() const;
+    void SetFont(Font* _Font);
+    Font* GetFont() const;
 
-	void Render() override;
+    void Render() override;
 };
-
-#endif

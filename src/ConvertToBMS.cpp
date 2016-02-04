@@ -1,5 +1,5 @@
-#include <fstream>
-#include <sstream>
+#include "pch.h"
+
 #include "GameGlobal.h"
 #include "Logging.h"
 #include "Song7K.h"
@@ -10,15 +10,15 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 	std::stringstream OutFile;
 
 	struct TimingMeasure {
-		vector<Event> BPMEvents;
-		vector<Event> StopEvents;
-		vector<Event> ScrollEvents;
+		std::vector<Event> BPMEvents;
+		std::vector<Event> StopEvents;
+		std::vector<Event> ScrollEvents;
 	};
 
-	vector<TimingMeasure> TimingMeasures;
-	vector<double> BPMs;
-	vector<int> Stops;
-	vector<double> Scrolls;
+	std::vector<TimingMeasure> TimingMeasures;
+	std::vector<double> BPMs;
+	std::vector<int> Stops;
+	std::vector<double> Scrolls;
 
 	void ResizeTimingMeasures(size_t NewMaxIndex) {
 		if (TimingMeasures.size() < NewMaxIndex + 1) {
@@ -70,7 +70,7 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 
 				// Create new event at measure.
 				int MeasureForEvent = MeasureForBeat(Beat);
-				ResizeTimingMeasures(MeasureForEvent); // Make sure we've got space on the measures vector
+				ResizeTimingMeasures(MeasureForEvent); // Make sure we've got space on the measures std::vector
 				TimingMeasures[MeasureForEvent].BPMEvents.push_back({ 
 					FractionForMeasure(MeasureForEvent, Beat),
 					index + 1 
@@ -128,7 +128,7 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 	}
 
 
-	GString ToBMSBase36(int n) {
+	std::string ToBMSBase36(int n) {
 		char pt[32] = {0};
 		itoa(n, pt, 36);
 		pt[2] = 0;
@@ -184,7 +184,7 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 		}
 	}
 
-	void WriteVectorToMeasureChannel(vector<Event> &Out, int Measure, int Channel, bool AllowMultiple = false) 
+	void WriteVectorToMeasureChannel(std::vector<Event> &Out, int Measure, int Channel, bool AllowMultiple = false) 
 	{
 		if (Out.size() == 0) return; // Nothing to write.
 
@@ -196,7 +196,7 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 			return dA < dB;
 		});
 
-		vector<vector<int>> rowified; 
+		std::vector<std::vector<int>> rowified; 
 
 		// Now that we have the LCM we can easily just place the objects exactly as we want to output them.
 		for (auto Obj : Out) { // We convert to a fraction that fits with the LCM.
@@ -212,7 +212,7 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 
 			if (!slotFree) // didn't find an unused slot
 			{
-				vector<int> row(VecLCM, 0);
+				std::vector<int> row(VecLCM, 0);
 				row[rNum] = Obj.Evt;
 				rowified.push_back(row);
 			}
@@ -276,7 +276,7 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 
 	void WriteMeasures()
 	{
-		uint32 Measure = 0;
+		uint32_t Measure = 0;
 		using std::endl;
 		for (auto M : Measures){
 			if (Parent->Data->Measures[Measure].Length != 4)
@@ -346,45 +346,46 @@ public:
 		Directory Sn = Song->SongName;
 		Sn.Normalize(true);
 
-		GString name = Utility::Format("%s/%s (%s) - %s.bms", 
+		std::string name = Utility::Format("%s/%s (%s) - %s.bms", 
 			PathOut.c_path(), Sn.c_path(), Parent->Name.c_str(), Parent->Author.c_str());
 
 #ifndef _WIN32
-		std::ofstream out(name.c_str());
+        std::ofstream out(name.c_str());
 #else
-		std::ofstream out(Utility::Widen(name).c_str());
+        std::ofstream out(Utility::Widen(name).c_str());
 #endif
 
-			
-		try {
-			if (!out.is_open())
-				throw std::exception( (Utility::Format("failed to open file %s", name.c_str()).c_str() ) );
-			if (BPS.size() == 0) 
-				throw std::exception("There are no timing points!");
-			WriteBMSOutput();
-			out << OutFile.str();
-		} catch (std::exception &e)
-		{
-			Log::Printf("Error while converting: %s\n", e.what());
-		}
-	}
+        try
+        {
+            if (!out.is_open())
+                throw std::exception((Utility::Format("failed to open file %s", name.c_str()).c_str()));
+            if (BPS.size() == 0)
+                throw std::exception("There are no timing points!");
+            WriteBMSOutput();
+            out << OutFile.str();
+        }
+        catch (std::exception &e)
+        {
+            Log::Printf("Error while converting: %s\n", e.what());
+        }
+    }
 };
 
 void ConvertBMSAll(VSRG::Song *Source, Directory PathOut, bool Quantize)
 {
-	for (auto Diff : Source->Difficulties){
-		BMSConverter Conv(Quantize, Diff.get(), Source);
-		Conv.Output(PathOut);
-	}
+    for (auto Diff : Source->Difficulties)
+    {
+        BMSConverter Conv(Quantize, Diff.get(), Source);
+        Conv.Output(PathOut);
+    }
 }
-
 
 void ExportToBMS(VSRG::Song* Source, Directory PathOut)
 {
-	ConvertBMSAll(Source, PathOut, true);
+    ConvertBMSAll(Source, PathOut, true);
 }
 
 void ExportToBMSUnquantized(VSRG::Song* Source, Directory PathOut)
 {
-	ConvertBMSAll(Source, PathOut, false);
+    ConvertBMSAll(Source, PathOut, false);
 }

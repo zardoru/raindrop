@@ -1,4 +1,5 @@
-#include "Global.h"
+#include "pch.h"
+
 #include "GameState.h"
 
 #include "LuaManager.h"
@@ -6,436 +7,438 @@
 
 int LuaPanic(lua_State* State)
 {
-	if (lua_isstring(State, -1))
-		wprintf(L"LUA ERROR: %ls\n", Utility::Widen(lua_tostring(State, -1)).c_str());
-	Utility::DebugBreak();
-	return 0;
+    if (lua_isstring(State, -1))
+        wprintf(L"LUA ERROR: %ls\n", Utility::Widen(lua_tostring(State, -1)).c_str());
+    Utility::DebugBreak();
+    return 0;
 }
 
 int Break(lua_State *S)
 {
-	Utility::DebugBreak();
-	return 0;
+    Utility::DebugBreak();
+    return 0;
 }
 
 int DoGameScript(lua_State *S)
 {
-	LuaManager* Lua = GetObjectFromState<LuaManager>(S, "Luaman");
-	GString File = luaL_checkstring(S, 1);
-	Lua->Require(GameState::GetInstance().GetScriptsDirectory() + File);
-	return 1;
+    LuaManager* Lua = GetObjectFromState<LuaManager>(S, "Luaman");
+    std::string File = luaL_checkstring(S, 1);
+    Lua->Require(GameState::GetInstance().GetScriptsDirectory() + File);
+    return 1;
 }
 
 LuaManager::LuaManager()
 {
-	State = luaL_newstate();
-	if (State)
-	{
-		// luaL_openlibs(State);
-		RegisterStruct("Luaman", (void*)this);
-		Register(Break, "DEBUGBREAK");
-		Register(DoGameScript, "game_require");
-		luaL_openlibs(State);
-		lua_atpanic(State, &LuaPanic);
-	}
-	// If we couldn't open lua, can we throw an exception?
+    State = luaL_newstate();
+    if (State)
+    {
+        // luaL_openlibs(State);
+        RegisterStruct("Luaman", (void*)this);
+        Register(Break, "DEBUGBREAK");
+        Register(DoGameScript, "game_require");
+        luaL_openlibs(State);
+        lua_atpanic(State, &LuaPanic);
+    }
+    // If we couldn't open lua, can we throw an exception?
 }
 
 LuaManager::~LuaManager()
 {
-	if (State)
-		lua_close(State);
+    if (State)
+        lua_close(State);
 }
 
-void LuaManager::GetGlobal(GString VarName)
+void LuaManager::GetGlobal(std::string VarName)
 {
-	lua_getglobal(State, VarName.c_str());
+    lua_getglobal(State, VarName.c_str());
 }
 
 bool LuaManager::RunScript(Directory file)
 {
-	return RunScript(file.path());
+    return RunScript(file.path());
 }
 
-bool LuaManager::RunScript(GString Filename)
+bool LuaManager::RunScript(std::string Filename)
 {
-	int errload = 0, errcall = 0;
+    int errload = 0, errcall = 0;
 
-	if (!Filename.length())
-		return false;
+    if (!Filename.length())
+        return false;
 
-	Log::Printf("Running script %s.\n", Filename.c_str());
+    Log::Printf("Running script %s.\n", Filename.c_str());
 
-	if( (errload = luaL_loadfile(State, Filename.c_str())) || (errcall = lua_pcall(State, 0, LUA_MULTRET, 0)))
-	{
-		const char* reason = lua_tostring(State, -1);
+    if ((errload = luaL_loadfile(State, Filename.c_str())) || (errcall = lua_pcall(State, 0, LUA_MULTRET, 0)))
+    {
+        const char* reason = lua_tostring(State, -1);
 
-		if (reason) {
-			Log::Printf("Lua error: %s\n", reason);
-			Utility::DebugBreak();
-		}
-		Pop();
-		return false;
-	}
-	return true;
+        if (reason)
+        {
+            Log::Printf("Lua error: %s\n", reason);
+            Utility::DebugBreak();
+        }
+        Pop();
+        return false;
+    }
+    return true;
 }
 
-bool LuaManager::RunString(GString string)
+bool LuaManager::RunString(std::string string)
 {
-	int errload = 0, errcall = 0;
-	
-	if ( (errload = luaL_loadstring(State, string.c_str())) || (errcall = lua_pcall(State, 0, LUA_MULTRET, 0)) )
-	{
-		GString reason = lua_tostring(State, -1);
-		Pop();
-		return false;
-	}
-	return true;
+    int errload = 0, errcall = 0;
+
+    if ((errload = luaL_loadstring(State, string.c_str())) || (errcall = lua_pcall(State, 0, LUA_MULTRET, 0)))
+    {
+        std::string reason = lua_tostring(State, -1);
+        Pop();
+        return false;
+    }
+    return true;
 }
 
-bool LuaManager::Require(GString Filename)
+bool LuaManager::Require(std::string Filename)
 {
-	lua_getglobal(State, "require");
-	lua_pushstring(State, Filename.c_str());
-	if (lua_pcall(State, 1, 1, 0))
-	{
-		const char* reason = lua_tostring(State, -1);
-		if (reason)
-		{
-			Log::Printf("lua require error: %s\n", reason);
-			Utility::DebugBreak();
-		}
-		// No popping here - if succesful or not we want to leave that return value to lua.
-		return false;
-	}
+    lua_getglobal(State, "require");
+    lua_pushstring(State, Filename.c_str());
+    if (lua_pcall(State, 1, 1, 0))
+    {
+        const char* reason = lua_tostring(State, -1);
+        if (reason)
+        {
+            Log::Printf("lua require error: %s\n", reason);
+            Utility::DebugBreak();
+        }
+        // No popping here - if succesful or not we want to leave that return value to lua.
+        return false;
+    }
 
-	return true;
+    return true;
 }
 
 bool LuaManager::IsValid()
 {
-	return State != nullptr;
+    return State != nullptr;
 }
 
-bool LuaManager::Register(lua_CFunction Function, GString FunctionName)
+bool LuaManager::Register(lua_CFunction Function, std::string FunctionName)
 {
-	if (!Function || FunctionName.empty())
-		return false;
-	lua_register(State, FunctionName.c_str(), Function);
-	return true;
+    if (!Function || FunctionName.empty())
+        return false;
+    lua_register(State, FunctionName.c_str(), Function);
+    return true;
 }
 
-int LuaManager::GetGlobalI(GString VariableName, int Default)
+int LuaManager::GetGlobalI(std::string VariableName, int Default)
 {
-	int rval = Default;
-	
-	GetGlobal(VariableName);
-	
-	if (lua_isnumber(State, -1))
-	{
-		rval = lua_tonumber(State, -1);
-	}
+    int rval = Default;
 
-	Pop();
-	return rval;
+    GetGlobal(VariableName);
+
+    if (lua_isnumber(State, -1))
+    {
+        rval = lua_tonumber(State, -1);
+    }
+
+    Pop();
+    return rval;
 }
 
-GString LuaManager::GetGlobalS(GString VariableName, GString Default)
+std::string LuaManager::GetGlobalS(std::string VariableName, std::string Default)
 {
-	GString rval = Default;
-	
-	GetGlobal(VariableName);
-	
-	if (!lua_isnil(State, -1) && lua_isstring(State, -1))
-	{
-		const char* s = lua_tostring(State, -1);
-		rval = s ? s : "";
-	}
+    std::string rval = Default;
 
-	Pop();
-	return rval;
+    GetGlobal(VariableName);
+
+    if (!lua_isnil(State, -1) && lua_isstring(State, -1))
+    {
+        const char* s = lua_tostring(State, -1);
+        rval = s ? s : "";
+    }
+
+    Pop();
+    return rval;
 }
 
-double LuaManager::GetGlobalD(GString VariableName, double Default)
+double LuaManager::GetGlobalD(std::string VariableName, double Default)
 {
-	double rval = Default;
-	
-	GetGlobal(VariableName);
-	if (lua_isnumber(State, -1))
-	{
-		rval = lua_tonumber(State, -1);
-	}
+    double rval = Default;
 
-	Pop();
-	return rval;
+    GetGlobal(VariableName);
+    if (lua_isnumber(State, -1))
+    {
+        rval = lua_tonumber(State, -1);
+    }
+
+    Pop();
+    return rval;
 }
 
-void LuaManager::SetGlobal(const GString &VariableName, const GString &Value)
+void LuaManager::SetGlobal(const std::string &VariableName, const std::string &Value)
 {
-	lua_pushstring(State, Value.c_str());
-	lua_setglobal(State, VariableName.c_str());
+    lua_pushstring(State, Value.c_str());
+    lua_setglobal(State, VariableName.c_str());
 }
 
-void LuaManager::SetGlobal(const GString &VariableName, const double &Value)
+void LuaManager::SetGlobal(const std::string &VariableName, const double &Value)
 {
-	lua_pushnumber(State, Value);
-	lua_setglobal(State, VariableName.c_str());
+    lua_pushnumber(State, Value);
+    lua_setglobal(State, VariableName.c_str());
 }
 
-bool LuaManager::RegisterStruct(GString Key, void* data, GString MetatableName)
+bool LuaManager::RegisterStruct(std::string Key, void* data, std::string MetatableName)
 {
-	if (!data) return false;
-	if (Key.length() < 1) return false;
+    if (!data) return false;
+    if (Key.length() < 1) return false;
 
-	lua_pushstring(State, Key.c_str());
-	lua_pushlightuserdata(State, data);
+    lua_pushstring(State, Key.c_str());
+    lua_pushlightuserdata(State, data);
 
-	if (MetatableName.length())
-	{
-		luaL_getmetatable(State, MetatableName.c_str());
-		lua_setmetatable(State, -2);
-	}
+    if (MetatableName.length())
+    {
+        luaL_getmetatable(State, MetatableName.c_str());
+        lua_setmetatable(State, -2);
+    }
 
-	lua_settable(State, LUA_REGISTRYINDEX);
-	return true;
+    lua_settable(State, LUA_REGISTRYINDEX);
+    return true;
 }
 
-void* LuaManager::GetStruct(GString Key)
+void* LuaManager::GetStruct(std::string Key)
 {
-	void* ptr = nullptr;
-	lua_pushstring(State, Key.c_str());
-	lua_gettable(State, LUA_REGISTRYINDEX);
-	ptr = lua_touserdata(State, -1); // returns null if does not exist
+    void* ptr = nullptr;
+    lua_pushstring(State, Key.c_str());
+    lua_gettable(State, LUA_REGISTRYINDEX);
+    ptr = lua_touserdata(State, -1); // returns null if does not exist
 
-	Pop();
-	return ptr;
+    Pop();
+    return ptr;
 }
 
 void LuaManager::NewArray()
 {
-	lua_newtable(State);
+    lua_newtable(State);
 }
 
-bool LuaManager::UseArray(GString VariableName)
+bool LuaManager::UseArray(std::string VariableName)
 {
-	GetGlobal(VariableName);
-	if (lua_istable(State, -1))
-		return true;
-	
-	Pop();
-	return false;
+    GetGlobal(VariableName);
+    if (lua_istable(State, -1))
+        return true;
+
+    Pop();
+    return false;
 }
 
 void LuaManager::SetFieldI(int index, int Value)
 {
-	lua_pushnumber(State, Value);
-	lua_rawseti(State, -2, index);
+    lua_pushnumber(State, Value);
+    lua_rawseti(State, -2, index);
 }
 
-void LuaManager::SetFieldS(int index, GString Value)
+void LuaManager::SetFieldS(int index, std::string Value)
 {
-	lua_pushstring(State, Value.c_str());
-	lua_rawseti(State, -2, index);
+    lua_pushstring(State, Value.c_str());
+    lua_rawseti(State, -2, index);
 }
 
-void LuaManager::SetFieldS(GString name, GString Value)
+void LuaManager::SetFieldS(std::string name, std::string Value)
 {
-	lua_pushstring(State, Value.c_str());
-	lua_setfield(State, -2, name.c_str());
+    lua_pushstring(State, Value.c_str());
+    lua_setfield(State, -2, name.c_str());
 }
 
 void LuaManager::SetFieldD(int index, double Value)
 {
-	lua_pushnumber(State, Value);
-	lua_rawseti(State, -2, index);
+    lua_pushnumber(State, Value);
+    lua_rawseti(State, -2, index);
 }
 
-int LuaManager::GetFieldI(GString Key, int Default)
+int LuaManager::GetFieldI(std::string Key, int Default)
 {
-	int R = Default;
-	lua_pushstring(State, Key.c_str());
-	lua_gettable(State, -2);
+    int R = Default;
+    lua_pushstring(State, Key.c_str());
+    lua_gettable(State, -2);
 
-	if (lua_isnumber(State, -1))
-	{
-		R = lua_tonumber(State, -1);
-	}// else Error
-	
-	Pop();
-	return R;
+    if (lua_isnumber(State, -1))
+    {
+        R = lua_tonumber(State, -1);
+    }// else Error
+
+    Pop();
+    return R;
 }
 
-double LuaManager::GetFieldD(GString Key, double Default)
+double LuaManager::GetFieldD(std::string Key, double Default)
 {
-	double R = Default;
+    double R = Default;
 
-	if (lua_istable(State, -1))
-	{
-		lua_pushstring(State, Key.c_str());
-		lua_gettable(State, -2);
+    if (lua_istable(State, -1))
+    {
+        lua_pushstring(State, Key.c_str());
+        lua_gettable(State, -2);
 
-		if (lua_isnumber(State, -1))
-		{
-			R = lua_tonumber(State, -1);
-		}// else Error
+        if (lua_isnumber(State, -1))
+        {
+            R = lua_tonumber(State, -1);
+        }// else Error
 
-		Pop();
-		return R;
-	}else
-		return R;
+        Pop();
+        return R;
+    }
+    else
+        return R;
 }
 
-GString LuaManager::GetFieldS(GString Key, GString Default)
+std::string LuaManager::GetFieldS(std::string Key, std::string Default)
 {
-	GString R = Default;
+    std::string R = Default;
 
-	lua_pushstring(State, Key.c_str());
-	lua_gettable(State, -2);
+    lua_pushstring(State, Key.c_str());
+    lua_gettable(State, -2);
 
-	if (lua_isstring(State, -1))
-	{
-		R = lua_tostring(State, -1);
-	}// else Error
+    if (lua_isstring(State, -1))
+    {
+        R = lua_tostring(State, -1);
+    }// else Error
 
-	Pop();
-	return R;
+    Pop();
+    return R;
 }
 
 void LuaManager::Pop()
 {
-	lua_pop(State, 1);
+    lua_pop(State, 1);
 }
 
-void LuaManager::FinalizeArray(GString ArrayName)
+void LuaManager::FinalizeArray(std::string ArrayName)
 {
-	lua_setglobal(State, ArrayName.c_str());
+    lua_setglobal(State, ArrayName.c_str());
 }
 
-void LuaManager::AppendPath(GString Path)
+void LuaManager::AppendPath(std::string Path)
 {
-	GetGlobal("package");
-	SetFieldS("path", GetFieldS("path") + ";" + Path);
-	Pop();
+    GetGlobal("package");
+    SetFieldS("path", GetFieldS("path") + ";" + Path);
+    Pop();
 }
 
 void LuaManager::PushArgument(int Value)
 {
-	if(func_input)
-		lua_pushnumber(State, Value);
+    if (func_input)
+        lua_pushnumber(State, Value);
 }
 
 void LuaManager::PushArgument(double Value)
 {
-	if(func_input)
-		lua_pushnumber(State, Value);
+    if (func_input)
+        lua_pushnumber(State, Value);
 }
 
-void LuaManager::PushArgument(GString Value)
+void LuaManager::PushArgument(std::string Value)
 {
-	if(func_input)
-		lua_pushstring(State, Value.c_str());
+    if (func_input)
+        lua_pushstring(State, Value.c_str());
 }
 
 bool LuaManager::CallFunction(const char* Name, int Arguments, int Results)
 {
-	bool IsFunc;
+    bool IsFunc;
 
-	func_args = Arguments;
-	func_results = Results;
-	lua_getglobal(State, Name);
+    func_args = Arguments;
+    func_results = Results;
+    lua_getglobal(State, Name);
 
-	IsFunc = lua_isfunction(State, -1);
+    IsFunc = lua_isfunction(State, -1);
 
-	if (IsFunc)
-		func_input = true;
-	else
-		Pop();
+    if (IsFunc)
+        func_input = true;
+    else
+        Pop();
 
-	return IsFunc;
+    return IsFunc;
 }
 
 bool LuaManager::RunFunction()
 {
-	if (!func_input)
-		return false;
-	func_input = false;
-	int errc = lua_pcall(State, func_args, func_results, 0);
+    if (!func_input)
+        return false;
+    func_input = false;
+    int errc = lua_pcall(State, func_args, func_results, 0);
 
-	if (errc)
-	{
-		GString reason = lua_tostring(State, -1);
+    if (errc)
+    {
+        std::string reason = lua_tostring(State, -1);
 
 #ifndef WIN32
-		printf("lua call error: %s\n", reason.c_str());
+        printf("lua call error: %s\n", reason.c_str());
 #else
-		Log::Printf("lua call error: %s\n", reason.c_str());
+        Log::Printf("lua call error: %s\n", reason.c_str());
 #endif
-		Pop(); // Remove the error from the stack.
-		func_err = true;
-		return false;
-	}
+        Pop(); // Remove the error from the stack.
+        func_err = true;
+        return false;
+    }
 
-	func_err = false;
-	return true;
+    func_err = false;
+    return true;
 }
 
 int LuaManager::GetFunctionResult(int StackPos)
 {
-	return GetFunctionResultF(StackPos);
+    return GetFunctionResultF(StackPos);
 }
 
 float LuaManager::GetFunctionResultF(int StackPos)
 {
-	float Value = -1;
-	
-	if (func_err) return 0;
+    float Value = -1;
 
-	if (lua_isnumber(State, -StackPos))
-	{
-		Value = lua_tonumber(State, -StackPos);
-	}
+    if (func_err) return 0;
 
-	Pop();
-	return Value;
+    if (lua_isnumber(State, -StackPos))
+    {
+        Value = lua_tonumber(State, -StackPos);
+    }
+
+    Pop();
+    return Value;
 }
 
-void LuaManager::NewMetatable(GString MtName)
+void LuaManager::NewMetatable(std::string MtName)
 {
-	luaL_newmetatable(State, MtName.c_str());
+    luaL_newmetatable(State, MtName.c_str());
 }
 
-void LuaManager::RegisterLibrary(GString Libname, const luaL_Reg *Reg)
+void LuaManager::RegisterLibrary(std::string Libname, const luaL_Reg *Reg)
 {
-	luaL_newlib(State, Reg);
-	lua_setglobal(State, Libname.c_str());
+    luaL_newlib(State, Reg);
+    lua_setglobal(State, Libname.c_str());
 }
 
 lua_State* LuaManager::GetState()
 {
-	return State;
+    return State;
 }
 
-void LuaManager::StartIteration ()
+void LuaManager::StartIteration()
 {
-	lua_pushnil(State);
+    lua_pushnil(State);
 }
 
 bool LuaManager::IterateNext()
 {
-	return lua_next(State, -2) != 0;
+    return lua_next(State, -2) != 0;
 }
 
 int LuaManager::NextInt()
 {
-	return lua_tonumber(State, -1);
+    return lua_tonumber(State, -1);
 }
 
 double LuaManager::NextDouble()
 {
-	return lua_tonumber(State, -1);
+    return lua_tonumber(State, -1);
 }
 
-GString LuaManager::NextGString()
+std::string LuaManager::NextGString()
 {
-	return lua_tostring(State, -1);
+    return lua_tostring(State, -1);
 }

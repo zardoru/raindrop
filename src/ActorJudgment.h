@@ -1,14 +1,11 @@
-#ifndef ACTOR_JUDGEMENT_H_
-#define ACTOR_JUDGEMENT_H_
+#pragma once
 
 class ActorJudgment : public Sprite
 {
-	float AnimTime;
+    float AnimTime;
 public:
-	// I can't find anything more obvious of a name.
-	ActorJudgment();
-	void ChangeJudgment(Judgment New);
-	void Run (double delta);
+    // I can't find anything more obvious of a name.
+    ActorJudgment();
+    void ChangeJudgment(Judgment New);
+    void Run(double delta);
 };
-
-#endif

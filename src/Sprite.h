@@ -1,5 +1,4 @@
-#ifndef Sprite_H
-#define Sprite_H
+#pragma once
 
 #include "Rendering.h"
 #include "Transformation.h"
@@ -11,83 +10,80 @@ class Image;
 class Drawable2D : public Transformation, public Drawable
 {
 public:
-	virtual ~Drawable2D() {};
-	virtual void Render() override;
-	// Stub
+    virtual ~Drawable2D() {};
+    virtual void Render() override;
+    // Stub
 };
 
 class Sprite : public Drawable2D
 {
 private: // Transformations
-	void Cleanup();
+    void Cleanup();
 
-	bool DirtyTexture;
-	
-	EBlendMode BlendingMode;
+    bool DirtyTexture;
 
-	// These crop variables define where to crop the image.
+    EBlendMode BlendingMode;
 
-	/*
-	* crop_x1 and crop_y1 define the top-left corner of the crop rectangle.
-	* crop_x2 and crop_y2 define the bottom-right corner of the crop rectangle.
-	* 
-	* These coordinates are in fractions.
-	*/
+    // These crop variables define where to crop the image.
 
-	float mCrop_x1, mCrop_y1;
-	float mCrop_x2, mCrop_y2;
+    /*
+    * crop_x1 and crop_y1 define the top-left corner of the crop rectangle.
+    * crop_x2 and crop_y2 define the bottom-right corner of the crop rectangle.
+    *
+    * These coordinates are in fractions.
+    */
 
-	Image* mImage;
+    float mCrop_x1, mCrop_y1;
+    float mCrop_x2, mCrop_y2;
 
-	void Construct(bool doInitTexture);
+    Image* mImage;
+
+    void Construct(bool doInitTexture);
 protected:
-	VBO *UvBuffer;
-	bool DoTextureCleanup;
-	void UpdateTexture();
-	bool ShouldDraw();
+    VBO *UvBuffer;
+    bool DoTextureCleanup;
+    void UpdateTexture();
+    bool ShouldDraw();
 public:
-	
-	Sprite(bool ShouldInitTexture);
-	Sprite();
-	~Sprite();
-	
-	// color and other transformations
-	float Alpha;
-	float Red, Blue, Green;
 
-	// Only valid if lighten is enabled.
-	float LightenFactor; 
+    Sprite(bool ShouldInitTexture);
+    Sprite();
+    ~Sprite();
 
-	bool Centered; // 0 for topleft, 1 for center
-	bool Lighten;
+    // color and other transformations
+    float Alpha;
+    float Red, Blue, Green;
 
-	bool ColorInvert;
-	bool AffectedByLightning;
-	bool BlackToTransparent; // If enabled, transforms black pixels into transparent pixels.
+    // Only valid if lighten is enabled.
+    float LightenFactor;
 
-	void SetImage(Image* image, bool ChangeSize = true);
-	Image* GetImage();
-	GString GetImageFilename() const;
+    bool Centered; // 0 for topleft, 1 for center
+    bool Lighten;
 
-	virtual void Initialize(bool ShouldInitTexture);
+    bool ColorInvert;
+    bool AffectedByLightning;
+    bool BlackToTransparent; // If enabled, transforms black pixels into transparent pixels.
 
-	void SetBlendMode(int Mode);
-	int GetBlendMode() const;
+    void SetImage(Image* image, bool ChangeSize = true);
+    Image* GetImage();
+    std::string GetImageFilename() const;
 
+    virtual void Initialize(bool ShouldInitTexture);
 
-	// Cropping
-	void SetCrop(Vec2 Crop1, Vec2 Crop2);
-	void SetCrop1(Vec2 Crop1);
-	void SetCrop2(Vec2 Crop2);
-	void SetCropToWholeImage();
-	void SetCropByPixels(int32 x1, int32 x2, int32 y1, int32 y2);
+    void SetBlendMode(int Mode);
+    int GetBlendMode() const;
 
-	virtual void Render() override;
-	bool RenderMinimalSetup();
-	void DrawLighten();
-	virtual void Invalidate();
+    // Cropping
+    void SetCrop(Vec2 Crop1, Vec2 Crop2);
+    void SetCrop1(Vec2 Crop1);
+    void SetCrop2(Vec2 Crop2);
+    void SetCropToWholeImage();
+    void SetCropByPixels(int32_t x1, int32_t x2, int32_t y1, int32_t y2);
 
-	void BindTextureVBO();
+    virtual void Render() override;
+    bool RenderMinimalSetup();
+    void DrawLighten();
+    virtual void Invalidate();
+
+    void BindTextureVBO();
 };
-
-#endif

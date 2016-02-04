@@ -1,0 +1,656 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\src\NoteLoaderSM.cpp">
+      <Filter>Source Files\vsrg\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\NoteLoaderBMS.cpp">
+      <Filter>Source Files\vsrg\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\NoteLoaderFTB.cpp">
+      <Filter>Source Files\vsrg\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\NoteLoaderOM.cpp">
+      <Filter>Source Files\vsrg\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenEvaluation7K.cpp">
+      <Filter>Source Files\vsrg\evaluation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenGameplay7K.cpp">
+      <Filter>Source Files\vsrg\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenGameplay7K_Mechanics.cpp">
+      <Filter>Source Files\vsrg\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\TrackNote.cpp">
+      <Filter>Source Files\vsrg\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Audio.cpp">
+      <Filter>Source Files\backend\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Audiofile.cpp">
+      <Filter>Source Files\backend\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\AudioSourceMP3.cpp">
+      <Filter>Source Files\backend\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\AudioSourceSFM.cpp">
+      <Filter>Source Files\backend\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Configuration.cpp">
+      <Filter>Source Files\backend\cfg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Directory.cpp">
+      <Filter>Source Files\backend\files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GameWindow.cpp">
+      <Filter>Source Files\backend\window</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GuiButton.cpp">
+      <Filter>Source Files\backend\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GuiTextPrompt.cpp">
+      <Filter>Source Files\backend\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Rendering.cpp">
+      <Filter>Source Files\backend\render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Screen.cpp">
+      <Filter>Source Files\backend\structure</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenLoading.cpp">
+      <Filter>Source Files\game global\screens</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenMainMenu.cpp">
+      <Filter>Source Files\game global\screens</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenSelectMusic.cpp">
+      <Filter>Source Files\game global\screens</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SongTiming.cpp">
+      <Filter>Source Files\game global\song interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Song7K.cpp">
+      <Filter>Source Files\vsrg\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Image.cpp">
+      <Filter>Source Files\backend\render\textures</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ImageLoader.cpp">
+      <Filter>Source Files\backend\render\textures</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ImageList.cpp">
+      <Filter>Source Files\backend\render\textures</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\raindrop.cpp">
+      <Filter>Source Files\backend</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Convert.cpp">
+      <Filter>Source Files\vsrg\converting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SongWheel.cpp">
+      <Filter>Source Files\game global\game status</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GameState.cpp">
+      <Filter>Source Files\game global\game status</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SongDatabase.cpp">
+      <Filter>Source Files\game global\game status</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SongList.cpp">
+      <Filter>Source Files\game global\game status</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Logging.cpp">
+      <Filter>Source Files\backend\logging</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SongLoader.cpp">
+      <Filter>Source Files\game global\song interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Line.cpp">
+      <Filter>Source Files\backend\render\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenGameplay7K_Setup.cpp">
+      <Filter>Source Files\vsrg\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\TruetypeFont.cpp">
+      <Filter>Source Files\backend\render\fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\BitmapFont.cpp">
+      <Filter>Source Files\backend\render\fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Font.cpp">
+      <Filter>Source Files\backend\render\fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GraphicalString.cpp">
+      <Filter>Source Files\backend\render\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\NoteLoaderOJN.cpp">
+      <Filter>Source Files\vsrg\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\AudioSourceOJM.cpp">
+      <Filter>Source Files\backend\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenGameplay7K_MechanicsDetails.cpp">
+      <Filter>Source Files\vsrg\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\LuaAnimationInterface.cpp">
+      <Filter>Source Files\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenGameplay7K_Lua.cpp">
+      <Filter>Source Files\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScoreKeeper7K_Lua.cpp">
+      <Filter>Source Files\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GameStateLua.cpp">
+      <Filter>Source Files\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Transformation.cpp">
+      <Filter>Source Files\backend\structure</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Utility.cpp">
+      <Filter>Source Files\backend</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Noteskin.cpp">
+      <Filter>Source Files\vsrg\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\IPC.cpp">
+      <Filter>Source Files\game global</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\RaindropRocketInterface.cpp">
+      <Filter>Source Files\backend\librocket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ConvertToBMS.cpp">
+      <Filter>Source Files\vsrg\converting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Sprite.cpp">
+      <Filter>Source Files\backend\render\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SceneEnvironment.cpp">
+      <Filter>Source Files\backend\structure</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\RowifiedDifficulty7K.cpp">
+      <Filter>Source Files\vsrg\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\TextureConfig.cpp">
+      <Filter>Source Files\backend\cfg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScoreKeeper7K.cpp">
+      <Filter>Source Files\vsrg\scorekeeper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScoreKeeper7K_bms.cpp">
+      <Filter>Source Files\vsrg\scorekeeper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScoreKeeper7K_experimental.cpp">
+      <Filter>Source Files\vsrg\scorekeeper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScoreKeeper7K_init.cpp">
+      <Filter>Source Files\vsrg\scorekeeper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScoreKeeper7K_o2jam.cpp">
+      <Filter>Source Files\vsrg\scorekeeper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScoreKeeper7K_osu.cpp">
+      <Filter>Source Files\vsrg\scorekeeper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScoreKeeper7K_rank.cpp">
+      <Filter>Source Files\vsrg\scorekeeper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\NPSGraph.cpp">
+      <Filter>Source Files\vsrg\converting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\BackgroundAnimation.cpp">
+      <Filter>Source Files\game global\BGA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Application.cpp">
+      <Filter>Source Files\game global</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Renderer7K.cpp">
+      <Filter>Source Files\vsrg\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\NoteTransformations.cpp">
+      <Filter>Source Files\vsrg\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\NoteLoaderBMSON.cpp">
+      <Filter>Source Files\vsrg\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Interruptible.cpp">
+      <Filter>Source Files\backend\structure</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\AudioSourceOGG.cpp">
+      <Filter>Source Files\backend\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenCustom.cpp">
+      <Filter>Source Files\game global\screens</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\LuaManager.cpp">
+      <Filter>Source Files\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenEdit.cpp">
+      <Filter>Source Files\dotcur</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenEvaluation.cpp">
+      <Filter>Source Files\dotcur</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ActorBarline.cpp">
+      <Filter>Source Files\dotcur</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ActorJudgment.cpp">
+      <Filter>Source Files\dotcur</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ActorLifebar.cpp">
+      <Filter>Source Files\dotcur</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GameObject.cpp">
+      <Filter>Source Files\dotcur</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenGameplay.cpp">
+      <Filter>Source Files\dotcur</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\NoteLoaderDC.cpp">
+      <Filter>Source Files\dotcur</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SongDC.cpp">
+      <Filter>Source Files\dotcur</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ext\pa_ringbuffer.c">
+      <Filter>Static Libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ext\jsoncpp.cpp">
+      <Filter>Static Libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ext\sha256.cpp">
+      <Filter>Static Libraries</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\pch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\LuaManager.h">
+      <Filter>Header Files\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Audio.h">
+      <Filter>Header Files\backend\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Audiofile.h">
+      <Filter>Header Files\backend\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AudioSourceMP3.h">
+      <Filter>Header Files\backend\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AudioSourceOGG.h">
+      <Filter>Header Files\backend\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AudioSourceOJM.h">
+      <Filter>Header Files\backend\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AudioSourceSFM.h">
+      <Filter>Header Files\backend\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Configuration.h">
+      <Filter>Header Files\backend\cfg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Directory.h">
+      <Filter>Header Files\backend\files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GuiButton.h">
+      <Filter>Header Files\backend\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GuiSwitchPanel.h">
+      <Filter>Header Files\backend\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GuiTextPrompt.h">
+      <Filter>Header Files\backend\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\RaindropRocketInterface.h">
+      <Filter>Header Files\backend\librocket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Logging.h">
+      <Filter>Header Files\backend\logging</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Rendering.h">
+      <Filter>Header Files\backend\render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Drawable.h">
+      <Filter>Header Files\backend\structure</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Interruptible.h">
+      <Filter>Header Files\backend\structure</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SceneEnvironment.h">
+      <Filter>Header Files\backend\structure</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Screen.h">
+      <Filter>Header Files\backend\structure</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Transformation.h">
+      <Filter>Header Files\backend\structure</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GameWindow.h">
+      <Filter>Header Files\backend\window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BindingsManager.h">
+      <Filter>Header Files\backend\window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BitmapFont.h">
+      <Filter>Header Files\backend\render\fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Font.h">
+      <Filter>Header Files\backend\render\fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\TruetypeFont.h">
+      <Filter>Header Files\backend\render\fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GraphicalString.h">
+      <Filter>Header Files\backend\render\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Line.h">
+      <Filter>Header Files\backend\render\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Sprite.h">
+      <Filter>Header Files\backend\render\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\VBO.h">
+      <Filter>Header Files\backend\render\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Image.h">
+      <Filter>Header Files\backend\render\textures</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ImageList.h">
+      <Filter>Header Files\backend\render\textures</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ImageLoader.h">
+      <Filter>Header Files\backend\render\textures</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScreenEdit.h">
+      <Filter>Header Files\dotcur</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScreenEvaluation.h">
+      <Filter>Header Files\dotcur</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ActorBarline.h">
+      <Filter>Header Files\dotcur</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ActorJudgment.h">
+      <Filter>Header Files\dotcur</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ActorLifebar.h">
+      <Filter>Header Files\dotcur</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GameObject.h">
+      <Filter>Header Files\dotcur</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScreenGameplay.h">
+      <Filter>Header Files\dotcur</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\NoteLoaderDC.h">
+      <Filter>Header Files\dotcur</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SongDC.h">
+      <Filter>Header Files\dotcur</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Application.h">
+      <Filter>Header Files\game global</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\IPC.h">
+      <Filter>Header Files\game global</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScoreKeeper.h">
+      <Filter>Header Files\game global</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GameGlobal.h">
+      <Filter>Header Files\game global</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Song.h">
+      <Filter>Header Files\game global\song interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SongLoader.h">
+      <Filter>Header Files\game global\song interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SongTiming.h">
+      <Filter>Header Files\game global\song interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BackgroundAnimation.h">
+      <Filter>Header Files\game global\BGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\osuBackgroundAnimation.h">
+      <Filter>Header Files\game global\BGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GameState.h">
+      <Filter>Header Files\game global\game status</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SongDatabase.h">
+      <Filter>Header Files\game global\game status</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SongList.h">
+      <Filter>Header Files\game global\game status</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SongWheel.h">
+      <Filter>Header Files\game global\game status</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScreenCustom.h">
+      <Filter>Header Files\game global\screens</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScreenLoading.h">
+      <Filter>Header Files\game global\screens</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScreenMainMenu.h">
+      <Filter>Header Files\game global\screens</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScreenSelectMusic.h">
+      <Filter>Header Files\game global\screens</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\TrackNote.h">
+      <Filter>Header Files\vsrg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Song7K.h">
+      <Filter>Header Files\vsrg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\NoteLoader7K.h">
+      <Filter>Header Files\vsrg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Noteskin.h">
+      <Filter>Header Files\vsrg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\NoteTransformations.h">
+      <Filter>Header Files\vsrg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScreenGameplay7K.h">
+      <Filter>Header Files\vsrg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScreenGameplay7K_Mechanics.h">
+      <Filter>Header Files\vsrg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScreenEvaluation7K.h">
+      <Filter>Header Files\vsrg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Converter.h">
+      <Filter>Header Files\vsrg</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{fb32c722-535f-44c8-92d5-ff7948fd273f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\backend">
+      <UniqueIdentifier>{48ccc0c2-188b-46a2-8080-66472591d9ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\backend\audio">
+      <UniqueIdentifier>{739056b2-26e2-44b8-9bcb-0fb0fcf50d9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\backend\cfg">
+      <UniqueIdentifier>{2028ba63-d636-446d-9511-8bcc77cf5455}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\backend\window">
+      <UniqueIdentifier>{e772aae2-a655-4a59-83cc-4caa5a14cb50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\backend\render">
+      <UniqueIdentifier>{b935270a-cd76-4ac2-8a6c-05cd33737330}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\backend\render\textures">
+      <UniqueIdentifier>{be92e194-9b35-465d-8344-488d7d311846}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\backend\render\objects">
+      <UniqueIdentifier>{46562340-2edd-4f4c-958b-5dc567f13c32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\backend\render\fonts">
+      <UniqueIdentifier>{1fc3da10-f22d-4719-b3ed-1e12cbbc788d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\backend\files">
+      <UniqueIdentifier>{f3eeaf66-4063-4666-92d8-cff236388802}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\backend\gui">
+      <UniqueIdentifier>{c2b9f21a-2d12-4ebe-94a5-dcb9a207dea5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\backend\logging">
+      <UniqueIdentifier>{7c95638d-8828-48b3-b6d6-ee037d7490ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\backend\structure">
+      <UniqueIdentifier>{b6179f2f-8e96-413f-930e-671459c7b05e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\backend\librocket">
+      <UniqueIdentifier>{954588fe-fdcc-4ebd-bd04-a3fb1e750ab3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\vsrg">
+      <UniqueIdentifier>{bd2267ab-5113-4024-a6b6-15c663dd66d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\vsrg\internal">
+      <UniqueIdentifier>{d49242fb-ee13-4836-b0e5-b0136ae1566e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\vsrg\gameplay">
+      <UniqueIdentifier>{3e6704ea-2ff2-4a67-9864-52f50b89771f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\vsrg\evaluation">
+      <UniqueIdentifier>{8b582cad-32d5-4f19-ae5d-972436643c80}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\vsrg\converting">
+      <UniqueIdentifier>{9e1fa62b-dcc8-43d6-af3c-a6ca61ee8ae6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\vsrg\scorekeeper">
+      <UniqueIdentifier>{f417bca7-f730-4e6e-8816-1084e8d5dc83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\dotcur">
+      <UniqueIdentifier>{9261a9c5-ccc7-4433-b029-e260937043fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\game global">
+      <UniqueIdentifier>{a68a9139-8807-4481-abf5-9ba1f3f0a2d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\game global\screens">
+      <UniqueIdentifier>{b9fe9eea-fefc-47ad-aa57-650da1c43ac8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\game global\song interface">
+      <UniqueIdentifier>{0c1dacd1-f4e5-4a0e-93f0-4190b392758b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\game global\game status">
+      <UniqueIdentifier>{9cb48b7b-447e-411e-bc50-2468f5ae2674}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\game global\BGA">
+      <UniqueIdentifier>{ba96faec-7b30-4f99-acc8-b14687e2dd44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\lua">
+      <UniqueIdentifier>{e0e66626-2faf-4c1f-8981-416451e59282}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{7f1909ef-3f8d-498d-ac87-cdda62558b26}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\backend">
+      <UniqueIdentifier>{ee591eac-4ea0-45db-9f16-759b65e33d22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\dotcur">
+      <UniqueIdentifier>{ba34457e-1b7c-45a8-968c-561a02ce6282}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\game global">
+      <UniqueIdentifier>{812140ad-2725-4006-972b-b5ddcf8b744d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\lua">
+      <UniqueIdentifier>{9c66dd79-de76-4f13-8096-2945cbb42592}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\vsrg">
+      <UniqueIdentifier>{753f8883-f25f-44e7-8c21-5c71a4c8814d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\backend\audio">
+      <UniqueIdentifier>{a89a8371-f7f5-422a-8aeb-7fc6301430fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\backend\cfg">
+      <UniqueIdentifier>{103d7f83-9db3-4390-90b8-6836516279c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\backend\files">
+      <UniqueIdentifier>{c4ed7459-28d5-4174-bc46-6018ecbd55ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\backend\gui">
+      <UniqueIdentifier>{fcaec375-a9e4-42e9-a386-e0bedc8a9c67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\backend\librocket">
+      <UniqueIdentifier>{031a169e-278e-4be0-aa8e-ccdb9be52ab3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\backend\logging">
+      <UniqueIdentifier>{5fdb4f59-4733-4efb-92bc-9746f870d743}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\backend\structure">
+      <UniqueIdentifier>{ca27c195-6014-46e5-8ab4-8ee2b2c1f02f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\backend\render">
+      <UniqueIdentifier>{48b5b0a2-3ece-42f4-ba6d-31bb96b84762}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\backend\window">
+      <UniqueIdentifier>{2f44aeed-5c7b-4299-86fe-cc5376da58c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\backend\render\fonts">
+      <UniqueIdentifier>{a1de3734-2e53-41d8-9e58-354961fe36cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\backend\render\objects">
+      <UniqueIdentifier>{a711b335-38d5-4216-8987-b868bddbc53c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\backend\render\textures">
+      <UniqueIdentifier>{9629b0c7-daf9-405a-b697-442d609ac2a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\game global\song interface">
+      <UniqueIdentifier>{7efd0f64-e1c6-4fc4-bc13-2ef334f512b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\game global\screens">
+      <UniqueIdentifier>{21e1e9ba-2451-4d4d-b758-b0e7903df2e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\game global\game status">
+      <UniqueIdentifier>{69d3e415-56a8-43dc-99e2-e7a64c4ef346}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\game global\BGA">
+      <UniqueIdentifier>{840b0a31-9171-40bf-86e9-88f9b59c39f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Static Libraries">
+      <UniqueIdentifier>{80165aaf-e155-45c8-adf2-16bdfe4f727c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Additional Files">
+      <UniqueIdentifier>{f35f41d1-f4f2-4ff6-9994-92b5a10dd18a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\.gitignore">
+      <Filter>Additional Files</Filter>
+    </None>
+    <None Include="..\config.ini">
+      <Filter>Additional Files</Filter>
+    </None>
+    <None Include="..\LICENSE">
+      <Filter>Additional Files</Filter>
+    </None>
+    <None Include="..\README.md">
+      <Filter>Additional Files</Filter>
+    </None>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="app.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\credits.txt">
+      <Filter>Additional Files</Filter>
+    </Text>
+    <Text Include="..\game_readme.txt">
+      <Filter>Additional Files</Filter>
+    </Text>
+  </ItemGroup>
+</Project>

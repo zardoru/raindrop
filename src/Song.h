@@ -1,151 +1,148 @@
-#ifndef SONG_H_
-#define SONG_H_
+#pragma once
 
 template <class T, class U>
 struct TimeBased
 {
-	U Time;
+    U Time;
 
-	inline bool operator< (const T &rhs)
-	{
-		return Time < rhs.Time;
-	}
+    inline bool operator< (const T &rhs)
+    {
+        return Time < rhs.Time;
+    }
 
-	inline bool operator>(const T &rhs)
-	{
-		return Time > rhs.Time;
-	}
+    inline bool operator>(const T &rhs)
+    {
+        return Time > rhs.Time;
+    }
 
-	inline operator U()
-	{
-		return Time;
-	}
+    inline operator U()
+    {
+        return Time;
+    }
 
-	TimeBased(U val) : Time(val) {};
-	TimeBased() = default;
+    TimeBased(U val) : Time(val) {};
+    TimeBased() = default;
 };
 
 struct TimingSegment : public TimeBased < TimingSegment, double >
 {
-	double Value; // in bpm
-	TimingSegment(double T, double V) : TimeBased(T), Value(V) {};
-	TimingSegment() : TimingSegment(0, 0) {};
+    double Value; // in bpm
+    TimingSegment(double T, double V) : TimeBased(T), Value(V) {};
+    TimingSegment() : TimingSegment(0, 0) {};
 };
 
-inline bool operator<(double Beat, const TimingSegment &in) {
-	return Beat < in.Time;
+inline bool operator<(double Beat, const TimingSegment &in)
+{
+    return Beat < in.Time;
 }
 
 inline bool operator<(const TimingSegment &A, const TimingSegment &B) {
 	return A.Time < B.Time;
 }
 
-typedef vector<TimingSegment> TimingData;
+typedef std::vector<TimingSegment> TimingData;
 
 struct AutoplaySound : public TimeBased < AutoplaySound, float >
 {
-	int Sound;
+    int Sound;
 
-	AutoplaySound() : TimeBased(0), Sound(0) {};
-	AutoplaySound(float T, int V) : TimeBased(T), Sound(V) {}
+    AutoplaySound() : TimeBased(0), Sound(0) {};
+    AutoplaySound(float T, int V) : TimeBased(T), Sound(V) {}
 };
 
 struct AutoplayBMP : public TimeBased < AutoplayBMP, float >
 {
-	int BMP;
-	AutoplayBMP() : TimeBased(0), BMP(0) {};
-	AutoplayBMP(float T, int V) : TimeBased(T), BMP(V) {};
+    int BMP;
+    AutoplayBMP() : TimeBased(0), BMP(0) {};
+    AutoplayBMP(float T, int V) : TimeBased(T), BMP(V) {};
 };
 
 enum ModeType
 {
-	MODE_DOTCUR,
-	MODE_VSRG
+    MODE_DOTCUR,
+    MODE_VSRG
 };
 
 struct SliceInfo
 {
-	double Start, End;
+    double Start, End;
 };
 
 struct SliceContainer
 {
-	map<int, GString> AudioFiles; // int := snd index, GString := file 
-	map<int, map<int, SliceInfo>> Slices; // 1st int := wav index, 2nd int := snd index, Slice Info, where to cut for 2nd int for wav 1st int
+    std::map<int, std::string> AudioFiles; // int := snd index, std::string := file
+    std::map<int, std::map<int, SliceInfo>> Slices; // 1st int := wav index, 2nd int := snd index, Slice Info, where to cut for 2nd int for wav 1st int
 };
 
 namespace Game
 {
+    class Song
+    {
+    public:
 
-	class Song
-	{
-	public:
+        int ID;
+        struct Difficulty
+        {
+            TimingData Timing;
 
-		int ID;
-		struct Difficulty {
+            double Offset;
+            double Duration;
 
-			TimingData Timing;
+            // Meta
+            std::string Name;
+            std::string Filename;
+            std::string Author;
 
-			double Offset;
-			double Duration;
+            uint32_t TotalNotes;
+            uint32_t TotalHolds;
+            uint32_t TotalObjects;
+            uint32_t TotalScoringObjects;
 
-			// Meta
-			GString Name;
-			GString Filename;
-			GString Author;
+            std::map<int, std::string> SoundList;
 
-			uint32 TotalNotes;
-			uint32 TotalHolds;
-			uint32 TotalObjects;
-			uint32 TotalScoringObjects;
+            int ID;
 
-			map<int, GString> SoundList;
+            Difficulty()
+            {
+                ID = -1;
+                Duration = 0;
+                Offset = 0;
+                TotalNotes = 0;
+                TotalHolds = 0;
+                TotalObjects = 0;
+                TotalScoringObjects = 0;
+            }
+        };
 
-			int ID;
+        ModeType Mode;
 
-			Difficulty() {
-				ID = -1;
-				Duration = 0;
-				Offset = 0;
-				TotalNotes = 0;
-				TotalHolds = 0;
-				TotalObjects = 0;
-				TotalScoringObjects = 0;
-			}
-		};
+        /* Song title */
+        std::string SongName;
 
-		ModeType Mode;
+        /* Song Author */
+        std::string SongAuthor;
 
-		/* Song title */
-		GString SongName;
+        /* Directory where files are contained */
+        Directory SongDirectory;
 
-		/* Song Author */
-		GString SongAuthor;
+        /* Relative Paths */
+        std::string SongFilename, BackgroundFilename;
 
-		/* Directory where files are contained */
-		Directory SongDirectory;
+        /* Song Audio for Preview*/
+        std::string SongPreviewSource;
 
-		/* Relative Paths */
-		GString SongFilename, BackgroundFilename;
+        /* Time to start preview */
+        float PreviewTime;
 
-		/* Song Audio for Preview*/
-		GString SongPreviewSource;
+        // Song subtitles
+        std::string Subtitle;
 
-		/* Time to start preview */
-		float PreviewTime;
+        // Song genre
+        std::string Genre;
 
-		// Song subtitles
-		GString Subtitle;
-
-		// Song genre
-		GString Genre;
-
-		Song() { ID = -1; PreviewTime = 0; };
-		virtual ~Song() {};
-	};
-
+        Song() { ID = -1; PreviewTime = 0; };
+        virtual ~Song() {};
+    };
 }
 
 #include "SongTiming.h"
-
-#endif

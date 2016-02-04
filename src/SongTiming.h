@@ -1,3 +1,5 @@
+#pragma once
+
 /* SongDC Timing functions. */
 
 /* Song Timing */
@@ -9,23 +11,23 @@ inline double bps(double bpm) { return bpm / 60; } // Return beats per second.
 int SectionIndex(const TimingData &Timing, double Beat);
 
 /*
-	Find the value of the interval function defined by Timing at the value Beat
+    Find the value of the interval function defined by Timing at the value Beat
 */
 double SectionValue(const TimingData &Timing, double Beat);
 
 /*
-	Find the time at Beat given a constant function defined in intervals by Timing
+    Find the time at Beat given a constant function defined in intervals by Timing
 */
 double TimeAtBeat(const TimingData &Timing, float Offset, double Beat, bool Abs = false);
 
 /*
-	Find the antiderivative of an interval defined function through the Timing variable
-	from 0 to Time.
+    Find the antiderivative of an interval defined function through the Timing variable
+    from 0 to Time.
 */
 double IntegrateToTime(const TimingData &Timing, double Time, float Drift = 0);
 
 /*
-	Find the sum of all stops that have happened in [0, Beat)
+    Find the sum of all stops that have happened in [0, Beat)
 */
 double StopTimeAtBeat(const TimingData &StopsTiming, double Beat);
 
@@ -34,12 +36,11 @@ double StopTimeAtBeat(const TimingData &StopsTiming, double Beat);
 		TimeAtBeat(Diff.Timing, Diff.Offset, Diff.Measures.size() * MySong.MeasureLength); : \
 	0
 
-void GetTimingChangesInInterval(const TimingData &Timing, 
-	double PointA, double PointB, 
-	TimingData &Out);
+void GetTimingChangesInInterval(const TimingData &Timing,
+    double PointA, double PointB,
+    TimingData &Out);
 
-void LoadTimingList(TimingData &Timing, GString line, bool AllowZeros = false);
-
+void LoadTimingList(TimingData &Timing, std::string line, bool AllowZeros = false);
 
 // Quantizes fraction to a beat's maximum resolution (1/48th of a beat)
 double QuantizeFractionBeat(double Frac);

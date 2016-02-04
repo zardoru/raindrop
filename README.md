@@ -20,24 +20,35 @@ Dependencies
 =====
 The dependencies of the project right now are:
 
-* boost
+* boost and boost::gil (develop)
 * glew
 * glfw 3.0
 * portaudio v19
 * libogg and libvorbis
 * libsndfile
+* soxr
+* portaudio
 * librocket
-* freeimage
+* sqlite3
+* libjpeg(turbo) and libpng
+* lua 5.2.1
+* zlib
 * libmpg123 (optional, but recommended)
+* glm (header only)
+* LuaBridge (header only)
+* stb_TrueType (header only)
+* randint (header only)
 
-The rest of the dependencies are included in source code form in ext-src.
-You may use libmpg123 to get MP3 support on either platform. It is included by default in ext-libs for windows, along with all dlls required to run raindrop.
+With the exception of boost, the required includes for these dependencies are within the 'lib\include' folder.
+Header only libraries require nothing more to be used.
+
 
 Building on Windows
 =====
-All dependencies are included in ext-libs, with only one major, important exception: boost. 
-The solution will attempt to grab boost from NuGet the first time around. 
-Try grabbing it globally before the vs2013 solution does, locally. You've been warned.
+Though you can compile them yourself, a full collection of pre-compiled libs can is available here http://i.mechacrash.com/LrjD9wjO
+If you're using Visual Studio, simply extracting these to the 'lib' directory will allow automatic linking.
+The solution will attempt to grab boost from NuGet first time, though it can simple be added manually if desired.
+
 
 Building on Linux
 =====

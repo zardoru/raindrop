@@ -1,12 +1,14 @@
+#include "pch.h"
+
 #include "GameGlobal.h"
 #include "TrackNote.h"
-#include <glm/gtc/matrix_transform.inl>
+//#include <glm/gtc/matrix_transform.inl>
 
 using namespace VSRG;
 
 TrackNote::TrackNote()
 {
-	EnabledHitFlags = EnabledFlag | HeadEnabledFlag;
+    EnabledHitFlags = EnabledFlag | HeadEnabledFlag;
 }
 
 TrackNote::~TrackNote()
@@ -15,41 +17,40 @@ TrackNote::~TrackNote()
 
 float TrackNote::GetHoldSize() const
 {
-	return abs((b_pos_holdend - b_pos));
+    return abs((b_pos_holdend - b_pos));
 }
 
 float TrackNote::GetHoldEndVertical()
 {
-	return b_pos_holdend;
+    return b_pos_holdend;
 }
 
 void TrackNote::FailHit()
 {
-	EnabledHitFlags |= FailedHitFlag;
+    EnabledHitFlags |= FailedHitFlag;
 }
-
 
 void TrackNote::MakeInvisible()
 {
-	EnabledHitFlags |= InvisibleFlag;
+    EnabledHitFlags |= InvisibleFlag;
 }
 
 void TrackNote::RemoveSound()
 {
-	Sound = 0;
+    Sound = 0;
 }
 
 bool TrackNote::FailedHit() const
 {
-	return (EnabledHitFlags & FailedHitFlag) != 0;
+    return (EnabledHitFlags & FailedHitFlag) != 0;
 }
 
 void TrackNote::AssignNotedata(const VSRG::NoteData &Notedata)
 {
-	Time = Notedata.StartTime;
-	EndTime = Notedata.EndTime;
-	Sound = Notedata.Sound;
-	NoteKind = Notedata.NoteKind;
+    Time = Notedata.StartTime;
+    EndTime = Notedata.EndTime;
+    Sound = Notedata.Sound;
+    NoteKind = Notedata.NoteKind;
 }
 
 int GetFractionKindBeat(double frac);
@@ -57,120 +58,120 @@ int GetFractionKindBeat(double frac);
 /* calculate the beat snap for this fraction */
 void TrackNote::AssignFraction(double frac)
 {
-	FractionKind = GetFractionKindBeat(frac);
+    FractionKind = GetFractionKindBeat(frac);
 }
 
 void TrackNote::AssignPosition(float Position, float endPosition)
 {
-	b_pos = Position;
-	b_pos_holdend = endPosition;
+    b_pos = Position;
+    b_pos_holdend = endPosition;
 }
 
 bool TrackNote::IsHold() const
 {
-	return EndTime != 0;
+    return EndTime != 0;
 }
 
 float TrackNote::GetVertical() const
 {
-	return b_pos;
+    return b_pos;
 }
 
 void TrackNote::AddTime(double Time)
 {
-	this->Time += Time;
+    this->Time += Time;
 
-	if (IsHold())
-		EndTime += Time;
+    if (IsHold())
+        EndTime += Time;
 }
 
 double TrackNote::GetTimeFinal() const
 {
-	return max(Time, EndTime);
+    return std::max(Time, EndTime);
 }
 
 double TrackNote::GetStartTime() const
 {
-	return Time;
+    return Time;
 }
 
 bool TrackNote::IsEnabled() const
 {
-	return EnabledHitFlags & EnabledFlag;
+    return EnabledHitFlags & EnabledFlag;
 }
 
 bool TrackNote::IsHeadEnabled() const
 {
-	return (EnabledHitFlags & HeadEnabledFlag) != 0;
+    return (EnabledHitFlags & HeadEnabledFlag) != 0;
 }
 
 void TrackNote::Disable()
 {
-	EnabledHitFlags &= ~EnabledFlag;
-	DisableHead();
+    EnabledHitFlags &= ~EnabledFlag;
+    DisableHead();
 }
 
 void TrackNote::DisableHead()
 {
-	EnabledHitFlags &= ~HeadEnabledFlag;
+    EnabledHitFlags &= ~HeadEnabledFlag;
 }
 
 void TrackNote::Hit()
 {
-	EnabledHitFlags |= WasHitFlag;
+    EnabledHitFlags |= WasHitFlag;
 }
 
 bool TrackNote::WasNoteHit() const
 {
-	return (EnabledHitFlags & WasHitFlag) != 0;
+    return (EnabledHitFlags & WasHitFlag) != 0;
 }
 
 float TrackNote::GetVerticalHold() const
 {
-	return b_pos + GetHoldSize() / 2;
+    return b_pos + GetHoldSize() / 2;
 }
 
 int TrackNote::GetSound() const
 {
-	return Sound;
+    return Sound;
 }
 
 int TrackNote::GetFracKind() const
 {
-	return FractionKind;
+    return FractionKind;
 }
 
 double &TrackNote::GetDataStartTime()
 {
-	return Time;
+    return Time;
 }
 
 double &TrackNote::GetDataEndTime()
 {
-	return EndTime;
+    return EndTime;
 }
 
-uint16 &TrackNote::GetDataSound()
+uint16_t &TrackNote::GetDataSound()
 {
-	return Sound;
+    return Sound;
 }
 
-uint8  TrackNote::GetDataNoteKind()
+uint8_t  TrackNote::GetDataNoteKind()
 {
-	return NoteKind;
+    return NoteKind;
 }
 
-uint8  TrackNote::GetDataFractionKind()
+uint8_t  TrackNote::GetDataFractionKind()
 {
-	return FractionKind;
+    return FractionKind;
 }
 
 bool TrackNote::IsJudgable() const
 {
-	return NoteKind != NK_INVISIBLE && NoteKind != NK_FAKE;
+    return NoteKind != NK_INVISIBLE && NoteKind != NK_FAKE;
 }
 
 bool TrackNote::IsVisible() const
 {
-	return NoteKind != NK_INVISIBLE && !(EnabledHitFlags & InvisibleFlag);
+    return NoteKind != NK_INVISIBLE && !(EnabledHitFlags & InvisibleFlag);
 }

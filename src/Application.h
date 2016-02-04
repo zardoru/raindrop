@@ -1,57 +1,53 @@
+#pragma once
 
-class Application 
+class Application
 {
-	double oldTime;
-	Screen *Game;
-	
-	struct {
-		int Argc;
-		char **Argv;
-	} Args;
+    double oldTime;
+    Screen *Game;
 
-	enum
-	{
-		MODE_NULL,
-		MODE_PLAY,
-		MODE_CONVERT,
-		MODE_GENCACHE,
-		MODE_VSRGPREVIEW,
-		MODE_STOPPREVIEW,
-		MODE_CUSTOMSCREEN
-	}RunMode;
+    enum
+    {
+        MODE_NULL,
+        MODE_PLAY,
+        MODE_CONVERT,
+        MODE_GENCACHE,
+        MODE_VSRGPREVIEW,
+        MODE_STOPPREVIEW,
+        MODE_CUSTOMSCREEN
+    }RunMode;
 
-	void ParseArgs();
+    void ParseArgs(int, char **);
 
-	Directory InFile, OutFile;
-	
-	// VSRG-Specific
-	enum {
-		CONV_BMS,
-		CONV_UQBMS,
-		CONV_SM,
-		CONV_OM,
-		CONV_NPS
-	} ConvertMode;
+    Directory InFile, OutFile;
 
-	int Measure;
-	int difIndex;
-	GString Author;
+    // VSRG-Specific
+    enum class CONVERTMODE
+    {
+        CONV_BMS,
+        CONV_UQBMS,
+        CONV_SM,
+        CONV_OM,
+        CONV_NPS
+    } ConvertMode;
 
-	bool Upscroll;
+    int Measure;
+    int difIndex;
+    std::string Author;
 
-	void SetupPreviewMode();
-	bool PollIPC();
+    bool Upscroll;
 
+    void SetupPreviewMode();
+    bool PollIPC();
 
 public:
 
-	Application(int argc, char *argv[]);
+    Application(int argc, char *argv[]);
 
-	void HandleInput(int32 key, KeyEventType state, bool isMouseInput);
-	void HandleScrollInput(double xOff, double yOff);
+    void HandleInput(int32_t key, KeyEventType state, bool isMouseInput);
+    void HandleScrollInput(double xOff, double yOff);
 
-	void Init();
-	void Run();
-	void Close();
-	void HandleTextInput(unsigned cp);
+    void Init();
+    void Run();
+    void Close();
+    void HandleTextInput(unsigned cp);
 };
