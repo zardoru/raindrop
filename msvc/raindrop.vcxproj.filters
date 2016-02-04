@@ -637,12 +637,20 @@
     <None Include="..\LICENSE">
       <Filter>Additional Files</Filter>
     </None>
-    <None Include="..\README">
+    <None Include="packages.config" />
+    <None Include="..\README.md">
       <Filter>Additional Files</Filter>
     </None>
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="app.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\credits.txt">
+      <Filter>Additional Files</Filter>
+    </Text>
+    <Text Include="..\game_readme.txt">
+      <Filter>Additional Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>
