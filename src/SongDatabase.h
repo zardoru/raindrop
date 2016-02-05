@@ -34,7 +34,7 @@ private:
         *st_GetStageFile;
 
     // Returns the ID.
-    int InsertFilename(Directory Fn);
+    int InsertFilename(std::filesystem::path Fn);
     bool DifficultyExists(int FileID, std::string DifficultyName, int *IDOut = NULL);
 public:
 
@@ -42,8 +42,8 @@ public:
     ~SongDatabase();
 
     void ClearDifficulties(int SongID);
-    bool CacheNeedsRenewal(Directory Dir);
-    void AddDifficulty(int SongID, Directory Filename, Game::Song::Difficulty* Diff, int Mode);
+    bool CacheNeedsRenewal(std::filesystem::path Dir);
+    void AddDifficulty(int SongID, std::filesystem::path Filename, Game::Song::Difficulty* Diff, int Mode);
 
     void GetPreviewInfo(int SongID, std::string &Filename, float &PreviewStart);
 
@@ -52,7 +52,7 @@ public:
     std::string GetArtistForDifficulty(int DiffID);
     std::string GetStageFile(int DiffID);
 
-    int GetSongIDForFile(Directory File, VSRG::Song* In);
+    int GetSongIDForFile(std::filesystem::path File, VSRG::Song* In);
 
     void GetSongInformation7K(int ID, VSRG::Song* Out);
 

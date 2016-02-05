@@ -10,20 +10,18 @@
 #include "ImageList.h"
 #include "Logging.h"
 
-Directory GetSongBackground(Game::Song &Song)
+std::filesystem::path GetSongBackground(Game::Song &Song)
 {
-    std::vector<std::string> DirCnt;
-    Directory SngDir = Song.SongDirectory;
+    auto SngDir = Song.SongDirectory;
 
-    if (Song.BackgroundFilename.length() != 0 && Utility::FileExists(SngDir / Song.BackgroundFilename))
+    if (Song.BackgroundFilename.length() != 0 && std::filesystem::exists(SngDir / Song.BackgroundFilename))
         return SngDir / Song.BackgroundFilename;
 
-    SngDir.ListDirectory(DirCnt, Directory::FS_REG);
-    for (auto i : DirCnt)
+    for (auto i : std::filesystem::directory_iterator(SngDir))
     {
-        std::string ext = Directory(i).GetExtension();
-        if (i.find("bg") != std::string::npos && (ext == "jpg" || ext == "png"))
-            return SngDir / i;
+        std::string ext = i.path().extension().string();
+        if (i.path().string().find("bg") != std::string::npos && (ext == "jpg" || ext == "png"))
+            return i;
     }
 
     return Configuration::GetSkinConfigs("DefaultBackground");
@@ -69,9 +67,9 @@ public:
         EventsLayer2 = Difficulty->Data->BMPEvents->BMPEventsLayer2;
 
         for (auto v : Difficulty->Data->BMPEvents->BMPList)
-            List.AddToListIndex(v.second, Song->SongDirectory, v.first);
+            List.AddToListIndex(v.second, Song->SongDirectory.u8string(), v.first);
 
-        List.AddToList(Song->BackgroundFilename, Song->SongDirectory);
+        List.AddToList(Song->BackgroundFilename, Song->SongDirectory.u8string());
         List.LoadAll();
     }
 
@@ -217,7 +215,7 @@ std::shared_ptr<BackgroundAnimation> CreateBGAforVSRG(VSRG::Song &input, uint8_t
         if (Diff->Data && Diff->Data->BMPEvents)
             return std::make_shared<BMSBackground>(context, Diff, &input);
         else
-            return std::make_shared<StaticBackground>(context, GetSongBackground(input));
+            return std::make_shared<StaticBackground>(context, GetSongBackground(input).u8string());
     }
 
     return nullptr;
@@ -225,7 +223,7 @@ std::shared_ptr<BackgroundAnimation> CreateBGAforVSRG(VSRG::Song &input, uint8_t
 
 std::shared_ptr<BackgroundAnimation> CreateBGAforDotcur(dotcur::Song &input, uint8_t DifficultyIndex)
 {
-    return std::make_shared<StaticBackground>(nullptr, GetSongBackground(input));
+    return std::make_shared<StaticBackground>(nullptr, GetSongBackground(input).u8string());
 }
 
 BackgroundAnimation::BackgroundAnimation(Interruptible* parent) : Interruptible(parent)

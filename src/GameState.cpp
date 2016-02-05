@@ -213,19 +213,18 @@ Image* GameState::GetSkinImage(const std::string& Path)
                 if (Song->Difficulties.size() > GetDifficultyIndex())
                 {
                     std::string File = Database->GetStageFile(Song->Difficulties.at(GetDifficultyIndex())->ID);
-                    Directory toLoad;
 
                     // Oh so it's loaded and it's not in the database, fine.
                     if (File.length() == 0 && Song->Difficulties.at(GetDifficultyIndex())->Data)
                         File = Song->Difficulties.at(GetDifficultyIndex())->Data->StageFile;
 
-                    toLoad = SelectedSong->SongDirectory / File.c_str();
+                    auto toLoad = SelectedSong->SongDirectory / File;
 
                     // ojn files use their cover inside the very ojn
                     if (Directory(File).GetExtension() == "ojn")
                     {
                         size_t read;
-                        const unsigned char* buf = reinterpret_cast<const unsigned char*>(LoadOJNCover(toLoad, read));
+                        const unsigned char* buf = reinterpret_cast<const unsigned char*>(LoadOJNCover(toLoad.u8string(), read));
                         ImageData data = ImageLoader::GetDataForImageFromMemory(buf, read);
                         StageImage->SetTextureData(&data, true);
                         delete[] buf;
@@ -233,9 +232,9 @@ Image* GameState::GetSkinImage(const std::string& Path)
                         return StageImage;
                     }
 
-                    if (File.length() && Utility::FileExists(toLoad.path()))
+                    if (File.length() && std::filesystem::exists(toLoad))
                     {
-                        StageImage->Assign(toLoad, ImageData::SM_DEFAULT, ImageData::WM_DEFAULT, true);
+                        StageImage->Assign(toLoad.u8string(), ImageData::SM_DEFAULT, ImageData::WM_DEFAULT, true);
                         return StageImage;
                     }
                     else return nullptr;
@@ -251,11 +250,11 @@ Image* GameState::GetSkinImage(const std::string& Path)
     {
         if (SelectedSong)
         {
-            Directory toLoad = SelectedSong->SongDirectory / SelectedSong->BackgroundFilename.c_str();
+            auto toLoad = SelectedSong->SongDirectory / SelectedSong->BackgroundFilename;
 
-            if (SelectedSong->BackgroundFilename.length() && Utility::FileExists(toLoad.path()))
+            if (SelectedSong->BackgroundFilename.length() && std::filesystem::exists(toLoad))
             {
-                SongBG->Assign(toLoad, ImageData::SM_DEFAULT, ImageData::WM_DEFAULT, true);
+                SongBG->Assign(toLoad.u8string(), ImageData::SM_DEFAULT, ImageData::WM_DEFAULT, true);
                 return SongBG;
             }
             else return nullptr;

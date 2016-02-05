@@ -268,6 +268,16 @@ namespace Utility
 
         return std::string(SHA.getHash());
     }
+
+	std::vector<std::filesystem::path> GetFileListing(std::filesystem::path path)
+	{
+		std::vector<std::filesystem::path> out;
+		for (auto &p : std::filesystem::directory_iterator(path)) {
+			out.push_back(p);
+		}
+
+		return out;
+	}
 } // namespace Utility
 
 double latof(std::string s)

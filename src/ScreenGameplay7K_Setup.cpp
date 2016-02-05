@@ -282,7 +282,7 @@ bool ScreenGameplay7K::LoadSongAudio()
     {
         Music = std::make_shared<AudioStream>();
         Music->SetPitch(Speed);
-        if (MySong->SongFilename.length() && Music->Open((MySong->SongDirectory / MySong->SongFilename).c_path()))
+        if (MySong->SongFilename.length() && Music->Open((MySong->SongDirectory / MySong->SongFilename).u8string().c_str()))
         {
             Log::Printf("Stream for %s succesfully opened.\n", MySong->SongFilename.c_str());
         }
@@ -291,16 +291,13 @@ bool ScreenGameplay7K::LoadSongAudio()
             if (!CurrentDiff->IsVirtual)
             {
                 // Caveat: Try to autodetect an mp3/ogg file.
-                std::vector<std::string> DirCnt;
                 auto SngDir = MySong->SongDirectory;
 
-                SngDir.ListDirectory(DirCnt, Directory::FS_REG);
-                for (auto i = DirCnt.begin();
-                i != DirCnt.end();
-                    ++i)
+                
+                for (auto i: std::filesystem::directory_iterator(SngDir))
                 {
-                    if (Directory(*i).GetExtension() == "mp3" || Directory(*i).GetExtension() == "ogg")
-                        if (Music->Open((SngDir / *i).c_path()))
+                    if (i.path().extension() == "mp3" || i.path().extension() == "ogg")
+                        if (Music->Open(i.path().u8string().c_str()))
                             return true;
                 }
 
@@ -318,7 +315,7 @@ bool ScreenGameplay7K::LoadSongAudio()
         Log::Printf("Loading OJM.\n");
         OJMAudio = std::make_shared<AudioSourceOJM>(this);
         OJMAudio->SetPitch(Speed);
-        OJMAudio->Open((MySong->SongDirectory / MySong->SongFilename).c_path());
+        OJMAudio->Open((MySong->SongDirectory / MySong->SongFilename).u8string().c_str());
 
         for (int i = 1; i <= 2000; i++)
         {
@@ -334,7 +331,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 
         if (CurrentDiff->Data->TimingInfo->GetType() == VSRG::TI_BMS)
         {
-            Directory dir = MySong->SongDirectory;
+            auto dir = MySong->SongDirectory;
             bool isBMSON = ((VSRG::BMSTimingInfo*)CurrentDiff->Data->TimingInfo.get())->IsBMSON;
             if (isBMSON)
             {
@@ -350,13 +347,13 @@ bool ScreenGameplay7K::LoadSongAudio()
                         // load basic sound
                         if (!audio[sounds.first].IsValid())
                         {
-                            Directory path = (dir / slicedata.AudioFiles[sounds.first]);
+                            auto path = (dir / slicedata.AudioFiles[sounds.first]);
 
                             audio[sounds.first].SetPitch(Speed);
 
-                            if (!audio[sounds.first].Open(path.c_path()))
+                            if (!audio[sounds.first].Open(path.u8string().c_str()))
                                 throw std::exception(Utility::Format("Unable to load %s.", slicedata.AudioFiles[sounds.first]).c_str());
-                            Log::Printf("BMSON: Load sound %s\n", path.c_path());
+                            Log::Printf("BMSON: Load sound %s\n", path.u8string().c_str());
                         }
 
                         audio[sounds.first].Slice(sounds.second.Start, sounds.second.End);
@@ -377,7 +374,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 
             ks->SetPitch(Speed);
 #ifdef WIN32
-            std::wstring sd = Utility::Widen(MySong->SongDirectory) + L"/" + Utility::Widen(i->second);
+            std::wstring sd = MySong->SongDirectory.wstring() + L"/" + Utility::Widen(i->second);
             ks->Open(Utility::Narrow(sd).c_str());
 #else
             ks->Open((MySong->SongDirectory + "/" + i->second).c_str());

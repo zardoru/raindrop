@@ -335,10 +335,9 @@ void ScreenSelectMusic::PlayPreview()
 
         if (!PreviewStream)
         {
-            Directory SDir = ToPreview->SongDirectory;
             PreviewStream = std::make_shared<AudioStream>();
 
-            if (PreviewStream->Open((SDir / PreviewFile).c_path()))
+            if (PreviewStream->Open((ToPreview->SongDirectory / PreviewFile).u8string().c_str()))
             {
                 PreviewStream->Play();
                 PreviewStream->SeekTime(StartTime);

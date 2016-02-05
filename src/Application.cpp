@@ -50,9 +50,9 @@ void Application::ParseArgs(int argc, char **argv)
         "show help message")
         ("preview,p",
         "Preview File")
-        ("input,i", po::value<std::filesystem::path>(),
+        ("input,i", po::value<std::string>(),
         "Input File")
-        ("output,o", po::value<std::filesystem::path>(),
+        ("output,o", po::value<std::string>(),
         "Output File")
         ("gencache,c",
         "Generate Cache")
@@ -68,7 +68,7 @@ void Application::ParseArgs(int argc, char **argv)
         "Stop Preview Instance")
         ("R,R",
         "Release IPC Pool")
-        ("L,L", po::value<std::filesystem::path>(),
+        ("L,L", po::value<std::string>(),
         "Load Custom Scene")
         ;
 
@@ -97,13 +97,13 @@ void Application::ParseArgs(int argc, char **argv)
 
     if (vm.count("input"))
     {
-        InFile = Directory(vm["input"].as<std::filesystem::path>().string());
+        InFile = vm["input"].as<std::string>();
     }
 
     if (vm.count("output"))
     {
         RunMode = MODE_CONVERT;
-        OutFile = Directory(vm["output"].as<std::filesystem::path>().string());
+        OutFile = vm["output"].as<std::string>();
     }
 
     if (vm.count("gencache"))
@@ -151,7 +151,7 @@ void Application::ParseArgs(int argc, char **argv)
     if (vm.count("L"))
     {
         RunMode = MODE_CUSTOMSCREEN;
-        InFile = Directory(vm["L"].as<std::filesystem::path>().string());
+        InFile = vm["L"].as<std::string>();
     }
 
     return;
@@ -168,6 +168,9 @@ void Application::Init()
 #else
     setlocale(LC_ALL, "");
 #endif
+
+	Log::Printf(RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT " start.\n");
+	Log::Printf("Working directory: %s\n", std::filesystem::current_path().u8string().c_str());
 
     GameState::GetInstance().Initialize();
     Log::Printf("Initializing... \n");
@@ -219,11 +222,11 @@ void Application::Init()
 void Application::SetupPreviewMode()
 {
     // Load the song.
-    std::shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), nullptr);
+    std::shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile, nullptr);
 
     if (!Sng || !Sng->Difficulties.size())
     {
-        Log::Printf("File %s could not be loaded for preview. (%d/%d)\n", InFile.c_path(), (long long int)Sng.get(), Sng ? Sng->Difficulties.size() : 0);
+        Log::Printf("File %s could not be loaded for preview. (%d/%d)\n", InFile.c_str(), (long long int)Sng.get(), Sng ? Sng->Difficulties.size() : 0);
         return;
     }
 
@@ -236,7 +239,7 @@ void Application::SetupPreviewMode()
     ScreenLoading *LoadScreen = new ScreenLoading(SGame);
 
     // Set them up.
-    Sng->SongDirectory = InFile.ParentDirectory().path() + "/";
+	Sng->SongDirectory = std::filesystem::absolute(InFile.parent_path());
 
     GameParameters Param;
     Param.Upscroll = Upscroll;
@@ -298,7 +301,7 @@ void Application::Run()
             IPC::Message Msg;
             Msg.MessageKind = IPC::Message::MSG_STARTFROMMEASURE;
             Msg.Param = Measure;
-            strncpy(Msg.Path, InFile.c_path(), 256);
+            strncpy(Msg.Path, InFile.u8string().c_str(), 256);
 
             IPC::SendMessageToQueue(&Msg);
             RunLoop = false;
@@ -316,20 +319,21 @@ void Application::Run()
     }
     else if (RunMode == MODE_CONVERT)
     {
-        std::shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.Filename().path(), InFile.ParentDirectory().path(), NULL);
+		InFile = std::filesystem::absolute(InFile);
+        std::shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.filename(), InFile.parent_path(), NULL);
 
         if (Sng && Sng->Difficulties.size())
         {
             if (ConvertMode == CONVERTMODE::CONV_OM) // for now this is the default
-                ConvertToOM(Sng.get(), OutFile.path(), Author);
+                ConvertToOM(Sng.get(), OutFile.u8string(), Author);
             else if (ConvertMode == CONVERTMODE::CONV_BMS)
-                ConvertToBMS(Sng.get(), OutFile.path());
+                ConvertToBMS(Sng.get(), OutFile.u8string());
             else if (ConvertMode == CONVERTMODE::CONV_UQBMS)
-                ExportToBMSUnquantized(Sng.get(), OutFile.path());
+                ExportToBMSUnquantized(Sng.get(), OutFile.u8string());
             else if (ConvertMode == CONVERTMODE::CONV_NPS)
-                ConvertToNPSGraph(Sng.get(), OutFile.path());
+                ConvertToNPSGraph(Sng.get(), OutFile.u8string());
             else
-                ConvertToSMTiming(Sng.get(), OutFile.path());
+                ConvertToSMTiming(Sng.get(), OutFile.u8string());
         }
         else
         {
@@ -364,7 +368,7 @@ void Application::Run()
     else if (RunMode == MODE_CUSTOMSCREEN)
     {
         Log::Printf("Initializing custom, ad-hoc screen...\n");
-        ScreenCustom *scr = new ScreenCustom(GameState::GetInstance().GetSkinFile(InFile));
+        ScreenCustom *scr = new ScreenCustom(GameState::GetInstance().GetSkinFile(InFile.u8string()));
         Game = scr;
     }
 

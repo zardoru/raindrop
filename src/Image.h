@@ -17,7 +17,7 @@ struct ImageData
         SM_DEFAULT = SM_MIPMAP
     } ScalingMode;
 
-    std::string Filename;
+	std::filesystem::path Filename;
     int Width, Height;
     void *Data;
 
@@ -44,7 +44,7 @@ public:
     ~Image();
 
     void Bind();
-    void Assign(Directory Filename,
+    void Assign(std::filesystem::path Filename,
         ImageData::EScalingMode ScaleMode = ImageData::SM_DEFAULT,
         ImageData::EWrapMode WrapMode = ImageData::WM_DEFAULT,
         bool Regenerate = false);
@@ -55,7 +55,7 @@ public:
     static void BindNull(); // Or, basically unbind.
 
     // Data
-    std::string fname;
+	std::filesystem::path fname;
     int w, h;
     unsigned int texture;
     bool IsValid;

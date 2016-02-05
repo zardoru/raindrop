@@ -104,8 +104,9 @@ namespace Engine
             // bind texture
             if (Handle->tex)
                 Handle->tex->Bind();
-            else
-                glBindTexture(GL_TEXTURE_2D, 0);
+			else {
+				Image::BindNull();
+			}
 
             SetShaderParameters(false, false, false, false, false, Handle->tex == nullptr);
             WindowFrame.SetUniform(U_COLOR, 1, 1, 1, 1);

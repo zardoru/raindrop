@@ -7,8 +7,8 @@
 #include "ImageLoader.h"
 
 std::mutex LoadMutex;
-std::map<std::string, Image*> ImageLoader::Textures;
-std::map<std::string, ImageLoader::UploadData> ImageLoader::PendingUploads;
+std::map<std::filesystem::path, Image*> ImageLoader::Textures;
+std::map<std::filesystem::path, ImageLoader::UploadData> ImageLoader::PendingUploads;
 
 void Image::CreateTexture()
 {
@@ -65,8 +65,7 @@ void Image::SetTextureData(ImageData *ImgInfo, bool Reassign)
     if (!TextureAssigned || Reassign) // We haven't set any data to this texture yet, or we want to regenerate storage
     {
         TextureAssigned = true;
-        Directory Dir = ImgInfo->Filename;
-        Dir = Dir.Filename();
+        auto Dir = ImgInfo->Filename.filename().string();
 
         glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
         if (!Configuration::TextureParameterExists(Dir, "gen-mipmap") || Configuration::GetTextureParameter(Dir, "gen-mipmap") == "true")
@@ -168,7 +167,7 @@ void Image::SetTextureData(ImageData *ImgInfo, bool Reassign)
     fname = ImgInfo->Filename;
 }
 
-void Image::Assign(Directory Filename, ImageData::EScalingMode ScaleMode,
+void Image::Assign(std::filesystem::path Filename, ImageData::EScalingMode ScaleMode,
     ImageData::EWrapMode WrapMode,
     bool Regenerate)
 {
@@ -220,7 +219,7 @@ void ImageLoader::DeleteImage(Image* &ToDelete)
     }
 }
 
-Image* ImageLoader::InsertImage(std::string Name, ImageData *imgData)
+Image* ImageLoader::InsertImage(std::filesystem::path Name, ImageData *imgData)
 {
     Image* I;
 
@@ -296,7 +295,7 @@ auto open_image(Stream&& in)
     return out;
 }
 
-ImageData ImageLoader::GetDataForImage(std::string filename)
+ImageData ImageLoader::GetDataForImage(std::filesystem::path filename)
 {
     auto file = std::ifstream{ filename, std::ios::binary };
     if (!file.is_open())
@@ -322,8 +321,9 @@ ImageData ImageLoader::GetDataForImageFromMemory(const unsigned char* const buff
     return out;
 }
 
-Image* ImageLoader::Load(std::string filename)
+Image* ImageLoader::Load(std::filesystem::path filename)
 {
+	if (std::filesystem::is_directory(filename)) return NULL;
     if (Textures.find(filename) != Textures.end() && Textures[filename]->IsValid)
     {
         return Textures[filename];
@@ -341,7 +341,7 @@ Image* ImageLoader::Load(std::string filename)
     return 0;
 }
 
-void ImageLoader::AddToPending(const char* Filename)
+void ImageLoader::AddToPending(std::filesystem::path Filename)
 {
     UploadData New;
     if (Textures.find(Filename) == Textures.end())
@@ -351,7 +351,7 @@ void ImageLoader::AddToPending(const char* Filename)
         New.Width = d.Width;
         New.Height = d.Height;
         LoadMutex.lock();
-        PendingUploads.insert(std::pair<char*, UploadData>((char*)Filename, New));
+        PendingUploads.insert(std::pair<std::filesystem::path, UploadData>(Filename, New));
         LoadMutex.unlock();
     }
 }

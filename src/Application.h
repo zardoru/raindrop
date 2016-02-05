@@ -18,7 +18,7 @@ class Application
 
     void ParseArgs(int, char **);
 
-    Directory InFile, OutFile;
+    std::filesystem::path InFile, OutFile;
 
     // VSRG-Specific
     enum class CONVERTMODE

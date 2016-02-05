@@ -306,7 +306,7 @@ namespace NoteLoaderBMS{
 				else
 					Track = TranslateTrackPMS(channel, startChannel);
 
-				if (!(Track >= 0 && Track < MAX_CHANNELS)) Utility::DebugBreak();
+				//if (!(Track >= 0 && Track < MAX_CHANNELS)) Utility::DebugBreak();
 				if (Track >= Chart->Channels || Track < 0) continue;
 
 				for (auto ev = i->second.Events[channel].begin(); ev != i->second.Events[channel].end(); ++ev)
@@ -983,7 +983,15 @@ namespace NoteLoaderBMS{
             if (!IsU8)
                 CommandContents = Utility::SJIStoU8(CommandContents);
 
-            utf8::replace_invalid(CommandContents.begin(), CommandContents.end(), back_inserter(tmp));
+			try {
+				utf8::replace_invalid(CommandContents.begin(), CommandContents.end(), back_inserter(tmp));
+			}
+			catch (...) {
+				if (IsU8) {
+					IsU8 = false;
+					CommandContents = Utility::SJIStoU8(CommandContents);
+				}
+			}
             CommandContents = tmp;
 
             if (Info->InterpStatement(command, CommandContents))
@@ -1223,7 +1231,7 @@ namespace NoteLoaderBMS{
 
         // Okay, we didn't find a fitting subtitle, let's try something else.
         // Get actual filename instead of full path.
-        filename = Utility::RelativeToPath(filename);
+        filename = std::filesystem::path(filename).filename().u8string();
         if (Diff->Name.length() == 0)
         {
             size_t startBracket = filename.find_first_of("[");

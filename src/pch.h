@@ -40,7 +40,7 @@ namespace std
     namespace filesystem = experimental::filesystem;
 }
 #else
-#include <boost\filesystem.hpp>
+#include <boost/filesystem.hpp>
 namespace std
 {
     namespace filesystem = boost::filesystem;
@@ -86,45 +86,45 @@ namespace std
 #include <ctime>
 
 // boost
-#include <boost\gil\extension\io\bmp_all.hpp>
-#include <boost\gil\extension\io\png_all.hpp>
-#include <boost\gil\extension\io\jpeg_all.hpp>
-#include <boost\gil\extension\io\targa_all.hpp>
-#include <boost\interprocess\ipc\message_queue.hpp>
-#include <boost\program_options.hpp>
+#include <boost/gil/extension/io/bmp_all.hpp>
+#include <boost/gil/extension/io/png_all.hpp>
+#include <boost/gil/extension/io/jpeg_all.hpp>
+#include <boost/gil/extension/io/targa_all.hpp>
+#include <boost/interprocess/ipc/message_queue.hpp>
+#include <boost/program_options.hpp>
 
 // librocket
-#include <Rocket\Controls.h>
-#include <Rocket\Core.h>
-#include <Rocket\Debugger.h>
-#include <Rocket\Core\Lua\Interpreter.h>
-#include <Rocket\Controls\Lua\Controls.h>
+#include <Rocket/Controls.h>
+#include <Rocket/Core.h>
+#include <Rocket/Debugger.h>
+#include <Rocket/Core/Lua/Interpreter.h>
+#include <Rocket/Controls/Lua/Controls.h>
 
 // OpenGL
-#include <GL\glew.h>
-#include <glm\glm.hpp>
-#include <glm\ext.hpp>
-#include <GLFW\glfw3.h>
+#include <GL/glew.h>
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
+#include <GLFW/glfw3.h>
 
 // audio
-#include <portaudio\portaudio.h>
+#include <portaudio/portaudio.h>
 #include <soxr.h>
-#include <ogg\ogg.h>
-#include <vorbis\vorbisfile.h>
+#include <ogg/ogg.h>
+#include <vorbis/vorbisfile.h>
 #include <sndfile.h>
 
 // others
 #include <stb_truetype.h>
 #include <sqlite3.h>
 #include <LuaBridge.h>
-#include <sys\stat.h>
+#include <sys/stat.h>
 
 // static libraries
-#include "ext\json\json.h"
-#include "ext\sha256.h"
-#include "ext\pa_ringbuffer.h"
-#include "ext\SimpleIni.h"
-#include "ext\utf8.h"
+#include "ext/json/json.h"
+#include "ext/sha256.h"
+#include "ext/pa_ringbuffer.h"
+#include "ext/SimpleIni.h"
+#include "ext/utf8.h"
 
 using Vec2 = glm::vec2;
 using Vec3 = glm::vec3;
@@ -232,6 +232,8 @@ namespace Utility
     std::string Trim(std::string& str);
     std::string ReplaceAll(std::string& str, const std::string& seq, const std::string what);
     std::string ToLower(std::string& str); // Caveat: only for ascii purposes.
+
+	std::vector<std::filesystem::path> GetFileListing(std::filesystem::path path);
 
     template <class T>
     std::string Join(const T& iterable, const std::string& seq)

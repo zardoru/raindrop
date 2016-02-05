@@ -26,7 +26,7 @@ void SongList::AddSong(std::shared_ptr<Game::Song> Song)
     mChildren.push_back(NewEntry);
 }
 
-void SongList::AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, Directory Dir, std::string Name, bool VSRGActive, bool DotcurActive)
+void SongList::AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, std::filesystem::path Dir, std::string Name, bool VSRGActive, bool DotcurActive)
 {
     bool EntryWasPushed = false;
     SongList* NewList = new SongList(this);
@@ -41,19 +41,17 @@ void SongList::AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, Dire
     std::vector<dotcur::Song*> SongsDC;
     std::vector<std::string> Listing;
 
-    Dir.ListDirectory(Listing, Directory::FS_DIR);
-
-    for (std::vector<std::string>::iterator i = Listing.begin();
-    i != Listing.end();
-        ++i)
+	for (auto i : std::filesystem::directory_iterator (Dir))
     {
-        if (*i == "." || *i == "..") continue;
+        if (i == "." || i == "..") continue;
+
+		if (!std::filesystem::is_directory(i.path())) continue;
 
         if (VSRGActive)
-            Loader->LoadSong7KFromDir(Dir / *i, Songs7K);
+            Loader->LoadSong7KFromDir(i, Songs7K);
 
         if (DotcurActive)
-            Loader->LoadSongDCFromDir(Dir / *i, SongsDC);
+            Loader->LoadSongDCFromDir(i.path().u8string(), SongsDC);
 
         if (!SongsDC.size() && !Songs7K.size()) // No songs, so, time to recursively search.
         {
@@ -64,7 +62,7 @@ void SongList::AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, Dire
                 EntryWasPushed = true;
             }
 
-            NewList->AddDirectory(loadMutex, Loader, Dir / *i, VSRGActive, DotcurActive);
+            NewList->AddDirectory(loadMutex, Loader, i, VSRGActive, DotcurActive);
 
             {
                 std::unique_lock<std::mutex> lock(loadMutex);
@@ -121,18 +119,11 @@ void SongList::AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, Dire
     }
 }
 
-void SongList::AddDirectory(std::mutex &loadMutex, SongLoader *Loader, Directory Dir, bool VSRGActive, bool DotcurActive)
+void SongList::AddDirectory(std::mutex &loadMutex, SongLoader *Loader, std::filesystem::path Dir, bool VSRGActive, bool DotcurActive)
 {
-    int idx = Dir.path().find_last_of('/') + 1;
+    int idx = Dir.u8string().find_last_of('/') + 1;
     std::string path;
-    if (idx == Dir.path().length() - 1) // it ends with a /
-    {
-        idx = Dir.ParentDirectory().path().find_last_of('/') + 1;
-        Dir.ParentDirectory().path().substr(idx);
-    }
-    else
-        path = Dir.path().substr(idx);
-
+	path = Dir.filename().u8string();
     AddNamedDirectory(loadMutex, Loader, Dir, path, VSRGActive, DotcurActive);
 }
 

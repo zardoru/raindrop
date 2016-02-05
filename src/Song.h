@@ -90,7 +90,7 @@ namespace Game
 
             // Meta
             std::string Name;
-            std::string Filename;
+            std::filesystem::path Filename;
             std::string Author;
 
             uint32_t TotalNotes;
@@ -123,7 +123,7 @@ namespace Game
         std::string SongAuthor;
 
         /* Directory where files are contained */
-        Directory SongDirectory;
+        std::filesystem::path SongDirectory;
 
         /* Relative Paths */
         std::string SongFilename, BackgroundFilename;

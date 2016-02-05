@@ -160,7 +160,7 @@ void ScreenEdit::SaveChart()
 {
     std::string DefaultPath = MySong->ChartFilename.length() ? MySong->ChartFilename : "chart.dcf";
     MySong->Repack();
-    MySong->Save((MySong->SongDirectory / DefaultPath).c_path());
+    MySong->Save((MySong->SongDirectory / DefaultPath).u8string().c_str());
     SavedSound->Play();
     MySong->Process();
 }

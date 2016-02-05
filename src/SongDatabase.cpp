@@ -131,45 +131,46 @@ SongDatabase::~SongDatabase()
 
 // Inserts a filename, if it already exists, updates it.
 // Returns the ID of the filename.
-int SongDatabase::InsertFilename(Directory Fn)
+int SongDatabase::InsertFilename(std::filesystem::path Fn)
 {
     int ret;
     int idOut;
     int lmt;
-    SC(sqlite3_bind_text(st_FilenameQuery, 1, Fn.c_path(), Fn.path().length(), SQLITE_STATIC));
+	std::string u8p = Fn.u8string();
+    SC(sqlite3_bind_text(st_FilenameQuery, 1, u8p.c_str(), u8p.length(), SQLITE_STATIC));
 
     if (sqlite3_step(st_FilenameQuery) == SQLITE_ROW)
     {
         idOut = sqlite3_column_int(st_FilenameQuery, 0);
         lmt = sqlite3_column_int(st_FilenameQuery, 1);
 
-        int lastLmt = Utility::GetLMT(Fn.path());
+        int lastLmt = Utility::GetLMT(u8p.c_str());
 
         // Update the last-modified-time of this file, and its hash if it has changed.
         if (lmt != lastLmt)
         {
-            std::string Hash = Utility::GetSha256ForFile(Fn);
+            std::string Hash = Utility::GetSha256ForFile(u8p);
             SC(sqlite3_bind_int(st_UpdateLMT, 1, lastLmt));
             SC(sqlite3_bind_text(st_UpdateLMT, 2, Hash.c_str(), Hash.length(), SQLITE_STATIC));
-            SC(sqlite3_bind_text(st_UpdateLMT, 3, Fn.c_path(), Fn.path().length(), SQLITE_STATIC));
+            SC(sqlite3_bind_text(st_UpdateLMT, 3, u8p.c_str(), u8p.length(), SQLITE_STATIC));
             SCS(sqlite3_step(st_UpdateLMT));
             SC(sqlite3_reset(st_UpdateLMT));
         }
     }
     else
     {
-        std::string Hash = Utility::GetSha256ForFile(Fn);
+        std::string Hash = Utility::GetSha256ForFile(u8p);
 
         // There's no entry, got to insert it.
-        SC(sqlite3_bind_text(st_FilenameInsertQuery, 1, Fn.c_path(), Fn.path().length(), SQLITE_STATIC));
-        SC(sqlite3_bind_int(st_FilenameInsertQuery, 2, Utility::GetLMT(Fn.path())));
+        SC(sqlite3_bind_text(st_FilenameInsertQuery, 1, u8p.c_str(), u8p.length(), SQLITE_STATIC));
+        SC(sqlite3_bind_int(st_FilenameInsertQuery, 2, Utility::GetLMT(u8p.c_str())));
         SC(sqlite3_bind_text(st_FilenameInsertQuery, 3, Hash.c_str(), Hash.length(), SQLITE_STATIC));
         SCS(sqlite3_step(st_FilenameInsertQuery)); // This should not fail. Otherwise, there are bigger problems to worry about...
         SC(sqlite3_reset(st_FilenameInsertQuery));
 
         // okay, then return the ID.
         SC(sqlite3_reset(st_FilenameQuery));
-        SC(sqlite3_bind_text(st_FilenameQuery, 1, Fn.c_path(), Fn.path().length(), SQLITE_STATIC));
+        SC(sqlite3_bind_text(st_FilenameQuery, 1, u8p.c_str(), u8p.length(), SQLITE_STATIC));
         sqlite3_step(st_FilenameQuery);
         idOut = sqlite3_column_int(st_FilenameQuery, 0);
     }
@@ -208,7 +209,7 @@ bool SongDatabase::DifficultyExists(int FileID, std::string DifficultyName, int 
 }
 
 // Adds a difficulty to the database, or updates it if it already exists.
-void SongDatabase::AddDifficulty(int SongID, Directory Filename, Game::Song::Difficulty* Diff, int Mode)
+void SongDatabase::AddDifficulty(int SongID, std::filesystem::path Filename, Game::Song::Difficulty* Diff, int Mode)
 {
     int FileID = InsertFilename(Filename);
     int DiffID;
@@ -307,13 +308,14 @@ std::string SongDatabase::GetDifficultyFilename(int ID)
     return out;
 }
 
-bool SongDatabase::CacheNeedsRenewal(Directory Dir)
+bool SongDatabase::CacheNeedsRenewal(std::filesystem::path Dir)
 {
-    int CurLMT = Utility::GetLMT(Dir.path());
+    int CurLMT = Utility::GetLMT(Dir.u8string());
     bool NeedsRenewal;
     int res, ret;
 
-    SC(sqlite3_bind_text(st_LMTQuery, 1, Dir.c_path(), Dir.path().length(), SQLITE_STATIC));
+	std::string u8p = std::filesystem::absolute(Dir).u8string();
+    SC(sqlite3_bind_text(st_LMTQuery, 1, u8p.c_str(), u8p.length(), SQLITE_STATIC));
     res = sqlite3_step(st_LMTQuery);
 
     if (res == SQLITE_ROW) // entry exists
@@ -424,11 +426,12 @@ void SongDatabase::GetSongInformation7K(int ID, VSRG::Song* Out)
     SC(sqlite3_reset(st_GetDiffInfo));
 }
 
-int SongDatabase::GetSongIDForFile(Directory File, VSRG::Song* In)
+int SongDatabase::GetSongIDForFile(std::filesystem::path File, VSRG::Song* In)
 {
     int ret;
     int Out = -1;
-    SC(sqlite3_bind_text(st_GetSIDFromFilename, 1, File.c_path(), File.path().length(), SQLITE_STATIC));
+	std::string u8path = std::filesystem::absolute(File).u8string();
+    SC(sqlite3_bind_text(st_GetSIDFromFilename, 1, u8path.c_str(), u8path.length(), SQLITE_STATIC));
 
     int r = sqlite3_step(st_GetSIDFromFilename);
     if (r == SQLITE_ROW)

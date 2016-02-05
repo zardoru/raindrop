@@ -22,8 +22,8 @@ public:
     SongList(SongList *Parent = nullptr);
     ~SongList();
 
-    void AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, Directory Dir, std::string Name, bool VSRGActive, bool DotcurActive);
-    void AddDirectory(std::mutex &loadMutex, SongLoader *Loader, Directory Dir, bool VSRGActive, bool DotcurActive);
+    void AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, std::filesystem::path Dir, std::string Name, bool VSRGActive, bool DotcurActive);
+    void AddDirectory(std::mutex &loadMutex, SongLoader *Loader, std::filesystem::path Dir, bool VSRGActive, bool DotcurActive);
     void AddVirtualDirectory(std::string NewEntryName, Game::Song* List, int Count);
     void AddSong(std::shared_ptr<Game::Song> Song);
 

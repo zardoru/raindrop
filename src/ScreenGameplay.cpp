@@ -218,9 +218,9 @@ void ScreenGameplay::LoadResources()
     {
         Music = new AudioStream();
 
-        if (!Music || !Music->Open((MySong->SongDirectory / MySong->SongFilename).c_path()))
+        if (!Music || !Music->Open((MySong->SongDirectory / MySong->SongFilename).u8string().c_str()))
         {
-            throw std::exception((Utility::Format("couldn't open song %s", MySong->SongFilename).c_str()));
+            throw std::exception((Utility::Format("couldn't open song %s", MySong->SongFilename.c_str()).c_str()));
         }
 
         seekTime(0);

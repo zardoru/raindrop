@@ -483,7 +483,7 @@ void Difficulty::Destroy()
 
     Timing.clear(); Timing.shrink_to_fit();
     Author.clear(); Author.shrink_to_fit();
-    Filename.clear(); Filename.shrink_to_fit();
+	Filename = "";
 
     SoundList.clear();
 }

@@ -16,26 +16,17 @@ struct loaderVSRGEntry_t
     const wchar_t* Ext;
     void(*LoadFunc) (std::string filename, std::string prefix, VSRG::Song* Out);
 } LoadersVSRG[] = {
-    { L"bms",   NoteLoaderBMS::LoadObjectsFromFile },
-    { L"bme",   NoteLoaderBMS::LoadObjectsFromFile },
-    { L"bml",   NoteLoaderBMS::LoadObjectsFromFile },
+    { L".bms",   NoteLoaderBMS::LoadObjectsFromFile },
+    { L".bme",   NoteLoaderBMS::LoadObjectsFromFile },
+    { L".bml",   NoteLoaderBMS::LoadObjectsFromFile },
     //{ L".bml",  NoteLoaderBMS::LoadObjectsFromFile },
-    { L"pms",   NoteLoaderBMS::LoadObjectsFromFile },
-    { L"sm",    NoteLoaderSM::LoadObjectsFromFile  },
-    { L"osu",   NoteLoaderOM::LoadObjectsFromFile  },
-    { L"fcf",   NoteLoaderFTB::LoadObjectsFromFile },
-    { L"ojn",   NoteLoaderOJN::LoadObjectsFromFile },
-    { L"ssc",   NoteLoaderSSC::LoadObjectsFromFile },
-    { L"bmson", NoteLoaderBMSON::LoadObjectsFromFile }
-};
-
-struct loaderVSRGEntry2_t
-{
-    const wchar_t* Ext;
-    void(*LoadFunc) (const std::filesystem::path&, VSRG::Song* Out);
-} LoadersVSRG2[] = {
-    { L"bml",   NoteLoaderBMS::LoadObjectsFromFile },
-    { L".bml",  NoteLoaderBMS::LoadObjectsFromFile }
+    { L".pms",   NoteLoaderBMS::LoadObjectsFromFile },
+    { L".sm",    NoteLoaderSM::LoadObjectsFromFile  },
+    { L".osu",   NoteLoaderOM::LoadObjectsFromFile  },
+    { L".fcf",   NoteLoaderFTB::LoadObjectsFromFile },
+    { L".ojn",   NoteLoaderOJN::LoadObjectsFromFile },
+    { L".ssc",   NoteLoaderSSC::LoadObjectsFromFile },
+    { L".bmson", NoteLoaderBMSON::LoadObjectsFromFile }
 };
 
 SongLoader::SongLoader(SongDatabase* Database)
@@ -138,18 +129,18 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(const std::filesystem::path& 
         Sng = new VSRG::Song();
     }
 
-    auto pref = filename.parent_path().string().c_str();
-    Sng->SongDirectory = Directory(pref);
+    auto pref = filename.parent_path().u8string().c_str();
+    Sng->SongDirectory = pref;
 
-    for (int i = 0; i < sizeof(LoadersVSRG2) / sizeof(loaderVSRGEntry_t); i++)
+    for (int i = 0; i < sizeof(LoadersVSRG) / sizeof(loaderVSRGEntry_t); i++)
     {
-        if (filename.extension() == LoadersVSRG2[i].Ext)
+        if (filename.extension() == LoadersVSRG[i].Ext)
         {
-            Log::Logf("Load %s from disk...", filename.string().c_str());
+            Log::LogPrintf("Load %s from disk...", filename.string().c_str());
             try
             {
-                LoadersVSRG2[i].LoadFunc(filename, Sng);
-                Log::Logf(" ok\n");
+                LoadersVSRG[i].LoadFunc(filename.u8string(), pref, Sng);
+                Log::LogPrintf(" ok\n");
             }
             catch (std::exception &e)
             {
@@ -164,12 +155,9 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(const std::filesystem::path& 
     return nullptr;
 }
 
-std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory Prefix, VSRG::Song *Sng)
+std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(std::filesystem::path Filename, std::filesystem::path Prefix, VSRG::Song *Sng)
 {
-    auto filename = std::filesystem::path{ Filename.path() };
-    auto directory = std::filesystem::path{ Prefix.path() };
-
-    //return LoadSong7KFromFilename(directory / filename, Sng);
+	auto prefix = Prefix.string();
 
     bool AllocSong = false;
     if (!Sng)
@@ -178,52 +166,31 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(Directory Filename, Directory
         Sng = new VSRG::Song();
     }
 
-    std::wstring Ext = Utility::Widen(Filename.GetExtension());
+    std::wstring Ext = Utility::Widen(Filename.extension().string());
 
     // no extension
-    if (Filename.path().find_first_of('.') == std::wstring::npos || !VSRGValidExtension(Ext))
+    if (!Filename.has_extension() || !VSRGValidExtension(Ext))
     {
         if (AllocSong) delete Sng;
         return nullptr;
     }
 
-    std::wstring fn;
-    std::wstring sp;
-    std::string pref = Prefix.path();
-
-    // Append a / at the end.
-    int q = pref.length() - 1;
-    if (q > 0)
-    {
-        char c = pref[q];
-        if (c != '/' && c != '\\')
-            pref += "/";
-    }
-
-    // If the directory is just a dot, add an extra / at the end
-    if (q == 0 && pref[q] == '.')
-        pref += "/";
-
-    fn = Utility::Widen(Filename);
-    sp = Utility::Widen(pref);
-
-    std::string fn_f = Utility::Narrow(sp + fn);
-
-    Sng->SongDirectory = Prefix;
+    Sng->SongDirectory = Prefix.string();
+	auto fn = Prefix / Filename;
 
     for (int i = 0; i < sizeof(LoadersVSRG) / sizeof(loaderVSRGEntry_t); i++)
     {
         if (Ext == LoadersVSRG[i].Ext)
         {
-            Log::LogPrintf("Load %s from disk...", fn_f.c_str());
+            Log::LogPrintf("Load %s from disk...", fn.u8string().c_str());
             try
             {
-                LoadersVSRG[i].LoadFunc(fn_f, Prefix, Sng);
-                Log::Logf(" ok\n");
+                LoadersVSRG[i].LoadFunc(fn.u8string(), prefix, Sng);
+                Log::LogPrintf(" ok\n");
             }
             catch (std::exception &e)
             {
-                Log::LogPrintf("Failure loading %s: %s\n", fn_f.c_str(), e.what());
+                Log::LogPrintf("Failure loading: %s\n", e.what());
             }
             break;
         }
@@ -262,13 +229,13 @@ void PushVSRGSong(std::vector<VSRG::Song*> &VecOut, VSRG::Song* Sng)
         delete Sng;
 }
 
-void SongLoader::LoadSong7KFromDir(Directory songPath, std::vector<VSRG::Song*> &VecOut)
+void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<VSRG::Song*> &VecOut)
 {
-    std::vector<std::string> Listing;
+	if (!std::filesystem::is_directory(songPath))
+		return;
 
-    songPath.ListDirectory(Listing, Directory::FS_REG);
-
-    Directory SongDirectory = songPath.path() + "/";
+    std::vector<std::filesystem::path> Listing = Utility::GetFileListing(songPath);
+    std::filesystem::path SongDirectory = std::filesystem::absolute(songPath);
 
     /*
         Procedure:
@@ -294,10 +261,8 @@ void SongLoader::LoadSong7KFromDir(Directory songPath, std::vector<VSRG::Song*> 
     /* First we need to see whether these file need to be renewed.*/
     for (auto i = Listing.begin(); i != Listing.end(); ++i)
     {
-        Directory File = *i;
-        File.Normalize();
-
-        std::wstring Ext = Utility::Widen(File.GetExtension());
+        auto File = *i;
+        std::wstring Ext = File.extension().wstring();
 
         /*
             Some people leave nameless, blank .bms files on their folder.
@@ -305,16 +270,15 @@ void SongLoader::LoadSong7KFromDir(Directory songPath, std::vector<VSRG::Song*> 
             we should just ignore this file.
             It'll be loaded in any case, but not considered for cache.
         */
-        std::string Fname = Utility::RemoveExtension(File.Filename());
+        std::string Fname = File.filename().string();
 
-        if (VSRGValidExtension(Ext) &&
-            Fname.length() &&
-            DB->CacheNeedsRenewal(SongDirectory / File.path()))
-            RenewCache = true;
+		if (VSRGValidExtension(Ext) &&
+			Fname.length() &&
+			DB->CacheNeedsRenewal(File))
+				RenewCache = true;
     }
 
     // Files were modified- we have to reload the charts.
-    RenewCache = true; // TESTING
     if (RenewCache)
     {
         // First, pack BMS charts together.
@@ -333,12 +297,10 @@ void SongLoader::LoadSong7KFromDir(Directory songPath, std::vector<VSRG::Song*> 
         VSRG::Song *smSong = new VSRG::Song;
         smSong->SongDirectory = SongDirectory;
 
-        for (auto i : Listing)
+        for (auto File : Listing)
         {
-            Directory File = i;
-            File.Normalize();
-
-            std::wstring Ext = Utility::Widen(File.GetExtension());
+            std::wstring Ext = File.extension().wstring();
+			File = File.filename();
 
             // We want to group charts with the same title together.
             if (ValidBMSExtension(Ext) || Ext == L"bmson")
@@ -352,7 +314,7 @@ void SongLoader::LoadSong7KFromDir(Directory songPath, std::vector<VSRG::Song*> 
                 catch (std::exception &ex)
                 {
                     Log::Logf("\nSongLoader::LoadSong7KFromDir(): Exception \"%s\" occurred while loading file \"%s\"\n",
-                        ex.what(), File.c_path());
+                        ex.what(), File.filename().c_str());
                     Utility::DebugBreak();
                 }
 
@@ -376,7 +338,7 @@ void SongLoader::LoadSong7KFromDir(Directory songPath, std::vector<VSRG::Song*> 
                 BMSSong = new VSRG::Song;
             }
 
-            if (Ext == L"ojn")
+            if (Ext == L".ojn")
             {
                 LoadSong7KFromFilename(File, SongDirectory, OJNSong);
                 VSRGUpdateDatabaseDifficulties(DB, OJNSong);
@@ -385,10 +347,10 @@ void SongLoader::LoadSong7KFromDir(Directory songPath, std::vector<VSRG::Song*> 
                 OJNSong->SongDirectory = SongDirectory;
             }
 
-            if (Ext == L"osu" || Ext == L"fcf")
+            if (Ext == L".osu" || Ext == L".fcf")
                 LoadSong7KFromFilename(File, SongDirectory, osuSong);
 
-            if (Ext == L"sm" || Ext == L"ssc")
+            if (Ext == L".sm" || Ext == L".ssc")
             {
                 LoadSong7KFromFilename(File, SongDirectory, smSong);
                 VSRGUpdateDatabaseDifficulties(DB, smSong);
@@ -421,17 +383,12 @@ void SongLoader::LoadSong7KFromDir(Directory songPath, std::vector<VSRG::Song*> 
         int ID = -1;
         std::vector<int> IDList;
 
-        for (auto i : Listing)
+        for (auto File : Listing)
         {
-            Directory File = i;
-            File.Normalize();
-
-            std::wstring Ext = Utility::Widen(File.GetExtension());
+            std::wstring Ext = File.extension().wstring();
             if (VSRGValidExtension(Ext))
             {
-                bool cacheRenew = DB->CacheNeedsRenewal(SongDirectory / File.path());
-                assert(!cacheRenew);
-                int CurrentID = DB->GetSongIDForFile(SongDirectory / File.path(), nullptr);
+                int CurrentID = DB->GetSongIDForFile(File, nullptr);
                 if (CurrentID != ID)
                 {
                     ID = CurrentID;
