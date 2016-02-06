@@ -310,11 +310,12 @@ std::string SongDatabase::GetDifficultyFilename(int ID)
 
 bool SongDatabase::CacheNeedsRenewal(std::filesystem::path Dir)
 {
-    int CurLMT = Utility::GetLMT(Dir.u8string());
+	// must match what we put at InsertFilename time, so turn into absolute path on both places!
+	std::string u8p = std::filesystem::absolute(Dir).u8string();
+    int CurLMT = Utility::GetLMT(u8p);
     bool NeedsRenewal;
     int res, ret;
 
-	std::string u8p = std::filesystem::absolute(Dir).u8string();
     SC(sqlite3_bind_text(st_LMTQuery, 1, u8p.c_str(), u8p.length(), SQLITE_STATIC));
     res = sqlite3_step(st_LMTQuery);
 

@@ -692,7 +692,7 @@ namespace NoteLoaderBMS{
 					assert(CurrentNestedLevel < 16);
 					assert(Limit > 1);
 
-					RandomStack[CurrentNestedLevel] = rand() % Limit + 1;
+					RandomStack[CurrentNestedLevel] = std::randint(1, Limit);
 
 				}
 				else if (Command == "#if")
@@ -741,7 +741,10 @@ namespace NoteLoaderBMS{
 			ForAllEventsInChannel([&](BMSEvent ev, int Measure)
 			{
 				auto Time = TimeForObj(Measure, ev.Fraction);
-				Chart->Data->Scrolls.push_back(TimingSegment (Time, Scrolls[ev.Event]));
+				if (Scrolls.find(ev.Event) != Scrolls.end())
+					Chart->Data->Scrolls.push_back(TimingSegment (Time, Scrolls[ev.Event]));
+				else
+					Chart->Data->Scrolls.push_back(TimingSegment(Time, 1));
 			}, CHANNEL_SCROLLS);
 		}
 
@@ -1195,6 +1198,13 @@ namespace NoteLoaderBMS{
                     std::string IndexStr = CommandSubcontents("#EXBPM", command);
                     int Index = b36toi(IndexStr.c_str());
                     Info->SetBPM(Index, latof(CommandContents.c_str()));
+                }
+				
+				OnCommandSub(#SCROLL)
+                {
+                    std::string IndexStr = CommandSubcontents("#SCROLL", command);
+                    int Index = b36toi(IndexStr.c_str());
+                    Info->SetScroll(Index, latof(CommandContents.c_str()));
                 }
 
                 /* Else... */

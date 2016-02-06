@@ -128,9 +128,9 @@ public:
         }
         else
         {
-            if (bmp != events_layer.end())
-                sprite->SetImage(List.GetFromIndex(bmp->BMP), false);
-            else
+            //if (bmp != events_layer.end())
+            //    sprite->SetImage(List.GetFromIndex(bmp->BMP), false);
+            //else
                 sprite->SetImage(nullptr, false);
         }
     }
