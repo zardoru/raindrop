@@ -32,6 +32,7 @@ Judgment.ScaleHit = 0.12
 Judgment.ScaleMiss = 0.02
 Judgment.Position.y = 400
 Judgment.Position.x = Judgment.Position.x - 50
+Judgment.Tilt = 0
 ComboDisplay.DigitWidth = 25
 ComboDisplay.DigitHeight = 25
 ComboDisplay.Position.x = Judgment.Position.x + 200
