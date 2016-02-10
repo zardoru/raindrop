@@ -139,16 +139,27 @@ namespace VSRG
         NK_TOTAL
     };
 
+	enum TimingInfoType
+	{
+		// Autodecide - Not a value for anything other than GameParameters!
+		TI_NONE = 0,
+		TI_BMS = 1,
+		TI_OSUMANIA = 2,
+		TI_O2JAM = 3,
+		TI_STEPMANIA = 4,
+		TI_RAINDROP = 5
+	};
+
     const uint8_t MAX_CHANNELS = 16;
 }
 
 #include "ScoreKeeper.h"
 
 struct GameParameters {
-	// If true, use upscroll
+	// If true, use upscroll (VSRG only)
 	int Upscroll;
 
-    // If true, enable Wave
+    // If true, enable Wave (VSRG only)
     int Wave;
 
     // If true, assume difficulty is already loaded and is not just metadata
@@ -160,7 +171,7 @@ struct GameParameters {
     // Auto mode enabled if true.
     int Auto;
 
-    // Selected hidden mode
+    // Selected hidden mode (VSRG only)
     int HiddenMode;
 
     // Music speed
@@ -169,11 +180,14 @@ struct GameParameters {
     // Randomizing mode -> 0 = Disabled, 1 = Per-Lane, 2 = Panic (unimplemented)
     int Random;
 
-    // Selected starting measure
+    // Selected starting measure (Preivew mode only)
     int32_t StartMeasure;
 
-	// Gauge type
+	// Gauge type (VSRG only)
 	int32_t GaugeType;
+
+	// Game System Type (VSRG only)
+	int32_t SystemType;
 
 	GameParameters() {
 		Upscroll = false;
@@ -186,6 +200,7 @@ struct GameParameters {
 		Random = 0;
 		Rate = 1;
 		GaugeType = LT_AUTO;
+		SystemType = VSRG::TI_NONE;
 	}
 };
 

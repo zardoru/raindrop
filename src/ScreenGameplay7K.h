@@ -73,6 +73,7 @@ private:
     int                BarlineOffsetKind;
     LifeType         lifebar_type;
     ScoreType        scoring_type;
+	int RequestedSystem;
 	int RequestedLifebar;
 
     std::shared_ptr<AudioStream> Music;

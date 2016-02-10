@@ -222,7 +222,7 @@ namespace Engine
         Rocket::Core::Initialise();
         Rocket::Controls::Initialise();
         Rocket::Core::Lua::Interpreter::Initialise();
-        // Rocket::Controls::Lua::RegisterTypes(Rocket::Core::Lua::Interpreter::GetLuaState());
+        Rocket::Controls::Lua::RegisterTypes(Rocket::Core::Lua::Interpreter::GetLuaState());
 
         Rocket::Core::FontDatabase::LoadFontFace("font.ttf", "default",
             Rocket::Core::Font::STYLE_NORMAL, Rocket::Core::Font::WEIGHT_NORMAL);
@@ -233,6 +233,6 @@ namespace Engine
     void SetupRocketLua(void* State)
     {
         Rocket::Core::Lua::Interpreter::RegisterCoreTypes((lua_State*)State);
-        //Rocket::Controls::Lua::RegisterTypes((lua_State*)State);
+        Rocket::Controls::Lua::RegisterTypes((lua_State*)State);
     }
 }

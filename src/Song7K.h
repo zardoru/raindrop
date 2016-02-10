@@ -28,15 +28,6 @@ namespace VSRG
 
     typedef std::vector<TrackNote> VectorTN[MAX_CHANNELS];
 
-    enum TimingInfoType
-    {
-        TI_NONE,
-        TI_BMS,
-        TI_OSUMANIA,
-        TI_O2JAM,
-        TI_STEPMANIA
-    };
-
     class CustomTimingInfo
     {
     protected:

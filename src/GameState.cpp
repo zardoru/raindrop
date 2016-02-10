@@ -292,3 +292,23 @@ void GameState::SetScorekeeper7K(std::shared_ptr<ScoreKeeper7K> Other)
 {
     SKeeper7K = Other;
 }
+
+void GameState::SetCurrentScoreType(int ScoreType)
+{
+	CurrentScoreType = ScoreType;
+}
+
+int GameState::GetCurrentScoreType() const
+{
+	return CurrentScoreType;
+}
+
+void GameState::SetCurrentSystemType(int SystemType)
+{
+	CurrentSubsystemType = SystemType;
+}
+
+int GameState::GetCurrentSystemType() const
+{
+	return CurrentSubsystemType;
+}

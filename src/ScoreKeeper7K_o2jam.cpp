@@ -17,7 +17,7 @@ int ScoreKeeper7K::getO2Judge(ScoreKeeperJudgment j)
         }
     }
 
-    if (coolcombo && coolcombo % 15) // every 15 cools you gain a pill, up to 5.
+    if (coolcombo && (coolcombo % 15 == 0)) // every 15 cools you gain a pill, up to 5.
         pills = std::min(pills + 1, 5);
 
     return j;

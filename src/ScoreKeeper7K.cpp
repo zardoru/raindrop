@@ -111,9 +111,12 @@ ScoreKeeperJudgment ScoreKeeper7K::hitNote(double ms)
                 // we using o2 based mechanics..
                 auto j = getO2Judge(judgment);
 
+				// transform this judgment if neccesary (pills/etc)
+				judgment = ScoreKeeperJudgment(j); 
                 judgment_amt[j]++;
             }
 
+			// breaking early is important.
             break;
         }
     }
@@ -194,10 +197,12 @@ void ScoreKeeper7K::missNote(bool auto_hold_miss, bool early_miss)
 
     accuracy = accuracy_percent(total_sqdev / total_notes);
 
-    if (!auto_hold_miss && !early_miss)
+    if (!early_miss)
     {
-        total_sqdev += getMissCutoff() * getMissCutoff();
-        combo = 0;
+		if (!auto_hold_miss) {
+			total_sqdev += getMissCutoff() * getMissCutoff();
+			combo = 0;
+		}
 
         // miss tier 2
         lifebar_easy = std::max(0.0, lifebar_easy - lifebar_easy_decrement * 3);
@@ -220,13 +225,22 @@ void ScoreKeeper7K::missNote(bool auto_hold_miss, bool early_miss)
         lifebar_exhard = std::max(0.0, lifebar_exhard - lifebar_exhard_decrement);
 
         lifebar_stepmania = std::max(0.0, lifebar_stepmania - lifebar_stepmania_earlymiss_decrement);
-    }
+	}
 
     // other methods
     update_bms(SKJ_MISS);
     update_exp2(SKJ_MISS);
     update_osu(SKJ_MISS);
     update_o2(SKJ_MISS);
+}
+
+double ScoreKeeper7K::getJudgmentCutoff() {
+	auto rt = 0.0;
+	for (int i = 0; i <= SKJ_MISS; i++)
+		rt = std::max(judgment_time[i], rt);
+
+	rt = std::max(std::max(miss_threshold, rt), earlymiss_threshold);
+	return rt;
 }
 
 double ScoreKeeper7K::getEarlyMissCutoff()

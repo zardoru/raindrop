@@ -37,6 +37,9 @@ namespace Game
         std::map<std::string, std::vector<std::string>> Fallback; // 2nd is 1st's fallback
 
 		int CurrentGaugeType;
+		int CurrentScoreType;
+		int CurrentSubsystemType;
+
         bool FileExistsOnSkin(const char* Filename, const char* Skin);
     public:
 
@@ -63,9 +66,17 @@ namespace Game
         void SetDifficultyIndex(uint32_t DifficultyIndex);
         uint32_t GetDifficultyIndex() const;
 
+		// VSRG Gauge Type
 		void SetCurrentGaugeType(int GaugeType);
 		int GetCurrentGaugeType() const;
 
+		// VSRG score system
+		void SetCurrentScoreType(int ScoreType);
+		int GetCurrentScoreType() const;
+
+		// VSRG subsystem
+		void SetCurrentSystemType(int SystemType);
+		int GetCurrentSystemType() const;
 
         // Note: Returning a shared_ptr causes lua to fail an assertion, since shared_ptr is not registered.
         ScoreKeeper7K* GetScorekeeper7K();

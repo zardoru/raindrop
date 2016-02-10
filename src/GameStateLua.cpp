@@ -143,6 +143,7 @@ void GameState::InitializeLua(lua_State *L)
 		.addData("Rate", &GameParameters::Rate)
 		.addData("Random", &GameParameters::Random)
 		.addData("GaugeType", &GameParameters::GaugeType)
+		.addData("SystemType", &GameParameters::SystemType)
 		.endClass();
 
 	luabridge::getGlobalNamespace(L)
@@ -152,6 +153,8 @@ void GameState::InitializeLua(lua_State *L)
 		.addFunction("GetScorekeeper7K", &GameState::GetScorekeeper7K)
 		.addFunction("GetParameters", &GameState::GetParameters)
 		.addProperty("CurrentGaugeType", &GameState::GetCurrentGaugeType)
+		.addProperty("CurrentScoreType", &GameState::GetCurrentScoreType)
+		.addProperty("CurrentSystemType", &GameState::GetCurrentSystemType)
 		.endClass()
 		.addFunction("toSong7K", toSong7K)
 		.addFunction("toSongDC", toSongDC);

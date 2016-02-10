@@ -300,7 +300,7 @@ ImageData ImageLoader::GetDataForImage(std::filesystem::path filename)
     auto file = std::ifstream{ filename, std::ios::binary };
     if (!file.is_open())
     {
-        Log::Printf("Could not open file \"%s\".\n", filename);
+        Log::Printf("Could not open file \"%s\".\n", Utility::Narrow(filename).c_str());
         return{};
     }
 

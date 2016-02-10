@@ -159,7 +159,7 @@ void ScreenGameplay7K::Init(std::shared_ptr<VSRG::Song> S, int DifficultyIndex, 
     NoFail = Param.NoFail;
     Random = Param.Random;
 	RequestedLifebar = (LifeType)(int)Clamp((int)Param.GaugeType, (int)LT_AUTO, (int)LT_O2JAM);
-
+	RequestedSystem = (int)Clamp(Param.SystemType, (int)VSRG::TI_NONE, (int)VSRG::TI_RAINDROP);
     ForceActivation = false;
 
     if (Param.StartMeasure == -1 && Auto)
@@ -546,7 +546,8 @@ void ScreenGameplay7K::ChangeNoteTimeToBeats()
             double beatStart = IntegrateToTime(BPS, m->GetDataStartTime());
             double beatEnd = IntegrateToTime(BPS, m->GetDataEndTime());
             m->GetDataStartTime() = beatStart;
-            m->GetDataEndTime() = beatEnd;
+			if (m->GetDataEndTime())
+				m->GetDataEndTime() = beatEnd;
         }
     }
 }
@@ -558,203 +559,260 @@ void ScreenGameplay7K::SetupMechanics()
     // This must be done before setLifeTotal in order for it to work.
     ScoreKeeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
 
-    if (Configuration::GetConfigf("AlwaysUseRaindropMechanics") == 0 && CurrentDiff->Data->TimingInfo)
-    {
-        auto TimingInfo = CurrentDiff->Data->TimingInfo.get();
-        if (TimingInfo->GetType() == VSRG::TI_BMS)
-        {
-            auto Info = static_cast<VSRG::BMSTimingInfo*> (TimingInfo);
-            ScoreKeeper->setLifeTotal(Info->GaugeTotal);
-            ScoreKeeper->setJudgeRank(Info->JudgeRank);
-            UsedTimingType = TT_TIME;
-            lifebar_type = LT_GROOVE;
-            bmsOrStepmania = true;
-        }
-        else if (TimingInfo->GetType() == VSRG::TI_OSUMANIA)
-        {
-            auto Info = static_cast<VSRG::OsuManiaTimingInfo*> (TimingInfo);
-            ScoreKeeper->setODWindows(Info->OD);
-            lifebar_type = LT_STEPMANIA;
-            scoring_type = ST_OSUMANIA;
-            UsedTimingType = TT_TIME;
-        }
-        else if (TimingInfo->GetType() == VSRG::TI_O2JAM)
-        {
-            auto O2Info = static_cast<VSRG::O2JamTimingInfo*>(TimingInfo);
-            lifebar_type = LT_O2JAM;
-            UsedTimingType = TT_BEATS;
-            scoring_type = ST_O2JAM;
-            ScoreKeeper->setJudgeRank(-100); // Special constant to notify beat based timing.
-            ScoreKeeper->setO2LifebarRating(O2Info->Difficulty);
-        }
-        else if (TimingInfo->GetType() == VSRG::TI_STEPMANIA)
-        {
-            lifebar_type = LT_STEPMANIA;
-            UsedTimingType = TT_TIME;
-            ScoreKeeper->setLifeTotal(-1);
-            ScoreKeeper->setSMJ4Windows();
-            bmsOrStepmania = true;
-        }
-        else
-        {
-            lifebar_type = LT_GROOVE;
-            UsedTimingType = TT_TIME;
-            ScoreKeeper->setLifeTotal(-1);
-            ScoreKeeper->setJudgeRank(Configuration::GetConfigf("DefaultJudgeRank"));
-        }
-    }
-    else
-    {
-        lifebar_type = LT_GROOVE;
-        ScoreKeeper->setLifeTotal(-1);
-        ScoreKeeper->setJudgeRank(Configuration::GetConfigf("DefaultJudgeRank"));
-        UsedTimingType = TT_TIME;
-        lifebar_type = LT_GROOVE;
-    }
+	// JudgeScale, Stepmania and OD can't be run together - only one can be set.
+	auto TimingInfo = CurrentDiff->Data->TimingInfo.get();
+	
+	// Pick a timing system
+	if (RequestedSystem == VSRG::TI_NONE) {
+		if (TimingInfo) {
+			// Automatic setup
+			RequestedSystem = TimingInfo->GetType();
+		}
+		else {
+			Log::Printf("Null timing info - assigning raindrop defaults.\n");
+			RequestedSystem = VSRG::TI_RAINDROP;
+			// pick raindrop system for null Timing Info
+		}
+	}
 
-    if (Configuration::GetConfigf("AlwaysUseRidiculousTiming"))
-    {
-        ScoreKeeper->set_manual_w0(true);
-    }
+	// If we got just assigned one or was already requested
+	// unlikely: timing info type is none? what
+	retry:
+	if (RequestedSystem != VSRG::TI_NONE) {
+		// Player requested a specific subsystem
+		if (RequestedSystem == VSRG::TI_BMS) {
+			bmsOrStepmania = true;
+			scoring_type = ST_EX;
+			UsedTimingType = TT_TIME;
+			if (TimingInfo->GetType() == VSRG::TI_BMS) {
+				auto Info = static_cast<VSRG::BMSTimingInfo*> (TimingInfo);
+				ScoreKeeper->setLifeTotal(Info->GaugeTotal);
+			}
+			else {
+				ScoreKeeper->setJudgeRank(3);
+			}
+		}
+		else if (RequestedSystem == VSRG::TI_O2JAM) {
+			scoring_type = ST_O2JAM;
+			UsedTimingType = TT_BEATS;
+			ScoreKeeper->setJudgeRank(-100);
+		}
+		else if (RequestedSystem == VSRG::TI_OSUMANIA) {
+			scoring_type = ST_OSUMANIA;
+			UsedTimingType = TT_TIME;
+			if (TimingInfo->GetType() == VSRG::TI_OSUMANIA) {
+				auto InfoOM = static_cast<VSRG::OsuManiaTimingInfo*> (TimingInfo);
+				ScoreKeeper->setODWindows(InfoOM->OD);
+			}
+			else ScoreKeeper->setODWindows(7);
+		}
+		else if (RequestedSystem == VSRG::TI_STEPMANIA) {
+			bmsOrStepmania = true;
+			UsedTimingType = TT_TIME;
+			scoring_type = ST_DP;
+			ScoreKeeper->setSMJ4Windows();
+		}
+		else if (RequestedSystem == VSRG::TI_RAINDROP) {
+			scoring_type = ST_EXP3;
+			lifebar_type = LT_STEPMANIA;
+			bmsOrStepmania = true;
+		}
+	}
+	else
+	{
+		Log::Printf("System picked was none - on purpose. Defaulting to raindrop.\n");
+		RequestedSystem = VSRG::TI_RAINDROP;
+		goto retry;
+	}
 
-    /*
-        If we're on TT_BEATS we've got to recalculate all note positions to beats,
-        and use mechanics that use TT_BEATS as its timing type.
-    */
+	GameState::GetInstance().SetCurrentSystemType(RequestedSystem);
 
-	if (RequestedLifebar != LT_AUTO)
+	// Timing System is set up. Set up life bar
+	if (RequestedLifebar == LT_AUTO) {
+		using namespace VSRG;
+		switch (RequestedSystem) {
+		case TI_BMS:
+		case TI_RAINDROP:
+			RequestedLifebar = LT_GROOVE;
+			break;
+		case TI_O2JAM:
+			RequestedLifebar = LT_O2JAM;
+			break;
+		case TI_OSUMANIA:
+		case TI_STEPMANIA:
+			RequestedLifebar = LT_STEPMANIA;
+			break;
+		default:
+			throw std::exception("Invalid requested system.");
+		}
+	}
+
+	switch (RequestedLifebar) {
+	case LT_STEPMANIA:
+		lifebar_type = LT_STEPMANIA; // Needs no setup.
+		break;
+
+	case LT_O2JAM:
+		if (TimingInfo->GetType() == VSRG::TI_O2JAM) {
+			auto InfoO2 = static_cast<VSRG::O2JamTimingInfo*> (TimingInfo);
+			ScoreKeeper->setO2LifebarRating(InfoO2->Difficulty);
+		} // else by default
+		lifebar_type = LT_O2JAM; // By default, HX
+		break;
+
+	case LT_GROOVE:
+	case LT_DEATH:
+	case LT_EASY:
+	case LT_EXHARD:
+	case LT_SURVIVAL:
+		if (TimingInfo->GetType() == VSRG::TI_BMS) { // Only needs setup if it's a BMS file
+			auto Info = static_cast<VSRG::BMSTimingInfo*> (TimingInfo);
+			ScoreKeeper->setLifeTotal(Info->GaugeTotal);
+		}
+		else // by raindrop defaults
+			ScoreKeeper->setLifeTotal(-1);
 		lifebar_type = (LifeType)RequestedLifebar;
+		break;
+	default:
+		throw std::exception("Invalid gauge type recieved");
+	}
 
-	GameState::GetInstance().SetCurrentGaugeType(lifebar_type);
+	/*
+		If we're on TT_BEATS we've got to recalculate all note positions to beats,
+		and use mechanics that use TT_BEATS as its timing type.
+	*/
 
-    if (UsedTimingType == TT_TIME)
-    {
-        Log::Printf("Using raindrop mechanics set!\n");
-        // Only forced release if not a bms or a stepmania chart.
-        MechanicsSet = std::make_shared<RaindropMechanics>(!bmsOrStepmania);
-    }
-    else if (UsedTimingType == TT_BEATS)
-    {
-        Log::Printf("Using o2jam mechanics set!\n");
-        MechanicsSet = std::make_shared<O2JamMechanics>();
-        ChangeNoteTimeToBeats();
-    }
+	GameState::GetInstance().SetCurrentGaugeType((int)lifebar_type);
+	GameState::GetInstance().SetCurrentScoreType(scoring_type);
 
-    MechanicsSet->Setup(MySong.get(), CurrentDiff.get(), ScoreKeeper);
-    MechanicsSet->HitNotify = std::bind(&ScreenGameplay7K::HitNote, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-    MechanicsSet->MissNotify = std::bind(&ScreenGameplay7K::MissNote, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
-    MechanicsSet->IsLaneKeyDown = std::bind(&ScreenGameplay7K::GetGearLaneState, this, std::placeholders::_1);
-    MechanicsSet->SetLaneHoldingState = std::bind(&ScreenGameplay7K::SetLaneHoldState, this, std::placeholders::_1, std::placeholders::_2);
-    MechanicsSet->PlayLaneSoundEvent = std::bind(&ScreenGameplay7K::PlayLaneKeysound, this, std::placeholders::_1);
-    MechanicsSet->PlayNoteSoundEvent = std::bind(&ScreenGameplay7K::PlayKeysound, this, std::placeholders::_1);
+	if (UsedTimingType == TT_TIME)
+	{
+		Log::Printf("Using raindrop mechanics set!\n");
+		// Only forced release if not a bms or a stepmania chart.
+		MechanicsSet = std::make_shared<RaindropMechanics>(!bmsOrStepmania);
+	}
+	else if (UsedTimingType == TT_BEATS)
+	{
+		Log::Printf("Using o2jam mechanics set!\n");
+		MechanicsSet = std::make_shared<O2JamMechanics>();
+		ChangeNoteTimeToBeats();
+	}
+
+	MechanicsSet->Setup(MySong.get(), CurrentDiff.get(), ScoreKeeper);
+	MechanicsSet->HitNotify = std::bind(&ScreenGameplay7K::HitNote, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+	MechanicsSet->MissNotify = std::bind(&ScreenGameplay7K::MissNote, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
+	MechanicsSet->IsLaneKeyDown = std::bind(&ScreenGameplay7K::GetGearLaneState, this, std::placeholders::_1);
+	MechanicsSet->SetLaneHoldingState = std::bind(&ScreenGameplay7K::SetLaneHoldState, this, std::placeholders::_1, std::placeholders::_2);
+	MechanicsSet->PlayLaneSoundEvent = std::bind(&ScreenGameplay7K::PlayLaneKeysound, this, std::placeholders::_1);
+	MechanicsSet->PlayNoteSoundEvent = std::bind(&ScreenGameplay7K::PlayKeysound, this, std::placeholders::_1);
 }
 
 void ScreenGameplay7K::LoadResources()
 {
-    auto MissSndFile = GameState::GetInstance().GetSkinFile("miss.ogg");
-    auto FailSndFile = GameState::GetInstance().GetSkinFile("stage_failed.ogg");
+	auto MissSndFile = GameState::GetInstance().GetSkinFile("miss.ogg");
+	auto FailSndFile = GameState::GetInstance().GetSkinFile("stage_failed.ogg");
 
-    MissSnd.Open(MissSndFile);
-    FailSnd.Open(FailSndFile);
+	MissSnd.Open(MissSndFile);
+	FailSnd.Open(FailSndFile);
 
-    if (!LoadChartData() || !LoadSongAudio() || !ProcessSong() || !LoadBGA())
-    {
-        DoPlay = false;
-        return;
-    }
+	if (!LoadChartData() || !LoadSongAudio() || !ProcessSong() || !LoadBGA())
+	{
+		DoPlay = false;
+		return;
+	}
 
-    SetupMechanics();
-    TurntableEnabled = CurrentDiff->Data->Turntable;
-    Noteskin::SetupNoteskin(CurrentDiff->Data->Turntable, CurrentDiff->Channels, this);
+	SetupMechanics();
+	TurntableEnabled = CurrentDiff->Data->Turntable;
+	Noteskin::SetupNoteskin(CurrentDiff->Data->Turntable, CurrentDiff->Channels, this);
 
-    SetupLua(Animations->GetEnv());
-    SetupAfterLoadingVariables();
-    SetupScriptConstants();
-    UpdateScriptVariables();
+	SetupLua(Animations->GetEnv());
+	SetupAfterLoadingVariables();
+	SetupScriptConstants();
+	UpdateScriptVariables();
 
-    Animations->Preload(GameState::GetInstance().GetSkinFile("screengameplay7k.lua"), "Preload");
-    Log::Printf("Done.\n");
+	Animations->Preload(GameState::GetInstance().GetSkinFile("screengameplay7k.lua"), "Preload");
+	Log::Printf("Done.\n");
 
-    AssignMeasure(StartMeasure);
+	AssignMeasure(StartMeasure);
 
-    // We're done with the data stored in the difficulties that aren't the one we're using. Clear it up.
-    for (auto i = MySong->Difficulties.begin(); i != MySong->Difficulties.end(); ++i)
-        (*i)->Destroy();
+	// We're done with the data stored in the difficulties that aren't the one we're using. Clear it up.
+	for (auto i = MySong->Difficulties.begin(); i != MySong->Difficulties.end(); ++i)
+		(*i)->Destroy();
 
-    DoPlay = true;
+	DoPlay = true;
 }
 
 bool ScreenGameplay7K::BindKeysToLanes(bool UseTurntable)
 {
-    std::string KeyProfile;
-    std::string value;
-    std::vector<std::string> res;
+	std::string KeyProfile;
+	std::string value;
+	std::vector<std::string> res;
 
-    if (UseTurntable)
-        KeyProfile = Configuration::GetConfigs("KeyProfileSpecial" + Utility::IntToStr(CurrentDiff->Channels));
-    else
-        KeyProfile = Configuration::GetConfigs("KeyProfile" + Utility::IntToStr(CurrentDiff->Channels));
+	if (UseTurntable)
+		KeyProfile = Configuration::GetConfigs("KeyProfileSpecial" + Utility::IntToStr(CurrentDiff->Channels));
+	else
+		KeyProfile = Configuration::GetConfigs("KeyProfile" + Utility::IntToStr(CurrentDiff->Channels));
 
-    value = Configuration::GetConfigs("Keys", KeyProfile);
-    res = Utility::TokenSplit(value);
+	value = Configuration::GetConfigs("Keys", KeyProfile);
+	res = Utility::TokenSplit(value);
 
-    for (unsigned i = 0; i < CurrentDiff->Channels; i++)
-    {
-        lastClosest[i] = 0;
+	for (unsigned i = 0; i < CurrentDiff->Channels; i++)
+	{
+		lastClosest[i] = 0;
 
-        if (i < res.size())
-            GearBindings[static_cast<int>(latof(res[i]))] = i;
-        else
-        {
-            if (!Auto)
-            {
-                Log::Printf("Mising bindings starting from lane " + Utility::IntToStr(i) + " using profile " + KeyProfile);
-                return false;
-            }
-        }
+		if (i < res.size())
+			GearBindings[static_cast<int>(latof(res[i]))] = i;
+		else
+		{
+			if (!Auto)
+			{
+				Log::Printf("Mising bindings starting from lane " + Utility::IntToStr(i) + " using profile " + KeyProfile);
+				return false;
+			}
+		}
 
-        HeldKey[i] = false;
-        GearIsPressed[i] = 0;
-    }
+		HeldKey[i] = false;
+		GearIsPressed[i] = 0;
+	}
 
-    return true;
+	return true;
 }
 
 void ScreenGameplay7K::InitializeResources()
 {
-    if (!BindKeysToLanes(TurntableEnabled))
-        if (!BindKeysToLanes(!TurntableEnabled))
-            DoPlay = false;
+	if (!BindKeysToLanes(TurntableEnabled))
+		if (!BindKeysToLanes(!TurntableEnabled))
+			DoPlay = false;
 
-    if (!DoPlay) // Failure to load something important?
-    {
-        Running = false;
-        return;
-    }
+	if (!DoPlay) // Failure to load something important?
+	{
+		Running = false;
+		return;
+	}
 
-    Noteskin::Validate();
+	Noteskin::Validate();
 
-    PlayReactiveSounds = (CurrentDiff->IsVirtual || !(Configuration::GetConfigf("DisableHitsounds")));
-    MsDisplayMargin = (Configuration::GetSkinConfigf("HitErrorDisplayLimiter"));
+	PlayReactiveSounds = (CurrentDiff->IsVirtual || !(Configuration::GetConfigf("DisableHitsounds")));
+	MsDisplayMargin = (Configuration::GetSkinConfigf("HitErrorDisplayLimiter"));
 
-    WindowFrame.SetLightMultiplier(0.75f);
+	WindowFrame.SetLightMultiplier(0.75f);
 
-    memset(CurrentKeysounds, 0, sizeof(CurrentKeysounds));
+	memset(CurrentKeysounds, 0, sizeof(CurrentKeysounds));
 
-    CalculateHiddenConstants();
+	CalculateHiddenConstants();
 
-    if (!StartMeasure || StartMeasure == -1)
-        WaitingTime = abs(std::min(-WaitingTime, CurrentDiff->Offset - 1.5));
-    else
-        WaitingTime = 0;
+	if (!StartMeasure || StartMeasure == -1)
+		WaitingTime = abs(std::min(-WaitingTime, CurrentDiff->Offset - 1.5));
+	else
+		WaitingTime = 0;
 
-    if (Noteskin::IsBarlineEnabled())
-        Barline = std::make_shared<Line>();
+	if (Noteskin::IsBarlineEnabled())
+		Barline = std::make_shared<Line>();
 
-    CurrentBeat = IntegrateToTime(BPS, -WaitingTime);
-    Animations->GetImageList()->ForceFetch();
-    BGA->Validate();
+	CurrentBeat = IntegrateToTime(BPS, -WaitingTime);
+	Animations->GetImageList()->ForceFetch();
+	BGA->Validate();
 
-    Animations->Initialize("", false);
-    Running = true;
+	Animations->Initialize("", false);
+	Running = true;
 }

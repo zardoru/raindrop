@@ -37,6 +37,18 @@
 				end
 			end
 
+			function gauge_change(event)
+				Global:GetParameters().GaugeType = tonumber(event.parameters["value"])
+			end
+
+			function game_change(event)
+				Global:GetParameters().SystemType = tonumber(event.parameters["value"])
+			end
+
+			function hidden_change(event)
+				Global:GetParameters().HiddenMode = tonumber(event.parameters["value"])
+			end
+
 		</script>
 
 	</head>
@@ -44,12 +56,43 @@
 	<body>
 		<div class="dbox">
 		<h1> Play Options </h1><br/>
-		Autoplay <input type="checkbox" id="auto" onchange="changesetting(element.id, element)" /> <br/>
-		Upscroll <input type="checkbox" id="upscroll" onchange="changesetting(element.id, element)" /> <br/>
-		Failure Disabled <input type="checkbox" id="nofail" onchange="changesetting(element.id, element)"/> <br/>
-		Random <input type="checkbox" id="random" onchange="changesetting(element.id, element)"/> <br/>
-		<input type="text" id="rate" onchange="changerate(element.attributes.value)"/> <br/>
-		rate
+		<form id="options">
+
+			Autoplay <input type="checkbox" id="auto" onchange="changesetting(element.id, element)" /> <br/>
+			Upscroll <input type="checkbox" id="upscroll" onchange="changesetting(element.id, element)" /> <br/>
+			Failure Disabled <input type="checkbox" id="nofail" onchange="changesetting(element.id, element)"/> <br/>
+			Random <input type="checkbox" id="random" onchange="changesetting(element.id, element)"/> <br/>
+			Hidden
+			<select name="hidden" onchange="hidden_change(event)">
+				<option value="0" selected="1">Normal</option>
+				<option value="1">Sudden</option>
+				<option value="2">Hidden</option>
+				<option value="3">Flashlight</option>
+			</select> <br/>
+			<input type="text" id="rate" onchange="changerate(element.attributes.value)"/> <br/>
+			rate <br/> <br/>
+
+			<!-- The following match the internal raindrop values. -->
+			<h2> Subsystem selection </h2> <br/>
+			Gauge <select name="gauge" onchange="gauge_change(event)">
+				<option value="0" selected="1">Auto</option>
+				<option value="1">Groove</option>
+				<option value="2">Survival</option>
+				<option value="3">ExHard</option>
+				<option value="4">Death</option>
+				<option value="5">Easy</option>
+				<option value="6">Stepmania</option>
+				<option value="7">O2Jam</option>
+			</select><br/>
+			Timing <select name="game" onchange="game_change(event)">
+				<option value="0" selected="1">Auto</option>
+				<option value="1">rd/BMS</option>
+				<option value="2">rd/osu!mania</option>
+				<option value="3">O2Jam</option>
+				<option value="4">rd/Stepmania</option>
+				<option value="5">rd/AutoBMS</option>
+			</select><br/>
+		</form>
 		</div>
 	</body>
 	<script>

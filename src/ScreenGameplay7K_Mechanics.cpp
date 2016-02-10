@@ -241,7 +241,7 @@ void ScreenGameplay7K::ReleaseLane(uint32_t Lane, float Time)
         };
 
         auto timeLower = (Time - (ScoreKeeper->usesO2() ? ScoreKeeper->getMissCutoff() : (ScoreKeeper->getMissCutoff() / 1000.0)));
-        auto timeHigher = (Time + (ScoreKeeper->usesO2() ? ScoreKeeper->getEarlyMissCutoff() : (ScoreKeeper->getEarlyMissCutoff() / 1000.0)));
+        auto timeHigher = (Time + (ScoreKeeper->usesO2() ? ScoreKeeper->getJudgmentCutoff() : (ScoreKeeper->getJudgmentCutoff() / 1000.0)));
 
         Start = std::lower_bound(NotesByChannel[Lane].begin(), NotesByChannel[Lane].end(), timeLower, LboundFunc);
 
@@ -281,7 +281,7 @@ void ScreenGameplay7K::JudgeLane(uint32_t Lane, float Time)
     if (!Warps.size() && !HasNegativeScroll)
     {
         auto timeLower = (Time - (ScoreKeeper->usesO2() ? ScoreKeeper->getMissCutoff() : (ScoreKeeper->getMissCutoff() / 1000.0)));
-        auto timeHigher = (Time + (ScoreKeeper->usesO2() ? ScoreKeeper->getEarlyMissCutoff() : (ScoreKeeper->getEarlyMissCutoff() / 1000.0)));
+        auto timeHigher = (Time + (ScoreKeeper->usesO2() ? ScoreKeeper->getJudgmentCutoff() : (ScoreKeeper->getJudgmentCutoff() / 1000.0)));
 
         Start = std::lower_bound(NotesByChannel[Lane].begin(), NotesByChannel[Lane].end(), timeLower);
         End = std::upper_bound(NotesByChannel[Lane].begin(), NotesByChannel[Lane].end(), timeHigher);

@@ -51,6 +51,7 @@ public:
 	double getJudgmentWindow(int judgment);
 	double getMissCutoff();
 	double getEarlyMissCutoff();
+	double getJudgmentCutoff();
 
 	int getScore(int score_type);
 	float getPercentScore(int score_type);

@@ -109,18 +109,20 @@ void ScoreKeeper7K::set_beat_timing_windows()
     // This in beats.
     double o2jamTimingAmt[] =
     {
+		0.664 * 0.1, // raindrop!o2jam extension: XCOOL
         0.664 * 0.2, // COOL threshold
         0.664 * 0.5, // GOOD threshold
         0.664 * 0.8, //  BAD threshold
         0.664 // MISS threshold
     };
 
-    judgment_time[SKJ_W1] = o2jamTimingAmt[0];
-    judgment_time[SKJ_W2] = o2jamTimingAmt[1];
-    judgment_time[SKJ_W3] = o2jamTimingAmt[2];
+	judgment_time[SKJ_W0] = o2jamTimingAmt[0];
+    judgment_time[SKJ_W1] = o2jamTimingAmt[1];
+    judgment_time[SKJ_W2] = o2jamTimingAmt[2];
+    judgment_time[SKJ_W3] = o2jamTimingAmt[3];
 
     // No early misses, only plain misses.
-    earlymiss_threshold = miss_threshold = o2jamTimingAmt[3];
+	earlymiss_threshold = miss_threshold = o2jamTimingAmt[4];
 }
 
 void ScoreKeeper7K::set_timing_windows()
@@ -164,10 +166,11 @@ void ScoreKeeper7K::setODWindows(int od)
 void ScoreKeeper7K::setSMJ4Windows()
 {
     // Ridiculous is included: J7 Marvelous.
-    double JudgmentValues[] = { 11.25, 22.5, 45, 90, 135, 180 };
+	// No early miss threshold
+    double JudgmentValues[] = { 11.25, 22.5, 45, 90, 135, 135 };
 
-    miss_threshold = 180;
-    earlymiss_threshold = 180;
+    miss_threshold = 135;
+    earlymiss_threshold = 135;
     for (int i = 0; i < sizeof(JudgmentValues) / sizeof(double); i++)
         judgment_time[i] = JudgmentValues[i];
 }

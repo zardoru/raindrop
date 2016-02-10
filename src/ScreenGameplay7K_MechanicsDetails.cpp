@@ -1,5 +1,7 @@
 #include "pch.h"
 
+#include "Logging.h"
+
 #include "GameGlobal.h"
 #include "Screen.h"
 #include "Sprite.h"
@@ -63,7 +65,8 @@ bool RaindropMechanics::OnUpdate(double SongTime, VSRG::TrackNote* m, uint32_t L
         if ((SongTime - m->GetTimeFinal()) * 1000 > score_keeper->getMissCutoff() && forcedRelease)
         {
             m->FailHit();
-            MissNotify(abs(SongTime - m->GetTimeFinal()) * 1000, k, m->IsHold(), true, false);
+			// Take away health and combo (1st false)
+            MissNotify(abs(SongTime - m->GetTimeFinal()) * 1000, k, m->IsHold(), false, false);
 
             SetLaneHoldingState(k, false);
             m->Disable();
@@ -79,6 +82,7 @@ bool RaindropMechanics::OnUpdate(double SongTime, VSRG::TrackNote* m, uint32_t L
                 }
                 else
                 {
+					// Only take away health, but not combo (1st false)
                     MissNotify(score_keeper->getMissCutoff(), k, m->IsHold(), true, false);
                 }
 
@@ -99,8 +103,9 @@ bool RaindropMechanics::OnPressLane(double SongTime, VSRG::TrackNote* m, uint32_
     double dev = (SongTime - m->GetStartTime()) * 1000;
     double tD = abs(dev);
 
-    if (tD > score_keeper->getEarlyMissCutoff()) // If the note was hit outside of judging range
+    if (tD > score_keeper->getJudgmentCutoff()) // If the note was hit outside of judging range
     {
+		Log::Printf("td > jc %f %f\n", tD, score_keeper->getJudgmentCutoff());
         // do nothing else for this note
         return false;
     }

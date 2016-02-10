@@ -3,10 +3,12 @@
 #include "LuaManager.h"
 #include "LuaBridge.h"
 
+#include "GameGlobal.h"
 #include "ScoreKeeper7K.h"
 
 void SetupScorekeeper7KLuaInterface(void* state)
 {
+	using namespace VSRG;
     lua_State* L = (lua_State*)state;
 
 	luabridge::getGlobalNamespace(L)
@@ -75,6 +77,11 @@ void SetupScorekeeper7KLuaInterface(void* state)
     cns(PMT_D);
     cns(PMT_E);
     cns(PMT_F);
+	cns(TI_NONE);
+	cns(TI_BMS);
+	cns(TI_OSUMANIA);
+	cns(TI_O2JAM);
+	cns(TI_STEPMANIA);
 }
 
 void SetScorekeeper7KInstance(void* state, ScoreKeeper7K *Instance)

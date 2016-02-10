@@ -133,8 +133,10 @@ function Init()
 		
 	dd = StringObject2D()
 	dd.Font = font
-	dd.Y = 348
-	dd.X = 820
+	dd.Y = 337
+	dd.X = 620
+
+	Engine:AddTarget(dd)
 	
 	WheelBackground = Object2D()
 	WheelBackground.Image = "Global/white.png"
@@ -234,7 +236,6 @@ function Init()
 		end
 	end
 
-	Engine:AddTarget(dd)
 
 	sbar = Engine:CreateObject()
 	sbar.Image = "Global/white.png"
@@ -259,7 +260,6 @@ function updText()
 
 				dd.Text = "Selected " .. diff.Name .. author .. string.format(" (%d of %d)", Global.DifficultyIndex+1, s7k.DifficultyCount) ..
 					"\nChannels: " .. diff.Channels .. 
-					"\nSong by " .. s7k.Author ..
 					"\nLevel " .. diff.Level .. 
 					" (" .. string.format("%.02f", nps) .. " nps)"
 
