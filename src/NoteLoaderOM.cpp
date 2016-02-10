@@ -116,10 +116,10 @@ struct OsuLoadInfo
 
 bool ReadGeneral(std::string line, OsuLoadInfo* Info)
 {
-    std::string Command = line.substr(0, line.find_first_of(" ")); // Lines are Information:<space>Content
+    std::string Command = line.substr(0, line.find_first_of(":")); // Lines are Information:<space>Content
     std::string Content = line.substr(line.find_first_of(":") + 1);
 
-    Content = Content.substr(Content.find_first_not_of(" "));
+    Utility::Trim(Content);
 
     if (Command == "AudioFilename:")
     {
@@ -722,12 +722,12 @@ void CopyTimingData(OsuLoadInfo* Info)
     }
 }
 
-void NoteLoaderOM::LoadObjectsFromFile(std::string filename, std::string prefix, Song *Out)
+void NoteLoaderOM::LoadObjectsFromFile(std::filesystem::path filename, Song *Out)
 {
 #if (!defined _WIN32) || (defined STLP)
     std::ifstream filein(filename.c_str());
 #else
-    std::ifstream filein(Utility::Widen(filename).c_str());
+    std::ifstream filein(filename);
 #endif
     std::regex versionfmt("osu file format v(\\d+)");
 
@@ -748,11 +748,9 @@ void NoteLoaderOM::LoadObjectsFromFile(std::string filename, std::string prefix,
 
     // osu! stores bpm information as the time in ms that a beat lasts.
     Diff->BPMType = Difficulty::BT_BEATSPACE;
-    Out->SongDirectory = prefix;
 
     Diff->Filename = filename;
-    Out->SongDirectory = prefix + "/";
-
+    
     /*
         Just like BMS, osu!mania charts have timing data separated by files
         and a set is implied using folders.

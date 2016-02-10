@@ -22,7 +22,7 @@ public:
     bool RegisterStruct(std::string Key, void* data, std::string MetatableName = std::string());
     void RegisterLibrary(std::string arrayname, const luaL_Reg *lib);
     void* GetStruct(std::string Key);
-    bool RunScript(Directory file);
+    bool RunScript(std::filesystem::path file);
     bool RunScript(std::string Filename);
     bool RunString(std::string sGString);
 

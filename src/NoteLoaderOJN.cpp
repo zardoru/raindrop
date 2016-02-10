@@ -274,14 +274,8 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
     }
 }
 
-bool IsValidOJN(std::fstream &filein, std::string filename, OjnHeader *Head)
+bool IsValidOJN(std::fstream &filein, OjnHeader *Head)
 {
-    if (!filein)
-    {
-        Log::Printf("NoteLoaderOJN: %s could not be opened\n", filename.c_str());
-        return false;
-    }
-
     filein.read(reinterpret_cast<char*>(Head), sizeof(OjnHeader));
 
     if (!filein)
@@ -310,7 +304,13 @@ const char *LoadOJNCover(std::string filename, size_t &read)
     OjnHeader Head;
     char* out;
 
-    if (!IsValidOJN(filein, filename, &Head))
+	if (!filein)
+	{
+		Log::Printf("NoteLoaderOJN: %s could not be opened\n", filename.c_str());
+		return false;
+	}
+
+    if (!IsValidOJN(filein, &Head))
         return "";
 
     out = new char[Head.cover_size];
@@ -322,17 +322,27 @@ const char *LoadOJNCover(std::string filename, size_t &read)
     return out;
 }
 
-void NoteLoaderOJN::LoadObjectsFromFile(std::string filename, std::string prefix, VSRG::Song *Out)
+void NoteLoaderOJN::LoadObjectsFromFile(std::filesystem::path filename, VSRG::Song *Out)
 {
 #if (!defined _WIN32)
     std::fstream filein(filename.c_str());
 #else
-    std::fstream filein(Utility::Widen(filename).c_str(), std::ios::binary | std::ios::in);
+    std::fstream filein(filename, std::ios::binary | std::ios::in);
 #endif
     OjnHeader Head;
+	auto ufn = Utility::Narrow(filename.wstring());
 
-    if (!IsValidOJN(filein, filename, &Head))
-        return;
+	if (!filein)
+	{
+		auto s = Utility::Format("NoteLoaderOJN: %s could not be opened\n", ufn);
+		throw std::runtime_error(s);
+	}
+
+	if (!IsValidOJN(filein, &Head))
+	{
+		auto s = Utility::Format("NoteLoaderOJN: %s is not a valid OJN.\n", ufn);
+		throw std::runtime_error(s);
+	}
 
     std::string vArtist;
     std::string vName;
@@ -374,7 +384,7 @@ void NoteLoaderOJN::LoadObjectsFromFile(std::string filename, std::string prefix
         Diff->Level = Head.level[i];
         Diff->Data->TimingInfo = TInfo;
         Diff->Author = Noter;
-        Diff->Data->StageFile = Directory(filename).Filename();
+        Diff->Data->StageFile = Utility::Narrow(filename.filename().wstring());
 
         Info.S = Out;
         filein.seekg(Head.note_offset[i]);

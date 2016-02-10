@@ -212,15 +212,19 @@ namespace Utility
 {
     void DebugBreak();
     bool IsNumeric(const char* s);
-    std::string RelativeToPath(std::string Filename);
-    std::string RemoveExtension(std::string Fn);
-    bool FileExists(std::string Filename);
+    
+	// Convert utf8 string into std::wstring.
     std::wstring Widen(std::string Line);
+
+	// Convert std::wstring into utf8 std::string.
     std::string Narrow(std::wstring Line);
+
+	// Convert SHIFT-JIS std::string into UTF-8 std::string.
     std::string SJIStoU8(std::string Line);
+
     void CheckDir(std::string Dirname);
-    int GetLMT(std::string Path);
-    std::string GetSha256ForFile(std::string Filename);
+    int GetLMT(std::filesystem::path Path);
+    std::string GetSha256ForFile(std::filesystem::path Filename);
     std::string IntToStr(int num);
     std::string CharToStr(char c);
     void RemoveFilenameIllegalCharacters(std::string &S, bool removeSlash, bool noAbsolute = true);

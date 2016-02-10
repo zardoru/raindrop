@@ -96,8 +96,12 @@ int RowifiedDifficulty::MeasureForBeat(double Beat)
 	auto it = upper_bound(MeasureAccomulation.begin(), MeasureAccomulation.end(), Beat);
 	auto Measure = it - MeasureAccomulation.begin() - 1;
 	
-	if (Measure < MeasureAccomulation.size() && Measure >= 0)
-		return Measure;
+	if (Measure >= 0)
+	{
+		size_t M = Measure; // eh, do we need more 2^31-1 measures? anyway shut up compiler
+		if (M < MeasureAccomulation.size())
+			return Measure;
+	}
 	
 	auto s = Utility::Format("Beat %f (Measure %d) outside of bounds (size = %d).", 
 		Beat, Measure, MeasureAccomulation.size());

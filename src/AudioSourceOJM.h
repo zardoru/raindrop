@@ -25,7 +25,7 @@ class AudioSourceOJM : public AudioDataSource, Interruptible
 public:
     AudioSourceOJM(Interruptible* Parent = nullptr);
     ~AudioSourceOJM();
-    bool Open(const char* Filename) override;
+    bool Open(std::filesystem::path Filename) override;
     std::shared_ptr<SoundSample> GetFromIndex(int Index);
     void Seek(float Time) override;
     uint32_t Read(short* buffer, size_t count) override;

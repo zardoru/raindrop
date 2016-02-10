@@ -16,7 +16,7 @@ class AudioSourceMP3 : public AudioDataSource
 public:
     AudioSourceMP3();
     ~AudioSourceMP3();
-    bool Open(const char* Filename) override;
+    bool Open(std::filesystem::path Filename) override;
     uint32_t Read(short* buffer, size_t count) override;
     void Seek(float Time) override;
     size_t GetLength() override; // Always returns total samples. Frames = Length/Channels.

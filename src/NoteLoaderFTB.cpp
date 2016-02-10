@@ -41,7 +41,7 @@ void NoteLoaderFTB::LoadMetadata(std::string filename, std::string prefix, Song 
     filein.close();
 }
 
-void NoteLoaderFTB::LoadObjectsFromFile(std::string filename, std::string prefix, Song *Out)
+void NoteLoaderFTB::LoadObjectsFromFile(std::filesystem::path filename, Song *Out)
 {
     std::shared_ptr<VSRG::Difficulty> Diff(new Difficulty());
     Measure Msr;
@@ -49,7 +49,7 @@ void NoteLoaderFTB::LoadObjectsFromFile(std::string filename, std::string prefix
 #if (!defined _WIN32) || (defined STLP)
     std::ifstream filein(filename.c_str());
 #else
-    std::ifstream filein(Utility::Widen(filename).c_str());
+    std::ifstream filein(filename);
 #endif
 
     Diff->Filename = filename;
@@ -62,7 +62,7 @@ failed:
 
     Diff->BPMType = VSRG::Difficulty::BT_MS; // MS using BPMs.
     Diff->Channels = 7;
-    Diff->Name = Utility::RemoveExtension(Utility::RelativeToPath(filename));
+    // Diff->Name = Utility::RemoveExtension(Utility::RelativeToPath(filename));
 
     while (filein)
     {

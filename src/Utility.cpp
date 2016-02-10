@@ -42,55 +42,16 @@ namespace Utility
         return !k.fail();
     }
 
-    std::string GetExtension(std::string Filename)
-    {
-        return Filename.substr(Filename.find_last_of(".") + 1);
-    }
-
-    std::string RelativeToPath(std::string Filename)
-    {
-        return Filename.substr(Filename.find_last_of("/"));
-    }
-
-    std::string RemoveExtension(std::string Fn)
-    {
-        return Fn.substr(0, Fn.find_last_of("."));
-    }
-
-    bool FileExists(std::string Fn)
-    {
-#if !(defined WIN32) || (defined MINGW)
-        struct stat st;
-        return (stat(Fn.c_str(), &st) != -1);
-#else
-        return _waccess(Utility::Widen(Fn).c_str(), 00) != -1;
-#endif
-    }
-
     std::wstring Widen(std::string Line)
     {
-        wchar_t u16s[2048]; // Ought to be enough for everyone.
-
-#ifndef WIN32
-        mbstowcs(u16s, Line.c_str(), 2048);
-#else
-        memset(u16s, 0, sizeof(wchar_t) * 2048);
-        size_t len = MultiByteToWideChar(CP_UTF8, 0, Line.c_str(), Line.length(), u16s, 2048);
-#endif
-        return std::wstring(u16s);
+		std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
+        return converter.from_bytes(Line);
     }
 
     std::string Narrow(std::wstring Line)
     {
-        char mbs[2048];
-
-#ifndef WIN32
-        wcstombs(mbs, Line.c_str(), 2048);
-#else
-        memset(mbs, 0, 2048);
-        size_t len = WideCharToMultiByte(CP_UTF8, 0, Line.c_str(), Line.length(), mbs, 2048, NULL, NULL);
-#endif
-        return std::string(mbs);
+		std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
+        return converter.to_bytes(Line);
     }
 
     const short MAX_STRING_SIZE = 2048;
@@ -223,14 +184,13 @@ namespace Utility
         }
     }
 
-    int GetLMT(std::string Path)
+    int GetLMT(std::filesystem::path Path)
     {
-        struct stat st;
-        if (stat(Path.c_str(), &st) != -1)
-        {
-            return st.st_mtime;
-        }
-        else return 0;
+		if (std::filesystem::exists(Path)) {
+			auto a = std::filesystem::last_write_time(Path);
+			return decltype(a)::clock::to_time_t(a);
+		}
+		else return -1;
     }
 
     void RemoveFilenameIllegalCharacters(std::string &S, bool removeSlash, bool noAbsolute)
@@ -245,13 +205,13 @@ namespace Utility
             ReplaceAll(S, "/", "");
     }
 
-    std::string GetSha256ForFile(std::string Filename)
+    std::string GetSha256ForFile(std::filesystem::path Filename)
     {
         SHA256 SHA;
 #ifndef WIN32
         std::ifstream InStream(Filename.c_str());
 #else
-        std::ifstream InStream(Utility::Widen(Filename).c_str());
+        std::ifstream InStream(Filename);
 #endif
         unsigned char tmpbuf[256];
 

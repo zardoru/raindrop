@@ -171,6 +171,9 @@ public:
             get_color( _palette[i], green_t() ) = _io_dev.read_uint8();
             get_color( _palette[i], red_t()   ) = _io_dev.read_uint8();
 
+			using alpha_channel = color_element_type<rgba8_pixel_t, alpha_t>::type;
+            get_color( _palette[i], alpha_t() ) = channel_traits<alpha_channel>::max_value();
+			
             // there are 4 entries when windows header
             // but 3 for os2 header
             if( _info._header_size == bmp_header_size::_win32_info_size )

@@ -3,7 +3,7 @@
 #include "ScreenCustom.h"
 #include "SceneEnvironment.h"
 
-ScreenCustom::ScreenCustom(const std::string& ScriptName)
+ScreenCustom::ScreenCustom(const std::filesystem::path& ScriptName)
     : Screen("ScreenCustom")
 {
     Animations->Initialize(ScriptName);

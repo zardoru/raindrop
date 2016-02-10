@@ -284,7 +284,8 @@ void SceneEnvironment::InitializeUI()
 void SceneEnvironment::RunUIScript(std::string Filename)
 {
     lua_State* L = Rocket::Core::Lua::Interpreter::GetLuaState();
-    luaL_dofile(L, GameState::GetInstance().GetSkinFile(Filename).c_str());
+	auto s = Utility::Narrow(GameState::GetInstance().GetSkinFile(Filename).wstring());
+    luaL_dofile(L, s.c_str());
 }
 
 SceneEnvironment::~SceneEnvironment()
@@ -317,7 +318,7 @@ void SceneEnvironment::SetUILayer(uint32_t Layer)
     Sort();
 }
 
-void SceneEnvironment::Preload(std::string Filename, std::string Arrname)
+void SceneEnvironment::Preload(std::filesystem::path Filename, std::string Arrname)
 {
     mInitScript = Filename;
 
@@ -329,7 +330,8 @@ void SceneEnvironment::Preload(std::string Filename, std::string Arrname)
 
         while (Lua->IterateNext())
         {
-            Images->AddToList(GameState::GetInstance().GetSkinFile(Lua->NextGString()), "");
+			auto s = GameState::GetInstance().GetSkinFile(Lua->NextGString());
+            Images->AddToList(s, "");
             Lua->Pop();
         }
 
@@ -362,10 +364,10 @@ bool SceneEnvironment::IsManagedObject(Drawable2D *Obj)
     return false;
 }
 
-void SceneEnvironment::Initialize(std::string Filename, bool RunScript)
+void SceneEnvironment::Initialize(std::filesystem::path Filename, bool RunScript)
 {
-    if (!mInitScript.length() && Filename.length())
-        mInitScript = Filename;
+    if (!mInitScript.wstring().length() && Filename.wstring().length())
+        mInitScript = Utility::Narrow(Filename.wstring());
 
     if (RunScript)
         Lua->RunScript(Filename);
@@ -575,7 +577,7 @@ void SceneEnvironment::ReloadUI()
 /* This function right now is broken beyond repair. Don't mind it. */
 void SceneEnvironment::ReloadScripts()
 {
-    std::string InitScript = mInitScript;
+    auto InitScript = mInitScript;
     this->~SceneEnvironment();
     new (this) SceneEnvironment(mScreenName.c_str(), false);
 

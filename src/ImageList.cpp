@@ -25,27 +25,24 @@ ImageList::~ImageList()
     Destroy();
 }
 
-void ImageList::AddToList(const std::string Filename, const std::string Prefix)
+void ImageList::AddToList(const std::filesystem::path Filename, const std::filesystem::path Prefix)
 {
-    Directory ResFilename = Directory(Prefix) / Filename;
-    ResFilename.Normalize(true);
+    auto ResFilename = Prefix / Filename;
 
     if (Images.find(ResFilename) == Images.end())
     {
-        ImageLoader::AddToPending(ResFilename.c_path());
+        ImageLoader::AddToPending(ResFilename);
         Images[ResFilename] = nullptr;
     }
 }
 
-void ImageList::AddToListIndex(const std::string Filename, const std::string Prefix, int Index)
+void ImageList::AddToListIndex(const std::filesystem::path Filename, const std::filesystem::path Prefix, int Index)
 {
-    Directory ResFilename = Directory(Prefix) / Filename;
-
-    ResFilename.Normalize(true);
+    auto ResFilename = Prefix / Filename;
 
     if (ImagesIndex.find(Index) == ImagesIndex.end())
     {
-        ImageLoader::AddToPending(ResFilename.c_path());
+        ImageLoader::AddToPending(ResFilename);
         Images[ResFilename] = nullptr;
         ImagesIndex[Index] = nullptr;
         ImagesIndexPending[Index] = ResFilename;

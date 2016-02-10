@@ -368,7 +368,8 @@ void Application::Run()
     else if (RunMode == MODE_CUSTOMSCREEN)
     {
         Log::Printf("Initializing custom, ad-hoc screen...\n");
-        ScreenCustom *scr = new ScreenCustom(GameState::GetInstance().GetSkinFile(InFile.u8string()));
+		auto s = Utility::Narrow(InFile.wstring());
+        ScreenCustom *scr = new ScreenCustom(GameState::GetInstance().GetSkinFile(s));
         Game = scr;
     }
 

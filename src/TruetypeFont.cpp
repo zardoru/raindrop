@@ -5,36 +5,74 @@
 
 #include "Logging.h"
 
-TruetypeFont::TruetypeFont(std::string Filename, float Scale)
+class TTFMan {
+public:
+	struct FontData {
+		std::shared_ptr<std::vector<unsigned char>> data;
+		std::shared_ptr<stbtt_fontinfo> info;
+	};
+
+private:
+	static std::map<std::filesystem::path, FontData> font_data;
+
+public:
+	static void Load(std::filesystem::path Filename, 
+		std::shared_ptr<std::vector<unsigned char>>& data, std::shared_ptr<stbtt_fontinfo>& info, bool &IsValid) {
+
+		// accelerate loading if font is on registers
+		if (font_data.find(Filename) != font_data.end())
+		{
+			auto &fnt = font_data[Filename];
+			info = fnt.info;
+			data = fnt.data;
+			IsValid = true;
+			return;
+		}
+
+		std::ifstream ifs(Filename.c_str(), std::ios::binary);
+
+		info = nullptr;
+		data = nullptr;
+
+		if (!ifs.is_open())
+		{
+			IsValid = false;
+			return;
+		}
+
+		// tell size
+		ifs.seekg(0, ifs.end);
+		auto offs = ifs.tellg();
+		ifs.seekg(0, ifs.beg);
+
+		data = std::make_shared<std::vector<unsigned char>>(offs);
+		info = std::make_shared<stbtt_fontinfo>();
+
+		// read data
+		ifs.read((char*)data.get()->data(), offs);
+
+		IsValid = (stbtt_InitFont(info.get(), 
+			data.get()->data(), 
+			stbtt_GetFontOffsetForIndex(data.get()->data(), 
+				0)) != 0);
+
+		if (IsValid) {
+			font_data[Filename] = {
+				data,
+				info
+			};
+		}
+	}
+};
+
+std::map < std::filesystem::path, TTFMan::FontData > TTFMan::font_data;
+
+TruetypeFont::TruetypeFont(std::filesystem::path Filename, float Scale)
 {
-    std::ifstream ifs(Filename.c_str(), std::ios::binary);
+	TTFMan::Load(Filename, this->data, this->info, IsValid);
 
-    info = nullptr;
-    data = nullptr;
-
-    if (!ifs.is_open())
-    {
-        IsValid = false;
-        return;
-    }
-
-    scale = Scale;
-
-    // tell size
-    ifs.seekg(0, ifs.end);
-    offs = ifs.tellg();
-    ifs.seekg(0, ifs.beg);
-
-    data = new unsigned char[offs];
-    info = new stbtt_fontinfo;
-
-    filename = Filename;
-
-    // read data
-    ifs.read((char*)data, offs);
-
-    IsValid = (stbtt_InitFont(info, data, stbtt_GetFontOffsetForIndex(data, 0)) != 0);
-    windowscale = 0;
+	scale = Scale;
+	windowscale = 0;
 
     if (IsValid)
     {
@@ -43,14 +81,12 @@ TruetypeFont::TruetypeFont(std::string Filename, float Scale)
         WindowFrame.AddTTF(this);
     }
     else
-        Log::Printf("Failure loading TTF file %s.\n", Filename.c_str());
+        Log::Printf("Failure loading TTF file %s.\n", Utility::Narrow(Filename.wstring()).c_str());
 }
 
 TruetypeFont::~TruetypeFont()
 {
     WindowFrame.RemoveTTF(this);
-    delete data;
-    delete info;
     ReleaseTextures();
 }
 
@@ -63,8 +99,8 @@ void TruetypeFont::UpdateWindowScale()
     windowscale = WindowFrame.GetWindowVScale();
 
     float oldrealscale = realscale;
-    realscale = stbtt_ScaleForPixelHeight(info, scale * windowscale);
-    virtualscale = stbtt_ScaleForPixelHeight(info, scale);
+    realscale = stbtt_ScaleForPixelHeight(info.get(), scale * windowscale);
+    virtualscale = stbtt_ScaleForPixelHeight(info.get(), scale);
 #ifdef VERBOSE_DEBUG
     wprintf(L"change scale %f -> %f, realscale %f -> %f\n", oldscale, windowscale, oldrealscale, realscale);
 #endif
@@ -105,14 +141,14 @@ TruetypeFont::codepdata &TruetypeFont::GetTexFromCodepoint(int cp)
 #endif
         if (IsValid)
         {
-            newcp.tex = stbtt_GetCodepointBitmap(info, 0, realscale, cp, &w, &h, &xofs, &yofs);
+            newcp.tex = stbtt_GetCodepointBitmap(info.get(), 0, realscale, cp, &w, &h, &xofs, &yofs);
             newcp.gltx = 0;
             newcp.scl = WindowFrame.GetWindowVScale();
             newcp.tw = w;
             newcp.th = h;
 
             // get size etc.. for how it'd be if the screen weren't resized
-            void * tx = stbtt_GetCodepointBitmap(info, 0, virtualscale, cp, &w, &h, &xofs, &yofs);
+            void * tx = stbtt_GetCodepointBitmap(info.get(), 0, virtualscale, cp, &w, &h, &xofs, &yofs);
             newcp.xofs = xofs;
             newcp.yofs = yofs;
             newcp.w = w;
@@ -153,9 +189,9 @@ float TruetypeFont::GetHorizontalLength(const char *In)
             ++it_nx;
             if (it_nx != itend)
             {
-                float aW = stbtt_GetCodepointKernAdvance(info, *it, *it_nx);
+                float aW = stbtt_GetCodepointKernAdvance(info.get(), *it, *it_nx);
                 int bW;
-                stbtt_GetCodepointHMetrics(info, *it, &bW, NULL);
+                stbtt_GetCodepointHMetrics(info.get(), *it, &bW, NULL);
                 Out += aW * virtualscale + bW * virtualscale;
             }
             else

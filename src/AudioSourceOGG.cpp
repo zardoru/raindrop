@@ -54,20 +54,16 @@ AudioSourceOGG::~AudioSourceOGG()
         ov_clear(&mOggFile);
 }
 
-bool AudioSourceOGG::Open(const char* Filename)
+bool AudioSourceOGG::Open(std::filesystem::path Filename)
 {
 #if !(defined WIN32) || (defined MINGW)
-    int32 retv = ov_fopen(Filename, &mOggFile);
+    int32 retv = ov_fopen(Utility::Narrow(Filename).c_str(), &mOggFile);
 #else
-    FILE* fp = _wfopen(Utility::Widen(Filename).c_str(), L"rb");
+    FILE* fp = _wfopen(Filename.c_str(), L"rb");
     int retv = -1;
 
     if (fp)
         retv = ov_open_callbacks(static_cast<void*>(fp), &mOggFile, nullptr, 0, fileInterfaceOgg);
-#endif
-
-#ifndef NDEBUG
-    dFILENAME = Filename;
 #endif
 
 #if !(defined WIN32) || (defined MINGW)
@@ -85,7 +81,7 @@ bool AudioSourceOGG::Open(const char* Filename)
     else
     {
         mIsValid = false;
-        Log::Printf("Failure loading ogg file: %s (%d)\n", Filename, retv);
+        Log::Printf("Failure loading ogg file: %s (%d)\n", Utility::Narrow(Filename).c_str(), retv);
     }
 
     return mIsValid;

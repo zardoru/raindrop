@@ -71,9 +71,9 @@ namespace Game
         ScoreKeeper7K* GetScorekeeper7K();
         void SetScorekeeper7K(std::shared_ptr<ScoreKeeper7K> Other);
 
-        std::string GetSkinFile(const std::string &Name, const std::string &Skin);
-        std::string GetSkinFile(const std::string &Name);
-        std::string GetFallbackSkinFile(const std::string &Name);
+        std::filesystem::path GetSkinFile(const std::string &Name, const std::string &Skin);
+        std::filesystem::path GetSkinFile(const std::string &Name);
+        std::filesystem::path GetFallbackSkinFile(const std::string &Name);
 
         SongDatabase* GetSongDatabase();
         static GameWindow* GetWindow();

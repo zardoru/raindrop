@@ -75,15 +75,15 @@ namespace LuaAnimFuncs
 
     int GetSkinFile(lua_State *L)
     {
-        std::string Out = GameState::GetInstance().GetSkinFile(std::string(luaL_checkstring(L, 1)), GameState::GetInstance().GetSkin());
-        lua_pushstring(L, Out.c_str());
+        auto Out = GameState::GetInstance().GetSkinFile(std::string(luaL_checkstring(L, 1)), GameState::GetInstance().GetSkin());
+        lua_pushstring(L, Utility::Narrow(Out.wstring()).c_str());
         return 1;
     }
 
     int GetFallbackFile(lua_State *L)
     {
-        std::string Out = GameState::GetInstance().GetFallbackSkinFile(std::string(luaL_checkstring(L, 1)));
-        lua_pushstring(L, Out.c_str());
+        auto Out = GameState::GetInstance().GetFallbackSkinFile(std::string(luaL_checkstring(L, 1)));
+        lua_pushstring(L, Utility::Narrow(Out.wstring()).c_str());
         return 1;
     }
 }

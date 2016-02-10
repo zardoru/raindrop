@@ -12,7 +12,7 @@ protected:
 public:
     AudioDataSource();
     virtual ~AudioDataSource();
-    virtual bool Open(const char* Filename) = 0;
+    virtual bool Open(std::filesystem::path Filename) = 0;
     virtual uint32_t Read(short* buffer, size_t count) = 0; // count is in samples.
     virtual void Seek(float Time) = 0;
     virtual size_t GetLength() = 0; // Always returns total frames.
@@ -33,7 +33,7 @@ protected:
 public:
     virtual ~Sound() = default;
     virtual uint32_t Read(float* buffer, size_t count) = 0;
-    virtual bool Open(const char* Filename) = 0;
+    virtual bool Open(std::filesystem::path Filename) = 0;
     virtual void Play() = 0;
     virtual bool IsPlaying() = 0;
     virtual void SeekTime(float Second) = 0;
@@ -62,7 +62,7 @@ public:
     AudioSample(AudioSample &&Other);
     ~AudioSample();
     uint32_t Read(float* buffer, size_t count) override;
-    bool Open(const char* Filename) override;
+    bool Open(std::filesystem::path Filename) override;
     bool Open(AudioDataSource* Source);
     void Play() override;
     void SeekTime(float Second) override;
@@ -97,7 +97,7 @@ public:
     ~AudioStream();
 
     uint32_t Read(float* buffer, size_t count) override;
-    bool Open(const char* Filename) override;
+    bool Open(std::filesystem::path Filename) override;
     void Play() override;
     void SeekTime(float Second) override;
     void SeekSample(uint32_t Sample) override;

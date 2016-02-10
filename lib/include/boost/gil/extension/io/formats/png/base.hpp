@@ -67,7 +67,7 @@ private:
     {
         if( png_ptr )
         {
-            assert( png_ptr->_struct && png_ptr->_info );
+            // assert( png_ptr->_struct && png_ptr->_info );
 
             png_destroy_read_struct( &png_ptr->_struct
                                    , &png_ptr->_info

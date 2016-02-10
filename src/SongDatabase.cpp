@@ -136,7 +136,8 @@ int SongDatabase::InsertFilename(std::filesystem::path Fn)
     int ret;
     int idOut;
     int lmt;
-	std::string u8p = Fn.u8string();
+	std::string u8p = Utility::Narrow(std::filesystem::absolute(Fn).wstring());
+
     SC(sqlite3_bind_text(st_FilenameQuery, 1, u8p.c_str(), u8p.length(), SQLITE_STATIC));
 
     if (sqlite3_step(st_FilenameQuery) == SQLITE_ROW)
@@ -144,12 +145,12 @@ int SongDatabase::InsertFilename(std::filesystem::path Fn)
         idOut = sqlite3_column_int(st_FilenameQuery, 0);
         lmt = sqlite3_column_int(st_FilenameQuery, 1);
 
-        int lastLmt = Utility::GetLMT(u8p.c_str());
+        int lastLmt = Utility::GetLMT(Fn);
 
         // Update the last-modified-time of this file, and its hash if it has changed.
         if (lmt != lastLmt)
         {
-            std::string Hash = Utility::GetSha256ForFile(u8p);
+            std::string Hash = Utility::GetSha256ForFile(Fn);
             SC(sqlite3_bind_int(st_UpdateLMT, 1, lastLmt));
             SC(sqlite3_bind_text(st_UpdateLMT, 2, Hash.c_str(), Hash.length(), SQLITE_STATIC));
             SC(sqlite3_bind_text(st_UpdateLMT, 3, u8p.c_str(), u8p.length(), SQLITE_STATIC));
@@ -159,11 +160,11 @@ int SongDatabase::InsertFilename(std::filesystem::path Fn)
     }
     else
     {
-        std::string Hash = Utility::GetSha256ForFile(u8p);
+        std::string Hash = Utility::GetSha256ForFile(Fn);
 
         // There's no entry, got to insert it.
         SC(sqlite3_bind_text(st_FilenameInsertQuery, 1, u8p.c_str(), u8p.length(), SQLITE_STATIC));
-        SC(sqlite3_bind_int(st_FilenameInsertQuery, 2, Utility::GetLMT(u8p.c_str())));
+        SC(sqlite3_bind_int(st_FilenameInsertQuery, 2, Utility::GetLMT(Fn)));
         SC(sqlite3_bind_text(st_FilenameInsertQuery, 3, Hash.c_str(), Hash.length(), SQLITE_STATIC));
         SCS(sqlite3_step(st_FilenameInsertQuery)); // This should not fail. Otherwise, there are bigger problems to worry about...
         SC(sqlite3_reset(st_FilenameInsertQuery));
@@ -311,8 +312,8 @@ std::string SongDatabase::GetDifficultyFilename(int ID)
 bool SongDatabase::CacheNeedsRenewal(std::filesystem::path Dir)
 {
 	// must match what we put at InsertFilename time, so turn into absolute path on both places!
-	std::string u8p = std::filesystem::absolute(Dir).u8string();
-    int CurLMT = Utility::GetLMT(u8p);
+	std::string u8p = Utility::Narrow(std::filesystem::absolute(Dir).wstring());
+    int CurLMT = Utility::GetLMT(Dir);
     bool NeedsRenewal;
     int res, ret;
 
@@ -418,9 +419,23 @@ void SongDatabase::GetSongInformation7K(int ID, VSRG::Song* Out)
 
         SC(sqlite3_bind_int(st_GetFileInfo, 1, FileID));
         sqlite3_step(st_GetFileInfo);
-        Diff->Filename = (char*)sqlite3_column_text(st_GetFileInfo, 0);
-        SC(sqlite3_reset(st_GetFileInfo));
 
+		// This copy is dangerous, so we should reset the info _before_ we try to copy.
+		std::string s = (char*)sqlite3_column_text(st_GetFileInfo, 0);
+		
+		// There's a case where a string could cause operator= to throw
+		// if it tries encoding from u8 into the internal ::path representation and it fails!
+		try {
+			Diff->Filename = s;
+		}
+		catch (std::exception &e) {
+			// We failed copying this thing - clean up and rethrow.
+			SC(sqlite3_reset(st_GetFileInfo));
+			SC(sqlite3_reset(st_GetDiffInfo));
+			throw e;
+		}
+
+		SC(sqlite3_reset(st_GetFileInfo));
         Out->Difficulties.push_back(Diff);
     }
 
@@ -431,7 +446,7 @@ int SongDatabase::GetSongIDForFile(std::filesystem::path File, VSRG::Song* In)
 {
     int ret;
     int Out = -1;
-	std::string u8path = std::filesystem::absolute(File).u8string();
+	std::string u8path = Utility::Narrow(std::filesystem::absolute(File).wstring());
     SC(sqlite3_bind_text(st_GetSIDFromFilename, 1, u8path.c_str(), u8path.length(), SQLITE_STATIC));
 
     int r = sqlite3_step(st_GetSIDFromFilename);

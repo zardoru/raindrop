@@ -7,8 +7,8 @@ class VBO;
 
 class TruetypeFont : public Font
 {
-    stbtt_fontinfo* info;
-    unsigned char* data;
+    std::shared_ptr<stbtt_fontinfo> info;
+    std::shared_ptr<std::vector<unsigned char>> data;
     size_t offs;
     bool IsValid;
     float scale;
@@ -40,7 +40,7 @@ class TruetypeFont : public Font
     void UpdateWindowScale();
 
 public:
-    TruetypeFont(std::string Filename, float Scale);
+    TruetypeFont(std::filesystem::path filename, float Scale);
     ~TruetypeFont();
     float GetHorizontalLength(const char *Text);
 

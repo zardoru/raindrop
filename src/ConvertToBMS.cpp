@@ -202,7 +202,7 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 		for (auto Obj : Out) { // We convert to a fraction that fits with the LCM.
 			auto rNum = Obj.Sect.Num * VecLCM / Obj.Sect.Den;
 			bool slotFree = false;
-			for (int i = 0; i < rowified.size(); i++) {
+			for (size_t i = 0; i < rowified.size(); i++) {
 				if (!rowified[i][rNum] || !AllowMultiple) {
 					rowified[i][rNum] = Obj.Evt;
 					slotFree = true;

@@ -12,7 +12,7 @@ BitmapFont::BitmapFont()
     Font = NULL;
 }
 
-void BitmapFont::LoadFontImage(const char* Location, Vec2 _CharSize, Vec2 _CellSize, Vec2 _RenderSize, char FontStart)
+void BitmapFont::LoadFontImage(std::filesystem::path Location, Vec2 _CharSize, Vec2 _CellSize, Vec2 _RenderSize, char FontStart)
 {
     if (!Font)
         Font = new Image;
@@ -26,9 +26,10 @@ void BitmapFont::LoadFontImage(const char* Location, Vec2 _CharSize, Vec2 _CellS
     RegenerateCharPositions(CellSize);
 }
 
-void BitmapFont::LoadSkinFontImage(const char* Location, Vec2 _CharSize, Vec2 _CellSize, Vec2 _RenderSize, char FontStart)
+void BitmapFont::LoadSkinFontImage(std::filesystem::path Location, Vec2 _CharSize, Vec2 _CellSize, Vec2 _RenderSize, char FontStart)
 {
-    LoadFontImage(GameState::GetInstance().GetSkinFile(Location).c_str(), _CharSize, _CellSize, _RenderSize, FontStart);
+    LoadFontImage(GameState::GetInstance().GetSkinFile(Utility::Narrow(Location.wstring())), 
+		_CharSize, _CellSize, _RenderSize, FontStart);
 }
 
 void BitmapFont::RegenerateCharPositions(Vec2 CellSize)

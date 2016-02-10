@@ -96,10 +96,8 @@ public:
     void Load()
     {
         std::map<std::string, std::string> Directories;
-        std::map<std::string, std::filesystem::path> Directories2;
 
         Configuration::GetConfigListS("SongDirectories", Directories, "Songs");
-        Configuration::GetConfigListS("SongDirectories", Directories2, "Songs");
 
         SongLoader Loader(DB);
 

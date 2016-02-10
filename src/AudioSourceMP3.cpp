@@ -28,18 +28,14 @@ AudioSourceMP3::~AudioSourceMP3()
     mpg123_delete(mHandle);
 }
 
-bool AudioSourceMP3::Open(const char* Filename)
+bool AudioSourceMP3::Open(std::filesystem::path Filename)
 {
     mpg123_param(mHandle, MPG123_FORCE_RATE, 44100, 1);
 
-#ifndef NDEBUG
-    dFILENAME = Filename;
-#endif
-
 #if !(defined WIN32) || (defined MINGW)
-    if (mpg123_open(mHandle, Filename) == MPG123_OK)
+    if (mpg123_open(mHandle, Utility::Narrow(Filename).c_str()) == MPG123_OK)
 #else
-    if (mpg123_topen(mHandle, Utility::Widen(Filename).c_str()) == MPG123_OK)
+    if (mpg123_topen(mHandle, Filename.c_str()) == MPG123_OK)
 #endif
     {
         long rate;
@@ -99,7 +95,7 @@ uint32_t AudioSourceMP3::Read(short* buffer, size_t count)
 void AudioSourceMP3::Seek(float Time)
 {
     mIsDataLeft = true;
-    size_t place = mRate * Time;
+    int place = round(mRate * Time);
     int res = mpg123_seek(mHandle, place, SEEK_SET);
     if (res < 0 || res < place)
     {

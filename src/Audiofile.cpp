@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "Logging.h"
 
 #include "Audio.h"
 #include "Audiofile.h"
@@ -41,21 +42,21 @@ void monoToStereo(T* Buffer, size_t cnt, size_t max_len)
     }
 }
 
-std::unique_ptr<AudioDataSource> SourceFromExt(Directory Filename)
+std::unique_ptr<AudioDataSource> SourceFromExt(std::filesystem::path Filename)
 {
     std::unique_ptr<AudioDataSource> Ret = nullptr;
-    std::string Ext = Filename.GetExtension();
-    Filename.Normalize();
-
-    if (Filename.path().length() == 0 || Ext.length() == 0)
+    auto ext = Utility::Narrow(Filename.extension().wstring());
+	auto u8fn = Utility::Narrow(Filename.wstring());
+    
+    if (u8fn.length() == 0 || ext.length() == 0)
     {
-        wprintf(L"Invalid filename. (%s) (%s)\n", Utility::Widen(Filename).c_str(), Utility::Widen(Ext).c_str());
+        Log::Printf("Invalid filename. (%s) (%s)\n", u8fn.c_str(), u8fn.c_str());
         return nullptr;
     }
 
-    Utility::ToLower(Ext);
+    Utility::ToLower(ext);
 
-    const char* xt = Ext.c_str();
+    const char* xt = ext.c_str();
     if (strstr(xt, "wav") || strstr(xt, "flac"))
         Ret = std::make_unique<AudioSourceSFM>();
 #ifdef MP3_ENABLED
@@ -66,10 +67,10 @@ std::unique_ptr<AudioDataSource> SourceFromExt(Directory Filename)
         Ret = std::make_unique<AudioSourceOGG>();
 
     if (Ret)
-        Ret->Open(Filename.c_path());
+        Ret->Open(u8fn.c_str());
     else
     {
-        wprintf(L"extension %ls has no audiosource associated\n", Utility::Widen(Ext).c_str());
+        Log::Printf("extension %s has no audiosource associated\n", ext.c_str());
         return nullptr;
     }
 
@@ -304,33 +305,31 @@ bool AudioSample::IsValid()
     return mData != nullptr && mData->size() != 0;
 }
 
-std::string RearrangeFilename(const char* Fn)
+std::filesystem::path RearrangeFilename(std::filesystem::path Fn)
 {
-    std::string Ret;
-    Directory File = Fn;
-    File.Normalize();
-    if (Utility::FileExists(File.c_path()))
+    std::filesystem::path Ret;
+    if (std::filesystem::exists(Fn))
         return Fn;
     else
     {
-        std::string Ext = File.GetExtension();
+        auto Ext = Utility::Narrow(Fn.extension().wstring());
         Utility::ToLower(Ext);
 
-        if (strstr(Ext.c_str(), "wav"))
-            Ret = Utility::RemoveExtension(Fn) + ".ogg";
+        if (Ext == ".wav")
+            Ret = Fn.parent_path() / (Fn.stem().wstring() + L".ogg");
         else
-            Ret = Utility::RemoveExtension(Fn) + ".wav";
+            Ret = Fn.parent_path() / (Fn.stem().wstring() + L".wav");
 
-        if (!Utility::FileExists(Ret))
-            return File.c_path();
+        if (!std::filesystem::exists(Ret))
+            return Fn;
         else
             return Ret;
     }
 }
 
-bool AudioSample::Open(const char* Filename)
+bool AudioSample::Open(std::filesystem::path Filename)
 {
-    std::string FilenameFixed = RearrangeFilename(Filename);
+    auto FilenameFixed = RearrangeFilename(Filename);
     std::unique_ptr<AudioDataSource> Src = SourceFromExt(FilenameFixed);
     return Open(Src.get());
 }
@@ -447,7 +446,7 @@ uint32_t AudioStream::Read(float* buffer, size_t count)
     return 0;
 }
 
-bool AudioStream::Open(const char* Filename)
+bool AudioStream::Open(std::filesystem::path Filename)
 {
     mSource = SourceFromExt(RearrangeFilename(Filename));
 

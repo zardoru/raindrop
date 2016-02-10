@@ -53,9 +53,9 @@ void LuaManager::GetGlobal(std::string VarName)
     lua_getglobal(State, VarName.c_str());
 }
 
-bool LuaManager::RunScript(Directory file)
+bool LuaManager::RunScript(std::filesystem::path file)
 {
-    return RunScript(file.path());
+    return RunScript(Utility::Narrow(file.wstring()));
 }
 
 bool LuaManager::RunScript(std::string Filename)
@@ -65,7 +65,7 @@ bool LuaManager::RunScript(std::string Filename)
     if (!Filename.length())
         return false;
 
-    Log::Printf("Running script %s.\n", Filename.c_str());
+    Log::LogPrintf("LuaManager: Running script %s.\n", Filename.c_str());
 
     if ((errload = luaL_loadfile(State, Filename.c_str())) || (errcall = lua_pcall(State, 0, LUA_MULTRET, 0)))
     {
@@ -73,7 +73,7 @@ bool LuaManager::RunScript(std::string Filename)
 
         if (reason)
         {
-            Log::Printf("Lua error: %s\n", reason);
+            Log::LogPrintf("LuaManager: Lua error: %s\n", reason);
             Utility::DebugBreak();
         }
         Pop();

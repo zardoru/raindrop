@@ -249,7 +249,7 @@ namespace NoteLoaderBMSON
 
         void LoadMeasureLengths()
         {
-            int Measure = 0;
+            size_t Measure = 0;
             auto& lines = root["lines"];
             auto& Measures = Chart->Data->Measures;
 
@@ -567,11 +567,12 @@ namespace NoteLoaderBMSON
             current_wav = 1;
         }
 
-        void SetFilename(std::string fn)
+        void SetFilename(std::filesystem::path fn)
         {
             Chart->Filename = fn;
+			auto fx = Chart->Filename;
             if (Chart->Name.length() == 0)
-                Chart->Name = Utility::RemoveExtension(Directory(fn).Filename().path());
+                Chart->Name = Utility::Narrow(fx.filename().replace_extension("").wstring());
         }
 
         void AddNotesToDifficulty()
@@ -653,12 +654,12 @@ namespace NoteLoaderBMSON
         }
     };
 
-    void LoadObjectsFromFile(std::string filename, std::string prefix, VSRG::Song* Out)
+    void LoadObjectsFromFile(std::filesystem::path filename, VSRG::Song* Out)
     {
 #if (!defined _WIN32)
         std::ifstream filein(filename.c_str());
 #else
-        std::ifstream filein(Utility::Widen(filename).c_str());
+        std::ifstream filein(filename);
 #endif
 
         BMSONLoader bmson(filein, Out);

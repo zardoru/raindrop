@@ -564,7 +564,7 @@ bool AudioSourceOJM::IsValid()
     return TemporaryState.Enabled != 0;
 }
 
-bool AudioSourceOJM::Open(const char* f)
+bool AudioSourceOJM::Open(std::filesystem::path f)
 {
     char sig[4];
 

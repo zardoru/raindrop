@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "Logging.h"
 
 #include "Audio.h"
 #include "Audiofile.h"
@@ -20,7 +21,7 @@ AudioSourceSFM::~AudioSourceSFM()
     delete info;
 }
 
-bool AudioSourceSFM::Open(const char* Filename)
+bool AudioSourceSFM::Open(std::filesystem::path Filename)
 {
     if (info) // we're already in use
         return false;
@@ -29,13 +30,9 @@ bool AudioSourceSFM::Open(const char* Filename)
     info->format = 0;
 
 #ifndef WIN32
-    mWavFile = sf_open(Filename, SFM_READ, info);
+    mWavFile = sf_open(Utility::Narrow(Filename).c_str(), SFM_READ, info);
 #else
-    mWavFile = sf_wchar_open(Utility::Widen(Filename).c_str(), SFM_READ, info);
-#endif
-
-#ifndef NDEBUG
-    dFILENAME = Filename;
+    mWavFile = sf_wchar_open(Filename.wstring().c_str(), SFM_READ, info);
 #endif
 
     mRate = info->samplerate;
@@ -45,7 +42,7 @@ bool AudioSourceSFM::Open(const char* Filename)
     int err = 0;
     if (!mWavFile || (err = sf_error(mWavFile)))
     {
-        wprintf(L"Error %d: Filename %ls (wavfile %p)\n", err, Utility::Widen(Filename).c_str(), mWavFile);
+        Log::LogPrintf("Error %d: Filename %s (wavfile %p)\n", err, Utility::Narrow(Filename).c_str(), mWavFile);
         return false;
     }
 

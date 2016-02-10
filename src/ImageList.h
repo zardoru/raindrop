@@ -9,8 +9,8 @@
 */
 class ImageList : public Interruptible
 {
-    std::map <std::string, Image*> Images;
-    std::map <int, std::string> ImagesIndexPending;
+    std::map <std::filesystem::path, Image*> Images;
+    std::map <int, std::filesystem::path> ImagesIndexPending;
     std::map <int, Image*> ImagesIndex;
     bool ShouldDeleteAtDestruction;
 
@@ -21,8 +21,8 @@ public:
     ~ImageList();
 
     void Destroy();
-    void AddToList(const std::string Filename, const std::string Prefix);
-    void AddToListIndex(const std::string Filename, const std::string Prefix, int Index);
+    void AddToList(const std::filesystem::path Filename, const std::filesystem::path Prefix);
+    void AddToListIndex(const std::filesystem::path Filename, const std::filesystem::path, int Index);
     void AddToList(const uint32_t Count, const std::string *Filename, const std::string Prefix);
     bool LoadAll();
 

@@ -378,9 +378,9 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
             next++;
             if (next != itend)
             {
-                float aW = stbtt_GetCodepointKernAdvance(info, *it, *next);
+                float aW = stbtt_GetCodepointKernAdvance(info.get(), *it, *next);
                 int bW;
-                stbtt_GetCodepointHMetrics(info, *it, &bW, NULL);
+                stbtt_GetCodepointHMetrics(info.get(), *it, &bW, NULL);
                 vOffs.x += aW * virtualscale + bW * virtualscale;
             }
         }

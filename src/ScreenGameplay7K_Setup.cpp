@@ -282,7 +282,7 @@ bool ScreenGameplay7K::LoadSongAudio()
     {
         Music = std::make_shared<AudioStream>();
         Music->SetPitch(Speed);
-        if (MySong->SongFilename.length() && Music->Open((MySong->SongDirectory / MySong->SongFilename).u8string().c_str()))
+        if (MySong->SongFilename.length() && Music->Open(MySong->SongDirectory / MySong->SongFilename))
         {
             Log::Printf("Stream for %s succesfully opened.\n", MySong->SongFilename.c_str());
         }
@@ -297,7 +297,7 @@ bool ScreenGameplay7K::LoadSongAudio()
                 for (auto i: std::filesystem::directory_iterator(SngDir))
                 {
                     if (i.path().extension() == "mp3" || i.path().extension() == "ogg")
-                        if (Music->Open(i.path().u8string().c_str()))
+                        if (Music->Open(i.path()))
                             return true;
                 }
 
@@ -315,7 +315,7 @@ bool ScreenGameplay7K::LoadSongAudio()
         Log::Printf("Loading OJM.\n");
         OJMAudio = std::make_shared<AudioSourceOJM>(this);
         OJMAudio->SetPitch(Speed);
-        OJMAudio->Open((MySong->SongDirectory / MySong->SongFilename).u8string().c_str());
+        OJMAudio->Open(MySong->SongDirectory / MySong->SongFilename);
 
         for (int i = 1; i <= 2000; i++)
         {
@@ -651,12 +651,11 @@ void ScreenGameplay7K::SetupMechanics()
 
 void ScreenGameplay7K::LoadResources()
 {
-    std::string MissSndFile = (GameState::GetInstance().GetSkinFile("miss.ogg"));
-    std::string FailSndFile = (GameState::GetInstance().GetSkinFile("stage_failed.ogg"));
+    auto MissSndFile = GameState::GetInstance().GetSkinFile("miss.ogg");
+    auto FailSndFile = GameState::GetInstance().GetSkinFile("stage_failed.ogg");
 
-    MissSnd.Open(MissSndFile.c_str());
-
-    FailSnd.Open(FailSndFile.c_str());
+    MissSnd.Open(MissSndFile);
+    FailSnd.Open(FailSndFile);
 
     if (!LoadChartData() || !LoadSongAudio() || !ProcessSong() || !LoadBGA())
     {

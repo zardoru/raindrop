@@ -182,9 +182,12 @@ namespace Engine
 
         Rocket::Core::FileHandle FileSystemInterface::Open(const Rocket::Core::String& path)
         {
-            std::string npath = GameState::GetInstance().GetSkinFile(path.CString());
-
-            FILE* F = fopen(npath.c_str(), "r");
+            auto npath = GameState::GetInstance().GetSkinFile(path.CString());
+#ifndef _WIN32
+            FILE* F = fopen(Utility::Narrow(npath.wstring()), "r");
+#else
+			FILE* F = _wfopen(npath.c_str(), L"r");
+#endif
 
             return (Rocket::Core::FileHandle) F;
         }

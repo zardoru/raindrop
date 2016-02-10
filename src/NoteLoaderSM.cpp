@@ -417,12 +417,12 @@ SpeedData ParseScrolls(std::string line)
     return Ret;
 }
 
-void NoteLoaderSSC::LoadObjectsFromFile(std::string filename, std::string prefix, Song *Out)
+void NoteLoaderSSC::LoadObjectsFromFile(std::filesystem::path filename, Song *Out)
 {
 #if (!defined _WIN32) || (defined STLP)
     std::ifstream filein(filename.c_str());
 #else
-    std::ifstream filein(Utility::Widen(filename).c_str());
+    std::ifstream filein(filename);
 #endif
 
     TimingData BPMData;
@@ -439,8 +439,6 @@ void NoteLoaderSSC::LoadObjectsFromFile(std::string filename, std::string prefix
         throw std::exception(Utility::Format("couldn't open %s for reading", filename.c_str()).c_str());
 
     std::string Banner;
-
-    Out->SongDirectory = prefix + "/";
 
     std::string line;
     while (filein)
@@ -660,12 +658,12 @@ void WarpifyTiming(Difficulty* Diff)
     }
 }
 
-void NoteLoaderSM::LoadObjectsFromFile(std::string filename, std::string prefix, Song *Out)
+void NoteLoaderSM::LoadObjectsFromFile(std::filesystem::path filename, Song *Out)
 {
 #if (!defined _WIN32) || (defined STLP)
     std::ifstream filein(filename.c_str());
 #else
-    std::ifstream filein(Utility::Widen(filename).c_str());
+    std::ifstream filein(filename);
 #endif
 
     TimingData BPMData;
@@ -682,7 +680,6 @@ void NoteLoaderSM::LoadObjectsFromFile(std::string filename, std::string prefix,
 
     std::string Banner;
 
-    Out->SongDirectory = prefix + "/";
     Diff->Offset = 0;
     Diff->Duration = 0;
     Diff->Data = std::make_shared<VSRG::DifficultyLoadInfo>();

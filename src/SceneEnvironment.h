@@ -49,7 +49,7 @@ class SceneEnvironment
     std::vector <Animation> Animations;
     bool mFrameSkip;
     std::string mScreenName;
-    std::string mInitScript;
+    std::filesystem::path mInitScript;
 
     Rocket::Core::Context* ctx;
     Rocket::Core::ElementDocument *Doc;
@@ -70,8 +70,8 @@ public:
     void RunUIScript(std::string Filename);
     void RunUIFunction(std::string Funcname);
     void SetUILayer(uint32_t Layer);
-    void Preload(std::string Filename, std::string ArrayName);
-    void Initialize(std::string Filename = "", bool RunScript = true);
+    void Preload(std::filesystem::path Filename, std::string ArrayName);
+    void Initialize(std::filesystem::path Filename = "", bool RunScript = true);
     LuaManager *GetEnv();
     ImageList* GetImageList();
 

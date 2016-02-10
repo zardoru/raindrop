@@ -14,7 +14,7 @@
 struct loaderVSRGEntry_t
 {
     const wchar_t* Ext;
-    void(*LoadFunc) (std::string filename, std::string prefix, VSRG::Song* Out);
+    void(*LoadFunc) (std::filesystem::path filename, VSRG::Song* Out);
 } LoadersVSRG[] = {
     { L".bms",   NoteLoaderBMS::LoadObjectsFromFile },
     { L".bme",   NoteLoaderBMS::LoadObjectsFromFile },
@@ -76,7 +76,9 @@ void SongLoader::LoadSongDCFromDir(Directory songPath, std::vector<dotcur::Song*
                 UsesFilename = true;
 
                 NewS->SongFilename = *i;
-                NewS->ChartFilename = UsesFilename ? Utility::RemoveExtension(NewS->SongName) + ".dcf" : NewS->SongName + ".dcf";
+				// todo: dcf
+
+                // NewS->ChartFilename = UsesFilename ? Utility::RemoveExtension(NewS->SongName) + ".dcf" : NewS->SongName + ".dcf";
                 VecOut.push_back(NewS);
             }
             else if (Ext == "png" || Ext == "jpg")
@@ -129,8 +131,7 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(const std::filesystem::path& 
         Sng = new VSRG::Song();
     }
 
-    auto pref = filename.parent_path().u8string().c_str();
-    Sng->SongDirectory = pref;
+    Sng->SongDirectory = filename.parent_path();
 
     for (int i = 0; i < sizeof(LoadersVSRG) / sizeof(loaderVSRGEntry_t); i++)
     {
@@ -139,7 +140,7 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(const std::filesystem::path& 
             Log::LogPrintf("Load %s from disk...", filename.string().c_str());
             try
             {
-                LoadersVSRG[i].LoadFunc(filename.u8string(), pref, Sng);
+                LoadersVSRG[i].LoadFunc(filename, Sng);
                 Log::LogPrintf(" ok\n");
             }
             catch (std::exception &e)
@@ -177,15 +178,16 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(std::filesystem::path Filenam
 
     Sng->SongDirectory = Prefix.string();
 	auto fn = Prefix / Filename;
+	auto fnu8 = Utility::Narrow(fn.wstring());
 
     for (int i = 0; i < sizeof(LoadersVSRG) / sizeof(loaderVSRGEntry_t); i++)
     {
         if (Ext == LoadersVSRG[i].Ext)
         {
-            Log::LogPrintf("Load %s from disk...", fn.u8string().c_str());
+            Log::LogPrintf("Load %s from disk...", fnu8.c_str());
             try
             {
-                LoadersVSRG[i].LoadFunc(fn.u8string(), prefix, Sng);
+                LoadersVSRG[i].LoadFunc(fn, Sng);
                 Log::LogPrintf(" ok\n");
             }
             catch (std::exception &e)
@@ -405,11 +407,16 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<V
         {
             VSRG::Song *New = new VSRG::Song;
             Log::Logf("Song ID %d load from cache...", *i);
-            DB->GetSongInformation7K(*i, New);
-            New->SongDirectory = SongDirectory;
+			try {
+				DB->GetSongInformation7K(*i, New);
+				New->SongDirectory = SongDirectory;
 
-            PushVSRGSong(VecOut, New);
-            Log::Logf(" ok\n");
+				PushVSRGSong(VecOut, New);
+				Log::Logf(" ok\n");
+			}
+			catch (std::exception &e) {
+				Log::Logf("Error loading from cache: %s\n", e.what());
+			}
         }
     }
 }

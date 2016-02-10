@@ -12,6 +12,7 @@
 
 #include "NoteLoader7K.h"
 
+
 #define DirectoryPrefix std::string("GameData/")
 #define SkinsPrefix std::string("Skins/")
 #define SongsPrefix std::string("Songs")
@@ -21,10 +22,10 @@ using namespace Game;
 
 bool GameState::FileExistsOnSkin(const char* Filename, const char* Skin)
 {
-    Directory path(Skin);
+    std::filesystem::path path(Skin);
     path = DirectoryPrefix / (SkinsPrefix / path / Filename);
 
-    return Utility::FileExists(path);
+    return std::filesystem::exists(path);
 }
 
 GameState::GameState()
@@ -64,8 +65,10 @@ std::string GameState::GetSkinScriptFile(const char* Filename, const std::string
     if (Fn.find(".lua") == std::string::npos)
         Fn += ".lua";
 
+	auto s = Utility::Narrow(GetSkinFile(Fn, skin));
+	s = s.substr(0, s.find_last_of('.'));
     // Since dots are interpreted as "look into this directory", we want to eliminate the extra .lua for require purposes.
-    return Utility::RemoveExtension(GetSkinFile(Fn, skin));
+    return s;
 }
 
 std::shared_ptr<Game::Song> GameState::GetSelectedSongShared()
@@ -94,11 +97,11 @@ void GameState::SetSelectedSong(std::shared_ptr<Game::Song> Song)
     SelectedSong = Song;
 }
 
-std::string GameState::GetSkinFile(const std::string &Name, const std::string &Skin)
+std::filesystem::path GameState::GetSkinFile(const std::string &Name, const std::string &Skin)
 {
     std::string Test = GetSkinPrefix(Skin) + Name;
 
-    if (Utility::FileExists(Test))
+    if (std::filesystem::exists(Test))
         return Test;
 
     if (Fallback.find(Skin) != Fallback.end())
@@ -113,7 +116,7 @@ std::string GameState::GetSkinFile(const std::string &Name, const std::string &S
     return Test;
 }
 
-std::string GameState::GetSkinFile(const std::string& Name)
+std::filesystem::path GameState::GetSkinFile(const std::string& Name)
 {
     return GetSkinFile(Name, GetSkin());
 }
@@ -175,7 +178,7 @@ SongDatabase* GameState::GetSongDatabase()
     return Database;
 }
 
-std::string GameState::GetFallbackSkinFile(const std::string &Name)
+std::filesystem::path GameState::GetFallbackSkinFile(const std::string &Name)
 {
     std::string Skin = GetSkin();
 
