@@ -308,6 +308,7 @@ void SongWheel::GoUp()
     {
         CurrentList = CurrentList->GetParentDirectory();
         OnDirectoryChange();
+		OnSongTentativeSelect(GetSelectedSong(), 0);
     }
 }
 

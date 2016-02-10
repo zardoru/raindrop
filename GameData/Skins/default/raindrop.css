@@ -41,13 +41,12 @@ input.text {
 
 select, dataselect {
  	color: white;
-	font-size: 20;
+	font-size: 18;
 	width: 180;
-	height: 25;
-	width: auto;
+	height: 24;
 	background: #101010;
 	text-align: left;
-	padding-bottom: 8px;
+	padding-bottom: 0px;
 }
 
 select selectarrow,

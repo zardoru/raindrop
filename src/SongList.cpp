@@ -160,7 +160,7 @@ std::shared_ptr<Game::Song> SongList::GetSongEntry(unsigned int Entry)
     if (!IsDirectory(Entry))
         return std::static_pointer_cast<Game::Song> (mChildren[Entry].Data);
     else
-        return NULL;
+        return nullptr;
 }
 
 std::string SongList::GetEntryTitle(unsigned int Entry)

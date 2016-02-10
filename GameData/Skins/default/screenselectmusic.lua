@@ -133,7 +133,7 @@ function Init()
 		
 	dd = StringObject2D()
 	dd.Font = font
-	dd.Y = 337
+	dd.Y = 327
 	dd.X = 620
 
 	Engine:AddTarget(dd)
@@ -258,8 +258,9 @@ function updText()
 					author = " by " .. author
 				end
 
-				dd.Text = "Selected " .. diff.Name .. author .. string.format(" (%d of %d)", Global.DifficultyIndex+1, s7k.DifficultyCount) ..
-					"\nChannels: " .. diff.Channels .. 
+				dd.Text = "Selected " .. diff.Name .. author .. 
+					string.format("\n%d of %d", Global.DifficultyIndex+1, s7k.DifficultyCount) ..
+					"\n" .. diff.Channels .. " Channels" ..
 					"\nLevel " .. diff.Level .. 
 					" (" .. string.format("%.02f", nps) .. " nps)"
 

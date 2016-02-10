@@ -68,19 +68,17 @@ function SetupJudgmentsDisplay()
 	w3 = ScoreKeeper:getJudgmentCount(SKJ_W3)
 	w4 = ScoreKeeper:getJudgmentCount(SKJ_W4)
 	w5 = ScoreKeeper:getJudgmentCount(SKJ_MISS)
-
+	Score = Global:GetScorekeeper7K():getScore(Global.CurrentScoreType)
+	
 	fmtext = ""
 	if ScoreKeeper:usesW0() == false then
 		if ScoreKeeper:usesO2() == false then
-			Score = Global:GetScorekeeper7K():getScore(ST_EXP3)
 			fmtext = fmtext .. string.format("Flawless: %04d\nSweet: %04d\nNice: %04d\nWeak: %04d\nMiss: %04d", w1, w2, w3, w4, w5)
 		else
 			local p = ScoreKeeper:getPills()
-			Score = Global:GetScorekeeper7K():getScore(ST_O2JAM)
 			fmtext = fmtext .. string.format("Flawless: %04d\nSweet: %04d\nNice: %04d\nMiss: %04d", w1, w2, w3, w5, p, rem)
 		end
 	else
-		Score = Global:GetScorekeeper7K():getScore(ST_EXP3)
 		fmtext = fmtext .. string.format("Flawless*: %04d\nFlawless: %04d\nSweet: %04d\nNice: %04d\nOK: %04d\nMiss: %04d", w0, w1, w2, w3, w4, w5)
 	end
 
