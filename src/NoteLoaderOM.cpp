@@ -116,7 +116,7 @@ struct OsuLoadInfo
 
 bool ReadGeneral(std::string line, OsuLoadInfo* Info)
 {
-    std::string Command = line.substr(0, line.find_first_of(":")); // Lines are Information:<space>Content
+	std::string Command = line.substr(0, line.find_first_of(":") + 1); // Lines are Information:<space>Content
     std::string Content = line.substr(line.find_first_of(":") + 1);
 
     Utility::Trim(Content);
