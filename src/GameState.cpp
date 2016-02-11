@@ -227,7 +227,7 @@ Image* GameState::GetSkinImage(const std::string& Path)
                     if (Directory(File).GetExtension() == "ojn")
                     {
                         size_t read;
-                        const unsigned char* buf = reinterpret_cast<const unsigned char*>(LoadOJNCover(toLoad.u8string(), read));
+                        const unsigned char* buf = reinterpret_cast<const unsigned char*>(LoadOJNCover(toLoad, read));
                         ImageData data = ImageLoader::GetDataForImageFromMemory(buf, read);
                         StageImage->SetTextureData(&data, true);
                         delete[] buf;
@@ -237,7 +237,7 @@ Image* GameState::GetSkinImage(const std::string& Path)
 
                     if (File.length() && std::filesystem::exists(toLoad))
                     {
-                        StageImage->Assign(toLoad.u8string(), ImageData::SM_DEFAULT, ImageData::WM_DEFAULT, true);
+                        StageImage->Assign(toLoad, ImageData::SM_DEFAULT, ImageData::WM_DEFAULT, true);
                         return StageImage;
                     }
                     else return nullptr;
@@ -257,7 +257,7 @@ Image* GameState::GetSkinImage(const std::string& Path)
 
             if (SelectedSong->BackgroundFilename.length() && std::filesystem::exists(toLoad))
             {
-                SongBG->Assign(toLoad.u8string(), ImageData::SM_DEFAULT, ImageData::WM_DEFAULT, true);
+                SongBG->Assign(toLoad, ImageData::SM_DEFAULT, ImageData::WM_DEFAULT, true);
                 return SongBG;
             }
             else return nullptr;

@@ -28,7 +28,7 @@ namespace NoteLoaderOM
     void LoadObjectsFromFile(std::filesystem::path filename, VSRG::Song *Out);
 }
 
-const char *LoadOJNCover(std::string filename, size_t &read);
+const char *LoadOJNCover(std::filesystem::path filename, size_t &read);
 namespace NoteLoaderOJN
 {
     void LoadObjectsFromFile(std::filesystem::path filename, VSRG::Song *Out);

@@ -294,13 +294,9 @@ bool IsValidOJN(std::fstream &filein, OjnHeader *Head)
     return true;
 }
 
-const char *LoadOJNCover(std::string filename, size_t &read)
+const char *LoadOJNCover(std::filesystem::path filename, size_t &read)
 {
-#if (!defined _WIN32)
-    std::fstream filein(filename.c_str());
-#else
-    std::fstream filein(Utility::Widen(filename).c_str(), std::ios::binary | std::ios::in);
-#endif
+    std::fstream filein(filename, std::ios::binary | std::ios::in);
     OjnHeader Head;
     char* out;
 

@@ -51,7 +51,7 @@ void SongList::AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, std:
             Loader->LoadSong7KFromDir(i, Songs7K);
 
         if (DotcurActive)
-            Loader->LoadSongDCFromDir(i.path().u8string(), SongsDC);
+            Loader->LoadSongDCFromDir(i.path().string(), SongsDC);
 
         if (!SongsDC.size() && !Songs7K.size()) // No songs, so, time to recursively search.
         {
@@ -121,10 +121,7 @@ void SongList::AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, std:
 
 void SongList::AddDirectory(std::mutex &loadMutex, SongLoader *Loader, std::filesystem::path Dir, bool VSRGActive, bool DotcurActive)
 {
-    int idx = Dir.u8string().find_last_of('/') + 1;
-    std::string path;
-	path = Dir.filename().u8string();
-    AddNamedDirectory(loadMutex, Loader, Dir, path, VSRGActive, DotcurActive);
+    AddNamedDirectory(loadMutex, Loader, Dir, Utility::Narrow(Dir.filename()), VSRGActive, DotcurActive);
 }
 
 void SongList::AddVirtualDirectory(std::string NewEntryName, Game::Song* List, int Count)

@@ -574,13 +574,22 @@ void GameWindow::AssignSize()
     if (WindowWidth == 0 || WindowHeight == 0)
     {
         GLFWmonitor *mon = glfwGetPrimaryMonitor();
-        const GLFWvidmode *mode = glfwGetVideoMode(mon);
 
-        size.x = mode->width;
-        size.y = mode->height;
+		if (mon) {
+			const GLFWvidmode *mode = glfwGetVideoMode(mon);
+
+			size.x = mode->width;
+			size.y = mode->height;
+		}
+		else {
+			WindowWidth = 1024;
+			WindowHeight = 768;
+			goto autosize;
+		}
     }
     else
     {
+		autosize:
         size.x = WindowWidth;
         size.y = WindowHeight;
     }
