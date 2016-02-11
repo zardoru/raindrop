@@ -341,24 +341,20 @@ public:
 		}
 	}
 
-	void Output(Directory PathOut)
+	void Output(std::filesystem::path PathOut)
 	{
-		Directory Sn = Song->SongName;
-		Sn.Normalize(true);
+		std::filesystem::path name = PathOut / Utility::Format("%s (%s) - %s.bms", 
+			Song->SongName.c_str(), Parent->Name.c_str(), Parent->Author.c_str());
 
-		std::string name = Utility::Format("%s/%s (%s) - %s.bms", 
-			PathOut.c_path(), Sn.c_path(), Parent->Name.c_str(), Parent->Author.c_str());
-
-#ifndef _WIN32
-        std::ofstream out(name.c_str());
-#else
-        std::ofstream out(Utility::Widen(name).c_str());
-#endif
+        std::ofstream out(name);
 
         try
         {
-            if (!out.is_open())
-                throw std::exception((Utility::Format("failed to open file %s", name.c_str()).c_str()));
+			if (!out.is_open())
+			{
+				auto s = Utility::Format("failed to open file %s", Utility::Narrow(name).c_str());
+				throw std::exception(s.c_str());
+			}
             if (BPS.size() == 0)
                 throw std::exception("There are no timing points!");
             WriteBMSOutput();
@@ -371,7 +367,7 @@ public:
     }
 };
 
-void ConvertBMSAll(VSRG::Song *Source, Directory PathOut, bool Quantize)
+void ConvertBMSAll(VSRG::Song *Source, std::filesystem::path PathOut, bool Quantize)
 {
     for (auto Diff : Source->Difficulties)
     {
@@ -380,12 +376,12 @@ void ConvertBMSAll(VSRG::Song *Source, Directory PathOut, bool Quantize)
     }
 }
 
-void ExportToBMS(VSRG::Song* Source, Directory PathOut)
+void ExportToBMS(VSRG::Song* Source, std::filesystem::path PathOut)
 {
     ConvertBMSAll(Source, PathOut, true);
 }
 
-void ExportToBMSUnquantized(VSRG::Song* Source, Directory PathOut)
+void ExportToBMSUnquantized(VSRG::Song* Source, std::filesystem::path PathOut)
 {
     ConvertBMSAll(Source, PathOut, false);
 }

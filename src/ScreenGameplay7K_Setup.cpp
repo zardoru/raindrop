@@ -252,14 +252,14 @@ bool ScreenGameplay7K::LoadChartData()
     {
         // The difficulty details are destroyed; which means we should load this from its original file.
         SongLoader Loader(GameState::GetInstance().GetSongDatabase());
-        Directory FN;
+        std::filesystem::path FN;
 
         Log::Printf("Loading Chart...");
-        LoadedSong = Loader.LoadFromMeta(MySong.get(), CurrentDiff, &FN, index);
+        LoadedSong = Loader.LoadFromMeta(MySong.get(), CurrentDiff, FN, index);
 
         if (LoadedSong == nullptr)
         {
-            Log::Printf("Failure to load chart. (Filename: %s)\n", FN.path().c_str());
+            Log::Printf("Failure to load chart. (Filename: %s)\n", Utility::Narrow(FN).c_str());
             return false;
         }
 
@@ -351,9 +351,9 @@ bool ScreenGameplay7K::LoadSongAudio()
 
                             audio[sounds.first].SetPitch(Speed);
 
-                            if (!audio[sounds.first].Open(path.u8string().c_str()))
+                            if (!audio[sounds.first].Open(path))
                                 throw std::exception(Utility::Format("Unable to load %s.", slicedata.AudioFiles[sounds.first]).c_str());
-                            Log::Printf("BMSON: Load sound %s\n", path.u8string().c_str());
+                            Log::Printf("BMSON: Load sound %s\n", Utility::Narrow(path.wstring()).c_str());
                         }
 
                         audio[sounds.first].Slice(sounds.second.Start, sounds.second.End);
@@ -374,8 +374,8 @@ bool ScreenGameplay7K::LoadSongAudio()
 
             ks->SetPitch(Speed);
 #ifdef WIN32
-            std::wstring sd = MySong->SongDirectory.wstring() + L"/" + Utility::Widen(i->second);
-            ks->Open(Utility::Narrow(sd).c_str());
+            std::filesystem::path sd = MySong->SongDirectory / i->second;
+            ks->Open(sd);
 #else
             ks->Open((MySong->SongDirectory + "/" + i->second).c_str());
 #endif

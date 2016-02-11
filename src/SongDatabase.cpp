@@ -298,13 +298,17 @@ void SongDatabase::AddDifficulty(int SongID, std::filesystem::path Filename, Gam
     Diff->ID = DiffID;
 }
 
-std::string SongDatabase::GetDifficultyFilename(int ID)
+std::filesystem::path SongDatabase::GetDifficultyFilename(int ID)
 {
     int ret;
     SC(sqlite3_bind_int(st_GetDiffFilename, 1, ID));
     SCS(sqlite3_step(st_GetDiffFilename));
 
-    std::string out = (char *)sqlite3_column_text(st_GetDiffFilename, 0);
+#ifdef _WIN32
+    std::filesystem::path out = Utility::Widen((char*)sqlite3_column_text(st_GetDiffFilename, 0));
+#else
+	std::filesystem::path out = (char*)sqlite3_column_text(st_GetDiffFilename, 0)
+#endif
     SC(sqlite3_reset(st_GetDiffFilename));
     return out;
 }
@@ -426,7 +430,11 @@ void SongDatabase::GetSongInformation7K(int ID, VSRG::Song* Out)
 		// There's a case where a string could cause operator= to throw
 		// if it tries encoding from u8 into the internal ::path representation and it fails!
 		try {
-			Diff->Filename = s;
+#ifdef _WIN32
+			Diff->Filename = Utility::Widen(s);
+#else
+			Diff->Filename = s
+#endif
 		}
 		catch (std::exception &e) {
 			// We failed copying this thing - clean up and rethrow.

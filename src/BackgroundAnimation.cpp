@@ -67,9 +67,9 @@ public:
         EventsLayer2 = Difficulty->Data->BMPEvents->BMPEventsLayer2;
 
         for (auto v : Difficulty->Data->BMPEvents->BMPList)
-            List.AddToListIndex(v.second, Song->SongDirectory.u8string(), v.first);
+            List.AddToListIndex(v.second, Song->SongDirectory, v.first);
 
-        List.AddToList(Song->BackgroundFilename, Song->SongDirectory.u8string());
+        List.AddToList(Song->BackgroundFilename, Song->SongDirectory);
         List.LoadAll();
     }
 
@@ -173,7 +173,7 @@ class StaticBackground : public BackgroundAnimation
     std::shared_ptr<Sprite> Background;
     ImageList List;
 public:
-    StaticBackground(Interruptible* parent, std::string Filename)
+    StaticBackground(Interruptible* parent, std::filesystem::path Filename)
         : BackgroundAnimation(parent), List(this)
     {
         Log::Printf("Using static background: %s\n", Filename.c_str());
@@ -215,7 +215,7 @@ std::shared_ptr<BackgroundAnimation> CreateBGAforVSRG(VSRG::Song &input, uint8_t
         if (Diff->Data && Diff->Data->BMPEvents)
             return std::make_shared<BMSBackground>(context, Diff, &input);
         else
-            return std::make_shared<StaticBackground>(context, GetSongBackground(input).u8string());
+            return std::make_shared<StaticBackground>(context, GetSongBackground(input));
     }
 
     return nullptr;
@@ -223,7 +223,7 @@ std::shared_ptr<BackgroundAnimation> CreateBGAforVSRG(VSRG::Song &input, uint8_t
 
 std::shared_ptr<BackgroundAnimation> CreateBGAforDotcur(dotcur::Song &input, uint8_t DifficultyIndex)
 {
-    return std::make_shared<StaticBackground>(nullptr, GetSongBackground(input).u8string());
+    return std::make_shared<StaticBackground>(nullptr, GetSongBackground(input));
 }
 
 BackgroundAnimation::BackgroundAnimation(Interruptible* parent) : Interruptible(parent)

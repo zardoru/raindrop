@@ -123,7 +123,8 @@ void ScreenGameplay7K::PlayLaneKeysound(uint32_t Lane)
 
     if (Keysounds.find(TN->GetSound()) != Keysounds.end() && PlayReactiveSounds)
         for (auto &&s : Keysounds[TN->GetSound()])
-            if (s) s->Play();
+            if (s) 
+				s->Play();
 }
 
 void ScreenGameplay7K::PlayKeysound(TrackNote* TN)

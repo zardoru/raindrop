@@ -13,7 +13,7 @@ int TrackToXPos(int totaltracks, int track)
     return (base * (track + 1) - minus);
 }
 
-void ConvertToOM(VSRG::Song *Sng, Directory PathOut, std::string Author)
+void ConvertToOM(VSRG::Song *Sng, std::filesystem::path PathOut, std::string Author)
 {
     for (auto Difficulty : Sng->Difficulties)
     {
@@ -30,9 +30,13 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, std::string Author)
         Utility::RemoveFilenameIllegalCharacters(DName, true);
         Utility::RemoveFilenameIllegalCharacters(Charter, true);
 
-        Directory Str = Utility::Format("%s/%s - %s [%s] (%s).osu", PathOut.c_path(), Author.c_str(), Name.c_str(), DName.c_str(), Charter.c_str());
-        Str.Normalize(true);
-        std::ofstream out(Str.c_path());
+		std::filesystem::path Str = 
+			PathOut / Utility::Format("%s - %s [%s] (%s).osu",
+									  Author.c_str(), 
+									  Name.c_str(), 
+									  DName.c_str(), 
+									  Charter.c_str());
+        std::ofstream out(Str);
 
         if (!out.is_open())
         {
@@ -146,14 +150,13 @@ void ConvertToOM(VSRG::Song *Sng, Directory PathOut, std::string Author)
     }
 }
 
-void ConvertToSMTiming(VSRG::Song *Sng, Directory PathOut)
+void ConvertToSMTiming(VSRG::Song *Sng, std::filesystem::path PathOut)
 {
     TimingData BPS, VSpeeds, Warps;
     VSRG::Difficulty* Diff = Sng->Difficulties[0].get();
     Diff->GetPlayableData(nullptr, BPS, VSpeeds, Warps);
 
-    std::ofstream out(PathOut.c_path());
-
+    std::ofstream out(PathOut);
     // Technically, stepmania's #OFFSET is actually #GAP, not #OFFSET.
     out << "#OFFSET:" << -Diff->Offset << ";\n";
 
@@ -192,8 +195,8 @@ void ConvertToSMTiming(VSRG::Song *Sng, Directory PathOut)
     out << ";";
 }
 
-void ExportToBMS(VSRG::Song *Sng, Directory PathOut);
-void ConvertToBMS(VSRG::Song *Sng, Directory PathOut)
+void ExportToBMS(VSRG::Song *Sng, std::filesystem::path PathOut);
+void ConvertToBMS(VSRG::Song *Sng, std::filesystem::path PathOut)
 {
     ExportToBMS(Sng, PathOut);
 }

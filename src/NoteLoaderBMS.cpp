@@ -394,8 +394,8 @@ namespace NoteLoaderBMS{
 				double Time = TimeForObj(i->first, ev.Fraction);
 				NoteData Note;
 				Note.StartTime = Time;
-				Note.Sound = ev.Event; // Mine explosion value.
-				// todo: finish
+				Note.Sound = ev.Event / 2; // Mine explosion value.
+				// todo: finish mine mechanics
 
 			}, startChannelMines, i);
 
@@ -406,6 +406,9 @@ namespace NoteLoaderBMS{
 				Note.StartTime = Time;
 				Note.Sound = ev.Event; // Sound.
 				Note.NoteKind = NK_INVISIBLE;
+
+				UsedSounds[ev.Event] = true;
+				Msr.Notes[Track].push_back(Note);
 			}, startChannelInvisible, i);
 		}
 
@@ -919,11 +922,7 @@ namespace NoteLoaderBMS{
 
 	void LoadObjectsFromFile(std::filesystem::path filename, Song *Out)
 	{
-#if (!defined _WIN32)
-        std::ifstream filein(filename.c_str());
-#else
         std::ifstream filein(filename);
-#endif
 
         std::shared_ptr<Difficulty> Diff(new Difficulty());
         std::shared_ptr<DifficultyLoadInfo> LInfo(new DifficultyLoadInfo());

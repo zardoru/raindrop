@@ -170,7 +170,8 @@ void Application::Init()
 #endif
 
 	Log::Printf(RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT " start.\n");
-	Log::Printf("Working directory: %s\n", std::filesystem::current_path().u8string().c_str());
+	// Log::Printf("Current Time: %s.\n", t1);
+	Log::Printf("Working directory: %s\n", Utility::Narrow(std::filesystem::current_path()).c_str());
 
     GameState::GetInstance().Initialize();
     Log::Printf("Initializing... \n");
@@ -278,7 +279,7 @@ bool Application::PollIPC()
     }
 }
 
-void ExportToBMSUnquantized(VSRG::Song* Source, Directory PathOut);
+void ExportToBMSUnquantized(VSRG::Song* Source, std::filesystem::path PathOut);
 
 void Application::Run()
 {
@@ -301,7 +302,7 @@ void Application::Run()
             IPC::Message Msg;
             Msg.MessageKind = IPC::Message::MSG_STARTFROMMEASURE;
             Msg.Param = Measure;
-            strncpy(Msg.Path, InFile.u8string().c_str(), 256);
+            strncpy(Msg.Path, Utility::Narrow(InFile).c_str(), 256);
 
             IPC::SendMessageToQueue(&Msg);
             RunLoop = false;
@@ -325,15 +326,15 @@ void Application::Run()
         if (Sng && Sng->Difficulties.size())
         {
             if (ConvertMode == CONVERTMODE::CONV_OM) // for now this is the default
-                ConvertToOM(Sng.get(), OutFile.u8string(), Author);
+                ConvertToOM(Sng.get(), OutFile, Author);
             else if (ConvertMode == CONVERTMODE::CONV_BMS)
-                ConvertToBMS(Sng.get(), OutFile.u8string());
+                ConvertToBMS(Sng.get(), OutFile);
             else if (ConvertMode == CONVERTMODE::CONV_UQBMS)
-                ExportToBMSUnquantized(Sng.get(), OutFile.u8string());
+                ExportToBMSUnquantized(Sng.get(), OutFile);
             else if (ConvertMode == CONVERTMODE::CONV_NPS)
-                ConvertToNPSGraph(Sng.get(), OutFile.u8string());
+                ConvertToNPSGraph(Sng.get(), OutFile);
             else
-                ConvertToSMTiming(Sng.get(), OutFile.u8string());
+                ConvertToSMTiming(Sng.get(), OutFile);
         }
         else
         {

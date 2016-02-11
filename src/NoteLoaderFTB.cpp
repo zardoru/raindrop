@@ -45,12 +45,7 @@ void NoteLoaderFTB::LoadObjectsFromFile(std::filesystem::path filename, Song *Ou
 {
     std::shared_ptr<VSRG::Difficulty> Diff(new Difficulty());
     Measure Msr;
-
-#if (!defined _WIN32) || (defined STLP)
-    std::ifstream filein(filename.c_str());
-#else
     std::ifstream filein(filename);
-#endif
 
     Diff->Filename = filename;
 

@@ -447,12 +447,12 @@ void SongLoader::GetSongList7K(std::vector<VSRG::Song*> &OutVec, Directory Dir)
     }
 }
 
-std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const VSRG::Song* Meta, std::shared_ptr<VSRG::Difficulty> &CurrentDiff, Directory *FilenameOut, uint8_t &Index)
+std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const VSRG::Song* Meta, std::shared_ptr<VSRG::Difficulty> &CurrentDiff, std::filesystem::path &FilenameOut, uint8_t &Index)
 {
     std::shared_ptr<VSRG::Song> Out;
 
-    std::string fn = DB->GetDifficultyFilename(CurrentDiff->ID);
-    *FilenameOut = fn;
+    std::filesystem::path fn = DB->GetDifficultyFilename(CurrentDiff->ID);
+    FilenameOut = fn;
 
     Out = LoadSong7KFromFilename(fn, "", nullptr);
     if (!Out) return nullptr;

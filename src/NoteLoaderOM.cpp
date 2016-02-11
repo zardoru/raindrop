@@ -724,11 +724,7 @@ void CopyTimingData(OsuLoadInfo* Info)
 
 void NoteLoaderOM::LoadObjectsFromFile(std::filesystem::path filename, Song *Out)
 {
-#if (!defined _WIN32) || (defined STLP)
-    std::ifstream filein(filename.c_str());
-#else
     std::ifstream filein(filename);
-#endif
     std::regex versionfmt("osu file format v(\\d+)");
 
     if (!filein.is_open())

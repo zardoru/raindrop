@@ -155,19 +155,16 @@ public:
     }
 };
 
-void ConvertToNPSGraph(VSRG::Song *Sng, Directory PathOut)
+void ConvertToNPSGraph(VSRG::Song *Sng, std::filesystem::path PathOut)
 {
     for (auto i = 0; i < Sng->Difficulties.size(); i++)
     {
-        std::ofstream out;
         auto Diff = Sng->GetDifficulty(i);
-        Directory Sn = Sng->SongName;
-        Sn.Normalize(true);
 
-        std::string name = Utility::Format("%s/ %s (%s) - %s.svg", PathOut.c_path(), Sn.c_path(), Diff->Name, Diff->Author);
+		auto s = Utility::Format("%s (%s) - %s.svg", Sng->SongName.c_str(), Diff->Name, Diff->Author);
+        std::filesystem::path name = PathOut / s;
 
-        out.open(name.c_str());
-
+		std::ofstream out(name);
         double interv = CfgValNPS("IntervalTime", 1);
         double margin = CfgValNPS("PeakMargin", 1.2f);
 

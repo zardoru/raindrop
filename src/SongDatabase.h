@@ -48,7 +48,7 @@ public:
     void GetPreviewInfo(int SongID, std::string &Filename, float &PreviewStart);
 
     // Difficulty information
-    std::string GetDifficultyFilename(int DiffID);
+    std::filesystem::path GetDifficultyFilename(int DiffID);
     std::string GetArtistForDifficulty(int DiffID);
     std::string GetStageFile(int DiffID);
 

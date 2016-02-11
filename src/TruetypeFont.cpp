@@ -29,7 +29,7 @@ public:
 			return;
 		}
 
-		std::ifstream ifs(Filename.c_str(), std::ios::binary);
+		std::ifstream ifs(Filename, std::ios::binary);
 
 		info = nullptr;
 		data = nullptr;

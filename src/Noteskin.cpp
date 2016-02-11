@@ -31,7 +31,7 @@ void lua_Render(Sprite *S)
     }
 }
 
-#ifndef WIN32
+#ifndef _WIN32
 #define LUACHECK(x) if (NoteskinLua == nullptr) {Log::Logf("%s: Noteskin state is invalid - no lua.\n", __func__); return x;}
 #else
 #define LUACHECK(x) if (NoteskinLua == nullptr) {Log::DebugPrintf("%s: Noteskin state is invalid - no lua.\n", __FUNCTION__); return x;}

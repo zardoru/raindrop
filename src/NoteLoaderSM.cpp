@@ -419,11 +419,7 @@ SpeedData ParseScrolls(std::string line)
 
 void NoteLoaderSSC::LoadObjectsFromFile(std::filesystem::path filename, Song *Out)
 {
-#if (!defined _WIN32) || (defined STLP)
-    std::ifstream filein(filename.c_str());
-#else
     std::ifstream filein(filename);
-#endif
 
     TimingData BPMData;
     TimingData StopsData;
@@ -660,11 +656,7 @@ void WarpifyTiming(Difficulty* Diff)
 
 void NoteLoaderSM::LoadObjectsFromFile(std::filesystem::path filename, Song *Out)
 {
-#if (!defined _WIN32) || (defined STLP)
-    std::ifstream filein(filename.c_str());
-#else
     std::ifstream filein(filename);
-#endif
 
     TimingData BPMData;
     TimingData StopsData;

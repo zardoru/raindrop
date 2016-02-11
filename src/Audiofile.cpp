@@ -67,7 +67,7 @@ std::unique_ptr<AudioDataSource> SourceFromExt(std::filesystem::path Filename)
         Ret = std::make_unique<AudioSourceOGG>();
 
     if (Ret)
-        Ret->Open(u8fn.c_str());
+        Ret->Open(Filename);
     else
     {
         Log::Printf("extension %s has no audiosource associated\n", ext.c_str());
