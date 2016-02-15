@@ -331,4 +331,7 @@ Temporary Items
 *.out
 *.app
 
-
+# Raindrop
+log.txt
+rd.db
+rd.db-journal
