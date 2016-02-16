@@ -335,13 +335,26 @@ void ScreenSelectMusic::PlayPreview()
 
         if (!PreviewStream)
         {
-            PreviewStream = std::make_shared<AudioStream>();
+            auto previewPath = ToPreview->SongDirectory / PreviewFile;
 
-            if (PreviewStream->Open((ToPreview->SongDirectory / PreviewFile).u8string().c_str()))
-            {
-                PreviewStream->Play();
-                PreviewStream->SeekTime(StartTime);
-                PreviewStream->SetLoop(true);
+            // If missing, find alternate preview file
+            if (!std::filesystem::exists(previewPath))
+                for (auto i : std::filesystem::directory_iterator(ToPreview->SongDirectory))
+                {
+                    auto extension = i.path().extension();
+                    if (extension == ".mp3" || extension == ".ogg")
+                        previewPath = i.path();
+                }
+
+            // Load preview
+            if (std::filesystem::exists(previewPath)) {
+                PreviewStream = std::make_shared<AudioStream>();
+                if (PreviewStream->Open(previewPath.u8string().c_str()))
+                {
+                    PreviewStream->Play();
+                    PreviewStream->SeekTime(StartTime);
+                    PreviewStream->SetLoop(true);
+                }
             }
         }
     }
