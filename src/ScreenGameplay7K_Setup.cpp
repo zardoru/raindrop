@@ -292,19 +292,20 @@ bool ScreenGameplay7K::LoadSongAudio()
             {
                 // Caveat: Try to autodetect an mp3/ogg file.
                 auto SngDir = MySong->SongDirectory;
-
                 
+                // Open the first MP3 and OGG file in the directory
                 for (auto i: std::filesystem::directory_iterator(SngDir))
                 {
-                    if (i.path().extension() == "mp3" || i.path().extension() == "ogg")
+                    auto extension = i.path().extension();
+                    if (extension == ".mp3" || extension == ".ogg")
                         if (Music->Open(i.path()))
                             return true;
                 }
-
+                
+                // Quit; couldn't find audio for a chart that requires it.
                 Music = nullptr;
-
                 Log::Printf("Unable to load song (Path: %s)\n", MySong->SongFilename.c_str());
-                return false; // Quit; couldn't find audio for a chart that requires it.
+                return false; 
             }
         }
     }
