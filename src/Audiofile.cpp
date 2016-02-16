@@ -66,15 +66,13 @@ std::unique_ptr<AudioDataSource> SourceFromExt(std::filesystem::path Filename)
     else if (strstr(xt, "ogg"))
         Ret = std::make_unique<AudioSourceOGG>();
 
-    if (Ret)
-        Ret->Open(Filename);
+    if (Ret && Ret->Open(Filename))
+		return Ret;
     else
     {
         Log::Printf("extension %s has no audiosource associated\n", ext.c_str());
         return nullptr;
     }
-
-    return Ret;
 }
 
 void Sound::SetPitch(double Pitch)
