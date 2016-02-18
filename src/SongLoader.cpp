@@ -305,7 +305,7 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<V
 			File = File.filename();
 
             // We want to group charts with the same title together.
-            if (ValidBMSExtension(Ext) || Ext == L"bmson")
+            if (ValidBMSExtension(Ext) || Ext == L".bmson")
             {
                 BMSSong->SongDirectory = SongDirectory;
 
