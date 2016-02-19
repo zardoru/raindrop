@@ -2,29 +2,12 @@
 
 struct ImageData
 {
-    enum EWrapMode
-    {
-        WM_CLAMP_TO_EDGE,
-        WM_REPEAT,
-        WM_DEFAULT = WM_CLAMP_TO_EDGE
-    } WrapMode;
-
-    enum EScalingMode
-    {
-        SM_LINEAR,
-        SM_NEAREST,
-        SM_MIPMAP,
-        SM_DEFAULT = SM_MIPMAP
-    } ScalingMode;
-
 	std::filesystem::path Filename;
     int Width, Height;
     void *Data;
 
     ImageData()
     {
-        WrapMode = WM_DEFAULT;
-        ScalingMode = SM_DEFAULT;
         Width = 0; Height = 0;
         Data = nullptr;
     }
@@ -44,10 +27,7 @@ public:
     ~Image();
 
     void Bind();
-    void Assign(std::filesystem::path Filename,
-        ImageData::EScalingMode ScaleMode = ImageData::SM_DEFAULT,
-        ImageData::EWrapMode WrapMode = ImageData::WM_DEFAULT,
-        bool Regenerate = false);
+    void Assign(std::filesystem::path Filename, bool Regenerate = false);
     void SetTextureData(ImageData *Data, bool Reassign = false);
 
     // Utilitarian

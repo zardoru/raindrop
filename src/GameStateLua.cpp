@@ -161,4 +161,12 @@ void GameState::InitializeLua(lua_State *L)
 
 	luabridge::push(L, this);
 	lua_setglobal(L, "Global");
+
+	luabridge::getGlobalNamespace(L)
+		.beginNamespace("System")
+		.addFunction("SetConfig", Configuration::SetConfig)
+		.addFunction("ReadConfigF", Configuration::GetConfigf)
+		.addFunction("ReadConfigS", Configuration::GetConfigs)
+		.addFunction("ReloadConfiguration", Configuration::Reload)
+		.endNamespace();
 }

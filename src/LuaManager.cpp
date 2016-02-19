@@ -341,18 +341,38 @@ void LuaManager::PushArgument(std::string Value)
 
 bool LuaManager::CallFunction(const char* Name, int Arguments, int Results)
 {
-    bool IsFunc;
+	bool IsFunc;
 
-    func_args = Arguments;
-    func_results = Results;
-    lua_getglobal(State, Name);
+	func_args = Arguments;
+	func_results = Results;
+
+	bool isTable = lua_istable(State, -1);
+	if (isTable) {
+		lua_pushstring(State, Name);
+		lua_gettable(State, -2);
+	} else
+		lua_getglobal(State, Name);
 
     IsFunc = lua_isfunction(State, -1);
 
     if (IsFunc)
         func_input = true;
-    else
-        Pop();
+	else {
+		Pop();
+
+		// this is generalizable, but i'm too lazy. -az
+		if (isTable) {
+			lua_getglobal(State, Name);
+
+			IsFunc = IsFunc = lua_isfunction(State, -1);
+			if (IsFunc)
+			{
+				func_input = true;
+			}
+			else
+				Pop();
+		}
+	}
 
     return IsFunc;
 }
@@ -384,22 +404,42 @@ bool LuaManager::RunFunction()
 
 int LuaManager::GetFunctionResult(int StackPos)
 {
-    return GetFunctionResultF(StackPos);
+    return GetFunctionResultD(StackPos);
+}
+
+std::string LuaManager::GetFunctionResultS(int StackPos)
+{
+	std::string Value;
+
+	if (func_err) return Value;
+
+	if (lua_isstring(State, -StackPos))
+	{
+		Value = lua_tostring(State, -StackPos);
+	}
+
+	Pop();
+	return Value;
 }
 
 float LuaManager::GetFunctionResultF(int StackPos)
 {
-    float Value = -1;
+	return GetFunctionResultD(StackPos);
+}
 
-    if (func_err) return 0;
+double LuaManager::GetFunctionResultD(int StackPos)
+{
+	double Value = -1;
 
-    if (lua_isnumber(State, -StackPos))
-    {
-        Value = lua_tonumber(State, -StackPos);
-    }
+	if (func_err) return 0;
 
-    Pop();
-    return Value;
+	if (lua_isnumber(State, -StackPos))
+	{
+		Value = lua_tonumber(State, -StackPos);
+	}
+
+	Pop();
+	return Value;
 }
 
 void LuaManager::NewMetatable(std::string MtName)

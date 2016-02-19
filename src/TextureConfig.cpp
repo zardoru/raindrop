@@ -97,7 +97,13 @@ private:
         skipws();
         while (input[offset] != '}')
         {
-            readid(); match(':'); readid(); match(';');
+            readid(); 
+			while (input[offset] == ',') {
+				offset += 1;
+				readid();
+			}
+			
+			match(':'); readid(); match(';');
             skipws();
         }
     }
@@ -139,13 +145,21 @@ public:
     {
         for (auto it = tokout->begin(); it != tokout->end(); it++)
         {
-            string &sym = (*it);
-            it++; it++; // skip {
+			vector<string> sym;
+			sym.push_back(*it);
+            it++; 
+			while (*it != "{") { // the commas are ommitted
+				sym.push_back(*it);
+			}
+
+			it++; // skip {
             while (*it != "}")
             {
                 string key = *it; it++; it++; // skip :
                 string val = *it; it++; it++; // skip ;
-                out[sym][key] = val;
+
+				for (auto &id: sym)
+					out[id][key] = val;
             }
         }
     }

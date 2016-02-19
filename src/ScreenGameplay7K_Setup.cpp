@@ -710,8 +710,8 @@ void ScreenGameplay7K::SetupMechanics()
 
 void ScreenGameplay7K::LoadResources()
 {
-	auto MissSndFile = GameState::GetInstance().GetSkinFile("miss.ogg");
-	auto FailSndFile = GameState::GetInstance().GetSkinFile("stage_failed.ogg");
+	auto MissSndFile = Configuration::GetSkinSound("Miss");
+	auto FailSndFile = Configuration::GetSkinSound("Fail");
 
 	MissSnd.Open(MissSndFile);
 	FailSnd.Open(FailSndFile);

@@ -71,6 +71,7 @@ enum KeyType
     KT_Right,
     KT_ReloadScreenScripts,
     KT_Debug,
+	KT_ReloadCFG,
 
     // raindrop specific
     KT_GameplayClick,

@@ -24,14 +24,6 @@
 
 #include "SongWheel.h"
 
-#define SONGLIST_BASEY 120
-#define SONGLIST_BASEX ScreenWidth*3/4
-
-SoundSample *SelectSnd = NULL, *ClickSnd = NULL;
-AudioStream	**Loops;
-
-int LoopTotal;
-
 void LuaEvt(LuaManager* LuaMan, std::string Func, Sprite* Obj)
 {
     LuaMan->CallFunction(Func.c_str());
@@ -74,7 +66,6 @@ void SetupWheelLua(LuaManager* Man)
 
 ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic")
 {
-    Font = nullptr;
     PreviewStream = nullptr;
 
     PreviousPreview = std::make_shared<Game::Song>();
@@ -109,29 +100,12 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic")
 
     Wheel->TransformItem = std::bind(&ScreenSelectMusic::TransformItem, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
     Wheel->TransformString = std::bind(&ScreenSelectMusic::TransformString, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
+	    
+    SelectSnd = std::make_unique<SoundSample>();
+    SelectSnd->Open(Configuration::GetSkinSound("SongSelectDecision"));
 
-    if (!SelectSnd)
-    {
-        LoopTotal = 0;
-        SelectSnd = new SoundSample();
-        SelectSnd->Open((GameState::GetInstance().GetSkinFile("select.wav")).c_str());
-
-        ClickSnd = new SoundSample();
-        ClickSnd->Open((GameState::GetInstance().GetSkinFile("click.wav")).c_str());
-
-        LoopTotal = Configuration::GetSkinConfigf("LoopTotal");
-
-        Loops = new AudioStream*[LoopTotal];
-        for (auto i = 0U; i < LoopTotal; ++i)
-        {
-            std::stringstream str;
-            str << "loop" << i + 1 << ".ogg";
-            Loops[i] = new AudioStream();
-            Loops[i]->Open(GameState::GetInstance().GetSkinFile(str.str()).c_str());
-            Loops[i]->Stop();
-            Loops[i]->SetLoop(true);
-        }
-    }
+    ClickSnd = std::make_unique<SoundSample>();
+    ClickSnd->Open(Configuration::GetSkinSound("SongSelectHover"));
 
     GameObject::GlobalInit();
 
@@ -142,7 +116,7 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic")
 void ScreenSelectMusic::InitializeResources()
 {
     LuaManager* LuaM = Animations->GetEnv();
-    UpBtn = new GUI::Button;
+    UpBtn = std::make_unique<GUI::Button>();
 
     Animations->InitializeUI();
 
@@ -153,7 +127,7 @@ void ScreenSelectMusic::InitializeResources()
     UpBtn->OnHover = OnUpHover;
     UpBtn->OnLeave = OnUpHoverLeave;
 
-    BackBtn = new GUI::Button;
+    BackBtn = std::make_unique<GUI::Button>();
 
     EventAnimationFunction OnBackClick(std::bind(LuaEvt, LuaM, "BackBtnClick", std::placeholders::_1));
     EventAnimationFunction OnBackHover(std::bind(LuaEvt, LuaM, "BackBtnHover", std::placeholders::_1));
@@ -162,16 +136,14 @@ void ScreenSelectMusic::InitializeResources()
     BackBtn->OnHover = OnBackHover;
     BackBtn->OnLeave = OnBackHoverLeave;
 
-    Animations->AddLuaTarget(BackBtn, "BackButton");
-    Animations->AddLuaTarget(UpBtn, "DirUpButton");
-    Animations->AddTarget(BackBtn);
-    Animations->AddTarget(UpBtn);
+    Animations->AddLuaTarget(BackBtn.get(), "BackButton");
+    Animations->AddLuaTarget(UpBtn.get(), "DirUpButton");
+    Animations->AddTarget(BackBtn.get());
+    Animations->AddTarget(UpBtn.get());
 
     Animations->Initialize();
 
     GameState::GetInstance().InitializeLua(Animations->GetEnv()->GetState());
-
-    SwitchUpscroll(false);
 
     Background.SetImage(GameState::GetInstance().GetSkinImage(Configuration::GetSkinConfigs("SelectMusicBackground")));
 
@@ -372,22 +344,24 @@ void ScreenSelectMusic::PlayPreview()
 
 void ScreenSelectMusic::PlayLoops()
 {
-    if (LoopTotal)
-    {
-        auto PlayingAlready = false;
-        for (auto i = 0U; i < LoopTotal; i++)
-        {
-            PlayingAlready = Loops[i]->IsPlaying();
-            if (PlayingAlready) break;
-        }
+	if (!BGM) {
+		auto fn = Configuration::GetSkinSound("SongSelectBGM");
+		BGM = std::make_unique<SoundStream>();
+		if (std::filesystem::exists(fn) &&
+			std::filesystem::is_regular_file(fn)) {
+			auto s = fn.string();
+			auto IsLoop = false;
+			Utility::ToLower(s);
 
-        if (!PlayingAlready)
-        {
-            auto rn = std::randint(0, LoopTotal - 1);
-            Loops[rn]->SeekTime(0);
-            Loops[rn]->Play();
-        }
-    }
+			if (s.find_first_of("loop") != std::string::npos)
+				IsLoop = true;
+
+			if (BGM->Open(fn)) {
+				BGM->SetLoop(IsLoop);
+				BGM->Play();
+			}
+		}
+	}
 }
 
 bool ScreenSelectMusic::Run(double Delta)
@@ -463,20 +437,10 @@ bool ScreenSelectMusic::Run(double Delta)
 
 void ScreenSelectMusic::StopLoops()
 {
-    for (int i = 0; i < LoopTotal; i++)
-    {
-        if (Loops[i]->IsPlaying())
-        {
-            Loops[i]->SeekTime(0);
-            Loops[i]->Stop();
-        }
-    }
-}
-
-void ScreenSelectMusic::SwitchUpscroll(bool NewUpscroll)
-{
-    OptionUpscroll = NewUpscroll;
-    Animations->GetEnv()->SetGlobal("Upscroll", OptionUpscroll);
+	if (BGM) {
+		BGM->Stop();
+		BGM = nullptr;
+	}
 }
 
 bool ScreenSelectMusic::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
@@ -510,9 +474,6 @@ bool ScreenSelectMusic::HandleInput(int32_t key, KeyEventType code, bool isMouse
             break;
         case KT_Right:
             GameState::GetInstance().SetDifficultyIndex(Game::SongWheel::GetInstance().NextDifficulty());
-            break;
-        case KT_FractionDec:
-            SwitchUpscroll(!OptionUpscroll);
             break;
         }
     }

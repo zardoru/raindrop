@@ -237,7 +237,7 @@ Image* GameState::GetSkinImage(const std::string& Path)
 
                     if (File.length() && std::filesystem::exists(toLoad))
                     {
-                        StageImage->Assign(toLoad, ImageData::SM_DEFAULT, ImageData::WM_DEFAULT, true);
+                        StageImage->Assign(toLoad, true);
                         return StageImage;
                     }
                     else return nullptr;
@@ -257,7 +257,7 @@ Image* GameState::GetSkinImage(const std::string& Path)
 
             if (SelectedSong->BackgroundFilename.length() && std::filesystem::exists(toLoad))
             {
-                SongBG->Assign(toLoad, ImageData::SM_DEFAULT, ImageData::WM_DEFAULT, true);
+                SongBG->Assign(toLoad, true);
                 return SongBG;
             }
             else return nullptr;

@@ -200,7 +200,9 @@ struct defaultKeys_s
     { GLFW_MOUSE_BUTTON_LEFT, KT_Select },
     { GLFW_MOUSE_BUTTON_RIGHT, KT_SelectRight },
     { 'Z', KT_GameplayClick },
-    { 'X', KT_GameplayClick }
+    { 'X', KT_GameplayClick },
+	{ GLFW_KEY_F5, KT_ReloadScreenScripts },
+	{ GLFW_KEY_F10, KT_ReloadCFG }
 };
 
 const int DEFAULT_KEYS_COUNT = sizeof(defaultKeys) / sizeof(defaultKeys_s);
@@ -219,8 +221,12 @@ char* KeytypeNames[] = {
     "right",
     "reload",
     "debug",
+	"reloadconfig",
     "hit",
-    "click"
+    "edfracdecrease",
+	"edfracincrease",
+	"edmode",
+	"edsetoffset",
 };
 
 int getIndexForKeytype(const char* key)

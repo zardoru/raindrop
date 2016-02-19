@@ -49,7 +49,9 @@ public:
     bool RunFunction();
 
     int GetFunctionResult(int StackPos = 1);
+	std::string GetFunctionResultS(int StackPos = 1);
     float GetFunctionResultF(int StackPos = 1);
+	double GetFunctionResultD(int StackPos = 1);
 
     void Pop();
 

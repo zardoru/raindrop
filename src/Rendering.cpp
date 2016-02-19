@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "GameWindow.h"
+#include "Configuration.h"
 #include "VBO.h"
 #include "Sprite.h"
 #include "Transformation.h"
@@ -47,6 +48,65 @@ float QuadColours[16] =
     1, 1, 1, 1,
     1, 1, 1, 1
 };
+
+void SetTextureParameters(std::string Dir)
+{
+	if (!Configuration::TextureParameterExists(Dir, "gen-mipmap") || 
+		Configuration::GetTextureParameter(Dir, "gen-mipmap") == "true")
+		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+
+	auto wrapS = GL_CLAMP_TO_EDGE, wrapT = GL_CLAMP_TO_EDGE;
+	if (Configuration::GetTextureParameter(Dir, "wrap-s") == "clamp-edge")
+		wrapS = GL_CLAMP_TO_EDGE;
+	else if (Configuration::GetTextureParameter(Dir, "wrap-s") == "repeat")
+		wrapS = GL_REPEAT;
+	else if (Configuration::GetTextureParameter(Dir, "wrap-s") == "clamp-border")
+		wrapS = GL_CLAMP_TO_BORDER;
+	else if (Configuration::GetTextureParameter(Dir, "wrap-s") == "repeat-mirrored")
+		wrapS = GL_MIRRORED_REPEAT;
+
+	if (Configuration::GetTextureParameter(Dir, "wrap-t") == "clamp-edge")
+		wrapT = GL_CLAMP_TO_EDGE;
+	else if (Configuration::GetTextureParameter(Dir, "wrap-t") == "repeat")
+		wrapT = GL_REPEAT;
+	else if (Configuration::GetTextureParameter(Dir, "wrap-t") == "clamp-border")
+		wrapT = GL_CLAMP_TO_BORDER;
+	else if (Configuration::GetTextureParameter(Dir, "wrap-t") == "repeat-mirrored")
+		wrapT = GL_MIRRORED_REPEAT;
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
+
+	GLint minp = GL_LINEAR_MIPMAP_LINEAR, maxp = GL_LINEAR;
+	if (Configuration::GetTextureParameter(Dir, "minfilter") == "linear")
+		minp = GL_LINEAR;
+	else if (Configuration::GetTextureParameter(Dir, "minfilter") == "nearest")
+		minp = GL_NEAREST;
+	else if (Configuration::GetTextureParameter(Dir, "minfilter") == "linear-mipmap-linear")
+		minp = GL_LINEAR_MIPMAP_LINEAR;
+	else if (Configuration::GetTextureParameter(Dir, "minfilter") == "linear-mipmap-nearest")
+		minp = GL_LINEAR_MIPMAP_NEAREST;
+	else if (Configuration::GetTextureParameter(Dir, "minfilter") == "nearest-mipmap-nearest")
+		minp = GL_NEAREST_MIPMAP_NEAREST;
+	else if (Configuration::GetTextureParameter(Dir, "minfilter") == "nearest-mipmap-linear")
+		minp = GL_NEAREST_MIPMAP_LINEAR;
+
+	if (Configuration::GetTextureParameter(Dir, "maxfilter") == "linear")
+		maxp = GL_LINEAR;
+	else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "nearest")
+		maxp = GL_NEAREST;
+	else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "linear-mipmap-linear")
+		maxp = GL_LINEAR_MIPMAP_LINEAR;
+	else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "linear-mipmap-nearest")
+		maxp = GL_LINEAR_MIPMAP_NEAREST;
+	else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "nearest-mipmap-nearest")
+		maxp = GL_NEAREST_MIPMAP_NEAREST;
+	else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "nearest-mipmap-linear")
+		maxp = GL_NEAREST_MIPMAP_LINEAR;
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minp);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, maxp);
+}
 
 void SetBlendingMode(EBlendMode Mode)
 {
@@ -314,6 +374,7 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
 {
     const char* Text = In.c_str();
     int Line = 0;
+	size_t len = In.length();
     glm::vec3 vOffs(Position.x, Position.y + scale, 0);
 
     if (!IsValid)
@@ -322,15 +383,15 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
     UpdateWindowScale();
 
     SetBlendingMode(BLEND_ALPHA);
-
     SetShaderParameters(false, false, false, false, false, true);
     WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha);
     SetPrimitiveQuadVBO();
 
     try
     {
-        utf8::iterator<const char*> it(Text, Text, Text + In.length());
-        utf8::iterator<const char*> itend(Text + In.length(), Text, Text + In.length());
+		auto nd = utf8::find_invalid<const char*>(Text, Text + In.length());
+        utf8::iterator<const char*> it(Text, Text, nd);
+        utf8::iterator<const char*> itend(nd, Text, nd);
         for (; it != itend; ++it)
         {
             CheckCodepoint(*it); // Force a regeneration of this if necessary
@@ -362,7 +423,7 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, cp.tw, cp.th, 0, GL_ALPHA, GL_UNSIGNED_BYTE, tx);

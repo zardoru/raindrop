@@ -403,6 +403,9 @@ void Application::Run()
 
 void Application::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
 {
+	if (BindingsManager::TranslateKey(key) == KT_ReloadCFG && code == KE_PRESS)
+		Configuration::Reload();
+
     Game->HandleInput(key, code, isMouseInput);
 }
 

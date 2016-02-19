@@ -94,7 +94,7 @@ void ScreenMainMenu::Init()
     if (!MMSelectSnd)
     {
         MMSelectSnd = new SoundSample();
-        MMSelectSnd->Open((GameState::GetInstance().GetSkinFile("select.ogg")).c_str());
+        MMSelectSnd->Open(Configuration::GetSkinSound("ClickPlay"));
     }
 }
 

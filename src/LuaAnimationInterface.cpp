@@ -236,7 +236,7 @@ void DefineSpriteInterface(LuaManager* anim_lua)
     anim_lua->Register(LuaAnimFuncs::Require, "skin_require");
     anim_lua->Register(LuaAnimFuncs::FallbackRequire, "fallback_require");
 
-    anim_lua->NewMetatable(LuaAnimFuncs::SpriteMetatable);
+    // anim_lua->NewMetatable(LuaAnimFuncs::SpriteMetatable);
     anim_lua->Register(LuaAnimFuncs::GetSkinConfigF, "GetConfigF");
     anim_lua->Register(LuaAnimFuncs::GetSkinConfigS, "GetConfigS");
     anim_lua->Register(LuaAnimFuncs::GetSkinDirectory, "GetSkinDirectory");

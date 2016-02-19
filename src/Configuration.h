@@ -3,10 +3,13 @@
 namespace Configuration
 {
     void Initialize();
+	void Reload();
     std::string GetConfigs(std::string Name, std::string Namespace = "");
     float  GetConfigf(std::string Name, std::string Namespace = "");
     std::string GetSkinConfigs(std::string Name, std::string Namespace = "");
     double  GetSkinConfigf(std::string Name, std::string Namespace = "");
+
+	std::filesystem::path GetSkinSound(std::string snd);
     void GetConfigListS(std::string Name, std::map<std::string, std::string> &Out, std::string DefaultKeyName);
     void GetConfigListS(std::string, std::map<std::string, std::filesystem::path>&, std::string);
     bool ListExists(std::string Name);

@@ -29,21 +29,23 @@ class ScreenSelectMusic : public Screen
     std::shared_ptr<Game::Song> ToPreview;
     std::shared_ptr<Game::Song> PreviousPreview;
     Sprite Background;
-    BitmapFont* Font;
 
-    GUI::Button *UpBtn, *BackBtn, *AutoBtn;
+	std::unique_ptr<GUI::Button>
+		UpBtn, BackBtn;
 
     std::shared_ptr<AudioStream> PreviewStream;
 
     bool SwitchBackGuiPending;
-
-    bool OptionUpscroll;
-
     bool IsTransitioning;
 
     void PlayPreview();
     void PlayLoops();
     void StopLoops();
+
+	std::unique_ptr<SoundStream> BGM;
+	std::unique_ptr<SoundSample> SelectSnd;
+	std::unique_ptr<SoundSample> ClickSnd;
+
 
     float GetListHorizontalTransformation(const float Y);
     void StartGameplayScreen();
@@ -59,7 +61,6 @@ class ScreenSelectMusic : public Screen
 
     void TransformItem(int Item, std::shared_ptr<Game::Song> Song, bool IsSelected, int ListItem);
     void TransformString(int Item, std::shared_ptr<Game::Song> Song, bool IsSelected, int ListItem, std::string text);
-    void SwitchUpscroll(bool NewUpscroll);
 public:
     ScreenSelectMusic();
     void LoadResources() override;

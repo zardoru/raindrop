@@ -17,7 +17,7 @@ void BitmapFont::LoadFontImage(std::filesystem::path Location, Vec2 _CharSize, V
     if (!Font)
         Font = new Image;
 
-    Font->Assign(Location, ImageData::SM_NEAREST);
+    Font->Assign(Location);
 
     StartingCharacter = FontStart;
     CharSize = _CharSize;

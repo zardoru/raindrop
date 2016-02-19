@@ -20,6 +20,8 @@ void SetShaderParameters(bool InvertColor,
     bool BlackToTransparent = false, bool ReplaceColor = false,
     int8_t HiddenMode = -1);
 
+void SetTextureParameters(std::string param_src);
+
 void SetPrimitiveQuadVBO();
 void FinalizeDraw();
 void DoQuadDraw();

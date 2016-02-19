@@ -57,7 +57,8 @@ bool AudioSourceMP3::Open(std::filesystem::path Filename)
         mIsValid = true;
         mIsDataLeft = true;
         return true;
-    }
+	}
+	else Log::LogPrintf("Failure loading MP3 file '%s'\n", Filename.string().c_str());
 
     return false;
 }

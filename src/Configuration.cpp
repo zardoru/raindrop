@@ -7,6 +7,7 @@
 #include "GameState.h"
 
 #include "LuaManager.h"
+#include "Logging.h"
 
 using namespace Configuration;
 
@@ -30,6 +31,8 @@ void Configuration::Initialize()
     SkinCfgLua->SetGlobal("Widescreen", IsWidescreen);
     SkinCfgLua->SetGlobal("ScreenWidth", ScreenWidth);
     SkinCfgLua->SetGlobal("ScreenHeight", ScreenHeight);
+
+	GameState::GetInstance().InitializeLua(SkinCfgLua->GetState());
     SkinCfgLua->RunScript(GameState::GetInstance().GetSkinFile("skin.lua"));
 
     LoadTextureParameters();
@@ -37,9 +40,18 @@ void Configuration::Initialize()
 
 void Configuration::Cleanup()
 {
-    Config->SaveFile("config.ini");
+	if (Config)
+		Config->SaveFile("config.ini");
+
     delete Config;
     delete SkinCfgLua;
+}
+
+void Configuration::Reload()
+{
+	Log::LogPrintf("Reloading configuration...\n");
+	Cleanup();
+	Initialize();
 }
 
 std::string GetConfsInt(std::string Name, std::string Namespace, LuaManager &L)
@@ -49,9 +61,15 @@ std::string GetConfsInt(std::string Name, std::string Namespace, LuaManager &L)
     {
         if (L.UseArray(Namespace))
         {
-            Retval = L.GetFieldS(Name);
-            L.Pop();
-        }
+			if (L.CallFunction(Name.c_str(), 0, 1)) {
+				if (L.RunFunction())
+					Retval = L.GetFunctionResultS();
+			}
+			else {
+				Retval = L.GetFieldS(Name);
+			}
+			L.Pop();
+		}
     }
     else
         Retval = L.GetGlobalS(Name);
@@ -66,14 +84,25 @@ double GetConffInt(std::string Name, std::string Namespace, LuaManager &L)
     {
         if (L.UseArray(Namespace))
         {
-            Retval = L.GetFieldD(Name, 0);
-            L.Pop();
+			if (L.CallFunction(Name.c_str(), 0, 1)) {
+				if (L.RunFunction())
+					Retval = L.GetFunctionResultD();
+			}
+			else {
+				Retval = L.GetFieldD(Name, 0);
+			}
+
+			L.Pop();
         }
     }
     else
         Retval = L.GetGlobalD(Name, 0);
 
     return Retval;
+}
+
+std::filesystem::path Configuration::GetSkinSound(std::string snd) {
+	return GameState::GetInstance().GetSkinFile(GetSkinConfigs(snd, "AudioManifest"));
 }
 
 std::string Configuration::GetConfigs(std::string Name, std::string Namespace)

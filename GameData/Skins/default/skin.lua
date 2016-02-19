@@ -9,11 +9,6 @@ MainMenuBackground = ""
 DefaultGameplayBackground = DefaultBackground
 DefaultGameplay7KBackground = DefaultBackground
 
--- Audio
-
--- Amount of .ogg BGM loops. this will be calculated automatically in the future.
-LoopTotal = 8
-
 -- Gameplay
 
 --[[ Considerations.
@@ -47,6 +42,26 @@ Lifebar = {
 	Centered = 1
 }
 
+-- Audio
+AudioManifest = {
+	Miss = "miss.wav",
+	Fail = "stage_failed.wav",
+	ClickPlay = "drop.wav",
+
+	--[[ 
+	--  Better than autodetection.
+	--	See, if you make a closure, Decision, Hover, then BGM
+	--	will be called in that order. 
+	--	That means you can choose them in a consistent way.
+	--	ala LR2
+	--]]
+	SongSelectDecision = "select.wav",
+	SongSelectHover = "click.wav",
+	SongSelectBGM = function()
+		return "loop" .. math.random(8) .. ".ogg" 
+	end
+}
+
 -- 7K mode configuration.
 -- Time that the 'miss' layer will be shown on BMS when a miss occurs.
 OnMissBGATime = 0.5
@@ -57,7 +72,7 @@ ScreenFilter = 0.7
 -- Whether to display the in-game histogram.
 Histogram = 0
 
--- show up to 9999 ms off
+-- show up to 999 ms off
 HitErrorDisplayLimiter = 999
 
 -- 1 is first after processing SV, 1 is mmod, 2 is cmod, anything else is default.

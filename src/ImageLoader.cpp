@@ -5,6 +5,7 @@
 
 #include "Image.h"
 #include "ImageLoader.h"
+#include "Rendering.h"
 
 std::mutex LoadMutex;
 std::map<std::filesystem::path, Image*> ImageLoader::Textures;
@@ -68,93 +69,8 @@ void Image::SetTextureData(ImageData *ImgInfo, bool Reassign)
         auto Dir = ImgInfo->Filename.filename().string();
 
         glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-        if (!Configuration::TextureParameterExists(Dir, "gen-mipmap") || Configuration::GetTextureParameter(Dir, "gen-mipmap") == "true")
-            glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+		SetTextureParameters(Dir);
 
-        GLint param;
-        switch (ImgInfo->WrapMode)
-        {
-        case ImageData::WM_CLAMP_TO_EDGE:
-            param = GL_CLAMP_TO_EDGE;
-            break;
-        case ImageData::WM_REPEAT:
-            param = GL_REPEAT;
-            break;
-        default:
-            param = GL_CLAMP_TO_EDGE;
-        }
-
-        GLint wrapS = param, wrapT = param;
-        if (Configuration::GetTextureParameter(Dir, "wrap-s") == "clamp-edge")
-            wrapS = GL_CLAMP_TO_EDGE;
-        else if (Configuration::GetTextureParameter(Dir, "wrap-s") == "repeat")
-            wrapS = GL_REPEAT;
-        else if (Configuration::GetTextureParameter(Dir, "wrap-s") == "clamp-border")
-            wrapS = GL_CLAMP_TO_BORDER;
-        else if (Configuration::GetTextureParameter(Dir, "wrap-s") == "repeat-mirrored")
-            wrapS = GL_MIRRORED_REPEAT;
-
-        if (Configuration::GetTextureParameter(Dir, "wrap-t") == "clamp-edge")
-            wrapT = GL_CLAMP_TO_EDGE;
-        else if (Configuration::GetTextureParameter(Dir, "wrap-t") == "repeat")
-            wrapT = GL_REPEAT;
-        else if (Configuration::GetTextureParameter(Dir, "wrap-t") == "clamp-border")
-            wrapT = GL_CLAMP_TO_BORDER;
-        else if (Configuration::GetTextureParameter(Dir, "wrap-t") == "repeat-mirrored")
-            wrapT = GL_MIRRORED_REPEAT;
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
-
-        GLint minparam;
-        switch (ImgInfo->ScalingMode)
-        {
-        case ImageData::SM_LINEAR:
-            minparam = GL_LINEAR;
-            param = GL_LINEAR;
-            break;
-        case ImageData::SM_MIPMAP:
-            minparam = GL_LINEAR_MIPMAP_LINEAR;
-            param = GL_LINEAR;
-            break;
-        case ImageData::SM_NEAREST:
-            minparam = GL_NEAREST;
-            param = GL_NEAREST;
-            break;
-        default:
-            minparam = GL_LINEAR_MIPMAP_LINEAR;
-            param = GL_LINEAR;
-        }
-
-        GLint minp = minparam, maxp = param;
-        if (Configuration::GetTextureParameter(Dir, "minfilter") == "linear")
-            minp = GL_LINEAR;
-        else if (Configuration::GetTextureParameter(Dir, "minfilter") == "nearest")
-            minp = GL_NEAREST;
-        else if (Configuration::GetTextureParameter(Dir, "minfilter") == "linear-mipmap-linear")
-            minp = GL_LINEAR_MIPMAP_LINEAR;
-        else if (Configuration::GetTextureParameter(Dir, "minfilter") == "linear-mipmap-nearest")
-            minp = GL_LINEAR_MIPMAP_NEAREST;
-        else if (Configuration::GetTextureParameter(Dir, "minfilter") == "nearest-mipmap-nearest")
-            minp = GL_NEAREST_MIPMAP_NEAREST;
-        else if (Configuration::GetTextureParameter(Dir, "minfilter") == "nearest-mipmap-linear")
-            minp = GL_NEAREST_MIPMAP_LINEAR;
-
-        if (Configuration::GetTextureParameter(Dir, "maxfilter") == "linear")
-            maxp = GL_LINEAR;
-        else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "nearest")
-            maxp = GL_NEAREST;
-        else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "linear-mipmap-linear")
-            maxp = GL_LINEAR_MIPMAP_LINEAR;
-        else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "linear-mipmap-nearest")
-            maxp = GL_LINEAR_MIPMAP_NEAREST;
-        else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "nearest-mipmap-nearest")
-            maxp = GL_NEAREST_MIPMAP_NEAREST;
-        else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "nearest-mipmap-linear")
-            maxp = GL_NEAREST_MIPMAP_LINEAR;
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minp);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, maxp);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ImgInfo->Width, ImgInfo->Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ImgInfo->Data);
     }
     else // We did, so let's update instead.
@@ -167,16 +83,12 @@ void Image::SetTextureData(ImageData *ImgInfo, bool Reassign)
     fname = ImgInfo->Filename;
 }
 
-void Image::Assign(std::filesystem::path Filename, ImageData::EScalingMode ScaleMode,
-    ImageData::EWrapMode WrapMode,
-    bool Regenerate)
+void Image::Assign(std::filesystem::path Filename, bool Regenerate)
 {
     ImageData Ret;
     CreateTexture();
 
     Ret = ImageLoader::GetDataForImage(Filename);
-    Ret.ScalingMode = ScaleMode;
-    Ret.WrapMode = WrapMode;
     SetTextureData(&Ret, Regenerate);
     fname = Filename;
     free(Ret.Data);

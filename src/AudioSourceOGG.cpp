@@ -81,7 +81,7 @@ bool AudioSourceOGG::Open(std::filesystem::path Filename)
     else
     {
         mIsValid = false;
-        Log::Printf("Failure loading ogg file: %s (%d)\n", Utility::Narrow(Filename).c_str(), retv);
+        Log::LogPrintf("Failure loading ogg file: %s (%d)\n", Utility::Narrow(Filename).c_str(), retv);
     }
 
     return mIsValid;

@@ -233,7 +233,9 @@ uint32_t AudioSample::Read(float* buffer, size_t count)
 
         if (mCounter < limit)
         {
-            s16tof32(mData->begin() + mCounter, mData->begin() + mCounter + ReadAmount, buffer);
+            s16tof32(mData->begin() + mCounter, 
+					 mData->begin() + mCounter + ReadAmount, 
+				     buffer);
             mCounter += ReadAmount;
         }
         else
