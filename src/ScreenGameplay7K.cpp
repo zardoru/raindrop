@@ -40,7 +40,7 @@ float ScreenGameplay7K::GetCurrentVerticalSpeed()
     return SectionValue(VSpeeds, WarpedSongTime);
 }
 
-float ScreenGameplay7K::GetCurrentVertical()
+double ScreenGameplay7K::GetCurrentVertical()
 {
     return CurrentVertical;
 }

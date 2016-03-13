@@ -61,7 +61,7 @@ void TrackNote::AssignFraction(double frac)
     FractionKind = GetFractionKindBeat(frac);
 }
 
-void TrackNote::AssignPosition(float Position, float endPosition)
+void TrackNote::AssignPosition(double Position, double endPosition)
 {
     b_pos = Position;
     b_pos_holdend = endPosition;

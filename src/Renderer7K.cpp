@@ -31,7 +31,7 @@ void ScreenGameplay7K::DrawBarlines()
 {
     for (auto i : MeasureBarlines)
     {
-        float realV = (CurrentVertical - i) * SpeedMultiplier + Noteskin::GetBarlineOffset() * sign(SpeedMultiplier) + JudgmentLinePos;
+        double realV = (CurrentVertical - i) * SpeedMultiplier + Noteskin::GetBarlineOffset() * sign(SpeedMultiplier) + JudgmentLinePos;
         if (realV > 0 && realV < ScreenWidth)
         {
             Barline->SetLocation(Vec2(Noteskin::GetBarlineStartX(), realV), Vec2(Noteskin::GetBarlineStartX() + Noteskin::GetBarlineWidth(), realV));
@@ -66,7 +66,7 @@ void ScreenGameplay7K::DrawMeasures()
 
     for (auto k = 0U; k < CurrentDiff->Channels; k++)
     {
-        auto Locate = [&](float StaticVert) -> float
+        auto Locate = [&](double StaticVert) -> double 
         {
             return (CurrentVertical - StaticVert) * SpeedMultiplier + JudgmentLinePos;
         };
@@ -119,8 +119,8 @@ void ScreenGameplay7K::DrawMeasures()
         // Now, draw them.
         for (auto m = Start; m != End; ++m)
         {
-            float Vertical = 0;
-            float VerticalHoldEnd;
+            double Vertical = 0;
+            double VerticalHoldEnd;
 
             // Don't attempt drawing this object if not visible.
             if (!m->IsVisible())
@@ -150,7 +150,7 @@ void ScreenGameplay7K::DrawMeasures()
             // Assign our matrix.
             WindowFrame.SetUniform(U_MVP, &id[0][0]);
 
-            float JPos;
+            double JPos;
 
             // LR2 style keep-on-the-judgment-line
             bool AboveLine = Vertical < JudgmentLinePos;
@@ -176,8 +176,8 @@ void ScreenGameplay7K::DrawMeasures()
                 if (!m->IsEnabled() && m->WasNoteHit() && !m->FailedHit())
                     Level = SuccesfullyHit;
 
-                float Pos;
-                float Size;
+                double Pos;
+                double Size;
                 // If we're being hit and..
                 bool DCS = Noteskin::ShouldDecreaseHoldSizeWhenBeingHit() && Level == 2;
                 if (DCS)

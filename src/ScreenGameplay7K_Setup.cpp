@@ -333,7 +333,7 @@ bool ScreenGameplay7K::LoadSongAudio()
         if (CurrentDiff->Data->TimingInfo->GetType() == VSRG::TI_BMS)
         {
             auto dir = MySong->SongDirectory;
-            bool isBMSON = ((VSRG::BMSTimingInfo*)CurrentDiff->Data->TimingInfo.get())->IsBMSON;
+            bool isBMSON = static_cast<VSRG::BMSTimingInfo*>(CurrentDiff->Data->TimingInfo.get())->IsBMSON;
             if (isBMSON)
             {
                 int wavs = 0;
@@ -495,18 +495,18 @@ bool ScreenGameplay7K::ProcessSong()
     if (Random) NoteTransform::Randomize(NotesByChannel, CurrentDiff->Channels, CurrentDiff->Data->Turntable);
 
     // Load up BGM events
-    std::vector<AutoplaySound> BGMs = CurrentDiff->Data->BGMEvents;
+    auto BGMs = CurrentDiff->Data->BGMEvents;
     if (Configuration::GetConfigf("DisableKeysounds"))
-        NoteTransform::MoveKeysoundsToBGM(CurrentDiff->Channels, NotesByChannel, BGMs);
+        NoteTransform::MoveKeysoundsToBGM(CurrentDiff->Channels, NotesByChannel, BGMs, Drift);
 
-    std::sort(BGMs.begin(), BGMs.end());
+    sort(BGMs.begin(), BGMs.end());
     for (auto &s : BGMs)
         BGMEvents.push(s);
 
     return true;
 }
 
-bool ScreenGameplay7K::LoadBGA()
+bool ScreenGameplay7K::LoadBGA() const
 {
     if (Configuration::GetConfigf("DisableBGA") == 0)
         BGA->Load();

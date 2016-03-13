@@ -45,7 +45,7 @@ Lifebar = {
 -- Audio
 AudioManifest = {
 	Miss = "miss.wav",
-	Fail = "stage_failed.wav",
+	Fail = "stage_failed.ogg",
 	ClickPlay = "drop.wav",
 
 	--[[ 

@@ -16,7 +16,7 @@ class LoadScreenThread
     Screen* mScreen;
 public:
     LoadScreenThread(std::atomic<bool>& status, Screen* screen) : mFinished(status), mScreen(screen) {};
-    void DoLoad()
+    void DoLoad() const
     {
         mFinished = false;
         try
@@ -76,13 +76,13 @@ void ScreenLoading::OnExitEnd()
     // Close the screen we're loading if we asked to interrupt its loading.
     if (ThreadInterrupted)
         Next->Close();
-
+	
     ChangeState(StateRunning);
 }
 
 bool ScreenLoading::Run(double TimeDelta)
 {
-    if (!LoadThread)
+    if (!LoadThread && !ThreadInterrupted)
         return (Running = RunNested(TimeDelta));
 
     if (!Animations) return false;

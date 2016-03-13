@@ -27,10 +27,16 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
     outputParams.channelCount = 2;
     outputParams.sampleFormat = paFloat32;
 
-    if (!Configuration::GetConfigf("UseHighLatency", "Audio"))
-        outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultLowOutputLatency;
-    else
-        outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultHighOutputLatency;
+	if (!Configuration::GetConfigf("RequestedLatency", "Audio")) {
+		if (!Configuration::GetConfigf("UseHighLatency", "Audio"))
+			outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultLowOutputLatency;
+		else
+			outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultHighOutputLatency;
+	} else
+	{
+		outputParams.suggestedLatency = Configuration::GetConfigf("RequestedLatency", "Audio");
+	}
+
 
 #ifndef WIN32
 
@@ -47,11 +53,13 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
         StreamInfo.version = 1;
         if (!Configuration::GetConfigf("WasapiDontUseExclusiveMode", "Audio"))
         {
+			Log::Logf("AUDIO: Attempting to use exclusive mode WASAPI\n");
             StreamInfo.threadPriority = eThreadPriorityProAudio;
-            StreamInfo.flags = paWinWasapiExclusive;
+            StreamInfo.flags = paWinWasapiExclusive | paWinWasapiThreadPriority;
         }
         else
         {
+			Log::Logf("AUDIO: Attempting to use shared mode WASAPI\n");
             StreamInfo.threadPriority = eThreadPriorityAudio;
             StreamInfo.flags = 0;
         }
@@ -61,6 +69,7 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
     }
     else
     {
+		Log::Logf("AUDIO: Attempting to use DirectSound\n");
         outputParams.hostApiSpecificStreamInfo = &DSStreamInfo;
 
         DSStreamInfo.size = sizeof(PaWinDirectSoundStreamInfo);
@@ -73,12 +82,12 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
     dLatency = outputParams.suggestedLatency;
 
     // fire up portaudio
-    PaError Err = Pa_OpenStream(mStream, NULL, &outputParams, Rate, 0, 0, Callback, (void*)Sound);
+    PaError Err = Pa_OpenStream(mStream, nullptr, &outputParams, Rate, 0, 0, Callback, static_cast<void*>(Sound));
 
+    Log::Logf("AUDIO: Device Selected %d\n", Device);
     if (Err)
     {
         Log::Logf("%ls\n", Utility::Widen(Pa_GetErrorText(Err)).c_str());
-        Log::Logf("Device Selected %d\n", Device);
     }
 #ifdef LINUX
     else
@@ -156,9 +165,9 @@ public:
             if (!Stream)
             {
                 // This was a Wasapi problem. Retry without it.
-                Log::Logf("Problem initializing WASAPI. Falling back to default API.");
+                Log::Logf("AUDIO: Problem initializing WASAPI. Falling back to default API.\n");
                 UseWasapi = false;
-                OpenStream(&Stream, Pa_GetDefaultOutputDevice(), 44100, (void*) this, Latency, Mix);
+                OpenStream(&Stream, Pa_GetDefaultOutputDevice(), 44100, static_cast<void*>(this), Latency, Mix);
             }
         }
         else
@@ -173,9 +182,9 @@ public:
         if (Stream)
         {
             Pa_StartStream(Stream);
-            std::this_thread::sleep_for(std::chrono::milliseconds(16));
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
             Latency = Pa_GetStreamInfo(Stream)->outputLatency;
-            Log::Logf("AUDIO: Latency after opening stream = %f \n", Latency);
+            Log::Logf("AUDIO: Latency after opening stream = %fms \n", Latency * 1000);
         }
 
         ConstFactor = 1.0;
@@ -342,7 +351,7 @@ void GetAudioInfo()
     for (PaHostApiIndex i = 0; i < ApiCount; i++)
     {
         const PaHostApiInfo* Index = Pa_GetHostApiInfo(i);
-        Log::Logf("(%d) %s: %d (%d)\n", i, Index->name, Index->defaultOutputDevice, Index->type);
+        Log::Logf("(%d) %s: Default Output: %d (Identifier: %d)\n", i, Index->name, Index->defaultOutputDevice, Index->type);
 
 #ifdef WIN32
         if (Index->type == paWASAPI)
@@ -376,8 +385,6 @@ void InitAudio()
 #ifdef WIN32
     UseWasapi = (Configuration::GetConfigf("UseWasapi", "Audio") != 0);
 #endif
-
-    // Normalize = (Configuration::GetConfigf("Normalize", "Audio") != 0);
 
     UseThreadedDecoder = (Configuration::GetConfigf("UseThreadedDecoder", "Audio") != 0);
 

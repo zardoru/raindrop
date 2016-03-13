@@ -222,12 +222,13 @@ bool AudioSample::Open(AudioDataSource* Src)
 
 uint32_t AudioSample::Read(float* buffer, size_t count)
 {
+    size_t limit = (mRate * Channels * mAudioEnd);
+
     if (!mIsPlaying)
         return 0;
 
-    if (mIsValid)
+    if (mIsValid && count && mData->size())
     {
-        size_t limit = (mRate * Channels * mAudioEnd);
         size_t bufferLeft = limit - mCounter;
         uint32_t ReadAmount = std::min(bufferLeft, count);
 
@@ -240,7 +241,12 @@ uint32_t AudioSample::Read(float* buffer, size_t count)
         }
         else
         {
-            mIsPlaying = false;
+			if (!mIsLooping)
+				mIsPlaying = false;
+			else
+			{
+				ReadAmount += Read(buffer + ReadAmount, count - ReadAmount);
+			}
             // memset(buffer, 0, count * sizeof(float));
         }
 

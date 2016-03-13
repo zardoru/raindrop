@@ -40,7 +40,14 @@ bool operator <(const HitsoundSectionData& lhs, const HitsoundSectionData& rhs)
     return lhs.Time < rhs.Time;
 }
 
-struct OsuLoadInfo
+class OsuManiaLoaderException : public std::exception
+{
+public:
+	OsuManiaLoaderException(std::string s) : exception(s.c_str()) {
+	}
+};
+
+struct OsuManiaLoaderState
 {
     double SliderVelocity;
     int Version;
@@ -73,7 +80,7 @@ struct OsuLoadInfo
                     ++Current;
 
                 if (Current == HitsoundSections.end())
-                    throw std::runtime_error("No uninherited timing points were found!");
+                    throw OsuManiaLoaderException("No uninherited timing points were found!");
                 else
                     Ret = Current->Value;
             }
@@ -81,12 +88,12 @@ struct OsuLoadInfo
                 Ret = Current->Value;
         }
         else
-            throw std::runtime_error("No timing points found on this osu! file.");
+            throw OsuManiaLoaderException("No timing points found on this osu! file.");
 
         return Ret;
     }
 
-    OsuLoadInfo()
+    OsuManiaLoaderState()
     {
         ReadAModeTag = false;
         Line = 0;
@@ -112,9 +119,10 @@ struct OsuLoadInfo
     }
 };
 
+
 /* osu!mania loader. credits to wanwan159, woc2006, Zorori and the author of AIBat for helping me understand this. */
 
-bool ReadGeneral(std::string line, OsuLoadInfo* Info)
+bool ReadGeneral(std::string line, OsuManiaLoaderState* Info)
 {
 	std::string Command = line.substr(0, line.find_first_of(":") + 1); // Lines are Information:<space>Content
     std::string Content = line.substr(line.find_first_of(":") + 1);
@@ -166,7 +174,7 @@ bool ReadGeneral(std::string line, OsuLoadInfo* Info)
     return true;
 }
 
-void ReadMetadata(std::string line, OsuLoadInfo* Info)
+void ReadMetadata(std::string line, OsuManiaLoaderState* Info)
 {
     auto Command = line.substr(0, line.find_first_of(":")); // Lines are Information:Content
     auto Content = line.substr(line.find_first_of(":") + 1, line.length() - line.find_first_of(":"));
@@ -204,7 +212,7 @@ void ReadMetadata(std::string line, OsuLoadInfo* Info)
     }
 }
 
-void ReadDifficulty(std::string line, OsuLoadInfo* Info)
+void ReadDifficulty(std::string line, OsuManiaLoaderState* Info)
 {
     std::string Command = line.substr(0, line.find_first_of(":")); // Lines are Information:Content
     std::string Content = line.substr(line.find_first_of(":") + 1, line.length() - line.find_first_of(":"));
@@ -229,7 +237,7 @@ void ReadDifficulty(std::string line, OsuLoadInfo* Info)
     }
 }
 
-void ReadEvents(std::string line, OsuLoadInfo* Info)
+void ReadEvents(std::string line, OsuManiaLoaderState* Info)
 {
     auto Spl = Utility::TokenSplit(line);
 
@@ -262,7 +270,7 @@ void ReadEvents(std::string line, OsuLoadInfo* Info)
     }
 }
 
-void ReadTiming(std::string line, OsuLoadInfo* Info)
+void ReadTiming(std::string line, OsuManiaLoaderState* Info)
 {
     double Value;
     bool IsInherited;
@@ -337,7 +345,7 @@ std::string SamplesetFromConstant(int Sampleset)
 
     SampleSetAddition is an abomination on a VSRG - so it's only left in for informative purposes.
 */
-std::string GetSampleFilename(OsuLoadInfo *Info, SplitResult &Spl, int NoteType, int Hitsound, float Time)
+std::string GetSampleFilename(OsuManiaLoaderState *Info, SplitResult &Spl, int NoteType, int Hitsound, float Time)
 {
     int SampleSet = 0, SampleSetAddition, CustomSample = 0;
     std::string SampleFilename;
@@ -467,7 +475,7 @@ std::string GetSampleFilename(OsuLoadInfo *Info, SplitResult &Spl, int NoteType,
     return SampleFilename;
 }
 
-void ReadObjects(std::string line, OsuLoadInfo* Info)
+void ReadObjects(std::string line, OsuManiaLoaderState* Info)
 {
     auto Spl = Utility::TokenSplit(line);
 
@@ -570,27 +578,70 @@ void ReadObjects(std::string line, OsuLoadInfo* Info)
     Info->Diff->Duration = std::max(std::max(Note.StartTime, Note.EndTime) + 1, Info->Diff->Duration);
 }
 
-void MeasurizeFromTimingData(OsuLoadInfo *Info)
+void Offsetize(OsuManiaLoaderState *Info, HitsoundSectionData &first)
+{
+    auto Diff = Info->Diff;
+    Diff->Offset = first.Time;
+
+    for (auto i = Info->HitsoundSections.begin();
+    i != Info->HitsoundSections.end();
+        ++i)
+    {
+        i->Time -= Diff->Offset;
+    }
+}
+
+std::vector<HitsoundSectionData>::iterator FindFirstMeasure(OsuManiaLoaderState *Info)
+{
+	auto i = Info->HitsoundSections.begin();
+	while (i != Info->HitsoundSections.end() && i->IsInherited)
+	{
+		++i;
+	}
+
+	return i != Info->HitsoundSections.end() ? i : Info->HitsoundSections.begin();
+}
+
+void MeasurizeFromTimingData(OsuManiaLoaderState *Info)
 {
     // Keep them at the order they are declared so they don't affect the applied hitsounds.
-    std::stable_sort(Info->HitsoundSections.begin(), Info->HitsoundSections.end());
+    stable_sort(Info->HitsoundSections.begin(), Info->HitsoundSections.end());
 
-    for (auto i = Info->HitsoundSections.begin(); i != Info->HitsoundSections.end(); ++i)
+	auto first = FindFirstMeasure(Info);
+	Offsetize(Info, *first);
+
+
+    for (auto i = first; i != Info->HitsoundSections.end(); ++i)
     {
         double TotalMeasuresThisSection;
         double SectionDurationInBeats;
-
         auto NextSect = i + 1;
 
         if (i->IsInherited || i->Omit) // Skip inherited sections.
             continue;
 
-        while (NextSect != Info->HitsoundSections.end() && NextSect->IsInherited) // Find first non-inherited section after this one.
-            ++NextSect;
+		while (NextSect != Info->HitsoundSections.end() && NextSect->IsInherited) // Find first non-inherited section after this one.
+		{
+			++NextSect;
+		}
 
         if (NextSect != Info->HitsoundSections.end()) // Okay, we've got it!
         {
-            SectionDurationInBeats = bps(i->Value) * (NextSect->Time - i->Time);
+			auto oneMS = 1.0 / 1000.0;
+			if (abs(NextSect->Time - i->Time) > oneMS)
+				SectionDurationInBeats = bps(i->Value) * (NextSect->Time - i->Time);
+			else {
+				// we've got to skip to it - osu doesn't display the current one
+				// if there's an older one that is 1ms later
+				// it just displays the last one
+				// thanks nivrad00 for finding this glitch
+
+				if (i == first) {
+					first = NextSect;
+				}
+				i = NextSect - 1;
+				continue;
+			}
         }
         else
         {
@@ -619,7 +670,7 @@ void MeasurizeFromTimingData(OsuLoadInfo *Info)
     }
 }
 
-void PushNotesToMeasures(OsuLoadInfo *Info)
+void PushNotesToMeasures(OsuManiaLoaderState *Info)
 {
     TimingData BPS;
     Info->Diff->ProcessBPS(BPS, 0);
@@ -657,18 +708,7 @@ void PushNotesToMeasures(OsuLoadInfo *Info)
     }
 }
 
-void Offsetize(OsuLoadInfo *Info)
-{
-    auto Diff = Info->Diff;
-    Diff->Offset = Info->HitsoundSections[0].Time;
 
-    for (auto i = Info->HitsoundSections.begin();
-    i != Info->HitsoundSections.end();
-        ++i)
-    {
-        i->Time -= Diff->Offset;
-    }
-}
 
 enum osuReadingMode
 {
@@ -711,7 +751,7 @@ void SetReadingMode(std::string& Line, osuReadingMode& ReadingMode)
         ReadingMode = RNotKnown;
 }
 
-void CopyTimingData(OsuLoadInfo* Info)
+void CopyTimingData(OsuManiaLoaderState* Info)
 {
     for (auto S : Info->HitsoundSections)
     {
@@ -728,10 +768,10 @@ void NoteLoaderOM::LoadObjectsFromFile(std::filesystem::path filename, Song *Out
     std::regex versionfmt("osu file format v(\\d+)");
 
     if (!filein.is_open())
-        throw std::exception("Could not open file.");
+        throw OsuManiaLoaderException("Could not open file.");
 
     auto Diff = std::make_shared<Difficulty>();
-    OsuLoadInfo Info;
+    OsuManiaLoaderState Info;
 
     Info.TimingInfo = std::make_shared<OsuManiaTimingInfo>();
     Info.OsuSong = Out;
@@ -763,11 +803,11 @@ void NoteLoaderOM::LoadObjectsFromFile(std::filesystem::path filename, Song *Out
     if (regex_search(Line.cbegin(), Line.cend(), sm, versionfmt))
         version = atoi(sm[1].str().c_str());
     else
-        throw std::exception("Invalid .osu file.");
+        throw OsuManiaLoaderException("Invalid .osu file.");
 
     // "osu file format v"
     if (version < 10) // why
-        throw std::exception(Utility::Format("Unsupported osu! file version (%d < 10)", version).c_str());
+        throw OsuManiaLoaderException(Utility::Format("Unsupported osu! file version (%d < 10)", version).c_str());
 
     Info.Version = version;
 
@@ -792,7 +832,7 @@ void NoteLoaderOM::LoadObjectsFromFile(std::filesystem::path filename, Song *Out
                     std::stable_sort(Info.HitsoundSections.begin(), Info.HitsoundSections.end());
                 if (ReadingModeOld == RGeneral)
                     if (!Info.ReadAModeTag)
-                        throw std::exception("Not an osu!mania chart.");
+                        throw OsuManiaLoaderException("Not an osu!mania chart.");
                 ReadingModeOld = ReadingMode;
                 continue;
             }
@@ -802,7 +842,7 @@ void NoteLoaderOM::LoadObjectsFromFile(std::filesystem::path filename, Song *Out
             case RGeneral:
                 if (!ReadGeneral(Line, &Info))  // don't load charts that we can't work with
                 {
-                    throw std::exception("osu! file unusable on raindrop.");
+                    throw OsuManiaLoaderException("osu! file unusable on raindrop.");
                 }
                 break;
             case RMetadata: ReadMetadata(Line, &Info); break;
@@ -816,10 +856,8 @@ void NoteLoaderOM::LoadObjectsFromFile(std::filesystem::path filename, Song *Out
 
         if (Diff->TotalObjects)
         {
-            // Calculate an alleged offset
-            Offsetize(&Info);
-
-            // Okay then, convert timing data into a measure-based format raindrop can use.
+            // Okay then, convert timing data into a measure-based format raindrop can use 
+			// and calculate offset.
             MeasurizeFromTimingData(&Info);
 
             CopyTimingData(&Info);
@@ -839,6 +877,6 @@ void NoteLoaderOM::LoadObjectsFromFile(std::filesystem::path filename, Song *Out
     catch (std::exception &e)
     {
         // rethrow with line info
-        throw std::exception(Utility::Format("Line %d: %s", Info.Line, e.what()).c_str());
+        throw OsuManiaLoaderException(Utility::Format("Line %d: %s", Info.Line, e.what()).c_str());
     }
 }

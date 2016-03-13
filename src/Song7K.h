@@ -40,7 +40,7 @@ namespace VSRG
 
         virtual ~CustomTimingInfo() {}
 
-        TimingInfoType GetType();
+        TimingInfoType GetType() const;
     };
 
     class BMSTimingInfo : public CustomTimingInfo
@@ -165,11 +165,11 @@ namespace VSRG
         bool IsVirtual;
 
         void ProcessVSpeeds(TimingData& BPS, TimingData& VSpeeds, double SpeedConstant);
-        void ProcessSpeedVariations(TimingData& BPS, TimingData& VSpeeds, double Drift);
-        double GetWarpAmountAtTime(double Time);
+        void ProcessSpeedVariations(TimingData& BPS, TimingData& VSpeeds, double Drift) const;
+        double GetWarpAmountAtTime(double Time) const;
     public:
 
-        bool IsWarpingAt(double start_time);
+        bool IsWarpingAt(double start_time) const;
         // Get processed data for use on ScreenGameplay7K.
         void GetPlayableData(VectorTN NotesOut,
             TimingData& BPS,
@@ -179,7 +179,7 @@ namespace VSRG
         void ProcessBPS(TimingData& BPS, double Drift);
 
         // The floats are in vertical units; like the notes' vertical position.
-        void GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSpeeds, double WaitTime, double Drift);
+        void GetMeasureLines(std::vector<double> &Out, TimingData& VerticalSpeeds, double WaitTime, double Drift);
 
         // Destroy all information that can be loaded from cache
         void Destroy();

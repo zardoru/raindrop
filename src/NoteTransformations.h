@@ -4,5 +4,5 @@ namespace NoteTransform
 {
     void Randomize(VSRG::VectorTN &Notes, int ChannelCount, bool RespectScratch = false);
     void Mirror(VSRG::VectorTN &Notes, int ChannelCount, bool RespectScratch = false);
-    void MoveKeysoundsToBGM(unsigned char channels, VSRG::VectorTN notes_by_channel, std::vector<AutoplaySound> &bg_ms);
+    void MoveKeysoundsToBGM(unsigned char channels, VSRG::VectorTN notes_by_channel, std::vector<AutoplaySound> &bg_ms, double drift);
 }

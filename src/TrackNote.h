@@ -34,9 +34,9 @@ namespace VSRG
         // 16 bytes (Implied 8 with inherited TimeBased)
         double EndTime;
 
-        // 8 bytes
-        float b_pos;
-        float b_pos_holdend;
+        // 16 bytes
+        double b_pos;
+        double b_pos_holdend;
 
         // 2 bytes
         uint16_t Sound;
@@ -46,7 +46,7 @@ namespace VSRG
         uint8_t FractionKind;
         uint8_t EnabledHitFlags;
 
-        // 32 bytes aligned
+        // 40 bytes aligned
     public:
         TrackNote();
 
@@ -69,7 +69,7 @@ namespace VSRG
         uint8_t  GetDataFractionKind();
 
         // Set this note's position on the vertical track.
-        void AssignPosition(float Position, float endPosition = 0);
+        void AssignPosition(double Position, double endPosition = 0);
 
         // Assign a fraction of a beat to this note.
         void AssignFraction(double frc); // frc = fraction of a beat

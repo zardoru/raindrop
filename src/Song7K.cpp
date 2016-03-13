@@ -5,7 +5,7 @@
 
 using namespace VSRG;
 
-TimingInfoType CustomTimingInfo::GetType()
+TimingInfoType CustomTimingInfo::GetType() const
 {
     return Type;
 }
@@ -45,12 +45,12 @@ void Difficulty::ProcessVSpeeds(TimingData& BPS, TimingData& VerticalSpeeds, dou
     Time != BPS.end();
         ++Time)
     {
-        float VerticalSpeed;
+        double VerticalSpeed;
         TimingSegment VSpeed;
 
         if (Time->Value)
         {
-            float spb = 1 / Time->Value;
+            auto spb = 1 / Time->Value;
             VerticalSpeed = MeasureBaseSpacing / (spb * 4);
         }
         else
@@ -95,13 +95,14 @@ double TimeFromTimingKind(const TimingData &Timing,
     return 0;
 }
 
-double BPSFromTimingKind(float Value, VSRG::Difficulty::ETimingType TimingType)
+double BPSFromTimingKind(double Value, VSRG::Difficulty::ETimingType TimingType)
 {
     if (TimingType == VSRG::Difficulty::BT_BEAT || TimingType == VSRG::Difficulty::BT_MS) // Time is in Beats
     {
         return bps(Value);
     }
-    else if (TimingType == VSRG::Difficulty::BT_BEATSPACE) // Time in MS, and not using bpm, but ms per beat.
+
+    if (TimingType == VSRG::Difficulty::BT_BEATSPACE) // Time in MS, and not using bpm, but ms per beat.
     {
         return bps(60000.0 / Value);
     }
@@ -172,7 +173,7 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
         BPS.push_back(Seg);
 
         // Now we find what bps to restore to.
-        float bpsRestore = bps(SectionValue(Timing, Time->Time));
+        auto bpsRestore = bps(SectionValue(Timing, Time->Time));
 
         for (auto k = BPS.begin(); k != BPS.end(); )
         {
@@ -200,7 +201,7 @@ void Difficulty::ProcessBPS(TimingData& BPS, double Drift)
     std::sort(BPS.begin(), BPS.end());
 }
 
-void Difficulty::ProcessSpeedVariations(TimingData& BPS, TimingData& VerticalSpeeds, double Drift)
+void Difficulty::ProcessSpeedVariations(TimingData& BPS, TimingData& VerticalSpeeds, double Drift) const
 {
     assert(Data != NULL);
 
@@ -243,8 +244,7 @@ void Difficulty::ProcessSpeedVariations(TimingData& BPS, TimingData& VerticalSpe
         if (ChangeTime < 0)
             continue;
 
-        float SpeedValue;
-        SpeedValue = SectionValue(tVSpeeds, ChangeTime) * Change->Value;
+        auto SpeedValue = SectionValue(tVSpeeds, ChangeTime) * Change->Value;
 
         TimingSegment VSpeed;
 
@@ -290,7 +290,7 @@ void Difficulty::ProcessSpeedVariations(TimingData& BPS, TimingData& VerticalSpe
     std::sort(VerticalSpeeds.begin(), VerticalSpeeds.end());
 }
 
-double Difficulty::GetWarpAmountAtTime(double Time)
+double Difficulty::GetWarpAmountAtTime(double Time) const
 {
     double wAmt = 0;
     for (auto warp : Data->Warps)
@@ -302,7 +302,7 @@ double Difficulty::GetWarpAmountAtTime(double Time)
     return wAmt;
 }
 
-bool Difficulty::IsWarpingAt(double start_time)
+bool Difficulty::IsWarpingAt(double start_time) const
 {
     auto it = std::lower_bound(Data->Warps.begin(), Data->Warps.end(), start_time);
     if (it != Data->Warps.end())
@@ -376,8 +376,8 @@ void Difficulty::GetPlayableData(VectorTN NotesOut,
 
                 NewNote.AddTime(Drift);
 
-                float VerticalPosition = IntegrateToTime(VerticalSpeeds, NewNote.GetStartTime());
-                float HoldEndPosition = IntegrateToTime(VerticalSpeeds, NewNote.GetTimeFinal());
+                auto VerticalPosition = IntegrateToTime(VerticalSpeeds, NewNote.GetStartTime());
+                auto HoldEndPosition = IntegrateToTime(VerticalSpeeds, NewNote.GetTimeFinal());
 
                 // if upscroll change minus for plus as well as matrix at screengameplay7k
                 if (!CurrentNote.EndTime)
@@ -424,7 +424,7 @@ void BPStoSPB(TimingData &BPS)
     }
 }
 
-void Difficulty::GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSpeeds, double WaitTime, double Drift)
+void Difficulty::GetMeasureLines(std::vector<double> &Out, TimingData& VerticalSpeeds, double WaitTime, double Drift)
 {
     double Last = 0;
     TimingData SPB;
@@ -451,15 +451,14 @@ void Difficulty::GetMeasureLines(std::vector<float> &Out, TimingData& VerticalSp
 
     for (auto i = 0; i < TotMeasures; i++)
     {
-        float PositionOut;
-        PositionOut = IntegrateToTime(VerticalSpeeds, Drift + Offset - MeasureTime * i);
+        auto PositionOut = IntegrateToTime(VerticalSpeeds, Drift + Offset - MeasureTime * i);
         Out.push_back(PositionOut);
     }
 
     // Add
     for (auto Msr : Data->Measures)
     {
-        float PositionOut = 0;
+        double PositionOut = 0.0;
 
         if (BPMType == BT_BEAT) // VerticalSpeeds already has drift applied, so we don't need to apply it again here.
         {

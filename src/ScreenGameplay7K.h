@@ -29,7 +29,7 @@ private:
     VSRG::VectorTN  NotesByChannel;
     std::map <int, std::vector<std::shared_ptr<SoundSample>> > Keysounds;
     std::queue<AutoplaySound>   BGMEvents;
-    std::vector<float>			 MeasureBarlines;
+    std::vector<double>			 MeasureBarlines;
 
     std::shared_ptr<VSRG::Difficulty>	 CurrentDiff;
     std::shared_ptr<VSRG::Song>			 MySong;
@@ -96,7 +96,7 @@ private:
 
     Mat4 noteEffectsMatrix[VSRG::MAX_CHANNELS];
 
-    float  CurrentBeat;
+    double CurrentBeat;
 
     bool GearIsPressed[VSRG::MAX_CHANNELS];
     bool stage_failed;
@@ -134,8 +134,7 @@ private:
     // Done in loading thread
     bool LoadChartData();
     bool LoadSongAudio();
-    bool LoadBGA();
-    void SetupBarline();
+    bool LoadBGA() const;
     bool ProcessSong();
 
     void SetupAfterLoadingVariables();
@@ -179,7 +178,7 @@ public:
     float GetCurrentBeat();
     float GetUserMultiplier() const;
     float GetCurrentVerticalSpeed();
-    float GetCurrentVertical();
+    double GetCurrentVertical();
     double GetSongTime();
     double GetWarpedSongTime();
 
@@ -187,11 +186,11 @@ public:
 
     ScreenGameplay7K();
     void Init(std::shared_ptr<VSRG::Song> S, int DifficultyIndex, const GameParameters &Param);
-    void LoadResources();
+    void LoadResources() override;
     bool BindKeysToLanes(bool UseTurntable);
-    void InitializeResources();
-    void Cleanup();
+    void InitializeResources() override;
+    void Cleanup() override;
 
-    bool Run(double Delta);
-    bool HandleInput(int32_t key, KeyEventType code, bool isMouseInput);
+    bool Run(double Delta) override;
+    bool HandleInput(int32_t key, KeyEventType code, bool isMouseInput) override;
 };
