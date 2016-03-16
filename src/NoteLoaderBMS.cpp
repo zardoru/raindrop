@@ -865,7 +865,7 @@ namespace NoteLoaderBMS{
 	// Returns: Out: a std::vector with all the subtitles, std::string: The title without the subtitles.
 	std::string GetSubtitles(std::string SLine, std::unordered_set<std::string> &Out)
 	{
-		std::regex sub_reg("([~(\\[<\"].*?[\\]\\)~>\"])");
+		std::regex sub_reg("([~\\-(\\[<\"].*?[\\]\\)~>\"\\-])$");
 		std::smatch m;
 		std::string matchL = SLine;
 		while (regex_search(matchL, m, sub_reg))
@@ -1226,8 +1226,7 @@ namespace NoteLoaderBMS{
 
         // First try to find a suiting subtitle
         std::string NewTitle = GetSubtitles(Out->SongName, Subs);
-        if (Diff->Name.length() == 0)
-            Diff->Name = DifficultyNameFromSubtitles(Subs);
+        Diff->Name += DifficultyNameFromSubtitles(Subs);
 
         // If we've got a title that's usuable then why not use it.
         if (NewTitle.length() > 0)

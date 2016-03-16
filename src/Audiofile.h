@@ -105,7 +105,7 @@ public:
 
     double GetStreamedTime();
     double GetPlayedTime();
-    uint32_t GetRate();
+    uint32_t GetRate() const;
 
     uint32_t Update();
     bool IsPlaying() override;

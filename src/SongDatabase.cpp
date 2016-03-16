@@ -433,7 +433,7 @@ void SongDatabase::GetSongInformation7K(int ID, VSRG::Song* Out)
 #ifdef _WIN32
 			Diff->Filename = Utility::Widen(s);
 #else
-			Diff->Filename = s
+			Diff->Filename = s;
 #endif
 		}
 		catch (std::exception &e) {

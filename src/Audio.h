@@ -17,5 +17,6 @@ void MixerAddSample(SoundSample *Sound);
 void MixerRemoveSample(SoundSample* Sound);
 void MixerUpdate();
 double MixerGetLatency();
+double MixerGetRate();
 double MixerGetFactor();
 double MixerGetTime();

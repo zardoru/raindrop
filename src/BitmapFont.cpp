@@ -5,7 +5,6 @@
 #include "Sprite.h"
 #include "BitmapFont.h"
 #include "ImageLoader.h"
-#include "Directory.h"
 
 BitmapFont::BitmapFont()
 {
@@ -71,7 +70,7 @@ BitmapFont *BitmapFont::FromLua(LuaManager* Lua, std::string TableName)
     BitmapFont* Ret = new BitmapFont();
 
     Lua->UseArray(TableName);
-    Directory Locat = Lua->GetFieldS("Location", GameState::GetInstance().GetSkinPrefix() + "font.tga");
+    std::filesystem::path Locat = Lua->GetFieldS("Location", GameState::GetInstance().GetSkinPrefix() + "font.tga");
     int CharWidth = Lua->GetFieldI("CharWidth");
     int CharHeight = Lua->GetFieldI("CharHeight");
     int CellWidth = Lua->GetFieldI("CellWidth");
@@ -81,7 +80,7 @@ BitmapFont *BitmapFont::FromLua(LuaManager* Lua, std::string TableName)
     int FontStart = Lua->GetFieldI("FontStart");
     Lua->Pop();
 
-    Ret->LoadFontImage(Locat.c_path(), Vec2(CharWidth, CharHeight), Vec2(CellWidth, CellHeight), Vec2(RenderWidth, RenderHeight), FontStart);
+    Ret->LoadFontImage(Locat.c_str(), Vec2(CharWidth, CharHeight), Vec2(CellWidth, CellHeight), Vec2(RenderWidth, RenderHeight), FontStart);
 
     return Ret;
 }

@@ -147,7 +147,6 @@
     <ClCompile Include="..\src\Configuration.cpp" />
     <ClCompile Include="..\src\Convert.cpp" />
     <ClCompile Include="..\src\ConvertToBMS.cpp" />
-    <ClCompile Include="..\src\Directory.cpp" />
     <ClCompile Include="..\src\ext\jsoncpp.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -248,7 +247,6 @@
     <ClInclude Include="..\src\BitmapFont.h" />
     <ClInclude Include="..\src\Configuration.h" />
     <ClInclude Include="..\src\Converter.h" />
-    <ClInclude Include="..\src\Directory.h" />
     <ClInclude Include="..\src\Drawable.h" />
     <ClInclude Include="..\src\Font.h" />
     <ClInclude Include="..\src\GameObject.h" />

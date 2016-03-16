@@ -475,6 +475,8 @@ bool ScreenSelectMusic::HandleInput(int32_t key, KeyEventType code, bool isMouse
         case KT_Right:
             GameState::GetInstance().SetDifficultyIndex(Game::SongWheel::GetInstance().NextDifficulty());
             break;
+		default:
+			break;
         }
     }
 

@@ -19,7 +19,6 @@ struct loaderVSRGEntry_t
     { L".bms",   NoteLoaderBMS::LoadObjectsFromFile },
     { L".bme",   NoteLoaderBMS::LoadObjectsFromFile },
     { L".bml",   NoteLoaderBMS::LoadObjectsFromFile },
-    //{ L".bml",  NoteLoaderBMS::LoadObjectsFromFile },
     { L".pms",   NoteLoaderBMS::LoadObjectsFromFile },
     { L".sm",    NoteLoaderSM::LoadObjectsFromFile  },
     { L".osu",   NoteLoaderOM::LoadObjectsFromFile  },
@@ -34,22 +33,22 @@ SongLoader::SongLoader(SongDatabase* Database)
     DB = Database;
 }
 
-void SongLoader::LoadSongDCFromDir(Directory songPath, std::vector<dotcur::Song*> &VecOut)
+void SongLoader::LoadSongDCFromDir(std::filesystem::path songPath, std::vector<dotcur::Song*> &VecOut)
 {
     bool FoundDCF = false;
-    std::vector<std::string> Listing;
-
-    songPath.ListDirectory(Listing, Directory::FS_REG, "dcf");
+	auto Listing = Utility::GetFileListing(songPath);
 
     // First, search for .dcf files.
-    for (std::vector<std::string>::iterator i = Listing.begin(); i != Listing.end(); i++)
+    for (auto i: Listing)
     {
+		if (i.extension() != ".dcf") continue;
+
         // found a .dcf- load it.
-        dotcur::Song *New = NoteLoader::LoadObjectsFromFile(songPath.path() + "/" + *i, songPath.path());
+        dotcur::Song *New = NoteLoaderDC::LoadObjectsFromFile(i, songPath);
         if (New)
         {
-            New->SongDirectory = songPath.path();
-            New->ChartFilename = *i;
+            New->SongDirectory = songPath;
+            New->ChartFilename = i;
             VecOut.push_back(New);
             FoundDCF = true;
         }
@@ -61,30 +60,29 @@ void SongLoader::LoadSongDCFromDir(Directory songPath, std::vector<dotcur::Song*
         dotcur::Song *NewS = nullptr;
         std::string PotentialBG, PotentialBGRelative;
 
-        Listing.clear();
-        songPath.ListDirectory(Listing, Directory::FS_REG);
+		Listing = Utility::GetFileListing(songPath);
 
-        for (std::vector<std::string>::iterator i = Listing.begin(); i != Listing.end(); i++)
+		for (auto i : Listing)
         {
-            std::string Ext = Directory(*i).GetExtension();
-            if (Ext == "ogg")
+			std::string Ext = i.extension().string();
+            if (Ext == ".ogg")
             {
                 bool UsesFilename = false;
                 NewS = new dotcur::Song();
-                NewS->SongDirectory = songPath.path();
-                NewS->SongName = *i;
+                NewS->SongDirectory = songPath;
+                NewS->SongName = i.filename().string();
                 UsesFilename = true;
 
-                NewS->SongFilename = *i;
+                NewS->SongFilename = i.filename().string();
 				// todo: dcf
 
                 // NewS->ChartFilename = UsesFilename ? Utility::RemoveExtension(NewS->SongName) + ".dcf" : NewS->SongName + ".dcf";
                 VecOut.push_back(NewS);
             }
-            else if (Ext == "png" || Ext == "jpg")
+            else if (Ext == ".png" || Ext == ".jpg")
             {
-                PotentialBG = (songPath.path() + *i);
-                PotentialBGRelative = *i;
+				PotentialBG = i.string();
+                PotentialBGRelative = i.filename().string();
             }
         }
 
@@ -283,6 +281,7 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<V
     // Files were modified- we have to reload the charts.
     if (RenewCache)
     {
+		CfgVar NoFileGrouping("NoFileGrouping");
         // First, pack BMS charts together.
         std::map<std::string, VSRG::Song*> bmsk;
         VSRG::Song *BMSSong = new VSRG::Song;
@@ -321,23 +320,36 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<V
                 }
 
                 // We found a chart with the same title (and subtitle) already.
-                std::string key = BMSSong->SongName + BMSSong->Subtitle;
-                if (bmsk.find(key) != bmsk.end())
-                {
-                    VSRG::Song *oldSng = bmsk[key];
 
-                    if (BMSSong->Difficulties.size()) // BMS charts don't have more than one difficulty anyway.
-                        oldSng->Difficulties.push_back(BMSSong->Difficulties[0]);
+				if (!NoFileGrouping) {
+					std::string key;
+					if (Configuration::GetConfigf("SeparateBySubtitle"))
+						key = BMSSong->SongName + BMSSong->Subtitle;
+					else
+						key = BMSSong->SongName;
 
-                    BMSSong->Difficulties.clear();
-                    delete BMSSong;
-                }
-                else // Ah then, don't delete it.
-                {
-                    bmsk[key] = BMSSong;
-                }
+					if (bmsk.find(key) != bmsk.end())
+					{
+						VSRG::Song *oldSng = bmsk[key];
 
-                BMSSong = new VSRG::Song;
+						if (BMSSong->Difficulties.size()) // BMS charts don't have more than one difficulty anyway.
+							oldSng->Difficulties.push_back(BMSSong->Difficulties[0]);
+
+						BMSSong->Difficulties.clear();
+						delete BMSSong;
+					}
+					else // Ah then, don't delete it.
+					{
+						bmsk[key] = BMSSong;
+					}
+
+					BMSSong = new VSRG::Song;
+				} else
+				{
+					VSRGUpdateDatabaseDifficulties(DB, BMSSong);
+					PushVSRGSong(VecOut, BMSSong);
+					BMSSong = new VSRG::Song;
+				}
             }
 
             if (Ext == L".ojn")
@@ -421,28 +433,26 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<V
     }
 }
 
-void SongLoader::GetSongListDC(std::vector<dotcur::Song*> &OutVec, Directory Dir)
+void SongLoader::GetSongListDC(std::vector<dotcur::Song*> &OutVec, std::filesystem::path Dir)
 {
-    std::vector <std::string> Listing;
+    std::vector <std::filesystem::path> Listing = Utility::GetFileListing(Dir);
 
-    Dir.ListDirectory(Listing, Directory::FS_DIR);
-    for (auto i = Listing.begin(); i != Listing.end(); ++i)
+    for (auto i: Listing)
     {
-        Log::Printf("%ls... ", Utility::Widen(*i).c_str());
-        LoadSongDCFromDir(Dir.path() + "/" + *i, OutVec);
+        Log::Printf("%s... ", i.c_str());
+        LoadSongDCFromDir(i, OutVec);
         Log::Printf("ok\n");
     }
 }
 
-void SongLoader::GetSongList7K(std::vector<VSRG::Song*> &OutVec, Directory Dir)
+void SongLoader::GetSongList7K(std::vector<VSRG::Song*> &OutVec,std::filesystem::path Dir)
 {
-    std::vector <std::string> Listing;
+    std::vector <std::filesystem::path> Listing = Utility::GetFileListing(Dir);
 
-    Dir.ListDirectory(Listing, Directory::FS_DIR);
-    for (auto i = Listing.begin(); i != Listing.end(); ++i)
+    for (auto i: Listing)
     {
-        Log::Printf("%ls... ", Utility::Widen(*i).c_str());
-        LoadSong7KFromDir(Dir.path() + "/" + *i, OutVec);
+		Log::Printf("%s... ", i.c_str());
+        LoadSong7KFromDir(i, OutVec);
         Log::Printf("ok\n");
     }
 }

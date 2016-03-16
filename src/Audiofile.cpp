@@ -183,11 +183,11 @@ bool AudioSample::Open(AudioDataSource* Src)
             Channels = 2;
         }
 
-        if (mRate != 44100 || mPitch != 1) // mixer_constant.. in the future, allow changing this destination sample rate.
+        if (mRate != MixerGetRate() || mPitch != 1) // mixer_constant.. in the future, allow changing this destination sample rate.
         {
             size_t done;
             size_t doneb;
-            double DstRate = 44100.0 / mPitch;
+            double DstRate = MixerGetRate() / mPitch;
             double ResamplingRate = DstRate / mRate;
             soxr_io_spec_t spc;
             size_t size = size_t(ceil(mSampleCount * ResamplingRate));
@@ -207,7 +207,7 @@ bool AudioSample::Open(AudioDataSource* Src)
 
             mSampleCount = size;
             mData = mDataNew;
-            mRate = 44100;
+            mRate = MixerGetRate();
         }
 
         mCounter = 0;
@@ -413,7 +413,7 @@ uint32_t AudioStream::Read(float* buffer, size_t count)
         double origRate = mSource->GetRate();
 
         // This is what our destination rate is.
-        double resRate = 44100.0 / mPitch;
+        double resRate = MixerGetRate() / mPitch;
         double RateRatio = resRate / origRate;
 
         // This is how many samples we want to read from the source buffer
@@ -469,7 +469,7 @@ bool AudioStream::Open(std::filesystem::path Filename)
         sis.otype = SOXR_INT16_I;
         sis.scale = 1;
         soxr_quality_spec_t q_spec = soxr_quality_spec(SOXR_VHQ, SOXR_VR);
-        mResampler = soxr_create(mSource->GetRate(), 44100, 2, nullptr, &sis, &q_spec, nullptr);
+        mResampler = soxr_create(mSource->GetRate(), MixerGetRate(), 2, nullptr, &sis, &q_spec, nullptr);
 
         mBufferSize = BUFF_SIZE;
         mData.resize(mBufferSize);
@@ -546,7 +546,7 @@ uint32_t AudioStream::Update()
     return ReadTotal;
 }
 
-uint32_t AudioStream::GetRate()
+uint32_t AudioStream::GetRate() const
 {
     return mSource->GetRate();
 }

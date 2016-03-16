@@ -75,6 +75,9 @@ Histogram = 0
 -- show up to 999 ms off
 HitErrorDisplayLimiter = 999
 
+-- Whether to go to song select inmediately on failure
+GoToSongSelectOnFailure = 0
+
 -- 1 is first after processing SV, 1 is mmod, 2 is cmod, anything else is default.
 -- default: first speed before processing SV
 DefaultSpeedKind = -1

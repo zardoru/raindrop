@@ -5,7 +5,6 @@
 
 #include "GameWindow.h"
 #include "Rendering.h"
-#include "Sprite.h"
 #include "Line.h"
 #include "SceneEnvironment.h"
 
@@ -31,10 +30,12 @@ void ScreenGameplay7K::DrawBarlines()
 {
     for (auto i : MeasureBarlines)
     {
-        double realV = (CurrentVertical - i) * SpeedMultiplier + Noteskin::GetBarlineOffset() * sign(SpeedMultiplier) + JudgmentLinePos;
+        double realV = (CurrentVertical - i) * SpeedMultiplier + 
+			Noteskin::GetBarlineOffset() * sign(SpeedMultiplier) + JudgmentLinePos;
         if (realV > 0 && realV < ScreenWidth)
         {
-            Barline->SetLocation(Vec2(Noteskin::GetBarlineStartX(), realV), Vec2(Noteskin::GetBarlineStartX() + Noteskin::GetBarlineWidth(), realV));
+            Barline->SetLocation(Vec2(Noteskin::GetBarlineStartX(), realV), 
+				Vec2(Noteskin::GetBarlineStartX() + Noteskin::GetBarlineWidth(), realV));
             Barline->Render();
         }
     }
@@ -179,8 +180,8 @@ void ScreenGameplay7K::DrawMeasures()
                 double Pos;
                 double Size;
                 // If we're being hit and..
-                bool DCS = Noteskin::ShouldDecreaseHoldSizeWhenBeingHit() && Level == 2;
-                if (DCS)
+                bool decrease_hold_size = Noteskin::ShouldDecreaseHoldSizeWhenBeingHit() && Level == 2;
+                if (decrease_hold_size)
                 {
                     Pos = (VerticalHoldEnd + JPos) / 2;
                     Size = VerticalHoldEnd - JPos;
@@ -194,7 +195,7 @@ void ScreenGameplay7K::DrawMeasures()
                 Noteskin::DrawHoldBody(k, Pos, Size, Level);
                 Noteskin::DrawHoldTail(*m, k, VerticalHoldEnd, Level);
 
-                if (Noteskin::AllowDanglingHeads() || DCS)
+                if (Noteskin::AllowDanglingHeads() || decrease_hold_size)
                     Noteskin::DrawHoldHead(*m, k, JPos, Level);
                 else
                     Noteskin::DrawHoldHead(*m, k, Vertical, Level);

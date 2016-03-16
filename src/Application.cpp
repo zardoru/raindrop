@@ -5,7 +5,6 @@
 #include "Screen.h"
 #include "Configuration.h"
 #include "Audio.h"
-#include "Directory.h"
 #include "Application.h"
 #include "Sprite.h"
 #include "BitmapFont.h"
@@ -268,11 +267,9 @@ bool Application::PollIPC()
         SetupPreviewMode();
 
         return true;
-        break;
     case IPC::Message::MSG_STOP:
         Game->Close();
         return true;
-        break;
     case IPC::Message::MSG_NULL:
     default:
         return false;

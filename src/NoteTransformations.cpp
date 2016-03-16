@@ -7,26 +7,6 @@ namespace NoteTransform
 {
 	void Randomize(VSRG::VectorTN &Notes, int ChannelCount, bool RespectScratch)
 	{
-		int si;
-
-		if (RespectScratch)
-			si = 1; else si = 0;
-
-		int ScratchCount;
-
-		if (RespectScratch)
-		{
-			if (ChannelCount == 6 || ChannelCount == 8)
-				ScratchCount = 1;
-			else if (ChannelCount == 12 || ChannelCount == 16)
-				ScratchCount = 2;
-			else
-				ScratchCount = 0;
-		} else
-		{
-			ScratchCount = 0;
-		}
-
 		std::vector<int> s;
 
 		// perform action to channel index minus scratch ones if applicable
@@ -72,7 +52,7 @@ namespace NoteTransform
 		// perform random
 		// note: random_shuffle's limitation of only swapping with earlier entries
 		// makes this preferable.
-		for (int i = 0; i < s.size(); i++)
+		for (auto i = 0; i < s.size(); i++)
 		{
 			std::swap(s[i], s[dev(mt) % s.size()]);
 		}
@@ -99,7 +79,7 @@ namespace NoteTransform
 
     void MoveKeysoundsToBGM(unsigned char channels, VSRG::VectorTN notes_by_channel, std::vector<AutoplaySound> &bg_ms, double drift)
     {
-        for (int k = 0; k < channels; k++)
+        for (auto k = 0; k < channels; k++)
         {
             for (auto&& n : notes_by_channel[k])
             {

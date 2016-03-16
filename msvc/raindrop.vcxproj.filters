@@ -40,9 +40,6 @@
     <ClCompile Include="..\src\Configuration.cpp">
       <Filter>Source Files\backend\cfg</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Directory.cpp">
-      <Filter>Source Files\backend\files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\GameWindow.cpp">
       <Filter>Source Files\backend\window</Filter>
     </ClCompile>
@@ -294,9 +291,6 @@
     <ClInclude Include="..\src\Configuration.h">
       <Filter>Header Files\backend\cfg</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Directory.h">
-      <Filter>Header Files\backend\files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\GuiButton.h">
       <Filter>Header Files\backend\gui</Filter>
     </ClInclude>
@@ -500,9 +494,6 @@
     <Filter Include="Source Files\backend\render\fonts">
       <UniqueIdentifier>{1fc3da10-f22d-4719-b3ed-1e12cbbc788d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\backend\files">
-      <UniqueIdentifier>{f3eeaf66-4063-4666-92d8-cff236388802}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\backend\gui">
       <UniqueIdentifier>{c2b9f21a-2d12-4ebe-94a5-dcb9a207dea5}</UniqueIdentifier>
     </Filter>
@@ -577,9 +568,6 @@
     </Filter>
     <Filter Include="Header Files\backend\cfg">
       <UniqueIdentifier>{103d7f83-9db3-4390-90b8-6836516279c2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\backend\files">
-      <UniqueIdentifier>{c4ed7459-28d5-4174-bc46-6018ecbd55ab}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\backend\gui">
       <UniqueIdentifier>{fcaec375-a9e4-42e9-a386-e0bedc8a9c67}</UniqueIdentifier>

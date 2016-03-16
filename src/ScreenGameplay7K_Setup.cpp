@@ -532,7 +532,7 @@ void ScreenGameplay7K::SetupAfterLoadingVariables()
 
     CurrentDiff->GetMeasureLines(MeasureBarlines, VSpeeds, WaitingTime, TimeCompensation);
 
-    ErrorTolerance = Configuration::GetConfigf("ErrorTolerance");
+    ErrorTolerance = CfgVar("ErrorTolerance");
 
     if (ErrorTolerance <= 0)
         ErrorTolerance = 5; // ms
@@ -750,11 +750,11 @@ bool ScreenGameplay7K::BindKeysToLanes(bool UseTurntable)
 	std::vector<std::string> res;
 
 	if (UseTurntable)
-		KeyProfile = Configuration::GetConfigs("KeyProfileSpecial" + Utility::IntToStr(CurrentDiff->Channels));
+		KeyProfile = CfgVar("KeyProfileSpecial" + Utility::IntToStr(CurrentDiff->Channels));
 	else
-		KeyProfile = Configuration::GetConfigs("KeyProfile" + Utility::IntToStr(CurrentDiff->Channels));
+		KeyProfile = CfgVar("KeyProfile" + Utility::IntToStr(CurrentDiff->Channels));
 
-	value = Configuration::GetConfigs("Keys", KeyProfile);
+	value = CfgVar("Keys", KeyProfile);
 	res = Utility::TokenSplit(value);
 
 	for (unsigned i = 0; i < CurrentDiff->Channels; i++)

@@ -1,7 +1,7 @@
 #pragma once
 
-namespace NoteLoader
+namespace NoteLoaderDC
 {
     // user responsability to clean this one up.
-    dotcur::Song *LoadObjectsFromFile(std::string filename, std::string prefix = "");
+    dotcur::Song *LoadObjectsFromFile(std::filesystem::path filename, std::filesystem::path prefix = "");
 };

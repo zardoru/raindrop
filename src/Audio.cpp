@@ -19,7 +19,7 @@ PaDeviceIndex DefaultDSDevice;
 /********* Mixer *********/
 /*************************/
 
-PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* Sound, double &dLatency, PaStreamCallback Callback)
+PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, void* Sound, double &dLatency, PaStreamCallback Callback)
 {
     PaStreamParameters outputParams;
 
@@ -27,16 +27,20 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
     outputParams.channelCount = 2;
     outputParams.sampleFormat = paFloat32;
 
-	if (!Configuration::GetConfigf("RequestedLatency", "Audio")) {
-		if (!Configuration::GetConfigf("UseHighLatency", "Audio"))
+	CfgVar RequestedLatency("RequestedLatency", "Audio");
+	CfgVar UseHighLatency("UseHighLatency", "Audio");
+
+	if (!RequestedLatency) {
+		if (!UseHighLatency)
 			outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultLowOutputLatency;
 		else
 			outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultHighOutputLatency;
 	} else
 	{
-		outputParams.suggestedLatency = Configuration::GetConfigf("RequestedLatency", "Audio");
+		outputParams.suggestedLatency = RequestedLatency.flt();
 	}
 
+	Log::Logf("AUDIO: Requesting latency of %f ms\n", outputParams.suggestedLatency * 1000);
 
 #ifndef WIN32
 
@@ -51,10 +55,12 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
         StreamInfo.hostApiType = paWASAPI;
         StreamInfo.size = sizeof(PaWasapiStreamInfo);
         StreamInfo.version = 1;
-        if (!Configuration::GetConfigf("WasapiDontUseExclusiveMode", "Audio"))
+
+		CfgVar UseSharedMode("WasapiUseSharedMode", "Audio");
+		if (!UseSharedMode)
         {
 			Log::Logf("AUDIO: Attempting to use exclusive mode WASAPI\n");
-            StreamInfo.threadPriority = eThreadPriorityProAudio;
+            StreamInfo.threadPriority = eThreadPriorityGames;
             StreamInfo.flags = paWinWasapiExclusive | paWinWasapiThreadPriority;
         }
         else
@@ -64,27 +70,33 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, double Rate, void* 
             StreamInfo.flags = 0;
         }
 
-        StreamInfo.hostProcessorOutput = NULL;
-        StreamInfo.hostProcessorInput = NULL;
+        StreamInfo.hostProcessorOutput = nullptr;
+        StreamInfo.hostProcessorInput = nullptr;
     }
     else
     {
-		Log::Logf("AUDIO: Attempting to use DirectSound\n");
-        outputParams.hostApiSpecificStreamInfo = &DSStreamInfo;
+		if (Pa_GetHostApiInfo(Pa_GetDeviceInfo(Device)->hostApi)->type == paDirectSound) {
+			Log::Logf("AUDIO: Attempting to use DirectSound\n");
+			outputParams.hostApiSpecificStreamInfo = &DSStreamInfo;
 
-        DSStreamInfo.size = sizeof(PaWinDirectSoundStreamInfo);
-        DSStreamInfo.hostApiType = paDirectSound;
-        DSStreamInfo.version = 2;
-        DSStreamInfo.flags = 0;
+			DSStreamInfo.size = sizeof(PaWinDirectSoundStreamInfo);
+			DSStreamInfo.hostApiType = paDirectSound;
+			DSStreamInfo.version = 2;
+			DSStreamInfo.flags = 0;
+		} else
+		{
+			outputParams.hostApiSpecificStreamInfo = nullptr;
+		}
     }
 #endif
 
     dLatency = outputParams.suggestedLatency;
 
+	double Rate = Pa_GetDeviceInfo(Device)->defaultSampleRate;
+    Log::Logf("AUDIO: Device Selected %d (Rate: %f)\n", Device, Rate);
     // fire up portaudio
     PaError Err = Pa_OpenStream(mStream, nullptr, &outputParams, Rate, 0, 0, Callback, static_cast<void*>(Sound));
 
-    Log::Logf("AUDIO: Device Selected %d\n", Device);
     if (Err)
     {
         Log::Logf("%ls\n", Utility::Widen(Pa_GetErrorText(Err)).c_str());
@@ -142,6 +154,11 @@ public:
         return *Mixer;
     }
 
+	double GetRate()
+    {
+		return Pa_GetStreamInfo(Stream)->sampleRate;
+    }
+
     void Initialize(bool StartThread)
     {
         RingbufData = new char[BUFF_SIZE*sizeof(float)];
@@ -160,23 +177,22 @@ public:
 #ifdef WIN32
         if (UseWasapi)
         {
-            OpenStream(&Stream, GetWasapiDevice(), 44100, (void*) this, Latency, Mix);
+            OpenStream(&Stream, GetWasapiDevice(), (void*) this, Latency, Mix);
 
             if (!Stream)
             {
                 // This was a Wasapi problem. Retry without it.
                 Log::Logf("AUDIO: Problem initializing WASAPI. Falling back to default API.\n");
                 UseWasapi = false;
-                OpenStream(&Stream, Pa_GetDefaultOutputDevice(), 44100, static_cast<void*>(this), Latency, Mix);
+                OpenStream(&Stream, Pa_GetDefaultOutputDevice(), static_cast<void*>(this), Latency, Mix);
             }
         }
         else
         {
-            OpenStream(&Stream, DefaultDSDevice, 44100, (void*) this, Latency, Mix);
+            OpenStream(&Stream, DefaultDSDevice, (void*) this, Latency, Mix);
         }
 #else
-        OpenStream(&Stream, Pa_GetDefaultOutputDevice(), 44100, (void*) this, Latency, Mix);
-
+        OpenStream(&Stream, Pa_GetDefaultOutputDevice(), (void*) this, Latency, Mix);
 #endif
 
         if (Stream)
@@ -368,7 +384,7 @@ void GetAudioInfo()
     {
         const PaDeviceInfo *Info = Pa_GetDeviceInfo(i);
         Log::Logf("(%d): %s\n", i, Info->name);
-        Log::Logf("\thighLat: %f, lowLat: %f\n", Info->defaultHighOutputLatency, Info->defaultLowOutputLatency);
+        Log::Logf("\thighLat: %f ms, lowLat: %f ma\n", Info->defaultHighOutputLatency * 1000, Info->defaultLowOutputLatency * 1000);
         Log::Logf("\tsampleRate: %f, hostApi: %d\n", Info->defaultSampleRate, Info->hostApi);
         Log::Logf("\tmaxchannels: %d\n", Info->maxOutputChannels);
     }
@@ -383,10 +399,11 @@ void InitAudio()
         return;
 
 #ifdef WIN32
-    UseWasapi = (Configuration::GetConfigf("UseWasapi", "Audio") != 0);
+	ConfigurationVariable cfg_UseWasapi("UseWasapi", "Audio");
+	UseWasapi = cfg_UseWasapi;
 #endif
 
-    UseThreadedDecoder = (Configuration::GetConfigf("UseThreadedDecoder", "Audio") != 0);
+    UseThreadedDecoder = ConfigurationVariable("UseThreadedDecoder", "Audio");
 
     GetAudioInfo();
 
@@ -447,6 +464,11 @@ double MixerGetLatency()
 #else
     return 0;
 #endif
+}
+
+double MixerGetRate()
+{
+	return PaMixer::GetInstance().GetRate();
 }
 
 double MixerGetFactor()

@@ -28,5 +28,51 @@ namespace Configuration
     void Cleanup();
 }
 
+class ConfigurationVariable
+{
+	std::string nm, ns;
+public:
+	ConfigurationVariable(std::string _nm, std::string _ns = "") : nm(_nm), ns(_ns) {};
+	~ConfigurationVariable() = default;
+	std::string str() const
+	{
+		return Configuration::GetConfigs(nm, ns);
+	};
+
+	float flt() const
+	{
+		return Configuration::GetConfigf(nm, ns);
+	}
+
+	operator float() const
+	{
+		return flt();
+	}
+
+	explicit operator bool() const
+	{
+		return flt() != 0;
+	}
+
+	explicit operator int() const
+	{
+		return static_cast<int>(floor(flt()));
+	}
+
+	operator std::string() const
+	{
+		return str();
+	}
+
+	std::map<std::string, std::string> str_list() const
+	{
+		std::map<std::string, std::string> out;
+		Configuration::GetConfigListS(nm, out, ns);
+		return out;
+	}
+};
+
+typedef ConfigurationVariable CfgVar;
+
 #define ScreenHeight Configuration::CfgScreenHeight()
 #define ScreenWidth Configuration::CfgScreenWidth()

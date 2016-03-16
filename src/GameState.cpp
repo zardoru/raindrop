@@ -37,24 +37,22 @@ GameState::GameState()
     Params = std::make_shared<GameParameters>();
 
     // TODO: circular references are possible :(
-    Directory SkinsDir(DirectoryPrefix + SkinsPrefix);
-    std::vector<std::string> listing;
-    SkinsDir.ListDirectory(listing, Directory::FS_DIR);
+    std::filesystem::path SkinsDir(DirectoryPrefix + SkinsPrefix);
+    std::vector<std::filesystem::path> listing = Utility::GetFileListing(SkinsDir);;
     for (auto s : listing)
     {
+		auto st = s.filename().string();
         std::ifstream fallback;
-        fallback.open((SkinsDir / s.c_str() / "fallback").c_path());
+        fallback.open(s / "fallback.txt");
         if (fallback.is_open() && s != "default")
         {
             std::string ln;
-            while (getline(fallback, ln))
-                if (Utility::ToLower(ln) != Utility::ToLower(s))
-                {
-                    Directory dir(ln); dir.Normalize(true);
-                    Fallback[s].push_back(dir);
-                }
+			while (getline(fallback, ln)) {
+				if (Utility::ToLower(ln) != Utility::ToLower(st))
+					Fallback[st].push_back(ln);
+			}
         }
-        if (!Fallback[s].size()) Fallback[s].push_back("default");
+        if (!Fallback[st].size()) Fallback[st].push_back("default");
     }
 }
 
@@ -215,16 +213,16 @@ Image* GameState::GetSkinImage(const std::string& Path)
 
                 if (Song->Difficulties.size() > GetDifficultyIndex())
                 {
-                    std::string File = Database->GetStageFile(Song->Difficulties.at(GetDifficultyIndex())->ID);
+                    std::filesystem::path File = Database->GetStageFile(Song->Difficulties.at(GetDifficultyIndex())->ID);
 
                     // Oh so it's loaded and it's not in the database, fine.
-                    if (File.length() == 0 && Song->Difficulties.at(GetDifficultyIndex())->Data)
+                    if (File.string().length() == 0 && Song->Difficulties.at(GetDifficultyIndex())->Data)
                         File = Song->Difficulties.at(GetDifficultyIndex())->Data->StageFile;
 
                     auto toLoad = SelectedSong->SongDirectory / File;
 
                     // ojn files use their cover inside the very ojn
-                    if (Directory(File).GetExtension() == "ojn")
+                    if (File.extension() == ".ojn")
                     {
                         size_t read;
                         const unsigned char* buf = reinterpret_cast<const unsigned char*>(LoadOJNCover(toLoad, read));
@@ -235,21 +233,26 @@ Image* GameState::GetSkinImage(const std::string& Path)
                         return StageImage;
                     }
 
-                    if (File.length() && std::filesystem::exists(toLoad))
+                    if (File.string().length() && std::filesystem::exists(toLoad))
                     {
                         StageImage->Assign(toLoad, true);
                         return StageImage;
                     }
-                    else return nullptr;
+
+                    return nullptr;
                 }
-                else return nullptr; // Oh okay, no difficulty assigned.
+
+                return nullptr; // Oh okay, no difficulty assigned.
             }
-            else // Stage file not supported for DC songs yet
-                return nullptr;
+            // Stage file not supported for DC songs yet
+            return nullptr;
         }
-        else return nullptr;
+
+		// no song selected
+        return nullptr;
     }
-    else if (Path == "SONGBG")
+
+    if (Path == "SONGBG")
     {
         if (SelectedSong)
         {
@@ -260,15 +263,21 @@ Image* GameState::GetSkinImage(const std::string& Path)
                 SongBG->Assign(toLoad, true);
                 return SongBG;
             }
-            else return nullptr;
+
+			// file doesn't exist
+            return nullptr;
         }
-        else return nullptr;
+
+		// no song selected
+        return nullptr;
     }
 
     /* Regular paths */
     if (Path.length())
         return ImageLoader::Load(GetSkinFile(Path, GetSkin()));
-    else return nullptr;
+
+	// no path?
+    return nullptr;
 }
 
 bool GameState::SkinSupportsChannelCount(int Count)
@@ -311,4 +320,9 @@ void GameState::SetCurrentSystemType(int SystemType)
 int GameState::GetCurrentSystemType() const
 {
 	return CurrentSubsystemType;
+}
+
+void GameState::SubmitScore(std::shared_ptr<ScoreKeeper7K> score)
+{
+	// TODO
 }

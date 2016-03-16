@@ -89,6 +89,8 @@ namespace Game
         SongDatabase* GetSongDatabase();
         static GameWindow* GetWindow();
 
+		void SubmitScore(std::shared_ptr<ScoreKeeper7K> score);
+
         GameParameters* GetParameters();
     };
 }

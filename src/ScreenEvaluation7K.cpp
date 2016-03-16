@@ -2,11 +2,7 @@
 
 #include "GameGlobal.h"
 #include "GameState.h"
-#include "Sprite.h"
-#include "Configuration.h"
-#include "BitmapFont.h"
 #include "ScreenEvaluation7K.h"
-#include "GameWindow.h"
 #include "ImageLoader.h"
 #include "Audio.h"
 #include "ScoreKeeper7K.h"
@@ -14,19 +10,20 @@
 #include "LuaManager.h"
 
 ScreenEvaluation7K::ScreenEvaluation7K() :
-    Screen("ScreenEvaluation7K", nullptr)
+    Screen("ScreenEvaluation7K", nullptr),
+	Score(nullptr)
 {
     Running = true;
 }
 
-void ScreenEvaluation7K::Init(ScoreKeeper7K *Result)
+void ScreenEvaluation7K::Init(std::shared_ptr<ScoreKeeper7K> Result)
 {
     Score = Result;
 
     Animations->InitializeUI();
 
     GameState::GetInstance().InitializeLua(Animations->GetEnv()->GetState());
-    SetScorekeeper7KInstance(Animations->GetEnv()->GetState(), Result);
+    SetScorekeeper7KInstance(Animations->GetEnv()->GetState(), Result.get());
 
     Animations->Initialize(GameState::GetInstance().GetSkinFile("screenevaluation7k.lua"));
 

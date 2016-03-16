@@ -26,7 +26,7 @@ namespace dotcur
         std::vector<dotcur::Difficulty*> Difficulties;
 
         /* chart filename*/
-        std::string ChartFilename;
+        std::filesystem::path ChartFilename;
 
         double		LeadInTime;
         int			MeasureLength;

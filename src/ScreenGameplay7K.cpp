@@ -12,6 +12,7 @@
 #include "ScreenGameplay7K.h"
 #include "ScreenEvaluation7K.h"
 #include "Noteskin.h"
+#include "GameState.h"
 
 using namespace VSRG;
 
@@ -249,8 +250,10 @@ stageFailed:
     // Okay then, the song's done, and the success animation is done too. Time to evaluate.
     if (SuccessTime < 0 && SongFinished)
     {
+		GameState::GetInstance().SubmitScore(ScoreKeeper);
+
         auto Eval = std::make_shared<ScreenEvaluation7K>();
-        Eval->Init(ScoreKeeper.get());
+        Eval->Init(ScoreKeeper);
         Next = Eval;
     }
 
@@ -258,11 +261,14 @@ stageFailed:
     {
         MissTime = 10; // Infinite, for as long as it lasts.
         if (FailureTime <= 0)
-        { // go to evaluation screen, or back to song select depending on the skin
-            if (Configuration::GetSkinConfigf("GoToSongSelectOnFailure") == 0)
+        { 
+			// go to evaluation screen, or back to song select depending on the skin
+			GameState::GetInstance().SubmitScore(ScoreKeeper);
+			
+			if (Configuration::GetSkinConfigf("GoToSongSelectOnFailure") == 0)
             {
                 auto Eval = std::make_shared<ScreenEvaluation7K>();
-                Eval->Init(ScoreKeeper.get());
+                Eval->Init(ScoreKeeper);
                 Next = Eval;
             }
             else

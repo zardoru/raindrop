@@ -123,10 +123,9 @@ void LoadNotes(Song* Out, Difficulty * Diff, std::string line)
     Out->Difficulties.push_back(Diff);
 }
 
-Song* NoteLoader::LoadObjectsFromFile(std::string filename, std::string prefix)
+Song* NoteLoaderDC::LoadObjectsFromFile(std::filesystem::path filename, std::filesystem::path prefix)
 {
-    std::ifstream filein;
-    filein.open(filename.c_str(), std::ios::in);
+    std::ifstream filein(filename);
     Song *Out = new Song();
     Difficulty *Diff = new Difficulty();
 
