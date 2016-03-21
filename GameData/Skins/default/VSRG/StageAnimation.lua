@@ -62,13 +62,18 @@ function ZoomVertOut(frac)
 	return 1
 end
 
-function DoSuccessAnimation()
+function FadeToBlack()
 	Black = Engine:CreateObject()
 	Black.Image = "Global/filter.png"
 	Black.Alpha = 0
 	Black.Width = ScreenWidth
 	Black.Height = ScreenHeight
 	Black.Z = 29
+	Engine:AddAnimation(Black, "FadeInBlack", EaseNone, 0.5, 3)
+end
+
+function DoSuccessAnimation()
+	FadeToBlack()
 
 	StageClear = Engine:CreateObject()
 	StageClear.Image = "VSRG/stageclear.png"
@@ -78,7 +83,6 @@ function DoSuccessAnimation()
 	StageClear.Z = 31
 	StageClear.Alpha = 0
 	
-	Engine:AddAnimation(Black, "FadeInBlack", EaseNone, 0.5, 3)
 
 	if IsFullCombo then
 		DoFullComboAnimation()

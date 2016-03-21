@@ -134,19 +134,17 @@ end
 
 -- Returns duration of failure animation.
 function OnFailureEvent()
-	DoFailAnimation()
-	return FailAnimation.Duration
-end
-
-function BackgroundFadeIn(frac)
-	-- ScreenBackground.Alpha = frac
-	return 1
+	if Global.CurrentGaugeType ~= LT_GROOVE then
+		DoFailAnimation()
+		return FailAnimation.Duration
+	else
+		FadeToBlack()
+		return SuccessAnimation.Duration
+	end
 end
 
 -- When 'enter' is pressed and the game starts, this function is called.
 function OnActivateEvent()
-	-- Engine:AddAnimation(ScreenBackground, "BackgroundFadeIn", EaseNone, 1, 0)
-
 	if Auto ~= 0 then
 		AutoAnimation.Init()
 	end

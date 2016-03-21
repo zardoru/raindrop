@@ -45,7 +45,9 @@ Lifebar = {
 -- Audio
 AudioManifest = {
 	Miss = "miss.wav",
-	Fail = "stage_failed.ogg",
+	Fail = function()
+		return Global.CurrentGaugeType ~= LT_GROOVE and "stage_failed.ogg" or ""
+	end,
 	ClickPlay = "drop.wav",
 
 	--[[ 

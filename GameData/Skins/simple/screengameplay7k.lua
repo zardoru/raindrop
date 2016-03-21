@@ -198,8 +198,13 @@ function OnFullComboEvent()
 end
 
 function OnFailureEvent()
-	DoFailAnimation()
-	return FailAnimation.Duration
+	if Global.CurrentGaugeType ~= LT_GROOVE then
+		DoFailAnimation()
+		return FailAnimation.Duration
+	else
+		FadeToBlack()
+		return SuccessAnimation.Duration
+	end
 end
 
 -- When 'enter' is pressed and the game starts, this function is called.
