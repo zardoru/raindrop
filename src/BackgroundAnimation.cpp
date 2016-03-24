@@ -211,13 +211,13 @@ public:
 
 std::shared_ptr<BackgroundAnimation> CreateBGAforVSRG(VSRG::Song &input, uint8_t DifficultyIndex, Interruptible *context)
 {
-    VSRG::Difficulty* Diff;
-    if (Diff = input.GetDifficulty(DifficultyIndex))
+    VSRG::Difficulty* Diff = input.GetDifficulty(DifficultyIndex);
+    if (Diff)
     {
         if (Diff->Data && Diff->Data->BMPEvents)
             return std::make_shared<BMSBackground>(context, Diff, &input);
 		if (Diff->Data && Diff->Data->TimingInfo && Diff->Data->TimingInfo->GetType() == VSRG::TI_OSUMANIA)
-			return std::make_shared<osuBackgroundAnimation>(&input, nullptr);
+			return std::make_shared<osuBackgroundAnimation>(&input, Diff->Data->osbSprites);
 
         return std::make_shared<StaticBackground>(context, GetSongBackground(input));
     }

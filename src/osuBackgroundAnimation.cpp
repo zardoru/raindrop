@@ -8,9 +8,11 @@
 
 #include <boost/algorithm/string/case_conv.hpp>
 #include "Image.h"
+#include "Logging.h"
 
 const double OSB_WIDTH = 640;
 const double OSB_HEIGHT = 480;
+CfgVar OSBDebug("OSB", "Debug");
 
 // Must match PP_* ordering. Displacement to apply to a top-left origin quad with size 1 depending on pivot.
 // X first, then Y.
@@ -28,6 +30,24 @@ pivot OriginPivots[] = {
 	{0.f   , -1.f},
 	{-0.5f , -1.f},
 	{-1.f  , -1.f},
+};
+
+std::function<float(float)> EasingFuncs[] = {
+	ease_none,
+	ease_out,
+	ease_in,
+	ease_out,
+	ease_in,
+	ease_inout,
+	ease_3in,
+	ease_3out,
+	ease_3inout,
+	ease_4in,
+	ease_4out,
+	ease_4inout,
+	ease_5in,
+	ease_5out,
+	ease_5inout
 };
 
 namespace osb {
@@ -57,6 +77,11 @@ namespace osb {
 		return EndTime - Time;
 	}
 
+	int Event::GetEase() const
+	{
+		return static_cast<int>(mEase);
+	}
+
 	void Event::SetTime(float time)
 	{
 		Time = time;
@@ -69,12 +94,12 @@ namespace osb {
 
 	void Event::SetEase(int val)
 	{
-		mEase = static_cast<EEase>(Clamp(val, (int)EEase::EASE_NONE, (int)EEase::EASE_4INOUT));
+		mEase = static_cast<EEase>(Clamp(val, static_cast<int>(EEase::EASE_NONE), static_cast<int>(EEase::EASE_COUNT) - 1));
 	}
 
 	float SingleValEvent::LerpValue(float At) const
 	{
-		return Lerp(Value, EndValue, Clamp((At - Time) / GetDuration(), 0.f, 1.f));
+		return Lerp(Value, EndValue, EasingFuncs[GetEase()](Clamp((At - Time) / GetDuration(), 0.f, 1.f)));
 	}
 
 	float SingleValEvent::GetValue() const
@@ -119,7 +144,7 @@ namespace osb {
 
 	Vec2 TwoValEvent::LerpValue(float At) const
 	{
-		return Lerp(Value, EndValue, Clamp((At - Time) / GetDuration(), 0.f, 1.f));
+		return Lerp(Value, EndValue, EasingFuncs[GetEase()](Clamp((At - Time) / GetDuration(), 0.f, 1.f)));
 	}
 
 	Vec3 ColorizeEvent::GetValue() const
@@ -142,16 +167,18 @@ namespace osb {
 		EndValue = val;
 	}
 
-	Vec3 ColorizeEvent::LerpValue(float At)
+	Vec3 ColorizeEvent::LerpValue(float At) const
 	{
-		return Lerp(Value, EndValue, Clamp((At - Time) / GetDuration(), 0.f, 1.f)) * 1.f / 255.f;
+		float factor = 1.f / 255.f;
+		return Lerp(Value, EndValue, EasingFuncs[GetEase()](Clamp((At - Time) / GetDuration(), 0.f, 1.f))) * factor;
 	}
 
-	BGASprite::BGASprite(std::string file, EOrigin origin, Vec2 start_pos) : EventComponent(EVT_COUNT)
+	BGASprite::BGASprite(std::string file, EOrigin origin, Vec2 start_pos, ELayer layer) : EventComponent(EVT_COUNT)
 	{
 		mFile = file;
 		mOrigin = origin;
 		mStartPos = start_pos;
+		mLayer = layer;
 
 		mParent = nullptr;
 		mImageIndex = -1;
@@ -166,9 +193,9 @@ namespace osb {
 	EventList::iterator BGASprite::GetEvent(float& Time, EEventType evt)
 	{
 		return lower_bound(mEventList[evt].begin(), mEventList[evt].end(), Time, 
-			[](const std::shared_ptr<osb::Event>& A, float Time) -> bool
+			[](const std::shared_ptr<osb::Event>& A, float t) -> bool
 		{ 
-			return A->Time < Time;
+			return A->Time < t;
 		});
 
 	}
@@ -177,6 +204,11 @@ namespace osb {
 	{
 		bool end_is_not_start = mEventList[evt].begin() != mEventList[evt].end();
 		return end_is_not_start;
+	}
+
+	EventList& BGASprite::GetEventList(EEventType evt)
+	{
+		return mEventList[evt];
 	}
 
 	template <class T>
@@ -189,7 +221,7 @@ namespace osb {
 	
 	void BGASprite::Update(float Time)
 	{
-		assert(mSprite);
+		if (!mSprite) return;
 		if (!mParent) return; // We need this.
 		if (mImageIndex == -1) // We haven't initialized from the parent's data yet? Alright.
 		{
@@ -363,6 +395,11 @@ namespace osb {
 		return mFile;
 	}
 
+	ELayer BGASprite::GetLayer()
+	{
+		return mLayer;
+	}
+
 	void BGASprite::SetParent(osuBackgroundAnimation* parent)
 	{
 		mParent = parent;
@@ -374,7 +411,7 @@ namespace osb {
 			stable_sort(mEventList[i].begin(), mEventList[i].end());
 	}
 
-	bool EventComponent::WithinEvents(float Time)
+	bool EventComponent::WithinEvents(float Time) const
 	{
 		return Time >= GetStartTime() && Time <= GetEndTime();
 	}
@@ -385,12 +422,12 @@ namespace osb {
 		EndPeriod(-StartPeriod)
 	{}
 
-	float EventComponent::GetStartTime()
+	float EventComponent::GetStartTime() const
 	{
 		return StartPeriod;
 	}
 
-	float EventComponent::GetEndTime()
+	float EventComponent::GetEndTime() const
 	{
 		return EndPeriod;
 	}
@@ -466,7 +503,21 @@ osb::EOrigin OriginFromString(std::string str)
 	if (str == "bottom" || str == "bottomcenter" || str == "bottomcentre") return osb::PP_BOTTOM;
 	if (str == "bottomright") return osb::PP_BOTTOMRIGHT;
 
+	if (OSBDebug)
+		Log::LogPrintf("OSB: Unknown origin type: %s.\n", str.c_str());
 	return osb::PP_TOPLEFT;
+}
+
+osb::ELayer LayerFromString(std::string str)
+{
+	if (str == "background") return osb::LAYER_BACKGROUND;
+	if (str == "pass") return osb::LAYER_PASS;
+	if (str == "fail") return osb::LAYER_FAIL;
+	if (str == "foreground") return osb::LAYER_FOREGROUND;
+
+	if (OSBDebug)
+		Log::LogPrintf("OSB: Unknown layer type: %s.\n", str.c_str());
+	return osb::LAYER_BACKGROUND;
 }
 
 std::shared_ptr<osb::Event> ParseEvent(std::vector<std::string> split)
@@ -566,21 +617,29 @@ std::shared_ptr<osb::Event> ParseEvent(std::vector<std::string> split)
 			xvt->SetEndValue((latof(split[4])));
 		evt = xvt;
 	}
-
-	if (evt->GetEventType() != osb::EVT_LOOP) {
-		evt->SetEase(latof(split[1]));
-		evt->SetTime(latof(split[2].length() ? split[2] : split[3]) / 1000.0);
-		evt->SetEndTime(latof(split[3].length() ? split[3] : split[2]) / 1000.0);
-	} else
+	if (ks == "T")
 	{
-		evt->SetTime(latof(split[1]) / 1000.0);
+		throw std::runtime_error("OSB: Storyboards using triggers is not supported.");
 	}
 
+	if (evt) {
+		if (evt->GetEventType() != osb::EVT_LOOP) {
+			evt->SetEase(latof(split[1]));
+			evt->SetTime(latof(split[2].length() ? split[2] : split[3]) / 1000.0);
+			evt->SetEndTime(latof(split[3].length() ? split[3] : split[2]) / 1000.0);
+		}
+		else
+		{
+			evt->SetTime(latof(split[1]) / 1000.0);
+		}
+	}
 	return evt;
 }
 
 std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 {
+	std::shared_ptr<osb::BGASprite> previous_background = nullptr;
+	auto line_nm = 1;
 	auto list = std::make_shared<osb::SpriteList>();
 	int previous_lead = 100;
 	std::shared_ptr<osb::BGASprite> sprite = nullptr;
@@ -604,29 +663,35 @@ std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 		lead_spaces = sst != std::string::npos ? sst : 0;
 		line = line.substr(lead_spaces);
 
+		// TODO: a proper csv parse for this.
 		std::vector<std::string> split_result = Utility::TokenSplit(line, ",");
 		for (auto &&s : split_result) boost::algorithm::to_lower(s);
 
 		if (!line.length() || split_result.size() < 2) continue;
+
+		auto strip_quotes = [&](std::string s)
+		{
+			std::string striped_filename;
+			std::smatch sm;
+			if (std::regex_match(s, sm, fnreg))
+			{
+				striped_filename = sm[1];
+			}
+			else { striped_filename = s; }
+			return striped_filename;
+		};
 
 		auto parse_sprite = [&]()
 		{
 			if (split_result[0] == "sprite")
 			{
 				Vec2 new_position(latof(split_result[4]), latof(split_result[5]));
-				std::string striped_filename;
-				std::smatch sm;
+				std::string striped_filename = strip_quotes(split_result[3]);
 
-				if (std::regex_match(split_result[3], sm, fnreg))
-				{
-					striped_filename = sm[1];
-				}
-				else { striped_filename = split_result[3]; }
-
-				//if (sprite)
-				//	sprite->SortEvents();
-
-				sprite = std::make_shared<osb::BGASprite>(striped_filename, OriginFromString(split_result[2]), new_position);
+				sprite = std::make_shared<osb::BGASprite>(striped_filename, 
+														  OriginFromString(split_result[2]), 
+														  new_position, 
+														  LayerFromString(split_result[1]));
 				list->push_back(sprite);
 				return true;
 			}
@@ -634,12 +699,48 @@ std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 			return false;
 		};
 
+		auto add_special_event = [&]()
+		{
+			if (split_result[0] == "0")
+			{
+				float time = latof(split_result[1]);
+				auto bgsprite = std::make_shared<osb::BGASprite>(split_result[2], 
+					osb::PP_TOPLEFT, 
+					Vec2(latof(split_result[3]), latof(split_result[4])),
+					osb::LAYER_BACKGROUND);
+
+				auto evt = std::make_shared<osb::FadeEvent>();
+				evt->SetEndValue(1);
+				evt->SetValue(1);
+				evt->SetTime(time);
+				evt->SetEndTime(std::numeric_limits<float>::infinity());
+
+				bgsprite->AddEvent(evt);
+
+				if (previous_background) {
+					float T = 1;
+					auto prev_evt = previous_background->GetEvent(T, osb::EVT_FADE);
+					if (previous_background->IsValidEvent(prev_evt, osb::EVT_FADE))
+						(osb::event_cast<osb::FadeEvent>(prev_evt, previous_background->GetEventList(osb::EVT_FADE)))->SetEndTime(time);
+				}
+
+				previous_background = bgsprite;
+
+				list->insert(list->begin(), bgsprite);
+				
+				return true;
+			}
+
+			if (split_result[0] == "2")
+				return true;
+
+			return false;
+		};
+		
 		if (lead_spaces < previous_lead && !readingLoop)
 		{
 			parse_sprite();
 		} else {
-			if (!sprite)
-				throw std::runtime_error("OSB command unpaired with sprite.");
 
 			// If it's a loop, check if we're out of it.
 			// If we're out of it, read a regular event, otherwise, read an event to the loop
@@ -653,7 +754,11 @@ std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 					loop->Unroll(vec);
 					for (auto i = 0; i < osb::EVT_COUNT; i++)
 						for (auto evt : vec[i])
+						{
+							if (!sprite)
+								throw std::runtime_error("OSB command unpaired with sprite.");
 							sprite->AddEvent(evt);
+						}
 				}
 				else
 					loop->AddEvent(ParseEvent(split_result));
@@ -665,16 +770,30 @@ std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 			// Not "else" because we do want to execute this if we're no longer reading the loop.
 			if (!readingLoop) {
 				if (!parse_sprite()) { // Not a sprite, okay...
-					auto ev = ParseEvent(split_result);
+					if (!add_special_event()) { // Not a special event, like a background or whatever.
 
-					// A loop began - set that we are reading a loop and set this loop as where to add the following commands.
-					if (ev->GetEventType() == osb::EVT_LOOP)
-					{
-						loop = std::static_pointer_cast<osb::Loop>(ev);
-						readingLoop = true;
+						auto ev = ParseEvent(split_result);
+
+						if (!ev) {
+							if (OSBDebug)
+								Log::LogPrintf("OSB: Event line %i does not name a known event type.\n", line_nm);
+							continue;
+						}
+
+						if (!sprite)
+							throw std::runtime_error("OSB command unpaired with sprite.");
+
+						// A loop began - set that we are reading a loop and set this loop as where to add the following commands.
+						if (ev->GetEventType() == osb::EVT_LOOP)
+						{
+							loop = std::static_pointer_cast<osb::Loop>(ev);
+							readingLoop = true;
+						}
+						else // add this event, if not a loop to this mSprite. It'll be unrolled once outside.
+						{
+							sprite->AddEvent(ev);
+						}
 					}
-					else // add this event, if not a loop to this mSprite. It'll be unrolled once outside.
-						sprite->AddEvent(ev);
 				}
 			}
 		}
@@ -698,12 +817,14 @@ osuBackgroundAnimation::osuBackgroundAnimation(VSRG::Song* song, std::shared_ptr
 		for (auto sp : *existing_mSprites)
 		{
 			mSprites.push_back(sp);
+			sp->SetParent(this);
 			AddImageToList(sp->GetImageFilename());
 		}
 	}
 
 	Transform.SetSize(OSB_WIDTH, OSB_HEIGHT);
 	Song = song;
+	CanValidate = false;
 }
 
 Image* osuBackgroundAnimation::GetImageFromIndex(int m_image_index)
@@ -745,16 +866,32 @@ void osuBackgroundAnimation::Load()
 	{
 		mImageList.AddToListIndex(i.first, Song->SongDirectory, i.second);
 	}
-
+	CanValidate = true;
 }
 
 void osuBackgroundAnimation::Validate()
 {
+	if (!CanValidate)
+	{
+		Log::LogPrintf("Can't validate osu! storyboard.");
+		return;
+	}
+	
 	for (auto &&i: mSprites)
 	{
 		auto sprite = std::make_shared<Sprite>();
-		i->SetSprite(sprite);
-		mDrawObjects.push_back(sprite);
+		switch (i->GetLayer()) 
+		{
+		case osb::LAYER_BACKGROUND:
+			i->SetSprite(sprite);
+			mBackgroundLayer.push_back(sprite);
+		case osb::LAYER_FOREGROUND:
+			i->SetSprite(sprite);
+			mForegroundLayer.push_back(sprite);
+		default:
+			if (OSBDebug)
+				Log::LogPrintf("Discarding sprite %s for being in layer %i.", i->GetImageFilename().c_str(), i->GetLayer());
+		}
 	}
 
 	mImageList.LoadAll();
@@ -775,8 +912,8 @@ void osuBackgroundAnimation::Update(float Delta)
 
 void osuBackgroundAnimation::Render()
 {
-	for (auto&& item: mDrawObjects)
-	{
+	for (auto&& item: mBackgroundLayer)
 		item->Render();
-	}
+	for (auto&& item: mForegroundLayer)
+		item->Render();
 }

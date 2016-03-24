@@ -23,6 +23,10 @@
 
 #include "NoteTransformations.h"
 
+CfgVar DisableBGA("DisableBGA");
+CfgVar DisableKeysounds("DisableKeysounds");
+
+
 ScreenGameplay7K::ScreenGameplay7K() : Screen("ScreenGameplay7K")
 {
     SpeedMultiplier = 0;
@@ -496,7 +500,7 @@ bool ScreenGameplay7K::ProcessSong()
 
     // Load up BGM events
     auto BGMs = CurrentDiff->Data->BGMEvents;
-    if (Configuration::GetConfigf("DisableKeysounds"))
+    if (DisableKeysounds)
         NoteTransform::MoveKeysoundsToBGM(CurrentDiff->Channels, NotesByChannel, BGMs, Drift);
 
     sort(BGMs.begin(), BGMs.end());
@@ -508,8 +512,15 @@ bool ScreenGameplay7K::ProcessSong()
 
 bool ScreenGameplay7K::LoadBGA() const
 {
-    if (Configuration::GetConfigf("DisableBGA") == 0)
-        BGA->Load();
+	if (!DisableBGA)
+	{
+		try {
+			BGA->Load();
+		} catch(std::exception &e)
+		{
+			Log::LogPrintf("Failure to load BGA: %s.\n", e.what());
+		}
+	}
 
     return true;
 }

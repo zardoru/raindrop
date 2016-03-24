@@ -2,6 +2,7 @@
 
 #include "Song.h"
 #include "TrackNote.h"
+#include "osuBackgroundAnimation.h"
 
 namespace VSRG
 {
@@ -130,6 +131,9 @@ namespace VSRG
 
         // Autoplay BMP
         std::shared_ptr<BMPEventsDetail> BMPEvents;
+
+		// o!m storyboard stuff
+		std::shared_ptr<osb::SpriteList> osbSprites;
 
         // Timing Info
         std::shared_ptr<CustomTimingInfo> TimingInfo;

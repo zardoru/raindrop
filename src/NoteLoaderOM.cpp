@@ -59,6 +59,8 @@ struct OsuManiaLoaderState
     std::shared_ptr<VSRG::Difficulty> Diff;
     std::string DefaultSampleset;
 
+	std::stringstream EventsContent;
+
     bool ReadAModeTag;
 
     std::vector<NoteData> Notes[MAX_CHANNELS];
@@ -248,6 +250,7 @@ void ReadEvents(std::string line, OsuManiaLoaderState* Info)
             Utility::ReplaceAll(Spl[2], "\"", "");
             Info->OsuSong->BackgroundFilename = Spl[2];
             Info->Diff->Data->StageFile = Spl[2];
+			Info->EventsContent << line << std::endl;
         }
         else if (Spl[0] == "5" || Spl[0] == "Sample")
         {
@@ -266,7 +269,10 @@ void ReadEvents(std::string line, OsuManiaLoaderState* Info)
             New.Sound = Evt;
 
             Info->Diff->Data->BGMEvents.push_back(New);
-        }
+        } else
+		{
+			Info->EventsContent << line << std::endl;
+		}
     }
 }
 
@@ -833,6 +839,11 @@ void NoteLoaderOM::LoadObjectsFromFile(std::filesystem::path filename, Song *Out
                 if (ReadingModeOld == RGeneral)
                     if (!Info.ReadAModeTag)
                         throw OsuManiaLoaderException("Not an osu!mania chart.");
+
+				if (ReadingModeOld == REvents)
+				{
+					Diff->Data->osbSprites = ReadOSBEvents(Info.EventsContent);
+				}
                 ReadingModeOld = ReadingMode;
                 continue;
             }

@@ -1,5 +1,11 @@
 #pragma once
 
+#include "BackgroundAnimation.h"
+#include "Transformation.h"
+#include "ImageList.h"
+#include "Easing.h"
+#include "SceneEnvironment.h"
+
 class osuBackgroundAnimation;
 
 namespace VSRG
@@ -41,9 +47,14 @@ namespace osb
 		EASE_3INOUT,
 		EASE_4IN,
 		EASE_4OUT,
-		EASE_4INOUT
+		EASE_4INOUT,
+		EASE_5IN,
+		EASE_5OUT,
+		EASE_5INOUT,
+		EASE_COUNT
 		// And many others, tho nobody uses them lol.
 	};
+
 
     class Event : public TimeBased<Event, float>
     {
@@ -57,6 +68,7 @@ namespace osb
         float GetTime() const;
         float GetEndTime() const;
         float GetDuration() const;
+		int GetEase() const;
 
         void SetTime(float time);
         void SetEndTime(float EndTime);
@@ -77,9 +89,9 @@ namespace osb
     public:
         void AddEvent(std::shared_ptr<Event> evt);
         void SortEvents();
-	    bool WithinEvents(float Time);
-		float GetStartTime();
-		float GetEndTime();
+	    bool WithinEvents(float Time) const;
+		float GetStartTime() const;
+		float GetEndTime() const;
     };
 
     class Loop : public EventComponent
@@ -151,7 +163,7 @@ namespace osb
 
         void SetValue(Vec3 val);
         void SetEndValue(Vec3 val);
-		Vec3 LerpValue(float At);
+		Vec3 LerpValue(float At) const;
     };
 
     class MoveXEvent : public SingleValEvent
@@ -221,6 +233,14 @@ namespace osb
         PP_BOTTOMRIGHT
     };
 
+	enum ELayer
+	{
+		LAYER_BACKGROUND,
+		LAYER_FAIL,
+		LAYER_PASS,
+		LAYER_FOREGROUND
+	};
+
     class BGASprite : public EventComponent
     {
         EOrigin mOrigin;
@@ -235,15 +255,18 @@ namespace osb
 
 		std::shared_ptr<Sprite> mSprite;
         int mImageIndex;
-        EventList::iterator GetEvent(float& Time, EEventType evt);
-        bool IsValidEvent(EventList::iterator& fade_evt, EEventType evt);
+
+		ELayer mLayer;
     public:
-        BGASprite(std::string file, EOrigin origin, Vec2 start_pos);
+        BGASprite(std::string file, EOrigin origin, Vec2 start_pos, ELayer laer);
 
 		void SetSprite(std::shared_ptr<Sprite> sprite);
 	    void Update(float Time);
         std::string GetImageFilename() const;
-
+        EventList::iterator GetEvent(float& Time, EEventType evt);
+        bool IsValidEvent(EventList::iterator& fade_evt, EEventType evt);
+		EventList& GetEventList(EEventType evt);
+		ELayer GetLayer();
         void SetParent(osuBackgroundAnimation* parent);
     };
 
@@ -252,12 +275,17 @@ namespace osb
 
 class osuBackgroundAnimation : public BackgroundAnimation
 {
+	std::vector<AutoplayBMP> mBackgroundEvents;
+	std::shared_ptr<Sprite> mBackground;
     std::vector<std::shared_ptr<osb::BGASprite>> mSprites;
-    std::vector<std::shared_ptr<Sprite>> mDrawObjects;
+    std::vector<std::shared_ptr<Sprite>> mBackgroundLayer;
+    std::vector<std::shared_ptr<Sprite>> mForegroundLayer;
     std::map<std::string, int> mFileIndices;
     ImageList mImageList;
     void AddImageToList(std::string image_filename);
 	VSRG::Song *Song;
+
+	bool CanValidate;
 public:
     osuBackgroundAnimation(VSRG::Song* song, std::shared_ptr<osb::SpriteList> existing_sprites);
     Image* GetImageFromIndex(int m_image_index);

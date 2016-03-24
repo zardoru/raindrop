@@ -4,6 +4,8 @@
 
 #include "Interruptible.h"
 
+class Image;
+
 /*
     In particular, allows a manifest of filenames to be passed to it and control when it loads those images.
 */

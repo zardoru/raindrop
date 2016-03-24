@@ -265,6 +265,9 @@
     <ClCompile Include="..\src\osuBackgroundAnimation.cpp">
       <Filter>Source Files\game global\BGA</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Easing.cpp">
+      <Filter>Source Files\game global\BGA</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\pch.h">
@@ -467,6 +470,9 @@
     </ClInclude>
     <ClInclude Include="..\src\Converter.h">
       <Filter>Header Files\vsrg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Easing.h">
+      <Filter>Header Files\game global\BGA</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
