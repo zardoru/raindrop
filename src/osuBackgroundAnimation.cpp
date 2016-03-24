@@ -371,7 +371,7 @@ namespace osb {
 	void EventComponent::SortEvents()
 	{
 		for (auto i = 0; i < EVT_COUNT; i++)
-			sort(mEventList[i].begin(), mEventList[i].end());
+			stable_sort(mEventList[i].begin(), mEventList[i].end());
 	}
 
 	bool EventComponent::WithinEvents(float Time)
@@ -563,7 +563,7 @@ std::shared_ptr<osb::Event> ParseEvent(std::vector<std::string> split)
 		if (split.size() > 5)
 			xvt->SetEndValue((latof(split[5])));
 		else
-			xvt->SetValue((latof(split[4])));
+			xvt->SetEndValue((latof(split[4])));
 		evt = xvt;
 	}
 
@@ -622,6 +622,9 @@ std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 					striped_filename = sm[1];
 				}
 				else { striped_filename = split_result[3]; }
+
+				//if (sprite)
+				//	sprite->SortEvents();
 
 				sprite = std::make_shared<osb::BGASprite>(striped_filename, OriginFromString(split_result[2]), new_position);
 				list->push_back(sprite);
@@ -743,7 +746,6 @@ void osuBackgroundAnimation::Load()
 		mImageList.AddToListIndex(i.first, Song->SongDirectory, i.second);
 	}
 
-	mImageList.LoadAll();
 }
 
 void osuBackgroundAnimation::Validate()
@@ -752,9 +754,10 @@ void osuBackgroundAnimation::Validate()
 	{
 		auto sprite = std::make_shared<Sprite>();
 		i->SetSprite(sprite);
-		sprite->SetImage(mImageList.GetFromIndex(GetIndexFromFilename(i->GetImageFilename())), false);
 		mDrawObjects.push_back(sprite);
 	}
+
+	mImageList.LoadAll();
 	mImageList.ForceFetch();
 }
 

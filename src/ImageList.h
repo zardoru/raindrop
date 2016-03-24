@@ -22,8 +22,12 @@ public:
 
     void Destroy();
     void AddToList(const std::filesystem::path Filename, const std::filesystem::path Prefix);
+
+	// AddToListIndex asks ImageLoader to load on a different thread.
     void AddToListIndex(const std::filesystem::path Filename, const std::filesystem::path, int Index);
     void AddToList(const uint32_t Count, const std::string *Filename, const std::string Prefix);
+
+	// Either load from scratch or from cached image. Unsafe for non-main thread.
     bool LoadAll();
 
     void ForceFetch();
