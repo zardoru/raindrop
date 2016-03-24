@@ -280,10 +280,10 @@ inline T LerpRatio(const T &Start, const T& End, double Progress, double Total)
     return Start + (End - Start) * Progress / Total;
 }
 
-template <class T>
-inline T Lerp(const T &Start, const T& End, double k)
+template <class T, class N>
+inline T Lerp(const T &Start, const T& End, N k)
 {
-    return Start + (End - Start) * k;
+    return Start + k * (End - Start);
 }
 
 template <class T>
@@ -303,10 +303,21 @@ inline T clamp_to_interval(const T& value, const T& target, const T& interval)
     return output;
 }
 
+template <class F, class T>
+T filter(F pred, const T &ctr)
+{
+	T rt_val;
+	for (auto&& v: ctr)
+	{
+		if (pred(v))
+			rt_val.insert(rt_val.cend(), v);
+	}
+
+	return rt_val;
+}
+
 int b36toi(const char* txt);
 int b16toi(const char* txt);
 
 int LCM(const std::vector<int> &Set);
 double latof(std::string s);
-
-#include "directory.h"

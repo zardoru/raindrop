@@ -9,6 +9,7 @@
 #include "ImageLoader.h"
 #include "ImageList.h"
 #include "Logging.h"
+#include "osuBackgroundAnimation.h"
 
 std::filesystem::path GetSongBackground(Game::Song &Song)
 {
@@ -215,8 +216,10 @@ std::shared_ptr<BackgroundAnimation> CreateBGAforVSRG(VSRG::Song &input, uint8_t
     {
         if (Diff->Data && Diff->Data->BMPEvents)
             return std::make_shared<BMSBackground>(context, Diff, &input);
-        else
-            return std::make_shared<StaticBackground>(context, GetSongBackground(input));
+		if (Diff->Data && Diff->Data->TimingInfo && Diff->Data->TimingInfo->GetType() == VSRG::TI_OSUMANIA)
+			return std::make_shared<osuBackgroundAnimation>(&input, nullptr);
+
+        return std::make_shared<StaticBackground>(context, GetSongBackground(input));
     }
 
     return nullptr;

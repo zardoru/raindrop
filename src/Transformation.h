@@ -11,8 +11,8 @@ class Transformation
     float mRotation;
     bool   mDirtyMatrix;
 
+	bool IsMatrixDirty();
     Transformation* Chain;
-    void UpdateMatrix();
 public:
     Transformation();
 
@@ -58,4 +58,5 @@ public:
     void ChainTransformation(Transformation *Other);
 
     const glm::mat4 &GetMatrix();
+    void UpdateMatrix();
 };

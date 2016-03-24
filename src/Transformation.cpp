@@ -3,6 +3,11 @@
 #include "Transformation.h"
 //#include <glm/gtc/matrix_transform.inl>
 
+bool Transformation::IsMatrixDirty()
+{
+	return mDirtyMatrix || (Chain && Chain->IsMatrixDirty());
+}
+
 Transformation::Transformation()
 {
     SetSize(1);
@@ -11,6 +16,7 @@ Transformation::Transformation()
     SetPosition(0, 0);
     Chain = NULL;
     mLayer = 0;
+	mDirtyMatrix = true;
 
     UpdateMatrix();
 }
@@ -177,7 +183,7 @@ void Transformation::SetZ(uint32_t Z)
 
 const glm::mat4 &Transformation::GetMatrix()
 {
-    if (mDirtyMatrix || (Chain && Chain->mDirtyMatrix))
+    if (IsMatrixDirty())
         UpdateMatrix();
 
     return mMatrix;

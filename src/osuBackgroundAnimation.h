@@ -23,36 +23,63 @@ namespace osb
         EVT_ADDITIVE,
         EVT_LOOP, // Unroll once finished loading into regular events.
         EVT_MOVE,
+		EVT_HFLIP,
+		EVT_VFLIP,
         EVT_COUNT
     };
+
+	enum EEase : int
+	{
+		EASE_NONE,
+		EASE_OUT,
+		EASE_IN,
+		EASE_2IN,
+		EASE_2OUT,
+		EASE_2INOUT,
+		EASE_3IN,
+		EASE_3OUT,
+		EASE_3INOUT,
+		EASE_4IN,
+		EASE_4OUT,
+		EASE_4INOUT
+		// And many others, tho nobody uses them lol.
+	};
 
     class Event : public TimeBased<Event, float>
     {
         EEventType mEvtType;
+		EEase mEase;
     protected:
         float EndTime;
-        Event(EEventType typ);
+        explicit Event(EEventType typ);
     public:
-        EEventType GetEventType();
-        float GetTime();
-        float GetEndTime();
-        float GetDuration();
+        EEventType GetEventType() const;
+        float GetTime() const;
+        float GetEndTime() const;
+        float GetDuration() const;
 
         void SetTime(float time);
         void SetEndTime(float EndTime);
+	    void SetEase(int val);
     };
 
-    typedef vector<shared_ptr<Event> > EventList;
+	// We need to cast these - and to cast these we need to copy them.
+	// Thus, we have to use shared_ptr.
+    typedef std::vector<std::shared_ptr<Event> > EventList;
     typedef EventList EventVector[EVT_COUNT];
 
     class EventComponent : public Event
     {
     protected:
         EventVector mEventList;
-        EventComponent(EEventType evt) : Event(evt) {};
+		float StartPeriod, EndPeriod;
+	    EventComponent(EEventType evt);
     public:
-        void AddEvent(shared_ptr<Event> evt);
+        void AddEvent(std::shared_ptr<Event> evt);
         void SortEvents();
+	    bool WithinEvents(float Time);
+		float GetStartTime();
+		float GetEndTime();
     };
 
     class Loop : public EventComponent
@@ -60,24 +87,26 @@ namespace osb
         int LoopCount;
         // EndTime is the last loop's time in here.
     public:
-        Loop() : EventComponent(EVT_LOOP) {}
+		Loop(int loop_count) : EventComponent(EVT_LOOP), LoopCount(loop_count) {}
 
         float GetIterationDuration();
-        shared_ptr<osb::EventVector> Unroll();
+        void Unroll(EventVector& evt_list);
     };
 
     class SingleValEvent : public Event
     {
     protected:
         float Value, EndValue;
-        SingleValEvent(EEventType typ) : Event(typ) {};
+        explicit SingleValEvent(EEventType typ) : 
+			Event(typ), Value(0), EndValue(0)
+        {};
     public:
-        float GetValue();
+        float GetValue() const;
         void SetValue(float value);
 
-        float GetEndValue();
+        float GetEndValue() const;
         void SetEndValue(float EndValue);
-        float LerpValue(float Time);
+        float LerpValue(float Time) const;
     };
 
     class TwoValEvent : public Event
@@ -86,12 +115,12 @@ namespace osb
     protected:
         TwoValEvent(EEventType evt) : Event(evt) {};
     public:
-        Vec2 GetValue();
-        Vec2 GetEndValue();
+        Vec2 GetValue() const;
+        Vec2 GetEndValue() const;
 
         void SetValue(Vec2 val);
         void SetEndValue(Vec2 val);
-        Vec2 LerpValue(float Time);
+        Vec2 LerpValue(float Time) const;
     };
 
     class MoveEvent : public TwoValEvent
@@ -117,11 +146,12 @@ namespace osb
         Vec3 Value, EndValue;
     public:
         ColorizeEvent() : Event(EVT_COLORIZE) {};
-        Vec3 GetValue();
-        Vec3 GetEndValue();
+        Vec3 GetValue() const;
+        Vec3 GetEndValue() const;
 
         void SetValue(Vec3 val);
         void SetEndValue(Vec3 val);
+		Vec3 LerpValue(float At);
     };
 
     class MoveXEvent : public SingleValEvent
@@ -166,6 +196,18 @@ namespace osb
         AdditiveEvent() : Event(EVT_ADDITIVE) {};
     };
 
+	class HFlipEvent : public Event
+	{
+	public:
+		HFlipEvent() : Event(EVT_HFLIP) {};
+	};
+
+	class VFlipEvent : public Event
+	{
+	public:
+		VFlipEvent() : Event(EVT_VFLIP) {};
+	};
+
     enum EOrigin
     {
         PP_TOPLEFT,
@@ -184,36 +226,46 @@ namespace osb
         EOrigin mOrigin;
         std::string mFile;
         Vec2 mStartPos;
+		Transformation mFlip;
+		Transformation mProp;
         Transformation mTransform;
         osuBackgroundAnimation *mParent;
 
+		std::shared_ptr<Sprite> mSprite;
         int mImageIndex;
         EventList::iterator GetEvent(float& Time, EEventType evt);
         bool IsValidEvent(EventList::iterator& fade_evt, EEventType evt);
     public:
         BGASprite(std::string file, EOrigin origin, Vec2 start_pos);
-        void Setup(float Time, Sprite& sprite);
-        std::string GetImageFilename();
+
+		void SetSprite(std::shared_ptr<Sprite> sprite);
+	    void Update(float Time);
+        std::string GetImageFilename() const;
 
         void SetParent(osuBackgroundAnimation* parent);
     };
 
-    typedef vector<shared_ptr<osb::BGASprite> >SpriteList;
+    typedef std::vector<std::shared_ptr<osb::BGASprite> >SpriteList;
 }
 
 class osuBackgroundAnimation : public BackgroundAnimation
 {
-    bool mIsWidescreen;
-    vector<shared_ptr<osb::BGASprite>> mSprites;
-    vector<shared_ptr<Sprite>> mDrawObjects;
-    map<std::string, int> mFileIndices;
+    std::vector<std::shared_ptr<osb::BGASprite>> mSprites;
+    std::vector<std::shared_ptr<Sprite>> mDrawObjects;
+    std::map<std::string, int> mFileIndices;
     ImageList mImageList;
     void AddImageToList(std::string image_filename);
-    double AnimationTime;
+	VSRG::Song *Song;
 public:
-    osuBackgroundAnimation(VSRG::Song* song, shared_ptr<osb::SpriteList> existing_sprites);
+    osuBackgroundAnimation(VSRG::Song* song, std::shared_ptr<osb::SpriteList> existing_sprites);
     Image* GetImageFromIndex(int m_image_index);
     int GetIndexFromFilename(std::string filename);
+
+	void Load() override;
+	void Validate() override;
+	void Update(float Delta) override;
+	void SetAnimationTime(double Time) override;
+	void Render() override;
 };
 
-shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str);
+std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str);

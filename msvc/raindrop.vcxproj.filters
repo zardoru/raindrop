@@ -262,6 +262,9 @@
     <ClCompile Include="..\src\ext\sha256.cpp">
       <Filter>Static Libraries</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\osuBackgroundAnimation.cpp">
+      <Filter>Source Files\game global\BGA</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\pch.h">

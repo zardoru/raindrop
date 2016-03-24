@@ -96,12 +96,3 @@ namespace Game
 }
 
 using Game::GameState;
-
-// This loads the meta only from the database.
-void LoadSong7KFromDir(Directory songPath, std::vector<VSRG::Song*> &VecOut);
-
-// This loads the whole of the song.
-std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(const std::filesystem::path&, VSRG::Song *Sng);
-
-// Loads the whole of the song.
-void LoadSongDCFromDir(Directory songPath, std::vector<dotcur::Song*> &VecOut);
