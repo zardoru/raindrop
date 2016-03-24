@@ -280,16 +280,9 @@ void Sprite::UpdateTexture()
     DirtyTexture = false;
 }
 
-bool Sprite::ShouldDraw()
+bool Sprite::ShouldDraw() const
 {
     if (Alpha == 0)
-        return false;
-
-    if (mImage)
-    {
-        mImage->Bind();
-    }
-    else
         return false;
 
     return true;
@@ -298,6 +291,13 @@ bool Sprite::ShouldDraw()
 bool Sprite::RenderMinimalSetup()
 {
     if (!ShouldDraw())
+        return false;
+
+	if (mImage)
+    {
+        mImage->Bind();
+    }
+    else
         return false;
 
     UpdateTexture();

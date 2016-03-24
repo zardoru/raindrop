@@ -193,13 +193,55 @@ namespace osb {
 		if (!mParent) return; // We need this.
 		if (mImageIndex == -1) // We haven't initialized from the parent's data yet? Alright.
 		{
+			// -> == then
 			assert(mParent != nullptr);
 			mImageIndex = mParent->GetIndexFromFilename(mFile);
+
+			// Starts from the sprite, at the bottom. Read bottom to top to see how transformations are applied.
+
+			// Steamlined, in order
+			// mFlip
+			// Flip: scale by negative, then translate (would change without assumptions to quad being top-left on origin!)
+
+			// mPivot
+			// pivot: translate quad with top-left origin to specified pivot
+
+			// mRotate
+			// rotate this resized item with new pivot and size (order between rot/scale matters - it's set up like scale then rot internally)
+
+			// mItemScale
+			// scale by texture relative to osu!'s storyboard 640x480 space into a 1x1 space
+			// what should matter is that it should be done after pivoting
+			// osu! wiki states scale and implicitly vecscale are affected by pivot.
+
+			// mTransform
+			// scale item up by scale and vscale command
+			// apply position
+
+			// rotate then scale to sb space then scale to command is the overall order on osu
+			// scale then rotate is our internal order, so we must add extra transforms.
+			// maybe in the future just use matrices directly, or make a class
+			// that "chains" matrices arbitrarily.
+			
+			// rotation -> scale + vecscale -> position.
 			mTransform.ChainTransformation(&mParent->GetTransformation());
-			mFlip.ChainTransformation(&mTransform);
-			mProp.ChainTransformation(&mFlip);
-			mSprite->ChainTransformation(&mProp);
-			mSprite->SetPosition(OriginPivots[mOrigin].x, OriginPivots[mOrigin].y);
+
+			// shouldnt matter if size or rotation comes first
+			// rotation -> item scale
+			mItemScale.ChainTransformation(&mTransform);
+
+			// pivot -> rotation
+			mRotation.ChainTransformation(&mItemScale);
+
+			// flip -> pivot
+			mPivot.ChainTransformation(&mRotation);
+			
+			// sprite -> flip vertices
+			mFlip.ChainTransformation(&mPivot);
+
+			// No op from sprite.
+			mSprite->ChainTransformation(&mFlip);
+			mPivot.SetPosition(OriginPivots[mOrigin].x, OriginPivots[mOrigin].y);
 		}
 
 		// Now get the values for all the different stuff.
@@ -215,7 +257,7 @@ namespace osb {
 			// Move, then scale (is the way transformations are set up
 			// therefore, pivot is applied, then scale
 			// then both size and scale on mTransform are free for usage.
-			mProp.SetSize(i->w / OSB_WIDTH, i->h / OSB_HEIGHT);
+			mItemScale.SetSize(i->w / OSB_WIDTH, i->h / OSB_HEIGHT);
 		}
 
 		// Okay, a pretty long function follows. Fade first.
@@ -265,8 +307,8 @@ namespace osb {
 
 		auto rot_evt = GetEvent(Time, EVT_ROTATE);
 		if (IsValidEvent(rot_evt, EVT_ROTATE))
-			mTransform.SetRotation(glm::degrees(event_cast<RotateEvent>(rot_evt, mEventList[EVT_ROTATE])->LerpValue(Time)));
-		else mTransform.SetRotation(0);
+			mRotation.SetRotation(glm::degrees(event_cast<RotateEvent>(rot_evt, mEventList[EVT_ROTATE])->LerpValue(Time)));
+		else mRotation.SetRotation(0);
 
 
 		auto colorization_evt = GetEvent(Time, EVT_COLORIZE);
@@ -706,8 +748,6 @@ void osuBackgroundAnimation::Load()
 
 void osuBackgroundAnimation::Validate()
 {
-	mImageList.ForceFetch();
-
 	for (auto &&i: mSprites)
 	{
 		auto sprite = std::make_shared<Sprite>();
@@ -715,7 +755,7 @@ void osuBackgroundAnimation::Validate()
 		sprite->SetImage(mImageList.GetFromIndex(GetIndexFromFilename(i->GetImageFilename())), false);
 		mDrawObjects.push_back(sprite);
 	}
-
+	mImageList.ForceFetch();
 }
 
 void osuBackgroundAnimation::SetAnimationTime(double Time)

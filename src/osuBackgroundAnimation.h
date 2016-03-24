@@ -227,8 +227,10 @@ namespace osb
         std::string mFile;
         Vec2 mStartPos;
 		Transformation mFlip;
-		Transformation mProp;
+		Transformation mRotation;
+		Transformation mItemScale;
         Transformation mTransform;
+		Transformation mPivot;
         osuBackgroundAnimation *mParent;
 
 		std::shared_ptr<Sprite> mSprite;
