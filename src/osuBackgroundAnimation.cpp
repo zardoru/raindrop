@@ -445,6 +445,9 @@ namespace osb {
 			auto mov = std::static_pointer_cast<MoveEvent>(event);
 			auto mxe = std::make_shared<MoveXEvent>();
 			auto mye = std::make_shared<MoveYEvent>();
+
+			mxe->SetEase(mov->GetEase());
+			mye->SetEase(mov->GetEase());
 			
 			mxe->SetTime(event->GetTime());
 			mye->SetTime(event->GetTime());
