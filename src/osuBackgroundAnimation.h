@@ -266,7 +266,7 @@ namespace osb
         EventList::iterator GetEvent(float& Time, EEventType evt);
         bool IsValidEvent(EventList::iterator& fade_evt, EEventType evt);
 		EventList& GetEventList(EEventType evt);
-		ELayer GetLayer();
+		ELayer GetLayer() const;
         void SetParent(osuBackgroundAnimation* parent);
     };
 

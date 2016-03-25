@@ -395,7 +395,7 @@ namespace osb {
 		return mFile;
 	}
 
-	ELayer BGASprite::GetLayer()
+	ELayer BGASprite::GetLayer() const
 	{
 		return mLayer;
 	}
@@ -407,8 +407,12 @@ namespace osb {
 
 	void EventComponent::SortEvents()
 	{
+		auto ecmp = [](const std::shared_ptr<Event> &A, const std::shared_ptr<Event> &B) {
+			return A->GetTime() < B->GetTime();
+		};
+
 		for (auto i = 0; i < EVT_COUNT; i++)
-			stable_sort(mEventList[i].begin(), mEventList[i].end());
+			stable_sort(mEventList[i].begin(), mEventList[i].end(), ecmp );
 	}
 
 	bool EventComponent::WithinEvents(float Time) const
@@ -471,21 +475,56 @@ namespace osb {
 		return dur;
 	}
 
+	template<class T>
+	std::shared_ptr<T> cp_event_cast(const std::shared_ptr<Event> &evt)
+	{
+		return std::make_shared<T>(*std::static_pointer_cast<T>(evt));
+	}
+
 	void Loop::Unroll(EventVector& ret)
 	{
 		double iter_duration = GetIterationDuration();
+		auto copy_event = [](const std::shared_ptr<Event>& evt) -> std::shared_ptr<Event>
+		{
+			// we've got to use the appropiate type copy-constructor, then we can treat as generic event.
+			switch (evt->GetEventType())
+			{
+			case EVT_MOVEX:
+				return cp_event_cast<MoveXEvent>(evt);
+			case EVT_MOVEY:
+				return cp_event_cast<MoveYEvent>(evt);
+			case EVT_SCALE:
+				return cp_event_cast<FadeEvent>(evt);
+			case EVT_SCALEVEC:
+				return cp_event_cast<VectorScaleEvent>(evt);
+			case EVT_ROTATE:
+				return cp_event_cast<RotateEvent>(evt);
+			case EVT_COLORIZE:
+				return cp_event_cast<ColorizeEvent>(evt);
+			case EVT_FADE:
+				return cp_event_cast<FadeEvent>(evt);
+			case EVT_ADDITIVE:
+				return cp_event_cast<AdditiveEvent>(evt);
+			case EVT_HFLIP:
+				return cp_event_cast<FlipHorizontalEvent>(evt);
+			case EVT_VFLIP:
+				return cp_event_cast<FlipVerticalEvent>(evt);
+			default:
+				throw std::runtime_error("Invalid event type %d\n");
+			}
+		};
 
 		for (auto i = 0; i < LoopCount; i++)
 			for (auto k = 0; k < EVT_COUNT; k++)
 				for (auto evt : mEventList[k])
 				{
-					Event new_evt(*evt);
+					std::shared_ptr<Event> new_evt = copy_event(evt);
 					// Iteration + Base Loop Time + Event Time
-					new_evt.SetTime(new_evt.Time + iter_duration * i + Time);
-					new_evt.SetEndTime(new_evt.GetEndTime() + iter_duration * i + Time);
+					new_evt->SetTime(new_evt->GetTime() + iter_duration * i + Time);
+					new_evt->SetEndTime(new_evt->GetEndTime() + iter_duration * i + Time);
 
 					// Add into the unrolled events list
-					ret[k].push_back(std::make_shared<Event>(new_evt));
+					ret[k].push_back(new_evt);
 				}
 	}
 }
@@ -687,6 +726,9 @@ std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 			{
 				Vec2 new_position(latof(split_result[4]), latof(split_result[5]));
 				std::string striped_filename = strip_quotes(split_result[3]);
+
+				if (sprite)
+					sprite->SortEvents(); // we're done. clean up and get ready
 
 				sprite = std::make_shared<osb::BGASprite>(striped_filename, 
 														  OriginFromString(split_result[2]), 
