@@ -466,13 +466,24 @@ namespace osb {
 	}
 
 	float Loop::GetIterationDuration()
-	{
-		float dur = 0;
+	{	
+		float min_start = std::numeric_limits<float>::infinity(); // a mouthful to type.
 		for (auto k = 0; k < EVT_COUNT; k++)
+			for (auto evt : mEventList[k])
+				min_start = std::min(min_start, evt->GetTime());
+
+		float max_end = -std::numeric_limits<float>::infinity(); // a mouthful to type.
+		for (auto k = 0; k < EVT_COUNT; k++)
+			for (auto evt : mEventList[k])
+				max_end = std::max(max_end, evt->GetEndTime());
+
+		return max_end - min_start;
+		/*float dur = 0;
+				for (auto k = 0; k < EVT_COUNT; k++)
 			for (auto evt : mEventList[k])
 				dur = std::max(evt->GetEndTime(), dur);
 
-		return dur;
+		return dur;*/
 	}
 
 	template<class T>
@@ -514,18 +525,25 @@ namespace osb {
 			}
 		};
 
-		for (auto i = 0; i < LoopCount; i++)
-			for (auto k = 0; k < EVT_COUNT; k++)
-				for (auto evt : mEventList[k])
+		// okay, osu loops are super funky.
+		// for the first iteration, the "relative time" is respected.
+		// for every other iteration, it repeats events at the start of each iteration 
+		// ignoring time relative to that iteration, but of the previous one, sort of
+		// relative time on further iterations begins at 0 of the previous loop, so to speak.
+		for (auto k = 0; k < EVT_COUNT; k++)
+		{
+			for (auto evt : mEventList[k]) {
+				for (auto i = 0; i < LoopCount; i++)
 				{
 					std::shared_ptr<Event> new_evt = copy_event(evt);
-					// Iteration + Base Loop Time + Event Time
-					new_evt->SetTime(new_evt->GetTime() + iter_duration * i + Time);
-					new_evt->SetEndTime(new_evt->GetEndTime() + iter_duration * i + Time);
+					new_evt->SetTime(evt->GetTime() + iter_duration * i + Time);
+					new_evt->SetEndTime(evt->GetEndTime() + iter_duration * i + Time);
 
 					// Add into the unrolled events list
 					ret[k].push_back(new_evt);
 				}
+			}
+		}
 	}
 }
 
@@ -681,6 +699,7 @@ std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 	auto line_nm = 1;
 	auto list = std::make_shared<osb::SpriteList>();
 	int previous_lead = 100;
+	int loop_lead = -1;
 	std::shared_ptr<osb::BGASprite> sprite = nullptr;
 	std::shared_ptr<osb::Loop> loop = nullptr;
 	bool readingLoop = false;
@@ -788,7 +807,7 @@ std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 			// If we're out of it, read a regular event, otherwise, read an event to the loop
 			if (readingLoop)
 			{
-				if (lead_spaces < previous_lead) {
+				if (lead_spaces < previous_lead || lead_spaces == loop_lead) {
 					readingLoop = false;
 
 					// We're done reading the loop - unroll it.
@@ -830,6 +849,7 @@ std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 						{
 							loop = std::static_pointer_cast<osb::Loop>(ev);
 							readingLoop = true;
+							loop_lead = lead_spaces;
 						}
 						else // add this event, if not a loop to this mSprite. It'll be unrolled once outside.
 						{
@@ -895,12 +915,15 @@ void osuBackgroundAnimation::Load()
 		if (std::getline(s, head) && head == "[Events]")
 		{
 			auto mSprite_list = ReadOSBEvents(s);
+
 			for (auto sp : *mSprite_list)
 			{
 				AddImageToList(sp->GetImageFilename());
 				sp->SetParent(this);
-				mSprites.push_back(sp);
 			}
+			
+			mSprite_list->insert(mSprite_list->end(), mSprites.begin(), mSprites.end());
+			mSprites = *mSprite_list;
 		}
 	}
 
