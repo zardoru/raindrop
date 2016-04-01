@@ -154,8 +154,8 @@ public:
         return *Mixer;
     }
 
-	double GetRate()
-    {
+	double GetRate() const
+	{
 		return Pa_GetStreamInfo(Stream)->sampleRate;
     }
 
@@ -177,7 +177,7 @@ public:
 #ifdef WIN32
         if (UseWasapi)
         {
-            OpenStream(&Stream, GetWasapiDevice(), (void*) this, Latency, Mix);
+            OpenStream(&Stream, GetWasapiDevice(), static_cast<void*>(this), Latency, Mix);
 
             if (!Stream)
             {
@@ -189,7 +189,7 @@ public:
         }
         else
         {
-            OpenStream(&Stream, DefaultDSDevice, (void*) this, Latency, Mix);
+            OpenStream(&Stream, DefaultDSDevice, static_cast<void*>(this), Latency, Mix);
         }
 #else
         OpenStream(&Stream, Pa_GetDefaultOutputDevice(), (void*) this, Latency, Mix);
@@ -291,7 +291,7 @@ public:
         mut2.unlock();
     }
 
-    double GetStreamTime()
+    double GetStreamTime() const
     {
         return Pa_GetStreamTime(Stream);
     }
@@ -349,8 +349,8 @@ public:
 
 int Mix(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags, void *userData)
 {
-    PaMixer *Mix = (PaMixer*)userData;
-    Mix->CopyOut((float*)output, frameCount * 2);
+    PaMixer *Mix = static_cast<PaMixer*>(userData);
+    Mix->CopyOut(static_cast<float*>(output), frameCount * 2);
     return 0;
 }
 

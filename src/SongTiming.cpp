@@ -78,7 +78,7 @@ void GetTimingChangesInInterval(const TimingData &Timing,
 {
     Out.clear();
 
-    for (TimingData::const_iterator i = Timing.begin(); i != Timing.end(); ++i)
+    for (auto i = Timing.begin(); i != Timing.end(); ++i)
     {
         if (i->Time >= PointA && i->Time < PointB)
         {

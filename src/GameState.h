@@ -45,7 +45,7 @@ namespace Game
 
         GameState();
         std::string GetSkinScriptFile(const char* Filename, const std::string& Skin);
-        std::shared_ptr<Game::Song> GetSelectedSongShared();
+        std::shared_ptr<Game::Song> GetSelectedSongShared() const;
         std::string GetFirstFallbackSkin();
         static GameState &GetInstance();
         void Initialize();
@@ -62,15 +62,16 @@ namespace Game
         std::string GetSkin();
 
         void SetSelectedSong(std::shared_ptr<Game::Song> Song);
-        Game::Song *GetSelectedSong();
+        Game::Song *GetSelectedSong() const;
         void SetDifficultyIndex(uint32_t DifficultyIndex);
         uint32_t GetDifficultyIndex() const;
 
 		// VSRG Gauge Type
 		void SetCurrentGaugeType(int GaugeType);
 		int GetCurrentGaugeType() const;
-
-		// VSRG score system
+	    Image* GetSongBG();
+	    Image* GetSongStage();
+	    // VSRG score system
 		void SetCurrentScoreType(int ScoreType);
 		int GetCurrentScoreType() const;
 

@@ -33,7 +33,7 @@ public:
     double GetFraction() const;
     void SetFraction(double frac);
     bool IsHold();
-    void Invalidate();
+    void Invalidate() override;
     bool ShouldRemove();
 };
 

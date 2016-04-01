@@ -80,7 +80,7 @@ void Sound::SetPitch(double Pitch)
     mPitch = Pitch;
 }
 
-double Sound::GetPitch()
+double Sound::GetPitch() const
 {
     return mPitch;
 }
@@ -90,12 +90,12 @@ void Sound::SetLoop(bool Loop)
     mIsLooping = Loop;
 }
 
-bool Sound::IsLooping()
+bool Sound::IsLooping() const
 {
     return mIsLooping;
 }
 
-uint32_t Sound::GetChannels()
+uint32_t Sound::GetChannels() const
 {
     return Channels;
 }
@@ -306,7 +306,7 @@ mData = buf;
 }
 */
 
-bool AudioSample::IsValid()
+bool AudioSample::IsValid() const
 {
     return mData != nullptr && mData->size() != 0;
 }
@@ -504,12 +504,12 @@ void AudioStream::SeekTime(float Second)
     mStreamTime = Second;
 }
 
-double AudioStream::GetStreamedTime()
+double AudioStream::GetStreamedTime() const
 {
     return mStreamTime;
 }
 
-double AudioStream::GetPlayedTime()
+double AudioStream::GetPlayedTime() const
 {
     return mPlaybackTime;
 }

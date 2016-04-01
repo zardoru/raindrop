@@ -1,7 +1,11 @@
 #include "pch.h"
 
 #include "GameGlobal.h"
+#include "Configuration.h"
+#include "Logging.h"
 #include "Song7K.h"
+
+CfgVar DebugMeasurePosGen("MeasurePosGen", "Debug");
 
 using namespace VSRG;
 
@@ -449,10 +453,16 @@ void Difficulty::GetMeasureLines(std::vector<double> &Out, TimingData& VerticalS
     int TotMeasures = PreTimeBeats / Data->Measures[0].Length;
     double MeasureTime = 1 / BPS * Data->Measures[0].Length;
 
+	if (DebugMeasurePosGen)
+		Log::LogPrintf("Total pre-offset measures: %d (pt: %f, ptb: %f, mtime: %f)", TotMeasures, PreTime, PreTimeBeats, MeasureTime);
+
     for (auto i = 0; i < TotMeasures; i++)
     {
-        auto PositionOut = IntegrateToTime(VerticalSpeeds, Drift + Offset - MeasureTime * i);
+		auto T = Drift + Offset - MeasureTime * i;
+        auto PositionOut = IntegrateToTime(VerticalSpeeds,T);
         Out.push_back(PositionOut);
+		if (DebugMeasurePosGen)
+			Log::LogPrintf("Add measure line at time %f (Vertical %f)\n", T, PositionOut);
     }
 
     // Add
@@ -468,6 +478,8 @@ void Difficulty::GetMeasureLines(std::vector<double> &Out, TimingData& VerticalS
         {
             auto TargetTime = IntegrateToTime(SPB, Last) + Offset + Drift;
             PositionOut = IntegrateToTime(VerticalSpeeds, TargetTime);
+			if (DebugMeasurePosGen)
+				Log::LogPrintf("Add measure line at time %f (Vertical: %f)\n", TargetTime, PositionOut);
         }
 
         Out.push_back(PositionOut);

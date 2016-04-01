@@ -49,7 +49,7 @@ void ScreenGameplay7K::DrawMeasures()
         DrawBarlines();
 
     // Set some parameters...
-    SetShaderParameters(false, false, true, true, false, false, RealHiddenMode);
+    Renderer::SetShaderParameters(false, false, true, true, false, false, RealHiddenMode);
 
     // Sudden = 1, Hidden = 2, flashlight = 3 (Defined in the shader)
     if (RealHiddenMode)
@@ -63,7 +63,7 @@ void ScreenGameplay7K::DrawMeasures()
     WindowFrame.SetUniform(U_SIM, &id[0][0]);
     WindowFrame.SetUniform(U_TRANM, &id[0][0]);
 
-    SetPrimitiveQuadVBO();
+    Renderer::SetPrimitiveQuadVBO();
 
     for (auto k = 0U; k < CurrentDiff->Channels; k++)
     {
@@ -212,5 +212,5 @@ void ScreenGameplay7K::DrawMeasures()
 
     /* Clean up */
     MultiplierChanged = false;
-    FinalizeDraw();
+    Renderer::FinalizeDraw();
 }

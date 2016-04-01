@@ -11,8 +11,8 @@
 #define FADEIN_DURATION 0.3f
 #define FADEOUT_DURATION 0.7f
 
-SoundSample *HitSnd = NULL;
-SoundSample *HoldReleaseSnd = NULL;
+SoundSample *HitSnd = nullptr;
+SoundSample *HoldReleaseSnd = nullptr;
 bool GameObjectTexInitialized = false;
 
 GameObject::GameObject() : Sprite(false)
@@ -46,7 +46,7 @@ GameObject::GameObject() : Sprite(false)
         HoldReleaseSnd->Open((GameState::GetInstance().GetSkinFile("holdfinish.ogg")).c_str());
     }
 
-    UvBuffer = TextureBuffer;
+    UvBuffer = Renderer::GetDefaultTextureBuffer();
 
     ColorInvert = false;
 }

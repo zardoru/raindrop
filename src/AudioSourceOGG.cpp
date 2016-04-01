@@ -12,25 +12,25 @@
 
 size_t readOGG(void* ptr, size_t size, size_t nmemb, void* p)
 {
-    FILE* fp = (FILE*)p;
+    FILE* fp = static_cast<FILE*>(p);
     return fread(ptr, size, nmemb, fp);
 }
 
 int seekOGG(void* p, ogg_int64_t offs, int whence)
 {
-    FILE* fp = (FILE*)p;
+    FILE* fp = static_cast<FILE*>(p);
     return fseek(fp, offs, whence);
 }
 
 long tellOGG(void* p)
 {
-    FILE* fp = (FILE*)p;
+    FILE* fp = static_cast<FILE*>(p);
     return ftell(fp);
 }
 
 int closeOgg(void* p)
 {
-    return fclose((FILE*)p);
+    return fclose(static_cast<FILE*>(p));
 }
 
 ov_callbacks fileInterfaceOgg = {
@@ -46,6 +46,9 @@ AudioSourceOGG::AudioSourceOGG()
     mSourceLoop = false;
     mIsDataLeft = false;
     mSeekTime = -1;
+
+	info = nullptr;
+	comment = nullptr;
 }
 
 AudioSourceOGG::~AudioSourceOGG()
@@ -106,10 +109,10 @@ uint32_t AudioSourceOGG::Read(short* buffer, size_t count)
     }
 
     /* read from ogg vorbis file */
-    size_t res = 1;
+    size_t res;
     while (read < size)
     {
-        res = ov_read(&mOggFile, (char*)buffer + read, size - read, 0, 2, 1, &sect);
+        res = ov_read(&mOggFile, reinterpret_cast<char*>(buffer) + read, size - read, 0, 2, 1, &sect);
 
         if (res > 0)
             read += res;

@@ -500,7 +500,7 @@ bool GameWindow::SetupWindow()
     if (!SetupShaders())
         return false;
 
-    InitializeRender();
+    Renderer::InitializeRender();
 
     // GLFW Hooks
     glfwSetFramebufferSizeCallback(wnd, ResizeFunc);

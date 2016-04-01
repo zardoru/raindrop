@@ -172,14 +172,14 @@ SF_VIRTUAL_IO M30Interface = {
     getFileLenM30,
     seekM30,
     readM30,
-    NULL,
+    nullptr,
     tellM30
 };
 
 ov_callbacks M30InterfaceOgg = {
     readM30OGG,
     seekM30OGG,
-    NULL,
+    nullptr,
     tellM30OGG
 };
 

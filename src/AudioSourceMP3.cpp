@@ -73,7 +73,7 @@ uint32_t AudioSourceMP3::Read(short* buffer, size_t count)
 
     // read # bytes into varr.
 
-    auto res = mpg123_read(mHandle, (unsigned char*)buffer, toRead, &actuallyread);
+    auto res = mpg123_read(mHandle, reinterpret_cast<unsigned char*>(buffer), toRead, &actuallyread);
     size_t last_read = actuallyread;
 
     if (actuallyread == 0) return 0; // Huh.

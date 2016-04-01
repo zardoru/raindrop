@@ -28,7 +28,12 @@ bool GameState::FileExistsOnSkin(const char* Filename, const char* Skin)
     return std::filesystem::exists(path);
 }
 
-GameState::GameState()
+GameState::GameState(): 
+	StageImage(nullptr), 
+	SongBG(nullptr), 
+	CurrentGaugeType(0), 
+	CurrentScoreType(0), 
+	CurrentSubsystemType(0)
 {
     CurrentSkin = "default";
     SelectedSong = nullptr;
@@ -69,7 +74,7 @@ std::string GameState::GetSkinScriptFile(const char* Filename, const std::string
     return s;
 }
 
-std::shared_ptr<Game::Song> GameState::GetSelectedSongShared()
+std::shared_ptr<Game::Song> GameState::GetSelectedSongShared() const
 {
     return SelectedSong;
 }
@@ -85,7 +90,7 @@ GameState& GameState::GetInstance()
     return *StateInstance;
 }
 
-Song *GameState::GetSelectedSong()
+Song *GameState::GetSelectedSong() const
 {
     return SelectedSong.get();
 }
@@ -200,77 +205,84 @@ int GameState::GetCurrentGaugeType() const
 	return CurrentGaugeType;
 }
 
+Image* GameState::GetSongBG()
+{
+	if (SelectedSong)
+	{
+		auto toLoad = SelectedSong->SongDirectory / SelectedSong->BackgroundFilename;
+
+		if (SelectedSong->BackgroundFilename.length() && std::filesystem::exists(toLoad))
+		{
+			SongBG->Assign(toLoad, true);
+			return SongBG;
+		}
+
+		// file doesn't exist
+		return nullptr;
+	}
+
+	// no song selected
+	return nullptr;
+}
+
+Image* GameState::GetSongStage()
+{
+	if (SelectedSong)
+	{
+		if (SelectedSong->Mode == MODE_VSRG)
+		{
+			VSRG::Song *Song = static_cast<VSRG::Song*>(SelectedSong.get());
+
+			if (Song->Difficulties.size() > GetDifficultyIndex())
+			{
+				std::filesystem::path File = Database->GetStageFile(Song->Difficulties.at(GetDifficultyIndex())->ID);
+
+				// Oh so it's loaded and it's not in the database, fine.
+				if (File.string().length() == 0 && Song->Difficulties.at(GetDifficultyIndex())->Data)
+					File = Song->Difficulties.at(GetDifficultyIndex())->Data->StageFile;
+
+				auto toLoad = SelectedSong->SongDirectory / File;
+
+				// ojn files use their cover inside the very ojn
+				if (File.extension() == ".ojn")
+				{
+					size_t read;
+					const unsigned char* buf = reinterpret_cast<const unsigned char*>(LoadOJNCover(toLoad, read));
+					ImageData data = ImageLoader::GetDataForImageFromMemory(buf, read);
+					StageImage->SetTextureData(&data, true);
+					delete[] buf;
+
+					return StageImage;
+				}
+
+				if (File.string().length() && std::filesystem::exists(toLoad))
+				{
+					StageImage->Assign(toLoad, true);
+					return StageImage;
+				}
+
+				return nullptr;
+			}
+
+			return nullptr;
+			// Oh okay, no difficulty assigned.
+		}
+		// Stage file not supported for DC songs yet
+		return nullptr;
+	}
+
+	// no song selected
+	return nullptr;
+}
+
 Image* GameState::GetSkinImage(const std::string& Path)
 {
     /* Special paths */
     if (Path == "STAGEFILE")
-    {
-        if (SelectedSong)
-        {
-            if (SelectedSong->Mode == MODE_VSRG)
-            {
-                VSRG::Song *Song = static_cast<VSRG::Song*>(SelectedSong.get());
-
-                if (Song->Difficulties.size() > GetDifficultyIndex())
-                {
-                    std::filesystem::path File = Database->GetStageFile(Song->Difficulties.at(GetDifficultyIndex())->ID);
-
-                    // Oh so it's loaded and it's not in the database, fine.
-                    if (File.string().length() == 0 && Song->Difficulties.at(GetDifficultyIndex())->Data)
-                        File = Song->Difficulties.at(GetDifficultyIndex())->Data->StageFile;
-
-                    auto toLoad = SelectedSong->SongDirectory / File;
-
-                    // ojn files use their cover inside the very ojn
-                    if (File.extension() == ".ojn")
-                    {
-                        size_t read;
-                        const unsigned char* buf = reinterpret_cast<const unsigned char*>(LoadOJNCover(toLoad, read));
-                        ImageData data = ImageLoader::GetDataForImageFromMemory(buf, read);
-                        StageImage->SetTextureData(&data, true);
-                        delete[] buf;
-
-                        return StageImage;
-                    }
-
-                    if (File.string().length() && std::filesystem::exists(toLoad))
-                    {
-                        StageImage->Assign(toLoad, true);
-                        return StageImage;
-                    }
-
-                    return nullptr;
-                }
-
-                return nullptr; // Oh okay, no difficulty assigned.
-            }
-            // Stage file not supported for DC songs yet
-            return nullptr;
-        }
-
-		// no song selected
-        return nullptr;
-    }
+	    return GetSongStage();
 
     if (Path == "SONGBG")
-    {
-        if (SelectedSong)
-        {
-            auto toLoad = SelectedSong->SongDirectory / SelectedSong->BackgroundFilename;
-
-            if (SelectedSong->BackgroundFilename.length() && std::filesystem::exists(toLoad))
-            {
-                SongBG->Assign(toLoad, true);
-                return SongBG;
-            }
-
-			// file doesn't exist
-            return nullptr;
-        }
-
-		// no song selected
-        return nullptr;
-    }
+	    return GetSongBG();
 
     /* Regular paths */
     if (Path.length())

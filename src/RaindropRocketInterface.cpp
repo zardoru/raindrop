@@ -99,7 +99,7 @@ namespace Engine
 
             glDisable(GL_DEPTH_TEST);
             glDepthMask(GL_FALSE);
-            SetBlendingMode(BLEND_ALPHA);
+            Renderer::SetBlendingMode(BLEND_ALPHA);
 
             // bind texture
             if (Handle->tex)
@@ -108,7 +108,7 @@ namespace Engine
 				Image::BindNull();
 			}
 
-            SetShaderParameters(false, false, false, false, false, Handle->tex == nullptr);
+            Renderer::SetShaderParameters(false, false, false, false, false, Handle->tex == nullptr);
             WindowFrame.SetUniform(U_COLOR, 1, 1, 1, 1);
             WindowFrame.SetUniform(U_MVP, &(tMatrix[0][0]));
 
@@ -125,7 +125,7 @@ namespace Engine
             Handle->indices->Bind();
             glDrawElements(GL_TRIANGLES, Handle->num_indices, GL_UNSIGNED_INT, 0);
 
-            FinalizeDraw();
+            Renderer::FinalizeDraw();
 
             glEnable(GL_DEPTH_TEST);
             glDepthMask(GL_TRUE);

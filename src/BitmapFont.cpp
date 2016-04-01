@@ -4,11 +4,11 @@
 #include "LuaManager.h"
 #include "Sprite.h"
 #include "BitmapFont.h"
-#include "ImageLoader.h"
 
 BitmapFont::BitmapFont()
 {
-    Font = NULL;
+	StartingCharacter = 0;
+    Font = nullptr;
 }
 
 void BitmapFont::LoadFontImage(std::filesystem::path Location, Vec2 _CharSize, Vec2 _CellSize, Vec2 _RenderSize, char FontStart)
@@ -36,7 +36,7 @@ void BitmapFont::RegenerateCharPositions(Vec2 CellSize)
     if (!Font)
         return;
 
-    int32_t HCellCount = (int)((float)Font->w / (float)CellSize.x), VCellCount = (int)((float)Font->h / (float)CellSize.y);
+    int32_t HCellCount = int(float(Font->w) / float(CellSize.x)), VCellCount = int(float(Font->h) / float(CellSize.y));
     uint32_t Current = StartingCharacter;
 
     for (unsigned short y = 0; y < VCellCount; y++)
@@ -67,7 +67,7 @@ void BitmapFont::SetAffectedByLightning(bool Lightning)
 
 BitmapFont *BitmapFont::FromLua(LuaManager* Lua, std::string TableName)
 {
-    BitmapFont* Ret = new BitmapFont();
+	auto Ret = new BitmapFont();
 
     Lua->UseArray(TableName);
     std::filesystem::path Locat = Lua->GetFieldS("Location", GameState::GetInstance().GetSkinPrefix() + "font.tga");

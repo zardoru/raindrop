@@ -69,7 +69,7 @@ void Image::SetTextureData(ImageData *ImgInfo, bool Reassign)
         auto Dir = ImgInfo->Filename.filename().string();
 
         glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-		SetTextureParameters(Dir);
+		Renderer::SetTextureParameters(Dir);
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ImgInfo->Width, ImgInfo->Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ImgInfo->Data);
     }

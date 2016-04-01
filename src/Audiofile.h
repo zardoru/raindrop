@@ -40,10 +40,10 @@ public:
     virtual void SeekSample(uint32_t Sample) = 0;
     virtual void Stop() = 0;
     void SetPitch(double pitch);
-    double GetPitch();
+    double GetPitch() const;
     void SetLoop(bool Loop);
-    bool IsLooping();
-    uint32_t GetChannels();
+    bool IsLooping() const;
+    uint32_t GetChannels() const;
 };
 
 class AudioSample : public Sound
@@ -73,7 +73,7 @@ public:
     void Slice(float audio_start, float audio_end);
     std::shared_ptr<AudioSample> CopySlice();
     // void Mix(AudioSample& Other);
-    bool IsValid();
+    bool IsValid() const;
 };
 
 class AudioStream : public Sound
@@ -103,8 +103,8 @@ public:
     void SeekSample(uint32_t Sample) override;
     void Stop() override;
 
-    double GetStreamedTime();
-    double GetPlayedTime();
+    double GetStreamedTime() const;
+    double GetPlayedTime() const;
     uint32_t GetRate() const;
 
     uint32_t Update();

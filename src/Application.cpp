@@ -31,7 +31,7 @@ bool DoRun = false;
 Application::Application(int argc, char *argv[])
 {
     oldTime = 0;
-    Game = NULL;
+    Game = nullptr;
     RunMode = MODE_PLAY;
     Upscroll = false;
     difIndex = 0;
@@ -318,7 +318,7 @@ void Application::Run()
     else if (RunMode == MODE_CONVERT)
     {
 		InFile = std::filesystem::absolute(InFile);
-        std::shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.filename(), InFile.parent_path(), NULL);
+        std::shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.filename(), InFile.parent_path(), nullptr);
 
         if (Sng && Sng->Difficulties.size())
         {

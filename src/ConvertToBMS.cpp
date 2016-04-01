@@ -62,14 +62,14 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 			assert(T.Time >= 0);
 			if (T.Value != 0) // Not a stop.
 			{
-				double Beat = QuantizeFunction(IntegrateToTime(BPS, T.Time));
-				double BPM = 60 * T.Value;
+				auto Beat = QuantizeFunction(IntegrateToTime(BPS, T.Time));
+				auto BPM = 60 * T.Value;
 
 				// Check redundant BPMs.
-				int index = GetIndexForValue(BPMs, BPM);
+				auto index = GetIndexForValue(BPMs, BPM);
 
 				// Create new event at measure.
-				int MeasureForEvent = MeasureForBeat(Beat);
+				auto MeasureForEvent = MeasureForBeat(Beat);
 				ResizeTimingMeasures(MeasureForEvent); // Make sure we've got space on the measures std::vector
 				TimingMeasures[MeasureForEvent].BPMEvents.push_back({ 
 					FractionForMeasure(MeasureForEvent, Beat),
@@ -118,7 +118,7 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 
 			if (Beat < 0) continue;
 
-			int MeasureForEvent = MeasureForBeat(Beat);
+			auto MeasureForEvent = MeasureForBeat(Beat);
 			ResizeTimingMeasures(MeasureForEvent);
 			TimingMeasures[MeasureForEvent].ScrollEvents.push_back({
 				FractionForMeasure(MeasureForEvent, Beat),
@@ -128,22 +128,7 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 	}
 
 
-	std::string ToBMSBase36(int n) {
-		char pt[32] = {0};
-		itoa(n, pt, 36);
-		pt[2] = 0;
-		if (pt[1] == 0) { // Make it at least, and at most, two digits (for BMS)
-			pt[1] = pt[0];
-			pt[0] = '0';
-		}
-
-		if (pt[0] == 0) {
-			pt[0] = '0';
-			pt[1] = '0';
-		}
-
-		return pt;
-	}
+	static std::string ToBMSBase36(int n);
 
 	void WriteHeader()
 	{
@@ -228,51 +213,9 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 		OutFile << std::endl;
 	}
 
-	int GetChannel(int channel) {
-		switch (channel) {
-		case 0:
-			return 42; // scratch
-		case 1:
-			return 37;
-		case 2:
-			return 38;
-		case 3:
-			return 39;
-		case 4:
-			return 40;
-		case 5:
-			return 41;
-		case 6:
-			return 44;
-		case 7:
-			return 45;
-		default:
-			return GetChannel(channel - 8) - 37 + 73; // move to 2nd side...
-		}
-	}
+	int GetChannel(int channel) const;
 
-	int GetLNChannel(int channel) {
-		switch (channel) {
-		case 0:
-			return 186; // scratch
-		case 1:
-			return 181;
-		case 2:
-			return 182;
-		case 3:
-			return 183;
-		case 4:
-			return 184;
-		case 5:
-			return 185;
-		case 6:
-			return 188;
-		case 7:
-			return 189;
-		default:
-			return GetLNChannel(channel - 8) - 181 + 217; // move to 2nd side...
-		}
-	}
+	int GetLNChannel(int channel) const;
 
 	void WriteMeasures()
 	{
@@ -366,6 +309,72 @@ public:
         }
     }
 };
+
+std::string BMSConverter::ToBMSBase36(int n)
+{
+	char pt[32] = {0};
+	itoa(n, pt, 36);
+	pt[2] = 0;
+	if (pt[1] == 0) { // Make it at least, and at most, two digits (for BMS)
+		pt[1] = pt[0];
+		pt[0] = '0';
+	}
+
+	if (pt[0] == 0) {
+		pt[0] = '0';
+		pt[1] = '0';
+	}
+
+	return pt;
+}
+
+int BMSConverter::GetChannel(int channel) const
+{
+	switch (channel) {
+	case 0:
+		return 42; // scratch
+	case 1:
+		return 37;
+	case 2:
+		return 38;
+	case 3:
+		return 39;
+	case 4:
+		return 40;
+	case 5:
+		return 41;
+	case 6:
+		return 44;
+	case 7:
+		return 45;
+	default:
+		return GetChannel(channel - 8) - 37 + 73; // move to 2nd side...
+	}
+}
+
+int BMSConverter::GetLNChannel(int channel) const
+{
+	switch (channel) {
+	case 0:
+		return 186; // scratch
+	case 1:
+		return 181;
+	case 2:
+		return 182;
+	case 3:
+		return 183;
+	case 4:
+		return 184;
+	case 5:
+		return 185;
+	case 6:
+		return 188;
+	case 7:
+		return 189;
+	default:
+		return GetLNChannel(channel - 8) - 181 + 217; // move to 2nd side...
+	}
+}
 
 void ConvertBMSAll(VSRG::Song *Source, std::filesystem::path PathOut, bool Quantize)
 {
