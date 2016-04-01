@@ -46,8 +46,10 @@ void Sprite::Initialize(bool ShouldInitTexture)
 {
     UvBuffer = nullptr;
 
-    if (ShouldInitTexture)
-        UpdateTexture();
+	if (ShouldInitTexture)
+		UpdateTexture();
+	else
+		UvBuffer = Renderer::GetDefaultTextureBuffer();
 }
 
 Sprite::~Sprite()

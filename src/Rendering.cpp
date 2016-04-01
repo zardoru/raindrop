@@ -24,6 +24,7 @@ const ColorRGB Blue = { 0, 0, 1, 1 };
 namespace Renderer {
 	VBO* QuadBuffer = nullptr;
 	VBO* TextureBuffer = nullptr;
+	VBO* TempTextureBuffer = nullptr;
 	VBO* ColorBuffer = nullptr;
 
 	float QuadPositions[8] =
@@ -82,6 +83,10 @@ namespace Renderer {
 			TextureBuffer = new VBO(VBO::Static, sizeof(QuadPositions) / sizeof(float));
 			TextureBuffer->Validate();
 			TextureBuffer->AssignData(QuadPositions);
+
+			TempTextureBuffer = new VBO(VBO::Static, sizeof(QuadPositions) / sizeof(float));
+			TempTextureBuffer->Validate();
+			TempTextureBuffer->AssignData(QuadPositions);
 
 			ColorBuffer = new VBO(VBO::Static, sizeof(QuadColours) / sizeof(float));
 			ColorBuffer->Validate();
@@ -235,8 +240,8 @@ namespace Renderer {
 			TextureCrop.P2.Y / float(ToDraw->h),
 		};
 
-		TextureBuffer->AssignData(CropPositions);
-		SetTexturedQuadVBO(TextureBuffer);
+		TempTextureBuffer->AssignData(CropPositions);
+		SetTexturedQuadVBO(TempTextureBuffer);
 
 		DoQuadDraw();
 

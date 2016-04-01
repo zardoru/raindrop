@@ -238,35 +238,16 @@ namespace osb {
 			// mPivot
 			// pivot: translate quad with top-left origin to specified pivot
 
-			// mRotate
-			// rotate this resized item with new pivot and size (order between rot/scale matters - it's set up like scale then rot internally)
-
-			// mItemScale
-			// scale by texture relative to osu!'s storyboard 640x480 space into a 1x1 space
-			// what should matter is that it should be done after pivoting
-			// osu! wiki states scale and implicitly vecscale are affected by pivot.
-
 			// mTransform
 			// scale item up by scale and vscale command
+			// apply rotation
 			// apply position
 
-			// rotate then scale to sb space then scale to command is the overall order on osu
-			// scale then rotate is our internal order, so we must add extra transforms.
-			// maybe in the future just use matrices directly, or make a class
-			// that "chains" matrices arbitrarily.
-			
 			// rotation -> scale + vecscale -> position.
-			mTransform.ChainTransformation(&mParent->GetTransformation());
-
-			// shouldnt matter if size or rotation comes first
-			// rotation -> item scale
-			mItemScale.ChainTransformation(&mTransform);
-
-			// pivot -> rotation
-			mRotation.ChainTransformation(&mItemScale);
+			mTransform.ChainTransformation(&mParent->GetScreenTransformation());
 
 			// flip -> pivot
-			mPivot.ChainTransformation(&mRotation);
+			mPivot.ChainTransformation(&mTransform);
 			
 			// sprite -> flip vertices
 			mFlip.ChainTransformation(&mPivot);
@@ -282,16 +263,7 @@ namespace osb {
 		mSprite->SetImage(mParent->GetImageFromIndex(mImageIndex), false);
 		mSprite->SetSize(1, 1);
 
-		if (mSprite->GetImage())
-		{
-			auto i = mSprite->GetImage();
-
-			// Move, then scale (is the way transformations are set up
-			// therefore, pivot is applied, then scale
-			// then both size and scale on mTransform are free for usage.
-			mItemScale.SetSize(i->w / OSB_WIDTH, i->h / OSB_HEIGHT);
-		}
-
+		
 		// Okay, a pretty long function follows. Fade first.
 		auto fade_evt = GetEvent(Time, EVT_FADE);
 		
@@ -312,12 +284,12 @@ namespace osb {
 		auto movx_evt = GetEvent(Time, EVT_MOVEX);
 		if (IsValidEvent(movx_evt, EVT_MOVEX))
 			mTransform.SetPositionX(event_cast<MoveXEvent>(movx_evt, mEventList[EVT_MOVEX])->LerpValue(Time));
-		else mTransform.SetPositionX(mStartPos.x / OSB_WIDTH);
+		else mTransform.SetPositionX(mStartPos.x);
 
 		auto movy_evt = GetEvent(Time, EVT_MOVEY);
 		if (IsValidEvent(movy_evt, EVT_MOVEY))
 			mTransform.SetPositionY(event_cast<MoveYEvent>(movy_evt, mEventList[EVT_MOVEY])->LerpValue(Time));
-		else mTransform.SetPositionY(mStartPos.y / OSB_HEIGHT);
+		else mTransform.SetPositionY(mStartPos.y);
 
 		// We already unpacked move events, so no need for this next snip.
 		/* auto mov_evt = GetEvent(Time, EVT_MOVE);
@@ -325,22 +297,41 @@ namespace osb {
 			mTransform.SetPosition(event_cast<MoveEvent>(mov_evt)->LerpValue(Time)); */
 
 		// Now scale and rotation.
+		float scale = 1;
 		auto scale_evt = GetEvent(Time, EVT_SCALE);
 		if (IsValidEvent(scale_evt, EVT_SCALE))
-			mTransform.SetScale(event_cast<ScaleEvent>(scale_evt, mEventList[EVT_SCALE])->LerpValue(Time));
-		else mTransform.SetScale(1);
+			scale = event_cast<ScaleEvent>(scale_evt, mEventList[EVT_SCALE])->LerpValue(Time);
+		else scale = 1;
 
 		// Since scale is just applied to size straight up, we can use this extra scale
 		// defaulting at 1,1 to be our vector scale. That way they'll pile up.
+		Vec2 vscale;
 		auto vscale_evt = GetEvent(Time, EVT_SCALEVEC);
 		if (IsValidEvent(vscale_evt, EVT_SCALEVEC))
-			mTransform.SetSize(event_cast<VectorScaleEvent>(vscale_evt, mEventList[EVT_SCALEVEC])->LerpValue(Time));
-		else mTransform.SetSize(1, 1);
+			vscale = event_cast<VectorScaleEvent>(vscale_evt, mEventList[EVT_SCALEVEC])->LerpValue(Time);
+		else vscale = Vec2(1, 1);
 
 		auto rot_evt = GetEvent(Time, EVT_ROTATE);
-		if (IsValidEvent(rot_evt, EVT_ROTATE))
-			mRotation.SetRotation(glm::degrees(event_cast<RotateEvent>(rot_evt, mEventList[EVT_ROTATE])->LerpValue(Time)));
-		else mRotation.SetRotation(0);
+		float rot = 0;
+		if (IsValidEvent(rot_evt, EVT_ROTATE)) {
+			rot = event_cast<RotateEvent>(rot_evt, mEventList[EVT_ROTATE])->LerpValue(Time);
+			mTransform.SetRotation(glm::degrees(rot));
+		}
+		else mTransform.SetRotation(0);
+
+		if (mSprite->GetImage())
+		{
+			auto i = mSprite->GetImage();
+
+			// Move, then scale (is the way transformations are set up
+			// therefore, pivot is applied, then scale
+			// then both size and scale on mTransform are free for usage.
+
+			// For some reason it's not applying scale then rotate - but rotate then scale.
+			// To get around this, we undo the transformation on the object's x-axis
+		    // by multiplying this value to X.
+			mTransform.SetSize(i->w * scale * vscale.x, i->h * scale * vscale.y);
+		}
 
 
 		auto colorization_evt = GetEvent(Time, EVT_COLORIZE);
@@ -370,7 +361,7 @@ namespace osb {
 			} else
 			{
 				mFlip.SetScaleX(1);
-				mFlip.SetPositionX(1);
+				mFlip.SetPositionX(0);
 			}
 		}
 
@@ -385,7 +376,7 @@ namespace osb {
 			} else
 			{
 				mFlip.SetScaleY(1);
-				mFlip.SetPositionY(1);
+				mFlip.SetPositionY(0);
 			}
 		}
 	}
@@ -609,29 +600,29 @@ std::shared_ptr<osb::Event> ParseEvent(std::vector<std::string> split)
 	}
 	if (ks == "M") {
 		auto xvt = std::make_shared<osb::MoveEvent>();
-		xvt->SetValue(Vec2(latof(split[4]) / OSB_WIDTH, latof(split[5]) / OSB_HEIGHT));
+		xvt->SetValue(Vec2(latof(split[4]), latof(split[5])));
 		if (split.size() > 6)
-			xvt->SetEndValue(Vec2(latof(split[6]) / OSB_WIDTH, latof(split[7]) / OSB_HEIGHT));
+			xvt->SetEndValue(Vec2(latof(split[6]), latof(split[7])));
 		else
-			xvt->SetEndValue(Vec2(latof(split[4]) / OSB_WIDTH, latof(split[5]) / OSB_HEIGHT));
+			xvt->SetEndValue(Vec2(latof(split[4]), latof(split[5])));
 		evt = xvt;
 	}
 	if (ks == "MX") {
 		auto xvt = std::make_shared<osb::MoveXEvent>();
-		xvt->SetValue(latof(split[4]) / OSB_WIDTH);
+		xvt->SetValue(latof(split[4]));
 		if (split.size() > 5)
-			xvt->SetEndValue(latof(split[5]) / OSB_WIDTH);
+			xvt->SetEndValue(latof(split[5]));
 		else
-			xvt->SetEndValue(latof(split[4]) / OSB_WIDTH);
+			xvt->SetEndValue(latof(split[4]));
 		evt = xvt;
 	}
 	if (ks == "MY") {
 		auto xvt = std::make_shared<osb::MoveYEvent>();
-		xvt->SetValue(latof(split[4]) / OSB_WIDTH);
+		xvt->SetValue(latof(split[4]));
 		if (split.size() > 5)
-			xvt->SetEndValue(latof(split[5]) / OSB_HEIGHT);
+			xvt->SetEndValue(latof(split[5]));
 		else
-			xvt->SetEndValue(latof(split[4]) / OSB_HEIGHT);
+			xvt->SetEndValue(latof(split[4]));
 		evt = xvt;
 	}
 	if (ks == "C") {
@@ -705,7 +696,6 @@ std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 	int loop_lead = -1;
 	std::shared_ptr<osb::BGASprite> sprite = nullptr;
 	std::shared_ptr<osb::Loop> loop = nullptr;
-	bool readingLoop = false;
 
 	std::string line;
 	/*
@@ -715,6 +705,32 @@ std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 	*/
 
 	std::regex fnreg("\"?(.*?)\"?");
+	auto strip_quotes = [&](std::string s)
+	{
+		std::string striped_filename;
+		std::smatch sm;
+		if (std::regex_match(s, sm, fnreg))
+		{
+			striped_filename = sm[1];
+		}
+		else { striped_filename = s; }
+		return striped_filename;
+	};
+
+	auto unroll_loop_into_sprite = [&]()
+	{
+		osb::EventVector vec;
+		loop->Unroll(vec);
+		for (auto i = 0; i < osb::EVT_COUNT; i++)
+			for (auto evt : vec[i])
+			{
+				if (!sprite)
+					throw std::runtime_error("OSB command unpaired with sprite.");
+				sprite->AddEvent(evt);
+			}
+		loop = nullptr;
+	};
+
 	while (std::getline(event_str, line))
 	{
 		int lead_spaces;
@@ -730,17 +746,7 @@ std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 
 		if (!line.length() || split_result.size() < 2) continue;
 
-		auto strip_quotes = [&](std::string s)
-		{
-			std::string striped_filename;
-			std::smatch sm;
-			if (std::regex_match(s, sm, fnreg))
-			{
-				striped_filename = sm[1];
-			}
-			else { striped_filename = s; }
-			return striped_filename;
-		};
+		
 
 		auto parse_sprite = [&]()
 		{
@@ -800,29 +806,21 @@ std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 
 			return false;
 		};
+
 		
-		if (lead_spaces < previous_lead && !readingLoop)
+		
+		if (lead_spaces < previous_lead && !loop)
 		{
 			parse_sprite();
 		} else {
 
 			// If it's a loop, check if we're out of it.
 			// If we're out of it, read a regular event, otherwise, read an event to the loop
-			if (readingLoop)
+			if (loop)
 			{
 				if (lead_spaces < previous_lead || lead_spaces == loop_lead) {
-					readingLoop = false;
-
 					// We're done reading the loop - unroll it.
-					osb::EventVector vec;
-					loop->Unroll(vec);
-					for (auto i = 0; i < osb::EVT_COUNT; i++)
-						for (auto evt : vec[i])
-						{
-							if (!sprite)
-								throw std::runtime_error("OSB command unpaired with sprite.");
-							sprite->AddEvent(evt);
-						}
+					unroll_loop_into_sprite();
 				}
 				else
 					loop->AddEvent(ParseEvent(split_result));
@@ -832,7 +830,7 @@ std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 			// Read a regular command.
 
 			// Not "else" because we do want to execute this if we're no longer reading the loop.
-			if (!readingLoop) {
+			if (!loop) {
 				if (!parse_sprite()) { // Not a sprite, okay...
 					if (!add_special_event()) { // Not a special event, like a background or whatever.
 
@@ -851,7 +849,6 @@ std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 						if (ev->GetEventType() == osb::EVT_LOOP)
 						{
 							loop = std::static_pointer_cast<osb::Loop>(ev);
-							readingLoop = true;
 							loop_lead = lead_spaces;
 						}
 						else // add this event, if not a loop to this mSprite. It'll be unrolled once outside.
@@ -865,6 +862,12 @@ std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 
 		previous_lead = lead_spaces;
 	}
+
+	if (sprite)
+		sprite->SortEvents();
+	// we have a pending loop? oops sorry
+	if (sprite && loop)
+		unroll_loop_into_sprite();
 
 	return list;
 }
@@ -888,8 +891,15 @@ osuBackgroundAnimation::osuBackgroundAnimation(VSRG::Song* song, std::shared_ptr
 	}
 
 	Transform.SetSize(OSB_WIDTH, OSB_HEIGHT);
+	mScreenTransformation.SetSize(1 / OSB_WIDTH, 1 / OSB_HEIGHT);
+	mScreenTransformation.ChainTransformation(&Transform);
 	Song = song;
 	CanValidate = false;
+}
+
+Transformation& osuBackgroundAnimation::GetScreenTransformation()
+{
+	return mScreenTransformation;
 }
 
 Image* osuBackgroundAnimation::GetImageFromIndex(int m_image_index)
@@ -947,7 +957,7 @@ void osuBackgroundAnimation::Validate()
 	
 	for (auto &&i: mSprites)
 	{
-		auto sprite = std::make_shared<Sprite>();
+		auto sprite = std::make_shared<Sprite>(false);
 		switch (i->GetLayer()) 
 		{
 		case osb::LAYER_BACKGROUND:

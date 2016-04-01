@@ -247,8 +247,6 @@ namespace osb
         std::string mFile;
         Vec2 mStartPos;
 		Transformation mFlip;
-		Transformation mRotation;
-		Transformation mItemScale;
         Transformation mTransform;
 		Transformation mPivot;
         osuBackgroundAnimation *mParent;
@@ -285,11 +283,13 @@ class osuBackgroundAnimation : public BackgroundAnimation
     void AddImageToList(std::string image_filename);
 	VSRG::Song *Song;
 
+	Transformation mScreenTransformation;
 	bool CanValidate;
 public:
     osuBackgroundAnimation(VSRG::Song* song, std::shared_ptr<osb::SpriteList> existing_sprites);
     Image* GetImageFromIndex(int m_image_index);
     int GetIndexFromFilename(std::string filename);
+	Transformation& GetScreenTransformation();
 
 	void Load() override;
 	void Validate() override;
