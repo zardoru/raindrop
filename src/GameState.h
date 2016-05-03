@@ -93,6 +93,7 @@ namespace Game
 		void SubmitScore(std::shared_ptr<ScoreKeeper7K> score);
 
         GameParameters* GetParameters();
+		void SortWheelBy(int criteria);
     };
 }
 

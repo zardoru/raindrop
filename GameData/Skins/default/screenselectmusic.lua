@@ -242,7 +242,14 @@ function Init()
 	sbar.Height = ScreenHeight
 	sbar.Width = 5
 	sbar.Y = 0
-	Engine:SetUILayer(30)
+	
+	wheeltick = Engine:CreateObject()
+	wheeltick.Image = "Global/white.png"
+	wheeltick.Height = 8
+	wheeltick.Width = 16
+	wheeltick.Layer = 25
+	
+	Engine:SetUILayer(24)
 end
 
 function updText()
@@ -286,7 +293,10 @@ function Update(Delta)
 	CurrentTX = clamp(CurrentTX + (TransformX - CurrentTX) * Delta * 8, WheelExitX, WheelX)
 
 	sbar.X = CurrentTX + ItemWidth
-
+	wheeltick.Width = math.max(16, ScreenWidth / Wheel.ItemCount)
+	wheeltick.X = (Wheel.SelectedIndex % Wheel.ItemCount) / (Wheel.ItemCount - 1) * (ScreenWidth - wheeltick.Width)
+	wheeltick.Y = 86
+	
 	Time = Time - Delta
 	
 

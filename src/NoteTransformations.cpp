@@ -52,10 +52,8 @@ namespace NoteTransform
 		// perform random
 		// note: random_shuffle's limitation of only swapping with earlier entries
 		// makes this preferable.
-		for (auto i = 0; i < s.size(); i++)
-		{
+		for (size_t i = 0; i < s.size(); i++)
 			std::swap(s[i], s[dev(mt) % s.size()]);
-		}
 
 		int limit = int(ceil(s.size() / 2.0));
 		int v = 0;

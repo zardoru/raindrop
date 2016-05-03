@@ -338,3 +338,8 @@ void GameState::SubmitScore(std::shared_ptr<ScoreKeeper7K> score)
 {
 	// TODO
 }
+
+void GameState::SortWheelBy(int criteria)
+{
+	SongWheel::GetInstance().SortBy(ESortCriteria(criteria));
+}

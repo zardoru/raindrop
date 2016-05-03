@@ -562,8 +562,10 @@ public:
 		if (!split_line.size()) // Handle this properly, eventually.
 			return "normal-hitnormal.wav";
 
-		auto set_iter = lower_bound(HitsoundSections.begin(), HitsoundSections.end(), Time) - 1;
+		auto set_iter = lower_bound(HitsoundSections.begin(), HitsoundSections.end(), Time);
 		auto spl_size = split_line.size();
+
+		if (set_iter != HitsoundSections.begin()) --set_iter;
 
 		if (NoteType & NOTE_HOLD)
 		{

@@ -235,6 +235,7 @@ namespace osb
 
 	enum ELayer
 	{
+		LAYER_SP_BACKGROUND, // special background (0,0 event)
 		LAYER_BACKGROUND,
 		LAYER_FAIL,
 		LAYER_PASS,
@@ -255,6 +256,7 @@ namespace osb
         int mImageIndex;
 
 		ELayer mLayer;
+		bool mUninitialized;
     public:
         BGASprite(std::string file, EOrigin origin, Vec2 start_pos, ELayer laer);
 
@@ -266,6 +268,7 @@ namespace osb
 		EventList& GetEventList(EEventType evt);
 		ELayer GetLayer() const;
         void SetParent(osuBackgroundAnimation* parent);
+	    void SetImageIndex(int index);
     };
 
     typedef std::vector<std::shared_ptr<osb::BGASprite> >SpriteList;
@@ -276,11 +279,12 @@ class osuBackgroundAnimation : public BackgroundAnimation
 	std::vector<AutoplayBMP> mBackgroundEvents;
 	std::shared_ptr<Sprite> mBackground;
     std::vector<std::shared_ptr<osb::BGASprite>> mSprites;
+    std::vector<std::shared_ptr<Sprite>> mAutoBGLayer;
     std::vector<std::shared_ptr<Sprite>> mBackgroundLayer;
     std::vector<std::shared_ptr<Sprite>> mForegroundLayer;
     std::map<std::string, int> mFileIndices;
     ImageList mImageList;
-    void AddImageToList(std::string image_filename);
+    int AddImageToList(std::string image_filename);
 	VSRG::Song *Song;
 
 	Transformation mScreenTransformation;

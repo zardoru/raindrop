@@ -13,10 +13,23 @@ struct ListEntry
     std::string EntryName;
 };
 
+enum ESortCriteria
+{
+	SORT_UNKNOWN,
+	SORT_TITLE,
+	SORT_AUTHOR,
+	SORT_LENGTH,
+	SORT_MAXNPS,
+	SORT_MINNPS,
+	SORT_COUNT
+};
+
 class SongList
 {
     SongList* mParent;
     std::vector<ListEntry> mChildren;
+
+	void SortByFn(std::function<bool(const ListEntry&, const ListEntry&)> fn);
 
 public:
     SongList(SongList *Parent = nullptr);
@@ -38,4 +51,5 @@ public:
     void SortAlphabetically();
     bool HasParentDirectory();
     SongList* GetParentDirectory();
+	void SortBy(ESortCriteria criteria);
 };

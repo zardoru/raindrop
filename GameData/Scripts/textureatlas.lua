@@ -23,10 +23,12 @@ function TextureAtlas:AssignFrames(Filename)
 			else
 				local restable = split(line)
 
-				Sprite = {  x = tonumber(restable[2]), 
-							y = tonumber(restable[3]), 
-							w = tonumber(restable[4]), 
-							h = tonumber(restable[5])}
+				Sprite = {  
+					x = tonumber(restable[2]), 
+					y = tonumber(restable[3]), 
+					w = tonumber(restable[4]), 
+					h = tonumber(restable[5])
+				}
 
 				Atlas.Sprites[restable[1]] = Sprite
 			end

@@ -1,4 +1,5 @@
 #pragma once
+#include "SongList.h"
 
 namespace dotcur
 {
@@ -12,7 +13,6 @@ namespace VSRG
 
 class BitmapFont;
 class Sprite;
-class SongList;
 class SongDatabase;
 class TruetypeFont;
 class LuaManager;
@@ -77,11 +77,12 @@ namespace Game
         bool IsHovering;
 
         bool LoadedSongsOnce;
-        uint8_t DifficultyIndex;
+        size_t DifficultyIndex;
 
         // We need to find the start and the end indices of what we want to display.
         void CalculateIndices();
     public:
+		
 
         DirectoryChangeNotifyFunction OnDirectoryChange;
 
@@ -162,6 +163,8 @@ namespace Game
         float GetItemHeight() const;
 
         bool IsLoading();
+
+		void SortBy(ESortCriteria criteria);
 
         void Update(float Delta);
         void Render();

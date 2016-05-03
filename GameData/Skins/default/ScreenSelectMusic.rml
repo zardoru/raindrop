@@ -2,79 +2,112 @@
 	<head>
 		<link type="text/css" href="raindrop.css"/>
 		<script>
-			Global:GetParameters().HiddenMode = 0
+		
+function activateAuto(elem)
+    if elem.id == "autobtn" then
+        elem.id = "autobtnac"
+        Global:GetParameters().Autoplay = 1
+    else
+        elem.id = "autobtn"
+        Global:GetParameters().Autoplay = 0
+    end
+end
 
-			function activateAuto(elem)
-				if elem.id == "autobtn" then
-					elem.id = "autobtnac"
-					Global:GetParameters().Autoplay = 1
-				else
-					elem.id = "autobtn"
-					Global:GetParameters().Autoplay = 0
-				end
-			end
+-- checked is nil or not nil depending on whatever it is.
+-- it also is on attributes rather than on the element itself (!)
+function changesetting(setting, val)
+    val = (val.attributes.checked ~= nil) and 1 or 0
+    if setting == "upscroll" then
+        Global:GetParameters().Upscroll = val
+    elseif setting == "nofail" then
+        Global:GetParameters().NoFail = val
+    elseif setting == "random" then
+        Global:GetParameters().Random = val
+    elseif setting == "auto" then
+        Global:GetParameters().Autoplay = val
+    end
+end
 
-			-- checked is nil or not nil depending on whatever it is.
-			-- it also is on attributes rather than on the element itself (!)
-			function changesetting(setting, val)
-				val.style.margin_left = 80
-				val = (val.attributes.checked ~= nil) and 1 or 0
-				if setting == "upscroll" then
-					Global:GetParameters().Upscroll = val
-				elseif setting == "nofail" then
-					Global:GetParameters().NoFail = val
-				elseif setting == "random" then
-					Global:GetParameters().Random = val
-				elseif setting == "auto" then
-					Global:GetParameters().Autoplay = val
-				end
-			end
-			
-			function changerate(v)
-				rt = tonumber(v)
-				if rt and rt > 0 then
-					Global:GetParameters().Rate = rt
-				end
-			end
+function changerate(v)
+    rt = tonumber(v)
+    if rt and rt > 0 then
+        Global:GetParameters().Rate = rt
+    end
+end
 
-			function gauge_change(event)
-				Global:GetParameters().GaugeType = tonumber(event.parameters["value"])
-			end
+function gauge_change(event)
+    Global:GetParameters().GaugeType = tonumber(event.parameters["value"])
+end
 
-			function game_change(event)
-				Global:GetParameters().SystemType = tonumber(event.parameters["value"])
-			end
+function game_change(event)
+    Global:GetParameters().SystemType = tonumber(event.parameters["value"])
+end
 
-			function hidden_change(event)
-				Global:GetParameters().HiddenMode = tonumber(event.parameters["value"])
-			end
+function hidden_change(event)
+    Global:GetParameters().HiddenMode = tonumber(event.parameters["value"])
+end
+
+function sort_change(event)
+    Global:SortWheelBy(tonumber(event.parameters["value"]))
+end
 
 		</script>
-
 	</head>
 
 	<body>
+		<div class="selbar">
+		<div class="sellt">
+			Song Select
+			</div>
+		<div class="selrt">
+			<h1> Sort by... </h1>
+			<div class="boxes">
+			<select name="sort" onchange="sort_change(event)" style="width: 100%">
+				<option value="0" selected="1">As is</option>
+				<option value="1">Title</option>
+				<option value="2">Author</option>
+				<option value="3">Length</option>
+				<option value="4">Max NPS</option>
+				<option value="5">Min NPS</option>
+			</select>
+			</div>
+		</div>
+		</div>
 		<div class="dbox">
-		<h1> Play Options </h1><br/>
+		<h1> Play Options </h1>
 		<form id="options">
-
-			Autoplay <input type="checkbox" id="auto" onchange="changesetting(element.id, element)" /> <br/>
-			Upscroll <input type="checkbox" id="upscroll" onchange="changesetting(element.id, element)" /> <br/>
-			Failure Disabled <input type="checkbox" id="nofail" onchange="changesetting(element.id, element)"/> <br/>
-			Random <input type="checkbox" id="random" onchange="changesetting(element.id, element)"/> <br/>
-			Hidden
-			<select name="hidden" onchange="hidden_change(event)">
+			<div class="boxes">
+				<div class="fl">
+					<input type="checkbox" id="auto" onchange="changesetting(element.id, element)" /> Autoplay
+				</div>
+				<div class="fr">
+					Failure Disabled <input type="checkbox" id="nofail" onchange="changesetting(element.id, element)"/>
+				</div>
+				<br/>
+				<div class="fl">
+					<input type="checkbox" id="upscroll" onchange="changesetting(element.id, element)" /> Upscroll 
+				</div>
+				<div class="fr">
+					Random <input type="checkbox" id="random" onchange="changesetting(element.id, element)"/>
+				</div>
+			</div>
+			<h1>Hidden</h1>
+			<div class="boxes">
+			<select name="hidden" id="hid" onchange="hidden_change(event)">
 				<option value="0" selected="1">Normal</option>
 				<option value="1">Sudden</option>
 				<option value="2">Hidden</option>
 				<option value="3">Flashlight</option>
-			</select> <br/>
-			<input type="text" id="rate" onchange="changerate(element.attributes.value)"/> <br/>
-			rate <br/> <br/>
-
+			</select>
+			</div>
+			<h1>Rate</h1>
+			<div class="boxes">
+			<input type="text" id="rate" value="1" cols="5" onchange="changerate(element.attributes.value)"/>
+			</div>
 			<!-- The following match the internal raindrop values. -->
-			<h2> Subsystem selection </h2> <br/>
-			Gauge <select name="gauge" onchange="gauge_change(event)">
+			<h1> Subsystem </h1>
+			<div class="boxes">
+			<div class="lt">Gauge</div> <select name="gauge" class="rt" onchange="gauge_change(event)">
 				<option value="0" selected="1">Auto</option>
 				<option value="1">Groove</option>
 				<option value="2">Survival</option>
@@ -84,7 +117,7 @@
 				<option value="6">Stepmania</option>
 				<option value="7">O2Jam</option>
 			</select><br/>
-			Timing <select name="game" onchange="game_change(event)">
+			<div class="lt">Timing</div> <select name="game" class="rt" onchange="game_change(event)">
 				<option value="0" selected="1">Auto</option>
 				<option value="1">rd/BMS</option>
 				<option value="2">rd/osu!mania</option>
@@ -92,8 +125,10 @@
 				<option value="4">rd/Stepmania</option>
 				<option value="5">rd/AutoBMS</option>
 			</select><br/>
+			</div>
 		</form>
 		</div>
+
 	</body>
 	<script>
 		onload()

@@ -10,8 +10,8 @@
 #include "Image.h"
 #include "Logging.h"
 
-const double OSB_WIDTH = 640;
-const double OSB_HEIGHT = 480;
+const float OSB_WIDTH = 640;
+const float OSB_HEIGHT = 480;
 CfgVar OSBDebug("OSB", "Debug");
 
 // Must match PP_* ordering. Displacement to apply to a top-left origin quad with size 1 depending on pivot.
@@ -50,7 +50,45 @@ std::function<float(float)> EasingFuncs[] = {
 	ease_5inout
 };
 
+
 namespace osb {
+	template<class T>
+	std::shared_ptr<T> cp_event_cast(const std::shared_ptr<Event> &evt)
+	{
+		return std::make_shared<T>(*std::static_pointer_cast<T>(evt));
+	}
+
+	auto copy_event = [](const std::shared_ptr<Event>& evt) -> std::shared_ptr<Event>
+	{
+		// we've got to use the appropiate type copy-constructor, then we can treat as generic event.
+		switch (evt->GetEventType())
+		{
+		case EVT_MOVEX:
+			return cp_event_cast<MoveXEvent>(evt);
+		case EVT_MOVEY:
+			return cp_event_cast<MoveYEvent>(evt);
+		case EVT_SCALE:
+			return cp_event_cast<FadeEvent>(evt);
+		case EVT_SCALEVEC:
+			return cp_event_cast<VectorScaleEvent>(evt);
+		case EVT_ROTATE:
+			return cp_event_cast<RotateEvent>(evt);
+		case EVT_COLORIZE:
+			return cp_event_cast<ColorizeEvent>(evt);
+		case EVT_FADE:
+			return cp_event_cast<FadeEvent>(evt);
+		case EVT_ADDITIVE:
+			return cp_event_cast<AdditiveEvent>(evt);
+		case EVT_HFLIP:
+			return cp_event_cast<FlipHorizontalEvent>(evt);
+		case EVT_VFLIP:
+			return cp_event_cast<FlipVerticalEvent>(evt);
+		default:
+			throw std::runtime_error("Invalid event type %d\n");
+		}
+	};
+
+
 	Event::Event(EEventType typ) :
 		mEvtType(typ), mEase(EASE_NONE)
 	{
@@ -182,6 +220,7 @@ namespace osb {
 
 		mParent = nullptr;
 		mImageIndex = -1;
+		mUninitialized = true;
 	}
 
 	void BGASprite::SetSprite(std::shared_ptr<Sprite> sprite)
@@ -223,12 +262,10 @@ namespace osb {
 	{
 		if (!mSprite) return;
 		if (!mParent) return; // We need this.
-		if (mImageIndex == -1) // We haven't initialized from the parent's data yet? Alright.
+		if (mUninitialized) // We haven't initialized from the parent's data yet? Alright.
 		{
 			// -> == then
 			assert(mParent != nullptr);
-			mImageIndex = mParent->GetIndexFromFilename(mFile);
-
 			// Starts from the sprite, at the bottom. Read bottom to top to see how transformations are applied.
 
 			// Steamlined, in order
@@ -255,14 +292,14 @@ namespace osb {
 			// No op from sprite.
 			mSprite->ChainTransformation(&mFlip);
 			mPivot.SetPosition(OriginPivots[mOrigin].x, OriginPivots[mOrigin].y);
+
+			// Set the image.
+			mSprite->SetImage(mParent->GetImageFromIndex(mImageIndex), false);
+
+			mUninitialized = false;
 		}
 
 		// Now get the values for all the different stuff.
-		// Set the image and reset size since we're using the pivot.
-		// Also forces the matrix to be recalculated.
-		mSprite->SetImage(mParent->GetImageFromIndex(mImageIndex), false);
-		mSprite->SetSize(1, 1);
-
 		
 		// Okay, a pretty long function follows. Fade first.
 		auto fade_evt = GetEvent(Time, EVT_FADE);
@@ -302,6 +339,11 @@ namespace osb {
 		if (IsValidEvent(scale_evt, EVT_SCALE))
 			scale = event_cast<ScaleEvent>(scale_evt, mEventList[EVT_SCALE])->LerpValue(Time);
 		else scale = 1;
+
+		// we want to scale it to fit - but we don't want to alter the scale set by the user
+		// scales just get multiplied so we'll do that
+		if (mLayer == osb::LAYER_SP_BACKGROUND && mSprite->GetImage())
+			scale *= OSB_HEIGHT / mSprite->GetImage()->h;
 
 		// Since scale is just applied to size straight up, we can use this extra scale
 		// defaulting at 1,1 to be our vector scale. That way they'll pile up.
@@ -396,6 +438,11 @@ namespace osb {
 		mParent = parent;
 	}
 
+	void BGASprite::SetImageIndex(int index)
+	{
+		mImageIndex = index;
+	}
+
 	void EventComponent::SortEvents()
 	{
 		auto ecmp = [](const std::shared_ptr<Event> &A, const std::shared_ptr<Event> &B) {
@@ -461,12 +508,12 @@ namespace osb {
 
 	float Loop::GetIterationDuration()
 	{	
-		float min_start = std::numeric_limits<float>::infinity(); // a mouthful to type.
+		auto min_start = std::numeric_limits<float>::infinity(); // a mouthful to type.
 		for (auto k = 0; k < EVT_COUNT; k++)
 			for (auto evt : mEventList[k])
 				min_start = std::min(min_start, evt->GetTime());
 
-		float max_end = -std::numeric_limits<float>::infinity(); // a mouthful to type.
+		auto max_end = -std::numeric_limits<float>::infinity(); // a mouthful to type.
 		for (auto k = 0; k < EVT_COUNT; k++)
 			for (auto evt : mEventList[k])
 				max_end = std::max(max_end, evt->GetEndTime());
@@ -480,50 +527,18 @@ namespace osb {
 		return dur;*/
 	}
 
-	template<class T>
-	std::shared_ptr<T> cp_event_cast(const std::shared_ptr<Event> &evt)
-	{
-		return std::make_shared<T>(*std::static_pointer_cast<T>(evt));
-	}
+	
 
 	void Loop::Unroll(EventVector& ret)
 	{
 		double iter_duration = GetIterationDuration();
-		auto copy_event = [](const std::shared_ptr<Event>& evt) -> std::shared_ptr<Event>
-		{
-			// we've got to use the appropiate type copy-constructor, then we can treat as generic event.
-			switch (evt->GetEventType())
-			{
-			case EVT_MOVEX:
-				return cp_event_cast<MoveXEvent>(evt);
-			case EVT_MOVEY:
-				return cp_event_cast<MoveYEvent>(evt);
-			case EVT_SCALE:
-				return cp_event_cast<FadeEvent>(evt);
-			case EVT_SCALEVEC:
-				return cp_event_cast<VectorScaleEvent>(evt);
-			case EVT_ROTATE:
-				return cp_event_cast<RotateEvent>(evt);
-			case EVT_COLORIZE:
-				return cp_event_cast<ColorizeEvent>(evt);
-			case EVT_FADE:
-				return cp_event_cast<FadeEvent>(evt);
-			case EVT_ADDITIVE:
-				return cp_event_cast<AdditiveEvent>(evt);
-			case EVT_HFLIP:
-				return cp_event_cast<FlipHorizontalEvent>(evt);
-			case EVT_VFLIP:
-				return cp_event_cast<FlipVerticalEvent>(evt);
-			default:
-				throw std::runtime_error("Invalid event type %d\n");
-			}
-		};
+		
 
 		// okay, osu loops are super funky.
-		// for the first iteration, the "relative time" is respected.
-		// for every other iteration, it repeats events at the start of each iteration 
-		// ignoring time relative to that iteration, but of the previous one, sort of
-		// relative time on further iterations begins at 0 of the previous loop, so to speak.
+		// a loop's iteration is calculated by dur = last event's end time - first event's start time
+		// not just last event's end time, so events are repeated as soon as the last one of the previous one ends
+		// that means, the time of the next event is not loop start time + max last time of event * iter
+		// but that dur previously mentioned instead.
 		for (auto k = 0; k < EVT_COUNT; k++)
 		{
 			for (auto evt : mEventList[k]) {
@@ -577,9 +592,7 @@ std::shared_ptr<osb::Event> ParseEvent(std::vector<std::string> split)
 	std::shared_ptr<osb::Event> evt;
 	boost::algorithm::to_upper(ks);
 
-	// Calculate all of these WRT their osu! storyboard sizes
 	if (ks == "V"){
-		// Exception being this.
 		auto xvt = std::make_shared<osb::VectorScaleEvent>();
 		xvt->SetValue(Vec2(latof(split[4]), latof(split[5])));
 		if (split.size() > 6)
@@ -589,7 +602,6 @@ std::shared_ptr<osb::Event> ParseEvent(std::vector<std::string> split)
 		evt = xvt;
 	}
 	if (ks == "S") {
-		// And this.
 		auto xvt = std::make_shared<osb::ScaleEvent>();
 		xvt->SetValue(latof(split[4]));
 		if (split.size() > 5)
@@ -704,7 +716,7 @@ std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 		do what is being done here.
 	*/
 
-	std::regex fnreg("\"?(.*?)\"?");
+	std::regex fnreg("\"?(.*?)\"?$");
 	auto strip_quotes = [&](std::string s)
 	{
 		std::string striped_filename;
@@ -774,15 +786,15 @@ std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 			if (split_result[0] == "0")
 			{
 				float time = latof(split_result[1]);
-				auto bgsprite = std::make_shared<osb::BGASprite>(split_result[2], 
-					osb::PP_TOPLEFT, 
-					Vec2(latof(split_result[3]), latof(split_result[4])),
-					osb::LAYER_BACKGROUND);
+				auto bgsprite = std::make_shared<osb::BGASprite>(strip_quotes(split_result[2]), 
+					osb::PP_CENTER, 
+					Vec2(320, 240),
+					osb::LAYER_SP_BACKGROUND);
 
 				auto evt = std::make_shared<osb::FadeEvent>();
 				evt->SetEndValue(1);
 				evt->SetValue(1);
-				evt->SetTime(time);
+				evt->SetTime(0);
 				evt->SetEndTime(std::numeric_limits<float>::infinity());
 
 				bgsprite->AddEvent(evt);
@@ -811,7 +823,8 @@ std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 		
 		if (lead_spaces < previous_lead && !loop)
 		{
-			parse_sprite();
+			if (!parse_sprite())
+				add_special_event();
 		} else {
 
 			// If it's a loop, check if we're out of it.
@@ -872,29 +885,58 @@ std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 	return list;
 }
 
-void osuBackgroundAnimation::AddImageToList(std::string image_filename)
+int osuBackgroundAnimation::AddImageToList(std::string image_filename)
 {
-	if (mFileIndices.find(image_filename) == mFileIndices.end())
-		mFileIndices[image_filename] = mFileIndices.size() + 1;
+	std::filesystem::path fn = image_filename;
+	auto idx = mFileIndices.size() + 1;
+	auto full_path = Song->SongDirectory / image_filename;
+
+	if (std::filesystem::exists(full_path)) {
+		// Okay, full path is definitely not in.
+		if (mFileIndices.find(full_path.string()) == mFileIndices.end()) {
+			mFileIndices[full_path.string()] = idx;
+			return idx;
+		} // It is? Okay. Give back the full path's index here.
+		else
+			return mFileIndices[full_path.string()];
+	} else
+	{
+		// Couldn't find this file? Perhaps it's missing its extension.
+		auto dir = full_path.parent_path();
+		for (auto i: std::filesystem::directory_iterator(dir))
+		{
+			// Okay, filenames are the same...
+			if (i.path().filename() == full_path.filename())
+			{
+				fn.replace_extension(i.path().extension());
+				if (mFileIndices.find(fn.string()) == mFileIndices.end())
+					mFileIndices[fn.string()] = idx;
+				else
+					return mFileIndices[fn.string()];
+			}
+		}
+	}
+
+	return -1; // everything has failed
 }
 
 osuBackgroundAnimation::osuBackgroundAnimation(VSRG::Song* song, std::shared_ptr<osb::SpriteList> existing_mSprites)
 	: mImageList(this)
 {
-	if (existing_mSprites) {
-		for (auto sp : *existing_mSprites)
-		{
-			mSprites.push_back(sp);
-			sp->SetParent(this);
-			AddImageToList(sp->GetImageFilename());
-		}
-	}
-
 	Transform.SetSize(OSB_WIDTH, OSB_HEIGHT);
 	mScreenTransformation.SetSize(1 / OSB_WIDTH, 1 / OSB_HEIGHT);
 	mScreenTransformation.ChainTransformation(&Transform);
 	Song = song;
 	CanValidate = false;
+
+	if (existing_mSprites) {
+		for (auto sp : *existing_mSprites)
+		{
+			mSprites.push_back(sp);
+			sp->SetParent(this);
+			sp->SetImageIndex(AddImageToList(sp->GetImageFilename()));
+		}
+	}
 }
 
 Transformation& osuBackgroundAnimation::GetScreenTransformation()
@@ -929,20 +971,49 @@ void osuBackgroundAnimation::Load()
 		{
 			auto mSprite_list = ReadOSBEvents(s);
 
+			// at this point i honestly forgot the type of this thing
+			auto newlist = std::make_shared<osb::SpriteList>();
+
 			for (auto sp : *mSprite_list)
 			{
-				AddImageToList(sp->GetImageFilename());
-				sp->SetParent(this);
+				bool moved = false;
+				// Who'd define a background on the .osb?
+				// I assume no one.
+				for (auto &&s: mSprites)
+				{
+					if (s->GetLayer() == osb::LAYER_SP_BACKGROUND)
+					{
+						if (s->GetImageFilename() == sp->GetImageFilename())
+						{
+							// Move events from sp into the existing background (that is s)
+							for (auto i = 0; i < osb::EVT_COUNT; i++)
+							{
+								auto el = sp->GetEventList(osb::EEventType(i));
+								for (auto &&ev : el)
+									s->AddEvent(osb::copy_event(ev));
+							}
+
+							s->SortEvents();
+							moved = true;
+						}
+					}
+				}
+
+				if (!moved) {
+					newlist->push_back(sp);
+					sp->SetParent(this);
+					sp->SetImageIndex(AddImageToList(sp->GetImageFilename()));
+				}
 			}
 			
-			mSprite_list->insert(mSprite_list->end(), mSprites.begin(), mSprites.end());
-			mSprites = *mSprite_list;
+			newlist->insert(newlist->end(), mSprites.begin(), mSprites.end());
+			mSprites = *newlist;
 		}
 	}
 
 	for (auto &&i : mFileIndices)
 	{
-		mImageList.AddToListIndex(i.first, Song->SongDirectory, i.second);
+		mImageList.AddToListIndex(i.first, "", i.second);
 	}
 	CanValidate = true;
 }
@@ -960,12 +1031,18 @@ void osuBackgroundAnimation::Validate()
 		auto sprite = std::make_shared<Sprite>(false);
 		switch (i->GetLayer()) 
 		{
+		case osb::LAYER_SP_BACKGROUND:
+			i->SetSprite(sprite);
+			mAutoBGLayer.push_back(sprite);
+			break;
 		case osb::LAYER_BACKGROUND:
 			i->SetSprite(sprite);
 			mBackgroundLayer.push_back(sprite);
+			break;
 		case osb::LAYER_FOREGROUND:
 			i->SetSprite(sprite);
 			mForegroundLayer.push_back(sprite);
+			break;
 		default:
 			if (OSBDebug)
 				Log::LogPrintf("Discarding sprite %s for being in layer %i.", i->GetImageFilename().c_str(), i->GetLayer());
@@ -990,6 +1067,8 @@ void osuBackgroundAnimation::Update(float Delta)
 
 void osuBackgroundAnimation::Render()
 {
+	for (auto&& item : mAutoBGLayer)
+		item->Render();
 	for (auto&& item: mBackgroundLayer)
 		item->Render();
 	for (auto&& item: mForegroundLayer)

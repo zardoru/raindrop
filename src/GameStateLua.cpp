@@ -155,6 +155,7 @@ void GameState::InitializeLua(lua_State *L)
 		.addProperty("CurrentGaugeType", &GameState::GetCurrentGaugeType)
 		.addProperty("CurrentScoreType", &GameState::GetCurrentScoreType)
 		.addProperty("CurrentSystemType", &GameState::GetCurrentSystemType)
+		.addFunction("SortWheelBy", &GameState::SortWheelBy)
 		.endClass()
 		.addFunction("toSong7K", toSong7K)
 		.addFunction("toSongDC", toSongDC);

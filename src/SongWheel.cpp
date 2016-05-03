@@ -183,7 +183,7 @@ int SongWheel::GetCursorIndex() const
 
 int SongWheel::PrevDifficulty()
 {
-    uint8_t max_index = 0;
+    size_t max_index = 0;
     if (!CurrentList->IsDirectory(SelectedItem))
     {
         DifficultyIndex--;
@@ -611,4 +611,10 @@ bool SongWheel::IsLoading()
         return mLoading;
     }
     else return false;
+}
+
+void SongWheel::SortBy(ESortCriteria criteria)
+{
+	std::unique_lock<std::mutex> lock(*mLoadMutex);
+	ListRoot->SortBy(criteria);
 }

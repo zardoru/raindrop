@@ -69,18 +69,21 @@ public:
 
     std::string GetSVGText(int diffIndex, double intervalduration = 1, double peakMargin = 1.2)
     {
+		using std::endl;
         std::stringstream out;
         std::vector<int> dataPoints = GetDataPoints(diffIndex, intervalduration);
         auto peak_it = std::max_element(dataPoints.begin(), dataPoints.end());
         float peakf = *peak_it;
         double peak = *peak_it * peakMargin;
 
-        out << "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n";
+        out << "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">" << endl;
 
         auto ptIdx = 0;
         float ImageHeight = CfgValNPS("GraphHeight", 300);
         float GraphYOffset = CfgValNPS("GraphYOffs", 50);
         float GraphXOffset = CfgValNPS("GraphXOffs", 100);
+		float TextXOffset = CfgValNPS("TextXOffs", 20);
+		float TextYOffset = CfgValNPS("TextYOffs", 20);
 
         float IntervalWidth = 10;
         float GraphWidth = dataPoints.size() * IntervalWidth;
@@ -100,29 +103,30 @@ public:
 
         float avgNPS = Song->GetDifficulty(diffIndex)->TotalScoringObjects / Song->GetDifficulty(diffIndex)->Duration;
 
-        out << Utility::Format("<text x=\"%d\" y=\"%d\" fill=\"black\">%s - %s (%s) by %s (Max NPS: %.2f/Avg NPS: %.2f)</text>\n",
-            20, 20,
-            Song->SongName, Song->SongAuthor, Song->GetDifficulty(diffIndex)->Name, DiffAuth,
+        out << Utility::Format("<text x=\"%.0f\" y=\"%.0f\" fill=\"black\">%s - %s (%s) by %s (Max NPS: %.2f/Avg NPS: %.2f)</text>",
+            TextXOffset, TextYOffset,
+            Song->SongName.c_str(), Song->SongAuthor.c_str(), 
+			Song->GetDifficulty(diffIndex)->Name.c_str(), DiffAuth.c_str(),
             peakf / intervalduration,
-            avgNPS);
+            avgNPS) << endl;
 
-        out << Utility::Format("\t<line x1 = \"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" style = \"stroke:rgb(0,0,0);stroke-width:4\"/>\n",
-            BL.x, BL.y, BR.x, BR.y);
+        out << Utility::Format("\t<line x1 = \"%.0f\" y1 = \"%.0f\" x2 = \"%.0f\" y2 = \"%.0f\" style = \"stroke:rgb(0,0,0);stroke-width:4\"/>",
+            BL.x, BL.y, BR.x, BR.y) << endl;
 
-        out << Utility::Format("\t<line x1 = \"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" style = \"stroke:rgb(0,0,0);stroke-width:4\"/>\n",
-            TL.x, TL.y, BL.x, BL.y);
+        out << Utility::Format("\t<line x1 = \"%.0f\" y1 = \"%.0f\" x2 = \"%.0f\" y2 = \"%.0f\" style = \"stroke:rgb(0,0,0);stroke-width:4\"/>",
+            TL.x, TL.y, BL.x, BL.y) << endl;
 
-        auto ptAmt = 5;
+        auto ptAmt = CfgValNPS("YAxisMarkers", 5);
         for (auto i = 1; i <= ptAmt; i++)
         {
             float X = (BL.x - GraphXOffset / 2);
             float Y = (BL.y - i * (ImageHeight / ptAmt / peakMargin));
             float Value = (peakf * i / ptAmt / intervalduration);
-            out << Utility::Format("\t<text x=\"%d\" y=\"%d\" fill=\"black\">%.2f</text>\n",
-                X, Y, Value);
+            out << Utility::Format("\t<text x=\"%.0f\" y=\"%.0f\" fill=\"black\">%.2f</text>",
+                X, Y, Value) << endl;
 
-            out << Utility::Format("\t<line x1 = \"%d\" y1 = \"%d\" x2 = \"%d\" y2 = \"%d\" style = \"stroke:rgb(0,0,0);stroke-width:0.5\"/>\n",
-                X, Y, GraphXOffset + RealGraphWidth, Y);
+            out << Utility::Format("\t<line x1 = \"%.0f\" y1 = \"%.0f\" x2 = \"%.0f\" y2 = \"%.0f\" style = \"stroke:rgb(0,0,0);stroke-width:0.5\"/>",
+                X, Y, GraphXOffset + RealGraphWidth, Y) << endl;
         }
 
         for (auto point : dataPoints)
@@ -161,7 +165,7 @@ void ConvertToNPSGraph(VSRG::Song *Sng, std::filesystem::path PathOut)
     {
         auto Diff = Sng->GetDifficulty(i);
 
-		auto s = Utility::Format("%s (%s) - %s.svg", Sng->SongName.c_str(), Diff->Name, Diff->Author);
+		auto s = Utility::Format("%s (%s) - %s.svg", Sng->SongName.c_str(), Diff->Name.c_str(), Diff->Author.c_str());
         std::filesystem::path name = PathOut / s;
 
 		std::ofstream out(name);

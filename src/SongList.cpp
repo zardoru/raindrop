@@ -188,3 +188,164 @@ SongList* SongList::GetParentDirectory()
 {
     return mParent;
 }
+
+void SongList::SortByFn(std::function<bool(const ListEntry&, const ListEntry&)> fn)
+{
+	std::stable_sort(mChildren.begin(), mChildren.end(), [&](const ListEntry&A, const ListEntry&B)
+	{
+		if (A.Kind == ListEntry::Directory && B.Kind != A.Kind)
+		{
+			return true;
+		}
+
+		if (A.Kind != ListEntry::Directory && B.Kind != A.Kind)
+		{
+			return false;
+		}
+
+		if (A.Kind == B.Kind && A.Kind == ListEntry::Directory)
+			return A.EntryName < B.EntryName;
+
+		return fn(A, B);
+	});
+};
+
+void SongList::SortBy(ESortCriteria criteria)
+{
+	switch (criteria)
+	{
+	case SORT_TITLE:
+		SortByFn([](const ListEntry&A, const ListEntry&B)
+		{
+			auto a = std::static_pointer_cast<Game::Song>(A.Data);
+			auto b = std::static_pointer_cast<Game::Song>(B.Data);
+			return a->SongName < b->SongName;
+		});
+		break;
+	case SORT_AUTHOR:
+		SortByFn([](const ListEntry&A, const ListEntry&B)
+		{
+			auto a = std::static_pointer_cast<Game::Song>(A.Data);
+			auto b = std::static_pointer_cast<Game::Song>(B.Data);
+			return a->SongAuthor < b->SongAuthor;
+		});
+		break;
+	case SORT_LENGTH:
+		SortByFn([](const ListEntry&A, const ListEntry&B)
+		{
+			auto dur = [](std::shared_ptr<Game::Song> a)
+			{
+				if (a->Mode == MODE_DOTCUR)
+				{
+					auto sng = std::static_pointer_cast<dotcur::Song>(a);
+					auto dif = sng->GetDifficulty(0);
+					if (dif) return dif->Duration;
+				}
+
+				if (a->Mode == MODE_VSRG)
+				{
+					auto sng = std::static_pointer_cast<VSRG::Song>(a);
+					auto dif = sng->GetDifficulty(0);
+					if (dif) return dif->Duration;
+				}	
+
+				return 0.0;
+			};
+
+			auto a = std::static_pointer_cast<Game::Song>(A.Data);
+			auto b = std::static_pointer_cast<Game::Song>(B.Data);
+			float lena = dur(a);
+			float lenb = dur(b);
+		
+			return lena < lenb;
+		});
+		break;
+	case SORT_MINNPS:
+		SortByFn([](const ListEntry&A, const ListEntry&B)
+		{
+			auto nps = [](std::shared_ptr<Game::Song> a)
+			{
+				if (a->Mode == MODE_DOTCUR)
+				{
+					auto sng = std::static_pointer_cast<dotcur::Song>(a);
+					auto minnps = std::numeric_limits<float>::infinity();
+					for (auto diff : sng->Difficulties) {
+						minnps = std::min(minnps, float(diff->TotalNotes / diff->Duration));
+					}
+					
+					return minnps;
+				}
+
+				if (a->Mode == MODE_VSRG)
+				{
+					auto sng = std::static_pointer_cast<VSRG::Song>(a);
+					auto minnps = std::numeric_limits<float>::infinity();
+					for (auto diff : sng->Difficulties) {
+						minnps = std::min(minnps, float(diff->TotalNotes / diff->Duration));
+					}
+
+					return minnps;
+				}	
+				return 0.0f;
+			};
+
+			auto a = std::static_pointer_cast<Game::Song>(A.Data);
+			auto b = std::static_pointer_cast<Game::Song>(B.Data);
+			float npsa = nps(a);
+			float npsb = nps(b);
+		
+			return npsa < npsb;
+		});
+		break;
+	case SORT_MAXNPS:
+		SortByFn([](const ListEntry&A, const ListEntry&B)
+		{
+			auto nps = [](std::shared_ptr<Game::Song> a)
+			{
+				if (a->Mode == MODE_DOTCUR)
+				{
+					auto sng = std::static_pointer_cast<dotcur::Song>(a);
+					auto maxnps = -std::numeric_limits<float>::infinity();
+					for (auto diff : sng->Difficulties) {
+						maxnps = std::max(maxnps, float(diff->TotalNotes / diff->Duration));
+					}
+					
+					return maxnps;
+				}
+
+				if (a->Mode == MODE_VSRG)
+				{
+					auto sng = std::static_pointer_cast<VSRG::Song>(a);
+					auto maxnps = -std::numeric_limits<float>::infinity();
+					for (auto diff : sng->Difficulties) {
+						maxnps = std::max(maxnps, float(diff->TotalNotes / diff->Duration));
+					}
+
+					return maxnps;
+				}	
+
+				return 0.0f;
+			};
+
+			auto a = std::static_pointer_cast<Game::Song>(A.Data);
+			auto b = std::static_pointer_cast<Game::Song>(B.Data);
+			float npsa = nps(a);
+			float npsb = nps(b);
+		
+			return npsa < npsb;
+		});
+		break;
+	default:
+		break;
+	}
+
+	// recursively sort
+	for (auto &&ch: mChildren)
+	{
+		if (ch.Kind == ListEntry::Directory)
+		{
+			auto list = std::static_pointer_cast<SongList>(ch.Data);
+			list->SortBy(criteria);
+		}
+	}
+}
