@@ -171,7 +171,6 @@ void ScreenGameplay7K::Init(std::shared_ptr<VSRG::Song> S, int DifficultyIndex, 
 
     ScoreKeeper = std::make_shared<ScoreKeeper7K>();
     GameState::GetInstance().SetScorekeeper7K(ScoreKeeper);
-    UpdateScriptScoreVariables();
 }
 
 void ScreenGameplay7K::CalculateHiddenConstants()
@@ -685,6 +684,9 @@ void ScreenGameplay7K::SetupMechanics()
 			ScoreKeeper->setLifeTotal(-1);
 		lifebar_type = (LifeType)RequestedLifebar;
 		break;
+	case LT_NORECOV:
+		lifebar_type = LT_NORECOV;
+		break;
 	default:
 		throw std::exception("Invalid gauge type recieved");
 	}
@@ -717,6 +719,9 @@ void ScreenGameplay7K::SetupMechanics()
 	MechanicsSet->SetLaneHoldingState = std::bind(&ScreenGameplay7K::SetLaneHoldState, this, std::placeholders::_1, std::placeholders::_2);
 	MechanicsSet->PlayLaneSoundEvent = std::bind(&ScreenGameplay7K::PlayLaneKeysound, this, std::placeholders::_1);
 	MechanicsSet->PlayNoteSoundEvent = std::bind(&ScreenGameplay7K::PlayKeysound, this, std::placeholders::_1);
+
+	// We're set - setup all of the variables that depend on mechanics, scoring etc.. to their initial values.
+    UpdateScriptScoreVariables();
 }
 
 void ScreenGameplay7K::LoadResources()

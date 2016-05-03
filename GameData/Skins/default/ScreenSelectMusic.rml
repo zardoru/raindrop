@@ -115,7 +115,8 @@ end
 				<option value="4">Death</option>
 				<option value="5">Easy</option>
 				<option value="6">Stepmania</option>
-				<option value="7">O2Jam</option>
+				<!-- <option value="7">NoRecovery</option> -->
+				<option value="8">O2Jam</option>
 			</select><br/>
 			<div class="lt">Timing</div> <select name="game" class="rt" onchange="game_change(event)">
 				<option value="0" selected="1">Auto</option>

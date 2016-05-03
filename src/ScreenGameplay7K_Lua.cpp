@@ -61,21 +61,25 @@ void ScreenGameplay7K::UpdateScriptVariables()
 // Called every time a note is hit or missed, before the lua events
 void ScreenGameplay7K::UpdateScriptScoreVariables()
 {
-    LuaManager *L = Animations->GetEnv();
+    auto L = Animations->GetEnv();
     L->SetGlobal("Combo", ScoreKeeper->getScore(ST_COMBO));
     L->SetGlobal("MaxCombo", ScoreKeeper->getScore(ST_MAX_COMBO));
     L->SetGlobal("Accuracy", ScoreKeeper->getPercentScore(PST_ACC));
     L->SetGlobal("SCScore", ScoreKeeper->getScore(scoring_type));
     L->SetGlobal("EXScore", ScoreKeeper->getScore(ST_EX));
 
-    std::pair<std::string, int> autopacemaker = ScoreKeeper->getAutoRankPacemaker();
+    auto autopacemaker = ScoreKeeper->getAutoRankPacemaker();
     L->SetGlobal("PacemakerText", autopacemaker.first);
     L->SetGlobal("PacemakerValue", autopacemaker.second);
+
+	auto bmpacemaker = ScoreKeeper->getAutoPacemaker();
+	L->SetGlobal("BMPacemakerText", bmpacemaker.first);
+	L->SetGlobal("BMPacemakerValue", bmpacemaker.second);
 
     L->SetGlobal("AccText", "ACC:");
     L->SetGlobal("AccValue", ScoreKeeper->getPercentScore(PST_EX));
 
-    double lifebar_amount = ScoreKeeper->getLifebarAmount(lifebar_type);
+    auto lifebar_amount = ScoreKeeper->getLifebarAmount(lifebar_type);
     L->SetGlobal("LifebarValue", lifebar_amount);
     if (lifebar_type == LT_GROOVE || lifebar_type == LT_EASY)
         L->SetGlobal("LifebarDisplay", std::max(2, int(floor(lifebar_amount * 50) * 2)));

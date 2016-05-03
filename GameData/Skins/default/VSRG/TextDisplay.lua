@@ -76,18 +76,29 @@ end
 
 function UpdateTextObjects()
 	
-	if PacemakerText then
-		pacemaker1.Text = PacemakerText;
+	--[[
+		You get two pacemakers: 
+		Raindrop Rank (PacemakerText/PacemakerValue)
+		BMS Rank (BMPacemakerText/BMPacemakerValue)
+		
+		Switch between them as you will.
+	]]
+	local pmt = BMPacemakerText
+	local pmv = BMPacemakerValue
+	
+	-- The following update the pacemaker for real.
+	if pmt then
+		pacemaker1.Text = pmt;
 	end
 
-	if PacemakerValue then
+	if pmv then
 		pre_char = "+";
-		if PacemakerValue < 0 then
+		if pmv < 0 then
 			pre_char = "-";
 			pacemaker2.Red = 1
 			pacemaker2.Green = 0
 			pacemaker2.Blue = 0
-		elseif PacemakerValue > 0 then
+		elseif pmv > 0 then
 			pacemaker2.Red = 0.45
 			pacemaker2.Green = 0.45
 			pacemaker2.Blue = 1
@@ -97,7 +108,7 @@ function UpdateTextObjects()
 			pacemaker2.Blue = 1
 		end
 		
-		pacemaker2.Text = string.format("%s%04d", pre_char, math.abs(PacemakerValue));
+		pacemaker2.Text = string.format("%s%04d", pre_char, math.abs(pmv));
 	end
 
 	if AccText then
