@@ -133,10 +133,10 @@ void ConvertToOM(VSRG::Song *Sng, std::filesystem::path PathOut, std::string Aut
                 {
                     if (Difficulty->IsWarpingAt(Note.StartTime)) continue;
 
-                    out << TrackToXPos(Difficulty->Channels, n) << ",0," << int(Note.StartTime * 1000.0) << ","
+                    out << TrackToXPos(Difficulty->Channels, n) << ",0," << int(round(Note.StartTime * 1000.0)) << ","
                         << (Note.EndTime ? "128" : "1") << ",0,";
                     if (Note.EndTime)
-                        out << int(Note.EndTime * 1000.0) << ",";
+                        out << int(round(Note.EndTime * 1000.0)) << ",";
                     out << "1:0:0:0:";
 
                     if (Note.Sound)

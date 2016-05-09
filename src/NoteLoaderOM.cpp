@@ -493,6 +493,8 @@ public:
 				New.Sound = Evt;
 
 				Diff->Data->BGMEvents.push_back(New);
+
+				Diff->Duration = std::max(Diff->Duration, Time);
 			} else
 			{
 				EventsContent << line << std::endl;

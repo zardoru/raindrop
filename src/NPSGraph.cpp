@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "GameGlobal.h"
+#include "Logging.h"
 #include "Song7K.h"
 
 float CfgValNPS(std::string name, float defaultvalue)
@@ -168,10 +169,15 @@ void ConvertToNPSGraph(VSRG::Song *Sng, std::filesystem::path PathOut)
 		auto s = Utility::Format("%s (%s) - %s.svg", Sng->SongName.c_str(), Diff->Name.c_str(), Diff->Author.c_str());
         std::filesystem::path name = PathOut / s;
 
+		Log::LogPrintf("Opening %s and writing graph.\n", name.string().c_str());
+
 		std::ofstream out(name);
         double interv = CfgValNPS("IntervalTime", 1);
         double margin = CfgValNPS("PeakMargin", 1.2f);
 
-        out << NPSGraph(Sng).GetSVGText(i, interv, margin);
+		if (out.is_open())
+			out << NPSGraph(Sng).GetSVGText(i, interv, margin);
+		else
+			Log::LogPrintf("Couldn't open file.\n");
     }
 }

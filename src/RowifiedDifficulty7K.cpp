@@ -71,7 +71,9 @@ void RowifiedDifficulty::CalculateMeasureAccomulation()
     MeasureAccomulation.clear();
     for (auto M : Parent->Data->Measures)
     {
-        MeasureAccomulation.push_back(QuantizeFunction(Acom));
+		// Note: Acom. doesn't need to be quantized.
+		// Only contents within measure.
+        MeasureAccomulation.push_back(Acom);
         Acom += M.Length;
     }
 }
@@ -79,7 +81,7 @@ void RowifiedDifficulty::CalculateMeasureAccomulation()
 IFraction RowifiedDifficulty::FractionForMeasure(int Measure, double Beat)
 {
     double mStart = MeasureAccomulation[Measure];
-    double mLen = QuantizeFunction(Parent->Data->Measures[Measure].Length);
+    double mLen = Parent->Data->Measures[Measure].Length;
     double mFrac = (Beat - mStart) / mLen;
     IFraction Frac;
 
@@ -93,7 +95,7 @@ IFraction RowifiedDifficulty::FractionForMeasure(int Measure, double Beat)
 
 int RowifiedDifficulty::MeasureForBeat(double Beat)
 {
-	auto it = upper_bound(MeasureAccomulation.begin(), MeasureAccomulation.end(), Beat);
+	auto it = upper_bound(MeasureAccomulation.begin(), MeasureAccomulation.end(), QuantizeFunction(Beat));
 	auto Measure = it - MeasureAccomulation.begin() - 1;
 	
 	if (Measure >= 0)

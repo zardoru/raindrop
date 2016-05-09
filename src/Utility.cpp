@@ -130,7 +130,7 @@ namespace Utility
         }
 
         std::vector<char> fmt(bfsize + 1);
-        vsnprintf(&fmt[0], bfsize, str.c_str(), vl);
+        vsnprintf(&fmt[0], bfsize + 1, str.c_str(), vl);
         va_end(vl);
 
         return std::string(fmt.data());

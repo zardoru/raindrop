@@ -156,12 +156,14 @@ double IntegrateToTime(const TimingData &Timing, double Time, float Drift)
 
 double QuantizeFractionBeat(double Frac)
 {
-    return double(std::min(48.0, floor(Frac * 49.0))) / 48.0;
+	assert(Frac < 1.0);
+    return floor(Frac * 48.0) / 48.0;
 }
 
 double QuantizeFractionMeasure(double Frac)
 {
-    return  (std::min(192.0, floor(Frac * 193.0))) / 192.0;
+	assert(Frac < 1.0);
+    return  floor(Frac * 192.0) / 192.0;
 }
 
 double QuantizeBeat(double Beat)
