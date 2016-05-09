@@ -853,9 +853,8 @@ public:
 							throw OsuManiaLoaderException("Not an osu!mania chart.");
 
 					if (ReadingModeOld == REvents)
-					{
-						Diff->Data->osbSprites = ReadOSBEvents(EventsContent);
-					}
+						Diff->Data->osbSprites = std::make_shared<osb::SpriteList>(ReadOSBEvents(EventsContent));
+
 					ReadingModeOld = ReadingMode;
 					continue;
 				}

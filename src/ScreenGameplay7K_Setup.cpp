@@ -515,6 +515,9 @@ bool ScreenGameplay7K::LoadBGA() const
 	{
 		try {
 			BGA->Load();
+
+			if (CurrentDiff->Data->osbSprites)
+				CurrentDiff->Data->osbSprites = nullptr;
 		} catch(std::exception &e)
 		{
 			Log::LogPrintf("Failure to load BGA: %s.\n", e.what());

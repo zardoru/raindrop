@@ -119,6 +119,8 @@ void Application::ParseArgs(int argc, char **argv)
             { "uqbms", CONVERTMODE::CONV_UQBMS },
             { "nps", CONVERTMODE::CONV_NPS }
         }.at(vm["format"].as<std::string>());
+
+		Log::LogPrintf("Setting format to %s (%d)\n", vm["format"].as<std::string>().c_str(), ConvertMode);
     }
 
     if (vm.count("measure"))
@@ -320,8 +322,10 @@ void Application::Run()
 		InFile = std::filesystem::absolute(InFile);
         std::shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.filename(), InFile.parent_path(), nullptr);
 
+		Log::Printf("Conversion mode activated.\n");
         if (Sng && Sng->Difficulties.size())
         {
+			Log::Printf("Initiating conversion for mode %d.\n", ConvertMode);
             if (ConvertMode == CONVERTMODE::CONV_OM) // for now this is the default
                 ConvertToOM(Sng.get(), OutFile, Author);
             else if (ConvertMode == CONVERTMODE::CONV_BMS)

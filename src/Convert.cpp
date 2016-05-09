@@ -15,6 +15,7 @@ int TrackToXPos(int totaltracks, int track)
 
 void ConvertToOM(VSRG::Song *Sng, std::filesystem::path PathOut, std::string Author)
 {
+	Log::LogPrintf("Attempt to convert %d difficulties...\n", Sng->Difficulties.size());
     for (auto Difficulty : Sng->Difficulties)
     {
         char vf[1024];
@@ -36,11 +37,13 @@ void ConvertToOM(VSRG::Song *Sng, std::filesystem::path PathOut, std::string Aut
 									  Name.c_str(), 
 									  DName.c_str(), 
 									  Charter.c_str());
+
+		Log::Printf("Converting into file %s...\n", Str.string().c_str());
         std::ofstream out(Str);
 
         if (!out.is_open())
         {
-            Log::Printf("Unable to open file %s for writing.\n", vf);
+            Log::Printf("Unable to open file %s for writing.\n", Str.string().c_str());
             return;
         }
 

@@ -289,6 +289,7 @@ public:
 		std::filesystem::path name = PathOut / Utility::Format("%s (%s) - %s.bms", 
 			Song->SongName.c_str(), Parent->Name.c_str(), Parent->Author.c_str());
 
+		Log::Printf("Converting to file %s...\n", name.c_str());
         std::ofstream out(name);
 
         try

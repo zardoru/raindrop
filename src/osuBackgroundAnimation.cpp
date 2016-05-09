@@ -218,12 +218,13 @@ namespace osb {
 		mStartPos = start_pos;
 		mLayer = layer;
 
+		mSprite = nullptr;
 		mParent = nullptr;
 		mImageIndex = -1;
 		mUninitialized = true;
 	}
 
-	void BGASprite::SetSprite(std::shared_ptr<Sprite> sprite)
+	void BGASprite::SetSprite(Sprite* sprite)
 	{
 		mSprite = sprite;
 	}
@@ -257,11 +258,9 @@ namespace osb {
 			return std::static_pointer_cast<T>(*(evt - 1));
 		return std::static_pointer_cast<T>(*evt);
 	}
-	
-	void BGASprite::Update(float Time)
+
+	void BGASprite::InitializeSprite()
 	{
-		if (!mSprite) return;
-		if (!mParent) return; // We need this.
 		if (mUninitialized) // We haven't initialized from the parent's data yet? Alright.
 		{
 			// -> == then
@@ -298,7 +297,12 @@ namespace osb {
 
 			mUninitialized = false;
 		}
+	}
 
+	void BGASprite::Update(float Time)
+	{
+		assert (mSprite != nullptr);
+		assert (mParent != nullptr); // We need this.
 		// Now get the values for all the different stuff.
 		
 		// Okay, a pretty long function follows. Fade first.
@@ -316,6 +320,10 @@ namespace osb {
 			else
 				mSprite->Alpha = 0;
 		}
+
+		// Don't bother updating unless we're visible.
+		if (mSprite->Alpha == 0)
+			return;
 
 		// Now position.	
 		auto movx_evt = GetEvent(Time, EVT_MOVEX);
@@ -699,14 +707,14 @@ std::shared_ptr<osb::Event> ParseEvent(std::vector<std::string> split)
 	return evt;
 }
 
-std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
+osb::SpriteList ReadOSBEvents(std::istream& event_str)
 {
-	std::shared_ptr<osb::BGASprite> previous_background = nullptr;
 	auto line_nm = 1;
-	auto list = std::make_shared<osb::SpriteList>();
+	auto list = osb::SpriteList();
 	int previous_lead = 100;
 	int loop_lead = -1;
-	std::shared_ptr<osb::BGASprite> sprite = nullptr;
+	osb::BGASprite* previous_background = nullptr;
+	osb::BGASprite* sprite = nullptr;
 	std::shared_ptr<osb::Loop> loop = nullptr;
 
 	std::string line;
@@ -770,11 +778,12 @@ std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 				if (sprite)
 					sprite->SortEvents(); // we're done. clean up and get ready
 
-				sprite = std::make_shared<osb::BGASprite>(striped_filename, 
-														  OriginFromString(split_result[2]), 
-														  new_position, 
-														  LayerFromString(split_result[1]));
-				list->push_back(sprite);
+				list.push_back(osb::BGASprite(striped_filename, 
+											  OriginFromString(split_result[2]), 
+											  new_position, 
+											  LayerFromString(split_result[1])));
+
+				sprite = &list.back();
 				return true;
 			}
 
@@ -786,7 +795,7 @@ std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 			if (split_result[0] == "0")
 			{
 				float time = latof(split_result[1]);
-				auto bgsprite = std::make_shared<osb::BGASprite>(strip_quotes(split_result[2]), 
+				auto bgsprite = osb::BGASprite(strip_quotes(split_result[2]), 
 					osb::PP_CENTER, 
 					Vec2(320, 240),
 					osb::LAYER_SP_BACKGROUND);
@@ -797,7 +806,7 @@ std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 				evt->SetTime(0);
 				evt->SetEndTime(std::numeric_limits<float>::infinity());
 
-				bgsprite->AddEvent(evt);
+				bgsprite.AddEvent(evt);
 
 				if (previous_background) {
 					float T = 1;
@@ -806,9 +815,9 @@ std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str)
 						(osb::event_cast<osb::FadeEvent>(prev_evt, previous_background->GetEventList(osb::EVT_FADE)))->SetEndTime(time);
 				}
 
-				previous_background = bgsprite;
+				previous_background = &bgsprite;
 
-				list->insert(list->begin(), bgsprite);
+				list.insert(list.begin(), bgsprite);
 				
 				return true;
 			}
@@ -920,7 +929,7 @@ int osuBackgroundAnimation::AddImageToList(std::string image_filename)
 	return -1; // everything has failed
 }
 
-osuBackgroundAnimation::osuBackgroundAnimation(VSRG::Song* song, std::shared_ptr<osb::SpriteList> existing_mSprites)
+osuBackgroundAnimation::osuBackgroundAnimation(VSRG::Song* song, osb::SpriteList* existing_mSprites)
 	: mImageList(this)
 {
 	Transform.SetSize(OSB_WIDTH, OSB_HEIGHT);
@@ -930,11 +939,10 @@ osuBackgroundAnimation::osuBackgroundAnimation(VSRG::Song* song, std::shared_ptr
 	CanValidate = false;
 
 	if (existing_mSprites) {
-		for (auto sp : *existing_mSprites)
-		{
+		for (auto sp : *existing_mSprites) {
+			sp.SetParent(this);
+			sp.SetImageIndex(AddImageToList(sp.GetImageFilename()));
 			mSprites.push_back(sp);
-			sp->SetParent(this);
-			sp->SetImageIndex(AddImageToList(sp->GetImageFilename()));
 		}
 	}
 }
@@ -972,49 +980,48 @@ void osuBackgroundAnimation::Load()
 			auto mSprite_list = ReadOSBEvents(s);
 
 			// at this point i honestly forgot the type of this thing
-			auto newlist = std::make_shared<osb::SpriteList>();
+			auto newlist = osb::SpriteList();
 
-			for (auto sp : *mSprite_list)
+			for (auto sp : mSprite_list)
 			{
 				bool moved = false;
 				// Who'd define a background on the .osb?
 				// I assume no one.
 				for (auto &&s: mSprites)
 				{
-					if (s->GetLayer() == osb::LAYER_SP_BACKGROUND)
+					if (s.GetLayer() == osb::LAYER_SP_BACKGROUND)
 					{
-						if (s->GetImageFilename() == sp->GetImageFilename())
+						if (s.GetImageFilename() == sp.GetImageFilename())
 						{
 							// Move events from sp into the existing background (that is s)
 							for (auto i = 0; i < osb::EVT_COUNT; i++)
 							{
-								auto el = sp->GetEventList(osb::EEventType(i));
+								auto el = sp.GetEventList(osb::EEventType(i));
 								for (auto &&ev : el)
-									s->AddEvent(osb::copy_event(ev));
+									s.AddEvent(osb::copy_event(ev));
 							}
 
-							s->SortEvents();
+							s.SortEvents();
 							moved = true;
 						}
 					}
 				}
 
 				if (!moved) {
-					newlist->push_back(sp);
-					sp->SetParent(this);
-					sp->SetImageIndex(AddImageToList(sp->GetImageFilename()));
+					sp.SetParent(this);
+					sp.SetImageIndex(AddImageToList(sp.GetImageFilename()));
+					newlist.push_back(sp);
 				}
 			}
 			
-			newlist->insert(newlist->end(), mSprites.begin(), mSprites.end());
-			mSprites = *newlist;
+			newlist.insert(newlist.end(), mSprites.begin(), mSprites.end());
+			mSprites = newlist;
 		}
 	}
 
 	for (auto &&i : mFileIndices)
-	{
 		mImageList.AddToListIndex(i.first, "", i.second);
-	}
+
 	CanValidate = true;
 }
 
@@ -1025,39 +1032,64 @@ void osuBackgroundAnimation::Validate()
 		Log::LogPrintf("Can't validate osu! storyboard.");
 		return;
 	}
-	
-	for (auto &&i: mSprites)
-	{
-		auto sprite = std::make_shared<Sprite>(false);
-		switch (i->GetLayer()) 
-		{
-		case osb::LAYER_SP_BACKGROUND:
-			i->SetSprite(sprite);
-			mAutoBGLayer.push_back(sprite);
-			break;
-		case osb::LAYER_BACKGROUND:
-			i->SetSprite(sprite);
-			mBackgroundLayer.push_back(sprite);
-			break;
-		case osb::LAYER_FOREGROUND:
-			i->SetSprite(sprite);
-			mForegroundLayer.push_back(sprite);
-			break;
-		default:
-			if (OSBDebug)
-				Log::LogPrintf("Discarding sprite %s for being in layer %i.", i->GetImageFilename().c_str(), i->GetLayer());
-		}
-	}
 
 	mImageList.LoadAll();
 	mImageList.ForceFetch();
+
+	// Count items/layer
+	std::map<int, int> cnt;
+	for (auto &&i : mSprites)
+		cnt[i.GetLayer()]++;
+
+	// Set size of sprite containers
+	mAutoBGLayer.resize(cnt[osb::LAYER_SP_BACKGROUND], Sprite(false));
+	mBackgroundLayer.resize(cnt[osb::LAYER_BACKGROUND] + cnt[osb::LAYER_PASS] + cnt[osb::LAYER_FAIL], Sprite(false));
+	mForegroundLayer.resize(cnt[osb::LAYER_FOREGROUND], Sprite(false));
+
+	// counters for each layer (only first three used atm)
+	auto i1 = 0, i2 = 0, i3 = 0, i4 = 0, i5 = 0;
+
+	// assign pre-reserved space to these layers
+	for (auto &&i : mSprites)
+	{
+		Sprite* spr = nullptr;
+		switch (i.GetLayer())
+		{
+		case osb::LAYER_SP_BACKGROUND:
+			spr = &mAutoBGLayer[i1];
+			i1++;
+			break;
+		case osb::LAYER_BACKGROUND:
+		case osb::LAYER_PASS:
+		case osb::LAYER_FAIL:
+			spr = &mBackgroundLayer[i2];
+			i2++;
+			break;
+		case osb::LAYER_FOREGROUND:
+			spr = &mForegroundLayer[i3];
+			i3++;
+			break;
+		default:
+			if (OSBDebug)
+				Log::LogPrintf("Discarding sprite %s for being in layer %i.", i.GetImageFilename().c_str(), i.GetLayer());
+		}
+
+		if (spr) {
+			i.SetSprite(spr);
+			i.InitializeSprite();
+		} else
+		{
+			if (OSBDebug)
+				Log::LogPrintf(" Warning: Non-existing layer.\n");
+		}
+	}
 }
 
 void osuBackgroundAnimation::SetAnimationTime(double Time)
 {
 	for (auto&& item: mSprites)
 	{
-		item->Update(Time);
+		item.Update(Time);
 	}
 }
 
@@ -1068,9 +1100,9 @@ void osuBackgroundAnimation::Update(float Delta)
 void osuBackgroundAnimation::Render()
 {
 	for (auto&& item : mAutoBGLayer)
-		item->Render();
+		item.Render();
 	for (auto&& item: mBackgroundLayer)
-		item->Render();
+		item.Render();
 	for (auto&& item: mForegroundLayer)
-		item->Render();
+		item.Render();
 }

@@ -252,7 +252,7 @@ namespace osb
 		Transformation mPivot;
         osuBackgroundAnimation *mParent;
 
-		std::shared_ptr<Sprite> mSprite;
+		Sprite* mSprite;
         int mImageIndex;
 
 		ELayer mLayer;
@@ -260,7 +260,8 @@ namespace osb
     public:
         BGASprite(std::string file, EOrigin origin, Vec2 start_pos, ELayer laer);
 
-		void SetSprite(std::shared_ptr<Sprite> sprite);
+		void SetSprite(Sprite* sprite);
+	    void InitializeSprite();
 	    void Update(float Time);
         std::string GetImageFilename() const;
         EventList::iterator GetEvent(float& Time, EEventType evt);
@@ -271,17 +272,15 @@ namespace osb
 	    void SetImageIndex(int index);
     };
 
-    typedef std::vector<std::shared_ptr<osb::BGASprite> >SpriteList;
+    typedef std::vector<osb::BGASprite> SpriteList;
 }
 
 class osuBackgroundAnimation : public BackgroundAnimation
 {
-	std::vector<AutoplayBMP> mBackgroundEvents;
-	std::shared_ptr<Sprite> mBackground;
-    std::vector<std::shared_ptr<osb::BGASprite>> mSprites;
-    std::vector<std::shared_ptr<Sprite>> mAutoBGLayer;
-    std::vector<std::shared_ptr<Sprite>> mBackgroundLayer;
-    std::vector<std::shared_ptr<Sprite>> mForegroundLayer;
+    osb::SpriteList mSprites;
+    std::vector<Sprite> mAutoBGLayer;
+    std::vector<Sprite> mBackgroundLayer;
+    std::vector<Sprite> mForegroundLayer;
     std::map<std::string, int> mFileIndices;
     ImageList mImageList;
     int AddImageToList(std::string image_filename);
@@ -290,7 +289,7 @@ class osuBackgroundAnimation : public BackgroundAnimation
 	Transformation mScreenTransformation;
 	bool CanValidate;
 public:
-    osuBackgroundAnimation(VSRG::Song* song, std::shared_ptr<osb::SpriteList> existing_sprites);
+    osuBackgroundAnimation(VSRG::Song* song, osb::SpriteList* existing_sprites);
     Image* GetImageFromIndex(int m_image_index);
     int GetIndexFromFilename(std::string filename);
 	Transformation& GetScreenTransformation();
@@ -302,4 +301,4 @@ public:
 	void Render() override;
 };
 
-std::shared_ptr<osb::SpriteList> ReadOSBEvents(std::istream& event_str);
+osb::SpriteList ReadOSBEvents(std::istream& event_str);
