@@ -60,6 +60,7 @@ public:
 	float getLifebarAmount(int lifebar_amount_type);
 
 	bool isStageFailed(int lifebar_amount_type);
+	bool hasDelayedFailure(int lifebar_type);
 	void failStage();
 
 	int getPacemakerDiff(PacemakerType pmt);

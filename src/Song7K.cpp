@@ -108,8 +108,7 @@ double BPSFromTimingKind(double Value, VSRG::Difficulty::ETimingType TimingType)
 
     if (TimingType == VSRG::Difficulty::BT_BEATSPACE) // Time in MS, and not using bpm, but ms per beat.
     {
-		// round to thousand (3-digit precision from osu!)
-        return bps(round( 60000.0 / Value * 1000 ) / 1000);
+        return bps(60000.0 / Value);
     }
 
     assert(0);

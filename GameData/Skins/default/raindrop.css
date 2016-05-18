@@ -47,8 +47,7 @@ input.checkbox:checked:hover
 
 input.text {
 	background: black;
-	display: block;
-	height: 40px;
+	display: inline-block;
 	width: 100%;
 }
 
@@ -141,6 +140,12 @@ select option:hover {
 .rt {
 	display: inline-block;
 	width: 50%;
+	height: 30px;
+}
+
+.rt input.text {
+	display:inline;
+	width:200px;
 	height: 30px;
 }
 

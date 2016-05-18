@@ -79,9 +79,13 @@ std::string GetConfsInt(std::string Name, std::string Namespace, LuaManager &L)
 			L.Pop();
 		}
     }
-    else
-        Retval = L.GetGlobalS(Name);
-
+    else {
+		if (L.CallFunction(Name.c_str(), 0, 1)) {
+			if (L.RunFunction())
+				Retval = L.GetFunctionResultS();
+		} else
+	        Retval = L.GetGlobalS(Name);
+	}
     return Retval;
 }
 
@@ -103,9 +107,13 @@ double GetConffInt(std::string Name, std::string Namespace, LuaManager &L)
 			L.Pop();
         }
     }
-    else
-        Retval = L.GetGlobalD(Name, 0);
-
+    else {
+		if (L.CallFunction(Name.c_str(), 0, 1)) {
+			if (L.RunFunction())
+				Retval = L.GetFunctionResultD();
+		} else
+	        Retval = L.GetGlobalD(Name, 0);
+	}
     return Retval;
 }
 

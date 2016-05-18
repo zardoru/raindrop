@@ -51,7 +51,7 @@ class SceneEnvironment
     std::string mScreenName;
     std::filesystem::path mInitScript;
 
-    Rocket::Core::Context* ctx;
+    Rocket::Core::Context* RocketContext;
     Rocket::Core::ElementDocument *Doc;
     RocketContextObject* obctx;
 public:

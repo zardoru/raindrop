@@ -82,5 +82,9 @@ GoToSongSelectOnFailure = 0
 
 -- 1 is first after processing SV, 1 is mmod, 2 is cmod, anything else is default.
 -- default: first speed before processing SV
-DefaultSpeedKind = -1
-DefaultSpeedUnits = 1000
+DefaultSpeedKind = function ()
+	return System.ReadConfigF("SpeedClass", "Speed")
+end
+DefaultSpeedUnits = function()
+	return System.ReadConfigF("SpeedAmount", "Speed")
+end

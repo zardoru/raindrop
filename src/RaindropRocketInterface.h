@@ -33,6 +33,7 @@ namespace Engine
         {
         public:
             float GetElapsedTime();
+            bool LogMessage(Rocket::Core::Log::Type type, const Rocket::Core::String& message);
         };
 
         class RenderInterface : public Rocket::Core::RenderInterface

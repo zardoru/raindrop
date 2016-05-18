@@ -241,7 +241,7 @@ SceneEnvironment::SceneEnvironment(const char* ScreenName, bool initUI)
     Images = std::make_shared<ImageList>(true);
     mFrameSkip = true;
 
-    ctx = NULL;
+    RocketContext = NULL;
     Doc = NULL;
     obctx = NULL;
     mScreenName = ScreenName;
@@ -264,11 +264,11 @@ void SceneEnvironment::InitializeUI()
     RocketContextObject *Obj = new RocketContextObject();
 
     // Set up context
-    ctx = Rocket::Core::CreateContext(mScreenName.c_str(), Rocket::Core::Vector2i(ScreenWidth, ScreenHeight));
-    if (!ctx)
-        ctx = Rocket::Core::GetContext(mScreenName.c_str());
+    RocketContext = Rocket::Core::CreateContext(mScreenName.c_str(), Rocket::Core::Vector2i(ScreenWidth, ScreenHeight));
+    if (!RocketContext)
+        RocketContext = Rocket::Core::GetContext(mScreenName.c_str());
 
-    Obj->ctx = ctx;
+    Obj->ctx = RocketContext;
     obctx = Obj;
 
     // Now set up document
@@ -278,7 +278,7 @@ void SceneEnvironment::InitializeUI()
     Objects.push_back(obctx);
     SetUILayer(0);
 
-    ctx->LoadMouseCursor("cursor.rml");
+    RocketContext->LoadMouseCursor("cursor.rml");
 }
 
 void SceneEnvironment::RunUIScript(std::string Filename)
@@ -305,8 +305,8 @@ SceneEnvironment::~SceneEnvironment()
     ManagedObjects.clear();
     ManagedFonts.clear();
 
-    if (ctx && ctx->GetReferenceCount() > 0)
-        ctx->RemoveReference();
+    if (RocketContext && RocketContext->GetReferenceCount() > 0)
+        RocketContext->RemoveReference();
 }
 
 void SceneEnvironment::SetUILayer(uint32_t Layer)
@@ -542,35 +542,37 @@ void SceneEnvironment::UpdateTargets(double TimeDelta)
         Lua->RunFunction();
     }
 
-    if (ctx)
+    if (RocketContext)
     {
         Vec2 nMousePos = GameState::GetInstance().GetWindow()->GetRelativeMPos();
-        ctx->ProcessMouseMove(nMousePos.x, nMousePos.y, 0);
+        RocketContext->ProcessMouseMove(nMousePos.x, nMousePos.y, 0);
 
-        ctx->Update();
+        RocketContext->Update();
     }
 }
 
 void SceneEnvironment::ReloadUI()
 {
-    if (!ctx) return;
+    if (!RocketContext) return;
 
     if (Doc)
     {
-        ctx->UnloadDocument(Doc);
+        RocketContext->UnloadDocument(Doc);
         Doc->Close();
         Rocket::Core::Factory::ClearStyleSheetCache();
         Doc->RemoveReference();
     }
-    ctx->UnloadAllDocuments();
+    RocketContext->UnloadAllDocuments();
 
     std::string FName = mScreenName + std::string(".rml");
 
-    Doc = ctx->LoadDocument(FName.c_str());
+    Doc = RocketContext->LoadDocument(FName.c_str());
     if (Doc)
     {
         Log::Printf("%s succesfully loaded.\n", FName.c_str());
         Doc->Show();
+        
+        Doc->DispatchEvent("ready", Rocket::Core::Dictionary());
     }
 }
 
@@ -628,29 +630,29 @@ bool SceneEnvironment::HandleInput(int32_t key, KeyEventType code, bool isMouseI
     {
         if (code == KE_PRESS)
         {
-            if (ctx)
-                ctx->ProcessMouseButtonDown(key, 0);
+            if (RocketContext)
+                RocketContext->ProcessMouseButtonDown(key, 0);
         }
         else if (code == KE_RELEASE)
         {
-            if (ctx)
-                ctx->ProcessMouseButtonUp(key, 0);
+            if (RocketContext)
+                RocketContext->ProcessMouseButtonUp(key, 0);
         }
     }
     else
     {
         if (code == KE_PRESS)
         {
-            if (ctx)
-                ctx->ProcessKeyDown(key_identifier_map[key], 0);
+            if (RocketContext)
+                RocketContext->ProcessKeyDown(key_identifier_map[key], 0);
 
             if (BindingsManager::TranslateKey(key) == KT_ReloadScreenScripts)
                 ReloadUI();
         }
         else
         {
-            if (ctx)
-                ctx->ProcessKeyUp(key_identifier_map[key], 0);
+            if (RocketContext)
+                RocketContext->ProcessKeyUp(key_identifier_map[key], 0);
         }
     }
 
@@ -659,8 +661,8 @@ bool SceneEnvironment::HandleInput(int32_t key, KeyEventType code, bool isMouseI
 
 bool SceneEnvironment::HandleTextInput(int codepoint)
 {
-    if (ctx)
-        return ctx->ProcessTextInput(codepoint);
+    if (RocketContext)
+        return RocketContext->ProcessTextInput(codepoint);
     else return false;
 }
 

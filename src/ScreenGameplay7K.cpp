@@ -206,12 +206,15 @@ stageFailed:
         ScoreKeeper->failStage();
         FailSnd.Play();
 
-        // We stop all audio..
-        Music->Stop();
-        for (auto i = Keysounds.begin(); i != Keysounds.end(); ++i)
-            for (auto &&s : i->second)
-                if (s)
-                    s->Stop();
+        // post-gameplay failure?
+        if (!ScoreKeeper->hasDelayedFailure(lifebar_type)) {
+            // We stop all audio..
+            Music->Stop();
+            for (auto i = Keysounds.begin(); i != Keysounds.end(); ++i)
+                for (auto &&s : i->second)
+                    if (s)
+                        s->Stop();
+        }
 
         // Run stage failed animation.
         Animations->DoEvent("OnFailureEvent", 1);

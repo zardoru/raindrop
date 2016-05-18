@@ -217,7 +217,7 @@ std::shared_ptr<BackgroundAnimation> CreateBGAforVSRG(VSRG::Song &input, uint8_t
         if (Diff->Data && Diff->Data->BMPEvents)
             return std::make_shared<BMSBackground>(context, Diff, &input);
 		if (Diff->Data && Diff->Data->TimingInfo && Diff->Data->TimingInfo->GetType() == VSRG::TI_OSUMANIA)
-			return std::make_shared<osuBackgroundAnimation>(&input, Diff->Data->osbSprites.get());
+			return std::make_shared<osuBackgroundAnimation>(context, Diff->Data->osbSprites.get(), &input);
 
         return std::make_shared<StaticBackground>(context, GetSongBackground(input));
     }

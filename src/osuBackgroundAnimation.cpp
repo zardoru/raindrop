@@ -929,8 +929,9 @@ int osuBackgroundAnimation::AddImageToList(std::string image_filename)
 	return -1; // everything has failed
 }
 
-osuBackgroundAnimation::osuBackgroundAnimation(VSRG::Song* song, osb::SpriteList* existing_mSprites)
-	: mImageList(this)
+osuBackgroundAnimation::osuBackgroundAnimation(Interruptible* parent, osb::SpriteList* existing_mSprites, VSRG::Song* song)
+	: BackgroundAnimation(parent),
+		mImageList(this)
 {
 	Transform.SetSize(OSB_WIDTH, OSB_HEIGHT);
 	mScreenTransformation.SetSize(1 / OSB_WIDTH, 1 / OSB_HEIGHT);
@@ -1019,8 +1020,10 @@ void osuBackgroundAnimation::Load()
 		}
 	}
 
-	for (auto &&i : mFileIndices)
+	for (auto &&i : mFileIndices) {
 		mImageList.AddToListIndex(i.first, "", i.second);
+		CheckInterruption();
+	}
 
 	CanValidate = true;
 }

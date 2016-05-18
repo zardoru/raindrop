@@ -289,7 +289,7 @@ class osuBackgroundAnimation : public BackgroundAnimation
 	Transformation mScreenTransformation;
 	bool CanValidate;
 public:
-    osuBackgroundAnimation(VSRG::Song* song, osb::SpriteList* existing_sprites);
+    osuBackgroundAnimation(Interruptible* parent, osb::SpriteList* existing_sprites, VSRG::Song* song);
     Image* GetImageFromIndex(int m_image_index);
     int GetIndexFromFilename(std::string filename);
 	Transformation& GetScreenTransformation();

@@ -51,10 +51,30 @@ function sort_change(event)
     Global:SortWheelBy(tonumber(event.parameters["value"]))
 end
 
+function speedclass_change(event)
+	System.SetConfig("SpeedClass", event.parameters["value"], "Speed")
+end
+
+function speedamt_change(event)
+	System.SetConfig("SpeedAmount", event.parameters["value"], "Speed")
+end
+
+savedSpeedClass = System.ReadConfigF("SpeedClass", "Speed")
+savedSpeedAmt = System.ReadConfigF("SpeedAmount", "Speed")
+
+function onready(document)
+	-- restore speed stuff from config...
+	local scElem = document:GetElementById("sc" .. savedSpeedClass)
+	local scaElem = document:GetElementById("spdamt")
+
+	scaElem:SetAttribute("value", savedSpeedAmt)
+	scElem:SetAttribute("selected", 1)
+end
+
 		</script>
 	</head>
 
-	<body>
+	<body onready="onready(document)">
 		<div class="selbar">
 		<div class="sellt">
 			Song Select
@@ -127,11 +147,18 @@ end
 				<option value="5">rd/AutoBMS</option>
 			</select><br/>
 			</div>
+			<h1> Speed Class</h1>
+			<div class="boxes">
+				<select style="width:100%; display: block;" name="speedclass" id="speedclass" onchange="speedclass_change(event, element)">
+					<option value="-1" selected="1" id="sc-1">First (before SV)</option>
+					<option value="0" id="sc0">First (after SV)</option>
+					<option value="1" id="sc1">Max Speed</option>
+					<option value="2" id="sc2">Constant Speed</option>
+				</select>
+			</div>
+			<h1> Target Speed </h1>
+			<input type="text" id="spdamt" onchange="speedamt_change(event, element)" value="0"/>
 		</form>
 		</div>
-
 	</body>
-	<script>
-		onload()
-	</script>
 </rml>

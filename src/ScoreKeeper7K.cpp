@@ -415,6 +415,18 @@ bool ScoreKeeper7K::isStageFailed(int lifebar_amount_type)
     }
 }
 
+bool ScoreKeeper7K::hasDelayedFailure(int lifebar_type)
+{
+    switch(lifebar_type)
+    {
+    case LT_GROOVE:
+    case LT_EASY:
+        return true;
+    default:
+        return false;
+    }
+}
+
 void ScoreKeeper7K::failStage()
 {
     total_notes = max_notes;

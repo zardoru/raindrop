@@ -20,6 +20,12 @@ namespace Engine
         {
             return glfwGetTime();
         }
+        
+        bool SystemInterface::LogMessage(Rocket::Core::Log::Type type, const Rocket::Core::String& message)
+        {
+            Log::LogPrintf("[librocket:%d] %s\n", type, message.CString());
+            return true;
+        }
 
         void RenderInterface::EnableScissorRegion(bool enable)
         {
