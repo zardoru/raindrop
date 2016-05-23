@@ -233,6 +233,7 @@
     <ClCompile Include="..\src\Transformation.cpp" />
     <ClCompile Include="..\src\TruetypeFont.cpp" />
     <ClCompile Include="..\src\Utility.cpp" />
+    <ClCompile Include="..\tests\TestSetA.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ActorBarline.h" />

@@ -71,9 +71,9 @@ namespace Renderer {
 		Image::ForceRebind();
 	}
 
+	static bool Initialized = false;
 	void InitializeRender()
 	{
-		static bool Initialized = false;
 		if (!Initialized)
 		{
 			QuadBuffer = new VBO(VBO::Static, sizeof(QuadPositions) / sizeof(float));
@@ -271,6 +271,8 @@ namespace Renderer {
 
 void Sprite::UpdateTexture()
 {
+	if (!Renderer::Initialized) return;
+
     if (!DirtyTexture)
         return;
 

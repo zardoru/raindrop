@@ -25,6 +25,10 @@
 #include "SongWheel.h"
 #include "ScreenCustom.h"
 
+// testing framework
+#define CATCH_CONFIG_RUNNER
+#include "ext/catch.hpp"
+
 bool Auto = false;
 bool DoRun = false;
 
@@ -69,6 +73,7 @@ void Application::ParseArgs(int argc, char **argv)
         "Release IPC Pool")
         ("L,L", po::value<std::string>(),
         "Load Custom Scene")
+		("test,T", "Run test suite")
         ;
 
     po::variables_map vm;
@@ -155,6 +160,11 @@ void Application::ParseArgs(int argc, char **argv)
         InFile = vm["L"].as<std::string>();
     }
 
+	if (vm.count("test"))
+	{
+		RunMode = MODE_TEST;
+	}
+
     return;
 }
 
@@ -164,8 +174,10 @@ void Application::Init()
     auto t1 = Clock::now();
 
 #if (defined WIN32) && !(defined MINGW)
-    SetConsoleOutputCP(CP_UTF8);
-    _setmode(_fileno(stdout), _O_U8TEXT);
+	if (RunMode != MODE_TEST) {
+		SetConsoleOutputCP(CP_UTF8);
+		_setmode(_fileno(stdout), _O_U8TEXT);
+	}
 #else
     setlocale(LC_ALL, "");
 #endif
@@ -224,32 +236,32 @@ void Application::Init()
 void Application::SetupPreviewMode()
 {
     // Load the song.
-    std::shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile, nullptr);
+    auto song = LoadSong7KFromFilename(InFile);
 
-    if (!Sng || !Sng->Difficulties.size())
+    if (!song || !song->Difficulties.size())
     {
-        Log::Printf("File %s could not be loaded for preview. (%d/%d)\n", InFile.c_str(), (long long int)Sng.get(), Sng ? Sng->Difficulties.size() : 0);
+        Log::Printf("File %s could not be loaded for preview. (%d/%d)\n", InFile.c_str(), (long long int)song.get(), song ? song->Difficulties.size() : 0);
         return;
     }
 
     // Avoid a crash...
-    GameState::GetInstance().SetSelectedSong(Sng);
+    GameState::GetInstance().SetSelectedSong(song);
     GameState::GetInstance().SetDifficultyIndex(difIndex);
 
     // Create loading screen and gameplay screen.
-    auto SGame = std::make_shared<ScreenGameplay7K>();
-    ScreenLoading *LoadScreen = new ScreenLoading(SGame);
+    auto game = std::make_shared<ScreenGameplay7K>();
+    ScreenLoading *LoadScreen = new ScreenLoading(game);
 
     // Set them up.
-	Sng->SongDirectory = std::filesystem::absolute(InFile.parent_path());
+	song->SongDirectory = std::filesystem::absolute(InFile.parent_path());
 
-    GameParameters Param;
-    Param.Upscroll = Upscroll;
-    Param.StartMeasure = Measure;
-    Param.Preloaded = true;
-    Param.Auto = Auto;
+    GameParameters param;
+    param.Upscroll = Upscroll;
+    param.StartMeasure = Measure;
+    param.Preloaded = true;
+    param.Auto = Auto;
 
-    SGame->Init(Sng, difIndex, Param);
+    game->Init(song, difIndex, param);
     LoadScreen->Init();
 
     Game = LoadScreen;
@@ -284,6 +296,21 @@ void Application::Run()
 {
     double T1 = glfwGetTime();
     bool RunLoop = true;
+
+	// if we're just running tests, legitimately don't give a crap about
+	// what goes on below.
+	if (RunMode == MODE_TEST)
+	{
+		Catch::Session session;
+
+		Log::Printf("Return value after running tests: %d.\n", session.run());
+		Log::Printf("Time: %fs\n", glfwGetTime() - T1);
+
+		std::cin.get();
+		return;
+
+	}
+
 
     if (!DoRun)
         return;

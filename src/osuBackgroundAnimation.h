@@ -24,14 +24,13 @@ namespace osb
         EVT_ROTATE,
         EVT_COLORIZE,
         EVT_FADE,
-        EVT_FLIPH,
-        EVT_FLIPV,
         EVT_ADDITIVE,
-        EVT_LOOP, // Unroll once finished loading into regular events.
-        EVT_MOVE,
 		EVT_HFLIP,
 		EVT_VFLIP,
-        EVT_COUNT
+        EVT_COUNT,
+		// Non-events (to be unpacked)
+        EVT_LOOP, // Unroll once finished loading into regular events.
+        EVT_MOVE
     };
 
 	enum EEase : int
@@ -79,31 +78,6 @@ namespace osb
 	// Thus, we have to use shared_ptr.
     typedef std::vector<std::shared_ptr<Event> > EventList;
     typedef EventList EventVector[EVT_COUNT];
-
-    class EventComponent : public Event
-    {
-    protected:
-        EventVector mEventList;
-		float StartPeriod, EndPeriod;
-	    EventComponent(EEventType evt);
-    public:
-        void AddEvent(std::shared_ptr<Event> evt);
-        void SortEvents();
-	    bool WithinEvents(float Time) const;
-		float GetStartTime() const;
-		float GetEndTime() const;
-    };
-
-    class Loop : public EventComponent
-    {
-        int LoopCount;
-        // EndTime is the last loop's time in here.
-    public:
-		Loop(int loop_count) : EventComponent(EVT_LOOP), LoopCount(loop_count) {}
-
-        float GetIterationDuration();
-        void Unroll(EventVector& evt_list);
-    };
 
     class SingleValEvent : public Event
     {
@@ -193,13 +167,13 @@ namespace osb
     class FlipHorizontalEvent : public Event
     {
     public:
-        FlipHorizontalEvent() : Event(EVT_FLIPH) {};
+        FlipHorizontalEvent() : Event(EVT_HFLIP) {};
     };
 
     class FlipVerticalEvent : public Event
     {
     public:
-        FlipVerticalEvent() : Event(EVT_FLIPV) {};
+        FlipVerticalEvent() : Event(EVT_VFLIP) {};
     };
 
     class AdditiveEvent : public Event
@@ -242,6 +216,44 @@ namespace osb
 		LAYER_FOREGROUND
 	};
 
+    class EventComponent : public Event
+    {
+    protected:
+		std::vector<MoveXEvent> evMoveX;
+		std::vector<MoveYEvent> evMoveY;
+		std::vector<ScaleEvent> evScale;
+		std::vector<VectorScaleEvent> evScaleVec;
+		std::vector<RotateEvent> evRotate;
+		std::vector<ColorizeEvent> evColorize;
+		std::vector<FadeEvent> evFade;
+		std::vector<FlipHorizontalEvent> evFlipH;
+		std::vector<FlipVerticalEvent> evFlipV;
+		std::vector<AdditiveEvent> evAdditive;
+
+		float StartPeriod, EndPeriod;
+	    EventComponent(EEventType evt);
+		friend class Loop;
+    public:
+        void AddEvent(std::shared_ptr<Event> evt);
+		void ClearEvents();
+        void SortEvents();
+	    bool WithinEvents(float Time) const;
+		float GetStartTime() const;
+		float GetEndTime() const;
+		void CopyEventsFrom(EventComponent &ec);
+    };
+
+    class Loop : public EventComponent
+    {
+        int LoopCount;
+        // EndTime is the last loop's time in here.
+    public:
+		Loop(int loop_count) : EventComponent(EVT_LOOP), LoopCount(loop_count) {}
+
+        float GetIterationDuration();
+        void Unroll(EventComponent* evt_list);
+    };
+
     class BGASprite : public EventComponent
     {
         EOrigin mOrigin;
@@ -264,9 +276,6 @@ namespace osb
 	    void InitializeSprite();
 	    void Update(float Time);
         std::string GetImageFilename() const;
-        EventList::iterator GetEvent(float& Time, EEventType evt);
-        bool IsValidEvent(EventList::iterator& fade_evt, EEventType evt);
-		EventList& GetEventList(EEventType evt);
 		ELayer GetLayer() const;
         void SetParent(osuBackgroundAnimation* parent);
 	    void SetImageIndex(int index);

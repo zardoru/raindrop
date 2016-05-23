@@ -13,7 +13,8 @@ class Application
         MODE_GENCACHE,
         MODE_VSRGPREVIEW,
         MODE_STOPPREVIEW,
-        MODE_CUSTOMSCREEN
+        MODE_CUSTOMSCREEN,
+		MODE_TEST
     }RunMode;
 
     void ParseArgs(int, char **);

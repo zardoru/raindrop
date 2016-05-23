@@ -17,4 +17,4 @@ public:
 };
 
 std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(std::filesystem::path Filename, std::filesystem::path Prefix, VSRG::Song *Sng);
-std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(const std::filesystem::path&, VSRG::Song *Sng);
+std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(const std::filesystem::path&, VSRG::Song *Sng = nullptr);

@@ -52,43 +52,6 @@ std::function<float(float)> EasingFuncs[] = {
 
 
 namespace osb {
-	template<class T>
-	std::shared_ptr<T> cp_event_cast(const std::shared_ptr<Event> &evt)
-	{
-		return std::make_shared<T>(*std::static_pointer_cast<T>(evt));
-	}
-
-	auto copy_event = [](const std::shared_ptr<Event>& evt) -> std::shared_ptr<Event>
-	{
-		// we've got to use the appropiate type copy-constructor, then we can treat as generic event.
-		switch (evt->GetEventType())
-		{
-		case EVT_MOVEX:
-			return cp_event_cast<MoveXEvent>(evt);
-		case EVT_MOVEY:
-			return cp_event_cast<MoveYEvent>(evt);
-		case EVT_SCALE:
-			return cp_event_cast<FadeEvent>(evt);
-		case EVT_SCALEVEC:
-			return cp_event_cast<VectorScaleEvent>(evt);
-		case EVT_ROTATE:
-			return cp_event_cast<RotateEvent>(evt);
-		case EVT_COLORIZE:
-			return cp_event_cast<ColorizeEvent>(evt);
-		case EVT_FADE:
-			return cp_event_cast<FadeEvent>(evt);
-		case EVT_ADDITIVE:
-			return cp_event_cast<AdditiveEvent>(evt);
-		case EVT_HFLIP:
-			return cp_event_cast<FlipHorizontalEvent>(evt);
-		case EVT_VFLIP:
-			return cp_event_cast<FlipVerticalEvent>(evt);
-		default:
-			throw std::runtime_error("Invalid event type %d\n");
-		}
-	};
-
-
 	Event::Event(EEventType typ) :
 		mEvtType(typ), mEase(EASE_NONE)
 	{
@@ -230,35 +193,6 @@ namespace osb {
 	}
 
 
-	EventList::iterator BGASprite::GetEvent(float& Time, EEventType evt)
-	{
-		return lower_bound(mEventList[evt].begin(), mEventList[evt].end(), Time, 
-			[](const std::shared_ptr<osb::Event>& A, float t) -> bool
-		{ 
-			return A->Time < t;
-		});
-
-	}
-
-	bool BGASprite::IsValidEvent(EventList::iterator& evt_iter, EEventType evt)
-	{
-		bool end_is_not_start = mEventList[evt].begin() != mEventList[evt].end();
-		return end_is_not_start;
-	}
-
-	EventList& BGASprite::GetEventList(EEventType evt)
-	{
-		return mEventList[evt];
-	}
-
-	template <class T>
-	std::shared_ptr<T> event_cast(EventList::iterator& evt, EventList& lst)
-	{
-		if (evt != lst.begin())
-			return std::static_pointer_cast<T>(*(evt - 1));
-		return std::static_pointer_cast<T>(*evt);
-	}
-
 	void BGASprite::InitializeSprite()
 	{
 		if (mUninitialized) // We haven't initialized from the parent's data yet? Alright.
@@ -299,6 +233,23 @@ namespace osb {
 		}
 	}
 
+	template <class T>
+	typename T::iterator GetEvent(double Time, T& vec)
+	{
+		return lower_bound(vec.begin(), vec.end(), Time, [](const typename T::value_type & v, const double &T)
+		{
+			return v.Time < T;
+		});
+	}
+
+	template <class T>
+	bool clamp_iter(typename T::iterator &it, T& vec)
+	{
+		if (vec.begin() == vec.end()) return false; // don't use this iter
+		if (it != vec.begin()) it--;
+		return true;
+	}
+
 	void BGASprite::Update(float Time)
 	{
 		assert (mSprite != nullptr);
@@ -306,11 +257,16 @@ namespace osb {
 		// Now get the values for all the different stuff.
 		
 		// Okay, a pretty long function follows. Fade first.
-		auto fade_evt = GetEvent(Time, EVT_FADE);
+		auto fade_evt = GetEvent(Time, evFade);
 		
-		if (IsValidEvent(fade_evt, EVT_FADE)) {
+		if (clamp_iter(fade_evt, evFade)) {
 			if (WithinEvents(Time))
-				mSprite->Alpha = event_cast<FadeEvent>(fade_evt, mEventList[EVT_FADE])->LerpValue(Time);
+			{
+				if (fade_evt->GetTime() == 0 && mLayer == LAYER_SP_BACKGROUND)
+					mSprite->Alpha = 1;
+				else
+					mSprite->Alpha = fade_evt->LerpValue(Time);
+			}
 			else
 				mSprite->Alpha = 0;
 		}
@@ -326,14 +282,14 @@ namespace osb {
 			return;
 
 		// Now position.	
-		auto movx_evt = GetEvent(Time, EVT_MOVEX);
-		if (IsValidEvent(movx_evt, EVT_MOVEX))
-			mTransform.SetPositionX(event_cast<MoveXEvent>(movx_evt, mEventList[EVT_MOVEX])->LerpValue(Time));
+		auto movx_evt = GetEvent(Time, evMoveX);
+		if (clamp_iter(movx_evt, evMoveX))
+			mTransform.SetPositionX(movx_evt->LerpValue(Time));
 		else mTransform.SetPositionX(mStartPos.x);
 
-		auto movy_evt = GetEvent(Time, EVT_MOVEY);
-		if (IsValidEvent(movy_evt, EVT_MOVEY))
-			mTransform.SetPositionY(event_cast<MoveYEvent>(movy_evt, mEventList[EVT_MOVEY])->LerpValue(Time));
+		auto movy_evt = GetEvent(Time, evMoveY);
+		if (clamp_iter(movy_evt, evMoveY))
+			mTransform.SetPositionY(movy_evt->LerpValue(Time));
 		else mTransform.SetPositionY(mStartPos.y);
 
 		// We already unpacked move events, so no need for this next snip.
@@ -343,9 +299,9 @@ namespace osb {
 
 		// Now scale and rotation.
 		float scale = 1;
-		auto scale_evt = GetEvent(Time, EVT_SCALE);
-		if (IsValidEvent(scale_evt, EVT_SCALE))
-			scale = event_cast<ScaleEvent>(scale_evt, mEventList[EVT_SCALE])->LerpValue(Time);
+		auto scale_evt = GetEvent(Time, evScale);
+		if (clamp_iter(scale_evt, evScale))
+			scale = scale_evt->LerpValue(Time);
 		else scale = 1;
 
 		// we want to scale it to fit - but we don't want to alter the scale set by the user
@@ -356,15 +312,15 @@ namespace osb {
 		// Since scale is just applied to size straight up, we can use this extra scale
 		// defaulting at 1,1 to be our vector scale. That way they'll pile up.
 		Vec2 vscale;
-		auto vscale_evt = GetEvent(Time, EVT_SCALEVEC);
-		if (IsValidEvent(vscale_evt, EVT_SCALEVEC))
-			vscale = event_cast<VectorScaleEvent>(vscale_evt, mEventList[EVT_SCALEVEC])->LerpValue(Time);
+		auto vscale_evt = GetEvent(Time, evScaleVec);
+		if (clamp_iter(vscale_evt, evScaleVec))
+			vscale = vscale_evt->LerpValue(Time);
 		else vscale = Vec2(1, 1);
 
-		auto rot_evt = GetEvent(Time, EVT_ROTATE);
+		auto rot_evt = GetEvent(Time, evRotate);
 		float rot = 0;
-		if (IsValidEvent(rot_evt, EVT_ROTATE)) {
-			rot = event_cast<RotateEvent>(rot_evt, mEventList[EVT_ROTATE])->LerpValue(Time);
+		if (clamp_iter(rot_evt, evRotate)) {
+			rot = rot_evt->LerpValue(Time);
 			mTransform.SetRotation(glm::degrees(rot));
 		}
 		else mTransform.SetRotation(0);
@@ -384,27 +340,27 @@ namespace osb {
 		}
 
 
-		auto colorization_evt = GetEvent(Time, EVT_COLORIZE);
-		if (IsValidEvent(colorization_evt, EVT_COLORIZE)) {
-			auto lerp = event_cast<ColorizeEvent>(colorization_evt, mEventList[EVT_COLORIZE])->LerpValue(Time);
+		auto colorization_evt = GetEvent(Time, evColorize);
+		if (clamp_iter(colorization_evt, evColorize)) {
+			auto lerp = colorization_evt->LerpValue(Time);
 			mSprite->Red = lerp.r;
 			mSprite->Green = lerp.g;
 			mSprite->Blue = lerp.b;
 		}
 
 		// The effects after this don't set values before they begin. (Parameter)
-		auto additive_evt = GetEvent(Time, EVT_ADDITIVE);
-		if (additive_evt != mEventList[EVT_ADDITIVE].begin()
-			&& mEventList[EVT_ADDITIVE].begin() != mEventList[EVT_ADDITIVE].end()
-			&& (additive_evt - 1)->get()->GetEndTime() <= Time)
+		auto additive_evt = GetEvent(Time, evAdditive);
+		if (additive_evt != evAdditive.begin()
+			&& evAdditive.begin() != evAdditive.end()
+			&& (additive_evt - 1)->GetEndTime() <= Time)
 			mSprite->SetBlendMode(BLEND_ADD);
 		else mSprite->SetBlendMode(BLEND_ALPHA);
 
-		auto hflip_evt = GetEvent(Time, EVT_HFLIP);
-		if (hflip_evt != mEventList[EVT_HFLIP].begin() 
-			&& mEventList[EVT_HFLIP].begin() != mEventList[EVT_HFLIP].end())
+		auto hflip_evt = GetEvent(Time, evFlipH);
+		if (hflip_evt != evFlipH.begin() 
+			&& evFlipH.begin() != evFlipH.end())
 		{
-			if ((hflip_evt - 1)->get()->GetEndTime() <= Time)
+			if ((hflip_evt - 1)->GetEndTime() <= Time)
 			{
 				mFlip.SetScaleX(-1);
 				mFlip.SetPositionX(1);
@@ -415,11 +371,11 @@ namespace osb {
 			}
 		}
 
-		auto vflip_evt = GetEvent(Time, EVT_VFLIP);
-		if (vflip_evt != mEventList[EVT_VFLIP].begin()
-			&& mEventList[EVT_VFLIP].begin() != mEventList[EVT_VFLIP].end())
+		auto vflip_evt = GetEvent(Time, evFlipV);
+		if (vflip_evt != evFlipV.begin()
+			&& evFlipV.begin() != evFlipV.end())
 		{
-			if ((vflip_evt - 1)->get()->GetEndTime() <= Time)
+			if ((vflip_evt - 1)->GetEndTime() <= Time)
 			{
 				mFlip.SetScaleY(-1);
 				mFlip.SetPositionY(1);
@@ -451,19 +407,49 @@ namespace osb {
 		mImageIndex = index;
 	}
 
-	void EventComponent::SortEvents()
+	template <class T>
+	void VecSort(T& vec)
 	{
-		auto ecmp = [](const std::shared_ptr<Event> &A, const std::shared_ptr<Event> &B) {
-			return A->GetTime() < B->GetTime();
+		auto cmp = [](const T::value_type& A, const T::value_type& B)
+		{
+			return A.GetTime() < B.GetTime();
 		};
 
-		for (auto i = 0; i < EVT_COUNT; i++)
-			stable_sort(mEventList[i].begin(), mEventList[i].end(), ecmp );
+		stable_sort(vec.begin(), vec.end(), cmp);
+		vec.shrink_to_fit();
+	}
+
+	void EventComponent::SortEvents()
+	{
+		VecSort(evMoveX);
+		VecSort(evMoveY);
+		VecSort(evScale);
+		VecSort(evScaleVec);
+		VecSort(evRotate);
+		VecSort(evColorize);
+		VecSort(evFade);
+		VecSort(evFlipH);
+		VecSort(evFlipV);
+		VecSort(evAdditive);
 	}
 
 	bool EventComponent::WithinEvents(float Time) const
 	{
 		return Time >= GetStartTime() && Time <= GetEndTime();
+	}
+
+	void EventComponent::CopyEventsFrom(EventComponent &ec)
+	{
+		evMoveX = ec.evMoveX;
+		evMoveY = ec.evMoveY;
+		evScale = ec.evScale;
+		evScaleVec = ec.evScaleVec;
+		evRotate = ec.evRotate;
+		evColorize = ec.evColorize;
+		evFade = ec.evFade;
+		evFlipH = ec.evFlipH;
+		evFlipV = ec.evFlipV;
+		evAdditive = ec.evAdditive;
 	}
 
 	EventComponent::EventComponent(EEventType evt): 
@@ -484,29 +470,61 @@ namespace osb {
 
 	void EventComponent::AddEvent(std::shared_ptr<Event> event)
 	{
-		if (event->GetEventType() != EVT_MOVE)
-			mEventList[event->GetEventType()].push_back(event);
+		if (event->GetEventType() != EVT_MOVE) {
+			switch (event->GetEventType()) {
+			case EVT_MOVEX:
+				evMoveX.push_back(*std::static_pointer_cast<MoveXEvent>(event));
+				break;
+			case EVT_MOVEY:
+				evMoveY.push_back(*std::static_pointer_cast<MoveYEvent>(event));
+				break;
+			case EVT_SCALE:
+				evScale.push_back(*std::static_pointer_cast<ScaleEvent>(event));
+				break;
+			case EVT_SCALEVEC:
+				evScaleVec.push_back(*std::static_pointer_cast<VectorScaleEvent>(event));
+				break;
+			case EVT_ROTATE:
+				evRotate.push_back(*std::static_pointer_cast<RotateEvent>(event));
+				break;
+			case EVT_COLORIZE:
+				evColorize.push_back(*std::static_pointer_cast<ColorizeEvent>(event));
+				break;
+			case EVT_FADE:
+				evFade.push_back(*std::static_pointer_cast<FadeEvent>(event));
+				break;
+			case EVT_ADDITIVE:
+				evAdditive.push_back(*std::static_pointer_cast<AdditiveEvent>(event));
+				break;
+			case EVT_HFLIP:
+				evFlipH.push_back(*std::static_pointer_cast<FlipHorizontalEvent>(event));
+				break;
+			case EVT_VFLIP:
+				evFlipV.push_back(*std::static_pointer_cast<FlipVerticalEvent>(event));
+				break;
+			}
+		}
 		else // Unpack move events.
 		{
 			auto mov = std::static_pointer_cast<MoveEvent>(event);
-			auto mxe = std::make_shared<MoveXEvent>();
-			auto mye = std::make_shared<MoveYEvent>();
+			auto mxe = MoveXEvent();
+			auto mye = MoveYEvent();
 
-			mxe->SetEase(mov->GetEase());
-			mye->SetEase(mov->GetEase());
+			mxe.SetEase(mov->GetEase());
+			mye.SetEase(mov->GetEase());
 			
-			mxe->SetTime(event->GetTime());
-			mye->SetTime(event->GetTime());
-			mxe->SetEndTime(event->GetEndTime());
-			mye->SetEndTime(event->GetEndTime());
+			mxe.SetTime(mov->GetTime());
+			mye.SetTime(mov->GetTime());
+			mxe.SetEndTime(mov->GetEndTime());
+			mye.SetEndTime(mov->GetEndTime());
 
-			mxe->SetValue(mov->GetValue().x);
-			mye->SetValue(mov->GetValue().y);
-			mxe->SetEndValue(mov->GetEndValue().x);
-			mye->SetEndValue(mov->GetEndValue().y);
+			mxe.SetValue(mov->GetValue().x);
+			mye.SetValue(mov->GetValue().y);
+			mxe.SetEndValue(mov->GetEndValue().x);
+			mye.SetEndValue(mov->GetEndValue().y);
 
-			mEventList[mxe->GetEventType()].push_back(mxe);
-			mEventList[mye->GetEventType()].push_back(mye);
+			evMoveX.push_back(mxe);
+			evMoveY.push_back(mye);
 		}
 		if (event->GetTime() < StartPeriod)
 			StartPeriod = event->GetTime();
@@ -514,19 +532,65 @@ namespace osb {
 			EndPeriod = event->GetEndTime();
 	}
 
+	void EventComponent::ClearEvents()
+	{
+		evMoveX.clear();
+		evMoveY.clear();
+		evScale.clear();
+		evScaleVec.clear();
+		evRotate.clear();
+		evColorize.clear();
+		evFade.clear();
+		evFlipH.clear();
+		evFlipV.clear();
+		evAdditive.clear();
+	}
+
+	// super obtuse way: member functions.
+	// somewhat obtuse way: this.
+
+	template <class T>
+	void minimize(T vec, float &min)
+	{
+		for (auto evt : vec)
+			min = std::min(min, evt.GetTime());
+	}
+
+
+	template <class T>
+	void maximize(T vec, float &max)
+	{
+		for (auto evt : vec)
+			max = std::max(max, evt.GetEndTime());
+	}
+
 	float Loop::GetIterationDuration()
 	{	
-		auto min_start = std::numeric_limits<float>::infinity(); // a mouthful to type.
-		for (auto k = 0; k < EVT_COUNT; k++)
-			for (auto evt : mEventList[k])
-				min_start = std::min(min_start, evt->GetTime());
+		auto min_end = std::numeric_limits<float>::infinity(); // a mouthful to type.
+		minimize(evMoveX, min_end);
+		minimize(evMoveY, min_end);
+		minimize(evScale, min_end);
+		minimize(evScaleVec, min_end);
+		minimize(evRotate, min_end);
+		minimize(evColorize, min_end);
+		minimize(evFade, min_end);
+		minimize(evFlipH, min_end);
+		minimize(evFlipV, min_end);
+		minimize(evAdditive, min_end);
 
 		auto max_end = -std::numeric_limits<float>::infinity(); // a mouthful to type.
-		for (auto k = 0; k < EVT_COUNT; k++)
-			for (auto evt : mEventList[k])
-				max_end = std::max(max_end, evt->GetEndTime());
+		maximize(evMoveX, max_end);
+		maximize(evMoveY, max_end);
+		maximize(evScale, max_end);
+		maximize(evScaleVec, max_end);
+		maximize(evRotate, max_end);
+		maximize(evColorize, max_end);
+		maximize(evFade, max_end);
+		maximize(evFlipH, max_end);
+		maximize(evFlipV, max_end);
+		maximize(evAdditive, max_end);
 
-		return max_end - min_start;
+		return max_end - min_end;
 		/*float dur = 0;
 				for (auto k = 0; k < EVT_COUNT; k++)
 			for (auto evt : mEventList[k])
@@ -536,31 +600,43 @@ namespace osb {
 	}
 
 	
-
-	void Loop::Unroll(EventVector& ret)
+	template <class T>
+	void UnrollEvents(double iter_duration, double Time, uint32_t LoopCount, T& dst, T& src)
 	{
+		for (auto &evt : src) {
+			for (auto i = 0; i < LoopCount; i++) {
+				auto el = evt;
+				el.SetTime(evt.GetTime() + iter_duration * i + Time);
+				el.SetEndTime(evt.GetEndTime() + iter_duration * i + Time);
+
+				// Add into the unrolled events list
+				dst.push_back(el);
+			}
+		}
+	}
+
+	void Loop::Unroll(EventComponent *ec)
+	{
+		if (!ec) throw std::runtime_error("No event component to unroll to.");
+
 		double iter_duration = GetIterationDuration();
-		
+
 
 		// okay, osu loops are super funky.
 		// a loop's iteration is calculated by dur = last event's end time - first event's start time
 		// not just last event's end time, so events are repeated as soon as the last one of the previous one ends
 		// that means, the time of the next event is not loop start time + max last time of event * iter
 		// but that dur previously mentioned instead.
-		for (auto k = 0; k < EVT_COUNT; k++)
-		{
-			for (auto evt : mEventList[k]) {
-				for (auto i = 0; i < LoopCount; i++)
-				{
-					std::shared_ptr<Event> new_evt = copy_event(evt);
-					new_evt->SetTime(evt->GetTime() + iter_duration * i + Time);
-					new_evt->SetEndTime(evt->GetEndTime() + iter_duration * i + Time);
-
-					// Add into the unrolled events list
-					ret[k].push_back(new_evt);
-				}
-			}
-		}
+		UnrollEvents(iter_duration, Time, LoopCount, ec->evMoveX, evMoveX);
+		UnrollEvents(iter_duration, Time, LoopCount, ec->evMoveY, evMoveY);
+		UnrollEvents(iter_duration, Time, LoopCount, ec->evScale, evScale);
+		UnrollEvents(iter_duration, Time, LoopCount, ec->evScaleVec, evScaleVec);
+		UnrollEvents(iter_duration, Time, LoopCount, ec->evRotate, evRotate);
+		UnrollEvents(iter_duration, Time, LoopCount, ec->evColorize, evColorize);
+		UnrollEvents(iter_duration, Time, LoopCount, ec->evFade, evFade);
+		UnrollEvents(iter_duration, Time, LoopCount, ec->evFlipH, evFlipH);
+		UnrollEvents(iter_duration, Time, LoopCount, ec->evFlipV, evFlipV);
+		UnrollEvents(iter_duration, Time, LoopCount, ec->evAdditive, evAdditive);
 	}
 }
 
@@ -740,14 +816,7 @@ osb::SpriteList ReadOSBEvents(std::istream& event_str)
 	auto unroll_loop_into_sprite = [&]()
 	{
 		osb::EventVector vec;
-		loop->Unroll(vec);
-		for (auto i = 0; i < osb::EVT_COUNT; i++)
-			for (auto evt : vec[i])
-			{
-				if (!sprite)
-					throw std::runtime_error("OSB command unpaired with sprite.");
-				sprite->AddEvent(evt);
-			}
+		loop->Unroll(sprite);
 		loop = nullptr;
 	};
 
@@ -808,12 +877,12 @@ osb::SpriteList ReadOSBEvents(std::istream& event_str)
 
 				bgsprite.AddEvent(evt);
 
-				if (previous_background) {
+				/*if (previous_background) {
 					float T = 1;
 					auto prev_evt = previous_background->GetEvent(T, osb::EVT_FADE);
 					if (previous_background->IsValidEvent(prev_evt, osb::EVT_FADE))
-						(osb::event_cast<osb::FadeEvent>(prev_evt, previous_background->GetEventList(osb::EVT_FADE)))->SetEndTime(time);
-				}
+						previous_background->GetEventList(osb::EVT_FADE)))->SetEndTime(time);
+				}*/
 
 				previous_background = &bgsprite;
 
@@ -994,15 +1063,7 @@ void osuBackgroundAnimation::Load()
 					{
 						if (s.GetImageFilename() == sp.GetImageFilename())
 						{
-							// Move events from sp into the existing background (that is s)
-							for (auto i = 0; i < osb::EVT_COUNT; i++)
-							{
-								auto el = sp.GetEventList(osb::EEventType(i));
-								for (auto &&ev : el)
-									s.AddEvent(osb::copy_event(ev));
-							}
-
-							s.SortEvents();
+							s.CopyEventsFrom(sp);
 							moved = true;
 						}
 					}
