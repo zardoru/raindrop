@@ -94,23 +94,7 @@ end
 		</div>
 		</div>
 		<div class="dbox">
-		<h1> Play Options </h1>
 		<form id="options">
-			<div class="boxes">
-				<div class="fl">
-					<input type="checkbox" id="auto" onchange="changesetting(element.id, element)" /> Autoplay
-				</div>
-				<div class="fr">
-					Failure Disabled <input type="checkbox" id="nofail" onchange="changesetting(element.id, element)"/>
-				</div>
-				<br/>
-				<div class="fl">
-					<input type="checkbox" id="upscroll" onchange="changesetting(element.id, element)" /> Upscroll 
-				</div>
-				<div class="fr">
-					Random <input type="checkbox" id="random" onchange="changesetting(element.id, element)"/>
-				</div>
-			</div>
 			<h1>Hidden</h1>
 			<div class="boxes">
 			<select name="hidden" id="hid" onchange="hidden_change(event)">
@@ -119,11 +103,6 @@ end
 				<option value="2">Hidden</option>
 				<option value="3">Flashlight</option>
 			</select>
-			</div>
-			<h1>Rate</h1>
-			<div class="boxes">
-			<input type="text" id="rate" value="1" cols="5" onchange="changerate(element.attributes.value)"/>
-			</div>
 			<!-- The following match the internal raindrop values. -->
 			<h1> Subsystem </h1>
 			<div class="boxes">
@@ -154,10 +133,32 @@ end
 					<option value="0" id="sc0">First (after SV)</option>
 					<option value="1" id="sc1">Max Speed</option>
 					<option value="2" id="sc2">Constant Speed</option>
+					<option value="4" id="sc4">Mode</option> 
 				</select>
 			</div>
 			<h1> Target Speed </h1>
-			<input type="text" id="spdamt" onchange="speedamt_change(event, element)" value="0"/>
+			<input type="text" id="spdamt" onchange="speedamt_change(event, element)" value="0"/>	</div>
+	
+			<div class="boxes">
+				<div class="fl">
+					<input type="checkbox" id="auto" onchange="changesetting(element.id, element)" /> Autoplay
+				</div>
+				<div class="fr">
+					Failure Disabled <input type="checkbox" id="nofail" onchange="changesetting(element.id, element)"/>
+				</div>
+				<br/>
+				<div class="fl">
+					<input type="checkbox" id="upscroll" onchange="changesetting(element.id, element)" /> Upscroll 
+				</div>
+				<div class="fr">
+					Random <input type="checkbox" id="random" onchange="changesetting(element.id, element)"/>
+				</div>
+			</div>
+			<h1>Rate</h1>
+			<div class="boxes">
+			<input type="text" id="rate" value="1" cols="5" onchange="changerate(element.attributes.value)"/>
+			</div>
+			
 		</form>
 		</div>
 	</body>

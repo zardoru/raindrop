@@ -115,6 +115,7 @@ enum ESpeedType
     SPEEDTYPE_MMOD,
     SPEEDTYPE_CMOD,
     SPEEDTYPE_FIRSTBPM,
+	SPEEDTYPE_MODE
 };
 
 // The values here must be consistent with the shaders!

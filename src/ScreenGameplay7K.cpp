@@ -358,7 +358,6 @@ bool ScreenGameplay7K::Run(double Delta)
 
             CurrentVertical = IntegrateToTime(VSpeeds, WarpedSongTime);
 
-            RunAutoEvents();
             RunMeasures();
             CheckShouldEndScreen();
         }
@@ -377,6 +376,7 @@ bool ScreenGameplay7K::Run(double Delta)
         WarpedSongTime = -WaitingTime;
     }
 
+    RunAutoEvents();
     Noteskin::Update(SongTime, CurrentBeat);
     RecalculateEffects();
 

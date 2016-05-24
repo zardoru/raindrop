@@ -261,14 +261,13 @@ namespace osb {
 		
 		if (clamp_iter(fade_evt, evFade)) {
 			if (WithinEvents(Time))
-			{
+					mSprite->Alpha = fade_evt->LerpValue(Time);
+			else {
 				if (fade_evt->GetTime() == 0 && mLayer == LAYER_SP_BACKGROUND)
 					mSprite->Alpha = 1;
 				else
-					mSprite->Alpha = fade_evt->LerpValue(Time);
+					mSprite->Alpha = 0;
 			}
-			else
-				mSprite->Alpha = 0;
 		}
 		else {
 			if (WithinEvents(Time))
@@ -302,12 +301,11 @@ namespace osb {
 		auto scale_evt = GetEvent(Time, evScale);
 		if (clamp_iter(scale_evt, evScale))
 			scale = scale_evt->LerpValue(Time);
+		else if (mLayer == osb::LAYER_SP_BACKGROUND && mSprite->GetImage())
+			scale *= OSB_HEIGHT / mSprite->GetImage()->h;
 		else scale = 1;
-
 		// we want to scale it to fit - but we don't want to alter the scale set by the user
 		// scales just get multiplied so we'll do that
-		if (mLayer == osb::LAYER_SP_BACKGROUND && mSprite->GetImage())
-			scale *= OSB_HEIGHT / mSprite->GetImage()->h;
 
 		// Since scale is just applied to size straight up, we can use this extra scale
 		// defaulting at 1,1 to be our vector scale. That way they'll pile up.
@@ -431,6 +429,8 @@ namespace osb {
 		VecSort(evFlipH);
 		VecSort(evFlipV);
 		VecSort(evAdditive);
+
+		GetDuration();
 	}
 
 	bool EventComponent::WithinEvents(float Time) const
@@ -450,6 +450,8 @@ namespace osb {
 		evFlipH = ec.evFlipH;
 		evFlipV = ec.evFlipV;
 		evAdditive = ec.evAdditive;
+
+		GetDuration(); // recalc. start/end periods
 	}
 
 	EventComponent::EventComponent(EEventType evt): 
@@ -564,7 +566,7 @@ namespace osb {
 			max = std::max(max, evt.GetEndTime());
 	}
 
-	float Loop::GetIterationDuration()
+	float EventComponent::GetDuration()
 	{	
 		auto min_end = std::numeric_limits<float>::infinity(); // a mouthful to type.
 		minimize(evMoveX, min_end);
@@ -590,13 +592,9 @@ namespace osb {
 		maximize(evFlipV, max_end);
 		maximize(evAdditive, max_end);
 
+		StartPeriod = min_end;
+		EndPeriod = max_end;
 		return max_end - min_end;
-		/*float dur = 0;
-				for (auto k = 0; k < EVT_COUNT; k++)
-			for (auto evt : mEventList[k])
-				dur = std::max(evt->GetEndTime(), dur);
-
-		return dur;*/
 	}
 
 	
@@ -619,7 +617,7 @@ namespace osb {
 	{
 		if (!ec) throw std::runtime_error("No event component to unroll to.");
 
-		double iter_duration = GetIterationDuration();
+		double iter_duration = GetDuration();
 
 
 		// okay, osu loops are super funky.
@@ -1151,6 +1149,9 @@ void osuBackgroundAnimation::Validate()
 
 void osuBackgroundAnimation::SetAnimationTime(double Time)
 {
+	if (!CanValidate)
+		return;
+
 	for (auto&& item: mSprites)
 	{
 		item.Update(Time);

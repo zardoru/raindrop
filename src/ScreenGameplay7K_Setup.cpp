@@ -468,6 +468,29 @@ bool ScreenGameplay7K::ProcessSong()
             double DesiredMultiplier = DesiredDefaultSpeed / VSpeeds[0].Value;
 
             SpeedMultiplierUser = DesiredMultiplier;
+        } else if (Type == SPEEDTYPE_MODE)
+        {
+			std::map <double, double> freq;
+			for (auto i = VSpeeds.begin(); i != VSpeeds.end(); i++)
+			{
+				if (i + 1 != VSpeeds.end())
+				{
+					freq[i->Value] += (i + 1)->Time - i->Time;
+				}
+				else freq[i->Value] += abs(CurrentDiff->Duration - i->Time);
+			}
+			auto max = -std::numeric_limits<float>::infinity();
+			auto val = 1000;
+			for (auto i: freq)
+			{
+				if (i.second > max)
+				{
+					max = i.second;
+					val = i.first;
+				}
+			}
+
+			SpeedMultiplierUser = DesiredDefaultSpeed / val;
         }
         else if (Type != SPEEDTYPE_CMOD) // other cases
         {
@@ -549,21 +572,6 @@ void ScreenGameplay7K::SetupAfterLoadingVariables()
 
     if (ErrorTolerance <= 0)
         ErrorTolerance = 5; // ms
-}
-
-void ScreenGameplay7K::ChangeNoteTimeToBeats()
-{
-    for (uint8_t k = 0; k < CurrentDiff->Channels; k++)
-    {
-        for (auto m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); ++m)
-        {
-            double beatStart = IntegrateToTime(BPS, m->GetDataStartTime());
-            double beatEnd = IntegrateToTime(BPS, m->GetDataEndTime());
-            m->GetDataStartTime() = beatStart;
-			if (m->GetDataEndTime())
-				m->GetDataEndTime() = beatEnd;
-        }
-    }
 }
 
 void ScreenGameplay7K::SetupMechanics()
@@ -712,7 +720,7 @@ void ScreenGameplay7K::SetupMechanics()
 	{
 		Log::Printf("Using o2jam mechanics set!\n");
 		MechanicsSet = std::make_shared<O2JamMechanics>();
-		ChangeNoteTimeToBeats();
+		NoteTransform::TransformToBeats(CurrentDiff->Channels, NotesByChannel, BPS);
 	}
 
 	MechanicsSet->Setup(MySong.get(), CurrentDiff.get(), ScoreKeeper);

@@ -241,6 +241,7 @@ namespace osb
 		float GetStartTime() const;
 		float GetEndTime() const;
 		void CopyEventsFrom(EventComponent &ec);
+        float GetDuration();
     };
 
     class Loop : public EventComponent
@@ -250,7 +251,6 @@ namespace osb
     public:
 		Loop(int loop_count) : EventComponent(EVT_LOOP), LoopCount(loop_count) {}
 
-        float GetIterationDuration();
         void Unroll(EventComponent* evt_list);
     };
 

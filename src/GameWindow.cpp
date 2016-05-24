@@ -489,6 +489,7 @@ bool GameWindow::SetupWindow()
     glDepthFunc(GL_LEQUAL);
 
     glEnable(GL_ALPHA_TEST);
+	glEnable(GL_POLYGON_SMOOTH);
     glAlphaFunc(GL_GREATER, 0);
 
     if (VSync)

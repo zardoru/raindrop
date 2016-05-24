@@ -86,4 +86,21 @@ namespace NoteTransform
             }
         }
     }
+
+	void TransformToBeats (unsigned char channels, 
+		VSRG::VectorTN notes_by_channel,
+		const TimingData &BPS){
+		for (uint8_t k = 0; k < channels; k++)
+		{
+			for (auto m = notes_by_channel[k].begin(); 
+			m != notes_by_channel[k].end(); ++m)
+			{
+				double beatStart = IntegrateToTime(BPS, m->GetDataStartTime());
+				double beatEnd = IntegrateToTime(BPS, m->GetDataEndTime());
+				m->GetDataStartTime() = beatStart;
+				if (m->GetDataEndTime())
+					m->GetDataEndTime() = beatEnd;
+			}
+		}
+	}
 }
