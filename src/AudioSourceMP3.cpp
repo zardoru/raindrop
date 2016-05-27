@@ -99,7 +99,7 @@ void AudioSourceMP3::Seek(float Time)
 		return;
 	}
 
-    int res = mpg123_seek_frame(mHandle, place, SEEK_SET);
+    int res = mpg123_seek(mHandle, place, SEEK_SET);
     if (res < 0 || res < place) {
         Log::Printf("Error seeking stream at %f (tried %d, got %d)\n", Time, place, res);
 		return;

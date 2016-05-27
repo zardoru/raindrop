@@ -149,6 +149,11 @@ AudioSample::~AudioSample()
     MixerRemoveSample(this);
 }
 
+void AudioSample::Seek(size_t offs)
+{
+	mCounter = Clamp(offs, (size_t)0, mData->size());
+}
+
 bool AudioSample::Open(AudioDataSource* Src)
 {
     if (Src && Src->IsValid())
@@ -227,6 +232,8 @@ uint32_t AudioSample::Read(float* buffer, size_t count)
     if (!mIsPlaying)
         return 0;
 
+
+_read:
     if (mIsValid && count && mData->size())
     {
         size_t bufferLeft = limit - mCounter;
@@ -238,17 +245,26 @@ uint32_t AudioSample::Read(float* buffer, size_t count)
 					 mData->begin() + mCounter + ReadAmount, 
 				     buffer);
             mCounter += ReadAmount;
+			count -= ReadAmount;
         }
-        else
-        {
+
+		if (mCounter == limit || count) {
 			if (!mIsLooping)
 				mIsPlaying = false;
 			else
 			{
-				ReadAmount += Read(buffer + ReadAmount, count - ReadAmount);
+				SeekTime(mAudioStart);
+				buffer += ReadAmount;
+
+				// note: implicit - count gets checked again
+				// and it was already updated
+				// basically call itself again. a goto is less expensive than a recursive call
+				// and less likely to overflow (impossible, probably).
+				// TODO: audio cracks a bit. not a big deal since
+				// as of now (27-05-2016) I don't use loop with samples.
+				goto _read;
 			}
-            // memset(buffer, 0, count * sizeof(float));
-        }
+		}
 
         return ReadAmount;
     }

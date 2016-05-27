@@ -61,7 +61,8 @@ public:
     AudioSample(AudioSample& Other);
     AudioSample(AudioSample &&Other);
     ~AudioSample();
-    uint32_t Read(float* buffer, size_t count) override;
+	void Seek(size_t offs);
+	uint32_t Read(float* buffer, size_t count) override;
     bool Open(std::filesystem::path Filename) override;
     bool Open(AudioDataSource* Source);
     void Play() override;
