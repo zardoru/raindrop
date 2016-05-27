@@ -589,6 +589,7 @@ void GameWindow::AssignSize()
 			size.y = mode->height;
 		}
 		else {
+			Log::LogPrintf("Monitor == null? Defaulting to 1024x768.");
 			WindowWidth = 1024;
 			WindowHeight = 768;
 			goto autosize;

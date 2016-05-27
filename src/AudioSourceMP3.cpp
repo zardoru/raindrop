@@ -76,16 +76,13 @@ uint32_t AudioSourceMP3::Read(short* buffer, size_t count)
     auto res = mpg123_read(mHandle, reinterpret_cast<unsigned char*>(buffer), toRead, &actuallyread);
     size_t last_read = actuallyread;
 
-    if (actuallyread == 0) return 0; // Huh.
-
     while (mSourceLoop && actuallyread < toRead)
     {
-        if (res == MPG123_DONE)
-            Seek(0);
+		if (res == MPG123_DONE) {
+			Seek(0);
+		}
 
-        count -= last_read / sizeof(short);
-
-        res = mpg123_read(mHandle, reinterpret_cast<unsigned char*>(buffer) + actuallyread, count, &last_read);
+        res = mpg123_read(mHandle, reinterpret_cast<unsigned char*>(buffer) + actuallyread, toRead - actuallyread, &last_read);
         actuallyread += last_read;
     }
 
@@ -95,16 +92,20 @@ uint32_t AudioSourceMP3::Read(short* buffer, size_t count)
 
 void AudioSourceMP3::Seek(float Time)
 {
-    mIsDataLeft = true;
     int place = round(mRate * Time);
-    int res = mpg123_seek(mHandle, place, SEEK_SET);
-    if (res < 0 || res < place)
-    {
+
+	if (place > mLen) {
+		Log::Printf("Attempt to seek after the stream's end.\n");
+		return;
+	}
+
+    int res = mpg123_seek_frame(mHandle, place, SEEK_SET);
+    if (res < 0 || res < place) {
         Log::Printf("Error seeking stream at %f (tried %d, got %d)\n", Time, place, res);
+		return;
     }
 
-    if (place > mLen)
-        Log::Printf("Attempt to seek after the stream's end.\n");
+    mIsDataLeft = true;
 }
 
 size_t AudioSourceMP3::GetLength()

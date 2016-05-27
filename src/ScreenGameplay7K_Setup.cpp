@@ -480,7 +480,7 @@ bool ScreenGameplay7K::ProcessSong()
 				else freq[i->Value] += abs(CurrentDiff->Duration - i->Time);
 			}
 			auto max = -std::numeric_limits<float>::infinity();
-			auto val = 1000;
+			auto val = 1000.f;
 			for (auto i: freq)
 			{
 				if (i.second > max)

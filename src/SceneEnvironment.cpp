@@ -560,7 +560,7 @@ void SceneEnvironment::ReloadUI()
         RocketContext->UnloadDocument(Doc);
         Doc->Close();
         Rocket::Core::Factory::ClearStyleSheetCache();
-        Doc->RemoveReference();
+        // Doc->RemoveReference();
     }
     RocketContext->UnloadAllDocuments();
 

@@ -1049,23 +1049,27 @@ void osuBackgroundAnimation::Load()
 
 			// at this point i honestly forgot the type of this thing
 			auto newlist = osb::SpriteList();
+			bool bgOverwritten = false;
 
 			for (auto sp : mSprite_list)
 			{
 				bool moved = false;
 				// Who'd define a background on the .osb?
 				// I assume no one.
-				for (auto &&s: mSprites)
-				{
-					if (s.GetLayer() == osb::LAYER_SP_BACKGROUND)
-					{
-						if (s.GetImageFilename() == sp.GetImageFilename())
-						{
-							s.CopyEventsFrom(sp);
-							moved = true;
+				// We only want to do this check once.
+				if (!bgOverwritten) {
+					for (auto &&s: mSprites) {
+						// we only want to possibly move these once
+						if (s.GetLayer() == osb::LAYER_SP_BACKGROUND) {
+							if (s.GetImageFilename() == sp.GetImageFilename()) {
+								s.CopyEventsFrom(sp);
+								moved = true;
+								bgOverwritten = true;
+							}
 						}
 					}
 				}
+			
 
 				if (!moved) {
 					sp.SetParent(this);
