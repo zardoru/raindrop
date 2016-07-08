@@ -184,7 +184,7 @@ void Application::Init()
 
 	Log::Printf(RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT " start.\n");
 	// Log::Printf("Current Time: %s.\n", t1);
-	Log::Printf("Working directory: %s\n", Utility::Narrow(std::filesystem::current_path()).c_str());
+	Log::Printf("Working directory: %s\n", Utility::Narrow(std::filesystem::current_path().wstring()).c_str());
 
     GameState::GetInstance().Initialize();
     Log::Printf("Initializing... \n");
@@ -328,7 +328,7 @@ void Application::Run()
             IPC::Message Msg;
             Msg.MessageKind = IPC::Message::MSG_STARTFROMMEASURE;
             Msg.Param = Measure;
-            strncpy(Msg.Path, Utility::Narrow(InFile).c_str(), 256);
+            strncpy(Msg.Path, Utility::Narrow(InFile.wstring()).c_str(), 256);
 
             IPC::SendMessageToQueue(&Msg);
             RunLoop = false;

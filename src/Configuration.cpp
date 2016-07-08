@@ -19,8 +19,11 @@ const std::string GlobalNamespace = "Global";
 
 class ConfigurationException : std::exception
 {
+private:
+	std::string msg;
 public:
-	ConfigurationException(std::string what) : exception(what.c_str()) {};
+	ConfigurationException(std::string what) : exception() { msg = what; }
+	const char* what() const noexcept { return msg.c_str(); }
 };
 
 ConfigurationException CfgNotLoaded("Configuration not loaded yet.");

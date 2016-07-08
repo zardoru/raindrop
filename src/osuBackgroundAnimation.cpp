@@ -236,9 +236,9 @@ namespace osb {
 	template <class T>
 	typename T::iterator GetEvent(double Time, T& vec)
 	{
-		return lower_bound(vec.begin(), vec.end(), Time, [](const typename T::value_type & v, const double &T)
+		return lower_bound(vec.begin(), vec.end(), Time, [](const typename T::value_type & v, const double &TT)
 		{
-			return v.Time < T;
+			return v.Time < TT;
 		});
 	}
 
@@ -408,7 +408,7 @@ namespace osb {
 	template <class T>
 	void VecSort(T& vec)
 	{
-		auto cmp = [](const T::value_type& A, const T::value_type& B)
+		auto cmp = [](const typename T::value_type& A, const typename T::value_type& B)
 		{
 			return A.GetTime() < B.GetTime();
 		};
@@ -1041,7 +1041,7 @@ void osuBackgroundAnimation::Load()
 	if (candidates.size())
 	{
 		std::string head;
-		std::fstream s(candidates.at(0), std::ios::in);
+		std::fstream s(candidates.at(0).string(), std::ios::in);
 
 		if (std::getline(s, head) && head == "[Events]")
 		{

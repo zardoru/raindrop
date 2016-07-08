@@ -296,14 +296,14 @@ bool IsValidOJN(std::fstream &filein, OjnHeader *Head)
 
 const char *LoadOJNCover(std::filesystem::path filename, size_t &read)
 {
-    std::fstream filein(filename, std::ios::binary | std::ios::in);
+    std::fstream filein(filename.string(), std::ios::binary | std::ios::in);
     OjnHeader Head;
     char* out;
 
 	if (!filein)
 	{
 		Log::Printf("NoteLoaderOJN: %s could not be opened\n", filename.c_str());
-		return false;
+		return 0;
 	}
 
     if (!IsValidOJN(filein, &Head))

@@ -125,13 +125,13 @@ void LoadNotes(Song* Out, Difficulty * Diff, std::string line)
 
 Song* NoteLoaderDC::LoadObjectsFromFile(std::filesystem::path filename, std::filesystem::path prefix)
 {
-    std::ifstream filein(filename);
+    std::ifstream filein(filename.string());
     Song *Out = new Song();
     Difficulty *Diff = new Difficulty();
 
     if (!filein.is_open())
     {
-        throw std::exception(Utility::Format("Unable to open %s for reading!", filename.c_str()).c_str());
+        throw std::runtime_error(Utility::Format("Unable to open %s for reading!", filename.c_str()).c_str());
     }
 
     Out->SongDirectory = prefix;

@@ -169,7 +169,7 @@ namespace Configuration
 {
     void LoadTextureParameters()
     {
-        std::ifstream istr(GameState::GetInstance().GetSkinFile("texparams.rcf"));
+        std::ifstream istr(GameState::GetInstance().GetSkinFile("texparams.rcf").string());
         std::string inp, line;
 
         if (!istr.is_open())

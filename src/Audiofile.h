@@ -58,7 +58,7 @@ class AudioSample : public Sound
 
 public:
     AudioSample();
-    AudioSample(AudioSample& Other);
+    AudioSample(const AudioSample& Other);
     AudioSample(AudioSample &&Other);
     ~AudioSample();
 	void Seek(size_t offs);

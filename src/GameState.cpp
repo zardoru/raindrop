@@ -48,7 +48,7 @@ GameState::GameState():
     {
 		auto st = s.filename().string();
         std::ifstream fallback;
-        fallback.open(s / "fallback.txt");
+        fallback.open((s / "fallback.txt").string());
         if (fallback.is_open() && s != "default")
         {
             std::string ln;
@@ -68,7 +68,7 @@ std::string GameState::GetSkinScriptFile(const char* Filename, const std::string
     if (Fn.find(".lua") == std::string::npos)
         Fn += ".lua";
 
-	auto s = Utility::Narrow(GetSkinFile(Fn, skin));
+	auto s = Utility::Narrow(GetSkinFile(Fn, skin).wstring());
 	s = s.substr(0, s.find_last_of('.'));
     // Since dots are interpreted as "look into this directory", we want to eliminate the extra .lua for require purposes.
     return s;

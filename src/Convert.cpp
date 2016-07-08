@@ -39,7 +39,7 @@ void ConvertToOM(VSRG::Song *Sng, std::filesystem::path PathOut, std::string Aut
 									  Charter.c_str());
 
 		Log::Printf("Converting into file %s...\n", Str.string().c_str());
-        std::ofstream out(Str);
+        std::ofstream out(Str.string());
 
         if (!out.is_open())
         {
@@ -159,7 +159,7 @@ void ConvertToSMTiming(VSRG::Song *Sng, std::filesystem::path PathOut)
     VSRG::Difficulty* Diff = Sng->Difficulties[0].get();
     Diff->GetPlayableData(nullptr, BPS, VSpeeds, Warps);
 
-    std::ofstream out(PathOut);
+    std::ofstream out(PathOut.string());
     // Technically, stepmania's #OFFSET is actually #GAP, not #OFFSET.
     out << "#OFFSET:" << -Diff->Offset << ";\n";
 

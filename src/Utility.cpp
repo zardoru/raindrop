@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "Logging.h"
+#include <experimental/filesystem>
 
 int b36toi(const char *txt)
 {
@@ -82,17 +83,17 @@ namespace Utility
 #else
         char buf[MAX_STRING_SIZE];
         iconv_t conv;
-        char** out = &buf;
+        char* out = buf;
         const char* in = Line.c_str();
         size_t BytesLeftSrc = Line.length();
         size_t BytesLeftDst = MAX_STRING_SIZE;
 
         conv = iconv_open("UTF-8", "SHIFT_JIS");
-        bool success = (iconv(conv, (char **)&in, &BytesLeftSrc, out, &BytesLeftDst) > -1);
+        bool success = (iconv(conv, (char **)&in, &BytesLeftSrc, &out, &BytesLeftDst) > -1);
 
         iconv_close(conv);
         if (success)
-            return std::string(*out);
+            return std::string(out);
         else
         {
             Log::Printf("Failure converting character sets.");
@@ -187,7 +188,7 @@ namespace Utility
     int GetLMT(std::filesystem::path Path)
     {
 		if (std::filesystem::exists(Path)) {
-			auto a = std::filesystem::last_write_time(Path);
+			auto a = std::experimental::filesystem::last_write_time(Path.string());
 			return decltype(a)::clock::to_time_t(a);
 		}
 		else return -1;
@@ -208,7 +209,7 @@ namespace Utility
     std::string GetSha256ForFile(std::filesystem::path Filename)
     {
         SHA256 SHA;
-        std::ifstream InStream(Filename);
+        std::ifstream InStream(Filename.string());
         unsigned char tmpbuf[256];
 
         if (!InStream.is_open())

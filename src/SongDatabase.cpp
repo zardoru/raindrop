@@ -71,8 +71,13 @@ const char* GetAuthorOfDifficulty = "SELECT author FROM diffdb WHERE diffid=?";
 const char* GetPreviewOfSong = "SELECT previewsong, previewtime FROM songdb WHERE id=?";
 const char* sGetStageFile = "SELECT stagefile FROM diffdb WHERE diffid=?";
 
-#define SC(x) ret=x; if(ret!=SQLITE_OK && ret != SQLITE_DONE) {Log::Printf("sqlite: %ls (code %d)\n",Utility::Widen(sqlite3_errmsg(db)).c_str(), ret); Utility::DebugBreak(); }
-#define SCS(x) ret=x; if(ret!=SQLITE_DONE && ret != SQLITE_ROW) {Log::Printf("sqlite: %ls (code %d)\n",Utility::Widen(sqlite3_errmsg(db)).c_str(), ret); Utility::DebugBreak(); }
+#define SC(x) \
+{ret=x; if(ret!=SQLITE_OK && ret != SQLITE_DONE) \
+{Log::Printf("sqlite: %ls (code %d)\n",Utility::Widen(sqlite3_errmsg(db)).c_str(), ret); Utility::DebugBreak(); }}
+
+#define SCS(x) \
+{ret=x; if(ret!=SQLITE_DONE && ret != SQLITE_ROW) \
+{Log::Printf("sqlite: %ls (code %d)\n",Utility::Widen(sqlite3_errmsg(db)).c_str(), ret); Utility::DebugBreak(); }}
 
 SongDatabase::SongDatabase(std::string Database)
 {
@@ -307,7 +312,7 @@ std::filesystem::path SongDatabase::GetDifficultyFilename(int ID)
 #ifdef _WIN32
     std::filesystem::path out = Utility::Widen((char*)sqlite3_column_text(st_GetDiffFilename, 0));
 #else
-	std::filesystem::path out = (char*)sqlite3_column_text(st_GetDiffFilename, 0)
+	std::filesystem::path out = (char*)sqlite3_column_text(st_GetDiffFilename, 0);
 #endif
     SC(sqlite3_reset(st_GetDiffFilename));
     return out;

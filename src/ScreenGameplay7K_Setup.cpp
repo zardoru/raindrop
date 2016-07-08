@@ -262,7 +262,7 @@ bool ScreenGameplay7K::LoadChartData()
 
         if (LoadedSong == nullptr)
         {
-            Log::Printf("Failure to load chart. (Filename: %s)\n", Utility::Narrow(FN).c_str());
+            Log::Printf("Failure to load chart. (Filename: %s)\n", Utility::Narrow(FN.wstring()).c_str());
             return false;
         }
 
@@ -356,7 +356,7 @@ bool ScreenGameplay7K::LoadSongAudio()
                             audio[sounds.first].SetPitch(Speed);
 
                             if (!audio[sounds.first].Open(path))
-                                throw std::exception(Utility::Format("Unable to load %s.", slicedata.AudioFiles[sounds.first]).c_str());
+                                throw std::runtime_error(Utility::Format("Unable to load %s.", slicedata.AudioFiles[sounds.first]).c_str());
                             Log::Printf("BMSON: Load sound %s\n", Utility::Narrow(path.wstring()).c_str());
                         }
 
@@ -381,7 +381,7 @@ bool ScreenGameplay7K::LoadSongAudio()
             std::filesystem::path sd = MySong->SongDirectory / i->second;
             ks->Open(sd);
 #else
-            ks->Open((MySong->SongDirectory + "/" + i->second).c_str());
+            ks->Open((MySong->SongDirectory.string() + "/" + i->second).c_str());
 #endif
             Keysounds[i->first].push_back(ks);
             CheckInterruption();
@@ -665,7 +665,7 @@ void ScreenGameplay7K::SetupMechanics()
 			RequestedLifebar = LT_STEPMANIA;
 			break;
 		default:
-			throw std::exception("Invalid requested system.");
+			throw std::runtime_error("Invalid requested system.");
 		}
 	}
 
@@ -699,7 +699,7 @@ void ScreenGameplay7K::SetupMechanics()
 		lifebar_type = LT_NORECOV;
 		break;
 	default:
-		throw std::exception("Invalid gauge type recieved");
+		throw std::runtime_error("Invalid gauge type recieved");
 	}
 
 	/*
@@ -777,11 +777,11 @@ bool ScreenGameplay7K::BindKeysToLanes(bool UseTurntable)
 	std::vector<std::string> res;
 
 	if (UseTurntable)
-		KeyProfile = CfgVar("KeyProfileSpecial" + Utility::IntToStr(CurrentDiff->Channels));
+		KeyProfile = (std::string)CfgVar("KeyProfileSpecial" + Utility::IntToStr(CurrentDiff->Channels));
 	else
-		KeyProfile = CfgVar("KeyProfile" + Utility::IntToStr(CurrentDiff->Channels));
+		KeyProfile = (std::string)CfgVar("KeyProfile" + Utility::IntToStr(CurrentDiff->Channels));
 
-	value = CfgVar("Keys", KeyProfile);
+	value = (std::string)CfgVar("Keys", KeyProfile);
 	res = Utility::TokenSplit(value);
 
 	for (unsigned i = 0; i < CurrentDiff->Channels; i++)

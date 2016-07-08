@@ -18,6 +18,7 @@
 #include <pa_win_wasapi.h>
 #include <pa_win_ds.h>
 
+
 #ifndef MINGW
 #include <direct.h>
 #include <mpg123.h>
@@ -30,7 +31,11 @@
 #endif
 
 #ifdef LINUX
+//This one might be needed : #include <fcntl.h>
+#include <mpg123.h>
+#include <unistd.h>
 #include <pa_linux_alsa.h>
+//This one might be needed too: #include <unistd.h>
 #endif
 
 #if _MSC_VER >= 1900
@@ -73,6 +78,7 @@ namespace std
 #include <thread>
 #include <unordered_set>
 #include <vector>
+
 #include <randint> // C++17 example implementation
 
 // C stdlib

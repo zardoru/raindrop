@@ -171,7 +171,7 @@ void ConvertToNPSGraph(VSRG::Song *Sng, std::filesystem::path PathOut)
 
 		Log::LogPrintf("Opening %s and writing graph.\n", name.string().c_str());
 
-		std::ofstream out(name);
+		std::ofstream out(name.string());
         double interv = CfgValNPS("IntervalTime", 1);
         double margin = CfgValNPS("PeakMargin", 1.2f);
 
