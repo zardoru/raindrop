@@ -58,7 +58,7 @@ namespace NoteLoaderBMSON
 	std::string msg; 
     public:
         BMSONException(const char * what) : exception(), msg(what) {}
-	const char* what() const noexcept { return msg; }
+	const char* what() const noexcept { return msg.c_str(); }
     };
 
     struct BmsonObject
