@@ -319,7 +319,7 @@ std::string BMSConverter::ToBMSBase36(int num)
 
     /* if num is zero */
     if (!num)
-        return strdup("0");
+        return "0";
 
     /* null terminate buf, and set i at end */
     buf[65] = '\0';
@@ -338,8 +338,17 @@ std::string BMSConverter::ToBMSBase36(int num)
         }
         buf[--i] = '-';
     }   
-    /* return a duplicate of the used portion of buf */
-    return strdup(buf + i);
+    
+    if (pt[1] == 0) { // Make it at least, and at most, two digits (for BMS)
+ -	pt[1] = pt[0];
+ -	pt[0] = '0';
+ -  }
+ -
+ -  if (pt[0] == 0) {
+    	pt[0] = '0';
+ -	pt[1] = '0';
+    }
+    return buf;
 }
 
 int BMSConverter::GetChannel(int channel) const
