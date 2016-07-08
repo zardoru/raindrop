@@ -121,7 +121,7 @@ void SongList::AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, std:
 
 void SongList::AddDirectory(std::mutex &loadMutex, SongLoader *Loader, std::filesystem::path Dir, bool VSRGActive, bool DotcurActive)
 {
-    AddNamedDirectory(loadMutex, Loader, Dir, Utility::Narrow(Dir.filename()), VSRGActive, DotcurActive);
+    AddNamedDirectory(loadMutex, Loader, Dir, Utility::Narrow(Dir.filename().wstring()), VSRGActive, DotcurActive);
 }
 
 void SongList::AddVirtualDirectory(std::string NewEntryName, Game::Song* List, int Count)

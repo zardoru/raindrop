@@ -33,7 +33,7 @@ bool AudioSourceMP3::Open(std::filesystem::path Filename)
     mpg123_param(mHandle, MPG123_FORCE_RATE, MixerGetRate(), 1);
 
 #if !(defined WIN32) || (defined MINGW)
-    if (mpg123_open(mHandle, Utility::Narrow(Filename).c_str()) == MPG123_OK)
+    if (mpg123_open(mHandle, Utility::Narrow(Filename.wstring()).c_str()) == MPG123_OK)
 #else
     if (mpg123_topen(mHandle, Filename.c_str()) == MPG123_OK)
 #endif

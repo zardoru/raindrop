@@ -290,17 +290,17 @@ public:
 			Song->SongName.c_str(), Parent->Name.c_str(), Parent->Author.c_str());
 
 		Log::Printf("Converting to file %s...\n", name.c_str());
-        std::ofstream out(name);
+        std::ofstream out(name.string());
 
         try
         {
 			if (!out.is_open())
 			{
-				auto s = Utility::Format("failed to open file %s", Utility::Narrow(name).c_str());
-				throw std::exception(s.c_str());
+				auto s = Utility::Format("failed to open file %s", Utility::Narrow(name.wstring()).c_str());
+				throw std::runtime_error(s.c_str());
 			}
             if (BPS.size() == 0)
-                throw std::exception("There are no timing points!");
+                throw std::runtime_error("There are no timing points!");
             WriteBMSOutput();
             out << OutFile.str();
         }
@@ -311,22 +311,35 @@ public:
     }
 };
 
-std::string BMSConverter::ToBMSBase36(int n)
+std::string BMSConverter::ToBMSBase36(int num)
 {
-	char pt[32] = {0};
-	itoa(n, pt, 36);
-	pt[2] = 0;
-	if (pt[1] == 0) { // Make it at least, and at most, two digits (for BMS)
-		pt[1] = pt[0];
-		pt[0] = '0';
-	}
+    char digits[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    int i;
+    char buf[66];   /* enough space for any 64-bit in base 2 */
 
-	if (pt[0] == 0) {
-		pt[0] = '0';
-		pt[1] = '0';
-	}
+    /* if num is zero */
+    if (!num)
+        return strdup("0");
 
-	return pt;
+    /* null terminate buf, and set i at end */
+    buf[65] = '\0';
+    i = 65;
+
+    if (num > 0) {  /* if positive... */
+        while (num) { /* until num is 0... */
+            /* go left 1 digit, divide by radix, and set digit to remainder */
+            buf[--i] = digits[num % 36];
+            num /= 36;
+        }
+    } else {    /* same for negative, but negate the modulus and prefix a '-' */
+        while (num) {
+            buf[--i] = digits[-(num % 36)];
+            num /= 36;
+        }
+        buf[--i] = '-';
+    }   
+    /* return a duplicate of the used portion of buf */
+    return strdup(buf + i);
 }
 
 int BMSConverter::GetChannel(int channel) const

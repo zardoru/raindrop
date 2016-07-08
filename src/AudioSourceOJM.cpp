@@ -129,7 +129,7 @@ sf_count_t tellM30(void* p)
 size_t readM30OGG(void* ptr, size_t size, size_t nmemb, void* p)
 {
     auto state = static_cast<SFM30*>(p);
-    int toRead = std::min(unsigned int(size*nmemb), unsigned int(state->DataLength - state->Offset));
+    int toRead = std::min((unsigned int)size*nmemb, (unsigned int)state->DataLength - state->Offset);
 
     if (state->Offset >= state->DataLength)
         return 0;
@@ -568,7 +568,7 @@ bool AudioSourceOJM::Open(std::filesystem::path f)
 {
     char sig[4];
 
-    ifile = std::make_shared<std::ifstream>(f, std::ios::binary);
+    ifile = std::make_shared<std::ifstream>(f.string(), std::ios::binary);
 
     if (!ifile->is_open())
     {

@@ -54,12 +54,11 @@ namespace NoteLoaderBMSON
 
     class BMSONException : public std::exception
     {
+    private:
+	const char * msg; 
     public:
-        BMSONException(const std::string &what) :
-            std::exception(what.c_str())
-        {
-            // stub
-        }
+        BMSONException(const char * what) : exception(), msg(what) {}
+	const char* what() const noexcept { return msg; }
     };
 
     struct BmsonObject
@@ -656,7 +655,7 @@ namespace NoteLoaderBMSON
 
     void LoadObjectsFromFile(std::filesystem::path filename, VSRG::Song* Out)
     {
-        std::ifstream filein(filename);
+        std::ifstream filein(filename.string());
 
         BMSONLoader bmson(filein, Out);
         bmson.DoLoad();

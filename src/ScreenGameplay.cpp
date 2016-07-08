@@ -220,7 +220,7 @@ void ScreenGameplay::LoadResources()
 
         if (!Music || !Music->Open(MySong->SongDirectory / MySong->SongFilename))
         {
-            throw std::exception((Utility::Format("couldn't open song %s", MySong->SongFilename.c_str()).c_str()));
+            throw std::runtime_error((Utility::Format("couldn't open song %s", MySong->SongFilename.c_str()).c_str()));
         }
 
         seekTime(0);

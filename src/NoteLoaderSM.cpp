@@ -419,7 +419,7 @@ SpeedData ParseScrolls(std::string line)
 
 void NoteLoaderSSC::LoadObjectsFromFile(std::filesystem::path filename, Song *Out)
 {
-    std::ifstream filein(filename);
+    std::ifstream filein(filename.string());
 
     TimingData BPMData;
     TimingData StopsData;
@@ -432,7 +432,7 @@ void NoteLoaderSSC::LoadObjectsFromFile(std::filesystem::path filename, Song *Ou
     std::shared_ptr<VSRG::Difficulty> Diff = nullptr;
 
     if (!filein.is_open())
-        throw std::exception(Utility::Format("couldn't open %s for reading", filename.c_str()).c_str());
+        throw std::runtime_error(Utility::Format("couldn't open %s for reading", filename.c_str()).c_str());
 
     std::string Banner;
 
@@ -656,7 +656,7 @@ void WarpifyTiming(Difficulty* Diff)
 
 void NoteLoaderSM::LoadObjectsFromFile(std::filesystem::path filename, Song *Out)
 {
-    std::ifstream filein(filename);
+    std::ifstream filein(filename.string());
 
     TimingData BPMData;
     TimingData StopsData;
@@ -668,7 +668,7 @@ void NoteLoaderSM::LoadObjectsFromFile(std::filesystem::path filename, Song *Out
     Diff->BPMType = VSRG::Difficulty::BT_BEAT;
 
     if (!filein.is_open())
-        throw std::exception(Utility::Format("couldn't open %s for reading").c_str());
+        throw std::runtime_error(Utility::Format("couldn't open %s for reading").c_str());
 
     std::string Banner;
 

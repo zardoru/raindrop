@@ -108,9 +108,11 @@ int GetTrackFromPosition(float Position, int Channels)
 
 class OsuManiaLoaderException : public std::exception
 {
+private:
+	const char * msg;
 public:
-	OsuManiaLoaderException(std::string s) : exception(s.c_str()) {
-	}
+	OsuManiaLoaderException(const char * what) : exception(), msg(what) {}
+	const char* what() const noexcept { return msg; }
 };
 
 class OsumaniaLoader
@@ -790,7 +792,7 @@ public:
 
 	void LoadFromFile(std::filesystem::path path)
     {
-		std::ifstream filein(path);
+		std::ifstream filein(path.string());
 		std::regex versionfmt("osu file format v(\\d+)");
 
 		if (!filein.is_open())

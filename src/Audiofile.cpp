@@ -112,7 +112,7 @@ AudioSample::AudioSample()
     MixerAddSample(this);
 }
 
-AudioSample::AudioSample(AudioSample& Other)
+AudioSample::AudioSample(const AudioSample& Other)
 {
     mPitch = Other.mPitch;
     mIsValid = Other.mIsValid;

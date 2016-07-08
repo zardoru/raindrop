@@ -30,7 +30,7 @@ bool AudioSourceSFM::Open(std::filesystem::path Filename)
     info->format = 0;
 
 #ifndef WIN32
-    mWavFile = sf_open(Utility::Narrow(Filename).c_str(), SFM_READ, info);
+    mWavFile = sf_open(Utility::Narrow(Filename.wstring()).c_str(), SFM_READ, info);
 #else
     mWavFile = sf_wchar_open(Filename.wstring().c_str(), SFM_READ, info);
 #endif
@@ -42,7 +42,7 @@ bool AudioSourceSFM::Open(std::filesystem::path Filename)
     int err = 0;
     if (!mWavFile || (err = sf_error(mWavFile)))
     {
-        Log::LogPrintf("Error %d: Filename %s (wavfile %p)\n", err, Utility::Narrow(Filename).c_str(), mWavFile);
+        Log::LogPrintf("Error %d: Filename %s (wavfile %p)\n", err, Utility::Narrow(Filename.wstring()).c_str(), mWavFile);
         return false;
     }
 
