@@ -339,14 +339,14 @@ std::string BMSConverter::ToBMSBase36(int num)
         buf[--i] = '-';
     }   
     
-    if (pt[1] == 0) { // Make it at least, and at most, two digits (for BMS)
- -	pt[1] = pt[0];
- -	pt[0] = '0';
+    if (buf[1] == 0) { // Make it at least, and at most, two digits (for BMS)
+ -	buf[1] = buf[0];
+ -	buf[0] = '0';
  -  }
  -
- -  if (pt[0] == 0) {
-    	pt[0] = '0';
- -	pt[1] = '0';
+ -  if (buf[0] == 0) {
+    	buf[0] = '0';
+ -	buf[1] = '0';
     }
     return buf;
 }
