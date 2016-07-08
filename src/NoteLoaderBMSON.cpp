@@ -55,7 +55,7 @@ namespace NoteLoaderBMSON
     class BMSONException : public std::exception
     {
     private:
-	const char * msg; 
+	std::string msg; 
     public:
         BMSONException(const char * what) : exception(), msg(what) {}
 	const char* what() const noexcept { return msg; }
