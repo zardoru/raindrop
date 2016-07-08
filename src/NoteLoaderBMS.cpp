@@ -998,22 +998,22 @@ namespace NoteLoaderBMS{
 
             if (Info->InterpStatement(command, CommandContents))
             {
-				OnCommand("#ext")
+				OnCommand(#ext)
 				{
 					Line = CommandContents;
 				}
 
-                OnCommand("#genre")
+                OnCommand(#genre)
                 {
                     // stub
                 }
 
-                OnCommand("#subtitle")
+                OnCommand(#subtitle)
                 {
                     Subs.insert(CommandContents);
                 }
 
-                OnCommand("#title")
+                OnCommand(#title)
                 {
                     Out->SongName = CommandContents;
                     // ltrim the std::string
@@ -1022,7 +1022,7 @@ namespace NoteLoaderBMS{
                         Out->SongName = Out->SongName.substr(np);
                 }
 
-                OnCommand("#artist")
+                OnCommand(#artist)
                 {
                     Out->SongAuthor = CommandContents;
 
@@ -1044,7 +1044,7 @@ namespace NoteLoaderBMS{
                     }
                 }
 
-                OnCommand("#bpm")
+                OnCommand(#bpm)
                 {
                     TimingSegment Seg;
                     Seg.Time = 0;
@@ -1054,7 +1054,7 @@ namespace NoteLoaderBMS{
                     continue;
                 }
 
-                OnCommand("#music")
+                OnCommand(#music)
                 {
                     Out->SongFilename = CommandContents;
                     Diff->IsVirtual = false;
@@ -1062,32 +1062,32 @@ namespace NoteLoaderBMS{
                         Out->SongPreviewSource = CommandContents;
                 }
 
-                OnCommand("#offset")
+                OnCommand(#offset)
                 {
                     Diff->Offset = latof(CommandContents.c_str());
                 }
 
-                OnCommand("#previewpoint")
+                OnCommand(#previewpoint)
                 {
                     Out->PreviewTime = latof(CommandContents.c_str());
                 }
 
-                OnCommand("#previewtime")
+                OnCommand(#previewtime)
                 {
                     Out->PreviewTime = latof(CommandContents.c_str());
                 }
 
-                OnCommand("#stagefile")
+                OnCommand(#stagefile)
                 {
                     Diff->Data->StageFile = CommandContents;
                 }
 
-                OnCommand("#lnobj")
+                OnCommand(#lnobj)
                 {
                     Info->SetLNObject(b36toi(CommandContents.c_str()));
                 }
 
-                OnCommand("#difficulty")
+                OnCommand(#difficulty)
                 {
                     std::string dName;
                     if (Utility::IsNumeric(CommandContents.c_str()))
@@ -1123,50 +1123,50 @@ namespace NoteLoaderBMS{
                     Diff->Name = dName;
                 }
 
-                OnCommand("#backbmp")
+                OnCommand(#backbmp)
                 {
                     Diff->Data->StageFile = CommandContents;
                 }
 
-                OnCommand("#preview")
+                OnCommand(#preview)
                 {
                     Out->SongPreviewSource = CommandContents;
                 }
 
-                OnCommand("#total")
+                OnCommand(#total)
                 {
                     Info->SetTotal(latof(CommandContents));
                 }
 
-                OnCommand("#playlevel")
+                OnCommand(#playlevel)
                 {
                     Diff->Level = std::stoi(CommandContents.c_str());
                 }
 
-                OnCommand("#rank")
+                OnCommand(#rank)
                 {
                     Info->SetJudgeRank(latof(CommandContents));
                 }
 
-                OnCommand("#maker")
+                OnCommand(#maker)
                 {
                     Diff->Author = CommandContents;
                 }
 
-                OnCommand("#subtitle")
+                OnCommand(#subtitle)
                 {
                     Utility::Trim(CommandContents);
                     Subs.insert(CommandContents);
                 }
 
-                OnCommandSub("#wav")
+                OnCommandSub(#wav)
                 {
                     std::string IndexStr = CommandSubcontents("#WAV", command);
                     int Index = b36toi(IndexStr.c_str());
                     Info->SetSound(Index, CommandContents);
                 }
 
-                OnCommandSub("#bmp")
+                OnCommandSub(#bmp)
                 {
                     std::string IndexStr = CommandSubcontents("#BMP", command);
                     int Index = b36toi(IndexStr.c_str());
@@ -1178,21 +1178,21 @@ namespace NoteLoaderBMS{
                     }
                 }
 
-                OnCommandSub("#bpm")
+                OnCommandSub(#bpm)
                 {
                     std::string IndexStr = CommandSubcontents("#BPM", command);
                     int Index = b36toi(IndexStr.c_str());
                     Info->SetBPM(Index, latof(CommandContents.c_str()));
                 }
 
-                OnCommandSub("#stop")
+                OnCommandSub(#stop)
                 {
                     std::string IndexStr = CommandSubcontents("#STOP", command);
                     int Index = b36toi(IndexStr.c_str());
                     Info->SetStop(Index, latof(CommandContents.c_str()));
                 }
 
-                OnCommandSub("#exbpm")
+                OnCommandSub(#exbpm)
                 {
                     std::string IndexStr = CommandSubcontents("#EXBPM", command);
                     int Index = b36toi(IndexStr.c_str());
