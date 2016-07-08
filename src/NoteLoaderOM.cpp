@@ -112,7 +112,7 @@ private:
 	std::string msg;
 public:
 	OsuManiaLoaderException(const char * what) : exception(), msg(what) {}
-	const char* what() const noexcept { return msg; }
+	const char* what() const noexcept { return msg.c_str(); }
 };
 
 class OsumaniaLoader
