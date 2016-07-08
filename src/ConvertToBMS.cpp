@@ -342,11 +342,13 @@ std::string BMSConverter::ToBMSBase36(int num)
     if (buf[1] == 0) { // Make it at least, and at most, two digits (for BMS)
  -	buf[1] = buf[0];
  -	buf[0] = '0';
+ 	buf[2] = '\0';
  -  }
  -
  -  if (buf[0] == 0) {
     	buf[0] = '0';
  -	buf[1] = '0';
+ 	buf[2] = '\0';
     }
     return buf;
 }
