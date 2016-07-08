@@ -109,7 +109,7 @@ int GetTrackFromPosition(float Position, int Channels)
 class OsuManiaLoaderException : public std::exception
 {
 private:
-	const char * msg;
+	std::string msg;
 public:
 	OsuManiaLoaderException(const char * what) : exception(), msg(what) {}
 	const char* what() const noexcept { return msg; }
