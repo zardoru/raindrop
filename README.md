@@ -45,7 +45,7 @@ Header only libraries require nothing more to be used.
 
 Building on Windows
 =====
-Though you can compile them yourself, a full collection of pre-compiled libs can is available here http://i.mechacrash.com/LrjD9wjO
+Though you can compile them yourself, a full collection of pre-compiled libs can is available [here](https://dl.dropboxusercontent.com/u/3740759/rdlib15062016.zip)
 If you're using Visual Studio, simply extracting these to the 'lib' directory will allow automatic linking.
 The solution will attempt to grab boost from NuGet first time, though it can simple be added manually if desired.
 
