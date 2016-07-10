@@ -296,7 +296,7 @@ public:
         {
 			if (!out.is_open())
 			{
-				auto s = Utility::Format("failed to open file %s", Utility::Narrow(name.wstring()).c_str());
+				auto s = Utility::Format("failed to open file %s", Utility::ToU8(name.wstring()).c_str());
 				throw std::runtime_error(s.c_str());
 			}
             if (BPS.size() == 0)

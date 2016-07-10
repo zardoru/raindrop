@@ -44,7 +44,7 @@ namespace Game
     public:
 
         GameState();
-        std::string GetSkinScriptFile(const char* Filename, const std::string& Skin);
+        std::filesystem::path GetSkinScriptFile(const char* Filename, const std::string& Skin);
         std::shared_ptr<Game::Song> GetSelectedSongShared() const;
         std::string GetFirstFallbackSkin();
         static GameState &GetInstance();

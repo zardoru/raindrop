@@ -39,17 +39,35 @@
 #endif
 
 #if _MSC_VER >= 1900
-#include <filesystem>
-namespace std
-{
-    namespace filesystem = experimental::filesystem;
-}
+	#include <filesystem>
+	namespace std
+	{
+		namespace filesystem = experimental::filesystem;
+	}
 #else
-#include <boost/filesystem.hpp>
-namespace std
-{
-    namespace filesystem = boost::filesystem;
-}
+
+	#ifndef __GNUC__
+		#include <boost/filesystem.hpp>
+		namespace std
+		{
+			namespace filesystem = boost::filesystem;
+		}
+	#else // it's GCC
+		#if __GNU_PREREQ(6,1)
+			// We can alias the filesystem
+			namespace std
+			{
+				namespace filesystem = experimental::filesystem;
+			}
+		#else
+			// okay then, use boost
+			#include <boost/filesystem.hpp>
+			namespace std
+			{
+				namespace filesystem = boost::filesystem;
+			}
+			#endif
+	#endif
 #endif
 
 // STL
@@ -222,8 +240,17 @@ namespace Utility
 	// Convert utf8 string into std::wstring.
     std::wstring Widen(std::string Line);
 
+	// Convert system locale string into std::wstring.
+	std::wstring FromLocaleStr(std::string Line);
+
+	// Convert system locale string into U8.
+	std::string LocaleToU8(std::string line);
+
 	// Convert std::wstring into utf8 std::string.
-    std::string Narrow(std::wstring Line);
+    std::string ToU8(std::wstring Line);
+
+	// Convert std::wstring into system locale std::string
+	std::string ToLocaleStr(std::wstring Line);
 
 	// Convert SHIFT-JIS std::string into UTF-8 std::string.
     std::string SJIStoU8(std::string Line);

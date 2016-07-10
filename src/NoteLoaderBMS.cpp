@@ -937,7 +937,7 @@ namespace NoteLoaderBMS{
         std::shared_ptr<BMSLoader> Info = std::make_shared<BMSLoader>(Out, Diff, IsPMS);
 
         if (!filein.is_open())
-            throw std::runtime_error(("NoteLoaderBMS: Couldn't open file " + Utility::Narrow(filename.wstring()) + "!").c_str());
+            throw std::runtime_error(("NoteLoaderBMS: Couldn't open file " + Utility::ToU8(filename.wstring()) + "!").c_str());
 
         /*
             BMS files are separated always one file, one difficulty, so it'd make sense
@@ -1239,7 +1239,7 @@ namespace NoteLoaderBMS{
 
         // Okay, we didn't find a fitting subtitle, let's try something else.
         // Get actual filename instead of full path.
-        std::string sf = Utility::Narrow(std::filesystem::path(filename).filename().wstring());
+        std::string sf = Utility::ToU8(std::filesystem::path(filename).filename().wstring());
         if (Diff->Name.length() == 0)
         {
             size_t startBracket = sf.find_first_of("[");

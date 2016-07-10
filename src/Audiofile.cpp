@@ -45,8 +45,8 @@ void monoToStereo(T* Buffer, size_t cnt, size_t max_len)
 std::unique_ptr<AudioDataSource> SourceFromExt(std::filesystem::path Filename)
 {
     std::unique_ptr<AudioDataSource> Ret = nullptr;
-    auto ext = Utility::Narrow(Filename.extension().wstring());
-	auto u8fn = Utility::Narrow(Filename.wstring());
+    auto ext = Utility::ToU8(Filename.extension().wstring());
+	auto u8fn = Utility::ToU8(Filename.wstring());
     
     if (u8fn.length() == 0 || ext.length() == 0)
     {
@@ -334,7 +334,7 @@ std::filesystem::path RearrangeFilename(std::filesystem::path Fn)
         return Fn;
     else
     {
-        auto Ext = Utility::Narrow(Fn.extension().wstring());
+        auto Ext = Utility::ToU8(Fn.extension().wstring());
         Utility::ToLower(Ext);
 
         if (Ext == ".wav")

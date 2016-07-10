@@ -262,7 +262,7 @@ bool ScreenGameplay7K::LoadChartData()
 
         if (LoadedSong == nullptr)
         {
-            Log::Printf("Failure to load chart. (Filename: %s)\n", Utility::Narrow(FN.wstring()).c_str());
+            Log::Printf("Failure to load chart. (Filename: %s)\n", Utility::ToU8(FN.wstring()).c_str());
             return false;
         }
 
@@ -357,7 +357,7 @@ bool ScreenGameplay7K::LoadSongAudio()
 
                             if (!audio[sounds.first].Open(path))
                                 throw std::runtime_error(Utility::Format("Unable to load %s.", slicedata.AudioFiles[sounds.first]).c_str());
-                            Log::Printf("BMSON: Load sound %s\n", Utility::Narrow(path.wstring()).c_str());
+                            Log::Printf("BMSON: Load sound %s\n", Utility::ToU8(path.wstring()).c_str());
                         }
 
                         audio[sounds.first].Slice(sounds.second.Start, sounds.second.End);

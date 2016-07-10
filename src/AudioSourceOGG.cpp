@@ -60,7 +60,7 @@ AudioSourceOGG::~AudioSourceOGG()
 bool AudioSourceOGG::Open(std::filesystem::path Filename)
 {
 #if !(defined WIN32) || (defined MINGW)
-    int32_t retv = ov_fopen(Utility::Narrow(Filename.wstring()).c_str(), &mOggFile);
+    int32_t retv = ov_fopen(Utility::ToU8(Filename.wstring()).c_str(), &mOggFile);
 #else
     FILE* fp = _wfopen(Filename.c_str(), L"rb");
     int retv = -1;
@@ -84,7 +84,7 @@ bool AudioSourceOGG::Open(std::filesystem::path Filename)
     else
     {
         mIsValid = false;
-        Log::LogPrintf("Failure loading ogg file: %s (%d)\n", Utility::Narrow(Filename.wstring()).c_str(), retv);
+        Log::LogPrintf("Failure loading ogg file: %s (%d)\n", Utility::ToU8(Filename.wstring()).c_str(), retv);
     }
 
     return mIsValid;

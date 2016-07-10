@@ -326,17 +326,17 @@ void NoteLoaderOJN::LoadObjectsFromFile(std::filesystem::path filename, VSRG::So
     std::fstream filein(filename, std::ios::binary | std::ios::in);
 #endif
     OjnHeader Head;
-	auto ufn = Utility::Narrow(filename.wstring());
+	auto ufn = Utility::ToU8(filename.wstring());
 
 	if (!filein)
 	{
-		auto s = Utility::Format("NoteLoaderOJN: %s could not be opened\n", ufn);
+		auto s = Utility::Format("NoteLoaderOJN: %s could not be opened\n", ufn.c_str());
 		throw std::runtime_error(s);
 	}
 
 	if (!IsValidOJN(filein, &Head))
 	{
-		auto s = Utility::Format("NoteLoaderOJN: %s is not a valid OJN.\n", ufn);
+		auto s = Utility::Format("NoteLoaderOJN: %s is not a valid OJN.\n", ufn.c_str());
 		throw std::runtime_error(s);
 	}
 
@@ -380,7 +380,7 @@ void NoteLoaderOJN::LoadObjectsFromFile(std::filesystem::path filename, VSRG::So
         Diff->Level = Head.level[i];
         Diff->Data->TimingInfo = TInfo;
         Diff->Author = Noter;
-        Diff->Data->StageFile = Utility::Narrow(filename.filename().wstring());
+        Diff->Data->StageFile = Utility::ToU8(filename.filename().wstring());
 
         Info.S = Out;
         filein.seekg(Head.note_offset[i]);

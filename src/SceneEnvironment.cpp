@@ -284,7 +284,7 @@ void SceneEnvironment::InitializeUI()
 void SceneEnvironment::RunUIScript(std::string Filename)
 {
     lua_State* L = Rocket::Core::Lua::Interpreter::GetLuaState();
-	auto s = Utility::Narrow(GameState::GetInstance().GetSkinFile(Filename).wstring());
+	auto s = Utility::ToLocaleStr(GameState::GetInstance().GetSkinFile(Filename).wstring());
     luaL_dofile(L, s.c_str());
 }
 
@@ -366,8 +366,8 @@ bool SceneEnvironment::IsManagedObject(Drawable2D *Obj)
 
 void SceneEnvironment::Initialize(std::filesystem::path Filename, bool RunScript)
 {
-    if (!mInitScript.wstring().length() && Filename.wstring().length())
-        mInitScript = Utility::Narrow(Filename.wstring());
+	if (!mInitScript.wstring().length() && Filename.wstring().length())
+		mInitScript = Filename;
 
     if (RunScript)
         Lua->RunScript(Filename);

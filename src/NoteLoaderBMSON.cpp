@@ -571,7 +571,7 @@ namespace NoteLoaderBMSON
             Chart->Filename = fn;
 			auto fx = Chart->Filename;
             if (Chart->Name.length() == 0)
-                Chart->Name = Utility::Narrow(fx.filename().replace_extension("").wstring());
+                Chart->Name = Utility::ToU8(fx.filename().replace_extension("").wstring());
         }
 
         void AddNotesToDifficulty()

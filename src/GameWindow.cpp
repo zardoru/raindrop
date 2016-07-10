@@ -394,12 +394,19 @@ void ResizeFunc(GLFWwindow* wnd, int32_t width, int32_t height)
 {
     float HeightRatio = (float)height / WindowFrame.GetMatrixSize().y;
 
-    double mwidth = WindowFrame.GetMatrixSize().x * HeightRatio;
-    glViewport(0, 0, mwidth, height);
-    glfwSetWindowSize(wnd, mwidth, height);
+	if (!WindowFrame.IsFullscreen) { // well then, let's enforce some aspect ratio
+		double mwidth = WindowFrame.GetMatrixSize().x * HeightRatio;
+		glViewport(0, 0, mwidth, height);
+		glfwSetWindowSize(wnd, mwidth, height);
 
-    WindowFrame.size.x = mwidth;
-    WindowFrame.size.y = height;
+		WindowFrame.size.x = mwidth;
+		WindowFrame.size.y = height;
+	}
+	else { // just assume the values are correct in fullscreen
+		glViewport(0, 0, width, height);
+		WindowFrame.size.x = width;
+		WindowFrame.size.y = height;
+	}
 
     WindowFrame.SizeRatio = HeightRatio;
 }
@@ -489,7 +496,7 @@ bool GameWindow::SetupWindow()
     glDepthFunc(GL_LEQUAL);
 
     glEnable(GL_ALPHA_TEST);
-	glEnable(GL_POLYGON_SMOOTH);
+	// glEnable(GL_POLYGON_SMOOTH);
     glAlphaFunc(GL_GREATER, 0);
 
     if (VSync)
@@ -541,9 +548,12 @@ bool GameWindow::AutoSetupWindow(Application* _parent)
     // todo: enum modes
     if (!glfwInit())
     {
-        Log::Logf("Failure to initialize glfw.\n");
+        Log::LogPrintf("Failure to initialize glfw.\n");
         return false; // std::exception("glfw failed initialization!"); // don't do shit
-    }
+	}
+	else {
+		Log::LogPrintf("GLFW succesfully initialized.\n");
+	}
 
     AssignSize();
     matrixSize.x = ScreenWidth;
@@ -553,6 +563,13 @@ bool GameWindow::AutoSetupWindow(Application* _parent)
 
     doFlush = Configuration::GetConfigf("VideoFlush") != 0;
     VSync = Configuration::GetConfigf("VSync") != 0;
+
+	if (IsFullscreen) {
+		if (!glfwGetPrimaryMonitor()) {
+			Log::LogPrintf("Can't get primary window (Fullscreen)\n");
+			IsFullscreen = false;
+		}
+	}
 
     if (!(wnd = glfwCreateWindow(size.x, size.y, RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, IsFullscreen ? glfwGetPrimaryMonitor() : NULL, NULL)))
     {
@@ -647,10 +664,17 @@ void GameWindow::SwapBuffers()
         }
         else
         {
-            AssignSize();
 
-            glfwDestroyWindow(wnd);
-            wnd = glfwCreateWindow(size.x, size.y, RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, glfwGetPrimaryMonitor(), NULL);
+			if (glfwGetPrimaryMonitor()) {
+				AssignSize();
+				glfwDestroyWindow(wnd);
+				wnd = glfwCreateWindow(size.x, size.y, RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, glfwGetPrimaryMonitor(), NULL);
+			} 
+			else {
+				Log::LogPrintf("Can't switch to fullscreen. No primary monitor detected?\n");
+				FullscreenSwitchbackPending = false;
+				return;
+			}
         }
 
         AttribLocs.clear();

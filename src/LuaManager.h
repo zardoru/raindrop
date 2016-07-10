@@ -27,7 +27,7 @@ public:
     bool RunString(std::string sGString);
 
     // Do a "require" call with Filename as the argument. This leaves a value on the stack!
-    bool Require(std::string Filename);
+    bool Require(std::filesystem::path path);
 
     // Global variables
 

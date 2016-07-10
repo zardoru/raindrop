@@ -147,7 +147,7 @@ void Sprite::BindTextureVBO()
 std::string Sprite::GetImageFilename() const
 {
     if (mImage)
-        return Utility::Narrow(mImage->fname.wstring());
+        return Utility::ToU8(mImage->fname.wstring());
     else
         return std::string();
 }

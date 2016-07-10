@@ -141,7 +141,7 @@ int SongDatabase::InsertFilename(std::filesystem::path Fn)
     int ret;
     int idOut;
     int lmt;
-	std::string u8p = Utility::Narrow(std::filesystem::absolute(Fn).wstring());
+	std::string u8p = Utility::ToU8(std::filesystem::absolute(Fn).wstring());
 
     SC(sqlite3_bind_text(st_FilenameQuery, 1, u8p.c_str(), u8p.length(), SQLITE_STATIC));
 
@@ -321,7 +321,7 @@ std::filesystem::path SongDatabase::GetDifficultyFilename(int ID)
 bool SongDatabase::CacheNeedsRenewal(std::filesystem::path Dir)
 {
 	// must match what we put at InsertFilename time, so turn into absolute path on both places!
-	std::string u8p = Utility::Narrow(std::filesystem::absolute(Dir).wstring());
+	std::string u8p = Utility::ToU8(std::filesystem::absolute(Dir).wstring());
     int CurLMT = Utility::GetLMT(Dir);
     bool NeedsRenewal;
     int res, ret;
@@ -459,7 +459,7 @@ int SongDatabase::GetSongIDForFile(std::filesystem::path File, VSRG::Song* In)
 {
     int ret;
     int Out = -1;
-	std::string u8path = Utility::Narrow(std::filesystem::absolute(File).wstring());
+	std::string u8path = Utility::ToU8(std::filesystem::absolute(File).wstring());
     SC(sqlite3_bind_text(st_GetSIDFromFilename, 1, u8path.c_str(), u8path.length(), SQLITE_STATIC));
 
     int r = sqlite3_step(st_GetSIDFromFilename);

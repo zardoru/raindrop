@@ -81,7 +81,7 @@ TruetypeFont::TruetypeFont(std::filesystem::path Filename, float Scale)
         WindowFrame.AddTTF(this);
     }
     else
-        Log::Printf("Failure loading TTF file %s.\n", Utility::Narrow(Filename.wstring()).c_str());
+        Log::Printf("Failure loading TTF file %s.\n", Utility::ToU8(Filename.wstring()).c_str());
 }
 
 TruetypeFont::~TruetypeFont()

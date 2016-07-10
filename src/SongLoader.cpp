@@ -176,7 +176,7 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(std::filesystem::path Filenam
 
     Sng->SongDirectory = Prefix.string();
 	auto fn = Prefix / Filename;
-	auto fnu8 = Utility::Narrow(fn.wstring());
+	auto fnu8 = Utility::ToU8(fn.wstring());
 
     for (int i = 0; i < sizeof(LoadersVSRG) / sizeof(loaderVSRGEntry_t); i++)
     {

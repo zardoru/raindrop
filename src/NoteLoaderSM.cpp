@@ -668,7 +668,7 @@ void NoteLoaderSM::LoadObjectsFromFile(std::filesystem::path filename, Song *Out
     Diff->BPMType = VSRG::Difficulty::BT_BEAT;
 
     if (!filein.is_open())
-        throw std::runtime_error(Utility::Format("couldn't open %s for reading").c_str());
+        throw std::runtime_error(Utility::Format("couldn't open %s for reading", filename.string().c_str()).c_str());
 
     std::string Banner;
 

@@ -55,19 +55,14 @@ void LuaManager::GetGlobal(std::string VarName)
 
 bool LuaManager::RunScript(std::filesystem::path file)
 {
-    return RunScript(Utility::Narrow(file.wstring()));
-}
-
-bool LuaManager::RunScript(std::string Filename)
-{
     int errload = 0, errcall = 0;
 
-    if (!Filename.length())
+    if (!std::filesystem::exists(file))
         return false;
 
-    Log::LogPrintf("LuaManager: Running script %s.\n", Filename.c_str());
+    Log::LogPrintf("LuaManager: Running script %s.\n", Utility::ToU8(file.wstring()).c_str());
 
-    if ((errload = luaL_loadfile(State, Filename.c_str())) || (errcall = lua_pcall(State, 0, LUA_MULTRET, 0)))
+    if ((errload = luaL_loadfile(State, Utility::ToLocaleStr(file).c_str())) || (errcall = lua_pcall(State, 0, LUA_MULTRET, 0)))
     {
         const char* reason = lua_tostring(State, -1);
 
@@ -95,10 +90,10 @@ bool LuaManager::RunString(std::string string)
     return true;
 }
 
-bool LuaManager::Require(std::string Filename)
+bool LuaManager::Require(std::filesystem::path Filename)
 {
     lua_getglobal(State, "require");
-    lua_pushstring(State, Filename.c_str());
+    lua_pushstring(State, Utility::ToLocaleStr(Filename.wstring()).c_str());
     if (lua_pcall(State, 1, 1, 0))
     {
         const char* reason = lua_tostring(State, -1);

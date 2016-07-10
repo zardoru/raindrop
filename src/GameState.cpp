@@ -61,17 +61,14 @@ GameState::GameState():
     }
 }
 
-std::string GameState::GetSkinScriptFile(const char* Filename, const std::string& skin)
+std::filesystem::path GameState::GetSkinScriptFile(const char* Filename, const std::string& skin)
 {
     std::string Fn = Filename;
 
     if (Fn.find(".lua") == std::string::npos)
         Fn += ".lua";
 
-	auto s = Utility::Narrow(GetSkinFile(Fn, skin).wstring());
-	s = s.substr(0, s.find_last_of('.'));
-    // Since dots are interpreted as "look into this directory", we want to eliminate the extra .lua for require purposes.
-    return s;
+    return GetSkinFile(Fn, skin).replace_extension("");
 }
 
 std::shared_ptr<Game::Song> GameState::GetSelectedSongShared() const

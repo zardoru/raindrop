@@ -1,7 +1,6 @@
 #include "pch.h"
 
 #include "Logging.h"
-#include <experimental/filesystem>
 
 int b36toi(const char *txt)
 {
@@ -15,6 +14,8 @@ int b16toi(const char *txt)
 
 namespace Utility
 {
+    const short MAX_STRING_SIZE = 2048;
+
     void DebugBreak()
     {
 #ifndef NDEBUG
@@ -45,17 +46,43 @@ namespace Utility
 
     std::wstring Widen(std::string Line)
     {
-		std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
+		std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
         return converter.from_bytes(Line);
     }
 
-    std::string Narrow(std::wstring Line)
+    std::string ToU8(std::wstring Line)
     {
-		std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
+		std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
         return converter.to_bytes(Line);
     }
 
-    const short MAX_STRING_SIZE = 2048;
+	std::string ToLocaleStr(std::wstring Line) {
+#ifdef WIN32
+        char mbs[MAX_STRING_SIZE];
+        size_t len = WideCharToMultiByte(0, 0, Line.c_str(), Line.length(), mbs, MAX_STRING_SIZE, NULL, 0);
+        mbs[len] = 0;
+        return std::string(mbs);
+#else
+		return ToU8(Line);
+#endif
+	}
+
+	std::wstring FromLocaleStr(std::string s)
+	{
+#ifdef WIN32
+		wchar_t wcs[MAX_STRING_SIZE];
+		size_t len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), s.length(), wcs, MAX_STRING_SIZE);
+		wcs[len] = 0;
+#else
+		return Widen(s);
+#endif
+	}
+
+	std::string LocaleToU8(std::string line)
+	{
+		return ToU8(FromLocaleStr(line));
+	}
+
 
     std::string SJIStoU8(std::string Line)
     {
@@ -188,7 +215,7 @@ namespace Utility
     int GetLMT(std::filesystem::path Path)
     {
 		if (std::filesystem::exists(Path)) {
-			auto a = std::experimental::filesystem::last_write_time(Path.string());
+			auto a = std::filesystem::last_write_time(Path);
 			return decltype(a)::clock::to_time_t(a);
 		}
 		else return -1;

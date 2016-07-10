@@ -184,7 +184,7 @@ void Application::Init()
 
 	Log::Printf(RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT " start.\n");
 	// Log::Printf("Current Time: %s.\n", t1);
-	Log::Printf("Working directory: %s\n", Utility::Narrow(std::filesystem::current_path().wstring()).c_str());
+	Log::Printf("Working directory: %s\n", Utility::ToU8(std::filesystem::current_path().wstring()).c_str());
 
     GameState::GetInstance().Initialize();
     Log::Printf("Initializing... \n");
@@ -328,7 +328,7 @@ void Application::Run()
             IPC::Message Msg;
             Msg.MessageKind = IPC::Message::MSG_STARTFROMMEASURE;
             Msg.Param = Measure;
-            strncpy(Msg.Path, Utility::Narrow(InFile.wstring()).c_str(), 256);
+            strncpy(Msg.Path, Utility::ToU8(InFile.wstring()).c_str(), 256);
 
             IPC::SendMessageToQueue(&Msg);
             RunLoop = false;
@@ -397,7 +397,7 @@ void Application::Run()
     else if (RunMode == MODE_CUSTOMSCREEN)
     {
         Log::Printf("Initializing custom, ad-hoc screen...\n");
-		auto s = Utility::Narrow(InFile.wstring());
+		auto s = Utility::ToU8(InFile.wstring());
         ScreenCustom *scr = new ScreenCustom(GameState::GetInstance().GetSkinFile(s));
         Game = scr;
     }

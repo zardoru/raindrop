@@ -27,7 +27,7 @@ void BitmapFont::LoadFontImage(std::filesystem::path Location, Vec2 _CharSize, V
 
 void BitmapFont::LoadSkinFontImage(std::filesystem::path Location, Vec2 _CharSize, Vec2 _CellSize, Vec2 _RenderSize, char FontStart)
 {
-    LoadFontImage(GameState::GetInstance().GetSkinFile(Utility::Narrow(Location.wstring())), 
+    LoadFontImage(GameState::GetInstance().GetSkinFile(Utility::ToU8(Location.wstring())), 
 		_CharSize, _CellSize, _RenderSize, FontStart);
 }
 
