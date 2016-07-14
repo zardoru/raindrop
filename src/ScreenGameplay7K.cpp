@@ -181,7 +181,7 @@ bool ScreenGameplay7K::HandleInput(int32_t key, KeyEventType code, bool isMouseI
 
 void ScreenGameplay7K::RunAutoEvents()
 {
-    if (!stage_failed)
+    if (!stage_failed && Active)
     {
         // Play BGM events.
         while (BGMEvents.size() && BGMEvents.front().Time <= SongTime)
