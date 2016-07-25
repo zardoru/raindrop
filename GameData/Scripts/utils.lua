@@ -71,3 +71,10 @@ function AutoadjustBackground(params)
 	Background.X = x + w / 2 - modWidth / 2
 	Background.Y = y + h / 2 - modHeight / 2
 end
+
+function sum(l)
+	local rt = 0
+	for k,v in ipairs(l) do
+		rt = rt + v
+	end
+end

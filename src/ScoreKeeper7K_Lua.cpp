@@ -33,6 +33,7 @@ void SetupScorekeeper7KLuaInterface(void* state)
 		.addFunction("getMaxNotes", &ScoreKeeper7K::getMaxNotes)
 		.addFunction("isStageFailed", &ScoreKeeper7K::isStageFailed)
         .addFunction("hasDelayedFailure", &ScoreKeeper7K::hasDelayedFailure)
+		.addFunction("getLifebarAmount", &ScoreKeeper7K::getLifebarAmount)
 		.endClass();
 
 #define cns(x) lua_pushinteger(L,x); lua_setglobal(L, #x);

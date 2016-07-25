@@ -3,10 +3,16 @@ game_require "utils"
 TextureAtlas = {}
 TextureAtlas.__index = TextureAtlas
 
-function TextureAtlas:SetObjectCrop(Object, Sprite)
+function TextureAtlas:SetObjectCrop(Object, Sprite, resize)
 	local Tab = self.Sprites[Sprite]
 	if Tab ~= nil then
 		Object:SetCropByPixels(Tab.x, Tab.x + Tab.w, Tab.y, Tab.y + Tab.h)
+		if resize then
+			Object.Width = Tab.w
+			Object.Height = Tab.h
+		end
+	else
+		print ("TextureAtlas: Picture not found: ", Sprite)
 	end
 end
 
@@ -45,4 +51,8 @@ function TextureAtlas:new(filename)
 	setmetatable(NewAtlas, TextureAtlas)
 	NewAtlas:AssignFrames(filename)
 	return NewAtlas
+end
+
+function TextureAtlas:skin_new(filename)
+	return self:new(GetSkinFile(filename))
 end

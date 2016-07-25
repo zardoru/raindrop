@@ -5,7 +5,7 @@
 
 bool Transformation::IsMatrixDirty()
 {
-	return mDirtyMatrix || (Chain && Chain->IsMatrixDirty());
+	return mDirtyMatrix || Chain;
 }
 
 Transformation::Transformation()

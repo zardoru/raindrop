@@ -87,7 +87,7 @@ namespace NoteLoaderBMSON
 
         SliceContainer Slices;
 
-        std::string GetSubartist(const char string[6])
+        std::string GetSubartist(const char *string)
         {
             std::regex sreg(Utility::Format("\\s*%s\\s*:\\s*(.*?)\\s*$", string));
             for (const auto& s : root["info"]["subartists"])

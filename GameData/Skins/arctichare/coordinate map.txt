@@ -1,0 +1,63 @@
+Arctic Hare skin by TomoAlien
+And you... if you're ready to program this!
+
+Oh... and with help from Dolphin, Zardoru, JerwuQu and other people at Discord BMS channel!
+
+ 880,  40 - Score 1P
+2540,  40 - Score 2P
+
+1340,  40 - Title Ticker [1160x120]
+
+ 880, 200 - BGA Display [2080x1170]
+
+ 970,1434 - Gauge On 1P
+ 970,1554 - Gauge On 2P
+
+1080,1430 - Gauge 1P [1600x80]
+1080,1550 - Gauge 2P [1600x80]
+
+2710,1434 - Gauge Percentage 1P
+2710,1554 - Gauge Percentage 2P
+
+ 920,1720 - Speed Mod 1P
+2570,1720 - Speed Mod 2P
+
+1814,1800 - BPM
+
+  30,2060 - Stats 1P: Perfect
+ 250,2060 - Stats 1P: Great
+ 470,2060 - Stats 1P: Good
+ 690,2060 - Stats 1P: Bad
+ 910,2060 - Stats 1P: Miss
+1130,2060 - Stats 1P: Max Combo
+
+2550,2060 - Stats 2P: Perfect
+2770,2060 - Stats 2P: Great
+2990,2060 - Stats 2P: Good
+3210,2060 - Stats 2P: Bad
+3430,2060 - Stats 2P: Miss
+3650,2060 - Stats 2P: Max Combo
+
+1830,2060 - Time Left [Minutes]
+1930,2060 - Time Left [Seconds]
+
+
+
+
+Half-Width Lanes...
+Notes are 100px wide.
+However, the next lane is NOT offset as previous+100px, but previous+50px.
+Scratch lane is its own thing. 
+
+Neons should just be put on the left and right side with additive blending.
+
+Dolphin wanted different color lightups for P1 and P2.
+
+Remember to finish off the lanes with lane-separator.png
+
+The Volume Meter lights are 3 pixels apart, which means that the offset is previous+24px.
+The first volume light strip overlay is placed at 27,28. This applies to every single UV block.
+
+Explosions...
+
+Well, not sure how they should exactly look, but something along the lines of the main explosions getting bigger with a randomized rotation.

@@ -24,7 +24,7 @@ void Log::Printf(std::string Format, ...)
     va_start(vl, Format);
     vsnprintf(Buffer, 2048, Format.c_str(), vl);
     va_end(vl);
-    wcout << Buffer;
+	wprintf(L"%hs", Buffer);
 }
 
 void Log::Logf(std::string Format, ...)
@@ -45,7 +45,7 @@ void Log::LogPrintf(std::string str, ...)
     va_start(vl, str);
     vsnprintf(Buffer, 2048, str.c_str(), vl);
     va_end(vl);
-    wcout << Buffer;
+	wprintf(L"%hs", Buffer);
     logfile << Buffer;
 	logfile.flush();
 }
