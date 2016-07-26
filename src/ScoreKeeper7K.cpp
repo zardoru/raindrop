@@ -397,9 +397,9 @@ bool ScoreKeeper7K::isStageFailed(int lifebar_amount_type)
     switch (lifebar_amount_type)
     {
     case LT_GROOVE:
-        return total_notes == max_notes && lifebar_groove < 0.70;
+        return total_notes == max_notes && lifebar_groove < 0.80;
     case LT_EASY:
-        return total_notes == max_notes && lifebar_easy < 0.70;
+        return total_notes == max_notes && lifebar_easy < 0.80;
     case LT_SURVIVAL:
         return lifebar_survival <= 0.0;
     case LT_EXHARD:
