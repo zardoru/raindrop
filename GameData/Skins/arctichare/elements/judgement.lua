@@ -127,8 +127,8 @@ local Judgment = {
         self.Transform.Y = 1560 * SkinScale / 2
 
         if self.TimeScaling > 0 then
-            local ys = lerp(self.TimeScaling, self.ScaleFeedbackTime, 0, 0, 1.0)
-            local xs = lerp(self.TimeScaling, self.ScaleFeedbackTime, 0, 1.8, 1.0)
+            local ys = lerp(self.TimeScaling, self.ScaleFeedbackTime, 0, 1.25, 1.0)
+            local xs = lerp(self.TimeScaling, self.ScaleFeedbackTime, 0, 1.25, 1.0)
             self.Transform.ScaleX = xs
             self.Transform.ScaleY = ys
         else
@@ -153,7 +153,7 @@ local Judgment = {
             local combo_w = #combo_str * digit_w * SkinScale
 
             
-            local judge_space = 5
+            local judge_space = -15
             local digit_offset = self.Judgment.Width / 2 * SkinScale + judge_space
             -- combo digits plus judge center
             local dpj = (combo_w + judge_space + self.Judgment.Width * SkinScale) / 2
