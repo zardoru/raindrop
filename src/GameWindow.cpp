@@ -103,10 +103,13 @@ const char* fragShader = "#version 120\n"
 std::map<int32_t, KeyType> BindingsManager::ScanFunction;
 std::map<int32_t, int32_t> BindingsManager::ScanFunction7K;
 
-const int NUM_OF_USED_CONTROLLER_BUTTONS = 9;
+const int NUM_OF_USED_CONTROLLER_BUTTONS = 32;
 
 int controllerToUse;
 bool JoystickEnabled;
+
+// az: wait - this is kind of a bad idea (limited size array)
+// TODO: there's ought to be a better way to do this
 
 //True is pressed, false is released
 bool controllerButtonState[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = { 0 };
@@ -286,6 +289,20 @@ void BindingsManager::Initialize()
                 SpecialKeys.push_back(thisButton);
             }
         }
+
+		int numOfAxis;
+		glfwGetJoystickAxes(controllerToUse, &numOfAxis);
+		if (numOfAxis)
+		{
+			for (int i = numOfButtons + 1; i <= numOfButtons + numOfAxis; i++) {
+				char name[32];
+				sprintf(name, "Controller%d", i);
+				sk_s thisAxis;
+				strcpy(thisAxis.KeyString, name);
+				thisAxis.boundkey = 1000 + i;
+				SpecialKeys.push_back(thisAxis);
+			}
+		}
     }
 
     JoystickEnabled = (glfwJoystickPresent(GLFW_JOYSTICK_1) == GL_TRUE);
@@ -628,9 +645,10 @@ void GameWindow::SwapBuffers()
     glfwSwapBuffers(wnd);
     glfwPollEvents();
 
-    int buttonArraySize = 0;
     if (JoystickEnabled)
     {
+		// buttons
+		int buttonArraySize = 0;
         const unsigned char *buttonArray = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &buttonArraySize);
         if (buttonArraySize > 0)
         {
@@ -652,6 +670,35 @@ void GameWindow::SwapBuffers()
                 }
             }
         }
+
+		// axis
+		int axisArraySize;
+		float deadzone = 0.25;
+		const float *axisArray = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axisArraySize);
+		if (axisArraySize) {
+			for (auto i = 0; i < axisArraySize; i++) {
+				for (auto j = 0; j < SpecialKeys.size(); j++) {
+					// as before, specialkeys vector value
+					int axis = SpecialKeys[j].boundkey - 1000;
+
+					if ((i + buttonArraySize + 1) != axis)
+						continue;
+
+					if (abs(axisArray[i]) > deadzone) {
+						if (controllerButtonState[axis] != true) {
+							controllerButtonState[axis] = true;
+                            WindowFrame.Parent->HandleInput(SpecialKeys[j].boundkey, KE_PRESS, false);
+						}
+					}
+					else {
+						if (controllerButtonState[axis] != false) {
+							controllerButtonState[axis] = false;
+                            WindowFrame.Parent->HandleInput(SpecialKeys[j].boundkey, KE_RELEASE, false);
+						}
+					}
+				}
+			}
+		}
     }
 
     /* Fullscreen switching */
