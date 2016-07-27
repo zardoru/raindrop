@@ -184,7 +184,7 @@ void Application::Init()
 	Log::Printf("Working directory: %s\n", Utility::ToU8(std::filesystem::current_path().wstring()).c_str());
 
 #if (defined WIN32)
-	Log::Printf("Current codepage: %ud\n", GetACP());
+	Log::Printf("Current codepage: %u\n", GetACP());
 #endif
 
     GameState::GetInstance().Initialize();
