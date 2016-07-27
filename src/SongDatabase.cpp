@@ -471,15 +471,20 @@ int SongDatabase::GetSongIDForFile(std::filesystem::path File, VSRG::Song* In)
     else
     {
         assert(In); // Okay, this is a query isn't it? Why doesn't the song exist?
+
+		auto u8sfn = Utility::ToU8(In->SongFilename.wstring());
+		auto u8bfn = Utility::ToU8(In->BackgroundFilename.wstring());
+		auto u8pfn = Utility::ToU8(In->SongPreviewSource.wstring());
+		
         // Okay then, insert the song.
         // So now the latest entry is what we're going to insert difficulties and files into.
         SC(sqlite3_bind_text(st_SngInsertQuery, 1, In->SongName.c_str(), In->SongName.length(), SQLITE_STATIC));
         SC(sqlite3_bind_text(st_SngInsertQuery, 2, In->SongAuthor.c_str(), In->SongAuthor.length(), SQLITE_STATIC));
         SC(sqlite3_bind_text(st_SngInsertQuery, 3, In->Subtitle.c_str(), In->Subtitle.length(), SQLITE_STATIC));
-        SC(sqlite3_bind_text(st_SngInsertQuery, 4, In->SongFilename.c_str(), In->SongFilename.length(), SQLITE_STATIC));
-        SC(sqlite3_bind_text(st_SngInsertQuery, 5, In->BackgroundFilename.c_str(), In->BackgroundFilename.length(), SQLITE_STATIC));
+        SC(sqlite3_bind_text(st_SngInsertQuery, 4, u8sfn.c_str(), u8sfn.length(), SQLITE_STATIC));
+        SC(sqlite3_bind_text(st_SngInsertQuery, 5, u8bfn.c_str(), u8bfn.length(), SQLITE_STATIC));
         SC(sqlite3_bind_int(st_SngInsertQuery, 6, In->Mode));
-        SC(sqlite3_bind_text(st_SngInsertQuery, 7, In->SongPreviewSource.c_str(), In->SongPreviewSource.length(), SQLITE_STATIC));
+        SC(sqlite3_bind_text(st_SngInsertQuery, 7, u8pfn.c_str(), u8pfn.length(), SQLITE_STATIC));
         SC(sqlite3_bind_double(st_SngInsertQuery, 8, In->PreviewTime));
 
         SCS(sqlite3_step(st_SngInsertQuery));

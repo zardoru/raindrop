@@ -135,7 +135,7 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(const std::filesystem::path& 
     {
         if (filename.extension() == LoadersVSRG[i].Ext)
         {
-            Log::LogPrintf("Load %s from disk...", filename.string().c_str());
+            Log::LogPrintf("Load %s from disk...", Utility::ToU8(filename.wstring()).c_str());
             try
             {
                 LoadersVSRG[i].LoadFunc(filename, Sng);
@@ -182,7 +182,7 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(std::filesystem::path Filenam
     {
         if (Ext == LoadersVSRG[i].Ext)
         {
-            Log::LogPrintf("Load %s from disk...", fnu8.c_str());
+            Log::LogPrintf("SongLoader: Load %s from disk...", fn.string().c_str());
             try
             {
                 LoadersVSRG[i].LoadFunc(fn, Sng);
@@ -190,7 +190,7 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(std::filesystem::path Filenam
             }
             catch (std::exception &e)
             {
-                Log::LogPrintf("Failure loading: %s\n", e.what());
+                Log::LogPrintf("SongLoader: Failure loading. Reason: %s \n", e.what());
             }
             break;
         }

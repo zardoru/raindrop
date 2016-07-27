@@ -152,17 +152,20 @@ namespace Engine
             Rocket::Core::Vector2i& texture_dimensions,
             const Rocket::Core::String& source)
         {
-            ImageData Data = ImageLoader::GetDataForImage(GameState::GetInstance().GetSkinFile(source.CString()));
+			auto file = GameState::GetInstance().GetSkinFile(source.CString());
+            ImageData Data = ImageLoader::GetDataForImage(file);
             Data.Filename = GameState::GetInstance().GetSkinFile(source.CString());
             texture_dimensions.x = Data.Width;
             texture_dimensions.y = Data.Height;
 
-            if (!Data.Data) return false;
+            if (!Data.Data.size()) return false;
 
-            GenerateTexture(texture_handle, (Rocket::Core::byte*)Data.Data, Rocket::Core::Vector2i(Data.Width, Data.Height));
-            Image* Ret = (Image*)texture_handle;
-            Ret->fname = Data.Filename;
+			Image* Ret = new Image;
+			texture_handle = (Rocket::Core::TextureHandle)(Ret);
+            Ret->fname = file;
+			Ret->SetTextureData(Data);
 
+			ImageLoader::RegisterTexture(Ret);
             return true;
         }
 
@@ -170,21 +173,33 @@ namespace Engine
             const Rocket::Core::byte* source,
             const Rocket::Core::Vector2i& source_dimensions)
         {
-            Image* Ret = new Image;
+			Image* Ret;
+            Ret = new Image;
+
+			auto size = source_dimensions.x * source_dimensions.y;
+			auto ptr = (uint32_t*)source;
             ImageData Data;
-            Data.Data = (unsigned char*)source;
+            Data.Data.assign(ptr, (ptr + size));
             Data.Width = source_dimensions.x;
             Data.Height = source_dimensions.y;
-            Ret->SetTextureData(&Data);
+            Ret->SetTextureData(Data);
+
+			m_TexCache[Ret] = Data;
 
             texture_handle = (Rocket::Core::TextureHandle) Ret;
-            return Data.Data != NULL;
+			return true;
         }
 
         void RenderInterface::ReleaseTexture(Rocket::Core::TextureHandle texture_handle)
         {
             delete (Image*)texture_handle;
         }
+
+		void RenderInterface::RegenerateTextures() {
+			for (auto &tex : m_TexCache) {
+				tex.first->SetTextureData(tex.second, true);
+			}
+		}
 
         Rocket::Core::FileHandle FileSystemInterface::Open(const Rocket::Core::String& path)
         {
@@ -217,6 +232,13 @@ namespace Engine
         {
             return ftell((FILE*)file);
         }
+
+		void ReloadTextures()
+		{
+			auto ri = Rocket::Core::GetRenderInterface();
+			auto rri = dynamic_cast<Engine::RocketInterface::RenderInterface*>(ri);
+			rri->RegenerateTextures();
+		}
     }
 
     void SetupRocket()

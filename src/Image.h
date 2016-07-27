@@ -4,12 +4,11 @@ struct ImageData
 {
 	std::filesystem::path Filename;
     int Width, Height;
-    void *Data;
+    std::vector<uint32_t> Data;
 
     ImageData()
     {
         Width = 0; Height = 0;
-        Data = nullptr;
     }
 };
 
@@ -28,7 +27,7 @@ public:
 
     void Bind();
     void Assign(std::filesystem::path Filename, bool Regenerate = false);
-    void SetTextureData(ImageData *Data, bool Reassign = false);
+    void SetTextureData(ImageData &Data, bool Reassign = false);
 
     // Utilitarian
     static void ForceRebind();

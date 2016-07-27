@@ -8,14 +8,14 @@ private:
 
     struct UploadData
     {
-        void *Data;
+        std::vector<uint32_t> Data;
         int Width, Height;
     };
 
     static std::map<std::filesystem::path, Image*> Textures;
     static std::map<std::filesystem::path, UploadData> PendingUploads;
 
-    static Image*		InsertImage(std::filesystem::path Name, ImageData *imgData);
+    static Image*		InsertImage(std::filesystem::path Name, ImageData &imgData);
 public:
 
     ImageLoader();
@@ -32,6 +32,8 @@ public:
     static void   UpdateTextures();
     static ImageData GetDataForImage(std::filesystem::path filename);
     static ImageData GetDataForImageFromMemory(const unsigned char *const buffer, size_t len);
+	static void	  ReloadAll();
+	static void RegisterTexture(Image* tex);
 
     /* On-the-spot, main thread loading or reloading. */
     static Image* Load(std::filesystem::path filename);

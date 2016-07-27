@@ -285,7 +285,8 @@ bool ScreenGameplay7K::LoadSongAudio()
     {
         Music = std::make_shared<AudioStream>();
         Music->SetPitch(Speed);
-        if (MySong->SongFilename.length() && Music->Open(MySong->SongDirectory / MySong->SongFilename))
+        if (std::filesystem::exists(MySong->SongFilename)
+			&& Music->Open(MySong->SongDirectory / MySong->SongFilename))
         {
             Log::Printf("Stream for %s succesfully opened.\n", MySong->SongFilename.c_str());
         }
@@ -314,7 +315,7 @@ bool ScreenGameplay7K::LoadSongAudio()
     }
 
     // Load samples.
-    if (strstr(MySong->SongFilename.c_str(), ".ojm"))
+    if (MySong->SongFilename.extension() == ".ojm")
     {
         Log::Printf("Loading OJM.\n");
         OJMAudio = std::make_shared<AudioSourceOJM>(this);

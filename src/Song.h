@@ -126,10 +126,10 @@ namespace Game
         std::filesystem::path SongDirectory;
 
         /* Relative Paths */
-        std::string SongFilename, BackgroundFilename;
+        std::filesystem::path SongFilename, BackgroundFilename;
 
         /* Song Audio for Preview*/
-        std::string SongPreviewSource;
+        std::filesystem::path SongPreviewSource;
 
         /* Time to start preview */
         float PreviewTime;

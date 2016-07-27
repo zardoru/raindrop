@@ -922,7 +922,7 @@ namespace NoteLoaderBMS{
 
 	void LoadObjectsFromFile(std::filesystem::path filename, Song *Out)
 	{
-        std::ifstream filein(filename.string());
+		CreateIfstream(filein, filename);
 
         std::shared_ptr<Difficulty> Diff(new Difficulty());
         std::shared_ptr<DifficultyLoadInfo> LInfo(new DifficultyLoadInfo());
@@ -1058,7 +1058,7 @@ namespace NoteLoaderBMS{
                 {
                     Out->SongFilename = CommandContents;
                     Diff->IsVirtual = false;
-                    if (!Out->SongPreviewSource.length()) // it's unset
+                    if (!Out->SongPreviewSource.string().length()) // it's unset
                         Out->SongPreviewSource = CommandContents;
                 }
 

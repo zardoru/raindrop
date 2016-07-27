@@ -655,7 +655,7 @@ namespace NoteLoaderBMSON
 
     void LoadObjectsFromFile(std::filesystem::path filename, VSRG::Song* Out)
     {
-        std::ifstream filein(filename.string());
+		CreateIfstream(filein, filename);
 
         BMSONLoader bmson(filein, Out);
         bmson.DoLoad();

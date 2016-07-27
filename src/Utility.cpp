@@ -59,7 +59,7 @@ namespace Utility
 	std::string ToLocaleStr(std::wstring Line) {
 #ifdef WIN32
         char mbs[MAX_STRING_SIZE];
-        size_t len = WideCharToMultiByte(0, 0, Line.c_str(), Line.length(), mbs, MAX_STRING_SIZE, NULL, 0);
+        size_t len = WideCharToMultiByte(0, 0, Line.c_str(), -1, mbs, MAX_STRING_SIZE, NULL, 0);
         mbs[len] = 0;
         return std::string(mbs);
 #else

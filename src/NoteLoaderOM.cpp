@@ -792,7 +792,8 @@ public:
 
 	void LoadFromFile(std::filesystem::path path)
     {
-		std::ifstream filein(path.string());
+		CreateIfstream(filein, path);
+
 		std::regex versionfmt("osu file format v(\\d+)");
 
 		if (!filein.is_open())

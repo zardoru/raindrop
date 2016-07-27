@@ -320,11 +320,8 @@ const char *LoadOJNCover(std::filesystem::path filename, size_t &read)
 
 void NoteLoaderOJN::LoadObjectsFromFile(std::filesystem::path filename, VSRG::Song *Out)
 {
-#if (!defined _WIN32)
-    std::fstream filein(filename.c_str());
-#else
-    std::fstream filein(filename, std::ios::binary | std::ios::in);
-#endif
+	CreateBinIfstream(filein, filename);
+
     OjnHeader Head;
 	auto ufn = Utility::ToU8(filename.wstring());
 

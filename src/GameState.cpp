@@ -208,7 +208,7 @@ Image* GameState::GetSongBG()
 	{
 		auto toLoad = SelectedSong->SongDirectory / SelectedSong->BackgroundFilename;
 
-		if (SelectedSong->BackgroundFilename.length() && std::filesystem::exists(toLoad))
+		if (std::filesystem::exists(toLoad))
 		{
 			SongBG->Assign(toLoad, true);
 			return SongBG;
@@ -246,7 +246,7 @@ Image* GameState::GetSongStage()
 					size_t read;
 					const unsigned char* buf = reinterpret_cast<const unsigned char*>(LoadOJNCover(toLoad, read));
 					ImageData data = ImageLoader::GetDataForImageFromMemory(buf, read);
-					StageImage->SetTextureData(&data, true);
+					StageImage->SetTextureData(data, true);
 					delete[] buf;
 
 					return StageImage;

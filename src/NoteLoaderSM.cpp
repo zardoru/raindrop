@@ -656,7 +656,7 @@ void WarpifyTiming(Difficulty* Diff)
 
 void NoteLoaderSM::LoadObjectsFromFile(std::filesystem::path filename, Song *Out)
 {
-    std::ifstream filein(filename.string());
+	CreateIfstream(filein, filename);
 
     TimingData BPMData;
     TimingData StopsData;

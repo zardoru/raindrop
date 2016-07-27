@@ -15,7 +15,7 @@ std::filesystem::path GetSongBackground(Game::Song &Song)
 {
     auto SngDir = Song.SongDirectory;
 
-    if (Song.BackgroundFilename.length() != 0 && std::filesystem::exists(SngDir / Song.BackgroundFilename))
+    if (std::filesystem::exists(SngDir / Song.BackgroundFilename))
         return SngDir / Song.BackgroundFilename;
 
     for (auto i : std::filesystem::directory_iterator(SngDir))
@@ -178,7 +178,7 @@ public:
     StaticBackground(Interruptible* parent, std::filesystem::path Filename)
         : BackgroundAnimation(parent), List(this)
     {
-        Log::Printf("Using static background: %s\n", Filename.c_str());
+        Log::Printf("Using static background: %s\n", Filename.string().c_str());
         List.AddToListIndex(Filename, "", 0);
     }
 

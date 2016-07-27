@@ -11,6 +11,7 @@
 #include "Sprite.h"
 #include "VBO.h"
 #include "TruetypeFont.h"
+#include "RaindropRocketInterface.h"
 //#include <glm/gtc/matrix_transform.hpp>
 
 GameWindow WindowFrame;
@@ -714,20 +715,25 @@ void GameWindow::SwapBuffers()
     /* Fullscreen switching */
     if (FullscreenSwitchbackPending)
     {
+		Log::LogPrintf("Attempting to switch fullscreen mode.\n");
         if (IsFullscreen)
         {
             glfwDestroyWindow(wnd);
             wnd = glfwCreateWindow(size.x, size.y, RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, NULL, NULL);
+			IsFullscreen = false;
         }
         else
         {
-
 			if (glfwGetPrimaryMonitor()) {
 				AssignSize();
 				glfwDestroyWindow(wnd);
 				wnd = glfwCreateWindow(size.x, size.y, RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, glfwGetPrimaryMonitor(), NULL);
+
+				IsFullscreen = true;
+				Log::LogPrintf("Switched to fullscreen mode.\n");
 			} 
 			else {
+				IsFullscreen = false;
 				Log::LogPrintf("Can't switch to fullscreen. No primary monitor detected?\n");
 				FullscreenSwitchbackPending = false;
 				return;
@@ -737,7 +743,10 @@ void GameWindow::SwapBuffers()
         AttribLocs.clear();
         UniformLocs.clear();
         SetupWindow();
-        ImageLoader::InvalidateAll();
+
+		// Reload all images.
+		Engine::RocketInterface::ReloadTextures();
+        ImageLoader::ReloadAll();
 
         /* This revalidates all VBOs and fonts */
         for (std::vector<VBO*>::iterator i = VBOList.begin(); i != VBOList.end(); i++)
@@ -746,12 +755,12 @@ void GameWindow::SwapBuffers()
             (*i)->Validate();
         }
 
+		// Automatically revalidated on usage
         for (std::vector<TruetypeFont*>::iterator i = TTFList.begin(); i != TTFList.end(); i++)
         {
             (*i)->Invalidate();
         }
 
-        IsFullscreen = !IsFullscreen;
         FullscreenSwitchbackPending = false;
     }
 }

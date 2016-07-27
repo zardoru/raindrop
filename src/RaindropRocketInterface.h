@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Image.h"
+
 class VBO;
 
 namespace Engine
@@ -48,7 +50,9 @@ namespace Engine
                 int num_indices, num_vertices;
             };
 
+			std::map<Image*, ImageData> m_TexCache;
         public:
+			~RenderInterface() = default;
 
             // Called by Rocket when it wants to compile geometry it believes will be static for the forseeable future.
             Rocket::Core::CompiledGeometryHandle CompileGeometry(Rocket::Core::Vertex* vertices, int num_vertices, int* indices, int num_indices, Rocket::Core::TextureHandle texture);
@@ -80,7 +84,11 @@ namespace Engine
 
             // Called by Rocket when a loaded texture is no longer required.
             void ReleaseTexture(Rocket::Core::TextureHandle texture_handle);
+
+			// Regenerate internal textures where required
+			void RegenerateTextures();
         };
+		void ReloadTextures();
     }
 
     void SetupRocket();

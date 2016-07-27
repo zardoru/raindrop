@@ -11,6 +11,8 @@ std::mutex LoadMutex;
 std::map<std::filesystem::path, Image*> ImageLoader::Textures;
 std::map<std::filesystem::path, ImageLoader::UploadData> ImageLoader::PendingUploads;
 
+CfgVar ImageLoaderMessages("ImageLoader", "Debug");
+
 void Image::CreateTexture()
 {
     if (texture == -1 || !IsValid)
@@ -45,20 +47,22 @@ void Image::Destroy() // Called at destruction time
 {
     if (IsValid && texture != -1)
     {
+		if (ImageLoaderMessages)
+			Log::LogPrintf("Image: Destroying image %s (Removing texture...)\n", fname.string().c_str());
         glDeleteTextures(1, &texture);
         IsValid = false;
         texture = -1;
     }
 }
 
-void Image::SetTextureData(ImageData *ImgInfo, bool Reassign)
+void Image::SetTextureData(ImageData &ImgInfo, bool Reassign)
 {
     if (Reassign) Destroy();
 
     CreateTexture(); // Make sure our texture exists.
     Bind();
 
-    if (ImgInfo->Data == nullptr && !Reassign)
+    if (ImgInfo.Data.size() == 0 && !Reassign)
     {
         return;
     }
@@ -66,32 +70,32 @@ void Image::SetTextureData(ImageData *ImgInfo, bool Reassign)
     if (!TextureAssigned || Reassign) // We haven't set any data to this texture yet, or we want to regenerate storage
     {
         TextureAssigned = true;
-        auto Dir = ImgInfo->Filename.filename().string();
+        auto Dir = ImgInfo.Filename.filename().string();
 
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		Renderer::SetTextureParameters(Dir);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ImgInfo->Width, ImgInfo->Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ImgInfo->Data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ImgInfo.Width, ImgInfo.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ImgInfo.Data.data());
     }
     else // We did, so let's update instead.
     {
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ImgInfo->Width, ImgInfo->Height, GL_RGBA, GL_UNSIGNED_BYTE, ImgInfo->Data);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ImgInfo.Width, ImgInfo.Height, GL_RGBA, GL_UNSIGNED_BYTE, ImgInfo.Data.data());
     }
 
-    w = ImgInfo->Width;
-    h = ImgInfo->Height;
-    fname = ImgInfo->Filename;
+    w = ImgInfo.Width;
+    h = ImgInfo.Height;
+    fname = ImgInfo.Filename;
 }
 
 void Image::Assign(std::filesystem::path Filename, bool Regenerate)
 {
-    ImageData Ret;
     CreateTexture();
 
-    Ret = ImageLoader::GetDataForImage(Filename);
-    SetTextureData(&Ret, Regenerate);
+	if (ImageLoaderMessages)
+		Log::LogPrintf("Image: Assigning \"%s\"\n", Filename.string().c_str());
+    auto Ret = ImageLoader::GetDataForImage(Filename);
+    SetTextureData(Ret, Regenerate);
     fname = Filename;
-    free(Ret.Data);
 }
 
 ImageLoader::ImageLoader()
@@ -105,37 +109,54 @@ ImageLoader::~ImageLoader()
 
 void ImageLoader::InvalidateAll()
 {
-    for (auto i = Textures.begin(); i != Textures.end(); ++i)
-    {
+    for (auto i = Textures.begin(); i != Textures.end(); ++i) {
+		if (ImageLoaderMessages) {
+			Log::LogPrintf("ImageLoader: Invalidate texture %s\n", i->first.string().c_str());
+		}
         i->second->IsValid = false;
     }
 }
 
+void ImageLoader::ReloadAll()
+{
+	UnloadAll();
+	for (auto &img : Textures) {
+		img.second->Assign(img.first, true);
+	}
+}
+
 void ImageLoader::UnloadAll()
 {
-    InvalidateAll();
-
-    for (auto i = Textures.begin(); i != Textures.end(); i++)
-    {
-        glDeleteTextures(1, &i->second->texture);
+    for (auto i = Textures.begin(); i != Textures.end(); i++) {
+		Log::LogPrintf("ImageLoader: Deleting texture %s\n", i->first.string().c_str());
+		i->second->Destroy();
     }
 }
 
 void ImageLoader::DeleteImage(Image* &ToDelete)
 {
-    if (ToDelete)
-    {
-        Textures.erase(Textures.find(ToDelete->fname));
-        delete ToDelete;
-        ToDelete = nullptr;
-    }
+    if (ToDelete) {
+		auto tex = Textures.find(ToDelete->fname);
+		if (tex != Textures.end()) {
+			Textures.erase(tex);
+			delete ToDelete;
+			ToDelete = nullptr;
+		}
+		else {
+			Log::LogPrintf("ImageLoader: Attempt to delete texture not registered in loader (%s)\n", ToDelete->fname.string().c_str());
+		}
+	}
+	else {
+		if (ImageLoaderMessages)
+			Log::LogPrintf("ImageLoader: Attempt to destroy NULL image\n");
+	}
 }
 
-Image* ImageLoader::InsertImage(std::filesystem::path Name, ImageData *imgData)
+Image* ImageLoader::InsertImage(std::filesystem::path Name, ImageData &imgData)
 {
     Image* I;
 
-    if (!imgData || imgData->Data == nullptr) return nullptr;
+    if (imgData.Data.size() == 0) return nullptr;
 
     if (Textures.find(Name) == Textures.end())
         I = (Textures[Name] = new Image());
@@ -195,12 +216,16 @@ auto open_image(Stream&& in)
 
     auto v = view(img);
     using pixel = decltype(v)::value_type;
-    auto data = new pixel[v.width() * v.height()];
-    copy_pixels(v, interleaved_view(v.width(), v.height(), data,
+    auto data = std::vector<uint32_t>();
+	data.resize(v.width() * v.height());
+
+	static_assert(sizeof(pixel) == sizeof(uint32_t), "Pixels are required to be RGBA 32 bits");
+    copy_pixels(v, interleaved_view(v.width(), v.height(), (pixel*)data.data(),
         v.width() * sizeof(pixel)));
 
+
     ImageData out;
-    out.Data = data;
+    out.Data.assign(data.begin(), data.end());
     out.Width = v.width();
     out.Height = v.height();
 
@@ -209,15 +234,29 @@ auto open_image(Stream&& in)
 
 ImageData ImageLoader::GetDataForImage(std::filesystem::path filename)
 {
+	if (!std::filesystem::exists(filename)) {
+		if (ImageLoaderMessages) {
+			Log::Printf("ImageLoader: File \"%s\" does not exist.\n", filename.string().c_str());
+		}
+
+		return {};
+	}
+
     auto file = std::ifstream{ filename.string(), std::ios::binary };
     if (!file.is_open())
     {
-        Log::Printf("Could not open file \"%s\".\n", Utility::ToU8(filename.wstring()).c_str());
+		if (ImageLoaderMessages) {
+			Log::Printf("ImageLoader: Unable to open \"%s\" (but file was found).\n", filename.string().c_str());
+		}
+
         return{};
     }
 
     auto out = open_image(file);
     out.Filename = filename;
+
+	if (ImageLoaderMessages)
+		Log::LogPrintf("ImageLoader: \"%s\" loaded.\n", filename.string().c_str());
 
     return out;
 }
@@ -243,9 +282,8 @@ Image* ImageLoader::Load(std::filesystem::path filename)
     else
     {
         ImageData ImgData = GetDataForImage(filename);
-        Image* Ret = InsertImage(filename, &ImgData);
+        Image* Ret = InsertImage(filename, ImgData);
 
-        free(ImgData.Data);
         Image::LastBound = Ret;
 
         return Ret;
@@ -289,9 +327,7 @@ void ImageLoader::UpdateTextures()
             imgData.Width = i->second.Width;
             imgData.Height = i->second.Height;
 
-            Image::LastBound = InsertImage(i->first, &imgData);
-
-            free(imgData.Data);
+            Image::LastBound = InsertImage(i->first, imgData);
         }
 
         PendingUploads.clear();
@@ -314,4 +350,16 @@ void ImageLoader::UpdateTextures()
             ++i;
         }
     }
+}
+
+void ImageLoader::RegisterTexture(Image* tex)
+{
+	if (tex->fname.string().length()) {
+		if (Textures.find(tex->fname) != Textures.end()) {
+			if (ImageLoaderMessages)
+				Log::LogPrintf("ImageLoader: Attempt to manually replace texture \"%s\" from storage\n", tex->fname.string().c_str());
+		}
+		else
+			Textures[tex->fname] = tex;
+	}
 }
