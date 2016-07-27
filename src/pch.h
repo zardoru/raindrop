@@ -349,6 +349,11 @@ T filter(F pred, const T &ctr)
 	return rt_val;
 }
 
+template <class T>
+T sign(T num) {
+	return (num > T(0)) - (num < T(0));
+}
+
 int b36toi(const char* txt);
 int b16toi(const char* txt);
 

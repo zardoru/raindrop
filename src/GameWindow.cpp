@@ -113,6 +113,7 @@ bool JoystickEnabled;
 
 //True is pressed, false is released
 bool controllerButtonState[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = { 0 };
+float lastAxisSign[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = { 0 };
 //The first member of this array should never be accessed; it's there to make reading some of the code easier.
 
 struct sk_s
@@ -686,8 +687,17 @@ void GameWindow::SwapBuffers()
 
 					if (abs(axisArray[i]) > deadzone) {
 						if (controllerButtonState[axis] != true) {
+							lastAxisSign[i] = sign(axisArray[i]);
+
 							controllerButtonState[axis] = true;
                             WindowFrame.Parent->HandleInput(SpecialKeys[j].boundkey, KE_PRESS, false);
+						}
+						else {
+							if (lastAxisSign[i] != sign(axisArray[i])) {
+								WindowFrame.Parent->HandleInput(SpecialKeys[j].boundkey, KE_RELEASE, false);
+								WindowFrame.Parent->HandleInput(SpecialKeys[j].boundkey, KE_PRESS, false);
+								lastAxisSign[i] = sign(axisArray[i]);
+							}
 						}
 					}
 					else {

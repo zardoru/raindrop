@@ -25,10 +25,7 @@
 #include "SongWheel.h"
 #include "ScreenCustom.h"
 
-// testing framework
-#define CATCH_CONFIG_RUNNER
-#include "ext/catch.hpp"
-
+void RunRaindropTests();
 bool Auto = false;
 bool DoRun = false;
 
@@ -186,6 +183,10 @@ void Application::Init()
 	// Log::Printf("Current Time: %s.\n", t1);
 	Log::Printf("Working directory: %s\n", Utility::ToU8(std::filesystem::current_path().wstring()).c_str());
 
+#if (defined WIN32)
+	Log::Printf("Current codepage: %ud\n", GetACP());
+#endif
+
     GameState::GetInstance().Initialize();
     Log::Printf("Initializing... \n");
 
@@ -301,12 +302,7 @@ void Application::Run()
 	// what goes on below.
 	if (RunMode == MODE_TEST)
 	{
-		Catch::Session session;
-
-		Log::Printf("Return value after running tests: %d.\n", session.run());
-		Log::Printf("Time: %fs\n", glfwGetTime() - T1);
-
-		std::cin.get();
+		RunRaindropTests();
 		return;
 
 	}

@@ -144,6 +144,7 @@
     <ClCompile Include="..\src\AudioSourceSFM.cpp" />
     <ClCompile Include="..\src\BackgroundAnimation.cpp" />
     <ClCompile Include="..\src\BitmapFont.cpp" />
+    <ClCompile Include="..\src\catch_compile_src.cpp" />
     <ClCompile Include="..\src\Configuration.cpp" />
     <ClCompile Include="..\src\Convert.cpp" />
     <ClCompile Include="..\src\ConvertToBMS.cpp" />

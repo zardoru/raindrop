@@ -24,8 +24,6 @@ void ScreenGameplay7K::Render()
     Animations->DrawFromLayer(14);
 }
 
-using glm::sign;
-
 void ScreenGameplay7K::DrawBarlines()
 {
     for (auto i : MeasureBarlines)

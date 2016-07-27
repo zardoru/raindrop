@@ -271,6 +271,9 @@
     <ClCompile Include="..\tests\TestSetA.cpp">
       <Filter>Testing Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\catch_compile_src.cpp">
+      <Filter>Source Files\backend</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\pch.h">
