@@ -379,8 +379,9 @@ bool ScreenGameplay7K::LoadSongAudio()
 
             ks->SetPitch(Speed);
 #ifdef WIN32
-            std::filesystem::path sd = MySong->SongDirectory / i->second;
-            ks->Open(sd);
+			std::filesystem::path rfd = i->second;
+            std::filesystem::path afd = MySong->SongDirectory / rfd;
+            ks->Open(afd);
 #else
             ks->Open((MySong->SongDirectory.string() + "/" + i->second).c_str());
 #endif

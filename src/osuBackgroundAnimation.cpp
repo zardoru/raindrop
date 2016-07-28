@@ -1084,7 +1084,7 @@ void osuBackgroundAnimation::Load()
 	}
 
 	for (auto &&i : mFileIndices) {
-		mImageList.AddToListIndex(i.first, "", i.second);
+		mImageList.AddToListIndex(i.first, i.second);
 		CheckInterruption();
 	}
 

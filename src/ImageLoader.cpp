@@ -236,7 +236,8 @@ ImageData ImageLoader::GetDataForImage(std::filesystem::path filename)
 {
 	if (!std::filesystem::exists(filename)) {
 		if (ImageLoaderMessages) {
-			Log::Printf("ImageLoader: File \"%s\" does not exist.\n", filename.string().c_str());
+			Log::Printf("ImageLoader: Couldn't access \"%s\"", filename.string().c_str());
+			Log::Printf("\n");
 		}
 
 		return {};

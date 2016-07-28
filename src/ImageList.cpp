@@ -36,16 +36,14 @@ void ImageList::AddToList(const std::filesystem::path Filename, const std::files
     }
 }
 
-void ImageList::AddToListIndex(const std::filesystem::path Filename, const std::filesystem::path Prefix, int Index)
+void ImageList::AddToListIndex(const std::filesystem::path Filename, int Index)
 {
-    auto ResFilename = Prefix / Filename;
-
     if (ImagesIndex.find(Index) == ImagesIndex.end())
     {
-        ImageLoader::AddToPending(ResFilename);
-        Images[ResFilename] = nullptr;
+        ImageLoader::AddToPending(Filename);
+        Images[Filename] = nullptr;
         ImagesIndex[Index] = nullptr;
-        ImagesIndexPending[Index] = ResFilename;
+        ImagesIndexPending[Index] = Filename;
     }
 }
 

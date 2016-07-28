@@ -371,6 +371,12 @@ std::string SongDatabase::GetArtistForDifficulty(int ID)
     return out;
 }
 
+#ifdef _WIN32
+#define _T(x) Utility::Widen((char*)x)
+#else
+#define _T(x) ((char*)x)
+#endif
+
 void SongDatabase::GetSongInformation7K(int ID, VSRG::Song* Out)
 {
     int ret;
@@ -387,9 +393,9 @@ void SongDatabase::GetSongInformation7K(int ID, VSRG::Song* Out)
 
     Out->SongName = (char*)sqlite3_column_text(st_GetSongInfo, 0);
     Out->SongAuthor = (char*)sqlite3_column_text(st_GetSongInfo, 1);
-    Out->SongFilename = (char*)sqlite3_column_text(st_GetSongInfo, 2);
+    Out->SongFilename = _T(sqlite3_column_text(st_GetSongInfo, 2));
     Out->Subtitle = (char*)sqlite3_column_text(st_GetSongInfo, 3);
-    Out->BackgroundFilename = (char*)sqlite3_column_text(st_GetSongInfo, 4);
+    Out->BackgroundFilename = _T(sqlite3_column_text(st_GetSongInfo, 4));
     Out->ID = ID;
     int mode = sqlite3_column_int(st_GetSongInfo, 5);
     Out->PreviewTime = sqlite3_column_double(st_GetSongInfo, 6);

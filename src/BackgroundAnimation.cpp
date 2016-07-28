@@ -68,8 +68,10 @@ public:
         EventsLayer1 = Difficulty->Data->BMPEvents->BMPEventsLayer;
         EventsLayer2 = Difficulty->Data->BMPEvents->BMPEventsLayer2;
 
-        for (auto v : Difficulty->Data->BMPEvents->BMPList)
-            List.AddToListIndex(v.second, Song->SongDirectory, v.first);
+		for (auto v : Difficulty->Data->BMPEvents->BMPList) {
+			std::filesystem::path path = Song->SongDirectory / v.second;
+			List.AddToListIndex(path, v.first);
+		}
 
         List.AddToList(Song->BackgroundFilename, Song->SongDirectory);
         List.LoadAll();
@@ -179,7 +181,7 @@ public:
         : BackgroundAnimation(parent), List(this)
     {
         Log::Printf("Using static background: %s\n", Filename.string().c_str());
-        List.AddToListIndex(Filename, "", 0);
+        List.AddToListIndex(Filename, 0);
     }
 
     void SetAnimationTime(double Time) override {}

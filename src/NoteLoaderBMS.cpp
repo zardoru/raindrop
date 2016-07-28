@@ -1250,12 +1250,7 @@ namespace NoteLoaderBMS{
 
             // No brackets? Okay then, let's use the filename.
             if (Diff->Name.length() == 0)
-            {
-                size_t last_slash = sf.find_last_of("/");
-                size_t last_dslash = sf.find_last_of("\\");
-                size_t last_dir = std::max(last_slash != std::string::npos ? last_slash : 0, last_dslash != std::string::npos ? last_dslash : 0);
-                Diff->Name = sf.substr(last_dir + 1, sf.length() - last_dir - 5);
-            }
+				Diff->Name = filename.filename().replace_extension().string();
         }
 
         Out->Difficulties.push_back(Diff);

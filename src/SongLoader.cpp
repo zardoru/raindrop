@@ -174,7 +174,7 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(std::filesystem::path Filenam
         return nullptr;
     }
 
-    Sng->SongDirectory = Prefix.string();
+    Sng->SongDirectory = Prefix;
 	auto fn = Prefix / Filename;
 	auto fnu8 = Utility::ToU8(fn.wstring());
 
@@ -422,6 +422,9 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<V
 			try {
 				DB->GetSongInformation7K(*i, New);
 				New->SongDirectory = SongDirectory;
+
+				// make sure it's a well-formed directory on debug
+				assert(std::filesystem::exists(New->SongDirectory));
 
 				PushVSRGSong(VecOut, New);
 				Log::Logf(" ok\n");

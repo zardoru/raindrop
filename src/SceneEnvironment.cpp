@@ -265,8 +265,10 @@ void SceneEnvironment::InitializeUI()
 
     // Set up context
     RocketContext = Rocket::Core::CreateContext(mScreenName.c_str(), Rocket::Core::Vector2i(ScreenWidth, ScreenHeight));
-    if (!RocketContext)
-        RocketContext = Rocket::Core::GetContext(mScreenName.c_str());
+	if (!RocketContext) {
+		RocketContext = Rocket::Core::GetContext(mScreenName.c_str());
+		Log::LogPrintf("SceneEnvironment: Context %s already exists.\n", mScreenName.c_str());
+	}
 
     Obj->ctx = RocketContext;
     obctx = Obj;
@@ -305,8 +307,10 @@ SceneEnvironment::~SceneEnvironment()
     ManagedObjects.clear();
     ManagedFonts.clear();
 
-    if (RocketContext && RocketContext->GetReferenceCount() > 0)
-        RocketContext->RemoveReference();
+	if (RocketContext) {
+		if (Doc) Doc->RemoveReference();
+		RocketContext->RemoveReference();
+	}
 }
 
 void SceneEnvironment::SetUILayer(uint32_t Layer)
