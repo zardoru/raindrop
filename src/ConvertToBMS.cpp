@@ -313,44 +313,31 @@ public:
 
 std::string BMSConverter::ToBMSBase36(int num)
 {
-    char digits[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    char digits[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     int i;
-    char buf[66];   /* enough space for any 64-bit in base 2 */
+    char buf[66];
 
     /* if num is zero */
     if (!num)
-        return "0";
+        return "00";
 
-    /* null terminate buf, and set i at end */
+	if (num > 1295) // ZZ in b36
+		throw std::runtime_error("Out of range number for BMS conversion");
+
     buf[65] = '\0';
     i = 65;
 
-    if (num > 0) {  /* if positive... */
-        while (num) { /* until num is 0... */
-            /* go left 1 digit, divide by radix, and set digit to remainder */
-            buf[--i] = digits[num % 36];
-            num /= 36;
-        }
-    } else {    /* same for negative, but negate the modulus and prefix a '-' */
-        while (num) {
-            buf[--i] = digits[-(num % 36)];
-            num /= 36;
-        }
-        buf[--i] = '-';
-    }   
-    
-    if (buf[1] == 0) { // Make it at least, and at most, two digits (for BMS)
-	buf[1] = buf[0];
-	buf[0] = '0';
- 	buf[2] = '\0';
-    }
+	// az simplification: only positive values
+	while (num) { /* until num is 0... */
+		/* go left 1 digit, divide by radix, and set digit to remainder */
+		buf[--i] = digits[num % 36];
+		num /= 36;
+	}
 
-    if (buf[0] == 0) {
-    	buf[0] = '0';
-	buf[1] = '0';
- 	buf[2] = '\0';
-    }
-    return buf;
+	if (i == 64) // 64 only one digit?
+		buf[i - 1] = '0';
+
+    return &buf[63]; // 63, 64, 65 (two digits + null terminator indices)
 }
 
 int BMSConverter::GetChannel(int channel) const
