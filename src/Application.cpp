@@ -114,12 +114,13 @@ void Application::ParseArgs(int argc, char **argv)
 
     if (vm.count("format"))
     {
-        ConvertMode = std::map<std::string, CONVERTMODE>{
-            { "om", CONVERTMODE::CONV_OM },
-            { "sm", CONVERTMODE::CONV_SM },
-            { "bms", CONVERTMODE::CONV_BMS },
-            { "uqbms", CONVERTMODE::CONV_UQBMS },
-            { "nps", CONVERTMODE::CONV_NPS }
+		ConvertMode = std::map<std::string, CONVERTMODE>{
+			{ "om", CONVERTMODE::CONV_OM },
+			{ "sm", CONVERTMODE::CONV_SM },
+			{ "bms", CONVERTMODE::CONV_BMS },
+			{ "uqbms", CONVERTMODE::CONV_UQBMS },
+			{ "nps", CONVERTMODE::CONV_NPS },
+			{ "acctest", CONVERTMODE::CONV_ACCTEST }
         }.at(vm["format"].as<std::string>());
 
 		Log::LogPrintf("Setting format to %s (%d)\n", vm["format"].as<std::string>().c_str(), ConvertMode);
@@ -357,7 +358,34 @@ void Application::Run()
                 ExportToBMSUnquantized(Sng.get(), OutFile);
             else if (ConvertMode == CONVERTMODE::CONV_NPS)
                 ConvertToNPSGraph(Sng.get(), OutFile);
-            else
+			else if (ConvertMode == CONVERTMODE::CONV_ACCTEST)
+			{
+				auto msr = Sng->Difficulties[0]->Data->Measures;
+				auto timeset = std::set<double>();
+				for (auto m : msr) {
+					for (auto i = 0; i < Sng->Difficulties[0]->Channels; i++)
+						for (auto note : m.Notes[i])
+							if (note.NoteKind == 0)
+								timeset.insert(note.StartTime);
+				}
+
+				if (OutFile.string().length()) {
+					Log::Printf("Attempt to open %s...\n", std::filesystem::absolute(OutFile).string().c_str());
+					std::fstream out(OutFile.string(), std::ios::out);
+
+					if (!out.is_open())
+						Log::Printf("Couldn't open!?\n");
+
+					out << std::setprecision(17) << std::fixed;
+					for (auto d : timeset)
+						out << d << std::endl;
+				}
+				else {
+					for (auto d : timeset)
+						Log::Printf("%.17f\n", d);
+				}
+			}
+			else
                 ConvertToSMTiming(Sng.get(), OutFile);
         }
         else

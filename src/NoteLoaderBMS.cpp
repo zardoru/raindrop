@@ -29,7 +29,7 @@ namespace NoteLoaderBMS{
 	/* literally pasted from wikipedia */
 	std::string tob36(long unsigned int value)
 	{
-		const char base36[37] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // off by 1 lol
+		const char base36[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // off by 1 lol
 		char buffer[14];
 		unsigned int offset = sizeof(buffer);
 
@@ -200,7 +200,7 @@ namespace NoteLoaderBMS{
 
 		NoteData *LastNotes[MAX_CHANNELS];
 
-		int LNObj;
+		std::set<int> LNObj;
 		int SideBOffset;
 
 		uint32_t RandomStack[16]; // Up to 16 nested levels.
@@ -327,7 +327,8 @@ namespace NoteLoaderBMS{
 
 				Chart->Duration = std::max(double(Chart->Duration), Time);
 
-				if (!LNObj || (LNObj != ev.Event))
+				// is this event on the lnobj set?
+				if (LNObj.find(ev.Event) == LNObj.end())
 				{
 				degradetonote:
 					NoteData Note;
@@ -341,10 +342,15 @@ namespace NoteLoaderBMS{
 					Chart->TotalObjects++;
 
 					Msr.Notes[Track].push_back(Note);
-					if (Msr.Notes[Track].size())
-						LastNotes[Track] = &Msr.Notes[Track].back();
+					/*
+						For future reference:
+						no, we can't get rid of LastNotes[x]
+						otherwise you'd be bounding longnotes to
+						only one measure.
+					*/
+					LastNotes[Track] = &Msr.Notes[Track].back();
 				}
-				else if (LNObj && (LNObj == ev.Event))
+				else // we got that this terminates a ln obj
 				{
 					if (LastNotes[Track])
 					{
@@ -451,6 +457,7 @@ namespace NoteLoaderBMS{
 			next_chan:;
 			}
 
+			
 			if (i->second.Events[CHANNEL_BGM].size() != 0) // There are some BGM events?
 			{
 				for (auto ev = i->second.Events[CHANNEL_BGM].begin(); ev != i->second.Events[CHANNEL_BGM].end(); ++ev)
@@ -611,7 +618,6 @@ namespace NoteLoaderBMS{
 				LastNotes[k] = nullptr;
 			}
 
-			LNObj = 0;
 			HasBMPEvents = false;
 			Skip = false;
 			CurrentNestedLevel = 0;
@@ -795,7 +801,7 @@ namespace NoteLoaderBMS{
 
 		void SetLNObject(int lnobj)
 		{
-			LNObj = lnobj;
+			LNObj.insert(lnobj);
 		}
 
 		void SetTotal(double total)
