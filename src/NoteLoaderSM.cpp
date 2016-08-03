@@ -328,6 +328,10 @@ void DoCommonSMCommands(std::string command, std::string CommandContents, Song* 
 }
 
 // Convert SSC warps into Raindrop warps.
+// Warning: This doesn't follow the beat-integration model dtinth programmed into Stepmania.
+// It's not interpreted as "infinite bpm" but as literally jumping around.
+// Should work for most cases. Haven't seen anyone put stops in the middle
+// of their warps, fortunately.
 TimingData CalculateRaindropWarpData(VSRG::Difficulty* Diff, const TimingData& Warps)
 {
 	TimingData Ret;

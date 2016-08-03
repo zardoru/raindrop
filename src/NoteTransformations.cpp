@@ -11,31 +11,20 @@ namespace NoteTransform
 
 		// perform action to channel index minus scratch ones if applicable
 		auto toChannels = [&](std::function<void(int)> fn) {
-			int index = 0;
 			for (auto i = 0; i < ChannelCount; i++)
 			{
 				if (i == 0 && RespectScratch)
-				{
 					if (ChannelCount == 6 || ChannelCount == 8) {
-						index++;
 						continue;
 					}
-				}
 
 				if (i == 5 && ChannelCount == 12 && RespectScratch)
-				{
-					index++;
 					continue;
-				}
 
 				if (i == 8 && ChannelCount == 16 && RespectScratch)
-				{
-					index++;
 					continue;
-				}
 
-				fn(index);
-				index++;
+				fn(i);
 			}
 		};
 

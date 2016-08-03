@@ -80,6 +80,9 @@ HitErrorDisplayLimiter = 999
 -- Whether to go to song select inmediately on failure
 GoToSongSelectOnFailure = 0
 
+-- Whether to not wait for enter to be pressed to start playing
+InmediateActivation = 1
+
 -- 1 is first after processing SV, 1 is mmod, 2 is cmod, anything else is default.
 -- default: first speed before processing SV
 DefaultSpeedKind = function ()

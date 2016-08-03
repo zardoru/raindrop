@@ -210,12 +210,17 @@ class OsumaniaLoader
 				if (DebugOsuLoader)
 					Log::LogPrintf("\nMCALC: %f to %f (%f beats long)", next->Time, i->Time, bt);
 
+				// the next section, and the one after that
 				auto c_next = next;
 				auto sk_next = next + 1;
 
+				// add nivrad's bug
 				do {
-					if (sk_next != seclst.end() && sk_next->Time - c_next->Time <= LINE_REMOVE_THRESHOLD) // and that next line has a time distance of less than the threshold
+					// and that next line has a time distance of less than the threshold
+					if (sk_next != seclst.end() && sk_next->Time - c_next->Time <= LINE_REMOVE_THRESHOLD) 
 					{
+						// ah the one after and the next are less than 1ms apart
+						// get the displacement in beats of this section
 						auto seg = (sk_next->Time - c_next->Time) * bps(c_next->Value);
 						if (DebugOsuLoader)
 							Log::LogPrintf("\nMCALC: %f to %f (section is %g beats long)", sk_next->Time, c_next->Time, seg);
@@ -228,6 +233,9 @@ class OsumaniaLoader
 					}
 				} while (true);
 
+				// either what we skipped or the inmediate next
+				// if what we skipped we're out of the 1ms woods
+				// anyway, the one after lasts more than 1ms
 				next = c_next;
 			} else
 			{
@@ -676,37 +684,37 @@ public:
 
 	void ReadObjects(std::string line)
 	{
-		auto Spl = Utility::TokenSplit(line);
+		auto ObjectData = Utility::TokenSplit(line);
 
-		auto Track = GetTrackFromPosition(latof(Spl[0].c_str()), Diff->Channels);
+		auto Track = GetTrackFromPosition(latof(ObjectData[0].c_str()), Diff->Channels);
 		int Hitsound;
 		NoteData Note;
 
-		SplitResult Spl2;
+		SplitResult ObjectHitsoundData;
 
 		/*
 			A few of these "ifs" are just since v11 and v12 store hold endtimes in different locations.
 			Or not include some information at all...
 		*/
 		int splitType = 5;
-		if (Spl.size() == 7)
+		if (ObjectData.size() == 7)
 			splitType = 6;
-		else if (Spl.size() == 5)
+		else if (ObjectData.size() == 5)
 			splitType = 4;
 
 		if (splitType != 4) // only 5 entries
-			Spl2 = Utility::TokenSplit(Spl[splitType], ":");
+			ObjectHitsoundData = Utility::TokenSplit(ObjectData[splitType], ":");
 
-		double startTime = latof(Spl[2].c_str()) / 1000.0;
-		int NoteType = atoi(Spl[3].c_str());
+		double startTime = latof(ObjectData[2].c_str()) / 1000.0;
+		int NoteType = atoi(ObjectData[3].c_str());
 
 		if (NoteType & NOTE_HOLD)
 		{
 			float endTime;
-			if (splitType == 5 && Spl2.size())
-				endTime = latof(Spl2[0].c_str()) / 1000.0;
+			if (splitType == 5 && ObjectHitsoundData.size())
+				endTime = latof(ObjectHitsoundData[0].c_str()) / 1000.0;
 			else if (splitType == 6)
-				endTime = latof(Spl[5].c_str()) / 1000.0;
+				endTime = latof(ObjectData[5].c_str()) / 1000.0;
 			else // what really? a hold that doesn't bother to tell us when it ends?
 				endTime = 0;
 
@@ -738,8 +746,8 @@ public:
 		else if (NoteType & NOTE_SLIDER)
 		{
 			// 6=repeats 7=length
-			auto sliderRepeats = latof(Spl[6].c_str());
-			auto sliderLength = latof(Spl[7].c_str());
+			auto sliderRepeats = latof(ObjectData[6].c_str());
+			auto sliderLength = latof(ObjectData[7].c_str());
 
 			auto Multiplier = GetSliderMultiplierAt(startTime);
 
@@ -758,9 +766,9 @@ public:
 			Diff->TotalHolds++;
 		}
 
-		Hitsound = atoi(Spl[4].c_str());
+		Hitsound = atoi(ObjectData[4].c_str());
 
-		auto Sample = GetSampleFilename(Spl2, NoteType, Hitsound, startTime);
+		auto Sample = GetSampleFilename(ObjectHitsoundData, NoteType, Hitsound, startTime);
 
 		if (Sample.length())
 		{

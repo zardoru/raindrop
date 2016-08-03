@@ -149,14 +149,14 @@ void ScreenGameplay7K::DrawMeasures()
             // Assign our matrix.
             WindowFrame.SetUniform(U_MVP, &id[0][0]);
 
-            double JPos;
+            double JudgeY;
 
             // LR2 style keep-on-the-judgment-line
             bool AboveLine = Vertical < JudgmentLinePos;
             if (!(AboveLine ^ IsUpscrolling()) && m->IsJudgable())
-                JPos = JudgmentLinePos;
+                JudgeY = JudgmentLinePos;
             else
-                JPos = Vertical;
+                JudgeY = Vertical;
 
             // We draw the body first, so that way the heads get drawn on top
             if (m->IsHold())
@@ -181,8 +181,8 @@ void ScreenGameplay7K::DrawMeasures()
                 bool decrease_hold_size = Noteskin::ShouldDecreaseHoldSizeWhenBeingHit() && Level == 2;
                 if (decrease_hold_size)
                 {
-                    Pos = (VerticalHoldEnd + JPos) / 2;
-                    Size = VerticalHoldEnd - JPos;
+                    Pos = (VerticalHoldEnd + JudgeY) / 2;
+                    Size = VerticalHoldEnd - JudgeY;
                 }
                 else // We were failed, not being hit or were already hit
                 {
@@ -194,14 +194,14 @@ void ScreenGameplay7K::DrawMeasures()
                 Noteskin::DrawHoldTail(*m, k, VerticalHoldEnd, Level);
 
                 if (Noteskin::AllowDanglingHeads() || decrease_hold_size)
-                    Noteskin::DrawHoldHead(*m, k, JPos, Level);
+                    Noteskin::DrawHoldHead(*m, k, JudgeY, Level);
                 else
                     Noteskin::DrawHoldHead(*m, k, Vertical, Level);
             }
             else
             {
                 if (Noteskin::AllowDanglingHeads())
-                    Noteskin::DrawNote(*m, k, JPos);
+                    Noteskin::DrawNote(*m, k, JudgeY);
                 else
                     Noteskin::DrawNote(*m, k, Vertical);
             }

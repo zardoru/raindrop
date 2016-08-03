@@ -63,10 +63,10 @@ namespace NoteLoaderBMSON
 
     struct BmsonObject
     {
-        int x;
-        double y;
-        double l;
-        bool c;
+        int x; // lane
+        double y; // pulse
+        double l; // length
+        bool c; // continuation flag
     };
 
     class BMSONLoader

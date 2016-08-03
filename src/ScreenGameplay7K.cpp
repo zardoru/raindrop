@@ -197,12 +197,8 @@ void ScreenGameplay7K::RunAutoEvents()
 
 void ScreenGameplay7K::CheckShouldEndScreen()
 {
-    // Run failure first; make sure it has priority over checking whether it's a pass or not.
-    if (ScoreKeeper->isStageFailed(lifebar_type) && !stage_failed && !NoFail)
-    {
-        // We make sure we don't trigger this twice.
-stageFailed:
-        stage_failed = true;
+	auto perform_stage_failure = [&]() {
+		stage_failed = true;
         ScoreKeeper->failStage();
         FailSnd.Play();
 
@@ -219,7 +215,11 @@ stageFailed:
         // Run stage failed animation.
         Animations->DoEvent("OnFailureEvent", 1);
         FailureTime = Clamp(Animations->GetEnv()->GetFunctionResultF(), 0.0f, 30.0f);
-    }
+	};
+
+    // Run failure first; make sure it has priority over checking whether it's a pass or not.
+    if (ScoreKeeper->isStageFailed(lifebar_type) && !stage_failed && !NoFail && !ScoreKeeper->hasDelayedFailure(lifebar_type))
+		perform_stage_failure();
 
     // Okay then, so it's a pass?
     if (WarpedSongTime > CurrentDiff->Duration && !stage_failed)
@@ -240,8 +240,11 @@ stageFailed:
         {
             if (!SongFinished)
             {
-                if (ScoreKeeper->isStageFailed(lifebar_type) && !NoFail)
-                    goto stageFailed; // No, don't trigger SongFinished. It wasn't a pass.
+				// delayed failure check
+				if (ScoreKeeper->isStageFailed(lifebar_type) && !NoFail) {
+					perform_stage_failure(); // No, don't trigger SongFinished. It wasn't a pass.
+					return;
+				}
 
                 SongFinished = true; // Reached the end!
                 Animations->DoEvent("OnSongFinishedEvent", 1);

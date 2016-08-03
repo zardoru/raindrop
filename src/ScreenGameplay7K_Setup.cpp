@@ -765,6 +765,8 @@ void ScreenGameplay7K::LoadResources()
 
 	AssignMeasure(StartMeasure);
 
+	ForceActivation = ForceActivation || (Configuration::GetSkinConfigf("InmediateActivation") == 1);
+
 	// We're done with the data stored in the difficulties that aren't the one we're using. Clear it up.
 	for (auto i = MySong->Difficulties.begin(); i != MySong->Difficulties.end(); ++i)
 		(*i)->Destroy();

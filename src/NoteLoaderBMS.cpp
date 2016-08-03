@@ -141,7 +141,7 @@ namespace NoteLoaderBMS{
 	struct BMSEvent
 	{
 		int Event;
-		float Fraction;
+		double Fraction;
 
 		bool operator<(const BMSEvent &rhs)
 		{
@@ -169,7 +169,7 @@ namespace NoteLoaderBMS{
 	typedef std::map<int, bool> FilenameUsedIndex;
 	typedef std::map<int, double> BpmListIndex;
 	typedef std::vector<NoteData> NoteVector;
-	typedef std::map<int, BMSMeasure> MeasureList;
+	typedef std::map<int, BMSMeasure> BMSMeasureList;
 
 	class BMSLoader
 	{
@@ -189,7 +189,7 @@ namespace NoteLoaderBMS{
 			Syntax in other words is
 			Measures[Measure].Events[Channel].Stuff
 			*/
-		MeasureList Measures;
+		BMSMeasureList Measures;
 		Song* Song;
 		std::shared_ptr<Difficulty> Chart;
 		std::vector<double> BeatAccomulation;
@@ -295,7 +295,7 @@ namespace NoteLoaderBMS{
 			}, CHANNEL_STOPS);
 		}
 
-		void ForChannelRangeInMeasure(const std::function<void(BMSEvent, int)> &fn, int startChannel, MeasureList::iterator &i)
+		void ForChannelRangeInMeasure(const std::function<void(BMSEvent, int)> &fn, int startChannel, BMSMeasureList::iterator &bms_measure)
 		{
 			for (int channel = startChannel; channel <= (startChannel + MAX_CHANNELS); channel++)
 			{
@@ -309,12 +309,12 @@ namespace NoteLoaderBMS{
 				//if (!(Track >= 0 && Track < MAX_CHANNELS)) Utility::DebugBreak();
 				if (Track >= Chart->Channels || Track < 0) continue;
 
-				for (auto ev = i->second.Events[channel].begin(); ev != i->second.Events[channel].end(); ++ev)
-					fn(*ev, Track);
+				for (auto ev : bms_measure->second.Events[channel])
+					fn(ev, Track);
 			}
 		}
 
-		void CalculateMeasureSide(MeasureList::iterator &i, int TrackOffset, int startChannel, int startChannelLN,
+		void CalculateMeasureSide(BMSMeasureList::iterator &i, int TrackOffset, int startChannel, int startChannelLN,
 			int startChannelMines, int startChannelInvisible, Measure &Msr)
 		{
 			// Standard events
@@ -327,10 +327,7 @@ namespace NoteLoaderBMS{
 
 				Chart->Duration = std::max(double(Chart->Duration), Time);
 
-				// is this event on the lnobj set?
-				if (LNObj.find(ev.Event) == LNObj.end())
-				{
-				degradetonote:
+				auto make_note = [&]() {
 					NoteData Note;
 
 					Note.StartTime = Time;
@@ -349,7 +346,11 @@ namespace NoteLoaderBMS{
 						only one measure.
 					*/
 					LastNotes[Track] = &Msr.Notes[Track].back();
-				}
+				};
+
+				// is this event on the lnobj set?
+				if (LNObj.find(ev.Event) == LNObj.end())
+					make_note();
 				else // we got that this terminates a ln obj
 				{
 					if (LastNotes[Track])
@@ -360,7 +361,7 @@ namespace NoteLoaderBMS{
 						LastNotes[Track] = nullptr;
 					}
 					else
-						goto degradetonote;
+						make_note();
 				}
 			}, startChannel, i);
 
@@ -418,22 +419,22 @@ namespace NoteLoaderBMS{
 			}, startChannelInvisible, i);
 		}
 
-		void CalculateMeasure(MeasureList::iterator &i)
+		void CalculateMeasure(BMSMeasureList::iterator &bms_measure)
 		{
 			Measure Msr;
 
-			Msr.Length = 4 * i->second.BeatDuration;
+			Msr.Length = 4 * bms_measure->second.BeatDuration;
 
 			// see both sides, p1 and p2
 			if (!IsPMS) // or BME-type PMS
 			{
-				CalculateMeasureSide(i, 0, startChannelP1, startChannelLNP1, startChannelMinesP1, startChannelInvisibleP1, Msr);
-				CalculateMeasureSide(i, SideBOffset, startChannelP2, startChannelLNP2, startChannelMinesP2, startChannelInvisibleP2, Msr);
+				CalculateMeasureSide(bms_measure, 0, startChannelP1, startChannelLNP1, startChannelMinesP1, startChannelInvisibleP1, Msr);
+				CalculateMeasureSide(bms_measure, SideBOffset, startChannelP2, startChannelLNP2, startChannelMinesP2, startChannelInvisibleP2, Msr);
 			}
 			else
 			{
-				CalculateMeasureSide(i, 0, startChannelP1, startChannelLNP1, startChannelMinesP1, startChannelInvisibleP1, Msr);
-				CalculateMeasureSide(i, 5, startChannelP2 + 1, startChannelLNP2 + 1, startChannelMinesP2 + 1, startChannelInvisibleP2 + 1, Msr);
+				CalculateMeasureSide(bms_measure, 0, startChannelP1, startChannelLNP1, startChannelMinesP1, startChannelInvisibleP1, Msr);
+				CalculateMeasureSide(bms_measure, 5, startChannelP2 + 1, startChannelLNP2 + 1, startChannelMinesP2 + 1, startChannelInvisibleP2 + 1, Msr);
 			}
 
 			// insert it into the difficulty structure
@@ -443,38 +444,25 @@ namespace NoteLoaderBMS{
 			{
 				// Our old pointers are invalid by now since the Msr structures are going to go out of scope
 				// Which means we must renew them, and that's better done here.
-
-				auto q = Chart->Data->Measures.rbegin();
-
-				while (q != Chart->Data->Measures.rend())
-				{
-					if ((*q).Notes[k].size()) {
-						LastNotes[k] = &((*q).Notes[k].back());
-						goto next_chan;
+				auto iter = Chart->Data->Measures.rbegin();
+				while (iter != Chart->Data->Measures.rend()) {
+					if (iter->Notes[k].size()) {
+						LastNotes[k] = &iter->Notes[k].back();
+						break;
 					}
-					++q;
+					iter++;
 				}
-			next_chan:;
 			}
 
 			
-			if (i->second.Events[CHANNEL_BGM].size() != 0) // There are some BGM events?
+			if (bms_measure->second.Events[CHANNEL_BGM].size() != 0) // There are some BGM events?
 			{
-				for (auto ev = i->second.Events[CHANNEL_BGM].begin(); ev != i->second.Events[CHANNEL_BGM].end(); ++ev)
+				for (auto ev : bms_measure->second.Events[CHANNEL_BGM])
 				{
-					int Event = ev->Event;
+					double Time = TimeForObj(bms_measure->first, ev.Fraction);
 
-					if (!Event) continue; // UNUSABLE event
-
-					double Time = TimeForObj(i->first, ev->Fraction);
-
-					AutoplaySound New;
-					New.Time = Time;
-					New.Sound = Event;
-
-					UsedSounds[New.Sound] = true;
-
-					Chart->Data->BGMEvents.push_back(New);
+					UsedSounds[ev.Event] = true;
+					Chart->Data->BGMEvents.push_back(AutoplaySound(Time, ev.Event));
 				}
 
 				sort(Chart->Data->BGMEvents.begin(), Chart->Data->BGMEvents.end());
@@ -486,7 +474,7 @@ namespace NoteLoaderBMS{
 			int startChannelMines, int startChannelInvisible)
 		{
 			// Actual autodetection
-			auto fn = [&](int sc, MeasureList::iterator &i)
+			auto fn = [&](int sc, BMSMeasureList::iterator &i)
 			{
 				// normal channels
 				for (int curChannel = sc; curChannel <= (sc+ MAX_CHANNELS - offset); curChannel++)
@@ -979,34 +967,41 @@ namespace NoteLoaderBMS{
             if (Line.length() == 0 || Line[0] != '#')
                 continue;
 
-            std::string command = Line.substr(Line.find_first_of("#"), Line.find_first_of(" ") - Line.find_first_of("#"));
-
-            Utility::ToLower(command);
-
 #define OnCommand(x) if(command == #x)
 #define OnCommandSub(x) if(command.substr(0, strlen(#x)) == #x)
 
-            std::string CommandContents = Line.substr(Line.find_first_of(" ") + 1);
-            std::string tmp;
-            if (!IsU8)
-                CommandContents = Utility::SJIStoU8(CommandContents);
+			std::string command;
+			std::string CommandContents;
 
-			try {
-				utf8::replace_invalid(CommandContents.begin(), CommandContents.end(), back_inserter(tmp));
-			}
-			catch (...) {
-				if (IsU8) {
-					IsU8 = false;
+			auto parse_line = [&]() {
+				command = Line.substr(Line.find_first_of("#"), Line.find_first_of(" ") - Line.find_first_of("#"));
+	            Utility::ToLower(command);
+				CommandContents = Line.substr(Line.find_first_of(" ") + 1);
+
+				std::string tmp;
+				if (!IsU8)
 					CommandContents = Utility::SJIStoU8(CommandContents);
+
+				try {
+					utf8::replace_invalid(CommandContents.begin(), CommandContents.end(), back_inserter(tmp));
 				}
-			}
-            CommandContents = tmp;
+				catch (...) {
+					if (IsU8) {
+						IsU8 = false;
+						tmp = Utility::SJIStoU8(CommandContents);
+					}
+				}
+				CommandContents = tmp;
+			};
+
+			parse_line();
 
             if (Info->InterpStatement(command, CommandContents))
             {
 				OnCommand(#ext)
 				{
 					Line = CommandContents;
+					parse_line();
 				}
 
                 OnCommand(#genre)
@@ -1021,11 +1016,7 @@ namespace NoteLoaderBMS{
 
                 OnCommand(#title)
                 {
-                    Out->SongName = CommandContents;
-                    // ltrim the std::string
-                    size_t np = Out->SongName.find_first_not_of(" ");
-                    if (np != std::string::npos)
-                        Out->SongName = Out->SongName.substr(np);
+					Out->SongName = Utility::Trim(CommandContents);
                 }
 
                 OnCommand(#artist)
@@ -1052,12 +1043,7 @@ namespace NoteLoaderBMS{
 
                 OnCommand(#bpm)
                 {
-                    TimingSegment Seg;
-                    Seg.Time = 0;
-                    Seg.Value = latof(CommandContents.c_str());
-                    Diff->Timing.push_back(Seg);
-
-                    continue;
+                    Diff->Timing.push_back(TimingSegment(0, latof(CommandContents)));
                 }
 
                 OnCommand(#music)
@@ -1205,7 +1191,7 @@ namespace NoteLoaderBMS{
                     Info->SetBPM(Index, latof(CommandContents.c_str()));
                 }
 				
-				OnCommandSub("#scroll")
+				OnCommandSub(#scroll)
                 {
                     std::string IndexStr = CommandSubcontents("#SCROLL", command);
                     int Index = b36toi(IndexStr.c_str());
@@ -1232,7 +1218,10 @@ namespace NoteLoaderBMS{
 
         // First try to find a suiting subtitle
         std::string NewTitle = GetSubtitles(Out->SongName, Subs);
-        Diff->Name += DifficultyNameFromSubtitles(Subs);
+		if (!Diff->Name.length())
+			Diff->Name = DifficultyNameFromSubtitles(Subs);
+		else
+			DifficultyNameFromSubtitles(Subs); // has side-effects and removes difficulty name if applicable
 
         // If we've got a title that's usuable then why not use it.
         if (NewTitle.length() > 0)
