@@ -67,7 +67,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>rocketcorelua.lib;rocketcontrolslua.lib;rocketcontrols.lib;rocketdebugger.lib;rocketcore.lib;libmpg123.lib;portaudio_x86.lib;soxr.lib;libsndfile-1.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;glfw3.lib;glew32.lib;opengl32.lib;libpng16.lib;turbojpeg.lib;jpeg-static.lib;kernel32.lib;user32.lib;gdi32.lib;lua52.lib;sqlite3.lib</AdditionalDependencies>
+      <AdditionalDependencies>dbghelp.lib;rocketcorelua.lib;rocketcontrolslua.lib;rocketcontrols.lib;rocketdebugger.lib;rocketcore.lib;libmpg123.lib;portaudio_x86.lib;soxr.lib;libsndfile-1.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;glfw3.lib;glew32.lib;opengl32.lib;libpng16.lib;turbojpeg.lib;jpeg-static.lib;kernel32.lib;user32.lib;gdi32.lib;lua52.lib;sqlite3.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -94,7 +94,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>rocketcorelua.lib;rocketcontrolslua.lib;rocketcontrols.lib;rocketdebugger.lib;rocketcore.lib;libmpg123.lib;portaudio_x86.lib;soxr.lib;libsndfile-1.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;glfw3.lib;glew32.lib;opengl32.lib;libpng16.lib;turbojpeg.lib;jpeg-static.lib;kernel32.lib;user32.lib;gdi32.lib;lua52.lib;sqlite3.lib</AdditionalDependencies>
+      <AdditionalDependencies>rocketcorelua.lib;rocketcontrolslua.lib;rocketcontrols.lib;rocketdebugger.lib;rocketcore.lib;libmpg123.lib;portaudio_x86.lib;soxr.lib;libsndfile-1.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;glfw3.lib;glew32.lib;opengl32.lib;libpng16.lib;turbojpeg.lib;jpeg-static.lib;kernel32.lib;user32.lib;gdi32.lib;lua52.lib;sqlite3.lib;dbghelp.lib</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -149,6 +149,7 @@
     <ClCompile Include="..\src\Convert.cpp" />
     <ClCompile Include="..\src\ConvertToBMS.cpp" />
     <ClCompile Include="..\src\Easing.cpp" />
+    <ClCompile Include="..\src\ErrorReporting.cpp" />
     <ClCompile Include="..\src\ext\jsoncpp.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>

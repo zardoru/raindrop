@@ -321,7 +321,7 @@ namespace NoteLoaderBMS{
 			ForChannelRangeInMeasure([&](BMSEvent ev, int Track) {
 				Track += TrackOffset;
 
-				if (!ev.Event || Track >= Chart->Channels) return; // UNUSABLE event
+				if (Track >= Chart->Channels) return; // UNUSABLE event
 
 				double Time = TimeForObj(i->first, ev.Fraction);
 

@@ -274,6 +274,9 @@
     <ClCompile Include="..\src\catch_compile_src.cpp">
       <Filter>Source Files\backend</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\ErrorReporting.cpp">
+      <Filter>Source Files\backend</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\pch.h">
