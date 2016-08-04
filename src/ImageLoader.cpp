@@ -232,15 +232,34 @@ auto open_image(Stream&& in)
     return out;
 }
 
+const char* exts[] = {".png", ".bmp", ".tga", ".jpg", ".jpeg"};
 ImageData ImageLoader::GetDataForImage(std::filesystem::path filename)
 {
 	if (!std::filesystem::exists(filename)) {
-		if (ImageLoaderMessages) {
+		auto orig_ext = filename.extension().string();
+		bool found = false;
+
+		for (auto e : exts) {
+			if (e != orig_ext) {
+				if (std::filesystem::exists(filename.replace_extension(e))) {
+					
+					if (ImageLoaderMessages)
+						Log::LogPrintf("ImageLoader: Replaced extension for %s to %s for loading.\n", filename.string().c_str(), e);
+
+					filename = filename.replace_extension(e);
+					found = true;
+					break;
+				}
+			}
+		}
+
+		if (ImageLoaderMessages && !found) {
 			Log::Printf("ImageLoader: Couldn't access \"%s\"", filename.string().c_str());
 			Log::Printf("\n");
 		}
 
-		return {};
+		if (!found)
+			return {};
 	}
 
     auto file = std::ifstream{ filename.string(), std::ios::binary };

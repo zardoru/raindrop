@@ -33,6 +33,10 @@ int main(int argc, char *argv[])
 		GetExceptionCode() == STATUS_ACCESS_VIOLATION ||
 		GetExceptionCode() == STATUS_ARRAY_BOUNDS_EXCEEDED) {
 		PrintTraceFromContext(*ex_info->ContextRecord);
+
+		MessageBox(nullptr, 
+			L"raindrop has crashed. Please see the log for details and maybe send it to github with a report of what you were doing to try and fix it.", 
+			L"Crash!", MB_OK | MB_ICONERROR);
 	}
 #endif
 
