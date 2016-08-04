@@ -3,6 +3,10 @@
 
 void PrintStackTrace();
 
+#ifdef _WIN32
+void InitDbgHelp();
+#endif
+
 void signalrec(int sig) {
 	PrintStackTrace();
 }
@@ -10,6 +14,10 @@ void signalrec(int sig) {
 void RegisterSignals() {
 	signal(SIGABRT, signalrec);
 	signal(SIGSEGV, signalrec);
+
+#ifdef _WIN32
+	InitDbgHelp();
+#endif
 }
 
 
@@ -142,7 +150,6 @@ void PrintStackTrace() {
 		Next in "A series of questionable API decisions": StackWalk!
 	*/
 
-	InitDbgHelp();
 
 	CONTEXT ctx;
 	memset(&ctx, 0, sizeof(CONTEXT));
