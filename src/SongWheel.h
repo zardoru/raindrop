@@ -1,14 +1,16 @@
 #pragma once
 #include "SongList.h"
 
-namespace dotcur
-{
-    class Song;
-}
+namespace Game {
+	namespace dotcur
+	{
+		class Song;
+	}
 
-namespace VSRG
-{
-    class Song;
+	namespace VSRG
+	{
+		class Song;
+	}
 }
 
 class BitmapFont;

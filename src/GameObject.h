@@ -2,39 +2,44 @@
 
 #include "Sprite.h"
 
-class GameObject : public Sprite
-{
-private:
-    friend class ScreenEdit;
+namespace Game {
+	namespace dotcur {
 
-    bool BeingHeld;
+		class GameObject : public Sprite
+		{
+		private:
+			friend class ScreenEdit;
 
-    int32_t heldKey;
+			bool BeingHeld;
 
-    unsigned char AnimationStatus;
+			int32_t heldKey;
 
-public:
+			unsigned char AnimationStatus;
 
-    double startTime, endTime, beat, hold_duration;
-    uint32_t Measure;
-    double Fraction;
-    float fadeout_time, fadein_time; // time to fadeout, and time to get a hit
-    float waiting_time;
+		public:
 
-    GameObject();
-    static void GlobalInit();
-    void Initialize();
+			double startTime, endTime, beat, hold_duration;
+			uint32_t Measure;
+			double Fraction;
+			float fadeout_time, fadein_time; // time to fadeout, and time to get a hit
+			float waiting_time;
 
-    Judgment Hit(double time, Vec2 mpos, bool KeyDown, bool Autoplay, int32_t Key);
-    Judgment Run(double delta, double Time, bool Autoplay);
-    void Animate(float delta, float songTime);
-    void Assign(double Duration, uint32_t Measure, double MeasureFraction);
+			GameObject();
+			static void GlobalInit();
+			void Initialize();
 
-    double GetFraction() const;
-    void SetFraction(double frac);
-    bool IsHold();
-    void Invalidate() override;
-    bool ShouldRemove();
-};
+			Judgment Hit(double time, Vec2 mpos, bool KeyDown, bool Autoplay, int32_t Key);
+			Judgment Run(double delta, double Time, bool Autoplay);
+			void Animate(float delta, float songTime);
+			void Assign(double Duration, uint32_t Measure, double MeasureFraction);
 
-using GameObjectVector = std::vector<GameObject>;
+			double GetFraction() const;
+			void SetFraction(double frac);
+			bool IsHold();
+			void Invalidate() override;
+			bool ShouldRemove();
+		};
+
+		using GameObjectVector = std::vector<GameObject>;
+	}
+}

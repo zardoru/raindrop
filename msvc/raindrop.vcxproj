@@ -180,6 +180,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\src\PlayerChartData.cpp" />
+    <ClCompile Include="..\src\PlayerContext.cpp" />
     <ClCompile Include="..\src\raindrop.cpp" />
     <ClCompile Include="..\src\GameObject.cpp" />
     <ClCompile Include="..\src\GameWindow.cpp" />
@@ -200,25 +202,18 @@
     <ClCompile Include="..\src\NoteLoaderFTB.cpp" />
     <ClCompile Include="..\src\NoteLoaderOM.cpp" />
     <ClCompile Include="..\src\NoteLoaderSM.cpp" />
-    <ClCompile Include="..\src\Renderer7K.cpp" />
     <ClCompile Include="..\src\Rendering.cpp" />
     <ClCompile Include="..\src\ScoreKeeper7K.cpp" />
-    <ClCompile Include="..\src\ScoreKeeper7K_bms.cpp" />
-    <ClCompile Include="..\src\ScoreKeeper7K_experimental.cpp" />
     <ClCompile Include="..\src\ScoreKeeper7K_init.cpp" />
     <ClCompile Include="..\src\ScoreKeeper7K_Lua.cpp" />
     <ClCompile Include="..\src\ScoreKeeper7K_o2jam.cpp" />
-    <ClCompile Include="..\src\ScoreKeeper7K_osu.cpp" />
-    <ClCompile Include="..\src\ScoreKeeper7K_rank.cpp" />
     <ClCompile Include="..\src\Screen.cpp" />
     <ClCompile Include="..\src\ScreenEdit.cpp" />
     <ClCompile Include="..\src\ScreenEvaluation.cpp" />
     <ClCompile Include="..\src\ScreenEvaluation7K.cpp" />
     <ClCompile Include="..\src\ScreenGameplay.cpp" />
     <ClCompile Include="..\src\ScreenGameplay7K.cpp" />
-    <ClCompile Include="..\src\ScreenGameplay7K_Lua.cpp" />
-    <ClCompile Include="..\src\ScreenGameplay7K_Mechanics.cpp" />
-    <ClCompile Include="..\src\ScreenGameplay7K_MechanicsDetails.cpp" />
+    <ClCompile Include="..\src\VSRGMechanics.cpp" />
     <ClCompile Include="..\src\ScreenGameplay7K_Setup.cpp" />
     <ClCompile Include="..\src\ScreenLoading.cpp" />
     <ClCompile Include="..\src\ScreenMainMenu.cpp" />
@@ -264,6 +259,8 @@
     <ClInclude Include="..\src\NoteTransformations.h" />
     <ClInclude Include="..\src\osuBackgroundAnimation.h" />
     <ClInclude Include="..\src\pch.h" />
+    <ClInclude Include="..\src\PlayerChartData.h" />
+    <ClInclude Include="..\src\PlayerContext.h" />
     <ClInclude Include="..\src\ScreenCustom.h" />
     <ClInclude Include="..\src\Sprite.h" />
     <ClInclude Include="..\src\IPC.h" />
@@ -288,7 +285,7 @@
     <ClInclude Include="..\src\ScreenEvaluation7K.h" />
     <ClInclude Include="..\src\ScreenGameplay.h" />
     <ClInclude Include="..\src\ScreenGameplay7K.h" />
-    <ClInclude Include="..\src\ScreenGameplay7K_Mechanics.h" />
+    <ClInclude Include="..\src\VSRGMechanics.h" />
     <ClInclude Include="..\src\ScreenLoading.h" />
     <ClInclude Include="..\src\ScreenMainMenu.h" />
     <ClInclude Include="..\src\ScreenSelectMusic.h" />

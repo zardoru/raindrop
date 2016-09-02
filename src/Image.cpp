@@ -2,9 +2,9 @@
 
 #include "Image.h"
 
-Image* Image::LastBound = NULL;
+Texture* Texture::LastBound = NULL;
 
-Image::Image(unsigned int texture, int w, int h) :
+Texture::Texture(unsigned int texture, int w, int h) :
     texture(texture),
     h(h),
     w(w)
@@ -13,7 +13,7 @@ Image::Image(unsigned int texture, int w, int h) :
     TextureAssigned = true;
 }
 
-Image::Image()
+Texture::Texture()
 {
     TextureAssigned = false;
     IsValid = false;
@@ -22,12 +22,12 @@ Image::Image()
     w = -1;
 }
 
-void Image::ForceRebind()
+void Texture::ForceRebind()
 {
     LastBound = NULL;
 }
 
-Image::~Image()
+Texture::~Texture()
 {
     Destroy();
 }

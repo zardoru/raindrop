@@ -3,9 +3,11 @@
 struct sqlite3;
 struct sqlite3_stmt;
 
-namespace VSRG
-{
-    class Song;
+namespace Game {
+	namespace VSRG
+	{
+		class Song;
+	}
 }
 
 class SongDatabase
@@ -52,9 +54,9 @@ public:
     std::string GetArtistForDifficulty(int DiffID);
     std::string GetStageFile(int DiffID);
 
-    int GetSongIDForFile(std::filesystem::path File, VSRG::Song* In);
+    int GetSongIDForFile(std::filesystem::path File, Game::VSRG::Song* In);
 
-    void GetSongInformation7K(int ID, VSRG::Song* Out);
+    void GetSongInformation(int ID, Game::VSRG::Song* Out);
 
     void StartTransaction();
     void EndTransaction();

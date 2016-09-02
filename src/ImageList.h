@@ -4,16 +4,16 @@
 
 #include "Interruptible.h"
 
-class Image;
+class Texture;
 
 /*
     In particular, allows a manifest of filenames to be passed to it and control when it loads those images.
 */
 class ImageList : public Interruptible
 {
-    std::map <std::filesystem::path, Image*> Images;
+    std::map <std::filesystem::path, Texture*> Images;
     std::map <int, std::filesystem::path> ImagesIndexPending;
-    std::map <int, Image*> ImagesIndex;
+    std::map <int, Texture*> ImagesIndex;
     bool ShouldDeleteAtDestruction;
 
 public:
@@ -35,11 +35,11 @@ public:
     void ForceFetch();
 
     // Gets image from this filename
-    Image* GetFromFilename(const std::string Filename);
+    Texture* GetFromFilename(const std::string Filename);
 
     // Gets image from this index
-    Image* GetFromIndex(int Index);
+    Texture* GetFromIndex(int Index);
 
     // Gets image from SkinPrefix + filename
-    Image* GetFromSkin(const std::string Filename);
+    Texture* GetFromSkin(const std::string Filename);
 };

@@ -234,7 +234,7 @@ void SongDatabase::AddDifficulty(int SongID, std::filesystem::path Filename, Gam
 
         if (Mode == MODE_VSRG)
         {
-            VSRG::Difficulty *VDiff = static_cast<VSRG::Difficulty*>(Diff);
+            auto VDiff = static_cast<Game::VSRG::Difficulty*>(Diff);
 
             SC(sqlite3_bind_int(st_DiffInsertQuery, 9, VDiff->IsVirtual));
             SC(sqlite3_bind_int(st_DiffInsertQuery, 10, VDiff->Channels));
@@ -266,7 +266,7 @@ void SongDatabase::AddDifficulty(int SongID, std::filesystem::path Filename, Gam
 
         if (Mode == MODE_VSRG)
         {
-            VSRG::Difficulty *VDiff = static_cast<VSRG::Difficulty*>(Diff);
+            auto VDiff = static_cast<Game::VSRG::Difficulty*>(Diff);
             assert(VDiff->Data != NULL);
 
             SC(sqlite3_bind_int(st_DiffUpdateQuery, 7, VDiff->IsVirtual));
@@ -377,7 +377,7 @@ std::string SongDatabase::GetArtistForDifficulty(int ID)
 #define _T(x) ((char*)x)
 #endif
 
-void SongDatabase::GetSongInformation7K(int ID, VSRG::Song* Out)
+void SongDatabase::GetSongInformation(int ID, Game::VSRG::Song* Out)
 {
     int ret;
     SC(sqlite3_bind_int(st_GetSongInfo, 1, ID));
@@ -385,7 +385,7 @@ void SongDatabase::GetSongInformation7K(int ID, VSRG::Song* Out)
 
     if (ret != SQLITE_ROW)
     {
-        Log::Printf("SongDatabase::GetSongInformation7K: Chart %d does not exist.\n", ID);
+        Log::Printf("SongDatabase::GetSongInformation: Chart %d does not exist.\n", ID);
         return;
     }
 
@@ -409,7 +409,7 @@ void SongDatabase::GetSongInformation7K(int ID, VSRG::Song* Out)
     SC(sqlite3_bind_int(st_GetDiffInfo, 1, ID));
     while (sqlite3_step(st_GetDiffInfo) != SQLITE_DONE)
     {
-        std::shared_ptr<VSRG::Difficulty> Diff(new VSRG::Difficulty);
+        auto Diff = std::make_shared<Game::VSRG::Difficulty>();
 
         // diffid associated data
         Diff->ID = sqlite3_column_int(st_GetDiffInfo, 0);
@@ -423,7 +423,7 @@ void SongDatabase::GetSongInformation7K(int ID, VSRG::Song* Out)
         Diff->Channels = sqlite3_column_int(st_GetDiffInfo, 8);
 
         int colInt = sqlite3_column_int(st_GetDiffInfo, 10);
-        Diff->BPMType = (VSRG::Difficulty::ETimingType)colInt;
+        Diff->BPMType = (Game::VSRG::Difficulty::ETimingType)colInt;
 
         // We don't include author information to force querying it from the database.
         // Diff->Author
@@ -461,7 +461,7 @@ void SongDatabase::GetSongInformation7K(int ID, VSRG::Song* Out)
     SC(sqlite3_reset(st_GetDiffInfo));
 }
 
-int SongDatabase::GetSongIDForFile(std::filesystem::path File, VSRG::Song* In)
+int SongDatabase::GetSongIDForFile(std::filesystem::path File, Game::VSRG::Song* In)
 {
     int ret;
     int Out = -1;

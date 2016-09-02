@@ -1,22 +1,8 @@
 #pragma once
 
 class GameWindow;
-struct GameParameters;
-
-namespace dotcur
-{
-    class Song;
-}
-
-namespace VSRG
-{
-    struct Difficulty;
-    class Song;
-}
-
 class SongDatabase;
-class Image;
-class ScoreKeeper7K;
+class Texture;
 
 struct lua_State;
 
@@ -24,21 +10,48 @@ namespace Game
 {
     class Song;
 
+	namespace dotcur
+	{
+		class Song;
+	}
+
+	namespace VSRG
+	{
+		struct Parameters;
+		struct Difficulty;
+		class Song;
+		class ScoreKeeper;
+	}
+
     class GameState
     {
         std::string CurrentSkin;
         SongDatabase* Database;
 
-        Image* StageImage;
-        Image* SongBG;
+        Texture* StageImage;
+        Texture* SongBG;
         std::shared_ptr<Game::Song> SelectedSong;
-        std::shared_ptr<ScoreKeeper7K> SKeeper7K;
-        std::shared_ptr<GameParameters> Params;
+
+		struct SPlayerCurrent7K {
+			std::shared_ptr<VSRG::ScoreKeeper> SKeeper7K;
+			std::shared_ptr<VSRG::Parameters> Params;
+			std::shared_ptr<VSRG::Difficulty> Diff;
+
+			int CurrentGaugeType;
+			int CurrentScoreType;
+			int CurrentSubsystemType;
+			SPlayerCurrent7K::SPlayerCurrent7K (){
+				CurrentGaugeType = 0;
+				CurrentScoreType = 0;
+				CurrentSubsystemType = 0;
+			}
+		};
+
+		std::vector<SPlayerCurrent7K> PlayerInfo;
+
         std::map<std::string, std::vector<std::string>> Fallback; // 2nd is 1st's fallback
 
-		int CurrentGaugeType;
-		int CurrentScoreType;
-		int CurrentSubsystemType;
+		
 
         bool FileExistsOnSkin(const char* Filename, const char* Skin);
     public:
@@ -57,31 +70,17 @@ namespace Game
         std::string GetSkinPrefix(const std::string &skin);
         std::string GetScriptsDirectory();
         void SetSkin(std::string NextSkin);
-        Image* GetSkinImage(const std::string& Image);
+        Texture* GetSkinImage(const std::string& Texture);
         bool SkinSupportsChannelCount(int Count);
         std::string GetSkin();
 
-        void SetSelectedSong(std::shared_ptr<Game::Song> Song);
+		void SetSelectedSong(std::shared_ptr<Game::Song> song);
         Game::Song *GetSelectedSong() const;
-        void SetDifficultyIndex(uint32_t DifficultyIndex);
-        uint32_t GetDifficultyIndex() const;
 
-		// VSRG Gauge Type
-		void SetCurrentGaugeType(int GaugeType);
-		int GetCurrentGaugeType() const;
-	    Image* GetSongBG();
-	    Image* GetSongStage();
-	    // VSRG score system
-		void SetCurrentScoreType(int ScoreType);
-		int GetCurrentScoreType() const;
+	    Texture* GetSongBG();
+	    Texture* GetSongStage();
 
-		// VSRG subsystem
-		void SetCurrentSystemType(int SystemType);
-		int GetCurrentSystemType() const;
 
-        // Note: Returning a shared_ptr causes lua to fail an assertion, since shared_ptr is not registered.
-        ScoreKeeper7K* GetScorekeeper7K();
-        void SetScorekeeper7K(std::shared_ptr<ScoreKeeper7K> Other);
 
         std::filesystem::path GetSkinFile(const std::string &Name, const std::string &Skin);
         std::filesystem::path GetSkinFile(const std::string &Name);
@@ -90,10 +89,33 @@ namespace Game
         SongDatabase* GetSongDatabase();
         static GameWindow* GetWindow();
 
-		void SubmitScore(std::shared_ptr<ScoreKeeper7K> score);
-
-        GameParameters* GetParameters();
 		void SortWheelBy(int criteria);
+
+		/* Player-number dependant functions */
+		bool PlayerNumberInBounds(int pn) const;
+
+		// VSRG Gauge Type
+		void SetCurrentGaugeType(int GaugeType, int pn);
+		int GetCurrentGaugeType(int pn) const;
+
+	    // VSRG score system
+		void SetCurrentScoreType(int ScoreType, int pn);
+		int GetCurrentScoreType(int pn) const;
+
+		// VSRG subsystem
+		void SetCurrentSystemType(int SystemType, int pn);
+		int GetCurrentSystemType(int pn) const;
+
+        // Note: Returning a shared_ptr causes lua to fail an assertion, since shared_ptr is not registered.
+        VSRG::ScoreKeeper* GetScorekeeper7K(int pn);
+        void SetScorekeeper7K(std::shared_ptr<VSRG::ScoreKeeper> Other, int pn);
+
+        VSRG::Parameters* GetParameters(int pn);
+		VSRG::Difficulty* GetDifficulty(int pn);
+		std::shared_ptr<VSRG::Difficulty> GetDifficultyShared(int pn);
+		void SetDifficulty(std::shared_ptr<VSRG::Difficulty> df, int pn);
+		int GetPlayerCount() const;
+		void SubmitScore(int pn);
     };
 }
 

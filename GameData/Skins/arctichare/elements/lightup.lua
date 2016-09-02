@@ -42,13 +42,16 @@ local Lightup = {
             end
 
             print("load ", pic)
-            self.Lights[i].Image = pic 
-            ScaleObj(self.Lights[i])
-            self.Lights[i].Centered = 1
-            self.Lights[i].Y = self.Lights[i].Height / 2 * SkinScale
-            self.Lights[i].X = self.coords[i] 
-            self.Lights[i].Layer = 25
-            self.Lights[i].BlendMode = BlendAdd
+            self.Lights[i].Image = pic
+						with(self.Lights[i], {
+							Centered = 1,
+	            Y = self.Lights[i].Height / 2 * SkinScale,
+	            X = self.coords[i],
+	            Layer = 25,
+	            BlendMode = BlendAdd
+						})
+
+						ScaleObj(self.Lights[i])
             print(self.Lights[i].X, self.Lights[i].Y)
         end
     end,
@@ -62,7 +65,7 @@ local Lightup = {
         for k,v in ipairs(keystate) do
             if v == 1 then
                 self.Lights[k].Alpha = 1
-            elseif v == 0 then 
+            elseif v == 0 then
                 self.Lights[k].Alpha = 0
             end
         end

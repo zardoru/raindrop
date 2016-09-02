@@ -2,14 +2,16 @@
 
 class BitmapFont;
 
-namespace dotcur
-{
-    class Song;
-}
+namespace Game {
+	namespace dotcur
+	{
+		class Song;
+	}
 
-namespace VSRG
-{
-    class Song;
+	namespace VSRG
+	{
+		class Song;
+	}
 }
 
 namespace GUI

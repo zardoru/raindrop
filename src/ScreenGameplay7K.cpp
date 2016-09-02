@@ -14,383 +14,354 @@
 #include "Noteskin.h"
 #include "GameState.h"
 
-using namespace VSRG;
+#include "LuaBridge.h"
 
-bool ScreenGameplay7K::IsAutoEnabled()
-{
-    return Auto;
-}
 
-bool ScreenGameplay7K::IsFailEnabled()
-{
-    return NoFail;
-}
+namespace Game {
+	namespace VSRG {
+		void ScreenGameplay::Activate()
+		{
+			if (!Active)
+				Animations->DoEvent("OnActivateEvent");
 
-float ScreenGameplay7K::GetCurrentBeat()
-{
-    return CurrentBeat;
-}
+			Active = true;
+		}
 
-float ScreenGameplay7K::GetUserMultiplier() const
-{
-    return SpeedMultiplierUser;
-}
+		bool ScreenGameplay::IsActive() const
+		{
+			return Active;
+		}
 
-float ScreenGameplay7K::GetCurrentVerticalSpeed()
-{
-    return SectionValue(VSpeeds, WarpedSongTime);
-}
+		Game::VSRG::Song* ScreenGameplay::GetSong() const
+		{
+			return MySong.get();
+		}
 
-double ScreenGameplay7K::GetCurrentVertical()
-{
-    return CurrentVertical;
-}
 
-double ScreenGameplay7K::GetWarpedSongTime()
-{
-    // We can't use lower_bound; Every warp changes the time we actually compare.
-    auto T = SongTime;
-    for (auto k = Warps.begin(); k != Warps.end(); ++k)
-    {
-        if (k->Time <= T)
-            T += k->Value;
-    }
+		void ScreenGameplay::PlayKeysound(int Keysound)
+		{
+			if (Keysounds.find(Keysound) != Keysounds.end() && PlayReactiveSounds)
+				for (auto &&s : Keysounds[Keysound])
+					if (s) s->Play();
+		}
 
-    return T;
-}
 
-double ScreenGameplay7K::GetSongTime()
-{
-    double usedTime = -1;
+		// Called right after the scorekeeper and the engine's objects are initialized.
+		void ScreenGameplay::SetupScriptConstants()
+		{
+			auto L = Animations->GetEnv();
+			luabridge::push(L->GetState(), &BGA->GetTransformation());
+			lua_setglobal(L->GetState(), "Background");
+		}
 
-    if (UsedTimingType == TT_BEATS)
-        usedTime = IntegrateToTime(BPS, SongTime + JudgeOffset);
-    else if (UsedTimingType == TT_TIME)
-        usedTime = SongTime + JudgeOffset;
+		// Called before the script is executed at all.
+		void ScreenGameplay::SetupLua(LuaManager* Env)
+		{
+			GameState::GetInstance().InitializeLua(Env->GetState());
+			Game::VSRG::PlayerContext::SetupLua(Env);
 
-    assert(usedTime != -1);
-    return usedTime;
-}
+#define f(n, x) addProperty(n, &ScreenGameplay::x)
+			luabridge::getGlobalNamespace(Env->GetState())
+				.beginClass <ScreenGameplay>("ScreenGameplay7K")
+				.f("Active", IsActive)
+				.f("Song", GetSong)
+				.addFunction("GetPlayer", &ScreenGameplay::GetPlayerContext)
+				// All of these depend on the player.
 
-void ScreenGameplay7K::SetUserMultiplier(float Multip)
-{
-    if (SongTime <= 0 || !Active)
-        SpeedMultiplierUser = Multip;
-}
+				.endClass();
 
-void ScreenGameplay7K::GearKeyEvent(uint32_t Lane, bool KeyDown)
-{
-    if (Animations->GetEnv()->CallFunction("GearKeyEvent", 2))
-    {
-        Animations->GetEnv()->PushArgument((int)Lane);
-        Animations->GetEnv()->PushArgument(KeyDown);
-        Animations->GetEnv()->RunFunction();
-    }
-}
+			luabridge::push(Env->GetState(), this);
+			lua_setglobal(Env->GetState(), "Game");
+		}
 
-void ScreenGameplay7K::TranslateKey(int32_t Index, bool KeyDown)
-{
-    if (Index < 0)
-        return;
 
-    if (GearBindings.find(Index) == GearBindings.end())
-        return;
+		Game::VSRG::PlayerContext* ScreenGameplay::GetPlayerContext(int i)
+		{
+			if (i >= 0 && i < Players.size())
+				return &Players[i];
+			else
+				return nullptr;
+		}
 
-    int GearIndex = GearBindings[Index]; /* Binding this key to a lane */
+		bool ScreenGameplay::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
+		{
+			/*
+			 In here we should use the input arrangements depending on
+			 the amount of channels the current difficulty is using.
+			 Also potentially pausing and quitting the screen.
+			 Other than that most input can be safely ignored.
+			*/
 
-    if (GearIndex >= MAX_CHANNELS || GearIndex < 0)
-        return;
+			/* Handle nested screens. */
+			if (Screen::HandleInput(key, code, isMouseInput))
+				return true;
 
-    if (KeyDown)
-    {
-        JudgeLane(GearIndex, GetSongTime());
-        GearIsPressed[GearIndex] = true;
-    }
-    else
-    {
-        ReleaseLane(GearIndex, GetSongTime());
-        GearIsPressed[GearIndex] = false;
-    }
-}
+			Animations->HandleInput(key, code, isMouseInput);
 
-bool ScreenGameplay7K::IsUpscrolling()
-{
-    return SpeedMultiplierUser < 0 || Upscroll;
-}
-
-void ScreenGameplay7K::Activate()
-{
-    if (!Active)
-        Animations->DoEvent("OnActivateEvent");
-
-    Active = true;
-}
-
-bool ScreenGameplay7K::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
-{
-    /*
-     In here we should use the input arrangements depending on
-     the amount of channels the current difficulty is using.
-     Also potentially pausing and quitting the screen.
-     Other than that most input can be safely ignored.
-    */
-
-    /* Handle nested screens. */
-    if (Screen::HandleInput(key, code, isMouseInput))
-        return true;
-
-    Animations->HandleInput(key, code, isMouseInput);
-
-    if (code == KE_PRESS)
-    {
-        switch (BindingsManager::TranslateKey(key))
-        {
-        case KT_Escape:
-            if (SongFinished)
-                SuccessTime = -1;
-            else
-                Running = false;
-            break;
-        case KT_Enter:
-            if (!Active)
-                Activate();
-            break;
-        case KT_Right:
-            SpeedMultiplierUser += 0.25;
-            MultiplierChanged = true;
-            break;
-        case KT_Left:
-            SpeedMultiplierUser -= 0.25;
-            MultiplierChanged = true;
-            break;
-        default:
-            break;
-        }
-
-        if (!Auto && BindingsManager::TranslateKey7K(key) != KT_Unknown)
-            TranslateKey(BindingsManager::TranslateKey7K(key), true);
-    }
-    else
-    {
-        if (!Auto && BindingsManager::TranslateKey7K(key) != KT_Unknown)
-            TranslateKey(BindingsManager::TranslateKey7K(key), false);
-    }
-
-    return true;
-}
-
-void ScreenGameplay7K::RunAutoEvents()
-{
-    if (!stage_failed && Active)
-    {
-        // Play BGM events.
-        while (BGMEvents.size() && BGMEvents.front().Time <= SongTime)
-        {
-            for (auto &&s : Keysounds[BGMEvents.front().Sound])
-                if (s) s->Play();
-            BGMEvents.pop();
-        }
-    }
-
-    BGA->SetAnimationTime(SongTime);
-}
-
-void ScreenGameplay7K::CheckShouldEndScreen()
-{
-	auto perform_stage_failure = [&]() {
-		stage_failed = true;
-        ScoreKeeper->failStage();
-        FailSnd.Play();
-
-        // post-gameplay failure?
-        if (!ScoreKeeper->hasDelayedFailure(lifebar_type)) {
-            // We stop all audio..
-            Music->Stop();
-            for (auto i = Keysounds.begin(); i != Keysounds.end(); ++i)
-                for (auto &&s : i->second)
-                    if (s)
-                        s->Stop();
-        }
-
-        // Run stage failed animation.
-        Animations->DoEvent("OnFailureEvent", 1);
-        FailureTime = Clamp(Animations->GetEnv()->GetFunctionResultF(), 0.0f, 30.0f);
-	};
-
-    // Run failure first; make sure it has priority over checking whether it's a pass or not.
-    if (ScoreKeeper->isStageFailed(lifebar_type) && !stage_failed && !NoFail && !ScoreKeeper->hasDelayedFailure(lifebar_type))
-		perform_stage_failure();
-
-    // Okay then, so it's a pass?
-    if (WarpedSongTime > CurrentDiff->Duration && !stage_failed)
-    {
-        double curBPS = SectionValue(BPS, WarpedSongTime);
-        double cutoffspb = 1 / curBPS;
-        double cutoffTime;
-
-        if (ScoreKeeper->usesO2()) // beat-based judgements
-            cutoffTime = cutoffspb * ScoreKeeper->getMissCutoff();
-        else // time-based judgments
-            cutoffTime = ScoreKeeper->getMissCutoff() / 1000.0;
-
-        // we need to make sure we trigger this AFTER all notes could've possibly been judged
-        // note to self: songtime will always be positive since duration is always positive.
-        // cutofftime is unlikely to ever be negative.
-        if (WarpedSongTime - CurrentDiff->Duration > cutoffTime)
-        {
-            if (!SongFinished)
-            {
-				// delayed failure check
-				if (ScoreKeeper->isStageFailed(lifebar_type) && !NoFail) {
-					perform_stage_failure(); // No, don't trigger SongFinished. It wasn't a pass.
-					return;
+			if (code == KE_PRESS)
+			{
+				switch (BindingsManager::TranslateKey(key))
+				{
+				case KT_Escape:
+					if (SongFinishTriggered)
+						Time.Success = -1;
+					else
+						Running = false;
+					break;
+				case KT_Enter:
+					if (!Active)
+						Activate();
+					break;
+				case KT_Right:
+					//SpeedMultiplierUser += 0.25;
+					break;
+				case KT_Left:
+					// SpeedMultiplierUser -= 0.25;
+					break;
+				default:
+					break;
 				}
 
-                SongFinished = true; // Reached the end!
-                Animations->DoEvent("OnSongFinishedEvent", 1);
-                SuccessTime = Clamp(Animations->GetEnv()->GetFunctionResultF(), 3.0f, 30.0f);
-            }
-        }
-    }
+				if (BindingsManager::TranslateKey7K(key) != KT_Unknown) {
+					for (auto &player: Players)
+						player.TranslateKey(BindingsManager::TranslateKey7K(key), true, Time.Stream);
+				}
+			}
+			else
+			{
+				if (BindingsManager::TranslateKey7K(key) != KT_Unknown) {
+					for (auto &player: Players)
+						player.TranslateKey(BindingsManager::TranslateKey7K(key), false, Time.Stream);
+				}
+			}
 
-    // Okay then, the song's done, and the success animation is done too. Time to evaluate.
-    if (SuccessTime < 0 && SongFinished)
-    {
-		GameState::GetInstance().SubmitScore(ScoreKeeper);
+			return true;
+		}
 
-        auto Eval = std::make_shared<ScreenEvaluation7K>();
-        Eval->Init(ScoreKeeper);
-        Next = Eval;
-    }
+		void ScreenGameplay::RunAutoEvents()
+		{
+			if (!StageFailureTriggered && Active)
+			{
+				// Play BGM events.
+				while (BGMEvents.size() && BGMEvents.front().Time <= Time.Stream)
+				{
+					for (auto &&s : Keysounds[BGMEvents.front().Sound])
+						if (s) s->Play();
+					BGMEvents.pop();
+				}
+			}
 
-    if (stage_failed)
-    {
-        MissTime = 10; // Infinite, for as long as it lasts.
-        if (FailureTime <= 0)
-        { 
-			// go to evaluation screen, or back to song select depending on the skin
-			GameState::GetInstance().SubmitScore(ScoreKeeper);
-			
-			if (Configuration::GetSkinConfigf("GoToSongSelectOnFailure") == 0)
-            {
-                auto Eval = std::make_shared<ScreenEvaluation7K>();
-                Eval->Init(ScoreKeeper);
-                Next = Eval;
-            }
-            else
-                Running = false;
-        }
-    }
-}
+			BGA->SetAnimationTime(Time.InterpolatedStream);
+		}
 
-void ScreenGameplay7K::UpdateSongTime(float Delta)
-{
-    // Check if we should play the music..
-    if (SongOldTime == -1)
-    {
-        if (Music)
-            Music->Play();
-        AudioStart = MixerGetTime();
-        AudioOldTime = AudioStart;
-        if (StartMeasure <= 0)
-        {
-            SongOldTime = 0;
-            SongTimeReal = 0;
-            SongTime = 0;
-        }
-    }
-    else
-    {
-        /* Update music. */
-        SongTime += Delta * Speed;
-    }
+		void ScreenGameplay::CheckShouldEndScreen()
+		{
+			auto perform_stage_failure = [&]() {
+				StageFailureTriggered = true;
+				// ScoreKeeper->failStage();
 
-    // Update for the next delta.
-    SongOldTime = SongTimeReal;
+				// post-gameplay failure?
+				if (!ShouldDelayFailure()) {
+					FailSnd.Play();
+					// We stop all audio..
+					Music->Stop();
+					for (auto i = Keysounds.begin(); i != Keysounds.end(); ++i)
+						for (auto &&s : i->second)
+							if (s)
+								s->Stop();
 
-    // Run interpolation
-    double CurrAudioTime = MixerGetTime();
-    double SongDelta = 0;
-    if (Music && Music->IsPlaying())
-        SongDelta = Music->GetStreamedTime() - SongOldTime;
-    else
-        SongDelta = (CurrAudioTime - AudioOldTime) * Speed;
+					// Run stage failed animation.
+					Animations->DoEvent("OnFailureEvent", 1);
+					Time.Failure = Clamp(Animations->GetEnv()->GetFunctionResultF(), 0.0f, 30.0f);
+				}
+			};
 
-    double TempOld = AudioOldTime;
-    AudioOldTime = CurrAudioTime;
-    SongTimeReal += SongDelta;
+			// Run failure first; make sure it has priority over checking whether it's a pass or not.
+			if (PlayersHaveFailed() && !ShouldDelayFailure())
+				perform_stage_failure();
 
-    bool AboveTolerance = abs(SongTime - SongTimeReal) * 1000 > ErrorTolerance;
-    if ((SongDelta != 0 && AboveTolerance) || !InterpolateTime) // Significant delta with a x ms difference? We're pretty off..
-    {
-        if (ErrorTolerance && InterpolateTime)
-            Log::LogPrintf("Audio Desync: delta = %f ms difference = %f ms. Real song time %f (expected %f) Audio current time: %f (old = %f)\n",
-            SongDelta * 1000, abs(SongTime - SongTimeReal) * 1000, SongTimeReal, SongTime, CurrAudioTime, TempOld);
-        SongTime = SongTimeReal;
-    }
+			// Okay then, so it's a pass?
+			if (SongHasFinished() && !StageFailureTriggered)
+			{
+				if (!SongFinishTriggered)
+				{
+					// delayed failure check. 
+					if (PlayersHaveFailed()) {
+						perform_stage_failure(); // No, don't trigger SongFinishTriggered. It wasn't a pass.
+						return;
+					}
 
-    // Update current beat
-    WarpedSongTime = GetWarpedSongTime();
-    CurrentBeat = IntegrateToTime(BPS, WarpedSongTime);
-}
+					SongFinishTriggered = true; // Reached the end!
+					Animations->DoEvent("OnSongFinishedEvent", 1);
+					Time.Success = Clamp(Animations->GetEnv()->GetFunctionResultF(), 3.0f, 30.0f);
+				}
+			}
 
-bool ScreenGameplay7K::Run(double Delta)
-{
-    if (Next)
-        return RunNested(Delta);
+			// Okay then, the song's done, and the success animation is done too. Time to evaluate.
+			if (Time.Success < 0 && SongFinishTriggered)
+			{
+				GameState::GetInstance().SubmitScore(0);
 
-    if (!DoPlay)
-        return false;
+				auto Eval = std::make_shared<ScreenEvaluation>();
+				Eval->Init();
+				Next = Eval;
+			}
 
-    if (ForceActivation)
-    {
-        Activate();
-        ForceActivation = false;
-    }
+			if (StageFailureTriggered)
+			{
+				Time.Miss = 10; // Infinite, for as long as it lasts.
+				if (Time.Failure <= 0)
+				{
+					// go to evaluation screen, or back to song select depending on the skin
+					GameState::GetInstance().SubmitScore(0);
 
-    if (Active)
-    {
-        GameTime += Delta;
-        MissTime -= Delta;
-        FailureTime -= Delta;
-        SuccessTime -= Delta;
+					if (Configuration::GetSkinConfigf("GoToSongSelectOnFailure") == 0)
+					{
+						auto Eval = std::make_shared<ScreenEvaluation>();
+						Eval->Init();
+						Next = Eval;
+					}
+					else
+						Running = false;
+				}
+			}
+		}
 
-        if (GameTime >= WaitingTime)
-        {
-            UpdateSongTime(Delta);
+		bool ScreenGameplay::ShouldDelayFailure()
+		{
+			for (auto &player : Players) {
+				if (player.HasDelayedFailure())
+					return true;
+			}
 
-            CurrentVertical = IntegrateToTime(VSpeeds, WarpedSongTime);
+			return false;
+		}
 
-            RunMeasures();
-            CheckShouldEndScreen();
-        }
-        else
-        {
-            SongTime = -(WaitingTime - GameTime);
-            CurrentBeat = IntegrateToTime(BPS, SongTime);
-            WarpedSongTime = SongTime;
-            CurrentVertical = IntegrateToTime(VSpeeds, SongTime);
-        }
-    }
-    else
-    {
-        CurrentVertical = IntegrateToTime(VSpeeds, -WaitingTime);
-        CurrentBeat = IntegrateToTime(BPS, SongTime);
-        WarpedSongTime = -WaitingTime;
-    }
+		bool ScreenGameplay::PlayersHaveFailed()
+		{
+			for (auto &player : Players) {
+				if (!player.HasFailed())
+					return false;
+			}
 
-    RunAutoEvents();
-    Noteskin::Update(SongTime, CurrentBeat);
-    RecalculateEffects();
+			return true;
+		}
 
-    UpdateScriptVariables();
+		bool ScreenGameplay::SongHasFinished()
+		{
+			for (auto &player : Players) {
+				if (!player.HasSongFinished(Time.Stream))
+					return false;
+			}
 
-    Animations->UpdateTargets(Delta);
-    BGA->Update(Delta);
-    Render();
+			return true;
+		}
 
-    if (Delta > 0.1)
-        Log::Logf("ScreenGameplay7K: Delay@[ST%.03f/RST:%.03f] = %f\n", GetScreenTime(), SongTime, Delta);
+		void ScreenGameplay::UpdateSongTime(float Delta)
+		{
+			// Check if we should play the music..
+			if (Time.OldStream == -1)
+			{
+				if (Music)
+					Music->Play();
+				Time.AudioStart = MixerGetTime();
+				Time.AudioOld = Time.AudioStart;
+				if (StartMeasure <= 0)
+				{
+					Time.InterpolatedStream = 0;
+					Time.Stream = 0;
+				}
+			}
+			else
+			{
+				/* Update music. */
+				Time.InterpolatedStream += Delta;
+			}
 
-    return Running;
+			// Update for the next delta.
+			Time.OldStream = Time.Stream;
+
+			// Run interpolation
+			double CurrAudioTime = MixerGetTime();
+			double SongDelta = 0;
+			if (Music && Music->IsPlaying())
+				SongDelta = Music->GetStreamedTime() - Time.OldStream;
+			else
+				SongDelta = (CurrAudioTime - Time.AudioOld);
+
+
+			double deltaErr = abs(Time.Stream - Time.InterpolatedStream);
+			bool AboveTolerance = deltaErr * 1000 > TimeError.ToleranceMS;
+			if ((SongDelta != 0 && AboveTolerance) || !Time.InterpolateStream) // Significant delta with a x ms difference? We're pretty off..
+			{
+				if (TimeError.ToleranceMS && Time.InterpolatedStream)
+					Log::LogPrintf("Audio Desync: delta = %f ms difference = %f ms. Real song time %f (expected %f) Audio current time: %f (old = %f)\n",
+						SongDelta * 1000, deltaErr * 1000, Time.Stream, Time.InterpolatedStream, CurrAudioTime, Time.AudioOld);
+				Time.InterpolatedStream = Time.Stream;
+			}
+
+			Time.AudioOld = CurrAudioTime;
+			Time.Stream += SongDelta;
+		}
+
+		bool ScreenGameplay::Run(double Delta)
+		{
+			if (Next)
+				return RunNested(Delta);
+
+			if (!DoPlay)
+				return false;
+
+			if (ForceActivation)
+			{
+				Activate();
+				ForceActivation = false;
+			}
+
+			if (Active)
+			{
+				Time.Game += Delta;
+				Time.Miss -= Delta;
+				Time.Failure -= Delta;
+				Time.Success -= Delta;
+
+				if (Time.Game >= Time.Waiting)
+				{
+					UpdateSongTime(Delta);
+
+					// PlayerContext::Update(Time.Stream)
+					CheckShouldEndScreen();
+				}
+				else
+				{
+					Time.InterpolatedStream = -(Time.Waiting - Time.Game);
+					Time.Stream = Time.InterpolatedStream;
+				}
+			}
+
+			RunAutoEvents();
+
+			Animations->UpdateTargets(Delta);
+			BGA->Update(Delta);
+			Render();
+
+			if (Delta > 0.1)
+				Log::Logf("ScreenGameplay7K: Delay@[ST%.03f/RST:%.03f] = %f\n", GetScreenTime(), Time.Game, Delta);
+
+			return Running;
+		}
+
+
+		void ScreenGameplay::Render()
+		{
+			BGA->Render();
+
+			Animations->DrawUntilLayer(13);
+
+			// PlayerContext::Render(Time.InterpolatedStream)
+
+			Animations->DrawFromLayer(14);
+		}
+
+	}
 }

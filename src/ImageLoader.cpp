@@ -8,12 +8,12 @@
 #include "Rendering.h"
 
 std::mutex LoadMutex;
-std::map<std::filesystem::path, Image*> ImageLoader::Textures;
+std::map<std::filesystem::path, Texture*> ImageLoader::Textures;
 std::map<std::filesystem::path, ImageLoader::UploadData> ImageLoader::PendingUploads;
 
 CfgVar ImageLoaderMessages("ImageLoader", "Debug");
 
-void Image::CreateTexture()
+void Texture::CreateTexture()
 {
     if (texture == -1 || !IsValid)
     {
@@ -25,13 +25,13 @@ void Image::CreateTexture()
     }
 }
 
-void Image::BindNull()
+void Texture::BindNull()
 {
     glBindTexture(GL_TEXTURE_2D, 0);
     LastBound = NULL;
 }
 
-void Image::Bind()
+void Texture::Bind()
 {
     if (IsValid && texture != -1)
     {
@@ -43,19 +43,19 @@ void Image::Bind()
     }
 }
 
-void Image::Destroy() // Called at destruction time
+void Texture::Destroy() // Called at destruction time
 {
     if (IsValid && texture != -1)
     {
 		if (ImageLoaderMessages)
-			Log::LogPrintf("Image: Destroying image %s (Removing texture...)\n", fname.string().c_str());
+			Log::LogPrintf("Texture: Destroying image %s (Removing texture...)\n", fname.string().c_str());
         glDeleteTextures(1, &texture);
         IsValid = false;
         texture = -1;
     }
 }
 
-void Image::SetTextureData(ImageData &ImgInfo, bool Reassign)
+void Texture::SetTextureData2D(ImageData &ImgInfo, bool Reassign)
 {
     if (Reassign) Destroy();
 
@@ -87,14 +87,14 @@ void Image::SetTextureData(ImageData &ImgInfo, bool Reassign)
     fname = ImgInfo.Filename;
 }
 
-void Image::Assign(std::filesystem::path Filename, bool Regenerate)
+void Texture::Assign(std::filesystem::path Filename, bool Regenerate)
 {
     CreateTexture();
 
 	if (ImageLoaderMessages)
-		Log::LogPrintf("Image: Assigning \"%s\"\n", Filename.string().c_str());
+		Log::LogPrintf("Texture: Assigning \"%s\"\n", Filename.string().c_str());
     auto Ret = ImageLoader::GetDataForImage(Filename);
-    SetTextureData(Ret, Regenerate);
+    SetTextureData2D(Ret, Regenerate);
     fname = Filename;
 }
 
@@ -133,7 +133,7 @@ void ImageLoader::UnloadAll()
     }
 }
 
-void ImageLoader::DeleteImage(Image* &ToDelete)
+void ImageLoader::DeleteImage(Texture* &ToDelete)
 {
     if (ToDelete) {
 		auto tex = Textures.find(ToDelete->fname);
@@ -152,18 +152,18 @@ void ImageLoader::DeleteImage(Image* &ToDelete)
 	}
 }
 
-Image* ImageLoader::InsertImage(std::filesystem::path Name, ImageData &imgData)
+Texture* ImageLoader::InsertImage(std::filesystem::path Name, ImageData &imgData)
 {
-    Image* I;
+    Texture* I;
 
     if (imgData.Data.size() == 0) return nullptr;
 
     if (Textures.find(Name) == Textures.end())
-        I = (Textures[Name] = new Image());
+        I = (Textures[Name] = new Texture());
     else
         I = Textures[Name];
 
-    I->SetTextureData(imgData);
+    I->SetTextureData2D(imgData);
     I->fname = Name;
 
     return I;
@@ -292,7 +292,7 @@ ImageData ImageLoader::GetDataForImageFromMemory(const unsigned char* const buff
     return out;
 }
 
-Image* ImageLoader::Load(std::filesystem::path filename)
+Texture* ImageLoader::Load(std::filesystem::path filename)
 {
 	if (std::filesystem::is_directory(filename)) return NULL;
     if (Textures.find(filename) != Textures.end() && Textures[filename]->IsValid)
@@ -302,9 +302,9 @@ Image* ImageLoader::Load(std::filesystem::path filename)
     else
     {
         ImageData ImgData = GetDataForImage(filename);
-        Image* Ret = InsertImage(filename, ImgData);
+        Texture* Ret = InsertImage(filename, ImgData);
 
-        Image::LastBound = Ret;
+        Texture::LastBound = Ret;
 
         return Ret;
     }
@@ -347,7 +347,7 @@ void ImageLoader::UpdateTextures()
             imgData.Width = i->second.Width;
             imgData.Height = i->second.Height;
 
-            Image::LastBound = InsertImage(i->first, imgData);
+            Texture::LastBound = InsertImage(i->first, imgData);
         }
 
         PendingUploads.clear();
@@ -372,7 +372,7 @@ void ImageLoader::UpdateTextures()
     }
 }
 
-void ImageLoader::RegisterTexture(Image* tex)
+void ImageLoader::RegisterTexture(Texture* tex)
 {
 	if (tex->fname.string().length()) {
 		if (Textures.find(tex->fname) != Textures.end()) {

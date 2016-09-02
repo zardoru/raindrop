@@ -26,7 +26,20 @@ function Components:Init()
         self.Lightup = Lightup:new(1)
         self.Judgment = Judgment:new(1)
     else
+				self.Score = Numbers:new(2540 * SkinScale, 40 * SkinScale, true, 6)
+				self.MulLeft = Numbers:new(2570 * SkinScale, 1720 * SkinScale, true, 2)
+				self.MulRight = Numbers:new(2740 * SkinScale, 1720 * SkinScale, true, 2)
+				self.Gauge = Gauge:new(970 * SkinScale, 1550 * SkinScale, 2, true)
 
+				self.J1 = Numbers:new(2550 * SkinScale, 2060 * SkinScale, false, 4)
+				self.J2 = Numbers:new(2770 * SkinScale, 2060 * SkinScale, false, 4)
+				self.J3 = Numbers:new(2990 * SkinScale, 2060 * SkinScale, false, 4)
+				self.J4 = Numbers:new(3210 * SkinScale, 2060 * SkinScale, false, 4)
+				self.JM = Numbers:new(3430 * SkinScale, 2060 * SkinScale, false, 4)
+				self.MC = Numbers:new(3650 * SkinScale, 2060 * SkinScale, false, 4)
+
+				self.Lightup = Lightup:new(2)
+				self.Judgment = Judgment:new(2)
     end
 end
 
@@ -44,7 +57,7 @@ function Components:Update(delta)
         self.Mins:update(0)
         self.Secs:update(0, true)
     end
-    
+
     self.Score:update(ScoreKeeper:getScore(ST_EX))
     local int = math.floor(Game:GetUserMultiplier())
     local frac = math.floor((Game:GetUserMultiplier() - int) * 100)

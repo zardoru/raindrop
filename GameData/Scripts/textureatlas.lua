@@ -1,4 +1,4 @@
-game_require "utils"
+game_require "librd"
 
 TextureAtlas = {}
 TextureAtlas.__index = TextureAtlas
@@ -29,10 +29,10 @@ function TextureAtlas:AssignFrames(Filename)
 			else
 				local restable = split(line)
 
-				Sprite = {  
-					x = tonumber(restable[2]), 
-					y = tonumber(restable[3]), 
-					w = tonumber(restable[4]), 
+				Sprite = {
+					x = tonumber(restable[2]),
+					y = tonumber(restable[3]),
+					w = tonumber(restable[4]),
 					h = tonumber(restable[5])
 				}
 
@@ -56,3 +56,5 @@ end
 function TextureAtlas:skin_new(filename)
 	return self:new(GetSkinFile(filename))
 end
+
+return TextureAtlas

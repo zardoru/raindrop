@@ -25,6 +25,6 @@ public:
     virtual void Render();
 
     Transformation& GetTransformation();
-    /* Can only be called from main thread! */
-    static std::shared_ptr<BackgroundAnimation> CreateBGAFromSong(uint8_t DifficultyIndex, Game::Song& Input, Interruptible* context, bool LoadNow = false);
+    /* Can only be called from main thread if LoadNow = true! */
+    static std::unique_ptr<BackgroundAnimation> CreateBGAFromSong(uint8_t DifficultyIndex, Game::Song& Input, Interruptible* context, bool LoadNow = false);
 };

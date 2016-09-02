@@ -22,9 +22,9 @@ float CfgValNPS(std::string name, float defaultvalue)
 
 class NPSGraph
 {
-    VSRG::Song* Song;
+    Game::VSRG::Song* Song;
 
-    int CountInterval(VSRG::Difficulty* In, double timeStart, double timeEnd)
+    int CountInterval(Game::VSRG::Difficulty* In, double timeStart, double timeEnd)
     {
         int out = 0;
         for (auto m : In->Data->Measures)
@@ -48,7 +48,7 @@ class NPSGraph
     }
 
 public:
-    NPSGraph(VSRG::Song* In)
+    NPSGraph(Game::VSRG::Song* In)
     {
         Song = In;
     }
@@ -56,7 +56,7 @@ public:
     std::vector<int> GetDataPoints(int diffIndex, double intervalduration)
     {
         std::vector<int> datapoints;
-        VSRG::Difficulty *Diff = Song->Difficulties.at(diffIndex).get();
+        Game::VSRG::Difficulty *Diff = Song->Difficulties.at(diffIndex).get();
         if (Diff == nullptr) return datapoints;
 
         int intervalCount = ceil(Diff->Duration / intervalduration);
@@ -160,7 +160,7 @@ public:
     }
 };
 
-void ConvertToNPSGraph(VSRG::Song *Sng, std::filesystem::path PathOut)
+void ConvertToNPSGraph(Game::VSRG::Song *Sng, std::filesystem::path PathOut)
 {
     for (auto i = 0; i < Sng->Difficulties.size(); i++)
     {

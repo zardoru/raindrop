@@ -5,6 +5,7 @@
 #include "Song7K.h"
 #include "Converter.h"
 #include "Logging.h"
+#include "PlayerChartData.h"
 
 int TrackToXPos(int totaltracks, int track)
 {
@@ -13,15 +14,11 @@ int TrackToXPos(int totaltracks, int track)
     return (base * (track + 1) - minus);
 }
 
-void ConvertToOM(VSRG::Song *Sng, std::filesystem::path PathOut, std::string Author)
+void ConvertToOM(Game::VSRG::Song *Sng, std::filesystem::path PathOut, std::string Author)
 {
 	Log::LogPrintf("Attempt to convert %d difficulties...\n", Sng->Difficulties.size());
     for (auto Difficulty : Sng->Difficulties)
     {
-        char vf[1024];
-        TimingData BPS;
-        TimingData VSpeeds, Warps;
-        std::string Author = Sng->SongAuthor;
         std::string Name = Sng->SongName;
         std::string DName = Difficulty->Name;
         std::string Charter = Author;
@@ -47,7 +44,7 @@ void ConvertToOM(VSRG::Song *Sng, std::filesystem::path PathOut, std::string Aut
             return;
         }
 
-        Difficulty->GetPlayableData(nullptr, BPS, VSpeeds, Warps, 0);
+		Game::VSRG::PlayerChartData data = Game::VSRG::PlayerChartData::FromDifficulty(Difficulty.get());
 
         // First, convert metadata.
         out
@@ -100,7 +97,7 @@ void ConvertToOM(VSRG::Song *Sng, std::filesystem::path PathOut, std::string Aut
         // Write BGM events here.
         for (auto BGM : Difficulty->Data->BGMEvents)
         {
-            auto sndf = Difficulty->SoundList[BGM.Sound];
+            auto sndf = Difficulty->Data->SoundList[BGM.Sound];
             out << "5," << int(round(BGM.Time * 1000)) << ",0,\"" << sndf << "\",100" << std::endl;
         }
 
@@ -113,7 +110,7 @@ void ConvertToOM(VSRG::Song *Sng, std::filesystem::path PathOut, std::string Aut
         // Then, timing points.
         out << "[TimingPoints]\n";
 
-        for (auto t : BPS)
+        for (auto t : data.BPS)
         {
             out << t.Time * 1000 << "," << 1000 / (t.Value ? t.Value : 0.00001) << ",4,1,0,15,1,0\n";
             out.flush();
@@ -134,7 +131,7 @@ void ConvertToOM(VSRG::Song *Sng, std::filesystem::path PathOut, std::string Aut
             {
                 for (auto Note : k.Notes[n])
                 {
-                    if (Difficulty->IsWarpingAt(Note.StartTime)) continue;
+                    if (data.IsWarpingAt(Note.StartTime)) continue;
 
                     out << TrackToXPos(Difficulty->Channels, n) << ",0," << int(round(Note.StartTime * 1000.0)) << ","
                         << (Note.EndTime ? "128" : "1") << ",0,";
@@ -143,7 +140,8 @@ void ConvertToOM(VSRG::Song *Sng, std::filesystem::path PathOut, std::string Aut
                     out << "1:0:0:0:";
 
                     if (Note.Sound)
-                        out << (Difficulty->SoundList.find(Note.Sound) != Difficulty->SoundList.end() ? Difficulty->SoundList[Note.Sound] : "");
+                        out << (Difficulty->Data->SoundList.find(Note.Sound) != Difficulty->Data->SoundList.end() ? 
+							Difficulty->Data->SoundList[Note.Sound] : "");
 
                     out << "\n";
                     out.flush();
@@ -153,11 +151,10 @@ void ConvertToOM(VSRG::Song *Sng, std::filesystem::path PathOut, std::string Aut
     }
 }
 
-void ConvertToSMTiming(VSRG::Song *Sng, std::filesystem::path PathOut)
+void ConvertToSMTiming(Game::VSRG::Song *Sng, std::filesystem::path PathOut)
 {
-    TimingData BPS, VSpeeds, Warps;
-    VSRG::Difficulty* Diff = Sng->Difficulties[0].get();
-    Diff->GetPlayableData(nullptr, BPS, VSpeeds, Warps);
+    Game::VSRG::Difficulty* Diff = Sng->Difficulties[0].get();
+	Game::VSRG::PlayerChartData data = Game::VSRG::PlayerChartData::FromDifficulty(Diff);
 
     std::ofstream out(PathOut.string());
     // Technically, stepmania's #OFFSET is actually #GAP, not #OFFSET.
@@ -173,21 +170,21 @@ void ConvertToSMTiming(VSRG::Song *Sng, std::filesystem::path PathOut)
         double Value = 0;
         switch (Diff->BPMType)
         {
-        case VSRG::Difficulty::BT_BEAT:
+        case Game::VSRG::Difficulty::BT_BEAT:
             Time = i->Time;
             Value = i->Value;
             break;
-        case VSRG::Difficulty::BT_BEATSPACE:
+        case Game::VSRG::Difficulty::BT_BEATSPACE:
             Time = i->Time;
             Value = 60000 / i->Value;
             break;
-        case VSRG::Difficulty::BT_MS:
+        case Game::VSRG::Difficulty::BT_MS:
             Time = i->Time / 1000.0;
             Value = i->Value;
             break;
         }
 
-        double Beat = QuantizeBeat(IntegrateToTime(BPS, Time + Diff->Offset, 0));
+        double Beat = QuantizeBeat(IntegrateToTime(data.BPS, Time + Diff->Offset, 0));
 
         out << Beat << "=" << Value;
 
@@ -198,8 +195,8 @@ void ConvertToSMTiming(VSRG::Song *Sng, std::filesystem::path PathOut)
     out << ";";
 }
 
-void ExportToBMS(VSRG::Song *Sng, std::filesystem::path PathOut);
-void ConvertToBMS(VSRG::Song *Sng, std::filesystem::path PathOut)
+void ExportToBMS(Game::VSRG::Song *Sng, std::filesystem::path PathOut);
+void ConvertToBMS(Game::VSRG::Song *Sng, std::filesystem::path PathOut)
 {
     ExportToBMS(Sng, PathOut);
 }

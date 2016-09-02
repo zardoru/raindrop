@@ -30,16 +30,11 @@ bool GameState::FileExistsOnSkin(const char* Filename, const char* Skin)
 
 GameState::GameState(): 
 	StageImage(nullptr), 
-	SongBG(nullptr), 
-	CurrentGaugeType(0), 
-	CurrentScoreType(0), 
-	CurrentSubsystemType(0)
+	SongBG(nullptr)
 {
     CurrentSkin = "default";
     SelectedSong = nullptr;
-    SKeeper7K = nullptr;
     Database = nullptr;
-    Params = std::make_shared<GameParameters>();
 
     // TODO: circular references are possible :(
     std::filesystem::path SkinsDir(DirectoryPrefix + SkinsPrefix);
@@ -59,6 +54,9 @@ GameState::GameState():
         }
         if (!Fallback[st].size()) Fallback[st].push_back("default");
     }
+
+	// push the default player
+	PlayerInfo.push_back(SPlayerCurrent7K());
 }
 
 std::filesystem::path GameState::GetSkinScriptFile(const char* Filename, const std::string& skin)
@@ -73,7 +71,10 @@ std::filesystem::path GameState::GetSkinScriptFile(const char* Filename, const s
 
 std::shared_ptr<Game::Song> GameState::GetSelectedSongShared() const
 {
-    return SelectedSong;
+	if (Game::SongWheel::GetInstance().GetSelectedSong())
+		return Game::SongWheel::GetInstance().GetSelectedSong();
+	else
+		return SelectedSong;
 }
 
 std::string GameState::GetFirstFallbackSkin()
@@ -90,11 +91,6 @@ GameState& GameState::GetInstance()
 Song *GameState::GetSelectedSong() const
 {
     return SelectedSong.get();
-}
-
-void GameState::SetSelectedSong(std::shared_ptr<Game::Song> Song)
-{
-    SelectedSong = Song;
 }
 
 std::filesystem::path GameState::GetSkinFile(const std::string &Name, const std::string &Skin)
@@ -116,6 +112,11 @@ std::filesystem::path GameState::GetSkinFile(const std::string &Name, const std:
     return Test;
 }
 
+void GameState::SetSelectedSong(std::shared_ptr<Game::Song> song)
+{
+	SelectedSong = song;
+}
+
 std::filesystem::path GameState::GetSkinFile(const std::string& Name)
 {
     return GetSkinFile(Name, GetSkin());
@@ -127,19 +128,9 @@ void GameState::Initialize()
     {
         Database = new SongDatabase("rd.db");
 
-        SongBG = new Image();
-        StageImage = new Image();
+        SongBG = new Texture();
+        StageImage = new Texture();
     }
-}
-
-void GameState::SetDifficultyIndex(uint32_t Index)
-{
-    SongWheel::GetInstance().SetDifficulty(Index);
-}
-
-uint32_t GameState::GetDifficultyIndex() const
-{
-    return SongWheel::GetInstance().GetDifficulty();
 }
 
 GameWindow* GameState::GetWindow()
@@ -192,17 +183,24 @@ std::filesystem::path GameState::GetFallbackSkinFile(const std::string &Name)
     return GetSkinPrefix() + Name;
 }
 
-void GameState::SetCurrentGaugeType(int GaugeType)
+bool GameState::PlayerNumberInBounds(int pn) const
 {
-	this->CurrentGaugeType = GaugeType;
+	return pn >= 0 && pn < PlayerInfo.size();
 }
 
-int GameState::GetCurrentGaugeType() const
+void GameState::SetCurrentGaugeType(int GaugeType, int pn)
 {
-	return CurrentGaugeType;
+	if (PlayerNumberInBounds(pn))
+		PlayerInfo[pn].CurrentGaugeType = GaugeType;
 }
 
-Image* GameState::GetSongBG()
+int GameState::GetCurrentGaugeType(int pn) const
+{
+	if (PlayerNumberInBounds(pn))
+		return PlayerInfo[pn].CurrentGaugeType;
+}
+
+Texture* GameState::GetSongBG()
 {
 	if (SelectedSong)
 	{
@@ -222,7 +220,7 @@ Image* GameState::GetSongBG()
 	return nullptr;
 }
 
-Image* GameState::GetSongStage()
+Texture* GameState::GetSongStage()
 {
 	if (SelectedSong)
 	{
@@ -230,13 +228,14 @@ Image* GameState::GetSongStage()
 		{
 			VSRG::Song *Song = static_cast<VSRG::Song*>(SelectedSong.get());
 
-			if (Song->Difficulties.size() > GetDifficultyIndex())
+			if (PlayerInfo[0].Diff)
 			{
-				std::filesystem::path File = Database->GetStageFile(Song->Difficulties.at(GetDifficultyIndex())->ID);
+				auto diff = PlayerInfo[0].Diff;
+				std::filesystem::path File = Database->GetStageFile(diff->ID);
 
 				// Oh so it's loaded and it's not in the database, fine.
-				if (File.string().length() == 0 && Song->Difficulties.at(GetDifficultyIndex())->Data)
-					File = Song->Difficulties.at(GetDifficultyIndex())->Data->StageFile;
+				if (File.string().length() == 0 && diff->Data)
+					File = diff->Data->StageFile;
 
 				auto toLoad = SelectedSong->SongDirectory / File;
 
@@ -246,7 +245,7 @@ Image* GameState::GetSongStage()
 					size_t read;
 					const unsigned char* buf = reinterpret_cast<const unsigned char*>(LoadOJNCover(toLoad, read));
 					ImageData data = ImageLoader::GetDataForImageFromMemory(buf, read);
-					StageImage->SetTextureData(data, true);
+					StageImage->SetTextureData2D(data, true);
 					delete[] buf;
 
 					return StageImage;
@@ -272,7 +271,7 @@ Image* GameState::GetSongStage()
 	return nullptr;
 }
 
-Image* GameState::GetSkinImage(const std::string& Path)
+Texture* GameState::GetSkinImage(const std::string& Path)
 {
     /* Special paths */
     if (Path == "STAGEFILE")
@@ -301,37 +300,60 @@ std::string GameState::GetSkin()
     return CurrentSkin;
 }
 
-ScoreKeeper7K* GameState::GetScorekeeper7K()
+Game::VSRG::ScoreKeeper* GameState::GetScorekeeper7K(int pn)
 {
-    return SKeeper7K.get();
+	if (PlayerNumberInBounds(pn))
+		return PlayerInfo[pn].SKeeper7K.get();
+	else return nullptr;
 }
 
-void GameState::SetScorekeeper7K(std::shared_ptr<ScoreKeeper7K> Other)
+void GameState::SetScorekeeper7K(std::shared_ptr<Game::VSRG::ScoreKeeper> Other, int pn)
 {
-    SKeeper7K = Other;
+    if (PlayerNumberInBounds(pn))
+		PlayerInfo[pn].SKeeper7K = Other;
 }
 
-void GameState::SetCurrentScoreType(int ScoreType)
+void GameState::SetCurrentScoreType(int ScoreType, int pn)
 {
-	CurrentScoreType = ScoreType;
+	if (PlayerNumberInBounds(pn))
+		PlayerInfo[pn].CurrentScoreType = ScoreType;
 }
 
-int GameState::GetCurrentScoreType() const
+int GameState::GetCurrentScoreType(int pn) const
 {
-	return CurrentScoreType;
+	if (PlayerNumberInBounds(pn))
+		return PlayerInfo[pn].CurrentScoreType;
+	else
+		return 0;
 }
 
-void GameState::SetCurrentSystemType(int SystemType)
+void GameState::SetCurrentSystemType(int SystemType, int pn)
 {
-	CurrentSubsystemType = SystemType;
+	if (PlayerNumberInBounds(pn))
+		PlayerInfo[pn].CurrentSubsystemType = SystemType;
 }
 
-int GameState::GetCurrentSystemType() const
+int GameState::GetCurrentSystemType(int pn) const
 {
-	return CurrentSubsystemType;
+	if (PlayerNumberInBounds(pn))
+		return PlayerInfo[pn].CurrentSubsystemType;
+	else
+		return 0;
 }
 
-void GameState::SubmitScore(std::shared_ptr<ScoreKeeper7K> score)
+void Game::GameState::SetDifficulty(std::shared_ptr<Game::VSRG::Difficulty> df, int pn)
+{
+	if (PlayerNumberInBounds(pn)) {
+		PlayerInfo[pn].Diff = df;
+	}
+}
+
+int Game::GameState::GetPlayerCount() const
+{
+	return PlayerInfo.size();
+}
+
+void GameState::SubmitScore(int pn)
 {
 	// TODO
 }

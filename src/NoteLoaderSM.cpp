@@ -7,7 +7,7 @@
 
 /* Stepmania/SSC loader. Lacks delays and speeds for now. As well as keysounds. */
 
-using namespace VSRG;
+using namespace Game::VSRG;
 using namespace NoteLoaderSM;
 
 struct StepmaniaSpeed
@@ -332,7 +332,7 @@ void DoCommonSMCommands(std::string command, std::string CommandContents, Song* 
 // It's not interpreted as "infinite bpm" but as literally jumping around.
 // Should work for most cases. Haven't seen anyone put stops in the middle
 // of their warps, fortunately.
-TimingData CalculateRaindropWarpData(VSRG::Difficulty* Diff, const TimingData& Warps)
+TimingData CalculateRaindropWarpData(Difficulty* Diff, const TimingData& Warps)
 {
 	TimingData Ret;
 	for (auto Warp : Warps)
@@ -351,7 +351,7 @@ TimingData CalculateRaindropWarpData(VSRG::Difficulty* Diff, const TimingData& W
 }
 
 // DRY etc I'll see it later.
-TimingData CalculateRaindropSCData(VSRG::Difficulty* Diff, const TimingData& SCd)
+TimingData CalculateRaindropSCData(Difficulty* Diff, const TimingData& SCd)
 {
 	TimingData Ret;
 	for (auto SC : SCd)
@@ -368,9 +368,9 @@ TimingData CalculateRaindropSCData(VSRG::Difficulty* Diff, const TimingData& SCd
 }
 
 // Transform the time data from beats to seconds
-VSRG::VectorSpeeds CalculateRaindropScrolls(VSRG::Difficulty *Diff, const SpeedData& In)
+VectorSpeeds CalculateRaindropScrolls(Difficulty *Diff, const SpeedData& In)
 {
-	VSRG::VectorSpeeds Ret;
+	VectorSpeeds Ret;
 
 	for (auto scroll : In)
 	{
@@ -433,7 +433,7 @@ void NoteLoaderSSC::LoadObjectsFromFile(std::filesystem::path filename, Song *Ou
     SpeedData diffSpeedData;
     double Offset = 0;
 
-    std::shared_ptr<VSRG::Difficulty> Diff = nullptr;
+    std::shared_ptr<Difficulty> Diff = nullptr;
 
     if (!filein.is_open())
         throw std::runtime_error(Utility::Format("couldn't open %s for reading", filename.c_str()).c_str());
@@ -552,7 +552,7 @@ void NoteLoaderSSC::LoadObjectsFromFile(std::filesystem::path filename, Song *Ou
 
         _OnCommand(#NOTES)
         {
-            Diff->BPMType = VSRG::Difficulty::BT_BEAT;
+            Diff->BPMType = Difficulty::BT_BEAT;
             if (!Diff->Timing.size())
                 Diff->Timing = BPMData;
 
@@ -574,7 +574,7 @@ void NoteLoaderSSC::LoadObjectsFromFile(std::filesystem::path filename, Song *Ou
             Diff->Duration = 0;
             Diff->Filename = filename;
             Diff->BPMType = Difficulty::BT_BEAT;
-            Diff->Data->TimingInfo = std::make_shared<StepmaniaTimingInfo>();
+            Diff->Data->TimingInfo = std::make_shared<StepmaniaChartInfo>();
             Diff->Data->StageFile = Banner;
 
             Diff->Data->Warps = CalculateRaindropWarpData(Diff.get(), Diff->Data->Warps);
@@ -666,10 +666,10 @@ void NoteLoaderSM::LoadObjectsFromFile(std::filesystem::path filename, Song *Out
     TimingData StopsData;
     double Offset = 0;
 
-    std::shared_ptr<VSRG::Difficulty> Diff = std::make_shared<VSRG::Difficulty>();
+    std::shared_ptr<Difficulty> Diff = std::make_shared<Difficulty>();
 
     // Stepmania uses beat-based locations for stops and BPM.
-    Diff->BPMType = VSRG::Difficulty::BT_BEAT;
+    Diff->BPMType = Difficulty::BT_BEAT;
 
     if (!filein.is_open())
         throw std::runtime_error(Utility::Format("couldn't open %s for reading", filename.string().c_str()).c_str());
@@ -678,7 +678,7 @@ void NoteLoaderSM::LoadObjectsFromFile(std::filesystem::path filename, Song *Out
 
     Diff->Offset = 0;
     Diff->Duration = 0;
-    Diff->Data = std::make_shared<VSRG::DifficultyLoadInfo>();
+    Diff->Data = std::make_shared<DifficultyLoadInfo>();
 
     std::string line;
     while (filein)
@@ -728,7 +728,7 @@ void NoteLoaderSM::LoadObjectsFromFile(std::filesystem::path filename, Song *Out
             Diff->Duration = 0;
             Diff->Filename = filename;
             Diff->BPMType = Difficulty::BT_BEAT;
-            Diff->Data->TimingInfo = std::make_shared<StepmaniaTimingInfo>();
+            Diff->Data->TimingInfo = std::make_shared<StepmaniaChartInfo>();
             Diff->Data->StageFile = Banner;
             CleanStopsData(Diff.get());
             WarpifyTiming(Diff.get());

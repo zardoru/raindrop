@@ -4,7 +4,7 @@ if Lanes ~= 8 and Lanes ~= 6 then
 end
 
 require "TextureAtlas"
-skin_require "custom_defs"
+Noteskin = skin_require "custom_defs"
 -- All notes have their origin centered.
 
 notes = {}
@@ -20,9 +20,6 @@ end
 function MakeNote(i)
 	ret = Object2D()
 	ret.Image = "assets/" .. NoteAtlas.File
-	print (Noteskin)
-	print (Noteskin[Lanes])
-	print ('Key' .. i .. 'Image')
 	NoteAtlas:SetObjectCrop(ret, "note-" .. Noteskin[Lanes]['Key' .. i .. 'Image'] .. ".png")
 	SetCommonNoteStuff(ret, i)
 	return ret
@@ -41,7 +38,7 @@ function MakeLongNote(i, n, isOn)
 	elseif not isOn then
 		txt = "off"
 		atlas = LNAtlas.off
-	end	 
+	end
 
 	ptop.Image = "assets/" .. atlas.File
 	pmid.Image = "assets/" .. atlas.File
@@ -68,7 +65,7 @@ end
 
 function Init()
 	NoteAtlas = TextureAtlas:skin_new("assets/note-normal.csv")
-	
+
 	LNAtlas = {
 		on = TextureAtlas:skin_new("assets/note-long-on.csv"),
 		off = TextureAtlas:skin_new("assets/note-long-off.csv")
@@ -80,7 +77,7 @@ function Init()
 		local keypic = Noteskin[Lanes]["Key" .. i .. "Image"]
 		-- normal hit notes
 		notes[i] = MakeNote(i)
-		
+
 		-- long notes (off by default)
 		longnotes[i] = {}
 		longnotes[i].on = MakeLongNote(keypic, i, true)
@@ -89,7 +86,7 @@ function Init()
 end
 
 function Update(delta, beat)
-end 
+end
 
 -- 1 is enabled. 2 is being pressed. 0 is failed. 3 is succesful hit.
 function drawNormalInternal(lane, loc, frac, active_level)
@@ -103,7 +100,7 @@ function drawHoldTopInternal(lane, loc, frac, active_level)
 	lane = lane + 1
 	if active_level == 2 then
 		note = longnotes[lane].on.top
-	else 
+	else
 		note = longnotes[lane].off.top
 	end
 
@@ -116,7 +113,7 @@ function drawHoldBotInternal(lane, loc, frac, active_level)
 	lane = lane + 1
 	if active_level == 2 then
 		note = longnotes[lane].on.bot
-	else 
+	else
 		note = longnotes[lane].off.bot
 	end
 
@@ -129,7 +126,7 @@ function drawHoldBodyInternal(lane, loc, size, active_level)
 	lane = lane + 1
 	if active_level == 2 then
 		note = longnotes[lane].on.mid
-	else 
+	else
 		note = longnotes[lane].off.mid
 	end
 
@@ -146,6 +143,8 @@ end
 -- Barline
 BarlineEnabled = 1
 BarlineOffset = NoteHeight / 2
+
+print ("Noteskin lanes is ")
 BarlineStartX = Noteskin[Lanes].GearStartX
 BarlineWidth = Noteskin[Lanes].BarlineWidth
 JudgmentLineY = ScreenHeight - (1560 * SkinScale - NoteHeight / 2)
@@ -158,7 +157,7 @@ NoteScreenSize = NoteHeight / 2
 
 DrawNormal = drawNormalInternal
 DrawFake = drawNormalInternal
-DrawLift = drawNormalInternal 
+DrawLift = drawNormalInternal
 DrawMine = drawMineInternal
 
 DrawHoldHead = drawHoldTopInternal

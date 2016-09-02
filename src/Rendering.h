@@ -9,7 +9,7 @@ enum EBlendMode
     BLEND_MULTIPLY
 };
 
-class Image;
+class Texture;
 class VBO;
 
 namespace Renderer {
@@ -26,7 +26,7 @@ namespace Renderer {
 	void DoQuadDraw();
 	void SetBlendingMode(EBlendMode Mode);
 	void SetTexturedQuadVBO(VBO *TexQuad);
-	void DrawTexturedQuad(Image* ToDraw, const AABB& TextureCrop, const Transformation& QuadTransformation, const EBlendMode &Mode = BLEND_ALPHA, const ColorRGB &InColor = Color::White);
+	void DrawTexturedQuad(Texture* ToDraw, const AABB& TextureCrop, const Transformation& QuadTransformation, const EBlendMode &Mode = BLEND_ALPHA, const ColorRGB &InColor = Color::White);
 	void DrawPrimitiveQuad(Transformation &QuadTransformation, const EBlendMode &Mode = BLEND_ALPHA, const ColorRGB &InColor = Color::White);
 
 	VBO* GetDefaultGeometryBuffer();

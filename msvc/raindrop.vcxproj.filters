@@ -19,9 +19,6 @@
     <ClCompile Include="..\src\ScreenGameplay7K.cpp">
       <Filter>Source Files\vsrg\gameplay</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ScreenGameplay7K_Mechanics.cpp">
-      <Filter>Source Files\vsrg\gameplay</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\TrackNote.cpp">
       <Filter>Source Files\vsrg\internal</Filter>
     </ClCompile>
@@ -127,13 +124,7 @@
     <ClCompile Include="..\src\AudioSourceOJM.cpp">
       <Filter>Source Files\backend\audio</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ScreenGameplay7K_MechanicsDetails.cpp">
-      <Filter>Source Files\vsrg\gameplay</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\LuaAnimationInterface.cpp">
-      <Filter>Source Files\lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ScreenGameplay7K_Lua.cpp">
       <Filter>Source Files\lua</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ScoreKeeper7K_Lua.cpp">
@@ -175,22 +166,10 @@
     <ClCompile Include="..\src\ScoreKeeper7K.cpp">
       <Filter>Source Files\vsrg\scorekeeper</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ScoreKeeper7K_bms.cpp">
-      <Filter>Source Files\vsrg\scorekeeper</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ScoreKeeper7K_experimental.cpp">
-      <Filter>Source Files\vsrg\scorekeeper</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\ScoreKeeper7K_init.cpp">
       <Filter>Source Files\vsrg\scorekeeper</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ScoreKeeper7K_o2jam.cpp">
-      <Filter>Source Files\vsrg\scorekeeper</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ScoreKeeper7K_osu.cpp">
-      <Filter>Source Files\vsrg\scorekeeper</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ScoreKeeper7K_rank.cpp">
       <Filter>Source Files\vsrg\scorekeeper</Filter>
     </ClCompile>
     <ClCompile Include="..\src\NPSGraph.cpp">
@@ -201,9 +180,6 @@
     </ClCompile>
     <ClCompile Include="..\src\Application.cpp">
       <Filter>Source Files\game global</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Renderer7K.cpp">
-      <Filter>Source Files\vsrg\gameplay</Filter>
     </ClCompile>
     <ClCompile Include="..\src\NoteTransformations.cpp">
       <Filter>Source Files\vsrg\gameplay</Filter>
@@ -276,6 +252,15 @@
     </ClCompile>
     <ClCompile Include="..\src\ErrorReporting.cpp">
       <Filter>Source Files\backend</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PlayerContext.cpp">
+      <Filter>Source Files\vsrg\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PlayerChartData.cpp">
+      <Filter>Source Files\vsrg\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\VSRGMechanics.cpp">
+      <Filter>Source Files\vsrg\gameplay</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -471,9 +456,6 @@
     <ClInclude Include="..\src\ScreenGameplay7K.h">
       <Filter>Header Files\vsrg</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\ScreenGameplay7K_Mechanics.h">
-      <Filter>Header Files\vsrg</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\ScreenEvaluation7K.h">
       <Filter>Header Files\vsrg</Filter>
     </ClInclude>
@@ -482,6 +464,15 @@
     </ClInclude>
     <ClInclude Include="..\src\Easing.h">
       <Filter>Header Files\game global\BGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\PlayerContext.h">
+      <Filter>Header Files\vsrg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\VSRGMechanics.h">
+      <Filter>Header Files\vsrg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\PlayerChartData.h">
+      <Filter>Header Files\vsrg</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

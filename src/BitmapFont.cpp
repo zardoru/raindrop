@@ -14,7 +14,7 @@ BitmapFont::BitmapFont()
 void BitmapFont::LoadFontImage(std::filesystem::path Location, Vec2 _CharSize, Vec2 _CellSize, Vec2 _RenderSize, char FontStart)
 {
     if (!Font)
-        Font = new Image;
+        Font = new Texture;
 
     Font->Assign(Location);
 

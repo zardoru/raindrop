@@ -72,25 +72,26 @@ AnimatedObjects = {
 
 	-- Internal functions for automating stuff.
 	Init = function ()
+		AnimatedObjects.Items = {}
 		for i = 1, #AnimatedObjects.List do
-			if AnimatedObjects.List[i] then 
-				AnimatedObjects.List[i].Init()
+			if AnimatedObjects.List[i] then
+				AnimatedObjects.Items[i] = AnimatedObjects.List[i]:new()
 			end
 		end
 	end,
 
 	Run = function (Delta)
-		for i = 1, #AnimatedObjects.List do
-			if AnimatedObjects.List[i] and AnimatedObjects.List[i].Run ~= nil then
-				AnimatedObjects.List[i].Run(Delta)
+		for i = 1, #AnimatedObjects.Items do
+			if AnimatedObjects.Items[i] and AnimatedObjects.Items[i].Run ~= nil then
+				AnimatedObjects.Items[i].Run(Delta)
 			end
 		end
 	end,
-	
+
 	GearKeyEvent = function (Lane, IsKeyDown)
 		for i = 1, #AnimatedObjects.List do
-			if AnimatedObjects.List[i] and AnimatedObjects.List[i].GearKeyEvent ~= nil then
-				AnimatedObjects.List[i].GearKeyEvent(Lane, IsKeyDown)
+			if AnimatedObjects.Items[i] and AnimatedObjects.Items[i].GearKeyEvent ~= nil then
+				AnimatedObjects.Items[i].GearKeyEvent(Lane, IsKeyDown)
 			end
 		end
 	end
@@ -152,53 +153,20 @@ end
 
 function HitEvent(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease)
 	-- When hits happen, this function is called.
-	if math.abs(TimeOff) < AccuracyHitMS then
-		DoColor = 0
+	AnimatedObjects.Hit(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease)
 
-		if JudgmentValue == 0 then
-			DoColor = 1
-		end
-
-		Explosions.Hit(Lane, 0, IsHold, IsHoldRelease)
-		ComboDisplay.Hit(DoColor)
-
-		local EarlyOrLate
-		if TimeOff < 0 then
-			EarlyOrLate = 1
-		else	
-			EarlyOrLate = 2
-		end
-
-		Judgment.Hit(JudgmentValue, EarlyOrLate)
-	end
-
-	if histogram then 
+	if histogram then
 	  	histogram:UpdatePoints()
 	end
-	ScoreDisplay.Update()
 end
 
 function MissEvent(TimeOff, Lane, IsHold)
 	-- When misses happen, this function is called.
-	if math.abs(TimeOff) <= 135 then -- mishit
-		Explosions.Hit(Lane, 1, IsHold, 0)
-	end
+	AnimatedObjects.MissEvent(TimeOff, Lane, IsHold)
 
-	local EarlyOrLate
-	if TimeOff < 0 then
-		EarlyOrLate = 1
-	else
-		EarlyOrLate = 2
-	end
-
-	Judgment.Hit(5, EarlyOrLate)
-
-	if histogram then 
+	if histogram then
 	  	histogram:UpdatePoints()
 	end
-	ScoreDisplay.Update()
-	ComboDisplay.Miss()
-	MissHighlight.OnMiss(Lane)
 end
 
 function KeyEvent(Key, Code, IsMouseInput)
@@ -213,7 +181,6 @@ function GearKeyEvent (Lane, IsKeyDown)
 	end
 
 	AnimatedObjects.GearKeyEvent(Lane, IsKeyDown)
-	HitLightning.LanePress(Lane, IsKeyDown)
 end
 
 -- Called when the song is over.
@@ -225,13 +192,12 @@ end
 
 function Update(Delta)
 	-- Executed every frame.
-	
+
 	if Active ~= 0 then
 		AutoAnimation.Run(Delta)
 	end
-	
+
 	AnimatedObjects.Run(Delta)
 	UpdateTextObjects()
 
 end
-

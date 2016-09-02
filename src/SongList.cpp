@@ -37,8 +37,8 @@ void SongList::AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, std:
     NewEntry.Kind = ListEntry::Directory;
     NewEntry.Data = std::shared_ptr<void>(NewList);
 
-    std::vector<VSRG::Song*> Songs7K;
-    std::vector<dotcur::Song*> SongsDC;
+    std::vector<Game::VSRG::Song*> Songs7K;
+    std::vector<Game::dotcur::Song*> SongsDC;
     std::vector<std::string> Listing;
 
 	for (auto i : std::filesystem::directory_iterator (Dir))
@@ -237,14 +237,14 @@ void SongList::SortBy(ESortCriteria criteria)
 			{
 				if (a->Mode == MODE_DOTCUR)
 				{
-					auto sng = std::static_pointer_cast<dotcur::Song>(a);
+					auto sng = std::static_pointer_cast<Game::dotcur::Song>(a);
 					auto dif = sng->GetDifficulty(0);
 					if (dif) return dif->Duration;
 				}
 
 				if (a->Mode == MODE_VSRG)
 				{
-					auto sng = std::static_pointer_cast<VSRG::Song>(a);
+					auto sng = std::static_pointer_cast<Game::VSRG::Song>(a);
 					auto dif = sng->GetDifficulty(0);
 					if (dif) return dif->Duration;
 				}	
@@ -267,7 +267,7 @@ void SongList::SortBy(ESortCriteria criteria)
 			{
 				if (a->Mode == MODE_DOTCUR)
 				{
-					auto sng = std::static_pointer_cast<dotcur::Song>(a);
+					auto sng = std::static_pointer_cast<Game::dotcur::Song>(a);
 					auto minnps = std::numeric_limits<float>::infinity();
 					for (auto diff : sng->Difficulties) {
 						minnps = std::min(minnps, float(diff->TotalNotes / diff->Duration));
@@ -278,7 +278,7 @@ void SongList::SortBy(ESortCriteria criteria)
 
 				if (a->Mode == MODE_VSRG)
 				{
-					auto sng = std::static_pointer_cast<VSRG::Song>(a);
+					auto sng = std::static_pointer_cast<Game::VSRG::Song>(a);
 					auto minnps = std::numeric_limits<float>::infinity();
 					for (auto diff : sng->Difficulties) {
 						minnps = std::min(minnps, float(diff->TotalNotes / diff->Duration));
@@ -304,7 +304,7 @@ void SongList::SortBy(ESortCriteria criteria)
 			{
 				if (a->Mode == MODE_DOTCUR)
 				{
-					auto sng = std::static_pointer_cast<dotcur::Song>(a);
+					auto sng = std::static_pointer_cast<Game::dotcur::Song>(a);
 					auto maxnps = -std::numeric_limits<float>::infinity();
 					for (auto diff : sng->Difficulties) {
 						maxnps = std::max(maxnps, float(diff->TotalNotes / diff->Duration));
@@ -315,7 +315,7 @@ void SongList::SortBy(ESortCriteria criteria)
 
 				if (a->Mode == MODE_VSRG)
 				{
-					auto sng = std::static_pointer_cast<VSRG::Song>(a);
+					auto sng = std::static_pointer_cast<Game::VSRG::Song>(a);
 					auto maxnps = -std::numeric_limits<float>::infinity();
 					for (auto diff : sng->Difficulties) {
 						maxnps = std::max(maxnps, float(diff->TotalNotes / diff->Duration));

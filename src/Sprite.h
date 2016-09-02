@@ -5,7 +5,7 @@
 #include "Drawable.h"
 
 class VBO;
-class Image;
+class Texture;
 
 class Drawable2D : public Transformation, public Drawable
 {
@@ -36,7 +36,7 @@ private: // Transformations
     float mCrop_x1, mCrop_y1;
     float mCrop_x2, mCrop_y2;
 
-    Image* mImage;
+    Texture* mImage;
 
     void Construct(bool doInitTexture);
 protected:
@@ -64,8 +64,8 @@ public:
     bool AffectedByLightning;
     bool BlackToTransparent; // If enabled, transforms black pixels into transparent pixels.
 
-    void SetImage(Image* image, bool ChangeSize = true);
-    Image* GetImage();
+    void SetImage(Texture* image, bool ChangeSize = true);
+    Texture* GetImage();
     std::string GetImageFilename() const;
 
     virtual void Initialize(bool ShouldInitTexture);

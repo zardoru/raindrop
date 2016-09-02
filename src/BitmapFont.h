@@ -8,7 +8,7 @@ class LuaManager;
 
 class BitmapFont : public Font
 {
-    Image *Font;
+    Texture *Font;
     Sprite CharPosition[258];
     Vec2 CharSize, CellSize, RenderSize;
     unsigned char StartingCharacter;

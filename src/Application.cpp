@@ -248,22 +248,23 @@ void Application::SetupPreviewMode()
 
     // Avoid a crash...
     GameState::GetInstance().SetSelectedSong(song);
-    GameState::GetInstance().SetDifficultyIndex(difIndex);
 
     // Create loading screen and gameplay screen.
-    auto game = std::make_shared<ScreenGameplay7K>();
+    auto game = std::make_shared<Game::VSRG::ScreenGameplay>();
     ScreenLoading *LoadScreen = new ScreenLoading(game);
 
     // Set them up.
 	song->SongDirectory = std::filesystem::absolute(InFile.parent_path());
 
-    GameParameters param;
+	/*
+    Game::VSRG::Parameters param;
+
     param.Upscroll = Upscroll;
     param.StartMeasure = Measure;
     param.Preloaded = true;
     param.Auto = Auto;
-
-    game->Init(song, difIndex, param);
+	*/
+    game->Init(song);
     LoadScreen->Init();
 
     Game = LoadScreen;
@@ -292,7 +293,7 @@ bool Application::PollIPC()
     }
 }
 
-void ExportToBMSUnquantized(VSRG::Song* Source, std::filesystem::path PathOut);
+void ExportToBMSUnquantized(Game::VSRG::Song* Source, std::filesystem::path PathOut);
 
 void Application::Run()
 {
@@ -344,7 +345,7 @@ void Application::Run()
     else if (RunMode == MODE_CONVERT)
     {
 		InFile = std::filesystem::absolute(InFile);
-        std::shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.filename(), InFile.parent_path(), nullptr);
+        std::shared_ptr<Game::VSRG::Song> Sng = LoadSong7KFromFilename(InFile.filename(), InFile.parent_path(), nullptr);
 
 		Log::Printf("Conversion mode activated.\n");
         if (Sng && Sng->Difficulties.size())

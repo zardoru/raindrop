@@ -4,174 +4,182 @@
 #include "TrackNote.h"
 //#include <glm/gtc/matrix_transform.inl>
 
-using namespace VSRG;
+namespace Game {
+	namespace VSRG {
 
-TrackNote::TrackNote()
-{
-    EnabledHitFlags = EnabledFlag | HeadEnabledFlag;
-}
+		TrackNote::TrackNote()
+		{
+			Reset();
+		}
 
-TrackNote::~TrackNote()
-{
-}
+		TrackNote::~TrackNote()
+		{
+		}
 
-float TrackNote::GetHoldSize() const
-{
-    return abs((b_pos_holdend - b_pos));
-}
+		void TrackNote::Reset()
+		{
+			EnabledHitFlags = EnabledFlag | HeadEnabledFlag;
+		}
 
-float TrackNote::GetHoldEndVertical()
-{
-    return b_pos_holdend;
-}
+		float TrackNote::GetHoldSize() const
+		{
+			return abs((b_pos_holdend - b_pos));
+		}
 
-void TrackNote::FailHit()
-{
-    EnabledHitFlags |= FailedHitFlag;
-}
+		float TrackNote::GetHoldEndVertical()
+		{
+			return b_pos_holdend;
+		}
 
-void TrackNote::MakeInvisible()
-{
-    EnabledHitFlags |= InvisibleFlag;
-}
+		void TrackNote::FailHit()
+		{
+			EnabledHitFlags |= FailedHitFlag;
+		}
 
-void TrackNote::RemoveSound()
-{
-    Sound = 0;
-}
+		void TrackNote::MakeInvisible()
+		{
+			EnabledHitFlags |= InvisibleFlag;
+		}
 
-bool TrackNote::FailedHit() const
-{
-    return (EnabledHitFlags & FailedHitFlag) != 0;
-}
+		void TrackNote::RemoveSound()
+		{
+			Sound = 0;
+		}
 
-void TrackNote::AssignNotedata(const VSRG::NoteData &Notedata)
-{
-    Time = Notedata.StartTime;
-    EndTime = Notedata.EndTime;
-    Sound = Notedata.Sound;
-    NoteKind = Notedata.NoteKind;
-}
+		bool TrackNote::FailedHit() const
+		{
+			return (EnabledHitFlags & FailedHitFlag) != 0;
+		}
 
-int GetFractionKindBeat(double frac);
+		void TrackNote::AssignNotedata(const VSRG::NoteData &Notedata)
+		{
+			Time = Notedata.StartTime;
+			EndTime = Notedata.EndTime;
+			Sound = Notedata.Sound;
+			NoteKind = Notedata.NoteKind;
+		}
 
-/* calculate the beat snap for this fraction */
-void TrackNote::AssignFraction(double frac)
-{
-    FractionKind = GetFractionKindBeat(frac);
-}
+		int GetFractionKindBeat(double frac);
 
-void TrackNote::AssignPosition(double Position, double endPosition)
-{
-    b_pos = Position;
-    b_pos_holdend = endPosition;
-}
+		/* calculate the beat snap for this fraction */
+		void TrackNote::AssignFraction(double frac)
+		{
+			FractionKind = GetFractionKindBeat(frac);
+		}
 
-bool TrackNote::IsHold() const
-{
-    return EndTime != 0;
-}
+		void TrackNote::AssignPosition(double Position, double endPosition)
+		{
+			b_pos = Position;
+			b_pos_holdend = endPosition;
+		}
 
-float TrackNote::GetVertical() const
-{
-    return b_pos;
-}
+		bool TrackNote::IsHold() const
+		{
+			return EndTime != 0;
+		}
 
-void TrackNote::AddTime(double Time)
-{
-    this->Time += Time;
+		float TrackNote::GetVertical() const
+		{
+			return b_pos;
+		}
 
-    if (IsHold())
-        EndTime += Time;
-}
+		void TrackNote::AddTime(double Time)
+		{
+			this->Time += Time;
 
-double TrackNote::GetTimeFinal() const
-{
-    return std::max(Time, EndTime);
-}
+			if (IsHold())
+				EndTime += Time;
+		}
 
-double TrackNote::GetStartTime() const
-{
-    return Time;
-}
+		double TrackNote::GetTimeFinal() const
+		{
+			return std::max(Time, EndTime);
+		}
 
-bool TrackNote::IsEnabled() const
-{
-    return EnabledHitFlags & EnabledFlag;
-}
+		double TrackNote::GetStartTime() const
+		{
+			return Time;
+		}
 
-bool TrackNote::IsHeadEnabled() const
-{
-    return (EnabledHitFlags & HeadEnabledFlag) != 0;
-}
+		bool TrackNote::IsEnabled() const
+		{
+			return EnabledHitFlags & EnabledFlag;
+		}
 
-void TrackNote::Disable()
-{
-    EnabledHitFlags &= ~EnabledFlag;
-    DisableHead();
-}
+		bool TrackNote::IsHeadEnabled() const
+		{
+			return (EnabledHitFlags & HeadEnabledFlag) != 0;
+		}
 
-void TrackNote::DisableHead()
-{
-    EnabledHitFlags &= ~HeadEnabledFlag;
-}
+		void TrackNote::Disable()
+		{
+			EnabledHitFlags &= ~EnabledFlag;
+			DisableHead();
+		}
 
-void TrackNote::Hit()
-{
-    EnabledHitFlags |= WasHitFlag;
-}
+		void TrackNote::DisableHead()
+		{
+			EnabledHitFlags &= ~HeadEnabledFlag;
+		}
 
-bool TrackNote::WasNoteHit() const
-{
-    return (EnabledHitFlags & WasHitFlag) != 0;
-}
+		void TrackNote::Hit()
+		{
+			EnabledHitFlags |= WasHitFlag;
+		}
 
-float TrackNote::GetVerticalHold() const
-{
-    return b_pos + GetHoldSize() / 2;
-}
+		bool TrackNote::WasNoteHit() const
+		{
+			return (EnabledHitFlags & WasHitFlag) != 0;
+		}
 
-int TrackNote::GetSound() const
-{
-    return Sound;
-}
+		float TrackNote::GetVerticalHold() const
+		{
+			return b_pos + GetHoldSize() / 2;
+		}
 
-int TrackNote::GetFracKind() const
-{
-    return FractionKind;
-}
+		int TrackNote::GetSound() const
+		{
+			return Sound;
+		}
 
-double &TrackNote::GetDataStartTime()
-{
-    return Time;
-}
+		int TrackNote::GetFracKind() const
+		{
+			return FractionKind;
+		}
 
-double &TrackNote::GetDataEndTime()
-{
-    return EndTime;
-}
+		double &TrackNote::GetDataStartTime()
+		{
+			return Time;
+		}
 
-uint16_t &TrackNote::GetDataSound()
-{
-    return Sound;
-}
+		double &TrackNote::GetDataEndTime()
+		{
+			return EndTime;
+		}
 
-uint8_t  TrackNote::GetDataNoteKind()
-{
-    return NoteKind;
-}
+		uint16_t &TrackNote::GetDataSound()
+		{
+			return Sound;
+		}
 
-uint8_t  TrackNote::GetDataFractionKind()
-{
-    return FractionKind;
-}
+		uint8_t  TrackNote::GetDataNoteKind()
+		{
+			return NoteKind;
+		}
 
-bool TrackNote::IsJudgable() const
-{
-    return NoteKind != NK_INVISIBLE && NoteKind != NK_FAKE;
-}
+		uint8_t  TrackNote::GetDataFractionKind()
+		{
+			return FractionKind;
+		}
 
-bool TrackNote::IsVisible() const
-{
-    return NoteKind != NK_INVISIBLE && !(EnabledHitFlags & InvisibleFlag);
+		bool TrackNote::IsJudgable() const
+		{
+			return NoteKind != NK_INVISIBLE && NoteKind != NK_FAKE;
+		}
+
+		bool TrackNote::IsVisible() const
+		{
+			return NoteKind != NK_INVISIBLE && !(EnabledHitFlags & InvisibleFlag);
+		}
+	}
 }

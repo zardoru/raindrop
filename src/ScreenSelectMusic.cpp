@@ -107,7 +107,7 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic")
     ClickSnd = std::make_unique<SoundSample>();
     ClickSnd->Open(Configuration::GetSkinSound("SongSelectHover"));
 
-    GameObject::GlobalInit();
+    Game::dotcur::GameObject::GlobalInit();
 
     IsTransitioning = false;
     TransitionTime = 0;
@@ -219,21 +219,20 @@ void ScreenSelectMusic::StartGameplayScreen()
 {
     std::shared_ptr<ScreenLoading> LoadNext;
     std::shared_ptr<Game::Song> MySong = GameState::GetInstance().GetSelectedSongShared();
-    uint8_t difindex = GameState::GetInstance().GetDifficultyIndex();
+	auto difindex = Game::SongWheel::GetInstance().GetDifficulty();
 
     if (MySong->Mode == MODE_DOTCUR)
     {
-        auto DotcurGame = std::make_shared<ScreenGameplay>();
-        DotcurGame->Init(static_cast<dotcur::Song*>(MySong.get()), difindex);
+        auto DotcurGame = std::make_shared<Game::dotcur::ScreenGameplay>();
+        DotcurGame->Init(static_cast<Game::dotcur::Song*>(MySong.get()), difindex);
 
         LoadNext = std::make_shared<ScreenLoading>(DotcurGame);
     }
     else
     {
-        auto VSRGGame = std::make_shared<ScreenGameplay7K>();
+        auto VSRGGame = std::make_shared<Game::VSRG::ScreenGameplay>();
 
-        VSRGGame->Init(std::dynamic_pointer_cast<VSRG::Song>(MySong),
-            difindex, *GameState::GetInstance().GetParameters());
+        VSRGGame->Init(std::dynamic_pointer_cast<Game::VSRG::Song>(MySong));
 
         LoadNext = std::make_shared<ScreenLoading>(VSRGGame);
     }
@@ -258,7 +257,6 @@ void ScreenSelectMusic::OnSongSelect(std::shared_ptr<Game::Song> MySong, uint8_t
     StopLoops();
 
     GameState::GetInstance().SetSelectedSong(MySong);
-    GameState::GetInstance().SetDifficultyIndex(difindex);
 
     Animations->DoEvent("OnSelect", 1);
     TransitionTime = Animations->GetEnv()->GetFunctionResultF();
@@ -470,10 +468,12 @@ bool ScreenSelectMusic::HandleInput(int32_t key, KeyEventType code, bool isMouse
             Running = false;
             break;
         case KT_Left:
-            GameState::GetInstance().SetDifficultyIndex(Game::SongWheel::GetInstance().PrevDifficulty());
+			Game::SongWheel::GetInstance().PrevDifficulty();
+            //GameState::GetInstance().SetDifficulty(Game::SongW, 0);
             break;
         case KT_Right:
-            GameState::GetInstance().SetDifficultyIndex(Game::SongWheel::GetInstance().NextDifficulty());
+			Game::SongWheel::GetInstance().NextDifficulty();
+            //GameState::GetInstance().SetDifficulty();
             break;
 		default:
 			break;
@@ -493,9 +493,8 @@ bool ScreenSelectMusic::HandleScrollInput(double xOff, double yOff)
             return true;
     }
 
-    Animations->HandleScrollInput(xOff, yOff);
-
-    return Game::SongWheel::GetInstance().HandleScrollInput(xOff, yOff);
+	Animations->HandleScrollInput(xOff, yOff);
+	return Game::SongWheel::GetInstance().HandleScrollInput(xOff, yOff);
 }
 
 void ScreenSelectMusic::TransformItem(int Item, std::shared_ptr<Game::Song> Song, bool IsSelected, int Index)

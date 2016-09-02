@@ -3,7 +3,7 @@
 function GetScale()
 	local srcres = 3840
 	local dstres = 1360
-	return dstres / srcres 
+	return dstres / srcres
 end
 
 SkinScale = GetScale()
@@ -21,7 +21,7 @@ function ScaleObj(o)
 end
 
 -- Player's default side on the field. 1 for left, 2 for right.
-PlayerSide = 1
+PlayerSide = 2
 
 -- Default side for the scratch. 1 for left, 2 for right.
 ScratchSide = 1

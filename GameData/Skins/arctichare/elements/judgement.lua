@@ -10,7 +10,7 @@ local Judgment = {
         "judge-bad.png",
         "judge-miss.png", -- w5 is unused, repeat miss
         "judge-miss.png"
-    }, 
+    },
     ComboMap = {
         "perfect",
         "great",
@@ -28,43 +28,45 @@ local Judgment = {
         self.PacemakerBadAtlas = TextureAtlas:skin_new("assets/pace-b.csv")
 
         -- Judgement object
-        self.Judgment = Engine:CreateObject()
-        self.Judgment.Centered = 1
-        self.Judgment.Alpha = 0
-        self.Judgment.Layer = 20
-        self.Judgment.ChainTransformation = self.Transform
+        self.Judgment = ScreenObject {
+        	Centered = 1,
+        	Alpha = 0,
+        	Layer = 20,
+        	ChainTransformation = self.Transform
+				}
 
         -- force load if not preloaded
-        self.Judgment.Image = self.JudgeAtlas.File
-        self.Judgment.Image = self.PGreatAtlas.File
+        self.Judgment.Image = "assets/" .. self.JudgeAtlas.File
+        self.Judgment.Image = "assets/" .. self.PGreatAtlas.File
         ScaleObj(self.Judgment)
 
         -- Combo object
         self.ComboDigits = {}
 
-        local max_digits = math.floor(math.log10(ScoreKeeper:getMaxNotes())) + 1 
-        for i=1, max_digits do 
-            local obj = Engine:CreateObject()
-            self.ComboDigits[#self.ComboDigits + 1] = obj
-            obj.Alpha = 0
-            obj.ChainTransformation = self.Transform
-            obj.Image = "assets/" .. self.ComboAtlas.File
-            obj.Layer = self.Judgment.Layer
-            ScaleObj(obj)  
+        local max_digits = math.floor(math.log10(ScoreKeeper:getMaxNotes())) + 1
+        for i=1, max_digits do
+            local obj = ScreenObject {
+	            Alpha = 0,
+	            ChainTransformation = self.Transform,
+	            Image = "assets/" .. self.ComboAtlas.File,
+	            Layer = self.Judgment.Layer
+						}
+            ScaleObj(obj)
+						self.ComboDigits[#self.ComboDigits + 1] = obj
         end
 
         self.DigitCount = max_digits
 
-        -- Pacemaker object 
+        -- Pacemaker object
 
         -- Fast/Slow indicator
-        self.FSIndicator = Engine:CreateObject()
-        self.FSIndicator.Alpha = 0
-        self.FSIndicator.Centered = 1
-        self.FSIndicator.Layer = 20
-        self.FSIndicator.Image = "assets/rate-fast.png"
-        self.FSIndicator.Image = "assets/rate-slow.png"
-        self.FSIndicator.ChainTransformation = self.Transform
+        self.FSIndicator = ScreenObject {
+        	Alpha = 0,
+        	Centered = 1,
+        	Layer = 20,
+        	ChainTransformation = self.Transform
+			  }
+
         ScaleObj(self.FSIndicator)
 
         self.TimeToFade = 0.25
@@ -85,42 +87,42 @@ local Judgment = {
         return ret
     end,
     onJudge = function(self, judge, timeoff)
-        print("JUDGE: ", judge, timeoff)
-
         -- update main judge
         self.LastJudge = judge
         if judge == 1 or judge == 0 then
-            -- if pgreat or judge == 0 then 
+            -- if pgreat or judge == 0 then
             self.Judgment.Image = "assets/" .. self.PGreatAtlas.File
             self.PGreatAtlas:SetObjectCrop(self.Judgment, "judge-pgreat-1.png", true)
             --end
-        else 
+        else
             self.Judgment.Image = "assets/" .. self.JudgeAtlas.File
             self.JudgeAtlas:SetObjectCrop(self.Judgment, Judgment.JudgeMap[judge], true)
         end
         self.Judgment.Alpha = 1
         self.TimeScaling = self.ScaleFeedbackTime
+				self.TimeRemainingToFade = self.TimeToFade
 
         -- update pacemaker
 
-        -- update F/S indicator 
+        -- update F/S indicator
         if judge == 1 or judge == 0 then
             self.FSIndicator.Alpha = 0
         else
             self.FSIndicator.Alpha = 1
             if timeoff > 0 then
                 self.FSIndicator.Image = "assets/rate-slow.png"
-            else 
+            else
                 self.FSIndicator.Image = "assets/rate-fast.png"
             end
 
             local jh = self.Judgment.Height * SkinScale / 2
             local ih = self.FSIndicator.Height * SkinScale / 2
-            self.FSIndicator.Y = self.Judgment.Y - jh - ih 
+            self.FSIndicator.Y = self.Judgment.Y - jh - ih
         end
     end,
     update = function(self, delta)
         self.TimeScaling = self.TimeScaling - delta
+				self.TimeRemainingToFade = self.TimeRemainingToFade - delta
         self.BlinkTime = self.BlinkTime + delta
 
         self.Transform.X = GearStartX - 40 * SkinScale + GearWidth / 2
@@ -146,13 +148,13 @@ local Judgment = {
             blink_frame = self.LastJudge
         end
 
-        
+				-- Blink and alpha stuff.
         if blink_frame and blink_frame ~= 6 then
             local combo_str = tostring(ScoreKeeper:getScore(ST_COMBO))
             local digit_w = 70
             local combo_w = #combo_str * digit_w * SkinScale
 
-            
+
             local judge_space = -15
             local digit_offset = self.Judgment.Width / 2 * SkinScale + judge_space
             -- combo digits plus judge center
@@ -160,13 +162,17 @@ local Judgment = {
 
             local joffset =  (dpj - self.Judgment.Width / 2 * SkinScale)
 
-            if combo_w > 0 then 
+            if combo_w > 0 then
                 self.Judgment.X = -joffset
             end
 
-            for i=1, #combo_str do 
-                if i > self.DigitCount then 
-                    break 
+						-- Place F/S on top of combo
+						local jstart = self.Judgment.X + self.Judgment.Width / 2 * SkinScale
+						self.FSIndicator.X = jstart
+
+            for i=1, #combo_str do
+                if i > self.DigitCount then
+                    break
                 end
 
                 local di = #combo_str - (i - 1)
@@ -174,9 +180,11 @@ local Judgment = {
 
                 local spr = "judge-" .. Judgment.ComboMap[blink_frame] .. "-combo-" .. digit .. ".png"
                 self.ComboAtlas:SetObjectCrop(self.ComboDigits[di], spr, true)
-                self.ComboDigits[di].Y = -self.Judgment.Height / 2 * SkinScale
-                self.ComboDigits[di].X = digit_offset + combo_w - digit_w * i * SkinScale - joffset
-                self.ComboDigits[di].Alpha = 1 
+								with ( self.ComboDigits[di], {
+									Y = -self.Judgment.Height / 2 * SkinScale,
+									X = digit_offset + combo_w - digit_w * i * SkinScale - joffset,
+									Alpha = 1
+								})
             end
 
             for i=(#combo_str+1), self.DigitCount do

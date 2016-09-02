@@ -3,7 +3,7 @@
 #include "GameGlobal.h"
 #include "SongDC.h"
 
-using namespace dotcur;
+using namespace Game::dotcur;
 
 Song::Song()
 {

@@ -1,31 +1,46 @@
 #pragma once
 
-class ScreenGameplay7K;
-class LuaManager;
+#include "LuaManager.h"
 
-class Noteskin
-{
-    static std::shared_ptr<LuaManager> NoteskinLua;
-    static ScreenGameplay7K* Parent;
-    static double NoteScreenSize;
-    static bool DanglingHeads;
-    static bool DecreaseHoldSizeWhenBeingHit;
-public:
-    static void Validate();
-    static void SetupNoteskin(bool SpecialStyle, int Lanes, ScreenGameplay7K *Parent);
-    static void Update(float Delta, float CurrentBeat);
-    static void Cleanup();
+/*
+	A noteskin must first be set up, then validated.
+	Then it's in a valid state and you can use whatever you want from it.
+	Validation must be done on the main thread since it may create geometry.
+	Setup can be done whenever.
+*/
 
-    static void DrawNote(VSRG::TrackNote &T, int Lane, float Location);
-    static void DrawHoldBody(int Lane, float Location, float Size, int ActiveLevel);
-    static float GetBarlineWidth();
-    static double GetBarlineStartX();
-    static double GetBarlineOffset();
-    static bool IsBarlineEnabled();
-    static double GetJudgmentY();
-    static void DrawHoldHead(VSRG::TrackNote& T, int Lane, float Location, int ActiveLevel);
-    static void DrawHoldTail(VSRG::TrackNote& T, int Lane, float Location, int ActiveLevel);
-    static double GetNoteOffset();
-    static bool AllowDanglingHeads();
-    static bool ShouldDecreaseHoldSizeWhenBeingHit();
-};
+namespace Game {
+	namespace VSRG {
+		class PlayerContext;
+			
+		class Noteskin
+		{
+			LuaManager NoteskinLua;
+			double NoteScreenSize;
+			bool DanglingHeads;
+			bool CanRender;
+			bool DecreaseHoldSizeWhenBeingHit;
+			PlayerContext* Parent;
+			void LuaRender(Sprite*);
+
+		public:
+			Noteskin(PlayerContext *parent);
+			void Validate();
+			void SetupNoteskin(bool SpecialStyle, int Lanes);
+			void Update(float Delta, float CurrentBeat);
+
+			void DrawNote(TrackNote &T, int Lane, float Location);
+			void DrawHoldBody(int Lane, float Location, float Size, int ActiveLevel);
+			float GetBarlineWidth();
+			double GetBarlineStartX();
+			double GetBarlineOffset();
+			bool IsBarlineEnabled();
+			double GetJudgmentY();
+			void DrawHoldHead(TrackNote& T, int Lane, float Location, int ActiveLevel);
+			void DrawHoldTail(TrackNote& T, int Lane, float Location, int ActiveLevel);
+			double GetNoteOffset();
+			bool AllowDanglingHeads();
+			bool ShouldDecreaseHoldSizeWhenBeingHit();
+		};
+	}
+}

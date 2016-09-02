@@ -4,8 +4,8 @@
 #include "Logging.h"
 #include "Song7K.h"
 
-class BMSConverter : public VSRG::RowifiedDifficulty {
-	VSRG::Song *Song;
+class BMSConverter : public Game::VSRG::RowifiedDifficulty {
+	Game::VSRG::Song *Song;
 
 	std::stringstream OutFile;
 
@@ -148,7 +148,7 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 		OutFile << "#MAKER " << Parent->Author << endl;
 
 		OutFile << endl << "-- WAVs" << endl;
-		for (auto i : Parent->SoundList){
+		for (auto i : Parent->Data->SoundList){
 			OutFile << "#WAV" << ToBMSBase36(i.first) << " " << i.second << endl;
 		}
 
@@ -269,7 +269,7 @@ class BMSConverter : public VSRG::RowifiedDifficulty {
 
 public:
 
-	BMSConverter(bool Quantize, VSRG::Difficulty *Source, VSRG::Song *Song) 
+	BMSConverter(bool Quantize, Game::VSRG::Difficulty *Source, Game::VSRG::Song *Song) 
 		: RowifiedDifficulty(Source, Quantize, true)
 	{
 		this->Song = Song;
@@ -388,7 +388,7 @@ int BMSConverter::GetLNChannel(int channel) const
 	}
 }
 
-void ConvertBMSAll(VSRG::Song *Source, std::filesystem::path PathOut, bool Quantize)
+void ConvertBMSAll(Game::VSRG::Song *Source, std::filesystem::path PathOut, bool Quantize)
 {
     for (auto Diff : Source->Difficulties)
     {
@@ -397,12 +397,12 @@ void ConvertBMSAll(VSRG::Song *Source, std::filesystem::path PathOut, bool Quant
     }
 }
 
-void ExportToBMS(VSRG::Song* Source, std::filesystem::path PathOut)
+void ExportToBMS(Game::VSRG::Song* Source, std::filesystem::path PathOut)
 {
     ConvertBMSAll(Source, PathOut, true);
 }
 
-void ExportToBMSUnquantized(VSRG::Song* Source, std::filesystem::path PathOut)
+void ExportToBMSUnquantized(Game::VSRG::Song* Source, std::filesystem::path PathOut)
 {
     ConvertBMSAll(Source, PathOut, false);
 }

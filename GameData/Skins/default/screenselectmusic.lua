@@ -1,4 +1,4 @@
-game_require "utils"
+game_require "librd"
 skin_require "Global/Background"
 skin_require "Global/FadeInScreen"
 

@@ -367,3 +367,5 @@ double latof(std::string s);
 #define CreateIfstream(name, fn) std::ifstream name(fn.string());
 #define CreateBinIfstream(name, fn) std::fstream name(fn.string(), std::ios::in | std::ios::binary);
 #endif
+
+#include "GameGlobal.h"

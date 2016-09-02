@@ -301,7 +301,7 @@ void DefineSpriteInterface(LuaManager* anim_lua)
         .q(X)
         .q(Y)
         .q(ChainTransformation)
-        .addProperty("Image", GetImage, SetImage) // Special for setting image.
+        .addProperty("Texture", GetImage, SetImage) // Special for setting image.
         .endClass();
 }
 

@@ -55,7 +55,7 @@ namespace Renderer {
 
 	void DrawPrimitiveQuad(Transformation &QuadTransformation, const EBlendMode &Mode, const ColorRGB &Color)
 	{
-		Image::BindNull();
+		Texture::BindNull();
 		WindowFrame.SetUniform(U_COLOR, Color.Red, Color.Green, Color.Blue, Color.Alpha);
 
 		SetBlendingMode(Mode);
@@ -68,7 +68,7 @@ namespace Renderer {
 		DoQuadDraw();
 		FinalizeDraw();
 
-		Image::ForceRebind();
+		Texture::ForceRebind();
 	}
 
 	static bool Initialized = false;
@@ -214,7 +214,7 @@ namespace Renderer {
 		WindowFrame.SetUniform(U_CENTERED, Centered);
 	}
 
-	void DrawTexturedQuad(Image* ToDraw, const AABB& TextureCrop, const Transformation& QuadTransformation,
+	void DrawTexturedQuad(Texture* ToDraw, const AABB& TextureCrop, const Transformation& QuadTransformation,
 		const EBlendMode &Mode, const ColorRGB &InColor)
 	{
 		if (ToDraw)
@@ -487,7 +487,7 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
 #endif
 
     Renderer::FinalizeDraw();
-    Image::ForceRebind();
+    Texture::ForceRebind();
 }
 
 void TruetypeFont::ReleaseTextures()
@@ -551,7 +551,7 @@ void Line::Render()
     WindowFrame.DisableAttribArray(A_POSITION);
     WindowFrame.DisableAttribArray(A_COLOR);
 
-    Image::ForceRebind();
+    Texture::ForceRebind();
 
     glEnable(GL_DEPTH_TEST);
 }

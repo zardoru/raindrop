@@ -67,7 +67,7 @@ int Sprite::GetBlendMode() const
     return BlendingMode;
 }
 
-void Sprite::SetImage(Image* image, bool ChangeSize)
+void Sprite::SetImage(Texture* image, bool ChangeSize)
 {
     if (mImage != image)
     {
@@ -134,7 +134,7 @@ void Sprite::Invalidate()
     // stub
 }
 
-Image* Sprite::GetImage()
+Texture* Sprite::GetImage()
 {
     return mImage;
 }

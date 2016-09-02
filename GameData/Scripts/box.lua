@@ -2,25 +2,25 @@ Box = {
 	TopLeft = 1,
 	Top = 2,
 	TopRight = 3,
-	Left = 4, 
+	Left = 4,
 	Center = 5,
 	Right = 6,
 	BottomLeft = 7,
 	Bottom = 8,
 	BottomRight = 9,
-	
-	
+
+
 	On = nil,
 	Off = 0,
 }
 
 Box.__index = Box
 
---[[ 
+--[[
 	If the index exists, use the specified corner if it's not zero, otherwise
 	use the default corner, and show it.
 	If the 'Transform' parameter exists. append to all objects this transformation.
-	
+
 	params.Width =  The width of the interior of the box. Must be larger than the sum of the corners' width.
 	params.Height = Height of the interior of the box. Must be larger than corners.
 	params.Source = (optional) The image source. If non-existant, use Global/box.png. This picture will be divided into a 3x3 grid.
@@ -52,20 +52,20 @@ function Box:ModifyTextureBounds(index, Object)
 end
 
 function Box:CreateCorner(index, replace)
-	
+
 	if replace == nil then
 		replace = index
 	end
-	
+
 	if replace == 0 then -- if it's nil, on the other hand..
 		return
 	end
-	
+
 	local BoxStartInteriorX = self.CellSize.Width
 	local BoxStartInteriorY = self.CellSize.Height
 	local BoxBottom = BoxStartInteriorY + self.InteriorSize.Height
 	local BoxRight = BoxStartInteriorX + self.InteriorSize.Width
-	
+
 	self.Objects = self.Objects or {}
 	self.Objects[#self.Objects+1] = Engine:CreateObject()
 	local Object = self.Objects[#self.Objects]
@@ -73,11 +73,11 @@ function Box:CreateCorner(index, replace)
 	Object.Width = self.CellSize.Width
 	Object.Height = self.CellSize.Height
 	Object.Layer = self.Layer
-	
+
 	if self.Transform then
 		Object.ChainTransformation = self.Transform
 	end
-	
+
 	if index == Box.TopLeft then
 		Object.X = 0
 		Object.Y = 0
@@ -93,7 +93,7 @@ function Box:CreateCorner(index, replace)
 		Object.Y = BoxStartInteriorY
 		Object.Height = self.InteriorSize.Height
 	elseif index == Box.Center then
-		if self.StretchCenter then		
+		if self.StretchCenter then
 			Object.X = 0
 			Object.Y = 0
 			Object.Width = self.InteriorSize.Width + self.CellSize.Width * 2
@@ -120,7 +120,7 @@ function Box:CreateCorner(index, replace)
 		Object.X = BoxRight
 		Object.Y = BoxBottom
 	end
-	
+
 	self:ModifyTextureBounds(replace, Object)
 end
 
@@ -128,19 +128,19 @@ function Box:CreateCorners(params)
 	self.Image = params.Source or "Global/box.png"
 	self.Transform = params.Transform
 	self.Layer = params.Layer or 20
-	
+
 	self.Master = Engine:CreateObject()
 	self.Master.Image = self.Image
 	self.Master.Alpha = 0
-	
-	self.StretchCenter = params.StretchCenter or true	
+
+	self.StretchCenter = params.StretchCenter or true
 	self.CellSize = { Width = self.Master.Width/3, Height = self.Master.Height/3 }
 	self.InteriorSize = { Width = params.Width or self.CellSize.Width, Height = params.Height or self.CellSize.Height }
-	
+
 	if self.Transform == nil then
 		print "no transform.."
 	end
-	
+
 	for i=1, 9 do
 		self:CreateCorner(i, params[i])
 	end
@@ -150,10 +150,12 @@ function Box:Create(params)
 	if type(params) ~= "table" then
 		return nil
 	end
-	
+
 	local out = {}
 	setmetatable(out, self)
 	out:CreateCorners(params)
-	
+
 	return out
 end
+
+return Box

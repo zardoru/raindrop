@@ -5,7 +5,7 @@ if Channels ~= 8 and Channels ~= 6 then
 end
 
 game_require "TextureAtlas"
-game_require "FixedObjects"
+FixedObjects = game_require "FixedObjects"
 
 game_require "utils"
 game_require "AnimationFunctions"
@@ -31,8 +31,9 @@ Bomb = {}
 BombTime = 0.2
 
 function Init()
-	FixedObjects.XRatio = SkinScale
-	FixedObjects.YRatio = SkinScale
+	Objs = FixedObjects:new()
+	Objs.XRatio = SkinScale
+	Objs.YRatio = SkinScale
 	AutoadjustBackground({
 		x = 880 * SkinScale,
 		y = 200 * SkinScale,
@@ -45,14 +46,26 @@ function Init()
 	IsFullCombo = false
 
 	print ("Create fixed objects")
-	FixedObjects.CreateFromCSV("hare.csv", Noteskin[Channels])
+	Objs:CreateFromCSV("hare.csv", Noteskin[Channels])
+	ObjP1 = FixedObjects:new()
+	ObjP1.XRatio = SkinScale
+	ObjP1.YRatio = SkinScale
+	ObjP2 = FixedObjects:new()
+	ObjP2.XRatio = SkinScale
+	ObjP2.YRatio = SkinScale
 	if Channels == 6 then
-		FixedObjects.CreateFromCSV("5k.csv", Noteskin[Channels])
+		local p1s = table.join(Channels6P1, Channels6Common)
+		local p2s = table.join(Channels6P2, Channels6Common)
+		table.dump(p1s)
+		table.dump(p2s)
+		ObjP1:CreateFromCSV("5k.csv", p1s)
+		ObjP2:CreateFromCSV("5k.csv", p2s)
 	else
-		FixedObjects.CreateFromCSV("7k.csv", Noteskin[Channels])
+		Objs:CreateFromCSV("7k.csv", Channels8P2)
+		-- FixedObjects.CreateFromCSV("7k.csv", Channels8P1[Channels])
 	end
 
-	for i=1, Channels do 
+	for i=1, Channels do
 		KeyArray[i] = 0
 	end
 end

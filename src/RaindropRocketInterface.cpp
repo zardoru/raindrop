@@ -87,7 +87,7 @@ namespace Engine
             Handle->indices->AssignData(indices);
 
             // assign texture
-            Handle->tex = (Image*)texture;
+            Handle->tex = (Texture*)texture;
 
             // give it some useful data
             Handle->num_vertices = num_vertices;
@@ -111,7 +111,7 @@ namespace Engine
             if (Handle->tex)
                 Handle->tex->Bind();
 			else {
-				Image::BindNull();
+				Texture::BindNull();
 			}
 
             Renderer::SetShaderParameters(false, false, false, false, false, Handle->tex == nullptr);
@@ -160,10 +160,10 @@ namespace Engine
 
             if (!Data.Data.size()) return false;
 
-			Image* Ret = new Image;
+			Texture* Ret = new Texture;
 			texture_handle = (Rocket::Core::TextureHandle)(Ret);
             Ret->fname = file;
-			Ret->SetTextureData(Data);
+			Ret->SetTextureData2D(Data);
 
 			ImageLoader::RegisterTexture(Ret);
             return true;
@@ -173,8 +173,8 @@ namespace Engine
             const Rocket::Core::byte* source,
             const Rocket::Core::Vector2i& source_dimensions)
         {
-			Image* Ret;
-            Ret = new Image;
+			Texture* Ret;
+            Ret = new Texture;
 
 			auto size = source_dimensions.x * source_dimensions.y;
 			auto ptr = (uint32_t*)source;
@@ -182,7 +182,7 @@ namespace Engine
             Data.Data.assign(ptr, (ptr + size));
             Data.Width = source_dimensions.x;
             Data.Height = source_dimensions.y;
-            Ret->SetTextureData(Data);
+            Ret->SetTextureData2D(Data);
 
 			m_TexCache[Ret] = Data;
 
@@ -192,12 +192,12 @@ namespace Engine
 
         void RenderInterface::ReleaseTexture(Rocket::Core::TextureHandle texture_handle)
         {
-            delete (Image*)texture_handle;
+            delete (Texture*)texture_handle;
         }
 
 		void RenderInterface::RegenerateTextures() {
 			for (auto &tex : m_TexCache) {
-				tex.first->SetTextureData(tex.second, true);
+				tex.first->SetTextureData2D(tex.second, true);
 			}
 		}
 

@@ -86,18 +86,18 @@ bool ImageList::LoadAll()
 }
 
 // Gets image from this filename
-Image* ImageList::GetFromFilename(const std::string Filename)
+Texture* ImageList::GetFromFilename(const std::string Filename)
 {
     return Images[Filename];
 }
 
 // Gets image from SkinPrefix + filename
-Image* ImageList::GetFromSkin(const std::string Filename)
+Texture* ImageList::GetFromSkin(const std::string Filename)
 {
     return Images[GameState::GetInstance().GetSkinPrefix() + Filename];
 }
 
-Image* ImageList::GetFromIndex(int Index)
+Texture* ImageList::GetFromIndex(int Index)
 {
     return ImagesIndex[Index];
 }

@@ -14,20 +14,21 @@ local DigitalNumbers = {
             self.width = 40 * SkinScale
             self.height = 70 * SkinScale
         end
-        
+
         self.x = x
         self.y = y
 
         self.digits = digits
         self.objects = {}
 
-        for i=1, self.digits do 
-            self.objects[i] = Engine:CreateObject()
-            self.objects[i].X = self.x + self.width * (i - 1)
-            self.objects[i].Y = self.y
-            self.objects[i].Layer = 10
+        for i=1, self.digits do
+            self.objects[i] = ScreenObject {
+            	X = self.x + self.width * (i - 1)
+            	Y = self.y
+            	Layer = 10
+						}
 
-            self.objects[i].Image = "assets/" .. self.atlas.File 
+            self.objects[i].Image = "assets/" .. self.atlas.File
             self.objects[i].Width = self.width
             self.objects[i].Height = self.height
         end
@@ -45,7 +46,7 @@ local DigitalNumbers = {
         if #s > self.digits then
             s = string.sub(s, #s - self.digits + 1)
         elseif #s < self.digits then
-            if zeropad then 
+            if zeropad then
                 s = string.rep("0", self.digits - #s) .. s
             else
                 s = string.rep("X", self.digits - #s) .. s

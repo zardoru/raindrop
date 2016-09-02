@@ -9,7 +9,7 @@
 
 typedef std::vector<std::string> SplitResult;
 
-using namespace VSRG;
+using namespace Game::VSRG;
 
 const auto SAMPLESET_NORMAL = 1;
 const auto SAMPLESET_SOFT = 2;
@@ -121,10 +121,10 @@ class OsumaniaLoader
     int Version;
     int last_sound_index;
     Song *osu_sng;
-    std::shared_ptr<VSRG::OsuManiaTimingInfo> TimingInfo;
+    std::shared_ptr<OsumaniaChartInfo> TimingInfo;
     std::map <std::string, int> Sounds;
     std::vector<HitsoundSectionData> HitsoundSections;
-    std::shared_ptr<VSRG::Difficulty> Diff;
+    std::shared_ptr<Difficulty> Diff;
     std::string DefaultSampleset;
 
 	std::stringstream EventsContent;
@@ -276,10 +276,11 @@ class OsumaniaLoader
 		}
 	}
 
+	
+	TimingData GetBPSData(Difficulty *difficulty, double Drift);
 	void PushNotesToMeasures()
 	{
-		TimingData BPS;
-		Diff->ProcessBPS(BPS, 0);
+		TimingData BPS = GetBPSData(Diff.get(), 0);
 
 		for (int k = 0; k < MAX_CHANNELS; k++)
 		{
@@ -344,7 +345,7 @@ public:
         return Ret;
     }
 
-    OsumaniaLoader(VSRG::Song *song): slider_velocity(1.4), Version(0), last_sound_index(1), osu_sng(song)
+    OsumaniaLoader(Song *song): slider_velocity(1.4), Version(0), last_sound_index(1), osu_sng(song)
     {
         ReadAModeTag = false;
         line_number = 0;
@@ -807,8 +808,8 @@ public:
 		if (!filein.is_open())
 			throw OsuManiaLoaderException("Could not open file.");
 
-	    TimingInfo = std::make_shared<OsuManiaTimingInfo>();
-		Diff = std::make_shared<VSRG::Difficulty>();
+	    TimingInfo = std::make_shared<OsumaniaChartInfo>();
+		Diff = std::make_shared<Difficulty>();
 		Diff->Data = std::make_shared<DifficultyLoadInfo>();
 		Diff->Data->TimingInfo = TimingInfo;
 
@@ -899,7 +900,7 @@ public:
 
 				// Copy all sounds we registered
 				for (auto i : Sounds)
-					Diff->SoundList[i.second] = i.first;
+					Diff->Data->SoundList[i.second] = i.first;
 
 				// Calculate level as NPS
 				Diff->Level = Diff->TotalScoringObjects / Diff->Duration;
@@ -913,18 +914,6 @@ public:
 		}
     }
 };
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 void NoteLoaderOM::LoadObjectsFromFile(std::filesystem::path filename, Song *Out)

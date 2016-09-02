@@ -7,7 +7,7 @@
 /* Note Loader for the .dcf format. Heavily inspired by Stepmania. */
 /* Even for dotcur, I wouldn't use this anymore, I just keep it for historical purposes. I'd use bmson. */
 
-using namespace dotcur;
+using namespace Game::dotcur;
 
 float _ScreenDifference()
 {

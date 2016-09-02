@@ -2,195 +2,114 @@
 
 #include "Audio.h"
 #include "Song7K.h"
-#include "ScoreKeeper.h"
-#include "ScreenGameplay7K_Mechanics.h"
 #include "BackgroundAnimation.h"
 
 class AudioStream;
-class Image;
+class Texture;
 class SceneEnvironment;
-class ScoreKeeper7K;
-class Line;
 class AudioSourceOJM;
-class VSRGMechanics;
 class LuaManager;
 
-class ScreenGameplay7K : public Screen
-{
-private:
+#include "PlayerContext.h"
 
-    std::shared_ptr<VSRGMechanics> MechanicsSet;
+namespace Game {
+	namespace VSRG {
+		class ScreenGameplay : public Screen
+		{
+		private:
 
-    bool HasNegativeScroll;
-    TimingData         VSpeeds;
-    TimingData		   BPS;
-    TimingData		   Warps;
-    VSRG::VectorSpeeds Speeds;
-    VSRG::VectorTN  NotesByChannel;
-    std::map <int, std::vector<std::shared_ptr<SoundSample>> > Keysounds;
-    std::queue<AutoplaySound>   BGMEvents;
-    std::vector<double>			 MeasureBarlines;
 
-    std::shared_ptr<VSRG::Difficulty>	 CurrentDiff;
-    std::shared_ptr<VSRG::Song>			 MySong;
-    std::shared_ptr<VSRG::Song>			 LoadedSong;
-    TimingType						 UsedTimingType;
+			std::map <int, std::vector<std::shared_ptr<SoundSample> > > Keysounds;
+			std::vector<PlayerContext> Players;
+			std::queue<AutoplaySound>   BGMEvents;
 
-    std::shared_ptr<Line> Barline;
+			std::shared_ptr<Song>			 MySong;
+			std::shared_ptr<Song>			 LoadedSong;
 
-    double BarlineOffset;
-    double NoteHeight;
-    double LanePositions[VSRG::MAX_CHANNELS];
-    double LaneWidth[VSRG::MAX_CHANNELS];
-    double SongTime, SongTimeReal;
-    double SongOldTime;
-    double WarpedSongTime;
-    double CurrentVertical;
-    double WaitingTime;
-    double ErrorTolerance;
-    double TimeCompensation;
-    double GameTime;
-    double MissTime;
-    double FailureTime;
-    double SuccessTime;
-    double MsDisplayMargin;
-    double Speed;
-    double AudioStart, AudioOldTime;
+			struct {
+				double InterpolatedStream, Stream;
+				double OldStream; // Previous frame's stream song time
+				double Waiting; // Time before T = 0 
+				double Game; // Overall screen time
+				double Miss; // Time for showing MISS layer
+				double Failure; // Time for showing Failure state
+				double Success; // Time for showing Success state
+				double AudioStart, AudioOld; // DAC thread start time and previous DAC time
+				bool InterpolateStream;
+			} Time;
 
-    /* User Variables */
-    float       SpeedMultiplierUser;
+			struct {
+				double ToleranceMS;
+				double AudioDrift;
+			} TimeError;
 
-    EHiddenMode SelectedHiddenMode;
 
-    Mat4             PositionMatrix;
+			int				 StartMeasure;
 
-    float            SpeedMultiplier;
-    int				 StartMeasure;
+			std::unique_ptr<AudioStream> Music;
+			std::unique_ptr<AudioSourceOJM> OJMAudio;
+			SoundSample MissSnd;
+			SoundSample FailSnd;
 
-    std::map<int, int> GearBindings;
-    int                lastClosest[VSRG::MAX_CHANNELS];
-    VSRG::TrackNote*   CurrentKeysounds[VSRG::MAX_CHANNELS];
-    int                BarlineOffsetKind;
-    LifeType         lifebar_type;
-    ScoreType        scoring_type;
-	int RequestedSystem;
-	int RequestedLifebar;
+			/* Effects */
+			bool StageFailureTriggered;
+			bool Active;
+			bool ForceActivation;
+			bool DoPlay;
+			bool Preloaded;
+			bool PlayReactiveSounds;
+			bool SongFinishTriggered;
 
-    std::shared_ptr<AudioStream> Music;
-    std::shared_ptr<AudioSourceOJM> OJMAudio;
-    SoundSample MissSnd;
-    SoundSample FailSnd;
+			std::unique_ptr<BackgroundAnimation> BGA;
+			double JudgeOffset;
+			void SetupScriptConstants();
+			void UpdateScriptVariables();
+			void UpdateScriptScoreVariables();
 
-    std::shared_ptr<ScoreKeeper7K> ScoreKeeper;
+			void ChangeNoteTimeToBeats();
 
-    EHiddenMode		 RealHiddenMode;
-    float            HideClampLow, HideClampHigh, HideClampFactor;
-    float            HideClampSum;
+			// Done in loading thread
+			bool LoadChartData();
+			bool LoadSongAudio();
+			bool LoadBGA() const;
+			bool ProcessSong();
 
-    /* Positions */
-    float  JudgmentLinePos;
 
-    /* Effects */
-    float waveEffect;
-    float beatScrollEffect;
+			void AssignMeasure(uint32_t Measure);
+			void RunAutoEvents();
+			void CheckShouldEndScreen();
+			bool ShouldDelayFailure();
+			bool PlayersHaveFailed();
+			bool SongHasFinished();
 
-    Mat4 noteEffectsMatrix[VSRG::MAX_CHANNELS];
+			void UpdateSongTime(float Delta);
+			void Render();
 
-    double CurrentBeat;
+			void PlayKeysound(int Keysound);
 
-    bool GearIsPressed[VSRG::MAX_CHANNELS];
-    bool stage_failed;
-    bool beatScrollEffectEnabled;
-    bool waveEffectEnabled;
-    bool Auto;
-    bool perfect_auto; // if enabled, auto will play perfectly.
-    bool Upscroll;
-    bool NoFail;
-    bool Active;
-    bool ForceActivation;
-    bool DoPlay;
-    bool Preloaded;
-    bool PlayReactiveSounds;
-    bool SongFinished;
+			void Activate();
+			friend class Noteskin;
+		public:
 
-    bool HeldKey[VSRG::MAX_CHANNELS];
-    bool MultiplierChanged;
+			void SetupLua(LuaManager* Env);
 
-    bool    InterpolateTime;
-    bool    AudioCompensation;
-    std::shared_ptr<BackgroundAnimation> BGA;
-    int Random;
-    bool TurntableEnabled;
-    float JudgeOffset;
-    void SetupScriptConstants();
-    void SetupLua(LuaManager* Env);
-    void SetupMechanics();
-    void UpdateScriptVariables();
-    void UpdateScriptScoreVariables();
-    void CalculateHiddenConstants();
+			// Functions for data.
+			bool IsActive() const;
+			Game::VSRG::Song* GetSong() const;
 
-    void ChangeNoteTimeToBeats();
 
-    // Done in loading thread
-    bool LoadChartData();
-    bool LoadSongAudio();
-    bool LoadBGA() const;
-    bool ProcessSong();
+			ScreenGameplay();
+			void Init(std::shared_ptr<Song> S);
+			void LoadResources() override;
+			void InitializeResources() override;
 
-    void SetupAfterLoadingVariables();
+			void Cleanup() override;
 
-    void RecalculateMatrix();
-    void RecalculateEffects();
-    void RunMeasures();
+			PlayerContext* GetPlayerContext(int i);
 
-    void HitNote(double TimeOff, uint32_t Lane, bool IsHold, bool IsHoldRelease = false);
-    void MissNote(double TimeOff, uint32_t Lane, bool IsHold, bool auto_hold_miss, bool early_miss);
+			bool Run(double Delta) override;
+			bool HandleInput(int32_t key, KeyEventType code, bool isMouseInput) override;
+		};
 
-    void DrawBarlines();
-    void DrawMeasures();
-
-    void GearKeyEvent(uint32_t Lane, bool KeyDown);
-    void JudgeLane(uint32_t Lane, float Time);
-    void ReleaseLane(uint32_t Lane, float Time);
-    void TranslateKey(int32_t K, bool KeyDown);
-    void AssignMeasure(uint32_t Measure);
-    void RunAutoEvents();
-    void CheckShouldEndScreen();
-    void UpdateSongTime(float Delta);
-    void Render();
-
-    void PlayLaneKeysound(uint32_t Lane);
-    void PlayKeysound(VSRG::TrackNote* Note);
-    void SetLaneHoldState(uint32_t Lane, bool NewState);
-
-    void Activate();
-
-    // true if holding down key
-    bool GetGearLaneState(uint32_t Lane);
-
-    friend class Noteskin;
-public:
-
-    // Functions for data.
-    bool IsAutoEnabled();
-    bool IsFailEnabled();
-    bool IsUpscrolling();
-    float GetCurrentBeat();
-    float GetUserMultiplier() const;
-    float GetCurrentVerticalSpeed();
-    double GetCurrentVertical();
-    double GetSongTime();
-    double GetWarpedSongTime();
-
-    void SetUserMultiplier(float Multip);
-
-    ScreenGameplay7K();
-    void Init(std::shared_ptr<VSRG::Song> S, int DifficultyIndex, const GameParameters &Param);
-    void LoadResources() override;
-    bool BindKeysToLanes(bool UseTurntable);
-    void InitializeResources() override;
-    void Cleanup() override;
-
-    bool Run(double Delta) override;
-    bool HandleInput(int32_t key, KeyEventType code, bool isMouseInput) override;
-};
+	}
+}

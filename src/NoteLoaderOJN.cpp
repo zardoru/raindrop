@@ -89,7 +89,7 @@ class OjnLoadInfo
 {
 public:
     std::vector<OjnMeasure> Measures;
-    VSRG::Song* S;
+    Game::VSRG::Song* S;
     float BPM;
 };
 
@@ -150,7 +150,7 @@ void FixOJNEvents(OjnLoadInfo *Info)
     }
 }
 
-void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
+void ProcessOJNEvents(OjnLoadInfo *Info, Game::VSRG::Difficulty* Out)
 {
     ptrdiff_t CurrentMeasure = 0;
 
@@ -165,7 +165,7 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
     {
         float MeasureBaseBeat = BeatForMeasure(Info, CurrentMeasure);
 
-        Out->Data->Measures.push_back(VSRG::Measure());
+        Out->Data->Measures.push_back(Game::VSRG::Measure());
 
         // All fractional measure events were already handled at read time.
         Out->Data->Measures[CurrentMeasure].Length = Measure.Len;
@@ -204,7 +204,7 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
 
         // Since events and measures are ordered already, there's no need to sort
         // timing data unless we insert new information.
-        sort(Out->Timing.begin(), Out->Timing.end());
+        sort(Out->Timing.begin(), Out->Timing.end(), TimeSegmentCompare<TimingSegment>);
     }
 
     // Now, we can process notes and long notes.
@@ -237,7 +237,7 @@ void ProcessOJNEvents(OjnLoadInfo *Info, VSRG::Difficulty* Out)
                 }
                 else // A note! In this case, we already 'normalized' O2Jam channels into raindrop channels.
                 {
-                    VSRG::NoteData Note;
+                    Game::VSRG::NoteData Note;
 
                     if (Evt.Channel >= 7) continue; // Who knows... A buffer overflow may be possible.
 
@@ -318,7 +318,7 @@ const char *LoadOJNCover(std::filesystem::path filename, size_t &read)
     return out;
 }
 
-void NoteLoaderOJN::LoadObjectsFromFile(std::filesystem::path filename, VSRG::Song *Out)
+void NoteLoaderOJN::LoadObjectsFromFile(std::filesystem::path filename, Game::VSRG::Song *Out)
 {
 	CreateBinIfstream(filein, filename);
 
@@ -356,20 +356,20 @@ void NoteLoaderOJN::LoadObjectsFromFile(std::filesystem::path filename, VSRG::So
     for (auto i = 0; i < 3; i++)
     {
         OjnLoadInfo Info;
-        std::shared_ptr<VSRG::Difficulty> Diff(new VSRG::Difficulty());
-        std::shared_ptr<VSRG::O2JamTimingInfo> TInfo(new VSRG::O2JamTimingInfo);
-        std::shared_ptr<VSRG::DifficultyLoadInfo> LInfo(new VSRG::DifficultyLoadInfo);
+        std::shared_ptr<Game::VSRG::Difficulty> Diff(new Game::VSRG::Difficulty());
+        std::shared_ptr<Game::VSRG::O2JamChartInfo> TInfo(new Game::VSRG::O2JamChartInfo);
+        std::shared_ptr<Game::VSRG::DifficultyLoadInfo> LInfo(new Game::VSRG::DifficultyLoadInfo);
 
         switch (i)
         {
         case 0:
-            TInfo->Difficulty = VSRG::O2JamTimingInfo::O2_EX;
+            TInfo->Difficulty = Game::VSRG::O2JamChartInfo::O2_EX;
             break;
         case 1:
-            TInfo->Difficulty = VSRG::O2JamTimingInfo::O2_NX;
+            TInfo->Difficulty = Game::VSRG::O2JamChartInfo::O2_NX;
             break;
         case 2:
-            TInfo->Difficulty = VSRG::O2JamTimingInfo::O2_HX;
+            TInfo->Difficulty = Game::VSRG::O2JamChartInfo::O2_HX;
             break;
         }
 
@@ -383,7 +383,7 @@ void NoteLoaderOJN::LoadObjectsFromFile(std::filesystem::path filename, VSRG::So
         filein.seekg(Head.note_offset[i]);
 
         // O2Jam files use Beat-Based notation.
-        Diff->BPMType = VSRG::Difficulty::BT_BEAT;
+        Diff->BPMType = Game::VSRG::Difficulty::BT_BEAT;
         Diff->Duration = Head.time[i];
         Diff->Name = DifficultyNames[i];
         Diff->Channels = 7;

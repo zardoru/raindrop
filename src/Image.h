@@ -12,22 +12,22 @@ struct ImageData
     }
 };
 
-class Image
+class Texture
 {
     friend class ImageLoader;
-    static Image* LastBound;
+    static Texture* LastBound;
     bool TextureAssigned;
 
     void Destroy();
     void CreateTexture();
 public:
-    Image(unsigned int texture, int w, int h);
-    Image();
-    ~Image();
+    Texture(unsigned int texture, int w, int h);
+    Texture();
+    ~Texture();
 
     void Bind();
     void Assign(std::filesystem::path Filename, bool Regenerate = false);
-    void SetTextureData(ImageData &Data, bool Reassign = false);
+    void SetTextureData2D(ImageData &Data, bool Reassign = false);
 
     // Utilitarian
     static void ForceRebind();
