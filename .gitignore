@@ -1,4 +1,5 @@
 # Created by https://www.gitignore.io/api/visualstudio,windows,osx,linux,c++
+# Modified for raindrop needs
 
 ### VisualStudio ###
 ## Ignore Visual Studio temporary files, build results, and
@@ -13,6 +14,12 @@
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
+
+# Release files in the root
+*.bat
+*.bms
+acctest
+songs
 
 # Build results
 [Dd]ebug/
