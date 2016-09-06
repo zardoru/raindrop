@@ -1,128 +1,144 @@
 HitLightning = {}
 
-HitLightning.OffTime = {}
-
-HitLightning.Times = {}
-
+HitLightning.Image = "VSRG/self.png"
 HitLightning.Height = 250
 
-function LightFunction () if GetConfigF("DisableHitlightningAnimation", "") == 1 then return 0 else return 1 end end
+local function LightFunction () 
+  if GetConfigF("DisableHitlightningAnimation", "") == 1 then 
+    return 0 
+  else 
+    return 1 
+  end 
+end
 
-HitLightning.Enabled = GetConfigF("DisableHitlightning", "") ~= 0
-HitLightning.Animate = LightFunction()
+--[[
+  note to self:
+  Constructor takes in a player context and a noteskin.
+  Player = ...
+  Noteskin = Noteskin[Channels]
+  
+  something like that.
+]]
 
-HitLightning.Pressed = {}
-HitLightning.Position = {}
-
-HitLightning.Image = "VSRG/hitlightning.png"
-
-function HitLightning.Init()
-
-	if HitLightning.Enabled == 0 then
+function HitLightning:Init()
+  self.Enabled = GetConfigF("DisableHitlightning", "") ~= 0
+  
+	if self.Enabled == 0 then
 		return
 	end
+  
+  self.OffTime = {}
 
-	for i = 1, Channels do
-		HitLightning.Times[i] = 1
-		HitLightning.Pressed[i] = 0
+  self.Times = {}
+  self.Animate = LightFunction()
+
+  self.Pressed = {}
+  self.Position = {}
+  self.Channels = self.Player.Channels
+
+	for i = 1, self.Channels do
+		self.Times[i] = 1
+		self.Pressed[i] = 0
 	end
 
-	for i=1, Channels do
-		HitLightning[i] = Engine:CreateObject()
+	for i=1, self.Channels do
+		self[i] = Engine:CreateObject()
 
-		HitLightning.OffTime[i] = 1
+		self.OffTime[i] = 1
 		
-		HitLightning[i].Image = HitLightning.Image
-		HitLightning[i].Centered = 1
-		HitLightning[i].BlendMode = BlendAdd
+		self[i].Texture = self.Image
+		self[i].Centered = 1
+		self[i].BlendMode = BlendAdd
 		
-		HitLightning[i].Width = Noteskin[Channels]["Key"..i.."Width"]
-		HitLightning[i].Height = HitLightning.Height
+		self[i].Width = self.Noteskin["Key"..i.."Width"]
+		self[i].Height = self.Height
 
+    local h = self.Player.JudgmentY
 		local scrollY = 0
 		local scrollX = 0
-		scrollX = Noteskin[Channels]["Key" .. i .. "X"]
-		if Upscroll ~= 0 then
-			scrollY = GearHeight +  HitLightning.Height / 2
-			HitLightning[i].Rotation = (180)
+		scrollX = self.Noteskin["Key" .. i .. "X"]
+    
+		if self.Player.Upscroll then
+			scrollY = h + self.Height / 2
+			self[i].Rotation = 180
 		else
-			scrollY = ScreenHeight - GearHeight - HitLightning.Height / 2
+			scrollY = h - self.Height / 2
 		end
 
-		HitLightning.Position[i] = { x = scrollX, y = scrollY }
-		HitLightning[i].X = scrollX
-		HitLightning[i].Y = scrollY
-		HitLightning[i].Layer = 15
-		HitLightning[i].Alpha = 0
+		self.Position[i] = { x = scrollX, y = scrollY }
+		self[i].X = scrollX
+		self[i].Y = scrollY
+		self[i].Layer = 15
+		self[i].Alpha = 0
 	end
 end
 
-function HitLightning.LanePress(Lane, IsKeyDown, SetRed)
+librd.make_new(HitLightning, HitLightning.Init)
 
-	if HitLightning.Enabled == 0 then
+function HitLightning:LanePress(Lane, IsKeyDown, pn)
+	if self.Enabled == 0 or pn ~= self.Player.Number then
 		return
 	end
+  
+  local spb = 60 / self.Player.BPM
 
-	if CurrentSPB ~= math.huge then
-		HitLightning.OffTime[Lane+1] = math.min(CurrentSPB / 1.5, 1)
+	if spb ~= math.huge then
+		self.OffTime[Lane+1] = math.min(spb / 1.5, 1)
 	end
 
-	if HitLightning.OffTime[Lane+1] > 3 then
-		HitLightning.OffTime[Lane+1] = 3
+	if self.OffTime[Lane+1] > 3 then
+		self.OffTime[Lane+1] = 3
 	end	
 
 	if IsKeyDown == 0 then
-		HitLightning.Times[Lane+1] = 0
-		HitLightning.Pressed[Lane+1] = 0
+		self.Times[Lane+1] = 0
+		self.Pressed[Lane+1] = 0
 	else
-		HitLightning.Pressed[Lane+1] = 1
+		self.Pressed[Lane+1] = 1
 	end
 end
 
-function HitLightning.Run(Delta)
-
-	if HitLightning.Enabled == 0 then
+function HitLightning:Run(Delta)
+	if self.Enabled == 0 then
 		return
 	end
 
-	for i=1, Channels do
+	for i=1, self.Channels do
+		self.Times[i] = self.Times[i] + Delta
 
-		HitLightning.Times[i] = HitLightning.Times[i] + Delta
-
-		if HitLightning.Pressed[i] == 0 then
-			if HitLightning.Times[i] <= HitLightning.OffTime[i] then
-				if HitLightning.Animate == 1 then
-					local Lerping = math.pow(HitLightning.Times[i] / HitLightning.OffTime[i], 2)
+		if self.Pressed[i] == 0 then
+			if self.Times[i] <= self.OffTime[i] then
+				if self.Animate == 1 then
+					local Lerping = math.pow(self.Times[i] / self.OffTime[i], 2)
 					local Additive
-					HitLightning[i].ScaleX = 1 - Lerping
-					HitLightning[i].ScaleY = 1 + 1.5 * Lerping
+					self[i].ScaleX = 1 - Lerping
+					self[i].ScaleY = 1 + 1.5 * Lerping
 
-					Additive = HitLightning.Height / 2 * 1.5 * Lerping
+					Additive = self.Height / 2 * 1.5 * Lerping
 
-					if Upscroll ~= 0 then
+					if self.Player.Upscroll then
 						Additive = Additive * -1
 					end
 
-					HitLightning[i].Y = HitLightning.Position[i].y - Additive
-					HitLightning[i].Alpha = ( 1 - Lerping )
-				elseif HitLightning.Animate == 2 then
-					local Lerping = math.pow(HitLightning.Times[i] / HitLightning.OffTime[i], 2)
+					self[i].Y = self.Position[i].y - Additive
+					self[i].Alpha = ( 1 - Lerping )
+				elseif self.Animate == 2 then
+					local Lerping = math.pow(self.Times[i] / self.OffTime[i], 2)
 					local Additive = 0
 
-					Additive = HitLightning.Height / 2 * Lerping
-					HitLightning[i].ScaleY = 1 - Lerping
-					HitLightning[i].Y = HitLightning.Position[i].y + Additive
-					HitLightning[i].Alpha = 1
+					Additive = self.Height / 2 * Lerping
+					self[i].ScaleY = 1 - Lerping
+					self[i].Y = self.Position[i].y + Additive
+					self[i].Alpha = 1
 				end
 			else
-				HitLightning[i].Alpha = 0
+				self[i].Alpha = 0
 			end
 
 		else
-			HitLightning[i]:SetScale(1)
-			HitLightning[i].Alpha = 1
-			HitLightning[i].Y = HitLightning.Position[i].y
+			self[i]:SetScale(1)
+			self[i].Alpha = 1
+			self[i].Y = self.Position[i].y
 		end
-
 	end
 end

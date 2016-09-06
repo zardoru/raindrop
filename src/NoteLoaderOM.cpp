@@ -42,6 +42,13 @@ std::string GetSamplesetStr(int Sampleset)
 	}	
 }
 
+
+namespace Game {
+	namespace VSRG {
+		TimingData GetBPSData(Difficulty *difficulty, double Drift);
+	}
+}
+
 enum OsuLoaderReadingState
 {
     RNotKnown,
@@ -277,10 +284,9 @@ class OsumaniaLoader
 	}
 
 	
-	TimingData GetBPSData(Difficulty *difficulty, double Drift);
 	void PushNotesToMeasures()
 	{
-		TimingData BPS = GetBPSData(Diff.get(), 0);
+		TimingData BPS = Game::VSRG::GetBPSData(Diff.get(), 0);
 
 		for (int k = 0; k < MAX_CHANNELS; k++)
 		{

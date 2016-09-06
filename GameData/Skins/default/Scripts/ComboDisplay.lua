@@ -9,6 +9,7 @@ ComboDisplay = {
 	BumpHorizontally = true,
 	HeightAddition = -20,
 	HoldBumpFactor = 1.2,
+  AtlasFile = "VSRG/combosheet.csv",
 
 	ExNotify = true, -- Whether to use the PGREAT-FLAWLESS* notification
 	ExNotifyImg = "VSRG/combo_bonus.png",
@@ -21,8 +22,14 @@ function ComboDisplay:SetName(i)
 end
 
 function ComboDisplay:Init()
+  self.X = self.X or self.Noteskin.GearStartX + self.Noteskin.GearWidth / 2
+  self.Y = self.Y or 0.3 * ScreenHeight
+  
+  if self.Player.Upscroll then
+    self.Y = ScreenHeight - self.Y
+  end
 
-	self.Atlas = TextureAtlas:skin_new("VSRG/combosheet.csv")
+	self.Atlas = TextureAtlas:skin_new(self.AtlasFile)
 
 	self.Images = {}
 	self.Targets = {}
@@ -43,7 +50,7 @@ function ComboDisplay:Init()
 
 	for i = 1, 6 do -- Drawing targets
 		self.Targets[i] = ScreenObject {
-			Image = "VSRG/"..self.Atlas.File,
+			Texture = self.Atlas.File,
 			Centered = 1,
 			Layer = 24,
 			Alpha = 0
@@ -63,7 +70,7 @@ function ComboDisplay:Init()
 			Centered = 1,
 			Layer = 24,
 			Alpha = 0,
-			Image = self.ExNotifyImg
+			Texture = self.ExNotifyImg
 		}
 
 		self.ExNotifyCurTime = 0
@@ -84,14 +91,14 @@ function ComboDisplay:Update()
 
 	local DisplaySize = ((#self.Digits)-1) * Size.w/2
 	self.ExNotifyPos = {
-		x = DisplaySize + Size.w / 2,
-		y = self.DigitHeight / 2
+		x = DisplaySize + Size.w / 2 + self.X,
+		y = self.DigitHeight / 2 + self.Y
 	}
 
 	for i = 1, 6 do
 		local NewPosition = {
-			x = DisplaySize - (i-1) * Size.w,
-			y = self.HeightAddition * (1 - self.BumpTime / self.BumpTotalTime)
+			x = DisplaySize - i * Size.w + self.X,
+			y = self.HeightAddition * (1 - self.BumpTime / self.BumpTotalTime) + self.Y
 		}
 
 		if i < ActDig then

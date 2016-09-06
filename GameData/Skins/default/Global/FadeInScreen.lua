@@ -1,3 +1,4 @@
+game_require "librd"
 skin_require "Global/Background"
 
 function FadeInA1(frac)
@@ -18,11 +19,15 @@ ScreenFade = { Duration = 0.45 }
 function ScreenFade.Init()
 	BackgroundAnimation:Init()
 	ScreenFade.Black = Engine:CreateObject()
-	ScreenFade.Black.Image = "Global/filter.png"
-	ScreenFade.Black.Width = ScreenWidth
-	ScreenFade.Black.Height = ScreenHeight
-	ScreenFade.Black.Alpha = 0
-	ScreenFade.Black.Layer = 31
+	ScreenFade.Black.Texture = "Global/filter.png"
+
+	with(ScreenFade.Black, {
+		Width = ScreenWidth,
+		Height = ScreenHeight,
+		Alpha = 0,
+		Layer = 31
+	})
+	
 	IFadeInA1 = invert(FadeInA1)
 	return
 	--[["Black1 = Engine:CreateObject()

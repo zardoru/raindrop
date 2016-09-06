@@ -4,6 +4,8 @@
 #include "TrackNote.h"
 //#include <glm/gtc/matrix_transform.inl>
 
+int GetFractionKindBeat(double frac);
+
 namespace Game {
 	namespace VSRG {
 
@@ -59,7 +61,6 @@ namespace Game {
 			NoteKind = Notedata.NoteKind;
 		}
 
-		int GetFractionKindBeat(double frac);
 
 		/* calculate the beat snap for this fraction */
 		void TrackNote::AssignFraction(double frac)

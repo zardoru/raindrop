@@ -1,79 +1,81 @@
 ScoreDisplay = ScoreDisplay or {}
 
-ScoreDisplay.Digits = {}
-ScoreDisplay.DigitWidth = 30
-ScoreDisplay.Sheet = "VSRG/combosheet.csv"
-ScoreDisplay.DigitHeight = 30
-ScoreDisplay.DigitCount = 9
-ScoreDisplay.W = ScoreDisplay.DigitWidth * ScoreDisplay.DigitCount
-ScoreDisplay.H = ScoreDisplay.DigitHeight
-ScoreDisplay.X = ScreenWidth - ScoreDisplay.W -- Topleft
-ScoreDisplay.Y = ScreenHeight - ScoreDisplay.H
-ScoreDisplay.Layer = 20
-ScoreDisplay.Targets = {}
-ScoreDisplay.Images = {}
+with(ScoreDisplay, {
+    DigitWidth = 30,
+    Sheet = "VSRG/combosheet.csv",
+    DigitHeight = 30,
+    DigitCount = 9,
+})
 
-function ScoreDisplay.SetName(i)
+with(ScoreDisplay, {
+    W = ScoreDisplay.DigitWidth * ScoreDisplay.DigitCount,
+    H = ScoreDisplay.DigitHeight
+})
+
+with(ScoreDisplay, {
+    X = ScreenWidth - ScoreDisplay.W, -- Topleft
+    Y = ScreenHeight - ScoreDisplay.H,
+    Layer = 20
+})
+
+function ScoreDisplay:SetName(i)
 	return i-1 .. ".png"
 end
 
-function ScoreDisplay.Init()
+function ScoreDisplay:Init()
 
-	ScoreDisplay.Score = 0
-	ScoreDisplay.DisplayScore = 0
+  self.Targets = {}
+  self.Images = {}
+
+  self.Digits = {}
+
+	self.Score = 0
+	self.DisplayScore = 0
 
 	for i = 1, 10 do -- Digit images
-		ScoreDisplay.Images[i] = ScoreDisplay.SetName(i)
+		self.Images[i] = self.SetName(i)
 	end
 
-	ScoreDisplay.Atlas = TextureAtlas:new(GetSkinFile(ScoreDisplay.Sheet))
+	self.Atlas = TextureAtlas:new(GetSkinFile(self.Sheet))
 
-	for i = 1, ScoreDisplay.DigitCount do
-		ScoreDisplay.Targets[i] = Engine:CreateObject()
+	for i = 1, self.DigitCount do
+		self.Targets[i] = Engine:CreateObject()
 
-		ScoreDisplay.Targets[i].X = ScoreDisplay.X + ScoreDisplay.W - ScoreDisplay.DigitWidth * i
-		ScoreDisplay.Targets[i].Y = ScoreDisplay.Y + ScoreDisplay.H - ScoreDisplay.DigitHeight
-		ScoreDisplay.Targets[i].Image = "VSRG/"..ScoreDisplay.Atlas.File
-		ScoreDisplay.Targets[i].Width = ScoreDisplay.DigitWidth
-		ScoreDisplay.Targets[i].Height = ScoreDisplay.DigitHeight
-		ScoreDisplay.Targets[i].Layer = ScoreDisplay.Layer
+		self.Targets[i].X = self.X + self.W - self.DigitWidth * i
+		self.Targets[i].Y = self.Y + self.H - self.DigitHeight
+		self.Targets[i].Image = "VSRG/"..self.Atlas.File
+		self.Targets[i].Width = self.DigitWidth
+		self.Targets[i].Height = self.DigitHeight
+		self.Targets[i].Layer = self.Layer
 
-		local Tab = ScoreDisplay.Atlas.Sprites[ScoreDisplay.Images[1]]
+		local Tab = self.Atlas.Sprites[self.Images[1]]
 
-		ScoreDisplay.Targets[i]:SetCropByPixels(Tab.x, Tab.x+Tab.w, Tab.y+Tab.h, Tab.y)
+		self.Targets[i]:SetCropByPixels(Tab.x, Tab.x+Tab.w, Tab.y+Tab.h, Tab.y)
 
-		ScoreDisplay.Targets[i].Alpha = (1)
+		self.Targets[i].Alpha = (1)
 	end
 end
 
-function ScoreDisplay.Run(Delta)
-	ScoreDisplay.DisplayScore = math.min((ScoreDisplay.Score - ScoreDisplay.DisplayScore) * Delta * 40 + ScoreDisplay.DisplayScore, ScoreDisplay.Score)
-	ScoreDisplay.Digits = {}
+librd.make_new(ScoreDisplay, ScoreDisplay.Init)
 
-	local TCombo = math.ceil(ScoreDisplay.DisplayScore)
-	local tdig = 0
-
-	while TCombo >= 1 do
-		table.insert(ScoreDisplay.Digits, math.floor(TCombo) % 10)
-		TCombo = TCombo / 10
-		tdig = tdig + 1
-	end
+function ScoreDisplay:Run(Delta)
+  self.Score = self.Player.Score
+  
+	self.DisplayScore = math.min((self.Score - self.DisplayScore) * Delta * 40 + self.DisplayScore, self.Score)
+	local Digits = librd.intToDigits(self.DisplayScore)
+  local tdig = #Digits
 
 	for i=1, tdig do
-		local Tab = ScoreDisplay.Atlas.Sprites[ScoreDisplay.Images[ScoreDisplay.Digits[i]+1]]
-		ScoreDisplay.Targets[i]:SetCropByPixels(Tab.x, Tab.x+Tab.w, Tab.y, Tab.y+Tab.h)
-		ScoreDisplay.Targets[i].Alpha = (1)
+		local Tab = self.Atlas.Sprites[self.Images[self.Digits[i]+1]]
+		self.Targets[i]:SetCropByPixels(Tab.x, Tab.x+Tab.w, Tab.y, Tab.y+Tab.h)
+		self.Targets[i].Alpha = (1)
 	end
 
-	for i=tdig+1, ScoreDisplay.DigitCount do
-		local Tab = ScoreDisplay.Atlas.Sprites[ScoreDisplay.Images[1]]
+	for i=tdig+1, self.DigitCount do
+		local Tab = self.Atlas.Sprites[self.Images[1]]
 
-		ScoreDisplay.Targets[i]:SetCropByPixels(Tab.x, Tab.x+Tab.w, Tab.y+Tab.h, Tab.y)
-		ScoreDisplay.Targets[i].Alpha = (1)
+		self.Targets[i]:SetCropByPixels(Tab.x, Tab.x+Tab.w, Tab.y+Tab.h, Tab.y)
+		self.Targets[i].Alpha = (1)
 	end
 
-end
-
-function ScoreDisplay.Update()
-	ScoreDisplay.Score = SCScore
 end

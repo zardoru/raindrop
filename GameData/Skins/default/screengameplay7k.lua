@@ -1,3 +1,4 @@
+game_require "debug"
 game_require "TextureAtlas"
 game_require "utils"
 game_require "AnimationFunctions"
@@ -7,24 +8,16 @@ skin_require "Global/FadeInScreen"
 -- Set up constants for everyone
 
 game_require "noteskin_defs"
-GearWidth = Noteskin[Channels].GearWidth
-GearHeight = GearHeightCommon
-if Upscroll ~= 0 then
-	UpscrollMod = -1
-else
-	UpscrollMod = 1
-end
-
-skin_require "VSRG/Explosions"
-skin_require "VSRG/ComboDisplay"
-skin_require "VSRG/KeyLightning"
-skin_require "VSRG/FixedObjects"
-skin_require "VSRG/ScoreDisplay"
-skin_require "VSRG/AutoplayAnimation"
-skin_require "VSRG/GameplayObjects"
-skin_require "VSRG/StageAnimation"
-skin_require "VSRG/AnimatedObjects"
-skin_require "VSRG/TextDisplay"
+skin_require "Scripts.Explosions"
+skin_require "Scripts.ComboDisplay"
+skin_require "Scripts.KeyLightning"
+skin_require "Scripts.FixedObjects"
+skin_require "Scripts.ScoreDisplay"
+skin_require "Scripts.AutoplayAnimation"
+skin_require "Scripts.Lifebar"
+skin_require "Scripts.StageAnimation"
+skin_require "Scripts.AnimatedObjects"
+skin_require "Scripts.TextDisplay"
 
 -- All of these will be loaded in the loading screen instead of
 -- in the main thread.
@@ -88,10 +81,10 @@ AnimatedObjects = {
 		end
 	end,
 
-	GearKeyEvent = function (Lane, IsKeyDown)
+	GearKeyEvent = function (Lane, IsKeyDown, PlayerNumber)
 		for i = 1, #AnimatedObjects.List do
 			if AnimatedObjects.Items[i] and AnimatedObjects.Items[i].GearKeyEvent ~= nil then
-				AnimatedObjects.Items[i].GearKeyEvent(Lane, IsKeyDown)
+				AnimatedObjects.Items[i].GearKeyEvent(Lane, IsKeyDown, PlayerNumber)
 			end
 		end
 	end
@@ -151,7 +144,7 @@ function OnActivateEvent()
 	end
 end
 
-function HitEvent(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease)
+function HitEvent(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease, PNum)
 	-- When hits happen, this function is called.
 	AnimatedObjects.Hit(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease)
 
@@ -160,7 +153,7 @@ function HitEvent(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease)
 	end
 end
 
-function MissEvent(TimeOff, Lane, IsHold)
+function MissEvent(TimeOff, Lane, IsHold, PNum)
 	-- When misses happen, this function is called.
 	AnimatedObjects.MissEvent(TimeOff, Lane, IsHold)
 
@@ -173,14 +166,14 @@ function KeyEvent(Key, Code, IsMouseInput)
 	-- All key events, related or not to gear are handled here
 end
 
-function GearKeyEvent (Lane, IsKeyDown)
+function GearKeyEvent (Lane, IsKeyDown, PNum)
 	-- Only lane presses/releases are handled here.
 
 	if Lane >= Channels then
 		return
 	end
 
-	AnimatedObjects.GearKeyEvent(Lane, IsKeyDown)
+	AnimatedObjects.GearKeyEvent(Lane, IsKeyDown, PNum)
 end
 
 -- Called when the song is over.

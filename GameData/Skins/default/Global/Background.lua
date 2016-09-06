@@ -14,8 +14,8 @@ function BackgroundAnimation.Init(self)
 	self.Blue = Engine:CreateObject()
 	self.Pink = Engine:CreateObject()
 
-	self.Pink.Image = "Global/pink.png"
-	self.Blue.Image = "Global/blue.png"
+	self.Pink.Texture  = "Global/pink.png"
+	self.Blue.Texture  = "Global/blue.png"
 	self.Pink.AffectedByLightning = 1
 	self.Blue.AffectedByLightning = 1
 

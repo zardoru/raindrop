@@ -13,11 +13,11 @@ Explosions = {
 	MissShow = 1
 }
 
-function self.HitName (i)
+function Explosions.HitName (i)
 	return "lightingN-" .. i-1 .. ".png"
 end
 
-function self.HoldName (i)
+function Explosions.HoldName (i)
 	return "lightingL-" .. i-1 .. ".png"
 end
 
@@ -85,7 +85,7 @@ librd.make_new(Explosions, Explosions.Init)
 
 function Explosions:Run(Delta)
 
-	for i = 1, Channels do
+	for i = 1, self.Player.Channels do
 		self.HitTime[i] = self.HitTime[i] + Delta
 
 		-- Calculate frame
@@ -98,11 +98,11 @@ function Explosions:Run(Delta)
 			self.HitTargets[i].Alpha = (1)
 
 			-- Assign size and stuff according to texture atlas
-			local Tab = self.HitAtlas.Sprites[self.HitImages[math.floor(Frame)]]
+			local Tab = self.HitAtlas.Sprites[self.HitImages[floor(Frame)]]
 
-			if not Tab then
+			--[[if not Tab then
 				print (self.HitImages[math.floor(Frame)])
-			end
+			end]]
 
 			self.HitTargets[i]:SetCropByPixels(Tab.x, Tab.x+Tab.w, Tab.y+Tab.h, Tab.y)
 			self.HitTargets[i].Width = Tab.w
@@ -134,7 +134,7 @@ function Explosions:Run(Delta)
 			self.HoldTargets[i].Alpha = (0)
 		else
 			self.HoldTargets[i].Alpha = (1)
-			local Tab = self.HoldAtlas.Sprites[self.HoldImages[math.floor(Frame)]]
+			local Tab = self.HoldAtlas.Sprites[self.HoldImages[floor(Frame)]]
 
 			self.HoldTargets[i]:SetCropByPixels(Tab.x, Tab.x + Tab.w, Tab.y + Tab.h, Tab.y)
 			self.HoldTargets[i].Width = Tab.w
@@ -145,20 +145,27 @@ function Explosions:Run(Delta)
 	end
 end
 
-function Explosions:Hit(j, t, l, IsHold, IsHoldRelease)
+function Explosions:Hit(j, t, l, IsHold, IsHoldRelease, pn)
+  if pn ~= self.Player.Number then
+    return
+  end
 
 	if IsHold ~= 0 then
 		self.HoldTime[l] = 0
 	end
 
-	if IsHold == 0 or IsHoldRelease == 1 then
+	if not IsHold or IsHoldRelease then
 		self.HitTime[l] = 0
 		self.HitColorize[l] = false
 	end
 end
 
-function Explosions:Miss()
-	if IsHold == 0 then
+function Explosions:Miss(t, l, i, pn)
+	if pn ~= self.Player.Number then
+    return
+  end
+  
+  if not IsHold then
 		self.HitTime[l] = 0
 		self.HitColorize[l] = true
 	end

@@ -27,7 +27,7 @@ function Init()
 	Acceleration = 0
 	
 	targLogo =  Engine:CreateObject()
-	targLogo.Image = "Loading/loading.png"
+	targLogo.Texture = "Loading/loading.png"
 	w = targLogo.Width
 	h = targLogo.Height
 	targLogo.Centered = 1
@@ -35,7 +35,7 @@ function Init()
 
 	targBadge = Engine:CreateObject()
 	
-	targBadge.Image = "Loading/loadingbadge.png"
+	targBadge.Texture = "Loading/loadingbadge.png"
 	targBadge.Centered = 1
 	targBadge.Width = 64
 	targBadge.Height = 64
@@ -45,7 +45,7 @@ function Init()
 	targBadge.Layer = 16
 	
 	BG = Engine:CreateObject()
-	BG.Image = "STAGEFILE" -- special constant
+	BG.Texture = "STAGEFILE" -- special constant
 	BG.Centered = 1
 	BG.X = ScreenWidth / 2
 	BG.Y = ScreenHeight / 2

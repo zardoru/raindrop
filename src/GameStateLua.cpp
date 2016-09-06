@@ -11,6 +11,7 @@
 #include "Song7K.h"
 #include "SongDC.h"
 #include "SongDatabase.h"
+#include "SongWheel.h"
 
 #include "ScoreKeeper7K.h"
 
@@ -81,24 +82,32 @@ Game::dotcur::Song* toSongDC(Game::Song* Sng)
 Game::VSRG::Parameters* GameState::GetParameters(int pn)
 {
 	if (PlayerNumberInBounds(pn))
-		return PlayerInfo[pn].Params.get();
+		return &PlayerInfo[pn].Params;
 	else return nullptr;
 }
 
 Game::VSRG::Difficulty * Game::GameState::GetDifficulty(int pn)
 {
-	if (PlayerNumberInBounds(pn))
+	if (PlayerNumberInBounds(pn) && PlayerInfo[pn].Diff)
 		return PlayerInfo[pn].Diff.get();
-	else
-		return nullptr;
+	else {
+		if(GetSelectedSong()->Mode == MODE_VSRG)
+			return ((Game::VSRG::Song*)GetSelectedSong())->GetDifficulty(SongWheel::GetInstance().GetDifficulty());
+	}
+
+	return nullptr;
 }
 
 std::shared_ptr<Game::VSRG::Difficulty> Game::GameState::GetDifficultyShared(int pn)
 {
-	if (PlayerNumberInBounds(pn))
+	if (PlayerNumberInBounds(pn) && PlayerInfo[pn].Diff)
 		return PlayerInfo[pn].Diff;
-	else
-		return nullptr;
+	else {
+		if(GetSelectedSong()->Mode == MODE_VSRG)
+			return ((Game::VSRG::Song*)GetSelectedSong())->Difficulties[SongWheel::GetInstance().GetDifficulty()];
+	}
+
+	return nullptr;
 }
 
 void GameState::InitializeLua(lua_State *L)

@@ -9,11 +9,6 @@ Judgment = {
 	ScaleMiss = 0.12,
 	ScaleExtra = 0.1,
 
-	Position = {
-		x = GearWidth/2 + GearStartX,
-		y = ComboDisplay.Position.y + ComboDisplay.DigitHeight + 20
-	},
-
 	Table = {
 		"judge-excellent.png",
 		"judge-perfect.png",
@@ -31,14 +26,19 @@ Judgment.__index = Judgment
 
 function Judgment:Init()
 	self.Atlas = TextureAtlas:skin_new("VSRG/self.csv")
+  
+  
+  self.defaultX = self.Noteskin.GearWidth / 2 + self.Noteskin.GearStartX
+  self.defaultY = ComboDisplay.Position.y + ComboDisplay.DigitHeight + 20
+  
 	self.Object = ScreenObject {
 		Layer = 24,
 		Centered = 1,
 		ScaleX = self.Scale,
 		ScaleY = self.Scale,
 		Image = self.Atlas.File,
-		X = self.Position.x,
-		Y = self.Position.y,
+		X = self.Position and self.Position.x or defaultX
+		Y = self.Position and self.Position.y or defaultY
 		Alpha = 0
 	}
 
@@ -56,7 +56,7 @@ function Judgment:Init()
 	}
 end
 
-Judgment.new = librd.new(Judgment.Init)
+librd.make_new(Judgment, Judgment.Init)
 
 local function GetComboLerp()
 	local AAAThreshold = 8.0 / 9.0
@@ -75,7 +75,7 @@ function Judgment:Run(Delta)
 		local OldJudgeScale = self.Object.ScaleX
 		local ScaleLerpAAA = ComboLerp * self.ScaleExtra
 		local DeltaScale = (self.Scale + ScaleLerpAAA - OldJudgeScale) * Delta * self.Speed
-		local FinalScale = math.max(0, OldJudgeScale + DeltaScale)
+		local FinalScale = max(0, OldJudgeScale + DeltaScale)
 
 		self.Object:SetScale (FinalScale)
 
@@ -126,7 +126,10 @@ function Judgment:Run(Delta)
 	end
 end
 
-function self.Hit(JudgmentValue, EarlyOrLate)
+function Judgment:Hit(JudgmentValue, Time, l, h, r, pn)
+  if pn ~= self.Player.Number then
+    return
+  end
 
 	self.Value = JudgmentValue
 
@@ -163,3 +166,4 @@ function self.Hit(JudgmentValue, EarlyOrLate)
 	self.Time = 0
 	self.EarlyOrLate = EarlyOrLate
 end
+

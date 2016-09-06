@@ -66,8 +66,10 @@ bool LuaManager::RunScript(std::filesystem::path file)
     {
         const char* reason = lua_tostring(State, -1);
 
-        if (reason)
+
+        if (reason && reason != last_error)
         {
+			last_error = reason;
             Log::LogPrintf("LuaManager: Lua error: %s\n", reason);
             Utility::DebugBreak();
         }
@@ -97,9 +99,10 @@ bool LuaManager::Require(std::filesystem::path Filename)
     if (lua_pcall(State, 1, 1, 0))
     {
         const char* reason = lua_tostring(State, -1);
-        if (reason)
+        if (reason && last_error != reason)
         {
-            Log::Printf("lua require error: %s\n", reason);
+			last_error = reason;
+            Log::LogPrintf("lua require error: %s\n", reason);
             Utility::DebugBreak();
         }
         // No popping here - if succesful or not we want to leave that return value to lua.
@@ -334,6 +337,12 @@ void LuaManager::PushArgument(std::string Value)
         lua_pushstring(State, Value.c_str());
 }
 
+void LuaManager::PushArgument(bool Value)
+{
+	if (func_input)
+		lua_pushboolean(State, Value);
+}
+
 bool LuaManager::CallFunction(const char* Name, int Arguments, int Results)
 {
 	bool IsFunc;
@@ -383,11 +392,14 @@ bool LuaManager::RunFunction()
     {
         std::string reason = lua_tostring(State, -1);
 
+		if (last_error != reason) {
+			last_error = reason;
 #ifndef WIN32
-        printf("lua call error: %s\n", reason.c_str());
+			printf("lua call error: %s\n", reason.c_str());
 #else
-        Log::Printf("lua call error: %s\n", reason.c_str());
+			Log::LogPrintf("lua call error: %s\n", reason.c_str());
 #endif
+		}
         Pop(); // Remove the error from the stack.
         func_err = true;
         return false;

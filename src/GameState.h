@@ -34,7 +34,7 @@ namespace Game
 
 		struct SPlayerCurrent7K {
 			std::shared_ptr<VSRG::ScoreKeeper> SKeeper7K;
-			std::shared_ptr<VSRG::Parameters> Params;
+			VSRG::Parameters Params;
 			std::shared_ptr<VSRG::Difficulty> Diff;
 
 			int CurrentGaugeType;

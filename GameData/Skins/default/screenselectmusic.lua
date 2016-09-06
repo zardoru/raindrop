@@ -100,11 +100,11 @@ function KeyEvent(k, c, m)
 end
 
 function DirUpBtnHover()
-	DirUpButton.Image = "SongSelect/up_h.png"
+	DirUpButton.Texture = "SongSelect/up_h.png"
 end
 
 function DirUpBtnHoverLeave()
-	DirUpButton.Image = "SongSelect/up.png"
+	DirUpButton.Texture = "SongSelect/up.png"
 end
 
 function BackBtnClick()
@@ -123,7 +123,7 @@ function Init()
 	BackgroundAnimation:Init()
 	ScreenFade.Init()
 	
-	DirUpButton.Image = "SongSelect/up.png"
+	DirUpButton.Texture = "SongSelect/up.png"
 	DirUpButton.Centered = 1
 	DirUpButton.X = ScreenWidth/2
 	DirUpButton.Y = ScreenHeight - DirUpButton.Height/2
@@ -139,7 +139,7 @@ function Init()
 	Engine:AddTarget(dd)
 	
 	WheelBackground = Object2D()
-	WheelBackground.Image = "Global/white.png"
+	WheelBackground.Texture = "Global/white.png"
 	WheelBackground.Width = ItemWidth
 	WheelBackground.Height = ItemHeight
 
@@ -212,7 +212,8 @@ function Init()
 				sng = toSongDC(Song)
 			end
 			if IsSelected then
-				strDuration.Text = floor(sng:GetDifficulty(Global.DifficultyIndex).Duration) .. " seconds"
+				-- player 0 selected difficulty data
+				strDuration.Text = floor(Global:GetDifficulty(0).Duration) .. " seconds"
 			else
 				strDuration.Text = floor(sng:GetDifficulty(0).Duration) .. " seconds"
 			end
@@ -237,14 +238,14 @@ function Init()
 	end
 
 
-	sbar = Engine:CreateObject()
-	sbar.Image = "Global/white.png"
-	sbar.Height = ScreenHeight
-	sbar.Width = 5
-	sbar.Y = 0
+	WheelSeparator = Engine:CreateObject()
+	WheelSeparator.Texture = "Global/white.png"
+	WheelSeparator.Height = ScreenHeight
+	WheelSeparator.Width = 5
+	WheelSeparator.Y = 0
 	
 	wheeltick = Engine:CreateObject()
-	wheeltick.Image = "Global/white.png"
+	wheeltick.Texture = "Global/white.png"
 	wheeltick.Height = 8
 	wheeltick.Width = 16
 	wheeltick.Layer = 25
@@ -257,7 +258,7 @@ function updText()
 	if sng then
 		local s7k = toSong7K(sng)
 		if s7k then
-			local diff = s7k:GetDifficulty(Global.DifficultyIndex)
+			local diff = Global:GetDifficulty(0)
 			if diff then
 				local author = diff.Author
 				local nps = diff.Objects / diff.Duration
@@ -266,7 +267,7 @@ function updText()
 				end
 
 				dd.Text = "Selected " .. diff.Name .. author .. 
-					string.format("\n%d of %d", Global.DifficultyIndex+1, s7k.DifficultyCount) ..
+					string.format("\n%d of %d", Wheel.DifficultyIndex+1, s7k.DifficultyCount) ..
 					"\n" .. diff.Channels .. " Channels" ..
 					"\nLevel " .. diff.Level .. 
 					" (" .. string.format("%.02f", nps) .. " nps)"
@@ -292,7 +293,7 @@ function Update(Delta)
 	BackgroundAnimation:Update(Delta)
 	CurrentTX = clamp(CurrentTX + (TransformX - CurrentTX) * Delta * 8, WheelExitX, WheelX)
 
-	sbar.X = CurrentTX + ItemWidth
+	WheelSeparator.X = CurrentTX + ItemWidth
 	wheeltick.Width = math.max(16, ScreenWidth / Wheel.ItemCount)
 	wheeltick.X = (Wheel.SelectedIndex % Wheel.ItemCount) / (Wheel.ItemCount - 1) * (ScreenWidth - wheeltick.Width)
 	wheeltick.Y = 86

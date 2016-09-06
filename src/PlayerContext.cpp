@@ -228,9 +228,14 @@ namespace Game {
 		}
 
 
+		bool PlayerContext::IsFailEnabled() const
+		{
+			return !Parameters.NoFail;
+		}
+
 		bool PlayerContext::IsUpscrolling() const
 		{
-			return GetAppliedSpeedMultiplier() < 0 || Parameters.Upscroll;
+			return GetAppliedSpeedMultiplier(LastUpdateTime) < 0 || Parameters.Upscroll;
 		}
 
 
@@ -250,9 +255,24 @@ namespace Game {
 			return CurrentDiff.get();
 		}
 
+		double PlayerContext::GetDuration() const
+		{
+			return ChartData.ConnectedDifficulty->Duration;
+		}
+
+		double PlayerContext::GetBeatDuration() const
+		{
+			return ChartData.GetBeatAt(GetDuration());
+		}
+
 		int PlayerContext::GetChannelCount() const
 		{
-			return CurrentDiff->Channels;
+			return ChartData.ConnectedDifficulty->Channels;
+		}
+
+		int PlayerContext::GetPlayerNumber() const
+		{
+			return PlayerNumber;
 		}
 
 		bool PlayerContext::GetIsHeldKey(int lane) const
@@ -266,6 +286,11 @@ namespace Game {
 		bool PlayerContext::GetUsesTurntable() const
 		{
 			return ChartData.HasTurntable;
+		}
+
+		double PlayerContext::GetAppliedSpeedMultiplier(double Time) const
+		{
+			return ChartData.GetSpeedMultiplierAt(Time);
 		}
 
 		double PlayerContext::GetCurrentBeat() const
@@ -297,6 +322,8 @@ namespace Game {
 			luabridge::getGlobalNamespace(Env->GetState())
 				.beginClass<PlayerContext>("PlayerContext")
 				.addProperty("Beat", &PlayerContext::GetCurrentBeat)
+				.addProperty("Duration", &PlayerContext::GetDuration)
+				.addProperty("BeatDuration", &PlayerContext::GetBeatDuration)
 				.addProperty("Channels", &PlayerContext::GetChannelCount)
 				.addProperty("BPM", &PlayerContext::GetCurrentBPM)
 				.addProperty("CanFail", &PlayerContext::IsFailEnabled)
@@ -309,12 +336,19 @@ namespace Game {
 				.addProperty("HasTurntable", &PlayerContext::GetUsesTurntable)
 				.addProperty("LifebarPercent", &PlayerContext::GetLifePST)
 				.addProperty("Difficulty", &PlayerContext::GetDifficulty)
+				.addProperty("Number", &PlayerContext::GetPlayerNumber)
+				.addProperty("Score", &PlayerContext::GetScore)
 				.addFunction("GetPacemakerText", &PlayerContext::GetPacemakerText)
 				.addFunction("GetPacemakerValue", &PlayerContext::GetPacemakerValue)
 				.addFunction("IsHoldActive", &PlayerContext::GetIsHeldKey)
 				.addFunction("GetClosestNoteTime", &PlayerContext::GetClosestNoteTime)
-				.addProperty("GetScorekeeper", &PlayerContext::GetScoreKeeper)
+				.addProperty("Scorekeeper", &PlayerContext::GetScoreKeeper)
 				.endClass();
+		}
+
+		double PlayerContext::GetScore() const
+		{
+			return PlayerScoreKeeper->getScore(ScoringType);
 		}
 
 		bool PlayerContext::BindKeysToLanes(bool UseTurntable)
@@ -322,6 +356,8 @@ namespace Game {
 			std::string KeyProfile;
 			std::string value;
 			std::vector<std::string> res;
+
+			auto CurrentDiff = ChartData.ConnectedDifficulty;
 
 			if (UseTurntable)
 				KeyProfile = (std::string)CfgVar("KeyProfileSpecial" + Utility::IntToStr(CurrentDiff->Channels));
@@ -471,6 +507,9 @@ namespace Game {
 
 		void PlayerContext::RunMeasures(double time)
 		{
+			/*
+				Notes are always ran at unwarped time. PlayerChartData unwarps the time.
+			*/
 			double timeClosest[VSRG::MAX_CHANNELS];
 			auto perfect_auto = true;
 
@@ -658,6 +697,11 @@ namespace Game {
 				return std::numeric_limits<double>::infinity();
 		}
 
+		void PlayerContext::SetUserMultiplier(float Multip)
+		{
+			Parameters.SpeedMultiplier = Multip;
+		}
+
 		void PlayerContext::SetPlayableData(std::shared_ptr<VSRG::Difficulty> diff, double Drift,
 			double DesiredDefaultSpeed, int Type)
 		{
@@ -800,7 +844,7 @@ namespace Game {
 			if (Animations) {
 				if (Animations->GetEnv()->CallFunction("GearKeyEvent", 3))
 				{
-					Animations->GetEnv()->PushArgument((int)Lane);
+					Animations->GetEnv()->PushArgument((int)Lane + 1);
 					Animations->GetEnv()->PushArgument(KeyDown);
 					Animations->GetEnv()->PushArgument(PlayerNumber);
 
@@ -811,6 +855,7 @@ namespace Game {
 
 		void PlayerContext::Update(double SongTime)
 		{
+			LastUpdateTime = SongTime;
 			RunMeasures(SongTime);
 		}
 
@@ -945,11 +990,20 @@ namespace Game {
 
 		void PlayerContext::DrawMeasures(double song_time)
 		{
+			/*
+				DrawMeasures should get the unwarped song time.
+				Internally, it uses warped song time.
+			*/
+			auto wt = ChartData.GetWarpedSongTime(song_time);
+
 			// note Y displacement at song_time
-			auto vert = ChartData.GetDisplacementAt(song_time);
+			auto vert = ChartData.GetDisplacementAt(wt);
 
 			// effective speed multiplier
 			auto effmul = ChartData.GetSpeedMultiplierAt(song_time) * Parameters.SpeedMultiplier;
+
+			// since + is downward, - is upward!
+			bool upscrolling = effmul < 0;
 
 			if (PlayerNoteskin.IsBarlineEnabled())
 				DrawBarlines(vert, effmul);
@@ -971,36 +1025,43 @@ namespace Game {
 
 			Renderer::SetPrimitiveQuadVBO();
 			auto &NotesByChannel = ChartData.NotesByChannel;
-			auto ny = PlayerNoteskin.GetJudgmentY();
+			auto jy = PlayerNoteskin.GetJudgmentY();
 
 			for (auto k = 0U; k < CurrentDiff->Channels; k++)
 			{
+				// From the note's vertical StaticVert transform to position on screen.
 				auto Locate = [&](double StaticVert) -> double
 				{
-					return (vert - StaticVert) * effmul + ny;
+					return (vert - StaticVert) * effmul + jy;
 				};
 
 				auto Start = NotesByChannel[k].begin();
 				auto End = NotesByChannel[k].end();
 
-				if (!ChartData.HasNegativeScroll)
+				// We've got guarantees about our note locations.
+				if (UseNoteOptimization())
 				{
 					/* Find the location of the first/next visible regular note */
 					auto LocPredicate = [&](const TrackNote &A, double _) -> bool
 					{
-						if (!IsUpscrolling())
+						if (!upscrolling)
 							return _ < Locate(A.GetVertical());
 						else // Signs are switched. We need to preserve the same order.
 							return _ > Locate(A.GetVertical());
 					};
 
 					// Signs are switched. Doesn't begin by the first note closest to the lower edge, but the one closest to the higher edge.
-					if (!IsUpscrolling())
+					if (!upscrolling)
 						Start = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), ScreenHeight + PlayerNoteskin.GetNoteOffset(), LocPredicate);
 					else
 						Start = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), 0 - PlayerNoteskin.GetNoteOffset(), LocPredicate);
 
 					// Locate the first hold that we can draw in this range
+					/*
+						Since our object is on screen, our hold may be on screen but may not be this note
+						since only head locations are used.
+						Find this possible hold by checking if it intersects the screen.
+					*/
 					auto rStart = std::reverse_iterator<std::vector<TrackNote>::iterator>(Start);
 					for (auto i = rStart; i != NotesByChannel[k].rend(); ++i)
 					{
@@ -1017,9 +1078,8 @@ namespace Game {
 					}
 
 					// Find the note that is out of the drawing range
-
 					// As before. Top becomes bottom, bottom becomes top.
-					if (!IsUpscrolling())
+					if (!upscrolling)
 						End = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), 0 - PlayerNoteskin.GetNoteOffset(), LocPredicate);
 					else
 						End = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), ScreenHeight + PlayerNoteskin.GetNoteOffset(), LocPredicate);
@@ -1039,7 +1099,7 @@ namespace Game {
 					VerticalHoldEnd = Locate(m->GetHoldEndVertical());
 
 					// Old check method that doesn't rely on a correct vertical ordering.
-					if (ChartData.HasNegativeScroll)
+					if (!UseNoteOptimization())
 					{
 						if (m->IsHold())
 						{
@@ -1063,7 +1123,7 @@ namespace Game {
 
 					// LR2 style keep-on-the-judgment-line
 					bool AboveLine = Vertical < PlayerNoteskin.GetJudgmentY();
-					if (!(AboveLine ^ IsUpscrolling()) && m->IsJudgable())
+					if (!(AboveLine ^ upscrolling) && m->IsJudgable())
 						JudgeY = PlayerNoteskin.GetJudgmentY();
 					else
 						JudgeY = Vertical;

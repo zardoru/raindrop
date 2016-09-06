@@ -17,6 +17,12 @@ namespace Game {
 		{
 			LuaManager NoteskinLua;
 			double NoteScreenSize;
+			double BarlineWidth;
+			double BarlineStartX;
+			double BarlineOffset;
+			double JudgmentY;
+			
+			bool BarlineEnabled;
 			bool DanglingHeads;
 			bool CanRender;
 			bool DecreaseHoldSizeWhenBeingHit;
@@ -31,16 +37,16 @@ namespace Game {
 
 			void DrawNote(TrackNote &T, int Lane, float Location);
 			void DrawHoldBody(int Lane, float Location, float Size, int ActiveLevel);
-			float GetBarlineWidth();
-			double GetBarlineStartX();
-			double GetBarlineOffset();
-			bool IsBarlineEnabled();
-			double GetJudgmentY();
+			float GetBarlineWidth() const;
+			double GetBarlineStartX() const;
+			double GetBarlineOffset() const;
+			bool IsBarlineEnabled() const;
+			double GetJudgmentY() const;
 			void DrawHoldHead(TrackNote& T, int Lane, float Location, int ActiveLevel);
 			void DrawHoldTail(TrackNote& T, int Lane, float Location, int ActiveLevel);
-			double GetNoteOffset();
-			bool AllowDanglingHeads();
-			bool ShouldDecreaseHoldSizeWhenBeingHit();
+			double GetNoteOffset() const;
+			bool AllowDanglingHeads() const;
+			bool ShouldDecreaseHoldSizeWhenBeingHit() const;
 		};
 	}
 }

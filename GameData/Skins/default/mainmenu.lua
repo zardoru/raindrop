@@ -8,25 +8,25 @@ Preload = {
 IntroDuration = 0.3
 ExitDuration = 2.3
 function PlayBtnHover()
-	PlayButton.Image = "MainMenu/playh.png";
+	PlayButton.Texture = "MainMenu/playh.png";
 	PlayButton.Width = 256
 	PlayButton.Height = 153
 end
 
 function PlayBtnHoverLeave()
-	PlayButton.Image = "MainMenu/play.png";
+	PlayButton.Texture = "MainMenu/play.png";
 	PlayButton.Width = 256
 	PlayButton.Height = 153
 end
 
 function ExitBtnHover()
-	ExitButton.Image = "MainMenu/quith.png"
+	ExitButton.Texture = "MainMenu/quith.png"
 	ExitButton.Width = 256
 	ExitButton.Height = 153
 end
 
 function ExitBtnHoverLeave()
-	ExitButton.Image = "MainMenu/quit.png"
+	ExitButton.Texture = "MainMenu/quit.png"
 	ExitButton.Width = 256
 	ExitButton.Height = 153
 end
@@ -65,7 +65,7 @@ function Init()
 	ScreenFade:Init()
 		
 	targLogo = Engine:CreateObject() 
-	targLogo.Image = "MainMenu/FRONTs.png"
+	targLogo.Texture = "MainMenu/FRONTs.png"
 	targLogo.X = ScreenWidth / 2
 	targLogo.Y = ScreenHeight / 4
 	targLogo.Centered = 1
@@ -73,7 +73,7 @@ function Init()
 	targLogo.Layer = 31
 
 	targBadge = Engine:CreateObject()
-	targBadge.Image = "MainMenu/BACKs.png"
+	targBadge.Texture = "MainMenu/BACKs.png"
 	targBadge.X = ScreenWidth / 2
 	targBadge.Y = ScreenHeight / 4
 	targBadge.Centered = 1

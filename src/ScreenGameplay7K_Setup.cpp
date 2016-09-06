@@ -40,6 +40,8 @@ namespace Game {
 			LoadedSong = nullptr;
 			Active = false;
 
+			StartMeasure = 0;
+
 			// Don't play unless everything goes right (later checks)
 			DoPlay = false;
 		}
@@ -88,8 +90,12 @@ namespace Game {
 		{
 			uint8_t index = 0;
 			// The song is the same for _everyone_, so...
+			bool preloaded = true;
+			for (auto &d : MySong->Difficulties) {
+				if (!d->Data) preloaded = false;
+			}
 
-			if (!Preloaded)
+			if (!preloaded)
 			{
 				// The difficulty details are destroyed; which means we should load this from its original file.
 				SongLoader Loader(GameState::GetInstance().GetSongDatabase());
@@ -112,6 +118,8 @@ namespace Game {
 				*/
 			}
 
+			
+
 			BGA = BackgroundAnimation::CreateBGAFromSong(index, *MySong, this);
 
 			return true;
@@ -131,7 +139,7 @@ namespace Game {
 				}
 				else
 				{
-					if (!Players[0].GetPlayerState().ConnectedDifficulty->IsVirtual)
+					if (!Players[0].GetPlayerState().IsVirtual())
 					{
 						// Caveat: Try to autodetect an mp3/ogg file.
 						auto SngDir = MySong->SongDirectory;
@@ -243,32 +251,38 @@ namespace Game {
 			int ApplyDriftVirtual = Configuration::GetConfigf("UseAudioCompensationKeysounds");
 			int ApplyDriftDecoder = Configuration::GetConfigf("UseAudioCompensationNonKeysounded");
 
-			auto &ps = Players[0].GetPlayerState();
+			auto diff = GameState::GetInstance().GetDifficulty(0);
 
 			if (Time.InterpolateStream &&  // Apply drift is enabled and:
-				((ApplyDriftVirtual && ps.IsVirtual()) ||  // We want to apply it to a keysounded file and it's virtual
-					(ApplyDriftDecoder && !ps.IsVirtual()))) // or we want to apply it to a non-keysounded file and it's not virtual
+				((ApplyDriftVirtual && diff->IsVirtual) ||  // We want to apply it to a keysounded file and it's virtual
+					(ApplyDriftDecoder && diff->IsVirtual))) // or we want to apply it to a non-keysounded file and it's not virtual
 				TimeError.AudioDrift += MixerGetLatency();
 
 			TimeError.AudioDrift += Configuration::GetConfigf("Offset7K");
 
-			if (ps.IsVirtual())
+			if (diff->IsVirtual)
 				TimeError.AudioDrift += Configuration::GetConfigf("OffsetKeysounded");
 			else
 				TimeError.AudioDrift += Configuration::GetConfigf("OffsetNonKeysounded");
 
 			JudgeOffset = Configuration::GetConfigf("JudgeOffsetMS") / 1000;
 
-			Log::Logf("TimeCompensation: %f (Latency: %f / Offset: %f)\n", TimeError.AudioDrift, MixerGetLatency(), ps.GetOffset());
+			Log::Logf("TimeCompensation: %f (Latency: %f / Offset: %f)\n", TimeError.AudioDrift, MixerGetLatency(), diff->Offset);
+
+			Log::Printf("Processing song... ");
+
+			for (auto &&p : Players) {
+				for (auto diff : MySong->Difficulties)
+					if (diff->ID == GameState::GetInstance().GetDifficulty(p.GetPlayerNumber())->ID)
+						p.SetPlayableData(diff, TimeError.AudioDrift, DesiredDefaultSpeed, Type);
+			}
 
 			// What, you mean we don't have timing data at all?
-			if (ps.HasTimingData())
+			if (!Players[0].GetPlayerState().HasTimingData())
 			{
 				Log::Printf("Error loading chart: No timing data.\n");
 				return false;
 			}
-
-			Log::Printf("Processing song... ");
 
 			auto bgm0 = Players[0].GetBgmData();
 
@@ -303,7 +317,7 @@ namespace Game {
 			MissSnd.Open(MissSndFile);
 			FailSnd.Open(FailSndFile);
 
-			if (!LoadChartData() || !LoadSongAudio() || !ProcessSong() || !LoadBGA())
+			if (!LoadChartData() || !ProcessSong() || !LoadSongAudio() || !LoadBGA())
 			{
 				DoPlay = false;
 				return;

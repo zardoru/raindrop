@@ -10,18 +10,18 @@ function Keys:Init()
 	self.Keys[i] = Engine:CreateObject()
 	local obj = self.Keys[i]
 	obj.Centered = 1
-	obj.X = Noteskin[Channels]["Key" .. i .. "X"]
+	obj.X = self.Noteskin["Key" .. i .. "X"]
 	obj.Image = self.KeyAtlas.File
 	obj.Layer = 27
-	self.KeysUp[i] = Noteskin[Channels]["Key" .. i]
-	self.KeysDown[i] = Noteskin[Channels]["Key" .. i .. "Down"]
+	self.KeysUp[i] = self.Noteskin["Key" .. i]
+	self.KeysDown[i] = self.Noteskin["Key" .. i .. "Down"]
 
 	self.KeyAtlas:SetObjectCrop(obj, self.KeysUp[i])
 
-	obj.Width = Noteskin[Channels]["Key" .. i .. "Width"]
-	obj.Height = Noteskin[Channels].GearHeight
+	obj.Width = self.Noteskin["Key" .. i .. "Width"]
+	obj.Height = self.Noteskin.GearHeight
 
-	if Upscroll == 1 then
+	if self.Player.Upscroll then
 		obj.Y = JudgmentLineY - obj.Height / 2 - NoteHeight / 2
 		obj.Rotation = 180
 	else
@@ -29,11 +29,18 @@ function Keys:Init()
 	end
 end
 
-function Keys:GearKeyEvent(i, IsKeyDown)
-	i = i + 1
-	if IsKeyDown == 1 then
+librd.make_new(Keys, Keys.Init)
+
+function Keys:GearKeyEvent(i, IsKeyDown, pn)
+  if pn ~= self.Player.Number then
+    return
+  end
+  
+	if IsKeyDown then
 		self.KeyAtlas:SetObjectCrop(self.Keys[i], self.KeysDown[i])
 	else
 		self.KeyAtlas:SetObjectCrop(self.Keys[i], self.KeysUp[i])
 	end
 end
+
+return Keys

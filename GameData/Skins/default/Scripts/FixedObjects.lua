@@ -1,52 +1,58 @@
 
-Filter = { Image = "Global/filter.png" }
-JudgeLine = { Image = "VSRG/judgeline.png" }
+Filter = { Image = "Global/Filter.png" }
+JudgeLine = { Image = "VSRG/JudgeLine.png" }
 StageLines = { ImageLeft = "VSRG/stage-left.png", ImageRight = "VSRG/stage-right.png" }
 
-function Filter.Init()
+function Filter:Init()
 	if GetConfigF("ScreenFilter", "") == 0 then
 		return
 	end
 	
 	FilterVal = GetConfigF("ScreenFilter", "")
 
-	Filter.Object = Engine:CreateObject()
+	self.Object = Engine:CreateObject()
 
-	Filter.Object.Image = (Filter.Image)
-	Filter.Object.X = GearStartX
-	Filter.Object.Width = GearWidth
-	Filter.Object.Height = ScreenHeight
-	Filter.Object.Alpha = FilterVal
-	Filter.Object.Layer = 1
+	self.Object.Image = (self.Image)
+  
+	self.Object.X = self.Noteskin.GearStartX
+	self.Object.Width = self.Noteskin.GearWidth
+	self.Object.Height = ScreenHeight
+	self.Object.Alpha = FilterVal
+	self.Object.Layer = 1
 end
 
+librd.make_new(Filter, Filter.Init)
 
-function JudgeLine.Init()
-	JudgeLine.Object = Engine:CreateObject()
-	JudgeLine.Size = { w = GearWidth, h = NoteHeight }
+function JudgeLine:Init()
+	self.Object = Engine:CreateObject()
+	self.Size = { w = self.Noteskin.GearWidth, h = self.Noteskin.NoteHeight }
 
-	JudgeLine.Object.Image = JudgeLine.Image
-	JudgeLine.Object.Centered = 1
+	self.Object.Image = self.Image
+	self.Object.Centered = 1
 
-	JudgeLine.Object.X = GearStartX + GearWidth / 2
-	JudgeLine.Object.Y = JudgmentLineY
+	self.Object.X = self.Noteskin.GearStartX + self.Noteskin.GearWidth / 2
+	self.Object.Y = self.Player.JudgmentY
 	
-	JudgeLine.Object.Width = JudgeLine.Size.w
-	JudgeLine.Object.Height = JudgeLine.Size.h
-	JudgeLine.Object.Layer = 12
+	self.Object.Width = self.Size.w
+	self.Object.Height = self.Size.h
+	self.Object.Layer = 12
 end
 
-function StageLines.Init()
-	StageLines.Left = Engine:CreateObject()
-	StageLines.Right = Engine:CreateObject()
+librd.make_new(JudgeLine, JudgeLine.Init)
+
+function StageLines:Init()
+	self.Left = Engine:CreateObject()
+	self.Right = Engine:CreateObject()
 	
-	StageLines.Left.Image = (StageLines.ImageLeft)
-	StageLines.Left.X = GearStartX - StageLines.Left.Width
-	StageLines.Left.Height = ScreenHeight
-	StageLines.Left.Layer = 16
+	self.Left.Image = self.ImageLeft
+	self.Left.X = self.Noteskin.GearStartX - self.Left.Width
+	self.Left.Height = ScreenHeight
+	self.Left.Layer = 16
 
-	StageLines.Right.Image = (StageLines.ImageRight)
-	StageLines.Right.X = (GearStartX + GearWidth)
-	StageLines.Right.Height = ScreenHeight
-	StageLines.Right.Layer = 20
+	self.Right.Image = (self.ImageRight)
+	self.Right.X = (self.Noteskin.GearStartX + self.Noteskin.GearWidth)
+	self.Right.Height = ScreenHeight
+	self.Right.Layer = 20
 end
+
+librd.make_new(StageLines, StageLines.Init)

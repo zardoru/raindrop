@@ -56,7 +56,6 @@ namespace Game {
 			bool Active;
 			bool ForceActivation;
 			bool DoPlay;
-			bool Preloaded;
 			bool PlayReactiveSounds;
 			bool SongFinishTriggered;
 

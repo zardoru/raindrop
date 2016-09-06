@@ -13,6 +13,7 @@ namespace Game {
 			WaitTime = DEFAULT_WAIT_TIME;
 			HasNegativeScroll = false;
 			HasTurntable = false;
+			ConnectedDifficulty = nullptr;
 		}
 
 		// If TimingType is Beat, use beat integration to get time in seconds at Time
@@ -208,8 +209,6 @@ namespace Game {
 
 		TimingData GetSpeedChanges(TimingData VerticalSpeeds, TimingData Scrolls, double Drift, double Offset, bool Reset)
 		{
-			assert(Data != NULL);
-
 			std::sort(Scrolls.begin(), Scrolls.end());
 
 			const auto Unmodified = VerticalSpeeds;
@@ -294,6 +293,7 @@ namespace Game {
 			}
 
 			std::sort(VerticalSpeeds.begin(), VerticalSpeeds.end());
+			return VerticalSpeeds;
 		}
 
 		double PlayerChartData::GetWarpAmount(double Time) const
@@ -344,7 +344,7 @@ namespace Game {
 			for (int KeyIndex = 0; KeyIndex < diff->Channels; KeyIndex++)
 			{
 				int MIdx = 0;
-				auto MsrBeat = 0;
+				auto MsrBeat = 0.0;
 
 				/* For each measure of this channel */
 				for (auto Msr : data->Measures)
@@ -379,7 +379,7 @@ namespace Game {
 						double dBeat = NoteBeat - MsrBeat; // do in relation to position from start of measure
 						double BeatFraction = dBeat - floor(dBeat);
 
-						NewNote.AssignFraction(dBeat);
+						NewNote.AssignFraction(BeatFraction);
 
 						// Notes use warped time. Unwarp it.
 						double Wamt = -out.GetWarpAmount(CurrentNote.StartTime);
@@ -416,6 +416,7 @@ namespace Game {
 
 			for (auto S : out.Speeds) if (S.Value < 0) out.HasNegativeScroll = true;
 			for (auto S : out.VSpeeds) if (S.Value < 0) out.HasNegativeScroll = true;
+			return out;
 		}
 
 		double PlayerChartData::GetWarpedSongTime(double SongTime) const

@@ -5,7 +5,7 @@ function AutoAnimation.Init()
 	
 	BnMoveFunction = getMoveFunction(GearStartX + GearWidth/2, -60, GearStartX + GearWidth/2, 100, AutoBN)
 			
-	AutoBN.Image = "VSRG/auto.png"
+	AutoBN.Texture = "VSRG/auto.png"
 
 	AutoBN.Centered = 1
 

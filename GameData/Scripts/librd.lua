@@ -59,8 +59,20 @@ function lerp(current, start, finish, startval, endval)
 	return (current - start) * (endval - startval) / (finish - start) + startval
 end
 
-function clerp(c, s, f, s, e)
-	return clamp(lerp(c,s,f,s,e), s or 0, e or 1)
+function clerp(c, s, f, sv, ev)
+	return clamp(lerp(c,s,f,sv,ev), s or 0, e or 1)
+end
+
+function mix(r, s, e)
+	return lerp(r, 0, 1, s, e)
+end
+
+function cmix(r, s, e)
+	return clerp(r, 0, 1, s, e)
+end
+
+function fract(d)
+	return d - floor(d)
 end
 
 function with(obj, t)

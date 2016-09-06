@@ -22,6 +22,12 @@ namespace Game {
 			DecreaseHoldSizeWhenBeingHit = true;
 			DanglingHeads = true;
 			Parent = parent;
+
+			BarlineOffset = 0;
+			BarlineEnabled = false;
+			BarlineStartX = 0;
+			BarlineWidth = 0;
+			JudgmentY = 0;
 		}
 
 		void Noteskin::LuaRender(Sprite *S)
@@ -38,10 +44,6 @@ namespace Game {
 		{
 			if (NoteskinLua.CallFunction("Init"))
 				NoteskinLua.RunFunction();
-
-			DecreaseHoldSizeWhenBeingHit = (NoteskinLua.GetGlobalD("DecreaseHoldSizeWhenBeingHit") != 0);
-			DanglingHeads = (NoteskinLua.GetGlobalD("DanglingHeads") != 0);
-			NoteScreenSize = NoteskinLua.GetGlobalD("NoteScreenSize");
 		}
 
 		void Noteskin::SetupNoteskin(bool SpecialStyle, int Lanes)
@@ -53,10 +55,20 @@ namespace Game {
 			DefineSpriteInterface(&NoteskinLua);
 
 			luabridge::getGlobalNamespace(NoteskinLua.GetState())
-				.beginClass<Noteskin>("Noteskin")
+				.beginClass<Noteskin>("NoteskinObject") // Not constructed, so name is irrelevant
 				.addFunction("Render", &Noteskin::LuaRender)
+				.addData("BarlineOffset", &Noteskin::BarlineOffset)
+				.addData("BarlineStartX", &Noteskin::BarlineStartX)
+				.addData("BarlineWidth", &Noteskin::BarlineWidth)
+				.addData("BarlineEnabled", &Noteskin::BarlineEnabled)
+				.addData("DecreaseHoldSizeWhenBeingHit", &Noteskin::DecreaseHoldSizeWhenBeingHit)
+				.addData("DanglingHeads", &Noteskin::DanglingHeads)
+				.addData("NoteScreenSize", &Noteskin::NoteScreenSize)
+				.addData("JudgmentY", &Noteskin::JudgmentY)
 				.endClass();
 
+			luabridge::push(NoteskinLua.GetState(), this);
+			luabridge::setGlobal(NoteskinLua.GetState(), this, "Noteskin");
 			NoteskinLua.RunScript(GameState::GetInstance().GetSkinFile("noteskin.lua"));
 		}
 
@@ -109,29 +121,29 @@ namespace Game {
 			CanRender = false;
 		}
 
-		float Noteskin::GetBarlineWidth()
+		float Noteskin::GetBarlineWidth() const
 		{
-			return NoteskinLua.GetGlobalD("BarlineWidth");
+			return BarlineWidth;
 		}
 
-		double Noteskin::GetBarlineStartX()
+		double Noteskin::GetBarlineStartX() const
 		{
-			return NoteskinLua.GetGlobalD("BarlineStartX");
+			return BarlineStartX;
 		}
 
-		double Noteskin::GetBarlineOffset()
+		double Noteskin::GetBarlineOffset() const
 		{
-			return NoteskinLua.GetGlobalD("BarlineOffset");
+			return BarlineOffset;
 		}
 
-		bool Noteskin::IsBarlineEnabled()
+		bool Noteskin::IsBarlineEnabled() const
 		{
-			return NoteskinLua.GetGlobalD("BarlineEnabled") != 0;
+			return BarlineEnabled;
 		}
 
-		double Noteskin::GetJudgmentY()
+		double Noteskin::GetJudgmentY() const
 		{
-			return NoteskinLua.GetGlobalD("JudgmentLineY");
+			return JudgmentY;
 		}
 
 		void Noteskin::DrawHoldHead(TrackNote &T, int Lane, float Location, int ActiveLevel)
@@ -165,17 +177,17 @@ namespace Game {
 			CanRender = false;
 		}
 
-		double Noteskin::GetNoteOffset()
+		double Noteskin::GetNoteOffset() const
 		{
 			return NoteScreenSize;
 		}
 
-		bool Noteskin::AllowDanglingHeads()
+		bool Noteskin::AllowDanglingHeads() const
 		{
 			return DanglingHeads;
 		}
 
-		bool Noteskin::ShouldDecreaseHoldSizeWhenBeingHit()
+		bool Noteskin::ShouldDecreaseHoldSizeWhenBeingHit() const
 		{
 			return DecreaseHoldSizeWhenBeingHit;
 		}

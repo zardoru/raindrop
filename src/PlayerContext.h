@@ -114,7 +114,7 @@ namespace Game {
 			bool IsUpscrolling() const;
 			bool GetUsesTurntable() const;
 
-			double GetAppliedSpeedMultiplier() const;
+			double GetAppliedSpeedMultiplier(double Time) const;
 			double GetCurrentBeat() const;
 			double GetUserMultiplier() const;
 			double GetCurrentVerticalSpeed() const;
@@ -135,6 +135,8 @@ namespace Game {
 
 			VSRG::Difficulty* GetDifficulty() const;
 
+			double GetDuration() const;
+			double GetBeatDuration() const;
 			/*
 				"So why is this returning a raw pointer?"
 				Lua binding. The answer is lua binding.
@@ -151,6 +153,9 @@ namespace Game {
 			std::vector<AutoplaySound> GetBgmData();
 
 			static void SetupLua(LuaManager *Env);
+
+			double GetScore() const;
+
 			void HitNote(double TimeOff, uint32_t Lane, bool IsHold, bool IsHoldRelease = false);
 			void MissNote(double TimeOff, uint32_t Lane, bool IsHold, bool auto_hold_miss, bool early_miss);
 			void GearKeyEvent(uint32_t Lane, bool KeyDown);
