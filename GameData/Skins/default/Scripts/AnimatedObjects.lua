@@ -34,12 +34,12 @@ function ProgressTick:Run(Delta)
 	if Game.Active ~= 0 then
     local dur = self.Player.BeatDuration
 		local Ratio = self.Player.Beat / dur
-		if SongTime > 0 then
+		if self.Player.Time > 0 then
 			self.Object.Alpha = 1
-			self.Object.Y = clerp(Beat, 0, dur, self.Start, self.End)
+			self.Object.Y = clerp(self.Player.Beat, 0, dur, self.Start, self.End)
 		else
-			self.Object.Alpha = 1 - SongTime / -1.5
-			self.Object.Y = cmix(math.pow(SongTime / -1.5, 2), self.Start, self.End)
+			self.Object.Alpha = 1 - self.Player.Time / -1.5
+			self.Object.Y = cmix(math.pow(self.Player.Time / -1.5, 2), self.Start, self.End)
 		end
 	else
 		self.Object.Alpha = 0
@@ -54,7 +54,7 @@ function Pulse:Init()
 		BlendMode = BlendAdd,
 		Layer = 11,
 		Alpha = 0,
-    X = self.Noteskin.GearStartX,
+    X = self.Noteskin.GearStartX + self.Object.Width / 2,
     Y = self.Player.JudgmentY - self.Object.Height
 	})
 
@@ -63,9 +63,10 @@ function Pulse:Init()
 	end
 end
 
-librd.make_new(Pulse, Pulse.init)
+librd.make_new(Pulse, Pulse.Init)
 
 function Pulse:Run(Delta)
+  
 	if Game.Active ~= 0 then
 		local BeatNth = 2
 		local BeatMultiplied = self.Player.Beat * BeatNth

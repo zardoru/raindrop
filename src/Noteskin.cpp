@@ -13,6 +13,7 @@
 
 #include "Screen.h"
 #include "ScreenGameplay7K.h"
+#include "PlayerContext.h"
 
 namespace Game {
 	namespace VSRG {
@@ -46,10 +47,16 @@ namespace Game {
 				NoteskinLua.RunFunction();
 		}
 
+		int Noteskin::GetChannels() const
+		{
+			return Channels;
+		}
+
 		void Noteskin::SetupNoteskin(bool SpecialStyle, int Lanes)
 		{
 			CanRender = false;
 
+			Channels = Lanes;
 
 			// we need a clean state if we're being called from a different thread (to destroy objects properly)
 			DefineSpriteInterface(&NoteskinLua);
@@ -65,10 +72,14 @@ namespace Game {
 				.addData("DanglingHeads", &Noteskin::DanglingHeads)
 				.addData("NoteScreenSize", &Noteskin::NoteScreenSize)
 				.addData("JudgmentY", &Noteskin::JudgmentY)
+				.addProperty("Channels", &Noteskin::GetChannels)
 				.endClass();
 
-			luabridge::push(NoteskinLua.GetState(), this);
-			luabridge::setGlobal(NoteskinLua.GetState(), this, "Noteskin");
+			//luabridge::push(NoteskinLua.GetState(), this);
+			luabridge::setGlobal(NoteskinLua.GetState(), this, "Notes");
+
+			Parent->SetupLua(&NoteskinLua);
+			luabridge::setGlobal(NoteskinLua.GetState(), Parent, "Player");
 			NoteskinLua.RunScript(GameState::GetInstance().GetSkinFile("noteskin.lua"));
 		}
 

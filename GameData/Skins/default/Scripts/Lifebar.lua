@@ -19,7 +19,7 @@ function Lifebar:Init()
 	self.Fill = Engine:CreateObject()
 	self.Fill2 = Engine:CreateObject()
 
-	self.Margin.Image = self.MarginFile
+	self.Margin.Texture = self.MarginFile
 	self.Margin.Layer = 25
 	self.Margin.Centered = 1
 	-- self.Margin.Width = self.Width
@@ -41,13 +41,13 @@ function Lifebar:Init()
 	self.Margin.X = self.CurrentPosition.x
 	self.Margin.Y = self.Position.y
 
-	self.Fill.Image = self.FillFile
+	self.Fill.Texture = self.FillFile
 	self.Fill.Width = self.FillWidth
 	self.Fill.Height = self.FillSize
 	self.Fill.Layer = 26
 	self.Fill.Centered = 1
 
-	self.Fill2.Image = self.FillFile
+	self.Fill2.Texture = self.FillFile
 	self.Fill2.Layer = 26
 	self.Fill2.Centered = 1
 	self.Fill2.BlendMode = BlendAdd
@@ -58,7 +58,7 @@ end
 librd.make_new(Lifebar, Lifebar.Init)
 
 function Lifebar:Run(Delta)
-	local DeltaLifebar = (LifebarValue - self.Display)
+	local DeltaLifebar = (self.Player.LifebarPercent / 100 - self.Display)
 	local DP = 1 - fract(self.Player.Beat)
 
 	self.Display = DeltaLifebar * Delta * self.Speed + self.Display
@@ -80,21 +80,21 @@ function Lifebar:Run(Delta)
 	self.Fill2.X = self.Position.x + self.FillOffset
 	self.Fill2.Y = NewY
 	self.Fill2:SetCropByPixels( 0, self.Width, self.FillSize - self.FillSize * Display, self.FillSize )
-	self.Fill2.Alpha = ( DP * LifebarValue )
+	self.Fill2.Alpha = ( DP * self.Player.LifebarPercent / 100 )
 end
 
 
 function Jambar:Init()
-  self.Width = self.Margin.Width
+  self.Width = 50
   self.Height = self.Height or 335
 
 	self.BarFG = Engine:CreateObject()
-	self.BarFG.Image = self.ImageFG;
+	self.BarFG.Texture = self.ImageFG;
   
 	with (self.BarFG, {
 		Centered = 1,
-		X = self.Margin.X,
-	  Layer = self.Margin.Layer,
+		X = self.Noteskin.GearStartX + self.Noteskin.GearWidth + self.Width / 2,
+	  Layer = 25,
 		Width = Jambar.Width,
 	  Height = Jambar.Height,
 	  Lighten = 1
@@ -105,7 +105,7 @@ librd.make_new(Jambar, Jambar.Init)
 
 function Jambar:Run(Delta)
   local targetRem
-  local ScoreKeeper = self.Player.ScoreKeeper
+  local ScoreKeeper = self.Player.Scorekeeper
   
   if ScoreKeeper.UsesO2 == false then
     targetRem = ScoreKeeper.JudgedNotes / ScoreKeeper.MaxNotes
@@ -117,7 +117,7 @@ function Jambar:Run(Delta)
 
   self.BarFG.LightenFactor = 1 - fract(self.Player.Beat)
 
-  local Offset = targetRem * Jambar.Height
+  local Offset = targetRem * self.Height
   self.BarFG.ScaleY = targetRem
   self.BarFG.Y = ScreenHeight - Offset / 2
   self.BarFG:SetCropByPixels( 0, self.Width, self.BarFG.Height - Offset, self.BarFG.Height )

@@ -91,7 +91,7 @@ namespace Game {
 			void RunAuto(TrackNote *m, double usedTime, uint32_t k);
 			void UpdateHidden(float AdjustmentSize, float FlashlightRatio);
 		public:
-			PlayerContext(int pn);
+			PlayerContext(int pn, Game::VSRG::Parameters par = Game::VSRG::Parameters());
 			void Init();
 			void Validate();
 			void Update(double songTime);
@@ -147,7 +147,7 @@ namespace Game {
 
 			// Setters
 			void SetUserMultiplier(float Multip);
-			void SetSceneEnvironment(std::shared_ptr<SceneEnvironment> *env);
+			void SetSceneEnvironment(std::shared_ptr<SceneEnvironment> env);
 
 			// Only if Difficulty->Data is not null.
 			std::vector<AutoplaySound> GetBgmData();
@@ -155,6 +155,7 @@ namespace Game {
 			static void SetupLua(LuaManager *Env);
 
 			double GetScore() const;
+			int GetCombo() const;
 
 			void HitNote(double TimeOff, uint32_t Lane, bool IsHold, bool IsHoldRelease = false);
 			void MissNote(double TimeOff, uint32_t Lane, bool IsHold, bool auto_hold_miss, bool early_miss);

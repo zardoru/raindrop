@@ -30,6 +30,8 @@ public:
     // Do a "require" call with Filename as the argument. This leaves a value on the stack!
     bool Require(std::filesystem::path path);
 
+	void DumpStack();
+
     // Global variables
 
     int GetGlobalI(std::string VariableName, int Default = -1);

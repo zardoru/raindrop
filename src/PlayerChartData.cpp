@@ -535,6 +535,7 @@ namespace Game {
 			double currentValue = 1;
 			double speedTime = CurrentTime;
 			double duration = 1;
+			bool integrateByBeats = false;
 
 			// The result of lower_bound comes after the current speed to apply.
 			if (speedIter != Speeds.begin())
@@ -548,6 +549,7 @@ namespace Game {
 				currentValue = speedIter->Value;
 				duration = speedIter->Duration;
 				speedTime = speedIter->Time;
+				integrateByBeats = speedIter->IntegrateByBeats;
 			}
 			else // Oh, we don't?
 			{
@@ -556,11 +558,11 @@ namespace Game {
 			}
 
 			double speedProgress;
-			if (!speedIter->IntegrateByBeats)
+			if (!integrateByBeats)
 				speedProgress = Clamp((CurrentTime - speedTime) / duration, 0.0, 1.0);
 			else {
 				// Assume duration in beats if IntegrateByBeats is true
-				speedProgress = Clamp((GetBeatAt(CurrentTime) - GetBeatAt(speedIter->Time)) / duration, 0.0, 1.0);
+				speedProgress = Clamp((GetBeatAt(CurrentTime) - GetBeatAt(speedTime)) / duration, 0.0, 1.0);
 			}
 
 			auto lerpedMultiplier = speedProgress * (currentValue - previousValue) + previousValue;

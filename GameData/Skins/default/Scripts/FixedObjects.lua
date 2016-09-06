@@ -12,7 +12,7 @@ function Filter:Init()
 
 	self.Object = Engine:CreateObject()
 
-	self.Object.Image = (self.Image)
+	self.Object.Texture = (self.Image)
   
 	self.Object.X = self.Noteskin.GearStartX
 	self.Object.Width = self.Noteskin.GearWidth
@@ -27,7 +27,7 @@ function JudgeLine:Init()
 	self.Object = Engine:CreateObject()
 	self.Size = { w = self.Noteskin.GearWidth, h = self.Noteskin.NoteHeight }
 
-	self.Object.Image = self.Image
+	self.Object.Texture = self.Image
 	self.Object.Centered = 1
 
 	self.Object.X = self.Noteskin.GearStartX + self.Noteskin.GearWidth / 2
@@ -44,12 +44,12 @@ function StageLines:Init()
 	self.Left = Engine:CreateObject()
 	self.Right = Engine:CreateObject()
 	
-	self.Left.Image = self.ImageLeft
+	self.Left.Texture = self.ImageLeft
 	self.Left.X = self.Noteskin.GearStartX - self.Left.Width
 	self.Left.Height = ScreenHeight
 	self.Left.Layer = 16
 
-	self.Right.Image = (self.ImageRight)
+	self.Right.Texture = (self.ImageRight)
 	self.Right.X = (self.Noteskin.GearStartX + self.Noteskin.GearWidth)
 	self.Right.Height = ScreenHeight
 	self.Right.Layer = 20

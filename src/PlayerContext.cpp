@@ -10,7 +10,7 @@
 
 namespace Game {
 	namespace VSRG {
-		PlayerContext::PlayerContext(int pn) : PlayerNoteskin(this)
+		PlayerContext::PlayerContext(int pn, Game::VSRG::Parameters p) : PlayerNoteskin(this)
 		{
 			PlayerNumber = pn;
 			Drift = 0;
@@ -20,6 +20,7 @@ namespace Game {
 			ScoringType = ST_EXP3;
 
 			PlayerScoreKeeper = std::make_shared<ScoreKeeper>();
+			Parameters = p;
 
 			Hidden = {};
 		}
@@ -246,7 +247,10 @@ namespace Game {
 
 		double PlayerContext::GetJudgmentY() const
 		{
-			return PlayerNoteskin.GetJudgmentY();
+			if (IsUpscrolling())
+				return PlayerNoteskin.GetJudgmentY();
+			else
+				return ScreenHeight - PlayerNoteskin.GetJudgmentY();
 		}
 
 
@@ -322,6 +326,7 @@ namespace Game {
 			luabridge::getGlobalNamespace(Env->GetState())
 				.beginClass<PlayerContext>("PlayerContext")
 				.addProperty("Beat", &PlayerContext::GetCurrentBeat)
+				.addProperty("Time", &PlayerContext::GetWarpedSongTime)
 				.addProperty("Duration", &PlayerContext::GetDuration)
 				.addProperty("BeatDuration", &PlayerContext::GetBeatDuration)
 				.addProperty("Channels", &PlayerContext::GetChannelCount)
@@ -338,6 +343,7 @@ namespace Game {
 				.addProperty("Difficulty", &PlayerContext::GetDifficulty)
 				.addProperty("Number", &PlayerContext::GetPlayerNumber)
 				.addProperty("Score", &PlayerContext::GetScore)
+				.addProperty("Combo", &PlayerContext::GetCombo)
 				.addFunction("GetPacemakerText", &PlayerContext::GetPacemakerText)
 				.addFunction("GetPacemakerValue", &PlayerContext::GetPacemakerValue)
 				.addFunction("IsHoldActive", &PlayerContext::GetIsHeldKey)
@@ -349,6 +355,11 @@ namespace Game {
 		double PlayerContext::GetScore() const
 		{
 			return PlayerScoreKeeper->getScore(ScoringType);
+		}
+
+		int PlayerContext::GetCombo() const
+		{
+			return PlayerScoreKeeper->getScore(ST_COMBO);
 		}
 
 		bool PlayerContext::BindKeysToLanes(bool UseTurntable)
@@ -409,7 +420,7 @@ namespace Game {
 					Animations->DoEvent("OnFullComboEvent");
 			}
 
-			OnHit(TimeOff, Lane, IsHold, IsHoldRelease);
+			//OnHit(TimeOff, Lane, IsHold, IsHoldRelease);
 		}
 
 		void PlayerContext::MissNote(double TimeOff, uint32_t Lane, bool IsHold, bool auto_hold_miss, bool early_miss)
@@ -430,7 +441,7 @@ namespace Game {
 				}
 			}
 
-			OnMiss(TimeOff, Lane, IsHold, auto_hold_miss, early_miss);
+			//OnMiss(TimeOff, Lane, IsHold, auto_hold_miss, early_miss);
 		}
 
 		void PlayerContext::SetLaneHoldState(uint32_t Lane, bool NewState)
@@ -533,13 +544,14 @@ namespace Game {
 						}
 					}
 
-					if (!m->IsJudgable() || !CanJudge())
-						continue;
-
 					// Autoplay
 					if (Parameters.Auto) {
 						RunAuto(&*m, usedTime, k);
 					}
+
+					if (!m->IsJudgable() || !CanJudge())
+						continue;
+
 
 
 
@@ -681,7 +693,7 @@ namespace Game {
 
 		bool PlayerContext::HasFailed()
 		{
-			return PlayerScoreKeeper->isStageFailed(LifebarType);
+			return PlayerScoreKeeper->isStageFailed(LifebarType) && !Parameters.NoFail;
 		}
 
 		bool PlayerContext::HasDelayedFailure()
@@ -700,6 +712,11 @@ namespace Game {
 		void PlayerContext::SetUserMultiplier(float Multip)
 		{
 			Parameters.SpeedMultiplier = Multip;
+		}
+
+		void PlayerContext::SetSceneEnvironment(std::shared_ptr<SceneEnvironment> env)
+		{
+			Animations = env;
 		}
 
 		void PlayerContext::SetPlayableData(std::shared_ptr<VSRG::Difficulty> diff, double Drift,
@@ -902,7 +919,7 @@ namespace Game {
 			for (auto i : ChartData.MeasureBarlines)
 			{
 				double realV = (CurrentVertical - i) * SpeedMultiplier +
-					PlayerNoteskin.GetBarlineOffset() * sign(SpeedMultiplier) + PlayerNoteskin.GetJudgmentY();
+					PlayerNoteskin.GetBarlineOffset() * sign(SpeedMultiplier) + GetJudgmentY();
 				if (realV > 0 && realV < ScreenWidth)
 				{
 					Barline->SetLocation(Vec2(PlayerNoteskin.GetBarlineStartX(), realV),
@@ -919,7 +936,7 @@ namespace Game {
 				calculate the range for which the current hidden mode is defined.
 			*/
 			float Center;
-			float JudgmentLinePos = PlayerNoteskin.GetJudgmentY();
+			float JudgmentLinePos = GetJudgmentY();
 			auto Upscroll = Parameters.Upscroll;
 
 			// Hidden calc
@@ -1025,7 +1042,7 @@ namespace Game {
 
 			Renderer::SetPrimitiveQuadVBO();
 			auto &NotesByChannel = ChartData.NotesByChannel;
-			auto jy = PlayerNoteskin.GetJudgmentY();
+			auto jy = GetJudgmentY();
 
 			for (auto k = 0U; k < CurrentDiff->Channels; k++)
 			{
@@ -1122,9 +1139,9 @@ namespace Game {
 					double JudgeY;
 
 					// LR2 style keep-on-the-judgment-line
-					bool AboveLine = Vertical < PlayerNoteskin.GetJudgmentY();
+					bool AboveLine = Vertical < GetJudgmentY();
 					if (!(AboveLine ^ upscrolling) && m->IsJudgable())
-						JudgeY = PlayerNoteskin.GetJudgmentY();
+						JudgeY = GetJudgmentY();
 					else
 						JudgeY = Vertical;
 

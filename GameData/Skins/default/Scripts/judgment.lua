@@ -25,7 +25,7 @@ Judgment.__index = Judgment
 
 
 function Judgment:Init()
-	self.Atlas = TextureAtlas:skin_new("VSRG/self.csv")
+	self.Atlas = TextureAtlas:skin_new("VSRG/judgment.csv")
   
   
   self.defaultX = self.Noteskin.GearWidth / 2 + self.Noteskin.GearStartX

@@ -20,7 +20,7 @@ namespace Game {
 
 
 			std::map <int, std::vector<std::shared_ptr<SoundSample> > > Keysounds;
-			std::vector<PlayerContext> Players;
+			std::vector<std::unique_ptr<PlayerContext>> Players;
 			std::queue<AutoplaySound>   BGMEvents;
 
 			std::shared_ptr<Song>			 MySong;

@@ -15,7 +15,7 @@ end
 
 function DoFullComboAnimation()
 	fcnotify = Engine:CreateObject ()
-	fcnotify.Image = "VSRG/fullcombo.png"
+	fcnotify.Texture = "VSRG/fullcombo.png"
 
 	local scalef = GearWidth / fcnotify.Width * 0.85
 	fcnotify.X = ScreenWidth / 2
@@ -27,7 +27,7 @@ function DoFullComboAnimation()
 	fcanim = getMoveFunction(fcnotify.X, ScreenHeight + fcnotify.Height/2 * scalef, fcnotify.X, ScreenHeight*3/4, fcnotify)
 
 	fcnotify2 = Engine:CreateObject()
-	fcnotify2.Image = "VSRG/fullcombo.png"
+	fcnotify2.Texture = "VSRG/fullcombo.png"
 
 	fcnotify2.X = ScreenWidth / 2
 	fcnotify2.Y =  ScreenHeight*3/4
@@ -64,7 +64,7 @@ end
 
 function FadeToBlack()
 	Black = Engine:CreateObject()
-	Black.Image = "Global/filter.png"
+	Black.Texture = "Global/filter.png"
 	Black.Alpha = 0
 	Black.Width = ScreenWidth
 	Black.Height = ScreenHeight
@@ -76,7 +76,7 @@ function DoSuccessAnimation()
 	FadeToBlack()
 
 	StageClear = Engine:CreateObject()
-	StageClear.Image = "VSRG/stageclear.png"
+	StageClear.Texture = "VSRG/stageclear.png"
 	StageClear.Centered = 1
 	StageClear.X = ScreenWidth / 2
 	StageClear.Y = ScreenHeight / 2
@@ -139,9 +139,9 @@ function DoFailAnimation()
 	White.X = ScreenWidth / 2
 	White.Y = ScreenHeight / 2
 	White.Height = 0
-	White.Image = "Global/white.png"
+	White.Texture = "Global/white.png"
 	White.Width = ScreenWidth
-	FailNotif.Image = "VSRG/stagefailed.png"
+	FailNotif.Texture = "VSRG/stagefailed.png"
 	FailNotif.Centered = 1
 	FailNotif.X = ScreenWidth / 2
 	FailNotif.Y = ScreenHeight / 2
@@ -156,9 +156,9 @@ function DoFailAnimation()
 	BE.FnA = Engine:CreateObject()
 	BE.FnB = Engine:CreateObject()
 	BE.FnC = Engine:CreateObject()
-	BE.FnA.Image = "VSRG/stagefailed.png"
-	BE.FnB.Image = "VSRG/stagefailed.png"
-	BE.FnC.Image = "VSRG/stagefailed.png"
+	BE.FnA.Texture = "VSRG/stagefailed.png"
+	BE.FnB.Texture = "VSRG/stagefailed.png"
+	BE.FnC.Texture = "VSRG/stagefailed.png"
 
 	BE.FnA.X = ScreenWidth/2
 	BE.FnB.X = ScreenWidth/2 

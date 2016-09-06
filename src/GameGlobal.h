@@ -311,6 +311,7 @@ namespace Game {
 				Rate = 1;
 				GaugeType = LT_AUTO;
 				SystemType = VSRG::TI_NONE;
+				SpeedMultiplier = 4;
 			}
 		};
 

@@ -1,4 +1,3 @@
-game_require "debug"
 game_require "TextureAtlas"
 game_require "utils"
 game_require "AnimationFunctions"
@@ -68,7 +67,12 @@ AnimatedObjects = {
 		AnimatedObjects.Items = {}
 		for i = 1, #AnimatedObjects.List do
 			if AnimatedObjects.List[i] then
-				AnimatedObjects.Items[i] = AnimatedObjects.List[i]:new()
+        local p = Game:GetPlayer(0)
+        local chan = p.Difficulty.Channels
+				AnimatedObjects.Items[i] = AnimatedObjects.List[i]:new({
+              Player = p,
+              Noteskin = Noteskin[chan]
+            })
 			end
 		end
 	end,
@@ -76,7 +80,7 @@ AnimatedObjects = {
 	Run = function (Delta)
 		for i = 1, #AnimatedObjects.Items do
 			if AnimatedObjects.Items[i] and AnimatedObjects.Items[i].Run ~= nil then
-				AnimatedObjects.Items[i].Run(Delta)
+				AnimatedObjects.Items[i]:Run(Delta)
 			end
 		end
 	end,
@@ -84,10 +88,26 @@ AnimatedObjects = {
 	GearKeyEvent = function (Lane, IsKeyDown, PlayerNumber)
 		for i = 1, #AnimatedObjects.List do
 			if AnimatedObjects.Items[i] and AnimatedObjects.Items[i].GearKeyEvent ~= nil then
-				AnimatedObjects.Items[i].GearKeyEvent(Lane, IsKeyDown, PlayerNumber)
+				AnimatedObjects.Items[i]:GearKeyEvent(Lane, IsKeyDown, PlayerNumber)
 			end
 		end
-	end
+	end,
+  
+  OnHit = function (a, b, c, d, e, f)
+    for i = 1, #AnimatedObjects.List do
+			if AnimatedObjects.Items[i] and AnimatedObjects.Items[i].OnHit ~= nil then
+        AnimatedObjects.Items[i]:OnHit(a, b, c, d, e, f)
+      end
+    end
+  end,
+  
+  OnMiss = function (t, l, h, p)
+    for i = 1, #AnimatedObjects.List do
+			if AnimatedObjects.Items[i] and AnimatedObjects.Items[i].OnMiss ~= nil then
+        AnimatedObjects.Items[i]:OnMiss(t, l, h, p)
+      end
+    end
+  end
 }
 
 BgAlpha = 0
@@ -97,7 +117,7 @@ BgAlpha = 0
 function Init()
 	AutoadjustBackground()
 	AnimatedObjects.Init()
-	DrawTextObjects()
+	-- DrawTextObjects()
 	ScreenFade.Init()
 	ScreenFade.Out(true)
 
@@ -146,7 +166,7 @@ end
 
 function HitEvent(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease, PNum)
 	-- When hits happen, this function is called.
-	AnimatedObjects.Hit(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease)
+	AnimatedObjects.OnHit(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease, PNum)
 
 	if histogram then
 	  	histogram:UpdatePoints()
@@ -155,7 +175,7 @@ end
 
 function MissEvent(TimeOff, Lane, IsHold, PNum)
 	-- When misses happen, this function is called.
-	AnimatedObjects.MissEvent(TimeOff, Lane, IsHold)
+	AnimatedObjects.OnMiss(TimeOff, Lane, IsHold, PNum)
 
 	if histogram then
 	  	histogram:UpdatePoints()
@@ -168,11 +188,6 @@ end
 
 function GearKeyEvent (Lane, IsKeyDown, PNum)
 	-- Only lane presses/releases are handled here.
-
-	if Lane >= Channels then
-		return
-	end
-
 	AnimatedObjects.GearKeyEvent(Lane, IsKeyDown, PNum)
 end
 
@@ -191,6 +206,6 @@ function Update(Delta)
 	end
 
 	AnimatedObjects.Run(Delta)
-	UpdateTextObjects()
+	-- UpdateTextObjects()
 
 end

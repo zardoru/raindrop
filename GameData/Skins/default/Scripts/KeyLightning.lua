@@ -1,6 +1,6 @@
 HitLightning = {}
 
-HitLightning.Image = "VSRG/self.png"
+HitLightning.Image = "VSRG/HitLightning.png"
 HitLightning.Height = 250
 
 local function LightFunction () 

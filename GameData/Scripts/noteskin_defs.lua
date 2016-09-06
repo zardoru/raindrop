@@ -153,9 +153,6 @@ Sizeup(Channels16Positions, Channels16Sizes, 16)
 
 GearHeightCommon = 135
 
--- Note height.
-NoteHeight = 16
-
 -- Actual channels configuration.
 -- Lane X positions are always centered.
 --
@@ -213,7 +210,9 @@ Channels16 = {
     Key16Down = C1D,
 
     GearHeight = GearHeightCommon,
-	GearWidth = GearWidthByChannels[16],
+    GearWidth = GearWidthByChannels[16],
+    GearStartX = 80,
+    NoteHeight = 16,
     BarlineWidth = GearWidthByChannels[16],
 
     -- Note Images
@@ -325,6 +324,8 @@ Channels12 = {
     
     GearHeight = GearHeightCommon,
     GearWidth = GearWidthByChannels[12],
+    GearStartX = 80,
+    NoteHeight = 16,
     BarlineWidth = GearWidthByChannels[12],
 	
     -- Note Images
@@ -408,9 +409,10 @@ Channels9 = {
     Key9Down = C4D,
 
 	GearHeight = GearHeightCommon,
-	
+	GearStartX = 80,
+  NoteHeight = 16,
 	GearWidth = GearWidthByChannels[9],
-    BarlineWidth = GearWidthByChannels[9],
+  BarlineWidth = GearWidthByChannels[9],
 
     -- Note Images
     Key1Image = NoteImage4,
@@ -480,7 +482,8 @@ if SpecialStyle ~= nil and SpecialStyle ~= 0 then
 		Key8Down = C4D,
 
 		GearHeight = GearHeightCommon,
-		
+		GearStartX = 80,
+    NoteHeight = 16,
 		GearWidth = GearWidthByChannels[8],
 		BarlineWidth = GearWidthByChannels[8],
 
@@ -546,7 +549,8 @@ else
 		Key8Down = C1D,
 
 		GearHeight = GearHeightCommon,
-		
+    GearStartX = 80,
+    NoteHeight = 16,
 		GearWidth = GearWidthByChannels[8],
 		BarlineWidth = GearWidthByChannels[8],
 
@@ -611,8 +615,9 @@ Channels7 = {
     Key7Down = C4D,
 
     GearHeight = GearHeightCommon,
-	
-	GearWidth = GearWidthByChannels[7],
+    GearStartX = 80,
+    NoteHeight = 16,
+    GearWidth = GearWidthByChannels[7],
     BarlineWidth = GearWidthByChannels[7],
 
     -- Note Images
@@ -694,7 +699,9 @@ if SpecialStyle ~= nil and SpecialStyle == 0 then
 		Key6X = Channels6Positions[6],
 		
 		GearWidth = GearWidthByChannels[6],
-		BarlineWidth = GearWidthByChannels[6]
+		BarlineWidth = GearWidthByChannels[6],
+    GearStartX = 80,
+    NoteHeight = 16
 	}
 else
 	Channels6 = {
@@ -737,7 +744,9 @@ else
 		Key6X = Channels6Positions[6],
 		
 		GearWidth = GearWidthByChannels[6],
-		BarlineWidth = GearWidthByChannels[6]
+		BarlineWidth = GearWidthByChannels[6],
+    GearStartX = 80,
+    NoteHeight = 16
 	}
 end
 
@@ -780,7 +789,9 @@ Channels5 = {
 	Key4X = Channels5Positions[4],
 	Key5X = Channels5Positions[5],
 	GearWidth = GearWidthByChannels[5],
-    BarlineWidth = GearWidthByChannels[5]
+  BarlineWidth = GearWidthByChannels[5],
+  GearStartX = 80,
+  NoteHeight = 16
 }
 
 -- 4 Channels. By default, it's DJMax-like.
@@ -814,8 +825,10 @@ Channels4 = {
     Key2X = Channels4Positions[2],
     Key3X = Channels4Positions[3],
     Key4X = Channels4Positions[4],
-	GearWidth = GearWidthByChannels[4],
-    BarlineWidth = GearWidthByChannels[4]
+    GearWidth = GearWidthByChannels[4],
+    BarlineWidth = GearWidthByChannels[4],
+    GearStartX = 80,
+    NoteHeight = 16
 }
 
 Channels1 = {
@@ -828,7 +841,9 @@ Channels1 = {
 	Key1Width = Channels1Sizes[1],
 	Key1X = Channels1Positions[1],
 	GearWidth = GearWidthByChannels[1],
-	BarlineWidth = GearWidthByChannels[1]
+	BarlineWidth = GearWidthByChannels[1],
+  GearStartX = 80,
+  NoteHeight = 16
 }
 
 Noteskin = {}

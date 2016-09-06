@@ -22,14 +22,14 @@ function Explosions.HoldName (i)
 end
 
 -- Internal functions
-local function ObjectPosition(Obj, Atlas, i, Scale)
-	Obj.Image = "VSRG/"..Atlas.File
+function Explosions:ObjectPosition(Obj, Atlas, i, Scale)
+	Obj.Texture = "VSRG/"..Atlas.File
 	Obj.Centered = 1
-	Obj.X = Noteskin[Channels]["Key"..i.."X"]
-	Obj.Y = JudgmentLineY
+	Obj.X = self.Noteskin["Key"..i.."X"]
+	Obj.Y = self.Player.JudgmentY
 
 	if Upscroll ~= 0 then
-		Obj.Rotation = (180)
+		Obj.Rotation = 180
 	end
 
 	Obj.Layer = (28)
@@ -38,7 +38,6 @@ local function ObjectPosition(Obj, Atlas, i, Scale)
 end
 
 function Explosions:Init()
-
 	self.HitImages = {}
 	self.HitTargets = {}
 	self.HitTime = {}
@@ -64,11 +63,11 @@ function Explosions:Init()
 		self.HoldImages[i] = self.HoldName(i)
 	end
 
-	for i = 1, Channels do
+	for i = 1, self.Player.Channels do
 		-- Regular explosions
 		self.HitTargets[i] = Engine:CreateObject()
 
-		ObjectPosition(self.HitTargets[i], self.HitAtlas, i, self.HitScale)
+		self:ObjectPosition(self.HitTargets[i], self.HitAtlas, i, self.HitScale)
 
 		self.HitTime[i] = self.HitFrameTime * self.HitFrames
 		self.HitColorize[i] = 0
@@ -76,7 +75,7 @@ function Explosions:Init()
 		-- Hold explosions
 		self.HoldTargets[i] = Engine:CreateObject()
 
-		ObjectPosition(self.HoldTargets[i], self.HoldAtlas, i, self.HoldScale)
+		self:ObjectPosition(self.HoldTargets[i], self.HoldAtlas, i, self.HoldScale)
 		self.HoldTime[i] = self.HoldDuration
 	end
 end
@@ -130,7 +129,7 @@ function Explosions:Run(Delta)
 
 		Frame = self.HoldTime[i] / self.HoldFrameTime + 1
 
-		if HeldKeys[i] == 0 then
+		if not self.Player:IsHoldActive(i - 1) then
 			self.HoldTargets[i].Alpha = (0)
 		else
 			self.HoldTargets[i].Alpha = (1)
@@ -145,12 +144,12 @@ function Explosions:Run(Delta)
 	end
 end
 
-function Explosions:Hit(j, t, l, IsHold, IsHoldRelease, pn)
+function Explosions:OnHit(j, t, l, IsHold, IsHoldRelease, pn)
   if pn ~= self.Player.Number then
     return
   end
 
-	if IsHold ~= 0 then
+	if IsHold then
 		self.HoldTime[l] = 0
 	end
 
@@ -160,7 +159,7 @@ function Explosions:Hit(j, t, l, IsHold, IsHoldRelease, pn)
 	end
 end
 
-function Explosions:Miss(t, l, i, pn)
+function Explosions:OnMiss(t, l, i, pn)
 	if pn ~= self.Player.Number then
     return
   end

@@ -22,6 +22,7 @@ namespace Game {
 			double BarlineOffset;
 			double JudgmentY;
 			
+			int Channels;
 			bool BarlineEnabled;
 			bool DanglingHeads;
 			bool CanRender;
@@ -47,6 +48,7 @@ namespace Game {
 			double GetNoteOffset() const;
 			bool AllowDanglingHeads() const;
 			bool ShouldDecreaseHoldSizeWhenBeingHit() const;
+			int GetChannels() const;
 		};
 	}
 }

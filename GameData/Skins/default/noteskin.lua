@@ -6,31 +6,31 @@ normalNotes = {}
 holdBodies = {}
 
 function setNoteStuff(note, i)
-	note.Width = Noteskin[Lanes]['Key' .. i .. 'Width']
-	note.X = Noteskin[Lanes]['Key' .. i .. 'X']
-	note.Height = NoteHeight
+	note.Width = Noteskin[Notes.Channels]['Key' .. i .. 'Width']
+	note.X = Noteskin[Notes.Channels]['Key' .. i .. 'X']
+	note.Height = Noteskin[Notes.Channels].NoteHeight
 	note.Layer = 14
 	note.Lighten = 1
 	note.LightenFactor = 0
 end
 
 function Init()
-	for i=1,Lanes do
+	for i=1,Notes.Channels do
 		normalNotes[i] = Object2D()
 		local note = normalNotes[i]
-		note.Image = Noteskin[Lanes]['Key' .. i .. 'Image']
+		note.Texture = Noteskin[Notes.Channels]['Key' .. i .. 'Image']
 		setNoteStuff(note, i)
 		
 		holdBodies[i] = Object2D()
 		note = holdBodies[i]
-		note.Image = Noteskin[Lanes]['Key' .. i .. 'HoldImage']
+		note.Texture = Noteskin[Notes.Channels]['Key' .. i .. 'HoldImage']
 		setNoteStuff(note, i)
 	end
 end
 
 function Update(delta, beat)
 	local fraction = 1 - (beat - math.floor(beat))
-	for i=1, Lanes do 
+	for i=1, Notes.Channels do 
 		local note = normalNotes[i]
 		note.LightenFactor = fraction
 	end 
@@ -41,7 +41,7 @@ function drawNormalInternal(lane, loc, frac, active_level)
 	note.Y = loc
 	
 	if active_level ~= 3 then
-		Render(note)
+		Notes:Render(note)
 	end
 end
 
@@ -62,7 +62,7 @@ function drawHoldBodyInternal(lane, loc, size, active_level)
 	end
 	
 	if active_level ~= 3 then
-		Render(note)
+		Notes:Render(note)
 	end
 end
 
@@ -72,17 +72,20 @@ end
 
 -- From now on, only engine variables are being set.
 -- Barline
-BarlineEnabled = 1
-BarlineOffset = NoteHeight / 2
-BarlineStartX = GearStartX
-BarlineWidth = Noteskin[Lanes].BarlineWidth
-JudgmentLineY = Noteskin[Lanes].GearHeight + NoteHeight / 2
-DecreaseHoldSizeWhenBeingHit = 1
-DanglingHeads = 1
+--game_require "debug"
+Notes.BarlineEnabled = 1
+Notes.BarlineOffset = Noteskin[Notes.Channels].NoteHeight / 2
+Notes.BarlineStartX = GearStartX
+Notes.BarlineWidth = Noteskin[Notes.Channels].BarlineWidth
+
+local jy = Noteskin[Notes.Channels].GearHeight + Noteskin[Notes.Channels].NoteHeight / 2
+Notes.JudgmentY = jy
+Notes.DecreaseHoldSizeWhenBeingHit = true
+Notes.DanglingHeads = true
 
 -- How many extra units do you require so that the whole bounding box is accounted
 -- when determining whether to show this note or not.
-NoteScreenSize = NoteHeight / 2
+Notes.NoteScreenSize = Noteskin[Notes.Channels].NoteHeight / 2
 
 DrawNormal = drawNormalInternal
 DrawFake = drawNormalInternal

@@ -80,7 +80,7 @@ end
 librd.make_new(ComboDisplay, ComboDisplay.Init)
 
 function ComboDisplay:Update()
-	self.Digits = librd.intToDigits(Combo)
+	self.Digits = librd.intToDigits(self.Player.Combo)
 
 	-- active digits = #Digits
 	local ActDig = #self.Digits + 1
@@ -139,7 +139,8 @@ function ComboDisplay:Miss()
 end
 
 function ComboDisplay:Run(Delta)
-	local Ratio = 1 - (Beat - math.floor(Beat))
+  local Beat = self.Player.Beat
+	local Ratio = 1 - fract(Beat)
 
 	-- the +2 at the topright
 	if #self.Digits ~= 0 then
@@ -164,10 +165,10 @@ function ComboDisplay:Run(Delta)
 	end
 
 	local RebootHT = 0
-	for i=1,Channels do
-	   if HeldKeys[i] ~= 0 then
-		RebootHT = 1
-		break
+	for i=1,self.Player.Channels do
+	   if self.Player:IsHoldActive(i - 1) ~= 0 then
+      RebootHT = 1
+      break
 	   end
 	end
 

@@ -54,10 +54,10 @@ namespace Game {
 
 		void ScreenGameplay::AssignMeasure(uint32_t Measure)
 		{
-			double mt = Players[0].GetMeasureTime(Measure);
-			double wt = Players[0].GetPlayerState().GetWarpedSongTime(mt);
+			double mt = Players[0]->GetMeasureTime(Measure);
+			double wt = Players[0]->GetPlayerState().GetWarpedSongTime(mt);
 			for (auto& player : Players) {
-				player.SetUnwarpedTime(mt);
+				player->SetUnwarpedTime(mt);
 			}
 
 			// We use P1's BGM events in every case.
@@ -82,8 +82,11 @@ namespace Game {
 			MySong = S;
 			ForceActivation = false;
 
-			for (auto i = 0; i < GameState::GetInstance().GetPlayerCount(); i++)
-				Players.push_back(std::move(PlayerContext(i)));
+			for (auto i = 0; i < GameState::GetInstance().GetPlayerCount(); i++) {
+				Players.push_back(std::make_unique<PlayerContext>(i, *GameState::GetInstance().GetParameters(i)));
+				Players[i]->PlayKeysound = std::bind(&ScreenGameplay::PlayKeysound, this, std::placeholders::_1);
+				Players[i]->SetSceneEnvironment(Animations);
+			}
 		}
 
 		bool ScreenGameplay::LoadChartData()
@@ -139,7 +142,7 @@ namespace Game {
 				}
 				else
 				{
-					if (!Players[0].GetPlayerState().IsVirtual())
+					if (!Players[0]->GetPlayerState().IsVirtual())
 					{
 						// Caveat: Try to autodetect an mp3/ogg file.
 						auto SngDir = MySong->SongDirectory;
@@ -161,7 +164,7 @@ namespace Game {
 				}
 			}
 
-			auto &ps = Players[0].GetPlayerState();
+			auto &ps = Players[0]->GetPlayerState();
 			auto SoundList = ps.GetSoundList();
 			auto ChartType = ps.GetChartType();
 			// Load samples.
@@ -273,18 +276,20 @@ namespace Game {
 
 			for (auto &&p : Players) {
 				for (auto diff : MySong->Difficulties)
-					if (diff->ID == GameState::GetInstance().GetDifficulty(p.GetPlayerNumber())->ID)
-						p.SetPlayableData(diff, TimeError.AudioDrift, DesiredDefaultSpeed, Type);
+					if (diff->ID == GameState::GetInstance().GetDifficulty(p->GetPlayerNumber())->ID) {
+						p->SetPlayableData(diff, TimeError.AudioDrift, DesiredDefaultSpeed, Type);
+						p->Init();
+					}
 			}
 
 			// What, you mean we don't have timing data at all?
-			if (!Players[0].GetPlayerState().HasTimingData())
+			if (!Players[0]->GetPlayerState().HasTimingData())
 			{
 				Log::Printf("Error loading chart: No timing data.\n");
 				return false;
 			}
 
-			auto bgm0 = Players[0].GetBgmData();
+			auto bgm0 = Players[0]->GetBgmData();
 
 			sort(bgm0.begin(), bgm0.end());
 			for (auto &s : bgm0)
@@ -358,6 +363,10 @@ namespace Game {
 
 			Animations->GetImageList()->ForceFetch();
 			BGA->Validate();
+
+			for (auto& p : Players) {
+				p->Validate();
+			}
 
 			Animations->Initialize("", false);
 			Running = true;

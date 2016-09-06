@@ -33,7 +33,7 @@ function ScoreDisplay:Init()
 	self.DisplayScore = 0
 
 	for i = 1, 10 do -- Digit images
-		self.Images[i] = self.SetName(i)
+		self.Images[i] = self:SetName(i)
 	end
 
 	self.Atlas = TextureAtlas:new(GetSkinFile(self.Sheet))
@@ -43,7 +43,7 @@ function ScoreDisplay:Init()
 
 		self.Targets[i].X = self.X + self.W - self.DigitWidth * i
 		self.Targets[i].Y = self.Y + self.H - self.DigitHeight
-		self.Targets[i].Image = "VSRG/"..self.Atlas.File
+		self.Targets[i].Texture = "VSRG/"..self.Atlas.File
 		self.Targets[i].Width = self.DigitWidth
 		self.Targets[i].Height = self.DigitHeight
 		self.Targets[i].Layer = self.Layer
@@ -66,7 +66,7 @@ function ScoreDisplay:Run(Delta)
   local tdig = #Digits
 
 	for i=1, tdig do
-		local Tab = self.Atlas.Sprites[self.Images[self.Digits[i]+1]]
+		local Tab = self.Atlas.Sprites[self.Images[Digits[i]+1]]
 		self.Targets[i]:SetCropByPixels(Tab.x, Tab.x+Tab.w, Tab.y, Tab.y+Tab.h)
 		self.Targets[i].Alpha = (1)
 	end

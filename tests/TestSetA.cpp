@@ -6,6 +6,9 @@
 #include "../src/SongLoader.h"
 #include "../src/BackgroundAnimation.h"
 
+#include "../src/LuaManager.h"
+#include "../src/Noteskin.h"
+
 #include "../src/Logging.h"
 #include "../src/ext/catch.hpp"
 
@@ -27,4 +30,19 @@ TEST_CASE("osu storyboard compliance")
 	auto bga = BackgroundAnimation::CreateBGAFromSong(0, *song, &stub, true);
 
 	bga->SetAnimationTime(65.0f);
+}
+
+TEST_CASE("Lua Manager state")
+{
+	LuaManager l;
+	REQUIRE(!l.CallFunction("NonExistingFunction"));
+}
+
+TEST_CASE("Noteskin state")
+{
+	Game::VSRG::Noteskin n(nullptr);
+	n.SetupNoteskin(false, 4);
+	n.Validate();
+	n.DrawHoldBody(0,0,0,0);
+
 }

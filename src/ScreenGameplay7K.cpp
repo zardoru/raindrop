@@ -78,7 +78,7 @@ namespace Game {
 		Game::VSRG::PlayerContext* ScreenGameplay::GetPlayerContext(int i)
 		{
 			if (i >= 0 && i < Players.size())
-				return &Players[i];
+				return Players[i].get();
 			else
 				return nullptr;
 		}
@@ -124,14 +124,14 @@ namespace Game {
 
 				if (BindingsManager::TranslateKey7K(key) != KT_Unknown) {
 					for (auto &player: Players)
-						player.TranslateKey(BindingsManager::TranslateKey7K(key), true, Time.Stream);
+						player->TranslateKey(BindingsManager::TranslateKey7K(key), true, Time.Stream);
 				}
 			}
 			else
 			{
 				if (BindingsManager::TranslateKey7K(key) != KT_Unknown) {
 					for (auto &player: Players)
-						player.TranslateKey(BindingsManager::TranslateKey7K(key), false, Time.Stream);
+						player->TranslateKey(BindingsManager::TranslateKey7K(key), false, Time.Stream);
 				}
 			}
 
@@ -177,7 +177,7 @@ namespace Game {
 			};
 
 			// Run failure first; make sure it has priority over checking whether it's a pass or not.
-			if (PlayersHaveFailed() && !ShouldDelayFailure())
+			if (PlayersHaveFailed() && !ShouldDelayFailure() && !StageFailureTriggered)
 				perform_stage_failure();
 
 			// Okay then, so it's a pass?
@@ -230,7 +230,7 @@ namespace Game {
 		bool ScreenGameplay::ShouldDelayFailure()
 		{
 			for (auto &player : Players) {
-				if (player.HasDelayedFailure())
+				if (player->HasDelayedFailure())
 					return true;
 			}
 
@@ -240,7 +240,7 @@ namespace Game {
 		bool ScreenGameplay::PlayersHaveFailed()
 		{
 			for (auto &player : Players) {
-				if (!player.HasFailed())
+				if (!player->HasFailed())
 					return false;
 			}
 
@@ -250,7 +250,7 @@ namespace Game {
 		bool ScreenGameplay::SongHasFinished()
 		{
 			for (auto &player : Players) {
-				if (!player.HasSongFinished(Time.Stream))
+				if (!player->HasSongFinished(Time.Stream))
 					return false;
 			}
 
@@ -294,7 +294,7 @@ namespace Game {
 			bool AboveTolerance = deltaErr * 1000 > TimeError.ToleranceMS;
 			if ((SongDelta != 0 && AboveTolerance) || !Time.InterpolateStream) // Significant delta with a x ms difference? We're pretty off..
 			{
-				if (TimeError.ToleranceMS && Time.InterpolatedStream)
+				if (TimeError.ToleranceMS && Time.InterpolateStream)
 					Log::LogPrintf("Audio Desync: delta = %f ms difference = %f ms. Real song time %f (expected %f) Audio current time: %f (old = %f)\n",
 						SongDelta * 1000, deltaErr * 1000, Time.Stream, Time.InterpolatedStream, CurrAudioTime, Time.AudioOld);
 				Time.InterpolatedStream = Time.Stream;
@@ -340,6 +340,8 @@ namespace Game {
 			}
 
 			RunAutoEvents();
+			for (auto &p : Players)
+				p->Update(Time.InterpolatedStream);
 
 			Animations->UpdateTargets(Delta);
 			BGA->Update(Delta);
@@ -357,6 +359,9 @@ namespace Game {
 			BGA->Render();
 
 			Animations->DrawUntilLayer(13);
+
+			for (auto &p : Players)
+				p->Render(Time.InterpolatedStream);
 
 			// PlayerContext::Render(Time.InterpolatedStream)
 

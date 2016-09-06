@@ -133,6 +133,7 @@ end
 
 librd = {
 	make_new = function (t, initializer)
+        assert(initializer)
 				t.__index = t
 				t.new = function (self, rt)
 									local ret = {}
@@ -148,10 +149,11 @@ librd = {
 		local ret = {}
 		i = floor(i)
 		while i >= 1 do
-			local rem = floor(i) % base
+			local rem = floor(i) % b
 			table.insert(ret, 1, rem)
 			i = floor(i / 10)
 		end
+    return ret
 	end
 }
 
