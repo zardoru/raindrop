@@ -333,12 +333,15 @@ namespace Game {
 				Drift, diff->Offset,
 				diff->BPMType == VSRG::Difficulty::BT_BEATSPACE);
 
+
 			out.HasTurntable = diff->Data->Turntable;
 
 			out.MeasureBarlines = out.GetMeasureLines();
 
-			if (!Speed)
+			if (!Speed) {
 				out.Warps = data->Warps;
+				out.Speeds = data->Speeds;
+			}
 
 			/* For all channels of this difficulty */
 			for (int KeyIndex = 0; KeyIndex < diff->Channels; KeyIndex++)
@@ -530,6 +533,7 @@ namespace Game {
 			// Calculate current speed value to apply.
 			auto CurrentTime = GetWarpedSongTime(Time);
 
+			// speedIter: first which time is greater than current
 			auto speedIter = lower_bound(Speeds.begin(), Speeds.end(), CurrentTime);
 			double previousValue = 1;
 			double currentValue = 1;
@@ -537,11 +541,15 @@ namespace Game {
 			double duration = 1;
 			bool integrateByBeats = false;
 
-			// The result of lower_bound comes after the current speed to apply.
 			if (speedIter != Speeds.begin())
-				--speedIter;
+				speedIter--;
 
 			// Do we have a speed that has a value to interpolate from?
+			/*
+				Elaboration:
+				From the speed at the end of the previous speed, interpolate to speedIter->value
+				in speedIter->duration time across the current time - speedIter->time.
+			*/
 			if (speedIter != Speeds.begin())
 			{
 				auto prevSpeed = speedIter - 1;
@@ -606,6 +614,7 @@ namespace Game {
 
 		bool PlayerChartData::HasTimingData() const
 		{
+			assert(ConnectedDifficulty != nullptr);
 			return ConnectedDifficulty->Timing.size() > 0;
 		}
 

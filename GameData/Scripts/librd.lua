@@ -60,7 +60,7 @@ function lerp(current, start, finish, startval, endval)
 end
 
 function clerp(c, s, f, sv, ev)
-	return clamp(lerp(c,s,f,sv,ev), s or 0, e or 1)
+	return clamp(lerp(c,s,f,sv,ev), sv, ev)
 end
 
 function mix(r, s, e)
@@ -76,7 +76,7 @@ function fract(d)
 end
 
 function with(obj, t)
-		if type(obj) == "table" and type(t) == "table" then
+		if type(t) == "table" then
 	    for k,v in pairs(t) do
 	        obj[k] = v
 	    end

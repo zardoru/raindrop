@@ -66,7 +66,7 @@ function ScoreDisplay:Run(Delta)
   local tdig = #Digits
 
 	for i=1, tdig do
-		local Tab = self.Atlas.Sprites[self.Images[Digits[i]+1]]
+		local Tab = self.Atlas.Sprites[self.Images[Digits[tdig - (i - 1)]+1]]
 		self.Targets[i]:SetCropByPixels(Tab.x, Tab.x+Tab.w, Tab.y, Tab.y+Tab.h)
 		self.Targets[i].Alpha = (1)
 	end

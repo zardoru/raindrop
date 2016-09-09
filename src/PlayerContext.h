@@ -78,7 +78,7 @@ namespace Game {
 			bool UseNoteOptimization();
 
 			void DrawBarlines(double cur_vertical, double smult);
-			void DrawMeasures(double song_time);
+			int DrawMeasures(double song_time); // returns rendered note count 
 
 			std::shared_ptr<SceneEnvironment> Animations;
 			Noteskin PlayerNoteskin;
@@ -174,7 +174,7 @@ namespace Game {
 			void SetUnwarpedTime(double time);
 
 			// Whether the player has actually failed or not
-			bool HasFailed();
+			bool HasFailed() const;
 
 			// Whether failure is delayed until the screen is over
 			bool HasDelayedFailure();

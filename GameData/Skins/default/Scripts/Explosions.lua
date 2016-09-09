@@ -28,13 +28,14 @@ function Explosions:ObjectPosition(Obj, Atlas, i, Scale)
 	Obj.X = self.Noteskin["Key"..i.."X"]
 	Obj.Y = self.Player.JudgmentY
 
-	if Upscroll ~= 0 then
+	if self.Player.Upscroll ~= 0 then
 		Obj.Rotation = 180
 	end
 
 	Obj.Layer = (28)
 	Obj.BlendMode = BlendAdd -- Add
 	Obj:SetScale(Scale)
+  Obj.Alpha = 0
 end
 
 function Explosions:Init()
@@ -83,7 +84,6 @@ end
 librd.make_new(Explosions, Explosions.Init)
 
 function Explosions:Run(Delta)
-
 	for i = 1, self.Player.Channels do
 		self.HitTime[i] = self.HitTime[i] + Delta
 
@@ -153,7 +153,7 @@ function Explosions:OnHit(j, t, l, IsHold, IsHoldRelease, pn)
 		self.HoldTime[l] = 0
 	end
 
-	if not IsHold or IsHoldRelease then
+	if (not IsHold) or IsHoldRelease then
 		self.HitTime[l] = 0
 		self.HitColorize[l] = false
 	end

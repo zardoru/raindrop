@@ -1,4 +1,6 @@
-Keys = {}
+Keys = {
+    KeysSheet = "VSRG/keys.csv"
+  }
 
 function Keys:Init()
 	self.KeysUp = {}
@@ -6,27 +8,31 @@ function Keys:Init()
 
 	self.KeyAtlas = TextureAtlas:skin_new(self.KeysSheet)
 
+  self.Keys = {}
+  
 	-- Keys
-	self.Keys[i] = Engine:CreateObject()
-	local obj = self.Keys[i]
-	obj.Centered = 1
-	obj.X = self.Noteskin["Key" .. i .. "X"]
-	obj.Image = self.KeyAtlas.File
-	obj.Layer = 27
-	self.KeysUp[i] = self.Noteskin["Key" .. i]
-	self.KeysDown[i] = self.Noteskin["Key" .. i .. "Down"]
+  for i=1, self.Player.Channels do
+    self.Keys[i] = Engine:CreateObject()
+    local obj = self.Keys[i]
+    obj.Centered = 1
+    obj.X = self.Noteskin["Key" .. i .. "X"]
+    obj.Texture = self.KeyAtlas.File
+    obj.Layer = 27
+    self.KeysUp[i] = self.Noteskin["Key" .. i]
+    self.KeysDown[i] = self.Noteskin["Key" .. i .. "Down"]
 
-	self.KeyAtlas:SetObjectCrop(obj, self.KeysUp[i])
+    self.KeyAtlas:SetObjectCrop(obj, self.KeysUp[i])
 
-	obj.Width = self.Noteskin["Key" .. i .. "Width"]
-	obj.Height = self.Noteskin.GearHeight
+    obj.Width = self.Noteskin["Key" .. i .. "Width"]
+    obj.Height = self.Noteskin.GearHeight
 
-	if self.Player.Upscroll then
-		obj.Y = JudgmentLineY - obj.Height / 2 - NoteHeight / 2
-		obj.Rotation = 180
-	else
-		obj.Y = JudgmentLineY + obj.Height / 2 + NoteHeight / 2
-	end
+    if self.Player.Upscroll then
+      obj.Y = self.Player.JudgmentY - obj.Height / 2 - self.Noteskin.NoteHeight / 2
+      obj.Rotation = 180
+    else
+      obj.Y = self.Player.JudgmentY + obj.Height / 2 + self.Noteskin.NoteHeight / 2
+    end
+  end
 end
 
 librd.make_new(Keys, Keys.Init)

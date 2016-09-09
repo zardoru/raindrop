@@ -104,21 +104,21 @@ end
 librd.make_new(Jambar, Jambar.Init)
 
 function Jambar:Run(Delta)
-  local targetRem
+  local remaining
   local ScoreKeeper = self.Player.Scorekeeper
   
-  if ScoreKeeper.UsesO2 == false then
-    targetRem = ScoreKeeper.JudgedNotes / ScoreKeeper.MaxNotes
+  if not ScoreKeeper.UsesO2 then
+    remaining = ScoreKeeper.JudgedNotes / ScoreKeeper.MaxNotes
   else
-    targetRem = 1 - (15 - (ScoreKeeper.CoolCombo % 15 + 1)) / 15
+    remaining = 1 - (15 - (ScoreKeeper.CoolCombo % 15 + 1)) / 15
   end
 
   -- Percentage from 0 to 1 of cool combo
 
   self.BarFG.LightenFactor = 1 - fract(self.Player.Beat)
 
-  local Offset = targetRem * self.Height
-  self.BarFG.ScaleY = targetRem
+  local Offset = remaining * self.Height
+  self.BarFG.ScaleY = remaining
   self.BarFG.Y = ScreenHeight - Offset / 2
   self.BarFG:SetCropByPixels( 0, self.Width, self.BarFG.Height - Offset, self.BarFG.Height )
 end

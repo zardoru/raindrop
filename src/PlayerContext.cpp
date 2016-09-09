@@ -7,6 +7,9 @@
 #include "Line.h"
 #include "NoteTransformations.h"
 #include "GameWindow.h"
+#include "BitmapFont.h"
+
+BitmapFont *fnt = nullptr;
 
 namespace Game {
 	namespace VSRG {
@@ -23,6 +26,10 @@ namespace Game {
 			Parameters = p;
 
 			Hidden = {};
+			if (!fnt) {
+				fnt = new BitmapFont();
+				fnt->LoadSkinFontImage("font.tga", Vec2(6, 15), Vec2(8, 16), Vec2(6, 15), 0);
+			}
 		}
 
 		void PlayerContext::Init() {
@@ -236,7 +243,7 @@ namespace Game {
 
 		bool PlayerContext::IsUpscrolling() const
 		{
-			return GetAppliedSpeedMultiplier(LastUpdateTime) < 0 || Parameters.Upscroll;
+			return GetAppliedSpeedMultiplier(LastUpdateTime) < 0;
 		}
 
 
@@ -294,7 +301,11 @@ namespace Game {
 
 		double PlayerContext::GetAppliedSpeedMultiplier(double Time) const
 		{
-			return ChartData.GetSpeedMultiplierAt(Time);
+			auto sm = ChartData.GetSpeedMultiplierAt(Time);
+			if (Parameters.Upscroll)
+				return -sm;
+			else
+				return sm;
 		}
 
 		double PlayerContext::GetCurrentBeat() const
@@ -332,6 +343,7 @@ namespace Game {
 				.addProperty("Channels", &PlayerContext::GetChannelCount)
 				.addProperty("BPM", &PlayerContext::GetCurrentBPM)
 				.addProperty("CanFail", &PlayerContext::IsFailEnabled)
+				.addProperty("HasFailed", &PlayerContext::HasFailed)
 				.addProperty("Upscroll", &PlayerContext::IsUpscrolling)
 				.addProperty("Speed", &PlayerContext::GetCurrentVerticalSpeed)
 				.addProperty("JudgmentY", &PlayerContext::GetJudgmentY)
@@ -544,16 +556,14 @@ namespace Game {
 						}
 					}
 
-					// Autoplay
-					if (Parameters.Auto) {
-						RunAuto(&*m, usedTime, k);
-					}
-
 					if (!m->IsJudgable() || !CanJudge())
 						continue;
 
-
-
+					// Autoplay
+					if (Parameters.Auto) {
+						RunAuto(&*m, usedTime, k);
+						if (!m->IsJudgable()) continue;
+					}
 
 					if (!CanJudge()) continue; // don't check for judgments after stage has failed.
 
@@ -691,7 +701,7 @@ namespace Game {
 					PlayKeysound(Gear.CurrentKeysounds[Lane]->GetSound());
 		}
 
-		bool PlayerContext::HasFailed()
+		bool PlayerContext::HasFailed() const
 		{
 			return PlayerScoreKeeper->isStageFailed(LifebarType) && !Parameters.NoFail;
 		}
@@ -795,6 +805,10 @@ namespace Game {
 
 					Parameters.SpeedMultiplier = DesiredMultiplier;
 				}
+
+				if (Type != SPEEDTYPE_CMOD)
+					ChartData = VSRG::PlayerChartData::FromDifficulty(CurrentDiff.get(), Drift);
+
 			}
 			else
 				ChartData = VSRG::PlayerChartData::FromDifficulty(CurrentDiff.get(), Drift);
@@ -872,13 +886,15 @@ namespace Game {
 
 		void PlayerContext::Update(double SongTime)
 		{
+			PlayerNoteskin.Update(SongTime - LastUpdateTime, ChartData.GetBeatAt(ChartData.GetWarpedSongTime(SongTime)));
 			LastUpdateTime = SongTime;
 			RunMeasures(SongTime);
 		}
 
 		void PlayerContext::Render(double SongTime)
 		{
-			DrawMeasures(SongTime);
+			int rnc = DrawMeasures(SongTime);
+
 		}
 
 		double PlayerContext::GetLifePST() const
@@ -1005,8 +1021,9 @@ namespace Game {
 
 		Mat4 id;
 
-		void PlayerContext::DrawMeasures(double song_time)
+		int PlayerContext::DrawMeasures(double song_time)
 		{
+			int rnc = 0;
 			/*
 				DrawMeasures should get the unwarped song time.
 				Internally, it uses warped song time.
@@ -1017,7 +1034,8 @@ namespace Game {
 			auto vert = ChartData.GetDisplacementAt(wt);
 
 			// effective speed multiplier
-			auto effmul = ChartData.GetSpeedMultiplierAt(song_time) * Parameters.SpeedMultiplier;
+			auto chartmul = GetAppliedSpeedMultiplier(song_time);
+			auto effmul = chartmul * Parameters.SpeedMultiplier;
 
 			// since + is downward, - is upward!
 			bool upscrolling = effmul < 0;
@@ -1124,12 +1142,7 @@ namespace Game {
 						}
 						else
 						{
-							if (Parameters.Upscroll)
-							{
-								if (!(Vertical < ScreenHeight)) continue;
-							}
-							else
-								if (!(Vertical > 0)) continue;
+							if (Vertical < -PlayerNoteskin.GetNoteOffset() || Vertical > ScreenHeight + PlayerNoteskin.GetNoteOffset()) continue;
 						}
 					}
 
@@ -1192,12 +1205,25 @@ namespace Game {
 						else
 							PlayerNoteskin.DrawNote(*m, k, Vertical);
 					}
+
+					rnc++; // Rendered note count increases...
 				}
 			}
 
 			/* Clean up */
 			Renderer::SetShaderParameters(false, false, true, true, false, false, 0);
 			Renderer::FinalizeDraw();
+
+
+			fnt->Render(Utility::Format("NOTES RENDERED: %d\nNOTE OPTIMIZATION: %d\nRANGE: %f to %f\nM/EM: %f/%f", 
+				rnc, 
+				UseNoteOptimization(), 
+				vert, vert + ScreenHeight,
+				chartmul, effmul), Vec2(0,0));
+
+			return rnc;
 		}
+
 	}
+
 }

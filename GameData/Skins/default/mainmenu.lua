@@ -1,12 +1,13 @@
 skin_require "Global/FadeInScreen"
+game_require "AnimationFunctions"
 
 Preload = {
 	"MainMenu/play.png",
 	"MainMenu/quit.png"
 }
 
-IntroDuration = 0.3
-ExitDuration = 2.3
+IntroDuration = 0.5
+ExitDuration = 1.5
 function PlayBtnHover()
 	PlayButton.Texture = "MainMenu/playh.png";
 	PlayButton.Width = 256
@@ -32,8 +33,10 @@ function ExitBtnHoverLeave()
 end
 
 function UpdateIntro(p, delta)
-	local S = math.sin(-5 * math.pi * (p + 1)) * math.pow(2, -10 * p) + 1
-	targBadge.Y = ScreenHeight/2*(S) - targBadge.Height
+	local S = elastic(p)
+  
+  -- At 1/3rd of the screen, please.
+	targBadge.Y = ScreenHeight * 3/7 * (S) - targBadge.Height
 	targLogo.Y = targBadge.Y
 	Update(delta)
 	BGAOut(p*p)
@@ -62,6 +65,7 @@ function UpdateExit(p, delta)
 end
 
 function Init()
+  elastic = Ease.ElasticSquare(1.5)
 	ScreenFade:Init()
 		
 	targLogo = Engine:CreateObject() 

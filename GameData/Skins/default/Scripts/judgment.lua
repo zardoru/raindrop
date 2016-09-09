@@ -21,52 +21,59 @@ Judgment = {
 	ShowTimingIndicator = 1
 }
 
-Judgment.__index = Judgment
-
 
 function Judgment:Init()
+  print "Judgment Initializing."
 	self.Atlas = TextureAtlas:skin_new("VSRG/judgment.csv")
   
   
   self.defaultX = self.Noteskin.GearWidth / 2 + self.Noteskin.GearStartX
-  self.defaultY = ComboDisplay.Position.y + ComboDisplay.DigitHeight + 20
+  self.defaultY = ScreenHeight * 0.4
+  print ("Judgment Default Pos: ", self.defaultX, self.defaultY)
   
 	self.Object = ScreenObject {
 		Layer = 24,
 		Centered = 1,
 		ScaleX = self.Scale,
 		ScaleY = self.Scale,
-		Image = self.Atlas.File,
-		X = self.Position and self.Position.x or defaultX
-		Y = self.Position and self.Position.y or defaultY
+		Texture = self.Atlas.File,
 		Alpha = 0
 	}
+  
+  if self.Position then 
+    self.Object.X = self.Position.x
+    self.Object.Y = self.Position.y
+  else
+    self.Object.X = self.defaultX
+    self.Object.Y = self.defaultY  
+  end
+  print ("Judgment Real pos/Texture: ", self.Object.X, self.Object.Y, self.Object.Texture)
 
 	self.LastAlternation = 0
 	self.Time = self.FadeoutTime + self.FadeoutDuration
 
 	self.IndicatorObject = ScreenObject {
-		Image = ("VSRG/" .. self.TimingIndicator)
-		Layer = 24
-		Centered = 1
+		Texture = ("VSRG/" .. self.TimingIndicator),
+		Layer = 24,
+		Centered = 1,
 		ScaleX = self.Scale,
 		ScaleY = self.Scale,
-		Alpha = 0
+		Alpha = 0,
 		Y = self.Object.Y
 	}
 end
 
 librd.make_new(Judgment, Judgment.Init)
 
-local function GetComboLerp()
+function Judgment:GetComboLerp()
 	local AAAThreshold = 8.0 / 9.0
-	return clerp(ScoreKeeper:getScore(ST_COMBO),  -- cur
-							 0, ScoreKeeper:getMaxNotes() * AAAThreshold, -- start end
+	return clerp(self.Player.Combo,  -- cur
+							 0, self.Player.Scorekeeper.MaxNotes * AAAThreshold, -- start end
 							 0, 1) -- start val end val
 end
 
 function Judgment:Run(Delta)
-	local ComboLerp = GetComboLerp()
+	local ComboLerp = self:GetComboLerp()
 
 	if Active ~= 0 then
 		local AlphaRatio
@@ -126,7 +133,7 @@ function Judgment:Run(Delta)
 	end
 end
 
-function Judgment:Hit(JudgmentValue, Time, l, h, r, pn)
+function Judgment:OnHit(JudgmentValue, Time, l, h, r, pn)
   if pn ~= self.Player.Number then
     return
   end
@@ -154,7 +161,7 @@ function Judgment:Hit(JudgmentValue, Time, l, h, r, pn)
 
 	if JudgmentValue ~= 5 then
 		if JudgmentValue ~= -1 then
-			local CLerp = GetComboLerp()
+			local CLerp = self:GetComboLerp()
 			self.Object:SetScale (self.ScaleHit + CLerp * self.ScaleExtra)
 		else
 			self.Object:SetScale (self.Scale)
@@ -167,3 +174,6 @@ function Judgment:Hit(JudgmentValue, Time, l, h, r, pn)
 	self.EarlyOrLate = EarlyOrLate
 end
 
+function Judgment:OnMiss(t, l, h, pn)
+  self:OnHit(5, t, l, h, h, pn)
+end

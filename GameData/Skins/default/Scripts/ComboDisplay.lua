@@ -89,10 +89,10 @@ function ComboDisplay:Update()
 		h = self.DigitHeight
 	}
 
-	local DisplaySize = ((#self.Digits)-1) * Size.w/2
+	local DisplaySize = ActDig * Size.w / 2
 	self.ExNotifyPos = {
-		x = DisplaySize + Size.w / 2 + self.X,
-		y = self.DigitHeight / 2 + self.Y
+		x = DisplaySize + self.X,
+		y = - self.DigitHeight / 2 + self.Y
 	}
 
 	for i = 1, 6 do
@@ -102,7 +102,8 @@ function ComboDisplay:Update()
 		}
 
 		if i < ActDig then
-			self.Atlas:SetObjectCrop(self.Targets[i], self.Images[self.Digits[i]+1])
+      local d = ActDig - i
+			self.Atlas:SetObjectCrop(self.Targets[i], self.Images[self.Digits[d]+1])
 
 			with (self.Targets[i], {
 				Width = Size.w,
@@ -117,7 +118,7 @@ function ComboDisplay:Update()
 	end
 end
 
-function ComboDisplay:Hit(j)
+function ComboDisplay:OnHit(j)
 
 	self:Update()
 	self.BumpTime = 0
@@ -130,7 +131,7 @@ function ComboDisplay:Hit(j)
 
 end
 
-function ComboDisplay:Miss()
+function ComboDisplay:OnMiss()
 
 	self:Update()
 	self.BumpTime = 0
@@ -164,17 +165,17 @@ function ComboDisplay:Run(Delta)
 		self.ExNotifyObject.Alpha = 0
 	end
 
-	local RebootHT = 0
+	local RebootHT = false
 	for i=1,self.Player.Channels do
-	   if self.Player:IsHoldActive(i - 1) ~= 0 then
-      RebootHT = 1
+	   if self.Player:IsHoldActive(i - 1) then
+      RebootHT = true
       break
 	   end
 	end
 
 	local HoldScale = 1
 
-	if RebootHT == 1 then
+	if RebootHT then
 		local BT = Beat * 2
 		local Ratio = (BT - math.floor(BT))
 		HoldScale = self.HoldBumpFactor - Ratio * (self.HoldBumpFactor - 1)

@@ -21,3 +21,12 @@ function getFadeFunction(sF, eF, obj)
 		return 1
 	end
 end
+
+Ease = {
+  ElasticSquare = function(p)
+    local attn = 1 + 1 - math.asin(1.0 / p) * 2.0 / math.pi
+    return function (x)
+      return math.sin(x*x * math.pi / 2.0 * attn) * p
+    end
+  end
+}

@@ -40,7 +40,7 @@ namespace Game {
 			LoadedSong = nullptr;
 			Active = false;
 
-			StartMeasure = 0;
+			StartMeasure = -1;
 
 			// Don't play unless everything goes right (later checks)
 			DoPlay = false;
@@ -275,18 +275,16 @@ namespace Game {
 			Log::Printf("Processing song... ");
 
 			for (auto &&p : Players) {
-				for (auto diff : MySong->Difficulties)
-					if (diff->ID == GameState::GetInstance().GetDifficulty(p->GetPlayerNumber())->ID) {
-						p->SetPlayableData(diff, TimeError.AudioDrift, DesiredDefaultSpeed, Type);
+				for (auto sd: MySong->Difficulties)
+					if (sd->ID == GameState::GetInstance().GetDifficulty(p->GetPlayerNumber())->ID) {
+						p->SetPlayableData(sd, TimeError.AudioDrift, DesiredDefaultSpeed, Type);
 						p->Init();
+						if (!p->GetPlayerState().HasTimingData())
+						{
+							Log::Printf("Error loading chart: No timing data for player %d.\n", p->GetPlayerNumber());
+							return false;
+						}
 					}
-			}
-
-			// What, you mean we don't have timing data at all?
-			if (!Players[0]->GetPlayerState().HasTimingData())
-			{
-				Log::Printf("Error loading chart: No timing data.\n");
-				return false;
 			}
 
 			auto bgm0 = Players[0]->GetBgmData();
@@ -339,7 +337,8 @@ namespace Game {
 			Animations->Preload(GameState::GetInstance().GetSkinFile("screengameplay7k.lua"), "Preload");
 			Log::Printf("Done.\n");
 
-			AssignMeasure(StartMeasure);
+			if (StartMeasure > 0)
+				AssignMeasure(StartMeasure);
 
 			ForceActivation = ForceActivation || (Configuration::GetSkinConfigf("InmediateActivation") == 1);
 

@@ -24,8 +24,11 @@ function HitLightning:Init()
   self.Enabled = GetConfigF("DisableHitlightning", "") ~= 0
   
 	if self.Enabled == 0 then
+    print "Hit Lightning disabled."
 		return
 	end
+  
+  print "Hit Lightning enabled."
   
   self.OffTime = {}
 
@@ -75,7 +78,7 @@ end
 
 librd.make_new(HitLightning, HitLightning.Init)
 
-function HitLightning:LanePress(Lane, IsKeyDown, pn)
+function HitLightning:GearKeyEvent(Lane, IsKeyDown, pn)
 	if self.Enabled == 0 or pn ~= self.Player.Number then
 		return
 	end
@@ -83,18 +86,18 @@ function HitLightning:LanePress(Lane, IsKeyDown, pn)
   local spb = 60 / self.Player.BPM
 
 	if spb ~= math.huge then
-		self.OffTime[Lane+1] = math.min(spb / 1.5, 1)
+		self.OffTime[Lane] = math.min(spb / 1.5, 1)
 	end
 
-	if self.OffTime[Lane+1] > 3 then
-		self.OffTime[Lane+1] = 3
+	if self.OffTime[Lane] > 3 then
+		self.OffTime[Lane] = 3
 	end	
 
-	if IsKeyDown == 0 then
-		self.Times[Lane+1] = 0
-		self.Pressed[Lane+1] = 0
+	if not IsKeyDown then
+		self.Times[Lane] = 0
+		self.Pressed[Lane] = 0
 	else
-		self.Pressed[Lane+1] = 1
+		self.Pressed[Lane] = 1
 	end
 end
 

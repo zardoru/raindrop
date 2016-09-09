@@ -334,22 +334,15 @@ bool Sprite::RenderMinimalSetup()
     glVertexAttribPointer(WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
 
     // Set the color.
-    WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha);
+	auto lf = 1.0 + LightenFactor;
+	if (!Lighten)
+		WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha);
+	else
+		WindowFrame.SetUniform(U_COLOR, Red * lf, Green * lf, Blue * lf, Alpha * lf);
+
     Renderer::DoQuadDraw();
 
-    DrawLighten();
-
     return true;
-}
-
-void Sprite::DrawLighten()
-{
-    if (Lighten)
-    {
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-        WindowFrame.SetUniform(U_COLOR, Red * LightenFactor, Green * LightenFactor, Blue * LightenFactor, Alpha * LightenFactor);
-        Renderer::DoQuadDraw();
-    }
 }
 
 void Sprite::Render()
@@ -368,12 +361,14 @@ void Sprite::Render()
 	Renderer::SetCurrentObjectMatrix(Mat);
 
     // Set the color.
-    WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha);
+	auto lf = 1.0 + LightenFactor;
+	if (!Lighten)
+		WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha);
+	else
+		WindowFrame.SetUniform(U_COLOR, Red * lf, Green * lf, Blue * lf, Alpha * lf);
 
     Renderer::SetTexturedQuadVBO(UvBuffer);
     Renderer::DoQuadDraw();
-
-    DrawLighten();
 
     Renderer::FinalizeDraw();
 }

@@ -11,10 +11,11 @@ int LuaPanic(lua_State* State)
 	if (lua_isstring(State, 1)) {
 		msg = lua_tostring(State, 1);
 		luaL_traceback(State, State, msg, 2);
+		return 1;
 	}
-	else
-		lua_pushstring(State, "(no error)");
-    return 1;
+	else {
+		return 0;
+	}
 }
 
 int Break(lua_State *S)

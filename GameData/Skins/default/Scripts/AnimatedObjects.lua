@@ -1,8 +1,8 @@
 
 ProgressTick = {
 	Image = "VSRG/progress_tick.png",
-  Start = 0,
-  End = ScreenHeight - 16
+  Start = -8,
+  End = ScreenHeight
 }
 
 Pulse = {
@@ -31,12 +31,12 @@ end
 librd.make_new(ProgressTick, ProgressTick.Init)
 
 function ProgressTick:Run(Delta)
-	if Game.Active ~= 0 then
+	if Game.Active then
     local dur = self.Player.BeatDuration
 		local Ratio = self.Player.Beat / dur
 		if self.Player.Time > 0 then
 			self.Object.Alpha = 1
-			self.Object.Y = clerp(self.Player.Beat, 0, dur, self.Start, self.End)
+			self.Object.Y = cmix(Ratio, self.Start, self.End)
 		else
 			self.Object.Alpha = 1 - self.Player.Time / -1.5
 			self.Object.Y = cmix(math.pow(self.Player.Time / -1.5, 2), self.Start, self.End)
@@ -54,9 +54,9 @@ function Pulse:Init()
 		BlendMode = BlendAdd,
 		Layer = 11,
 		Alpha = 0,
-    X = self.Noteskin.GearStartX + self.Object.Width / 2,
-    Y = self.Player.JudgmentY - self.Object.Height
-	})
+    })
+    self.Object.X = self.Noteskin.GearStartX
+    self.Object.Y = self.Player.JudgmentY - self.Object.Height
 
   if self.Transformation then
 		self.Object.ChainTransformation = self.Transformation
@@ -72,8 +72,8 @@ function Pulse:Run(Delta)
 		local BeatMultiplied = self.Player.Beat * BeatNth
 		local NthOfBeat = 1
 
-		if math.floor(BeatMultiplied) % BeatNth == 0 then
-			NthOfBeat = fract(BeatMultiplied)
+		if floor(BeatMultiplied) % BeatNth == 0 then
+			NthOfBeat = cmix(fract(BeatMultiplied), 0.2, 1)
 		end
 
 		self.Object.Alpha = 1 - NthOfBeat

@@ -16,7 +16,8 @@ skin_require "Scripts.AutoplayAnimation"
 skin_require "Scripts.Lifebar"
 skin_require "Scripts.StageAnimation"
 skin_require "Scripts.AnimatedObjects"
-skin_require "Scripts.TextDisplay"
+skin_require "Scripts.Keys"
+skin_require "Scripts.Judgment"
 
 -- All of these will be loaded in the loading screen instead of
 -- in the main thread.
@@ -57,6 +58,7 @@ AnimatedObjects = {
 		ScoreDisplay,
 		Lifebar,
 		MissHighlight,
+    Keys,
 		Judgment,
 		Explosions,
 		Jambar
@@ -64,6 +66,8 @@ AnimatedObjects = {
 
 	-- Internal functions for automating stuff.
 	Init = function ()
+    local n = #AnimatedObjects.List
+    print (n, "objects in Gameplay Screen")
 		AnimatedObjects.Items = {}
 		for i = 1, #AnimatedObjects.List do
 			if AnimatedObjects.List[i] then
@@ -73,6 +77,8 @@ AnimatedObjects = {
               Player = p,
               Noteskin = Noteskin[chan]
             })
+      else
+        print ("AnimatedObjects object",i,"is nil")
 			end
 		end
 	end,
@@ -117,7 +123,6 @@ BgAlpha = 0
 function Init()
 	AutoadjustBackground()
 	AnimatedObjects.Init()
-	-- DrawTextObjects()
 	ScreenFade.Init()
 	ScreenFade.Out(true)
 
@@ -206,6 +211,5 @@ function Update(Delta)
 	end
 
 	AnimatedObjects.Run(Delta)
-	-- UpdateTextObjects()
 
 end
