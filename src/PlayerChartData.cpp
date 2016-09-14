@@ -628,6 +628,11 @@ namespace Game {
 			return IntegrateToTime(VSpeeds, Time);
 		}
 
+		double PlayerChartData::GetDyAt(double Time) const
+		{
+			return SectionValue(VSpeeds, GetWarpedSongTime(Time));
+		}
+
 		void PlayerChartData::DisableNotesUntil(double Time)
 		{
 			ResetNotes();

@@ -30,6 +30,7 @@ namespace Game {
 			double GetBpsAt(double Time) const;
 			double GetBeatAt(double Time) const;
 			double GetDisplacementAt(double Time) const;
+			double GetDyAt(double Time) const; // in unwarped song time
 			double GetTimeAtBeat(double beat, double drift = 0) const;
 			double GetOffset() const;
 			std::map<int, std::string> GetSoundList() const;

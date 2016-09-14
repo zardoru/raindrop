@@ -73,7 +73,7 @@ function Pulse:Run(Delta)
 		local NthOfBeat = 1
 
 		if floor(BeatMultiplied) % BeatNth == 0 then
-			NthOfBeat = cmix(fract(BeatMultiplied), 0.2, 1)
+			NthOfBeat = fract(BeatMultiplied)
 		end
 
 		self.Object.Alpha = 1 - NthOfBeat

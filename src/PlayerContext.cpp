@@ -10,6 +10,7 @@
 #include "BitmapFont.h"
 
 BitmapFont *fnt = nullptr;
+CfgVar DebugNoteRendering("NoteRender", "Debug");
 
 namespace Game {
 	namespace VSRG {
@@ -26,7 +27,10 @@ namespace Game {
 			Parameters = p;
 
 			Hidden = {};
-			if (!fnt) {
+
+			Gear = {};
+
+			if (!fnt && DebugNoteRendering) {
 				fnt = new BitmapFont();
 				fnt->LoadSkinFontImage("font.tga", Vec2(6, 15), Vec2(8, 16), Vec2(6, 15), 0);
 			}
@@ -320,15 +324,13 @@ namespace Game {
 
 		double PlayerContext::GetCurrentVerticalSpeed() const
 		{
-			return ChartData.GetDisplacementAt(LastUpdateTime);
+			return ChartData.GetDyAt(LastUpdateTime);
 		}
 
 		double PlayerContext::GetWarpedSongTime() const
 		{
 			return ChartData.GetWarpedSongTime(LastUpdateTime);
 		}
-
-
 
 		void PlayerContext::SetupLua(LuaManager *Env)
 		{
@@ -754,8 +756,8 @@ namespace Game {
 				{
 					Parameters.SpeedMultiplier = 1;
 					ChartData = VSRG::PlayerChartData::FromDifficulty(CurrentDiff.get(), Drift, DesiredDefaultSpeed);
-				}
-
+				} else
+					ChartData = VSRG::PlayerChartData::FromDifficulty(CurrentDiff.get(), Drift);
 
 				if (Type == SPEEDTYPE_MMOD) // mmod
 				{
@@ -805,10 +807,6 @@ namespace Game {
 
 					Parameters.SpeedMultiplier = DesiredMultiplier;
 				}
-
-				if (Type != SPEEDTYPE_CMOD)
-					ChartData = VSRG::PlayerChartData::FromDifficulty(CurrentDiff.get(), Drift);
-
 			}
 			else
 				ChartData = VSRG::PlayerChartData::FromDifficulty(CurrentDiff.get(), Drift);
@@ -1215,12 +1213,13 @@ namespace Game {
 			Renderer::FinalizeDraw();
 
 
-			fnt->Render(Utility::Format("NOTES RENDERED: %d\nNOTE OPTIMIZATION: %d\nRANGE: %f to %f\nM/EM: %f/%f", 
-				rnc, 
-				UseNoteOptimization(), 
-				vert, vert + ScreenHeight,
-				chartmul, effmul), Vec2(0,0));
-
+			if (DebugNoteRendering) {
+				fnt->Render(Utility::Format("NOTES RENDERED: %d\nN/O: %d\nRNG: %f to %f\nM/EM/CVS: %f/%f/%f",
+					rnc,
+					UseNoteOptimization(),
+					vert, vert + ScreenHeight,
+					chartmul, effmul, GetCurrentVerticalSpeed() * effmul), Vec2(0, 0));
+			}
 			return rnc;
 		}
 
