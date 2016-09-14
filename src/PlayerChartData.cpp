@@ -437,7 +437,7 @@ namespace Game {
 		TimingData BPStoSPB(TimingData BPS)
 		{
 			auto BPSCopy = BPS;
-			for (auto i : BPS)
+			for (auto &&i : BPS)
 			{
 				i.Value = 1 / i.Value;
 				i.Time = IntegrateToTime(BPSCopy, i.Time); // Find time in beats based off beats in time

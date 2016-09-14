@@ -216,6 +216,9 @@ namespace Game {
 
 		void PlayerContext::TranslateKey(int32_t Index, bool KeyDown, double Time)
 		{
+			if (Parameters.Auto)
+				return;
+
 			if (Index < 0)
 				return;
 
