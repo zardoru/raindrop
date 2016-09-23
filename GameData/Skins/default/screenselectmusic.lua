@@ -119,6 +119,12 @@ function BackBtnHoverLeave()
 
 end
 
+function gamma(o)
+	o.Red = pow(o.Red, 2.2)
+	o.Green = pow(o.Green, 2.2)
+	o.Blue = pow(o.Blue, 2.2)
+end
+
 function Init()
 	BackgroundAnimation:Init()
 	ScreenFade.Init()
@@ -166,6 +172,7 @@ function Init()
 				end
 			end
 		end
+		gamma(WheelBackground)		
 	end
 
 	strName = StringObject2D()
@@ -195,6 +202,7 @@ function Init()
 	WheelItemStrings[Wheel:AddString(strArtist)] = function(Song, IsSelected, Index, Txt)
 		strArtist.X = strArtist.X + 10
 		strArtist.Y = strArtist.Y + 45
+		strArtist.Red = 1
 		if Song then
 			strArtist.Text = "by " .. Song.Author
 			strArtist.Blue = 0.3
@@ -204,6 +212,8 @@ function Init()
 			strArtist.Blue = 0.3
 			strArtist.Green = 0.3
 		end
+
+		gamma(strArtist)
 	end
 	WheelItemStrings[Wheel:AddString(strDuration)] = function(Song, IsSelected, Index, Txt)
 		if Song then
@@ -211,12 +221,10 @@ function Init()
 			if not sng then
 				sng = toSongDC(Song)
 			end
-			if IsSelected then
-				-- player 0 selected difficulty data
-				strDuration.Text = floor(Global:GetDifficulty(0).Duration) .. " seconds"
-			else
-				strDuration.Text = floor(sng:GetDifficulty(0).Duration) .. " seconds"
-			end
+
+			local s = floor(sng:GetDifficulty(0).Duration % 60)
+			local m = floor( (sng:GetDifficulty(0).Duration - s) / 60 )
+			strDuration.Text = string.format("%d:%02d", m, s)
 		else
 			strDuration.Text = ""
 		end

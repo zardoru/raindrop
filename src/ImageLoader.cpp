@@ -75,7 +75,8 @@ void Texture::SetTextureData2D(ImageData &ImgInfo, bool Reassign)
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		Renderer::SetTextureParameters(Dir);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ImgInfo.Width, ImgInfo.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ImgInfo.Data.data());
+        //glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8, ImgInfo.Width, ImgInfo.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ImgInfo.Data.data());
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8, ImgInfo.Width, ImgInfo.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ImgInfo.Data.data());
     }
     else // We did, so let's update instead.
     {

@@ -71,8 +71,8 @@ function SetupJudgmentsDisplay(player)
 	Score = player.Score
 	
 	fmtext = ""
-	if ScoreKeeper.UsesW0() == false then
-		if ScoreKeeper.UsesO2() == false then
+	if ScoreKeeper.UsesW0 == false then
+		if ScoreKeeper.UsesO2 == false then
 			fmtext = fmtext .. string.format("Flawless: %04d\nSweet: %04d\nNice: %04d\nWeak: %04d\nMiss: %04d", w1, w2, w3, w4, w5)
 		else
 			local p = ScoreKeeper.Pills
@@ -85,7 +85,7 @@ function SetupJudgmentsDisplay(player)
 	fmtext = fmtext .. string.format("\nMax Combo: %d", ScoreKeeper:GetScore(ST_MAX_COMBO))
 	fmtext = fmtext .. string.format("\nNotes hit: %d%%", ScoreKeeper:GetPercentScore(PST_NH))
 	fmtext = fmtext .. string.format("\nAccuracy: %d%%", ScoreKeeper:GetPercentScore(PST_ACC))
-	fmtext = fmtext .. string.format("\nAverage hit (ms): %.2f" , ScoreKeeper:GetAvgHit())
+	fmtext = fmtext .. string.format("\nAverage hit (ms): %.2f" , ScoreKeeper.AvgHit)
 	fmtext = fmtext .. "\nraindrop rank: "
 
 	if ScoreKeeper.Rank > 0 then
@@ -105,9 +105,9 @@ function SetupJudgmentsDisplay(player)
 	Engine:AddTarget(JudgeStr)
 end
 
-function SetSongTitle()
+function SetSongTitle(diff)
 	Filter = Engine:CreateObject()
-	Filter.Image = "Global/filter.png"
+	Filter.Texture = "Global/filter.png"
 	Filter.X = 0
 	Filter.Y = ScreenHeight - 30
 	Filter.Width = ScreenWidth
@@ -116,7 +116,6 @@ function SetSongTitle()
 	TitleText = StringObject2D()
 
 	sng = toSong7K(Global:GetSelectedSong())
-	diff = sng:GetDifficulty(Global.DifficultyIndex)
 	if diff.Author ~= "" then
 		difftxt = string.format("%s by %s", diff.Name, diff.Author)
 	else
@@ -133,8 +132,8 @@ function SetSongTitle()
 	Engine:AddTarget(TitleText)
 end
 
-function SetupHistogram()
-	histogram = Histogram:new()
+function SetupHistogram(p)
+	histogram = Histogram:new(p)
 	histogram:SetPosition(ScreenWidth / 2 - 255 / 2, 20)
 	histogram:SetColor(30 / 255, 50 / 255, 200 / 255)
 	hist_bg = histogram:SetBackground("Global/white.png")
@@ -151,25 +150,25 @@ function SetupHistogram()
 end
 
 function Init()
-
+  local p = Game:GetPlayer(0)
 	BackgroundAnimation:Init()
 	SetupFonts()
-	SetupRank()
-	SetupJudgmentsDisplay()
+	SetupRank(p)
+	SetupJudgmentsDisplay(p)
 
-	ScoreDisplay.Init()
-	ScoreDisplay.Score = Score
+	sd = ScoreDisplay:new({Player = p})
+	sd.Score = Score
 
 	scoreStr = StringObject2D()
 	scoreStr.Font = EvalFont
-	scoreStr.X = ScoreDisplay.X
-	scoreStr.Y = ScoreDisplay.Y + ScoreDisplay.H
+	scoreStr.X = sd.X
+	scoreStr.Y = sd.Y + sd.H
 	scoreStr.Text = "score"
 
 	Engine:AddTarget(scoreStr)
 
-	SetSongTitle()
-	SetupHistogram()
+	SetSongTitle(p.Difficulty)
+	SetupHistogram(p)
 	ScreenFade.Init()
 	ScreenFade.Out()
 end
@@ -179,5 +178,5 @@ function Cleanup()
 end
 
 function Update(Delta)
-	ScoreDisplay.Run(Delta)
+	sd:Run(Delta)
 end

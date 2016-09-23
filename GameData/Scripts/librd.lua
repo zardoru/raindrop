@@ -34,6 +34,7 @@ function sum(l)
 	for k,v in ipairs(l) do
 		rt = rt + v
 	end
+  return rt
 end
 
 table.join = function (a, b)

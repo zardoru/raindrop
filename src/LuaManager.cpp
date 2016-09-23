@@ -61,6 +61,15 @@ void LuaManager::GetGlobal(std::string VarName)
     lua_getglobal(State, VarName.c_str());
 }
 
+void reportError(lua_State *State)
+{
+	const char* reason = lua_tostring(State, -1);
+
+    Log::LogPrintf("LuaManager: Lua error: %s\n", reason);
+    Utility::DebugBreak();
+    lua_pop(State, 1);
+}
+
 bool LuaManager::RunScript(std::filesystem::path file)
 {
     int errload = 0, errcall = 0;
@@ -70,20 +79,23 @@ bool LuaManager::RunScript(std::filesystem::path file)
 
     Log::LogPrintf("LuaManager: Running script %s.\n", Utility::ToU8(file.wstring()).c_str());
 
-    if ((errload = luaL_loadfile(State, Utility::ToLocaleStr(file).c_str())) || (errcall = lua_pcall(State, 0, LUA_MULTRET, 0)))
+
+	if ((errload = luaL_loadfile(State, Utility::ToLocaleStr(file).c_str()))) {
+		reportError(State);
+		return false;
+	}
+	
+	lua_pushcfunction(State, LuaPanic);
+	lua_insert(State, -2);
+
+	if (errcall = lua_pcall(State, 0, 0, -2))
     {
-        const char* reason = lua_tostring(State, -1);
-
-
-        if (reason && reason != last_error)
-        {
-			last_error = reason;
-            Log::LogPrintf("LuaManager: Lua error: %s\n", reason);
-            Utility::DebugBreak();
-        }
-        Pop();
-        return false;
+		reportError(State);
+		Pop(); // remove pushed panic function
+		return false;
     }
+
+	Pop(); // remove panic func.
     return true;
 }
 

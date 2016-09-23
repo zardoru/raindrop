@@ -61,7 +61,8 @@ AnimatedObjects = {
     Keys,
 		Judgment,
 		Explosions,
-		Jambar
+		Jambar,
+    AutoAnimation
 	},
 
 	-- Internal functions for automating stuff.
@@ -73,9 +74,18 @@ AnimatedObjects = {
 			if AnimatedObjects.List[i] then
         local p = Game:GetPlayer(0)
         local chan = p.Difficulty.Channels
+        local ns
+        local TT = p.Turntable and (p.Channels == 6 or p.Channels == 8)
+        
+        if not TT then
+          ns = Noteskin[chan]
+        else
+          ns = NoteskinSpecial[chan]
+        end
+        
 				AnimatedObjects.Items[i] = AnimatedObjects.List[i]:new({
               Player = p,
-              Noteskin = Noteskin[chan]
+              Noteskin = ns
             })
       else
         print ("AnimatedObjects object",i,"is nil")
@@ -111,6 +121,22 @@ AnimatedObjects = {
     for i = 1, #AnimatedObjects.List do
 			if AnimatedObjects.Items[i] and AnimatedObjects.Items[i].OnMiss ~= nil then
         AnimatedObjects.Items[i]:OnMiss(t, l, h, p)
+      end
+    end
+  end,
+  
+  OnActivate = function()
+    for i = 1, #AnimatedObjects.List do
+			if AnimatedObjects.Items[i] and AnimatedObjects.Items[i].OnActivate ~= nil then
+        AnimatedObjects.Items[i]:OnActivate()
+      end
+    end
+  end,
+  
+  OnSongFinish = function()
+    for i = 1, #AnimatedObjects.List do
+			if AnimatedObjects.Items[i] and AnimatedObjects.Items[i].OnSongFinish ~= nil then
+        AnimatedObjects.Items[i]:OnSongFinish()
       end
     end
   end
@@ -164,9 +190,7 @@ end
 
 -- When 'enter' is pressed and the game starts, this function is called.
 function OnActivateEvent()
-	if Auto ~= 0 then
-		AutoAnimation.Init()
-	end
+	AnimatedObjects.OnActivate()
 end
 
 function HitEvent(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease, PNum)
@@ -198,7 +222,7 @@ end
 
 -- Called when the song is over.
 function OnSongFinishedEvent()
-	AutoAnimation.Finish()
+	AnimatedObjects.OnSongFinish()
 	DoSuccessAnimation()
 	return SuccessAnimation.Duration
 end
@@ -206,8 +230,8 @@ end
 function Update(Delta)
 	-- Executed every frame.
 
-	if Active ~= 0 then
-		AutoAnimation.Run(Delta)
+	if Game.Active then
+		AutoAnimation:Run(Delta)
 	end
 
 	AnimatedObjects.Run(Delta)

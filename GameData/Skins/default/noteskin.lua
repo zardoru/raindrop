@@ -5,25 +5,33 @@ game_require "noteskin_defs"
 normalNotes = {}
 holdBodies = {}
 
+local TT = Notes.Channels == 6 or Notes.Channels == 8
+
+if Player.Turntable and TT then
+  skin = NoteskinSpecial
+else
+  skin = Noteskin
+end
 function setNoteStuff(note, i)
-	note.Width = Noteskin[Notes.Channels]['Key' .. i .. 'Width']
-	note.X = Noteskin[Notes.Channels]['Key' .. i .. 'X']
-	note.Height = Noteskin[Notes.Channels].NoteHeight
+	note.Width = skin[Notes.Channels]['Key' .. i .. 'Width']
+	note.X = skin[Notes.Channels]['Key' .. i .. 'X']
+	note.Height = skin[Notes.Channels].NoteHeight
 	note.Layer = 14
 	note.Lighten = 1
 	note.LightenFactor = 0
 end
 
 function Init()
+
 	for i=1,Notes.Channels do
 		normalNotes[i] = Object2D()
 		local note = normalNotes[i]
-		note.Texture = Noteskin[Notes.Channels]['Key' .. i .. 'Image']
+		note.Texture = skin[Notes.Channels]['Key' .. i .. 'Image']
 		setNoteStuff(note, i)
 		
 		holdBodies[i] = Object2D()
 		note = holdBodies[i]
-		note.Texture = Noteskin[Notes.Channels]['Key' .. i .. 'HoldImage']
+		note.Texture = skin[Notes.Channels]['Key' .. i .. 'HoldImage']
 		setNoteStuff(note, i)
 	end
 end
@@ -74,18 +82,19 @@ end
 -- Barline
 --game_require "debug"
 Notes.BarlineEnabled = 1
-Notes.BarlineOffset = Noteskin[Notes.Channels].NoteHeight / 2
+Notes.BarlineOffset = skin[Notes.Channels].NoteHeight / 2
 Notes.BarlineStartX = GearStartX
-Notes.BarlineWidth = Noteskin[Notes.Channels].BarlineWidth
 
-local jy = Noteskin[Notes.Channels].GearHeight + Noteskin[Notes.Channels].NoteHeight / 2
+Notes.BarlineWidth = skin[Notes.Channels].BarlineWidth
+
+local jy = skin[Notes.Channels].GearHeight + skin[Notes.Channels].NoteHeight / 2
 Notes.JudgmentY = jy
 Notes.DecreaseHoldSizeWhenBeingHit = true
 Notes.DanglingHeads = true
 
 -- How many extra units do you require so that the whole bounding box is accounted
 -- when determining whether to show this note or not.
-Notes.NoteScreenSize = Noteskin[Notes.Channels].NoteHeight / 2
+Notes.NoteScreenSize = skin[Notes.Channels].NoteHeight / 2
 
 DrawNormal = drawNormalInternal
 DrawFake = drawNormalInternal

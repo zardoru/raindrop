@@ -514,6 +514,9 @@ bool GameWindow::SetupWindow()
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
 
+	//glRenderbufferStorage(GL_RENDERBUFFER, )
+	glEnable(GL_FRAMEBUFFER_SRGB);
+
     glEnable(GL_ALPHA_TEST);
 	// glEnable(GL_POLYGON_SMOOTH);
     glAlphaFunc(GL_GREATER, 0);
@@ -573,6 +576,8 @@ bool GameWindow::AutoSetupWindow(Application* _parent)
 	else {
 		Log::LogPrintf("GLFW succesfully initialized.\n");
 	}
+
+	glfwWindowHint(GLFW_SRGB_CAPABLE, 1);
 
     AssignSize();
     matrixSize.x = ScreenWidth;

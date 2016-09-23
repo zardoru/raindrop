@@ -4,8 +4,8 @@ Histogram = {}
 Histogram.__index = Histogram
 
 function Histogram:GenerateObjects(w, h)
-  local skeep = Global:GetScorekeeper7K()
-  local pnt_cnt = skeep:getHistogramPointCount()
+  local skeep = self.Player.Scorekeeper
+  local pnt_cnt = skeep.HistogramPointCount
 
 	with  (self, {
   	item_size = w / pnt_cnt,
@@ -18,7 +18,7 @@ function Histogram:GenerateObjects(w, h)
 
   for i=1,pnt_cnt do
     local ref = ScreenObject {
-    	Image = "Global/white.png",
+    	Texture = "Global/white.png",
     	Width = self.item_size
 		}
 
@@ -31,20 +31,20 @@ function Histogram:GenerateObjects(w, h)
 end
 
 function Histogram:UpdatePoints()
-  local skeep = Global:GetScorekeeper7K()
-  local top_point = skeep:getHistogramHighestPoint()
+  local skeep = self.Player.Scorekeeper
+  local top_point = skeep.HistogramHighestPoint
 
   for k,ref in pairs(self.Objects) do
     -- change this 128 by the amount of ms + 1 the histogram covers
     -- basically floor(point_count / 2)
 
     ref.X = self.item_size * (k - 1) + self.X
-    ref.Height = self.Height * skeep:getHistogramPoint(k - 128) / top_point
+    ref.Height = self.Height * skeep:GetHistogramPoint(k - 128) / top_point
     ref.Y = self.Y - ref.Height + self.Height
 
     if (k - 128) == 0 then
 			with (self.centerSep, {
-	      Image = "Global/white.png",
+	      Texture = "Global/white.png",
 	      Width = self.item_size,
 	      Height = self.Height,
 	      X = ref.X,
@@ -92,7 +92,7 @@ function Histogram:SetBackground(image)
     self.bg = Engine:CreateObject()
     self.bg.X = self.X
     self.bg.Y = self.Y
-    self.bg.Image = image
+    self.bg.Texture = image
     self.bg.Width = self.Width
     self.bg.Height = self.Height
   end
@@ -100,12 +100,13 @@ function Histogram:SetBackground(image)
   return self.bg
 end
 
-function Histogram:new(width, height, layer)
+function Histogram:new(player, width, height, layer)
   local out = {}
-  local skeep = Global:GetScorekeeper7K()
+  local skeep = player.Scorekeeper
 
   setmetatable(out, self)
-  out:GenerateObjects(width or skeep:getHistogramPointCount(), height or 100)
+  out.Player = player
+  out:GenerateObjects(width or skeep.HistogramPointCount * 1.15, height or 100)
   out:SetLayer(layer or 16)
   return out
 end

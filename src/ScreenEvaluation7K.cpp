@@ -3,6 +3,7 @@
 #include "GameGlobal.h"
 #include "GameState.h"
 #include "ScreenEvaluation7K.h"
+#include "ScreenGameplay7K.h"
 #include "ImageLoader.h"
 #include "Audio.h"
 #include "ScoreKeeper7K.h"
@@ -18,11 +19,11 @@ namespace Game {
 			Running = true;
 		}
 
-		void ScreenEvaluation::Init()
+		void ScreenEvaluation::Init(ScreenGameplay *pr)
 		{
 			Animations->InitializeUI();
 
-			GameState::GetInstance().InitializeLua(Animations->GetEnv()->GetState());
+			pr->SetupLua(Animations->GetEnv());
 			Animations->Initialize(GameState::GetInstance().GetSkinFile("screenevaluation7k.lua"));
 
 			IntroDuration = Animations->GetIntroDuration();

@@ -203,7 +203,7 @@ namespace Game {
 				GameState::GetInstance().SubmitScore(0);
 
 				auto Eval = std::make_shared<ScreenEvaluation>();
-				Eval->Init();
+				Eval->Init(this);
 				Next = Eval;
 			}
 
@@ -218,7 +218,7 @@ namespace Game {
 					if (Configuration::GetSkinConfigf("GoToSongSelectOnFailure") == 0)
 					{
 						auto Eval = std::make_shared<ScreenEvaluation>();
-						Eval->Init();
+						Eval->Init(this);
 						Next = Eval;
 					}
 					else
