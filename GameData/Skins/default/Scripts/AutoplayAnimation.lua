@@ -1,6 +1,9 @@
 AutoAnimation = {}
 
 function AutoAnimation:Init()
+	if not self.Player.Auto then
+		return
+	end
 	self.AutoBN = Engine:CreateObject()
 	
   local sx = self.Noteskin.GearStartX + self.Noteskin.GearWidth/2

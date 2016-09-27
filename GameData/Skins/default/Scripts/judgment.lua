@@ -1,13 +1,14 @@
 Judgment = {
 	FadeoutTime = 0.5,
 	FadeoutDuration = 0.15,
-	Speed = 25,
 	Tilt = 7, -- in degrees
 
-	Scale = 0.20,
-	ScaleHit = 0.08,
-	ScaleMiss = 0.12,
-	ScaleExtra = 0.1,
+	ScaleTime = 0.1,
+	Scale = 0.21,
+	ScaleHit = 1.1,
+	ScaleOK = 0.9,
+	ScaleMiss = 0.7,
+	ScaleExtra = 0.2,
 
 	Table = {
 		"judge-excellent.png",
@@ -18,7 +19,8 @@ Judgment = {
 	},
 
 	TimingIndicator = "hiterror.png",
-	ShowTimingIndicator = 1
+	ShowTimingIndicator = true,
+	ScaleLerp = Ease.ElasticSquare(2.5)
 }
 
 
@@ -29,25 +31,32 @@ function Judgment:Init()
   
   self.defaultX = self.Noteskin.GearWidth / 2 + self.Noteskin.GearStartX
   self.defaultY = ScreenHeight * 0.4
+  self.ScaleLerp = self.ScaleLerp or function (x) return x end
   print ("Judgment Default Pos: ", self.defaultX, self.defaultY)
   
 	self.Object = ScreenObject {
 		Layer = 24,
 		Centered = 1,
-		ScaleX = self.Scale,
-		ScaleY = self.Scale,
 		Texture = self.Atlas.File,
 		Alpha = 0
 	}
+
+	self.Transform = Transformation()
+	self.Object.ChainTransformation = self.Transform
   
-  if self.Position then 
-    self.Object.X = self.Position.x
-    self.Object.Y = self.Position.y
-  else
-    self.Object.X = self.defaultX
-    self.Object.Y = self.defaultY  
-  end
-  print ("Judgment Real pos/Texture: ", self.Object.X, self.Object.Y, self.Object.Texture)
+	if self.Position then 
+		self.Transform.X = self.Position.x
+		self.Transform.Y = self.Position.y
+	  else
+		self.Transform.X = self.defaultX
+		self.Transform.Y = self.defaultY  
+	  end
+
+	  self.Transform.Width = self.Scale
+	  self.Transform.Height = self.Scale
+
+
+  	print ("Judgment Real pos/Texture: ", self.Transform.X, self.Transform.Y, self.Object.Texture)
 
 	self.LastAlternation = 0
 	self.Time = self.FadeoutTime + self.FadeoutDuration
@@ -56,11 +65,11 @@ function Judgment:Init()
 		Texture = ("VSRG/" .. self.TimingIndicator),
 		Layer = 24,
 		Centered = 1,
-		ScaleX = self.Scale,
-		ScaleY = self.Scale,
 		Alpha = 0,
-		Y = self.Object.Y
 	}
+	self.IndicatorObject:SetScale( 1 / self.Scale )
+
+	self.IndicatorObject.ChainTransformation = self.Transform
 end
 
 librd.make_new(Judgment, Judgment.Init)
@@ -75,16 +84,23 @@ end
 function Judgment:Run(Delta)
 	local ComboLerp = self:GetComboLerp()
 
-	if Active ~= 0 then
+	if Game.Active then
 		local AlphaRatio
-		self.Time = self.Time + Delta
+		self.Time = min(self.Time + Delta, self.ScaleTime)
 
-		local OldJudgeScale = self.Object.ScaleX
-		local ScaleLerpAAA = ComboLerp * self.ScaleExtra
-		local DeltaScale = (self.Scale + ScaleLerpAAA - OldJudgeScale) * Delta * self.Speed
-		local FinalScale = max(0, OldJudgeScale + DeltaScale)
+		local sval
+		if self.Value < 3 then
+			sval = self.ScaleHit
+		elseif self.Value < 5 then
+			sval = self.ScaleOK
+		else
+			sval = self.ScaleMiss
+		end
 
-		self.Object:SetScale (FinalScale)
+		local s = lerp(self.ScaleLerp(self.Time / self.ScaleTime), 0, 1, 1, sval)
+
+		self.Transform.ScaleX = s
+		self.Transform.ScaleY = s
 
 		if self.Time > self.FadeoutTime then
 			local Time = self.Time - self.FadeoutTime
@@ -102,30 +118,25 @@ function Judgment:Run(Delta)
 			AlphaRatio = 1
 		end
 
-		local w = self.Object.Width
-		local h = self.Object.Height
+		local w = self.Object.Width 
+		local h = self.Object.Height 
 
 		self.Object.Alpha = (AlphaRatio)
 
 		if self.LastAlternation == 0 then
-			self.Object.Rotation = (self.Tilt * ComboLerp)
+			self.Transform.Rotation = (self.Tilt * ComboLerp)
 		else
-			self.Object.Rotation = (-self.Tilt * ComboLerp)
+			self.Transform.Rotation = (-self.Tilt * ComboLerp)
 		end
 
-		if self.Value ~= 1 and self.ShowTimingIndicator == 1 then -- not a "flawless"
+		if self.Value ~= 1 and self.ShowTimingIndicator then -- not a "flawless"
+			self.IndicatorObject.Alpha = AlphaRatio
 
-			self.IndicatorObject.Alpha = (AlphaRatio)
-
-			local NewRatio = FinalScale / self.Scale
-			self.IndicatorObject:SetScale(NewRatio)
-
-			if self.EarlyOrLate == 1 then -- early
-				self.IndicatorObject.X = self.Position.x - w/2 * FinalScale - 20
+			if self.Early then -- early
+				self.IndicatorObject.X = - (w / 2 + 130)
 			else
-				if self.EarlyOrLate == 2 then -- late
-					self.IndicatorObject.X = self.Position.x + w/2 * FinalScale + 20
-				end
+				-- late
+				self.IndicatorObject.X = w / 2 + 130
 			end
 		else
 			self.IndicatorObject.Alpha = 0
@@ -171,7 +182,7 @@ function Judgment:OnHit(JudgmentValue, Time, l, h, r, pn)
 	end
 
 	self.Time = 0
-	self.EarlyOrLate = EarlyOrLate
+	self.Early = Time < 0
 end
 
 function Judgment:OnMiss(t, l, h, pn)

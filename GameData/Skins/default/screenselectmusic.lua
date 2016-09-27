@@ -189,6 +189,8 @@ function Init()
 	strDuration.Font = infofont
 	strLevel.Font = infofont
 	strSubtitle.Font = infofont 
+
+	local dur_x = 50
 	
 	-- Transform these strings according to what they are
 	WheelItemStrings[Wheel:AddString(strName)] = function(Song, IsSelected, Index, Txt)
@@ -198,6 +200,15 @@ function Init()
 		else
 		    strName.Text = Txt
 		end
+
+		local w = wheelfont:GetLength(strName.Text)
+		local m = ItemWidth - dur_x - 20
+		if w > m then
+			strName.ScaleX = m / w
+		else
+			strName.ScaleX = 1
+		end
+
 	end
 	WheelItemStrings[Wheel:AddString(strArtist)] = function(Song, IsSelected, Index, Txt)
 		strArtist.X = strArtist.X + 10
@@ -211,6 +222,15 @@ function Init()
 			strArtist.Text = "directory..."
 			strArtist.Blue = 0.3
 			strArtist.Green = 0.3
+		end
+
+		local w = infofont:GetLength(strArtist.Text)
+		local m = ItemWidth - 20
+
+		if w > m then
+			strArtist.ScaleX = m / w
+		else
+			strArtist.ScaleX = 1
 		end
 
 		gamma(strArtist)
@@ -228,7 +248,7 @@ function Init()
 		else
 			strDuration.Text = ""
 		end
-		strDuration.X = strDuration.X + ItemWidth - infofont:GetLength(strDuration.Text) - 20
+		strDuration.X = strDuration.X + ItemWidth - dur_x
 		strDuration.Y = strDuration.Y + 10
 	end
 	WheelItemStrings[Wheel:AddString(strLevel)] = function(Song, IsSelected, Index, Txt)
@@ -242,6 +262,15 @@ function Init()
 			strSubtitle.Text = Song.Subtitle
 		else
 			strSubtitle.Text = ""
+		end
+
+		local w = infofont:GetLength(strSubtitle.Text)
+		local m = ItemWidth - 20
+
+		if w > m then
+			strSubtitle.ScaleX = m / w
+		else
+			strSubtitle.ScaleX = 1
 		end
 	end
 

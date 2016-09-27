@@ -107,8 +107,8 @@ namespace Game {
 
 			if (tD > score_keeper->getJudgmentCutoff()) // If the note was hit outside of judging range
 			{
-				Log::Printf("td > jc %f %f\n", tD, score_keeper->getJudgmentCutoff());
-				// do nothing else for this note
+				// Log::Printf("td > jc %f %f\n", tD, score_keeper->getJudgmentCutoff());
+				// do nothing else for this note - anyway, this case happens if note optimization is disabled.
 				return false;
 			}
 			else // Within judging range, including early misses

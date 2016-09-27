@@ -43,7 +43,7 @@ function ScoreDisplay:Init()
 
 		self.Targets[i].X = self.X + self.W - self.DigitWidth * i
 		self.Targets[i].Y = self.Y + self.H - self.DigitHeight
-		self.Targets[i].Texture = "VSRG/"..self.Atlas.File
+		self.Targets[i].Texture = self.Atlas.File
 		self.Targets[i].Width = self.DigitWidth
 		self.Targets[i].Height = self.DigitHeight
 		self.Targets[i].Layer = self.Layer

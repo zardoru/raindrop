@@ -121,7 +121,7 @@ namespace Game {
 				*/
 			}
 
-			
+
 
 			BGA = BackgroundAnimation::CreateBGAFromSong(index, *MySong, this);
 
@@ -167,10 +167,11 @@ namespace Game {
 			auto &ps = Players[0]->GetPlayerState();
 			auto SoundList = ps.GetSoundList();
 			auto ChartType = ps.GetChartType();
+
 			// Load samples.
 			if (MySong->SongFilename.extension() == ".ojm")
 			{
-				Log::Printf("Loading OJM.\n");
+				Log::Printf("O2JAM: Loading OJM.\n");
 				OJMAudio = std::make_unique<AudioSourceOJM>(this);
 				OJMAudio->SetPitch(Rate);
 				OJMAudio->Open(MySong->SongDirectory / MySong->SongFilename);
@@ -185,42 +186,7 @@ namespace Game {
 			}
 			else if (SoundList.size())
 			{
-				Log::Printf("Loading samples... ");
-
-				if (ps.IsBmson())
-				{
-					auto dir = MySong->SongDirectory;
-					int wavs = 0;
-					std::map<int, SoundSample> audio;
-					auto &slicedata = ps.GetSliceData();
-					// do bmson loading
-					for (auto wav : slicedata.Slices)
-					{
-						for (auto sounds : wav.second)
-						{
-							CheckInterruption();
-							// load basic sound
-							if (!audio[sounds.first].IsValid())
-							{
-								auto path = (dir / slicedata.AudioFiles[sounds.first]);
-
-								audio[sounds.first].SetPitch(Rate);
-
-								if (!audio[sounds.first].Open(path))
-									throw std::runtime_error(Utility::Format("Unable to load %s.", slicedata.AudioFiles[sounds.first]).c_str());
-								Log::Printf("BMSON: Load sound %s\n", Utility::ToU8(path.wstring()).c_str());
-							}
-
-							audio[sounds.first].Slice(sounds.second.Start, sounds.second.End);
-							Keysounds[wav.first].push_back(audio[sounds.first].CopySlice());
-							wavs++;
-						}
-
-						Keysounds[wav.first].shrink_to_fit();
-					}
-
-					Log::Printf("BMSON: Generated %d sound objects.\n", wavs);
-				}
+				Log::Printf("Chart Audio: Loading samples... ");
 
 				for (auto i = SoundList.begin(); i != SoundList.end(); ++i)
 				{
@@ -238,8 +204,101 @@ namespace Game {
 					CheckInterruption();
 				}
 			}
+			else if (ps.IsBmson()) {
+				Log::Printf("BMSON: Loading Slice data...\n");
+				LoadBmson();
+			}
+
 
 			return true;
+		}
+
+		void ScreenGameplay::LoadBmson() {
+			auto Rate = GameState::GetInstance().GetParameters(0)->Rate;
+			auto &ps = Players[0]->GetPlayerState();
+			auto dir = MySong->SongDirectory;
+			std::map<int, SoundSample> audio;
+			std::mutex audio_data_mutex;
+			std::mutex keysound_data_mutex;
+			auto &slicedata = ps.GetSliceData();
+
+			// do bmson loading - threaded slicing!
+			std::vector<std::future<void>> threads;
+			std::atomic<int> obj_cnt = 0;
+
+			auto load_start_time = std::chrono::high_resolution_clock::now();
+			for (auto audiofile : slicedata.AudioFiles) {
+				auto fn = [&](const std::pair<int, std::string> audiofile) {
+					auto path = (dir / audiofile.second);
+					SoundSample* p;
+
+					// Audio load (parallelly?)
+					audio_data_mutex.lock();
+					p = &audio[audiofile.first];
+					audio_data_mutex.unlock();
+
+					p->SetPitch(Rate);
+
+					// Verbose, but not as verbose as other languages.
+
+					Log::LogPrintf("BMSON: Load sound %s AUDIO ID: %d\n", Utility::ToU8(path.wstring()).c_str(), audiofile.first);
+					auto t = std::chrono::high_resolution_clock::now();
+
+					// Open file
+					if (!p->Open(path))
+						throw std::runtime_error(Utility::Format("Unable to load %s.", audiofile.second.c_str()));
+
+
+					// Done. Slicing
+					auto d = std::chrono::high_resolution_clock::now() - t;
+					auto cd = std::chrono::duration_cast<std::chrono::milliseconds>(d);
+
+					Log::LogPrintf("BMSON: Slicing %d. Read in %I64dms...\n", audiofile.first, cd.count());
+					auto t2 = std::chrono::high_resolution_clock::now();
+					// Slice file
+					// For each wav/sound index on the list
+					for (auto wav : slicedata.Slices) {
+						// for each slice on this index (mix-note)
+						for (auto sound : wav.second) {
+							// This is a slice of our available big boy.
+							if (sound.first == audiofile.first) {
+								p->Slice(sound.second.Start, sound.second.End);
+								keysound_data_mutex.lock();
+								Keysounds[wav.first].push_back(p->CopySlice());
+								keysound_data_mutex.unlock();
+							}
+							// obj_cnt++;
+						}
+					}
+
+					auto d2 = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - t2);
+					Log::LogPrintf("BMSON: Sliced %d in %I64dms...\n", audiofile.first, d2.count());
+				};
+
+				threads.push_back(std::async(std::launch::async, fn, audiofile));
+			}
+
+			bool go_on = true;
+			while (go_on) {
+				bool one_thread_is_not_finished = false;
+				for (auto &thread : threads) {
+					if (thread.wait_for(std::chrono::milliseconds(0)) != std::future_status::ready) {
+						one_thread_is_not_finished = true;
+					}
+				}
+
+				go_on = one_thread_is_not_finished;
+			}
+
+			// Get rid of that extra space
+			for (auto &ks : Keysounds) {
+				ks.second.shrink_to_fit();
+			}
+
+			auto load_dur = std::chrono::high_resolution_clock::now() - load_start_time;
+			auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(load_dur).count();
+			Log::LogPrintf("BMSON: Loaded slices in %I64d\n", dur);
+			//Log::Printf("BMSON: Generated %d sound objects.\n", wavs);
 		}
 
 		bool ScreenGameplay::ProcessSong()
@@ -275,7 +334,7 @@ namespace Game {
 			Log::Printf("Processing song... ");
 
 			for (auto &&p : Players) {
-				for (auto sd: MySong->Difficulties)
+				for (auto sd : MySong->Difficulties)
 					if (sd->ID == GameState::GetInstance().GetDifficulty(p->GetPlayerNumber())->ID) {
 						p->SetPlayableData(sd, TimeError.AudioDrift, DesiredDefaultSpeed, Type);
 						p->Init();

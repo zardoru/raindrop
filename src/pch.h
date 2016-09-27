@@ -93,6 +93,7 @@
 #include <sstream>
 #include <streambuf>
 #include <string>
+#include <future>
 #include <thread>
 #include <unordered_set>
 #include <vector>

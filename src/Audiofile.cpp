@@ -188,7 +188,7 @@ bool AudioSample::Open(AudioDataSource* Src)
             Channels = 2;
         }
 
-        if (mRate != MixerGetRate() || mPitch != 1) // mixer_constant.. in the future, allow changing this destination sample rate.
+        if (mRate != MixerGetRate() || mPitch != 1)
         {
             size_t done;
             size_t doneb;
@@ -205,10 +205,12 @@ bool AudioSample::Open(AudioDataSource* Src)
             spc.flags = 0;
             soxr_quality_spec_t q_spec = soxr_quality_spec(SOXR_VHQ, SOXR_VR);
 
-            soxr_oneshot(mRate, DstRate, Channels,
-                mData->data(), mSampleCount / Channels, &done,
-                mDataNew->data(), size / Channels, &doneb,
-                &spc, &q_spec, nullptr);
+			auto resampler = soxr_create(mRate, MixerGetRate(), 2, nullptr, &spc, &q_spec, nullptr);
+			
+			soxr_process(resampler, mData->data(), mSampleCount / Channels, &done,
+				mDataNew->data(), size / Channels, &doneb);
+
+			soxr_delete(resampler);
 
             mSampleCount = size;
             mData = mDataNew;
