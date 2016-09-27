@@ -7,17 +7,18 @@ skin_require "Global/FadeInScreen"
 -- Set up constants for everyone
 
 game_require "noteskin_defs"
-skin_require "Scripts.Explosions"
-skin_require "Scripts.ComboDisplay"
-skin_require "Scripts.KeyLightning"
-skin_require "Scripts.FixedObjects"
-skin_require "Scripts.ScoreDisplay"
-skin_require "Scripts.AutoplayAnimation"
-skin_require "Scripts.Lifebar"
-skin_require "Scripts.StageAnimation"
-skin_require "Scripts.AnimatedObjects"
-skin_require "Scripts.Keys"
-skin_require "Scripts.Judgment"
+skin_require "Scripts/Explosions"
+skin_require "Scripts/ComboDisplay"
+skin_require "Scripts/KeyLightning"
+skin_require "Scripts/FixedObjects"
+skin_require "Scripts/ScoreDisplay"
+skin_require "Scripts/AutoplayAnimation"
+skin_require "Scripts/Lifebar"
+skin_require "Scripts/StageAnimation"
+skin_require "Scripts/AnimatedObjects"
+skin_require "Scripts/Keys"
+skin_require "Scripts/Judgment"
+skin_require "override"
 
 -- All of these will be loaded in the loading screen instead of
 -- in the main thread.
@@ -71,7 +72,7 @@ AnimatedObjects = {
     print (n, "objects in Gameplay Screen")
 		AnimatedObjects.Items = {}
 		for i = 1, #AnimatedObjects.List do
-			if AnimatedObjects.List[i] then
+			if AnimatedObjects.List[i] and AnimatedObjects.List[i].new then
         local p = Game:GetPlayer(0)
         local chan = p.Difficulty.Channels
         local ns
@@ -88,7 +89,9 @@ AnimatedObjects = {
               Noteskin = ns
             })
       else
-        print ("AnimatedObjects object",i,"is nil")
+        if not AnimatedObjects.List[i] then
+          print ("AnimatedObjects object",i,"is nil")
+        end
 			end
 		end
 	end,

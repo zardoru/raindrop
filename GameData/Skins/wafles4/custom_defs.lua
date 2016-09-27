@@ -1,14 +1,4 @@
-if Channels == 4 or Lanes == 4 then
-	cnt = 1
-else
-	cnt = nil
-end
-
-if cnt == nil then
-	return
-end
-
-GearStartX = 15
+game_require "librd"
 
 Channels4Sizes = {
 	100,
@@ -16,32 +6,23 @@ Channels4Sizes = {
 	100,
 	100
 }
-Channels4Positions = {}
+
+Channels4Positions = {
+	0,
+	100,
+	200,
+	300
+}
+
+local gsx = 140
+Channels4Positions = map(function(x) return x + gsx + 50 end, Channels4Positions)
 
 GearWidthByChannels = {}
--- Calculate the positions of lanes based off their sizes and a start position.
-function Sizeup(Pos, Size, Num)
-	local GearWidthChannel = 0
-	
-	for i=1, Num do
-		GearWidthChannel = GearWidthChannel + Size[i]
-	end
-	
-	GearWidthByChannels[Num] = GearWidthChannel
-	
-	Pos[1] = Size[1] / 2 + GearStartX
-	for i=2, Num do
-		Pos[i] = Pos[i-1] + Size[i-1] / 2 + Size[i] / 2
-	end
-end
-
-Sizeup(Channels4Positions, Channels4Sizes, 4)
-
--- Note height.
-NoteHeight = 100
 
 -- Only 4 channels supported in wafles4.
 Channels4 = {
+	GearStartX = gsx,
+	NoteHeight = 100,
     GearHeight = 100,
     Key1Width = Channels4Sizes[1],
     Key2Width = Channels4Sizes[2],
@@ -51,9 +32,11 @@ Channels4 = {
     Key2X = Channels4Positions[2],
     Key3X = Channels4Positions[3],
     Key4X = Channels4Positions[4],
-	GearWidth = GearWidthByChannels[4],
-    BarlineWidth = GearWidthByChannels[4]
+    GearWidth = 400,
+    BarlineWidth = 400,
+    rotTable = {90, 0, 180, 270}
 }
 
-Noteskin = {}
+print "Setting custom"
+Noteskin = Noteskin or {}
 Noteskin[4] = Channels4

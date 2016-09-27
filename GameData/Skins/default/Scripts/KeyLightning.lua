@@ -21,9 +21,9 @@ end
 ]]
 
 function HitLightning:Init()
-  self.Enabled = GetConfigF("DisableHitlightning", "") ~= 0
+  self.Enabled = (GetConfigF("DisableHitlightning", "") ~= 0)
   
-	if self.Enabled == 0 then
+	if not self.Enabled then
     print "Hit Lightning disabled."
 		return
 	end
@@ -79,7 +79,7 @@ end
 librd.make_new(HitLightning, HitLightning.Init)
 
 function HitLightning:GearKeyEvent(Lane, IsKeyDown, pn)
-	if self.Enabled == 0 or pn ~= self.Player.Number then
+	if not self.Enabled or pn ~= self.Player.Number then
 		return
 	end
   
@@ -102,7 +102,7 @@ function HitLightning:GearKeyEvent(Lane, IsKeyDown, pn)
 end
 
 function HitLightning:Run(Delta)
-	if self.Enabled == 0 then
+	if not self.Enabled then
 		return
 	end
 

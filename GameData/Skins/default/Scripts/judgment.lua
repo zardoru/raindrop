@@ -70,6 +70,7 @@ function Judgment:Init()
 	self.IndicatorObject:SetScale( 1 / self.Scale )
 
 	self.IndicatorObject.ChainTransformation = self.Transform
+  --self.Value = 0
 end
 
 librd.make_new(Judgment, Judgment.Init)
@@ -84,7 +85,7 @@ end
 function Judgment:Run(Delta)
 	local ComboLerp = self:GetComboLerp()
 
-	if Game.Active then
+	if Game.Active and self.Value then
 		local AlphaRatio
 		self.Time = min(self.Time + Delta, self.ScaleTime)
 
@@ -141,6 +142,9 @@ function Judgment:Run(Delta)
 		else
 			self.IndicatorObject.Alpha = 0
 		end
+  else
+    self.IndicatorObject.Alpha = 0
+    self.Object.Alpha = 0
 	end
 end
 

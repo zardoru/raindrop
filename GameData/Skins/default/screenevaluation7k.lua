@@ -2,7 +2,7 @@ game_require "TextureAtlas"
 game_require "Histogram"
 skin_require "Global/Background"
 skin_require "Global/FadeInScreen"
-skin_require "Scripts.ScoreDisplay"
+skin_require "Scripts/ScoreDisplay"
 
 function SetupFonts()
 	EvalFont = Fonts.TruetypeFont(GetSkinFile("font.ttf"), 30);
