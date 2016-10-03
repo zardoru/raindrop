@@ -70,6 +70,7 @@ namespace Game {
 			// Done in loading thread
 			bool LoadChartData();
 			bool LoadSongAudio();
+			void LoadSamples();
 			void LoadBmson();
 			bool LoadBGA() const;
 			bool ProcessSong();

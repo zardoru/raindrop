@@ -187,22 +187,8 @@ namespace Game {
 			else if (SoundList.size())
 			{
 				Log::Printf("Chart Audio: Loading samples... ");
+				LoadSamples();
 
-				for (auto i = SoundList.begin(); i != SoundList.end(); ++i)
-				{
-					auto ks = std::make_shared<SoundSample>();
-
-					ks->SetPitch(Rate);
-#ifdef WIN32
-					std::filesystem::path rfd = i->second;
-					std::filesystem::path afd = MySong->SongDirectory / rfd;
-					ks->Open(afd);
-#else
-					ks->Open((MySong->SongDirectory.string() + "/" + i->second).c_str());
-#endif
-					Keysounds[i->first].push_back(ks);
-					CheckInterruption();
-				}
 			}
 			else if (ps.IsBmson()) {
 				Log::Printf("BMSON: Loading Slice data...\n");
@@ -211,6 +197,44 @@ namespace Game {
 
 
 			return true;
+		}
+
+		void ScreenGameplay::LoadSamples() {
+			auto Rate = GameState::GetInstance().GetParameters(0)->Rate;
+			auto &ps = Players[0]->GetPlayerState();
+			auto SoundList = ps.GetSoundList();
+
+			auto start = std::chrono::high_resolution_clock::now();
+			for (auto i = SoundList.begin(); i != SoundList.end(); ++i)
+			{
+				auto ks = std::make_shared<SoundSample>();
+
+				ks->SetPitch(Rate);
+#ifdef WIN32
+				std::filesystem::path rfd = i->second;
+				std::filesystem::path afd = MySong->SongDirectory / rfd;
+				ks->Open(afd, true);
+#else
+				ks->Open((MySong->SongDirectory.string() + "/" + i->second).c_str(), true);
+#endif
+				Keysounds[i->first].push_back(ks);
+				CheckInterruption();
+			}
+
+			CfgVar await("AwaitKeysoundLoad");
+			if (await) {
+				for (auto &vec : Keysounds) {
+					for (auto &snd : vec.second) {
+						snd->AwaitLoad();
+					}
+				}
+			}
+
+			auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
+			if (await)
+				Log::LogPrintf("Keysounds awaited. Taken %I64dms to finish.", dur);
+			else
+				Log::LogPrintf("Keysounds loading in the background - some may not play. Taken %I64dms to finish.", dur);
 		}
 
 		void ScreenGameplay::LoadBmson() {
@@ -429,5 +453,5 @@ namespace Game {
 			Animations->Initialize("", false);
 			Running = true;
 		}
+		}
 	}
-}

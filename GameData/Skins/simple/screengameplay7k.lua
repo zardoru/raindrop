@@ -1,4 +1,4 @@
-if Channels ~= 8 then
+if Game:GetPlayer(0).Channels ~= 8 then
 	fallback_require "screengameplay7k"
 	return
 end
@@ -23,9 +23,9 @@ XR = 1360 / 1280
 GearWidth = 380
 GearHeight = GearHeightCommon
 
-skin_require("VSRG/ComboDisplay")
-skin_require("VSRG/judgment")
-skin_require("VSRG/ScoreDisplay")
+skin_require "Scripts/ComboDisplay"
+skin_require "Scripts/Judgment"
+skin_require "Scripts/ScoreDisplay"
 
 Judgment.Scale = 0.15
 Judgment.ScaleHit = 0.12

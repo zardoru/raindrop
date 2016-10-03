@@ -22,8 +22,8 @@ function doMidiNote()
 	tapSizePixels = 1024 / 8
 
 	function setNoteStuff(note, i, rot)
-		note.Width = Noteskin[Lanes]['Key' .. i .. 'Width']
-		note.X = Noteskin[Lanes]['Key' .. i .. 'X']
+		note.Width = Noteskin[Notes.Channels]['Key' .. i .. 'Width']
+		note.X = Noteskin[Notes.Channels]['Key' .. i .. 'X']
 		note.Height = NoteHeight
 		note.Layer = 14
 		note.Lighten = 1
@@ -46,7 +46,7 @@ function doMidiNote()
 		  xTable[i] = { Start = half + frame, End = half + nextFrame }
 		  xTableFake[i] = { Start = frame, End = nextFrame }
 		end
-		for i=1,Lanes do
+		for i=1,Notes.Channels do
 			normalNotes[i] = Object2D()
 			local note = normalNotes[i]
 			note.Image = "_Down Tap Note 8x8 (doubleres).png"
@@ -103,7 +103,7 @@ function doMidiNote()
 		end
 		
 		if active_level ~= 3 then
-			Render(note)
+			Notes:Render(note)
 		end
 	end
 
@@ -120,7 +120,7 @@ function doMidiNote()
 		-- colorize note
 		note:SetCropByPixels(xvalue.Start, xvalue.End, yvalue.Start, yvalue.End)
 		if active_level ~= 3 then
-			Render(note)
+			Notes:Render(note)
 		end
 	end
 
@@ -145,7 +145,7 @@ function doMidiNote()
 			-- force repeat texture
 			note:SetCropByPixels(0, 128, 0, size)
 			if active_level ~= 3 then
-				Render(note)
+				Notes:Render(note)
 			end
 		end
 		
@@ -158,7 +158,7 @@ function doMidiNote()
 		local note = holdHeads[lane + 1]
 		note.Y = loc
 		if active_level ~= 3 then
-			Render(note)
+			Notes:Render(note)
 		end
 	  else
 		drawNormalInternal(lane, loc, frac, active_level)
@@ -171,17 +171,17 @@ function doMidiNote()
 
 	-- From now on, only engine variables are being set.
 	-- Barline
-	BarlineEnabled = 0
-	BarlineOffset = NoteHeight / 2
-	BarlineStartX = GearStartX
-	BarlineWidth = Noteskin[Lanes].BarlineWidth
-	JudgmentLineY = Noteskin[Lanes].GearHeight
-	DecreaseHoldSizeWhenBeingHit = 1
-	DanglingHeads = 0
+	BarlineEnabled = false
+	Notes.BarlineOffset = Noteskin[Notes.Channels].NoteHeight / 2
+	Notes.BarlineStartX = Noteskin[Notes.Channels].GearStartX
+	Notes.BarlineWidth = Noteskin[Notes.Channels].BarlineWidth
+	Notes.JudgmentY = Noteskin[Notes.Channels].GearHeight
+	Notes.DecreaseHoldSizeWhenBeingHit = 1
+	Notes.DanglingHeads = false
 
 	-- How many extra units do you require so that the whole bounding box is accounted
 	-- when determining whether to show this note or not.
-	NoteScreenSize = NoteHeight / 2
+	Notes.NoteScreenSize = NoteHeight / 2
 
 	DrawNormal = drawNormalInternal
 	DrawFake = drawNormalInternal
@@ -193,7 +193,7 @@ function doMidiNote()
 	DrawHoldBody = drawHoldBodyInternal
 end
 
-if Lanes == 4 then
+if Notes.Channels == 4 then
 	skin_require("custom_defs")
 	doMidiNote()
 else

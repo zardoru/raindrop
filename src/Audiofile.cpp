@@ -115,8 +115,9 @@ AudioSample::AudioSample()
 AudioSample::AudioSample(const AudioSample& Other)
 {
     mPitch = Other.mPitch;
-    mIsValid = Other.mIsValid;
+    mIsValid = (bool)Other.mIsValid;
     mIsLooping = Other.mIsLooping;
+	mIsLoaded = (bool)Other.mIsLoaded;
 
     mAudioStart = Other.mAudioStart;
     mAudioEnd = Other.mAudioEnd;
@@ -131,8 +132,13 @@ AudioSample::AudioSample(const AudioSample& Other)
 AudioSample::AudioSample(AudioSample&& Other)
 {
     mPitch = Other.mPitch;
-    mIsValid = Other.mIsValid;
+    mIsValid = (bool)Other.mIsValid;
     mIsLooping = Other.mIsLooping;
+
+	if (!Other.mIsLoaded)
+		Other.mThread.wait();
+
+	mIsLoaded = true;
 
     mAudioStart = Other.mAudioStart;
     mAudioEnd = Other.mAudioEnd;
@@ -154,73 +160,86 @@ void AudioSample::Seek(size_t offs)
 	mCounter = Clamp(offs, (size_t)0, mData->size());
 }
 
-bool AudioSample::Open(AudioDataSource* Src)
+
+std::mutex soxr_lock;
+bool AudioSample::Open(AudioDataSource* Src, bool async)
 {
     if (Src && Src->IsValid())
     {
-        Channels = Src->GetChannels();
-        size_t mSampleCount = Src->GetLength() * Channels;
+		auto fn = [=]() {
+			this->Channels = Src->GetChannels();
+			size_t mSampleCount = Src->GetLength() * this->Channels;
 
-        if (!mSampleCount) // Huh what why?
-            return false;
+			if (!mSampleCount) // Huh what why?
+				return;
 
-        mData = std::make_shared<std::vector<short>>(mSampleCount);
-        size_t total = Src->Read(mData->data(), mSampleCount);
+			this->mData = std::make_shared<std::vector<short>>(mSampleCount);
+			size_t total = Src->Read(mData->data(), mSampleCount);
 
-        if (total < mSampleCount) // Oh, odd. Oh well.
-            mSampleCount = total;
+			if (total < mSampleCount) // Oh, odd. Oh well.
+				mSampleCount = total;
 
-        mRate = Src->GetRate();
+			this->mRate = Src->GetRate();
 
-        if (Channels == 1) // Mono? We'll need to duplicate information for both channels.
-        {
-            size_t size = mSampleCount * 2;
-            auto mDataNew = std::make_shared<std::vector<short>>(size);
+			if (this->Channels == 1) // Mono? We'll need to duplicate information for both channels.
+			{
+				size_t size = mSampleCount * 2;
+				auto mDataNew = std::make_shared<std::vector<short>>(size);
 
-            for (size_t i = 0, j = 0; i < mSampleCount; i++, j += 2)
-            {
-                (*mDataNew)[j] = (*mData)[i];
-                (*mDataNew)[j + 1] = (*mData)[i];
-            }
+				for (size_t i = 0, j = 0; i < mSampleCount; i++, j += 2)
+				{
+					(*mDataNew)[j] = (*mData)[i];
+					(*mDataNew)[j + 1] = (*mData)[i];
+				}
 
-            mSampleCount = size;
-            mData = mDataNew;
-            Channels = 2;
-        }
+				mSampleCount = size;
+				this->mData = mDataNew;
+				this->Channels = 2;
+			}
 
-        if (mRate != MixerGetRate() || mPitch != 1)
-        {
-            size_t done;
-            size_t doneb;
-            double DstRate = MixerGetRate() / mPitch;
-            double ResamplingRate = DstRate / mRate;
-            soxr_io_spec_t spc;
-            size_t size = size_t(ceil(mSampleCount * ResamplingRate));
-            auto mDataNew = std::make_shared<std::vector<short>>(size);
+			if (mRate != MixerGetRate() || mPitch != 1)
+			{
+				size_t done;
+				size_t doneb;
+				double DstRate = MixerGetRate() / mPitch;
+				double ResamplingRate = DstRate / mRate;
+				soxr_io_spec_t spc;
+				size_t size = size_t(ceil(mSampleCount * ResamplingRate));
+				auto mDataNew = std::make_shared<std::vector<short>>(size);
 
-            spc.e = nullptr;
-            spc.itype = SOXR_INT16_I;
-            spc.otype = SOXR_INT16_I;
-            spc.scale = 1;
-            spc.flags = 0;
-            soxr_quality_spec_t q_spec = soxr_quality_spec(SOXR_VHQ, SOXR_VR);
+				spc.e = nullptr;
+				spc.itype = SOXR_INT16_I;
+				spc.otype = SOXR_INT16_I;
+				spc.scale = 1;
+				spc.flags = 0;
 
-			auto resampler = soxr_create(mRate, MixerGetRate(), 2, nullptr, &spc, &q_spec, nullptr);
-			
-			soxr_process(resampler, mData->data(), mSampleCount / Channels, &done,
-				mDataNew->data(), size / Channels, &doneb);
+				soxr_lock.lock();
+				soxr_quality_spec_t q_spec = soxr_quality_spec(SOXR_VHQ, SOXR_VR);
 
-			soxr_delete(resampler);
+				auto resampler = soxr_create(mRate, MixerGetRate(), 2, nullptr, &spc, &q_spec, nullptr);
+				
+				soxr_process(resampler, this->mData->data(), mSampleCount / this->Channels, &done,
+					mDataNew->data(), size / this->Channels, &doneb);
 
-            mSampleCount = size;
-            mData = mDataNew;
-            mRate = MixerGetRate();
-        }
+				soxr_delete(resampler);
+				soxr_lock.unlock();
 
-        mCounter = 0;
-        mIsValid = true;
+				this->mData = mDataNew;
+				this->mRate = MixerGetRate();
+			}
 
-        mAudioEnd = (float(mSampleCount) / (float(mRate) * Channels));
+			this->mCounter = 0;
+			this->mIsValid = true;
+
+			this->mAudioEnd = (float(this->mData->size()) / (float(this->mRate) * this->Channels));
+			this->mIsLoaded = true;
+		};
+
+		if (async)
+			mThread = std::async(std::launch::async, fn);
+		else
+			fn();
+
 
         return true;
     }
@@ -231,14 +250,14 @@ uint32_t AudioSample::Read(float* buffer, size_t count)
 {
     size_t limit = (mRate * Channels * mAudioEnd);
 
-    if (!mIsPlaying)
+    if (!mIsPlaying || !mIsLoaded)
         return 0;
 
 
 _read:
     if (mIsValid && count && mData->size())
     {
-        size_t bufferLeft = limit - mCounter;
+		size_t bufferLeft = limit - mCounter;
         uint32_t ReadAmount = std::min(bufferLeft, count);
 
         if (mCounter < limit)
@@ -281,6 +300,8 @@ bool AudioSample::IsPlaying()
 
 void AudioSample::Slice(float audio_start, float audio_end)
 {
+	if (!mIsLoaded) mThread.wait();
+
     float audioDuration = float(mData->size()) / (float(mRate) * Channels);
     mAudioStart = Clamp(float(audio_start / mPitch), 0.0f, audioDuration);
     mAudioEnd = Clamp(float(audio_end / mPitch), mAudioStart, audioDuration);
@@ -288,6 +309,9 @@ void AudioSample::Slice(float audio_start, float audio_end)
 
 std::shared_ptr<AudioSample> AudioSample::CopySlice()
 {
+	if (!mIsLoaded)
+		mThread.wait();
+
     size_t start = Clamp(size_t(mAudioStart * mRate * Channels), size_t(0), mData->size());
     size_t end = Clamp(size_t(mAudioEnd * mRate * Channels), start, mData->size());
 
@@ -358,9 +382,30 @@ bool AudioSample::Open(std::filesystem::path Filename)
     return Open(Src.get());
 }
 
+bool AudioSample::Open(std::filesystem::path Filename, bool async)
+{
+	auto fn = [=]() {
+		auto FilenameFixed = RearrangeFilename(Filename);
+		std::unique_ptr<AudioDataSource> Src = SourceFromExt(FilenameFixed);
+		this->Open(Src.get(), false);
+	};
+
+	if (async)
+	{
+		mThread = std::async(std::launch::async, fn);
+		return true;
+	}
+	else
+		fn();
+}
+
 void AudioSample::Play()
 {
     if (!IsValid()) return;
+
+	if (!mIsLoaded && mThread.valid())
+		mThread.wait();
+
     mIsPlaying = true;
     SeekTime(mAudioStart);
 }
@@ -384,6 +429,17 @@ void AudioSample::SeekSample(uint32_t Sample)
 void AudioSample::Stop()
 {
     mIsPlaying = false;
+}
+
+bool AudioSample::AwaitLoad()
+{
+	if (!mIsLoaded && mThread.valid())
+	{
+		mThread.wait();
+		return true;
+	}
+
+	return false;
 }
 
 AudioStream::AudioStream()
@@ -470,6 +526,7 @@ uint32_t AudioStream::Read(float* buffer, size_t count)
     return 0;
 }
 
+
 bool AudioStream::Open(std::filesystem::path Filename)
 {
     mSource = SourceFromExt(RearrangeFilename(Filename));
@@ -486,6 +543,7 @@ bool AudioStream::Open(std::filesystem::path Filename)
         sis.itype = SOXR_INT16_I;
         sis.otype = SOXR_INT16_I;
         sis.scale = 1;
+
         soxr_quality_spec_t q_spec = soxr_quality_spec(SOXR_VHQ, SOXR_VR);
         mResampler = soxr_create(mSource->GetRate(), MixerGetRate(), 2, nullptr, &sis, &q_spec, nullptr);
 
