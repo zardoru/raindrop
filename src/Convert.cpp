@@ -184,7 +184,7 @@ void ConvertToSMTiming(Game::VSRG::Song *Sng, std::filesystem::path PathOut)
             break;
         }
 
-        double Beat = QuantizeBeat(IntegrateToTime(data.BPS, Time + Diff->Offset, 0));
+        double Beat = QuantizeBeat(IntegrateToTime(data.BPS, Time + Diff->Offset));
 
         out << Beat << "=" << Value;
 

@@ -264,6 +264,7 @@ void Application::SetupPreviewMode()
     param.Preloaded = true;
     param.Auto = Auto;
 	*/
+	GameState::GetInstance().GetParameters(0)->Auto = Auto;
     game->Init(song);
     LoadScreen->Init();
 

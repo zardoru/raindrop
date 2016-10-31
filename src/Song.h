@@ -184,7 +184,7 @@ double TimeAtBeat(const TimingData &Timing, float Offset, double Beat, bool Abs 
     Find the antiderivative of an interval defined function through the Timing variable
     from 0 to Time.
 */
-double IntegrateToTime(const TimingData &Timing, double Time, float Drift = 0);
+double IntegrateToTime(const TimingData &Timing, double Time);
 
 /*
     Find the sum of all stops that have happened in [0, Beat)

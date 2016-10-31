@@ -8,6 +8,7 @@
 #include "NoteTransformations.h"
 #include "GameWindow.h"
 #include "BitmapFont.h"
+#include "Shader.h"
 
 BitmapFont *fnt = nullptr;
 CfgVar DebugNoteRendering("NoteRender", "Debug");
@@ -751,7 +752,7 @@ namespace Game {
 			 *		but only if there's a constant specified by the user.
 			 */
 
-
+			DesiredDefaultSpeed /= Parameters.Rate;
 
 			if (DesiredDefaultSpeed)
 			{
@@ -1050,14 +1051,11 @@ namespace Game {
 			// Sudden = 1, Hidden = 2, flashlight = 3 (Defined in the shader)
 			if (Hidden.Mode)
 			{
-				WindowFrame.SetUniform(U_HIDLOW, Hidden.ClampLow);
-				WindowFrame.SetUniform(U_HIDHIGH, Hidden.ClampHigh);
-				WindowFrame.SetUniform(U_HIDFAC, Hidden.ClampFactor);
-				WindowFrame.SetUniform(U_HIDSUM, Hidden.ClampSum);
+				Renderer::Shader::SetUniform(Renderer::DefaultShader::GetUniform(Renderer::U_HIDLOW), Hidden.ClampLow);
+				Renderer::Shader::SetUniform(Renderer::DefaultShader::GetUniform(Renderer::U_HIDHIGH), Hidden.ClampHigh);
+				Renderer::Shader::SetUniform(Renderer::DefaultShader::GetUniform(Renderer::U_HIDFAC), Hidden.ClampFactor);
+				Renderer::Shader::SetUniform(Renderer::DefaultShader::GetUniform(Renderer::U_HIDSUM), Hidden.ClampSum);
 			}
-
-			WindowFrame.SetUniform(U_SIM, &id[0][0]);
-			WindowFrame.SetUniform(U_TRANM, &id[0][0]);
 
 			Renderer::SetPrimitiveQuadVBO();
 			auto &NotesByChannel = ChartData.NotesByChannel;
@@ -1146,9 +1144,6 @@ namespace Game {
 							if (Vertical < -PlayerNoteskin.GetNoteOffset() || Vertical > ScreenHeight + PlayerNoteskin.GetNoteOffset()) continue;
 						}
 					}
-
-					// Assign our matrix.
-					WindowFrame.SetUniform(U_MVP, &id[0][0]);
 
 					double JudgeY;
 

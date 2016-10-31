@@ -24,7 +24,7 @@ const auto NOTE_SLIDER = 2;
 const auto NOTE_HOLD = 128;
 const auto NOTE_NORMAL = 1;
 
-const double LINE_REMOVE_THRESHOLD = 0.0011;
+const double LINE_REMOVE_THRESHOLD = 0.0012;
 
 CfgVar DebugOsuLoader("OsuLoader", "Debug");
 
@@ -185,11 +185,11 @@ class OsumaniaLoader
 		Offsetize();
 
 		auto seclst = filter([](const HitsoundSectionData& H) {return !H.IsInherited && !H.Omit;}, HitsoundSections);
-		double displacement = 0;
 		for (auto i = seclst.begin(); i != seclst.end();)
 		{
 			double SectionDurationInBeats = 0;
 			double acom_mlen = i->MeasureLen;
+
 			/* 
 			
 			if there's an older one that is 1ms later
@@ -215,7 +215,7 @@ class OsumaniaLoader
 				SectionDurationInBeats += bt;
 
 				if (DebugOsuLoader)
-					Log::LogPrintf("\nMCALC: %f to %f (%f beats long)", next->Time, i->Time, bt);
+					Log::LogPrintf("\nMCALC: %f to %f (%f beats long at %f bpm)", next->Time, i->Time, bt, i->Value);
 
 				// the next section, and the one after that
 				auto c_next = next;
@@ -276,6 +276,10 @@ class OsumaniaLoader
 					Measure Msr;
 					Msr.Length = Fraction * (i)->MeasureLen;
 					Diff->Data->Measures.push_back(Msr);
+				}
+				else {
+					if (Diff->Data->Measures.size())
+						Diff->Data->Measures.back().Length += Fraction * i->MeasureLen;
 				}
 			}
 

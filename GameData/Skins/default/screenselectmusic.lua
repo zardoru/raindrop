@@ -120,9 +120,7 @@ function BackBtnHoverLeave()
 end
 
 function gamma(o)
-	o.Red = pow(o.Red, 2.2)
-	o.Green = pow(o.Green, 2.2)
-	o.Blue = pow(o.Blue, 2.2)
+	-- nop
 end
 
 function Init()

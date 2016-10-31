@@ -154,9 +154,11 @@ namespace Game {
 
 			// Start with lights off.
 			if (ShouldChangeScreenAtEnd)
-				WindowFrame.SetLightMultiplier(0);
+			{
+			}//WindowFrame.SetLightMultiplier(0);
 			else
-				WindowFrame.SetLightMultiplier(1.2f);
+			{
+			} // WindowFrame.SetLightMultiplier(1.2f);
 			WindowFrame.SetVisibleCursor(false);
 		}
 
@@ -518,9 +520,10 @@ namespace Game {
 				ReadySign.Alpha = 2 * ((-2)*X*X + 2 * X);
 
 				// Lights
-				float LightProgress = GetScreenTime() / 1.5;
+				/*float LightProgress = GetScreenTime() / 1.5;
 				if (LightProgress <= 1)
 					WindowFrame.SetLightMultiplier(LightProgress * 1.2);
+					*/
 			}
 			else
 				ReadySign.Alpha = 0;

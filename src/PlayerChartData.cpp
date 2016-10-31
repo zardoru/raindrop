@@ -221,12 +221,12 @@ namespace Game {
 				double ChangeTime = Change->Time + Drift + Offset;
 
 				/*
-					Find all VSpeeds
+					Find all 
 					if there exists a speed change which is virtually happening at the same time as this VSpeed
 					modify it to be this value * factor
 				*/
 
-				bool MoveOn = false;
+				bool insert = true;
 				for (auto Time = VerticalSpeeds.begin();
 				Time != VerticalSpeeds.end();
 					++Time)
@@ -234,27 +234,28 @@ namespace Game {
 					if (abs(ChangeTime - Time->Time) < 0.00001)
 					{
 						Time->Value *= Change->Value;
-						MoveOn = true;
+						insert = false;
 					}
 				}
 
-				if (MoveOn) continue;
 
 				/*
 					There are no collisions- insert a new speed at this time
 				*/
 
-				if (ChangeTime < 0)
-					continue;
+				if (insert) {
+					if (ChangeTime < 0)
+						continue;
 
-				auto SpeedValue = SectionValue(Unmodified, ChangeTime) * Change->Value;
+					auto SpeedValue = SectionValue(Unmodified, ChangeTime) * Change->Value;
 
-				TimingSegment VSpeed;
+					TimingSegment VSpeed;
 
-				VSpeed.Time = ChangeTime;
-				VSpeed.Value = SpeedValue;
+					VSpeed.Time = ChangeTime;
+					VSpeed.Value = SpeedValue;
 
-				VerticalSpeeds.push_back(VSpeed);
+					VerticalSpeeds.push_back(VSpeed);
+				}
 
 				/*
 					Theorically, if there were a VSpeed change after this one (such as a BPM change) we've got to modify them
@@ -439,7 +440,7 @@ namespace Game {
 			auto BPSCopy = BPS;
 			for (auto &&i : BPS)
 			{
-				i.Value = 1 / i.Value;
+				i.Value = 1.0 / i.Value;
 				i.Time = IntegrateToTime(BPSCopy, i.Time); // Find time in beats based off beats in time
 			}
 
@@ -477,7 +478,7 @@ namespace Game {
 			double MeasureTime = 1 / BPS * Data->Measures[0].Length;
 
 			if (DebugMeasurePosGen)
-				Log::LogPrintf("Total pre-offset measures: %d (pt: %f, ptb: %f, mtime: %f)", TotMeasures, PreTime, PreTimeBeats, MeasureTime);
+				Log::LogPrintf("Total pre-offset measures: %d (pt: %f, ptb: %f, mtime: %f)\n", TotMeasures, PreTime, PreTimeBeats, MeasureTime);
 
 			for (auto i = 0; i < TotMeasures; i++)
 			{
@@ -499,10 +500,13 @@ namespace Game {
 				}
 				else if (BPMType == Difficulty::BT_BEATSPACE)
 				{
-					auto TargetTime = IntegrateToTime(SPB, Last) + diff->Offset + Drift;
+					auto TargetTime = IntegrateToTime(SPB, Last) + diff->Offset;
+					//TargetTime = round(TargetTime * 1000.0) / 1000.0; // Round to MS
+
 					PositionOut = IntegrateToTime(VSpeeds, TargetTime);
-					if (DebugMeasurePosGen)
+					if (DebugMeasurePosGen) {
 						Log::LogPrintf("Add measure line at time %f (Vertical: %f)\n", TargetTime, PositionOut);
+					}
 				}
 
 				Out.push_back(PositionOut);

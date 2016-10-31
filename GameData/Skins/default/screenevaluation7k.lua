@@ -179,4 +179,5 @@ end
 
 function Update(Delta)
 	sd:Run(Delta)
+	BackgroundAnimation:Update(Delta)
 end

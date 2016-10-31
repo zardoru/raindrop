@@ -18,6 +18,8 @@
 #include "GraphicalString.h"
 #include "Logging.h"
 
+#include "Shader.h"
+
 namespace LuaAnimFuncs
 {
     const char * SpriteMetatable = "Sys.Sprite";
@@ -225,6 +227,42 @@ struct O2DProxy
     }
 };
 
+class LShader : public Renderer::Shader {
+public:
+	int Send(lua_State *L) {
+		int n = lua_gettop(L);
+		std::string sendto = luaL_checkstring(L, 2);
+
+		Bind();
+		int uniform = Shader::GetUniform(sendto);
+
+		switch (n) {
+		case 3:
+			Shader::SetUniform(uniform, (float)luaL_checknumber(L, 3));
+			break;
+		case 4:
+			Shader::SetUniform(uniform, Vec2((float)luaL_checknumber(L, 3), 
+										     (float)luaL_checknumber(L, 4)));
+			break;
+		case 5:
+			Shader::SetUniform(uniform, Vec3((float)luaL_checknumber(L, 3), 
+											 (float)luaL_checknumber(L, 4), 
+											 (float)luaL_checknumber(L, 5)));
+			break;
+		case 6:
+			Shader::SetUniform(uniform, (float)luaL_checknumber(L, 3), 
+										(float)luaL_checknumber(L, 4), 
+										(float)luaL_checknumber(L, 5),
+										(float)luaL_checknumber(L, 6));
+			break;
+		default:
+			return luaL_error(L, "shader send has wrong argument n (%d) range is 3 to 6", n + 1);
+		};
+
+		return 0;
+	}
+};
+
 void DefineSpriteInterface(LuaManager* anim_lua)
 {
     anim_lua->AppendPath("./?;./?.lua");
@@ -275,6 +313,15 @@ void DefineSpriteInterface(LuaManager* anim_lua)
         .addFunction("SetChainTransformation", &Transformation::ChainTransformation)
         .endClass();
 
+	luabridge::getGlobalNamespace(anim_lua->GetState())
+		.beginClass<Renderer::Shader>("__shader_internal")
+		.endClass()
+		.deriveClass<LShader, Renderer::Shader>("Shader")
+		.addConstructor<void(*) ()>()
+		.addFunction("Compile", &LShader::Compile)
+		.addCFunction("Send", &LShader::Send)
+		.endClass();
+
     luabridge::getGlobalNamespace(anim_lua->GetState())
         .deriveClass<Sprite, Transformation>("Object2D")
         .addConstructor<void(*) ()>()
@@ -289,6 +336,7 @@ void DefineSpriteInterface(LuaManager* anim_lua)
         .v(Green)
         .p(BlendMode)
         .f(SetCropByPixels)
+		.addProperty("Shader", &Sprite::GetShader, &Sprite::SetShader)
         .addFunction<void (Sprite::*)(float)>("AddRotation", &Sprite::AddRotation)
         .addFunction<void (Sprite::*)(float)>("SetScale", &Sprite::SetScale)
         .q(Z)

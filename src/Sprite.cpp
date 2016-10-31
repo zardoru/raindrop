@@ -38,6 +38,7 @@ void Sprite::Construct(bool doInitTexture)
 
     mImage = nullptr;
     UvBuffer = nullptr;
+	mShader = nullptr;
 
     Initialize(doInitTexture);
 }
@@ -65,6 +66,16 @@ void Sprite::SetBlendMode(int Mode)
 int Sprite::GetBlendMode() const
 {
     return BlendingMode;
+}
+
+void Sprite::SetShader(Renderer::Shader * s)
+{
+	mShader = s;
+}
+
+Renderer::Shader * Sprite::GetShader() const
+{
+	return mShader;
 }
 
 void Sprite::SetImage(Texture* image, bool ChangeSize)

@@ -102,4 +102,5 @@ function Update(Delta)
 
 	badgeRotSpeed = math.max(badgeRotSpeed - Delta * 240, 120)
 	targBadge.Rotation = targBadge.Rotation - badgeRotSpeed * Delta
+	BackgroundAnimation:Update(Delta)
 end

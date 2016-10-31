@@ -9,6 +9,8 @@
 #include "GameWindow.h"
 #include "RaindropRocketInterface.h"
 
+#include "Shader.h"
+
 //#include <glm/gtx/matrix_operation.hpp>
 //#include <glm/gtc/matrix_transform.inl>
 
@@ -114,19 +116,20 @@ namespace Engine
 				Texture::BindNull();
 			}
 
-            Renderer::SetShaderParameters(false, false, false, false, false, Handle->tex == nullptr);
-            WindowFrame.SetUniform(U_COLOR, 1, 1, 1, 1);
-            WindowFrame.SetUniform(U_MVP, &(tMatrix[0][0]));
+			using namespace Renderer;
+            SetShaderParameters(false, false, false, false, false, Handle->tex == nullptr);
+            Shader::SetUniform(DefaultShader::GetUniform(U_COLOR), 1, 1, 1, 1);
+            Shader::SetUniform(DefaultShader::GetUniform(U_MVP), &(tMatrix[0][0]));
 
             // bind VBOs
             Handle->vert->Bind();
-            glVertexAttribPointer(WindowFrame.EnableAttribArray(A_POSITION), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+            glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_POSITION)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
 
             Handle->uv->Bind();
-            glVertexAttribPointer(WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+            glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_UV)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
 
             Handle->color->Bind();
-            glVertexAttribPointer(WindowFrame.EnableAttribArray(A_COLOR), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
+            glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_COLOR)), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
 
             Handle->indices->Bind();
             glDrawElements(GL_TRIANGLES, Handle->num_indices, GL_UNSIGNED_INT, 0);

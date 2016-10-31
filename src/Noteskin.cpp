@@ -15,6 +15,8 @@
 #include "ScreenGameplay7K.h"
 #include "PlayerContext.h"
 
+#include "Shader.h"
+
 namespace Game {
 	namespace VSRG {
 		Noteskin::Noteskin(PlayerContext *parent) {
@@ -36,7 +38,7 @@ namespace Game {
 			if (CanRender)
 			{
 				Mat4 mt = S->GetMatrix();
-				WindowFrame.SetUniform(U_SIM, &mt[0][0]);
+				Renderer::Shader::SetUniform(Renderer::DefaultShader::GetUniform(Renderer::U_MVP), &mt[0][0]);
 				S->RenderMinimalSetup();
 			}
 		}

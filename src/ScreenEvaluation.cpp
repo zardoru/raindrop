@@ -73,8 +73,8 @@ namespace Game {
 				CalculateScore());
 
 			ResultsNumerical = _Results;
-			WindowFrame.SetLightMultiplier(1);
-			WindowFrame.SetLightPosition(glm::vec3(0, 0, 1));
+			//WindowFrame.SetLightMultiplier(1);
+			//WindowFrame.SetLightPosition(glm::vec3(0, 0, 1));
 
 			TitleFormat = SongTitle + " by " + SongAuthor;
 		}
@@ -95,7 +95,7 @@ namespace Game {
 
 		bool ScreenEvaluation::Run(double Delta)
 		{
-			WindowFrame.SetLightMultiplier(sin(GetScreenTime()) * 0.2 + 1);
+			//WindowFrame.SetLightMultiplier(sin(GetScreenTime()) * 0.2 + 1);
 
 			Background.Render();
 			if (Font)

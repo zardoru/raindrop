@@ -187,6 +187,7 @@
     <ClCompile Include="..\src\GameWindow.cpp" />
     <ClCompile Include="..\src\RowifiedDifficulty7K.cpp" />
     <ClCompile Include="..\src\ScreenCustom.cpp" />
+    <ClCompile Include="..\src\Shader.cpp" />
     <ClCompile Include="..\src\Sprite.cpp" />
     <ClCompile Include="..\src\RaindropRocketInterface.cpp" />
     <ClCompile Include="..\src\SceneEnvironment.cpp" />
@@ -262,6 +263,7 @@
     <ClInclude Include="..\src\PlayerChartData.h" />
     <ClInclude Include="..\src\PlayerContext.h" />
     <ClInclude Include="..\src\ScreenCustom.h" />
+    <ClInclude Include="..\src\Shader.h" />
     <ClInclude Include="..\src\Sprite.h" />
     <ClInclude Include="..\src\IPC.h" />
     <ClInclude Include="..\src\Noteskin.h" />

@@ -7,6 +7,10 @@
 class VBO;
 class Texture;
 
+namespace Renderer {
+	class Shader;
+};
+
 class Drawable2D : public Transformation, public Drawable
 {
 public:
@@ -40,6 +44,7 @@ private: // Transformations
 
     void Construct(bool doInitTexture);
 protected:
+	Renderer::Shader *mShader;
     VBO *UvBuffer;
     bool DoTextureCleanup;
     void UpdateTexture();
@@ -72,6 +77,9 @@ public:
 
     void SetBlendMode(int Mode);
     int GetBlendMode() const;
+
+	void SetShader(Renderer::Shader *s);
+	Renderer::Shader *GetShader() const;
 
     // Cropping
     void SetCrop(Vec2 Crop1, Vec2 Crop2);

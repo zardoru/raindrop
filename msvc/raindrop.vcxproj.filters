@@ -262,6 +262,9 @@
     <ClCompile Include="..\src\VSRGMechanics.cpp">
       <Filter>Source Files\vsrg\gameplay</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Shader.cpp">
+      <Filter>Header Files\backend\render\objects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\pch.h">
@@ -473,6 +476,9 @@
     </ClInclude>
     <ClInclude Include="..\src\PlayerChartData.h">
       <Filter>Header Files\vsrg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Shader.h">
+      <Filter>Header Files\backend\render\objects</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -33,3 +33,10 @@ namespace Renderer {
 	VBO* GetDefaultTextureBuffer();
 	VBO* GetDefaultColorBuffer();
 }
+
+inline float l2gamma (float c) {
+	if (c > 1.) return 1.;
+	else if (c < 0.) return 0.;
+	else if (c <= 0.04045) return c / 12.92;
+	else return pow((c + 0.055) / 1.055, 2.4);
+};

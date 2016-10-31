@@ -150,7 +150,7 @@ void ScreenSelectMusic::InitializeResources()
     Background.Centered = 1;
     Background.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
 
-    WindowFrame.SetLightMultiplier(1);
+    //WindowFrame.SetLightMultiplier(1);
     Background.AffectedByLightning = true;
     Animations->AddLuaTarget(&Background, "ScreenBackground");
 }
@@ -419,7 +419,7 @@ bool ScreenSelectMusic::Run(double Delta)
     UpBtn->Run(Delta);
     BackBtn->Run(Delta);
 
-    WindowFrame.SetLightMultiplier(sin(Time) * 0.2 + 1);
+    //WindowFrame.SetLightMultiplier(sin(Time) * 0.2 + 1);
 
     Background.Render();
     Animations->UpdateTargets(Delta);

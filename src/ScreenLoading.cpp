@@ -55,8 +55,8 @@ ScreenLoading::ScreenLoading(std::shared_ptr<Screen> _Next) : Screen("ScreenLoad
 
 void ScreenLoading::OnIntroBegin()
 {
-    WindowFrame.SetLightMultiplier(0.8f);
-    WindowFrame.SetLightPosition(glm::vec3(0, -0.5, 1));
+    //WindowFrame.SetLightMultiplier(0.8f);
+    //WindowFrame.SetLightPosition(glm::vec3(0, -0.5, 1));
 }
 
 void ScreenLoading::Init()
@@ -68,8 +68,8 @@ void ScreenLoading::OnExitEnd()
 {
     Screen::OnExitEnd();
 
-    WindowFrame.SetLightMultiplier(1);
-    WindowFrame.SetLightPosition(glm::vec3(0, 0, 1));
+    //WindowFrame.SetLightMultiplier(1);
+    //WindowFrame.SetLightPosition(glm::vec3(0, 0, 1));
 
     Animations.reset();
 
