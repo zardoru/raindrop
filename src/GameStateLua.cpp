@@ -184,6 +184,8 @@ void GameState::InitializeLua(lua_State *L)
 		.addFunction("GetCurrentScoreType", &GameState::GetCurrentScoreType)
 		.addFunction("GetCurrentSystemType", &GameState::GetCurrentSystemType)
 		.addFunction("SortWheelBy", &GameState::SortWheelBy)
+		.addFunction("StartScreen", &GameState::StartScreenTransition)
+		.addFunction("ExitScreen", &GameState::ExitCurrentScreen)
 		.endClass()
 		.addFunction("toSong7K", toSong7K)
 		.addFunction("toSongDC", toSongDC);

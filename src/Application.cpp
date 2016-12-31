@@ -251,7 +251,7 @@ void Application::SetupPreviewMode()
 
     // Create loading screen and gameplay screen.
     auto game = std::make_shared<Game::VSRG::ScreenGameplay>();
-    ScreenLoading *LoadScreen = new ScreenLoading(game);
+    auto LoadScreen = std::make_shared<ScreenLoading>(game);
 
     // Set them up.
 	song->SongDirectory = std::filesystem::absolute(InFile.parent_path());
@@ -280,7 +280,7 @@ bool Application::PollIPC()
         Measure = Msg.Param;
         InFile = std::string(Msg.Path);
         Game->Close();
-        delete Game;
+		Game = nullptr;
 
         SetupPreviewMode();
 
@@ -316,8 +316,8 @@ void Application::Run()
 
     if (RunMode == MODE_PLAY)
     {
-        Game = new ScreenMainMenu();
-        static_cast<ScreenMainMenu*>(Game)->Init();
+        Game = std::make_shared<ScreenMainMenu>();
+        static_cast<ScreenMainMenu*>(Game.get())->Init();
     }
     else if (RunMode == MODE_VSRGPREVIEW)
     {
@@ -424,7 +424,7 @@ void Application::Run()
     {
         Log::Printf("Initializing custom, ad-hoc screen...\n");
 		auto s = Utility::ToU8(InFile.wstring());
-        ScreenCustom *scr = new ScreenCustom(GameState::GetInstance().GetSkinFile(s));
+        auto scr = std::make_shared<ScreenCustom>(GameState::GetInstance().GetSkinFile(s));
         Game = scr;
     }
 
@@ -434,6 +434,7 @@ void Application::Run()
         return;
 
     ImageLoader::UpdateTextures();
+	GameState::GetInstance().SetRootScreen(Game);
 
     oldTime = glfwGetTime();
     while (Game->IsScreenRunning() && !WindowFrame.ShouldCloseWindow())
@@ -473,7 +474,7 @@ void Application::Close()
     if (Game)
     {
         Game->Cleanup();
-        delete Game;
+		Game = nullptr;
     }
 
     WindowFrame.Cleanup();

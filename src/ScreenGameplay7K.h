@@ -19,7 +19,7 @@ namespace Game {
 		private:
 
 
-			std::map <int, std::vector<std::shared_ptr<SoundSample> > > Keysounds;
+			std::map <int, std::vector<std::shared_ptr<AudioSample> > > Keysounds;
 			std::vector<std::unique_ptr<PlayerContext>> Players;
 			std::queue<AutoplaySound>   BGMEvents;
 
@@ -48,8 +48,8 @@ namespace Game {
 
 			std::unique_ptr<AudioStream> Music;
 			std::unique_ptr<AudioSourceOJM> OJMAudio;
-			SoundSample MissSnd;
-			SoundSample FailSnd;
+			AudioSample MissSnd;
+			AudioSample FailSnd;
 
 			/* Effects */
 			bool StageFailureTriggered;

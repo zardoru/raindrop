@@ -1,5 +1,6 @@
 #include "pch.h"
 
+#include "GameState.h"
 #include "SceneEnvironment.h"
 #include "Screen.h"
 
@@ -101,6 +102,11 @@ Screen* Screen::GetTop()
 {
     if (Next) return Next->GetTop();
     else return this;
+}
+
+void Screen::StartTransition(std::shared_ptr<Screen> scr)
+{
+	Next = scr;
 }
 
 double Screen::GetScreenTime()
@@ -214,6 +220,8 @@ void Screen::OnExitBegin()
 void Screen::OnExitEnd()
 {
     Animations->DoEvent("OnExitEnd");
+
+	Next = GameState::GetInstance().GetNextScreen();
 }
 
 void Screen::OnRunningBegin()

@@ -132,9 +132,6 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\ActorBarline.cpp" />
-    <ClCompile Include="..\src\ActorJudgment.cpp" />
-    <ClCompile Include="..\src\ActorLifebar.cpp" />
     <ClCompile Include="..\src\Application.cpp" />
     <ClCompile Include="..\src\Audio.cpp" />
     <ClCompile Include="..\src\Audiofile.cpp" />
@@ -183,7 +180,6 @@
     <ClCompile Include="..\src\PlayerChartData.cpp" />
     <ClCompile Include="..\src\PlayerContext.cpp" />
     <ClCompile Include="..\src\raindrop.cpp" />
-    <ClCompile Include="..\src\GameObject.cpp" />
     <ClCompile Include="..\src\GameWindow.cpp" />
     <ClCompile Include="..\src\RowifiedDifficulty7K.cpp" />
     <ClCompile Include="..\src\ScreenCustom.cpp" />
@@ -198,7 +194,6 @@
     <ClCompile Include="..\src\ImageLoader.cpp" />
     <ClCompile Include="..\src\LuaAnimationInterface.cpp" />
     <ClCompile Include="..\src\LuaManager.cpp" />
-    <ClCompile Include="..\src\NoteLoaderDC.cpp" />
     <ClCompile Include="..\src\NoteLoaderBMS.cpp" />
     <ClCompile Include="..\src\NoteLoaderFTB.cpp" />
     <ClCompile Include="..\src\NoteLoaderOM.cpp" />
@@ -209,10 +204,7 @@
     <ClCompile Include="..\src\ScoreKeeper7K_Lua.cpp" />
     <ClCompile Include="..\src\ScoreKeeper7K_o2jam.cpp" />
     <ClCompile Include="..\src\Screen.cpp" />
-    <ClCompile Include="..\src\ScreenEdit.cpp" />
-    <ClCompile Include="..\src\ScreenEvaluation.cpp" />
     <ClCompile Include="..\src\ScreenEvaluation7K.cpp" />
-    <ClCompile Include="..\src\ScreenGameplay.cpp" />
     <ClCompile Include="..\src\ScreenGameplay7K.cpp" />
     <ClCompile Include="..\src\VSRGMechanics.cpp" />
     <ClCompile Include="..\src\ScreenGameplay7K_Setup.cpp" />
@@ -220,7 +212,6 @@
     <ClCompile Include="..\src\ScreenMainMenu.cpp" />
     <ClCompile Include="..\src\ScreenSelectMusic.cpp" />
     <ClCompile Include="..\src\SongDatabase.cpp" />
-    <ClCompile Include="..\src\SongDC.cpp" />
     <ClCompile Include="..\src\Song7K.cpp" />
     <ClCompile Include="..\src\SongList.cpp" />
     <ClCompile Include="..\src\SongLoader.cpp" />
@@ -234,9 +225,6 @@
     <ClCompile Include="..\tests\TestSetA.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\ActorBarline.h" />
-    <ClInclude Include="..\src\ActorJudgment.h" />
-    <ClInclude Include="..\src\ActorLifebar.h" />
     <ClInclude Include="..\src\Application.h" />
     <ClInclude Include="..\src\Audio.h" />
     <ClInclude Include="..\src\Audiofile.h" />
@@ -251,7 +239,6 @@
     <ClInclude Include="..\src\Drawable.h" />
     <ClInclude Include="..\src\Easing.h" />
     <ClInclude Include="..\src\Font.h" />
-    <ClInclude Include="..\src\GameObject.h" />
     <ClInclude Include="..\src\GameGlobal.h" />
     <ClInclude Include="..\src\GameState.h" />
     <ClInclude Include="..\src\GameWindow.h" />
@@ -278,14 +265,10 @@
     <ClInclude Include="..\src\Line.h" />
     <ClInclude Include="..\src\Logging.h" />
     <ClInclude Include="..\src\LuaManager.h" />
-    <ClInclude Include="..\src\NoteLoaderDC.h" />
     <ClInclude Include="..\src\NoteLoader7K.h" />
     <ClInclude Include="..\src\ScoreKeeper.h" />
     <ClInclude Include="..\src\Screen.h" />
-    <ClInclude Include="..\src\ScreenEdit.h" />
-    <ClInclude Include="..\src\ScreenEvaluation.h" />
     <ClInclude Include="..\src\ScreenEvaluation7K.h" />
-    <ClInclude Include="..\src\ScreenGameplay.h" />
     <ClInclude Include="..\src\ScreenGameplay7K.h" />
     <ClInclude Include="..\src\VSRGMechanics.h" />
     <ClInclude Include="..\src\ScreenLoading.h" />
@@ -294,7 +277,6 @@
     <ClInclude Include="..\src\Song.h" />
     <ClInclude Include="..\src\Song7K.h" />
     <ClInclude Include="..\src\SongDatabase.h" />
-    <ClInclude Include="..\src\SongDC.h" />
     <ClInclude Include="..\src\SongList.h" />
     <ClInclude Include="..\src\SongLoader.h" />
     <ClInclude Include="..\src\SongTiming.h" />

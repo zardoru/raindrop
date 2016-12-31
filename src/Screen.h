@@ -45,6 +45,8 @@ public:
 
     Screen* GetTop();
 
+	void StartTransition(std::shared_ptr<Screen> scr);
+
     // Screen implementation.
     virtual void LoadResources(); // could, or not, be called from main thread.
     virtual void InitializeResources(); // must be called from main thread - assume it always is

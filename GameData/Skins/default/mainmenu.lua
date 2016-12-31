@@ -8,29 +8,6 @@ Preload = {
 
 IntroDuration = 0.5
 ExitDuration = 1.5
-function PlayBtnHover()
-	PlayButton.Texture = "MainMenu/playh.png";
-	PlayButton.Width = 256
-	PlayButton.Height = 153
-end
-
-function PlayBtnHoverLeave()
-	PlayButton.Texture = "MainMenu/play.png";
-	PlayButton.Width = 256
-	PlayButton.Height = 153
-end
-
-function ExitBtnHover()
-	ExitButton.Texture = "MainMenu/quith.png"
-	ExitButton.Width = 256
-	ExitButton.Height = 153
-end
-
-function ExitBtnHoverLeave()
-	ExitButton.Texture = "MainMenu/quit.png"
-	ExitButton.Width = 256
-	ExitButton.Height = 153
-end
 
 function UpdateIntro(p, delta)
 	local S = elastic(p)
@@ -64,6 +41,12 @@ function UpdateExit(p, delta)
 	BGAIn(ease)
 end
 
+function KeyEvent(k, c, mouse)
+	if c == 1 then 
+		Global:StartScreen("songselect")
+	end
+end
+
 function Init()
   elastic = Ease.ElasticSquare(1.5)
 	ScreenFade:Init()
@@ -83,13 +66,17 @@ function Init()
 	targBadge.Centered = 1
 	targBadge.Layer = 31
 	
-	PlayBtnHoverLeave()
-	PlayButton.Y = ScreenHeight - 153 * 2 - 40
-	PlayButton.Layer = 12
+	font = Fonts.TruetypeFont(GetSkinFile("font.ttf"), 24)
 
-	ExitBtnHoverLeave()
-	ExitButton.Y = ScreenHeight - 153
-	ExitButton.Layer = 12
+	s = "press any key..."
+	title = StringObject2D()
+	title.Font = font
+	title.X = ScreenWidth / 2 - font:GetLength(s) / 2
+	title.Y = ScreenHeight * 3 / 4
+	title.Text = s
+	title.Z = 31
+	Engine:AddTarget(title)
+
 	-- Rocket UI not initialized yet...
 end
 

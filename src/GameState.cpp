@@ -7,6 +7,10 @@
 #include "SongDatabase.h"
 #include "SongWheel.h"
 
+#include "Screen.h"
+#include "ScreenCustom.h"
+#include "ScreenSelectMusic.h"
+
 #include "ImageLoader.h"
 #include "Song7K.h"
 
@@ -91,6 +95,28 @@ GameState& GameState::GetInstance()
 Song *GameState::GetSelectedSong() const
 {
     return SelectedSong.get();
+}
+
+void Game::GameState::StartScreenTransition(std::string target)
+{
+	if (target.find("custom") == 0) {
+		auto res = Utility::TokenSplit(target, ":");
+		if (res.size() == 2)
+		{
+			auto scr = std::make_shared<ScreenCustom>(res[1]);
+			RootScreen->GetTop()->StartTransition(scr);
+		}
+	}
+	else if (target == "songselect") {
+		auto scr = std::make_shared<ScreenSelectMusic>();
+		scr->Init();
+		RootScreen->GetTop()->StartTransition(scr);
+	}
+}
+
+void Game::GameState::ExitCurrentScreen()
+{
+	RootScreen->GetTop()->Close();
 }
 
 std::filesystem::path GameState::GetSkinFile(const std::string &Name, const std::string &Skin)
@@ -198,6 +224,7 @@ int GameState::GetCurrentGaugeType(int pn) const
 {
 	if (PlayerNumberInBounds(pn))
 		return PlayerInfo[pn].CurrentGaugeType;
+	return 0;
 }
 
 Texture* GameState::GetSongBG()
@@ -356,6 +383,30 @@ int Game::GameState::GetPlayerCount() const
 void GameState::SubmitScore(int pn)
 {
 	// TODO
+}
+
+bool Game::GameState::IsSongUnlocked(Game::Song * song)
+{
+	return true;
+}
+
+void Game::GameState::UnlockSong(Game::Song * song)
+{
+}
+
+void Game::GameState::SetRootScreen(std::shared_ptr<Screen> root)
+{
+	RootScreen = root;
+}
+
+std::shared_ptr<Screen> Game::GameState::GetCurrentScreen()
+{
+	return std::shared_ptr<Screen>();
+}
+
+std::shared_ptr<Screen> Game::GameState::GetNextScreen()
+{
+	return std::shared_ptr<Screen>();
 }
 
 void GameState::SortWheelBy(int criteria)

@@ -134,11 +134,14 @@ namespace Renderer {
 		if (!status) {
 			glGetProgramInfoLog(mProgram, 512, NULL, buffer);
 			Log::LogPrintf("Shader linking failed: %d - %s\n", status, buffer);
+			return false;
 		}
 
 		// Use our recently compiled program.
 
 		// Clean up..
+		//glDeleteShader(mVertProgram);
+		glDeleteShader(mFragProgram);
 
 		// Set up the uniform constants we'll be using in the program.
 		uniforms[A_POSITION] = glGetAttribLocation(mProgram, "position");
@@ -158,6 +161,8 @@ namespace Renderer {
 
 
 		Bind();
+
+		return true;
 	}
 
 	void DefaultShader::SetColor(float r, float g, float b, float a)
@@ -189,11 +194,6 @@ namespace Renderer {
 		CHECKERR();
 		Log::LogPrintf("Compiling fragment shader.\n");
 
-		auto vertsh = glCreateShader(GL_VERTEX_SHADER);
-		glShaderSource(vertsh, 1, &vertShader, NULL);
-		glCompileShader(vertsh);
-
-
 		auto fragsh = glCreateShader(GL_FRAGMENT_SHADER);
 		auto src = frag.c_str();
 		glShaderSource(fragsh, 1, &src, NULL);
@@ -215,7 +215,7 @@ namespace Renderer {
 
 		mShaderHandle = glCreateProgram();
 		CHECKERR();
-		glAttachShader(mShaderHandle, vertsh);
+		glAttachShader(mShaderHandle, DefaultShader::GetVertexShader());
 		CHECKERR();
 		glAttachShader(mShaderHandle, fragsh);
 		CHECKERR();
@@ -229,6 +229,8 @@ namespace Renderer {
 		}
 		else
 			Log::LogPrintf("Shader linking succesful.\n");
+
+		glDeleteShader(fragsh);
 	}
 
 	void Shader::Bind() {
@@ -298,6 +300,7 @@ namespace Renderer {
 	}
 
 	Shader::~Shader() {
+		glDeleteProgram(mShaderHandle);
 		WindowFrame.RemoveShader(this);
 	}
 }

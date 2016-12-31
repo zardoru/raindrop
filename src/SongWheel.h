@@ -39,6 +39,7 @@ namespace Game
     typedef std::function<void(int32_t, std::shared_ptr<Song>, bool, int32_t, std::string)> StringTransformFunction;
     typedef std::function <float(float)> ListTransformFunction;
     typedef std::function<void()> DirectoryChangeNotifyFunction;
+	typedef std::function<bool(const ListEntry * const)> FuncFilterCriteria;
 
     class SongWheel
     {
@@ -47,8 +48,7 @@ namespace Game
         SongWheel();
 
         int32_t CursorPos, OldCursorPos;
-        int32_t SelectedItem, SelectedListItem;
-        int StartIndex, EndIndex;
+        int32_t SelectedBoundItem, SelectedUnboundItem;
 
         std::mutex* mLoadMutex;
         std::thread* mLoadThread;
@@ -58,19 +58,15 @@ namespace Game
 
         std::shared_ptr<SongList> ListRoot;
         SongList* CurrentList;
-
-        float CurrentVerticalDisplacement;
-        float PendingVerticalDisplacement;
-        float shownListY;
+		SongList FilteredCurrentList;
 
         std::map<int, Sprite*> Sprites;
         std::map<int, GraphicalString*> Strings;
 
-        float ItemHeight;
         float Time;
-        float DisplacementSpeed;
-        float ItemWidth;
-        void DisplayItem(int32_t ListItem, int32_t ItemPosition, Vec2 Position);
+
+		// itemFraction = item / total of displayed items
+        void DisplayItem(int32_t ListItem, int32_t ItemPosition, float itemFraction);
         bool InWheelBounds(Vec2 Pos);
 
         bool IsInitialized;
@@ -81,11 +77,11 @@ namespace Game
         bool LoadedSongsOnce;
         size_t DifficultyIndex;
 
-        // We need to find the start and the end indices of what we want to display.
-        void CalculateIndices();
+		std::vector<FuncFilterCriteria> ActiveFilters;
+
+		AABBd ItemBoxAt(float t);
     public:
 		
-
         DirectoryChangeNotifyFunction OnDirectoryChange;
 
         ItemNotification OnItemClick;
@@ -96,18 +92,22 @@ namespace Game
         SongNotification OnSongTentativeSelect;
 
         ListTransformFunction TransformHorizontal;
-        ListTransformFunction TransformListY;
-        ListTransformFunction TransformPendingDisplacement;
+		ListTransformFunction TransformVertical;
+		ListTransformFunction TransformWidth;
+		ListTransformFunction TransformHeight;
+
+		int DisplayItemCount;
+		int DisplayStartIndex;
 
         ItemTransformFunction TransformItem;
         StringTransformFunction TransformString;
-
-        float ScrollSpeed;
 
         // Singleton
         static SongWheel& GetInstance();
 
         void CleanItems();
+
+		void ReapplyFilters();
 
         void GoUp();
         void Initialize(SongDatabase* Database);
@@ -138,35 +138,23 @@ namespace Game
         // Returns the item index the mouse is currently hovering over.
         int GetListCursorIndex() const;
 
-        void  SetItemHeight(float Height);
-
-        void SetItemWidth(float width);
-        float GetItemWidth() const;
-
         // These give and set the global, infinite wheel item.
-        // When wanting to use the bound index, read from SelectedItem, not these.
+        // When wanting to use the bound index, read from SelectedBoundItem, not these.
         void  SetSelectedItem(int32_t Item);
         int32_t GetSelectedItem() const;
         int32_t GetNumItems() const;
 
-        bool IsItemDirectory(int32_t Item);
+		bool IsItemDirectory(int32_t Item) const;
 
-        float GetListY() const;
-        void SetListY(float newLY);
-
-        float GetDeltaY() const;
-        void SetDeltaY(float newDY);
-
-        float GetTransformedY() const;
-
-        int32_t IndexAtPoint(float Y);
-        uint32_t NormalizedIndexAtPoint(float Y);
-
-        float GetItemHeight() const;
+        int32_t IndexAtPoint(float X, float Y);
+        uint32_t NormalizedIndexAtPoint(float X, float Y);
 
         bool IsLoading();
 
 		void SortBy(ESortCriteria criteria);
+
+		void ResetFilters();
+		void SelectBy(FuncFilterCriteria criteria);
 
         void Update(float Delta);
         void Render();

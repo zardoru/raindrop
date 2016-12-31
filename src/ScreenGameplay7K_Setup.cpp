@@ -178,7 +178,7 @@ namespace Game {
 
 				for (int i = 1; i <= 2000; i++)
 				{
-					std::shared_ptr<SoundSample> Snd = OJMAudio->GetFromIndex(i);
+					std::shared_ptr<AudioSample> Snd = OJMAudio->GetFromIndex(i);
 
 					if (Snd != nullptr)
 						Keysounds[i].push_back(Snd);
@@ -207,7 +207,7 @@ namespace Game {
 			auto start = std::chrono::high_resolution_clock::now();
 			for (auto i = SoundList.begin(); i != SoundList.end(); ++i)
 			{
-				auto ks = std::make_shared<SoundSample>();
+				auto ks = std::make_shared<AudioSample>();
 
 				ks->SetPitch(Rate);
 #ifdef WIN32
@@ -229,7 +229,7 @@ namespace Game {
 			auto Rate = GameState::GetInstance().GetParameters(0)->Rate;
 			auto &ps = Players[0]->GetPlayerState();
 			auto dir = MySong->SongDirectory;
-			std::map<int, SoundSample> audio;
+			std::map<int, AudioSample> audio;
 			std::mutex audio_data_mutex;
 			std::mutex keysound_data_mutex;
 			auto &slicedata = ps.GetSliceData();
@@ -242,7 +242,7 @@ namespace Game {
 			for (auto audiofile : slicedata.AudioFiles) {
 				auto fn = [&](const std::pair<int, std::string> audiofile) {
 					auto path = (dir / audiofile.second);
-					SoundSample* p;
+					AudioSample* p;
 
 					// Audio load (parallelly?)
 					audio_data_mutex.lock();

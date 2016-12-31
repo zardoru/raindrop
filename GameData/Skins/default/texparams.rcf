@@ -7,3 +7,9 @@ loading.png {
 	maxfilter: nearest;
 	gen-mipmap: false;
 }
+tile_aqua.png {
+	maxfilter: nearest;
+	minfilter: nearest;
+	wrap-s: repeat;
+	wrap-t: repeat;
+}

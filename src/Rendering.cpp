@@ -363,17 +363,35 @@ void Sprite::Render()
 	if (!mShader) {
 		auto mat = GetMatrix();
 		Renderer::SetShaderParameters(ColorInvert, AffectedByLightning, Centered, false, BlackToTransparent);
+		auto lf = 1.0 + LightenFactor;
+		if (!Lighten)
+			Renderer::DefaultShader::SetColor(Red, Green, Blue, Alpha);
+		else
+			Renderer::DefaultShader::SetColor(Red * lf, Green * lf, Blue * lf, Alpha * lf);
+		
 		Renderer::SetCurrentObjectMatrix(mat);
-		Renderer::DefaultShader::SetColor(Red, Green, Blue, Alpha);
 	}
 	else {
 		auto proj = WindowFrame.GetMatrixProjection();
 		auto mat = GetMatrix();
+
 		mShader->Bind();
-		Renderer::Shader::SetUniform(mShader->GetUniform("projection"), &proj[0][0]);
-		Renderer::Shader::SetUniform(mShader->GetUniform("mvp"), &mat[0][0]);
-		Renderer::Shader::SetUniform(mShader->GetUniform("centered"), Centered);
-		Renderer::Shader::SetUniform(mShader->GetUniform("color"), l2gamma(Red), l2gamma(Green), l2gamma(Blue), Alpha);
+
+		auto sh = mShader->GetUniform("projection");
+		if (sh != -1)
+			Renderer::Shader::SetUniform(sh, &proj[0][0]);
+
+		sh = mShader->GetUniform("mvp");
+		if (sh != -1)
+			Renderer::Shader::SetUniform(sh, &mat[0][0]);
+
+		sh = mShader->GetUniform("centered");
+		if (sh != -1)
+			Renderer::Shader::SetUniform(sh, Centered);
+
+		sh = mShader->GetUniform("color");
+		if (sh != -1)
+			Renderer::Shader::SetUniform(sh, l2gamma(Red), l2gamma(Green), l2gamma(Blue), Alpha);
 	}
 
     

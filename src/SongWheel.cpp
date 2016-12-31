@@ -20,13 +20,15 @@ using namespace Game;
 SongWheel::SongWheel()
 {
     IsInitialized = false;
-    PendingVerticalDisplacement = 0;
     mLoadMutex = nullptr;
     mLoadThread = nullptr;
-    CurrentVerticalDisplacement = 0;
     VSRGModeActive = (Configuration::GetConfigf("VSRGEnabled") != 0);
-    dotcurModeActive = (Configuration::GetConfigf("dotcurEnabled") != 0);
+	dotcurModeActive = false;
+    // dotcurModeActive = (Configuration::GetConfigf("dotcurEnabled") != 0);
     DifficultyIndex = 0;
+
+	DisplayStartIndex = 0;
+	DisplayItemCount = 0;
 
     ListRoot = nullptr;
     CurrentList = nullptr;
@@ -51,6 +53,7 @@ void SongWheel::CleanItems()
     Sprites.clear();
 }
 
+
 void SongWheel::Initialize(SongDatabase* Database)
 {
     if (IsInitialized)
@@ -59,13 +62,11 @@ void SongWheel::Initialize(SongDatabase* Database)
         return;
     }
 
-    ScrollSpeed = 90;
-    SelectedItem = 0;
-    SelectedListItem = 0;
+    SelectedBoundItem = 0;
+    SelectedUnboundItem = 0;
     CursorPos = 0;
     OldCursorPos = 0;
     Time = 0;
-    DisplacementSpeed = 2;
 
     IsInitialized = true;
     DifficultyIndex = 0;
@@ -184,17 +185,17 @@ int SongWheel::GetCursorIndex() const
 int SongWheel::PrevDifficulty()
 {
     size_t max_index = 0;
-    if (!CurrentList->IsDirectory(SelectedItem))
+    if (!FilteredCurrentList.IsDirectory(SelectedBoundItem))
     {
         DifficultyIndex--;
-        if (CurrentList->GetSongEntry(SelectedItem)->Mode == MODE_VSRG)
+        if (FilteredCurrentList.GetSongEntry(SelectedBoundItem)->Mode == MODE_VSRG)
         {
-            auto Song = std::static_pointer_cast<VSRG::Song> (CurrentList->GetSongEntry(SelectedItem));
+            auto Song = std::static_pointer_cast<VSRG::Song> (FilteredCurrentList.GetSongEntry(SelectedBoundItem));
             max_index = Song->Difficulties.size() - 1;
         }
         else
         {
-            auto Song = std::static_pointer_cast<dotcur::Song> (CurrentList->GetSongEntry(SelectedItem));
+            auto Song = std::static_pointer_cast<dotcur::Song> (FilteredCurrentList.GetSongEntry(SelectedBoundItem));
             max_index = Song->Difficulties.size() - 1;
         }
 
@@ -209,18 +210,18 @@ int SongWheel::PrevDifficulty()
 
 int SongWheel::NextDifficulty()
 {
-    if (!CurrentList->IsDirectory(SelectedItem))
+    if (!FilteredCurrentList.IsDirectory(SelectedBoundItem))
     {
         DifficultyIndex++;
-        if (CurrentList->GetSongEntry(SelectedItem)->Mode == MODE_VSRG)
+        if (FilteredCurrentList.GetSongEntry(SelectedBoundItem)->Mode == MODE_VSRG)
         {
-            auto Song = std::static_pointer_cast<VSRG::Song> (CurrentList->GetSongEntry(SelectedItem));
+            auto Song = std::static_pointer_cast<VSRG::Song> (FilteredCurrentList.GetSongEntry(SelectedBoundItem));
             if (DifficultyIndex >= Song->Difficulties.size())
                 DifficultyIndex = 0;
         }
         else
         {
-            auto Song = std::static_pointer_cast<dotcur::Song> (CurrentList->GetSongEntry(SelectedItem));
+            auto Song = std::static_pointer_cast<dotcur::Song> (FilteredCurrentList.GetSongEntry(SelectedBoundItem));
             if (DifficultyIndex >= Song->Difficulties.size())
                 DifficultyIndex = 0;
         }
@@ -233,12 +234,24 @@ int SongWheel::NextDifficulty()
 
 bool SongWheel::InWheelBounds(Vec2 Pos)
 {
-    return Pos.x > TransformHorizontal(Pos.y) && Pos.x < TransformHorizontal(Pos.y) + ItemWidth;
+	return IndexAtPoint(Pos.x, Pos.y) != -1;
+}
+
+AABBd Game::SongWheel::ItemBoxAt(float t)
+{
+	Vec2 Position(TransformHorizontal(t), TransformVertical(t));
+	Vec2 Size(TransformWidth(t), TransformHeight(t));
+
+	// az: No + operator, lol?
+	Vec2 BottomRightCorner = Position;
+	BottomRightCorner += Size;
+
+	return AABBd(Position.x, Position.y, BottomRightCorner.x, BottomRightCorner.y);
 }
 
 void SongWheel::SetDifficulty(uint32_t i)
 {
-    if (CurrentList && !CurrentList->IsDirectory(SelectedItem))
+    if (!FilteredCurrentList.IsDirectory(SelectedBoundItem))
     {
         auto Song = std::static_pointer_cast<VSRG::Song> (GetSelectedSong());
         size_t maxIndex = Song->Difficulties.size();
@@ -272,12 +285,14 @@ bool SongWheel::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
             Vec2 mpos = GameState::GetWindow()->GetRelativeMPos();
             auto boundIndex = GetCursorIndex();
             auto Idx = GetListCursorIndex();
-            if (boundIndex != CurrentList->GetNumEntries()) // There's entries!
+            if (boundIndex != FilteredCurrentList.GetNumEntries()) // There's entries!
             {
                 if (InWheelBounds(mpos) || !isMouseInput)
                 {
                     if (OnItemClick)
-                        OnItemClick(Idx, boundIndex, CurrentList->GetEntryTitle(boundIndex), CurrentList->GetSongEntry(boundIndex));
+                        OnItemClick(Idx, boundIndex, 
+							FilteredCurrentList.GetEntryTitle(boundIndex), 
+							FilteredCurrentList.GetSongEntry(boundIndex));
                     return true;
                 }
             }
@@ -285,12 +300,6 @@ bool SongWheel::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
 
         switch (key)
         {
-        case 'Q':
-            PendingVerticalDisplacement += 320;
-            return true;
-        case 'W':
-            PendingVerticalDisplacement -= 320;
-            return true;
         case 'E':
             GoUp();
             return true;
@@ -307,6 +316,7 @@ void SongWheel::GoUp()
     if (CurrentList->HasParentDirectory())
     {
         CurrentList = CurrentList->GetParentDirectory();
+		ReapplyFilters();
         OnDirectoryChange();
 		OnSongTentativeSelect(GetSelectedSong(), 0);
     }
@@ -319,7 +329,7 @@ bool SongWheel::HandleScrollInput(const double dx, const double dy)
 
 std::shared_ptr<Game::Song> SongWheel::GetSelectedSong()
 {
-    return CurrentList->GetSongEntry(SelectedItem);
+    return FilteredCurrentList.GetSongEntry(SelectedBoundItem);
 }
 
 void SongWheel::Update(float Delta)
@@ -338,32 +348,11 @@ void SongWheel::Update(float Delta)
     if (!CurrentList)
         return;
 
-    if (TransformPendingDisplacement) // We have a pending displacement transformation function
-    {
-        float Delta = TransformPendingDisplacement(PendingVerticalDisplacement);
-        CurrentVerticalDisplacement += Delta;
-        PendingVerticalDisplacement -= Delta;
-    }
-    else if (PendingVerticalDisplacement) // We don't, so we use the default hardcoded method
-    {
-        float ListDelta = PendingVerticalDisplacement * Delta * DisplacementSpeed;
-        float NewListY = CurrentVerticalDisplacement + ListDelta;
-
-        CurrentVerticalDisplacement = NewListY;
-        PendingVerticalDisplacement -= ListDelta;
-    }
-
-    if (TransformListY)
-        shownListY = TransformListY(CurrentVerticalDisplacement);
-    else
-        shownListY = CurrentVerticalDisplacement;
-
     Vec2 mpos = GameState::GetInstance().GetWindow()->GetRelativeMPos();
-    float Transformed = TransformHorizontal(mpos.y);
     if (InWheelBounds(mpos))
     {
         IsHovering = true;
-        CursorPos = IndexAtPoint(mpos.y);
+        CursorPos = IndexAtPoint(mpos.x, mpos.y);
     }
     else
     {
@@ -372,7 +361,7 @@ void SongWheel::Update(float Delta)
             IsHovering = false;
             if (OnItemHoverLeave)
                 OnItemHoverLeave(GetCursorIndex(), GetListCursorIndex(),
-                CurrentList->GetEntryTitle(GetCursorIndex()), nullptr);
+                FilteredCurrentList.GetEntryTitle(GetCursorIndex()), nullptr);
         }
     }
 
@@ -385,28 +374,34 @@ void SongWheel::Update(float Delta)
         {
             std::shared_ptr<Game::Song> Notify = GetSelectedSong();
             OnItemHover(GetCursorIndex(), GetListCursorIndex(),
-                CurrentList->GetEntryTitle(GetCursorIndex()), Notify);
+                FilteredCurrentList.GetEntryTitle(GetCursorIndex()), Notify);
         }
     }
 }
 
-void SongWheel::DisplayItem(int32_t ListItem, int32_t ListPosition, Vec2 Position)
+void SongWheel::DisplayItem(int32_t ListItem, int32_t ListPosition, float itemFraction)
 {
-    if (Position.y > -ItemHeight && Position.y < ScreenHeight)
+	AABBd screen_box (0.0, 0.0, ScreenWidth, ScreenHeight);
+	AABBd item_box = ItemBoxAt(itemFraction);
+	Vec2 pos(item_box.X1, item_box.Y1);
+	// Vec2 size (item_box.width(), item_box.height()); 
+
+    if (screen_box.Intersects(item_box))
     {
         bool IsSelected = false;
         std::shared_ptr<Song> Song = nullptr;
         std::string Text;
+
         if (ListItem != -1)
         {
-            Song = CurrentList->GetSongEntry(ListItem);
-            Text = CurrentList->GetEntryTitle(ListItem);
-            IsSelected = (ListPosition == SelectedListItem);
+            Song = FilteredCurrentList.GetSongEntry(ListItem);
+            Text = FilteredCurrentList.GetEntryTitle(ListItem);
+            IsSelected = (ListPosition == SelectedUnboundItem);
         }
 
         for (auto Item = Sprites.begin(); Item != Sprites.end(); ++Item)
-        {
-            Item->second->SetPosition(Position);
+        {			
+            Item->second->SetPosition(item_box.X1, item_box.Y1);
 
             if (TransformItem)
                 TransformItem(Item->first, Song, IsSelected, ListPosition);
@@ -417,7 +412,7 @@ void SongWheel::DisplayItem(int32_t ListItem, int32_t ListPosition, Vec2 Positio
 
         for (auto Item = Strings.begin(); Item != Strings.end(); ++Item)
         {
-            Item->second->SetPosition(Position);
+            Item->second->SetPosition(pos);	
 
             if (TransformString)
                 TransformString(Item->first, Song, IsSelected, ListPosition, Text);
@@ -427,31 +422,23 @@ void SongWheel::DisplayItem(int32_t ListItem, int32_t ListPosition, Vec2 Positio
     }
 }
 
-void SongWheel::CalculateIndices()
-{
-    int maxItems = ScreenHeight / ItemHeight; // This is how many items we want to draw.
-
-    // I only really need the top index.
-    float V = floor(-shownListY / ItemHeight);
-    StartIndex = V;
-    EndIndex = StartIndex + maxItems + 1;
-}
 
 void SongWheel::Render()
 {
     int Index = GetCursorIndex();
     std::unique_lock<std::mutex> lock(*mLoadMutex);
     int Cur = 0;
-    int Max = CurrentList->GetNumEntries();
+    int Max = FilteredCurrentList.GetNumEntries();
 
-    CalculateIndices();
+	// I only really need the top index.
+	int DisplayEndIndex = DisplayStartIndex + DisplayItemCount + 1;
 
-    for (Cur = StartIndex; Cur <= EndIndex; Cur++)
+	float TotalEntries = DisplayEndIndex - DisplayStartIndex;
+    for (Cur = DisplayStartIndex; Cur <= DisplayEndIndex; Cur++)
     {
-        float yTransform = Cur*ItemHeight + shownListY;
-        float xTransform = TransformHorizontal(yTransform);
-        Vec2 Position = Vec2(xTransform, yTransform);
+		// Cur*ItemHeight + shownListY
 
+		float t = (Cur - DisplayStartIndex) / TotalEntries;
         if (Max)
         {
             int RealIndex = Cur % Max;
@@ -459,72 +446,55 @@ void SongWheel::Render()
             while (RealIndex < 0) // Loop over..
                 RealIndex += Max;
 
-            DisplayItem(RealIndex, Cur, Position);
+            DisplayItem(RealIndex, Cur, t);
         }
         else
-            DisplayItem(-1, Cur, Position);
+            DisplayItem(-1, Cur, t);
     }
 }
 
 int32_t SongWheel::GetSelectedItem() const
 {
-    return SelectedListItem;
+    return SelectedUnboundItem;
 }
 
-void SongWheel::SetItemHeight(float Height)
-{
-    ItemHeight = Height;
-}
-
-void SongWheel::SetItemWidth(float width)
-{
-    ItemWidth = width;
-}
-
-float SongWheel::GetItemWidth() const
-{
-    return ItemWidth;
-}
 
 void SongWheel::SetSelectedItem(int32_t Item)
 {
     if (!CurrentList)
         return;
 
-    if (CurrentList->GetNumEntries() == 0)
-        return;
-
-    int32_t OldListIndex = SelectedListItem;
-    SelectedListItem = Item;
+    SelectedUnboundItem = Item;
 
     // Get a bound item index
-    while (Item < 0) Item += CurrentList->GetNumEntries();
-    Item %= CurrentList->GetNumEntries();
-
+	if (GetNumItems())
+		Item = modulo(Item, GetNumItems());
+	else
+		Item = 0;
+    
     // Set bound item index to this.
-    SelectedItem = Item;
+    SelectedBoundItem = Item;
     GameState::GetInstance().SetSelectedSong(GetSelectedSong());
     OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
 }
 
-int32_t SongWheel::IndexAtPoint(float Y)
+int32_t SongWheel::IndexAtPoint(float X, float Y)
 {
-    float posy = Y;
-    posy -= shownListY;
-    // posy -= abs(fmod(posy, ItemHeight));
-    posy = (posy / ItemHeight);
-    return floor(posy);
+	for (int cur = DisplayStartIndex;
+		cur != DisplayStartIndex + DisplayItemCount + 1;
+		cur++) {
+		float t = float(cur - DisplayStartIndex) / float(DisplayItemCount + 1);
+
+		if (ItemBoxAt(t).IsInBox(X, Y))
+			return cur;
+	}
+
+	return -1;
 }
 
-uint32_t SongWheel::NormalizedIndexAtPoint(float Y)
+uint32_t SongWheel::NormalizedIndexAtPoint(float X, float Y)
 {
-    auto Idx = IndexAtPoint(Y);
-    if (!Idx || !GetNumItems() || (Idx % GetNumItems() == 0)) return 0;
-
-    while (Idx > GetNumItems())
-        Idx -= GetNumItems();
-    while (Idx < 0)
-        Idx += GetNumItems();
+    auto Idx = modulo(IndexAtPoint(X, Y), GetNumItems());
     return Idx;
 }
 
@@ -534,17 +504,17 @@ int32_t SongWheel::GetNumItems() const
         return 0;
     else
     {
-        return CurrentList->GetNumEntries();
+        return FilteredCurrentList.GetNumEntries();
     }
 }
 
-bool SongWheel::IsItemDirectory(int32_t Item)
+bool SongWheel::IsItemDirectory(int32_t Item) const
 {
-    if (CurrentList->GetNumEntries())
+    if (FilteredCurrentList.GetNumEntries())
     {
-        while (Item < 0) Item += CurrentList->GetNumEntries();
-        Item %= CurrentList->GetNumEntries();
-        return CurrentList->IsDirectory(Item);
+        while (Item < 0) Item += GetNumItems();
+        Item %= GetNumItems();
+        return FilteredCurrentList.IsDirectory(Item);
     }
 
     return false;
@@ -557,14 +527,16 @@ void SongWheel::SetCursorIndex(int Index)
 
 void SongWheel::ConfirmSelection()
 {
-    if (!CurrentList->IsDirectory(SelectedItem))
+    if (!FilteredCurrentList.IsDirectory(SelectedBoundItem))
     {
         OnSongConfirm(GetSelectedSong(), DifficultyIndex);
     }
     else
     {
-        CurrentList = CurrentList->GetListEntry(SelectedItem).get();
-        SetSelectedItem(SelectedListItem); // Update our selected item to new bounderies.
+        CurrentList = CurrentList->GetListEntry(SelectedBoundItem).get();
+
+		ReapplyFilters();
+        SetSelectedItem(SelectedUnboundItem); // Update our selected item to new bounderies.
         OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
     }
 }
@@ -572,36 +544,6 @@ void SongWheel::ConfirmSelection()
 int SongWheel::GetListCursorIndex() const
 {
     return CursorPos;
-}
-
-float SongWheel::GetItemHeight() const
-{
-    return ItemHeight;
-}
-
-float SongWheel::GetListY() const
-{
-    return CurrentVerticalDisplacement;
-}
-
-void SongWheel::SetListY(float List)
-{
-    CurrentVerticalDisplacement = List;
-}
-
-float SongWheel::GetDeltaY() const
-{
-    return PendingVerticalDisplacement;
-}
-
-void SongWheel::SetDeltaY(float PD)
-{
-    PendingVerticalDisplacement = PD;
-}
-
-float SongWheel::GetTransformedY() const
-{
-    return shownListY;
 }
 
 bool SongWheel::IsLoading()
@@ -617,4 +559,46 @@ void SongWheel::SortBy(ESortCriteria criteria)
 {
 	std::unique_lock<std::mutex> lock(*mLoadMutex);
 	ListRoot->SortBy(criteria);
+}
+
+void Game::SongWheel::ReapplyFilters()
+{
+	if (!CurrentList) return;
+
+	FilteredCurrentList = SongList();
+	for (auto entry : CurrentList->GetEntries()) {
+		bool add = true;
+
+		if (entry.Kind == ListEntry::Song) {
+			auto song = std::static_pointer_cast<Game::Song>(entry.Data);
+			if (!GameState::GetInstance().IsSongUnlocked(song.get()))
+				continue;
+		}
+
+		// all filters pass?
+		// no filters means next block is skipped, so always adds
+		for (auto can_add : ActiveFilters) {
+			// this one doesn't
+			if (!can_add(&entry)) {
+				add = false;
+				break;
+			}
+		}
+
+		// all filters passed!
+		if (add)
+			FilteredCurrentList.AddEntry(entry);
+	}
+}
+
+void Game::SongWheel::ResetFilters()
+{
+	ActiveFilters.clear();
+	ReapplyFilters();
+}
+
+void Game::SongWheel::SelectBy(FuncFilterCriteria criteria)
+{
+	ActiveFilters.push_back(criteria);
+	ReapplyFilters();
 }

@@ -16,7 +16,7 @@ class AudioSourceOJM : public AudioDataSource, Interruptible
         void* File;
     } TemporaryState;
 
-    std::shared_ptr<SoundSample> Arr[2000];
+    std::shared_ptr<AudioSample> Arr[2000];
     std::shared_ptr<std::ifstream> ifile;
     void parseM30();
     void parseOMC();
@@ -26,7 +26,7 @@ public:
     AudioSourceOJM(Interruptible* Parent = nullptr);
     ~AudioSourceOJM();
     bool Open(std::filesystem::path Filename) override;
-    std::shared_ptr<SoundSample> GetFromIndex(int Index);
+    std::shared_ptr<AudioSample> GetFromIndex(int Index);
     void Seek(float Time) override;
     uint32_t Read(short* buffer, size_t count) override;
 

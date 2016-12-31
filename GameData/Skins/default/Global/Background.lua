@@ -19,8 +19,20 @@ function BackgroundAnimation.Init(self)
 		uniform float frac;
 		uniform float persp;
 		void main(void) {
-			float z = abs(texcoord.y - .5) * 2. / persp;
-			gl_FragColor = texture2D(tex, fract(texcoord / z + frac)) * clamp(z, 0, 0.5) * 2. * persp;
+			vec2 uv = texcoord - .5;
+			float z = sqrt(abs(.5*.5 - uv.x*uv.x - uv.y*uv.y)) / persp;
+
+			vec2 rv = uv;
+			uv /= z;
+			
+			uv.x += frac / 4.;
+			/*vec4 col = texture2D(tex, uv) ;
+			float v = (col.r + col.g + col.b) / 3.;
+			vec4 gs = vec4(v,v,v,1.);
+			vec4 nc = vec4(0.48, 0.79, 1., 1.);
+			gl_FragColor = gs * persp * z;
+			*/
+			gl_FragColor = texture2D(tex, uv) * (z + 0.2);
 		}
 	]]
 
@@ -29,15 +41,18 @@ function BackgroundAnimation.Init(self)
 	self.Pink = Engine:CreateObject()
 
 	self.Pink.Texture  = "Global/pink.png"
-	self.Blue.Texture  = "Global/blue.png"
+	self.Blue.Texture  = "Global/tile_aqua.png"
 
+	self.Blue.Height = ScreenHeight
+	self.Blue.Width = ScreenWidth
 	self.Blue.Shader = self.shader
 
 	self.Pink.Y = -self.Pink.Height
 	self.Blue.Y = 0
 	self.Pink.Z = 0
 	self.Blue.Z = 0
-
+	self.Pink.Alpha = 0
+	
 	self.t = 0
 end
 

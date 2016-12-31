@@ -55,7 +55,7 @@ class AudioSample : public Sound
     bool	 mIsPlaying;
     std::atomic<bool> mIsValid;
 	std::atomic<bool> mIsLoaded;
-	std::future<void> mThread;
+	std::future<bool> mThread;
 
 public:
     AudioSample();

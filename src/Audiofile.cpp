@@ -171,7 +171,7 @@ bool AudioSample::Open(AudioDataSource* Src, bool async)
 			size_t mSampleCount = Src->GetLength() * this->Channels;
 
 			if (!mSampleCount) // Huh what why?
-				return;
+				return false;
 
 			this->mData = std::make_shared<std::vector<short>>(mSampleCount);
 			size_t total = Src->Read(mData->data(), mSampleCount);
@@ -233,6 +233,8 @@ bool AudioSample::Open(AudioDataSource* Src, bool async)
 
 			this->mAudioEnd = (float(this->mData->size()) / (float(this->mRate) * this->Channels));
 			this->mIsLoaded = true;
+
+			return true;
 		};
 
 		if (async)
@@ -387,7 +389,7 @@ bool AudioSample::Open(std::filesystem::path Filename, bool async)
 	auto fn = [=]() {
 		auto FilenameFixed = RearrangeFilename(Filename);
 		std::unique_ptr<AudioDataSource> Src = SourceFromExt(FilenameFixed);
-		this->Open(Src.get(), false);
+		return this->Open(Src.get(), false);
 	};
 
 	if (async)
@@ -395,8 +397,9 @@ bool AudioSample::Open(std::filesystem::path Filename, bool async)
 		mThread = std::async(std::launch::async, fn);
 		return true;
 	}
-	else
-		fn();
+	else {
+		return fn();
+	}
 }
 
 void AudioSample::Play()

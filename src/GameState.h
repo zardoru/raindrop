@@ -3,6 +3,7 @@
 class GameWindow;
 class SongDatabase;
 class Texture;
+class Screen;
 
 struct lua_State;
 
@@ -52,7 +53,7 @@ namespace Game
         std::map<std::string, std::vector<std::string>> Fallback; // 2nd is 1st's fallback
 
 		
-
+		std::shared_ptr<Screen> RootScreen;
         bool FileExistsOnSkin(const char* Filename, const char* Skin);
     public:
 
@@ -80,7 +81,8 @@ namespace Game
 	    Texture* GetSongBG();
 	    Texture* GetSongStage();
 
-
+		void StartScreenTransition(std::string target);
+		void ExitCurrentScreen();
 
         std::filesystem::path GetSkinFile(const std::string &Name, const std::string &Skin);
         std::filesystem::path GetSkinFile(const std::string &Name);
@@ -116,6 +118,13 @@ namespace Game
 		void SetDifficulty(std::shared_ptr<VSRG::Difficulty> df, int pn);
 		int GetPlayerCount() const;
 		void SubmitScore(int pn);
+
+		bool IsSongUnlocked(Game::Song *song);
+		void UnlockSong(Game::Song *song);
+
+		void SetRootScreen(std::shared_ptr<Screen> root);
+		std::shared_ptr<Screen> GetCurrentScreen();
+		std::shared_ptr<Screen> GetNextScreen();
     };
 }
 

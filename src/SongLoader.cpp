@@ -37,6 +37,7 @@ SongLoader::SongLoader(SongDatabase* Database)
 
 void SongLoader::LoadSongDCFromDir(std::filesystem::path songPath, std::vector<dotcur::Song*> &VecOut)
 {
+#ifdef DOTCUR_ENABLED
     bool FoundDCF = false;
 	auto Listing = Utility::GetFileListing(songPath);
 
@@ -93,6 +94,7 @@ void SongLoader::LoadSongDCFromDir(std::filesystem::path songPath, std::vector<d
             NewS->BackgroundFilename = PotentialBG;
         }
     }
+#endif
 }
 
 bool VSRGValidExtension(std::wstring Ext)

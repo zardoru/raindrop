@@ -8,6 +8,10 @@
 #include "SongDC.h"
 #include "SongLoader.h"
 
+ListEntry::ListEntry() {
+	Kind = Directory;
+}
+
 SongList::SongList(SongList* Parent)
     : mParent(Parent)
 {
@@ -24,6 +28,16 @@ void SongList::AddSong(std::shared_ptr<Game::Song> Song)
     NewEntry.Data = Song;
 
     mChildren.push_back(NewEntry);
+}
+
+void SongList::AddEntry(ListEntry entry)
+{
+	mChildren.push_back(entry);
+}
+
+const std::vector<ListEntry>& SongList::GetEntries()
+{
+	return mChildren;
 }
 
 void SongList::AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, std::filesystem::path Dir, std::string Name, bool VSRGActive, bool DotcurActive)
@@ -140,7 +154,7 @@ void SongList::AddVirtualDirectory(std::string NewEntryName, Game::Song* List, i
 }
 
 // if false, it's a song
-bool SongList::IsDirectory(unsigned int Entry)
+bool SongList::IsDirectory(unsigned int Entry) const
 {
     if (Entry >= mChildren.size()) return true;
     return mChildren[Entry].Kind == ListEntry::Directory;
@@ -174,7 +188,7 @@ std::string SongList::GetEntryTitle(unsigned int Entry)
     }
 }
 
-unsigned int SongList::GetNumEntries()
+unsigned int SongList::GetNumEntries() const
 {
     return mChildren.size();
 }
@@ -237,9 +251,13 @@ void SongList::SortBy(ESortCriteria criteria)
 			{
 				if (a->Mode == MODE_DOTCUR)
 				{
+#ifdef DOTCUR_ENABLED
 					auto sng = std::static_pointer_cast<Game::dotcur::Song>(a);
 					auto dif = sng->GetDifficulty(0);
 					if (dif) return dif->Duration;
+#else
+					return -1.0;
+#endif
 				}
 
 				if (a->Mode == MODE_VSRG)
