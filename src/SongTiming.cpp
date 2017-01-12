@@ -40,7 +40,7 @@ double SectionValue(const TimingData &Timing, double Beat)
     }
 }
 
-double TimeAtBeat(const TimingData &Timing, float Offset, double Beat, bool Abs)
+double TimeAtBeat(const TimingData &Timing, double Offset, double Beat, bool Abs)
 {
     uint32_t CurrentIndex = SectionIndex(Timing, Beat) + 1;
     double Time = Offset;

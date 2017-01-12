@@ -157,7 +157,7 @@ namespace NoteLoaderBMS{
 	{
 		// first argument is channel, second is event list
 		std::map<int, BMSEventList> Events;
-		float BeatDuration;
+		double BeatDuration;
 
 		BMSMeasure()
 		{
@@ -196,7 +196,7 @@ namespace NoteLoaderBMS{
 
 		int LowerBound, UpperBound;
 
-		float startTime[MAX_CHANNELS];
+		double startTime[MAX_CHANNELS];
 
 		NoteData *LastNotes[MAX_CHANNELS];
 

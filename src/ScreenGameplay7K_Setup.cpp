@@ -412,21 +412,6 @@ namespace Game {
 				AssignMeasure(StartMeasure);
 
 			ForceActivation = ForceActivation || (Configuration::GetSkinConfigf("InmediateActivation") == 1);
-
-			CfgVar await("AwaitKeysoundLoad");
-			if (await) {
-				auto st = std::chrono::high_resolution_clock::now();
-				Log::LogPrintf("Awaiting for keysounds to finish loading...\n");
-				for (auto &vec : Keysounds) {
-					for (auto &snd : vec.second) {
-						snd->AwaitLoad();
-					}
-				}
-
-				
-				auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - st).count();
-				Log::LogPrintf("Done. Taken %I64dms to finish.\n", dur);
-			}
 			
 
 			// We're done with the data stored in the difficulties that aren't the one we're using. Clear it up.
@@ -452,6 +437,21 @@ namespace Game {
 
 			for (auto& p : Players) {
 				p->Validate();
+			}
+
+			CfgVar await("AwaitKeysoundLoad");
+			if (await) {
+				auto st = std::chrono::high_resolution_clock::now();
+				Log::LogPrintf("Awaiting for keysounds to finish loading...\n");
+				for (auto &vec : Keysounds) {
+					for (auto &snd : vec.second) {
+						snd->AwaitLoad();
+					}
+				}
+
+
+				auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - st).count();
+				Log::LogPrintf("Done. Taken %I64dms to finish.\n", dur);
 			}
 
 			Animations->Initialize("", false);

@@ -312,13 +312,17 @@ bool Sprite::ShouldDraw()
     if (Alpha == 0)
         return false;
 
+	if (mShader)
+		if (!mShader->IsValid())
+			return false;
+
     if (mImage)
     {
 		mImage->Bind();
 		return true;
     }
     else
-        return false;
+        return mShader && mShader->IsValid();
 
     return true;
 }

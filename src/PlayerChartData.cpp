@@ -7,7 +7,7 @@ CfgVar DebugMeasurePosGen("MeasurePosGen", "Debug");
 
 namespace Game {
 	namespace VSRG {
-		PlayerChartData::PlayerChartData()
+		GameChartData::GameChartData()
 		{
 			Drift = 0;
 			WaitTime = DEFAULT_WAIT_TIME;
@@ -297,7 +297,7 @@ namespace Game {
 			return VerticalSpeeds;
 		}
 
-		double PlayerChartData::GetWarpAmount(double Time) const
+		double GameChartData::GetWarpAmount(double Time) const
 		{
 			double wAmt = 0;
 			for (auto warp : Warps)
@@ -309,7 +309,7 @@ namespace Game {
 			return wAmt;
 		}
 
-		bool PlayerChartData::IsWarpingAt(double start_time) const
+		bool GameChartData::IsWarpingAt(double start_time) const
 		{
 			auto it = std::lower_bound(Warps.begin(), Warps.end(), start_time, TimeSegmentCompare<TimingSegment>);
 			if (it != Warps.end())
@@ -319,9 +319,9 @@ namespace Game {
 		}
 
 
-		PlayerChartData PlayerChartData::FromDifficulty(Difficulty *diff, double Drift, double Speed)
+		GameChartData GameChartData::FromDifficulty(Difficulty *diff, double Drift, double Speed)
 		{
-			PlayerChartData out;
+			GameChartData out;
 			auto data = diff->Data;
 			if (data == nullptr)
 				throw std::runtime_error("Tried to pass a metadata-only difficulty to Player Chart data generator.\n");
@@ -368,7 +368,7 @@ namespace Game {
 						NewNote.AddTime(Drift);
 
 						auto VerticalPosition = IntegrateToTime(out.VSpeeds, NewNote.GetStartTime());
-						auto HoldEndPosition = IntegrateToTime(out.VSpeeds, NewNote.GetTimeFinal());
+						auto HoldEndPosition = IntegrateToTime(out.VSpeeds, NewNote.GetEndTime());
 
 						// if upscroll change minus for plus as well as matrix at screengameplay7k
 						if (!CurrentNote.EndTime)
@@ -423,7 +423,7 @@ namespace Game {
 			return out;
 		}
 
-		double PlayerChartData::GetWarpedSongTime(double SongTime) const
+		double GameChartData::GetWarpedSongTime(double SongTime) const
 		{
 			auto T = SongTime;
 			for (auto k = Warps.cbegin(); k != Warps.cend(); ++k)
@@ -448,7 +448,7 @@ namespace Game {
 		}
 
 
-		std::vector<double> PlayerChartData::GetMeasureLines() const
+		std::vector<double> GameChartData::GetMeasureLines() const
 		{
 			auto &diff = ConnectedDifficulty;
 			auto Data = diff->Data;
@@ -516,23 +516,23 @@ namespace Game {
 			return Out;
 		}
 
-		double PlayerChartData::GetBpmAt(double Time) const
+		double GameChartData::GetBpmAt(double Time) const
 		{
 			return SectionValue(BPS, Time) * 60;
 		}
 
-		double PlayerChartData::GetBpsAt(double Time) const
+		double GameChartData::GetBpsAt(double Time) const
 		{
 			return SectionValue(BPS, Time);
 		}
 
 
-		double PlayerChartData::GetBeatAt(double Time) const
+		double GameChartData::GetBeatAt(double Time) const
 		{
 			return IntegrateToTime(BPS, Time);
 		}
 
-		double PlayerChartData::GetSpeedMultiplierAt(double Time) const
+		double GameChartData::GetSpeedMultiplierAt(double Time) const
 		{
 			// Calculate current speed value to apply.
 			auto CurrentTime = GetWarpedSongTime(Time);
@@ -582,62 +582,62 @@ namespace Game {
 			return lerpedMultiplier;
 		}
 
-		double PlayerChartData::GetTimeAtBeat(double beat, double drift) const
+		double GameChartData::GetTimeAtBeat(double beat, double drift) const
 		{
 			return TimeAtBeat(ConnectedDifficulty->Timing, ConnectedDifficulty->Offset + drift, beat) + StopTimeAtBeat(ConnectedDifficulty->Data->Stops, beat);
 		}
 
-		double PlayerChartData::GetOffset() const
+		double GameChartData::GetOffset() const
 		{
 			return ConnectedDifficulty->Offset;
 		}
 
-		std::map<int, std::string> PlayerChartData::GetSoundList() const
+		std::map<int, std::string> GameChartData::GetSoundList() const
 		{
 			assert(ConnectedDifficulty && ConnectedDifficulty->Data);
 			return ConnectedDifficulty->Data->SoundList;
 		}
 
-		ChartType PlayerChartData::GetChartType() const
+		ChartType GameChartData::GetChartType() const
 		{
 			assert(ConnectedDifficulty && ConnectedDifficulty->Data);
 			assert(ConnectedDifficulty->Data->TimingInfo);
 			return ConnectedDifficulty->Data->TimingInfo->GetType();
 		}
 
-		bool PlayerChartData::IsBmson() const
+		bool GameChartData::IsBmson() const
 		{
 			return GetChartType() == TI_BMS &&
 				dynamic_cast<BMSChartInfo*>(ConnectedDifficulty->Data->TimingInfo.get())->IsBMSON;
 		}
 
-		bool PlayerChartData::IsVirtual() const
+		bool GameChartData::IsVirtual() const
 		{
 			return ConnectedDifficulty->IsVirtual;
 		}
 
-		bool PlayerChartData::HasTimingData() const
+		bool GameChartData::HasTimingData() const
 		{
 			assert(ConnectedDifficulty != nullptr);
 			return ConnectedDifficulty->Timing.size() > 0;
 		}
 
-		SliceContainer PlayerChartData::GetSliceData() const
+		SliceContainer GameChartData::GetSliceData() const
 		{
 			return ConnectedDifficulty->Data->SliceData;
 		}
 
-		double PlayerChartData::GetDisplacementAt(double Time) const
+		double GameChartData::GetDisplacementAt(double Time) const
 		{
 			return IntegrateToTime(VSpeeds, Time);
 		}
 
-		double PlayerChartData::GetDyAt(double Time) const
+		double GameChartData::GetDisplacementSpeedAt(double Time) const
 		{
 			return SectionValue(VSpeeds, GetWarpedSongTime(Time));
 		}
 
-		void PlayerChartData::DisableNotesUntil(double Time)
+		void GameChartData::DisableNotesUntil(double Time)
 		{
 			ResetNotes();
 			for (auto k = 0U; k < MAX_CHANNELS; k++)
@@ -646,7 +646,7 @@ namespace Game {
 						m->Disable();
 		}
 
-		void PlayerChartData::ResetNotes()
+		void GameChartData::ResetNotes()
 		{
 			for (auto k = 0U; k < MAX_CHANNELS; k++)
 				for (auto m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); ++m)

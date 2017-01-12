@@ -124,6 +124,7 @@ end
 				<option value="3">O2Jam</option>
 				<option value="4">rd/Stepmania</option>
 				<option value="5">rd/AutoBMS</option>
+				<option value="6">rd/RDArcade</option>
 			</select><br/>
 			</div>
 			<h1> Speed Class</h1>

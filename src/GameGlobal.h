@@ -122,6 +122,13 @@ namespace Game {
 	{
 		const auto DEFAULT_WAIT_TIME = 1.5;
 
+		const int SCRATCH_1P_CHANNEL = 0;
+		const int SCRATCH_2P_CHANNEL = 8;
+
+		inline bool IsScratchLane(uint32_t lane) {
+			return lane == SCRATCH_1P_CHANNEL || lane == SCRATCH_2P_CHANNEL;
+		}
+
 		// note type: 3 bits
 		enum ENoteKind
 		{
@@ -142,7 +149,8 @@ namespace Game {
 			TI_OSUMANIA = 2,
 			TI_O2JAM = 3,
 			TI_STEPMANIA = 4,
-			TI_RAINDROP = 5
+			TI_RAINDROP = 5,
+			TI_RDAC = 6
 		};
 
 

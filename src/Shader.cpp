@@ -191,6 +191,7 @@ namespace Renderer {
 
 	
 	void Shader::Compile(std::string frag) {
+		mIsValid = true;
 		CHECKERR();
 		Log::LogPrintf("Compiling fragment shader.\n");
 
@@ -209,6 +210,7 @@ namespace Renderer {
 		if (status != GL_TRUE)
 		{
 			Log::LogPrintf("Fragment Shader Error: %s\n", buffer);
+			mIsValid = false;
 		}
 		else
 			Log::LogPrintf("Fragment Shader Compiled Succesfully\n");
@@ -226,6 +228,7 @@ namespace Renderer {
 		if (!status) {
 			glGetProgramInfoLog(mShaderHandle, 512, NULL, buffer);
 			Log::LogPrintf("Shader linking failed: %d - %s\n", status, buffer);
+			mIsValid = false;
 		}
 		else
 			Log::LogPrintf("Shader linking succesful.\n");
@@ -287,6 +290,11 @@ namespace Renderer {
 
 	uint32_t Shader::GetUniform(std::string uni) {
 		return glGetUniformLocation(mShaderHandle, uni.c_str());
+	}
+
+	bool Shader::IsValid()
+	{
+		return mIsValid;
 	}
 
 	uint32_t DefaultShader::GetUniform(uint32_t uni) {

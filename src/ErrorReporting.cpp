@@ -69,7 +69,6 @@ void PrintTraceFromContext(CONTEXT &ctx)
 		stackframe.AddrFrame.Mode = AddrModeFlat;
 		stackframe.AddrStack.Mode = AddrModeFlat;
 
-		int machine;
 #if _WIN32
 		stackframe.AddrPC.Offset = ctx.Eip;
 		stackframe.AddrFrame.Offset = ctx.Ebp;

@@ -221,7 +221,8 @@ void Screen::OnExitEnd()
 {
     Animations->DoEvent("OnExitEnd");
 
-	Next = GameState::GetInstance().GetNextScreen();
+	if (!Next)
+		Next = GameState::GetInstance().GetNextScreen();
 }
 
 void Screen::OnRunningBegin()

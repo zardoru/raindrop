@@ -23,7 +23,7 @@ namespace Game {
 			else
 				QuantizeFunction = std::bind(PassThrough, std::placeholders::_1);
 
-			BPS = Game::VSRG::PlayerChartData::FromDifficulty(Source).BPS;
+			BPS = Game::VSRG::GameChartData::FromDifficulty(Source).BPS;
 
 			CalculateMeasureAccomulation();
 

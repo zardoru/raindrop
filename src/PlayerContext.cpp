@@ -56,7 +56,7 @@ namespace Game {
 		}
 
 
-		const PlayerChartData& PlayerContext::GetPlayerState()
+		const GameChartData& PlayerContext::GetPlayerState()
 		{
 			return ChartData;
 		}
@@ -64,7 +64,7 @@ namespace Game {
 		void PlayerContext::SetupMechanics()
 		{
 			using namespace Game::VSRG;
-			bool Stepmania = false;
+			bool disable_forced_release = false;
 
 			// This must be done before setLifeTotal in order for it to work.
 			PlayerScoreKeeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
@@ -90,8 +90,8 @@ namespace Game {
 		retry:
 			if (Parameters.SystemType != VSRG::TI_NONE) {
 				// Player requested a specific subsystem
-				if (Parameters.SystemType == VSRG::TI_BMS) {
-					Stepmania = true;
+				if (Parameters.SystemType == VSRG::TI_BMS || Parameters.SystemType == VSRG::TI_RDAC) {
+					disable_forced_release = true;
 					ScoringType = ST_EX;
 					UsedTimingType = TT_TIME;
 					if (TimingInfo->GetType() == VSRG::TI_BMS) {
@@ -117,7 +117,7 @@ namespace Game {
 					else PlayerScoreKeeper->setODWindows(7);
 				}
 				else if (Parameters.SystemType == VSRG::TI_STEPMANIA) {
-					Stepmania = true;
+					disable_forced_release = true;
 					UsedTimingType = TT_TIME;
 					ScoringType = ST_DP;
 					PlayerScoreKeeper->setSMJ4Windows();
@@ -140,6 +140,7 @@ namespace Game {
 				switch (Parameters.SystemType) {
 				case TI_BMS:
 				case TI_RAINDROP:
+				case TI_RDAC:
 					Parameters.GaugeType = LT_GROOVE;
 					break;
 				case TI_O2JAM:
@@ -194,9 +195,16 @@ namespace Game {
 
 			if (UsedTimingType == TT_TIME)
 			{
-				Log::Printf("Using raindrop mechanics set!\n");
-				// Only forced release if not a bms or a stepmania chart.
-				MechanicsSet = std::make_unique<RaindropMechanics>(!Stepmania);
+				if (Parameters.SystemType == VSRG::TI_RDAC)
+				{
+					Log::Printf("RAINDROP ARCADE STAAAAAAAAART!\n");
+					MechanicsSet = std::make_unique<RaindropArcadeMechanics>();
+				}
+				else {
+					Log::Printf("Using raindrop mechanics set!\n");
+					// Only forced release if not a bms or a stepmania chart.
+					MechanicsSet = std::make_unique<RaindropMechanics>(!disable_forced_release);
+				}
 			}
 			else if (UsedTimingType == TT_BEATS)
 			{
@@ -328,7 +336,7 @@ namespace Game {
 
 		double PlayerContext::GetCurrentVerticalSpeed() const
 		{
-			return ChartData.GetDyAt(LastUpdateTime);
+			return ChartData.GetDisplacementSpeedAt(LastUpdateTime);
 		}
 
 		double PlayerContext::GetWarpedSongTime() const
@@ -441,9 +449,9 @@ namespace Game {
 			//OnHit(TimeOff, Lane, IsHold, IsHoldRelease);
 		}
 
-		void PlayerContext::MissNote(double TimeOff, uint32_t Lane, bool IsHold, bool auto_hold_miss, bool early_miss)
+		void PlayerContext::MissNote(double TimeOff, uint32_t Lane, bool IsHold, bool dont_break_combo, bool early_miss)
 		{
-			PlayerScoreKeeper->missNote(auto_hold_miss, early_miss);
+			PlayerScoreKeeper->missNote(dont_break_combo, early_miss);
 
 			if (IsHold)
 				Gear.HeldKey[Lane] = false;
@@ -459,7 +467,7 @@ namespace Game {
 				}
 			}
 
-			//OnMiss(TimeOff, Lane, IsHold, auto_hold_miss, early_miss);
+			//OnMiss(TimeOff, Lane, IsHold, dont_break_combo, early_miss);
 		}
 
 		void PlayerContext::SetLaneHoldState(uint32_t Lane, bool NewState)
@@ -502,12 +510,12 @@ namespace Game {
 				if (m->IsEnabled()) {
 					if (m->IsHold())
 					{
-						if (m->WasNoteHit())
+						if (m->WasHit())
 						{
-							if (m->GetTimeFinal() < TimeThreshold) {
-								double hit_time = clamp_to_interval(usedTime, m->GetTimeFinal(), 0.008);
+							if (m->GetEndTime() < TimeThreshold) {
+								double hit_time = clamp_to_interval(usedTime, m->GetEndTime(), 0.008);
 								// We use clamp_to_interval for those pesky outliers.
-								if (perfect_auto) ReleaseLane(k, m->GetTimeFinal());
+								if (perfect_auto) ReleaseLane(k, m->GetEndTime());
 								else ReleaseLane(k, hit_time);
 							}
 						}
@@ -522,7 +530,7 @@ namespace Game {
 						double hit_time = clamp_to_interval(usedTime, m->GetStartTime(), 0.008);
 						if (perfect_auto) {
 							JudgeLane(k, m->GetStartTime());
-							ReleaseLane(k, m->GetTimeFinal());
+							ReleaseLane(k, m->GetEndTime());
 						}
 						else {
 							JudgeLane(k, hit_time);
@@ -537,13 +545,13 @@ namespace Game {
 		void PlayerContext::RunMeasures(double time)
 		{
 			/*
-				Notes are always ran at unwarped time. PlayerChartData unwarps the time.
+				Notes are always ran at unwarped time. GameChartData unwarps the time.
 			*/
 			double timeClosest[VSRG::MAX_CHANNELS];
 			auto perfect_auto = true;
 
 			for (int i = 0; i < VSRG::MAX_CHANNELS; i++)
-				timeClosest[i] = CurrentDiff->Duration;
+				timeClosest[i] = std::numeric_limits<double>::infinity();
 
 			double usedTime = GetChartTimeAt(time);
 			auto &NotesByChannel = ChartData.NotesByChannel;
@@ -554,11 +562,13 @@ namespace Game {
 					// Keysound update to closest note.
 					if (m->IsEnabled())
 					{
-						if ((abs(usedTime - m->GetTimeFinal()) < timeClosest[k]))
+						auto t = abs(usedTime - m->GetEndTime());
+						if (t < timeClosest[k])
 						{
 							if (CurrentDiff->IsVirtual)
 								Gear.CurrentKeysounds[k] = &(*m);
-							Gear.ClosestNoteMS[k] = abs(usedTime - m->GetTimeFinal());
+							Gear.ClosestNoteMS[k] = abs(usedTime - m->GetEndTime());
+							timeClosest[k] = t;
 						}
 					}
 
@@ -596,11 +606,11 @@ namespace Game {
 				// this does the job as it should instead of comparing start times where hold tails would be completely ignored.
 				auto LboundFunc = [](const TrackNote &A, const double &B) -> bool
 				{
-					return A.GetTimeFinal() < B;
+					return A.GetEndTime() < B;
 				};
 				auto HboundFunc = [](const double &A, const TrackNote &B) -> bool
 				{
-					return A < B.GetTimeFinal();
+					return A < B.GetEndTime();
 				};
 
 				auto timeLower = (Time - (PlayerScoreKeeper->usesO2() ? PlayerScoreKeeper->getMissCutoffMS() : (PlayerScoreKeeper->getMissCutoffMS() / 1000.0)));
@@ -612,7 +622,7 @@ namespace Game {
 				auto rStart = std::reverse_iterator<std::vector<TrackNote>::iterator>(Start);
 				for (auto i = rStart; i != NotesByChannel[Lane].rend(); ++i)
 				{
-					if (i->IsHold() && i->IsEnabled() && i->IsJudgable() && i->WasNoteHit() && !i->FailedHit())
+					if (i->IsHold() && i->IsEnabled() && i->IsJudgable() && i->WasHit() && !i->FailedHit())
 						Start = i.base() - 1;
 				}
 
@@ -759,9 +769,9 @@ namespace Game {
 				if (Type == SPEEDTYPE_CMOD) // cmod
 				{
 					Parameters.SpeedMultiplier = 1;
-					ChartData = VSRG::PlayerChartData::FromDifficulty(CurrentDiff.get(), Drift, DesiredDefaultSpeed);
+					ChartData = VSRG::GameChartData::FromDifficulty(CurrentDiff.get(), Drift, DesiredDefaultSpeed);
 				} else
-					ChartData = VSRG::PlayerChartData::FromDifficulty(CurrentDiff.get(), Drift);
+					ChartData = VSRG::GameChartData::FromDifficulty(CurrentDiff.get(), Drift);
 
 				if (Type == SPEEDTYPE_MMOD) // mmod
 				{
@@ -813,7 +823,7 @@ namespace Game {
 				}
 			}
 			else
-				ChartData = VSRG::PlayerChartData::FromDifficulty(CurrentDiff.get(), Drift);
+				ChartData = VSRG::GameChartData::FromDifficulty(CurrentDiff.get(), Drift);
 
 			if (Parameters.Random)
 				NoteTransform::Randomize(ChartData.NotesByChannel, CurrentDiff->Channels, CurrentDiff->Data->Turntable);
@@ -1164,11 +1174,11 @@ namespace Game {
 							Level = Active;
 						if (!m->IsEnabled() && m->FailedHit())
 							Level = Failed;
-						if (!m->IsEnabled() && !m->FailedHit() && !m->WasNoteHit())
+						if (!m->IsEnabled() && !m->FailedHit() && !m->WasHit())
 							Level = Failed;
-						if (m->IsEnabled() && m->WasNoteHit() && !m->FailedHit())
+						if (m->IsEnabled() && m->WasHit() && !m->FailedHit())
 							Level = BeingHit;
-						if (!m->IsEnabled() && m->WasNoteHit() && !m->FailedHit())
+						if (!m->IsEnabled() && m->WasHit() && !m->FailedHit())
 							Level = SuccesfullyHit;
 
 						double Pos;
@@ -1212,7 +1222,7 @@ namespace Game {
 
 
 			if (DebugNoteRendering) {
-				fnt->Render(Utility::Format("NOTES RENDERED: %d\nN/O: %d\nRNG: %f to %f\nM/EM/CVS: %f/%f/%f",
+				fnt->Render(Utility::Format("NOTES RENDERED: %d\nN/O: %d\nRNG: %f to %f\nMULT/EFFECTIVEMULT/SPEED: %f/%f/%f",
 					rnc,
 					UseNoteOptimization(),
 					vert, vert + ScreenHeight,

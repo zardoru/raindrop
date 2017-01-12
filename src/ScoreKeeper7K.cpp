@@ -194,7 +194,7 @@ namespace Game {
 			return use_w0; 
 		}
 
-		void ScoreKeeper::missNote(bool auto_hold_miss, bool early_miss)
+		void ScoreKeeper::missNote(bool dont_break_combo, bool early_miss)
 		{
 			judgment_amt[SKJ_MISS]++;
 
@@ -205,7 +205,7 @@ namespace Game {
 
 			if (!early_miss)
 			{
-				if (!auto_hold_miss) {
+				if (!dont_break_combo) {
 					total_sqdev += getMissCutoffMS() * getMissCutoffMS();
 					combo = 0;
 				}

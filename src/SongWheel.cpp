@@ -110,6 +110,7 @@ public:
             ++i)
         {
             ListRoot->AddNamedDirectory(*mLoadMutex, &Loader, i->second, i->first, VSRGActive, DCActive);
+			SongWheel::GetInstance().ReapplyFilters();
         }
 
         DB->EndTransaction();
@@ -559,6 +560,7 @@ void SongWheel::SortBy(ESortCriteria criteria)
 {
 	std::unique_lock<std::mutex> lock(*mLoadMutex);
 	ListRoot->SortBy(criteria);
+	ReapplyFilters();
 }
 
 void Game::SongWheel::ReapplyFilters()

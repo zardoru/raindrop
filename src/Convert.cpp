@@ -44,7 +44,7 @@ void ConvertToOM(Game::VSRG::Song *Sng, std::filesystem::path PathOut, std::stri
             return;
         }
 
-		Game::VSRG::PlayerChartData data = Game::VSRG::PlayerChartData::FromDifficulty(Difficulty.get());
+		Game::VSRG::GameChartData data = Game::VSRG::GameChartData::FromDifficulty(Difficulty.get());
 
         // First, convert metadata.
         out
@@ -154,7 +154,7 @@ void ConvertToOM(Game::VSRG::Song *Sng, std::filesystem::path PathOut, std::stri
 void ConvertToSMTiming(Game::VSRG::Song *Sng, std::filesystem::path PathOut)
 {
     Game::VSRG::Difficulty* Diff = Sng->Difficulties[0].get();
-	Game::VSRG::PlayerChartData data = Game::VSRG::PlayerChartData::FromDifficulty(Diff);
+	Game::VSRG::GameChartData data = Game::VSRG::GameChartData::FromDifficulty(Diff);
 
     std::ofstream out(PathOut.string());
     // Technically, stepmania's #OFFSET is actually #GAP, not #OFFSET.

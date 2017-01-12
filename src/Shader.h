@@ -25,6 +25,7 @@ namespace Renderer {
 
 	class Shader {
 		int mShaderHandle;
+		bool mIsValid;
 	protected:
 		static int mLastShader;
 	public:
@@ -36,6 +37,9 @@ namespace Renderer {
 		void CompileFull(std::string frag, std::string vert);
 
 		uint32_t GetUniform(std::string uni);
+
+		bool IsValid();
+
 		static void SetUniform(uint32_t Uniform, int i);
 
 		static void SetUniform(uint32_t Uniform, float F);

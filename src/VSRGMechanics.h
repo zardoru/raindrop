@@ -26,6 +26,10 @@ namespace Game {
 			Difficulty *CurrentDifficulty;
 			std::shared_ptr<ScoreKeeper> score_keeper;
 
+			bool IsLateHeadMiss(double t, TrackNote *note);
+			bool InJudgeCutoff(double t, TrackNote *note);
+			bool IsEarlyMiss(double t, TrackNote *note);
+			bool IsBmBadJudge(double t, TrackNote *note);
 		public:
 
 			virtual ~Mechanics() = default;
@@ -47,6 +51,10 @@ namespace Game {
 
 			// If returns true, don't judge any more notes either.
 			virtual bool OnReleaseLane(double SongTime, VSRG::TrackNote* Note, uint32_t Lane) = 0;
+
+			virtual bool OnScratchUp(double SongTime, VSRG::TrackNote *Note, uint32_t Lane);
+			virtual bool OnScratchDown(double SongTime, VSRG::TrackNote *Note, uint32_t Lane);
+			virtual bool OnScratchNeutral(double SongTime, VSRG::TrackNote *Note, uint32_t Lane);
 
 			virtual TimingType GetTimingKind() = 0;
 		};
@@ -72,6 +80,48 @@ namespace Game {
 			bool OnReleaseLane(double SongBeat, VSRG::TrackNote* Note, uint32_t Lane) override;
 
 			TimingType GetTimingKind() override;
+		};
+
+		class RaindropArcadeMechanics : public Mechanics {
+		public:
+			enum EScratchState {
+				SCR_NEUTRAL,
+				SCR_UP,
+				SCR_DOWN
+			};
+
+		private:
+
+
+			// Left and right (case of double?)
+			EScratchState ScratchState[2];
+
+			int GetScratchForLane(uint32_t Lane);
+			bool CanHitNoteHead(double time, TrackNote* note);
+			bool CanHitNoteTail(double time, TrackNote* note);
+			void JudgeScratch(double SongTime, TrackNote* Note, uint32_t Lane, EScratchState newScratchState, EScratchState oldScratchState);
+			void PerformJudgement(double SongTime, TrackNote* Note, uint32_t Lane);
+		public:
+			RaindropArcadeMechanics();
+			~RaindropArcadeMechanics() = default;
+
+			// If returns true, don't judge any more notes.
+			bool OnUpdate(double SongTime, TrackNote* Note, uint32_t Lane) override;
+
+			// If returns true, don't judge any more notes.
+			bool OnPressLane(double SongTime, TrackNote* Note, uint32_t Lane) override;
+
+			// If returns true, don't judge any more notes either.
+			bool OnReleaseLane(double SongTime, TrackNote* Note, uint32_t Lane) override;
+
+			bool OnScratchUp(double SongTime, TrackNote *Note, uint32_t Lane) override;
+			bool OnScratchDown(double SongTime, TrackNote *Note, uint32_t Lane) override;
+
+			// If Note is null, it didn't happen while an hold was being held
+			// otherwise, it happened while a hold was being held
+			bool OnScratchNeutral(double SongTime, TrackNote *Note, uint32_t Lane) override;
+
+			TimingType GetTimingKind()  override;
 		};
 	}
 }

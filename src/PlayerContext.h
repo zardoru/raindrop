@@ -34,7 +34,7 @@ namespace Game {
 		public:
 			;
 		private:
-			PlayerChartData ChartData;
+			GameChartData ChartData;
 
 			double LastUpdateTime; // seconds, song time
 
@@ -107,7 +107,7 @@ namespace Game {
 			*/
 			void SetPlayableData(std::shared_ptr<VSRG::Difficulty> difficulty, double Drift = 0, 
 								double DesiredDefaultSpeed = 0, int Type = SPEEDTYPE_DEFAULT);
-			const PlayerChartData &GetPlayerState();
+			const GameChartData &GetPlayerState();
 
 			// Getters (Lua)
 			bool IsFailEnabled() const;
@@ -158,7 +158,7 @@ namespace Game {
 			int GetCombo() const;
 
 			void HitNote(double TimeOff, uint32_t Lane, bool IsHold, bool IsHoldRelease = false);
-			void MissNote(double TimeOff, uint32_t Lane, bool IsHold, bool auto_hold_miss, bool early_miss);
+			void MissNote(double TimeOff, uint32_t Lane, bool IsHold, bool dont_break_combo, bool early_miss);
 			void GearKeyEvent(uint32_t Lane, bool KeyDown);
 			void JudgeLane(uint32_t Lane, double Time);
 			void ReleaseLane(uint32_t Lane, double Time);

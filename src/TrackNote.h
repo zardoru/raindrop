@@ -80,10 +80,11 @@ namespace Game {
 			// Add this much drift to the note. Doesn't reset.
 			void AddTime(double Time);
 
-			// Disable note for judgment completely.
+			// Disable note for judgment completely. Takes it out of update/press/release/scratch events etc..
 			void Disable();
 
 			// Disable the head of this note. Leaves the option of hitting the tail if not disabled.
+			// It's a mechanics flag - it still gets updated/pressed/released etc...
 			void DisableHead();
 
 			// Get the position on the track of the note/hold head.
@@ -102,7 +103,7 @@ namespace Game {
 			bool IsHeadEnabled() const;
 
 			// Get whether this note was hit on the head.
-			bool WasNoteHit() const;
+			bool WasHit() const;
 
 			// Get whether this note is a judgable kind of note. Doesn't depend on failure state.
 			// It also doesn't apply mechanical rules (i.e. hit notes can't be judged twice)
@@ -115,7 +116,7 @@ namespace Game {
 			int GetSound() const;
 
 			// Get the maximum between the start and end times. If not a hold, Start = End.
-			double GetTimeFinal() const;
+			double GetEndTime() const;
 
 			// Get the start time of this note. If not a hold, Start = End.
 			double GetStartTime() const;

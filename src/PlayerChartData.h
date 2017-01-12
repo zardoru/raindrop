@@ -4,7 +4,7 @@
 
 namespace Game {
 	namespace VSRG {
-		struct PlayerChartData {
+		struct GameChartData {
 			TimingData           VSpeeds;
 			TimingData		     BPS;
 			TimingData		     Warps;
@@ -18,19 +18,19 @@ namespace Game {
 			double WaitTime;
 			Difficulty* ConnectedDifficulty;
 
-			PlayerChartData();
+			GameChartData();
 
 			// Chart data functions
 			double GetWarpedSongTime(double SongTime) const;
 			double GetWarpAmount(double Time) const;
 			bool IsWarpingAt(double start_time) const;
-			std::vector<double> PlayerChartData::GetMeasureLines() const;
-			double PlayerChartData::GetSpeedMultiplierAt(double Time) const; // Time in unwarped song time
+			std::vector<double> GameChartData::GetMeasureLines() const;
+			double GameChartData::GetSpeedMultiplierAt(double Time) const; // Time in unwarped song time
 			double GetBpmAt(double Time) const;
 			double GetBpsAt(double Time) const;
 			double GetBeatAt(double Time) const;
 			double GetDisplacementAt(double Time) const;
-			double GetDyAt(double Time) const; // in unwarped song time
+			double GetDisplacementSpeedAt(double Time) const; // in unwarped song time
 			double GetTimeAtBeat(double beat, double drift = 0) const;
 			double GetOffset() const;
 			std::map<int, std::string> GetSoundList() const;
@@ -45,7 +45,7 @@ namespace Game {
 
 			// Drift is an offset to apply to _everything_.
 			// Speed is a constant to set the speed to.
-			static PlayerChartData FromDifficulty(Difficulty *diff, double Drift = 0, double Speed = 0);
+			static GameChartData FromDifficulty(Difficulty *diff, double Drift = 0, double Speed = 0);
 		};
 	}
 }

@@ -108,7 +108,7 @@ bool operator< (const HitsoundSectionData& lhs, const double rhs) {
 
 int GetTrackFromPosition(float Position, int Channels)
 {
-    float Step = 512.0 / Channels;
+    float Step = 512.f / Channels;
 
     return static_cast<int>(Position / Step);
 }
@@ -361,7 +361,7 @@ public:
         line_number = 0;
     }
 
-    float GetSliderMultiplierAt(double T)
+    double GetSliderMultiplierAt(double T)
     {
 		auto seclst = filter([&](const HitsoundSectionData &H) { return H.IsInherited && H.Time >= T; }, HitsoundSections);
         return seclst.size() ? seclst[0].Value : 1;
@@ -576,7 +576,7 @@ public:
 
 		SampleSetAddition is an abomination on a VSRG - so it's only left in for informative purposes.
 	*/
-	std::string GetSampleFilename(SplitResult &split_line, int NoteType, int Hitsound, float Time)
+	std::string GetSampleFilename(SplitResult &split_line, int NoteType, int Hitsound, double Time)
 	{
 		// SampleSetAddition is unused but left for self-documenting purposes.
 		int SampleSet = 0, SampleSetAddition, CustomSample = 0;
@@ -721,7 +721,7 @@ public:
 
 		if (NoteType & NOTE_HOLD)
 		{
-			float endTime;
+			double endTime;
 			if (splitType == 5 && ObjectHitsoundData.size())
 				endTime = latof(ObjectHitsoundData[0].c_str()) / 1000.0;
 			else if (splitType == 6)

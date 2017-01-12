@@ -51,7 +51,7 @@ TEST_CASE("Noteskin state")
 TEST_CASE("Speed support")
 {
 	auto sng = LoadSong7KFromFilename("tests/files/jnight.ssc");
-	auto pcd = Game::VSRG::PlayerChartData::FromDifficulty(sng->GetDifficulty(0));
+	auto pcd = Game::VSRG::GameChartData::FromDifficulty(sng->GetDifficulty(0));
 	auto tbeat = pcd.GetTimeAtBeat(93. + 4.);
 	REQUIRE(pcd.GetSpeedMultiplierAt(tbeat) == 0.250);
 }

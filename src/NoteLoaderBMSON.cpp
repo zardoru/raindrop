@@ -342,7 +342,7 @@ namespace NoteLoaderBMSON
             }
         }
 
-        float TimeForObj(double beat)
+        double TimeForObj(double beat)
         {
             return TimeAtBeat(Chart->Timing, 0, beat) + StopTimeAtBeat(Chart->Data->Stops, beat);
         }

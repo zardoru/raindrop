@@ -92,7 +92,7 @@ namespace Game {
 				EndTime += Time;
 		}
 
-		double TrackNote::GetTimeFinal() const
+		double TrackNote::GetEndTime() const
 		{
 			return std::max(Time, EndTime);
 		}
@@ -128,7 +128,7 @@ namespace Game {
 			EnabledHitFlags |= WasHitFlag;
 		}
 
-		bool TrackNote::WasNoteHit() const
+		bool TrackNote::WasHit() const
 		{
 			return (EnabledHitFlags & WasHitFlag) != 0;
 		}

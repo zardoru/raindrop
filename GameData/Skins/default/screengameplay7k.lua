@@ -23,7 +23,7 @@ skin_require "override"
 -- All of these will be loaded in the loading screen instead of
 -- in the main thread.
 Preload = {
---[[	"VSRG/judgeline.png",
+	"VSRG/judgeline.png",
 	"VSRG/stage-left.png",
 	"VSRG/stage-right.png",
 	"VSRG/pulse_ver.png",
@@ -43,7 +43,7 @@ Preload = {
 	"VSRG/keys.png",
 	"VSRG/fullcombo.png",
 	"VSRG/stageclear.png"
-]]}
+}
 
 -- A convenience class to handle events and such.
 AnimatedObjects = {
@@ -152,8 +152,7 @@ BgAlpha = 0
 function Init()
 	AutoadjustBackground()
 	AnimatedObjects.Init()
-	ScreenFade.Init()
-	ScreenFade.Out(true)
+
 
 
 	if GetConfigF("Histogram", "") ~= 0 then
