@@ -94,6 +94,10 @@ enum KeyType
 	KT_SwitchBPMPrompt,
 
 	// 7K specific
+	KT_P1_SCRATCH_UP,
+	KT_P1_SCRATCH_DOWN,
+	KT_P2_SCRATCH_UP,
+	KT_P2_SCRATCH_DOWN,
 	KT_Key1,
 	KT_Key2,
 	KT_Key3,

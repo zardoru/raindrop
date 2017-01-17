@@ -32,6 +32,7 @@ bool JoystickEnabled;
 //True is pressed, false is released
 bool controllerButtonState[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = { 0 };
 float lastAxisSign[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = { 0 };
+float lastAxisValue[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = { 0 };
 //The first member of this array should never be accessed; it's there to make reading some of the code easier.
 
 struct sk_s
@@ -149,6 +150,10 @@ char* KeytypeNames[] = {
 	"edfracincrease",
 	"edmode",
 	"edsetoffset",
+	"scratchp1up",
+	"scratchp1down",
+	"scratchp2up",
+	"scratchp2down",
 };
 
 int getIndexForKeytype(const char* key)
@@ -630,6 +635,8 @@ void GameWindow::SwapBuffers()
 						}
 					}
 				}
+
+
 			}
 		}
     }
