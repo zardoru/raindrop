@@ -308,8 +308,14 @@ SceneEnvironment::~SceneEnvironment()
     ManagedFonts.clear();
 
 	if (RocketContext) {
-		if (Doc) Doc->RemoveReference();
-		RocketContext->RemoveReference();
+		lua_gc(Rocket::Core::Lua::Interpreter::GetLuaState(), LUA_GCCOLLECT, 0);
+
+		/*if (Doc && Doc->GetReferenceCount()) {
+			Doc->RemoveReference();
+			Doc = nullptr;
+		}*/
+		// RocketContext->RemoveReference();
+		RocketContext = nullptr;
 	}
 }
 
@@ -561,12 +567,13 @@ void SceneEnvironment::ReloadUI()
 
     if (Doc)
     {
-        RocketContext->UnloadDocument(Doc);
-        Doc->Close();
+		Doc->GetContext()->UnloadDocument(Doc);
+		Doc->RemoveReference();
+		Doc = nullptr;
         Rocket::Core::Factory::ClearStyleSheetCache();
-        // Doc->RemoveReference();
     }
-    RocketContext->UnloadAllDocuments();
+
+    // RocketContext->UnloadAllDocuments();
 
     std::string FName = mScreenName + std::string(".rml");
 
@@ -594,6 +601,11 @@ void SceneEnvironment::ReloadAll()
 {
     ReloadUI();
     ReloadScripts();
+}
+
+void SceneEnvironment::SetScreenName(std::string sname)
+{
+	mScreenName = sname;
 }
 
 void SceneEnvironment::DrawUntilLayer(uint32_t Layer)

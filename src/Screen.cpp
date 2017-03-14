@@ -4,7 +4,7 @@
 #include "SceneEnvironment.h"
 #include "Screen.h"
 
-Screen::Screen(std::string Name)
+Screen::Screen(std::string Name, bool InitUI)
 {
     Parent = nullptr;
     Running = false;
@@ -12,7 +12,7 @@ Screen::Screen(std::string Name)
     ScreenTime = 0;
     IntroDuration = 0;
     ScreenState = StateRunning;
-    Animations = std::make_shared<SceneEnvironment>(Name.c_str());
+    Animations = std::make_shared<SceneEnvironment>(Name.c_str(), InitUI);
 }
 
 Screen::Screen(std::string Name, std::shared_ptr<Screen> _Parent)

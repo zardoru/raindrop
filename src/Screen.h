@@ -30,7 +30,7 @@ protected:
     std::shared_ptr<Screen> Next;
 
 public:
-    Screen(std::string Name);
+    Screen(std::string Name, bool InitUI = true);
     Screen(std::string Name, std::shared_ptr<Screen> _Parent);
     virtual ~Screen();
 
