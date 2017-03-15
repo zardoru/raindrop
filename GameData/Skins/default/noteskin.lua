@@ -17,7 +17,7 @@ function setNoteStuff(note, i)
 	note.X = skin[Notes.Channels]['Key' .. i .. 'X']
 	note.Height = skin[Notes.Channels].NoteHeight
 	note.Layer = 14
-	note.Lighten = 1
+	note.Lighten = true
 	note.LightenFactor = 0
 end
 

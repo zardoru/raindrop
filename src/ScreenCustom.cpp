@@ -12,7 +12,7 @@ ScreenCustom::ScreenCustom(const std::filesystem::path& ScriptName)
     ChangeState(StateIntro);
     Running = true;
 
-	Animations->SetScreenName(ScriptName.filename().string());
+	Animations->SetScreenName(ScriptName.filename().replace_extension().string());
 	Animations->InitializeUI();
 }
 

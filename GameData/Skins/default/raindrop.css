@@ -4,6 +4,78 @@ body {
 	text-align: right;
 }
 
+.widebox
+{
+	position: absolute;
+	top: 155px;
+	display: block;
+	width: 100%;
+	overflow-y: scroll;
+	height: 600%;
+	text-align: left;
+
+	background: #101010;
+	border-top-width: 3px;
+	border-bottom-width: 3px;
+	border-top-color: white;
+	border-bottom-color: white;
+}
+
+scrollbarvertical
+{
+	width: 24px;
+}
+
+scrollbarvertical slidertrack
+{
+	background: #A0A0A0;
+}
+
+scrollbarvertical sliderbar
+{
+	background: #303030;
+	width: 20px;
+	margin-left: 2px;
+}
+
+scrollbarvertical sliderarrowdec, sliderarrowinc
+{
+	background: #080808;
+	height: 35px;
+}
+
+.opt h1
+{
+	margin-left: 15%;
+	display: inline;
+	text-align: left;
+	left: 5%;
+	width: 100%;
+	font-size: 48;
+	darken-font-effect: shadow;
+    darken-offset: 1px 1px;
+    darken-color: grey;
+}
+
+.opt form 
+{
+	width: 70%;
+	display: inline-block;
+	margin-left: 15%;
+	padding-left: 2%;
+	background: #0A0A0A;
+}
+
+.opt form input:after
+{
+	content: "hello";
+}
+
+#text
+{
+	font-family: default;
+}
+
 .dbox h1
 {
 	display: block;
@@ -51,9 +123,45 @@ input.text {
 	width: 100%;
 }
 
+.opt input.text {
+	display: inline-block;
+	width: 40%;
+	height: 6%;
+	font-size: 20px;
+	margin-bottom: -15px;
+}
+
 input.text:hover {
 	background: grey;
 }
+
+input.range slidertrack
+{
+	height: 10px;
+	background: #303030;
+
+}
+
+.row {
+	display: inline-block;
+	width: 100%;
+}
+
+.rowlt {
+	text-align: right;
+	margin-right: 15px;
+	display: inline-block;
+	width: 50%;
+}
+
+.rowrt {
+	position: relative;
+	text-align: left;
+	margin-left: 15px;
+	display: inline-block;
+	top: -10px;
+}
+
 
 .boxes {
 	padding-top: 2px;

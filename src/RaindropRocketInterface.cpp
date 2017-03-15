@@ -37,7 +37,8 @@ namespace Engine
 
         void RenderInterface::SetScissorRegion(int x, int y, int width, int height)
         {
-            glScissor(x, y, width, height);
+			float ratio = WindowFrame.GetWindowVScale();
+            glScissor(x * ratio, (ScreenHeight - (y + height)) * ratio, width * ratio, height * ratio);
         }
 
         struct pointf
