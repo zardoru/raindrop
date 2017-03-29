@@ -1,7 +1,7 @@
 <rml>
 	<head>
 		<link type="text/css" href="raindrop.css"/>
-		<script src="selectmusicui.lua></script>
+		<script src="selectmusicui.lua"></script>
 	</head>
 
 	<body onready="onready(document)">

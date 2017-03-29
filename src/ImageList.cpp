@@ -1,7 +1,7 @@
 #include "pch.h"
 
 #include "GameState.h"
-#include "Image.h"
+#include "Texture.h"
 #include "ImageList.h"
 #include "ImageLoader.h"
 #include "Sprite.h"

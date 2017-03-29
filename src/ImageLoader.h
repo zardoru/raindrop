@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Image.h"
+#include "Texture.h"
 
 class ImageLoader
 {

@@ -2,7 +2,7 @@
 
 #include "Font.h"
 #include "Sprite.h"
-#include "Image.h"
+#include "Texture.h"
 
 class LuaManager;
 

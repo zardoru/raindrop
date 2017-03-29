@@ -7,7 +7,7 @@
 #include "osuBackgroundAnimation.h"
 
 #include <boost/algorithm/string/case_conv.hpp>
-#include "Image.h"
+#include "Texture.h"
 #include "Logging.h"
 
 const float OSB_WIDTH = 640;

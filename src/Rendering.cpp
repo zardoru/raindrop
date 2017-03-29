@@ -9,7 +9,7 @@
 #include "Rendering.h"
 
 #include "Line.h"
-#include "Image.h"
+#include "Texture.h"
 
 #include "TruetypeFont.h"
 #include "BitmapFont.h"
@@ -57,7 +57,7 @@ namespace Renderer {
 
 	void DrawPrimitiveQuad(Transformation &QuadTransformation, const EBlendMode &Mode, const ColorRGB &Color)
 	{
-		Texture::BindNull();
+		Texture::Unbind();
 		Shader::SetUniform(DefaultShader::GetUniform(U_COLOR), Color.Red, Color.Green, Color.Blue, Color.Alpha);
 
 		SetBlendingMode(Mode);

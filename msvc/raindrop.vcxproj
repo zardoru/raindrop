@@ -190,7 +190,7 @@
     <ClCompile Include="..\src\SceneEnvironment.cpp" />
     <ClCompile Include="..\src\GuiButton.cpp" />
     <ClCompile Include="..\src\GuiTextPrompt.cpp" />
-    <ClCompile Include="..\src\Image.cpp" />
+    <ClCompile Include="..\src\Texture.cpp" />
     <ClCompile Include="..\src\ImageList.cpp" />
     <ClCompile Include="..\src\ImageLoader.cpp" />
     <ClCompile Include="..\src\LuaAnimationInterface.cpp" />
@@ -260,7 +260,7 @@
     <ClInclude Include="..\src\SceneEnvironment.h" />
     <ClInclude Include="..\src\GuiButton.h" />
     <ClInclude Include="..\src\GuiTextPrompt.h" />
-    <ClInclude Include="..\src\Image.h" />
+    <ClInclude Include="..\src\Texture.h" />
     <ClInclude Include="..\src\ImageList.h" />
     <ClInclude Include="..\src\ImageLoader.h" />
     <ClInclude Include="..\src\Line.h" />

@@ -47,21 +47,21 @@ function sort_change(event)
 end
 
 function speedclass_change(event)
-	System.SetConfig("SpeedClass", event.parameters["value"], "Speed")
+    System.SetConfig("SpeedClass", event.parameters["value"], "Speed")
 end
 
 function speedamt_change(event)
-	System.SetConfig("SpeedAmount", event.parameters["value"], "Speed")
+    System.SetConfig("SpeedAmount", event.parameters["value"], "Speed")
 end
 
 savedSpeedClass = System.ReadConfigF("SpeedClass", "Speed")
 savedSpeedAmt = System.ReadConfigF("SpeedAmount", "Speed")
 
 function onready(document)
-	-- restore speed stuff from config...
-	local scElem = document:GetElementById("sc" .. savedSpeedClass)
-	local scaElem = document:GetElementById("spdamt")
+    -- restore speed stuff from config...
+    local scElem = document:GetElementById("sc" .. savedSpeedClass)
+    local scaElem = document:GetElementById("spdamt")
 
-	scaElem:SetAttribute("value", savedSpeedAmt)
-	scElem:SetAttribute("selected", 1)
+    scaElem:SetAttribute("value", savedSpeedAmt)
+    scElem:SetAttribute("selected", 1)
 end

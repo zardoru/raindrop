@@ -114,7 +114,7 @@ namespace Engine
             if (Handle->tex)
                 Handle->tex->Bind();
 			else {
-				Texture::BindNull();
+				Texture::Unbind();
 			}
 
 			using namespace Renderer;

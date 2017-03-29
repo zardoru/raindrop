@@ -26,12 +26,12 @@ public:
     ~Texture();
 
     void Bind();
-    void Assign(std::filesystem::path Filename, bool Regenerate = false);
+    void LoadFile(std::filesystem::path Filename, bool Regenerate = false);
     void SetTextureData2D(ImageData &Data, bool Reassign = false);
 
     // Utilitarian
     static void ForceRebind();
-    static void BindNull(); // Or, basically unbind.
+    static void Unbind(); // Or, basically unbind.
 
     // Data
 	std::filesystem::path fname;

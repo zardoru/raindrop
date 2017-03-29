@@ -235,7 +235,7 @@ Texture* GameState::GetSongBG()
 
 		if (std::filesystem::exists(toLoad))
 		{
-			SongBG->Assign(toLoad, true);
+			SongBG->LoadFile(toLoad, true);
 			return SongBG;
 		}
 
@@ -280,7 +280,7 @@ Texture* GameState::GetSongStage()
 
 				if (File.string().length() && std::filesystem::exists(toLoad))
 				{
-					StageImage->Assign(toLoad, true);
+					StageImage->LoadFile(toLoad, true);
 					return StageImage;
 				}
 

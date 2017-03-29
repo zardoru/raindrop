@@ -67,9 +67,6 @@
     <ClCompile Include="..\src\Song7K.cpp">
       <Filter>Source Files\vsrg\internal</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Image.cpp">
-      <Filter>Source Files\backend\render\textures</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\ImageLoader.cpp">
       <Filter>Source Files\backend\render\textures</Filter>
     </ClCompile>
@@ -241,6 +238,9 @@
     <ClCompile Include="..\src\ArcadeMechanics.cpp">
       <Filter>Source Files\vsrg\gameplay</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Texture.cpp">
+      <Filter>Source Files\backend\render\textures</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\pch.h">
@@ -329,9 +329,6 @@
     </ClInclude>
     <ClInclude Include="..\src\VBO.h">
       <Filter>Header Files\backend\render\objects</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Image.h">
-      <Filter>Header Files\backend\render\textures</Filter>
     </ClInclude>
     <ClInclude Include="..\src\ImageList.h">
       <Filter>Header Files\backend\render\textures</Filter>
@@ -428,6 +425,9 @@
     </ClInclude>
     <ClInclude Include="..\src\Shader.h">
       <Filter>Header Files\backend\render\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Texture.h">
+      <Filter>Header Files\backend\render\textures</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

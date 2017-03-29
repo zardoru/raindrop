@@ -3,7 +3,7 @@
 #include "Sprite.h"
 
 #include "VBO.h"
-#include "Image.h"
+#include "Texture.h"
 
 void Drawable2D::Render() {}
 

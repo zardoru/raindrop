@@ -16,7 +16,7 @@ void BitmapFont::LoadFontImage(std::filesystem::path Location, Vec2 _CharSize, V
     if (!Font)
         Font = new Texture;
 
-    Font->Assign(Location);
+    Font->LoadFile(Location);
 
     StartingCharacter = FontStart;
     CharSize = _CharSize;

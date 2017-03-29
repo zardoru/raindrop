@@ -301,7 +301,7 @@ private:
 
 public:
 
-    void CopyOut(float * out, int samples)
+    void WriteAndAdvanceStream(float * out, int samples)
     {
         int count = samples;
 
@@ -350,7 +350,7 @@ public:
 int Mix(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags, void *userData)
 {
     PaMixer *Mix = static_cast<PaMixer*>(userData);
-    Mix->CopyOut(static_cast<float*>(output), frameCount * 2);
+    Mix->WriteAndAdvanceStream(static_cast<float*>(output), frameCount * 2);
     return 0;
 }
 
