@@ -38,7 +38,7 @@ protected:
 public:
     Texture(unsigned int texture, int w, int h);
     Texture();
-    ~Texture();
+    virtual ~Texture();
 
     void Bind();
     void LoadFile(std::filesystem::path Filename, bool Regenerate = false);

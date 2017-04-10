@@ -27,6 +27,10 @@ public:
 
 	// AddToListIndex asks ImageLoader to load on a different thread.
     void AddToListIndex(const std::filesystem::path Filename, int Index);
+
+	// Add texture (Doesn't get removed)
+	void AddToListIndex(Texture* tex, int Index);
+
     void AddToList(const uint32_t Count, const std::string *Filename, const std::string Prefix);
 
 	// Either load from scratch or from cached image. Unsafe for non-main thread.

@@ -130,6 +130,9 @@ namespace Game {
 
 		bool ScreenGameplay::LoadSongAudio()
 		{
+			CfgVar SkipLoadAudio("SkipAudioLoad", "Debug");
+			if (SkipLoadAudio) return true;
+
 			auto Rate = GameState::GetInstance().GetParameters(0)->Rate;
 			if (!Music)
 			{

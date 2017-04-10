@@ -318,9 +318,9 @@ void Application::Run()
 
     if (RunMode == MODE_PLAY)
     {
-        //Game = std::make_shared<ScreenMainMenu>();
-        //static_cast<ScreenMainMenu*>(Game.get())->Init();
-		Game = std::make_shared<ScreenVideoTest>();
+        Game = std::make_shared<ScreenMainMenu>();
+        static_cast<ScreenMainMenu*>(Game.get())->Init();
+		//Game = std::make_shared<ScreenVideoTest>();
     }
     else if (RunMode == MODE_VSRGPREVIEW)
     {

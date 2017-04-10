@@ -10,6 +10,7 @@
 #include "ImageList.h"
 #include "Logging.h"
 #include "osuBackgroundAnimation.h"
+#include "VideoPlayback.h"
 
 std::filesystem::path GetSongBackground(Game::Song &Song)
 {
@@ -29,6 +30,29 @@ std::filesystem::path GetSongBackground(Game::Song &Song)
     return Configuration::GetSkinConfigs("DefaultBackground");
 }
 
+std::string videoextensions[] = {
+	".mkv",
+	".mp4",
+	".avi",
+	".wmv",
+	".m4v",
+	".mpg",
+	".mpeg",
+	".mpv",
+	".flv"
+};
+
+bool IsVideoPath(std::filesystem::path path)
+{
+	auto pathext = path.extension().string();
+	for (auto ext : videoextensions) {
+		if (pathext == ext)
+			return true;
+	}
+
+	return false;
+}
+
 class BMSBackground : public BackgroundAnimation
 {
     std::shared_ptr<Sprite> Layer0;
@@ -39,6 +63,10 @@ class BMSBackground : public BackgroundAnimation
     std::vector<AutoplayBMP> EventsLayerMiss;
     std::vector<AutoplayBMP> EventsLayer1;
     std::vector<AutoplayBMP> EventsLayer2;
+
+	std::map<int, VideoPlayback*> Videos;
+	
+
     ImageList List;
     Game::VSRG::Song* Song;
     Game::VSRG::Difficulty* Difficulty;
@@ -61,6 +89,13 @@ public:
         BlackToTransparent = BtoT;
     }
 
+	~BMSBackground()
+	{
+		for (auto vid : Videos) {
+			delete vid.second;
+		}
+	}
+
     void Load() override
     {
         EventsLayer0 = Difficulty->Data->BMPEvents->BMPEventsLayerBase;
@@ -70,7 +105,19 @@ public:
 
 		for (auto v : Difficulty->Data->BMPEvents->BMPList) {
 			std::filesystem::path path = Song->SongDirectory / v.second;
-			List.AddToListIndex(path, v.first);
+			if (IsVideoPath(path))
+			{
+				auto vid = new VideoPlayback();
+				if (vid->Open(path)) {
+					vid->StartDecodeThread();
+					List.AddToListIndex(vid, v.first);
+					Videos[v.first] = vid;
+				}
+				else
+					delete vid;
+			}
+			else
+				List.AddToListIndex(path, v.first);
 		}
 
         List.AddToList(Song->BackgroundFilename, Song->SongDirectory);
@@ -98,8 +145,14 @@ public:
 
         Layer1->BlackToTransparent = Layer2->BlackToTransparent = BlackToTransparent;
 
-        LayerMiss->SetImage(List.GetFromIndex(0), false);
-        Layer0->SetImage(List.GetFromIndex(1), false);
+        LayerMiss->SetImage(List.GetFromIndex(0), true);
+        Layer0->SetImage(List.GetFromIndex(1), true);
+
+		Layer0->SetWidth(Layer0->GetWidth() / Layer0->GetHeight());
+		Layer0->SetHeight(1);
+		auto x = Layer0->GetWidth();
+
+		Layer0->SetPositionX( (1 - x) / 2 );
 
         sort(EventsLayer0.begin(), EventsLayer0.end());
         sort(EventsLayerMiss.begin(), EventsLayerMiss.end());
@@ -128,7 +181,14 @@ public:
         if (bmp != events_layer.begin())
         {
             bmp = bmp - 1;
-            sprite->SetImage(List.GetFromIndex(bmp->BMP), false);
+
+			auto tex = List.GetFromIndex(bmp->BMP);
+			auto vid = dynamic_cast<VideoPlayback*>(tex);
+			if (vid) {
+				vid->UpdateClock(time - bmp->Time);
+			}
+
+            sprite->SetImage(tex, false);
         }
         else
         {

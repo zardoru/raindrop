@@ -202,6 +202,7 @@ VideoPlayback::VideoPlayback(uint32_t framequeueitems)
 {
 	InitializeFFMpeg();
 	mFrameQueueItems = framequeueitems;
+	Context = nullptr;
 }
 
 VideoPlayback::~VideoPlayback()
@@ -324,6 +325,7 @@ void VideoPlayback::UpdateVideoTexture(void * data)
 	AVFrame* frame = (AVFrame*)data;
 
 	CreateTexture();
+	Bind();
 
 	if (IsValid) {
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);

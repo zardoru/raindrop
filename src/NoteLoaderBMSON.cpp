@@ -547,12 +547,24 @@ namespace NoteLoaderBMSON
                 for (auto &bgi : bga["bga_header"])
                     out->BMPList[bgi["id"].asInt()] = CleanFilename(bgi["name"].asString());
 
-                for (auto &bg0 : bga["bga_notes"])
-                    out->BMPEventsLayerBase.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
-                for (auto &bg0 : bga["layer_notes"])
-                    out->BMPEventsLayer.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
-                for (auto &bg0 : bga["poor_notes"])
-                    out->BMPEventsLayerMiss.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
+				if (version != VERSION_1) {
+					for (auto &bg0 : bga["bga_notes"])
+						out->BMPEventsLayerBase.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
+					for (auto &bg0 : bga["layer_notes"])
+						out->BMPEventsLayer.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
+					for (auto &bg0 : bga["poor_notes"])
+						out->BMPEventsLayerMiss.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
+				}
+				else {
+					for (auto &bg0 : bga["bga_events"])
+						out->BMPEventsLayerBase.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
+					for (auto &bg0 : bga["layer_events"])
+						out->BMPEventsLayer.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
+					for (auto &bg0 : bga["poor_events"])
+						out->BMPEventsLayerMiss.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
+				}
+
+				Chart->Data->BMPEvents = out;
             }
         }
     public:

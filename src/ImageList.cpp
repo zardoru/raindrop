@@ -47,6 +47,11 @@ void ImageList::AddToListIndex(const std::filesystem::path Filename, int Index)
     }
 }
 
+void ImageList::AddToListIndex(Texture * tex, int Index)
+{
+	ImagesIndex[Index] = tex;
+}
+
 void ImageList::Destroy()
 {
     for (auto i = Images.begin(); i != Images.end(); ++i)
