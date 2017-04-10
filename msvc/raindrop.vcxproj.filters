@@ -232,14 +232,20 @@
     <ClCompile Include="..\src\VSRGMechanics.cpp">
       <Filter>Source Files\vsrg\gameplay</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Shader.cpp">
-      <Filter>Header Files\backend\render\objects</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\ArcadeMechanics.cpp">
       <Filter>Source Files\vsrg\gameplay</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Texture.cpp">
       <Filter>Source Files\backend\render\textures</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Shader.cpp">
+      <Filter>Source Files\backend\render\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\VideoPlayback.cpp">
+      <Filter>Source Files\backend\render\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenVideoTest.cpp">
+      <Filter>Source Files\game global\screens</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -428,6 +434,12 @@
     </ClInclude>
     <ClInclude Include="..\src\Texture.h">
       <Filter>Header Files\backend\render\textures</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\VideoPlayback.h">
+      <Filter>Header Files\backend\render\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScreenVideoTest.h">
+      <Filter>Header Files\game global</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

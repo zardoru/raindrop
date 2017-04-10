@@ -47,6 +47,9 @@ public:
     void ClearWindow(); // basically wrapping up glClear
     void Cleanup();
 
+	void UpdateFullscreen();
+	void RunInput();
+
     void SetVisibleCursor(bool Visible);
     void AddVBO(VBO* V);
     void RemoveVBO(VBO *V);

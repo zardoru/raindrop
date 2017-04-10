@@ -83,20 +83,22 @@ void Texture::SetTextureData2D(ImageData &ImgInfo, bool Reassign)
 		return;
 	}
 
+	auto img = ImgInfo.TempData ? ImgInfo.TempData : ImgInfo.Data.data();
+
 	if (!TextureAssigned || Reassign) // We haven't set any data to this texture yet, or we want to regenerate storage
 	{
 		TextureAssigned = true;
 		auto Dir = ImgInfo.Filename.filename().string();
 
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, ImgInfo.Alignment);
 		Renderer::SetTextureParameters(Dir);
 
 		//glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8, ImgInfo.Width, ImgInfo.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ImgInfo.Data.data());
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8, ImgInfo.Width, ImgInfo.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ImgInfo.Data.data());
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8, ImgInfo.Width, ImgInfo.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, img);
 	}
 	else // We did, so let's update instead.
 	{
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ImgInfo.Width, ImgInfo.Height, GL_RGBA, GL_UNSIGNED_BYTE, ImgInfo.Data.data());
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ImgInfo.Width, ImgInfo.Height, GL_RGBA, GL_UNSIGNED_BYTE, img);
 	}
 
 	w = ImgInfo.Width;

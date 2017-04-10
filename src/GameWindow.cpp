@@ -35,13 +35,13 @@ float lastAxisSign[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = { 0 };
 float lastAxisValue[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = { 0 };
 //The first member of this array should never be accessed; it's there to make reading some of the code easier.
 
-struct sk_s
+struct KeyAssociation
 {
     char KeyString[32];
     int boundkey;
 };
 
-sk_s StaticSpecialKeys[] = // only add if someone actually needs more
+KeyAssociation StaticSpecialKeys[] = // only add if someone actually needs more
 {
     { "LShift", GLFW_KEY_LEFT_SHIFT },
     { "RShift", GLFW_KEY_RIGHT_SHIFT },
@@ -82,9 +82,9 @@ sk_s StaticSpecialKeys[] = // only add if someone actually needs more
     { "Backspace", GLFW_KEY_BACKSPACE }
 };
 
-const int NUM_OF_STATIC_SPECIAL_KEYS = sizeof(StaticSpecialKeys) / sizeof(sk_s); //make sure to match the above array
+const int NUM_OF_STATIC_SPECIAL_KEYS = sizeof(StaticSpecialKeys) / sizeof(KeyAssociation); //make sure to match the above array
 
-std::vector<sk_s> SpecialKeys;
+std::vector<KeyAssociation> SpecialKeys;
 
 int KeyTranslate(std::string K)
 {
@@ -207,7 +207,7 @@ void BindingsManager::Initialize()
             {
                 char name[32];
                 sprintf(name, "Controller%d", i);
-                sk_s thisButton;
+                KeyAssociation thisButton;
                 strcpy(thisButton.KeyString, name);
                 thisButton.boundkey = 1000 + i;
                 SpecialKeys.push_back(thisButton);
@@ -221,7 +221,7 @@ void BindingsManager::Initialize()
 			for (int i = numOfButtons + 1; i <= numOfButtons + numOfAxis; i++) {
 				char name[32];
 				sprintf(name, "Controller%d", i);
-				sk_s thisAxis;
+				KeyAssociation thisAxis;
 				strcpy(thisAxis.KeyString, name);
 				thisAxis.boundkey = 1000 + i;
 				SpecialKeys.push_back(thisAxis);
@@ -568,37 +568,108 @@ void GameWindow::AssignSize()
 
 void GameWindow::SwapBuffers()
 {
-    if (doFlush)
-        glFlush();
+	if (doFlush)
+		glFlush();
 
-    glfwSwapBuffers(wnd);
-    glfwPollEvents();
+	glfwSwapBuffers(wnd);
+	
 
-    if (JoystickEnabled)
-    {
+    /* Fullscreen switching */
+
+}
+
+void GameWindow::ClearWindow()
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void GameWindow::Cleanup()
+{
+	glfwDestroyWindow(wnd);
+	glfwTerminate();
+}
+
+void GameWindow::UpdateFullscreen()
+{
+	if (FullscreenSwitchbackPending)
+	{
+		Log::LogPrintf("Attempting to switch fullscreen mode.\n");
+		if (IsFullscreen)
+		{
+			glfwDestroyWindow(wnd);
+			wnd = glfwCreateWindow(size.x, size.y, RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, NULL, NULL);
+			IsFullscreen = false;
+		}
+		else
+		{
+			if (glfwGetPrimaryMonitor()) {
+				AssignSize();
+				glfwDestroyWindow(wnd);
+				wnd = glfwCreateWindow(size.x, size.y, RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, glfwGetPrimaryMonitor(), NULL);
+
+				IsFullscreen = true;
+				Log::LogPrintf("Switched to fullscreen mode.\n");
+			}
+			else {
+				IsFullscreen = false;
+				Log::LogPrintf("Can't switch to fullscreen. No primary monitor detected?\n");
+				FullscreenSwitchbackPending = false;
+				return;
+			}
+		}
+
+		SetupWindow();
+
+		// Reload all images.
+		Engine::RocketInterface::ReloadTextures();
+		ImageLoader::ReloadAll();
+
+		/* This revalidates all VBOs and fonts */
+		for (std::vector<VBO*>::iterator i = VBOList.begin(); i != VBOList.end(); i++)
+		{
+			(*i)->Invalidate();
+			(*i)->Validate();
+		}
+
+		// Automatically revalidated on usage
+		for (std::vector<TruetypeFont*>::iterator i = TTFList.begin(); i != TTFList.end(); i++)
+		{
+			(*i)->Invalidate();
+		}
+
+		FullscreenSwitchbackPending = false;
+	}
+}
+
+void GameWindow::RunInput()
+{
+	glfwPollEvents();
+
+	if (JoystickEnabled)
+	{
 		// buttons
 		int buttonArraySize = 0;
-        const unsigned char *buttonArray = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &buttonArraySize);
-        if (buttonArraySize > 0)
-        {
-            for (int i = 0; i < buttonArraySize; i++)
-            {
-                for (uint32_t j = 0; j < SpecialKeys.size(); j++)
-                {
-                    /* Matches the pressed button to its entry in the SpecialKeys vector. */
-                    int thisKeyNumber = SpecialKeys[j].boundkey - 1000;
-                    if (i + 1 == thisKeyNumber)
-                    {
-                        /* Only processes the button push/release if the state has changed. */
-                        if ((buttonArray[i] != 0) != controllerButtonState[thisKeyNumber])
-                        {
-                            WindowFrame.Parent->HandleInput(SpecialKeys[j].boundkey, ToKeyEventType(buttonArray[i]), false);
-                            controllerButtonState[thisKeyNumber] = !controllerButtonState[thisKeyNumber];
-                        }
-                    }
-                }
-            }
-        }
+		const unsigned char *buttonArray = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &buttonArraySize);
+		if (buttonArraySize > 0)
+		{
+			for (int i = 0; i < buttonArraySize; i++)
+			{
+				for (uint32_t j = 0; j < SpecialKeys.size(); j++)
+				{
+					/* Matches the pressed button to its entry in the SpecialKeys vector. */
+					int thisKeyNumber = SpecialKeys[j].boundkey - 1000;
+					if (i + 1 == thisKeyNumber)
+					{
+						/* Only processes the button push/release if the state has changed. */
+						if ((buttonArray[i] != 0) != controllerButtonState[thisKeyNumber])
+						{
+							WindowFrame.Parent->HandleInput(SpecialKeys[j].boundkey, ToKeyEventType(buttonArray[i]), false);
+							controllerButtonState[thisKeyNumber] = !controllerButtonState[thisKeyNumber];
+						}
+					}
+				}
+			}
+		}
 
 		// axis
 		int axisArraySize;
@@ -618,7 +689,7 @@ void GameWindow::SwapBuffers()
 							lastAxisSign[i] = sign(axisArray[i]);
 
 							controllerButtonState[axis] = true;
-                            WindowFrame.Parent->HandleInput(SpecialKeys[j].boundkey, KE_PRESS, false);
+							WindowFrame.Parent->HandleInput(SpecialKeys[j].boundkey, KE_PRESS, false);
 						}
 						else {
 							if (lastAxisSign[i] != sign(axisArray[i])) {
@@ -631,76 +702,14 @@ void GameWindow::SwapBuffers()
 					else {
 						if (controllerButtonState[axis] != false) {
 							controllerButtonState[axis] = false;
-                            WindowFrame.Parent->HandleInput(SpecialKeys[j].boundkey, KE_RELEASE, false);
+							WindowFrame.Parent->HandleInput(SpecialKeys[j].boundkey, KE_RELEASE, false);
 						}
 					}
 				}
-
-
 			}
 		}
-    }
 
-    /* Fullscreen switching */
-    if (FullscreenSwitchbackPending)
-    {
-		Log::LogPrintf("Attempting to switch fullscreen mode.\n");
-        if (IsFullscreen)
-        {
-            glfwDestroyWindow(wnd);
-            wnd = glfwCreateWindow(size.x, size.y, RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, NULL, NULL);
-			IsFullscreen = false;
-        }
-        else
-        {
-			if (glfwGetPrimaryMonitor()) {
-				AssignSize();
-				glfwDestroyWindow(wnd);
-				wnd = glfwCreateWindow(size.x, size.y, RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, glfwGetPrimaryMonitor(), NULL);
-
-				IsFullscreen = true;
-				Log::LogPrintf("Switched to fullscreen mode.\n");
-			} 
-			else {
-				IsFullscreen = false;
-				Log::LogPrintf("Can't switch to fullscreen. No primary monitor detected?\n");
-				FullscreenSwitchbackPending = false;
-				return;
-			}
-        }
-
-        SetupWindow();
-
-		// Reload all images.
-		Engine::RocketInterface::ReloadTextures();
-        ImageLoader::ReloadAll();
-
-        /* This revalidates all VBOs and fonts */
-        for (std::vector<VBO*>::iterator i = VBOList.begin(); i != VBOList.end(); i++)
-        {
-            (*i)->Invalidate();
-            (*i)->Validate();
-        }
-
-		// Automatically revalidated on usage
-        for (std::vector<TruetypeFont*>::iterator i = TTFList.begin(); i != TTFList.end(); i++)
-        {
-            (*i)->Invalidate();
-        }
-
-        FullscreenSwitchbackPending = false;
-    }
-}
-
-void GameWindow::ClearWindow()
-{
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-
-void GameWindow::Cleanup()
-{
-    glfwDestroyWindow(wnd);
-    glfwTerminate();
+	}
 }
 
 bool GameWindow::ShouldCloseWindow()
@@ -724,6 +733,7 @@ bool GameWindow::SetupShaders()
 
     if (glGenVertexArrays && glBindVertexArray)
     {
+		Log::Printf("System supports VAOs...\n");
         glGenVertexArrays(1, &defaultVao);
         glBindVertexArray(defaultVao);
     }

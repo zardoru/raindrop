@@ -25,6 +25,8 @@
 #include "SongWheel.h"
 #include "ScreenCustom.h"
 
+#include "ScreenVideoTest.h"
+
 void RunRaindropTests();
 bool Auto = false;
 bool DoRun = false;
@@ -316,8 +318,9 @@ void Application::Run()
 
     if (RunMode == MODE_PLAY)
     {
-        Game = std::make_shared<ScreenMainMenu>();
-        static_cast<ScreenMainMenu*>(Game.get())->Init();
+        //Game = std::make_shared<ScreenMainMenu>();
+        //static_cast<ScreenMainMenu*>(Game.get())->Init();
+		Game = std::make_shared<ScreenVideoTest>();
     }
     else if (RunMode == MODE_VSRGPREVIEW)
     {
@@ -443,6 +446,8 @@ void Application::Run()
         double delta = newTime - oldTime;
         ImageLoader::UpdateTextures();
 
+		WindowFrame.RunInput();
+
         WindowFrame.ClearWindow();
 
         if (RunMode == MODE_VSRGPREVIEW) // Run IPC Message Queue Querying.
@@ -452,6 +457,8 @@ void Application::Run()
 
         MixerUpdate();
         WindowFrame.SwapBuffers();
+		WindowFrame.UpdateFullscreen();
+
         oldTime = newTime;
     }
 }
