@@ -4,7 +4,7 @@
 #include "Shader.h"
 #include "GameWindow.h"
 
-inline void CHECKERR() {
+void CHECKERR() {
 		auto err = glGetError();
 		if (err) {
 			Log::LogPrintf("OpenGL Shader Error: %d\n", err);

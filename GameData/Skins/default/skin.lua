@@ -74,6 +74,8 @@ ScreenFilter = 0.7
 -- Whether to display the in-game histogram.
 Histogram = 0
 
+Hitlightning = 1
+
 -- show up to 999 ms off
 HitErrorDisplayLimiter = 999
 

@@ -113,11 +113,11 @@ librd.make_new(MissHighlight, MissHighlight.Init)
 function MissHighlight:Run(Delta)
 	for i=1, self.Player.Channels do
 		self.CurrentTime[i] = self.CurrentTime[i] + Delta
-		self[i].Alpha = clerp(self.CurrentTime[i], 0, self.Time[i], 1, 0)
+		self[i].Alpha = max(1 - self.CurrentTime[i] / self.Time[i], 0)
 	end
 end
 
-function MissHighlight:Miss(t, l, h, pn)
+function MissHighlight:OnMiss(t, l, h, pn)
   if pn ~= self.Player.Number then
     return
   end

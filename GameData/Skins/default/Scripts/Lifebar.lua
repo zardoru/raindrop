@@ -53,6 +53,8 @@ function Lifebar:Init()
 	self.Fill2.BlendMode = BlendAdd
 	self.Fill2.Width = self.Fill.Width
 	self.Display = 0
+
+	self:Run(0)
 end
 
 librd.make_new(Lifebar, Lifebar.Init)
@@ -92,13 +94,15 @@ function Jambar:Init()
 	self.BarFG.Texture = self.ImageFG;
   
 	with (self.BarFG, {
-		Centered = 1,
-		X = self.Noteskin.GearStartX + self.Noteskin.GearWidth + self.Width / 2,
+		Centered = 0,
+		X = self.Noteskin.GearStartX + self.Noteskin.GearWidth + self.Width / 2 + 5,
 	  Layer = 25,
 		Width = Jambar.Width,
 	  Height = Jambar.Height,
 	  Lighten = 1
 	})
+
+	self:Run(0)
 end
 
 librd.make_new(Jambar, Jambar.Init)

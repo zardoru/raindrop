@@ -18,6 +18,7 @@ skin_require "Scripts/StageAnimation"
 skin_require "Scripts/AnimatedObjects"
 skin_require "Scripts/Keys"
 skin_require "Scripts/Judgment"
+skin_require "Scripts/TextDisplay"
 skin_require "override"
 
 -- All of these will be loaded in the loading screen instead of
@@ -63,6 +64,7 @@ AnimatedObjects = {
 		Judgment,
 		Explosions,
 		Jambar,
+		PlayerText,
     AutoAnimation
 	},
 

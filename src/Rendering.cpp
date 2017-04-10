@@ -606,6 +606,7 @@ void BitmapFont::Render(const std::string &In, const Vec2 &Position, const Mat4 
     }
 
 	using namespace Renderer;
+	Renderer::DefaultShader::Bind();
 	SetShaderParameters(false, false, false);
     DefaultShader::SetColor(Red, Green, Blue, Alpha);
 

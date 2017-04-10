@@ -21,7 +21,7 @@ end
 ]]
 
 function HitLightning:Init()
-  self.Enabled = (GetConfigF("DisableHitlightning", "") ~= 0)
+  self.Enabled = (GetConfigF("Hitlightning", "") ~= 0)
   
 	if not self.Enabled then
     print "Hit Lightning disabled."
