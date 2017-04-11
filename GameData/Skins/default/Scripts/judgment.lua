@@ -10,6 +10,9 @@ Judgment = {
 	ScaleMiss = 0.7,
 	ScaleExtra = 0.2,
 
+	-- if not nil it overrides default position
+	--Position = {},
+
 	Table = {
 		"judge-excellent.png",
 		"judge-perfect.png",
@@ -35,25 +38,25 @@ function Judgment:Init()
   print ("Judgment Default Pos: ", self.defaultX, self.defaultY)
   
 	self.Object = ScreenObject {
-		Layer = 24,
+		Layer = 30,
 		Centered = 1,
 		Texture = self.Atlas.File,
-		Alpha = 0
+		Alpha = 1
 	}
 
 	self.Transform = Transformation()
 	self.Object.ChainTransformation = self.Transform
   
 	if self.Position then 
-		self.Transform.X = self.Position.x
-		self.Transform.Y = self.Position.y
-	  else
+		self.Transform.X = self.Position.x or self.defaultX
+		self.Transform.Y = self.Position.y or self.defaultY
+	else
 		self.Transform.X = self.defaultX
 		self.Transform.Y = self.defaultY  
-	  end
+	end
 
-	  self.Transform.Width = self.Scale
-	  self.Transform.Height = self.Scale
+	self.Transform.Width = self.Scale
+	self.Transform.Height = self.Scale
 
 
   	print ("Judgment Real pos/Texture: ", self.Transform.X, self.Transform.Y, self.Object.Texture)
@@ -84,7 +87,7 @@ end
 
 function Judgment:Run(Delta)
 	local ComboLerp = self:GetComboLerp()
-
+	
 	if Game.Active and self.Value then
 		local AlphaRatio
 		self.Time = min(self.Time + Delta, self.ScaleTime)
@@ -142,17 +145,16 @@ function Judgment:Run(Delta)
 		else
 			self.IndicatorObject.Alpha = 0
 		end
-  else
-    self.IndicatorObject.Alpha = 0
-    self.Object.Alpha = 0
+	else
+		self.IndicatorObject.Alpha = 0
+		self.Object.Alpha = 0
 	end
 end
 
 function Judgment:OnHit(JudgmentValue, Time, l, h, r, pn)
-  if pn ~= self.Player.Number then
-    return
-  end
-
+	if pn ~= self.Player.Number then
+		return
+	end
 	self.Value = JudgmentValue
 
 	if self.Value == 0 then

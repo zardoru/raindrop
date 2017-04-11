@@ -22,8 +22,8 @@ function ComboDisplay:SetName(i)
 end
 
 function ComboDisplay:Init()
-  self.X = self.X or self.Noteskin.GearStartX + self.Noteskin.GearWidth / 2
-  self.Y = self.Y or 0.3 * ScreenHeight
+  self.X = self.Position and self.Position.x or self.Noteskin.GearStartX + self.Noteskin.GearWidth / 2
+  self.Y = self.Position and self.Position.y or 0.3 * ScreenHeight
   
   if self.Player.Upscroll then
     self.Y = ScreenHeight - self.Y

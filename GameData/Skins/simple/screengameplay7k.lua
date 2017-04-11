@@ -11,8 +11,6 @@ skin_require "custom_defs"
 game_require "utils"
 game_require "AnimationFunctions"
 
-skin_require "Global/FadeInScreen"
-skin_require "VSRG/StageAnimation"
 -- Set up constants for everyone
 
 
@@ -28,15 +26,20 @@ skin_require "Scripts/Judgment"
 skin_require "Scripts/ScoreDisplay"
 
 Judgment.Scale = 0.15
-Judgment.ScaleHit = 0.12
-Judgment.ScaleMiss = 0.02
-Judgment.Position.y = 400
-Judgment.Position.x = Judgment.Position.x - 50
+Judgment.ScaleHit = 1.2
+Judgment.ScaleMiss = 0.1
+Judgment.Position = {
+	y = 400,
+	x = GearStartX + Noteskin[8].GearWidth / 2 - 50
+}
+
 Judgment.Tilt = 0
 ComboDisplay.DigitWidth = 25
 ComboDisplay.DigitHeight = 25
-ComboDisplay.Position.x = Judgment.Position.x + 200
-ComboDisplay.Position.y = Judgment.Position.y
+ComboDisplay.Position = {
+	x = Judgment.Position.x + 200,
+	y = Judgment.Position.y
+}
 ComboDisplay.BumpVertically = 0
 ComboDisplay.BumpHorizontally = 0
 ComboDisplay.HeightAddition = 0
@@ -96,8 +99,8 @@ function GenText()
 	TitleText.Font = TitleFont
 	TitleText.Layer = 21
 
-	sng = toSong7K(Global:GetSelectedSong())
-	diff = sng:GetDifficulty(Global.DifficultyIndex)
+	sng = Global:GetSelectedSong()
+	diff = Game:GetPlayer(0).Difficulty
 	if diff.Author ~= "" then
 		difftxt = string.format("%s by %s", diff.Name, diff.Author)
 	else
@@ -120,17 +123,24 @@ function Init()
 		h = 480 * YR
 	})
 
-	ScreenFade.Init()
-	ScreenFade.Out(true)
 
-	ComboDisplay.Init()
-	Judgment.Init()
-	ScoreDisplay.Init()
+	local tbl = {
+		Player = Game:GetPlayer(0),
+		Noteskin = Noteskin[8]
+	}
+
+	combodisplay = ComboDisplay:new(tbl)
+	judgment = Judgment:new(tbl)
+	scoredisplay = ScoreDisplay:new(tbl)
 	IsFullCombo = false
+
+	Channels = Game:GetPlayer(0).Channels
 
 	GenText()
 	print "Creating fixed objects."
-	FixedObjects.CreateFromCSV("simple.csv", Noteskin[8])
+	GameObjects = FixedObjects:new()
+	GameObjects:CreateFromCSV("simple.csv", Noteskin[8])
+	Sprites = GameObjects.Sprites 
 
 	SongPosition = Sprites["tick"]
 	SongPosition.Centered = true
@@ -179,6 +189,7 @@ function Init()
 		end
 	end
 
+	local LifebarValue = Game:GetPlayer(0).LifebarPercent / 100
 	HP = Sprites["health"]
 	HP.ScaleX = LifebarValue
 	HP:SetCropByPixels(0, 352 * LifebarValue, 0, 29)
@@ -198,12 +209,12 @@ function OnFullComboEvent()
 end
 
 function OnFailureEvent()
-	if Global.CurrentGaugeType ~= LT_GROOVE then
+	if Global:GetCurrentGaugeType(0) ~= LT_GROOVE then
 		DoFailAnimation()
 		return FailAnimation.Duration
 	else
-		FadeToBlack()
-		return SuccessAnimation.Duration
+		-- FadeToBlack()
+		return 1 --SuccessAnimation.Duration
 	end
 end
 
@@ -211,31 +222,25 @@ end
 function OnActivateEvent()
 end
 
-function HitEvent(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease)
+function HitEvent(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease, pn)
     local MapLane = Noteskin[Channels].Map[Lane]
 
-	local eol = 0
-	if TimeOff > 0 then eol = 2 elseif TimeOff < 0 then eol = 1 end
-	Judgment.Hit(JudgmentValue, eol)
-	ComboDisplay.Hit(JudgmentValue == 0)
+	judgment:OnHit(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease, pn)
+	combodisplay:OnHit(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease, pn)
 
 	Bomb[MapLane].CurrentTime = BombTime
-	ScoreDisplay.Update()
 end
 
-function MissEvent(TimeOff, Lane, IsHold)
-	local eol = 0
-	if TimeOff < 0 then eol = 2 elseif TimeOff > 0 then eol = 1 end
-	Judgment.Hit(5, eol)
-
-	ComboDisplay.Hit(0)
+function MissEvent(TimeOff, Lane, IsHold, PlayerNumber)
+	judgment:OnMiss(TimeOff, Lane, IsHold, PlayerNumber)
+	combodisplay:OnMiss(TimeOff, Lane, IsHold, PlayerNumber)
 end
 
 function KeyEvent(Key, Code, IsMouseInput)
 end
 
 function GearKeyEvent (Lane, IsKeyDown)
-    local MapLane = Noteskin[Channels].Map[Lane + 1]
+    local MapLane = Noteskin[Channels].Map[Lane]
 	KeyArray[MapLane] = IsKeyDown
 
 	Lightning[MapLane].Object.Alpha = 1
@@ -258,16 +263,18 @@ end
 
 function Update(Delta)
 	-- Executed every frame.
+	local Beat = Game:GetPlayer(0).Beat
 	local beatEffect = Beat - math.floor(Beat)
 
-	local SongPercentage = Game:GetSongTime() / (SongDuration + 3)
+	local SongPercentage = Game:GetPlayer(0).Time / (Game:GetPlayer(0).Duration + 3)
 
-	if Game:GetSongTime() < 0 then
-		SongPercentage = math.pow(SongTime / -1.5, 2)
+	if Game:GetPlayer(0).Time < 0 then
+		SongPercentage = math.pow(Game:GetPlayer(0).Time / -1.5, 2)
 	end
 
-	SongPosition.Y = 62 + 383 * SongPercentage * XR
+	SongPosition.Y = 53 * YR + (402 - SongPosition.Height / 2) * SongPercentage * YR
 
+	local LifebarValue = Game:GetPlayer(0).LifebarPercent / 100
 	HP.ScaleX = math.ceil(LifebarValue * 50) / 50
 	HP:SetCropByPixels(0, 352 * math.ceil(LifebarValue * 50) / 50, 0, 29)
 
@@ -281,7 +288,7 @@ function Update(Delta)
 	end
 
 	for i=1,Channels do
-		if KeyArray[i] == 1 then
+		if KeyArray[i] then
 			Lightning[i].CurrentTime = LightingTime
 		end
 
@@ -289,13 +296,15 @@ function Update(Delta)
 		Bomb[i]:Update(Delta)
 	end
 
-	if CurrentBPM ~= 0 then
+	local CurrentBPM = Game:GetPlayer(0).BPM
+	--if CurrentBPM ~= 0 then
 		BPMText.Text = string.format("%03d", CurrentBPM)
-	end
+	--end
 
-	HPText.Text = string.format("%03d%%", LifebarDisplay)
+	HPText.Text = string.format("%03d%%", LifebarValue * 100)
 
-	Judgment.Run(Delta)
-	ComboDisplay.Run(Delta)
-	ScoreDisplay.Run(Delta)
+	scoredisplay:Run(Delta)
+	judgment:Run(Delta)
+	combodisplay:Run(Delta)
+	scoredisplay:Run(Delta)
 end

@@ -203,6 +203,7 @@ VideoPlayback::VideoPlayback(uint32_t framequeueitems)
 	InitializeFFMpeg();
 	mFrameQueueItems = framequeueitems;
 	Context = nullptr;
+	mDecodeThread = nullptr;
 }
 
 VideoPlayback::~VideoPlayback()
