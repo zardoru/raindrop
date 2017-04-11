@@ -1,4 +1,4 @@
-HitLightning = {}
+HitLightning = { Enabled = true }
 
 HitLightning.Image = "VSRG/HitLightning.png"
 HitLightning.Height = 250
@@ -21,10 +21,10 @@ end
 ]]
 
 function HitLightning:Init()
-  self.Enabled = (GetConfigF("Hitlightning", "") ~= 0)
   
-	if not self.Enabled then
+	if not self.Enabled or (GetConfigF("Hitlightning", "") == 0) then
     print "Hit Lightning disabled."
+		self.Enabled = false
 		return
 	end
   

@@ -24,7 +24,7 @@ function doMidiNote()
 	function setNoteStuff(note, i, rot)
 		note.Width = Noteskin[Notes.Channels]['Key' .. i .. 'Width']
 		note.X = Noteskin[Notes.Channels]['Key' .. i .. 'X']
-		note.Height = NoteHeight
+		note.Height = Noteskin[Notes.Channels].NoteHeight
 		note.Layer = 14
 		note.Lighten = 1
 		note.LightenFactor = 0
@@ -49,35 +49,35 @@ function doMidiNote()
 		for i=1,Notes.Channels do
 			normalNotes[i] = Object2D()
 			local note = normalNotes[i]
-			note.Image = "_Down Tap Note 8x8 (doubleres).png"
+			note.Texture = "_Down Tap Note 8x8 (doubleres).png"
 			setNoteStuff(note, i, rotTableNotes)
 			
 			holdBodiesInactive[i] = Object2D()
 			note = holdBodiesInactive[i]
-			note.Image = "Down Hold Body Active (doubleres).png"
+			note.Texture = "Down Hold Body Inactive (doubleres).png"
 			setNoteStuff(note, i)
 			
 			holdBodiesActive[i] = Object2D()
 			note = holdBodiesActive[i]
-			note.Image = "Down Hold Body Inactive (doubleres).png"
+			note.Texture = "Down Hold Body Active (doubleres).png"
 			bodyHeight = note.Height
 			setNoteStuff(note, i)
 			
 			holdTailsInactive[i] = Object2D()
 			note = holdTailsInactive[i]
-			note.Image = "Down Hold BottomCap Inactive (doubleres).png"
+			note.Texture = "Down Hold BottomCap Inactive (doubleres).png"
 			setNoteStuff(note, i)
 			
 			holdTailsActive[i] = Object2D()
 			note = holdTailsActive[i]
-		  note.Image = "Down Hold BottomCap Active (doubleres).png"
-		  setNoteStuff(note, i, tailsRot)
+			note.Texture = "Down Hold BottomCap Active (doubleres).png"
+			setNoteStuff(note, i, tailsRot)
 			
 			
 		  
 		  holdHeads[i] = Object2D()
 		  note = holdHeads[i]
-		  note.Image = "Down Hold Head Active.png"
+		  note.Texture = "Down Hold Head Active.png"
 		  setNoteStuff(note, i, rotTable)
 		end
 
@@ -89,16 +89,16 @@ function doMidiNote()
 		
 		if active_level == 2 then
 			note = holdTailsActive[lane + 1]
-		note.LightenFactor = 1
-	  else
-		note.LightenFactor = 0
+			note.LightenFactor = 1
+		else
+			note.LightenFactor = 0
 		end
 		
-		if Game:IsUpscrolling() then
-			note.Y = loc + NoteHeight / 2
+		if Player.Upscroll then
+			note.Y = loc + Noteskin[4].NoteHeight / 2
 			note.Rotation = 0
 		else 
-			note.Y = loc - NoteHeight / 2
+			note.Y = loc - Noteskin[4].NoteHeight / 2
 			note.Rotation = 180
 		end
 		
@@ -111,12 +111,18 @@ function doMidiNote()
 	end 
 
 	function drawNormalInternal(lane, loc, frac, active_level)
-	  local frame = math.floor(Game:GetCurrentBeat() * 4) % 4 + 1
+		local frame = math.floor(Player.Beat * 4) % 4 + 1
 		local note = normalNotes[lane + 1]
-	  local yvalue = yTable[frac] or yTable[48]
-	  local xvalue = xTable[frame] or xTable[1]
+		local yvalue = yTable[frac] or yTable[48]
+		local xvalue = xTable[frame] or xTable[1]
 		note.Y = loc
 		
+		if active_level == 2 then
+			note.LightenFactor = 1
+		else
+			note.LightenFactor = 0
+		end
+
 		-- colorize note
 		note:SetCropByPixels(xvalue.Start, xvalue.End, yvalue.Start, yvalue.End)
 		if active_level ~= 3 then
@@ -128,12 +134,9 @@ function doMidiNote()
 	function drawHoldBodyInternal(lane, loc, size, active_level)
 		function do_draw(lane, loc, size, active_level)
 			local note = holdBodiesInactive[lane + 1];
-		
-			if active_level ~= 0 then  
-				note = holdBodiesActive[lane + 1]
-			end 
 			
 			if active_level == 2 then
+				note = holdBodiesActive[lane + 1]
 				note.LightenFactor = 1
 			else
 				note.LightenFactor = 0
@@ -171,17 +174,17 @@ function doMidiNote()
 
 	-- From now on, only engine variables are being set.
 	-- Barline
-	BarlineEnabled = false
+	Notes.BarlineEnabled = false
 	Notes.BarlineOffset = Noteskin[Notes.Channels].NoteHeight / 2
 	Notes.BarlineStartX = Noteskin[Notes.Channels].GearStartX
-	Notes.BarlineWidth = Noteskin[Notes.Channels].BarlineWidth
+	Notes.BarlineWidth = 400
 	Notes.JudgmentY = Noteskin[Notes.Channels].GearHeight
 	Notes.DecreaseHoldSizeWhenBeingHit = 1
 	Notes.DanglingHeads = false
 
 	-- How many extra units do you require so that the whole bounding box is accounted
 	-- when determining whether to show this note or not.
-	Notes.NoteScreenSize = NoteHeight / 2
+	Notes.NoteScreenSize = 50--NoteHeight / 2
 
 	DrawNormal = drawNormalInternal
 	DrawFake = drawNormalInternal
