@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Image.h"
+#include "Texture.h"
 
 class VBO;
 
@@ -46,11 +46,11 @@ namespace Engine
                 VBO *uv;
                 VBO *color;
                 VBO *indices;
-                Image* tex;
+                Texture* tex;
                 int num_indices, num_vertices;
             };
 
-			std::map<Image*, ImageData> m_TexCache;
+			std::map<Texture*, ImageData> m_TexCache;
         public:
 			~RenderInterface() = default;
 

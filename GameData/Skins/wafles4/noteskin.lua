@@ -24,39 +24,39 @@ function DoWafles()
 	function Init()
 
 		function setNoteStuff(note, i)
-			note.Width = Noteskin[Lanes]['Key' .. i .. 'Width']
-			note.X = Noteskin[Lanes]['Key' .. i .. 'X']
-			note.Height = NoteHeight
+			note.Width = Noteskin[4]['Key' .. i .. 'Width']
+			note.X = Noteskin[4]['Key' .. i .. 'X']
+			note.Height = Noteskin[4].NoteHeight
 			note.Layer = 14
 			note.Lighten = 1
 			note.LightenFactor = 0
 		end
 
-		for i=1,Lanes do
+		for i=1,Notes.Channels do
 			normalNotes[i] = Object2D()
 			local note = normalNotes[i]
-			note.Image = "_down tap note 1x8 (doubleres).png"
+			note.Texture = "_down tap note 1x8 (doubleres).png"
 			setNoteStuff(note, i)
 			
 			holdBodiesInactive[i] = Object2D()
 			note = holdBodiesInactive[i]
-			note.Image = "holdbodyinactive.png"
+			note.Texture = "holdbodyinactive.png"
 			setNoteStuff(note, i)
 			
 			holdBodiesActive[i] = Object2D()
 			note = holdBodiesActive[i]
-			note.Image = "holdbodyactive.png"
+			note.Texture = "holdbodyactive.png"
 			bodyHeight = note.Height
 			setNoteStuff(note, i)
 			
 			holdTailsInactive[i] = Object2D()
 			note = holdTailsInactive[i]
-			note.Image = "holdtailinactive.png"
+			note.Texture = "holdtailinactive.png"
 			setNoteStuff(note, i)
 			
 			holdTailsActive[i] = Object2D()
 			note = holdTailsActive[i]
-			note.Image = "holdtailactive.png"
+			note.Texture = "holdtailactive.png"
 			setNoteStuff(note, i)
 		end
 	end
@@ -76,22 +76,22 @@ function DoWafles()
 		end
 		
 		
-		if Game:IsUpscrolling() then
-			note.Y = loc + NoteHeight / 2
+		if Player.Upscroll then
+			note.Y = loc + Noteskin[4].NoteHeight / 2
 			note.Rotation = 0
 		else 
-			note.Y = loc - NoteHeight / 2
+			note.Y = loc - Noteskin[4].NoteHeight / 2
 			note.Rotation = 180
 		end
 		
 		if active_level ~= 3 then
-			Render(note)
+			Notes:Render(note)
 		end
 	end
 
 	function Update(delta, beat)
 		local fraction = 1 - (beat - math.floor(beat))
-		for i=1, Lanes do 
+		for i=1, Notes.Channels do 
 			local note = normalNotes[i]
 			note.LightenFactor = fraction
 		end 
@@ -107,7 +107,7 @@ function DoWafles()
 		note:SetCropByPixels(0, 128, value.Start, value.End)
 		note.Rotation = rotTable[lane + 1]
 		if active_level ~= 3 then
-			Render(note)
+			Notes:Render(note)
 		end
 	end
 
@@ -135,7 +135,7 @@ function DoWafles()
 			-- force repeat texture
 			note:SetCropByPixels(0, 128, 0, size)
 			if active_level ~= 3 then
-				Render(note)
+				Notes:Render(note)
 			end
 		end
 		
@@ -152,17 +152,17 @@ function DoWafles()
 
 	-- From now on, only engine variables are being set.
 	-- Barline
-	BarlineEnabled = 0
-	BarlineOffset = NoteHeight / 2
-	BarlineStartX = GearStartX
-	BarlineWidth = Noteskin[Lanes].BarlineWidth
-	JudgmentLineY = Noteskin[Lanes].GearHeight
-	DecreaseHoldSizeWhenBeingHit = 1
-	DanglingHeads = 0
+	Notes.BarlineEnabled = false
+	Notes.BarlineOffset = Noteskin[Notes.Channels].NoteHeight / 2
+	Notes.BarlineStartX = Noteskin[Notes.Channels].GearStartX
+	Notes.BarlineWidth = Noteskin[Notes.Channels].BarlineWidth
+	Notes.JudgmentY = Noteskin[Notes.Channels].GearHeight
+	Notes.DecreaseHoldSizeWhenBeingHit = true
+	Notes.DanglingHeads = false
 
 	-- How many extra units do you require so that the whole bounding box is accounted
 	-- when determining whether to show this note or not.
-	NoteScreenSize = NoteHeight / 2
+	Notes.NoteScreenSize = Noteskin[Notes.Channels].NoteHeight / 2
 
 	DrawNormal = drawNormalInternal
 	DrawFake = drawNormalInternal
@@ -174,8 +174,8 @@ function DoWafles()
 	DrawHoldBody = drawHoldBodyInternal
 end
 
-if Lanes == 4 then
-	skin_require("custom_defs")
+if Notes.Channels == 4 then
+	skin_require "custom_defs"
 	DoWafles()
 else
 	fallback_require("noteskin")

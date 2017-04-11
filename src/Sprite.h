@@ -5,7 +5,11 @@
 #include "Drawable.h"
 
 class VBO;
-class Image;
+class Texture;
+
+namespace Renderer {
+	class Shader;
+};
 
 class Drawable2D : public Transformation, public Drawable
 {
@@ -36,10 +40,11 @@ private: // Transformations
     float mCrop_x1, mCrop_y1;
     float mCrop_x2, mCrop_y2;
 
-    Image* mImage;
+    Texture* mTexture;
 
     void Construct(bool doInitTexture);
 protected:
+	Renderer::Shader *mShader;
     VBO *UvBuffer;
     bool DoTextureCleanup;
     void UpdateTexture();
@@ -64,14 +69,17 @@ public:
     bool AffectedByLightning;
     bool BlackToTransparent; // If enabled, transforms black pixels into transparent pixels.
 
-    void SetImage(Image* image, bool ChangeSize = true);
-    Image* GetImage();
+    void SetImage(Texture* image, bool ChangeSize = true);
+    Texture* GetImage();
     std::string GetImageFilename() const;
 
     virtual void Initialize(bool ShouldInitTexture);
 
     void SetBlendMode(int Mode);
     int GetBlendMode() const;
+
+	void SetShader(Renderer::Shader *s);
+	Renderer::Shader *GetShader() const;
 
     // Cropping
     void SetCrop(Vec2 Crop1, Vec2 Crop2);
@@ -82,7 +90,6 @@ public:
 
     virtual void Render() override;
     bool RenderMinimalSetup();
-    void DrawLighten();
     virtual void Invalidate();
 
     void BindTextureVBO();

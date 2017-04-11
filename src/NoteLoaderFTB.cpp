@@ -4,7 +4,7 @@
 #include "Song7K.h"
 #include "NoteLoader7K.h"
 
-using namespace VSRG;
+using namespace Game::VSRG;
 
 /*
     This is pretty much the simplest possible loader.
@@ -43,7 +43,7 @@ void NoteLoaderFTB::LoadMetadata(std::string filename, std::string prefix, Song 
 
 void NoteLoaderFTB::LoadObjectsFromFile(std::filesystem::path filename, Song *Out)
 {
-    std::shared_ptr<VSRG::Difficulty> Diff(new Difficulty());
+    std::shared_ptr<Difficulty> Diff(new Difficulty());
     Measure Msr;
     std::ifstream filein(filename.string());
 
@@ -55,7 +55,7 @@ failed:
         return;
     }
 
-    Diff->BPMType = VSRG::Difficulty::BT_MS; // MS using BPMs.
+    Diff->BPMType = Difficulty::BT_MS; // MS using BPMs.
     Diff->Channels = 7;
     // Diff->Name = Utility::RemoveExtension(Utility::RelativeToPath(filename));
 

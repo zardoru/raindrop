@@ -52,9 +52,10 @@ class AudioSample : public Sound
     uint32_t   mCounter;
     float    mAudioStart, mAudioEnd;
     std::shared_ptr<std::vector<short>> mData;
-    bool	 mValid;
     bool	 mIsPlaying;
-    bool	 mIsValid;
+    std::atomic<bool> mIsValid;
+	std::atomic<bool> mIsLoaded;
+	std::future<bool> mThread;
 
 public:
     AudioSample();
@@ -64,11 +65,14 @@ public:
 	void Seek(size_t offs);
 	uint32_t Read(float* buffer, size_t count) override;
     bool Open(std::filesystem::path Filename) override;
-    bool Open(AudioDataSource* Source);
+    bool Open(std::filesystem::path Filename, bool async);
+    bool Open(AudioDataSource* Source, bool async = false);
     void Play() override;
     void SeekTime(float Second) override;
     void SeekSample(uint32_t Sample) override;
     void Stop() override;
+
+	bool AwaitLoad();
 
     bool IsPlaying() override;
     void Slice(float audio_start, float audio_end);

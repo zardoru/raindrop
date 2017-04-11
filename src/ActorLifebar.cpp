@@ -8,75 +8,80 @@
 #include "ImageLoader.h"
 #include "GameWindow.h"
 
-ActorLifebar::ActorLifebar() : Sprite()
-{
-    Health = 50; // Out of 100!
-    pending_health = 0;
-    time = 0;
+namespace Game {
+	namespace dotcur {
 
-    SetImage(GameState::GetInstance().GetSkinImage("healthbar.png"));
+		ActorLifebar::ActorLifebar() : Sprite()
+		{
+			Health = 50; // Out of 100!
+			pending_health = 0;
+			time = 0;
 
-    SetWidth(PlayfieldHeight / 2);
-    SetHeight(Configuration::GetSkinConfigf("Height", "Lifebar"));
-    Centered = Configuration::GetSkinConfigf("Centered", "Lifebar") != 0;
-    SetPosition(Configuration::GetSkinConfigf("X", "Lifebar"), Configuration::GetSkinConfigf("Y", "Lifebar"));
-    SetRotation(Configuration::GetSkinConfigf("Rotation", "Lifebar"));
-    AffectedByLightning = true;
+			SetImage(GameState::GetInstance().GetSkinImage("healthbar.png"));
 
-    UpdateHealth();
-}
+			SetWidth(PlayfieldHeight / 2);
+			SetHeight(Configuration::GetSkinConfigf("Height", "Lifebar"));
+			Centered = Configuration::GetSkinConfigf("Centered", "Lifebar") != 0;
+			SetPosition(Configuration::GetSkinConfigf("X", "Lifebar"), Configuration::GetSkinConfigf("Y", "Lifebar"));
+			SetRotation(Configuration::GetSkinConfigf("Rotation", "Lifebar"));
+			AffectedByLightning = true;
 
-void ActorLifebar::UpdateHealth()
-{
-    if (Health < 0)
-    {
-        Health = 0;
-    }
+			UpdateHealth();
+		}
 
-    SetCrop2(Vec2(Health / 100, 1));
-    Red = Green = Blue = Health / 100;
-    SetWidth((Health / 100) * PlayfieldHeight);
-}
+		void ActorLifebar::UpdateHealth()
+		{
+			if (Health < 0)
+			{
+				Health = 0;
+			}
 
-void ActorLifebar::HitJudgment(Judgment Hit)
-{
-    switch (Hit)
-    {
-    case Excellent:
-        pending_health += 2;
-        break;
-    case Perfect:
-        pending_health += 1;
-        break;
-    case Great:
-        break;
-    case Bad:
-        pending_health -= 3;
-        break;
-    case Miss:
-    case NG:
-        pending_health -= 12;
-    }
-}
+			SetCrop2(Vec2(Health / 100, 1));
+			Red = Green = Blue = Health / 100;
+			SetWidth((Health / 100) * PlayfieldHeight);
+		}
 
-void ActorLifebar::Run(double delta)
-{
-    time += delta;
-    if (pending_health != 0)
-    {
-        Health += pending_health * delta;
-        pending_health -= pending_health * delta;
+		void ActorLifebar::HitJudgment(Judgment Hit)
+		{
+			switch (Hit)
+			{
+			case J_EXCELLENT:
+				pending_health += 2;
+				break;
+			case J_PERFECT:
+				pending_health += 1;
+				break;
+			case J_GREAT:
+				break;
+			case Bad:
+				pending_health -= 3;
+				break;
+			case Miss:
+			case NG:
+				pending_health -= 12;
+			}
+		}
 
-        if (pending_health > 200) // only up to 2x health
-            pending_health = 200;
+		void ActorLifebar::Run(double delta)
+		{
+			time += delta;
+			if (pending_health != 0)
+			{
+				Health += pending_health * delta;
+				pending_health -= pending_health * delta;
 
-        /* Accomulate health. Better you do, more forviging to mistakes. */
-        if (Health > 100)
-        {
-            pending_health += Health - 100;
-            Health = 100;
-        }
-    }
+				if (pending_health > 200) // only up to 2x health
+					pending_health = 200;
 
-    UpdateHealth();
+				/* Accomulate health. Better you do, more forviging to mistakes. */
+				if (Health > 100)
+				{
+					pending_health += Health - 100;
+					Health = 100;
+				}
+			}
+
+			UpdateHealth();
+		}
+	}
 }

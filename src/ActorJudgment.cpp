@@ -8,57 +8,62 @@
 
 #define AnimDuration 0.3f
 
-ActorJudgment::ActorJudgment()
-{
-    Centered = Configuration::GetSkinConfigf("Centered", "Judgment") != 0;
-    SetRotation(Configuration::GetSkinConfigf("Rotation", "Judgment"));
-    Alpha = 0;
-    SetImage(GameState::GetInstance().GetSkinImage("judge-perfect.png"));
-    SetPosition(Configuration::GetSkinConfigf("X", "Judgment"), Configuration::GetSkinConfigf("Y", "Judgment"));
-    AnimTime = 0;
-    AffectedByLightning = true;
-}
+namespace Game {
+	namespace dotcur {
 
-void ActorJudgment::ChangeJudgment(Judgment New)
-{
-    AnimTime = AnimDuration;
-    SetScale(1.3f);
-    Alpha = 1;
+		ActorJudgment::ActorJudgment()
+		{
+			Centered = Configuration::GetSkinConfigf("Centered", "Judgment") != 0;
+			SetRotation(Configuration::GetSkinConfigf("Rotation", "Judgment"));
+			Alpha = 0;
+			SetImage(GameState::GetInstance().GetSkinImage("judge-perfect.png"));
+			SetPosition(Configuration::GetSkinConfigf("X", "Judgment"), Configuration::GetSkinConfigf("Y", "Judgment"));
+			AnimTime = 0;
+			AffectedByLightning = true;
+		}
 
-    switch (New)
-    {
-    case Excellent:
-        SetImage(GameState::GetInstance().GetSkinImage("judge-excellent.png"));
-        break;
-    case Perfect:
-        SetImage(GameState::GetInstance().GetSkinImage("judge-perfect.png"));
-        break;
-    case Great:
-        SetImage(GameState::GetInstance().GetSkinImage("judge-great.png"));
-        break;
-    case Bad:
-        SetImage(GameState::GetInstance().GetSkinImage("judge-bad.png"));
-        break;
-    case Miss:
-        SetImage(GameState::GetInstance().GetSkinImage("judge-miss.png"));
-        break;
-    case None:
-        break;
-    }
-}
+		void ActorJudgment::ChangeJudgment(Judgment New)
+		{
+			AnimTime = AnimDuration;
+			SetScale(1.3f);
+			Alpha = 1;
 
-void ActorJudgment::Run(double delta)
-{
-    if (AnimTime > 0)
-    {
-        SetScale(Vec2(LerpRatio(GetScale().x, 1.0f, AnimDuration - AnimTime, AnimDuration),
-            LerpRatio(GetScale().y, 1.0f, AnimDuration - AnimTime, AnimDuration)));
-    }
+			switch (New)
+			{
+			case J_EXCELLENT:
+				SetImage(GameState::GetInstance().GetSkinImage("judge-excellent.png"));
+				break;
+			case J_PERFECT:
+				SetImage(GameState::GetInstance().GetSkinImage("judge-perfect.png"));
+				break;
+			case J_GREAT:
+				SetImage(GameState::GetInstance().GetSkinImage("judge-great.png"));
+				break;
+			case Bad:
+				SetImage(GameState::GetInstance().GetSkinImage("judge-bad.png"));
+				break;
+			case Miss:
+				SetImage(GameState::GetInstance().GetSkinImage("judge-miss.png"));
+				break;
+			case None:
+				break;
+			}
+		}
 
-    AnimTime -= delta;
+		void ActorJudgment::Run(double delta)
+		{
+			if (AnimTime > 0)
+			{
+				SetScale(Vec2(LerpRatio(GetScale().x, 1.0f, AnimDuration - AnimTime, AnimDuration),
+					LerpRatio(GetScale().y, 1.0f, AnimDuration - AnimTime, AnimDuration)));
+			}
 
-    if (AnimTime < -1)
-    {
-        Alpha -= delta; // Fade out in one second
-    }
+			AnimTime -= delta;
+
+			if (AnimTime < -1)
+			{
+				Alpha -= delta; // Fade out in one second
+			}
+		}
+	}
 }

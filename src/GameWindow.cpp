@@ -12,94 +12,11 @@
 #include "VBO.h"
 #include "TruetypeFont.h"
 #include "RaindropRocketInterface.h"
+
+#include "Shader.h"
 //#include <glm/gtc/matrix_transform.hpp>
 
 GameWindow WindowFrame;
-
-const char* vertShader = "#version 120\n"
-"attribute vec3 position;\n"
-"attribute vec2 vertexUV;\n"
-"attribute vec4 colorvert;\n"
-"uniform mat4 projection;\n"
-"uniform mat4 mvp;\n"
-"uniform mat4 tranM;\n"
-"uniform mat4 siM;\n"
-"uniform bool useTranslate;\n"
-"uniform bool Centered;\n"
-"uniform float sMult;\n" // For 7K mode, letting the shader do the heavy lifting
-"varying vec2 Texcoord;\n"
-"varying vec3 Pos_world;\n"
-"varying vec4 colorfrag;\n"
-"void main() \n"
-"{\n"
-"	vec3 k_pos = position;\n"
-"	if (Centered){\n"
-"		k_pos = k_pos + vec3(-0.5, -0.5, 0);\n"
-"	}\n"
-"	if (useTranslate){\n"
-"		gl_Position = projection * mvp * siM * vec4(k_pos, 1);\n"
-"		Pos_world = (projection * mvp * siM * vec4(k_pos.xyz, 1)).xyz;\n"
-"	}else{\n"
-"		gl_Position = projection * mvp * vec4(k_pos.xyz, 1);\n"
-"		Pos_world = (projection * mvp * vec4(k_pos.xyz, 1)).xyz;\n"
-"	}\n"
-"	Texcoord = vertexUV;\n"
-"   colorfrag = colorvert;\n"
-"}";
-
-const char* fragShader = "#version 120\n"
-"varying vec2 Texcoord;\n"
-"varying vec3 Pos_world;\n"
-"varying vec4 colorfrag;\n"
-"uniform vec4 Color;\n"
-"uniform sampler2D tex;\n"
-"uniform float     lMul;\n"
-"uniform vec3      lPos;\n"
-"uniform bool inverted;\n"
-"uniform bool replaceColor;\n"
-"uniform float clampHSUnder;\n"
-"uniform float clampHSOver;\n"
-"uniform float clampFLSum;\n"
-"uniform float HFactor;\n"
-"uniform bool AffectedByLightning;\n"
-"uniform bool BlackToTransparent;\n" // If true, transform r0 g0 b0 aX to a0.
-"uniform int HiddenLightning;\n"
-"\n"
-"void main(void)\n"
-"{\n"
-"    vec4 tCol;\n"
-"	 vec4 tex2D;\n"
-"	 if (!replaceColor){\n"
-"		tex2D = texture2D(tex, Texcoord);\n"
-"	 }else{"
-"		tex2D = vec4(1.0, 1.0, 1.0, texture2D(tex, Texcoord).a);"
-"	 }"
-"	 if (inverted) {\n"
-"		tCol = vec4(1.0, 1.0, 1.0, tex2D.a*2) - tex2D * Color;\n"
-"	 }else{\n"
-"		tCol = tex2D * Color;\n"
-"	 }\n"
-"	 if (BlackToTransparent) {\n"
-"			if (tCol.r == 0 && tCol.g == 0 && tCol.b == 0) tCol.a = 0;"
-"	 }"
-"    if (AffectedByLightning){\n"
-"		float dist = length ( lPos - vec3(Pos_world.xy, 0) );\n"
-"       float temp = lMul / (dist*dist);\n"
-"		gl_FragColor = tCol * vec4(vec3(temp), 1);\n"
-"	 }else{\n" // Alpha lighting for hidden/flashlight/sudden
-"		if (HiddenLightning > 0) {\n"
-"			float clmp = clamp(Pos_world.y, clampHSUnder, clampHSOver) + clampFLSum;\n"
-"			float ld;\n"
-"			if (HiddenLightning == 1) ld = 1 - clmp * HFactor;\n"
-"			else if (HiddenLightning == 2) ld = clmp * HFactor;\n"
-"			else { clmp = abs(clmp); ld = 1 - clmp * HFactor; } \n"
-"			gl_FragColor = vec4(tCol.rgb, tCol.a * clamp(ld, 0, 1));\n"
-"		} else if (HiddenLightning == 0) {\n"
-"			gl_FragColor = tCol;\n"
-"		}\n"
-"    }\n"
-"    gl_FragColor *= colorfrag;\n"
-"}\n";
 
 std::map<int32_t, KeyType> BindingsManager::ScanFunction;
 std::map<int32_t, int32_t> BindingsManager::ScanFunction7K;
@@ -115,15 +32,16 @@ bool JoystickEnabled;
 //True is pressed, false is released
 bool controllerButtonState[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = { 0 };
 float lastAxisSign[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = { 0 };
+float lastAxisValue[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = { 0 };
 //The first member of this array should never be accessed; it's there to make reading some of the code easier.
 
-struct sk_s
+struct KeyAssociation
 {
     char KeyString[32];
     int boundkey;
 };
 
-sk_s StaticSpecialKeys[] = // only add if someone actually needs more
+KeyAssociation StaticSpecialKeys[] = // only add if someone actually needs more
 {
     { "LShift", GLFW_KEY_LEFT_SHIFT },
     { "RShift", GLFW_KEY_RIGHT_SHIFT },
@@ -164,9 +82,9 @@ sk_s StaticSpecialKeys[] = // only add if someone actually needs more
     { "Backspace", GLFW_KEY_BACKSPACE }
 };
 
-const int NUM_OF_STATIC_SPECIAL_KEYS = sizeof(StaticSpecialKeys) / sizeof(sk_s); //make sure to match the above array
+const int NUM_OF_STATIC_SPECIAL_KEYS = sizeof(StaticSpecialKeys) / sizeof(KeyAssociation); //make sure to match the above array
 
-std::vector<sk_s> SpecialKeys;
+std::vector<KeyAssociation> SpecialKeys;
 
 int KeyTranslate(std::string K)
 {
@@ -232,6 +150,10 @@ char* KeytypeNames[] = {
 	"edfracincrease",
 	"edmode",
 	"edsetoffset",
+	"scratchp1up",
+	"scratchp1down",
+	"scratchp2up",
+	"scratchp2down",
 };
 
 int getIndexForKeytype(const char* key)
@@ -285,7 +207,7 @@ void BindingsManager::Initialize()
             {
                 char name[32];
                 sprintf(name, "Controller%d", i);
-                sk_s thisButton;
+                KeyAssociation thisButton;
                 strcpy(thisButton.KeyString, name);
                 thisButton.boundkey = 1000 + i;
                 SpecialKeys.push_back(thisButton);
@@ -299,7 +221,7 @@ void BindingsManager::Initialize()
 			for (int i = numOfButtons + 1; i <= numOfButtons + numOfAxis; i++) {
 				char name[32];
 				sprintf(name, "Controller%d", i);
-				sk_s thisAxis;
+				KeyAssociation thisAxis;
 				strcpy(thisAxis.KeyString, name);
 				thisAxis.boundkey = 1000 + i;
 				SpecialKeys.push_back(thisAxis);
@@ -514,6 +436,9 @@ bool GameWindow::SetupWindow()
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
 
+	//glRenderbufferStorage(GL_RENDERBUFFER, )
+	glEnable(GL_FRAMEBUFFER_SRGB);
+
     glEnable(GL_ALPHA_TEST);
 	// glEnable(GL_POLYGON_SMOOTH);
     glAlphaFunc(GL_GREATER, 0);
@@ -573,6 +498,8 @@ bool GameWindow::AutoSetupWindow(Application* _parent)
 	else {
 		Log::LogPrintf("GLFW succesfully initialized.\n");
 	}
+
+	glfwWindowHint(GLFW_SRGB_CAPABLE, 1);
 
     AssignSize();
     matrixSize.x = ScreenWidth;
@@ -641,37 +568,108 @@ void GameWindow::AssignSize()
 
 void GameWindow::SwapBuffers()
 {
-    if (doFlush)
-        glFlush();
+	if (doFlush)
+		glFlush();
 
-    glfwSwapBuffers(wnd);
-    glfwPollEvents();
+	glfwSwapBuffers(wnd);
+	
 
-    if (JoystickEnabled)
-    {
+    /* Fullscreen switching */
+
+}
+
+void GameWindow::ClearWindow()
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void GameWindow::Cleanup()
+{
+	glfwDestroyWindow(wnd);
+	glfwTerminate();
+}
+
+void GameWindow::UpdateFullscreen()
+{
+	if (FullscreenSwitchbackPending)
+	{
+		Log::LogPrintf("Attempting to switch fullscreen mode.\n");
+		if (IsFullscreen)
+		{
+			glfwDestroyWindow(wnd);
+			wnd = glfwCreateWindow(size.x, size.y, RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, NULL, NULL);
+			IsFullscreen = false;
+		}
+		else
+		{
+			if (glfwGetPrimaryMonitor()) {
+				AssignSize();
+				glfwDestroyWindow(wnd);
+				wnd = glfwCreateWindow(size.x, size.y, RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, glfwGetPrimaryMonitor(), NULL);
+
+				IsFullscreen = true;
+				Log::LogPrintf("Switched to fullscreen mode.\n");
+			}
+			else {
+				IsFullscreen = false;
+				Log::LogPrintf("Can't switch to fullscreen. No primary monitor detected?\n");
+				FullscreenSwitchbackPending = false;
+				return;
+			}
+		}
+
+		SetupWindow();
+
+		// Reload all images.
+		Engine::RocketInterface::ReloadTextures();
+		ImageLoader::ReloadAll();
+
+		/* This revalidates all VBOs and fonts */
+		for (std::vector<VBO*>::iterator i = VBOList.begin(); i != VBOList.end(); i++)
+		{
+			(*i)->Invalidate();
+			(*i)->Validate();
+		}
+
+		// Automatically revalidated on usage
+		for (std::vector<TruetypeFont*>::iterator i = TTFList.begin(); i != TTFList.end(); i++)
+		{
+			(*i)->Invalidate();
+		}
+
+		FullscreenSwitchbackPending = false;
+	}
+}
+
+void GameWindow::RunInput()
+{
+	glfwPollEvents();
+
+	if (JoystickEnabled)
+	{
 		// buttons
 		int buttonArraySize = 0;
-        const unsigned char *buttonArray = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &buttonArraySize);
-        if (buttonArraySize > 0)
-        {
-            for (int i = 0; i < buttonArraySize; i++)
-            {
-                for (uint32_t j = 0; j < SpecialKeys.size(); j++)
-                {
-                    /* Matches the pressed button to its entry in the SpecialKeys vector. */
-                    int thisKeyNumber = SpecialKeys[j].boundkey - 1000;
-                    if (i + 1 == thisKeyNumber)
-                    {
-                        /* Only processes the button push/release if the state has changed. */
-                        if ((buttonArray[i] != 0) != controllerButtonState[thisKeyNumber])
-                        {
-                            WindowFrame.Parent->HandleInput(SpecialKeys[j].boundkey, ToKeyEventType(buttonArray[i]), false);
-                            controllerButtonState[thisKeyNumber] = !controllerButtonState[thisKeyNumber];
-                        }
-                    }
-                }
-            }
-        }
+		const unsigned char *buttonArray = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &buttonArraySize);
+		if (buttonArraySize > 0)
+		{
+			for (int i = 0; i < buttonArraySize; i++)
+			{
+				for (uint32_t j = 0; j < SpecialKeys.size(); j++)
+				{
+					/* Matches the pressed button to its entry in the SpecialKeys vector. */
+					int thisKeyNumber = SpecialKeys[j].boundkey - 1000;
+					if (i + 1 == thisKeyNumber)
+					{
+						/* Only processes the button push/release if the state has changed. */
+						if ((buttonArray[i] != 0) != controllerButtonState[thisKeyNumber])
+						{
+							WindowFrame.Parent->HandleInput(SpecialKeys[j].boundkey, ToKeyEventType(buttonArray[i]), false);
+							controllerButtonState[thisKeyNumber] = !controllerButtonState[thisKeyNumber];
+						}
+					}
+				}
+			}
+		}
 
 		// axis
 		int axisArraySize;
@@ -691,7 +689,7 @@ void GameWindow::SwapBuffers()
 							lastAxisSign[i] = sign(axisArray[i]);
 
 							controllerButtonState[axis] = true;
-                            WindowFrame.Parent->HandleInput(SpecialKeys[j].boundkey, KE_PRESS, false);
+							WindowFrame.Parent->HandleInput(SpecialKeys[j].boundkey, KE_PRESS, false);
 						}
 						else {
 							if (lastAxisSign[i] != sign(axisArray[i])) {
@@ -704,91 +702,14 @@ void GameWindow::SwapBuffers()
 					else {
 						if (controllerButtonState[axis] != false) {
 							controllerButtonState[axis] = false;
-                            WindowFrame.Parent->HandleInput(SpecialKeys[j].boundkey, KE_RELEASE, false);
+							WindowFrame.Parent->HandleInput(SpecialKeys[j].boundkey, KE_RELEASE, false);
 						}
 					}
 				}
 			}
 		}
-    }
 
-    /* Fullscreen switching */
-    if (FullscreenSwitchbackPending)
-    {
-		Log::LogPrintf("Attempting to switch fullscreen mode.\n");
-        if (IsFullscreen)
-        {
-            glfwDestroyWindow(wnd);
-            wnd = glfwCreateWindow(size.x, size.y, RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, NULL, NULL);
-			IsFullscreen = false;
-        }
-        else
-        {
-			if (glfwGetPrimaryMonitor()) {
-				AssignSize();
-				glfwDestroyWindow(wnd);
-				wnd = glfwCreateWindow(size.x, size.y, RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, glfwGetPrimaryMonitor(), NULL);
-
-				IsFullscreen = true;
-				Log::LogPrintf("Switched to fullscreen mode.\n");
-			} 
-			else {
-				IsFullscreen = false;
-				Log::LogPrintf("Can't switch to fullscreen. No primary monitor detected?\n");
-				FullscreenSwitchbackPending = false;
-				return;
-			}
-        }
-
-        AttribLocs.clear();
-        UniformLocs.clear();
-        SetupWindow();
-
-		// Reload all images.
-		Engine::RocketInterface::ReloadTextures();
-        ImageLoader::ReloadAll();
-
-        /* This revalidates all VBOs and fonts */
-        for (std::vector<VBO*>::iterator i = VBOList.begin(); i != VBOList.end(); i++)
-        {
-            (*i)->Invalidate();
-            (*i)->Validate();
-        }
-
-		// Automatically revalidated on usage
-        for (std::vector<TruetypeFont*>::iterator i = TTFList.begin(); i != TTFList.end(); i++)
-        {
-            (*i)->Invalidate();
-        }
-
-        FullscreenSwitchbackPending = false;
-    }
-}
-
-void GameWindow::ClearWindow()
-{
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-
-int32_t GameWindow::GetDefaultFragShader() const
-{
-    return defaultFragShader;
-}
-
-int32_t GameWindow::GetDefaultVertexShader() const
-{
-    return defaultVertexShader;
-}
-
-int32_t GameWindow::GetShaderProgram() const
-{
-    return defaultShaderProgram;
-}
-
-void GameWindow::Cleanup()
-{
-    glfwDestroyWindow(wnd);
-    glfwTerminate();
+	}
 }
 
 bool GameWindow::ShouldCloseWindow()
@@ -812,136 +733,15 @@ bool GameWindow::SetupShaders()
 
     if (glGenVertexArrays && glBindVertexArray)
     {
+		Log::Printf("System supports VAOs...\n");
         glGenVertexArrays(1, &defaultVao);
         glBindVertexArray(defaultVao);
     }
 
-    defaultVertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(defaultVertexShader, 1, &vertShader, NULL);
-    glCompileShader(defaultVertexShader);
+	Renderer::DefaultShader::Compile();
+	Renderer::DefaultShader::UpdateProjection(projection);
 
-    defaultFragShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(defaultFragShader, 1, &fragShader, NULL);
-    glCompileShader(defaultFragShader);
-
-    GLint status;
-    char buffer[512];
-
-    glGetShaderiv(defaultVertexShader, GL_COMPILE_STATUS, &status);
-
-    glGetShaderInfoLog(defaultVertexShader, 512, NULL, buffer);
-
-    if (status != GL_TRUE)
-    {
-        Log::Logf("Vertex Shader Error: %s\n", buffer);
-        return false;
-    }
-    else
-        Log::Logf("Vertex Shader Status: %s\n", buffer);
-
-    glGetShaderiv(defaultFragShader, GL_COMPILE_STATUS, &status);
-
-    glGetShaderInfoLog(defaultFragShader, 512, NULL, buffer);
-
-    if (status != GL_TRUE)
-    {
-        Log::Logf("Fragment Shader Error: %s\n", buffer);
-        return false;
-    }
-    else Log::Logf("Fragment Shader Status: %s\n", buffer);
-
-    defaultShaderProgram = glCreateProgram();
-    glAttachShader(defaultShaderProgram, defaultVertexShader);
-    glAttachShader(defaultShaderProgram, defaultFragShader);
-
-    // glBindFragDataLocation( defaultShaderProgram, 0, "outColor" );
-
-    glLinkProgram(defaultShaderProgram);
-
-    // Use our recently compiled program.
-    glUseProgram(defaultShaderProgram);
-
-    // setup our projection matrix
-    GLuint MatrixID = glGetUniformLocation(defaultShaderProgram, "projection");
-    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &projection[0][0]);
-
-    // Clean up..
-    glDeleteShader(defaultVertexShader);
-    glDeleteShader(defaultFragShader);
-
-    // Set up the uniform constants we'll be using in the program.
-    uniforms[A_POSITION] = glGetAttribLocation(defaultShaderProgram, "position");
-    uniforms[A_UV] = glGetAttribLocation(defaultShaderProgram, "vertexUV");
-    uniforms[A_COLOR] = glGetAttribLocation(defaultShaderProgram, "colorvert");
-    uniforms[U_TRANM] = glGetUniformLocation(defaultShaderProgram, "tranM");
-    uniforms[U_MVP] = glGetUniformLocation(defaultShaderProgram, "mvp");
-    uniforms[U_SIM] = glGetUniformLocation(defaultShaderProgram, "siM");
-    uniforms[U_TRANSL] = glGetUniformLocation(defaultShaderProgram, "useTranslate");
-    uniforms[U_SMULT] = glGetUniformLocation(defaultShaderProgram, "sMult");
-    uniforms[U_CENTERED] = glGetUniformLocation(defaultShaderProgram, "Centered");
-    uniforms[U_COLOR] = glGetUniformLocation(defaultShaderProgram, "Color");
-    uniforms[U_LMUL] = glGetUniformLocation(defaultShaderProgram, "lMul");
-    uniforms[U_LPOS] = glGetUniformLocation(defaultShaderProgram, "lPos");
-    uniforms[U_INVERT] = glGetUniformLocation(defaultShaderProgram, "inverted");
-    uniforms[U_LIGHT] = glGetUniformLocation(defaultShaderProgram, "AffectedByLightning");
-    uniforms[U_HIDDEN] = glGetUniformLocation(defaultShaderProgram, "HiddenLightning");
-    uniforms[U_HIDLOW] = glGetUniformLocation(defaultShaderProgram, "clampHSUnder");
-    uniforms[U_HIDHIGH] = glGetUniformLocation(defaultShaderProgram, "clampHSOver");
-    uniforms[U_HIDFAC] = glGetUniformLocation(defaultShaderProgram, "HFactor");
-    uniforms[U_HIDSUM] = glGetUniformLocation(defaultShaderProgram, "clampFLSum");
-    uniforms[U_REPCOLOR] = glGetUniformLocation(defaultShaderProgram, "replaceColor");
-    uniforms[U_BTRANSP] = glGetUniformLocation(defaultShaderProgram, "BlackToTransparent");
-
-    SetLightPosition(glm::vec3(0, 0, 1));
-    SetLightMultiplier(1);
     return true;
-}
-
-void GameWindow::SetUniform(uint32_t Uniform, int i)
-{
-    glUniform1i(uniforms[Uniform], i);
-}
-
-void GameWindow::SetUniform(uint32_t Uniform, float A, float B, float C, float D)
-{
-    glUniform4f(uniforms[Uniform], A, B, C, D);
-}
-
-void GameWindow::SetUniform(uint32_t Uniform, glm::vec3 Pos)
-{
-    glUniform3f(uniforms[Uniform], Pos.x, Pos.y, Pos.z);
-}
-
-void GameWindow::SetUniform(uint32_t Uniform, float F)
-{
-    glUniform1f(uniforms[Uniform], F);
-}
-
-void GameWindow::SetUniform(uint32_t Uniform, float *Matrix4x4)
-{
-    glUniformMatrix4fv(uniforms[Uniform], 1, GL_FALSE, Matrix4x4);
-}
-
-int GameWindow::EnableAttribArray(uint32_t Attrib)
-{
-    glEnableVertexAttribArray(uniforms[Attrib]);
-    return uniforms[Attrib];
-}
-
-int GameWindow::DisableAttribArray(uint32_t Attrib)
-{
-    glDisableVertexAttribArray(uniforms[Attrib]);
-    return uniforms[Attrib];
-}
-
-void GameWindow::SetLightPosition(glm::vec3 Position)
-{
-    SetUniform(U_LPOS, Position);
-}
-
-void GameWindow::SetLightMultiplier(float Multiplier)
-{
-    SetUniform(U_LMUL, Multiplier);
 }
 
 void GameWindow::AddVBO(VBO *V)
@@ -961,6 +761,21 @@ void GameWindow::RemoveVBO(VBO *V)
             return;
         }
     }
+}
+
+void GameWindow::AddShader(Renderer::Shader *S)
+{
+	ShaderList.push_back(S);
+}
+
+void GameWindow::RemoveShader(Renderer::Shader *S)
+{
+	for (auto i = ShaderList.begin(); i != ShaderList.end(); ++i) {
+		if (*i == S) {
+			ShaderList.erase(i);
+			return;
+		}
+	}
 }
 
 void GameWindow::AddTTF(TruetypeFont* TTF)

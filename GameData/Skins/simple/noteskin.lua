@@ -1,7 +1,9 @@
-if Lanes ~= 8 then
+if Notes.Channels ~= 8 then
 	fallback_require("noteskin")
 	return
 end
+
+Lanes = Notes.Channels
 
 skin_require("custom_defs")
 -- All notes have their origin centered.
@@ -27,7 +29,7 @@ function Init()
 		local image = 'assets/n' .. Noteskin[8]["Key" .. i .. "Image"] .. ".png"
 		
 		print ("Set image " .. image)
-		note.Image = image
+		note.Texture = image
 		setNoteStuff(note, i)
 		
 		holdBodies[i] = Object2D()
@@ -35,7 +37,7 @@ function Init()
 		
 		image = 'assets/l'.. Noteskin[8]["Key" .. i .. "Image" ] .. ".png"
 		print ("Set image " .. image)
-		note.Image = image
+		note.Texture = image
 		setNoteStuff(note, i)
 	end
 end
@@ -48,7 +50,7 @@ function drawNormalInternal(lane, loc, frac, active_level)
 	note.Y = loc
 	
 	if active_level ~= 3 then
-		Render(note)
+		Notes:Render(note)
 	end
 end
 
@@ -75,7 +77,7 @@ function drawHoldBodyInternal(lane, loc, size, active_level)
 		note.Blue = 0.5
 	end
 	
-	Render(note)
+	Notes:Render(note)
 end
 
 function drawMineInternal(lane, loc, frac)
@@ -84,17 +86,17 @@ end
 
 -- From now on, only engine variables are being set.
 -- Barline
-BarlineEnabled = 1
-BarlineOffset = NoteHeight / 2
-BarlineStartX = GearStartX
-BarlineWidth = Noteskin[Lanes].BarlineWidth * XR
-JudgmentLineY = ScreenHeight - 485 * YR
-DecreaseHoldSizeWhenBeingHit = 1
-DanglingHeads = 1
+Notes.BarlineEnabled = 1
+Notes.BarlineOffset = NoteHeight / 2
+Notes.BarlineStartX = GearStartX
+Notes.BarlineWidth = Noteskin[Lanes].BarlineWidth * XR
+Notes.JudgmentY = ScreenHeight - 485 * YR
+Notes.DecreaseHoldSizeWhenBeingHit = 1
+Notes.DanglingHeads = 1
 
 -- How many extra units do you require so that the whole bounding box is accounted
 -- when determining whether to show this note or not.
-NoteScreenSize = NoteHeight / 2
+Notes.NoteScreenSize = NoteHeight / 2
 
 DrawNormal = drawNormalInternal
 DrawFake = drawNormalInternal

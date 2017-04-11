@@ -61,7 +61,8 @@ void Configuration::Cleanup()
 void Configuration::Reload()
 {
 	Log::LogPrintf("Reloading configuration...\n");
-	Cleanup();
+    delete Config;
+    delete SkinCfgLua;
 	Initialize();
 }
 

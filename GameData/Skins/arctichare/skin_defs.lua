@@ -3,7 +3,7 @@
 function GetScale()
 	local srcres = 3840
 	local dstres = 1360
-	return dstres / srcres 
+	return dstres / srcres
 end
 
 SkinScale = GetScale()

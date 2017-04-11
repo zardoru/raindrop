@@ -350,7 +350,7 @@ void AudioSourceOJM::parseM30()
             F412XOR(&SampleData[0], Entry.sample_size);
 
         // Sample data is done. Now the bits that are specific to raindrop..
-        auto NewSample = std::make_shared<SoundSample>();
+        auto NewSample = std::make_shared<AudioSample>();
 
         SFM30 ToLoad;
         ToLoad.Buffer = std::move(SampleData);
@@ -436,7 +436,7 @@ void AudioSourceOJM::parseOMC()
         ToLoad.Buffer = std::move(Buffer);
         ToLoad.DataLength = WavHead.chunk_size;
 
-        auto NewSample = std::make_shared<SoundSample>();
+        auto NewSample = std::make_shared<AudioSample>();
         TemporaryState.File = sf_open_virtual(&M30Interface, SFM_READ, &Info, &ToLoad);
         TemporaryState.Info = &Info;
         TemporaryState.Enabled = OJM_WAV;
@@ -469,7 +469,7 @@ void AudioSourceOJM::parseOMC()
 
         ifile->read(&Buffer[0], OggHead.sample_size);
 
-        auto NewSample = std::make_shared<SoundSample>();
+        auto NewSample = std::make_shared<AudioSample>();
 
         SFM30 ToLoad;
         ToLoad.Buffer = Buffer;
@@ -537,7 +537,7 @@ void AudioSourceOJM::Seek(float Time)
     // Unused.
 }
 
-std::shared_ptr<SoundSample> AudioSourceOJM::GetFromIndex(int index)
+std::shared_ptr<AudioSample> AudioSourceOJM::GetFromIndex(int index)
 {
     return Arr[index - 1];
 }

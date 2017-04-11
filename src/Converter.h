@@ -1,6 +1,6 @@
 #pragma once
 
-void ConvertToOM(VSRG::Song *Sng, std::filesystem::path PathOut, std::string Author);
-void ConvertToBMS(VSRG::Song *Sng, std::filesystem::path PathOut);
-void ConvertToSMTiming(VSRG::Song *Sng, std::filesystem::path PathOut);
-void ConvertToNPSGraph(VSRG::Song *Sng, std::filesystem::path PathOut);
+void ConvertToOM(Game::VSRG::Song *Sng, std::filesystem::path PathOut, std::string Author);
+void ConvertToBMS(Game::VSRG::Song *Sng, std::filesystem::path PathOut);
+void ConvertToSMTiming(Game::VSRG::Song *Sng, std::filesystem::path PathOut);
+void ConvertToNPSGraph(Game::VSRG::Song *Sng, std::filesystem::path PathOut);

@@ -73,9 +73,9 @@ namespace NoteLoaderBMSON
     {
         Json::Value root;
         std::ifstream &input;
-        VSRG::Song* song;
-        std::shared_ptr<VSRG::Difficulty> Chart;
-        std::shared_ptr<VSRG::BMSTimingInfo> TimingInfo;
+        Game::VSRG::Song* song;
+        std::shared_ptr<Game::VSRG::Difficulty> Chart;
+        std::shared_ptr<Game::VSRG::BMSChartInfo> TimingInfo;
         std::unordered_set<std::string> subtitles;
         std::string version;
         double resolution;
@@ -124,7 +124,7 @@ namespace NoteLoaderBMSON
             if (regex_search(s, sm, generic_keys))
             {
                 int chans = atoi(sm[1].str().c_str());
-                if (chans <= VSRG::MAX_CHANNELS)
+                if (chans <= Game::VSRG::MAX_CHANNELS)
                 {
                     Chart->Channels = chans;
                     for (int i = 0; i < chans; i++)
@@ -136,7 +136,7 @@ namespace NoteLoaderBMSON
             if (regex_search(s, sm, special_keys))
             {
                 int chans = atoi(sm[1].str().c_str());
-                if (chans <= VSRG::MAX_CHANNELS)
+                if (chans <= Game::VSRG::MAX_CHANNELS)
                 {
                     Chart->Channels = chans;
                     Chart->Data->Turntable = true;
@@ -194,7 +194,7 @@ namespace NoteLoaderBMSON
             if (!meta["eyecatch_image"].isNull())
                 Chart->Data->StageFile = meta["eyecatch_image"].asString();
 
-            Chart->BPMType = VSRG::Difficulty::BT_BEAT;
+            Chart->BPMType = Game::VSRG::Difficulty::BT_BEAT;
 
             SetChannelsFromModeHint(meta["mode_hint"]);
 
@@ -342,7 +342,7 @@ namespace NoteLoaderBMSON
             }
         }
 
-        float TimeForObj(double beat)
+        double TimeForObj(double beat)
         {
             return TimeAtBeat(Chart->Timing, 0, beat) + StopTimeAtBeat(Chart->Data->Stops, beat);
         }
@@ -539,7 +539,7 @@ namespace NoteLoaderBMSON
         void LoadBGA()
         {
             if (version != VERSION_1) return; // BGA unsupported on version 0.21
-            auto out = std::make_shared<VSRG::BMPEventsDetail>();
+            auto out = std::make_shared<Game::VSRG::BMPEventsDetail>();
 
             auto& bga = root["bga"];
             if (!bga.isNull())
@@ -547,17 +547,29 @@ namespace NoteLoaderBMSON
                 for (auto &bgi : bga["bga_header"])
                     out->BMPList[bgi["id"].asInt()] = CleanFilename(bgi["name"].asString());
 
-                for (auto &bg0 : bga["bga_notes"])
-                    out->BMPEventsLayerBase.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
-                for (auto &bg0 : bga["layer_notes"])
-                    out->BMPEventsLayer.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
-                for (auto &bg0 : bga["poor_notes"])
-                    out->BMPEventsLayerMiss.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
+				if (version != VERSION_1) {
+					for (auto &bg0 : bga["bga_notes"])
+						out->BMPEventsLayerBase.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
+					for (auto &bg0 : bga["layer_notes"])
+						out->BMPEventsLayer.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
+					for (auto &bg0 : bga["poor_notes"])
+						out->BMPEventsLayerMiss.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
+				}
+				else {
+					for (auto &bg0 : bga["bga_events"])
+						out->BMPEventsLayerBase.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
+					for (auto &bg0 : bga["layer_events"])
+						out->BMPEventsLayer.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
+					for (auto &bg0 : bga["poor_events"])
+						out->BMPEventsLayerMiss.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
+				}
+
+				Chart->Data->BMPEvents = out;
             }
         }
     public:
 
-        BMSONLoader(std::ifstream &inp, VSRG::Song* out) : input(inp)
+        BMSONLoader(std::ifstream &inp, Game::VSRG::Song* out) : input(inp)
         {
             input >> root;
             song = out;
@@ -593,7 +605,7 @@ namespace NoteLoaderBMSON
                         continue;
                     }
 
-                    VSRG::NoteData new_note;
+                    Game::VSRG::NoteData new_note;
                     new_note.StartTime = TimeForObj(note.first);
                     if (note.second.Length)
                     {
@@ -620,9 +632,9 @@ namespace NoteLoaderBMSON
 
         void DoLoad()
         {
-            Chart = std::make_shared<VSRG::Difficulty>();
-            Chart->Data = std::make_shared<VSRG::DifficultyLoadInfo>();
-            Chart->Data->TimingInfo = TimingInfo = std::make_shared<VSRG::BMSTimingInfo>();
+            Chart = std::make_shared<Game::VSRG::Difficulty>();
+            Chart->Data = std::make_shared<Game::VSRG::DifficultyLoadInfo>();
+            Chart->Data->TimingInfo = TimingInfo = std::make_shared<Game::VSRG::BMSChartInfo>();
             TimingInfo->IsBMSON = true;
 
             if (!root.isMember("version")) // NSE (check member to be == 1.0.0 for VERSION_1!)
@@ -653,7 +665,7 @@ namespace NoteLoaderBMSON
         }
     };
 
-    void LoadObjectsFromFile(std::filesystem::path filename, VSRG::Song* Out)
+    void LoadObjectsFromFile(std::filesystem::path filename, Game::VSRG::Song* Out)
     {
 		CreateIfstream(filein, filename);
 

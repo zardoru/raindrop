@@ -1,13 +1,12 @@
 Credits for raindrop:
 
 Diego Ahumada (Agka): Main Coder/Project Lead.
-Lau Kevin (DJNightmare): Graphics. Vicinity skin.
+Lau Kevin (DJNightmare): Graphics.
 Felipe Rojas Pacheco (darkbluecat): Music.
 Okan Dilek (Aethral): Music. Sound effects.
 Joe Zeng (Dragonaire): Scoring Code. Pokemono font. Pacemaker.
 David E. (Lyntle): Logo, Graphics
 Ecco (Dolphin): BMS testing/Simple Skin
-Joel Wong (PROGUY): focusjam skin elements
 Vince F. (Takeda Shingen): Graphics
 Ryotaka Matsumoto: Music
 Midiman: midi-note noteskin
@@ -15,9 +14,9 @@ wafles: wafles4 noteskin
 NuclearFej: Controller support.
 NimaVisual: Logo Font
 Chris Harpum (mechacrash): Refactoring and cleanup
+TomoAlien: arctichare skin assets
 
 raindrop is licensed under the gplv3.
 the default skin's scripts are public domain.
 The skin elements' rights including but not limited to music, graphics and sounds are of their respective owners.
 You can find its source code in https://github.com/zardoru/raindrop
-You can join the development at irc.bemaniso.ws@#raindrop and at http://vsrg.club.

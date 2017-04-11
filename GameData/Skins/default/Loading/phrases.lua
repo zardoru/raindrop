@@ -125,7 +125,7 @@ function Phrases.Init()
 	
 	Phrases.BG = Engine:CreateObject()
 
-	Phrases.BG.Image = "Global/filter.png"
+	Phrases.BG.Texture = "Global/filter.png"
 	Phrases.BG.Height = 30
 	Phrases.BG.Layer = 11
 	Phrases.BG.Width = ScreenWidth

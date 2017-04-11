@@ -11,6 +11,7 @@
 #include "Song7K.h"
 #include "SongDC.h"
 #include "SongDatabase.h"
+#include "SongWheel.h"
 
 #include "ScoreKeeper7K.h"
 
@@ -62,30 +63,56 @@ struct songHelper
     }
 };
 
-VSRG::Song* toSong7K(Game::Song* Sng)
+Game::VSRG::Song* toSong7K(Game::Song* Sng)
 {
     if (Sng && Sng->Mode == MODE_VSRG)
-        return (VSRG::Song*) Sng;
+        return (Game::VSRG::Song*) Sng;
     else
-        return NULL;
+        return nullptr;
 }
 
-dotcur::Song* toSongDC(Game::Song* Sng)
+Game::dotcur::Song* toSongDC(Game::Song* Sng)
 {
     if (Sng && Sng->Mode == MODE_DOTCUR)
-        return (dotcur::Song*) Sng;
+        return (Game::dotcur::Song*) Sng;
     else
-        return NULL;
+        return nullptr;
 }
 
-GameParameters* GameState::GetParameters()
+Game::VSRG::Parameters* GameState::GetParameters(int pn)
 {
-    return Params.get();
+	if (PlayerNumberInBounds(pn))
+		return &PlayerInfo[pn].Params;
+	else return nullptr;
+}
+
+Game::VSRG::Difficulty * Game::GameState::GetDifficulty(int pn)
+{
+	if (PlayerNumberInBounds(pn) && PlayerInfo[pn].Diff)
+		return PlayerInfo[pn].Diff.get();
+	else {
+		if(GetSelectedSong() && GetSelectedSong()->Mode == MODE_VSRG)
+			return ((Game::VSRG::Song*)GetSelectedSong())->GetDifficulty(SongWheel::GetInstance().GetDifficulty());
+	}
+
+	return nullptr;
+}
+
+std::shared_ptr<Game::VSRG::Difficulty> Game::GameState::GetDifficultyShared(int pn)
+{
+	if (PlayerNumberInBounds(pn) && PlayerInfo[pn].Diff)
+		return PlayerInfo[pn].Diff;
+	else {
+		if(GetSelectedSong()->Mode == MODE_VSRG)
+			return ((Game::VSRG::Song*)GetSelectedSong())->Difficulties[SongWheel::GetInstance().GetDifficulty()];
+	}
+
+	return nullptr;
 }
 
 void GameState::InitializeLua(lua_State *L)
 {
-	SetupScorekeeper7KLuaInterface(L);
+	Game::VSRG::SetupScorekeeperLuaInterface(L);
 
 	luabridge::getGlobalNamespace(L)
 		.beginClass <Game::Song>("Song")
@@ -133,29 +160,32 @@ void GameState::InitializeLua(lua_State *L)
 		// .addFunction("GetDifficulty", &songHelper::getDifficulty<dotcur::Song, dotcur::Difficulty>)
 		.endClass();
 
+	using namespace Game::VSRG;
 	luabridge::getGlobalNamespace(L)
-		.beginClass <GameParameters>("GameParameters")
-		.addData("Upscroll", &GameParameters::Upscroll)
-		.addData("Wave", &GameParameters::Wave)
-		.addData("NoFail", &GameParameters::NoFail)
-		.addData("Autoplay", &GameParameters::Auto)
-		.addData("HiddenMode", &GameParameters::HiddenMode)
-		.addData("Rate", &GameParameters::Rate)
-		.addData("Random", &GameParameters::Random)
-		.addData("GaugeType", &GameParameters::GaugeType)
-		.addData("SystemType", &GameParameters::SystemType)
+		.beginClass <Parameters>("Parameters")
+		.addData("Upscroll", &Parameters::Upscroll)
+		.addData("Wave", &Parameters::Wave)
+		.addData("NoFail", &Parameters::NoFail)
+		.addData("Autoplay", &Parameters::Auto)
+		.addData("HiddenMode", &Parameters::HiddenMode)
+		.addData("Rate", &Parameters::Rate)
+		.addData("Random", &Parameters::Random)
+		.addData("GaugeType", &Parameters::GaugeType)
+		.addData("SystemType", &Parameters::SystemType)
 		.endClass();
 
 	luabridge::getGlobalNamespace(L)
 		.beginClass <GameState> ("GameState")
 		.addFunction("GetSelectedSong", &GameState::GetSelectedSong)
-		.addProperty("DifficultyIndex", &GameState::GetDifficultyIndex, &GameState::SetDifficultyIndex)
+		.addFunction("GetDifficulty", &GameState::GetDifficulty)
 		.addFunction("GetScorekeeper7K", &GameState::GetScorekeeper7K)
 		.addFunction("GetParameters", &GameState::GetParameters)
-		.addProperty("CurrentGaugeType", &GameState::GetCurrentGaugeType)
-		.addProperty("CurrentScoreType", &GameState::GetCurrentScoreType)
-		.addProperty("CurrentSystemType", &GameState::GetCurrentSystemType)
+		.addFunction("GetCurrentGaugeType", &GameState::GetCurrentGaugeType)
+		.addFunction("GetCurrentScoreType", &GameState::GetCurrentScoreType)
+		.addFunction("GetCurrentSystemType", &GameState::GetCurrentSystemType)
 		.addFunction("SortWheelBy", &GameState::SortWheelBy)
+		.addFunction("StartScreen", &GameState::StartScreenTransition)
+		.addFunction("ExitScreen", &GameState::ExitCurrentScreen)
 		.endClass()
 		.addFunction("toSong7K", toSong7K)
 		.addFunction("toSongDC", toSongDC);

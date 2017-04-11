@@ -2,14 +2,14 @@ game_require "TextureAtlas"
 game_require "Histogram"
 skin_require "Global/Background"
 skin_require "Global/FadeInScreen"
-skin_require "VSRG/ScoreDisplay"
+skin_require "Scripts/ScoreDisplay"
 
 function SetupFonts()
 	EvalFont = Fonts.TruetypeFont(GetSkinFile("font.ttf"), 30);
 end
 
-function GetRankImage()
-	scorerank = ScoreKeeper:getBMRank()
+function GetRankImage(ScoreKeeper)
+	local scorerank = ScoreKeeper.BMRank
 	if scorerank == PMT_AAA then
 		return "AAA"
 	elseif scorerank == PMT_AA then
@@ -28,9 +28,9 @@ function GetRankImage()
 
 end
 
-function SetupRank()
+function SetupRank(player)
 	RankPic = Engine:CreateObject()
-	RankPic.Image = "Evaluation/score" .. GetRankImage() .. ".png"
+	RankPic.Texture = "Evaluation/score" .. GetRankImage(player.Scorekeeper) .. ".png"
 	RankPic.Centered = 1
 	RankPic.X = ScreenWidth / 2 - RankPic.Width / 2
 	RankPic.Y = ScreenHeight / 2
@@ -43,7 +43,7 @@ function SetupRank()
 	end
 
 	local str = ""
-	if ScoreKeeper:isStageFailed(Global.CurrentGaugeType) then
+	if player.HasFailed then
 		str = " (failed)"
 	end
 
@@ -57,41 +57,41 @@ function SetupRank()
 end
 
 
-function SetupJudgmentsDisplay()
+function SetupJudgmentsDisplay(player)
+  local ScoreKeeper = player.Scorekeeper
 	JudgeStr = StringObject2D()
 	JudgeStr.Font = EvalFont
-	ScoreKeeper = Global:GetScorekeeper7K()
 
-	w0 = ScoreKeeper:getJudgmentCount(SKJ_W0)
-	w1 = ScoreKeeper:getJudgmentCount(SKJ_W1)
-	w2 = ScoreKeeper:getJudgmentCount(SKJ_W2)
-	w3 = ScoreKeeper:getJudgmentCount(SKJ_W3)
-	w4 = ScoreKeeper:getJudgmentCount(SKJ_W4)
-	w5 = ScoreKeeper:getJudgmentCount(SKJ_MISS)
-	Score = Global:GetScorekeeper7K():getScore(Global.CurrentScoreType)
+	w0 = ScoreKeeper:GetJudgmentCount(SKJ_W0)
+	w1 = ScoreKeeper:GetJudgmentCount(SKJ_W1)
+	w2 = ScoreKeeper:GetJudgmentCount(SKJ_W2)
+	w3 = ScoreKeeper:GetJudgmentCount(SKJ_W3)
+	w4 = ScoreKeeper:GetJudgmentCount(SKJ_W4)
+	w5 = ScoreKeeper:GetJudgmentCount(SKJ_MISS)
+	Score = player.Score
 	
 	fmtext = ""
-	if ScoreKeeper:usesW0() == false then
-		if ScoreKeeper:usesO2() == false then
+	if ScoreKeeper.UsesW0 == false then
+		if ScoreKeeper.UsesO2 == false then
 			fmtext = fmtext .. string.format("Flawless: %04d\nSweet: %04d\nNice: %04d\nWeak: %04d\nMiss: %04d", w1, w2, w3, w4, w5)
 		else
-			local p = ScoreKeeper:getPills()
-			fmtext = fmtext .. string.format("Flawless: %04d\nSweet: %04d\nNice: %04d\nMiss: %04d", w1, w2, w3, w5, p, rem)
+			local p = ScoreKeeper.Pills
+			fmtext = fmtext .. string.format("Flawless: %04d\nSweet: %04d\nNice: %04d\nMiss: %04d\nPills: %d", w1, w2, w3, w5, p)
 		end
 	else
 		fmtext = fmtext .. string.format("Flawless*: %04d\nFlawless: %04d\nSweet: %04d\nNice: %04d\nOK: %04d\nMiss: %04d", w0, w1, w2, w3, w4, w5)
 	end
 
-	fmtext = fmtext .. string.format("\nMax Combo: %d", ScoreKeeper:getScore(ST_MAX_COMBO))
-	fmtext = fmtext .. string.format("\nNotes hit: %d%%", ScoreKeeper:getPercentScore(PST_NH))
-	fmtext = fmtext .. string.format("\nAccuracy: %d%%", ScoreKeeper:getPercentScore(PST_ACC))
-	fmtext = fmtext .. string.format("\nAverage hit (ms): %.2f" , ScoreKeeper:getAvgHit())
+	fmtext = fmtext .. string.format("\nMax Combo: %d", ScoreKeeper:GetScore(ST_MAX_COMBO))
+	fmtext = fmtext .. string.format("\nNotes hit: %d%%", ScoreKeeper:GetPercentScore(PST_NH))
+	fmtext = fmtext .. string.format("\nAccuracy: %d%%", ScoreKeeper:GetPercentScore(PST_ACC))
+	fmtext = fmtext .. string.format("\nAverage hit (ms): %.2f" , ScoreKeeper.AvgHit)
 	fmtext = fmtext .. "\nraindrop rank: "
 
-	if ScoreKeeper:getRank() > 0 then
-		fmtext = fmtext .. "+" .. ScoreKeeper:getRank()
+	if ScoreKeeper.Rank > 0 then
+		fmtext = fmtext .. "+" .. ScoreKeeper.Rank
 	else
-		fmtext = fmtext .. ScoreKeeper:getRank()
+		fmtext = fmtext .. ScoreKeeper.Rank
 	end
 
 	JudgeStr.Text = fmtext
@@ -105,9 +105,9 @@ function SetupJudgmentsDisplay()
 	Engine:AddTarget(JudgeStr)
 end
 
-function SetSongTitle()
+function SetSongTitle(diff)
 	Filter = Engine:CreateObject()
-	Filter.Image = "Global/filter.png"
+	Filter.Texture = "Global/filter.png"
 	Filter.X = 0
 	Filter.Y = ScreenHeight - 30
 	Filter.Width = ScreenWidth
@@ -116,7 +116,6 @@ function SetSongTitle()
 	TitleText = StringObject2D()
 
 	sng = toSong7K(Global:GetSelectedSong())
-	diff = sng:GetDifficulty(Global.DifficultyIndex)
 	if diff.Author ~= "" then
 		difftxt = string.format("%s by %s", diff.Name, diff.Author)
 	else
@@ -133,8 +132,8 @@ function SetSongTitle()
 	Engine:AddTarget(TitleText)
 end
 
-function SetupHistogram()
-	histogram = Histogram:new()
+function SetupHistogram(p)
+	histogram = Histogram:new(p)
 	histogram:SetPosition(ScreenWidth / 2 - 255 / 2, 20)
 	histogram:SetColor(30 / 255, 50 / 255, 200 / 255)
 	hist_bg = histogram:SetBackground("Global/white.png")
@@ -151,25 +150,25 @@ function SetupHistogram()
 end
 
 function Init()
-
+  local p = Game:GetPlayer(0)
 	BackgroundAnimation:Init()
 	SetupFonts()
-	SetupRank()
-	SetupJudgmentsDisplay()
+	SetupRank(p)
+	SetupJudgmentsDisplay(p)
 
-	ScoreDisplay.Init()
-	ScoreDisplay.Score = Score
+	sd = ScoreDisplay:new({Player = p})
+	sd.Score = Score
 
 	scoreStr = StringObject2D()
 	scoreStr.Font = EvalFont
-	scoreStr.X = ScoreDisplay.X
-	scoreStr.Y = ScoreDisplay.Y + ScoreDisplay.H
+	scoreStr.X = sd.X
+	scoreStr.Y = sd.Y + sd.H
 	scoreStr.Text = "score"
 
 	Engine:AddTarget(scoreStr)
 
-	SetSongTitle()
-	SetupHistogram()
+	SetSongTitle(p.Difficulty)
+	SetupHistogram(p)
 	ScreenFade.Init()
 	ScreenFade.Out()
 end
@@ -179,5 +178,6 @@ function Cleanup()
 end
 
 function Update(Delta)
-	ScoreDisplay.Run(Delta)
+	sd:Run(Delta)
+	BackgroundAnimation:Update(Delta)
 end

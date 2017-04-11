@@ -26,6 +26,8 @@
 
 namespace NoteLoaderBMS{
 
+	using namespace Game::VSRG;
+
 	/* literally pasted from wikipedia */
 	std::string tob36(long unsigned int value)
 	{
@@ -87,7 +89,7 @@ namespace NoteLoaderBMS{
 		case 5:
 			return 0;
 		case 6: // foot pedal is ignored.
-			return VSRG::MAX_CHANNELS + 1;
+			return MAX_CHANNELS + 1;
 		case 7:
 			return 6;
 		case 8:
@@ -155,15 +157,13 @@ namespace NoteLoaderBMS{
 	{
 		// first argument is channel, second is event list
 		std::map<int, BMSEventList> Events;
-		float BeatDuration;
+		double BeatDuration;
 
 		BMSMeasure()
 		{
 			BeatDuration = 1; // Default duration
 		}
 	};
-
-	using namespace VSRG;
 
 	typedef std::map<int, std::string> FilenameListIndex;
 	typedef std::map<int, bool> FilenameUsedIndex;
@@ -190,13 +190,13 @@ namespace NoteLoaderBMS{
 			Measures[Measure].Events[Channel].Stuff
 			*/
 		BMSMeasureList Measures;
-		Song* Song;
+		Game::VSRG::Song* Song;
 		std::shared_ptr<Difficulty> Chart;
 		std::vector<double> BeatAccomulation;
 
 		int LowerBound, UpperBound;
 
-		float startTime[MAX_CHANNELS];
+		double startTime[MAX_CHANNELS];
 
 		NoteData *LastNotes[MAX_CHANNELS];
 
@@ -595,10 +595,10 @@ namespace NoteLoaderBMS{
 			return Range;
 		}
 
-		std::shared_ptr<BMSTimingInfo> TimingInfo;
+		std::shared_ptr<BMSChartInfo> TimingInfo;
 	public:
 
-		BMSLoader(VSRG::Song* song, std::shared_ptr<VSRG::Difficulty> diff, bool ispms)
+		BMSLoader(Game::VSRG::Song* song, std::shared_ptr<Difficulty> diff, bool ispms)
 		{
 			for (auto k = 0; k < MAX_CHANNELS; k++)
 			{
@@ -620,7 +620,7 @@ namespace NoteLoaderBMS{
 			Chart->BPMType = Difficulty::BT_BEAT;
 			Chart->IsVirtual = true;
 
-			TimingInfo = std::make_shared<BMSTimingInfo>();
+			TimingInfo = std::make_shared<BMSChartInfo>();
 			Chart->Data->TimingInfo = TimingInfo;
 		}
 
@@ -780,7 +780,7 @@ namespace NoteLoaderBMS{
 			/* Copy only used sounds to the sound list */
 			for (auto i = Sounds.begin(); i != Sounds.end(); ++i)
 				if (UsedSounds.find(i->first) != UsedSounds.end() && UsedSounds[i->first]) // This sound is used.
-					Chart->SoundList[i->first] = i->second;
+					Chart->Data->SoundList[i->first] = i->second;
 
 			if (HasBMPEvents)
 				Chart->Data->BMPEvents->BMPList = Bitmaps;

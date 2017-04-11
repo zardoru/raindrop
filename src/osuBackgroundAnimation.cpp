@@ -7,7 +7,7 @@
 #include "osuBackgroundAnimation.h"
 
 #include <boost/algorithm/string/case_conv.hpp>
-#include "Image.h"
+#include "Texture.h"
 #include "Logging.h"
 
 const float OSB_WIDTH = 640;
@@ -602,7 +602,7 @@ namespace osb {
 	void UnrollEvents(double iter_duration, double Time, uint32_t LoopCount, T& dst, T& src)
 	{
 		for (auto &evt : src) {
-			for (auto i = 0; i < LoopCount; i++) {
+			for (uint32_t i = 0; i < LoopCount; i++) {
 				auto el = evt;
 				el.SetTime(evt.GetTime() + iter_duration * i + Time);
 				el.SetEndTime(evt.GetEndTime() + iter_duration * i + Time);
@@ -996,7 +996,7 @@ int osuBackgroundAnimation::AddImageToList(std::string image_filename)
 	return -1; // everything has failed
 }
 
-osuBackgroundAnimation::osuBackgroundAnimation(Interruptible* parent, osb::SpriteList* existing_mSprites, VSRG::Song* song)
+osuBackgroundAnimation::osuBackgroundAnimation(Interruptible* parent, osb::SpriteList* existing_mSprites, Game::VSRG::Song* song)
 	: BackgroundAnimation(parent),
 		mImageList(this)
 {
@@ -1020,7 +1020,7 @@ Transformation& osuBackgroundAnimation::GetScreenTransformation()
 	return mScreenTransformation;
 }
 
-Image* osuBackgroundAnimation::GetImageFromIndex(int m_image_index)
+Texture* osuBackgroundAnimation::GetImageFromIndex(int m_image_index)
 {
 	return mImageList.GetFromIndex(m_image_index);
 }

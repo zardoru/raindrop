@@ -40,7 +40,7 @@ double SectionValue(const TimingData &Timing, double Beat)
     }
 }
 
-double TimeAtBeat(const TimingData &Timing, float Offset, double Beat, bool Abs)
+double TimeAtBeat(const TimingData &Timing, double Offset, double Beat, bool Abs)
 {
     uint32_t CurrentIndex = SectionIndex(Timing, Beat) + 1;
     double Time = Offset;
@@ -132,7 +132,7 @@ double StopTimeAtBeat(const TimingData &StopsTiming, double Beat)
     return Time;
 }
 
-double IntegrateToTime(const TimingData &Timing, double Time, float Drift)
+double IntegrateToTime(const TimingData &Timing, double Time)
 {
     if (!Timing.size()) return 0;
 
@@ -148,7 +148,7 @@ double IntegrateToTime(const TimingData &Timing, double Time, float Drift)
         for (auto i = 0; i < Section; i++)
             Out += (Timing[i + 1].Time - Timing[i].Time) * Timing[i].Value;
 
-        Out += (Time - Timing[Section].Time + Drift) * Timing[Section].Value;
+        Out += (Time - Timing[Section].Time) * Timing[Section].Value;
     }
 
     return Out;

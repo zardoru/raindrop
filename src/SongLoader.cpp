@@ -11,10 +11,12 @@
 #include "NoteLoader7K.h"
 #include "NoteLoaderDC.h"
 
+using namespace Game;
+
 struct loaderVSRGEntry_t
 {
     const wchar_t* Ext;
-    void(*LoadFunc) (std::filesystem::path filename, VSRG::Song* Out);
+    void(*LoadFunc) (std::filesystem::path filename, Game::VSRG::Song* Out);
 } LoadersVSRG[] = {
     { L".bms",   NoteLoaderBMS::LoadObjectsFromFile },
     { L".bme",   NoteLoaderBMS::LoadObjectsFromFile },
@@ -35,6 +37,7 @@ SongLoader::SongLoader(SongDatabase* Database)
 
 void SongLoader::LoadSongDCFromDir(std::filesystem::path songPath, std::vector<dotcur::Song*> &VecOut)
 {
+#ifdef DOTCUR_ENABLED
     bool FoundDCF = false;
 	auto Listing = Utility::GetFileListing(songPath);
 
@@ -91,6 +94,7 @@ void SongLoader::LoadSongDCFromDir(std::filesystem::path songPath, std::vector<d
             NewS->BackgroundFilename = PotentialBG;
         }
     }
+#endif
 }
 
 bool VSRGValidExtension(std::wstring Ext)
@@ -115,7 +119,7 @@ bool ValidBMSExtension(std::wstring Ext)
     return false;
 }
 
-std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(const std::filesystem::path& filename, VSRG::Song *Sng)
+std::shared_ptr<Game::VSRG::Song> LoadSong7KFromFilename(const std::filesystem::path& filename, Game::VSRG::Song *Sng)
 {
     if (!filename.has_extension())
     {
@@ -126,7 +130,7 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(const std::filesystem::path& 
     if (!Sng)
     {
         AllocSong = true;
-        Sng = new VSRG::Song();
+        Sng = new Game::VSRG::Song();
     }
 
     Sng->SongDirectory = filename.parent_path();
@@ -150,11 +154,11 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(const std::filesystem::path& 
     }
 
     if (AllocSong)
-        return std::shared_ptr<VSRG::Song>(Sng);
+        return std::shared_ptr<Game::VSRG::Song>(Sng);
     return nullptr;
 }
 
-std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(std::filesystem::path Filename, std::filesystem::path Prefix, VSRG::Song *Sng)
+std::shared_ptr<Game::VSRG::Song> LoadSong7KFromFilename(std::filesystem::path Filename, std::filesystem::path Prefix, Game::VSRG::Song *Sng)
 {
 	auto prefix = Prefix.string();
 
@@ -162,7 +166,7 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(std::filesystem::path Filenam
     if (!Sng)
     {
         AllocSong = true;
-        Sng = new VSRG::Song();
+        Sng = new Game::VSRG::Song();
     }
 
     std::wstring Ext = Utility::Widen(Filename.extension().string());
@@ -197,11 +201,11 @@ std::shared_ptr<VSRG::Song> LoadSong7KFromFilename(std::filesystem::path Filenam
     }
 
     if (AllocSong)
-        return std::shared_ptr<VSRG::Song>(Sng);
+        return std::shared_ptr<Game::VSRG::Song>(Sng);
     return nullptr;
 }
 
-void VSRGUpdateDatabaseDifficulties(SongDatabase* DB, VSRG::Song *New)
+void VSRGUpdateDatabaseDifficulties(SongDatabase* DB, Game::VSRG::Song *New)
 {
     int ID;
 
@@ -221,7 +225,7 @@ void VSRGUpdateDatabaseDifficulties(SongDatabase* DB, VSRG::Song *New)
     }
 }
 
-void PushVSRGSong(std::vector<VSRG::Song*> &VecOut, VSRG::Song* Sng)
+void PushVSRGSong(std::vector<Game::VSRG::Song*> &VecOut, Game::VSRG::Song* Sng)
 {
     if (Sng->Difficulties.size())
         VecOut.push_back(Sng);
@@ -229,7 +233,7 @@ void PushVSRGSong(std::vector<VSRG::Song*> &VecOut, VSRG::Song* Sng)
         delete Sng;
 }
 
-void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<VSRG::Song*> &VecOut)
+void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<Game::VSRG::Song*> &VecOut)
 {
 	if (!std::filesystem::is_directory(songPath))
 		return;
@@ -283,19 +287,19 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<V
     {
 		CfgVar NoFileGrouping("NoFileGrouping");
         // First, pack BMS charts together.
-        std::map<std::string, VSRG::Song*> bmsk;
-        VSRG::Song *BMSSong = new VSRG::Song;
+        std::map<std::string, Game::VSRG::Song*> bmsk;
+        Game::VSRG::Song *BMSSong = new Game::VSRG::Song;
 
         // Every OJN gets its own Song object.
-        VSRG::Song *OJNSong = new VSRG::Song;
+        Game::VSRG::Song *OJNSong = new Game::VSRG::Song;
         OJNSong->SongDirectory = SongDirectory;
 
         // osu!mania charts are packed together, with FTB charts.
-        VSRG::Song *osuSong = new VSRG::Song;
+        Game::VSRG::Song *osuSong = new Game::VSRG::Song;
         osuSong->SongDirectory = SongDirectory;
 
         // Stepmania charts get their own song objects too.
-        VSRG::Song *smSong = new VSRG::Song;
+        Game::VSRG::Song *smSong = new Game::VSRG::Song;
         smSong->SongDirectory = SongDirectory;
 
         for (auto File : Listing)
@@ -330,7 +334,7 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<V
 
 					if (bmsk.find(key) != bmsk.end())
 					{
-						VSRG::Song *oldSng = bmsk[key];
+						Game::VSRG::Song *oldSng = bmsk[key];
 
 						if (BMSSong->Difficulties.size()) // BMS charts don't have more than one difficulty anyway.
 							oldSng->Difficulties.push_back(BMSSong->Difficulties[0]);
@@ -343,12 +347,12 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<V
 						bmsk[key] = BMSSong;
 					}
 
-					BMSSong = new VSRG::Song;
+					BMSSong = new Game::VSRG::Song;
 				} else
 				{
 					VSRGUpdateDatabaseDifficulties(DB, BMSSong);
 					PushVSRGSong(VecOut, BMSSong);
-					BMSSong = new VSRG::Song;
+					BMSSong = new Game::VSRG::Song;
 				}
             }
 
@@ -420,7 +424,7 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<V
             VSRG::Song *New = new VSRG::Song;
             Log::Logf("Song ID %d load from cache...", *i);
 			try {
-				DB->GetSongInformation7K(*i, New);
+				DB->GetSongInformation(*i, New);
 				New->SongDirectory = SongDirectory;
 
 				// make sure it's a well-formed directory on debug
@@ -460,7 +464,7 @@ void SongLoader::GetSongList7K(std::vector<VSRG::Song*> &OutVec,std::filesystem:
     }
 }
 
-std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const VSRG::Song* Meta, std::shared_ptr<VSRG::Difficulty> &CurrentDiff, std::filesystem::path &FilenameOut, uint8_t &Index)
+std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const Game::VSRG::Song* Meta, std::shared_ptr<Game::VSRG::Difficulty> &CurrentDiff, std::filesystem::path &FilenameOut, uint8_t &Index)
 {
     std::shared_ptr<VSRG::Song> Out;
 

@@ -69,10 +69,12 @@ AudioManifest = {
 OnMissBGATime = 0.5
 
 -- Set screen filter transparency on 7K.
-ScreenFilter = 0.7
+ScreenFilter = 0.9
 
 -- Whether to display the in-game histogram.
 Histogram = 0
+
+Hitlightning = 1
 
 -- show up to 999 ms off
 HitErrorDisplayLimiter = 999

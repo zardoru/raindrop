@@ -30,7 +30,7 @@ protected:
     std::shared_ptr<Screen> Next;
 
 public:
-    Screen(std::string Name);
+    Screen(std::string Name, bool InitUI = true);
     Screen(std::string Name, std::shared_ptr<Screen> _Parent);
     virtual ~Screen();
 
@@ -44,6 +44,8 @@ public:
     void Close();
 
     Screen* GetTop();
+
+	void StartTransition(std::shared_ptr<Screen> scr);
 
     // Screen implementation.
     virtual void LoadResources(); // could, or not, be called from main thread.

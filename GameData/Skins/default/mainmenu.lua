@@ -1,39 +1,19 @@
 skin_require "Global/FadeInScreen"
+game_require "AnimationFunctions"
 
 Preload = {
 	"MainMenu/play.png",
 	"MainMenu/quit.png"
 }
 
-IntroDuration = 0.3
-ExitDuration = 2.3
-function PlayBtnHover()
-	PlayButton.Image = "MainMenu/playh.png";
-	PlayButton.Width = 256
-	PlayButton.Height = 153
-end
-
-function PlayBtnHoverLeave()
-	PlayButton.Image = "MainMenu/play.png";
-	PlayButton.Width = 256
-	PlayButton.Height = 153
-end
-
-function ExitBtnHover()
-	ExitButton.Image = "MainMenu/quith.png"
-	ExitButton.Width = 256
-	ExitButton.Height = 153
-end
-
-function ExitBtnHoverLeave()
-	ExitButton.Image = "MainMenu/quit.png"
-	ExitButton.Width = 256
-	ExitButton.Height = 153
-end
+IntroDuration = 0.5
+ExitDuration = 1.5
 
 function UpdateIntro(p, delta)
-	local S = math.sin(-5 * math.pi * (p + 1)) * math.pow(2, -10 * p) + 1
-	targBadge.Y = ScreenHeight/2*(S) - targBadge.Height
+	local S = elastic(p)
+  
+  -- At 1/3rd of the screen, please.
+	targBadge.Y = ScreenHeight * 3/7 * (S) - targBadge.Height
 	targLogo.Y = targBadge.Y
 	Update(delta)
 	BGAOut(p*p)
@@ -61,11 +41,18 @@ function UpdateExit(p, delta)
 	BGAIn(ease)
 end
 
+function KeyEvent(k, c, mouse)
+	if c == 1 then 
+		Global:StartScreen("songselect")
+	end
+end
+
 function Init()
+  elastic = Ease.ElasticSquare(1.5)
 	ScreenFade:Init()
 		
 	targLogo = Engine:CreateObject() 
-	targLogo.Image = "MainMenu/FRONTs.png"
+	targLogo.Texture = "MainMenu/FRONTs.png"
 	targLogo.X = ScreenWidth / 2
 	targLogo.Y = ScreenHeight / 4
 	targLogo.Centered = 1
@@ -73,19 +60,23 @@ function Init()
 	targLogo.Layer = 31
 
 	targBadge = Engine:CreateObject()
-	targBadge.Image = "MainMenu/BACKs.png"
+	targBadge.Texture = "MainMenu/BACKs.png"
 	targBadge.X = ScreenWidth / 2
 	targBadge.Y = ScreenHeight / 4
 	targBadge.Centered = 1
 	targBadge.Layer = 31
 	
-	PlayBtnHoverLeave()
-	PlayButton.Y = ScreenHeight - 153 * 2 - 40
-	PlayButton.Layer = 12
+	font = Fonts.TruetypeFont(GetSkinFile("font.ttf"), 24)
 
-	ExitBtnHoverLeave()
-	ExitButton.Y = ScreenHeight - 153
-	ExitButton.Layer = 12
+	s = "press any key..."
+	title = StringObject2D()
+	title.Font = font
+	title.X = ScreenWidth / 2 - font:GetLength(s) / 2
+	title.Y = ScreenHeight * 3 / 4
+	title.Text = s
+	title.Z = 31
+	Engine:AddTarget(title)
+
 	-- Rocket UI not initialized yet...
 end
 
@@ -98,4 +89,5 @@ function Update(Delta)
 
 	badgeRotSpeed = math.max(badgeRotSpeed - Delta * 240, 120)
 	targBadge.Rotation = targBadge.Rotation - badgeRotSpeed * Delta
+	BackgroundAnimation:Update(Delta)
 end

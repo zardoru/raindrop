@@ -10,6 +10,7 @@
 #include "ImageList.h"
 #include "Logging.h"
 #include "osuBackgroundAnimation.h"
+#include "VideoPlayback.h"
 
 std::filesystem::path GetSongBackground(Game::Song &Song)
 {
@@ -29,6 +30,29 @@ std::filesystem::path GetSongBackground(Game::Song &Song)
     return Configuration::GetSkinConfigs("DefaultBackground");
 }
 
+std::string videoextensions[] = {
+	".mkv",
+	".mp4",
+	".avi",
+	".wmv",
+	".m4v",
+	".mpg",
+	".mpeg",
+	".mpv",
+	".flv"
+};
+
+bool IsVideoPath(std::filesystem::path path)
+{
+	auto pathext = path.extension().string();
+	for (auto ext : videoextensions) {
+		if (pathext == ext)
+			return true;
+	}
+
+	return false;
+}
+
 class BMSBackground : public BackgroundAnimation
 {
     std::shared_ptr<Sprite> Layer0;
@@ -39,13 +63,17 @@ class BMSBackground : public BackgroundAnimation
     std::vector<AutoplayBMP> EventsLayerMiss;
     std::vector<AutoplayBMP> EventsLayer1;
     std::vector<AutoplayBMP> EventsLayer2;
+
+	std::map<int, VideoPlayback*> Videos;
+	
+
     ImageList List;
-    VSRG::Song* Song;
-    VSRG::Difficulty* Difficulty;
+    Game::VSRG::Song* Song;
+    Game::VSRG::Difficulty* Difficulty;
     bool Validated;
     bool BlackToTransparent;
 public:
-    BMSBackground(Interruptible* parent, VSRG::Difficulty* Difficulty, VSRG::Song* Song) : BackgroundAnimation(parent), List(this)
+    BMSBackground(Interruptible* parent, Game::VSRG::Difficulty* Difficulty, Game::VSRG::Song* Song) : BackgroundAnimation(parent), List(this)
     {
         this->Difficulty = Difficulty;
         this->Song = Song;
@@ -53,13 +81,20 @@ public:
         MissTime = 0;
 
         bool BtoT = false;
-        if (Difficulty->Data->TimingInfo->GetType() == VSRG::TI_BMS)
+        if (Difficulty->Data->TimingInfo->GetType() == Game::VSRG::TI_BMS)
         {
-            if (!std::dynamic_pointer_cast<VSRG::BMSTimingInfo>(Difficulty->Data->TimingInfo)->IsBMSON)
+            if (!std::dynamic_pointer_cast<Game::VSRG::BMSChartInfo>(Difficulty->Data->TimingInfo)->IsBMSON)
                 BtoT = true;
         }
         BlackToTransparent = BtoT;
     }
+
+	~BMSBackground()
+	{
+		for (auto vid : Videos) {
+			delete vid.second;
+		}
+	}
 
     void Load() override
     {
@@ -70,7 +105,19 @@ public:
 
 		for (auto v : Difficulty->Data->BMPEvents->BMPList) {
 			std::filesystem::path path = Song->SongDirectory / v.second;
-			List.AddToListIndex(path, v.first);
+			if (IsVideoPath(path))
+			{
+				auto vid = new VideoPlayback();
+				if (vid->Open(path)) {
+					vid->StartDecodeThread();
+					List.AddToListIndex(vid, v.first);
+					Videos[v.first] = vid;
+				}
+				else
+					delete vid;
+			}
+			else
+				List.AddToListIndex(path, v.first);
 		}
 
         List.AddToList(Song->BackgroundFilename, Song->SongDirectory);
@@ -98,8 +145,14 @@ public:
 
         Layer1->BlackToTransparent = Layer2->BlackToTransparent = BlackToTransparent;
 
-        LayerMiss->SetImage(List.GetFromIndex(0), false);
-        Layer0->SetImage(List.GetFromIndex(1), false);
+        LayerMiss->SetImage(List.GetFromIndex(0), true);
+        Layer0->SetImage(List.GetFromIndex(1), true);
+
+		Layer0->SetWidth(Layer0->GetWidth() / Layer0->GetHeight());
+		Layer0->SetHeight(1);
+		auto x = Layer0->GetWidth();
+
+		Layer0->SetPositionX( (1 - x) / 2 );
 
         sort(EventsLayer0.begin(), EventsLayer0.end());
         sort(EventsLayerMiss.begin(), EventsLayerMiss.end());
@@ -124,11 +177,18 @@ public:
 
     void SetLayerImage(Sprite *sprite, std::vector<AutoplayBMP> &events_layer, double time)
     {
-        auto bmp = std::lower_bound(events_layer.begin(), events_layer.end(), time);
+        auto bmp = std::lower_bound(events_layer.begin(), events_layer.end(), time, TimeSegmentCompare<AutoplayBMP>);
         if (bmp != events_layer.begin())
         {
             bmp = bmp - 1;
-            sprite->SetImage(List.GetFromIndex(bmp->BMP), false);
+
+			auto tex = List.GetFromIndex(bmp->BMP);
+			auto vid = dynamic_cast<VideoPlayback*>(tex);
+			if (vid) {
+				vid->UpdateClock(time - bmp->Time);
+			}
+
+            sprite->SetImage(tex, false);
         }
         else
         {
@@ -211,25 +271,25 @@ public:
     }
 };
 
-std::shared_ptr<BackgroundAnimation> CreateBGAforVSRG(VSRG::Song &input, uint8_t DifficultyIndex, Interruptible *context)
+std::unique_ptr<BackgroundAnimation> CreateBGAforVSRG(Game::VSRG::Song &input, uint8_t DifficultyIndex, Interruptible *context)
 {
-    VSRG::Difficulty* Diff = input.GetDifficulty(DifficultyIndex);
+    Game::VSRG::Difficulty* Diff = input.GetDifficulty(DifficultyIndex);
     if (Diff)
     {
         if (Diff->Data && Diff->Data->BMPEvents)
-            return std::make_shared<BMSBackground>(context, Diff, &input);
-		if (Diff->Data && Diff->Data->TimingInfo && Diff->Data->TimingInfo->GetType() == VSRG::TI_OSUMANIA)
-			return std::make_shared<osuBackgroundAnimation>(context, Diff->Data->osbSprites.get(), &input);
+            return std::make_unique<BMSBackground>(context, Diff, &input);
+		if (Diff->Data && Diff->Data->TimingInfo && Diff->Data->TimingInfo->GetType() == Game::VSRG::TI_OSUMANIA)
+			return std::make_unique<osuBackgroundAnimation>(context, Diff->Data->osbSprites.get(), &input);
 
-        return std::make_shared<StaticBackground>(context, GetSongBackground(input));
+        return std::make_unique<StaticBackground>(context, GetSongBackground(input));
     }
 
     return nullptr;
 }
 
-std::shared_ptr<BackgroundAnimation> CreateBGAforDotcur(dotcur::Song &input, uint8_t DifficultyIndex)
+std::unique_ptr<BackgroundAnimation> CreateBGAforDotcur(Game::dotcur::Song &input, uint8_t DifficultyIndex)
 {
-    return std::make_shared<StaticBackground>(nullptr, GetSongBackground(input));
+    return std::make_unique<StaticBackground>(nullptr, GetSongBackground(input));
 }
 
 BackgroundAnimation::BackgroundAnimation(Interruptible* parent) : Interruptible(parent)
@@ -269,17 +329,17 @@ Transformation& BackgroundAnimation::GetTransformation()
     return Transform;
 }
 
-std::shared_ptr<BackgroundAnimation> BackgroundAnimation::CreateBGAFromSong(uint8_t DifficultyIndex, Game::Song& Input, Interruptible* context, bool LoadNow)
+std::unique_ptr<BackgroundAnimation> BackgroundAnimation::CreateBGAFromSong(uint8_t DifficultyIndex, Game::Song& Input, Interruptible* context, bool LoadNow)
 {
-    std::shared_ptr<BackgroundAnimation> ret = nullptr;
+    std::unique_ptr<BackgroundAnimation> ret = nullptr;
 
     switch (Input.Mode)
     {
     case MODE_VSRG:
-        ret = CreateBGAforVSRG(static_cast<VSRG::Song&> (Input), DifficultyIndex, context);
+        ret = CreateBGAforVSRG(static_cast<Game::VSRG::Song&> (Input), DifficultyIndex, context);
         break;
     case MODE_DOTCUR:
-        ret = CreateBGAforDotcur(static_cast<dotcur::Song&> (Input), DifficultyIndex);
+        ret = CreateBGAforDotcur(static_cast<Game::dotcur::Song&> (Input), DifficultyIndex);
         break;
     default:
         break;

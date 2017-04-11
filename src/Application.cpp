@@ -25,6 +25,8 @@
 #include "SongWheel.h"
 #include "ScreenCustom.h"
 
+#include "ScreenVideoTest.h"
+
 void RunRaindropTests();
 bool Auto = false;
 bool DoRun = false;
@@ -248,22 +250,24 @@ void Application::SetupPreviewMode()
 
     // Avoid a crash...
     GameState::GetInstance().SetSelectedSong(song);
-    GameState::GetInstance().SetDifficultyIndex(difIndex);
 
     // Create loading screen and gameplay screen.
-    auto game = std::make_shared<ScreenGameplay7K>();
-    ScreenLoading *LoadScreen = new ScreenLoading(game);
+    auto game = std::make_shared<Game::VSRG::ScreenGameplay>();
+    auto LoadScreen = std::make_shared<ScreenLoading>(game);
 
     // Set them up.
 	song->SongDirectory = std::filesystem::absolute(InFile.parent_path());
 
-    GameParameters param;
+	/*
+    Game::VSRG::Parameters param;
+
     param.Upscroll = Upscroll;
     param.StartMeasure = Measure;
     param.Preloaded = true;
     param.Auto = Auto;
-
-    game->Init(song, difIndex, param);
+	*/
+	GameState::GetInstance().GetParameters(0)->Auto = Auto;
+    game->Init(song);
     LoadScreen->Init();
 
     Game = LoadScreen;
@@ -278,7 +282,7 @@ bool Application::PollIPC()
         Measure = Msg.Param;
         InFile = std::string(Msg.Path);
         Game->Close();
-        delete Game;
+		Game = nullptr;
 
         SetupPreviewMode();
 
@@ -292,7 +296,7 @@ bool Application::PollIPC()
     }
 }
 
-void ExportToBMSUnquantized(VSRG::Song* Source, std::filesystem::path PathOut);
+void ExportToBMSUnquantized(Game::VSRG::Song* Source, std::filesystem::path PathOut);
 
 void Application::Run()
 {
@@ -314,8 +318,9 @@ void Application::Run()
 
     if (RunMode == MODE_PLAY)
     {
-        Game = new ScreenMainMenu();
-        static_cast<ScreenMainMenu*>(Game)->Init();
+        Game = std::make_shared<ScreenMainMenu>();
+        static_cast<ScreenMainMenu*>(Game.get())->Init();
+		//Game = std::make_shared<ScreenVideoTest>();
     }
     else if (RunMode == MODE_VSRGPREVIEW)
     {
@@ -344,7 +349,7 @@ void Application::Run()
     else if (RunMode == MODE_CONVERT)
     {
 		InFile = std::filesystem::absolute(InFile);
-        std::shared_ptr<VSRG::Song> Sng = LoadSong7KFromFilename(InFile.filename(), InFile.parent_path(), nullptr);
+        std::shared_ptr<Game::VSRG::Song> Sng = LoadSong7KFromFilename(InFile.filename(), InFile.parent_path(), nullptr);
 
 		Log::Printf("Conversion mode activated.\n");
         if (Sng && Sng->Difficulties.size())
@@ -422,7 +427,7 @@ void Application::Run()
     {
         Log::Printf("Initializing custom, ad-hoc screen...\n");
 		auto s = Utility::ToU8(InFile.wstring());
-        ScreenCustom *scr = new ScreenCustom(GameState::GetInstance().GetSkinFile(s));
+        auto scr = std::make_shared<ScreenCustom>(GameState::GetInstance().GetSkinFile(s));
         Game = scr;
     }
 
@@ -432,6 +437,7 @@ void Application::Run()
         return;
 
     ImageLoader::UpdateTextures();
+	GameState::GetInstance().SetRootScreen(Game);
 
     oldTime = glfwGetTime();
     while (Game->IsScreenRunning() && !WindowFrame.ShouldCloseWindow())
@@ -439,6 +445,8 @@ void Application::Run()
         double newTime = glfwGetTime();
         double delta = newTime - oldTime;
         ImageLoader::UpdateTextures();
+
+		WindowFrame.RunInput();
 
         WindowFrame.ClearWindow();
 
@@ -449,6 +457,8 @@ void Application::Run()
 
         MixerUpdate();
         WindowFrame.SwapBuffers();
+		WindowFrame.UpdateFullscreen();
+
         oldTime = newTime;
     }
 }
@@ -471,7 +481,7 @@ void Application::Close()
     if (Game)
     {
         Game->Cleanup();
-        delete Game;
+		Game = nullptr;
     }
 
     WindowFrame.Cleanup();

@@ -3,7 +3,7 @@
 class Application
 {
     double oldTime;
-    Screen *Game;
+    std::shared_ptr<Screen> Game;
 
     enum
     {

@@ -1,5 +1,5 @@
-if Channels ~= 8 then
-	if Lanes ~= 8 then
+if not Game or Game:GetPlayer(0).Channels ~= 8 then
+	if Notes.Channels ~= 8 then
 		return
 	end
 end

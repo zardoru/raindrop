@@ -38,31 +38,28 @@ void SetupWheelLua(LuaManager* Man)
         .beginClass<SongWheel>("SongWheel")
         .addFunction("NextDifficulty", &SongWheel::NextDifficulty)
         .addFunction("PrevDifficulty", &SongWheel::PrevDifficulty)
-        .addFunction("SetDifficulty", &SongWheel::SetDifficulty)
+		.addProperty("DifficultyIndex", &SongWheel::GetDifficulty, &SongWheel::SetDifficulty)
         .addFunction("IsLoading", &SongWheel::IsLoading)
         .addFunction("GetIndexAtPoint", &SongWheel::IndexAtPoint)
-        .addFunction("NormalizedIndexAtPoint", &SongWheel::NormalizedIndexAtPoint)
-        .addFunction("GetTransformedY", &SongWheel::GetTransformedY)
+        .addFunction("GetNormalizedIndexAtPoint", &SongWheel::NormalizedIndexAtPoint)
         .addFunction("GoUp", &SongWheel::GoUp)
         .addFunction("AddSprite", &SongWheel::AddSprite)
         .addFunction("AddString", &SongWheel::AddText)
         .addFunction("ConfirmSelection", &SongWheel::ConfirmSelection)
         .addFunction("IsItemDirectory", &SongWheel::IsItemDirectory)
         .addProperty("SelectedIndex", &SongWheel::GetSelectedItem, &SongWheel::SetSelectedItem)
-        .addProperty("ListY", &SongWheel::GetListY, &SongWheel::SetListY)
         .addProperty("CursorIndex", &SongWheel::GetCursorIndex, &SongWheel::SetCursorIndex)
-        .addProperty("PendingY", &SongWheel::GetDeltaY, &SongWheel::SetDeltaY)
-        .addProperty("ItemHeight", &SongWheel::GetItemHeight, &SongWheel::SetItemHeight)
-        .addProperty("ItemWidth", &SongWheel::GetItemWidth, &SongWheel::SetItemWidth)
         .addProperty("ListIndex", &SongWheel::GetListCursorIndex)
         .addProperty("ItemCount", &SongWheel::GetNumItems)
-        .addProperty("ItemHeight", &SongWheel::GetItemHeight)
-        .addData("ScrollSpeed", &SongWheel::ScrollSpeed)
+		.addData("DisplayStartIndex", &SongWheel::DisplayStartIndex)
+		.addData("DisplayItemCount", &SongWheel::DisplayItemCount)
         .endClass();
 
     luabridge::push(L, &SongWheel::GetInstance());
     lua_setglobal(L, "Wheel");
 }
+
+namespace Game{
 
 ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic")
 {
@@ -83,10 +80,12 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic")
 
     Game::ListTransformFunction TransformHFunc(std::bind(&ScreenSelectMusic::GetListHorizontalTransformation, this, std::placeholders::_1));
     Game::ListTransformFunction TransformVFunc(std::bind(&ScreenSelectMusic::GetListVerticalTransformation, this, std::placeholders::_1));
-    Game::ListTransformFunction TransformPVert(std::bind(&ScreenSelectMusic::GetListPendingVerticalTransformation, this, std::placeholders::_1));
-    Wheel->TransformHorizontal = TransformHFunc;
-    Wheel->TransformListY = TransformVFunc;
-    Wheel->TransformPendingDisplacement = TransformPVert;
+	Game::ListTransformFunction TransformWFunc(std::bind(&ScreenSelectMusic::GetListWidthTransformation, this, std::placeholders::_1));
+	Game::ListTransformFunction TransformHeightFunc(std::bind(&ScreenSelectMusic::GetListHeightTransformation, this, std::placeholders::_1));
+	Wheel->TransformHorizontal = TransformHFunc;
+	Wheel->TransformVertical = TransformVFunc;
+	Wheel->TransformWidth = TransformWFunc;
+	Wheel->TransformHeight = TransformHeightFunc;
 
     Game::DirectoryChangeNotifyFunction DirChangeNotif(std::bind(&ScreenSelectMusic::OnDirectoryChange, this));
     Wheel->OnDirectoryChange = DirChangeNotif;
@@ -101,13 +100,13 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic")
     Wheel->TransformItem = std::bind(&ScreenSelectMusic::TransformItem, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
     Wheel->TransformString = std::bind(&ScreenSelectMusic::TransformString, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
 	    
-    SelectSnd = std::make_unique<SoundSample>();
+    SelectSnd = std::make_unique<AudioSample>();
     SelectSnd->Open(Configuration::GetSkinSound("SongSelectDecision"));
 
-    ClickSnd = std::make_unique<SoundSample>();
+    ClickSnd = std::make_unique<AudioSample>();
     ClickSnd->Open(Configuration::GetSkinSound("SongSelectHover"));
 
-    GameObject::GlobalInit();
+    // Game::dotcur::GameObject::GlobalInit();
 
     IsTransitioning = false;
     TransitionTime = 0;
@@ -116,43 +115,12 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic")
 void ScreenSelectMusic::InitializeResources()
 {
     LuaManager* LuaM = Animations->GetEnv();
-    UpBtn = std::make_unique<GUI::Button>();
 
     Animations->InitializeUI();
-
-    EventAnimationFunction OnUpClick(std::bind(LuaEvt, LuaM, "DirUpBtnClick", std::placeholders::_1));
-    EventAnimationFunction OnUpHover(std::bind(LuaEvt, LuaM, "DirUpBtnHover", std::placeholders::_1));
-    EventAnimationFunction OnUpHoverLeave(std::bind(LuaEvt, LuaM, "DirUpBtnHoverLeave", std::placeholders::_1));
-    UpBtn->OnClick = OnUpClick;
-    UpBtn->OnHover = OnUpHover;
-    UpBtn->OnLeave = OnUpHoverLeave;
-
-    BackBtn = std::make_unique<GUI::Button>();
-
-    EventAnimationFunction OnBackClick(std::bind(LuaEvt, LuaM, "BackBtnClick", std::placeholders::_1));
-    EventAnimationFunction OnBackHover(std::bind(LuaEvt, LuaM, "BackBtnHover", std::placeholders::_1));
-    EventAnimationFunction OnBackHoverLeave(std::bind(LuaEvt, LuaM, "BackBtnHoverLeave", std::placeholders::_1));
-    BackBtn->OnClick = OnBackClick;
-    BackBtn->OnHover = OnBackHover;
-    BackBtn->OnLeave = OnBackHoverLeave;
-
-    Animations->AddLuaTarget(BackBtn.get(), "BackButton");
-    Animations->AddLuaTarget(UpBtn.get(), "DirUpButton");
-    Animations->AddTarget(BackBtn.get());
-    Animations->AddTarget(UpBtn.get());
 
     Animations->Initialize();
 
     GameState::GetInstance().InitializeLua(Animations->GetEnv()->GetState());
-
-    Background.SetImage(GameState::GetInstance().GetSkinImage(Configuration::GetSkinConfigs("SelectMusicBackground")));
-
-    Background.Centered = 1;
-    Background.SetPosition(ScreenWidth / 2, ScreenHeight / 2);
-
-    WindowFrame.SetLightMultiplier(1);
-    Background.AffectedByLightning = true;
-    Animations->AddLuaTarget(&Background, "ScreenBackground");
 }
 
 void ScreenSelectMusic::LoadResources()
@@ -178,62 +146,58 @@ void ScreenSelectMusic::Cleanup()
     Game::SongWheel::GetInstance().CleanItems();
 }
 
-float ScreenSelectMusic::GetListPendingVerticalTransformation(const float Y)
+float ScreenSelectMusic::GetTransform(const char *TransformName, const float Y)
 {
-    LuaManager *Lua = Animations->GetEnv();
-    if (Lua->CallFunction("TransformPendingVertical", 1, 1))
-    {
-        Lua->PushArgument(Y);
-        Lua->RunFunction();
-        return Lua->GetFunctionResultF();
-    }
-    else return 0;
+	LuaManager *Lua = Animations->GetEnv();
+	if (Lua->CallFunction(TransformName, 1, 1))
+	{
+		Lua->PushArgument(Y);
+		Lua->RunFunction();
+		return Lua->GetFunctionResultF();
+	}
+	else return 0;
 }
 
 float ScreenSelectMusic::GetListVerticalTransformation(const float Y)
 {
-    LuaManager *Lua = Animations->GetEnv();
-    if (Lua->CallFunction("TransformListVertical", 1, 1))
-    {
-        Lua->PushArgument(Y);
-        Lua->RunFunction();
-        return Lua->GetFunctionResultF();
-    }
-    else return 0;
+	return GetTransform("TransformListVertical", Y);
 }
 
 float ScreenSelectMusic::GetListHorizontalTransformation(const float Y)
 {
-    LuaManager *Lua = Animations->GetEnv();
-    if (Lua->CallFunction("TransformListHorizontal", 1, 1))
-    {
-        Lua->PushArgument(Y);
-        Lua->RunFunction();
-        return Lua->GetFunctionResultF();
-    }
-    else
-        return 0;
+	return GetTransform("TransformListHorizontal", Y);
+}
+
+float ScreenSelectMusic::GetListWidthTransformation(const float Y)
+{
+	return GetTransform("TransformListWidth", Y);
+}
+
+float ScreenSelectMusic::GetListHeightTransformation(const float Y)
+{
+	return GetTransform("TransformListHeight", Y);
 }
 
 void ScreenSelectMusic::StartGameplayScreen()
 {
     std::shared_ptr<ScreenLoading> LoadNext;
     std::shared_ptr<Game::Song> MySong = GameState::GetInstance().GetSelectedSongShared();
-    uint8_t difindex = GameState::GetInstance().GetDifficultyIndex();
+	auto difindex = Game::SongWheel::GetInstance().GetDifficulty();
 
     if (MySong->Mode == MODE_DOTCUR)
     {
-        auto DotcurGame = std::make_shared<ScreenGameplay>();
-        DotcurGame->Init(static_cast<dotcur::Song*>(MySong.get()), difindex);
+#ifdef DOTCUR_ENABLED
+        auto DotcurGame = std::make_shared<Game::dotcur::ScreenGameplay>();
+        DotcurGame->Init(static_cast<Game::dotcur::Song*>(MySong.get()), difindex);
 
         LoadNext = std::make_shared<ScreenLoading>(DotcurGame);
+#endif
     }
     else
     {
-        auto VSRGGame = std::make_shared<ScreenGameplay7K>();
+        auto VSRGGame = std::make_shared<Game::VSRG::ScreenGameplay>();
 
-        VSRGGame->Init(std::dynamic_pointer_cast<VSRG::Song>(MySong),
-            difindex, *GameState::GetInstance().GetParameters());
+        VSRGGame->Init(std::dynamic_pointer_cast<Game::VSRG::Song>(MySong));
 
         LoadNext = std::make_shared<ScreenLoading>(VSRGGame);
     }
@@ -258,7 +222,6 @@ void ScreenSelectMusic::OnSongSelect(std::shared_ptr<Game::Song> MySong, uint8_t
     StopLoops();
 
     GameState::GetInstance().SetSelectedSong(MySong);
-    GameState::GetInstance().SetDifficultyIndex(difindex);
 
     Animations->DoEvent("OnSelect", 1);
     TransitionTime = Animations->GetEnv()->GetFunctionResultF();
@@ -346,7 +309,7 @@ void ScreenSelectMusic::PlayLoops()
 {
 	if (!BGM) {
 		auto fn = Configuration::GetSkinSound("SongSelectBGM");
-		BGM = std::make_unique<SoundStream>();
+		BGM = std::make_unique<AudioStream>();
 		if (std::filesystem::exists(fn) &&
 			std::filesystem::is_regular_file(fn)) {
 			auto s = fn.string();
@@ -418,12 +381,6 @@ bool ScreenSelectMusic::Run(double Delta)
 
     Game::SongWheel::GetInstance().Update(Delta);
 
-    UpBtn->Run(Delta);
-    BackBtn->Run(Delta);
-
-    WindowFrame.SetLightMultiplier(sin(Time) * 0.2 + 1);
-
-    Background.Render();
     Animations->UpdateTargets(Delta);
 
     Animations->DrawUntilLayer(16);
@@ -451,11 +408,6 @@ bool ScreenSelectMusic::HandleInput(int32_t key, KeyEventType code, bool isMouse
     if (Next)
         return Next->HandleInput(key, code, isMouseInput);
 
-    if (UpBtn->HandleInput(key, code, isMouseInput))
-    {
-        Game::SongWheel::GetInstance().GoUp();
-        return true;
-    }
 
     if (Game::SongWheel::GetInstance().HandleInput(key, code, isMouseInput))
         return true;
@@ -470,10 +422,12 @@ bool ScreenSelectMusic::HandleInput(int32_t key, KeyEventType code, bool isMouse
             Running = false;
             break;
         case KT_Left:
-            GameState::GetInstance().SetDifficultyIndex(Game::SongWheel::GetInstance().PrevDifficulty());
+			Game::SongWheel::GetInstance().PrevDifficulty();
+            //GameState::GetInstance().SetDifficulty(Game::SongW, 0);
             break;
         case KT_Right:
-            GameState::GetInstance().SetDifficultyIndex(Game::SongWheel::GetInstance().NextDifficulty());
+			Game::SongWheel::GetInstance().NextDifficulty();
+            //GameState::GetInstance().SetDifficulty();
             break;
 		default:
 			break;
@@ -493,9 +447,8 @@ bool ScreenSelectMusic::HandleScrollInput(double xOff, double yOff)
             return true;
     }
 
-    Animations->HandleScrollInput(xOff, yOff);
-
-    return Game::SongWheel::GetInstance().HandleScrollInput(xOff, yOff);
+	Animations->HandleScrollInput(xOff, yOff);
+	return Game::SongWheel::GetInstance().HandleScrollInput(xOff, yOff);
 }
 
 void ScreenSelectMusic::TransformItem(int Item, std::shared_ptr<Game::Song> Song, bool IsSelected, int Index)
@@ -562,4 +515,6 @@ void ScreenSelectMusic::OnItemHoverLeave(int32_t Index, uint32_t boundIndex, std
         luabridge::push(Animations->GetEnv()->GetState(), Selected.get());
         Animations->GetEnv()->RunFunction();
     }
+}
+
 }

@@ -1,62 +1,69 @@
+game_require "librd"
+
 Histogram = {}
 Histogram.__index = Histogram
 
 function Histogram:GenerateObjects(w, h)
-  local skeep = Global:GetScorekeeper7K()
-  local pnt_cnt = skeep:getHistogramPointCount()
-  self.item_size = w / pnt_cnt
-  
-  print ("HISTOGRAM ITEM SIZE " .. self.item_size)
-  self.Objects = {}
-  self.Width = w
-  self.Height = h
-  self.X = 0
-  self.Y = 0
-  
+  local skeep = self.Player.Scorekeeper
+  local pnt_cnt = skeep.HistogramPointCount
+
+	with  (self, {
+  	item_size = w / pnt_cnt,
+  	Objects = {},
+  	Width = w,
+  	Height = h,
+	  X = 0,
+  	Y = 0
+	})
+
   for i=1,pnt_cnt do
-    local ref = Engine:CreateObject()
-    ref.Image = "Global/white.png"
-    ref.Width = self.item_size
+    local ref = ScreenObject {
+    	Texture = "Global/white.png",
+    	Width = self.item_size
+		}
+
     self.Objects[i] = ref
     -- x, y, and h are set in updatepoints
   end
-  
+
   self.centerSep = Engine:CreateObject()
   self:UpdatePoints()
 end
 
 function Histogram:UpdatePoints()
-  local skeep = Global:GetScorekeeper7K()
-  local top_point = skeep:getHistogramHighestPoint()
-  
+  local skeep = self.Player.Scorekeeper
+  local top_point = skeep.HistogramHighestPoint
+
   for k,ref in pairs(self.Objects) do
     -- change this 128 by the amount of ms + 1 the histogram covers
     -- basically floor(point_count / 2)
-  
+
     ref.X = self.item_size * (k - 1) + self.X
-    ref.Height = self.Height * skeep:getHistogramPoint(k - 128) / top_point
+    ref.Height = self.Height * skeep:GetHistogramPoint(k - 128) / top_point
     ref.Y = self.Y - ref.Height + self.Height
-    
+
     if (k - 128) == 0 then
-      self.centerSep.Image = "Global/white.png"
-      self.centerSep.Width = self.item_size
-      self.centerSep.Height = self.Height
-      self.centerSep.X = ref.X
-      self.centerSep.Y = self.Y
+			with (self.centerSep, {
+	      Texture = "Global/white.png",
+	      Width = self.item_size,
+	      Height = self.Height,
+	      X = ref.X,
+	      Y = self.Y
+			})
     end
-    
+
   end
 end
 
 function Histogram:SetLayer(layer)
   if not layer then return end
-  
+
   for k,v in pairs(self.Objects) do
-    v.Layer = layer  
+    v.Layer = layer
   end
   self.centerSep.Layer = layer - 1
   if self.bg then
-    self.bg.layer = layer - 2 
+    self.bg.layer = layer - 2
   end
 end
 
@@ -66,7 +73,7 @@ function Histogram:SetColor(r, g, b)
     v.Green = g or v.Green
     v.Blue = b or v.Blue
   end
-  
+
   self.centerSep.Red = r * 0.5 or self.centerSep.Red
   self.centerSep.Green = g * 0.5 or self.centerSep.Green
   self.centerSep.Blue = b * 0.5 or self.centerSep.Blue
@@ -85,20 +92,21 @@ function Histogram:SetBackground(image)
     self.bg = Engine:CreateObject()
     self.bg.X = self.X
     self.bg.Y = self.Y
-    self.bg.Image = image
+    self.bg.Texture = image
     self.bg.Width = self.Width
     self.bg.Height = self.Height
   end
-  
+
   return self.bg
 end
 
-function Histogram:new(width, height, layer)
+function Histogram:new(player, width, height, layer)
   local out = {}
-  local skeep = Global:GetScorekeeper7K()
-  
+  local skeep = player.Scorekeeper
+
   setmetatable(out, self)
-  out:GenerateObjects(width or skeep:getHistogramPointCount(), height or 100)
+  out.Player = player
+  out:GenerateObjects(width or skeep.HistogramPointCount * 1.15, height or 100)
   out:SetLayer(layer or 16)
   return out
 end

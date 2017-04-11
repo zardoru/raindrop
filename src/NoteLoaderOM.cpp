@@ -9,7 +9,7 @@
 
 typedef std::vector<std::string> SplitResult;
 
-using namespace VSRG;
+using namespace Game::VSRG;
 
 const auto SAMPLESET_NORMAL = 1;
 const auto SAMPLESET_SOFT = 2;
@@ -24,7 +24,7 @@ const auto NOTE_SLIDER = 2;
 const auto NOTE_HOLD = 128;
 const auto NOTE_NORMAL = 1;
 
-const double LINE_REMOVE_THRESHOLD = 0.0011;
+const double LINE_REMOVE_THRESHOLD = 0.0012;
 
 CfgVar DebugOsuLoader("OsuLoader", "Debug");
 
@@ -40,6 +40,13 @@ std::string GetSamplesetStr(int Sampleset)
 	default:
 		return "normal";
 	}	
+}
+
+
+namespace Game {
+	namespace VSRG {
+		TimingData GetBPSData(Difficulty *difficulty, double Drift);
+	}
 }
 
 enum OsuLoaderReadingState
@@ -101,7 +108,7 @@ bool operator< (const HitsoundSectionData& lhs, const double rhs) {
 
 int GetTrackFromPosition(float Position, int Channels)
 {
-    float Step = 512.0 / Channels;
+    float Step = 512.f / Channels;
 
     return static_cast<int>(Position / Step);
 }
@@ -121,10 +128,10 @@ class OsumaniaLoader
     int Version;
     int last_sound_index;
     Song *osu_sng;
-    std::shared_ptr<VSRG::OsuManiaTimingInfo> TimingInfo;
+    std::shared_ptr<OsumaniaChartInfo> TimingInfo;
     std::map <std::string, int> Sounds;
     std::vector<HitsoundSectionData> HitsoundSections;
-    std::shared_ptr<VSRG::Difficulty> Diff;
+    std::shared_ptr<Difficulty> Diff;
     std::string DefaultSampleset;
 
 	std::stringstream EventsContent;
@@ -178,11 +185,11 @@ class OsumaniaLoader
 		Offsetize();
 
 		auto seclst = filter([](const HitsoundSectionData& H) {return !H.IsInherited && !H.Omit;}, HitsoundSections);
-		double displacement = 0;
 		for (auto i = seclst.begin(); i != seclst.end();)
 		{
 			double SectionDurationInBeats = 0;
 			double acom_mlen = i->MeasureLen;
+
 			/* 
 			
 			if there's an older one that is 1ms later
@@ -208,7 +215,7 @@ class OsumaniaLoader
 				SectionDurationInBeats += bt;
 
 				if (DebugOsuLoader)
-					Log::LogPrintf("\nMCALC: %f to %f (%f beats long)", next->Time, i->Time, bt);
+					Log::LogPrintf("\nMCALC: %f to %f (%f beats long at %f bpm)", next->Time, i->Time, bt, i->Value);
 
 				// the next section, and the one after that
 				auto c_next = next;
@@ -270,16 +277,20 @@ class OsumaniaLoader
 					Msr.Length = Fraction * (i)->MeasureLen;
 					Diff->Data->Measures.push_back(Msr);
 				}
+				else {
+					if (Diff->Data->Measures.size())
+						Diff->Data->Measures.back().Length += Fraction * i->MeasureLen;
+				}
 			}
 
 			i = next;
 		}
 	}
 
+	
 	void PushNotesToMeasures()
 	{
-		TimingData BPS;
-		Diff->ProcessBPS(BPS, 0);
+		TimingData BPS = Game::VSRG::GetBPSData(Diff.get(), 0);
 
 		for (int k = 0; k < MAX_CHANNELS; k++)
 		{
@@ -344,13 +355,13 @@ public:
         return Ret;
     }
 
-    OsumaniaLoader(VSRG::Song *song): slider_velocity(1.4), Version(0), last_sound_index(1), osu_sng(song)
+    OsumaniaLoader(Song *song): slider_velocity(1.4), Version(0), last_sound_index(1), osu_sng(song)
     {
         ReadAModeTag = false;
         line_number = 0;
     }
 
-    float GetSliderMultiplierAt(double T)
+    double GetSliderMultiplierAt(double T)
     {
 		auto seclst = filter([&](const HitsoundSectionData &H) { return H.IsInherited && H.Time >= T; }, HitsoundSections);
         return seclst.size() ? seclst[0].Value : 1;
@@ -565,7 +576,7 @@ public:
 
 		SampleSetAddition is an abomination on a VSRG - so it's only left in for informative purposes.
 	*/
-	std::string GetSampleFilename(SplitResult &split_line, int NoteType, int Hitsound, float Time)
+	std::string GetSampleFilename(SplitResult &split_line, int NoteType, int Hitsound, double Time)
 	{
 		// SampleSetAddition is unused but left for self-documenting purposes.
 		int SampleSet = 0, SampleSetAddition, CustomSample = 0;
@@ -710,7 +721,7 @@ public:
 
 		if (NoteType & NOTE_HOLD)
 		{
-			float endTime;
+			double endTime;
 			if (splitType == 5 && ObjectHitsoundData.size())
 				endTime = latof(ObjectHitsoundData[0].c_str()) / 1000.0;
 			else if (splitType == 6)
@@ -807,8 +818,8 @@ public:
 		if (!filein.is_open())
 			throw OsuManiaLoaderException("Could not open file.");
 
-	    TimingInfo = std::make_shared<OsuManiaTimingInfo>();
-		Diff = std::make_shared<VSRG::Difficulty>();
+	    TimingInfo = std::make_shared<OsumaniaChartInfo>();
+		Diff = std::make_shared<Difficulty>();
 		Diff->Data = std::make_shared<DifficultyLoadInfo>();
 		Diff->Data->TimingInfo = TimingInfo;
 
@@ -899,7 +910,7 @@ public:
 
 				// Copy all sounds we registered
 				for (auto i : Sounds)
-					Diff->SoundList[i.second] = i.first;
+					Diff->Data->SoundList[i.second] = i.first;
 
 				// Calculate level as NPS
 				Diff->Level = Diff->TotalScoringObjects / Diff->Duration;
@@ -913,18 +924,6 @@ public:
 		}
     }
 };
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 void NoteLoaderOM::LoadObjectsFromFile(std::filesystem::path filename, Song *Out)

@@ -8,6 +8,10 @@
 #include "SongDC.h"
 #include "SongLoader.h"
 
+ListEntry::ListEntry() {
+	Kind = Directory;
+}
+
 SongList::SongList(SongList* Parent)
     : mParent(Parent)
 {
@@ -26,6 +30,16 @@ void SongList::AddSong(std::shared_ptr<Game::Song> Song)
     mChildren.push_back(NewEntry);
 }
 
+void SongList::AddEntry(ListEntry entry)
+{
+	mChildren.push_back(entry);
+}
+
+const std::vector<ListEntry>& SongList::GetEntries()
+{
+	return mChildren;
+}
+
 void SongList::AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, std::filesystem::path Dir, std::string Name, bool VSRGActive, bool DotcurActive)
 {
     bool EntryWasPushed = false;
@@ -37,8 +51,8 @@ void SongList::AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, std:
     NewEntry.Kind = ListEntry::Directory;
     NewEntry.Data = std::shared_ptr<void>(NewList);
 
-    std::vector<VSRG::Song*> Songs7K;
-    std::vector<dotcur::Song*> SongsDC;
+    std::vector<Game::VSRG::Song*> Songs7K;
+    std::vector<Game::dotcur::Song*> SongsDC;
     std::vector<std::string> Listing;
 
 	for (auto i : std::filesystem::directory_iterator (Dir))
@@ -140,7 +154,7 @@ void SongList::AddVirtualDirectory(std::string NewEntryName, Game::Song* List, i
 }
 
 // if false, it's a song
-bool SongList::IsDirectory(unsigned int Entry)
+bool SongList::IsDirectory(unsigned int Entry) const
 {
     if (Entry >= mChildren.size()) return true;
     return mChildren[Entry].Kind == ListEntry::Directory;
@@ -174,7 +188,7 @@ std::string SongList::GetEntryTitle(unsigned int Entry)
     }
 }
 
-unsigned int SongList::GetNumEntries()
+unsigned int SongList::GetNumEntries() const
 {
     return mChildren.size();
 }
@@ -237,14 +251,18 @@ void SongList::SortBy(ESortCriteria criteria)
 			{
 				if (a->Mode == MODE_DOTCUR)
 				{
-					auto sng = std::static_pointer_cast<dotcur::Song>(a);
+#ifdef DOTCUR_ENABLED
+					auto sng = std::static_pointer_cast<Game::dotcur::Song>(a);
 					auto dif = sng->GetDifficulty(0);
 					if (dif) return dif->Duration;
+#else
+					return -1.0;
+#endif
 				}
 
 				if (a->Mode == MODE_VSRG)
 				{
-					auto sng = std::static_pointer_cast<VSRG::Song>(a);
+					auto sng = std::static_pointer_cast<Game::VSRG::Song>(a);
 					auto dif = sng->GetDifficulty(0);
 					if (dif) return dif->Duration;
 				}	
@@ -267,7 +285,7 @@ void SongList::SortBy(ESortCriteria criteria)
 			{
 				if (a->Mode == MODE_DOTCUR)
 				{
-					auto sng = std::static_pointer_cast<dotcur::Song>(a);
+					auto sng = std::static_pointer_cast<Game::dotcur::Song>(a);
 					auto minnps = std::numeric_limits<float>::infinity();
 					for (auto diff : sng->Difficulties) {
 						minnps = std::min(minnps, float(diff->TotalNotes / diff->Duration));
@@ -278,7 +296,7 @@ void SongList::SortBy(ESortCriteria criteria)
 
 				if (a->Mode == MODE_VSRG)
 				{
-					auto sng = std::static_pointer_cast<VSRG::Song>(a);
+					auto sng = std::static_pointer_cast<Game::VSRG::Song>(a);
 					auto minnps = std::numeric_limits<float>::infinity();
 					for (auto diff : sng->Difficulties) {
 						minnps = std::min(minnps, float(diff->TotalNotes / diff->Duration));
@@ -304,7 +322,7 @@ void SongList::SortBy(ESortCriteria criteria)
 			{
 				if (a->Mode == MODE_DOTCUR)
 				{
-					auto sng = std::static_pointer_cast<dotcur::Song>(a);
+					auto sng = std::static_pointer_cast<Game::dotcur::Song>(a);
 					auto maxnps = -std::numeric_limits<float>::infinity();
 					for (auto diff : sng->Difficulties) {
 						maxnps = std::max(maxnps, float(diff->TotalNotes / diff->Duration));
@@ -315,7 +333,7 @@ void SongList::SortBy(ESortCriteria criteria)
 
 				if (a->Mode == MODE_VSRG)
 				{
-					auto sng = std::static_pointer_cast<VSRG::Song>(a);
+					auto sng = std::static_pointer_cast<Game::VSRG::Song>(a);
 					auto maxnps = -std::numeric_limits<float>::infinity();
 					for (auto diff : sng->Difficulties) {
 						maxnps = std::max(maxnps, float(diff->TotalNotes / diff->Duration));

@@ -67,6 +67,8 @@ public:
     void ReloadUI();
     void ReloadAll();
 
+	void SetScreenName(std::string sname);
+
     void RunUIScript(std::string Filename);
     void RunUIFunction(std::string Funcname);
     void SetUILayer(uint32_t Layer);

@@ -8,6 +8,7 @@ class LuaManager
     void GetGlobal(std::string VarName);
 
     int func_args, func_results; bool func_input; bool func_err;
+	std::string last_error;
 
 public:
 
@@ -29,6 +30,8 @@ public:
     // Do a "require" call with Filename as the argument. This leaves a value on the stack!
     bool Require(std::filesystem::path path);
 
+	void DumpStack();
+
     // Global variables
 
     int GetGlobalI(std::string VariableName, int Default = -1);
@@ -44,6 +47,7 @@ public:
     void PushArgument(int Value);
     void PushArgument(double Value);
     void PushArgument(std::string Value);
+	void PushArgument(bool Value);
 
     bool CallFunction(const char* Name, int Arguments = 0, int Results = 0);
     bool RunFunction();

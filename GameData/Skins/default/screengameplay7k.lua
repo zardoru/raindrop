@@ -7,24 +7,19 @@ skin_require "Global/FadeInScreen"
 -- Set up constants for everyone
 
 game_require "noteskin_defs"
-GearWidth = Noteskin[Channels].GearWidth
-GearHeight = GearHeightCommon
-if Upscroll ~= 0 then
-	UpscrollMod = -1
-else
-	UpscrollMod = 1
-end
-
-skin_require "VSRG/Explosions"
-skin_require "VSRG/ComboDisplay"
-skin_require "VSRG/KeyLightning"
-skin_require "VSRG/FixedObjects"
-skin_require "VSRG/ScoreDisplay"
-skin_require "VSRG/AutoplayAnimation"
-skin_require "VSRG/GameplayObjects"
-skin_require "VSRG/StageAnimation"
-skin_require "VSRG/AnimatedObjects"
-skin_require "VSRG/TextDisplay"
+skin_require "Scripts/Explosions"
+skin_require "Scripts/ComboDisplay"
+skin_require "Scripts/KeyLightning"
+skin_require "Scripts/FixedObjects"
+skin_require "Scripts/ScoreDisplay"
+skin_require "Scripts/AutoplayAnimation"
+skin_require "Scripts/Lifebar"
+skin_require "Scripts/StageAnimation"
+skin_require "Scripts/AnimatedObjects"
+skin_require "Scripts/Keys"
+skin_require "Scripts/Judgment"
+skin_require "Scripts/TextDisplay"
+skin_require "override"
 
 -- All of these will be loaded in the loading screen instead of
 -- in the main thread.
@@ -65,35 +60,91 @@ AnimatedObjects = {
 		ScoreDisplay,
 		Lifebar,
 		MissHighlight,
+    Keys,
 		Judgment,
 		Explosions,
-		Jambar
+		Jambar,
+		PlayerText,
+    AutoAnimation
 	},
 
 	-- Internal functions for automating stuff.
 	Init = function ()
+    local n = #AnimatedObjects.List
+    print (n, "objects in Gameplay Screen")
+		AnimatedObjects.Items = {}
 		for i = 1, #AnimatedObjects.List do
-			if AnimatedObjects.List[i] then 
-				AnimatedObjects.List[i].Init()
+			if AnimatedObjects.List[i] and AnimatedObjects.List[i].new then
+        local p = Game:GetPlayer(0)
+        local chan = p.Difficulty.Channels
+        local ns
+        local TT = p.Turntable and (p.Channels == 6 or p.Channels == 8)
+        
+        if not TT then
+          ns = Noteskin[chan]
+        else
+          ns = NoteskinSpecial[chan]
+        end
+        
+				AnimatedObjects.Items[i] = AnimatedObjects.List[i]:new({
+              Player = p,
+              Noteskin = ns
+            })
+      else
+        if not AnimatedObjects.List[i] then
+          print ("AnimatedObjects object",i,"is nil")
+        end
 			end
 		end
 	end,
 
 	Run = function (Delta)
-		for i = 1, #AnimatedObjects.List do
-			if AnimatedObjects.List[i] and AnimatedObjects.List[i].Run ~= nil then
-				AnimatedObjects.List[i].Run(Delta)
+		for i = 1, #AnimatedObjects.Items do
+			if AnimatedObjects.Items[i] and AnimatedObjects.Items[i].Run ~= nil then
+				AnimatedObjects.Items[i]:Run(Delta)
 			end
 		end
 	end,
-	
-	GearKeyEvent = function (Lane, IsKeyDown)
+
+	GearKeyEvent = function (Lane, IsKeyDown, PlayerNumber)
 		for i = 1, #AnimatedObjects.List do
-			if AnimatedObjects.List[i] and AnimatedObjects.List[i].GearKeyEvent ~= nil then
-				AnimatedObjects.List[i].GearKeyEvent(Lane, IsKeyDown)
+			if AnimatedObjects.Items[i] and AnimatedObjects.Items[i].GearKeyEvent ~= nil then
+				AnimatedObjects.Items[i]:GearKeyEvent(Lane, IsKeyDown, PlayerNumber)
 			end
 		end
-	end
+	end,
+  
+  OnHit = function (a, b, c, d, e, f)
+    for i = 1, #AnimatedObjects.List do
+			if AnimatedObjects.Items[i] and AnimatedObjects.Items[i].OnHit ~= nil then
+        AnimatedObjects.Items[i]:OnHit(a, b, c, d, e, f)
+      end
+    end
+  end,
+  
+  OnMiss = function (t, l, h, p)
+    for i = 1, #AnimatedObjects.List do
+			if AnimatedObjects.Items[i] and AnimatedObjects.Items[i].OnMiss ~= nil then
+        AnimatedObjects.Items[i]:OnMiss(t, l, h, p)
+      end
+    end
+  end,
+  
+  OnActivate = function()
+    for i = 1, #AnimatedObjects.List do
+			if AnimatedObjects.Items[i] and AnimatedObjects.Items[i].OnActivate ~= nil then
+        AnimatedObjects.Items[i]:OnActivate()
+      end
+    end
+  end,
+  
+  OnSongFinish = function()
+    for i = 1, #AnimatedObjects.List do
+			if AnimatedObjects.Items[i] and AnimatedObjects.Items[i].OnSongFinish ~= nil then
+        AnimatedObjects.Items[i]:OnSongFinish()
+      end
+    end
+  end
 }
 
 BgAlpha = 0
@@ -103,9 +154,7 @@ BgAlpha = 0
 function Init()
 	AutoadjustBackground()
 	AnimatedObjects.Init()
-	DrawTextObjects()
-	ScreenFade.Init()
-	ScreenFade.Out(true)
+
 
 
 	if GetConfigF("Histogram", "") ~= 0 then
@@ -145,93 +194,57 @@ end
 
 -- When 'enter' is pressed and the game starts, this function is called.
 function OnActivateEvent()
-	if Auto ~= 0 then
-		AutoAnimation.Init()
-	end
+	AnimatedObjects.OnActivate()
 end
 
-function HitEvent(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease)
+function HitEvent(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease, PNum)
 	-- When hits happen, this function is called.
-	if math.abs(TimeOff) < AccuracyHitMS then
-		DoColor = 0
+	AnimatedObjects.OnHit(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease, PNum)
 
-		if JudgmentValue == 0 then
-			DoColor = 1
-		end
-
-		Explosions.Hit(Lane, 0, IsHold, IsHoldRelease)
-		ComboDisplay.Hit(DoColor)
-
-		local EarlyOrLate
-		if TimeOff < 0 then
-			EarlyOrLate = 1
-		else	
-			EarlyOrLate = 2
-		end
-
-		Judgment.Hit(JudgmentValue, EarlyOrLate)
-	end
-
-	if histogram then 
+	if histogram then
 	  	histogram:UpdatePoints()
 	end
-	ScoreDisplay.Update()
 end
 
-function MissEvent(TimeOff, Lane, IsHold)
+function MissEvent(TimeOff, Lane, IsHold, PNum)
 	-- When misses happen, this function is called.
-	if math.abs(TimeOff) <= 135 then -- mishit
-		Explosions.Hit(Lane, 1, IsHold, 0)
-	end
+	AnimatedObjects.OnMiss(TimeOff, Lane, IsHold, PNum)
 
-	local EarlyOrLate
-	if TimeOff < 0 then
-		EarlyOrLate = 1
-	else
-		EarlyOrLate = 2
-	end
-
-	Judgment.Hit(5, EarlyOrLate)
-
-	if histogram then 
+	if histogram then
 	  	histogram:UpdatePoints()
 	end
-	ScoreDisplay.Update()
-	ComboDisplay.Miss()
-	MissHighlight.OnMiss(Lane)
 end
 
 function KeyEvent(Key, Code, IsMouseInput)
 	-- All key events, related or not to gear are handled here
-end
-
-function GearKeyEvent (Lane, IsKeyDown)
-	-- Only lane presses/releases are handled here.
-
-	if Lane >= Channels then
-		return
+	if Key == 262 and Code == 1 then  -- right arrow
+		Game:GetPlayer(0).SpeedMultiplier = Game:GetPlayer(0).SpeedMultiplier + 0.25
 	end
 
-	AnimatedObjects.GearKeyEvent(Lane, IsKeyDown)
-	HitLightning.LanePress(Lane, IsKeyDown)
+	if Key == 263 and Code == 1 then  -- left arrow
+		Game:GetPlayer(0).SpeedMultiplier = Game:GetPlayer(0).SpeedMultiplier - 0.25
+	end
+end
+
+function GearKeyEvent (Lane, IsKeyDown, PNum)
+	-- Only lane presses/releases are handled here.
+	AnimatedObjects.GearKeyEvent(Lane, IsKeyDown, PNum)
 end
 
 -- Called when the song is over.
 function OnSongFinishedEvent()
-	AutoAnimation.Finish()
+	AnimatedObjects.OnSongFinish()
 	DoSuccessAnimation()
 	return SuccessAnimation.Duration
 end
 
 function Update(Delta)
 	-- Executed every frame.
-	
-	if Active ~= 0 then
-		AutoAnimation.Run(Delta)
+
+	if Game.Active then
+		AutoAnimation:Run(Delta)
 	end
-	
+
 	AnimatedObjects.Run(Delta)
-	UpdateTextObjects()
 
 end
-

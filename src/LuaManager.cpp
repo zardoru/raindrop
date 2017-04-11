@@ -7,10 +7,15 @@
 
 int LuaPanic(lua_State* State)
 {
-    if (lua_isstring(State, -1))
-        wprintf(L"LUA ERROR: %ls\n", Utility::Widen(lua_tostring(State, -1)).c_str());
-    Utility::DebugBreak();
-    return 0;
+	const char* msg = NULL;
+	if (lua_isstring(State, 1)) {
+		msg = lua_tostring(State, 1);
+		luaL_traceback(State, State, msg, 2);
+		return 1;
+	}
+	else {
+		return 0;
+	}
 }
 
 int Break(lua_State *S)
@@ -40,6 +45,9 @@ LuaManager::LuaManager()
         lua_atpanic(State, &LuaPanic);
     }
     // If we couldn't open lua, can we throw an exception?
+
+	func_input = func_args = func_results = 0;
+	func_err = false;
 }
 
 LuaManager::~LuaManager()
@@ -53,6 +61,15 @@ void LuaManager::GetGlobal(std::string VarName)
     lua_getglobal(State, VarName.c_str());
 }
 
+void reportError(lua_State *State)
+{
+	const char* reason = lua_tostring(State, -1);
+
+    Log::LogPrintf("LuaManager: Lua error: %s\n", reason);
+    Utility::DebugBreak();
+    lua_pop(State, 1);
+}
+
 bool LuaManager::RunScript(std::filesystem::path file)
 {
     int errload = 0, errcall = 0;
@@ -62,18 +79,23 @@ bool LuaManager::RunScript(std::filesystem::path file)
 
     Log::LogPrintf("LuaManager: Running script %s.\n", Utility::ToU8(file.wstring()).c_str());
 
-    if ((errload = luaL_loadfile(State, Utility::ToLocaleStr(file).c_str())) || (errcall = lua_pcall(State, 0, LUA_MULTRET, 0)))
-    {
-        const char* reason = lua_tostring(State, -1);
 
-        if (reason)
-        {
-            Log::LogPrintf("LuaManager: Lua error: %s\n", reason);
-            Utility::DebugBreak();
-        }
-        Pop();
-        return false;
+	if ((errload = luaL_loadfile(State, Utility::ToLocaleStr(file).c_str()))) {
+		reportError(State);
+		return false;
+	}
+	
+	lua_pushcfunction(State, LuaPanic);
+	lua_insert(State, -2);
+
+	if (errcall = lua_pcall(State, 0, 0, -2))
+    {
+		reportError(State);
+		Pop(); // remove pushed panic function
+		return false;
     }
+
+	Pop(); // remove panic func.
     return true;
 }
 
@@ -92,20 +114,25 @@ bool LuaManager::RunString(std::string string)
 
 bool LuaManager::Require(std::filesystem::path Filename)
 {
+	lua_pushcfunction(State, LuaPanic);
     lua_getglobal(State, "require");
     lua_pushstring(State, Utility::ToLocaleStr(Filename.wstring()).c_str());
-    if (lua_pcall(State, 1, 1, 0))
+    if (lua_pcall(State, 1, 1, -3))
     {
         const char* reason = lua_tostring(State, -1);
-        if (reason)
+        if (reason && last_error != reason)
         {
-            Log::Printf("lua require error: %s\n", reason);
+			last_error = reason;
+            Log::LogPrintf("lua require error: %s\n", reason);
             Utility::DebugBreak();
         }
+
+		lua_remove(State, -2); // Remove the traceback.
         // No popping here - if succesful or not we want to leave that return value to lua.
         return false;
     }
 
+	lua_remove(State, -2); // Remove the traceback.
     return true;
 }
 
@@ -334,6 +361,37 @@ void LuaManager::PushArgument(std::string Value)
         lua_pushstring(State, Value.c_str());
 }
 
+void LuaManager::PushArgument(bool Value)
+{
+	if (func_input)
+		lua_pushboolean(State, Value);
+}
+
+// http://lua-users.org/lists/lua-l/2006-03/msg00335.html
+void LuaManager::DumpStack()
+{
+	auto L = State;
+	int i = lua_gettop(L);
+	Log::LogPrintf(" ----------------  Stack Dump ----------------\n");
+	while (i) {
+		int t = lua_type(L, i);
+		switch (t) {
+		case LUA_TSTRING:
+			Log::LogPrintf("%d:`%s'\n", i, lua_tostring(L, i));
+			break;
+		case LUA_TBOOLEAN:
+			Log::LogPrintf("%d: %s\n", i, lua_toboolean(L, i) ? "true" : "false");
+			break;
+		case LUA_TNUMBER:
+			Log::LogPrintf("%d: %g\n", i, lua_tonumber(L, i));
+			break;
+		default: Log::LogPrintf("%d: %s\n", i, lua_typename(L, t)); break;
+		}
+		i--;
+	}
+	Log::LogPrintf("--------------- Stack Dump Finished ---------------\n");
+}
+
 bool LuaManager::CallFunction(const char* Name, int Arguments, int Results)
 {
 	bool IsFunc;
@@ -345,9 +403,10 @@ bool LuaManager::CallFunction(const char* Name, int Arguments, int Results)
 	if (isTable) {
 		lua_pushstring(State, Name);
 		lua_gettable(State, -2);
-	} else
+	}
+	else {
 		lua_getglobal(State, Name);
-
+	}
     IsFunc = lua_isfunction(State, -1);
 
     if (IsFunc)
@@ -377,23 +436,34 @@ bool LuaManager::RunFunction()
     if (!func_input)
         return false;
     func_input = false;
-    int errc = lua_pcall(State, func_args, func_results, 0);
+
+	int base = lua_gettop(State) - func_args;
+	lua_pushcfunction(State, LuaPanic);
+	lua_insert(State, base);
+
+    int errc = lua_pcall(State, func_args, func_results, base);
 
     if (errc)
     {
         std::string reason = lua_tostring(State, -1);
 
+		if (last_error != reason) {
+			last_error = reason;
 #ifndef WIN32
-        printf("lua call error: %s\n", reason.c_str());
+			printf("lua call error: %s\n", reason.c_str());
 #else
-        Log::Printf("lua call error: %s\n", reason.c_str());
+			Log::LogPrintf("lua call error: %s\n", reason.c_str());
 #endif
+		}
+		lua_remove(State, base); // remove traceback function
         Pop(); // Remove the error from the stack.
         func_err = true;
         return false;
     }
 
     func_err = false;
+	lua_remove(State, base);
+	// Remove traceback function.
     return true;
 }
 

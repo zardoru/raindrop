@@ -1,10 +1,14 @@
+Lanes = Player.Channels
+
 if Lanes ~= 8 and Lanes ~= 6 then
 	fallback_require("noteskin")
 	return
 end
 
 require "TextureAtlas"
-skin_require "custom_defs"
+Noteskin, a, b = skin_require "custom_defs"
+
+print(Noteskin, a, b)
 -- All notes have their origin centered.
 
 notes = {}
@@ -19,10 +23,7 @@ end
 
 function MakeNote(i)
 	ret = Object2D()
-	ret.Image = "assets/" .. NoteAtlas.File
-	print (Noteskin)
-	print (Noteskin[Lanes])
-	print ('Key' .. i .. 'Image')
+	ret.Texture = "assets/" .. NoteAtlas.File
 	NoteAtlas:SetObjectCrop(ret, "note-" .. Noteskin[Lanes]['Key' .. i .. 'Image'] .. ".png")
 	SetCommonNoteStuff(ret, i)
 	return ret
@@ -41,11 +42,11 @@ function MakeLongNote(i, n, isOn)
 	elseif not isOn then
 		txt = "off"
 		atlas = LNAtlas.off
-	end	 
+	end
 
-	ptop.Image = "assets/" .. atlas.File
-	pmid.Image = "assets/" .. atlas.File
-	pbot.Image = "assets/" .. atlas.File
+	ptop.Texture = "assets/" .. atlas.File
+	pmid.Texture = "assets/" .. atlas.File
+	pbot.Texture = "assets/" .. atlas.File
 
 	local fntop = "note-long-top-" .. txt .. "-" .. i .. ".png"
 	atlas:SetObjectCrop(ptop, fntop)
@@ -68,7 +69,7 @@ end
 
 function Init()
 	NoteAtlas = TextureAtlas:skin_new("assets/note-normal.csv")
-	
+
 	LNAtlas = {
 		on = TextureAtlas:skin_new("assets/note-long-on.csv"),
 		off = TextureAtlas:skin_new("assets/note-long-off.csv")
@@ -80,7 +81,7 @@ function Init()
 		local keypic = Noteskin[Lanes]["Key" .. i .. "Image"]
 		-- normal hit notes
 		notes[i] = MakeNote(i)
-		
+
 		-- long notes (off by default)
 		longnotes[i] = {}
 		longnotes[i].on = MakeLongNote(keypic, i, true)
@@ -89,13 +90,13 @@ function Init()
 end
 
 function Update(delta, beat)
-end 
+end
 
 -- 1 is enabled. 2 is being pressed. 0 is failed. 3 is succesful hit.
 function drawNormalInternal(lane, loc, frac, active_level)
 		lane = lane + 1
 		notes[lane].Y = loc
-		Render(notes[lane])
+		Notes:Render(notes[lane])
 end
 
 function drawHoldTopInternal(lane, loc, frac, active_level)
@@ -103,12 +104,16 @@ function drawHoldTopInternal(lane, loc, frac, active_level)
 	lane = lane + 1
 	if active_level == 2 then
 		note = longnotes[lane].on.top
-	else 
+	else
 		note = longnotes[lane].off.top
 	end
 
+	if active_level == 3 or active_level == 0 then 
+		return
+	end
+
 	note.Y = loc
-	Render(note)
+	Notes:Render(note)
 end
 
 function drawHoldBotInternal(lane, loc, frac, active_level)
@@ -116,12 +121,16 @@ function drawHoldBotInternal(lane, loc, frac, active_level)
 	lane = lane + 1
 	if active_level == 2 then
 		note = longnotes[lane].on.bot
-	else 
+	else
 		note = longnotes[lane].off.bot
 	end
 
+	if active_level == 3 or active_level == 0 then 
+		return
+	end
+
 	note.Y = loc
-	Render(note)
+	Notes:Render(note)
 end
 
 function drawHoldBodyInternal(lane, loc, size, active_level)
@@ -129,13 +138,17 @@ function drawHoldBodyInternal(lane, loc, size, active_level)
 	lane = lane + 1
 	if active_level == 2 then
 		note = longnotes[lane].on.mid
-	else 
+	else
 		note = longnotes[lane].off.mid
+	end
+
+	if active_level == 3 or active_level == 0 then 
+		return
 	end
 
 	note.Y = loc
 	note.Height = size
-	Render(note)
+	Notes:Render(note)
 end
 
 function drawMineInternal(lane, loc, frac)
@@ -144,21 +157,23 @@ end
 
 -- From now on, only engine variables are being set.
 -- Barline
-BarlineEnabled = 1
-BarlineOffset = NoteHeight / 2
-BarlineStartX = Noteskin[Lanes].GearStartX
-BarlineWidth = Noteskin[Lanes].BarlineWidth
-JudgmentLineY = ScreenHeight - (1560 * SkinScale - NoteHeight / 2)
-DecreaseHoldSizeWhenBeingHit = 1
-DanglingHeads = 1
+Notes.BarlineEnabled = 1
+Notes.BarlineOffset = Noteskin[Lanes].NoteHeight / 2
+
+print ("Noteskin lanes is ")
+Notes.BarlineStartX = Noteskin[Lanes].GearStartX
+Notes.BarlineWidth = Noteskin[Lanes].BarlineWidth
+Notes.JudgmentY = ScreenHeight - (1560 * SkinScale - NoteHeight / 2)
+Notes.DecreaseHoldSizeWhenBeingHit = 1
+Notes.DanglingHeads = 1
 
 -- How many extra units do you require so that the whole bounding box is accounted
 -- when determining whether to show this note or not.
-NoteScreenSize = NoteHeight / 2
+Notes.NoteScreenSize = Noteskin[Lanes].NoteHeight / 2
 
 DrawNormal = drawNormalInternal
 DrawFake = drawNormalInternal
-DrawLift = drawNormalInternal 
+DrawLift = drawNormalInternal
 DrawMine = drawMineInternal
 
 DrawHoldHead = drawHoldTopInternal

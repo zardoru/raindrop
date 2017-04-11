@@ -134,8 +134,8 @@ class PaMixer
 
     double Latency;
 
-    std::vector<SoundStream*> Streams;
-    std::vector<SoundSample*> Samples;
+    std::vector<AudioStream*> Streams;
+    std::vector<AudioSample*> Samples;
     double ConstFactor;
 
     int SizeAvailable;
@@ -231,7 +231,7 @@ public:
         } while (Threaded);
     }
 
-    void AppendMusic(SoundStream* Stream)
+    void AppendMusic(AudioStream* Stream)
     {
         mut2.lock();
         mut.lock();
@@ -240,7 +240,7 @@ public:
         mut2.unlock();
     }
 
-    void RemoveMusic(SoundStream *Stream)
+    void RemoveMusic(AudioStream *Stream)
     {
         mut2.lock();
         mut.lock();
@@ -261,7 +261,7 @@ public:
         mut2.unlock();
     }
 
-    void AddSound(SoundSample* Sample)
+    void AddSound(AudioSample* Sample)
     {
         mut2.lock();
         mut.lock();
@@ -270,7 +270,7 @@ public:
         mut2.unlock();
     }
 
-    void RemoveSound(SoundSample* Sample)
+    void RemoveSound(AudioSample* Sample)
     {
         mut2.lock();
         mut.lock();
@@ -301,7 +301,7 @@ private:
 
 public:
 
-    void CopyOut(float * out, int samples)
+    void WriteAndAdvanceStream(float * out, int samples)
     {
         int count = samples;
 
@@ -350,7 +350,7 @@ public:
 int Mix(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags, void *userData)
 {
     PaMixer *Mix = static_cast<PaMixer*>(userData);
-    Mix->CopyOut(static_cast<float*>(output), frameCount * 2);
+    Mix->WriteAndAdvanceStream(static_cast<float*>(output), frameCount * 2);
     return 0;
 }
 
@@ -421,28 +421,28 @@ double GetDeviceLatency()
 #endif
 }
 
-void MixerAddStream(SoundStream *Sound)
+void MixerAddStream(AudioStream *Sound)
 {
 #ifndef NO_AUDIO
     PaMixer::GetInstance().AppendMusic(Sound);
 #endif
 }
 
-void MixerRemoveStream(SoundStream* Sound)
+void MixerRemoveStream(AudioStream* Sound)
 {
 #ifndef NO_AUDIO
     PaMixer::GetInstance().RemoveMusic(Sound);
 #endif
 }
 
-void MixerAddSample(SoundSample* Sample)
+void MixerAddSample(AudioSample* Sample)
 {
 #ifndef NO_AUDIO
     PaMixer::GetInstance().AddSound(Sample);
 #endif
 }
 
-void MixerRemoveSample(SoundSample* Sample)
+void MixerRemoveSample(AudioSample* Sample)
 {
 #ifndef NO_AUDIO
     PaMixer::GetInstance().RemoveSound(Sample);

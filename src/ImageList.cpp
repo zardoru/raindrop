@@ -1,7 +1,7 @@
 #include "pch.h"
 
 #include "GameState.h"
-#include "Image.h"
+#include "Texture.h"
 #include "ImageList.h"
 #include "ImageLoader.h"
 #include "Sprite.h"
@@ -47,6 +47,11 @@ void ImageList::AddToListIndex(const std::filesystem::path Filename, int Index)
     }
 }
 
+void ImageList::AddToListIndex(Texture * tex, int Index)
+{
+	ImagesIndex[Index] = tex;
+}
+
 void ImageList::Destroy()
 {
     for (auto i = Images.begin(); i != Images.end(); ++i)
@@ -86,18 +91,18 @@ bool ImageList::LoadAll()
 }
 
 // Gets image from this filename
-Image* ImageList::GetFromFilename(const std::string Filename)
+Texture* ImageList::GetFromFilename(const std::string Filename)
 {
     return Images[Filename];
 }
 
 // Gets image from SkinPrefix + filename
-Image* ImageList::GetFromSkin(const std::string Filename)
+Texture* ImageList::GetFromSkin(const std::string Filename)
 {
     return Images[GameState::GetInstance().GetSkinPrefix() + Filename];
 }
 
-Image* ImageList::GetFromIndex(int Index)
+Texture* ImageList::GetFromIndex(int Index)
 {
     return ImagesIndex[Index];
 }

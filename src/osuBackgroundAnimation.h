@@ -8,9 +8,10 @@
 
 class osuBackgroundAnimation;
 
-namespace VSRG
-{
-    class Song;
+namespace Game {
+	namespace VSRG {
+		class Song;
+	}
 }
 
 namespace osb
@@ -293,13 +294,13 @@ class osuBackgroundAnimation : public BackgroundAnimation
     std::map<std::string, int> mFileIndices;
     ImageList mImageList;
     int AddImageToList(std::string image_filename);
-	VSRG::Song *Song;
+	Game::VSRG::Song *Song;
 
 	Transformation mScreenTransformation;
 	bool CanValidate;
 public:
-    osuBackgroundAnimation(Interruptible* parent, osb::SpriteList* existing_sprites, VSRG::Song* song);
-    Image* GetImageFromIndex(int m_image_index);
+    osuBackgroundAnimation(Interruptible* parent, osb::SpriteList* existing_sprites, Game::VSRG::Song* song);
+    Texture* GetImageFromIndex(int m_image_index);
     int GetIndexFromFilename(std::string filename);
 	Transformation& GetScreenTransformation();
 

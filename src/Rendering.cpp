@@ -9,10 +9,12 @@
 #include "Rendering.h"
 
 #include "Line.h"
-#include "Image.h"
+#include "Texture.h"
 
 #include "TruetypeFont.h"
 #include "BitmapFont.h"
+
+#include "Shader.h"
 
 const ColorRGB White = { 1, 1, 1, 1 };
 const ColorRGB Black = { 0, 0, 0, 1 };
@@ -55,20 +57,20 @@ namespace Renderer {
 
 	void DrawPrimitiveQuad(Transformation &QuadTransformation, const EBlendMode &Mode, const ColorRGB &Color)
 	{
-		Image::BindNull();
-		WindowFrame.SetUniform(U_COLOR, Color.Red, Color.Green, Color.Blue, Color.Alpha);
+		Texture::Unbind();
+		Shader::SetUniform(DefaultShader::GetUniform(U_COLOR), Color.Red, Color.Green, Color.Blue, Color.Alpha);
 
 		SetBlendingMode(Mode);
 
 		Mat4 Mat = QuadTransformation.GetMatrix();
-		WindowFrame.SetUniform(U_MVP, &(Mat[0][0]));
+		Shader::SetUniform(DefaultShader::GetUniform(U_MVP), &(Mat[0][0]));
 
 		// Assign position attrib. pointer
 		SetPrimitiveQuadVBO();
 		DoQuadDraw();
 		FinalizeDraw();
 
-		Image::ForceRebind();
+		Texture::ForceRebind();
 	}
 
 	static bool Initialized = false;
@@ -171,27 +173,27 @@ namespace Renderer {
 	void SetPrimitiveQuadVBO()
 	{
 		QuadBuffer->Bind();
-		glVertexAttribPointer(WindowFrame.EnableAttribArray(A_POSITION), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
-		glVertexAttribPointer(WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+		glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_POSITION)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+		glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_UV)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
 		ColorBuffer->Bind();
-		glVertexAttribPointer(WindowFrame.EnableAttribArray(A_COLOR), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
+		glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_COLOR)), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
 	}
 
 	void SetTexturedQuadVBO(VBO *TexQuad)
 	{
 		QuadBuffer->Bind();
-		glVertexAttribPointer(WindowFrame.EnableAttribArray(A_POSITION), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+		glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_POSITION)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
 		TexQuad->Bind();
-		glVertexAttribPointer(WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+		glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_UV)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
 		ColorBuffer->Bind();
-		glVertexAttribPointer(WindowFrame.EnableAttribArray(A_COLOR), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
+		glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_COLOR)), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
 	}
 
 	void FinalizeDraw()
 	{
-		WindowFrame.DisableAttribArray(A_POSITION);
-		WindowFrame.DisableAttribArray(A_UV);
-		WindowFrame.DisableAttribArray(A_COLOR);
+		Shader::DisableAttribArray(DefaultShader::GetUniform(A_POSITION));
+		Shader::DisableAttribArray(DefaultShader::GetUniform(A_UV));
+		Shader::DisableAttribArray(DefaultShader::GetUniform(A_COLOR));
 	}
 
 	void SetShaderParameters(bool InvertColor,
@@ -199,29 +201,28 @@ namespace Renderer {
 		bool BlackToTransparent, bool ReplaceColor,
 		int8_t HiddenMode)
 	{
-		WindowFrame.SetUniform(U_INVERT, InvertColor);
-		WindowFrame.SetUniform(U_LIGHT, UseGlobalLight);
+		DefaultShader::Bind();
+		Shader::SetUniform(DefaultShader::GetUniform(U_INVERT), InvertColor);
 
 		if (HiddenMode == -1)
-			WindowFrame.SetUniform(U_HIDDEN, 0); // not affected by hidden lightning
+			Shader::SetUniform(DefaultShader::GetUniform(U_HIDDEN), 0); // not affected by hidden lightning
 		else
-			WindowFrame.SetUniform(U_HIDDEN, HiddenMode); // Assume the other related parameters are already set.
+			Shader::SetUniform(DefaultShader::GetUniform(U_HIDDEN), HiddenMode); // Assume the other related parameters are already set.
 
-		WindowFrame.SetUniform(U_REPCOLOR, ReplaceColor);
-		WindowFrame.SetUniform(U_BTRANSP, BlackToTransparent);
+		Shader::SetUniform(DefaultShader::GetUniform(U_REPCOLOR), ReplaceColor);
+		Shader::SetUniform(DefaultShader::GetUniform(U_BTRANSP), BlackToTransparent);
 
-		WindowFrame.SetUniform(U_TRANSL, UseSecondTransformationMatrix);
-		WindowFrame.SetUniform(U_CENTERED, Centered);
+		Shader::SetUniform(DefaultShader::GetUniform(U_CENTERED), Centered);
 	}
 
-	void DrawTexturedQuad(Image* ToDraw, const AABB& TextureCrop, const Transformation& QuadTransformation,
+	void DrawTexturedQuad(Texture* ToDraw, const AABB& TextureCrop, const Transformation& QuadTransformation,
 		const EBlendMode &Mode, const ColorRGB &InColor)
 	{
 		if (ToDraw)
 			ToDraw->Bind();
 		else return;
 
-		WindowFrame.SetUniform(U_COLOR, InColor.Red, InColor.Green, InColor.Blue, InColor.Alpha);
+		Shader::SetUniform(DefaultShader::GetUniform(U_COLOR), InColor.Red, InColor.Green, InColor.Blue, InColor.Alpha);
 
 		SetBlendingMode(Mode);
 
@@ -265,7 +266,7 @@ namespace Renderer {
 
 	void SetCurrentObjectMatrix(glm::mat4 &mat)
 	{
-	    WindowFrame.SetUniform(U_MVP, &(mat[0][0]));
+	    Shader::SetUniform(DefaultShader::GetUniform(U_MVP), &(mat[0][0]));
 	}
 }
 
@@ -311,12 +312,17 @@ bool Sprite::ShouldDraw()
     if (Alpha == 0)
         return false;
 
-    if (mImage)
+	if (mShader)
+		if (!mShader->IsValid())
+			return false;
+
+    if (mTexture)
     {
-        mImage->Bind();
+		mTexture->Bind();
+		return mTexture->IsBound();
     }
     else
-        return false;
+        return mShader && mShader->IsValid();
 
     return true;
 }
@@ -331,25 +337,21 @@ bool Sprite::RenderMinimalSetup()
     Renderer::SetBlendingMode(BlendingMode);
 
     UvBuffer->Bind();
-    glVertexAttribPointer(WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+    glVertexAttribPointer(
+		Renderer::Shader::EnableAttribArray(Renderer::DefaultShader::GetUniform(Renderer::A_UV)), 
+		2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr
+	);
 
     // Set the color.
-    WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha);
+	auto lf = 1.0 + LightenFactor;
+	if (!Lighten)
+		Renderer::DefaultShader::SetColor(Red, Green, Blue, Alpha);
+	else
+		Renderer::DefaultShader::SetColor(Red * lf, Green * lf, Blue * lf, Alpha * lf);
+
     Renderer::DoQuadDraw();
 
-    DrawLighten();
-
     return true;
-}
-
-void Sprite::DrawLighten()
-{
-    if (Lighten)
-    {
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-        WindowFrame.SetUniform(U_COLOR, Red * LightenFactor, Green * LightenFactor, Blue * LightenFactor, Alpha * LightenFactor);
-        Renderer::DoQuadDraw();
-    }
 }
 
 void Sprite::Render()
@@ -362,18 +364,44 @@ void Sprite::Render()
     Renderer::SetBlendingMode(BlendingMode);
 
     // Assign our matrix.
-    Renderer::SetShaderParameters(ColorInvert, AffectedByLightning, Centered, false, BlackToTransparent);
+	if (!mShader) {
+		auto mat = GetMatrix();
+		Renderer::SetShaderParameters(ColorInvert, AffectedByLightning, Centered, false, BlackToTransparent);
+		auto lf = 1.0 + LightenFactor;
+		if (!Lighten)
+			Renderer::DefaultShader::SetColor(Red, Green, Blue, Alpha);
+		else
+			Renderer::DefaultShader::SetColor(Red * lf, Green * lf, Blue * lf, Alpha * lf);
+		
+		Renderer::SetCurrentObjectMatrix(mat);
+	}
+	else {
+		auto proj = WindowFrame.GetMatrixProjection();
+		auto mat = GetMatrix();
 
-    auto Mat = GetMatrix();
-	Renderer::SetCurrentObjectMatrix(Mat);
+		mShader->Bind();
 
-    // Set the color.
-    WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha);
+		auto sh = mShader->GetUniform("projection");
+		if (sh != -1)
+			Renderer::Shader::SetUniform(sh, &proj[0][0]);
+
+		sh = mShader->GetUniform("mvp");
+		if (sh != -1)
+			Renderer::Shader::SetUniform(sh, &mat[0][0]);
+
+		sh = mShader->GetUniform("centered");
+		if (sh != -1)
+			Renderer::Shader::SetUniform(sh, Centered);
+
+		sh = mShader->GetUniform("color");
+		if (sh != -1)
+			Renderer::Shader::SetUniform(sh, l2gamma(Red), l2gamma(Green), l2gamma(Blue), Alpha);
+	}
+
+    
 
     Renderer::SetTexturedQuadVBO(UvBuffer);
     Renderer::DoQuadDraw();
-
-    DrawLighten();
 
     Renderer::FinalizeDraw();
 }
@@ -409,9 +437,10 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
 
     UpdateWindowScale();
 
+	Renderer::DefaultShader::Bind();
     Renderer::SetBlendingMode(BLEND_ALPHA);
     Renderer::SetShaderParameters(false, false, false, false, false, true);
-    WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha);
+    Renderer::DefaultShader::SetColor(Red, Green, Blue, Alpha);
     Renderer::SetPrimitiveQuadVBO();
 
     try
@@ -458,7 +487,7 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
             else
                 glBindTexture(GL_TEXTURE_2D, cp.gltx);
 
-            WindowFrame.SetUniform(U_MVP, &(dx[0][0]));
+            Renderer::Shader::SetUniform(Renderer::DefaultShader::GetUniform(Renderer::U_MVP), &(dx[0][0]));
 
             Renderer::DoQuadDraw();
 
@@ -487,7 +516,7 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
 #endif
 
     Renderer::FinalizeDraw();
-    Image::ForceRebind();
+    Texture::ForceRebind();
 }
 
 void TruetypeFont::ReleaseTextures()
@@ -534,24 +563,25 @@ void Line::Render()
     glBindTexture(GL_TEXTURE_2D, 0);
 
     // Set the color.
-	Renderer::SetShaderParameters(false, false, false, false, false, true);
+	using namespace Renderer;
+	SetShaderParameters(false, false, false, false, false, true);
 
-    WindowFrame.SetUniform(U_COLOR, R, G, B, A);
-    WindowFrame.SetUniform(U_MVP, &(Identity[0][0]));
+    DefaultShader::SetColor(R, G, B, A);
+    Shader::SetUniform(DefaultShader::GetUniform(U_MVP), &(Identity[0][0]));
 
     // Assign position attrib. pointer
     lnvbo->Bind();
-    glVertexAttribPointer(WindowFrame.EnableAttribArray(A_POSITION), 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_POSITION)), 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-	Renderer::ColorBuffer->Bind();
-    glVertexAttribPointer(WindowFrame.EnableAttribArray(A_COLOR), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
+	ColorBuffer->Bind();
+    glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_COLOR)), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
 
     glDrawArrays(GL_LINES, 0, 2);
 
-    WindowFrame.DisableAttribArray(A_POSITION);
-    WindowFrame.DisableAttribArray(A_COLOR);
+    Shader::DisableAttribArray(DefaultShader::GetUniform(A_POSITION));
+    Shader::DisableAttribArray(DefaultShader::GetUniform(A_COLOR));
 
-    Image::ForceRebind();
+    Texture::ForceRebind();
 
     glEnable(GL_DEPTH_TEST);
 }
@@ -575,17 +605,18 @@ void BitmapFont::Render(const std::string &In, const Vec2 &Position, const Mat4 
         Font->IsValid = true;
     }
 
-	Renderer::SetShaderParameters(false, false, false);
-    WindowFrame.SetUniform(U_COLOR, Red, Green, Blue, Alpha);
+	using namespace Renderer;
+	SetShaderParameters(false, false, false);
+    DefaultShader::SetColor(Red, Green, Blue, Alpha);
 
     Font->Bind();
 
     // Assign position attrib. pointer
 	Renderer::QuadBuffer->Bind();
-    glVertexAttribPointer(WindowFrame.EnableAttribArray(A_POSITION), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+    glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_POSITION)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
 
 	Renderer::ColorBuffer->Bind();
-    glVertexAttribPointer(WindowFrame.EnableAttribArray(A_COLOR), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
+    glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_COLOR)), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
 
     for (; *Text != '\0'; Text++)
     {
@@ -603,22 +634,22 @@ void BitmapFont::Render(const std::string &In, const Vec2 &Position, const Mat4 
         Mat4 RenderTransform = Transform * CharPosition[*Text].GetMatrix();
 
         // Assign transformation matrix
-        WindowFrame.SetUniform(U_MVP, &(RenderTransform[0][0]));
+        Shader::SetUniform(DefaultShader::GetUniform(U_MVP), &(RenderTransform[0][0]));
 
         // Assign vertex UVs
         CharPosition[*Text].BindTextureVBO();
-        glVertexAttribPointer(WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+        glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_UV)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
 
         // Do the rendering!
         Renderer::DoQuadDraw();
 
-        WindowFrame.DisableAttribArray(A_UV);
+        Shader::DisableAttribArray(DefaultShader::GetUniform(A_UV));
 
         Character += RenderSize.x;
     }
 
-    WindowFrame.DisableAttribArray(A_POSITION);
-    WindowFrame.DisableAttribArray(A_COLOR);
+    Shader::DisableAttribArray(DefaultShader::GetUniform(A_POSITION));
+    Shader::DisableAttribArray(DefaultShader::GetUniform(A_COLOR));
 }
 
 uint32_t VBO::LastBound = 0;

@@ -93,6 +93,7 @@
 #include <sstream>
 #include <streambuf>
 #include <string>
+#include <future>
 #include <thread>
 #include <unordered_set>
 #include <vector>
@@ -169,10 +170,51 @@ struct TAABB
         struct { T X, Y; } P2;
         struct { T X2, Y2; }; // Bottomright point
     };
+
+	TAABB(T x1, T y1, T x2, T y2) {
+		X1 = x1;
+		X2 = x2;
+		Y1 = y1;
+		Y2 = y2;
+	}
+
+	TAABB() {
+		X1 = X2 = 0;
+		Y1 = Y2 = 0;
+	}
+
+	inline bool IsInBox(T x, T y) {
+		return x >= X1 && x <= X2
+			&& y >= Y1 && y <= Y2;
+	}
+
+	inline bool Intersects(const TAABB &other) {
+		return IsInBox(other.X1, other.Y1) ||
+			IsInBox(other.X2, other.Y2) ||
+			IsInBox(other.X2, other.Y1) ||
+			IsInBox(other.X1, other.Y2);
+	}
+
+	inline T width() {
+		return X2 - X1;
+	}
+
+	inline T height() {
+		return Y2 - Y1;
+	}
 };
 
 using AABB = TAABB<float>;
 using AABBd = TAABB<double>;
+
+// return in mod t
+template
+<class T>
+inline T modulo(T in, T t) {
+	T rem = in % t;
+	if (rem < 0) return t + rem;
+	else return rem;
+}
 
 template
 <class T>
@@ -367,3 +409,5 @@ double latof(std::string s);
 #define CreateIfstream(name, fn) std::ifstream name(fn.string());
 #define CreateBinIfstream(name, fn) std::fstream name(fn.string(), std::ios::in | std::ios::binary);
 #endif
+
+#include "GameGlobal.h"

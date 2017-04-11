@@ -36,6 +36,7 @@ public:
 
 		if (!ifs.is_open())
 		{
+			Log::LogPrintf("Couldn't open font %s\n", Filename.string().c_str());
 			IsValid = false;
 			return;
 		}
@@ -61,6 +62,9 @@ public:
 				data,
 				info
 			};
+		}
+		else {
+			Log::LogPrintf("Couldn't load font after reading it\n");
 		}
 	}
 };

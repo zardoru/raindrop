@@ -19,9 +19,6 @@
     <ClCompile Include="..\src\ScreenGameplay7K.cpp">
       <Filter>Source Files\vsrg\gameplay</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ScreenGameplay7K_Mechanics.cpp">
-      <Filter>Source Files\vsrg\gameplay</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\TrackNote.cpp">
       <Filter>Source Files\vsrg\internal</Filter>
     </ClCompile>
@@ -69,9 +66,6 @@
     </ClCompile>
     <ClCompile Include="..\src\Song7K.cpp">
       <Filter>Source Files\vsrg\internal</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Image.cpp">
-      <Filter>Source Files\backend\render\textures</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ImageLoader.cpp">
       <Filter>Source Files\backend\render\textures</Filter>
@@ -127,13 +121,7 @@
     <ClCompile Include="..\src\AudioSourceOJM.cpp">
       <Filter>Source Files\backend\audio</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ScreenGameplay7K_MechanicsDetails.cpp">
-      <Filter>Source Files\vsrg\gameplay</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\LuaAnimationInterface.cpp">
-      <Filter>Source Files\lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ScreenGameplay7K_Lua.cpp">
       <Filter>Source Files\lua</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ScoreKeeper7K_Lua.cpp">
@@ -175,22 +163,10 @@
     <ClCompile Include="..\src\ScoreKeeper7K.cpp">
       <Filter>Source Files\vsrg\scorekeeper</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ScoreKeeper7K_bms.cpp">
-      <Filter>Source Files\vsrg\scorekeeper</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ScoreKeeper7K_experimental.cpp">
-      <Filter>Source Files\vsrg\scorekeeper</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\ScoreKeeper7K_init.cpp">
       <Filter>Source Files\vsrg\scorekeeper</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ScoreKeeper7K_o2jam.cpp">
-      <Filter>Source Files\vsrg\scorekeeper</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ScoreKeeper7K_osu.cpp">
-      <Filter>Source Files\vsrg\scorekeeper</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ScoreKeeper7K_rank.cpp">
       <Filter>Source Files\vsrg\scorekeeper</Filter>
     </ClCompile>
     <ClCompile Include="..\src\NPSGraph.cpp">
@@ -201,9 +177,6 @@
     </ClCompile>
     <ClCompile Include="..\src\Application.cpp">
       <Filter>Source Files\game global</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Renderer7K.cpp">
-      <Filter>Source Files\vsrg\gameplay</Filter>
     </ClCompile>
     <ClCompile Include="..\src\NoteTransformations.cpp">
       <Filter>Source Files\vsrg\gameplay</Filter>
@@ -225,33 +198,6 @@
     </ClCompile>
     <ClCompile Include="..\src\LuaManager.cpp">
       <Filter>Source Files\lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ScreenEdit.cpp">
-      <Filter>Source Files\dotcur</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ScreenEvaluation.cpp">
-      <Filter>Source Files\dotcur</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ActorBarline.cpp">
-      <Filter>Source Files\dotcur</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ActorJudgment.cpp">
-      <Filter>Source Files\dotcur</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ActorLifebar.cpp">
-      <Filter>Source Files\dotcur</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\GameObject.cpp">
-      <Filter>Source Files\dotcur</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ScreenGameplay.cpp">
-      <Filter>Source Files\dotcur</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\NoteLoaderDC.cpp">
-      <Filter>Source Files\dotcur</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\SongDC.cpp">
-      <Filter>Source Files\dotcur</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ext\pa_ringbuffer.c">
       <Filter>Static Libraries</Filter>
@@ -276,6 +222,30 @@
     </ClCompile>
     <ClCompile Include="..\src\ErrorReporting.cpp">
       <Filter>Source Files\backend</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PlayerContext.cpp">
+      <Filter>Source Files\vsrg\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PlayerChartData.cpp">
+      <Filter>Source Files\vsrg\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\VSRGMechanics.cpp">
+      <Filter>Source Files\vsrg\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ArcadeMechanics.cpp">
+      <Filter>Source Files\vsrg\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Texture.cpp">
+      <Filter>Source Files\backend\render\textures</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Shader.cpp">
+      <Filter>Source Files\backend\render\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\VideoPlayback.cpp">
+      <Filter>Source Files\backend\render\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenVideoTest.cpp">
+      <Filter>Source Files\game global\screens</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -366,41 +336,11 @@
     <ClInclude Include="..\src\VBO.h">
       <Filter>Header Files\backend\render\objects</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Image.h">
-      <Filter>Header Files\backend\render\textures</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\ImageList.h">
       <Filter>Header Files\backend\render\textures</Filter>
     </ClInclude>
     <ClInclude Include="..\src\ImageLoader.h">
       <Filter>Header Files\backend\render\textures</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\ScreenEdit.h">
-      <Filter>Header Files\dotcur</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\ScreenEvaluation.h">
-      <Filter>Header Files\dotcur</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\ActorBarline.h">
-      <Filter>Header Files\dotcur</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\ActorJudgment.h">
-      <Filter>Header Files\dotcur</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\ActorLifebar.h">
-      <Filter>Header Files\dotcur</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\GameObject.h">
-      <Filter>Header Files\dotcur</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\ScreenGameplay.h">
-      <Filter>Header Files\dotcur</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\NoteLoaderDC.h">
-      <Filter>Header Files\dotcur</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\SongDC.h">
-      <Filter>Header Files\dotcur</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Application.h">
       <Filter>Header Files\game global</Filter>
@@ -471,9 +411,6 @@
     <ClInclude Include="..\src\ScreenGameplay7K.h">
       <Filter>Header Files\vsrg</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\ScreenGameplay7K_Mechanics.h">
-      <Filter>Header Files\vsrg</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\ScreenEvaluation7K.h">
       <Filter>Header Files\vsrg</Filter>
     </ClInclude>
@@ -482,6 +419,27 @@
     </ClInclude>
     <ClInclude Include="..\src\Easing.h">
       <Filter>Header Files\game global\BGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\PlayerContext.h">
+      <Filter>Header Files\vsrg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\VSRGMechanics.h">
+      <Filter>Header Files\vsrg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\PlayerChartData.h">
+      <Filter>Header Files\vsrg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Shader.h">
+      <Filter>Header Files\backend\render\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Texture.h">
+      <Filter>Header Files\backend\render\textures</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\VideoPlayback.h">
+      <Filter>Header Files\backend\render\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ScreenVideoTest.h">
+      <Filter>Header Files\game global</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -542,9 +500,6 @@
     <Filter Include="Source Files\vsrg\scorekeeper">
       <UniqueIdentifier>{f417bca7-f730-4e6e-8816-1084e8d5dc83}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\dotcur">
-      <UniqueIdentifier>{9261a9c5-ccc7-4433-b029-e260937043fc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\game global">
       <UniqueIdentifier>{a68a9139-8807-4481-abf5-9ba1f3f0a2d6}</UniqueIdentifier>
     </Filter>
@@ -568,9 +523,6 @@
     </Filter>
     <Filter Include="Header Files\backend">
       <UniqueIdentifier>{ee591eac-4ea0-45db-9f16-759b65e33d22}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\dotcur">
-      <UniqueIdentifier>{ba34457e-1b7c-45a8-968c-561a02ce6282}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\game global">
       <UniqueIdentifier>{812140ad-2725-4006-972b-b5ddcf8b744d}</UniqueIdentifier>

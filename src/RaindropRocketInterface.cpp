@@ -9,6 +9,8 @@
 #include "GameWindow.h"
 #include "RaindropRocketInterface.h"
 
+#include "Shader.h"
+
 //#include <glm/gtx/matrix_operation.hpp>
 //#include <glm/gtc/matrix_transform.inl>
 
@@ -35,7 +37,8 @@ namespace Engine
 
         void RenderInterface::SetScissorRegion(int x, int y, int width, int height)
         {
-            glScissor(x, y, width, height);
+			float ratio = WindowFrame.GetWindowVScale();
+            glScissor(x * ratio, (ScreenHeight - (y + height)) * ratio, width * ratio, height * ratio);
         }
 
         struct pointf
@@ -87,7 +90,7 @@ namespace Engine
             Handle->indices->AssignData(indices);
 
             // assign texture
-            Handle->tex = (Image*)texture;
+            Handle->tex = (Texture*)texture;
 
             // give it some useful data
             Handle->num_vertices = num_vertices;
@@ -111,22 +114,23 @@ namespace Engine
             if (Handle->tex)
                 Handle->tex->Bind();
 			else {
-				Image::BindNull();
+				Texture::Unbind();
 			}
 
-            Renderer::SetShaderParameters(false, false, false, false, false, Handle->tex == nullptr);
-            WindowFrame.SetUniform(U_COLOR, 1, 1, 1, 1);
-            WindowFrame.SetUniform(U_MVP, &(tMatrix[0][0]));
+			using namespace Renderer;
+            SetShaderParameters(false, false, false, false, false, Handle->tex == nullptr);
+            Shader::SetUniform(DefaultShader::GetUniform(U_COLOR), 1, 1, 1, 1);
+            Shader::SetUniform(DefaultShader::GetUniform(U_MVP), &(tMatrix[0][0]));
 
             // bind VBOs
             Handle->vert->Bind();
-            glVertexAttribPointer(WindowFrame.EnableAttribArray(A_POSITION), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+            glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_POSITION)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
 
             Handle->uv->Bind();
-            glVertexAttribPointer(WindowFrame.EnableAttribArray(A_UV), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+            glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_UV)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
 
             Handle->color->Bind();
-            glVertexAttribPointer(WindowFrame.EnableAttribArray(A_COLOR), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
+            glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_COLOR)), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
 
             Handle->indices->Bind();
             glDrawElements(GL_TRIANGLES, Handle->num_indices, GL_UNSIGNED_INT, 0);
@@ -160,10 +164,10 @@ namespace Engine
 
             if (!Data.Data.size()) return false;
 
-			Image* Ret = new Image;
+			Texture* Ret = new Texture;
 			texture_handle = (Rocket::Core::TextureHandle)(Ret);
             Ret->fname = file;
-			Ret->SetTextureData(Data);
+			Ret->SetTextureData2D(Data);
 
 			ImageLoader::RegisterTexture(Ret);
             return true;
@@ -173,8 +177,8 @@ namespace Engine
             const Rocket::Core::byte* source,
             const Rocket::Core::Vector2i& source_dimensions)
         {
-			Image* Ret;
-            Ret = new Image;
+			Texture* Ret;
+            Ret = new Texture;
 
 			auto size = source_dimensions.x * source_dimensions.y;
 			auto ptr = (uint32_t*)source;
@@ -182,7 +186,7 @@ namespace Engine
             Data.Data.assign(ptr, (ptr + size));
             Data.Width = source_dimensions.x;
             Data.Height = source_dimensions.y;
-            Ret->SetTextureData(Data);
+            Ret->SetTextureData2D(Data);
 
 			m_TexCache[Ret] = Data;
 
@@ -192,12 +196,12 @@ namespace Engine
 
         void RenderInterface::ReleaseTexture(Rocket::Core::TextureHandle texture_handle)
         {
-            delete (Image*)texture_handle;
+            delete (Texture*)texture_handle;
         }
 
 		void RenderInterface::RegenerateTextures() {
 			for (auto &tex : m_TexCache) {
-				tex.first->SetTextureData(tex.second, true);
+				tex.first->SetTextureData2D(tex.second, true);
 			}
 		}
 

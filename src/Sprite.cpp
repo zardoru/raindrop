@@ -3,7 +3,7 @@
 #include "Sprite.h"
 
 #include "VBO.h"
-#include "Image.h"
+#include "Texture.h"
 
 void Drawable2D::Render() {}
 
@@ -36,8 +36,9 @@ void Sprite::Construct(bool doInitTexture)
     DoTextureCleanup = doInitTexture;
     AffectedByLightning = false;
 
-    mImage = nullptr;
+    mTexture = nullptr;
     UvBuffer = nullptr;
+	mShader = nullptr;
 
     Initialize(doInitTexture);
 }
@@ -67,11 +68,21 @@ int Sprite::GetBlendMode() const
     return BlendingMode;
 }
 
-void Sprite::SetImage(Image* image, bool ChangeSize)
+void Sprite::SetShader(Renderer::Shader * s)
 {
-    if (mImage != image)
+	mShader = s;
+}
+
+Renderer::Shader * Sprite::GetShader() const
+{
+	return mShader;
+}
+
+void Sprite::SetImage(Texture* image, bool ChangeSize)
+{
+    if (mTexture != image)
     {
-        mImage = image;
+        mTexture = image;
         if (image)
         {
             if (ChangeSize)
@@ -85,12 +96,12 @@ void Sprite::SetImage(Image* image, bool ChangeSize)
 
 void Sprite::SetCropByPixels(int32_t x1, int32_t x2, int32_t y1, int32_t y2)
 {
-    if (mImage)
+    if (mTexture)
     {
-        mCrop_x1 = (float)x1 / (float)mImage->w;
-        mCrop_x2 = (float)x2 / (float)mImage->w;
-        mCrop_y1 = (float)y1 / (float)mImage->h;
-        mCrop_y2 = (float)y2 / (float)mImage->h;
+        mCrop_x1 = (float)x1 / (float)mTexture->w;
+        mCrop_x2 = (float)x2 / (float)mTexture->w;
+        mCrop_y1 = (float)y1 / (float)mTexture->h;
+        mCrop_y2 = (float)y2 / (float)mTexture->h;
 
         DirtyTexture = true;
         UpdateTexture();
@@ -134,9 +145,9 @@ void Sprite::Invalidate()
     // stub
 }
 
-Image* Sprite::GetImage()
+Texture* Sprite::GetImage()
 {
-    return mImage;
+    return mTexture;
 }
 
 void Sprite::BindTextureVBO()
@@ -146,8 +157,8 @@ void Sprite::BindTextureVBO()
 
 std::string Sprite::GetImageFilename() const
 {
-    if (mImage)
-        return Utility::ToU8(mImage->fname.wstring());
+    if (mTexture)
+        return Utility::ToU8(mTexture->fname.wstring());
     else
         return std::string();
 }

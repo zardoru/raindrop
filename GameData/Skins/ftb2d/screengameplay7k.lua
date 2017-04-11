@@ -1,4 +1,4 @@
-if Channels > 7 then
+if Game:GetPlayer(0).Channels > 7 then
 	fallback_require("screengameplay7k")
 	return
 end
@@ -63,23 +63,23 @@ Layout = {1, 2, 3, 4, 3, 2, 1}
 function MakeKeys(i)
 		KeyHold[i] = Engine:CreateObject()
 		obj = KeyHold[i]
-		obj.Image = "assets/keyhold.png"
+		obj.Texture = "assets/keyhold.png"
 		obj.Height = 60
 		obj.Width = 40
 		obj.Centered = 1
 		obj.X = Noteskin[7]["Key" .. i .. "X"]
-		obj.Y = JudgmentLineY + obj.Height / 2 + 5
+		obj.Y = Game:GetPlayer(0).JudgmentY + obj.Height / 2 + 5
 		obj.Layer = 16
 		obj.Alpha = 1
 		
 		Key[i] = Engine:CreateObject()
 		obj = Key[i]
-		obj.Image = "Global/white.png"
+		obj.Texture = "Global/white.png"
 		obj.Height = 60
 		obj.Width = 40
 		obj.Centered = 1
 		obj.X = Noteskin[7]["Key" .. i .. "X"]
-		obj.Y = JudgmentLineY + obj.Height / 2 + 5
+		obj.Y = Game:GetPlayer(0).JudgmentY + obj.Height / 2 + 5
 		obj.Layer = 16
 		obj.Alpha = 1
 		obj.Lighten = 1
@@ -93,9 +93,7 @@ end
 
 function Init()
 	AutoadjustBackground()
-	ScreenFade.Init()
-	ScreenFade.Out(true)
-
+	
 	CreateText()
 	
 	print "Creating animated objects"
@@ -109,8 +107,10 @@ function Init()
 	Glow.Object.Layer = 20
 	
 	print "Creating fixed objects."
-	FixedObjects.CreateFromCSV("ftb.csv")
+	GameObjects = FixedObjects:new()
+	GameObjects:CreateFromCSV("ftb.csv")
 	
+	Sprites = GameObjects.Sprites
 	HealthBar = Sprites['hp_fill']
 	HealthBar.Lighten = 1
 	HealthBar.LightenFactor = 2
@@ -131,7 +131,7 @@ function Init()
 		obj.Width = GearWidth / 7
 		obj.Height = obj.Width
 		obj.X = Noteskin[7]["Key" .. i .. "X"]
-		obj.Y = JudgmentLineY
+		obj.Y = Game:GetPlayer(0).JudgmentY
 		obj.Centered = 1
 		obj.Layer = 21
 		obj.Alpha = 0
@@ -153,13 +153,13 @@ function Init()
 		obj.Green = Colours[Layout[i]][2] / 255
 		obj.Blue = Colours[Layout[i]][3] / 255
 		
-		KeyArray[i] = 0
+		KeyArray[i] = false
 		
 		MakeKeys(i)
 		
 		Judgments[i] = Engine:CreateObject()
 		obj = Judgments[i]
-		obj.Image = JudgmentAtlas.File
+		obj.Texture = JudgmentAtlas.File
 		obj.Width = GearWidth / 7
 		obj.Height = 0.234 * obj.Width
 		obj.Layer = 22
@@ -167,7 +167,7 @@ function Init()
 		obj.Centered = 1
 		obj:SetScale(1)
 		obj.X = Noteskin[7]["Key" .. i .. "X"]
-		obj.Y = JudgmentLineY - obj.Height / 2
+		obj.Y = Game:GetPlayer(0).JudgmentY - obj.Height / 2
 	end
 	
 	Engine:Sort()
@@ -195,7 +195,7 @@ end
 
 function Judgment(frac, targ)
 	targ.Alpha = 1 - frac
-	targ.Y = JudgmentLineY - 100 * frac
+	targ.Y = Game:GetPlayer(0).JudgmentY - 100 * frac
 	return 1
 end
 
@@ -211,7 +211,7 @@ function JUDGE(JudgmentValue, Lane)
 end
 
 function HitEvent(JudgmentValue, TimeOff, Lane, IsHold, IsHoldRelease)
-  local MapLane = Noteskin[Channels].Map[Lane]
+  local MapLane = Noteskin[Game:GetPlayer(0).Channels].Map[Lane]
   
 	Engine:AddAnimation(Explosions[MapLane].EffectExplosion.Object, "Explode", EaseNone, 0.25, 0)
 	Explosions[MapLane].EffectExplosion.CurrentTime = 0
@@ -227,7 +227,7 @@ function KeyEvent(Key, Code, IsMouseInput)
 end
 
 function GearKeyEvent (Lane, IsKeyDown)
-  local MapLane = Noteskin[Channels].Map[Lane + 1]
+  local MapLane = Noteskin[Game:GetPlayer(0).Channels].Map[Lane]
   
 	KeyArray[MapLane] = IsKeyDown
 	
@@ -302,35 +302,38 @@ function CreateText()
 end
 
 function UpdateText()
-	lblcurCombo.Text = ScoreKeeper:getScore(ST_COMBO)
-	lblcurMaxCombo.Text = ScoreKeeper:getScore(ST_MAX_COMBO)
+	local ScoreKeeper = Game:GetPlayer(0).Scorekeeper
+	lblcurCombo.Text = ScoreKeeper:GetScore(ST_COMBO)
+	lblcurMaxCombo.Text = ScoreKeeper:GetScore(ST_MAX_COMBO)
 	lblcurMaxCombo.X = 312 - largeFont:GetLength(lblcurMaxCombo.Text)
 	
-	lblScore.Text = string.format("%08d", SCScore)
+	lblScore.Text = string.format("%08d", Game:GetPlayer(0).Score)
 	local len = xlFont:GetLength(lblScore.Text)
 	lblScore.X = 42 + math.abs(GearWidth - len) / 2
 	
 end
 
 function Update(Delta)
+	local Beat = Game:GetPlayer(0).Beat
 	-- Executed every frame.
 	local beatEffect = Beat - math.floor(Beat)
 	Glow:SetFraction(beatEffect)
 	
-	local dLifebar = LifebarValue - HealthBar.ScaleX
+	local dLifebar = Game:GetPlayer(0).LifebarPercent / 100 - HealthBar.ScaleX
 	HealthBar.ScaleX = HealthBar.ScaleX + dLifebar * Delta
-	HealthBar.Green = LifebarValue
-	HealthBar.Blue = LifebarValue
+	HealthBar.Green = Game:GetPlayer(0).LifebarPercent / 100
+	HealthBar.Blue = Game:GetPlayer(0).LifebarPercent / 100
 	
 	UpdateText()
 	
-	local SongPercentage = Game:GetSongTime() / SongDuration
+	local SongPercentage = Game:GetPlayer(0).Time / Game:GetPlayer(0).Duration
 	
 	SongPosition.Y = ScreenHeight - ScreenHeight * SongPercentage
 	SongPosition.ScaleY = SongPercentage
 	SongPosition:SetCropByPixels(0, 4, 404 - 404 * SongPercentage, 404)
 	
-	local Acc = ScoreKeeper:getTotalNotes() / ScoreKeeper:getMaxNotes()
+	local ScoreKeeper = Game:GetPlayer(0).Scorekeeper
+	local Acc = ScoreKeeper.JudgedNotes / ScoreKeeper.MaxNotes
 	Flair.Y = ScreenHeight - ScreenHeight * Acc
 	Flair.ScaleY = Acc
 	Flair:SetCropByPixels(0, 4, 404 - 404 * Acc, 404)
@@ -338,7 +341,7 @@ function Update(Delta)
 	for i=1,7 do 
 		Explosions[i].EffectExplosion:Update(Delta)
 		
-		if KeyArray[i] == 1 then
+		if KeyArray[i] then
 			Lightning[i].CurrentTime = 0
 		end
 		
