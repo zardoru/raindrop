@@ -74,14 +74,14 @@ function Init()
 	Engine:AddTarget(songAuthor)
 	
 	LineL = Engine:CreateObject()
-	LineL.Image = "Global/white.png"
+	LineL.Texture = "Global/white.png"
 	LineL.X = 20
 	LineL.Y = 0
 	LineL.Width = 1
 	LineL.Height = ScreenHeight 
 	
 	LineR = Engine:CreateObject()
-	LineR.Image = "Global/white.png"
+	LineR.Texture = "Global/white.png"
 	LineR.X = ScreenWidth - 20
 	LineR.Y = 0
 	LineR.Width = 1

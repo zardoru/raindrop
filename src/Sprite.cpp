@@ -36,7 +36,7 @@ void Sprite::Construct(bool doInitTexture)
     DoTextureCleanup = doInitTexture;
     AffectedByLightning = false;
 
-    mImage = nullptr;
+    mTexture = nullptr;
     UvBuffer = nullptr;
 	mShader = nullptr;
 
@@ -80,9 +80,9 @@ Renderer::Shader * Sprite::GetShader() const
 
 void Sprite::SetImage(Texture* image, bool ChangeSize)
 {
-    if (mImage != image)
+    if (mTexture != image)
     {
-        mImage = image;
+        mTexture = image;
         if (image)
         {
             if (ChangeSize)
@@ -96,12 +96,12 @@ void Sprite::SetImage(Texture* image, bool ChangeSize)
 
 void Sprite::SetCropByPixels(int32_t x1, int32_t x2, int32_t y1, int32_t y2)
 {
-    if (mImage)
+    if (mTexture)
     {
-        mCrop_x1 = (float)x1 / (float)mImage->w;
-        mCrop_x2 = (float)x2 / (float)mImage->w;
-        mCrop_y1 = (float)y1 / (float)mImage->h;
-        mCrop_y2 = (float)y2 / (float)mImage->h;
+        mCrop_x1 = (float)x1 / (float)mTexture->w;
+        mCrop_x2 = (float)x2 / (float)mTexture->w;
+        mCrop_y1 = (float)y1 / (float)mTexture->h;
+        mCrop_y2 = (float)y2 / (float)mTexture->h;
 
         DirtyTexture = true;
         UpdateTexture();
@@ -147,7 +147,7 @@ void Sprite::Invalidate()
 
 Texture* Sprite::GetImage()
 {
-    return mImage;
+    return mTexture;
 }
 
 void Sprite::BindTextureVBO()
@@ -157,8 +157,8 @@ void Sprite::BindTextureVBO()
 
 std::string Sprite::GetImageFilename() const
 {
-    if (mImage)
-        return Utility::ToU8(mImage->fname.wstring());
+    if (mTexture)
+        return Utility::ToU8(mTexture->fname.wstring());
     else
         return std::string();
 }

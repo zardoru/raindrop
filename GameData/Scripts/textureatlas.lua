@@ -12,7 +12,11 @@ function TextureAtlas:SetObjectCrop(Object, Sprite, resize)
 			Object.Height = Tab.h
 		end
 	else
-		print ("TextureAtlas: Picture not found: ", Sprite)
+		print ("TextureAtlas: ", self.File," Picture not found: ", Sprite)
+		print ("Available: ")
+		for k,v in pairs(self.Sprites) do
+			print ("\t", k)
+		end
 	end
 end
 
@@ -58,3 +62,4 @@ function TextureAtlas:skin_new(filename)
 end
 
 return TextureAtlas
+

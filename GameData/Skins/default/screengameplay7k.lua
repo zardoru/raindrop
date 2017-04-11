@@ -217,6 +217,13 @@ end
 
 function KeyEvent(Key, Code, IsMouseInput)
 	-- All key events, related or not to gear are handled here
+	if Key == 262 and Code == 1 then  -- right arrow
+		Game:GetPlayer(0).SpeedMultiplier = Game:GetPlayer(0).SpeedMultiplier + 0.25
+	end
+
+	if Key == 263 and Code == 1 then  -- left arrow
+		Game:GetPlayer(0).SpeedMultiplier = Game:GetPlayer(0).SpeedMultiplier - 0.25
+	end
 end
 
 function GearKeyEvent (Lane, IsKeyDown, PNum)

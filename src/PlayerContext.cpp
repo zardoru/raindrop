@@ -881,6 +881,12 @@ namespace Game {
 			return wt > CurrentDiff->Duration + cutoff;
 		}
 
+		double PlayerContext::GetWaitingTime()
+		{
+			CfgVar WaitingTime("WaitingTime");
+			return std::max(std::max(WaitingTime > 1.0? WaitingTime : 1.5, 0.0), CurrentDiff ? -CurrentDiff->Offset : 0);
+		}
+
 
 		void PlayerContext::GearKeyEvent(uint32_t Lane, bool KeyDown)
 		{

@@ -40,7 +40,7 @@ private: // Transformations
     float mCrop_x1, mCrop_y1;
     float mCrop_x2, mCrop_y2;
 
-    Texture* mImage;
+    Texture* mTexture;
 
     void Construct(bool doInitTexture);
 protected:
@@ -90,7 +90,6 @@ public:
 
     virtual void Render() override;
     bool RenderMinimalSetup();
-    void DrawLighten();
     virtual void Invalidate();
 
     void BindTextureVBO();

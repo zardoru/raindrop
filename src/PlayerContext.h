@@ -132,6 +132,7 @@ namespace Game {
 			double GetMeasureTime(double Msr) const;
 			double HasSongFinished(double time) const;
 
+			double GetWaitingTime();
 
 			VSRG::Difficulty* GetDifficulty() const;
 

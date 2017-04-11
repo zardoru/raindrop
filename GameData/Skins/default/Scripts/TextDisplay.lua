@@ -39,7 +39,7 @@ function PlayerText:Init()
 	self.lifebar.X = self.Noteskin.GearStartX + self.Noteskin.GearWidth + 80;
 	self.lifebar.Y = 340;
 
-	self.judgments.Font = fnt1
+	self.judgments.Font = fntB
 	self.judgments.X = self.lifebar.X
 	self.judgments.Y = 560
 

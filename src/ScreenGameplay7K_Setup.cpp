@@ -367,6 +367,10 @@ namespace Game {
 			for (auto &s : bgm0)
 				BGMEvents.push(s);
 
+			for (auto &&p : Players) {
+				Time.Waiting = std::max(Time.Waiting, p->GetWaitingTime());
+			}
+
 			return true;
 		}
 
@@ -421,6 +425,20 @@ namespace Game {
 			for (auto i = MySong->Difficulties.begin(); i != MySong->Difficulties.end(); ++i)
 				(*i)->Destroy();
 
+			CfgVar await("AwaitKeysoundLoad");
+			if (await) {
+				auto st = std::chrono::high_resolution_clock::now();
+				Log::LogPrintf("Awaiting for keysounds to finish loading...\n");
+				for (auto &vec : Keysounds) {
+					for (auto &snd : vec.second) {
+						snd->AwaitLoad();
+					}
+				}
+			
+				auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - st).count();
+				Log::LogPrintf("Done. Taken %I64dms to finish.\n", dur);
+			}
+
 			DoPlay = true;
 		}
 
@@ -442,20 +460,6 @@ namespace Game {
 				p->Validate();
 			}
 
-			CfgVar await("AwaitKeysoundLoad");
-			if (await) {
-				auto st = std::chrono::high_resolution_clock::now();
-				Log::LogPrintf("Awaiting for keysounds to finish loading...\n");
-				for (auto &vec : Keysounds) {
-					for (auto &snd : vec.second) {
-						snd->AwaitLoad();
-					}
-				}
-
-
-				auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - st).count();
-				Log::LogPrintf("Done. Taken %I64dms to finish.\n", dur);
-			}
 
 			Animations->Initialize("", false);
 			Running = true;

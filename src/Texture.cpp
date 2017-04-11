@@ -48,6 +48,11 @@ void Texture::Unbind()
 	LastBound = NULL;
 }
 
+bool Texture::IsBound()
+{
+	return LastBound == this;
+}
+
 void Texture::Bind()
 {
 	if (IsValid && texture != -1)

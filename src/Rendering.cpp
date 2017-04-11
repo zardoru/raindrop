@@ -316,10 +316,10 @@ bool Sprite::ShouldDraw()
 		if (!mShader->IsValid())
 			return false;
 
-    if (mImage)
+    if (mTexture)
     {
-		mImage->Bind();
-		return true;
+		mTexture->Bind();
+		return mTexture->IsBound();
     }
     else
         return mShader && mShader->IsValid();
@@ -606,7 +606,6 @@ void BitmapFont::Render(const std::string &In, const Vec2 &Position, const Mat4 
     }
 
 	using namespace Renderer;
-	Renderer::DefaultShader::Bind();
 	SetShaderParameters(false, false, false);
     DefaultShader::SetColor(Red, Green, Blue, Alpha);
 
@@ -635,7 +634,7 @@ void BitmapFont::Render(const std::string &In, const Vec2 &Position, const Mat4 
         Mat4 RenderTransform = Transform * CharPosition[*Text].GetMatrix();
 
         // Assign transformation matrix
-        Shader::SetUniform(U_MVP, &(RenderTransform[0][0]));
+        Shader::SetUniform(DefaultShader::GetUniform(U_MVP), &(RenderTransform[0][0]));
 
         // Assign vertex UVs
         CharPosition[*Text].BindTextureVBO();

@@ -28,12 +28,12 @@ function FrameInterpolator:New(sprite_file, duration, object)
 		i = i + 1
 	end
 
-	out.TotalFrames = i or 0
-	out.Duration = duration or 0
+	out.TotalFrames = i or 1
+	out.Duration = duration or 1
 
 	out.CurrentTime = 0
 
-	out.Object.Image = out.SpriteSheet.File or "null"
+	out.Object.Texture = out.SpriteSheet.File or "null"
 
 	out:Update(0)
 
@@ -41,7 +41,7 @@ function FrameInterpolator:New(sprite_file, duration, object)
 end
 
 function FrameInterpolator:GetFrameAtFrac(frac)
-	local Frame = math.floor(frac * (self.TotalFrames))
+	local Frame = math.floor(frac * (self.TotalFrames - 1))
 	return Frame
 end
 

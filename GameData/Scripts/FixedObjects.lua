@@ -9,7 +9,7 @@ function FixedObjects:CreateObjectFromParameters(tbl, constants)
 
 	local name = tbl[2]
 	-- table.dump(constants)
-	Object.Image = constants[tbl[1]] or tbl[1] or 0
+	Object.Texture = constants[tbl[1]] or tbl[1] or 0
 	with (Object, {
 		X = (constants[tbl[3]] or tbl[3] or 0) * self.XRatio,
 		Y = (constants[tbl[4]] or tbl[4] or 0) * self.YRatio,
