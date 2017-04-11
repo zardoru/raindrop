@@ -1,4 +1,6 @@
 -- 7+1 and 5+1 supported only
+Channels = Game:GetPlayer(0).Channels
+
 if Channels ~= 8 and Channels ~= 6 then
 	fallback_require "screengameplay7k"
 	return
@@ -56,17 +58,19 @@ function Init()
 	if Channels == 6 then
 		local p1s = table.join(Channels6P1, Channels6Common)
 		local p2s = table.join(Channels6P2, Channels6Common)
-		table.dump(p1s)
-		table.dump(p2s)
+
 		ObjP1:CreateFromCSV("5k.csv", p1s)
 		ObjP2:CreateFromCSV("5k.csv", p2s)
 	else
-		Objs:CreateFromCSV("7k.csv", Channels8P2)
-		-- FixedObjects.CreateFromCSV("7k.csv", Channels8P1[Channels])
+		local p1s = table.join(Channels8P1, Channels8Common)
+		local p2s = table.join(Channels8P2, Channels8Common)
+
+		Objs:CreateFromCSV("7k.csv", p1s)
+		Objs:CreateFromCSV("7k.csv", p2s)
 	end
 
 	for i=1, Channels do
-		KeyArray[i] = 0
+		KeyArray[i] = false
 	end
 end
 
@@ -77,7 +81,7 @@ function OnFullComboEvent()
 end
 
 function OnFailureEvent()
-	if Global.CurrentGaugeType ~= LT_GROOVE then
+	if Global:GetCurrentCurrentGauge(0) ~= LT_GROOVE then
 		DoFailAnimation()
 		return FailAnimation.Duration
 	else
@@ -102,7 +106,7 @@ function KeyEvent(Key, Code, IsMouseInput)
 end
 
 function GearKeyEvent (Lane, IsKeyDown)
-    KeyArray[Lane + 1] = IsKeyDown
+    KeyArray[Lane] = IsKeyDown
 end
 
 -- Called when the song is over.
@@ -112,12 +116,12 @@ function OnSongFinishedEvent()
 end
 
 function Update(Delta)
-	-- Executed every frame.
-	local beatEffect = Beat - math.floor(Beat)
+	local SongTime = Game:GetPlayer(0).Time
+	local SongDuration = Game:GetPlayer(0).Duration
 
-	local SongPercentage = Game:GetSongTime() / (SongDuration + 3)
+	local SongPercentage = SongTime / (SongDuration + 3)
 
-	if Game:GetSongTime() < 0 then
+	if SongTime < 0 then
 		SongPercentage = math.pow(SongTime / -1.5, 2)
 	end
 

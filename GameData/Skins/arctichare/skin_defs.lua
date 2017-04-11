@@ -21,7 +21,7 @@ function ScaleObj(o)
 end
 
 -- Player's default side on the field. 1 for left, 2 for right.
-PlayerSide = 2
+PlayerSide = 1
 
 -- Default side for the scratch. 1 for left, 2 for right.
 ScratchSide = 1

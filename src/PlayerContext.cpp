@@ -219,7 +219,6 @@ namespace Game {
 			MechanicsSet->IsLaneKeyDown = std::bind(&PlayerContext::GetGearLaneState, this, std::placeholders::_1);
 			MechanicsSet->SetLaneHoldingState = std::bind(&PlayerContext::SetLaneHoldState, this, std::placeholders::_1, std::placeholders::_2);
 			MechanicsSet->PlayNoteSoundEvent = PlayKeysound;
-
 			// We're set - setup all of the variables that depend on mechanics, scoring etc.. to their initial values.
 		}
 
@@ -658,6 +657,21 @@ namespace Game {
 		void PlayerContext::SetUnwarpedTime(double time)
 		{
 			ChartData.DisableNotesUntil(time);
+		}
+
+		int PlayerContext::GetCurrentGaugeType()
+		{
+			return LifebarType;
+		}
+
+		int PlayerContext::GetCurrentScoreType()
+		{
+			return ScoringType;
+		}
+
+		int PlayerContext::GetCurrentSystemType()
+		{
+			return UsedTimingType;
 		}
 
 		bool PlayerContext::UseNoteOptimization()

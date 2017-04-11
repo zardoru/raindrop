@@ -353,6 +353,12 @@ namespace Game {
 					if (sd->ID == GameState::GetInstance().GetDifficulty(p->GetPlayerNumber())->ID) {
 						p->SetPlayableData(sd, TimeError.AudioDrift, DesiredDefaultSpeed, Type);
 						p->Init();
+
+						// there's a better way but not right now
+						GameState::GetInstance().SetCurrentGaugeType(p->GetCurrentGaugeType(), p->GetPlayerNumber());
+						GameState::GetInstance().SetCurrentScoreType(p->GetCurrentScoreType(), p->GetPlayerNumber());
+						GameState::GetInstance().SetCurrentSystemType(p->GetCurrentSystemType(), p->GetPlayerNumber());
+
 						if (!p->GetPlayerState().HasTimingData())
 						{
 							Log::Printf("Error loading chart: No timing data for player %d.\n", p->GetPlayerNumber());

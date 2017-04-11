@@ -348,7 +348,7 @@ namespace Game {
 
 /* Program itself consts */
 #define RAINDROP_WINDOWTITLE "raindrop ver: "
-#define RAINDROP_VERSION "0.400"
+#define RAINDROP_VERSION "0.500"
 #ifdef NDEBUG
 #define RAINDROP_BUILDTYPE " "
 #else

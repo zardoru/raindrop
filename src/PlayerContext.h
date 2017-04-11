@@ -174,6 +174,10 @@ namespace Game {
 
 			void SetUnwarpedTime(double time);
 
+			int GetCurrentGaugeType();
+			int GetCurrentScoreType();
+			int GetCurrentSystemType();
+
 			// Whether the player has actually failed or not
 			bool HasFailed() const;
 
