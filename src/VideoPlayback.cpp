@@ -307,17 +307,24 @@ void VideoPlayback::StartDecodeThread()
 
 void VideoPlayback::UpdateClock(double clock)
 {
-	if (Context->DisplayFrame.frame) {
-		if (Context->DisplayFrame.pts <= clock) {
-			UpdateVideoTexture(Context->DisplayFrame.frame);
-			Context->PutCleanFrame(Context->DisplayFrame);
-			Context->DisplayFrame.frame = nullptr;
+	bool update = true;
+
+	while (update) {
+		if (Context->DisplayFrame.frame) {
+			if (Context->DisplayFrame.pts <= clock) {
+				UpdateVideoTexture(Context->DisplayFrame.frame);
+				Context->PutCleanFrame(Context->DisplayFrame);
+				Context->DisplayFrame.frame = nullptr;
+			}
+			else break;
 		}
-	}
-	else {
-		Context->DisplayFrame = Context->GetPendingFrame();
-		Context->CleanFrameAvailable = true;
-		Context->ringbuffer_has_space.notify_one();
+		else {
+			Context->DisplayFrame = Context->GetPendingFrame();
+			Context->CleanFrameAvailable = true;
+			Context->ringbuffer_has_space.notify_one();
+
+			if (!Context->DisplayFrame.frame) update = false;
+		}
 	}
 }
 
