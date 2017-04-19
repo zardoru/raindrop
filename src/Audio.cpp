@@ -30,7 +30,7 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, void* Sound, double
 	CfgVar RequestedLatency("RequestedLatency", "Audio");
 	CfgVar UseHighLatency("UseHighLatency", "Audio");
 
-	if (!RequestedLatency) {
+	if (RequestedLatency < 0 || UseHighLatency) {
 		if (!UseHighLatency)
 			outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultLowOutputLatency;
 		else
@@ -60,13 +60,13 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, void* Sound, double
 		if (!UseSharedMode)
         {
 			Log::Logf("AUDIO: Attempting to use exclusive mode WASAPI\n");
-            StreamInfo.threadPriority = eThreadPriorityGames;
+            StreamInfo.threadPriority = eThreadPriorityProAudio;
             StreamInfo.flags = paWinWasapiExclusive | paWinWasapiThreadPriority;
         }
         else
         {
 			Log::Logf("AUDIO: Attempting to use shared mode WASAPI\n");
-            StreamInfo.threadPriority = eThreadPriorityAudio;
+            StreamInfo.threadPriority = eThreadPriorityGames;
             StreamInfo.flags = 0;
         }
 

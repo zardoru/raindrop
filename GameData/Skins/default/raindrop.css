@@ -6,12 +6,12 @@ body {
 
 .widebox
 {
-	position: absolute;
-	top: 155px;
+	/*position: absolute;*/
+	margin-top: 5%;
 	display: block;
 	width: 100%;
 	overflow-y: scroll;
-	height: 600%;
+	height: 68%;
 	text-align: left;
 
 	background: #101010;
@@ -19,6 +19,12 @@ body {
 	border-bottom-width: 3px;
 	border-top-color: white;
 	border-bottom-color: white;
+}
+
+.centered {
+	display: block;
+	width: 100%;
+	text-align: center;
 }
 
 scrollbarvertical
@@ -50,7 +56,6 @@ scrollbarvertical sliderarrowdec, sliderarrowinc
 	display: inline;
 	text-align: left;
 	left: 5%;
-	width: 100%;
 	font-size: 48;
 	darken-font-effect: shadow;
     darken-offset: 1px 1px;
@@ -162,6 +167,19 @@ input.range slidertrack
 	top: -10px;
 }
 
+button {
+	background-color: #101010;
+	padding: 5px 15px;
+	margin: 0px 5px;
+}
+
+button:hover {
+	background-color: #505050;
+}
+
+button:active {
+	background-color: #080808;
+}
 
 .boxes {
 	padding-top: 2px;
@@ -193,7 +211,7 @@ select, dataselect {
 }
 
 select:hover {
-	background: grey;
+	background: #505050;
 }
 
 select selectarrow,
@@ -217,7 +235,7 @@ dataselect selectbox {
 }
 
 select option:hover {
-	background: grey;
+	background: #505050;
 }
 
 .dbox {
