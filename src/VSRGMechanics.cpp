@@ -272,6 +272,8 @@ namespace Game {
 			double tD = SongBeat - m->GetEndTime();
 			double tHead = SongBeat - m->GetStartTime();
 
+			if (!m->IsEnabled()) return false; // keep looking
+
 			// Condition A: Hold tail outside accuracy cutoff (can't be hit any longer),
 			// note wasn't hit at the head and it's a hold
 			if (tD > 0 && !m->WasHit() && m->IsHold())
