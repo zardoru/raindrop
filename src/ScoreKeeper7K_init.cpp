@@ -104,6 +104,7 @@ namespace Game {
 			setMissDecrement(0.08);
 			setEarlyMissDecrement(0.02);
 
+			memset(judgment_time, 0, sizeof(judgment_time));
 			judge_window_scale = 1.00;
 			setBMSTimingWindows();
 		}
