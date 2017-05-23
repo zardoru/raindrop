@@ -81,6 +81,8 @@ namespace Game {
 			bool usesW0() const;
 			bool usesO2() const;
 
+			float getHitStDev() const;
+
 			void reset();
 
 		private:
@@ -90,7 +92,9 @@ namespace Game {
 			bool use_w0; // whether or not to use ridiculous timing.
 			bool use_w0_for_ex2; // whether or not to require ridiculous for 2 EX score.
 
+			// online avg hit and variance
 			double avg_hit;
+			double hit_variance;
 
 			// o2jam-specific variable
 			bool use_bbased;

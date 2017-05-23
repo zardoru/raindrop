@@ -40,15 +40,25 @@ namespace Game {
 		int ScoreKeeper::getTotalNotes() const
 		{ return total_notes; }
 
+
+		float ScoreKeeper::getHitStDev() const
+		{
+			return sqrt(hit_variance / (total_notes - 1));
+		}
+
 		// ms is misleading- since it may very well be beats, but it's fine.
 		ScoreKeeperJudgment ScoreKeeper::hitNote(double ms)
 		{
 			// hit notes
 
-			avg_hit *= total_notes;
+			// online variance and average hit
 			++total_notes;
-			avg_hit += ms;
-			avg_hit /= total_notes;
+			float delta = ms - avg_hit;
+			avg_hit += delta / total_notes;
+
+			hit_variance += delta * (ms - avg_hit);
+
+			
 
 			// std::cerr << use_bbased << " " << ms << " ";
 
