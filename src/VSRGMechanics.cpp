@@ -26,7 +26,8 @@ namespace Game {
 		}
 		bool Mechanics::IsEarlyMiss(double t, TrackNote * note)
 		{
-			return (t - note->GetStartTime()) * 1000. < -score_keeper->getMissCutoffMS();
+			double dt = (t - note->GetStartTime()) * 1000.;
+			return dt < -score_keeper->getMissCutoffMS() && dt > -score_keeper->getEarlyMissCutoff();
 		}
 
 		bool Mechanics::IsBmBadJudge(double t, TrackNote * note)

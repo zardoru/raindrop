@@ -55,10 +55,15 @@ namespace Game {
 		class BMSChartInfo : public ChartInfo
 		{
 		public:
-			int JudgeRank;
+			float JudgeRank;
+			
 			float GaugeTotal;
 
+			// neccesary because of regular BMS DEFEXRANK
+			bool PercentualJudgerank;
+
 			// Whether this uses BMSON features.
+			// (Also makes GaugeTotal a rate instead of an absolute)
 			bool IsBMSON;
 
 			BMSChartInfo()
@@ -67,6 +72,7 @@ namespace Game {
 				JudgeRank = 3;
 				GaugeTotal = -1;
 				IsBMSON = false;
+				PercentualJudgerank = false;
 			}
 		};
 

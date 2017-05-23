@@ -104,10 +104,10 @@ namespace Game {
 			setEarlyMissDecrement(0.02);
 
 			judge_window_scale = 1.00;
-			set_timing_windows();
+			setBMSTimingWindows();
 		}
 
-		void ScoreKeeper::set_beat_timing_windows()
+		void ScoreKeeper::setO2JamBeatTimingWindows()
 		{
 			// This in beats.
 			double o2jamTimingAmt[] =
@@ -128,17 +128,17 @@ namespace Game {
 			earlymiss_threshold = miss_threshold = o2jamTimingAmt[4];
 		}
 
-		void ScoreKeeper::set_timing_windows()
+		void ScoreKeeper::setBMSTimingWindows()
 		{
 			double JudgmentValues[] = { 6.4, 16, 40, 100, 250, 625 };
 
 			miss_threshold = 250;
-			earlymiss_threshold = 1250;
+			earlymiss_threshold = 625;
 
 			for (auto i = 0; i < sizeof(JudgmentValues) / sizeof(double); i++)
 				judgment_time[i] = JudgmentValues[i] * judge_window_scale;
 
-			for (auto i = 0; i < 9; i++)
+			for (auto i = 0; i < sizeof(judgment_amt) / sizeof(double); i++)
 				judgment_amt[i] = 0;
 
 			for (auto i = -127; i < 128; ++i)
@@ -189,13 +189,15 @@ namespace Game {
 		{
 			init();
 			this->judge_window_scale = judge_window_scale;
-			set_timing_windows();
+			setBMSTimingWindows();
 		}
 
-		void ScoreKeeper::setLifeTotal(double total)
+		void ScoreKeeper::setLifeTotal(double total, double multiplier)
 		{
-			if (total != -1) lifebar_total = total;
-			else lifebar_total = std::max(260.0, 7.605 * max_notes / (6.5 + 0.01 * max_notes));
+			double effmul = isnan(multiplier) ? 1 : multiplier;
+
+			if (total != -1 && isnan(multiplier) && !isnan(total)) lifebar_total = total;
+			else lifebar_total = std::max(260.0, 7.605 * max_notes / (6.5 + 0.01 * max_notes)) * effmul;
 
 			// recalculate groove lifebar increments.
 			lifebar_easy_increment = Clamp(lifebar_total / max_notes / 50.0, 0.004, 0.8);
@@ -233,7 +235,7 @@ namespace Game {
 			{
 				use_bbased = true;
 				use_w0 = false;
-				set_beat_timing_windows();
+				setO2JamBeatTimingWindows();
 				return;
 			}
 
@@ -250,13 +252,13 @@ namespace Game {
 			case 4:
 				judge_window_scale = 2.00; break;
 			}
-			set_timing_windows();
+			setBMSTimingWindows();
 		}
 
 		void ScoreKeeper::setJudgeScale(double scale)
 		{
 			judge_window_scale = scale;
-			set_timing_windows();
+			setBMSTimingWindows();
 		}
 	}
 }

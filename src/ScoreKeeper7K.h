@@ -14,7 +14,10 @@ namespace Game {
 			void init();
 
 			void setMaxNotes(int notes);
-			void setLifeTotal(double total);
+
+			// total if multiplier is nan, else default rate * multiplier
+			void setLifeTotal(double total, double multiplier = NAN);
+
 			void setLifeIncrements(double* increments, int inc_n);
 			void setMissDecrement(double decrement);
 			void setEarlyMissDecrement(double decrement);
@@ -82,7 +85,7 @@ namespace Game {
 
 		private:
 
-			void set_beat_timing_windows();
+			void setO2JamBeatTimingWindows();
 
 			bool use_w0; // whether or not to use ridiculous timing.
 			bool use_w0_for_ex2; // whether or not to require ridiculous for 2 EX score.
@@ -239,7 +242,7 @@ namespace Game {
 
 			double life_increment[9];
 
-			void set_timing_windows();
+			void setBMSTimingWindows();
 
 			// miss thresholds; notes hit outside here count as misses.
 			// units are in ms

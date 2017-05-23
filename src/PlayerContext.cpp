@@ -96,10 +96,13 @@ namespace Game {
 					UsedTimingType = TT_TIME;
 					if (TimingInfo->GetType() == VSRG::TI_BMS) {
 						auto Info = static_cast<VSRG::BMSChartInfo*> (TimingInfo);
-						PlayerScoreKeeper->setLifeTotal(Info->GaugeTotal);
+						if (!Info->PercentualJudgerank)
+							PlayerScoreKeeper->setJudgeRank(Info->JudgeRank);
+						else
+							PlayerScoreKeeper->setJudgeScale(Info->JudgeRank / 100.0);
 					}
 					else {
-						PlayerScoreKeeper->setJudgeRank(3);
+						PlayerScoreKeeper->setJudgeRank(2);
 					}
 				}
 				else if (Parameters.SystemType == VSRG::TI_O2JAM) {
@@ -175,7 +178,10 @@ namespace Game {
 			case LT_SURVIVAL:
 				if (TimingInfo->GetType() == VSRG::TI_BMS) { // Only needs setup if it's a BMS file
 					auto Info = static_cast<VSRG::BMSChartInfo*> (TimingInfo);
-					PlayerScoreKeeper->setLifeTotal(Info->GaugeTotal);
+					if (Info->IsBMSON)
+						PlayerScoreKeeper->setLifeTotal(NAN, Info->GaugeTotal);
+					else
+						PlayerScoreKeeper->setLifeTotal(Info->GaugeTotal);
 				}
 				else // by raindrop defaults
 					PlayerScoreKeeper->setLifeTotal(-1);

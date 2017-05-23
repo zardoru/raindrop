@@ -25,6 +25,7 @@
 */
 
 namespace NoteLoaderBMS{
+	
 
 	using namespace Game::VSRG;
 
@@ -797,9 +798,16 @@ namespace NoteLoaderBMS{
 			TimingInfo->GaugeTotal = total;
 		}
 
+		void SetDefexRank(double defex)
+		{
+			TimingInfo->JudgeRank = defex;
+			TimingInfo->PercentualJudgerank = true;
+		}
+
 		void SetJudgeRank(double judgerank)
 		{
 			TimingInfo->JudgeRank = judgerank;
+			TimingInfo->PercentualJudgerank = false;
 		}
 
 		void SetSound(int index, std::string command_contents)
@@ -1068,6 +1076,11 @@ namespace NoteLoaderBMS{
                 {
                     Out->PreviewTime = latof(CommandContents.c_str());
                 }
+
+				OnCommand(#defexrank)
+				{
+					Info->SetDefexRank(latof(CommandContents.c_str()));
+				}
 
                 OnCommand(#stagefile)
                 {
