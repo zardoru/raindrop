@@ -339,7 +339,8 @@ namespace Game {
 		/* Vertical Space for a Measure.
 		 A single 4/4 measure takes all of the playing field.
 		 Increasing this will decrease multiplier resolution. */
-		const float MeasureBaseSpacing = 0.8f * ScreenHeightDefault;
+		extern SkinMetric PLAYFIELD_SIZE;
+		extern SkinMetric UNITS_PER_MEASURE;
 
 		/* vsrg constants */
 
@@ -367,4 +368,4 @@ namespace Game {
 #define RAINDROP_VERSIONTEXT RAINDROP_VERSION RAINDROP_BUILDTYPE __DATE__
 
 #include "BindingsManager.h"
-#include "Configuration.h"
+

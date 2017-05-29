@@ -183,7 +183,7 @@ namespace Game {
 				if (Section.Value)
 				{
 					auto spb = 1 / Section.Value;
-					VerticalSpeed = MeasureBaseSpacing / (spb * 4);
+					VerticalSpeed = UNITS_PER_MEASURE / (spb * 4);
 				}
 				else
 					VerticalSpeed = 0;

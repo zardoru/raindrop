@@ -8,7 +8,7 @@
 #include "GameWindow.h"
 #include "ImageLoader.h"
 #include "Audio.h"
-#include "Configuration.h"
+
 #include "Sprite.h"
 #include "GuiButton.h"
 

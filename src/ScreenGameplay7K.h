@@ -62,11 +62,7 @@ namespace Game {
 			std::unique_ptr<BackgroundAnimation> BGA;
 			double JudgeOffset;
 			void SetupScriptConstants();
-			void UpdateScriptVariables();
-			void UpdateScriptScoreVariables();
-
-			void ChangeNoteTimeToBeats();
-
+			
 			// Done in loading thread
 			bool LoadChartData();
 			bool LoadSongAudio();
@@ -89,6 +85,10 @@ namespace Game {
 			void PlayKeysound(int Keysound);
 
 			void Activate();
+
+
+			void OnPlayerMiss(double dt, uint32_t lane, bool hold, bool dontbreakcombo, bool earlymiss, int pn);
+
 			friend class Noteskin;
 		public:
 

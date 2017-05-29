@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "GameGlobal.h"
+
 #include "BackgroundAnimation.h"
 #include "Song.h"
 #include "Song7K.h"

@@ -53,8 +53,9 @@ namespace Game {
 
 			struct SHiddenData {
 				EHiddenMode		 Mode;
-				float            ClampLow, ClampHigh, ClampFactor;
-				float            ClampSum;
+				float            Center; // in NDC
+				float			 TransitionSize; // in NDC
+				float			 CenterSize; // in NDC
 			} Hidden;
 
 			LifeType           LifebarType;
@@ -89,7 +90,7 @@ namespace Game {
 			void RunMeasures(double time);
 			void PlayLaneKeysound(uint32_t Lane);
 			void RunAuto(TrackNote *m, double usedTime, uint32_t k);
-			void UpdateHidden(float AdjustmentSize, float FlashlightRatio);
+			void UpdateHidden();
 		public:
 			PlayerContext(int pn, Game::VSRG::PlayscreenParameters par = Game::VSRG::PlayscreenParameters());
 			void Init();
@@ -97,9 +98,9 @@ namespace Game {
 			void Update(double songTime);
 			void Render(double songTime);
 
-			std::function<void(int)> PlayKeysound;
-			std::function<void(double, uint32_t, bool, bool)> OnHit;
-			std::function<void(double, uint32_t, bool, bool, bool)> OnMiss;
+			std::function<void(int sndid)> PlayKeysound;
+			std::function<void(double dt, uint32_t lane, bool hold, bool release, int pn)> OnHit;
+			std::function<void(double dt, uint32_t lane, bool hold, bool dontbreakcombo, bool earlymiss, int pn)> OnMiss;
 
 			/*
 				About this pointer's lifetime:
@@ -160,6 +161,7 @@ namespace Game {
 
 			void HitNote(double TimeOff, uint32_t Lane, bool IsHold, bool IsHoldRelease = false);
 			void MissNote(double TimeOff, uint32_t Lane, bool IsHold, bool dont_break_combo, bool early_miss);
+			void SetOnMiss(std::function<void(int)> fn);
 			void GearKeyEvent(uint32_t Lane, bool KeyDown);
 			void JudgeLane(uint32_t Lane, double Time);
 			void ReleaseLane(uint32_t Lane, double Time);

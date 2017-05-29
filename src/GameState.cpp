@@ -1,6 +1,5 @@
 #include "pch.h"
 
-#include "GameGlobal.h"
 #include "GameState.h"
 #include "GameWindow.h"
 #include "Song.h"
@@ -16,6 +15,12 @@
 
 #include "NoteLoader7K.h"
 
+namespace Game {
+	namespace VSRG {
+		SkinMetric PLAYFIELD_SIZE("PlayfieldSize");
+		SkinMetric UNITS_PER_MEASURE("UnitsPerMeasure");
+	}
+}
 
 #define DirectoryPrefix std::string("GameData/")
 #define SkinsPrefix std::string("Skins/")

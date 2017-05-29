@@ -12,6 +12,7 @@
 #define _USE_MATH_DEFINES
 
 #define ENABLE_SNDFILE_WINDOWS_PROTOTYPES 1
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <io.h>
 #include <fcntl.h>
@@ -410,4 +411,5 @@ double latof(std::string s);
 #define CreateBinIfstream(name, fn) std::fstream name(fn.string(), std::ios::in | std::ios::binary);
 #endif
 
+#include "Configuration.h"
 #include "GameGlobal.h"

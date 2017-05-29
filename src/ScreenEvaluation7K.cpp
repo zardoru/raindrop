@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "GameGlobal.h"
+
 #include "GameState.h"
 #include "ScreenEvaluation7K.h"
 #include "ScreenGameplay7K.h"

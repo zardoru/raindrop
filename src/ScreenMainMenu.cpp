@@ -1,8 +1,8 @@
 #include "pch.h"
 
-#include "GameGlobal.h"
+
 #include "GameState.h"
-#include "Configuration.h"
+
 #include "SceneEnvironment.h"
 #include "Screen.h"
 #include "ImageLoader.h"

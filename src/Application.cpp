@@ -3,7 +3,7 @@
 #include "GameGlobal.h"
 #include "Logging.h"
 #include "Screen.h"
-#include "Configuration.h"
+
 #include "Audio.h"
 #include "Application.h"
 #include "Sprite.h"

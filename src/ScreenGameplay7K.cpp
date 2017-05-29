@@ -304,6 +304,11 @@ namespace Game {
 			Time.Stream += SongDelta;
 		}
 
+		void ScreenGameplay::OnPlayerMiss(double dt, uint32_t lane, bool hold, bool dontbreakcombo, bool earlymiss, int pn)
+		{
+			BGA->OnMiss();
+		}
+
 		bool ScreenGameplay::Run(double Delta)
 		{
 			if (Next)

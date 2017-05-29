@@ -1,7 +1,7 @@
 #include "pch.h"
 
-#include "GameGlobal.h"
-#include "Configuration.h"
+
+
 
 #define SI_CONVERT_GENERIC
 #include "GameState.h"
@@ -34,15 +34,15 @@ void Configuration::Initialize()
     Config->LoadFile("config.ini");
     SkinCfgLua = new LuaManager();
 
+	AddRDLuaGlobal(SkinCfgLua);
+
     if (Configuration::GetConfigs("Skin").length())
         GameState::GetInstance().SetSkin(Configuration::GetConfigs("Skin"));
 
     IsWidescreen = Configuration::GetConfigf("Widescreen");
 
     SkinCfgLua->SetGlobal("Widescreen", IsWidescreen);
-    SkinCfgLua->SetGlobal("ScreenWidth", ScreenWidth);
-    SkinCfgLua->SetGlobal("ScreenHeight", ScreenHeight);
-
+    
 	GameState::GetInstance().InitializeLua(SkinCfgLua->GetState());
     SkinCfgLua->RunScript(GameState::GetInstance().GetSkinFile("skin.lua"));
 

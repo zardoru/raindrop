@@ -7,7 +7,7 @@
 #include "Sprite.h"
 #include "LuaManager.h"
 #include "SceneEnvironment.h"
-#include "Configuration.h"
+
 #include "LuaBridge.h"
 
 #include "Font.h"
@@ -265,25 +265,7 @@ public:
 
 void DefineSpriteInterface(LuaManager* anim_lua)
 {
-    anim_lua->AppendPath("./?;./?.lua");
-    anim_lua->AppendPath(GameState::GetInstance().GetScriptsDirectory() + "?");
-    anim_lua->AppendPath(GameState::GetInstance().GetScriptsDirectory() + "?.lua");
-
-    anim_lua->AppendPath(GameState::GetInstance().GetSkinPrefix() + "?");
-    anim_lua->AppendPath(GameState::GetInstance().GetSkinPrefix() + "?.lua");
-
-    // anim_lua->AppendPath(GameState::GetFallbackSkinPrefix());
-    anim_lua->Register(LuaAnimFuncs::Require, "skin_require");
-    anim_lua->Register(LuaAnimFuncs::FallbackRequire, "fallback_require");
-
-    // anim_lua->NewMetatable(LuaAnimFuncs::SpriteMetatable);
-    anim_lua->Register(LuaAnimFuncs::GetSkinConfigF, "GetConfigF");
-    anim_lua->Register(LuaAnimFuncs::GetSkinConfigS, "GetConfigS");
-    anim_lua->Register(LuaAnimFuncs::GetSkinDirectory, "GetSkinDirectory");
-    anim_lua->Register(LuaAnimFuncs::GetSkinFile, "GetSkinFile");
-
-    anim_lua->SetGlobal("ScreenHeight", ScreenHeight);
-    anim_lua->SetGlobal("ScreenWidth", ScreenWidth);
+	AddRDLuaGlobal(anim_lua);
 
     // Animation constants
     anim_lua->SetGlobal("EaseNone", Animation::EaseLinear);
@@ -351,6 +333,29 @@ void DefineSpriteInterface(LuaManager* anim_lua)
         .q(ChainTransformation)
         .addProperty("Texture", GetImage, SetImage) // Special for setting image.
         .endClass();
+}
+
+void AddRDLuaGlobal(LuaManager * anim_lua)
+{
+	anim_lua->AppendPath("./?;./?.lua");
+	anim_lua->AppendPath(GameState::GetInstance().GetScriptsDirectory() + "?");
+	anim_lua->AppendPath(GameState::GetInstance().GetScriptsDirectory() + "?.lua");
+
+	anim_lua->AppendPath(GameState::GetInstance().GetSkinPrefix() + "?");
+	anim_lua->AppendPath(GameState::GetInstance().GetSkinPrefix() + "?.lua");
+
+	// anim_lua->AppendPath(GameState::GetFallbackSkinPrefix());
+	anim_lua->Register(LuaAnimFuncs::Require, "skin_require");
+	anim_lua->Register(LuaAnimFuncs::FallbackRequire, "fallback_require");
+
+	// anim_lua->NewMetatable(LuaAnimFuncs::SpriteMetatable);
+	anim_lua->Register(LuaAnimFuncs::GetSkinConfigF, "GetConfigF");
+	anim_lua->Register(LuaAnimFuncs::GetSkinConfigS, "GetConfigS");
+	anim_lua->Register(LuaAnimFuncs::GetSkinDirectory, "GetSkinDirectory");
+	anim_lua->Register(LuaAnimFuncs::GetSkinFile, "GetSkinFile");
+
+	anim_lua->SetGlobal("ScreenHeight", ScreenHeight);
+	anim_lua->SetGlobal("ScreenWidth", ScreenWidth);
 }
 
 // New lua interface.

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GameGlobal.h"
+
 
 namespace Game {
 	namespace VSRG {

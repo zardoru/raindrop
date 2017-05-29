@@ -3,7 +3,7 @@
 #include "GameGlobal.h"
 #include "Logging.h"
 #include "BindingsManager.h"
-#include "Configuration.h"
+
 #include "Screen.h"
 #include "Application.h"
 #include "GameWindow.h"

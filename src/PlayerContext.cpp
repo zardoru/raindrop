@@ -50,7 +50,7 @@ namespace Game {
 				if (!BindKeysToLanes(!ChartData.HasTurntable))
 					Log::LogPrintf("Couldn't get valid bindings for current key count %d.\n", GetChannelCount());
 
-
+			UpdateHidden();
 			if (PlayerNoteskin.IsBarlineEnabled())
 				Barline = std::make_unique<Line>();
 		}
@@ -453,7 +453,8 @@ namespace Game {
 					Animations->DoEvent("OnFullComboEvent");
 			}
 
-			//OnHit(TimeOff, Lane, IsHold, IsHoldRelease);
+			if (OnHit)
+				OnHit(TimeOff, Lane, IsHold, IsHoldRelease, PlayerNumber);
 		}
 
 		void PlayerContext::MissNote(double TimeOff, uint32_t Lane, bool IsHold, bool dont_break_combo, bool early_miss)
@@ -474,7 +475,8 @@ namespace Game {
 				}
 			}
 
-			//OnMiss(TimeOff, Lane, IsHold, dont_break_combo, early_miss);
+			if (OnMiss)
+				OnMiss(TimeOff, Lane, IsHold, dont_break_combo, early_miss, PlayerNumber);
 		}
 
 		void PlayerContext::SetLaneHoldState(uint32_t Lane, bool NewState)
@@ -803,18 +805,6 @@ namespace Game {
 				// if GN is true, Default Speed = GN!
 				// Convert GN to speed.
 				if (Parameters.GreenNumber) {
-					double first_height = std::numeric_limits<float>::infinity();
-					double first_time = std::numeric_limits<float>::infinity();
-					for (int i = 0; i < MAX_CHANNELS; i++) {
-						if (ChartData.NotesByChannel[i].size() > 0) {
-							auto v = ChartData.NotesByChannel[i][0].GetVertical();
-							auto t = ChartData.NotesByChannel[i][0].GetStartTime();
-							if (v < first_height) {
-								first_height = v;
-								first_time = t;
-							}
-						}
-					}
 
 					// v0 is normal speed
 					// (green number speed * green number time) / (normal speed * normal time)
@@ -822,9 +812,10 @@ namespace Game {
 					// playfield distance / note distance
 					
 					/*auto v0 = ChartData.VSpeeds[0].Value;
-					auto hratio = MeasureBaseSpacing / first_height;
+					auto hratio = UNITS_PER_MEASURE / first_height;
 					double new_speed = hratio * v0 * first_time / (DesiredDefaultSpeed / 1000);*/
-					double new_speed = MeasureBaseSpacing / (DesiredDefaultSpeed / 1000);
+					// simplifying that gets you dn / tn lol
+					double new_speed = PLAYFIELD_SIZE / (DesiredDefaultSpeed / 1000);
 					DesiredDefaultSpeed = new_speed;
 
 					if (Type == SPEEDTYPE_CMOD) {
@@ -875,7 +866,7 @@ namespace Game {
 				else if (Type != SPEEDTYPE_CMOD) // other cases
 				{
 					double bpsd = 4.0 / (ChartData.BPS[0].Value);
-					double Speed = (MeasureBaseSpacing / bpsd);
+					double Speed = (UNITS_PER_MEASURE / bpsd);
 					double DesiredMultiplier = DesiredDefaultSpeed / Speed;
 
 					Parameters.SpeedMultiplier = DesiredMultiplier;
@@ -1022,38 +1013,41 @@ namespace Game {
 			}
 		}
 
-		void PlayerContext::UpdateHidden(float AdjustmentSize, float FlashlightRatio)
+		void PlayerContext::UpdateHidden()
 		{
 			/*
 				Given the top of the screen being 1, the bottom being -1
 				calculate the range for which the current hidden mode is defined.
 			*/
-			float Center;
+			CfgVar HiddenSize("HiddenSize", "Hidden");
+			CfgVar FLSize("FlashlightSize", "Hidden");
+			CfgVar Threshold("Threshold", "Hidden");
+
+			auto toYRange = [](float x) {
+				x /= ScreenHeight; // [0,768] -> [0,1]
+				x *= -2; // [0,1] -> [0, -2]
+				x += 1; // [1, -1]
+				return x;
+			};
+			
+			float Center = toYRange(Threshold * PLAYFIELD_SIZE);
 			float JudgmentLinePos = GetJudgmentY();
 			auto Upscroll = Parameters.Upscroll;
+
+			
 
 			// Hidden calc
 			if (Parameters.HiddenMode)
 			{
-				float LimPos = -((JudgmentLinePos / ScreenHeight) * 2 - 1); // Frac. of screen
-				float AdjustmentSize;
+				float pfCenter;
+				
+				Hidden.TransitionSize = HiddenSize * PLAYFIELD_SIZE / ScreenHeight;
 
 				if (Upscroll)
 				{
-					Center = -((((ScreenHeight - JudgmentLinePos) / 2 + JudgmentLinePos) / ScreenHeight) * 2 - 1);
-
-					// AdjustmentSize = -( ((ScreenHeight - JudgmentLinePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
-
-					if (Parameters.HiddenMode == HM_HIDDEN)
-					{
-						Hidden.ClampHigh = Center;
-						Hidden.ClampLow = -1 + AdjustmentSize;
-					}
-					else if (Parameters.HiddenMode == HM_SUDDEN)
-					{
-						Hidden.ClampHigh = LimPos - AdjustmentSize;
-						Hidden.ClampLow = Center;
-					}
+					pfCenter = toYRange(ScreenHeight - JudgmentLinePos + Threshold * PLAYFIELD_SIZE);
+					Hidden.Center = pfCenter;
+					
 
 					// Invert Hidden Mode.
 					if (Parameters.HiddenMode == HM_SUDDEN) Hidden.Mode = HM_HIDDEN;
@@ -1062,37 +1056,12 @@ namespace Game {
 				}
 				else
 				{
-					Center = -((JudgmentLinePos / 2 / ScreenHeight) * 2 - 1);
-
-					// AdjustmentSize = -( ((JudgmentLinePos) / 2 / ScreenHeight) - 1 ); // A quarter of the playing field.
-
-					// Hidden/Sudden
-					if (Parameters.HiddenMode == HM_HIDDEN)
-					{
-						Hidden.ClampHigh = 1 - AdjustmentSize;
-						Hidden.ClampLow = Center;
-					}
-					else if (Parameters.HiddenMode == HM_SUDDEN)
-					{
-						Hidden.ClampHigh = Center;
-						Hidden.ClampLow = LimPos + AdjustmentSize;
-					}
-
+					pfCenter = Center;
+					Hidden.Center = pfCenter;
 					Hidden.Mode = (Game::VSRG::EHiddenMode)Parameters.HiddenMode;
 				}
 
-				if (Parameters.HiddenMode == HM_FLASHLIGHT) // Flashlight
-				{
-					Hidden.ClampLow = Center - FlashlightRatio;
-					Hidden.ClampHigh = Center + FlashlightRatio;
-					Hidden.ClampSum = -Center;
-					Hidden.ClampFactor = 1 / FlashlightRatio;
-				}
-				else // Hidden/Sudden
-				{
-					Hidden.ClampSum = -Hidden.ClampLow;
-					Hidden.ClampFactor = 1 / (Hidden.ClampHigh + Hidden.ClampSum);
-				}
+				Hidden.CenterSize = FLSize * PLAYFIELD_SIZE / ScreenHeight;
 			}
 		}
 
@@ -1126,10 +1095,9 @@ namespace Game {
 			// Sudden = 1, Hidden = 2, flashlight = 3 (Defined in the shader)
 			if (Hidden.Mode)
 			{
-				Renderer::Shader::SetUniform(Renderer::DefaultShader::GetUniform(Renderer::U_HIDLOW), Hidden.ClampLow);
-				Renderer::Shader::SetUniform(Renderer::DefaultShader::GetUniform(Renderer::U_HIDHIGH), Hidden.ClampHigh);
-				Renderer::Shader::SetUniform(Renderer::DefaultShader::GetUniform(Renderer::U_HIDFAC), Hidden.ClampFactor);
-				Renderer::Shader::SetUniform(Renderer::DefaultShader::GetUniform(Renderer::U_HIDSUM), Hidden.ClampSum);
+				Renderer::Shader::SetUniform(Renderer::DefaultShader::GetUniform(Renderer::U_HIDCENTER), Hidden.Center);
+				Renderer::Shader::SetUniform(Renderer::DefaultShader::GetUniform(Renderer::U_HIDSIZE), Hidden.TransitionSize);
+				Renderer::Shader::SetUniform(Renderer::DefaultShader::GetUniform(Renderer::U_HIDFLSIZE), Hidden.CenterSize);
 			}
 
 			Renderer::SetPrimitiveQuadVBO();

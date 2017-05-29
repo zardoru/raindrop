@@ -464,6 +464,13 @@ namespace Game {
 
 			for (auto& p : Players) {
 				p->Validate();
+				p->OnMiss = std::bind(&ScreenGameplay::OnPlayerMiss, this, 
+					std::placeholders::_1, 
+					std::placeholders::_2, 
+					std::placeholders::_3, 
+					std::placeholders::_4, 
+					std::placeholders::_5, 
+					std::placeholders::_6);
 			}
 
 

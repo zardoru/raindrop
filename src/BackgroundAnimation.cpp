@@ -39,7 +39,8 @@ std::string videoextensions[] = {
 	".mpg",
 	".mpeg",
 	".mpv",
-	".flv"
+	".flv",
+	".webm"
 };
 
 bool IsVideoPath(std::filesystem::path path)

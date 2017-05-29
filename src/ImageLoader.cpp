@@ -1,7 +1,7 @@
 #include "pch.h"
 
 #include "Logging.h"
-#include "Configuration.h"
+
 
 #include "Texture.h"
 #include "ImageLoader.h"

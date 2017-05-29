@@ -1,7 +1,7 @@
 #include "pch.h"
 
 #include "GameWindow.h"
-#include "Configuration.h"
+
 #include "VBO.h"
 #include "Sprite.h"
 #include "Transformation.h"
@@ -347,7 +347,7 @@ bool Sprite::RenderMinimalSetup()
 	if (!Lighten)
 		Renderer::DefaultShader::SetColor(Red, Green, Blue, Alpha);
 	else
-		Renderer::DefaultShader::SetColor(Red * lf, Green * lf, Blue * lf, Alpha * lf);
+		Renderer::DefaultShader::SetColor(Red * lf, Green * lf, Blue * lf, Alpha);
 
     Renderer::DoQuadDraw();
 
@@ -371,7 +371,7 @@ void Sprite::Render()
 		if (!Lighten)
 			Renderer::DefaultShader::SetColor(Red, Green, Blue, Alpha);
 		else
-			Renderer::DefaultShader::SetColor(Red * lf, Green * lf, Blue * lf, Alpha * lf);
+			Renderer::DefaultShader::SetColor(Red * lf, Green * lf, Blue * lf, Alpha);
 		
 		Renderer::SetCurrentObjectMatrix(mat);
 	}

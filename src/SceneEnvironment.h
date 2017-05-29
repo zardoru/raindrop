@@ -111,3 +111,5 @@ public:
 };
 
 void DefineSpriteInterface(LuaManager* anim_lua);
+
+void AddRDLuaGlobal(LuaManager * anim_lua);

@@ -111,3 +111,5 @@ T* GetUserObject(lua_State *L, int Parameter, const char* MetatableName)
     luaL_argcheck(L, ud != NULL, 1, "Expected object of different type!");
     return ud;
 }
+
+void AddRDLuaGlobal(LuaManager * anim_lua);

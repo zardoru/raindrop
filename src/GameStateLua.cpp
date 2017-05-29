@@ -1,7 +1,5 @@
 #include "pch.h"
 
-#include "GameGlobal.h"
-
 #include "LuaManager.h"
 #include "LuaBridge.h"
 
