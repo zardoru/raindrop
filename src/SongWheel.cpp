@@ -134,8 +134,6 @@ void SongWheel::ReloadSongs(SongDatabase* Database)
     DB = Database;
     Join();
 
-    ListRoot = nullptr;
-
     ListRoot = std::make_shared<SongList>();
     CurrentList = ListRoot.get();
 
@@ -316,7 +314,9 @@ void SongWheel::GoUp()
 
     if (CurrentList->HasParentDirectory())
     {
+		CurrentList->SetInUse(false);
         CurrentList = CurrentList->GetParentDirectory();
+		CurrentList->ClearEmpty();
 		ReapplyFilters();
         OnDirectoryChange();
 		OnSongTentativeSelect(GetSelectedSong(), 0);
@@ -534,6 +534,7 @@ void SongWheel::ConfirmSelection()
     else
     {
         CurrentList = CurrentList->GetListEntry(SelectedBoundItem).get();
+		CurrentList->SetInUse(true);
 
 		ReapplyFilters();
         SetSelectedItem(SelectedUnboundItem); // Update our selected item to new bounderies.
@@ -566,7 +567,7 @@ void Game::SongWheel::ReapplyFilters()
 {
 	if (!CurrentList) return;
 
-	FilteredCurrentList = SongList();
+	FilteredCurrentList.Clear();
 	for (auto entry : CurrentList->GetEntries()) {
 		bool add = true;
 

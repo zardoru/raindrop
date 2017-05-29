@@ -46,6 +46,7 @@ namespace Game {
 			double getAvgHit() const;
 
 			ScoreKeeperJudgment hitNote(double ms);
+			void lifebarHit(double ms, Game::VSRG::ScoreKeeperJudgment judgment);
 			void missNote(bool auto_hold_miss, bool early_miss);
 
 			double getAccMax() const;

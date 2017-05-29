@@ -81,23 +81,27 @@ namespace Game {
 			ms = abs(ms);
 
 			// combo
-
-			double combo_leniency;
-			if (use_o2jam)
-				combo_leniency = judgment_time[SKJ_W2];
-			else
-				combo_leniency = judgment_time[SKJ_W3]; // GOODs/GREATs or less
-
-			if (ms <= combo_leniency)
-			{
+			auto increase_combo = [&]() {
 				++notes_hit;
 				++combo;
 				if (combo > max_combo)
 					max_combo = combo;
-			}
-			else
+			};
+
+			// check combo for o2jam later (after transformed judgment)
+			double combo_leniency;
+			if (!use_o2jam)
 			{
-				combo = 0;
+				combo_leniency = judgment_time[SKJ_W3]; // GOODs/GREATs or less
+
+				if (ms <= combo_leniency)
+				{
+					increase_combo();
+				}
+				else
+				{
+					combo = 0;
+				}
 			}
 
 			// accuracy score
@@ -136,6 +140,16 @@ namespace Game {
 				}
 			}
 
+			// since it may be transformed we check for combo here instead
+			if (use_o2jam) {
+				if (judgment < SKJ_W3) {
+					increase_combo();
+				}
+				else {
+					combo = 0;
+				}
+			}
+
 			// SC, ACC^2 score
 
 			sc_score += Clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.0) * 2;
@@ -145,6 +159,27 @@ namespace Game {
 
 			// lifebars
 
+			lifebarHit(ms, judgment);
+
+			if (judgment == SKJ_NONE)
+				std::cerr << "Error, invalid judgment: " << ms << "\n";
+
+			// std::cerr << std::endl;
+
+			// Other methods
+
+			update_ranks(judgment); // rank calculation
+			update_bms(judgment); // Beatmania scoring
+			update_lr2(judgment); // Lunatic Rave 2 scoring
+			update_exp2(judgment);
+			update_osu(judgment);
+			update_o2(judgment);
+
+			return judgment;
+		}
+
+		void ScoreKeeper::lifebarHit(double ms, Game::VSRG::ScoreKeeperJudgment judgment)
+		{
 			if (ms <= judgment_time[SKJ_W3])
 			{
 				lifebar_easy = std::min(1.0, lifebar_easy + lifebar_easy_increment);
@@ -176,22 +211,6 @@ namespace Game {
 			// std::cerr << ms << " " << judgment << " " << life_increment[judgment] << std::endl;
 
 			lifebar_stepmania = std::min(1.0, lifebar_stepmania + life_increment[judgment]);
-
-			if (judgment == SKJ_NONE)
-				std::cerr << "Error, invalid judgment: " << ms << "\n";
-
-			// std::cerr << std::endl;
-
-		// Other methods
-
-			update_ranks(judgment); // rank calculation
-			update_bms(judgment); // Beatmania scoring
-			update_lr2(judgment); // Lunatic Rave 2 scoring
-			update_exp2(judgment);
-			update_osu(judgment);
-			update_o2(judgment);
-
-			return judgment;
 		}
 
 		int ScoreKeeper::getJudgmentCount(int judgment)

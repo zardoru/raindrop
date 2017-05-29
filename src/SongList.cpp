@@ -14,11 +14,45 @@ ListEntry::ListEntry() {
 
 SongList::SongList(SongList* Parent)
     : mParent(Parent)
+	, IsInUse(false)
 {
 }
 
 SongList::~SongList()
 {
+}
+
+void SongList::Clear()
+{
+	mChildren.clear();
+}
+
+void SongList::SetInUse(bool inuse)
+{
+	IsInUse = inuse;
+}
+
+bool SongList::InUse()
+{
+	return IsInUse;
+}
+
+void SongList::ClearEmpty()
+{
+	for (auto it = mChildren.begin(); it != mChildren.end(); ) {
+		bool increase = true;
+
+		if (it->Kind == it->Directory) {
+			auto list = std::static_pointer_cast<SongList>(it->Data);
+			if (list->GetNumEntries() == 0 && !list->InUse()) {
+				it = mChildren.erase(it);
+				increase = false;
+			}
+		}
+
+		if (increase)
+			++it;
+	}
 }
 
 void SongList::AddSong(std::shared_ptr<Game::Song> Song)
@@ -80,7 +114,7 @@ void SongList::AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, std:
 
             {
                 std::unique_lock<std::mutex> lock(loadMutex);
-                if (!NewList->GetNumEntries())
+                if (!NewList->GetNumEntries() && !NewList->InUse())
                 {
                     if (mChildren.size())
                         mChildren.erase(mChildren.end() - 1);

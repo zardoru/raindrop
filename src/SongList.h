@@ -29,12 +29,19 @@ class SongList
 {
     SongList* mParent;
     std::vector<ListEntry> mChildren;
-
+	std::atomic<bool> IsInUse;
 	void SortByFn(std::function<bool(const ListEntry&, const ListEntry&)> fn);
 
 public:
     SongList(SongList *Parent = nullptr);
     ~SongList();
+
+	void Clear();
+
+	void SetInUse(bool use);
+	bool InUse();
+
+	void ClearEmpty();
 
     void AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, std::filesystem::path Dir, std::string Name, bool VSRGActive, bool DotcurActive);
     void AddDirectory(std::mutex &loadMutex, SongLoader *Loader, std::filesystem::path Dir, bool VSRGActive, bool DotcurActive);
