@@ -124,14 +124,14 @@ namespace Game {
 
 				if (BindingsManager::TranslateKey7K(key) != KT_Unknown) {
 					for (auto &player: Players)
-						player->TranslateKey(BindingsManager::TranslateKey7K(key), true, Time.Stream);
+						player->TranslateKey(BindingsManager::TranslateKey7K(key), true, Time.Stream + JudgeOffset);
 				}
 			}
 			else
 			{
 				if (BindingsManager::TranslateKey7K(key) != KT_Unknown) {
 					for (auto &player: Players)
-						player->TranslateKey(BindingsManager::TranslateKey7K(key), false, Time.Stream);
+						player->TranslateKey(BindingsManager::TranslateKey7K(key), false, Time.Stream + JudgeOffset);
 				}
 			}
 

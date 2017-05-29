@@ -16,7 +16,7 @@ namespace Game {
 			luabridge::getGlobalNamespace(L)
 				.beginClass <ScoreKeeper>("ScoreKeeper")
 				.addProperty("MaxAccuracy", &ScoreKeeper::getAccMax)
-				.addProperty("EarlyMissCutoffMS", &ScoreKeeper::getEarlyMissCutoff)
+				.addProperty("EarlyMissCutoffMS", &ScoreKeeper::getEarlyMissCutoffMS)
 				.addProperty("UsesW0", &ScoreKeeper::usesW0)
 				.addProperty("MissCutoffMS", &ScoreKeeper::getMissCutoffMS)
 				.addProperty("Rank", &ScoreKeeper::getRank)

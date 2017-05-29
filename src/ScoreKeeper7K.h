@@ -52,7 +52,7 @@ namespace Game {
 
 			double getJudgmentWindow(int judgment);
 			double getMissCutoffMS() const;
-			double getEarlyMissCutoff() const;
+			double getEarlyMissCutoffMS() const;
 			double getJudgmentCutoff();
 
 			int getScore(int score_type);
@@ -97,7 +97,7 @@ namespace Game {
 			double hit_variance;
 
 			// o2jam-specific variable
-			bool use_bbased;
+			bool use_o2jam;
 
 			/*
 				Standard scoring.
@@ -269,4 +269,7 @@ namespace Game {
 		void SetupScorekeeperLuaInterface(void* state);
 		void SetScorekeeperInstance(void* state, ScoreKeeper *Instance);
 	}
+
+	
+	const double O2_WINDOW = 0.664;
 }

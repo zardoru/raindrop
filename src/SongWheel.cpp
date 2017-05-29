@@ -370,7 +370,6 @@ void SongWheel::Update(float Delta)
     if (OldCursorPos != CursorPos)
     {
         OldCursorPos = CursorPos;
-        DifficultyIndex = 0;
         if (OnItemHover)
         {
             std::shared_ptr<Game::Song> Notify = GetSelectedSong();

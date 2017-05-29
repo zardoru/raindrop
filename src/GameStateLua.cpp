@@ -172,6 +172,7 @@ void GameState::InitializeLua(lua_State *L)
 		.addData("Random", &Parameters::Random)
 		.addData("GaugeType", &Parameters::GaugeType)
 		.addData("SystemType", &Parameters::SystemType)
+		.addData("GreenNumber", &Parameters::GreenNumber)
 		.endClass();
 
 	luabridge::getGlobalNamespace(L)

@@ -308,7 +308,7 @@ SceneEnvironment::~SceneEnvironment()
     ManagedFonts.clear();
 
 	if (RocketContext) {
-		lua_gc(Rocket::Core::Lua::Interpreter::GetLuaState(), LUA_GCCOLLECT, 0);
+		// lua_gc(Rocket::Core::Lua::Interpreter::GetLuaState(), LUA_GCCOLLECT, 0);
 
 		/*if (Doc && Doc->GetReferenceCount()) {
 			Doc->RemoveReference();

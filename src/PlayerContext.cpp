@@ -784,14 +784,51 @@ namespace Game {
 
 			DesiredDefaultSpeed /= Parameters.Rate;
 
+			
+
 			if (DesiredDefaultSpeed)
 			{
 				if (Type == SPEEDTYPE_CMOD) // cmod
 				{
 					Parameters.SpeedMultiplier = 1;
-					ChartData = VSRG::GameChartData::FromDifficulty(CurrentDiff.get(), Drift, DesiredDefaultSpeed);
+
+					double spd = Parameters.GreenNumber ? 1000 : DesiredDefaultSpeed;
+
+					ChartData = VSRG::GameChartData::FromDifficulty(CurrentDiff.get(), Drift, spd);
 				} else
 					ChartData = VSRG::GameChartData::FromDifficulty(CurrentDiff.get(), Drift);
+
+				// if GN is true, Default Speed = GN!
+				// Convert GN to speed.
+				if (Parameters.GreenNumber) {
+					double first_height = std::numeric_limits<float>::infinity();
+					double first_time = std::numeric_limits<float>::infinity();
+					for (int i = 0; i < MAX_CHANNELS; i++) {
+						if (ChartData.NotesByChannel[i].size() > 0) {
+							auto v = ChartData.NotesByChannel[i][0].GetVertical();
+							auto t = ChartData.NotesByChannel[i][0].GetStartTime();
+							if (v < first_height) {
+								first_height = v;
+								first_time = t;
+							}
+						}
+					}
+
+					// v0 is normal speed
+					// (green number speed * green number time) / (normal speed * normal time)
+					// equals
+					// playfield distance / note distance
+					
+					/*auto v0 = ChartData.VSpeeds[0].Value;
+					auto hratio = MeasureBaseSpacing / first_height;
+					double new_speed = hratio * v0 * first_time / (DesiredDefaultSpeed / 1000);*/
+					double new_speed = MeasureBaseSpacing / (DesiredDefaultSpeed / 1000);
+					DesiredDefaultSpeed = new_speed;
+
+					if (Type == SPEEDTYPE_CMOD) {
+						Parameters.SpeedMultiplier = DesiredDefaultSpeed / 1000;
+					}
+				}
 
 				if (Type == SPEEDTYPE_MMOD) // mmod
 				{

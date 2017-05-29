@@ -62,11 +62,12 @@ namespace Game {
 
 			// std::cerr << use_bbased << " " << ms << " ";
 
-			if (use_bbased)
+			if (use_o2jam)
 			{
-				if (abs(ms * 150) < 128)
+				auto dist = ms / O2_WINDOW * 128;
+				if (abs(dist) < 128)
 				{
-					++histogram[static_cast<int>(round(ms * 150)) + 127];
+					++histogram[static_cast<int>(round(dist)) + 127];
 				}
 			}
 			else
@@ -81,13 +82,13 @@ namespace Game {
 
 			// combo
 
-			double jt;
-			if (use_bbased)
-				jt = judgment_time[SKJ_W2];
+			double combo_leniency;
+			if (use_o2jam)
+				combo_leniency = judgment_time[SKJ_W2];
 			else
-				jt = judgment_time[SKJ_W3];
+				combo_leniency = judgment_time[SKJ_W3]; // GOODs/GREATs or less
 
-			if (ms <= jt)
+			if (ms <= combo_leniency)
 			{
 				++notes_hit;
 				++combo;
@@ -101,8 +102,8 @@ namespace Game {
 
 			// accuracy score
 
-			if (use_bbased)
-				total_sqdev += ms * ms * 22500;
+			if (use_o2jam)
+				total_sqdev += ms * ms / pow(O2_WINDOW, 2);
 			else
 				total_sqdev += ms * ms;
 
@@ -112,13 +113,13 @@ namespace Game {
 
 			ScoreKeeperJudgment judgment = SKJ_NONE;
 
-			for (int i = (use_w0 ? 0 : 1); i < (use_bbased ? 4 : 6); i++)
+			for (int i = (use_w0 ? 0 : 1); i < (use_o2jam ? 4 : 6); i++)
 			{
 				if (ms <= judgment_time[i])
 				{
 					judgment = ScoreKeeperJudgment(i);
 
-					if (!use_bbased)
+					if (!use_o2jam)
 						judgment_amt[judgment]++;
 					else
 					{
@@ -252,14 +253,11 @@ namespace Game {
 
 		double ScoreKeeper::getJudgmentCutoff() {
 			auto rt = 0.0;
-			for (int i = 0; i <= SKJ_MISS; i++)
-				rt = std::max(judgment_time[i], rt);
-
 			rt = std::max(std::max(miss_threshold, rt), earlymiss_threshold);
 			return rt;
 		}
 
-		double ScoreKeeper::getEarlyMissCutoff() const
+		double ScoreKeeper::getEarlyMissCutoffMS() const
 		{
 			return earlymiss_threshold;
 		}

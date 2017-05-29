@@ -311,12 +311,15 @@ namespace Game {
 			// Game System Type (VSRG only)
 			int32_t SystemType;
 
+			bool GreenNumber;
+
 			Parameters() {
 				Upscroll = false;
 				Wave = false;
 				Preloaded = false;
 				Auto = false;
 				NoFail = false;
+				GreenNumber = false;
 				HiddenMode = HM_NONE;
 				StartMeasure = -1;
 				Random = 0;

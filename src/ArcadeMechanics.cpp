@@ -105,7 +105,7 @@ namespace Game {
 		{
 			if (!Note->IsEnabled()) return false;
 
-			double miss_time = score_keeper->getMissCutoffMS();
+			double miss_time = score_keeper->getJudgmentWindow(SKJ_W3);
 			double dev = (SongTime - Note->GetStartTime()) * 1000.;
 			double tail_dev = (SongTime - Note->GetEndTime()) * 1000.;
 			
