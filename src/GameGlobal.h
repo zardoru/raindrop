@@ -147,7 +147,7 @@ namespace Game {
 
 		enum ChartType
 		{
-			// Autodecide - Not a value for anything other than Parameters!
+			// Autodecide - Not a value for anything other than PlayscreenParameters!
 			TI_NONE = 0,
 			TI_BMS = 1,
 			TI_OSUMANIA = 2,
@@ -225,7 +225,7 @@ namespace Game {
 
 		enum LifeType {
 
-			LT_AUTO = 0, // Only for Parameters
+			LT_AUTO = 0, // Only for PlayscreenParameters
 			// actual groove type should be set by playing field from chart
 
 			LT_GROOVE = 1, // Beatmania default lifebar
@@ -274,7 +274,7 @@ namespace Game {
 			PMT_F = 35,
 		};
 
-		struct Parameters {
+		struct PlayscreenParameters {
 			// If true, use upscroll (VSRG only)
 			int Upscroll;
 
@@ -311,15 +311,21 @@ namespace Game {
 			// Game System Type (VSRG only)
 			int32_t SystemType;
 
+			// Whether to interpret desired speed
+			// as green number
 			bool GreenNumber;
 
-			Parameters() {
+			// Whether to enable the use of strictest timing
+			bool UseW0;
+
+			PlayscreenParameters() {
 				Upscroll = false;
 				Wave = false;
 				Preloaded = false;
 				Auto = false;
 				NoFail = false;
 				GreenNumber = false;
+				UseW0 = false;
 				HiddenMode = HM_NONE;
 				StartMeasure = -1;
 				Random = 0;

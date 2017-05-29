@@ -193,7 +193,7 @@ namespace Game {
 				judgment_time[i] = JudgmentValues[i];
 		}
 
-		void ScoreKeeper::set_manual_w0(bool on) { use_w0 = on; } // make a config option
+		void ScoreKeeper::setUseW0(bool on) { use_w0 = on; } // make a config option
 
 		ScoreKeeper::ScoreKeeper()
 		{

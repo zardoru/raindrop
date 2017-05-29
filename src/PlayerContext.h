@@ -49,7 +49,7 @@ namespace Game {
 			double Drift;
 			bool JudgeNotes;
 
-			Parameters Parameters;
+			PlayscreenParameters Parameters;
 
 			struct SHiddenData {
 				EHiddenMode		 Mode;
@@ -91,7 +91,7 @@ namespace Game {
 			void RunAuto(TrackNote *m, double usedTime, uint32_t k);
 			void UpdateHidden(float AdjustmentSize, float FlashlightRatio);
 		public:
-			PlayerContext(int pn, Game::VSRG::Parameters par = Game::VSRG::Parameters());
+			PlayerContext(int pn, Game::VSRG::PlayscreenParameters par = Game::VSRG::PlayscreenParameters());
 			void Init();
 			void Validate();
 			void Update(double songTime);

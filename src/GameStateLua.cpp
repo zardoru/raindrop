@@ -79,7 +79,7 @@ Game::dotcur::Song* toSongDC(Game::Song* Sng)
         return nullptr;
 }
 
-Game::VSRG::Parameters* GameState::GetParameters(int pn)
+Game::VSRG::PlayscreenParameters* GameState::GetParameters(int pn)
 {
 	if (PlayerNumberInBounds(pn))
 		return &PlayerInfo[pn].Params;
@@ -162,17 +162,18 @@ void GameState::InitializeLua(lua_State *L)
 
 	using namespace Game::VSRG;
 	luabridge::getGlobalNamespace(L)
-		.beginClass <Parameters>("Parameters")
-		.addData("Upscroll", &Parameters::Upscroll)
-		.addData("Wave", &Parameters::Wave)
-		.addData("NoFail", &Parameters::NoFail)
-		.addData("Autoplay", &Parameters::Auto)
-		.addData("HiddenMode", &Parameters::HiddenMode)
-		.addData("Rate", &Parameters::Rate)
-		.addData("Random", &Parameters::Random)
-		.addData("GaugeType", &Parameters::GaugeType)
-		.addData("SystemType", &Parameters::SystemType)
-		.addData("GreenNumber", &Parameters::GreenNumber)
+		.beginClass <PlayscreenParameters>("PlayscreenParameters")
+		.addData("Upscroll", &PlayscreenParameters::Upscroll)
+		.addData("Wave", &PlayscreenParameters::Wave)
+		.addData("NoFail", &PlayscreenParameters::NoFail)
+		.addData("Autoplay", &PlayscreenParameters::Auto)
+		.addData("HiddenMode", &PlayscreenParameters::HiddenMode)
+		.addData("Rate", &PlayscreenParameters::Rate)
+		.addData("Random", &PlayscreenParameters::Random)
+		.addData("GaugeType", &PlayscreenParameters::GaugeType)
+		.addData("SystemType", &PlayscreenParameters::SystemType)
+		.addData("GreenNumber", &PlayscreenParameters::GreenNumber)
+		.addData("UseW0", &PlayscreenParameters::UseW0)
 		.endClass();
 
 	luabridge::getGlobalNamespace(L)

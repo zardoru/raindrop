@@ -18,7 +18,7 @@ namespace Game
 
 	namespace VSRG
 	{
-		struct Parameters;
+		struct PlayscreenParameters;
 		struct Difficulty;
 		class Song;
 		class ScoreKeeper;
@@ -35,7 +35,7 @@ namespace Game
 
 		struct SPlayerCurrent7K {
 			std::shared_ptr<VSRG::ScoreKeeper> SKeeper7K;
-			VSRG::Parameters Params;
+			VSRG::PlayscreenParameters Params;
 			std::shared_ptr<VSRG::Difficulty> Diff;
 
 			int CurrentGaugeType;
@@ -112,7 +112,7 @@ namespace Game
         VSRG::ScoreKeeper* GetScorekeeper7K(int pn);
         void SetScorekeeper7K(std::shared_ptr<VSRG::ScoreKeeper> Other, int pn);
 
-        VSRG::Parameters* GetParameters(int pn);
+        VSRG::PlayscreenParameters* GetParameters(int pn);
 		VSRG::Difficulty* GetDifficulty(int pn);
 		std::shared_ptr<VSRG::Difficulty> GetDifficultyShared(int pn);
 		void SetDifficulty(std::shared_ptr<VSRG::Difficulty> df, int pn);

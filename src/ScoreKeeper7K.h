@@ -78,7 +78,7 @@ namespace Game {
 			uint8_t getPills() const;
 			int getCoolCombo() const;
 
-			void set_manual_w0(bool);
+			void setUseW0(bool);
 			bool usesW0() const;
 			bool usesO2() const;
 

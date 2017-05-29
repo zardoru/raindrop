@@ -259,7 +259,7 @@ void Application::SetupPreviewMode()
 	song->SongDirectory = std::filesystem::absolute(InFile.parent_path());
 
 	/*
-    Game::VSRG::Parameters param;
+    Game::VSRG::PlayscreenParameters param;
 
     param.Upscroll = Upscroll;
     param.StartMeasure = Measure;

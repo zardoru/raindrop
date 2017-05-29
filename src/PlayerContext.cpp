@@ -15,7 +15,7 @@ CfgVar DebugNoteRendering("NoteRender", "Debug");
 
 namespace Game {
 	namespace VSRG {
-		PlayerContext::PlayerContext(int pn, Game::VSRG::Parameters p) : PlayerNoteskin(this)
+		PlayerContext::PlayerContext(int pn, Game::VSRG::PlayscreenParameters p) : PlayerNoteskin(this)
 		{
 			PlayerNumber = pn;
 			Drift = 0;
@@ -68,6 +68,8 @@ namespace Game {
 
 			// This must be done before setLifeTotal in order for it to work.
 			PlayerScoreKeeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
+
+			PlayerScoreKeeper->setUseW0(Parameters.UseW0);
 
 			// JudgeScale, Stepmania and OD can't be run together - only one can be set.
 			auto TimingInfo = CurrentDiff->Data->TimingInfo.get();
