@@ -261,6 +261,7 @@ namespace Game {
 			~Song();
 
 			VSRG::Difficulty* GetDifficulty(uint32_t i);
+			uint8_t GetDifficultyCount() override;
 		};
 
 	}

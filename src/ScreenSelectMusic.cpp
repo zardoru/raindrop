@@ -213,6 +213,8 @@ void ScreenSelectMusic::OnSongSelect(std::shared_ptr<Game::Song> MySong, uint8_t
     if (IsTransitioning)
         return;
 
+	if (difindex > MySong->GetDifficultyCount()) return;
+
     if (PreviewStream) PreviewStream->Stop();
 
     IsTransitioning = true;

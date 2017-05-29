@@ -30,7 +30,10 @@ Difficulty* Song::GetDifficulty(uint32_t i)
         return Difficulties.at(i).get();
 }
 
-
+uint8_t Song::GetDifficultyCount()
+{
+	return Difficulties.size();
+}
 
 void Difficulty::Destroy()
 {

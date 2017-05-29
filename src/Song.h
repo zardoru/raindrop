@@ -155,6 +155,8 @@ namespace Game
         // Song genre
         std::string Genre;
 
+		virtual uint8_t GetDifficultyCount() { return 0; };
+
         Song() { ID = -1; PreviewTime = 0; };
         virtual ~Song() {};
     };
