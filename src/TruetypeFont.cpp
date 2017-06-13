@@ -12,6 +12,7 @@ public:
 	struct FontData {
 		std::shared_ptr<std::vector<unsigned char>> data;
 		std::shared_ptr<stbtt_fontinfo> info;
+		std::shared_ptr<std::map<int, TruetypeFont::codepdata> > texels;
 	};
 
 private:
@@ -19,7 +20,10 @@ private:
 
 public:
 	static void Load(std::filesystem::path Filename, 
-		std::shared_ptr<std::vector<unsigned char>>& data, std::shared_ptr<stbtt_fontinfo>& info, bool &IsValid) {
+		std::shared_ptr<std::vector<unsigned char>>& data, 
+		std::shared_ptr<stbtt_fontinfo>& info, 
+		std::shared_ptr<std::map<int, TruetypeFont::codepdata> > &Texels,
+		bool &IsValid) {
 
 		// accelerate loading if font is on registers
 		if (font_data.find(Filename) != font_data.end())
@@ -27,6 +31,7 @@ public:
 			auto &fnt = font_data[Filename];
 			info = fnt.info;
 			data = fnt.data;
+			Texels = fnt.texels;
 			IsValid = true;
 			return;
 		}
@@ -35,6 +40,7 @@ public:
 
 		info = nullptr;
 		data = nullptr;
+		Texels = nullptr;
 
 		if (!ifs.is_open())
 		{
@@ -50,7 +56,7 @@ public:
 
 		data = std::make_shared<std::vector<unsigned char>>(offs);
 		info = std::make_shared<stbtt_fontinfo>();
-
+		Texels = std::make_shared<std::map<int, TruetypeFont::codepdata>>();
 		// read data
 		ifs.read((char*)data.get()->data(), offs);
 
@@ -62,7 +68,8 @@ public:
 		if (IsValid) {
 			font_data[Filename] = {
 				data,
-				info
+				info,
+				Texels
 			};
 		}
 		else {
@@ -75,7 +82,7 @@ std::map < std::filesystem::path, TTFMan::FontData > TTFMan::font_data;
 
 TruetypeFont::TruetypeFont(std::filesystem::path Filename)
 {
-	TTFMan::Load(Filename, this->data, this->info, IsValid);
+	TTFMan::Load(Filename, this->data, this->info, this->Texes, IsValid);
 	
     if (IsValid)
     {
@@ -89,13 +96,13 @@ TruetypeFont::TruetypeFont(std::filesystem::path Filename)
 TruetypeFont::~TruetypeFont()
 {
     WindowFrame.RemoveTTF(this);
-    ReleaseTextures();
+    // ReleaseTextures();
 }
 
 void TruetypeFont::Invalidate()
 {
-    for (std::map <int, codepdata>::iterator i = Texes.begin();
-    i != Texes.end();
+    for (std::map <int, codepdata>::iterator i = Texes->begin();
+    i != Texes->end();
         i++)
     {
         i->second.gltx = 0;
@@ -105,7 +112,7 @@ void TruetypeFont::Invalidate()
 
 TruetypeFont::codepdata &TruetypeFont::GetTexFromCodepoint(int cp)
 {
-    if (Texes.find(cp) == Texes.end())
+    if (Texes->find(cp) == Texes->end())
     {
         codepdata newcp;
         int w, h, xofs, yofs;
@@ -140,12 +147,12 @@ TruetypeFont::codepdata &TruetypeFont::GetTexFromCodepoint(int cp)
         else
             memset(&newcp, 0, sizeof(codepdata));
 
-        Texes[cp] = newcp;
-        return Texes[cp];
+		Texes->insert_or_assign(cp, newcp);
+        return Texes->at(cp);
     }
     else
     {
-        return Texes[cp];
+        return Texes->at(cp);
     }
 }
 

@@ -417,11 +417,11 @@ void Sprite::Cleanup()
 
 void TruetypeFont::ReleaseCodepoint(int cp)
 {
-    if (Texes.find(cp) != Texes.end())
+    if (Texes->find(cp) != Texes->end())
     {
-        free(Texes[cp].tex);
-        glDeleteTextures(1, &Texes[cp].gltx);
-        Texes.erase(cp);
+        free(Texes->at(cp).tex);
+        glDeleteTextures(1, &Texes->at(cp).gltx);
+        Texes->erase(cp);
     }
 }
 
@@ -519,14 +519,18 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
 
 void TruetypeFont::ReleaseTextures()
 {
-    for (auto i = Texes.begin();
-    i != Texes.end();
+    for (auto i = Texes->begin();
+    i != Texes->end();
         ++i)
     {
-        if (i->second.tex)
-            free(i->second.tex);
-        if (i->second.gltx)
-            glDeleteTextures(1, &i->second.gltx);
+		if (i->second.tex) {
+			free(i->second.tex);
+			i->second.tex = 0;
+		}
+		if (i->second.gltx) {
+			glDeleteTextures(1, &i->second.gltx);
+			i->second.gltx = 0;
+		}
     }
 }
 

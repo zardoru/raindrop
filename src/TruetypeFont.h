@@ -24,11 +24,12 @@ class TruetypeFont : public Font
     };
 
     std::string filename;
-    std::map<int, codepdata> Texes;
+    std::shared_ptr<std::map<int, codepdata> > Texes;
     codepdata& GetTexFromCodepoint(int cp);
     void ReleaseCodepoint(int cp);
     void ReleaseTextures();
 
+	friend class TTFMan;
 public:
     TruetypeFont(std::filesystem::path filename);
     ~TruetypeFont();
