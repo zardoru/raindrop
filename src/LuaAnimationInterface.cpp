@@ -398,7 +398,7 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
         .addFunction("GetLength", &Font::GetHorizontalLength)
         .endClass()
         .deriveClass <TruetypeFont, Font>("TruetypeFont")
-        .addConstructor <void(*) (std::string, float)>()
+        .addConstructor <void(*) (std::string)>()
         .endClass()
         .deriveClass <BitmapFont, Font>("BitmapFont")
         .addConstructor<void(*)()>()
@@ -411,6 +411,8 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
         .addConstructor <void(*) ()>()
         .addProperty("Font", &GraphicalString::GetFont, &GraphicalString::SetFont)
         .addProperty("Text", &GraphicalString::GetText, &GraphicalString::SetText)
+		.addProperty("FontSize", &GraphicalString::GetFontSize, &GraphicalString::SetFontSize)
+		.addProperty("TextSize", &GraphicalString::GetTextSize)
         .endClass();
 }
 

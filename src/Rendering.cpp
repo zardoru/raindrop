@@ -425,17 +425,15 @@ void TruetypeFont::ReleaseCodepoint(int cp)
     }
 }
 
-void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat4 &Transform)
+void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat4 &Transform, const Vec2 &Scale)
 {
     const char* Text = In.c_str();
     int Line = 0;
 	size_t len = In.length();
-    glm::vec3 vOffs(Position.x, Position.y + scale, 0);
+    glm::vec3 vOffs(Position.x, Position.y + Scale.y * SDF_SIZE, 0);
 
     if (!IsValid)
         return;
-
-    UpdateWindowScale();
 
 	Renderer::DefaultShader::Bind();
     Renderer::SetBlendingMode(BLEND_ALPHA);
@@ -450,21 +448,20 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
         utf8::iterator<const char*> itend(nd, Text, nd);
         for (; it != itend; ++it)
         {
-            CheckCodepoint(*it); // Force a regeneration of this if necessary
             codepdata &cp = GetTexFromCodepoint(*it);
             unsigned char* tx = cp.tex;
-            glm::vec3 trans = vOffs + glm::vec3(cp.xofs, cp.yofs, 0);
+            glm::vec3 trans = vOffs + glm::vec3(cp.xofs * Scale.x, cp.yofs * Scale.y, 0);
             glm::mat4 dx;
 
             if (*it == 10) // utf-32 line feed
             {
                 Line++;
                 vOffs.x = Position.x;
-                vOffs.y = Position.y + scale * (Line + 1);
+				vOffs.y = Position.y + (Line + 1) * Scale.y * SDF_SIZE;
                 continue;
             }
 
-            dx = Transform * glm::translate(Mat4(), trans) * glm::scale(Mat4(), glm::vec3(cp.w, cp.h, 1));
+            dx = Transform * glm::translate(Mat4(), trans) * glm::scale(Mat4(), glm::vec3(cp.w * Scale.x, cp.h * Scale.y, 1));
 
             // do the actual draw?
             if (cp.gltx == 0)
@@ -479,10 +476,11 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				// SDF texture => filtering
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, cp.tw, cp.th, 0, GL_ALPHA, GL_UNSIGNED_BYTE, tx);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, cp.w, cp.h, 0, GL_ALPHA, GL_UNSIGNED_BYTE, tx);
             }
             else
                 glBindTexture(GL_TEXTURE_2D, cp.gltx);
@@ -498,7 +496,7 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
                 float aW = stbtt_GetCodepointKernAdvance(info.get(), *it, *next);
                 int bW;
                 stbtt_GetCodepointHMetrics(info.get(), *it, &bW, NULL);
-                vOffs.x += aW * virtualscale + bW * virtualscale;
+                vOffs.x += (aW * realscale + bW * realscale * Scale.x);
             }
         }
     }
@@ -586,7 +584,7 @@ void Line::Render()
     glEnable(GL_DEPTH_TEST);
 }
 
-void BitmapFont::Render(const std::string &In, const Vec2 &Position, const Mat4 &Transform)
+void BitmapFont::Render(const std::string &In, const Vec2 &Position, const Mat4 &Transform, const Vec2 &Scale)
 {
     const char* Text = In.c_str();
     int32_t Character = 0, Line = 0;

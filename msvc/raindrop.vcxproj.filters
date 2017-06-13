@@ -247,6 +247,9 @@
     <ClCompile Include="..\src\ScreenVideoTest.cpp">
       <Filter>Source Files\game global\screens</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\SDF.cpp">
+      <Filter>Source Files\backend\render\fonts</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\pch.h">
@@ -440,6 +443,9 @@
     </ClInclude>
     <ClInclude Include="..\src\ScreenVideoTest.h">
       <Filter>Header Files\game global</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SDF.h">
+      <Filter>Header Files\backend\render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

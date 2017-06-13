@@ -5,6 +5,8 @@
 
 #include "Logging.h"
 
+#include "SDF.h"
+
 class TTFMan {
 public:
 	struct FontData {
@@ -71,17 +73,13 @@ public:
 
 std::map < std::filesystem::path, TTFMan::FontData > TTFMan::font_data;
 
-TruetypeFont::TruetypeFont(std::filesystem::path Filename, float Scale)
+TruetypeFont::TruetypeFont(std::filesystem::path Filename)
 {
 	TTFMan::Load(Filename, this->data, this->info, IsValid);
-
-	scale = Scale;
-	windowscale = 0;
-
+	
     if (IsValid)
     {
-        UpdateWindowScale();
-
+		realscale = stbtt_ScaleForPixelHeight(info.get(), SDF_SIZE);
         WindowFrame.AddTTF(this);
     }
     else
@@ -94,22 +92,6 @@ TruetypeFont::~TruetypeFont()
     ReleaseTextures();
 }
 
-void TruetypeFont::UpdateWindowScale()
-{
-    if (windowscale == WindowFrame.GetWindowVScale())
-        return;
-
-    float oldscale = windowscale;
-    windowscale = WindowFrame.GetWindowVScale();
-
-    float oldrealscale = realscale;
-    realscale = stbtt_ScaleForPixelHeight(info.get(), scale * windowscale);
-    virtualscale = stbtt_ScaleForPixelHeight(info.get(), scale);
-#ifdef VERBOSE_DEBUG
-    wprintf(L"change scale %f -> %f, realscale %f -> %f\n", oldscale, windowscale, oldrealscale, realscale);
-#endif
-}
-
 void TruetypeFont::Invalidate()
 {
     for (std::map <int, codepdata>::iterator i = Texes.begin();
@@ -120,19 +102,6 @@ void TruetypeFont::Invalidate()
     }
 }
 
-void TruetypeFont::CheckCodepoint(int cp)
-{
-    if (Texes.find(cp) != Texes.end())
-    {
-        if (Texes[cp].scl != windowscale)
-        {
-#ifdef VERBOSE_DEBUG
-            wprintf(L"releasing %d\n", cp);
-#endif
-            ReleaseCodepoint(cp); // force regeneration if scale changed
-        }
-    }
-}
 
 TruetypeFont::codepdata &TruetypeFont::GetTexFromCodepoint(int cp)
 {
@@ -145,20 +114,28 @@ TruetypeFont::codepdata &TruetypeFont::GetTexFromCodepoint(int cp)
 #endif
         if (IsValid)
         {
-            newcp.tex = stbtt_GetCodepointBitmap(info.get(), 0, realscale, cp, &w, &h, &xofs, &yofs);
-            newcp.gltx = 0;
-            newcp.scl = WindowFrame.GetWindowVScale();
-            newcp.tw = w;
-            newcp.th = h;
+			unsigned char* nonsdf = stbtt_GetCodepointBitmap(info.get(), 0, realscale, cp, &w, &h, &xofs, &yofs);
+			if (nonsdf) {
+				unsigned char* sdf = new unsigned char[w * h];
 
-            // get size etc.. for how it'd be if the screen weren't resized
-            void * tx = stbtt_GetCodepointBitmap(info.get(), 0, virtualscale, cp, &w, &h, &xofs, &yofs);
-            newcp.xofs = xofs;
+				// convert our non-sdf texture to a SDF texture
+				ConvertToSDF(sdf, nonsdf, w, h);
+
+				// free our non-sdf
+				free(nonsdf);
+
+				// use our SDF texture. alpha testing is up by default
+				newcp.tex = sdf;
+			}
+			else
+				newcp.tex = NULL;
+
+            newcp.gltx = 0;
+			newcp.xofs = xofs;
             newcp.yofs = yofs;
             newcp.w = w;
             newcp.h = h;
 
-            free(tx);
         }
         else
             memset(&newcp, 0, sizeof(codepdata));
@@ -186,7 +163,6 @@ float TruetypeFont::GetHorizontalLength(const char *In)
         utf8::iterator<const char*> itend(Text + len, Text, Text + len);
         for (; it != itend; ++it)
         {
-            CheckCodepoint(*it); // Force a regeneration of this if necessary
             codepdata &cp = GetTexFromCodepoint(*it);
 
             auto it_nx = it;
@@ -196,7 +172,7 @@ float TruetypeFont::GetHorizontalLength(const char *In)
                 float aW = stbtt_GetCodepointKernAdvance(info.get(), *it, *it_nx);
                 int bW;
                 stbtt_GetCodepointHMetrics(info.get(), *it, &bW, NULL);
-                Out += aW * virtualscale + bW * virtualscale;
+                Out += aW * realscale + bW * realscale;
             }
             else
                 Out += cp.w;

@@ -47,7 +47,7 @@ void ScreenMainMenu::Init()
     ChangeState(StateIntro);
 
     if (!TTFO)
-        TTFO = new TruetypeFont(GameState::GetInstance().GetSkinFile("font.ttf"), 16);
+        TTFO = new TruetypeFont(GameState::GetInstance().GetSkinFile("font.ttf"));
 }
 
 bool ScreenMainMenu::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
@@ -68,9 +68,12 @@ bool ScreenMainMenu::Run(double Delta)
     if (RunNested(Delta))
         return true;
 
-    TTFO->Render(std::string("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop"), Vec2(0, 0), glm::translate(Mat4(), Vec3(0, 0, 30)));
+    
     Animations->DrawTargets(Delta);
 
+	float f = 16 / SDF_SIZE;
+	TTFO->Render(std::string("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop"), 
+		Vec2(0, 0), Mat4(), Vec2(f, f));
     return Running;
 }
 

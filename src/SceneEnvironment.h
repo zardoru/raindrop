@@ -88,7 +88,7 @@ public:
     void RemoveTarget(Drawable2D *Targ);
     void DrawTargets(double TimeDelta);
 
-    TruetypeFont* CreateTTF(const char* Dir, float Size);
+    TruetypeFont* CreateTTF(const char* Dir);
 
     void Sort();
 
