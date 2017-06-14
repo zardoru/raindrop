@@ -7,6 +7,7 @@ class GraphicalString : public Sprite
     std::string mText;
     Font* mFont;
 	float mFontHeight;
+	float mKernScale;
 public:
     GraphicalString();
     void SetText(std::string _Text);
@@ -14,6 +15,8 @@ public:
     void SetFont(Font* _Font);
     Font* GetFont() const;
 
+	float GetKerningScale() const;
+	void SetKerningScale(float ks);
 	float GetTextSize() const;
 	void SetFontSize(float fsize);
 	float GetFontSize() const;

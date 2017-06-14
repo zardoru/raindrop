@@ -124,7 +124,7 @@ void ConvertToSDF(unsigned char* out, unsigned char* tex, int w, int h) {
 	for (int y = 0; y < h; y++) {
 		for (int x = 0; x < w; x++) {
 			int idx = y * w + x;
-			if (tex[idx] < 128) {
+			if (tex[idx] < 64) {
 				g1.Put(x, y, { 0, 0 });
 				g2.Put(x, y, { INF, INF });
 			}

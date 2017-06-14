@@ -406,13 +406,14 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
         .addFunction("LoadBitmapFont", LoadBmFont)
         .endNamespace();
 
-    luabridge::getGlobalNamespace(AnimLua->GetState())
-        .deriveClass<GraphicalString, Sprite>("StringObject2D")
-        .addConstructor <void(*) ()>()
-        .addProperty("Font", &GraphicalString::GetFont, &GraphicalString::SetFont)
-        .addProperty("Text", &GraphicalString::GetText, &GraphicalString::SetText)
+	luabridge::getGlobalNamespace(AnimLua->GetState())
+		.deriveClass<GraphicalString, Sprite>("StringObject2D")
+		.addConstructor <void(*) ()>()
+		.addProperty("Font", &GraphicalString::GetFont, &GraphicalString::SetFont)
+		.addProperty("Text", &GraphicalString::GetText, &GraphicalString::SetText)
 		.addProperty("FontSize", &GraphicalString::GetFontSize, &GraphicalString::SetFontSize)
 		.addProperty("TextSize", &GraphicalString::GetTextSize)
+		.addProperty("KernScale", &GraphicalString::GetKerningScale, &GraphicalString::SetKerningScale)
         .endClass();
 }
 

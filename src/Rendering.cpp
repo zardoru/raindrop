@@ -430,7 +430,7 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
     const char* Text = In.c_str();
     int Line = 0;
 	size_t len = In.length();
-    glm::vec3 vOffs(Position.x, Position.y + Scale.y * SDF_SIZE, 0);
+    glm::vec3 vOffs(Position.x, Position.y + Scale.y, 0);
 
     if (!IsValid)
         return;
@@ -450,18 +450,20 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
         {
             codepdata &cp = GetTexFromCodepoint(*it);
             unsigned char* tx = cp.tex;
-            glm::vec3 trans = vOffs + glm::vec3(cp.xofs * Scale.x, cp.yofs * Scale.y, 0);
+            glm::vec3 trans = vOffs + glm::vec3(cp.xofs * 
+				Scale.x * Scale.y / SDF_SIZE, cp.yofs * Scale.y / SDF_SIZE, 0);
             glm::mat4 dx;
 
             if (*it == 10) // utf-32 line feed
             {
                 Line++;
                 vOffs.x = Position.x;
-				vOffs.y = Position.y + (Line + 1) * Scale.y * SDF_SIZE;
+				vOffs.y = Position.y + (Line + 1) * Scale.y;
                 continue;
             }
 
-            dx = Transform * glm::translate(Mat4(), trans) * glm::scale(Mat4(), glm::vec3(cp.w * Scale.x, cp.h * Scale.y, 1));
+            dx = Transform * glm::translate(Mat4(), trans) * 
+				glm::scale(Mat4(), glm::vec3(cp.w * Scale.y / SDF_SIZE, cp.h * Scale.y / SDF_SIZE, 1));
 
             // do the actual draw?
             if (cp.gltx == 0)
@@ -496,7 +498,7 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
                 float aW = stbtt_GetCodepointKernAdvance(info.get(), *it, *next);
                 int bW;
                 stbtt_GetCodepointHMetrics(info.get(), *it, &bW, NULL);
-                vOffs.x += (aW * realscale + bW * realscale * Scale.x);
+                vOffs.x += (aW * realscale + bW * realscale) * Scale.x  * Scale.y / SDF_SIZE;
             }
         }
     }

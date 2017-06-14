@@ -181,7 +181,7 @@ namespace Game {
 				if (TimingInfo->GetType() == VSRG::TI_BMS) { // Only needs setup if it's a BMS file
 					auto Info = static_cast<VSRG::BMSChartInfo*> (TimingInfo);
 					if (Info->IsBMSON)
-						PlayerScoreKeeper->setLifeTotal(NAN, Info->GaugeTotal);
+						PlayerScoreKeeper->setLifeTotal(NAN, Info->GaugeTotal / 100.0);
 					else
 						PlayerScoreKeeper->setLifeTotal(Info->GaugeTotal);
 				}

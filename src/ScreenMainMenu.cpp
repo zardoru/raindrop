@@ -71,10 +71,10 @@ bool ScreenMainMenu::Run(double Delta)
     
     Animations->DrawTargets(Delta);
 
-	float f = 16 / SDF_SIZE;
+	float f = 16;
 	auto m = glm::translate(0.f, 0.f, 30.f);
 	TTFO->Render(std::string("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop"), 
-		Vec2(0, 0), m, Vec2(f, f));
+		Vec2(0, 0), m, Vec2(1, f));
     return Running;
 }
 
