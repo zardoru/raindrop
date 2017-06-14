@@ -224,7 +224,10 @@ void ScreenSelectMusic::OnSongSelect(std::shared_ptr<Game::Song> MySong, uint8_t
     StopLoops();
 
     GameState::GetInstance().SetSelectedSong(MySong);
-
+	if (MySong->Mode == MODE_VSRG) {
+		auto sng = std::static_pointer_cast<VSRG::Song>(MySong);
+		GameState::GetInstance().SetDifficulty(sng->Difficulties[difindex], 0);
+	}
     Animations->DoEvent("OnSelect", 1);
     TransitionTime = Animations->GetEnv()->GetFunctionResultF();
 

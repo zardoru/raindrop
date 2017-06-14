@@ -86,9 +86,9 @@ Game::VSRG::PlayscreenParameters* GameState::GetParameters(int pn)
 
 Game::VSRG::Difficulty * Game::GameState::GetDifficulty(int pn)
 {
-	if (PlayerNumberInBounds(pn) && PlayerInfo[pn].Diff)
+	/*if (PlayerNumberInBounds(pn) && PlayerInfo[pn].Diff)
 		return PlayerInfo[pn].Diff.get();
-	else {
+	else*/ {
 		if(GetSelectedSong() && GetSelectedSong()->Mode == MODE_VSRG)
 			return ((Game::VSRG::Song*)GetSelectedSong())->GetDifficulty(SongWheel::GetInstance().GetDifficulty());
 	}
