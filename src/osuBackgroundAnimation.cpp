@@ -11,6 +11,7 @@
 #include "Logging.h"
 
 const float OSB_WIDTH = 640;
+const float OSB_WIDTH_WIDE = 853;
 const float OSB_HEIGHT = 480;
 CfgVar OSBDebug("OSB", "Debug");
 

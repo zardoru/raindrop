@@ -384,6 +384,7 @@ std::string SongDatabase::GetGenreForDifficulty(int DiffID)
 	if (sqlite3_step(st_GetDiffGenre) == SQLITE_ROW)
 		out = (char*)sqlite3_column_text(st_GetDiffGenre, 0);
 
+	sqlite3_reset(st_GetDiffGenre);
 	return out;
 }
 

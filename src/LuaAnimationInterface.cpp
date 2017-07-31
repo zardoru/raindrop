@@ -166,7 +166,8 @@ struct O2DProxy
         return obj->GetRotation();
     }
 
-    static Transformation getChainTransformation(Sprite const* obj)
+	template <class T>
+    static Transformation getChainTransformation(T const* obj)
     {
         return Transformation();
     }
@@ -211,7 +212,8 @@ struct O2DProxy
         obj->SetPositionY(param);
     }
 
-    static void setChainTransformation(Sprite *obj, Transformation* param)
+	template <class T>
+    static void setChainTransformation(T *obj, Transformation* param)
     {
         obj->ChainTransformation(param);
     }
@@ -330,7 +332,7 @@ void DefineSpriteInterface(LuaManager* anim_lua)
         .q(Height)
         .q(X)
         .q(Y)
-        .q(ChainTransformation)
+        .addProperty("ChainTransformation", &O2DProxy::getChainTransformation<Sprite>, &O2DProxy::setChainTransformation<Sprite>)
         .addProperty("Texture", GetImage, SetImage) // Special for setting image.
         .endClass();
 }
@@ -414,6 +416,7 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 		.addProperty("FontSize", &GraphicalString::GetFontSize, &GraphicalString::SetFontSize)
 		.addProperty("TextSize", &GraphicalString::GetTextSize)
 		.addProperty("KernScale", &GraphicalString::GetKerningScale, &GraphicalString::SetKerningScale)
+		.addProperty("ChainTransformation", &O2DProxy::getChainTransformation<GraphicalString>, &O2DProxy::setChainTransformation<GraphicalString>)
         .endClass();
 }
 

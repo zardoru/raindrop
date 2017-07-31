@@ -73,6 +73,8 @@ class BMSBackground : public BackgroundAnimation
     Game::VSRG::Difficulty* Difficulty;
     bool Validated;
     bool BlackToTransparent;
+	int MaxWidth, MaxHeight;
+	bool IsBMSON;
 public:
     BMSBackground(Interruptible* parent, Game::VSRG::Difficulty* Difficulty, Game::VSRG::Song* Song) : BackgroundAnimation(parent), List(this)
     {
@@ -81,9 +83,12 @@ public:
         Validated = false;
         MissTime = 0;
 
+		MaxWidth = MaxHeight = 256;
+
         bool BtoT = false;
         if (Difficulty->Data->TimingInfo->GetType() == Game::VSRG::TI_BMS)
         {
+			IsBMSON = std::dynamic_pointer_cast<Game::VSRG::BMSChartInfo>(Difficulty->Data->TimingInfo)->IsBMSON;
             if (!std::dynamic_pointer_cast<Game::VSRG::BMSChartInfo>(Difficulty->Data->TimingInfo)->IsBMSON)
                 BtoT = true;
         }
@@ -113,12 +118,15 @@ public:
 					vid->StartDecodeThread();
 					List.AddToListIndex(vid, v.first);
 					Videos[v.first] = vid;
+					MaxWidth = std::max(MaxWidth, vid->w);
+					MaxHeight = std::max(MaxHeight, vid->h);
 				}
 				else
 					delete vid;
 			}
 			else
 				List.AddToListIndex(path, v.first);
+
 		}
 
         List.AddToList(Song->BackgroundFilename, Song->SongDirectory);
@@ -149,11 +157,10 @@ public:
         LayerMiss->SetImage(List.GetFromIndex(0), true);
         Layer0->SetImage(List.GetFromIndex(1), true);
 
-		Layer0->SetWidth(Layer0->GetWidth() / Layer0->GetHeight());
-		Layer0->SetHeight(1);
-		auto x = Layer0->GetWidth();
 
-		Layer0->SetPositionX( (1 - x) / 2 );
+		auto ratio = Layer0->GetWidth() / Layer0->GetHeight();
+		Layer0->SetWidth(1);
+		Layer0->SetHeight(1);
 
         sort(EventsLayer0.begin(), EventsLayer0.end());
         sort(EventsLayerMiss.begin(), EventsLayerMiss.end());
@@ -170,7 +177,9 @@ public:
             EventsLayerMiss.push_back(bmp);
         }
 
-        Transform.SetWidth(256);
+
+
+        Transform.SetWidth(256 * ratio);
         Transform.SetHeight(256);
 
         Validated = true;
