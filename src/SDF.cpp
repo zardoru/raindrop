@@ -11,7 +11,7 @@
 
 // comments added for myself
 
-#define INF 30000
+#define INF 10000
 
 // Internal structures
 struct Point {
@@ -44,7 +44,8 @@ public:
 
 	Point Get(int x, int y) {
 		int idx = y * w + x;
-		if (idx < 0 || idx >= s) return { INF, INF };
+		if ( y >= h || y < 0 || x >= w || x < 0 )
+			return { INF, INF };
 
 		return point[idx];
 	}
@@ -124,7 +125,7 @@ void ConvertToSDF(unsigned char* out, unsigned char* tex, int w, int h) {
 	for (int y = 0; y < h; y++) {
 		for (int x = 0; x < w; x++) {
 			int idx = y * w + x;
-			if (tex[idx] < 64) {
+			if (tex[idx] < 128) {
 				g1.Put(x, y, { 0, 0 });
 				g2.Put(x, y, { INF, INF });
 			}
@@ -146,9 +147,9 @@ void ConvertToSDF(unsigned char* out, unsigned char* tex, int w, int h) {
 	// copy to float GL_ALPHA texture
 	for (int y = 0; y < h; y++) {
 		for (int x = 0; x < w; x++) {
-			int d1 = (int)sqrt(g1.DistSqr(x, y));
-			int d2 = (int)sqrt(g2.DistSqr(x, y));
-			int dist = d1 - d2;
+			auto d1 = sqrt(g1.DistSqr(x, y));
+			auto d2 = sqrt(g2.DistSqr(x, y));
+			int dist = round(d1 - d2);
 
 			// dist = dist * 3 + 128;
 			
@@ -161,11 +162,19 @@ void ConvertToSDF(unsigned char* out, unsigned char* tex, int w, int h) {
 
 	for (int y = 0; y < h; y++) {
 		for (int x = 0; x < w; x++) {
-			int v = preout[y * w + x];
+			auto v = preout[y * w + x];
 			//float o = round(float(v - min) / float(max - min) * 255.0);
-			float o = v * -128.0 / min + 128;
-			int d = Clamp((int)o, 0, 255);
-			out[y * w + x] =  d;
+
+			if (v < 0) {
+				float o = round(v * -128.0 / min + 128);
+				int d = Clamp((int)o, 0, 255);
+				out[y * w + x] = d;
+			}
+			else {
+				float o = round(v * 127 / max + 128);
+				int d = Clamp((int)o, 0, 255);
+				out[y * w + x] = d;
+			}
 		}
 	}
 	

@@ -972,8 +972,11 @@ namespace NoteLoaderBMS{
 
             Utility::ReplaceAll(Line, "[\r\n]", "");
 
-            if (Line.length() == 0 || Line[0] != '#')
+            if (Line.length() == 0 || Line.find_first_of("#") == std::string::npos)
                 continue;
+
+			// allow indentation
+			Line = Line.substr(Line.find_first_of("#"));
 
 #define OnCommand(x) if(command == #x)
 #define OnCommandSub(x) if(command.substr(0, strlen(#x)) == #x)
@@ -1014,7 +1017,7 @@ namespace NoteLoaderBMS{
 
                 OnCommand(#genre)
                 {
-                    // stub
+					Diff->Data->Genre = CommandContents;
                 }
 
                 OnCommand(#subtitle)

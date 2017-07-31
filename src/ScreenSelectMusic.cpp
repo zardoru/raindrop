@@ -452,6 +452,8 @@ bool ScreenSelectMusic::HandleScrollInput(double xOff, double yOff)
             return true;
     }
 
+	if (IsTransitioning) return false;
+
 	Animations->HandleScrollInput(xOff, yOff);
 	return Game::SongWheel::GetInstance().HandleScrollInput(xOff, yOff);
 }

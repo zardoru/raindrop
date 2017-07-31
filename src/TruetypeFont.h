@@ -35,6 +35,8 @@ public:
     ~TruetypeFont();
     float GetHorizontalLength(const char *Text);
 
+	static void GenerateFontCache(std::filesystem::path u8charin, std::filesystem::path inputttf, std::filesystem::path outpath);
+
     void Invalidate();
     void Render(const std::string &Text, const Vec2 &Position, const Mat4 &Transform = Mat4(), const Vec2 &Scale = Vec2(1,1));
 };

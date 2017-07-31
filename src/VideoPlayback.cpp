@@ -2,6 +2,7 @@
 
 #include "Texture.h"
 #include "VideoPlayback.h"
+#include "Logging.h"
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -229,7 +230,7 @@ bool VideoPlayback::Open(std::filesystem::path path)
 	}
 
 	// Find the first video stream
-	for (int i = 0; i < newctx->AV->nb_streams; i++)
+	for (size_t i = 0; i < newctx->AV->nb_streams; i++)
 	{
 		if (newctx->AV->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
 			newctx->videoStreamIndex = i;
@@ -257,6 +258,9 @@ bool VideoPlayback::Open(std::filesystem::path path)
 		return false;
 
 	newctx->InitializeBuffers(mFrameQueueItems, newctx->UsableCodecCtx->width, newctx->UsableCodecCtx->height);
+
+	/*Log::Printf("Video delay (frames): %d\n", newctx->UsableCodecCtx->delay);
+	av_seek_frame(newctx->AV, newctx->videoStreamIndex, newctx->UsableCodecCtx->delay * 2, 0);*/
 
 	auto f = avpicture_get_size(newctx->UsableCodecCtx->pix_fmt, 
 		newctx->UsableCodecCtx->width, 
@@ -345,7 +349,7 @@ void VideoPlayback::UpdateVideoTexture(void * data)
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, frame->data[0]);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, frame->data[0]);
 			TextureAssigned = true;
 		}
 		else {

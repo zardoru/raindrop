@@ -50,6 +50,19 @@ struct songHelper
         return;
     }
 
+	template <class T>
+	static std::string getDifficultyGenre(T const *Diff)
+	{
+		auto candidate = GameState::GetInstance().GetSongDatabase()->GetGenreForDifficulty(Diff->ID);
+		return candidate;
+	}
+
+	template <class T>
+	static void setDifficultyGenre(T *Diff, std::string s)
+	{
+		return;
+	}
+
     template <class T, class Q>
     static Q* getDifficulty(T *Sng, uint32_t idx)
     {
@@ -132,6 +145,8 @@ void GameState::InitializeLua(lua_State *L)
 		.addData("ScoreObjects", &Game::Song::Difficulty::TotalScoringObjects, false)
 		.addProperty("Author", &songHelper::getDifficultyAuthor<Game::Song::Difficulty>, 
 			&songHelper::setDifficultyAuthor <Game::Song::Difficulty>)
+		.addProperty("Genre", &songHelper::getDifficultyGenre<Game::Song::Difficulty>, 
+			&songHelper::setDifficultyGenre<Game::Song::Difficulty>)
 		.endClass();
 
 	luabridge::getGlobalNamespace(L)

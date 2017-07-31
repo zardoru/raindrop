@@ -250,6 +250,9 @@
     <ClCompile Include="..\src\SDF.cpp">
       <Filter>Source Files\backend\render\fonts</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\TTFCache.cpp">
+      <Filter>Source Files\backend\render\fonts</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\pch.h">
@@ -445,6 +448,9 @@
       <Filter>Header Files\game global</Filter>
     </ClInclude>
     <ClInclude Include="..\src\SDF.h">
+      <Filter>Header Files\backend\render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\TTFCache.h">
       <Filter>Header Files\backend\render</Filter>
     </ClInclude>
   </ItemGroup>

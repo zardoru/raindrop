@@ -450,8 +450,9 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
         {
             codepdata &cp = GetTexFromCodepoint(*it);
             unsigned char* tx = cp.tex;
-            glm::vec3 trans = vOffs + glm::vec3(cp.xofs * 
-				Scale.x * Scale.y / SDF_SIZE, cp.yofs * Scale.y / SDF_SIZE, 0);
+            glm::vec3 trans = vOffs + glm::vec3(
+				cp.xofs * Scale.x * Scale.y / SDF_SIZE, 
+				cp.yofs * Scale.y / SDF_SIZE, 0);
             glm::mat4 dx;
 
             if (*it == 10) // utf-32 line feed

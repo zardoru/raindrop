@@ -32,6 +32,7 @@ private:
         *st_GetSIDFromFilename,
         *st_GetLastSongID,
         *st_GetDiffAuthor,
+		*st_GetDiffGenre,
         *st_GetPreviewInfo,
         *st_GetStageFile;
 
@@ -52,6 +53,7 @@ public:
     // Difficulty information
     std::filesystem::path GetDifficultyFilename(int DiffID);
     std::string GetArtistForDifficulty(int DiffID);
+	std::string GetGenreForDifficulty(int DiffID);
     std::string GetStageFile(int DiffID);
 
     int GetSongIDForFile(std::filesystem::path File, Game::VSRG::Song* In);

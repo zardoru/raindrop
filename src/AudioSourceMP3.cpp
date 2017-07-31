@@ -92,7 +92,7 @@ uint32_t AudioSourceMP3::Read(short* buffer, size_t count)
 
 void AudioSourceMP3::Seek(float Time)
 {
-    int place = round(mRate * Time);
+    size_t place = round(mRate * Time);
 
 	if (place > mLen) {
 		Log::Printf("Attempt to seek after the stream's end.\n");

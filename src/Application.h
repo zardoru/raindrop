@@ -10,16 +10,17 @@ class Application
         MODE_NULL,
         MODE_PLAY,
         MODE_CONVERT,
-        MODE_GENCACHE,
+        MODE_GENSONGCACHE,
         MODE_VSRGPREVIEW,
         MODE_STOPPREVIEW,
         MODE_CUSTOMSCREEN,
+		MODE_GENFONTCACHE,
 		MODE_TEST
     }RunMode;
 
     void ParseArgs(int, char **);
 
-    std::filesystem::path InFile, OutFile;
+    std::filesystem::path InFile, OutFile, InFontTextFile;
 
     // VSRG-Specific
     enum class CONVERTMODE

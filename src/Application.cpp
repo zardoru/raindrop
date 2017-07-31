@@ -57,7 +57,7 @@ void Application::ParseArgs(int argc, char **argv)
         ("output,o", po::value<std::string>(),
         "Output File")
         ("gencache,c",
-        "Generate Cache")
+        "Generate Song Cache")
         ("format,g", po::value<std::string>(),
         "Target Format")
         ("measure,m", po::value<unsigned>()->default_value(0),
@@ -72,7 +72,9 @@ void Application::ParseArgs(int argc, char **argv)
         "Release IPC Pool")
         ("L,L", po::value<std::string>(),
         "Load Custom Scene")
-		("test,T", "Run test suite")
+		("test,T", "Run test suite"),
+		("fontcache,F", po::value<std::string>(),
+		"Generate Font Cache")
         ;
 
     po::variables_map vm;
@@ -111,8 +113,13 @@ void Application::ParseArgs(int argc, char **argv)
 
     if (vm.count("gencache"))
     {
-        RunMode = MODE_GENCACHE;
+        RunMode = MODE_GENSONGCACHE;
     }
+
+	if (vm.count("fontcache")) {
+		RunMode = MODE_GENFONTCACHE;
+		InFontTextFile = vm["fontcache"].as<std::string>();
+	}
 
     if (vm.count("format"))
     {
@@ -401,7 +408,7 @@ void Application::Run()
 
         RunLoop = false;
     }
-    else if (RunMode == MODE_GENCACHE)
+    else if (RunMode == MODE_GENSONGCACHE)
     {
         Log::Printf("Generating cache...\n");
         Game::GameState::GetInstance().Initialize();

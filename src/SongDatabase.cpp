@@ -6,7 +6,7 @@
 #include "Song7K.h"
 #include "SongDatabase.h"
 
-char *DatabaseQuery =
+auto DatabaseQuery =
 "CREATE TABLE IF NOT EXISTS [songdb] (\
   [id] INTEGER, \
   [songtitle] varchar(260), \
@@ -38,38 +38,40 @@ CREATE TABLE IF NOT EXISTS [diffdb] (\
   [bpmtype] INT,\
   [level] INT,\
   [author] VARCHAR(256),\
+  [genre] VARCHAR(256),\
   [stagefile] varchar(260));\
     CREATE INDEX IF NOT EXISTS song_index ON songfiledb(filename);\
 	  CREATE INDEX IF NOT EXISTS diff_index ON diffdb(diffid, songid, fileid);\
 	  CREATE INDEX IF NOT EXISTS songid_index ON songdb(id);\
   ";
 
-const char* InsertSongQuery = "INSERT INTO songdb VALUES (NULL,?,?,?,?,?,?,?,?)";
-const char* InsertDifficultyQuery = "INSERT INTO diffdb VALUES (?,NULL,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-const char* GetFilenameIDQuery = "SELECT id, lastmodified FROM songfiledb WHERE filename=?";
-const char* InsertFilenameQuery = "INSERT INTO songfiledb VALUES (NULL,?,?,?)";
-const char* GetDiffNameQuery = "SELECT name FROM diffdb \
+auto InsertSongQuery = "INSERT INTO songdb VALUES (NULL,?,?,?,?,?,?,?,?)";
+auto InsertDifficultyQuery = "INSERT INTO diffdb VALUES (?,NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+auto GetFilenameIDQuery = "SELECT id, lastmodified FROM songfiledb WHERE filename=?";
+auto InsertFilenameQuery = "INSERT INTO songfiledb VALUES (NULL,?,?,?)";
+auto GetDiffNameQuery = "SELECT name FROM diffdb \
 							 WHERE (diffdb.fileid = (SELECT songfiledb.id FROM songfiledb WHERE filename=?))";
-const char* GetLMTQuery = "SELECT lastmodified FROM songfiledb WHERE filename=?";
-const char* GetSongInfo = "SELECT songtitle, songauthor, songfilename, subtitle, songbackground, mode, previewtime FROM songdb WHERE id=?";
-const char* GetDiffInfo = "SELECT diffid, name, objcount, scoreobjectcount, holdcount, notecount, duration, isvirtual, \
-						  keys, fileid, bpmtype, level FROM diffdb WHERE songid=?";
-const char* GetFileInfo = "SELECT filename, lastmodified FROM songfiledb WHERE id=?";
-const char* UpdateLMT = "UPDATE songfiledb SET lastmodified=?, hash=? WHERE filename=?";
-const char* UpdateDiff = "UPDATE diffdb SET name=?,objcount=?,scoreobjectcount=?,holdcount=?,notecount=?,\
-	duration=?,isvirtual=?,keys=?,bpmtype=?,level=?,author=?,stagefile=? WHERE diffid=?";
+auto GetLMTQuery = "SELECT lastmodified FROM songfiledb WHERE filename=?";
+auto GetSongInfo = "SELECT songtitle, songauthor, songfilename, subtitle, songbackground, mode, previewtime FROM songdb WHERE id=?";
+auto GetDiffInfo = "SELECT diffid, name, objcount, scoreobjectcount, holdcount, notecount, duration, isvirtual, \
+						  keys, fileid, bpmtype, level, genre FROM diffdb WHERE songid=?";
+auto GetFileInfo = "SELECT filename, lastmodified FROM songfiledb WHERE id=?";
+auto UpdateLMT = "UPDATE songfiledb SET lastmodified=?, hash=? WHERE filename=?";
+auto UpdateDiff = "UPDATE diffdb SET name=?,objcount=?,scoreobjectcount=?,holdcount=?,notecount=?,\
+	duration=?,isvirtual=?,keys=?,bpmtype=?,level=?,author=?,stagefile=?,genre=? WHERE diffid=?";
 
-const char* GetDiffFilename = "SELECT filename FROM songfiledb WHERE (songfiledb.id = (SELECT diffdb.fileid FROM diffdb WHERE diffid=?))";
+auto GetDiffFilename = "SELECT filename FROM songfiledb WHERE (songfiledb.id = (SELECT diffdb.fileid FROM diffdb WHERE diffid=?))";
 
-const char* GetDiffIDFileID = "SELECT diffid FROM diffdb \
+auto GetDiffIDFileID = "SELECT diffid FROM diffdb \
 							 WHERE diffdb.fileid=? AND\
 							 							 diffdb.name = ?";
 
-const char* GetSongIDFromFilename = "SELECT songid FROM diffdb WHERE (diffdb.fileid = (SELECT id FROM songfiledb WHERE filename=?))";
-const char* GetLatestSongID = "SELECT MAX(id) FROM songdb";
-const char* GetAuthorOfDifficulty = "SELECT author FROM diffdb WHERE diffid=?";
-const char* GetPreviewOfSong = "SELECT previewsong, previewtime FROM songdb WHERE id=?";
-const char* sGetStageFile = "SELECT stagefile FROM diffdb WHERE diffid=?";
+auto GetSongIDFromFilename = "SELECT songid FROM diffdb WHERE (diffdb.fileid = (SELECT id FROM songfiledb WHERE filename=?))";
+auto GetLatestSongID = "SELECT MAX(id) FROM songdb";
+auto GetAuthorOfDifficulty = "SELECT author FROM diffdb WHERE diffid=?";
+auto GetPreviewOfSong = "SELECT previewsong, previewtime FROM songdb WHERE id=?";
+auto sGetStageFile = "SELECT stagefile FROM diffdb WHERE diffid=?";
+auto GetGenre = "SELECT genre FROM diffdb WHERE diffid=?";
 
 #define SC(x) \
 {ret=x; if(ret!=SQLITE_OK && ret != SQLITE_DONE) \
@@ -109,6 +111,7 @@ SongDatabase::SongDatabase(std::string Database)
         SC(sqlite3_prepare_v2(db, GetAuthorOfDifficulty, strlen(GetAuthorOfDifficulty), &st_GetDiffAuthor, &tail));
         SC(sqlite3_prepare_v2(db, GetPreviewOfSong, strlen(GetPreviewOfSong), &st_GetPreviewInfo, &tail));
         SC(sqlite3_prepare_v2(db, sGetStageFile, strlen(sGetStageFile), &st_GetStageFile, &tail));
+		SC(sqlite3_prepare_v2(db, GetGenre, strlen(GetGenre), &st_GetDiffGenre, &tail));
     }
 }
 
@@ -241,7 +244,8 @@ void SongDatabase::AddDifficulty(int SongID, std::filesystem::path Filename, Gam
             SC(sqlite3_bind_int(st_DiffInsertQuery, 11, VDiff->BPMType));
             SC(sqlite3_bind_int(st_DiffInsertQuery, 12, VDiff->Level));
             SC(sqlite3_bind_text(st_DiffInsertQuery, 13, VDiff->Author.c_str(), VDiff->Author.length(), SQLITE_STATIC));
-            SC(sqlite3_bind_text(st_DiffInsertQuery, 14, VDiff->Data->StageFile.c_str(), VDiff->Data->StageFile.length(), SQLITE_STATIC));
+			SC(sqlite3_bind_text(st_DiffInsertQuery, 14, VDiff->Data->Genre.c_str(), VDiff->Data->Genre.length(), SQLITE_STATIC));
+            SC(sqlite3_bind_text(st_DiffInsertQuery, 15, VDiff->Data->StageFile.c_str(), VDiff->Data->StageFile.length(), SQLITE_STATIC));
         }
         else if (Mode == MODE_DOTCUR)
         {
@@ -275,6 +279,7 @@ void SongDatabase::AddDifficulty(int SongID, std::filesystem::path Filename, Gam
             SC(sqlite3_bind_int(st_DiffUpdateQuery, 10, VDiff->Level));
             SC(sqlite3_bind_text(st_DiffUpdateQuery, 11, VDiff->Author.c_str(), VDiff->Author.length(), SQLITE_STATIC));
             SC(sqlite3_bind_text(st_DiffUpdateQuery, 12, VDiff->Data->StageFile.c_str(), VDiff->Data->StageFile.length(), SQLITE_STATIC));
+			SC(sqlite3_bind_text(st_DiffUpdateQuery, 13, VDiff->Data->Genre.c_str(), VDiff->Data->Genre.length(), SQLITE_STATIC));
         }
         else if (Mode == MODE_DOTCUR)
         {
@@ -371,10 +376,21 @@ std::string SongDatabase::GetArtistForDifficulty(int ID)
     return out;
 }
 
+std::string SongDatabase::GetGenreForDifficulty(int DiffID)
+{
+	std::string out;
+	sqlite3_bind_int(st_GetDiffGenre, 1, DiffID);
+
+	if (sqlite3_step(st_GetDiffGenre) == SQLITE_ROW)
+		out = (char*)sqlite3_column_text(st_GetDiffGenre, 0);
+
+	return out;
+}
+
 #ifdef _WIN32
-#define _T(x) Utility::Widen((char*)x)
+#define _W(x) Utility::Widen((char*)x)
 #else
-#define _T(x) ((char*)x)
+#define _W(x) ((char*)x)
 #endif
 
 void SongDatabase::GetSongInformation(int ID, Game::VSRG::Song* Out)
@@ -393,9 +409,9 @@ void SongDatabase::GetSongInformation(int ID, Game::VSRG::Song* Out)
 
     Out->SongName = (char*)sqlite3_column_text(st_GetSongInfo, 0);
     Out->SongAuthor = (char*)sqlite3_column_text(st_GetSongInfo, 1);
-    Out->SongFilename = _T(sqlite3_column_text(st_GetSongInfo, 2));
+    Out->SongFilename = _W(sqlite3_column_text(st_GetSongInfo, 2));
     Out->Subtitle = (char*)sqlite3_column_text(st_GetSongInfo, 3);
-    Out->BackgroundFilename = _T(sqlite3_column_text(st_GetSongInfo, 4));
+    Out->BackgroundFilename = _W(sqlite3_column_text(st_GetSongInfo, 4));
     Out->ID = ID;
     int mode = sqlite3_column_int(st_GetSongInfo, 5);
     Out->PreviewTime = sqlite3_column_double(st_GetSongInfo, 6);

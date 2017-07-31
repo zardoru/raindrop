@@ -160,6 +160,9 @@ namespace Game {
 			// Background/foreground to show when loading.
 			std::string StageFile;
 
+			// Genre (Display only, for the most part)
+			std::string Genre;
+
 			// Whether this difficulty uses the scratch channel (being channel/index 0 always used for this)
 			bool Turntable;
 

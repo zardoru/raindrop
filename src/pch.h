@@ -411,5 +411,15 @@ double latof(std::string s);
 #define CreateBinIfstream(name, fn) std::fstream name(fn.string(), std::ios::in | std::ios::binary);
 #endif
 
+template <class T>
+void BinWrite(std::ofstream &of, T obj) {
+	of.write((char*)&obj, sizeof(T));
+}
+
+template <class T>
+void BinRead(std::ifstream &of, T& obj) {
+	of.read((char*)&obj, sizeof(T));
+}
+
 #include "Configuration.h"
 #include "GameGlobal.h"

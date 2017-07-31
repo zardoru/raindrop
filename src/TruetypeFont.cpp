@@ -1,11 +1,16 @@
 #include "pch.h"
 
 #include "TruetypeFont.h"
+
+#include "GameState.h"
 #include "GameWindow.h"
 
+#include "TTFCache.h"
 #include "Logging.h"
 
 #include "SDF.h"
+
+const std::filesystem::path CACHE_PATH = "GameData/fontcache/";
 
 class TTFMan {
 public:
@@ -190,4 +195,31 @@ float TruetypeFont::GetHorizontalLength(const char *In)
     }
 
     return Out;
+}
+
+void TruetypeFont::GenerateFontCache(std::filesystem::path u8charin, 
+	std::filesystem::path inputttf,
+	std::filesystem::path out)
+{
+	TTFCache cache;
+	TruetypeFont ttf(inputttf);
+
+	// make sure our base path exists
+	auto path = CACHE_PATH / Game::GameState::GetInstance().GetSkin();
+	std::filesystem::create_directory(path);
+
+	auto cachename = path / inputttf.replace_extension("").filename();
+
+	std::ifstream in(u8charin, std::ios::binary);
+
+	std::istreambuf_iterator<char> it(in.rdbuf());
+	std::istreambuf_iterator<char> end;
+	
+	while (it != end) {
+		auto ch = utf8::next(it, end);
+		auto tx = ttf.GetTexFromCodepoint(ch);
+		cache.SetCharacterBuffer(ch, tx.tex, tx.w * tx.h);
+	}
+
+	cache.SaveCache(out);
 }
