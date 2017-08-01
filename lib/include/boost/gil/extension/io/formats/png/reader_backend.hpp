@@ -505,12 +505,12 @@ public:
             png_charp scale_width  = NULL;
             png_charp scale_height = NULL;
 
-            if( this->_info._valid_scale_factors = png_get_sCAL_s( get_struct()
-                                                                 , get_info()
-                                                                 , &this->_info._scale_unit
-                                                                 , &scale_width
-                                                                 , &scale_height
-                                                                 ) > 0
+            if(( this->_info._valid_scale_factors = png_get_sCAL_s( get_struct()
+                                                                  , get_info()
+                                                                  , &this->_info._scale_unit
+                                                                  , &scale_width
+                                                                  , &scale_height
+                                                                  )) > 0
               )
             {
                 if( scale_width )

@@ -242,7 +242,7 @@ void ImageLoader::AddToPending(std::filesystem::path Filename)
 }
 
 /* For multi-threaded loading. */
-void ImageLoader::LoadFromManifest(char** Manifest, int Count, std::string Prefix)
+void ImageLoader::LoadFromManifest(const char** Manifest, int Count, std::string Prefix)
 {
     for (int i = 0; i < Count; i++)
     {

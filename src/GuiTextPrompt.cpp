@@ -64,7 +64,7 @@ void TextPrompt::Render()
 {
     if (mOpen)
     {
-        std::string str = Utility::Format("%s\n\n%s_\n\nPress Enter to Confirm or Escape to Abort", mPromptText, mBufferText);
+        std::string str = Utility::Format("%s\n\n%s_\n\nPress Enter to Confirm or Escape to Abort", mPromptText.c_str(), mBufferText.c_str());
         if (mPromptFont)
             mPromptFont->Render(str, Vec2(100, 200)); // todo: change position
     }

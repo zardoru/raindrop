@@ -14,7 +14,7 @@ AudioStream *ScreenEvaluationMusic = NULL;
 namespace Game {
 	namespace dotcur {
 		ScreenEvaluation::ScreenEvaluation() :
-			Screen("ScreenEvaluation", nullptr)
+			Screen("ScreenEvaluation", false)
 		{
 			Running = true;
 			Font = NULL;
@@ -29,7 +29,7 @@ namespace Game {
 		{
 			if (!ScreenEvaluationMusic)
 			{
-				ScreenEvaluationMusic = new SoundStream();
+				ScreenEvaluationMusic = new AudioStream();
 				ScreenEvaluationMusic->Open((GameState::GetInstance().GetSkinFile("screenevaluationloop.ogg")).c_str());
 				ScreenEvaluationMusic->SetLoop(true);
 			}

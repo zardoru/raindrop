@@ -131,7 +131,7 @@ struct defaultKeys_s
 const int DEFAULT_KEYS_COUNT = sizeof(defaultKeys) / sizeof(defaultKeys_s);
 
 // Must match KeyType structure.
-char* KeytypeNames[] = {
+const char* KeytypeNames[] = {
     "unknown",
     "escape",
     "select",

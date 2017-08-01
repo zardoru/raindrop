@@ -15,7 +15,7 @@
 namespace Game {
 	namespace dotcur {
 		ScreenGameplay::ScreenGameplay() :
-			Screen("ScreenGameplay", nullptr),
+			Screen("ScreenGameplay", false),
 			Barline(this)
 		{
 			Running = true;
@@ -183,7 +183,7 @@ namespace Game {
 
 		void ScreenGameplay::LoadResources()
 		{
-			char* SkinFiles[] =
+			const char* SkinFiles[] =
 			{
 				"cursor.png",
 				"Barline.png",

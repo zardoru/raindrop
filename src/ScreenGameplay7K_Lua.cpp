@@ -9,5 +9,3 @@
 
 #include "ScoreKeeper7K.h"
 #include "ScreenGameplay7K.h"
-
-}

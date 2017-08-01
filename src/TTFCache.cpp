@@ -8,7 +8,7 @@ TTFCache::TTFCache()
 
 bool TTFCache::LoadCache(std::filesystem::path cachepath)
 {
-	std::ifstream in(cachepath, std::ios::binary);
+	std::ifstream in(cachepath.string(), std::ios::binary);
 	if (!in.is_open()) return false;
 
 	mCharBuffer.clear();
@@ -33,7 +33,7 @@ bool TTFCache::LoadCache(std::filesystem::path cachepath)
 
 bool TTFCache::SaveCache(std::filesystem::path cachepath)
 {
-	std::ofstream out(cachepath, std::ios::binary);
+	std::ofstream out(cachepath.string(), std::ios::binary);
 	if (!out.is_open()) return false;
 
 	auto size = mCharBuffer.size();

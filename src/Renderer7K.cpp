@@ -11,4 +11,4 @@
 #include "ScreenGameplay7K.h"
 #include "Noteskin.h"
 
-using namespace VSRG;
+using namespace Game::VSRG;

@@ -72,7 +72,7 @@ void Application::ParseArgs(int argc, char **argv)
         "Release IPC Pool")
         ("L,L", po::value<std::string>(),
         "Load Custom Scene")
-		("test,T", "Run test suite"),
+		("test,T", "Run test suite")
 		("fontcache,F", po::value<std::string>(),
 		"Generate Font Cache")
         ;

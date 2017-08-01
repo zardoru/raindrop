@@ -80,7 +80,7 @@ bool LuaManager::RunScript(std::filesystem::path file)
     Log::LogPrintf("LuaManager: Running script %s.\n", Utility::ToU8(file.wstring()).c_str());
 
 
-	if ((errload = luaL_loadfile(State, Utility::ToLocaleStr(file).c_str()))) {
+	if ((errload = luaL_loadfile(State, Utility::ToLocaleStr(file.wstring()).c_str()))) {
 		reportError(State);
 		return false;
 	}
@@ -88,7 +88,7 @@ bool LuaManager::RunScript(std::filesystem::path file)
 	lua_pushcfunction(State, LuaPanic);
 	lua_insert(State, -2);
 
-	if (errcall = lua_pcall(State, 0, 0, -2))
+	if ((errcall = lua_pcall(State, 0, 0, -2)))
     {
 		reportError(State);
 		Pop(); // remove pushed panic function

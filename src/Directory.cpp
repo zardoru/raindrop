@@ -150,7 +150,7 @@ std::vector<std::string>& Directory::ListDirectory(std::vector<std::string>& Vec
             if (fname == L"." || fname == L"..")
                 continue;
 
-            Vec.push_back(Utility::Narrow(fname));
+            Vec.push_back(Utility::ToU8(fname));
         }
         else
         {

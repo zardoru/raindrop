@@ -116,7 +116,7 @@ enum KeyType
 	KT_Key16
 };
 
-extern char* KeytypeNames[];
+extern const char* KeytypeNames[];
 
 
 

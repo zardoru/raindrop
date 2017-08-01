@@ -11,8 +11,8 @@
 #define FADEIN_DURATION 0.3f
 #define FADEOUT_DURATION 0.7f
 
-SoundSample *HitSnd = nullptr;
-SoundSample *HoldReleaseSnd = nullptr;
+AudioSample *HitSnd = nullptr;
+AudioSample *HoldReleaseSnd = nullptr;
 bool GameObjectTexInitialized = false;
 
 namespace Game {
@@ -38,13 +38,13 @@ namespace Game {
 
 			if (!HitSnd)
 			{
-				HitSnd = new SoundSample();
+				HitSnd = new AudioSample();
 				HitSnd->Open((GameState::GetInstance().GetSkinFile("hit.ogg")).c_str());
 			}
 
 			if (!HoldReleaseSnd)
 			{
-				HoldReleaseSnd = new SoundSample();
+				HoldReleaseSnd = new AudioSample();
 				HoldReleaseSnd->Open((GameState::GetInstance().GetSkinFile("holdfinish.ogg")).c_str());
 			}
 

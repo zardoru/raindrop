@@ -35,7 +35,7 @@ public:
     }
 };
 
-ScreenLoading::ScreenLoading(std::shared_ptr<Screen> _Next) : Screen("ScreenLoading", nullptr)
+ScreenLoading::ScreenLoading(std::shared_ptr<Screen> _Next) : Screen("ScreenLoading", false)
 {
     Next = _Next;
     LoadThread = nullptr;

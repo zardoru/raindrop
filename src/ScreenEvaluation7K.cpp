@@ -14,7 +14,7 @@ namespace Game {
 	namespace VSRG {
 
 		ScreenEvaluation::ScreenEvaluation() :
-			Screen("ScreenEvaluation7K", nullptr)
+			Screen("ScreenEvaluation7K", false)
 		{
 			Running = true;
 		}

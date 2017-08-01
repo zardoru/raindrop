@@ -235,11 +235,11 @@ namespace Game {
 			std::map<int, AudioSample> audio;
 			std::mutex audio_data_mutex;
 			std::mutex keysound_data_mutex;
-			auto &slicedata = ps.GetSliceData();
+			const auto &slicedata = ps.GetSliceData();
 
 			// do bmson loading - threaded slicing!
 			std::vector<std::future<void>> threads;
-			std::atomic<int> obj_cnt = 0;
+			std::atomic<int> obj_cnt(0);
 
 			auto load_start_time = std::chrono::high_resolution_clock::now();
 			for (auto audiofile : slicedata.AudioFiles) {

@@ -113,15 +113,15 @@ public:
 		}
 	}
 
-	VideoPlaybackData::~VideoPlaybackData() {
+	~VideoPlaybackData() {
 		av_frame_free(&DisplayFrame.frame);
 		
 		AVFrame* f;
-		while (f = GetCleanFrame().frame) {
+		while ((f = GetCleanFrame().frame)) {
 			av_frame_free(&f);
 		}
 
-		while (f = GetPendingFrame().frame) {
+		while ((f = GetPendingFrame().frame)) {
 			av_frame_free(&f);
 		}
 

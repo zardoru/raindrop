@@ -36,6 +36,7 @@ namespace Game {
 			double GetFraction() const;
 			void SetFraction(double frac);
 			bool IsHold();
+			void Assign(double Duration, uint32_t _Measure, double _MeasureFraction);
 			void Invalidate() override;
 			bool ShouldRemove();
 		};

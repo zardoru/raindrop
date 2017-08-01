@@ -161,7 +161,7 @@ namespace Renderer {
 		uniforms[U_BTRANSP] = glGetUniformLocation(mProgram, "BlackToTransparent");
 
 
-		Bind();
+		StaticBind();
 
 		return true;
 	}
@@ -177,7 +177,7 @@ namespace Renderer {
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &proj[0][0]);
 	}
 
-	void DefaultShader::Bind() {
+	void DefaultShader::StaticBind() {
 		CHECKERR();
 		if (mLastShader != mProgram) {
 			mLastShader = mProgram;
