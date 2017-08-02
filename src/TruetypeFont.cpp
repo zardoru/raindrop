@@ -198,14 +198,14 @@ float TruetypeFont::GetHorizontalLength(const char *In)
 }
 
 void TruetypeFont::GenerateFontCache(std::filesystem::path u8charin, 
-	std::filesystem::path inputttf,
-	std::filesystem::path out)
+	std::filesystem::path inputttf)
 {
 	TTFCache cache;
 	TruetypeFont ttf(inputttf);
 
 	// make sure our base path exists
 	auto path = CACHE_PATH / Game::GameState::GetInstance().GetSkin();
+	std::filesystem::create_directory(CACHE_PATH);
 	std::filesystem::create_directory(path);
 
 	auto cachename = path / inputttf.replace_extension("").filename();
@@ -221,5 +221,5 @@ void TruetypeFont::GenerateFontCache(std::filesystem::path u8charin,
 		cache.SetCharacterBuffer(ch, tx.tex, tx.w * tx.h);
 	}
 
-	cache.SaveCache(out);
+	cache.SaveCache(cachename);
 }

@@ -62,7 +62,6 @@ const uint8_t * const TTFCache::GetCharacterBuffer(int id)
 
 void TTFCache::SetCharacterBuffer(int id, uint8_t * data, size_t size)
 {
-	if (mCharBuffer.find(id) != mCharBuffer.end()) {
-
-	}
+	mCharBuffer[id].resize(size);
+	memcpy(mCharBuffer[id].data(), data, size);
 }

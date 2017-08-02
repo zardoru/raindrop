@@ -27,6 +27,8 @@
 
 #include "ScreenVideoTest.h"
 
+#include "TruetypeFont.h"
+
 void RunRaindropTests();
 bool Auto = false;
 bool DoRun = false;
@@ -436,7 +438,15 @@ void Application::Run()
 		auto s = Utility::ToU8(InFile.wstring());
         auto scr = std::make_shared<ScreenCustom>(GameState::GetInstance().GetSkinFile(s));
         Game = scr;
-    }
+	}
+	else if (RunMode == MODE_GENFONTCACHE)
+	{
+		Log::Printf("Generating font cache for provided file...\n");
+
+		TruetypeFont::GenerateFontCache(InFontTextFile, InFile);
+
+		RunLoop = false;
+	}
 
     Log::Printf("Time: %fs\n", glfwGetTime() - T1);
 
