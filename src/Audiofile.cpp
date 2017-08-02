@@ -612,7 +612,7 @@ uint32_t AudioStream::Update()
 
     mSource->SetLooping(IsLooping());
 
-    if (ReadTotal = mSource->Read(tbuf, eCount))
+    if ((ReadTotal = mSource->Read(tbuf, eCount)))
     {
         PaUtil_WriteRingBuffer(&mRingBuf, tbuf, ReadTotal);
     }

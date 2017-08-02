@@ -201,7 +201,7 @@ namespace Renderer {
 		bool BlackToTransparent, bool ReplaceColor,
 		int8_t HiddenMode)
 	{
-		DefaultShader::Bind();
+		DefaultShader::StaticBind();
 		Shader::SetUniform(DefaultShader::GetUniform(U_INVERT), InvertColor);
 
 		if (HiddenMode == -1)
@@ -435,7 +435,7 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
     if (!IsValid)
         return;
 
-	Renderer::DefaultShader::Bind();
+    Renderer::DefaultShader::StaticBind();
     Renderer::SetBlendingMode(BLEND_ALPHA);
     Renderer::SetShaderParameters(false, false, false, false, false, true);
     Renderer::DefaultShader::SetColor(Red, Green, Blue, Alpha);

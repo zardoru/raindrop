@@ -41,7 +41,7 @@ namespace Game
 			int CurrentGaugeType;
 			int CurrentScoreType;
 			int CurrentSubsystemType;
-			SPlayerCurrent7K::SPlayerCurrent7K (){
+			SPlayerCurrent7K (){
 				CurrentGaugeType = 0;
 				CurrentScoreType = 0;
 				CurrentSubsystemType = 0;

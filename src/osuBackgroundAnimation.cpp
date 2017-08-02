@@ -505,6 +505,8 @@ namespace osb {
 			case EVT_VFLIP:
 				evFlipV.push_back(*std::static_pointer_cast<FlipVerticalEvent>(event));
 				break;
+			default:
+				break;
 			}
 		}
 		else // Unpack move events.

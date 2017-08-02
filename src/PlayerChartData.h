@@ -24,8 +24,8 @@ namespace Game {
 			double GetWarpedSongTime(double SongTime) const;
 			double GetWarpAmount(double Time) const;
 			bool IsWarpingAt(double start_time) const;
-			std::vector<double> GameChartData::GetMeasureLines() const;
-			double GameChartData::GetSpeedMultiplierAt(double Time) const; // Time in unwarped song time
+			std::vector<double> GetMeasureLines() const;
+			double GetSpeedMultiplierAt(double Time) const; // Time in unwarped song time
 			double GetBpmAt(double Time) const;
 			double GetBpsAt(double Time) const;
 			double GetBeatAt(double Time) const;

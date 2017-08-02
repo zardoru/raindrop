@@ -152,7 +152,7 @@ TruetypeFont::codepdata &TruetypeFont::GetTexFromCodepoint(int cp)
         else
             memset(&newcp, 0, sizeof(codepdata));
 
-		Texes->insert_or_assign(cp, newcp);
+        (*Texes)[cp] = newcp;
         return Texes->at(cp);
     }
     else
@@ -210,7 +210,7 @@ void TruetypeFont::GenerateFontCache(std::filesystem::path u8charin,
 
 	auto cachename = path / inputttf.replace_extension("").filename();
 
-	std::ifstream in(u8charin, std::ios::binary);
+	std::ifstream in(u8charin.string(), std::ios::binary);
 
 	std::istreambuf_iterator<char> it(in.rdbuf());
 	std::istreambuf_iterator<char> end;

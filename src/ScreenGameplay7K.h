@@ -3,11 +3,11 @@
 #include "Audio.h"
 #include "Song7K.h"
 #include "BackgroundAnimation.h"
+#include "AudioSourceOJM.h"
 
 class AudioStream;
 class Texture;
 class SceneEnvironment;
-class AudioSourceOJM;
 class LuaManager;
 
 #include "PlayerContext.h"

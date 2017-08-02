@@ -13,13 +13,7 @@
 
 #include "ScoreKeeper7K.h"
 #include "ScreenGameplay7K.h"
-#include "ScreenGameplay7K_Mechanics.h"
 
 //#include <glm/gtc/matrix_transform.inl>
 
-using namespace VSRG;
-
-void ScreenGameplay7K::RecalculateMatrix()
-{
-    PositionMatrix = glm::translate(Mat4(), glm::vec3(0, JudgmentLinePos + CurrentVertical * SpeedMultiplier, 0));
-}
+using namespace Game::VSRG;

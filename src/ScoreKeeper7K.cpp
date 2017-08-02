@@ -519,6 +519,9 @@ namespace Game {
 				return rank_pts - (total_notes * 260 / 100 + (total_notes * 260 % 100 != 0));
 			case PMT_RANK_P9:
 				return rank_pts - (total_notes * 280 / 100 + (total_notes * 280 % 100 != 0));
+
+			default:
+				break;
 			}
 
 			return 0;
@@ -570,17 +573,17 @@ namespace Game {
 
 		void ScoreKeeper::update_bms(ScoreKeeperJudgment judgment)
 		{
-			if (!use_w0_for_ex2 && judgment <= SKJ_W1 || use_w0_for_ex2 && judgment == SKJ_W0)
+			if ((!use_w0_for_ex2 && judgment <= SKJ_W1) || (use_w0_for_ex2 && judgment == SKJ_W0))
 			{
 				ex_score += 2;
 				bms_dance_pts += 15;
 			}
-			else if (!use_w0_for_ex2 && judgment == SKJ_W2 || use_w0_for_ex2 && judgment == SKJ_W1)
+			else if ((!use_w0_for_ex2 && judgment == SKJ_W2) || (use_w0_for_ex2 && judgment == SKJ_W1))
 			{
 				ex_score += 1;
 				bms_dance_pts += 10;
 			}
-			else if (!use_w0_for_ex2 && judgment == SKJ_W3 || use_w0_for_ex2 && judgment == SKJ_W2)
+			else if ((!use_w0_for_ex2 && judgment == SKJ_W3) || (use_w0_for_ex2 && judgment == SKJ_W2))
 			{
 				bms_dance_pts += 2;
 			}
@@ -599,15 +602,15 @@ namespace Game {
 
 		void ScoreKeeper::update_lr2(ScoreKeeperJudgment judgment)
 		{
-			if (!use_w0_for_ex2 && judgment <= SKJ_W1 || use_w0_for_ex2 && judgment == SKJ_W0)
+			if ((!use_w0_for_ex2 && judgment <= SKJ_W1) || (use_w0_for_ex2 && judgment == SKJ_W0))
 			{
 				lr2_dance_pts += 10;
 			}
-			else if (!use_w0_for_ex2 && judgment == SKJ_W2 || use_w0_for_ex2 && judgment == SKJ_W1)
+			else if ((!use_w0_for_ex2 && judgment == SKJ_W2) || (use_w0_for_ex2 && judgment == SKJ_W1))
 			{
 				lr2_dance_pts += 5;
 			}
-			else if (!use_w0_for_ex2 && judgment == SKJ_W3 || use_w0_for_ex2 && judgment == SKJ_W2)
+			else if ((!use_w0_for_ex2 && judgment == SKJ_W3) || (use_w0_for_ex2 && judgment == SKJ_W2))
 			{
 				lr2_dance_pts += 1;
 			}
@@ -671,17 +674,17 @@ namespace Game {
 
 		void ScoreKeeper::update_exp2(ScoreKeeperJudgment judgment)
 		{
-			if (!use_w0_for_ex2 && judgment <= SKJ_W1 || use_w0_for_ex2 && judgment == SKJ_W0)
+			if ((!use_w0_for_ex2 && judgment <= SKJ_W1) || (use_w0_for_ex2 && judgment == SKJ_W0))
 			{
 				exp_combo += 4;
 				exp_hit_score += 2;
 			}
-			else if (!use_w0_for_ex2 && judgment == SKJ_W2 || use_w0_for_ex2 && judgment == SKJ_W1)
+			else if ((!use_w0_for_ex2 && judgment == SKJ_W2) || (use_w0_for_ex2 && judgment == SKJ_W1))
 			{
 				exp_combo += 3;
 				exp_hit_score += 2;
 			}
-			else if (!use_w0_for_ex2 && judgment == SKJ_W3 || use_w0_for_ex2 && judgment == SKJ_W2)
+			else if ((!use_w0_for_ex2 && judgment == SKJ_W3) || (use_w0_for_ex2 && judgment == SKJ_W2))
 			{
 				exp_combo += 2;
 				exp_hit_score += 1;
@@ -744,6 +747,8 @@ namespace Game {
 				osu_points += 0;
 				bonus_counter = 0;
 				break;
+			default:
+				break;
 			}
 
 			osu_bonus_points += osu_bonus_multiplier * sqrt(double(bonus_counter));
@@ -755,8 +760,8 @@ namespace Game {
 		{
 			if (!use_w0_for_ex2 && judgment <= SKJ_W0) ++rank_w0_count;
 
-			if (!use_w0_for_ex2 && judgment <= SKJ_W1 || use_w0_for_ex2 && judgment <= SKJ_W0) ++rank_w1_count;
-			if (!use_w0_for_ex2 && judgment <= SKJ_W2 || use_w0_for_ex2 && judgment <= SKJ_W1) ++rank_w2_count;
+			if ((!use_w0_for_ex2 && judgment <= SKJ_W1) || (use_w0_for_ex2 && judgment <= SKJ_W0)) ++rank_w1_count;
+			if ((!use_w0_for_ex2 && judgment <= SKJ_W2) || (use_w0_for_ex2 && judgment <= SKJ_W1)) ++rank_w2_count;
 			if (judgment <= SKJ_W3) ++rank_w3_count;
 
 			long long rank_w0_pts = std::max(rank_w0_count * 2 - total_notes, 0LL);

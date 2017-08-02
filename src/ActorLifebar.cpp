@@ -59,6 +59,9 @@ namespace Game {
 			case Miss:
 			case NG:
 				pending_health -= 12;
+				break;
+			default:
+				break;
 			}
 		}
 

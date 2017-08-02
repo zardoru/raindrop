@@ -45,7 +45,7 @@ namespace Game {
 			case Miss:
 				SetImage(GameState::GetInstance().GetSkinImage("judge-miss.png"));
 				break;
-			case None:
+			default:
 				break;
 			}
 		}

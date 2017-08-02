@@ -173,12 +173,22 @@ namespace Utility
         for (; next != nullptr; next = strpbrk(it, token.c_str()))
         {
             if (!compress || it - next != 0)
-                ret.push_back(std::string(it, next));
+            {
+                char a[next - it + 1];
+                std::memcpy(a, it, sizeof(a) - 1);
+                a[sizeof(a) - 1] = '\0';
+                ret.push_back(std::string(a));
+            }
             it = next + 1;
         }
 
         if (it != next && len)
-            ret.push_back(std::string(it, &str[len]));
+        {
+            char a[&str[0] + len - it + 1];
+            std::memcpy(a, it, sizeof(a) - 1);
+            a[sizeof(a) - 1] = '\0';
+            ret.push_back(std::string(a));
+        }
         return ret;
     }
 
@@ -215,8 +225,7 @@ namespace Utility
     int GetLMT(std::filesystem::path Path)
     {
 		if (std::filesystem::exists(Path)) {
-			auto a = std::filesystem::last_write_time(Path);
-			return decltype(a)::clock::to_time_t(a);
+			return std::filesystem::last_write_time(Path);
 		}
 		else return -1;
     }

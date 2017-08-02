@@ -52,6 +52,45 @@ The solution will attempt to grab boost from NuGet first time, though it can sim
 
 Building on Linux
 =====
-The Linux scons file as of right now is outdated. 
-Not only that, you've got to hunt for the dependencies yourself, even if it wasn't.
-As of right now, it still is a decent base to get it to build.
+To install the dependencies on Debian, run:
+```
+$ sudo apt install \
+	clang \
+	libavcodec-dev \
+	libavformat-dev \
+	libboost-all-dev \
+	libglew-dev \
+	libglfw3-dev \
+	libglu1-mesa-dev \
+	libjpeg62-turbo-dev \
+	liblua5.2-dev \
+	libmpg123-dev \
+	libogg-dev \
+	libpng-dev \
+	libsndfile1-dev \
+	libsoxr-dev \
+	libsqlite3-dev \
+	libswscale-dev \
+	libvorbis-dev \
+	libxi-dev \
+	portaudio19-dev \
+	zlib1g-dev
+```
+
+No package exists for libRocket, so you must compile it yourself.
+It requires CMake and FreeType.
+```
+$ sudo apt install cmake libfreetype6-dev
+$ git clone https://github.com/libRocket/libRocket.git
+$ cd libRocket/Build
+$ mkdir build
+$ cd build
+$ cmake -DBUILD_LUA_BINDINGS=ON ..
+$ make
+$ sudo make install
+```
+
+To compile raindrop, run:
+```
+$ scons
+```

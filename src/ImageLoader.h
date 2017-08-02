@@ -28,7 +28,7 @@ public:
 
     /* For multi-threaded loading. */
     static void   AddToPending(std::filesystem::path Filename);
-    static void   LoadFromManifest(char** Manifest, int Count, std::string Prefix = "");
+    static void   LoadFromManifest(const char** Manifest, int Count, std::string Prefix = "");
     static void   UpdateTextures();
     static ImageData GetDataForImage(std::filesystem::path filename);
     static ImageData GetDataForImageFromMemory(const unsigned char *const buffer, size_t len);

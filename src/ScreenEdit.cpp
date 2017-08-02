@@ -7,7 +7,7 @@
 #include "ImageLoader.h"
 #include "Audio.h"
 
-SoundSample *SavedSound = NULL;
+AudioSample *SavedSound = NULL;
 
 double Fracs[] = {
     1,
@@ -73,7 +73,7 @@ namespace Game {
 
 			if (!SavedSound)
 			{
-				SavedSound = new SoundSample();
+				SavedSound = new AudioSample();
 				SavedSound->Open((GameState::GetInstance().GetSkinFile("save.ogg")).c_str());
 			}
 
@@ -277,6 +277,7 @@ namespace Game {
 					case KT_GridInc:            GridCellSize++; return true;
 					case KT_SwitchOffsetPrompt: OffsetPrompt.SwitchOpen(); return true;
 					case KT_SwitchBPMPrompt:	BPMPrompt.SwitchOpen(); return true;
+					default:                    break;
 					}
 
 					switch (key)

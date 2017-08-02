@@ -11,6 +11,7 @@
 
 #include "Sprite.h"
 #include "GuiButton.h"
+#include "Line.h"
 
 #include "Song.h"
 #include "ScreenSelectMusic.h"

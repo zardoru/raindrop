@@ -572,7 +572,7 @@ bool AudioSourceOJM::Open(std::filesystem::path f)
 
     if (!ifile->is_open())
     {
-        Log::Printf("AudioSourceOJM: unable to load %s.\n", f);
+        Log::Printf("AudioSourceOJM: unable to load %s.\n", f.c_str());
         return false;
     }
 

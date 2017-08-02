@@ -26,7 +26,7 @@ BitmapFont* MainMenuFont = NULL;
 LuaManager* MainMenuLua = NULL;
 TruetypeFont* TTFO = NULL;
 
-ScreenMainMenu::ScreenMainMenu() : Screen("ScreenMainMenu", nullptr)
+ScreenMainMenu::ScreenMainMenu() : Screen("ScreenMainMenu", false)
 {
     TNext = nullptr;
 }

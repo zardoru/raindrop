@@ -54,8 +54,9 @@
 			namespace filesystem = boost::filesystem;
 		}
 	#else // it's GCC
-		#if __GNU_PREREQ(6,1)
+		#if __GNUC_PREREQ(6,1)
 			// We can alias the filesystem
+			#include <experimental/filesystem>
 			namespace std
 			{
 				namespace filesystem = experimental::filesystem;
