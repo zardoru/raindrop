@@ -45,6 +45,7 @@
 	{
 		namespace filesystem = experimental::filesystem;
 	}
+	#define STD_FILESYSTEM
 #else
 
 	#ifndef __GNUC__
@@ -61,6 +62,7 @@
 			{
 				namespace filesystem = experimental::filesystem;
 			}
+			#define STD_FILESYSTEM
 		#else
 			// okay then, use boost
 			#include <boost/filesystem.hpp>
@@ -300,7 +302,7 @@ namespace Utility
     std::string SJIStoU8(std::string Line);
 
     void CheckDir(std::string Dirname);
-    int GetLMT(std::filesystem::path Path);
+    int GetLastModifiedTime(std::filesystem::path Path);
     std::string GetSha256ForFile(std::filesystem::path Filename);
     std::string IntToStr(int num);
     std::string CharToStr(char c);

@@ -174,20 +174,14 @@ namespace Utility
         {
             if (!compress || it - next != 0)
             {
-                char a[next - it + 1];
-                std::memcpy(a, it, sizeof(a) - 1);
-                a[sizeof(a) - 1] = '\0';
-                ret.push_back(std::string(a));
+                ret.push_back(str.substr(it - str.c_str(), next - it));
             }
             it = next + 1;
         }
 
         if (it != next && len)
         {
-            char a[&str[0] + len - it + 1];
-            std::memcpy(a, it, sizeof(a) - 1);
-            a[sizeof(a) - 1] = '\0';
-            ret.push_back(std::string(a));
+			ret.push_back(str.substr(it - str.c_str(), next - it));
         }
         return ret;
     }
@@ -222,10 +216,15 @@ namespace Utility
         }
     }
 
-    int GetLMT(std::filesystem::path Path)
+    int GetLastModifiedTime(std::filesystem::path Path)
     {
 		if (std::filesystem::exists(Path)) {
+#ifndef STD_FILESYSTEM // boost
 			return std::filesystem::last_write_time(Path);
+#else // stl
+			auto a = std::filesystem::last_write_time(Path);
+			return decltype(a)::clock::to_time_t(a);
+#endif
 		}
 		else return -1;
     }
@@ -265,6 +264,8 @@ namespace Utility
 	std::vector<std::filesystem::path> GetFileListing(std::filesystem::path path)
 	{
 		std::vector<std::filesystem::path> out;
+
+		if (!std::filesystem::exists(path)) return out;
 		for (auto &p : std::filesystem::directory_iterator(path)) {
 			out.push_back(p);
 		}

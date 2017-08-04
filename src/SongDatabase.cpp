@@ -153,7 +153,7 @@ int SongDatabase::InsertFilename(std::filesystem::path Fn)
         idOut = sqlite3_column_int(st_FilenameQuery, 0);
         lmt = sqlite3_column_int(st_FilenameQuery, 1);
 
-        int lastLmt = Utility::GetLMT(Fn);
+        int lastLmt = Utility::GetLastModifiedTime(Fn);
 
         // Update the last-modified-time of this file, and its hash if it has changed.
         if (lmt != lastLmt)
@@ -172,7 +172,7 @@ int SongDatabase::InsertFilename(std::filesystem::path Fn)
 
         // There's no entry, got to insert it.
         SC(sqlite3_bind_text(st_FilenameInsertQuery, 1, u8p.c_str(), u8p.length(), SQLITE_STATIC));
-        SC(sqlite3_bind_int(st_FilenameInsertQuery, 2, Utility::GetLMT(Fn)));
+        SC(sqlite3_bind_int(st_FilenameInsertQuery, 2, Utility::GetLastModifiedTime(Fn)));
         SC(sqlite3_bind_text(st_FilenameInsertQuery, 3, Hash.c_str(), Hash.length(), SQLITE_STATIC));
         SCS(sqlite3_step(st_FilenameInsertQuery)); // This should not fail. Otherwise, there are bigger problems to worry about...
         SC(sqlite3_reset(st_FilenameInsertQuery));
@@ -327,7 +327,7 @@ bool SongDatabase::CacheNeedsRenewal(std::filesystem::path Dir)
 {
 	// must match what we put at InsertFilename time, so turn into absolute path on both places!
 	std::string u8p = Utility::ToU8(std::filesystem::absolute(Dir).wstring());
-    int CurLMT = Utility::GetLMT(Dir);
+    int CurLMT = Utility::GetLastModifiedTime(Dir);
     bool NeedsRenewal;
     int res, ret;
 

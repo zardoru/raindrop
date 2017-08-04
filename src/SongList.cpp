@@ -89,6 +89,9 @@ void SongList::AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, std:
     std::vector<Game::dotcur::Song*> SongsDC;
     std::vector<std::string> Listing;
 
+	// boost throws with nonexisting directories
+	if (!std::filesystem::exists(Dir)) return;
+
 	for (auto i : std::filesystem::directory_iterator (Dir))
     {
         if (i == "." || i == "..") continue;
