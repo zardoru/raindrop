@@ -194,6 +194,7 @@
     <ClCompile Include="..\src\SceneEnvironment.cpp" />
     <ClCompile Include="..\src\GuiButton.cpp" />
     <ClCompile Include="..\src\GuiTextPrompt.cpp" />
+    <ClCompile Include="..\src\SwRescale.cpp" />
     <ClCompile Include="..\src\Texture.cpp" />
     <ClCompile Include="..\src\ImageList.cpp" />
     <ClCompile Include="..\src\ImageLoader.cpp" />
@@ -268,6 +269,7 @@
     <ClInclude Include="..\src\SceneEnvironment.h" />
     <ClInclude Include="..\src\GuiButton.h" />
     <ClInclude Include="..\src\GuiTextPrompt.h" />
+    <ClInclude Include="..\src\SwRescale.h" />
     <ClInclude Include="..\src\Texture.h" />
     <ClInclude Include="..\src\ImageList.h" />
     <ClInclude Include="..\src\ImageLoader.h" />

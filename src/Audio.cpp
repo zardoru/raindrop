@@ -30,7 +30,12 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, void* Sound, double
 	CfgVar RequestedLatency("RequestedLatency", "Audio");
 	CfgVar UseHighLatency("UseHighLatency", "Audio");
 
-	if (RequestedLatency < 0 || UseHighLatency) {
+#ifdef WIN32
+	bool useAuto = (RequestedLatency < 0 && UseWasapi) || (RequestedLatency <= 0 && !UseWasapi);
+#else
+	bool useAuto = RequestedLatency <= 0;
+#endif
+	if ( useAuto || UseHighLatency) {
 		if (!UseHighLatency)
 			outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultLowOutputLatency;
 		else
@@ -85,6 +90,12 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, void* Sound, double
 			DSStreamInfo.flags = 0;
 		} else
 		{
+			if (Pa_GetHostApiInfo(Pa_GetDeviceInfo(Device)->hostApi)->type == paMME) {
+				Log::Logf("AUDIO: Attempting to use MME\n");
+			}
+			else {
+				Log::Logf("AUDIO: Opening host API with identifier: %d\n", Pa_GetHostApiInfo(Pa_GetDeviceInfo(Device)->hostApi)->type);
+			}
 			outputParams.hostApiSpecificStreamInfo = nullptr;
 		}
     }
@@ -95,11 +106,11 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, void* Sound, double
 	double Rate = Pa_GetDeviceInfo(Device)->defaultSampleRate;
     Log::Logf("AUDIO: Device Selected %d (Rate: %f)\n", Device, Rate);
     // fire up portaudio
-    PaError Err = Pa_OpenStream(mStream, nullptr, &outputParams, Rate, 0, 0, Callback, static_cast<void*>(Sound));
+    PaError Err = Pa_OpenStream(mStream, nullptr, &outputParams, Rate, 0, paDitherOff | paClipOff, Callback, static_cast<void*>(Sound));
 
     if (Err)
     {
-        Log::Logf("%ls\n", Utility::Widen(Pa_GetErrorText(Err)).c_str());
+        Log::Logf("Audio: Failed opening device, portaudio reports \"%ls\"\n", Utility::Widen(Pa_GetErrorText(Err)).c_str());
     }
 #ifdef LINUX
     else
@@ -182,9 +193,14 @@ public:
             if (!Stream)
             {
                 // This was a Wasapi problem. Retry without it.
-                Log::Logf("AUDIO: Problem initializing WASAPI. Falling back to default API.\n");
+                Log::Logf("AUDIO: Problem initializing WASAPI. Falling back to DirectSound API.\n");
                 UseWasapi = false;
-                OpenStream(&Stream, Pa_GetDefaultOutputDevice(), static_cast<void*>(this), Latency, Mix);
+                OpenStream(&Stream, DefaultDSDevice, static_cast<void*>(this), Latency, Mix);
+
+				if (!Stream) {
+					Log::Logf("AUDIO: Problem initializing DirectSound API. Falling back to default API.\n");
+					OpenStream(&Stream, Pa_GetDefaultOutputDevice(), static_cast<void*>(this), Latency, Mix);
+				}
             }
         }
         else
@@ -383,6 +399,7 @@ void GetAudioInfo()
     for (PaDeviceIndex i = 0; i < DevCount; i++)
     {
         const PaDeviceInfo *Info = Pa_GetDeviceInfo(i);
+		if (Info->maxOutputChannels == 0) continue; // Skip input devices.
         Log::Logf("(%d): %s\n", i, Info->name);
         Log::Logf("\thighLat: %f ms, lowLat: %f ma\n", Info->defaultHighOutputLatency * 1000, Info->defaultLowOutputLatency * 1000);
         Log::Logf("\tsampleRate: %f, hostApi: %d\n", Info->defaultSampleRate, Info->hostApi);

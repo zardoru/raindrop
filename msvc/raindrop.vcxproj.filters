@@ -253,6 +253,9 @@
     <ClCompile Include="..\src\TTFCache.cpp">
       <Filter>Source Files\backend\render\fonts</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\SwRescale.cpp">
+      <Filter>Source Files\backend\render\textures</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\pch.h">
@@ -452,6 +455,9 @@
     </ClInclude>
     <ClInclude Include="..\src\TTFCache.h">
       <Filter>Header Files\backend\render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SwRescale.h">
+      <Filter>Header Files\backend\render\textures</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
