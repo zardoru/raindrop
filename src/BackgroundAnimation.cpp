@@ -110,7 +110,8 @@ public:
         EventsLayer2 = Difficulty->Data->BMPEvents->BMPEventsLayer2;
 
 		for (auto v : Difficulty->Data->BMPEvents->BMPList) {
-			std::filesystem::path path = Song->SongDirectory / v.second;
+			std::filesystem::path vs = v.second;
+			std::filesystem::path path = Song->SongDirectory / vs;
 			if (IsVideoPath(path))
 			{
 				auto vid = new VideoPlayback();

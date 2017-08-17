@@ -177,7 +177,8 @@ ImageData ImageLoader::GetDataForImage(std::filesystem::path filename)
 			return {};
 	}
 
-    auto file = std::ifstream{ filename.string(), std::ios::binary };
+	// this macro warps around windows/linux stuff wrt wide strings
+	CreateBinIfstream(file, filename);
     if (!file.is_open())
     {
 		if (ImageLoaderMessages) {
