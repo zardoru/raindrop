@@ -106,7 +106,7 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, void* Sound, double
 	double Rate = Pa_GetDeviceInfo(Device)->defaultSampleRate;
     Log::Logf("AUDIO: Device Selected %d (Rate: %f)\n", Device, Rate);
     // fire up portaudio
-    PaError Err = Pa_OpenStream(mStream, nullptr, &outputParams, Rate, 0, paDitherOff | paClipOff, Callback, static_cast<void*>(Sound));
+    PaError Err = Pa_OpenStream(mStream, nullptr, &outputParams, Rate, 0, 0, Callback, static_cast<void*>(Sound));
 
     if (Err)
     {

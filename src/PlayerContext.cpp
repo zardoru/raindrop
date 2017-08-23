@@ -1139,17 +1139,15 @@ namespace Game {
 						since only head locations are used.
 						Find this possible hold by checking if it intersects the screen.
 					*/
-					auto rStart = std::reverse_iterator<std::vector<TrackNote>::iterator>(Start);
-					for (auto i = rStart; i != NotesByChannel[k].rend(); ++i)
-					{
+					if (Start != NotesByChannel[k].begin()) {
+						auto i = Start - 1;//std::reverse_iterator<std::vector<TrackNote>::iterator>(Start);
 						if (i->IsHold() && i->IsVisible())
 						{
 							auto Vert = Locate(i->GetVertical());
 							auto VertEnd = Locate(i->GetHoldEndVertical());
 							if (IntervalsIntersect(0, ScreenHeight, std::min(Vert, VertEnd), std::max(Vert, VertEnd)))
 							{
-								Start = i.base() - 1;
-								break;
+								Start = i;
 							}
 						}
 					}
@@ -1218,16 +1216,18 @@ namespace Game {
 						double Size;
 						// If we're being hit and..
 						bool decrease_hold_size = PlayerNoteskin.ShouldDecreaseHoldSizeWhenBeingHit() && Level == 2;
+						auto reference_point = 0.0f;
 						if (decrease_hold_size)
 						{
-							Pos = (VerticalHoldEnd + JudgeY) / 2;
-							Size = VerticalHoldEnd - JudgeY;
+							reference_point = JudgeY;
 						}
 						else // We were failed, not being hit or were already hit
 						{
-							Pos = (VerticalHoldEnd + Vertical) / 2;
-							Size = VerticalHoldEnd - Vertical;
+							reference_point = Vertical;
 						}
+
+						Pos = (VerticalHoldEnd + reference_point) / 2;
+						Size = VerticalHoldEnd - reference_point;
 
 						PlayerNoteskin.DrawHoldBody(k, Pos, Size, Level);
 						PlayerNoteskin.DrawHoldTail(*m, k, VerticalHoldEnd, Level);

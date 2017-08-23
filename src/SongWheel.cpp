@@ -529,7 +529,8 @@ void SongWheel::ConfirmSelection()
 {
     if (!FilteredCurrentList.IsDirectory(SelectedBoundItem))
     {
-        OnSongConfirm(GetSelectedSong(), DifficultyIndex);
+		if (DifficultyIndex < GetSelectedSong()->GetDifficultyCount())
+			OnSongConfirm(GetSelectedSong(), DifficultyIndex);
     }
     else
     {
