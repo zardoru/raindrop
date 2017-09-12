@@ -289,7 +289,7 @@ namespace Game {
 
 			std::unique_ptr<Game::VSRG::Mechanics> PrepareMechanicsSet(
 				std::shared_ptr<VSRG::Difficulty> CurrentDiff, 
-				Game::VSRG::ScoreKeeper* PlayerScorekeeper,
+				std::shared_ptr<Game::VSRG::ScoreKeeper> PlayerScorekeeper,
 				double JudgeY);
 
 			ScoreType GetScoringType() const;

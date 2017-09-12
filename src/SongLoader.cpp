@@ -151,7 +151,7 @@ void PushSongToDatabase(SongDatabase* DB, Game::VSRG::Song *New)
     // All difficulties have the same song ID, so..
     ID = DB->GetSongIDForFile(New->Difficulties.at(0)->Filename);
 	if (ID == -1) {
-		DB->AddSongToDatabase(New);
+		ID = DB->AddSongToDatabase(New);
 	}
 
 	New->ID = ID;
@@ -161,7 +161,7 @@ void PushSongToDatabase(SongDatabase* DB, Game::VSRG::Song *New)
     k != New->Difficulties.end();
         ++k)
     {
-        DB->AddDifficulty(ID, (*k)->Filename, k->get(), MODE_VSRG);
+        DB->AddDifficulty(ID, (*k)->Filename, k->get());
         (*k)->Destroy();
     }
 }
@@ -411,7 +411,7 @@ std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const Game::VSRG::Song* Met
     bool DifficultyFound = false;
     for (auto k : Out->Difficulties)
     {
-        DB->AddDifficulty(Meta->ID, k->Filename, k.get(), MODE_VSRG);
+        DB->AddDifficulty(Meta->ID, k->Filename, k.get());
         if (k->ID == CurrentDiff->ID) // We've got a match; move onward.
         {
             CurrentDiff = k;

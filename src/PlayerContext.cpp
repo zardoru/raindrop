@@ -60,7 +60,7 @@ namespace Game {
 		{
 			using namespace Game::VSRG;
 
-			MechanicsSet = Parameters.PrepareMechanicsSet(CurrentDiff, PlayerScoreKeeper.get(), GetJudgmentY());
+			MechanicsSet = Parameters.PrepareMechanicsSet(CurrentDiff, PlayerScoreKeeper, GetJudgmentY());
 			MechanicsSet->TransformNotes(ChartState);
 
 

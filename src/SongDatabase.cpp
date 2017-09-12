@@ -67,13 +67,13 @@ auto GetDiffInfo = "SELECT diffid, name, objcount,\
 				   scoreobjectcount, duration, isvirtual, \
 				   keys, fileid, level, genre FROM diffdb WHERE songid=$sid";
 
-auto GetFileInfo = "SELECT filename, lastmodified FROM songfiledb WHERE id=$id";
+auto GetFileInfo = "SELECT filename, lastmodified FROM songfiledb WHERE id=$fid";
 
 auto UpdateLMT = "UPDATE songfiledb SET lastmodified=$lmt, hash=$hash WHERE filename=$fn";
 
 auto UpdateDiff = "UPDATE diffdb SET name=$name,objcount=$objcnt,scoreobjectcount=$scoreobjcnt,\
 	duration=$dur,\
-	isvirtual=$vir,\
+	isvirtual=$virtual,\
 	keys=$keys,\
 	level=$level,\
 	author=$author,\
@@ -263,7 +263,7 @@ bool SongDatabase::DifficultyExists(int FileID, std::string DifficultyName, int 
     return r == SQLITE_ROW;
 }
 
-void SongDatabase::UpdateDiffInternal(int &ret, int DiffID, Game::Song::Difficulty * Diff, int Mode)
+void SongDatabase::UpdateDiffInternal(int &ret, int DiffID, Game::Song::Difficulty * Diff)
 {
 	SC(sqlite3_bind_int(st_DiffUpdateQuery,
 		sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$did"),
@@ -318,16 +318,16 @@ void SongDatabase::UpdateDiffInternal(int &ret, int DiffID, Game::Song::Difficul
 }
 
 // Adds a difficulty to the database, or updates it if it already exists.
-void SongDatabase::AddDifficulty(int SongID, std::filesystem::path Filename, Game::Song::Difficulty* Diff, int Mode)
+void SongDatabase::AddDifficulty(int SongID, std::filesystem::path Filename, Game::Song::Difficulty* Diff)
 {
     int FileID = InsertFilename(Filename);
     int DiffID;
     int ret;
 
     if (!DifficultyExists(FileID, Diff->Name, &DiffID))
-		InsertDiffInternal(ret, SongID, FileID, Diff, Mode);
+		InsertDiffInternal(ret, SongID, FileID, Diff);
     else // Update
-		UpdateDiffInternal(ret, DiffID, Diff, Mode);
+		UpdateDiffInternal(ret, DiffID, Diff);
 
     if (DiffID == 0)
     {
@@ -342,9 +342,52 @@ void SongDatabase::AddDifficulty(int SongID, std::filesystem::path Filename, Gam
 
 int SongDatabase::AddSongToDatabase(Game::VSRG::Song * Song)
 {
+	int ret = 0;
+	auto u8sfn = Utility::ToU8(Song->SongFilename.wstring());
+	auto u8bfn = Utility::ToU8(Song->BackgroundFilename.wstring());
+	auto u8pfn = Utility::ToU8(Song->SongPreviewSource.wstring());
+
+	// Okay then, insert the song.
+	// So now the latest entry is what we're going to insert difficulties and files into.
+	SC(sqlite3_bind_text(st_SngInsertQuery, 
+		sqlite3_bind_parameter_index(st_SngInsertQuery, "$title"),
+		Song->SongName.c_str(), Song->SongName.length(), SQLITE_STATIC));
+
+	SC(sqlite3_bind_text(st_SngInsertQuery, 
+		sqlite3_bind_parameter_index(st_SngInsertQuery, "$author"),
+		Song->SongAuthor.c_str(), Song->SongAuthor.length(), SQLITE_STATIC));
+
+	SC(sqlite3_bind_text(st_SngInsertQuery, 
+		sqlite3_bind_parameter_index(st_SngInsertQuery, "$subtitle"),
+		Song->Subtitle.c_str(), Song->Subtitle.length(), SQLITE_STATIC));
+
+	SC(sqlite3_bind_text(st_SngInsertQuery, 
+		sqlite3_bind_parameter_index(st_SngInsertQuery, "$fn"),
+		u8sfn.c_str(), u8sfn.length(), SQLITE_STATIC));
+
+	SC(sqlite3_bind_text(st_SngInsertQuery, 
+		sqlite3_bind_parameter_index(st_SngInsertQuery, "$bg"),
+		u8bfn.c_str(), u8bfn.length(), SQLITE_STATIC));
+
+	SC(sqlite3_bind_text(st_SngInsertQuery, 
+		sqlite3_bind_parameter_index(st_SngInsertQuery, "$psong"), 
+		u8pfn.c_str(), u8pfn.length(), SQLITE_STATIC));
+	
+	SC(sqlite3_bind_double(st_SngInsertQuery, 
+		sqlite3_bind_parameter_index(st_SngInsertQuery, "$ptime"),
+		Song->PreviewTime));
+
+	SCS(sqlite3_step(st_SngInsertQuery));
+	SC(sqlite3_reset(st_SngInsertQuery));
+
+	sqlite3_step(st_GetLastSongID);
+	int Out = sqlite3_column_int(st_GetLastSongID, 0);
+	sqlite3_reset(st_GetLastSongID);
+
+	return Out;
 }
 
-void SongDatabase::InsertDiffInternal(int &ret, int SongID, int FileID, Game::Song::Difficulty * Diff, int Mode)
+void SongDatabase::InsertDiffInternal(int &ret, int SongID, int FileID, Game::Song::Difficulty * Diff)
 {
 	SC(sqlite3_bind_int(st_DiffInsertQuery,
 		sqlite3_bind_parameter_index(st_DiffInsertQuery, "$sid"),
@@ -527,7 +570,7 @@ void SongDatabase::GetSongInformation(int ID, Game::VSRG::Song* Out)
 
     // Now, difficulty information.
     SC(sqlite3_bind_int(stGetDiffInfo, 
-		sqlite3_bind_parameter_index(stGetDiffInfo, "$did"), 
+		sqlite3_bind_parameter_index(stGetDiffInfo, "$sid"), 
 		ID));
 
     while (sqlite3_step(stGetDiffInfo) != SQLITE_DONE)

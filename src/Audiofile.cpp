@@ -421,6 +421,8 @@ void AudioSample::SeekTime(float Second)
 {
     mCounter = mRate * Second * Channels;
 
+	if (!mData) return;
+
     if (mCounter >= mData->size())
         mCounter = mData->size();
 }

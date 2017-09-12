@@ -39,6 +39,9 @@ private:
     // Returns the ID.
     int InsertFilename(std::filesystem::path Fn);
     bool DifficultyExists(int FileID, std::string DifficultyName, int *IDOut = NULL);
+
+	void UpdateDiffInternal(int &ret, int DiffID, Game::Song::Difficulty * Diff);
+	void InsertDiffInternal(int &ret, int SongID, int FileID, Game::Song::Difficulty * Diff);
 public:
 
     SongDatabase(std::string Database);
@@ -46,12 +49,9 @@ public:
 
     void ClearDifficulties(int SongID);
     bool CacheNeedsRenewal(std::filesystem::path Dir);
-	void UpdateDiffInternal(int &ret, int DiffID, Game::Song::Difficulty * Diff, int Mode);
-	void AddDifficulty(int SongID, std::filesystem::path Filename, Game::Song::Difficulty* Diff, int Mode);
+	void AddDifficulty(int SongID, std::filesystem::path Filename, Game::Song::Difficulty* Diff);
 
 	int AddSongToDatabase(Game::VSRG::Song *Song);
-
-	void InsertDiffInternal(int &ret, int SongID, int FileID, Game::Song::Difficulty * Diff, int Mode);
 
     void GetPreviewInfo(int SongID, std::string &Filename, float &PreviewStart);
 

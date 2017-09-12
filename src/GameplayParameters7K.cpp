@@ -120,7 +120,7 @@ namespace Game {
 
 		std::unique_ptr<Game::VSRG::Mechanics> PlayscreenParameters::PrepareMechanicsSet(
 			std::shared_ptr<VSRG::Difficulty> CurrentDiff, 
-			Game::VSRG::ScoreKeeper * PlayerScoreKeeper,
+			std::shared_ptr<Game::VSRG::ScoreKeeper> PlayerScoreKeeper,
 			double JudgeY)
 		{
 			std::unique_ptr<Game::VSRG::Mechanics> MechanicsSet = nullptr;
@@ -156,7 +156,7 @@ namespace Game {
 				SystemType = VSRG::TI_RAINDROP;
 			}
 
-			TimingType UsedTimingType = SetupGameSystem(TimingInfo, PlayerScoreKeeper);
+			TimingType UsedTimingType = SetupGameSystem(TimingInfo, PlayerScoreKeeper.get());
 
 			/*
 			If we're on TT_BEATS we've got to recalculate all note positions to beats,
@@ -185,7 +185,8 @@ namespace Game {
 				MechanicsSet = std::make_unique<O2JamMechanics>();
 			}
 
-			SetupGauge(TimingInfo, PlayerScoreKeeper);
+			MechanicsSet->Setup(CurrentDiff.get(), PlayerScoreKeeper);
+			SetupGauge(TimingInfo, PlayerScoreKeeper.get());
 			UpdateHidden(JudgeY);
 
 			return MechanicsSet;
