@@ -34,7 +34,7 @@ namespace Game {
 		public:
 			;
 		private:
-			GameChartData ChartData;
+			PlayerChartState ChartState;
 
 			double LastUpdateTime; // seconds, song time
 
@@ -51,17 +51,6 @@ namespace Game {
 
 			PlayscreenParameters Parameters;
 
-			struct SHiddenData {
-				EHiddenMode		 Mode;
-				float            Center; // in NDC
-				float			 TransitionSize; // in NDC
-				float			 CenterSize; // in NDC
-			} Hidden;
-
-			LifeType           LifebarType;
-			ScoreType          ScoringType;
-
-
 			struct SGearState {
 				std::map<int, int> Bindings;
 				VSRG::TrackNote*   CurrentKeysounds[VSRG::MAX_CHANNELS];
@@ -75,22 +64,16 @@ namespace Game {
 				bool TurntableEnabled;
 			} Gear;
 
-			// Whether to use time-based binary search on notes
-			bool UseNoteOptimization();
-
 			void DrawBarlines(double cur_vertical, double smult);
 			int DrawMeasures(double song_time); // returns rendered note count 
 
-			std::shared_ptr<SceneEnvironment> Animations;
 			Noteskin PlayerNoteskin;
 			int PlayerNumber;
-			int UsedTimingType;
 
 			void SetupMechanics();
 			void RunMeasures(double time);
 			void PlayLaneKeysound(uint32_t Lane);
 			void RunAuto(TrackNote *m, double usedTime, uint32_t k);
-			void UpdateHidden();
 		public:
 			PlayerContext(int pn, Game::VSRG::PlayscreenParameters par = Game::VSRG::PlayscreenParameters());
 			void Init();
@@ -99,8 +82,9 @@ namespace Game {
 			void Render(double songTime);
 
 			std::function<void(int sndid)> PlayKeysound;
-			std::function<void(double dt, uint32_t lane, bool hold, bool release, int pn)> OnHit;
+			std::function<void(ScoreKeeperJudgment judgment, double dt, uint32_t lane, bool hold, bool release, int pn)> OnHit;
 			std::function<void(double dt, uint32_t lane, bool hold, bool dontbreakcombo, bool earlymiss, int pn)> OnMiss;
+			std::function<void(uint32_t lane, bool keydown, int pn)> OnGearKeyEvent;
 
 			/*
 				About this pointer's lifetime:
@@ -108,7 +92,7 @@ namespace Game {
 			*/
 			void SetPlayableData(std::shared_ptr<VSRG::Difficulty> difficulty, double Drift = 0, 
 								double DesiredDefaultSpeed = 0, int Type = SPEEDTYPE_DEFAULT);
-			const GameChartData &GetPlayerState();
+			const PlayerChartState &GetPlayerState();
 
 			// Getters (Lua)
 			bool IsFailEnabled() const;
@@ -130,7 +114,6 @@ namespace Game {
 			int GetChannelCount() const;
 			int GetPlayerNumber() const;
 			bool GetIsHeldKey(int Lane) const;
-			double GetMeasureTime(double Msr) const;
 			double HasSongFinished(double time) const;
 
 			double GetWaitingTime();
@@ -149,7 +132,6 @@ namespace Game {
 
 			// Setters
 			void SetUserMultiplier(float Multip);
-			void SetSceneEnvironment(std::shared_ptr<SceneEnvironment> env);
 
 			// Only if Difficulty->Data is not null.
 			std::vector<AutoplaySound> GetBgmData();
@@ -161,7 +143,6 @@ namespace Game {
 
 			void HitNote(double TimeOff, uint32_t Lane, bool IsHold, bool IsHoldRelease = false);
 			void MissNote(double TimeOff, uint32_t Lane, bool IsHold, bool dont_break_combo, bool early_miss);
-			void SetOnMiss(std::function<void(int)> fn);
 			void GearKeyEvent(uint32_t Lane, bool KeyDown);
 			void JudgeLane(uint32_t Lane, double Time);
 			void ReleaseLane(uint32_t Lane, double Time);
@@ -176,9 +157,9 @@ namespace Game {
 
 			void SetUnwarpedTime(double time);
 
-			int GetCurrentGaugeType();
-			int GetCurrentScoreType();
-			int GetCurrentSystemType();
+			int GetCurrentGaugeType() const;
+			int GetCurrentScoreType() const;
+			int GetCurrentSystemType() const;
 
 			// Whether the player has actually failed or not
 			bool HasFailed() const;

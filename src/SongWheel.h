@@ -2,11 +2,6 @@
 #include "SongList.h"
 
 namespace Game {
-	namespace dotcur
-	{
-		class Song;
-	}
-
 	namespace VSRG
 	{
 		class Song;
@@ -33,10 +28,10 @@ class GraphicalString;
 
 namespace Game
 {
-    typedef std::function<void(std::shared_ptr<Song>, uint8_t)> SongNotification;
+    typedef std::function<void(std::shared_ptr<VSRG::Song>, uint8_t)> SongNotification;
     typedef std::function<void(int32_t, uint32_t, std::string, std::shared_ptr<Song>)> ItemNotification;
-    typedef std::function<void(int32_t, std::shared_ptr<Song>, bool, int32_t)> ItemTransformFunction;
-    typedef std::function<void(int32_t, std::shared_ptr<Song>, bool, int32_t, std::string)> StringTransformFunction;
+    typedef std::function<void(int32_t, std::shared_ptr<VSRG::Song>, bool, int32_t)> ItemTransformFunction;
+    typedef std::function<void(int32_t, std::shared_ptr<VSRG::Song>, bool, int32_t, std::string)> StringTransformFunction;
     typedef std::function <float(float)> ListTransformFunction;
     typedef std::function<void()> DirectoryChangeNotifyFunction;
 	typedef std::function<bool(const ListEntry * const)> FuncFilterCriteria;
@@ -116,7 +111,7 @@ namespace Game
 
         bool HandleInput(int32_t key, KeyEventType code, bool isMouseInput);
         bool HandleScrollInput(const double dx, const double dy);
-        std::shared_ptr<Song> GetSelectedSong();
+        std::shared_ptr<VSRG::Song> GetSelectedSong();
         void ReloadSongs(SongDatabase* Database);
         void LoadSongsOnce(SongDatabase* Database);
 

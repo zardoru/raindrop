@@ -11,10 +11,6 @@ namespace Game
 {
     class Song;
 
-	namespace dotcur
-	{
-		class Song;
-	}
 
 	namespace VSRG
 	{
@@ -22,6 +18,7 @@ namespace Game
 		struct Difficulty;
 		class Song;
 		class ScoreKeeper;
+		class PlayerContext;
 	}
 
     class GameState
@@ -31,21 +28,13 @@ namespace Game
 
         Texture* StageImage;
         Texture* SongBG;
-        std::shared_ptr<Game::Song> SelectedSong;
+        std::shared_ptr<Game::VSRG::Song> SelectedSong;
 
 		struct SPlayerCurrent7K {
 			std::shared_ptr<VSRG::ScoreKeeper> SKeeper7K;
 			VSRG::PlayscreenParameters Params;
 			std::shared_ptr<VSRG::Difficulty> Diff;
-
-			int CurrentGaugeType;
-			int CurrentScoreType;
-			int CurrentSubsystemType;
-			SPlayerCurrent7K (){
-				CurrentGaugeType = 0;
-				CurrentScoreType = 0;
-				CurrentSubsystemType = 0;
-			}
+			VSRG::PlayerContext *ctx;
 		};
 
 		std::vector<SPlayerCurrent7K> PlayerInfo;
@@ -75,8 +64,7 @@ namespace Game
         bool SkinSupportsChannelCount(int Count);
         std::string GetSkin();
 
-		void SetSelectedSong(std::shared_ptr<Game::Song> song);
-        Game::Song *GetSelectedSong() const;
+        Game::VSRG::Song *GetSelectedSong() const;
 
 	    Texture* GetSongBG();
 	    Texture* GetSongStage();
@@ -96,16 +84,15 @@ namespace Game
 		/* Player-number dependant functions */
 		bool PlayerNumberInBounds(int pn) const;
 
+		void SetPlayerContext(VSRG::PlayerContext* pc, int pn);
+
 		// VSRG Gauge Type
-		void SetCurrentGaugeType(int GaugeType, int pn);
 		int GetCurrentGaugeType(int pn) const;
 
 	    // VSRG score system
-		void SetCurrentScoreType(int ScoreType, int pn);
 		int GetCurrentScoreType(int pn) const;
 
 		// VSRG subsystem
-		void SetCurrentSystemType(int SystemType, int pn);
 		int GetCurrentSystemType(int pn) const;
 
         // Note: Returning a shared_ptr causes lua to fail an assertion, since shared_ptr is not registered.

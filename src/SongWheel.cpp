@@ -3,7 +3,6 @@
 #include "GameGlobal.h"
 #include "GameState.h"
 #include "Logging.h"
-#include "SongDC.h"
 #include "Song7K.h"
 #include "GameWindow.h"
 #include "SongLoader.h"
@@ -108,8 +107,9 @@ public:
         for (auto i = Directories.begin();
         i != Directories.end();
             ++i)
+
         {
-            ListRoot->AddNamedDirectory(*mLoadMutex, &Loader, i->second, i->first, VSRGActive, DCActive);
+            ListRoot->AddNamedDirectory(*mLoadMutex, &Loader, i->second, i->first);
 			SongWheel::GetInstance().ReapplyFilters();
         }
 
@@ -187,16 +187,8 @@ int SongWheel::PrevDifficulty()
     if (!FilteredCurrentList.IsDirectory(SelectedBoundItem))
     {
         DifficultyIndex--;
-        if (FilteredCurrentList.GetSongEntry(SelectedBoundItem)->Mode == MODE_VSRG)
-        {
-            auto Song = std::static_pointer_cast<VSRG::Song> (FilteredCurrentList.GetSongEntry(SelectedBoundItem));
-            max_index = Song->Difficulties.size() - 1;
-        }
-        else
-        {
-            auto Song = std::static_pointer_cast<dotcur::Song> (FilteredCurrentList.GetSongEntry(SelectedBoundItem));
-            max_index = Song->Difficulties.size() - 1;
-        }
+        auto Song = std::static_pointer_cast<VSRG::Song> (FilteredCurrentList.GetSongEntry(SelectedBoundItem));
+		max_index = Song->Difficulties.size() - 1;
 
         DifficultyIndex = std::min(max_index, DifficultyIndex);
         OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
@@ -212,18 +204,11 @@ int SongWheel::NextDifficulty()
     if (!FilteredCurrentList.IsDirectory(SelectedBoundItem))
     {
         DifficultyIndex++;
-        if (FilteredCurrentList.GetSongEntry(SelectedBoundItem)->Mode == MODE_VSRG)
-        {
-            auto Song = std::static_pointer_cast<VSRG::Song> (FilteredCurrentList.GetSongEntry(SelectedBoundItem));
-            if (DifficultyIndex >= Song->Difficulties.size())
-                DifficultyIndex = 0;
-        }
-        else
-        {
-            auto Song = std::static_pointer_cast<dotcur::Song> (FilteredCurrentList.GetSongEntry(SelectedBoundItem));
-            if (DifficultyIndex >= Song->Difficulties.size())
-                DifficultyIndex = 0;
-        }
+        
+        auto Song = std::static_pointer_cast<VSRG::Song> (FilteredCurrentList.GetSongEntry(SelectedBoundItem));
+        if (DifficultyIndex >= Song->Difficulties.size())
+            DifficultyIndex = 0;
+        
 
         OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
     }
@@ -328,9 +313,9 @@ bool SongWheel::HandleScrollInput(const double dx, const double dy)
     return true;
 }
 
-std::shared_ptr<Game::Song> SongWheel::GetSelectedSong()
+std::shared_ptr<Game::VSRG::Song> SongWheel::GetSelectedSong()
 {
-    return FilteredCurrentList.GetSongEntry(SelectedBoundItem);
+    return std::static_pointer_cast<Game::VSRG::Song>(FilteredCurrentList.GetSongEntry(SelectedBoundItem));
 }
 
 void SongWheel::Update(float Delta)
@@ -389,7 +374,7 @@ void SongWheel::DisplayItem(int32_t ListItem, int32_t ListPosition, float itemFr
     if (screen_box.Intersects(item_box))
     {
         bool IsSelected = false;
-        std::shared_ptr<Song> Song = nullptr;
+        std::shared_ptr<VSRG::Song> Song = nullptr;
         std::string Text;
 
         if (ListItem != -1)
@@ -474,7 +459,6 @@ void SongWheel::SetSelectedItem(int32_t Item)
     
     // Set bound item index to this.
     SelectedBoundItem = Item;
-    GameState::GetInstance().SetSelectedSong(GetSelectedSong());
     OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
 }
 

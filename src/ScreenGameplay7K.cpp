@@ -112,12 +112,6 @@ namespace Game {
 					if (!Active)
 						Activate();
 					break;
-				case KT_Right:
-					//SpeedMultiplierUser += 0.25;
-					break;
-				case KT_Left:
-					// SpeedMultiplierUser -= 0.25;
-					break;
 				default:
 					break;
 				}
@@ -146,7 +140,13 @@ namespace Game {
 				while (BGMEvents.size() && BGMEvents.front().Time <= Time.Stream)
 				{
 					for (auto &&s : Keysounds[BGMEvents.front().Sound])
-						if (s) s->Play();
+						if (s) {
+							double dt = Time.Stream - BGMEvents.front().Time;
+							if (dt < s->GetDuration()) {
+								s->SeekTime(dt);
+								s->Play();
+							}
+						}
 					BGMEvents.pop();
 				}
 			}
@@ -304,9 +304,50 @@ namespace Game {
 			Time.Stream += SongDelta;
 		}
 
+		void ScreenGameplay::OnPlayerHit(ScoreKeeperJudgment judgment, double dt, uint32_t lane, bool hold, bool release, int pn)
+		{
+			
+			if (Animations->GetEnv()->CallFunction("HitEvent", 6))
+			{
+				Animations->GetEnv()->PushArgument(judgment);
+				Animations->GetEnv()->PushArgument(dt);
+				Animations->GetEnv()->PushArgument((int)lane + 1);
+				Animations->GetEnv()->PushArgument(hold);
+				Animations->GetEnv()->PushArgument(release);
+				Animations->GetEnv()->PushArgument(pn);
+				Animations->GetEnv()->RunFunction();
+			}
+
+			auto PlayerScoreKeeper = Players[pn]->GetScoreKeeper();
+			if (PlayerScoreKeeper->getMaxNotes() == PlayerScoreKeeper->getScore(ST_NOTES_HIT))
+				Animations->DoEvent("OnFullComboEvent");
+			
+		}
+
 		void ScreenGameplay::OnPlayerMiss(double dt, uint32_t lane, bool hold, bool dontbreakcombo, bool earlymiss, int pn)
 		{
 			BGA->OnMiss();
+
+			if (Animations->GetEnv()->CallFunction("MissEvent", 4))
+			{
+				Animations->GetEnv()->PushArgument(dt);
+				Animations->GetEnv()->PushArgument((int)lane + 1);
+				Animations->GetEnv()->PushArgument(hold);
+				Animations->GetEnv()->PushArgument(pn);
+				Animations->GetEnv()->RunFunction();
+			}
+		}
+
+		void ScreenGameplay::OnPlayerGearKeyEvent(uint32_t lane, bool keydown, int pn)
+		{
+			if (Animations->GetEnv()->CallFunction("GearKeyEvent", 3))
+			{
+				Animations->GetEnv()->PushArgument((int)lane + 1);
+				Animations->GetEnv()->PushArgument(keydown);
+				Animations->GetEnv()->PushArgument(pn);
+
+				Animations->GetEnv()->RunFunction();
+			}
 		}
 
 		bool ScreenGameplay::Run(double Delta)
@@ -367,8 +408,6 @@ namespace Game {
 
 			for (auto &p : Players)
 				p->Render(Time.InterpolatedStream);
-
-			// PlayerContext::Render(Time.InterpolatedStream)
 
 			Animations->DrawFromLayer(14);
 		}

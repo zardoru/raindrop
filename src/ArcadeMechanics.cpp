@@ -22,7 +22,7 @@ namespace Game {
 		}
 		bool RaindropArcadeMechanics::CanHitNoteHead(double time, TrackNote * note)
 		{
-			return (abs(time - note->GetStartTime()) < score_keeper->getJudgmentCutoff()) && note->IsHeadEnabled() && !note->WasHit();
+			return (abs(time - note->GetStartTime()) < PlayerScoreKeeper->getJudgmentCutoff()) && note->IsHeadEnabled() && !note->WasHit();
 		}
 		bool RaindropArcadeMechanics::CanHitNoteTail(double time, TrackNote * note)
 		{
@@ -82,7 +82,7 @@ namespace Game {
 
 					double tdev = (Note->GetEndTime() - SongTime) * 1000.;
 					// Tail is within judge window, and head was hit
-					if ( abs(tdev) < score_keeper->getJudgmentWindow(SKJ_W3)
+					if ( abs(tdev) < PlayerScoreKeeper->getJudgmentWindow(SKJ_W3)
 						&& Note->WasHit()) {
 						Note->Hit();
 						HitNotify(tdev, Lane, Note->IsHold(), true);
@@ -105,7 +105,7 @@ namespace Game {
 		{
 			if (!Note->IsEnabled()) return false;
 
-			double miss_time = score_keeper->getJudgmentWindow(SKJ_W3);
+			double miss_time = PlayerScoreKeeper->getJudgmentWindow(SKJ_W3);
 			double dev = (SongTime - Note->GetStartTime()) * 1000.;
 			double tail_dev = (SongTime - Note->GetEndTime()) * 1000.;
 			

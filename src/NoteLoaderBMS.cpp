@@ -335,10 +335,7 @@ namespace NoteLoaderBMS{
 					Note.Sound = ev.Event;
 					UsedSounds[ev.Event] = true;
 
-					Chart->TotalScoringObjects++;
-					Chart->TotalNotes++;
-					Chart->TotalObjects++;
-
+					
 					Msr.Notes[Track].push_back(Note);
 					/*
 						For future reference:
@@ -356,8 +353,6 @@ namespace NoteLoaderBMS{
 				{
 					if (LastNotes[Track])
 					{
-						Chart->TotalHolds++;
-						Chart->TotalScoringObjects++;
 						LastNotes[Track]->EndTime = Time;
 						LastNotes[Track] = nullptr;
 					}
@@ -385,10 +380,6 @@ namespace NoteLoaderBMS{
 
 					Note.Sound = ev.Event;
 					UsedSounds[ev.Event] = true;
-
-					Chart->TotalScoringObjects += 2;
-					Chart->TotalHolds++;
-					Chart->TotalObjects++;
 
 					Msr.Notes[Track].push_back(Note);
 

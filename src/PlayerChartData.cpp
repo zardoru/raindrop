@@ -7,7 +7,7 @@ CfgVar DebugMeasurePosGen("MeasurePosGen", "Debug");
 
 namespace Game {
 	namespace VSRG {
-		GameChartData::GameChartData()
+		PlayerChartState::PlayerChartState()
 		{
 			Drift = 0;
 			WaitTime = DEFAULT_WAIT_TIME;
@@ -164,14 +164,14 @@ namespace Game {
 			return BPS;
 		}
 
-		TimingData GetVSpeeds(TimingData& BPS, double Speed)
+		TimingData GetVSpeeds(TimingData& BPS, double ConstantUserSpeed)
 		{
 			TimingData VerticalSpeeds;
 
 			// We're using a CMod, so further processing is pointless
-			if (Speed)
+			if (ConstantUserSpeed)
 			{
-				VerticalSpeeds.push_back(TimingSegment(0, Speed));
+				VerticalSpeeds.push_back(TimingSegment(0, ConstantUserSpeed));
 				return VerticalSpeeds;
 			}
 			// End CMod
@@ -207,7 +207,7 @@ namespace Game {
 			return VerticalSpeeds;
 		}
 
-		TimingData GetSpeedChanges(TimingData VerticalSpeeds, TimingData Scrolls, double Drift, double Offset, bool Reset)
+		TimingData ApplySpeedChanges(TimingData VerticalSpeeds, TimingData Scrolls, double Drift, double Offset, bool Reset)
 		{
 			std::sort(Scrolls.begin(), Scrolls.end());
 
@@ -297,7 +297,7 @@ namespace Game {
 			return VerticalSpeeds;
 		}
 
-		double GameChartData::GetWarpAmount(double Time) const
+		double PlayerChartState::GetWarpAmount(double Time) const
 		{
 			double wAmt = 0;
 			for (auto warp : Warps)
@@ -309,7 +309,7 @@ namespace Game {
 			return wAmt;
 		}
 
-		bool GameChartData::IsWarpingAt(double start_time) const
+		bool PlayerChartState::IsWarpingAt(double start_time) const
 		{
 			auto it = std::lower_bound(Warps.begin(), Warps.end(), start_time, TimeSegmentCompare<TimingSegment>);
 			if (it != Warps.end())
@@ -319,29 +319,30 @@ namespace Game {
 		}
 
 
-		GameChartData GameChartData::FromDifficulty(Difficulty *diff, double Drift, double Speed)
+		PlayerChartState PlayerChartState::FromDifficulty(Difficulty *diff, double UserOffset, double ConstantUserSpeed)
 		{
-			GameChartData out;
+			PlayerChartState out;
 			auto data = diff->Data;
 			if (data == nullptr)
 				throw std::runtime_error("Tried to pass a metadata-only difficulty to Player Chart data generator.\n");
 
 			out.ConnectedDifficulty = diff;
-			out.Drift = Drift;
-			out.BPS = GetBPSData(diff, Drift);
-			out.VSpeeds = GetVSpeeds(out.BPS, Speed);
-			out.VSpeeds = GetSpeedChanges(out.VSpeeds, data->Scrolls,
-				Drift, diff->Offset,
-				diff->BPMType == VSRG::Difficulty::BT_BEATSPACE);
+			out.Drift = UserOffset;
+			out.BPS = GetBPSData(diff, UserOffset);
+			out.ScrollSpeeds = GetVSpeeds(out.BPS, ConstantUserSpeed);
 
 
 			out.HasTurntable = diff->Data->Turntable;
 
 			out.MeasureBarlines = out.GetMeasureLines();
 
-			if (!Speed) {
+			if (!ConstantUserSpeed) {
+				out.ScrollSpeeds = ApplySpeedChanges(out.ScrollSpeeds, data->Scrolls,
+					UserOffset, diff->Offset,
+					diff->BPMType == VSRG::Difficulty::BT_BEATSPACE);
+
 				out.Warps = data->Warps;
-				out.Speeds = data->Speeds;
+				out.InterpoloatedSpeedMultipliers = data->InterpoloatedSpeedMultipliers;
 			}
 
 			/* For all channels of this difficulty */
@@ -365,10 +366,10 @@ namespace Game {
 						TrackNote NewNote;
 
 						NewNote.AssignNotedata(CurrentNote);
-						NewNote.AddTime(Drift);
+						NewNote.AddTime(UserOffset);
 
-						auto VerticalPosition = IntegrateToTime(out.VSpeeds, NewNote.GetStartTime());
-						auto HoldEndPosition = IntegrateToTime(out.VSpeeds, NewNote.GetEndTime());
+						auto VerticalPosition = IntegrateToTime(out.ScrollSpeeds, NewNote.GetStartTime());
+						auto HoldEndPosition = IntegrateToTime(out.ScrollSpeeds, NewNote.GetEndTime());
 
 						// if upscroll change minus for plus as well as matrix at screengameplay7k
 						if (!CurrentNote.EndTime)
@@ -391,7 +392,7 @@ namespace Game {
 
 						// !Speed: non-constant
 						// Judgable & ! warping: Constant speed, so only add non-warped notes.
-						if (!Speed || (NewNote.IsJudgable() && !out.IsWarpingAt(CurrentNote.StartTime)))
+						if (!ConstantUserSpeed || (NewNote.IsJudgable() && !out.IsWarpingAt(CurrentNote.StartTime)))
 							out.NotesByChannel[KeyIndex].push_back(NewNote);
 					}
 
@@ -407,23 +408,21 @@ namespace Game {
 				});
 			}
 
-			if (Speed) // Only apply speeds on non-constant velocities
-				out.Speeds = diff->Data->Speeds;
-
 			for (auto&& w : out.Warps)
-				w.Time += Drift;
-			for (auto&& s : out.Speeds)
-				s.Time += Drift;
+				w.Time += UserOffset;
+			for (auto&& s : out.InterpoloatedSpeedMultipliers)
+				s.Time += UserOffset;
 
 			// Toggle whether we can use our guarantees for optimizations or not at rendering/judge time.
 			out.HasNegativeScroll = false;
 
-			for (auto S : out.Speeds) if (S.Value < 0) out.HasNegativeScroll = true;
-			for (auto S : out.VSpeeds) if (S.Value < 0) out.HasNegativeScroll = true;
+			for (auto S : out.InterpoloatedSpeedMultipliers) if (S.Value < 0) out.HasNegativeScroll = true;
+			for (auto S : out.ScrollSpeeds) if (S.Value < 0) out.HasNegativeScroll = true;
 			return out;
 		}
 
-		double GameChartData::GetWarpedSongTime(double SongTime) const
+		// audio time -> chart time
+		double PlayerChartState::GetWarpedSongTime(double SongTime) const
 		{
 			auto T = SongTime;
 			for (auto k = Warps.cbegin(); k != Warps.cend(); ++k)
@@ -448,7 +447,7 @@ namespace Game {
 		}
 
 
-		std::vector<double> GameChartData::GetMeasureLines() const
+		std::vector<double> PlayerChartState::GetMeasureLines() const
 		{
 			auto &diff = ConnectedDifficulty;
 			auto Data = diff->Data;
@@ -483,7 +482,7 @@ namespace Game {
 			for (auto i = 0; i < TotMeasures; i++)
 			{
 				auto T = Drift + diff->Offset - MeasureTime * i;
-				auto PositionOut = IntegrateToTime(VSpeeds, T);
+				auto PositionOut = IntegrateToTime(ScrollSpeeds, T);
 				Out.push_back(PositionOut);
 				if (DebugMeasurePosGen)
 					Log::LogPrintf("Add measure line at time %f (Vertical %f)\n", T, PositionOut);
@@ -496,14 +495,14 @@ namespace Game {
 
 				if (BPMType == Difficulty::BT_BEAT) // VerticalSpeeds already has drift applied, so we don't need to apply it again here.
 				{
-					PositionOut = IntegrateToTime(VSpeeds, Drift + GetTimeAtBeat(Last));
+					PositionOut = IntegrateToTime(ScrollSpeeds, Drift + GetTimeAtBeat(Last));
 				}
 				else if (BPMType == Difficulty::BT_BEATSPACE)
 				{
 					auto TargetTime = IntegrateToTime(SPB, Last) + diff->Offset;
 					//TargetTime = round(TargetTime * 1000.0) / 1000.0; // Round to MS
 
-					PositionOut = IntegrateToTime(VSpeeds, TargetTime);
+					PositionOut = IntegrateToTime(ScrollSpeeds, TargetTime);
 					if (DebugMeasurePosGen) {
 						Log::LogPrintf("Add measure line at time %f (Vertical: %f)\n", TargetTime, PositionOut);
 					}
@@ -516,36 +515,36 @@ namespace Game {
 			return Out;
 		}
 
-		double GameChartData::GetBpmAt(double Time) const
+		double PlayerChartState::GetBpmAt(double Time) const
 		{
 			return SectionValue(BPS, Time) * 60;
 		}
 
-		double GameChartData::GetBpsAt(double Time) const
+		double PlayerChartState::GetBpsAt(double Time) const
 		{
 			return SectionValue(BPS, Time);
 		}
 
 
-		double GameChartData::GetBeatAt(double Time) const
+		double PlayerChartState::GetBeatAt(double Time) const
 		{
 			return IntegrateToTime(BPS, Time);
 		}
 
-		double GameChartData::GetSpeedMultiplierAt(double Time) const
+		double PlayerChartState::GetSpeedMultiplierAt(double Time) const
 		{
 			// Calculate current speed value to apply.
 			auto CurrentTime = GetWarpedSongTime(Time);
 
 			// speedIter: first which time is greater than current
-			auto speedIter = lower_bound(Speeds.begin(), Speeds.end(), CurrentTime);
+			auto speedIter = lower_bound(InterpoloatedSpeedMultipliers.begin(), InterpoloatedSpeedMultipliers.end(), CurrentTime);
 			double previousValue = 1;
 			double currentValue = 1;
 			double speedTime = CurrentTime;
 			double duration = 1;
 			bool integrateByBeats = false;
 
-			if (speedIter != Speeds.begin())
+			if (speedIter != InterpoloatedSpeedMultipliers.begin())
 				speedIter--;
 
 			// Do we have a speed that has a value to interpolate from?
@@ -554,7 +553,7 @@ namespace Game {
 				From the speed at the end of the previous speed, interpolate to speedIter->value
 				in speedIter->duration time across the current time - speedIter->time.
 			*/
-			if (speedIter != Speeds.begin())
+			if (speedIter != InterpoloatedSpeedMultipliers.begin())
 			{
 				auto prevSpeed = speedIter - 1;
 				previousValue = prevSpeed->Value;
@@ -565,7 +564,7 @@ namespace Game {
 			}
 			else // Oh, we don't?
 			{
-				if (speedIter != Speeds.end())
+				if (speedIter != InterpoloatedSpeedMultipliers.end())
 					currentValue = previousValue = speedIter->Value;
 			}
 
@@ -582,62 +581,92 @@ namespace Game {
 			return lerpedMultiplier;
 		}
 
-		double GameChartData::GetTimeAtBeat(double beat, double drift) const
+		// returns chart time
+		double PlayerChartState::GetTimeAtBeat(double beat, double drift) const
 		{
-			return TimeAtBeat(ConnectedDifficulty->Timing, ConnectedDifficulty->Offset + drift, beat) + StopTimeAtBeat(ConnectedDifficulty->Data->Stops, beat);
+			return TimeAtBeat(ConnectedDifficulty->Timing, ConnectedDifficulty->Offset + drift, beat) + 
+				StopTimeAtBeat(ConnectedDifficulty->Data->Stops, beat);
 		}
 
-		double GameChartData::GetOffset() const
+		double PlayerChartState::GetOffset() const
 		{
 			return ConnectedDifficulty->Offset;
 		}
 
-		std::map<int, std::string> GameChartData::GetSoundList() const
+		double PlayerChartState::GetMeasureTime(double msr) const
+		{
+			double beat = 0;
+
+			if (msr <= 0)
+			{
+				return 0;
+			}
+
+			auto whole = int(floor(msr));
+			auto fraction = msr - double(whole);
+			for (auto i = 0; i < whole; i++)
+				beat += ConnectedDifficulty->Data->Measures[i].Length;
+			beat += ConnectedDifficulty->Data->Measures[whole].Length * fraction;
+
+			// Log::Logf("Warping to measure measure %d at beat %f.\n", whole, beat);
+
+			return GetTimeAtBeat(beat);
+		}
+
+		bool PlayerChartState::IsNoteTimeSorted()
+		{
+			return !Warps.size()  // The actual time is scrambled
+				&& !HasNegativeScroll; // Draw order may be incorrect
+		}
+
+		std::map<int, std::string> PlayerChartState::GetSoundList() const
 		{
 			assert(ConnectedDifficulty && ConnectedDifficulty->Data);
 			return ConnectedDifficulty->Data->SoundList;
 		}
 
-		ChartType GameChartData::GetChartType() const
+		ChartType PlayerChartState::GetChartType() const
 		{
 			assert(ConnectedDifficulty && ConnectedDifficulty->Data);
 			assert(ConnectedDifficulty->Data->TimingInfo);
 			return ConnectedDifficulty->Data->TimingInfo->GetType();
 		}
 
-		bool GameChartData::IsBmson() const
+		bool PlayerChartState::IsBmson() const
 		{
 			return GetChartType() == TI_BMS &&
 				dynamic_cast<BMSChartInfo*>(ConnectedDifficulty->Data->TimingInfo.get())->IsBMSON;
 		}
 
-		bool GameChartData::IsVirtual() const
+		bool PlayerChartState::IsVirtual() const
 		{
 			return ConnectedDifficulty->IsVirtual;
 		}
 
-		bool GameChartData::HasTimingData() const
+		bool PlayerChartState::HasTimingData() const
 		{
 			assert(ConnectedDifficulty != nullptr);
 			return ConnectedDifficulty->Timing.size() > 0;
 		}
 
-		SliceContainer GameChartData::GetSliceData() const
+		SliceContainer PlayerChartState::GetSliceData() const
 		{
 			return ConnectedDifficulty->Data->SliceData;
 		}
 
-		double GameChartData::GetDisplacementAt(double Time) const
+		// chart time -> note displacement
+		double PlayerChartState::GetChartDisplacementAt(double Time) const
 		{
-			return IntegrateToTime(VSpeeds, Time);
+			return IntegrateToTime(ScrollSpeeds, Time);
 		}
 
-		double GameChartData::GetDisplacementSpeedAt(double Time) const
+		// song time -> scroll speed
+		double PlayerChartState::GetDisplacementSpeedAt(double Time) const
 		{
-			return SectionValue(VSpeeds, GetWarpedSongTime(Time));
+			return SectionValue(ScrollSpeeds, GetWarpedSongTime(Time));
 		}
 
-		void GameChartData::DisableNotesUntil(double Time)
+		void PlayerChartState::DisableNotesUntil(double Time)
 		{
 			ResetNotes();
 			for (auto k = 0U; k < MAX_CHANNELS; k++)
@@ -646,7 +675,7 @@ namespace Game {
 						m->Disable();
 		}
 
-		void GameChartData::ResetNotes()
+		void PlayerChartState::ResetNotes()
 		{
 			for (auto k = 0U; k < MAX_CHANNELS; k++)
 				for (auto m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); ++m)

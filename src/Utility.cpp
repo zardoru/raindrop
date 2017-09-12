@@ -244,7 +244,7 @@ namespace Utility
     std::string GetSha256ForFile(std::filesystem::path Filename)
     {
         SHA256 SHA;
-        std::ifstream InStream(Filename.string());
+		CreateIfstream(InStream, Filename);
         unsigned char tmpbuf[256];
 
         if (!InStream.is_open())

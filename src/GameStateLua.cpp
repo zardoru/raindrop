@@ -7,7 +7,6 @@
 
 #include "Song.h"
 #include "Song7K.h"
-#include "SongDC.h"
 #include "SongDatabase.h"
 #include "SongWheel.h"
 
@@ -72,23 +71,38 @@ struct songHelper
         Q* diff = (Q*)Sng->Difficulties[idx];
         return diff;
     }
+
+	template <class T>
+	static int GetObjCount(T const* diff)
+	{
+		return 0;
+		/*if (diff->Mode == MODE_VSRG) {
+		return;
+		}*/
+	}
+
+	template <class T>
+	static int GetScoreObjCount(T const* diff)
+	{
+		return 0;
+		/*if (diff->Mode == MODE_VSRG) {
+		return;
+		}*/
+	}
+
+	template <class T>
+	static void SetObjCount(T* Diff, int s)
+	{
+		return;
+	}
+
+
+	template <class T>
+	static void SetScoreObjCount(T* diff, int s)
+	{
+		return;
+	}
 };
-
-Game::VSRG::Song* toSong7K(Game::Song* Sng)
-{
-    if (Sng && Sng->Mode == MODE_VSRG)
-        return (Game::VSRG::Song*) Sng;
-    else
-        return nullptr;
-}
-
-Game::dotcur::Song* toSongDC(Game::Song* Sng)
-{
-    if (Sng && Sng->Mode == MODE_DOTCUR)
-        return (Game::dotcur::Song*) Sng;
-    else
-        return nullptr;
-}
 
 Game::VSRG::PlayscreenParameters* GameState::GetParameters(int pn)
 {
@@ -99,13 +113,8 @@ Game::VSRG::PlayscreenParameters* GameState::GetParameters(int pn)
 
 Game::VSRG::Difficulty * Game::GameState::GetDifficulty(int pn)
 {
-	/*if (PlayerNumberInBounds(pn) && PlayerInfo[pn].Diff)
-		return PlayerInfo[pn].Diff.get();
-	else*/ {
-		if(GetSelectedSong() && GetSelectedSong()->Mode == MODE_VSRG)
-			return ((Game::VSRG::Song*)GetSelectedSong())->GetDifficulty(SongWheel::GetInstance().GetDifficulty());
-	}
-
+	if(GetSelectedSong())
+		return ((Game::VSRG::Song*)GetSelectedSong())->GetDifficulty(SongWheel::GetInstance().GetDifficulty());
 	return nullptr;
 }
 
@@ -114,8 +123,7 @@ std::shared_ptr<Game::VSRG::Difficulty> Game::GameState::GetDifficultyShared(int
 	if (PlayerNumberInBounds(pn) && PlayerInfo[pn].Diff)
 		return PlayerInfo[pn].Diff;
 	else {
-		if(GetSelectedSong()->Mode == MODE_VSRG)
-			return ((Game::VSRG::Song*)GetSelectedSong())->Difficulties[SongWheel::GetInstance().GetDifficulty()];
+		return ((Game::VSRG::Song*)GetSelectedSong())->Difficulties[SongWheel::GetInstance().GetDifficulty()];
 	}
 
 	return nullptr;
@@ -139,12 +147,16 @@ void GameState::InitializeLua(lua_State *L)
 		.addData("Duration", &Game::Song::Difficulty::Duration, false)
 		.addData("Name", &Game::Song::Difficulty::Name, false)
 		.addData("Offset", &Game::Song::Difficulty::Offset, false)
-		.addData("Holds", &Game::Song::Difficulty::TotalHolds, false)
-		.addData("Notes", &Game::Song::Difficulty::TotalNotes, false)
-		.addData("Objects", &Game::Song::Difficulty::TotalObjects, false)
-		.addData("ScoreObjects", &Game::Song::Difficulty::TotalScoringObjects, false)
+		
+		.addProperty("Objects", &songHelper::GetObjCount<Game::Song::Difficulty>,
+			&songHelper::SetObjCount<Game::Song::Difficulty>)
+
+		.addProperty("ScoreObjects", &songHelper::GetScoreObjCount<Game::Song::Difficulty>,
+			&songHelper::SetScoreObjCount<Game::Song::Difficulty>)
+		
 		.addProperty("Author", &songHelper::getDifficultyAuthor<Game::Song::Difficulty>, 
 			&songHelper::setDifficultyAuthor <Game::Song::Difficulty>)
+		
 		.addProperty("Genre", &songHelper::getDifficultyGenre<Game::Song::Difficulty>, 
 			&songHelper::setDifficultyGenre<Game::Song::Difficulty>)
 		.endClass();
@@ -155,22 +167,12 @@ void GameState::InitializeLua(lua_State *L)
 		.addData("Channels", &VSRG::Difficulty::Channels, false)
 		.endClass();
 
-	luabridge::getGlobalNamespace(L)
-		.deriveClass <dotcur::Difficulty, Game::Song::Difficulty> ("DifficultyDC")
-		.endClass();
 
 	luabridge::getGlobalNamespace(L)
 		.deriveClass <VSRG::Song, Game::Song>("Song7K")
 		.addProperty("DifficultyCount", &songHelper::getDifficultyCountForSong<VSRG::Song>,
 			&songHelper::setDifficultyCountForSong<VSRG::Song>)
 		.addFunction("GetDifficulty", &VSRG::Song::GetDifficulty)
-		.endClass();
-
-	luabridge::getGlobalNamespace(L)
-		.deriveClass <dotcur::Song, Game::Song>("SongDC")
-		.addProperty("DifficultyCount", &songHelper::getDifficultyCountForSong<dotcur::Song>,
-			&songHelper::setDifficultyCountForSong<dotcur::Song>)
-		// .addFunction("GetDifficulty", &songHelper::getDifficulty<dotcur::Song, dotcur::Difficulty>)
 		.endClass();
 
 	using namespace Game::VSRG;
@@ -190,7 +192,7 @@ void GameState::InitializeLua(lua_State *L)
 		.endClass();
 
 	luabridge::getGlobalNamespace(L)
-		.beginClass <GameState> ("GameState")
+		.beginClass <GameState>("GameState")
 		.addFunction("GetSelectedSong", &GameState::GetSelectedSong)
 		.addFunction("GetDifficulty", &GameState::GetDifficulty)
 		.addFunction("GetScorekeeper7K", &GameState::GetScorekeeper7K)
@@ -201,9 +203,7 @@ void GameState::InitializeLua(lua_State *L)
 		.addFunction("SortWheelBy", &GameState::SortWheelBy)
 		.addFunction("StartScreen", &GameState::StartScreenTransition)
 		.addFunction("ExitScreen", &GameState::ExitCurrentScreen)
-		.endClass()
-		.addFunction("toSong7K", toSong7K)
-		.addFunction("toSongDC", toSongDC);
+		.endClass();
 
 	luabridge::push(L, this);
 	lua_setglobal(L, "Global");

@@ -31,7 +31,7 @@ namespace Game {
 			}
 		};
 
-		typedef std::vector<SpeedSection> VectorSpeeds;
+		typedef std::vector<SpeedSection> VectorInterpolatedSpeedMultipliers;
 
 		typedef std::vector<Measure> VectorMeasure;
 
@@ -140,7 +140,7 @@ namespace Game {
 			VectorMeasure Measures;
 
 			// For Speed changes.
-			VectorSpeeds Speeds;
+			VectorInterpolatedSpeedMultipliers InterpoloatedSpeedMultipliers;
 
 			// Autoplay Sounds
 			std::vector<AutoplaySound> BGMEvents;
@@ -168,6 +168,9 @@ namespace Game {
 
 			// Audio slicing data
 			SliceContainer SliceData;
+
+			uint32_t GetObjectCount();
+			uint32_t GetScoreItemsCount();
 
 			DifficultyLoadInfo()
 			{

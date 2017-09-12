@@ -122,8 +122,6 @@ struct defaultKeys_s
     { GLFW_KEY_BACKSPACE, KT_BSPC },
     { GLFW_MOUSE_BUTTON_LEFT, KT_Select },
     { GLFW_MOUSE_BUTTON_RIGHT, KT_SelectRight },
-    { 'Z', KT_GameplayClick },
-    { 'X', KT_GameplayClick },
 	{ GLFW_KEY_F5, KT_ReloadScreenScripts },
 	{ GLFW_KEY_F10, KT_ReloadCFG }
 };
@@ -677,7 +675,7 @@ void GameWindow::RunInput()
 		const float *axisArray = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axisArraySize);
 		if (axisArraySize) {
 			for (auto i = 0; i < axisArraySize; i++) {
-				for (auto j = 0; j < SpecialKeys.size(); j++) {
+				for (size_t j = 0; j < SpecialKeys.size(); j++) {
 					// as before, specialkeys vector value
 					int axis = SpecialKeys[j].boundkey - 1000;
 

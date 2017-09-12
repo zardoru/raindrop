@@ -79,7 +79,7 @@ public:
 
         out << "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">" << endl;
 
-        auto ptIdx = 0;
+        size_t ptIdx = 0;
         float ImageHeight = CfgValNPS("GraphHeight", 300);
         float GraphYOffset = CfgValNPS("GraphYOffs", 50);
         float GraphXOffset = CfgValNPS("GraphXOffs", 100);
@@ -102,7 +102,7 @@ public:
         if (!DiffAuth.length())
             DiffAuth = "an anonymous charter";
 
-        float avgNPS = Song->GetDifficulty(diffIndex)->TotalScoringObjects / Song->GetDifficulty(diffIndex)->Duration;
+        float avgNPS = Song->GetDifficulty(diffIndex)->Data->GetScoreItemsCount() / Song->GetDifficulty(diffIndex)->Duration;
 
         out << Utility::Format("<text x=\"%.0f\" y=\"%.0f\" fill=\"black\">%s - %s (%s) by %s (Max NPS: %.2f/Avg NPS: %.2f)</text>",
             TextXOffset, TextYOffset,

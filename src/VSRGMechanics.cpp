@@ -11,36 +11,47 @@
 #include "ScoreKeeper7K.h"
 #include "VSRGMechanics.h"
 #include "TrackNote.h"
+#include "NoteTransformations.h"
 
 namespace Game {
 	namespace VSRG {
 		bool Mechanics::IsLateHeadMiss(double t, TrackNote * note)
 		{
-			return (t - note->GetStartTime()) * 1000.0 > score_keeper->getMissCutoffMS();
+			return (t - note->GetStartTime()) * 1000.0 > PlayerScoreKeeper->getMissCutoffMS();
 		}
 
 		bool Mechanics::InJudgeCutoff(double t, TrackNote * note)
 		{
-			return (abs(t - note->GetStartTime()) < score_keeper->getJudgmentCutoff()) ||
-				(abs(t - note->GetEndTime()) < score_keeper->getJudgmentCutoff());
+			return (abs(t - note->GetStartTime()) < PlayerScoreKeeper->getJudgmentCutoff()) ||
+				(abs(t - note->GetEndTime()) < PlayerScoreKeeper->getJudgmentCutoff());
 		}
 		bool Mechanics::IsEarlyMiss(double t, TrackNote * note)
 		{
 			double dt = (t - note->GetStartTime()) * 1000.;
-			return dt < -score_keeper->getMissCutoffMS() && dt > -score_keeper->getEarlyMissCutoffMS();
+			return dt < -PlayerScoreKeeper->getMissCutoffMS() && dt > -PlayerScoreKeeper->getEarlyMissCutoffMS();
 		}
 
 		bool Mechanics::IsBmBadJudge(double t, TrackNote * note)
 		{
 			double dt = abs(t - note->GetStartTime());
-			return dt > score_keeper->getJudgmentWindow(SKJ_W3) && dt < score_keeper->getJudgmentWindow(SKJ_W4);
+			return dt > PlayerScoreKeeper->getJudgmentWindow(SKJ_W3) && dt < PlayerScoreKeeper->getJudgmentWindow(SKJ_W4);
 		}
 		
+
+		void Mechanics::TransformNotes(PlayerChartState & ChartState)
+		{
+			if (GetTimingKind() == TT_BEATS) {
+				NoteTransform::TransformToBeats(
+					CurrentDifficulty->Channels,
+					ChartState.NotesByChannel, 
+					ChartState.BPS);
+			}
+		}
 
 		void Mechanics::Setup(VSRG::Difficulty *Difficulty, std::shared_ptr<ScoreKeeper> scoreKeeper)
 		{
 			CurrentDifficulty = Difficulty;
-			score_keeper = scoreKeeper;
+			PlayerScoreKeeper = scoreKeeper;
 		}
 
 		RaindropMechanics::RaindropMechanics(bool forcedRelease)
@@ -87,7 +98,7 @@ namespace Game {
 			else if (m->IsHold() && m->IsEnabled())
 			{
 				// Condition C-1: Forced release is enabled
-				if ((SongTime - m->GetEndTime()) * 1000 > score_keeper->getMissCutoffMS() && forcedRelease)
+				if ((SongTime - m->GetEndTime()) * 1000 > PlayerScoreKeeper->getMissCutoffMS() && forcedRelease)
 				{
 					m->FailHit();
 					// Take away health and combo (1st false)
@@ -108,7 +119,7 @@ namespace Game {
 						else
 						{
 							// Only take away health, but not combo (1st true)
-							MissNotify(score_keeper->getMissCutoffMS(), k, m->IsHold(), true, false);
+							MissNotify(PlayerScoreKeeper->getMissCutoffMS(), k, m->IsHold(), true, false);
 						}
 
 						SetLaneHoldingState(k, false);
@@ -172,7 +183,7 @@ namespace Game {
 				double releaseWindow;
 
 				if (forcedRelease)
-					releaseWindow = score_keeper->getJudgmentWindow(SKJ_W3);
+					releaseWindow = PlayerScoreKeeper->getJudgmentWindow(SKJ_W3);
 				else
 					releaseWindow = 250; // 250 ms
 
@@ -216,7 +227,7 @@ namespace Game {
 				double dev = (SongBeat - m->GetEndTime());
 				double tD = abs(dev);
 
-				if (tD < score_keeper->getJudgmentWindow(SKJ_W3)) /* Released in time */
+				if (tD < PlayerScoreKeeper->getJudgmentWindow(SKJ_W3)) /* Released in time */
 				{
 					HitNotify(dev, Lane, m->IsHold(), true);
 					SetLaneHoldingState(Lane, false);
@@ -244,7 +255,7 @@ namespace Game {
 			double dev = (SongBeat - m->GetStartTime());
 			double tD = abs(dev);
 
-			if (tD < score_keeper->getJudgmentWindow(SKJ_W3)) // If the note was hit inside judging range
+			if (tD < PlayerScoreKeeper->getJudgmentWindow(SKJ_W3)) // If the note was hit inside judging range
 			{
 				m->Hit();
 
@@ -257,7 +268,7 @@ namespace Game {
 					m->Disable();
 
 					// BADs stay visible.
-					if (tD < score_keeper->getJudgmentWindow(SKJ_W2))
+					if (tD < PlayerScoreKeeper->getJudgmentWindow(SKJ_W2))
 						m->MakeInvisible();
 				}
 
@@ -265,7 +276,7 @@ namespace Game {
 
 				return true;
 			}
-			else if (tD > score_keeper->getJudgmentWindow(SKJ_W3) && tD < score_keeper->getMissCutoffMS()) {
+			else if (tD > PlayerScoreKeeper->getJudgmentWindow(SKJ_W3) && tD < PlayerScoreKeeper->getMissCutoffMS()) {
 				m->FailHit();
 				m->Disable();
 
@@ -293,7 +304,7 @@ namespace Game {
 				MissNotify(abs(tTail), k, m->IsHold(), true, false);
 				m->Disable();
 			} // Condition B: Regular note or hold head outside cutoff, wasn't hit and it's enabled.
-			else if (tHead > score_keeper->getJudgmentWindow(SKJ_W3) && !m->WasHit() && m->IsEnabled())
+			else if (tHead > PlayerScoreKeeper->getJudgmentWindow(SKJ_W3) && !m->WasHit() && m->IsEnabled())
 			{
 				m->FailHit();
 				MissNotify(abs(tHead), k, m->IsHold(), false, false);
@@ -301,7 +312,7 @@ namespace Game {
 				// remove from judgment completely
 				m->Disable();
 			} // Condition C: Hold head was hit, but hold tail was not released.
-			else if (tTail > score_keeper->getJudgmentWindow(SKJ_W3) &&
+			else if (tTail > PlayerScoreKeeper->getJudgmentWindow(SKJ_W3) &&
 				m->IsHold() && m->WasHit() && m->IsEnabled())
 			{
 				m->FailHit();

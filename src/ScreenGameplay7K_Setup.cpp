@@ -54,7 +54,7 @@ namespace Game {
 
 		void ScreenGameplay::AssignMeasure(uint32_t Measure)
 		{
-			double mt = Players[0]->GetMeasureTime(Measure);
+			double mt = Players[0]->GetPlayerState().GetMeasureTime(Measure);
 			double wt = Players[0]->GetPlayerState().GetWarpedSongTime(mt);
 			for (auto& player : Players) {
 				player->SetUnwarpedTime(mt);
@@ -83,9 +83,9 @@ namespace Game {
 			ForceActivation = false;
 
 			for (auto i = 0; i < GameState::GetInstance().GetPlayerCount(); i++) {
-				Players.push_back(std::make_unique<PlayerContext>(i, *GameState::GetInstance().GetParameters(i)));
+				Players.push_back(std::make_unique<PlayerContext>(i, *GameState::GetInstance().GetParameters(i)));				
+				GameState::GetInstance().SetPlayerContext(Players[i].get(), i);
 				Players[i]->PlayKeysound = std::bind(&ScreenGameplay::PlayKeysound, this, std::placeholders::_1);
-				Players[i]->SetSceneEnvironment(Animations);
 			}
 		}
 
@@ -332,7 +332,7 @@ namespace Game {
 
 			if (Time.InterpolateStream &&  // Apply drift is enabled and:
 				((ApplyDriftVirtual && diff->IsVirtual) ||  // We want to apply it to a keysounded file and it's virtual
-					(ApplyDriftDecoder && diff->IsVirtual))) // or we want to apply it to a non-keysounded file and it's not virtual
+				(ApplyDriftDecoder && diff->IsVirtual))) // or we want to apply it to a non-keysounded file and it's not virtual
 				TimeError.AudioDrift += MixerGetLatency();
 
 			TimeError.AudioDrift += Configuration::GetConfigf("Offset7K");
@@ -353,11 +353,6 @@ namespace Game {
 					if (sd->ID == GameState::GetInstance().GetDifficulty(p->GetPlayerNumber())->ID) {
 						p->SetPlayableData(sd, TimeError.AudioDrift, DesiredDefaultSpeed, Type);
 						p->Init();
-
-						// there's a better way but not right now
-						GameState::GetInstance().SetCurrentGaugeType(p->GetCurrentGaugeType(), p->GetPlayerNumber());
-						GameState::GetInstance().SetCurrentScoreType(p->GetCurrentScoreType(), p->GetPlayerNumber());
-						GameState::GetInstance().SetCurrentSystemType(p->GetCurrentSystemType(), p->GetPlayerNumber());
 
 						if (!p->GetPlayerState().HasTimingData())
 						{
@@ -425,7 +420,7 @@ namespace Game {
 				AssignMeasure(StartMeasure);
 
 			ForceActivation = ForceActivation || (Configuration::GetSkinConfigf("InmediateActivation") == 1);
-			
+
 
 			// We're done with the data stored in the difficulties that aren't the one we're using. Clear it up.
 			for (auto i = MySong->Difficulties.begin(); i != MySong->Difficulties.end(); ++i)
@@ -440,7 +435,7 @@ namespace Game {
 						snd->AwaitLoad();
 					}
 				}
-			
+
 				auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - st).count();
 				Log::LogPrintf("Done. Taken %I64dms to finish.\n", dur);
 			}
@@ -464,18 +459,32 @@ namespace Game {
 
 			for (auto& p : Players) {
 				p->Validate();
-				p->OnMiss = std::bind(&ScreenGameplay::OnPlayerMiss, this, 
-					std::placeholders::_1, 
-					std::placeholders::_2, 
-					std::placeholders::_3, 
-					std::placeholders::_4, 
-					std::placeholders::_5, 
+
+				p->OnHit = std::bind(&ScreenGameplay::OnPlayerHit, this,
+					std::placeholders::_1,
+					std::placeholders::_2,
+					std::placeholders::_3,
+					std::placeholders::_4,
+					std::placeholders::_5,
 					std::placeholders::_6);
+
+				p->OnMiss = std::bind(&ScreenGameplay::OnPlayerMiss, this,
+					std::placeholders::_1,
+					std::placeholders::_2,
+					std::placeholders::_3,
+					std::placeholders::_4,
+					std::placeholders::_5,
+					std::placeholders::_6);
+
+				p->OnGearKeyEvent = std::bind(&ScreenGameplay::OnPlayerGearKeyEvent, this,
+					std::placeholders::_1,
+					std::placeholders::_2,
+					std::placeholders::_3);
 			}
 
 
 			Animations->Initialize("", false);
 			Running = true;
 		}
-		}
 	}
+}

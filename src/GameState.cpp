@@ -1,6 +1,8 @@
 #include "pch.h"
 
+#include "PlayerContext.h"
 #include "GameState.h"
+
 #include "GameWindow.h"
 #include "Song.h"
 #include "SongDatabase.h"
@@ -97,9 +99,9 @@ GameState& GameState::GetInstance()
     return *StateInstance;
 }
 
-Song *GameState::GetSelectedSong() const
+VSRG::Song *GameState::GetSelectedSong() const
 {
-    return SelectedSong.get();
+    return SongWheel::GetInstance().GetSelectedSong().get();
 }
 
 void Game::GameState::StartScreenTransition(std::string target)
@@ -141,11 +143,6 @@ std::filesystem::path GameState::GetSkinFile(const std::string &Name, const std:
     }
 
     return Test;
-}
-
-void GameState::SetSelectedSong(std::shared_ptr<Game::Song> song)
-{
-	SelectedSong = song;
 }
 
 std::filesystem::path GameState::GetSkinFile(const std::string& Name)
@@ -219,16 +216,17 @@ bool GameState::PlayerNumberInBounds(int pn) const
 	return pn >= 0 && pn < PlayerInfo.size();
 }
 
-void GameState::SetCurrentGaugeType(int GaugeType, int pn)
+void Game::GameState::SetPlayerContext(VSRG::PlayerContext * pc, int pn)
 {
-	if (PlayerNumberInBounds(pn))
-		PlayerInfo[pn].CurrentGaugeType = GaugeType;
+	if (PlayerNumberInBounds(pn)) {
+		PlayerInfo[pn].ctx = pc;
+	}
 }
 
 int GameState::GetCurrentGaugeType(int pn) const
 {
 	if (PlayerNumberInBounds(pn))
-		return PlayerInfo[pn].CurrentGaugeType;
+		return PlayerInfo[pn].ctx ? PlayerInfo[pn].ctx->GetCurrentGaugeType() : PlayerInfo[pn].Params.GaugeType;
 	return 0;
 }
 
@@ -256,47 +254,42 @@ Texture* GameState::GetSongStage()
 {
 	if (SelectedSong)
 	{
-		if (SelectedSong->Mode == MODE_VSRG)
+		auto Song = SelectedSong;
+
+		if (PlayerInfo[0].Diff)
 		{
-			VSRG::Song *Song = static_cast<VSRG::Song*>(SelectedSong.get());
+			auto diff = PlayerInfo[0].Diff;
+			std::filesystem::path File = Database->GetStageFile(diff->ID);
 
-			if (PlayerInfo[0].Diff)
+			// Oh so it's loaded and it's not in the database, fine.
+			if (File.string().length() == 0 && diff->Data)
+				File = diff->Data->StageFile;
+
+			auto toLoad = SelectedSong->SongDirectory / File;
+
+			// ojn files use their cover inside the very ojn
+			if (File.extension() == ".ojn")
 			{
-				auto diff = PlayerInfo[0].Diff;
-				std::filesystem::path File = Database->GetStageFile(diff->ID);
+				size_t read;
+				const unsigned char* buf = reinterpret_cast<const unsigned char*>(LoadOJNCover(toLoad, read));
+				ImageData data = ImageLoader::GetDataForImageFromMemory(buf, read);
+				StageImage->SetTextureData2D(data, true);
+				delete[] buf;
 
-				// Oh so it's loaded and it's not in the database, fine.
-				if (File.string().length() == 0 && diff->Data)
-					File = diff->Data->StageFile;
+				return StageImage;
+			}
 
-				auto toLoad = SelectedSong->SongDirectory / File;
-
-				// ojn files use their cover inside the very ojn
-				if (File.extension() == ".ojn")
-				{
-					size_t read;
-					const unsigned char* buf = reinterpret_cast<const unsigned char*>(LoadOJNCover(toLoad, read));
-					ImageData data = ImageLoader::GetDataForImageFromMemory(buf, read);
-					StageImage->SetTextureData2D(data, true);
-					delete[] buf;
-
-					return StageImage;
-				}
-
-				if (File.string().length() && std::filesystem::exists(toLoad))
-				{
-					StageImage->LoadFile(toLoad, true);
-					return StageImage;
-				}
-
-				return nullptr;
+			if (File.string().length() && std::filesystem::exists(toLoad))
+			{
+				StageImage->LoadFile(toLoad, true);
+				return StageImage;
 			}
 
 			return nullptr;
-			// Oh okay, no difficulty assigned.
 		}
-		// Stage file not supported for DC songs yet
+
 		return nullptr;
+		// Oh okay, no difficulty assigned.
 	}
 
 	// no song selected
@@ -345,30 +338,19 @@ void GameState::SetScorekeeper7K(std::shared_ptr<Game::VSRG::ScoreKeeper> Other,
 		PlayerInfo[pn].SKeeper7K = Other;
 }
 
-void GameState::SetCurrentScoreType(int ScoreType, int pn)
-{
-	if (PlayerNumberInBounds(pn))
-		PlayerInfo[pn].CurrentScoreType = ScoreType;
-}
 
 int GameState::GetCurrentScoreType(int pn) const
 {
 	if (PlayerNumberInBounds(pn))
-		return PlayerInfo[pn].CurrentScoreType;
+		return PlayerInfo[pn].Params.GetScoringType();
 	else
 		return 0;
-}
-
-void GameState::SetCurrentSystemType(int SystemType, int pn)
-{
-	if (PlayerNumberInBounds(pn))
-		PlayerInfo[pn].CurrentSubsystemType = SystemType;
 }
 
 int GameState::GetCurrentSystemType(int pn) const
 {
 	if (PlayerNumberInBounds(pn))
-		return PlayerInfo[pn].CurrentSubsystemType;
+		return PlayerInfo[pn].ctx ? PlayerInfo[pn].ctx->GetCurrentSystemType() : PlayerInfo[pn].Params.SystemType;
 	else
 		return 0;
 }

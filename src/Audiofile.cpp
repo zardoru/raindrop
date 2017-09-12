@@ -2,7 +2,6 @@
 #include "Logging.h"
 
 #include "Audio.h"
-#include "Audiofile.h"
 #include "AudioSourceSFM.h"
 #include "AudioSourceOGG.h"
 
@@ -293,6 +292,11 @@ _read:
     }
     else
         return 0;
+}
+
+double AudioSample::GetDuration()
+{
+	return mAudioEnd - mAudioStart;
 }
 
 bool AudioSample::IsPlaying()

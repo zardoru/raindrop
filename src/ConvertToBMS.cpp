@@ -148,17 +148,17 @@ class BMSConverter : public Game::VSRG::RowifiedDifficulty {
 		OutFile << "#MAKER " << Parent->Author << endl;
 
 		OutFile << endl << "-- WAVs" << endl;
-		for (auto i : Parent->Data->SoundList){
+		for (auto i : Parent->Data->SoundList) {
 			OutFile << "#WAV" << ToBMSBase36(i.first) << " " << i.second << endl;
 		}
 
 		OutFile << endl << "-- BPMs" << endl;
-		for (size_t i = 0; i < BPMs.size(); i++){
+		for (size_t i = 0; i < BPMs.size(); i++) {
 			OutFile << "#BPM" << ToBMSBase36(i + 1) << " " << BPMs[i] << endl;
 		}
 
 		OutFile << endl << "-- STOPs" << endl;
-		for (size_t i = 0; i < Stops.size(); i++){
+		for (size_t i = 0; i < Stops.size(); i++) {
 			OutFile << "#STOP" << ToBMSBase36(i + 1) << " " << Stops[i] << endl;
 		}
 
@@ -169,48 +169,84 @@ class BMSConverter : public Game::VSRG::RowifiedDifficulty {
 		}
 	}
 
-	void WriteVectorToMeasureChannel(std::vector<Event> &Out, int Measure, int Channel, bool AllowMultiple = false) 
+	void WriteVectorToMeasureChannel(std::vector<Event> &EventList, int Measure, int Channel, bool AllowMultiple = false)
 	{
-		if (Out.size() == 0) return; // Nothing to write.
+		if (EventList.size() == 0) return; // Nothing to write.
 
-		auto VecLCM = GetRowCount(Out);
-		sort(Out.begin(), Out.end(), [](const Event& A, const Event&B)
+		auto VecLCM = GetRowCount(EventList);
+		sort(EventList.begin(), EventList.end(), [](const Event& A, const Event&B)
 			-> bool {
-			     auto dA = double(A.Sect.Num) / A.Sect.Den;
-			     auto dB = double(B.Sect.Num) / B.Sect.Den;
-			return dA < dB;
+			return ((double)A.Sect.Num / A.Sect.Den) < ((double)B.Sect.Num / B.Sect.Den);
 		});
 
-		std::vector<std::vector<int>> rowified; 
+		// first of the pair is numerator aka row given veclcm as a denominator
+		// second is event at numerator aka row
+		std::map<int, std::vector<int>> rowified;
+
+		// simultaneous event count
+		size_t linecount = 0;
 
 		// Now that we have the LCM we can easily just place the objects exactly as we want to output them.
-		for (auto Obj : Out) { // We convert to a fraction that fits with the LCM.
-			auto rNum = Obj.Sect.Num * VecLCM / Obj.Sect.Den;
-			bool slotFree = false;
-			for (size_t i = 0; i < rowified.size(); i++) {
-				if (!rowified[i][rNum] || !AllowMultiple) {
-					rowified[i][rNum] = Obj.Evt;
-					slotFree = true;
-					break;
+		for (auto &Obj : EventList) {
+
+			// We convert to a numerator that fits with the LCM.
+			auto newNumerator = Obj.Sect.Num * VecLCM / Obj.Sect.Den;
+			auto &it = rowified[newNumerator];
+
+			if (!it.size() || AllowMultiple) {
+				it.push_back(Obj.Evt);
+
+				// max amount of simultaneous events are given by the largest vector
+				linecount = std::max(linecount, it.size());
+			}
+		}
+
+		std::vector<std::stringstream> lines(linecount);
+
+		// add the tag to all lines.
+		for (size_t i = 0; i < linecount; i++) {
+			auto &line = lines[i];
+			line << Utility::Format("#%03d%s:", Measure, ToBMSBase36(Channel).c_str());
+		}
+
+		for (auto row = rowified.begin(); row != rowified.end(); row++) {
+
+			// ith line gets the ith column at fraction row->first / LCM
+			for (size_t i = 0; i < linecount; i++) {
+				auto &line = lines[i];
+
+				if (i < row->second.size()) {
+					line << ToBMSBase36(row->second[i]);
+				}
+				else
+					line << "00";
+			}
+
+			size_t next_row;
+			auto next = row;
+			next++;
+
+			if (next != rowified.end()) {
+				next_row = next->first;
+			}
+			else {
+				next_row = VecLCM;
+			}
+
+			// don't count the destination row itself (take 1)
+			size_t zero_fill = next_row - row->first - 1;
+			for (size_t i = 0; i < zero_fill; i++) {
+				for (auto &line : lines) {
+					line << "00";
 				}
 			}
 
-			if (!slotFree) // didn't find an unused slot
-			{
-				std::vector<int> row(VecLCM, 0);
-				row[rNum] = Obj.Evt;
-				rowified.push_back(row);
-			}
 		}
 
-		for (auto val : rowified) {
-			OutFile << Utility::Format("#%03d%s:", Measure, ToBMSBase36(Channel).c_str());
-			for (auto r : val) {
-				OutFile << ToBMSBase36(r);
-			}
+		for (auto &line : lines) {
+			OutFile << line.str();
 			OutFile << std::endl;
 		}
-		OutFile << std::endl;
 	}
 
 	int GetChannel(int channel) const;
@@ -322,7 +358,7 @@ std::string BMSConverter::ToBMSBase36(int num)
         return "00";
 
 	if (num > 1295) // ZZ in b36
-		throw std::runtime_error("Out of range number for BMS conversion");
+		throw std::runtime_error("EventList of range number for BMS conversion");
 
     buf[65] = '\0';
     i = 65;

@@ -80,6 +80,7 @@ namespace Game {
 			bool SongHasFinished();
 
 			void UpdateSongTime(float Delta);
+			void OnPlayerHit(ScoreKeeperJudgment judgment, double dt, uint32_t lane, bool hold, bool release, int pn);
 			void Render();
 
 			void PlayKeysound(int Keysound);
@@ -88,6 +89,8 @@ namespace Game {
 
 
 			void OnPlayerMiss(double dt, uint32_t lane, bool hold, bool dontbreakcombo, bool earlymiss, int pn);
+
+			void OnPlayerGearKeyEvent(uint32_t lane, bool keydown, int pn);
 
 			friend class Noteskin;
 		public:

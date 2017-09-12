@@ -85,9 +85,6 @@
     <ClCompile Include="..\src\GameState.cpp">
       <Filter>Source Files\game global\game status</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\SongDatabase.cpp">
-      <Filter>Source Files\game global\game status</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\SongList.cpp">
       <Filter>Source Files\game global\game status</Filter>
     </ClCompile>
@@ -255,6 +252,12 @@
     </ClCompile>
     <ClCompile Include="..\src\SwRescale.cpp">
       <Filter>Source Files\backend\render\textures</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GameplayParameters7K.cpp">
+      <Filter>Source Files\vsrg\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SongDatabase.cpp">
+      <Filter>Source Files\game global\song interface</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

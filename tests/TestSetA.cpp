@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "../src/GameGlobal.h"
 #include "../src/Song.h"
-#include "../src/SongDC.h"
 #include "../src/Song7K.h"
 #include "../src/SongLoader.h"
 #include "../src/BackgroundAnimation.h"
@@ -51,7 +50,7 @@ TEST_CASE("Noteskin state")
 TEST_CASE("Speed support")
 {
 	auto sng = LoadSong7KFromFilename("tests/files/jnight.ssc");
-	auto pcd = Game::VSRG::GameChartData::FromDifficulty(sng->GetDifficulty(0));
+	auto pcd = Game::VSRG::PlayerChartState::FromDifficulty(sng->GetDifficulty(0));
 	auto tbeat = pcd.GetTimeAtBeat(93. + 4.);
 	REQUIRE(pcd.GetSpeedMultiplierAt(tbeat) == 0.250);
 }

@@ -257,9 +257,6 @@ void Application::SetupPreviewMode()
         return;
     }
 
-    // Avoid a crash...
-    GameState::GetInstance().SetSelectedSong(song);
-
     // Create loading screen and gameplay screen.
     auto game = std::make_shared<Game::VSRG::ScreenGameplay>();
     auto LoadScreen = std::make_shared<ScreenLoading>(game);

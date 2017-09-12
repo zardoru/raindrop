@@ -5,7 +5,6 @@
 #include "Song.h"
 #include "BackgroundAnimation.h"
 #include "Song7K.h"
-#include "SongDC.h"
 #include "ImageLoader.h"
 #include "ImageList.h"
 #include "Logging.h"
@@ -298,11 +297,6 @@ std::unique_ptr<BackgroundAnimation> CreateBGAforVSRG(Game::VSRG::Song &input, u
     return nullptr;
 }
 
-std::unique_ptr<BackgroundAnimation> CreateBGAforDotcur(Game::dotcur::Song &input, uint8_t DifficultyIndex)
-{
-    return std::make_unique<StaticBackground>(nullptr, GetSongBackground(input));
-}
-
 BackgroundAnimation::BackgroundAnimation(Interruptible* parent) : Interruptible(parent)
 {
 }
@@ -344,18 +338,8 @@ std::unique_ptr<BackgroundAnimation> BackgroundAnimation::CreateBGAFromSong(uint
 {
     std::unique_ptr<BackgroundAnimation> ret = nullptr;
 
-    switch (Input.Mode)
-    {
-    case MODE_VSRG:
-        ret = CreateBGAforVSRG(static_cast<Game::VSRG::Song&> (Input), DifficultyIndex, context);
-        break;
-    case MODE_DOTCUR:
-        ret = CreateBGAforDotcur(static_cast<Game::dotcur::Song&> (Input), DifficultyIndex);
-        break;
-    default:
-        break;
-    }
-
+    ret = CreateBGAforVSRG(static_cast<Game::VSRG::Song&> (Input), DifficultyIndex, context);
+    
     if (LoadNow)
     {
         ret->Load();

@@ -58,8 +58,8 @@ namespace Game {
 		void OnItemHover(int32_t Index, uint32_t boundIndex, std::string Line, std::shared_ptr<Game::Song> Selected);
 		void OnItemHoverLeave(int32_t Index, uint32_t boundIndex, std::string Line, std::shared_ptr<Game::Song> Selected);
 
-		void TransformItem(int Item, std::shared_ptr<Game::Song> Song, bool IsSelected, int ListItem);
-		void TransformString(int Item, std::shared_ptr<Game::Song> Song, bool IsSelected, int ListItem, std::string text);
+		void TransformItem(int Item, std::shared_ptr<Game::VSRG::Song> Song, bool IsSelected, int ListItem);
+		void TransformString(int Item, std::shared_ptr<Game::VSRG::Song> Song, bool IsSelected, int ListItem, std::string text);
 	public:
 		ScreenSelectMusic();
 		void LoadResources() override;

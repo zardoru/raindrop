@@ -7,13 +7,6 @@ namespace Game {
 		class TrackNote;
 		class Song;
 
-		enum TimingType
-		{
-			TT_TIME,
-			TT_BEATS,
-			TT_PIXELS
-		};
-
 		class Mechanics
 		{
 		public:
@@ -24,7 +17,7 @@ namespace Game {
 		protected:
 
 			Difficulty *CurrentDifficulty;
-			std::shared_ptr<ScoreKeeper> score_keeper;
+			std::shared_ptr<ScoreKeeper> PlayerScoreKeeper;
 
 			bool IsLateHeadMiss(double t, TrackNote *note);
 			bool InJudgeCutoff(double t, TrackNote *note);
@@ -40,6 +33,8 @@ namespace Game {
 			KeysoundEvent PlayNoteSoundEvent;
 			HitEvent HitNotify;
 			MissEvent MissNotify;
+
+			virtual void TransformNotes(PlayerChartState &ChartState);
 
 			virtual void Setup(VSRG::Difficulty *Difficulty, std::shared_ptr<ScoreKeeper> scoreKeeper);
 

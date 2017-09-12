@@ -243,6 +243,21 @@ namespace Color
     extern const ColorRGB Blue;
 }
 
+template
+<class T>
+T gcd(T a, T b)
+{
+	if (b == 0) return a;
+	else return gcd<T>(b, a % b);
+}
+
+template
+<class T>
+T lcm(T a, T b)
+{
+	return a * b / gcd<T>(a, b);
+}
+
 template <class T>
 struct Fraction
 {
@@ -273,6 +288,19 @@ struct Fraction
             d = static_cast<double>(Num) / Den;
         }
     }
+
+	Fraction<T> Simplify() {
+		T t = gcd(Num, Den);
+		return Fraction{ a / t, b / t };
+	}
+
+	operator double() {
+		return Num / Den;
+	}
+
+	bool operator<(Fraction<T> other) {
+		return this->operator double() < other->operator double();
+	}
 };
 
 using LFraction = Fraction<long long>;

@@ -283,7 +283,7 @@ namespace NoteLoaderBMSON
 
             double prev = 0;
 
-            for (int i = 0; i < Measure; i++) // set length of last measure to difference between last note and last measure's beats.
+            for (size_t i = 0; i < Measure; i++) // set length of last measure to difference between last note and last measure's beats.
                 prev += Chart->Data->Measures[i].Length;
 
             Chart->Data->Measures[Chart->Data->Measures.size() - 1].Length = FindLastNoteBeat() - prev;
@@ -515,9 +515,18 @@ namespace NoteLoaderBMSON
 
                 auto notes = (*audio)["notes"];
                 for (auto &note : notes)
-                    objs.push_back(BmsonObject{ note["x"].asInt(), note["y"].asDouble(), note["l"].asDouble(), note["c"].asBool() });
+                    objs.push_back(BmsonObject
+				{ 
+					note["x"].asInt(), 
+					note["y"].asDouble(), 
+					note["l"].asDouble(), 
+					note["c"].asBool() 
+				});
 
-                std::stable_sort(objs.begin(), objs.end(), [](const BmsonObject& l, const BmsonObject& r) -> bool { return l.y < r.y; });
+                std::stable_sort(objs.begin(), objs.end(), 
+					[](const BmsonObject& l, const BmsonObject& r) -> bool { 
+					return l.y < r.y; 
+				});
                 JoinBGMSlices(objs);
 
                 for (auto note = objs.begin(); note != objs.end(); ++note)
@@ -614,20 +623,14 @@ namespace NoteLoaderBMSON
                     if (note.second.Length)
                     {
                         new_note.EndTime = TimeForObj(note.first + note.second.Length);
-                        Chart->TotalHolds++;
-                        Chart->TotalScoringObjects++;
                     }
 
                     new_note.Sound = note.second.Sound;
 
-                    int Measure = MeasureForBeat(note.first);
+                    auto Measure = MeasureForBeat(note.first);
                     if (Measure >= Chart->Data->Measures.size())
                         Chart->Data->Measures.resize(Measure + 1);
                     Chart->Data->Measures[MeasureForBeat(note.first)].Notes[lane.first].push_back(new_note);
-
-                    Chart->TotalObjects++;
-                    Chart->TotalScoringObjects++;
-                    Chart->TotalNotes++;
 
                     Chart->Duration = std::max(std::max(Chart->Duration, new_note.StartTime), new_note.EndTime);
                 }

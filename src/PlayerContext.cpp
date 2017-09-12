@@ -21,13 +21,9 @@ namespace Game {
 			Drift = 0;
 
 			JudgeNotes = true;
-			LifebarType = LT_AUTO;
-			ScoringType = ST_EXP3;
 
 			PlayerScoreKeeper = std::make_shared<ScoreKeeper>();
 			Parameters = p;
-
-			Hidden = {};
 
 			Gear = {};
 
@@ -38,7 +34,7 @@ namespace Game {
 		}
 
 		void PlayerContext::Init() {
-			PlayerNoteskin.SetupNoteskin(ChartData.HasTurntable, CurrentDiff->Channels);
+			PlayerNoteskin.SetupNoteskin(ChartState.HasTurntable, CurrentDiff->Channels);
 		}
 
 		void PlayerContext::Validate() {
@@ -46,189 +42,54 @@ namespace Game {
 			MsDisplayMargin = (Configuration::GetSkinConfigf("HitErrorDisplayLimiter"));
 
 
-			if (!BindKeysToLanes(ChartData.HasTurntable))
-				if (!BindKeysToLanes(!ChartData.HasTurntable))
+			if (!BindKeysToLanes(ChartState.HasTurntable))
+				if (!BindKeysToLanes(!ChartState.HasTurntable))
 					Log::LogPrintf("Couldn't get valid bindings for current key count %d.\n", GetChannelCount());
 
-			UpdateHidden();
 			if (PlayerNoteskin.IsBarlineEnabled())
 				Barline = std::make_unique<Line>();
 		}
 
 
-		const GameChartData& PlayerContext::GetPlayerState()
+		const PlayerChartState& PlayerContext::GetPlayerState()
 		{
-			return ChartData;
+			return ChartState;
 		}
 
 		void PlayerContext::SetupMechanics()
 		{
 			using namespace Game::VSRG;
-			bool disable_forced_release = false;
 
-			// This must be done before setLifeTotal in order for it to work.
-			PlayerScoreKeeper->setMaxNotes(CurrentDiff->TotalScoringObjects);
+			MechanicsSet = Parameters.PrepareMechanicsSet(CurrentDiff, PlayerScoreKeeper.get(), GetJudgmentY());
+			MechanicsSet->TransformNotes(ChartState);
 
-			PlayerScoreKeeper->setUseW0(Parameters.UseW0);
-
-			// JudgeScale, Stepmania and OD can't be run together - only one can be set.
-			auto TimingInfo = CurrentDiff->Data->TimingInfo.get();
-
-			// Pick a timing system
-			if (Parameters.SystemType == VSRG::TI_NONE) {
-				if (TimingInfo) {
-					// Automatic setup
-					Parameters.SystemType = TimingInfo->GetType();
-				}
-				else {
-					Log::Printf("Null timing info - assigning raindrop defaults.\n");
-					Parameters.SystemType = VSRG::TI_RAINDROP;
-					// pick raindrop system for null Timing Info
-				}
-			}
-
-			// If we got just assigned one or was already requested
-			// unlikely: timing info type is none? what
-		retry:
-			if (Parameters.SystemType != VSRG::TI_NONE) {
-				// Player requested a specific subsystem
-				if (Parameters.SystemType == VSRG::TI_BMS || Parameters.SystemType == VSRG::TI_RDAC) {
-					disable_forced_release = true;
-					ScoringType = ST_EX;
-					UsedTimingType = TT_TIME;
-					if (TimingInfo->GetType() == VSRG::TI_BMS) {
-						auto Info = static_cast<VSRG::BMSChartInfo*> (TimingInfo);
-						if (!Info->PercentualJudgerank)
-							PlayerScoreKeeper->setJudgeRank(Info->JudgeRank);
-						else
-							PlayerScoreKeeper->setJudgeScale(Info->JudgeRank / 100.0);
-					}
-					else {
-						PlayerScoreKeeper->setJudgeRank(2);
-					}
-				}
-				else if (Parameters.SystemType == VSRG::TI_O2JAM) {
-					ScoringType = ST_O2JAM;
-					UsedTimingType = TT_BEATS;
-					PlayerScoreKeeper->setJudgeRank(-100);
-				}
-				else if (Parameters.SystemType == VSRG::TI_OSUMANIA) {
-					ScoringType = ST_OSUMANIA;
-					UsedTimingType = TT_TIME;
-					if (TimingInfo->GetType() == VSRG::TI_OSUMANIA) {
-						auto InfoOM = static_cast<VSRG::OsumaniaChartInfo*> (TimingInfo);
-						PlayerScoreKeeper->setODWindows(InfoOM->OD);
-					}
-					else PlayerScoreKeeper->setODWindows(7);
-				}
-				else if (Parameters.SystemType == VSRG::TI_STEPMANIA) {
-					disable_forced_release = true;
-					UsedTimingType = TT_TIME;
-					ScoringType = ST_DP;
-					PlayerScoreKeeper->setSMJ4Windows();
-				}
-				else if (Parameters.SystemType == VSRG::TI_RAINDROP) {
-					ScoringType = ST_EXP3;
-					LifebarType = LT_STEPMANIA;
-				}
-			}
-			else
-			{
-				Log::Printf("System picked was none - on purpose. Defaulting to raindrop.\n");
-				Parameters.SystemType = VSRG::TI_RAINDROP;
-				goto retry;
-			}
-
-			// Timing System is set up. Set up life bar
-			if (Parameters.GaugeType == LT_AUTO) {
-				using namespace VSRG;
-				switch (Parameters.SystemType) {
-				case TI_BMS:
-				case TI_RAINDROP:
-				case TI_RDAC:
-					Parameters.GaugeType = LT_GROOVE;
-					break;
-				case TI_O2JAM:
-					Parameters.GaugeType = LT_O2JAM;
-					break;
-				case TI_OSUMANIA:
-				case TI_STEPMANIA:
-					Parameters.GaugeType = LT_STEPMANIA;
-					break;
-				default:
-					throw std::runtime_error("Invalid requested system.");
-				}
-			}
-
-			switch (Parameters.GaugeType) {
-			case LT_STEPMANIA:
-				LifebarType = LT_STEPMANIA; // Needs no setup.
-				break;
-
-			case LT_O2JAM:
-				if (TimingInfo->GetType() == VSRG::TI_O2JAM) {
-					auto InfoO2 = static_cast<VSRG::O2JamChartInfo*> (TimingInfo);
-					PlayerScoreKeeper->setO2LifebarRating(InfoO2->Difficulty);
-				} // else by default
-				LifebarType = LT_O2JAM; // By default, HX
-				break;
-
-			case LT_GROOVE:
-			case LT_DEATH:
-			case LT_EASY:
-			case LT_EXHARD:
-			case LT_SURVIVAL:
-				if (TimingInfo->GetType() == VSRG::TI_BMS) { // Only needs setup if it's a BMS file
-					auto Info = static_cast<VSRG::BMSChartInfo*> (TimingInfo);
-					if (Info->IsBMSON)
-						PlayerScoreKeeper->setLifeTotal(NAN, Info->GaugeTotal / 100.0);
-					else
-						PlayerScoreKeeper->setLifeTotal(Info->GaugeTotal);
-				}
-				else // by raindrop defaults
-					PlayerScoreKeeper->setLifeTotal(-1);
-				LifebarType = (LifeType)Parameters.GaugeType;
-				break;
-			case LT_NORECOV:
-				LifebarType = LT_NORECOV;
-				break;
-			default:
-				throw std::runtime_error("Invalid gauge type recieved");
-			}
-
-			/*
-				If we're on TT_BEATS we've got to recalculate all note positions to beats,
-				and use mechanics that use TT_BEATS as its timing type.
-			*/
-
-			if (UsedTimingType == TT_TIME)
-			{
-				if (Parameters.SystemType == VSRG::TI_RDAC)
-				{
-					Log::Printf("RAINDROP ARCADE STAAAAAAAAART!\n");
-					MechanicsSet = std::make_unique<RaindropArcadeMechanics>();
-				}
-				else {
-					Log::Printf("Using raindrop mechanics set!\n");
-					// Only forced release if not a bms or a stepmania chart.
-					MechanicsSet = std::make_unique<RaindropMechanics>(!disable_forced_release);
-				}
-			}
-			else if (UsedTimingType == TT_BEATS)
-			{
-				Log::Printf("Using o2jam mechanics set!\n");
-				MechanicsSet = std::make_unique<O2JamMechanics>();
-				NoteTransform::TransformToBeats(GetChannelCount(), ChartData.NotesByChannel, ChartData.BPS);
-			}
 
 			MechanicsSet->Setup(CurrentDiff.get(), PlayerScoreKeeper);
-			MechanicsSet->HitNotify = std::bind(&PlayerContext::HitNote, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-			MechanicsSet->MissNotify = std::bind(&PlayerContext::MissNote, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
-			MechanicsSet->IsLaneKeyDown = std::bind(&PlayerContext::GetGearLaneState, this, std::placeholders::_1);
-			MechanicsSet->SetLaneHoldingState = std::bind(&PlayerContext::SetLaneHoldState, this, std::placeholders::_1, std::placeholders::_2);
+			// Setup mechanics set callbacks
+			MechanicsSet->HitNotify = std::bind(&PlayerContext::HitNote, this, 
+				std::placeholders::_1, 
+				std::placeholders::_2, 
+				std::placeholders::_3, 
+				std::placeholders::_4);
+			
+			MechanicsSet->MissNotify = std::bind(&PlayerContext::MissNote, this, 
+				std::placeholders::_1, 
+				std::placeholders::_2, 
+				std::placeholders::_3, 
+				std::placeholders::_4, 
+				std::placeholders::_5);
+			
+			MechanicsSet->IsLaneKeyDown = std::bind(&PlayerContext::GetGearLaneState, this, 
+				std::placeholders::_1);
+			
+			MechanicsSet->SetLaneHoldingState = std::bind(&PlayerContext::SetLaneHoldState, this, 
+				std::placeholders::_1, 
+				std::placeholders::_2);
+
 			MechanicsSet->PlayNoteSoundEvent = PlayKeysound;
 			// We're set - setup all of the variables that depend on mechanics, scoring etc.. to their initial values.
 		}
+
 
 		void PlayerContext::TranslateKey(int32_t Index, bool KeyDown, double Time)
 		{
@@ -272,7 +133,7 @@ namespace Game {
 
 		double PlayerContext::GetCurrentBPM() const
 		{
-			return ChartData.GetBpmAt(GetWarpedSongTime());
+			return ChartState.GetBpmAt(GetWarpedSongTime());
 		}
 
 		double PlayerContext::GetJudgmentY() const
@@ -291,17 +152,17 @@ namespace Game {
 
 		double PlayerContext::GetDuration() const
 		{
-			return ChartData.ConnectedDifficulty->Duration;
+			return ChartState.ConnectedDifficulty->Duration;
 		}
 
 		double PlayerContext::GetBeatDuration() const
 		{
-			return ChartData.GetBeatAt(GetDuration());
+			return ChartState.GetBeatAt(GetDuration());
 		}
 
 		int PlayerContext::GetChannelCount() const
 		{
-			return ChartData.ConnectedDifficulty->Channels;
+			return ChartState.ConnectedDifficulty->Channels;
 		}
 
 		int PlayerContext::GetPlayerNumber() const
@@ -319,12 +180,12 @@ namespace Game {
 
 		bool PlayerContext::GetUsesTurntable() const
 		{
-			return ChartData.HasTurntable;
+			return ChartState.HasTurntable;
 		}
 
 		double PlayerContext::GetAppliedSpeedMultiplier(double Time) const
 		{
-			auto sm = ChartData.GetSpeedMultiplierAt(Time);
+			auto sm = ChartState.GetSpeedMultiplierAt(Time);
 			if (Parameters.Upscroll)
 				return -sm;
 			else
@@ -333,22 +194,22 @@ namespace Game {
 
 		double PlayerContext::GetCurrentBeat() const
 		{
-			return ChartData.GetBeatAt(LastUpdateTime);
+			return ChartState.GetBeatAt(LastUpdateTime);
 		}
 
 		double PlayerContext::GetUserMultiplier() const
 		{
-			return Parameters.SpeedMultiplier;
+			return Parameters.UserSpeedMultiplier;
 		}
 
 		double PlayerContext::GetCurrentVerticalSpeed() const
 		{
-			return ChartData.GetDisplacementSpeedAt(LastUpdateTime);
+			return ChartState.GetDisplacementSpeedAt(LastUpdateTime);
 		}
 
 		double PlayerContext::GetWarpedSongTime() const
 		{
-			return ChartData.GetWarpedSongTime(LastUpdateTime);
+			return ChartState.GetWarpedSongTime(LastUpdateTime);
 		}
 
 		void PlayerContext::SetupLua(LuaManager *Env)
@@ -370,7 +231,7 @@ namespace Game {
 				.addProperty("JudgmentY", &PlayerContext::GetJudgmentY)
 				.addProperty("Difficulty", &PlayerContext::GetDifficulty)
 				.addProperty("Turntable", &PlayerContext::GetUsesTurntable)
-				.addProperty("SpeedMultiplier", &PlayerContext::GetUserMultiplier, &PlayerContext::SetUserMultiplier)
+				.addProperty("UserSpeedMultiplier", &PlayerContext::GetUserMultiplier, &PlayerContext::SetUserMultiplier)
 				.addProperty("HasTurntable", &PlayerContext::GetUsesTurntable)
 				.addProperty("LifebarPercent", &PlayerContext::GetLifePST)
 				.addProperty("Difficulty", &PlayerContext::GetDifficulty)
@@ -387,7 +248,7 @@ namespace Game {
 
 		double PlayerContext::GetScore() const
 		{
-			return PlayerScoreKeeper->getScore(ScoringType);
+			return PlayerScoreKeeper->getScore(Parameters.GetScoringType());
 		}
 
 		int PlayerContext::GetCombo() const
@@ -401,7 +262,7 @@ namespace Game {
 			std::string value;
 			std::vector<std::string> res;
 
-			auto CurrentDiff = ChartData.ConnectedDifficulty;
+			auto CurrentDiff = ChartState.ConnectedDifficulty;
 
 			if (UseTurntable)
 				KeyProfile = (std::string)CfgVar("KeyProfileSpecial" + Utility::IntToStr(CurrentDiff->Channels));
@@ -435,26 +296,10 @@ namespace Game {
 
 		void PlayerContext::HitNote(double TimeOff, uint32_t Lane, bool IsHold, bool IsHoldRelease)
 		{
-			int Judgment = PlayerScoreKeeper->hitNote(TimeOff);
-
-			if (Animations) {
-				if (Animations->GetEnv()->CallFunction("HitEvent", 6))
-				{
-					Animations->GetEnv()->PushArgument(Judgment);
-					Animations->GetEnv()->PushArgument(TimeOff);
-					Animations->GetEnv()->PushArgument((int)Lane + 1);
-					Animations->GetEnv()->PushArgument(IsHold);
-					Animations->GetEnv()->PushArgument(IsHoldRelease);
-					Animations->GetEnv()->PushArgument(PlayerNumber);
-					Animations->GetEnv()->RunFunction();
-				}
-
-				if (PlayerScoreKeeper->getMaxNotes() == PlayerScoreKeeper->getScore(ST_NOTES_HIT))
-					Animations->DoEvent("OnFullComboEvent");
-			}
+			auto Judgment = PlayerScoreKeeper->hitNote(TimeOff);
 
 			if (OnHit)
-				OnHit(TimeOff, Lane, IsHold, IsHoldRelease, PlayerNumber);
+				OnHit(Judgment, TimeOff, Lane, IsHold, IsHoldRelease, PlayerNumber);
 		}
 
 		void PlayerContext::MissNote(double TimeOff, uint32_t Lane, bool IsHold, bool dont_break_combo, bool early_miss)
@@ -463,17 +308,6 @@ namespace Game {
 
 			if (IsHold)
 				Gear.HeldKey[Lane] = false;
-
-			if (Animations) {
-				if (Animations->GetEnv()->CallFunction("MissEvent", 4))
-				{
-					Animations->GetEnv()->PushArgument(TimeOff);
-					Animations->GetEnv()->PushArgument((int)Lane + 1);
-					Animations->GetEnv()->PushArgument(IsHold);
-					Animations->GetEnv()->PushArgument(PlayerNumber);
-					Animations->GetEnv()->RunFunction();
-				}
-			}
 
 			if (OnMiss)
 				OnMiss(TimeOff, Lane, IsHold, dont_break_combo, early_miss, PlayerNumber);
@@ -494,12 +328,12 @@ namespace Game {
 
 		double PlayerContext::GetChartTimeAt(double time) const
 		{
-			if (UsedTimingType == TT_BEATS) {
-				return ChartData.GetBeatAt(time);
+			if (MechanicsSet->GetTimingKind() == TT_BEATS) {
+				return ChartState.GetBeatAt(time);
 			}
-			else if (UsedTimingType == TT_TIME) {
+			/*else if (MechanicsSet->GetTimingKind() == TT_TIME) {
 				return time;
-			}
+			}*/
 			else
 				return time;
 		}
@@ -563,7 +397,7 @@ namespace Game {
 				timeClosest[i] = std::numeric_limits<double>::infinity();
 
 			double usedTime = GetChartTimeAt(time);
-			auto &NotesByChannel = ChartData.NotesByChannel;
+			auto &NotesByChannel = ChartState.NotesByChannel;
 
 			for (auto k = 0U; k < CurrentDiff->Channels; k++)
 			{
@@ -604,12 +438,12 @@ namespace Game {
 
 			if (!CanJudge()) return; // don't judge any more after stage is failed.
 
-			auto &NotesByChannel = ChartData.NotesByChannel;
+			auto &NotesByChannel = ChartState.NotesByChannel;
 			auto Start = NotesByChannel[Lane].begin();
 			auto End = NotesByChannel[Lane].end();
 
 			// Use this optimization when we can make sure vertical properly aligns up with time.
-			if (UseNoteOptimization())
+			if (ChartState.IsNoteTimeSorted())
 			{
 				// In comparison to the regular compare function, since end times are what matter with holds (or lift events, where start == end)
 				// this does the job as it should instead of comparing start times where hold tails would be completely ignored.
@@ -622,8 +456,12 @@ namespace Game {
 					return A < B.GetEndTime();
 				};
 
-				auto timeLower = (Time - (PlayerScoreKeeper->usesO2() ? PlayerScoreKeeper->getMissCutoffMS() : (PlayerScoreKeeper->getMissCutoffMS() / 1000.0)));
-				auto timeHigher = (Time + (PlayerScoreKeeper->usesO2() ? PlayerScoreKeeper->getJudgmentCutoff() : (PlayerScoreKeeper->getJudgmentCutoff() / 1000.0)));
+				auto timeLower = (Time - (PlayerScoreKeeper->usesO2() ? 
+					PlayerScoreKeeper->getMissCutoffMS() : 
+					(PlayerScoreKeeper->getMissCutoffMS() / 1000.0)));
+				auto timeHigher = (Time + (PlayerScoreKeeper->usesO2() ? 
+					PlayerScoreKeeper->getJudgmentCutoff() : 
+					(PlayerScoreKeeper->getJudgmentCutoff() / 1000.0)));
 
 				Start = std::lower_bound(NotesByChannel[Lane].begin(), NotesByChannel[Lane].end(), timeLower, LboundFunc);
 
@@ -666,28 +504,23 @@ namespace Game {
 
 		void PlayerContext::SetUnwarpedTime(double time)
 		{
-			ChartData.DisableNotesUntil(time);
+			ChartState.ResetNotes();
+			ChartState.DisableNotesUntil(time);
 		}
 
-		int PlayerContext::GetCurrentGaugeType()
+		int PlayerContext::GetCurrentGaugeType() const
 		{
-			return LifebarType;
+			return Parameters.GaugeType;
 		}
 
-		int PlayerContext::GetCurrentScoreType()
+		int PlayerContext::GetCurrentScoreType() const
 		{
-			return ScoringType;
+			return Parameters.GetScoringType();
 		}
 
-		int PlayerContext::GetCurrentSystemType()
+		int PlayerContext::GetCurrentSystemType() const
 		{
-			return UsedTimingType;
-		}
-
-		bool PlayerContext::UseNoteOptimization()
-		{
-			return !ChartData.Warps.size()  // The actual time is scrambled
-				&& !ChartData.HasNegativeScroll; // Draw order may be incorrect
+			return MechanicsSet->GetTimingKind();
 		}
 
 		void PlayerContext::JudgeLane(uint32_t Lane, double Time)
@@ -697,16 +530,20 @@ namespace Game {
 			if (!CanJudge())
 				return;
 
-			auto &Notes = ChartData.NotesByChannel[Lane];
+			auto &Notes = ChartState.NotesByChannel[Lane];
 
 			auto Start = Notes.begin();
 			auto End = Notes.end();
 
 			// Use this optimization when we can make sure vertical properly aligns up with time, as with ReleaseLane.
-			if (UseNoteOptimization())
+			if (ChartState.IsNoteTimeSorted())
 			{
-				auto timeLower = (Time - (PlayerScoreKeeper->usesO2() ? PlayerScoreKeeper->getMissCutoffMS() : (PlayerScoreKeeper->getMissCutoffMS() / 1000.0)));
-				auto timeHigher = (Time + (PlayerScoreKeeper->usesO2() ? PlayerScoreKeeper->getJudgmentCutoff() : (PlayerScoreKeeper->getJudgmentCutoff() / 1000.0)));
+				auto timeLower = (Time - (PlayerScoreKeeper->usesO2() ? 
+					PlayerScoreKeeper->getMissCutoffMS() : 
+					(PlayerScoreKeeper->getMissCutoffMS() / 1000.0)));
+				auto timeHigher = (Time + (PlayerScoreKeeper->usesO2() ? 
+					PlayerScoreKeeper->getJudgmentCutoff() : 
+					(PlayerScoreKeeper->getJudgmentCutoff() / 1000.0)));
 
 				Start = std::lower_bound(Notes.begin(), Notes.end(), timeLower);
 				End = std::upper_bound(Notes.begin(), Notes.end(), timeHigher);
@@ -743,12 +580,12 @@ namespace Game {
 
 		bool PlayerContext::HasFailed() const
 		{
-			return PlayerScoreKeeper->isStageFailed(LifebarType) && !Parameters.NoFail;
+			return PlayerScoreKeeper->isStageFailed(GetCurrentGaugeType()) && !Parameters.NoFail;
 		}
 
 		bool PlayerContext::HasDelayedFailure()
 		{
-			return PlayerScoreKeeper->hasDelayedFailure(LifebarType);
+			return PlayerScoreKeeper->hasDelayedFailure(GetCurrentGaugeType());
 		}
 
 		double PlayerContext::GetClosestNoteTime(int lane) const
@@ -761,12 +598,7 @@ namespace Game {
 
 		void PlayerContext::SetUserMultiplier(float Multip)
 		{
-			Parameters.SpeedMultiplier = Multip;
-		}
-
-		void PlayerContext::SetSceneEnvironment(std::shared_ptr<SceneEnvironment> env)
-		{
-			Animations = env;
+			Parameters.UserSpeedMultiplier = Multip;
 		}
 
 		void PlayerContext::SetPlayableData(std::shared_ptr<VSRG::Difficulty> diff, double Drift,
@@ -775,108 +607,9 @@ namespace Game {
 			CurrentDiff = diff;
 			this->Drift = Drift;
 
-			/*
-			 * 		There are four kinds of speed modifiers:
-			 * 		-CMod (Keep speed the same through the song, equal to a constant)
-			 * 		-MMod (Find highest speed and set multiplier to such that the highest speed is equal to a constant)
-			 *		-First (Find the first speed in the chart, and set multiplier to such that the first speed is equal to a constant)
-			 *		-Mode (Find the speed that lasts the most in the chart, set multiplier based on that)
-			 *
-			 *		The calculations are done ahead, and while SpeedConstant = 0 either MMod or first are assumed
-			 *		but only if there's a constant specified by the user.
-			 */
-
-			DesiredDefaultSpeed /= Parameters.Rate;
-
-			
-
-			if (DesiredDefaultSpeed)
-			{
-				if (Type == SPEEDTYPE_CMOD) // cmod
-				{
-					Parameters.SpeedMultiplier = 1;
-
-					double spd = Parameters.GreenNumber ? 1000 : DesiredDefaultSpeed;
-
-					ChartData = VSRG::GameChartData::FromDifficulty(CurrentDiff.get(), Drift, spd);
-				} else
-					ChartData = VSRG::GameChartData::FromDifficulty(CurrentDiff.get(), Drift);
-
-				// if GN is true, Default Speed = GN!
-				// Convert GN to speed.
-				if (Parameters.GreenNumber) {
-
-					// v0 is normal speed
-					// (green number speed * green number time) / (normal speed * normal time)
-					// equals
-					// playfield distance / note distance
-					
-					/*auto v0 = ChartData.VSpeeds[0].Value;
-					auto hratio = UNITS_PER_MEASURE / first_height;
-					double new_speed = hratio * v0 * first_time / (DesiredDefaultSpeed / 1000);*/
-					// simplifying that gets you dn / tn lol
-					double new_speed = PLAYFIELD_SIZE / (DesiredDefaultSpeed / 1000);
-					DesiredDefaultSpeed = new_speed;
-
-					if (Type == SPEEDTYPE_CMOD) {
-						Parameters.SpeedMultiplier = DesiredDefaultSpeed / 1000;
-					}
-				}
-
-				if (Type == SPEEDTYPE_MMOD) // mmod
-				{
-					double speed_max = 0; // Find the highest speed
-					for (auto i : ChartData.VSpeeds)
-					{
-						speed_max = std::max(speed_max, abs(i.Value));
-					}
-
-					double Ratio = DesiredDefaultSpeed / speed_max; // How much above or below are we from the maximum speed?
-					Parameters.SpeedMultiplier = Ratio;
-				}
-				else if (Type == SPEEDTYPE_FIRST) // First speed.
-				{
-					double DesiredMultiplier = DesiredDefaultSpeed / ChartData.VSpeeds[0].Value;
-					Parameters.SpeedMultiplier = DesiredMultiplier;
-				}
-				else if (Type == SPEEDTYPE_MODE) // Most lasting speed.
-				{
-					std::map <double, double> freq;
-					for (auto i = ChartData.VSpeeds.begin(); i != ChartData.VSpeeds.end(); i++)
-					{
-						if (i + 1 != ChartData.VSpeeds.end())
-						{
-							freq[i->Value] += (i + 1)->Time - i->Time;
-						}
-						else freq[i->Value] += abs(CurrentDiff->Duration - i->Time);
-					}
-					auto max = -std::numeric_limits<float>::infinity();
-					auto val = 1000.f;
-					for (auto i : freq)
-					{
-						if (i.second > max)
-						{
-							max = i.second;
-							val = i.first;
-						}
-					}
-
-					Parameters.SpeedMultiplier = DesiredDefaultSpeed / val;
-				}
-				else if (Type != SPEEDTYPE_CMOD) // other cases
-				{
-					double bpsd = 4.0 / (ChartData.BPS[0].Value);
-					double Speed = (UNITS_PER_MEASURE / bpsd);
-					double DesiredMultiplier = DesiredDefaultSpeed / Speed;
-
-					Parameters.SpeedMultiplier = DesiredMultiplier;
-				}
-			}
-			else
-				ChartData = VSRG::GameChartData::FromDifficulty(CurrentDiff.get(), Drift);
-
-			if (Parameters.Random)
-				NoteTransform::Randomize(ChartData.NotesByChannel, CurrentDiff->Channels, CurrentDiff->Data->Turntable);
+			auto d = Parameters.Setup(DesiredDefaultSpeed, Type, Drift, diff);
+			ChartState = *d;
+			delete d;
 
 			SetupMechanics();
 		}
@@ -888,39 +621,18 @@ namespace Game {
 			// Load up BGM events
 			auto BGMs = CurrentDiff->Data->BGMEvents;
 			if (DisableKeysounds)
-				NoteTransform::MoveKeysoundsToBGM(CurrentDiff->Channels, ChartData.NotesByChannel, BGMs, Drift);
+				NoteTransform::MoveKeysoundsToBGM(CurrentDiff->Channels, ChartState.NotesByChannel, BGMs, Drift);
 
 			return BGMs;
 		}
 
-		double PlayerContext::GetMeasureTime(double msr) const
-		{
-			double beat = 0;
-
-			if (msr <= 0)
-			{
-				return 0;
-			}
-
-			auto whole = int(floor(msr));
-			auto fraction = msr - double(whole);
-			for (auto i = 0; i < whole; i++)
-				beat += CurrentDiff->Data->Measures[i].Length;
-			beat += CurrentDiff->Data->Measures[whole].Length * fraction;
-
-			Log::Logf("Warping to measure measure %d at beat %f.\n", whole, beat);
-
-			return ChartData.GetTimeAtBeat(beat);
-		}
-
 		double PlayerContext::HasSongFinished(double time) const
 		{
-			double wt = ChartData.GetWarpedSongTime(time);
+			double wt = ChartState.GetWarpedSongTime(time);
 			double cutoff;
 
 			if (PlayerScoreKeeper->usesO2()) { // beat-based judgements 
-
-				double curBPS = ChartData.GetBpsAt(time);
+				double curBPS = ChartState.GetBpsAt(time);
 				double cutoffspb = 1 / curBPS;
 
 				cutoff = cutoffspb * PlayerScoreKeeper->getMissCutoffMS();
@@ -940,21 +652,14 @@ namespace Game {
 
 		void PlayerContext::GearKeyEvent(uint32_t Lane, bool KeyDown)
 		{
-			if (Animations) {
-				if (Animations->GetEnv()->CallFunction("GearKeyEvent", 3))
-				{
-					Animations->GetEnv()->PushArgument((int)Lane + 1);
-					Animations->GetEnv()->PushArgument(KeyDown);
-					Animations->GetEnv()->PushArgument(PlayerNumber);
-
-					Animations->GetEnv()->RunFunction();
-				}
+			if (OnGearKeyEvent) {
+				OnGearKeyEvent(Lane, KeyDown, PlayerNumber);
 			}
 		}
 
 		void PlayerContext::Update(double SongTime)
 		{
-			PlayerNoteskin.Update(SongTime - LastUpdateTime, ChartData.GetBeatAt(ChartData.GetWarpedSongTime(SongTime)));
+			PlayerNoteskin.Update(SongTime - LastUpdateTime, ChartState.GetBeatAt(ChartState.GetWarpedSongTime(SongTime)));
 			LastUpdateTime = SongTime;
 			RunMeasures(SongTime);
 		}
@@ -967,6 +672,7 @@ namespace Game {
 
 		double PlayerContext::GetLifePST() const
 		{
+			auto LifebarType = GetCurrentGaugeType();
 			auto lifebar_amount = PlayerScoreKeeper->getLifebarAmount(LifebarType);
 			if (LifebarType == LT_GROOVE || LifebarType == LT_EASY)
 				return std::max(2, int(floor(lifebar_amount * 50) * 2));
@@ -998,70 +704,18 @@ namespace Game {
 			}
 		}
 
-		void PlayerContext::DrawBarlines(double CurrentVertical, double SpeedMultiplier)
+		void PlayerContext::DrawBarlines(double CurrentVertical, double UserSpeedMultiplier)
 		{
-			for (auto i : ChartData.MeasureBarlines)
+			for (auto i : ChartState.MeasureBarlines)
 			{
-				double realV = (CurrentVertical - i) * SpeedMultiplier +
-					PlayerNoteskin.GetBarlineOffset() * sign(SpeedMultiplier) + GetJudgmentY();
+				double realV = (CurrentVertical - i) * UserSpeedMultiplier +
+					PlayerNoteskin.GetBarlineOffset() * sign(UserSpeedMultiplier) + GetJudgmentY();
 				if (realV > 0 && realV < ScreenWidth)
 				{
 					Barline->SetLocation(Vec2(PlayerNoteskin.GetBarlineStartX(), realV),
 						Vec2(PlayerNoteskin.GetBarlineStartX() + PlayerNoteskin.GetBarlineWidth(), realV));
 					Barline->Render();
 				}
-			}
-		}
-
-		void PlayerContext::UpdateHidden()
-		{
-			/*
-				Given the top of the screen being 1, the bottom being -1
-				calculate the range for which the current hidden mode is defined.
-			*/
-			CfgVar HiddenSize("HiddenSize", "Hidden");
-			CfgVar FLSize("FlashlightSize", "Hidden");
-			CfgVar Threshold("Threshold", "Hidden");
-
-			auto toYRange = [](float x) {
-				x /= ScreenHeight; // [0,768] -> [0,1]
-				x *= -2; // [0,1] -> [0, -2]
-				x += 1; // [1, -1]
-				return x;
-			};
-			
-			float Center = toYRange(Threshold * PLAYFIELD_SIZE);
-			float JudgmentLinePos = GetJudgmentY();
-			auto Upscroll = Parameters.Upscroll;
-
-			
-
-			// Hidden calc
-			if (Parameters.HiddenMode)
-			{
-				float pfCenter;
-				
-				Hidden.TransitionSize = HiddenSize * PLAYFIELD_SIZE / ScreenHeight;
-
-				if (Upscroll)
-				{
-					pfCenter = toYRange(ScreenHeight - JudgmentLinePos + Threshold * PLAYFIELD_SIZE);
-					Hidden.Center = pfCenter;
-					
-
-					// Invert Hidden Mode.
-					if (Parameters.HiddenMode == HM_SUDDEN) Hidden.Mode = HM_HIDDEN;
-					else if (Parameters.HiddenMode == HM_HIDDEN) Hidden.Mode = HM_SUDDEN;
-					else Hidden.Mode = (Game::VSRG::EHiddenMode)Parameters.HiddenMode;
-				}
-				else
-				{
-					pfCenter = Center;
-					Hidden.Center = pfCenter;
-					Hidden.Mode = (Game::VSRG::EHiddenMode)Parameters.HiddenMode;
-				}
-
-				Hidden.CenterSize = FLSize * PLAYFIELD_SIZE / ScreenHeight;
 			}
 		}
 
@@ -1074,34 +728,40 @@ namespace Game {
 				DrawMeasures should get the unwarped song time.
 				Internally, it uses warped song time.
 			*/
-			auto wt = ChartData.GetWarpedSongTime(song_time);
+			auto wt = ChartState.GetWarpedSongTime(song_time);
 
 			// note Y displacement at song_time
-			auto vert = ChartData.GetDisplacementAt(wt);
+			auto chart_displacement = ChartState.GetChartDisplacementAt(wt);
 
 			// effective speed multiplier
-			auto chartmul = GetAppliedSpeedMultiplier(song_time);
-			auto effmul = chartmul * Parameters.SpeedMultiplier;
+			auto chart_multiplier = GetAppliedSpeedMultiplier(song_time);
+			auto effective_chart_speed_multiplier = chart_multiplier * Parameters.UserSpeedMultiplier;
 
 			// since + is downward, - is upward!
-			bool upscrolling = effmul < 0;
+			bool upscrolling = effective_chart_speed_multiplier < 0;
 
 			if (PlayerNoteskin.IsBarlineEnabled())
-				DrawBarlines(vert, effmul);
+				DrawBarlines(chart_displacement, effective_chart_speed_multiplier);
 
 			// Set some parameters...
-			Renderer::SetShaderParameters(false, false, true, true, false, false, Hidden.Mode);
+			Renderer::SetShaderParameters(false, false, true, true, false, false, Parameters.GetHiddenMode());
 
 			// Sudden = 1, Hidden = 2, flashlight = 3 (Defined in the shader)
-			if (Hidden.Mode)
+			if (Parameters.GetHiddenMode())
 			{
-				Renderer::Shader::SetUniform(Renderer::DefaultShader::GetUniform(Renderer::U_HIDCENTER), Hidden.Center);
-				Renderer::Shader::SetUniform(Renderer::DefaultShader::GetUniform(Renderer::U_HIDSIZE), Hidden.TransitionSize);
-				Renderer::Shader::SetUniform(Renderer::DefaultShader::GetUniform(Renderer::U_HIDFLSIZE), Hidden.CenterSize);
+				Renderer::Shader::SetUniform(
+					Renderer::DefaultShader::GetUniform(Renderer::U_HIDCENTER), 
+					Parameters.GetHiddenCenter());
+				Renderer::Shader::SetUniform(
+					Renderer::DefaultShader::GetUniform(Renderer::U_HIDSIZE), 
+					Parameters.GetHiddenTransitionSize());
+				Renderer::Shader::SetUniform(
+					Renderer::DefaultShader::GetUniform(Renderer::U_HIDFLSIZE), 
+					Parameters.GetHiddenCenterSize());
 			}
 
 			Renderer::SetPrimitiveQuadVBO();
-			auto &NotesByChannel = ChartData.NotesByChannel;
+			auto &NotesByChannel = ChartState.NotesByChannel;
 			auto jy = GetJudgmentY();
 
 			for (auto k = 0U; k < CurrentDiff->Channels; k++)
@@ -1109,29 +769,37 @@ namespace Game {
 				// From the note's vertical StaticVert transform to position on screen.
 				auto Locate = [&](double StaticVert) -> double
 				{
-					return (vert - StaticVert) * effmul + jy;
+					return (chart_displacement - StaticVert) * effective_chart_speed_multiplier + jy;
 				};
 
 				auto Start = NotesByChannel[k].begin();
 				auto End = NotesByChannel[k].end();
 
 				// We've got guarantees about our note locations.
-				if (UseNoteOptimization())
+				if (ChartState.IsNoteTimeSorted())
 				{
 					/* Find the location of the first/next visible regular note */
-					auto LocPredicate = [&](const TrackNote &A, double _) -> bool
+					auto LocPredicate = [&](const TrackNote &A, double TrackDisplacement) -> bool
 					{
 						if (!upscrolling)
-							return _ < Locate(A.GetVertical());
+							return TrackDisplacement < Locate(A.GetVertical());
 						else // Signs are switched. We need to preserve the same order.
-							return _ > Locate(A.GetVertical());
+							return TrackDisplacement > Locate(A.GetVertical());
 					};
 
 					// Signs are switched. Doesn't begin by the first note closest to the lower edge, but the one closest to the higher edge.
 					if (!upscrolling)
-						Start = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), ScreenHeight + PlayerNoteskin.GetNoteOffset(), LocPredicate);
+						Start = std::lower_bound(
+							NotesByChannel[k].begin(), 
+							NotesByChannel[k].end(), 
+							ScreenHeight + PlayerNoteskin.GetNoteOffset(), 
+							LocPredicate);
 					else
-						Start = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), 0 - PlayerNoteskin.GetNoteOffset(), LocPredicate);
+						Start = std::lower_bound(
+							NotesByChannel[k].begin(),
+							NotesByChannel[k].end(), 
+							0 - PlayerNoteskin.GetNoteOffset(), 
+							LocPredicate);
 
 					// Locate the first hold that we can draw in this range
 					/*
@@ -1174,15 +842,17 @@ namespace Game {
 					VerticalHoldEnd = Locate(m->GetHoldEndVertical());
 
 					// Old check method that doesn't rely on a correct vertical ordering.
-					if (!UseNoteOptimization())
+					if (!ChartState.IsNoteTimeSorted())
 					{
 						if (m->IsHold())
 						{
-							if (!IntervalsIntersect(0, ScreenHeight, std::min(Vertical, VerticalHoldEnd), std::max(Vertical, VerticalHoldEnd))) continue;
+							if (!IntervalsIntersect(0, ScreenHeight, 
+								std::min(Vertical, VerticalHoldEnd), std::max(Vertical, VerticalHoldEnd))) continue;
 						}
 						else
 						{
-							if (Vertical < -PlayerNoteskin.GetNoteOffset() || Vertical > ScreenHeight + PlayerNoteskin.GetNoteOffset()) continue;
+							if (Vertical < -PlayerNoteskin.GetNoteOffset() || 
+								Vertical > ScreenHeight + PlayerNoteskin.GetNoteOffset()) continue;
 						}
 					}
 
@@ -1198,6 +868,7 @@ namespace Game {
 					// We draw the body first, so that way the heads get drawn on top
 					if (m->IsHold())
 					{
+						// todo: move this note state determination to the note itself 
 						enum : int { Failed, Active, BeingHit, SuccesfullyHit };
 						int Level = -1;
 
@@ -1255,15 +926,17 @@ namespace Game {
 
 
 			if (DebugNoteRendering) {
-				fnt->Render(Utility::Format("NOTES RENDERED: %d\nN/O: %d\nRNG: %f to %f\nMULT/EFFECTIVEMULT/SPEED: %f/%f/%f",
+				fnt->Render(Utility::Format("NOTES RENDERED: %d\nSORTEDTIME: %d\nRNG: %f to %f\nMULT/EFFECTIVEMULT/SPEED: %f/%f/%f",
 					rnc,
-					UseNoteOptimization(),
-					vert, vert + ScreenHeight,
-					chartmul, effmul, GetCurrentVerticalSpeed() * effmul), Vec2(0, 0));
+					ChartState.IsNoteTimeSorted(),
+					chart_displacement, chart_displacement + ScreenHeight,
+					chart_multiplier, effective_chart_speed_multiplier, GetCurrentVerticalSpeed() * effective_chart_speed_multiplier), Vec2(0, 0));
 			}
 			return rnc;
 		}
 
-	}
+		
+
+}
 
 }

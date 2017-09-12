@@ -230,18 +230,15 @@ bool Configuration::ListExists(std::string Name)
 
 uint32_t Configuration::CfgScreenHeight()
 {
-    if (IsWidescreen)
-        return ScreenHeightWidescreen;
-    else
-        return ScreenHeightDefault;
+	return ScreenHeightDefault;
 }
 
 uint32_t Configuration::CfgScreenWidth()
 {
-    if (IsWidescreen == 1)
-        return ScreenWidthWidescreen;
-    else if (IsWidescreen == 2)
-        return 1230;
-    else
-        return ScreenWidthDefault;
+    if (IsWidescreen == 1) // 16:9
+        return 16.0 / 9.0 * ScreenHeightDefault;
+    else if (IsWidescreen == 2) // 16:10
+        return 16.0 / 10.0 * ScreenHeightDefault;
+    else 
+        return 4.0 / 3.0 * ScreenHeightDefault;
 }
