@@ -65,8 +65,6 @@ namespace Game
         bool InWheelBounds(Vec2 Pos);
 
         bool IsInitialized;
-        bool dotcurModeActive;
-        bool VSRGModeActive;
         bool IsHovering;
 
         bool LoadedSongsOnce;

@@ -21,9 +21,6 @@ SongWheel::SongWheel()
     IsInitialized = false;
     mLoadMutex = nullptr;
     mLoadThread = nullptr;
-    VSRGModeActive = (Configuration::GetConfigf("VSRGEnabled") != 0);
-	dotcurModeActive = false;
-    // dotcurModeActive = (Configuration::GetConfigf("dotcurEnabled") != 0);
     DifficultyIndex = 0;
 
 	DisplayStartIndex = 0;
@@ -78,16 +75,12 @@ class LoadThread
     std::mutex* mLoadMutex;
     SongDatabase* DB;
     std::shared_ptr<SongList> ListRoot;
-    bool VSRGActive;
-    bool DCActive;
     std::atomic<bool>& isLoading;
 public:
-    LoadThread(std::mutex* m, SongDatabase* d, std::shared_ptr<SongList> r, bool va, bool da, std::atomic<bool>& loadingstatus)
+    LoadThread(std::mutex* m, SongDatabase* d, std::shared_ptr<SongList> r, std::atomic<bool>& loadingstatus)
         : mLoadMutex(m),
         DB(d),
         ListRoot(r),
-        VSRGActive(va),
-        DCActive(da),
         isLoading(loadingstatus)
     {
         isLoading = true;
@@ -140,7 +133,7 @@ void SongWheel::ReloadSongs(SongDatabase* Database)
     if (!mLoadMutex)
         mLoadMutex = new std::mutex;
 
-    LoadThread L(mLoadMutex, DB, ListRoot, VSRGModeActive, dotcurModeActive, mLoading);
+    LoadThread L(mLoadMutex, DB, ListRoot, mLoading);
     mLoadThread = new std::thread(&LoadThread::Load, L);
 }
 

@@ -330,6 +330,9 @@ namespace Game {
 
 			auto diff = GameState::GetInstance().GetDifficulty(0);
 
+			if (!diff) // possibly preloaded
+				diff = MySong->GetDifficulty(0);
+
 			if (Time.InterpolateStream &&  // Apply drift is enabled and:
 				((ApplyDriftVirtual && diff->IsVirtual) ||  // We want to apply it to a keysounded file and it's virtual
 				(ApplyDriftDecoder && diff->IsVirtual))) // or we want to apply it to a non-keysounded file and it's not virtual
@@ -349,8 +352,10 @@ namespace Game {
 			Log::Printf("Processing song... ");
 
 			for (auto &&p : Players) {
-				for (auto sd : MySong->Difficulties)
-					if (sd->ID == GameState::GetInstance().GetDifficulty(p->GetPlayerNumber())->ID) {
+				for (auto sd : MySong->Difficulties) {
+					auto diff = GameState::GetInstance().GetDifficulty(p->GetPlayerNumber());
+					// If there's no difficulty assigned, no point in checking.
+					if ( (diff && sd->ID == diff->ID) || !diff ) {
 						p->SetPlayableData(sd, TimeError.AudioDrift, DesiredDefaultSpeed, Type);
 						p->Init();
 
@@ -360,6 +365,7 @@ namespace Game {
 							return false;
 						}
 					}
+				}
 			}
 
 			auto bgm0 = Players[0]->GetBgmData();

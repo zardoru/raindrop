@@ -66,7 +66,12 @@ namespace Game {
 
 			// Condition A: Hold tail outside accuracy cutoff (can't be hit any longer),
 			// note wasn't hit at the head and it's a hold
-			if ((SongTime - m->GetEndTime()) > 0 && !m->WasHit() && m->IsHold())
+			if (
+				(SongTime - m->GetEndTime()) > 0 // outside judgment
+				&& !m->WasHit() && m->IsHold() // not hit yet
+				// and head can't be hit
+				&& (abs(m->GetStartTime() - SongTime) > PlayerScoreKeeper->getMissCutoffMS() / 1000.0)
+				)
 			{
 				// ^ no need for delays here.
 				// remove hold notes that were never hit.

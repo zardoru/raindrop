@@ -14,6 +14,8 @@ using namespace Configuration;
 LuaManager *SkinCfgLua;
 CSimpleIniA *Config;
 int IsWidescreen;
+std::string ConfigFile = "config.ini";
+
 
 const std::string GlobalNamespace = "Global";
 
@@ -28,10 +30,15 @@ public:
 
 ConfigurationException CfgNotLoaded("Configuration not loaded yet.");
 
+void Configuration::SetConfigFile(std::string cfg)
+{
+    ConfigFile = cfg;
+}
+
 void Configuration::Initialize()
 {
     Config = new CSimpleIniA;
-    Config->LoadFile("config.ini");
+    Config->LoadFile(ConfigFile.c_str());
     SkinCfgLua = new LuaManager();
 
 	AddRDLuaGlobal(SkinCfgLua);
@@ -52,7 +59,7 @@ void Configuration::Initialize()
 void Configuration::Cleanup()
 {
 	if (Config)
-		Config->SaveFile("config.ini");
+		Config->SaveFile(ConfigFile.c_str());
 
     delete Config;
     delete SkinCfgLua;

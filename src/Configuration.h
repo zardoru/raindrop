@@ -2,6 +2,8 @@
 
 namespace Configuration
 {
+
+	void SetConfigFile(std::string cfgfile);
     void Initialize();
 	void Reload();
     std::string GetConfigs(std::string Name, std::string Namespace = "");

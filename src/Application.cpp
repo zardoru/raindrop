@@ -76,7 +76,9 @@ void Application::ParseArgs(int argc, char **argv)
         "Load Custom Scene")
 		("test,T", "Run test suite")
 		("fontcache,F", po::value<std::string>(),
-		"Generate Font Cache")
+        "Generate Font Cache")
+        ("config,x", po::value<std::string>(), 
+        "Set config file")
         ;
 
     po::variables_map vm;
@@ -111,6 +113,11 @@ void Application::ParseArgs(int argc, char **argv)
     {
         RunMode = MODE_CONVERT;
         OutFile = vm["output"].as<std::string>();
+    }
+
+    if (vm.count("config"))
+    {
+        Configuration::SetConfigFile(vm["config"].as<std::string>());
     }
 
     if (vm.count("gencache"))
@@ -251,9 +258,10 @@ void Application::SetupPreviewMode()
     // Load the song.
     auto song = LoadSong7KFromFilename(InFile);
 
+
     if (!song || !song->Difficulties.size())
     {
-        Log::Printf("File %s could not be loaded for preview. (%d/%d)\n", InFile.c_str(), (long long int)song.get(), song ? song->Difficulties.size() : 0);
+        Log::Printf("File %ls could not be loaded for preview. (ptr %d/diffcnt %d)\n", InFile.c_str(), (long long int)song.get(), song ? song->Difficulties.size() : 0);
         return;
     }
 
