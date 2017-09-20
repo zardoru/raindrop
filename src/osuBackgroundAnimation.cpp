@@ -218,6 +218,7 @@ namespace osb {
 			mTransform.ChainTransformation(&mParent->GetScreenTransformation());
 
 			// flip -> pivot
+			mPivot.SetPosition(OriginPivots[mOrigin].x, OriginPivots[mOrigin].y);
 			mPivot.ChainTransformation(&mTransform);
 			
 			// sprite -> flip vertices
@@ -225,7 +226,6 @@ namespace osb {
 
 			// No op from sprite.
 			mSprite->ChainTransformation(&mFlip);
-			mPivot.SetPosition(OriginPivots[mOrigin].x, OriginPivots[mOrigin].y);
 
 			// Set the image.
 			mSprite->SetImage(mParent->GetImageFromIndex(mImageIndex), false);
@@ -244,7 +244,7 @@ namespace osb {
 	}
 
 	template <class T>
-	bool clamp_iter(typename T::iterator &it, T& vec)
+	bool ValidateEventIterator(typename T::iterator &it, T& vec)
 	{
 		if (vec.begin() == vec.end()) return false; // don't use this iter
 		if (it != vec.begin()) it--;
@@ -260,7 +260,7 @@ namespace osb {
 		// Okay, a pretty long function follows. Fade first.
 		auto fade_evt = GetEvent(Time, evFade);
 		
-		if (clamp_iter(fade_evt, evFade)) {
+		if (ValidateEventIterator(fade_evt, evFade)) {
 			if (WithinEvents(Time))
 					mSprite->Alpha = fade_evt->LerpValue(Time);
 			else {
@@ -283,12 +283,12 @@ namespace osb {
 
 		// Now position.	
 		auto movx_evt = GetEvent(Time, evMoveX);
-		if (clamp_iter(movx_evt, evMoveX))
+		if (ValidateEventIterator(movx_evt, evMoveX))
 			mTransform.SetPositionX(movx_evt->LerpValue(Time));
 		else mTransform.SetPositionX(mStartPos.x);
 
 		auto movy_evt = GetEvent(Time, evMoveY);
-		if (clamp_iter(movy_evt, evMoveY))
+		if (ValidateEventIterator(movy_evt, evMoveY))
 			mTransform.SetPositionY(movy_evt->LerpValue(Time));
 		else mTransform.SetPositionY(mStartPos.y);
 
@@ -300,7 +300,7 @@ namespace osb {
 		// Now scale and rotation.
 		float scale = 1;
 		auto scale_evt = GetEvent(Time, evScale);
-		if (clamp_iter(scale_evt, evScale))
+		if (ValidateEventIterator(scale_evt, evScale))
 			scale = scale_evt->LerpValue(Time);
 		else if (mLayer == osb::LAYER_SP_BACKGROUND && mSprite->GetImage())
 			scale *= OSB_HEIGHT / mSprite->GetImage()->h;
@@ -312,13 +312,13 @@ namespace osb {
 		// defaulting at 1,1 to be our vector scale. That way they'll pile up.
 		Vec2 vscale;
 		auto vscale_evt = GetEvent(Time, evScaleVec);
-		if (clamp_iter(vscale_evt, evScaleVec))
+		if (ValidateEventIterator(vscale_evt, evScaleVec))
 			vscale = vscale_evt->LerpValue(Time);
 		else vscale = Vec2(1, 1);
 
 		auto rot_evt = GetEvent(Time, evRotate);
 		float rot = 0;
-		if (clamp_iter(rot_evt, evRotate)) {
+		if (ValidateEventIterator(rot_evt, evRotate)) {
 			rot = rot_evt->LerpValue(Time);
 			mTransform.SetRotation(glm::degrees(rot));
 		}
@@ -332,15 +332,13 @@ namespace osb {
 			// therefore, pivot is applied, then scale
 			// then both size and scale on mTransform are free for usage.
 
-			// For some reason it's not applying scale then rotate - but rotate then scale.
-			// To get around this, we undo the transformation on the object's x-axis
-		    // by multiplying this value to X.
+			// Set active scales.
 			mTransform.SetSize(i->w * scale * vscale.x, i->h * scale * vscale.y);
 		}
 
 
 		auto colorization_evt = GetEvent(Time, evColorize);
-		if (clamp_iter(colorization_evt, evColorize)) {
+		if (ValidateEventIterator(colorization_evt, evColorize)) {
 			auto lerp = colorization_evt->LerpValue(Time);
 			mSprite->Red = lerp.r;
 			mSprite->Green = lerp.g;
@@ -407,7 +405,7 @@ namespace osb {
 	}
 
 	template <class T>
-	void VecSort(T& vec)
+	void SortEventList(T& vec)
 	{
 		auto cmp = [](const typename T::value_type& A, const typename T::value_type& B)
 		{
@@ -420,16 +418,16 @@ namespace osb {
 
 	void EventComponent::SortEvents()
 	{
-		VecSort(evMoveX);
-		VecSort(evMoveY);
-		VecSort(evScale);
-		VecSort(evScaleVec);
-		VecSort(evRotate);
-		VecSort(evColorize);
-		VecSort(evFade);
-		VecSort(evFlipH);
-		VecSort(evFlipV);
-		VecSort(evAdditive);
+		SortEventList(evMoveX);
+		SortEventList(evMoveY);
+		SortEventList(evScale);
+		SortEventList(evScaleVec);
+		SortEventList(evRotate);
+		SortEventList(evColorize);
+		SortEventList(evFade);
+		SortEventList(evFlipH);
+		SortEventList(evFlipV);
+		SortEventList(evAdditive);
 
 		GetDuration();
 	}

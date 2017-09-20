@@ -184,7 +184,11 @@ class OsumaniaLoader
 	{
 		Offsetize();
 
-		auto seclst = filter([](const HitsoundSectionData& H) {return !H.IsInherited && !H.Omit;}, HitsoundSections);
+		auto seclst = filter([](const HitsoundSectionData& H) 
+		{
+			return !H.IsInherited && !H.Omit;
+		}, HitsoundSections);
+
 		for (auto i = seclst.begin(); i != seclst.end();)
 		{
 			double SectionDurationInBeats = 0;

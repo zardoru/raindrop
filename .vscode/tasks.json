@@ -1,0 +1,42 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "taskName": "Build Debug",
+            "type": "process",
+            "command": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\MSBuild\\15.0\\Bin\\msbuild.exe",
+            "args": [
+                "msvc/raindrop.vcxproj",
+                "/property:GenerateFullPaths=true",
+                "/t:build",
+                "/p:Configuration=Debug"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "taskName": "Build Release",
+            "type": "process",
+            "command": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\MSBuild\\15.0\\Bin\\msbuild.exe",
+            "args": [
+                "msvc/raindrop.vcxproj",
+                "/property:GenerateFullPaths=true",
+                "/t:build",
+                "/p:Configuration=Release"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": "$msCompile"
+        }
+    ]
+}
