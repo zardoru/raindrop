@@ -279,7 +279,9 @@ void Application::SetupPreviewMode()
     param.StartMeasure = Measure;
     param.Preloaded = true;
     param.Auto = Auto;
-	*/
+    */
+    
+    GameState::GetInstance().SetSelectedSong(song);
 	GameState::GetInstance().GetParameters(0)->Auto = Auto;
     game->Init(song);
     LoadScreen->Init();

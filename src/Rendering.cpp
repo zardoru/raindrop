@@ -16,6 +16,8 @@
 
 #include "Shader.h"
 
+#include "ImageLoader.h"
+
 const ColorRGB White = { 1, 1, 1, 1 };
 const ColorRGB Black = { 0, 0, 0, 1 };
 const ColorRGB Red = { 1, 0, 0, 1 };
@@ -28,6 +30,7 @@ namespace Renderer {
 	VBO* TextureBuffer = nullptr;
 	VBO* TempTextureBuffer = nullptr;
 	VBO* ColorBuffer = nullptr;
+	Texture* xor_tex = nullptr;
 
 	float QuadPositions[8] =
 	{
@@ -73,6 +76,13 @@ namespace Renderer {
 		Texture::ForceRebind();
 	}
 
+	void SetXorTexParameters() {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	}
+
 	static bool Initialized = false;
 	void InitializeRender()
 	{
@@ -93,9 +103,36 @@ namespace Renderer {
 			ColorBuffer = new VBO(VBO::Static, sizeof(QuadColours) / sizeof(float));
 			ColorBuffer->Validate();
 			ColorBuffer->AssignData(QuadColours);
+
+			// create xor texture
+			xor_tex = new Texture;
+			
+			std::vector<uint32_t> buf(256 * 256);
+			for(int i = 0; i < 256; i++) {
+				for (int j = 0; j < 256; j++) {
+					uint8_t x = i ^ j;
+
+					buf[i * 256 + j] = (255 << 24) + x + (x << 8) + (x << 16);
+				}
+			}
+
+			ImageData d(256, 256, nullptr);
+			d.Data = buf;
+
+			xor_tex->SetTextureData2D(d);
+			xor_tex->fname = "xor";
+			SetXorTexParameters(); // it's bound, apply parameters
+
+			ImageLoader::RegisterTexture(xor_tex);
 			Initialized = true;
 		}
 	}
+
+	Texture* GetXorTexture(){
+		return xor_tex;
+	}
+
+	
 
 	void SetTextureParameters(std::string Dir)
 	{

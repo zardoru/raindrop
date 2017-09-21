@@ -679,7 +679,7 @@ namespace NoteLoaderBMS{
 					int Limit = std::stoi(Contents.c_str());
 
 					assert(CurrentNestedLevel < 16);
-					assert(Limit > 1);
+					//assert(Limit > 1);
 
 					RandomStack[CurrentNestedLevel] = std::randint(1, Limit);
 

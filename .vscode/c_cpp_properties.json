@@ -82,7 +82,7 @@
                     "${workspaceRoot}/src/"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
-                "databaseFilename": ""
+                "databaseFilename": "${workspaceRoot}/.vscode/browse.db"
             }
         }
     ],

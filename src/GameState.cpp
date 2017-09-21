@@ -99,9 +99,15 @@ GameState& GameState::GetInstance()
     return *StateInstance;
 }
 
+void GameState::SetSelectedSong(std::shared_ptr<VSRG::Song> sng)
+{
+	SelectedSong = sng;
+}
+
 VSRG::Song *GameState::GetSelectedSong() const
 {
-    return SongWheel::GetInstance().GetSelectedSong().get();
+	auto p = SongWheel::GetInstance().GetSelectedSong().get();
+    return p ? p : SelectedSong.get();
 }
 
 void Game::GameState::StartScreenTransition(std::string target)

@@ -39,7 +39,7 @@
                 "type": "cppvsdbg",
                 "request": "launch",
                 "program": "${workspaceRoot}/msvc/Debug/raindrop.exe",
-                "args": [],
+                "args": ["--config", "config-debug.ini"],
                 "stopAtEntry": false,
                 "cwd": "${workspaceRoot}/debug",
                 "environment": [],

@@ -64,6 +64,7 @@ namespace Game
         bool SkinSupportsChannelCount(int Count);
         std::string GetSkin();
 
+		void SetSelectedSong(std::shared_ptr<Game::VSRG::Song> song);
         Game::VSRG::Song *GetSelectedSong() const;
 
 	    Texture* GetSongBG();

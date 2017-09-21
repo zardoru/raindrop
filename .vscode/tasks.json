@@ -37,6 +37,22 @@
                 "reveal": "always"
             },
             "problemMatcher": "$msCompile"
+        },
+        {
+            "taskName": "Rebuild Release",
+            "type": "process",
+            "command": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\MSBuild\\15.0\\Bin\\msbuild.exe",
+            "args": [
+                "msvc/raindrop.vcxproj",
+                "/property:GenerateFullPaths=true",
+                "/t:Clean;Build",
+                "/p:Configuration=Release"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": "$msCompile"
         }
     ]
 }

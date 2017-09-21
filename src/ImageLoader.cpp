@@ -12,9 +12,11 @@ std::map<std::filesystem::path, Texture*> ImageLoader::Textures;
 std::map<std::filesystem::path, ImageLoader::UploadData> ImageLoader::PendingUploads;
 
 CfgVar ImageLoaderMessages("ImageLoader", "Debug");
+CfgVar XorTexture("XorTexture", "Debug");
 
 ImageLoader::ImageLoader()
 {
+
 }
 
 ImageLoader::~ImageLoader()
@@ -50,6 +52,8 @@ void ImageLoader::UnloadAll()
 
 void ImageLoader::DeleteImage(Texture* &ToDelete)
 {
+    if (ToDelete == Renderer::GetXorTexture()) return;
+
     if (ToDelete) {
 		auto tex = Textures.find(ToDelete->fname);
 		if (tex != Textures.end()) {
@@ -70,6 +74,7 @@ void ImageLoader::DeleteImage(Texture* &ToDelete)
 Texture* ImageLoader::InsertImage(std::filesystem::path Name, ImageData &imgData)
 {
     Texture* I;
+    if (XorTexture) return Renderer::GetXorTexture();
 
     if (imgData.Data.size() == 0) return nullptr;
 
@@ -210,6 +215,8 @@ ImageData ImageLoader::GetDataForImageFromMemory(const unsigned char* const buff
 
 Texture* ImageLoader::Load(std::filesystem::path filename)
 {
+    if (XorTexture) return Renderer::GetXorTexture();
+
 	if (std::filesystem::is_directory(filename)) return NULL;
     if (Textures.find(filename) != Textures.end() && Textures[filename]->IsValid)
     {
@@ -230,6 +237,9 @@ Texture* ImageLoader::Load(std::filesystem::path filename)
 void ImageLoader::AddToPending(std::filesystem::path Filename)
 {
     UploadData New;
+
+    if (XorTexture) return;
+
     if (Textures.find(Filename) == Textures.end())
     {
         auto d = GetDataForImage(Filename);
