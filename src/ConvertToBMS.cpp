@@ -209,6 +209,9 @@ class BMSConverter : public Game::VSRG::RowifiedDifficulty {
 			line << Utility::Format("#%03d%s:", Measure, ToBMSBase36(Channel).c_str());
 		}
 
+		if (rowified.find(0) == rowified.end())
+			rowified[0].resize(0);
+
 		for (auto row = rowified.begin(); row != rowified.end(); row++) {
 
 			// ith line gets the ith column at fraction row->first / LCM

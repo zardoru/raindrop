@@ -885,8 +885,13 @@ public:
 				default: break;
 				}
 			}
+			
+			auto notecount = 0;
+			for (int i = 0; i < Diff->Channels; i++) {
+				notecount += Notes[i].size();
+			}
 
-			if (Diff->Data->GetObjectCount())
+			if (notecount)
 			{
 				// Okay then, convert timing data into a measure-based format raindrop can use 
 				// and calculate offset.
