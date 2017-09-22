@@ -2,11 +2,17 @@
         "version": "0.2.0",
         "configurations": [
             {
+                "name": "(Windows) Attach",
+                "type": "cppvsdbg",
+                "request": "attach",
+                "processId": "${command:pickProcess}"
+            },
+            {
                 "name": "(Windows) Run Test osu file - Autoplay (debug/test.osu)",
                 "type": "cppvsdbg",
                 "request": "launch",
                 "program": "${workspaceRoot}/msvc/Debug/raindrop.exe",
-                "args": ["-p", "-i", "test.osu", "--config", "config-debug.ini"],
+                "args": ["-p", "-i", "s3a/test.osu", "--config", "config-debug.ini"],
                 "stopAtEntry": false,
                 "cwd": "${workspaceRoot}/debug",
                 "environment": [],

@@ -334,7 +334,6 @@ namespace Game {
 
 			out.HasTurntable = diff->Data->Turntable;
 
-			out.MeasureBarlines = out.GetMeasureLines();
 
 			if (!ConstantUserSpeed) {
 				out.ScrollSpeeds = ApplySpeedChanges(out.ScrollSpeeds, data->Scrolls,
@@ -344,6 +343,9 @@ namespace Game {
 				out.Warps = data->Warps;
 				out.InterpoloatedSpeedMultipliers = data->InterpoloatedSpeedMultipliers;
 			}
+
+			// this has to go _after_ speed changes were applied
+			out.MeasureBarlines = out.GetMeasureLines();
 
 			/* For all channels of this difficulty */
 			for (int KeyIndex = 0; KeyIndex < diff->Channels; KeyIndex++)

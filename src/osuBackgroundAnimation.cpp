@@ -10,6 +10,8 @@
 #include "Texture.h"
 #include "Logging.h"
 
+#include "VideoPlayback.h"
+
 const float OSB_WIDTH = 640;
 const float OSB_WIDTH_WIDE = 853;
 const float OSB_HEIGHT = 480;
@@ -303,7 +305,7 @@ namespace osb {
 		if (ValidateEventIterator(scale_evt, evScale))
 			scale = scale_evt->LerpValue(Time);
 		else if (mLayer == osb::LAYER_SP_BACKGROUND && mSprite->GetImage())
-			scale *= OSB_HEIGHT / mSprite->GetImage()->h;
+			scale *= OSB_WIDTH_WIDE / mSprite->GetImage()->w;
 		else scale = 1;
 		// we want to scale it to fit - but we don't want to alter the scale set by the user
 		// scales just get multiplied so we'll do that
@@ -334,6 +336,11 @@ namespace osb {
 
 			// Set active scales.
 			mTransform.SetSize(i->w * scale * vscale.x, i->h * scale * vscale.y);
+
+			auto vid = dynamic_cast<VideoPlayback*>(i);
+			if (vid) {
+				vid->UpdateClock(Time - evFade.begin()->GetTime());
+			}
 		}
 
 
@@ -876,13 +883,6 @@ osb::SpriteList ReadOSBEvents(std::istream& event_str)
 
 				bgsprite.AddEvent(evt);
 
-				/*if (previous_background) {
-					float T = 1;
-					auto prev_evt = previous_background->GetEvent(T, osb::EVT_FADE);
-					if (previous_background->IsValidEvent(prev_evt, osb::EVT_FADE))
-						previous_background->GetEventList(osb::EVT_FADE)))->SetEndTime(time);
-				}*/
-
 				previous_background = &bgsprite;
 
 				list.insert(list.begin(), bgsprite);
@@ -892,6 +892,27 @@ osb::SpriteList ReadOSBEvents(std::istream& event_str)
 
 			if (split_result[0] == "2")
 				return true;
+
+			if (split_result[0] == "video") {
+				float time = latof(split_result[1]);
+				auto bgsprite = osb::BGASprite(
+					strip_quotes(split_result[2]), 
+					osb::PP_CENTER, 
+					Vec2(320, 240),
+					osb::LAYER_SP_BACKGROUND);
+
+				auto evt = std::make_shared<osb::FadeEvent>();
+				evt->SetEndValue(1);
+				evt->SetValue(1);
+				evt->SetTime(latof(split_result[1]) / 1000.0f);
+				evt->SetEndTime(std::numeric_limits<float>::infinity());
+
+				bgsprite.AddEvent(evt);
+
+				previous_background = &bgsprite;
+
+				list.insert(list.end(), bgsprite);
+			}
 
 			return false;
 		};
@@ -1001,21 +1022,41 @@ osuBackgroundAnimation::osuBackgroundAnimation(Interruptible* parent, osb::Sprit
 	: BackgroundAnimation(parent),
 		mImageList(this)
 {
-	Transform.SetSize(OSB_WIDTH, OSB_HEIGHT);
-	mScreenTransformation.SetSize(1 / OSB_WIDTH, 1 / OSB_HEIGHT);
+	Transform.SetSize(OSB_WIDTH_WIDE, OSB_HEIGHT);
+	mScreenTransformation.SetPositionX( (OSB_WIDTH_WIDE - OSB_WIDTH) / 2 / OSB_WIDTH_WIDE);
+	mScreenTransformation.SetSize(1 / OSB_WIDTH_WIDE, 1 / OSB_HEIGHT);
 	mScreenTransformation.ChainTransformation(&Transform);
 	Song = song;
 	CanValidate = false;
 
+	int video_index = 0;
 	if (existing_mSprites) {
 		for (auto sp : *existing_mSprites) {
 			sp.SetParent(this);
-			sp.SetImageIndex(AddImageToList(sp.GetImageFilename()));
+
+			auto vpath = song->SongDirectory / sp.GetImageFilename();
+			if (IsVideoPath(vpath)) {
+				video_index--;
+				auto vid = mVideoList[video_index] = new VideoPlayback();
+				if (vid->Open(vpath)) {
+					vid->StartDecodeThread();
+					mImageList.AddToListIndex(vid, video_index);
+				}
+			} else {
+				sp.SetImageIndex(AddImageToList(sp.GetImageFilename()));
+			}
 			mSprites.push_back(sp);
 		}
 	}
 }
 
+osuBackgroundAnimation::~osuBackgroundAnimation()
+{
+	for (auto v: mVideoList) {
+		delete v.second;
+	}
+}
+	
 Transformation& osuBackgroundAnimation::GetScreenTransformation()
 {
 	return mScreenTransformation;
@@ -1023,7 +1064,10 @@ Transformation& osuBackgroundAnimation::GetScreenTransformation()
 
 Texture* osuBackgroundAnimation::GetImageFromIndex(int m_image_index)
 {
-	return mImageList.GetFromIndex(m_image_index);
+	if (m_image_index >= 0)
+		return mImageList.GetFromIndex(m_image_index);
+	else
+		return mVideoList[m_image_index];
 }
 
 int osuBackgroundAnimation::GetIndexFromFilename(std::string filename)

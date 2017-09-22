@@ -313,6 +313,9 @@ void VideoPlayback::UpdateClock(double clock)
 {
 	bool update = true;
 
+	if (!Context) return;
+	if (clock < 0) return; 
+
 	while (update) {
 		if (Context->DisplayFrame.frame) {
 			if (Context->DisplayFrame.pts <= clock) {
