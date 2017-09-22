@@ -1,9 +1,54 @@
 raindrop
 =====
 
-raindrop is a music game project aimed to be a multi-mode rhythm game for home desktops, nevertheless mainly focused on vsrg simulation (such as iidx, o2jam, stepmania, FTB, osu!mania, etc.). 
-A cytus-like mode is implemented and a flexible VSRG engine is, too. It supports several chart formats and is able to convert between them, including:
+raindrop is a music game project aimed to be a multi-mode rhythm game for home desktops. It is a modern VSRG engine that supports warps, scroll speeds, and much more.
 
+Features
+=====
+* Negative-able BPM/stop support
+* #RANDOM BMS
+* Hidden/Fake notes
+* OJN cover support
+* Multiple timing systems
+	* O2Jam (Near perfect simulation, with scoring)
+	* Stepmania (excluding chord cohesion)
+	* Raindrop Standard (with the EXP3 scoring system by Joe Zeng)
+	* osu!mania (with the osu!mania scoring system)
+	* EX-score scoring system
+* Multiple Gauges
+	* O2Jam Gauge
+	* Death/Groove/Survival/ExHard/Easy
+	* Stepmania gauge
+* Hidden scrolling, user-adjustable
+	* Flashlight, Hidden, Sudden
+* Speed classes
+	* CMod (As Constant)
+	* Common (Or Mode, based on time rather than beats! The default!)
+	* Max Speed
+	* Min Speed
+	* Green Number support
+* Upscroll support
+* Autoplay
+* Random (By Lanes)
+* Failure deactivation
+* Lua Skinning with HTML-based librocket UI widgets
+* TTF based SDF font support
+* Rates, that also respect your desired target speed
+* Wheel sorting
+* Result Histogram, Grades
+* osu!mania storyboard support
+* Video playback via FFMPEG
+* Previewer commands to connect to bmsone or uBMSC/iBMSC
+* MP3/Ogg/WAV support
+* JPEG/PNG/BMP/TGA support, with an sRGB aware color space
+* Modern formats: BMSON/SM5 support
+* Scroll and/or Speed support for osu!, BMS and Stepmania charts
+* #PREVIEW extensions for BMS
+* #MUSIC extension for BMS
+* Automatic Chart Author extraction from #ARTIST tag
+
+Formats supported
+=====
 * bms/bme/bml/pms (+ raindrop-specific extensions)
 * bmson
 * o2jam ojn/ojm
