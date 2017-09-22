@@ -100,7 +100,7 @@ namespace Game {
 
 		bool ScoreKeeper::usesO2() const
 		{
-			return use_bbased;
+			return use_o2jam;
 		}
 
 		int ScoreKeeper::getCoolCombo() const

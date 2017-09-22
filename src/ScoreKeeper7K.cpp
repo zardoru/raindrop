@@ -40,23 +40,34 @@ namespace Game {
 		int ScoreKeeper::getTotalNotes() const
 		{ return total_notes; }
 
+
+		float ScoreKeeper::getHitStDev() const
+		{
+			return sqrt(hit_variance / (total_notes - 1));
+		}
+
 		// ms is misleading- since it may very well be beats, but it's fine.
 		ScoreKeeperJudgment ScoreKeeper::hitNote(double ms)
 		{
 			// hit notes
 
-			avg_hit *= total_notes;
+			// online variance and average hit
 			++total_notes;
-			avg_hit += ms;
-			avg_hit /= total_notes;
+			float delta = ms - avg_hit;
+			avg_hit += delta / total_notes;
+
+			hit_variance += delta * (ms - avg_hit);
+
+			
 
 			// std::cerr << use_bbased << " " << ms << " ";
 
-			if (use_bbased)
+			if (use_o2jam)
 			{
-				if (abs(ms * 150) < 128)
+				auto dist = ms / O2_WINDOW * 128;
+				if (abs(dist) < 128)
 				{
-					++histogram[static_cast<int>(round(ms * 150)) + 127];
+					++histogram[static_cast<int>(round(dist)) + 127];
 				}
 			}
 			else
@@ -70,29 +81,33 @@ namespace Game {
 			ms = abs(ms);
 
 			// combo
-
-			double jt;
-			if (use_bbased)
-				jt = judgment_time[SKJ_W2];
-			else
-				jt = judgment_time[SKJ_W3];
-
-			if (ms <= jt)
-			{
+			auto increase_combo = [&]() {
 				++notes_hit;
 				++combo;
 				if (combo > max_combo)
 					max_combo = combo;
-			}
-			else
+			};
+
+			// check combo for o2jam later (after transformed judgment)
+			double combo_leniency;
+			if (!use_o2jam)
 			{
-				combo = 0;
+				combo_leniency = judgment_time[SKJ_W3]; // GOODs/GREATs or less
+
+				if (ms <= combo_leniency)
+				{
+					increase_combo();
+				}
+				else
+				{
+					combo = 0;
+				}
 			}
 
 			// accuracy score
 
-			if (use_bbased)
-				total_sqdev += ms * ms * 22500;
+			if (use_o2jam)
+				total_sqdev += ms * ms / pow(O2_WINDOW, 2);
 			else
 				total_sqdev += ms * ms;
 
@@ -102,13 +117,13 @@ namespace Game {
 
 			ScoreKeeperJudgment judgment = SKJ_NONE;
 
-			for (int i = (use_w0 ? 0 : 1); i < (use_bbased ? 4 : 6); i++)
+			for (int i = (use_w0 ? 0 : 1); i < (use_o2jam ? 4 : 6); i++)
 			{
 				if (ms <= judgment_time[i])
 				{
 					judgment = ScoreKeeperJudgment(i);
 
-					if (!use_bbased)
+					if (!use_o2jam)
 						judgment_amt[judgment]++;
 					else
 					{
@@ -125,6 +140,16 @@ namespace Game {
 				}
 			}
 
+			// since it may be transformed we check for combo here instead
+			if (use_o2jam) {
+				if (judgment < SKJ_W3) {
+					increase_combo();
+				}
+				else {
+					combo = 0;
+				}
+			}
+
 			// SC, ACC^2 score
 
 			sc_score += Clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.0) * 2;
@@ -134,6 +159,27 @@ namespace Game {
 
 			// lifebars
 
+			lifebarHit(ms, judgment);
+
+			if (judgment == SKJ_NONE)
+				std::cerr << "Error, invalid judgment: " << ms << "\n";
+
+			// std::cerr << std::endl;
+
+			// Other methods
+
+			update_ranks(judgment); // rank calculation
+			update_bms(judgment); // Beatmania scoring
+			update_lr2(judgment); // Lunatic Rave 2 scoring
+			update_exp2(judgment);
+			update_osu(judgment);
+			update_o2(judgment);
+
+			return judgment;
+		}
+
+		void ScoreKeeper::lifebarHit(double ms, Game::VSRG::ScoreKeeperJudgment judgment)
+		{
 			if (ms <= judgment_time[SKJ_W3])
 			{
 				lifebar_easy = std::min(1.0, lifebar_easy + lifebar_easy_increment);
@@ -165,22 +211,6 @@ namespace Game {
 			// std::cerr << ms << " " << judgment << " " << life_increment[judgment] << std::endl;
 
 			lifebar_stepmania = std::min(1.0, lifebar_stepmania + life_increment[judgment]);
-
-			if (judgment == SKJ_NONE)
-				std::cerr << "Error, invalid judgment: " << ms << "\n";
-
-			// std::cerr << std::endl;
-
-		// Other methods
-
-			update_ranks(judgment); // rank calculation
-			update_bms(judgment); // Beatmania scoring
-			update_lr2(judgment); // Lunatic Rave 2 scoring
-			update_exp2(judgment);
-			update_osu(judgment);
-			update_o2(judgment);
-
-			return judgment;
 		}
 
 		int ScoreKeeper::getJudgmentCount(int judgment)
@@ -242,14 +272,11 @@ namespace Game {
 
 		double ScoreKeeper::getJudgmentCutoff() {
 			auto rt = 0.0;
-			for (int i = 0; i <= SKJ_MISS; i++)
-				rt = std::max(judgment_time[i], rt);
-
 			rt = std::max(std::max(miss_threshold, rt), earlymiss_threshold);
 			return rt;
 		}
 
-		double ScoreKeeper::getEarlyMissCutoff() const
+		double ScoreKeeper::getEarlyMissCutoffMS() const
 		{
 			return earlymiss_threshold;
 		}
@@ -492,6 +519,9 @@ namespace Game {
 				return rank_pts - (total_notes * 260 / 100 + (total_notes * 260 % 100 != 0));
 			case PMT_RANK_P9:
 				return rank_pts - (total_notes * 280 / 100 + (total_notes * 280 % 100 != 0));
+
+			default:
+				break;
 			}
 
 			return 0;
@@ -543,17 +573,17 @@ namespace Game {
 
 		void ScoreKeeper::update_bms(ScoreKeeperJudgment judgment)
 		{
-			if (!use_w0_for_ex2 && judgment <= SKJ_W1 || use_w0_for_ex2 && judgment == SKJ_W0)
+			if ((!use_w0_for_ex2 && judgment <= SKJ_W1) || (use_w0_for_ex2 && judgment == SKJ_W0))
 			{
 				ex_score += 2;
 				bms_dance_pts += 15;
 			}
-			else if (!use_w0_for_ex2 && judgment == SKJ_W2 || use_w0_for_ex2 && judgment == SKJ_W1)
+			else if ((!use_w0_for_ex2 && judgment == SKJ_W2) || (use_w0_for_ex2 && judgment == SKJ_W1))
 			{
 				ex_score += 1;
 				bms_dance_pts += 10;
 			}
-			else if (!use_w0_for_ex2 && judgment == SKJ_W3 || use_w0_for_ex2 && judgment == SKJ_W2)
+			else if ((!use_w0_for_ex2 && judgment == SKJ_W3) || (use_w0_for_ex2 && judgment == SKJ_W2))
 			{
 				bms_dance_pts += 2;
 			}
@@ -572,15 +602,15 @@ namespace Game {
 
 		void ScoreKeeper::update_lr2(ScoreKeeperJudgment judgment)
 		{
-			if (!use_w0_for_ex2 && judgment <= SKJ_W1 || use_w0_for_ex2 && judgment == SKJ_W0)
+			if ((!use_w0_for_ex2 && judgment <= SKJ_W1) || (use_w0_for_ex2 && judgment == SKJ_W0))
 			{
 				lr2_dance_pts += 10;
 			}
-			else if (!use_w0_for_ex2 && judgment == SKJ_W2 || use_w0_for_ex2 && judgment == SKJ_W1)
+			else if ((!use_w0_for_ex2 && judgment == SKJ_W2) || (use_w0_for_ex2 && judgment == SKJ_W1))
 			{
 				lr2_dance_pts += 5;
 			}
-			else if (!use_w0_for_ex2 && judgment == SKJ_W3 || use_w0_for_ex2 && judgment == SKJ_W2)
+			else if ((!use_w0_for_ex2 && judgment == SKJ_W3) || (use_w0_for_ex2 && judgment == SKJ_W2))
 			{
 				lr2_dance_pts += 1;
 			}
@@ -644,17 +674,17 @@ namespace Game {
 
 		void ScoreKeeper::update_exp2(ScoreKeeperJudgment judgment)
 		{
-			if (!use_w0_for_ex2 && judgment <= SKJ_W1 || use_w0_for_ex2 && judgment == SKJ_W0)
+			if ((!use_w0_for_ex2 && judgment <= SKJ_W1) || (use_w0_for_ex2 && judgment == SKJ_W0))
 			{
 				exp_combo += 4;
 				exp_hit_score += 2;
 			}
-			else if (!use_w0_for_ex2 && judgment == SKJ_W2 || use_w0_for_ex2 && judgment == SKJ_W1)
+			else if ((!use_w0_for_ex2 && judgment == SKJ_W2) || (use_w0_for_ex2 && judgment == SKJ_W1))
 			{
 				exp_combo += 3;
 				exp_hit_score += 2;
 			}
-			else if (!use_w0_for_ex2 && judgment == SKJ_W3 || use_w0_for_ex2 && judgment == SKJ_W2)
+			else if ((!use_w0_for_ex2 && judgment == SKJ_W3) || (use_w0_for_ex2 && judgment == SKJ_W2))
 			{
 				exp_combo += 2;
 				exp_hit_score += 1;
@@ -717,6 +747,8 @@ namespace Game {
 				osu_points += 0;
 				bonus_counter = 0;
 				break;
+			default:
+				break;
 			}
 
 			osu_bonus_points += osu_bonus_multiplier * sqrt(double(bonus_counter));
@@ -728,8 +760,8 @@ namespace Game {
 		{
 			if (!use_w0_for_ex2 && judgment <= SKJ_W0) ++rank_w0_count;
 
-			if (!use_w0_for_ex2 && judgment <= SKJ_W1 || use_w0_for_ex2 && judgment <= SKJ_W0) ++rank_w1_count;
-			if (!use_w0_for_ex2 && judgment <= SKJ_W2 || use_w0_for_ex2 && judgment <= SKJ_W1) ++rank_w2_count;
+			if ((!use_w0_for_ex2 && judgment <= SKJ_W1) || (use_w0_for_ex2 && judgment <= SKJ_W0)) ++rank_w1_count;
+			if ((!use_w0_for_ex2 && judgment <= SKJ_W2) || (use_w0_for_ex2 && judgment <= SKJ_W1)) ++rank_w2_count;
 			if (judgment <= SKJ_W3) ++rank_w3_count;
 
 			long long rank_w0_pts = std::max(rank_w0_count * 2 - total_notes, 0LL);

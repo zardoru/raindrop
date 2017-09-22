@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "GameGlobal.h"
+
 #include "Logging.h"
 #include "GameState.h"
 

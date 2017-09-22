@@ -11,11 +11,7 @@ class TruetypeFont : public Font
     std::shared_ptr<std::vector<unsigned char>> data;
     size_t offs;
     bool IsValid;
-    float scale;
-    float virtualscale;
     float realscale;
-
-    float windowscale;
 
     struct codepdata
     {
@@ -23,27 +19,24 @@ class TruetypeFont : public Font
         uint32_t gltx;
         int xofs;
         int yofs;
-        float scl;
         int w;
         int h;
-        int tw;
-        int th;
     };
 
     std::string filename;
-    std::map<int, codepdata> Texes;
-    void SetupTexture();
+    std::shared_ptr<std::map<int, codepdata> > Texes;
     codepdata& GetTexFromCodepoint(int cp);
-    void CheckCodepoint(int cp);
     void ReleaseCodepoint(int cp);
     void ReleaseTextures();
-    void UpdateWindowScale();
 
+	friend class TTFMan;
 public:
-    TruetypeFont(std::filesystem::path filename, float Scale);
+    TruetypeFont(std::filesystem::path filename);
     ~TruetypeFont();
     float GetHorizontalLength(const char *Text);
 
+	static void GenerateFontCache(std::filesystem::path u8charin, std::filesystem::path inputttf);
+
     void Invalidate();
-    void Render(const std::string &Text, const Vec2 &Position, const Mat4 &Transform = Mat4());
+    void Render(const std::string &Text, const Vec2 &Position, const Mat4 &Transform = Mat4(), const Vec2 &Scale = Vec2(1,1));
 };

@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "GameGlobal.h"
+
 #include "TrackNote.h"
 //#include <glm/gtc/matrix_transform.inl>
 

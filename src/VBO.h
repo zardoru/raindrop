@@ -25,7 +25,7 @@ private:
     static uint32_t LastBoundIndex;
     bool IsValid;
     Type mType;
-    void *VboData;
+    char *VboData;
     IdxKind mKind;
     uint32_t ElementCount;
     uint32_t ElementSize;

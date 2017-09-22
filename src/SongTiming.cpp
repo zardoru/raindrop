@@ -2,20 +2,11 @@
 
 #include "Song.h"
 
-int gcd(int a, int b)
-{
-    if (b == 0) return a;
-    else return gcd(b, a % b);
-}
 
-int lcm(int a, int b)
-{
-    return a * b / gcd(a, b);
-}
 
 int LCM(const std::vector<int> &Set)
 {
-    return std::accumulate(Set.begin() + 1, Set.end(), *Set.begin(), lcm);
+    return std::accumulate(Set.begin() + 1, Set.end(), *Set.begin(), lcm<int>);
 }
 
 int SectionIndex(const TimingData &Timing, double Beat)

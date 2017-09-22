@@ -10,6 +10,8 @@ GraphicalString::GraphicalString()
 {
     SetSize(1); // Default size, so it doesn't scale to 0
     SetZ(0);
+	mFontHeight = 16;
+	mKernScale = 1;
 }
 
 void GraphicalString::SetFont(Font* _Font)
@@ -32,10 +34,38 @@ std::string GraphicalString::GetText() const
     return mText;
 }
 
+float GraphicalString::GetKerningScale() const
+{
+	return mKernScale;
+}
+
+void GraphicalString::SetKerningScale(float ks)
+{
+	mKernScale = ks;
+}
+
+float GraphicalString::GetTextSize() const
+{
+	if (!mFont) return 0.0f;
+	return mFont->GetHorizontalLength(mText.c_str()) / SDF_SIZE * mFontHeight * mKernScale;
+}
+
+void GraphicalString::SetFontSize(float fsize)
+{
+	mFontHeight = fsize;
+}
+
+float GraphicalString::GetFontSize() const
+{
+	return mFontHeight;
+}
+
 void GraphicalString::Render()
 {
     if (!mFont) return;
     mFont->SetColor(Red, Green, Blue);
     mFont->SetAlpha(Alpha);
-    mFont->Render(mText, Vec2(0, 0), GetMatrix());
+
+	float sc = mFontHeight;
+    mFont->Render(mText, Vec2(0, 0), GetMatrix(), Vec2(mKernScale, sc));
 }

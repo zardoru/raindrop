@@ -173,12 +173,16 @@ namespace Utility
         for (; next != nullptr; next = strpbrk(it, token.c_str()))
         {
             if (!compress || it - next != 0)
-                ret.push_back(std::string(it, next));
+            {
+                ret.push_back(str.substr(it - str.c_str(), next - it));
+            }
             it = next + 1;
         }
 
         if (it != next && len)
-            ret.push_back(std::string(it, &str[len]));
+        {
+			ret.push_back(str.substr(it - str.c_str(), next - it));
+        }
         return ret;
     }
 
@@ -212,11 +216,15 @@ namespace Utility
         }
     }
 
-    int GetLMT(std::filesystem::path Path)
+    int GetLastModifiedTime(std::filesystem::path Path)
     {
 		if (std::filesystem::exists(Path)) {
+#ifndef STD_FILESYSTEM // boost
+			return std::filesystem::last_write_time(Path);
+#else // stl
 			auto a = std::filesystem::last_write_time(Path);
 			return decltype(a)::clock::to_time_t(a);
+#endif
 		}
 		else return -1;
     }
@@ -236,7 +244,7 @@ namespace Utility
     std::string GetSha256ForFile(std::filesystem::path Filename)
     {
         SHA256 SHA;
-        std::ifstream InStream(Filename.string());
+		CreateIfstream(InStream, Filename);
         unsigned char tmpbuf[256];
 
         if (!InStream.is_open())
@@ -256,6 +264,8 @@ namespace Utility
 	std::vector<std::filesystem::path> GetFileListing(std::filesystem::path path)
 	{
 		std::vector<std::filesystem::path> out;
+
+		if (!std::filesystem::exists(path)) return out;
 		for (auto &p : std::filesystem::directory_iterator(path)) {
 			out.push_back(p);
 		}

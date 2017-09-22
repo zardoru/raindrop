@@ -28,3 +28,5 @@ public:
     /* Can only be called from main thread if LoadNow = true! */
     static std::unique_ptr<BackgroundAnimation> CreateBGAFromSong(uint8_t DifficultyIndex, Game::Song& Input, Interruptible* context, bool LoadNow = false);
 };
+
+bool IsVideoPath(std::filesystem::path path);

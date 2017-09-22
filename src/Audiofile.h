@@ -74,6 +74,9 @@ public:
 
 	bool AwaitLoad();
 
+	// returns duration in seconds
+	double GetDuration();
+
     bool IsPlaying() override;
     void Slice(float audio_start, float audio_end);
     std::shared_ptr<AudioSample> CopySlice();

@@ -75,7 +75,6 @@ inline bool TimeSegmentCompare(const T &t, const double &v) {
 
 enum ModeType
 {
-    MODE_DOTCUR,
     MODE_VSRG
 };
 
@@ -110,11 +109,6 @@ namespace Game
             std::filesystem::path Filename;
             std::string Author;
 
-            uint32_t TotalNotes;
-            uint32_t TotalHolds;
-            uint32_t TotalObjects;
-            uint32_t TotalScoringObjects;
-
             int ID;
 
             Difficulty()
@@ -122,10 +116,6 @@ namespace Game
                 ID = -1;
                 Duration = 0;
                 Offset = 0;
-                TotalNotes = 0;
-                TotalHolds = 0;
-                TotalObjects = 0;
-                TotalScoringObjects = 0;
             }
         };
 
@@ -154,6 +144,8 @@ namespace Game
 
         // Song genre
         std::string Genre;
+
+		virtual uint8_t GetDifficultyCount() { return 0; };
 
         Song() { ID = -1; PreviewTime = 0; };
         virtual ~Song() {};

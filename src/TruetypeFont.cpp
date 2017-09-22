@@ -1,15 +1,23 @@
 #include "pch.h"
 
 #include "TruetypeFont.h"
+
+#include "GameState.h"
 #include "GameWindow.h"
 
+#include "TTFCache.h"
 #include "Logging.h"
+
+#include "SDF.h"
+
+const std::filesystem::path CACHE_PATH = "GameData/fontcache/";
 
 class TTFMan {
 public:
 	struct FontData {
 		std::shared_ptr<std::vector<unsigned char>> data;
 		std::shared_ptr<stbtt_fontinfo> info;
+		std::shared_ptr<std::map<int, TruetypeFont::codepdata> > texels;
 	};
 
 private:
@@ -17,7 +25,10 @@ private:
 
 public:
 	static void Load(std::filesystem::path Filename, 
-		std::shared_ptr<std::vector<unsigned char>>& data, std::shared_ptr<stbtt_fontinfo>& info, bool &IsValid) {
+		std::shared_ptr<std::vector<unsigned char>>& data, 
+		std::shared_ptr<stbtt_fontinfo>& info, 
+		std::shared_ptr<std::map<int, TruetypeFont::codepdata> > &Texels,
+		bool &IsValid) {
 
 		// accelerate loading if font is on registers
 		if (font_data.find(Filename) != font_data.end())
@@ -25,6 +36,7 @@ public:
 			auto &fnt = font_data[Filename];
 			info = fnt.info;
 			data = fnt.data;
+			Texels = fnt.texels;
 			IsValid = true;
 			return;
 		}
@@ -33,6 +45,7 @@ public:
 
 		info = nullptr;
 		data = nullptr;
+		Texels = nullptr;
 
 		if (!ifs.is_open())
 		{
@@ -48,7 +61,7 @@ public:
 
 		data = std::make_shared<std::vector<unsigned char>>(offs);
 		info = std::make_shared<stbtt_fontinfo>();
-
+		Texels = std::make_shared<std::map<int, TruetypeFont::codepdata>>();
 		// read data
 		ifs.read((char*)data.get()->data(), offs);
 
@@ -60,7 +73,8 @@ public:
 		if (IsValid) {
 			font_data[Filename] = {
 				data,
-				info
+				info,
+				Texels
 			};
 		}
 		else {
@@ -71,17 +85,13 @@ public:
 
 std::map < std::filesystem::path, TTFMan::FontData > TTFMan::font_data;
 
-TruetypeFont::TruetypeFont(std::filesystem::path Filename, float Scale)
+TruetypeFont::TruetypeFont(std::filesystem::path Filename)
 {
-	TTFMan::Load(Filename, this->data, this->info, IsValid);
-
-	scale = Scale;
-	windowscale = 0;
-
+	TTFMan::Load(Filename, this->data, this->info, this->Texes, IsValid);
+	
     if (IsValid)
     {
-        UpdateWindowScale();
-
+		realscale = stbtt_ScaleForPixelHeight(info.get(), SDF_SIZE);
         WindowFrame.AddTTF(this);
     }
     else
@@ -91,52 +101,23 @@ TruetypeFont::TruetypeFont(std::filesystem::path Filename, float Scale)
 TruetypeFont::~TruetypeFont()
 {
     WindowFrame.RemoveTTF(this);
-    ReleaseTextures();
-}
-
-void TruetypeFont::UpdateWindowScale()
-{
-    if (windowscale == WindowFrame.GetWindowVScale())
-        return;
-
-    float oldscale = windowscale;
-    windowscale = WindowFrame.GetWindowVScale();
-
-    float oldrealscale = realscale;
-    realscale = stbtt_ScaleForPixelHeight(info.get(), scale * windowscale);
-    virtualscale = stbtt_ScaleForPixelHeight(info.get(), scale);
-#ifdef VERBOSE_DEBUG
-    wprintf(L"change scale %f -> %f, realscale %f -> %f\n", oldscale, windowscale, oldrealscale, realscale);
-#endif
+    // ReleaseTextures();
 }
 
 void TruetypeFont::Invalidate()
 {
-    for (std::map <int, codepdata>::iterator i = Texes.begin();
-    i != Texes.end();
+    for (std::map <int, codepdata>::iterator i = Texes->begin();
+    i != Texes->end();
         i++)
     {
         i->second.gltx = 0;
     }
 }
 
-void TruetypeFont::CheckCodepoint(int cp)
-{
-    if (Texes.find(cp) != Texes.end())
-    {
-        if (Texes[cp].scl != windowscale)
-        {
-#ifdef VERBOSE_DEBUG
-            wprintf(L"releasing %d\n", cp);
-#endif
-            ReleaseCodepoint(cp); // force regeneration if scale changed
-        }
-    }
-}
 
 TruetypeFont::codepdata &TruetypeFont::GetTexFromCodepoint(int cp)
 {
-    if (Texes.find(cp) == Texes.end())
+    if (Texes->find(cp) == Texes->end())
     {
         codepdata newcp;
         int w, h, xofs, yofs;
@@ -145,30 +126,38 @@ TruetypeFont::codepdata &TruetypeFont::GetTexFromCodepoint(int cp)
 #endif
         if (IsValid)
         {
-            newcp.tex = stbtt_GetCodepointBitmap(info.get(), 0, realscale, cp, &w, &h, &xofs, &yofs);
-            newcp.gltx = 0;
-            newcp.scl = WindowFrame.GetWindowVScale();
-            newcp.tw = w;
-            newcp.th = h;
+			unsigned char* nonsdf = stbtt_GetCodepointBitmap(info.get(), 0, realscale, cp, &w, &h, &xofs, &yofs);
+			if (nonsdf) {
+				unsigned char* sdf = new unsigned char[w * h];
 
-            // get size etc.. for how it'd be if the screen weren't resized
-            void * tx = stbtt_GetCodepointBitmap(info.get(), 0, virtualscale, cp, &w, &h, &xofs, &yofs);
-            newcp.xofs = xofs;
+				// convert our non-sdf texture to a SDF texture
+				ConvertToSDF(sdf, nonsdf, w, h);
+
+				// free our non-sdf
+				free(nonsdf);
+
+				// use our SDF texture. alpha testing is up by default
+				newcp.tex = sdf;
+			}
+			else
+				newcp.tex = NULL;
+
+            newcp.gltx = 0;
+			newcp.xofs = xofs;
             newcp.yofs = yofs;
             newcp.w = w;
             newcp.h = h;
 
-            free(tx);
         }
         else
             memset(&newcp, 0, sizeof(codepdata));
 
-        Texes[cp] = newcp;
-        return Texes[cp];
+        (*Texes)[cp] = newcp;
+        return Texes->at(cp);
     }
     else
     {
-        return Texes[cp];
+        return Texes->at(cp);
     }
 }
 
@@ -186,7 +175,6 @@ float TruetypeFont::GetHorizontalLength(const char *In)
         utf8::iterator<const char*> itend(Text + len, Text, Text + len);
         for (; it != itend; ++it)
         {
-            CheckCodepoint(*it); // Force a regeneration of this if necessary
             codepdata &cp = GetTexFromCodepoint(*it);
 
             auto it_nx = it;
@@ -196,7 +184,7 @@ float TruetypeFont::GetHorizontalLength(const char *In)
                 float aW = stbtt_GetCodepointKernAdvance(info.get(), *it, *it_nx);
                 int bW;
                 stbtt_GetCodepointHMetrics(info.get(), *it, &bW, NULL);
-                Out += aW * virtualscale + bW * virtualscale;
+                Out += aW * realscale + bW * realscale;
             }
             else
                 Out += cp.w;
@@ -207,4 +195,31 @@ float TruetypeFont::GetHorizontalLength(const char *In)
     }
 
     return Out;
+}
+
+void TruetypeFont::GenerateFontCache(std::filesystem::path u8charin, 
+	std::filesystem::path inputttf)
+{
+	TTFCache cache;
+	TruetypeFont ttf(inputttf);
+
+	// make sure our base path exists
+	auto path = CACHE_PATH / Game::GameState::GetInstance().GetSkin();
+	std::filesystem::create_directory(CACHE_PATH);
+	std::filesystem::create_directory(path);
+
+	auto cachename = path / inputttf.replace_extension("").filename();
+
+	std::ifstream in(u8charin.string(), std::ios::binary);
+
+	std::istreambuf_iterator<char> it(in.rdbuf());
+	std::istreambuf_iterator<char> end;
+	
+	while (it != end) {
+		auto ch = utf8::next(it, end);
+		auto tx = ttf.GetTexFromCodepoint(ch);
+		cache.SetCharacterBuffer(ch, tx.tex, tx.w * tx.h);
+	}
+
+	cache.SaveCache(cachename);
 }

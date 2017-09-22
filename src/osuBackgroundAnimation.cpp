@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "GameGlobal.h"
+
 #include "BackgroundAnimation.h"
 #include "Song.h"
 #include "Song7K.h"
@@ -10,7 +10,10 @@
 #include "Texture.h"
 #include "Logging.h"
 
+#include "VideoPlayback.h"
+
 const float OSB_WIDTH = 640;
+const float OSB_WIDTH_WIDE = 853;
 const float OSB_HEIGHT = 480;
 CfgVar OSBDebug("OSB", "Debug");
 
@@ -217,6 +220,7 @@ namespace osb {
 			mTransform.ChainTransformation(&mParent->GetScreenTransformation());
 
 			// flip -> pivot
+			mPivot.SetPosition(OriginPivots[mOrigin].x, OriginPivots[mOrigin].y);
 			mPivot.ChainTransformation(&mTransform);
 			
 			// sprite -> flip vertices
@@ -224,7 +228,6 @@ namespace osb {
 
 			// No op from sprite.
 			mSprite->ChainTransformation(&mFlip);
-			mPivot.SetPosition(OriginPivots[mOrigin].x, OriginPivots[mOrigin].y);
 
 			// Set the image.
 			mSprite->SetImage(mParent->GetImageFromIndex(mImageIndex), false);
@@ -243,7 +246,7 @@ namespace osb {
 	}
 
 	template <class T>
-	bool clamp_iter(typename T::iterator &it, T& vec)
+	bool ValidateEventIterator(typename T::iterator &it, T& vec)
 	{
 		if (vec.begin() == vec.end()) return false; // don't use this iter
 		if (it != vec.begin()) it--;
@@ -259,7 +262,7 @@ namespace osb {
 		// Okay, a pretty long function follows. Fade first.
 		auto fade_evt = GetEvent(Time, evFade);
 		
-		if (clamp_iter(fade_evt, evFade)) {
+		if (ValidateEventIterator(fade_evt, evFade)) {
 			if (WithinEvents(Time))
 					mSprite->Alpha = fade_evt->LerpValue(Time);
 			else {
@@ -282,12 +285,12 @@ namespace osb {
 
 		// Now position.	
 		auto movx_evt = GetEvent(Time, evMoveX);
-		if (clamp_iter(movx_evt, evMoveX))
+		if (ValidateEventIterator(movx_evt, evMoveX))
 			mTransform.SetPositionX(movx_evt->LerpValue(Time));
 		else mTransform.SetPositionX(mStartPos.x);
 
 		auto movy_evt = GetEvent(Time, evMoveY);
-		if (clamp_iter(movy_evt, evMoveY))
+		if (ValidateEventIterator(movy_evt, evMoveY))
 			mTransform.SetPositionY(movy_evt->LerpValue(Time));
 		else mTransform.SetPositionY(mStartPos.y);
 
@@ -299,10 +302,10 @@ namespace osb {
 		// Now scale and rotation.
 		float scale = 1;
 		auto scale_evt = GetEvent(Time, evScale);
-		if (clamp_iter(scale_evt, evScale))
+		if (ValidateEventIterator(scale_evt, evScale))
 			scale = scale_evt->LerpValue(Time);
 		else if (mLayer == osb::LAYER_SP_BACKGROUND && mSprite->GetImage())
-			scale *= OSB_HEIGHT / mSprite->GetImage()->h;
+			scale *= OSB_WIDTH_WIDE / mSprite->GetImage()->w;
 		else scale = 1;
 		// we want to scale it to fit - but we don't want to alter the scale set by the user
 		// scales just get multiplied so we'll do that
@@ -311,13 +314,13 @@ namespace osb {
 		// defaulting at 1,1 to be our vector scale. That way they'll pile up.
 		Vec2 vscale;
 		auto vscale_evt = GetEvent(Time, evScaleVec);
-		if (clamp_iter(vscale_evt, evScaleVec))
+		if (ValidateEventIterator(vscale_evt, evScaleVec))
 			vscale = vscale_evt->LerpValue(Time);
 		else vscale = Vec2(1, 1);
 
 		auto rot_evt = GetEvent(Time, evRotate);
 		float rot = 0;
-		if (clamp_iter(rot_evt, evRotate)) {
+		if (ValidateEventIterator(rot_evt, evRotate)) {
 			rot = rot_evt->LerpValue(Time);
 			mTransform.SetRotation(glm::degrees(rot));
 		}
@@ -331,15 +334,18 @@ namespace osb {
 			// therefore, pivot is applied, then scale
 			// then both size and scale on mTransform are free for usage.
 
-			// For some reason it's not applying scale then rotate - but rotate then scale.
-			// To get around this, we undo the transformation on the object's x-axis
-		    // by multiplying this value to X.
+			// Set active scales.
 			mTransform.SetSize(i->w * scale * vscale.x, i->h * scale * vscale.y);
+
+			auto vid = dynamic_cast<VideoPlayback*>(i);
+			if (vid) {
+				vid->UpdateClock(Time - evFade.begin()->GetTime());
+			}
 		}
 
 
 		auto colorization_evt = GetEvent(Time, evColorize);
-		if (clamp_iter(colorization_evt, evColorize)) {
+		if (ValidateEventIterator(colorization_evt, evColorize)) {
 			auto lerp = colorization_evt->LerpValue(Time);
 			mSprite->Red = lerp.r;
 			mSprite->Green = lerp.g;
@@ -406,7 +412,7 @@ namespace osb {
 	}
 
 	template <class T>
-	void VecSort(T& vec)
+	void SortEventList(T& vec)
 	{
 		auto cmp = [](const typename T::value_type& A, const typename T::value_type& B)
 		{
@@ -419,16 +425,16 @@ namespace osb {
 
 	void EventComponent::SortEvents()
 	{
-		VecSort(evMoveX);
-		VecSort(evMoveY);
-		VecSort(evScale);
-		VecSort(evScaleVec);
-		VecSort(evRotate);
-		VecSort(evColorize);
-		VecSort(evFade);
-		VecSort(evFlipH);
-		VecSort(evFlipV);
-		VecSort(evAdditive);
+		SortEventList(evMoveX);
+		SortEventList(evMoveY);
+		SortEventList(evScale);
+		SortEventList(evScaleVec);
+		SortEventList(evRotate);
+		SortEventList(evColorize);
+		SortEventList(evFade);
+		SortEventList(evFlipH);
+		SortEventList(evFlipV);
+		SortEventList(evAdditive);
 
 		GetDuration();
 	}
@@ -503,6 +509,8 @@ namespace osb {
 				break;
 			case EVT_VFLIP:
 				evFlipV.push_back(*std::static_pointer_cast<FlipVerticalEvent>(event));
+				break;
+			default:
 				break;
 			}
 		}
@@ -875,13 +883,6 @@ osb::SpriteList ReadOSBEvents(std::istream& event_str)
 
 				bgsprite.AddEvent(evt);
 
-				/*if (previous_background) {
-					float T = 1;
-					auto prev_evt = previous_background->GetEvent(T, osb::EVT_FADE);
-					if (previous_background->IsValidEvent(prev_evt, osb::EVT_FADE))
-						previous_background->GetEventList(osb::EVT_FADE)))->SetEndTime(time);
-				}*/
-
 				previous_background = &bgsprite;
 
 				list.insert(list.begin(), bgsprite);
@@ -891,6 +892,27 @@ osb::SpriteList ReadOSBEvents(std::istream& event_str)
 
 			if (split_result[0] == "2")
 				return true;
+
+			if (split_result[0] == "video") {
+				float time = latof(split_result[1]);
+				auto bgsprite = osb::BGASprite(
+					strip_quotes(split_result[2]), 
+					osb::PP_CENTER, 
+					Vec2(320, 240),
+					osb::LAYER_SP_BACKGROUND);
+
+				auto evt = std::make_shared<osb::FadeEvent>();
+				evt->SetEndValue(1);
+				evt->SetValue(1);
+				evt->SetTime(latof(split_result[1]) / 1000.0f);
+				evt->SetEndTime(std::numeric_limits<float>::infinity());
+
+				bgsprite.AddEvent(evt);
+
+				previous_background = &bgsprite;
+
+				list.insert(list.end(), bgsprite);
+			}
 
 			return false;
 		};
@@ -1000,21 +1022,41 @@ osuBackgroundAnimation::osuBackgroundAnimation(Interruptible* parent, osb::Sprit
 	: BackgroundAnimation(parent),
 		mImageList(this)
 {
-	Transform.SetSize(OSB_WIDTH, OSB_HEIGHT);
-	mScreenTransformation.SetSize(1 / OSB_WIDTH, 1 / OSB_HEIGHT);
+	Transform.SetSize(OSB_WIDTH_WIDE, OSB_HEIGHT);
+	mScreenTransformation.SetPositionX( (OSB_WIDTH_WIDE - OSB_WIDTH) / 2 / OSB_WIDTH_WIDE);
+	mScreenTransformation.SetSize(1 / OSB_WIDTH_WIDE, 1 / OSB_HEIGHT);
 	mScreenTransformation.ChainTransformation(&Transform);
 	Song = song;
 	CanValidate = false;
 
+	int video_index = 0;
 	if (existing_mSprites) {
 		for (auto sp : *existing_mSprites) {
 			sp.SetParent(this);
-			sp.SetImageIndex(AddImageToList(sp.GetImageFilename()));
+
+			auto vpath = song->SongDirectory / sp.GetImageFilename();
+			if (IsVideoPath(vpath)) {
+				video_index--;
+				auto vid = mVideoList[video_index] = new VideoPlayback();
+				if (vid->Open(vpath)) {
+					vid->StartDecodeThread();
+					mImageList.AddToListIndex(vid, video_index);
+				}
+			} else {
+				sp.SetImageIndex(AddImageToList(sp.GetImageFilename()));
+			}
 			mSprites.push_back(sp);
 		}
 	}
 }
 
+osuBackgroundAnimation::~osuBackgroundAnimation()
+{
+	for (auto v: mVideoList) {
+		delete v.second;
+	}
+}
+	
 Transformation& osuBackgroundAnimation::GetScreenTransformation()
 {
 	return mScreenTransformation;
@@ -1022,7 +1064,10 @@ Transformation& osuBackgroundAnimation::GetScreenTransformation()
 
 Texture* osuBackgroundAnimation::GetImageFromIndex(int m_image_index)
 {
-	return mImageList.GetFromIndex(m_image_index);
+	if (m_image_index >= 0)
+		return mImageList.GetFromIndex(m_image_index);
+	else
+		return mVideoList[m_image_index];
 }
 
 int osuBackgroundAnimation::GetIndexFromFilename(std::string filename)

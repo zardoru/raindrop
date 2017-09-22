@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -16,20 +16,21 @@
     <ProjectName>raindrop</ProjectName>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">.\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -45,7 +46,7 @@
     <LocalDebuggerWorkingDirectory>$(ProjectDir)..\</LocalDebuggerWorkingDirectory>
     <LocalDebuggerEnvironment>PATH=%PATH%;$(ProjectDir)..\lib\$(Configuration)</LocalDebuggerEnvironment>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <IncludePath>..\lib\include;..\lib\include\LuaBridge;..\lib\include\lua;..\lib\include\zlib;..\lib\include\libmpg123;..\lib\include\libsndfile;..\lib\include\sqlite3;..\lib\include\stb;..\lib\include\soxr;..\lib\include\libjpeg-turbo;..\lib\include\stdex;..\lib\include\libpng;..\lib\include\portaudio;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;$(UniversalCRT_IncludePath)</IncludePath>
+    <IncludePath>..\lib\include;..\lib\include\LuaBridge;..\lib\include\lua;..\lib\include\zlib;..\lib\include\libmpg123;..\lib\include\libsndfile;..\lib\include\sqlite3;..\lib\include\stb;..\lib\include\soxr;..\lib\include\libjpeg-turbo;..\lib\include\stdex;..\lib\include\libpng;..\lib\include\portaudio;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;$(UniversalCRT_IncludePath);$(VC_IncludePath)</IncludePath>
     <LibraryPath>..\lib\$(Configuration);..\lib\Any;$(LibraryPath)</LibraryPath>
     <LibraryWPath />
   </PropertyGroup>
@@ -53,7 +54,7 @@
     <LocalDebuggerWorkingDirectory>$(ProjectDir)..\</LocalDebuggerWorkingDirectory>
     <LocalDebuggerEnvironment>PATH=%PATH%;$(ProjectDir)..\lib\$(Configuration)</LocalDebuggerEnvironment>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <IncludePath>..\lib\include;..\lib\include\LuaBridge;..\lib\include\lua;..\lib\include\zlib;..\lib\include\libmpg123;..\lib\include\libsndfile;..\lib\include\sqlite3;..\lib\include\stb;..\lib\include\soxr;..\lib\include\libjpeg-turbo;..\lib\include\stdex;..\lib\include\libpng;..\lib\include\portaudio;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;$(UniversalCRT_IncludePath)</IncludePath>
+    <IncludePath>..\lib\include;..\lib\include\LuaBridge;..\lib\include\lua;..\lib\include\zlib;..\lib\include\libmpg123;..\lib\include\libsndfile;..\lib\include\sqlite3;..\lib\include\stb;..\lib\include\soxr;..\lib\include\libjpeg-turbo;..\lib\include\stdex;..\lib\include\libpng;..\lib\include\portaudio;$(WindowsSDK_IncludePath)\include;$(WindowsSdkDir)\include;$(FrameworkSDKDir)\include;$(VCInstallDir)include;$(UniversalCRT_IncludePath);$(VC_IncludePath)</IncludePath>
     <LibraryPath>..\lib\$(Configuration);..\lib\Any;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release NoSTLport|Win32'">
@@ -162,6 +163,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\src\Font.cpp" />
+    <ClCompile Include="..\src\GameplayParameters7K.cpp" />
     <ClCompile Include="..\src\GameState.cpp" />
     <ClCompile Include="..\src\GameStateLua.cpp" />
     <ClCompile Include="..\src\GraphicalString.cpp" />
@@ -186,12 +188,14 @@
     <ClCompile Include="..\src\RowifiedDifficulty7K.cpp" />
     <ClCompile Include="..\src\ScreenCustom.cpp" />
     <ClCompile Include="..\src\ScreenVideoTest.cpp" />
+    <ClCompile Include="..\src\SDF.cpp" />
     <ClCompile Include="..\src\Shader.cpp" />
     <ClCompile Include="..\src\Sprite.cpp" />
     <ClCompile Include="..\src\RaindropRocketInterface.cpp" />
     <ClCompile Include="..\src\SceneEnvironment.cpp" />
     <ClCompile Include="..\src\GuiButton.cpp" />
     <ClCompile Include="..\src\GuiTextPrompt.cpp" />
+    <ClCompile Include="..\src\SwRescale.cpp" />
     <ClCompile Include="..\src\Texture.cpp" />
     <ClCompile Include="..\src\ImageList.cpp" />
     <ClCompile Include="..\src\ImageLoader.cpp" />
@@ -209,6 +213,7 @@
     <ClCompile Include="..\src\Screen.cpp" />
     <ClCompile Include="..\src\ScreenEvaluation7K.cpp" />
     <ClCompile Include="..\src\ScreenGameplay7K.cpp" />
+    <ClCompile Include="..\src\TTFCache.cpp" />
     <ClCompile Include="..\src\VideoPlayback.cpp" />
     <ClCompile Include="..\src\VSRGMechanics.cpp" />
     <ClCompile Include="..\src\ScreenGameplay7K_Setup.cpp" />
@@ -255,6 +260,7 @@
     <ClInclude Include="..\src\PlayerContext.h" />
     <ClInclude Include="..\src\ScreenCustom.h" />
     <ClInclude Include="..\src\ScreenVideoTest.h" />
+    <ClInclude Include="..\src\SDF.h" />
     <ClInclude Include="..\src\Shader.h" />
     <ClInclude Include="..\src\Sprite.h" />
     <ClInclude Include="..\src\IPC.h" />
@@ -264,6 +270,7 @@
     <ClInclude Include="..\src\SceneEnvironment.h" />
     <ClInclude Include="..\src\GuiButton.h" />
     <ClInclude Include="..\src\GuiTextPrompt.h" />
+    <ClInclude Include="..\src\SwRescale.h" />
     <ClInclude Include="..\src\Texture.h" />
     <ClInclude Include="..\src\ImageList.h" />
     <ClInclude Include="..\src\ImageLoader.h" />
@@ -275,6 +282,7 @@
     <ClInclude Include="..\src\Screen.h" />
     <ClInclude Include="..\src\ScreenEvaluation7K.h" />
     <ClInclude Include="..\src\ScreenGameplay7K.h" />
+    <ClInclude Include="..\src\TTFCache.h" />
     <ClInclude Include="..\src\VideoPlayback.h" />
     <ClInclude Include="..\src\VSRGMechanics.h" />
     <ClInclude Include="..\src\ScreenLoading.h" />
@@ -328,12 +336,14 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="packages\boost.1.60.0.0\build\native\boost.targets" Condition="Exists('packages\boost.1.60.0.0\build\native\boost.targets')" />
+    <Import Project="packages\boost.1.64.0.0\build\native\boost.targets" Condition="Exists('packages\boost.1.64.0.0\build\native\boost.targets')" />
+    <Import Project="packages\boost_program_options-vc141.1.64.0.0\build\native\boost_program_options-vc141.targets" Condition="Exists('packages\boost_program_options-vc141.1.64.0.0\build\native\boost_program_options-vc141.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('packages\boost.1.60.0.0\build\native\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\boost.1.60.0.0\build\native\boost.targets'))" />
+    <Error Condition="!Exists('packages\boost.1.64.0.0\build\native\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\boost.1.64.0.0\build\native\boost.targets'))" />
+    <Error Condition="!Exists('packages\boost_program_options-vc141.1.64.0.0\build\native\boost_program_options-vc141.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\boost_program_options-vc141.1.64.0.0\build\native\boost_program_options-vc141.targets'))" />
   </Target>
 </Project>

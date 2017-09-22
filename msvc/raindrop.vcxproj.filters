@@ -85,9 +85,6 @@
     <ClCompile Include="..\src\GameState.cpp">
       <Filter>Source Files\game global\game status</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\SongDatabase.cpp">
-      <Filter>Source Files\game global\game status</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\SongList.cpp">
       <Filter>Source Files\game global\game status</Filter>
     </ClCompile>
@@ -246,6 +243,21 @@
     </ClCompile>
     <ClCompile Include="..\src\ScreenVideoTest.cpp">
       <Filter>Source Files\game global\screens</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SDF.cpp">
+      <Filter>Source Files\backend\render\fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\TTFCache.cpp">
+      <Filter>Source Files\backend\render\fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SwRescale.cpp">
+      <Filter>Source Files\backend\render\textures</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GameplayParameters7K.cpp">
+      <Filter>Source Files\vsrg\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SongDatabase.cpp">
+      <Filter>Source Files\game global\song interface</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -440,6 +452,15 @@
     </ClInclude>
     <ClInclude Include="..\src\ScreenVideoTest.h">
       <Filter>Header Files\game global</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SDF.h">
+      <Filter>Header Files\backend\render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\TTFCache.h">
+      <Filter>Header Files\backend\render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SwRescale.h">
+      <Filter>Header Files\backend\render\textures</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

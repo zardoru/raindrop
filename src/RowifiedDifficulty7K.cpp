@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "GameGlobal.h"
+
 #include "Song7K.h"
 #include "Logging.h"
 #include "PlayerChartData.h"
@@ -23,7 +23,7 @@ namespace Game {
 			else
 				QuantizeFunction = std::bind(PassThrough, std::placeholders::_1);
 
-			BPS = Game::VSRG::GameChartData::FromDifficulty(Source).BPS;
+			BPS = Game::VSRG::PlayerChartState::FromDifficulty(Source).BPS;
 
 			CalculateMeasureAccomulation();
 

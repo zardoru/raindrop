@@ -5,7 +5,6 @@
 #include "Song.h"
 #include "BackgroundAnimation.h"
 #include "Song7K.h"
-#include "SongDC.h"
 #include "ImageLoader.h"
 #include "ImageList.h"
 #include "Logging.h"
@@ -39,7 +38,8 @@ std::string videoextensions[] = {
 	".mpg",
 	".mpeg",
 	".mpv",
-	".flv"
+	".flv",
+	".webm"
 };
 
 bool IsVideoPath(std::filesystem::path path)
@@ -72,6 +72,8 @@ class BMSBackground : public BackgroundAnimation
     Game::VSRG::Difficulty* Difficulty;
     bool Validated;
     bool BlackToTransparent;
+	int MaxWidth, MaxHeight;
+	bool IsBMSON;
 public:
     BMSBackground(Interruptible* parent, Game::VSRG::Difficulty* Difficulty, Game::VSRG::Song* Song) : BackgroundAnimation(parent), List(this)
     {
@@ -80,9 +82,12 @@ public:
         Validated = false;
         MissTime = 0;
 
+		MaxWidth = MaxHeight = 256;
+
         bool BtoT = false;
         if (Difficulty->Data->TimingInfo->GetType() == Game::VSRG::TI_BMS)
         {
+			IsBMSON = std::dynamic_pointer_cast<Game::VSRG::BMSChartInfo>(Difficulty->Data->TimingInfo)->IsBMSON;
             if (!std::dynamic_pointer_cast<Game::VSRG::BMSChartInfo>(Difficulty->Data->TimingInfo)->IsBMSON)
                 BtoT = true;
         }
@@ -104,7 +109,8 @@ public:
         EventsLayer2 = Difficulty->Data->BMPEvents->BMPEventsLayer2;
 
 		for (auto v : Difficulty->Data->BMPEvents->BMPList) {
-			std::filesystem::path path = Song->SongDirectory / v.second;
+			std::filesystem::path vs = v.second;
+			std::filesystem::path path = Song->SongDirectory / vs;
 			if (IsVideoPath(path))
 			{
 				auto vid = new VideoPlayback();
@@ -112,12 +118,15 @@ public:
 					vid->StartDecodeThread();
 					List.AddToListIndex(vid, v.first);
 					Videos[v.first] = vid;
+					MaxWidth = std::max(MaxWidth, vid->w);
+					MaxHeight = std::max(MaxHeight, vid->h);
 				}
 				else
 					delete vid;
 			}
 			else
 				List.AddToListIndex(path, v.first);
+
 		}
 
         List.AddToList(Song->BackgroundFilename, Song->SongDirectory);
@@ -148,11 +157,10 @@ public:
         LayerMiss->SetImage(List.GetFromIndex(0), true);
         Layer0->SetImage(List.GetFromIndex(1), true);
 
-		Layer0->SetWidth(Layer0->GetWidth() / Layer0->GetHeight());
-		Layer0->SetHeight(1);
-		auto x = Layer0->GetWidth();
 
-		Layer0->SetPositionX( (1 - x) / 2 );
+		auto ratio = Layer0->GetWidth() / Layer0->GetHeight();
+		Layer0->SetWidth(1);
+		Layer0->SetHeight(1);
 
         sort(EventsLayer0.begin(), EventsLayer0.end());
         sort(EventsLayerMiss.begin(), EventsLayerMiss.end());
@@ -169,7 +177,9 @@ public:
             EventsLayerMiss.push_back(bmp);
         }
 
-        Transform.SetWidth(256);
+
+
+        Transform.SetWidth(256 * ratio);
         Transform.SetHeight(256);
 
         Validated = true;
@@ -287,11 +297,6 @@ std::unique_ptr<BackgroundAnimation> CreateBGAforVSRG(Game::VSRG::Song &input, u
     return nullptr;
 }
 
-std::unique_ptr<BackgroundAnimation> CreateBGAforDotcur(Game::dotcur::Song &input, uint8_t DifficultyIndex)
-{
-    return std::make_unique<StaticBackground>(nullptr, GetSongBackground(input));
-}
-
 BackgroundAnimation::BackgroundAnimation(Interruptible* parent) : Interruptible(parent)
 {
 }
@@ -333,18 +338,8 @@ std::unique_ptr<BackgroundAnimation> BackgroundAnimation::CreateBGAFromSong(uint
 {
     std::unique_ptr<BackgroundAnimation> ret = nullptr;
 
-    switch (Input.Mode)
-    {
-    case MODE_VSRG:
-        ret = CreateBGAforVSRG(static_cast<Game::VSRG::Song&> (Input), DifficultyIndex, context);
-        break;
-    case MODE_DOTCUR:
-        ret = CreateBGAforDotcur(static_cast<Game::dotcur::Song&> (Input), DifficultyIndex);
-        break;
-    default:
-        break;
-    }
-
+    ret = CreateBGAforVSRG(static_cast<Game::VSRG::Song&> (Input), DifficultyIndex, context);
+    
     if (LoadNow)
     {
         ret->Load();

@@ -25,18 +25,6 @@ namespace NoteLoaderBMSON
         double Length; // in beats
     };
 
-    const struct
-    {
-        int bmson_level;
-        int rank_level;
-    } level_bindings[] = {
-        { 52, 1 },
-        { 60, 2 },
-        { 70, 3 },
-        { 100, 4 },
-        { 120, 5 }
-    };
-
     struct
     {
         const char* hint;
@@ -89,7 +77,9 @@ namespace NoteLoaderBMSON
 
         std::string GetSubartist(const char *string)
         {
-            std::regex sreg(Utility::Format("\\s*%s\\s*:\\s*(.*?)\\s*$", string));
+            std::regex sreg(Utility::Format("\\s*%s\\s*:\\s*(.*?)\\s*$", string), 
+				std::regex_constants::icase | std::regex_constants::ECMAScript);
+
             for (const auto& s : root["info"]["subartists"])
             {
                 std::smatch sm;
@@ -166,7 +156,7 @@ namespace NoteLoaderBMSON
             auto meta = root["info"];
             song->SongName = NoteLoaderBMS::GetSubtitles(meta["title"].asString(), subtitles);
             song->SongAuthor = meta["artist"].asString();
-            song->Subtitle = Utility::Join(subtitles, " ");
+            song->Subtitle = meta["subtitle"].asString() + Utility::Join(subtitles, " ");
 
             song->BackgroundFilename = meta["back_image"].asString();
 
@@ -207,8 +197,8 @@ namespace NoteLoaderBMSON
 
             song->SongPreviewSource = meta["preview_music"].asString();
 
-            // DEFEXRANK?
-            int jRank;
+            // DEFEXRANK!
+            double jRank;
 
             Json::Value jr;
             if (version == UNSPECIFIED_VERSION)
@@ -217,13 +207,13 @@ namespace NoteLoaderBMSON
                 jr = meta["judge_rank"];
 
             if (!jr.isNull())
-                jRank = jr.asInt();
+                jRank = jr.asDouble();
             else
                 jRank = 100;
 
-            for (auto v : level_bindings)
-                if (v.bmson_level == jRank)
-                    TimingInfo->JudgeRank = v.rank_level;
+			TimingInfo->JudgeRank = jRank;
+			TimingInfo->PercentualJudgerank = true;
+
             TimingInfo->GaugeTotal = meta["total"].asInt();
         }
 
@@ -293,7 +283,7 @@ namespace NoteLoaderBMSON
 
             double prev = 0;
 
-            for (int i = 0; i < Measure; i++) // set length of last measure to difference between last note and last measure's beats.
+            for (size_t i = 0; i < Measure; i++) // set length of last measure to difference between last note and last measure's beats.
                 prev += Chart->Data->Measures[i].Length;
 
             Chart->Data->Measures[Chart->Data->Measures.size() - 1].Length = FindLastNoteBeat() - prev;
@@ -525,9 +515,18 @@ namespace NoteLoaderBMSON
 
                 auto notes = (*audio)["notes"];
                 for (auto &note : notes)
-                    objs.push_back(BmsonObject{ note["x"].asInt(), note["y"].asDouble(), note["l"].asDouble(), note["c"].asBool() });
+                    objs.push_back(BmsonObject
+				{ 
+					note["x"].asInt(), 
+					note["y"].asDouble(), 
+					note["l"].asDouble(), 
+					note["c"].asBool() 
+				});
 
-                std::stable_sort(objs.begin(), objs.end(), [](const BmsonObject& l, const BmsonObject& r) -> bool { return l.y < r.y; });
+                std::stable_sort(objs.begin(), objs.end(), 
+					[](const BmsonObject& l, const BmsonObject& r) -> bool { 
+					return l.y < r.y; 
+				});
                 JoinBGMSlices(objs);
 
                 for (auto note = objs.begin(); note != objs.end(); ++note)
@@ -544,27 +543,41 @@ namespace NoteLoaderBMSON
             auto& bga = root["bga"];
             if (!bga.isNull())
             {
+				bool hasData = false;
                 for (auto &bgi : bga["bga_header"])
                     out->BMPList[bgi["id"].asInt()] = CleanFilename(bgi["name"].asString());
 
 				if (version != VERSION_1) {
-					for (auto &bg0 : bga["bga_notes"])
+					for (auto &bg0 : bga["bga_notes"]) {
 						out->BMPEventsLayerBase.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
-					for (auto &bg0 : bga["layer_notes"])
+						hasData = true;
+					}
+					for (auto &bg0 : bga["layer_notes"]) {
 						out->BMPEventsLayer.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
-					for (auto &bg0 : bga["poor_notes"])
+						hasData = true;
+					}
+					for (auto &bg0 : bga["poor_notes"]) {
 						out->BMPEventsLayerMiss.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
+						hasData = true;
+					}
 				}
 				else {
-					for (auto &bg0 : bga["bga_events"])
+					for (auto &bg0 : bga["bga_events"]) {
 						out->BMPEventsLayerBase.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
-					for (auto &bg0 : bga["layer_events"])
+						hasData = true;
+					}
+					for (auto &bg0 : bga["layer_events"]) {
 						out->BMPEventsLayer.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
-					for (auto &bg0 : bga["poor_events"])
+						hasData = true;
+					}
+					for (auto &bg0 : bga["poor_events"]) {
 						out->BMPEventsLayerMiss.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
+						hasData = true;
+					}
 				}
 
-				Chart->Data->BMPEvents = out;
+				if (hasData)
+					Chart->Data->BMPEvents = out;
             }
         }
     public:
@@ -610,20 +623,14 @@ namespace NoteLoaderBMSON
                     if (note.second.Length)
                     {
                         new_note.EndTime = TimeForObj(note.first + note.second.Length);
-                        Chart->TotalHolds++;
-                        Chart->TotalScoringObjects++;
                     }
 
                     new_note.Sound = note.second.Sound;
 
-                    int Measure = MeasureForBeat(note.first);
+                    auto Measure = MeasureForBeat(note.first);
                     if (Measure >= Chart->Data->Measures.size())
                         Chart->Data->Measures.resize(Measure + 1);
                     Chart->Data->Measures[MeasureForBeat(note.first)].Notes[lane.first].push_back(new_note);
-
-                    Chart->TotalObjects++;
-                    Chart->TotalScoringObjects++;
-                    Chart->TotalNotes++;
 
                     Chart->Duration = std::max(std::max(Chart->Duration, new_note.StartTime), new_note.EndTime);
                 }

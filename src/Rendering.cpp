@@ -1,7 +1,7 @@
 #include "pch.h"
 
 #include "GameWindow.h"
-#include "Configuration.h"
+
 #include "VBO.h"
 #include "Sprite.h"
 #include "Transformation.h"
@@ -16,6 +16,8 @@
 
 #include "Shader.h"
 
+#include "ImageLoader.h"
+
 const ColorRGB White = { 1, 1, 1, 1 };
 const ColorRGB Black = { 0, 0, 0, 1 };
 const ColorRGB Red = { 1, 0, 0, 1 };
@@ -28,6 +30,7 @@ namespace Renderer {
 	VBO* TextureBuffer = nullptr;
 	VBO* TempTextureBuffer = nullptr;
 	VBO* ColorBuffer = nullptr;
+	Texture* xor_tex = nullptr;
 
 	float QuadPositions[8] =
 	{
@@ -73,6 +76,13 @@ namespace Renderer {
 		Texture::ForceRebind();
 	}
 
+	void SetXorTexParameters() {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	}
+
 	static bool Initialized = false;
 	void InitializeRender()
 	{
@@ -93,9 +103,36 @@ namespace Renderer {
 			ColorBuffer = new VBO(VBO::Static, sizeof(QuadColours) / sizeof(float));
 			ColorBuffer->Validate();
 			ColorBuffer->AssignData(QuadColours);
+
+			// create xor texture
+			xor_tex = new Texture;
+			
+			std::vector<uint32_t> buf(256 * 256);
+			for(int i = 0; i < 256; i++) {
+				for (int j = 0; j < 256; j++) {
+					uint8_t x = i ^ j;
+
+					buf[i * 256 + j] = (255 << 24) + x + (x << 8) + (x << 16);
+				}
+			}
+
+			ImageData d(256, 256, nullptr);
+			d.Data = buf;
+
+			xor_tex->SetTextureData2D(d);
+			xor_tex->fname = "xor";
+			SetXorTexParameters(); // it's bound, apply parameters
+
+			ImageLoader::RegisterTexture(xor_tex);
 			Initialized = true;
 		}
 	}
+
+	Texture* GetXorTexture(){
+		return xor_tex;
+	}
+
+	
 
 	void SetTextureParameters(std::string Dir)
 	{
@@ -201,7 +238,7 @@ namespace Renderer {
 		bool BlackToTransparent, bool ReplaceColor,
 		int8_t HiddenMode)
 	{
-		DefaultShader::Bind();
+		DefaultShader::StaticBind();
 		Shader::SetUniform(DefaultShader::GetUniform(U_INVERT), InvertColor);
 
 		if (HiddenMode == -1)
@@ -347,7 +384,7 @@ bool Sprite::RenderMinimalSetup()
 	if (!Lighten)
 		Renderer::DefaultShader::SetColor(Red, Green, Blue, Alpha);
 	else
-		Renderer::DefaultShader::SetColor(Red * lf, Green * lf, Blue * lf, Alpha * lf);
+		Renderer::DefaultShader::SetColor(Red * lf, Green * lf, Blue * lf, Alpha);
 
     Renderer::DoQuadDraw();
 
@@ -371,7 +408,7 @@ void Sprite::Render()
 		if (!Lighten)
 			Renderer::DefaultShader::SetColor(Red, Green, Blue, Alpha);
 		else
-			Renderer::DefaultShader::SetColor(Red * lf, Green * lf, Blue * lf, Alpha * lf);
+			Renderer::DefaultShader::SetColor(Red * lf, Green * lf, Blue * lf, Alpha);
 		
 		Renderer::SetCurrentObjectMatrix(mat);
 	}
@@ -417,27 +454,25 @@ void Sprite::Cleanup()
 
 void TruetypeFont::ReleaseCodepoint(int cp)
 {
-    if (Texes.find(cp) != Texes.end())
+    if (Texes->find(cp) != Texes->end())
     {
-        free(Texes[cp].tex);
-        glDeleteTextures(1, &Texes[cp].gltx);
-        Texes.erase(cp);
+        free(Texes->at(cp).tex);
+        glDeleteTextures(1, &Texes->at(cp).gltx);
+        Texes->erase(cp);
     }
 }
 
-void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat4 &Transform)
+void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat4 &Transform, const Vec2 &Scale)
 {
     const char* Text = In.c_str();
     int Line = 0;
 	size_t len = In.length();
-    glm::vec3 vOffs(Position.x, Position.y + scale, 0);
+    glm::vec3 vOffs(Position.x, Position.y + Scale.y, 0);
 
     if (!IsValid)
         return;
 
-    UpdateWindowScale();
-
-	Renderer::DefaultShader::Bind();
+    Renderer::DefaultShader::StaticBind();
     Renderer::SetBlendingMode(BLEND_ALPHA);
     Renderer::SetShaderParameters(false, false, false, false, false, true);
     Renderer::DefaultShader::SetColor(Red, Green, Blue, Alpha);
@@ -450,21 +485,23 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
         utf8::iterator<const char*> itend(nd, Text, nd);
         for (; it != itend; ++it)
         {
-            CheckCodepoint(*it); // Force a regeneration of this if necessary
             codepdata &cp = GetTexFromCodepoint(*it);
             unsigned char* tx = cp.tex;
-            glm::vec3 trans = vOffs + glm::vec3(cp.xofs, cp.yofs, 0);
+            glm::vec3 trans = vOffs + glm::vec3(
+				cp.xofs * Scale.x * Scale.y / SDF_SIZE, 
+				cp.yofs * Scale.y / SDF_SIZE, 0);
             glm::mat4 dx;
 
             if (*it == 10) // utf-32 line feed
             {
                 Line++;
                 vOffs.x = Position.x;
-                vOffs.y = Position.y + scale * (Line + 1);
+				vOffs.y = Position.y + (Line + 1) * Scale.y;
                 continue;
             }
 
-            dx = Transform * glm::translate(Mat4(), trans) * glm::scale(Mat4(), glm::vec3(cp.w, cp.h, 1));
+            dx = Transform * glm::translate(Mat4(), trans) * 
+				glm::scale(Mat4(), glm::vec3(cp.w * Scale.y / SDF_SIZE, cp.h * Scale.y / SDF_SIZE, 1));
 
             // do the actual draw?
             if (cp.gltx == 0)
@@ -479,10 +516,11 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				// SDF texture => filtering
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, cp.tw, cp.th, 0, GL_ALPHA, GL_UNSIGNED_BYTE, tx);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, cp.w, cp.h, 0, GL_ALPHA, GL_UNSIGNED_BYTE, tx);
             }
             else
                 glBindTexture(GL_TEXTURE_2D, cp.gltx);
@@ -498,7 +536,7 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
                 float aW = stbtt_GetCodepointKernAdvance(info.get(), *it, *next);
                 int bW;
                 stbtt_GetCodepointHMetrics(info.get(), *it, &bW, NULL);
-                vOffs.x += aW * virtualscale + bW * virtualscale;
+                vOffs.x += (aW * realscale + bW * realscale) * Scale.x  * Scale.y / SDF_SIZE;
             }
         }
     }
@@ -521,14 +559,18 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
 
 void TruetypeFont::ReleaseTextures()
 {
-    for (auto i = Texes.begin();
-    i != Texes.end();
+    for (auto i = Texes->begin();
+    i != Texes->end();
         ++i)
     {
-        if (i->second.tex)
-            free(i->second.tex);
-        if (i->second.gltx)
-            glDeleteTextures(1, &i->second.gltx);
+		if (i->second.tex) {
+			free(i->second.tex);
+			i->second.tex = 0;
+		}
+		if (i->second.gltx) {
+			glDeleteTextures(1, &i->second.gltx);
+			i->second.gltx = 0;
+		}
     }
 }
 
@@ -586,7 +628,7 @@ void Line::Render()
     glEnable(GL_DEPTH_TEST);
 }
 
-void BitmapFont::Render(const std::string &In, const Vec2 &Position, const Mat4 &Transform)
+void BitmapFont::Render(const std::string &In, const Vec2 &Position, const Mat4 &Transform, const Vec2 &Scale)
 {
     const char* Text = In.c_str();
     int32_t Character = 0, Line = 0;

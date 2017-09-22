@@ -6,64 +6,6 @@
 const uint16_t ScreenWidthDefault = 1024;
 const uint16_t ScreenHeightDefault = 768;
 
-// 16:9
-const uint16_t ScreenWidthWidescreen = 1360;
-const uint16_t ScreenHeightWidescreen = 768;
-
-/* raindrop  .cur mode Consts */
-namespace Game {
-	namespace dotcur {
-		const uint16_t PlayfieldWidth = 800;
-		const uint16_t PlayfieldHeight = 600;
-		const int16_t  ScreenOffset = 80;
-		const float    CircleSize = 80.0f;
-
-		const float	 LeniencyHitTime = 0.135f;
-		const float	 HoldLeniencyHitTime = 0.1f;
-
-		const float  LE_EXCELLENT = 0.03f;
-		const float  LE_PERFECT = 0.05f;
-		const float  LE_GREAT = 0.1f;
-
-		enum Judgment
-		{
-			None,
-			NG,
-			Miss,
-			OK,
-			Bad,
-			J_GREAT,
-			J_PERFECT,
-			J_EXCELLENT
-		};
-
-		struct EvaluationData
-		{
-			uint32_t MaxCombo;
-			uint32_t NumNG;
-			uint32_t NumOK;
-			uint32_t NumMisses;
-			uint32_t NumBads;
-			uint32_t NumGreats;
-			uint32_t NumPerfects;
-			uint32_t NumExcellents;
-
-			// Scoring
-			uint32_t totalNotes;
-			double dpScore;
-			double dpScoreSquare;
-		};
-	}
-}
-
-float _ScreenDifference();
-
-#define ScreenDifference _ScreenDifference()
-
-
-
-
-
 enum KeyType
 {
 	// General stuff
@@ -80,18 +22,6 @@ enum KeyType
 	KT_ReloadScreenScripts,
 	KT_Debug,
 	KT_ReloadCFG,
-
-	// raindrop specific
-	KT_GameplayClick,
-
-	// Editor specific
-	KT_FractionDec,
-	KT_FractionInc,
-	KT_ChangeMode,
-	KT_GridDec,
-	KT_GridInc,
-	KT_SwitchOffsetPrompt,
-	KT_SwitchBPMPrompt,
 
 	// 7K specific
 	KT_P1_SCRATCH_UP,
@@ -116,7 +46,7 @@ enum KeyType
 	KT_Key16
 };
 
-extern char* KeytypeNames[];
+extern const char* KeytypeNames[];
 
 
 
@@ -147,7 +77,7 @@ namespace Game {
 
 		enum ChartType
 		{
-			// Autodecide - Not a value for anything other than Parameters!
+			// Autodecide - Not a value for anything other than PlayscreenParameters!
 			TI_NONE = 0,
 			TI_BMS = 1,
 			TI_OSUMANIA = 2,
@@ -225,7 +155,7 @@ namespace Game {
 
 		enum LifeType {
 
-			LT_AUTO = 0, // Only for Parameters
+			LT_AUTO = 0, // Only for PlayscreenParameters
 			// actual groove type should be set by playing field from chart
 
 			LT_GROOVE = 1, // Beatmania default lifebar
@@ -274,7 +204,40 @@ namespace Game {
 			PMT_F = 35,
 		};
 
-		struct Parameters {
+		enum TimingType
+		{
+			TT_TIME,
+			TT_BEATS,
+			TT_PIXELS
+		};
+
+		struct Difficulty;
+		struct PlayerChartState;
+		class ChartInfo;
+		class Mechanics;
+		class ScoreKeeper;
+
+		struct PlayscreenParameters {
+		private:
+			struct SHiddenData {
+				EHiddenMode		 Mode;
+				float            Center; // in NDC
+				float			 TransitionSize; // in NDC
+				float			 CenterSize; // in NDC
+
+				
+			};
+			
+			void UpdateHidden(double JudgeY);
+			SHiddenData Hidden;
+
+			TimingType SetupGameSystem(
+				std::shared_ptr<ChartInfo> TimingInfo, 
+				ScoreKeeper* PlayerScoreKeeper);
+
+			void SetupGauge(std::shared_ptr<ChartInfo> TimingInfo, ScoreKeeper* PlayerScoreKeeper);
+
+		public:
 			// If true, use upscroll (VSRG only)
 			int Upscroll;
 
@@ -297,7 +260,7 @@ namespace Game {
 			float Rate;
 
 			// Scroll speed
-			double SpeedMultiplier;
+			double UserSpeedMultiplier;
 
 			// Randomizing mode -> 0 = Disabled, 1 = Per-Lane, 2 = Panic (unimplemented)
 			int Random;
@@ -311,26 +274,54 @@ namespace Game {
 			// Game System Type (VSRG only)
 			int32_t SystemType;
 
-			Parameters() {
+			// Whether to interpret desired speed
+			// as green number
+			bool GreenNumber;
+
+			// Whether to enable the use of strictest timing
+			bool UseW0;
+
+			PlayerChartState* Setup(
+				double DesiredDefaultSpeed, 
+				int SpeedType, 
+				double Drift, 
+				std::shared_ptr<VSRG::Difficulty> CurrentDiff);
+
+			std::unique_ptr<Game::VSRG::Mechanics> PrepareMechanicsSet(
+				std::shared_ptr<VSRG::Difficulty> CurrentDiff, 
+				std::shared_ptr<Game::VSRG::ScoreKeeper> PlayerScorekeeper,
+				double JudgeY);
+
+			ScoreType GetScoringType() const;
+
+			int GetHiddenMode();
+			float GetHiddenCenter();
+			float GetHiddenTransitionSize();
+			float GetHiddenCenterSize();
+
+			PlayscreenParameters() {
 				Upscroll = false;
 				Wave = false;
 				Preloaded = false;
 				Auto = false;
 				NoFail = false;
+				GreenNumber = false;
+				UseW0 = false;
 				HiddenMode = HM_NONE;
 				StartMeasure = -1;
 				Random = 0;
 				Rate = 1;
 				GaugeType = LT_AUTO;
 				SystemType = VSRG::TI_NONE;
-				SpeedMultiplier = 4;
+				UserSpeedMultiplier = 4;
 			}
 		};
 
 		/* Vertical Space for a Measure.
 		 A single 4/4 measure takes all of the playing field.
 		 Increasing this will decrease multiplier resolution. */
-		const float MeasureBaseSpacing = 0.8f * ScreenHeightDefault;
+		extern SkinMetric PLAYFIELD_SIZE;
+		extern SkinMetric UNITS_PER_MEASURE;
 
 		/* vsrg constants */
 
@@ -348,7 +339,7 @@ namespace Game {
 
 /* Program itself consts */
 #define RAINDROP_WINDOWTITLE "raindrop ver: "
-#define RAINDROP_VERSION "0.500"
+#define RAINDROP_VERSION "0.600"
 #ifdef NDEBUG
 #define RAINDROP_BUILDTYPE " "
 #else
@@ -358,4 +349,4 @@ namespace Game {
 #define RAINDROP_VERSIONTEXT RAINDROP_VERSION RAINDROP_BUILDTYPE __DATE__
 
 #include "BindingsManager.h"
-#include "Configuration.h"
+

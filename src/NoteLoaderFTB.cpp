@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "GameGlobal.h"
+
 #include "Song7K.h"
 #include "NoteLoader7K.h"
 
@@ -90,19 +90,14 @@ failed:
             {
                 Note.StartTime = latof(NoteInfo.at(0).c_str()) / 1000.0;
                 Note.EndTime = latof(NoteInfo.at(1).c_str()) / 1000.0;
-                Diff->TotalHolds++;
-                Diff->TotalScoringObjects += 2;
             }
             else
             {
                 Note.StartTime = latof(NoteInfo.at(0).c_str()) / 1000.0;
-                Diff->TotalNotes++;
-                Diff->TotalScoringObjects++;
             }
 
             /* index 1 is unused */
             int Track = atoi(LineContents[2].c_str()); // Always > 1
-            Diff->TotalObjects++;
 
             Diff->Duration = std::max(std::max(Note.StartTime, Note.EndTime), Diff->Duration);
             Msr.Notes[Track - 1].push_back(Note);
@@ -122,6 +117,6 @@ failed:
     else
         goto failed;
 
-    Diff->Level = Diff->TotalScoringObjects / Diff->Duration;
+    Diff->Level = Diff->Data->GetScoreItemsCount() / Diff->Duration;
     Out->Difficulties.push_back(Diff);
 }

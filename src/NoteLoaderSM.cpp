@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "GameGlobal.h"
+
 #include "Song7K.h"
 #include "NoteLoader7K.h"
 #include "Logging.h"
@@ -112,15 +112,15 @@ void LoadNotesSM(Song *Out, Difficulty *Diff, std::vector<std::string> &MeasureT
     /* For each measure of the song */
     for (size_t i = 0; i < MeasureText.size(); i++) /* i = current measure */
     {
-        ptrdiff_t MeasureFractions = MeasureText[i].length() / Keys;
+        ptrdiff_t MeasureSubdivisions = MeasureText[i].length() / Keys;
         Measure Msr;
 
         if (MeasureText[i].length())
         {
             /* For each fraction of the measure*/
-            for (ptrdiff_t m = 0; m < MeasureFractions; m++) /* m = current fraction */
+            for (ptrdiff_t m = 0; m < MeasureSubdivisions; m++) /* m = current fraction */
             {
-                double Beat = i * 4.0 + m * 4.0 / (double)MeasureFractions; /* Current beat */
+                double Beat = i * 4.0 + m * 4.0 / (double)MeasureSubdivisions; /* Current beat */
                 double StopsTime = StopTimeAtBeat(Diff->Data->Stops, Beat);
                 double Time = TimeAtBeat(Diff->Timing, Diff->Offset, Beat, true) + StopsTime;
                 bool InWarpSection = IsTimeWithinWarp(Diff, Time);
@@ -137,14 +137,6 @@ void LoadNotesSM(Song *Out, Difficulty *Diff, std::vector<std::string> &MeasureT
                     {
                     case '1': /* Taps */
                         Note.StartTime = Time;
-
-                        if (!InWarpSection)
-                        {
-                            Diff->TotalNotes++;
-                            Diff->TotalObjects++;
-                            Diff->TotalScoringObjects++;
-                        }
-
                         Msr.Notes[k].push_back(Note);
                         break;
                     case '2': /* Holds */
@@ -152,20 +144,13 @@ void LoadNotesSM(Song *Out, Difficulty *Diff, std::vector<std::string> &MeasureT
                         KeyStartTime[k] = Time;
                         KeyBeat[k] /*heh*/ = Beat;
 
-                        if (!InWarpSection)
-                            Diff->TotalScoringObjects++;
                         break;
                     case '3': /* Hold releases */
                         Note.StartTime = KeyStartTime[k];
                         Note.EndTime = Time;
 
                         if (!IsTimeWithinWarp(Diff, KeyStartTime[k]))
-                        {
                             Note.NoteKind = NK_NORMAL; // Un-fake it.
-                            Diff->TotalHolds++;
-                            Diff->TotalObjects++;
-                            Diff->TotalScoringObjects++;
-                        }
                         Msr.Notes[k].push_back(Note);
                         break;
                     case 'F':
@@ -351,7 +336,7 @@ TimingData CalculateRaindropWarpData(Difficulty* Diff, const TimingData& Warps)
 }
 
 // DRY etc I'll see it later.
-TimingData CalculateRaindropSCData(Difficulty* Diff, const TimingData& SCd)
+TimingData CalculateRaindropScrollData(Difficulty* Diff, const TimingData& SCd)
 {
 	TimingData Ret;
 	for (auto SC : SCd)
@@ -368,9 +353,9 @@ TimingData CalculateRaindropSCData(Difficulty* Diff, const TimingData& SCd)
 }
 
 // Transform the time data from beats to seconds
-VectorSpeeds CalculateRaindropScrolls(Difficulty *Diff, const SpeedData& In)
+VectorInterpolatedSpeedMultipliers CalculateRaindropSpeedData(Difficulty *Diff, const SpeedData& In)
 {
-	VectorSpeeds Ret;
+	VectorInterpolatedSpeedMultipliers Ret;
 
 	for (auto scroll : In)
 	{
@@ -566,9 +551,9 @@ void NoteLoaderSSC::LoadObjectsFromFile(std::filesystem::path filename, Song *Ou
                 Diff->Data->Scrolls = ScrollData;
 
             if (!diffSpeedData.size())
-                Diff->Data->Speeds = CalculateRaindropScrolls(Diff.get(), speedData);
+                Diff->Data->InterpoloatedSpeedMultipliers = CalculateRaindropSpeedData(Diff.get(), speedData);
             else
-                Diff->Data->Speeds = CalculateRaindropScrolls(Diff.get(), diffSpeedData);
+                Diff->Data->InterpoloatedSpeedMultipliers = CalculateRaindropSpeedData(Diff.get(), diffSpeedData);
 
             Diff->Offset = -Offset;
             Diff->Duration = 0;
@@ -578,7 +563,7 @@ void NoteLoaderSSC::LoadObjectsFromFile(std::filesystem::path filename, Song *Ou
             Diff->Data->StageFile = Banner;
 
             Diff->Data->Warps = CalculateRaindropWarpData(Diff.get(), Diff->Data->Warps);
-            Diff->Data->Scrolls = CalculateRaindropSCData(Diff.get(), Diff->Data->Scrolls);
+            Diff->Data->Scrolls = CalculateRaindropScrollData(Diff.get(), Diff->Data->Scrolls);
 
             CommandContents = RemoveComments(CommandContents);
             auto Measures = Utility::TokenSplit(CommandContents);
@@ -628,29 +613,52 @@ void WarpifyTiming(Difficulty* Diff)
 
             // for all negative sections between i and the next positive section
             // add up their duration in seconds
-            double warpDuration = 0;
-            double warpDurationBeats = 0;
+            double totalWarpDuration = 0;
             while (currentSection->Value < 0)
             {
                 if (currentSection != Diff->Timing.end())
                 {
-                    // add the duration of section k, if there's one to determine it.
+                    // add the duration of section, if there's one to determine it.
                     auto nextSection = currentSection + 1;
                     if (nextSection != Diff->Timing.end())
                     {
-                        warpDuration += spb(abs(currentSection->Value)) * (nextSection->Time - currentSection->Time);
-                        warpDurationBeats += nextSection->Time - currentSection->Time;
+						auto sectionDurationBeats = (nextSection->Time - currentSection->Time);
+						auto sectionSecondsPerBeat = spb(abs(currentSection->Value));
+                        totalWarpDuration += sectionSecondsPerBeat * sectionDurationBeats;
                     }
+
+					/* 
+					todo: 
+					dtinth's interpretation for sm5 warps 
+					infinite bpm, implies we have to split the warp when
+					there's a stop.
+					*/ 
+
+					// negative bpm means backward scrolling to raindrop
+					// therefore, to scroll forwards and warp over this section properly
+					// we make it positive
                     currentSection->Value = -currentSection->Value;
                 }
                 else break;
                 ++currentSection;
             }
-            // Now since W = DurationInBeats(Dn) + TimeToBeatsAtBPM(DurationInTime(Dn), NextPositiveBPM)
-            // DurationInBeats is warpDurationBeats, DurationInTime is warpDuration. k->Value is NextPositiveBPM
-            double warpTime = TimeAtBeat(Diff->Timing, Diff->Offset, i->Time, true) + StopTimeAtBeat(Diff->Data->Stops, i->Time);
+            
+			// diff->timing is in "no-warp" time
+			// which means it's in "the time if warps were not considered"
+			// or "chart time" used for display
+			// the audio time, or time used for judgement
+			// is usually behind the chart time.
+			// notedata is in chart time.
+			// therefore, tracknote time data is in audio time
+			// and vertical position is in chart time.
+			// chart time is calculated by adding up all the
+			// time scrolled by bpm ignoring everything else
+			// plus time scrolled by stops 
+			// plus time scrolled by warps.
+            double warpTime = TimeAtBeat(Diff->Timing, Diff->Offset, i->Time, true) + 
+				StopTimeAtBeat(Diff->Data->Stops, i->Time);
 
-            Diff->Data->Warps.push_back(TimingSegment(warpTime, warpDuration * 2));
+            Diff->Data->Warps.push_back(TimingSegment(warpTime, totalWarpDuration * 2));
             // And now that we're done, there's no need to check the negative BPMs inbetween this one and the next positive BPM, so...
             i = currentSection;
             if (i == Diff->Timing.end()) break;

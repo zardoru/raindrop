@@ -54,7 +54,7 @@ namespace Game {
 
 		void ScreenGameplay::AssignMeasure(uint32_t Measure)
 		{
-			double mt = Players[0]->GetMeasureTime(Measure);
+			double mt = Players[0]->GetPlayerState().GetMeasureTime(Measure);
 			double wt = Players[0]->GetPlayerState().GetWarpedSongTime(mt);
 			for (auto& player : Players) {
 				player->SetUnwarpedTime(mt);
@@ -83,9 +83,9 @@ namespace Game {
 			ForceActivation = false;
 
 			for (auto i = 0; i < GameState::GetInstance().GetPlayerCount(); i++) {
-				Players.push_back(std::make_unique<PlayerContext>(i, *GameState::GetInstance().GetParameters(i)));
+				Players.push_back(std::make_unique<PlayerContext>(i, *GameState::GetInstance().GetParameters(i)));				
+				GameState::GetInstance().SetPlayerContext(Players[i].get(), i);
 				Players[i]->PlayKeysound = std::bind(&ScreenGameplay::PlayKeysound, this, std::placeholders::_1);
-				Players[i]->SetSceneEnvironment(Animations);
 			}
 		}
 
@@ -134,12 +134,21 @@ namespace Game {
 			if (SkipLoadAudio) return true;
 
 			auto Rate = GameState::GetInstance().GetParameters(0)->Rate;
+
+
+			auto &ps = Players[0]->GetPlayerState();
+			auto SoundList = ps.GetSoundList();
 			if (!Music)
 			{
 				Music = std::make_unique<AudioStream>();
 				Music->SetPitch(Rate);
-				if (std::filesystem::exists(MySong->SongFilename)
-					&& Music->Open(MySong->SongDirectory / MySong->SongFilename))
+
+				auto s = MySong->SongDirectory / MySong->SongFilename;
+
+				Log::LogPrintf("Chart Audio: Attempt to load \"%s\"...", s.string().c_str());
+
+				if (std::filesystem::exists(s)
+					&& Music->Open(s))
 				{
 					Log::Printf("Stream for %s succesfully opened.\n", MySong->SongFilename.c_str());
 				}
@@ -156,19 +165,22 @@ namespace Game {
 							auto extension = i.path().extension();
 							if (extension == ".mp3" || extension == ".ogg")
 								if (Music->Open(i.path()))
-									return true;
+									if (!SoundList.size())
+										return true;
 						}
 
 						// Quit; couldn't find audio for a chart that requires it.
 						Music = nullptr;
-						Log::Printf("Unable to load song (Path: %s)\n", MySong->SongFilename.c_str());
-						return false;
+
+						// don't abort load if we have keysounds
+						if (!SoundList.size()) {
+							Log::Printf("Unable to load song (Path: %s)\n", MySong->SongFilename.c_str());
+							return false;
+						}
 					}
 				}
 			}
 
-			auto &ps = Players[0]->GetPlayerState();
-			auto SoundList = ps.GetSoundList();
 			auto ChartType = ps.GetChartType();
 
 			// Load samples.
@@ -189,7 +201,7 @@ namespace Game {
 			}
 			else if (SoundList.size())
 			{
-				Log::Printf("Chart Audio: Loading samples... ");
+				Log::LogPrintf("Chart Audio: Loading samples... ");
 				LoadSamples();
 
 			}
@@ -235,11 +247,11 @@ namespace Game {
 			std::map<int, AudioSample> audio;
 			std::mutex audio_data_mutex;
 			std::mutex keysound_data_mutex;
-			auto &slicedata = ps.GetSliceData();
+			const auto &slicedata = ps.GetSliceData();
 
 			// do bmson loading - threaded slicing!
 			std::vector<std::future<void>> threads;
-			std::atomic<int> obj_cnt = 0;
+			std::atomic<int> obj_cnt(0);
 
 			auto load_start_time = std::chrono::high_resolution_clock::now();
 			for (auto audiofile : slicedata.AudioFiles) {
@@ -330,9 +342,12 @@ namespace Game {
 
 			auto diff = GameState::GetInstance().GetDifficulty(0);
 
+			if (!diff) // possibly preloaded
+				diff = MySong->GetDifficulty(0);
+
 			if (Time.InterpolateStream &&  // Apply drift is enabled and:
 				((ApplyDriftVirtual && diff->IsVirtual) ||  // We want to apply it to a keysounded file and it's virtual
-					(ApplyDriftDecoder && diff->IsVirtual))) // or we want to apply it to a non-keysounded file and it's not virtual
+				(ApplyDriftDecoder && diff->IsVirtual))) // or we want to apply it to a non-keysounded file and it's not virtual
 				TimeError.AudioDrift += MixerGetLatency();
 
 			TimeError.AudioDrift += Configuration::GetConfigf("Offset7K");
@@ -349,15 +364,12 @@ namespace Game {
 			Log::Printf("Processing song... ");
 
 			for (auto &&p : Players) {
-				for (auto sd : MySong->Difficulties)
-					if (sd->ID == GameState::GetInstance().GetDifficulty(p->GetPlayerNumber())->ID) {
+				for (auto sd : MySong->Difficulties) {
+					auto diff = GameState::GetInstance().GetDifficulty(p->GetPlayerNumber());
+					// If there's no difficulty assigned, no point in checking.
+					if ( (diff && sd->ID == diff->ID) || !diff ) {
 						p->SetPlayableData(sd, TimeError.AudioDrift, DesiredDefaultSpeed, Type);
 						p->Init();
-
-						// there's a better way but not right now
-						GameState::GetInstance().SetCurrentGaugeType(p->GetCurrentGaugeType(), p->GetPlayerNumber());
-						GameState::GetInstance().SetCurrentScoreType(p->GetCurrentScoreType(), p->GetPlayerNumber());
-						GameState::GetInstance().SetCurrentSystemType(p->GetCurrentSystemType(), p->GetPlayerNumber());
 
 						if (!p->GetPlayerState().HasTimingData())
 						{
@@ -365,6 +377,7 @@ namespace Game {
 							return false;
 						}
 					}
+				}
 			}
 
 			auto bgm0 = Players[0]->GetBgmData();
@@ -425,7 +438,7 @@ namespace Game {
 				AssignMeasure(StartMeasure);
 
 			ForceActivation = ForceActivation || (Configuration::GetSkinConfigf("InmediateActivation") == 1);
-			
+
 
 			// We're done with the data stored in the difficulties that aren't the one we're using. Clear it up.
 			for (auto i = MySong->Difficulties.begin(); i != MySong->Difficulties.end(); ++i)
@@ -440,7 +453,7 @@ namespace Game {
 						snd->AwaitLoad();
 					}
 				}
-			
+
 				auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - st).count();
 				Log::LogPrintf("Done. Taken %I64dms to finish.\n", dur);
 			}
@@ -464,11 +477,32 @@ namespace Game {
 
 			for (auto& p : Players) {
 				p->Validate();
+
+				p->OnHit = std::bind(&ScreenGameplay::OnPlayerHit, this,
+					std::placeholders::_1,
+					std::placeholders::_2,
+					std::placeholders::_3,
+					std::placeholders::_4,
+					std::placeholders::_5,
+					std::placeholders::_6);
+
+				p->OnMiss = std::bind(&ScreenGameplay::OnPlayerMiss, this,
+					std::placeholders::_1,
+					std::placeholders::_2,
+					std::placeholders::_3,
+					std::placeholders::_4,
+					std::placeholders::_5,
+					std::placeholders::_6);
+
+				p->OnGearKeyEvent = std::bind(&ScreenGameplay::OnPlayerGearKeyEvent, this,
+					std::placeholders::_1,
+					std::placeholders::_2,
+					std::placeholders::_3);
 			}
 
 
 			Animations->Initialize("", false);
 			Running = true;
 		}
-		}
 	}
+}

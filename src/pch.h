@@ -12,6 +12,7 @@
 #define _USE_MATH_DEFINES
 
 #define ENABLE_SNDFILE_WINDOWS_PROTOTYPES 1
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <io.h>
 #include <fcntl.h>
@@ -44,6 +45,7 @@
 	{
 		namespace filesystem = experimental::filesystem;
 	}
+	#define STD_FILESYSTEM
 #else
 
 	#ifndef __GNUC__
@@ -53,12 +55,14 @@
 			namespace filesystem = boost::filesystem;
 		}
 	#else // it's GCC
-		#if __GNU_PREREQ(6,1)
+		#if __GNUC_PREREQ(6,1)
 			// We can alias the filesystem
+			#include <experimental/filesystem>
 			namespace std
 			{
 				namespace filesystem = experimental::filesystem;
 			}
+			#define STD_FILESYSTEM
 		#else
 			// okay then, use boost
 			#include <boost/filesystem.hpp>
@@ -239,6 +243,21 @@ namespace Color
     extern const ColorRGB Blue;
 }
 
+template
+<class T>
+T gcd(T a, T b)
+{
+	if (b == 0) return a;
+	else return gcd<T>(b, a % b);
+}
+
+template
+<class T>
+T lcm(T a, T b)
+{
+	return a * b / gcd<T>(a, b);
+}
+
 template <class T>
 struct Fraction
 {
@@ -269,6 +288,19 @@ struct Fraction
             d = static_cast<double>(Num) / Den;
         }
     }
+
+	Fraction<T> Simplify() {
+		T t = gcd(Num, Den);
+		return Fraction{ a / t, b / t };
+	}
+
+	operator double() {
+		return Num / Den;
+	}
+
+	bool operator<(Fraction<T> other) {
+		return this->operator double() < other->operator double();
+	}
 };
 
 using LFraction = Fraction<long long>;
@@ -298,7 +330,7 @@ namespace Utility
     std::string SJIStoU8(std::string Line);
 
     void CheckDir(std::string Dirname);
-    int GetLMT(std::filesystem::path Path);
+    int GetLastModifiedTime(std::filesystem::path Path);
     std::string GetSha256ForFile(std::filesystem::path Filename);
     std::string IntToStr(int num);
     std::string CharToStr(char c);
@@ -410,4 +442,15 @@ double latof(std::string s);
 #define CreateBinIfstream(name, fn) std::fstream name(fn.string(), std::ios::in | std::ios::binary);
 #endif
 
+template <class T>
+void BinWrite(std::ofstream &of, T obj) {
+	of.write((char*)&obj, sizeof(T));
+}
+
+template <class T>
+void BinRead(std::ifstream &of, T& obj) {
+	of.read((char*)&obj, sizeof(T));
+}
+
+#include "Configuration.h"
 #include "GameGlobal.h"

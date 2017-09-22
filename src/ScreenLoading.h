@@ -15,5 +15,5 @@ public:
     bool Run(double TimeDelta) override;
     bool HandleInput(int32_t key, KeyEventType code, bool isMouseInput) override;
     bool HandleScrollInput(double xOff, double yOff) override;
-    void Cleanup();
+    void Cleanup() override;
 };

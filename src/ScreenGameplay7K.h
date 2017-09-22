@@ -3,11 +3,11 @@
 #include "Audio.h"
 #include "Song7K.h"
 #include "BackgroundAnimation.h"
+#include "AudioSourceOJM.h"
 
 class AudioStream;
 class Texture;
 class SceneEnvironment;
-class AudioSourceOJM;
 class LuaManager;
 
 #include "PlayerContext.h"
@@ -62,11 +62,7 @@ namespace Game {
 			std::unique_ptr<BackgroundAnimation> BGA;
 			double JudgeOffset;
 			void SetupScriptConstants();
-			void UpdateScriptVariables();
-			void UpdateScriptScoreVariables();
-
-			void ChangeNoteTimeToBeats();
-
+			
 			// Done in loading thread
 			bool LoadChartData();
 			bool LoadSongAudio();
@@ -84,11 +80,18 @@ namespace Game {
 			bool SongHasFinished();
 
 			void UpdateSongTime(float Delta);
+			void OnPlayerHit(ScoreKeeperJudgment judgment, double dt, uint32_t lane, bool hold, bool release, int pn);
 			void Render();
 
 			void PlayKeysound(int Keysound);
 
 			void Activate();
+
+
+			void OnPlayerMiss(double dt, uint32_t lane, bool hold, bool dontbreakcombo, bool earlymiss, int pn);
+
+			void OnPlayerGearKeyEvent(uint32_t lane, bool keydown, int pn);
+
 			friend class Noteskin;
 		public:
 

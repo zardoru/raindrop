@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "GameGlobal.h"
+
 #include "Logging.h"
 #include "Song7K.h"
 #include "NoteLoader7K.h"
@@ -184,7 +184,11 @@ class OsumaniaLoader
 	{
 		Offsetize();
 
-		auto seclst = filter([](const HitsoundSectionData& H) {return !H.IsInherited && !H.Omit;}, HitsoundSections);
+		auto seclst = filter([](const HitsoundSectionData& H) 
+		{
+			return !H.IsInherited && !H.Omit;
+		}, HitsoundSections);
+
 		for (auto i = seclst.begin(); i != seclst.end();)
 		{
 			double SectionDurationInBeats = 0;
@@ -738,21 +742,11 @@ public:
 					Log::Printf("NoteLoaderOM: object at track %d has startTime > endTime (%f and %f)\n", Track, startTime, endTime);
 
 				Note.EndTime = 0;
-
-				Diff->TotalScoringObjects += 1;
-				Diff->TotalNotes++;
-			}
-			else
-			{
-				Diff->TotalScoringObjects += 2;
-				Diff->TotalHolds++;
 			}
 		}
 		else if (NoteType & NOTE_NORMAL)
 		{
 			Note.StartTime = startTime;
-			Diff->TotalNotes++;
-			Diff->TotalScoringObjects++;
 		}
 		else if (NoteType & NOTE_SLIDER)
 		{
@@ -772,9 +766,6 @@ public:
 
 			Note.StartTime = startTime;
 			Note.EndTime = len_seconds + startTime;
-
-			Diff->TotalScoringObjects += 2;
-			Diff->TotalHolds++;
 		}
 
 		Hitsound = atoi(ObjectData[4].c_str());
@@ -792,7 +783,6 @@ public:
 			Note.Sound = Sounds[Sample];
 		}
 
-		Diff->TotalObjects++;
 		Notes[Track].push_back(Note);
 
 		Diff->Duration = std::max(std::max(Note.StartTime, Note.EndTime) + 1, Diff->Duration);
@@ -895,8 +885,13 @@ public:
 				default: break;
 				}
 			}
+			
+			auto notecount = 0;
+			for (int i = 0; i < Diff->Channels; i++) {
+				notecount += Notes[i].size();
+			}
 
-			if (Diff->TotalObjects)
+			if (notecount)
 			{
 				// Okay then, convert timing data into a measure-based format raindrop can use 
 				// and calculate offset.
@@ -913,7 +908,7 @@ public:
 					Diff->Data->SoundList[i.second] = i.first;
 
 				// Calculate level as NPS
-				Diff->Level = Diff->TotalScoringObjects / Diff->Duration;
+				Diff->Level = Diff->Data->GetScoreItemsCount() / Diff->Duration;
 				osu_sng->Difficulties.push_back(Diff);
 			}
 		}
@@ -931,5 +926,4 @@ void NoteLoaderOM::LoadObjectsFromFile(std::filesystem::path filename, Song *Out
     OsumaniaLoader Info(Out);
 
 	Info.LoadFromFile(filename);
-    
 }

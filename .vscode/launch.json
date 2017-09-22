@@ -1,0 +1,66 @@
+{
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "(Windows) Attach",
+                "type": "cppvsdbg",
+                "request": "attach",
+                "processId": "${command:pickProcess}"
+            },
+            {
+                "name": "(Windows) Run Test osu file - Autoplay (debug/test.osu)",
+                "type": "cppvsdbg",
+                "request": "launch",
+                "program": "${workspaceRoot}/msvc/Debug/raindrop.exe",
+                "args": ["-p", "-i", "s3a/test.osu", "--config", "config-debug.ini"],
+                "stopAtEntry": false,
+                "cwd": "${workspaceRoot}/debug",
+                "environment": [],
+                "externalConsole": true
+            },
+            {
+                "name": "(Windows) Run Test BMS file - Autoplay (debug/test.bms)",
+                "type": "cppvsdbg",
+                "request": "launch",
+                "program": "${workspaceRoot}/msvc/Debug/raindrop.exe",
+                "args": ["-p", "-i", "test.bms", "--config", "config-debug.ini"],
+                "stopAtEntry": false,
+                "cwd": "${workspaceRoot}/debug",
+                "environment": [],
+                "externalConsole": true
+            },
+            {
+                "name": "(Windows) Run Test BMS file (debug/test.bms)",
+                "type": "cppvsdbg",
+                "request": "launch",
+                "program": "${workspaceRoot}/msvc/Debug/raindrop.exe",
+                "args": ["-p", "-i", "test.bms", "--config", "config-debug.ini"],
+                "stopAtEntry": false,
+                "cwd": "${workspaceRoot}/debug",
+                "environment": [],
+                "externalConsole": true
+            },
+            {
+                "name": "(Windows) Run Tests",
+                "type": "cppvsdbg",
+                "request": "launch",
+                "program": "${workspaceRoot}/msvc/Debug/raindrop.exe",
+                "args": ["--test"],
+                "stopAtEntry": false,
+                "cwd": "${workspaceRoot}/debug",
+                "environment": [],
+                "externalConsole": true
+            },
+            {
+                "name": "(Windows) Debug Launch",
+                "type": "cppvsdbg",
+                "request": "launch",
+                "program": "${workspaceRoot}/msvc/Debug/raindrop.exe",
+                "args": ["--config", "config-debug.ini"],
+                "stopAtEntry": false,
+                "cwd": "${workspaceRoot}/debug",
+                "environment": [],
+                "externalConsole": true
+            }
+        ]
+    }

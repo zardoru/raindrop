@@ -14,7 +14,10 @@ namespace Game {
 			void init();
 
 			void setMaxNotes(int notes);
-			void setLifeTotal(double total);
+
+			// total if multiplier is nan, else default rate * multiplier
+			void setLifeTotal(double total, double multiplier = NAN);
+
 			void setLifeIncrements(double* increments, int inc_n);
 			void setMissDecrement(double decrement);
 			void setEarlyMissDecrement(double decrement);
@@ -43,13 +46,14 @@ namespace Game {
 			double getAvgHit() const;
 
 			ScoreKeeperJudgment hitNote(double ms);
+			void lifebarHit(double ms, Game::VSRG::ScoreKeeperJudgment judgment);
 			void missNote(bool auto_hold_miss, bool early_miss);
 
 			double getAccMax() const;
 
 			double getJudgmentWindow(int judgment);
 			double getMissCutoffMS() const;
-			double getEarlyMissCutoff() const;
+			double getEarlyMissCutoffMS() const;
 			double getJudgmentCutoff();
 
 			int getScore(int score_type);
@@ -74,23 +78,27 @@ namespace Game {
 			uint8_t getPills() const;
 			int getCoolCombo() const;
 
-			void set_manual_w0(bool);
+			void setUseW0(bool);
 			bool usesW0() const;
 			bool usesO2() const;
+
+			float getHitStDev() const;
 
 			void reset();
 
 		private:
 
-			void set_beat_timing_windows();
+			void setO2JamBeatTimingWindows();
 
 			bool use_w0; // whether or not to use ridiculous timing.
 			bool use_w0_for_ex2; // whether or not to require ridiculous for 2 EX score.
 
+			// online avg hit and variance
 			double avg_hit;
+			double hit_variance;
 
 			// o2jam-specific variable
-			bool use_bbased;
+			bool use_o2jam;
 
 			/*
 				Standard scoring.
@@ -239,7 +247,7 @@ namespace Game {
 
 			double life_increment[9];
 
-			void set_timing_windows();
+			void setBMSTimingWindows();
 
 			// miss thresholds; notes hit outside here count as misses.
 			// units are in ms
@@ -262,4 +270,7 @@ namespace Game {
 		void SetupScorekeeperLuaInterface(void* state);
 		void SetScorekeeperInstance(void* state, ScoreKeeper *Instance);
 	}
+
+	
+	const double O2_WINDOW = 0.664;
 }

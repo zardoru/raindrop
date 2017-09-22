@@ -2,7 +2,6 @@
 #include "Logging.h"
 
 #include "Audio.h"
-#include "Audiofile.h"
 #include "AudioSourceSFM.h"
 #include "AudioSourceOGG.h"
 
@@ -295,6 +294,11 @@ _read:
         return 0;
 }
 
+double AudioSample::GetDuration()
+{
+	return mAudioEnd - mAudioStart;
+}
+
 bool AudioSample::IsPlaying()
 {
     return mIsPlaying;
@@ -416,6 +420,8 @@ void AudioSample::Play()
 void AudioSample::SeekTime(float Second)
 {
     mCounter = mRate * Second * Channels;
+
+	if (!mData) return;
 
     if (mCounter >= mData->size())
         mCounter = mData->size();
@@ -612,7 +618,7 @@ uint32_t AudioStream::Update()
 
     mSource->SetLooping(IsLooping());
 
-    if (ReadTotal = mSource->Read(tbuf, eCount))
+    if ((ReadTotal = mSource->Read(tbuf, eCount)))
     {
         PaUtil_WriteRingBuffer(&mRingBuf, tbuf, ReadTotal);
     }

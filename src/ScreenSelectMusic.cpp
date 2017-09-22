@@ -8,17 +8,16 @@
 #include "GameWindow.h"
 #include "ImageLoader.h"
 #include "Audio.h"
-#include "Configuration.h"
+
 #include "Sprite.h"
 #include "GuiButton.h"
+#include "Line.h"
 
 #include "Song.h"
 #include "ScreenSelectMusic.h"
 #include "ScreenLoading.h"
 
-#include "ScreenGameplay.h"
 #include "ScreenGameplay7K.h"
-#include "ScreenEdit.h"
 #include "LuaManager.h"
 #include "SongDatabase.h"
 
@@ -142,7 +141,6 @@ void ScreenSelectMusic::Cleanup()
 
     StopLoops();
 
-    GameState::GetInstance().SetSelectedSong(nullptr);
     Game::SongWheel::GetInstance().CleanItems();
 }
 
@@ -184,23 +182,12 @@ void ScreenSelectMusic::StartGameplayScreen()
     std::shared_ptr<Game::Song> MySong = GameState::GetInstance().GetSelectedSongShared();
 	auto difindex = Game::SongWheel::GetInstance().GetDifficulty();
 
-    if (MySong->Mode == MODE_DOTCUR)
-    {
-#ifdef DOTCUR_ENABLED
-        auto DotcurGame = std::make_shared<Game::dotcur::ScreenGameplay>();
-        DotcurGame->Init(static_cast<Game::dotcur::Song*>(MySong.get()), difindex);
+    
+    auto VSRGGame = std::make_shared<Game::VSRG::ScreenGameplay>();
 
-        LoadNext = std::make_shared<ScreenLoading>(DotcurGame);
-#endif
-    }
-    else
-    {
-        auto VSRGGame = std::make_shared<Game::VSRG::ScreenGameplay>();
+    VSRGGame->Init(std::dynamic_pointer_cast<Game::VSRG::Song>(MySong));
 
-        VSRGGame->Init(std::dynamic_pointer_cast<Game::VSRG::Song>(MySong));
-
-        LoadNext = std::make_shared<ScreenLoading>(VSRGGame);
-    }
+    LoadNext = std::make_shared<ScreenLoading>(VSRGGame);
 
     LoadNext->Init();
     Next = LoadNext;
@@ -213,6 +200,8 @@ void ScreenSelectMusic::OnSongSelect(std::shared_ptr<Game::Song> MySong, uint8_t
     if (IsTransitioning)
         return;
 
+	if (difindex > MySong->GetDifficultyCount()) return;
+
     if (PreviewStream) PreviewStream->Stop();
 
     IsTransitioning = true;
@@ -221,7 +210,8 @@ void ScreenSelectMusic::OnSongSelect(std::shared_ptr<Game::Song> MySong, uint8_t
 
     StopLoops();
 
-    GameState::GetInstance().SetSelectedSong(MySong);
+	auto sng = std::static_pointer_cast<VSRG::Song>(MySong);
+	GameState::GetInstance().SetDifficulty(sng->Difficulties[difindex], 0);
 
     Animations->DoEvent("OnSelect", 1);
     TransitionTime = Animations->GetEnv()->GetFunctionResultF();
@@ -235,7 +225,6 @@ void ScreenSelectMusic::OnSongChange(std::shared_ptr<Game::Song> MySong, uint8_t
 
     if (MySong)
     {
-        GameState::GetInstance().SetSelectedSong(MySong);
         Animations->DoEvent("OnSongChange");
 
         PreviewWaitTime = 1;
@@ -423,11 +412,9 @@ bool ScreenSelectMusic::HandleInput(int32_t key, KeyEventType code, bool isMouse
             break;
         case KT_Left:
 			Game::SongWheel::GetInstance().PrevDifficulty();
-            //GameState::GetInstance().SetDifficulty(Game::SongW, 0);
             break;
         case KT_Right:
 			Game::SongWheel::GetInstance().NextDifficulty();
-            //GameState::GetInstance().SetDifficulty();
             break;
 		default:
 			break;
@@ -447,11 +434,13 @@ bool ScreenSelectMusic::HandleScrollInput(double xOff, double yOff)
             return true;
     }
 
+	if (IsTransitioning) return false;
+
 	Animations->HandleScrollInput(xOff, yOff);
 	return Game::SongWheel::GetInstance().HandleScrollInput(xOff, yOff);
 }
 
-void ScreenSelectMusic::TransformItem(int Item, std::shared_ptr<Game::Song> Song, bool IsSelected, int Index)
+void ScreenSelectMusic::TransformItem(int Item, std::shared_ptr<Game::VSRG::Song> Song, bool IsSelected, int Index)
 {
     if (Animations->GetEnv()->CallFunction("TransformItem", 4))
     {
@@ -463,7 +452,7 @@ void ScreenSelectMusic::TransformItem(int Item, std::shared_ptr<Game::Song> Song
     }
 }
 
-void ScreenSelectMusic::TransformString(int Item, std::shared_ptr<Game::Song> Song, bool IsSelected, int Index, std::string text)
+void ScreenSelectMusic::TransformString(int Item, std::shared_ptr<Game::VSRG::Song> Song, bool IsSelected, int Index, std::string text)
 {
     if (Animations->GetEnv()->CallFunction("TransformString", 5))
     {

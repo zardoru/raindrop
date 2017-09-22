@@ -1,0 +1,18 @@
+{
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**.dll": true,
+        "**.db": true,
+        "**/xcode":true,
+        "**/release":true,
+        "**/songs":true,
+        "**/debug":true,
+        "**/msvc":true,
+        "**/lib":true,
+        "**/src/ext":true
+    }
+}

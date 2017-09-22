@@ -209,7 +209,7 @@ namespace Engine
         {
             auto npath = GameState::GetInstance().GetSkinFile(path.CString());
 #ifndef _WIN32
-            FILE* F = fopen(Utility::Narrow(npath.wstring()).c_str(), "r");
+            FILE* F = fopen(Utility::ToU8(npath.wstring()).c_str(), "r");
 #else
 			FILE* F = _wfopen(npath.c_str(), L"r");
 #endif

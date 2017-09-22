@@ -11,8 +11,9 @@ namespace Game {
 			use_w0_for_ex2 = false;
 
 			rank_pts = 0;
-			use_bbased = false;
+			use_o2jam = false;
 			avg_hit = 0;
+			hit_variance = 0;
 
 			pacemaker_texts[PMT_F] = "F";
 			pacemaker_texts[PMT_E] = "E";
@@ -103,20 +104,21 @@ namespace Game {
 			setMissDecrement(0.08);
 			setEarlyMissDecrement(0.02);
 
+			memset(judgment_time, 0, sizeof(judgment_time));
 			judge_window_scale = 1.00;
-			set_timing_windows();
+			setBMSTimingWindows();
 		}
 
-		void ScoreKeeper::set_beat_timing_windows()
+		void ScoreKeeper::setO2JamBeatTimingWindows()
 		{
 			// This in beats.
 			double o2jamTimingAmt[] =
 			{
-				0.664 * 0.1, // raindrop!o2jam extension: XCOOL
-				0.664 * 0.2, // COOL threshold
-				0.664 * 0.5, // GOOD threshold
-				0.664 * 0.8, //  BAD threshold
-				0.664 // MISS threshold
+				O2_WINDOW * 0.1, // raindrop!o2jam extension: XCOOL
+				O2_WINDOW * 0.2, // COOL threshold
+				O2_WINDOW * 0.5, // GOOD threshold
+				O2_WINDOW * 0.8, //  BAD threshold
+				O2_WINDOW // MISS threshold
 			};
 
 			judgment_time[SKJ_W0] = o2jamTimingAmt[0];
@@ -128,17 +130,18 @@ namespace Game {
 			earlymiss_threshold = miss_threshold = o2jamTimingAmt[4];
 		}
 
-		void ScoreKeeper::set_timing_windows()
+		void ScoreKeeper::setBMSTimingWindows()
 		{
-			double JudgmentValues[] = { 6.4, 16, 40, 100, 250, 625 };
+			// double JudgmentValues[] = { 6.4, 16, 40, 100, 250, -1, 625 };
+			double JudgmentValues[] = { 8.8, 22, 55, 137.5, 250, -1, 625 };
 
 			miss_threshold = 250;
-			earlymiss_threshold = 1250;
+			earlymiss_threshold = 625;
 
 			for (auto i = 0; i < sizeof(JudgmentValues) / sizeof(double); i++)
 				judgment_time[i] = JudgmentValues[i] * judge_window_scale;
 
-			for (auto i = 0; i < 9; i++)
+			for (auto i = 0; i < sizeof(judgment_amt) / sizeof(double); i++)
 				judgment_amt[i] = 0;
 
 			for (auto i = -127; i < 128; ++i)
@@ -149,15 +152,27 @@ namespace Game {
 		{
 			use_w0 = true; // if chart has OD, use osu!mania scoring.
 			use_w0_for_ex2 = true;
-
-			double JudgmentValues[] = { 16, 34, 67, 97, 121, 158 };
+			
+			/*
+			double JudgmentValues[] = { 16, 34, 67, 97, 121, -1, 158 };
 
 			miss_threshold = 121 + (10 - od) * 3;
-			earlymiss_threshold = 158 + (10 - od) * 3;
+			// earlymiss_threshold = 158 + (10 - od) * 3;
 
 			judgment_time[SKJ_W0] = JudgmentValues[SKJ_W0];
 			for (int i = 1; i < sizeof(JudgmentValues) / sizeof(double); i++)
 				judgment_time[i] = JudgmentValues[i] + (10 - od) * 3;
+
+			*/
+
+			double JudgmentValues[] = { 16, 64, 97, 127, 151, -1, 188 };
+
+			miss_threshold = 188 - od * 3;
+			earlymiss_threshold = miss_threshold;
+
+			judgment_time[SKJ_W0] = JudgmentValues[SKJ_W0];
+			for (int i = 1; i < sizeof(JudgmentValues) / sizeof(double); i++)
+				judgment_time[i] = JudgmentValues[i] - od * 3;
 
 			for (int i = 0; i < 9; i++)
 				judgment_amt[i] = 0;
@@ -170,15 +185,15 @@ namespace Game {
 		{
 			// Ridiculous is included: J7 Marvelous.
 			// No early miss threshold
-			double JudgmentValues[] = { 11.25, 22.5, 45, 90, 135, 135 };
+			double JudgmentValues[] = { 11.25, 22.5, 45, 90, 135, 180, 180 };
 
-			miss_threshold = 135;
-			earlymiss_threshold = 135;
+			miss_threshold = 180;
+			earlymiss_threshold = 180;
 			for (int i = 0; i < sizeof(JudgmentValues) / sizeof(double); i++)
 				judgment_time[i] = JudgmentValues[i];
 		}
 
-		void ScoreKeeper::set_manual_w0(bool on) { use_w0 = on; } // make a config option
+		void ScoreKeeper::setUseW0(bool on) { use_w0 = on; } // make a config option
 
 		ScoreKeeper::ScoreKeeper()
 		{
@@ -189,13 +204,15 @@ namespace Game {
 		{
 			init();
 			this->judge_window_scale = judge_window_scale;
-			set_timing_windows();
+			setBMSTimingWindows();
 		}
 
-		void ScoreKeeper::setLifeTotal(double total)
+		void ScoreKeeper::setLifeTotal(double total, double multiplier)
 		{
-			if (total != -1) lifebar_total = total;
-			else lifebar_total = std::max(260.0, 7.605 * max_notes / (6.5 + 0.01 * max_notes));
+			double effmul = isnan(multiplier) ? 1 : multiplier;
+
+			if (total != -1 && isnan(multiplier) && !isnan(total)) lifebar_total = total;
+			else lifebar_total = std::max(260.0, 7.605 * max_notes / (6.5 + 0.01 * max_notes)) * effmul;
 
 			// recalculate groove lifebar increments.
 			lifebar_easy_increment = Clamp(lifebar_total / max_notes / 50.0, 0.004, 0.8);
@@ -231,32 +248,34 @@ namespace Game {
 
 			if (rank == -100) // We assume we're dealing with beats-based timing.
 			{
-				use_bbased = true;
+				use_o2jam = true;
 				use_w0 = false;
-				set_beat_timing_windows();
+				setO2JamBeatTimingWindows();
 				return;
 			}
 
-			use_bbased = false;
+			use_o2jam = false;
+
+			// old values: 0.5, 0.75, 1.0, 1.5, 2.0
 			switch (rank) {
 			case 0:
-				judge_window_scale = 0.50; break;
+				judge_window_scale = 8.0 / 11.0; break;
 			case 1:
-				judge_window_scale = 0.75; break;
+				judge_window_scale = 9.0 / 11.0; break;
 			case 2:
 				judge_window_scale = 1.00; break;
 			case 3:
-				judge_window_scale = 1.50; break;
+				judge_window_scale = 13.0 / 11.0; break;
 			case 4:
-				judge_window_scale = 2.00; break;
+				judge_window_scale = 16.0 / 11.0; break;
 			}
-			set_timing_windows();
+			setBMSTimingWindows();
 		}
 
 		void ScoreKeeper::setJudgeScale(double scale)
 		{
 			judge_window_scale = scale;
-			set_timing_windows();
+			setBMSTimingWindows();
 		}
 	}
 }

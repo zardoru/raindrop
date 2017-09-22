@@ -16,7 +16,7 @@ namespace Game {
 			luabridge::getGlobalNamespace(L)
 				.beginClass <ScoreKeeper>("ScoreKeeper")
 				.addProperty("MaxAccuracy", &ScoreKeeper::getAccMax)
-				.addProperty("EarlyMissCutoffMS", &ScoreKeeper::getEarlyMissCutoff)
+				.addProperty("EarlyMissCutoffMS", &ScoreKeeper::getEarlyMissCutoffMS)
 				.addProperty("UsesW0", &ScoreKeeper::usesW0)
 				.addProperty("MissCutoffMS", &ScoreKeeper::getMissCutoffMS)
 				.addProperty("Rank", &ScoreKeeper::getRank)
@@ -28,7 +28,9 @@ namespace Game {
 				.addProperty("HistogramPointCount", &ScoreKeeper::getHistogramPointCount)
 				.addProperty("HistogramHighestPoint", &ScoreKeeper::getHistogramHighestPoint)
 				.addProperty("AvgHit", &ScoreKeeper::getAvgHit)
+				.addProperty("StDev", &ScoreKeeper::getHitStDev)
 				.addProperty("MaxNotes", &ScoreKeeper::getMaxNotes)
+				.addFunction("GetJudgmentWindow", &ScoreKeeper::getJudgmentWindow)
 				.addFunction("GetHistogramPoint", &ScoreKeeper::getHistogramPoint)
 				.addFunction("GetJudgmentCount", &ScoreKeeper::getJudgmentCount)
 				.addFunction("GetScore", &ScoreKeeper::getScore)
@@ -38,54 +40,54 @@ namespace Game {
 				.addFunction("GetLifebarAmount", &ScoreKeeper::getLifebarAmount)
 				.endClass();
 
-#define cns(x) lua_pushinteger(L,x); lua_setglobal(L, #x);
-			cns(SKJ_MISS);
-			cns(SKJ_W0);
-			cns(SKJ_W1);
-			cns(SKJ_W2);
-			cns(SKJ_W3);
-			cns(SKJ_W4);
-			cns(SKJ_W5);
-			cns(ST_SCORE);
-			cns(ST_COMBO);
-			cns(ST_DP);
-			cns(ST_EX);
-			cns(ST_EXP);
-			cns(ST_EXP3);
-			cns(ST_IIDX);
-			cns(ST_JB2);
-			cns(ST_LR2);
-			cns(ST_MAX_COMBO);
-			cns(ST_NOTES_HIT);
-			cns(ST_OSUMANIA);
-			cns(ST_O2JAM);
-			cns(PST_RANK);
-			cns(PST_ACC);
-			cns(PST_EX);
-			cns(PST_NH);
-			cns(PST_OSU);
-			cns(LT_GROOVE);
-			cns(LT_SURVIVAL);
-			cns(LT_EXHARD);
-			cns(LT_DEATH);
-			cns(LT_EASY);
-			cns(LT_O2JAM);
-			cns(LT_STEPMANIA);
-			cns(LT_NORECOV);
-			cns(LT_BATTERY);
-			cns(PMT_AAA);
-			cns(PMT_AA);
-			cns(PMT_A);
-			cns(PMT_B);
-			cns(PMT_C);
-			cns(PMT_D);
-			cns(PMT_E);
-			cns(PMT_F);
-			cns(TI_NONE);
-			cns(TI_BMS);
-			cns(TI_OSUMANIA);
-			cns(TI_O2JAM);
-			cns(TI_STEPMANIA);
+#define Constant(x) lua_pushinteger(L,x); lua_setglobal(L, #x);
+			Constant(SKJ_MISS);
+			Constant(SKJ_W0);
+			Constant(SKJ_W1);
+			Constant(SKJ_W2);
+			Constant(SKJ_W3);
+			Constant(SKJ_W4);
+			Constant(SKJ_W5);
+			Constant(ST_SCORE);
+			Constant(ST_COMBO);
+			Constant(ST_DP);
+			Constant(ST_EX);
+			Constant(ST_EXP);
+			Constant(ST_EXP3);
+			Constant(ST_IIDX);
+			Constant(ST_JB2);
+			Constant(ST_LR2);
+			Constant(ST_MAX_COMBO);
+			Constant(ST_NOTES_HIT);
+			Constant(ST_OSUMANIA);
+			Constant(ST_O2JAM);
+			Constant(PST_RANK);
+			Constant(PST_ACC);
+			Constant(PST_EX);
+			Constant(PST_NH);
+			Constant(PST_OSU);
+			Constant(LT_GROOVE);
+			Constant(LT_SURVIVAL);
+			Constant(LT_EXHARD);
+			Constant(LT_DEATH);
+			Constant(LT_EASY);
+			Constant(LT_O2JAM);
+			Constant(LT_STEPMANIA);
+			Constant(LT_NORECOV);
+			Constant(LT_BATTERY);
+			Constant(PMT_AAA);
+			Constant(PMT_AA);
+			Constant(PMT_A);
+			Constant(PMT_B);
+			Constant(PMT_C);
+			Constant(PMT_D);
+			Constant(PMT_E);
+			Constant(PMT_F);
+			Constant(TI_NONE);
+			Constant(TI_BMS);
+			Constant(TI_OSUMANIA);
+			Constant(TI_O2JAM);
+			Constant(TI_STEPMANIA);
 		}
 	}
 }

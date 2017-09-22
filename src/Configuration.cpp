@@ -1,7 +1,7 @@
 #include "pch.h"
 
-#include "GameGlobal.h"
-#include "Configuration.h"
+
+
 
 #define SI_CONVERT_GENERIC
 #include "GameState.h"
@@ -14,6 +14,8 @@ using namespace Configuration;
 LuaManager *SkinCfgLua;
 CSimpleIniA *Config;
 int IsWidescreen;
+std::string ConfigFile = "config.ini";
+
 
 const std::string GlobalNamespace = "Global";
 
@@ -28,11 +30,18 @@ public:
 
 ConfigurationException CfgNotLoaded("Configuration not loaded yet.");
 
+void Configuration::SetConfigFile(std::string cfg)
+{
+    ConfigFile = cfg;
+}
+
 void Configuration::Initialize()
 {
     Config = new CSimpleIniA;
-    Config->LoadFile("config.ini");
+    Config->LoadFile(ConfigFile.c_str());
     SkinCfgLua = new LuaManager();
+
+	AddRDLuaGlobal(SkinCfgLua);
 
     if (Configuration::GetConfigs("Skin").length())
         GameState::GetInstance().SetSkin(Configuration::GetConfigs("Skin"));
@@ -40,9 +49,7 @@ void Configuration::Initialize()
     IsWidescreen = Configuration::GetConfigf("Widescreen");
 
     SkinCfgLua->SetGlobal("Widescreen", IsWidescreen);
-    SkinCfgLua->SetGlobal("ScreenWidth", ScreenWidth);
-    SkinCfgLua->SetGlobal("ScreenHeight", ScreenHeight);
-
+    
 	GameState::GetInstance().InitializeLua(SkinCfgLua->GetState());
     SkinCfgLua->RunScript(GameState::GetInstance().GetSkinFile("skin.lua"));
 
@@ -52,7 +59,7 @@ void Configuration::Initialize()
 void Configuration::Cleanup()
 {
 	if (Config)
-		Config->SaveFile("config.ini");
+		Config->SaveFile(ConfigFile.c_str());
 
     delete Config;
     delete SkinCfgLua;
@@ -230,18 +237,15 @@ bool Configuration::ListExists(std::string Name)
 
 uint32_t Configuration::CfgScreenHeight()
 {
-    if (IsWidescreen)
-        return ScreenHeightWidescreen;
-    else
-        return ScreenHeightDefault;
+	return ScreenHeightDefault;
 }
 
 uint32_t Configuration::CfgScreenWidth()
 {
-    if (IsWidescreen == 1)
-        return ScreenWidthWidescreen;
-    else if (IsWidescreen == 2)
-        return 1230;
-    else
-        return ScreenWidthDefault;
+    if (IsWidescreen == 1) // 16:9
+        return 16.0 / 9.0 * ScreenHeightDefault;
+    else if (IsWidescreen == 2) // 16:10
+        return 16.0 / 10.0 * ScreenHeightDefault;
+    else 
+        return 4.0 / 3.0 * ScreenHeightDefault;
 }

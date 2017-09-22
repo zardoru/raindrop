@@ -2,6 +2,8 @@
 
 namespace Configuration
 {
+
+	void SetConfigFile(std::string cfgfile);
     void Initialize();
 	void Reload();
     std::string GetConfigs(std::string Name, std::string Namespace = "");
@@ -30,16 +32,17 @@ namespace Configuration
 
 class ConfigurationVariable
 {
+protected:
 	std::string nm, ns;
 public:
 	ConfigurationVariable(std::string _nm, std::string _ns = "") : nm(_nm), ns(_ns) {};
 	~ConfigurationVariable() = default;
-	std::string str() const
+	virtual std::string str() const
 	{
 		return Configuration::GetConfigs(nm, ns);
 	};
 
-	float flt() const
+	virtual float flt() const
 	{
 		return Configuration::GetConfigf(nm, ns);
 	}
@@ -69,6 +72,20 @@ public:
 		std::map<std::string, std::string> out;
 		Configuration::GetConfigListS(nm, out, ns);
 		return out;
+	}
+};
+
+class SkinMetric : public ConfigurationVariable {
+public:
+	SkinMetric(std::string _nm, std::string _ns = "") : ConfigurationVariable(_nm, _ns) {}
+	std::string str() const override
+	{ 
+		return Configuration::GetSkinConfigs(nm, ns);
+	}
+
+	float flt() const override
+	{
+		return Configuration::GetSkinConfigf(nm, ns);
 	}
 };
 

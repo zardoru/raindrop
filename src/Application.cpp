@@ -3,7 +3,7 @@
 #include "GameGlobal.h"
 #include "Logging.h"
 #include "Screen.h"
-#include "Configuration.h"
+
 #include "Audio.h"
 #include "Application.h"
 #include "Sprite.h"
@@ -26,6 +26,8 @@
 #include "ScreenCustom.h"
 
 #include "ScreenVideoTest.h"
+
+#include "TruetypeFont.h"
 
 void RunRaindropTests();
 bool Auto = false;
@@ -57,7 +59,7 @@ void Application::ParseArgs(int argc, char **argv)
         ("output,o", po::value<std::string>(),
         "Output File")
         ("gencache,c",
-        "Generate Cache")
+        "Generate Song Cache")
         ("format,g", po::value<std::string>(),
         "Target Format")
         ("measure,m", po::value<unsigned>()->default_value(0),
@@ -73,6 +75,10 @@ void Application::ParseArgs(int argc, char **argv)
         ("L,L", po::value<std::string>(),
         "Load Custom Scene")
 		("test,T", "Run test suite")
+		("fontcache,F", po::value<std::string>(),
+        "Generate Font Cache")
+        ("config,x", po::value<std::string>(), 
+        "Set config file")
         ;
 
     po::variables_map vm;
@@ -109,10 +115,20 @@ void Application::ParseArgs(int argc, char **argv)
         OutFile = vm["output"].as<std::string>();
     }
 
+    if (vm.count("config"))
+    {
+        Configuration::SetConfigFile(vm["config"].as<std::string>());
+    }
+
     if (vm.count("gencache"))
     {
-        RunMode = MODE_GENCACHE;
+        RunMode = MODE_GENSONGCACHE;
     }
+
+	if (vm.count("fontcache")) {
+		RunMode = MODE_GENFONTCACHE;
+		InFontTextFile = vm["fontcache"].as<std::string>();
+	}
 
     if (vm.count("format"))
     {
@@ -242,14 +258,12 @@ void Application::SetupPreviewMode()
     // Load the song.
     auto song = LoadSong7KFromFilename(InFile);
 
+
     if (!song || !song->Difficulties.size())
     {
-        Log::Printf("File %s could not be loaded for preview. (%d/%d)\n", InFile.c_str(), (long long int)song.get(), song ? song->Difficulties.size() : 0);
+        Log::Printf("File %ls could not be loaded for preview. (ptr %d/diffcnt %d)\n", InFile.c_str(), (long long int)song.get(), song ? song->Difficulties.size() : 0);
         return;
     }
-
-    // Avoid a crash...
-    GameState::GetInstance().SetSelectedSong(song);
 
     // Create loading screen and gameplay screen.
     auto game = std::make_shared<Game::VSRG::ScreenGameplay>();
@@ -259,13 +273,15 @@ void Application::SetupPreviewMode()
 	song->SongDirectory = std::filesystem::absolute(InFile.parent_path());
 
 	/*
-    Game::VSRG::Parameters param;
+    Game::VSRG::PlayscreenParameters param;
 
     param.Upscroll = Upscroll;
     param.StartMeasure = Measure;
     param.Preloaded = true;
     param.Auto = Auto;
-	*/
+    */
+    
+    GameState::GetInstance().SetSelectedSong(song);
 	GameState::GetInstance().GetParameters(0)->Auto = Auto;
     game->Init(song);
     LoadScreen->Init();
@@ -401,7 +417,7 @@ void Application::Run()
 
         RunLoop = false;
     }
-    else if (RunMode == MODE_GENCACHE)
+    else if (RunMode == MODE_GENSONGCACHE)
     {
         Log::Printf("Generating cache...\n");
         Game::GameState::GetInstance().Initialize();
@@ -429,7 +445,15 @@ void Application::Run()
 		auto s = Utility::ToU8(InFile.wstring());
         auto scr = std::make_shared<ScreenCustom>(GameState::GetInstance().GetSkinFile(s));
         Game = scr;
-    }
+	}
+	else if (RunMode == MODE_GENFONTCACHE)
+	{
+		Log::Printf("Generating font cache for provided file...\n");
+
+		TruetypeFont::GenerateFontCache(InFontTextFile, InFile);
+
+		RunLoop = false;
+	}
 
     Log::Printf("Time: %fs\n", glfwGetTime() - T1);
 

@@ -14,10 +14,9 @@ namespace Renderer {
 		U_COLOR,
 		U_INVERT,
 		U_HIDDEN,
-		U_HIDLOW,
-		U_HIDHIGH,
-		U_HIDFAC,
-		U_HIDSUM,
+		U_HIDCENTER,
+		U_HIDSIZE,
+		U_HIDFLSIZE,
 		U_REPCOLOR,
 		U_BTRANSP,
 		NUM_SHADERVARS
@@ -60,7 +59,7 @@ namespace Renderer {
 	public:
 		static bool Compile();
 		static void UpdateProjection(Mat4 proj);
-		static void Bind();
+		static void StaticBind();
 		static uint32_t GetUniform(uint32_t uni);
 
 		static void SetColor(float r, float g, float b, float a);

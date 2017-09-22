@@ -7,7 +7,7 @@
 #include "Sprite.h"
 #include "LuaManager.h"
 #include "SceneEnvironment.h"
-#include "Configuration.h"
+
 #include "LuaBridge.h"
 
 #include "Font.h"
@@ -166,7 +166,8 @@ struct O2DProxy
         return obj->GetRotation();
     }
 
-    static Transformation getChainTransformation(Sprite const* obj)
+	template <class T>
+    static Transformation getChainTransformation(T const* obj)
     {
         return Transformation();
     }
@@ -211,7 +212,8 @@ struct O2DProxy
         obj->SetPositionY(param);
     }
 
-    static void setChainTransformation(Sprite *obj, Transformation* param)
+	template <class T>
+    static void setChainTransformation(T *obj, Transformation* param)
     {
         obj->ChainTransformation(param);
     }
@@ -265,25 +267,7 @@ public:
 
 void DefineSpriteInterface(LuaManager* anim_lua)
 {
-    anim_lua->AppendPath("./?;./?.lua");
-    anim_lua->AppendPath(GameState::GetInstance().GetScriptsDirectory() + "?");
-    anim_lua->AppendPath(GameState::GetInstance().GetScriptsDirectory() + "?.lua");
-
-    anim_lua->AppendPath(GameState::GetInstance().GetSkinPrefix() + "?");
-    anim_lua->AppendPath(GameState::GetInstance().GetSkinPrefix() + "?.lua");
-
-    // anim_lua->AppendPath(GameState::GetFallbackSkinPrefix());
-    anim_lua->Register(LuaAnimFuncs::Require, "skin_require");
-    anim_lua->Register(LuaAnimFuncs::FallbackRequire, "fallback_require");
-
-    // anim_lua->NewMetatable(LuaAnimFuncs::SpriteMetatable);
-    anim_lua->Register(LuaAnimFuncs::GetSkinConfigF, "GetConfigF");
-    anim_lua->Register(LuaAnimFuncs::GetSkinConfigS, "GetConfigS");
-    anim_lua->Register(LuaAnimFuncs::GetSkinDirectory, "GetSkinDirectory");
-    anim_lua->Register(LuaAnimFuncs::GetSkinFile, "GetSkinFile");
-
-    anim_lua->SetGlobal("ScreenHeight", ScreenHeight);
-    anim_lua->SetGlobal("ScreenWidth", ScreenWidth);
+	AddRDLuaGlobal(anim_lua);
 
     // Animation constants
     anim_lua->SetGlobal("EaseNone", Animation::EaseLinear);
@@ -348,9 +332,32 @@ void DefineSpriteInterface(LuaManager* anim_lua)
         .q(Height)
         .q(X)
         .q(Y)
-        .q(ChainTransformation)
+        .addProperty("ChainTransformation", &O2DProxy::getChainTransformation<Sprite>, &O2DProxy::setChainTransformation<Sprite>)
         .addProperty("Texture", GetImage, SetImage) // Special for setting image.
         .endClass();
+}
+
+void AddRDLuaGlobal(LuaManager * anim_lua)
+{
+	anim_lua->AppendPath("./?;./?.lua");
+	anim_lua->AppendPath(GameState::GetInstance().GetScriptsDirectory() + "?");
+	anim_lua->AppendPath(GameState::GetInstance().GetScriptsDirectory() + "?.lua");
+
+	anim_lua->AppendPath(GameState::GetInstance().GetSkinPrefix() + "?");
+	anim_lua->AppendPath(GameState::GetInstance().GetSkinPrefix() + "?.lua");
+
+	// anim_lua->AppendPath(GameState::GetFallbackSkinPrefix());
+	anim_lua->Register(LuaAnimFuncs::Require, "skin_require");
+	anim_lua->Register(LuaAnimFuncs::FallbackRequire, "fallback_require");
+
+	// anim_lua->NewMetatable(LuaAnimFuncs::SpriteMetatable);
+	anim_lua->Register(LuaAnimFuncs::GetSkinConfigF, "GetConfigF");
+	anim_lua->Register(LuaAnimFuncs::GetSkinConfigS, "GetConfigS");
+	anim_lua->Register(LuaAnimFuncs::GetSkinDirectory, "GetSkinDirectory");
+	anim_lua->Register(LuaAnimFuncs::GetSkinFile, "GetSkinFile");
+
+	anim_lua->SetGlobal("ScreenHeight", ScreenHeight);
+	anim_lua->SetGlobal("ScreenWidth", ScreenWidth);
 }
 
 // New lua interface.
@@ -393,7 +400,7 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
         .addFunction("GetLength", &Font::GetHorizontalLength)
         .endClass()
         .deriveClass <TruetypeFont, Font>("TruetypeFont")
-        .addConstructor <void(*) (std::string, float)>()
+        .addConstructor <void(*) (std::string)>()
         .endClass()
         .deriveClass <BitmapFont, Font>("BitmapFont")
         .addConstructor<void(*)()>()
@@ -401,11 +408,15 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
         .addFunction("LoadBitmapFont", LoadBmFont)
         .endNamespace();
 
-    luabridge::getGlobalNamespace(AnimLua->GetState())
-        .deriveClass<GraphicalString, Sprite>("StringObject2D")
-        .addConstructor <void(*) ()>()
-        .addProperty("Font", &GraphicalString::GetFont, &GraphicalString::SetFont)
-        .addProperty("Text", &GraphicalString::GetText, &GraphicalString::SetText)
+	luabridge::getGlobalNamespace(AnimLua->GetState())
+		.deriveClass<GraphicalString, Sprite>("StringObject2D")
+		.addConstructor <void(*) ()>()
+		.addProperty("Font", &GraphicalString::GetFont, &GraphicalString::SetFont)
+		.addProperty("Text", &GraphicalString::GetText, &GraphicalString::SetText)
+		.addProperty("FontSize", &GraphicalString::GetFontSize, &GraphicalString::SetFontSize)
+		.addProperty("TextSize", &GraphicalString::GetTextSize)
+		.addProperty("KernScale", &GraphicalString::GetKerningScale, &GraphicalString::SetKerningScale)
+		.addProperty("ChainTransformation", &O2DProxy::getChainTransformation<GraphicalString>, &O2DProxy::setChainTransformation<GraphicalString>)
         .endClass();
 }
 

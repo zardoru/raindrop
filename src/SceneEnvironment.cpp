@@ -252,9 +252,9 @@ SceneEnvironment::SceneEnvironment(const char* ScreenName, bool initUI)
         InitializeUI();
 }
 
-TruetypeFont* SceneEnvironment::CreateTTF(const char* Dir, float Size)
+TruetypeFont* SceneEnvironment::CreateTTF(const char* Dir)
 {
-    TruetypeFont *Ret = new TruetypeFont(Dir, Size);
+    TruetypeFont *Ret = new TruetypeFont(Dir);
     ManagedFonts.push_back(Ret);
     return Ret;
 }
@@ -308,7 +308,7 @@ SceneEnvironment::~SceneEnvironment()
     ManagedFonts.clear();
 
 	if (RocketContext) {
-		lua_gc(Rocket::Core::Lua::Interpreter::GetLuaState(), LUA_GCCOLLECT, 0);
+		// lua_gc(Rocket::Core::Lua::Interpreter::GetLuaState(), LUA_GCCOLLECT, 0);
 
 		/*if (Doc && Doc->GetReferenceCount()) {
 			Doc->RemoveReference();

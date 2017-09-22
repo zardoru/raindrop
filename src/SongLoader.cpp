@@ -5,11 +5,9 @@
 
 #include "Song.h"
 #include "SongDatabase.h"
-#include "SongDC.h"
 #include "Song7K.h"
 #include "SongLoader.h"
 #include "NoteLoader7K.h"
-#include "NoteLoaderDC.h"
 
 using namespace Game;
 
@@ -33,68 +31,6 @@ struct loaderVSRGEntry_t
 SongLoader::SongLoader(SongDatabase* Database)
 {
     DB = Database;
-}
-
-void SongLoader::LoadSongDCFromDir(std::filesystem::path songPath, std::vector<dotcur::Song*> &VecOut)
-{
-#ifdef DOTCUR_ENABLED
-    bool FoundDCF = false;
-	auto Listing = Utility::GetFileListing(songPath);
-
-    // First, search for .dcf files.
-    for (auto i: Listing)
-    {
-		if (i.extension() != ".dcf") continue;
-
-        // found a .dcf- load it.
-        dotcur::Song *New = NoteLoaderDC::LoadObjectsFromFile(i, songPath);
-        if (New)
-        {
-            New->SongDirectory = songPath;
-            New->ChartFilename = i;
-            VecOut.push_back(New);
-            FoundDCF = true;
-        }
-    }
-
-    // If we didn't find any chart, add this song to the list as edit-only.
-    if (!FoundDCF && (Configuration::GetConfigf("OggListing") != 0))
-    {
-        dotcur::Song *NewS = nullptr;
-        std::string PotentialBG, PotentialBGRelative;
-
-		Listing = Utility::GetFileListing(songPath);
-
-		for (auto i : Listing)
-        {
-			std::string Ext = i.extension().string();
-            if (Ext == ".ogg")
-            {
-                bool UsesFilename = false;
-                NewS = new dotcur::Song();
-                NewS->SongDirectory = songPath;
-                NewS->SongName = i.filename().string();
-                UsesFilename = true;
-
-                NewS->SongFilename = i.filename().string();
-				// todo: dcf
-
-                // NewS->ChartFilename = UsesFilename ? Utility::RemoveExtension(NewS->SongName) + ".dcf" : NewS->SongName + ".dcf";
-                VecOut.push_back(NewS);
-            }
-            else if (Ext == ".png" || Ext == ".jpg")
-            {
-				PotentialBG = i.string();
-                PotentialBGRelative = i.filename().string();
-            }
-        }
-
-        if (NewS)
-        {
-            NewS->BackgroundFilename = PotentialBG;
-        }
-    }
-#endif
 }
 
 bool VSRGValidExtension(std::wstring Ext)
@@ -205,7 +141,7 @@ std::shared_ptr<Game::VSRG::Song> LoadSong7KFromFilename(std::filesystem::path F
     return nullptr;
 }
 
-void VSRGUpdateDatabaseDifficulties(SongDatabase* DB, Game::VSRG::Song *New)
+void PushSongToDatabase(SongDatabase* DB, Game::VSRG::Song *New)
 {
     int ID;
 
@@ -213,19 +149,24 @@ void VSRGUpdateDatabaseDifficulties(SongDatabase* DB, Game::VSRG::Song *New)
         return;
 
     // All difficulties have the same song ID, so..
-    ID = DB->GetSongIDForFile(New->Difficulties.at(0)->Filename, New);
+    ID = DB->GetSongIDForFile(New->Difficulties.at(0)->Filename);
+	if (ID == -1) {
+		ID = DB->AddSongToDatabase(New);
+	}
+
+	New->ID = ID;
 
     // Do the update, with the either new or old difficulty.
     for (auto k = New->Difficulties.begin();
     k != New->Difficulties.end();
         ++k)
     {
-        DB->AddDifficulty(ID, (*k)->Filename, k->get(), MODE_VSRG);
+        DB->AddDifficulty(ID, (*k)->Filename, k->get());
         (*k)->Destroy();
     }
 }
 
-void PushVSRGSong(std::vector<Game::VSRG::Song*> &VecOut, Game::VSRG::Song* Sng)
+void AddSongToList(std::vector<Game::VSRG::Song*> &VecOut, Game::VSRG::Song* Sng)
 {
     if (Sng->Difficulties.size())
         VecOut.push_back(Sng);
@@ -350,8 +291,8 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<G
 					BMSSong = new Game::VSRG::Song;
 				} else
 				{
-					VSRGUpdateDatabaseDifficulties(DB, BMSSong);
-					PushVSRGSong(VecOut, BMSSong);
+					PushSongToDatabase(DB, BMSSong);
+					AddSongToList(VecOut, BMSSong);
 					BMSSong = new Game::VSRG::Song;
 				}
             }
@@ -359,8 +300,8 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<G
             if (Ext == L".ojn")
             {
                 LoadSong7KFromFilename(File, SongDirectory, OJNSong);
-                VSRGUpdateDatabaseDifficulties(DB, OJNSong);
-                PushVSRGSong(VecOut, OJNSong);
+                PushSongToDatabase(DB, OJNSong);
+                AddSongToList(VecOut, OJNSong);
                 OJNSong = new VSRG::Song;
                 OJNSong->SongDirectory = SongDirectory;
             }
@@ -371,8 +312,8 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<G
             if (Ext == L".sm" || Ext == L".ssc")
             {
                 LoadSong7KFromFilename(File, SongDirectory, smSong);
-                VSRGUpdateDatabaseDifficulties(DB, smSong);
-                PushVSRGSong(VecOut, smSong);
+                PushSongToDatabase(DB, smSong);
+                AddSongToList(VecOut, smSong);
                 smSong = new VSRG::Song;
                 smSong->SongDirectory = SongDirectory;
             }
@@ -382,18 +323,18 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<G
         for (auto i = bmsk.begin();
         i != bmsk.end(); ++i)
         {
-            VSRGUpdateDatabaseDifficulties(DB, i->second);
-            PushVSRGSong(VecOut, i->second);
+            PushSongToDatabase(DB, i->second);
+            AddSongToList(VecOut, i->second);
         }
 
-        VSRGUpdateDatabaseDifficulties(DB, OJNSong);
-        PushVSRGSong(VecOut, OJNSong);
+        PushSongToDatabase(DB, OJNSong);
+        AddSongToList(VecOut, OJNSong);
 
-        VSRGUpdateDatabaseDifficulties(DB, osuSong);
-        PushVSRGSong(VecOut, osuSong);
+        PushSongToDatabase(DB, osuSong);
+        AddSongToList(VecOut, osuSong);
 
-        VSRGUpdateDatabaseDifficulties(DB, smSong);
-        PushVSRGSong(VecOut, smSong);
+        PushSongToDatabase(DB, smSong);
+        AddSongToList(VecOut, smSong);
     }
     else // We can reload from cache. We do this on a per-file basis.
     {
@@ -406,7 +347,7 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<G
             std::wstring Ext = File.extension().wstring();
             if (VSRGValidExtension(Ext))
             {
-                int CurrentID = DB->GetSongIDForFile(File, nullptr);
+                int CurrentID = DB->GetSongIDForFile(File);
                 if (CurrentID != ID)
                 {
                     ID = CurrentID;
@@ -430,25 +371,13 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<G
 				// make sure it's a well-formed directory on debug
 				assert(std::filesystem::exists(New->SongDirectory));
 
-				PushVSRGSong(VecOut, New);
+				AddSongToList(VecOut, New);
 				Log::Logf(" ok\n");
 			}
 			catch (std::exception &e) {
 				Log::Logf("Error loading from cache: %s\n", e.what());
 			}
         }
-    }
-}
-
-void SongLoader::GetSongListDC(std::vector<dotcur::Song*> &OutVec, std::filesystem::path Dir)
-{
-    std::vector <std::filesystem::path> Listing = Utility::GetFileListing(Dir);
-
-    for (auto i: Listing)
-    {
-        Log::Printf("%s... ", i.c_str());
-        LoadSongDCFromDir(i, OutVec);
-        Log::Printf("ok\n");
     }
 }
 
@@ -464,7 +393,7 @@ void SongLoader::GetSongList7K(std::vector<VSRG::Song*> &OutVec,std::filesystem:
     }
 }
 
-std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const Game::VSRG::Song* Meta, std::shared_ptr<Game::VSRG::Difficulty> &CurrentDiff, std::filesystem::path &FilenameOut, uint8_t &Index)
+std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const Game::VSRG::Song* Meta, std::shared_ptr<Game::VSRG::Difficulty> CurrentDiff, std::filesystem::path &FilenameOut, uint8_t &Index)
 {
     std::shared_ptr<VSRG::Song> Out;
 
@@ -482,7 +411,7 @@ std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const Game::VSRG::Song* Met
     bool DifficultyFound = false;
     for (auto k : Out->Difficulties)
     {
-        DB->AddDifficulty(Meta->ID, k->Filename, k.get(), MODE_VSRG);
+        DB->AddDifficulty(Meta->ID, k->Filename, k.get());
         if (k->ID == CurrentDiff->ID) // We've got a match; move onward.
         {
             CurrentDiff = k;

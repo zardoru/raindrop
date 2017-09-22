@@ -41,10 +41,9 @@ const char* fragShader = "#version 120\n"
 "uniform sampler2D tex;\n"
 "uniform bool inverted;\n"
 "uniform bool replaceColor;\n"
-"uniform float clampHSUnder;\n"
-"uniform float clampHSOver;\n"
-"uniform float clampFLSum;\n"
-"uniform float HFactor;\n"
+"uniform float hdcenter;\n"
+"uniform float flsize;\n"
+"uniform float hdsize;\n"
 "uniform bool BlackToTransparent;\n" // If true, transform r0 g0 b0 aX to a0.
 "uniform int HiddenLightning;\n"
 "\n"
@@ -55,7 +54,10 @@ const char* fragShader = "#version 120\n"
 "	 if (!replaceColor){\n"
 "		tex2D = texture2D(tex, texcoord);\n"
 "	 }else{"
-"		tex2D = vec4(1.0, 1.0, 1.0, texture2D(tex, texcoord).a);"
+"		float a = texture2D(tex, texcoord).a;"
+"		float r = 0.5;"
+"		float rw = fwidth(a);"
+"		tex2D = vec4(1.0, 1.0, 1.0, smoothstep(r - rw, r + rw, a));"
 "	 }"
 "	 if (inverted) {\n"
 "		tCol = vec4(1.0, 1.0, 1.0, tex2D.a*2) - tex2D * color;\n"
@@ -66,12 +68,15 @@ const char* fragShader = "#version 120\n"
 "			if (tCol.r == 0 && tCol.g == 0 && tCol.b == 0) tCol.a = 0;"
 "	 }"
 "	if (HiddenLightning > 0) {\n"
-"		float clmp = clamp(Pos_world.y, clampHSUnder, clampHSOver) + clampFLSum;\n"
-"		float ld;\n"
-"		if (HiddenLightning == 1) ld = 1 - clmp * HFactor;\n"
-"		else if (HiddenLightning == 2) ld = clmp * HFactor;\n"
-"		else { clmp = abs(clmp); ld = 1 - clmp * HFactor; } \n"
-"		gl_FragColor = vec4(tCol.rgb, tCol.a * clamp(ld, 0, 1));\n"
+"       float ld = 1;\n"
+"		if (HiddenLightning == 2) "
+"           ld = smoothstep(hdcenter - hdsize, hdcenter, Pos_world.y);\n"
+"		else if (HiddenLightning == 1) "
+"           ld = smoothstep(hdcenter, hdcenter - hdsize, Pos_world.y);\n"
+"		else { ld = smoothstep(hdcenter - flsize - hdsize / 2, hdcenter - flsize, Pos_world.y) * "
+"                   smoothstep(hdcenter + flsize + hdsize / 2, hdcenter + flsize, Pos_world.y);"
+" } \n"
+"		gl_FragColor = vec4(tCol.rgb, tCol.a * ld);\n"
 "	} else if (HiddenLightning == 0) {\n"
 "		gl_FragColor = tCol;\n"
 "	}\n"
@@ -152,15 +157,14 @@ namespace Renderer {
 		uniforms[U_COLOR] = glGetUniformLocation(mProgram, "color");
 		uniforms[U_INVERT] = glGetUniformLocation(mProgram, "inverted");
 		uniforms[U_HIDDEN] = glGetUniformLocation(mProgram, "HiddenLightning");
-		uniforms[U_HIDLOW] = glGetUniformLocation(mProgram, "clampHSUnder");
-		uniforms[U_HIDHIGH] = glGetUniformLocation(mProgram, "clampHSOver");
-		uniforms[U_HIDFAC] = glGetUniformLocation(mProgram, "HFactor");
-		uniforms[U_HIDSUM] = glGetUniformLocation(mProgram, "clampFLSum");
+		uniforms[U_HIDCENTER] = glGetUniformLocation(mProgram, "hdcenter");
+		uniforms[U_HIDSIZE] = glGetUniformLocation(mProgram, "hdsize");
+		uniforms[U_HIDFLSIZE] = glGetUniformLocation(mProgram, "flsize");
 		uniforms[U_REPCOLOR] = glGetUniformLocation(mProgram, "replaceColor");
 		uniforms[U_BTRANSP] = glGetUniformLocation(mProgram, "BlackToTransparent");
 
 
-		Bind();
+		StaticBind();
 
 		return true;
 	}
@@ -176,7 +180,7 @@ namespace Renderer {
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &proj[0][0]);
 	}
 
-	void DefaultShader::Bind() {
+	void DefaultShader::StaticBind() {
 		CHECKERR();
 		if (mLastShader != mProgram) {
 			mLastShader = mProgram;

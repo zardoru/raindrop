@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "GameGlobal.h"
+
 #include "GameState.h"
 #include "Screen.h"
 #include "SceneEnvironment.h"
@@ -35,7 +35,7 @@ public:
     }
 };
 
-ScreenLoading::ScreenLoading(std::shared_ptr<Screen> _Next) : Screen("ScreenLoading", nullptr)
+ScreenLoading::ScreenLoading(std::shared_ptr<Screen> _Next) : Screen("ScreenLoading", false)
 {
     Next = _Next;
     LoadThread = nullptr;

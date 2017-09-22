@@ -3,7 +3,7 @@
 #include "GameGlobal.h"
 #include "Logging.h"
 #include "BindingsManager.h"
-#include "Configuration.h"
+
 #include "Screen.h"
 #include "Application.h"
 #include "GameWindow.h"
@@ -122,8 +122,6 @@ struct defaultKeys_s
     { GLFW_KEY_BACKSPACE, KT_BSPC },
     { GLFW_MOUSE_BUTTON_LEFT, KT_Select },
     { GLFW_MOUSE_BUTTON_RIGHT, KT_SelectRight },
-    { 'Z', KT_GameplayClick },
-    { 'X', KT_GameplayClick },
 	{ GLFW_KEY_F5, KT_ReloadScreenScripts },
 	{ GLFW_KEY_F10, KT_ReloadCFG }
 };
@@ -131,7 +129,7 @@ struct defaultKeys_s
 const int DEFAULT_KEYS_COUNT = sizeof(defaultKeys) / sizeof(defaultKeys_s);
 
 // Must match KeyType structure.
-char* KeytypeNames[] = {
+const char* KeytypeNames[] = {
     "unknown",
     "escape",
     "select",
@@ -440,7 +438,7 @@ bool GameWindow::SetupWindow()
 	glEnable(GL_FRAMEBUFFER_SRGB);
 
     glEnable(GL_ALPHA_TEST);
-	// glEnable(GL_POLYGON_SMOOTH);
+	glEnable(GL_POLYGON_SMOOTH);
     glAlphaFunc(GL_GREATER, 0);
 
     if (VSync)
@@ -677,7 +675,7 @@ void GameWindow::RunInput()
 		const float *axisArray = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axisArraySize);
 		if (axisArraySize) {
 			for (auto i = 0; i < axisArraySize; i++) {
-				for (auto j = 0; j < SpecialKeys.size(); j++) {
+				for (size_t j = 0; j < SpecialKeys.size(); j++) {
 					// as before, specialkeys vector value
 					int axis = SpecialKeys[j].boundkey - 1000;
 

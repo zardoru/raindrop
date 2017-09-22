@@ -1,8 +1,8 @@
 #include "pch.h"
 
-#include "GameGlobal.h"
+
 #include "GameState.h"
-#include "Configuration.h"
+
 #include "SceneEnvironment.h"
 #include "Screen.h"
 #include "ImageLoader.h"
@@ -26,7 +26,7 @@ BitmapFont* MainMenuFont = NULL;
 LuaManager* MainMenuLua = NULL;
 TruetypeFont* TTFO = NULL;
 
-ScreenMainMenu::ScreenMainMenu() : Screen("ScreenMainMenu", nullptr)
+ScreenMainMenu::ScreenMainMenu() : Screen("ScreenMainMenu", false)
 {
     TNext = nullptr;
 }
@@ -47,7 +47,7 @@ void ScreenMainMenu::Init()
     ChangeState(StateIntro);
 
     if (!TTFO)
-        TTFO = new TruetypeFont(GameState::GetInstance().GetSkinFile("font.ttf"), 16);
+        TTFO = new TruetypeFont(GameState::GetInstance().GetSkinFile("font.ttf"));
 }
 
 bool ScreenMainMenu::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
@@ -68,9 +68,13 @@ bool ScreenMainMenu::Run(double Delta)
     if (RunNested(Delta))
         return true;
 
-    TTFO->Render(std::string("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop"), Vec2(0, 0), glm::translate(Mat4(), Vec3(0, 0, 30)));
+    
     Animations->DrawTargets(Delta);
 
+	float f = 24;
+	auto m = glm::translate(0.f, 0.f, 30.f);
+	TTFO->Render(std::string("version: " RAINDROP_VERSIONTEXT "\nhttp://github.com/zardoru/raindrop"), 
+		Vec2(0, 0), m, Vec2(1, f));
     return Running;
 }
 

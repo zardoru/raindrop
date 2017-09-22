@@ -32,6 +32,8 @@ namespace Renderer {
 	VBO* GetDefaultGeometryBuffer();
 	VBO* GetDefaultTextureBuffer();
 	VBO* GetDefaultColorBuffer();
+
+	Texture* GetXorTexture();
 }
 
 inline float l2gamma (float c) {

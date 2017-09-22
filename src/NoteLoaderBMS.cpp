@@ -25,6 +25,7 @@
 */
 
 namespace NoteLoaderBMS{
+	
 
 	using namespace Game::VSRG;
 
@@ -334,10 +335,7 @@ namespace NoteLoaderBMS{
 					Note.Sound = ev.Event;
 					UsedSounds[ev.Event] = true;
 
-					Chart->TotalScoringObjects++;
-					Chart->TotalNotes++;
-					Chart->TotalObjects++;
-
+					
 					Msr.Notes[Track].push_back(Note);
 					/*
 						For future reference:
@@ -355,8 +353,6 @@ namespace NoteLoaderBMS{
 				{
 					if (LastNotes[Track])
 					{
-						Chart->TotalHolds++;
-						Chart->TotalScoringObjects++;
 						LastNotes[Track]->EndTime = Time;
 						LastNotes[Track] = nullptr;
 					}
@@ -384,10 +380,6 @@ namespace NoteLoaderBMS{
 
 					Note.Sound = ev.Event;
 					UsedSounds[ev.Event] = true;
-
-					Chart->TotalScoringObjects += 2;
-					Chart->TotalHolds++;
-					Chart->TotalObjects++;
 
 					Msr.Notes[Track].push_back(Note);
 
@@ -687,7 +679,7 @@ namespace NoteLoaderBMS{
 					int Limit = std::stoi(Contents.c_str());
 
 					assert(CurrentNestedLevel < 16);
-					assert(Limit > 1);
+					//assert(Limit > 1);
 
 					RandomStack[CurrentNestedLevel] = std::randint(1, Limit);
 
@@ -797,9 +789,16 @@ namespace NoteLoaderBMS{
 			TimingInfo->GaugeTotal = total;
 		}
 
+		void SetDefexRank(double defex)
+		{
+			TimingInfo->JudgeRank = defex;
+			TimingInfo->PercentualJudgerank = true;
+		}
+
 		void SetJudgeRank(double judgerank)
 		{
 			TimingInfo->JudgeRank = judgerank;
+			TimingInfo->PercentualJudgerank = false;
 		}
 
 		void SetSound(int index, std::string command_contents)
@@ -964,8 +963,11 @@ namespace NoteLoaderBMS{
 
             Utility::ReplaceAll(Line, "[\r\n]", "");
 
-            if (Line.length() == 0 || Line[0] != '#')
+            if (Line.length() == 0 || Line.find_first_of("#") == std::string::npos)
                 continue;
+
+			// allow indentation
+			Line = Line.substr(Line.find_first_of("#"));
 
 #define OnCommand(x) if(command == #x)
 #define OnCommandSub(x) if(command.substr(0, strlen(#x)) == #x)
@@ -1006,7 +1008,7 @@ namespace NoteLoaderBMS{
 
                 OnCommand(#genre)
                 {
-                    // stub
+					Diff->Data->Genre = CommandContents;
                 }
 
                 OnCommand(#subtitle)
@@ -1068,6 +1070,11 @@ namespace NoteLoaderBMS{
                 {
                     Out->PreviewTime = latof(CommandContents.c_str());
                 }
+
+				OnCommand(#defexrank)
+				{
+					Info->SetDefexRank(latof(CommandContents.c_str()));
+				}
 
                 OnCommand(#stagefile)
                 {
@@ -1132,7 +1139,8 @@ namespace NoteLoaderBMS{
 
                 OnCommand(#playlevel)
                 {
-                    Diff->Level = std::stoi(CommandContents.c_str());
+					if (CommandContents != "")
+                    	Diff->Level = std::stoi(CommandContents);
                 }
 
                 OnCommand(#rank)

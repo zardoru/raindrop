@@ -285,6 +285,8 @@ namespace osb
     typedef std::vector<osb::BGASprite> SpriteList;
 }
 
+class VideoPlayback;
+
 class osuBackgroundAnimation : public BackgroundAnimation
 {
     osb::SpriteList mSprites;
@@ -293,16 +295,19 @@ class osuBackgroundAnimation : public BackgroundAnimation
     std::vector<Sprite> mForegroundLayer;
     std::map<std::string, int> mFileIndices;
     ImageList mImageList;
+    std::map<int, VideoPlayback*> mVideoList;
     int AddImageToList(std::string image_filename);
 	Game::VSRG::Song *Song;
 
-	Transformation mScreenTransformation;
-	bool CanValidate;
+    Transformation mScreenTransformation;
+    bool CanValidate;
+
 public:
     osuBackgroundAnimation(Interruptible* parent, osb::SpriteList* existing_sprites, Game::VSRG::Song* song);
+    ~osuBackgroundAnimation();
     Texture* GetImageFromIndex(int m_image_index);
     int GetIndexFromFilename(std::string filename);
-	Transformation& GetScreenTransformation();
+    Transformation& GetScreenTransformation();
 
 	void Load() override;
 	void Validate() override;

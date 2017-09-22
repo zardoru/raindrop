@@ -39,6 +39,10 @@ void Texture::CreateTexture()
 
 		LastBound = this;
 		IsValid = true;
+	} else if (texture != -1 && IsValid) {
+		glBindTexture(GL_TEXTURE_2D, texture);
+
+		LastBound = this;
 	}
 }
 

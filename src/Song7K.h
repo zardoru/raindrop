@@ -31,7 +31,7 @@ namespace Game {
 			}
 		};
 
-		typedef std::vector<SpeedSection> VectorSpeeds;
+		typedef std::vector<SpeedSection> VectorInterpolatedSpeedMultipliers;
 
 		typedef std::vector<Measure> VectorMeasure;
 
@@ -55,10 +55,15 @@ namespace Game {
 		class BMSChartInfo : public ChartInfo
 		{
 		public:
-			int JudgeRank;
+			float JudgeRank;
+			
 			float GaugeTotal;
 
+			// neccesary because of regular BMS DEFEXRANK
+			bool PercentualJudgerank;
+
 			// Whether this uses BMSON features.
+			// (Also makes GaugeTotal a rate instead of an absolute)
 			bool IsBMSON;
 
 			BMSChartInfo()
@@ -67,6 +72,7 @@ namespace Game {
 				JudgeRank = 3;
 				GaugeTotal = -1;
 				IsBMSON = false;
+				PercentualJudgerank = false;
 			}
 		};
 
@@ -134,7 +140,7 @@ namespace Game {
 			VectorMeasure Measures;
 
 			// For Speed changes.
-			VectorSpeeds Speeds;
+			VectorInterpolatedSpeedMultipliers InterpoloatedSpeedMultipliers;
 
 			// Autoplay Sounds
 			std::vector<AutoplaySound> BGMEvents;
@@ -154,11 +160,17 @@ namespace Game {
 			// Background/foreground to show when loading.
 			std::string StageFile;
 
+			// Genre (Display only, for the most part)
+			std::string Genre;
+
 			// Whether this difficulty uses the scratch channel (being channel/index 0 always used for this)
 			bool Turntable;
 
 			// Audio slicing data
 			SliceContainer SliceData;
+
+			uint32_t GetObjectCount();
+			uint32_t GetScoreItemsCount();
 
 			DifficultyLoadInfo()
 			{
@@ -255,6 +267,7 @@ namespace Game {
 			~Song();
 
 			VSRG::Difficulty* GetDifficulty(uint32_t i);
+			uint8_t GetDifficultyCount() override;
 		};
 
 	}

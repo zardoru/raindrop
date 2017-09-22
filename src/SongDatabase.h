@@ -20,10 +20,10 @@ private:
         *st_FilenameQuery,
         *st_FilenameInsertQuery,
         *st_DiffIDQuery,
-        *st_LMTQuery,
+        *stGetLMTQuery,
         *st_DelDiffsQuery,
-        *st_GetSongInfo,
-        *st_GetDiffInfo,
+        *stGetSongInfo,
+        *stGetDiffInfo,
         *st_GetFileInfo,
         *st_UpdateLMT,
         *st_GetDiffIDFile,
@@ -32,12 +32,16 @@ private:
         *st_GetSIDFromFilename,
         *st_GetLastSongID,
         *st_GetDiffAuthor,
+		*st_GetDiffGenre,
         *st_GetPreviewInfo,
         *st_GetStageFile;
 
     // Returns the ID.
     int InsertFilename(std::filesystem::path Fn);
     bool DifficultyExists(int FileID, std::string DifficultyName, int *IDOut = NULL);
+
+	void UpdateDiffInternal(int &ret, int DiffID, Game::Song::Difficulty * Diff);
+	void InsertDiffInternal(int &ret, int SongID, int FileID, Game::Song::Difficulty * Diff);
 public:
 
     SongDatabase(std::string Database);
@@ -45,16 +49,19 @@ public:
 
     void ClearDifficulties(int SongID);
     bool CacheNeedsRenewal(std::filesystem::path Dir);
-    void AddDifficulty(int SongID, std::filesystem::path Filename, Game::Song::Difficulty* Diff, int Mode);
+	void AddDifficulty(int SongID, std::filesystem::path Filename, Game::Song::Difficulty* Diff);
+
+	int AddSongToDatabase(Game::VSRG::Song *Song);
 
     void GetPreviewInfo(int SongID, std::string &Filename, float &PreviewStart);
 
     // Difficulty information
     std::filesystem::path GetDifficultyFilename(int DiffID);
     std::string GetArtistForDifficulty(int DiffID);
+	std::string GetGenreForDifficulty(int DiffID);
     std::string GetStageFile(int DiffID);
 
-    int GetSongIDForFile(std::filesystem::path File, Game::VSRG::Song* In);
+    int GetSongIDForFile(std::filesystem::path File);
 
     void GetSongInformation(int ID, Game::VSRG::Song* Out);
 

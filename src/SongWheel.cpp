@@ -3,7 +3,6 @@
 #include "GameGlobal.h"
 #include "GameState.h"
 #include "Logging.h"
-#include "SongDC.h"
 #include "Song7K.h"
 #include "GameWindow.h"
 #include "SongLoader.h"
@@ -22,9 +21,6 @@ SongWheel::SongWheel()
     IsInitialized = false;
     mLoadMutex = nullptr;
     mLoadThread = nullptr;
-    VSRGModeActive = (Configuration::GetConfigf("VSRGEnabled") != 0);
-	dotcurModeActive = false;
-    // dotcurModeActive = (Configuration::GetConfigf("dotcurEnabled") != 0);
     DifficultyIndex = 0;
 
 	DisplayStartIndex = 0;
@@ -79,16 +75,12 @@ class LoadThread
     std::mutex* mLoadMutex;
     SongDatabase* DB;
     std::shared_ptr<SongList> ListRoot;
-    bool VSRGActive;
-    bool DCActive;
     std::atomic<bool>& isLoading;
 public:
-    LoadThread(std::mutex* m, SongDatabase* d, std::shared_ptr<SongList> r, bool va, bool da, std::atomic<bool>& loadingstatus)
+    LoadThread(std::mutex* m, SongDatabase* d, std::shared_ptr<SongList> r, std::atomic<bool>& loadingstatus)
         : mLoadMutex(m),
         DB(d),
         ListRoot(r),
-        VSRGActive(va),
-        DCActive(da),
         isLoading(loadingstatus)
     {
         isLoading = true;
@@ -108,8 +100,9 @@ public:
         for (auto i = Directories.begin();
         i != Directories.end();
             ++i)
+
         {
-            ListRoot->AddNamedDirectory(*mLoadMutex, &Loader, i->second, i->first, VSRGActive, DCActive);
+            ListRoot->AddNamedDirectory(*mLoadMutex, &Loader, i->second, i->first);
 			SongWheel::GetInstance().ReapplyFilters();
         }
 
@@ -134,15 +127,13 @@ void SongWheel::ReloadSongs(SongDatabase* Database)
     DB = Database;
     Join();
 
-    ListRoot = nullptr;
-
     ListRoot = std::make_shared<SongList>();
     CurrentList = ListRoot.get();
 
     if (!mLoadMutex)
         mLoadMutex = new std::mutex;
 
-    LoadThread L(mLoadMutex, DB, ListRoot, VSRGModeActive, dotcurModeActive, mLoading);
+    LoadThread L(mLoadMutex, DB, ListRoot, mLoading);
     mLoadThread = new std::thread(&LoadThread::Load, L);
 }
 
@@ -189,16 +180,8 @@ int SongWheel::PrevDifficulty()
     if (!FilteredCurrentList.IsDirectory(SelectedBoundItem))
     {
         DifficultyIndex--;
-        if (FilteredCurrentList.GetSongEntry(SelectedBoundItem)->Mode == MODE_VSRG)
-        {
-            auto Song = std::static_pointer_cast<VSRG::Song> (FilteredCurrentList.GetSongEntry(SelectedBoundItem));
-            max_index = Song->Difficulties.size() - 1;
-        }
-        else
-        {
-            auto Song = std::static_pointer_cast<dotcur::Song> (FilteredCurrentList.GetSongEntry(SelectedBoundItem));
-            max_index = Song->Difficulties.size() - 1;
-        }
+        auto Song = std::static_pointer_cast<VSRG::Song> (FilteredCurrentList.GetSongEntry(SelectedBoundItem));
+		max_index = Song->Difficulties.size() - 1;
 
         DifficultyIndex = std::min(max_index, DifficultyIndex);
         OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
@@ -214,18 +197,11 @@ int SongWheel::NextDifficulty()
     if (!FilteredCurrentList.IsDirectory(SelectedBoundItem))
     {
         DifficultyIndex++;
-        if (FilteredCurrentList.GetSongEntry(SelectedBoundItem)->Mode == MODE_VSRG)
-        {
-            auto Song = std::static_pointer_cast<VSRG::Song> (FilteredCurrentList.GetSongEntry(SelectedBoundItem));
-            if (DifficultyIndex >= Song->Difficulties.size())
-                DifficultyIndex = 0;
-        }
-        else
-        {
-            auto Song = std::static_pointer_cast<dotcur::Song> (FilteredCurrentList.GetSongEntry(SelectedBoundItem));
-            if (DifficultyIndex >= Song->Difficulties.size())
-                DifficultyIndex = 0;
-        }
+        
+        auto Song = std::static_pointer_cast<VSRG::Song> (FilteredCurrentList.GetSongEntry(SelectedBoundItem));
+        if (DifficultyIndex >= Song->Difficulties.size())
+            DifficultyIndex = 0;
+        
 
         OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
     }
@@ -316,7 +292,9 @@ void SongWheel::GoUp()
 
     if (CurrentList->HasParentDirectory())
     {
+		CurrentList->SetInUse(false);
         CurrentList = CurrentList->GetParentDirectory();
+		CurrentList->ClearEmpty();
 		ReapplyFilters();
         OnDirectoryChange();
 		OnSongTentativeSelect(GetSelectedSong(), 0);
@@ -328,9 +306,9 @@ bool SongWheel::HandleScrollInput(const double dx, const double dy)
     return true;
 }
 
-std::shared_ptr<Game::Song> SongWheel::GetSelectedSong()
+std::shared_ptr<Game::VSRG::Song> SongWheel::GetSelectedSong()
 {
-    return FilteredCurrentList.GetSongEntry(SelectedBoundItem);
+    return std::static_pointer_cast<Game::VSRG::Song>(FilteredCurrentList.GetSongEntry(SelectedBoundItem));
 }
 
 void SongWheel::Update(float Delta)
@@ -370,7 +348,6 @@ void SongWheel::Update(float Delta)
     if (OldCursorPos != CursorPos)
     {
         OldCursorPos = CursorPos;
-        DifficultyIndex = 0;
         if (OnItemHover)
         {
             std::shared_ptr<Game::Song> Notify = GetSelectedSong();
@@ -390,7 +367,7 @@ void SongWheel::DisplayItem(int32_t ListItem, int32_t ListPosition, float itemFr
     if (screen_box.Intersects(item_box))
     {
         bool IsSelected = false;
-        std::shared_ptr<Song> Song = nullptr;
+        std::shared_ptr<VSRG::Song> Song = nullptr;
         std::string Text;
 
         if (ListItem != -1)
@@ -475,7 +452,6 @@ void SongWheel::SetSelectedItem(int32_t Item)
     
     // Set bound item index to this.
     SelectedBoundItem = Item;
-    GameState::GetInstance().SetSelectedSong(GetSelectedSong());
     OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
 }
 
@@ -530,11 +506,13 @@ void SongWheel::ConfirmSelection()
 {
     if (!FilteredCurrentList.IsDirectory(SelectedBoundItem))
     {
-        OnSongConfirm(GetSelectedSong(), DifficultyIndex);
+		if (DifficultyIndex < GetSelectedSong()->GetDifficultyCount())
+			OnSongConfirm(GetSelectedSong(), DifficultyIndex);
     }
     else
     {
         CurrentList = CurrentList->GetListEntry(SelectedBoundItem).get();
+		CurrentList->SetInUse(true);
 
 		ReapplyFilters();
         SetSelectedItem(SelectedUnboundItem); // Update our selected item to new bounderies.
@@ -567,7 +545,7 @@ void Game::SongWheel::ReapplyFilters()
 {
 	if (!CurrentList) return;
 
-	FilteredCurrentList = SongList();
+	FilteredCurrentList.Clear();
 	for (auto entry : CurrentList->GetEntries()) {
 		bool add = true;
 
