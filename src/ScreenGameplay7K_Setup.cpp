@@ -134,12 +134,21 @@ namespace Game {
 			if (SkipLoadAudio) return true;
 
 			auto Rate = GameState::GetInstance().GetParameters(0)->Rate;
+
+
+			auto &ps = Players[0]->GetPlayerState();
+			auto SoundList = ps.GetSoundList();
 			if (!Music)
 			{
 				Music = std::make_unique<AudioStream>();
 				Music->SetPitch(Rate);
-				if (std::filesystem::exists(MySong->SongFilename)
-					&& Music->Open(MySong->SongDirectory / MySong->SongFilename))
+
+				auto s = MySong->SongDirectory / MySong->SongFilename;
+
+				Log::LogPrintf("Chart Audio: Attempt to load \"%s\"...", s.string().c_str());
+
+				if (std::filesystem::exists(s)
+					&& Music->Open(s))
 				{
 					Log::Printf("Stream for %s succesfully opened.\n", MySong->SongFilename.c_str());
 				}
@@ -156,19 +165,22 @@ namespace Game {
 							auto extension = i.path().extension();
 							if (extension == ".mp3" || extension == ".ogg")
 								if (Music->Open(i.path()))
-									return true;
+									if (!SoundList.size())
+										return true;
 						}
 
 						// Quit; couldn't find audio for a chart that requires it.
 						Music = nullptr;
-						Log::Printf("Unable to load song (Path: %s)\n", MySong->SongFilename.c_str());
-						return false;
+
+						// don't abort load if we have keysounds
+						if (!SoundList.size()) {
+							Log::Printf("Unable to load song (Path: %s)\n", MySong->SongFilename.c_str());
+							return false;
+						}
 					}
 				}
 			}
 
-			auto &ps = Players[0]->GetPlayerState();
-			auto SoundList = ps.GetSoundList();
 			auto ChartType = ps.GetChartType();
 
 			// Load samples.
@@ -189,7 +201,7 @@ namespace Game {
 			}
 			else if (SoundList.size())
 			{
-				Log::Printf("Chart Audio: Loading samples... ");
+				Log::LogPrintf("Chart Audio: Loading samples... ");
 				LoadSamples();
 
 			}

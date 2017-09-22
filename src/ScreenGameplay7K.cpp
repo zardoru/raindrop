@@ -163,8 +163,11 @@ namespace Game {
 				// post-gameplay failure?
 				if (!ShouldDelayFailure()) {
 					FailSnd.Play();
+
 					// We stop all audio..
-					Music->Stop();
+					if (Music)
+						Music->Stop();
+
 					for (auto i = Keysounds.begin(); i != Keysounds.end(); ++i)
 						for (auto &&s : i->second)
 							if (s)
