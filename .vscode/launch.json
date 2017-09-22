@@ -2,6 +2,17 @@
         "version": "0.2.0",
         "configurations": [
             {
+                "name": "(Windows) Test Screen",
+                "type": "cppvsdbg",
+                "request": "launch",
+                "program": "${workspaceRoot}/msvc/Debug/raindrop.exe",
+                "args": ["-L", "screen_btest.lua"],
+                "stopAtEntry": false,
+                "cwd": "${workspaceRoot}/debug",
+                "environment": [],
+                "externalConsole": false
+            },
+            {
                 "name": "(Windows) Attach",
                 "type": "cppvsdbg",
                 "request": "attach",
@@ -16,7 +27,7 @@
                 "stopAtEntry": false,
                 "cwd": "${workspaceRoot}/debug",
                 "environment": [],
-                "externalConsole": true
+                "externalConsole": false
             },
             {
                 "name": "(Windows) Run Test BMS file - Autoplay (debug/test.bms)",
@@ -27,7 +38,7 @@
                 "stopAtEntry": false,
                 "cwd": "${workspaceRoot}/debug",
                 "environment": [],
-                "externalConsole": true
+                "externalConsole": false
             },
             {
                 "name": "(Windows) Run Test BMS file (debug/test.bms)",
@@ -38,7 +49,7 @@
                 "stopAtEntry": false,
                 "cwd": "${workspaceRoot}/debug",
                 "environment": [],
-                "externalConsole": true
+                "externalConsole": false
             },
             {
                 "name": "(Windows) Run Tests",
@@ -49,7 +60,7 @@
                 "stopAtEntry": false,
                 "cwd": "${workspaceRoot}/debug",
                 "environment": [],
-                "externalConsole": true
+                "externalConsole": false
             },
             {
                 "name": "(Windows) Debug Launch",
@@ -60,7 +71,7 @@
                 "stopAtEntry": false,
                 "cwd": "${workspaceRoot}/debug",
                 "environment": [],
-                "externalConsole": true
+                "externalConsole": false
             }
         ]
     }
