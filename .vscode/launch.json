@@ -1,6 +1,7 @@
 {
         "version": "0.2.0",
         "configurations": [
+
             {
                 "name": "(Windows) Test Screen",
                 "type": "cppvsdbg",
@@ -17,6 +18,17 @@
                 "type": "cppvsdbg",
                 "request": "attach",
                 "processId": "${command:pickProcess}"
+            },
+{
+                "name": "(Windows) Run Test o2jam file - Autoplay (debug/test.ojn)",
+                "type": "cppvsdbg",
+                "request": "launch",
+                "program": "${workspaceRoot}/msvc/Debug/raindrop.exe",
+                "args": ["-p", "-i", "test.ojn", "--config", "config-debug.ini"],
+                "stopAtEntry": false,
+                "cwd": "${workspaceRoot}/debug",
+                "environment": [],
+                "externalConsole": false
             },
             {
                 "name": "(Windows) Run Test osu file - Autoplay (debug/test.osu)",

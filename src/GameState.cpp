@@ -258,10 +258,9 @@ Texture* GameState::GetSongBG()
 
 Texture* GameState::GetSongStage()
 {
-	if (SelectedSong)
+	auto sng = SelectedSong ? SelectedSong.get() : GetSelectedSong();
+	if (sng)
 	{
-		auto Song = SelectedSong;
-
 		if (PlayerInfo[0].Diff)
 		{
 			auto diff = PlayerInfo[0].Diff;
@@ -271,7 +270,7 @@ Texture* GameState::GetSongStage()
 			if (File.string().length() == 0 && diff->Data)
 				File = diff->Data->StageFile;
 
-			auto toLoad = SelectedSong->SongDirectory / File;
+			auto toLoad = sng->SongDirectory / File;
 
 			// ojn files use their cover inside the very ojn
 			if (File.extension() == ".ojn")

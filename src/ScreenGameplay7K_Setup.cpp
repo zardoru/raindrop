@@ -375,7 +375,8 @@ namespace Game {
 						{
 							Log::Printf("Error loading chart: No timing data for player %d.\n", p->GetPlayerNumber());
 							return false;
-						}
+						} else // may double-init otherwise
+							break;
 					}
 				}
 			}
