@@ -110,6 +110,8 @@ namespace Game
 		bool IsSongUnlocked(Game::Song *song);
 		void UnlockSong(Game::Song *song);
 
+		void SetSystemFolder(const std::string folder);
+
 		void SetRootScreen(std::shared_ptr<Screen> root);
 		std::shared_ptr<Screen> GetCurrentScreen();
 		std::shared_ptr<Screen> GetNextScreen();

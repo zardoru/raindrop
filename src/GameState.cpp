@@ -24,12 +24,17 @@ namespace Game {
 	}
 }
 
-#define DirectoryPrefix std::string("GameData/")
+std::string DirectoryPrefix("GameData/");
 #define SkinsPrefix std::string("Skins/")
 #define SongsPrefix std::string("Songs")
 #define ScriptsPrefix std::string("Scripts/")
 
 using namespace Game;
+
+void GameState::SetSystemFolder(const std::string folder)
+{
+	DirectoryPrefix = folder;
+}
 
 bool GameState::FileExistsOnSkin(const char* Filename, const char* Skin)
 {

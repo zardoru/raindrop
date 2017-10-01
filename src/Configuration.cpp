@@ -39,9 +39,13 @@ void Configuration::Initialize()
 {
     Config = new CSimpleIniA;
     Config->LoadFile(ConfigFile.c_str());
-    SkinCfgLua = new LuaManager();
 
-	AddRDLuaGlobal(SkinCfgLua);
+    auto dir = Configuration::GetConfigs("GameDirectory");
+    if (dir.length()) {
+        GameState::GetInstance().SetSystemFolder(dir + "/");
+    }
+
+    SkinCfgLua = new LuaManager();
 
     if (Configuration::GetConfigs("Skin").length())
         GameState::GetInstance().SetSkin(Configuration::GetConfigs("Skin"));
@@ -52,6 +56,8 @@ void Configuration::Initialize()
     
 	GameState::GetInstance().InitializeLua(SkinCfgLua->GetState());
     SkinCfgLua->RunScript(GameState::GetInstance().GetSkinFile("skin.lua"));
+
+	AddRDLuaGlobal(SkinCfgLua);
 
     LoadTextureParameters();
 }
@@ -237,15 +243,21 @@ bool Configuration::ListExists(std::string Name)
 
 uint32_t Configuration::CfgScreenHeight()
 {
-	return ScreenHeightDefault;
+    static uint32_t height = 0;
+    if (height == 0) {
+        height = GetSkinConfigf("SkinHeight");
+        if (height == 0)
+            height = ScreenHeightDefault;
+    }
+	return height;
 }
 
 uint32_t Configuration::CfgScreenWidth()
 {
     if (IsWidescreen == 1) // 16:9
-        return 16.0 / 9.0 * ScreenHeightDefault;
+        return 16.0 / 9.0 * CfgScreenHeight();
     else if (IsWidescreen == 2) // 16:10
-        return 16.0 / 10.0 * ScreenHeightDefault;
+        return 16.0 / 10.0 * CfgScreenHeight();
     else 
-        return 4.0 / 3.0 * ScreenHeightDefault;
+        return 4.0 / 3.0 * CfgScreenHeight();
 }

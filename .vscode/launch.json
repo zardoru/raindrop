@@ -19,7 +19,7 @@
                 "request": "attach",
                 "processId": "${command:pickProcess}"
             },
-{
+            {
                 "name": "(Windows) Run Test o2jam file - Autoplay (debug/test.ojn)",
                 "type": "cppvsdbg",
                 "request": "launch",
@@ -29,6 +29,17 @@
                 "cwd": "${workspaceRoot}/debug",
                 "environment": [],
                 "externalConsole": false
+            },
+            {
+                "name": "(Windows) Run Test bmson file - Autoplay (debug/test.bmson)",
+                "type": "cppvsdbg",
+                "request": "launch",
+                "program": "${workspaceRoot}/msvc/Debug/raindrop.exe",
+                "args": ["-p", "-i", "test.bmson", "--config", "config-debug.ini"],
+                "stopAtEntry": false,
+                "cwd": "${workspaceRoot}/debug",
+                "environment": [],
+                "externalConsole": true
             },
             {
                 "name": "(Windows) Run Test osu file - Autoplay (debug/test.osu)",
