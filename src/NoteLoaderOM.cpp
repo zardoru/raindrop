@@ -473,6 +473,9 @@ public:
 		if (Command == "CircleSize")
 		{
 			Diff->Channels = atoi(Content.c_str());
+			if (Diff->Channels > MAX_CHANNELS) {
+				throw OsuManiaLoaderException("osu! file with more lanes than the engine supports.");
+			}
 		}
 		else if (Command == "SliderMultiplier")
 		{

@@ -21,6 +21,9 @@ namespace Game {
 
 			std::map <int, std::vector<std::shared_ptr<AudioSample> > > Keysounds;
 			std::vector<std::unique_ptr<PlayerContext>> Players;
+			std::map<int, bool> PlayfieldClipEnabled;
+			std::map<int, AABB> PlayfieldClipArea;
+
 			std::queue<AutoplaySound>   BGMEvents;
 
 			std::shared_ptr<Song>			 MySong;
@@ -91,6 +94,9 @@ namespace Game {
 			void OnPlayerMiss(double dt, uint32_t lane, bool hold, bool dontbreakcombo, bool earlymiss, int pn);
 
 			void OnPlayerGearKeyEvent(uint32_t lane, bool keydown, int pn);
+
+			void SetPlayerClip(int pn, AABB box);
+			void DisablePlayerClip(int pn);
 
 			friend class Noteskin;
 		public:

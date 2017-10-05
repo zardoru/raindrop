@@ -1,16 +1,11 @@
 #pragma once
 
-#include "GuiButton.h"
-#include "Line.h"
 
 class SceneEnvironment;
 
 class ScreenMainMenu : public Screen
 {
-    GUI::Button PlayBtn, EditBtn, OptionsBtn, ExitBtn;
-
     Screen *TNext;
-    Sprite Background;
 public:
     ScreenMainMenu();
     void Init();

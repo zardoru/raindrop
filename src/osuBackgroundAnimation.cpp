@@ -1022,10 +1022,10 @@ osuBackgroundAnimation::osuBackgroundAnimation(Interruptible* parent, osb::Sprit
 	: BackgroundAnimation(parent),
 		mImageList(this)
 {
-	Transform.SetSize(OSB_WIDTH_WIDE, OSB_HEIGHT);
+	SetSize(OSB_WIDTH_WIDE, OSB_HEIGHT);
 	mScreenTransformation.SetPositionX( (OSB_WIDTH_WIDE - OSB_WIDTH) / 2 / OSB_WIDTH_WIDE);
 	mScreenTransformation.SetSize(1 / OSB_WIDTH_WIDE, 1 / OSB_HEIGHT);
-	mScreenTransformation.ChainTransformation(&Transform);
+	mScreenTransformation.ChainTransformation(this);
 	Song = song;
 	CanValidate = false;
 

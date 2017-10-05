@@ -400,6 +400,7 @@ namespace Game {
 			{
 				try {
 					BGA->Load();
+					Animations->AddTarget(BGA.get(), true);
 				}
 				catch (std::exception &e)
 				{

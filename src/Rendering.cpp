@@ -305,6 +305,35 @@ namespace Renderer {
 	{
 	    Shader::SetUniform(DefaultShader::GetUniform(U_MVP), &(mat[0][0]));
 	}
+
+	void SetScissor(bool enabled)
+	{
+		if (enabled) glEnable(GL_SCISSOR_TEST);
+		else glDisable(GL_SCISSOR_TEST);
+	}
+
+	void SetScissorRegion(int x, int y, int w, int h) {
+		float ratio = WindowFrame.GetWindowVScale();
+		glScissor(x * ratio, (ScreenHeight - (y + h)) * ratio, w * ratio, h * ratio);
+	}
+
+	void SetScissorRegionWnd(int x, int y, int w, int h) {
+		// x: 0 -> 0; screenwidth -> windowwidth
+		// y: 0 -> windowheight; screenheight -> 0
+		auto tx = [&](int x) {
+			auto ww = WindowFrame.GetWindowSize().x;
+			return x * ww / ScreenWidth;
+		};
+
+		auto ty = [&](int y) {
+			auto wh = WindowFrame.GetWindowSize().y;
+			auto m = -wh / ScreenHeight;
+			return m * y + wh;
+		};
+
+		auto vratio = WindowFrame.GetWindowSize().y / ScreenHeight;
+		glScissor(tx(x), ty(y) - h * vratio, tx(w), h * vratio);
+	}
 }
 
 void Sprite::UpdateTexture()

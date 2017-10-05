@@ -1,6 +1,5 @@
-#include "pch.h"
+#include "pch.h" 
 
-#include "GameGlobal.h"
 #include "Logging.h"
 #include "Screen.h"
 #include "Audio.h"
@@ -22,116 +21,129 @@ namespace Game {
 		void ScreenGameplay::Activate()
 		{
 			if (!Active)
-				Animations->DoEvent("OnActivateEvent");
-
+			Animations->DoEvent("OnActivateEvent");
+			
 			Active = true;
 		}
-
+		
 		bool ScreenGameplay::IsActive() const
 		{
 			return Active;
 		}
-
+		
 		Game::VSRG::Song* ScreenGameplay::GetSong() const
 		{
 			return MySong.get();
 		}
-
-
+		
+		
 		void ScreenGameplay::PlayKeysound(int Keysound)
 		{
 			if (Keysounds.find(Keysound) != Keysounds.end() && PlayReactiveSounds)
-				for (auto &&s : Keysounds[Keysound])
-					if (s) s->Play();
+			for (auto &&s : Keysounds[Keysound])
+			if (s) s->Play();
 		}
-
-
+		
+		
 		// Called right after the scorekeeper and the engine's objects are initialized.
 		void ScreenGameplay::SetupScriptConstants()
 		{
 			auto L = Animations->GetEnv();
-			luabridge::push(L->GetState(), &BGA->GetTransformation());
+			luabridge::push(L->GetState(), static_cast<Transformation*>(BGA.get()));
 			lua_setglobal(L->GetState(), "Background");
 		}
-
+		
 		// Called before the script is executed at all.
 		void ScreenGameplay::SetupLua(LuaManager* Env)
 		{
 			GameState::GetInstance().InitializeLua(Env->GetState());
 			Game::VSRG::PlayerContext::SetupLua(Env);
-
-#define f(n, x) addProperty(n, &ScreenGameplay::x)
+			
+			#define f(n, x) addProperty(n, &ScreenGameplay::x)
 			luabridge::getGlobalNamespace(Env->GetState())
-				.beginClass <ScreenGameplay>("ScreenGameplay7K")
-				.f("Active", IsActive)
-				.f("Song", GetSong)
-				.addFunction("GetPlayer", &ScreenGameplay::GetPlayerContext)
-				// All of these depend on the player.
-
-				.endClass();
-
+			.beginClass <ScreenGameplay>("ScreenGameplay7K")
+			.f("Active", IsActive)
+			.f("Song", GetSong)
+			.addFunction("GetPlayer", &ScreenGameplay::GetPlayerContext)
+			.addFunction("SetPlayerClip", &ScreenGameplay::SetPlayerClip)
+			.addFunction("DisablePlayerClip", &ScreenGameplay::DisablePlayerClip)
+			// All of these depend on the player.
+			
+			.endClass();
+			
 			luabridge::push(Env->GetState(), this);
 			lua_setglobal(Env->GetState(), "Game");
 		}
-
-
+		
+		
 		Game::VSRG::PlayerContext* ScreenGameplay::GetPlayerContext(int i)
 		{
 			if (i >= 0 && i < Players.size())
-				return Players[i].get();
+			return Players[i].get();
 			else
-				return nullptr;
+			return nullptr;
 		}
 
+		void ScreenGameplay::SetPlayerClip(int pn, AABB box)
+		{
+			PlayfieldClipEnabled[pn] = true;
+			PlayfieldClipArea[pn] = box;
+		}
+
+		void ScreenGameplay::DisablePlayerClip(int pn)
+		{
+			PlayfieldClipEnabled[pn] = false;
+		}
+		
 		bool ScreenGameplay::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
 		{
 			/*
-			 In here we should use the input arrangements depending on
-			 the amount of channels the current difficulty is using.
-			 Also potentially pausing and quitting the screen.
-			 Other than that most input can be safely ignored.
+			In here we should use the input arrangements depending on
+			the amount of channels the current difficulty is using.
+			Also potentially pausing and quitting the screen.
+			Other than that most input can be safely ignored.
 			*/
-
+			
 			/* Handle nested screens. */
 			if (Screen::HandleInput(key, code, isMouseInput))
-				return true;
-
+			return true;
+			
 			Animations->HandleInput(key, code, isMouseInput);
-
+			
 			if (code == KE_PRESS)
 			{
 				switch (BindingsManager::TranslateKey(key))
 				{
-				case KT_Escape:
+					case KT_Escape:
 					if (SongFinishTriggered)
-						Time.Success = -1;
+					Time.Success = -1;
 					else
-						Running = false;
+					Running = false;
 					break;
-				case KT_Enter:
+					case KT_Enter:
 					if (!Active)
-						Activate();
+					Activate();
 					break;
-				default:
+					default:
 					break;
 				}
-
+				
 				if (BindingsManager::TranslateKey7K(key) != KT_Unknown) {
 					for (auto &player: Players)
-						player->TranslateKey(BindingsManager::TranslateKey7K(key), true, Time.Stream + JudgeOffset);
+					player->TranslateKey(BindingsManager::TranslateKey7K(key), true, Time.Stream + JudgeOffset);
 				}
 			}
 			else
 			{
 				if (BindingsManager::TranslateKey7K(key) != KT_Unknown) {
 					for (auto &player: Players)
-						player->TranslateKey(BindingsManager::TranslateKey7K(key), false, Time.Stream + JudgeOffset);
+					player->TranslateKey(BindingsManager::TranslateKey7K(key), false, Time.Stream + JudgeOffset);
 				}
 			}
-
+			
 			return true;
 		}
-
+		
 		void ScreenGameplay::RunAutoEvents()
 		{
 			if (!StageFailureTriggered && Active)
@@ -140,49 +152,49 @@ namespace Game {
 				while (BGMEvents.size() && BGMEvents.front().Time <= Time.Stream)
 				{
 					for (auto &&s : Keysounds[BGMEvents.front().Sound])
-						if (s) {
-							double dt = Time.Stream - BGMEvents.front().Time;
-							if (dt < s->GetDuration()) {
-								s->SeekTime(dt);
-								s->Play();
-							}
+					if (s) {
+						double dt = Time.Stream - BGMEvents.front().Time;
+						if (dt < s->GetDuration()) {
+							s->SeekTime(dt);
+							s->Play();
 						}
+					}
 					BGMEvents.pop();
 				}
 			}
-
+			
 			BGA->SetAnimationTime(Time.InterpolatedStream);
 		}
-
+		
 		void ScreenGameplay::CheckShouldEndScreen()
 		{
 			auto perform_stage_failure = [&]() {
 				StageFailureTriggered = true;
 				// ScoreKeeper->failStage();
-
+				
 				// post-gameplay failure?
 				if (!ShouldDelayFailure()) {
 					FailSnd.Play();
-
+					
 					// We stop all audio..
 					if (Music)
-						Music->Stop();
-
+					Music->Stop();
+					
 					for (auto i = Keysounds.begin(); i != Keysounds.end(); ++i)
-						for (auto &&s : i->second)
-							if (s)
-								s->Stop();
-
+					for (auto &&s : i->second)
+					if (s)
+					s->Stop();
+					
 					// Run stage failed animation.
 					Animations->DoEvent("OnFailureEvent", 1);
 					Time.Failure = Clamp(Animations->GetEnv()->GetFunctionResultF(), 0.0f, 30.0f);
 				}
 			};
-
+			
 			// Run failure first; make sure it has priority over checking whether it's a pass or not.
 			if (PlayersHaveFailed() && !ShouldDelayFailure() && !StageFailureTriggered)
-				perform_stage_failure();
-
+			perform_stage_failure();
+			
 			// Okay then, so it's a pass?
 			if (SongHasFinished() && !StageFailureTriggered)
 			{
@@ -193,23 +205,23 @@ namespace Game {
 						perform_stage_failure(); // No, don't trigger SongFinishTriggered. It wasn't a pass.
 						return;
 					}
-
+					
 					SongFinishTriggered = true; // Reached the end!
 					Animations->DoEvent("OnSongFinishedEvent", 1);
 					Time.Success = Clamp(Animations->GetEnv()->GetFunctionResultF(), 3.0f, 30.0f);
 				}
 			}
-
+			
 			// Okay then, the song's done, and the success animation is done too. Time to evaluate.
 			if (Time.Success < 0 && SongFinishTriggered)
 			{
 				GameState::GetInstance().SubmitScore(0);
-
+				
 				auto Eval = std::make_shared<ScreenEvaluation>();
 				Eval->Init(this);
 				Next = Eval;
 			}
-
+			
 			if (StageFailureTriggered)
 			{
 				Time.Miss = 10; // Infinite, for as long as it lasts.
@@ -217,7 +229,7 @@ namespace Game {
 				{
 					// go to evaluation screen, or back to song select depending on the skin
 					GameState::GetInstance().SubmitScore(0);
-
+					
 					if (Configuration::GetSkinConfigf("GoToSongSelectOnFailure") == 0)
 					{
 						auto Eval = std::make_shared<ScreenEvaluation>();
@@ -225,48 +237,48 @@ namespace Game {
 						Next = Eval;
 					}
 					else
-						Running = false;
+					Running = false;
 				}
 			}
 		}
-
+		
 		bool ScreenGameplay::ShouldDelayFailure()
 		{
 			for (auto &player : Players) {
 				if (player->HasDelayedFailure())
-					return true;
+				return true;
 			}
-
+			
 			return false;
 		}
-
+		
 		bool ScreenGameplay::PlayersHaveFailed()
 		{
 			for (auto &player : Players) {
 				if (!player->HasFailed())
-					return false;
+				return false;
 			}
-
+			
 			return true;
 		}
-
+		
 		bool ScreenGameplay::SongHasFinished()
 		{
 			for (auto &player : Players) {
 				if (!player->HasSongFinished(Time.Stream))
-					return false;
+				return false;
 			}
-
+			
 			return true;
 		}
-
+		
 		void ScreenGameplay::UpdateSongTime(float Delta)
 		{
 			// Check if we should play the music..
 			if (Time.OldStream == -1)
 			{
 				if (Music)
-					Music->Play();
+				Music->Play();
 				Time.AudioStart = MixerGetTime();
 				Time.AudioOld = Time.AudioStart;
 				if (StartMeasure <= 0)
@@ -280,33 +292,33 @@ namespace Game {
 				/* Update music. */
 				Time.InterpolatedStream += Delta;
 			}
-
+			
 			// Update for the next delta.
 			Time.OldStream = Time.Stream;
-
+			
 			// Run interpolation
 			double CurrAudioTime = MixerGetTime();
 			double SongDelta = 0;
 			if (Music && Music->IsPlaying())
-				SongDelta = Music->GetStreamedTime() - Time.OldStream;
+			SongDelta = Music->GetStreamedTime() - Time.OldStream;
 			else
-				SongDelta = (CurrAudioTime - Time.AudioOld);
-
-
+			SongDelta = (CurrAudioTime - Time.AudioOld);
+			
+			
 			double deltaErr = abs(Time.Stream - Time.InterpolatedStream);
 			bool AboveTolerance = deltaErr * 1000 > TimeError.ToleranceMS;
 			if ((SongDelta != 0 && AboveTolerance) || !Time.InterpolateStream) // Significant delta with a x ms difference? We're pretty off..
 			{
 				if (TimeError.ToleranceMS && Time.InterpolateStream)
-					Log::LogPrintf("Audio Desync: delta = %f ms difference = %f ms. Real song time %f (expected %f) Audio current time: %f (old = %f)\n",
-						SongDelta * 1000, deltaErr * 1000, Time.Stream, Time.InterpolatedStream, CurrAudioTime, Time.AudioOld);
+				Log::LogPrintf("Audio Desync: delta = %f ms difference = %f ms. Real song time %f (expected %f) Audio current time: %f (old = %f)\n",
+				SongDelta * 1000, deltaErr * 1000, Time.Stream, Time.InterpolatedStream, CurrAudioTime, Time.AudioOld);
 				Time.InterpolatedStream = Time.Stream;
 			}
-
+			
 			Time.AudioOld = CurrAudioTime;
 			Time.Stream += SongDelta;
 		}
-
+		
 		void ScreenGameplay::OnPlayerHit(ScoreKeeperJudgment judgment, double dt, uint32_t lane, bool hold, bool release, int pn)
 		{
 			
@@ -320,17 +332,17 @@ namespace Game {
 				Animations->GetEnv()->PushArgument(pn);
 				Animations->GetEnv()->RunFunction();
 			}
-
+			
 			auto PlayerScoreKeeper = Players[pn]->GetScoreKeeper();
 			if (PlayerScoreKeeper->getMaxNotes() == PlayerScoreKeeper->getScore(ST_NOTES_HIT))
-				Animations->DoEvent("OnFullComboEvent");
+			Animations->DoEvent("OnFullComboEvent");
 			
 		}
-
+		
 		void ScreenGameplay::OnPlayerMiss(double dt, uint32_t lane, bool hold, bool dontbreakcombo, bool earlymiss, int pn)
 		{
 			BGA->OnMiss();
-
+			
 			if (Animations->GetEnv()->CallFunction("MissEvent", 4))
 			{
 				Animations->GetEnv()->PushArgument(dt);
@@ -340,7 +352,7 @@ namespace Game {
 				Animations->GetEnv()->RunFunction();
 			}
 		}
-
+		
 		void ScreenGameplay::OnPlayerGearKeyEvent(uint32_t lane, bool keydown, int pn)
 		{
 			if (Animations->GetEnv()->CallFunction("GearKeyEvent", 3))
@@ -348,36 +360,36 @@ namespace Game {
 				Animations->GetEnv()->PushArgument((int)lane + 1);
 				Animations->GetEnv()->PushArgument(keydown);
 				Animations->GetEnv()->PushArgument(pn);
-
+				
 				Animations->GetEnv()->RunFunction();
 			}
 		}
-
+		
 		bool ScreenGameplay::Run(double Delta)
 		{
 			if (Next)
-				return RunNested(Delta);
-
+			return RunNested(Delta);
+			
 			if (!DoPlay)
-				return false;
-
+			return false;
+			
 			if (ForceActivation)
 			{
 				Activate();
 				ForceActivation = false;
 			}
-
+			
 			if (Active)
 			{
 				Time.Game += Delta;
 				Time.Miss -= Delta;
 				Time.Failure -= Delta;
 				Time.Success -= Delta;
-
+				
 				if (Time.Game >= Time.Waiting)
 				{
 					UpdateSongTime(Delta);
-
+					
 					// PlayerContext::Update(Time.Stream)
 					CheckShouldEndScreen();
 				}
@@ -387,33 +399,46 @@ namespace Game {
 					Time.Stream = Time.InterpolatedStream;
 				}
 			}
-
+			
 			RunAutoEvents();
 			for (auto &p : Players)
-				p->Update(Time.InterpolatedStream);
-
+			p->Update(Time.InterpolatedStream);
+			
 			Animations->UpdateTargets(Delta);
 			BGA->Update(Delta);
 			Render();
-
+			
 			if (Delta > 0.1)
-				Log::Logf("ScreenGameplay7K: Delay@[ST%.03f/RST:%.03f] = %f\n", GetScreenTime(), Time.Game, Delta);
-
+			Log::Logf("ScreenGameplay7K: Delay@[ST%.03f/RST:%.03f] = %f\n", GetScreenTime(), Time.Game, Delta);
+			
 			return Running;
 		}
-
-
+		
+		
 		void ScreenGameplay::Render()
 		{
-			BGA->Render();
-
 			Animations->DrawUntilLayer(13);
-
-			for (auto &p : Players)
-				p->Render(Time.InterpolatedStream);
-
-			Animations->DrawFromLayer(14);
+			
+			for (auto &p : Players) {
+				if (PlayfieldClipEnabled[p->GetPlayerNumber()])
+				{
+					Renderer::SetScissor(true);
+					
+					auto reg = PlayfieldClipArea[p->GetPlayerNumber()];
+					
+					Renderer::SetScissorRegionWnd(
+						reg.X1, reg.Y1, reg.width(), reg.height()
+					);
+					
+					p->Render(Time.InterpolatedStream);
+					Renderer::SetScissor(false);
+				} else {
+					p->Render(Time.InterpolatedStream);
+				}
+				
+				Animations->DrawFromLayer(14);
+			}
+			
 		}
-
 	}
 }

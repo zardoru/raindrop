@@ -29,6 +29,10 @@ namespace Renderer {
 	void DrawTexturedQuad(Texture* ToDraw, const AABB& TextureCrop, const Transformation& QuadTransformation, const EBlendMode &Mode = BLEND_ALPHA, const ColorRGB &InColor = Color::White);
 	void DrawPrimitiveQuad(Transformation &QuadTransformation, const EBlendMode &Mode = BLEND_ALPHA, const ColorRGB &InColor = Color::White);
 
+	void SetScissor(bool enable);
+	void SetScissorRegion(int x, int y, int w, int h);
+	void SetScissorRegionWnd(int x, int y, int w, int h);
+
 	VBO* GetDefaultGeometryBuffer();
 	VBO* GetDefaultTextureBuffer();
 	VBO* GetDefaultColorBuffer();

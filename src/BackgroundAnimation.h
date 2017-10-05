@@ -8,10 +8,8 @@ namespace Game
     class Song;
 }
 
-class BackgroundAnimation : public Interruptible
+class BackgroundAnimation : public Interruptible, public Drawable2D
 {
-protected:
-    Transformation Transform;
 public:
     BackgroundAnimation(Interruptible* parent = nullptr);
     virtual ~BackgroundAnimation() = default;
@@ -24,7 +22,6 @@ public:
     virtual void OnMiss();
     virtual void Render();
 
-    Transformation& GetTransformation();
     /* Can only be called from main thread if LoadNow = true! */
     static std::unique_ptr<BackgroundAnimation> CreateBGAFromSong(uint8_t DifficultyIndex, Game::Song& Input, Interruptible* context, bool LoadNow = false);
 };

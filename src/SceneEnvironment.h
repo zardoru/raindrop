@@ -82,7 +82,8 @@ public:
     void DoEvent(std::string EventName, int Return = 0);
     void AddLuaAnimation(Sprite* Target, const std::string &FName, int Easing, float Duration, float Delay);
     void StopAnimationsForTarget(Sprite* Target);
-    void AddTarget(Sprite *Targ, bool IsExternal = false);
+    void AddTarget(Drawable2D* Targ, bool IsExternal = false);
+    void AddSpriteTarget(Sprite* Targ);
     void AddLuaTarget(Sprite *Targ, std::string Varname);
     void AddLuaTargetArray(Sprite *Targ, std::string Varname, std::string Arrname);
     void RemoveTarget(Drawable2D *Targ);

@@ -31,14 +31,12 @@ namespace Engine
 
         void RenderInterface::EnableScissorRegion(bool enable)
         {
-            if (enable) glEnable(GL_SCISSOR_TEST);
-            else glDisable(GL_SCISSOR_TEST);
+            Renderer::SetScissor(enable);
         }
 
         void RenderInterface::SetScissorRegion(int x, int y, int width, int height)
         {
-			float ratio = WindowFrame.GetWindowVScale();
-            glScissor(x * ratio, (ScreenHeight - (y + height)) * ratio, width * ratio, height * ratio);
+            Renderer::SetScissorRegion(x, y, width, height);
         }
 
         struct pointf

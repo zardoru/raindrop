@@ -193,8 +193,6 @@
     <ClCompile Include="..\src\Sprite.cpp" />
     <ClCompile Include="..\src\RaindropRocketInterface.cpp" />
     <ClCompile Include="..\src\SceneEnvironment.cpp" />
-    <ClCompile Include="..\src\GuiButton.cpp" />
-    <ClCompile Include="..\src\GuiTextPrompt.cpp" />
     <ClCompile Include="..\src\SwRescale.cpp" />
     <ClCompile Include="..\src\Texture.cpp" />
     <ClCompile Include="..\src\ImageList.cpp" />
@@ -268,8 +266,6 @@
     <ClInclude Include="..\src\RaindropRocketInterface.h" />
     <ClInclude Include="..\src\Rendering.h" />
     <ClInclude Include="..\src\SceneEnvironment.h" />
-    <ClInclude Include="..\src\GuiButton.h" />
-    <ClInclude Include="..\src\GuiTextPrompt.h" />
     <ClInclude Include="..\src\SwRescale.h" />
     <ClInclude Include="..\src\Texture.h" />
     <ClInclude Include="..\src\ImageList.h" />
@@ -295,7 +291,6 @@
     <ClInclude Include="..\src\SongLoader.h" />
     <ClInclude Include="..\src\SongTiming.h" />
     <ClInclude Include="..\src\SongWheel.h" />
-    <ClInclude Include="..\src\GuiSwitchPanel.h" />
     <ClInclude Include="..\src\TrackNote.h" />
     <ClInclude Include="..\src\Transformation.h" />
     <ClInclude Include="..\src\TruetypeFont.h" />

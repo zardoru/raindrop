@@ -377,7 +377,7 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
     luabridge::getGlobalNamespace(AnimLua->GetState())
         .beginClass <SceneEnvironment>("GraphObjMan")
         .addFunction("AddAnimation", &SceneEnvironment::AddLuaAnimation)
-        .addFunction("AddTarget", &SceneEnvironment::AddTarget)
+        .addFunction("AddTarget", &SceneEnvironment::AddSpriteTarget)
         .addFunction("Sort", &SceneEnvironment::Sort)
         .addFunction("StopAnimation", &SceneEnvironment::StopAnimationsForTarget)
         .addFunction("SetUILayer", &SceneEnvironment::SetUILayer)
@@ -390,6 +390,20 @@ void CreateNewLuaAnimInterface(LuaManager *AnimLua)
 #undef f
 #undef p
 #undef v
+
+    luabridge::getGlobalNamespace(AnimLua->GetState())
+        .beginClass<AABB>("AABB")
+        .addConstructor<void (*)()>()
+        .addConstructor<void (*)(float, float, float, float)>()
+        .addData("x", &AABB::X1)
+        .addData("x2", &AABB::X2)
+        .addData("y", &AABB::Y1)
+        .addData("y2", &AABB::Y2)
+        .addProperty("w", &AABB::width, &AABB::SetWidth)
+        .addProperty("h", &AABB::height, &AABB::SetHeight)
+        .addFunction("Contains", &AABB::IsInBox)
+        .addFunction("Intersects", &AABB::Intersects)
+        .endClass();
 
     // These are mostly defined so we can pass them around and construct them.
     luabridge::getGlobalNamespace(AnimLua->GetState())

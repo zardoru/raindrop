@@ -13,6 +13,7 @@ Screen::Screen(std::string Name, bool InitUI)
     IntroDuration = 0;
     ScreenState = StateRunning;
     Animations = std::make_shared<SceneEnvironment>(Name.c_str(), InitUI);
+    SkipThisFrame = true;
 }
 
 Screen::Screen(std::string Name, std::shared_ptr<Screen> _Parent)

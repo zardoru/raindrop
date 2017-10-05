@@ -388,7 +388,7 @@ void SceneEnvironment::Initialize(std::filesystem::path Filename, bool RunScript
     Images->LoadAll();
 }
 
-void SceneEnvironment::AddTarget(Sprite *Targ, bool IsExternal)
+void SceneEnvironment::AddTarget(Drawable2D *Targ, bool IsExternal)
 {
     Objects.push_back(Targ);
 
@@ -396,6 +396,11 @@ void SceneEnvironment::AddTarget(Sprite *Targ, bool IsExternal)
         ExternalObjects.push_back(Targ);
 
     Sort();
+}
+
+void SceneEnvironment::AddSpriteTarget(Sprite *Targ)
+{
+    AddTarget(Targ, false);
 }
 
 void SceneEnvironment::AddLuaTarget(Sprite *Targ, std::string Varname)

@@ -127,6 +127,12 @@ public:
 
 				ojnfile.read(reinterpret_cast<char*>(&package), sizeof(OjnPackage));
 
+				// this happens sometimes, oddly -az
+				if (PackageHeader.measure >= Measures.size())
+				{
+					Measures.resize(PackageHeader.measure + 1);
+				}
+
 				switch (PackageHeader.channel)
 				{
 				case 0: // Fractional measure

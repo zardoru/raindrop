@@ -142,10 +142,10 @@ public:
         Layer1 = std::make_shared<Sprite>();
         Layer2 = std::make_shared<Sprite>();
 
-        Layer0->ChainTransformation(&Transform);
-        LayerMiss->ChainTransformation(&Transform);
-        Layer1->ChainTransformation(&Transform);
-        Layer2->ChainTransformation(&Transform);
+        Layer0->ChainTransformation(this);
+        LayerMiss->ChainTransformation(this);
+        Layer1->ChainTransformation(this);
+        Layer2->ChainTransformation(this);
 
         Layer0->SetZ(0);
         Layer1->SetZ(0);
@@ -179,8 +179,8 @@ public:
 
 
 
-        Transform.SetWidth(256 * ratio);
-        Transform.SetHeight(256);
+        SetWidth(256 * ratio);
+        SetHeight(256);
 
         Validated = true;
     }
@@ -263,9 +263,9 @@ public:
             auto pt = List.GetFromIndex(0);
             Background = std::make_shared<Sprite>();
             Background->SetImage(pt, false);
-            Background->ChainTransformation(&Transform);
-            Transform.SetWidth(pt ? pt->w : 0);
-            Transform.SetHeight(pt ? pt->h : 0);
+            Background->ChainTransformation(this);
+            SetWidth(pt ? pt->w : 0);
+            SetHeight(pt ? pt->h : 0);
         }
     }
 
@@ -327,11 +327,6 @@ void BackgroundAnimation::OnMiss()
 
 void BackgroundAnimation::Render()
 {
-}
-
-Transformation& BackgroundAnimation::GetTransformation()
-{
-    return Transform;
 }
 
 std::unique_ptr<BackgroundAnimation> BackgroundAnimation::CreateBGAFromSong(uint8_t DifficultyIndex, Game::Song& Input, Interruptible* context, bool LoadNow)

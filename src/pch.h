@@ -199,11 +199,19 @@ struct TAABB
 			IsInBox(other.X1, other.Y2);
 	}
 
-	inline T width() {
+	inline void SetWidth(T w) {
+		X2 = X1 + w;
+	}
+
+	inline void SetHeight(T h) {
+		Y2 = Y1 + h;
+	}
+
+	T width() const { 
 		return X2 - X1;
 	}
 
-	inline T height() {
+	T height() const {
 		return Y2 - Y1;
 	}
 };
