@@ -299,7 +299,7 @@ struct Fraction
 
 	Fraction<T> Simplify() {
 		T t = gcd(Num, Den);
-		return Fraction{ a / t, b / t };
+		return Fraction{ Num / t, Den / t };
 	}
 
 	operator double() {
