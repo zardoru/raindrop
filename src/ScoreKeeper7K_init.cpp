@@ -209,10 +209,12 @@ namespace Game {
 
 		void ScoreKeeper::setLifeTotal(double total, double multiplier)
 		{
-			double effmul = isnan(multiplier) ? 1 : multiplier;
+			double effmul = std::isnan(multiplier) ? 1 : multiplier;
 
-			if (total != -1 && isnan(multiplier) && !isnan(total)) lifebar_total = total;
-			else lifebar_total = std::max(260.0, 7.605 * max_notes / (6.5 + 0.01 * max_notes)) * effmul;
+			if (total != -1 && std::isnan(multiplier) && !std::isnan(total)) 
+				lifebar_total = total;
+			else 
+				lifebar_total = std::max(260.0, 7.605 * max_notes / (6.5 + 0.01 * max_notes)) * effmul;
 
 			// recalculate groove lifebar increments.
 			lifebar_easy_increment = Clamp(lifebar_total / max_notes / 50.0, 0.004, 0.8);

@@ -43,7 +43,7 @@ namespace Game {
 			std::unique_ptr<Game::VSRG::Mechanics> MechanicsSet;
 			std::shared_ptr<ScoreKeeper> PlayerScoreKeeper;
 
-			std::unique_ptr<Line> Barline;
+			Line* Barline;
 
 			double MsDisplayMargin;
 			double Drift;
@@ -76,6 +76,7 @@ namespace Game {
 			void RunAuto(TrackNote *m, double usedTime, uint32_t k);
 		public:
 			PlayerContext(int pn, Game::VSRG::PlayscreenParameters par = Game::VSRG::PlayscreenParameters());
+			~PlayerContext();
 			void Init();
 			void Validate();
 			void Update(double songTime);

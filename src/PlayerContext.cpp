@@ -31,6 +31,17 @@ namespace Game {
 				fnt = new BitmapFont();
 				fnt->LoadSkinFontImage("font.tga", Vec2(6, 15), Vec2(8, 16), Vec2(6, 15), 0);
 			}
+
+			Barline = nullptr;
+		}
+
+		PlayerContext::~PlayerContext()
+		{
+			if (Barline)
+			{
+				delete Barline;
+				Barline = nullptr;
+			}
 		}
 
 		void PlayerContext::Init() {
@@ -47,7 +58,7 @@ namespace Game {
 					Log::LogPrintf("Couldn't get valid bindings for current key count %d.\n", GetChannelCount());
 
 			if (PlayerNoteskin.IsBarlineEnabled())
-				Barline = std::make_unique<Line>();
+				Barline = new Line();
 		}
 
 

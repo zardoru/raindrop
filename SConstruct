@@ -1,4 +1,4 @@
-env = Environment(CXX='clang++')
+env = Environment(CXX='clang++', build_dir='build')
 env.Append(CPPPATH=[
 	'src/ext',
 	'src',
@@ -24,6 +24,10 @@ if not int(DisableMP3):
 	env.Append(LIBS=['mpg123'])
 
 import sys
+import os 
+
+if os.path.exists("src/pch.pch"):
+	env.Append(CXXFLAGS="-include-pch src/pch.pch")
 
 env.Program("dc", source=[
 	Glob('src/*.cpp'),

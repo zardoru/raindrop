@@ -231,7 +231,7 @@ namespace NoteLoaderBMSON
                 }
             }
 
-            if (isinf(last_y)) return 0;
+            if (std::isinf(last_y)) return 0;
 
             return last_y / resolution;
         }

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PCH_H_
+#define PCH_H_
 
 #if (defined _MSC_VER) && (_MSC_VER < 1800)
 #error "You require Visual Studio 2013 or higher to compile this application."
@@ -462,3 +463,5 @@ void BinRead(std::ifstream &of, T& obj) {
 
 #include "Configuration.h"
 #include "GameGlobal.h"
+
+#endif // #define PCH_H_
