@@ -1,4 +1,6 @@
-env = Environment(CXX='clang++', build_dir='build')
+VariantDir("build", "src", duplicate=0)
+
+env = Environment(CXX='clang++', variant_dir='build')
 env.Append(CPPPATH=[
 	'src/ext',
 	'src',
@@ -9,7 +11,7 @@ env.Append(CPPPATH=[
 	'lib/include'
 ])
 
-IsDebug = ARGUMENTS.get('release', 0)
+IsDebug = ARGUMENTS.get('debug', 0)
 DisableMP3 = ARGUMENTS.get('nomp3', 0)
 
 env.Append(CPPDEFINES=['LINUX'], CXXFLAGS="-std=c++14")
@@ -26,13 +28,16 @@ if not int(DisableMP3):
 import sys
 import os 
 
-if os.path.exists("src/pch.pch"):
+if os.path.exists("src/pch.pch") and not IsDebug:
 	env.Append(CXXFLAGS="-include-pch src/pch.pch")
 
+if os.path.exists("src/dpch.pch") and not IsDebug:
+	env.Append(CXXFLAGS="-include-pch src/dpch.pch")
+
 env.Program("dc", source=[
-	Glob('src/*.cpp'),
-	Glob('src/ext/*.c'),
-	Glob('src/ext/*.cpp')
+	Glob('build/*.cpp'),
+	Glob('build/ext/*.c'),
+	Glob('build/ext/*.cpp')
 ])
 
 env.Append(LIBS=[

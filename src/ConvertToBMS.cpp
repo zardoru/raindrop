@@ -27,18 +27,20 @@ class BMSConverter : public Game::VSRG::RowifiedDifficulty {
 	}
 
 	template <class T>
-	int GetIndexForValue(std::vector<T> &vec, T value)
+	uint32_t GetIndexForValue(std::vector<T> &vec, T value)
 	{
-		auto index = -1;
+		bool found = false;
+		uint32_t index = 0;
 		for (size_t i = 0; i < vec.size(); i++) {
 			if (vec[i] == value) {
 				index = i;
+				found = true;
 				break;
 			}
 		}
 
 		// Didn't find it. Push it.
-		if (index == -1) {
+		if (!found) {
 			vec.push_back(value);
 			index = vec.size() - 1;
 		}
@@ -114,11 +116,11 @@ class BMSConverter : public Game::VSRG::RowifiedDifficulty {
 		for (auto S : Parent->Data->Scrolls)
 		{
 			auto Beat = QuantizeFunction(IntegrateToTime(BPS, S.Time));
-			auto index = GetIndexForValue(Scrolls, S.Value);
+			uint32_t index = GetIndexForValue(Scrolls, S.Value);
 
 			if (Beat < 0) continue;
 
-			auto MeasureForEvent = MeasureForBeat(Beat);
+			uint32_t MeasureForEvent = MeasureForBeat(Beat);
 			ResizeTimingMeasures(MeasureForEvent);
 			TimingMeasures[MeasureForEvent].ScrollEvents.push_back({
 				FractionForMeasure(MeasureForEvent, Beat),

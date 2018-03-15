@@ -151,8 +151,13 @@ namespace Game {
 							int MeasureForEvent = MeasureForBeat(StartBeat);
 							ResizeMeasures(MeasureForEvent);
 
-							int Snd = N.Sound ? N.Sound : 1;
-							Measures[MeasureForEvent].Objects[K].push_back({ FractionForMeasure(MeasureForEvent, StartBeat), Snd });
+							auto Snd = N.Sound ? N.Sound : 1;
+							Measures[MeasureForEvent].Objects[K].push_back(
+								{ 
+									FractionForMeasure(MeasureForEvent, StartBeat), 
+									Snd 
+								}
+							);
 						}
 						else
 						{ // Hold. Emit channels 51-...
@@ -161,7 +166,7 @@ namespace Game {
 							int MeasureForEventEnd = MeasureForBeat(EndBeat);
 							ResizeMeasures(MeasureForEventEnd);
 
-							int Snd = N.Sound ? N.Sound : 1;
+							auto Snd = N.Sound ? N.Sound : 1;
 							Measures[MeasureForEvent].LNObjects[K].push_back({ FractionForMeasure(MeasureForEvent, StartBeat), Snd });
 							Measures[MeasureForEventEnd].LNObjects[K].push_back({ FractionForMeasure(MeasureForEventEnd, EndBeat), Snd });
 						}

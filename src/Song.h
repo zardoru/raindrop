@@ -55,10 +55,10 @@ typedef std::vector<TimingSegment> TimingData;
 
 struct AutoplaySound : public TimeBased < AutoplaySound, double >
 {
-    int Sound;
+    uint32_t Sound;
 
     AutoplaySound() : TimeBased(0), Sound(0) {};
-    AutoplaySound(double T, int V) : TimeBased(T), Sound(V) {}
+    AutoplaySound(double T, uint32_t V) : TimeBased(T), Sound(V) {}
 };
 
 struct AutoplayBMP : public TimeBased < AutoplayBMP, double >

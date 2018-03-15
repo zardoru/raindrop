@@ -18,12 +18,14 @@ namespace Game {
 			// start time and end time are 8 bytes each - 16 bytes.
 			double StartTime, EndTime;
 			uint32_t Sound; // Do we really need more than this?
+			uint32_t TailSound; 
 			uint8_t NoteKind; // To be used with ENoteKind.
+			// 7 bytes wasted
 
 			NoteData()
 			{
 				StartTime = EndTime = 0;
-				Sound = 0;
+				Sound = TailSound = 0;
 				NoteKind = NK_NORMAL;
 			}
 		};
@@ -38,15 +40,18 @@ namespace Game {
 			double b_pos;
 			double b_pos_holdend;
 
-			// 2 bytes
-			uint16_t Sound;
+			// 8 bytes
+			uint32_t Sound;
+			uint32_t TailSound;
 
 			// 3 bytes
 			uint8_t NoteKind; // To be used with ENoteKind.
 			uint8_t FractionKind;
+
+			// The only real state actually tracked by the note
 			uint8_t EnabledHitFlags;
 
-			// 40 bytes aligned
+			// 48 bytes aligned
 		public:
 			TrackNote();
 
@@ -59,8 +64,8 @@ namespace Game {
 			// Get the actual end time regardless of start time.
 			double &GetDataEndTime();
 
-			// Get what sound this note has. (Redundant)
-			uint16_t &GetDataSound();
+			// Get what sound this note has. (Redundant?)
+			uint32_t &GetDataSound();
 
 			// Get the kind of head this note has.
 			uint8_t  GetDataNoteKind();
@@ -113,7 +118,10 @@ namespace Game {
 			bool IsVisible() const;
 
 			// Get the sound associated to this note.
-			int GetSound() const;
+			uint32_t GetSound() const;
+
+			// Get the sound associated to this note's tail.
+			uint32_t GetTailSound() const;
 
 			// Get the maximum between the start and end times. If not a hold, Start = End.
 			double GetEndTime() const;

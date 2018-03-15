@@ -217,7 +217,7 @@ namespace Game {
 			struct Event
 			{
 				IFraction Sect;
-				int Evt;
+				uint32_t Evt;
 			};
 
 			struct Measure

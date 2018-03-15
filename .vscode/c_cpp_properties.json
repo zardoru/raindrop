@@ -28,15 +28,34 @@
             "includePath": [
                 "/usr/include",
                 "/usr/local/include",
-                "${workspaceRoot}"
+                "${workspaceRoot}",
+                "/usr/lib/llvm-3.8/lib/clang/3.8.0/include",
+                "/usr/include/c++/5",
+                "/usr/include/x86_64-linux-gnu/c++/5",
+                "${workspaceRoot}/src/",
+                "${workspaceRoot}/lib/include/",
+                "${workspaceRoot}/lib/include/portaudio",
+                "${workspaceRoot}/lib/include/libmpg123",
+                "${workspaceRoot}/lib/include/libpng",
+                "${workspaceRoot}/lib/include/libjpeg-turbo",
+                "${workspaceRoot}/lib/include/zlib",
+                "${workspaceRoot}/lib/include/libsndfile",
+                "${workspaceRoot}/lib/include/stb",
+                "${workspaceRoot}/lib/include/sqlite3",
+                "${workspaceRoot}/lib/include/soxr",
+                "${workspaceRoot}/lib/include/LuaBridge",
+                "${workspaceRoot}/lib/include/lua",
+                "${workspaceRoot}/lib/include/stdex",
+                "/usr/include/x86_64-linux-gnu"
             ],
-            "defines": [],
+            "defines": ["LINUX", "MP3_ENABLED"],
             "intelliSenseMode": "clang-x64",
             "browse": {
                 "path": [
                     "/usr/include",
                     "/usr/local/include",
-                    "${workspaceRoot}"
+                    "${workspaceRoot}",
+                    "${workspaceRoot}/src/"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""

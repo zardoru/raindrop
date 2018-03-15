@@ -17,11 +17,7 @@ inline float func_ease_out(float lerp, std::function<float(float)> f)
 
 inline float f2_ease_inout(float lerp, std::function<float(float)> f1, std::function<float(float)> f2)
 {
-	lerp *= 2;
-	if (lerp < 1)
-		return func_ease_in(lerp, f1);
-	else
-		return func_ease_out(lerp - 1, f2);
+	return lerp * func_ease_in(lerp, f1) + (1 - lerp) * func_ease_out(lerp, f2);
 }
 
 inline float func_ease_inout(float lerp, std::function<float(float)> f1)

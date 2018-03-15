@@ -58,6 +58,7 @@ namespace Game {
 			Time = Notedata.StartTime;
 			EndTime = Notedata.EndTime;
 			Sound = Notedata.Sound;
+			TailSound = Notedata.TailSound;
 			NoteKind = Notedata.NoteKind;
 		}
 
@@ -138,9 +139,14 @@ namespace Game {
 			return b_pos + GetHoldSize() / 2;
 		}
 
-		int TrackNote::GetSound() const
+		uint32_t TrackNote::GetSound() const
 		{
 			return Sound;
+		}
+
+		uint32_t TrackNote::GetTailSound() const
+		{
+			return TailSound;
 		}
 
 		int TrackNote::GetFracKind() const
@@ -158,7 +164,7 @@ namespace Game {
 			return EndTime;
 		}
 
-		uint16_t &TrackNote::GetDataSound()
+		uint32_t &TrackNote::GetDataSound()
 		{
 			return Sound;
 		}

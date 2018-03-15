@@ -209,6 +209,8 @@ namespace Game {
 					m->Disable();
 					SetLaneHoldingState(Lane, false);
 				}
+
+				PlayNoteSoundEvent(m->GetTailSound());
 				return true;
 			}
 
@@ -246,6 +248,9 @@ namespace Game {
 					m->Disable();
 					SetLaneHoldingState(Lane, false);
 				}
+
+				PlayNoteSoundEvent(m->GetTailSound());
+				
 				return true;
 			}
 

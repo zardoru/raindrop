@@ -33,7 +33,7 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, void* Sound, double
 #ifdef WIN32
 	bool useAuto = (RequestedLatency < 0 && UseWasapi) || (RequestedLatency <= 0 && !UseWasapi);
 #else
-	bool useAuto = RequestedLatency <= 0;
+	bool useAuto = RequestedLatency <= 0.0;
 #endif
 	if ( useAuto || UseHighLatency) {
 		if (!UseHighLatency)
@@ -104,7 +104,7 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, void* Sound, double
     dLatency = outputParams.suggestedLatency;
 
 	double Rate = Pa_GetDeviceInfo(Device)->defaultSampleRate;
-    Log::Logf("AUDIO: Device Selected %d (Rate: %f)\n", Device, Rate);
+    Log::Logf("AUDIO: Device Selected %d (Rate: %f)\n", Device + 1, Rate);
     // fire up portaudio
     PaError Err = Pa_OpenStream(mStream, nullptr, &outputParams, Rate, 0, 0, Callback, static_cast<void*>(Sound));
 
@@ -208,7 +208,11 @@ public:
             OpenStream(&Stream, DefaultDSDevice, static_cast<void*>(this), Latency, Mix);
         }
 #else
-        OpenStream(&Stream, Pa_GetDefaultOutputDevice(), (void*) this, Latency, Mix);
+        CfgVar RequestedDevice("RequestedDevice", "Audio");
+        if (RequestedDevice == 0)
+            OpenStream(&Stream, Pa_GetDefaultOutputDevice(), (void*) this, Latency, Mix);
+        else
+            OpenStream(&Stream, RequestedDevice - 1, (void*) this, Latency, Mix);
 #endif
 
         if (Stream)
@@ -400,7 +404,7 @@ void GetAudioInfo()
     {
         const PaDeviceInfo *Info = Pa_GetDeviceInfo(i);
 		if (Info->maxOutputChannels == 0) continue; // Skip input devices.
-        Log::Logf("(%d): %s\n", i, Info->name);
+        Log::Logf("(%d): %s\n", i + 1, Info->name);
         Log::Logf("\thighLat: %f ms, lowLat: %f ma\n", Info->defaultHighOutputLatency * 1000, Info->defaultLowOutputLatency * 1000);
         Log::Logf("\tsampleRate: %f, hostApi: %d\n", Info->defaultSampleRate, Info->hostApi);
         Log::Logf("\tmaxchannels: %d\n", Info->maxOutputChannels);
