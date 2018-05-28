@@ -32,6 +32,7 @@ ConfigurationException CfgNotLoaded("Configuration not loaded yet.");
 
 void Configuration::SetConfigFile(std::string cfg)
 {
+	Log::LogPrintf("Using configuration file %s\n", cfg.c_str());
     ConfigFile = cfg;
 }
 

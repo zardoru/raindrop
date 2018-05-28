@@ -145,6 +145,32 @@ bool AudioSourceMP3::HasDataLeft()
     return mIsDataLeft;
 }
 
+std::string toSafeString1(char* s)
+{
+	std::string ret = "";
+	for (int i = 0; i < 30; i++)
+	{
+		if (isprint(s[i]))
+			ret += s[i];
+		else
+			return ret;
+	}
+
+	return ret;
+}
+
+std::string toSafeString2(mpg123_string *str)
+{
+	std::string s;
+	if (str) {
+		if (str->p != nullptr) {
+			s = std::string(str->p, str->fill - 1);
+		}
+	}
+
+	return s;
+}
+
 AudioSourceMP3::Metadata AudioSourceMP3::GetMetadata()
 {
 	if (mpg123_scan(mHandle) == MPG123_OK)
@@ -157,15 +183,15 @@ AudioSourceMP3::Metadata AudioSourceMP3::GetMetadata()
 			mpg123_id3(mHandle, &v1, &v2) == MPG123_OK) {
 			if (v1) {
 				return Metadata{
-					std::string(v1->artist, 30),
-					std::string(v1->title, 30)
+					toSafeString1(v1->artist),
+					toSafeString1(v1->title)
 				};
 			}
 
 			if (v2) {
 				return Metadata{
-					std::string(v2->artist ? v2->artist->p : "", 30),
-					std::string(v2->title ? v2->title->p : "", 30)
+					toSafeString2(v2->artist),
+					toSafeString2(v2->title)
 				};
 			}
 		}

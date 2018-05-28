@@ -273,8 +273,10 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<G
 
 		if (VSRGValidExtension(Ext) &&
 			Fname.length() &&
-			DB->CacheNeedsRenewal(File))
-				RenewCache = true;
+			DB->CacheNeedsRenewal(File)) {
+			Log::LogPrintf("File '%s' needs renewal.\n", File.string().c_str());
+			RenewCache = true;
+		}
     }
 
     // Files were modified- we have to reload the charts.
@@ -418,7 +420,7 @@ std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const Game::VSRG::Song* Met
     if (!Out) return nullptr;
 
     // Copy relevant data
-    Out->SongDirectory = Meta->SongDirectory;
+    Out->SongDirectory = fn.parent_path();
 
     Index = 0;
     /* Find out Difficulty IDs to the recently loaded song's difficulty! */

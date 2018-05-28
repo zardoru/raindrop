@@ -135,7 +135,7 @@ namespace Game {
 
 			auto Rate = GameState::GetInstance().GetParameters(0)->Rate;
 
-
+			Log::LogPrintf("Chart audio: Load start!\n");
 			auto &ps = Players[0]->GetPlayerState();
 			auto SoundList = ps.GetSoundList();
 			if (!Music)
@@ -145,7 +145,7 @@ namespace Game {
 
 				auto s = MySong->SongDirectory / MySong->SongFilename;
 
-				Log::LogPrintf("Chart Audio: Attempt to load \"%s\"...", s.string().c_str());
+				Log::LogPrintf("Chart Audio: Attempt to load \"%s\"...\n", s.string().c_str());
 
 				if (std::filesystem::exists(s)
 					&& Music->Open(s))

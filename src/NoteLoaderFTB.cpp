@@ -7,6 +7,8 @@
 #include "Audiofile.h"
 #include "AudioSourceMP3.h"
 
+#include "Logging.h"
+
 using namespace Game::VSRG;
 
 /*
@@ -48,17 +50,13 @@ void NoteLoaderFTB::LoadMetadata(std::string filename, std::string prefix, Song 
 
 void LoadFTBFromString(std::string s, Difficulty *Diff)
 {
-	std::stringstream filein;
-	filein << s;
 	Measure Msr;
 
 	int cnt = 0;
 
-	while (filein)
+	auto lines = Utility::TokenSplit(s, "\r\n", true);
+	for(auto Line : lines)
 	{
-		std::string Line;
-		std::getline(filein, Line);
-
 		Line = Utility::Trim(Line);
 
 		if (Line[0] == '#' || Line.length() == 0)
@@ -97,19 +95,24 @@ void LoadFTBFromString(std::string s, Difficulty *Diff)
 			int Track = atoi(LineContents[2].c_str()); // Always > 1
 
 			Diff->Duration = std::max(std::max(Note.StartTime, Note.EndTime), Diff->Duration);
-			Msr.Notes[Track - 1].push_back(Note);
+			
+			if (Track > 0)
+				Msr.Notes[Track - 1].push_back(Note);
+
 			cnt++;
 		}
 	}
 
 	// Offsetize
-	if (Diff->Timing.size())
+	if (Diff->Timing.size() == 0)
 	{
-		Diff->Offset = Diff->Timing.begin()->Time;
-
-		for (auto i : Diff->Timing)
-			i.Time -= Diff->Offset;
+		Diff->Timing.push_back(TimingSegment{ 0, 120 });
 	}
+
+	/*Diff->Offset = Diff->Timing[0].Time;
+
+	for (auto &i : Diff->Timing)
+		i.Time -= Diff->Offset;*/
 
 	Diff->Data->Measures.push_back(Msr);
 	Diff->Level = (float)cnt / Diff->Duration;
@@ -118,10 +121,14 @@ void LoadFTBFromString(std::string s, Difficulty *Diff)
 void SetMetadataFromMP3(Song* song)
 {
 	AudioSourceMP3 source;
-	if (source.Open(song->SongFilename)) {
+	if (source.Open(song->SongDirectory / song->SongFilename)) {
 		auto meta = source.GetMetadata();
-		song->Artist = meta.artist;
-		song->Title = meta.title;
+		song->Artist = Utility::Trim(meta.artist);
+		song->Title = Utility::Trim(meta.title);
+
+		if (song->Artist == "" || song->Title == "") {
+			Log::LogPrintf("%s is missing metadata information\n", song->SongFilename.string().c_str());
+		}
 	}
 
 }
@@ -132,13 +139,12 @@ void NoteLoaderFTB::LoadObjectsFromFile(std::filesystem::path filename, Song *Ou
 
     if (!input)
     {
-failed:
         return;
     }
 
 	// whatever__stuff.ext -> whatever
-	auto filestr = filename.replace_extension("").string();
-	auto songname = filestr.substr(0, filestr.find_first_of("_"));
+	auto filestr = filename.filename().replace_extension("").string();
+	auto songname = filestr.substr(0, filestr.find_last_of("_"));
 
 	if (unzGoToFirstFile(input) == UNZ_OK) {
 		do {
@@ -174,11 +180,12 @@ failed:
 
 					LoadFTBFromString(std::string(data, len), Diff.get());
 
+					// done!
+					if (Diff->Duration > 0)
+						Out->Difficulties.push_back(Diff);
+
 					delete[] data;
 					unzCloseCurrentFile(input);
-
-					// done!
-					Out->Difficulties.push_back(Diff);
 				} // opened file
 			}
 			else continue; // no file info
@@ -188,6 +195,10 @@ failed:
 	unzClose(input);
 
 	// done with difficulties. Now metadata
-	Out->SongFilename = filestr + ".ftb";
+	Out->SongFilename = filename.filename().replace_extension("ftb");
+	Out->SongPreviewSource = Out->SongFilename;
 	SetMetadataFromMP3(Out);
+	if (Out->Title == "") {
+		Out->Title = songname;
+	}
 }
