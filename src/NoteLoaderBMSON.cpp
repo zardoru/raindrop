@@ -154,8 +154,8 @@ namespace NoteLoaderBMSON
         void LoadMeta()
         {
             auto meta = root["info"];
-            song->SongName = NoteLoaderBMS::GetSubtitles(meta["title"].asString(), subtitles);
-            song->SongAuthor = meta["artist"].asString();
+            song->Title = NoteLoaderBMS::GetSubtitles(meta["title"].asString(), subtitles);
+            song->Artist = meta["artist"].asString();
             song->Subtitle = meta["subtitle"].asString() + Utility::Join(subtitles, " ");
 
             song->BackgroundFilename = meta["back_image"].asString();

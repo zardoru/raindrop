@@ -21,7 +21,9 @@
             "macFrameworkPath": [
                 "/System/Library/Frameworks",
                 "/Library/Frameworks"
-            ]
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++17"
         },
         {
             "name": "Linux",
@@ -48,7 +50,10 @@
                 "${workspaceRoot}/lib/include/stdex",
                 "/usr/include/x86_64-linux-gnu"
             ],
-            "defines": ["LINUX", "MP3_ENABLED"],
+            "defines": [
+                "LINUX",
+                "MP3_ENABLED"
+            ],
             "intelliSenseMode": "clang-x64",
             "browse": {
                 "path": [
@@ -59,7 +64,9 @@
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
-            }
+            },
+            "cStandard": "c11",
+            "cppStandard": "c++17"
         },
         {
             "name": "Win32",
@@ -102,8 +109,10 @@
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": "${workspaceRoot}/.vscode/browse.db"
-            }
+            },
+            "cStandard": "c11",
+            "cppStandard": "c++17"
         }
     ],
-    "version": 3
+    "version": 4
 }

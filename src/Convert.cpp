@@ -18,7 +18,7 @@ void ConvertToOM(Game::VSRG::Song *Sng, std::filesystem::path PathOut, std::stri
 	Log::LogPrintf("Attempt to convert %d difficulties...\n", Sng->Difficulties.size());
     for (auto Difficulty : Sng->Difficulties)
     {
-        std::string Name = Sng->SongName;
+        std::string Name = Sng->Title;
         std::string DName = Difficulty->Name;
         std::string Charter = Author;
 
@@ -69,10 +69,10 @@ void ConvertToOM(Game::VSRG::Song *Sng, std::filesystem::path PathOut, std::stri
 
         out
             << "[Metadata]\n"
-            << "Title: " << Sng->SongName << "\n"
-            << "TitleUnicode: " << Sng->SongName << "\n"
-            << "Artist: " << Sng->SongAuthor << "\n"
-            << "ArtistUnicode: " << Sng->SongAuthor << "\n"
+            << "Title: " << Sng->Title << "\n"
+            << "TitleUnicode: " << Sng->Title << "\n"
+            << "Artist: " << Sng->Artist << "\n"
+            << "ArtistUnicode: " << Sng->Artist << "\n"
             << "Creator: " << Author << "\n"
             << "Version: " << Difficulty->Name << "\n"
             << "Source: \nTags: \nBeatmapID:0\nBeatmapSetID:-1\n\n";

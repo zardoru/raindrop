@@ -1018,18 +1018,18 @@ namespace NoteLoaderBMS{
 
                 OnCommand(#title)
                 {
-					Out->SongName = Utility::Trim(CommandContents);
+					Out->Title = Utility::Trim(CommandContents);
                 }
 
                 OnCommand(#artist)
                 {
-                    Out->SongAuthor = CommandContents;
+                    Out->Artist = CommandContents;
 
-                    size_t np = Out->SongAuthor.find_first_not_of(" ");
+                    size_t np = Out->Artist.find_first_not_of(" ");
 
                     if (np != std::string::npos)
                     {
-                        std::string author = Out->SongAuthor.substr(np); // I have a feeling this regex will keep growing
+                        std::string author = Out->Artist.substr(np); // I have a feeling this regex will keep growing
                         std::regex chart_author_regex("\\s*[\\/_]?\\s*(?:obj|note)\\.?\\s*[:_]?\\s*(.*)", std::regex::icase);
                         std::smatch sm;
                         if (regex_search(author, sm, chart_author_regex))
@@ -1039,7 +1039,7 @@ namespace NoteLoaderBMS{
                             author = regex_replace(author, chart_author_regex, "\0");
                         }
 
-                        Out->SongAuthor = author;
+                        Out->Artist = author;
                     }
                 }
 
@@ -1225,7 +1225,7 @@ namespace NoteLoaderBMS{
         Info->CompileBMS();
 
         // First try to find a suiting subtitle
-        std::string NewTitle = GetSubtitles(Out->SongName, Subs);
+        std::string NewTitle = GetSubtitles(Out->Title, Subs);
 		if (!Diff->Name.length())
 			Diff->Name = DifficultyNameFromSubtitles(Subs);
 		else
@@ -1233,7 +1233,7 @@ namespace NoteLoaderBMS{
 
         // If we've got a title that's usuable then why not use it.
         if (NewTitle.length() > 0)
-            Out->SongName = NewTitle.substr(0, NewTitle.find_last_not_of(" ") + 1);
+            Out->Title = NewTitle.substr(0, NewTitle.find_last_not_of(" ") + 1);
 
         if (Subs.size() > 1)
             Out->Subtitle = Utility::Join(Subs, " ");

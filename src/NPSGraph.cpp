@@ -106,7 +106,7 @@ public:
 
         out << Utility::Format("<text x=\"%.0f\" y=\"%.0f\" fill=\"black\">%s - %s (%s) by %s (Max NPS: %.2f/Avg NPS: %.2f)</text>",
             TextXOffset, TextYOffset,
-            Song->SongName.c_str(), Song->SongAuthor.c_str(), 
+            Song->Title.c_str(), Song->Artist.c_str(), 
 			Song->GetDifficulty(diffIndex)->Name.c_str(), DiffAuth.c_str(),
             peakf / intervalduration,
             avgNPS) << endl;
@@ -166,7 +166,7 @@ void ConvertToNPSGraph(Game::VSRG::Song *Sng, std::filesystem::path PathOut)
     {
         auto Diff = Sng->GetDifficulty(i);
 
-		auto s = Utility::Format("%s (%s) - %s.svg", Sng->SongName.c_str(), Diff->Name.c_str(), Diff->Author.c_str());
+		auto s = Utility::Format("%s (%s) - %s.svg", Sng->Title.c_str(), Diff->Name.c_str(), Diff->Author.c_str());
         std::filesystem::path name = PathOut / s;
 
 		Log::LogPrintf("Opening %s and writing graph.\n", name.string().c_str());

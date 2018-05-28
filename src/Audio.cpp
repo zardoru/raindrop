@@ -156,8 +156,11 @@ class PaMixer
     std::mutex mut, mut2, rbufmux;
     std::condition_variable ringbuffer_has_space;
 
-    PaMixer() {};
+    PaMixer() {
+		Stream = nullptr;
+	}
 public:
+
 
     static PaMixer &GetInstance()
     {
@@ -167,6 +170,9 @@ public:
 
 	double GetRate() const
 	{
+		if (!Stream)
+			return 44100.0;
+
 		return Pa_GetStreamInfo(Stream)->sampleRate;
     }
 

@@ -122,10 +122,10 @@ namespace Game
         ModeType Mode;
 
         /* Song title */
-        std::string SongName;
+        std::string Title;
 
         /* Song Author */
-        std::string SongAuthor;
+        std::string Artist;
 
         /* Directory where files are contained */
         std::filesystem::path SongDirectory;

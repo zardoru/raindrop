@@ -40,12 +40,6 @@
     <ClCompile Include="..\src\GameWindow.cpp">
       <Filter>Source Files\backend\window</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\GuiButton.cpp">
-      <Filter>Source Files\backend\gui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\GuiTextPrompt.cpp">
-      <Filter>Source Files\backend\gui</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Rendering.cpp">
       <Filter>Source Files\backend\render</Filter>
     </ClCompile>
@@ -259,6 +253,12 @@
     <ClCompile Include="..\src\SongDatabase.cpp">
       <Filter>Source Files\game global\song interface</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\ext\unzip.c">
+      <Filter>Static Libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ext\ioapi.c">
+      <Filter>Static Libraries</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\pch.h">
@@ -287,15 +287,6 @@
     </ClInclude>
     <ClInclude Include="..\src\Configuration.h">
       <Filter>Header Files\backend\cfg</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\GuiButton.h">
-      <Filter>Header Files\backend\gui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\GuiSwitchPanel.h">
-      <Filter>Header Files\backend\gui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\GuiTextPrompt.h">
-      <Filter>Header Files\backend\gui</Filter>
     </ClInclude>
     <ClInclude Include="..\src\RaindropRocketInterface.h">
       <Filter>Header Files\backend\librocket</Filter>

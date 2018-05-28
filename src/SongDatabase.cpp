@@ -351,11 +351,11 @@ int SongDatabase::AddSongToDatabase(Game::VSRG::Song * Song)
 	// So now the latest entry is what we're going to insert difficulties and files into.
 	SC(sqlite3_bind_text(st_SngInsertQuery, 
 		sqlite3_bind_parameter_index(st_SngInsertQuery, "$title"),
-		Song->SongName.c_str(), Song->SongName.length(), SQLITE_STATIC));
+		Song->Title.c_str(), Song->Title.length(), SQLITE_STATIC));
 
 	SC(sqlite3_bind_text(st_SngInsertQuery, 
 		sqlite3_bind_parameter_index(st_SngInsertQuery, "$author"),
-		Song->SongAuthor.c_str(), Song->SongAuthor.length(), SQLITE_STATIC));
+		Song->Artist.c_str(), Song->Artist.length(), SQLITE_STATIC));
 
 	SC(sqlite3_bind_text(st_SngInsertQuery, 
 		sqlite3_bind_parameter_index(st_SngInsertQuery, "$subtitle"),
@@ -558,8 +558,8 @@ void SongDatabase::GetSongInformation(int ID, Game::VSRG::Song* Out)
 
 	// oh god there is no better way without keeping track of column names for a
 	// statement by yourself...
-    Out->SongName = (char*)sqlite3_column_text(stGetSongInfo, 0);
-    Out->SongAuthor = (char*)sqlite3_column_text(stGetSongInfo, 1);
+    Out->Title = (char*)sqlite3_column_text(stGetSongInfo, 0);
+    Out->Artist = (char*)sqlite3_column_text(stGetSongInfo, 1);
     Out->SongFilename = _W(sqlite3_column_text(stGetSongInfo, 2));
     Out->Subtitle = (char*)sqlite3_column_text(stGetSongInfo, 3);
     Out->BackgroundFilename = _W(sqlite3_column_text(stGetSongInfo, 4));

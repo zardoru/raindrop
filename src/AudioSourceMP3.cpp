@@ -144,3 +144,34 @@ bool AudioSourceMP3::HasDataLeft()
 {
     return mIsDataLeft;
 }
+
+AudioSourceMP3::Metadata AudioSourceMP3::GetMetadata()
+{
+	if (mpg123_scan(mHandle) == MPG123_OK)
+	{
+		auto meta = mpg123_meta_check(mHandle);
+		mpg123_id3v1 *v1;
+		mpg123_id3v2 *v2;
+
+		if ((meta & MPG123_ID3) && 
+			mpg123_id3(mHandle, &v1, &v2) == MPG123_OK) {
+			if (v1) {
+				return Metadata{
+					std::string(v1->artist, 30),
+					std::string(v1->title, 30)
+				};
+			}
+
+			if (v2) {
+				return Metadata{
+					std::string(v2->artist ? v2->artist->p : "", 30),
+					std::string(v2->title ? v2->title->p : "", 30)
+				};
+			}
+		}
+	}
+
+
+	return Metadata();
+}
+

@@ -24,6 +24,13 @@ public:
     uint32_t GetChannels() override; // Returns channels of audio
     bool IsValid() override;
     bool HasDataLeft() override;
+
+	struct Metadata {
+		std::string artist;
+		std::string title;
+	};
+
+	Metadata GetMetadata();
 };
 
 #endif

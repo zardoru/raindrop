@@ -205,7 +205,7 @@ std::string SongList::GetEntryTitle(unsigned int Entry)
     else
     {
         std::shared_ptr<Game::Song> Song = std::static_pointer_cast<Game::Song>(mChildren[Entry].Data);
-        return Song->SongName;
+        return Song->Title;
     }
 }
 
@@ -254,7 +254,7 @@ void SongList::SortBy(ESortCriteria criteria)
 		{
 			auto a = std::static_pointer_cast<Game::Song>(A.Data);
 			auto b = std::static_pointer_cast<Game::Song>(B.Data);
-			return a->SongName < b->SongName;
+			return a->Title < b->Title;
 		});
 		break;
 	case SORT_AUTHOR:
@@ -262,7 +262,7 @@ void SongList::SortBy(ESortCriteria criteria)
 		{
 			auto a = std::static_pointer_cast<Game::Song>(A.Data);
 			auto b = std::static_pointer_cast<Game::Song>(B.Data);
-			return a->SongAuthor < b->SongAuthor;
+			return a->Artist < b->Artist;
 		});
 		break;
 	case SORT_LENGTH:

@@ -137,8 +137,8 @@ class BMSConverter : public Game::VSRG::RowifiedDifficulty {
 		using std::endl;
 		OutFile << "-- " << RAINDROP_WINDOWTITLE << RAINDROP_VERSIONTEXT << " converter to BMS" << endl;
 		OutFile << "-- HEADER" << endl;
-		OutFile << "#ARTIST " << Song->SongAuthor << endl;
-		OutFile << "#TITLE " << Song->SongName << endl;
+		OutFile << "#ARTIST " << Song->Artist << endl;
+		OutFile << "#TITLE " << Song->Title << endl;
 		OutFile << "#MUSIC " << Song->SongFilename << endl;
 		OutFile << "#OFFSET " << Parent->Offset << endl;
 		OutFile << "#BPM " << GetStartingBPM() << endl;
@@ -328,7 +328,7 @@ public:
 	void Output(std::filesystem::path PathOut)
 	{
 		std::filesystem::path name = PathOut / Utility::Format("%s (%s) - %s.bms", 
-			Song->SongName.c_str(), Parent->Name.c_str(), Parent->Author.c_str());
+			Song->Title.c_str(), Parent->Name.c_str(), Parent->Author.c_str());
 
 		Log::Printf("Converting to file %s...\n", name.c_str());
         std::ofstream out(name.string());

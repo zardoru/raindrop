@@ -436,11 +436,11 @@ public:
 		Utility::Trim(Content);
 		if (Command == "Title")
 		{
-			osu_sng->SongName = Content;
+			osu_sng->Title = Content;
 		}
 		else if (Command == "Artist")
 		{
-			osu_sng->SongAuthor = Content;
+			osu_sng->Artist = Content;
 		}
 		else if (Command == "Version")
 		{
@@ -449,12 +449,12 @@ public:
 		else if (Command == "TitleUnicode")
 		{
 			if (Content.length() > 1)
-				osu_sng->SongName = Content;
+				osu_sng->Title = Content;
 		}
 		else if (Command == "ArtistUnicode")
 		{
 			if (Content.length() > 1)
-				osu_sng->SongAuthor = Content;
+				osu_sng->Artist = Content;
 		}
 		else if (Command == "Creator")
 		{

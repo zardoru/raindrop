@@ -22,7 +22,7 @@ struct loaderVSRGEntry_t
     { L".pms",   NoteLoaderBMS::LoadObjectsFromFile },
     { L".sm",    NoteLoaderSM::LoadObjectsFromFile  },
     { L".osu",   NoteLoaderOM::LoadObjectsFromFile  },
-    { L".fcf",   NoteLoaderFTB::LoadObjectsFromFile },
+    { L".ft2",   NoteLoaderFTB::LoadObjectsFromFile },
     { L".ojn",   NoteLoaderOJN::LoadObjectsFromFile },
     { L".ssc",   NoteLoaderSSC::LoadObjectsFromFile },
     { L".bmson", NoteLoaderBMSON::LoadObjectsFromFile }
@@ -174,6 +174,60 @@ void AddSongToList(std::vector<Game::VSRG::Song*> &VecOut, Game::VSRG::Song* Sng
         delete Sng;
 }
 
+void SongLoader::LoadBMS(Game::VSRG::Song * &BMSSong, 
+	std::filesystem::path &SongDirectory, 
+	std::filesystem::path File, 
+	CfgVar &NoFileGrouping, 
+	std::map<std::string, Game::VSRG::Song *> &bmsk, 
+	std::vector<Game::VSRG::Song *> & VecOut)
+{
+	BMSSong->SongDirectory = SongDirectory;
+
+	try
+	{
+		LoadSong7KFromFilename(File, SongDirectory, BMSSong);
+	}
+	catch (std::exception &ex)
+	{
+		Log::Logf("\nSongLoader::LoadSong7KFromDir(): Exception \"%s\" occurred while loading file \"%s\"\n",
+			ex.what(), File.filename().c_str());
+		Utility::DebugBreak();
+	}
+
+	// We found a chart with the same title (and subtitle) already.
+
+	if (!NoFileGrouping) {
+		std::string key;
+		if (Configuration::GetConfigf("SeparateBySubtitle"))
+			key = BMSSong->Title + BMSSong->Subtitle;
+		else
+			key = BMSSong->Title;
+
+		if (bmsk.find(key) != bmsk.end())
+		{
+			Game::VSRG::Song *oldSng = bmsk[key];
+
+			if (BMSSong->Difficulties.size()) // BMS charts don't have more than one difficulty anyway.
+				oldSng->Difficulties.push_back(BMSSong->Difficulties[0]);
+
+			BMSSong->Difficulties.clear();
+			delete BMSSong;
+		}
+		else // Ah then, don't delete it.
+		{
+			bmsk[key] = BMSSong;
+		}
+
+		BMSSong = new Game::VSRG::Song;
+	}
+	else
+	{
+		PushSongToDatabase(DB, BMSSong);
+		AddSongToList(VecOut, BMSSong);
+		BMSSong = new Game::VSRG::Song;
+	}
+}
+
 void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<Game::VSRG::Song*> &VecOut)
 {
 	if (!std::filesystem::is_directory(songPath))
@@ -251,53 +305,11 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<G
             // We want to group charts with the same title together.
             if (ValidBMSExtension(Ext) || Ext == L".bmson")
             {
-                BMSSong->SongDirectory = SongDirectory;
-
-                try
-                {
-                    LoadSong7KFromFilename(File, SongDirectory, BMSSong);
-                }
-                catch (std::exception &ex)
-                {
-                    Log::Logf("\nSongLoader::LoadSong7KFromDir(): Exception \"%s\" occurred while loading file \"%s\"\n",
-                        ex.what(), File.filename().c_str());
-                    Utility::DebugBreak();
-                }
-
-                // We found a chart with the same title (and subtitle) already.
-
-				if (!NoFileGrouping) {
-					std::string key;
-					if (Configuration::GetConfigf("SeparateBySubtitle"))
-						key = BMSSong->SongName + BMSSong->Subtitle;
-					else
-						key = BMSSong->SongName;
-
-					if (bmsk.find(key) != bmsk.end())
-					{
-						Game::VSRG::Song *oldSng = bmsk[key];
-
-						if (BMSSong->Difficulties.size()) // BMS charts don't have more than one difficulty anyway.
-							oldSng->Difficulties.push_back(BMSSong->Difficulties[0]);
-
-						BMSSong->Difficulties.clear();
-						delete BMSSong;
-					}
-					else // Ah then, don't delete it.
-					{
-						bmsk[key] = BMSSong;
-					}
-
-					BMSSong = new Game::VSRG::Song;
-				} else
-				{
-					PushSongToDatabase(DB, BMSSong);
-					AddSongToList(VecOut, BMSSong);
-					BMSSong = new Game::VSRG::Song;
-				}
+				LoadBMS(BMSSong, SongDirectory, File, NoFileGrouping, bmsk, VecOut);
             }
 
-            if (Ext == L".ojn")
+			// .ft2 doesn't need its own entry. 
+			if (Ext == L".ojn" || Ext == L".ft2")
             {
                 LoadSong7KFromFilename(File, SongDirectory, OJNSong);
                 PushSongToDatabase(DB, OJNSong);
@@ -306,9 +318,11 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<G
                 OJNSong->SongDirectory = SongDirectory;
             }
 
-            if (Ext == L".osu" || Ext == L".fcf")
+			// Add them all to the same song.
+            if (Ext == L".osu")
                 LoadSong7KFromFilename(File, SongDirectory, osuSong);
 
+			// Same as before.
             if (Ext == L".sm" || Ext == L".ssc")
             {
                 LoadSong7KFromFilename(File, SongDirectory, smSong);

@@ -59,7 +59,7 @@ std::unique_ptr<AudioDataSource> SourceFromExt(std::filesystem::path Filename)
     if (strstr(xt, "wav") || strstr(xt, "flac"))
         Ret = std::make_unique<AudioSourceSFM>();
 #ifdef MP3_ENABLED
-    else if (strstr(xt, "mp3"))
+    else if (strstr(xt, "mp3") || strstr(xt, "ftb")) // az: ftb hax lol
         Ret = std::make_unique<AudioSourceMP3>();
 #endif
     else if (strstr(xt, "ogg"))

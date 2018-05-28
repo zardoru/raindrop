@@ -421,8 +421,8 @@ void NoteLoaderOJN::LoadObjectsFromFile(std::filesystem::path filename, Game::VS
     utf8::replace_invalid(Head.title, Head.title + 64, std::back_inserter(vName));
     utf8::replace_invalid(Head.noter, Head.noter + 32, std::back_inserter(Noter));
 
-    Out->SongAuthor = vArtist;
-    Out->SongName = vName;
+    Out->Artist = vArtist;
+    Out->Title = vName;
     Out->SongFilename = Head.ojm_file;
 
     for (auto i = 0; i < 3; i++)

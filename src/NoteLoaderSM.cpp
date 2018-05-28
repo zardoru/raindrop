@@ -227,9 +227,9 @@ void DoCommonSMCommands(std::string command, std::string CommandContents, Song* 
         if (utf8::is_valid(CommandContents.begin(), CommandContents.end()))
         {
 #ifdef WIN32
-            Out->SongName = CommandContents;
+            Out->Title = CommandContents;
 #else
-            Out->SongName = CommandContents;
+            Out->Title = CommandContents;
             try
             {
                 std::vector<int> cp;
@@ -237,12 +237,12 @@ void DoCommonSMCommands(std::string command, std::string CommandContents, Song* 
             }
             catch (utf8::not_enough_room &e)
             {
-                Out->SongName = Utility::SJIStoU8(CommandContents);
+                Out->Title = Utility::SJIStoU8(CommandContents);
             }
 #endif
         }
         else
-            Out->SongName = Utility::SJIStoU8(CommandContents);
+            Out->Title = Utility::SJIStoU8(CommandContents);
     }
 
     _OnCommand(#SUBTITLE)
@@ -265,7 +265,7 @@ void DoCommonSMCommands(std::string command, std::string CommandContents, Song* 
 #endif
         }
         else
-            Out->SongAuthor = Utility::SJIStoU8(CommandContents);
+            Out->Artist = Utility::SJIStoU8(CommandContents);
     }
 
     _OnCommand(#ARTIST)
@@ -273,9 +273,9 @@ void DoCommonSMCommands(std::string command, std::string CommandContents, Song* 
         if (utf8::is_valid(CommandContents.begin(), CommandContents.end()))
         {
 #ifdef WIN32
-            Out->SongAuthor = CommandContents;
+            Out->Artist = CommandContents;
 #else
-            Out->SongAuthor = CommandContents;
+            Out->Artist = CommandContents;
             try
             {
                 std::vector<int> cp;
@@ -283,12 +283,12 @@ void DoCommonSMCommands(std::string command, std::string CommandContents, Song* 
             }
             catch (utf8::not_enough_room &e)
             {
-                Out->SongAuthor = Utility::SJIStoU8(CommandContents);
+                Out->Artist = Utility::SJIStoU8(CommandContents);
             }
 #endif
         }
         else
-            Out->SongAuthor = Utility::SJIStoU8(CommandContents);
+            Out->Artist = Utility::SJIStoU8(CommandContents);
     }
 
     _OnCommand(#BACKGROUND)
