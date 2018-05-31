@@ -112,9 +112,12 @@ namespace Game {
 			else
 				ChartState = VSRG::PlayerChartState::FromDifficulty(CurrentDiff.get(), Drift);
 
-			if (Random)
-				NoteTransform::Randomize(ChartState.NotesByChannel, CurrentDiff->Channels, CurrentDiff->Data->Turntable);
+			/*if (Random)
+				NoteTransform::Randomize(ChartState.NotesByChannel, CurrentDiff->Channels, CurrentDiff->Data->Turntable);*/
 
+
+			// Sinisterrr/fully negative charts fix.
+			UserSpeedMultiplier = abs(UserSpeedMultiplier);
 			return new PlayerChartState(ChartState);
 		}
 

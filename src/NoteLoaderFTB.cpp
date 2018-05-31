@@ -103,6 +103,12 @@ void LoadFTBFromString(std::string s, Difficulty *Diff)
 		}
 	}
 
+	/*for (auto &lane : Msr.Notes) { // Sort lanes by time.
+		std::sort(lane.begin(), lane.end(), [](const NoteData &A, const NoteData &B) {
+			return A.StartTime < B.StartTime;
+		});
+	}*/
+
 	// Offsetize
 	if (Diff->Timing.size() == 0)
 	{
@@ -128,6 +134,23 @@ void SetMetadataFromMP3(Song* song)
 
 		if (song->Artist == "" || song->Title == "") {
 			Log::LogPrintf("%s is missing metadata information\n", song->SongFilename.string().c_str());
+		}
+
+		double lenSecs = (source.GetLength()) / source.GetRate();
+		for (auto & diff : song->Difficulties) {
+			diff->Duration = std::min(diff->Duration, lenSecs);
+
+			// fakeify
+			for (auto &msr : diff->Data->Measures) {
+				for (int i = 0; i < 7; i++) {
+					for (auto &note : msr.Notes[i]) {
+						if (note.StartTime > lenSecs) {
+							note.NoteKind = NK_FAKE;
+						}
+					}
+				}
+			}
+
 		}
 	}
 

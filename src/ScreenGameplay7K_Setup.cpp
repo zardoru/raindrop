@@ -26,6 +26,9 @@ CfgVar DisableBGA("DisableBGA");
 
 namespace Game {
 	namespace VSRG {
+
+		bool isChartLoaded;
+
 		ScreenGameplay::ScreenGameplay() : Screen("ScreenGameplay7K")
 		{
 			Time = {};
@@ -44,6 +47,8 @@ namespace Game {
 
 			// Don't play unless everything goes right (later checks)
 			DoPlay = false;
+
+			isChartLoaded = false;
 		}
 
 		void ScreenGameplay::Cleanup()
@@ -125,13 +130,21 @@ namespace Game {
 
 			BGA = BackgroundAnimation::CreateBGAFromSong(index, *MySong, this);
 
+			isChartLoaded = true;
 			return true;
 		}
 
 		bool ScreenGameplay::LoadSongAudio()
 		{
 			CfgVar SkipLoadAudio("SkipAudioLoad", "Debug");
-			if (SkipLoadAudio) return true;
+			if (SkipLoadAudio) {
+				Log::LogPrintf("SkipAudioLoad is ON, skipping audio load.\n");
+				return true;
+			}
+
+			if (!isChartLoaded) {
+				Log::LogPrintf("what the hell is going on");
+			}
 
 			auto Rate = GameState::GetInstance().GetParameters(0)->Rate;
 
@@ -419,7 +432,27 @@ namespace Game {
 			MissSnd.Open(MissSndFile);
 			FailSnd.Open(FailSndFile);
 
-			if (!LoadChartData() || !ProcessSong() || !LoadSongAudio() || !LoadBGA())
+			// For some reason, it tries to load song audio before chartdata is assigned from meta???
+			// so I have to be a bit more explicit about the order, then
+			if (!LoadChartData())
+			{
+				DoPlay = false;
+				return;
+			}
+
+			if (!ProcessSong())
+			{
+				DoPlay = false;
+				return;
+			}
+
+			if (!LoadSongAudio())
+			{
+				DoPlay = false;
+				return;
+			}
+
+			if (!LoadBGA())
 			{
 				DoPlay = false;
 				return;

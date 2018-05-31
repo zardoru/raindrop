@@ -36,6 +36,7 @@ namespace Game {
 		typedef std::vector<Measure> VectorMeasure;
 
 		typedef std::vector<TrackNote> VectorTN[MAX_CHANNELS];
+		typedef std::vector<TrackNote*> VectorTNP[MAX_CHANNELS];
 
 		class ChartInfo
 		{

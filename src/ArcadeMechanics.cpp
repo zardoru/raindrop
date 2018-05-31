@@ -22,7 +22,8 @@ namespace Game {
 		}
 		bool RaindropArcadeMechanics::CanHitNoteHead(double time, TrackNote * note)
 		{
-			return (abs(time - note->GetStartTime()) < PlayerScoreKeeper->getJudgmentCutoff()) && note->IsHeadEnabled() && !note->WasHit();
+			double cutoff = PlayerScoreKeeper->getJudgmentCutoffMS() / 1000.0;
+			return (abs(time - note->GetStartTime()) < cutoff) && note->IsHeadEnabled() && !note->WasHit();
 		}
 		bool RaindropArcadeMechanics::CanHitNoteTail(double time, TrackNote * note)
 		{

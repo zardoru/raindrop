@@ -58,7 +58,8 @@ bool AudioSourceMP3::Open(std::filesystem::path Filename)
         mIsDataLeft = true;
         return true;
 	}
-	else Log::LogPrintf("Failure loading MP3 file '%s'\n", Filename.string().c_str());
+	else
+		Log::LogPrintf("Failure loading MP3 file '%s'\n", Filename.string().c_str());
 
     return false;
 }
@@ -75,6 +76,10 @@ uint32_t AudioSourceMP3::Read(short* buffer, size_t count)
 
     auto res = mpg123_read(mHandle, reinterpret_cast<unsigned char*>(buffer), toRead, &actuallyread);
     size_t last_read = actuallyread;
+
+	if (res == MPG123_DONE && !mSourceLoop) {
+		mIsDataLeft = false;
+	}
 
     while (mSourceLoop && actuallyread < toRead)
     {

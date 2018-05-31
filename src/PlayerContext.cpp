@@ -15,6 +15,26 @@ CfgVar DebugNoteRendering("NoteRender", "Debug");
 
 namespace Game {
 	namespace VSRG {
+
+		auto NoteLboundFuncHead = [](const TrackNote* A, const double &B) -> bool
+		{
+			return A->GetStartTime() < B;
+		};
+
+		auto NoteHboundFuncHead = [](const double &A, const TrackNote* B) -> bool
+		{
+			return A < B->GetStartTime();
+		};
+
+		auto NoteLboundFunc = [](const TrackNote* A, const double &B) -> bool
+		{
+			return A->GetEndTime() < B;
+		};
+		auto NoteHboundFunc = [](const double &A, const TrackNote* B) -> bool
+		{
+			return A < B->GetEndTime();
+		};
+
 		PlayerContext::PlayerContext(int pn, Game::VSRG::PlayscreenParameters p) : PlayerNoteskin(this)
 		{
 			PlayerNumber = pn;
@@ -408,11 +428,12 @@ namespace Game {
 				timeClosest[i] = std::numeric_limits<double>::infinity();
 
 			double usedTime = GetChartTimeAt(time);
-			auto &NotesByChannel = ChartState.NotesByChannel;
+			auto &NotesByChannel = ChartState.NotesTimeOrdered;
 
 			for (auto k = 0U; k < CurrentDiff->Channels; k++)
 			{
-				for (auto m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); ++m) {
+				for (auto mp = NotesByChannel[k].begin(); mp != NotesByChannel[k].end(); ++mp) {
+					auto m = *mp;
 					// Keysound update to closest note.
 					if (m->IsEnabled())
 					{
@@ -431,7 +452,7 @@ namespace Game {
 
 					// Autoplay
 					if (Parameters.Auto) {
-						RunAuto(&*m, usedTime, k);
+						RunAuto(m, usedTime, k);
 						if (!m->IsJudgable()) continue;
 					}
 
@@ -449,49 +470,52 @@ namespace Game {
 
 			if (!CanJudge()) return; // don't judge any more after stage is failed.
 
-			auto &NotesByChannel = ChartState.NotesByChannel;
+			auto &NotesByChannel = ChartState.NotesTimeOrdered;
 			auto Start = NotesByChannel[Lane].begin();
 			auto End = NotesByChannel[Lane].end();
 
 			// Use this optimization when we can make sure vertical properly aligns up with time.
-			if (ChartState.IsNoteTimeSorted())
+			//if (ChartState.IsNoteTimeSorted())
 			{
 				// In comparison to the regular compare function, since end times are what matter with holds (or lift events, where start == end)
 				// this does the job as it should instead of comparing start times where hold tails would be completely ignored.
-				auto LboundFunc = [](const TrackNote &A, const double &B) -> bool
-				{
-					return A.GetEndTime() < B;
-				};
-				auto HboundFunc = [](const double &A, const TrackNote &B) -> bool
-				{
-					return A < B.GetEndTime();
-				};
+				auto threshold = (PlayerScoreKeeper->usesO2() ?
+					PlayerScoreKeeper->getMissCutoffMS() :
+					(PlayerScoreKeeper->getMissCutoffMS() / 1000.0));
 
-				auto timeLower = (Time - (PlayerScoreKeeper->usesO2() ? 
-					PlayerScoreKeeper->getMissCutoffMS() : 
-					(PlayerScoreKeeper->getMissCutoffMS() / 1000.0)));
-				auto timeHigher = (Time + (PlayerScoreKeeper->usesO2() ? 
-					PlayerScoreKeeper->getJudgmentCutoff() : 
-					(PlayerScoreKeeper->getJudgmentCutoff() / 1000.0)));
+				auto timeLower = (Time - threshold);
+				auto timeHigher = (Time + threshold);
 
-				Start = std::lower_bound(NotesByChannel[Lane].begin(), NotesByChannel[Lane].end(), timeLower, LboundFunc);
+				Start = std::lower_bound(
+					NotesByChannel[Lane].begin(), 
+					NotesByChannel[Lane].end(), timeLower, NoteLboundFunc);
 
 				// Locate the first hold that we can judge in this range (Pending holds. Similar to what was done when drawing.)
-				auto rStart = std::reverse_iterator<std::vector<TrackNote>::iterator>(Start);
+				auto rStart = std::reverse_iterator<std::vector<TrackNote*>::iterator>(Start);
 				for (auto i = rStart; i != NotesByChannel[Lane].rend(); ++i)
 				{
-					if (i->IsHold() && i->IsEnabled() && i->IsJudgable() && i->WasHit() && !i->FailedHit())
+					auto ip = *i;
+					if (ip->IsHold() 
+						&& ip->IsEnabled() 
+						&& ip->IsJudgable() 
+						&& ip->WasHit() 
+						&& !ip->FailedHit())
 						Start = i.base() - 1;
 				}
 
-				End = std::upper_bound(NotesByChannel[Lane].begin(), NotesByChannel[Lane].end(), timeHigher, HboundFunc);
+				End = std::upper_bound(
+					NotesByChannel[Lane].begin(), 
+					NotesByChannel[Lane].end(), 
+					timeHigher, 
+					NoteHboundFunc);
 
 				if (End != NotesByChannel[Lane].end())
 					++End;
 			}
 
-			for (auto m = Start; m != End; ++m)
+			for (auto mp = Start; mp != End; ++mp)
 			{
+				auto m = *mp;
 				if (!m->IsJudgable()) continue;
 				if (MechanicsSet->OnReleaseLane(Time, &(*m), Lane)) // Are we done judging..?
 					break;
@@ -541,31 +565,32 @@ namespace Game {
 			if (!CanJudge())
 				return;
 
-			auto &Notes = ChartState.NotesByChannel[Lane];
+			auto &Notes = ChartState.NotesTimeOrdered[Lane];
 
 			auto Start = Notes.begin();
 			auto End = Notes.end();
 
-			// Use this optimization when we can make sure vertical properly aligns up with time, as with ReleaseLane.
-			if (ChartState.IsNoteTimeSorted())
-			{
-				auto timeLower = (Time - (PlayerScoreKeeper->usesO2() ? 
-					PlayerScoreKeeper->getMissCutoffMS() : 
-					(PlayerScoreKeeper->getMissCutoffMS() / 1000.0)));
-				auto timeHigher = (Time + (PlayerScoreKeeper->usesO2() ? 
-					PlayerScoreKeeper->getJudgmentCutoff() : 
-					(PlayerScoreKeeper->getJudgmentCutoff() / 1000.0)));
+			auto threshold = (PlayerScoreKeeper->usesO2() ?
+				PlayerScoreKeeper->getJudgmentCutoffMS() :
+				(PlayerScoreKeeper->getJudgmentCutoffMS() / 1000.0));
 
-				Start = std::lower_bound(Notes.begin(), Notes.end(), timeLower);
-				End = std::upper_bound(Notes.begin(), Notes.end(), timeHigher);
+			// Use this optimization when we can make sure vertical properly aligns up with time, as with ReleaseLane.
+			//if (ChartState.IsNoteTimeSorted())
+			{
+				auto timeLower = (Time - threshold);
+				auto timeHigher = (Time + threshold);
+
+				Start = std::lower_bound(Notes.begin(), Notes.end(), timeLower, NoteLboundFuncHead);
+				End = std::upper_bound(Notes.begin(), Notes.end(), timeHigher, NoteHboundFuncHead);
 			}
 
 			bool notJudged = true;
 
 			Gear.ClosestNoteMS[Lane] = MsDisplayMargin;
 
-			for (auto m = Start; m != End; ++m)
+			for (auto mp = Start; mp != End; ++mp)
 			{
+				auto m = *mp;
 				double dev = (Time - m->GetStartTime()) * 1000;
 				double tD = abs(dev);
 
@@ -620,6 +645,7 @@ namespace Game {
 
 			auto d = Parameters.Setup(DesiredDefaultSpeed, Type, Drift, diff);
 			ChartState = *d;
+			ChartState.PrepareOrderedNotes(); // Invalid ordered notes until we do this.
 			delete d;
 
 			SetupMechanics();
@@ -632,7 +658,7 @@ namespace Game {
 			// Load up BGM events
 			auto BGMs = CurrentDiff->Data->BGMEvents;
 			if (DisableKeysounds)
-				NoteTransform::MoveKeysoundsToBGM(CurrentDiff->Channels, ChartState.NotesByChannel, BGMs, Drift);
+				NoteTransform::MoveKeysoundsToBGM(CurrentDiff->Channels, ChartState.Notes, BGMs, Drift);
 
 			return BGMs;
 		}
@@ -772,7 +798,7 @@ namespace Game {
 			}
 
 			Renderer::SetPrimitiveQuadVBO();
-			auto &NotesByChannel = ChartState.NotesByChannel;
+			auto &Notes = ChartState.NotesVerticallyOrdered;
 			auto jy = GetJudgmentY();
 
 			for (auto k = 0U; k < CurrentDiff->Channels; k++)
@@ -783,32 +809,32 @@ namespace Game {
 					return (chart_displacement - StaticVert) * effective_chart_speed_multiplier + jy;
 				};
 
-				auto Start = NotesByChannel[k].begin();
-				auto End = NotesByChannel[k].end();
+				auto Start = Notes[k].begin();
+				auto End = Notes[k].end();
 
 				// We've got guarantees about our note locations.
-				if (ChartState.IsNoteTimeSorted())
+				//if (ChartState.IsNoteTimeSorted())
 				{
 					/* Find the location of the first/next visible regular note */
-					auto LocPredicate = [&](const TrackNote &A, double TrackDisplacement) -> bool
+					auto LocPredicate = [&](const TrackNote* A, double TrackDisplacement) -> bool
 					{
 						if (!upscrolling)
-							return TrackDisplacement < Locate(A.GetVertical());
+							return TrackDisplacement < Locate(A->GetVertical());
 						else // Signs are switched. We need to preserve the same order.
-							return TrackDisplacement > Locate(A.GetVertical());
+							return TrackDisplacement > Locate(A->GetVertical());
 					};
 
 					// Signs are switched. Doesn't begin by the first note closest to the lower edge, but the one closest to the higher edge.
 					if (!upscrolling)
 						Start = std::lower_bound(
-							NotesByChannel[k].begin(), 
-							NotesByChannel[k].end(), 
+							Notes[k].begin(), 
+							Notes[k].end(), 
 							ScreenHeight + PlayerNoteskin.GetNoteOffset(), 
 							LocPredicate);
 					else
 						Start = std::lower_bound(
-							NotesByChannel[k].begin(),
-							NotesByChannel[k].end(), 
+							Notes[k].begin(),
+							Notes[k].end(), 
 							0 - PlayerNoteskin.GetNoteOffset(), 
 							LocPredicate);
 
@@ -818,12 +844,12 @@ namespace Game {
 						since only head locations are used.
 						Find this possible hold by checking if it intersects the screen.
 					*/
-					if (Start != NotesByChannel[k].begin()) {
+					if (Start != Notes[k].begin()) {
 						auto i = Start - 1;//std::reverse_iterator<std::vector<TrackNote>::iterator>(Start);
-						if (i->IsHold() && i->IsVisible())
+						if ((*i)->IsHold() && (*i)->IsVisible())
 						{
-							auto Vert = Locate(i->GetVertical());
-							auto VertEnd = Locate(i->GetHoldEndVertical());
+							auto Vert = Locate((*i)->GetVertical());
+							auto VertEnd = Locate((*i)->GetHoldEndVertical());
 							if (IntervalsIntersect(0, ScreenHeight, std::min(Vert, VertEnd), std::max(Vert, VertEnd)))
 							{
 								Start = i;
@@ -834,14 +860,15 @@ namespace Game {
 					// Find the note that is out of the drawing range
 					// As before. Top becomes bottom, bottom becomes top.
 					if (!upscrolling)
-						End = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), 0 - PlayerNoteskin.GetNoteOffset(), LocPredicate);
+						End = std::lower_bound(Notes[k].begin(), Notes[k].end(), 0 - PlayerNoteskin.GetNoteOffset(), LocPredicate);
 					else
-						End = std::lower_bound(NotesByChannel[k].begin(), NotesByChannel[k].end(), ScreenHeight + PlayerNoteskin.GetNoteOffset(), LocPredicate);
+						End = std::lower_bound(Notes[k].begin(), Notes[k].end(), ScreenHeight + PlayerNoteskin.GetNoteOffset(), LocPredicate);
 				}
 
 				// Now, draw them.
-				for (auto m = Start; m != End; ++m)
+				for (auto mp = Start; mp != End; ++mp)
 				{
+					auto m = *mp;
 					double Vertical = 0;
 					double VerticalHoldEnd;
 
@@ -853,7 +880,7 @@ namespace Game {
 					VerticalHoldEnd = Locate(m->GetHoldEndVertical());
 
 					// Old check method that doesn't rely on a correct vertical ordering.
-					if (!ChartState.IsNoteTimeSorted())
+					/*if (!ChartState.IsNoteTimeSorted())
 					{
 						if (m->IsHold())
 						{
@@ -865,7 +892,7 @@ namespace Game {
 							if (Vertical < -PlayerNoteskin.GetNoteOffset() || 
 								Vertical > ScreenHeight + PlayerNoteskin.GetNoteOffset()) continue;
 						}
-					}
+					}*/
 
 					double JudgeY;
 
@@ -939,7 +966,7 @@ namespace Game {
 			if (DebugNoteRendering) {
 				fnt->Render(Utility::Format("NOTES RENDERED: %d\nSORTEDTIME: %d\nRNG: %f to %f\nMULT/EFFECTIVEMULT/SPEED: %f/%f/%f",
 					rnc,
-					ChartState.IsNoteTimeSorted(),
+					true,//ChartState.IsNoteTimeSorted(),
 					chart_displacement, chart_displacement + ScreenHeight,
 					chart_multiplier, effective_chart_speed_multiplier, GetCurrentVerticalSpeed() * effective_chart_speed_multiplier), Vec2(0, 0));
 			}

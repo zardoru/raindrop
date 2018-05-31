@@ -264,9 +264,16 @@ namespace Game {
 		
 		bool ScreenGameplay::SongHasFinished()
 		{
+			auto runtime = Time.Stream;
+
+			// music is not playing, game is active...
+			if (Music && !Music->IsPlaying() && Active) {
+				runtime = Time.InterpolatedStream;
+			}
+
 			for (auto &player : Players) {
-				if (!player->HasSongFinished(Time.Stream))
-				return false;
+				if (!player->HasSongFinished(runtime))
+					return false;
 			}
 			
 			return true;

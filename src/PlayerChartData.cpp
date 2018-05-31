@@ -395,19 +395,12 @@ namespace Game {
 						// !Speed: non-constant
 						// Judgable & ! warping: Constant speed, so only add non-warped notes.
 						if (!ConstantUserSpeed || (NewNote.IsJudgable() && !out.IsWarpingAt(CurrentNote.StartTime)))
-							out.NotesByChannel[KeyIndex].push_back(NewNote);
+							out.Notes[KeyIndex].push_back(NewNote);
 					}
 
 					MIdx++;
 					MsrBeat += Msr.Length;
 				}
-
-				// done with the channel - sort it
-				std::stable_sort(out.NotesByChannel[KeyIndex].begin(), out.NotesByChannel[KeyIndex].end(),
-					[](const TrackNote &A, const TrackNote &B) -> bool
-				{
-					return A.GetVertical() < B.GetVertical();
-				});
 			}
 
 			for (auto&& w : out.Warps)
@@ -421,6 +414,48 @@ namespace Game {
 			for (auto S : out.InterpoloatedSpeedMultipliers) if (S.Value < 0) out.HasNegativeScroll = true;
 			for (auto S : out.ScrollSpeeds) if (S.Value < 0) out.HasNegativeScroll = true;
 			return out;
+		}
+
+		void PlayerChartState::PrepareOrderedNotes()
+		{
+			auto diff = ConnectedDifficulty;
+
+
+			// We do this post push_back 
+			// since pointers are invalidated at every turn back there.
+			for (int i = 0; i < diff->Channels; i++) {
+				NotesVerticallyOrdered[i].clear();
+				NotesTimeOrdered[i].clear();
+
+				for (int j = 0; j < Notes[i].size(); j++) {
+					auto ptr = &(Notes[i][j]);
+					NotesVerticallyOrdered[i].push_back(ptr);
+					NotesTimeOrdered[i].push_back(ptr);
+				}
+
+				NotesVerticallyOrdered[i].shrink_to_fit();
+				NotesTimeOrdered[i].shrink_to_fit();
+			}
+
+			for (int i = 0; i < diff->Channels; i++) {
+
+				// done with the channel - sort it
+				std::stable_sort(
+					NotesVerticallyOrdered[i].begin(),
+					NotesVerticallyOrdered[i].end(),
+					[](const TrackNote* A, const TrackNote* B) -> bool
+				{
+					return A->GetVertical() < B->GetVertical();
+				});
+
+				std::stable_sort(
+					NotesTimeOrdered[i].begin(),
+					NotesTimeOrdered[i].end(),
+					[](const TrackNote *A, const TrackNote *B) -> bool
+				{
+					return A->GetStartTime() < B->GetStartTime();
+				});
+			}
 		}
 
 		// audio time -> chart time
@@ -615,11 +650,6 @@ namespace Game {
 			return GetTimeAtBeat(beat);
 		}
 
-		bool PlayerChartState::IsNoteTimeSorted()
-		{
-			return !Warps.size()  // The actual time is scrambled
-				&& !HasNegativeScroll; // Draw order may be incorrect
-		}
 
 		std::map<int, std::string> PlayerChartState::GetSoundList() const
 		{
@@ -672,7 +702,7 @@ namespace Game {
 		{
 			ResetNotes();
 			for (auto k = 0U; k < MAX_CHANNELS; k++)
-				for (auto m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); ++m)
+				for (auto m = Notes[k].begin(); m != Notes[k].end(); ++m)
 					if (m->GetStartTime() <= Time)
 						m->Disable();
 		}
@@ -680,7 +710,7 @@ namespace Game {
 		void PlayerChartState::ResetNotes()
 		{
 			for (auto k = 0U; k < MAX_CHANNELS; k++)
-				for (auto m = NotesByChannel[k].begin(); m != NotesByChannel[k].end(); ++m)
+				for (auto m = Notes[k].begin(); m != Notes[k].end(); ++m)
 					m->Reset();
 		}
 	}

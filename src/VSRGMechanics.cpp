@@ -22,8 +22,9 @@ namespace Game {
 
 		bool Mechanics::InJudgeCutoff(double t, TrackNote * note)
 		{
-			return (abs(t - note->GetStartTime()) < PlayerScoreKeeper->getJudgmentCutoff()) ||
-				(abs(t - note->GetEndTime()) < PlayerScoreKeeper->getJudgmentCutoff());
+			double cutoff = PlayerScoreKeeper->getJudgmentCutoffMS() / 1000.0;
+			return (abs(t - note->GetStartTime()) < cutoff) ||
+				(abs(t - note->GetEndTime()) < cutoff);
 		}
 		bool Mechanics::IsEarlyMiss(double t, TrackNote * note)
 		{
@@ -33,7 +34,7 @@ namespace Game {
 
 		bool Mechanics::IsBmBadJudge(double t, TrackNote * note)
 		{
-			double dt = abs(t - note->GetStartTime());
+			double dt = abs(t - note->GetStartTime()) * 1000.0;
 			return dt > PlayerScoreKeeper->getJudgmentWindow(SKJ_W3) && dt < PlayerScoreKeeper->getJudgmentWindow(SKJ_W4);
 		}
 		
@@ -43,7 +44,7 @@ namespace Game {
 			if (GetTimingKind() == TT_BEATS) {
 				NoteTransform::TransformToBeats(
 					CurrentDifficulty->Channels,
-					ChartState.NotesByChannel, 
+					ChartState.Notes, 
 					ChartState.BPS);
 			}
 		}

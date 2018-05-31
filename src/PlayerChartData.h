@@ -9,7 +9,9 @@ namespace Game {
 			TimingData		     BPS;
 			TimingData		     Warps;
 			VectorInterpolatedSpeedMultipliers   InterpoloatedSpeedMultipliers;
-			VectorTN       NotesByChannel;
+			VectorTN       Notes;
+			VectorTNP       NotesVerticallyOrdered;
+			VectorTNP       NotesTimeOrdered;
 			std::vector<double>	 MeasureBarlines;
 			bool HasNegativeScroll;
 			bool HasTurntable;
@@ -35,7 +37,6 @@ namespace Game {
 			double GetOffset() const;
 			double GetMeasureTime(double msr) const;
 
-			bool IsNoteTimeSorted();
 			std::map<int, std::string> GetSoundList() const;
 			ChartType GetChartType() const;
 			bool IsBmson() const;
@@ -43,6 +44,7 @@ namespace Game {
 			bool HasTimingData() const;
 			SliceContainer GetSliceData() const;
 
+			void PrepareOrderedNotes();
 			void DisableNotesUntil(double Time);
 			void ResetNotes();
 

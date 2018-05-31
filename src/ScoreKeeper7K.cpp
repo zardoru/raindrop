@@ -270,7 +270,7 @@ namespace Game {
 			update_o2(SKJ_MISS);
 		}
 
-		double ScoreKeeper::getJudgmentCutoff() {
+		double ScoreKeeper::getJudgmentCutoffMS() {
 			auto rt = 0.0;
 			rt = std::max(std::max(miss_threshold, rt), earlymiss_threshold);
 			return rt;

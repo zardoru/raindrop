@@ -54,7 +54,7 @@ namespace Game {
 			double getJudgmentWindow(int judgment);
 			double getMissCutoffMS() const;
 			double getEarlyMissCutoffMS() const;
-			double getJudgmentCutoff();
+			double getJudgmentCutoffMS();
 
 			int getScore(int score_type);
 			float getPercentScore(int score_type) const;
