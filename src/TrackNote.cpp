@@ -14,6 +14,12 @@ namespace Game {
 			Reset();
 		}
 
+		TrackNote::TrackNote(const NoteData &Data)
+		{
+			TrackNote();
+			AssignNotedata(Data);
+		}
+
 		TrackNote::~TrackNote()
 		{
 		}

@@ -22,9 +22,10 @@ namespace Game {
 
 		bool Mechanics::InJudgeCutoff(double t, TrackNote * note)
 		{
-			double cutoff = PlayerScoreKeeper->getJudgmentCutoffMS() / 1000.0;
-			return (abs(t - note->GetStartTime()) < cutoff) ||
-				(abs(t - note->GetEndTime()) < cutoff);
+			double earlyMissCutoff = PlayerScoreKeeper->getEarlyMissCutoffMS() / 1000.0;
+			double missCutoff = PlayerScoreKeeper->getMissCutoffMS() / 1000.0;
+			return (abs(t - note->GetStartTime()) < earlyMissCutoff) ||
+				(abs(t - note->GetEndTime()) < missCutoff);
 		}
 		bool Mechanics::IsEarlyMiss(double t, TrackNote * note)
 		{
@@ -64,21 +65,23 @@ namespace Game {
 		{
 			auto k = Lane;
 			/* We have to check for all gameplay conditions for this note. */
+			double missCutoff = PlayerScoreKeeper->getMissCutoffMS();
 
 			// Condition A: Hold tail outside accuracy cutoff (can't be hit any longer),
-			// note wasn't hit at the head and it's a hold
-			if (
-				(SongTime - m->GetEndTime()) > 0 // outside judgment
-				&& !m->WasHit() && m->IsHold() // not hit yet
-				// and head can't be hit
-				&& (abs(m->GetStartTime() - SongTime) > PlayerScoreKeeper->getMissCutoffMS() / 1000.0)
-				)
+			// note wasn't hit at the head and can't be hit at the head, and it's a hold
+			if (!InJudgeCutoff(SongTime, m) // outside judgment
+				&& !m->WasHit() && m->IsHold()) // not hit yet
 			{
-				// ^ no need for delays here.
-				// remove hold notes that were never hit.
-				m->MakeInvisible();
-				MissNotify(abs(SongTime - m->GetEndTime()) * 1000, k, m->IsHold(), true, false);
-				m->Hit();
+				double dev = (SongTime - m->GetEndTime()) * 1000;
+				double tD = abs(dev);
+				
+				if (dev > 0) {
+					// remove hold notes that were never hit.
+					m->MakeInvisible();
+					MissNotify(tD, k, m->IsHold(), true, false);
+					m->Hit();
+				}
+
 			} // Condition B: Regular note or hold head outside cutoff, wasn't hit and it's enabled.
 			else if (IsLateHeadMiss(SongTime, m) &&
 				(!m->WasHit() && m->IsHeadEnabled()))
@@ -101,10 +104,10 @@ namespace Game {
 					}
 				}
 			} // Condition C: Hold head was hit, but hold tail was not released.
-			else if (m->IsHold() && m->IsEnabled())
+			else if (m->IsHold() && m->IsEnabled() && m->WasHit())
 			{
 				// Condition C-1: Forced release is enabled
-				if ((SongTime - m->GetEndTime()) * 1000 > PlayerScoreKeeper->getMissCutoffMS() && forcedRelease)
+				if ((SongTime - m->GetEndTime()) * 1000 > missCutoff && forcedRelease)
 				{
 					m->FailHit();
 					// Take away health and combo (1st false)
@@ -116,7 +119,8 @@ namespace Game {
 				else
 				{
 					// Condition C-2: Forced release is not enabled
-					if (SongTime - m->GetEndTime() > 0 && !forcedRelease)
+					if (SongTime - m->GetEndTime() > 0 && 
+						!forcedRelease)
 					{
 						if (IsLaneKeyDown(Lane))
 						{

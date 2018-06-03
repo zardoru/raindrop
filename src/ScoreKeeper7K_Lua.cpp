@@ -30,6 +30,7 @@ namespace Game {
 				.addProperty("AvgHit", &ScoreKeeper::getAvgHit)
 				.addProperty("StDev", &ScoreKeeper::getHitStDev)
 				.addProperty("MaxNotes", &ScoreKeeper::getMaxNotes)
+				.addProperty("OffsetDistrust", &ScoreKeeper::getOffsetDistrust)
 				.addFunction("GetJudgmentWindow", &ScoreKeeper::getJudgmentWindow)
 				.addFunction("GetHistogramPoint", &ScoreKeeper::getHistogramPoint)
 				.addFunction("GetJudgmentCount", &ScoreKeeper::getJudgmentCount)

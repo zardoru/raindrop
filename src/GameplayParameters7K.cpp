@@ -258,7 +258,7 @@ namespace Game {
 			}
 
 			if (SystemType == VSRG::TI_STEPMANIA) {
-				return ST_DP;
+				return ST_EX;
 			}
 
 			if (SystemType == VSRG::TI_RAINDROP) {

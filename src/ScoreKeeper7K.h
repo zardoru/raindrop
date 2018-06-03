@@ -84,6 +84,9 @@ namespace Game {
 
 			float getHitStDev() const;
 
+			// percent we're sure the offset is wrong
+			double getOffsetDistrust() const;
+
 			void reset();
 
 		private:

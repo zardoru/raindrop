@@ -205,9 +205,6 @@
     <ClCompile Include="..\src\Easing.cpp">
       <Filter>Source Files\game global\BGA</Filter>
     </ClCompile>
-    <ClCompile Include="..\tests\TestSetA.cpp">
-      <Filter>Testing Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\catch_compile_src.cpp">
       <Filter>Source Files\backend</Filter>
     </ClCompile>
@@ -259,6 +256,7 @@
     <ClCompile Include="..\src\ext\ioapi.c">
       <Filter>Static Libraries</Filter>
     </ClCompile>
+    <ClCompile Include="..\tests\TestSetA.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\pch.h">
@@ -595,9 +593,6 @@
     </Filter>
     <Filter Include="Additional Files">
       <UniqueIdentifier>{f35f41d1-f4f2-4ff6-9994-92b5a10dd18a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Testing Files">
-      <UniqueIdentifier>{5a1c77c5-bed0-4f0b-b2e8-96a49af2615e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

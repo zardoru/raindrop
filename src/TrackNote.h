@@ -28,6 +28,12 @@ namespace Game {
 				Sound = TailSound = 0;
 				NoteKind = NK_NORMAL;
 			}
+
+			NoteData(double _StartTime, double _EndTime) {
+				NoteData();
+				StartTime = _StartTime;
+				EndTime = _EndTime;
+			}
 		};
 
 		class TrackNote : public TimeBased<TrackNote, double>
@@ -54,9 +60,12 @@ namespace Game {
 			// 48 bytes aligned
 		public:
 			TrackNote();
+			TrackNote(const NoteData &Data);
 
 			// Build this tracknote from this NoteData.
 			void AssignNotedata(const NoteData &Data);
+
+			// az: These return by references are completely useless and kinda stupid.
 
 			// Get the start time.
 			double &GetDataStartTime();

@@ -34,11 +34,15 @@ namespace Game {
 			else exp_max_combo_pts = 1300 + (notes - 25) * 100;
 		}
 
-		int ScoreKeeper::getMaxNotes() const 
-		{ return max_notes; }
+		int ScoreKeeper::getMaxNotes() const
+		{
+			return max_notes;
+		}
 
 		int ScoreKeeper::getTotalNotes() const
-		{ return total_notes; }
+		{
+			return total_notes;
+		}
 
 
 		float ScoreKeeper::getHitStDev() const
@@ -58,7 +62,7 @@ namespace Game {
 
 			hit_variance += delta * (ms - avg_hit);
 
-			
+
 
 			// std::cerr << use_bbased << " " << ms << " ";
 
@@ -220,8 +224,8 @@ namespace Game {
 			return judgment_amt[judgment];
 		}
 
-		bool ScoreKeeper::usesW0() const { 
-			return use_w0; 
+		bool ScoreKeeper::usesW0() const {
+			return use_w0;
 		}
 
 		void ScoreKeeper::missNote(bool dont_break_combo, bool early_miss)
@@ -803,5 +807,43 @@ namespace Game {
 			if (rank_pts > 0) return -8;
 			return -9;
 		}
-	}
-}
+
+		double normalCdf(double x) {
+			return 0.5 + 0.5 * erf(x / sqrt(2));
+		}
+
+		// bisection method erf. inverse
+		//double cdf_percentile(double val) {
+		//	const auto error = 1e-4; // 4 digits is good enough lol
+		//	double lo = -1000;
+		//	double hi = 1000;
+
+		//	double center = (hi + lo) / 2;
+		//	while (abs(normalCdf(center) - val) > error) {
+		//		double result = normalCdf(center);
+
+		//		if (result < val)
+		//			lo = center;
+		//		if (result > val)
+		//			hi = center;
+
+		//		center = (hi + lo) / 2;
+		//	}
+
+		//	return center;
+		//}
+
+		// return p-value 
+		double ScoreKeeper::getOffsetDistrust() const
+		{
+			// avgHit != 0 is what we're testing
+			// don't want this to grow that much with total notes, at all.
+			double zscore = abs(getAvgHit()) / (getHitStDev()/* /sqrt(total_notes) */);
+			// we're always off the center, so, sort of scale the result
+			double pvalue = (normalCdf(zscore) - 0.5) * 2; 
+
+			return pvalue;
+		}
+
+	} // namespace VSRG
+} // namespace Game

@@ -536,7 +536,7 @@ namespace Game {
 				}
 				else if (BPMType == Difficulty::BT_BEATSPACE)
 				{
-					auto TargetTime = IntegrateToTime(SPB, Last) + diff->Offset;
+					auto TargetTime = IntegrateToTime(SPB, Last) + diff->Offset + Drift;
 					//TargetTime = round(TargetTime * 1000.0) / 1000.0; // Round to MS
 
 					PositionOut = IntegrateToTime(ScrollSpeeds, TargetTime);

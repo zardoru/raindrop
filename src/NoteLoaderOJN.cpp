@@ -24,10 +24,10 @@ struct OjnHeader
     int32_t genre;
     float bpm;
     int16_t level[4];
-    int32_t event_count[3];
-    int32_t note_count[3];
-    int32_t measure_count[3];
-    int32_t package_count[3];
+    uint32_t event_count[3];
+    uint32_t note_count[3];
+    uint32_t measure_count[3];
+    uint32_t package_count[3];
     int16_t old_encode_version;
     int16_t old_songid;
     char old_genre[20];
@@ -37,7 +37,7 @@ struct OjnHeader
     char artist[32];
     char noter[32];
     char ojm_file[32];
-    int32_t cover_size;
+    uint32_t cover_size;
     int32_t time[3];
     int32_t note_offset[3];
     int32_t cover_offset;
@@ -45,9 +45,9 @@ struct OjnHeader
 
 struct OjnPackageHeader
 {
-    int measure;
-    short channel;
-    short events;
+    uint32_t measure;
+    int16_t channel;
+	int16_t events;
 };
 
 union OjnPackage
