@@ -220,12 +220,10 @@ namespace Game {
 		struct PlayscreenParameters {
 		private:
 			struct SHiddenData {
-				EHiddenMode		 Mode;
+				EHiddenMode		 Mode; // effective mode after upscroll adjustment
 				float            Center; // in NDC
 				float			 TransitionSize; // in NDC
 				float			 CenterSize; // in NDC
-
-				
 			};
 			
 			void UpdateHidden(double JudgeY);
@@ -238,20 +236,23 @@ namespace Game {
 			void SetupGauge(std::shared_ptr<ChartInfo> TimingInfo, ScoreKeeper* PlayerScoreKeeper);
 
 		public:
-			// If true, use upscroll (VSRG only)
-			int Upscroll;
 
-			// If true, enable Wave (VSRG only)
-			int Wave;
-
+			// == Non Player Options ==
 			// If true, assume difficulty is already loaded and is not just metadata
 			int Preloaded;
 
-			// Fail disabled if true.
-			int NoFail;
-
 			// Auto mode enabled if true.
 			int Auto;
+
+			// Selected starting measure (Preivew mode only)
+			int32_t StartMeasure;
+
+			// == Player options == 
+			// If true, use upscroll (VSRG only)
+			int Upscroll;
+
+			// Fail disabled if true.
+			int NoFail;
 
 			// Selected hidden mode (VSRG only)
 			int HiddenMode;
@@ -264,9 +265,6 @@ namespace Game {
 
 			// Randomizing mode -> 0 = Disabled, 1 = Per-Lane, 2 = Panic (unimplemented)
 			int Random;
-
-			// Selected starting measure (Preivew mode only)
-			int32_t StartMeasure;
 
 			// Gauge type (VSRG only)
 			int32_t GaugeType;
@@ -299,9 +297,11 @@ namespace Game {
 			float GetHiddenTransitionSize();
 			float GetHiddenCenterSize();
 
+			void deserialize(Json::Value json);
+			Json::Value serialize();
+
 			PlayscreenParameters() {
 				Upscroll = false;
-				Wave = false;
 				Preloaded = false;
 				Auto = false;
 				NoFail = false;
@@ -328,11 +328,12 @@ namespace Game {
 		enum ESpeedType
 		{
 			SPEEDTYPE_DEFAULT = -1,
-			SPEEDTYPE_FIRST,
-			SPEEDTYPE_MMOD,
-			SPEEDTYPE_CMOD,
-			SPEEDTYPE_FIRSTBPM,
-			SPEEDTYPE_MODE
+			SPEEDTYPE_FIRST, // first, after SV
+			SPEEDTYPE_MMOD, // maximum mod
+			SPEEDTYPE_CMOD, // constant
+			SPEEDTYPE_FIRSTBPM, // first, ignoring sv
+			SPEEDTYPE_MODE, // most common
+			SPEEDTYPE_MULTIPLIER // use target speed as multiplier directly
 		};
 	}
 }

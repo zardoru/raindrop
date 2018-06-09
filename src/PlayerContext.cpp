@@ -121,6 +121,27 @@ namespace Game {
 			// We're set - setup all of the variables that depend on mechanics, scoring etc.. to their initial values.
 		}
 
+		void PlayerContext::OnPlayerKeyEvent(double Time, bool KeyDown, uint32_t lane)
+		{
+			PlayerReplay.AddEvent(Replay::Entry
+			{
+				Time - Drift,
+				lane,
+				KeyDown
+			});
+
+			if (KeyDown)
+			{
+				JudgeLane(lane, GetChartTimeAt(Time));
+				Gear.IsPressed[lane] = true;
+			}
+			else
+			{
+				ReleaseLane(lane, GetChartTimeAt(Time));
+				Gear.IsPressed[lane] = false;
+			}
+		}
+
 
 		void PlayerContext::TranslateKey(int32_t Index, bool KeyDown, double Time)
 		{
@@ -138,16 +159,7 @@ namespace Game {
 			if (GearIndex >= VSRG::MAX_CHANNELS || GearIndex < 0)
 				return;
 
-			if (KeyDown)
-			{
-				JudgeLane(GearIndex, GetChartTimeAt(Time));
-				Gear.IsPressed[GearIndex] = true;
-			}
-			else
-			{
-				ReleaseLane(GearIndex, GetChartTimeAt(Time));
-				Gear.IsPressed[GearIndex] = false;
-			}
+			OnPlayerKeyEvent(Time, KeyDown, GearIndex);
 		}
 
 
@@ -275,6 +287,16 @@ namespace Game {
 				.addFunction("GetClosestNoteTime", &PlayerContext::GetClosestNoteTime)
 				.addProperty("Scorekeeper", &PlayerContext::GetScoreKeeper)
 				.endClass();
+		}
+
+		Replay PlayerContext::GetReplay()
+		{
+			return PlayerReplay;
+		}
+
+		void PlayerContext::LoadReplay(std::filesystem::path path)
+		{
+			PlayerReplay.Load(path);
 		}
 
 		double PlayerContext::GetScore() const
@@ -637,11 +659,25 @@ namespace Game {
 			Parameters.UserSpeedMultiplier = Multip;
 		}
 
-		void PlayerContext::SetPlayableData(std::shared_ptr<VSRG::Difficulty> diff, double Drift,
-			double DesiredDefaultSpeed, int Type)
+		void PlayerContext::SetPlayableData(std::shared_ptr<VSRG::Difficulty> diff, double Drift)
 		{
+			double DesiredDefaultSpeed = Configuration::GetSkinConfigf("DefaultSpeedUnits");
+
+			Game::VSRG::ESpeedType Type = (Game::VSRG::ESpeedType)(int)Configuration::GetSkinConfigf("DefaultSpeedKind");
+
 			CurrentDiff = diff;
 			this->Drift = Drift;
+
+			// use data from the replay if one is loaded
+			if (PlayerReplay.IsLoaded()) {
+				Parameters = PlayerReplay.GetEffectiveParameters();
+				DesiredDefaultSpeed = Parameters.UserSpeedMultiplier;
+				Type = SPEEDTYPE_MULTIPLIER; // treat desired default speed as the actual multiplier
+
+				PlayerReplay.AddPlaybackListener([this](Replay::Entry entry) {
+					this->OnPlayerKeyEvent(entry.Time + this->Drift, entry.Down, entry.Lane);
+				});
+			}
 
 			auto d = Parameters.Setup(DesiredDefaultSpeed, Type, Drift, diff);
 			ChartState = *d;
@@ -698,6 +734,7 @@ namespace Game {
 		{
 			PlayerNoteskin.Update(SongTime - LastUpdateTime, ChartState.GetBeatAt(ChartState.GetWarpedSongTime(SongTime)));
 			LastUpdateTime = SongTime;
+			PlayerReplay.Update(SongTime - Drift);
 			RunMeasures(SongTime);
 		}
 

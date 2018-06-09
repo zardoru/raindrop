@@ -813,7 +813,7 @@ public:
 
 	    TimingInfo = std::make_shared<OsumaniaChartInfo>();
 		Diff = std::make_shared<Difficulty>();
-		Diff->Data = std::make_shared<DifficultyLoadInfo>();
+		Diff->Data = std::make_unique<DifficultyLoadInfo>();
 		Diff->Data->TimingInfo = TimingInfo;
 
 		// osu! stores bpm information as the time in ms that a beat lasts.

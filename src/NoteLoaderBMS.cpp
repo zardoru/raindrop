@@ -918,12 +918,11 @@ namespace NoteLoaderBMS{
 		CreateIfstream(filein, filename);
 
         std::shared_ptr<Difficulty> Diff(new Difficulty());
-        std::shared_ptr<DifficultyLoadInfo> LInfo(new DifficultyLoadInfo());
         std::regex DataDeclaration("(\\d{3})([a-zA-Z0-9]{2})");
         bool IsPMS = false;
 
         Diff->Filename = filename;
-        Diff->Data = LInfo;
+		Diff->Data = std::make_unique<DifficultyLoadInfo>();
         if (filename.wstring().find(L"pms") != std::wstring::npos)
             IsPMS = true;
 
@@ -1139,7 +1138,7 @@ namespace NoteLoaderBMS{
 
                 OnCommand(#playlevel)
                 {
-					if (CommandContents != "")
+					if (Utility::IsNumeric(CommandContents.c_str()))
                     	Diff->Level = std::stoi(CommandContents);
                 }
 

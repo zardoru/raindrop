@@ -445,9 +445,11 @@ double latof(std::string s);
 
 #ifdef _WIN32
 #define CreateIfstream(name, fn) std::ifstream name(fn.wstring());
+#define CreateOfstream(name, fn) std::ofstream name(fn.wstring());
 #define CreateBinIfstream(name, fn) std::fstream name(fn.wstring(), std::ios::in | std::ios::binary);
 #else
 #define CreateIfstream(name, fn) std::ifstream name(fn.string());
+#define CreateOfstream(name, fn) std::ofstream name(fn.string());
 #define CreateBinIfstream(name, fn) std::fstream name(fn.string(), std::ios::in | std::ios::binary);
 #endif
 

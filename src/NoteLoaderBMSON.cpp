@@ -6,6 +6,8 @@
 
 // All non-standard exceptions are marked with NSE.
 
+using namespace Game::VSRG;
+
 namespace NoteLoaderBMS
 {
     std::string GetSubtitles(std::string SLine, std::unordered_set<std::string> &Out);
@@ -61,9 +63,9 @@ namespace NoteLoaderBMSON
     {
         Json::Value root;
         std::ifstream &input;
-        Game::VSRG::Song* song;
-        std::shared_ptr<Game::VSRG::Difficulty> Chart;
-        std::shared_ptr<Game::VSRG::BMSChartInfo> TimingInfo;
+        Song* song;
+        std::shared_ptr<Difficulty> Chart;
+        std::shared_ptr<BMSChartInfo> TimingInfo;
         std::unordered_set<std::string> subtitles;
         std::string version;
         double resolution;
@@ -114,7 +116,7 @@ namespace NoteLoaderBMSON
             if (regex_search(s, sm, generic_keys))
             {
                 int chans = atoi(sm[1].str().c_str());
-                if (chans <= Game::VSRG::MAX_CHANNELS)
+                if (chans <= MAX_CHANNELS)
                 {
                     Chart->Channels = chans;
                     for (int i = 0; i < chans; i++)
@@ -126,7 +128,7 @@ namespace NoteLoaderBMSON
             if (regex_search(s, sm, special_keys))
             {
                 int chans = atoi(sm[1].str().c_str());
-                if (chans <= Game::VSRG::MAX_CHANNELS)
+                if (chans <= MAX_CHANNELS)
                 {
                     Chart->Channels = chans;
                     Chart->Data->Turntable = true;
@@ -184,7 +186,7 @@ namespace NoteLoaderBMSON
             if (!meta["eyecatch_image"].isNull())
                 Chart->Data->StageFile = meta["eyecatch_image"].asString();
 
-            Chart->BPMType = Game::VSRG::Difficulty::BT_BEAT;
+            Chart->BPMType = Difficulty::BT_BEAT;
 
             SetChannelsFromModeHint(meta["mode_hint"]);
 
@@ -538,7 +540,7 @@ namespace NoteLoaderBMSON
         void LoadBGA()
         {
             if (version != VERSION_1) return; // BGA unsupported on version 0.21
-            auto out = std::make_shared<Game::VSRG::BMPEventsDetail>();
+            auto out = std::make_shared<BMPEventsDetail>();
 
             auto& bga = root["bga"];
             if (!bga.isNull())
@@ -582,7 +584,7 @@ namespace NoteLoaderBMSON
         }
     public:
 
-        BMSONLoader(std::ifstream &inp, Game::VSRG::Song* out) : input(inp)
+        BMSONLoader(std::ifstream &inp, Song* out) : input(inp)
         {
             input >> root;
             song = out;
@@ -618,7 +620,7 @@ namespace NoteLoaderBMSON
                         continue;
                     }
 
-                    Game::VSRG::NoteData new_note;
+                    NoteData new_note;
                     new_note.StartTime = TimeForObj(note.first);
                     if (note.second.Length)
                     {
@@ -639,9 +641,9 @@ namespace NoteLoaderBMSON
 
         void DoLoad()
         {
-            Chart = std::make_shared<Game::VSRG::Difficulty>();
-            Chart->Data = std::make_shared<Game::VSRG::DifficultyLoadInfo>();
-            Chart->Data->TimingInfo = TimingInfo = std::make_shared<Game::VSRG::BMSChartInfo>();
+            Chart = std::make_shared<Difficulty>();
+            Chart->Data = std::make_unique<DifficultyLoadInfo>();
+            Chart->Data->TimingInfo = TimingInfo = std::make_shared<BMSChartInfo>();
             TimingInfo->IsBMSON = true;
 
             if (!root.isMember("version")) // NSE (check member to be == 1.0.0 for VERSION_1!)
@@ -672,7 +674,7 @@ namespace NoteLoaderBMSON
         }
     };
 
-    void LoadObjectsFromFile(std::filesystem::path filename, Game::VSRG::Song* Out)
+    void LoadObjectsFromFile(std::filesystem::path filename, Song* Out)
     {
 		CreateIfstream(filein, filename);
 

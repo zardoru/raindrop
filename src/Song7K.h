@@ -167,6 +167,10 @@ namespace Game {
 			// Whether this difficulty uses the scratch channel (being channel/index 0 always used for this)
 			bool Turntable;
 
+			// Identification purposes
+			std::string FileHash;
+			int IndexInFile;
+
 			// Audio slicing data
 			SliceContainer SliceData;
 
@@ -176,12 +180,13 @@ namespace Game {
 			DifficultyLoadInfo()
 			{
 				Turntable = false;
+				IndexInFile = -1;
 			}
 		};
 
 		struct Difficulty : Game::Song::Difficulty
 		{
-			std::shared_ptr<DifficultyLoadInfo> Data;
+			std::unique_ptr<DifficultyLoadInfo> Data;
 
 			enum ETimingType
 			{

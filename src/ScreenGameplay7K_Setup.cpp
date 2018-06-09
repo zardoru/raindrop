@@ -345,9 +345,6 @@ namespace Game {
 		{
 			TimeError.AudioDrift = 0;
 
-			double DesiredDefaultSpeed = Configuration::GetSkinConfigf("DefaultSpeedUnits");
-
-			Game::VSRG::ESpeedType Type = (Game::VSRG::ESpeedType)(int)Configuration::GetSkinConfigf("DefaultSpeedKind");
 			double SpeedConstant = 0; // Unless set, assume we're using speed changes
 
 			int ApplyDriftVirtual = Configuration::GetConfigf("UseAudioCompensationKeysounds");
@@ -376,12 +373,14 @@ namespace Game {
 
 			Log::Printf("Processing song... ");
 
+			int diffindex = 0;
 			for (auto &&p : Players) {
 				for (auto sd : MySong->Difficulties) {
 					auto diff = GameState::GetInstance().GetDifficulty(p->GetPlayerNumber());
+
 					// If there's no difficulty assigned, no point in checking.
 					if ( (diff && sd->ID == diff->ID) || !diff ) {
-						p->SetPlayableData(sd, TimeError.AudioDrift, DesiredDefaultSpeed, Type);
+						p->SetPlayableData(sd, TimeError.AudioDrift);
 						p->Init();
 
 						if (!p->GetPlayerState().HasTimingData())
@@ -391,6 +390,8 @@ namespace Game {
 						} else // may double-init otherwise
 							break;
 					}
+
+					diffindex++;
 				}
 			}
 

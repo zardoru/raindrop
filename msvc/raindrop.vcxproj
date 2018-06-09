@@ -194,6 +194,7 @@
     <ClCompile Include="..\src\PlayerContext.cpp" />
     <ClCompile Include="..\src\raindrop.cpp" />
     <ClCompile Include="..\src\GameWindow.cpp" />
+    <ClCompile Include="..\src\Replay7K.cpp" />
     <ClCompile Include="..\src\RowifiedDifficulty7K.cpp" />
     <ClCompile Include="..\src\ScreenCustom.cpp" />
     <ClCompile Include="..\src\ScreenVideoTest.cpp" />
@@ -265,6 +266,7 @@
     <ClInclude Include="..\src\pch.h" />
     <ClInclude Include="..\src\PlayerChartData.h" />
     <ClInclude Include="..\src\PlayerContext.h" />
+    <ClInclude Include="..\src\Replay7K.h" />
     <ClInclude Include="..\src\ScreenCustom.h" />
     <ClInclude Include="..\src\ScreenVideoTest.h" />
     <ClInclude Include="..\src\SDF.h" />

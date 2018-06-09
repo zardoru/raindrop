@@ -100,6 +100,10 @@ namespace Game {
 
 					UserSpeedMultiplier = DesiredDefaultSpeed / val;
 				}
+				else if (Type == SPEEDTYPE_MULTIPLIER) // target speed is just a multiplier
+				{
+					UserSpeedMultiplier = DesiredDefaultSpeed;
+				}
 				else if (Type != SPEEDTYPE_CMOD) // other cases
 				{
 					double bpsd = 4.0 / (ChartState.BPS[0].Value);
@@ -112,8 +116,8 @@ namespace Game {
 			else
 				ChartState = VSRG::PlayerChartState::FromDifficulty(CurrentDiff.get(), Drift);
 
-			/*if (Random)
-				NoteTransform::Randomize(ChartState.NotesByChannel, CurrentDiff->Channels, CurrentDiff->Data->Turntable);*/
+			if (Random)
+				NoteTransform::Randomize(ChartState.Notes, CurrentDiff->Channels, CurrentDiff->Data->Turntable);
 
 
 			// Sinisterrr/fully negative charts fix.
@@ -286,6 +290,37 @@ namespace Game {
 		float PlayscreenParameters::GetHiddenCenterSize()
 		{
 			return Hidden.CenterSize;
+		}
+
+		void PlayscreenParameters::deserialize(Json::Value json)
+		{
+			Upscroll = json["upscroll"].asBool();
+			NoFail = json["nofail"].asBool();
+			HiddenMode = json["hidden"].asInt();
+			Rate = json["rate"].asFloat();
+			UserSpeedMultiplier = json["userspeed"].asFloat();
+			Random = json["random"].asInt();
+			GaugeType = json["gauge"].asInt();
+			SystemType = json["system"].asInt();
+			GreenNumber = json["isGreenNumber"].asBool();
+			UseW0 = json["W0"].asBool();
+		}
+
+		Json::Value PlayscreenParameters::serialize()
+		{
+			Json::Value ret;
+			ret["upscroll"] = Upscroll;
+			ret["nofail"] = NoFail;
+			ret["hidden"] = HiddenMode;
+			ret["rate"] = Rate;
+			ret["userspeed"] = UserSpeedMultiplier;
+			ret["random"] = Random;
+			ret["gauge"] = GaugeType;
+			ret["system"] = SystemType;
+			ret["isGreenNumber"] = GreenNumber;
+			ret["W0"] = UseW0;
+
+			return ret;
 		}
 
 		TimingType PlayscreenParameters::SetupGameSystem(

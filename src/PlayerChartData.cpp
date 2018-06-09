@@ -322,7 +322,7 @@ namespace Game {
 		PlayerChartState PlayerChartState::FromDifficulty(Difficulty *diff, double UserOffset, double ConstantUserSpeed)
 		{
 			PlayerChartState out;
-			auto data = diff->Data;
+			auto &data = diff->Data;
 			if (data == nullptr)
 				throw std::runtime_error("Tried to pass a metadata-only difficulty to Player Chart data generator.\n");
 
@@ -487,7 +487,7 @@ namespace Game {
 		std::vector<double> PlayerChartState::GetMeasureLines() const
 		{
 			auto &diff = ConnectedDifficulty;
-			auto Data = diff->Data;
+			auto &Data = diff->Data;
 			auto Timing = diff->Timing;
 			auto BPMType = diff->BPMType;
 			double Last = 0;

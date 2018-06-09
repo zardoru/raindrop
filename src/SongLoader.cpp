@@ -94,7 +94,11 @@ std::shared_ptr<Game::VSRG::Song> LoadSong7KFromFilename(const std::filesystem::
     return nullptr;
 }
 
-std::shared_ptr<Game::VSRG::Song> LoadSong7KFromFilename(std::filesystem::path Filename, std::filesystem::path Prefix, Game::VSRG::Song *Sng)
+std::shared_ptr<Game::VSRG::Song> LoadSong7KFromFilename(
+	std::filesystem::path Filename, 
+	std::filesystem::path Prefix, 
+	Game::VSRG::Song *Sng,
+	SongDatabase* DB)
 {
 	auto prefix = Prefix.string();
 
@@ -127,6 +131,17 @@ std::shared_ptr<Game::VSRG::Song> LoadSong7KFromFilename(std::filesystem::path F
             {
                 LoadersVSRG[i].LoadFunc(fn, Sng);
                 Log::LogPrintf(" ok\n");
+
+				int dindex = 0;
+				auto hash = (DB != nullptr) ? DB->GetChartHash(fn) : Utility::GetSha256ForFile(fn);
+				for (auto &d : Sng->Difficulties) {
+					d->Data->FileHash = hash;
+					if (d->Data->IndexInFile == -1) {
+						d->Data->IndexInFile = dindex;
+						dindex++;
+					}
+				}
+
             }
             catch (std::exception &e)
             {
@@ -141,30 +156,7 @@ std::shared_ptr<Game::VSRG::Song> LoadSong7KFromFilename(std::filesystem::path F
     return nullptr;
 }
 
-void PushSongToDatabase(SongDatabase* DB, Game::VSRG::Song *New)
-{
-    int ID;
 
-    if (!New->Difficulties.size())
-        return;
-
-    // All difficulties have the same song ID, so..
-    ID = DB->GetSongIDForFile(New->Difficulties.at(0)->Filename);
-	if (ID == -1) {
-		ID = DB->AddSongToDatabase(New);
-	}
-
-	New->ID = ID;
-
-    // Do the update, with the either new or old difficulty.
-    for (auto k = New->Difficulties.begin();
-    k != New->Difficulties.end();
-        ++k)
-    {
-        DB->AddDifficulty(ID, (*k)->Filename, k->get());
-        (*k)->Destroy();
-    }
-}
 
 void AddSongToList(std::vector<Game::VSRG::Song*> &VecOut, Game::VSRG::Song* Sng)
 {
@@ -185,7 +177,7 @@ void SongLoader::LoadBMS(Game::VSRG::Song * &BMSSong,
 
 	try
 	{
-		LoadSong7KFromFilename(File, SongDirectory, BMSSong);
+		LoadSong7KFromFilename(File, SongDirectory, BMSSong, DB);
 	}
 	catch (std::exception &ex)
 	{
@@ -222,7 +214,7 @@ void SongLoader::LoadBMS(Game::VSRG::Song * &BMSSong,
 	}
 	else
 	{
-		PushSongToDatabase(DB, BMSSong);
+		DB->AssociateSong(BMSSong);
 		AddSongToList(VecOut, BMSSong);
 		BMSSong = new Game::VSRG::Song;
 	}
@@ -252,7 +244,6 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<G
         All osu!mania charts must be packed together.
         OJNs must be their own chart.
         SMs must be their own chart. (And SSCs have priority if more loaders are supported later)
-        All FCFs to be grouped together
 
         Therefore; it's not the song directory which we check, but the difficulties' files.
     */
@@ -313,8 +304,8 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<G
 			// .ft2 doesn't need its own entry. 
 			if (Ext == L".ojn" || Ext == L".ft2")
             {
-                LoadSong7KFromFilename(File, SongDirectory, OJNSong);
-                PushSongToDatabase(DB, OJNSong);
+                LoadSong7KFromFilename(File, SongDirectory, OJNSong, DB);
+                DB->AssociateSong(OJNSong);
                 AddSongToList(VecOut, OJNSong);
                 OJNSong = new VSRG::Song;
                 OJNSong->SongDirectory = SongDirectory;
@@ -322,13 +313,13 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<G
 
 			// Add them all to the same song.
             if (Ext == L".osu")
-                LoadSong7KFromFilename(File, SongDirectory, osuSong);
+                LoadSong7KFromFilename(File, SongDirectory, osuSong, DB);
 
 			// Same as before.
             if (Ext == L".sm" || Ext == L".ssc")
             {
-                LoadSong7KFromFilename(File, SongDirectory, smSong);
-                PushSongToDatabase(DB, smSong);
+                LoadSong7KFromFilename(File, SongDirectory, smSong, DB);
+                DB->AssociateSong(smSong);
                 AddSongToList(VecOut, smSong);
                 smSong = new VSRG::Song;
                 smSong->SongDirectory = SongDirectory;
@@ -339,17 +330,17 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<G
         for (auto i = bmsk.begin();
         i != bmsk.end(); ++i)
         {
-            PushSongToDatabase(DB, i->second);
+            DB->AssociateSong(i->second);
             AddSongToList(VecOut, i->second);
         }
 
-        PushSongToDatabase(DB, OJNSong);
+        DB->AssociateSong(OJNSong);
         AddSongToList(VecOut, OJNSong);
 
-        PushSongToDatabase(DB, osuSong);
+        DB->AssociateSong(osuSong);
         AddSongToList(VecOut, osuSong);
 
-        PushSongToDatabase(DB, smSong);
+        DB->AssociateSong(smSong);
         AddSongToList(VecOut, smSong);
     }
     else // We can reload from cache. We do this on a per-file basis.
@@ -432,7 +423,7 @@ std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const Game::VSRG::Song* Met
     bool DifficultyFound = false;
     for (auto k : Out->Difficulties)
     {
-        DB->AddDifficulty(Meta->ID, k->Filename, k.get());
+        DB->InsertOrUpdateDifficulty(Meta->ID, k.get());
         if (k->ID == CurrentDiff->ID) // We've got a match; move onward.
         {
             CurrentDiff = k;

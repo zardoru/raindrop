@@ -197,8 +197,7 @@ void NoteLoaderFTB::LoadObjectsFromFile(std::filesystem::path filename, Song *Ou
 					Diff->Name = name;
 					
 
-					std::shared_ptr<DifficultyLoadInfo> LInfo(new DifficultyLoadInfo());
-					Diff->Data = LInfo;
+					Diff->Data = std::make_unique<DifficultyLoadInfo>();
 					Diff->Data->TimingInfo = std::make_shared<StepmaniaChartInfo>();
 
 					LoadFTBFromString(std::string(data, len), Diff.get());

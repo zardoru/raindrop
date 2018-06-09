@@ -21,5 +21,5 @@ public:
     std::shared_ptr<Game::VSRG::Song> LoadFromMeta(const Game::VSRG::Song* Meta, std::shared_ptr<Game::VSRG::Difficulty> CurrentDiff, std::filesystem::path& FilenameOut, uint8_t& Index);
 };
 
-std::shared_ptr<Game::VSRG::Song> LoadSong7KFromFilename(std::filesystem::path Filename, std::filesystem::path Prefix, Game::VSRG::Song *Sng);
+std::shared_ptr<Game::VSRG::Song> LoadSong7KFromFilename(std::filesystem::path Filename, std::filesystem::path Prefix, Game::VSRG::Song *Sng, SongDatabase* DB = nullptr);
 std::shared_ptr<Game::VSRG::Song> LoadSong7KFromFilename(const std::filesystem::path&, Game::VSRG::Song *Sng = nullptr);

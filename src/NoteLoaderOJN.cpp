@@ -11,6 +11,8 @@
 #define BPM_CHANNEL 10
 #define AUTOPLAY_CHANNEL 9
 
+using namespace Game::VSRG;
+
 const char *DifficultyNames[] = { "EX", "NX", "HX" };
 
 // based from the ojn documentation at
@@ -106,7 +108,7 @@ private:
 
 	std::vector<OjnMeasure> Measures;
 public:
-    Game::VSRG::Song* S;
+    Song* S;
     float BPM;
 
 	void ReadPackages(OjnHeader &Head, int difficulty_index, std::fstream &ojnfile)
@@ -213,14 +215,14 @@ public:
 		}
 	}
 
-	void CopyOJNTimingData(Game::VSRG::Difficulty *Out)
+	void CopyOJNTimingData(Difficulty *Out)
 	{
 		auto CurrentMeasure = 0;
 		for (auto Measure : Measures)
 		{
 			float MeasureBaseBeat = BeatForMeasure(CurrentMeasure);
 
-			Out->Data->Measures.push_back(Game::VSRG::Measure());
+			Out->Data->Measures.push_back(::Game::VSRG::Measure());
 
 			// All fractional measure events were already handled at read time.
 			Out->Data->Measures[CurrentMeasure].Length = Measure.Len;
@@ -265,7 +267,7 @@ public:
 
 	// Based off the O2JAM method at
 	// https://github.com/open2jamorg/open2jam/blob/master/parsers/src/org/open2jam/parsers/EventList.java
-	void OutputAllOJNEventsToDifficulty(Game::VSRG::Difficulty *Out)
+	void OutputAllOJNEventsToDifficulty(Difficulty *Out)
 	{
 		// First, we sort and clear up invalid events.
 		FixOJNEvents();
@@ -280,7 +282,7 @@ public:
 		CopyOJNNoteData(Out);
 	}
 
-	void CopyOJNNoteData(Game::VSRG::Difficulty * Out)
+	void CopyOJNNoteData(Difficulty * Out)
 	{
 		auto CurrentMeasure = 0;
 		float PendingLNs[7] = { 0 };
@@ -428,24 +430,23 @@ void NoteLoaderOJN::LoadObjectsFromFile(std::filesystem::path filename, Game::VS
     for (auto i = 0; i < 3; i++)
     {
         OjnLoadDifficultyContext Info;
-        std::shared_ptr<Game::VSRG::Difficulty> Diff(new Game::VSRG::Difficulty());
-        std::shared_ptr<Game::VSRG::O2JamChartInfo> TInfo(new Game::VSRG::O2JamChartInfo);
-        std::shared_ptr<Game::VSRG::DifficultyLoadInfo> LInfo(new Game::VSRG::DifficultyLoadInfo);
+        std::shared_ptr<Difficulty> Diff(new Difficulty());
+        std::shared_ptr<O2JamChartInfo> TInfo(new O2JamChartInfo);
 
         switch (i)
         {
         case 0:
-            TInfo->Difficulty = Game::VSRG::O2JamChartInfo::O2_EX;
+            TInfo->Difficulty = O2JamChartInfo::O2_EX;
             break;
         case 1:
-            TInfo->Difficulty = Game::VSRG::O2JamChartInfo::O2_NX;
+            TInfo->Difficulty = O2JamChartInfo::O2_NX;
             break;
         case 2:
-            TInfo->Difficulty = Game::VSRG::O2JamChartInfo::O2_HX;
+            TInfo->Difficulty = O2JamChartInfo::O2_HX;
             break;
         }
 
-        Diff->Data = LInfo;
+        Diff->Data = std::make_unique<DifficultyLoadInfo>();
         Diff->Level = Head.level[i];
         Diff->Data->TimingInfo = TInfo;
         Diff->Author = Noter;
@@ -455,7 +456,7 @@ void NoteLoaderOJN::LoadObjectsFromFile(std::filesystem::path filename, Game::VS
         filein.seekg(Head.note_offset[i]);
 
         // O2Jam files use Beat-Based notation.
-        Diff->BPMType = Game::VSRG::Difficulty::BT_BEAT;
+        Diff->BPMType = Difficulty::BT_BEAT;
         Diff->Duration = Head.time[i];
         Diff->Name = DifficultyNames[i];
         Diff->Channels = 7;

@@ -181,7 +181,6 @@ bool LoadTracksSM(Song *Out, Difficulty *Diff, std::string line)
     /* Remove newlines and comments */
     CommandContents = RemoveComments(CommandContents);
 
-    /* Split contents */
     auto Mainline = Utility::TokenSplit(CommandContents, ":");
 
     if (Mainline.size() < 6) // No, like HELL I'm loading this.
@@ -448,7 +447,7 @@ void NoteLoaderSSC::LoadObjectsFromFile(std::filesystem::path filename, Song *Ou
         OnCommand(#NOTEDATA)
         {
             Diff = std::make_shared<Difficulty>();
-            Diff->Data = std::make_shared<DifficultyLoadInfo>();
+            Diff->Data = std::make_unique<DifficultyLoadInfo>();
             diffSpeedData.clear(); // Clear this in particular since we're using a temp for diffs unlike the rest of the data.
         }
 
@@ -686,7 +685,7 @@ void NoteLoaderSM::LoadObjectsFromFile(std::filesystem::path filename, Song *Out
 
     Diff->Offset = 0;
     Diff->Duration = 0;
-    Diff->Data = std::make_shared<DifficultyLoadInfo>();
+    Diff->Data = std::make_unique<DifficultyLoadInfo>();
 
     std::string line;
     while (filein)
@@ -730,7 +729,7 @@ void NoteLoaderSM::LoadObjectsFromFile(std::filesystem::path filename, Song *Out
         OnCommand(#NOTES)
         {
             Diff->Timing = BPMData;
-            Diff->Data = std::make_shared<DifficultyLoadInfo>();
+            Diff->Data = std::make_unique<DifficultyLoadInfo>();
             Diff->Data->Stops = StopsData;
             Diff->Offset = -Offset;
             Diff->Duration = 0;

@@ -6,6 +6,7 @@
 #include "VSRGMechanics.h"
 #include "PlayerChartData.h"
 #include "Noteskin.h"
+#include "Replay7K.h"
 
 class Line;
 
@@ -50,6 +51,7 @@ namespace Game {
 			bool JudgeNotes;
 
 			PlayscreenParameters Parameters;
+			Replay PlayerReplay;
 
 			struct SGearState {
 				std::map<int, int> Bindings;
@@ -74,6 +76,8 @@ namespace Game {
 			void RunMeasures(double time);
 			void PlayLaneKeysound(uint32_t Lane);
 			void RunAuto(TrackNote *m, double usedTime, uint32_t k);
+
+			void OnPlayerKeyEvent(double Time, bool KeyDown, uint32_t lane);
 		public:
 			PlayerContext(int pn, Game::VSRG::PlayscreenParameters par = Game::VSRG::PlayscreenParameters());
 			~PlayerContext();
@@ -91,8 +95,7 @@ namespace Game {
 				About this pointer's lifetime:
 				PlayerContext requires the song/difficulty pointer to stay valid until it's destroyed.
 			*/
-			void SetPlayableData(std::shared_ptr<VSRG::Difficulty> difficulty, double Drift = 0, 
-								double DesiredDefaultSpeed = 0, int Type = SPEEDTYPE_DEFAULT);
+			void SetPlayableData(std::shared_ptr<VSRG::Difficulty> difficulty, double Drift = 0);
 			const PlayerChartState &GetPlayerState();
 
 			// Getters (Lua)
@@ -138,6 +141,9 @@ namespace Game {
 			std::vector<AutoplaySound> GetBgmData();
 
 			static void SetupLua(LuaManager *Env);
+
+			Replay GetReplay();
+			void LoadReplay(std::filesystem::path path);
 
 			double GetScore() const;
 			int GetCombo() const;

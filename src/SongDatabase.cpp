@@ -96,10 +96,15 @@ auto GetPreviewOfSong = "SELECT previewsong, previewtime FROM songdb WHERE id=$s
 auto sGetStageFile = "SELECT stagefile FROM diffdb WHERE diffid=$did";
 auto GetGenre = "SELECT genre FROM diffdb WHERE diffid=$did";
 
+auto FileFromHash = "SELECT filename FROM songfiledb WHERE hash=$hash";
+auto HashFromFile = "SELECT hash FROM songfiledb WHERE filename=$filename";
+
+// sqlite check
 #define SC(x) \
 {ret=x; if(ret!=SQLITE_OK && ret != SQLITE_DONE) \
 {Log::Printf("sqlite: %ls (code %d)\n",Utility::Widen(sqlite3_errmsg(db)).c_str(), ret); Utility::DebugBreak(); }}
 
+// sqlite check sequence
 #define SCS(x) \
 {ret=x; if(ret!=SQLITE_DONE && ret != SQLITE_ROW) \
 {Log::Printf("sqlite: %ls (code %d)\n",Utility::Widen(sqlite3_errmsg(db)).c_str(), ret); Utility::DebugBreak(); }}
@@ -135,6 +140,8 @@ SongDatabase::SongDatabase(std::string Database)
         SC(sqlite3_prepare_v2(db, GetPreviewOfSong, strlen(GetPreviewOfSong), &st_GetPreviewInfo, &tail));
         SC(sqlite3_prepare_v2(db, sGetStageFile, strlen(sGetStageFile), &st_GetStageFile, &tail));
 		SC(sqlite3_prepare_v2(db, GetGenre, strlen(GetGenre), &st_GetDiffGenre, &tail));
+		SC(sqlite3_prepare_v2(db, FileFromHash, strlen(FileFromHash), &st_FileFromHash, &tail));
+		SC(sqlite3_prepare_v2(db, HashFromFile, strlen(HashFromFile), &st_HashFromFile, &tail));
     }
 }
 
@@ -156,17 +163,23 @@ SongDatabase::~SongDatabase()
         sqlite3_finalize(st_GetSIDFromFilename);
         sqlite3_finalize(st_GetLastSongID);
         sqlite3_finalize(st_GetDiffAuthor);
+		sqlite3_finalize(st_GetPreviewInfo);
+		sqlite3_finalize(st_GetStageFile);
+		sqlite3_finalize(st_GetDiffGenre);
+		sqlite3_finalize(st_FileFromHash);
+		sqlite3_finalize(st_HashFromFile);
         sqlite3_close(db);
     }
 }
 
 // Inserts a filename, if it already exists, updates it.
 // Returns the ID of the filename.
-int SongDatabase::InsertFilename(std::filesystem::path Fn)
+int SongDatabase::InsertOrUpdateChartFile(Game::VSRG::Difficulty* Diff)
 {
     int ret;
     int idOut;
     int lmt;
+	auto Fn = Diff->Filename;
 	std::string u8p = Utility::ToU8(std::filesystem::absolute(Fn).wstring());
 
     SC(sqlite3_bind_text(st_FilenameQuery, 1, u8p.c_str(), u8p.length(), SQLITE_STATIC));
@@ -181,7 +194,7 @@ int SongDatabase::InsertFilename(std::filesystem::path Fn)
         // Update the last-modified-time of this file, and its hash if it has changed.
         if (lmt != lastLmt)
         {
-            std::string Hash = Utility::GetSha256ForFile(Fn);
+            std::string Hash = Diff->Data->FileHash;
             
 			SC(sqlite3_bind_int(st_UpdateLMT, 
 				sqlite3_bind_parameter_index(st_UpdateLMT, "$lmt"), 
@@ -317,10 +330,34 @@ void SongDatabase::UpdateDiffInternal(int &ret, int DiffID, Game::Song::Difficul
 	SC(sqlite3_reset(st_DiffUpdateQuery));
 }
 
-// Adds a difficulty to the database, or updates it if it already exists.
-void SongDatabase::AddDifficulty(int SongID, std::filesystem::path Filename, Game::Song::Difficulty* Diff)
+void SongDatabase::AssociateSong(Game::VSRG::Song *New)
 {
-    int FileID = InsertFilename(Filename);
+	int ID;
+
+	if (!New->Difficulties.size())
+		return;
+
+	// All difficulties have the same song ID, so..
+	ID = GetSongIDForFile(New->Difficulties.at(0)->Filename);
+	if (ID == -1) {
+		ID = InsertSongInternal(New);
+	}
+
+	New->ID = ID;
+
+	// Do the update, with the either new or old difficulty.
+	for (auto k = New->Difficulties.begin();
+		k != New->Difficulties.end();
+		++k)
+	{
+		InsertOrUpdateDifficulty(ID, k->get());
+		(*k)->Destroy();
+	}
+}
+
+void SongDatabase::InsertOrUpdateDifficulty(int SongID, Game::VSRG::Difficulty* Diff)
+{
+    int FileID = InsertOrUpdateChartFile(Diff);
     int DiffID;
     int ret;
 
@@ -340,7 +377,7 @@ void SongDatabase::AddDifficulty(int SongID, std::filesystem::path Filename, Gam
     Diff->ID = DiffID;
 }
 
-int SongDatabase::AddSongToDatabase(Game::VSRG::Song * Song)
+int SongDatabase::InsertSongInternal(Game::VSRG::Song * Song)
 {
 	int ret = 0;
 	auto u8sfn = Utility::ToU8(Song->SongFilename.wstring());
@@ -458,6 +495,59 @@ std::filesystem::path SongDatabase::GetDifficultyFilename(int ID)
 	return out;
 }
 
+std::filesystem::path SongDatabase::GetChartFilename(std::string hash)
+{
+	sqlite3_bind_text(st_FileFromHash,
+		sqlite3_bind_parameter_index(st_FileFromHash, "$hash"),
+		hash.c_str(), hash.length(), SQLITE_STATIC);
+
+	auto res = sqlite3_step(st_FileFromHash);
+
+	auto ret = std::filesystem::path();
+
+	// if there's more than one candidate file, 
+	// find the first one that exists
+	// ret will be last declared if none exist
+	while (res == SQLITE_ROW) {
+		auto out = sqlite3_column_text(st_FileFromHash, 0);
+		ret = out;
+
+		if (std::filesystem::exists(ret))
+			break;
+		else
+			sqlite3_step(st_FileFromHash);
+	}
+
+	sqlite3_reset(st_FileFromHash);
+
+	return ret;
+}
+
+std::string SongDatabase::GetChartHash(std::filesystem::path filename)
+{
+	std::string u8p = Utility::ToU8(std::filesystem::absolute(filename).wstring());
+
+	sqlite3_bind_text(st_HashFromFile,
+		sqlite3_bind_parameter_index(st_HashFromFile, "$filename"),
+		u8p.c_str(), u8p.length(), SQLITE_STATIC);
+
+	auto res = sqlite3_step(st_HashFromFile);
+
+	auto ret = std::string();
+
+	if (res == SQLITE_ROW) {
+		auto out = (char*)sqlite3_column_text(st_HashFromFile, 0);
+		ret = out;
+	}
+	else {
+		ret = Utility::GetSha256ForFile(filename);
+	}
+
+	sqlite3_reset(st_HashFromFile);
+
+	return ret;
+}
+
 bool SongDatabase::CacheNeedsRenewal(std::filesystem::path Dir)
 {
 	// must match what we put at InsertFilename time, so turn into absolute path on both places!
@@ -562,7 +652,7 @@ void SongDatabase::GetSongInformation(int ID, Game::VSRG::Song* Out)
     Out->Artist = (char*)sqlite3_column_text(stGetSongInfo, 1);
     Out->SongFilename = _W(sqlite3_column_text(stGetSongInfo, 2));
     Out->Subtitle = (char*)sqlite3_column_text(stGetSongInfo, 3);
-    Out->BackgroundFilename = _W(sqlite3_column_text(stGetSongInfo, 4));
+    // Out->BackgroundFilename = _W(sqlite3_column_text(stGetSongInfo, 4));
     Out->ID = ID;
     Out->PreviewTime = sqlite3_column_double(stGetSongInfo, 5);
 
@@ -597,7 +687,7 @@ void SongDatabase::GetSongInformation(int ID, Game::VSRG::Song* Out)
 
         sqlite3_step(st_GetFileInfo);
 
-		// This copy is dangerous, so we should reset the info _before_ we try to copy.
+		// Widen can throw, so we should reset the info _before_ we try to copy.
 		std::string s = (char*)sqlite3_column_text(st_GetFileInfo, 0);
 		
 		// There's a case where a string could cause operator= to throw
