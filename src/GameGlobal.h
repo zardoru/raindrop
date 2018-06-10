@@ -298,7 +298,7 @@ namespace Game {
 			float GetHiddenCenterSize();
 
 			void deserialize(Json::Value json);
-			Json::Value serialize();
+			Json::Value serialize() const;
 
 			PlayscreenParameters() {
 				Upscroll = false;

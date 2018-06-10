@@ -75,6 +75,8 @@ namespace Game {
 			int getRank() const; // returns a number from -9 to 9
 			int getBMRank() const; // returns PMT_xxx according to EXScore Rank
 
+			long long getRankPoints() const; // returns underlying rank points
+
 			uint8_t getPills() const;
 			int getCoolCombo() const;
 

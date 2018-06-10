@@ -185,6 +185,7 @@
     <ClCompile Include="..\src\Noteskin.cpp" />
     <ClCompile Include="..\src\NoteTransformations.cpp" />
     <ClCompile Include="..\src\NPSGraph.cpp" />
+    <ClCompile Include="..\src\OffsetDatabase.cpp" />
     <ClCompile Include="..\src\osuBackgroundAnimation.cpp" />
     <ClCompile Include="..\src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -192,10 +193,12 @@
     </ClCompile>
     <ClCompile Include="..\src\PlayerChartData.cpp" />
     <ClCompile Include="..\src\PlayerContext.cpp" />
+    <ClCompile Include="..\src\Profile.cpp" />
     <ClCompile Include="..\src\raindrop.cpp" />
     <ClCompile Include="..\src\GameWindow.cpp" />
     <ClCompile Include="..\src\Replay7K.cpp" />
     <ClCompile Include="..\src\RowifiedDifficulty7K.cpp" />
+    <ClCompile Include="..\src\ScoreDatabase.cpp" />
     <ClCompile Include="..\src\ScreenCustom.cpp" />
     <ClCompile Include="..\src\ScreenVideoTest.cpp" />
     <ClCompile Include="..\src\SDF.cpp" />
@@ -262,11 +265,14 @@
     <ClInclude Include="..\src\GraphicalString.h" />
     <ClInclude Include="..\src\Interruptible.h" />
     <ClInclude Include="..\src\NoteTransformations.h" />
+    <ClInclude Include="..\src\OffsetDatabase.h" />
     <ClInclude Include="..\src\osuBackgroundAnimation.h" />
     <ClInclude Include="..\src\pch.h" />
     <ClInclude Include="..\src\PlayerChartData.h" />
     <ClInclude Include="..\src\PlayerContext.h" />
+    <ClInclude Include="..\src\Profile.h" />
     <ClInclude Include="..\src\Replay7K.h" />
+    <ClInclude Include="..\src\ScoreDatabase.h" />
     <ClInclude Include="..\src\ScreenCustom.h" />
     <ClInclude Include="..\src\ScreenVideoTest.h" />
     <ClInclude Include="..\src\SDF.h" />
@@ -285,7 +291,6 @@
     <ClInclude Include="..\src\Logging.h" />
     <ClInclude Include="..\src\LuaManager.h" />
     <ClInclude Include="..\src\NoteLoader7K.h" />
-    <ClInclude Include="..\src\ScoreKeeper.h" />
     <ClInclude Include="..\src\Screen.h" />
     <ClInclude Include="..\src\ScreenEvaluation7K.h" />
     <ClInclude Include="..\src\ScreenGameplay7K.h" />

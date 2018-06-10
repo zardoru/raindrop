@@ -306,7 +306,7 @@ namespace Game {
 			UseW0 = json["W0"].asBool();
 		}
 
-		Json::Value PlayscreenParameters::serialize()
+		Json::Value PlayscreenParameters::serialize() const
 		{
 			Json::Value ret;
 			ret["upscroll"] = Upscroll;

@@ -107,7 +107,7 @@ struct songHelper
 Game::VSRG::PlayscreenParameters* GameState::GetParameters(int pn)
 {
 	if (PlayerNumberInBounds(pn))
-		return &PlayerInfo[pn].Params;
+		return &PlayerInfo[pn].play_parameters;
 	else return nullptr;
 }
 
@@ -120,8 +120,8 @@ Game::VSRG::Difficulty * Game::GameState::GetDifficulty(int pn)
 
 std::shared_ptr<Game::VSRG::Difficulty> Game::GameState::GetDifficultyShared(int pn)
 {
-	if (PlayerNumberInBounds(pn) && PlayerInfo[pn].Diff)
-		return PlayerInfo[pn].Diff;
+	if (PlayerNumberInBounds(pn) && PlayerInfo[pn].active_difficulty)
+		return PlayerInfo[pn].active_difficulty;
 	else {
 		return ((Game::VSRG::Song*)GetSelectedSong())->Difficulties[SongWheel::GetInstance().GetDifficulty()];
 	}

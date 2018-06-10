@@ -73,6 +73,8 @@ GameState::GameState():
 
 	// push the default player
 	PlayerInfo.push_back(SPlayerCurrent7K());
+	auto& player = PlayerInfo.back();
+	player.profile.Load("machine");
 }
 
 std::filesystem::path GameState::GetSkinScriptFile(const char* Filename, const std::string& skin)
@@ -237,7 +239,7 @@ void Game::GameState::SetPlayerContext(VSRG::PlayerContext * pc, int pn)
 int GameState::GetCurrentGaugeType(int pn) const
 {
 	if (PlayerNumberInBounds(pn))
-		return PlayerInfo[pn].ctx ? PlayerInfo[pn].ctx->GetCurrentGaugeType() : PlayerInfo[pn].Params.GaugeType;
+		return PlayerInfo[pn].ctx ? PlayerInfo[pn].ctx->GetCurrentGaugeType() : PlayerInfo[pn].play_parameters.GaugeType;
 	return 0;
 }
 
@@ -266,9 +268,9 @@ Texture* GameState::GetSongStage()
 	auto sng = SelectedSong ? SelectedSong.get() : GetSelectedSong();
 	if (sng)
 	{
-		if (PlayerInfo[0].Diff)
+		if (PlayerInfo[0].active_difficulty)
 		{
-			auto diff = PlayerInfo[0].Diff;
+			auto diff = PlayerInfo[0].active_difficulty;
 			std::filesystem::path File = Database->GetStageFile(diff->ID);
 
 			// Oh so it's loaded and it's not in the database, fine.
@@ -338,21 +340,21 @@ std::string GameState::GetSkin()
 Game::VSRG::ScoreKeeper* GameState::GetScorekeeper7K(int pn)
 {
 	if (PlayerNumberInBounds(pn))
-		return PlayerInfo[pn].SKeeper7K.get();
+		return PlayerInfo[pn].scorekeeper.get();
 	else return nullptr;
 }
 
 void GameState::SetScorekeeper7K(std::shared_ptr<Game::VSRG::ScoreKeeper> Other, int pn)
 {
     if (PlayerNumberInBounds(pn))
-		PlayerInfo[pn].SKeeper7K = Other;
+		PlayerInfo[pn].scorekeeper = Other;
 }
 
 
 int GameState::GetCurrentScoreType(int pn) const
 {
 	if (PlayerNumberInBounds(pn))
-		return PlayerInfo[pn].Params.GetScoringType();
+		return PlayerInfo[pn].play_parameters.GetScoringType();
 	else
 		return 0;
 }
@@ -360,7 +362,7 @@ int GameState::GetCurrentScoreType(int pn) const
 int GameState::GetCurrentSystemType(int pn) const
 {
 	if (PlayerNumberInBounds(pn))
-		return PlayerInfo[pn].ctx ? PlayerInfo[pn].ctx->GetCurrentSystemType() : PlayerInfo[pn].Params.SystemType;
+		return PlayerInfo[pn].ctx ? PlayerInfo[pn].ctx->GetCurrentSystemType() : PlayerInfo[pn].play_parameters.SystemType;
 	else
 		return 0;
 }
@@ -368,7 +370,7 @@ int GameState::GetCurrentSystemType(int pn) const
 void Game::GameState::SetDifficulty(std::shared_ptr<Game::VSRG::Difficulty> df, int pn)
 {
 	if (PlayerNumberInBounds(pn)) {
-		PlayerInfo[pn].Diff = df;
+		PlayerInfo[pn].active_difficulty = df;
 	}
 }
 

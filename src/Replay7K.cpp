@@ -86,7 +86,7 @@ namespace Game {
 			return true;
 		}
 
-		bool Replay::Save(std::filesystem::path outputpath)
+		bool Replay::Save(std::filesystem::path outputpath) const
 		{
 			Json::Value root;
 

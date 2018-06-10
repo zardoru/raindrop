@@ -37,8 +37,10 @@ CREATE TABLE IF NOT EXISTS [diffdb] (\
   [genre] VARCHAR(256),\
   [stagefile] varchar(260));\
     CREATE INDEX IF NOT EXISTS song_index ON songfiledb(filename);\
-	  CREATE INDEX IF NOT EXISTS diff_index ON diffdb(diffid, songid, fileid);\
-	  CREATE INDEX IF NOT EXISTS songid_index ON songdb(id);\
+	CREATE INDEX IF NOT EXISTS diff_index ON diffdb(diffid, songid, fileid);\
+	CREATE INDEX IF NOT EXISTS songid_index ON songdb(id);\
+	CREATE INDEX IF NOT EXISTS file_index ON songfiledb(filename);\
+	CREATE INDEX IF NOT EXISTS file_index2 ON songfiledb(hash);\
   ";
 
 auto InsertSongQuery = "INSERT INTO songdb VALUES (NULL,$title,$author,$subtitle,$fn,$bg,$psong,$ptime)";
@@ -111,220 +113,286 @@ auto HashFromFile = "SELECT hash FROM songfiledb WHERE filename=$filename";
 
 SongDatabase::SongDatabase(std::string Database)
 {
-    int ret = sqlite3_open_v2(Database.c_str(), &db, SQLITE_OPEN_FULLMUTEX | SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+	int ret = sqlite3_open_v2(Database.c_str(), &db, SQLITE_OPEN_FULLMUTEX | SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
 
-    if (ret != SQLITE_OK)
-        Log::Printf("Unable to open song database file.");
-    else
-    {
-        char* err; // Do the "create tables" query.
-        const char* tail;
-        SC(sqlite3_exec(db, DatabaseQuery, NULL, NULL, &err));
+	if (ret != SQLITE_OK)
+		Log::Printf("Unable to open song database file.");
+	else
+	{
+		char* err; // Do the "create tables" query.
+		const char* tail;
+		SC(sqlite3_exec(db, DatabaseQuery, NULL, NULL, &err));
 
-        // And not just that, also the statements.
-        SC(sqlite3_prepare_v2(db, InsertSongQuery, strlen(InsertSongQuery), &st_SngInsertQuery, &tail));
-        SC(sqlite3_prepare_v2(db, InsertDifficultyQuery, strlen(InsertDifficultyQuery), &st_DiffInsertQuery, &tail));
-        SC(sqlite3_prepare_v2(db, GetFilenameIDQuery, strlen(GetFilenameIDQuery), &st_FilenameQuery, &tail));
-        SC(sqlite3_prepare_v2(db, InsertFilenameQuery, strlen(InsertFilenameQuery), &st_FilenameInsertQuery, &tail));
-        SC(sqlite3_prepare_v2(db, GetLMTQuery, strlen(GetLMTQuery), &stGetLMTQuery, &tail));
-        SC(sqlite3_prepare_v2(db, GetSongInfo, strlen(GetSongInfo), &stGetSongInfo, &tail));
-        SC(sqlite3_prepare_v2(db, GetDiffInfo, strlen(GetDiffInfo), &stGetDiffInfo, &tail));
-        SC(sqlite3_prepare_v2(db, GetFileInfo, strlen(GetFileInfo), &st_GetFileInfo, &tail));
-        SC(sqlite3_prepare_v2(db, UpdateLMT, strlen(UpdateLMT), &st_UpdateLMT, &tail));
-        SC(sqlite3_prepare_v2(db, GetDiffIDFileID, strlen(GetDiffIDFileID), &st_GetDiffIDFile, &tail));
-        SC(sqlite3_prepare_v2(db, UpdateDiff, strlen(UpdateDiff), &st_DiffUpdateQuery, &tail));
-        SC(sqlite3_prepare_v2(db, GetDiffFilename, strlen(GetDiffFilename), &st_GetDiffFilename, &tail));
-        SC(sqlite3_prepare_v2(db, GetSongIDFromFilename, strlen(GetSongIDFromFilename), &st_GetSIDFromFilename, &tail));
-        SC(sqlite3_prepare_v2(db, GetLatestSongID, strlen(GetLatestSongID), &st_GetLastSongID, &tail));
-        SC(sqlite3_prepare_v2(db, GetAuthorOfDifficulty, strlen(GetAuthorOfDifficulty), &st_GetDiffAuthor, &tail));
-        SC(sqlite3_prepare_v2(db, GetPreviewOfSong, strlen(GetPreviewOfSong), &st_GetPreviewInfo, &tail));
-        SC(sqlite3_prepare_v2(db, sGetStageFile, strlen(sGetStageFile), &st_GetStageFile, &tail));
+		// And not just that, also the statements.
+		SC(sqlite3_prepare_v2(db, InsertSongQuery, strlen(InsertSongQuery), &st_SngInsertQuery, &tail));
+		SC(sqlite3_prepare_v2(db, InsertDifficultyQuery, strlen(InsertDifficultyQuery), &st_DiffInsertQuery, &tail));
+		SC(sqlite3_prepare_v2(db, GetFilenameIDQuery, strlen(GetFilenameIDQuery), &st_FilenameQuery, &tail));
+		SC(sqlite3_prepare_v2(db, InsertFilenameQuery, strlen(InsertFilenameQuery), &st_FilenameInsertQuery, &tail));
+		SC(sqlite3_prepare_v2(db, GetLMTQuery, strlen(GetLMTQuery), &stGetLMTQuery, &tail));
+		SC(sqlite3_prepare_v2(db, GetSongInfo, strlen(GetSongInfo), &stGetSongInfo, &tail));
+		SC(sqlite3_prepare_v2(db, GetDiffInfo, strlen(GetDiffInfo), &stGetDiffInfo, &tail));
+		SC(sqlite3_prepare_v2(db, GetFileInfo, strlen(GetFileInfo), &st_GetFileInfo, &tail));
+		SC(sqlite3_prepare_v2(db, UpdateLMT, strlen(UpdateLMT), &st_UpdateLMT, &tail));
+		SC(sqlite3_prepare_v2(db, GetDiffIDFileID, strlen(GetDiffIDFileID), &st_GetDiffIDFile, &tail));
+		SC(sqlite3_prepare_v2(db, UpdateDiff, strlen(UpdateDiff), &st_DiffUpdateQuery, &tail));
+		SC(sqlite3_prepare_v2(db, GetDiffFilename, strlen(GetDiffFilename), &st_GetDiffFilename, &tail));
+		SC(sqlite3_prepare_v2(db, GetSongIDFromFilename, strlen(GetSongIDFromFilename), &st_GetSIDFromFilename, &tail));
+		SC(sqlite3_prepare_v2(db, GetLatestSongID, strlen(GetLatestSongID), &st_GetLastSongID, &tail));
+		SC(sqlite3_prepare_v2(db, GetAuthorOfDifficulty, strlen(GetAuthorOfDifficulty), &st_GetDiffAuthor, &tail));
+		SC(sqlite3_prepare_v2(db, GetPreviewOfSong, strlen(GetPreviewOfSong), &st_GetPreviewInfo, &tail));
+		SC(sqlite3_prepare_v2(db, sGetStageFile, strlen(sGetStageFile), &st_GetStageFile, &tail));
 		SC(sqlite3_prepare_v2(db, GetGenre, strlen(GetGenre), &st_GetDiffGenre, &tail));
 		SC(sqlite3_prepare_v2(db, FileFromHash, strlen(FileFromHash), &st_FileFromHash, &tail));
 		SC(sqlite3_prepare_v2(db, HashFromFile, strlen(HashFromFile), &st_HashFromFile, &tail));
-    }
+	}
 }
 
 SongDatabase::~SongDatabase()
 {
-    if (db)
-    {
-        sqlite3_finalize(st_SngInsertQuery);
-        sqlite3_finalize(st_DiffInsertQuery);
-        sqlite3_finalize(st_FilenameQuery);
-        sqlite3_finalize(st_FilenameInsertQuery);
-        sqlite3_finalize(stGetLMTQuery);
-        sqlite3_finalize(stGetSongInfo);
-        sqlite3_finalize(stGetDiffInfo);
-        sqlite3_finalize(st_UpdateLMT);
-        sqlite3_finalize(st_GetDiffIDFile);
-        sqlite3_finalize(st_DiffUpdateQuery);
-        sqlite3_finalize(st_GetDiffFilename);
-        sqlite3_finalize(st_GetSIDFromFilename);
-        sqlite3_finalize(st_GetLastSongID);
-        sqlite3_finalize(st_GetDiffAuthor);
+	if (db)
+	{
+		sqlite3_finalize(st_SngInsertQuery);
+		sqlite3_finalize(st_DiffInsertQuery);
+		sqlite3_finalize(st_FilenameQuery);
+		sqlite3_finalize(st_FilenameInsertQuery);
+		sqlite3_finalize(stGetLMTQuery);
+		sqlite3_finalize(stGetSongInfo);
+		sqlite3_finalize(stGetDiffInfo);
+		sqlite3_finalize(st_UpdateLMT);
+		sqlite3_finalize(st_GetDiffIDFile);
+		sqlite3_finalize(st_DiffUpdateQuery);
+		sqlite3_finalize(st_GetDiffFilename);
+		sqlite3_finalize(st_GetSIDFromFilename);
+		sqlite3_finalize(st_GetLastSongID);
+		sqlite3_finalize(st_GetDiffAuthor);
 		sqlite3_finalize(st_GetPreviewInfo);
 		sqlite3_finalize(st_GetStageFile);
 		sqlite3_finalize(st_GetDiffGenre);
 		sqlite3_finalize(st_FileFromHash);
 		sqlite3_finalize(st_HashFromFile);
-        sqlite3_close(db);
-    }
+		sqlite3_close(db);
+	}
 }
 
 // Inserts a filename, if it already exists, updates it.
 // Returns the ID of the filename.
 int SongDatabase::InsertOrUpdateChartFile(Game::VSRG::Difficulty* Diff)
 {
-    int ret;
-    int idOut;
-    int lmt;
+	int ret;
+	int idOut;
+	int lmt;
 	auto Fn = Diff->Filename;
 	std::string u8p = Utility::ToU8(std::filesystem::absolute(Fn).wstring());
 
-    SC(sqlite3_bind_text(st_FilenameQuery, 1, u8p.c_str(), u8p.length(), SQLITE_STATIC));
+	SC(sqlite3_bind_text(st_FilenameQuery, 1, u8p.c_str(), u8p.length(), SQLITE_STATIC));
 
-    if (sqlite3_step(st_FilenameQuery) == SQLITE_ROW)
-    {
-        idOut = sqlite3_column_int(st_FilenameQuery, 0);
-        lmt = sqlite3_column_int(st_FilenameQuery, 1);
+	if (sqlite3_step(st_FilenameQuery) == SQLITE_ROW)
+	{
+		idOut = sqlite3_column_int(st_FilenameQuery, 0);
+		lmt = sqlite3_column_int(st_FilenameQuery, 1);
 
-        int lastLmt = Utility::GetLastModifiedTime(Fn);
+		int lastLmt = Utility::GetLastModifiedTime(Fn);
 
-        // Update the last-modified-time of this file, and its hash if it has changed.
-        if (lmt != lastLmt)
-        {
-            std::string Hash = Diff->Data->FileHash;
-            
-			SC(sqlite3_bind_int(st_UpdateLMT, 
-				sqlite3_bind_parameter_index(st_UpdateLMT, "$lmt"), 
-				lastLmt));
+		// Update the last-modified-time of this file, and its hash if it has changed.
+		if (lmt != lastLmt)
+		{
+			std::string Hash = Diff->Data->FileHash;
 
-            SC(sqlite3_bind_text(st_UpdateLMT, 
-				sqlite3_bind_parameter_index(st_UpdateLMT, "$hash"), 
-				Hash.c_str(), Hash.length(), SQLITE_STATIC));
+			SC(sqlite3_bind_int(
+				st_UpdateLMT,
+				sqlite3_bind_parameter_index(st_UpdateLMT, "$lmt"),
+				lastLmt
+			));
 
-            SC(sqlite3_bind_text(st_UpdateLMT, 
-				sqlite3_bind_parameter_index(st_UpdateLMT, "$fn"), 
-				u8p.c_str(), u8p.length(), SQLITE_STATIC));
+			SC(sqlite3_bind_text(
+				st_UpdateLMT,
+				sqlite3_bind_parameter_index(st_UpdateLMT, "$hash"),
+				Hash.c_str(),
+				Hash.length(), 
+				SQLITE_STATIC
+			));
 
-            SCS(sqlite3_step(st_UpdateLMT));
-            SC(sqlite3_reset(st_UpdateLMT));
-        }
-    }
-    else
-    {
-        std::string Hash = Utility::GetSha256ForFile(Fn);
+			SC(sqlite3_bind_text(
+				st_UpdateLMT,
+				sqlite3_bind_parameter_index(st_UpdateLMT, "$fn"),
+				u8p.c_str(), 
+				u8p.length(),
+				SQLITE_STATIC
+			));
 
-        // There's no entry, got to insert it.
-        SC(sqlite3_bind_text(st_FilenameInsertQuery, 
-			sqlite3_bind_parameter_index(st_FilenameInsertQuery, "$fn"), 
-			u8p.c_str(), u8p.length(), SQLITE_STATIC));
+			SCS(sqlite3_step(st_UpdateLMT));
+			SC(sqlite3_reset(st_UpdateLMT));
+		}
+	}
+	else
+	{
+		std::string Hash = Utility::GetSha256ForFile(Fn);
 
-        SC(sqlite3_bind_int(st_FilenameInsertQuery, 
-			sqlite3_bind_parameter_index(st_FilenameInsertQuery, "$lmt"), 
-			Utility::GetLastModifiedTime(Fn)));
+		// There's no entry, got to insert it.
+		SC(sqlite3_bind_text(
+			st_FilenameInsertQuery,
+			sqlite3_bind_parameter_index(st_FilenameInsertQuery, "$fn"),
+			u8p.c_str(), 
+			u8p.length(), 
+			SQLITE_STATIC
+		));
 
-        SC(sqlite3_bind_text(st_FilenameInsertQuery, 
-			sqlite3_bind_parameter_index(st_FilenameInsertQuery, "$hash"), 
-			Hash.c_str(), Hash.length(), SQLITE_STATIC));
+		SC(sqlite3_bind_int(
+			st_FilenameInsertQuery,
+			sqlite3_bind_parameter_index(st_FilenameInsertQuery, "$lmt"),
+			Utility::GetLastModifiedTime(Fn)
+		));
+
+		SC(sqlite3_bind_text(
+			st_FilenameInsertQuery,
+			sqlite3_bind_parameter_index(st_FilenameInsertQuery, "$hash"),
+			Hash.c_str(), 
+			Hash.length(), 
+			SQLITE_STATIC
+		));
 
 		// This should not fail. Otherwise, there are bigger problems to worry about...
-        SCS(sqlite3_step(st_FilenameInsertQuery)); 
-        SC(sqlite3_reset(st_FilenameInsertQuery));
+		SCS(sqlite3_step(st_FilenameInsertQuery));
+		SC(sqlite3_reset(st_FilenameInsertQuery));
 
-        // okay, then return the ID.
-        SC(sqlite3_reset(st_FilenameQuery));
-        SC(sqlite3_bind_text(st_FilenameQuery, 
+		// okay, then return the ID.
+		SC(sqlite3_reset(st_FilenameQuery));
+		SC(sqlite3_bind_text(
+			st_FilenameQuery,
 			sqlite3_bind_parameter_index(st_FilenameQuery, "$fn"),
-			u8p.c_str(), u8p.length(), SQLITE_STATIC));
+			u8p.c_str(), 
+			u8p.length(),
+			SQLITE_STATIC
+		));
 
-        sqlite3_step(st_FilenameQuery);
-        idOut = sqlite3_column_int(st_FilenameQuery, 0);
-    }
+		sqlite3_step(st_FilenameQuery);
+		idOut = sqlite3_column_int(st_FilenameQuery, 0);
+	}
 
-    SC(sqlite3_reset(st_FilenameQuery));
-    return idOut;
+	SC(sqlite3_reset(st_FilenameQuery));
+	return idOut;
 }
 
 // remove all difficulties associated to this ID
 void SongDatabase::ClearDifficulties(int SongID)
 {
-    int ret;
-    SC(sqlite3_bind_int(st_DelDiffsQuery, 1, SongID));
-    SCS(sqlite3_step(st_DelDiffsQuery));
-    SC(sqlite3_reset(st_DelDiffsQuery));
+	int ret;
+	SC(sqlite3_bind_int(st_DelDiffsQuery, 1, SongID));
+	SCS(sqlite3_step(st_DelDiffsQuery));
+	SC(sqlite3_reset(st_DelDiffsQuery));
 }
 
 // returns if difficulty exists in the database. And difficulty ID.
 bool SongDatabase::DifficultyExists(int FileID, std::string DifficultyName, int *IDOut)
 {
-    int ret;
-    SC(sqlite3_bind_int(st_GetDiffIDFile, 1, FileID));
-    SC(sqlite3_bind_text(st_GetDiffIDFile, 2, DifficultyName.c_str(), DifficultyName.length(), SQLITE_STATIC));
-    int r = sqlite3_step(st_GetDiffIDFile);
+	int ret;
 
-    if (IDOut)
-    {
-        if (r == SQLITE_ROW)
-            *IDOut = sqlite3_column_int(st_GetDiffIDFile, 0);
-        else
-            *IDOut = 0;
-    }
+	SC(sqlite3_bind_int(
+		st_GetDiffIDFile, 
+		sqlite3_bind_parameter_index(st_GetDiffIDFile, "$fid"), 
+		FileID
+	));
 
-    SC(sqlite3_reset(st_GetDiffIDFile));
-    return r == SQLITE_ROW;
+	SC(sqlite3_bind_text(
+		st_GetDiffIDFile, 
+		sqlite3_bind_parameter_index(st_GetDiffIDFile, "$name"),
+		DifficultyName.c_str(), 
+		DifficultyName.length(), 
+		SQLITE_STATIC
+	));
+
+	int r = sqlite3_step(st_GetDiffIDFile);
+
+	if (IDOut)
+	{
+		if (r == SQLITE_ROW)
+			*IDOut = sqlite3_column_int(st_GetDiffIDFile, 0);
+		else
+			*IDOut = 0;
+	}
+
+	SC(sqlite3_reset(st_GetDiffIDFile));
+	return r == SQLITE_ROW;
 }
 
 void SongDatabase::UpdateDiffInternal(int &ret, int DiffID, Game::Song::Difficulty * Diff)
 {
-	SC(sqlite3_bind_int(st_DiffUpdateQuery,
+	SC(sqlite3_bind_int(
+		st_DiffUpdateQuery,
 		sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$did"),
 		DiffID));
 
-	SC(sqlite3_bind_text(st_DiffUpdateQuery,
+	SC(sqlite3_bind_text(
+		st_DiffUpdateQuery,
 		sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$name"),
-		Diff->Name.c_str(), Diff->Name.length(), SQLITE_STATIC));
+		Diff->Name.c_str(),
+		Diff->Name.length(),
+		SQLITE_STATIC
+	));
 
-	SC(sqlite3_bind_double(st_DiffUpdateQuery,
+	SC(sqlite3_bind_double(
+		st_DiffUpdateQuery,
 		sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$dur"),
-		Diff->Duration));
+		Diff->Duration
+	));
 
-		auto VDiff = static_cast<Game::VSRG::Difficulty*>(Diff);
-		assert(VDiff->Data != NULL);
+	auto VDiff = static_cast<Game::VSRG::Difficulty*>(Diff);
+	assert(VDiff->Data != NULL);
 
-		SC(sqlite3_bind_int(st_DiffUpdateQuery,
-			sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$objcnt"),
-			VDiff->Data->GetObjectCount()));
+	SC(sqlite3_bind_int(
+		st_DiffUpdateQuery,
+		sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$objcnt"),
+		VDiff->Data->GetObjectCount()
+	));
 
-		SC(sqlite3_bind_int(st_DiffUpdateQuery,
-			sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$scoreobjcnt"),
-			VDiff->Data->GetScoreItemsCount()));
+	SC(sqlite3_bind_int(
+		st_DiffUpdateQuery,
+		sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$scoreobjcnt"),
+		VDiff->Data->GetScoreItemsCount()
+	));
 
-		SC(sqlite3_bind_int(st_DiffUpdateQuery,
-			sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$virtual"),
-			VDiff->IsVirtual));
+	SC(sqlite3_bind_int(
+		st_DiffUpdateQuery,
+		sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$virtual"),
+		VDiff->IsVirtual
+	));
 
-		SC(sqlite3_bind_int(st_DiffUpdateQuery,
-			sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$keys"),
-			VDiff->Channels));
+	SC(sqlite3_bind_int(
+		st_DiffUpdateQuery,
+		sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$keys"),
+		VDiff->Channels
+	));
 
-		SC(sqlite3_bind_int(st_DiffUpdateQuery,
-			sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$level"),
-			VDiff->Level));
+	SC(sqlite3_bind_int(
+		st_DiffUpdateQuery,
+		sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$level"),
+		VDiff->Level
+	));
 
-		SC(sqlite3_bind_text(st_DiffUpdateQuery,
-			sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$author"),
-			VDiff->Author.c_str(), VDiff->Author.length(), SQLITE_STATIC));
+	SC(sqlite3_bind_text(
+		st_DiffUpdateQuery,
+		sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$author"),
+		VDiff->Author.c_str(), 
+		VDiff->Author.length(), 
+		SQLITE_STATIC
+	));
 
-		SC(sqlite3_bind_text(st_DiffUpdateQuery,
-			sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$stagefile"),
-			VDiff->Data->StageFile.c_str(), VDiff->Data->StageFile.length(), SQLITE_STATIC));
+	SC(sqlite3_bind_text(
+		st_DiffUpdateQuery,
+		sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$stagefile"),
+		VDiff->Data->StageFile.c_str(), 
+		VDiff->Data->StageFile.length(),
+		SQLITE_STATIC
+	));
 
-		SC(sqlite3_bind_text(st_DiffUpdateQuery,
-			sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$genre"),
-			VDiff->Data->Genre.c_str(), VDiff->Data->Genre.length(), SQLITE_STATIC));
-	
+	SC(sqlite3_bind_text(
+		st_DiffUpdateQuery,
+		sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$genre"),
+		VDiff->Data->Genre.c_str(), 
+		VDiff->Data->Genre.length(), 
+		SQLITE_STATIC
+	));
+
 
 	SCS(sqlite3_step(st_DiffUpdateQuery));
 	SC(sqlite3_reset(st_DiffUpdateQuery));
@@ -357,24 +425,24 @@ void SongDatabase::AssociateSong(Game::VSRG::Song *New)
 
 void SongDatabase::InsertOrUpdateDifficulty(int SongID, Game::VSRG::Difficulty* Diff)
 {
-    int FileID = InsertOrUpdateChartFile(Diff);
-    int DiffID;
-    int ret;
+	int FileID = InsertOrUpdateChartFile(Diff);
+	int DiffID;
+	int ret;
 
-    if (!DifficultyExists(FileID, Diff->Name, &DiffID))
+	if (!DifficultyExists(FileID, Diff->Name, &DiffID))
 		InsertDiffInternal(ret, SongID, FileID, Diff);
-    else // Update
+	else // Update
 		UpdateDiffInternal(ret, DiffID, Diff);
 
-    if (DiffID == 0)
-    {
-        if (!DifficultyExists(FileID, Diff->Name, &DiffID))
-            Utility::DebugBreak();
-        if (DiffID == 0)
-            Utility::DebugBreak();
-    }
+	if (DiffID == 0)
+	{
+		if (!DifficultyExists(FileID, Diff->Name, &DiffID))
+			Utility::DebugBreak();
+		if (DiffID == 0)
+			Utility::DebugBreak();
+	}
 
-    Diff->ID = DiffID;
+	Diff->ID = DiffID;
 }
 
 int SongDatabase::InsertSongInternal(Game::VSRG::Song * Song)
@@ -386,33 +454,57 @@ int SongDatabase::InsertSongInternal(Game::VSRG::Song * Song)
 
 	// Okay then, insert the song.
 	// So now the latest entry is what we're going to insert difficulties and files into.
-	SC(sqlite3_bind_text(st_SngInsertQuery, 
+	SC(sqlite3_bind_text(st_SngInsertQuery,
 		sqlite3_bind_parameter_index(st_SngInsertQuery, "$title"),
-		Song->Title.c_str(), Song->Title.length(), SQLITE_STATIC));
+		Song->Title.c_str(), 
+		Song->Title.length(), 
+		SQLITE_STATIC
+	));
 
-	SC(sqlite3_bind_text(st_SngInsertQuery, 
+	SC(sqlite3_bind_text(st_SngInsertQuery,
 		sqlite3_bind_parameter_index(st_SngInsertQuery, "$author"),
-		Song->Artist.c_str(), Song->Artist.length(), SQLITE_STATIC));
+		Song->Artist.c_str(), 
+		Song->Artist.length(), 
+		SQLITE_STATIC
+	));
 
-	SC(sqlite3_bind_text(st_SngInsertQuery, 
+	SC(sqlite3_bind_text(
+		st_SngInsertQuery,
 		sqlite3_bind_parameter_index(st_SngInsertQuery, "$subtitle"),
-		Song->Subtitle.c_str(), Song->Subtitle.length(), SQLITE_STATIC));
+		Song->Subtitle.c_str(), 
+		Song->Subtitle.length(), 
+		SQLITE_STATIC
+	));
 
-	SC(sqlite3_bind_text(st_SngInsertQuery, 
+	SC(sqlite3_bind_text(
+		st_SngInsertQuery,
 		sqlite3_bind_parameter_index(st_SngInsertQuery, "$fn"),
-		u8sfn.c_str(), u8sfn.length(), SQLITE_STATIC));
+		u8sfn.c_str(), 
+		u8sfn.length(), 
+		SQLITE_STATIC
+	));
 
-	SC(sqlite3_bind_text(st_SngInsertQuery, 
+	SC(sqlite3_bind_text(
+		st_SngInsertQuery,
 		sqlite3_bind_parameter_index(st_SngInsertQuery, "$bg"),
-		u8bfn.c_str(), u8bfn.length(), SQLITE_STATIC));
+		u8bfn.c_str(), 
+		u8bfn.length(), 
+		SQLITE_STATIC
+	));
 
-	SC(sqlite3_bind_text(st_SngInsertQuery, 
-		sqlite3_bind_parameter_index(st_SngInsertQuery, "$psong"), 
-		u8pfn.c_str(), u8pfn.length(), SQLITE_STATIC));
-	
-	SC(sqlite3_bind_double(st_SngInsertQuery, 
+	SC(sqlite3_bind_text(
+		st_SngInsertQuery,
+		sqlite3_bind_parameter_index(st_SngInsertQuery, "$psong"),
+		u8pfn.c_str(), 
+		u8pfn.length(), 
+		SQLITE_STATIC
+	));
+
+	SC(sqlite3_bind_double(
+		st_SngInsertQuery,
 		sqlite3_bind_parameter_index(st_SngInsertQuery, "$ptime"),
-		Song->PreviewTime));
+		Song->PreviewTime
+	));
 
 	SCS(sqlite3_step(st_SngInsertQuery));
 	SC(sqlite3_reset(st_SngInsertQuery));
@@ -426,54 +518,87 @@ int SongDatabase::InsertSongInternal(Game::VSRG::Song * Song)
 
 void SongDatabase::InsertDiffInternal(int &ret, int SongID, int FileID, Game::Song::Difficulty * Diff)
 {
-	SC(sqlite3_bind_int(st_DiffInsertQuery,
+	SC(sqlite3_bind_int(
+		st_DiffInsertQuery,
 		sqlite3_bind_parameter_index(st_DiffInsertQuery, "$sid"),
-		SongID));
+		SongID
+	));
 
-	SC(sqlite3_bind_int(st_DiffInsertQuery,
+	SC(sqlite3_bind_int(
+		st_DiffInsertQuery,
 		sqlite3_bind_parameter_index(st_DiffInsertQuery, "$fid"),
-		FileID));
+		FileID
+	));
 
-	SC(sqlite3_bind_text(st_DiffInsertQuery,
+	SC(sqlite3_bind_text(
+		st_DiffInsertQuery,
 		sqlite3_bind_parameter_index(st_DiffInsertQuery, "$name"),
-		Diff->Name.c_str(), Diff->Name.length(), SQLITE_STATIC));
+		Diff->Name.c_str(), 
+		Diff->Name.length(),
+		SQLITE_STATIC
+	));
 
-	SC(sqlite3_bind_double(st_DiffInsertQuery,
-		sqlite3_bind_parameter_index(st_DiffInsertQuery, "$dur"), Diff->Duration));
+	SC(sqlite3_bind_double(
+		st_DiffInsertQuery,
+		sqlite3_bind_parameter_index(st_DiffInsertQuery, "$dur"), 
+		Diff->Duration
+	));
 
-	SC(sqlite3_bind_text(st_DiffInsertQuery,
+	SC(sqlite3_bind_text(
+		st_DiffInsertQuery,
 		sqlite3_bind_parameter_index(st_DiffInsertQuery, "$author"),
-		Diff->Author.c_str(), Diff->Author.length(), SQLITE_STATIC));
+		Diff->Author.c_str(), 
+		Diff->Author.length(), 
+		SQLITE_STATIC
+	));
 
 	auto VDiff = static_cast<Game::VSRG::Difficulty*>(Diff);
 
-	SC(sqlite3_bind_int(st_DiffInsertQuery,
+	SC(sqlite3_bind_int(
+		st_DiffInsertQuery,
 		sqlite3_bind_parameter_index(st_DiffInsertQuery, "$objcnt"),
-		VDiff->Data->GetObjectCount()));
+		VDiff->Data->GetObjectCount()
+	));
 
-	SC(sqlite3_bind_int(st_DiffInsertQuery,
+	SC(sqlite3_bind_int(
+		st_DiffInsertQuery,
 		sqlite3_bind_parameter_index(st_DiffInsertQuery, "$scoreobjcnt"),
-		VDiff->Data->GetScoreItemsCount()));
+		VDiff->Data->GetScoreItemsCount()
+	));
 
-	SC(sqlite3_bind_int(st_DiffInsertQuery,
+	SC(sqlite3_bind_int(
+		st_DiffInsertQuery,
 		sqlite3_bind_parameter_index(st_DiffInsertQuery, "$virtual"),
-		VDiff->IsVirtual));
+		VDiff->IsVirtual
+	));
 
-	SC(sqlite3_bind_int(st_DiffInsertQuery,
+	SC(sqlite3_bind_int(
+		st_DiffInsertQuery,
 		sqlite3_bind_parameter_index(st_DiffInsertQuery, "$keys"),
-		VDiff->Channels));
+		VDiff->Channels
+	));
 
-	SC(sqlite3_bind_int(st_DiffInsertQuery,
+	SC(sqlite3_bind_int(
+		st_DiffInsertQuery,
 		sqlite3_bind_parameter_index(st_DiffInsertQuery, "$level"),
-		VDiff->Level));
+		VDiff->Level
+	));
 
-	SC(sqlite3_bind_text(st_DiffInsertQuery,
+	SC(sqlite3_bind_text(
+		st_DiffInsertQuery,
 		sqlite3_bind_parameter_index(st_DiffInsertQuery, "$genre"),
-		VDiff->Data->Genre.c_str(), VDiff->Data->Genre.length(), SQLITE_STATIC));
+		VDiff->Data->Genre.c_str(), 
+		VDiff->Data->Genre.length(), 
+		SQLITE_STATIC
+	));
 
-	SC(sqlite3_bind_text(st_DiffInsertQuery,
+	SC(sqlite3_bind_text(
+		st_DiffInsertQuery,
 		sqlite3_bind_parameter_index(st_DiffInsertQuery, "$stagefile"),
-		VDiff->Data->StageFile.c_str(), VDiff->Data->StageFile.length(), SQLITE_STATIC));
+		VDiff->Data->StageFile.c_str(), 
+		VDiff->Data->StageFile.length(), 
+		SQLITE_STATIC
+	));
 
 
 	SCS(sqlite3_step(st_DiffInsertQuery));
@@ -497,9 +622,13 @@ std::filesystem::path SongDatabase::GetDifficultyFilename(int ID)
 
 std::filesystem::path SongDatabase::GetChartFilename(std::string hash)
 {
-	sqlite3_bind_text(st_FileFromHash,
+	sqlite3_bind_text(
+		st_FileFromHash,
 		sqlite3_bind_parameter_index(st_FileFromHash, "$hash"),
-		hash.c_str(), hash.length(), SQLITE_STATIC);
+		hash.c_str(), 
+		hash.length(), 
+		SQLITE_STATIC
+	);
 
 	auto res = sqlite3_step(st_FileFromHash);
 
@@ -510,7 +639,7 @@ std::filesystem::path SongDatabase::GetChartFilename(std::string hash)
 	// ret will be last declared if none exist
 	while (res == SQLITE_ROW) {
 		auto out = sqlite3_column_text(st_FileFromHash, 0);
-		ret = out;
+		ret = out ? out : "";
 
 		if (std::filesystem::exists(ret))
 			break;
@@ -527,9 +656,13 @@ std::string SongDatabase::GetChartHash(std::filesystem::path filename)
 {
 	std::string u8p = Utility::ToU8(std::filesystem::absolute(filename).wstring());
 
-	sqlite3_bind_text(st_HashFromFile,
+	sqlite3_bind_text(
+		st_HashFromFile,
 		sqlite3_bind_parameter_index(st_HashFromFile, "$filename"),
-		u8p.c_str(), u8p.length(), SQLITE_STATIC);
+		u8p.c_str(), 
+		u8p.length(), 
+		SQLITE_STATIC
+	);
 
 	auto res = sqlite3_step(st_HashFromFile);
 
@@ -556,9 +689,13 @@ bool SongDatabase::CacheNeedsRenewal(std::filesystem::path Dir)
 	bool NeedsRenewal;
 	int res, ret;
 
-	SC(sqlite3_bind_text(stGetLMTQuery,
+	SC(sqlite3_bind_text(
+		stGetLMTQuery,
 		sqlite3_bind_parameter_index(stGetLMTQuery, "$fn"),
-		u8p.c_str(), u8p.length(), SQLITE_STATIC));
+		u8p.c_str(), 
+		u8p.length(), 
+		SQLITE_STATIC
+	));
 
 	res = sqlite3_step(stGetLMTQuery);
 
@@ -570,49 +707,51 @@ bool SongDatabase::CacheNeedsRenewal(std::filesystem::path Dir)
 	}
 	else
 	{
-        NeedsRenewal = true;
-    }
+		NeedsRenewal = true;
+	}
 
-    SC(sqlite3_reset(stGetLMTQuery));
-    return NeedsRenewal;
+	SC(sqlite3_reset(stGetLMTQuery));
+	return NeedsRenewal;
 }
 
 void SongDatabase::StartTransaction()
 {
-    char* tail;
-    sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, &tail);
+	char* tail;
+	sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, &tail);
 }
 
 void SongDatabase::EndTransaction()
 {
-    char* tail;
-    sqlite3_exec(db, "COMMIT;", NULL, NULL, &tail);
+	char* tail;
+	sqlite3_exec(db, "COMMIT;", NULL, NULL, &tail);
 }
 
 std::string SongDatabase::GetArtistForDifficulty(int ID)
 {
-    int rs;
-    std::string out;
+	int rs;
+	std::string out;
 
-    sqlite3_bind_int(st_GetDiffAuthor, 
+	sqlite3_bind_int(
+		st_GetDiffAuthor,
 		sqlite3_bind_parameter_index(st_GetDiffAuthor, "$did"),
-		ID);
+		ID
+	);
 
-    rs = sqlite3_step(st_GetDiffAuthor);
+	rs = sqlite3_step(st_GetDiffAuthor);
 
-    if (rs == SQLITE_ROW)
-        out = (char*)sqlite3_column_text(st_GetDiffAuthor, 0);
+	if (rs == SQLITE_ROW)
+		out = (char*)sqlite3_column_text(st_GetDiffAuthor, 0);
 
-    sqlite3_reset(st_GetDiffAuthor);
-    return out;
+	sqlite3_reset(st_GetDiffAuthor);
+	return out;
 }
 
 std::string SongDatabase::GetGenreForDifficulty(int DiffID)
 {
 	std::string out;
 
-	sqlite3_bind_int(st_GetDiffGenre, 
-		sqlite3_bind_parameter_index(st_GetDiffGenre, "$did"), 
+	sqlite3_bind_int(st_GetDiffGenre,
+		sqlite3_bind_parameter_index(st_GetDiffGenre, "$did"),
 		DiffID);
 
 	if (sqlite3_step(st_GetDiffGenre) == SQLITE_ROW)
@@ -630,66 +769,70 @@ std::string SongDatabase::GetGenreForDifficulty(int DiffID)
 
 void SongDatabase::GetSongInformation(int ID, Game::VSRG::Song* Out)
 {
-    int ret;
-    
-	SC(sqlite3_bind_int(stGetSongInfo, 
-		sqlite3_bind_parameter_index(stGetSongInfo, "$sid"), 
-		ID));
+	int ret;
 
-    ret = sqlite3_step(stGetSongInfo);
+	SC(sqlite3_bind_int(
+		stGetSongInfo,
+		sqlite3_bind_parameter_index(stGetSongInfo, "$sid"),
+		ID
+	));
 
-    if (ret != SQLITE_ROW)
-    {
-        Log::Printf("SongDatabase::GetSongInformation: Song %d does not exist.\n", ID);
-        return;
-    }
+	ret = sqlite3_step(stGetSongInfo);
 
-    // Main metadata is up in this query.
+	if (ret != SQLITE_ROW)
+	{
+		Log::Printf("SongDatabase::GetSongInformation: Song %d does not exist.\n", ID);
+		return;
+	}
+
+	// Main metadata is up in this query.
 
 	// oh god there is no better way without keeping track of column names for a
 	// statement by yourself...
-    Out->Title = (char*)sqlite3_column_text(stGetSongInfo, 0);
-    Out->Artist = (char*)sqlite3_column_text(stGetSongInfo, 1);
-    Out->SongFilename = _W(sqlite3_column_text(stGetSongInfo, 2));
-    Out->Subtitle = (char*)sqlite3_column_text(stGetSongInfo, 3);
-    // Out->BackgroundFilename = _W(sqlite3_column_text(stGetSongInfo, 4));
-    Out->ID = ID;
-    Out->PreviewTime = sqlite3_column_double(stGetSongInfo, 5);
+	Out->Title = (char*)sqlite3_column_text(stGetSongInfo, 0);
+	Out->Artist = (char*)sqlite3_column_text(stGetSongInfo, 1);
+	Out->SongFilename = _W(sqlite3_column_text(stGetSongInfo, 2));
+	Out->Subtitle = (char*)sqlite3_column_text(stGetSongInfo, 3);
+	// Out->BackgroundFilename = _W(sqlite3_column_text(stGetSongInfo, 4));
+	Out->ID = ID;
+	Out->PreviewTime = sqlite3_column_double(stGetSongInfo, 5);
 
-    SC(sqlite3_reset(stGetSongInfo));
+	SC(sqlite3_reset(stGetSongInfo));
 
-    // Now, difficulty information.
-    SC(sqlite3_bind_int(stGetDiffInfo, 
-		sqlite3_bind_parameter_index(stGetDiffInfo, "$sid"), 
+	// Now, difficulty information.
+	SC(sqlite3_bind_int(stGetDiffInfo,
+		sqlite3_bind_parameter_index(stGetDiffInfo, "$sid"),
 		ID));
 
-    while (sqlite3_step(stGetDiffInfo) != SQLITE_DONE)
-    {
-        auto Diff = std::make_shared<Game::VSRG::Difficulty>();
+	while (sqlite3_step(stGetDiffInfo) != SQLITE_DONE)
+	{
+		auto Diff = std::make_shared<Game::VSRG::Difficulty>();
 
-        // diffid associated data
-        Diff->ID = sqlite3_column_int(stGetDiffInfo, 0);
-        Diff->Name = (char*)sqlite3_column_text(stGetDiffInfo, 1);
-        Diff->Duration = sqlite3_column_double(stGetDiffInfo, 4);
-        Diff->IsVirtual = (sqlite3_column_int(stGetDiffInfo, 5) == 1);
-        Diff->Channels = sqlite3_column_int(stGetDiffInfo, 6);
+		// diffid associated data
+		Diff->ID = sqlite3_column_int(stGetDiffInfo, 0);
+		Diff->Name = (char*)sqlite3_column_text(stGetDiffInfo, 1);
+		Diff->Duration = sqlite3_column_double(stGetDiffInfo, 4);
+		Diff->IsVirtual = (sqlite3_column_int(stGetDiffInfo, 5) == 1);
+		Diff->Channels = sqlite3_column_int(stGetDiffInfo, 6);
 
-        // We don't include author information to force querying it from the database.
-        // Diff->Author
-        Diff->Level = sqlite3_column_int(stGetDiffInfo, 8);
+		// We don't include author information to force querying it from the database.
+		// Diff->Author
+		Diff->Level = sqlite3_column_int(stGetDiffInfo, 8);
 
-        // File ID associated data
-        int FileID = sqlite3_column_int(stGetDiffInfo, 7);
+		// File ID associated data
+		int FileID = sqlite3_column_int(stGetDiffInfo, 7);
 
-        SC(sqlite3_bind_int(st_GetFileInfo, 
-			sqlite3_bind_parameter_index(st_GetFileInfo, "$fid"), 
-			FileID));
+		SC(sqlite3_bind_int(
+			st_GetFileInfo,
+			sqlite3_bind_parameter_index(st_GetFileInfo, "$fid"),
+			FileID
+		));
 
-        sqlite3_step(st_GetFileInfo);
+		sqlite3_step(st_GetFileInfo);
 
 		// Widen can throw, so we should reset the info _before_ we try to copy.
 		std::string s = (char*)sqlite3_column_text(st_GetFileInfo, 0);
-		
+
 		// There's a case where a string could cause operator= to throw
 		// if it tries encoding from u8 into the internal ::path representation and it fails!
 		try {
@@ -707,65 +850,73 @@ void SongDatabase::GetSongInformation(int ID, Game::VSRG::Song* Out)
 		}
 
 		SC(sqlite3_reset(st_GetFileInfo));
-        Out->Difficulties.push_back(Diff);
-    }
+		Out->Difficulties.push_back(Diff);
+	}
 
-    SC(sqlite3_reset(stGetDiffInfo));
+	SC(sqlite3_reset(stGetDiffInfo));
 }
 
 int SongDatabase::GetSongIDForFile(std::filesystem::path File)
 {
-    int ret;
-    int Out = -1;
+	int ret;
+	int Out = -1;
 	std::string u8path = Utility::ToU8(std::filesystem::absolute(File).wstring());
 
-    SC(sqlite3_bind_text(st_GetSIDFromFilename, 
-		sqlite3_bind_parameter_index(st_GetSIDFromFilename, "$fn"), 
-		u8path.c_str(), u8path.length(), SQLITE_STATIC));
+	SC(sqlite3_bind_text(
+		st_GetSIDFromFilename,
+		sqlite3_bind_parameter_index(st_GetSIDFromFilename, "$fn"),
+		u8path.c_str(), 
+		u8path.length(), 
+		SQLITE_STATIC
+	));
 
-    int r = sqlite3_step(st_GetSIDFromFilename);
-    if (r == SQLITE_ROW)
-    {
-        // We found a song with ID and everything..
-        Out = sqlite3_column_int(st_GetSIDFromFilename, 0);
-    }
+	int r = sqlite3_step(st_GetSIDFromFilename);
+	if (r == SQLITE_ROW)
+	{
+		// We found a song with ID and everything..
+		Out = sqlite3_column_int(st_GetSIDFromFilename, 0);
+	}
 
-    sqlite3_reset(st_GetSIDFromFilename);
-    return Out;
+	sqlite3_reset(st_GetSIDFromFilename);
+	return Out;
 }
 
 std::string SongDatabase::GetStageFile(int DiffID)
 {
-    int ret;
-    
-	SC(sqlite3_bind_int(st_GetStageFile, 
-		sqlite3_bind_parameter_index(st_GetStageFile, "$did"), 
-		DiffID));
+	int ret;
 
-    SCS(sqlite3_step(st_GetStageFile));
+	SC(sqlite3_bind_int(
+		st_GetStageFile,
+		sqlite3_bind_parameter_index(st_GetStageFile, "$did"),
+		DiffID
+	));
 
-    const char* sOut = (const char*)sqlite3_column_text(st_GetStageFile, 0);
-    std::string Out = sOut ? sOut : "";
+	SCS(sqlite3_step(st_GetStageFile));
 
-    SC(sqlite3_reset(st_GetStageFile));
-    return Out;
+	const char* sOut = (const char*)sqlite3_column_text(st_GetStageFile, 0);
+	std::string Out = sOut ? sOut : "";
+
+	SC(sqlite3_reset(st_GetStageFile));
+	return Out;
 }
 
 void SongDatabase::GetPreviewInfo(int SongID, std::string &Filename, float &PreviewStart)
 {
-    int ret;
-    SC(sqlite3_bind_int(st_GetPreviewInfo, 
-		sqlite3_bind_parameter_index(st_GetPreviewInfo, "$sid"), 
-		SongID));
+	int ret;
+	SC(sqlite3_bind_int(
+		st_GetPreviewInfo,
+		sqlite3_bind_parameter_index(st_GetPreviewInfo, "$sid"),
+		SongID
+	));
 
-    SCS(sqlite3_step(st_GetPreviewInfo));
+	SCS(sqlite3_step(st_GetPreviewInfo));
 
-    const char* sOut = (const char*)sqlite3_column_text(st_GetPreviewInfo, 0);
-    float fOut = sqlite3_column_double(st_GetPreviewInfo, 1);
+	const char* sOut = (const char*)sqlite3_column_text(st_GetPreviewInfo, 0);
+	float fOut = sqlite3_column_double(st_GetPreviewInfo, 1);
 
-    std::string Out = sOut ? sOut : "";
+	std::string Out = sOut ? sOut : "";
 
-    SC(sqlite3_reset(st_GetPreviewInfo));
-    Filename = Out;
-    PreviewStart = fOut;
+	SC(sqlite3_reset(st_GetPreviewInfo));
+	Filename = Out;
+	PreviewStart = fOut;
 }

@@ -655,6 +655,11 @@ namespace Game {
 			}
 		}
 
+		long long ScoreKeeper::getRankPoints() const
+		{
+			return rank_pts;
+		}
+
 		/*
 
 		EXP^2 system

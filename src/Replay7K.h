@@ -56,7 +56,7 @@ namespace Game {
 			*/
 			void AddEvent(Entry entry);
 			bool Load(std::filesystem::path input);
-			bool Save(std::filesystem::path input);
+			bool Save(std::filesystem::path input) const;
 
 			// similar to auto, use judgetime - offset
 			void Update(double Time);

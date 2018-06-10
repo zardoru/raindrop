@@ -7,6 +7,8 @@ class Screen;
 
 struct lua_State;
 
+#include "Profile.h"
+
 namespace Game
 {
     class Song;
@@ -31,10 +33,11 @@ namespace Game
         std::shared_ptr<Game::VSRG::Song> SelectedSong;
 
 		struct SPlayerCurrent7K {
-			std::shared_ptr<VSRG::ScoreKeeper> SKeeper7K;
-			VSRG::PlayscreenParameters Params;
-			std::shared_ptr<VSRG::Difficulty> Diff;
+			std::shared_ptr<VSRG::ScoreKeeper> scorekeeper;
+			VSRG::PlayscreenParameters play_parameters;
+			std::shared_ptr<VSRG::Difficulty> active_difficulty;
 			VSRG::PlayerContext *ctx;
+			Profile profile;
 		};
 
 		std::vector<SPlayerCurrent7K> PlayerInfo;
