@@ -2,6 +2,7 @@
 
 #include "ScoreKeeper7K.h"
 #include "ScoreDatabase.h"
+#include "Logging.h"
 
 auto qScoreDDL = "CREATE TABLE IF NOT EXISTS [scores](\
 	[charthash] varchar(64) NOT NULL,\
@@ -24,7 +25,9 @@ auto qScoreDDL = "CREATE TABLE IF NOT EXISTS [scores](\
 	[avghit] float NOT NULL DEFAULT 0,\
 	[stdev] int NOT NULL DEFAULT 0,\
 	[offset] float NOT NULL DEFAULT 0,\
-	[judgeoffset] float NOT NULL DEFAULT 0);\
+	[judgeoffset] float NOT NULL DEFAULT 0,\
+	[date] DATETIME NOT NULL DEFAULT (datetime('now','localtime'))\
+    );\
 	CREATE INDEX IF NOT EXISTS [songid]\
 	ON[scores](\
 		[charthash],\
@@ -32,7 +35,7 @@ auto qScoreDDL = "CREATE TABLE IF NOT EXISTS [scores](\
 
 auto qAddScore = "INSERT INTO scores VALUES(\
 	$hash,$diffindex,$rankpts,$ex,$score,$scoretype,$gauge,$gaugetype,\
-    $hits,$maxcombo,$w0,$w1,$w2,$w3,$w4,$w5,$misses,$avghit,$stdev,$offset,$judgeoffset);";
+    $hits,$maxcombo,$w0,$w1,$w2,$w3,$w4,$w5,$misses,$avghit,$stdev,$offset,$judgeoffset,datetime('now'));";
 
 auto qBestEx = "SELECT rankpts, exscore, score, scoretype, gauge, gaugetype, \
 			    hits, maxcombo, w0, w1, w2, w3, w4, w5, misses, avghit, stdev, \
@@ -56,6 +59,10 @@ auto qAllScores = "SELECT rankpts, exscore, score, scoretype, gauge, gaugetype, 
 				charthash=$hash AND diffindex=$diffindex\
 				ORDER BY rankpts DESC";
 
+#define SC(x) \
+{ret=x; if(ret!=SQLITE_OK && ret != SQLITE_DONE) \
+{Log::Printf("sqlite: %ls (code %d)\n",Utility::Widen(sqlite3_errmsg(db)).c_str(), ret); Utility::DebugBreak(); }}
+
 namespace Game {
 
 	ScoreDatabase::ScoreDatabase()
@@ -69,13 +76,18 @@ namespace Game {
 		db = nullptr;
 	}
 
-	ScoreDatabase::~ScoreDatabase() 
+	void ScoreDatabase::CleanupStatements()
 	{
 		sqlite3_finalize(stAddScore);
 		sqlite3_finalize(stAllScores);
 		sqlite3_finalize(stBestEx);
 		sqlite3_finalize(stBestRank);
 		sqlite3_finalize(stBestType);
+	}
+
+	ScoreDatabase::~ScoreDatabase() 
+	{
+		CleanupStatements();
 
 		if (db)
 			sqlite3_close(db);
@@ -84,6 +96,7 @@ namespace Game {
 	void ScoreDatabase::Open(std::filesystem::path path)
 	{
 		if (db) {
+			CleanupStatements();
 			sqlite3_close(db);
 			db = nullptr;
 		}
@@ -95,10 +108,12 @@ namespace Game {
 			NULL
 		);
 
-		char* err;
-		sqlite3_exec(db, qScoreDDL, NULL, NULL, &err);
+		char* erra;
+		const char* err;
+		sqlite3_exec(db, qScoreDDL, NULL, NULL, &erra);
+		int ret;
 
-		sqlite3_prepare_v2(db, qAddScore, strlen(qAddScore), &stAddScore, &err);
+		SC(sqlite3_prepare_v2(db, qAddScore, strlen(qAddScore), &stAddScore, &err));
 		sqlite3_prepare_v2(db, qBestEx, strlen(qBestEx), &stBestEx, &err);
 		sqlite3_prepare_v2(db, qBestRank, strlen(qBestRank), &stBestRank, &err);
 		sqlite3_prepare_v2(db, qBestType, strlen(qBestType), &stBestType, &err);
@@ -136,7 +151,7 @@ namespace Game {
 
 		sqlite3_bind_int(
 			stAddScore,
-			sqlite3_bind_parameter_index(stAddScore, "$exscore"),
+			sqlite3_bind_parameter_index(stAddScore, "$ex"),
 			keeper.getScore(VSRG::ST_EX)
 		);
 
@@ -242,7 +257,8 @@ namespace Game {
 			judgeoffset
 		);
 
-		sqlite3_step(stAddScore);
+		int ret;
+		SC(sqlite3_step(stAddScore));
 		sqlite3_reset(stAddScore);
 	}
 

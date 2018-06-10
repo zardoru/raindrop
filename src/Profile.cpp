@@ -33,6 +33,8 @@ namespace Game {
 
 		auto path = GetPath();
 		Scores.Open(path / SCOREDB_FILENAME);
+
+		return true;
 	}
 
 	bool Profile::Save()
@@ -51,7 +53,7 @@ namespace Game {
 
 		// format current datetime
 		char date_str[512];
-		strftime(date_str, 512, "%F %R", tm);
+		strftime(date_str, 512, "%F %H.%M", tm);
 
 		char replay_filename[512];
 
@@ -61,8 +63,8 @@ namespace Game {
 			512,
 			"[%s] %s - %s.rdr", 
 			date_str, 
-			song->Artist, 
-			song->Title
+			song->Artist.c_str(), 
+			song->Title.c_str()
 		);
 
 		// put it out
@@ -71,7 +73,7 @@ namespace Game {
 
 	ScoreRow Profile::GetDifficultyScore(VSRG::Difficulty * diff)
 	{
-		
+		return ScoreRow();
 	}
 
 	std::vector<std::string> Profile::GetProfileList()

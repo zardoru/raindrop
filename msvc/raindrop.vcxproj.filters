@@ -248,9 +248,6 @@
     <ClCompile Include="..\src\SongTiming.cpp">
       <Filter>Source Files\song data loaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\SongDatabase.cpp">
-      <Filter>Source Files\song data loaders</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Easing.cpp">
       <Filter>Source Files\support</Filter>
     </ClCompile>
@@ -267,6 +264,9 @@
       <Filter>Source Files\game global status</Filter>
     </ClCompile>
     <ClCompile Include="..\src\OffsetDatabase.cpp">
+      <Filter>Source Files\game global status</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SongDatabase.cpp">
       <Filter>Source Files\game global status</Filter>
     </ClCompile>
   </ItemGroup>

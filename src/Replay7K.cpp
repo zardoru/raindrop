@@ -26,17 +26,17 @@ namespace Game {
 			SpeedType = speedType;
 		}
 
-		PlayscreenParameters Replay::GetEffectiveParameters()
+		PlayscreenParameters Replay::GetEffectiveParameters() const
 		{
 			return UserParameters;
 		}
 
-		std::string Replay::GetSongHash()
+		std::string Replay::GetSongHash() const
 		{
 			return SongHash;
 		}
 
-		uint32_t Replay::GetDifficultyIndex()
+		uint32_t Replay::GetDifficultyIndex() const
 		{
 			return DiffIndex;
 		}
@@ -105,8 +105,14 @@ namespace Game {
 
 			root["userParameters"] = UserParameters.serialize();
 
+
+			Json::StreamWriterBuilder builder;
+			builder["indentation"] = "";
+			builder["commentStyle"] = "None";
+			auto writer = std::unique_ptr<Json::StreamWriter>(builder.newStreamWriter());
+
 			CreateOfstream(out, outputpath);
-			out << root;
+			writer->write(root, &out);
 
 			return true;
 		}

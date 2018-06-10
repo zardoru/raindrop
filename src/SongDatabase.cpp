@@ -638,7 +638,7 @@ std::filesystem::path SongDatabase::GetChartFilename(std::string hash)
 	// find the first one that exists
 	// ret will be last declared if none exist
 	while (res == SQLITE_ROW) {
-		auto out = sqlite3_column_text(st_FileFromHash, 0);
+		char* out = (char*)sqlite3_column_text(st_FileFromHash, 0);
 		ret = out ? out : "";
 
 		if (std::filesystem::exists(ret))

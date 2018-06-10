@@ -42,9 +42,9 @@ namespace Game {
 				uint32_t diffindex = 0 // difficulty index in the defined chart hash
 			);
 
-			PlayscreenParameters GetEffectiveParameters();
-			std::string GetSongHash();
-			uint32_t GetDifficultyIndex();
+			PlayscreenParameters GetEffectiveParameters() const;
+			std::string GetSongHash() const;
+			uint32_t GetDifficultyIndex() const;
 
 			bool IsLoaded();
 

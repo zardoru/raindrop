@@ -16,6 +16,7 @@
 #include "Song7K.h"
 
 #include "NoteLoader7K.h"
+#include "ScoreKeeper7K.h"
 
 namespace Game {
 	namespace VSRG {
@@ -72,7 +73,7 @@ GameState::GameState():
     }
 
 	// push the default player
-	PlayerInfo.push_back(SPlayerCurrent7K());
+	PlayerInfo.resize(1);
 	auto& player = PlayerInfo.back();
 	player.profile.Load("machine");
 }
@@ -381,7 +382,34 @@ int Game::GameState::GetPlayerCount() const
 
 void GameState::SubmitScore(int pn)
 {
-	// TODO
+	if (!PlayerNumberInBounds(pn))
+		return;
+
+	auto *player = &PlayerInfo[pn];
+	auto d = GetDifficultyShared(pn);
+	auto replay = player->ctx->GetReplay();
+	auto scoretype = replay.GetEffectiveParameters().GetScoringType();
+	auto gaugetype = (VSRG::LifeType)replay.GetEffectiveParameters().GaugeType;
+	auto scorekeeper = *player->scorekeeper;
+	auto drift = player->ctx->GetDrift();
+	auto joffset = player->ctx->GetJudgeOffset();
+	auto song = *GetSelectedSong();
+
+	auto submitfunc = [=]() {
+		player->profile.Scores.AddScore(
+			replay.GetSongHash(),
+			replay.GetDifficultyIndex(),
+			scoretype,
+			gaugetype,
+			scorekeeper,
+			drift,
+			joffset
+		);
+
+		player->profile.SaveReplay(&song, replay);
+	};
+
+	std::async(submitfunc);
 }
 
 bool Game::GameState::IsSongUnlocked(Game::Song * song)

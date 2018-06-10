@@ -47,7 +47,7 @@ namespace Game {
 			Line* Barline;
 
 			double MsDisplayMargin;
-			double Drift;
+			double Drift, JudgeOffset;
 			bool JudgeNotes;
 
 			PlayscreenParameters Parameters;
@@ -132,6 +132,8 @@ namespace Game {
 			*/
 			ScoreKeeper* GetScoreKeeper() const;
 
+			std::shared_ptr<ScoreKeeper> GetScoreKeeperShared() const;
+
 			double GetClosestNoteTime(int Lane) const;
 
 			// Setters
@@ -167,6 +169,12 @@ namespace Game {
 			int GetCurrentGaugeType() const;
 			int GetCurrentScoreType() const;
 			int GetCurrentSystemType() const;
+
+			// in seconds - chart time displacement
+			double GetDrift() const;
+
+			// in seconds - key event judge time displacement
+			double GetJudgeOffset() const;
 
 			// Whether the player has actually failed or not
 			bool HasFailed() const;

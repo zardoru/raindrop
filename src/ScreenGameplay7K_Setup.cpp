@@ -36,7 +36,7 @@ namespace Game {
 			Music = nullptr;
 
 			StageFailureTriggered = false;
-			SongFinishTriggered = false;
+			SongPassTriggered = false;
 
 			Time.InterpolateStream = (Configuration::GetConfigf("InterpolateTime") != 0);
 
@@ -367,8 +367,6 @@ namespace Game {
 			else
 				TimeError.AudioDrift += Configuration::GetConfigf("OffsetNonKeysounded");
 
-			JudgeOffset = Configuration::GetConfigf("JudgeOffsetMS") / 1000;
-
 			Log::Logf("TimeCompensation: %f (Latency: %f / Offset: %f)\n", TimeError.AudioDrift, MixerGetLatency(), diff->Offset);
 
 			Log::Printf("Processing song... ");
@@ -381,7 +379,12 @@ namespace Game {
 					// If there's no difficulty assigned, no point in checking.
 					if ( (diff && sd->ID == diff->ID) || !diff ) {
 						p->SetPlayableData(sd, TimeError.AudioDrift);
+
 						p->Init();
+						GameState::GetInstance().SetScorekeeper7K(
+							p->GetScoreKeeperShared(),
+							p->GetPlayerNumber()
+						);
 
 						if (!p->GetPlayerState().HasTimingData())
 						{

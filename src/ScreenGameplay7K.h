@@ -60,10 +60,9 @@ namespace Game {
 			bool ForceActivation;
 			bool DoPlay;
 			bool PlayReactiveSounds;
-			bool SongFinishTriggered;
+			bool SongPassTriggered;
 
 			std::unique_ptr<BackgroundAnimation> BGA;
-			double JudgeOffset;
 			void SetupScriptConstants();
 			
 			// Done in loading thread

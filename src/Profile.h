@@ -1,6 +1,8 @@
 #pragma once
 
+#include "Song7K.h"
 #include "ScoreDatabase.h"
+#include "Replay7K.h"
 
 namespace Game {
 	

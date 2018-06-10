@@ -1,7 +1,5 @@
 #pragma once
 
-struct sqlite3;
-struct sqlite3_stmt;
 
 namespace Game {
 
@@ -52,14 +50,12 @@ namespace Game {
 			*stBestType,
 			*stBestEx,
 			*stBestRank,
-			*stBestType,
 			*stAllScores;
 		
+		void CleanupStatements();
 	public:
 		ScoreDatabase();
 		~ScoreDatabase();
-		ScoreDatabase(ScoreDatabase&) = delete;
-		ScoreDatabase(ScoreDatabase&&) = delete;
 		void Open(std::filesystem::path path);
 		void AddScore(
 			std::string charthash,

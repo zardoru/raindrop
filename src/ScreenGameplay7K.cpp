@@ -115,7 +115,7 @@ namespace Game {
 				switch (BindingsManager::TranslateKey(key))
 				{
 				case KT_Escape:
-					if (SongFinishTriggered)
+					if (SongPassTriggered)
 						Time.Success = -1;
 					else
 						Running = false;
@@ -135,7 +135,7 @@ namespace Game {
 						player->TranslateKey(
 							BindingsManager::TranslateKey7K(key),
 							true,
-							Time.Stream + JudgeOffset);
+							Time.Stream);
 					}
 				}
 			}
@@ -148,7 +148,7 @@ namespace Game {
 						player->TranslateKey(
 							BindingsManager::TranslateKey7K(key),
 							false,
-							Time.Stream + JudgeOffset);
+							Time.Stream);
 					}
 				}
 			}
@@ -184,6 +184,9 @@ namespace Game {
 				StageFailureTriggered = true;
 				// ScoreKeeper->failStage();
 
+				// go to evaluation screen, or back to song select depending on the skin
+				GameState::GetInstance().SubmitScore(0);
+
 				// post-gameplay failure?
 				if (!ShouldDelayFailure()) {
 					FailSnd.Play();
@@ -210,25 +213,26 @@ namespace Game {
 			// Okay then, so it's a pass?
 			if (SongHasFinished() && !StageFailureTriggered)
 			{
-				if (!SongFinishTriggered)
+				if (!SongPassTriggered)
 				{
 					// delayed failure check. 
 					if (PlayersHaveFailed()) {
-						perform_stage_failure(); // No, don't trigger SongFinishTriggered. It wasn't a pass.
+						perform_stage_failure(); // No, don't trigger SongPassTriggered. It wasn't a pass.
 						return;
 					}
 
-					SongFinishTriggered = true; // Reached the end!
+					// do score submit
+					GameState::GetInstance().SubmitScore(0);
+
+					SongPassTriggered = true; // Reached the end!
 					Animations->DoEvent("OnSongFinishedEvent", 1);
 					Time.Success = Clamp(Animations->GetEnv()->GetFunctionResultF(), 3.0f, 30.0f);
 				}
 			}
 
 			// Okay then, the song's done, and the success animation is done too. Time to evaluate.
-			if (Time.Success < 0 && SongFinishTriggered)
+			if (Time.Success < 0 && SongPassTriggered)
 			{
-				GameState::GetInstance().SubmitScore(0);
-
 				auto Eval = std::make_shared<ScreenEvaluation>();
 				Eval->Init(this);
 				Next = Eval;
@@ -239,9 +243,6 @@ namespace Game {
 				Time.Miss = 10; // Infinite, for as long as it lasts.
 				if (Time.Failure <= 0)
 				{
-					// go to evaluation screen, or back to song select depending on the skin
-					GameState::GetInstance().SubmitScore(0);
-
 					if (Configuration::GetSkinConfigf("GoToSongSelectOnFailure") == 0)
 					{
 						auto Eval = std::make_shared<ScreenEvaluation>();

@@ -39,6 +39,7 @@ namespace Game {
 		{
 			PlayerNumber = pn;
 			Drift = 0;
+			JudgeOffset = 0;
 
 			JudgeNotes = true;
 
@@ -159,7 +160,7 @@ namespace Game {
 			if (GearIndex >= VSRG::MAX_CHANNELS || GearIndex < 0)
 				return;
 
-			OnPlayerKeyEvent(Time, KeyDown, GearIndex);
+			OnPlayerKeyEvent(Time + JudgeOffset, KeyDown, GearIndex);
 		}
 
 
@@ -549,6 +550,11 @@ namespace Game {
 			return PlayerScoreKeeper.get();
 		}
 
+		std::shared_ptr<ScoreKeeper> PlayerContext::GetScoreKeeperShared() const
+		{
+			return PlayerScoreKeeper;
+		}
+
 		void PlayerContext::SetCanJudge(bool canjudge)
 		{
 			JudgeNotes = canjudge;
@@ -578,6 +584,16 @@ namespace Game {
 		int PlayerContext::GetCurrentSystemType() const
 		{
 			return MechanicsSet->GetTimingKind();
+		}
+
+		double PlayerContext::GetDrift() const
+		{
+			return Drift;
+		}
+
+		double PlayerContext::GetJudgeOffset() const
+		{
+			return JudgeOffset;
 		}
 
 		void PlayerContext::JudgeLane(uint32_t Lane, double Time)
@@ -661,18 +677,22 @@ namespace Game {
 
 		void PlayerContext::SetPlayableData(std::shared_ptr<VSRG::Difficulty> diff, double Drift)
 		{
+			CfgVar JudgeOffsetMS("JudgeOffsetMS");
 			double DesiredDefaultSpeed = Configuration::GetSkinConfigf("DefaultSpeedUnits");
-
 			Game::VSRG::ESpeedType Type = (Game::VSRG::ESpeedType)(int)Configuration::GetSkinConfigf("DefaultSpeedKind");
 
 			CurrentDiff = diff;
 			this->Drift = Drift;
+			JudgeOffset = JudgeOffsetMS / 1000.0;
 
+			// this has to happen after the setup so we can use the effective parameters!
 			// use data from the replay if one is loaded
 			if (PlayerReplay.IsLoaded()) {
 				Parameters = PlayerReplay.GetEffectiveParameters();
 				DesiredDefaultSpeed = Parameters.UserSpeedMultiplier;
-				Type = SPEEDTYPE_MULTIPLIER; // treat desired default speed as the actual multiplier
+
+				// treat desired default speed as the actual multiplier
+				Type = SPEEDTYPE_MULTIPLIER;
 
 				PlayerReplay.AddPlaybackListener([this](Replay::Entry entry) {
 					this->OnPlayerKeyEvent(entry.Time + this->Drift, entry.Down, entry.Lane);
@@ -683,8 +703,16 @@ namespace Game {
 			ChartState = *d;
 			ChartState.PrepareOrderedNotes(); // Invalid ordered notes until we do this.
 			delete d;
-
+			
 			SetupMechanics();
+
+			// setupmechanics sets the effective gauge/etc so we have to do that first
+			PlayerReplay.SetSongData(
+				Parameters,
+				Type,
+				diff->Data->FileHash,
+				diff->Data->IndexInFile
+			);
 		}
 
 		std::vector<AutoplaySound> PlayerContext::GetBgmData()
