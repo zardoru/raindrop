@@ -297,8 +297,8 @@ namespace Game {
 			float GetHiddenTransitionSize();
 			float GetHiddenCenterSize();
 
-			void deserialize(Json::Value json);
-			Json::Value serialize() const;
+			void deserialize(Json json);
+			Json serialize() const;
 
 			PlayscreenParameters() {
 				Upscroll = false;

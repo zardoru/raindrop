@@ -150,7 +150,7 @@
 #include <sys/stat.h>
 
 // static libraries
-#include "ext/json/json.h"
+#include "ext/json.hpp"
 #include "ext/sha256.h"
 #include "ext/pa_ringbuffer.h"
 #include "ext/SimpleIni.h"
@@ -159,6 +159,7 @@
 using Vec2 = glm::vec2;
 using Vec3 = glm::vec3;
 using Mat4 = glm::mat4;
+using Json = nlohmann::json;
 
 template
 <class T>
@@ -445,12 +446,14 @@ double latof(std::string s);
 
 #ifdef _WIN32
 #define CreateIfstream(name, fn) std::ifstream name(fn.wstring());
-#define CreateOfstream(name, fn) std::ofstream name(fn.wstring());
 #define CreateBinIfstream(name, fn) std::fstream name(fn.wstring(), std::ios::in | std::ios::binary);
+#define CreateOfstream(name, fn) std::ofstream name(fn.wstring());
+#define CreateBinOfstream(name, fn) std::ofstream name(fn.wstring(), std::ios::binary);
 #else
 #define CreateIfstream(name, fn) std::ifstream name(fn.string());
 #define CreateOfstream(name, fn) std::ofstream name(fn.string());
 #define CreateBinIfstream(name, fn) std::fstream name(fn.string(), std::ios::in | std::ios::binary);
+#define CreateBinOfstream(name, fn) std::ofstream name(fn.string(), std::ios::binary);
 #endif
 
 template <class T>

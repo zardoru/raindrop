@@ -61,7 +61,7 @@ namespace NoteLoaderBMSON
 
     class BMSONLoader
     {
-        Json::Value root;
+        Json root;
         std::ifstream &input;
         Song* song;
         std::shared_ptr<Difficulty> Chart;
@@ -85,7 +85,7 @@ namespace NoteLoaderBMSON
             for (const auto& s : root["info"]["subartists"])
             {
                 std::smatch sm;
-                auto str = s.asString();
+                std::string str = s;
                 if (regex_search(str, sm, sreg))
                 {
                     return sm[1];
@@ -95,7 +95,7 @@ namespace NoteLoaderBMSON
             return "";
         }
 
-        void SetChannelsFromModeHint(Json::Value values)
+        void SetChannelsFromModeHint(Json values)
         {
             std::regex generic_keys("generic\\-(\\d+)keys");
             std::regex special_keys("special\\-(\\d+)keys");
@@ -103,7 +103,7 @@ namespace NoteLoaderBMSON
 
             mappings.clear();
 
-            if (values.isNull())
+            if (values.is_null())
             {
                 // default_layout:
                 Chart->Data->Turntable = true;
@@ -112,7 +112,7 @@ namespace NoteLoaderBMSON
                 return;
             }
 
-            std::string s = values.asCString();
+            std::string s = values;
             if (regex_search(s, sm, generic_keys))
             {
                 int chans = atoi(sm[1].str().c_str());
@@ -140,7 +140,7 @@ namespace NoteLoaderBMSON
 
             for (auto layout : BmsonLayouts)
             {
-                if (values.asString() == layout.hint)
+                if (values == layout.hint)
                 {
                     Chart->Channels = layout.keys;
                     mappings = layout.mappings;
@@ -150,41 +150,39 @@ namespace NoteLoaderBMSON
             }
 
             // Okay then, didn't match anything...
-            throw BMSONException(Utility::Format("Unknown mode hint: \"%s\"", values.asString().c_str()).c_str());
+            throw BMSONException(Utility::Format("Unknown mode hint: \"%s\"", values.get<std::string>().c_str()).c_str());
         }
 
         void LoadMeta()
         {
             auto meta = root["info"];
-            song->Title = NoteLoaderBMS::GetSubtitles(meta["title"].asString(), subtitles);
-            song->Artist = meta["artist"].asString();
-            song->Subtitle = meta["subtitle"].asString() + Utility::Join(subtitles, " ");
+            song->Title = NoteLoaderBMS::GetSubtitles(meta["title"], subtitles);
+            song->Artist = meta["artist"];
+            song->Subtitle = meta["subtitle"].get<std::string>() + Utility::Join(subtitles, " ");
 
-            song->BackgroundFilename = meta["back_image"].asString();
+            song->BackgroundFilename = meta["back_image"].get<std::string>();
 
             for (auto &s : meta["subtitles"])
-                subtitles.insert(s.asString());
+                subtitles.insert(s.get<std::string>());
 
             if (version == UNSPECIFIED_VERSION)
-                Chart->Timing.push_back(TimingSegment(0, meta["initBPM"].asDouble()));
+                Chart->Timing.push_back(TimingSegment(0, meta["initBPM"]));
             else if (version == VERSION_1)
             {
-                if (!meta.isMember("init_bpm"))
+                if (meta["init_bpm"].is_null())
                     throw BMSONException("Unspecified init_bpm!");
-                if (meta["init_bpm"].isNull())
-                    throw BMSONException("NULL init_bpm!");
-                Chart->Timing.push_back(TimingSegment(0, meta["init_bpm"].asDouble()));
+                Chart->Timing.push_back(TimingSegment(0, meta["init_bpm"]));
             }
 
-            Chart->Level = meta["level"].asInt();
+            Chart->Level = meta["level"];
 
             Chart->Author = GetSubartist("chart");
 
-            if (!meta["chart_name"].isNull())
-                Chart->Name = meta["chart_name"].asString();
+            if (!meta["chart_name"].is_null())
+                Chart->Name = meta["chart_name"];
 
-            if (!meta["eyecatch_image"].isNull())
-                Chart->Data->StageFile = meta["eyecatch_image"].asString();
+            if (!meta["eyecatch_image"].is_null())
+                Chart->Data->StageFile = meta["eyecatch_image"];
 
             Chart->BPMType = Difficulty::BT_BEAT;
 
@@ -192,44 +190,44 @@ namespace NoteLoaderBMSON
 
             Chart->IsVirtual = true;
 
-            if (!meta["resolution"].isNull())
-                resolution = abs(meta["resolution"].asDouble());
+            if (!meta["resolution"].is_null())
+                resolution = abs(meta["resolution"]);
 
             if (resolution == 0) resolution = BMSON_DEFAULT_RESOLUTION;
 
-            song->SongPreviewSource = meta["preview_music"].asString();
+            song->SongPreviewSource = meta["preview_music"].get<std::string>();
 
             // DEFEXRANK!
             double jRank;
 
-            Json::Value jr;
+            Json jr;
             if (version == UNSPECIFIED_VERSION)
                 jr = meta["judgeRank"];
             else
                 jr = meta["judge_rank"];
 
-            if (!jr.isNull())
-                jRank = jr.asDouble();
+            if (!jr.is_null())
+                jRank = jr;
             else
                 jRank = 100;
 
 			TimingInfo->JudgeRank = jRank;
 			TimingInfo->PercentualJudgerank = true;
 
-            TimingInfo->GaugeTotal = meta["total"].asInt();
+            TimingInfo->GaugeTotal = meta["total"];
         }
 
         double FindLastNoteBeat()
         {
             double last_y = -std::numeric_limits<double>::infinity();
-            Json::Value *sc;
+            Json *sc;
             GetSoundChannels(sc);
             for (auto &&s : *sc)
             {
                 auto notes = s["notes"];
                 for (auto &&note : notes)
                 {
-                    last_y = std::max(note["y"].asDouble(), last_y);
+                    last_y = std::max(note["y"].get<double>(), last_y);
                 }
             }
 
@@ -244,16 +242,15 @@ namespace NoteLoaderBMSON
             auto& lines = root["lines"];
             auto& Measures = Chart->Data->Measures;
 
-            if (lines.isNull()) return;
-            if (!lines.isArray()) return;
+            if (!lines.is_array()) return;
 
             if (lines.size())
             {
                 // ommitted 0- first measure is...
-                if (lines[0]["y"].asDouble() != 0)
+                if (lines[0]["y"].get<double>() != 0)
                 {
                     Measures.resize(1);
-                    Measures[0].Length = lines[0]["y"].asDouble() / resolution;
+                    Measures[0].Length = lines[0]["y"].get<double>() / resolution;
                     Measure++;
                 }
 
@@ -264,7 +261,7 @@ namespace NoteLoaderBMSON
                     auto next = msr; ++next;
                     if (next != lines.end())
                     {
-                        double duration = ((*next)["y"].asDouble() - (*msr)["y"].asDouble()) / resolution;
+                        double duration = ((*next)["y"].get<double>() - (*msr)["y"].get<double>()) / resolution;
 
                         if (Measure >= Measures.size())
                             Measures.resize(Measure + 1);
@@ -293,8 +290,8 @@ namespace NoteLoaderBMSON
 
         void LoadTiming()
         {
-            Json::Value bpm_notes;
-            Json::Value stop_notes;
+            Json bpm_notes;
+            Json stop_notes;
 
             if (version == UNSPECIFIED_VERSION)
             {
@@ -309,26 +306,26 @@ namespace NoteLoaderBMSON
 
             for (auto bpm : bpm_notes)
             {
-                double y = bpm["y"].asDouble() / resolution;
+                double y = bpm["y"].get<double>() / resolution;
                 double val;
 
                 if (version == UNSPECIFIED_VERSION)
-                    val = bpm["v"].asDouble();
+                    val = bpm["v"];
                 else
-                    val = bpm["bpm"].asDouble();
+                    val = bpm["bpm"];
 
                 Chart->Timing.push_back(TimingSegment(y, val));
             }
 
             for (auto stop : stop_notes)
             {
-                double y = stop["y"].asDouble() / resolution;
+                double y = stop["y"].get<double>() / resolution;
                 double val;
 
                 if (version == UNSPECIFIED_VERSION)
-                    val = spb(SectionValue(Chart->Timing, y)) * stop["v"].asDouble() / resolution;
+                    val = spb(SectionValue(Chart->Timing, y)) * stop["v"].get<double>() / resolution;
                 else
-                    val = spb(SectionValue(Chart->Timing, y)) * stop["duration"].asDouble() / resolution;
+                    val = spb(SectionValue(Chart->Timing, y)) * stop["duration"].get<double>() / resolution;
 
                 Chart->Data->Stops.push_back(TimingSegment(y, val));
             }
@@ -356,7 +353,7 @@ namespace NoteLoaderBMSON
             return Measure;
         }
 
-        void GetSoundChannels(Json::Value* &snd_channel)
+        void GetSoundChannels(Json* &snd_channel)
         {
             if (version == UNSPECIFIED_VERSION)
                 snd_channel = &root["soundChannel"];
@@ -505,13 +502,13 @@ namespace NoteLoaderBMSON
         void LoadNotes()
         {
             int sound_index = 1;
-            Json::Value *snd_channel;
+            Json *snd_channel;
             GetSoundChannels(snd_channel);
 
             for (auto audio = snd_channel->begin(); audio != snd_channel->end(); ++audio)
             {
                 double last_time = 0;
-                AddGlobalSliceSound((*audio)["name"].asString(), sound_index);
+                AddGlobalSliceSound((*audio)["name"], sound_index);
 
                 std::vector<BmsonObject> objs;
 
@@ -519,10 +516,10 @@ namespace NoteLoaderBMSON
                 for (auto &note : notes)
                     objs.push_back(BmsonObject
 				{ 
-					note["x"].asInt(), 
-					note["y"].asDouble(), 
-					note["l"].asDouble(), 
-					note["c"].asBool() 
+					note["x"], 
+					note["y"], 
+					note["l"], 
+					note["c"]
 				});
 
                 std::stable_sort(objs.begin(), objs.end(), 
@@ -543,37 +540,69 @@ namespace NoteLoaderBMSON
             auto out = std::make_shared<BMPEventsDetail>();
 
             auto& bga = root["bga"];
-            if (!bga.isNull())
+            if (!bga.is_null())
             {
 				bool hasData = false;
                 for (auto &bgi : bga["bga_header"])
-                    out->BMPList[bgi["id"].asInt()] = CleanFilename(bgi["name"].asString());
+                    out->BMPList[bgi["id"]] = CleanFilename(bgi["name"]);
 
 				if (version != VERSION_1) {
 					for (auto &bg0 : bga["bga_notes"]) {
-						out->BMPEventsLayerBase.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
+						out->BMPEventsLayerBase.push_back(
+                            AutoplayBMP(
+                                TimeForObj(bg0["y"].get<double>() / resolution), 
+                                bg0["id"]
+                            )
+                        );
 						hasData = true;
 					}
 					for (auto &bg0 : bga["layer_notes"]) {
-						out->BMPEventsLayer.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
+						out->BMPEventsLayer.push_back(
+                            AutoplayBMP(
+                                TimeForObj(bg0["y"].get<double>() / resolution), 
+                                bg0["id"]
+                            )
+                        );
 						hasData = true;
 					}
 					for (auto &bg0 : bga["poor_notes"]) {
-						out->BMPEventsLayerMiss.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
+						out->BMPEventsLayerMiss.push_back(
+                            AutoplayBMP(
+                                TimeForObj(bg0["y"].get<double>() / resolution), 
+                                bg0["id"]
+                            )
+                        );
+
 						hasData = true;
 					}
 				}
 				else {
 					for (auto &bg0 : bga["bga_events"]) {
-						out->BMPEventsLayerBase.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
+						out->BMPEventsLayerBase.push_back(
+                            AutoplayBMP(
+                                TimeForObj(bg0["y"].get<double>() / resolution), 
+                                bg0["id"]
+                            )
+                        )
+                        ;
 						hasData = true;
 					}
 					for (auto &bg0 : bga["layer_events"]) {
-						out->BMPEventsLayer.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
+						out->BMPEventsLayer.push_back(
+                            AutoplayBMP(
+                                TimeForObj(bg0["y"].get<double>() / resolution), 
+                                bg0["id"]
+                            )
+                        );
 						hasData = true;
 					}
 					for (auto &bg0 : bga["poor_events"]) {
-						out->BMPEventsLayerMiss.push_back(AutoplayBMP(TimeForObj(bg0["y"].asDouble() / resolution), bg0["id"].asInt()));
+						out->BMPEventsLayerMiss.push_back(
+                            AutoplayBMP(
+                                TimeForObj(bg0["y"].get<double>() / resolution), 
+                                bg0["id"]
+                            )
+                        );
 						hasData = true;
 					}
 				}
@@ -646,19 +675,19 @@ namespace NoteLoaderBMSON
             Chart->Data->TimingInfo = TimingInfo = std::make_shared<BMSChartInfo>();
             TimingInfo->IsBMSON = true;
 
-            if (!root.isMember("version")) // NSE (check member to be == 1.0.0 for VERSION_1!)
+            if (root["version"].is_null()) // NSE (check member to be == 1.0.0 for VERSION_1!)
                 version = UNSPECIFIED_VERSION;
             else
             {
-                if (!root["version"].isNull())
-                {
-                    if (root["version"].asString() == VERSION_1)
-                        version = VERSION_1;
-                    else
-                        throw BMSONException(Utility::Format("Unknown BMSON version (%s)", root["version"].asString().c_str()).c_str());
-                }
+                if (root["version"].get<std::string>() == VERSION_1)
+                    version = VERSION_1;
                 else
-                    throw BMSONException("NULL bmson version - rejecting file.");
+                    throw BMSONException(
+                        Utility::Format(
+                            "Unknown BMSON version (%s)", 
+                        root["version"].get<std::string>().c_str()
+                        ).c_str()
+                        );
             }
 
             LoadMeta();

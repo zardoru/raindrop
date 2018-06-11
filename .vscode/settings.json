@@ -14,5 +14,23 @@
         "**/msvc":true,
         "**/lib":true,
         "**/src/ext":true
+    },
+    "files.associations": {
+        "regex": "cpp",
+        "future": "cpp",
+        "istream": "cpp",
+        "memory": "cpp",
+        "type_traits": "cpp",
+        "xlocmes": "cpp",
+        "xlocmon": "cpp",
+        "xlocnum": "cpp",
+        "xloctime": "cpp",
+        "algorithm": "cpp",
+        "deque": "cpp",
+        "list": "cpp",
+        "vector": "cpp",
+        "xstring": "cpp",
+        "xiosbase": "cpp",
+        "xlocale": "cpp"
     }
 }

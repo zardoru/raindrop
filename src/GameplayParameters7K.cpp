@@ -292,23 +292,23 @@ namespace Game {
 			return Hidden.CenterSize;
 		}
 
-		void PlayscreenParameters::deserialize(Json::Value json)
+		void PlayscreenParameters::deserialize(Json json)
 		{
-			Upscroll = json["upscroll"].asBool();
-			NoFail = json["nofail"].asBool();
-			HiddenMode = json["hidden"].asInt();
-			Rate = json["rate"].asFloat();
-			UserSpeedMultiplier = json["userspeed"].asFloat();
-			Random = json["random"].asInt();
-			GaugeType = json["gauge"].asInt();
-			SystemType = json["system"].asInt();
-			GreenNumber = json["isGreenNumber"].asBool();
-			UseW0 = json["W0"].asBool();
+			Upscroll = json["upscroll"];
+			NoFail = json["nofail"];
+			HiddenMode = json["hidden"];
+			Rate = json["rate"];
+			UserSpeedMultiplier = json["userspeed"];
+			Random = json["random"];
+			GaugeType = json["gauge"];
+			SystemType = json["system"];
+			GreenNumber = json["isGreenNumber"];
+			UseW0 = json["W0"];
 		}
 
-		Json::Value PlayscreenParameters::serialize() const
+		Json PlayscreenParameters::serialize() const
 		{
-			Json::Value ret;
+			Json ret;
 			ret["upscroll"] = Upscroll;
 			ret["nofail"] = NoFail;
 			ret["hidden"] = HiddenMode;

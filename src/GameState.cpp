@@ -388,6 +388,10 @@ void GameState::SubmitScore(int pn)
 	auto *player = &PlayerInfo[pn];
 	auto d = GetDifficultyShared(pn);
 	auto replay = player->ctx->GetReplay();
+
+	if (replay.GetEffectiveParameters().Auto)
+		return;
+
 	auto scoretype = replay.GetEffectiveParameters().GetScoringType();
 	auto gaugetype = (VSRG::LifeType)replay.GetEffectiveParameters().GaugeType;
 	auto scorekeeper = *player->scorekeeper;

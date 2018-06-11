@@ -53,20 +53,20 @@ namespace Game {
 
 		bool Replay::Load(std::filesystem::path input)
 		{
-			Json::Value root;
-			CreateIfstream(in, input);
-			in >> root;
+			
+			CreateBinIfstream(in, input);
 
-			size_t count = root["replayEvents"].size();
+			Json root;
+			root = Json::from_cbor(in);
+
 			std::vector <Entry> events;
 
 			// copy potentially unsorted events
-			for (auto i = 0; i < count; i++) {
-				auto jsonentry = root["replayEvents"][i];
+			for (auto jsonentry: root["replayEvents"]) {
 				events.push_back(Entry{
-						jsonentry["t"].asDouble(),
-						jsonentry["l"].asUInt(),
-						jsonentry["d"].asBool()
+						jsonentry["t"],
+						jsonentry["l"],
+						jsonentry["d"]
 					});
 			}
 
@@ -79,8 +79,8 @@ namespace Game {
 				EventPlaybackQueue.push(evt);
 			}
 
-			SongHash = root["song"]["hash"].asString();
-			DiffIndex = root["song"]["index"].asUInt();
+			SongHash = root["song"]["hash"];
+			DiffIndex = root["song"]["index"];
 			UserParameters.deserialize(root["userParameters"]);
 
 			return true;
@@ -88,31 +88,34 @@ namespace Game {
 
 		bool Replay::Save(std::filesystem::path outputpath) const
 		{
-			Json::Value root;
+			Json root = {
+				{"song", 
+					{
+						{"hash", SongHash},
+						{"index", DiffIndex}
+					}
+				},
+				{
+					"userParameters",
+					UserParameters.serialize()
+				}
+			};
 
 			for (auto entry : ReplayData)
 			{
-				Json::Value jsonentry;
-				jsonentry["t"] = entry.Time;
-				jsonentry["l"] = entry.Lane;
-				jsonentry["d"] = (entry.Down != 0);
+				Json jsonentry = {
+					{"t", entry.Time},
+					{"l", entry.Lane},
+					{"d", entry.Down != 0}
+				};
 
-				root["replayEvents"].append(jsonentry);
+				root["replayEvents"].push_back(jsonentry);
 			}
 
-			root["song"]["hash"] = SongHash;
-			root["song"]["index"] = DiffIndex;
-
-			root["userParameters"] = UserParameters.serialize();
-
-
-			Json::StreamWriterBuilder builder;
-			builder["indentation"] = "";
-			builder["commentStyle"] = "None";
-			auto writer = std::unique_ptr<Json::StreamWriter>(builder.newStreamWriter());
-
-			CreateOfstream(out, outputpath);
-			writer->write(root, &out);
+			
+			CreateBinOfstream(out, outputpath);
+			auto buf = Json::to_cbor(root);
+			out.write((const char*)buf.data(), buf.size());
 
 			return true;
 		}
