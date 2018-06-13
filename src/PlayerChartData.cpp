@@ -9,7 +9,6 @@ namespace Game {
 	namespace VSRG {
 		PlayerChartState::PlayerChartState()
 		{
-			Drift = 0;
 			WaitTime = DEFAULT_WAIT_TIME;
 			HasNegativeScroll = false;
 			HasTurntable = false;
@@ -22,16 +21,15 @@ namespace Game {
 			const TimingData &StopsTiming,
 			const double Time,
 			VSRG::Difficulty::ETimingType TimingType,
-			double Offset,
-			double Drift)
+			double Offset)
 		{
 			if (TimingType == VSRG::Difficulty::BT_BEAT) // Time is in Beats
 			{
-				return TimeAtBeat(Timing, Drift + Offset, Time) + StopTimeAtBeat(StopsTiming, Time);
+				return TimeAtBeat(Timing, Offset, Time) + StopTimeAtBeat(StopsTiming, Time);
 			}
 			else if (TimingType == VSRG::Difficulty::BT_MS || TimingType == VSRG::Difficulty::BT_BEATSPACE) // Time is in MS
 			{
-				return Time + Drift + Offset;
+				return Time + Offset;
 			}
 
 			assert(0); // Never happens. Must never happen ever ever.
@@ -55,7 +53,7 @@ namespace Game {
 			return 0; // shut up compiler
 		}
 
-		TimingData GetBPSData(VSRG::Difficulty *difficulty, double Drift)
+		TimingData GetBPSData(VSRG::Difficulty *difficulty)
 		{
 			const auto &data = difficulty->Data;
 			const auto &Timing = difficulty->Timing;
@@ -77,7 +75,7 @@ namespace Game {
 			{
 				TimingSegment Seg;
 
-				Seg.Time = TimeFromTimingKind(Timing, StopsTiming, Time.Time, BPMType, Offset, Drift);
+				Seg.Time = TimeFromTimingKind(Timing, StopsTiming, Time.Time, BPMType, Offset);
 				Seg.Value = BPSFromTimingKind(Time.Value, BPMType);
 
 				BPS.push_back(Seg);
@@ -95,7 +93,7 @@ namespace Game {
 				++Time)
 			{
 				TimingSegment Seg;
-				double StopStartTime = TimeAtBeat(Timing, Offset + Drift, Time->Time) + StopTimeAtBeat(StopsTiming, Time->Time);
+				double StopStartTime = TimeAtBeat(Timing, Offset, Time->Time) + StopTimeAtBeat(StopsTiming, Time->Time);
 				double StopEndTime = StopStartTime + Time->Value;
 
 				/* Initial Stop */
@@ -207,7 +205,7 @@ namespace Game {
 			return VerticalSpeeds;
 		}
 
-		TimingData ApplySpeedChanges(TimingData VerticalSpeeds, TimingData Scrolls, double Drift, double Offset, bool Reset)
+		TimingData ApplySpeedChanges(TimingData VerticalSpeeds, TimingData Scrolls, double Offset, bool Reset)
 		{
 			std::sort(Scrolls.begin(), Scrolls.end());
 
@@ -218,7 +216,7 @@ namespace Game {
 				++Change)
 			{
 				TimingData::const_iterator NextChange = (Change + 1);
-				double ChangeTime = Change->Time + Drift + Offset;
+				double ChangeTime = Change->Time + Offset;
 
 				/*
 					Find all 
@@ -319,7 +317,7 @@ namespace Game {
 		}
 
 
-		PlayerChartState PlayerChartState::FromDifficulty(Difficulty *diff, double UserOffset, double ConstantUserSpeed)
+		PlayerChartState PlayerChartState::FromDifficulty(Difficulty *diff, double ConstantUserSpeed)
 		{
 			PlayerChartState out;
 			auto &data = diff->Data;
@@ -327,8 +325,7 @@ namespace Game {
 				throw std::runtime_error("Tried to pass a metadata-only difficulty to Player Chart data generator.\n");
 
 			out.ConnectedDifficulty = diff;
-			out.Drift = UserOffset;
-			out.BPS = GetBPSData(diff, UserOffset);
+			out.BPS = GetBPSData(diff);
 			out.ScrollSpeeds = GetVSpeeds(out.BPS, ConstantUserSpeed);
 
 
@@ -336,8 +333,7 @@ namespace Game {
 
 
 			if (!ConstantUserSpeed) {
-				out.ScrollSpeeds = ApplySpeedChanges(out.ScrollSpeeds, data->Scrolls,
-					UserOffset, diff->Offset,
+				out.ScrollSpeeds = ApplySpeedChanges(out.ScrollSpeeds, data->Scrolls, diff->Offset,
 					diff->BPMType == VSRG::Difficulty::BT_BEATSPACE);
 
 				out.Warps = data->Warps;
@@ -368,16 +364,12 @@ namespace Game {
 						TrackNote NewNote;
 
 						NewNote.AssignNotedata(CurrentNote);
-						NewNote.AddTime(UserOffset);
 
 						auto VerticalPosition = IntegrateToTime(out.ScrollSpeeds, NewNote.GetStartTime());
 						auto HoldEndPosition = IntegrateToTime(out.ScrollSpeeds, NewNote.GetEndTime());
 
 						// if upscroll change minus for plus as well as matrix at screengameplay7k
-						if (!CurrentNote.EndTime)
-							NewNote.AssignPosition(VerticalPosition);
-						else
-							NewNote.AssignPosition(VerticalPosition, HoldEndPosition);
+						NewNote.AssignPosition(VerticalPosition, HoldEndPosition);
 
 						// Okay, now we want to know what fraction of a beat we're dealing with
 						// this way we can display colored (a la Stepmania) notes.
@@ -402,11 +394,6 @@ namespace Game {
 					MsrBeat += Msr.Length;
 				}
 			}
-
-			for (auto&& w : out.Warps)
-				w.Time += UserOffset;
-			for (auto&& s : out.InterpoloatedSpeedMultipliers)
-				s.Time += UserOffset;
 
 			// Toggle whether we can use our guarantees for optimizations or not at rendering/judge time.
 			out.HasNegativeScroll = false;
@@ -508,7 +495,7 @@ namespace Game {
 
 			// Add lines before offset, and during waiting time...
 			double BPS = BPSFromTimingKind(Timing[0].Value, diff->BPMType);
-			double PreTime = WaitTime + diff->Offset + Drift;
+			double PreTime = WaitTime + diff->Offset;
 			double PreTimeBeats = BPS * PreTime;
 			int TotMeasures = PreTimeBeats / Data->Measures[0].Length;
 			double MeasureTime = 1 / BPS * Data->Measures[0].Length;
@@ -518,7 +505,7 @@ namespace Game {
 
 			for (auto i = 0; i < TotMeasures; i++)
 			{
-				auto T = Drift + diff->Offset - MeasureTime * i;
+				auto T = diff->Offset - MeasureTime * i;
 				auto PositionOut = IntegrateToTime(ScrollSpeeds, T);
 				Out.push_back(PositionOut);
 				if (DebugMeasurePosGen)
@@ -530,14 +517,13 @@ namespace Game {
 			{
 				double PositionOut = 0.0;
 
-				if (BPMType == Difficulty::BT_BEAT) // VerticalSpeeds already has drift applied, so we don't need to apply it again here.
+				if (BPMType == Difficulty::BT_BEAT)
 				{
-					PositionOut = IntegrateToTime(ScrollSpeeds, Drift + GetTimeAtBeat(Last));
+					PositionOut = IntegrateToTime(ScrollSpeeds, GetTimeAtBeat(Last));
 				}
 				else if (BPMType == Difficulty::BT_BEATSPACE)
 				{
-					auto TargetTime = IntegrateToTime(SPB, Last) + diff->Offset + Drift;
-					//TargetTime = round(TargetTime * 1000.0) / 1000.0; // Round to MS
+					auto TargetTime = IntegrateToTime(SPB, Last) + diff->Offset;
 
 					PositionOut = IntegrateToTime(ScrollSpeeds, TargetTime);
 					if (DebugMeasurePosGen) {
@@ -619,9 +605,9 @@ namespace Game {
 		}
 
 		// returns chart time
-		double PlayerChartState::GetTimeAtBeat(double beat, double drift) const
+		double PlayerChartState::GetTimeAtBeat(double beat) const
 		{
-			return TimeAtBeat(ConnectedDifficulty->Timing, ConnectedDifficulty->Offset + drift, beat) + 
+			return TimeAtBeat(ConnectedDifficulty->Timing, ConnectedDifficulty->Offset, beat) + 
 				StopTimeAtBeat(ConnectedDifficulty->Data->Stops, beat);
 		}
 

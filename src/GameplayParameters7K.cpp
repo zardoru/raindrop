@@ -37,10 +37,10 @@ namespace Game {
 
 					double spd = GreenNumber ? 1000 : DesiredDefaultSpeed;
 
-					ChartState = VSRG::PlayerChartState::FromDifficulty(CurrentDiff.get(), Drift, spd);
+					ChartState = VSRG::PlayerChartState::FromDifficulty(CurrentDiff.get(), spd);
 				}
 				else
-					ChartState = VSRG::PlayerChartState::FromDifficulty(CurrentDiff.get(), Drift);
+					ChartState = VSRG::PlayerChartState::FromDifficulty(CurrentDiff.get());
 
 				// if GN is true, Default Speed = GN!
 				// Convert GN to speed.

@@ -45,7 +45,7 @@ std::string GetSamplesetStr(int Sampleset)
 
 namespace Game {
 	namespace VSRG {
-		TimingData GetBPSData(Difficulty *difficulty, double Drift);
+		TimingData GetBPSData(Difficulty *difficulty);
 	}
 }
 
@@ -294,7 +294,7 @@ class OsumaniaLoader
 	
 	void PushNotesToMeasures()
 	{
-		TimingData BPS = Game::VSRG::GetBPSData(Diff.get(), 0);
+		TimingData BPS = Game::VSRG::GetBPSData(Diff.get());
 
 		for (int k = 0; k < MAX_CHANNELS; k++)
 		{

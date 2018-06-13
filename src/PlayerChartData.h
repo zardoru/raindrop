@@ -16,7 +16,6 @@ namespace Game {
 			bool HasNegativeScroll;
 			bool HasTurntable;
 
-			double Drift;
 			double WaitTime;
 			Difficulty* ConnectedDifficulty;
 
@@ -33,7 +32,7 @@ namespace Game {
 			double GetBeatAt(double Time) const;
 			double GetChartDisplacementAt(double Time) const;
 			double GetDisplacementSpeedAt(double Time) const; // in unwarped song time
-			double GetTimeAtBeat(double beat, double drift = 0) const;
+			double GetTimeAtBeat(double beat) const;
 			double GetOffset() const;
 			double GetMeasureTime(double msr) const;
 
@@ -50,7 +49,7 @@ namespace Game {
 
 			// Drift is an offset to apply to _everything_.
 			// Speed is a constant to set the speed to.
-			static PlayerChartState FromDifficulty(Difficulty *diff, double Drift = 0, double Speed = 0);
+			static PlayerChartState FromDifficulty(Difficulty *diff, double Speed = 0);
 		};
 	}
 }

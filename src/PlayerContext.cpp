@@ -126,19 +126,19 @@ namespace Game {
 		{
 			PlayerReplay.AddEvent(Replay::Entry
 			{
-				Time - Drift,
+				Time,
 				lane,
 				KeyDown
 			});
 
 			if (KeyDown)
 			{
-				JudgeLane(lane, GetChartTimeAt(Time));
+				JudgeLane(lane, GetChartTimeAt(Time - Drift));
 				Gear.IsPressed[lane] = true;
 			}
 			else
 			{
-				ReleaseLane(lane, GetChartTimeAt(Time));
+				ReleaseLane(lane, GetChartTimeAt(Time - Drift));
 				Gear.IsPressed[lane] = false;
 			}
 		}
@@ -171,7 +171,7 @@ namespace Game {
 
 		bool PlayerContext::IsUpscrolling() const
 		{
-			return GetAppliedSpeedMultiplier(LastUpdateTime) < 0;
+			return GetAppliedSpeedMultiplier(LastUpdateTime - Drift) < 0;
 		}
 
 
@@ -238,7 +238,7 @@ namespace Game {
 
 		double PlayerContext::GetCurrentBeat() const
 		{
-			return ChartState.GetBeatAt(LastUpdateTime);
+			return ChartState.GetBeatAt(LastUpdateTime - Drift);
 		}
 
 		double PlayerContext::GetUserMultiplier() const
@@ -248,12 +248,12 @@ namespace Game {
 
 		double PlayerContext::GetCurrentVerticalSpeed() const
 		{
-			return ChartState.GetDisplacementSpeedAt(LastUpdateTime);
+			return ChartState.GetDisplacementSpeedAt(LastUpdateTime - Drift);
 		}
 
 		double PlayerContext::GetWarpedSongTime() const
 		{
-			return ChartState.GetWarpedSongTime(LastUpdateTime);
+			return ChartState.GetWarpedSongTime(LastUpdateTime - Drift);
 		}
 
 		void PlayerContext::SetupLua(LuaManager *Env)
@@ -760,15 +760,17 @@ namespace Game {
 
 		void PlayerContext::Update(double SongTime)
 		{
-			PlayerNoteskin.Update(SongTime - LastUpdateTime, ChartState.GetBeatAt(ChartState.GetWarpedSongTime(SongTime)));
+			auto driftedTime = SongTime - Drift;
+			auto Beat = ChartState.GetBeatAt(ChartState.GetWarpedSongTime(driftedTime));
+			PlayerNoteskin.Update(SongTime - LastUpdateTime, Beat);
 			LastUpdateTime = SongTime;
-			PlayerReplay.Update(SongTime - Drift);
-			RunMeasures(SongTime);
+			PlayerReplay.Update(SongTime);
+			RunMeasures(SongTime - Drift);
 		}
 
 		void PlayerContext::Render(double SongTime)
 		{
-			int rnc = DrawMeasures(SongTime);
+			int rnc = DrawMeasures(SongTime - Drift);
 
 		}
 
