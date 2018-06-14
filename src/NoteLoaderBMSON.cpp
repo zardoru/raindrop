@@ -191,7 +191,7 @@ namespace NoteLoaderBMSON
             Chart->IsVirtual = true;
 
             if (!meta["resolution"].is_null())
-                resolution = abs(meta["resolution"]);
+                resolution = abs(meta["resolution"].get<double>());
 
             if (resolution == 0) resolution = BMSON_DEFAULT_RESOLUTION;
 
