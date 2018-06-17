@@ -103,7 +103,7 @@ std::shared_ptr<Game::VSRG::Song> LoadSong7KFromFilename(std::filesystem::path f
 std::shared_ptr<Game::VSRG::Song> LoadSong7KFromFilename(
 	std::filesystem::path Filename, 
 	std::filesystem::path Prefix, 
-	Game::VSRG::Song* &Sng,
+	Game::VSRG::Song* Sng,
 	SongDatabase* DB)
 {
 	auto prefix = Prefix.string();
@@ -425,7 +425,7 @@ std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const Game::VSRG::Song* Met
     FilenameOut = fn;
 
 	Log::LogPrintf("Loading chart from meta ID %i from %s\n", Meta->ID, fn.string().c_str());
-    Out = LoadSong7KFromFilename(fn.filename());
+    Out = LoadSong7KFromFilename(fn.filename(), fn.parent_path(), nullptr, DB);
     if (!Out) return nullptr;
 
     // Copy relevant data
