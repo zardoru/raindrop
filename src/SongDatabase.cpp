@@ -686,7 +686,7 @@ std::string SongDatabase::GetChartHash(std::filesystem::path filename)
 bool SongDatabase::CacheNeedsRenewal(std::filesystem::path Dir)
 {
 	// must match what we put at InsertFilename time, so turn into absolute path on both places!
-	std::string u8p = Utility::ToU8(std::filesystem::absolute(Dir).wstring());
+	auto u8p = std::filesystem::absolute(Dir).u8string();
 	int CurLMT = Utility::GetLastModifiedTime(Dir);
 	bool NeedsRenewal;
 	int res, ret;
@@ -862,7 +862,7 @@ int SongDatabase::GetSongIDForFile(std::filesystem::path File)
 {
 	int ret;
 	int Out = -1;
-	std::string u8path = Utility::ToU8(std::filesystem::absolute(File).wstring());
+	const std::string u8path = std::filesystem::absolute(File).u8string();
 
 	SC(sqlite3_bind_text(
 		st_GetSIDFromFilename,

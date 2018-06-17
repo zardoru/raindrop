@@ -13,19 +13,19 @@ using namespace Game;
 
 struct loaderVSRGEntry_t
 {
-    const wchar_t* Ext;
+    const char* Ext;
     void(*LoadFunc) (std::filesystem::path filename, Game::VSRG::Song* Out);
 } LoadersVSRG[] = {
-    { L".bms",   NoteLoaderBMS::LoadObjectsFromFile },
-    { L".bme",   NoteLoaderBMS::LoadObjectsFromFile },
-    { L".bml",   NoteLoaderBMS::LoadObjectsFromFile },
-    { L".pms",   NoteLoaderBMS::LoadObjectsFromFile },
-    { L".sm",    NoteLoaderSM::LoadObjectsFromFile  },
-    { L".osu",   NoteLoaderOM::LoadObjectsFromFile  },
-    { L".ft2",   NoteLoaderFTB::LoadObjectsFromFile },
-    { L".ojn",   NoteLoaderOJN::LoadObjectsFromFile },
-    { L".ssc",   NoteLoaderSSC::LoadObjectsFromFile },
-    { L".bmson", NoteLoaderBMSON::LoadObjectsFromFile }
+    { ".bms",   NoteLoaderBMS::LoadObjectsFromFile },
+    { ".bme",   NoteLoaderBMS::LoadObjectsFromFile },
+    { ".bml",   NoteLoaderBMS::LoadObjectsFromFile },
+    { ".pms",   NoteLoaderBMS::LoadObjectsFromFile },
+    { ".sm",    NoteLoaderSM::LoadObjectsFromFile  },
+    { ".osu",   NoteLoaderOM::LoadObjectsFromFile  },
+    { ".ft2",   NoteLoaderFTB::LoadObjectsFromFile },
+    { ".ojn",   NoteLoaderOJN::LoadObjectsFromFile },
+    { ".ssc",   NoteLoaderSSC::LoadObjectsFromFile },
+    { ".bmson", NoteLoaderBMSON::LoadObjectsFromFile }
 };
 
 SongLoader::SongLoader(SongDatabase* Database)
@@ -33,41 +33,48 @@ SongLoader::SongLoader(SongDatabase* Database)
     DB = Database;
 }
 
-bool VSRGValidExtension(std::wstring Ext)
+bool VSRGValidExtension(const std::string &s)
 {
+	auto period = s.find_last_of(".");
+	if (period == std::string::npos) return false;
+
+	const char* cs = s.c_str() + period;
     for (int i = 0; i < sizeof(LoadersVSRG) / sizeof(loaderVSRGEntry_t); i++)
     {
-        if (Ext == LoadersVSRG[i].Ext)
+        if (!strcmp(cs, LoadersVSRG[i].Ext))
             return true;
     }
 
     return false;
 }
 
-bool ValidBMSExtension(std::wstring Ext)
+bool ValidBMSExtension(const std::string &s)
 {
+	auto period = s.find_last_of(".");
+	if (period == std::string::npos) return false;
+
+	const char* cs = s.c_str() + period;
+
     for (int i = 0; i < sizeof(LoadersVSRG) / sizeof(loaderVSRGEntry_t); i++)
     {
-        if (Ext == LoadersVSRG[i].Ext && LoadersVSRG[i].LoadFunc == NoteLoaderBMS::LoadObjectsFromFile)
+        if (!strcmp(cs, LoadersVSRG[i].Ext) && 
+			LoadersVSRG[i].LoadFunc == NoteLoaderBMS::LoadObjectsFromFile)
             return true;
     }
 
     return false;
 }
 
-std::shared_ptr<Game::VSRG::Song> LoadSong7KFromFilename(const std::filesystem::path& filename, Game::VSRG::Song *Sng)
+std::shared_ptr<Game::VSRG::Song> LoadSong7KFromFilename(std::filesystem::path filename)
 {
     if (!filename.has_extension())
     {
         return nullptr;
     }
 
-    bool AllocSong = false;
-    if (!Sng)
-    {
-        AllocSong = true;
-        Sng = new Game::VSRG::Song();
-    }
+	filename = std::filesystem::absolute(filename);
+
+    auto Sng = std::make_shared<Game::VSRG::Song>();
 
     Sng->SongDirectory = filename.parent_path();
 
@@ -78,26 +85,25 @@ std::shared_ptr<Game::VSRG::Song> LoadSong7KFromFilename(const std::filesystem::
             Log::LogPrintf("Load %s from disk...", Utility::ToU8(filename.wstring()).c_str());
             try
             {
-                LoadersVSRG[i].LoadFunc(filename, Sng);
+                LoadersVSRG[i].LoadFunc(filename, Sng.get());
                 Log::LogPrintf(" ok\n");
             }
             catch (std::exception &e)
             {
                 Log::LogPrintf("Failure loading %s: %s\n", filename.string().c_str(), e.what());
             }
+
             break;
         }
     }
 
-    if (AllocSong)
-        return std::shared_ptr<Game::VSRG::Song>(Sng);
-    return nullptr;
+	return Sng;
 }
 
 std::shared_ptr<Game::VSRG::Song> LoadSong7KFromFilename(
 	std::filesystem::path Filename, 
 	std::filesystem::path Prefix, 
-	Game::VSRG::Song *Sng,
+	Game::VSRG::Song* &Sng,
 	SongDatabase* DB)
 {
 	auto prefix = Prefix.string();
@@ -109,10 +115,10 @@ std::shared_ptr<Game::VSRG::Song> LoadSong7KFromFilename(
         Sng = new Game::VSRG::Song();
     }
 
-    std::wstring Ext = Utility::Widen(Filename.extension().string());
 
+	auto fs = Filename.string();
     // no extension
-    if (!Filename.has_extension() || !VSRGValidExtension(Ext))
+    if (!Filename.has_extension() || !VSRGValidExtension(fs))
     {
         if (AllocSong) delete Sng;
         return nullptr;
@@ -122,9 +128,11 @@ std::shared_ptr<Game::VSRG::Song> LoadSong7KFromFilename(
 	auto fn = Prefix / Filename;
 	auto fnu8 = Utility::ToU8(fn.wstring());
 
+	auto ext = fs.c_str() + fs.find_last_of(".");
+
     for (int i = 0; i < sizeof(LoadersVSRG) / sizeof(loaderVSRGEntry_t); i++)
     {
-        if (Ext == LoadersVSRG[i].Ext)
+        if (!strcmp(ext, LoadersVSRG[i].Ext))
         {
             Log::LogPrintf("SongLoader: Load %s from disk...", fn.string().c_str());
             try
@@ -166,10 +174,12 @@ void AddSongToList(std::vector<Game::VSRG::Song*> &VecOut, Game::VSRG::Song* Sng
         delete Sng;
 }
 
-void SongLoader::LoadBMS(Game::VSRG::Song * &BMSSong, 
+CfgVar NoFileGrouping("NoFileGrouping");
+
+void SongLoader::LoadBMS(
+	Game::VSRG::Song * &BMSSong, 
 	std::filesystem::path &SongDirectory, 
 	std::filesystem::path File, 
-	CfgVar &NoFileGrouping, 
 	std::map<std::string, Game::VSRG::Song *> &bmsk, 
 	std::vector<Game::VSRG::Song *> & VecOut)
 {
@@ -220,12 +230,13 @@ void SongLoader::LoadBMS(Game::VSRG::Song * &BMSSong,
 	}
 }
 
+std::vector<std::filesystem::path> pathlist(32);
+
 void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<Game::VSRG::Song*> &VecOut)
 {
 	if (!std::filesystem::is_directory(songPath))
 		return;
 
-    std::vector<std::filesystem::path> Listing = Utility::GetFileListing(songPath);
     std::filesystem::path SongDirectory = std::filesystem::absolute(songPath);
 
     /*
@@ -248,11 +259,12 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<G
         Therefore; it's not the song directory which we check, but the difficulties' files.
     */
 
+	pathlist.clear();
+
     /* First we need to see whether these file need to be renewed.*/
-    for (auto i = Listing.begin(); i != Listing.end(); ++i)
+    for (auto &entry: std::filesystem::directory_iterator(SongDirectory))
     {
-        auto File = *i;
-        std::wstring Ext = File.extension().wstring();
+		const auto &File = entry.path();
 
         /*
             Some people leave nameless, blank .bms files on their folder.
@@ -260,49 +272,55 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<G
             we should just ignore this file.
             It'll be loaded in any case, but not considered for cache.
         */
-        std::string Fname = File.filename().string();
+        std::string Fname = File.string();
 
-		if (VSRGValidExtension(Ext) &&
-			Fname.length() &&
-			DB->CacheNeedsRenewal(File)) {
-			Log::LogPrintf("File '%s' needs renewal.\n", File.string().c_str());
-			RenewCache = true;
+		if (VSRGValidExtension(Fname))
+		{
+			if (DB->CacheNeedsRenewal(File)) {
+				Log::LogPrintf("File '%s' needs renewal.\n", Fname.c_str());
+				RenewCache = true;
+			}
+
+			pathlist.push_back(File);
 		}
     }
 
     // Files were modified- we have to reload the charts.
     if (RenewCache)
     {
-		CfgVar NoFileGrouping("NoFileGrouping");
-        // First, pack BMS charts together.
-        std::map<std::string, Game::VSRG::Song*> bmsk;
-        Game::VSRG::Song *BMSSong = new Game::VSRG::Song;
+		std::map<std::string, Game::VSRG::Song*> bmsk;
 
-        // Every OJN gets its own Song object.
-        Game::VSRG::Song *OJNSong = new Game::VSRG::Song;
-        OJNSong->SongDirectory = SongDirectory;
+		// These may or not be grouped together.
+		auto BMSSong = new Game::VSRG::Song;
 
-        // osu!mania charts are packed together, with FTB charts.
-        Game::VSRG::Song *osuSong = new Game::VSRG::Song;
-        osuSong->SongDirectory = SongDirectory;
+		// Every OJN gets its own Song object.
+		auto OJNSong = new Game::VSRG::Song;
 
-        // Stepmania charts get their own song objects too.
-        Game::VSRG::Song *smSong = new Game::VSRG::Song;
-        smSong->SongDirectory = SongDirectory;
+		// osu!mania charts are packed together, with FTB charts.
+		auto osuSong = new Game::VSRG::Song;
 
-        for (auto File : Listing)
+		// Stepmania charts get their own song objects too.
+		auto smSong = new Game::VSRG::Song;
+
+        for (auto &entry: pathlist)
         {
-            std::wstring Ext = File.extension().wstring();
-			File = File.filename();
+			const auto &File = entry.filename();
+
+			// get extension
+			auto fs = File.string();
+			auto period = fs.find_last_of(".");
+			if (period == std::string::npos) continue;
+
+			std::string Ext = fs.c_str() + period;
 
             // We want to group charts with the same title together.
-            if (ValidBMSExtension(Ext) || Ext == L".bmson")
+            if (ValidBMSExtension(fs) || Ext == ".bmson")
             {
-				LoadBMS(BMSSong, SongDirectory, File, NoFileGrouping, bmsk, VecOut);
+				LoadBMS(BMSSong, SongDirectory, File, bmsk, VecOut);
             }
 
 			// .ft2 doesn't need its own entry. 
-			if (Ext == L".ojn" || Ext == L".ft2")
+			if (Ext == ".ojn" || Ext == ".ft2")
             {
                 LoadSong7KFromFilename(File, SongDirectory, OJNSong, DB);
                 DB->AssociateSong(OJNSong);
@@ -312,11 +330,11 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<G
             }
 
 			// Add them all to the same song.
-            if (Ext == L".osu")
+            if (Ext == ".osu")
                 LoadSong7KFromFilename(File, SongDirectory, osuSong, DB);
 
 			// Same as before.
-            if (Ext == L".sm" || Ext == L".ssc")
+            if (Ext == ".sm" || Ext == ".ssc")
             {
                 LoadSong7KFromFilename(File, SongDirectory, smSong, DB);
                 DB->AssociateSong(smSong);
@@ -326,7 +344,7 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<G
             }
         }
 
-        // PushVSRGSong() handles the cleanup.
+        // AddSongToList() handles the cleanup.
         for (auto i = bmsk.begin();
         i != bmsk.end(); ++i)
         {
@@ -349,17 +367,16 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<G
         int ID = -1;
         std::vector<int> IDList;
 
-        for (auto File : Listing)
-        {
-            std::wstring Ext = File.extension().wstring();
-            if (VSRGValidExtension(Ext))
+		for (auto &File: pathlist)
+		{
+			// get extension
+			auto fs = File.string();
+
+            int CurrentID = DB->GetSongIDForFile(File);
+            if (CurrentID != ID)
             {
-                int CurrentID = DB->GetSongIDForFile(File);
-                if (CurrentID != ID)
-                {
-                    ID = CurrentID;
-                    IDList.push_back(ID);
-                }
+                ID = CurrentID;
+                IDList.push_back(ID);
             }
         }
 
@@ -408,7 +425,7 @@ std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const Game::VSRG::Song* Met
     FilenameOut = fn;
 
 	Log::LogPrintf("Loading chart from meta ID %i from %s\n", Meta->ID, fn.string().c_str());
-    Out = LoadSong7KFromFilename(fn.filename(), Meta->SongDirectory, nullptr);
+    Out = LoadSong7KFromFilename(fn.filename());
     if (!Out) return nullptr;
 
     // Copy relevant data

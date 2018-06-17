@@ -365,7 +365,7 @@ void Application::Run()
     else if (RunMode == MODE_CONVERT)
     {
 		InFile = std::filesystem::absolute(InFile);
-        std::shared_ptr<Game::VSRG::Song> Sng = LoadSong7KFromFilename(InFile.filename(), InFile.parent_path(), nullptr);
+        auto Sng = LoadSong7KFromFilename(InFile);
 
 		Log::Printf("Conversion mode activated.\n");
         if (Sng && Sng->Difficulties.size())

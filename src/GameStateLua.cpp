@@ -28,6 +28,7 @@ struct songHelper
         return Sng->Difficulties.size();
     }
 
+
     template <class T>
     static void setDifficultyCountForSong(T *Sng, uint32_t v)
     {
@@ -56,8 +57,22 @@ struct songHelper
 		return candidate;
 	}
 
+
 	template <class T>
 	static void setDifficultyGenre(T *Diff, std::string s)
+	{
+		return;
+	}
+
+	template <class T>
+	static int getLevel(T const *Diff)
+	{
+		return Diff->Level;
+	}
+
+
+	template <class T>
+	static void setLevel(T *Diff, int t)
 	{
 		return;
 	}
@@ -148,22 +163,28 @@ void GameState::InitializeLua(lua_State *L)
 		.addData("Name", &Game::Song::Difficulty::Name, false)
 		.addData("Offset", &Game::Song::Difficulty::Offset, false)
 		
-		.addProperty("Objects", &songHelper::GetObjCount<Game::Song::Difficulty>,
+		.addProperty("Objects", 
+			&songHelper::GetObjCount<Game::Song::Difficulty>,
 			&songHelper::SetObjCount<Game::Song::Difficulty>)
 
-		.addProperty("ScoreObjects", &songHelper::GetScoreObjCount<Game::Song::Difficulty>,
+		.addProperty("ScoreObjects",
+			&songHelper::GetScoreObjCount<Game::Song::Difficulty>,
 			&songHelper::SetScoreObjCount<Game::Song::Difficulty>)
 		
-		.addProperty("Author", &songHelper::getDifficultyAuthor<Game::Song::Difficulty>, 
+		.addProperty("Author", 
+			&songHelper::getDifficultyAuthor<Game::Song::Difficulty>, 
 			&songHelper::setDifficultyAuthor <Game::Song::Difficulty>)
 		
-		.addProperty("Genre", &songHelper::getDifficultyGenre<Game::Song::Difficulty>, 
+		.addProperty("Genre", 
+			&songHelper::getDifficultyGenre<Game::Song::Difficulty>, 
 			&songHelper::setDifficultyGenre<Game::Song::Difficulty>)
 		.endClass();
 
 	luabridge::getGlobalNamespace(L)
 		.deriveClass <VSRG::Difficulty, Game::Song::Difficulty>("Difficulty7K")
-		.addData("Level", &VSRG::Difficulty::Level, false)
+		.addProperty("Level", 
+			&songHelper::getLevel<VSRG::Difficulty>,
+			&songHelper::setLevel<VSRG::Difficulty>)
 		.addData("Channels", &VSRG::Difficulty::Channels, false)
 		.endClass();
 

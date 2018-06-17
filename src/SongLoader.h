@@ -9,10 +9,10 @@ class SongLoader
 public:
     SongLoader(SongDatabase* usedDatabase);
 
-	void LoadBMS(Game::VSRG::Song * &BMSSong,
+	void LoadBMS(
+		Game::VSRG::Song * &BMSSong,
 		std::filesystem::path &SongDirectory,
 		std::filesystem::path File,
-		CfgVar &NoFileGrouping,
 		std::map<std::string, Game::VSRG::Song *> &bmsk,
 		std::vector<Game::VSRG::Song *> & VecOut);
 
@@ -21,5 +21,6 @@ public:
     std::shared_ptr<Game::VSRG::Song> LoadFromMeta(const Game::VSRG::Song* Meta, std::shared_ptr<Game::VSRG::Difficulty> CurrentDiff, std::filesystem::path& FilenameOut, uint8_t& Index);
 };
 
-std::shared_ptr<Game::VSRG::Song> LoadSong7KFromFilename(std::filesystem::path Filename, std::filesystem::path Prefix, Game::VSRG::Song *Sng, SongDatabase* DB = nullptr);
-std::shared_ptr<Game::VSRG::Song> LoadSong7KFromFilename(const std::filesystem::path&, Game::VSRG::Song *Sng = nullptr);
+std::shared_ptr<Game::VSRG::Song> LoadSong7KFromFilename(
+	std::filesystem::path path
+);
