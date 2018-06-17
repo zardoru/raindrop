@@ -392,8 +392,6 @@ void GameState::SubmitScore(int pn)
 	if (replay.GetEffectiveParameters().Auto)
 		return;
 
-	auto scoretype = replay.GetEffectiveParameters().GetScoringType();
-	auto gaugetype = (VSRG::LifeType)replay.GetEffectiveParameters().GaugeType;
 	auto scorekeeper = *player->scorekeeper;
 	auto drift = player->ctx->GetDrift();
 	auto joffset = player->ctx->GetJudgeOffset();
@@ -403,8 +401,7 @@ void GameState::SubmitScore(int pn)
 		player->profile.Scores.AddScore(
 			replay.GetSongHash(),
 			replay.GetDifficultyIndex(),
-			scoretype,
-			gaugetype,
+			replay.GetEffectiveParameters(),
 			scorekeeper,
 			drift,
 			joffset

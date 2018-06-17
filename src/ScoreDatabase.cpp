@@ -5,14 +5,12 @@
 #include "Logging.h"
 
 auto qScoreDDL = "CREATE TABLE IF NOT EXISTS [scores](\
-	[charthash] varchar(64) NOT NULL,\
+	[chartid] INT NOT NULL,\
 	[diffindex] INT NOT NULL DEFAULT 0,\
 	[rankpts] int64 NOT NULL DEFAULT 0,\
 	[exscore] int NOT NULL DEFAULT 0,\
 	[score] int64 NOT NULL DEFAULT 0,\
-	[scoretype] int NOT NULL DEFAULT(-1),\
 	[gauge] float NOT NULL DEFAULT 1,\
-	[gaugetype] int NOT NULL DEFAULT(-1),\
 	[hits] int NOT NULL DEFAULT 0,\
 	[maxcombo] int NOT NULL DEFAULT 0,\
 	[w0] int NOT NULL DEFAULT 0,\
@@ -26,37 +24,53 @@ auto qScoreDDL = "CREATE TABLE IF NOT EXISTS [scores](\
 	[stdev] int NOT NULL DEFAULT 0,\
 	[offset] float NOT NULL DEFAULT 0,\
 	[judgeoffset] float NOT NULL DEFAULT 0,\
+	[playopts] TEXT NOT NULL DEFAULT '',\
 	[date] DATETIME NOT NULL DEFAULT (datetime('now','localtime'))\
     );\
+	CREATE TABLE IF NOT EXISTS [hashes](\
+	[id] INTEGER PRIMARY KEY,\
+	[charthash] varchar(64) NOT NULL UNIQUE\
+	);\
 	CREATE INDEX IF NOT EXISTS [songid]\
 	ON[scores](\
-		[charthash],\
-		[diffindex]); ";
+		[chartid],\
+		[diffindex]);\
+	CREATE INDEX IF NOT EXISTS [chartid_row]\
+	ON [hashes](\
+		[charthash]);";
 
-auto qAddScore = "INSERT INTO scores VALUES(\
-	$hash,$diffindex,$rankpts,$ex,$score,$scoretype,$gauge,$gaugetype,\
-    $hits,$maxcombo,$w0,$w1,$w2,$w3,$w4,$w5,$misses,$avghit,$stdev,$offset,$judgeoffset,datetime('now'));";
+auto qAddHash = "INSERT OR IGNORE INTO hashes VALUES(NULL,$hash);";
 
-auto qBestEx = "SELECT rankpts, exscore, score, scoretype, gauge, gaugetype, \
+auto qAddScore = "INSERT INTO scores SELECT\
+	id,\
+	$diffindex,\
+	$rankpts,$ex,\
+	$score,\
+	$gauge,\
+    $hits,$maxcombo,\
+	$w0,$w1,$w2,$w3,$w4,$w5,$misses,\
+	$avghit,$stdev,\
+	$offset,$judgeoffset,\
+	$playopts,\
+	datetime('now')\
+	FROM hashes WHERE charthash=$hash;";
+
+auto qBestEx = "SELECT rankpts, exscore, score, gauge, \
 			    hits, maxcombo, w0, w1, w2, w3, w4, w5, misses, avghit, stdev, \
-				offset, judgeoffset FROM scores WHERE\
-				charthash=$hash AND diffindex=$diffindex ORDER BY exscore DESC LIMIT 1";
+				offset, judgeoffset, playopts FROM scores WHERE\
+				chartid=(SELECT id FROM hashes WHERE charthash=$hash) AND diffindex=$diffindex \
+				ORDER BY exscore DESC LIMIT 1";
 
-auto qBestRank = "SELECT rankpts, exscore, score, scoretype, gauge, gaugetype, \
+auto qBestRank = "SELECT rankpts, exscore, score, gauge, \
 			    hits, maxcombo, w0, w1, w2, w3, w4, w5, misses, avghit, stdev, \
-				offset, judgeoffset FROM scores WHERE\
-				charthash=$hash AND diffindex=$diffindex ORDER BY rankpts DESC LIMIT 1";
+				offset, judgeoffset, playopts FROM scores WHERE\
+				chartid=(SELECT id FROM hashes WHERE charthash=$hash) AND diffindex=$diffindex\
+				ORDER BY rankpts DESC LIMIT 1";
 
-auto qBestType = "SELECT rankpts, exscore, score, scoretype, gauge, gaugetype, \
+auto qAllScores = "SELECT rankpts, exscore, score, gauge, \
 			    hits, maxcombo, w0, w1, w2, w3, w4, w5, misses, avghit, stdev, \
-				offset, judgeoffset FROM scores WHERE\
-				charthash=$hash AND diffindex=$diffindex AND scoretype=$type \
-				ORDER BY score DESC LIMIT 1";
-
-auto qAllScores = "SELECT rankpts, exscore, score, scoretype, gauge, gaugetype, \
-			    hits, maxcombo, w0, w1, w2, w3, w4, w5, misses, avghit, stdev, \
-				offset, judgeoffset FROM scores WHERE\
-				charthash=$hash AND diffindex=$diffindex\
+				offset, judgeoffset, playopts FROM scores WHERE\
+				chartid=(SELECT id FROM hashes WHERE charthash=$hash) AND diffindex=$diffindex\
 				ORDER BY rankpts DESC";
 
 #define SC(x) \
@@ -71,9 +85,23 @@ namespace Game {
 		stAllScores = nullptr;
 		stBestEx = nullptr;
 		stBestRank = nullptr;
-		stBestType = nullptr;
+		/*stBestType = nullptr;*/
+		stAddHash = nullptr;
 
 		db = nullptr;
+	}
+
+	void ScoreDatabase::AddHash(std::string hash)
+	{
+		sqlite3_bind_text(stAddHash,
+			sqlite3_bind_parameter_index(stAddHash, "$hash"),
+			hash.c_str(),
+			hash.length(),
+			SQLITE_STATIC
+		);
+
+		sqlite3_step(stAddHash);
+		sqlite3_reset(stAddHash);
 	}
 
 	void ScoreDatabase::CleanupStatements()
@@ -82,7 +110,8 @@ namespace Game {
 		sqlite3_finalize(stAllScores);
 		sqlite3_finalize(stBestEx);
 		sqlite3_finalize(stBestRank);
-		sqlite3_finalize(stBestType);
+		sqlite3_finalize(stAddHash);
+		/*sqlite3_finalize(stBestType);*/
 	}
 
 	ScoreDatabase::~ScoreDatabase() 
@@ -114,22 +143,27 @@ namespace Game {
 		int ret;
 
 		SC(sqlite3_prepare_v2(db, qAddScore, strlen(qAddScore), &stAddScore, &err));
-		sqlite3_prepare_v2(db, qBestEx, strlen(qBestEx), &stBestEx, &err);
-		sqlite3_prepare_v2(db, qBestRank, strlen(qBestRank), &stBestRank, &err);
-		sqlite3_prepare_v2(db, qBestType, strlen(qBestType), &stBestType, &err);
-		sqlite3_prepare_v2(db, qAllScores, strlen(qAllScores), &stAllScores, &err);
+		SC(sqlite3_prepare_v2(db, qBestEx, strlen(qBestEx), &stBestEx, &err));
+		SC(sqlite3_prepare_v2(db, qBestRank, strlen(qBestRank), &stBestRank, &err));
+		/*SC(sqlite3_prepare_v2(db, qBestType, strlen(qBestType), &stBestType, &err));*/
+		SC(sqlite3_prepare_v2(db, qAllScores, strlen(qAllScores), &stAllScores, &err));
+		SC(sqlite3_prepare_v2(db, qAddHash, strlen(qAddHash), &stAddHash, &err));
 	}
 
 	void ScoreDatabase::AddScore(
 		std::string charthash,
 		int diffindex,
-		VSRG::ScoreType type,
-		VSRG::LifeType gaugetype,
+		VSRG::PlayscreenParameters params,
 		VSRG::ScoreKeeper keeper, 
 		double offset, 
 		double judgeoffset)
 	{
-		// az: this takes forever to type. 
+		// az: this takes forever to type.
+		auto type = params.GetScoringType();
+		auto gaugetype = params.GaugeType;
+
+		// insert or do nothing
+		AddHash(charthash);
 
 		sqlite3_bind_text(
 			stAddScore, 
@@ -161,22 +195,10 @@ namespace Game {
 			keeper.getScore(type)
 		);
 
-		sqlite3_bind_int(
-			stAddScore,
-			sqlite3_bind_parameter_index(stAddScore, "$scoretype"),
-			type
-		);
-
 		sqlite3_bind_double(
 			stAddScore,
 			sqlite3_bind_parameter_index(stAddScore, "$gauge"),
 			keeper.getLifebarAmount(gaugetype)
-		);
-
-		sqlite3_bind_int(
-			stAddScore,
-			sqlite3_bind_parameter_index(stAddScore, "$gaugetype"),
-			gaugetype
 		);
 
 		sqlite3_bind_int(
@@ -257,6 +279,15 @@ namespace Game {
 			judgeoffset
 		);
 
+		auto paramstr = params.serialize().dump();
+		sqlite3_bind_text(
+			stAddScore,
+			sqlite3_bind_parameter_index(stAddScore, "$playopts"),
+			paramstr.c_str(),
+			paramstr.length(),
+			SQLITE_STATIC
+		);
+
 		int ret;
 		SC(sqlite3_step(stAddScore));
 		sqlite3_reset(stAddScore);
@@ -287,27 +318,33 @@ namespace Game {
 		ret.rank_score = sqlite3_column_int64(stmt, 0);
 		ret.exscore = sqlite3_column_int(stmt, 1);
 		ret.score = sqlite3_column_int(stmt, 2);
-		ret.score_type = (VSRG::ScoreType)sqlite3_column_int(stmt, 3);
-		ret.gauge = sqlite3_column_double(stmt, 4);
-		ret.gauge_type = (VSRG::LifeType)sqlite3_column_int(stmt, 5);
-		ret.hits = sqlite3_column_int(stmt, 6);
-		ret.max_combo = sqlite3_column_int(stmt, 7);
-		ret.judgments[0] = sqlite3_column_int(stmt, 8);
-		ret.judgments[1] = sqlite3_column_int(stmt, 9);
-		ret.judgments[2] = sqlite3_column_int(stmt, 10);
-		ret.judgments[3] = sqlite3_column_int(stmt, 11);
-		ret.judgments[4] = sqlite3_column_int(stmt, 12);
-		ret.judgments[5] = sqlite3_column_int(stmt, 13);
-		ret.misses = sqlite3_column_int(stmt, 14);
-		ret.avghit = sqlite3_column_int(stmt, 15);
-		ret.stdev = sqlite3_column_int(stmt, 16);
-		ret.offset = sqlite3_column_double(stmt, 17);
-		ret.judgeoffset = sqlite3_column_double(stmt, 18);
+		ret.gauge = sqlite3_column_double(stmt, 3);
+		ret.hits = sqlite3_column_int(stmt, 4);
+		ret.max_combo = sqlite3_column_int(stmt, 5);
+		ret.judgments[0] = sqlite3_column_int(stmt, 6);
+		ret.judgments[1] = sqlite3_column_int(stmt, 7);
+		ret.judgments[2] = sqlite3_column_int(stmt, 8);
+		ret.judgments[3] = sqlite3_column_int(stmt, 9);
+		ret.judgments[4] = sqlite3_column_int(stmt, 10);
+		ret.judgments[5] = sqlite3_column_int(stmt, 11);
+		ret.misses = sqlite3_column_int(stmt, 12);
+		ret.avghit = sqlite3_column_int(stmt, 13);
+		ret.stdev = sqlite3_column_int(stmt, 14);
+		ret.offset = sqlite3_column_double(stmt, 15);
+		ret.judgeoffset = sqlite3_column_double(stmt, 16);
+
+		// parse playscreen params
+		std::string paramstr = (char *)sqlite3_column_text(stmt, 17);
+
+		VSRG::PlayscreenParameters params;
+		params.deserialize(Json::parse(paramstr));
+		ret.play_opts = params;
+
 
 		return ret;
 	}
 
-	ScoreRow ScoreDatabase::GetBestScoreForSong(std::string songhash, int diffindex, VSRG::ScoreType st)
+	/*ScoreRow ScoreDatabase::GetBestScoreForSong(std::string songhash, int diffindex, VSRG::ScoreType st)
 	{
 		ScoreRow ret;
 		prepareBest(stBestType, songhash, diffindex);
@@ -324,7 +361,7 @@ namespace Game {
 
 		sqlite3_reset(stBestType);
 		return ret;
-	}
+	}*/
 
 	ScoreRow ScoreDatabase::GetBestScoreForSongEX(std::string songhash, int diffindex)
 	{

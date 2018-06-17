@@ -304,6 +304,8 @@ namespace Game {
 			SystemType = json["system"];
 			GreenNumber = json["isGreenNumber"];
 			UseW0 = json["W0"];
+			// future use:
+			// ScoringType = json["score"];
 		}
 
 		Json PlayscreenParameters::serialize() const
@@ -317,6 +319,7 @@ namespace Game {
 			ret["random"] = Random;
 			ret["gauge"] = GaugeType;
 			ret["system"] = SystemType;
+			ret["score"] = GetScoringType();
 			ret["isGreenNumber"] = GreenNumber;
 			ret["W0"] = UseW0;
 

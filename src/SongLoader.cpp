@@ -427,14 +427,7 @@ std::shared_ptr<VSRG::Song> SongLoader::LoadFromMeta(const Game::VSRG::Song* Met
 	Log::LogPrintf("Loading chart from meta ID %i from %s\n", Meta->ID, fn.string().c_str());
     Out = LoadSong7KFromFilename(fn.filename(), fn.parent_path(), nullptr, DB);
     if (!Out) return nullptr;
-
-    // Copy relevant data
-	/*Log::LogPrintf("Copying directory '%s' to Out Song (was %s)\n",
-		Meta->SongDirectory.string().c_str(),
-		Out->SongDirectory.string().c_str());
-
-    Out->SongDirectory = Meta->SongDirectory;*/
-
+	
     Index = 0;
     /* Find out Difficulty IDs to the recently loaded song's difficulty! */
     bool DifficultyFound = false;
