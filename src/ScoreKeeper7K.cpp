@@ -371,6 +371,8 @@ namespace Game {
 				return notes_hit;
 			case ST_O2JAM:
 				return o2_score;
+			case ST_RANK:
+				return rank_pts;
 			default:
 				return 0;
 			}

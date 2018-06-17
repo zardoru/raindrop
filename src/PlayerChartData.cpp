@@ -560,7 +560,12 @@ namespace Game {
 			auto CurrentTime = GetWarpedSongTime(Time);
 
 			// speedIter: first which time is greater than current
-			auto speedIter = lower_bound(InterpoloatedSpeedMultipliers.begin(), InterpoloatedSpeedMultipliers.end(), CurrentTime);
+			auto speedIter = lower_bound(
+				InterpoloatedSpeedMultipliers.begin(), 
+				InterpoloatedSpeedMultipliers.end(), 
+				CurrentTime
+			);
+
 			double previousValue = 1;
 			double currentValue = 1;
 			double speedTime = CurrentTime;

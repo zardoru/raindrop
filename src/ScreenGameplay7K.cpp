@@ -320,7 +320,7 @@ namespace Game {
 			double CurrAudioTime = MixerGetTime();
 			double SongDelta = 0;
 			if (Music && Music->IsPlaying())
-				SongDelta = Music->GetStreamedTime() - Time.OldStream;
+				SongDelta = Music->GetPlayedTimeDAC() - Time.OldStream;
 			else
 				SongDelta = (CurrAudioTime - Time.AudioOld);
 

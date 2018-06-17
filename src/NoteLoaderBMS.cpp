@@ -1139,7 +1139,7 @@ namespace NoteLoaderBMS{
                 OnCommand(#playlevel)
                 {
 					if (Utility::IsNumeric(CommandContents.c_str()))
-                    	Diff->Level = std::stoi(CommandContents);
+                    	Diff->Level = std::stoll(CommandContents);
                 }
 
                 OnCommand(#rank)

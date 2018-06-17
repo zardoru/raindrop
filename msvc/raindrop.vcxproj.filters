@@ -47,7 +47,7 @@
       <Filter>Source Files\backend</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Convert.cpp">
-      <Filter>Source Files\game\converting</Filter>
+      <Filter>Source Files\converting</Filter>
     </ClCompile>
     <ClCompile Include="..\src\SongWheel.cpp">
       <Filter>Source Files\game global status</Filter>
@@ -104,7 +104,7 @@
       <Filter>Source Files\backend\librocket</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ConvertToBMS.cpp">
-      <Filter>Source Files\game\converting</Filter>
+      <Filter>Source Files\converting</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Sprite.cpp">
       <Filter>Source Files\backend\render\objects</Filter>
@@ -128,7 +128,7 @@
       <Filter>Source Files\game\score systems/replay data</Filter>
     </ClCompile>
     <ClCompile Include="..\src\NPSGraph.cpp">
-      <Filter>Source Files\game\converting</Filter>
+      <Filter>Source Files\converting</Filter>
     </ClCompile>
     <ClCompile Include="..\src\BackgroundAnimation.cpp">
       <Filter>Source Files\game\gameplay screen\BGA</Filter>
@@ -146,9 +146,6 @@
       <Filter>Source Files\lua</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ext\pa_ringbuffer.c">
-      <Filter>Static Libraries</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ext\jsoncpp.cpp">
       <Filter>Static Libraries</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ext\sha256.cpp">
@@ -594,9 +591,6 @@
     <Filter Include="Source Files\game\evaluation">
       <UniqueIdentifier>{8b582cad-32d5-4f19-ae5d-972436643c80}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\game\converting">
-      <UniqueIdentifier>{9e1fa62b-dcc8-43d6-af3c-a6ca61ee8ae6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\game\gameplay mechanics">
       <UniqueIdentifier>{09200374-de26-46f4-95cb-f77c53f1e0bc}</UniqueIdentifier>
     </Filter>
@@ -620,6 +614,9 @@
     </Filter>
     <Filter Include="Source Files\support">
       <UniqueIdentifier>{54b21073-82a1-40b0-bd3d-c06b3580ad87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\converting">
+      <UniqueIdentifier>{9e1fa62b-dcc8-43d6-af3c-a6ca61ee8ae6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

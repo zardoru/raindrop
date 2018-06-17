@@ -327,7 +327,10 @@ private:
 
 public:
 
-    void WriteAndAdvanceStream(float * out, int samples)
+    void WriteAndAdvanceStream(
+		float * out, 
+		int samples, 
+		const PaStreamCallbackTimeInfo *timeInfo)
     {
         int count = samples;
 
@@ -338,6 +341,10 @@ public:
             mut.lock();
             for (auto i = Streams.begin(); i != Streams.end(); ++i)
             {
+				if ((*i)->GetStreamedTime() == 0) {
+					(*i)->mStreamStartTime = timeInfo->outputBufferDacTime;
+				}
+
                 size_t read = (*i)->Read(ts, samples);
 
                 streaming |= (*i)->IsPlaying();
@@ -376,7 +383,7 @@ public:
 int Mix(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags, void *userData)
 {
     PaMixer *Mix = static_cast<PaMixer*>(userData);
-    Mix->WriteAndAdvanceStream(static_cast<float*>(output), frameCount * 2);
+    Mix->WriteAndAdvanceStream(static_cast<float*>(output), frameCount * 2, timeInfo);
     return 0;
 }
 

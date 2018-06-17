@@ -578,8 +578,10 @@ bool AudioStream::IsPlaying()
 
 void AudioStream::Play()
 {
-    if (mSource && mSource->IsValid())
-        mIsPlaying = true;
+	if (mSource && mSource->IsValid()) {
+		mIsPlaying = true;
+		mStreamStartTime = MixerGetTime();
+	}
 }
 
 void AudioStream::SeekTime(float Second)
@@ -629,6 +631,11 @@ uint32_t AudioStream::Update()
     }
 
     return ReadTotal;
+}
+
+double AudioStream::GetPlayedTimeDAC() const
+{
+	return std::max(MixerGetTime() - mStreamStartTime, 0.0);
 }
 
 uint32_t AudioStream::GetRate() const

@@ -291,7 +291,7 @@ void SongList::SortBy(ESortCriteria criteria)
 			auto nps = [](std::shared_ptr<Game::Song> a)
 			{
 				auto sng = std::static_pointer_cast<Game::VSRG::Song>(a);
-				auto minnps = 10000000;
+				long long minnps = 10000000;
 				for (auto diff : sng->Difficulties) {
 					minnps = std::min(minnps, diff->Level);
 				}
@@ -313,7 +313,7 @@ void SongList::SortBy(ESortCriteria criteria)
 			auto nps = [](std::shared_ptr<Game::Song> a)
 			{
 				auto sng = std::static_pointer_cast<Game::VSRG::Song>(a);
-				auto maxnps = -10000000;
+				long long maxnps = -10000000;
 				for (auto diff : sng->Difficulties) {
 					maxnps = std::max(maxnps, diff->Level);
 				}

@@ -32,15 +32,17 @@ CREATE TABLE IF NOT EXISTS [diffdb] (\
   [duration] DOUBLE, \
   [isvirtual] INTEGER, \
   [keys] INTEGER,\
-  [level] INT,\
+  [level] INT64,\
   [author] VARCHAR(256),\
   [genre] VARCHAR(256),\
   [stagefile] varchar(260));\
-    CREATE INDEX IF NOT EXISTS song_index ON songfiledb(filename);\
 	CREATE INDEX IF NOT EXISTS diff_index ON diffdb(diffid, songid, fileid);\
+	CREATE INDEX IF NOT EXISTS diff_index2 ON diffdb(songid);\
+	CREATE INDEX IF NOT EXISTS diff_index3 ON diffdb(fileid);\
 	CREATE INDEX IF NOT EXISTS songid_index ON songdb(id);\
 	CREATE INDEX IF NOT EXISTS file_index ON songfiledb(filename);\
 	CREATE INDEX IF NOT EXISTS file_index2 ON songfiledb(hash);\
+	CREATE INDEX IF NOT EXISTS file_index3 ON songfiledb(id);\
   ";
 
 auto InsertSongQuery = "INSERT INTO songdb VALUES (NULL,$title,$author,$subtitle,$fn,$bg,$psong,$ptime)";
@@ -363,7 +365,7 @@ void SongDatabase::UpdateDiffInternal(int &ret, int DiffID, Game::Song::Difficul
 		VDiff->Channels
 	));
 
-	SC(sqlite3_bind_int(
+	SC(sqlite3_bind_int64(
 		st_DiffUpdateQuery,
 		sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$level"),
 		VDiff->Level
@@ -578,7 +580,7 @@ void SongDatabase::InsertDiffInternal(int &ret, int SongID, int FileID, Game::So
 		VDiff->Channels
 	));
 
-	SC(sqlite3_bind_int(
+	SC(sqlite3_bind_int64(
 		st_DiffInsertQuery,
 		sqlite3_bind_parameter_index(st_DiffInsertQuery, "$level"),
 		VDiff->Level
@@ -817,7 +819,7 @@ void SongDatabase::GetSongInformation(int ID, Game::VSRG::Song* Out)
 
 		// We don't include author information to force querying it from the database.
 		// Diff->Author
-		Diff->Level = sqlite3_column_int(stGetDiffInfo, 8);
+		Diff->Level = sqlite3_column_int64(stGetDiffInfo, 8);
 
 		// File ID associated data
 		int FileID = sqlite3_column_int(stGetDiffInfo, 7);

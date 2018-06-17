@@ -195,7 +195,7 @@ namespace Game {
 				BT_BEATSPACE // osu! ms/beat timing
 			} BPMType;
 
-			int Level;
+			long long Level;
 			unsigned char Channels;
 			bool IsVirtual;
 		public:

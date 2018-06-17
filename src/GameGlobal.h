@@ -119,7 +119,7 @@ namespace Game {
 
 		enum ScoreType
 		{
-			ST_SCORE = 1, // raindrop's 7K scoring type.
+			ST_RANK = 1, // raindrop rank scoring
 
 			ST_EX = 2, // EX score
 			ST_DP = 3, // DP score
@@ -127,6 +127,7 @@ namespace Game {
 			ST_IIDX = 10, // IIDX score
 			ST_LR2 = 11, // LR2 score
 
+			ST_SCORE = 20, // score out of 100m
 			ST_OSUMANIA = 21, // osu!mania scoring
 			ST_JB2 = 22, // jubeat^2 scoring
 

@@ -104,6 +104,8 @@ public:
     AudioStream();
     ~AudioStream();
 
+	double mStreamStartTime;
+
     uint32_t Read(float* buffer, size_t count) override;
     bool Open(std::filesystem::path Filename) override;
     void Play() override;
@@ -113,6 +115,11 @@ public:
 
     double GetStreamedTime() const;
     double GetPlayedTime() const;
+
+	// return time that has been played according to the DAC clock
+	// based off current mixer time and mStreamStartTime, assigned by audio.cpp
+	double GetPlayedTimeDAC() const;
+
     uint32_t GetRate() const;
 
     uint32_t Update();

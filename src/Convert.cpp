@@ -81,9 +81,9 @@ void ConvertToOM(Game::VSRG::Song *Sng, std::filesystem::path PathOut, std::stri
 
         out
             << "[Difficulty]\n"
-            << "HPDrainRate: 7\n"
+            << "HPDrainRate: 8\n"
             << "CircleSize: " << int(Difficulty->Channels) << "\n"
-            << "OverallDifficulty: 7\n"
+            << "OverallDifficulty: 8\n"
             << "ApproachRate: 9\n"
             << "SliderMultiplier: 1.4\n"
             << "SliderTickRate: 1\n\n"
@@ -136,11 +136,19 @@ void ConvertToOM(Game::VSRG::Song *Sng, std::filesystem::path PathOut, std::stri
                         << (Note.EndTime ? "128" : "1") << ",0,";
                     if (Note.EndTime)
                         out << int(round(Note.EndTime * 1000.0)) << ",";
-                    out << "1:0:0:0:";
+					// "sampleSet:additionSet:customIndex:sampleVolume:filename"
+					out << "1:0:0:";
+					
 
-                    if (Note.Sound)
-                        out << (Difficulty->Data->SoundList.find(Note.Sound) != Difficulty->Data->SoundList.end() ? 
+					if (Note.Sound)
+					{
+						out << "100:";
+						out << (Difficulty->Data->SoundList.find(Note.Sound) != Difficulty->Data->SoundList.end() ?
 							Difficulty->Data->SoundList[Note.Sound] : "");
+					}
+					else {
+						out << "0:";
+					}
 
                     out << "\n";
                     out.flush();
