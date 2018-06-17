@@ -36,7 +36,7 @@ namespace Game {
 		bool IsPlayedScore() {
 			// enough things are zero to say we didn't play this thing
 			if (hits == misses && hits == 0) {
-				if (score == 0 || score_type == VSRG::LT_AUTO)
+				if (score == 0 || gauge_type == VSRG::LT_AUTO)
 					return false;
 			}
 
