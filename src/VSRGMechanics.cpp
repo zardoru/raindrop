@@ -30,7 +30,7 @@ namespace Game {
 		bool Mechanics::IsEarlyMiss(double t, TrackNote * note)
 		{
 			double dt = (t - note->GetStartTime()) * 1000.;
-			return dt < -PlayerScoreKeeper->getLateMissCutoffMS() && dt > -PlayerScoreKeeper->getEarlyMissCutoffMS();
+			return dt < -PlayerScoreKeeper->getLateMissCutoffMS() && dt >= -PlayerScoreKeeper->getEarlyMissCutoffMS();
 		}
 
 		bool Mechanics::IsBmBadJudge(double t, TrackNote * note)
@@ -42,7 +42,7 @@ namespace Game {
 		bool Mechanics::InHeadCutoff(double t, TrackNote * note)
 		{
 			double dev = (t - note->GetStartTime()) * 1000;
-			return dev >= -PlayerScoreKeeper->getEarlyHitCutoffMS() && 
+			return dev >= -PlayerScoreKeeper->getEarlyMissCutoffMS() && 
 				dev <= PlayerScoreKeeper->getLateMissCutoffMS();
 		}
 		
@@ -76,7 +76,7 @@ namespace Game {
 
 			// Condition A: Hold tail outside accuracy cutoff (can't be hit any longer),
 			// note wasn't hit at the head and can't be hit at the head, and it's a hold
-			if (!InJudgeCutoff(SongTime, m) // outside judgment
+			if (!InHeadCutoff(SongTime, m) // head outside judgment
 				&& !m->WasHit() && m->IsHold()) // not hit yet
 			{
 				double dev = (SongTime - m->GetEndTime()) * 1000;
@@ -90,6 +90,8 @@ namespace Game {
 						MissNotify(tD, k, m->IsHold(), true, false);
 
 					m->Hit();
+
+					return true;
 				}
 
 			} // Condition B: Regular note or hold head outside cutoff, wasn't hit and it's enabled.
@@ -140,6 +142,8 @@ namespace Game {
 						SetLaneHoldingState(k, false);
 
 					m->Disable();
+
+					return true;
 				}
 				else
 				{
@@ -169,6 +173,7 @@ namespace Game {
 							SetLaneHoldingState(k, false);
 
 						m->Disable();
+						return true;
 					}
 				}
 			} // Condition D: Hold head was hit, but was released early was already handled at ReleaseLane so no need to be redundant here.
@@ -232,18 +237,27 @@ namespace Game {
 				double dev = (SongTime - m->GetEndTime()) * 1000;
 				double tD = abs(dev);
 
+				double earlyHit = PlayerScoreKeeper->getEarlyMissCutoffMS();
+				double lateMiss = PlayerScoreKeeper->getLateMissCutoffMS();
+
 				double releaseWindow;
 
-				if (forcedRelease)
+				if (forcedRelease) {
 					releaseWindow = PlayerScoreKeeper->getJudgmentWindow(SKJ_W3);
-				else
+				} else
 					releaseWindow = 250; // 250 ms
 
-				if (tD < releaseWindow) /* Released in time */
+				/* Released in time */
+				if ( ((tD < releaseWindow) && !forcedRelease) ||
+					 (dev > -earlyHit && dev < lateMiss) )
 				{
 					// Only consider it a timed thing if releasing it is forced.
-					HitNotify(forcedRelease ? dev : 0, Lane, true, true);
-					SetLaneHoldingState(Lane, false);
+					if (HitNotify)
+						HitNotify(forcedRelease ? dev : 0, Lane, true, true);
+					
+					if (SetLaneHoldingState)
+						SetLaneHoldingState(Lane, false);
+
 					m->Disable();
 				}
 				else /* Released off time */
@@ -251,13 +265,19 @@ namespace Game {
 					// early misses for hold notes always count as regular misses.
 					// they don't break combo when we're not doing forced releases.
 					m->FailHit();
-					MissNotify(dev, Lane, true, false, false);
+					
+					if (MissNotify)
+						MissNotify(dev, Lane, true, false, false);
 
 					m->Disable();
-					SetLaneHoldingState(Lane, false);
+
+					if (SetLaneHoldingState)
+						SetLaneHoldingState(Lane, false);
 				}
 
-				PlayNoteSoundEvent(m->GetTailSound());
+				if (PlayNoteSoundEvent)
+					PlayNoteSoundEvent(m->GetTailSound());
+
 				return true;
 			}
 

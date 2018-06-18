@@ -189,7 +189,7 @@ TEST_CASE("Raindrop Mechanics (Stepmania - LN tails)", "[raindropmechsettails]")
 	
 	SECTION("Tails are not missed when the head is still active") {
 		double tailTime = 0.001;
-		double missCutoff = s.sk->getLateMissCutoffMS();
+		double missCutoff = s.sk->getLateMissCutoffMS() / 1000.0;
 
 		TrackNote t(NoteData{
 			0, tailTime
@@ -208,11 +208,28 @@ struct OMSetup
 	std::shared_ptr<ScoreKeeper> sk;
 	RaindropMechanics mech;
 
+	// always lane 0
+	bool LaneDown;
+
 	OMSetup() : mech(true) {
 		sk = std::make_shared<ScoreKeeper>();
 		sk->setODWindows(0);
 		mech.Setup(nullptr, sk);
 		sk->setMaxNotes(100);
+
+		// SetLaneHoldingState is set if we're currently hitting a hold.
+		// we don't really need this.
+		/*mech.SetLaneHoldingState = [&](uint32_t, bool state) {
+			LaneDown = state;
+		};*/
+
+		mech.IsLaneKeyDown = [&](uint32_t) {
+			return LaneDown;
+		};
+
+		mech.MissNotify = [&](double t, uint32_t, bool hold, bool nobreakcombo, bool earlymiss) {
+			sk->missNote(nobreakcombo, earlymiss);
+		};
 	}
 };
 
@@ -250,4 +267,69 @@ TEST_CASE("osu!mania judgments", "[omjudge]") {
 		}
 	}
 
+	double earlyhitWindow = s.sk->getEarlyHitCutoffMS() / 1000.0;
+	double lateCutoff = s.sk->getLateMissCutoffMS() / 1000.0;
+	double lnCutoff = s.sk->getJudgmentWindow(SKJ_W3);
+	TrackNote t(
+		NoteData{ 0, 10 }
+	);
+
+	SECTION("Long note tail windows are hit inside the hit window") {
+		TrackNote lt = t;
+
+		lt.Hit(); // we need this flag to hit the tail
+		REQUIRE(s.mech.OnReleaseLane(lt.GetEndTime(), &lt, 0));
+
+		lt.Reset(); lt.Hit();
+		REQUIRE(s.mech.OnReleaseLane(lt.GetEndTime() - earlyhitWindow + epsilon, &lt, 0));
+
+		lt.Reset(); lt.Hit();
+		REQUIRE(s.mech.OnReleaseLane(lt.GetEndTime() + lateCutoff - epsilon, &lt, 0));
+	}
+
+	SECTION("Long note tails have proper lenience when hit") {
+		TrackNote lt = t;
+
+		// update
+		lt.Hit();
+		REQUIRE_FALSE(s.mech.OnUpdate(lt.GetEndTime() - lateCutoff + epsilon, &lt, 0));
+		REQUIRE_FALSE(s.mech.OnUpdate(lt.GetEndTime() + lateCutoff - epsilon, &lt, 0));
+		REQUIRE_FALSE(s.mech.OnUpdate(lt.GetEndTime() + epsilon, &lt, 0));
+
+		lt.Reset(); lt.Hit();
+		REQUIRE(s.mech.OnUpdate(lt.GetEndTime() + lateCutoff + epsilon, &lt, 0));
+
+
+		// release on time
+		lt.Reset(); lt.Hit();
+		int misses = s.sk->getJudgmentCount(SKJ_MISS);
+		REQUIRE(s.mech.OnReleaseLane(lt.GetEndTime() + lateCutoff - epsilon, &lt, 0));
+		REQUIRE(s.sk->getJudgmentCount(SKJ_MISS) == misses);
+
+		lt.Reset(); lt.Hit();
+		REQUIRE(s.mech.OnReleaseLane(lt.GetEndTime() + epsilon, &lt, 0));
+		REQUIRE(s.sk->getJudgmentCount(SKJ_MISS) == misses);
+
+		lt.Reset(); lt.Hit();
+		REQUIRE(s.mech.OnReleaseLane(lt.GetEndTime() - lateCutoff + epsilon, &lt, 0));
+		REQUIRE(s.sk->getJudgmentCount(SKJ_MISS) == misses);
+
+		// too early/late release
+		lt.Reset(); lt.Hit();
+		REQUIRE(s.mech.OnReleaseLane(lt.GetEndTime() - earlyhitWindow - epsilon, &lt, 0));
+		REQUIRE(s.sk->getJudgmentCount(SKJ_MISS) == misses + 1);
+
+		lt.Reset(); lt.Hit();
+		REQUIRE(s.mech.OnReleaseLane(lt.GetEndTime() + lateCutoff + epsilon, &lt, 0));
+		REQUIRE(s.sk->getJudgmentCount(SKJ_MISS) == misses + 2);
+	}
+
+	SECTION("Long note tails miss only after the tail end is done when not hit") {
+		TrackNote lt = t;
+		REQUIRE_FALSE(s.mech.OnUpdate(5, &lt, 0));
+
+		lt.DisableHead(); // otherwise, it'll miss the head
+		REQUIRE_FALSE(s.mech.OnUpdate(t.GetEndTime() - epsilon, &lt, 0));
+		REQUIRE(s.mech.OnUpdate(t.GetEndTime() + epsilon, &lt, 0));
+	}
 }
