@@ -14,8 +14,7 @@ class Application
         MODE_VSRGPREVIEW,
         MODE_STOPPREVIEW,
         MODE_CUSTOMSCREEN,
-		MODE_GENFONTCACHE,
-		MODE_TEST
+		MODE_GENFONTCACHE
     }RunMode;
 
     void ParseArgs(int, char **);

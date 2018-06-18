@@ -52,8 +52,10 @@ namespace Game {
 			double getAccMax() const;
 
 			double getJudgmentWindow(int judgment);
-			double getMissCutoffMS() const;
+
+			double getLateMissCutoffMS() const;
 			double getEarlyMissCutoffMS() const;
+			double getEarlyHitCutoffMS() const;
 			double getJudgmentCutoffMS();
 
 			int getScore(int score_type);
@@ -256,8 +258,9 @@ namespace Game {
 
 			// miss thresholds; notes hit outside here count as misses.
 			// units are in ms
-			double miss_threshold;
-			double earlymiss_threshold;
+			double late_miss_threshold;
+			double early_miss_threshold;
+			double early_hit_threshold;
 
 			double histogram[255]; // records from -127 to +127 ms.
 

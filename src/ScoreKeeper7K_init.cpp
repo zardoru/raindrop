@@ -125,9 +125,15 @@ namespace Game {
 			judgment_time[SKJ_W1] = o2jamTimingAmt[1];
 			judgment_time[SKJ_W2] = o2jamTimingAmt[2];
 			judgment_time[SKJ_W3] = o2jamTimingAmt[3];
+			judgment_time[SKJ_W4] = -1;
+			judgment_time[SKJ_W5] = -1;
+			judgment_time[SKJ_MISS] = o2jamTimingAmt[4];
+
 
 			// No early misses, only plain misses.
-			earlymiss_threshold = miss_threshold = o2jamTimingAmt[4];
+			late_miss_threshold = o2jamTimingAmt[3];
+			early_miss_threshold = o2jamTimingAmt[3]; // "non-existent"
+			early_hit_threshold = o2jamTimingAmt[4];
 		}
 
 		void ScoreKeeper::setBMSTimingWindows()
@@ -135,8 +141,10 @@ namespace Game {
 			// double JudgmentValues[] = { 6.4, 16, 40, 100, 250, -1, 625 };
 			double JudgmentValues[] = { 8.8, 22, 55, 137.5, 250, -1, 625 };
 
-			miss_threshold = 250;
-			earlymiss_threshold = 625;
+			// don't scale any of these
+			early_miss_threshold = judgment_time[SKJ_MISS];
+			early_hit_threshold = judgment_time[SKJ_W4];
+			late_miss_threshold = judgment_time[SKJ_W4];
 
 			for (auto i = 0; i < sizeof(JudgmentValues) / sizeof(double); i++)
 				judgment_time[i] = JudgmentValues[i] * judge_window_scale;
@@ -144,35 +152,28 @@ namespace Game {
 			for (auto i = 0; i < sizeof(judgment_amt) / sizeof(double); i++)
 				judgment_amt[i] = 0;
 
+			
+
 			for (auto i = -127; i < 128; ++i)
 				histogram[i + 127] = 0;
 		}
 
 		void ScoreKeeper::setODWindows(int od)
 		{
-			use_w0 = true; // if chart has OD, use osu!mania scoring.
-			use_w0_for_ex2 = true;
+			//use_w0 = true; // if chart has OD, use osu!mania scoring.
+			//use_w0_for_ex2 = true;
 			
-			/*
-			double JudgmentValues[] = { 16, 34, 67, 97, 121, -1, 158 };
 
-			miss_threshold = 121 + (10 - od) * 3;
-			// earlymiss_threshold = 158 + (10 - od) * 3;
+			// w1, w2, w3, w4, w5, miss
+			double JudgmentValues[] = { 16, 64, 97, 127, 151, 188 };
 
-			judgment_time[SKJ_W0] = JudgmentValues[SKJ_W0];
+			late_miss_threshold = 151 - od * 3;
+			early_hit_threshold = 188 - od * 3;
+			early_miss_threshold = early_hit_threshold;
+
+			judgment_time[SKJ_W1] = JudgmentValues[SKJ_W0];
 			for (int i = 1; i < sizeof(JudgmentValues) / sizeof(double); i++)
-				judgment_time[i] = JudgmentValues[i] + (10 - od) * 3;
-
-			*/
-
-			double JudgmentValues[] = { 16, 64, 97, 127, 151, -1, 188 };
-
-			miss_threshold = 188 - od * 3;
-			earlymiss_threshold = miss_threshold;
-
-			judgment_time[SKJ_W0] = JudgmentValues[SKJ_W0];
-			for (int i = 1; i < sizeof(JudgmentValues) / sizeof(double); i++)
-				judgment_time[i] = JudgmentValues[i] - od * 3;
+				judgment_time[i + 1] = JudgmentValues[i] - od * 3;
 
 			for (int i = 0; i < 9; i++)
 				judgment_amt[i] = 0;
@@ -185,10 +186,13 @@ namespace Game {
 		{
 			// Ridiculous is included: J7 Marvelous.
 			// No early miss threshold
-			double JudgmentValues[] = { 11.25, 22.5, 45, 90, 135, 180, 180 };
+			// w0, w1, w2, w3, w4, w5
+			double JudgmentValues[] = { 11.25, 22.5, 45, 90, 135, 180 };
 
-			miss_threshold = 180;
-			earlymiss_threshold = 180;
+			late_miss_threshold = 180;
+			early_miss_threshold = 180;
+			early_hit_threshold = 180;
+
 			for (int i = 0; i < sizeof(JudgmentValues) / sizeof(double); i++)
 				judgment_time[i] = JudgmentValues[i];
 		}

@@ -176,6 +176,23 @@ SongDatabase::~SongDatabase()
 	}
 }
 
+void FilenameBind(sqlite3_stmt* stmt, std::wstring &s, int parameter)
+{
+
+#ifdef _WIN32
+	sqlite3_bind_text16(
+		stmt, 
+		parameter, 
+		s.c_str(), 
+		s.size() * sizeof(wchar_t), 
+		SQLITE_STATIC
+	);
+#else
+	auto s = Utility::ToU8(s);
+	SC(sqlite3_bind_text(stmt, parameter, s.c_str(), s.length(), SQLITE_TRANSIENT));
+#endif
+}
+
 // Inserts a filename, if it already exists, updates it.
 // Returns the ID of the filename.
 int SongDatabase::InsertOrUpdateChartFile(Game::VSRG::Difficulty* Diff)
@@ -184,9 +201,13 @@ int SongDatabase::InsertOrUpdateChartFile(Game::VSRG::Difficulty* Diff)
 	int idOut;
 	int lmt;
 	auto Fn = Diff->Filename;
-	std::string u8p = Utility::ToU8(std::filesystem::absolute(Fn).wstring());
+	auto dbfn = std::filesystem::absolute(Fn).wstring();
 
-	SC(sqlite3_bind_text(st_FilenameQuery, 1, u8p.c_str(), u8p.length(), SQLITE_STATIC));
+	FilenameBind(
+		st_FilenameQuery, 
+		dbfn, 
+		sqlite3_bind_parameter_index(st_FilenameQuery, "$fn")
+	);
 
 	if (sqlite3_step(st_FilenameQuery) == SQLITE_ROW)
 	{
@@ -214,13 +235,11 @@ int SongDatabase::InsertOrUpdateChartFile(Game::VSRG::Difficulty* Diff)
 				SQLITE_STATIC
 			));
 
-			SC(sqlite3_bind_text(
+			FilenameBind(
 				st_UpdateLMT,
-				sqlite3_bind_parameter_index(st_UpdateLMT, "$fn"),
-				u8p.c_str(), 
-				u8p.length(),
-				SQLITE_STATIC
-			));
+				dbfn,
+				sqlite3_bind_parameter_index(st_UpdateLMT, "$fn")
+			);
 
 			SCS(sqlite3_step(st_UpdateLMT));
 			SC(sqlite3_reset(st_UpdateLMT));
@@ -231,13 +250,11 @@ int SongDatabase::InsertOrUpdateChartFile(Game::VSRG::Difficulty* Diff)
 		std::string Hash = Utility::GetSha256ForFile(Fn);
 
 		// There's no entry, got to insert it.
-		SC(sqlite3_bind_text(
+		FilenameBind(
 			st_FilenameInsertQuery,
-			sqlite3_bind_parameter_index(st_FilenameInsertQuery, "$fn"),
-			u8p.c_str(), 
-			u8p.length(), 
-			SQLITE_STATIC
-		));
+			dbfn,
+			sqlite3_bind_parameter_index(st_FilenameInsertQuery, "$fn")
+		);
 
 		SC(sqlite3_bind_int(
 			st_FilenameInsertQuery,
@@ -259,13 +276,11 @@ int SongDatabase::InsertOrUpdateChartFile(Game::VSRG::Difficulty* Diff)
 
 		// okay, then return the ID.
 		SC(sqlite3_reset(st_FilenameQuery));
-		SC(sqlite3_bind_text(
+		FilenameBind(
 			st_FilenameQuery,
-			sqlite3_bind_parameter_index(st_FilenameQuery, "$fn"),
-			u8p.c_str(), 
-			u8p.length(),
-			SQLITE_STATIC
-		));
+			dbfn,
+			sqlite3_bind_parameter_index(st_FilenameQuery, "$fn")
+		);
 
 		sqlite3_step(st_FilenameQuery);
 		idOut = sqlite3_column_int(st_FilenameQuery, 0);
@@ -450,9 +465,9 @@ void SongDatabase::InsertOrUpdateDifficulty(int SongID, Game::VSRG::Difficulty* 
 int SongDatabase::InsertSongInternal(Game::VSRG::Song * Song)
 {
 	int ret = 0;
-	auto u8sfn = Utility::ToU8(Song->SongFilename.wstring());
-	auto u8bfn = Utility::ToU8(Song->BackgroundFilename.wstring());
-	auto u8pfn = Utility::ToU8(Song->SongPreviewSource.wstring());
+	auto sngfn = Song->SongFilename.wstring();
+	auto bgfn = Song->BackgroundFilename.wstring();
+	auto previewfn = Song->SongPreviewSource.wstring();
 
 	// Okay then, insert the song.
 	// So now the latest entry is what we're going to insert difficulties and files into.
@@ -478,29 +493,23 @@ int SongDatabase::InsertSongInternal(Game::VSRG::Song * Song)
 		SQLITE_STATIC
 	));
 
-	SC(sqlite3_bind_text(
+	FilenameBind(
 		st_SngInsertQuery,
-		sqlite3_bind_parameter_index(st_SngInsertQuery, "$fn"),
-		u8sfn.c_str(), 
-		u8sfn.length(), 
-		SQLITE_STATIC
-	));
+		sngfn,
+		sqlite3_bind_parameter_index(st_SngInsertQuery, "$fn")
+	);
 
-	SC(sqlite3_bind_text(
+	FilenameBind(
 		st_SngInsertQuery,
-		sqlite3_bind_parameter_index(st_SngInsertQuery, "$bg"),
-		u8bfn.c_str(), 
-		u8bfn.length(), 
-		SQLITE_STATIC
-	));
+		bgfn,
+		sqlite3_bind_parameter_index(st_SngInsertQuery, "$bg")
+	);
 
-	SC(sqlite3_bind_text(
+	FilenameBind(
 		st_SngInsertQuery,
-		sqlite3_bind_parameter_index(st_SngInsertQuery, "$psong"),
-		u8pfn.c_str(), 
-		u8pfn.length(), 
-		SQLITE_STATIC
-	));
+		previewfn,
+		sqlite3_bind_parameter_index(st_SngInsertQuery, "$psong")
+	);
 
 	SC(sqlite3_bind_double(
 		st_SngInsertQuery,
@@ -656,16 +665,14 @@ std::filesystem::path SongDatabase::GetChartFilename(std::string hash)
 
 std::string SongDatabase::GetChartHash(std::filesystem::path filename)
 {
-	std::string u8p = Utility::ToU8(std::filesystem::absolute(filename).wstring());
+	auto chartfn = std::filesystem::absolute(filename).wstring();
 
-	sqlite3_bind_text(
+	FilenameBind(
 		st_HashFromFile,
-		sqlite3_bind_parameter_index(st_HashFromFile, "$filename"),
-		u8p.c_str(), 
-		u8p.length(), 
-		SQLITE_STATIC
+		chartfn,
+		sqlite3_bind_parameter_index(st_HashFromFile, "$filename")
 	);
-
+	
 	auto res = sqlite3_step(st_HashFromFile);
 
 	auto ret = std::string();
@@ -686,19 +693,17 @@ std::string SongDatabase::GetChartHash(std::filesystem::path filename)
 bool SongDatabase::CacheNeedsRenewal(std::filesystem::path Dir)
 {
 	// must match what we put at InsertFilename time, so turn into absolute path on both places!
-	auto u8p = std::filesystem::absolute(Dir).u8string();
+	auto chartfilename = std::filesystem::absolute(Dir).wstring();
 	int CurLMT = Utility::GetLastModifiedTime(Dir);
 	bool NeedsRenewal;
 	int res, ret;
 
-	SC(sqlite3_bind_text(
+	FilenameBind(
 		stGetLMTQuery,
-		sqlite3_bind_parameter_index(stGetLMTQuery, "$fn"),
-		u8p.c_str(), 
-		u8p.length(), 
-		SQLITE_STATIC
-	));
-
+		chartfilename,
+		sqlite3_bind_parameter_index(stGetLMTQuery, "$fn")
+	);
+	
 	res = sqlite3_step(stGetLMTQuery);
 
 	if (res == SQLITE_ROW) // entry exists
@@ -862,15 +867,13 @@ int SongDatabase::GetSongIDForFile(std::filesystem::path File)
 {
 	int ret;
 	int Out = -1;
-	const std::string u8path = std::filesystem::absolute(File).u8string();
+	auto path = std::filesystem::absolute(File).wstring();
 
-	SC(sqlite3_bind_text(
+	FilenameBind(
 		st_GetSIDFromFilename,
-		sqlite3_bind_parameter_index(st_GetSIDFromFilename, "$fn"),
-		u8path.c_str(), 
-		u8path.length(), 
-		SQLITE_STATIC
-	));
+		path,
+		sqlite3_bind_parameter_index(st_GetSIDFromFilename, "$fn")
+	);
 
 	int r = sqlite3_step(st_GetSIDFromFilename);
 	if (r == SQLITE_ROW)

@@ -18,12 +18,13 @@ namespace Game {
 
 			Difficulty *CurrentDifficulty;
 			std::shared_ptr<ScoreKeeper> PlayerScoreKeeper;
+		public:
 
 			bool IsLateHeadMiss(double t, TrackNote *note);
 			bool InJudgeCutoff(double t, TrackNote *note);
 			bool IsEarlyMiss(double t, TrackNote *note);
 			bool IsBmBadJudge(double t, TrackNote *note);
-		public:
+			bool InHeadCutoff(double t, TrackNote *note);
 
 			virtual ~Mechanics() = default;
 

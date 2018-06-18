@@ -4,6 +4,7 @@
 #include "NoteTransformations.h"
 #include "VSRGMechanics.h"
 #include "ScoreKeeper7K.h"
+#include "Logging.h"
 
 namespace Game {
 	namespace VSRG {
@@ -116,8 +117,18 @@ namespace Game {
 			else
 				ChartState = VSRG::PlayerChartState::FromDifficulty(CurrentDiff.get(), Drift);
 
-			if (Random)
-				NoteTransform::Randomize(ChartState.Notes, CurrentDiff->Channels, CurrentDiff->Data->Turntable);
+			if (Random) {
+				if (!IsSeedSet)
+					SetSeed(time(nullptr));
+
+
+				NoteTransform::Randomize(
+					ChartState.Notes, 
+					CurrentDiff->Channels, 
+					CurrentDiff->Data->Turntable,
+					Seed
+				);
+			}
 
 
 			// Sinisterrr/fully negative charts fix.
@@ -292,6 +303,22 @@ namespace Game {
 			return Hidden.CenterSize;
 		}
 
+		int PlayscreenParameters::GetSeed()
+		{
+			return Seed;
+		}
+
+		void PlayscreenParameters::SetSeed(int seed)
+		{
+			Seed = seed;
+			IsSeedSet = true;
+		}
+
+		void PlayscreenParameters::ResetSeed()
+		{
+			IsSeedSet = false;
+		}
+
 		void PlayscreenParameters::deserialize(Json json)
 		{
 			Upscroll = json["upscroll"];
@@ -306,6 +333,10 @@ namespace Game {
 			UseW0 = json["W0"];
 			// future use:
 			// ScoringType = json["score"];
+
+			if (Random) {
+				SetSeed(json["seed"]);
+			}
 		}
 
 		Json PlayscreenParameters::serialize() const
@@ -322,6 +353,13 @@ namespace Game {
 			ret["score"] = GetScoringType();
 			ret["isGreenNumber"] = GreenNumber;
 			ret["W0"] = UseW0;
+
+			if (Random && IsSeedSet) {
+				ret["seed"] = Seed;
+			}
+
+			if (Random && !IsSeedSet)
+				Log::LogPrintf("Warning: serializing with random set, but no seed\n");
 
 			return ret;
 		}

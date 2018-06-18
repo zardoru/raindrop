@@ -17,26 +17,33 @@ namespace Game {
 	namespace VSRG {
 		bool Mechanics::IsLateHeadMiss(double t, TrackNote * note)
 		{
-			return (t - note->GetStartTime()) * 1000.0 > PlayerScoreKeeper->getMissCutoffMS();
+			return (t - note->GetStartTime()) * 1000.0 > PlayerScoreKeeper->getLateMissCutoffMS();
 		}
 
 		bool Mechanics::InJudgeCutoff(double t, TrackNote * note)
 		{
 			double earlyMissCutoff = PlayerScoreKeeper->getEarlyMissCutoffMS() / 1000.0;
-			double missCutoff = PlayerScoreKeeper->getMissCutoffMS() / 1000.0;
-			return (abs(t - note->GetStartTime()) < earlyMissCutoff) ||
-				(abs(t - note->GetEndTime()) < missCutoff);
+			double missCutoff = PlayerScoreKeeper->getLateMissCutoffMS() / 1000.0;
+			return (abs(t - note->GetStartTime()) <= earlyMissCutoff) ||
+				(abs(t - note->GetEndTime()) <= missCutoff);
 		}
 		bool Mechanics::IsEarlyMiss(double t, TrackNote * note)
 		{
 			double dt = (t - note->GetStartTime()) * 1000.;
-			return dt < -PlayerScoreKeeper->getMissCutoffMS() && dt > -PlayerScoreKeeper->getEarlyMissCutoffMS();
+			return dt < -PlayerScoreKeeper->getLateMissCutoffMS() && dt > -PlayerScoreKeeper->getEarlyMissCutoffMS();
 		}
 
 		bool Mechanics::IsBmBadJudge(double t, TrackNote * note)
 		{
 			double dt = abs(t - note->GetStartTime()) * 1000.0;
 			return dt > PlayerScoreKeeper->getJudgmentWindow(SKJ_W3) && dt < PlayerScoreKeeper->getJudgmentWindow(SKJ_W4);
+		}
+
+		bool Mechanics::InHeadCutoff(double t, TrackNote * note)
+		{
+			double dev = (t - note->GetStartTime()) * 1000;
+			return dev >= -PlayerScoreKeeper->getEarlyHitCutoffMS() && 
+				dev <= PlayerScoreKeeper->getLateMissCutoffMS();
 		}
 		
 
@@ -65,7 +72,7 @@ namespace Game {
 		{
 			auto k = Lane;
 			/* We have to check for all gameplay conditions for this note. */
-			double missCutoff = PlayerScoreKeeper->getMissCutoffMS();
+			double missCutoff = PlayerScoreKeeper->getLateMissCutoffMS();
 
 			// Condition A: Hold tail outside accuracy cutoff (can't be hit any longer),
 			// note wasn't hit at the head and can't be hit at the head, and it's a hold
@@ -78,7 +85,10 @@ namespace Game {
 				if (dev > 0) {
 					// remove hold notes that were never hit.
 					m->MakeInvisible();
-					MissNotify(tD, k, m->IsHold(), true, false);
+
+					if (MissNotify)
+						MissNotify(tD, k, m->IsHold(), true, false);
+
 					m->Hit();
 				}
 
@@ -86,7 +96,14 @@ namespace Game {
 			else if (IsLateHeadMiss(SongTime, m) &&
 				(!m->WasHit() && m->IsHeadEnabled()))
 			{
-				MissNotify(abs(SongTime - m->GetStartTime()) * 1000, k, m->IsHold(), false, false);
+				if (MissNotify)
+					MissNotify(
+						abs(SongTime - m->GetStartTime()) * 1000, 
+						k, 
+						m->IsHold(), 
+						false, 
+						false
+					);
 
 				// only remove tap notes from judgment; hold notes might be activated before the tail later.
 				if (!(m->IsHold()))
@@ -100,9 +117,13 @@ namespace Game {
 					if (IsLaneKeyDown(k))
 					{ // if the note was already being held down
 						m->Hit();
-						SetLaneHoldingState(k, true);
+
+						if (SetLaneHoldingState)
+							SetLaneHoldingState(k, true);
 					}
 				}
+
+				return true;
 			} // Condition C: Hold head was hit, but hold tail was not released.
 			else if (m->IsHold() && m->IsEnabled() && m->WasHit())
 			{
@@ -111,9 +132,13 @@ namespace Game {
 				{
 					m->FailHit();
 					// Take away health and combo (1st false)
-					MissNotify(abs(SongTime - m->GetEndTime()) * 1000, k, m->IsHold(), false, false);
 
-					SetLaneHoldingState(k, false);
+					if (MissNotify)
+						MissNotify(abs(SongTime - m->GetEndTime()) * 1000, k, m->IsHold(), false, false);
+
+					if (SetLaneHoldingState)
+						SetLaneHoldingState(k, false);
+
 					m->Disable();
 				}
 				else
@@ -124,15 +149,25 @@ namespace Game {
 					{
 						if (IsLaneKeyDown(Lane))
 						{
-							HitNotify(0, k, true, true);
+							if (HitNotify)
+								HitNotify(0, k, true, true);
 						}
 						else
 						{
 							// Only take away health, but not combo (1st true)
-							MissNotify(PlayerScoreKeeper->getMissCutoffMS(), k, m->IsHold(), true, false);
+							if (MissNotify)
+								MissNotify(
+									PlayerScoreKeeper->getLateMissCutoffMS(), 
+									k, 
+									m->IsHold(), 
+									true, 
+									false
+								);
 						}
 
-						SetLaneHoldingState(k, false);
+						if (SetLaneHoldingState)
+							SetLaneHoldingState(k, false);
+
 						m->Disable();
 					}
 				}
@@ -149,7 +184,7 @@ namespace Game {
 			double dev = (SongTime - m->GetStartTime()) * 1000;
 			double tD = abs(dev);
 
-			if (!InJudgeCutoff(SongTime, m)) // If the note was hit outside of judging range
+			if (!InHeadCutoff(SongTime, m)) // If the note was hit outside of judging range
 			{
 				// Log::Printf("td > jc %f %f\n", tD, score_keeper->getJudgmentCutoff());
 				// do nothing else for this note - anyway, this case happens if note optimization is disabled.
@@ -160,15 +195,20 @@ namespace Game {
 				// early miss
 				if (IsEarlyMiss(SongTime, m))
 				{
-					MissNotify(dev, Lane, m->IsHold(), m->IsHold(), true);
+					if (MissNotify)
+						MissNotify(dev, Lane, m->IsHold(), m->IsHold(), true);
 				}
 				else
 				{
 					m->Hit();
-					HitNotify(dev, Lane, m->IsHold(), false);
+					if (HitNotify)
+						HitNotify(dev, Lane, m->IsHold(), false);
 
 					if (m->IsHold())
-						SetLaneHoldingState(Lane, true);
+					{
+						if (SetLaneHoldingState)
+							SetLaneHoldingState(Lane, true);
+					}
 					else
 					{
 						m->Disable();
@@ -176,7 +216,9 @@ namespace Game {
 					}
 				}
 
-				PlayNoteSoundEvent(m->GetSound());
+				if (PlayNoteSoundEvent)
+					PlayNoteSoundEvent(m->GetSound());
+
 				return true;
 			}
 
@@ -291,7 +333,7 @@ namespace Game {
 
 				return true;
 			}
-			else if (tD > PlayerScoreKeeper->getJudgmentWindow(SKJ_W3) && tD < PlayerScoreKeeper->getMissCutoffMS()) {
+			else if (tD > PlayerScoreKeeper->getJudgmentWindow(SKJ_W3) && tD < PlayerScoreKeeper->getLateMissCutoffMS()) {
 				m->FailHit();
 				m->Disable();
 

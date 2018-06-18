@@ -187,7 +187,11 @@ std::string Configuration::GetSkinConfigs(std::string Name, std::string Namespac
 
 double  Configuration::GetSkinConfigf(std::string Name, std::string Namespace)
 {
-    return GetConffInt(Name, Namespace, *SkinCfgLua);
+	if (SkinCfgLua)
+		return GetConffInt(Name, Namespace, *SkinCfgLua);
+	else {
+		return 0;
+	}
 }
 
 void Configuration::GetConfigListS(std::string Name, std::map<std::string, std::string> &Out, std::string DefaultKeyName)

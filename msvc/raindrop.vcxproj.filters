@@ -43,9 +43,6 @@
     <ClCompile Include="..\src\ImageList.cpp">
       <Filter>Source Files\backend\render\textures</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\raindrop.cpp">
-      <Filter>Source Files\backend</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Convert.cpp">
       <Filter>Source Files\converting</Filter>
     </ClCompile>
@@ -154,9 +151,6 @@
     <ClCompile Include="..\src\osuBackgroundAnimation.cpp">
       <Filter>Source Files\game\gameplay screen\BGA</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\catch_compile_src.cpp">
-      <Filter>Source Files\backend</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\ErrorReporting.cpp">
       <Filter>Source Files\backend</Filter>
     </ClCompile>
@@ -187,7 +181,6 @@
     <ClCompile Include="..\src\ext\ioapi.c">
       <Filter>Static Libraries</Filter>
     </ClCompile>
-    <ClCompile Include="..\tests\TestSetA.cpp" />
     <ClCompile Include="..\src\NoteLoaderSM.cpp">
       <Filter>Source Files\song data loaders</Filter>
     </ClCompile>
@@ -265,6 +258,12 @@
     </ClCompile>
     <ClCompile Include="..\src\SongDatabase.cpp">
       <Filter>Source Files\game global status</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\raindrop.cpp">
+      <Filter>Source Files\main and ipc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tests\MechanicsTests.cpp">
+      <Filter>Tests</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -617,6 +616,9 @@
     </Filter>
     <Filter Include="Source Files\converting">
       <UniqueIdentifier>{9e1fa62b-dcc8-43d6-af3c-a6ca61ee8ae6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests">
+      <UniqueIdentifier>{2f00a771-64c6-4b6d-86c1-83a8900e3249}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

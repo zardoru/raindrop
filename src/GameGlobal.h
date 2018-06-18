@@ -236,6 +236,9 @@ namespace Game {
 
 			void SetupGauge(std::shared_ptr<ChartInfo> TimingInfo, ScoreKeeper* PlayerScoreKeeper);
 
+			int Seed;
+			bool IsSeedSet;
+
 		public:
 
 			// == Non Player Options ==
@@ -298,6 +301,15 @@ namespace Game {
 			float GetHiddenTransitionSize();
 			float GetHiddenCenterSize();
 
+			// Last used, or set, seed.
+			int GetSeed();
+
+			// Use this seed to shuffle.
+			void SetSeed(int seed);
+
+			// Unset the seed. Generate a new one.
+			void ResetSeed();
+
 			void deserialize(Json json);
 			Json serialize() const;
 
@@ -315,6 +327,7 @@ namespace Game {
 				GaugeType = LT_AUTO;
 				SystemType = VSRG::TI_NONE;
 				UserSpeedMultiplier = 4;
+				IsSeedSet = false;
 			}
 		};
 

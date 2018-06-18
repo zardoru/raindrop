@@ -18,7 +18,7 @@ namespace Game {
 				.addProperty("MaxAccuracy", &ScoreKeeper::getAccMax)
 				.addProperty("EarlyMissCutoffMS", &ScoreKeeper::getEarlyMissCutoffMS)
 				.addProperty("UsesW0", &ScoreKeeper::usesW0)
-				.addProperty("MissCutoffMS", &ScoreKeeper::getMissCutoffMS)
+				.addProperty("MissCutoffMS", &ScoreKeeper::getLateMissCutoffMS)
 				.addProperty("Rank", &ScoreKeeper::getRank)
 				.addProperty("BMRank", &ScoreKeeper::getBMRank)
 				.addProperty("UsesO2", &ScoreKeeper::usesO2)

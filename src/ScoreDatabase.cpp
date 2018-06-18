@@ -170,12 +170,14 @@ namespace Game {
 			sqlite3_bind_parameter_index(stAddScore, "$hash"),
 			charthash.c_str(), 
 			charthash.length(), 
-			SQLITE_STATIC);
+			SQLITE_STATIC
+		);
 
 		sqlite3_bind_int(
 			stAddScore,
 			sqlite3_bind_parameter_index(stAddScore, "$diffindex"),
-			diffindex);
+			diffindex
+		);
 
 		sqlite3_bind_int64(
 			stAddScore,

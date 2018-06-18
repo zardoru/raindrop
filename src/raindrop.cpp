@@ -3,6 +3,11 @@
 #include "Screen.h"
 #include "Application.h"
 
+#ifdef TESTS
+#define CATCH_CONFIG_RUNNER
+#include "ext/catch.hpp"
+#endif 
+
 // ErrorReporting.cpp
 void RegisterSignals();
 
@@ -11,10 +16,19 @@ void PrintTraceFromContext(CONTEXT &ctx);
 #endif
 
 void RunApplication(int argc, char** argv) {
+#ifndef TESTS
 	Application App(argc, argv);
 	App.Init();
 	App.Run();
 	App.Close();
+#else
+	Catch::Session session;
+	session.applyCommandLine(argc, argv);
+
+	std::cout << session.run();
+
+	std::cin.get();
+#endif
 }
 
 int main(int argc, char *argv[])

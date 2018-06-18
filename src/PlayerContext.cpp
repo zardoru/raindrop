@@ -126,7 +126,7 @@ namespace Game {
 		{
 			PlayerReplay.AddEvent(Replay::Entry
 			{
-				Time,
+				Time - Drift,
 				lane,
 				KeyDown
 			});
@@ -503,8 +503,8 @@ namespace Game {
 				// In comparison to the regular compare function, since end times are what matter with holds (or lift events, where start == end)
 				// this does the job as it should instead of comparing start times where hold tails would be completely ignored.
 				auto threshold = (PlayerScoreKeeper->usesO2() ?
-					PlayerScoreKeeper->getMissCutoffMS() :
-					(PlayerScoreKeeper->getMissCutoffMS() / 1000.0));
+					PlayerScoreKeeper->getLateMissCutoffMS() :
+					(PlayerScoreKeeper->getLateMissCutoffMS() / 1000.0));
 
 				auto timeLower = (Time - threshold);
 				auto timeHigher = (Time + threshold);
@@ -695,7 +695,7 @@ namespace Game {
 				Type = SPEEDTYPE_MULTIPLIER;
 
 				PlayerReplay.AddPlaybackListener([this](Replay::Entry entry) {
-					this->OnPlayerKeyEvent(entry.Time + this->Drift, entry.Down, entry.Lane);
+					this->OnPlayerKeyEvent(entry.Time + this->GetDrift(), entry.Down, entry.Lane);
 				});
 			}
 
@@ -736,10 +736,10 @@ namespace Game {
 				double curBPS = ChartState.GetBpsAt(time);
 				double cutoffspb = 1 / curBPS;
 
-				cutoff = cutoffspb * PlayerScoreKeeper->getMissCutoffMS();
+				cutoff = cutoffspb * PlayerScoreKeeper->getLateMissCutoffMS();
 			} 
 			else // time-based judgments
-				cutoff = PlayerScoreKeeper->getMissCutoffMS() / 1000.0;
+				cutoff = PlayerScoreKeeper->getLateMissCutoffMS() / 1000.0;
 
 			return wt > CurrentDiff->Duration + cutoff;
 		}
@@ -764,7 +764,7 @@ namespace Game {
 			auto Beat = ChartState.GetBeatAt(ChartState.GetWarpedSongTime(driftedTime));
 			PlayerNoteskin.Update(SongTime - LastUpdateTime, Beat);
 			LastUpdateTime = SongTime;
-			PlayerReplay.Update(SongTime);
+			PlayerReplay.Update(SongTime - Drift);
 			RunMeasures(SongTime - Drift);
 		}
 

@@ -65,8 +65,11 @@ void reportError(lua_State *State)
 {
 	const char* reason = lua_tostring(State, -1);
 
+
     Log::LogPrintf("LuaManager: Lua error: %s\n", reason);
+#ifndef TESTS
     Utility::DebugBreak();
+#endif
     lua_pop(State, 1);
 }
 

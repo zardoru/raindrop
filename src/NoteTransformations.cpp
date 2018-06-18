@@ -7,7 +7,7 @@ namespace Game {
 	namespace VSRG {
 		namespace NoteTransform
 		{
-			void Randomize(Game::VSRG::VectorTN &Notes, int ChannelCount, bool RespectScratch)
+			void Randomize(Game::VSRG::VectorTN &Notes, int ChannelCount, bool RespectScratch, int Seed)
 			{
 				std::vector<int> s;
 
@@ -37,7 +37,7 @@ namespace Game {
 					s.push_back(index);
 				});
 
-				std::mt19937 mt(time(0));
+				std::mt19937 mt(Seed);
 				std::uniform_int_distribution<int> dev;
 
 				// perform random

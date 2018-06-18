@@ -74,7 +74,6 @@ void Application::ParseArgs(int argc, char **argv)
         "Release IPC Pool")
         ("L,L", po::value<std::string>(),
         "Load Custom Scene")
-		("test,T", "Run test suite")
 		("fontcache,F", po::value<std::string>(),
         "Generate Font Cache")
         ("config,x", po::value<std::string>(), 
@@ -176,11 +175,6 @@ void Application::ParseArgs(int argc, char **argv)
         InFile = vm["L"].as<std::string>();
     }
 
-	if (vm.count("test"))
-	{
-		RunMode = MODE_TEST;
-	}
-
     return;
 }
 
@@ -190,10 +184,8 @@ void Application::Init()
     auto t1 = Clock::now();
 
 #if (defined WIN32) && !(defined MINGW)
-	if (RunMode != MODE_TEST) {
-		SetConsoleOutputCP(CP_UTF8);
-		_setmode(_fileno(stdout), _O_U8TEXT);
-	}
+	SetConsoleOutputCP(CP_UTF8);
+	_setmode(_fileno(stdout), _O_U8TEXT);
 #else
     setlocale(LC_ALL, "");
 #endif
@@ -318,16 +310,6 @@ void Application::Run()
 {
     double T1 = glfwGetTime();
     bool RunLoop = true;
-
-	// if we're just running tests, legitimately don't give a crap about
-	// what goes on below.
-	if (RunMode == MODE_TEST)
-	{
-		RunRaindropTests();
-		return;
-
-	}
-
 
     if (!DoRun)
         return;

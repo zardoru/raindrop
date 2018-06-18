@@ -54,6 +54,16 @@ namespace Game {
 		ScoreKeeperJudgment ScoreKeeper::hitNote(double ms)
 		{
 			// hit notes
+			if (ms < -early_miss_threshold || ms > late_miss_threshold) {
+#if (defined TESTS || defined DEBUG)
+				auto msg = Utility::Format(
+					"Out of hit window: %.0f (range: %.0f to %.0f)",
+					ms, -early_miss_threshold, late_miss_threshold);
+				throw std::runtime_error(msg);
+#else
+				return SKJ_NONE;
+#endif
+			}
 
 			// online variance and average hit
 			++total_notes;
@@ -96,7 +106,7 @@ namespace Game {
 			double combo_leniency;
 			if (!use_o2jam)
 			{
-				combo_leniency = judgment_time[SKJ_W3]; // GOODs/GREATs or less
+				combo_leniency = judgment_time[SKJ_W3]; // GOODs or less
 
 				if (ms <= combo_leniency)
 				{
@@ -121,7 +131,7 @@ namespace Game {
 
 			ScoreKeeperJudgment judgment = SKJ_NONE;
 
-			for (int i = (use_w0 ? 0 : 1); i < (use_o2jam ? 4 : 6); i++)
+			for (int i = (use_w0 ? 0 : 1); i <= 6; i++)
 			{
 				if (ms <= judgment_time[i])
 				{
@@ -154,17 +164,6 @@ namespace Game {
 				}
 			}
 
-			// SC, ACC^2 score
-
-			sc_score += Clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.0) * 2;
-			sc_sc_score += sc_score * Clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.0);
-
-			score = double(SCORE_MAX * sc_sc_score) / (max_notes * (max_notes + 1));
-
-			// lifebars
-
-			lifebarHit(ms, judgment);
-
 			if (judgment == SKJ_NONE)
 				std::cerr << "Error, invalid judgment: " << ms << "\n";
 
@@ -172,12 +171,30 @@ namespace Game {
 
 			// Other methods
 
-			update_ranks(judgment); // rank calculation
-			update_bms(judgment); // Beatmania scoring
-			update_lr2(judgment); // Lunatic Rave 2 scoring
-			update_exp2(judgment);
-			update_osu(judgment);
-			update_o2(judgment);
+			// we have to missNote - 
+			if (judgment != SKJ_MISS)
+			{
+				// SC, ACC^2 score
+
+				sc_score += Clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.0) * 2;
+				sc_sc_score += sc_score * Clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.0);
+
+				score = double(SCORE_MAX * sc_sc_score) / (max_notes * (max_notes + 1));
+
+				// lifebars
+
+				lifebarHit(ms, judgment);
+
+				update_ranks(judgment); // rank calculation
+				update_bms(judgment); // Beatmania scoring
+				update_lr2(judgment); // Lunatic Rave 2 scoring
+				update_exp2(judgment);
+				update_osu(judgment);
+				update_o2(judgment);
+			}
+			else {
+				missNote(false, false);
+			}
 
 			return judgment;
 		}
@@ -240,7 +257,7 @@ namespace Game {
 			if (!early_miss)
 			{
 				if (!dont_break_combo) {
-					total_sqdev += getMissCutoffMS() * getMissCutoffMS();
+					total_sqdev += getLateMissCutoffMS() * getLateMissCutoffMS();
 					combo = 0;
 				}
 
@@ -276,18 +293,23 @@ namespace Game {
 
 		double ScoreKeeper::getJudgmentCutoffMS() {
 			auto rt = 0.0;
-			rt = std::max(std::max(miss_threshold, rt), earlymiss_threshold);
+			rt = std::max(std::max(late_miss_threshold, rt), early_miss_threshold);
 			return rt;
 		}
 
 		double ScoreKeeper::getEarlyMissCutoffMS() const
 		{
-			return earlymiss_threshold;
+			return early_miss_threshold;
 		}
 
-		double ScoreKeeper::getMissCutoffMS() const
+		double ScoreKeeper::getEarlyHitCutoffMS() const
 		{
-			return miss_threshold;
+			return early_hit_threshold;
+		}
+
+		double ScoreKeeper::getLateMissCutoffMS() const
+		{
+			return late_miss_threshold;
 		}
 
 		double ScoreKeeper::getAccMax() const
