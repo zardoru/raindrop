@@ -29,7 +29,7 @@ bugdex
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
-[Tt]ests/
+msvc/[Tt]ests/
 x64/
 x86/
 bld/
