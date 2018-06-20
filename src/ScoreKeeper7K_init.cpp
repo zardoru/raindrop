@@ -138,8 +138,8 @@ namespace Game {
 
 		void ScoreKeeper::setBMSTimingWindows()
 		{
-			// double JudgmentValues[] = { 6.4, 16, 40, 100, 250, -1, 625 };
-			double JudgmentValues[] = { 8.8, 22, 55, 137.5, 250, -1, 625 };
+			double JudgmentValues[] = { 6.4, 16, 40, 100, 250, -1, 625 };
+			// double JudgmentValues[] = { 8.8, 22, 55, 137.5, 250, -1, 625 };
 
 			// don't scale any of these
 			early_miss_threshold = judgment_time[SKJ_MISS];
@@ -263,7 +263,7 @@ namespace Game {
 			use_o2jam = false;
 
 			// old values: 0.5, 0.75, 1.0, 1.5, 2.0
-			switch (rank) {
+			/*switch (rank) { // second version
 			case 0:
 				judge_window_scale = 8.0 / 11.0; break;
 			case 1:
@@ -274,7 +274,22 @@ namespace Game {
 				judge_window_scale = 13.0 / 11.0; break;
 			case 4:
 				judge_window_scale = 16.0 / 11.0; break;
+			}*/
+
+			// third version
+			switch (rank) {
+			case 0:
+				judge_window_scale = 1; break;
+			case 1:
+				judge_window_scale = 1.2; break;
+			case 2:
+				judge_window_scale = 1.4; break;
+			case 3:
+				judge_window_scale = 1.7; break;
+			case 4:
+				judge_window_scale = 2; break;
 			}
+
 			setBMSTimingWindows();
 		}
 
