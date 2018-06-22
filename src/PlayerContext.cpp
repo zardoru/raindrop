@@ -261,31 +261,85 @@ namespace Game {
 			assert(Env != nullptr);
 
 			luabridge::getGlobalNamespace(Env->GetState())
+				/// @engineclass Player
 				.beginClass<PlayerContext>("PlayerContext")
+				/// Current song beat
+				// @roproperty Beat 
 				.addProperty("Beat", &PlayerContext::GetCurrentBeat)
+				/// Song time in warped space
+				// @roproperty Time
 				.addProperty("Time", &PlayerContext::GetWarpedSongTime)
+				/// Song duration in warp space
+				// @roproperty Duration
 				.addProperty("Duration", &PlayerContext::GetDuration)
+				/// Beat duration in warp space
+				// @roproperty BeatDuration
 				.addProperty("BeatDuration", &PlayerContext::GetBeatDuration)
+				/// Active channel count
+				// @roproperty Channels
 				.addProperty("Channels", &PlayerContext::GetChannelCount)
+				/// Current chart BPM
+				// @roproperty BPM
 				.addProperty("BPM", &PlayerContext::GetCurrentBPM)
+				/// Whether failure is enabled
+				// @roproperty CanFail
 				.addProperty("CanFail", &PlayerContext::IsFailEnabled)
+				/// Whether the player has failed
+				// @roproperty HasFailed
 				.addProperty("HasFailed", &PlayerContext::HasFailed)
+				/// Whether the notes are currently moving towards the top of the screen
+				// @roproperty Upscroll
 				.addProperty("Upscroll", &PlayerContext::IsUpscrolling)
+				/// The current displacement speed for the notes
+				// @roproperty Speed
 				.addProperty("Speed", &PlayerContext::GetCurrentVerticalSpeed)
+				/// The current effective position of the judgment line
+				// @roproperty JudgmentY
 				.addProperty("JudgmentY", &PlayerContext::GetJudgmentY)
+				/// Current difficulty assigned to the player
+				// @roproperty Difficulty
 				.addProperty("Difficulty", &PlayerContext::GetDifficulty)
+				/// Whether the current chart is using a turntable
+				// @roproperty Turntable
 				.addProperty("Turntable", &PlayerContext::GetUsesTurntable)
+				/// Current speed multiplier
+				// @property UserSpeedMultiplier
 				.addProperty("UserSpeedMultiplier", &PlayerContext::GetUserMultiplier, &PlayerContext::SetUserMultiplier)
+				/// Same as Turntable
+				// @roproperty HasTurntable
 				.addProperty("HasTurntable", &PlayerContext::GetUsesTurntable)
+				/// Get current gauge health as a percentage
+				// @roproperty LifebarPercent
 				.addProperty("LifebarPercent", &PlayerContext::GetLifePST)
-				.addProperty("Difficulty", &PlayerContext::GetDifficulty)
+				/// Current player number
+				// @roproperty Number
 				.addProperty("Number", &PlayerContext::GetPlayerNumber)
+				/// Get currently active score type's score value
+				// @roproperty Score
 				.addProperty("Score", &PlayerContext::GetScore)
+				/// Current player combo
+				// @roproperty Combo
 				.addProperty("Combo", &PlayerContext::GetCombo)
+				/// Get Pacemaker text (a la rank:+/-xxx - the rank part.)
+				// @function GetPacemakerText
+				// @param bm Whether to use the BMS grading pacemaker. Uses raindrop pacemaker otherwise
 				.addFunction("GetPacemakerText", &PlayerContext::GetPacemakerText)
+				/// Get pacemaker value (a la rank:+/-xxx - the xxx part.)
+				// @function GetPacemakerText
+				// @param bm Whether to use the BMS grading pacemaker. Uses raindrop pacemaker otherwise
 				.addFunction("GetPacemakerValue", &PlayerContext::GetPacemakerValue)
+				/// Get if there's a hold currently being held at the given lane
+				// @function IsHoldActive
+				// @param lane Lane, 0-index based
+				// @return A boolean, stating whether the lane has a hold currently being pressed.
 				.addFunction("IsHoldActive", &PlayerContext::GetIsHeldKey)
+				/// Get the closest note time to the last key press' timestamp.
+				// @function GetClosestNoteTime
+				// @param lane Lane, 0-index based
+				// @return Closest note time, in MS.
 				.addFunction("GetClosestNoteTime", &PlayerContext::GetClosestNoteTime)
+				/// Get current player @{ScoreKeeper7K} instance
+				// @roproperty Scorekeeper
 				.addProperty("Scorekeeper", &PlayerContext::GetScoreKeeper)
 				.endClass();
 		}
@@ -594,6 +648,11 @@ namespace Game {
 		double PlayerContext::GetJudgeOffset() const
 		{
 			return JudgeOffset;
+		}
+
+		double PlayerContext::GetRate() const
+		{
+			return Parameters.Rate;
 		}
 
 		void PlayerContext::JudgeLane(uint32_t Lane, double Time)

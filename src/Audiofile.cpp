@@ -213,7 +213,7 @@ bool AudioSample::Open(AudioDataSource* Src, bool async)
 				spc.flags = 0;
 
 				soxr_lock.lock();
-				soxr_quality_spec_t q_spec = soxr_quality_spec(SOXR_VHQ, SOXR_VR);
+				soxr_quality_spec_t q_spec = soxr_quality_spec(SOXR_QQ, SOXR_VR);
 
 				auto resampler = soxr_create(mRate, MixerGetRate(), 2, nullptr, &spc, &q_spec, nullptr);
 				

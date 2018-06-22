@@ -10,6 +10,8 @@
 #include "BindingsManager.h"
 #include "Logging.h"
 
+/// @themescript screenloading.lua
+
 class LoadScreenThread
 {
     std::atomic<bool>& mFinished;
@@ -41,7 +43,8 @@ ScreenLoading::ScreenLoading(std::shared_ptr<Screen> _Next) : Screen("ScreenLoad
     LoadThread = nullptr;
     Running = true;
     ThreadInterrupted = false;
-
+	/// Global gamestate.
+	// @autoinstance Global
     GameState::GetInstance().InitializeLua(Animations->GetEnv()->GetState());
 
     Animations->Preload(GameState::GetInstance().GetSkinFile("screenloading.lua"), "Preload");

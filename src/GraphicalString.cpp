@@ -63,7 +63,7 @@ float GraphicalString::GetFontSize() const
 void GraphicalString::Render()
 {
     if (!mFont) return;
-    mFont->SetColor(Red, Green, Blue);
+    mFont->SetColor(Color.Red, Color.Green, Color.Blue);
     mFont->SetAlpha(Alpha);
 
 	float sc = mFontHeight;

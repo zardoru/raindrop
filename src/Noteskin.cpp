@@ -19,6 +19,7 @@
 
 namespace Game {
 	namespace VSRG {
+		/// @themescript noteskin.lua
 		Noteskin::Noteskin(PlayerContext *parent) {
 			CanRender = false;
 			NoteScreenSize = 0;
@@ -45,6 +46,10 @@ namespace Game {
 
 		void Noteskin::Validate()
 		{
+			/***
+			 Function called when the Noteskin is created. Called only once.
+			 @callback Init
+			 */ 
 			if (NoteskinLua.CallFunction("Init"))
 				NoteskinLua.RunFunction();
 		}
@@ -63,30 +68,27 @@ namespace Game {
 			// we need a clean state if we're being called from a different thread (to destroy objects properly)
 			DefineSpriteInterface(&NoteskinLua);
 
-			luabridge::getGlobalNamespace(NoteskinLua.GetState())
-				.beginClass<Noteskin>("NoteskinObject") // Not constructed, so name is irrelevant
-				.addFunction("Render", &Noteskin::LuaRender)
-				.addData("BarlineOffset", &Noteskin::BarlineOffset)
-				.addData("BarlineStartX", &Noteskin::BarlineStartX)
-				.addData("BarlineWidth", &Noteskin::BarlineWidth)
-				.addData("BarlineEnabled", &Noteskin::BarlineEnabled)
-				.addData("DecreaseHoldSizeWhenBeingHit", &Noteskin::DecreaseHoldSizeWhenBeingHit)
-				.addData("DanglingHeads", &Noteskin::DanglingHeads)
-				.addData("NoteScreenSize", &Noteskin::NoteScreenSize)
-				.addData("JudgmentY", &Noteskin::JudgmentY)
-				.addProperty("Channels", &Noteskin::GetChannels)
-				.endClass();
+			AddScriptClasses();
 
-			//luabridge::push(NoteskinLua.GetState(), this);
+			/// Instance of @{NoteskinObject} provided by the engine. 
+			// @autoinstance Notes
 			luabridge::setGlobal(NoteskinLua.GetState(), this, "Notes");
 
 			Parent->SetupLua(&NoteskinLua);
+			/// Instance of @{Player} provided by the engine. Owner of the current noteskin script.
+			// @autoinstance Player 
 			luabridge::setGlobal(NoteskinLua.GetState(), Parent, "Player");
 			NoteskinLua.RunScript(GameState::GetInstance().GetSkinFile("noteskin.lua"));
 		}
 
 		void Noteskin::Update(float Delta, float CurrentBeat)
 		{
+			/***
+			 Update callback. Called every frame.
+			 @callback Update
+			 @param delta Time since last frame.
+			 @param beat Current song beat.
+			 */  
 			if (NoteskinLua.CallFunction("Update", 2))
 			{
 				NoteskinLua.PushArgument(Delta);
@@ -98,7 +100,14 @@ namespace Game {
 		void Noteskin::DrawNote(TrackNote& T, int Lane, float Location)
 		{
 			const char* CallFunc = nullptr;
-
+			/***
+			 Draw a normal note.
+			 @callback DrawNormal
+			 @param lane Lane of the note.
+			 @param loc_y Nominal Y position of the note.
+			 @param fraction Measure subdivision of this note.
+			 @param active_level Always 0 for normal notes.
+			 */ 
 			switch (T.GetDataNoteKind())
 			{
 			case VSRG::ENoteKind::NK_NORMAL:
@@ -161,6 +170,15 @@ namespace Game {
 
 		void Noteskin::DrawHoldHead(TrackNote &T, int Lane, float Location, int ActiveLevel)
 		{
+			/***
+			 Draw a hold head. Falls back to DrawNormal if nonexistent
+			 @callback DrawHoldHead
+			 @param lane Lane of the note.
+			 @param loc_y Nominal Y position of the note.
+			 @param fraction Measure subdivision of this note.
+			 @param active_level 0 if failed, 1 if active, 2 if being hit, 3 if succesfully hit.
+			 */ 
+
 			if (!NoteskinLua.CallFunction("DrawHoldHead", 4))
 				if (!NoteskinLua.CallFunction("DrawNormal", 4))
 					return;
@@ -176,6 +194,14 @@ namespace Game {
 
 		void Noteskin::DrawHoldTail(TrackNote& T, int Lane, float Location, int ActiveLevel)
 		{
+			/***
+			 Draw a hold tail. Falls back to DrawNormal if nonexistent
+			 @callback DrawHoldTail
+			 @param lane Lane of the note.
+			 @param loc_y Nominal Y position of the note.
+			 @param fraction Measure subdivision of this note.
+			 @param active_level 0 if failed, 1 if active, 2 if being hit, 3 if succesfully hit.
+			 */ 
 
 			if (!NoteskinLua.CallFunction("DrawHoldTail", 4))
 				if (!NoteskinLua.CallFunction("DrawNormal", 4))
@@ -207,6 +233,15 @@ namespace Game {
 
 		void Noteskin::DrawHoldBody(int Lane, float Location, float Size, int ActiveLevel)
 		{
+			/***
+			 Draw a hold body.
+			 @callback DrawHoldBody
+			 @param lane Lane of the note.
+			 @param loc_y Nominal Y position of the note.
+			 @param fraction Measure subdivision of this note.
+			 @param active_level 0 if failed, 1 if active, 2 if being hit, 3 if succesfully hit.
+			 */ 
+
 			if (!NoteskinLua.CallFunction("DrawHoldBody", 4))
 				return;
 
@@ -218,6 +253,8 @@ namespace Game {
 			NoteskinLua.RunFunction();
 			CanRender = false;
 		}
+
+		
 	}
 }
 

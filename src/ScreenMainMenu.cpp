@@ -26,6 +26,8 @@ BitmapFont* MainMenuFont = NULL;
 LuaManager* MainMenuLua = NULL;
 TruetypeFont* TTFO = NULL;
 
+
+/// @themescript mainmenu.lua
 ScreenMainMenu::ScreenMainMenu() : Screen("ScreenMainMenu", false)
 {
     TNext = nullptr;
@@ -36,6 +38,8 @@ void ScreenMainMenu::Init()
     Running = true;
 
     MainMenuLua = Animations->GetEnv();
+	/// Global gamestate instance.
+	// @autoinstance Global
 	GameState::GetInstance().InitializeLua(MainMenuLua->GetState());
 
     Animations->Initialize(GameState::GetInstance().GetSkinFile("mainmenu.lua"));

@@ -347,9 +347,9 @@ namespace osb {
 		auto colorization_evt = GetEvent(Time, evColorize);
 		if (ValidateEventIterator(colorization_evt, evColorize)) {
 			auto lerp = colorization_evt->LerpValue(Time);
-			mSprite->Red = lerp.r;
-			mSprite->Green = lerp.g;
-			mSprite->Blue = lerp.b;
+			mSprite->Color.Red = lerp.r;
+			mSprite->Color.Green = lerp.g;
+			mSprite->Color.Blue = lerp.b;
 		}
 
 		// The effects after this don't set values before they begin. (Parameter)

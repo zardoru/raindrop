@@ -13,13 +13,13 @@
 #include "Noteskin.h"
 #include "GameState.h"
 
-#include "LuaBridge.h"
-
-
+/// @themescript screengameplay7k.lua
 namespace Game {
 	namespace VSRG {
 		void ScreenGameplay::Activate()
 		{
+			/// Called once the song time starts advancing.
+			// @callback OnActivateEvent
 			if (!Active)
 				Animations->DoEvent("OnActivateEvent");
 
@@ -50,28 +50,24 @@ namespace Game {
 		{
 			auto L = Animations->GetEnv();
 			luabridge::push(L->GetState(), static_cast<Transformation*>(BGA.get()));
+			/// The BGA's transform.
+			// @autoinstance Background
 			lua_setglobal(L->GetState(), "Background");
 		}
 
 		// Called before the script is executed at all.
 		void ScreenGameplay::SetupLua(LuaManager* Env)
 		{
+			/// Global Gamestate
+			// @autoinstance Global
 			GameState::GetInstance().InitializeLua(Env->GetState());
 			Game::VSRG::PlayerContext::SetupLua(Env);
 
-#define f(n, x) addProperty(n, &ScreenGameplay::x)
-			luabridge::getGlobalNamespace(Env->GetState())
-				.beginClass <ScreenGameplay>("ScreenGameplay7K")
-				.f("Active", IsActive)
-				.f("Song", GetSong)
-				.addFunction("GetPlayer", &ScreenGameplay::GetPlayerContext)
-				.addFunction("SetPlayerClip", &ScreenGameplay::SetPlayerClip)
-				.addFunction("DisablePlayerClip", &ScreenGameplay::DisablePlayerClip)
-				// All of these depend on the player.
-
-				.endClass();
+			AddScriptClasses(Env);
 
 			luabridge::push(Env->GetState(), this);
+			/// ScreenGameplay instance.
+			// @autoinstance Game
 			lua_setglobal(Env->GetState(), "Game");
 		}
 
@@ -200,7 +196,11 @@ namespace Game {
 							if (s)
 								s->Stop();
 
-					// Run stage failed animation.
+					// run failure event
+
+					/// If the player fails, this is called. 
+					// Return time to wait before transitioning out of this screen. Clamped to [0,30]
+					// @callback OnFailureEvent
 					Animations->DoEvent("OnFailureEvent", 1);
 					Time.Failure = Clamp(Animations->GetEnv()->GetFunctionResultF(), 0.0f, 30.0f);
 				}
@@ -225,8 +225,12 @@ namespace Game {
 					GameState::GetInstance().SubmitScore(0);
 
 					SongPassTriggered = true; // Reached the end!
+
+					/// If the player succeeds, this is called.
+					// Returns time to exit screen. Clamped [0,30]
+					// @callback OnSongFinishedEvent
 					Animations->DoEvent("OnSongFinishedEvent", 1);
-					Time.Success = Clamp(Animations->GetEnv()->GetFunctionResultF(), 3.0f, 30.0f);
+					Time.Success = Clamp(Animations->GetEnv()->GetFunctionResultF(), 1.0f, 30.0f);
 				}
 			}
 
@@ -310,7 +314,7 @@ namespace Game {
 			else
 			{
 				/* Update music. */
-				Time.InterpolatedStream += Delta;
+				Time.InterpolatedStream += Delta * GetPlayerContext(0)->GetRate();
 			}
 
 			// Update for the next delta.
@@ -323,6 +327,8 @@ namespace Game {
 				SongDelta = Music->GetPlayedTimeDAC() - Time.OldStream;
 			else
 				SongDelta = (CurrAudioTime - Time.AudioOld);
+
+			SongDelta *= GetPlayerContext(0)->GetRate();
 
 
 			double deltaErr = abs(Time.Stream - Time.InterpolatedStream);
@@ -349,7 +355,14 @@ namespace Game {
 
 		void ScreenGameplay::OnPlayerHit(ScoreKeeperJudgment judgment, double dt, uint32_t lane, bool hold, bool release, int pn)
 		{
-
+			/// When a note is hit, this is called.
+			// @callback HitEvent
+			// @param judgment Judgment value.
+			// @param dev Deviation from the note in ms.
+			// @param lane 1-index based lane.
+			// @param hold Whether the note was a hold.
+			// @param release Whether it was a hold release.
+			// @param pn Player number. Identifies who hit the note.
 			if (Animations->GetEnv()->CallFunction("HitEvent", 6))
 			{
 				Animations->GetEnv()->PushArgument(judgment);
@@ -363,7 +376,12 @@ namespace Game {
 
 			auto PlayerScoreKeeper = Players[pn]->GetScoreKeeper();
 			if (PlayerScoreKeeper->getMaxNotes() == PlayerScoreKeeper->getScore(ST_NOTES_HIT))
+			{
+				/// Once a player achieves a full combo, this is called. This is called inmediately after HitEvent
+				// so the script can keep track of player number who last hit.
+				// @callback OnFullComboEvent
 				Animations->DoEvent("OnFullComboEvent");
+			}
 
 		}
 
@@ -371,6 +389,12 @@ namespace Game {
 		{
 			BGA->OnMiss();
 
+			/// Whenever a player fails, this is called.
+			// @callback MissEvent
+			// @param dev Deviation from the note in ms.
+			// @param lane 1-index based lane.
+			// @param hold Whether the note was a hold.
+			// @param pn Player number identifying who missed the note.
 			if (Animations->GetEnv()->CallFunction("MissEvent", 4))
 			{
 				Animations->GetEnv()->PushArgument(dt);
@@ -383,6 +407,11 @@ namespace Game {
 
 		void ScreenGameplay::OnPlayerGearKeyEvent(uint32_t lane, bool keydown, int pn)
 		{
+			/// Called when a gear button was pressed or released
+			// @callback GearKeyEvent
+			// @param lane 1-index based lane.
+			// @param keydown Whether the key is down or up.
+			// @param pn Player number identifying who performed this event.
 			if (Animations->GetEnv()->CallFunction("GearKeyEvent", 3))
 			{
 				Animations->GetEnv()->PushArgument((int)lane + 1);

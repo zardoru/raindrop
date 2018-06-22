@@ -27,7 +27,7 @@ void Sprite::Construct(bool doInitTexture)
 
     BlendingMode = BLEND_ALPHA;
 
-    Red = Blue = Green = 1.0;
+    Color.Red = Color.Blue = Color.Green = 1.0;
     Alpha = 1.0;
 
     Centered = false;

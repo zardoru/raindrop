@@ -79,9 +79,6 @@
     <ClCompile Include="..\src\AudioSourceOJM.cpp">
       <Filter>Source Files\backend\audio</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\LuaAnimationInterface.cpp">
-      <Filter>Source Files\lua</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\ScoreKeeper7K_Lua.cpp">
       <Filter>Source Files\lua</Filter>
     </ClCompile>
@@ -264,6 +261,30 @@
     </ClCompile>
     <ClCompile Include="..\tests\MechanicsTests.cpp">
       <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\NoteskinLua.cpp">
+      <Filter>Source Files\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ScreenGameplay7KLua.cpp">
+      <Filter>Source Files\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\TransformationLua.cpp">
+      <Filter>Source Files\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ShaderLua.cpp">
+      <Filter>Source Files\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SceneEnvironmentLua.cpp">
+      <Filter>Source Files\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\StringsLua.cpp">
+      <Filter>Source Files\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UtilityLua.cpp">
+      <Filter>Source Files\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\RaindropLua.cpp">
+      <Filter>Source Files\lua</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -635,6 +656,9 @@
       <Filter>Additional Files</Filter>
     </None>
     <None Include="packages.config" />
+    <None Include="..\src\Object2DLua.cpp">
+      <Filter>Source Files\lua</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="app.rc" />

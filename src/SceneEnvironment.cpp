@@ -12,6 +12,11 @@
 #include "RaindropRocketInterface.h"
 #include "TruetypeFont.h"
 
+/// All the other scenes derive from this.
+// No @{Object2D} should not be created on the global scope. Only on the callbacks given by the SceneBase.
+// Any custom screens will only have what is provided by this module.
+/// @themescript SceneBase
+
 void CreateLuaInterface(LuaManager *AnimLua);
 
 std::map<int, Rocket::Core::Input::KeyIdentifier> key_identifier_map;
@@ -181,6 +186,10 @@ void SceneEnvironment::RunIntro(float Fraction, float Delta)
         return;
     }
 
+	/// Update the screen's intro state
+	// @callback UpdateIntro
+	// @param fraction The percentage of the intro that is done.
+	// @param delta The time passed since last frame.
     if (Lua->CallFunction("UpdateIntro", 2))
     {
         Lua->PushArgument(Fraction);
@@ -197,7 +206,10 @@ void SceneEnvironment::RunExit(float Fraction, float Delta)
         mFrameSkip = false;
         return;
     }
-
+	/// Update the screen's transition into the next screen.
+	// @callback UpdateExit
+	// @param fraction The percentage of the intro that is done.
+	// @param delta The time passed since last frame.
     if (Lua->CallFunction("UpdateExit", 2))
     {
         Lua->PushArgument(Fraction);
@@ -210,11 +222,15 @@ void SceneEnvironment::RunExit(float Fraction, float Delta)
 
 float SceneEnvironment::GetIntroDuration()
 {
+	/// How long the intro section lasts.
+	// @modvar IntroDuration
     return std::max(Lua->GetGlobalD("IntroDuration"), 0.0);
 }
 
 float SceneEnvironment::GetExitDuration()
 {
+	/// How long the outro section lasts.
+	// @modvar ExitDuration
     return std::max(Lua->GetGlobalD("ExitDuration"), 0.0);
 }
 
@@ -237,6 +253,8 @@ SceneEnvironment::SceneEnvironment(const char* ScreenName, bool initUI)
     Lua = std::make_shared<LuaManager>();
     Lua->RegisterStruct("GOMAN", this);
 
+	/// Automatic instance of SceneEnvironment for script use.
+	// @autoinstance Engine
     CreateLuaInterface(Lua.get());
     Images = std::make_shared<ImageList>(true);
     mFrameSkip = true;
@@ -292,6 +310,8 @@ void SceneEnvironment::RunUIScript(std::string Filename)
 
 SceneEnvironment::~SceneEnvironment()
 {
+	/// Called when the scene environment will be destroyed.
+	// @callback Cleanup
     if (Lua->CallFunction("Cleanup"))
     {
         Lua->RunFunction();
@@ -382,6 +402,8 @@ void SceneEnvironment::Initialize(std::filesystem::path Filename, bool RunScript
     if (RunScript)
         Lua->RunScript(Filename);
 
+	/// This function is called at the initialization phase of the screen.
+	// @callback Init
     if (Lua->CallFunction("Init"))
         Lua->RunFunction();
 
@@ -438,6 +460,10 @@ void SceneEnvironment::RemoveManagedObject(Drawable2D *Obj)
 
 void SceneEnvironment::HandleScrollInput(double x_off, double y_off)
 {
+	/// Called when the mouse scrolls.
+	// @callback ScrollEvent
+	// @param xoff Change in X scroll.
+	// @param yoff Change in Y scroll.
     if (Lua->CallFunction("ScrollEvent", 2))
     {
         Lua->PushArgument(x_off);
@@ -551,6 +577,9 @@ void SceneEnvironment::UpdateTargets(double TimeDelta)
         i++;
     }
 
+	/// Main update loop. Called every frame.
+	// @callback Update
+	// @param delta Change in time since last frame.
     if (Lua->CallFunction("Update", 1))
     {
         Lua->PushArgument(TimeDelta);
@@ -639,6 +668,11 @@ LuaManager *SceneEnvironment::GetEnv()
 
 bool SceneEnvironment::HandleInput(int32_t key, KeyEventType code, bool isMouseInput)
 {
+	/// Called when a key is pressed or released.
+	// @callback KeyEvent
+	// @param key The key code.
+	// @param type The type of event. 1 is press, 2 is release.
+	// @param isMouseInput Whether this is a mouse button press.
     if (Lua->CallFunction("KeyEvent", 3))
     {
         Lua->PushArgument(key);

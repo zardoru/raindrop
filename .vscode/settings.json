@@ -5,8 +5,8 @@
         "**/.hg": true,
         "**/CVS": true,
         "**/.DS_Store": true,
-        "**.dll": true,
-        "**.db": true,
+        "**/*.dll": true,
+        "**/*.db": true,
         "**/xcode":true,
         "**/release":true,
         "**/songs":true,
@@ -31,6 +31,7 @@
         "vector": "cpp",
         "xstring": "cpp",
         "xiosbase": "cpp",
-        "xlocale": "cpp"
+        "xlocale": "cpp",
+        "filesystem": "cpp"
     }
 }

@@ -402,6 +402,7 @@ namespace Game {
 				// LifebarType = LT_STEPMANIA;
 			}
 
+			PlayerScoreKeeper->applyRateScale(Rate);
 			return UsedTimingType;
 		}
 		void PlayscreenParameters::SetupGauge(std::shared_ptr<ChartInfo> TimingInfo, ScoreKeeper* PlayerScoreKeeper)

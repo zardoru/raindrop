@@ -57,7 +57,8 @@ public:
 
     // color and other transformations
     float Alpha;
-    float Red, Blue, Green;
+	ColorRGB Color;
+    // float Red, Blue, Green;
 
     // Only valid if lighten is enabled.
     float LightenFactor;

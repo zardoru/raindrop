@@ -73,6 +73,8 @@ namespace Game {
 			bool LoadBGA() const;
 			bool ProcessSong();
 
+			void AddScriptClasses(LuaManager* Env);
+
 
 			void AssignMeasure(uint32_t Measure);
 			void RunAutoEvents();

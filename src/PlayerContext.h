@@ -176,6 +176,8 @@ namespace Game {
 			// in seconds - key event judge time displacement
 			double GetJudgeOffset() const;
 
+			double GetRate() const;
+
 			// Whether the player has actually failed or not
 			bool HasFailed() const;
 

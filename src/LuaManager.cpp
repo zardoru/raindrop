@@ -32,8 +32,15 @@ int DoGameScript(lua_State *S)
     return 1;
 }
 
+int LuaReadOnlyError(lua_State *S)
+{
+	luaL_error(S, "tried to write to read-only table");
+	return 0;
+}
+
 LuaManager::LuaManager()
 {
+	WeOwnThisState = true;
     State = luaL_newstate();
     if (State)
     {
@@ -50,9 +57,15 @@ LuaManager::LuaManager()
 	func_err = false;
 }
 
+LuaManager::LuaManager(lua_State *L)
+{
+	WeOwnThisState = false;
+	State = L;
+}
+
 LuaManager::~LuaManager()
 {
-    if (State)
+    if (State && WeOwnThisState)
         lua_close(State);
 }
 
@@ -259,6 +272,12 @@ void LuaManager::SetFieldI(int index, int Value)
     lua_rawseti(State, -2, index);
 }
 
+void LuaManager::SetFieldI(std::string name, int Value)
+{
+	lua_pushinteger(State, Value);
+	lua_setfield(State, -2, name.c_str());
+}
+
 void LuaManager::SetFieldS(int index, std::string Value)
 {
     lua_pushstring(State, Value.c_str());
@@ -275,6 +294,12 @@ void LuaManager::SetFieldD(int index, double Value)
 {
     lua_pushnumber(State, Value);
     lua_rawseti(State, -2, index);
+}
+
+void LuaManager::SetFieldD(std::string name, double Value)
+{
+	lua_pushnumber(State, Value);
+	lua_setfield(State, -2, name.c_str());
 }
 
 int LuaManager::GetFieldI(std::string Key, int Default)
@@ -337,6 +362,17 @@ void LuaManager::Pop()
 void LuaManager::FinalizeArray(std::string ArrayName)
 {
     lua_setglobal(State, ArrayName.c_str());
+}
+
+void LuaManager::FinalizeEnum(std::string EnumName)
+{
+	// create read-only metatable
+	NewArray();
+	lua_pushcfunction(State, LuaReadOnlyError);
+	lua_setfield(State, -2, "__newindex");
+	lua_setmetatable(State, -2);
+	
+	lua_setglobal(State, EnumName.c_str());
 }
 
 void LuaManager::AppendPath(std::string Path)

@@ -4,6 +4,7 @@ int LuaPanic(lua_State* State);
 
 class LuaManager
 {
+	bool WeOwnThisState;
     lua_State* State;
     void GetGlobal(std::string VarName);
 
@@ -13,6 +14,8 @@ class LuaManager
 public:
 
     LuaManager();
+	LuaManager(lua_State* state);
+
     ~LuaManager();
 
     bool IsValid(); // returns true if instance is valid, as in we were able to open a lua state.
@@ -75,7 +78,9 @@ public:
     bool UseArray(std::string VariableName); // returns true if the array exists
 
     void SetFieldI(int index, int Value);
+	void SetFieldI(std::string name, int Value);
     void SetFieldD(int index, double Value);
+	void SetFieldD(std::string name, double Value);
     void SetFieldS(int index, std::string Value);
     void SetFieldS(std::string name, std::string Value);
 
@@ -92,6 +97,7 @@ public:
     std::string NextGString();
 
     void FinalizeArray(std::string ArrayName); // saves the new array with this name
+	void FinalizeEnum(std::string EnumName);
     void AppendPath(std::string Path);
     // TODO: Table variables
 };

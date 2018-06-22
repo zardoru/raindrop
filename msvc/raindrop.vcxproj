@@ -214,6 +214,7 @@
     <ClCompile Include="..\src\NoteLoaderBMSON.cpp" />
     <ClCompile Include="..\src\NoteLoaderOJN.cpp" />
     <ClCompile Include="..\src\Noteskin.cpp" />
+    <ClCompile Include="..\src\NoteskinLua.cpp" />
     <ClCompile Include="..\src\NoteTransformations.cpp" />
     <ClCompile Include="..\src\NPSGraph.cpp" />
     <ClCompile Include="..\src\OffsetDatabase.cpp" />
@@ -230,19 +231,23 @@
     <ClCompile Include="..\src\GameWindow.cpp" />
     <ClCompile Include="..\src\Replay7K.cpp" />
     <ClCompile Include="..\src\RowifiedDifficulty7K.cpp" />
+    <ClCompile Include="..\src\SceneEnvironmentLua.cpp" />
     <ClCompile Include="..\src\ScoreDatabase.cpp" />
     <ClCompile Include="..\src\ScreenCustom.cpp" />
+    <ClCompile Include="..\src\ScreenGameplay7KLua.cpp" />
     <ClCompile Include="..\src\ScreenVideoTest.cpp" />
     <ClCompile Include="..\src\SDF.cpp" />
     <ClCompile Include="..\src\Shader.cpp" />
+    <ClCompile Include="..\src\ShaderLua.cpp" />
     <ClCompile Include="..\src\Sprite.cpp" />
     <ClCompile Include="..\src\RaindropRocketInterface.cpp" />
     <ClCompile Include="..\src\SceneEnvironment.cpp" />
+    <ClCompile Include="..\src\StringsLua.cpp" />
     <ClCompile Include="..\src\SwRescale.cpp" />
     <ClCompile Include="..\src\Texture.cpp" />
     <ClCompile Include="..\src\ImageList.cpp" />
     <ClCompile Include="..\src\ImageLoader.cpp" />
-    <ClCompile Include="..\src\LuaAnimationInterface.cpp" />
+    <ClCompile Include="..\src\RaindropLua.cpp" />
     <ClCompile Include="..\src\LuaManager.cpp" />
     <ClCompile Include="..\src\NoteLoaderBMS.cpp" />
     <ClCompile Include="..\src\NoteLoaderFTB.cpp" />
@@ -256,7 +261,9 @@
     <ClCompile Include="..\src\Screen.cpp" />
     <ClCompile Include="..\src\ScreenEvaluation7K.cpp" />
     <ClCompile Include="..\src\ScreenGameplay7K.cpp" />
+    <ClCompile Include="..\src\TransformationLua.cpp" />
     <ClCompile Include="..\src\TTFCache.cpp" />
+    <ClCompile Include="..\src\UtilityLua.cpp" />
     <ClCompile Include="..\src\VideoPlayback.cpp" />
     <ClCompile Include="..\src\VSRGMechanics.cpp" />
     <ClCompile Include="..\src\ScreenGameplay7K_Setup.cpp" />
@@ -373,6 +380,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Tests|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </None>
+    <ClCompile Include="..\src\Object2DLua.cpp" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

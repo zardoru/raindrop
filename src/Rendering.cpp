@@ -411,9 +411,9 @@ bool Sprite::RenderMinimalSetup()
     // Set the color.
 	auto lf = 1.0 + LightenFactor;
 	if (!Lighten)
-		Renderer::DefaultShader::SetColor(Red, Green, Blue, Alpha);
+		Renderer::DefaultShader::SetColor(Color.Red, Color.Green, Color.Blue, Alpha);
 	else
-		Renderer::DefaultShader::SetColor(Red * lf, Green * lf, Blue * lf, Alpha);
+		Renderer::DefaultShader::SetColor(Color.Red * lf, Color.Green * lf, Color.Blue * lf, Alpha);
 
     Renderer::DoQuadDraw();
 
@@ -435,9 +435,9 @@ void Sprite::Render()
 		Renderer::SetShaderParameters(ColorInvert, AffectedByLightning, Centered, false, BlackToTransparent);
 		auto lf = 1.0 + LightenFactor;
 		if (!Lighten)
-			Renderer::DefaultShader::SetColor(Red, Green, Blue, Alpha);
+			Renderer::DefaultShader::SetColor(Color.Red, Color.Green, Color.Blue, Alpha);
 		else
-			Renderer::DefaultShader::SetColor(Red * lf, Green * lf, Blue * lf, Alpha);
+			Renderer::DefaultShader::SetColor(Color.Red * lf, Color.Green * lf, Color.Blue * lf, Alpha);
 		
 		Renderer::SetCurrentObjectMatrix(mat);
 	}
@@ -461,7 +461,11 @@ void Sprite::Render()
 
 		sh = mShader->GetUniform("color");
 		if (sh != -1)
-			Renderer::Shader::SetUniform(sh, l2gamma(Red), l2gamma(Green), l2gamma(Blue), Alpha);
+			Renderer::Shader::SetUniform(sh, 
+				l2gamma(Color.Red), 
+				l2gamma(Color.Green), 
+				l2gamma(Color.Blue), 
+				Alpha);
 	}
 
     

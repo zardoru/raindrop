@@ -599,6 +599,17 @@ namespace Game {
 			return std::make_pair(ss.str(), pacemaker);
 		}
 
+		void ScoreKeeper::applyRateScale(double rate)
+		{
+			for (int i = 0; i <= 6; i++) {
+				judgment_time[i] *= rate;
+			}
+
+			early_miss_threshold *= rate;
+			early_hit_threshold *= rate;
+			late_miss_threshold *= rate;
+		}
+
 		void ScoreKeeper::update_bms(ScoreKeeperJudgment judgment)
 		{
 			if ((!use_w0_for_ex2 && judgment <= SKJ_W1) || (use_w0_for_ex2 && judgment == SKJ_W0))

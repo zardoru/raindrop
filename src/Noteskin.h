@@ -29,7 +29,7 @@ namespace Game {
 			bool DecreaseHoldSizeWhenBeingHit;
 			PlayerContext* Parent;
 			void LuaRender(Sprite*);
-
+		    void AddScriptClasses();
 		public:
 			Noteskin(PlayerContext *parent);
 			void Validate();

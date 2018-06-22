@@ -56,6 +56,8 @@ namespace Game
         static GameState &GetInstance();
         void Initialize();
 
+		/* Defines Difficulty/Song/Playscreen/Gamestate
+		 and defines Global as the Gamestate singleton */
         void InitializeLua(lua_State *L);
 
         std::string GetDirectoryPrefix();

@@ -73,6 +73,8 @@ namespace Game {
 			std::pair<std::string, int> getAutoRankPacemaker();
 			std::map<PacemakerType, std::string> pacemaker_texts;
 
+			void applyRateScale(double rate);
+
 
 			int getRank() const; // returns a number from -9 to 9
 			int getBMRank() const; // returns PMT_xxx according to EXScore Rank
