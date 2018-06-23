@@ -152,7 +152,14 @@ namespace Game {
 			for (auto i = 0; i < sizeof(judgment_amt) / sizeof(double); i++)
 				judgment_amt[i] = 0;
 
+			// account for extremely low judge_window_scale
+			judgment_time[SKJ_W0] = std::max(judgment_time[SKJ_W0], 3.2);
+			judgment_time[SKJ_W1] = std::max(judgment_time[SKJ_W1], 8.0);
 			
+			if (judgment_time[SKJ_W4] < 250.0) {
+				auto window = std::max(judgment_time[SKJ_W1], judgment_time[SKJ_W4]);
+				early_hit_threshold = late_miss_threshold = std::min(window, 250.0);
+			}
 
 			for (auto i = -127; i < 128; ++i)
 				histogram[i + 127] = 0;
