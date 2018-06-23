@@ -302,7 +302,7 @@ namespace Game {
 
 		void ScoreKeeper::setJudgeScale(double scale)
 		{
-			judge_window_scale = scale;
+			judge_window_scale = scale * 100.0 / 72.0;
 			setBMSTimingWindows();
 		}
 	}
