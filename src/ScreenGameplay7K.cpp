@@ -324,7 +324,7 @@ namespace Game {
 			double CurrAudioTime = MixerGetTime();
 			double SongDelta = 0;
 			if (Music && Music->IsPlaying())
-				SongDelta = Music->GetPlayedTimeDAC() - Time.OldStream;
+				SongDelta = Music->GetStreamedTime() - Time.OldStream;
 			else
 				SongDelta = (CurrAudioTime - Time.AudioOld);
 
@@ -459,7 +459,7 @@ namespace Game {
 
 			RunAutoEvents();
 			for (auto &p : Players)
-				p->Update(Time.InterpolatedStream);
+				p->Update(Time.Stream);
 
 			Animations->UpdateTargets(Delta);
 			BGA->Update(Delta);

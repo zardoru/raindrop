@@ -17,8 +17,10 @@ DisableMP3 = ARGUMENTS.get('nomp3', 0)
 env.Append(CPPDEFINES=['LINUX'], CXXFLAGS="-std=c++14")
 
 if int(IsDebug):
+	print "Compiling debug mode..."
 	env.Append(CCFLAGS=["-g"])
 else:
+	print "Compiling release mode..."
 	env.Append(CCFLAGS=["-O2", "-DNDEBUG", "-fpermissive"])
 
 if not int(DisableMP3):
@@ -67,5 +69,6 @@ env.Append(LIBS=[
 	'stdc++fs',
 	'swscale',
 	'vorbis',
-	'vorbisfile'
+	'vorbisfile',
+	'z'
 ]);

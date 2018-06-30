@@ -438,7 +438,7 @@ bool GameWindow::SetupWindow()
 	glEnable(GL_FRAMEBUFFER_SRGB);
 
     glEnable(GL_ALPHA_TEST);
-	glEnable(GL_POLYGON_SMOOTH);
+	// glEnable(GL_POLYGON_SMOOTH);
     glAlphaFunc(GL_GREATER, 0);
 
     if (VSync)

@@ -188,8 +188,8 @@ void FilenameBind(sqlite3_stmt* stmt, std::wstring &s, int parameter)
 		SQLITE_STATIC
 	);
 #else
-	auto s = Utility::ToU8(s);
-	SC(sqlite3_bind_text(stmt, parameter, s.c_str(), s.length(), SQLITE_TRANSIENT));
+	auto us = Utility::ToU8(s);
+	sqlite3_bind_text(stmt, parameter, us.c_str(), us.length(), SQLITE_TRANSIENT);
 #endif
 }
 
