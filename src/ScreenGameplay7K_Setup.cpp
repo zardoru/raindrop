@@ -376,8 +376,10 @@ namespace Game {
 				for (auto sd : MySong->Difficulties) {
 					auto diff = GameState::GetInstance().GetDifficulty(p->GetPlayerNumber());
 
+					if (!diff) continue;
+
 					// If there's no difficulty assigned, no point in checking.
-					if ( (diff && sd->ID == diff->ID) || !diff ) {
+					if ( sd->ID == diff->ID ) {
 						p->SetPlayableData(sd, TimeError.AudioDrift);
 
 						p->Init();

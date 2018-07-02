@@ -549,10 +549,10 @@ public:
 		double MeasureLen = 4;
 
 		// We already set the value
-		if (Spl.size() > 1 && !IsInherited)
+			Value = -100 / latof(Spl[1].c_str());
+		if (!IsInherited)
 			Value = 60000 / latof(Spl[1].c_str());
 		else
-			Value = -100 / latof(Spl[1].c_str());
 
 		if (Spl.size() > 2)
 			MeasureLen = latof(Spl[2].c_str());

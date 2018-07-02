@@ -249,8 +249,8 @@ namespace Game {
 				}
 				else
 				{
-					pfCenter = Center;
-					Center = pfCenter;
+					// pfCenter = Center;
+					// Center = pfCenter;
 					Hidden.Mode = (Game::VSRG::EHiddenMode)HiddenMode;
 				}
 

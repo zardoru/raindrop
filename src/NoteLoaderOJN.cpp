@@ -358,7 +358,7 @@ bool IsValidOJN(std::fstream &filein, OjnHeader *Head)
         return false;
     }
 
-    if (strcmp(Head->signature, "ojn"))
+    if (strcmp(Head->signature, "ojn") != 0)
     {
         Log::Printf("NoteLoaderOJN: %s is not an ojn file.\n");
         return false;

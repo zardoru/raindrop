@@ -136,7 +136,7 @@ void SetMetadataFromMP3(Song* song)
 			Log::LogPrintf("%s is missing metadata information\n", song->SongFilename.string().c_str());
 		}
 
-		double lenSecs = (source.GetLength()) / source.GetRate();
+		double lenSecs = ((double)source.GetLength()) / source.GetRate();
 		for (auto & diff : song->Difficulties) {
 			diff->Duration = std::min(diff->Duration, lenSecs);
 

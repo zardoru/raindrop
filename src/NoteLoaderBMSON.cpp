@@ -424,12 +424,9 @@ namespace NoteLoaderBMSON
                 // a: TODO: find good criteria to reuse slice
 
                 // b: the slice is different (wav == current_wav is true)
-                if (wav == current_wav)
-                {
-                    auto &slice = Slices.Slices[wav];
-                    slice[sound_index].Start = st;
-                    slice[sound_index].End = et;
-                }
+                auto &slice = Slices.Slices[wav];
+                slice[sound_index].Start = st;
+                slice[sound_index].End = et;
 
                 // add a new object.
                 AddObject(sound_index, note, wav);
@@ -450,11 +447,8 @@ namespace NoteLoaderBMSON
             if (lane < -1) // only for slice purposes?
                 return;
 
-            if (lane >= -1)
-            {
-                Notes[lane][beat].Sound = wav_index;
-                Notes[lane][beat].Length = len;
-            }
+            Notes[lane][beat].Sound = wav_index;
+            Notes[lane][beat].Length = len;            
         }
 
         std::string CleanFilename(std::string nam)

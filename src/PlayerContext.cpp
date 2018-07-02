@@ -681,8 +681,6 @@ namespace Game {
 				End = std::upper_bound(Notes.begin(), Notes.end(), timeHigher, NoteHboundFuncHead);
 			}
 
-			bool notJudged = true;
-
 			Gear.ClosestNoteMS[Lane] = MsDisplayMargin;
 
 			for (auto mp = Start; mp != End; ++mp)
@@ -701,14 +699,12 @@ namespace Game {
 
 				if (MechanicsSet->OnPressLane(Time, &(*m), Lane))
 				{
-					notJudged = false;
 					return; // we judged a note in this lane, so we're done.
 				}
 			}
 
-			if (notJudged)
-				if (Gear.CurrentKeysounds[Lane])
-					PlayKeysound(Gear.CurrentKeysounds[Lane]->GetSound());
+			if (Gear.CurrentKeysounds[Lane])
+				PlayKeysound(Gear.CurrentKeysounds[Lane]->GetSound());
 		}
 
 		bool PlayerContext::HasFailed() const

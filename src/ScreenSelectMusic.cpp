@@ -256,31 +256,28 @@ void ScreenSelectMusic::PlayPreview()
             PreviewStream = nullptr;
         }
 
-        if (!PreviewStream)
-        {
-            auto previewPath = ToPreview->SongDirectory / PreviewFile;
+        auto previewPath = ToPreview->SongDirectory / PreviewFile;
 
-            // If missing, find alternate preview file
-            if (!std::filesystem::exists(previewPath))
-                for (auto i : std::filesystem::directory_iterator(ToPreview->SongDirectory))
-                {
-                    auto extension = i.path().extension();
-                    if (extension == ".mp3" || extension == ".ogg")
-                        previewPath = i.path();
-                }
-
-            // Load preview
-            if (std::filesystem::exists(previewPath)) {
-                PreviewStream = std::make_shared<AudioStream>();
-                if (PreviewStream->Open(previewPath))
-                {
-                    PreviewStream->Play();
-                    PreviewStream->SeekTime(StartTime);
-                    PreviewStream->SetLoop(true);
-                }
+        // If missing, find alternate preview file
+        if (!std::filesystem::exists(previewPath))
+            for (auto i : std::filesystem::directory_iterator(ToPreview->SongDirectory))
+            {
+                auto extension = i.path().extension();
+                if (extension == ".mp3" || extension == ".ogg")
+                    previewPath = i.path();
             }
-        }
-    }
+
+        // Load preview
+		if (std::filesystem::exists(previewPath)) {
+			PreviewStream = std::make_shared<AudioStream>();
+			if (PreviewStream->Open(previewPath))
+			{
+				PreviewStream->Play();
+				PreviewStream->SeekTime(StartTime);
+				PreviewStream->SetLoop(true);
+			}
+		}
+}
     else
     {
         if (PreviewStream)

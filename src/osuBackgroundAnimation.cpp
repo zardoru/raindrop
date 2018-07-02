@@ -795,7 +795,6 @@ osb::SpriteList ReadOSBEvents(std::istream& event_str)
 	auto list = osb::SpriteList();
 	int previous_lead = 100;
 	int loop_lead = -1;
-	osb::BGASprite* previous_background = nullptr;
 	osb::BGASprite* sprite = nullptr;
 	std::shared_ptr<osb::Loop> loop = nullptr;
 
@@ -883,8 +882,6 @@ osb::SpriteList ReadOSBEvents(std::istream& event_str)
 
 				bgsprite.AddEvent(evt);
 
-				previous_background = &bgsprite;
-
 				list.insert(list.begin(), bgsprite);
 				
 				return true;
@@ -908,8 +905,6 @@ osb::SpriteList ReadOSBEvents(std::istream& event_str)
 				evt->SetEndTime(std::numeric_limits<float>::infinity());
 
 				bgsprite.AddEvent(evt);
-
-				previous_background = &bgsprite;
 
 				list.insert(list.end(), bgsprite);
 			}

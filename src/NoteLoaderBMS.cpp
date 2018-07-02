@@ -296,7 +296,7 @@ namespace NoteLoaderBMS{
 			}, CHANNEL_STOPS);
 		}
 
-		void ForChannelRangeInMeasure(const std::function<void(BMSEvent, int)> &fn, int startChannel, BMSMeasureList::iterator &bms_measure)
+		void ForChannelRangeInMeasure(const std::function<void(BMSEvent, int)> &fn, int startChannel, const BMSMeasureList::iterator &bms_measure)
 		{
 			for (int channel = startChannel; channel <= (startChannel + MAX_CHANNELS); channel++)
 			{

@@ -457,7 +457,7 @@ bool LuaManager::CallFunction(const char* Name, int Arguments, int Results)
 		if (isTable) {
 			lua_getglobal(State, Name);
 
-			IsFunc = IsFunc = lua_isfunction(State, -1);
+			IsFunc = lua_isfunction(State, -1);
 			if (IsFunc)
 			{
 				func_input = true;

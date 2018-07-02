@@ -125,9 +125,6 @@ void SongList::AddNamedDirectory(
         }
         else
         {
-            auto tSize = Songs7K.size();
-
-            if (Songs7K.size())
             {
                 std::unique_lock<std::mutex> lock(loadMutex);
 
@@ -141,14 +138,11 @@ void SongList::AddNamedDirectory(
                 Songs7K.clear();
             }
 
-            if (tSize > 0) // There's a song in here.
+            if (!EntryWasPushed)
             {
-                if (!EntryWasPushed)
-                {
-                    std::unique_lock<std::mutex> lock(loadMutex);
-                    mChildren.push_back(NewEntry);
-                    EntryWasPushed = true;
-                }
+                std::unique_lock<std::mutex> lock(loadMutex);
+                mChildren.push_back(NewEntry);
+                EntryWasPushed = true;
             }
         }
     }

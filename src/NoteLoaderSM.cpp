@@ -104,7 +104,7 @@ void LoadNotesSM(Song *Out, Difficulty *Diff, std::vector<std::string> &MeasureT
 {
     /* Hold data */
     int Keys = Diff->Channels;
-    double KeyStartTime[16];
+	double KeyStartTime[16] = { 0 };
     double KeyBeat[16]; // heh
     if (!Keys)
         return;

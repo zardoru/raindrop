@@ -1,6 +1,6 @@
 #pragma once
 
-class InterruptedException : std::exception
+class InterruptedException : public std::exception
 {
 public:
     InterruptedException() : std::exception() {};

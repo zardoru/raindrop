@@ -19,7 +19,7 @@ std::string ConfigFile = "config.ini";
 
 const std::string GlobalNamespace = "Global";
 
-class ConfigurationException : std::exception
+class ConfigurationException : public std::exception
 {
 private:
 	std::string msg;

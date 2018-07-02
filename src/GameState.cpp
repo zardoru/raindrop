@@ -410,7 +410,7 @@ void GameState::SubmitScore(int pn)
 		player->profile.SaveReplay(&song, replay);
 	};
 
-	std::async(submitfunc);
+	std::async(std::launch::async, submitfunc);
 }
 
 bool Game::GameState::IsSongUnlocked(Game::Song * song)

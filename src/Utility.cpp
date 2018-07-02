@@ -73,6 +73,7 @@ namespace Utility
 		wchar_t wcs[MAX_STRING_SIZE];
 		size_t len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), s.length(), wcs, MAX_STRING_SIZE);
 		wcs[len] = 0;
+		return std::wstring(wcs);
 #else
 		return Widen(s);
 #endif
@@ -232,9 +233,9 @@ namespace Utility
     void RemoveFilenameIllegalCharacters(std::string &S, bool removeSlash, bool noAbsolute)
     {
         // size_t len = strlen(fn);
-        if (!noAbsolute)
+        /*if (!noAbsolute)
             ReplaceAll(S, "[<>\\|?*]", "");
-        else
+        else*/
             ReplaceAll(S, "[<>\\|?*]", "");
 
         if (removeSlash)

@@ -753,7 +753,7 @@ VBO::~VBO()
 
     WindowFrame.RemoveVBO(this);
 
-    delete VboData;
+    delete[] VboData;
     VboData = nullptr;
 }
 

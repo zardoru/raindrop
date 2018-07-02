@@ -26,6 +26,7 @@ namespace Game {
 			memset(judgments, 0, sizeof(judgments));
 			hits = misses = 0;
 			offset = judgeoffset = 0;
+			max_combo = 0;
 		}
 
 		// returns true if the score is to be considered 

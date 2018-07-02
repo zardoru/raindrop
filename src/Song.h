@@ -22,7 +22,7 @@ struct TimeBased
 
 	inline bool operator>(const U &rhs)
 	{
-		return Time < rhs;
+		return Time > rhs;
 	}
 	
 	inline bool compareSegment (const U &lhs, const T &rhs)

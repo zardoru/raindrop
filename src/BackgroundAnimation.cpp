@@ -88,7 +88,7 @@ public:
         if (Difficulty->Data->TimingInfo->GetType() == Game::VSRG::TI_BMS)
         {
 			IsBMSON = std::dynamic_pointer_cast<Game::VSRG::BMSChartInfo>(Difficulty->Data->TimingInfo)->IsBMSON;
-            if (!std::dynamic_pointer_cast<Game::VSRG::BMSChartInfo>(Difficulty->Data->TimingInfo)->IsBMSON)
+            if (!IsBMSON)
                 BtoT = true;
         }
         BlackToTransparent = BtoT;

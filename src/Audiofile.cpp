@@ -645,6 +645,7 @@ uint32_t AudioStream::GetRate() const
 
 AudioDataSource::AudioDataSource()
 {
+	mSourceLoop = false;
 }
 
 AudioDataSource::~AudioDataSource()
