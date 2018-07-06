@@ -38,6 +38,7 @@ bld/
 [Oo]bj/
 build/
 
+
 # Visual Studio 2015 cache/options directory
 .vs/
 #.vscode/*
@@ -47,6 +48,16 @@ build/
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
+
+# CMake
+*_cotire.cmake
+cotire/
+CMakeFiles/
+rd-script
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+.sconsign.dblite
 
 # NUNIT
 *.VisualState.xml
@@ -353,3 +364,4 @@ rd.db-journal
 /lib/Any
 /sjis.txt
 profiles
+Songs/

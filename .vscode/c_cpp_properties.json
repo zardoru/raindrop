@@ -34,7 +34,7 @@
                 "/usr/lib/llvm-3.8/lib/clang/3.8.0/include",
                 "/usr/include/c++/5",
                 "/usr/include/x86_64-linux-gnu/c++/5",
-                "${workspaceRoot}/src/",
+                "${workspaceRoot}/rd-include/",
                 "${workspaceRoot}/lib/include/",
                 "${workspaceRoot}/lib/include/portaudio",
                 "${workspaceRoot}/lib/include/libmpg123",
@@ -60,7 +60,7 @@
                     "/usr/include",
                     "/usr/local/include",
                     "${workspaceRoot}",
-                    "${workspaceRoot}/src/"
+                    "${workspaceRoot}/rd-include/"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
