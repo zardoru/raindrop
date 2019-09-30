@@ -1,0 +1,4 @@
+class IRenderContext {
+public:
+    
+};

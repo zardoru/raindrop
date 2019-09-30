@@ -199,7 +199,7 @@ protected:
                         , get_info()
                         , const_cast< png_charp >( _info._icc_name.c_str() )
                         , _info._iccp_compression_type
-                        , const_cast< png_charp >( & (_info._profile.front()) )
+                        , const_cast< png_charp >( reinterpret_cast<const png_charp> (& (_info._profile.front()) ) )
                         , _info._profile_length
                         );
 #endif

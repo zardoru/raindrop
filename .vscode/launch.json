@@ -1,8 +1,9 @@
 {
         "version": "0.2.0",
         "configurations": [
+
             {
-                "name": "(Windows) Test Screen",
+                "name": "(Win32Dbg) Test Screen",
                 "type": "cppvsdbg",
                 "request": "launch",
                 "program": "${workspaceRoot}/msvc/Debug/raindrop.exe",
@@ -13,13 +14,46 @@
                 "externalConsole": false
             },
             {
-                "name": "(Windows) Attach",
+                "name": "(Win32Dbg) Attach",
                 "type": "cppvsdbg",
                 "request": "attach",
                 "processId": "${command:pickProcess}"
             },
             {
-                "name": "(Windows) Run Test osu file - Autoplay (debug/test.osu)",
+                "name": "(Win32Dbg) Run Test o2jam w/Autoplay (debug/test.ojn)",
+                "type": "cppvsdbg",
+                "request": "launch",
+                "program": "${workspaceRoot}/msvc/Debug/raindrop.exe",
+                "args": ["-p", "-i", "test.ojn", "--config", "config-debug.ini"],
+                "stopAtEntry": false,
+                "cwd": "${workspaceRoot}/debug",
+                "environment": [],
+                "externalConsole": false
+            },
+            {
+                "name": "(Win32Dbg) Run Test bmson w/Autoplay (debug/test.bmson)",
+                "type": "cppvsdbg",
+                "request": "launch",
+                "program": "${workspaceRoot}/msvc/Debug/raindrop.exe",
+                "args": ["-p", "-i", "test.bmson", "--config", "config-debug.ini"],
+                "stopAtEntry": false,
+                "cwd": "${workspaceRoot}/debug",
+                "environment": [],
+                "externalConsole": true
+            },
+            {
+                "name": "(Win32Rel) Run Test bmson w/Autoplay (debug/test.bmson)",
+                "type": "cppvsdbg",
+                "request": "launch",
+                "program": "${workspaceRoot}/msvc/Release/raindrop.exe",
+                "args": ["-p", "-i", "test.bmson", "--config", "config-debug.ini"],
+                "stopAtEntry": false,
+                "cwd": "${workspaceRoot}/debug",
+                "environment": [],
+                "externalConsole": true
+            },
+            {
+                "name": "(Win32Dbg) Run Test osu w/Autoplay (debug/test.osu)",
                 "type": "cppvsdbg",
                 "request": "launch",
                 "program": "${workspaceRoot}/msvc/Debug/raindrop.exe",
@@ -30,7 +64,7 @@
                 "externalConsole": false
             },
             {
-                "name": "(Windows) Run Test BMS file - Autoplay (debug/test.bms)",
+                "name": "(Win32Dbg) Run Test BMS w/Autoplay (debug/test.bms)",
                 "type": "cppvsdbg",
                 "request": "launch",
                 "program": "${workspaceRoot}/msvc/Debug/raindrop.exe",
@@ -41,7 +75,7 @@
                 "externalConsole": false
             },
             {
-                "name": "(Windows) Run Test BMS file (debug/test.bms)",
+                "name": "(Win32Dbg) Run Test BMS (debug/test.bms)",
                 "type": "cppvsdbg",
                 "request": "launch",
                 "program": "${workspaceRoot}/msvc/Debug/raindrop.exe",
@@ -52,7 +86,7 @@
                 "externalConsole": false
             },
             {
-                "name": "(Windows) Run Tests",
+                "name": "(Win32Dbg) Run Tests",
                 "type": "cppvsdbg",
                 "request": "launch",
                 "program": "${workspaceRoot}/msvc/Debug/raindrop.exe",
@@ -63,7 +97,7 @@
                 "externalConsole": false
             },
             {
-                "name": "(Windows) Debug Launch",
+                "name": "(Win32Dbg) Debug Launch",
                 "type": "cppvsdbg",
                 "request": "launch",
                 "program": "${workspaceRoot}/msvc/Debug/raindrop.exe",

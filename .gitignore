@@ -13,6 +13,7 @@
 *.userosscache
 *.sln.docstates
 .vscode/BROWSE.*
+doc
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -22,17 +23,21 @@
 *.bms
 acctest
 songs
+bugdex
 
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
+msvc/[Tt]ests/
 x64/
 x86/
 bld/
 [Bb]in/
 [Oo]bj/
+build/
+
 
 # Visual Studio 2015 cache/options directory
 .vs/
@@ -43,6 +48,16 @@ bld/
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
+
+# CMake
+*_cotire.cmake
+cotire/
+CMakeFiles/
+rd-script
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+.sconsign.dblite
 
 # NUNIT
 *.VisualState.xml
@@ -348,3 +363,5 @@ rd.db
 rd.db-journal
 /lib/Any
 /sjis.txt
+profiles
+Songs/

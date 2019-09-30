@@ -90,9 +90,9 @@ Header only libraries require nothing more to be used.
 
 Building on Windows
 =====
-Though you can compile them yourself, a full collection of pre-compiled libs can is available [here](https://www.dropbox.com/s/alkxtb2tozllaap/rdlib-09042017.7z?dl=0)
+Though you can compile them yourself, a full collection of pre-compiled libs can is available [here](https://www.dropbox.com/s/ck1jbxq5dfpz8h5/rdlib-18062018.7z?dl=0)
 If you're using Visual Studio, simply extracting these to the 'lib' directory will allow automatic linking.
-The solution will attempt to grab boost from NuGet first time, though it can simple be added manually if desired.
+The solution will attempt to grab boost from NuGet first time, though it can be added manually if desired.
 
 
 Building on Linux
@@ -139,3 +139,7 @@ To compile raindrop, run:
 ```
 $ scons
 ```
+
+Building API documentation
+=====
+The API documentation of raindrop is built using LDoc. Once you install it, you can generate the API docs by running  ```ldoc .```

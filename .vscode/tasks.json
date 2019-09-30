@@ -4,7 +4,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "taskName": "Build Debug",
+            "label": "(Windows) Build Debug",
             "type": "process",
             "command": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\MSBuild\\15.0\\Bin\\msbuild.exe",
             "args": [
@@ -23,7 +23,7 @@
             "problemMatcher": "$msCompile"
         },
         {
-            "taskName": "Build Release",
+            "label": "(Windows) Build Release",
             "type": "process",
             "command": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\MSBuild\\15.0\\Bin\\msbuild.exe",
             "args": [
@@ -39,7 +39,7 @@
             "problemMatcher": "$msCompile"
         },
         {
-            "taskName": "Rebuild Release",
+            "label": "(Windows) Rebuild Release",
             "type": "process",
             "command": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\MSBuild\\15.0\\Bin\\msbuild.exe",
             "args": [
@@ -53,6 +53,38 @@
                 "reveal": "always"
             },
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "(Linux) Build Debug",
+            "type": "process",
+            "command": "scons",
+            "args": [
+                "debug=1"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "(Linux) Build Release",
+            "type": "process",
+            "command": "scons",
+            "args": [
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
         }
     ]
 }
