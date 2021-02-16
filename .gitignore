@@ -53,6 +53,7 @@ build/
 *_cotire.cmake
 cotire/
 CMakeFiles/
+cmake-build-debug/
 rd-script
 CMakeCache.txt
 cmake_install.cmake
@@ -361,7 +362,7 @@ Temporary Items
 log.txt
 rd.db
 rd.db-journal
-/lib/Any
+/lib/
 /sjis.txt
 profiles
 Songs/

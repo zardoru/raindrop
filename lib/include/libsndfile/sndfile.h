@@ -1,5 +1,5 @@
 /*
-** Copyright (C) 1999-2015 Erik de Castro Lopo <erikd@mega-nerd.com>
+** Copyright (C) 1999-2016 Erik de Castro Lopo <erikd@mega-nerd.com>
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU Lesser General Public License as published by
@@ -180,6 +180,10 @@ enum
 	SFC_SET_CLIPPING				= 0x10C0,
 	SFC_GET_CLIPPING				= 0x10C1,
 
+	SFC_GET_CUE_COUNT				= 0x10CD,
+	SFC_GET_CUE						= 0x10CE,
+	SFC_SET_CUE						= 0x10CF,
+
 	SFC_GET_INSTRUMENT				= 0x10D0,
 	SFC_SET_INSTRUMENT				= 0x10D1,
 
@@ -329,7 +333,7 @@ typedef	struct SNDFILE_tag	SNDFILE ;
 ** and the Microsoft compiler.
 */
 
-#if (defined (_MSCVER) || defined (_MSC_VER))
+#if (defined (_MSCVER) || defined (_MSC_VER) && (_MSC_VER < 1310))
 typedef __int64		sf_count_t ;
 #define SF_COUNT_MAX		0x7fffffffffffffffi64
 #else
@@ -400,6 +404,28 @@ typedef struct
 {	sf_count_t	offset ;
 	sf_count_t	length ;
 } SF_EMBED_FILE_INFO ;
+
+/*
+**	Struct used to retrieve cue marker information from a file
+*/
+
+typedef struct
+{	int32_t 	indx ;
+	uint32_t 	position ;
+	int32_t 	fcc_chunk ;
+	int32_t 	chunk_start ;
+	int32_t		block_start ;
+	uint32_t 	sample_offset ;
+	char name [256] ;
+} SF_CUE_POINT ;
+
+#define	SF_CUES_VAR(count) \
+	struct \
+	{	uint32_t cue_count ; \
+		SF_CUE_POINT cue_points [count] ; \
+	}
+
+typedef SF_CUES_VAR (100) SF_CUES ;
 
 /*
 **	Structs used to retrieve music sample information from a file.

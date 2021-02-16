@@ -8,7 +8,7 @@ find_path(SOXR_INCLUDE_DIR soxr.h)
 find_library(SOXR_LIBRARY soxr libsoxr)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(SOXR DEFAULT_MSG 
+find_package_handle_standard_args(Soxr DEFAULT_MSG
     SOXR_LIBRARY SOXR_INCLUDE_DIR)
 
 mark_as_advanced(SOXR_INCLUDE_DIR SOXR_LIBRARY)

@@ -7,10 +7,10 @@ find_path(SNDFILE_INCLUDE_DIR sndfile.h
             HINTS
              /usr/include)
 
-find_library(SNDFILE_LIBRARY NAMES libsndfile sndfile)
+find_library(SNDFILE_LIBRARY NAMES libsndfile sndfile libsndfile-1 sndfile-1)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(SNDFILE DEFAULT_MSG 
+find_package_handle_standard_args(Sndfile DEFAULT_MSG
     SNDFILE_LIBRARY SNDFILE_INCLUDE_DIR)
 
 mark_as_advanced(SNDFILE_INCLUDE_DIR SNDFILE_LIBRARY)

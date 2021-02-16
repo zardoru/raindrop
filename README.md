@@ -3,10 +3,9 @@ raindrop
 
 raindrop is a music game project aimed to be a multi-mode rhythm game for home desktops. It is a modern VSRG engine that supports warps, scroll speeds, and much more.
 
-Features
-=====
-* Negative-able BPM/stop support
-* #RANDOM BMS
+# Features
+
+## Gameplay 
 * Hidden/Fake notes
 * OJN cover support
 * Multiple timing systems
@@ -31,18 +30,24 @@ Features
 * Autoplay
 * Random (By Lanes)
 * Failure deactivation
+* Scroll and/or Speed support for osu!, BMS and Stepmania charts
+
+## UI
+* Wheel sorting
 * Lua Skinning with HTML-based librocket UI widgets
 * TTF based SDF font support
-* Rates, that also respect your desired target speed
-* Wheel sorting
 * Result Histogram, Grades
-* osu!mania storyboard support
+
+## BGA
 * Video playback via FFMPEG
+* osu!mania storyboard support
+
+## Rhythm Engine
+* Negative-able BPM/stop support
+* #RANDOM BMS
 * Previewer commands to connect to bmsone or uBMSC/iBMSC
 * MP3/Ogg/WAV support
 * JPEG/PNG/BMP/TGA support, with an sRGB aware color space
-* Modern formats: BMSON/SM5 support
-* Scroll and/or Speed support for osu!, BMS and Stepmania charts
 * #PREVIEW extensions for BMS
 * #MUSIC extension for BMS
 * Automatic Chart Author extraction from #ARTIST tag
@@ -65,35 +70,48 @@ Dependencies
 =====
 The dependencies of the project right now are:
 
-* boost and boost::gil (develop)
+## Video
 * glew
-* glfw 3.0
-* portaudio v19
-* libogg and libvorbis
+* glfw
+* libjpeg(turbo) 
+* libpng
+* ffmpeg
+
+## Audio
+* libogg 
+* libvorbis/libvorbisfile
 * libsndfile
 * soxr
 * portaudio
-* librocket
-* sqlite3
-* libjpeg(turbo) and libpng
+* portaudio v19
+* libmpg123 (optional, but recommended)
+
+## Other
+* boost
+	* gil
+	* program options
 * lua 5.2.1
 * zlib
-* libmpg123 (optional, but recommended)
+* librocket
+
+## Included libraries
 * glm (header only)
 * LuaBridge (header only)
 * stb_TrueType (header only)
 * randint (header only)
-
-With the exception of boost, the required includes for these dependencies are within the 'lib\include' folder.
-Header only libraries require nothing more to be used.
-
+* nlohmann's json (header only)
+* utf8-cpp (header only)
+* simpleini
+* minizip
+* portaudio's ringbuffer implementation
+* sqlite3
+* sha256 implementation by Stephan Brumme
 
 Building on Windows
 =====
 Though you can compile them yourself, a full collection of pre-compiled libs can is available [here](https://www.dropbox.com/s/ck1jbxq5dfpz8h5/rdlib-18062018.7z?dl=0)
-If you're using Visual Studio, simply extracting these to the 'lib' directory will allow automatic linking.
-The solution will attempt to grab boost from NuGet first time, though it can be added manually if desired.
-
+Make a `lib` directory at the same level as the `src` directory and extract the include and lib folders into it.
+CMake should detect that you're on windows, and you've extracted these files. Otherwise, you'll have to provide them yourself.
 
 Building on Linux
 =====

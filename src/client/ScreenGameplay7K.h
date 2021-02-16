@@ -1,0 +1,114 @@
+#pragma once
+
+class AudioStream;
+class Texture;
+class SceneEnvironment;
+class LuaManager;
+
+class ScreenGameplay : public Screen
+{
+private:
+
+
+    std::map <int, std::vector<std::shared_ptr<AudioSample> > > Keysounds;
+    std::vector<std::unique_ptr<PlayerContext>> Players;
+    std::map<int, bool> PlayfieldClipEnabled;
+    std::map<int, AABB> PlayfieldClipArea;
+
+    std::queue<AutoplaySound>   BGMEvents;
+
+    std::shared_ptr<rd::Song>			 MySong;
+    std::shared_ptr<rd::Song>			 LoadedSong;
+
+    struct {
+        double InterpolatedStream, Stream;
+        double OldStream; // Previous frame's stream song time
+        double Waiting; // Time before T = 0
+        double Game; // Overall screen time
+        double Miss; // Time for showing MISS layer
+        double Failure; // Time for showing Failure state
+        double Success; // Time for showing Success state
+        double AudioStart, AudioOld; // DAC thread start time and previous DAC time
+        bool InterpolateStream;
+    } Time;
+
+    struct {
+        double ToleranceMS;
+        double AudioDrift;
+    } TimeError;
+
+
+    int				 StartMeasure;
+
+    std::unique_ptr<AudioStream> Music;
+    std::unique_ptr<AudioSourceOJM> OJMAudio;
+    AudioSample MissSnd;
+    AudioSample FailSnd;
+
+    /* Effects */
+    bool StageFailureTriggered;
+    bool Active;
+    bool ForceActivation;
+    bool DoPlay;
+    bool PlayReactiveSounds;
+    bool SongPassTriggered;
+
+    std::unique_ptr<BackgroundAnimation> BGA;
+    void SetupScriptConstants();
+
+    // Done in loading thread
+    bool LoadChartData();
+    bool LoadSongAudio();
+    void LoadSamples();
+    void LoadBmson();
+    bool LoadBGA() const;
+    bool ProcessSong();
+
+    void AddScriptClasses(LuaManager* Env);
+
+
+    void AssignMeasure(uint32_t Measure);
+    void RunAutoEvents();
+    void CheckShouldEndScreen();
+    bool ShouldDelayFailure();
+    bool PlayersHaveFailed();
+    bool SongHasFinished();
+
+    void UpdateSongTime(float Delta);
+    void OnPlayerHit(rd::ScoreKeeperJudgment judgment, double dt, uint32_t lane, bool hold, bool release, int pn);
+    void Render();
+
+    void PlayKeysound(int Keysound);
+
+    void Activate();
+
+
+    void OnPlayerMiss(double dt, uint32_t lane, bool hold, bool dontbreakcombo, bool earlymiss, int pn);
+
+    void OnPlayerGearKeyEvent(uint32_t lane, bool keydown, int pn);
+
+    void SetPlayerClip(int pn, AABB box);
+    void DisablePlayerClip(int pn);
+
+    friend class Noteskin;
+public:
+
+    void SetupLua(LuaManager* Env);
+
+    // Functions for data.
+    bool IsActive() const;
+    rd::Song* GetSong() const;
+
+
+    ScreenGameplay();
+    void Init(std::shared_ptr<rd::Song> S);
+    void LoadResources() override;
+    void InitializeResources() override;
+
+    void Cleanup() override;
+
+    PlayerContext* GetPlayerContext(int i);
+
+    bool Run(double Delta) override;
+    bool HandleInput(int32_t key, bool isPressed, bool isMouseInput) override;
+};

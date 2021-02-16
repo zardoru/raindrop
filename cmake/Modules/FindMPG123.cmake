@@ -8,7 +8,7 @@ find_path(MPG123_INCLUDE_DIR
             HINTS /usr/include
 )
 
-find_library(MPG123_LIBRARY mpg123 libmpg123)
+find_library(MPG123_LIBRARY NAMES mpg123 libmpg123)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(MPG123 DEFAULT_MSG 

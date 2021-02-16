@@ -1,0 +1,9 @@
+ringbuffer: v19
+sha256: n/a
+LuaBridge: 4.2.1
+utf8-cpp: 2x
+simpleini: 4.17
+glm: 0.9.9.7
+stb_truetype: n/a
+nlohmann/json: 3.7.3
+sqlite: 3300100

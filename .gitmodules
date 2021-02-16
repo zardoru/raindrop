@@ -1,6 +1,3 @@
-[submodule "arcadedata"]
-	path = arcadedata
-	url = git@gitlab.com:agka/raindrop-arcade-data.git
 [submodule "GameData"]
 	path = GameData
 	url = https://github.com/zardoru/raindrop-data.git
