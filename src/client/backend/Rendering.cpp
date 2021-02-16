@@ -180,31 +180,48 @@ namespace Renderer {
 
 
         GLint minp = GL_LINEAR, maxp = GL_LINEAR;
+        bool mipmaps = false;
 		if (Configuration::GetTextureParameter(Dir, "minfilter") == "linear")
 			minp = GL_LINEAR;
 		else if (Configuration::GetTextureParameter(Dir, "minfilter") == "nearest")
 			minp = GL_NEAREST;
-		else if (Configuration::GetTextureParameter(Dir, "minfilter") == "linear-mipmap-linear")
-			minp = GL_LINEAR_MIPMAP_LINEAR;
-		else if (Configuration::GetTextureParameter(Dir, "minfilter") == "linear-mipmap-nearest")
-			minp = GL_LINEAR_MIPMAP_NEAREST;
-		else if (Configuration::GetTextureParameter(Dir, "minfilter") == "nearest-mipmap-nearest")
+		else if (Configuration::GetTextureParameter(Dir, "minfilter") == "linear-mipmap-linear") {
+            minp = GL_LINEAR_MIPMAP_LINEAR;
+            mipmaps = true;
+        }
+		else if (Configuration::GetTextureParameter(Dir, "minfilter") == "linear-mipmap-nearest") {
+            minp = GL_LINEAR_MIPMAP_NEAREST;
+            mipmaps = true;
+        }
+		else if (Configuration::GetTextureParameter(Dir, "minfilter") == "nearest-mipmap-nearest") {
 			minp = GL_NEAREST_MIPMAP_NEAREST;
-		else if (Configuration::GetTextureParameter(Dir, "minfilter") == "nearest-mipmap-linear")
-			minp = GL_NEAREST_MIPMAP_LINEAR;
+		    mipmaps = true;
+		}
+		else if (Configuration::GetTextureParameter(Dir, "minfilter") == "nearest-mipmap-linear") {
+            minp = GL_NEAREST_MIPMAP_LINEAR;
+            mipmaps = true;
+        }
 
 		if (Configuration::GetTextureParameter(Dir, "maxfilter") == "linear")
 			maxp = GL_LINEAR;
 		else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "nearest")
 			maxp = GL_NEAREST;
-		else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "linear-mipmap-linear")
+		else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "linear-mipmap-linear") {
 			maxp = GL_LINEAR_MIPMAP_LINEAR;
-		else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "linear-mipmap-nearest")
+		    mipmaps = true;
+		}
+		else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "linear-mipmap-nearest") {
 			maxp = GL_LINEAR_MIPMAP_NEAREST;
-		else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "nearest-mipmap-nearest")
+		    mipmaps = true;
+		}
+		else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "nearest-mipmap-nearest") {
 			maxp = GL_NEAREST_MIPMAP_NEAREST;
-		else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "nearest-mipmap-linear")
+		    mipmaps = true;
+		}
+		else if (Configuration::GetTextureParameter(Dir, "maxfilter") == "nearest-mipmap-linear") {
 			maxp = GL_NEAREST_MIPMAP_LINEAR;
+		    mipmaps = true;
+		}
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minp);
         assert (glGetError() == 0);
@@ -212,6 +229,10 @@ namespace Renderer {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, maxp);
         assert (glGetError() == 0);
 
+        if (mipmaps) {
+            glGenerateMipmap(GL_TEXTURE_2D);
+            assert (glGetError() == 0);
+        }
     }
 
 	void SetBlendingMode(EBlendMode Mode)

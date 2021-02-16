@@ -274,6 +274,9 @@ SceneEnvironment::SceneEnvironment(const char* ScreenName, bool initUI)
     Lua = std::make_shared<LuaManager>();
     Lua->RegisterStruct("GOMAN", this);
 
+
+    GameState::GetInstance().InitializeLua(Lua->GetState());
+
 	/// Automatic instance of SceneEnvironment for script use.
 	// @autoinstance Engine
     CreateLuaInterface(Lua.get());
@@ -431,8 +434,9 @@ void SceneEnvironment::Initialize(std::filesystem::path Filename, bool RunScript
 		mInitScript = Filename;
 
     if (RunScript) {
-        if (!Lua->RunScript(Filename))
-            Log::LogPrintf("Couldn't load script %s.", Filename.string().c_str());
+        if (!Lua->RunScript(mInitScript)) {
+            Log::LogPrintf("Couldn't load script %s: %s", mInitScript.string().c_str(), Lua->GetLastError().c_str());
+        }
     }
 
 	/// This function is called at the initialization phase of the screen.
