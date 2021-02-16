@@ -179,7 +179,7 @@ namespace Renderer {
         assert (glGetError() == 0);
 
 
-        GLint minp = GL_LINEAR_MIPMAP_LINEAR, maxp = GL_LINEAR;
+        GLint minp = GL_LINEAR, maxp = GL_LINEAR;
 		if (Configuration::GetTextureParameter(Dir, "minfilter") == "linear")
 			minp = GL_LINEAR;
 		else if (Configuration::GetTextureParameter(Dir, "minfilter") == "nearest")

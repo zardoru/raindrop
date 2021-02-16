@@ -209,10 +209,10 @@ float Transformation::GetPositionY() const
 
 void Transformation::UpdateMatrix()
 {
-    Mat4 Scl = glm::scale(Mat4(), glm::vec3(mWidth*mScale.x, mHeight*mScale.y, 1));
-    Mat4 Pos = glm::translate(Mat4(), glm::vec3(mPosition.x, mPosition.y, mLayer));
-    Mat4 Rot = glm::rotate(Mat4(), mRotation, glm::vec3(0, 0, 1));
-    Mat4 Chn;
+    Mat4 Scl = glm::scale(glm::identity<Mat4>(), glm::vec3(mWidth*mScale.x, mHeight*mScale.y, 1));
+    Mat4 Pos = glm::translate(glm::identity<Mat4>(), glm::vec3(mPosition.x, mPosition.y, mLayer));
+    Mat4 Rot = glm::rotate(glm::identity<Mat4>(), mRotation, glm::vec3(0, 0, 1));
+    Mat4 Chn = glm::identity<Mat4>();
 
     if (Chain)
         Chn = Chain->GetMatrix();
