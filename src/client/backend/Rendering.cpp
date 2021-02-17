@@ -588,8 +588,8 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
                 continue;
             }
 
-            dx = Transform * glm::translate(Mat4(), trans) * 
-				glm::scale(Mat4(), glm::vec3(cp.w * Scale.y / SDF_SIZE, cp.h * Scale.y / SDF_SIZE, 1));
+            if(!tx || !cp.w || !cp.h)
+                goto advance;
 
             // do the actual draw?
             if (cp.gltx == 0)
@@ -608,15 +608,19 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, cp.w, cp.h, 0, GL_ALPHA, GL_UNSIGNED_BYTE, tx);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, cp.w, cp.h, 0, GL_RED, GL_UNSIGNED_BYTE, tx);
             }
-            else
+            else if (cp.gltx)
                 glBindTexture(GL_TEXTURE_2D, cp.gltx);
+
+            dx = Transform * glm::translate(glm::identity<Mat4>(), trans) *
+                 glm::scale(glm::identity<Mat4>(), glm::vec3(cp.w * Scale.y / SDF_SIZE, cp.h * Scale.y / SDF_SIZE, 1));
 
             Renderer::Shader::SetUniform(Renderer::DefaultShader::GetUniform(Renderer::U_MVP), &(dx[0][0]));
 
             Renderer::DoQuadDraw();
 
+            advance:
             utf8::iterator<const char*> next = it;
             next++;
             if (next != itend)
