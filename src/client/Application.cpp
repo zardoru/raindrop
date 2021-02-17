@@ -219,6 +219,8 @@ void Application::Init()
 #endif
      */
 
+    setbuf(stdout, 0);
+
 	Log::Printf(RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT " start.\n");
 	// Log::Printf("Current Time: %s.\n", t1);
 	Log::Printf("Working directory: %s\n", Conversion::ToU8(std::filesystem::current_path().wstring()).c_str());

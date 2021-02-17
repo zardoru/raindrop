@@ -46,8 +46,8 @@ static const std::regex RegexSubtitle(R"(([~\-(\[<"].*?[\]\)~>"\-])$)", std::reg
 static const std::regex RegexChartAuthor(R"(\s*[\/_]?\s*(?:obj|note)\.?\s*[:_]?\s*(.*))", std::regex::icase, std::regex::optimize);
 
 namespace NoteLoaderBMS{
-	
 
+    const int max_channels_per_side = 25; // 24k + 1
 	using namespace rd;
 
 	std::default_random_engine randgen;
@@ -530,7 +530,7 @@ namespace NoteLoaderBMS{
 			auto fn = [&](int sc, BMSMeasureList::iterator &i)
 			{
 				// normal channels
-				for (int curChannel = sc; curChannel <= (sc+ MAX_CHANNELS - offset); curChannel++)
+				for (int curChannel = sc; curChannel <= (sc+ max_channels_per_side - offset); curChannel++)
 				{
 					if (i->second.Events.find(curChannel) == i->second.Events.end())
 						continue;
@@ -548,7 +548,7 @@ namespace NoteLoaderBMS{
 						offs = TranslateTrackPMS(curChannel, sc) + offset;
 					}
 
-					if (offs < MAX_CHANNELS) // A few BMSes use the foot pedal, so we need to not overflow the array.
+					if (offs < max_channels_per_side) // A few BMSes use the foot pedal, so we need to not overflow the array.
 						usedChannels[offs] = 1;
 				}
 			};
@@ -564,8 +564,8 @@ namespace NoteLoaderBMS{
 
 		int AutodetectChannelCount()
 		{
-			int usedChannels[MAX_CHANNELS] = {};
-			int usedChannelsB[MAX_CHANNELS] = {};
+			int usedChannels[max_channels_per_side] = {};
+			int usedChannelsB[max_channels_per_side] = {};
 
 			if (IsPMS)
 				return 9;
@@ -579,7 +579,7 @@ namespace NoteLoaderBMS{
 			/* Find the last channel we've used's index */
 			int FirstIndex = -1;
 			int LastIndex = 0;
-			for (int i = 0; i < MAX_CHANNELS; i++)
+			for (int i = 0; i < max_channels_per_side; i++)
 			{
 				if (usedChannels[i] != 0)
 				{
@@ -596,7 +596,7 @@ namespace NoteLoaderBMS{
 			// Correct if second side starts at an offset different from zero.
 			int sideBIndex = -1;
 
-			for (int i = 0; i < MAX_CHANNELS; i++)
+			for (int i = 0; i < max_channels_per_side; i++)
 				if (usedChannelsB[i])
 				{
 					sideBIndex = i;
@@ -607,14 +607,14 @@ namespace NoteLoaderBMS{
 
 			if (sideBIndex >= 0)
 			{
-				for (int i = LastIndex + 1; i < MAX_CHANNELS; i++)
+				for (int i = LastIndex + 1; i < max_channels_per_side; i++)
 					usedChannels[i] |= usedChannelsB[i - LastIndex - 1];
 			}
 
 			// if (FirstIndex >= 0 && sideBIndex >= 0); // This means, when working with the second side, add the offset to the current track.
 
 			/* Find new boundaries for used channels. This means the first channel will be the Lower Bound. */
-			for (int i = 0; i < MAX_CHANNELS; i++)
+			for (int i = 0; i < max_channels_per_side; i++)
 			{
 				if (usedChannels[i] != 0)
 				{
@@ -954,7 +954,7 @@ namespace NoteLoaderBMS{
 
         Diff->Filename = filename;
 		Diff->Data = std::make_unique<DifficultyLoadInfo>();
-        if (filename.wstring().find(L"pms") != std::wstring::npos)
+        if (filename.wstring().find(L".pms") != std::wstring::npos)
             IsPMS = true;
 
         auto Info = std::make_unique<BMSLoader>(Out, Diff, IsPMS);

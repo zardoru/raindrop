@@ -104,6 +104,19 @@ static void GLCHECKERR() {
     }
 }
 
+void APIENTRY OnGlDebugMsg(
+        GLenum source,
+        GLenum type,
+        GLuint id,
+        GLenum severity,
+        GLsizei length,
+        const GLchar* message,
+        const void* userParam) {
+    std::string msg(message, message + length);
+    Log::Printf("source(%d) type(%d) id(%d) severity(%d): %s",
+                source, type, id, severity, msg.c_str());
+}
+
 const int NUM_OF_STATIC_SPECIAL_KEYS = sizeof(StaticSpecialKeys) / sizeof(KeyAssociation); //make sure to match the above array
 
 std::vector<KeyAssociation> SpecialKeys;
@@ -466,6 +479,11 @@ bool GameWindow::SetupWindow()
 
     GLCHECKERR();
 
+    if (glDebugMessageCallback) {
+        // glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_MEDIUM, 0, nullptr, GL_TRUE);
+        glDebugMessageCallback(OnGlDebugMsg, nullptr);
+    }
+
     // GLFW Hooks
     glfwSetFramebufferSizeCallback(wnd, ResizeFunc);
     glfwSetWindowSizeCallback(wnd, ResizeFunc);
@@ -516,6 +534,9 @@ bool GameWindow::AutoSetupWindow(Application* _parent)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifndef NDEBUG
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
+#endif
 
     AssignSize();
     matrixSize.x = ScreenWidth;

@@ -53,7 +53,7 @@ build/
 *_cotire.cmake
 cotire/
 CMakeFiles/
-cmake-build-debug/
+cmake-build-*/
 rd-script
 CMakeCache.txt
 cmake_install.cmake

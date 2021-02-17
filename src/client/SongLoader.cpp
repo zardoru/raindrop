@@ -36,13 +36,9 @@ SongLoader::SongLoader(SongDatabase* Database)
 
 bool VSRGValidExtension(const std::string &s)
 {
-	auto period = s.find_last_of(".");
-	if (period == std::string::npos) return false;
-
-	const char* cs = s.c_str() + period;
     for (auto i : LoadersVSRG)
     {
-        if (!strcmp(cs, i.Ext))
+        if (s == i.Ext)
             return true;
     }
 
@@ -51,14 +47,10 @@ bool VSRGValidExtension(const std::string &s)
 
 bool ValidBMSExtension(const std::string &s)
 {
-	auto period = s.find_last_of(".");
-	if (period == std::string::npos) return false;
-
-	const char* cs = s.c_str() + period;
 
     for (auto & i : LoadersVSRG)
     {
-        if (!strcmp(cs, i.Ext) &&
+        if (s == i.Ext &&
 			i.LoadFunc == NoteLoaderBMS::LoadObjectsFromFile)
             return true;
     }
@@ -81,9 +73,8 @@ std::shared_ptr<rd::Song> LoadSong7KFromFilename(
     }
 
 
-	auto fs = Filename.string();
     // no extension
-    if (!Filename.has_extension() || !VSRGValidExtension(fs))
+    if (!Filename.has_extension() || !VSRGValidExtension(Filename.extension().string()))
     {
         if (AllocSong) delete Sng;
         return nullptr;
@@ -92,13 +83,13 @@ std::shared_ptr<rd::Song> LoadSong7KFromFilename(
     Sng->SongDirectory = std::filesystem::absolute(Filename).parent_path();
 	auto fn = Filename;
 
-	auto ext = fs.c_str() + fs.find_last_of(".");
+	auto ext = Filename.extension();
 
     for (auto i : LoadersVSRG)
     {
-        if (!strcmp(ext, i.Ext))
+        if (ext == i.Ext)
         {
-            Log::LogPrintf("SongLoader: Load %s from disk...", fn.string().c_str());
+            Log::LogPrintf("SongLoader: Load %ls from disk...", fn.wstring().c_str());
             try
             {
                 i.LoadFunc(fn, Sng);
@@ -154,8 +145,8 @@ void SongLoader::LoadBMS(
 	}
 	catch (std::exception &ex)
 	{
-		Log::Logf("\nSongLoader::LoadSong7KFromDir(): Exception \"%s\" occurred while loading file \"%s\"\n",
-			ex.what(), File.filename().c_str());
+		Log::Logf("\nSongLoader::LoadSong7KFromDir(): Exception \"%s\" occurred while loading file \"%ls\"\n",
+			ex.what(), File.wstring().c_str());
 		Utility::DebugBreak();
 	}
 
@@ -235,12 +226,10 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<r
             we should just ignore this file.
             It'll be loaded in any case, but not considered for cache.
         */
-        std::string Fname = File.string();
-
-		if (VSRGValidExtension(Fname))
+		if (VSRGValidExtension(File.extension().string()))
 		{
 			if (DB->CacheNeedsRenewal(File)) {
-				Log::LogPrintf("File '%s' needs renewal.\n", Fname.c_str());
+				Log::LogPrintf("File '%ls' needs renewal.\n", File.wstring().c_str());
 				RenewCache = true;
 			}
 
@@ -267,25 +256,19 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<r
 
         for (auto &entry: pathlist)
         {
-			const auto &File = entry.filename();
-
 			// get extension
-			auto fs = File.string();
-			auto period = fs.find_last_of('.');
-			if (period == std::string::npos) continue;
-
-			std::string Ext = fs.c_str() + period;
+			auto Ext = entry.extension().string();
 
             // We want to group charts with the same title together.
-            if (ValidBMSExtension(fs) || Ext == ".bmson")
+            if (ValidBMSExtension(Ext) || Ext == ".bmson")
             {
-				LoadBMS(BMSSong,  File, bmsk, VecOut);
+				LoadBMS(BMSSong, entry, bmsk, VecOut);
             }
 
 			// .ft2 doesn't need its own entry. 
 			if (Ext == ".ojn" || Ext == ".ft2")
             {
-                LoadSong7KFromFilename(File, OJNSong, DB);
+                LoadSong7KFromFilename(entry, OJNSong, DB);
                 DB->AssociateSong(OJNSong);
                 AddSongToList(VecOut, OJNSong);
                 OJNSong = new Song;
@@ -294,12 +277,12 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<r
 
 			// Add them all to the same song.
             if (Ext == ".osu")
-                LoadSong7KFromFilename(File, osuSong, DB);
+                LoadSong7KFromFilename(entry, osuSong, DB);
 
 			// Same as before.
             if (Ext == ".sm" || Ext == ".ssc")
             {
-                LoadSong7KFromFilename(File, smSong, DB);
+                LoadSong7KFromFilename(entry, smSong, DB);
                 DB->AssociateSong(smSong);
                 AddSongToList(VecOut, smSong);
                 smSong = new Song;
@@ -331,9 +314,6 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<r
 
 		for (auto &File: pathlist)
 		{
-			// get extension
-			auto fs = File.string();
-
             int CurrentID = DB->GetSongIDForFile(File);
             if (CurrentID != ID)
             {
@@ -385,7 +365,7 @@ std::shared_ptr<Song> SongLoader::LoadFromMeta(const rd::Song* Meta, std::shared
     FilenameOut = fn;
 
 	Log::LogPrintf("Loading chart from meta ID %i from %s\n", Meta->ID, fn.string().c_str());
-    Out = LoadSong7KFromFilename(fn.filename(), nullptr, DB);
+    Out = LoadSong7KFromFilename(fn, nullptr, DB);
     if (!Out) return nullptr;
 	
     Index = 0;

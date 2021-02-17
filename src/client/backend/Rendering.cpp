@@ -875,23 +875,23 @@ void VBO::AssignData(void* Data)
         RegenBuffer = true;
     }
 
-    Bind();
+    Bind(true);
     if (RegenBuffer)
         glBufferData(BufType, ElementSize * ElementCount, VboData, UpType);
     else
         glBufferSubData(BufType, 0, ElementSize * ElementCount, VboData);
 }
 
-void VBO::Bind() const
+void VBO::Bind(bool Force) const
 {
     assert(IsValid);
 
-    if (mKind == ArrayBuffer && LastBound != InternalVBO)
+    if (mKind == ArrayBuffer && (LastBound != InternalVBO || Force))
     {
         glBindBuffer(BufTypeForKind(mKind), InternalVBO);
         LastBound = InternalVBO;
     }
-    else if (mKind == IndexBuffer && LastBoundIndex != InternalVBO)
+    else if (mKind == IndexBuffer && (LastBoundIndex != InternalVBO || Force))
     {
         glBindBuffer(BufTypeForKind(mKind), InternalVBO);
         LastBoundIndex = InternalVBO;
