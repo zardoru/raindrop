@@ -73,6 +73,11 @@ ScreenGameplay::ScreenGameplay() : Screen("ScreenGameplay7K") {
 void ScreenGameplay::Cleanup() {
     if (Music)
         Music->Stop();
+
+    for (auto& k : Keysounds) {
+        for (auto &s: k.second)
+            GetMixer()->RemoveSample(s.get());
+    }
 }
 
 void ScreenGameplay::AssignMeasure(uint32_t Measure) {
@@ -485,6 +490,7 @@ void ScreenGameplay::LoadResources() {
         for (auto &vec : Keysounds) {
             for (auto &snd : vec.second) {
                 snd->AwaitLoad();
+                GetMixer()->AddSample(snd.get());
             }
         }
 

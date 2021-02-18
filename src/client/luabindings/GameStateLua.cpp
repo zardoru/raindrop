@@ -154,20 +154,13 @@ std::shared_ptr<rd::Difficulty> GameState::GetDifficultyShared(int pn)
 }
 
 
-int DoGameScript(lua_State *S)
-{
-    auto Lua = GetObjectFromState<LuaManager>(S, "Luaman");
-    std::string File = luaL_checkstring(S, 1);
-    Lua->Require(GameState::GetInstance().GetScriptsDirectory() + File);
-    return 1;
-}
+
 
 /// rd Data types. Generally inert.
 // @engineclass GameState
 void GameState::InitializeLua(lua_State *L)
 {
 	LuaManager l(L);
-	l.Register(DoGameScript, "game_require");
 
 	rd::SetupScorekeeperLuaInterface(L);
 

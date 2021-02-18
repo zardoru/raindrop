@@ -34,7 +34,7 @@ public:
     ~VBO();
     void Invalidate();
     void Validate();
-    void Bind() const;
+    void Bind(bool Force = false) const;
     uint32_t GetElementCount() const;
 
     /* Size must be valid with parameters given to VBO. */

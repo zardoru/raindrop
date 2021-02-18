@@ -245,7 +245,7 @@ PlayerChartState* Setup(
                 }
             }
 
-            param.UserSpeedMultiplier = DesiredDefaultSpeed / val;
+            param.UserSpeedMultiplier = DesiredDefaultSpeed  / (val * UNITS_PER_MEASURE);
         }
         else if (Type == SPEEDTYPE_MULTIPLIER) // target speed is just a multiplier
         {
@@ -1125,6 +1125,7 @@ Mat4 id;
 
 int PlayerContext::DrawMeasures(double song_time) {
     int rnc = 0;
+    float upm = UNITS_PER_MEASURE;
     /*
         DrawMeasures should get the unwarped song time.
         Internally, it uses warped song time.
@@ -1132,7 +1133,7 @@ int PlayerContext::DrawMeasures(double song_time) {
     auto wt = ChartState.GetWarpedSongTime(song_time);
 
     // note Y displacement at song_time
-    auto chart_displacement = ChartState.GetChartDisplacementAt(wt);
+    auto chart_displacement = ChartState.GetChartDisplacementAt(wt) * upm;
 
     // effective speed multiplier
     auto chart_multiplier = GetAppliedSpeedMultiplier(song_time);
@@ -1167,7 +1168,7 @@ int PlayerContext::DrawMeasures(double song_time) {
     for (auto k = 0U; k < CurrentDiff->Channels; k++) {
         // From the note's vertical StaticVert transform to position on screen.
         auto Locate = [&](double StaticVert) -> double {
-            return (chart_displacement - StaticVert) * effective_chart_speed_multiplier + jy;
+            return (chart_displacement - StaticVert * upm) * effective_chart_speed_multiplier + jy;
         };
 
         auto Start = Notes[k].begin();

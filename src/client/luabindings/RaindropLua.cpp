@@ -16,6 +16,14 @@ namespace LuaAnimFuncs
 {
     const char * SpriteMetatable = "Sys.Sprite";
 
+    int DoGameScript(lua_State *S)
+    {
+        auto Lua = GetObjectFromState<LuaManager>(S, "Luaman");
+        std::string File = luaL_checkstring(S, 1);
+        Lua->Require(GameState::GetInstance().GetScriptsDirectory() + File);
+        return 1;
+    }
+
     int GetSkinConfigF(lua_State *L)
     {
         std::string Key = luaL_checkstring(L, 1);
@@ -117,6 +125,7 @@ void AddRDLuaGlobal(LuaManager * anim_lua)
 
 	// anim_lua->AppendPath(GameState::GetFallbackSkinPrefix());
 	anim_lua->Register(LuaAnimFuncs::Require, "skin_require");
+    anim_lua->Register(LuaAnimFuncs::DoGameScript, "game_require");
 	anim_lua->Register(LuaAnimFuncs::FallbackRequire, "fallback_require");
 
 	// anim_lua->NewMetatable(LuaAnimFuncs::SpriteMetatable);

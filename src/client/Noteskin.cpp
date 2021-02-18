@@ -79,7 +79,9 @@ void Noteskin::SetupNoteskin(bool SpecialStyle, int Lanes) {
     /// Instance of @{Player} provided by the engine. Owner of the current noteskin script.
     // @autoinstance Player
     luabridge::setGlobal(NoteskinLua.GetState(), Parent, "Player");
-    NoteskinLua.RunScript(GameState::GetInstance().GetSkinFile("noteskin.lua"));
+    if (!NoteskinLua.RunScript(GameState::GetInstance().GetSkinFile("noteskin.lua"))) {
+        Log::LogPrintf("noteskin.lua: %s\n", NoteskinLua.GetLastError().c_str());
+    }
 }
 
 void Noteskin::Update(float Delta, float CurrentBeat) {

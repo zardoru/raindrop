@@ -52,4 +52,7 @@ void ScreenGameplay::AddScriptClasses(LuaManager* Env)
         .addFunction("DisablePlayerClip", &ScreenGameplay::DisablePlayerClip)
         // All of these depend on the player.
         .endClass();
+
+    luabridge::push(Env->GetState(), this);
+    lua_setglobal(Env->GetState(), "Game");
 }
