@@ -210,7 +210,7 @@ ImageData ImageLoader::GetDataForImage(std::filesystem::path filename)
     out.Filename = filename;
 
 	if (ImageLoaderMessages)
-		Log::LogPrintf("ImageLoader: \"%s\" loaded.\n", filename.string().c_str());
+		Log::LogPrintf("ImageLoader: \"%ls\" loaded.\n", filename.wstring().c_str());
 
     return out;
 }

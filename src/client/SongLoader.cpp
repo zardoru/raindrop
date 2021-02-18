@@ -364,7 +364,7 @@ std::shared_ptr<Song> SongLoader::LoadFromMeta(const rd::Song* Meta, std::shared
     std::filesystem::path fn = DB->GetDifficultyFilename(CurrentDiff->ID);
     FilenameOut = fn;
 
-	Log::LogPrintf("Loading chart from meta ID %i from %s\n", Meta->ID, fn.string().c_str());
+	Log::LogPrintf("Loading chart from meta ID %i from %ls\n", Meta->ID, fn.wstring().c_str());
     Out = LoadSong7KFromFilename(fn, nullptr, DB);
     if (!Out) return nullptr;
 	

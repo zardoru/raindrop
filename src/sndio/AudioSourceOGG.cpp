@@ -79,7 +79,7 @@ bool AudioSourceOGG::Open(std::filesystem::path Filename)
 #if !(defined WIN32) || (defined MINGW)
     int32_t retv = ov_fopen(Conversion::ToU8(Filename.wstring()).c_str(), &internal->mOggFile);
 #else
-    FILE* fp = _wfopen(Filename.c_str(), L"rb");
+    FILE* fp = _wfopen(Filename.wstring().c_str(), L"rb");
     int retv = -1;
 
     if (fp)

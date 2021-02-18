@@ -34,8 +34,8 @@ std::filesystem::path GetSongBackground(rd::Song &Song)
     for (auto i : std::filesystem::directory_iterator(SngDir))
     {
         std::string ext = i.path().extension().string();
-		auto s = i.path().string();
-        if (s.find("bg") != std::string::npos && (ext == ".jpg" || ext == ".png"))
+		const auto& s = i.path();
+        if (s.wstring().find(L"bg") != std::string::npos && (ext == ".jpg" || ext == ".png"))
             return i;
     }
 

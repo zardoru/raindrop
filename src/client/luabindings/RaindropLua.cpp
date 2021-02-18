@@ -11,6 +11,7 @@
 #include "../LuaManager.h"
 
 #include "../Configuration.h"
+#include "../Logging.h"
 
 namespace LuaAnimFuncs
 {
@@ -20,7 +21,9 @@ namespace LuaAnimFuncs
     {
         auto Lua = GetObjectFromState<LuaManager>(S, "Luaman");
         std::string File = luaL_checkstring(S, 1);
-        Lua->Require(GameState::GetInstance().GetScriptsDirectory() + File);
+        if (!Lua->Require(GameState::GetInstance().GetScriptsDirectory() + File)) {
+            Log::LogPrintf("lua error while doing game_include: %s", Lua->GetLastError().c_str());
+        }
         return 1;
     }
 

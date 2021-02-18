@@ -167,14 +167,21 @@ bool ScreenGameplay::LoadSongAudio() {
     auto &ps = Players[0]->GetPlayerState();
     auto SoundList = ps.GetSoundList();
     if (!Music) {
+        bool attempt_music_load = true;
         Music = std::make_unique<AudioStream>();
         Music->SetPitch(Rate);
 
+
+        if (MySong->SongFilename.empty())
+            attempt_music_load = false;
+
         auto s = MySong->SongDirectory / MySong->SongFilename;
 
-        Log::LogPrintf("Chart Audio: Attempt to load \"%s\"...\n", s.string().c_str());
+        if (attempt_music_load)
+            Log::LogPrintf("Chart Audio: Attempt to load \"%ls\"...\n", s.wstring().c_str());
 
         if (std::filesystem::exists(s)
+            && attempt_music_load
             && Music->Open(s)) {
             Log::Printf("Stream for %s succesfully opened.\n", MySong->SongFilename.c_str());
         } else {
@@ -196,7 +203,7 @@ bool ScreenGameplay::LoadSongAudio() {
 
                 // don't abort load if we have keysounds
                 if (!SoundList.size()) {
-                    Log::Printf("Unable to load song (Path: %s)\n", MySong->SongFilename.c_str());
+                    Log::Printf("Unable to load song (Path: %ls)\n", MySong->SongFilename.wstring().c_str());
                     return false;
                 }
             }
@@ -241,13 +248,9 @@ void ScreenGameplay::LoadSamples() {
         auto ks = std::make_shared<AudioSample>();
 
         ks->SetPitch(Rate);
-#ifdef WIN32
         std::filesystem::path rfd = i->second;
         std::filesystem::path afd = MySong->SongDirectory / rfd;
         ks->Open(afd, true);
-#else
-        ks->Open((MySong->SongDirectory.string() + "/" + i->second).c_str(), true);
-#endif
         Keysounds[i->first].push_back(ks);
         CheckInterruption();
     }
