@@ -215,6 +215,7 @@ VideoPlayback::~VideoPlayback()
 {
 	if (mDecodeThread) {
 		RunDecodeThread = false;
+
 		mDecodeThread->join();
 	}
 
@@ -305,7 +306,7 @@ void VideoPlayback::StartDecodeThread()
 
 			QueueFrame();
 
-			while (!Context->CleanFrameAvailable) {
+			while (!Context->CleanFrameAvailable && RunDecodeThread) {
 				std::unique_lock<std::mutex> lock(Context->ringbuffer_mutex);
 				Context->ringbuffer_has_space.wait(lock);
 			}

@@ -244,14 +244,14 @@ void ScreenGameplay::LoadSamples() {
     auto SoundList = ps.GetSoundList();
 
     auto start = std::chrono::high_resolution_clock::now();
-    for (auto i = SoundList.begin(); i != SoundList.end(); ++i) {
-        auto ks = std::make_shared<AudioSample>();
+    for (auto & i : SoundList) {
+        auto ks = std::make_shared<AudioSample>(GetMixer());
 
         ks->SetPitch(Rate);
-        std::filesystem::path rfd = i->second;
+        std::filesystem::path rfd = i.second;
         std::filesystem::path afd = MySong->SongDirectory / rfd;
         ks->Open(afd, true);
-        Keysounds[i->first].push_back(ks);
+        Keysounds[i.first].push_back(ks);
         CheckInterruption();
     }
 
@@ -493,7 +493,7 @@ void ScreenGameplay::LoadResources() {
         for (auto &vec : Keysounds) {
             for (auto &snd : vec.second) {
                 snd->AwaitLoad();
-                GetMixer()->AddSample(snd.get());
+                // GetMixer()->AddSample(snd.get());
             }
         }
 
