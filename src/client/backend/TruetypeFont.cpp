@@ -145,13 +145,13 @@ TruetypeFont::codepdata &TruetypeFont::GetTexFromCodepoint(int cp)
                     cp,
 			        &w, &h, &xofs, &yofs);
 			if (nonsdf) {
-				unsigned char* sdf = new unsigned char[w * h];
+				auto* sdf = new unsigned char[w * h];
 
 				// convert our non-sdf texture to a SDF texture
 				ConvertToSDF(sdf, nonsdf, w, h);
 
 				// free our non-sdf
-				free(nonsdf);
+				delete[] nonsdf;
 
 				// use our SDF texture. alpha testing is up by default
 				newcp.tex = sdf;

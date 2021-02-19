@@ -80,6 +80,9 @@ bool ImageList::LoadAll()
     bool WereErrors = false;
     for (auto & Image : Images)
     {
+        if (Image.first.empty())
+            continue;
+
         Image.second = ImageLoader::Load(Image.first);
         if (Image.second == nullptr)
             WereErrors = true;

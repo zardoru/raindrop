@@ -279,7 +279,7 @@ Texture* GameState::GetSongStage()
 			std::filesystem::path File = Database->GetStageFile(diff->ID);
 
 			// Oh so it's loaded and it's not in the database, fine.
-			if (File.string().length() == 0 && diff->Data)
+			if (File.wstring().length() == 0 && diff->Data)
 				File = diff->Data->StageFile;
 
 			auto toLoad = sng->SongDirectory / File;
@@ -296,7 +296,7 @@ Texture* GameState::GetSongStage()
 				return StageImage;
 			}
 
-			if (File.string().length() && std::filesystem::exists(toLoad))
+			if (File.wstring().length() && std::filesystem::exists(toLoad))
 			{
 				StageImage->LoadFile(toLoad, true);
 				return StageImage;

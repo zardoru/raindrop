@@ -4,6 +4,7 @@
 #include <pa_ringbuffer.h>
 
 #include <GL/glew.h>
+#include <fstream>
 #include "Texture.h"
 #include "VideoPlayback.h"
 #include "../Logging.h"
@@ -42,6 +43,13 @@ public:
 
 #define MAX_PACKETS 64
 
+static int readVideoFunction(void* opaque, uint8_t* buf, int buf_size) {
+    auto& me = *reinterpret_cast<std::ifstream*>(opaque);
+    me.read(reinterpret_cast<char*>(buf), buf_size);
+    return me.gcount();
+}
+
+
 class VideoPlaybackData
 {
 public:
@@ -50,7 +58,12 @@ public:
 	AVCodecContext *UsableCodecCtx;
 	AVCodec *Codec;
 
-	VideoFrame DisplayFrame;
+    std::ifstream buf;
+    unsigned char* buffer;
+    std::shared_ptr<AVIOContext> avioContext;
+
+
+    VideoFrame DisplayFrame;
 	
 	// contains pending AVFrame* to display
 	PaUtilRingBuffer mPendingFrameQueue;
@@ -74,11 +87,29 @@ public:
 	std::atomic<bool> CleanFrameAvailable;
 	std::condition_variable ringbuffer_has_space;
 
-	VideoPlaybackData() {
-		AV = nullptr;
+	/*
+	 * answer from https://stackoverflow.com/questions/9604633/reading-a-file-located-in-memory-with-libavformat
+	 * to read from iostreams
+	 * */
+	VideoPlaybackData(std::filesystem::path path) :
+	    AV(avformat_alloc_context()),
+	    buf(path, std::ios::binary),
+	    buffer((unsigned char*)av_malloc(8192)),
+	    avioContext(avio_alloc_context(
+	            buffer,
+	            4096, 0,
+	            reinterpret_cast<void*>(static_cast<std::istream*>(&buf)),
+	             readVideoFunction,
+	            nullptr,
+	            nullptr),
+                 av_free
+         ){
 		CodecCtx = nullptr;
 		Codec = nullptr;
 		sws_ctx = nullptr;
+
+        AV->pb = avioContext.get();
+        AV->flags |= AVFMT_FLAG_CUSTOM_IO;
 	}
 
 	VideoFrame GetCleanFrame()
@@ -118,6 +149,14 @@ public:
 	}
 
 	~VideoPlaybackData() {
+
+        // fuck it, leak it
+        // avformat_free_context(AV);
+        avformat_close_input(&AV);
+        avioContext = nullptr;
+        // av_free(buffer);
+
+
 		av_frame_free(&DisplayFrame.frame);
 		
 		AVFrame* f;
@@ -129,7 +168,8 @@ public:
 			av_frame_free(&f);
 		}
 
-		avformat_free_context(AV);
+
+
 		avcodec_free_context(&UsableCodecCtx);
 		//avcodec_free_context(&CodecCtx);
 		//avcodec_free_context(&Codec);
@@ -181,7 +221,7 @@ void VideoPlayback::QueueFrame()
 
 	int gotframe;
 	AVPacket packet;
-	while (av_read_frame(Context->AV, &packet) >= 0) { 
+	while (av_read_frame(Context->AV, &packet) >= 0) {
 		
 		if (packet.stream_index == Context->videoStreamIndex) {
 			avcodec_decode_video2(Context->UsableCodecCtx, Context->DecodedFrame, &gotframe, &packet);
@@ -219,14 +259,14 @@ VideoPlayback::~VideoPlayback()
 		mDecodeThread->join();
 	}
 
-	if (Context)
-		delete Context;
+	delete Context;
 }
 
 bool VideoPlayback::Open(std::filesystem::path path)
 {
-	auto newctx = new VideoPlaybackData();
-	if (avformat_open_input(&newctx->AV, path.string().c_str(), nullptr, nullptr) < 0) {
+	auto newctx = new VideoPlaybackData(path);
+
+	if (avformat_open_input(&newctx->AV, "dummy", nullptr, nullptr) < 0) {
 		return false;
 	}
 
@@ -308,7 +348,7 @@ void VideoPlayback::StartDecodeThread()
 
 			while (!Context->CleanFrameAvailable && RunDecodeThread) {
 				std::unique_lock<std::mutex> lock(Context->ringbuffer_mutex);
-				Context->ringbuffer_has_space.wait(lock);
+				Context->ringbuffer_has_space.wait_for(lock, std::chrono::seconds(1));
 			}
 		}
 	});

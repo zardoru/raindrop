@@ -121,7 +121,7 @@ public:
         EventsLayer1 = Difficulty->Data->BMPEvents->BMPEventsLayer;
         EventsLayer2 = Difficulty->Data->BMPEvents->BMPEventsLayer2;
 
-		for (auto v : Difficulty->Data->BMPEvents->BMPList) {
+		for (const auto& v : Difficulty->Data->BMPEvents->BMPList) {
 			std::filesystem::path vs = v.second;
 			std::filesystem::path path = Song->SongDirectory / vs;
 			if (IsVideoPath(path))
@@ -263,7 +263,7 @@ public:
     StaticBackground(Interruptible* parent, std::filesystem::path Filename)
         : BackgroundAnimation(parent), List(this)
     {
-        Log::Printf("Using static background: %s\n", Filename.string().c_str());
+        Log::Printf("Using static background: %ls\n", Filename.wstring().c_str());
         List.AddToListIndex(Filename, 0);
     }
 

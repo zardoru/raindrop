@@ -17,6 +17,7 @@
 #ifdef WIN32
 #include <portaudio/pa_win_wasapi.h>
 #include <portaudio/pa_win_ds.h>
+#include <portaudio/pa_win_wdmks.h>
 #include <atomic>
 #include <pa_ringbuffer.h>
 #include <cassert>
@@ -33,6 +34,7 @@ bool UseThreadedDecoder = false;
 bool UseWasapi = false;
 PaDeviceIndex DefaultWasapiDevice;
 PaDeviceIndex DefaultDSDevice;
+PaDeviceIndex DefaultWDMKSDevice;
 #endif
 
 /*************************/
@@ -74,6 +76,7 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, void* Sound, double
 #else
     PaWasapiStreamInfo StreamInfo;
     PaWinDirectSoundStreamInfo DSStreamInfo;
+    PaWinWDMKSInfo WDMKSStreamInfo;
     if (UseWasapi)
     {
         outputParams.hostApiSpecificStreamInfo = &StreamInfo;
@@ -100,6 +103,18 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, void* Sound, double
     }
     else
     {
+        if (Pa_GetHostApiInfo(Pa_GetDeviceInfo(Device)->hostApi)->type == paWDMKS) {
+            Log::Logf("AUDIO: Attempting to use Windows Driver Model Kernel Streaming\n");
+            outputParams.hostApiSpecificStreamInfo = &WDMKSStreamInfo;
+
+            WDMKSStreamInfo.size = sizeof(PaWinWDMKSInfo);
+            WDMKSStreamInfo.hostApiType = paWDMKS;
+            WDMKSStreamInfo.version = 1;
+            WDMKSStreamInfo.flags = 0;
+            WDMKSStreamInfo.noOfPackets = 0;
+            WDMKSStreamInfo.channelMask = 0;
+        }
+
 		if (Pa_GetHostApiInfo(Pa_GetDeviceInfo(Device)->hostApi)->type == paDirectSound) {
 			Log::Logf("AUDIO: Attempting to use DirectSound\n");
 			outputParams.hostApiSpecificStreamInfo = &DSStreamInfo;
@@ -211,34 +226,36 @@ public:
         {
             std::thread(&PaMixer::Run, this).detach();
         }
+
+        CfgVar RequestedDevice("RequestedDevice", "Audio");
+        if (RequestedDevice > 0)
+            OpenStream(&Stream, RequestedDevice - 1, (void*) this, Latency, Mix);
+
 #ifdef WIN32
-        if (UseWasapi)
+        if (UseWasapi && !Stream)
         {
             OpenStream(&Stream, GetWasapiDevice(), static_cast<void*>(this), Latency, Mix);
+        }
 
-            if (!Stream)
-            {
-                // This was a Wasapi problem. Retry without it.
-                Log::Logf("AUDIO: Problem initializing WASAPI. Falling back to DirectSound API.\n");
+        if (!Stream)
+        {
+            // This was a Wasapi problem. Retry without it.
+            if (UseWasapi) {
+                Log::Logf("AUDIO: Problem initializing WASAPI. Falling back to WDMKS.\n");
                 UseWasapi = false;
-                OpenStream(&Stream, DefaultDSDevice, static_cast<void*>(this), Latency, Mix);
+            }
 
-				if (!Stream) {
-					Log::Logf("AUDIO: Problem initializing DirectSound API. Falling back to default API.\n");
-					OpenStream(&Stream, Pa_GetDefaultOutputDevice(), static_cast<void*>(this), Latency, Mix);
-				}
+            OpenStream(&Stream, DefaultWDMKSDevice, static_cast<void *>(this), Latency, Mix);
+            if (!Stream) {
+                Log::Logf("AUDIO: Problem initializing WDMKS. Falling back to DirectSound.\n");
+                OpenStream(&Stream, DefaultDSDevice, static_cast<void *>(this), Latency, Mix);
+
+                if (!Stream) {
+                    Log::Logf("AUDIO: Problem initializing DirectSound API. Falling back to default API.\n");
+                    OpenStream(&Stream, Pa_GetDefaultOutputDevice(), static_cast<void *>(this), Latency, Mix);
+                }
             }
         }
-        else
-        {
-            OpenStream(&Stream, DefaultDSDevice, static_cast<void*>(this), Latency, Mix);
-        }
-#else
-        CfgVar RequestedDevice("RequestedDevice", "Audio");
-        if (RequestedDevice == 0)
-            OpenStream(&Stream, Pa_GetDefaultOutputDevice(), (void*) this, Latency, Mix);
-        else
-            OpenStream(&Stream, RequestedDevice - 1, (void*) this, Latency, Mix);
 #endif
 
         if (Stream)
@@ -428,6 +445,8 @@ void GetAudioInfo()
             DefaultWasapiDevice = Index->defaultOutputDevice;
         else if (Index->type == paDirectSound)
             DefaultDSDevice = Index->defaultOutputDevice;
+        else if (Index->type == paWDMKS)
+            DefaultWDMKSDevice = Index->defaultOutputDevice;
 #endif
     }
 

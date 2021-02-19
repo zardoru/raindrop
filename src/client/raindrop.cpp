@@ -27,13 +27,13 @@ int main(int argc, char *argv[])
 {
 	RegisterSignals();
 	
-#ifdef _WIN32
+#if _WIN32 && NDEBUG
 	int cd = 0;
 	_EXCEPTION_POINTERS *ex_info;
 	__try {
 #endif
 		RunApplication(argc, argv);
-#ifdef _WIN32
+#if _WIN32 && NDEBUG
 	} 
 	__except ( ex_info = GetExceptionInformation(),
 		GetExceptionCode() == STATUS_ACCESS_VIOLATION ||

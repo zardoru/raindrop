@@ -39,7 +39,7 @@ void ImageLoader::InvalidateAll()
 {
     for (auto i = Textures.begin(); i != Textures.end(); ++i) {
 		if (ImageLoaderMessages) {
-			Log::LogPrintf("ImageLoader: Invalidate texture %s\n", i->first.string().c_str());
+			Log::LogPrintf("ImageLoader: Invalidate texture %ls\n", i->first.wstring().c_str());
 		}
         i->second->IsValid = false;
     }
@@ -73,7 +73,7 @@ void ImageLoader::DeleteImage(Texture* &ToDelete)
 			ToDelete = nullptr;
 		}
 		else {
-			Log::LogPrintf("ImageLoader: Attempt to delete texture not registered in loader (%s)\n", ToDelete->fname.string().c_str());
+			Log::LogPrintf("ImageLoader: Attempt to delete texture not registered in loader (%ls)\n", ToDelete->fname.wstring().c_str());
 		}
 	}
 	else {
@@ -177,7 +177,7 @@ ImageData ImageLoader::GetDataForImage(std::filesystem::path filename)
 				if (std::filesystem::exists(filename.replace_extension(e))) {
 					
 					if (ImageLoaderMessages)
-						Log::LogPrintf("ImageLoader: Replaced extension for %s to %s for loading.\n", filename.string().c_str(), e);
+						Log::LogPrintf("ImageLoader: Replaced extension for %ls to %s for loading.\n", filename.wstring().c_str(), e);
 
 					filename = filename.replace_extension(e);
 					found = true;
@@ -187,7 +187,7 @@ ImageData ImageLoader::GetDataForImage(std::filesystem::path filename)
 		}
 
 		if (ImageLoaderMessages && !found) {
-			Log::Printf("ImageLoader: Couldn't access \"%s\"", filename.string().c_str());
+			Log::Printf("ImageLoader: Couldn't access \"%ls\"", filename.wstring().c_str());
 			Log::Printf("\n");
 		}
 
@@ -200,7 +200,7 @@ ImageData ImageLoader::GetDataForImage(std::filesystem::path filename)
     if (!file.is_open())
     {
 		if (ImageLoaderMessages) {
-			Log::Printf("ImageLoader: Unable to open \"%s\" (but file was found).\n", filename.string().c_str());
+			Log::Printf("ImageLoader: Unable to open \"%ls\" (but file was found).\n", filename.wstring().c_str());
 		}
 
         return{};
@@ -316,7 +316,7 @@ void ImageLoader::RegisterTexture(Texture* tex)
 	if (tex->fname.string().length()) {
 		if (Textures.find(tex->fname) != Textures.end()) {
 			if (ImageLoaderMessages)
-				Log::LogPrintf("ImageLoader: Attempt to manually replace texture \"%s\" from storage\n", tex->fname.string().c_str());
+				Log::LogPrintf("ImageLoader: Attempt to manually replace texture \"%ls\" from storage\n", tex->fname.wstring().c_str());
 		}
 		else
 			Textures[tex->fname] = tex;
