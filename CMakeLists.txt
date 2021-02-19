@@ -156,11 +156,10 @@ endif()
 # ================================================
 file(GLOB_RECURSE core_files src/game/*.cpp src/game/*.c)
 add_library(rd.core STATIC ${core_files} ${MINIZIP_FILES})
-target_include_directories(rd.core PUBLIC ${LUA_INCLUDE_DIR} ${ZLIB_INCLUDE_DIR})
+target_include_directories(rd.core PUBLIC ${ZLIB_INCLUDE_DIR})
 target_link_libraries(rd.core
     rd.sndio
     rd.util
-    ${LUA_LIBRARIES} 
     ${ZLIB_LIBRARIES})
 
 if (USE_GCC)
@@ -180,35 +179,45 @@ set (BODY_SOURCE
 add_executable(rdbody
     ${BODY_SOURCE}
 )
+
+set(BODY_INCLUDE
+        ${PNG_INCLUDE_DIRS}
+        ${GLEW_INCLUDE_DIRS}
+        ${JPEG_INCLUDE_DIR}
+        ${PORTAUDIO_INCLUDE_DIRS}
+        ${Boost_INCLUDE_DIR}
+        ${LUA_INCLUDE_DIR}
+        ${FFMPEG_INCLUDE_DIR}
+        src/client/backend
+)
+
 target_include_directories(rdbody PRIVATE
-    ${PNG_INCLUDE_DIRS}
-    ${GLEW_INCLUDE_DIRS}
-    ${JPEG_INCLUDE_DIR}
-    ${PORTAUDIO_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIR}
-    ${FFMPEG_INCLUDE_DIR}
-    src/client/backend
+    ${BODY_INCLUDE}
 )
 
 if (WIN32)
     set(WINLIBS opengl32.lib Shlwapi.lib Dbghelp.lib)
 endif()
 
+set (BODY_LIBS
+        ${LUA_LIBRARIES}
+        rd.core
+        Boost::program_options
+        Boost::date_time
+        ${GLFW3_LIBRARIES}
+        ${PNG_LIBRARIES}
+        ${LUA_LIBRARIES}
+        ${JPEG_LIBRARIES}
+        ${GLEW_LIBRARIES}
+        ${Portaudio_LIBRARIES}
+        ${FFMPEG_LIBAVCODEC}
+        ${FFMPEG_LIBAVUTIL}
+        ${FFMPEG_LIBAVFORMAT}
+        ${FFMPEG_LIBSWSCALE}
+        ${WINLIBS})
+
 target_link_libraries(rdbody
-    ${LUA_LIBRARIES}
-    rd.core
-    Boost::program_options
-    Boost::date_time
-    ${GLFW3_LIBRARIES}
-    ${PNG_LIBRARIES}
-    ${JPEG_LIBRARIES}
-    ${GLEW_LIBRARIES}
-    ${Portaudio_LIBRARIES}
-    ${FFMPEG_LIBAVCODEC}
-    ${FFMPEG_LIBAVUTIL}
-    ${FFMPEG_LIBAVFORMAT}
-    ${FFMPEG_LIBSWSCALE}
-    ${WINLIBS}
+    ${BODY_LIBS}
 )
 
 

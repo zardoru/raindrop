@@ -22,7 +22,7 @@ namespace LuaAnimFuncs
         auto Lua = GetObjectFromState<LuaManager>(S, "Luaman");
         std::string File = luaL_checkstring(S, 1);
         if (!Lua->Require(GameState::GetInstance().GetScriptsDirectory() + File)) {
-            Log::LogPrintf("lua error while doing game_include: %s", Lua->GetLastError().c_str());
+            Log::LogPrintf("lua error while doing game_require: %s", Lua->GetLastError().c_str());
         }
         return 1;
     }
@@ -70,7 +70,10 @@ namespace LuaAnimFuncs
             return 1;
         }
 
-        Lua->Require(GameState::GetInstance().GetSkinScriptFile(file.c_str(), skin));
+        if (!Lua->Require(GameState::GetInstance().GetSkinScriptFile(file.c_str(), skin))) {
+            Log::LogPrintf("Failure executing lua script while running fallback_require: %s\n", Lua->GetLastError().c_str());
+        }
+
         return 1;
     }
 

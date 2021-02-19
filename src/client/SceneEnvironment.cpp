@@ -386,7 +386,9 @@ void SceneEnvironment::Preload(std::filesystem::path Filename, std::string Arrna
 {
     mInitScript = Filename;
 
-    Lua->RunScript(Filename);
+    if (!Lua->RunScript(Filename)) {
+        Log::LogPrintf("Couldn't run lua script while preloading: %s\n", Lua->GetLastError().c_str());
+    }
 
     if (Lua->UseArray(Arrname))
     {
