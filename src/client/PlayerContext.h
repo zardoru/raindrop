@@ -40,6 +40,7 @@ private:
 
     double MsDisplayMargin;
     double Drift, JudgeOffset;
+    double UnitsPerMeasure;
     bool JudgeNotes;
 
     PlayscreenParameters Parameters;

@@ -690,7 +690,7 @@ void Line::UpdateVBO()
 
 void Line::Render()
 {
-    Mat4 Identity;
+    auto Identity = glm::identity<Mat4>();
     UpdateVBO();
 
     glDisable(GL_DEPTH_TEST);
@@ -698,7 +698,7 @@ void Line::Render()
 
     // Set the color.
 	using namespace Renderer;
-	SetShaderParameters(false, false, false, false, false, true);
+	SetShaderParameters(true, false, false, false, false, false);
 
     DefaultShader::SetColor(R, G, B, A);
     Shader::SetUniform(DefaultShader::GetUniform(U_MVP), &(Identity[0][0]));

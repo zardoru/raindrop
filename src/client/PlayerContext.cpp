@@ -1026,6 +1026,8 @@ void PlayerContext::SetPlayableData(std::shared_ptr<Difficulty> diff, double Dri
             diff->Data->FileHash,
             diff->Data->IndexInFile
     );
+
+    UnitsPerMeasure = UNITS_PER_MEASURE;
 }
 
 std::vector<AutoplaySound> PlayerContext::GetBgmData() {
@@ -1111,7 +1113,7 @@ int PlayerContext::GetPacemakerValue(bool bm) const {
 
 void PlayerContext::DrawBarlines(double CurrentVertical, double UserSpeedMultiplier) {
     for (auto i : ChartState.MeasureBarlines) {
-        double realV = (CurrentVertical - i) * UserSpeedMultiplier +
+        double realV = (CurrentVertical - i * UnitsPerMeasure) * UserSpeedMultiplier +
                        PlayerNoteskin->GetBarlineOffset() * sign(UserSpeedMultiplier) + GetJudgmentY();
         if (realV > 0 && realV < ScreenWidth) {
             Barline->SetLocation(Vec2(PlayerNoteskin->GetBarlineStartX(), realV),
@@ -1125,7 +1127,6 @@ Mat4 id;
 
 int PlayerContext::DrawMeasures(double song_time) {
     int rnc = 0;
-    float upm = UNITS_PER_MEASURE;
     /*
         DrawMeasures should get the unwarped song time.
         Internally, it uses warped song time.
@@ -1133,7 +1134,7 @@ int PlayerContext::DrawMeasures(double song_time) {
     auto wt = ChartState.GetWarpedSongTime(song_time);
 
     // note Y displacement at song_time
-    auto chart_displacement = ChartState.GetChartDisplacementAt(wt) * upm;
+    auto chart_displacement = ChartState.GetChartDisplacementAt(wt) * UnitsPerMeasure;
 
     // effective speed multiplier
     auto chart_multiplier = GetAppliedSpeedMultiplier(song_time);
@@ -1168,7 +1169,7 @@ int PlayerContext::DrawMeasures(double song_time) {
     for (auto k = 0U; k < CurrentDiff->Channels; k++) {
         // From the note's vertical StaticVert transform to position on screen.
         auto Locate = [&](double StaticVert) -> double {
-            return (chart_displacement - StaticVert * upm) * effective_chart_speed_multiplier + jy;
+            return (chart_displacement - StaticVert * UnitsPerMeasure) * effective_chart_speed_multiplier + jy;
         };
 
         auto Start = Notes[k].begin();

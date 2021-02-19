@@ -23,6 +23,9 @@ void RegisterSignals() {
 	signal(SIGSEGV, signalrec);
 
 #ifdef _WIN32
+#ifndef NDEBUG
+	Log::LogPrintf("Initializing DbgHelp.\n");
+#endif
 	InitDbgHelp();
 #endif
 }
@@ -89,7 +92,12 @@ void PrintTraceFromContext(CONTEXT &ctx)
 		// Eh.. 32 frames?
 		while (true) {
 
-			if (!StackWalk64(IMAGE_FILE_MACHINE_I386,
+#if _WIN64
+		    auto img = IMAGE_FILE_MACHINE_AMD64;
+#else
+            auto img = IMAGE_FILE_MACHINE_I386;
+#endif
+			if (!StackWalk64(img,
 				handle,
 				thread_handle,
 				&stackframe,
