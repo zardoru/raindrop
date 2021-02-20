@@ -301,8 +301,20 @@ class OsumaniaLoader
 		{
 			for (auto i = Notes[k].begin(); i != Notes[k].end(); ++i)
 			{
-				double Beat = QuantizeBeat(IntegrateToTime(BPS, i->StartTime));
+				double Beat;
 				double CurrentBeat = 0; // Lower bound of this measure
+
+				if (!isnan(i->StartTime)) {
+                    Beat = QuantizeBeat(IntegrateToTime(BPS, i->StartTime));
+				} else {
+				    if (isnan(i->EndTime))
+				        continue; // ???? why
+
+                    i->NoteKind = NK_FAKE;
+                    i->StartTime = i->EndTime;
+                    i->EndTime = 0;
+				    Beat = QuantizeBeat(IntegrateToTime(BPS, i->EndTime));
+				}
 
 				if (Beat < 0)
 				{
@@ -573,7 +585,8 @@ public:
 		SecData.IsInherited = IsInherited;
 		SecData.Omit = false; // adjust if taiko bar omission is up
 
-		HitsoundSections.push_back(SecData);
+		if (!isnan(SecData.Time)) // ._.
+    		HitsoundSections.push_back(SecData);
 	}
 	/*
 		This function is mostly correct; the main issue is that we'd have to know

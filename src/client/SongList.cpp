@@ -12,6 +12,7 @@
 
 ListEntry::ListEntry() {
 	Kind = Directory;
+	SelectedIndex = 0;
 }
 
 SongList::SongList(SongList* Parent)
@@ -80,7 +81,8 @@ void SongList::AddNamedDirectory(
 	std::mutex &loadMutex, 
 	SongLoader *Loader, 
 	std::filesystem::path Dir, 
-	std::string Name)
+	std::string Name,
+	OnLoadNotifyFunc OnSongLoaded)
 {
     bool EntryWasPushed = false;
     auto* NewList = new SongList(this);
@@ -114,7 +116,7 @@ void SongList::AddNamedDirectory(
                 EntryWasPushed = true;
             }
 
-            NewList->AddDirectory(loadMutex, Loader, i);
+            NewList->AddDirectory(loadMutex, Loader, i, OnSongLoaded);
 
             {
                 std::unique_lock<std::mutex> lock(loadMutex);
@@ -148,12 +150,17 @@ void SongList::AddNamedDirectory(
                 EntryWasPushed = true;
             }
         }
+
+        if (EntryWasPushed) {
+            if (OnSongLoaded)
+                OnSongLoaded ();
+        }
     }
 }
 
-void SongList::AddDirectory(std::mutex &loadMutex, SongLoader *Loader, std::filesystem::path Dir)
+void SongList::AddDirectory(std::mutex &loadMutex, SongLoader *Loader, std::filesystem::path Dir, OnLoadNotifyFunc OnSongLoaded)
 {
-    AddNamedDirectory(loadMutex, Loader, Dir, Conversion::ToU8(Dir.filename().wstring()));
+    AddNamedDirectory(loadMutex, Loader, Dir, Conversion::ToU8(Dir.filename().wstring()), OnSongLoaded);
 }
 
 void SongList::AddVirtualDirectory(std::string NewEntryName, rd::Song* List, int Count)

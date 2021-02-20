@@ -49,19 +49,6 @@ float pow_ease_inout(float lerp)
 inline float passthrough(float v) { return v; }
 
 
-extern std::function<float(float)> ease_none;
-extern std::function<float(float)> ease_in;
-extern std::function<float(float)> ease_out;
-extern std::function<float(float)> ease_inout;
-extern std::function<float(float)> ease_3in;
-extern std::function<float(float)> ease_3out;
-extern std::function<float(float)> ease_3inout;
-extern std::function<float(float)> ease_4in;
-extern std::function<float(float)> ease_4out;
-extern std::function<float(float)> ease_4inout;
-extern std::function<float(float)> ease_5in;
-extern std::function<float(float)> ease_5out;
-extern std::function<float(float)> ease_5inout;
 
 
 

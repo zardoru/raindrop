@@ -113,8 +113,9 @@ public:
 
         for (auto & Directorie : Directories)
         {
-            ListRoot->AddNamedDirectory(*mLoadMutex, &Loader, Directorie.second, Directorie.first);
-			SongWheel::GetInstance().ReapplyFilters();
+            ListRoot->AddNamedDirectory(*mLoadMutex, &Loader, Directorie.second, Directorie.first, [] {
+                SongWheel::GetInstance().ReapplyFilters();
+            });
         }
 
         DB->EndTransaction();
@@ -557,7 +558,7 @@ void SongWheel::ReapplyFilters()
 	if (!CurrentList) return;
 
 	FilteredCurrentList.Clear();
-	for (auto entry : CurrentList->GetEntries()) {
+	for (const auto& entry : CurrentList->GetEntries()) {
 		bool add = true;
 
 		if (entry.Kind == ListEntry::Song) {
@@ -568,7 +569,7 @@ void SongWheel::ReapplyFilters()
 
 		// all filters pass?
 		// no filters means next block is skipped, so always adds
-		for (auto can_add : ActiveFilters) {
+		for (const auto& can_add : ActiveFilters) {
 			// this one doesn't
 			if (!can_add(&entry)) {
 				add = false;

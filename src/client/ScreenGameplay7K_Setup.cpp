@@ -71,8 +71,10 @@ ScreenGameplay::ScreenGameplay() : Screen("ScreenGameplay7K") {
 }
 
 void ScreenGameplay::Cleanup() {
-    if (Music)
+    if (Music) {
         Music->Stop();
+        GetMixer()->RemoveStream(Music.get());
+    }
 
     for (auto& k : Keysounds) {
         for (auto &s: k.second)
@@ -184,6 +186,7 @@ bool ScreenGameplay::LoadSongAudio() {
             && attempt_music_load
             && Music->Open(s)) {
             Log::Printf("Stream for %s succesfully opened.\n", MySong->SongFilename.c_str());
+            GetMixer()->AddStream(Music.get());
         } else {
             if (!Players[0]->GetPlayerState().IsVirtual()) {
                 // Caveat: Try to autodetect an mp3/ogg file.

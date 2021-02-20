@@ -47,21 +47,21 @@ pivot OriginPivots[] = {
 };
 
 std::function<float(float)> EasingFuncs[] = {
-	ease_none,
-	ease_out,
-	ease_in,
-	ease_out,
-	ease_in,
-	ease_inout,
-	ease_3in,
-	ease_3out,
-	ease_3inout,
-	ease_4in,
-	ease_4out,
-	ease_4inout,
-	ease_5in,
-	ease_5out,
-	ease_5inout
+    passthrough,
+    pow_ease_out<2>,
+    pow_ease_in<2>,
+    pow_ease_out<2>,
+    pow_ease_in<2>,
+    pow_ease_inout<2>,
+    pow_ease_in<3>,
+    pow_ease_out<3>,
+    pow_ease_inout<3>,
+    pow_ease_in<4>,
+    pow_ease_out<4>,
+    pow_ease_inout<4>,
+    pow_ease_in<5>,
+    pow_ease_out<5>,
+    pow_ease_inout<5>,
 };
 
 

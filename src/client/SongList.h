@@ -11,6 +11,7 @@ struct ListEntry
     } Kind;
     std::shared_ptr<void> Data;
     std::string EntryName;
+    int SelectedIndex;
 	ListEntry();
 };
 
@@ -24,6 +25,8 @@ enum ESortCriteria
 	SORT_MINLEVEL,
 	SORT_COUNT
 };
+
+typedef std::function<void()> OnLoadNotifyFunc;
 
 class SongList
 {
@@ -43,8 +46,8 @@ public:
 
 	void ClearEmpty();
 
-    void AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, std::filesystem::path Dir, std::string Name);
-    void AddDirectory(std::mutex &loadMutex, SongLoader *Loader, std::filesystem::path Dir);
+    void AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, std::filesystem::path Dir, std::string Name, OnLoadNotifyFunc OnSongLoaded = nullptr);
+    void AddDirectory(std::mutex &loadMutex, SongLoader *Loader, std::filesystem::path Dir, OnLoadNotifyFunc OnSongLoaded = nullptr);
     void AddVirtualDirectory(std::string NewEntryName, rd::Song* List, int Count);
     void AddSong(std::shared_ptr<rd::Song> Song);
 	
