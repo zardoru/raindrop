@@ -171,7 +171,7 @@ void ScreenGameplay::RunAutoEvents() {
         }
     }
 
-    BGA->SetAnimationTime(Time.InterpolatedStream);
+    BGA->SetAnimationTime(Time.Stream);
 }
 
 void ScreenGameplay::CheckShouldEndScreen() {
@@ -274,7 +274,7 @@ bool ScreenGameplay::SongHasFinished() {
 
     // music is not playing, game is active...
     if (Music && !Music->IsPlaying() && Active) {
-        runtime = Time.InterpolatedStream;
+        runtime = Time.Stream;
     }
 
     for (auto &player : Players) {
@@ -286,56 +286,34 @@ bool ScreenGameplay::SongHasFinished() {
 }
 
 void ScreenGameplay::UpdateSongTime(float Delta) {
-    // Check if we should play the music..
-    if (Time.OldStream == -1) {
-        if (Music)
+
+    // First call.
+    if (isnan(Time.OldStream)) {
+        if (Music && Music->IsValid()) {
+            if (Time.Stream == 0) /* we have not sought already */
+                Music->SeekTime(-Time.Waiting);
+
             Music->Play();
-        Time.AudioStart = MixerGetTime();
-        Time.AudioOld = Time.AudioStart;
-        if (StartMeasure <= 0) {
-            Time.InterpolatedStream = 0;
-            Time.Stream = 0;
+        } else {
+            Time.Stream = -Time.Waiting;
         }
-    } else {
-        /* Update music. */
-        Time.InterpolatedStream += Delta * GetPlayerContext(0)->GetRate();
+
+        Time.AudioOld = GetMixer()->GetTime();
     }
 
-    // Update for the next delta.
+    // UpdateDecoder for the next delta.
     Time.OldStream = Time.Stream;
 
-    // Run interpolation
-    double CurrAudioTime = MixerGetTime();
-    double SongDelta = 0;
-    if (Music && Music->IsPlaying())
-        SongDelta = Music->GetStreamedTime() - Time.OldStream;
-    else
-        SongDelta = (CurrAudioTime - Time.AudioOld);
-
-    SongDelta *= GetPlayerContext(0)->GetRate();
-
-
-    double deltaErr = abs(Time.Stream - Time.InterpolatedStream);
-    bool AboveTolerance = deltaErr * 1000 > TimeError.ToleranceMS;
-    if ((SongDelta != 0 && AboveTolerance) ||
-        !Time.InterpolateStream) // Significant delta with a x ms difference? We're pretty off..
-    {
-        if (TimeError.ToleranceMS && Time.InterpolateStream)
-            Log::LogPrintf(
-                    "Audio Desync: delta = %f ms difference = %f ms."
-                    " Real song time %f (expected %f) Audio current time: %f (old = %f)\n",
-                    SongDelta * 1000,
-                    deltaErr * 1000,
-                    Time.Stream,
-                    Time.InterpolatedStream,
-                    CurrAudioTime,
-                    Time.AudioOld);
-
-        Time.InterpolatedStream = Time.Stream;
+    // Current Time
+    if (Music && Music->IsValid())
+        /* map stream time to DAC queued sample times */
+        Time.Stream = Music->MapStreamClock(GetMixer()->GetTime(), GetMixer()->GetRate());
+    else {
+        /* these remain deltas for rates*/
+        double CurrAudioTime = GetMixer()->GetTime();
+        Time.Stream += CurrAudioTime - Time.AudioOld;
+        Time.AudioOld = CurrAudioTime;
     }
-
-    Time.AudioOld = CurrAudioTime;
-    Time.Stream += SongDelta;
 }
 
 void
@@ -420,14 +398,10 @@ bool ScreenGameplay::Run(double Delta) {
         Time.Failure -= Delta;
         Time.Success -= Delta;
 
-        if (Time.Game >= Time.Waiting) {
-            UpdateSongTime(Delta);
+        UpdateSongTime(Delta);
 
-            // PlayerContext::Update(Time.Stream)
+        if (Time.Game >= Time.Waiting) {
             CheckShouldEndScreen();
-        } else {
-            Time.InterpolatedStream = -(Time.Waiting - Time.Game);
-            Time.Stream = Time.InterpolatedStream;
         }
     }
 
@@ -459,10 +433,10 @@ void ScreenGameplay::Render() {
                     reg.X1, reg.Y1, reg.width(), reg.height()
             );
 
-            p->Render(Time.InterpolatedStream);
+            p->Render(Time.Stream);
             Renderer::SetScissor(false);
         } else {
-            p->Render(Time.InterpolatedStream);
+            p->Render(Time.Stream);
         }
 
         Animations->DrawFromLayer(14);

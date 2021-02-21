@@ -50,7 +50,9 @@ namespace LuaAnimFuncs
         auto *Lua = GetObjectFromState<LuaManager>(L, "Luaman");
         std::string Request = luaL_checkstring(L, 1);
         auto File = GameState::GetInstance().GetSkinScriptFile(Request.c_str(), GameState::GetInstance().GetSkin());
-        Lua->Require(File);
+        if (!Lua->Require(File)) {
+            Log::LogPrintf("Error while calling require: %s\n", Lua->GetLastError().c_str());
+        }
 
 		// return whatever lua->require left on the stack.
         return 1;

@@ -51,13 +51,11 @@ bool isChartLoaded;
 
 ScreenGameplay::ScreenGameplay() : Screen("ScreenGameplay7K") {
     Time = {};
-    Time.OldStream = -1;
+    Time.OldStream = NAN;
     Music = nullptr;
 
     StageFailureTriggered = false;
     SongPassTriggered = false;
-
-    Time.InterpolateStream = (Configuration::GetConfigf("InterpolateTime") != 0);
 
     LoadedSong = nullptr;
     Active = false;
@@ -94,11 +92,11 @@ void ScreenGameplay::AssignMeasure(uint32_t Measure) {
     while (BGMEvents.size() && BGMEvents.front() <= wt)
         BGMEvents.pop();
 
-    Time.Stream = Time.InterpolatedStream = mt;
+    Time.Stream = mt;
 
     if (Music) {
         Log::Printf("ScreenGameplay7K: Setting player to time %f.\n", mt);
-        Time.OldStream = -1;
+        Time.OldStream = NAN;
         Music->SeekTime(Time.Stream);
     }
 
@@ -366,8 +364,7 @@ bool ScreenGameplay::ProcessSong() {
     if (!diff) // possibly preloaded
         diff = MySong->GetDifficulty(0);
 
-    if (Time.InterpolateStream &&  // Apply drift is enabled and:
-        ((ApplyDriftVirtual && diff->IsVirtual) ||  // We want to apply it to a keysounded file and it's virtual
+    if (((ApplyDriftVirtual && diff->IsVirtual) ||  // We want to apply it to a keysounded file and it's virtual
          (ApplyDriftDecoder &&
           diff->IsVirtual))) // or we want to apply it to a non-keysounded file and it's not virtual
         TimeError.AudioDrift += MixerGetLatency();

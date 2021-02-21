@@ -21,15 +21,14 @@ private:
     std::shared_ptr<rd::Song>			 LoadedSong;
 
     struct {
-        double InterpolatedStream, Stream;
+        double Stream;
         double OldStream; // Previous frame's stream song time
         double Waiting; // Time before T = 0
         double Game; // Overall screen time
         double Miss; // Time for showing MISS layer
         double Failure; // Time for showing Failure state
         double Success; // Time for showing Success state
-        double AudioStart, AudioOld; // DAC thread start time and previous DAC time
-        bool InterpolateStream;
+        double AudioOld; // DAC thread start time and previous DAC time
     } Time;
 
     struct {

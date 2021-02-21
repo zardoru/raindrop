@@ -41,8 +41,8 @@ int main(int argc, char *argv[])
 		PrintTraceFromContext(*ex_info->ContextRecord);
 
 		MessageBox(nullptr, 
-			"raindrop has crashed. Please see the log for details and maybe send it to github with a report of what you were doing to try and fix it.",
-			"Crash!", MB_OK | MB_ICONERROR);
+			L"raindrop has crashed. Please see the log for details and maybe send it to github with a report of what you were doing to try and fix it.",
+			L"Crash!", MB_OK | MB_ICONERROR);
 	}
 #endif
 

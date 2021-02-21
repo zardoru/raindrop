@@ -64,7 +64,7 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, void* Sound, double
 			outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultHighOutputLatency;
 	} else
 	{
-		outputParams.suggestedLatency = RequestedLatency.flt();
+		outputParams.suggestedLatency = RequestedLatency.flt() / 1000.f;
 	}
 
 	Log::Logf("AUDIO: Requesting latency of %f ms\n", outputParams.suggestedLatency * 1000);
@@ -179,6 +179,7 @@ class PaMixer : public IMixer
     PaUtilRingBuffer RingBuf;
 
     double Latency;
+    double Rate;
 
     std::vector<AudioStream*> Streams;
     std::vector<AudioSample*> Samples;
@@ -188,10 +189,11 @@ class PaMixer : public IMixer
     bool Threaded;
     std::atomic<bool> WaitForRingbufferSpace;
 
-    std::mutex mut, mut2, rbufmux;
+    std::mutex mutex_stream, mutex_decoder, rbufmux;
     std::condition_variable ringbuffer_has_space;
 
     PaMixer() {
+        Rate = 44100;
 		Stream = nullptr;
 	}
 public:
@@ -205,10 +207,7 @@ public:
 
 	double GetRate()
 	{
-		if (!Stream)
-			return 44100.0;
-
-		return Pa_GetStreamInfo(Stream)->sampleRate;
+		return Rate;
     }
 
     void Initialize(bool StartThread)
@@ -263,6 +262,7 @@ public:
             Pa_StartStream(Stream);
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             Latency = Pa_GetStreamInfo(Stream)->outputLatency;
+            Rate = Pa_GetStreamInfo(Stream)->sampleRate;
             Log::Logf("AUDIO: Latency after opening stream = %fms \n", Latency * 1000);
         }
 
@@ -276,10 +276,10 @@ public:
             WaitForRingbufferSpace = true;
 
             {
-                mut2.lock();
+                mutex_decoder.lock();
                 for (auto & item : Streams)
-                    item->Update();
-                mut2.unlock();
+                    item->UpdateDecoder();
+                mutex_decoder.unlock();
             }
 
             if (Threaded)
@@ -296,17 +296,17 @@ public:
 
     void AddStream(AudioStream* Stream) override
     {
-        mut2.lock();
-        mut.lock();
+        mutex_decoder.lock();
+        mutex_stream.lock();
         Streams.push_back(Stream);
-        mut.unlock();
-        mut2.unlock();
+        mutex_stream.unlock();
+        mutex_decoder.unlock();
     }
 
     void RemoveStream(AudioStream *Stream) override
     {
-        mut2.lock();
-        mut.lock();
+        mutex_decoder.lock();
+        mutex_stream.lock();
         for (auto i = Streams.begin(); i != Streams.end();)
         {
             if ((*i) == Stream)
@@ -320,23 +320,23 @@ public:
 
             ++i;
         }
-        mut.unlock();
-        mut2.unlock();
+        mutex_stream.unlock();
+        mutex_decoder.unlock();
     }
 
     void AddSample(AudioSample* Sample) override
     {
-        mut2.lock();
-        mut.lock();
+        mutex_decoder.lock();
+        mutex_stream.lock();
         Samples.push_back(Sample);
-        mut.unlock();
-        mut2.unlock();
+        mutex_stream.unlock();
+        mutex_decoder.unlock();
     }
 
     void RemoveSample(AudioSample* Sample) override
     {
-        mut2.lock();
-        mut.lock();
+        mutex_decoder.lock();
+        mutex_stream.lock();
         for (auto i = Samples.begin(); i != Samples.end();)
         {
             if ((*i) == Sample)
@@ -350,8 +350,8 @@ public:
 
             ++i;
         }
-        mut.unlock();
-        mut2.unlock();
+        mutex_stream.unlock();
+        mutex_decoder.unlock();
     }
 
     double GetTime() override
@@ -375,18 +375,40 @@ public:
 
         bool streaming = false;
         {
-            mut.lock();
+            mutex_stream.lock();
             for (auto & Stream : Streams)
             {
-				if (Stream->GetStreamedTime() == 0) {
-					Stream->mStreamStartTime = timeInfo->outputBufferDacTime;
-				}
+                /*
+                 * first, update our clocks
+                 * */
+//                atomic_stream_time_t new_clock = Stream->dac_clock;
+//                new_clock.clock_map_index = (new_clock.clock_map_index + 1) % 2;
+//                auto& map = new_clock.clock_map[new_clock.clock_map_index];
+//                Stream->dac_clock.store(new_clock);
 
-                size_t read = Stream->Read(ts, samples);
+                auto read_frames_start = Stream->GetReadFrames();
+                auto read = Stream->Read(ts, samples);
+                auto read_frames_end = Stream->GetReadFrames();
+
+                if (read > 0) {
+                    stream_time_map_t map{
+                            timeInfo->outputBufferDacTime,
+                            timeInfo->outputBufferDacTime + (read / 2) / GetRate(),
+                            read_frames_start,
+                            read_frames_end
+                    };
+
+                    Stream->QueueStreamClock(map);
+
+                    for (size_t k = 0; k < read; k++)
+                        out[k] += ts[k];
+                }
+
+                /**
+                 * Copy read data into output
+                 */
 
                 streaming |= Stream->IsPlaying();
-                for (size_t k = 0; k < read; k++)
-                    out[k] += ts[k];
             }
 
             for (auto & Sample : Samples)
@@ -397,7 +419,7 @@ public:
                     out[k] += ts[k];
             }
 
-            mut.unlock();
+            mutex_stream.unlock();
         }
 
         if (streaming)

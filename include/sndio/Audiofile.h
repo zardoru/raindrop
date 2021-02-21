@@ -31,7 +31,7 @@ public:
     virtual uint32_t Read(float* buffer, size_t count) = 0;
     virtual bool Open(std::filesystem::path Filename) = 0;
     virtual void Play() = 0;
-    virtual bool IsPlaying() = 0;
+    virtual bool IsPlaying() const = 0;
     virtual void SeekTime(float Second) = 0;
     virtual void SeekSample(uint32_t Sample) = 0;
     virtual void Stop() = 0;
@@ -76,12 +76,29 @@ public:
 	// returns duration in seconds
 	double GetDuration();
 
-    bool IsPlaying() override;
+    bool IsPlaying() const override;
     void Slice(float audio_start, float audio_end);
     std::shared_ptr<AudioSample> CopySlice();
     // void Mix(AudioSample& Other);
     bool IsValid() const;
 };
+
+struct stream_time_map_t {
+    double clock_start, clock_end;
+    int64_t frame_start, frame_end;
+    inline double map(double clock, double sample_rate) {
+        double t_relative = (clock - clock_start) / (clock_end - clock_start);
+        /* if (t_relative < 0) t_relative = 0; /* clamp t_relative - probably fine if it's negative */
+        if (t_relative > 1) t_relative = 1;
+
+        return ((frame_end - frame_start) * t_relative + frame_start) / sample_rate;
+    }
+};
+//
+//struct atomic_stream_time_t {
+//    stream_time_map_t clock_map[2];
+//    unsigned char clock_map_index;
+//};
 
 class AudioStream : public Sound
 {
@@ -92,21 +109,25 @@ class AudioStream : public Sound
 
     std::unique_ptr<AudioDataSource> mSource;
     unsigned int     mBufferSize;
-    std::vector<short>	 mData;
+    std::vector<short>	 mDecodedData;
     std::vector<short>	 mResampleBuffer;
-    std::vector<short>	 mOutputBuffer;
     short			 tbuf[8192];
     double			 mStreamTime;
     double			 mPlaybackTime;
 
+    /* total # of frames pulled after a Read operation. Can be negative for syncing purposes.
+     * Is in the sampling rate of the target sample rate, not the source sample rate */
+    int64_t           mReadFrames;
+
     bool			 mIsPlaying;
     IMixer *mOwnerMixer;
+    stream_time_map_t current_clock;
 public:
     AudioStream();
     AudioStream(IMixer* owner_mixer);
     ~AudioStream();
 
-	double mStreamStartTime;
+//    std::atomic<atomic_stream_time_t> dac_clock;
 
     uint32_t Read(float* buffer, size_t count) override;
     bool Open(std::filesystem::path Filename) override;
@@ -114,16 +135,20 @@ public:
     void SeekTime(float Second) override;
     void SeekSample(uint32_t Sample) override;
     void Stop() override;
+    bool IsValid();
+
+    int64_t GetReadFrames() const;
 
     double GetStreamedTime() const;
     double GetPlayedTime() const;
+    bool QueueStreamClock(const stream_time_map_t &map);
 
-	// return time that has been played according to the DAC clock
-	// based off current mixer time and mStreamStartTime, assigned by audio.cpp
-	double GetPlayedTimeDAC() const;
+    /* maps a stream clock time to a point in time of the song. */
+    double MapStreamClock(double stream_clock, double real_sample_rate);
+
 
     uint32_t GetRate() const;
 
-    uint32_t Update();
-    bool IsPlaying() override;
+    uint32_t UpdateDecoder();
+    bool IsPlaying() const override;
 };

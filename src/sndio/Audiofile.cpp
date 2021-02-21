@@ -1,3 +1,4 @@
+#include <array>
 #include "av-io-common-pch.h"
 #include "Audiofile.h"
 #include "IMixer.h"
@@ -13,10 +14,14 @@
 
 #include <soxr.h>
 
+
 class AudioStream::AudioStreamInternal
 {
     public:
-    PaUtilRingBuffer mRingBuf;
+    PaUtilRingBuffer mDecodedDataRingbuffer;
+
+    std::array<uint8_t, 4096> mBufClockData;
+    PaUtilRingBuffer mBufClock;
     soxr_t			 mResampler;
 };
 
@@ -324,7 +329,7 @@ double AudioSample::GetDuration()
 	return mAudioEnd - mAudioStart;
 }
 
-bool AudioSample::IsPlaying()
+bool AudioSample::IsPlaying() const
 {
     return mIsPlaying;
 }
@@ -484,8 +489,12 @@ AudioStream::AudioStream()
     mSource = nullptr;
     mOwnerMixer = nullptr;
     internal = std::make_unique<AudioStreamInternal>();
-    
 
+    current_clock = {};
+
+    // dac_clock.store({});
+
+    mReadFrames = 0;
     mStreamTime = 0;
 
     // MixerAddStream(this);
@@ -501,9 +510,8 @@ AudioStream::~AudioStream()
 
 uint32_t AudioStream::Read(float* buffer, size_t count)
 {
-    size_t cnt;
     ring_buffer_size_t toRead = count; // Count is the amount of samples.
-    size_t outcnt;
+    size_t padded = 0;
 
     if (!mSource || !mSource->IsValid())
     {
@@ -511,11 +519,25 @@ uint32_t AudioStream::Read(float* buffer, size_t count)
         return 0;
     }
 
+    if (mIsPlaying && mReadFrames < 0) {
+        /* advance buffer padding first */
+        ring_buffer_size_t read_frames_positive = abs(mReadFrames);
+
+        /* multiply frames by channels (2) to get samples */
+        int64_t padding_len = std::min(toRead, read_frames_positive * 2);
+        memset(buffer, 0, padding_len * sizeof(float));
+        buffer += padding_len;
+        toRead -= padding_len;
+        mReadFrames += padding_len / 2;
+
+        padded = padding_len;
+    }
+
     if (Channels == 1) // We just want half the samples.
         toRead >>= 1;
 
-    if (PaUtil_GetRingBufferReadAvailable(&internal->mRingBuf) < toRead || !mIsPlaying)
-        toRead = PaUtil_GetRingBufferReadAvailable(&internal->mRingBuf);
+    if (PaUtil_GetRingBufferReadAvailable(&internal->mDecodedDataRingbuffer) < toRead || !mIsPlaying)
+        toRead = PaUtil_GetRingBufferReadAvailable(&internal->mDecodedDataRingbuffer);
 
     double dstrate = mSource->GetRate();
     if (mOwnerMixer)
@@ -531,36 +553,36 @@ uint32_t AudioStream::Read(float* buffer, size_t count)
         double RateRatio = resRate / origRate;
 
         // This is how many samples we want to read from the source buffer
-        size_t scount = ceil(origRate * toRead / resRate);
+        size_t scount = ceil(origRate / resRate * toRead);
 
-        cnt = PaUtil_ReadRingBuffer(&internal->mRingBuf, mResampleBuffer.data(), scount);
+        size_t cnt = PaUtil_ReadRingBuffer(&internal->mDecodedDataRingbuffer, mResampleBuffer.data(), scount);
         // cnt now contains how many samples we actually read...
 
-        if (!cnt) return 0; // ????
-
-        // This is how many resulting samples we can output with what we read...
-        outcnt = floor(cnt * resRate / origRate);
-
-        size_t odone;
+        if (!cnt)
+            return padded; // case 1: pure padding. case 2: really just not enough data has been decoded
 
         if (Channels == 1) // Turn mono audio to stereo audio.
             monoToStereo(mResampleBuffer.data(), cnt, BUFF_SIZE);
 
+        size_t outcnt = floor(cnt * resRate / origRate);
+
         soxr_set_io_ratio(internal->mResampler, 1 / RateRatio, cnt / 2);
 
         // The count that soxr asks for I think, is frames, not samples. Thus, the division by channels.
+        size_t odone;
         soxr_process(internal->mResampler,
             mResampleBuffer.data(), cnt / Channels, nullptr,
-            mOutputBuffer.data(), outcnt / Channels, &odone);
+            buffer, outcnt / Channels, &odone);
 
-        outcnt = odone;
-
-        // * 2 from * Channels since we mono -> stereo mono signals.
-        s16tof32(mOutputBuffer.begin(), mOutputBuffer.begin() + odone * 2, buffer);
-
+        mReadFrames += odone;
         mStreamTime += double(cnt / Channels) / mSource->GetRate();
-        // mPlaybackTime = mStreamTime - MixerGetLatency();
-        return outcnt * 2;
+        return odone * 2 + padded;
+
+        // simple no resampling
+        /* s16tof32(mResampleBuffer.begin(), mResampleBuffer.begin() + cnt, buffer);
+        mReadFrames += cnt / Channels;
+        mStreamTime += double(cnt / Channels) / mSource->GetRate();
+        return cnt; */
     }
 
     return 0;
@@ -576,12 +598,11 @@ bool AudioStream::Open(std::filesystem::path Filename)
         Channels = mSource->GetChannels();
 
         mResampleBuffer.resize(BUFF_SIZE);
-        mOutputBuffer.resize(BUFF_SIZE);
 
-        soxr_io_spec_t sis;
+        soxr_io_spec_t sis{};
         sis.flags = 0;
         sis.itype = SOXR_INT16_I;
-        sis.otype = SOXR_INT16_I;
+        sis.otype = SOXR_FLOAT32_I;
         sis.scale = 1;
 
         double dstrate = mSource->GetRate();
@@ -599,11 +620,25 @@ bool AudioStream::Open(std::filesystem::path Filename)
         );
 
         mBufferSize = BUFF_SIZE;
-        mData.resize(mBufferSize);
-        assert(mData.size() == mBufferSize);
-        PaUtil_InitializeRingBuffer(&internal->mRingBuf, sizeof(short), mBufferSize, mData.data());
+        mDecodedData.resize(mBufferSize);
+        assert(mDecodedData.size() == mBufferSize);
+        PaUtil_InitializeRingBuffer(
+            &internal->mDecodedDataRingbuffer, 
+            sizeof(short), 
+            mBufferSize, 
+            mDecodedData.data()
+        );
 
-        mStreamTime = mPlaybackTime = 0;
+        PaUtil_InitializeRingBuffer(
+            &internal->mBufClock,
+            sizeof(stream_time_map_t),
+            4096 / sizeof(stream_time_map_t),
+            internal->mBufClockData.data()
+        );
+
+        current_clock = {};
+
+        mStreamTime = mPlaybackTime = mReadFrames = 0;
 
         SeekTime(0);
 
@@ -613,7 +648,7 @@ bool AudioStream::Open(std::filesystem::path Filename)
     return false;
 }
 
-bool AudioStream::IsPlaying()
+bool AudioStream::IsPlaying() const
 {
     return mIsPlaying;
 }
@@ -622,14 +657,16 @@ void AudioStream::Play()
 {
 	if (mSource && mSource->IsValid()) {
 		mIsPlaying = true;
-		mStreamStartTime = -std::numeric_limits<float>::infinity();
 	}
 }
 
 void AudioStream::SeekTime(float Second)
 {
-    if (mSource)
+    if (mSource) {
         mSource->Seek(Second);
+    }
+
+    mReadFrames = Second * GetRate();
     mStreamTime = Second;
 }
 
@@ -653,9 +690,9 @@ void AudioStream::Stop()
     mIsPlaying = false;
 }
 
-uint32_t AudioStream::Update()
+uint32_t AudioStream::UpdateDecoder()
 {
-    uint32_t eCount = PaUtil_GetRingBufferWriteAvailable(&internal->mRingBuf);
+    uint32_t eCount = PaUtil_GetRingBufferWriteAvailable(&internal->mDecodedDataRingbuffer);
     uint32_t ReadTotal;
 
     if (!mSource || !mSource->IsValid()) return 0;
@@ -664,29 +701,49 @@ uint32_t AudioStream::Update()
 
     if ((ReadTotal = mSource->Read(tbuf, eCount)))
     {
-        PaUtil_WriteRingBuffer(&internal->mRingBuf, tbuf, ReadTotal);
+        PaUtil_WriteRingBuffer(&internal->mDecodedDataRingbuffer, tbuf, ReadTotal);
     }
     else
     {
-        if (!PaUtil_GetRingBufferReadAvailable(&internal->mRingBuf) && !mSource->HasDataLeft())
+        if (!PaUtil_GetRingBufferReadAvailable(&internal->mDecodedDataRingbuffer) && !mSource->HasDataLeft())
             mIsPlaying = false;
     }
 
     return ReadTotal;
 }
 
-double AudioStream::GetPlayedTimeDAC() const
-{
-    if (mOwnerMixer)
-	    return std::max(mOwnerMixer->GetTime() - mStreamStartTime, 0.0);
-    else
-        return GetStreamedTime();
-}
-
 uint32_t AudioStream::GetRate() const
 {
     return mSource->GetRate();
 }
+
+double AudioStream::MapStreamClock(double stream_clock, double real_sample_rate) {
+    if (mReadFrames == 0) return 0; /* no data has been streamed */
+
+    while (current_clock.clock_end < stream_clock) { /* this is over */
+
+        /* if there are no pending clock maps on the ring buffer */
+        if (!PaUtil_ReadRingBuffer(&internal->mBufClock, &current_clock, 1)) {
+            break;
+        }
+    }
+
+    return current_clock.map(stream_clock, real_sample_rate);
+}
+
+int64_t AudioStream::GetReadFrames() const {
+    return mReadFrames;
+}
+
+bool AudioStream::QueueStreamClock(const stream_time_map_t& map) {
+    if (PaUtil_GetRingBufferWriteAvailable(&internal->mBufClock) > 0) {
+        PaUtil_WriteRingBuffer(&internal->mBufClock, &map, 1);
+        return true;
+    }
+
+    return false;
+}
+
 
 AudioDataSource::AudioDataSource()
 {
@@ -700,4 +757,9 @@ AudioDataSource::~AudioDataSource()
 void AudioDataSource::SetLooping(bool Loop)
 {
     mSourceLoop = Loop;
+}
+
+bool AudioStream::IsValid()
+{
+    return mSource && mSource->IsValid();
 }

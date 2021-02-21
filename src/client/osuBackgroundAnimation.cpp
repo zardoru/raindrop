@@ -1209,7 +1209,7 @@ void osuBackgroundAnimation::SetAnimationTime(double Time)
 
 	for (auto&& item: mSprites)
 	{
-		item.Update(Time);
+        item.Update(Time);
 	}
 }
 
