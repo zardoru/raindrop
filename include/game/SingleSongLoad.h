@@ -2,7 +2,7 @@
 
 namespace rd {
     struct loaderVSRGEntry_t {
-        const char *Ext;
+        const wchar_t *Ext;
 
         void (*LoadFunc)(const std::filesystem::path &filename, Song *Out);
     };

@@ -126,7 +126,7 @@ endif()
 # Sound File IO library
 # ================================================
 file(GLOB_RECURSE sndio_files "src/sndio/*.cpp")
-add_library(rd.sndio STATIC ${sndio_files})
+add_library(rd.sndio STATIC ${sndio_files} ${RINGBUFFER_FILES})
 target_include_directories(rd.sndio PUBLIC include/sndio)
 target_include_directories(rd.sndio PUBLIC
         ${OGG_INCLUDE_DIR}
@@ -173,7 +173,6 @@ file(GLOB_RECURSE backend_files src/client/*.cpp)
 set (BODY_SOURCE
         ${backend_files}
         ${SQLITE_FILES}
-        ${RINGBUFFER_FILES}
 )
 
 add_executable(rdbody
@@ -220,5 +219,21 @@ target_link_libraries(rdbody
     ${BODY_LIBS}
 )
 
+# Converter tools
+# ================================================
+add_executable(rdconverter
+        src/converter/converter.cpp)
 
+target_include_directories(rdconverter PRIVATE
+        ${Boost_INCLUDE_DIR}
+)
 
+if (WIN32)
+    set(WINLIBS_CONV Shlwapi.lib)
+endif()
+
+target_link_libraries(rdconverter
+        rd.core
+        Boost::program_options
+        ${WINLIBS_CONV}
+)

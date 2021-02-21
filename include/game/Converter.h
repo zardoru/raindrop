@@ -48,7 +48,8 @@ public:
     bool IsQuantized() const;
 };
 
-void ConvertToOM(rd::Song *Sng, std::filesystem::path PathOut, std::string Author);
-void ConvertToBMS(rd::Song *Sng, std::filesystem::path PathOut);
-void ConvertToSMTiming(rd::Song *Sng, std::filesystem::path PathOut);
-void ConvertToNPSGraph(rd::Song *Sng, std::filesystem::path PathOut);
+void ConvertToOM(rd::Song *Sng, std::filesystem::path PathOut, std::string Author); /* pathout is a directory */
+void ConvertToBMS(rd::Song *Sng, std::filesystem::path PathOut);  /* pathout is a directory */
+void ConvertToSMTiming(rd::Song *Sng, std::filesystem::path PathOut); /* pathout is a file */
+void ConvertToNPSGraph(rd::Song *Sng, std::filesystem::path PathOut); /* pathout is a directory */
+void ExportToBMSUnquantized(rd::Song* Source, std::filesystem::path PathOut);

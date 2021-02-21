@@ -37,3 +37,5 @@ namespace NoteLoaderBMSON
 {
     void LoadObjectsFromFile(const std::filesystem::path& filename, rd::Song *Out);
 }
+
+std::shared_ptr<rd::Song> LoadSongFromFile(std::filesystem::path filename);

@@ -33,11 +33,11 @@
 
 #include <sndio/Audiofile.h>
 #include <sndio/AudioSourceOJM.h>
+#include <iostream>
 #include "BackgroundAnimation.h"
 #include "ScreenGameplay7K.h"
 
 #include "ScreenLoading.h"
-#include "game/Converter.h"
 
 #include "IPC.h"
 
@@ -81,16 +81,10 @@ void Application::ParseArgs(int argc, char **argv)
         "Preview File")
         ("input,i", po::value<std::string>(),
         "Input File")
-        ("output,o", po::value<std::string>(),
-        "Output File")
         ("gencache,c",
         "Generate Song Cache")
-        ("format,g", po::value<std::string>(),
-        "Target Format")
         ("measure,m", po::value<unsigned>()->default_value(0),
         "Measure")
-        ("author,a", po::value<std::string>()->default_value("raindrop"),
-        "Author")
         ("A,A",
         "Auto")
         ("S,S",
@@ -120,8 +114,7 @@ void Application::ParseArgs(int argc, char **argv)
 
     if (vm.count("help"))
     {
-        // fixme
-        // Log::Printf("%s\n", desc.);
+        std::cout << desc;
         return;
     }
 
@@ -133,12 +126,6 @@ void Application::ParseArgs(int argc, char **argv)
     if (vm.count("input"))
     {
         InFile = vm["input"].as<std::string>();
-    }
-
-    if (vm.count("output"))
-    {
-        RunMode = MODE_CONVERT;
-        OutFile = vm["output"].as<std::string>();
     }
 
     if (vm.count("config"))
@@ -156,19 +143,7 @@ void Application::ParseArgs(int argc, char **argv)
 		InFontTextFile = vm["fontcache"].as<std::string>();
 	}
 
-    if (vm.count("format"))
-    {
-		ConvertMode = std::map<std::string, CONVERTMODE>{
-			{ "om", CONVERTMODE::CONV_OM },
-			{ "sm", CONVERTMODE::CONV_SM },
-			{ "bms", CONVERTMODE::CONV_BMS },
-			{ "uqbms", CONVERTMODE::CONV_UQBMS },
-			{ "nps", CONVERTMODE::CONV_NPS },
-			{ "acctest", CONVERTMODE::CONV_ACCTEST }
-        }.at(vm["format"].as<std::string>());
 
-		Log::LogPrintf("Setting format to %s (%d)\n", vm["format"].as<std::string>().c_str(), ConvertMode);
-    }
 
     if (vm.count("measure"))
     {
@@ -338,7 +313,6 @@ bool Application::PollIPC()
     }
 }
 
-void ExportToBMSUnquantized(rd::Song* Source, std::filesystem::path PathOut);
 
 void Application::Run()
 {
@@ -377,61 +351,6 @@ void Application::Run()
             // Set up the message queue. We need this if we're in preview mode to be able to control raindrop from the command line.
             IPC::SetupMessageQueue();
         }
-    }
-    else if (RunMode == MODE_CONVERT)
-    {
-		InFile = std::filesystem::absolute(InFile);
-        auto Sng = LoadSong7KFromFilename(InFile);
-
-		Log::Printf("Conversion mode activated.\n");
-        if (Sng && !Sng->Difficulties.empty())
-        {
-			Log::Printf("Initiating conversion for mode %d.\n", ConvertMode);
-            if (ConvertMode == CONVERTMODE::CONV_OM) // for now this is the default
-                ConvertToOM(Sng.get(), OutFile, Author);
-            else if (ConvertMode == CONVERTMODE::CONV_BMS)
-                ConvertToBMS(Sng.get(), OutFile);
-            else if (ConvertMode == CONVERTMODE::CONV_UQBMS)
-                ExportToBMSUnquantized(Sng.get(), OutFile);
-            else if (ConvertMode == CONVERTMODE::CONV_NPS)
-                ConvertToNPSGraph(Sng.get(), OutFile);
-			else if (ConvertMode == CONVERTMODE::CONV_ACCTEST)
-			{
-				auto msr = Sng->Difficulties[0]->Data->Measures;
-				auto timeset = std::set<double>();
-				for (const auto& m : msr) {
-					for (auto i = 0; i < Sng->Difficulties[0]->Channels; i++)
-						for (auto note : m.Notes[i])
-							if (note.NoteKind == 0)
-								timeset.insert(note.StartTime);
-				}
-
-				if (OutFile.string().length()) {
-					Log::Printf("Attempt to open %s...\n", std::filesystem::absolute(OutFile).string().c_str());
-					std::fstream out(OutFile.string(), std::ios::out);
-
-					if (!out.is_open())
-						Log::Printf("Couldn't open!?\n");
-
-					out << std::setprecision(17) << std::fixed;
-					for (auto d : timeset)
-						out << d << std::endl;
-				}
-				else {
-					for (auto d : timeset)
-						Log::Printf("%.17f\n", d);
-				}
-			}
-			else
-                ConvertToSMTiming(Sng.get(), OutFile);
-        }
-        else
-        {
-            if (Sng) Log::Printf("No notes or timing were loaded.\n");
-            else Log::Printf("Failure loading file at all.\n");
-        }
-
-        RunLoop = false;
     }
     else if (RunMode == MODE_GENSONGCACHE)
     {

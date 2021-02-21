@@ -8,16 +8,16 @@
 #include "TextAndFileUtil.h"
 
 const rd::loaderVSRGEntry_t LoadersVSRG[] = {
-    { ".bms",   NoteLoaderBMS::LoadObjectsFromFile },
-    { ".bme",   NoteLoaderBMS::LoadObjectsFromFile },
-    { ".bml",   NoteLoaderBMS::LoadObjectsFromFile },
-    { ".pms",   NoteLoaderBMS::LoadObjectsFromFile },
-    { ".sm",    NoteLoaderSM::LoadObjectsFromFile  },
-    { ".osu",   NoteLoaderOM::LoadObjectsFromFile  },
-    { ".ft2",   NoteLoaderFTB::LoadObjectsFromFile },
-    { ".ojn",   NoteLoaderOJN::LoadObjectsFromFile },
-    { ".ssc",   NoteLoaderSSC::LoadObjectsFromFile },
-    { ".bmson", NoteLoaderBMSON::LoadObjectsFromFile }
+    { L".bms",   NoteLoaderBMS::LoadObjectsFromFile },
+    { L".bme",   NoteLoaderBMS::LoadObjectsFromFile },
+    { L".bml",   NoteLoaderBMS::LoadObjectsFromFile },
+    { L".pms",   NoteLoaderBMS::LoadObjectsFromFile },
+    { L".sm",    NoteLoaderSM::LoadObjectsFromFile  },
+    { L".osu",   NoteLoaderOM::LoadObjectsFromFile  },
+    { L".ft2",   NoteLoaderFTB::LoadObjectsFromFile },
+    { L".ojn",   NoteLoaderOJN::LoadObjectsFromFile },
+    { L".ssc",   NoteLoaderSSC::LoadObjectsFromFile },
+    { L".bmson", NoteLoaderBMSON::LoadObjectsFromFile }
 };
 
 std::shared_ptr<rd::Song> LoadSongFromFile(std::filesystem::path filename)

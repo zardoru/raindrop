@@ -142,18 +142,18 @@ class BMSConverter : public RowifiedDifficulty {
 		OutFile << "-- HEADER" << endl;
 		OutFile << "#ARTIST " << Song->Artist << endl;
 		OutFile << "#TITLE " << Song->Title << endl;
-		OutFile << "#MUSIC " << Song->SongFilename << endl;
+		OutFile << "#MUSIC " << Conversion::ToU8(Song->SongFilename.wstring()) << endl;
 		OutFile << "#OFFSET " << Parent->Offset << endl;
 		OutFile << "#BPM " << GetStartingBPM() << endl;
 		OutFile << "#PREVIEWPOINT " << Song->PreviewTime << endl;
 		OutFile << "#STAGEFILE " << Parent->Data->StageFile << endl;
 		OutFile << "#DIFFICULTY " << Parent->Name << endl;
-		OutFile << "#PREVIEW " << Song->SongPreviewSource << endl;
+		OutFile << "#PREVIEW " << Conversion::ToU8(Song->SongPreviewSource.wstring()) << endl;
 		OutFile << "#PLAYLEVEL " << Parent->Level << endl;
 		OutFile << "#MAKER " << Parent->Author << endl;
 
 		OutFile << endl << "-- WAVs" << endl;
-		for (auto i : Parent->Data->SoundList) {
+		for (const auto& i : Parent->Data->SoundList) {
 			OutFile << "#WAV" << ToBMSBase36(i.first) << " " << i.second << endl;
 		}
 
@@ -176,7 +176,7 @@ class BMSConverter : public RowifiedDifficulty {
 
 	void WriteVectorToMeasureChannel(std::vector<Event> &EventList, int Measure, int Channel, bool AllowMultiple = false)
 	{
-		if (EventList.size() == 0) return; // Nothing to write.
+		if (EventList.empty()) return; // Nothing to write.
 
 		auto VecLCM = GetRowCount(EventList);
 		sort(EventList.begin(), EventList.end(), [](const Event& A, const Event&B)
@@ -277,17 +277,17 @@ class BMSConverter : public RowifiedDifficulty {
 
 			if (Measure < TimingMeasures.size()) {
 
-				if (TimingMeasures[Measure].BPMEvents.size()) {
+				if (!TimingMeasures[Measure].BPMEvents.empty()) {
 					OutFile << "-- BPM" << endl;
 					WriteVectorToMeasureChannel(TimingMeasures[Measure].BPMEvents, Measure, 8); // lol just exbpm. who cares anyway
 				}
 
-				if (TimingMeasures[Measure].StopEvents.size()) {
+				if (!TimingMeasures[Measure].StopEvents.empty()) {
 					OutFile << "-- STOPS" << endl;
 					WriteVectorToMeasureChannel(TimingMeasures[Measure].StopEvents, Measure, 9);
 				}
 
-				if (TimingMeasures[Measure].ScrollEvents.size())
+				if (!TimingMeasures[Measure].ScrollEvents.empty())
 				{
 					OutFile << "-- SCROLLS" << endl;
 					WriteVectorToMeasureChannel(TimingMeasures[Measure].ScrollEvents, Measure, b36toi("SC"));
@@ -325,8 +325,13 @@ public:
 
 	void Output(std::filesystem::path PathOut)
 	{
-		std::filesystem::path name = PathOut / Utility::Format("%s (%s) - %s.bms", 
-			Song->Title.c_str(), Parent->Name.c_str(), Parent->Author.c_str());
+		std::filesystem::path name = PathOut;
+
+		if (std::filesystem::is_directory(PathOut) && std::filesystem::exists(PathOut)) {
+		    name = name / Utility::Format("%s (%s) - %s.bms",
+                          Song->Title.c_str(), Parent->Name.c_str(), Parent->Author.c_str());
+		}
+
 
 		std::ofstream out(name.string());
 
@@ -335,8 +340,10 @@ public:
 			auto s = Utility::Format("failed to open file %s", Conversion::ToU8(name.wstring()).c_str());
 			throw std::runtime_error(s.c_str());
 		}
-		if (BPS.size() == 0)
+
+		if (BPS.empty())
 			throw std::runtime_error("There are no timing points!");
+
 		WriteBMSOutput();
 		out << OutFile.str();        
     }

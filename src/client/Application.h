@@ -9,7 +9,6 @@ class Application
     {
         MODE_NULL,
         MODE_PLAY,
-        MODE_CONVERT,
         MODE_GENSONGCACHE,
         MODE_VSRGPREVIEW,
         MODE_STOPPREVIEW,
@@ -19,18 +18,7 @@ class Application
 
     void ParseArgs(int, char **);
 
-    std::filesystem::path InFile, OutFile, InFontTextFile;
-
-    // VSRG-Specific
-    enum class CONVERTMODE
-    {
-        CONV_BMS,
-        CONV_UQBMS,
-        CONV_SM,
-        CONV_OM,
-        CONV_NPS,
-		CONV_ACCTEST
-    } ConvertMode;
+    std::filesystem::path InFile, InFontTextFile;
 
     int Measure;
     int difIndex;

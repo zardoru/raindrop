@@ -164,7 +164,15 @@ void ConvertToSMTiming(rd::Song *Sng, std::filesystem::path PathOut)
     rd::Difficulty* Diff = Sng->Difficulties[0].get();
 	rd::PlayerChartState data = rd::PlayerChartState::FromDifficulty(Diff);
 
-    std::ofstream out(PathOut.string());
+	if (std::filesystem::is_directory(PathOut)) {
+        PathOut = PathOut /  Utility::Format("%s %s.sm", Sng->Artist.c_str(), Sng->Title.c_str());
+	}
+
+    std::ofstream out(PathOut);
+	if (!out.is_open()) {
+	    throw std::invalid_argument("could not open %s for output.");
+	}
+
     // Technically, stepmania's #OFFSET is actually #GAP, not #OFFSET.
     out << "#OFFSET:" << -Diff->Offset << ";\n";
 

@@ -17,16 +17,16 @@ using namespace rd;
 
 /* matches SingleSongLoad stuff */
 const rd::loaderVSRGEntry_t LoadersVSRG[] = {
-        { ".bms",   NoteLoaderBMS::LoadObjectsFromFile },
-        { ".bme",   NoteLoaderBMS::LoadObjectsFromFile },
-        { ".bml",   NoteLoaderBMS::LoadObjectsFromFile },
-        { ".pms",   NoteLoaderBMS::LoadObjectsFromFile },
-        { ".sm",    NoteLoaderSM::LoadObjectsFromFile  },
-        { ".osu",   NoteLoaderOM::LoadObjectsFromFile  },
-        { ".ft2",   NoteLoaderFTB::LoadObjectsFromFile },
-        { ".ojn",   NoteLoaderOJN::LoadObjectsFromFile },
-        { ".ssc",   NoteLoaderSSC::LoadObjectsFromFile },
-        { ".bmson", NoteLoaderBMSON::LoadObjectsFromFile }
+        { L".bms",   NoteLoaderBMS::LoadObjectsFromFile },
+        { L".bme",   NoteLoaderBMS::LoadObjectsFromFile },
+        { L".bml",   NoteLoaderBMS::LoadObjectsFromFile },
+        { L".pms",   NoteLoaderBMS::LoadObjectsFromFile },
+        { L".sm",    NoteLoaderSM::LoadObjectsFromFile  },
+        { L".osu",   NoteLoaderOM::LoadObjectsFromFile  },
+        { L".ft2",   NoteLoaderFTB::LoadObjectsFromFile },
+        { L".ojn",   NoteLoaderOJN::LoadObjectsFromFile },
+        { L".ssc",   NoteLoaderSSC::LoadObjectsFromFile },
+        { L".bmson", NoteLoaderBMSON::LoadObjectsFromFile }
 };
 
 SongLoader::SongLoader(SongDatabase* Database)
@@ -34,7 +34,7 @@ SongLoader::SongLoader(SongDatabase* Database)
     DB = Database;
 }
 
-bool VSRGValidExtension(const std::string &s)
+bool VSRGValidExtension(const std::wstring &s)
 {
     for (auto i : LoadersVSRG)
     {
@@ -45,7 +45,7 @@ bool VSRGValidExtension(const std::string &s)
     return false;
 }
 
-bool ValidBMSExtension(const std::string &s)
+bool ValidBMSExtension(const std::wstring &s)
 {
 
     for (auto & i : LoadersVSRG)
@@ -74,7 +74,7 @@ std::shared_ptr<rd::Song> LoadSong7KFromFilename(
 
 
     // no extension
-    if (!Filename.has_extension() || !VSRGValidExtension(Filename.extension().string()))
+    if (!Filename.has_extension() || !VSRGValidExtension(Filename.extension()))
     {
         if (AllocSong) delete Sng;
         return nullptr;
@@ -226,7 +226,8 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<r
             we should just ignore this file.
             It'll be loaded in any case, but not considered for cache.
         */
-		if (VSRGValidExtension(File.extension().string()))
+        auto ext = File.extension();
+		if (VSRGValidExtension(ext))
 		{
 			if (DB->CacheNeedsRenewal(File)) {
 				Log::LogPrintf("File '%ls' needs renewal.\n", File.wstring().c_str());
@@ -257,16 +258,16 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<r
         for (auto &entry: pathlist)
         {
 			// get extension
-			auto Ext = entry.extension().string();
+			auto Ext = entry.extension();
 
             // We want to group charts with the same title together.
-            if (ValidBMSExtension(Ext) || Ext == ".bmson")
+            if (ValidBMSExtension(Ext) || Ext == L".bmson")
             {
 				LoadBMS(BMSSong, entry, bmsk, VecOut);
             }
 
 			// .ft2 doesn't need its own entry. 
-			if (Ext == ".ojn" || Ext == ".ft2")
+			if (Ext == L".ojn" || Ext == L".ft2")
             {
                 LoadSong7KFromFilename(entry, OJNSong, DB);
                 DB->AssociateSong(OJNSong);
@@ -276,11 +277,11 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<r
             }
 
 			// Add them all to the same song.
-            if (Ext == ".osu")
+            if (Ext == L".osu")
                 LoadSong7KFromFilename(entry, osuSong, DB);
 
 			// Same as before.
-            if (Ext == ".sm" || Ext == ".ssc")
+            if (Ext == L".sm" || Ext == L".ssc")
             {
                 LoadSong7KFromFilename(entry, smSong, DB);
                 DB->AssociateSong(smSong);
