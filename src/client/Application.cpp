@@ -77,7 +77,7 @@ void Application::ParseArgs(int argc, char **argv)
     desc.add_options()
         ("help,?",
         "show help message")
-        ("preview,p",
+        ("preview,p", /* unused */
         "Preview File")
         ("input,i", po::value<std::string>(),
         "Input File")
@@ -118,14 +118,10 @@ void Application::ParseArgs(int argc, char **argv)
         return;
     }
 
-    if (vm.count("preview"))
-    {
-        RunMode = MODE_VSRGPREVIEW;
-    }
-
     if (vm.count("input"))
     {
         InFile = vm["input"].as<std::string>();
+        RunMode = MODE_VSRGPREVIEW;
     }
 
     if (vm.count("config"))

@@ -39,12 +39,12 @@ namespace rd {
     double BPSFromTimingKind(double Value, Difficulty::ETimingType TimingType) {
         if (TimingType == Difficulty::BT_BEAT || TimingType == Difficulty::BT_MS) // Time is in Beats
         {
-            return bps(Value);
+            return bpm_to_bps(Value);
         }
 
         if (TimingType == Difficulty::BT_BEATSPACE) // Time in MS, and not using bpm, but ms per beat.
         {
-            return bps(60000.0 / Value);
+            return bpm_to_bps(60000.0 / Value);
         }
 
         assert(0);
@@ -118,7 +118,7 @@ namespace rd {
             BPS.push_back(Seg);
 
             // Now we find what bps to restore to.
-            auto bpsRestore = bps(SectionValue(Timing, Time->Time));
+            auto bpsRestore = bpm_to_bps(SectionValue(Timing, Time->Time));
 
             for (auto k = BPS.begin(); k != BPS.end();) {
                 // There's BPM changes in between the stop?

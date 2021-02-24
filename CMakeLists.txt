@@ -196,6 +196,7 @@ target_include_directories(rdbody PRIVATE
 
 if (WIN32)
     set(WINLIBS opengl32.lib Shlwapi.lib Dbghelp.lib)
+    target_compile_definitions(rdbody PRIVATE -DUNICODE)
 endif()
 
 set (BODY_LIBS
@@ -230,6 +231,7 @@ target_include_directories(rdconverter PRIVATE
 
 if (WIN32)
     set(WINLIBS_CONV Shlwapi.lib)
+    target_compile_definitions(rdconverter PRIVATE -DUNICODE)
 endif()
 
 target_link_libraries(rdconverter

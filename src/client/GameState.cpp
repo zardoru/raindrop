@@ -67,7 +67,7 @@ GameState::GameState():
     // TODO: circular references are possible :(
     std::filesystem::path SkinsDir(DirectoryPrefix + SkinsPrefix);
     std::vector<std::filesystem::path> listing = Utility::GetFileListing(SkinsDir);;
-    for (auto s : listing)
+    for (const auto& s : listing)
     {
 		auto st = s.filename().string();
         std::ifstream fallback;

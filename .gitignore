@@ -366,3 +366,5 @@ rd.db-journal
 /sjis.txt
 profiles
 Songs/
+/msvc-cmake
+/CMakeSettings.json

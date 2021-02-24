@@ -310,7 +310,7 @@ namespace rd
 
 /* Song Timing */
 inline double spb(double bpm) { return 60 / bpm; } // Return seconds per beat.
-inline double bps(double bpm) { return bpm / 60; } // Return beats per second.
+inline double bpm_to_bps(double bpm) { return bpm / 60; } // Return beats per second.
 
 /* Assume these are sorted. */
 // Return the vector's index Beat resides in.

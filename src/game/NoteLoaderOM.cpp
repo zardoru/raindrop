@@ -193,7 +193,7 @@ class OsumaniaLoader
 		for (auto i = seclst.begin(); i != seclst.end();)
 		{
 			double SectionDurationInBeats = 0;
-			double acom_mlen = i->MeasureLen;
+			double SectionDurationInSecondsTotal = 0;
 
 			/* 
 			
@@ -214,10 +214,11 @@ class OsumaniaLoader
 			it's merely not shown
 			*/
 			auto next = i + 1;
-			if (next != seclst.end())
+			if (next != seclst.end()) /* not the last item case */
 			{
-				auto bt = (next->Time - i->Time) * bps(i->Value);
-				SectionDurationInBeats += bt;
+				const auto subsection_duration = (next->Time - i->Time) * bpm_to_bps(i->Value);
+				SectionDurationInBeats += subsection_duration;
+				SectionDurationInSecondsTotal += (next->Time - i->Time);
 
 				//if (DebugOsuLoader)
 				//	Log::LogPrintf("\nMCALC: %f to %f (%f beats long at %f bpm)", next->Time, i->Time, bt, i->Value);
@@ -233,10 +234,11 @@ class OsumaniaLoader
 					{
 						// ah the one after and the next are less than 1ms apart
 						// get the displacement in beats of this section
-						auto seg = (sk_next->Time - c_next->Time) * bps(c_next->Value);
+						auto seg = (sk_next->Time - c_next->Time) * bpm_to_bps(c_next->Value);
 						//if (DebugOsuLoader)
 						//	Log::LogPrintf("\nMCALC: %f to %f (section is %g beats long)", sk_next->Time, c_next->Time, seg);
 						SectionDurationInBeats += seg; // we displace along here
+						SectionDurationInSecondsTotal += (sk_next->Time - c_next->Time);
 						++c_next;
 						++sk_next;
 					}
@@ -249,18 +251,28 @@ class OsumaniaLoader
 				// if what we skipped we're out of the 1ms woods
 				// anyway, the one after lasts more than 1ms
 				next = c_next;
-			} else
+			} else /* last item case */
 			{
-				auto seg = bps(i->Value) * (Diff->Duration - i->Time);
-				SectionDurationInBeats += seg;
+				const auto section_duration = bpm_to_bps(i->Value) * (Diff->Duration - i->Time);
+				SectionDurationInBeats += section_duration;
 				//if (DebugOsuLoader)
 				//	Log::LogPrintf("\nMCALC: Last seg. %f to %f (%g beats long)", Diff->Duration, i->Time, seg);
 
 			}
 			
 			auto TotalMeasuresThisSection = SectionDurationInBeats / i->MeasureLen;
+			auto MaxMeasures = SectionDurationInSecondsTotal / LINE_REMOVE_THRESHOLD;
+
+			/* this is nivrad's bug again, but for its actual intended purpose - capping measure lines */
+			if (TotalMeasuresThisSection > MaxMeasures)
+			{
+				i->MeasureLen = SectionDurationInBeats;
+				TotalMeasuresThisSection = 1; 
+			}
+			
 			//if (DebugOsuLoader)
 			//	Log::LogPrintf("\nTotal Measures: %g, beats: %g, mlen: %f", TotalMeasuresThisSection, SectionDurationInBeats, i->MeasureLen);
+			
 
 
 			auto Whole = floor(TotalMeasuresThisSection);

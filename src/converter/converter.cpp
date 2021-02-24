@@ -14,10 +14,10 @@ po::variables_map vm; /* args */
 std::filesystem::path in_path;
 std::filesystem::path out_path;
 
-std::string Author;
+std::string author;
 
 // VSRG-Specific
-enum class CONVERTMODE
+enum class ConvertMode
 {
     CONV_BMS,
     CONV_UQBMS,
@@ -25,28 +25,28 @@ enum class CONVERTMODE
     CONV_OM,
     CONV_NPS,
     CONV_ACCTEST
-} ConvertMode;
+} convert_mode;
 
 void convert() {
-    auto Sng = LoadSongFromFile(in_path);
+    auto song = LoadSongFromFile(in_path);
 
-    if (Sng && !Sng->Difficulties.empty())
+    if (song && !song->Difficulties.empty())
     {
-        std::cout << "Initiating conversion for mode " << (int)ConvertMode << std::endl;
-        if (ConvertMode == CONVERTMODE::CONV_OM) // for now this is the default
-            ConvertToOM(Sng.get(), out_path, Author);
-        else if (ConvertMode == CONVERTMODE::CONV_BMS)
-            ConvertToBMS(Sng.get(), out_path);
-        else if (ConvertMode == CONVERTMODE::CONV_UQBMS)
-            ExportToBMSUnquantized(Sng.get(), out_path);
-        else if (ConvertMode == CONVERTMODE::CONV_NPS)
-            ConvertToNPSGraph(Sng.get(), out_path);
-        else if (ConvertMode == CONVERTMODE::CONV_ACCTEST)
+        std::cout << "Initiating conversion for mode " << (int)convert_mode << std::endl;
+        if (convert_mode == ConvertMode::CONV_OM) // for now this is the default
+            ConvertToOM(song.get(), out_path, author);
+        else if (convert_mode == ConvertMode::CONV_BMS)
+            ConvertToBMS(song.get(), out_path);
+        else if (convert_mode == ConvertMode::CONV_UQBMS)
+            ExportToBMSUnquantized(song.get(), out_path);
+        else if (convert_mode == ConvertMode::CONV_NPS)
+            ConvertToNPSGraph(song.get(), out_path);
+        else if (convert_mode == ConvertMode::CONV_ACCTEST)
         {
-            auto msr = Sng->Difficulties[0]->Data->Measures;
+            auto msr = song->Difficulties[0]->Data->Measures;
             auto timeset = std::set<double>();
             for (const auto& m : msr) {
-                for (auto i = 0; i < Sng->Difficulties[0]->Channels; i++)
+                for (auto i = 0; i < song->Difficulties[0]->Channels; i++)
                     for (auto note : m.Notes[i])
                         if (note.NoteKind == 0)
                             timeset.insert(note.StartTime);
@@ -72,11 +72,11 @@ void convert() {
             }
         }
         else
-            ConvertToSMTiming(Sng.get(), out_path);
+            ConvertToSMTiming(song.get(), out_path);
     }
     else
     {
-        if (Sng)
+        if (song)
             std::cout << "No notes or timing were loaded.\n";
         else
             std::cout << "Failure loading file.\n";
@@ -84,7 +84,7 @@ void convert() {
 
 }
 
-bool parse_args(int argc, char** argv) {
+bool parse_args(const int argc, char** argv) {
     po::positional_options_description p;
     p.add("input", 1);
 
@@ -141,20 +141,20 @@ bool init_converter() {
 
     if (vm.count("format"))
     {
-        auto modes = std::map<std::string, CONVERTMODE>{
-                {"om",      CONVERTMODE::CONV_OM},
-                {"sm",      CONVERTMODE::CONV_SM},
-                {"bms",     CONVERTMODE::CONV_BMS},
-                {"uqbms",   CONVERTMODE::CONV_UQBMS},
-                {"nps",     CONVERTMODE::CONV_NPS},
-                {"acctest", CONVERTMODE::CONV_ACCTEST}
+        auto modes = std::map<std::string, ConvertMode>{
+                {"om",      ConvertMode::CONV_OM},
+                {"sm",      ConvertMode::CONV_SM},
+                {"bms",     ConvertMode::CONV_BMS},
+                {"uqbms",   ConvertMode::CONV_UQBMS},
+                {"nps",     ConvertMode::CONV_NPS},
+                {"acctest", ConvertMode::CONV_ACCTEST}
         };
 
         try {
-            ConvertMode = modes.at(vm["format"].as<std::string>());
+            convert_mode = modes.at(vm["format"].as<std::string>());
 
             std::cout << "Setting format to " << vm["format"].as<std::string>().c_str()
-                       << " (" << (int) ConvertMode << ")" << std::endl;
+                       << " (" << (int) convert_mode << ")" << std::endl;
         } catch(std::out_of_range &o) {
             std::cout << "Unknown format. Valid values are:" << std::endl;
             for (const auto &p: modes) {
@@ -170,18 +170,26 @@ int main(int argc, char** argv) {
     std::cout << "raindrop converter " << VERSION << std::endl;
     std::cout << "Working directory: " << std::filesystem::current_path() << std::endl;
 
-    if (!parse_args(argc, argv)) {
-        // std::cout << "unknown / incompatible option supplied\n";
-        return -1;
-    }
-
-    if (init_converter()) {
-        try {
-            convert();
-            std::cout << "done." << std::endl;
-        } catch(std::exception &e) {
-            std::cout << e.what() << std::endl;
+    try
+    {
+        if (!parse_args(argc, argv)) {
+            // std::cout << "unknown / incompatible option supplied\n";
+            return -1;
         }
+
+        if (init_converter()) {
+            try {
+                convert();
+                std::cout << "done." << std::endl;
+            }
+            catch (std::exception& e) {
+                std::cout << e.what() << std::endl;
+            }
+        }
+    }
+    catch (std::exception &e)
+    {
+        std::cout << e.what() << std::endl;
     }
 
     return 0;
