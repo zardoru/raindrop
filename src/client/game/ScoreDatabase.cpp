@@ -1,13 +1,17 @@
 #include <string>
 #include <filesystem>
 #include <sqlite/sqlite3.h>
-#include <json.hpp>
+
 
 #include <TextAndFileUtil.h>
 
 #include <game/GameConstants.h>
 #include <game/ScoreKeeper7K.h>
+
+#include <json.hpp>
 #include "PlayscreenParameters.h"
+#include "../serialize/PlayscreenParameters.h"
+
 #include "ScoreDatabase.h"
 #include "Logging.h"
 
@@ -280,12 +284,12 @@ void ScoreDatabase::AddScore(
             judgeoffset
     );
 
-    auto paramstr = params.serialize().dump();
+    auto param_str = serialize(params).dump();
     sqlite3_bind_text(
             stAddScore,
             sqlite3_bind_parameter_index(stAddScore, "$playopts"),
-            paramstr.c_str(),
-            paramstr.length(),
+            param_str.c_str(),
+            param_str.length(),
             SQLITE_STATIC
     );
 
@@ -327,8 +331,8 @@ ScoreRow toScoreRow(sqlite3_stmt *stmt) {
     ret.judgments[4] = sqlite3_column_int(stmt, 10);
     ret.judgments[5] = sqlite3_column_int(stmt, 11);
     ret.misses = sqlite3_column_int(stmt, 12);
-    ret.avghit = sqlite3_column_int(stmt, 13);
-    ret.stdev = sqlite3_column_int(stmt, 14);
+    ret.avghit = sqlite3_column_double(stmt, 13);
+    ret.stdev = sqlite3_column_double(stmt, 14);
     ret.offset = sqlite3_column_double(stmt, 15);
     ret.judgeoffset = sqlite3_column_double(stmt, 16);
 
@@ -336,7 +340,7 @@ ScoreRow toScoreRow(sqlite3_stmt *stmt) {
     std::string paramstr = (char *) sqlite3_column_text(stmt, 17);
 
     PlayscreenParameters params;
-    params.deserialize(nlohmann::json::parse(paramstr));
+    deserialize(params, nlohmann::json::parse(paramstr));
     ret.play_opts = params;
 
 

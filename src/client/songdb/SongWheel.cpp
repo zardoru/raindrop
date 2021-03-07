@@ -1,15 +1,16 @@
 #include <cstdint>
 #include <mutex>
 #include <game/Song.h>
-#include <json.hpp>
+#include <functional>
+
 #include <utility>
 #include <glm.h>
 #include <rmath.h>
 
 #include "Logging.h"
 
-#include "PlayscreenParameters.h"
-#include "GameState.h"
+#include "../game/PlayscreenParameters.h"
+#include "../game/GameState.h"
 
 #include "GameWindow.h"
 #include "SongLoader.h"
@@ -24,8 +25,8 @@
 #include "SongList.h"
 
 #include "SongDatabase.h"
-#include "Configuration.h"
-#include "Game.h"
+#include "../structure/Configuration.h"
+#include "../game/Game.h"
 //#include <glm/gtc/matrix_transform.inl>
 
 using namespace rd;

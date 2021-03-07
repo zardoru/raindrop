@@ -43,7 +43,7 @@ public:
 	bool IsBound();
     void Bind();
     void LoadFile(std::filesystem::path Filename, bool Regenerate = false);
-    void SetTextureData2D(ImageData &Data, bool Reassign = false);
+    void SetTextureData2D(ImageData &Data, bool Regenerate = false);
 
     // Utilitarian
     static void ForceRebind();

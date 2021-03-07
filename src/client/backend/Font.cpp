@@ -2,7 +2,7 @@
 #include <glm.h>
 
 #include "Font.h"
-#include "../Logging.h"
+#include "Logging.h"
 
 Font::Font() :
     Red(1), Green(1), Blue(1), Alpha(1)

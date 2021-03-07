@@ -1,14 +1,14 @@
 #define SI_CONVERT_GENERIC
 #include <memory>
-#include <json.hpp>
+
 #include <filesystem>
 #include <simpleini/SimpleIni.h>
 
 #include <game/GameConstants.h>
-#include "PlayscreenParameters.h"
-#include "GameState.h"
+#include "../game/PlayscreenParameters.h"
+#include "../game/GameState.h"
 
-#include "Game.h"
+#include "../game/Game.h"
 #include "Configuration.h"
 
 #include "LuaManager.h"

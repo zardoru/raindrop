@@ -5,7 +5,7 @@
 #include <map>
 #include <future>
 #include <condition_variable>
-#include "../Configuration.h"
+#include "../structure/Configuration.h"
 #include <portaudio/portaudio.h>
 
 #include <Audiofile.h>
@@ -26,7 +26,7 @@
 
 #include "Audio.h"
 
-#include "../Logging.h"
+#include "Logging.h"
 
 bool UseThreadedDecoder = false;
 

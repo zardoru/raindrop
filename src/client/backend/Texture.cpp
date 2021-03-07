@@ -86,21 +86,21 @@ void Texture::Destroy() // Called at destruction time
 	}
 }
 
-void Texture::SetTextureData2D(ImageData &ImgInfo, bool Reassign)
+void Texture::SetTextureData2D(ImageData &ImgInfo, bool Regenerate)
 {
-	if (Reassign) Destroy();
+	if (Regenerate) Destroy();
 
 	CreateTexture(); // Make sure our texture exists.
 
 
-	if (ImgInfo.Data.size() == 0 && !Reassign)
+	if (ImgInfo.Data.size() == 0 && !Regenerate)
 	{
 		return;
 	}
 
 	auto img = ImgInfo.TempData ? ImgInfo.TempData : ImgInfo.Data.data();
 
-	if (!TextureAssigned || Reassign) // We haven't set any data to this texture yet, or we want to regenerate storage
+	if (!TextureAssigned || Regenerate) // We haven't set any data to this texture yet, or we want to regenerate storage
 	{
 		TextureAssigned = true;
 		auto Dir = ImgInfo.Filename.filename().string();

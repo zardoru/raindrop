@@ -26,7 +26,7 @@
 
 #include "ImageLoader.h"
 
-#include "../Configuration.h"
+#include "../structure/Configuration.h"
 
 const ColorRGB White = { 1, 1, 1, 1 };
 const ColorRGB Black = { 0, 0, 0, 1 };

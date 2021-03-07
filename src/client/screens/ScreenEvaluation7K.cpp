@@ -1,5 +1,5 @@
 #include <memory>
-#include <json.hpp>
+
 #include <filesystem>
 #include <rmath.h>
 #include <queue>
@@ -10,9 +10,9 @@
 #include <AudioSourceOJM.h>
 
 #include <game/Song.h>
-#include "PlayscreenParameters.h"
-#include "GameState.h"
-#include "Screen.h"
+#include "../game/PlayscreenParameters.h"
+#include "../game/GameState.h"
+#include "../structure/Screen.h"
 
 #include "Transformation.h"
 #include "Rendering.h"
@@ -20,14 +20,14 @@
 
 #include "ScreenEvaluation7K.h"
 
-#include "BackgroundAnimation.h"
+#include "../bga/BackgroundAnimation.h"
 #include "ScreenGameplay7K.h"
 
 #include "ImageLoader.h"
-#include "SceneEnvironment.h"
+#include "../structure/SceneEnvironment.h"
 
 #include "LuaManager.h"
-#include "Game.h"
+#include "../game/Game.h"
 
 
 ScreenEvaluation::ScreenEvaluation() :

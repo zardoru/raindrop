@@ -10,7 +10,7 @@
 #include <utility>
 #include "SongDatabase.h"
 #include "SongLoader.h"
-#include "Configuration.h"
+#include "../structure/Configuration.h"
 
 
 using namespace rd;

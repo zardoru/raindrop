@@ -103,9 +103,6 @@ public:
     // Unset the seed. Generate a new one.
     void ResetSeed();
 
-    void deserialize(nlohmann::json json);
-    nlohmann::json serialize() const;
-
     PlayscreenParameters() {
         Upscroll = false;
         Preloaded = false;

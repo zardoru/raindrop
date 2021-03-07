@@ -1,6 +1,6 @@
 #include <cstdint>
 #include <string>
-#include <json.hpp>
+
 #include <rmath.h>
 
 #include <game/Song.h>
@@ -15,7 +15,7 @@
 #include "Rendering.h"
 #include "Sprite.h"
 #include "Noteskin.h"
-#include "SceneEnvironment.h"
+#include "../structure/SceneEnvironment.h"
 
 #include "GameWindow.h"
 

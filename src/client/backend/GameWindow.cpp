@@ -10,11 +10,11 @@
 #include <rmath.h>
 #include <glm.h>
 
-#include "../Game.h"
-#include "../Logging.h"
-#include "../BindingsManager.h"
+#include "../game/Game.h"
+#include "Logging.h"
+#include "../structure/BindingsManager.h"
 
-#include "../Screen.h"
+#include "../structure/Screen.h"
 #include "../Application.h"
 #include "GameWindow.h"
 #include "ImageLoader.h"
@@ -25,7 +25,7 @@
 #include "TruetypeFont.h"
 // #include "RaindropRocketInterface.h"
 
-#include "../Configuration.h"
+#include "../structure/Configuration.h"
 #include "TextAndFileUtil.h"
 
 #include "Shader.h"

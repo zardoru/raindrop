@@ -5,7 +5,7 @@
 #include <fstream>
 #include <sstream>
 
-#include "../Logging.h"
+#include "Logging.h"
 
 #include <boost/gil/extension/io/bmp.hpp>
 #include <boost/gil/extension/io/png.hpp>
@@ -18,7 +18,7 @@
 #include "Transformation.h"
 #include "Rendering.h"
 
-#include "../Configuration.h"
+#include "../structure/Configuration.h"
 
 std::mutex LoadMutex;
 std::map<std::filesystem::path, Texture*> ImageLoader::Textures;
@@ -75,19 +75,18 @@ void ImageLoader::DeleteImage(Texture* &ToDelete)
 		else {
 			Log::LogPrintf("ImageLoader: Attempt to delete texture not registered in loader (%ls)\n", ToDelete->fname.wstring().c_str());
 		}
-	}
-	else {
+	} else {
 		if (ImageLoaderMessages)
 			Log::LogPrintf("ImageLoader: Attempt to destroy NULL image\n");
 	}
 }
 
-Texture* ImageLoader::InsertImage(std::filesystem::path Name, ImageData &imgData)
+Texture* ImageLoader::InsertImage(const std::filesystem::path& Name, ImageData &imgData)
 {
     Texture* I;
     if (XorTexture) return Renderer::GetXorTexture();
 
-    if (imgData.Data.size() == 0) return nullptr;
+    if (imgData.Data.empty()) return nullptr;
 
     if (Textures.find(Name) == Textures.end())
         I = (Textures[Name] = new Texture());
@@ -116,7 +115,7 @@ auto open_image(Stream&& in)
                 break;
             }
             catch (std::ios_base::failure& f) {
-                Log::LogPrintf("io exception loading file %s\n", f.what());
+                // Log::LogPrintf("io exception loading file %s\n", f.what());
             }
 
             in.clear();
@@ -266,27 +265,27 @@ void ImageLoader::AddToPending(const std::filesystem::path& Filename)
 }
 
 /* For multi-threaded loading. */
-void ImageLoader::LoadFromManifest(const char** Manifest, int Count, std::string Prefix)
+void ImageLoader::LoadFromManifest(const char** Manifest, int Count, const std::string& Prefix)
 {
     for (int i = 0; i < Count; i++)
     {
-        const char* FinalFilename = (Prefix + Manifest[i]).c_str();
+        auto FinalFilename = Prefix + Manifest[i];
         AddToPending(FinalFilename);
     }
 }
 
 void ImageLoader::UpdateTextures()
 {
-    if (PendingUploads.size() && LoadMutex.try_lock())
+    if (!PendingUploads.empty() && LoadMutex.try_lock())
     {
-        for (auto i = PendingUploads.begin(); i != PendingUploads.end(); i++)
+        for (auto & PendingUpload : PendingUploads)
         {
             ImageData imgData;
-            imgData.Data = i->second.Data;
-            imgData.Width = i->second.Width;
-            imgData.Height = i->second.Height;
+            imgData.Data = PendingUpload.second.Data;
+            imgData.Width = PendingUpload.second.Width;
+            imgData.Height = PendingUpload.second.Height;
 
-            Texture::LastBound = InsertImage(i->first, imgData);
+            Texture::LastBound = InsertImage(PendingUpload.first, imgData);
         }
 
         PendingUploads.clear();

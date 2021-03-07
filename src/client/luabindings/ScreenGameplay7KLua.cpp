@@ -8,27 +8,27 @@
 #include <future>
 #include <rmath.h>
 #include <queue>
-#include <json.hpp>
+
 
 #include <Audiofile.h>
 #include <AudioSourceOJM.h>
 
-#include "../LuaManager.h"
+#include "LuaManager.h"
 #include <LuaBridge/LuaBridge.h>
 
 #include <game/Song.h>
 #include <game/VSRGMechanics.h>
-#include "../PlayscreenParameters.h"
-#include "../PlayerContext.h"
+#include "../game/PlayscreenParameters.h"
+#include "../game/PlayerContext.h"
 
 
 #include "Transformation.h"
 #include "Rendering.h"
 #include "Sprite.h"
-#include "../BackgroundAnimation.h"
+#include "../bga/BackgroundAnimation.h"
 
-#include "../Screen.h"
-#include "../ScreenGameplay7K.h"
+#include "../structure/Screen.h"
+#include "../screens/ScreenGameplay7K.h"
 
 
 void ScreenGameplay::AddScriptClasses(LuaManager* Env)

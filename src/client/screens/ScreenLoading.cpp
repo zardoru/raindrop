@@ -3,19 +3,20 @@
 #include <thread>
 #include <string>
 #include <filesystem>
-#include <json.hpp>
+#include <map>
+#include <functional>
 
 #include <game/GameConstants.h>
-#include "PlayscreenParameters.h"
-#include "GameState.h"
+#include "../game/PlayscreenParameters.h"
+#include "../game/GameState.h"
 
-#include "Screen.h"
-#include "SceneEnvironment.h"
+#include "../structure/Screen.h"
+#include "../structure/SceneEnvironment.h"
 
 #include "LuaManager.h"
 #include "ScreenLoading.h"
 #include "Logging.h"
-#include "Game.h"
+#include "../game/Game.h"
 
 /// @themescript screenloading.lua
 

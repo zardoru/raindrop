@@ -15,7 +15,7 @@ private:
     static std::map<std::filesystem::path, Texture*> Textures;
     static std::map<std::filesystem::path, UploadData> PendingUploads;
 
-    static Texture*		InsertImage(std::filesystem::path Name, ImageData &imgData);
+    static Texture*		InsertImage(const std::filesystem::path& Name, ImageData &imgData);
 public:
 
     ImageLoader();
@@ -28,7 +28,7 @@ public:
 
     /* For multi-threaded loading. */
     static void   AddToPending(const std::filesystem::path& Filename);
-    static void   LoadFromManifest(const char** Manifest, int Count, std::string Prefix = "");
+    static void   LoadFromManifest(const char** Manifest, int Count, const std::string& Prefix = "");
     static void   UpdateTextures();
     static ImageData GetDataForImage(std::filesystem::path filename);
     static ImageData GetDataForImageFromMemory(const unsigned char *const buffer, size_t len);

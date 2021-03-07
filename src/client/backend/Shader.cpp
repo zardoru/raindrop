@@ -9,7 +9,7 @@
 #include "Shader.h"
 #include "GameWindow.h"
 
-#include "../Logging.h"
+#include "Logging.h"
 
 void CHECKERR() {
 		auto err = glGetError();

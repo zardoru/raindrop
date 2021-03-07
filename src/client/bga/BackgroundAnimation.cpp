@@ -4,7 +4,7 @@
 #include <thread>
 #include <rmath.h>
 
-#include "Configuration.h"
+#include "../structure/Configuration.h"
 
 #include "Transformation.h"
 #include "Rendering.h"

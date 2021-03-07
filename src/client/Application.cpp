@@ -6,15 +6,15 @@
 #include <fstream>
 #include <glm.h>
 #include <rmath.h>
-#include <json.hpp>
+
 
 #include <game/GameConstants.h>
 #include <game/Song.h>
 #include <game/VSRGMechanics.h>
 
-#include "Game.h"
+#include "game/Game.h"
 #include "Logging.h"
-#include "Screen.h"
+#include "structure/Screen.h"
 
 #include "Audio.h"
 #include "Application.h"
@@ -25,31 +25,31 @@
 #include "GameWindow.h"
 #include "LuaManager.h"
 
-#include "PlayscreenParameters.h"
-#include "GameState.h"
+#include "game/PlayscreenParameters.h"
+#include "game/GameState.h"
 
 
-#include "ScreenMainMenu.h"
+#include "screens/ScreenMainMenu.h"
 
 #include <sndio/Audiofile.h>
 #include <sndio/AudioSourceOJM.h>
 #include <iostream>
-#include "BackgroundAnimation.h"
-#include "ScreenGameplay7K.h"
+#include "bga/BackgroundAnimation.h"
+#include "screens/ScreenGameplay7K.h"
 
-#include "ScreenLoading.h"
+#include "screens/ScreenLoading.h"
 
 #include "IPC.h"
 
 /* fixme: to be replaced with rmlui */
 // #include "RaindropRocketInterface.h"
 
-#include "SongLoader.h"
-#include "SongList.h"
-#include "SongWheel.h"
-#include "ScreenCustom.h"
+#include "songdb/SongLoader.h"
+#include "songdb/SongList.h"
+#include "songdb/SongWheel.h"
+#include "structure/ScreenCustom.h"
 
-#include "Configuration.h"
+#include "structure/Configuration.h"
 #include "TextAndFileUtil.h"
 
 #include "TruetypeFont.h"

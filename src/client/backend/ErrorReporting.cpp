@@ -6,7 +6,7 @@
 
 #include <vector>
 #include <csignal>
-#include "../Logging.h"
+#include "Logging.h"
 
 void PrintStackTrace();
 

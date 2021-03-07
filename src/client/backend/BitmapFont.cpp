@@ -1,15 +1,16 @@
 #include <string>
 #include <glm.h>
 #include <filesystem>
-#include <json.hpp>
+#include <map>
+
 #include <rmath.h>
 
 #include <game/GameConstants.h>
 #include <TextAndFileUtil.h>
-#include "../PlayscreenParameters.h"
-#include "../GameState.h"
+#include "../game/PlayscreenParameters.h"
+#include "../game/GameState.h"
 
-#include "../LuaManager.h"
+#include "LuaManager.h"
 #include "Transformation.h"
 #include "Rendering.h"
 #include "Sprite.h"

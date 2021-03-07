@@ -3,9 +3,11 @@
 #include <queue>
 #include <fstream>
 #include <filesystem>
-#include <json.hpp>
 
+#include <json.hpp>
 #include "PlayscreenParameters.h"
+#include "../serialize/PlayscreenParameters.h"
+
 #include "Replay7K.h"
 
 
@@ -78,30 +80,29 @@ bool Replay::Load(std::filesystem::path input) {
 
     SongHash = root["song"]["hash"];
     DiffIndex = root["song"]["index"];
-    UserParameters.deserialize(root["userParameters"]);
+    deserialize(UserParameters, root["userParameters"]);
 
     return true;
 }
 
 bool Replay::Save(std::filesystem::path outputpath) const {
     json root = {
-            {"song",
-                    {
-                            {"hash", SongHash},
-                            {"index", DiffIndex}
-                    }
-            },
+        {"song",
             {
-             "userParameters",
-                    UserParameters.serialize()
+                {"hash", SongHash},
+                {"index", DiffIndex}
             }
+        },
+        {
+         "userParameters", serialize(UserParameters)
+        }
     };
 
     for (auto entry : ReplayData) {
         json jsonentry = {
-                {"t", entry.Time},
-                {"l", entry.Lane},
-                {"d", entry.Down != 0}
+            {"t", entry.Time},
+            {"l", entry.Lane},
+            {"d", entry.Down != 0}
         };
 
         root["replayEvents"].push_back(jsonentry);

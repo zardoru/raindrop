@@ -7,7 +7,7 @@
 #include <fstream>
 #include "Texture.h"
 #include "VideoPlayback.h"
-#include "../Logging.h"
+#include "Logging.h"
 
 extern "C" {
 #include <libavcodec/avcodec.h>

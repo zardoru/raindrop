@@ -1,23 +1,23 @@
 #include <string>
 #include <filesystem>
-#include <json.hpp>
+
 #include <mutex>
 #include <glm.h>
 #include <rmath.h>
 
-#include "../LuaManager.h"
+#include "LuaManager.h"
 #include <LuaBridge/LuaBridge.h>
 
 #include <game/Song.h>
-#include "../PlayscreenParameters.h"
+#include "../game/PlayscreenParameters.h"
 
-#include "../GameState.h"
+#include "../game/GameState.h"
 
-#include "../SongDatabase.h"
-#include "../SongList.h"
-#include "../SongWheel.h"
-#include "../PlayscreenParameters.h"
-#include "../Configuration.h"
+#include "../songdb/SongDatabase.h"
+#include "../songdb/SongList.h"
+#include "../songdb/SongWheel.h"
+#include "../game/PlayscreenParameters.h"
+#include "../structure/Configuration.h"
 
 #include <game/ScoreKeeper7K.h>
 

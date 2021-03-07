@@ -2,10 +2,13 @@
 #include <game/VSRGMechanics.h>
 #include <game/ScoreKeeper7K.h>
 #include <game/NoteTransformations.h>
-#include <json.hpp>
+
 #include "Logging.h"
-#include "Configuration.h"
+#include "../structure/Configuration.h"
 #include "PlayscreenParameters.h"
+
+#include <json.hpp>
+#include "../serialize/PlayscreenParameters.h"
 
 /* Vertical Space for a Measure.
     A single 4/4 measure takes all of the playing field.
@@ -125,46 +128,46 @@ void PlayscreenParameters::ResetSeed()
     IsSeedSet = false;
 }
 
-void PlayscreenParameters::deserialize(nlohmann::json json)
+void deserialize(PlayscreenParameters &out, nlohmann::json json)
 {
-    Upscroll = json["upscroll"];
-    NoFail = json["nofail"];
-    HiddenMode = json["hidden"];
-    Rate = json["rate"];
-    UserSpeedMultiplier = json["userspeed"];
-    Random = json["random"];
-    GaugeType = json["gauge"];
-    SystemType = json["system"];
-    GreenNumber = json["isGreenNumber"];
-    UseW0 = json["W0"];
+    out.Upscroll = json["upscroll"];
+    out.NoFail = json["nofail"];
+    out.HiddenMode = json["hidden"];
+    out.Rate = json["rate"];
+    out.UserSpeedMultiplier = json["userspeed"];
+    out.Random = json["random"];
+    out.GaugeType = json["gauge"];
+    out.SystemType = json["system"];
+    out.GreenNumber = json["isGreenNumber"];
+    out.UseW0 = json["W0"];
     // future use:
     // ScoringType = json["score"];
 
-    if (Random) {
-        SetSeed(json["seed"]);
+    if (out.Random) {
+        out.SetSeed(json["seed"]);
     }
 }
 
-nlohmann::json PlayscreenParameters::serialize() const
+nlohmann::json serialize(const PlayscreenParameters &in)
 {
     nlohmann::json ret;
-    ret["upscroll"] = Upscroll;
-    ret["nofail"] = NoFail;
-    ret["hidden"] = HiddenMode;
-    ret["rate"] = Rate;
-    ret["userspeed"] = UserSpeedMultiplier;
-    ret["random"] = Random;
-    ret["gauge"] = GaugeType;
-    ret["system"] = SystemType;
-    ret["score"] = GetScoringType();
-    ret["isGreenNumber"] = GreenNumber;
-    ret["W0"] = UseW0;
+    ret["upscroll"] = in.Upscroll;
+    ret["nofail"] = in.NoFail;
+    ret["hidden"] = in.HiddenMode;
+    ret["rate"] = in.Rate;
+    ret["userspeed"] = in.UserSpeedMultiplier;
+    ret["random"] = in.Random;
+    ret["gauge"] = in.GaugeType;
+    ret["system"] = in.SystemType;
+    ret["score"] = in.GetScoringType();
+    ret["isGreenNumber"] = in.GreenNumber;
+    ret["W0"] = in.UseW0;
 
-    if (Random && IsSeedSet) {
-        ret["seed"] = Seed;
+    if (in.Random && in.IsSeedSet) {
+        ret["seed"] = in.Seed;
     }
 
-    if (Random && !IsSeedSet)
+    if (in.Random && !in.IsSeedSet)
         Log::LogPrintf("Warning: serializing with random set, but no seed\n");
 
     return ret;

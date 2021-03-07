@@ -4,7 +4,7 @@
 #include <game/GameConstants.h>
 #include <game/ScoreKeeper7K.h>
 
-#include "../LuaManager.h"
+#include "LuaManager.h"
 #include <LuaBridge/LuaBridge.h>
 
 

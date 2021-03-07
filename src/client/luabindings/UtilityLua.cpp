@@ -1,7 +1,7 @@
 #include <filesystem>
 #include <rmath.h>
 
-#include "../LuaManager.h"
+#include "LuaManager.h"
 #include <LuaBridge/LuaBridge.h>
 
 /// Utility classes.

@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <utf8.h>
 #include <glm.h>
-#include <json.hpp>
+
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #include <stb/stb_truetype.h>
@@ -14,13 +14,13 @@
 #include "TruetypeFont.h"
 
 #include <game/GameConstants.h>
-#include "../PlayscreenParameters.h"
-#include "../GameState.h"
+#include "../game/PlayscreenParameters.h"
+#include "../game/GameState.h"
 #include "GameWindow.h"
 
 #include "Transformation.h"
 #include "TTFCache.h"
-#include "../Logging.h"
+#include "Logging.h"
 
 #include "SDF.h"
 

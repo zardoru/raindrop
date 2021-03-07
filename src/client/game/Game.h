@@ -46,4 +46,4 @@ extern const char* KeytypeNames[];
 
 #define RAINDROP_VERSIONTEXT RAINDROP_VERSION RAINDROP_BUILDTYPE __DATE__
 
-#include "BindingsManager.h"
+#include "../structure/BindingsManager.h"

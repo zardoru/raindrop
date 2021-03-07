@@ -6,7 +6,7 @@
 #include <game/VSRGMechanics.h>
 #include <game/NoteTransformations.h>
 
-#include <json.hpp>
+
 #include <glm.h>
 #include <TextAndFileUtil.h>
 
@@ -28,7 +28,7 @@
 #include "BitmapFont.h"
 #include "Shader.h"
 
-#include "Configuration.h"
+#include "../structure/Configuration.h"
 
 #include "Noteskin.h"
 #include "Replay7K.h"

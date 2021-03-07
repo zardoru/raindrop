@@ -5,10 +5,10 @@
 #include "Rendering.h"
 #include "Sprite.h"
 
-#include "../LuaManager.h"
+#include "LuaManager.h"
 #include <LuaBridge/LuaBridge.h>
 
-#include "../Noteskin.h"
+#include "../game/Noteskin.h"
 
 void Noteskin::AddScriptClasses() {
     luabridge::getGlobalNamespace(NoteskinLua.GetState())

@@ -2,7 +2,7 @@
 #include <game/Song.h>
 #include <game/ScoreKeeper7K.h>
 
-#include <json.hpp>
+
 #include <TextAndFileUtil.h>
 
 #include "PlayscreenParameters.h"
@@ -63,7 +63,7 @@ void Profile::SaveReplay(const rd::Song *song, const Replay &replay) {
             replay_filename,
             512,
             L"[%s] %ls - %ls.rdr",
-            date_str,
+            Conversion::Widen(date_str).c_str(),
             Conversion::Widen(song->Artist).c_str(),
             Conversion::Widen(song->Title).c_str()
     );

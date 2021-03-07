@@ -209,7 +209,10 @@ std::string SongList::GetEntryTitle(unsigned int Entry)
     else
     {
         std::shared_ptr<rd::Song> Song = std::static_pointer_cast<rd::Song>(mChildren[Entry].Data);
-        return Song->Title;
+        if (Song)
+            return Song->Title;
+        else
+            return "<no song>";
     }
 }
 

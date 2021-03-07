@@ -17,7 +17,7 @@
 #include "BitmapFont.h"
 #include "GraphicalString.h"
 
-#include "../LuaManager.h"
+#include "LuaManager.h"
 #include <LuaBridge/LuaBridge.h>
 
 void LoadBmFont(BitmapFont* B, std::string Fn, float CellWidth, float CellHeight, float CharWidth, float CharHeight, int startChar)

@@ -1,6 +1,6 @@
 #include <future>
 #include <queue>
-#include <json.hpp>
+
 #include <utility>
 #include <glm.h>
 #include <rmath.h>
@@ -13,36 +13,36 @@
 #include <Audiofile.h>
 #include <AudioSourceOJM.h>
 
-#include "PlayscreenParameters.h"
-#include "GameState.h"
+#include "../game/PlayscreenParameters.h"
+#include "../game/GameState.h"
 
 #include "Logging.h"
-#include "SongLoader.h"
-#include "Screen.h"
+#include "../songdb/SongLoader.h"
+#include "../structure/Screen.h"
 #include "GameWindow.h"
 #include "ImageList.h"
 
-#include "SceneEnvironment.h"
+#include "../structure/SceneEnvironment.h"
 
 #include "Transformation.h"
 #include "Rendering.h"
 #include "Sprite.h"
-#include "BackgroundAnimation.h"
+#include "../bga/BackgroundAnimation.h"
 
 #include <game/PlayerChartState.h>
 #include <game/VSRGMechanics.h>
 #include <TextAndFileUtil.h>
-#include "PlayerContext.h"
+#include "../game/PlayerContext.h"
 #include "ScreenGameplay7K.h"
 
 #include "LuaManager.h"
 // #include <LuaBridge/LuaBridge.h>
-#include "Noteskin.h"
+#include "../game/Noteskin.h"
 #include "Line.h"
 
 
 
-#include "Configuration.h"
+#include "../structure/Configuration.h"
 
 CfgVar DisableBGA("DisableBGA");
 

@@ -5,7 +5,7 @@
 #include <queue>
 #include <rmath.h>
 #include <glm.h>
-#include <json.hpp>
+
 
 #include <game/Song.h>
 #include <game/NoteLoader7K.h>
@@ -14,25 +14,25 @@
 #include "PlayscreenParameters.h"
 #include "GameState.h"
 
-#include "SongDatabase.h"
-#include "SongList.h"
-#include "SongWheel.h"
+#include "../songdb/SongDatabase.h"
+#include "../songdb/SongList.h"
+#include "../songdb/SongWheel.h"
 
 #include "ScoreDatabase.h"
 #include "Profile.h"
 
 #include <game/PlayerChartState.h>
 #include <game/VSRGMechanics.h>
-#include "Replay7k.h"
+#include "Replay7K.h"
 #include "PlayerContext.h"
 
-#include "Screen.h"
-#include "ScreenCustom.h"
-#include "ScreenSelectMusic.h"
+#include "../structure/Screen.h"
+#include "../structure/ScreenCustom.h"
+#include "../screens/ScreenSelectMusic.h"
 
 #include "ImageLoader.h"
 
-#include "Configuration.h"
+#include "../structure/Configuration.h"
 #include "TextAndFileUtil.h"
 
 

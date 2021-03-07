@@ -1,6 +1,6 @@
 #include <memory>
 #include <filesystem>
-#include <json.hpp>
+
 #include <queue>
 #include <future>
 
@@ -9,12 +9,12 @@
 #include <AudioSourceOJM.h>
 
 #include "Logging.h"
-#include "Screen.h"
+#include "../structure/Screen.h"
 
 #include "LuaManager.h"
 #include <LuaBridge/LuaBridge.h>
 #include <rmath.h>
-#include "SceneEnvironment.h"
+#include "../structure/SceneEnvironment.h"
 
 #include "Transformation.h"
 #include "Rendering.h"
@@ -24,17 +24,17 @@
 #include <game/PlayerChartState.h>
 #include <game/VSRGMechanics.h>
 #include <game/ScoreKeeper7K.h>
-#include "PlayscreenParameters.h"
-#include "Noteskin.h"
-#include "PlayerContext.h"
-#include "BackgroundAnimation.h"
+#include "../game/PlayscreenParameters.h"
+#include "../game/Noteskin.h"
+#include "../game/PlayerContext.h"
+#include "../bga/BackgroundAnimation.h"
 #include "ScreenGameplay7K.h"
 
 #include "ScreenEvaluation7K.h"
 
-#include "GameState.h"
-#include "Game.h"
-#include "Configuration.h"
+#include "../game/GameState.h"
+#include "../game/Game.h"
+#include "../structure/Configuration.h"
 
 /// @themescript screengameplay7k.lua
 void ScreenGameplay::Activate() {

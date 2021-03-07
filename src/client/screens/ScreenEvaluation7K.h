@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Screen.h"
+#include "../structure/Screen.h"
 
 class BitmapFont;
 

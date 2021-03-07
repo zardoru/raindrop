@@ -1,14 +1,16 @@
 #include <filesystem>
-#include <json.hpp>
+#include <map>
+#include <functional>
+
 #include <glm.h>
 #include <rmath.h>
 
 #include <game/GameConstants.h>
-#include "PlayscreenParameters.h"
-#include "GameState.h"
+#include "../game/PlayscreenParameters.h"
+#include "../game/GameState.h"
 
-#include "SceneEnvironment.h"
-#include "Screen.h"
+#include "../structure/SceneEnvironment.h"
+#include "../structure/Screen.h"
 #include "ImageLoader.h"
 #include "Audio.h"
 #include "GameWindow.h"

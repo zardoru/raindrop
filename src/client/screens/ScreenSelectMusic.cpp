@@ -4,16 +4,16 @@
 #include <thread>
 #include <queue>
 #include <future>
-#include <json.hpp>
+
 #include <glm.h>
 #include <rmath.h>
 
 #include <game/Song.h>
-#include "PlayscreenParameters.h"
-#include "GameState.h"
+#include "../game/PlayscreenParameters.h"
+#include "../game/GameState.h"
 #include "Logging.h"
-#include "Screen.h"
-#include "SceneEnvironment.h"
+#include "../structure/Screen.h"
+#include "../structure/SceneEnvironment.h"
 #include "GameWindow.h"
 #include "ImageLoader.h"
 
@@ -29,7 +29,7 @@
 #include "ScreenSelectMusic.h"
 #include "ScreenLoading.h"
 
-#include "BackgroundAnimation.h"
+#include "../bga/BackgroundAnimation.h"
 
 #include "ScreenGameplay7K.h"
 
@@ -37,12 +37,12 @@
 #include <LuaBridge/LuaBridge.h>
 #include <TextAndFileUtil.h>
 
-#include "SongDatabase.h"
-#include "SongList.h"
-#include "SongWheel.h"
+#include "../songdb/SongDatabase.h"
+#include "../songdb/SongList.h"
+#include "../songdb/SongWheel.h"
 
-#include "Configuration.h"
-#include "Game.h"
+#include "../structure/Configuration.h"
+#include "../game/Game.h"
 
 void LuaEvt(LuaManager *LuaMan, std::string Func, Sprite *Obj) {
     LuaMan->CallFunction(Func.c_str());

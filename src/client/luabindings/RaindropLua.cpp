@@ -1,17 +1,17 @@
 #include <TextAndFileUtil.h>
-#include <json.hpp>
+#include <map>
 #include <rmath.h>
 
 #include <game/GameConstants.h>
-#include "../PlayscreenParameters.h"
-#include "../GameState.h"
+#include "../game/PlayscreenParameters.h"
+#include "../game/GameState.h"
 
 #include "Texture.h"
 #include "ImageLoader.h"
-#include "../LuaManager.h"
+#include "LuaManager.h"
 
-#include "../Configuration.h"
-#include "../Logging.h"
+#include "../structure/Configuration.h"
+#include "Logging.h"
 
 namespace LuaAnimFuncs
 {

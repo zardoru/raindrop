@@ -1,19 +1,19 @@
 #include <string>
 #include <rmath.h>
 #include <filesystem>
-#include <json.hpp>
+#include <map>
 
 #include "Transformation.h"
 #include "Rendering.h"
 #include "Sprite.h"
 
 
-#include "../LuaManager.h"
-#include "../Logging.h"
+#include "LuaManager.h"
+#include "Logging.h"
 
 #include <game/GameConstants.h>
-#include "../PlayscreenParameters.h"
-#include "../GameState.h"
+#include "../game/PlayscreenParameters.h"
+#include "../game/GameState.h"
 #include <LuaBridge/LuaBridge.h>
 
 /// @engineclass Object2D

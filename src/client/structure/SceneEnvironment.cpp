@@ -2,12 +2,14 @@
 #include <string>
 #include <memory>
 #include <filesystem>
-#include <json.hpp>
+#include <map>
+#include <functional>
+
 #include <rmath.h>
 
 #include <game/GameConstants.h>
-#include "PlayscreenParameters.h"
-#include "GameState.h"
+#include "../game/PlayscreenParameters.h"
+#include "../game/GameState.h"
 
 #include "Transformation.h"
 #include "Rendering.h"

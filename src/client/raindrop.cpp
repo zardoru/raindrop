@@ -4,7 +4,7 @@
 #include <string>
 #include <filesystem>
 
-#include "Screen.h"
+#include "structure/Screen.h"
 #include "Application.h"
 
 

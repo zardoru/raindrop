@@ -1,7 +1,7 @@
 #include <filesystem>
 #include <functional>
 
-#include "SceneEnvironment.h"
+#include "../structure/SceneEnvironment.h"
 #include "LuaManager.h"
 
 #include <LuaBridge/LuaBridge.h>

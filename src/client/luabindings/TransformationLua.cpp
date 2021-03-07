@@ -1,7 +1,7 @@
 #include <filesystem>
 
 #include "Transformation.h"
-#include "../LuaManager.h"
+#include "LuaManager.h"
 #include <LuaBridge/LuaBridge.h>
 
 /// Transformation class to have an object hierarchy.

@@ -21,7 +21,7 @@
 
 #include "VideoPlayback.h"
 
-#include "Configuration.h"
+#include "../structure/Configuration.h"
 
 const float OSB_WIDTH = 640;
 const float OSB_WIDTH_WIDE = 853;
