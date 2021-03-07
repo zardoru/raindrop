@@ -3,6 +3,7 @@
 #include <map>
 #include <thread>
 #include <rmath.h>
+#include <sstream>
 
 #include "../structure/Configuration.h"
 
@@ -122,8 +123,8 @@ public:
         EventsLayer2 = Difficulty->Data->BMPEvents->BMPEventsLayer2;
 
 		for (const auto& v : Difficulty->Data->BMPEvents->BMPList) {
-			std::filesystem::path vs = v.second;
-			std::filesystem::path path = Song->SongDirectory / vs;
+			auto vs = v.second;
+			auto path = Song->SongDirectory / vs;
 			if (IsVideoPath(path))
 			{
 				auto vid = new VideoPlayback();
@@ -301,9 +302,15 @@ std::unique_ptr<BackgroundAnimation> CreateBGAforVSRG(rd::Song &input, uint8_t D
     {
         if (Diff->Data && Diff->Data->BMPEvents)
             return std::make_unique<BMSBackground>(context, Diff, &input);
-		if (Diff->Data && Diff->Data->TimingInfo && Diff->Data->TimingInfo->GetType() == rd::TI_OSUMANIA)
-            /* fixme: read osb as string, load here instead of relying on osb type on the loader. */
-			return std::make_unique<osuBackgroundAnimation>(context, nullptr/* Diff->Data->osbSprites.get() */, &input);
+		if (Diff->Data && Diff->Data->TimingInfo && Diff->Data->TimingInfo->GetType() == rd::TI_OSUMANIA) {
+		    try {
+		        std::stringstream s(Diff->Data->osbSprites);
+
+                return std::make_unique<osuBackgroundAnimation>(context, ReadOSBEvents(s), &input);
+            } catch (std::exception &e) {
+                Log::LogPrintf("Failure to parse OSB events of .osu file. Reason: %s\n", e.what());
+            }
+        }
 
         return std::make_unique<StaticBackground>(context, GetSongBackground(input));
     }
@@ -345,14 +352,13 @@ void BackgroundAnimation::Render()
 
 std::unique_ptr<BackgroundAnimation> BackgroundAnimation::CreateBGAFromSong(uint8_t DifficultyIndex, rd::Song& Input, Interruptible* context, bool LoadNow)
 {
-    std::unique_ptr<BackgroundAnimation> ret = nullptr;
-
-    ret = CreateBGAforVSRG(static_cast<rd::Song&> (Input), DifficultyIndex, context);
+    auto ret = CreateBGAforVSRG(static_cast<rd::Song&> (Input), DifficultyIndex, context);
     
     if (LoadNow)
     {
         ret->Load();
         ret->Validate();
     }
+
     return ret;
 }

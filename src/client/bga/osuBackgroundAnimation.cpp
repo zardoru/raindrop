@@ -23,9 +23,9 @@
 
 #include "../structure/Configuration.h"
 
-const float OSB_WIDTH = 640;
-const float OSB_WIDTH_WIDE = 853;
-const float OSB_HEIGHT = 480;
+constexpr float OSB_WIDTH = 640;
+constexpr float OSB_WIDTH_WIDE = 853;
+constexpr float OSB_HEIGHT = 480;
 CfgVar OSBDebug("OSB", "Debug");
 
 // Must match PP_* ordering. Displacement to apply to a top-left origin quad with size 1 depending on pivot.
@@ -34,7 +34,8 @@ struct pivot
 {
 	float x, y;
 };
-pivot OriginPivots[] = {
+
+constexpr pivot OriginPivots[] = {
 	{0.f   ,  0.f},
 	{-0.5f ,  0.f},
 	{-1.f  ,  0.f},
@@ -46,7 +47,7 @@ pivot OriginPivots[] = {
 	{-1.f  , -1.f},
 };
 
-std::function<float(float)> EasingFuncs[] = {
+const std::function<float(float)> EasingFuncs[] = {
     passthrough,
     pow_ease_out<2>,
     pow_ease_in<2>,
@@ -816,7 +817,7 @@ osb::SpriteList ReadOSBEvents(std::istream& event_str)
 		do what is being done here.
 	*/
 
-	std::regex fnreg("\"?(.*?)\"?$");
+	const std::regex fnreg("\"?(.*?)\"?$");
 	auto strip_quotes = [&](std::string s)
 	{
 		std::string striped_filename;
@@ -829,9 +830,7 @@ osb::SpriteList ReadOSBEvents(std::istream& event_str)
 		return striped_filename;
 	};
 
-	auto unroll_loop_into_sprite = [&]()
-	{
-		osb::EventVector vec;
+	auto unroll_loop_into_sprite = [&]() {
 		loop->Unroll(sprite);
 		loop = nullptr;
 	};
@@ -850,8 +849,6 @@ osb::SpriteList ReadOSBEvents(std::istream& event_str)
 		for (auto &&s : split_result) boost::algorithm::to_lower(s);
 
 		if (!line.length() || split_result.size() < 2) continue;
-
-		
 
 		auto parse_sprite = [&]()
 		{
@@ -1024,7 +1021,7 @@ int osuBackgroundAnimation::AddImageToList(std::string image_filename)
 	return -1; // everything has failed
 }
 
-osuBackgroundAnimation::osuBackgroundAnimation(Interruptible* parent, osb::SpriteList* existing_mSprites, rd::Song* song)
+osuBackgroundAnimation::osuBackgroundAnimation(Interruptible* parent, const osb::SpriteList& existing_mSprites, rd::Song* song)
 	: BackgroundAnimation(parent),
 		mImageList(this)
 {
@@ -1036,23 +1033,21 @@ osuBackgroundAnimation::osuBackgroundAnimation(Interruptible* parent, osb::Sprit
 	CanValidate = false;
 
 	int video_index = 0;
-	if (existing_mSprites) {
-		for (auto sp : *existing_mSprites) {
-			sp.SetParent(this);
+    for (auto sp : existing_mSprites) {
+        sp.SetParent(this);
 
-			auto vpath = song->SongDirectory / sp.GetImageFilename();
-			if (IsVideoPath(vpath)) {
-				video_index--;
-				auto vid = mVideoList[video_index] = new VideoPlayback();
-				if (vid->Open(vpath)) {
-					vid->StartDecodeThread();
-					mImageList.AddToListIndex(vid, video_index);
-				}
-			} else {
-				sp.SetImageIndex(AddImageToList(sp.GetImageFilename()));
-			}
-			mSprites.push_back(sp);
-		}
+        auto vpath = song->SongDirectory / sp.GetImageFilename();
+        if (IsVideoPath(vpath)) {
+            video_index--;
+            auto vid = mVideoList[video_index] = new VideoPlayback();
+            if (vid->Open(vpath)) {
+                vid->StartDecodeThread();
+                mImageList.AddToListIndex(vid, video_index);
+            }
+        } else {
+            sp.SetImageIndex(AddImageToList(sp.GetImageFilename()));
+        }
+        mSprites.push_back(sp);
 	}
 }
 

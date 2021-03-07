@@ -186,8 +186,8 @@ namespace rd
         // Autoplay BMP
         std::shared_ptr<BMPEventsDetail> BMPEvents;
 
-        // o!m storyboard stuff
-        // std::shared_ptr<osb::SpriteList> osbSprites;
+        // o!m storyboard stuff: saved as a string for later parsing
+        std::string osbSprites;
 
         // Timing Info
         std::shared_ptr<ChartInfo> TimingInfo;

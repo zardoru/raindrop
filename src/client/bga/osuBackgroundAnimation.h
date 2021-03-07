@@ -295,7 +295,7 @@ class osuBackgroundAnimation : public BackgroundAnimation
     bool CanValidate;
 
 public:
-    osuBackgroundAnimation(Interruptible* parent, osb::SpriteList* existing_sprites, rd::Song* song);
+    osuBackgroundAnimation(Interruptible* parent, const osb::SpriteList& existing_sprites, rd::Song* song);
     ~osuBackgroundAnimation();
     Texture* GetImageFromIndex(int m_image_index);
     int GetIndexFromFilename(std::string filename);
