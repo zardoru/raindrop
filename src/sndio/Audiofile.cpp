@@ -233,7 +233,7 @@ bool AudioSample::Open(AudioDataSource* Src, bool async)
 				double DstRate = rate / mPitch;
 				double ResamplingRate = DstRate / mRate;
 				soxr_io_spec_t spc;
-				size_t size = size_t(ceil(mSampleCount * ResamplingRate));
+				auto size = size_t(ceil(mSampleCount * ResamplingRate));
 				auto mDataNew = std::make_shared<std::vector<short>>(size);
 
 				spc.e = nullptr;
@@ -288,16 +288,16 @@ uint32_t AudioSample::Read(float* buffer, size_t count)
 _read:
     if (mIsValid && count && mData->size())
     {
-		size_t bufferLeft = limit - mCounter;
-        uint32_t ReadAmount = std::min(bufferLeft, count);
+		size_t buffer_left = limit - mCounter;
+        uint32_t read_amount = std::min(buffer_left, count);
 
         if (mCounter < limit)
         {
-            s16tof32(mData->begin() + mCounter, 
-					 mData->begin() + mCounter + ReadAmount, 
+            s16tof32(mData->begin() + mCounter,
+                     mData->begin() + mCounter + read_amount,
 				     buffer);
-            mCounter += ReadAmount;
-			count -= ReadAmount;
+            mCounter += read_amount;
+			count -= read_amount;
         }
 
 		if (mCounter == limit || count) {
@@ -306,7 +306,7 @@ _read:
 			else
 			{
 				SeekTime(mAudioStart);
-				buffer += ReadAmount;
+				buffer += read_amount;
 
 				// note: implicit - count gets checked again
 				// and it was already updated
@@ -318,7 +318,7 @@ _read:
 			}
 		}
 
-        return ReadAmount;
+        return read_amount;
     }
     else
         return 0;
@@ -605,18 +605,18 @@ bool AudioStream::Open(std::filesystem::path Filename)
         sis.otype = SOXR_FLOAT32_I;
         sis.scale = 1;
 
-        double dstrate = mSource->GetRate();
-        if (mOwnerMixer) dstrate = mOwnerMixer->GetRate();
+        double dst_rate = mSource->GetRate();
+        if (mOwnerMixer) dst_rate = mOwnerMixer->GetRate();
 
         soxr_quality_spec_t q_spec = soxr_quality_spec(SOXR_VHQ, SOXR_VR);
         internal->mResampler = soxr_create(
-            mSource->GetRate(), 
-            dstrate,
-            2, 
-            nullptr, 
-            &sis,
-            &q_spec,
-            nullptr
+                mSource->GetRate(),
+                dst_rate,
+                2,
+                nullptr,
+                &sis,
+                &q_spec,
+                nullptr
         );
 
         mBufferSize = BUFF_SIZE;

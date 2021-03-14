@@ -1,20 +1,11 @@
-#include "pch.h"
+#include <filesystem>
 
-#include "../src/GameGlobal.h"
-#include "../src/Song.h"
-#include "../src/Song7K.h"
-#include "../src/SongLoader.h"
-#include "../src/BackgroundAnimation.h"
+#include <catch.hpp>
+#include <LuaManager.h>
+#include <game/VSRGMechanics.h>
+#include <game/ScoreKeeper7K.h>
 
-#include "../src/LuaManager.h"
-#include "../src/Noteskin.h"
-
-#include "../src/PlayerChartData.h"
-
-#include "../src/Logging.h"
-#include "../src/ext/catch.hpp"
-#include "../src/VSRGMechanics.h"
-#include "../src/ScoreKeeper7K.h"
+constexpr auto TIME_RANGE = 10000;
 
 /*
 TEST_CASE("osu storyboard compliance")
@@ -38,19 +29,8 @@ TEST_CASE("Lua Manager state")
 	REQUIRE_FALSE(l.CallFunction("NonExistingFunction"));
 }
 
-using namespace Game::VSRG;
+using namespace rd;
 
-TEST_CASE("Noteskin can be used with no context", "[noteskin]")
-{
-	Noteskin n(nullptr);
-
-	SECTION("Noteskin doesn't crash with no context") {
-		
-		REQUIRE_NOTHROW(n.SetupNoteskin(false, 4));
-		REQUIRE_NOTHROW(n.Validate());
-		REQUIRE_NOTHROW(n.DrawHoldBody(0, 0, 0, 0));
-	}
-}
 
 /*
 TEST_CASE("Speed support")
@@ -151,8 +131,8 @@ TEST_CASE("Raindrop Mechanics (BMS tests)", "[raindropbms]") {
 		double earlymiss = -s.sk->getEarlyMissCutoffMS();
 		double latemiss = s.sk->getLateMissCutoffMS();
 
-		REQUIRE_THROWS(s.sk->hitNote(earlymiss - 1));
-		REQUIRE_THROWS(s.sk->hitNote(latemiss + 1));
+		REQUIRE(s.sk->hitNote(earlymiss - 1) == SKJ_NONE);
+		REQUIRE(s.sk->hitNote(latemiss + 1) == SKJ_NONE);
 	}
 
 	SECTION("Late window misses work as intended") {
@@ -164,6 +144,13 @@ TEST_CASE("Raindrop Mechanics (BMS tests)", "[raindropbms]") {
 		int misses = s.sk->getJudgmentCount(SKJ_MISS);
 		REQUIRE(s.mech.OnUpdate(latemiss + epsilon, &t, 0));
 		REQUIRE(s.sk->getJudgmentCount(SKJ_MISS) == misses + 1);
+	}
+
+	SECTION("No runtime errors across a big range of time") {
+	    for (int i = -TIME_RANGE; i <= TIME_RANGE; i++) {
+	        double t = (double)i / 1000.0;
+            REQUIRE_NOTHROW(s.sk->hitNote(t));
+	    }
 	}
 }
 
@@ -201,6 +188,13 @@ TEST_CASE("Raindrop Mechanics (Stepmania - LN tails)", "[raindropmechsettails]")
 		// Tail time < time, head can still be hit, should not miss!
 		REQUIRE_FALSE(s.mech.OnUpdate(tailTime + missCutoff - 0.002, &t, 0));
 	}
+
+    SECTION("No runtime errors across a big range of time") {
+        for (int i = -TIME_RANGE; i <= TIME_RANGE; i++) {
+            double t = (double)i / 1000.0;
+            REQUIRE_NOTHROW(s.sk->hitNote(t));
+        }
+    }
 }
 
 struct OMSetup
@@ -332,4 +326,12 @@ TEST_CASE("osu!mania judgments", "[omjudge]") {
 		REQUIRE_FALSE(s.mech.OnUpdate(t.GetEndTime() - epsilon, &lt, 0));
 		REQUIRE(s.mech.OnUpdate(t.GetEndTime() + epsilon, &lt, 0));
 	}
+
+
+    SECTION("No runtime errors across a big range of time") {
+        for (int i = -TIME_RANGE; i <= TIME_RANGE; i++) {
+            double t = (double)i / 1000.0;
+            REQUIRE_NOTHROW(s.sk->hitNote(t));
+        }
+    }
 }

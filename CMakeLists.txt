@@ -239,3 +239,25 @@ target_link_libraries(rdconverter
         Boost::program_options
         ${WINLIBS_CONV}
 )
+
+# Test runner
+# ================================================
+# same body sources, minus main.
+list(REMOVE_ITEM BODY_SOURCE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/client/raindrop.cpp
+)
+
+add_executable(rdtests
+        tests/main.cpp ${BODY_SOURCE}
+        tests/MechanicsTests.cpp
+        tests/NoteskinTests.cpp)
+
+target_link_libraries(rdtests
+        ${BODY_LIBS}
+)
+
+target_include_directories(rdtests PRIVATE
+        ${BODY_INCLUDE}
+        src/
+        src-thirdparty/
+)

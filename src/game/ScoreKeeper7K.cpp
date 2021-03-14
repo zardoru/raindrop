@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <numeric>
 #include <iostream>
+#include <TextAndFileUtil.h>
 
 namespace rd {
     ScoreKeeper::~ScoreKeeper() {}
@@ -52,14 +53,7 @@ namespace rd {
     ScoreKeeperJudgment ScoreKeeper::hitNote(double ms) {
         // hit notes
         if (ms < -early_miss_threshold || ms > late_miss_threshold) {
-#if (defined TESTS || defined DEBUG)
-            auto msg = Utility::Format(
-                "Out of hit window: %.0f (range: %.0f to %.0f)",
-                ms, -early_miss_threshold, late_miss_threshold);
-            throw std::runtime_error(msg);
-#else
             return SKJ_NONE;
-#endif
         }
 
         // online variance and average hit
@@ -148,8 +142,9 @@ namespace rd {
             }
         }
 
-        if (judgment == SKJ_NONE)
-            std::cerr << "Error, invalid judgment: " << ms << "\n";
+        if (judgment == SKJ_NONE) {
+            throw std::runtime_error(Utility::Format("Invalid judgment at %i ms", ms));
+        }
 
         // std::cerr << std::endl;
 
