@@ -7,21 +7,7 @@
 
 constexpr auto TIME_RANGE = 10000;
 
-/*
-TEST_CASE("osu storyboard compliance")
-{
-	Interruptible stub;
-	auto song = LoadSong7KFromFilename("tests/files/esb.osu");
-	
-	REQUIRE(song != nullptr);
-	REQUIRE(song->Difficulties.size() != 0);
 
-	Log::Printf("Loading BGA...\n");
-	auto bga = BackgroundAnimation::CreateBGAFromSong(0, *song, &stub, true);
-
-	bga->SetAnimationTime(65.0f);
-}
-*/
 
 TEST_CASE("Lua Manager state")
 {
@@ -32,15 +18,7 @@ TEST_CASE("Lua Manager state")
 using namespace rd;
 
 
-/*
-TEST_CASE("Speed support")
-{
-	auto sng = LoadSong7KFromFilename("tests/files/jnight.ssc");
-	auto pcd = Game::VSRG::PlayerChartState::FromDifficulty(sng->GetDifficulty(0));
-	auto tbeat = pcd.GetTimeAtBeat(93. + 4.);
-	REQUIRE(pcd.GetSpeedMultiplierAt(tbeat) == 0.250);
-}
-*/
+
 
 double epsilon = 0.001; // one ms
 
