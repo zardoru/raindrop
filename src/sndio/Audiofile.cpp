@@ -528,7 +528,13 @@ uint32_t AudioStream::Read(float* buffer, size_t count)
         memset(buffer, 0, padding_len * sizeof(float));
         buffer += padding_len;
         toRead -= padding_len;
-        mReadFrames += padding_len / 2;
+
+        if (mOwnerMixer) {
+            auto rate_ratio = double (GetRate()) / double (mOwnerMixer->GetRate());
+            auto len = padding_len / 2 * rate_ratio;
+            mReadFrames += len;
+        } else
+            mReadFrames += padding_len / 2;
 
         padded = padding_len;
     }
@@ -555,6 +561,16 @@ uint32_t AudioStream::Read(float* buffer, size_t count)
         // This is how many samples we want to read from the source buffer
         size_t scount = ceil(origRate / resRate * toRead);
 
+        // quantize so our read buffers don't get off. pitch will not be
+        // completely correct but it won't trash the audio or the buffer..
+        // scount was made volatile just in case this gets optimized.
+        /*
+        scount = scount / Channels;
+        scount = scount * Channels;
+         */
+        if (scount & 1 && Channels == 2 && mPitch < 1) scount += 1; // make even (channels)
+        else if (scount & 1 && Channels == 2 && mPitch > 1) scount -= 1; // also make even
+
         size_t cnt = PaUtil_ReadRingBuffer(&internal->mDecodedDataRingbuffer, mResampleBuffer.data(), scount);
         // cnt now contains how many samples we actually read...
 
@@ -564,19 +580,33 @@ uint32_t AudioStream::Read(float* buffer, size_t count)
         if (Channels == 1) // Turn mono audio to stereo audio.
             monoToStereo(mResampleBuffer.data(), cnt, BUFF_SIZE);
 
-        size_t outcnt = floor(cnt * resRate / origRate);
+        size_t outcnt = round(cnt * RateRatio);
+        if (outcnt & 1 && outcnt < count) outcnt += 1; // make even (edge case... :S)
 
-        soxr_set_io_ratio(internal->mResampler, 1 / RateRatio, cnt / 2);
+        soxr_set_io_ratio(internal->mResampler, 1 / RateRatio, 0 /*cnt / Channels*/);
 
         // The count that soxr asks for I think, is frames, not samples. Thus, the division by channels.
-        size_t odone;
-        soxr_process(internal->mResampler,
-            mResampleBuffer.data(), cnt / Channels, nullptr,
-            buffer, outcnt / Channels, &odone);
+        size_t total_input = 0, total_output = 0;
+        while (total_output < outcnt && total_input < cnt) { /* sometimes you need repeated calls to soxr_process to get all the data you want */
+            size_t idone, odone;
+            soxr_process(
+                    internal->mResampler,
+                   mResampleBuffer.data() + total_input,
+                  (cnt - total_input) / Channels, &idone,
+                   buffer + total_output,
+                   (outcnt - total_output) / Channels, &odone
+             );
 
-        mReadFrames += odone;
-        mStreamTime += double(cnt / Channels) / mSource->GetRate();
-        return odone * 2 + padded;
+            if (idone == 0 && odone == 0) /* well, we can't go on like this then... */
+                break;
+
+            total_input += idone * Channels;
+            total_output += odone * Channels;
+        }
+
+        mReadFrames += total_input / Channels;
+        mStreamTime += double(total_input / Channels) / mSource->GetRate();
+        return total_output + padded;
 
         // simple no resampling
         /* s16tof32(mResampleBuffer.begin(), mResampleBuffer.begin() + cnt, buffer);
@@ -717,7 +747,7 @@ uint32_t AudioStream::GetRate() const
     return mSource->GetRate();
 }
 
-double AudioStream::MapStreamClock(double stream_clock, double real_sample_rate) {
+double AudioStream::MapStreamClock(double stream_clock) {
     if (mReadFrames == 0) return 0; /* no data has been streamed */
 
     while (current_clock.clock_end < stream_clock) { /* this is over */
@@ -728,7 +758,7 @@ double AudioStream::MapStreamClock(double stream_clock, double real_sample_rate)
         }
     }
 
-    return current_clock.map(stream_clock, real_sample_rate);
+    return current_clock.map(stream_clock, GetRate());
 }
 
 int64_t AudioStream::GetReadFrames() const {

@@ -133,6 +133,19 @@ bool ScreenGameplay::HandleInput(int32_t key, bool isPressed, bool isMouseInput)
                 break;
         }
 
+#ifndef NDEBUG
+        if (key == 290) // f1
+        {
+            if (Music)
+                Music->SetPitch(Music->GetPitch() - 0.2);
+        }
+        if (key == 291)
+        {
+            if (Music)
+                Music->SetPitch(Music->GetPitch() + 0.2);
+        }// f2
+#endif
+
         if (BindingsManager::TranslateKey7K(key) != KT_Unknown) {
             for (auto &player : Players) {
                 player->TranslateKey(
@@ -158,7 +171,7 @@ bool ScreenGameplay::HandleInput(int32_t key, bool isPressed, bool isMouseInput)
 void ScreenGameplay::RunAutoEvents() {
     if (!StageFailureTriggered && Active) {
         // Play BGM events.
-        while (BGMEvents.size() && BGMEvents.front().Time <= Time.Stream) {
+        while (!BGMEvents.empty() && BGMEvents.front().Time <= Time.Stream) {
             for (auto &&s : Keysounds[BGMEvents.front().Sound])
                 if (s) {
                     double dt = Time.Stream - BGMEvents.front().Time;
@@ -190,8 +203,8 @@ void ScreenGameplay::CheckShouldEndScreen() {
             if (Music)
                 Music->Stop();
 
-            for (auto i = Keysounds.begin(); i != Keysounds.end(); ++i)
-                for (auto &&s : i->second)
+            for (auto & Keysound : Keysounds)
+                for (auto &&s : Keysound.second)
                     if (s)
                         s->Stop();
 
@@ -307,7 +320,7 @@ void ScreenGameplay::UpdateSongTime(float Delta) {
     // Current Time
     if (Music && Music->IsValid())
         /* map stream time to DAC queued sample times */
-        Time.Stream = Music->MapStreamClock(GetMixer()->GetTime(), GetMixer()->GetRate());
+        Time.Stream = Music->MapStreamClock(GetMixer()->GetTime());
     else {
         /* these remain deltas for rates*/
         double CurrAudioTime = GetMixer()->GetTime();

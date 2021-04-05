@@ -144,7 +144,7 @@ public:
     bool QueueStreamClock(const stream_time_map_t &map);
 
     /* maps a stream clock time to a point in time of the song. */
-    double MapStreamClock(double stream_clock, double real_sample_rate);
+    double MapStreamClock(double stream_clock);
 
 
     uint32_t GetRate() const;

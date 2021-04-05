@@ -154,10 +154,10 @@ void SongLoader::LoadBMS(
 
 	if (!NoFileGrouping) {
 		std::string key;
-		if (Configuration::GetConfigf("SeparateBySubtitle"))
+		//if (Configuration::GetConfigf("SeparateBySubtitle"))
 			key = BMSSong->Title + BMSSong->Subtitle;
-		else
-			key = BMSSong->Title;
+		//else
+		//	key = BMSSong->Title;
 
 		if (bmsk.find(key) != bmsk.end())
 		{
