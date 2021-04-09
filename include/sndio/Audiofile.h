@@ -93,6 +93,12 @@ struct stream_time_map_t {
 
         return ((frame_end - frame_start) * t_relative + frame_start) / sample_rate;
     }
+
+    inline double reverse_map(double song_time, double sample_rate) {
+        return double(song_time * sample_rate - frame_start) /
+               double(frame_end - frame_start)
+               * (clock_end - clock_start) + clock_start;
+    }
 };
 //
 //struct atomic_stream_time_t {

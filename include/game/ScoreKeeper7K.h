@@ -1,6 +1,9 @@
 #pragma once
 
 #include <map>
+#include <game/gauges/GaugeBMS.h>
+#include <game/gauges/GaugeStepmania.h>
+#include <game/gauges/GaugeO2Jam.h>
 
 namespace rd {
     class ScoreKeeper {
@@ -19,12 +22,6 @@ namespace rd {
 
         // total if multiplier is nan, else default rate * multiplier
         void setLifeTotal(double total, double multiplier = NAN);
-
-        void setLifeIncrements(double *increments, int inc_n);
-
-        void setMissDecrement(double decrement);
-
-        void setEarlyMissDecrement(double decrement);
 
         void setO2LifebarRating(int difficulty);
 
@@ -80,8 +77,6 @@ namespace rd {
 
         float getPercentScore(int score_type) const;
 
-        int getLifebarUnits(int lifebar_unit_type);
-
         float getLifebarAmount(int lifebar_amount_type);
 
         bool isStageFailed(int lifebar_amount_type);
@@ -120,8 +115,6 @@ namespace rd {
 
         // percent we're sure the offset is wrong
         double getOffsetDistrust() const;
-
-        void reset();
 
     private:
 
@@ -250,41 +243,22 @@ namespace rd {
         // lifebar data.
 
         double lifebar_total;
+        GaugeGroove gauge_groove;
+        GaugeEasy gauge_easy;
+        GaugeSurvival gauge_survival;
+        GaugeExHard gauge_exhard;
+        GaugeDeath gauge_death;
+        GaugeStepmania gauge_stepmania;
+        GaugeO2Jam gauge_o2jam;
 
+        std::map<LifeType, Gauge*> Gauges;
 
-        double lifebar_groove;
-        double lifebar_groove_increment;
-        double lifebar_groove_decrement;
-
-        double lifebar_survival;
-        double lifebar_survival_increment;
-        double lifebar_survival_decrement;
-
-        double lifebar_exhard;
-        double lifebar_exhard_increment;
-        double lifebar_exhard_decrement;
-
-        double lifebar_death;
-
-        double lifebar_easy;
-        double lifebar_easy_increment;
-        double lifebar_easy_decrement;
-
-        double lifebar_o2jam;
-        double lifebar_o2jam_increment;
-        double lifebar_o2jam_decrement;
-        double lifebar_o2jam_decrement_bad;
-
-        double lifebar_stepmania;
-        double lifebar_stepmania_miss_decrement;
-        double lifebar_stepmania_earlymiss_decrement;
 
         // judgment information
         double judgment_time[9];
         double judgment_amt[9];
         double judge_window_scale;
 
-        double life_increment[9];
 
         void setBMSTimingWindows();
 

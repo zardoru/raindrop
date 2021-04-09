@@ -54,6 +54,7 @@ namespace rd {
 
         SKJ_HOLD_OK = 10, // OK, only used with DDR-style holds
         SKJ_HOLD_NG = 11, // NG
+        SKJ_MINE = 12 // whoops you pressed a mine
     };
 
     enum ScoreType

@@ -63,30 +63,7 @@ namespace rd {
         o2_score = std::max(static_cast<long long>(0), o2_score);
     }
 
-    void ScoreKeeper::setO2LifebarRating(int difficulty) {
-        difficulty = Clamp(difficulty, 0, 2);
 
-        lifebar_o2jam = 1;
-
-        // Thanks to Entozer for giving this information.
-        switch (difficulty) {
-            case 0: // EX
-                lifebar_o2jam_increment = (19.0 / 20.0) / 290.0;
-                lifebar_o2jam_decrement = 1.0 / 20.0;
-                lifebar_o2jam_decrement_bad = 1.0 / 100.0;
-                break;
-            case 1: // NX
-                lifebar_o2jam_increment = (24.0 / 25.0) / 470.0;
-                lifebar_o2jam_decrement = 1.0 / 25.0;
-                lifebar_o2jam_decrement_bad = 1.0 / 144.0;
-                break;
-            case 2: // HX
-                lifebar_o2jam_increment = (33.0 / 34.0) / 950.0;
-                lifebar_o2jam_decrement = 1.0 / 34.0;
-                lifebar_o2jam_decrement_bad = 1.0 / 200.0;
-                break;
-        }
-    }
 
     bool ScoreKeeper::usesO2() const {
         return use_o2jam;

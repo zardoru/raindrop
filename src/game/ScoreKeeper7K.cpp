@@ -177,32 +177,9 @@ namespace rd {
     }
 
     void ScoreKeeper::lifebarHit(double ms, rd::ScoreKeeperJudgment judgment) {
-        if (ms <= judgment_time[SKJ_W3]) {
-            lifebar_easy = std::min(1.0, lifebar_easy + lifebar_easy_increment);
-            lifebar_groove = std::min(1.0, lifebar_groove + lifebar_groove_increment);
-
-            if (lifebar_survival > 0)
-                lifebar_survival = std::min(1.0, lifebar_survival + lifebar_survival_increment);
-            if (lifebar_exhard > 0)
-                lifebar_exhard = std::min(1.0, lifebar_exhard + lifebar_exhard_increment);
-        } else {
-            // miss tier 1
-            lifebar_easy = std::max(0.0, lifebar_easy - lifebar_easy_decrement);
-            lifebar_groove = std::max(0.0, lifebar_groove - lifebar_groove_decrement);
-            lifebar_survival = std::max(0.0, lifebar_survival - lifebar_groove_decrement);
-            lifebar_exhard = std::max(0.0, lifebar_exhard - lifebar_exhard_decrement);
-
-            lifebar_death = 0;
+        for (auto &gauge: Gauges) {
+            gauge.second->Update(judgment, true);
         }
-
-        if (ms <= judgment_time[SKJ_W1]) { // only COOLs restore o2jam lifebar
-            lifebar_o2jam = std::min(1.0, lifebar_o2jam + lifebar_o2jam_increment);
-        } else if (ms > judgment_time[SKJ_W2]) // BADs get some HP from you,
-            lifebar_o2jam = std::max(0.0, lifebar_o2jam - lifebar_o2jam_decrement_bad);
-
-        // std::cerr << ms << " " << judgment << " " << life_increment[judgment] << std::endl;
-
-        lifebar_stepmania = std::min(1.0, lifebar_stepmania + life_increment[judgment]);
     }
 
     int ScoreKeeper::getJudgmentCount(int judgment) {
@@ -223,31 +200,13 @@ namespace rd {
 
         accuracy = accuracy_percent(total_sqdev / total_notes);
 
-        if (!early_miss) {
-            if (!dont_break_combo) {
-                total_sqdev += getLateMissCutoffMS() * getLateMissCutoffMS();
-                combo = 0;
-            }
+        for (auto &gauge : Gauges) {
+            gauge.second->Update(SKJ_MISS, early_miss);
+        }
 
-            // miss tier 2
-            lifebar_easy = std::max(0.0, lifebar_easy - lifebar_easy_decrement * 3);
-            lifebar_groove = std::max(0.0, lifebar_groove - lifebar_groove_decrement * 3);
-            lifebar_survival = std::max(0.0, lifebar_survival - lifebar_survival_decrement * 3);
-            lifebar_exhard = std::max(0.0, lifebar_exhard - lifebar_exhard_decrement * 3);
-
-            lifebar_death = 0;
-
-            lifebar_stepmania = std::max(0.0, lifebar_stepmania - lifebar_stepmania_miss_decrement);
-
-            lifebar_o2jam = std::max(0.0, lifebar_o2jam - lifebar_o2jam_decrement);
-        } else if (early_miss) {
-            // miss tier 1
-            lifebar_easy = std::max(0.0, lifebar_easy - lifebar_easy_decrement);
-            lifebar_groove = std::max(0.0, lifebar_groove - lifebar_groove_decrement);
-            lifebar_survival = std::max(0.0, lifebar_survival - lifebar_survival_decrement);
-            lifebar_exhard = std::max(0.0, lifebar_exhard - lifebar_exhard_decrement);
-
-            lifebar_stepmania = std::max(0.0, lifebar_stepmania - lifebar_stepmania_earlymiss_decrement);
+        if (!early_miss && !dont_break_combo) {
+            total_sqdev += getLateMissCutoffMS() * getLateMissCutoffMS();
+            combo = 0;
         }
 
         // other methods
@@ -379,60 +338,27 @@ namespace rd {
         }
     }
 
-    int ScoreKeeper::getLifebarUnits(int lifebar_unit_type) {
-        return 0;
-    }
-
     float ScoreKeeper::getLifebarAmount(int lifebar_amount_type) {
-        switch (lifebar_amount_type) {
-            case LT_EASY:
-                return lifebar_easy;
-            case LT_GROOVE:
-                return lifebar_groove;
-            case LT_SURVIVAL:
-                return lifebar_survival;
-            case LT_EXHARD:
-                return lifebar_exhard;
-            case LT_DEATH:
-                return lifebar_death;
-            case LT_STEPMANIA:
-                return lifebar_stepmania;
-            case LT_O2JAM:
-                return lifebar_o2jam;
-            default:
-                return 0;
-        }
-    }
+        if (Gauges.find((LifeType)lifebar_amount_type) != Gauges.end())
+            return Gauges[(LifeType)lifebar_amount_type]->GetGaugeValue();
+
+        return 0;
+   }
 
     bool ScoreKeeper::isStageFailed(int lifebar_amount_type) {
-        switch (lifebar_amount_type) {
-            case LT_GROOVE:
-                return total_notes == max_notes && lifebar_groove < 0.80;
-            case LT_EASY:
-                return total_notes == max_notes && lifebar_easy < 0.80;
-            case LT_SURVIVAL:
-                return lifebar_survival <= 0.0;
-            case LT_EXHARD:
-                return lifebar_exhard <= 0.0;
-            case LT_DEATH:
-                return lifebar_death <= 0.0;
-            case LT_STEPMANIA:
-                return lifebar_stepmania <= 0.0;
-            case LT_O2JAM:
-                return lifebar_o2jam <= 0.0;
-            default:
-                return false;
-        }
+        bool song_ended = total_notes == max_notes;
+
+        if (Gauges.find((LifeType)lifebar_amount_type) != Gauges.end())
+            return Gauges[(LifeType)lifebar_amount_type]->HasFailed(song_ended);
+
+        return false;
     }
 
     bool ScoreKeeper::hasDelayedFailure(int lifebar_type) {
-        switch (lifebar_type) {
-            case LT_GROOVE:
-            case LT_EASY:
-                return true;
-            default:
-                return false;
-        }
+        if (Gauges.find((LifeType)lifebar_type) != Gauges.end())
+            return Gauges[(LifeType)lifebar_type]->HasDelayedFailure();
+
+        return false;
     }
 
     void ScoreKeeper::failStage() {

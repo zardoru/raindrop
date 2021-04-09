@@ -306,6 +306,7 @@ void ScreenGameplay::UpdateSongTime(float Delta) {
             if (Time.Stream == 0) /* we have not sought already */
                 Music->SeekTime(-Time.Waiting);
 
+            // Music->SetPitch(0.8);
             Music->Play();
         } else {
             Time.Stream = -Time.Waiting;
@@ -327,6 +328,15 @@ void ScreenGameplay::UpdateSongTime(float Delta) {
         Time.Stream += CurrAudioTime - Time.AudioOld;
         Time.AudioOld = CurrAudioTime;
     }
+
+#ifdef AUDIO_CLOCK_DEBUG
+    if (Music->IsPlaying() && Time.Stream > 0 && Music->GetPlayedTime() > 0) {
+        double expected = (GetMixer()->GetTime() - Music->GetPlayedTime()) * Music->GetPitch();
+        if (expected - Time.Stream > 0.1) {
+            std::cerr << "..." << std::endl;
+        }
+    }
+#endif
 }
 
 void

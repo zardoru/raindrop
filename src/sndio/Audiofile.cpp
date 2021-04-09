@@ -752,6 +752,13 @@ double AudioStream::MapStreamClock(double stream_clock) {
 
     while (current_clock.clock_end < stream_clock) { /* this is over */
 
+        /* record start time */
+        if (current_clock.frame_start <= 0 &&
+            current_clock.frame_end >= 0 &&
+            current_clock.clock_start != 0) {
+            mPlaybackTime = current_clock.reverse_map(0, GetRate());
+        }
+
         /* if there are no pending clock maps on the ring buffer */
         if (!PaUtil_ReadRingBuffer(&internal->mBufClock, &current_clock, 1)) {
             break;

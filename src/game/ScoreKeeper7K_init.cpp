@@ -89,20 +89,20 @@ namespace rd {
         total_sqdev = 0;
         accuracy = 0;
 
-        lifebar_groove = 0.20;
-        lifebar_easy = 0.20;
-        lifebar_survival = 1;
-        lifebar_exhard = 1;
-        lifebar_death = 1;
+        Gauges = {
+                {LT_GROOVE, &gauge_groove},
+                {LT_EASY, &gauge_easy},
+                {LT_SURVIVAL, &gauge_survival},
+                {LT_EXHARD, &gauge_exhard},
+                {LT_DEATH, &gauge_death},
+                {LT_STEPMANIA, &gauge_stepmania},
+                {LT_O2JAM, &gauge_o2jam}
+        };
 
-        lifebar_stepmania = 0.50;
+        for (auto &gauge: Gauges) {
+            gauge.second->Reset();
+        }
 
-        setO2LifebarRating(2); // HX by default.
-
-        double inc[6] = {+0.010, +0.008, +0.004, 0, -0.04, -0.08};
-        setLifeIncrements(inc, 6);
-        setMissDecrement(0.08);
-        setEarlyMissDecrement(0.02);
 
         memset(judgment_time, 0, sizeof(judgment_time));
         judge_window_scale = 1.00;
@@ -147,8 +147,8 @@ namespace rd {
         for (auto i = 0; i < sizeof(JudgmentValues) / sizeof(double); i++)
             judgment_time[i] = JudgmentValues[i] * judge_window_scale;
 
-        for (auto i = 0; i < sizeof(judgment_amt) / sizeof(double); i++)
-            judgment_amt[i] = 0;
+        for (double & i : judgment_amt)
+            i = 0;
 
         // account for extremely low judge_window_scale
         judgment_time[SKJ_W0] = std::max(judgment_time[SKJ_W0], 3.2);
@@ -179,8 +179,8 @@ namespace rd {
         for (int i = 1; i < sizeof(JudgmentValues) / sizeof(double); i++)
             judgment_time[i + 1] = JudgmentValues[i] - od * 3;
 
-        for (int i = 0; i < 9; i++)
-            judgment_amt[i] = 0;
+        for (double & i : judgment_amt)
+            i = 0;
 
         for (int i = -127; i < 128; ++i)
             histogram[i + 127] = 0;
@@ -221,32 +221,18 @@ namespace rd {
             lifebar_total = std::max(260.0, 7.605 * max_notes / (6.5 + 0.01 * max_notes)) * effmul;
 
         // recalculate groove lifebar increments.
-        lifebar_easy_increment = Clamp(lifebar_total / max_notes / 50.0, 0.004, 0.8);
-        lifebar_groove_increment = Clamp(lifebar_total / max_notes / 100.0, 0.002, 0.8);
-        lifebar_survival_increment = lifebar_total / max_notes / 200.0;
-        lifebar_exhard_increment = lifebar_total / max_notes / 200.0;
-
-        lifebar_easy_decrement = Clamp(lifebar_total / max_notes / 12.0, 0.00, 0.02);
-        lifebar_groove_decrement = Clamp(lifebar_total / max_notes / 10.0, 0.01, 0.02);
-        lifebar_survival_decrement = Clamp(lifebar_total / max_notes / 7.0, 0.02, 0.15);
-        lifebar_exhard_decrement = Clamp(lifebar_total / max_notes / 3.0, 0.03, 0.3);
+        gauge_death.Setup(lifebar_total, max_notes, 0);
+        gauge_exhard.Setup(lifebar_total, max_notes, 0);
+        gauge_survival.Setup(lifebar_total, max_notes, 0);
+        gauge_easy.Setup(lifebar_total, max_notes, 0);
+        gauge_groove.Setup(lifebar_total, max_notes, 0);
     }
 
-    void ScoreKeeper::setLifeIncrements(double *increments, int inc_n) {
-        for (int a = 0; a < inc_n; ++a) {
-            life_increment[a] = increments[a];
-        }
+    void ScoreKeeper::setO2LifebarRating(int difficulty) {
+        gauge_o2jam.Setup(0, 0, difficulty);
     }
 
-    void ScoreKeeper::setMissDecrement(double decrement) {
-        lifebar_stepmania_miss_decrement = decrement;
-    }
-
-    void ScoreKeeper::setEarlyMissDecrement(double decrement) {
-        lifebar_stepmania_earlymiss_decrement = decrement;
-    }
-
-    void ScoreKeeper::setJudgeRank(int rank) {
+   void ScoreKeeper::setJudgeRank(int rank) {
 
         if (rank == -100) // We assume we're dealing with beats-based timing.
         {
