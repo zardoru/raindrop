@@ -7,7 +7,6 @@
 namespace rd {
 
     void ScoreKeeper::init() {
-        use_w0 = false; // don't use Ridiculous by default.
         use_w0_for_ex2 = false;
 
         rank_pts = 0;
@@ -47,7 +46,6 @@ namespace rd {
         rank_w2_count = 0;
         rank_w3_count = 0;
 
-        notes_hit = 0;
         total_notes = 0;
 
         ex_score = 0;
@@ -77,9 +75,6 @@ namespace rd {
         sc_score = 0;
         sc_sc_score = 0;
 
-        combo = 0;
-        max_combo = 0;
-
         coolcombo = 0;
         pills = 0;
         jams = 0;
@@ -100,107 +95,50 @@ namespace rd {
         };
 
         for (auto &gauge: Gauges) {
+            gauge.second->DefaultSetup();
             gauge.second->Reset();
         }
 
+        Timings = {
+                {TI_RAINDROP, &timing_raindrop},
+                {TI_OSUMANIA, &timing_osumania},
+                {TI_O2JAM, &timing_o2jam},
+                {TI_STEPMANIA, &timing_stepmania}
+        };
 
-        memset(judgment_time, 0, sizeof(judgment_time));
-        judge_window_scale = 1.00;
-        setBMSTimingWindows();
-    }
-
-    void ScoreKeeper::setO2JamBeatTimingWindows() {
-        // This in beats.
-        double o2jamTimingAmt[] =
-                {
-                        O2_WINDOW * 0.1, // raindrop!o2jam extension: XCOOL
-                        O2_WINDOW * 0.2, // COOL threshold
-                        O2_WINDOW * 0.5, // GOOD threshold
-                        O2_WINDOW * 0.8, //  BAD threshold
-                        O2_WINDOW // MISS threshold
-                };
-
-        judgment_time[SKJ_W0] = o2jamTimingAmt[0];
-        judgment_time[SKJ_W1] = o2jamTimingAmt[1];
-        judgment_time[SKJ_W2] = o2jamTimingAmt[2];
-        judgment_time[SKJ_W3] = o2jamTimingAmt[3];
-        judgment_time[SKJ_W4] = -1;
-        judgment_time[SKJ_W5] = -1;
-        judgment_time[SKJ_MISS] = o2jamTimingAmt[4];
-
-
-        // No early misses, only plain misses.
-        late_miss_threshold = o2jamTimingAmt[3];
-        early_miss_threshold = o2jamTimingAmt[3]; // "non-existent"
-        early_hit_threshold = o2jamTimingAmt[4];
-    }
-
-    void ScoreKeeper::setBMSTimingWindows() {
-        double JudgmentValues[] = {6.4, 16, 40, 100, 250, -1, 625};
-        // double JudgmentValues[] = { 8.8, 22, 55, 137.5, 250, -1, 625 };
-
-        // don't scale any of these
-        early_miss_threshold = judgment_time[SKJ_MISS];
-        early_hit_threshold = judgment_time[SKJ_W4];
-        late_miss_threshold = judgment_time[SKJ_W4];
-
-        for (auto i = 0; i < sizeof(JudgmentValues) / sizeof(double); i++)
-            judgment_time[i] = JudgmentValues[i] * judge_window_scale;
-
-        for (double & i : judgment_amt)
-            i = 0;
-
-        // account for extremely low judge_window_scale
-        judgment_time[SKJ_W0] = std::max(judgment_time[SKJ_W0], 3.2);
-        judgment_time[SKJ_W1] = std::max(judgment_time[SKJ_W1], 8.0);
-
-        if (judgment_time[SKJ_W4] < 250.0) {
-            auto window = std::max(judgment_time[SKJ_W1], judgment_time[SKJ_W4]);
-            early_hit_threshold = late_miss_threshold = std::min(window, 250.0);
+        for (auto &timing: Timings) {
+            timing.second->DefaultSetup();
+            timing.second->Reset();
         }
+
+        CurrentTimingWindow = &timing_raindrop;
 
         for (auto i = -127; i < 128; ++i)
             histogram[i + 127] = 0;
     }
 
+    void ScoreKeeper::setO2JamBeatTimingWindows() {
+        CurrentTimingWindow = &timing_o2jam;
+    }
+
+    void ScoreKeeper::setBMSTimingWindows() {
+        CurrentTimingWindow = &timing_raindrop;
+    }
+
     void ScoreKeeper::setODWindows(int od) {
-        //use_w0 = true; // if chart has OD, use osu!mania scoring.
-        //use_w0_for_ex2 = true;
-
-
-        // w1, w2, w3, w4, w5, miss
-        double JudgmentValues[] = {16, 64, 97, 127, 151, 188};
-
-        late_miss_threshold = 151 - od * 3;
-        early_hit_threshold = 188 - od * 3;
-        early_miss_threshold = early_hit_threshold;
-
-        judgment_time[SKJ_W1] = JudgmentValues[SKJ_W0];
-        for (int i = 1; i < sizeof(JudgmentValues) / sizeof(double); i++)
-            judgment_time[i + 1] = JudgmentValues[i] - od * 3;
-
-        for (double & i : judgment_amt)
-            i = 0;
-
-        for (int i = -127; i < 128; ++i)
-            histogram[i + 127] = 0;
+        timing_osumania.Setup(od, 1);
+        CurrentTimingWindow = &timing_osumania;
     }
 
-    void ScoreKeeper::setSMJ4Windows() {
-        // Ridiculous is included: J7 Marvelous.
-        // No early miss threshold
-        // w0, w1, w2, w3, w4, w5
-        double JudgmentValues[] = {11.25, 22.5, 45, 90, 135, 180};
+    void ScoreKeeper::setUseW0(bool on) {
+        for (auto &timing: Timings) {
+            if (on)
+                timing.second->SetWindowSkip(1);
+            else
+                timing.second->SetWindowSkip(0);
 
-        late_miss_threshold = 180;
-        early_miss_threshold = 180;
-        early_hit_threshold = 180;
-
-        for (int i = 0; i < sizeof(JudgmentValues) / sizeof(double); i++)
-            judgment_time[i] = JudgmentValues[i];
-    }
-
-    void ScoreKeeper::setUseW0(bool on) { use_w0 = on; } // make a config option
+        }
+    } // make a config option
 
     ScoreKeeper::ScoreKeeper() {
         init();
@@ -208,8 +146,12 @@ namespace rd {
 
     ScoreKeeper::ScoreKeeper(double judge_window_scale) {
         init();
-        this->judge_window_scale = judge_window_scale;
+        timing_raindrop.Setup(0, judge_window_scale);
         setBMSTimingWindows();
+    }
+
+    void ScoreKeeper::setSMJ4Windows() {
+        CurrentTimingWindow = &timing_stepmania;
     }
 
     void ScoreKeeper::setLifeTotal(double total, double multiplier) {
@@ -237,7 +179,6 @@ namespace rd {
         if (rank == -100) // We assume we're dealing with beats-based timing.
         {
             use_o2jam = true;
-            use_w0 = false;
             setO2JamBeatTimingWindows();
             return;
         }
@@ -259,6 +200,7 @@ namespace rd {
         }*/
 
         // third version
+        float judge_window_scale = 1.7;
         switch (rank) {
             case 0:
                 judge_window_scale = 1;
@@ -275,13 +217,16 @@ namespace rd {
             case 4:
                 judge_window_scale = 2;
                 break;
+            default:
+                break;
         }
 
+       timing_raindrop.Setup(0, judge_window_scale);
         setBMSTimingWindows();
     }
 
     void ScoreKeeper::setJudgeScale(double scale) {
-        judge_window_scale = scale * 100.0 / 72.0;
+        timing_raindrop.Setup(0, scale * 100.0 / 72.0);
         setBMSTimingWindows();
     }
 }

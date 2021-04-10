@@ -152,6 +152,7 @@ namespace rd {
         TT_PIXELS
     };
 
+    constexpr double O2_WINDOW = 0.664;
 
     /* vsrg constants */
 

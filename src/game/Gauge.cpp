@@ -23,7 +23,7 @@ bool Gauge::HasDelayedFailure() {
     return false;
 }
 
-void Gauge::Setup(double total, double max_notes, double strictness) {
+void Gauge::Setup(double total, long long max_notes, double strictness) {
     // stub
 }
 
@@ -31,7 +31,7 @@ void Gauge::DefaultSetup() {
    // stub
 }
 
-void GaugeO2Jam::Setup(double total, double max_notes, double strictness) {
+void GaugeO2Jam::Setup(double total, long long max_notes, double strictness) {
     // Thanks to Entozer for giving this information.
     if (strictness == 0) { // EX
         increment = (19.0 / 20.0) / 290.0;

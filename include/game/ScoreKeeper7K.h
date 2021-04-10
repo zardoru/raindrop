@@ -5,6 +5,12 @@
 #include <game/gauges/GaugeStepmania.h>
 #include <game/gauges/GaugeO2Jam.h>
 
+#include <game/timing_windows/TimingWindowsO2Jam.h>
+#include <game/timing_windows/TimingWindowsOsuMania.h>
+#include <game/timing_windows/TimingWindowsRaindropBMS.h>
+#include <game/timing_windows/TimingWindowsStepmania.h>
+
+
 namespace rd {
     class ScoreKeeper {
 
@@ -55,11 +61,11 @@ namespace rd {
 
         double getAvgHit() const;
 
-        ScoreKeeperJudgment hitNote(double ms);
+        ScoreKeeperJudgment hitNote(double ms, uint32_t lane, NoteJudgmentPart part);
 
         void lifebarHit(double ms, rd::ScoreKeeperJudgment judgment);
 
-        void missNote(bool auto_hold_miss, bool early_miss);
+        void missNote(bool dont_break_combo, bool early_miss, bool apply_miss);
 
         double getAccMax() const;
 
@@ -120,7 +126,6 @@ namespace rd {
 
         void setO2JamBeatTimingWindows();
 
-        bool use_w0; // whether or not to use ridiculous timing.
         bool use_w0_for_ex2; // whether or not to require ridiculous for 2 EX score.
 
         // online avg hit and variance
@@ -222,16 +227,12 @@ namespace rd {
             misc.
             */
 
-        long long notes_hit; // notes hit %.
         long long total_notes;
 
 
         long long dp_score; // DDR dance-point scoring
         long long dp_dp_score;
 
-
-        long long combo;
-        long long max_combo;
 
         double total_sqdev; // accuracy scoring
         double accuracy;
@@ -255,18 +256,15 @@ namespace rd {
 
 
         // judgment information
-        double judgment_time[9];
-        double judgment_amt[9];
-        double judge_window_scale;
+        TimingWindowsO2Jam timing_o2jam;
+        TimingWindowsOsuMania timing_osumania;
+        TimingWindowsRaindropBMS timing_raindrop;
+        TimingWindowsStepmania timing_stepmania;
 
+        std::map<ChartType, TimingWindows*> Timings;
+        TimingWindows* CurrentTimingWindow;
 
         void setBMSTimingWindows();
-
-        // miss thresholds; notes hit outside here count as misses.
-        // units are in ms
-        double late_miss_threshold;
-        double early_miss_threshold;
-        double early_hit_threshold;
 
         double histogram[255]; // records from -127 to +127 ms.
 
@@ -287,5 +285,4 @@ namespace rd {
 }
 
 
-const double O2_WINDOW = 0.664;
 

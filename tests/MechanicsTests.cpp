@@ -33,7 +33,7 @@ struct BMSSetup {
 		sk->setMaxNotes(100);
 
 		mech.MissNotify = [&](double t, uint32_t, bool hold, bool nobreakcombo, bool earlymiss) {
-			sk->missNote(nobreakcombo, earlymiss);
+            sk->missNote(nobreakcombo, earlymiss, true);
 		};
 	}
 };
@@ -99,18 +99,18 @@ TEST_CASE("Raindrop Mechanics (BMS tests)", "[raindropbms]") {
 
 	double hitwindow = s.sk->getEarlyHitCutoffMS();
 	SECTION("No MISS judgment on the widest window") {
-		REQUIRE(s.sk->hitNote(hitwindow) != SKJ_MISS);
-		REQUIRE(s.sk->hitNote(hitwindow) != SKJ_NONE);
-		REQUIRE(s.sk->hitNote(hitwindow - 1) != SKJ_MISS);
-		REQUIRE(s.sk->hitNote(hitwindow - 1) != SKJ_NONE);
+		REQUIRE(s.sk->hitNote(hitwindow, 0, NoteJudgmentPart::NOTE) != SKJ_MISS);
+		REQUIRE(s.sk->hitNote(hitwindow, 0, NoteJudgmentPart::NOTE) != SKJ_NONE);
+		REQUIRE(s.sk->hitNote(hitwindow - 1, 0, NoteJudgmentPart::NOTE) != SKJ_MISS);
+		REQUIRE(s.sk->hitNote(hitwindow - 1, 0, NoteJudgmentPart::NOTE) != SKJ_NONE);
 	}
 
 	SECTION("NONE judgment outside of hit window") {
 		double earlymiss = -s.sk->getEarlyMissCutoffMS();
 		double latemiss = s.sk->getLateMissCutoffMS();
 
-		REQUIRE(s.sk->hitNote(earlymiss - 1) == SKJ_NONE);
-		REQUIRE(s.sk->hitNote(latemiss + 1) == SKJ_NONE);
+		REQUIRE(s.sk->hitNote(earlymiss - 1, 0, NoteJudgmentPart::NOTE) == SKJ_NONE);
+		REQUIRE(s.sk->hitNote(latemiss + 1, 0, NoteJudgmentPart::NOTE) == SKJ_NONE);
 	}
 
 	SECTION("Late window misses work as intended") {
@@ -127,7 +127,7 @@ TEST_CASE("Raindrop Mechanics (BMS tests)", "[raindropbms]") {
 	SECTION("No runtime errors across a big range of time") {
 	    for (int i = -TIME_RANGE; i <= TIME_RANGE; i++) {
 	        double t = (double)i / 1000.0;
-            REQUIRE_NOTHROW(s.sk->hitNote(t));
+            REQUIRE_NOTHROW(s.sk->hitNote(t, 0, NoteJudgmentPart::NOTE));
 	    }
 	}
 }
@@ -170,7 +170,7 @@ TEST_CASE("Raindrop Mechanics (Stepmania - LN tails)", "[raindropmechsettails]")
     SECTION("No runtime errors across a big range of time") {
         for (int i = -TIME_RANGE; i <= TIME_RANGE; i++) {
             double t = (double)i / 1000.0;
-            REQUIRE_NOTHROW(s.sk->hitNote(t));
+            REQUIRE_NOTHROW(s.sk->hitNote(t, 0, NoteJudgmentPart::NOTE));
         }
     }
 }
@@ -200,7 +200,7 @@ struct OMSetup
 		};
 
 		mech.MissNotify = [&](double t, uint32_t, bool hold, bool nobreakcombo, bool earlymiss) {
-			sk->missNote(nobreakcombo, earlymiss);
+            sk->missNote(nobreakcombo, earlymiss, true);
 		};
 	}
 };
@@ -215,7 +215,7 @@ TEST_CASE("osu!mania judgments", "[omjudge]") {
 	SECTION("Judgments from W1 to W5 are correct Early (OD0)") {
 		auto j = SKJ_W1;
 		for (auto judgems : JudgmentValues) {
-			REQUIRE(s.sk->hitNote(judgems + 2) == j);
+			REQUIRE(s.sk->hitNote(judgems + 2, 0, NoteJudgmentPart::NOTE) == j);
 
 			j = (ScoreKeeperJudgment)((int)j + 1);
 		}
@@ -224,7 +224,7 @@ TEST_CASE("osu!mania judgments", "[omjudge]") {
 	SECTION("Judgments from W1 to W5 are correct at the limit Early (OD0)") {
 		auto j = SKJ_W1;
 		for (auto judgems : JudgmentValues) {
-			REQUIRE(s.sk->hitNote(judgems) == j);
+			REQUIRE(s.sk->hitNote(judgems, 0, NoteJudgmentPart::NOTE) == j);
 
 			j = (ScoreKeeperJudgment)((int)j + 1);
 		}
@@ -233,7 +233,7 @@ TEST_CASE("osu!mania judgments", "[omjudge]") {
 	SECTION("Judgments from W1 to W5 are correct at the limit Late (OD0)") {
 		auto j = SKJ_W1;
 		for (auto judgems : JudgmentValuesLate) {
-			REQUIRE(s.sk->hitNote(judgems) == j);
+			REQUIRE(s.sk->hitNote(judgems, 0, NoteJudgmentPart::NOTE) == j);
 
 			j = (ScoreKeeperJudgment)((int)j + 1);
 		}
@@ -309,7 +309,7 @@ TEST_CASE("osu!mania judgments", "[omjudge]") {
     SECTION("No runtime errors across a big range of time") {
         for (int i = -TIME_RANGE; i <= TIME_RANGE; i++) {
             double t = (double)i / 1000.0;
-            REQUIRE_NOTHROW(s.sk->hitNote(t));
+            REQUIRE_NOTHROW(s.sk->hitNote(t, 0, NoteJudgmentPart::NOTE));
         }
     }
 }

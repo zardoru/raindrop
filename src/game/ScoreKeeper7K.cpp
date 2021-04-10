@@ -50,11 +50,7 @@ namespace rd {
     }
 
     // ms is misleading- since it may very well be beats, but it's fine.
-    ScoreKeeperJudgment ScoreKeeper::hitNote(double ms) {
-        // hit notes
-        if (ms < -early_miss_threshold || ms > late_miss_threshold) {
-            return SKJ_NONE;
-        }
+    ScoreKeeperJudgment ScoreKeeper::hitNote(double ms, uint32_t lane, NoteJudgmentPart part) {
 
         // online variance and average hit
         ++total_notes;
@@ -63,9 +59,6 @@ namespace rd {
 
         hit_variance += delta * (ms - avg_hit);
 
-
-
-        // std::cerr << use_bbased << " " << ms << " ";
 
         if (use_o2jam) {
             auto dist = ms / O2_WINDOW * 128;
@@ -78,30 +71,8 @@ namespace rd {
             }
         }
 
-        ms = std::abs(ms);
 
-        // combo
-        auto increase_combo = [&]() {
-            ++notes_hit;
-            ++combo;
-            if (combo > max_combo)
-                max_combo = combo;
-        };
-
-        // check combo for o2jam later (after transformed judgment)
-        double combo_leniency;
-        if (!use_o2jam) {
-            combo_leniency = judgment_time[SKJ_W3]; // GOODs or less
-
-            if (ms <= combo_leniency) {
-                increase_combo();
-            } else {
-                combo = 0;
-            }
-        }
-
-        // accuracy score
-
+       // accuracy score
         if (use_o2jam)
             total_sqdev += ms * ms / pow(O2_WINDOW, 2);
         else
@@ -110,48 +81,45 @@ namespace rd {
         accuracy = accuracy_percent(total_sqdev / total_notes);
 
         // judgments
+        /* add judgment, handle combo etc.. */
 
-        ScoreKeeperJudgment judgment = SKJ_NONE;
+        auto judge = CurrentTimingWindow->GetJudgmentForTimeOffset(ms, static_cast<uint32_t>(lane), part);
+        ScoreKeeperJudgment o2Judge;
+        for (auto &timing: Timings) {
+            /* XXX: this won't really work unless the ms part of this is in beats */
+            if (timing.first == TI_O2JAM) {
+                ScoreKeeperJudgment o2Judge;
 
-        for (int i = (use_w0 ? 0 : 1); i <= 6; i++) {
-            if (ms <= judgment_time[i]) {
-                judgment = ScoreKeeperJudgment(i);
+                // we didn't run "getJudgement" for our o2jam state
+                if (timing.second != CurrentTimingWindow) {
+                    o2Judge = timing.second->GetJudgmentForTimeOffset(ms, lane, part);
+                } else  // we did so just reuse it
+                    o2Judge = judge;
 
-                if (!use_o2jam)
-                    judgment_amt[judgment]++;
-                else {
-                    // we using o2 based mechanics..
-                    auto j = getO2Judge(judgment);
+                o2Judge = static_cast<ScoreKeeperJudgment>(getO2Judge(o2Judge));
+                timing.second->AddJudgment(o2Judge);
 
-                    // transform this judgment if neccesary (pills/etc)
-                    judgment = ScoreKeeperJudgment(j);
-                    judgment_amt[j]++;
+                // update our temporal judgment if we're using o2jam timing
+                if (CurrentTimingWindow == &timing_o2jam) {
+                    judge = o2Judge;
                 }
-
-                // breaking early is important.
-                break;
-            }
-        }
-
-        // since it may be transformed we check for combo here instead
-        if (use_o2jam) {
-            if (judgment < SKJ_W3) {
-                increase_combo();
             } else {
-                combo = 0;
+                if (timing.second == CurrentTimingWindow)
+                    timing.second->AddJudgment(judge);
+                else {
+                    auto myJudge = timing.second->GetJudgmentForTimeOffset(ms, lane, part);
+                    timing.second->AddJudgment(myJudge);
+                }
             }
         }
-
-        if (judgment == SKJ_NONE) {
-            throw std::runtime_error(Utility::Format("Invalid judgment at %i ms", ms));
-        }
-
-        // std::cerr << std::endl;
 
         // Other methods
 
-        // we have to missNote -
-        if (judgment != SKJ_MISS) {
+        if (judge == SKJ_NONE) // nothing to update
+            return judge;
+
+        // we have to missNote?
+        if (judge != SKJ_MISS) {
             // SC, ACC^2 score
 
             sc_score += Clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.0) * 2;
@@ -161,19 +129,19 @@ namespace rd {
 
             // lifebars
 
-            lifebarHit(ms, judgment);
+            lifebarHit(abs(ms), judge);
 
-            update_ranks(judgment); // rank calculation
-            update_bms(judgment); // Beatmania scoring
-            update_lr2(judgment); // Lunatic Rave 2 scoring
-            update_exp2(judgment);
-            update_osu(judgment);
-            update_o2(judgment);
+            update_ranks(judge); // rank calculation
+            update_bms(judge); // Beatmania scoring
+            update_lr2(judge); // Lunatic Rave 2 scoring
+            update_exp2(judge);
+            update_osu(judge);
+            update_o2(judge);
         } else {
-            missNote(false, false);
+            missNote(false, false, false);
         }
 
-        return judgment;
+        return judge;
     }
 
     void ScoreKeeper::lifebarHit(double ms, rd::ScoreKeeperJudgment judgment) {
@@ -183,17 +151,20 @@ namespace rd {
     }
 
     int ScoreKeeper::getJudgmentCount(int judgment) {
-        if (judgment >= 9 || judgment < 0) return 0;
-
-        return judgment_amt[judgment];
+        return CurrentTimingWindow->GetJudgmentCount(static_cast<ScoreKeeperJudgment>(judgment));
     }
 
     bool ScoreKeeper::usesW0() const {
-        return use_w0;
+        return CurrentTimingWindow->GetWindowSkip() == 0;
     }
 
-    void ScoreKeeper::missNote(bool dont_break_combo, bool early_miss) {
-        judgment_amt[SKJ_MISS]++;
+    void ScoreKeeper::missNote(bool dont_break_combo, bool early_miss, bool apply_miss) {
+        if (apply_miss) {
+            for (auto &timing: Timings) {
+                timing.second->AddJudgment(SKJ_MISS);
+            }
+        }
+
 
         if (!early_miss)
             ++total_notes;
@@ -206,7 +177,9 @@ namespace rd {
 
         if (!early_miss && !dont_break_combo) {
             total_sqdev += getLateMissCutoffMS() * getLateMissCutoffMS();
-            combo = 0;
+
+            // TODO: fit this in with the new timing scheme? does it matter?
+            // combo = 0;
         }
 
         // other methods
@@ -217,21 +190,25 @@ namespace rd {
     }
 
     double ScoreKeeper::getJudgmentCutoffMS() {
-        auto rt = 0.0;
-        rt = std::max(std::max(late_miss_threshold, rt), early_miss_threshold);
-        return rt;
+        return std::accumulate(
+                Timings.begin(),
+                Timings.end(),
+                0.0,
+                [] (double accum, const std::pair<ChartType, TimingWindows*>& wnd) {
+                    return std::max(accum, std::max(wnd.second->GetEarlyThreshold(), wnd.second->GetLateThreshold()));
+                });
     }
 
     double ScoreKeeper::getEarlyMissCutoffMS() const {
-        return early_miss_threshold;
+        return CurrentTimingWindow->GetLateThreshold();
     }
 
     double ScoreKeeper::getEarlyHitCutoffMS() const {
-        return early_hit_threshold;
+        return CurrentTimingWindow->GetEarlyHitCutoff();
     }
 
     double ScoreKeeper::getLateMissCutoffMS() const {
-        return late_miss_threshold;
+        return CurrentTimingWindow->GetLateThreshold();
     }
 
     double ScoreKeeper::getAccMax() const {
@@ -239,8 +216,7 @@ namespace rd {
     }
 
     double ScoreKeeper::getJudgmentWindow(int judgment) {
-        if (judgment >= 9 || judgment < 0) return 0;
-        return judgment_time[judgment];
+        return CurrentTimingWindow->GetJudgmentWindow(static_cast<ScoreKeeperJudgment>(judgment));
     }
 
     std::string ScoreKeeper::getHistogram() {
@@ -299,11 +275,11 @@ namespace rd {
             case ST_OSUMANIA:
                 return osu_score;
             case ST_COMBO:
-                return combo;
+                return CurrentTimingWindow->GetCombo();
             case ST_MAX_COMBO:
-                return max_combo;
+                return CurrentTimingWindow->GetMaxCombo();
             case ST_NOTES_HIT:
-                return notes_hit;
+                return CurrentTimingWindow->GetNotesHit();
             case ST_O2JAM:
                 return o2_score;
             case ST_RANK:
@@ -327,7 +303,7 @@ namespace rd {
                 return accuracy;
             case PST_NH:
                 if (total_notes)
-                    return double(notes_hit) / double(total_notes) * 100.0;
+                    return double(CurrentTimingWindow->GetNotesHit()) / double(total_notes) * 100.0;
                 return 100;
             case PST_OSU:
                 if (total_notes)
@@ -468,13 +444,15 @@ namespace rd {
     }
 
     void ScoreKeeper::applyRateScale(double rate) {
-        for (int i = 0; i <= 6; i++) {
+        // TODO: take whatever steps are necessary to not depend on this
+        /*for (int i = 0; i <= 6; i++) {
             judgment_time[i] *= rate;
         }
 
         early_miss_threshold *= rate;
         early_hit_threshold *= rate;
         late_miss_threshold *= rate;
+         */
     }
 
     void ScoreKeeper::update_bms(ScoreKeeperJudgment judgment) {
@@ -601,30 +579,31 @@ namespace rd {
 
         switch (judgment) {
             case SKJ_W0:
+            case SKJ_W1:
                 osu_points += 320;
                 osu_accuracy += 300;
                 osu_bonus_multiplier = 32;
                 bonus_counter = std::min(100, bonus_counter + 2);
                 break;
-            case SKJ_W1:
+            case SKJ_W2:
                 osu_points += 300;
                 osu_accuracy += 300;
                 osu_bonus_multiplier = 32;
                 bonus_counter = std::min(100, bonus_counter + 1);
                 break;
-            case SKJ_W2:
+            case SKJ_W3:
                 osu_points += 200;
                 osu_accuracy += 200;
                 osu_bonus_multiplier = 16;
                 bonus_counter = std::max(0, bonus_counter - 8);
                 break;
-            case SKJ_W3:
+            case SKJ_W4:
                 osu_points += 100;
                 osu_accuracy += 100;
                 osu_bonus_multiplier = 8;
                 bonus_counter = std::max(0, bonus_counter - 24);
                 break;
-            case SKJ_W4:
+            case SKJ_W5:
                 osu_points += 50;
                 osu_accuracy += 50;
                 osu_bonus_multiplier = 4;
@@ -640,6 +619,8 @@ namespace rd {
 
         osu_bonus_points += osu_bonus_multiplier * sqrt(double(bonus_counter));
 
+        /* TODO: o!m timing system will report less max_notes than there are because
+         * holds count as one judgment instead of 2.*/
         osu_score = 500000 * ((osu_points + osu_bonus_points) / double(max_notes * 320));
     }
 

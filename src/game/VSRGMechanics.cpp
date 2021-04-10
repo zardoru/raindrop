@@ -160,7 +160,6 @@ namespace rd {
             return false;
 
         double dev = (SongTime - m->GetStartTime()) * 1000;
-        double tD = abs(dev);
 
         if (!InHeadCutoff(SongTime, m)) // If the note was hit outside of judging range
         {

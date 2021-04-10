@@ -10,7 +10,7 @@ namespace rd {
         double lifebar_amount = 1;
     public:
         virtual void DefaultSetup();
-        virtual void Setup(double total, double max_notes, double strictness);
+        virtual void Setup(double total, long long max_notes, double strictness);
         virtual void Reset() = 0; /* Note: Setup must have been called */
 
         /* is_early means whether this is not a late miss (late miss = note was simply not pressed) */

@@ -701,14 +701,25 @@ bool PlayerContext::BindKeysToLanes(bool UseTurntable) {
 }
 
 void PlayerContext::HitNote(double TimeOff, uint32_t Lane, bool IsHold, bool IsHoldRelease) {
-    auto Judgment = PlayerScoreKeeper->hitNote(TimeOff);
+
+    NoteJudgmentPart part;
+
+    if (!IsHold) part = NoteJudgmentPart::NOTE;
+    else {
+        if (IsHoldRelease)
+            part = NoteJudgmentPart::HOLD_TAIL;
+        else
+            part = NoteJudgmentPart::HOLD_HEAD;
+    }
+
+    auto Judgment = PlayerScoreKeeper->hitNote(TimeOff, Lane, part);
 
     if (OnHit)
         OnHit(Judgment, TimeOff, Lane, IsHold, IsHoldRelease, PlayerNumber);
 }
 
 void PlayerContext::MissNote(double TimeOff, uint32_t Lane, bool IsHold, bool dont_break_combo, bool early_miss) {
-    PlayerScoreKeeper->missNote(dont_break_combo, early_miss);
+    PlayerScoreKeeper->missNote(dont_break_combo, early_miss, true);
 
     if (IsHold)
         Gear.HeldKey[Lane] = false;

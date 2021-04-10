@@ -11,7 +11,7 @@ namespace rd {
 
         void Reset() override;
 
-        void Setup (double total, double max_notes, double strictness) override;
+        void Setup (double total, long long max_notes, double strictness) override;
 
         void Update(ScoreKeeperJudgment skj, bool is_early, float mine_value) override;
     };
