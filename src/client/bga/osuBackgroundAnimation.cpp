@@ -334,7 +334,7 @@ namespace osb {
 		float rot = 0;
 		if (ValidateEventIterator(rot_evt, evRotate)) {
 			rot = rot_evt->LerpValue(Time);
-			mTransform.SetRotation(glm::degrees(rot));
+			mTransform.SetRotation(rot);
 		}
 		else mTransform.SetRotation(0);
 
