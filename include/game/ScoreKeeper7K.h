@@ -9,6 +9,7 @@
 #include <game/timing_windows/TimingWindowsOsuMania.h>
 #include <game/timing_windows/TimingWindowsRaindropBMS.h>
 #include <game/timing_windows/TimingWindowsStepmania.h>
+#include <game/timing_windows/TimingWindowsLR2Oraja.h>
 
 
 namespace rd {
@@ -121,6 +122,8 @@ namespace rd {
 
         // percent we're sure the offset is wrong
         double getOffsetDistrust() const;
+
+        void useLR2Timing();
 
     private:
 
@@ -260,6 +263,7 @@ namespace rd {
         TimingWindowsOsuMania timing_osumania;
         TimingWindowsRaindropBMS timing_raindrop;
         TimingWindowsStepmania timing_stepmania;
+        TimingWindowsLR2Oraja timing_lr2;
 
         std::map<ChartType, TimingWindows*> Timings;
         TimingWindows* CurrentTimingWindow;

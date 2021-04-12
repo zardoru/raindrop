@@ -70,7 +70,7 @@ namespace rd {
 			uint32_t &GetDataSound();
 
 			// Get the kind of head this note has.
-			uint8_t  GetDataNoteKind();
+			uint8_t  GetDataNoteKind() const;
 
 			// Get what fraction of a beat this note belongs to.
 			uint8_t  GetDataFractionKind();

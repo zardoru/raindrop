@@ -103,7 +103,8 @@ namespace rd {
                 {TI_RAINDROP, &timing_raindrop},
                 {TI_OSUMANIA, &timing_osumania},
                 {TI_O2JAM, &timing_o2jam},
-                {TI_STEPMANIA, &timing_stepmania}
+                {TI_STEPMANIA, &timing_stepmania},
+                {TI_LR2, &timing_lr2}
         };
 
         for (auto &timing: Timings) {
@@ -201,32 +202,39 @@ namespace rd {
 
         // third version
         float judge_window_scale = 1.7;
+        double lr2_rank = 75;
         switch (rank) {
-            case 0:
+            case 0: // VHARD
                 judge_window_scale = 1;
+                lr2_rank = 25;
                 break;
-            case 1:
+            case 1: // HARD
                 judge_window_scale = 1.2;
+                lr2_rank = 50;
                 break;
-            case 2:
+            case 2: // NORMAL
                 judge_window_scale = 1.4;
+                lr2_rank = 75;
                 break;
-            case 3:
+            case 3: // EASY
                 judge_window_scale = 1.7;
+                lr2_rank = 100;
                 break;
-            case 4:
+            case 4: // VEASY
                 judge_window_scale = 2;
                 break;
             default:
                 break;
         }
 
-       timing_raindrop.Setup(0, judge_window_scale);
+        timing_raindrop.Setup(0, judge_window_scale);
+        timing_lr2.Setup(0, lr2_rank);
         setBMSTimingWindows();
     }
 
     void ScoreKeeper::setJudgeScale(double scale) {
         timing_raindrop.Setup(0, scale * 100.0 / 72.0);
+        timing_lr2.Setup(0, scale);
         setBMSTimingWindows();
     }
 }

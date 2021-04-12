@@ -77,7 +77,7 @@ namespace rd {
             BPS.push_back(Seg);
         }
 
-        if (!StopsTiming.size() || BPMType != Difficulty::BT_BEAT) // Stops only supported in Beat mode.
+        if (StopsTiming.empty() || BPMType != Difficulty::BT_BEAT) // Stops only supported in Beat mode.
             return BPS;
 
         /*
@@ -207,11 +207,9 @@ namespace rd {
             */
 
             bool insert = true;
-            for (auto Time = VerticalSpeeds.begin();
-                 Time != VerticalSpeeds.end();
-                 ++Time) {
-                if (abs(ChangeTime - Time->Time) < 0.00001) {
-                    Time->Value *= Change->Value;
+            for (auto & VerticalSpeed : VerticalSpeeds) {
+                if (abs(ChangeTime - VerticalSpeed.Time) < 0.00001) {
+                    VerticalSpeed.Value *= Change->Value;
                     insert = false;
                 }
             }
@@ -249,18 +247,16 @@ namespace rd {
             // We're not an osu!mania chart, so it's time to do what should be done.
             // All VSpeeds with T > current and T < next is a BPM change speed;
             // multiply it by the value of the current speed
-            for (auto Time = VerticalSpeeds.begin();
-                 Time != VerticalSpeeds.end();
-                 ++Time) {
-                if (Time->Time > ChangeTime) {
+            for (auto & VerticalSpeed : VerticalSpeeds) {
+                if (VerticalSpeed.Time > ChangeTime) {
                     // Two options, between two speed changes, or the last one. Second case, NextChange == Scrolls.end().
                     // Otherwise, just move on
                     // Last speed change
                     if (NextChange == Scrolls.end()) {
-                        Time->Value = Change->Value * SectionValue(Unmodified, Time->Time);
+                        VerticalSpeed.Value = Change->Value * SectionValue(Unmodified, VerticalSpeed.Time);
                     } else {
-                        if (Time->Time < NextChange->Time) // Between speed changes
-                            Time->Value = Change->Value * SectionValue(Unmodified, Time->Time);
+                        if (VerticalSpeed.Time < NextChange->Time) // Between speed changes
+                            VerticalSpeed.Value = Change->Value * SectionValue(Unmodified, VerticalSpeed.Time);
                     }
                 }
             }
@@ -322,7 +318,6 @@ namespace rd {
             /* For each measure of this channel */
             for (auto Msr : data->Measures) {
                 /* For each note in the measure... */
-                auto total_notes = Msr.Notes[KeyIndex].size();
 
                 for (auto CurrentNote: Msr.Notes[KeyIndex]) {
                     /*
@@ -413,9 +408,9 @@ namespace rd {
     // audio time -> chart time
     double PlayerChartState::GetWarpedSongTime(double SongTime) const {
         auto T = SongTime;
-        for (auto k = Warps.cbegin(); k != Warps.cend(); ++k) {
-            if (k->Time <= T)
-                T += k->Value;
+        for (auto Warp : Warps) {
+            if (Warp.Time <= T)
+                T += Warp.Value;
         }
 
         return T;
@@ -446,10 +441,10 @@ namespace rd {
         if (!Data)
             return Out;
 
-        if (!Timing.size())
+        if (Timing.empty())
             return Out;
 
-        if (!Data->Measures.size())
+        if (Data->Measures.empty())
             return Out;
 
 
@@ -472,7 +467,7 @@ namespace rd {
         }
 
         // Add
-        for (auto Msr : Data->Measures) {
+        for (const auto& Msr : Data->Measures) {
             double PositionOut = 0.0;
 
             if (BPMType == Difficulty::BT_BEAT) {

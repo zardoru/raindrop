@@ -45,6 +45,8 @@ namespace rd {
         double early_miss_threshold; /* if time_delta is > this, it's an early miss, given it's not an early hit. */
         double early_hit_threshold;  /* if time_delta is > this, it's inside the timing windows. */
 
+        ScoreKeeperJudgment GetJudgmentFromTimingWindows(const std::array<double, JUDGMENT_ARRAY_SIZE>& windows, double time_delta) const;
+
     public:
         TimingWindows();
 
@@ -79,11 +81,11 @@ namespace rd {
 
         // set how many timing windows to skip (from w0)
         void SetWindowSkip(uint32_t window_skip);
+        uint32_t GetWindowSkip() const;
 
         double GetEarlyHitCutoff() const;
 
         uint32_t GetNotesHit() const;
 
-        uint32_t GetWindowSkip() const;
     };
 }

@@ -33,7 +33,8 @@ namespace rd {
         TI_O2JAM = 3,
         TI_STEPMANIA = 4,
         TI_RAINDROP = 5,
-        TI_RDAC = 6
+        TI_RDAC = 6,
+        TI_LR2 = 7
     };
 
     const uint8_t MAX_CHANNELS = 128; // full MIDI range

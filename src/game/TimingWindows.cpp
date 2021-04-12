@@ -4,36 +4,20 @@
 #include <game/timing_windows/TimingWindowsStepmania.h>
 #include <game/timing_windows/TimingWindowsOsuMania.h>
 #include <game/timing_windows/TimingWindowsO2Jam.h>
+#include <game/timing_windows/TimingWindowsLR2Oraja.h>
 
 using namespace rd;
+
+/*
+ * Timing Windows Base Class
+ * */
 
 void TimingWindows::Setup(double strictness, double scale) {
     // stub. might get ignored in favor of a constructor
 }
 
 ScoreKeeperJudgment TimingWindows::GetJudgmentForTimeOffset(double time_delta, uint32_t lane, NoteJudgmentPart part) {
-    /* assuming time_delta is negative */
-    if (time_delta < -early_hit_threshold) {
-        if (time_delta >= -early_miss_threshold) {
-            return SKJ_MISS;
-        }
-    } else if (time_delta > late_miss_threshold) {
-        return SKJ_MISS;
-    } else if (time_delta >= -early_hit_threshold) {
-        time_delta = abs(time_delta);
-
-        auto skj = current_window_skip;
-        for (auto i = current_window_skip; i < judgment_time.size(); i++) { /* running off the assumption */
-            auto wnd = judgment_time[i];
-            if (time_delta < wnd) {
-                auto skj_val = (ScoreKeeperJudgment) skj;
-                return skj_val;
-            }
-            skj += 1;
-        }
-    }
-
-    return SKJ_NONE;
+    return GetJudgmentFromTimingWindows(judgment_time, time_delta);
 }
 
 double TimingWindows::GetEarlyThreshold() const{
@@ -118,6 +102,35 @@ uint32_t TimingWindows::GetWindowSkip() const {
     return current_window_skip;
 }
 
+ScoreKeeperJudgment
+TimingWindows::GetJudgmentFromTimingWindows(const std::array<double, JUDGMENT_ARRAY_SIZE> &windows, double time_delta) const {
+    /* assuming time_delta is negative */
+    if (time_delta < -early_hit_threshold) {
+        if (time_delta >= -early_miss_threshold) {
+            return SKJ_MISS;
+        }
+    } else if (time_delta > late_miss_threshold) {
+        return SKJ_MISS;
+    } else if (time_delta >= -early_hit_threshold) {
+        time_delta = abs(time_delta);
+
+        auto skj = current_window_skip;
+        for (auto i = current_window_skip; i < windows.size(); i++) { /* running off the assumption */
+            auto wnd = windows[i];
+            if (time_delta < wnd) {
+                auto skj_val = (ScoreKeeperJudgment) skj;
+                return skj_val;
+            }
+            skj += 1;
+        }
+    }
+
+    return SKJ_NONE;
+}
+
+/*
+ * Raindrop BMS
+ */
 
 void TimingWindowsRaindropBMS::Setup(double strictness, double scale) {
     static constexpr double JudgmentValues[] = {6.4, 16, 40, 100, 250, -1, 625};
@@ -168,6 +181,9 @@ void TimingWindowsStepmania::DefaultSetup() {
     Setup(0, 0);
 }
 
+/*
+ * osu!mania
+ */
 void TimingWindowsOsuMania::Setup(double strictness, double scale) {
     const auto od = strictness;
     // w1, w2, w3, w4, w5, miss
@@ -237,6 +253,15 @@ void TimingWindowsOsuMania::DefaultSetup() {
     Setup(8, 1);
 }
 
+void TimingWindowsOsuMania::Reset() {
+    TimingWindows::Reset();
+    lane_hold_delta_time.fill(-1);
+}
+
+/*
+ * O2Jam
+ */
+
 void TimingWindowsO2Jam::Setup(double strictness, double scale) {
     // This in beats.
     static constexpr double o2jamTimingAmt[] =
@@ -271,3 +296,92 @@ void TimingWindowsO2Jam::DefaultSetup() {
     Setup(0, 0);
 }
 
+/*
+ * LR2Oraja
+ * */
+void TimingWindowsLR2Oraja::DefaultSetup() {
+    Setup(0, 100);
+}
+
+void TimingWindowsLR2Oraja::Setup(double strictness, double scale) {
+    static constexpr double wnd_note[] = {-1, 21, 60, 120, 200, -1, 1000};
+    static constexpr double wnd_ln[] = {-1, 120, 160, 170, 200, -1, 1000};
+
+    // straight up copy windows first
+    memcpy(judgment_time.data(), wnd_note, judgment_time.size() * sizeof (double));
+    memcpy(judgeLN.data(), wnd_ln, judgeLN.size() * sizeof (double));
+
+    // interpolate
+    ScaleByDefExRank(judgment_time, scale);
+    ScaleByDefExRank(judgeLN, scale);
+
+    early_hit_threshold = wnd_note[SKJ_W4]; /* this is the same for both LN and regular note kinds */
+    early_miss_threshold = wnd_note[SKJ_MISS];
+    late_miss_threshold = wnd_note[SKJ_W4];
+
+    current_window_skip = 1;
+    min_window_skip = 1;
+    max_window_skip = 1;
+}
+
+void TimingWindowsLR2Oraja::ScaleByDefExRank(std::array<double, JUDGMENT_ARRAY_SIZE> &in_out, double scale) {
+    static constexpr double wnd_scale[3][5] = {
+            {0, 8, 15, 18, 21}, // W1 // PG: DefEx 0 => 0, DefEx 100 => 21
+            {0, 24, 30, 40, 60}, // W2 // Great: DefEx 0 => 0, DefEx 100 => 60
+            {0, 40, 60, 100, 120} // W3 // Good: DefEx 0 => 0, DefEx 100 => 120
+    };
+
+    if (scale < 100) {
+        int judge_index = scale / 25; // every 25 judges it changes difficulty (VHARD, HARD, NORMAL, etc..)
+        auto interpolate = fmod(scale, 25.0);
+
+        for (int skj = SKJ_W1; skj < SKJ_W4; ++skj) {
+            auto judge = wnd_scale[skj - SKJ_W1];
+            auto delta = judge[judge_index + 1] - judge[judge_index] + 12;
+            auto interJudge = judge[judge_index] + interpolate * delta / 25.0;
+            in_out[skj] = in_out[skj] * interJudge / judge[4];
+        }
+    } else {
+        for (int skj = SKJ_W1; skj < SKJ_W4; ++skj) {
+            in_out[skj] = in_out[skj] * scale / 100.0;
+        }
+    }
+
+    // exceeding the bad windows
+    for (int i = SKJ_W3; i >= SKJ_W1; --i) {
+        if (in_out[i] > in_out[i + 1])
+            in_out[i] = in_out[i + 1];
+    }
+}
+
+ScoreKeeperJudgment TimingWindowsLR2Oraja::GetJudgmentForTimeOffset(double time_delta, uint32_t lane, NoteJudgmentPart part) {
+    if (part == NoteJudgmentPart::NOTE)
+        return TimingWindows::GetJudgmentForTimeOffset(time_delta, lane, part);
+    if (part == NoteJudgmentPart::HOLD_HEAD)
+    {
+        hold_head_delta[lane] = time_delta; // NOLINT(cppcoreguidelines-narrowing-conversions)
+        return SKJ_NONE;
+    }
+
+    if (part == NoteJudgmentPart::HOLD_TAIL) {
+        if (hold_head_delta[lane] < 0) // head hasn't been hit or missed so don't really care.
+            return SKJ_NONE;
+
+        /* early release or late stayed-pressed */
+        if (time_delta < -early_hit_threshold) {
+            return SKJ_MISS;
+        }
+
+        if (time_delta > late_miss_threshold) {
+            return SKJ_MISS;
+        }
+
+        /* in judgment windows press */
+        return GetJudgmentFromTimingWindows(judgeLN, hold_head_delta[lane]);
+    }
+}
+
+void TimingWindowsLR2Oraja::Reset() {
+    TimingWindows::Reset();
+    hold_head_delta.fill(-1);
+}

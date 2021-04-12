@@ -19,7 +19,7 @@ int SectionIndex(const TimingData &Timing, double Beat)
 
 double SectionValue(const TimingData &Timing, double Beat)
 {
-    if (!Timing.size()) return -1;
+    if (Timing.empty()) return -1;
 
     if (Beat < Timing[0].Time)
         return Timing[0].Value;
@@ -72,11 +72,11 @@ void GetTimingChangesInInterval(const TimingData &Timing,
 {
     Out.clear();
 
-    for (auto i = Timing.begin(); i != Timing.end(); ++i)
+    for (auto i : Timing)
     {
-        if (i->Time >= PointA && i->Time < PointB)
+        if (i.Time >= PointA && i.Time < PointB)
         {
-            Out.push_back(*i);
+            Out.push_back(i);
         }
     }
 }
@@ -115,12 +115,12 @@ double StopTimeAtBeat(const TimingData &StopsTiming, double Beat)
 {
     double Time = 0;
 
-    if (Beat == 0 || !StopsTiming.size()) return Time;
+    if (Beat == 0 || StopsTiming.empty()) return Time;
 
-    for (uint32_t i = 0; i < StopsTiming.size(); i++)
+    for (auto i : StopsTiming)
     {
-        if (StopsTiming.at(i).Time < Beat)
-            Time += StopsTiming.at(i).Value;
+        if (i.Time < Beat)
+            Time += i.Value;
     }
 
     return Time;
@@ -128,7 +128,7 @@ double StopTimeAtBeat(const TimingData &StopsTiming, double Beat)
 
 double IntegrateToTime(const TimingData &Timing, double Time)
 {
-    if (!Timing.size()) return 0;
+    if (Timing.empty()) return 0;
 
     auto Section = SectionIndex(Timing, Time);
     double Out = 0;

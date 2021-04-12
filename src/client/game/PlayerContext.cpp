@@ -115,7 +115,7 @@ TimingType SetupGameSystem(
         ScoreKeeper* PlayerScoreKeeper) {
     TimingType UsedTimingType = TT_TIME;
 
-    if (param.SystemType == TI_BMS || param.SystemType == TI_RDAC) {
+    if (param.SystemType == TI_BMS || param.SystemType == TI_RDAC || param.SystemType == TI_LR2) {
         UsedTimingType = TT_TIME;
         if (TimingInfo->GetType() == TI_BMS) {
             auto Info = static_cast<BMSChartInfo*> (TimingInfo.get());
@@ -126,6 +126,10 @@ TimingType SetupGameSystem(
         }
         else {
             PlayerScoreKeeper->setJudgeRank(2);
+        }
+
+        if (param.SystemType == TI_LR2) {
+            PlayerScoreKeeper->useLR2Timing();
         }
     }
     else if (param.SystemType == TI_O2JAM) {
@@ -146,6 +150,8 @@ TimingType SetupGameSystem(
     }
     else if (param.SystemType == TI_RAINDROP) {
         // LifebarType = LT_STEPMANIA;
+    } else {
+        Log::LogPrintf("Warning: unknown SystemType %d\n", param.SystemType);
     }
 
     PlayerScoreKeeper->applyRateScale(param.Rate);
@@ -289,6 +295,7 @@ void SetupGauge(PlayscreenParameters& param, const std::shared_ptr<ChartInfo>& T
             case TI_BMS:
             case TI_RAINDROP:
             case TI_RDAC:
+            case TI_LR2: // TODO: LR2's groove?
                 param.GaugeType = LT_GROOVE;
                 break;
             case TI_O2JAM:

@@ -3,6 +3,7 @@
 class AudioSourceMP3 : public AudioDataSource
 {
     void *mHandle;
+    void *ioHandle;
     uint32_t mRate;
     int mEncoding;
     int mChannels;

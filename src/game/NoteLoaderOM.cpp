@@ -76,12 +76,12 @@ void SetReadingMode(std::string& Line, OsuLoaderReadingState& ReadingMode)
 		{"[HitObjects]", RHitobjects},
 	};
 
-	for (auto x: state_table)
+	for (const auto& x: state_table)
 	{
 		if (x.cnt == Line) { ReadingMode = x.val; return; }
 	}
 
-	if (Line.find_first_of("[") == 0)
+	if (Line.find_first_of('[') == 0)
 		ReadingMode = RNotKnown;
 }
 
@@ -147,11 +147,9 @@ class OsumaniaLoader
 		auto first = FindFirstMeasure();
 		Diff->Offset = first->Time;
 
-		for (auto i = HitsoundSections.begin();
-		i != HitsoundSections.end();
-			++i)
+		for (auto & HitsoundSection : HitsoundSections)
 		{
-			i->Time -= Diff->Offset;
+			HitsoundSection.Time -= Diff->Offset;
 		}
 	}
 
@@ -295,7 +293,7 @@ class OsumaniaLoader
 					Diff->Data->Measures.push_back(Msr);
 				}
 				else {
-					if (Diff->Data->Measures.size())
+					if (!Diff->Data->Measures.empty())
 						Diff->Data->Measures.back().Length += Fraction * i->MeasureLen;
 				}
 			}
@@ -358,7 +356,7 @@ public:
     double GetBeatspaceAt(double T)
     {
         double Ret;
-        if (HitsoundSections.size())
+        if (!HitsoundSections.empty())
         {
             auto Current = HitsoundSections.begin();
             while (Current != HitsoundSections.end() && (Current->Time > T || Current->IsInherited))
@@ -398,8 +396,8 @@ public:
 
 	bool ReadGeneral(std::string line)
 	{
-		std::string Command = line.substr(0, line.find_first_of(":") + 1); // Lines are Information:<space>Content
-		std::string Content = line.substr(line.find_first_of(":") + 1);
+		std::string Command = line.substr(0, line.find_first_of(':') + 1); // Lines are Information:<space>Content
+		std::string Content = line.substr(line.find_first_of(':') + 1);
 
 		Utility::Trim(Content);
 
@@ -449,10 +447,10 @@ public:
 	}
 
 
-	void ReadMetadata(std::string line)
+	void ReadMetadata(const std::string& line)
 	{
-		auto Command = line.substr(0, line.find_first_of(":")); // Lines are Information:Content
-		auto Content = line.substr(line.find_first_of(":") + 1, line.length() - line.find_first_of(":"));
+		auto Command = line.substr(0, line.find_first_of(':')); // Lines are Information:Content
+		auto Content = line.substr(line.find_first_of(':') + 1, line.length() - line.find_first_of(":"));
 
 	#ifdef VERBOSE_DEBUG
 		printf("Command found: %s | Contents: %s\n", Command.c_str(), Content.c_str());
@@ -488,10 +486,10 @@ public:
 	}
 
 
-	void ReadDifficulty(std::string line)
+	void ReadDifficulty(const std::string& line)
 	{
-		std::string Command = line.substr(0, line.find_first_of(":")); // Lines are Information:Content
-		std::string Content = line.substr(line.find_first_of(":") + 1, line.length() - line.find_first_of(":"));
+		std::string Command = line.substr(0, line.find_first_of(':')); // Lines are Information:Content
+		std::string Content = line.substr(line.find_first_of(':') + 1, line.length() - line.find_first_of(':'));
 		Utility::Trim(Content);
 
 		// We ignore everything but the key count!
@@ -504,19 +502,19 @@ public:
 		}
 		else if (Command == "SliderMultiplier")
 		{
-			slider_velocity = latof(Content.c_str()) * 100;
+			slider_velocity = latof(Content) * 100;
 		}
 		else if (Command == "HPDrainRate")
 		{
-			TimingInfo->HP = latof(Content.c_str());
+			TimingInfo->HP = latof(Content);
 		}
 		else if (Command == "OverallDifficulty")
 		{
-			TimingInfo->OD = latof(Content.c_str());
+			TimingInfo->OD = latof(Content);
 		}
 	}
 
-	void ReadEvents(std::string line)
+	void ReadEvents(const std::string& line)
 	{
 		auto Spl = Utility::TokenSplit(line);
 
@@ -539,7 +537,7 @@ public:
 					last_sound_index++;
 				}
 
-				double Time = latof(Spl[1].c_str()) / 1000.0;
+				double Time = latof(Spl[1]) / 1000.0;
 				int Evt = Sounds[Spl[3]];
 				AutoplaySound New;
 				New.Time = Time;
@@ -555,7 +553,7 @@ public:
 		}
 	}
 
-	void ReadTiming(std::string line)
+	void ReadTiming(const std::string& line)
 	{
 		double Value;
 		bool IsInherited;
@@ -574,13 +572,13 @@ public:
 		double MeasureLen = 4;
 
 		// We already set the value
-			Value = -100 / latof(Spl[1].c_str());
+			Value = -100 / latof(Spl[1]);
 		if (!IsInherited)
-			Value = 60000 / latof(Spl[1].c_str());
+			Value = 60000 / latof(Spl[1]);
 		else
 
 		if (Spl.size() > 2)
-			MeasureLen = latof(Spl[2].c_str());
+			MeasureLen = latof(Spl[2]);
 
 		if (Spl.size() > 3)
 			Sampleset = atoi(Spl[3].c_str());
@@ -615,7 +613,7 @@ public:
 		int SampleSet = 0, SampleSetAddition, CustomSample = 0;
 		std::string SampleFilename;
 
-		if (!split_line.size()) // Handle this properly, eventually.
+		if (split_line.empty()) // Handle this properly, eventually.
 			return "normal-hitnormal.wav";
 
 		auto set_iter = lower_bound(HitsoundSections.begin(), HitsoundSections.end(), Time);
@@ -726,11 +724,11 @@ public:
 		return SampleFilename;
 	}
 
-	void ReadObjects(std::string line)
+	void ReadObjects(const std::string& line)
 	{
 		auto ObjectData = Utility::TokenSplit(line);
 
-		auto Track = GetTrackFromPosition(latof(ObjectData[0].c_str()), Diff->Channels);
+		auto Track = GetTrackFromPosition(latof(ObjectData[0]), Diff->Channels);
 		int Hitsound;
 		NoteData Note;
 
@@ -749,16 +747,16 @@ public:
 		if (splitType != 4) // only 5 entries
 			ObjectHitsoundData = Utility::TokenSplit(ObjectData[splitType], ":");
 
-		double startTime = latof(ObjectData[2].c_str()) / 1000.0;
+		double startTime = latof(ObjectData[2]) / 1000.0;
 		int NoteType = atoi(ObjectData[3].c_str());
 
 		if (NoteType & NOTE_HOLD)
 		{
 			double endTime;
-			if (splitType == 5 && ObjectHitsoundData.size())
-				endTime = latof(ObjectHitsoundData[0].c_str()) / 1000.0;
+			if (splitType == 5 && !ObjectHitsoundData.empty())
+				endTime = latof(ObjectHitsoundData[0]) / 1000.0;
 			else if (splitType == 6)
-				endTime = latof(ObjectData[5].c_str()) / 1000.0;
+				endTime = latof(ObjectData[5]) / 1000.0;
 			else // what really? a hold that doesn't bother to tell us when it ends?
 				endTime = 0;
 
@@ -780,8 +778,8 @@ public:
 		else if (NoteType & NOTE_SLIDER)
 		{
 			// 6=repeats 7=length
-			auto sliderRepeats = latof(ObjectData[6].c_str());
-			auto sliderLength = latof(ObjectData[7].c_str());
+			auto sliderRepeats = latof(ObjectData[6]);
+			auto sliderLength = latof(ObjectData[7]);
 
 			auto Multiplier = GetSliderMultiplierAt(startTime);
 
@@ -828,7 +826,7 @@ public:
 		}
 	}
 
-	void LoadFromFile(std::filesystem::path path)
+	void LoadFromFile(const std::filesystem::path& path)
     {
 		std::ifstream filein (path, std::ios::in);
 

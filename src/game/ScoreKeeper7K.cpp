@@ -706,4 +706,8 @@ namespace rd {
         return pvalue;
     }
 
+    void ScoreKeeper::useLR2Timing() {
+        CurrentTimingWindow = &timing_lr2;
+    }
+
 } // namespace rd

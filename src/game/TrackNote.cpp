@@ -139,7 +139,7 @@ namespace rd {
         return Sound;
     }
 
-    uint8_t TrackNote::GetDataNoteKind() {
+    uint8_t TrackNote::GetDataNoteKind() const {
         return NoteKind;
     }
 

@@ -28,6 +28,7 @@ namespace rd {
 
         bool IsBmBadJudge(double t, TrackNote *note);
 
+        /* returns true if the note is within the timing windows. */
         bool InHeadCutoff(double t, TrackNote *note);
 
         virtual ~Mechanics() = default;
@@ -96,8 +97,6 @@ namespace rd {
         };
 
     private:
-
-
         // Left and right (case of double?)
         EScratchState ScratchState[2];
 

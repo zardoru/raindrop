@@ -10,6 +10,7 @@ namespace rd {
     public:
 
         explicit TimingWindowsOsuMania(bool _score_v2 = false);
+        void Reset() override;
         void DefaultSetup() override;
         void Setup(double strictness, double scale) override;
         ScoreKeeperJudgment GetJudgmentForTimeOffset(double time_delta, uint32_t lane, NoteJudgmentPart part) override;

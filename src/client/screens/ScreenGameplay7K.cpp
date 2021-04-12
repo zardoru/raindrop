@@ -461,8 +461,8 @@ void ScreenGameplay::Render() {
         } else {
             p->Render(Time.Stream);
         }
-
-        Animations->DrawFromLayer(14);
     }
+
+    Animations->DrawFromLayer(14);
 
 }

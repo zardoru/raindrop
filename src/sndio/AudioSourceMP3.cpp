@@ -2,6 +2,8 @@
 #include "Audiofile.h"
 #include "AudioSourceMP3.h"
 
+#include <fstream>
+
 #include "TextAndFileUtil.h"
 
 #ifdef WIN32
@@ -24,6 +26,37 @@
 
 static bool mpg123_initialized = false;
 
+ssize_t read_mp3(void* opaque, void* buf, size_t buf_size) {
+    auto& me = *reinterpret_cast<std::ifstream*>(opaque);
+    me.read(reinterpret_cast<char*>(buf), buf_size);
+    return me.gcount();
+}
+
+off_t seek_mp3(void* opaque, off_t off, int whence) {
+    auto& me = *reinterpret_cast<std::ifstream*>(opaque);
+    switch (whence) {
+        case SEEK_CUR:
+            me.seekg(off, std::ios::cur);
+            break;
+        case SEEK_END:
+            me.seekg(off, std::ios::end);
+            break;
+        case SEEK_SET:
+            me.seekg(off, std::ios::beg);
+            break;
+        default:
+            break;
+    }
+
+    return me.tellg();
+}
+
+void cleanup_mp3(void* opaque) {
+    auto* me = reinterpret_cast<std::ifstream*>(opaque);
+    delete me;
+}
+
+
 AudioSourceMP3::AudioSourceMP3()
 {
     int err;
@@ -35,9 +68,17 @@ AudioSourceMP3::AudioSourceMP3()
     }
 
     mHandle = mpg123_new(nullptr, &err);
+    mpg123_replace_reader_handle(
+        (mpg123_handle*)mHandle,
+        read_mp3,
+        seek_mp3,
+        cleanup_mp3
+    );
+
     mpg123_format_none((mpg123_handle*)mHandle);
     mIsValid = false;
     mIsDataLeft = false;
+    ioHandle = nullptr;
 }
 
 AudioSourceMP3::~AudioSourceMP3()
@@ -50,8 +91,9 @@ bool AudioSourceMP3::Open(std::filesystem::path Filename)
 {
     // if (mOwnerMixer)
     // mpg123_param((mpg123_handle*)mHandle, MPG123_FORCE_RATE, MixerGetRate(), 1);
+    ioHandle = new std::ifstream (Filename, std::ios::binary);
 
-    if (mpg123_open((mpg123_handle*)mHandle, Filename.string().c_str()) == MPG123_OK)
+    if (mpg123_open_handle((mpg123_handle*)mHandle, ioHandle) == MPG123_OK)
     {
         long rate;
 
@@ -173,7 +215,7 @@ bool AudioSourceMP3::HasDataLeft()
 
 std::string toSafeString1(char* s)
 {
-	std::string ret = "";
+	std::string ret;
 	for (int i = 0; i < 30; i++)
 	{
 		if (isprint(s[i]))

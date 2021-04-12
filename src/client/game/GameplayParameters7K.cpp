@@ -89,6 +89,10 @@ ScoreType PlayscreenParameters::GetScoringType() const
         return ST_EXP3;
     }
 
+    if (SystemType == TI_LR2) {
+        return ST_LR2; /* most people use EX but hey... */
+    }
+
     return ST_EX;
 }
 
