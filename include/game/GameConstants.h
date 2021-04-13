@@ -39,8 +39,7 @@ namespace rd {
 
     const uint8_t MAX_CHANNELS = 128; // full MIDI range
 
-    enum ScoreKeeperJudgment
-    {
+    enum ScoreKeeperJudgment {
         SKJ_NONE = -1, // no judgment.
 
         SKJ_W0 = 0, // Ridiculous / rainbow 300, for those that use it.
@@ -55,7 +54,8 @@ namespace rd {
 
         SKJ_HOLD_OK = 10, // OK, only used with DDR-style holds
         SKJ_HOLD_NG = 11, // NG
-        SKJ_MINE = 12 // whoops you pressed a mine
+        SKJ_MINE = 12, // whoops you pressed a mine
+        SKJ_TICK = 13 // long note makes combo go brrrrrrrrr
     };
 
     enum ScoreType
@@ -110,6 +110,7 @@ namespace rd {
         LT_STEPMANIA = 6, // Stepmania/DDR/osu!mania scoring mode.
         LT_NORECOV = 7, // DDR no recov. mode
         LT_O2JAM = 8,
+        LT_OSUMANIA = 9,
 
         LT_BATTERY = 11, // DDR battery mode.
     };

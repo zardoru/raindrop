@@ -800,3 +800,8 @@ bool AudioStream::IsValid()
 {
     return mSource && mSource->IsValid();
 }
+
+AudioStream::AudioStream(IMixer *owner_mixer) : AudioStream() {
+    mOwnerMixer = owner_mixer;
+    mOwnerMixer->AddStream(this);
+}

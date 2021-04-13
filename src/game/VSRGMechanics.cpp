@@ -54,6 +54,7 @@ namespace rd {
 
     RaindropMechanics::RaindropMechanics(bool forcedRelease) {
         this->forcedRelease = forcedRelease;
+        hold_hit_time.fill(NAN);
     }
 
     bool RaindropMechanics::OnUpdate(double SongTime, TrackNote *m, uint32_t Lane) {
@@ -104,6 +105,8 @@ namespace rd {
 
                     if (SetLaneHoldingState)
                         SetLaneHoldingState(k, true);
+
+                    hold_hit_time[Lane] = SongTime;
                 }
             }
 
@@ -122,11 +125,12 @@ namespace rd {
                     SetLaneHoldingState(k, false);
 
                 m->Disable();
+                hold_hit_time[Lane] = NAN;
 
                 return true;
-            } else {
+            } else if ((SongTime - m->GetEndTime()) * 1000 > missCutoff && !forcedRelease) {
                 // Condition C-2: Forced release is not enabled
-                if (SongTime - m->GetEndTime() > 0 &&
+                if (SongTime - m->GetEndTime() > 0 && // TODO: LN leniency
                     !forcedRelease) {
                     if (IsLaneKeyDown(Lane)) {
                         if (HitNotify)
@@ -146,8 +150,23 @@ namespace rd {
                     if (SetLaneHoldingState)
                         SetLaneHoldingState(k, false);
 
+                    hold_hit_time[Lane] = NAN;
                     m->Disable();
                     return true;
+                }
+            } else { // still not over, and we're hitting it
+                auto tick_interval = PlayerScoreKeeper->getLNTickInterval();
+                if (tick_interval > 0) {
+                    if (m->IsEnabled() && m->WasHit() && !isnan(hold_hit_time[Lane])) {
+                        auto delta = SongTime - hold_hit_time[Lane];
+
+                        if (delta > tick_interval) {
+                            auto ticks = floor(delta / tick_interval);
+                            PlayerScoreKeeper->tickLN((int)ticks);
+                            hold_hit_time[Lane] += ticks * tick_interval;
+                        }
+
+                    }
                 }
             }
         } // Condition D: Hold head was hit, but was released early was already handled at ReleaseLane so no need to be redundant here.
@@ -180,6 +199,8 @@ namespace rd {
                 if (m->IsHold()) {
                     if (SetLaneHoldingState)
                         SetLaneHoldingState(Lane, true);
+
+                    hold_hit_time[Lane] = SongTime;
                 } else {
                     m->Disable();
                     m->MakeInvisible();
@@ -218,11 +239,6 @@ namespace rd {
                 // Only consider it a timed thing if releasing it is forced.
                 if (HitNotify)
                     HitNotify(forcedRelease ? dev : 0, Lane, true, true);
-
-                if (SetLaneHoldingState)
-                    SetLaneHoldingState(Lane, false);
-
-                m->Disable();
             } else /* Released off time */
             {
                 // early misses for hold notes always count as regular misses.
@@ -231,12 +247,14 @@ namespace rd {
 
                 if (MissNotify)
                     MissNotify(dev, Lane, true, false, false);
-
-                m->Disable();
-
-                if (SetLaneHoldingState)
-                    SetLaneHoldingState(Lane, false);
             }
+
+            hold_hit_time[Lane] = NAN;
+
+            if (SetLaneHoldingState)
+                SetLaneHoldingState(Lane, false);
+
+            m->Disable();
 
             if (PlayNoteSoundEvent)
                 PlayNoteSoundEvent(m->GetTailSound());

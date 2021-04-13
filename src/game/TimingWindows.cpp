@@ -102,6 +102,10 @@ uint32_t TimingWindows::GetWindowSkip() const {
     return current_window_skip;
 }
 
+double TimingWindows::GetTickInterval() {
+    return 0;
+}
+
 ScoreKeeperJudgment
 TimingWindows::GetJudgmentFromTimingWindows(const std::array<double, JUDGMENT_ARRAY_SIZE> &windows, double time_delta) const {
     /* assuming time_delta is negative */
@@ -256,6 +260,19 @@ void TimingWindowsOsuMania::DefaultSetup() {
 void TimingWindowsOsuMania::Reset() {
     TimingWindows::Reset();
     lane_hold_delta_time.fill(-1);
+}
+
+double TimingWindowsOsuMania::GetTickInterval() {
+    return 0.1;
+}
+
+void TimingWindowsOsuMania::AddJudgment(ScoreKeeperJudgment skj) {
+    if (skj == SKJ_TICK) {
+        combo++;
+        return;
+    }
+
+    TimingWindows::AddJudgment(skj);
 }
 
 /*

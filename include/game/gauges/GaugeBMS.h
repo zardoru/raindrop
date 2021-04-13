@@ -34,6 +34,7 @@ namespace rd {
 
         void Update(ScoreKeeperJudgment skj, bool is_early, float mine_value) override {
             if (skj == SKJ_NONE) return;
+            if (skj == SKJ_TICK) return;
             if (skj == SKJ_MINE) {
                 lifebar_amount -= mine_value;
             } else if (skj > SKJ_W3) { /* bad, miss */

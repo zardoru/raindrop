@@ -14,5 +14,7 @@ namespace rd {
         void DefaultSetup() override;
         void Setup(double strictness, double scale) override;
         ScoreKeeperJudgment GetJudgmentForTimeOffset(double time_delta, uint32_t lane, NoteJudgmentPart part) override;
+        double GetTickInterval() override;
+        void AddJudgment(ScoreKeeperJudgment skj) override;
     };
 }

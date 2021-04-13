@@ -302,6 +302,8 @@ void SetupGauge(PlayscreenParameters& param, const std::shared_ptr<ChartInfo>& T
                 param.GaugeType = LT_O2JAM;
                 break;
             case TI_OSUMANIA:
+                param.GaugeType = LT_OSUMANIA;
+                break;
             case TI_STEPMANIA:
                 param.GaugeType = LT_STEPMANIA;
                 break;
@@ -314,6 +316,11 @@ void SetupGauge(PlayscreenParameters& param, const std::shared_ptr<ChartInfo>& T
         case LT_STEPMANIA:
             // LifebarType = LT_STEPMANIA; // Needs no setup.
             break;
+        case LT_OSUMANIA:
+            if (TimingInfo->GetType() == TI_OSUMANIA) {
+                auto InfoOm = static_cast<OsumaniaChartInfo*> (TimingInfo.get());
+                PlayerScoreKeeper->setOsuHP(InfoOm->HP);
+            }
 
         case LT_O2JAM:
             if (TimingInfo->GetType() == TI_O2JAM) {

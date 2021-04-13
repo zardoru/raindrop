@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <array>
 #include <game/PlayerChartState.h>
 
 namespace rd {
@@ -64,8 +65,9 @@ namespace rd {
 
     class RaindropMechanics : public Mechanics {
         bool forcedRelease;
+        std::array<double, MAX_CHANNELS> hold_hit_time;
     public:
-        RaindropMechanics(bool forcedRelease);
+        explicit RaindropMechanics(bool forcedRelease);
 
         bool OnUpdate(double SongTime, TrackNote *Note, uint32_t Lane) override;
 

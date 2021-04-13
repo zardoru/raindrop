@@ -102,6 +102,7 @@ namespace rd {
         Constant(LT_O2JAM);
         Constant(LT_STEPMANIA);
         Constant(LT_NORECOV);
+        Constant(LT_OSUMANIA);
         Constant(LT_BATTERY);
         helper.FinalizeEnum("LifeType");
 

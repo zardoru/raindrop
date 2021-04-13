@@ -71,7 +71,6 @@ ScreenGameplay::ScreenGameplay() : Screen("ScreenGameplay7K") {
 void ScreenGameplay::Cleanup() {
     if (Music) {
         Music->Stop();
-        GetMixer()->RemoveStream(Music.get());
     }
 
     for (auto& k : Keysounds) {
@@ -168,7 +167,7 @@ bool ScreenGameplay::LoadSongAudio() {
     auto SoundList = ps.GetSoundList();
     if (!Music) {
         bool attempt_music_load = true;
-        Music = std::make_unique<AudioStream>();
+        Music = std::make_unique<AudioStream>(GetMixer());
         Music->SetPitch(Rate);
 
 
@@ -184,7 +183,6 @@ bool ScreenGameplay::LoadSongAudio() {
             && attempt_music_load
             && Music->Open(s)) {
             Log::Printf("Stream for %s succesfully opened.\n", MySong->SongFilename.c_str());
-            GetMixer()->AddStream(Music.get());
         } else {
             if (!Players[0]->GetPlayerState().IsVirtual()) {
                 // Caveat: Try to autodetect an mp3/ogg file.

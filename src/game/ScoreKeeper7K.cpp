@@ -710,4 +710,24 @@ namespace rd {
         CurrentTimingWindow = &timing_lr2;
     }
 
+    void ScoreKeeper::setOsuHP(float hp) {
+        gauge_osumania.Setup(0, 0, hp);
+    }
+
+    double ScoreKeeper::getLNTickInterval() {
+        return CurrentTimingWindow->GetTickInterval();
+    }
+
+    void ScoreKeeper::tickLN(int ticks) {
+        for (auto i = 0; i < ticks; i++) {
+            for (auto &timing : Timings) {
+                timing.second->AddJudgment(SKJ_TICK);
+            }
+
+            for (auto &gauge : Gauges) {
+                gauge.second->Update(SKJ_TICK, false, 0);
+            }
+        }
+    }
+
 } // namespace rd

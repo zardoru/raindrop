@@ -91,7 +91,8 @@ namespace rd {
                 {LT_EXHARD, &gauge_exhard},
                 {LT_DEATH, &gauge_death},
                 {LT_STEPMANIA, &gauge_stepmania},
-                {LT_O2JAM, &gauge_o2jam}
+                {LT_O2JAM, &gauge_o2jam},
+                {LT_OSUMANIA, &gauge_osumania}
         };
 
         for (auto &gauge: Gauges) {

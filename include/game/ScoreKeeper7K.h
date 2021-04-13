@@ -10,6 +10,7 @@
 #include <game/timing_windows/TimingWindowsRaindropBMS.h>
 #include <game/timing_windows/TimingWindowsStepmania.h>
 #include <game/timing_windows/TimingWindowsLR2Oraja.h>
+#include <game/gauges/GaugeOsuMania.h>
 
 
 namespace rd {
@@ -124,6 +125,12 @@ namespace rd {
         double getOffsetDistrust() const;
 
         void useLR2Timing();
+
+        void setOsuHP(float hp);
+
+        double getLNTickInterval();
+
+        void tickLN(int ticks);
 
     private:
 
@@ -254,6 +261,7 @@ namespace rd {
         GaugeDeath gauge_death;
         GaugeStepmania gauge_stepmania;
         GaugeO2Jam gauge_o2jam;
+        GaugeOsuMania gauge_osumania;
 
         std::map<LifeType, Gauge*> Gauges;
 

@@ -130,8 +130,8 @@ class AudioStream : public Sound
     stream_time_map_t current_clock;
 public:
     AudioStream();
-    AudioStream(IMixer* owner_mixer);
-    ~AudioStream();
+    explicit AudioStream(IMixer* owner_mixer);
+    ~AudioStream() override;
 
 //    std::atomic<atomic_stream_time_t> dac_clock;
 

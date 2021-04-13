@@ -15,6 +15,7 @@
 #include "osuBackgroundAnimation.h"
 
 #include <boost/algorithm/string/case_conv.hpp>
+#include <utility>
 #include <TextAndFileUtil.h>
 #include "Texture.h"
 #include "Logging.h"
@@ -191,7 +192,7 @@ namespace osb {
 
 	BGASprite::BGASprite(std::string file, EOrigin origin, Vec2 start_pos, ELayer layer) : EventComponent(EVT_COUNT)
 	{
-		mFile = file;
+		mFile = std::move(file);
 		mOrigin = origin;
 		mStartPos = start_pos;
 		mLayer = layer;

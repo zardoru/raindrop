@@ -70,7 +70,7 @@ namespace rd {
         double GetLateThreshold() const; /* in the units described by GetTimeUnits */
 
         /* judgment counts */
-        void AddJudgment(ScoreKeeperJudgment skj);
+        virtual void AddJudgment(ScoreKeeperJudgment skj);
         uint32_t GetJudgmentCount(ScoreKeeperJudgment skj);
         double GetJudgmentWindow(ScoreKeeperJudgment skj);
         uint32_t GetCombo() const;
@@ -86,6 +86,9 @@ namespace rd {
         double GetEarlyHitCutoff() const;
 
         uint32_t GetNotesHit() const;
+
+        /* if we generate ticks for health bars, return how long to wait between them in seconds. */
+        virtual double GetTickInterval();
 
     };
 }

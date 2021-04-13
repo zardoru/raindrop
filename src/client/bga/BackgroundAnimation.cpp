@@ -181,17 +181,14 @@ public:
         sort(EventsLayer1.begin(), EventsLayer1.end());
         sort(EventsLayer2.begin(), EventsLayer2.end());
 
-        // Add BMP 0 as default value for layer 0. I was opting for a
-        // if() at SetLayerImage time, but we're microoptimizing for branch mishits.
-        if (EventsLayerMiss.size() == 0 || (EventsLayerMiss.size() > 0 && EventsLayerMiss[0].Time > 0))
+        // Add BMP 0 as default value for layer 0.
+        if (EventsLayerMiss.empty() || (!EventsLayerMiss.empty() && EventsLayerMiss[0].Time > 0))
         {
             AutoplayBMP bmp;
             bmp.Time = 0;
             bmp.BMP = 0;
             EventsLayerMiss.push_back(bmp);
         }
-
-
 
         SetWidth(256 * ratio);
         SetHeight(256);
