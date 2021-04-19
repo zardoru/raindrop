@@ -175,7 +175,7 @@ namespace rd {
                 .addProperty("CoolCombo", &ScoreKeeper::getCoolCombo)
                         /// Current count of judged notes
                         // @roproperty JudgedNotes
-                .addProperty("JudgedNotes", &ScoreKeeper::getTotalNotes)
+                .addProperty("JudgedNotes", &ScoreKeeper::getJudgedNotes)
                         /// Current histogram point count
                         // @roproperty HistogramPointCount
                 .addProperty("HistogramPointCount", &ScoreKeeper::getHistogramPointCount)
@@ -190,7 +190,7 @@ namespace rd {
                 .addProperty("StDev", &ScoreKeeper::getHitStDev)
                         /// Max judgable notes
                         // @roproperty MaxNotes
-                .addProperty("MaxNotes", &ScoreKeeper::getMaxNotes)
+                .addProperty("MaxNotes", &ScoreKeeper::getMaxJudgableNotes)
                         /// Confidence offset is wrong in 0-1 range
                         // @roproperty OffsetDistrust
                 .addProperty("OffsetDistrust", &ScoreKeeper::getOffsetDistrust)

@@ -14,7 +14,7 @@ namespace rd {
             Setup(100, 100, 0);
         }
 
-        /* relative_total: #TOTAL / max_notes */
+        /* relative_total: #TOTAL / total_score_objects_with_2x_holds */
         void Setup(double total, long long max_notes, double strictness) override {
             lifebar_increment = Clamp(
                     total / max_notes / GaugeParameters::increase_total_divider,

@@ -17,6 +17,8 @@ namespace rd {
          * */
         void Setup(double strictness, double scale) override;
         ScoreKeeperJudgment GetJudgmentForTimeOffset(double time_delta, uint32_t lane, NoteJudgmentPart part) override;
+
+        bool UsesTwoJudgesPerHold() const;
     };
 
 

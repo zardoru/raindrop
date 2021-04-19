@@ -7,9 +7,6 @@
 namespace rd {
 
     void ScoreKeeper::init() {
-        use_w0_for_ex2 = false;
-
-        rank_pts = 0;
         use_o2jam = false;
         avg_hit = 0;
         hit_variance = 0;
@@ -37,52 +34,28 @@ namespace rd {
         setAccMin(6.4);
         setAccMax(100);
 
-        max_notes = 0;
-
-        score = 0;
-
-        rank_w0_count = 0;
-        rank_w1_count = 0;
-        rank_w2_count = 0;
-        rank_w3_count = 0;
-
-        total_notes = 0;
-
-        ex_score = 0;
-
-        bms_combo = 0;
-        bms_combo_pts = 0;
-        bms_dance_pts = 0;
-        bms_score = 0;
-
-        lr2_dance_pts = 0;
-        lr2_score = 0;
-
-        osu_points = 0;
-        bonus_counter = 100;
-        osu_bonus_points = 0;
-
-        osu_score = 0;
-        osu_accuracy = 100;
-
-        exp_combo = 0;
-        exp_combo_pts = 0;
-        exp_max_combo_pts = 0;
-        exp_hit_score = 0;
-        exp_score = 0;
-        exp3_score = 0;
-
-        sc_score = 0;
-        sc_sc_score = 0;
-
-        coolcombo = 0;
-        pills = 0;
-        jams = 0;
-        jam_jchain = 0;
-        o2_score = 0;
+        total_score_objects = 0;
+        total_holds = 0;
+        judged_notes = 0;
 
         total_sqdev = 0;
         accuracy = 0;
+
+        Scores = {
+                {ST_LR2, &score_lr2},
+                {ST_EX, &score_ex},
+                {ST_O2JAM, &score_o2jam},
+                {ST_OSUMANIA, &score_osumania},
+                {ST_OSUMANIA_ACC, &score_osumania_acc},
+                {ST_RANK, &score_rank},
+                {ST_EXP, &score_exp},
+                {ST_EXP3, &score_exp3},
+                {ST_IIDX, &score_bms}
+        };
+
+        for (auto &scoresys: Scores) {
+            scoresys.second->Reset();
+        }
 
         Gauges = {
                 {LT_GROOVE, &gauge_groove},
@@ -162,14 +135,14 @@ namespace rd {
         if (total != -1 && std::isnan(multiplier) && !std::isnan(total))
             lifebar_total = total;
         else
-            lifebar_total = std::max(260.0, 7.605 * max_notes / (6.5 + 0.01 * max_notes)) * effmul;
+            lifebar_total = std::max(260.0, 7.605 * getMaxJudgableNotes() / (6.5 + 0.01 * getMaxJudgableNotes())) * effmul;
 
         // recalculate groove lifebar increments.
-        gauge_death.Setup(lifebar_total, max_notes, 0);
-        gauge_exhard.Setup(lifebar_total, max_notes, 0);
-        gauge_survival.Setup(lifebar_total, max_notes, 0);
-        gauge_easy.Setup(lifebar_total, max_notes, 0);
-        gauge_groove.Setup(lifebar_total, max_notes, 0);
+        gauge_death.Setup(lifebar_total, getMaxJudgableNotes(), 0);
+        gauge_exhard.Setup(lifebar_total, getMaxJudgableNotes(), 0);
+        gauge_survival.Setup(lifebar_total, getMaxJudgableNotes(), 0);
+        gauge_easy.Setup(lifebar_total, getMaxJudgableNotes(), 0);
+        gauge_groove.Setup(lifebar_total, getMaxJudgableNotes(), 0);
     }
 
     void ScoreKeeper::setO2LifebarRating(int difficulty) {

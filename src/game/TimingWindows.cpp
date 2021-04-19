@@ -121,7 +121,7 @@ TimingWindows::GetJudgmentFromTimingWindows(const std::array<double, JUDGMENT_AR
         auto skj = current_window_skip;
         for (auto i = current_window_skip; i < windows.size(); i++) { /* running off the assumption */
             auto wnd = windows[i];
-            if (time_delta < wnd) {
+            if (time_delta <= wnd) {
                 auto skj_val = (ScoreKeeperJudgment) skj;
                 return skj_val;
             }
@@ -130,6 +130,10 @@ TimingWindows::GetJudgmentFromTimingWindows(const std::array<double, JUDGMENT_AR
     }
 
     return SKJ_NONE;
+}
+
+bool TimingWindows::UsesTwoJudgesPerHold() const {
+    return true;
 }
 
 /*
@@ -275,6 +279,10 @@ void TimingWindowsOsuMania::AddJudgment(ScoreKeeperJudgment skj) {
     TimingWindows::AddJudgment(skj);
 }
 
+bool TimingWindowsOsuMania::UsesTwoJudgesPerHold() const {
+    return false;
+}
+
 /*
  * O2Jam
  */
@@ -401,4 +409,8 @@ ScoreKeeperJudgment TimingWindowsLR2Oraja::GetJudgmentForTimeOffset(double time_
 void TimingWindowsLR2Oraja::Reset() {
     TimingWindows::Reset();
     hold_head_delta.fill(-1);
+}
+
+bool TimingWindowsLR2Oraja::UsesTwoJudgesPerHold() const {
+    return false;
 }

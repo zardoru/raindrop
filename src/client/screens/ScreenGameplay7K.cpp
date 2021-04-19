@@ -361,7 +361,7 @@ ScreenGameplay::OnPlayerHit(rd::ScoreKeeperJudgment judgment, double dt, uint32_
     }
 
     auto PlayerScoreKeeper = Players[pn]->GetScoreKeeper();
-    if (PlayerScoreKeeper->getMaxNotes() == PlayerScoreKeeper->getScore(rd::ST_NOTES_HIT)) {
+    if (PlayerScoreKeeper->getMaxJudgableNotes() == PlayerScoreKeeper->getScore(rd::ST_NOTES_HIT)) {
         /// Once a player achieves a full combo, this is called. This is called inmediately after HitEvent
         // so the script can keep track of player number who last hit.
         // @callback OnFullComboEvent

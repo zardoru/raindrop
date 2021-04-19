@@ -16,5 +16,6 @@ namespace rd {
         ScoreKeeperJudgment GetJudgmentForTimeOffset(double time_delta, uint32_t lane, NoteJudgmentPart part) override;
         double GetTickInterval() override;
         void AddJudgment(ScoreKeeperJudgment skj) override;
+        bool UsesTwoJudgesPerHold() const override;
     };
 }

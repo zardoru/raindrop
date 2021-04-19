@@ -90,5 +90,7 @@ namespace rd {
         /* if we generate ticks for health bars, return how long to wait between them in seconds. */
         virtual double GetTickInterval();
 
+        // true by default, unless overridden
+        virtual bool UsesTwoJudgesPerHold() const; // if false, uses only one judgment per hold
     };
 }

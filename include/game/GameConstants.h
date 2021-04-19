@@ -42,6 +42,8 @@ namespace rd {
     enum ScoreKeeperJudgment {
         SKJ_NONE = -1, // no judgment.
 
+        /* anything below W0 is a special constant */
+
         SKJ_W0 = 0, // Ridiculous / rainbow 300, for those that use it.
 
         SKJ_W1 = 1, // J_PERFECT / flashing J_GREAT
@@ -51,6 +53,8 @@ namespace rd {
         SKJ_W5 = 5, // W5 is unused in beatmania.
 
         SKJ_MISS = 6, // Miss / Poor
+
+        /* anything over "MISS" is considered to be a special constant*/
 
         SKJ_HOLD_OK = 10, // OK, only used with DDR-style holds
         SKJ_HOLD_NG = 11, // NG
@@ -71,6 +75,7 @@ namespace rd {
         ST_SCORE = 20, // score out of 100m
         ST_OSUMANIA = 21, // osu!mania scoring
         ST_JB2 = 22, // jubeat^2 scoring
+        ST_OSUMANIA_ACC = 23, // osu!mania accuracy
 
         ST_EXP = 30, // experimental scoring.
         ST_EXP3 = 31, // experimental scoring.

@@ -30,7 +30,7 @@ struct BMSSetup {
 		sk = std::make_shared<ScoreKeeper>();
 		sk->setJudgeRank(4); // easy
 		mech.Setup(nullptr, sk);
-		sk->setMaxNotes(100);
+        sk->setTotalObjects(100, 0);
 
 		mech.MissNotify = [&](double t, uint32_t, bool hold, bool nobreakcombo, bool earlymiss) {
             sk->missNote(nobreakcombo, earlymiss, true);
@@ -46,7 +46,7 @@ struct SMSetup {
 		sk = std::make_shared<ScoreKeeper>();
 		sk->setSMJ4Windows();
 		mech.Setup(nullptr, sk);
-		sk->setMaxNotes(100);
+        sk->setTotalObjects(100, 0);
 	}
 };
 
@@ -82,7 +82,7 @@ TEST_CASE("Raindrop Mechanics (BMS tests)", "[raindropbms]") {
 			10, 0
 		});
 
-		auto t1 = t.GetStartTime() - earlyMiss;
+		auto t1 = t.GetStartTime() - earlyMiss + 0.001;
 		REQUIRE(s.mech.IsEarlyMiss(t1, &t));
 		REQUIRE(s.mech.OnPressLane(t1, &t, 0));
 
@@ -110,7 +110,9 @@ TEST_CASE("Raindrop Mechanics (BMS tests)", "[raindropbms]") {
 		double latemiss = s.sk->getLateMissCutoffMS();
 
 		REQUIRE(s.sk->hitNote(earlymiss - 1, 0, NoteJudgmentPart::NOTE) == SKJ_NONE);
-		REQUIRE(s.sk->hitNote(latemiss + 1, 0, NoteJudgmentPart::NOTE) == SKJ_NONE);
+
+		// following test is no longer true due to new implementation of timing windows.
+		// REQUIRE(s.sk->hitNote(latemiss + 1, 0, NoteJudgmentPart::NOTE) == SKJ_NONE);
 	}
 
 	SECTION("Late window misses work as intended") {
@@ -187,7 +189,7 @@ struct OMSetup
 		sk = std::make_shared<ScoreKeeper>();
 		sk->setODWindows(0);
 		mech.Setup(nullptr, sk);
-		sk->setMaxNotes(100);
+        sk->setTotalObjects(100, 0);
 
 		// SetLaneHoldingState is set if we're currently hitting a hold.
 		// we don't really need this.
@@ -237,6 +239,10 @@ TEST_CASE("osu!mania judgments", "[omjudge]") {
 
 			j = (ScoreKeeperJudgment)((int)j + 1);
 		}
+	}
+
+	SECTION("What even happened here?") {
+        REQUIRE(s.sk->hitNote(-127.73032683987395, 0, NoteJudgmentPart::NOTE) != -1);
 	}
 
 	double earlyhitWindow = s.sk->getEarlyHitCutoffMS() / 1000.0;

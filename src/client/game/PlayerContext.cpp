@@ -364,7 +364,8 @@ std::unique_ptr<rd::Mechanics> PrepareMechanicsSet(
     std::unique_ptr<rd::Mechanics> MechanicsSet = nullptr;
 
     // This must be done before setLifeTotal in order for it to work.
-    PlayerScoreKeeper->setMaxNotes(CurrentDiff->Data->GetScoreItemsCount());
+    auto hold_count = CurrentDiff->Data->GetScoreItemsCount() - CurrentDiff->Data->GetObjectCount();
+    PlayerScoreKeeper->setTotalObjects(CurrentDiff->Data->GetObjectCount(), hold_count);
 
     PlayerScoreKeeper->setUseW0(param.UseW0);
 

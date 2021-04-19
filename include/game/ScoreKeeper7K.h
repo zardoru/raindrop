@@ -1,6 +1,6 @@
 #pragma once
 
-#include <map>
+#include <unordered_map>
 #include <game/gauges/GaugeBMS.h>
 #include <game/gauges/GaugeStepmania.h>
 #include <game/gauges/GaugeO2Jam.h>
@@ -12,6 +12,10 @@
 #include <game/timing_windows/TimingWindowsLR2Oraja.h>
 #include <game/gauges/GaugeOsuMania.h>
 
+#include <game/scoring_systems/RaindropScoring.h>
+#include <game/scoring_systems/O2JamScoring.h>
+#include <game/scoring_systems/BMSScoring.h>
+#include <game/scoring_systems/OsumaniaScoring.h>
 
 namespace rd {
     class ScoreKeeper {
@@ -26,9 +30,10 @@ namespace rd {
 
         void init();
 
-        void setMaxNotes(int notes);
+        void setTotalObjects(int total_objects, int total_holds);
 
-        // total if multiplier is nan, else default rate * multiplier
+        // total if multiplier is nan, else default rate * multiplier - has to be called after setting
+        // any timing parameters like judge rank or OD and after setting total objects.
         void setLifeTotal(double total, double multiplier = NAN);
 
         void setO2LifebarRating(int difficulty);
@@ -47,9 +52,9 @@ namespace rd {
 
         // accessor functions
 
-        int getMaxNotes() const;
+        int getMaxJudgableNotes() const;
 
-        int getTotalNotes() const;
+        int getJudgedNotes() const;
 
         int getJudgmentCount(int Judge);
 
@@ -81,7 +86,7 @@ namespace rd {
 
         double getJudgmentCutoffMS();
 
-        int getScore(int score_type);
+        int getScore(int score_type) const;
 
         float getPercentScore(int score_type) const;
 
@@ -99,15 +104,13 @@ namespace rd {
 
         std::pair<std::string, int> getAutoRankPacemaker();
 
-        std::map<PacemakerType, std::string> pacemaker_texts;
+        std::unordered_map<PacemakerType, std::string> pacemaker_texts;
 
         void applyRateScale(double rate);
 
 
         int getRank() const; // returns a number from -9 to 9
         int getBMRank() const; // returns PMT_xxx according to EXScore Rank
-
-        long long getRankPoints() const; // returns underlying rank points
 
         uint8_t getPills() const;
 
@@ -136,8 +139,6 @@ namespace rd {
 
         void setO2JamBeatTimingWindows();
 
-        bool use_w0_for_ex2; // whether or not to require ridiculous for 2 EX score.
-
         // online avg hit and variance
         double avg_hit;
         double hit_variance;
@@ -147,97 +148,43 @@ namespace rd {
 
         /*
             Standard scoring.
-            */
+        */
 
         double score; // standard score.
         double sc_score;
         double sc_sc_score;
 
-        /*
-            Rank scoring
-            */
-
-        long long rank_w0_count;
-        long long rank_w1_count;
-        long long rank_w2_count;
-        long long rank_w3_count;
-
-        long long rank_pts; // rank scoring
-
-        void update_ranks(ScoreKeeperJudgment judgment);
-
-        long long max_notes;
+        long long total_score_objects;
+        long long total_holds;
 
         /*
-            BMS scoring
-            */
+         * Score Systems
+         */
 
-        long long ex_score;
+        // BMS
+        ScoreSystemBMS score_bms;
+        ScoreSystemEX score_ex;
+        ScoreSystemLR2 score_lr2;
 
-        long long bms_combo;
-        long long bms_combo_pts;
-        long long bms_max_combo_pts;
+        // O2Jam
+        ScoreSystemO2Jam score_o2jam;
 
-        long long bms_dance_pts;
-        long long bms_score;
+        // osu!mania
+        ScoreSystemOsuMania score_osumania;
+        ScoreSystemOsuManiaAccuracy score_osumania_acc;
 
-        long long lr2_dance_pts;
-        long long lr2_score;
+        // Raindrop
+        ScoreSystemExp score_exp;
+        ScoreSystemExp3 score_exp3;
+        ScoreSystemRank score_rank;
 
-        void update_bms(ScoreKeeperJudgment judgment);
-
-        void update_lr2(ScoreKeeperJudgment judgment);
-
-        /*
-            osu!
-            */
-
-        long long osu_points;
-        long long osu_accuracy;
-        int bonus_counter;
-        double osu_bonus_points;
-
-        double osu_score;
-
-        void update_osu(ScoreKeeperJudgment judgment);
-
-
-        /*
-            experimental
-            */
-
-        long long exp_combo;
-        long long exp_combo_pts;
-        long long exp_max_combo_pts;
-
-        long long exp_hit_score;
-
-        double exp_score;
-
-        double exp3_score;
-
-        void update_exp2(ScoreKeeperJudgment judgment);
-
-        /*
-            o2jam
-            */
-
-        char pills;
-
-        long long coolcombo;
-        long long o2_score;
-        long long jams;
-        long long jam_jchain;
-
-        void update_o2(ScoreKeeperJudgment judgment);
-
-        int getO2Judge(ScoreKeeperJudgment j);
+        std::unordered_map<ScoreType, ScoringSystem*> Scores;
 
         /*
             misc.
-            */
+        */
 
-        long long total_notes;
+        long long judged_notes;
 
 
         long long dp_score; // DDR dance-point scoring
@@ -248,8 +195,6 @@ namespace rd {
         double accuracy;
 
         double accuracy_percent(double var);
-
-
 
         // lifebar data.
 
@@ -263,7 +208,7 @@ namespace rd {
         GaugeO2Jam gauge_o2jam;
         GaugeOsuMania gauge_osumania;
 
-        std::map<LifeType, Gauge*> Gauges;
+        std::unordered_map<LifeType, Gauge*> Gauges;
 
 
         // judgment information
@@ -273,7 +218,7 @@ namespace rd {
         TimingWindowsStepmania timing_stepmania;
         TimingWindowsLR2Oraja timing_lr2;
 
-        std::map<ChartType, TimingWindows*> Timings;
+        std::unordered_map<ChartType, TimingWindows*> Timings;
         TimingWindows* CurrentTimingWindow;
 
         void setBMSTimingWindows();

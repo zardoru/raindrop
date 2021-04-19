@@ -185,7 +185,7 @@ void ScoreDatabase::AddScore(
     sqlite3_bind_int64(
             stAddScore,
             sqlite3_bind_parameter_index(stAddScore, "$rankpts"),
-            keeper.getRankPoints()
+            keeper.getScore(rd::ST_RANK)
     );
 
     sqlite3_bind_int(
@@ -209,7 +209,7 @@ void ScoreDatabase::AddScore(
     sqlite3_bind_int(
             stAddScore,
             sqlite3_bind_parameter_index(stAddScore, "$hits"),
-            keeper.getTotalNotes()
+            keeper.getJudgedNotes()
     );
 
     sqlite3_bind_int(

@@ -23,7 +23,7 @@ namespace rd {
 
     bool Mechanics::IsEarlyMiss(double t, TrackNote *note) {
         double dt = (t - note->GetStartTime()) * 1000.;
-        return dt < -PlayerScoreKeeper->getLateMissCutoffMS() && dt >= -PlayerScoreKeeper->getEarlyMissCutoffMS();
+        return dt < -PlayerScoreKeeper->getEarlyHitCutoffMS() && dt >= -PlayerScoreKeeper->getEarlyMissCutoffMS();
     }
 
     bool Mechanics::IsBmBadJudge(double t, TrackNote *note) {
