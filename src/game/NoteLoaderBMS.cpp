@@ -43,7 +43,7 @@ static const std::regex RegexDataDeclaration("(\\d{3})([a-zA-Z0-9]{2})", std::re
 static const std::regex RegexSubtitle(R"(([~\-(\[<"].*?[\]\)~>"\-])$)", std::regex::optimize);
 
 // Chart author.
-static const std::regex RegexChartAuthor(R"(\s*[\/_]?\s*(?:obj|note)\.?\s*[:_]?\s*(.*))", std::regex::icase, std::regex::optimize);
+static const std::regex RegexChartAuthor(R"(\s*[\/_]?\s*(?:obj|note)\.?\s*[:_]?\s*(.*))", std::regex::icase);
 
 namespace NoteLoaderBMS{
 
