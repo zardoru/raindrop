@@ -65,7 +65,16 @@ namespace rd {
                 {LT_DEATH, &gauge_death},
                 {LT_STEPMANIA, &gauge_stepmania},
                 {LT_O2JAM, &gauge_o2jam},
-                {LT_OSUMANIA, &gauge_osumania}
+                {LT_OSUMANIA, &gauge_osumania},
+                {LT_LR2_ASSIST, &gauge_lr2_assist},
+                {LT_LR2_EASY, &gauge_lr2_easy},
+                {LT_LR2_NORMAL, &gauge_lr2_normal},
+                {LT_LR2_HARD, &gauge_lr2_hard},
+                {LT_LR2_EXHARD, &gauge_lr2_exhard},
+                {LT_LR2_HAZARD, &gauge_lr2_hazard},
+                {LT_LR2_CLASS, &gauge_lr2_class},
+                {LT_LR2_EXCLASS, &gauge_lr2_exclass},
+                {LT_LR2_EXHARDCLASS, &gauge_lr2_exhardclass}
         };
 
         for (auto &gauge: Gauges) {
@@ -132,10 +141,17 @@ namespace rd {
     void ScoreKeeper::setLifeTotal(double total, double multiplier) {
         double effmul = std::isnan(multiplier) ? 1 : multiplier;
 
-        if (total != -1 && std::isnan(multiplier) && !std::isnan(total))
+        double lifebar_total_lr2;
+        if (total != -1 && std::isnan(multiplier) && !std::isnan(total)) {
             lifebar_total = total;
-        else
-            lifebar_total = std::max(260.0, 7.605 * getMaxJudgableNotes() / (6.5 + 0.01 * getMaxJudgableNotes())) * effmul;
+            lifebar_total_lr2 = total;
+        } else {
+            auto max_notes = getMaxJudgableNotes();
+            lifebar_total =
+                    std::max(260.0, 7.605 * max_notes / (6.5 + 0.01 * max_notes)) * effmul;
+
+            lifebar_total_lr2 = 160.0 + (max_notes + std::min(std::max(max_notes, 390), 600) - 390) * 11.0 / 70.0;
+        }
 
         // recalculate groove lifebar increments.
         gauge_death.Setup(lifebar_total, getMaxJudgableNotes(), 0);
@@ -143,6 +159,15 @@ namespace rd {
         gauge_survival.Setup(lifebar_total, getMaxJudgableNotes(), 0);
         gauge_easy.Setup(lifebar_total, getMaxJudgableNotes(), 0);
         gauge_groove.Setup(lifebar_total, getMaxJudgableNotes(), 0);
+        gauge_lr2_assist.Setup(lifebar_total_lr2, getMaxJudgableNotes(), 0);
+        gauge_lr2_easy.Setup(lifebar_total_lr2, getMaxJudgableNotes(), 0);
+        gauge_lr2_normal.Setup(lifebar_total_lr2, getMaxJudgableNotes(), 0);
+        gauge_lr2_hard.Setup(lifebar_total_lr2, getMaxJudgableNotes(), 0);
+        gauge_lr2_exhard.Setup(lifebar_total_lr2, getMaxJudgableNotes(), 0);
+        gauge_lr2_hazard.Setup(lifebar_total_lr2, getMaxJudgableNotes(), 0);
+        gauge_lr2_class.Setup(lifebar_total_lr2, getMaxJudgableNotes(), 0);
+        gauge_lr2_exclass.Setup(lifebar_total_lr2, getMaxJudgableNotes(), 0);
+        gauge_lr2_exhardclass.Setup(lifebar_total_lr2, getMaxJudgableNotes(), 0);
     }
 
     void ScoreKeeper::setO2LifebarRating(int difficulty) {

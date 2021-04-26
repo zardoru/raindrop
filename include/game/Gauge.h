@@ -3,8 +3,6 @@
 #include <game/GameConstants.h>
 
 namespace rd {
-    class GaugeParameters {};
-
     class Gauge { /* all gauges and values are on a 0-1 scale for 0 to 100% */
     protected:
         double lifebar_amount = 1;

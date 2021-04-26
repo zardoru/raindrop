@@ -3,6 +3,7 @@
 #include <game/gauges/GaugeO2Jam.h>
 #include <game/gauges/GaugeStepmania.h>
 #include <game/gauges/GaugeOsuMania.h>
+#include <game/gauges/GaugeLR2Oraja.h>
 
 using namespace rd;
 

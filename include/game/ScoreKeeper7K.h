@@ -4,6 +4,7 @@
 #include <game/gauges/GaugeBMS.h>
 #include <game/gauges/GaugeStepmania.h>
 #include <game/gauges/GaugeO2Jam.h>
+#include <game/gauges/GaugeLR2Oraja.h>
 
 #include <game/timing_windows/TimingWindowsO2Jam.h>
 #include <game/timing_windows/TimingWindowsOsuMania.h>
@@ -208,8 +209,17 @@ namespace rd {
         GaugeO2Jam gauge_o2jam;
         GaugeOsuMania gauge_osumania;
 
-        std::unordered_map<LifeType, Gauge*> Gauges;
+        GaugeLR2Assist gauge_lr2_assist;
+        GaugeLR2Easy gauge_lr2_easy;
+        GaugeLR2Normal gauge_lr2_normal;
+        GaugeLR2Hard gauge_lr2_hard;
+        GaugeLR2ExHard gauge_lr2_exhard;
+        GaugeLr2Hazard gauge_lr2_hazard;
+        GaugeLr2Class gauge_lr2_class;
+        GaugeLr2ExClass gauge_lr2_exclass;
+        GaugeLr2ExHardClass gauge_lr2_exhardclass;
 
+        std::unordered_map<LifeType, Gauge*> Gauges;
 
         // judgment information
         TimingWindowsO2Jam timing_o2jam;

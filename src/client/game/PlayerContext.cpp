@@ -295,8 +295,10 @@ void SetupGauge(PlayscreenParameters& param, const std::shared_ptr<ChartInfo>& T
             case TI_BMS:
             case TI_RAINDROP:
             case TI_RDAC:
-            case TI_LR2: // TODO: LR2's groove?
                 param.GaugeType = LT_GROOVE;
+                break;
+            case TI_LR2: // LR2's groove gauge
+                param.GaugeType = LT_LR2_NORMAL;
                 break;
             case TI_O2JAM:
                 param.GaugeType = LT_O2JAM;

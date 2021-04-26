@@ -118,6 +118,16 @@ namespace rd {
         LT_OSUMANIA = 9,
 
         LT_BATTERY = 11, // DDR battery mode.
+
+        LT_LR2_ASSIST = 12,
+        LT_LR2_EASY = 13,
+        LT_LR2_NORMAL = 14,
+        LT_LR2_HARD = 15,
+        LT_LR2_EXHARD = 16,
+        LT_LR2_HAZARD = 17,
+        LT_LR2_CLASS = 18,
+        LT_LR2_EXCLASS = 19,
+        LT_LR2_EXHARDCLASS = 20
     };
 
     // Pacemakers.
