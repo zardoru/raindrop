@@ -96,7 +96,18 @@ void GaugeOsuMania::Setup(double total, long long int max, double strictness) {
     const auto fraction = modf(HP, &_whole);
     const auto whole = (long long)_whole;
     static constexpr std::array<double, 11> HPM = { /* HP multipliers */
-            8,
+            7.272727273,
+            7.142857143,
+            7.168458781,
+            6.944444444,
+            6.802721088,
+            6.666666667,
+            6.451612903,
+            6.024096386,
+            5.376344086,
+            4.032258065,
+            1.111111111
+            /*8, // old, wrong values
             7.142857143,
             6.451612903,
             5.555555556,
@@ -106,8 +117,10 @@ void GaugeOsuMania::Setup(double total, long long int max, double strictness) {
             2.409638554,
             1.612903226,
             0.8064516129,
-            0.1111111111,
+            0.1111111111,*/
     };
+
+
 
     // interpolate the HPM
     auto hpm_value = HPM[whole];

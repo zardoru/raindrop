@@ -931,7 +931,7 @@ public:
 				PushNotesToMeasures();
 
 				// Copy all sounds we registered
-				for (auto i : Sounds)
+				for (const auto& i : Sounds)
 					Diff->Data->SoundList[i.second] = i.first;
 
 				// Calculate level as NPS
