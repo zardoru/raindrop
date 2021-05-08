@@ -39,7 +39,7 @@ class GameState
 
 
     std::shared_ptr<Screen> RootScreen;
-    bool FileExistsOnSkin(const char* Filename, const char* Skin);
+    static bool FileExistsOnSkin(const char* Filename, const char* Skin);
 public:
 
     GameState();
@@ -55,11 +55,11 @@ public:
 
     std::string GetDirectoryPrefix();
     std::string GetSkinPrefix();
-    std::string GetSkinPrefix(const std::string &skin);
-    std::string GetScriptsDirectory();
+    static std::string GetSkinPrefix(const std::string &skin);
+    static std::string GetScriptsDirectory();
     void SetSkin(std::string NextSkin);
     Texture* GetSkinImage(const std::string& Texture);
-    bool SkinSupportsChannelCount(int Count);
+    static bool SkinSupportsChannelCount(int Count);
     std::string GetSkin();
 
     void SetSelectedSong(std::shared_ptr<rd::Song> song);
@@ -110,7 +110,7 @@ public:
     void SetSystemFolder(const std::string folder);
 
     void SetRootScreen(std::shared_ptr<Screen> root);
-    std::shared_ptr<Screen> GetCurrentScreen();
+    static std::shared_ptr<Screen> GetCurrentScreen();
     std::shared_ptr<Screen> GetNextScreen();
 
     void AddActiveProfile(std::string profile_name);

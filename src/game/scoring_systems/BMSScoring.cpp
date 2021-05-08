@@ -147,16 +147,17 @@ long long rd::ScoreSystemEX::GetMaxScore(long long int max_notes, bool use_w0) {
     return max_notes * 2;
 }
 
-rd::PacemakerType rd::ScoreSystemEX::GetRank() const {
+rd::PacemakerType rd::ScoreSystemEX::GetRank(long long max_notes) const {
     static constexpr double thresholds[] = {8.0 / 9.0, 7.0 / 9.0, 6.0 / 9.0,
                            5.0 / 9.0, 4.0 / 9.0, 3.0 / 9.0, 2.0 / 9.0, 1.0 / 9.0,
                            0, -std::numeric_limits<double>::infinity()};
 
-    double exps = ex_score;
+    double exps = double (ex_score) / double (max_notes) / 2.0;
     auto rank_index = 9;
 
+    // see if the current ex score crosses the threshold for this BM rank
     for (auto i = 0; i < sizeof(thresholds) / sizeof(double); i++) {
-        if (exps > thresholds[i] * 100) {
+        if (exps > thresholds[i]) {
             rank_index = i;
             break;
         }

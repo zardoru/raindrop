@@ -439,7 +439,7 @@ namespace rd {
     }
 
     int ScoreKeeper::getBMRank() const {
-        return score_ex.GetRank();
+        return score_ex.GetRank(judged_notes);
     }
 
     int ScoreKeeper::getRank() const {

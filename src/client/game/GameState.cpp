@@ -80,7 +80,7 @@ GameState::GameState():
 					Fallback[st].push_back(ln);
 			}
         }
-        if (!Fallback[st].size()) Fallback[st].push_back("default");
+        if (Fallback[st].empty()) Fallback[st].push_back("default");
     }
 
 	// push the default player
@@ -112,7 +112,7 @@ std::string GameState::GetFirstFallbackSkin()
 
 GameState& GameState::GetInstance()
 {
-    static GameState* StateInstance = new GameState;
+    static auto* StateInstance = new GameState;
     return *StateInstance;
 }
 
@@ -401,20 +401,21 @@ void GameState::SubmitScore(int pn)
 	auto joffset = player->ctx->GetJudgeOffset();
 	auto &song = *GetSelectedSong();
 
-	auto submitfunc = [&]() {
-		player->profile->Scores.AddScore(
-			replay.GetSongHash(),
-			replay.GetDifficultyIndex(),
-			replay.GetEffectiveParameters(),
-			scorekeeper,
-			drift,
-			joffset
-		);
+    auto submitfunc = [=]() {
+        player->profile->Scores.AddScore(
+                replay.GetSongHash(),
+                replay.GetDifficultyIndex(),
+                replay.GetEffectiveParameters(),
+                scorekeeper,
+                drift,
+                joffset
+        );
 
-		player->profile->SaveReplay(&song, replay);
-	};
+        player->profile->SaveReplay(&song, replay);
+    };
 
-	std::async(std::launch::async, submitfunc);
+    std::thread t(submitfunc);
+    t.detach();
 }
 
 bool GameState::IsSongUnlocked(rd::Song * song)

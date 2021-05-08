@@ -48,7 +48,8 @@ off_t seek_mp3(void* opaque, off_t off, int whence) {
             break;
     }
 
-    return me.tellg();
+    auto tg = me.tellg();
+    return tg;
 }
 
 void cleanup_mp3(void* opaque) {
@@ -91,25 +92,26 @@ bool AudioSourceMP3::Open(std::filesystem::path Filename)
 {
     // if (mOwnerMixer)
     // mpg123_param((mpg123_handle*)mHandle, MPG123_FORCE_RATE, MixerGetRate(), 1);
-    ioHandle = new std::ifstream (Filename, std::ios::binary);
+    auto ios = new std::ifstream (Filename, std::ios::binary);
+
+    if (!ios->is_open()) {
+        return false;
+    }
+
+    ioHandle = ios;
 
     if (mpg123_open_handle((mpg123_handle*)mHandle, ioHandle) == MPG123_OK)
     {
         long rate;
 
-        // mpg123_format_all((mpg123_handle*)mHandle);
-        mpg123_format((mpg123_handle*)mHandle, 44100, MPG123_STEREO, MPG123_ENC_SIGNED_16);
+        auto res = mpg123_format_all((mpg123_handle*)mHandle);
+        // mpg123_format((mpg123_handle*)mHandle, 44100, MPG123_STEREO, MPG123_ENC_SIGNED_16);
 
-        mpg123_getformat((mpg123_handle*)mHandle, &rate, &mChannels, &mEncoding);
+        auto res2 = mpg123_getformat((mpg123_handle*)mHandle, &rate, &mChannels, &mEncoding);
 
         mRate = rate;
 
-        size_t pos = mpg123_tell((mpg123_handle*)mHandle);
-        size_t start = mpg123_seek((mpg123_handle*)mHandle, 0, SEEK_SET);
-        size_t end = mpg123_seek((mpg123_handle*)mHandle, 0, SEEK_END);
-        mpg123_seek((mpg123_handle*)mHandle, pos, SEEK_SET);
-
-        mLen = end - start;
+        mLen = mpg123_length((mpg123_handle*)mHandle);
 
         mIsValid = true;
         mIsDataLeft = mLen > 0;

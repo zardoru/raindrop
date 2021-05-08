@@ -24,7 +24,7 @@ namespace rd {
         void Update(ScoreKeeperJudgment skj, bool use_w0) override;
         long long GetCurrentScore(long long max_notes, bool use_w0) const override;
         long long GetMaxScore(long long max_notes, bool use_w0) override;
-        PacemakerType GetRank() const;
+        rd::PacemakerType GetRank(long long max_notes) const;
     };
 
     class ScoreSystemLR2 : public ScoringSystem {
