@@ -37,6 +37,10 @@ struct OMSetup {
             return LaneDown;
         };
 
+        mech.HitNotify = [&](double dev, uint32_t lane, bool hold, bool should_break) {
+            sk->hitNote(dev, lane, NoteJudgmentPart::NOTE);
+        };
+
         mech.MissNotify = [&](double t, uint32_t, bool hold, bool nobreakcombo, bool earlymiss) {
             sk->missNote(nobreakcombo, earlymiss, true);
         };
@@ -170,7 +174,7 @@ TEST_CASE("osu!mania judgments", "[omjudge]") {
             s.sk->hitNote(0, 0, NoteJudgmentPart::NOTE);
 
         REQUIRE(s.sk->getScore(ST_COMBO) == 50);
-        REQUIRE(s.sk->hitNote(-170, 0, NoteJudgmentPart::NOTE) == SKJ_MISS);
+        REQUIRE(s.sk->hitNote(-s.sk->getEarlyHitCutoffMS() + 1, 0, NoteJudgmentPart::NOTE) == SKJ_MISS);
         REQUIRE(s.sk->getScore(ST_COMBO) == 0);
 
         /* late version */
@@ -180,7 +184,31 @@ TEST_CASE("osu!mania judgments", "[omjudge]") {
             s.sk->hitNote(0, 0, NoteJudgmentPart::NOTE);
 
         REQUIRE(s.sk->getScore(ST_COMBO) == 50);
-        REQUIRE(s.sk->hitNote(170, 0, NoteJudgmentPart::NOTE) == SKJ_MISS);
+        REQUIRE(s.sk->hitNote(s.sk->getEarlyHitCutoffMS() - 1, 0, NoteJudgmentPart::NOTE) == SKJ_MISS);
+        REQUIRE(s.sk->getScore(ST_COMBO) == 0);
+    }
+
+    SECTION("[Mechanics] Early Weak hits should break combo.") {
+        s.sk->init();
+        s.sk->setODWindows(0);
+        for (int i = 0; i < 50; i++)
+            s.sk->hitNote(0, 0, NoteJudgmentPart::NOTE);
+
+        TrackNote t(NoteData{ 0, 0 });
+        REQUIRE(s.sk->getScore(ST_COMBO) == 50);
+        REQUIRE(s.mech.OnPressLane((-s.sk->getEarlyHitCutoffMS() + 1) / 1000.0, &t, 0) == true);
+        REQUIRE(s.sk->getScore(ST_COMBO) == 0);
+
+        /* late version */
+        s.sk->init();
+        s.sk->setODWindows(0);
+        for (int i = 0; i < 50; i++)
+            s.sk->hitNote(0, 0, NoteJudgmentPart::NOTE);
+
+
+        t.Reset();
+        REQUIRE(s.sk->getScore(ST_COMBO) == 50);
+        REQUIRE(s.mech.OnPressLane((s.sk->getLateMissCutoffMS() - 1) / 1000.0, &t, 0) == true);
         REQUIRE(s.sk->getScore(ST_COMBO) == 0);
     }
 

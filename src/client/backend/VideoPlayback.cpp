@@ -14,6 +14,7 @@ extern "C" {
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
 #include <libavutil/pixfmt.h>
+#include <libavutil/imgutils.h>
 }
 /*
 	Much of this implementation are a simplification of the tutorials found at
@@ -54,7 +55,7 @@ class VideoPlaybackData
 {
 public:
 	AVFormatContext *AV;
-	AVCodecContext *CodecCtx;
+	AVCodecParameters *CodecCtx;
 	AVCodecContext *UsableCodecCtx;
 	AVCodec *Codec;
 
@@ -186,15 +187,15 @@ public:
 		PaUtil_InitializeRingBuffer(&mPendingFrameQueue, sizeof(VideoFrame), framecnt, PendingQueueData.data());
 		PaUtil_InitializeRingBuffer(&mCleanFrameQueue, sizeof(VideoFrame), framecnt, CleanQueueData.data());
 
-		auto framesize = avpicture_get_size(AV_PIX_FMT_RGB24, w, h) + AV_INPUT_BUFFER_PADDING_SIZE;
+		auto frame_size = av_image_get_buffer_size(AV_PIX_FMT_RGB24, w, h, 1) + AV_INPUT_BUFFER_PADDING_SIZE;
 
-		FrameData.assign(framesize * framecnt, 0);
+		FrameData.assign(frame_size * framecnt, 0);
 
 		for (uint32_t i = 0; i < framecnt; i++)
 		{
 			auto avframe = av_frame_alloc();
-			uint8_t *buf = (uint8_t*)(FrameData.data() + i * framesize);
-			avpicture_fill((AVPicture*)avframe, buf, AV_PIX_FMT_RGB24, w, h);
+			auto *frame_data = (uint8_t*)(FrameData.data() + i * frame_size);
+			av_image_fill_arrays(avframe->data, avframe->linesize, frame_data, AV_PIX_FMT_RGB24, w, h, 1);
 
 			VideoFrame vf;
 			vf.frame = avframe;
@@ -203,14 +204,6 @@ public:
 	}
 };
 
-void InitializeFFMpeg()
-{
-	static bool initialized = false;
-	if (!initialized) {
-		av_register_all();
-		initialized = true;
-	}
-}
 
 void VideoPlayback::QueueFrame()
 {
@@ -219,33 +212,50 @@ void VideoPlayback::QueueFrame()
 		return;
 	}
 
-	int gotframe;
 	AVPacket packet;
 	while (av_read_frame(Context->AV, &packet) >= 0) {
-		
+		bool got_frame = false;
+
 		if (packet.stream_index == Context->videoStreamIndex) {
-			avcodec_decode_video2(Context->UsableCodecCtx, Context->DecodedFrame, &gotframe, &packet);
-			if (gotframe) {
+			// TODO: won't this break?
+			auto res = avcodec_send_packet(Context->UsableCodecCtx, &packet);
+			if (res < 0)
+			{
+				// what CAN we do?
+				continue;
+			}
+
+			if (res >= 0) {
+				res = avcodec_receive_frame(Context->UsableCodecCtx, Context->DecodedFrame);
+
 				auto cf = Context->GetCleanFrame();
 
-				sws_scale(Context->sws_ctx, (uint8_t const* const*)Context->DecodedFrame->data,
-					Context->DecodedFrame->linesize, 0, Context->UsableCodecCtx->height, cf.frame->data, cf.frame->linesize);
+				sws_scale(
+					Context->sws_ctx,
+					(uint8_t const* const*)Context->DecodedFrame->data,
+					Context->DecodedFrame->linesize,
+					0,
+					Context->UsableCodecCtx->height,
+					cf.frame->data,
+					cf.frame->linesize
+				);
 
-
-				cf.pts = av_frame_get_best_effort_timestamp(Context->DecodedFrame) * av_q2d(Context->AV->streams[Context->videoStreamIndex]->time_base);
-				Context->PutPendingFrame(cf);
-			} 
+				cf.pts = Context->DecodedFrame->best_effort_timestamp *
+					av_q2d(Context->AV->streams[Context->videoStreamIndex]->time_base);
+				Context->PutPendingFrame(std::move(cf));
+				got_frame = true;
+			}
 		}
 
-		av_free_packet(&packet);
+		av_packet_unref(&packet);
 
-		if (gotframe) break;
+		if (got_frame) break;
 	}
 }
 
+
 VideoPlayback::VideoPlayback(uint32_t framequeueitems)
 {
-	InitializeFFMpeg();
 	mFrameQueueItems = framequeueitems;
 	Context = nullptr;
 	mDecodeThread = nullptr;
@@ -267,49 +277,65 @@ bool VideoPlayback::Open(std::filesystem::path path)
 	auto newctx = new VideoPlaybackData(path);
 
 	if (avformat_open_input(&newctx->AV, "dummy", nullptr, nullptr) < 0) {
+		delete newctx;
 		return false;
 	}
 
 	if (avformat_find_stream_info(newctx->AV, nullptr) < 0) {
+		delete newctx;
 		return false;
 	}
 
 	// Find the first video stream
 	for (size_t i = 0; i < newctx->AV->nb_streams; i++)
 	{
-		if (newctx->AV->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
+		if (newctx->AV->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
 			newctx->videoStreamIndex = i;
-			newctx->CodecCtx = newctx->AV->streams[i]->codec;
+			newctx->CodecCtx = newctx->AV->streams[i]->codecpar;
 			break;
 		}
 	}
 
-	if (!newctx->CodecCtx)
+	if (!newctx->CodecCtx) {
+		delete newctx;
 		return false; // Didn't find a video stream
+	}
 
 	// decoder find...
 	newctx->Codec = avcodec_find_decoder(newctx->CodecCtx->codec_id);
-	if (!newctx->Codec)
+	if (!newctx->Codec) {
+		delete newctx;
 		return false;
+	}
 
 	// context copy
 	newctx->UsableCodecCtx = avcodec_alloc_context3(newctx->Codec);
-	if (avcodec_copy_context(newctx->UsableCodecCtx, newctx->CodecCtx) != 0) {
+	if (avcodec_parameters_to_context(newctx->UsableCodecCtx, newctx->CodecCtx) != 0) {
+		delete newctx;
+		return false;
+	}
+
+	if (newctx->UsableCodecCtx->pix_fmt == AV_PIX_FMT_NONE) {
+		delete newctx;
 		return false;
 	}
 
 	// open context?
-	if (avcodec_open2(newctx->UsableCodecCtx, newctx->Codec, nullptr) < 0)
+	if (avcodec_open2(newctx->UsableCodecCtx, newctx->Codec, nullptr) < 0) {
+		delete newctx;
 		return false;
+	}
 
 	newctx->InitializeBuffers(mFrameQueueItems, newctx->UsableCodecCtx->width, newctx->UsableCodecCtx->height);
 
 	/*Log::Printf("Video delay (frames): %d\n", newctx->UsableCodecCtx->delay);
 	av_seek_frame(newctx->AV, newctx->videoStreamIndex, newctx->UsableCodecCtx->delay * 2, 0);*/
 
-	auto f = avpicture_get_size(newctx->UsableCodecCtx->pix_fmt, 
-		newctx->UsableCodecCtx->width, 
-		newctx->UsableCodecCtx->height) + AV_INPUT_BUFFER_PADDING_SIZE;
+	auto f = av_image_get_buffer_size(
+		newctx->UsableCodecCtx->pix_fmt,
+		newctx->UsableCodecCtx->width,
+		newctx->UsableCodecCtx->height,
+		1) + AV_INPUT_BUFFER_PADDING_SIZE;
 	newctx->DecodedFrameData.assign(f, 0);
 
 	auto ucc = newctx->UsableCodecCtx;
