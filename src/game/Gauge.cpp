@@ -34,17 +34,20 @@ void Gauge::DefaultSetup() {
 void GaugeO2Jam::Setup(double total, long long max_notes, double strictness) {
     // Thanks to Entozer for giving this information.
     if (strictness == 0) { // EX
-        increment = (19.0 / 20.0) / 290.0;
-        decrement = 1.0 / 20.0;
-        decrement_bad = 1.0 / 100.0;
+        increment = 0.3;
+        increment_good = 0.2;
+        decrement_bad = -1;
+        decrement_miss = -5;
     } else if (strictness == 1) { // NX
-        increment = (24.0 / 25.0) / 470.0;
-        decrement = 1.0 / 25.0;
-        decrement_bad = 1.0 / 144.0;
+        increment = 0.2;
+        increment_good = 0.1;
+        decrement_bad = -0.7;
+        decrement_miss = -4;
     } else { // HX
-        increment = (33.0 / 34.0) / 950.0;
-        decrement = 1.0 / 34.0;
-        decrement_bad = 1.0 / 200.0;
+        increment = 0.1;
+        increment_good = 0.0;
+        decrement_bad = -0.5;
+        decrement_miss = -3;
     }
 }
 
@@ -53,18 +56,24 @@ void GaugeO2Jam::Update(ScoreKeeperJudgment skj, bool is_early, float mine_value
     if (skj == SKJ_TICK) return;
     if (skj <= SKJ_W1) // only COOLs restore o2jam lifebar
         lifebar_amount += increment;
+    else if (skj == SKJ_W2)
+        lifebar_amount += increment_good;
     else if (skj == SKJ_MISS)
-        lifebar_amount -= decrement;
+        lifebar_amount -= decrement_miss;
     else if (skj >= SKJ_W3) // BADs get some HP from you,
         lifebar_amount -= decrement_bad;
 }
 
 void GaugeO2Jam::Reset() {
-    lifebar_amount = 1;
+    lifebar_amount = 100;
 }
 
 void GaugeO2Jam::DefaultSetup() {
     Setup(0, 0, 2); // HX
+}
+
+double GaugeO2Jam::GetGaugeValue() {
+    return lifebar_amount / 100.0;
 }
 
 void GaugeStepmania::Reset() { lifebar_amount = 0.5; }

@@ -5,7 +5,7 @@
 namespace rd {
     class GaugeO2Jam : public Gauge {
     protected:
-        double increment{}, decrement{}, decrement_bad{};
+        double increment{}, increment_good{}, decrement_bad{}, decrement_miss{};
     public:
         void DefaultSetup() override;
 
@@ -14,6 +14,8 @@ namespace rd {
         void Setup (double total, long long max_notes, double strictness) override;
 
         void Update(ScoreKeeperJudgment skj, bool is_early, float mine_value) override;
+
+        virtual double GetGaugeValue() override;
     };
 
 
