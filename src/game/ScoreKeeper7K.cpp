@@ -96,18 +96,19 @@ namespace rd {
                     o2Judge = judge;
 
                 o2Judge = static_cast<ScoreKeeperJudgment>(score_o2jam.MutateJudgment(o2Judge));
-                timing.second->AddJudgment(o2Judge);
+                timing.second->AddJudgment(o2Judge, false);
 
                 // update our temporal judgment if we're using o2jam timing
                 if (CurrentTimingWindow == &timing_o2jam) {
                     judge = o2Judge;
                 }
             } else {
+                bool early_miss = ms < -timing.second->GetEarlyHitCutoff() && ms >= -timing.second->GetEarlyThreshold();
                 if (timing.second == CurrentTimingWindow)
-                    timing.second->AddJudgment(judge);
+                    timing.second->AddJudgment(judge, early_miss);
                 else {
                     auto myJudge = timing.second->GetJudgmentForTimeOffset(ms, lane, part);
-                    timing.second->AddJudgment(myJudge);
+                    timing.second->AddJudgment(myJudge, early_miss);
                 }
             }
         }
@@ -157,7 +158,7 @@ namespace rd {
     void ScoreKeeper::missNote(bool dont_break_combo, bool early_miss, bool apply_miss) {
         if (apply_miss) {
             for (auto &timing: Timings) {
-                timing.second->AddJudgment(SKJ_MISS);
+                timing.second->AddJudgment(SKJ_MISS, false);
             }
 
             for (auto &scoresys: Scores) {
@@ -497,7 +498,7 @@ namespace rd {
     void ScoreKeeper::tickLN(int ticks) {
         for (auto i = 0; i < ticks; i++) {
             for (auto &timing : Timings) {
-                timing.second->AddJudgment(SKJ_TICK);
+                timing.second->AddJudgment(SKJ_TICK, false);
             }
 
             for (auto &gauge : Gauges) {

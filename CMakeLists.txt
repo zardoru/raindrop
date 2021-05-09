@@ -250,7 +250,9 @@ list(REMOVE_ITEM BODY_SOURCE
 add_executable(rdtests
         tests/main.cpp ${BODY_SOURCE}
         tests/MechanicsTests.cpp
-        tests/NoteskinTests.cpp tests/FilesTests.cpp)
+        tests/OsuManiaTests.cpp
+        tests/NoteskinTests.cpp
+        tests/FilesTests.cpp)
 
 target_link_libraries(rdtests
         ${BODY_LIBS}

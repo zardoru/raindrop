@@ -65,12 +65,12 @@ namespace rd {
          * so that's per-lane information.
          * */
         virtual ScoreKeeperJudgment GetJudgmentForTimeOffset(double time_delta, uint32_t lane, NoteJudgmentPart part = NoteJudgmentPart::NOTE);
-        virtual void UpdateCombo(ScoreKeeperJudgment skj);
+        virtual void UpdateCombo(ScoreKeeperJudgment skj, bool should_break_combo);
         double GetEarlyThreshold() const; /* in the units described by GetTimeUnits */
         double GetLateThreshold() const; /* in the units described by GetTimeUnits */
 
         /* judgment counts */
-        virtual void AddJudgment(ScoreKeeperJudgment skj);
+        virtual void AddJudgment(ScoreKeeperJudgment skj, bool early_miss);
         uint32_t GetJudgmentCount(ScoreKeeperJudgment skj);
         double GetJudgmentWindow(ScoreKeeperJudgment skj);
         uint32_t GetCombo() const;

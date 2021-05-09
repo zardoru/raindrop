@@ -28,10 +28,10 @@ double TimingWindows::GetLateThreshold() const {
     return late_miss_threshold;
 }
 
-void TimingWindows::AddJudgment(ScoreKeeperJudgment skj) {
+void TimingWindows::AddJudgment(ScoreKeeperJudgment skj, bool early_miss) {
     if (skj >= 0 && skj < JUDGMENT_ARRAY_SIZE) {
         judgment_amt[skj] += 1;
-        UpdateCombo(skj);
+        UpdateCombo(skj, !early_miss);
     }
 }
 
@@ -65,14 +65,15 @@ void TimingWindows::DefaultSetup() {
     // stub
 }
 
-void TimingWindows::UpdateCombo(ScoreKeeperJudgment skj) {
+void TimingWindows::UpdateCombo(ScoreKeeperJudgment skj, bool should_break_combo) {
     if (skj <= combo_leniency) {
         notes_hit++;
         combo++;
 
         max_combo = std::max(combo, max_combo);
     } else {
-        combo = 0;
+        if (should_break_combo)
+            combo = 0;
     }
 }
 
@@ -270,13 +271,13 @@ double TimingWindowsOsuMania::GetTickInterval() {
     return 0.1;
 }
 
-void TimingWindowsOsuMania::AddJudgment(ScoreKeeperJudgment skj) {
+void TimingWindowsOsuMania::AddJudgment(ScoreKeeperJudgment skj, bool early_miss) {
     if (skj == SKJ_TICK) {
         combo++;
         return;
     }
 
-    TimingWindows::AddJudgment(skj);
+    TimingWindows::AddJudgment(skj, false);
 }
 
 bool TimingWindowsOsuMania::UsesTwoJudgesPerHold() const {
