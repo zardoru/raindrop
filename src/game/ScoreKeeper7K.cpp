@@ -158,7 +158,7 @@ namespace rd {
     void ScoreKeeper::missNote(bool dont_break_combo, bool early_miss, bool apply_miss) {
         if (apply_miss) {
             for (auto &timing: Timings) {
-                timing.second->AddJudgment(SKJ_MISS, false);
+                timing.second->AddJudgment(SKJ_MISS, early_miss);
             }
 
             for (auto &scoresys: Scores) {
