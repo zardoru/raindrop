@@ -166,7 +166,7 @@ if (USE_GCC)
 cotire(rd.core)
 endif()
 
-# rd Body (or client... whichever you prefer)
+# rd Body Source (What's common to Tests and the Actual Executable)
 # ================================================
 file(GLOB_RECURSE backend_files src/client/*.cpp)
 
@@ -175,8 +175,12 @@ set (BODY_SOURCE
         ${SQLITE_FILES}
 )
 
-add_executable(rdbody
-    ${BODY_SOURCE}
+list(REMOVE_ITEM BODY_SOURCE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/client/raindrop.cpp
+)
+
+add_library(rdbody.src
+        ${BODY_SOURCE}
 )
 
 set(BODY_INCLUDE
@@ -190,13 +194,13 @@ set(BODY_INCLUDE
         src/client/backend
 )
 
-target_include_directories(rdbody PRIVATE
+target_include_directories(rdbody.src PUBLIC
     ${BODY_INCLUDE}
 )
 
 if (WIN32)
     set(WINLIBS opengl32.lib Shlwapi.lib Dbghelp.lib)
-    target_compile_definitions(rdbody PRIVATE -DUNICODE)
+    target_compile_definitions(rdbody.src PRIVATE -DUNICODE)
 endif()
 
 set (BODY_LIBS
@@ -216,9 +220,17 @@ set (BODY_LIBS
         ${FFMPEG_LIBSWSCALE}
         ${WINLIBS})
 
-target_link_libraries(rdbody
+target_link_libraries(rdbody.src
     ${BODY_LIBS}
 )
+
+# rdbody - the actual thing people can play
+# ================================================
+add_executable(rdbody
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/client/raindrop.cpp
+)
+
+target_link_libraries(rdbody rdbody.src)
 
 # Converter tools
 # ================================================
@@ -242,20 +254,17 @@ target_link_libraries(rdconverter
 
 # Test runner
 # ================================================
-# same body sources, minus main.
-list(REMOVE_ITEM BODY_SOURCE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/client/raindrop.cpp
-)
+
 
 add_executable(rdtests
-        tests/main.cpp ${BODY_SOURCE}
+        tests/main.cpp
         tests/MechanicsTests.cpp
         tests/OsuManiaTests.cpp
         tests/NoteskinTests.cpp
         tests/FilesTests.cpp)
 
 target_link_libraries(rdtests
-        ${BODY_LIBS}
+    rdbody.src
 )
 
 target_include_directories(rdtests PRIVATE

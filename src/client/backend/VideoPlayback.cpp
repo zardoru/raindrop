@@ -7,13 +7,11 @@
 #include <fstream>
 #include "Texture.h"
 #include "VideoPlayback.h"
-#include "Logging.h"
 
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
-#include <libavutil/pixfmt.h>
 #include <libavutil/imgutils.h>
 }
 /*
@@ -41,8 +39,6 @@ public:
 		pts = 0;
 	}
 };
-
-#define MAX_PACKETS 64
 
 static int readVideoFunction(void* opaque, uint8_t* buf, int buf_size) {
     auto& me = *reinterpret_cast<std::ifstream*>(opaque);
@@ -222,6 +218,7 @@ void VideoPlayback::QueueFrame()
 			if (res < 0)
 			{
 				// what CAN we do?
+                av_packet_unref(&packet);
 				continue;
 			}
 
@@ -355,8 +352,8 @@ bool VideoPlayback::Open(std::filesystem::path path)
 		nullptr, nullptr, nullptr);
 
 	// only assign on success
-	if (Context) delete Context;
-	Context = newctx;;
+	delete Context;
+	Context = newctx;
 	return true;
 }
 
@@ -408,7 +405,7 @@ void VideoPlayback::UpdateClock(double clock)
 
 void VideoPlayback::UpdateVideoTexture(void * data)
 {
-	AVFrame* frame = (AVFrame*)data;
+	auto* frame = (AVFrame*)data;
 
 	CreateTexture();
 	Bind();
