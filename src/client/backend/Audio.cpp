@@ -15,6 +15,7 @@
 #define BUFF_SIZE 8192
 
 #ifdef WIN32
+
 #include <portaudio/pa_win_wasapi.h>
 #include <portaudio/pa_win_ds.h>
 #include <portaudio/pa_win_wdmks.h>
@@ -41,33 +42,31 @@ PaDeviceIndex DefaultWDMKSDevice;
 /********* Mixer *********/
 /*************************/
 
-PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, void* Sound, double &dLatency, PaStreamCallback Callback)
-{
+PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, void *Sound, double &dLatency, PaStreamCallback Callback) {
     PaStreamParameters outputParams;
 
     outputParams.device = Device;
     outputParams.channelCount = 2;
     outputParams.sampleFormat = paFloat32;
 
-	CfgVar RequestedLatency("RequestedLatency", "Audio");
-	CfgVar UseHighLatency("UseHighLatency", "Audio");
+    CfgVar RequestedLatency("RequestedLatency", "Audio");
+    CfgVar UseHighLatency("UseHighLatency", "Audio");
 
 #ifdef WIN32
-	bool useAuto = (RequestedLatency < 0 && UseWasapi) || (RequestedLatency <= 0 && !UseWasapi);
+    bool useAuto = (RequestedLatency < 0 && UseWasapi) || (RequestedLatency <= 0 && !UseWasapi);
 #else
-	bool useAuto = RequestedLatency <= 0.0;
+    bool useAuto = RequestedLatency <= 0.0;
 #endif
-	if ( useAuto || UseHighLatency) {
-		if (!UseHighLatency)
-			outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultLowOutputLatency;
-		else
-			outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultHighOutputLatency;
-	} else
-	{
-		outputParams.suggestedLatency = RequestedLatency.flt() / 1000.f;
-	}
+    if (useAuto || UseHighLatency) {
+        if (!UseHighLatency)
+            outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultLowOutputLatency;
+        else
+            outputParams.suggestedLatency = Pa_GetDeviceInfo(outputParams.device)->defaultHighOutputLatency;
+    } else {
+        outputParams.suggestedLatency = RequestedLatency.flt() / 1000.f;
+    }
 
-	Log::Logf("AUDIO: Requesting latency of %f ms\n", outputParams.suggestedLatency * 1000);
+    Log::Logf("AUDIO: Requesting latency of %f ms\n", outputParams.suggestedLatency * 1000);
 
 #ifndef WIN32
 
@@ -77,32 +76,26 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, void* Sound, double
     PaWasapiStreamInfo StreamInfo;
     PaWinDirectSoundStreamInfo DSStreamInfo;
     PaWinWDMKSInfo WDMKSStreamInfo;
-    if (UseWasapi)
-    {
+    if (UseWasapi) {
         outputParams.hostApiSpecificStreamInfo = &StreamInfo;
         StreamInfo.hostApiType = paWASAPI;
         StreamInfo.size = sizeof(PaWasapiStreamInfo);
         StreamInfo.version = 1;
 
-		CfgVar UseSharedMode("WasapiUseSharedMode", "Audio");
-		if (!UseSharedMode)
-        {
-			Log::Logf("AUDIO: Attempting to use exclusive mode WASAPI\n");
+        CfgVar UseSharedMode("WasapiUseSharedMode", "Audio");
+        if (!UseSharedMode) {
+            Log::Logf("AUDIO: Attempting to use exclusive mode WASAPI\n");
             StreamInfo.threadPriority = eThreadPriorityProAudio;
             StreamInfo.flags = paWinWasapiExclusive | paWinWasapiThreadPriority;
-        }
-        else
-        {
-			Log::Logf("AUDIO: Attempting to use shared mode WASAPI\n");
+        } else {
+            Log::Logf("AUDIO: Attempting to use shared mode WASAPI\n");
             StreamInfo.threadPriority = eThreadPriorityGames;
             StreamInfo.flags = 0;
         }
 
         StreamInfo.hostProcessorOutput = nullptr;
         StreamInfo.hostProcessorInput = nullptr;
-    }
-    else
-    {
+    } else {
         if (Pa_GetHostApiInfo(Pa_GetDeviceInfo(Device)->hostApi)->type == paWDMKS) {
             Log::Logf("AUDIO: Attempting to use Windows Driver Model Kernel Streaming\n");
             outputParams.hostApiSpecificStreamInfo = &WDMKSStreamInfo;
@@ -115,37 +108,36 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, void* Sound, double
             WDMKSStreamInfo.channelMask = 0;
         }
 
-		if (Pa_GetHostApiInfo(Pa_GetDeviceInfo(Device)->hostApi)->type == paDirectSound) {
-			Log::Logf("AUDIO: Attempting to use DirectSound\n");
-			outputParams.hostApiSpecificStreamInfo = &DSStreamInfo;
+        if (Pa_GetHostApiInfo(Pa_GetDeviceInfo(Device)->hostApi)->type == paDirectSound) {
+            Log::Logf("AUDIO: Attempting to use DirectSound\n");
+            outputParams.hostApiSpecificStreamInfo = &DSStreamInfo;
 
-			DSStreamInfo.size = sizeof(PaWinDirectSoundStreamInfo);
-			DSStreamInfo.hostApiType = paDirectSound;
-			DSStreamInfo.version = 2;
-			DSStreamInfo.flags = 0;
-		} else
-		{
-			if (Pa_GetHostApiInfo(Pa_GetDeviceInfo(Device)->hostApi)->type == paMME) {
-				Log::Logf("AUDIO: Attempting to use MME\n");
-			}
-			else {
-				Log::Logf("AUDIO: Opening host API with identifier: %d\n", Pa_GetHostApiInfo(Pa_GetDeviceInfo(Device)->hostApi)->type);
-			}
-			outputParams.hostApiSpecificStreamInfo = nullptr;
-		}
+            DSStreamInfo.size = sizeof(PaWinDirectSoundStreamInfo);
+            DSStreamInfo.hostApiType = paDirectSound;
+            DSStreamInfo.version = 2;
+            DSStreamInfo.flags = 0;
+        } else {
+            if (Pa_GetHostApiInfo(Pa_GetDeviceInfo(Device)->hostApi)->type == paMME) {
+                Log::Logf("AUDIO: Attempting to use MME\n");
+            } else {
+                Log::Logf("AUDIO: Opening host API with identifier: %d\n",
+                          Pa_GetHostApiInfo(Pa_GetDeviceInfo(Device)->hostApi)->type);
+            }
+            outputParams.hostApiSpecificStreamInfo = nullptr;
+        }
     }
 #endif
 
     dLatency = outputParams.suggestedLatency;
 
-	double Rate = Pa_GetDeviceInfo(Device)->defaultSampleRate;
+    double Rate = Pa_GetDeviceInfo(Device)->defaultSampleRate;
     Log::Logf("AUDIO: Device Selected %d (Rate: %f)\n", Device + 1, Rate);
     // fire up portaudio
-    PaError Err = Pa_OpenStream(mStream, nullptr, &outputParams, Rate, 0, 0, Callback, static_cast<void*>(Sound));
+    PaError Err = Pa_OpenStream(mStream, nullptr, &outputParams, Rate, 0, 0, Callback, static_cast<void *>(Sound));
 
-    if (Err)
-    {
-        Log::Logf("Audio: Failed opening device, portaudio reports \"%ls\"\n", Conversion::Widen(Pa_GetErrorText(Err)).c_str());
+    if (Err) {
+        Log::Logf("Audio: Failed opening device, portaudio reports \"%ls\"\n",
+                  Conversion::Widen(Pa_GetErrorText(Err)).c_str());
     }
 #ifdef LINUX
     else
@@ -159,10 +151,11 @@ PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, void* Sound, double
 }
 
 #ifdef WIN32
-PaDeviceIndex GetWasapiDevice()
-{
+
+PaDeviceIndex GetWasapiDevice() {
     return DefaultWasapiDevice; // implement properly?
 }
+
 #else
 PaDeviceIndex GetWasapiDevice()
 {
@@ -170,23 +163,23 @@ PaDeviceIndex GetWasapiDevice()
 }
 #endif
 
-int Mix(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags, void *userData);
+int Mix(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo,
+        PaStreamCallbackFlags statusFlags, void *userData);
 
-class PaMixer : public IMixer
-{
-    PaStream* Stream;
-    char *RingbufData;
-    PaUtilRingBuffer RingBuf;
+class PaMixer : public IMixer {
+    PaStream *Stream;
+    char *RingbufData{};
+    PaUtilRingBuffer RingBuf{};
 
-    double Latency;
+    double Latency{};
     double Rate;
 
-    std::vector<AudioStream*> Streams;
-    std::vector<AudioSample*> Samples;
-    double ConstFactor;
+    std::vector<AudioStream *> Streams;
+    std::vector<AudioSample *> Samples;
+    double ConstFactor{};
 
-    int SizeAvailable;
-    bool Threaded;
+    int SizeAvailable{};
+    bool Threaded{};
     std::atomic<bool> WaitForRingbufferSpace;
 
     std::mutex mutex_stream, mutex_decoder, rbufmux;
@@ -194,25 +187,23 @@ class PaMixer : public IMixer
 
     PaMixer() {
         Rate = 44100;
-		Stream = nullptr;
-	}
+        Stream = nullptr;
+    }
+
 public:
 
 
-    static PaMixer &GetInstance()
-    {
+    static PaMixer &GetInstance() {
         static auto *Mixer = new PaMixer;
         return *Mixer;
     }
 
-	double GetRate()
-	{
-		return Rate;
+    double GetRate() {
+        return Rate;
     }
 
-    void Initialize(bool StartThread)
-    {
-        RingbufData = new char[BUFF_SIZE*sizeof(float)];
+    void Initialize(bool StartThread) {
+        RingbufData = new char[BUFF_SIZE * sizeof(float)];
 
         WaitForRingbufferSpace = false;
 
@@ -221,23 +212,20 @@ public:
         Threaded = StartThread;
         Stream = nullptr;
 
-        if (StartThread)
-        {
+        if (StartThread) {
             std::thread(&PaMixer::Run, this).detach();
         }
 
         CfgVar RequestedDevice("RequestedDevice", "Audio");
         if (RequestedDevice > 0)
-            OpenStream(&Stream, RequestedDevice - 1, (void*) this, Latency, Mix);
+            OpenStream(&Stream, RequestedDevice - 1, (void *) this, Latency, Mix);
 
 #ifdef WIN32
-        if (UseWasapi && !Stream)
-        {
-            OpenStream(&Stream, GetWasapiDevice(), static_cast<void*>(this), Latency, Mix);
+        if (UseWasapi && !Stream) {
+            OpenStream(&Stream, GetWasapiDevice(), static_cast<void *>(this), Latency, Mix);
         }
 
-        if (!Stream)
-        {
+        if (!Stream) {
             // This was a Wasapi problem. Retry without it.
             if (UseWasapi) {
                 Log::Logf("AUDIO: Problem initializing WASAPI. Falling back to WDMKS.\n");
@@ -257,8 +245,7 @@ public:
         }
 #endif
 
-        if (Stream)
-        {
+        if (Stream) {
             Pa_StartStream(Stream);
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             Latency = Pa_GetStreamInfo(Stream)->outputLatency;
@@ -269,33 +256,28 @@ public:
         ConstFactor = 1.0;
     }
 
-    void Run()
-    {
-        do
-        {
+    void Run() {
+        do {
             WaitForRingbufferSpace = true;
 
             {
                 mutex_decoder.lock();
-                for (auto & item : Streams)
+                for (auto &item: Streams)
                     item->UpdateDecoder();
                 mutex_decoder.unlock();
             }
 
-            if (Threaded)
-            {
+            if (Threaded) {
                 std::unique_lock<std::mutex> lock(rbufmux);
 
-                while (WaitForRingbufferSpace)
-                {
+                while (WaitForRingbufferSpace) {
                     ringbuffer_has_space.wait(lock);
                 }
             }
         } while (Threaded);
     }
 
-    void AddStream(AudioStream* Stream) override
-    {
+    void AddStream(AudioStream *Stream) override {
         mutex_decoder.lock();
         mutex_stream.lock();
         Streams.push_back(Stream);
@@ -303,14 +285,11 @@ public:
         mutex_decoder.unlock();
     }
 
-    void RemoveStream(AudioStream *Stream) override
-    {
+    void RemoveStream(AudioStream *Stream) override {
         mutex_decoder.lock();
         mutex_stream.lock();
-        for (auto i = Streams.begin(); i != Streams.end();)
-        {
-            if ((*i) == Stream)
-            {
+        for (auto i = Streams.begin(); i != Streams.end();) {
+            if ((*i) == Stream) {
                 i = Streams.erase(i);
                 if (i != Streams.end())
                     continue;
@@ -324,8 +303,7 @@ public:
         mutex_decoder.unlock();
     }
 
-    void AddSample(AudioSample* Sample) override
-    {
+    void AddSample(AudioSample *Sample) override {
         mutex_decoder.lock();
         mutex_stream.lock();
         Samples.push_back(Sample);
@@ -333,14 +311,11 @@ public:
         mutex_decoder.unlock();
     }
 
-    void RemoveSample(AudioSample* Sample) override
-    {
+    void RemoveSample(AudioSample *Sample) override {
         mutex_decoder.lock();
         mutex_stream.lock();
-        for (auto i = Samples.begin(); i != Samples.end();)
-        {
-            if ((*i) == Sample)
-            {
+        for (auto i = Samples.begin(); i != Samples.end();) {
+            if ((*i) == Sample) {
                 i = Samples.erase(i);
 
                 if (i == Samples.end())
@@ -354,21 +329,20 @@ public:
         mutex_decoder.unlock();
     }
 
-    double GetTime() override
-    {
+    double GetTime() override {
         return Pa_GetStreamTime(Stream);
     }
+
 private:
-    float ts[BUFF_SIZE * 2];
-    float tsF[BUFF_SIZE * 2];
+    float ts[BUFF_SIZE * 2]{};
+    float tsF[BUFF_SIZE * 2]{};
 
 public:
 
     void WriteAndAdvanceStream(
-		float * out, 
-		int samples, 
-		const PaStreamCallbackTimeInfo *timeInfo)
-    {
+            float *out,
+            int samples,
+            const PaStreamCallbackTimeInfo *timeInfo) {
         int count = samples;
 
         memset(out, 0, samples * sizeof(float));
@@ -376,8 +350,7 @@ public:
         bool streaming = false;
         {
             mutex_stream.lock();
-            for (auto & Stream : Streams)
-            {
+            for (auto &Stream: Streams) {
                 /*
                  * first, update our clocks
                  * */
@@ -411,8 +384,7 @@ public:
                 streaming |= Stream->IsPlaying();
             }
 
-            for (auto & Sample : Samples)
-            {
+            for (auto &Sample: Samples) {
                 size_t read = Sample->Read(ts, samples);
 
                 for (size_t k = 0; k < read; k++)
@@ -422,28 +394,25 @@ public:
             mutex_stream.unlock();
         }
 
-        if (streaming)
-        {
+        if (streaming) {
             WaitForRingbufferSpace = false;
             ringbuffer_has_space.notify_one();
         }
     }
 
-    double GetLatency() const
-    {
+    double GetLatency() const {
         return Latency;
     }
 
-    double GetFactor()
-    {
+    double GetFactor() {
         return ConstFactor;
     }
 };
 
-int Mix(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags, void *userData)
-{
-    auto *Mix = static_cast<PaMixer*>(userData);
-    Mix->WriteAndAdvanceStream(static_cast<float*>(output), frameCount * 2, timeInfo);
+int Mix(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo,
+        PaStreamCallbackFlags statusFlags, void *userData) {
+    auto *Mix = static_cast<PaMixer *>(userData);
+    Mix->WriteAndAdvanceStream(static_cast<float *>(output), frameCount * 2, timeInfo);
     return 0;
 }
 
@@ -451,16 +420,15 @@ int Mix(const void *input, void *output, unsigned long frameCount, const PaStrea
 /********** API **********/
 /*************************/
 
-void GetAudioInfo()
-{
+void GetAudioInfo() {
     PaHostApiIndex ApiCount = Pa_GetHostApiCount();
 
     Log::Logf("AUDIO: The default API is %d\n", Pa_GetDefaultHostApi());
 
-    for (PaHostApiIndex i = 0; i < ApiCount; i++)
-    {
-        const PaHostApiInfo* Index = Pa_GetHostApiInfo(i);
-        Log::Logf("(%d) %s: Default Output: %d (Identifier: %d)\n", i, Index->name, Index->defaultOutputDevice, Index->type);
+    for (PaHostApiIndex i = 0; i < ApiCount; i++) {
+        const PaHostApiInfo *Index = Pa_GetHostApiInfo(i);
+        Log::Logf("(%d) %s: Default Output: %d (Identifier: %d)\n", i, Index->name, Index->defaultOutputDevice,
+                  Index->type);
 
 #ifdef WIN32
         if (Index->type == paWASAPI)
@@ -475,19 +443,18 @@ void GetAudioInfo()
     Log::Logf("\nAUDIO: The audio devices are\n");
 
     PaDeviceIndex DevCount = Pa_GetDeviceCount();
-    for (PaDeviceIndex i = 0; i < DevCount; i++)
-    {
+    for (PaDeviceIndex i = 0; i < DevCount; i++) {
         const PaDeviceInfo *Info = Pa_GetDeviceInfo(i);
-		if (Info->maxOutputChannels == 0) continue; // Skip input devices.
+        if (Info->maxOutputChannels == 0) continue; // Skip input devices.
         Log::Logf("(%d): %s\n", i + 1, Info->name);
-        Log::Logf("\thighLat: %f ms, lowLat: %f ma\n", Info->defaultHighOutputLatency * 1000, Info->defaultLowOutputLatency * 1000);
+        Log::Logf("\thighLat: %f ms, lowLat: %f ma\n", Info->defaultHighOutputLatency * 1000,
+                  Info->defaultLowOutputLatency * 1000);
         Log::Logf("\tsampleRate: %f, hostApi: %d\n", Info->defaultSampleRate, Info->hostApi);
         Log::Logf("\tmaxchannels: %d\n", Info->maxOutputChannels);
     }
 }
 
-void InitAudio()
-{
+void InitAudio() {
 #ifndef NO_AUDIO
     PaError Err = Pa_Initialize();
 
@@ -495,8 +462,8 @@ void InitAudio()
         return;
 
 #ifdef WIN32
-	ConfigurationVariable cfg_UseWasapi("UseWasapi", "Audio");
-	UseWasapi = cfg_UseWasapi;
+    ConfigurationVariable cfg_UseWasapi("UseWasapi", "Audio");
+    UseWasapi = cfg_UseWasapi;
 #endif
 
     UseThreadedDecoder = ConfigurationVariable("UseThreadedDecoder", "Audio");
@@ -508,8 +475,7 @@ void InitAudio()
 #endif
 }
 
-double GetDeviceLatency()
-{
+double GetDeviceLatency() {
 #ifndef NO_AUDIO
     return Pa_GetDeviceInfo(Pa_GetDefaultOutputDevice())->defaultLowOutputLatency;
 #else
@@ -518,20 +484,18 @@ double GetDeviceLatency()
 }
 
 
-IMixer* GetMixer() {
+IMixer *GetMixer() {
     return &PaMixer::GetInstance();
 }
 
-void MixerUpdate()
-{
+void MixerUpdate() {
 #ifndef NO_AUDIO
     if (!UseThreadedDecoder)
         PaMixer::GetInstance().Run();
 #endif
 }
 
-double MixerGetLatency()
-{
+double MixerGetLatency() {
 #ifndef NO_AUDIO
     return PaMixer::GetInstance().GetLatency();
 #else
@@ -539,13 +503,11 @@ double MixerGetLatency()
 #endif
 }
 
-double MixerGetRate()
-{
-	return PaMixer::GetInstance().GetRate();
+double MixerGetRate() {
+    return PaMixer::GetInstance().GetRate();
 }
 
-double MixerGetFactor()
-{
+double MixerGetFactor() {
 #ifndef NO_AUDIO
     return PaMixer::GetInstance().GetFactor();
 #else
@@ -553,8 +515,7 @@ double MixerGetFactor()
 #endif
 }
 
-double MixerGetTime()
-{
+double MixerGetTime() {
 #ifndef NO_AUDIO
     return PaMixer::GetInstance().GetTime();
 #else

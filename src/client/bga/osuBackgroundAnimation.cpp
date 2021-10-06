@@ -845,7 +845,6 @@ osb::SpriteList ReadOSBEvents(std::istream& event_str)
 		lead_spaces = sst != std::string::npos ? sst : 0;
 		line = line.substr(lead_spaces);
 
-		// TODO: a proper csv parse for this.
 		std::vector<std::string> split_result = Utility::TokenSplit(line, ",");
 		for (auto &&s : split_result) boost::algorithm::to_lower(s);
 

@@ -149,8 +149,11 @@ bool ScreenGameplay::LoadChartData() {
     return true;
 }
 
+CfgVar DebugLoadAudio("DebugAudioLoad", "Debug");
+
 bool ScreenGameplay::LoadSongAudio() {
     CfgVar SkipLoadAudio("SkipAudioLoad", "Debug");
+
     if (SkipLoadAudio) {
         Log::LogPrintf("SkipAudioLoad is ON, skipping audio load.\n");
         return true;
@@ -188,28 +191,33 @@ bool ScreenGameplay::LoadSongAudio() {
                 // Caveat: Try to autodetect an mp3/ogg file.
                 auto SngDir = MySong->SongDirectory;
 
+                if (DebugLoadAudio)
+                    Log::LogPrintf("Attempt to autodetect audio from directory...\n");
+
                 // Open the first MP3 and OGG file in the directory
                 for (auto i : std::filesystem::directory_iterator(SngDir)) {
                     auto extension = i.path().extension();
                     if (extension == ".mp3" || extension == ".ogg")
-                        if (Music->Open(i.path()))
-                            if (!SoundList.size())
+                        if (Music->Open(i.path())) {
+                            if (DebugLoadAudio)
+                                Log::LogPrintf("Got audio on path... %S\n", i.path().wstring().c_str());
+
+                            if (SoundList.empty())
                                 return true;
+                        }
                 }
 
                 // Quit; couldn't find audio for a chart that requires it.
                 Music = nullptr;
 
                 // don't abort load if we have keysounds
-                if (!SoundList.size()) {
+                if (SoundList.empty()) {
                     Log::Printf("Unable to load song (Path: %ls)\n", MySong->SongFilename.wstring().c_str());
                     return false;
                 }
             }
         }
     }
-
-    auto ChartType = ps.GetChartType();
 
     // Load samples.
     if (MySong->SongFilename.extension() == ".ojm") {
@@ -249,7 +257,16 @@ void ScreenGameplay::LoadSamples() {
         ks->SetPitch(Rate);
         std::filesystem::path rfd = i.second;
         std::filesystem::path afd = MySong->SongDirectory / rfd;
-        ks->Open(afd, true);
+
+        if (DebugLoadAudio) {
+            Log::LogPrintf("Attempt to load sound %S (%i)...\n", afd.wstring().c_str(), i.first);
+
+            if (!std::filesystem::exists(afd)) {
+                Log::LogPrintf("\t... but it does not exist.\n", afd.wstring().c_str());
+            }
+        }
+
+        ks->Open(afd, false);
         Keysounds[i.first].push_back(ks);
         CheckInterruption();
     }
@@ -481,8 +498,8 @@ void ScreenGameplay::LoadResources() {
 
 
     // We're done with the data stored in the difficulties that aren't the one we're using. Clear it up.
-    for (auto & Difficultie : MySong->Difficulties)
-        Difficultie->Destroy();
+    for (auto & difficulty : MySong->Difficulties)
+        difficulty->Destroy();
 
     CfgVar await("AwaitKeysoundLoad");
     if (await) {
@@ -519,26 +536,23 @@ void ScreenGameplay::InitializeResources() {
     for (auto &p : Players) {
         p->Validate();
 
-        p->OnHit = std::bind(&ScreenGameplay::OnPlayerHit, this,
-                             std::placeholders::_1,
-                             std::placeholders::_2,
-                             std::placeholders::_3,
-                             std::placeholders::_4,
-                             std::placeholders::_5,
-                             std::placeholders::_6);
+        // TODO: parameter types/names
+        p->OnHit = [this](auto && PH1, auto && PH2, auto && PH3, auto && PH4, auto && PH5, auto && PH6) {
+            OnPlayerHit(std::forward<decltype(PH1)>(PH1),
+                        std::forward<decltype(PH2)>(PH2),
+                        std::forward<decltype(PH3)>(PH3),
+                        std::forward<decltype(PH4)>(PH4),
+                        std::forward<decltype(PH5)>(PH5),
+                        std::forward<decltype(PH6)>(PH6));
+        };
 
-        p->OnMiss = std::bind(&ScreenGameplay::OnPlayerMiss, this,
-                              std::placeholders::_1,
-                              std::placeholders::_2,
-                              std::placeholders::_3,
-                              std::placeholders::_4,
-                              std::placeholders::_5,
-                              std::placeholders::_6);
+        p->OnMiss = [this](double dt, uint32_t lane, bool hold, bool dontbreakcombo, bool earlymiss, int playerNumber) {
+            OnPlayerMiss(dt, lane, hold, dontbreakcombo, earlymiss, playerNumber);
+        };
 
-        p->OnGearKeyEvent = std::bind(&ScreenGameplay::OnPlayerGearKeyEvent, this,
-                                      std::placeholders::_1,
-                                      std::placeholders::_2,
-                                      std::placeholders::_3);
+        p->OnGearKeyEvent = [this](auto && PH1, auto && PH2, auto && PH3) {
+            OnPlayerGearKeyEvent(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2), std::forward<decltype(PH3)>(PH3));
+        };
     }
 
 

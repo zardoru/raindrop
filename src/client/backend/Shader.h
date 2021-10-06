@@ -9,7 +9,7 @@ namespace Renderer {
 		A_POSITION,
 		A_UV,
 		A_COLOR,
-		U_MVP,
+		U_MODELVIEW,
 		U_CENTERED,
 		U_COLOR,
 		U_INVERT,

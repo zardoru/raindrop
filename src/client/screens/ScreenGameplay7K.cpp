@@ -54,11 +54,14 @@ rd::Song *ScreenGameplay::GetSong() const {
     return MySong.get();
 }
 
-
 void ScreenGameplay::PlayKeysound(int Keysound) {
-    if (Keysounds.find(Keysound) != Keysounds.end() && PlayReactiveSounds)
-        for (auto &&s : Keysounds[Keysound])
+    auto fnd = Keysounds.find(Keysound);
+
+    if (fnd != Keysounds.end() && PlayReactiveSounds) {
+        for (auto &&s: Keysounds[Keysound]) {
             if (s) s->Play();
+        }
+    }
 }
 
 

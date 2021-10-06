@@ -48,6 +48,7 @@ if (WIN32)
     list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/soxr")
     list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/portaudio")
     list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/ffmpeg")
+    list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/RmlUi")
 
     # Libraries
     set(BASE_LIB_PATH "${CMAKE_SOURCE_DIR}/lib/lib")
@@ -72,6 +73,7 @@ find_package(MPG123 REQUIRED)
 find_package(Sndfile REQUIRED)
 find_package(Soxr REQUIRED)
 find_package(FFmpeg REQUIRED)
+find_package(RmlUi REQUIRED)
 
 # On linux, properly configured, these don't need our module scripts
 # as they install their own Find modules.
@@ -97,9 +99,6 @@ set(SHA256_FILES src-thirdparty/sha256/sha256.cpp)
 set(RINGBUFFER_FILES src-thirdparty/ringbuffer/pa_ringbuffer.c)
 set(SQLITE_FILES src-thirdparty/sqlite/sqlite3.c)
 set(MINIZIP_FILES src-thirdparty/minizip/ioapi.c src-thirdparty/minizip/unzip.c)
-
-message(STATUS ${CMAKE_CL_64})
-message(STATUS ${SQLITE_FILES})
 
 # Utility library
 # ================================================
@@ -135,8 +134,8 @@ target_include_directories(rd.sndio PUBLIC
         ${SOXR_INCLUDE_DIR})
 target_compile_definitions(rd.sndio PUBLIC SNDIO_DLL)
 
-message(STATUS ${OGG_LIBRARY} " " ${VORBIS_LIBRARY} " "
-        ${VORBISFILE_LIBRARY})
+#message(STATUS ${OGG_LIBRARY} " " ${VORBIS_LIBRARY} " "
+#        ${VORBISFILE_LIBRARY})
 
 target_link_libraries(rd.sndio
     rd.util
@@ -191,6 +190,7 @@ set(BODY_INCLUDE
         ${Boost_INCLUDE_DIR}
         ${LUA_INCLUDE_DIR}
         ${FFMPEG_INCLUDE_DIR}
+        ${RMLUI_INCLUDE_DIR}
         src/client/backend
 )
 
@@ -218,6 +218,7 @@ set (BODY_LIBS
         ${FFMPEG_LIBAVUTIL}
         ${FFMPEG_LIBAVFORMAT}
         ${FFMPEG_LIBSWSCALE}
+        ${RMLUI_LIBRARIES}
         ${WINLIBS})
 
 target_link_libraries(rdbody.src
@@ -231,6 +232,11 @@ add_executable(rdbody
 )
 
 target_link_libraries(rdbody rdbody.src)
+
+if (WIN32)
+    set(WINLIBS opengl32.lib Shlwapi.lib Dbghelp.lib)
+    target_compile_definitions(rdbody PRIVATE -DUNICODE)
+endif()
 
 # Converter tools
 # ================================================

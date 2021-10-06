@@ -45,14 +45,6 @@ void CreateSceneEnvironmentLua(LuaManager* anim_lua)
 		// @function StopAnimation
 		// @param target Target to stop animations of.
 		.addFunction("StopAnimation", &SceneEnvironment::StopAnimationsForTarget)
-		/// Set the layer of the UI objects.(librocket)
-		// @function SetUILayer
-		// @param layer Layer.
-		.addFunction("SetUILayer", &SceneEnvironment::SetUILayer)
-		/// Run a UI script. (librocket)
-		// @function RunUIScript
-		// @param script Script filename.
-		.addFunction("RunUIScript", &SceneEnvironment::RunUIScript)
 		/// Create an Object2D and register it. Shorthand for obj = Object2D(); Engine:AddTarget(obj).
 		// @function CreateObject
 		// @return A new @{Object2D}

@@ -46,8 +46,8 @@ class IMixer;
 
 class AudioSample : public Sound
 {
-    uint32_t	 mRate;
-    uint32_t   mCounter;
+    uint32_t	 mRate{};
+    uint32_t   mCounter{};
     float    mAudioStart, mAudioEnd;
     std::shared_ptr<std::vector<short>> mData;
     bool	 mIsPlaying;
@@ -59,7 +59,7 @@ public:
     AudioSample();
     AudioSample(IMixer* owner_mixer);
     AudioSample(const AudioSample& Other);
-    AudioSample(AudioSample &&Other);
+    AudioSample(AudioSample &&Other) noexcept;
     ~AudioSample();
 	void Seek(size_t offs);
 	uint32_t Read(float* buffer, size_t count) override;
@@ -81,6 +81,8 @@ public:
     std::shared_ptr<AudioSample> CopySlice();
     // void Mix(AudioSample& Other);
     bool IsValid() const;
+
+    bool InnerLoad(AudioDataSource *Src);
 };
 
 struct stream_time_map_t {

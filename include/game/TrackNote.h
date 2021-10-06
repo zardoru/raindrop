@@ -22,8 +22,7 @@ namespace rd {
                 NoteKind = NK_NORMAL;
             }
 
-            NoteData(double _StartTime, double _EndTime) {
-                NoteData();
+            NoteData(double _StartTime, double _EndTime) : NoteData() {
                 StartTime = _StartTime;
                 EndTime = _EndTime;
             }
@@ -53,7 +52,7 @@ namespace rd {
 			// 48 bytes aligned
 		public:
 			TrackNote();
-			TrackNote(const NoteData &Data);
+			explicit TrackNote(const NoteData &Data);
 
 			// Build this tracknote from this NoteData.
 			void AssignNotedata(const NoteData &Data);

@@ -15,7 +15,6 @@ ScreenCustom::ScreenCustom(const std::filesystem::path& ScriptName)
     Running = true;
 
 	Animations->SetScreenName(ScriptName.filename().replace_extension().string());
-	Animations->InitializeUI();
 }
 
 bool ScreenCustom::Run(double Delta)

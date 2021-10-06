@@ -148,13 +148,11 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic") {
 }
 
 void ScreenSelectMusic::InitializeResources() {
-    LuaManager *LuaM = Animations->GetEnv();
-
-    Animations->InitializeUI();
+    auto luam = Animations->GetEnv();
 
     Animations->Initialize();
 
-    GameState::GetInstance().InitializeLua(Animations->GetEnv()->GetState());
+    GameState::GetInstance().InitializeLua(luam->GetState());
 }
 
 void ScreenSelectMusic::LoadResources() {

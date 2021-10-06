@@ -53,7 +53,6 @@ void ScreenMainMenu::Init()
 	GameState::GetInstance().InitializeLua(MainMenuLua->GetState());
 
     Animations->Initialize(GameState::GetInstance().GetSkinFile("mainmenu.lua"));
-    Animations->InitializeUI();
 
     IntroDuration = Animations->GetIntroDuration();
     ExitDuration = Animations->GetIntroDuration();

@@ -6,5 +6,5 @@ namespace Log
 
     void Printf(std::string Format, ...);
     void Logf(std::string Format, ...);
-    void LogPrintf(std::string str, ...);
+    void LogPrintf(const std::string str, ...);
 };

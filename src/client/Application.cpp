@@ -54,7 +54,6 @@
 
 #include "TruetypeFont.h"
 
-void RunRaindropTests();
 bool Auto = false;
 bool DoRun = false;
 
@@ -237,8 +236,6 @@ void Application::Init()
     {
         DoRun = WindowFrame.AutoSetupWindow(this);
         InitAudio();
-        // XXX: rmlui
-        // Engine::SetupRocket();
         Game = nullptr;
     }
     else

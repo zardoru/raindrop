@@ -41,7 +41,7 @@ void Log::Logf(std::string Format, ...)
     logfile.flush();
 }
 
-void Log::LogPrintf(std::string str, ...)
+void Log::LogPrintf(const std::string str, ...)
 {
     char Buffer[2048];
     va_list vl;

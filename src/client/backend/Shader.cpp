@@ -161,7 +161,7 @@ namespace Renderer {
 		uniforms[A_POSITION] = glGetAttribLocation(mProgram, "position");
 		uniforms[A_UV] = glGetAttribLocation(mProgram, "vertexUV");
 		uniforms[A_COLOR] = glGetAttribLocation(mProgram, "colorvert");
-		uniforms[U_MVP] = glGetUniformLocation(mProgram, "mvp");
+		uniforms[U_MODELVIEW] = glGetUniformLocation(mProgram, "mvp");
 		uniforms[U_CENTERED] = glGetUniformLocation(mProgram, "centered");
 		uniforms[U_COLOR] = glGetUniformLocation(mProgram, "color");
 		uniforms[U_INVERT] = glGetUniformLocation(mProgram, "inverted");

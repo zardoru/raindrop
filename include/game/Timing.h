@@ -51,11 +51,11 @@ struct TimingSegment : public TimedEvent < TimingSegment, double >
     TimingSegment() : TimingSegment(0, 0) {};
 };
 
-const unsigned char EnabledFlag = 1 << 0;
-const unsigned char WasHitFlag = 1 << 1;
-const unsigned char HeadEnabledFlag = 1 << 2;
-const unsigned char FailedHitFlag = 1 << 3;
-const unsigned char InvisibleFlag = 1 << 4;
+constexpr unsigned char EnabledFlag = 1 << 0;
+constexpr unsigned char WasHitFlag = 1 << 1;
+constexpr unsigned char HeadEnabledFlag = 1 << 2;
+constexpr unsigned char FailedHitFlag = 1 << 3;
+constexpr unsigned char InvisibleFlag = 1 << 4;
 
 
 

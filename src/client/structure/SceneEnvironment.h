@@ -4,17 +4,7 @@ class Drawable2D;
 class Sprite;
 class LuaManager;
 class ImageList;
-class RocketContextObject;
 class TruetypeFont;
-
-namespace Rocket
-{
-    namespace Core
-    {
-        class Context;
-        class ElementDocument;
-    }
-}
 
 struct Animation
 {
@@ -51,9 +41,6 @@ class SceneEnvironment
     std::string mScreenName;
     std::filesystem::path mInitScript;
 
-    Rocket::Core::Context* RocketContext;
-    Rocket::Core::ElementDocument *Doc;
-    RocketContextObject* obctx;
 public:
     SceneEnvironment(const char* ScreenName, bool initGUI = false);
     ~SceneEnvironment();
@@ -61,19 +48,14 @@ public:
     void RemoveManagedObjects();
     void RemoveExternalObjects();
 
-    void InitializeUI();
-
     void ReloadScripts();
     void ReloadUI();
     void ReloadAll();
 
 	void SetScreenName(std::string sname);
 
-    void RunUIScript(std::string Filename);
-    void RunUIFunction(std::string Funcname);
-    void SetUILayer(uint32_t Layer);
-    void Preload(std::filesystem::path Filename, std::string ArrayName);
-    void Initialize(std::filesystem::path Filename = "", bool RunScript = true);
+    void Preload(const std::filesystem::path& Filename, std::string array_name);
+    void Initialize(const std::filesystem::path& Filename = "", bool RunScript = true);
     LuaManager *GetEnv();
     ImageList* GetImageList();
 

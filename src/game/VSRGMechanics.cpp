@@ -128,32 +128,29 @@ namespace rd {
                 hold_hit_time[Lane] = NAN;
 
                 return true;
-            } else if ((SongTime - m->GetEndTime()) * 1000 > missCutoff && !forcedRelease) {
+            } else if ((SongTime - m->GetEndTime()) * 1000 > 0 && !forcedRelease) {
                 // Condition C-2: Forced release is not enabled
-                if (SongTime - m->GetEndTime() > 0 && // TODO: LN leniency
-                    !forcedRelease) {
-                    if (IsLaneKeyDown(Lane)) {
-                        if (HitNotify)
-                            HitNotify(0, k, true, true);
-                    } else {
-                        // Only take away health, but not combo (1st true)
-                        if (MissNotify)
-                            MissNotify(
-                                    PlayerScoreKeeper->getLateMissCutoffMS(),
-                                    k,
-                                    m->IsHold(),
-                                    true,
-                                    false
-                            );
-                    }
-
-                    if (SetLaneHoldingState)
-                        SetLaneHoldingState(k, false);
-
-                    hold_hit_time[Lane] = NAN;
-                    m->Disable();
-                    return true;
+                if (IsLaneKeyDown(Lane)) {
+                    if (HitNotify)
+                        HitNotify(0, k, true, true);
+                } else {
+                    // Only take away health, but not combo (1st true)
+                    if (MissNotify)
+                        MissNotify(
+                                PlayerScoreKeeper->getLateMissCutoffMS(),
+                                k,
+                                m->IsHold(),
+                                true,
+                                false
+                        );
                 }
+
+                if (SetLaneHoldingState)
+                    SetLaneHoldingState(k, false);
+
+                hold_hit_time[Lane] = NAN;
+                m->Disable();
+                return true;
             } else { // still not over, and we're hitting it
                 auto tick_interval = PlayerScoreKeeper->getLNTickInterval();
                 if (tick_interval > 0) {
@@ -162,7 +159,7 @@ namespace rd {
 
                         if (delta > tick_interval) {
                             auto ticks = floor(delta / tick_interval);
-                            PlayerScoreKeeper->tickLN((int)ticks);
+                            PlayerScoreKeeper->tickLN((int) ticks);
                             hold_hit_time[Lane] += ticks * tick_interval;
                         }
 

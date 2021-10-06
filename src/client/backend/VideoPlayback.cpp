@@ -213,7 +213,6 @@ void VideoPlayback::QueueFrame()
 		bool got_frame = false;
 
 		if (packet.stream_index == Context->videoStreamIndex) {
-			// TODO: won't this break?
 			auto res = avcodec_send_packet(Context->UsableCodecCtx, &packet);
 			if (res < 0)
 			{

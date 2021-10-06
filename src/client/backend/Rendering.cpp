@@ -76,7 +76,7 @@ namespace Renderer {
 		SetBlendingMode(Mode);
 
 		Mat4 Mat = QuadTransformation.GetMatrix();
-		Shader::SetUniform(DefaultShader::GetUniform(U_MVP), &(Mat[0][0]));
+		Shader::SetUniform(DefaultShader::GetUniform(U_MODELVIEW), &(Mat[0][0]));
 
 		// Assign position attrib. pointer
 		SetPrimitiveQuadVBO();
@@ -345,7 +345,7 @@ namespace Renderer {
 
 	void SetCurrentObjectMatrix(glm::mat4 &mat)
 	{
-	    Shader::SetUniform(DefaultShader::GetUniform(U_MVP), &(mat[0][0]));
+	    Shader::SetUniform(DefaultShader::GetUniform(U_MODELVIEW), &(mat[0][0]));
 	}
 
 	void SetScissor(bool enabled)
@@ -616,7 +616,7 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
             dx = Transform * glm::translate(glm::identity<Mat4>(), trans) *
                  glm::scale(glm::identity<Mat4>(), glm::vec3(cp.w * Scale.y / SDF_SIZE, cp.h * Scale.y / SDF_SIZE, 1));
 
-            Renderer::Shader::SetUniform(Renderer::DefaultShader::GetUniform(Renderer::U_MVP), &(dx[0][0]));
+            Renderer::Shader::SetUniform(Renderer::DefaultShader::GetUniform(Renderer::U_MODELVIEW), &(dx[0][0]));
 
             Renderer::DoQuadDraw();
 
@@ -701,7 +701,7 @@ void Line::Render()
 	SetShaderParameters(true, false, false, false, false, false);
 
     DefaultShader::SetColor(R, G, B, A);
-    Shader::SetUniform(DefaultShader::GetUniform(U_MVP), &(Identity[0][0]));
+    Shader::SetUniform(DefaultShader::GetUniform(U_MODELVIEW), &(Identity[0][0]));
 
     // Assign position attrib. pointer
     lnvbo->Bind();
@@ -768,7 +768,7 @@ void BitmapFont::Render(const std::string &In, const Vec2 &Position, const Mat4 
         Mat4 RenderTransform = Transform * CharPosition[*Text].GetMatrix();
 
         // Assign transformation matrix
-        Shader::SetUniform(DefaultShader::GetUniform(U_MVP), &(RenderTransform[0][0]));
+        Shader::SetUniform(DefaultShader::GetUniform(U_MODELVIEW), &(RenderTransform[0][0]));
 
         // Assign vertex UVs
         CharPosition[*Text].BindTextureVBO();

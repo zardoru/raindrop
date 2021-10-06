@@ -36,8 +36,6 @@ ScreenEvaluation::ScreenEvaluation() :
 }
 
 void ScreenEvaluation::Init(ScreenGameplay *pr) {
-    Animations->InitializeUI();
-
     pr->SetupLua(Animations->GetEnv());
     Animations->Initialize(GameState::GetInstance().GetSkinFile("screenevaluation7k.lua"));
 
