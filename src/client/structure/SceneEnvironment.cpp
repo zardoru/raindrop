@@ -445,3 +445,7 @@ void SceneEnvironment::DoEvent(std::string EventName, int Return) {
     if (Lua->CallFunction(EventName.c_str(), 0, Return))
         Lua->RunFunction();
 }
+
+void SceneEnvironment::RemoveSpriteTarget(Sprite *Targ) {
+    RemoveTarget(Targ);
+}

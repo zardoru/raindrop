@@ -66,6 +66,7 @@ public:
     void StopAnimationsForTarget(Sprite* Target);
     void AddTarget(Drawable2D* Targ, bool IsExternal = false);
     void AddSpriteTarget(Sprite* Targ);
+    void RemoveSpriteTarget(Sprite* Targ);
     void AddLuaTarget(Sprite *Targ, std::string Varname);
     void AddLuaTargetArray(Sprite *Targ, std::string Varname, std::string Arrname);
     void RemoveTarget(Drawable2D *Targ);

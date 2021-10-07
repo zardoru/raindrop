@@ -38,6 +38,10 @@ void CreateSceneEnvironmentLua(LuaManager* anim_lua)
 		// @function AddTarget
 		// @tparam Object2Dtarget The Object2D to handle.
 		.addFunction("AddTarget", &SceneEnvironment::AddSpriteTarget)
+        /// Register a previously-unregistered @{Object2D}
+        // @function AddTarget
+        // @tparam Object2Dtarget The Object2D to handle.
+        .addFunction("RemoveTarget", &SceneEnvironment::RemoveSpriteTarget)
 		/// Sort objects. Generally done behind-the-scenes when a Z is changed.
 		// @function Sort
 		.addFunction("Sort", &SceneEnvironment::Sort)
