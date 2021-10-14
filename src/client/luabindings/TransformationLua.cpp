@@ -36,7 +36,7 @@ public:
     }
 
     static VectorLua getPosition(Transformation const *obj) {
-        return {obj->GetPositionX(), obj->GetPositionX()};
+        return {obj->GetPositionX(), obj->GetPositionY()};
     }
 
     static void setPosition(Transformation *obj, VectorLua v) {

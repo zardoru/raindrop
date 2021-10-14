@@ -12,6 +12,7 @@ public:
     VectorLua sub(VectorLua v);
     float dot(VectorLua v);
     VectorLua scale(float v);
+    VectorLua normalized();
     void setX(float x);
     void setY(float y);
     float getX() const;
