@@ -440,6 +440,9 @@ bool Sprite::RenderMinimalSetup()
     if (!ShouldDraw())
         return false;
 
+//    Renderer::SetScissor(Scissor);
+//    Renderer::SetScissorRegion(ScissorRegion.X1, ScissorRegion.Y1, ScissorRegion.width(), ScissorRegion.height());
+
     UpdateTexture();
 
     Renderer::SetBlendingMode(BlendingMode);
@@ -466,6 +469,9 @@ void Sprite::Render()
 {
     if (!ShouldDraw())
         return;
+
+    Renderer::SetScissor(Scissor);
+    Renderer::SetScissorRegion(ScissorRegion.X1, ScissorRegion.Y1, ScissorRegion.width(), ScissorRegion.height());
 
     UpdateTexture();
     assert(glGetError() == 0);
@@ -519,8 +525,6 @@ void Sprite::Render()
 
     assert(glGetError() == 0);
 
-    
-
     Renderer::SetTexturedQuadVBO(UvBuffer);
     assert(glGetError() == 0);
 
@@ -559,6 +563,10 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
 
     if (!IsValid)
         return;
+
+
+//    Renderer::SetScissor(Scissor);
+//    Renderer::SetScissorRegion(ScissorRegion.X1, ScissorRegion.Y1, ScissorRegion.width(), ScissorRegion.height());
 
     Renderer::DefaultShader::StaticBind();
     Renderer::SetBlendingMode(BLEND_ALPHA);
@@ -738,6 +746,9 @@ void BitmapFont::Render(const std::string &In, const Vec2 &Position, const Mat4 
         }
         Font->IsValid = true;
     }
+
+//    Renderer::SetScissor(Scissor);
+//    Renderer::SetScissorRegion(ScissorRegion.X1, ScissorRegion.Y1, ScissorRegion.width(), ScissorRegion.height());
 
 	using namespace Renderer;
 	SetShaderParameters(false, false, false);

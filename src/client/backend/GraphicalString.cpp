@@ -67,6 +67,10 @@ float GraphicalString::GetFontSize() const
 void GraphicalString::Render()
 {
     if (!mFont) return;
+
+    Renderer::SetScissor(Scissor);
+    Renderer::SetScissorRegion(ScissorRegion.X1, ScissorRegion.Y1, ScissorRegion.width(), ScissorRegion.height());
+
     mFont->SetColor(Color.Red, Color.Green, Color.Blue);
     mFont->SetAlpha(Alpha);
 

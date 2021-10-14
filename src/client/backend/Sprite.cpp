@@ -45,6 +45,9 @@ void Sprite::Construct(bool doInitTexture)
     UvBuffer = nullptr;
 	mShader = nullptr;
 
+    Scissor = false;
+    ScissorRegion = AABB ();
+
     Initialize(doInitTexture);
 }
 

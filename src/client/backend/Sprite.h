@@ -62,6 +62,9 @@ public:
     bool Centered; // 0 for topleft, 1 for center
     bool Lighten;
 
+    bool Scissor;
+    AABB ScissorRegion;
+
     bool ColorInvert;
     bool AffectedByLightning;
     bool BlackToTransparent; // If enabled, transforms black pixels into transparent pixels.

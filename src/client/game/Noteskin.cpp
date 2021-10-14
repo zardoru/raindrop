@@ -75,7 +75,7 @@ void Noteskin::SetupNoteskin(bool SpecialStyle, int Lanes) {
     // @autoinstance Notes
     luabridge::setGlobal(NoteskinLua.GetState(), this, "Notes");
 
-    Parent->SetupLua(&NoteskinLua);
+    PlayerContext::SetupLua(&NoteskinLua);
     /// Instance of @{Player} provided by the engine. Owner of the current noteskin script.
     // @autoinstance Player
     luabridge::setGlobal(NoteskinLua.GetState(), Parent, "Player");
