@@ -33,11 +33,11 @@ std::shared_ptr<rd::Song> LoadSongFromFile(std::filesystem::path filename)
 
     Sng->SongDirectory = filename.parent_path();
 
-    for (int i = 0; i < sizeof(LoadersVSRG) / sizeof(rd::loaderVSRGEntry_t); i++)
+    for (auto i : LoadersVSRG)
     {
-        if (filename.extension() == LoadersVSRG[i].Ext)
+        if (filename.extension() == i.Ext)
         {
-            LoadersVSRG[i].LoadFunc(filename, Sng.get());
+            i.LoadFunc(filename, Sng.get());
 
             auto hash = Utility::GetSha256ForFile(filename);
             auto dindex = 0;

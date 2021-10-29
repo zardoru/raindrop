@@ -45,10 +45,8 @@ if (WIN32)
     list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/glfw")
     list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/mpg123")
     list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/libsndfile")
-    list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/soxr")
     list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/portaudio")
     list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/ffmpeg")
-    list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/RmlUi")
 
     # Libraries
     set(BASE_LIB_PATH "${CMAKE_SOURCE_DIR}/lib/lib")
@@ -71,25 +69,20 @@ find_package(JPEG REQUIRED)
 find_package(OggVorbis REQUIRED)
 find_package(MPG123 REQUIRED)
 find_package(Sndfile REQUIRED)
-find_package(Soxr REQUIRED)
 find_package(FFmpeg REQUIRED)
-find_package(RmlUi REQUIRED)
 
 # On linux, properly configured, these don't need our module scripts
 # as they install their own Find modules.
 if (LINUX)
     find_package(glfw3 CONFIG)
-    find_package(libRocket CONFIG)
 endif ()
 
 # We may want to use our bundle, therefore...
 if (WIN32)
     find_package(glfw3)
-    # find_package(libRocket)
 endif()
 
 # message("GLFW3 directory: ${GLFW3_INCLUDE_DIR}")
-# message("libRocket directory: ${libRocket_INCLUDE_DIRS}")
 
 include_directories(include)
 include_directories(src-thirdparty)
@@ -131,11 +124,13 @@ target_include_directories(rd.sndio PUBLIC
         ${OGG_INCLUDE_DIR}
         ${VORBISFILE_INCLUDE_DIR}
         ${SNDFILE_INCLUDE_DIR}
-        ${SOXR_INCLUDE_DIR})
+        ${FFMPEG_INCLUDE_DIR})
 target_compile_definitions(rd.sndio PUBLIC SNDIO_DLL)
 
 #message(STATUS ${OGG_LIBRARY} " " ${VORBIS_LIBRARY} " "
 #        ${VORBISFILE_LIBRARY})
+
+# message(STATUS ${FFMPEG_LIBSWRESAMPLE} " "  ${OGG_LIBRARY})
 
 target_link_libraries(rd.sndio
     rd.util
@@ -144,7 +139,7 @@ target_link_libraries(rd.sndio
     ${VORBISFILE_LIBRARY}
     ${MPG123_LIBRARY}
     ${SNDFILE_LIBRARY}
-    ${SOXR_LIBRARIES})
+    ${FFMPEG_LIBSWRESAMPLE})
 
 
 if (USE_GCC)
@@ -190,7 +185,6 @@ set(BODY_INCLUDE
         ${Boost_INCLUDE_DIR}
         ${LUA_INCLUDE_DIR}
         ${FFMPEG_INCLUDE_DIR}
-        ${RMLUI_INCLUDE_DIR}
         src/client/backend
 )
 
@@ -218,7 +212,6 @@ set (BODY_LIBS
         ${FFMPEG_LIBAVUTIL}
         ${FFMPEG_LIBAVFORMAT}
         ${FFMPEG_LIBSWSCALE}
-        ${RMLUI_LIBRARIES}
         ${WINLIBS})
 
 target_link_libraries(rdbody.src

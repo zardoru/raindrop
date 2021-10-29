@@ -118,7 +118,7 @@ class AudioStream : public Sound
     std::unique_ptr<AudioDataSource> mSource;
     unsigned int     mBufferSize;
     std::vector<short>	 mDecodedData;
-    std::vector<short>	 mResampleBuffer;
+    std::vector<uint8_t>	 mResampleBuffer;
     short			 tbuf[8192];
     double			 mStreamTime;
     double			 mPlaybackTime;
