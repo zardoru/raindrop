@@ -152,7 +152,7 @@ struct O2DProxy {
     }
 
     static VectorLua getPosition(Sprite const *obj) {
-        return {obj->GetPositionX(), obj->GetPositionX()};
+        return {obj->GetPositionX(), obj->GetPositionY()};
     }
 
     static void setPosition(Sprite *obj, VectorLua v) {
