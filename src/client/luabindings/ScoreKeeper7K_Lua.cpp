@@ -104,6 +104,15 @@ namespace rd {
         Constant(LT_NORECOV);
         Constant(LT_OSUMANIA);
         Constant(LT_BATTERY);
+        Constant(LT_LR2_ASSIST);
+        Constant(LT_LR2_EASY);
+        Constant(LT_LR2_NORMAL);
+        Constant(LT_LR2_HARD);
+        Constant(LT_LR2_EXHARD);
+        Constant(LT_LR2_HAZARD);
+        Constant(LT_LR2_CLASS);
+        Constant(LT_LR2_EXCLASS);
+        Constant(LT_LR2_EXHARDCLASS);
         helper.FinalizeEnum("LifeType");
 
         /// Pacemaker grade targets.

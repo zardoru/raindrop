@@ -201,10 +201,11 @@ void Application::Init()
 #endif
 	 */
 
+    Configuration::Initialize();
     GameState::GetInstance().Initialize();
     Log::Printf("Initializing... \n");
 
-    Configuration::Initialize();
+
 
     bool Setup = false;
 

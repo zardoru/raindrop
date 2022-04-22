@@ -35,11 +35,18 @@
 #include "../structure/Configuration.h"
 #include "TextAndFileUtil.h"
 
+#include "../../ir/StormIR.h"
+#include "Logging.h"
 
 
 std::string DirectoryPrefix("GameData/");
 #define SkinsPrefix std::string("Skins/")
 #define ScriptsPrefix std::string("Scripts/")
+
+CfgVar StormIR_AppId    ("AppId", "StormIR");
+CfgVar StormIR_ClientKey("ClientKey", "StormIR");
+CfgVar StormIR_Username ("Username", "StormIR");
+CfgVar StormIR_Password ("Pass", "StormIR");
 
 using namespace rd;
 
@@ -63,6 +70,21 @@ GameState::GameState():
     CurrentSkin = "default";
     SelectedSong = nullptr;
     Database = nullptr;
+
+    if (!StormIR_AppId.str().empty() && !StormIR_ClientKey.str().empty() ) {
+        if (!StormIR_Username.str().empty() && !StormIR_Password.str().empty() ) {
+            ir = std::make_unique<StormIR::StormIR>(StormIR_AppId, StormIR_ClientKey);
+            if (ir->Login(StormIR_Username, StormIR_Password)) {
+                Log::LogPrintf("[IR] Logged into StormIR.\n");
+            } else {
+                Log::LogPrintf("[IR] Failed to log into StormIR: %s.\n", ir->GetLastError().c_str());
+            }
+        } else {
+            Log::LogPrintf("[IR] StormIR User or Password missing.\n");
+        }
+    } else {
+        Log::LogPrintf("[IR] StormIR appid or clientkey are missing. Could not connect.\n");
+    }
 
     // TODO: circular references are possible :(
     std::filesystem::path SkinsDir(DirectoryPrefix + SkinsPrefix);
@@ -412,6 +434,15 @@ void GameState::SubmitScore(int pn)
         );
 
         player->profile->SaveReplay(&song, replay);
+
+        if (ir && ir->IsConnected()) {
+            Log::LogPrintf("[IR] Submitting score...\n");
+            if (ir->SubmitScore(&song, d.get(), replay, scorekeeper)) {
+                Log::LogPrintf("[IR] Success.\n");
+            } else {
+                Log::LogPrintf("[IR] Couldn't submit score.\n");
+            }
+        }
     };
 
     std::thread t(submitfunc);

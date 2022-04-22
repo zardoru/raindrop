@@ -13,6 +13,8 @@ public:
     float dot(VectorLua v);
     VectorLua scale(float v);
     VectorLua normalized();
+    VectorLua min(VectorLua v);
+    VectorLua max(VectorLua v);
     void setX(float x);
     void setY(float y);
     float getX() const;

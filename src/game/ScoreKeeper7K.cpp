@@ -147,7 +147,7 @@ namespace rd {
         }
     }
 
-    int ScoreKeeper::getJudgmentCount(int judgment) {
+    int ScoreKeeper::getJudgmentCount(int judgment) const {
         return CurrentTimingWindow->GetJudgmentCount(static_cast<ScoreKeeperJudgment>(judgment));
     }
 
@@ -296,18 +296,18 @@ namespace rd {
         }
     }
 
-    float ScoreKeeper::getLifebarAmount(int lifebar_amount_type) {
+    float ScoreKeeper::getLifebarAmount(int lifebar_amount_type) const {
         if (Gauges.find((LifeType)lifebar_amount_type) != Gauges.end())
-            return Gauges[(LifeType)lifebar_amount_type]->GetGaugeValue();
+            return Gauges.at((LifeType)lifebar_amount_type)->GetGaugeValue();
 
         return 0;
    }
 
-    bool ScoreKeeper::isStageFailed(int lifebar_amount_type) {
+    bool ScoreKeeper::isStageFailed(int lifebar_amount_type) const{
         bool song_ended = judged_notes == getMaxJudgableNotes();
 
         if (Gauges.find((LifeType)lifebar_amount_type) != Gauges.end())
-            return Gauges[(LifeType)lifebar_amount_type]->HasFailed(song_ended);
+            return Gauges.at((LifeType)lifebar_amount_type)->HasFailed(song_ended);
 
         return false;
     }

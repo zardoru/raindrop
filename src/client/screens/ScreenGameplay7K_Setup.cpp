@@ -10,8 +10,8 @@
 #include <game/NoteTransformations.h>
 
 #include <Audio.h>
-#include <Audiofile.h>
-#include <AudioSourceOJM.h>
+#include <sndio/Audiofile.h>
+#include <sndio/AudioSourceOJM.h>
 
 #include "../game/PlayscreenParameters.h"
 #include "../game/GameState.h"
@@ -88,7 +88,7 @@ void ScreenGameplay::AssignMeasure(uint32_t Measure) {
 
     // We use P1's BGM events in every case.
     // Remove non-played objects
-    while (BGMEvents.size() && BGMEvents.front() <= wt)
+    while (!BGMEvents.empty() && BGMEvents.front() <= wt)
         BGMEvents.pop();
 
     Time.Stream = mt;
@@ -109,7 +109,7 @@ void ScreenGameplay::Init(std::shared_ptr<rd::Song> S) {
     for (auto i = 0; i < GameState::GetInstance().GetPlayerCount(); i++) {
         Players.push_back(std::make_unique<PlayerContext>(i, *GameState::GetInstance().GetParameters(i)));
         GameState::GetInstance().SetPlayerContext(Players[i].get(), i);
-        Players[i]->PlayKeysound = std::bind(&ScreenGameplay::PlayKeysound, this, std::placeholders::_1);
+        Players[i]->PlayKeysound = [this](auto && PH1) { PlayKeysound(std::forward<decltype(PH1)>(PH1)); };
     }
 }
 
@@ -195,7 +195,7 @@ bool ScreenGameplay::LoadSongAudio() {
                     Log::LogPrintf("Attempt to autodetect audio from directory...\n");
 
                 // Open the first MP3 and OGG file in the directory
-                for (auto i : std::filesystem::directory_iterator(SngDir)) {
+                for (const auto& i : std::filesystem::directory_iterator(SngDir)) {
                     auto extension = i.path().extension();
                     if (extension == ".mp3" || extension == ".ogg")
                         if (Music->Open(i.path())) {
@@ -232,7 +232,7 @@ bool ScreenGameplay::LoadSongAudio() {
             if (Snd != nullptr)
                 Keysounds[i].push_back(Snd);
         }
-    } else if (SoundList.size()) {
+    } else if (!SoundList.empty()) {
         Log::LogPrintf("Chart Audio: Loading samples... ");
         LoadSamples();
 
@@ -291,7 +291,7 @@ void ScreenGameplay::LoadBmson() {
 
     auto load_start_time = std::chrono::high_resolution_clock::now();
     for (auto audiofile : slicedata.AudioFiles) {
-        auto fn = [&](const std::pair<int, std::string> audiofile) {
+        auto fn = [&](const std::pair<int, std::string>& audiofile) {
             auto path = (dir / audiofile.second);
             AudioSample *p;
 
@@ -398,7 +398,7 @@ bool ScreenGameplay::ProcessSong() {
 
     int diffindex = 0;
     for (auto &&p : Players) {
-        for (auto sd : MySong->Difficulties) {
+        for (const auto& sd : MySong->Difficulties) {
             auto diff = GameState::GetInstance().GetDifficulty(p->GetPlayerNumber());
 
             if (!diff) continue;

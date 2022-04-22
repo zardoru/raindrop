@@ -18,8 +18,8 @@
 #include "ImageLoader.h"
 
 #include <Audio.h>
-#include <Audiofile.h>
-#include <AudioSourceOJM.h>
+#include <sndio/Audiofile.h>
+#include <sndio/AudioSourceOJM.h>
 
 #include "Transformation.h"
 #include "Rendering.h"

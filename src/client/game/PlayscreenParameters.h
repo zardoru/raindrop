@@ -76,6 +76,8 @@ public:
     // Whether to enable the use of strictest timing
     bool UseW0;
 
+    int SpeedType;
+
     /* PlayerChartState* Setup(
             double DesiredDefaultSpeed,
             int SpeedType,
@@ -118,6 +120,7 @@ public:
         SystemType = rd::TI_NONE;
         UserSpeedMultiplier = 4;
         IsSeedSet = false;
+        SpeedType = rd::SPEEDTYPE_DEFAULT;
     }
 };
 

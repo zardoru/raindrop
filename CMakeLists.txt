@@ -8,9 +8,19 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+
+
 if (NOT WIN32)
     include(cotire)
 endif ()
+
+## <== CPR SNIP
+include(FetchContent)
+# The commit hash for 1.8.1. Replace with the latest from: https://github.com/libcpr/cpr/releases
+FetchContent_Declare(cpr GIT_REPOSITORY https://github.com/libcpr/cpr.git
+        GIT_TAG 6ea2dec23c3df14ac3b27b7d2d6bbff0cb7ba1b0)
+FetchContent_MakeAvailable(cpr)
+## CPR SNIP ==>
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     option(USE_GCC "Use GCC as your compiler" OFF)
@@ -70,6 +80,9 @@ find_package(OggVorbis REQUIRED)
 find_package(MPG123 REQUIRED)
 find_package(Sndfile REQUIRED)
 find_package(FFmpeg REQUIRED)
+message("$<==== BOOST ${Boost_PROGRAM_OPTIONS_LIBRARY} =====>")
+
+
 
 # On linux, properly configured, these don't need our module scripts
 # as they install their own Find modules.
@@ -167,13 +180,13 @@ file(GLOB_RECURSE backend_files src/client/*.cpp)
 set (BODY_SOURCE
         ${backend_files}
         ${SQLITE_FILES}
-)
+        src/ir/StormIR.cpp src/ir/StormIR.h src/ir/ScoreSerializer.cpp src/ir/ScoreSerializer.h)
 
 list(REMOVE_ITEM BODY_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/client/raindrop.cpp
 )
 
-add_library(rdbody.src
+add_library(rdbody.src STATIC
         ${BODY_SOURCE}
 )
 
@@ -197,7 +210,7 @@ if (WIN32)
     target_compile_definitions(rdbody.src PRIVATE -DUNICODE)
 endif()
 
-set (BODY_LIBS
+target_link_libraries(rdbody.src
         ${LUA_LIBRARIES}
         rd.core
         Boost::program_options
@@ -212,11 +225,8 @@ set (BODY_LIBS
         ${FFMPEG_LIBAVUTIL}
         ${FFMPEG_LIBAVFORMAT}
         ${FFMPEG_LIBSWSCALE}
-        ${WINLIBS})
-
-target_link_libraries(rdbody.src
-    ${BODY_LIBS}
-)
+        ${WINLIBS}
+        cpr::cpr)
 
 # rdbody - the actual thing people can play
 # ================================================

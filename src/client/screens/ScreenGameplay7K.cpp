@@ -5,8 +5,8 @@
 #include <future>
 
 #include <Audio.h>
-#include <Audiofile.h>
-#include <AudioSourceOJM.h>
+#include <sndio/Audiofile.h>
+#include <sndio/AudioSourceOJM.h>
 
 #include "Logging.h"
 #include "../structure/Screen.h"

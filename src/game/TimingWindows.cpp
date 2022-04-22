@@ -35,7 +35,7 @@ void TimingWindows::AddJudgment(ScoreKeeperJudgment skj, bool early_miss) {
     }
 }
 
-uint32_t TimingWindows::GetJudgmentCount(ScoreKeeperJudgment skj) {
+uint32_t TimingWindows::GetJudgmentCount(ScoreKeeperJudgment skj) const {
     if (skj >= 0 && skj < JUDGMENT_ARRAY_SIZE)
         return judgment_amt[skj];
     return 0;
@@ -330,8 +330,9 @@ void TimingWindowsLR2Oraja::DefaultSetup() {
 }
 
 void TimingWindowsLR2Oraja::Setup(double strictness, double scale) {
-    static constexpr double wnd_note[] = {-1, 21, 60, 120, 200, -1, 1000};
-    static constexpr double wnd_ln[] = {-1, 120, 160, 170, 200, -1, 1000};
+    static constexpr double wnd_note[] =  { -1 , 21  , 60  , 120 , 200 , -1 , 1000 } ;
+    static constexpr double wnd_ln[]   =  { -1 , 120 , 160 , 170 , 200 , -1 , 1000 } ;
+
 
     // straight up copy windows first
     memcpy(judgment_time.data(), wnd_note, judgment_time.size() * sizeof (double));
@@ -352,9 +353,10 @@ void TimingWindowsLR2Oraja::Setup(double strictness, double scale) {
 
 void TimingWindowsLR2Oraja::ScaleByDefExRank(std::array<double, JUDGMENT_ARRAY_SIZE> &in_out, double scale) {
     static constexpr double wnd_scale[3][5] = {
-            {0, 8, 15, 18, 21}, // W1 // PG: DefEx 0 => 0, DefEx 100 => 21
-            {0, 24, 30, 40, 60}, // W2 // Great: DefEx 0 => 0, DefEx 100 => 60
-            {0, 40, 60, 100, 120} // W3 // Good: DefEx 0 => 0, DefEx 100 => 120
+           { 0 , 8  , 15 , 18  , 21  }  ,     // W1            // PG: DefEx 0    = > 0 , DefEx 100 = > 21
+           { 0 , 24 , 30 , 40  , 60  }  ,     // W2            // Great: DefEx 0 = > 0 , DefEx 100 = > 60
+           { 0 , 40 , 60 , 100 , 120 }        // W3            // Good: DefEx 0 =  > 0 , DefEx 100 = > 120
+
     };
 
     if (scale < 100) {
@@ -395,7 +397,7 @@ ScoreKeeperJudgment TimingWindowsLR2Oraja::GetJudgmentForTimeOffset(double time_
 
         /* early release or late stayed-pressed */
         if (time_delta < -early_hit_threshold) {
-            return SKJ_MISS;
+            return SKJ_W4; /* https://github.com/wcko87/lr2oraja/commit/afddfba93357d2a73ddc94b803cf41ac5c6e8ab5 */
         }
 
         if (time_delta > late_miss_threshold) {

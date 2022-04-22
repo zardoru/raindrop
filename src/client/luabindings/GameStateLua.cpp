@@ -299,6 +299,7 @@ void GameState::InitializeLua(lua_State *L)
 		/// Whether to enable extended W0 judge
 		// @property UseW0
 		.addData("UseW0", &PlayscreenParameters::UseW0)
+        .addData("SpeedType", &PlayscreenParameters::SpeedType)
 		.endClass();
 
 	luabridge::getGlobalNamespace(L)

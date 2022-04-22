@@ -52,6 +52,14 @@ VectorLua VectorLua::normalized() {
     return VectorLua(glm::normalize(vec2));
 }
 
+VectorLua VectorLua::min(VectorLua other) {
+    return VectorLua(glm::min(vec2, other.vec2));
+}
+
+VectorLua VectorLua::max(VectorLua other) {
+    return VectorLua(glm::max(vec2, other.vec2));
+}
+
 class AABBproxy {
 public:
     static VectorLua getPosition(AABB const *self) {
@@ -89,6 +97,8 @@ void CreateUtilityLua(LuaManager *AnimLua) {
             .addFunction("scale", &VectorLua::scale)
             .addFunction("dot", &VectorLua::dot)
             .addFunction("normalized", &VectorLua::normalized)
+            .addFunction("min", &VectorLua::min)
+            .addFunction("max", &VectorLua::max)
             .addFunction("__add", &VectorLua::add)
             .addFunction("__sub", &VectorLua::sub)
             .addFunction("__mul", &VectorLua::scale)

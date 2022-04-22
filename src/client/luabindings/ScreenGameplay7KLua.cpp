@@ -10,8 +10,8 @@
 #include <queue>
 
 
-#include <Audiofile.h>
-#include <AudioSourceOJM.h>
+#include <sndio/Audiofile.h>
+#include <sndio/AudioSourceOJM.h>
 
 #include "LuaManager.h"
 #include <LuaBridge/LuaBridge.h>

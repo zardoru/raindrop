@@ -150,7 +150,7 @@ namespace rd {
             lifebar_total =
                     std::max(260.0, 7.605 * max_notes / (6.5 + 0.01 * max_notes)) * effmul;
 
-            lifebar_total_lr2 = 160.0 + (max_notes + std::min(std::max(max_notes, 390), 600) - 390) * 11.0 / 70.0;
+            lifebar_total_lr2 = 160.0 + (max_notes + std::min(std::max(max_notes - 400, 0), 200)) * 11.0 / 70.0;
         }
 
         // recalculate groove lifebar increments.

@@ -258,7 +258,6 @@ void AudioSample::Seek(size_t offs)
 }
 
 
-std::mutex soxr_lock;
 bool AudioSample::Open(AudioDataSource* Src, bool async)
 {
     if (Src && Src->IsValid())
@@ -306,11 +305,12 @@ bool AudioSample::InnerLoad(AudioDataSource *Src) {
         auto new_data = std::make_shared<std::vector<uint8_t>>(totalOutputFrameCount * sizeof (short));
 
         {
-            SwrResampler::Config cfg{};
-            cfg.use_float = false;
-            cfg.input_channels = Channels;
-            cfg.dst_rate = DstRate;
-            cfg.src_rate = mRate;
+            SwrResampler::Config cfg = {
+                    .src_rate = static_cast<double>(mRate),
+                    .dst_rate = DstRate,
+                    .input_channels = static_cast<uint8_t>(Channels),
+                    .use_float = false
+            };
 
             SwrResampler resampler;
             resampler.Configure(cfg);

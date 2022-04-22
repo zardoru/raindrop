@@ -16,6 +16,10 @@ namespace rd
 class Profile;
 class PlayerContext;
 
+namespace StormIR {
+    class StormIR;
+}
+
 class GameState
 {
     std::string CurrentSkin;
@@ -24,6 +28,7 @@ class GameState
     Texture* StageImage;
     Texture* SongBG;
     std::shared_ptr<rd::Song> SelectedSong;
+    std::unique_ptr<StormIR::StormIR> ir;
 
     struct SPlayerCurrent7K {
         std::shared_ptr<rd::ScoreKeeper> scorekeeper;

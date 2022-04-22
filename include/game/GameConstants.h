@@ -28,7 +28,7 @@ namespace rd {
     {
         // Autodecide - Not a value for anything other than PlayscreenParameters!
         TI_NONE = 0,
-        TI_BMS = 1,
+        TI_BMS = 1, // used primarily as a chart type; equivalent to either RAINDROP or RDAC.
         TI_OSUMANIA = 2,
         TI_O2JAM = 3,
         TI_STEPMANIA = 4,

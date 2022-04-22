@@ -235,6 +235,10 @@ void SceneEnvironment::AddTarget(Drawable2D *target, bool IsExternal) {
 }
 
 void SceneEnvironment::AddSpriteTarget(Sprite *target) {
+    if (target == nullptr) {
+        Log::LogPrintf("attempt to add null target\n");
+        return;
+    }
     AddTarget(target, false);
 }
 

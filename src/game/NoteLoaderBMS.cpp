@@ -333,7 +333,7 @@ namespace NoteLoaderBMS{
 			}, CHANNEL_STOPS);
 		}
 
-		void ForChannelRangeInMeasure(const std::function<void(BMSEvent, int)> &fn, int startChannel, const BMSMeasureList::iterator &bms_measure)
+		void ForChannelRangeInMeasure(const std::function<void(BMSEvent, int)> &action, int startChannel, const BMSMeasureList::iterator &bms_measure)
 		{
 			for (int channel = startChannel; channel <= (startChannel + MAX_CHANNELS); channel++)
 			{
@@ -348,7 +348,7 @@ namespace NoteLoaderBMS{
 				if (Track >= Chart->Channels || Track < 0) continue;
 
 				for (auto ev : bms_measure->second.Events[channel])
-					fn(ev, Track);
+					action(ev, Track);
 			}
 		}
 
@@ -454,19 +454,26 @@ namespace NoteLoaderBMS{
 
 			Msr.Length = 4 * bms_measure->second.BeatDuration;
 
+            int baseOffset = 0;
+
+            // xxx: kind of a hack, but unlikely to break unless done on purpose
+            if (!Chart->Data->Turntable && (Chart->Channels == 12 || Chart->Channels == 16)) {
+                baseOffset = 1;
+            }
+
 			// see both sides, p1 and p2
 			if (!IsPMS) // or BME-type PMS
 			{
 				CalculateMeasureSide(
 				        bms_measure,
-				        0,
+				        baseOffset,
 				        startChannelP1, startChannelLNP1,
 				        startChannelMinesP1, startChannelInvisibleP1,
 				        Msr
                 );
 				CalculateMeasureSide(
 				        bms_measure,
-				        SideBOffset,
+				        SideBOffset + baseOffset,
 				        startChannelP2, startChannelLNP2,
 				        startChannelMinesP2, startChannelInvisibleP2,
 				        Msr
@@ -522,12 +529,12 @@ namespace NoteLoaderBMS{
 			}
 		}
 
-		void AutodetectChannelCountSide(int offset, int usedChannels[MAX_CHANNELS], 
+		void AutodetectChannelCountSide(int offset, int usedChannels[max_channels_per_side],
 			int startChannel, int startChannelLN, 
 			int startChannelMines, int startChannelInvisible)
 		{
 			// Actual autodetection
-			auto fn = [&](int sc, BMSMeasureList::iterator &i)
+			auto maskFromChannelAtMeasure = [&](int sc, BMSMeasureList::iterator &i)
 			{
 				// normal channels
 				for (int curChannel = sc; curChannel <= (sc+ max_channels_per_side - offset); curChannel++)
@@ -555,10 +562,10 @@ namespace NoteLoaderBMS{
 
 			for (auto i = Measures.begin(); i != Measures.end(); ++i)
 			{
-				fn(startChannel, i);
-				fn(startChannelLN, i);
-				fn(startChannelMines, i);
-				fn(startChannelInvisible, i);
+				maskFromChannelAtMeasure(startChannel, i);
+				maskFromChannelAtMeasure(startChannelLN, i);
+				maskFromChannelAtMeasure(startChannelMines, i);
+				maskFromChannelAtMeasure(startChannelInvisible, i);
 			}
 		}
 
@@ -574,7 +581,12 @@ namespace NoteLoaderBMS{
 			UpperBound = 0;
 
 			/* Autodetect channel count based off channel information */
-			AutodetectChannelCountSide(0, usedChannels, startChannelP1, startChannelLNP1, startChannelMinesP1, startChannelInvisibleP1);
+			AutodetectChannelCountSide(0,
+                                       usedChannels,
+                                       startChannelP1,
+                                       startChannelLNP1,
+                                       startChannelMinesP1,
+                                       startChannelInvisibleP1);
 
 			/* Find the last channel we've used's index */
 			int FirstIndex = -1;
@@ -591,7 +603,12 @@ namespace NoteLoaderBMS{
 			}
 
 			// Use that information to add the p2 side right next to the p1 side and have a continuous thing.
-			AutodetectChannelCountSide(0, usedChannelsB, startChannelP2, startChannelLNP2, startChannelMinesP2, startChannelInvisibleP2);
+			AutodetectChannelCountSide(0,
+                                       usedChannelsB,
+                                       startChannelP2,
+                                       startChannelLNP2,
+                                       startChannelMinesP2,
+                                       startChannelInvisibleP2);
 
 			// Correct if second side starts at an offset different from zero.
 			int sideBIndex = -1;
@@ -634,7 +651,7 @@ namespace NoteLoaderBMS{
 			// While other cases would really not make much sense, they're theorically supported, anyway.
 			SideBOffset = LastIndex + 1;
 
-			// We modify it for completey unused key modes to not appear..
+			// We modify it for completely unused key modes to not appear
 			if (Range < 4) // 1, 2, 3
 				Range = 6;
 
@@ -810,13 +827,13 @@ namespace NoteLoaderBMS{
 
 			Chart->Channels = AutodetectChannelCount();
 
+            // Check turntable on 5/7 key singles or doubles key count
+            if (Chart->Channels == 6 || Chart->Channels == 8 ||
+                Chart->Channels == 12 || Chart->Channels == 16)
+                Chart->Data->Turntable = IsSpecialStyle;
+
 			for (auto i = m.begin(); i != m.end(); ++i)
 				CalculateMeasure(i);
-
-			// Check turntable on 5/7 key singles or doubles key count
-			if (Chart->Channels == 6 || Chart->Channels == 8 ||
-				Chart->Channels == 12 || Chart->Channels == 16)
-				Chart->Data->Turntable = IsSpecialStyle;
 
 			/* Copy only used sounds to the sound list */
 			for (auto & Sound : Sounds)

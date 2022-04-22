@@ -57,7 +57,7 @@ namespace rd {
 
         int getJudgedNotes() const;
 
-        int getJudgmentCount(int Judge);
+        int getJudgmentCount(int Judge) const;
 
         std::string getHistogram();
 
@@ -91,9 +91,9 @@ namespace rd {
 
         float getPercentScore(int score_type) const;
 
-        float getLifebarAmount(int lifebar_amount_type);
+        float getLifebarAmount(int lifebar_amount_type) const;
 
-        bool isStageFailed(int lifebar_amount_type);
+        bool isStageFailed(int lifebar_amount_type) const;
 
         bool hasDelayedFailure(int lifebar_type);
 

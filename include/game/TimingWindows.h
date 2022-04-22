@@ -71,7 +71,7 @@ namespace rd {
 
         /* judgment counts */
         virtual void AddJudgment(ScoreKeeperJudgment skj, bool early_miss);
-        uint32_t GetJudgmentCount(ScoreKeeperJudgment skj);
+        uint32_t GetJudgmentCount(ScoreKeeperJudgment skj) const;
         double GetJudgmentWindow(ScoreKeeperJudgment skj);
         uint32_t GetCombo() const;
         uint32_t GetMaxCombo() const;

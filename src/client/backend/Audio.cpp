@@ -8,7 +8,7 @@
 #include "../structure/Configuration.h"
 #include <portaudio/portaudio.h>
 
-#include <Audiofile.h>
+#include <sndio/Audiofile.h>
 
 #include <TextAndFileUtil.h>
 
