@@ -684,8 +684,8 @@ int PlayerContext::GetCombo() const {
 
 bool PlayerContext::BindKeysToLanes(bool UseTurntable) {
     std::string KeyProfile;
-    std::string value;
-    std::vector<std::string> res;
+    std::string keyList;
+    std::vector<std::string> keyListArr;
 
     auto diff = ChartState.ConnectedDifficulty;
 
@@ -694,14 +694,14 @@ bool PlayerContext::BindKeysToLanes(bool UseTurntable) {
     else
         KeyProfile = (std::string) CfgVar("KeyProfile" + IntToStr(diff->Channels));
 
-    value = (std::string) CfgVar("Keys", KeyProfile);
-    res = Utility::TokenSplit(value);
+    keyList = (std::string) CfgVar("Keys", KeyProfile);
+    keyListArr = Utility::TokenSplit(keyList);
 
     for (unsigned i = 0; i < diff->Channels; i++) {
         Gear.ClosestNoteMS[i] = 0;
 
-        if (i < res.size())
-            Gear.Bindings[static_cast<int>(latof(res[i]))] = i;
+        if (i < keyListArr.size())
+            Gear.Bindings[static_cast<int>(latof(keyListArr[i]))] = i;
         else {
             if (!Parameters.Auto) {
                 Log::Printf("Mising bindings starting from lane " + IntToStr(i) + " using profile " +

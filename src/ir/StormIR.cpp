@@ -90,7 +90,7 @@ namespace StormIR {
     }
 
     bool StormIR::IsConnected() {
-        return _impl->_sessionToken != "";
+        return !_impl->_sessionToken.empty();
     }
 
     bool StormIR::SubmitScore(
@@ -112,10 +112,14 @@ namespace StormIR {
         );
         auto s = _impl->ApiRequest("functions/submitScore");
         auto b = j.dump();
-        s.SetBody(b);
+        s.UpdateHeader({{"Content-Type", "application/json"}});
+        s.SetBody(cpr::Body{b});
 
         auto r = s.Post();
-        if (r.error) {
+        auto t = r.text;
+        auto errJson = json::parse(r.text);
+        if (r.error || errJson["error"].is_string()) {
+            last_error = r.text;
             return false;
         }
 

@@ -440,7 +440,7 @@ void GameState::SubmitScore(int pn)
             if (ir->SubmitScore(&song, d.get(), replay, scorekeeper)) {
                 Log::LogPrintf("[IR] Success.\n");
             } else {
-                Log::LogPrintf("[IR] Couldn't submit score.\n");
+                Log::LogPrintf("[IR] Couldn't submit score: %s\n", ir->GetLastError().c_str());
             }
         }
     };
