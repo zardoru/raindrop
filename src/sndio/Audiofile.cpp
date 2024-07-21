@@ -577,6 +577,7 @@ uint32_t AudioStream::Read(float* buffer, size_t count)
     if (Channels == 1) // We just want half the samples.
         requested_samples_to_read >>= 1;
 
+    // TODO: account for sample rate differences
     if (PaUtil_GetRingBufferReadAvailable(&internal->mDecodedDataRingbuffer) < requested_samples_to_read || !mIsPlaying)
         requested_samples_to_read = PaUtil_GetRingBufferReadAvailable(&internal->mDecodedDataRingbuffer);
 

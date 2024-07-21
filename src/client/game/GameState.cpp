@@ -25,6 +25,7 @@
 #include <game/VSRGMechanics.h>
 #include "Replay7K.h"
 #include "PlayerContext.h"
+#include "AudioFile.h"
 
 #include "../structure/Screen.h"
 #include "../structure/ScreenCustom.h"

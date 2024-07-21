@@ -8,9 +8,16 @@
 #include <glm.h>
 #include <rmath.h>
 
+#include "LuaManager.h"
+#include <LuaBridge/LuaBridge.h>
+#include <TextAndFileUtil.h>
+
 #include <game/Song.h>
 #include "../game/PlayscreenParameters.h"
 #include "../game/GameState.h"
+#include "../game/PlayerChartState.h"
+#include "../game/VSRGMechanics.h"
+#include "../game/PlayerContext.h"
 #include "Logging.h"
 #include "../structure/Screen.h"
 #include "../structure/SceneEnvironment.h"
@@ -32,10 +39,6 @@
 #include "../bga/BackgroundAnimation.h"
 
 #include "ScreenGameplay7K.h"
-
-#include "LuaManager.h"
-#include <LuaBridge/LuaBridge.h>
-#include <TextAndFileUtil.h>
 
 #include "../songdb/SongDatabase.h"
 #include "../songdb/SongList.h"

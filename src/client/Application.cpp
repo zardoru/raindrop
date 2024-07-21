@@ -35,6 +35,7 @@
 #include <sndio/AudioSourceOJM.h>
 #include <iostream>
 #include "bga/BackgroundAnimation.h"
+#include "game/PlayerContext.h"
 #include "screens/ScreenGameplay7K.h"
 
 #include "screens/ScreenLoading.h"

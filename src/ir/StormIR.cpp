@@ -118,7 +118,8 @@ namespace StormIR {
         auto r = s.Post();
         auto t = r.text;
         auto errJson = json::parse(r.text);
-        if (r.error || errJson["error"].is_string()) {
+        auto hasError = !errJson["code"].is_null() && !errJson["message"].is_null();
+        if (r.error || hasError) {
             last_error = r.text;
             return false;
         }
