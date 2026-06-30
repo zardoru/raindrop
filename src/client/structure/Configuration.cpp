@@ -48,20 +48,20 @@ void Configuration::Initialize()
 
     auto dir = Configuration::GetConfigs("GameDirectory");
     if (dir.length()) {
-        GameState::GetInstance().SetSystemFolder(dir + "/");
+        GameState::get_instance().set_system_folder(dir + "/");
     }
 
     SkinCfgLua = new LuaManager();
 
     if (Configuration::GetConfigs("Skin").length())
-        GameState::GetInstance().SetSkin(Configuration::GetConfigs("Skin"));
+        GameState::get_instance().set_skin(Configuration::GetConfigs("Skin"));
 
     IsWidescreen = Configuration::GetConfigf("Widescreen");
 
     SkinCfgLua->SetGlobal("Widescreen", IsWidescreen);
     
-	GameState::GetInstance().InitializeLua(SkinCfgLua->GetState());
-    SkinCfgLua->RunScript(GameState::GetInstance().GetSkinFile("skin.lua"));
+	GameState::get_instance().initialize_lua(SkinCfgLua->GetState());
+    SkinCfgLua->RunScript(GameState::get_instance().get_skin_file("skin.lua"));
 
 	AddRDLuaGlobal(SkinCfgLua);
 
@@ -141,7 +141,7 @@ double GetConffInt(std::string Name, std::string Namespace, LuaManager &L)
 }
 
 std::filesystem::path Configuration::GetSkinSound(std::string snd) {
-	return GameState::GetInstance().GetSkinFile(GetSkinConfigs(snd, "AudioManifest"));
+	return GameState::get_instance().get_skin_file(GetSkinConfigs(snd, "AudioManifest"));
 }
 
 std::string Configuration::GetConfigs(std::string Name, std::string Namespace)

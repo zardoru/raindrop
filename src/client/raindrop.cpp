@@ -9,30 +9,27 @@
 
 
 // ErrorReporting.cpp
-void RegisterSignals();
+void register_signals();
 
 #ifdef _WIN32
 #include <windows.h>
 void PrintTraceFromContext(CONTEXT &ctx);
 #endif
 
-void RunApplication(int argc, char** argv) {
-	Application App(argc, argv);
-	App.Init();
-	App.Run();
-	App.Close();
-}
 
 int main(int argc, char *argv[])
 {
-	RegisterSignals();
+	register_signals();
 	
 #if _WIN32 && NDEBUG
 	int cd = 0;
 	_EXCEPTION_POINTERS *ex_info;
 	__try {
 #endif
-		RunApplication(argc, argv);
+	    Application app(argc, argv);
+	    app.Init();
+	    app.Run();
+	    app.Close();
 #if _WIN32 && NDEBUG
 	} 
 	__except ( ex_info = GetExceptionInformation(),

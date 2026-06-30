@@ -43,7 +43,7 @@ PaDeviceIndex DefaultWDMKSDevice;
 /********* Mixer *********/
 /*************************/
 
-PaError OpenStream(PaStream **mStream, PaDeviceIndex Device, void *Sound, double &dLatency, PaStreamCallback Callback) {
+PaError OpenStream(PaStream **mStream, const PaDeviceIndex Device, void *Sound, double &dLatency, const PaStreamCallback Callback) {
     PaStreamParameters outputParams;
 
     outputParams.device = Device;
@@ -203,7 +203,7 @@ public:
         return Rate;
     }
 
-    void Initialize(bool StartThread) {
+    void Initialize(const bool StartThread) {
         RingbufData = new char[BUFF_SIZE * sizeof(float)];
 
         WaitForRingbufferSpace = false;
@@ -264,7 +264,7 @@ public:
             {
                 mutex_decoder.lock();
                 for (auto &item: Streams)
-                    item->UpdateDecoder();
+                    item->update_decoder();
                 mutex_decoder.unlock();
             }
 
@@ -341,7 +341,7 @@ public:
 
     void WriteAndAdvanceStream(
             float *out,
-            int samples,
+            const int samples,
             const PaStreamCallbackTimeInfo *timeInfo) {
         memset(out, 0, samples * sizeof(float));
 
@@ -357,9 +357,9 @@ public:
 //                auto& map = new_clock.clock_map[new_clock.clock_map_index];
 //                Stream->dac_clock.store(new_clock);
 
-                auto read_frames_start = Stream->GetReadFrames();
-                auto read = Stream->Read(ts, samples);
-                auto read_frames_end = Stream->GetReadFrames();
+                auto read_frames_start = Stream->get_read_frames();
+                auto read = Stream->read(ts, samples);
+                auto read_frames_end = Stream->get_read_frames();
 
                 if (read > 0) {
                     stream_time_map_t map{
@@ -369,7 +369,7 @@ public:
                             read_frames_end
                     };
 
-                    Stream->QueueStreamClock(map);
+                    Stream->queue_stream_clock(map);
 
                     for (size_t k = 0; k < read; k++)
                         out[k] += ts[k];
@@ -379,11 +379,11 @@ public:
                  * Copy read data into output
                  */
 
-                streaming |= Stream->IsPlaying();
+                streaming |= Stream->is_playing();
             }
 
             for (auto &Sample: Samples) {
-                size_t read = Sample->Read(ts, samples);
+                size_t read = Sample->read(ts, samples);
 
                 for (size_t k = 0; k < read; k++)
                     out[k] += ts[k];
@@ -407,7 +407,7 @@ public:
     }
 };
 
-int Mix(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo,
+int Mix(const void *input, void *output, const unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo,
         PaStreamCallbackFlags statusFlags, void *userData) {
     auto *Mix = static_cast<PaMixer *>(userData);
     Mix->WriteAndAdvanceStream(static_cast<float *>(output), frameCount * 2, timeInfo);

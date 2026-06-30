@@ -11,12 +11,12 @@
 
 #include "Sprite.h"
 
-ImageList::ImageList(bool ReleaseAtDestruction)
+ImageList::ImageList(const bool ReleaseAtDestruction)
 {
     ShouldDeleteAtDestruction = ReleaseAtDestruction;
 }
 
-ImageList::ImageList(Interruptible *Parent, bool ReleaseAtDestruction)
+ImageList::ImageList(Interruptible *Parent, const bool ReleaseAtDestruction)
     : Interruptible(Parent)
 {
     ShouldDeleteAtDestruction = ReleaseAtDestruction;
@@ -41,7 +41,7 @@ void ImageList::AddToList(const std::filesystem::path& Filename, const std::file
     }
 }
 
-void ImageList::AddToListIndex(const std::filesystem::path& Filename, int Index)
+void ImageList::AddToListIndex(const std::filesystem::path& Filename, const int Index)
 {
     if (ImagesIndex.find(Index) == ImagesIndex.end())
     {
@@ -52,7 +52,7 @@ void ImageList::AddToListIndex(const std::filesystem::path& Filename, int Index)
     }
 }
 
-void ImageList::AddToListIndex(Texture * tex, int Index)
+void ImageList::AddToListIndex(Texture * tex, const int Index)
 {
 	ImagesIndex[Index] = tex;
 }
@@ -107,10 +107,10 @@ Texture* ImageList::GetFromFilename(const std::string& Filename)
 // Gets image from SkinPrefix + filename
 Texture* ImageList::GetFromSkin(const std::string& Filename)
 {
-    return Images[GameState::GetInstance().GetSkinPrefix() + Filename];
+    return Images[GameState::get_instance().get_skin_prefix() + Filename];
 }
 
-Texture* ImageList::GetFromIndex(int Index)
+Texture* ImageList::GetFromIndex(const int Index)
 {
     return ImagesIndex[Index];
 }
@@ -121,7 +121,7 @@ void ImageList::ForceFetch()
 
     for (auto & Image : Images)
     {
-        Fill.SetImage(Image.second, false);
+        Fill.set_image(Image.second, false);
 
         // Draw as black.
         Fill.Color.Red = Fill.Color.Blue = Fill.Color.Green = 0.0001f;

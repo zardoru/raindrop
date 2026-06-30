@@ -108,7 +108,7 @@ public:
 };
 
 template <class T>
-T* GetObjectFromState(lua_State* L, std::string ObjectName)
+T* GetObjectFromState(lua_State* L, const std::string ObjectName)
 {
     lua_pushstring(L, ObjectName.c_str());
     lua_gettable(L, LUA_REGISTRYINDEX);
@@ -116,7 +116,7 @@ T* GetObjectFromState(lua_State* L, std::string ObjectName)
 }
 
 template<class T>
-T* GetUserObject(lua_State *L, int Parameter, const char* MetatableName)
+T* GetUserObject(lua_State *L, const int Parameter, const char* MetatableName)
 {
     T* ud = (T*)luaL_checkudata(L, Parameter, MetatableName);
     luaL_argcheck(L, ud != NULL, 1, "Expected object of different type!");

@@ -157,7 +157,7 @@ bool LuaManager::IsValid()
     return State != nullptr;
 }
 
-bool LuaManager::Register(lua_CFunction Function, std::string FunctionName)
+bool LuaManager::Register(const lua_CFunction Function, std::string FunctionName)
 {
     if (!Function || FunctionName.empty())
         return false;
@@ -165,7 +165,7 @@ bool LuaManager::Register(lua_CFunction Function, std::string FunctionName)
     return true;
 }
 
-int LuaManager::GetGlobalI(std::string VariableName, int Default)
+int LuaManager::GetGlobalI(std::string VariableName, const int Default)
 {
     int rval = Default;
 
@@ -196,7 +196,7 @@ std::string LuaManager::GetGlobalS(std::string VariableName, std::string Default
     return rval;
 }
 
-double LuaManager::GetGlobalD(std::string VariableName, double Default)
+double LuaManager::GetGlobalD(std::string VariableName, const double Default)
 {
     double rval = Default;
 
@@ -266,19 +266,19 @@ bool LuaManager::UseArray(std::string VariableName)
     return false;
 }
 
-void LuaManager::SetFieldI(int index, int Value)
+void LuaManager::SetFieldI(const int index, const int Value)
 {
     lua_pushnumber(State, Value);
     lua_rawseti(State, -2, index);
 }
 
-void LuaManager::SetFieldI(std::string name, int Value)
+void LuaManager::SetFieldI(std::string name, const int Value)
 {
 	lua_pushinteger(State, Value);
 	lua_setfield(State, -2, name.c_str());
 }
 
-void LuaManager::SetFieldS(int index, std::string Value)
+void LuaManager::SetFieldS(const int index, std::string Value)
 {
     lua_pushstring(State, Value.c_str());
     lua_rawseti(State, -2, index);
@@ -290,19 +290,19 @@ void LuaManager::SetFieldS(std::string name, std::string Value)
     lua_setfield(State, -2, name.c_str());
 }
 
-void LuaManager::SetFieldD(int index, double Value)
+void LuaManager::SetFieldD(const int index, const double Value)
 {
     lua_pushnumber(State, Value);
     lua_rawseti(State, -2, index);
 }
 
-void LuaManager::SetFieldD(std::string name, double Value)
+void LuaManager::SetFieldD(std::string name, const double Value)
 {
 	lua_pushnumber(State, Value);
 	lua_setfield(State, -2, name.c_str());
 }
 
-int LuaManager::GetFieldI(std::string Key, int Default)
+int LuaManager::GetFieldI(std::string Key, const int Default)
 {
     int R = Default;
     lua_pushstring(State, Key.c_str());
@@ -317,7 +317,7 @@ int LuaManager::GetFieldI(std::string Key, int Default)
     return R;
 }
 
-double LuaManager::GetFieldD(std::string Key, double Default)
+double LuaManager::GetFieldD(std::string Key, const double Default)
 {
     double R = Default;
 
@@ -382,13 +382,13 @@ void LuaManager::AppendPath(std::string Path)
     Pop();
 }
 
-void LuaManager::PushArgument(int Value)
+void LuaManager::PushArgument(const int Value)
 {
     if (func_input)
         lua_pushnumber(State, Value);
 }
 
-void LuaManager::PushArgument(double Value)
+void LuaManager::PushArgument(const double Value)
 {
     if (func_input)
         lua_pushnumber(State, Value);
@@ -400,7 +400,7 @@ void LuaManager::PushArgument(std::string Value)
         lua_pushstring(State, Value.c_str());
 }
 
-void LuaManager::PushArgument(bool Value)
+void LuaManager::PushArgument(const bool Value)
 {
 	if (func_input)
 		lua_pushboolean(State, Value);
@@ -436,7 +436,7 @@ void LuaManager::DumpStack()
 	Log::LogPrintf("--------------- Stack Dump Finished ---------------\n");*/
 }
 
-bool LuaManager::CallFunction(const char* Name, int Arguments, int Results)
+bool LuaManager::CallFunction(const char* Name, const int Arguments, const int Results)
 {
 	bool IsFunc;
 
@@ -511,12 +511,12 @@ bool LuaManager::RunFunction()
     return true;
 }
 
-int LuaManager::GetFunctionResult(int StackPos)
+int LuaManager::GetFunctionResult(const int StackPos)
 {
     return GetFunctionResultD(StackPos);
 }
 
-std::string LuaManager::GetFunctionResultS(int StackPos)
+std::string LuaManager::GetFunctionResultS(const int StackPos)
 {
 	std::string Value;
 
@@ -531,12 +531,12 @@ std::string LuaManager::GetFunctionResultS(int StackPos)
 	return Value;
 }
 
-float LuaManager::GetFunctionResultF(int StackPos)
+float LuaManager::GetFunctionResultF(const int StackPos)
 {
 	return GetFunctionResultD(StackPos);
 }
 
-double LuaManager::GetFunctionResultD(int StackPos)
+double LuaManager::GetFunctionResultD(const int StackPos)
 {
 	double Value = -1;
 

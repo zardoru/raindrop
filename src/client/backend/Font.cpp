@@ -9,29 +9,29 @@ Font::Font() :
 {
 }
 
-void Font::SetColor(float _Red, float _Green, float _Blue)
+void Font::set_color(const float red, const float green, const float blue)
 {
-    Red = _Red;
-    Green = _Green;
-    Blue = _Blue;
+    Red = red;
+    Green = green;
+    Blue = blue;
 }
 
-void Font::SetAlpha(float _Alpha)
+void Font::set_alpha(const float alpha)
 {
-    Alpha = _Alpha;
+    Alpha = alpha;
 }
 
-void Font::Invalidate()
-{
-    /* stub */
-}
-
-void Font::Render(const std::string &Text, const Vec2 &Position, const Mat4& Transform, const Vec2 &Scale)
+void Font::invalidate()
 {
     /* stub */
 }
 
-float Font::GetHorizontalLength(const char* Text)
+void Font::render(const std::string &Text, const Vec2 &Position, const Mat4& Transform, const Vec2 &Scale)
+{
+    /* stub */
+}
+
+float Font::get_horizontal_length(const char* Text)
 {
     return 0; // stub
 }

@@ -88,7 +88,7 @@ sf_count_t getFileLenM30(void* p)
     return state->DataLength;
 }
 
-sf_count_t seekM30(sf_count_t offs, int whence, void* p)
+sf_count_t seekM30(const sf_count_t offs, const int whence, void* p)
 {
     auto state = static_cast<SFM30*>(p);
 
@@ -108,7 +108,7 @@ sf_count_t seekM30(sf_count_t offs, int whence, void* p)
     return state->Offset;
 }
 
-sf_count_t readM30(void* ptr, sf_count_t count, void* p)
+sf_count_t readM30(void* ptr, const sf_count_t count, void* p)
 {
     auto state = static_cast<SFM30*>(p);
     auto toRead = std::min(size_t(count), size_t(state->DataLength - state->Offset));
@@ -130,7 +130,7 @@ sf_count_t tellM30(void* p)
     return std::min(state->Offset, state->DataLength);
 }
 
-size_t readM30OGG(void* ptr, size_t size, size_t nmemb, void* p)
+size_t readM30OGG(void* ptr, const size_t size, const size_t nmemb, void* p)
 {
     auto state = static_cast<SFM30*>(p);
     int toRead = std::min((unsigned int)size*nmemb, (unsigned int)state->DataLength - state->Offset);
@@ -146,7 +146,7 @@ size_t readM30OGG(void* ptr, size_t size, size_t nmemb, void* p)
     return toRead;
 }
 
-int seekM30OGG(void* p, ogg_int64_t offs, int whence)
+int seekM30OGG(void* p, const ogg_int64_t offs, const int whence)
 {
     auto state = static_cast<SFM30*>(p);
 
@@ -237,7 +237,7 @@ char REARRANGE_TABLE[] = {
 /**
 * fuck the person who invented this, FUCK YOU!... but with love =$
 */
-void omc_rearrange(char* buf_io, size_t len)
+void omc_rearrange(char* buf_io, const size_t len)
 {
     int key = ((len % 17) << 4) + (len % 17);
     int block_size = len / 17;
@@ -254,7 +254,7 @@ void omc_rearrange(char* buf_io, size_t len)
     }
 }
 
-void omc_xor(char* buf, size_t len, int &acc_keybyte, int &acc_counter)
+void omc_xor(char* buf, const size_t len, int &acc_keybyte, int &acc_counter)
 {
     int tmp;
     char this_byte = 0;
@@ -276,7 +276,7 @@ void omc_xor(char* buf, size_t len, int &acc_keybyte, int &acc_counter)
     }
 }
 
-void NamiXOR(char* buffer, size_t length)
+void NamiXOR(char* buffer, const size_t length)
 {
     char NAMI[] = { 0x6E, 0x61, 0x6D, 0x69 };
     for (size_t i = 0; i + 3 < length; i += 4)
@@ -288,7 +288,7 @@ void NamiXOR(char* buffer, size_t length)
     }
 }
 
-void F412XOR(char* buffer, size_t length)
+void F412XOR(char* buffer, const size_t length)
 {
     char F412[] = { 0x30, 0x34, 0x31, 0x32 };
     for (size_t i = 0; i + 3 < length; i += 4)
@@ -369,8 +369,8 @@ void AudioSourceOJM::parseM30()
         if (vf.vi)
         {
             TemporaryState.Enabled = OJM_OGG;
-            NewSample->SetPitch(Speed);
-            NewSample->Open(this);
+            NewSample->set_pitch(Speed);
+            NewSample->open(this);
             TemporaryState.Enabled = 0;
         }
 
@@ -444,8 +444,8 @@ void AudioSourceOJM::parseOMC()
         TemporaryState.File = sf_open_virtual(&M30Interface, SFM_READ, &Info, &ToLoad);
         TemporaryState.Info = &Info;
         TemporaryState.Enabled = OJM_WAV;
-        NewSample->SetPitch(Speed);
-        NewSample->Open(this);
+        NewSample->set_pitch(Speed);
+        NewSample->open(this);
         TemporaryState.Enabled = false;
 
         Arr[SampleID] = NewSample;
@@ -484,8 +484,8 @@ void AudioSourceOJM::parseOMC()
         TemporaryState.File = &vf;
         TemporaryState.Info = vf.vi;
         TemporaryState.Enabled = OJM_OGG;
-        NewSample->SetPitch(Speed);
-        NewSample->Open(this);
+        NewSample->set_pitch(Speed);
+        NewSample->open(this);
         TemporaryState.Enabled = false;
 
         ov_clear(&vf);
@@ -495,17 +495,17 @@ void AudioSourceOJM::parseOMC()
     }
 }
 
-bool AudioSourceOJM::HasDataLeft()
+bool AudioSourceOJM::has_data_left()
 {
     return TemporaryState.Enabled != 0;
 }
 
-void AudioSourceOJM::SetPitch(double speed)
+void AudioSourceOJM::SetPitch(const double speed)
 {
     Speed = speed;
 }
 
-size_t AudioSourceOJM::GetLength()
+size_t AudioSourceOJM::get_length()
 {
     if (TemporaryState.Enabled == OJM_WAV)
     {
@@ -520,7 +520,7 @@ size_t AudioSourceOJM::GetLength()
     return 0;
 }
 
-uint32_t AudioSourceOJM::GetRate()
+uint32_t AudioSourceOJM::get_rate()
 {
     if (TemporaryState.Enabled == OJM_WAV)
     {
@@ -536,17 +536,17 @@ uint32_t AudioSourceOJM::GetRate()
         return 0;
 }
 
-void AudioSourceOJM::Seek(float Time)
+void AudioSourceOJM::seek(float Time)
 {
     // Unused.
 }
 
-std::shared_ptr<AudioSample> AudioSourceOJM::GetFromIndex(int index)
+std::shared_ptr<AudioSample> AudioSourceOJM::GetFromIndex(const int index)
 {
     return Arr[index - 1];
 }
 
-uint32_t AudioSourceOJM::GetChannels()
+uint32_t AudioSourceOJM::get_channels()
 {
     if (TemporaryState.Enabled == OJM_WAV)
     {
@@ -563,12 +563,12 @@ uint32_t AudioSourceOJM::GetChannels()
     return 0;
 }
 
-bool AudioSourceOJM::IsValid()
+bool AudioSourceOJM::is_valid()
 {
     return TemporaryState.Enabled != 0;
 }
 
-bool AudioSourceOJM::Open(std::filesystem::path f)
+bool AudioSourceOJM::open(const std::filesystem::path f)
 {
     char sig[4];
 
@@ -598,7 +598,7 @@ bool AudioSourceOJM::Open(std::filesystem::path f)
     return true;
 }
 
-uint32_t AudioSourceOJM::Read(short* buffer, size_t count)
+uint32_t AudioSourceOJM::read(short* buffer, const size_t count)
 {
     std::vector<short> temp_buf(count);
     size_t read = 0;

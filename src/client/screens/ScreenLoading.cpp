@@ -53,9 +53,9 @@ ScreenLoading::ScreenLoading(std::shared_ptr<Screen> _Next) : Screen("ScreenLoad
     ThreadInterrupted = false;
 	/// Global gamestate.
 	// @autoinstance Global
-    GameState::GetInstance().InitializeLua(Animations->GetEnv()->GetState());
+    GameState::get_instance().initialize_lua(Animations->GetEnv()->GetState());
 
-    Animations->Preload(GameState::GetInstance().GetSkinFile("screenloading.lua"), "Preload");
+    Animations->Preload(GameState::get_instance().get_skin_file("screenloading.lua"), "Preload");
     Animations->Initialize("", false);
 
     IntroDuration = std::max(Animations->GetEnv()->GetGlobalD("IntroDuration"), 0.0);

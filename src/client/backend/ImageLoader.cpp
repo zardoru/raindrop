@@ -62,7 +62,7 @@ void ImageLoader::UnloadAll()
 
 void ImageLoader::DeleteImage(Texture* &ToDelete)
 {
-    if (ToDelete == Renderer::GetXorTexture()) return;
+    if (ToDelete == renderer::get_xor_texture()) return;
 
     if (ToDelete) {
 		auto tex = Textures.find(ToDelete->fname);
@@ -83,7 +83,7 @@ void ImageLoader::DeleteImage(Texture* &ToDelete)
 Texture* ImageLoader::InsertImage(const std::filesystem::path& Name, ImageData &imgData)
 {
     Texture* I;
-    if (XorTexture) return Renderer::GetXorTexture();
+    if (XorTexture) return renderer::get_xor_texture();
 
     if (imgData.Data.empty()) return nullptr;
 
@@ -213,7 +213,7 @@ ImageData ImageLoader::GetDataForImage(std::filesystem::path filename)
     return out;
 }
 
-ImageData ImageLoader::GetDataForImageFromMemory(const unsigned char* const buffer, size_t len)
+ImageData ImageLoader::GetDataForImageFromMemory(const unsigned char* const buffer, const size_t len)
 {
     auto file = std::stringstream{ std::stringstream::in |
         std::stringstream::out | std::stringstream::binary };
@@ -226,7 +226,7 @@ ImageData ImageLoader::GetDataForImageFromMemory(const unsigned char* const buff
 
 Texture* ImageLoader::Load(const std::filesystem::path& filename)
 {
-    if (XorTexture) return Renderer::GetXorTexture();
+    if (XorTexture) return renderer::get_xor_texture();
 
 	if (std::filesystem::is_directory(filename)) return NULL;
     if (Textures.find(filename) != Textures.end() && Textures[filename]->IsValid)
@@ -264,7 +264,7 @@ void ImageLoader::AddToPending(const std::filesystem::path& Filename)
 }
 
 /* For multi-threaded loading. */
-void ImageLoader::LoadFromManifest(const char** Manifest, int Count, const std::string& Prefix)
+void ImageLoader::LoadFromManifest(const char** Manifest, const int Count, const std::string& Prefix)
 {
     for (int i = 0; i < Count; i++)
     {

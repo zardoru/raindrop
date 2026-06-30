@@ -24,7 +24,7 @@ void LoadBmFont(BitmapFont* B, std::string Fn, float CellWidth, float CellHeight
 {
 	Vec2 Size(CharWidth, CharHeight);
 	Vec2 CellSize(CellWidth, CellHeight);
-	B->LoadSkinFontImage(Fn.c_str(), Size, CellSize, Size, startChar);
+	B->load_skin_font_image(Fn.c_str(), Size, CellSize, Size, startChar);
 }
 
 /// Font and string types. Instantiate a font with TruetypeFont() or LoadBitmapFont() - they are on the "Font" namespace.
@@ -42,15 +42,15 @@ void CreateStringsLuaInterface(LuaManager* AnimLua)
 		// @param r Red, from 0 to 1.
 		// @param g Green, from 0 to 1.
 		// @param b Blue, from 0 to 1.
-		.addFunction("SetColor", &Font::SetColor)
+		.addFunction("SetColor", &Font::set_color)
 		/// Set font alpha
 		// @function SetAlpha
 		// @param alpha New alpha value.
-		.addFunction("SetAlpha", &Font::SetAlpha)
+		.addFunction("SetAlpha", &Font::set_alpha)
 		/// Get horizontal length for a string.
 		// @function GetLength
 		// @tparam string s The string to get the length of.
-		.addFunction("GetLength", &Font::GetHorizontalLength)
+		.addFunction("GetLength", &Font::get_horizontal_length)
 		.endClass()
 		/// @type Font.TruetypeFont
 		.deriveClass <TruetypeFont, Font>("TruetypeFont")

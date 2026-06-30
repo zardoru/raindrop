@@ -14,7 +14,7 @@ class Line : public Drawable
     float R, G, B, A;
 
     bool NeedsUpdate;
-    void UpdateVBO();
+    void update_vbo();
 public:
     Line();
 

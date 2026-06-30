@@ -50,9 +50,9 @@ void ScreenMainMenu::Init()
     MainMenuLua = Animations->GetEnv();
 	/// Global gamestate instance.
 	// @autoinstance Global
-	GameState::GetInstance().InitializeLua(MainMenuLua->GetState());
+	GameState::get_instance().initialize_lua(MainMenuLua->GetState());
 
-    Animations->Initialize(GameState::GetInstance().GetSkinFile("mainmenu.lua"));
+    Animations->Initialize(GameState::get_instance().get_skin_file("mainmenu.lua"));
 
     IntroDuration = Animations->GetIntroDuration();
     ExitDuration = Animations->GetIntroDuration();

@@ -246,8 +246,8 @@ public:
 
         Layer1->BlackToTransparent = Layer2->BlackToTransparent = BlackToTransparent;
 
-        LayerMiss->SetImage(List.GetFromIndex(0), true);
-        Layer0->SetImage(List.GetFromIndex(1), true);
+        LayerMiss->set_image(List.GetFromIndex(0), true);
+        Layer0->set_image(List.GetFromIndex(1), true);
 
 
 		auto ratio = Layer0->GetWidth() / Layer0->GetHeight();
@@ -287,14 +287,14 @@ public:
 				vid->UpdateClock(time - bmp->Time);
 			}
 
-            sprite->SetImage(tex, false);
+            sprite->set_image(tex, false);
         }
         else
         {
             //if (bmp != events_layer.end())
             //    sprite->SetImage(List.GetFromIndex(bmp->BMP), false);
             //else
-                sprite->SetImage(nullptr, false);
+                sprite->set_image(nullptr, false);
         }
     }
 
@@ -351,7 +351,7 @@ public:
         {
             auto pt = List.GetFromIndex(0);
             Background = std::make_shared<Sprite>();
-            Background->SetImage(pt, false);
+            Background->set_image(pt, false);
             Background->ChainTransformation(this);
             SetWidth(pt ? pt->w : 0);
             SetHeight(pt ? pt->h : 0);

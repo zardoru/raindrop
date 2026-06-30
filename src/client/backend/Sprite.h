@@ -6,7 +6,7 @@
 class VBO;
 class Texture;
 
-namespace Renderer {
+namespace renderer {
 	class Shader;
 };
 
@@ -21,13 +21,13 @@ public:
 class Sprite : public Drawable2D
 {
 protected:
-    Renderer::Shader *mShader;
-    VBO *UvBuffer;
+    renderer::Shader *m_shader_;
+    VBO *uv_buffer_;
 private: // Transformations
     void Cleanup();
-    Texture* mTexture;
+    Texture* m_texture_;
 
-    EBlendMode BlendingMode;
+    EBlendMode blending_mode_;
 
     // These crop variables define where to crop the image.
 
@@ -43,10 +43,10 @@ private: // Transformations
 
 
 
-    void Construct(bool doInitTexture);
+    void construct(bool doInitTexture);
 protected:
-    void UpdateTexture();
-    bool ShouldDraw();
+    void update_texture();
+    bool should_draw() const;
 
     bool DirtyTexture;
     bool DoTextureCleanup;
@@ -61,7 +61,7 @@ public:
     bool BlackToTransparent; // If enabled, transforms black pixels into transparent pixels.
 public:
 
-    Sprite(bool ShouldInitTexture);
+    Sprite(bool should_init_texture);
     Sprite();
     ~Sprite();
 
@@ -76,28 +76,28 @@ public:
     AABB ScissorRegion;
 
 
-    void SetImage(Texture* image, bool ChangeSize = true);
-    Texture* GetImage();
-    std::string GetImageFilename() const;
+    void set_image(Texture* image, bool reset_size = true);
+    Texture* get_image() const;
+    std::string get_image_filename() const;
 
-    virtual void Initialize(bool ShouldInitTexture);
+    virtual void initialize(bool should_init_texture);
 
     void SetBlendMode(int Mode);
     int GetBlendMode() const;
 
-	void SetShader(Renderer::Shader *s);
-	Renderer::Shader *GetShader() const;
+	void SetShader(renderer::Shader *s);
+	renderer::Shader *GetShader() const;
 
     // Cropping
-    void SetCrop(Vec2 Crop1, Vec2 Crop2);
-    void SetCrop1(Vec2 Crop1);
-    void SetCrop2(Vec2 Crop2);
-    void SetCropToWholeImage();
-    void SetCropByPixels(int32_t x1, int32_t x2, int32_t y1, int32_t y2);
+    void set_crop(Vec2 Crop1, Vec2 Crop2);
+    void set_crop1(Vec2 Crop1);
+    void set_crop2(Vec2 Crop2);
+    void set_crop_to_whole_image();
+    void set_crop_by_pixels(int32_t x1, int32_t x2, int32_t y1, int32_t y2);
 
     virtual void Render() override;
-    bool RenderMinimalSetup();
-    virtual void Invalidate();
+    bool render_minimal_setup();
+    virtual void invalidate();
 
-    void BindTextureVBO();
+    void bind_texture_vbo() const;
 };

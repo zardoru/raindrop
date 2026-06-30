@@ -32,11 +32,11 @@ private:
 public:
     VBO(Type T, uint32_t Elements, uint32_t Size = sizeof(float), IdxKind Kind = ArrayBuffer);
     ~VBO();
-    void Invalidate();
-    void Validate();
-    void Bind(bool Force = false) const;
-    uint32_t GetElementCount() const;
+    void invalidate();
+    void validate();
+    void bind(bool force = false) const;
+    uint32_t get_element_count() const;
 
     /* Size must be valid with parameters given to VBO. */
-    void AssignData(void *Data);
+    void assign_data(const void *Data);
 };

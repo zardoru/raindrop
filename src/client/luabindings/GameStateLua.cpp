@@ -47,7 +47,7 @@ struct songHelper
     template <class T>
     static std::string getDifficultyAuthor(T const *Diff)
     {
-        std::string candidate = GameState::GetInstance().GetSongDatabase()->GetArtistForDifficulty(Diff->ID);
+        std::string candidate = GameState::get_instance().get_song_database()->GetArtistForDifficulty(Diff->ID);
         if (!candidate.length())
             candidate = Diff->Author;
         return candidate;
@@ -62,7 +62,7 @@ struct songHelper
 	template <class T>
 	static std::string getDifficultyGenre(T const *Diff)
 	{
-		auto candidate = GameState::GetInstance().GetSongDatabase()->GetGenreForDifficulty(Diff->ID);
+		auto candidate = GameState::get_instance().get_song_database()->GetGenreForDifficulty(Diff->ID);
 		return candidate;
 	}
 
@@ -128,40 +128,40 @@ struct songHelper
 	}
 };
 
-PlayscreenParameters* GameState::GetParameters(int pn)
+PlayscreenParameters* GameState::get_parameters(int pn)
 {
-	if (PlayerNumberInBounds(pn))
+	if (player_number_in_bounds(pn))
 		return &PlayerInfo[pn].play_parameters;
 	else return nullptr;
 }
 
-rd::Difficulty * GameState::GetDifficulty(int pn)
+rd::Difficulty * GameState::get_difficulty(int pn)
 {
-	if(GetSelectedSong())
-		return ((rd::Song*)GetSelectedSong())->GetDifficulty(SongWheel::GetInstance().GetDifficulty());
+	if(get_selected_song())
+		return ((rd::Song*)get_selected_song())->GetDifficulty(SongWheel::GetInstance().GetDifficulty());
 	return nullptr;
 }
 
-std::shared_ptr<rd::Difficulty> GameState::GetDifficultyShared(int pn)
+std::shared_ptr<rd::Difficulty> GameState::get_difficulty_shared(int pn)
 {
-    if (auto song = GetSelectedSong())
+    if (auto song = get_selected_song())
         return song->Difficulties[SongWheel::GetInstance().GetDifficulty()];
 
 	return nullptr;
 }
 
-otoworm::Chart *GameState::GetChart(int pn)
+otoworm::Chart *GameState::get_chart(int pn)
 {
-    auto chart = GetChartShared(pn);
+    auto chart = get_chart_shared(pn);
     return chart.get();
 }
 
-std::shared_ptr<otoworm::Chart> GameState::GetChartShared(int pn)
+std::shared_ptr<otoworm::Chart> GameState::get_chart_shared(int pn)
 {
-    if (PlayerNumberInBounds(pn) && PlayerInfo[pn].active_chart)
+    if (player_number_in_bounds(pn) && PlayerInfo[pn].active_chart)
         return PlayerInfo[pn].active_chart;
 
-    auto group = GetSelectedChartGroupShared();
+    auto group = get_selected_chart_group_shared();
     if (!group)
         return nullptr;
 
@@ -177,7 +177,7 @@ std::shared_ptr<otoworm::Chart> GameState::GetChartShared(int pn)
 
 /// rd Data types. Generally inert.
 // @engineclass GameState
-void GameState::InitializeLua(lua_State *L)
+void GameState::initialize_lua(lua_State *L)
 {
 	LuaManager l(L);
 
@@ -328,50 +328,50 @@ void GameState::InitializeLua(lua_State *L)
 		/// Returns currently selected song.
 		// @function GetSelectedSong
 		// @return The currently selected song.
-		.addFunction("GetSelectedSong", &GameState::GetSelectedSong)
+		.addFunction("GetSelectedSong", &GameState::get_selected_song)
 		/// Returns the player's current difficulty.
 		// @function GetDifficulty
 		// @param pn The player number.
 		// @return The player's Difficulty7K.
-		.addFunction("GetDifficulty", &GameState::GetDifficulty)
+		.addFunction("GetDifficulty", &GameState::get_difficulty)
 		/// Returns the player's current scorekeeper.
 		// @function GetScorekeeper7K
 		// @param pn The player number.
 		// @return The player's @{ScoreKeeper7K}.
-		.addFunction("GetScorekeeper7K", &GameState::GetScorekeeper7K)
+		.addFunction("GetScorekeeper7K", &GameState::get_scorekeeper7_k)
 		/// Returns the player's currently requested parameters.
 		// @function GetParameters
 		// @param pn The player number.
 		// @return The player's PlayscreenParameters.
-		.addFunction("GetParameters", &GameState::GetParameters)
+		.addFunction("GetParameters", &GameState::get_parameters)
 		/// Returns the player's currently effective Gauge Type.
 		// @function GetCurrentGaugeType
 		// @param pn The player number.
 		// @return A player's current gauge type.
-		.addFunction("GetCurrentGaugeType", &GameState::GetCurrentGaugeType)
+		.addFunction("GetCurrentGaugeType", &GameState::get_current_gauge_type)
 		/// Returns the player's currently effective score type.
 		// @function GetCurrentScoreType
 		// @param pn The player number.
 		// @return A player's current score type.
-		.addFunction("GetCurrentScoreType", &GameState::GetCurrentScoreType)
+		.addFunction("GetCurrentScoreType", &GameState::get_current_score_type)
 		/// Returns the player's currently effective system type.
 		// @function GetCurrentSystemType
 		// @param pn The player number.
 		// @return A player's current system type.
-		.addFunction("GetCurrentSystemType", &GameState::GetCurrentSystemType)
+		.addFunction("GetCurrentSystemType", &GameState::get_current_system_type)
 		/// Sort the wheel using a criteria.
 		// @function SortWheelBy
 		// @param crit A criteria. Currently an enum.
-		.addFunction("SortWheelBy", &GameState::SortWheelBy)
+		.addFunction("SortWheelBy", &GameState::sort_wheel_by)
 		/// Starts a new screen. Use "custom:filename" to use your own script.
 		// filename is a path relative to the program's working directory.
 		// You can use "songselect" as well.
 		// @function StartScreen
 		// @param screen The string describing the screen to transition to.
-		.addFunction("StartScreen", &GameState::StartScreenTransition)
+		.addFunction("StartScreen", &GameState::start_screen_transition)
 		/// Pops the current screen and goes back up one level.
 		// @function ExitScreen
-		.addFunction("ExitScreen", &GameState::ExitCurrentScreen)
+		.addFunction("ExitScreen", &GameState::exit_current_screen)
 		.endClass();
 
 	luabridge::push(L, this);

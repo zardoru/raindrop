@@ -243,7 +243,7 @@ namespace osb {
 			mSprite->ChainTransformation(&mFlip);
 
 			// Set the image.
-			mSprite->SetImage(mParent->GetImageFromIndex(mImageIndex), false);
+			mSprite->set_image(mParent->GetImageFromIndex(mImageIndex), false);
 
 			mUninitialized = false;
 		}
@@ -317,8 +317,8 @@ namespace osb {
 		auto scale_evt = GetEvent(Time, evScale);
 		if (ValidateEventIterator(scale_evt, evScale))
 			scale = scale_evt->LerpValue(Time);
-		else if (mLayer == osb::LAYER_SP_BACKGROUND && mSprite->GetImage())
-			scale *= OSB_WIDTH_WIDE / mSprite->GetImage()->w;
+		else if (mLayer == osb::LAYER_SP_BACKGROUND && mSprite->get_image())
+			scale *= OSB_WIDTH_WIDE / mSprite->get_image()->w;
 		else scale = 1;
 		// we want to scale it to fit - but we don't want to alter the scale set by the user
 		// scales just get multiplied so we'll do that
@@ -339,9 +339,9 @@ namespace osb {
 		}
 		else mTransform.SetRotation(0);
 
-		if (mSprite->GetImage())
+		if (mSprite->get_image())
 		{
-			auto i = mSprite->GetImage();
+			auto i = mSprite->get_image();
 
 			// Move, then scale (is the way transformations are set up
 			// therefore, pivot is applied, then scale

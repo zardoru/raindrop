@@ -7,7 +7,7 @@ class VBO;
 class Application;
 class TruetypeFont;
 
-namespace Renderer {
+namespace renderer {
 	class Shader;
 }
 
@@ -34,7 +34,7 @@ class GameWindow
 
     std::vector<VBO*> VBOList;
     std::vector<TruetypeFont*> TTFList;
-	std::vector<Renderer::Shader*> ShaderList;
+	std::vector<renderer::Shader*> ShaderList;
 
     Application* Parent;
     bool FullscreenSwitchbackPending, IsFullscreen, CloseRequested;
@@ -52,8 +52,8 @@ public:
     void AddVBO(VBO* V);
     void RemoveVBO(VBO *V);
 
-	void AddShader(Renderer::Shader *S);
-	void RemoveShader(Renderer::Shader *S);
+	void AddShader(renderer::Shader *S);
+	void RemoveShader(renderer::Shader *S);
 
     void AddTTF(TruetypeFont* TTF);
     void RemoveTTF(TruetypeFont* TTF);

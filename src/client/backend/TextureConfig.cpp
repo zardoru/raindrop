@@ -50,7 +50,7 @@ private:
     }
 
     // see if C is a token
-    bool istok(char C)
+    bool istok(const char C)
     {
         char tokens[] = ",;{}:";
         for (size_t i = 0; i < sizeof(tokens); i++)
@@ -85,7 +85,7 @@ private:
     }
 
     // get to the next non-whitespace that equals tok
-    void match(char tok)
+    void match(const char tok)
     {
         skipws();
         if (tok != input[offset])
@@ -122,7 +122,7 @@ public:
     {
     public:
         int line; int offs;
-        syntax_error(string err, int ln, int lnoff) : runtime_error(err)
+        syntax_error(string err, const int ln, const int lnoff) : runtime_error(err)
         {
             line = ln; offs = lnoff;
         }
@@ -175,7 +175,7 @@ namespace Configuration
 {
     void LoadTextureParameters()
     {
-        auto s = GameState::GetInstance().GetSkinFile("texparams.rcf").string();
+        auto s = GameState::get_instance().get_skin_file("texparams.rcf").string();
         std::ifstream istr(s);
         std::string inp, line;
 

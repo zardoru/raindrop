@@ -179,13 +179,13 @@ struct O2DProxy {
 
 // Wrapper functions
 void SetImage(Sprite *O, std::string dir) {
-    O->SetImage(GameState::GetInstance().GetSkinImage(dir));
-    if (O->GetImage() == nullptr)
+    O->set_image(GameState::get_instance().get_skin_image(dir));
+    if (O->get_image() == nullptr)
         Log::Printf("File %s could not be loaded.\n", dir.c_str());
 }
 
 std::string GetImage(const Sprite *O) {
-    return O->GetImageFilename();
+    return O->get_image_filename();
 }
 
 void CreateObject2DLua(LuaManager *anim_lua) {
@@ -241,10 +241,10 @@ void CreateObject2DLua(LuaManager *anim_lua) {
                     // @param x2 Right X coordinate.
                     // @param y1 Top Y coordinate.
                     // @param y2 Bottom Y coordinate.
-            .addFunction("SetCropByPixels", &Sprite::SetCropByPixels)
+            .addFunction("SetCropByPixels", &Sprite::set_crop_by_pixels)
                     /// Reset the crop to the whole image.
                     // @function ResetCrop
-            .addFunction("ResetCrop", &Sprite::SetCropToWholeImage)
+            .addFunction("ResetCrop", &Sprite::set_crop_to_whole_image)
                     /// @{Shader} to render this sprite with.
                     // @property Shader
             .addProperty("Shader", &Sprite::GetShader, &Sprite::SetShader)

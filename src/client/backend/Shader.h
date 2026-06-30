@@ -2,7 +2,7 @@
 
 
 
-namespace Renderer {
+namespace renderer {
 
 	enum DefaultShaderVars
 	{
@@ -26,30 +26,30 @@ namespace Renderer {
 		int mShaderHandle;
 		bool mIsValid{};
 	protected:
-		static int mLastShader;
+		static int m_last_shader_;
 	public:
 		Shader();
 		~Shader();
 
-		virtual void Bind();
-		void Compile(const std::string& frag);
+		virtual void bind();
+		void compile(const std::string& frag);
 		void CompileFull(std::string frag, std::string vert);
 
-		uint32_t GetUniform(const std::string& uni) const;
+		uint32_t get_uniform(const std::string& uni) const;
 
-		bool IsValid() const;
+		bool is_valid() const;
 
-		static void SetUniform(uint32_t Uniform, int i);
+		static void SetUniform(uint32_t uniform, int i);
 
 		static void SetUniform(uint32_t Uniform, float F);
-		static void SetUniform(uint32_t Uniform, glm::vec2 vec);
-		static void SetUniform(uint32_t Uniform, glm::vec3 vec);
-		static void SetUniform(uint32_t Uniform, float A, float B, float C, float D);
+		static void SetUniform(uint32_t uniform, glm::vec2 vec);
+		static void SetUniform(uint32_t uniform, glm::vec3 vec);
+		static void SetUniform(uint32_t uniform, float A, float B, float C, float D);
 		
-		static void SetUniform(uint32_t Uniform, float *Matrix4x4);
+		static void set_uniform(uint32_t uniform, const float *matrix4_x4);
 
-		static int EnableAttribArray(uint32_t attrib);
-		static int DisableAttribArray(uint32_t attrib);
+		static int enable_attrib_array(uint32_t attrib);
+		static int disable_attrib_array(uint32_t attrib);
 		
 	};
 
@@ -57,13 +57,13 @@ namespace Renderer {
 		static int mFragProgram, mVertProgram, mProgram;
 		static uint32_t uniforms[NUM_SHADERVARS];
 	public:
-		static bool Compile();
-		static void UpdateProjection(Mat4 proj);
-		static void StaticBind();
+		static bool compile();
+		static void update_projection(Mat4 proj);
+		static void static_bind();
 		static uint32_t GetUniform(uint32_t uni);
 
-		static void SetColor(float r, float g, float b, float a);
+		static void set_color(float r, float g, float b, float a);
 
-		static int GetVertexShader();
+		static int get_vertex_shader();
 	};
 }

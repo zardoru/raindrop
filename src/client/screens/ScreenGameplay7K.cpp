@@ -59,7 +59,7 @@ void ScreenGameplay::PlayKeysound(int Keysound) {
 
     if (fnd != Keysounds.end() && PlayReactiveSounds) {
         for (auto &&s: Keysounds[Keysound]) {
-            if (s) s->Play();
+            if (s) s->play();
         }
     }
 }
@@ -78,7 +78,7 @@ void ScreenGameplay::SetupScriptConstants() {
 void ScreenGameplay::SetupLua(LuaManager *Env) {
     /// Global Gamestate
     // @autoinstance Global
-    GameState::GetInstance().InitializeLua(Env->GetState());
+    GameState::get_instance().initialize_lua(Env->GetState());
     PlayerContext::SetupLua(Env);
 
     AddScriptClasses(Env);
@@ -140,18 +140,18 @@ bool ScreenGameplay::HandleInput(int32_t key, bool isPressed, bool isMouseInput)
         if (key == 290) // f1
         {
             if (Music)
-                Music->SetPitch(Music->GetPitch() - 0.2);
+                Music->set_pitch(Music->get_pitch() - 0.2);
         }
         if (key == 291)
         {
             if (Music)
-                Music->SetPitch(Music->GetPitch() + 0.2);
+                Music->set_pitch(Music->get_pitch() + 0.2);
         }// f2
 #endif
 
         if (BindingsManager::TranslateKey7K(key) != KT_Unknown) {
             for (auto &player : Players) {
-                player->TranslateKey(
+                player->translate_key(
                         BindingsManager::TranslateKey7K(key),
                         true,
                         Time.Stream);
@@ -160,7 +160,7 @@ bool ScreenGameplay::HandleInput(int32_t key, bool isPressed, bool isMouseInput)
     } else {
         if (BindingsManager::TranslateKey7K(key) != KT_Unknown) {
             for (auto &player : Players) {
-                player->TranslateKey(
+                player->translate_key(
                         BindingsManager::TranslateKey7K(key),
                         false,
                         Time.Stream);
@@ -178,9 +178,9 @@ void ScreenGameplay::RunAutoEvents() {
             for (auto &&s : Keysounds[BGMEvents.front().Sound])
                 if (s) {
                     double dt = Time.Stream - BGMEvents.front().Time;
-                    if (dt < s->GetDuration()) {
-                        s->SeekTime(dt);
-                        s->Play();
+                    if (dt < s->get_duration()) {
+                        s->seek_time(dt);
+                        s->play();
                     }
                 }
             BGMEvents.pop();
@@ -196,20 +196,20 @@ void ScreenGameplay::CheckShouldEndScreen() {
         // ScoreKeeper->failStage();
 
         // go to evaluation screen, or back to song select depending on the skin
-        GameState::GetInstance().SubmitScore(0);
+        GameState::get_instance().submit_score(0);
 
         // post-gameplay failure?
         if (!ShouldDelayFailure()) {
-            FailSnd.Play();
+            FailSnd.play();
 
             // We stop all audio..
             if (Music)
-                Music->Stop();
+                Music->stop();
 
             for (auto & Keysound : Keysounds)
                 for (auto &&s : Keysound.second)
                     if (s)
-                        s->Stop();
+                        s->stop();
 
             // run failure event
 
@@ -235,7 +235,7 @@ void ScreenGameplay::CheckShouldEndScreen() {
             }
 
             // do score submit
-            GameState::GetInstance().SubmitScore(0);
+            GameState::get_instance().submit_score(0);
 
             SongPassTriggered = true; // Reached the end!
 
@@ -269,7 +269,7 @@ void ScreenGameplay::CheckShouldEndScreen() {
 
 bool ScreenGameplay::ShouldDelayFailure() {
     for (auto &player : Players) {
-        if (player->HasDelayedFailure())
+        if (player->has_delayed_failure())
             return true;
     }
 
@@ -278,7 +278,7 @@ bool ScreenGameplay::ShouldDelayFailure() {
 
 bool ScreenGameplay::PlayersHaveFailed() {
     for (auto &player : Players) {
-        if (!player->HasFailed())
+        if (!player->has_failed())
             return false;
     }
 
@@ -289,12 +289,12 @@ bool ScreenGameplay::SongHasFinished() {
     auto runtime = Time.Stream;
 
     // music is not playing, game is active...
-    if (Music && !Music->IsPlaying() && Active) {
+    if (Music && !Music->is_playing() && Active) {
         runtime = Time.Stream;
     }
 
     for (auto &player : Players) {
-        if (!player->HasSongFinished(runtime))
+        if (!player->has_song_finished(runtime))
             return false;
     }
 
@@ -305,12 +305,12 @@ void ScreenGameplay::UpdateSongTime(float Delta) {
 
     // First call.
     if (isnan(Time.OldStream)) {
-        if (Music && Music->IsValid()) {
+        if (Music && Music->is_valid()) {
             if (Time.Stream == 0) /* we have not sought already */
-                Music->SeekTime(-Time.Waiting);
+                Music->seek_time(-Time.Waiting);
 
             // Music->SetPitch(0.8);
-            Music->Play();
+            Music->play();
         } else {
             Time.Stream = -Time.Waiting;
         }
@@ -322,9 +322,9 @@ void ScreenGameplay::UpdateSongTime(float Delta) {
     Time.OldStream = Time.Stream;
 
     // Current Time
-    if (Music && Music->IsValid())
+    if (Music && Music->is_valid())
         /* map stream time to DAC queued sample times */
-        Time.Stream = Music->MapStreamClock(GetMixer()->GetTime());
+        Time.Stream = Music->map_stream_clock(GetMixer()->GetTime());
     else {
         /* these remain deltas for rates*/
         double CurrAudioTime = GetMixer()->GetTime();
@@ -333,8 +333,8 @@ void ScreenGameplay::UpdateSongTime(float Delta) {
     }
 
 #ifdef AUDIO_CLOCK_DEBUG
-    if (Music->IsPlaying() && Time.Stream > 0 && Music->GetPlayedTime() > 0) {
-        double expected = (GetMixer()->GetTime() - Music->GetPlayedTime()) * Music->GetPitch();
+    if (Music->is_playing() && Time.Stream > 0 && Music->get_played_time() > 0) {
+        double expected = (GetMixer()->GetTime() - Music->get_played_time()) * Music->get_pitch();
         if (expected - Time.Stream > 0.1) {
             std::cerr << "..." << std::endl;
         }
@@ -433,7 +433,7 @@ bool ScreenGameplay::Run(double Delta) {
 
     RunAutoEvents();
     for (auto &p : Players)
-        p->Update(Time.Stream);
+        p->update(Time.Stream);
 
     Animations->UpdateTargets(Delta);
     BGA->Update(Delta);
@@ -450,19 +450,19 @@ void ScreenGameplay::Render() {
     Animations->DrawUntilLayer(13);
 
     for (auto &p : Players) {
-        if (PlayfieldClipEnabled[p->GetPlayerNumber()]) {
-            Renderer::SetScissor(true);
+        if (PlayfieldClipEnabled[p->get_player_number()]) {
+            renderer::set_scissor(true);
 
-            auto reg = PlayfieldClipArea[p->GetPlayerNumber()];
+            auto reg = PlayfieldClipArea[p->get_player_number()];
 
-            Renderer::SetScissorRegionWnd(
+            renderer::set_scissor_region_wnd(
                     reg.X1, reg.Y1, reg.width(), reg.height()
             );
 
-            p->Render(Time.Stream);
-            Renderer::SetScissor(false);
+            p->render(Time.Stream);
+            renderer::set_scissor(false);
         } else {
-            p->Render(Time.Stream);
+            p->render(Time.Stream);
         }
     }
 

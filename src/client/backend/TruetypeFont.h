@@ -26,17 +26,17 @@ class TruetypeFont : public Font
     std::string filename;
     std::shared_ptr<std::map<int, codepdata> > Texes;
     codepdata& GetTexFromCodepoint(int cp);
-    void ReleaseCodepoint(int cp);
-    void ReleaseTextures();
+    void release_codepoint(int cp) const;
+    void release_textures() const;
 
 	friend class TTFMan;
 public:
     TruetypeFont(std::filesystem::path filename);
     ~TruetypeFont();
-    float GetHorizontalLength(const char *Text);
+    float get_horizontal_length(const char *Text);
 
 	static void GenerateFontCache(const std::filesystem::path& u8charin, std::filesystem::path inputttf);
 
-    void Invalidate();
-    void Render(const std::string &Text, const Vec2 &Position, const Mat4 &Transform = Mat4(), const Vec2 &Scale = Vec2(1,1));
+    void invalidate();
+    void render(const std::string &Text, const Vec2 &position, const Mat4 &transform = Mat4(), const Vec2 &scale = Vec2(1,1));
 };

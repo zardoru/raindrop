@@ -15,12 +15,12 @@ public:
     AudioSourceSFM();
     ~AudioSourceSFM();
 
-    bool Open(std::filesystem::path Filename) override;
-    uint32_t Read(short* buffer, size_t count) override;
-    void Seek(float Time) override;
-    size_t GetLength() override;
-    uint32_t GetRate() override;
-    uint32_t GetChannels() override;
-    bool IsValid() override;
-    bool HasDataLeft() override;
+    bool open(std::filesystem::path Filename) override;
+    uint32_t read(short* buffer, size_t count) override;
+    void seek(float Time) override;
+    size_t get_length() override;
+    uint32_t get_rate() override;
+    uint32_t get_channels() override;
+    bool is_valid() override;
+    bool has_data_left() override;
 };

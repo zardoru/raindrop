@@ -10,7 +10,7 @@
 
 Texture* Texture::LastBound = nullptr;
 
-Texture::Texture(unsigned int texture, int w, int h) :
+Texture::Texture(const unsigned int texture, const int w, const int h) :
     texture(texture),
     h(h),
     w(w)
@@ -85,7 +85,7 @@ void Texture::Destroy() // Called at destruction time
 	}
 }
 
-void Texture::SetTextureData2D(ImageData &ImgInfo, bool Regenerate)
+void Texture::SetTextureData2D(ImageData &ImgInfo, const bool Regenerate)
 {
 	if (Regenerate) Destroy();
 
@@ -106,7 +106,7 @@ void Texture::SetTextureData2D(ImageData &ImgInfo, bool Regenerate)
 
 		glPixelStorei(GL_UNPACK_ALIGNMENT, ImgInfo.Alignment);
 
-		Renderer::SetTextureParameters(Dir);
+		renderer::set_texture_parameters(Dir);
         assert (glGetError() == 0);
 
 		//glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8, ImgInfo.Width, ImgInfo.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ImgInfo.Data.data());
@@ -123,7 +123,7 @@ void Texture::SetTextureData2D(ImageData &ImgInfo, bool Regenerate)
 	fname = ImgInfo.Filename;
 }
 
-void Texture::LoadFile(std::filesystem::path Filename, bool Regenerate)
+void Texture::LoadFile(std::filesystem::path Filename, const bool Regenerate)
 {
 	CreateTexture();
 

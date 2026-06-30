@@ -29,13 +29,13 @@
 
 static bool mpg123_initialized = false;
 
-ssize_t read_mp3(void* opaque, void* buf, size_t buf_size) {
+ssize_t read_mp3(void* opaque, void* buf, const size_t buf_size) {
     auto& me = *reinterpret_cast<std::ifstream*>(opaque);
     me.read(reinterpret_cast<char*>(buf), buf_size);
     return me.gcount();
 }
 
-off_t seek_mp3(void* opaque, off_t off, int whence) {
+off_t seek_mp3(void* opaque, const off_t off, const int whence) {
     auto& me = *reinterpret_cast<std::ifstream*>(opaque);
     switch (whence) {
         case SEEK_CUR:
@@ -91,7 +91,7 @@ AudioSourceMP3::~AudioSourceMP3()
     mpg123_delete((mpg123_handle*)mHandle);
 }
 
-bool AudioSourceMP3::Open(std::filesystem::path Filename)
+bool AudioSourceMP3::open(const std::filesystem::path Filename)
 {
     // if (mOwnerMixer)
     // mpg123_param((mpg123_handle*)mHandle, MPG123_FORCE_RATE, MixerGetRate(), 1);
@@ -126,12 +126,12 @@ bool AudioSourceMP3::Open(std::filesystem::path Filename)
     return false;
 }
 
-uint32_t AudioSourceMP3::Read(short* buffer, size_t count)
+uint32_t AudioSourceMP3::read(short* buffer, const size_t count)
 {
     size_t actuallyread;
     auto toRead = count * sizeof(short); // # of bytes to actually read
 
-    if (toRead == 0 || !IsValid())
+    if (toRead == 0 || !is_valid())
         return 0;
 
     // read # bytes into varr.
@@ -146,7 +146,7 @@ uint32_t AudioSourceMP3::Read(short* buffer, size_t count)
     while (mSourceLoop && actuallyread < toRead)
     {
 		if (res == MPG123_DONE) {
-			Seek(0);
+			seek(0);
 		}
 
         res = mpg123_read(
@@ -163,7 +163,7 @@ uint32_t AudioSourceMP3::Read(short* buffer, size_t count)
     return actuallyread / sizeof(short);
 }
 
-void AudioSourceMP3::Seek(float Time)
+void AudioSourceMP3::seek(const float Time)
 {
     int place = round(mRate * Time);
 
@@ -181,22 +181,22 @@ void AudioSourceMP3::Seek(float Time)
     mIsDataLeft = true;
 }
 
-size_t AudioSourceMP3::GetLength()
+size_t AudioSourceMP3::get_length()
 {
     return mLen;
 }
 
-uint32_t AudioSourceMP3::GetRate()
+uint32_t AudioSourceMP3::get_rate()
 {
     return mRate;
 }
 
-uint32_t AudioSourceMP3::GetChannels()
+uint32_t AudioSourceMP3::get_channels()
 {
     return mChannels;
 }
 
-bool AudioSourceMP3::IsValid()
+bool AudioSourceMP3::is_valid()
 {
     if (!mIsValid) return false;
 
@@ -213,7 +213,7 @@ bool AudioSourceMP3::IsValid()
     return mHandle && isValidMp3Stream;
 }
 
-bool AudioSourceMP3::HasDataLeft()
+bool AudioSourceMP3::has_data_left()
 {
     return mIsDataLeft;
 }

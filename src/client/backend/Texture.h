@@ -16,7 +16,7 @@ struct ImageData
 		TempData = nullptr;
     }
 
-	ImageData(int w, int h, void* data, int align = 1) {
+	ImageData(const int w, const int h, void* data, const int align = 1) {
 		ImageData();
 		Width = w; Height = h;
 		TempData = (uint32_t*)data;

@@ -37,7 +37,7 @@ ScreenEvaluation::ScreenEvaluation() :
 
 void ScreenEvaluation::Init(ScreenGameplay *pr) {
     pr->SetupLua(Animations->GetEnv());
-    Animations->Initialize(GameState::GetInstance().GetSkinFile("screenevaluation7k.lua"));
+    Animations->Initialize(GameState::get_instance().get_skin_file("screenevaluation7k.lua"));
 
     IntroDuration = Animations->GetIntroDuration();
     ExitDuration = Animations->GetExitDuration();

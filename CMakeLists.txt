@@ -8,8 +8,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
-
 ## <== CPR SNIP
 include(FetchContent)
 # The commit hash for 1.8.1. Replace with the latest from: https://github.com/libcpr/cpr/releases
@@ -79,9 +77,10 @@ find_package(Sndfile REQUIRED)
 find_package(Iconv REQUIRED)
 message("$<==== BOOST ${Boost_PROGRAM_OPTIONS_LIBRARY} =====>")
 
-if(NOT TARGET otoworm::otoworm)
-    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../libotoworm" "${CMAKE_BINARY_DIR}/_deps/libotoworm")
-endif()
+
+
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/libotoworm" "${CMAKE_BINARY_DIR}/_deps/libotoworm")
+
 
 include_directories(include)
 include_directories(src-thirdparty)
@@ -151,7 +150,7 @@ target_link_libraries(rd.core
 
 # rd Body Source (What's common to Tests and the Actual Executable)
 # ================================================
-file(GLOB_RECURSE backend_files src/client/*.cpp)
+file(GLOB_RECURSE backend_files CONFIGURE_DEPENDS src/client/*.cpp)
 
 set (BODY_SOURCE
         ${backend_files}

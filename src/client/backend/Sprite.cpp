@@ -11,25 +11,25 @@
 
 void Drawable2D::Render() {}
 
-Sprite::Sprite(bool ShouldInitTexture) : Drawable2D()
+Sprite::Sprite(bool should_init_texture) : Drawable2D()
 {
-    Construct(ShouldInitTexture);
+    construct(should_init_texture);
 }
 
 Sprite::Sprite() : Drawable2D()
 {
-    Construct(true);
+    construct(true);
 }
 
-void Sprite::Construct(bool doInitTexture)
+void Sprite::construct(const bool doInitTexture)
 {
-    SetCropToWholeImage();
+    set_crop_to_whole_image();
 
     Lighten = false;
     LightenFactor = 1.0f;
     BlackToTransparent = false;
 
-    BlendingMode = BLEND_ALPHA;
+    blending_mode_ = BLEND_ALPHA;
 
     Color.Red = Color.Blue = Color.Green = 1.0;
     Alpha = 1.0;
@@ -40,24 +40,24 @@ void Sprite::Construct(bool doInitTexture)
     DoTextureCleanup = doInitTexture;
     AffectedByLightning = false;
 
-    mTexture = nullptr;
-    UvBuffer = nullptr;
-	mShader = nullptr;
+    m_texture_ = nullptr;
+    uv_buffer_ = nullptr;
+	m_shader_ = nullptr;
 
     Scissor = false;
     ScissorRegion = AABB ();
 
-    Initialize(doInitTexture);
+    initialize(doInitTexture);
 }
 
-void Sprite::Initialize(bool ShouldInitTexture)
+void Sprite::initialize(const bool should_init_texture)
 {
-    UvBuffer = nullptr;
+    uv_buffer_ = nullptr;
 
-	if (ShouldInitTexture)
-		UpdateTexture();
+	if (should_init_texture)
+		update_texture();
 	else
-		UvBuffer = Renderer::GetDefaultTextureBuffer();
+		uv_buffer_ = renderer::get_default_texture_buffer();
 }
 
 Sprite::~Sprite()
@@ -67,55 +67,55 @@ Sprite::~Sprite()
 
 void Sprite::SetBlendMode(int Mode)
 {
-    BlendingMode = (EBlendMode)Mode;
+    blending_mode_ = (EBlendMode)Mode;
 }
 
 int Sprite::GetBlendMode() const
 {
-    return BlendingMode;
+    return blending_mode_;
 }
 
-void Sprite::SetShader(Renderer::Shader * s)
+void Sprite::SetShader(renderer::Shader * s)
 {
-	mShader = s;
+	m_shader_ = s;
 }
 
-Renderer::Shader * Sprite::GetShader() const
+renderer::Shader * Sprite::GetShader() const
 {
-	return mShader;
+	return m_shader_;
 }
 
-void Sprite::SetImage(Texture* image, bool ChangeSize)
+void Sprite::set_image(Texture* image, const bool reset_size)
 {
-    if (mTexture != image)
+    if (m_texture_ != image)
     {
-        mTexture = image;
+        m_texture_ = image;
         if (image)
         {
-            if (ChangeSize)
+            if (reset_size)
             {
-                SetCropToWholeImage();
+                set_crop_to_whole_image();
                 SetSize(image->w, image->h);
             }
         }
     }
 }
 
-void Sprite::SetCropByPixels(int32_t x1, int32_t x2, int32_t y1, int32_t y2)
+void Sprite::set_crop_by_pixels(const int32_t x1, const int32_t x2, const int32_t y1, const int32_t y2)
 {
-    if (mTexture)
+    if (m_texture_)
     {
-        mCrop_x1 = (float)x1 / (float)mTexture->w;
-        mCrop_x2 = (float)x2 / (float)mTexture->w;
-        mCrop_y1 = (float)y1 / (float)mTexture->h;
-        mCrop_y2 = (float)y2 / (float)mTexture->h;
+        mCrop_x1 = (float)x1 / (float)m_texture_->w;
+        mCrop_x2 = (float)x2 / (float)m_texture_->w;
+        mCrop_y1 = (float)y1 / (float)m_texture_->h;
+        mCrop_y2 = (float)y2 / (float)m_texture_->h;
 
         DirtyTexture = true;
-        UpdateTexture();
+        update_texture();
     }
 }
 
-void Sprite::SetCropToWholeImage()
+void Sprite::set_crop_to_whole_image()
 {
     mCrop_x1 = 0;
     mCrop_x2 = 1;
@@ -124,7 +124,7 @@ void Sprite::SetCropToWholeImage()
     DirtyTexture = true;
 }
 
-void Sprite::SetCrop(Vec2 Crop1, Vec2 Crop2)
+void Sprite::set_crop(const Vec2 Crop1, const Vec2 Crop2)
 {
     mCrop_x1 = Crop1.x;
     mCrop_y1 = Crop1.y;
@@ -133,39 +133,39 @@ void Sprite::SetCrop(Vec2 Crop1, Vec2 Crop2)
     DirtyTexture = true;
 }
 
-void Sprite::SetCrop1(Vec2 Crop1)
+void Sprite::set_crop1(const Vec2 Crop1)
 {
     mCrop_x1 = Crop1.x;
     mCrop_y1 = Crop1.y;
     DirtyTexture = true;
 }
 
-void Sprite::SetCrop2(Vec2 Crop2)
+void Sprite::set_crop2(const Vec2 Crop2)
 {
     mCrop_x2 = Crop2.x;
     mCrop_y2 = Crop2.y;
     DirtyTexture = true;
 }
 
-void Sprite::Invalidate()
+void Sprite::invalidate()
 {
     // stub
 }
 
-Texture* Sprite::GetImage()
+Texture* Sprite::get_image() const
 {
-    return mTexture;
+    return m_texture_;
 }
 
-void Sprite::BindTextureVBO()
+void Sprite::bind_texture_vbo() const
 {
-    UvBuffer->Bind();
+    uv_buffer_->bind();
 }
 
-std::string Sprite::GetImageFilename() const
+std::string Sprite::get_image_filename() const
 {
-    if (mTexture)
-        return Conversion::ToU8(mTexture->fname.wstring());
+    if (m_texture_)
+        return Conversion::ToU8(m_texture_->fname.wstring());
     else
         return std::string();
 }

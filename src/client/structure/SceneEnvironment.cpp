@@ -131,7 +131,7 @@ SceneEnvironment::SceneEnvironment(const char *ScreenName, bool initUI) {
     Lua->RegisterStruct("GOMAN", this);
 
 
-    GameState::GetInstance().InitializeLua(Lua->GetState());
+    GameState::get_instance().initialize_lua(Lua->GetState());
 
     /// Automatic instance of SceneEnvironment for script use.
     // @autoinstance Engine
@@ -177,7 +177,7 @@ void SceneEnvironment::Preload(const std::filesystem::path& Filename, std::strin
         Lua->StartIteration();
 
         while (Lua->IterateNext()) {
-            auto s = GameState::GetInstance().GetSkinFile(Lua->NextGString());
+            auto s = GameState::get_instance().get_skin_file(Lua->NextGString());
             Images->AddToList(s, "");
             Lua->Pop();
         }

@@ -114,7 +114,7 @@ TruetypeFont::~TruetypeFont()
     // ReleaseTextures();
 }
 
-void TruetypeFont::Invalidate()
+void TruetypeFont::invalidate()
 {
     for (auto & i : *Texes)
     {
@@ -123,9 +123,9 @@ void TruetypeFont::Invalidate()
 }
 
 
-TruetypeFont::codepdata &TruetypeFont::GetTexFromCodepoint(int cp)
+TruetypeFont::codepdata &TruetypeFont::GetTexFromCodepoint(const int cp)
 {
-    if (Texes->find(cp) == Texes->end())
+    if (!Texes->contains(cp))
     {
         int w, h, xofs, yofs;
         codepdata newcp;
@@ -173,18 +173,18 @@ TruetypeFont::codepdata &TruetypeFont::GetTexFromCodepoint(int cp)
     }
 }
 
-float TruetypeFont::GetHorizontalLength(const char *In)
+float TruetypeFont::get_horizontal_length(const char *in)
 {
-    const char* Text = In;
-    size_t len = strlen(In);
-    float Out = 0;
+    const char* text = in;
+    const size_t len = strlen(in);
+    float out = 0;
 
     if (!IsValid) return 0;
 
     try
     {
-        utf8::iterator<const char*> it(Text, Text, Text + len);
-        utf8::iterator<const char*> itend(Text + len, Text, Text + len);
+        utf8::iterator<const char*> it(text, text, text + len);
+        utf8::iterator<const char*> itend(text + len, text, text + len);
         for (; it != itend; ++it)
         {
             codepdata &cp = GetTexFromCodepoint(*it);
@@ -196,17 +196,17 @@ float TruetypeFont::GetHorizontalLength(const char *In)
                 float aW = stbtt_GetCodepointKernAdvance(info.get(), *it, *it_nx);
                 int bW;
                 stbtt_GetCodepointHMetrics(info.get(), *it, &bW, NULL);
-                Out += aW * realscale + bW * realscale;
+                out += aW * realscale + bW * realscale;
             }
             else
-                Out += cp.w;
+                out += cp.w;
         }
     }
     catch (...)
     {
     }
 
-    return Out;
+    return out;
 }
 
 void TruetypeFont::GenerateFontCache(const std::filesystem::path& u8charin,
@@ -216,7 +216,7 @@ void TruetypeFont::GenerateFontCache(const std::filesystem::path& u8charin,
 	TruetypeFont ttf(inputttf);
 
 	// make sure our base path exists
-	auto path = CACHE_PATH / GameState::GetInstance().GetSkin();
+	auto path = CACHE_PATH / GameState::get_instance().get_skin();
 	std::filesystem::create_directory(CACHE_PATH);
 	std::filesystem::create_directory(path);
 
@@ -230,8 +230,8 @@ void TruetypeFont::GenerateFontCache(const std::filesystem::path& u8charin,
 	while (it != end) {
 		auto ch = utf8::next(it, end);
 		auto tx = ttf.GetTexFromCodepoint(ch);
-		cache.SetCharacterBuffer(ch, tx.tex, tx.w * tx.h);
+		cache.set_character_buffer(ch, tx.tex, tx.w * tx.h);
 	}
 
-	cache.SaveCache(cachename);
+	cache.save_cache(cachename);
 }

@@ -18,7 +18,7 @@ void signalrec(int sig) {
 	PrintStackTrace();
 }
 
-void RegisterSignals() {
+void register_signals() {
 	signal(SIGABRT, signalrec);
 	signal(SIGSEGV, signalrec);
 

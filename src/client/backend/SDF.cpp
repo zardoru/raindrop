@@ -35,14 +35,14 @@ public:
 		delete[] point;
 	}
 
-	void Resize(int w, int h) {
+	void Resize(const int w, const int h) {
 		this->w = w;
 		this->h = h;
 		point = new Point[w * h];
 		s = w * h;
 	}
 
-	Point Get(int x, int y) const {
+	Point Get(const int x, const int y) const {
 		int idx = y * w + x;
 		if ( y >= h || y < 0 || x >= w || x < 0 )
 			return { INF, INF };
@@ -50,15 +50,15 @@ public:
 		return point[idx];
 	}
 
-	void Put(int x, int y, Point v) const {
+	void Put(const int x, const int y, const Point v) const {
 		point[y * w + x] = v;
 	}
 
-	int DistSqr(int x, int y) {
+	int DistSqr(const int x, const int y) {
 		return Get(x, y).DistSqr();
 	}
 
-	void Compare(Point &p, int x, int y, int ox, int oy) {
+	void Compare(Point &p, const int x, const int y, const int ox, const int oy) {
 		Point other = Get(x + ox, y + oy);
 		other.dx += ox;
 		other.dy += oy;
@@ -114,7 +114,7 @@ void GenSDF(Grid &g)
 	}
 }
 
-void ConvertToSDF(unsigned char* out, unsigned char* tex, int w, int h) {
+void ConvertToSDF(unsigned char* out, unsigned char* tex, const int w, const int h) {
 	// Generate initial SDF
 	Grid g1, g2;
 	g1.Resize(w, h);

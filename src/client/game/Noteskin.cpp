@@ -43,8 +43,8 @@ Noteskin::Noteskin(PlayerContext *parent) {
 void Noteskin::LuaRender(Sprite *S) {
     if (CanRender) {
         Mat4 mt = S->GetMatrix();
-        Renderer::Shader::SetUniform(Renderer::DefaultShader::GetUniform(Renderer::U_MODELVIEW), &mt[0][0]);
-        S->RenderMinimalSetup();
+        renderer::Shader::set_uniform(renderer::DefaultShader::GetUniform(renderer::U_MODELVIEW), &mt[0][0]);
+        S->render_minimal_setup();
     }
 }
 
@@ -79,7 +79,7 @@ void Noteskin::SetupNoteskin(bool SpecialStyle, int Lanes) {
     /// Instance of @{Player} provided by the engine. Owner of the current noteskin script.
     // @autoinstance Player
     luabridge::setGlobal(NoteskinLua.GetState(), Parent, "Player");
-    if (!NoteskinLua.RunScript(GameState::GetInstance().GetSkinFile("noteskin.lua"))) {
+    if (!NoteskinLua.RunScript(GameState::get_instance().get_skin_file("noteskin.lua"))) {
         Log::LogPrintf("noteskin.lua: %s\n", NoteskinLua.GetLastError().c_str());
     }
 }

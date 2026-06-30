@@ -9,7 +9,7 @@ TTFCache::TTFCache()
 }
 
 
-bool TTFCache::LoadCache(std::filesystem::path cachepath)
+bool TTFCache::load_cache(std::filesystem::path cachepath)
 {
 	/*std::ifstream in(cachepath.string(), std::ios::binary);
 	if (!in.is_open()) return false;
@@ -34,7 +34,7 @@ bool TTFCache::LoadCache(std::filesystem::path cachepath)
 	return true;
 }
 
-bool TTFCache::SaveCache(std::filesystem::path cachepath)
+bool TTFCache::save_cache(std::filesystem::path cachepath)
 {
     /*
 	std::ofstream out(cachepath.string(), std::ios::binary);
@@ -55,7 +55,7 @@ bool TTFCache::SaveCache(std::filesystem::path cachepath)
 	return true;
 }
 
-const uint8_t * const TTFCache::GetCharacterBuffer(int id)
+const uint8_t * const TTFCache::get_character_buffer(const int id)
 {
 	if (mCharBuffer.find(id) != mCharBuffer.end()) {
 		return mCharBuffer[id].data();
@@ -64,7 +64,7 @@ const uint8_t * const TTFCache::GetCharacterBuffer(int id)
 	return nullptr;
 }
 
-void TTFCache::SetCharacterBuffer(int id, uint8_t * data, size_t size)
+void TTFCache::set_character_buffer(const int id, const uint8_t * data, const size_t size)
 {
 	mCharBuffer[id].resize(size);
 	memcpy(mCharBuffer[id].data(), data, size);

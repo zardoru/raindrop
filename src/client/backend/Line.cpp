@@ -11,7 +11,7 @@ Line::Line()
     y2 = 100;
 }
 
-void Line::SetColor(float iR, float iG, float iB, float iA)
+void Line::SetColor(const float iR, const float iG, const float iB, const float iA)
 {
     R = iR;
     G = iG;

@@ -564,7 +564,7 @@ void SongWheel::ReapplyFilters()
 
 		if (entry.Kind == ListEntry::Song) {
 			auto song = std::static_pointer_cast<rd::Song>(entry.Data);
-			if (!GameState::GetInstance().IsSongUnlocked(song.get()))
+			if (!GameState::get_instance().is_song_unlocked(song.get()))
 				continue;
 		}
 

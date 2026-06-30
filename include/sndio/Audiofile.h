@@ -8,96 +8,96 @@ protected:
 public:
     AudioDataSource();
     virtual ~AudioDataSource();
-    virtual bool Open(std::filesystem::path Filename) = 0;
-    virtual uint32_t Read(short* buffer, size_t count) = 0; // count is in samples.
-    virtual void Seek(float Time) = 0;
-    virtual size_t GetLength() = 0; // Always returns total frames.
-    virtual uint32_t GetRate() = 0; // Returns sampling rate of audio
-    virtual uint32_t GetChannels() = 0; // Returns channels of audio
-    virtual bool IsValid() = 0;
-    virtual bool HasDataLeft() = 0;
+    virtual bool open(std::filesystem::path Filename) = 0;
+    virtual uint32_t read(short* buffer, size_t count) = 0; // count is in samples.
+    virtual void seek(float Time) = 0;
+    virtual size_t get_length() = 0; // Always returns total frames.
+    virtual uint32_t get_rate() = 0; // Returns sampling rate of audio
+    virtual uint32_t get_channels() = 0; // Returns channels of audio
+    virtual bool is_valid() = 0;
+    virtual bool has_data_left() = 0;
 
-    void SetLooping(bool Loop);
+    void set_looping(bool Loop);
 };
 
 class Sound
 {
 protected:
-    uint32_t Channels;
-    bool mIsLooping;
-    double mPitch;
+    uint32_t channels_ = 0;
+    bool m_is_looping_ = false;
+    double m_pitch_ = 0;
 public:
     virtual ~Sound() = default;
-    virtual uint32_t Read(float* buffer, size_t count) = 0;
-    virtual bool Open(std::filesystem::path Filename) = 0;
-    virtual void Play() = 0;
-    virtual bool IsPlaying() const = 0;
-    virtual void SeekTime(float Second) = 0;
-    virtual void SeekSample(uint32_t Sample) = 0;
-    virtual void Stop() = 0;
-    void SetPitch(double pitch);
-    double GetPitch() const;
-    void SetLoop(bool Loop);
-    bool IsLooping() const;
-    uint32_t GetChannels() const;
+    virtual uint32_t read(float* buffer, size_t count) = 0;
+    virtual bool open(std::filesystem::path Filename) = 0;
+    virtual void play() = 0;
+    virtual bool is_playing() const = 0;
+    virtual auto seek_time(float Second) -> void = 0;
+    virtual void seek_sample(uint32_t Sample) = 0;
+    virtual void stop() = 0;
+    void set_pitch(double pitch);
+    double get_pitch() const;
+    void set_loop(bool Loop);
+    bool is_looping() const;
+    uint32_t get_channels() const;
 };
 
 class IMixer;
 
 class AudioSample : public Sound
 {
-    uint32_t	 mRate{};
-    uint32_t   mCounter{};
-    float    mAudioStart, mAudioEnd;
-    std::shared_ptr<std::vector<short>> mData;
-    bool	 mIsPlaying;
-    std::atomic<bool> mIsValid;
-	std::atomic<bool> mIsLoaded;
-	std::future<bool> mThread;
-    IMixer *mOwnerMixer;
+    uint32_t	 m_rate_{};
+    uint32_t   m_counter_{};
+    float    m_audio_start_, m_audio_end_;
+    std::shared_ptr<std::vector<short>> m_data_;
+    bool	 m_is_playing_;
+    std::atomic<bool> m_is_valid_;
+	std::atomic<bool> m_is_loaded_;
+	std::future<bool> m_thread_;
+    IMixer *m_owner_mixer_;
 public:
     AudioSample();
     AudioSample(IMixer* owner_mixer);
     AudioSample(const AudioSample& Other);
     AudioSample(AudioSample &&Other) noexcept;
     ~AudioSample();
-	void Seek(size_t offs);
-	uint32_t Read(float* buffer, size_t count) override;
-    bool Open(std::filesystem::path Filename) override;
-    bool Open(std::filesystem::path Filename, bool async);
-    bool Open(AudioDataSource* Source, bool async = false);
-    void Play() override;
-    void SeekTime(float Second) override;
-    void SeekSample(uint32_t Sample) override;
-    void Stop() override;
+	void seek(size_t offs);
+	uint32_t read(float* buffer, size_t count) override;
+    bool open(std::filesystem::path Filename) override;
+    bool open(std::filesystem::path Filename, bool async);
+    bool open(AudioDataSource* Source, bool async = false);
+    void play() override;
+    void seek_time(float Second) override;
+    void seek_sample(uint32_t Sample) override;
+    void stop() override;
 
-	bool AwaitLoad();
+	bool await_load();
 
 	// returns duration in seconds
-	double GetDuration();
+	double get_duration();
 
-    bool IsPlaying() const override;
-    void Slice(float audio_start, float audio_end);
+    bool is_playing() const override;
+    void slice(float audio_start, float audio_end);
     std::shared_ptr<AudioSample> CopySlice();
     // void Mix(AudioSample& Other);
-    bool IsValid() const;
+    bool is_valid() const;
 
-    bool InnerLoad(AudioDataSource *Src);
+    bool inner_load(AudioDataSource *Src);
 };
 
 struct stream_time_map_t {
     double clock_start, clock_end;
     int64_t frame_start, frame_end;
-    inline double map(double clock, double sample_rate) {
+    inline double map(double clock, double sample_rate) const {
         double t_relative = (clock - clock_start) / (clock_end - clock_start);
         if (t_relative > 1) t_relative = 1;
 
         return ((frame_end - frame_start) * t_relative + frame_start) / sample_rate;
     }
 
-    inline double reverse_map(double song_time, double sample_rate) {
-        return double(song_time * sample_rate - frame_start) /
-               double(frame_end - frame_start)
+    inline double reverse_map(double song_time, double sample_rate) const {
+        return (song_time * sample_rate - frame_start) /
+               static_cast<double>(frame_end - frame_start)
                * (clock_end - clock_start) + clock_start;
     }
 };
@@ -111,24 +111,24 @@ class AudioStream : public Sound
 {
     class AudioStreamInternal;
 
-    std::unique_ptr<AudioStreamInternal> internal;
+    std::unique_ptr<AudioStreamInternal> internal_;
     
 
-    std::unique_ptr<AudioDataSource> mSource;
-    unsigned int     mBufferSize;
-    std::vector<short>	 mDecodedData;
-    std::vector<uint8_t>	 mResampleBuffer;
-    short			 tbuf[8192];
-    double			 mStreamTime;
-    double			 mPlaybackTime;
+    std::unique_ptr<AudioDataSource> m_source_;
+    unsigned int     m_buffer_size_;
+    std::vector<short>	 m_decoded_data_;
+    std::vector<uint8_t>	 m_resample_buffer_;
+    short			 audio_buffer_[8192];
+    double			 m_stream_time_;
+    double			 m_playback_time_;
 
     /* total # of frames pulled after a Read operation. Can be negative for syncing purposes.
      * Is in the sampling rate of the target sample rate, not the source sample rate */
-    int64_t           mReadFrames;
+    size_t           m_read_frames_;
 
-    bool			 mIsPlaying;
-    IMixer *mOwnerMixer;
-    stream_time_map_t current_clock;
+    bool			 m_is_playing_;
+    IMixer *m_owner_mixer_;
+    stream_time_map_t current_clock_;
 public:
     AudioStream();
     explicit AudioStream(IMixer* owner_mixer);
@@ -136,26 +136,26 @@ public:
 
 //    std::atomic<atomic_stream_time_t> dac_clock;
 
-    uint32_t Read(float* buffer, size_t count) override;
-    bool Open(std::filesystem::path Filename) override;
-    void Play() override;
-    void SeekTime(float Second) override;
-    void SeekSample(uint32_t Sample) override;
-    void Stop() override;
-    bool IsValid();
+    uint32_t read(float* buffer, size_t count) override;
+    bool open(std::filesystem::path filename) override;
+    void play() override;
+    void seek_time(float second) override;
+    void seek_sample(uint32_t Sample) override;
+    void stop() override;
+    bool is_valid() const;
 
-    int64_t GetReadFrames() const;
+    int64_t get_read_frames() const;
 
-    double GetStreamedTime() const;
-    double GetPlayedTime() const;
-    bool QueueStreamClock(const stream_time_map_t &map);
+    double get_streamed_time() const;
+    double get_played_time() const;
+    bool queue_stream_clock(const stream_time_map_t &map) const;
 
     /* maps a stream clock time to a point in time of the song. */
-    double MapStreamClock(double stream_clock);
+    double map_stream_clock(double stream_clock);
 
 
-    uint32_t GetRate() const;
+    uint32_t get_rate() const;
 
-    uint32_t UpdateDecoder();
-    bool IsPlaying() const override;
+    uint32_t update_decoder();
+    bool is_playing() const override;
 };

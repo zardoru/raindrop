@@ -1,3 +1,6 @@
-[submodule "GameData"]
-	path = GameData
+[submodule "data"]
+	path = data
 	url = https://github.com/zardoru/raindrop-data.git
+[submodule "libotoworm"]
+	path = libotoworm
+	url = https://github.com/zardoru/libotoworm

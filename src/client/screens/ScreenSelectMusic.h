@@ -52,11 +52,11 @@ class ScreenSelectMusic : public Screen {
 
     void OnDirectoryChange();
 
-    void OnItemClick(int32_t Index, uint32_t boundIndex, std::string Line, std::shared_ptr<rd::Song> Selected);
+    void OnItemClick(int32_t index, uint32_t bound_index, std::string Line, std::shared_ptr<rd::Song> selected);
 
-    void OnItemHover(int32_t Index, uint32_t boundIndex, std::string Line, std::shared_ptr<rd::Song> Selected);
+    void OnItemHover(int32_t index, uint32_t bound_index, std::string Line, std::shared_ptr<rd::Song> selected);
 
-    void OnItemHoverLeave(int32_t Index, uint32_t boundIndex, std::string Line, std::shared_ptr<rd::Song> Selected);
+    void OnItemHoverLeave(int32_t index, uint32_t bound_index, std::string Line, std::shared_ptr<rd::Song> selected);
 
     void TransformItem(int Item, std::shared_ptr<rd::Song> Song, bool IsSelected, int ListItem);
 

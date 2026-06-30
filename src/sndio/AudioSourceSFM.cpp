@@ -28,7 +28,7 @@ AudioSourceSFM::~AudioSourceSFM()
     delete info;
 }
 
-bool AudioSourceSFM::Open(std::filesystem::path Filename)
+bool AudioSourceSFM::open(const std::filesystem::path Filename)
 {
     if (info) // we're already in use
         return false;
@@ -58,7 +58,7 @@ bool AudioSourceSFM::Open(std::filesystem::path Filename)
     return true;
 }
 
-uint32_t AudioSourceSFM::Read(short* buffer, size_t count)
+uint32_t AudioSourceSFM::read(short* buffer, const size_t count)
 {
     auto read = 0U;
     if (mWavFile)
@@ -68,7 +68,7 @@ uint32_t AudioSourceSFM::Read(short* buffer, size_t count)
 
         while (mSourceLoop && (remaining > 0) && read)
         {
-            Seek(0);
+            seek(0);
             read += sf_read_short((SNDFILE*)mWavFile, static_cast<short*>(buffer) + (read), remaining);
             remaining -= read;
         }
@@ -80,7 +80,7 @@ uint32_t AudioSourceSFM::Read(short* buffer, size_t count)
     return read;
 }
 
-void AudioSourceSFM::Seek(float Time)
+void AudioSourceSFM::seek(const float Time)
 {
     if (mWavFile)
     {
@@ -91,27 +91,27 @@ void AudioSourceSFM::Seek(float Time)
     }
 }
 
-size_t AudioSourceSFM::GetLength()
+size_t AudioSourceSFM::get_length()
 {
     return info->frames;
 }
 
-uint32_t AudioSourceSFM::GetRate()
+uint32_t AudioSourceSFM::get_rate()
 {
     return mRate;
 }
 
-uint32_t AudioSourceSFM::GetChannels()
+uint32_t AudioSourceSFM::get_channels()
 {
     return mChannels;
 }
 
-bool AudioSourceSFM::IsValid()
+bool AudioSourceSFM::is_valid()
 {
     return mWavFile != nullptr;
 }
 
-bool AudioSourceSFM::HasDataLeft()
+bool AudioSourceSFM::has_data_left()
 {
     return mIsDataLeft;
 }

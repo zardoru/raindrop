@@ -203,7 +203,7 @@ void Application::Init()
 	 */
 
     Configuration::Initialize();
-    GameState::GetInstance().Initialize();
+    GameState::get_instance().initialize();
     Log::Printf("Initializing... \n");
 
 
@@ -217,7 +217,7 @@ void Application::Init()
         if (Configuration::GetConfigf("Preload"))
         {
             Log::Printf("Preloading songs...");
-            SongWheel::GetInstance().LoadSongsOnce(GameState::GetInstance().GetSongDatabase());
+            SongWheel::GetInstance().LoadSongsOnce(GameState::get_instance().get_song_database());
             SongWheel::GetInstance().Join();
         }
     }
@@ -261,8 +261,8 @@ void Application::SetupPreviewMode()
         return;
     }
 
-    GameState::GetInstance().SetSelectedSong(song);
-    GameState::GetInstance().SetSelectedChartGroup(song->OtoChartGroup);
+    GameState::get_instance().set_selected_song(song);
+    GameState::get_instance().set_selected_chart_group(song->OtoChartGroup);
     // Create loading screen and gameplay screen.
     auto game = std::make_shared<ScreenGameplay>();
     auto LoadScreen = std::make_shared<ScreenLoading>(game);
@@ -279,7 +279,7 @@ void Application::SetupPreviewMode()
     param.Auto = Auto;
     */
     
-	GameState::GetInstance().GetParameters(0)->Auto = Auto;
+	GameState::get_instance().get_parameters(0)->Auto = Auto;
     game->Init(song->OtoChartGroup);
     LoadScreen->Init();
 
@@ -351,8 +351,8 @@ void Application::Run()
     else if (RunMode == MODE_GENSONGCACHE)
     {
         Log::Printf("Generating cache...\n");
-        GameState::GetInstance().Initialize();
-        SongWheel::GetInstance().Initialize(GameState::GetInstance().GetSongDatabase());
+        GameState::get_instance().initialize();
+        SongWheel::GetInstance().Initialize(GameState::get_instance().get_song_database());
         SongWheel::GetInstance().Join();
 
         RunLoop = false;
@@ -374,7 +374,7 @@ void Application::Run()
     {
         Log::Printf("Initializing custom, ad-hoc screen...\n");
 		auto s = Conversion::ToU8(InFile.wstring());
-        auto scr = std::make_shared<ScreenCustom>(GameState::GetInstance().GetSkinFile(s));
+        auto scr = std::make_shared<ScreenCustom>(GameState::get_instance().get_skin_file(s));
         Game = scr;
 	}
 	else if (RunMode == MODE_GENFONTCACHE)
@@ -392,7 +392,7 @@ void Application::Run()
         return;
 
     ImageLoader::UpdateTextures();
-	GameState::GetInstance().SetRootScreen(Game);
+	GameState::get_instance().set_root_screen(Game);
 
     oldTime = WindowFrame.GetCurrentTime();
     while (Game->IsScreenRunning() && !WindowFrame.ShouldCloseWindow())

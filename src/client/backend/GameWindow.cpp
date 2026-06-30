@@ -37,7 +37,7 @@ GameWindow WindowFrame;
 std::map<int32_t, KeyType> BindingsManager::ScanFunction;
 std::map<int32_t, int32_t> BindingsManager::ScanFunction7K;
 
-const int NUM_OF_USED_CONTROLLER_BUTTONS = 32;
+constexpr int NUM_OF_USED_CONTROLLER_BUTTONS = 32;
 
 int controllerToUse;
 bool JoystickEnabled;
@@ -107,11 +107,11 @@ static void GLCHECKERR() {
 }
 
 void APIENTRY OnGlDebugMsg(
-        GLenum source,
-        GLenum type,
-        GLuint id,
-        GLenum severity,
-        GLsizei length,
+        const GLenum source,
+        const GLenum type,
+        const GLuint id,
+        const GLenum severity,
+        const GLsizei length,
         const GLchar* message,
         const void* userParam) {
     std::string msg(message, message + length);
@@ -119,7 +119,7 @@ void APIENTRY OnGlDebugMsg(
                 source, type, id, severity, msg.c_str());
 }
 
-const int NUM_OF_STATIC_SPECIAL_KEYS = sizeof(StaticSpecialKeys) / sizeof(KeyAssociation); //make sure to match the above array
+constexpr int NUM_OF_STATIC_SPECIAL_KEYS = sizeof(StaticSpecialKeys) / sizeof(KeyAssociation); //make sure to match the above array
 
 std::vector<KeyAssociation> SpecialKeys;
 
@@ -163,7 +163,7 @@ struct defaultKeys_s
 	{ SDLK_F10, KT_ReloadCFG }
 };
 
-const int DEFAULT_KEYS_COUNT = sizeof(defaultKeys) / sizeof(defaultKeys_s);
+constexpr int DEFAULT_KEYS_COUNT = sizeof(defaultKeys) / sizeof(defaultKeys_s);
 
 // Must match KeyType structure.
 const char* KeytypeNames[] = {
@@ -204,7 +204,7 @@ int getIndexForKeytype(const char* key)
     return -1;
 }
 
-std::string getNameForKeytype(KeyType K)
+std::string getNameForKeytype(const KeyType K)
 {
     if (K < sizeof KeytypeNames / sizeof(char*))
         return KeytypeNames[K];
@@ -212,7 +212,7 @@ std::string getNameForKeytype(KeyType K)
         return IntToStr(K);
 }
 
-std::string getNameForUntranslatedKey(int K)
+std::string getNameForUntranslatedKey(const int K)
 {
     for (int i = 0; i < NUM_OF_STATIC_SPECIAL_KEYS; i++)
     {
@@ -325,7 +325,7 @@ void BindingsManager::Initialize()
     }
 }
 
-KeyType BindingsManager::TranslateKey(int32_t Scan)
+KeyType BindingsManager::TranslateKey(const int32_t Scan)
 {
     if (ScanFunction.find(Scan) != ScanFunction.end())
     {
@@ -335,7 +335,7 @@ KeyType BindingsManager::TranslateKey(int32_t Scan)
     return KT_Unknown;
 }
 
-int32_t BindingsManager::TranslateKey7K(int32_t Scan)
+int32_t BindingsManager::TranslateKey7K(const int32_t Scan)
 {
     if (ScanFunction7K.find(Scan) != ScanFunction7K.end())
     {
@@ -359,7 +359,7 @@ GameWindow::GameWindow()
     glContext = nullptr;
 }
 
-void ResizeFunc(int32_t width, int32_t height)
+void ResizeFunc(const int32_t width, const int32_t height)
 {
     float HeightRatio = (float)height / WindowFrame.GetMatrixSize().y;
 
@@ -380,7 +380,7 @@ void ResizeFunc(int32_t width, int32_t height)
     WindowFrame.SizeRatio = HeightRatio;
 }
 
-void InputFunc(int32_t key, bool pressed, SDL_Keymod modk)
+void InputFunc(const int32_t key, const bool pressed, const SDL_Keymod modk)
 {
     WindowFrame.Parent->HandleInput(key, pressed, false);
 
@@ -388,12 +388,12 @@ void InputFunc(int32_t key, bool pressed, SDL_Keymod modk)
         WindowFrame.FullscreenSwitchbackPending = true;
 }
 
-void MouseInputFunc(int32_t key, bool pressed)
+void MouseInputFunc(const int32_t key, const bool pressed)
 {
     WindowFrame.Parent->HandleInput(key, pressed, true);
 }
 
-void ScrollFunc(double xOff, double yOff)
+void ScrollFunc(const double xOff, const double yOff)
 {
     WindowFrame.Parent->HandleScrollInput(xOff, yOff);
 }
@@ -471,7 +471,7 @@ bool GameWindow::SetupWindow()
 
     GLCHECKERR();
 
-    Renderer::InitializeRender();
+    renderer::initialize();
 
     GLCHECKERR();
 
@@ -653,14 +653,14 @@ void GameWindow::UpdateFullscreen()
 		/* This revalidates all VBOs and fonts */
 		for (auto & i : VBOList)
 		{
-			i->Invalidate();
-			i->Validate();
+			i->invalidate();
+			i->validate();
 		}
 
 		// Automatically revalidated on usage
 		for (auto & i : TTFList)
 		{
-			i->Invalidate();
+			i->invalidate();
 		}
 
 		FullscreenSwitchbackPending = false;
@@ -777,7 +777,7 @@ bool GameWindow::ShouldCloseWindow()
     return CloseRequested;
 }
 
-void GameWindow::SetVisibleCursor(bool Visible)
+void GameWindow::SetVisibleCursor(const bool Visible)
 {
     if (Visible)
     {
@@ -798,8 +798,8 @@ bool GameWindow::SetupShaders()
         glBindVertexArray(defaultVao);
     }
 
-	Renderer::DefaultShader::Compile();
-	Renderer::DefaultShader::UpdateProjection(projection);
+	renderer::DefaultShader::compile();
+	renderer::DefaultShader::update_projection(projection);
 
     return true;
 }
@@ -823,12 +823,12 @@ void GameWindow::RemoveVBO(VBO *V)
     }
 }
 
-void GameWindow::AddShader(Renderer::Shader *S)
+void GameWindow::AddShader(renderer::Shader *S)
 {
 	ShaderList.push_back(S);
 }
 
-void GameWindow::RemoveShader(Renderer::Shader *S)
+void GameWindow::RemoveShader(renderer::Shader *S)
 {
 	for (auto i = ShaderList.begin(); i != ShaderList.end(); ++i) {
 		if (*i == S) {

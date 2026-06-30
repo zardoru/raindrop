@@ -88,7 +88,7 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic") {
     ToPreview = nullptr;
 
     SongWheel *Wheel = &SongWheel::GetInstance();
-    Wheel->Initialize(GameState::GetInstance().GetSongDatabase());
+    Wheel->Initialize(GameState::get_instance().get_song_database());
 
     SongNotification SongNotifyFunc([this](auto &&PH1, auto &&PH2) {
         OnSongChange(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2));
@@ -139,10 +139,10 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic") {
     };
 
     SelectSnd = std::make_unique<AudioSample>();
-    SelectSnd->Open(Configuration::GetSkinSound("SongSelectDecision"));
+    SelectSnd->open(Configuration::GetSkinSound("SongSelectDecision"));
 
     ClickSnd = std::make_unique<AudioSample>();
-    ClickSnd->Open(Configuration::GetSkinSound("SongSelectHover"));
+    ClickSnd->open(Configuration::GetSkinSound("SongSelectHover"));
 
     // rd::dotcur::GameObject::GlobalInit();
 
@@ -155,7 +155,7 @@ void ScreenSelectMusic::InitializeResources() {
 
     Animations->Initialize();
 
-    GameState::GetInstance().InitializeLua(luam->GetState());
+    GameState::get_instance().initialize_lua(luam->GetState());
 }
 
 void ScreenSelectMusic::LoadResources() {
@@ -164,7 +164,7 @@ void ScreenSelectMusic::LoadResources() {
     SwitchBackGuiPending = true;
 
     SetupWheelLua(Animations->GetEnv());
-    Animations->Preload(GameState::GetInstance().GetSkinFile("screenselectmusic.lua"), "Preload");
+    Animations->Preload(GameState::get_instance().get_skin_file("screenselectmusic.lua"), "Preload");
 
     Time = 0;
 }
@@ -205,7 +205,7 @@ float ScreenSelectMusic::GetListHeightTransformation(const float Y) {
 
 void ScreenSelectMusic::StartGameplayScreen() {
     std::shared_ptr<ScreenLoading> LoadNext;
-    auto chart_group = GameState::GetInstance().GetSelectedChartGroupShared();
+    auto chart_group = GameState::get_instance().get_selected_chart_group_shared();
 
 
     auto VSRGGame = std::make_shared<ScreenGameplay>();
@@ -226,16 +226,16 @@ void ScreenSelectMusic::OnSongSelect(std::shared_ptr<rd::Song> MySong, uint8_t d
 
     if (difindex > MySong->GetDifficultyCount()) return;
 
-    if (PreviewStream) PreviewStream->Stop();
+    if (PreviewStream) PreviewStream->stop();
 
     IsTransitioning = true;
 
-    SelectSnd->Play();
+    SelectSnd->play();
 
     StopLoops();
 
     if (MySong->OtoChartGroup && difindex < MySong->OtoChartGroup->charts.size())
-        GameState::GetInstance().SetChart(MySong->OtoChartGroup->charts[difindex], 0);
+        GameState::get_instance().set_chart(MySong->OtoChartGroup->charts[difindex], 0);
 
     Animations->DoEvent("OnSelect", 1);
     TransitionTime = Animations->GetEnv()->GetFunctionResultF();
@@ -244,7 +244,7 @@ void ScreenSelectMusic::OnSongSelect(std::shared_ptr<rd::Song> MySong, uint8_t d
 }
 
 void ScreenSelectMusic::OnSongChange(std::shared_ptr<rd::Song> MySong, uint8_t difindex) {
-    ClickSnd->Play();
+    ClickSnd->play();
 
     if (MySong) {
         Animations->DoEvent("OnSongChange");
@@ -257,13 +257,13 @@ void ScreenSelectMusic::OnSongChange(std::shared_ptr<rd::Song> MySong, uint8_t d
 
 void ScreenSelectMusic::PlayPreview() {
     // Do the song preview thing.
-    SongDatabase *DB = GameState::GetInstance().GetSongDatabase();
+    SongDatabase *DB = GameState::get_instance().get_song_database();
     float StartTime;
     std::string PreviewFile;
 
     if (ToPreview == nullptr) {
         if (PreviewStream != nullptr)
-            PreviewStream->Stop();
+            PreviewStream->stop();
         return;
     }
 
@@ -271,7 +271,7 @@ void ScreenSelectMusic::PlayPreview() {
 
     if (PreviewFile.length() > 0) {
         if (PreviewStream) {
-            PreviewStream->Stop();
+            PreviewStream->stop();
             PreviewStream = nullptr;
         }
 
@@ -288,15 +288,15 @@ void ScreenSelectMusic::PlayPreview() {
         // Load preview
         if (std::filesystem::exists(previewPath)) {
             PreviewStream = std::make_shared<AudioStream>();
-            if (PreviewStream->Open(previewPath)) {
-                PreviewStream->Play();
-                PreviewStream->SeekTime(StartTime);
-                PreviewStream->SetLoop(true);
+            if (PreviewStream->open(previewPath)) {
+                PreviewStream->play();
+                PreviewStream->seek_time(StartTime);
+                PreviewStream->set_loop(true);
             }
         }
     } else {
         if (PreviewStream) {
-            PreviewStream->Stop();
+            PreviewStream->stop();
             PreviewStream = nullptr;
         }
     }
@@ -318,9 +318,9 @@ void ScreenSelectMusic::PlayLoops() {
             if (s.find_first_of("loop") != std::string::npos)
                 IsLoop = true;
 
-            if (BGM->Open(fn)) {
-                BGM->SetLoop(IsLoop);
-                BGM->Play();
+            if (BGM->open(fn)) {
+                BGM->set_loop(IsLoop);
+                BGM->play();
             }
         }
     }
@@ -328,8 +328,8 @@ void ScreenSelectMusic::PlayLoops() {
 
 bool ScreenSelectMusic::Run(double Delta) {
     if (IsTransitioning) {
-        if (PreviewStream && PreviewStream->IsPlaying())
-            PreviewStream->Stop();
+        if (PreviewStream && PreviewStream->is_playing())
+            PreviewStream->stop();
 
         if (TransitionTime < 0) {
             if (RunNested(Delta))
@@ -356,7 +356,7 @@ bool ScreenSelectMusic::Run(double Delta) {
             if (PreviousPreview != ToPreview)
                 PlayPreview();
 
-            if (PreviewStream && PreviewStream->IsPlaying())
+            if (PreviewStream && PreviewStream->is_playing())
                 StopLoops();
             else {
                 if (!SwitchBackGuiPending)
@@ -382,7 +382,7 @@ bool ScreenSelectMusic::Run(double Delta) {
 
 void ScreenSelectMusic::StopLoops() {
     if (BGM) {
-        BGM->Stop();
+        BGM->stop();
         GetMixer()->RemoveStream(BGM.get());
         BGM = nullptr;
     }

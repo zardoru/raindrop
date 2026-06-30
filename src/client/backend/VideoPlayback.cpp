@@ -40,7 +40,7 @@ public:
 	}
 };
 
-static int readVideoFunction(void* opaque, uint8_t* buf, int buf_size) {
+static int readVideoFunction(void* opaque, uint8_t* buf, const int buf_size) {
     auto& me = *reinterpret_cast<std::ifstream*>(opaque);
     me.read(reinterpret_cast<char*>(buf), buf_size);
     return me.gcount();
@@ -131,14 +131,14 @@ public:
 			return VideoFrame();
 	}
 
-	void PutPendingFrame(VideoFrame frame)
+	void PutPendingFrame(const VideoFrame frame)
 	{
 		if (PaUtil_GetRingBufferWriteAvailable(&mPendingFrameQueue)) {
 			PaUtil_WriteRingBuffer(&mPendingFrameQueue, &frame, 1);
 		}
 	}
 
-	void PutCleanFrame(VideoFrame frame)
+	void PutCleanFrame(const VideoFrame frame)
 	{
 		if (PaUtil_GetRingBufferWriteAvailable(&mCleanFrameQueue)) {
 			PaUtil_WriteRingBuffer(&mCleanFrameQueue, &frame, 1);
@@ -173,7 +173,7 @@ public:
 		sws_freeContext(sws_ctx);
 	}
 
-	void InitializeBuffers(uint32_t framecnt, int w, int h) {
+	void InitializeBuffers(const uint32_t framecnt, const int w, const int h) {
 		// framecnt += 1;
 
 		auto mem = sizeof(VideoFrame) * framecnt;
@@ -250,7 +250,7 @@ void VideoPlayback::QueueFrame()
 }
 
 
-VideoPlayback::VideoPlayback(uint32_t framequeueitems)
+VideoPlayback::VideoPlayback(const uint32_t framequeueitems)
 {
 	mFrameQueueItems = framequeueitems;
 	Context = nullptr;
@@ -379,7 +379,7 @@ void VideoPlayback::StartDecodeThread()
 	});
 }
 
-void VideoPlayback::UpdateClock(double clock)
+void VideoPlayback::UpdateClock(const double clock)
 {
 	bool update = true;
 

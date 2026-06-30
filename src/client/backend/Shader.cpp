@@ -28,7 +28,7 @@ const unsigned char fragShader[] = {
 };
 
 namespace {
-	void ReplaceAll(std::string& source, const std::string& from, const std::string& to) {
+	void replace_all(std::string& source, const std::string& from, const std::string& to) {
 		size_t pos = 0;
 		while ((pos = source.find(from, pos)) != std::string::npos) {
 			source.replace(pos, from.size(), to);
@@ -36,7 +36,7 @@ namespace {
 		}
 	}
 
-	std::string NormalizeShaderSource(std::string source) {
+	std::string normalize_shader_source(std::string source) {
 		if (source.size() >= 3 &&
 			static_cast<unsigned char>(source[0]) == 0xEF &&
 			static_cast<unsigned char>(source[1]) == 0xBB &&
@@ -48,29 +48,29 @@ namespace {
 		if (first != std::string::npos)
 			source.erase(0, first);
 
-		ReplaceAll(source, "texture2D", "texture");
+		replace_all(source, "texture2D", "texture");
 
 		return source;
 	}
 }
 
-namespace Renderer {
-	int Shader::mLastShader = -1;
+namespace renderer {
+	int Shader::m_last_shader_ = -1;
 	int DefaultShader::mVertProgram, DefaultShader::mFragProgram, DefaultShader::mProgram;
 	uint32_t DefaultShader::uniforms[NUM_SHADERVARS];
 
-	bool DefaultShader::Compile()
+	bool DefaultShader::compile()
 	{
 		CHECKERR();
 		mVertProgram = glCreateShader(GL_VERTEX_SHADER);
-		auto normalizedVert = NormalizeShaderSource(std::string(reinterpret_cast<const char *>(vertShader), sizeof(vertShader)));
+		auto normalizedVert = normalize_shader_source(std::string(reinterpret_cast<const char *>(vertShader), sizeof(vertShader)));
 		const auto vertSrc = normalizedVert.c_str();
 		const auto vertLength = static_cast<GLint>(normalizedVert.size());
 		glShaderSource(mVertProgram, 1, &vertSrc, &vertLength);
 		glCompileShader(mVertProgram);
 
 		mFragProgram = glCreateShader(GL_FRAGMENT_SHADER);
-		auto normalizedFrag = NormalizeShaderSource(std::string(reinterpret_cast<const char *>(fragShader), sizeof(fragShader)));
+		auto normalizedFrag = normalize_shader_source(std::string(reinterpret_cast<const char *>(fragShader), sizeof(fragShader)));
 		const auto fragSrc = normalizedFrag.c_str();
 		const auto fragLength = static_cast<GLint>(normalizedFrag.size());
 		glShaderSource(mFragProgram, 1, &fragSrc, &fragLength);
@@ -139,42 +139,42 @@ namespace Renderer {
 		uniforms[U_BTRANSP] = glGetUniformLocation(mProgram, "BlackToTransparent");
 
 
-		StaticBind();
+		static_bind();
 
 		return true;
 	}
 
-	void DefaultShader::SetColor(float r, float g, float b, float a)
+	void DefaultShader::set_color(const float r, const float g, const float b, const float a)
 	{
 		SetUniform(GetUniform(U_COLOR), l2gamma(r), l2gamma(g), l2gamma(b), a);
 	}
 
-	void DefaultShader::UpdateProjection(Mat4 proj)
+	void DefaultShader::update_projection(Mat4 proj)
 	{
 		GLuint MatrixID = glGetUniformLocation(mProgram, "projection");
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &proj[0][0]);
 	}
 
-	void DefaultShader::StaticBind() {
+	void DefaultShader::static_bind() {
 		CHECKERR();
-		if (mLastShader != mProgram) {
-			mLastShader = mProgram;
+		if (m_last_shader_ != mProgram) {
+			m_last_shader_ = mProgram;
 			glUseProgram(mProgram);
 			CHECKERR();
 		}
 	}
 
-	int DefaultShader::GetVertexShader() {
+	int DefaultShader::get_vertex_shader() {
 		return mVertProgram;
 	}
 
 	
-	void Shader::Compile(const std::string& frag) {
+	void Shader::compile(const std::string& frag) {
 		mIsValid = true;
 		CHECKERR();
 		Log::LogPrintf("Compiling fragment shader.\n");
 
-		auto normalized_frag = NormalizeShaderSource(frag);
+		auto normalized_frag = normalize_shader_source(frag);
 		auto fragsh = glCreateShader(GL_FRAGMENT_SHADER);
 		auto src = normalized_frag.c_str();
 		const auto length = static_cast<GLint>(normalized_frag.size());
@@ -198,7 +198,7 @@ namespace Renderer {
 
 		mShaderHandle = glCreateProgram();
 		CHECKERR();
-		glAttachShader(mShaderHandle, DefaultShader::GetVertexShader());
+		glAttachShader(mShaderHandle, DefaultShader::get_vertex_shader());
 		CHECKERR();
 		glAttachShader(mShaderHandle, fragsh);
 		CHECKERR();
@@ -221,68 +221,68 @@ namespace Renderer {
         assert(glGetError() == 0);
 	}
 
-	void Shader::Bind() {
+	void Shader::bind() {
 		CHECKERR();
 		assert(glIsProgram(mShaderHandle));
-		if (mLastShader != mShaderHandle) {
-			mLastShader = mShaderHandle;
+		if (m_last_shader_ != mShaderHandle) {
+			m_last_shader_ = mShaderHandle;
 			glUseProgram(mShaderHandle);
 			CHECKERR();
 		}
 	}
 
-	void Shader::SetUniform(uint32_t Uniform, int i)
+	void Shader::SetUniform(const uint32_t uniform, const int i)
 	{
-		glUniform1i(Uniform, i);
+		glUniform1i(uniform, i);
 	}
 
-	void Shader::SetUniform(uint32_t Uniform, float A, float B, float C, float D)
+	void Shader::SetUniform(const uint32_t uniform, const float A, const float B, const float C, const float D)
 	{
-		glUniform4f(Uniform, A, B, C, D);
+		glUniform4f(uniform, A, B, C, D);
 	}
 
-	void Shader::SetUniform(uint32_t Uniform, glm::vec2 Pos)
+	void Shader::SetUniform(const uint32_t uniform, const glm::vec2 Pos)
 	{
-		glUniform2f(Uniform, Pos.x, Pos.y);
+		glUniform2f(uniform, Pos.x, Pos.y);
 	}
 
-	void Shader::SetUniform(uint32_t Uniform, glm::vec3 Pos)
+	void Shader::SetUniform(const uint32_t uniform, const glm::vec3 Pos)
 	{
-		glUniform3f(Uniform, Pos.x, Pos.y, Pos.z);
+		glUniform3f(uniform, Pos.x, Pos.y, Pos.z);
 	}
 
-	void Shader::SetUniform(uint32_t Uniform, float F)
+	void Shader::SetUniform(const uint32_t Uniform, const float F)
 	{
 		glUniform1f(Uniform, F);
 	}
 
-	void Shader::SetUniform(uint32_t Uniform, float *Matrix4x4)
+	void Shader::set_uniform(const uint32_t uniform, const float *matrix4_x4)
 	{
-		glUniformMatrix4fv(Uniform, 1, GL_FALSE, Matrix4x4);
+		glUniformMatrix4fv(uniform, 1, GL_FALSE, matrix4_x4);
 	}
 
-	int Shader::EnableAttribArray(uint32_t Attrib)
+	int Shader::enable_attrib_array(const uint32_t Attrib)
 	{
 		glEnableVertexAttribArray(Attrib);
 		return Attrib;
 	}
 
-	int Shader::DisableAttribArray(uint32_t Attrib)
+	int Shader::disable_attrib_array(const uint32_t Attrib)
 	{
 		glDisableVertexAttribArray(Attrib);
 		return Attrib;
 	}
 
-	uint32_t Shader::GetUniform(const std::string& uni) const {
+	uint32_t Shader::get_uniform(const std::string& uni) const {
 		return glGetUniformLocation(mShaderHandle, uni.c_str());
 	}
 
-	bool Shader::IsValid() const
+	bool Shader::is_valid() const
 	{
 		return mIsValid;
 	}
 
-	uint32_t DefaultShader::GetUniform(uint32_t uni) {
+	uint32_t DefaultShader::GetUniform(const uint32_t uni) {
 		assert(uni < NUM_SHADERVARS);
 		return uniforms[uni];
 	}

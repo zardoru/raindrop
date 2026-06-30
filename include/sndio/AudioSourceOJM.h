@@ -25,15 +25,15 @@ class AudioSourceOJM : public AudioDataSource, Interruptible
 public:
     AudioSourceOJM(Interruptible* Parent = nullptr);
     ~AudioSourceOJM();
-    bool Open(std::filesystem::path Filename) override;
+    bool open(std::filesystem::path Filename) override;
     std::shared_ptr<AudioSample> GetFromIndex(int Index);
-    void Seek(float Time) override;
-    uint32_t Read(short* buffer, size_t count) override;
+    void seek(float Time) override;
+    uint32_t read(short* buffer, size_t count) override;
 
-    size_t GetLength() override; // Always returns total samples. Frames = Length/Channels.
-    uint32_t GetRate() override; // Returns sampling rate of audio
-    uint32_t GetChannels() override; // Returns channels of audio
-    bool IsValid() override;
-    bool HasDataLeft() override;
+    size_t get_length() override; // Always returns total samples. Frames = Length/Channels.
+    uint32_t get_rate() override; // Returns sampling rate of audio
+    uint32_t get_channels() override; // Returns channels of audio
+    bool is_valid() override;
+    bool has_data_left() override;
     void SetPitch(double speed);
 };

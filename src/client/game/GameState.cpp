@@ -1,7 +1,6 @@
 #include <string>
 #include <mutex>
 #include <future>
-#include <fstream>
 #include <rmath.h>
 
 
@@ -35,10 +34,6 @@
 #include "Logging.h"
 #include "Audiofile.h"
 
-std::string DirectoryPrefix("data/");
-#define SkinsPrefix std::string("skins/")
-#define ScriptsPrefix std::string("scripts/")
-
 CfgVar StormIR_AppId    ("AppId", "StormIR");
 CfgVar StormIR_ClientKey("ClientKey", "StormIR");
 CfgVar StormIR_Username ("Username", "StormIR");
@@ -46,24 +41,15 @@ CfgVar StormIR_Password ("Pass", "StormIR");
 
 using namespace rd;
 
-void GameState::SetSystemFolder(const std::string folder)
+void GameState::set_system_folder(const std::string folder)
 {
-	DirectoryPrefix = folder;
-}
-
-bool GameState::FileExistsOnSkin(const char* Filename, const char* Skin)
-{
-    std::filesystem::path path(Skin);
-    path = DirectoryPrefix / (SkinsPrefix / path / Filename);
-
-    return std::filesystem::exists(path);
+	Filesystem.set_system_folder(folder);
 }
 
 GameState::GameState(): 
 	StageImage(nullptr), 
 	SongBG(nullptr)
 {
-    CurrentSkin = "default";
     SelectedSong = nullptr;
     SelectedChartGroup = nullptr;
     Database = nullptr;
@@ -83,40 +69,26 @@ GameState::GameState():
         Log::LogPrintf("[IR] StormIR appid or clientkey are missing. Could not connect.\n");
     }
 
-    // TODO: circular references are possible :(
-    std::filesystem::path SkinsDir(DirectoryPrefix + SkinsPrefix);
-    std::vector<std::filesystem::path> listing = Utility::GetFileListing(SkinsDir);;
-    for (const auto& s : listing)
-    {
-		auto st = s.filename().string();
-        std::ifstream fallback;
-        fallback.open((s / "fallback.txt").string());
-        if (fallback.is_open() && s != "default")
-        {
-            std::string ln;
-			while (getline(fallback, ln)) {
-				if (Utility::ToLower(ln) != Utility::ToLower(st))
-					Fallback[st].push_back(ln);
-			}
-        }
-        if (Fallback[st].empty()) Fallback[st].push_back("default");
-    }
-
 	// push the default player
-	AddActiveProfile("machine");
+	add_active_profile("machine");
 }
 
-std::filesystem::path GameState::GetSkinScriptFile(const char* Filename, const std::string& skin)
+GameFilesystem& GameState::filesystem()
 {
-    std::string Fn = Filename;
-
-    if (Fn.find(".lua") == std::string::npos)
-        Fn += ".lua";
-
-    return GetSkinFile(Fn, skin).replace_extension("");
+    return Filesystem;
 }
 
-std::shared_ptr<rd::Song> GameState::GetSelectedSongShared() const
+const GameFilesystem& GameState::filesystem() const
+{
+    return Filesystem;
+}
+
+std::filesystem::path GameState::get_skin_script_file(const char* Filename, const std::string& skin)
+{
+    return Filesystem.get_skin_script_file(Filename, skin);
+}
+
+std::shared_ptr<rd::Song> GameState::get_selected_song_shared() const
 {
 	if (SongWheel::GetInstance().GetSelectedSong())
 		return SongWheel::GetInstance().GetSelectedSong();
@@ -124,93 +96,79 @@ std::shared_ptr<rd::Song> GameState::GetSelectedSongShared() const
 		return SelectedSong;
 }
 
-std::shared_ptr<otoworm::ChartGroup> GameState::GetSelectedChartGroupShared() const
+std::shared_ptr<otoworm::ChartGroup> GameState::get_selected_chart_group_shared() const
 {
-    if (auto song = SongWheel::GetInstance().GetSelectedSong())
+    if (const auto song = SongWheel::GetInstance().GetSelectedSong())
         return song->OtoChartGroup;
     return SelectedChartGroup;
 }
 
-std::string GameState::GetFirstFallbackSkin()
+std::string GameState::get_first_fallback_skin()
 {
-    return Fallback[GetSkin()][0];
+    return Filesystem.get_first_fallback_skin();
 }
 
-GameState& GameState::GetInstance()
+GameState& GameState::get_instance()
 {
     static auto* StateInstance = new GameState;
     return *StateInstance;
 }
 
-void GameState::SetSelectedSong(std::shared_ptr<Song> sng)
+void GameState::set_selected_song(std::shared_ptr<Song> sng)
 {
 	SelectedSong = sng;
     SelectedChartGroup = SelectedSong ? SelectedSong->OtoChartGroup : nullptr;
 }
 
-void GameState::SetSelectedChartGroup(std::shared_ptr<otoworm::ChartGroup> chart_group)
+void GameState::set_selected_chart_group(std::shared_ptr<otoworm::ChartGroup> chart_group)
 {
     SelectedChartGroup = std::move(chart_group);
 }
 
-Song *GameState::GetSelectedSong() const
+Song *GameState::get_selected_song() const
 {
-	auto p = SongWheel::GetInstance().GetSelectedSong().get();
+	const auto p = SongWheel::GetInstance().GetSelectedSong().get();
     return p ? p : SelectedSong.get();
 }
 
-otoworm::ChartGroup *GameState::GetSelectedChartGroup() const
+otoworm::ChartGroup *GameState::get_selected_chart_group() const
 {
-    return GetSelectedChartGroupShared().get();
+    return get_selected_chart_group_shared().get();
 }
 
-void GameState::StartScreenTransition(std::string target)
+void GameState::start_screen_transition(std::string target) const
 {
 	if (target.find("custom") == 0) {
 		auto res = Utility::TokenSplit(target, ":");
 		if (res.size() == 2)
 		{
-			auto scr = std::make_shared<ScreenCustom>(res[1]);
+			const auto scr = std::make_shared<ScreenCustom>(res[1]);
 			RootScreen->GetTop()->StartTransition(scr);
 		}
 	}
 	else if (target == "songselect") {
-		auto scr = std::make_shared<ScreenSelectMusic>();
+		const auto scr = std::make_shared<ScreenSelectMusic>();
 		scr->Init();
 		RootScreen->GetTop()->StartTransition(scr);
 	}
 }
 
-void GameState::ExitCurrentScreen()
+void GameState::exit_current_screen() const
 {
 	RootScreen->GetTop()->Close();
 }
 
-std::filesystem::path GameState::GetSkinFile(const std::string &Name, const std::string &Skin)
+std::filesystem::path GameState::get_skin_file(const std::string &Name, const std::string &Skin)
 {
-    std::string Test = GetSkinPrefix(Skin) + Name;
-
-    if (std::filesystem::exists(Test))
-        return Test;
-
-    if (Fallback.contains(Skin))
-    {
-        for (auto &s : Fallback[Skin])
-        {
-            if (FileExistsOnSkin(Name.c_str(), s.c_str()))
-                return GetSkinFile(Name, s);
-        }
-    }
-
-    return Test;
+    return Filesystem.get_skin_file(Name, Skin);
 }
 
-std::filesystem::path GameState::GetSkinFile(const std::string& Name)
+std::filesystem::path GameState::get_skin_file(const std::string& Name)
 {
-    return GetSkinFile(Name, GetSkin());
+    return Filesystem.get_skin_file(Name);
 }
 
-void GameState::Initialize()
+void GameState::initialize()
 {
     if (!Database)
     {
@@ -221,76 +179,66 @@ void GameState::Initialize()
     }
 }
 
-std::string GameState::GetDirectoryPrefix()
+std::string GameState::get_directory_prefix()
 {
-    return DirectoryPrefix;
+	return get_instance().filesystem().get_directory_prefix();
 }
 
-std::string GameState::GetSkinPrefix()
+std::string GameState::get_skin_prefix()
 {
-    // I wonder if a directory transversal is possible. Or useful, for that matter.
-    return GetSkinPrefix(GetSkin());
+    return Filesystem.get_skin_prefix();
 }
 
-std::string GameState::GetSkinPrefix(const std::string& skin)
+std::string GameState::get_skin_prefix(const std::string& skin)
 {
-    return DirectoryPrefix + SkinsPrefix + skin + "/";
+    return get_instance().filesystem().get_skin_prefix(skin);
 }
 
-void GameState::SetSkin(std::string Skin)
+void GameState::set_skin(const std::string& Skin)
 {
-    CurrentSkin = Skin;
+    Filesystem.set_skin(Skin);
 }
 
-std::string GameState::GetScriptsDirectory()
+std::string GameState::get_scripts_directory()
 {
-    return DirectoryPrefix + ScriptsPrefix;
+    return get_instance().filesystem().get_scripts_directory();
 }
 
-SongDatabase* GameState::GetSongDatabase()
+SongDatabase* GameState::get_song_database() const
 {
     return Database;
 }
 
-std::filesystem::path GameState::GetFallbackSkinFile(const std::string &Name)
+std::filesystem::path GameState::get_fallback_skin_file(const std::string &Name)
 {
-    std::string Skin = GetSkin();
-
-    if (Fallback.find(Skin) != Fallback.end())
-    {
-        for (auto s : Fallback[Skin])
-            if (FileExistsOnSkin(Name.c_str(), s.c_str()))
-                return GetSkinFile(Name, s);
-    }
-
-    return GetSkinPrefix() + Name;
+    return Filesystem.get_fallback_skin_file(Name);
 }
 
-bool GameState::PlayerNumberInBounds(int pn) const
+bool GameState::player_number_in_bounds(int pn) const
 {
 	return pn >= 0 && pn < PlayerInfo.size();
 }
 
-void GameState::SetPlayerContext(PlayerContext * pc, int pn)
+void GameState::set_player_context(PlayerContext * pc, int pn)
 {
-	if (PlayerNumberInBounds(pn)) {
+	if (player_number_in_bounds(pn)) {
 		PlayerInfo[pn].ctx = pc;
 	}
 }
 
-int GameState::GetCurrentGaugeType(int pn) const
+int GameState::get_current_gauge_type(int pn) const
 {
-	if (PlayerNumberInBounds(pn))
+	if (player_number_in_bounds(pn))
 		return PlayerInfo[pn].ctx ? PlayerInfo[pn].ctx->GetCurrentGaugeType() : PlayerInfo[pn].play_parameters.GaugeType;
 	return 0;
 }
 
-Texture* GameState::GetSongBG()
+Texture* GameState::get_song_bg()
 {
-    auto chart_group = GetSelectedChartGroupShared();
+    const auto chart_group = get_selected_chart_group_shared();
 	if (chart_group)
 	{
-		auto toLoad = chart_group->path / chart_group->background_filename;
+		const auto toLoad = chart_group->path / chart_group->background_filename;
 
 		if (std::filesystem::exists(toLoad))
 		{
@@ -306,21 +254,21 @@ Texture* GameState::GetSongBG()
 	return nullptr;
 }
 
-Texture* GameState::GetSongStage()
+Texture* GameState::get_song_stage()
 {
-	auto chart_group = GetSelectedChartGroupShared();
+	const auto chart_group = get_selected_chart_group_shared();
 	if (chart_group)
 	{
 		if (PlayerInfo[0].active_chart)
 		{
-			auto chart = PlayerInfo[0].active_chart;
+			const auto chart = PlayerInfo[0].active_chart;
 			std::filesystem::path File = Database->GetStageFile(static_cast<int>(chart->id));
 
 			// Oh so it's loaded and it's not in the database, fine.
 			if (File.wstring().length() == 0 && chart->transient)
 				File = chart->transient->stage_file;
 
-			auto toLoad = chart_group->path / File;
+			const auto toLoad = chart_group->path / File;
 
 			// ojn files use their cover inside the very ojn
 			if (File.extension() == ".ojn")
@@ -351,93 +299,91 @@ Texture* GameState::GetSongStage()
 	return nullptr;
 }
 
-Texture* GameState::GetSkinImage(const std::string& Path)
+Texture* GameState::get_skin_image(const std::string& Path)
 {
     /* Special paths */
     if (Path == "STAGEFILE")
-	    return GetSongStage();
+	    return get_song_stage();
 
     if (Path == "SONGBG")
-	    return GetSongBG();
+	    return get_song_bg();
 
     /* Regular paths */
     if (Path.length())
-        return ImageLoader::Load(GetSkinFile(Path, GetSkin()));
+        return ImageLoader::Load(Filesystem.get_skin_file(Path));
 
 	// no path?
     return nullptr;
 }
 
-bool GameState::SkinSupportsChannelCount(int Count)
+bool GameState::skin_supports_channel_count(int Count)
 {
-    char nstr[256];
-    snprintf(nstr, sizeof nstr, "Channels%d", Count);
-    return Configuration::ListExists(nstr);
+    return get_instance().filesystem().skin_supports_channel_count(Count);
 }
 
-std::string GameState::GetSkin()
+std::string GameState::get_skin()
 {
-    return CurrentSkin;
+    return Filesystem.get_skin();
 }
 
-rd::ScoreKeeper* GameState::GetScorekeeper7K(int pn)
+rd::ScoreKeeper* GameState::get_scorekeeper7_k(int pn)
 {
-	if (PlayerNumberInBounds(pn))
+	if (player_number_in_bounds(pn))
 		return PlayerInfo[pn].scorekeeper.get();
 	else return nullptr;
 }
 
-void GameState::SetScorekeeper7K(std::shared_ptr<rd::ScoreKeeper> Other, int pn)
+void GameState::set_scorekeeper7_k(std::shared_ptr<rd::ScoreKeeper> other, int pn)
 {
-    if (PlayerNumberInBounds(pn))
-		PlayerInfo[pn].scorekeeper = Other;
+    if (player_number_in_bounds(pn))
+		PlayerInfo[pn].scorekeeper = other;
 }
 
 
-int GameState::GetCurrentScoreType(int pn) const
+int GameState::get_current_score_type(int pn) const
 {
-	if (PlayerNumberInBounds(pn))
+	if (player_number_in_bounds(pn))
 		return PlayerInfo[pn].play_parameters.GetScoringType();
 	else
 		return 0;
 }
 
-int GameState::GetCurrentSystemType(int pn) const
+int GameState::get_current_system_type(int pn) const
 {
-	if (PlayerNumberInBounds(pn))
-		return PlayerInfo[pn].ctx ? PlayerInfo[pn].ctx->GetCurrentSystemType() : PlayerInfo[pn].play_parameters.SystemType;
+	if (player_number_in_bounds(pn))
+		return PlayerInfo[pn].ctx ? PlayerInfo[pn].ctx->get_current_system_type() : PlayerInfo[pn].play_parameters.SystemType;
 	else
 		return 0;
 }
 
-void GameState::SetChart(std::shared_ptr<otoworm::Chart> chart, int pn)
+void GameState::set_chart(std::shared_ptr<otoworm::Chart> chart, int pn)
 {
-    if (PlayerNumberInBounds(pn))
+    if (player_number_in_bounds(pn))
         PlayerInfo[pn].active_chart = std::move(chart);
 }
 
-int GameState::GetPlayerCount() const
+int GameState::get_player_count() const
 {
 	return PlayerInfo.size();
 }
 
-void GameState::SubmitScore(int pn)
+void GameState::submit_score(int pn)
 {
-	if (!PlayerNumberInBounds(pn))
+	if (!player_number_in_bounds(pn))
 		return;
 
-	auto *player = &PlayerInfo[pn];
-	auto chart = GetChartShared(pn);
-	auto chart_group = GetSelectedChartGroupShared();
-	auto replay = player->ctx->GetReplay();
+	const auto *player = &PlayerInfo[pn];
+	const auto chart = get_chart_shared(pn);
+	const auto chart_group = get_selected_chart_group_shared();
+	const auto replay = player->ctx->get_replay();
 
 	if (replay.GetEffectiveParameters().Auto)
 		return;
 
-	auto scorekeeper = *player->scorekeeper;
-	auto drift = player->ctx->GetDrift();
-	auto joffset = player->ctx->GetJudgeOffset();
-	auto &song = *GetSelectedSong();
+	const auto scorekeeper = *player->scorekeeper;
+	const auto drift = player->ctx->get_drift();
+	const auto joffset = player->ctx->get_judge_offset();
+	const auto &song = *get_selected_song();
 
     auto submitfunc = [=, this] {
         player->profile->Scores.AddScore(
@@ -465,36 +411,36 @@ void GameState::SubmitScore(int pn)
     t.detach();
 }
 
-bool GameState::IsSongUnlocked(rd::Song * song)
+bool GameState::is_song_unlocked(rd::Song * song)
 {
 	return true;
 }
 
-void GameState::UnlockSong(rd::Song * song)
+void GameState::unlock_song(rd::Song * song)
 {
 }
 
-void GameState::SetRootScreen(std::shared_ptr<Screen> root)
+void GameState::set_root_screen(std::shared_ptr<Screen> root)
 {
 	RootScreen = root;
 }
 
-std::shared_ptr<Screen> GameState::GetCurrentScreen()
+std::shared_ptr<Screen> GameState::get_current_screen()
 {
 	return std::shared_ptr<Screen>();
 }
 
-std::shared_ptr<Screen> GameState::GetNextScreen()
+std::shared_ptr<Screen> GameState::get_next_screen()
 {
 	return std::shared_ptr<Screen>();
 }
 
-void GameState::SortWheelBy(int criteria)
+void GameState::sort_wheel_by(int criteria)
 {
 	SongWheel::GetInstance().SortBy(static_cast<ESortCriteria>(criteria));
 }
 
-void GameState::AddActiveProfile(const std::string &profile_name) {
+void GameState::add_active_profile(const std::string &profile_name) {
     PlayerInfo.emplace_back();
     auto *new_player = &PlayerInfo.back();
     new_player->profile = new Profile();

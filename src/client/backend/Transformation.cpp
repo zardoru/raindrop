@@ -20,25 +20,25 @@ Transformation::Transformation()
 }
 
 // Scale
-void Transformation::SetScale(Vec2 Scale)
+void Transformation::SetScale(const Vec2 Scale)
 {
     mScale = Scale;
     mDirtyMatrix = true;
 }
 
-void Transformation::SetScale(float Scale)
+void Transformation::SetScale(const float Scale)
 {
     SetScaleX(Scale);
     SetScaleY(Scale);
 }
 
-void Transformation::SetScaleX(float ScaleX)
+void Transformation::SetScaleX(const float ScaleX)
 {
     mScale.x = ScaleX;
     mDirtyMatrix = true;
 }
 
-void Transformation::SetScaleY(float ScaleY)
+void Transformation::SetScaleY(const float ScaleY)
 {
     mScale.y = ScaleY;
     mDirtyMatrix = true;
@@ -50,49 +50,49 @@ Vec2 Transformation::GetScale() const
 }
 
 // Position
-void Transformation::SetPosition(Vec2 Pos)
+void Transformation::SetPosition(const Vec2 Pos)
 {
     mPosition = Pos;
     mDirtyMatrix = true;
 }
 
-void Transformation::SetPosition(float pX, float pY)
+void Transformation::SetPosition(const float pX, const float pY)
 {
     SetPositionX(pX);
     SetPositionY(pY);
 }
 
-void Transformation::SetPositionX(float pX)
+void Transformation::SetPositionX(const float pX)
 {
     mPosition.x = pX;
     mDirtyMatrix = true;
 }
 
-void Transformation::SetPositionY(float pY)
+void Transformation::SetPositionY(const float pY)
 {
     mPosition.y = pY;
     mDirtyMatrix = true;
 }
 
-void Transformation::AddPosition(float pX, float pY)
+void Transformation::AddPosition(const float pX, const float pY)
 {
     mPosition.x += pX;
     mPosition.y += pY;
     mDirtyMatrix = true;
 }
 
-void Transformation::AddPosition(Vec2 pos)
+void Transformation::AddPosition(const Vec2 pos)
 {
     mPosition += pos;
     mDirtyMatrix = true;
 }
 
-void Transformation::AddPositionX(float pX)
+void Transformation::AddPositionX(const float pX)
 {
     AddPosition(pX, 0);
 }
 
-void Transformation::AddPositionY(float pY)
+void Transformation::AddPositionY(const float pY)
 {
     AddPosition(0, pY);
 }
@@ -103,30 +103,30 @@ Vec2 Transformation::GetPosition() const
 }
 
 // Size
-void Transformation::SetSize(Vec2 Size)
+void Transformation::SetSize(const Vec2 Size)
 {
     mWidth = Size.x;
     mHeight = Size.y;
     mDirtyMatrix = true;
 }
 
-void Transformation::SetSize(float Size)
+void Transformation::SetSize(const float Size)
 {
     SetSize(Vec2(Size, Size));
 }
 
-void Transformation::SetSize(float W, float H)
+void Transformation::SetSize(const float W, const float H)
 {
     SetSize(Vec2(W, H));
 }
 
-void Transformation::SetWidth(float W)
+void Transformation::SetWidth(const float W)
 {
     mWidth = W;
     mDirtyMatrix = true;
 }
 
-void Transformation::SetHeight(float H)
+void Transformation::SetHeight(const float H)
 {
     mHeight = H;
     mDirtyMatrix = true;
@@ -148,7 +148,7 @@ float Transformation::GetHeight() const
 }
 
 // Rotation
-void Transformation::SetRotation(float Rot)
+void Transformation::SetRotation(const float Rot)
 {
     mRotation = Rot;
     mDirtyMatrix = true;
@@ -159,7 +159,7 @@ float Transformation::GetRotation() const
     return mRotation;
 }
 
-void Transformation::AddRotation(float Rot)
+void Transformation::AddRotation(const float Rot)
 {
     mRotation += Rot;
 
@@ -173,7 +173,7 @@ uint32_t Transformation::GetZ() const
     return mLayer;
 }
 
-void Transformation::SetZ(uint32_t Z)
+void Transformation::SetZ(const uint32_t Z)
 {
     mLayer = Z;
     mDirtyMatrix = true;

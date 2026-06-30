@@ -2,6 +2,7 @@
 
 #include <ChartGroup.h>
 #include "PlayscreenParameters.h"
+#include "../structure/GameFilesystem.h"
 
 
 class SongDatabase;
@@ -26,7 +27,7 @@ namespace StormIR {
 
 class GameState
 {
-    std::string CurrentSkin;
+    GameFilesystem Filesystem;
     SongDatabase* Database;
 
     Texture* StageImage;
@@ -45,88 +46,86 @@ class GameState
 
     std::vector<SPlayerCurrent7K> PlayerInfo;
 
-    std::map<std::string, std::vector<std::string>> Fallback; // 2nd is 1st's fallback
-
-
     std::shared_ptr<Screen> RootScreen;
-    static bool FileExistsOnSkin(const char* Filename, const char* Skin);
 public:
 
     GameState();
-    std::filesystem::path GetSkinScriptFile(const char* Filename, const std::string& Skin);
-    std::shared_ptr<rd::Song> GetSelectedSongShared() const;
-    std::shared_ptr<otoworm::ChartGroup> GetSelectedChartGroupShared() const;
-    std::string GetFirstFallbackSkin();
-    static GameState &GetInstance();
-    void Initialize();
+    GameFilesystem& filesystem();
+    const GameFilesystem& filesystem() const;
+    std::filesystem::path get_skin_script_file(const char* Filename, const std::string& Skin);
+    std::shared_ptr<rd::Song> get_selected_song_shared() const;
+    std::shared_ptr<otoworm::ChartGroup> get_selected_chart_group_shared() const;
+    std::string get_first_fallback_skin();
+    static GameState &get_instance();
+    void initialize();
 
     /* Defines Difficulty/Song/Playscreen/Gamestate
      and defines Global as the Gamestate singleton */
-    void InitializeLua(lua_State *L);
+    void initialize_lua(lua_State *L);
 
-    std::string GetDirectoryPrefix();
-    std::string GetSkinPrefix();
-    static std::string GetSkinPrefix(const std::string &skin);
-    static std::string GetScriptsDirectory();
-    void SetSkin(std::string NextSkin);
-    Texture* GetSkinImage(const std::string& Texture);
-    static bool SkinSupportsChannelCount(int Count);
-    std::string GetSkin();
+    static std::string get_directory_prefix();
+    std::string get_skin_prefix();
+    static std::string get_skin_prefix(const std::string &skin);
+    static std::string get_scripts_directory();
+    void set_skin(const std::string& NextSkin);
+    Texture* get_skin_image(const std::string& Texture);
+    static bool skin_supports_channel_count(int Count);
+    std::string get_skin();
 
-    void SetSelectedSong(std::shared_ptr<rd::Song> song);
-    void SetSelectedChartGroup(std::shared_ptr<otoworm::ChartGroup> chart_group);
-    rd::Song *GetSelectedSong() const;
-    otoworm::ChartGroup *GetSelectedChartGroup() const;
+    void set_selected_song(std::shared_ptr<rd::Song> song);
+    void set_selected_chart_group(std::shared_ptr<otoworm::ChartGroup> chart_group);
+    rd::Song *get_selected_song() const;
+    otoworm::ChartGroup *get_selected_chart_group() const;
 
-    Texture* GetSongBG();
-    Texture* GetSongStage();
+    Texture* get_song_bg();
+    Texture* get_song_stage();
 
-    void StartScreenTransition(std::string target);
-    void ExitCurrentScreen();
+    void start_screen_transition(std::string target) const;
+    void exit_current_screen() const;
 
-    std::filesystem::path GetSkinFile(const std::string &Name, const std::string &Skin);
-    std::filesystem::path GetSkinFile(const std::string &Name);
-    std::filesystem::path GetFallbackSkinFile(const std::string &Name);
+    std::filesystem::path get_skin_file(const std::string &Name, const std::string &Skin);
+    std::filesystem::path get_skin_file(const std::string &Name);
+    std::filesystem::path get_fallback_skin_file(const std::string &Name);
 
-    SongDatabase* GetSongDatabase();
+    SongDatabase* get_song_database() const;
 
-    void SortWheelBy(int criteria);
+    void sort_wheel_by(int criteria);
 
     /* Player-number dependant functions */
-    bool PlayerNumberInBounds(int pn) const;
+    bool player_number_in_bounds(int pn) const;
 
-    void SetPlayerContext(PlayerContext* pc, int pn);
+    void set_player_context(PlayerContext* pc, int pn);
 
     // VSRG Gauge Type
-    int GetCurrentGaugeType(int pn) const;
+    int get_current_gauge_type(int pn) const;
 
     // VSRG score system
-    int GetCurrentScoreType(int pn) const;
+    int get_current_score_type(int pn) const;
 
     // VSRG subsystem
-    int GetCurrentSystemType(int pn) const;
+    int get_current_system_type(int pn) const;
 
     // Note: Returning a shared_ptr causes lua to fail an assertion, since shared_ptr is not registered.
-    rd::ScoreKeeper* GetScorekeeper7K(int pn);
-    void SetScorekeeper7K(std::shared_ptr<rd::ScoreKeeper> Other, int pn);
+    rd::ScoreKeeper* get_scorekeeper7_k(int pn);
+    void set_scorekeeper7_k(std::shared_ptr<rd::ScoreKeeper> other, int pn);
 
-    PlayscreenParameters* GetParameters(int pn);
-    rd::Difficulty* GetDifficulty(int pn);
-    std::shared_ptr<rd::Difficulty> GetDifficultyShared(int pn);
-    otoworm::Chart* GetChart(int pn);
-    std::shared_ptr<otoworm::Chart> GetChartShared(int pn);
-    void SetChart(std::shared_ptr<otoworm::Chart> chart, int pn);
-    int GetPlayerCount() const;
-    void SubmitScore(int pn);
+    PlayscreenParameters* get_parameters(int pn);
+    rd::Difficulty* get_difficulty(int pn);
+    std::shared_ptr<rd::Difficulty> get_difficulty_shared(int pn);
+    otoworm::Chart* get_chart(int pn);
+    std::shared_ptr<otoworm::Chart> get_chart_shared(int pn);
+    void set_chart(std::shared_ptr<otoworm::Chart> chart, int pn);
+    int get_player_count() const;
+    void submit_score(int pn);
 
-    bool IsSongUnlocked(rd::Song *song);
-    void UnlockSong(rd::Song *song);
+    bool is_song_unlocked(rd::Song *song);
+    void unlock_song(rd::Song *song);
 
-    void SetSystemFolder(const std::string folder);
+    void set_system_folder(const std::string folder);
 
-    void SetRootScreen(std::shared_ptr<Screen> root);
-    static std::shared_ptr<Screen> GetCurrentScreen();
-    std::shared_ptr<Screen> GetNextScreen();
+    void set_root_screen(std::shared_ptr<Screen> root);
+    static std::shared_ptr<Screen> get_current_screen();
+    std::shared_ptr<Screen> get_next_screen();
 
-    void AddActiveProfile(const std::string &profile_name);
+    void add_active_profile(const std::string &profile_name);
 };

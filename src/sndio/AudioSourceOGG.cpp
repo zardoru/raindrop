@@ -28,13 +28,13 @@ public:
     and I can only respond - ogg on libsndfile is broken as hell.
 */
 
-size_t readOGG(void* ptr, size_t size, size_t nmemb, void* p)
+size_t readOGG(void* ptr, const size_t size, const size_t nmemb, void* p)
 {
     FILE* fp = static_cast<FILE*>(p);
     return fread(ptr, size, nmemb, fp);
 }
 
-int seekOGG(void* p, ogg_int64_t offs, int whence)
+int seekOGG(void* p, const ogg_int64_t offs, const int whence)
 {
     FILE* fp = static_cast<FILE*>(p);
     return fseek(fp, offs, whence);
@@ -74,7 +74,7 @@ AudioSourceOGG::~AudioSourceOGG()
         ov_clear(&internal->mOggFile);
 }
 
-bool AudioSourceOGG::Open(std::filesystem::path Filename)
+bool AudioSourceOGG::open(const std::filesystem::path Filename)
 {
 #if !(defined WIN32) || (defined MINGW)
     int32_t retv = ov_fopen(Conversion::ToU8(Filename.wstring()).c_str(), &internal->mOggFile);
@@ -107,7 +107,7 @@ bool AudioSourceOGG::Open(std::filesystem::path Filename)
     return mIsValid;
 }
 
-uint32_t AudioSourceOGG::Read(short* buffer, size_t count)
+uint32_t AudioSourceOGG::read(short* buffer, const size_t count)
 {
     size_t size;
     size_t read = 0;
@@ -157,32 +157,32 @@ uint32_t AudioSourceOGG::Read(short* buffer, size_t count)
     return read / sizeof(short);
 }
 
-void AudioSourceOGG::Seek(float Time)
+void AudioSourceOGG::seek(const float Time)
 {
     mSeekTime = Time;
 }
 
-size_t AudioSourceOGG::GetLength()
+size_t AudioSourceOGG::get_length()
 {
     return ov_pcm_total(&internal->mOggFile, -1);
 }
 
-uint32_t AudioSourceOGG::GetRate()
+uint32_t AudioSourceOGG::get_rate()
 {
     return internal->info->rate;
 }
 
-uint32_t AudioSourceOGG::GetChannels()
+uint32_t AudioSourceOGG::get_channels()
 {
     return internal->info->channels;
 }
 
-bool AudioSourceOGG::IsValid()
+bool AudioSourceOGG::is_valid()
 {
     return mIsValid;
 }
 
-bool AudioSourceOGG::HasDataLeft()
+bool AudioSourceOGG::has_data_left()
 {
     return mIsDataLeft;
 }

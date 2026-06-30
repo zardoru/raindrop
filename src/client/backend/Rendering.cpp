@@ -31,18 +31,18 @@
 
 #include "../structure/Configuration.h"
 
-const ColorRGB White = { 1, 1, 1, 1 };
-const ColorRGB Black = { 0, 0, 0, 1 };
-const ColorRGB Red = { 1, 0, 0, 1 };
-const ColorRGB Green = { 0, 1, 0, 1 };
-const ColorRGB Blue = { 0, 0, 1, 1 };
+constexpr ColorRGB White = { 1, 1, 1, 1 };
+constexpr ColorRGB Black = { 0, 0, 0, 1 };
+constexpr ColorRGB Red = { 1, 0, 0, 1 };
+constexpr ColorRGB Green = { 0, 1, 0, 1 };
+constexpr ColorRGB Blue = { 0, 0, 1, 1 };
 
 
-namespace Renderer {
-	VBO* QuadBuffer = nullptr;
-	VBO* TextureBuffer = nullptr;
-	VBO* TempTextureBuffer = nullptr;
-	VBO* ColorBuffer = nullptr;
+namespace renderer {
+	VBO* quad_buffer = nullptr;
+	VBO* texture_buffer = nullptr;
+	VBO* temp_texture_buffer = nullptr;
+	VBO* color_buffer = nullptr;
 	Texture* xor_tex = nullptr;
 
 	float QuadPositions[8] =
@@ -66,30 +66,30 @@ namespace Renderer {
 		1, 1, 1, 1
 	};
 
-	void DoQuadDraw()
+	void do_quad_draw()
 	{
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	}
 
-	void DrawPrimitiveQuad(Transformation &QuadTransformation, const EBlendMode &Mode, const ColorRGB &Color)
+	void draw_primitive_quad(Transformation &QuadTransformation, const EBlendMode &Mode, const ColorRGB &Color)
 	{
 		Texture::Unbind();
 		Shader::SetUniform(DefaultShader::GetUniform(U_COLOR), Color.Red, Color.Green, Color.Blue, Color.Alpha);
 
-		SetBlendingMode(Mode);
+		set_blending_mode(Mode);
 
 		Mat4 Mat = QuadTransformation.GetMatrix();
-		Shader::SetUniform(DefaultShader::GetUniform(U_MODELVIEW), &(Mat[0][0]));
+		Shader::set_uniform(DefaultShader::GetUniform(U_MODELVIEW), &(Mat[0][0]));
 
 		// Assign position attrib. pointer
-		SetPrimitiveQuadVBO();
-		DoQuadDraw();
-		FinalizeDraw();
+		set_primitive_quad_vbo();
+		do_quad_draw();
+		finalize_draw();
 
 		Texture::ForceRebind();
 	}
 
-	void SetXorTexParameters() {
+	void set_xor_tex_parameters() {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -97,24 +97,24 @@ namespace Renderer {
 	}
 
 	static bool Initialized = false;
-	void InitializeRender()
+	void initialize()
 	{
 		if (!Initialized)
 		{
-			QuadBuffer = new VBO(VBO::Static, sizeof(QuadPositions) / sizeof(float));
-			QuadBuffer->AssignData(QuadPositions);
+			quad_buffer = new VBO(VBO::Static, sizeof(QuadPositions) / sizeof(float));
+			quad_buffer->assign_data(QuadPositions);
 			assert(glGetError() == 0);
 
-			TextureBuffer = new VBO(VBO::Static, sizeof(QuadPositions) / sizeof(float));
-			TextureBuffer->AssignData(QuadPositions);
+			texture_buffer = new VBO(VBO::Static, sizeof(QuadPositions) / sizeof(float));
+			texture_buffer->assign_data(QuadPositions);
             assert(glGetError() == 0);
 
-			TempTextureBuffer = new VBO(VBO::Static, sizeof(QuadPositions) / sizeof(float));
-			TempTextureBuffer->AssignData(QuadPositions);
+			temp_texture_buffer = new VBO(VBO::Static, sizeof(QuadPositions) / sizeof(float));
+			temp_texture_buffer->assign_data(QuadPositions);
             assert(glGetError() == 0);
 
-			ColorBuffer = new VBO(VBO::Static, sizeof(QuadColours) / sizeof(float));
-			ColorBuffer->AssignData(QuadColours);
+			color_buffer = new VBO(VBO::Static, sizeof(QuadColours) / sizeof(float));
+			color_buffer->assign_data(QuadColours);
             assert(glGetError() == 0);
 
 			// create xor texture
@@ -137,7 +137,7 @@ namespace Renderer {
 
 			xor_tex->fname = "xor";
 
-			SetXorTexParameters(); // it's bound by SetTextureData2D, apply parameters
+			set_xor_tex_parameters(); // it's bound by SetTextureData2D, apply parameters
             assert(glGetError() == 0);
 
 			ImageLoader::RegisterTexture(xor_tex);
@@ -148,13 +148,13 @@ namespace Renderer {
 		}
 	}
 
-	Texture* GetXorTexture(){
+	Texture* get_xor_texture(){
 		return xor_tex;
 	}
 
 	
 
-	void SetTextureParameters(std::string Dir)
+	void set_texture_parameters(std::string Dir)
 	{
 		auto wrapS = GL_CLAMP_TO_EDGE, wrapT = GL_CLAMP_TO_EDGE;
 		if (Configuration::GetTextureParameter(Dir, "wrap-s") == "clamp-edge")
@@ -238,7 +238,7 @@ namespace Renderer {
         }
     }
 
-	void SetBlendingMode(EBlendMode Mode)
+	void set_blending_mode(const EBlendMode Mode)
 	{
 		if (Mode == BLEND_ADD)
 		{
@@ -252,38 +252,38 @@ namespace Renderer {
 		}
 	}
 
-	void SetPrimitiveQuadVBO()
+	void set_primitive_quad_vbo()
 	{
-		QuadBuffer->Bind();
-		glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_POSITION)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
-		glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_UV)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
-		ColorBuffer->Bind();
-		glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_COLOR)), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
+		quad_buffer->bind();
+		glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::GetUniform(A_POSITION)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+		glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::GetUniform(A_UV)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+		color_buffer->bind();
+		glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::GetUniform(A_COLOR)), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
 	}
 
-	void SetTexturedQuadVBO(VBO *TexQuad)
+	void set_textured_quad_vbo(VBO *TexQuad)
 	{
-		QuadBuffer->Bind();
-		glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_POSITION)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
-		TexQuad->Bind();
-		glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_UV)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
-		ColorBuffer->Bind();
-		glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_COLOR)), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
+		quad_buffer->bind();
+		glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::GetUniform(A_POSITION)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+		TexQuad->bind();
+		glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::GetUniform(A_UV)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+		color_buffer->bind();
+		glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::GetUniform(A_COLOR)), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
 	}
 
-	void FinalizeDraw()
+	void finalize_draw()
 	{
-		Shader::DisableAttribArray(DefaultShader::GetUniform(A_POSITION));
-		Shader::DisableAttribArray(DefaultShader::GetUniform(A_UV));
-		Shader::DisableAttribArray(DefaultShader::GetUniform(A_COLOR));
+		Shader::disable_attrib_array(DefaultShader::GetUniform(A_POSITION));
+		Shader::disable_attrib_array(DefaultShader::GetUniform(A_UV));
+		Shader::disable_attrib_array(DefaultShader::GetUniform(A_COLOR));
 	}
 
-	void SetShaderParameters(bool InvertColor,
-		bool UseGlobalLight, bool Centered, bool UseSecondTransformationMatrix,
-		bool BlackToTransparent, bool ReplaceColor,
-		int8_t HiddenMode)
+	void set_shader_parameters(const bool InvertColor,
+                               const bool Centered,
+                               const bool BlackToTransparent, const bool ReplaceColor,
+                               const int8_t HiddenMode)
 	{
-		DefaultShader::StaticBind();
+		DefaultShader::static_bind();
 		Shader::SetUniform(DefaultShader::GetUniform(U_INVERT), InvertColor);
 
 		if (HiddenMode == -1)
@@ -297,7 +297,7 @@ namespace Renderer {
 		Shader::SetUniform(DefaultShader::GetUniform(U_CENTERED), Centered);
 	}
 
-	void DrawTexturedQuad(Texture* ToDraw, const AABB& TextureCrop, const Transformation& QuadTransformation,
+	void draw_textured_quad(Texture* ToDraw, const AABB& TextureCrop, const Transformation& QuadTransformation,
 		const EBlendMode &Mode, const ColorRGB &InColor)
 	{
 		if (ToDraw)
@@ -306,7 +306,7 @@ namespace Renderer {
 
 		Shader::SetUniform(DefaultShader::GetUniform(U_COLOR), InColor.Red, InColor.Green, InColor.Blue, InColor.Alpha);
 
-		SetBlendingMode(Mode);
+		set_blending_mode(Mode);
 
 		float CropPositions[8] = {
 			// topright
@@ -323,54 +323,54 @@ namespace Renderer {
 			TextureCrop.P2.Y / float(ToDraw->h),
 		};
 
-		TempTextureBuffer->AssignData(CropPositions);
-		SetTexturedQuadVBO(TempTextureBuffer);
+		temp_texture_buffer->assign_data(CropPositions);
+		set_textured_quad_vbo(temp_texture_buffer);
 
-		DoQuadDraw();
+		do_quad_draw();
 
-		FinalizeDraw();
+		finalize_draw();
 	}
 	
-	VBO* GetDefaultGeometryBuffer()
+	VBO* get_default_geometry_buffer()
 	{
-		return QuadBuffer;
+		return quad_buffer;
 	}
 	
-	VBO* GetDefaultTextureBuffer()
+	VBO* get_default_texture_buffer()
 	{
-		return TextureBuffer;
+		return texture_buffer;
 	}
 
-	VBO* GetDefaultColorBuffer()
+	VBO* get_default_color_buffer()
 	{
-		return ColorBuffer;
+		return color_buffer;
 	}
 
-	void SetCurrentObjectMatrix(glm::mat4 &mat)
+	void set_current_object_matrix(glm::mat4 &mat)
 	{
-	    Shader::SetUniform(DefaultShader::GetUniform(U_MODELVIEW), &(mat[0][0]));
+	    Shader::set_uniform(DefaultShader::GetUniform(U_MODELVIEW), &(mat[0][0]));
 	}
 
-	void SetScissor(bool enabled)
+	void set_scissor(const bool enabled)
 	{
 		if (enabled) glEnable(GL_SCISSOR_TEST);
 		else glDisable(GL_SCISSOR_TEST);
 	}
 
-	void SetScissorRegion(int x, int y, int w, int h) {
+	void set_scissor_region(const int x, const int y, const int w, const int h) {
 		float ratio = WindowFrame.GetWindowVScale();
 		glScissor(x * ratio, (ScreenHeight - (y + h)) * ratio, w * ratio, h * ratio);
 	}
 
-	void SetScissorRegionWnd(int x, int y, int w, int h) {
+	void set_scissor_region_wnd(const int x, const int y, const int w, const int h) {
 		// x: 0 -> 0; screenwidth -> windowwidth
 		// y: 0 -> windowheight; screenheight -> 0
-		auto tx = [&](int x) {
+		auto tx = [&](const int x) {
 			auto ww = WindowFrame.GetWindowSize().x;
 			return x * ww / ScreenWidth;
 		};
 
-		auto ty = [&](int y) {
+		auto ty = [&](const int y) {
 			auto wh = WindowFrame.GetWindowSize().y;
 			auto m = -wh / ScreenHeight;
 			return m * y + wh;
@@ -381,9 +381,9 @@ namespace Renderer {
 	}
 }
 
-void Sprite::UpdateTexture()
+void Sprite::update_texture()
 {
-	if (!Renderer::Initialized) return;
+	if (!renderer::Initialized) return;
 
     if (!DirtyTexture)
         return;
@@ -394,10 +394,10 @@ void Sprite::UpdateTexture()
         return;
     }
 
-    if (!UvBuffer)
-        UvBuffer = new VBO(VBO::Dynamic, 8);
+    if (!uv_buffer_)
+        uv_buffer_ = new VBO(VBO::Dynamic, 8);
 
-    UvBuffer->Validate();
+    uv_buffer_->validate();
 
     float CropPositions[8] = { // 2 for each vertex and a uniform for z order
 		// topright
@@ -414,112 +414,112 @@ void Sprite::UpdateTexture()
 		mCrop_y1,
     };
 
-    UvBuffer->AssignData(CropPositions);
+    uv_buffer_->assign_data(CropPositions);
     DirtyTexture = false;
 }
 
-bool Sprite::ShouldDraw()
+bool Sprite::should_draw() const
 {
     if (Alpha == 0)
         return false;
 
-	if (mShader)
-		if (!mShader->IsValid())
+	if (m_shader_)
+		if (!m_shader_->is_valid())
 			return false;
 
-    if (mTexture)
+    if (m_texture_)
     {
-		mTexture->Bind();
-		return mTexture->IsBound();
+		m_texture_->Bind();
+		return m_texture_->IsBound();
     }
     else
-        return mShader && mShader->IsValid();
+        return m_shader_ && m_shader_->is_valid();
 
     return true;
 }
 
-bool Sprite::RenderMinimalSetup()
+bool Sprite::render_minimal_setup()
 {
-    if (!ShouldDraw())
+    if (!should_draw())
         return false;
 
 //    Renderer::SetScissor(Scissor);
 //    Renderer::SetScissorRegion(ScissorRegion.X1, ScissorRegion.Y1, ScissorRegion.width(), ScissorRegion.height());
 
-    UpdateTexture();
+    update_texture();
 
-    Renderer::SetBlendingMode(BlendingMode);
+    renderer::set_blending_mode(blending_mode_);
 
-    UvBuffer->Bind();
+    uv_buffer_->bind();
     glVertexAttribPointer(
-		Renderer::Shader::EnableAttribArray(Renderer::DefaultShader::GetUniform(Renderer::A_UV)), 
+		renderer::Shader::enable_attrib_array(renderer::DefaultShader::GetUniform(renderer::A_UV)), 
 		2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr
 	);
 
     // Set the color.
 	auto lf = 1.0 + LightenFactor;
 	if (!Lighten)
-		Renderer::DefaultShader::SetColor(Color.Red, Color.Green, Color.Blue, Alpha);
+		renderer::DefaultShader::set_color(Color.Red, Color.Green, Color.Blue, Alpha);
 	else
-		Renderer::DefaultShader::SetColor(Color.Red * lf, Color.Green * lf, Color.Blue * lf, Alpha);
+		renderer::DefaultShader::set_color(Color.Red * lf, Color.Green * lf, Color.Blue * lf, Alpha);
 
-    Renderer::DoQuadDraw();
+    renderer::do_quad_draw();
 
     return true;
 }
 
 void Sprite::Render()
 {
-    if (!ShouldDraw())
+    if (!should_draw())
         return;
 
-    Renderer::SetScissor(Scissor);
-    Renderer::SetScissorRegion(ScissorRegion.X1, ScissorRegion.Y1, ScissorRegion.width(), ScissorRegion.height());
+    renderer::set_scissor(Scissor);
+    renderer::set_scissor_region(ScissorRegion.X1, ScissorRegion.Y1, ScissorRegion.width(), ScissorRegion.height());
 
-    UpdateTexture();
+    update_texture();
     assert(glGetError() == 0);
 
-    Renderer::SetBlendingMode(BlendingMode);
+    renderer::set_blending_mode(blending_mode_);
     assert(glGetError() == 0);
 
     // Assign our matrix.
-	if (!mShader) {
+	if (!m_shader_) {
 		auto mat = GetMatrix();
-		Renderer::SetShaderParameters(ColorInvert, AffectedByLightning, Centered, false, BlackToTransparent);
+		renderer::set_shader_parameters(ColorInvert, Centered, BlackToTransparent);
         assert(glGetError() == 0);
 
 		auto lf = 1.0 + LightenFactor;
 		if (!Lighten)
-			Renderer::DefaultShader::SetColor(Color.Red, Color.Green, Color.Blue, Alpha);
+			renderer::DefaultShader::set_color(Color.Red, Color.Green, Color.Blue, Alpha);
 		else
-			Renderer::DefaultShader::SetColor(Color.Red * lf, Color.Green * lf, Color.Blue * lf, Alpha);
+			renderer::DefaultShader::set_color(Color.Red * lf, Color.Green * lf, Color.Blue * lf, Alpha);
         assert(glGetError() == 0);
 		
-		Renderer::SetCurrentObjectMatrix(mat);
+		renderer::set_current_object_matrix(mat);
         assert(glGetError() == 0);
 	}
 	else {
 		auto proj = WindowFrame.GetMatrixProjection();
 		auto mat = GetMatrix();
 
-		mShader->Bind();
+		m_shader_->bind();
 
-		auto sh = mShader->GetUniform("projection"); assert(glGetError() == 0);
+		auto sh = m_shader_->get_uniform("projection"); assert(glGetError() == 0);
 		if (sh != -1)
-			Renderer::Shader::SetUniform(sh, &proj[0][0]);
+			renderer::Shader::set_uniform(sh, &proj[0][0]);
         assert(glGetError() == 0);
 
-		sh = mShader->GetUniform("mvp"); assert(glGetError() == 0);
+		sh = m_shader_->get_uniform("mvp"); assert(glGetError() == 0);
 		if (sh != -1)
-			Renderer::Shader::SetUniform(sh, &mat[0][0]); assert(glGetError() == 0);
+			renderer::Shader::set_uniform(sh, &mat[0][0]); assert(glGetError() == 0);
 
-		sh = mShader->GetUniform("centered"); assert(glGetError() == 0);
+		sh = m_shader_->get_uniform("centered"); assert(glGetError() == 0);
 		if (sh != -1)
-			Renderer::Shader::SetUniform(sh, Centered); assert(glGetError() == 0);
+			renderer::Shader::SetUniform(sh, Centered); assert(glGetError() == 0);
 
-		sh = mShader->GetUniform("color"); assert(glGetError() == 0);
+		sh = m_shader_->get_uniform("color"); assert(glGetError() == 0);
 		if (sh != -1)
-			Renderer::Shader::SetUniform(sh, 
+			renderer::Shader::SetUniform(sh, 
 				l2gamma(Color.Red), 
 				l2gamma(Color.Green), 
 				l2gamma(Color.Blue), 
@@ -528,13 +528,13 @@ void Sprite::Render()
 
     assert(glGetError() == 0);
 
-    Renderer::SetTexturedQuadVBO(UvBuffer);
+    renderer::set_textured_quad_vbo(uv_buffer_);
     assert(glGetError() == 0);
 
-    Renderer::DoQuadDraw();
+    renderer::do_quad_draw();
     assert(glGetError() == 0);
 
-    Renderer::FinalizeDraw();
+    renderer::finalize_draw();
     assert(glGetError() == 0);
 }
 
@@ -542,14 +542,14 @@ void Sprite::Cleanup()
 {
     if (DoTextureCleanup)
     {
-        delete UvBuffer;
-		UvBuffer = nullptr;
+        delete uv_buffer_;
+		uv_buffer_ = nullptr;
     }
 }
 
-void TruetypeFont::ReleaseCodepoint(int cp)
+void TruetypeFont::release_codepoint(const int cp) const
 {
-    if (Texes->find(cp) != Texes->end())
+    if (Texes->contains(cp))
     {
         free(Texes->at(cp).tex);
         glDeleteTextures(1, &Texes->at(cp).gltx);
@@ -557,12 +557,12 @@ void TruetypeFont::ReleaseCodepoint(int cp)
     }
 }
 
-void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat4 &Transform, const Vec2 &Scale)
+void TruetypeFont::render(const std::string &in, const Vec2 &position, const Mat4 &transform, const Vec2 &scale)
 {
-    const char* Text = In.c_str();
+    const char* Text = in.c_str();
     int Line = 0;
-	size_t len = In.length();
-    glm::vec3 vOffs(Position.x, Position.y + Scale.y, 0);
+	size_t len = in.length();
+    glm::vec3 vOffs(position.x, position.y + scale.y, 0);
 
     if (!IsValid)
         return;
@@ -571,15 +571,15 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
 //    Renderer::SetScissor(Scissor);
 //    Renderer::SetScissorRegion(ScissorRegion.X1, ScissorRegion.Y1, ScissorRegion.width(), ScissorRegion.height());
 
-    Renderer::DefaultShader::StaticBind();
-    Renderer::SetBlendingMode(BLEND_ALPHA);
-    Renderer::SetShaderParameters(false, false, false, false, false, true);
-    Renderer::DefaultShader::SetColor(Red, Green, Blue, Alpha);
-    Renderer::SetPrimitiveQuadVBO();
+    renderer::DefaultShader::static_bind();
+    renderer::set_blending_mode(BLEND_ALPHA);
+    renderer::set_shader_parameters(false, false, false, true);
+    renderer::DefaultShader::set_color(Red, Green, Blue, Alpha);
+    renderer::set_primitive_quad_vbo();
 
     try
     {
-		auto nd = utf8::find_invalid<const char*>(Text, Text + In.length());
+		auto nd = utf8::find_invalid<const char*>(Text, Text + in.length());
         utf8::iterator<const char*> it(Text, Text, nd);
         utf8::iterator<const char*> itend(nd, Text, nd);
         for (; it != itend; ++it)
@@ -587,15 +587,15 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
             codepdata &cp = GetTexFromCodepoint(*it);
             unsigned char* tx = cp.tex;
             glm::vec3 trans = vOffs + glm::vec3(
-				cp.xofs * Scale.x * Scale.y / SDF_SIZE, 
-				cp.yofs * Scale.y / SDF_SIZE, 0);
+				cp.xofs * scale.x * scale.y / SDF_SIZE,
+				cp.yofs * scale.y / SDF_SIZE, 0);
             glm::mat4 dx;
 
             if (*it == 10) // utf-32 line feed
             {
                 Line++;
-                vOffs.x = Position.x;
-				vOffs.y = Position.y + (Line + 1) * Scale.y;
+                vOffs.x = position.x;
+				vOffs.y = position.y + (Line + 1) * scale.y;
                 continue;
             }
 
@@ -624,12 +624,12 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
             else if (cp.gltx)
                 glBindTexture(GL_TEXTURE_2D, cp.gltx);
 
-            dx = Transform * glm::translate(glm::identity<Mat4>(), trans) *
-                 glm::scale(glm::identity<Mat4>(), glm::vec3(cp.w * Scale.y / SDF_SIZE, cp.h * Scale.y / SDF_SIZE, 1));
+            dx = transform * glm::translate(glm::identity<Mat4>(), trans) *
+                 glm::scale(glm::identity<Mat4>(), glm::vec3(cp.w * scale.y / SDF_SIZE, cp.h * scale.y / SDF_SIZE, 1));
 
-            Renderer::Shader::SetUniform(Renderer::DefaultShader::GetUniform(Renderer::U_MODELVIEW), &(dx[0][0]));
+            renderer::Shader::set_uniform(renderer::DefaultShader::GetUniform(renderer::U_MODELVIEW), &(dx[0][0]));
 
-            Renderer::DoQuadDraw();
+            renderer::do_quad_draw();
 
             advance:
             utf8::iterator<const char*> next = it;
@@ -639,7 +639,7 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
                 float aW = stbtt_GetCodepointKernAdvance(info.get(), *it, *next);
                 int bW;
                 stbtt_GetCodepointHMetrics(info.get(), *it, &bW, NULL);
-                vOffs.x += (aW * realscale + bW * realscale) * Scale.x  * Scale.y / SDF_SIZE;
+                vOffs.x += (aW * realscale + bW * realscale) * scale.x  * scale.y / SDF_SIZE;
             }
         }
     }
@@ -656,11 +656,11 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
     }
 #endif
 
-    Renderer::FinalizeDraw();
+    renderer::finalize_draw();
     Texture::ForceRebind();
 }
 
-void TruetypeFont::ReleaseTextures()
+void TruetypeFont::release_textures() const
 {
     for (auto &val: *Texes | std::views::values)
     {
@@ -675,7 +675,7 @@ void TruetypeFont::ReleaseTextures()
     }
 }
 
-void Line::UpdateVBO()
+void Line::update_vbo()
 {
     if (NeedsUpdate)
     {
@@ -684,14 +684,14 @@ void Line::UpdateVBO()
             lnvbo = new VBO(VBO::Stream, 4);
         }
 
-        lnvbo->Validate();
+        lnvbo->validate();
 
         float xx[] = {
             x1, y1,
             x2, y2
         };
 
-        lnvbo->AssignData(xx);
+        lnvbo->assign_data(xx);
 
         NeedsUpdate = false;
     }
@@ -700,36 +700,36 @@ void Line::UpdateVBO()
 void Line::Render()
 {
     auto Identity = glm::identity<Mat4>();
-    UpdateVBO();
+    update_vbo();
 
     glDisable(GL_DEPTH_TEST);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     // Set the color.
-	using namespace Renderer;
-	SetShaderParameters(true, false, false, false, false, false);
+	using namespace renderer;
+	set_shader_parameters(true, false, false, false);
 
-    DefaultShader::SetColor(R, G, B, A);
-    Shader::SetUniform(DefaultShader::GetUniform(U_MODELVIEW), &(Identity[0][0]));
+    DefaultShader::set_color(R, G, B, A);
+    Shader::set_uniform(DefaultShader::GetUniform(U_MODELVIEW), &(Identity[0][0]));
 
     // Assign position attrib. pointer
-    lnvbo->Bind();
-    glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_POSITION)), 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+    lnvbo->bind();
+    glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::GetUniform(A_POSITION)), 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-	ColorBuffer->Bind();
-    glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_COLOR)), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
+	color_buffer->bind();
+    glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::GetUniform(A_COLOR)), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
 
     glDrawArrays(GL_LINES, 0, 2);
 
-    Shader::DisableAttribArray(DefaultShader::GetUniform(A_POSITION));
-    Shader::DisableAttribArray(DefaultShader::GetUniform(A_COLOR));
+    Shader::disable_attrib_array(DefaultShader::GetUniform(A_POSITION));
+    Shader::disable_attrib_array(DefaultShader::GetUniform(A_COLOR));
 
     Texture::ForceRebind();
 
     glEnable(GL_DEPTH_TEST);
 }
 
-void BitmapFont::Render(const std::string &In, const Vec2 &Position, const Mat4 &Transform, const Vec2 &Scale)
+void BitmapFont::render(const std::string &In, const Vec2 &Position, const Mat4 &Transform, const Vec2 &Scale)
 {
     const char* Text = In.c_str();
     int32_t Character = 0, Line = 0;
@@ -742,8 +742,8 @@ void BitmapFont::Render(const std::string &In, const Vec2 &Position, const Mat4 
     {
         for (int i = 0; i < 256; i++)
         {
-            CharPosition[i].Invalidate();
-            CharPosition[i].Initialize(true);
+            CharPosition[i].invalidate();
+            CharPosition[i].initialize(true);
         }
         Font->IsValid = true;
     }
@@ -751,18 +751,18 @@ void BitmapFont::Render(const std::string &In, const Vec2 &Position, const Mat4 
 //    Renderer::SetScissor(Scissor);
 //    Renderer::SetScissorRegion(ScissorRegion.X1, ScissorRegion.Y1, ScissorRegion.width(), ScissorRegion.height());
 
-	using namespace Renderer;
-	SetShaderParameters(false, false, false);
-    DefaultShader::SetColor(Red, Green, Blue, Alpha);
+	using namespace renderer;
+	set_shader_parameters(false, false);
+    DefaultShader::set_color(Red, Green, Blue, Alpha);
 
     Font->Bind();
 
     // Assign position attrib. pointer
-	Renderer::QuadBuffer->Bind();
-    glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_POSITION)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+	renderer::quad_buffer->bind();
+    glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::GetUniform(A_POSITION)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
 
-	Renderer::ColorBuffer->Bind();
-    glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_COLOR)), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
+	renderer::color_buffer->bind();
+    glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::GetUniform(A_COLOR)), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
 
     for (; *Text != '\0'; Text++)
     {
@@ -780,28 +780,28 @@ void BitmapFont::Render(const std::string &In, const Vec2 &Position, const Mat4 
         Mat4 RenderTransform = Transform * CharPosition[*Text].GetMatrix();
 
         // Assign transformation matrix
-        Shader::SetUniform(DefaultShader::GetUniform(U_MODELVIEW), &(RenderTransform[0][0]));
+        Shader::set_uniform(DefaultShader::GetUniform(U_MODELVIEW), &(RenderTransform[0][0]));
 
         // Assign vertex UVs
-        CharPosition[*Text].BindTextureVBO();
-        glVertexAttribPointer(Shader::EnableAttribArray(DefaultShader::GetUniform(A_UV)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+        CharPosition[*Text].bind_texture_vbo();
+        glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::GetUniform(A_UV)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
 
         // Do the rendering!
-        Renderer::DoQuadDraw();
+        renderer::do_quad_draw();
 
-        Shader::DisableAttribArray(DefaultShader::GetUniform(A_UV));
+        Shader::disable_attrib_array(DefaultShader::GetUniform(A_UV));
 
         Character += RenderSize.x;
     }
 
-    Shader::DisableAttribArray(DefaultShader::GetUniform(A_POSITION));
-    Shader::DisableAttribArray(DefaultShader::GetUniform(A_COLOR));
+    Shader::disable_attrib_array(DefaultShader::GetUniform(A_POSITION));
+    Shader::disable_attrib_array(DefaultShader::GetUniform(A_COLOR));
 }
 
 uint32_t VBO::LastBound = 0;
 uint32_t VBO::LastBoundIndex = 0;
 
-VBO::VBO(Type T, uint32_t Elements, uint32_t Size, IdxKind Kind)
+VBO::VBO(const Type T, const uint32_t Elements, const uint32_t Size, const IdxKind Kind)
 {
     InternalVBO = 0;
     IsValid = false;
@@ -828,23 +828,23 @@ VBO::~VBO()
     VboData = nullptr;
 }
 
-uint32_t VBO::GetElementCount() const
+uint32_t VBO::get_element_count() const
 {
     return ElementCount;
 }
 
-void VBO::Invalidate()
+void VBO::invalidate()
 {
     IsValid = false;
 }
 
-void VBO::Validate()
+void VBO::validate()
 {
     if (!IsValid)
-        AssignData(VboData);
+        assign_data(VboData);
 }
 
-unsigned int UpTypeForKind(VBO::Type mType)
+unsigned int up_type_for_kind(const VBO::Type mType)
 {
     auto UpType = 0;
 
@@ -858,7 +858,7 @@ unsigned int UpTypeForKind(VBO::Type mType)
     return UpType;
 }
 
-unsigned int BufTypeForKind(VBO::IdxKind mKind)
+unsigned int BufTypeForKind(const VBO::IdxKind mKind)
 {
     unsigned int BufType = GL_ARRAY_BUFFER;
 
@@ -869,14 +869,12 @@ unsigned int BufTypeForKind(VBO::IdxKind mKind)
     return BufType;
 }
 
-void VBO::AssignData(void* Data)
+void VBO::assign_data(const void* Data)
 {
-    unsigned int UpType;
-    unsigned int BufType;
     bool RegenBuffer = false;
 
-    UpType = UpTypeForKind(mType);
-    BufType = BufTypeForKind(mKind);
+    const unsigned int up_type = up_type_for_kind(mType);
+    const unsigned int buf_type = BufTypeForKind(mKind);
 
     memmove(VboData, Data, ElementSize * ElementCount);
 
@@ -887,23 +885,23 @@ void VBO::AssignData(void* Data)
         RegenBuffer = true;
     }
 
-    Bind(true);
+    bind(true);
     if (RegenBuffer)
-        glBufferData(BufType, ElementSize * ElementCount, VboData, UpType);
+        glBufferData(buf_type, ElementSize * ElementCount, VboData, up_type);
     else
-        glBufferSubData(BufType, 0, ElementSize * ElementCount, VboData);
+        glBufferSubData(buf_type, 0, ElementSize * ElementCount, VboData);
 }
 
-void VBO::Bind(bool Force) const
+void VBO::bind(const bool force) const
 {
     assert(IsValid);
 
-    if (mKind == ArrayBuffer && (LastBound != InternalVBO || Force))
+    if (mKind == ArrayBuffer && (LastBound != InternalVBO || force))
     {
         glBindBuffer(BufTypeForKind(mKind), InternalVBO);
         LastBound = InternalVBO;
     }
-    else if (mKind == IndexBuffer && (LastBoundIndex != InternalVBO || Force))
+    else if (mKind == IndexBuffer && (LastBoundIndex != InternalVBO || force))
     {
         glBindBuffer(BufTypeForKind(mKind), InternalVBO);
         LastBoundIndex = InternalVBO;

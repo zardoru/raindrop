@@ -6,18 +6,18 @@
 #include "LuaManager.h"
 #include <LuaBridge/LuaBridge.h>
 
-class LShader : public Renderer::Shader {
+class LShader : public renderer::Shader {
 public:
 	void Compile(const std::string& fragment) {
-		Renderer::Shader::Compile(fragment);
+		renderer::Shader::compile(fragment);
 	}
 
 	int Send(lua_State *L) {
 		int n = lua_gettop(L);
 		std::string sendto = luaL_checkstring(L, 2);
 
-		Bind();
-		int uniform = Shader::GetUniform(sendto);
+		bind();
+		int uniform = Shader::get_uniform(sendto);
 
 		switch (n) {
 		case 3:
@@ -50,9 +50,9 @@ public:
 void CreateShaderLua(LuaManager* anim_lua)
 {
 	luabridge::getGlobalNamespace(anim_lua->GetState())
-		.beginClass<Renderer::Shader>("__shader_internal")
+		.beginClass<renderer::Shader>("__shader_internal")
 		.endClass()
-		.deriveClass<LShader, Renderer::Shader>("Shader")
+		.deriveClass<LShader, renderer::Shader>("Shader")
 		/// Creates a new shader instance.
 		// @function Shader
 		.addConstructor<void(*) ()>()

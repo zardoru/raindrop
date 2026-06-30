@@ -21,7 +21,7 @@ namespace LuaAnimFuncs
     {
         auto Lua = GetObjectFromState<LuaManager>(S, "Luaman");
         std::string File = luaL_checkstring(S, 1);
-        if (!Lua->Require(GameState::GetInstance().GetScriptsDirectory() + File)) {
+        if (!Lua->Require(GameState::get_instance().get_scripts_directory() + File)) {
             Log::LogPrintf("lua error while doing game_require: %s", Lua->GetLastError().c_str());
         }
         return 1;
@@ -49,7 +49,7 @@ namespace LuaAnimFuncs
     {
         auto *Lua = GetObjectFromState<LuaManager>(L, "Luaman");
         std::string Request = luaL_checkstring(L, 1);
-        auto File = GameState::GetInstance().GetSkinScriptFile(Request.c_str(), GameState::GetInstance().GetSkin());
+        auto File = GameState::get_instance().get_skin_script_file(Request.c_str(), GameState::get_instance().get_skin());
         if (!Lua->Require(File)) {
             Log::LogPrintf("Error while calling require: %s\n", Lua->GetLastError().c_str());
         }
@@ -62,17 +62,17 @@ namespace LuaAnimFuncs
     {
         auto *Lua = GetObjectFromState<LuaManager>(L, "Luaman");
         std::string file = luaL_checkstring(L, 1);
-        std::string skin = GameState::GetInstance().GetFirstFallbackSkin();
+        std::string skin = GameState::get_instance().get_first_fallback_skin();
         if (lua_isstring(L, 2) && lua_tostring(L, 2))
             skin = luaL_checkstring(L, 2);
 
-        if (skin == GameState::GetInstance().GetSkin())
+        if (skin == GameState::get_instance().get_skin())
         {
             lua_pushboolean(L, 0);
             return 1;
         }
 
-        if (!Lua->Require(GameState::GetInstance().GetSkinScriptFile(file.c_str(), skin))) {
+        if (!Lua->Require(GameState::get_instance().get_skin_script_file(file.c_str(), skin))) {
             Log::LogPrintf("Failure executing lua script while running fallback_require: %s\n", Lua->GetLastError().c_str());
         }
 
@@ -81,20 +81,20 @@ namespace LuaAnimFuncs
 
     int GetSkinDirectory(lua_State *L)
     {
-        lua_pushstring(L, GameState::GetInstance().GetSkinPrefix().c_str());
+        lua_pushstring(L, GameState::get_instance().get_skin_prefix().c_str());
         return 1;
     }
 
     int GetSkinFile(lua_State *L)
     {
-        auto Out = GameState::GetInstance().GetSkinFile(std::string(luaL_checkstring(L, 1)), GameState::GetInstance().GetSkin());
+        auto Out = GameState::get_instance().get_skin_file(std::string(luaL_checkstring(L, 1)), GameState::get_instance().get_skin());
         lua_pushstring(L, Conversion::ToU8(Out.wstring()).c_str());
         return 1;
     }
 
     int GetFallbackFile(lua_State *L)
     {
-        auto Out = GameState::GetInstance().GetFallbackSkinFile(std::string(luaL_checkstring(L, 1)));
+        auto Out = GameState::get_instance().get_fallback_skin_file(std::string(luaL_checkstring(L, 1)));
         lua_pushstring(L, Conversion::ToU8(Out.wstring()).c_str());
         return 1;
     }
@@ -125,11 +125,11 @@ void DefineSpriteInterface(LuaManager* anim_lua)
 void AddRDLuaGlobal(LuaManager * anim_lua)
 {
 	anim_lua->AppendPath("./?;./?.lua");
-	anim_lua->AppendPath(GameState::GetInstance().GetScriptsDirectory() + "?");
-	anim_lua->AppendPath(GameState::GetInstance().GetScriptsDirectory() + "?.lua");
+	anim_lua->AppendPath(GameState::get_instance().get_scripts_directory() + "?");
+	anim_lua->AppendPath(GameState::get_instance().get_scripts_directory() + "?.lua");
 
-	anim_lua->AppendPath(GameState::GetInstance().GetSkinPrefix() + "?");
-	anim_lua->AppendPath(GameState::GetInstance().GetSkinPrefix() + "?.lua");
+	anim_lua->AppendPath(GameState::get_instance().get_skin_prefix() + "?");
+	anim_lua->AppendPath(GameState::get_instance().get_skin_prefix() + "?.lua");
 
 	// anim_lua->AppendPath(GameState::GetFallbackSkinPrefix());
 	anim_lua->Register(LuaAnimFuncs::Require, "skin_require");
