@@ -26,6 +26,7 @@ void Difficulty::Destroy()
 {
     if (Data)
         Data = nullptr;
+    OtoChart = nullptr;
 
     Timing.clear(); Timing.shrink_to_fit();
     Author.clear(); Author.shrink_to_fit();

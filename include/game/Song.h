@@ -6,6 +6,7 @@
 #include <vector>
 #include <filesystem>
 #include <map>
+#include <ChartGroup.h>
 
 typedef std::vector<TimingSegment> TimingData;
 
@@ -239,6 +240,7 @@ namespace rd
 
         // VSRG
         std::unique_ptr<DifficultyLoadInfo> Data;
+        std::shared_ptr<otoworm::Chart> OtoChart;
 
         enum ETimingType
         {
@@ -271,6 +273,7 @@ namespace rd
 
         int ID;
         std::vector<std::shared_ptr<Difficulty>> Difficulties;
+        std::shared_ptr<otoworm::ChartGroup> OtoChartGroup;
 
         /* Song title */
         std::string Title;

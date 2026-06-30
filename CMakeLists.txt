@@ -10,10 +10,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
 
-if (NOT WIN32)
-    include(cotire)
-endif ()
-
 ## <== CPR SNIP
 include(FetchContent)
 # The commit hash for 1.8.1. Replace with the latest from: https://github.com/libcpr/cpr/releases
@@ -52,7 +48,6 @@ if (WIN32)
     list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/lua")
     list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/png")
     list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/jpeg")
-    list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/glfw")
     list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/mpg123")
     list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/libsndfile")
     list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/portaudio")
@@ -70,32 +65,23 @@ endif()
 
 # While we use gil, there's no real need to include it here. it's header-only.
 find_package(Boost COMPONENTS program_options date_time REQUIRED)
+find_package(SDL3 REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(PNG REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(Lua REQUIRED)
-find_package(Portaudio REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(OggVorbis REQUIRED)
 find_package(MPG123 REQUIRED)
-find_package(Sndfile REQUIRED)
 find_package(FFmpeg REQUIRED)
+find_package(Portaudio REQUIRED)
+find_package(Sndfile REQUIRED)
+find_package(Iconv REQUIRED)
 message("$<==== BOOST ${Boost_PROGRAM_OPTIONS_LIBRARY} =====>")
 
-
-
-# On linux, properly configured, these don't need our module scripts
-# as they install their own Find modules.
-if (LINUX)
-    find_package(glfw3 CONFIG)
-endif ()
-
-# We may want to use our bundle, therefore...
-if (WIN32)
-    find_package(glfw3)
+if(NOT TARGET otoworm::otoworm)
+    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../libotoworm" "${CMAKE_BINARY_DIR}/_deps/libotoworm")
 endif()
-
-# message("GLFW3 directory: ${GLFW3_INCLUDE_DIR}")
 
 include_directories(include)
 include_directories(src-thirdparty)
@@ -110,6 +96,7 @@ set(MINIZIP_FILES src-thirdparty/minizip/ioapi.c src-thirdparty/minizip/unzip.c)
 # ================================================
 file(GLOB_RECURSE util_files src/util/*.cpp src/util/*.c)
 add_library(rd.util STATIC ${util_files} ${SHA256_FILES})
+target_link_libraries(rd.util Iconv::Iconv)
 
 if (LINUX)
     if (NOT USE_GCC)
@@ -123,10 +110,6 @@ if (LINUX)
         endif()
     endif()
 endif(LINUX)
-
-if (USE_GCC)
-cotire(rd.util)
-endif()
 
 # Sound File IO library
 # ================================================
@@ -151,13 +134,9 @@ target_link_libraries(rd.sndio
     ${VORBIS_LIBRARY} 
     ${VORBISFILE_LIBRARY}
     ${MPG123_LIBRARY}
-    ${SNDFILE_LIBRARY}
+    SndFile::sndfile
     ${FFMPEG_LIBSWRESAMPLE})
 
-
-if (USE_GCC)
-cotire(rd.util)
-endif()
 
 # Common chart data library
 # ================================================
@@ -165,13 +144,10 @@ file(GLOB_RECURSE core_files src/game/*.cpp src/game/*.c)
 add_library(rd.core STATIC ${core_files} ${MINIZIP_FILES})
 target_include_directories(rd.core PUBLIC ${ZLIB_INCLUDE_DIR})
 target_link_libraries(rd.core
+    otoworm::otoworm
     rd.sndio
     rd.util
-    ${ZLIB_LIBRARIES})
-
-if (USE_GCC)
-cotire(rd.core)
-endif()
+    ZLIB::ZLIB)
 
 # rd Body Source (What's common to Tests and the Actual Executable)
 # ================================================
@@ -192,9 +168,7 @@ add_library(rdbody.src STATIC
 
 set(BODY_INCLUDE
         ${PNG_INCLUDE_DIRS}
-        ${GLEW_INCLUDE_DIRS}
         ${JPEG_INCLUDE_DIR}
-        ${PORTAUDIO_INCLUDE_DIRS}
         ${Boost_INCLUDE_DIR}
         ${LUA_INCLUDE_DIR}
         ${FFMPEG_INCLUDE_DIR}
@@ -215,12 +189,12 @@ target_link_libraries(rdbody.src
         rd.core
         Boost::program_options
         Boost::date_time
-        ${GLFW3_LIBRARIES}
+        SDL3::SDL3
         ${PNG_LIBRARIES}
         ${LUA_LIBRARIES}
         ${JPEG_LIBRARIES}
         ${GLEW_LIBRARIES}
-        ${Portaudio_LIBRARIES}
+        PortAudio::PortAudio
         ${FFMPEG_LIBAVCODEC}
         ${FFMPEG_LIBAVUTIL}
         ${FFMPEG_LIBAVFORMAT}
@@ -256,7 +230,7 @@ if (WIN32)
 endif()
 
 target_link_libraries(rdconverter
-        rd.core
+        otoworm::otoworm
         Boost::program_options
         ${WINLIBS_CONV}
 )

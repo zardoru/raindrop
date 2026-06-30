@@ -6,6 +6,7 @@
 #define RAINDROP_SCORESERIALIZER_H
 
 #include "../client/game/PlayscreenParameters.h"
+#include <ChartGroup.h>
 
 namespace StormIR {
     class BadScoreType : public std::exception {
@@ -15,12 +16,12 @@ namespace StormIR {
 
     using nlohmann::json;
 
-    json SerializeScore(const rd::Song *pSong, const rd::Difficulty *pDifficulty,
+    json SerializeScore(const otoworm::ChartGroup *chart_group, const otoworm::Chart *chart,
                                  const size_t index, const rd::ScoreKeeper &keeper, const PlayscreenParameters &options);
 
-    json SerializeSongInformation(const rd::Song *pSong);
+    json SerializeSongInformation(const otoworm::ChartGroup *chart_group);
 
-    json SerializeDifficultyInformation(const rd::Difficulty *pDifficulty);
+    json SerializeDifficultyInformation(const otoworm::ChartGroup *chart_group, const otoworm::Chart *chart);
 
     json SerializeOptions(const PlayscreenParameters &parameters);
 

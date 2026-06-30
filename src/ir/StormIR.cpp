@@ -94,8 +94,8 @@ namespace StormIR {
     }
 
     bool StormIR::SubmitScore(
-            const rd::Song *song,
-            const rd::Difficulty *diff,
+            const otoworm::ChartGroup *chart_group,
+            const otoworm::Chart *chart,
             const Replay &replay,
             const rd::ScoreKeeper &score
     ) {
@@ -104,8 +104,8 @@ namespace StormIR {
 
         // most of the hard work is done in this function
         auto j = SerializeScore(
-                song,
-                diff,
+                chart_group,
+                chart,
                 replay.GetDifficultyIndex(),
                 score,
                 replay.GetEffectiveParameters()

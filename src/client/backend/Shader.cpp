@@ -1,4 +1,5 @@
 #include <string>
+#include <cctype>
 #include <glm.h>
 #include <GL/glew.h>
 #include <cassert>
@@ -18,81 +19,40 @@ void CHECKERR() {
 		}
 	}
 
-const char* vertShader = "#version 120\n"
-"attribute vec3 position;\n"
-"attribute vec2 vertexUV;\n"
-"attribute vec4 colorvert;\n"
-"uniform mat4 projection;\n"
-"uniform mat4 mvp;\n"
-"uniform bool centered;\n"
-"varying vec2 texcoord;\n"
-"varying vec3 Pos_world;\n"
-"varying vec4 colorfrag;\n"
-"void main() \n"
-"{\n"
-"	vec3 k_pos = position;\n"
-"	if (centered){\n"
-"		k_pos = k_pos + vec3(-0.5, -0.5, 0);\n"
-"	}\n"
-"	gl_Position = projection * mvp * vec4(k_pos.xyz, 1);\n"
-"	Pos_world = (projection * mvp * vec4(k_pos.xyz, 1)).xyz;\n"
-"	texcoord = vertexUV;\n"
-"   colorfrag = colorvert;\n"
-"}";
+const unsigned char vertShader[] = {
+#embed "./defaultVert.glsl"
+};
 
-const char* fragShader = "#version 120\n"
-"varying vec2 texcoord;\n"
-"varying vec3 Pos_world;\n"
-"varying vec4 colorfrag;\n"
-"uniform vec4 color;\n"
-"uniform sampler2D tex;\n"
-"uniform bool inverted;\n"
-"uniform bool replaceColor;\n"
-"uniform float hdcenter;\n"
-"uniform float flsize;\n"
-"uniform float hdsize;\n"
-"uniform bool BlackToTransparent;\n" // If true, transform r0 g0 b0 aX to a0.
-"uniform int HiddenLightning;\n"
-"\n"
-"void main(void)\n"
-"{\n"
-"    vec4 tCol;\n"
-"	 vec4 tex2D;\n"
-"	 if (!replaceColor){\n"
-"		tex2D = texture2D(tex, texcoord);\n"
-"	 }else{\n"
-"		float a = texture2D(tex, texcoord).r;\n"
-"		float r = 0.5;\n"
-"		float rw = fwidth(a);\n"
-"       float s = smoothstep(r - rw, r + rw, a);\n"
-"       if (s <= 0) discard;\n"
-"		tex2D = vec4(1.0, 1.0, 1.0, s);\n"
-"	 }\n"
-"	 if (inverted) {\n"
-"		tCol = vec4(1.0, 1.0, 1.0, tex2D.a*2) - tex2D * color;\n"
-"	 }else{\n"
-"		tCol = tex2D * color;\n"
-"	 }\n"
-"	 if (BlackToTransparent) {\n"
-"			if (tCol.r == 0 && tCol.g == 0 && tCol.b == 0) tCol.a = 0;\n"
-"	 }\n"
-"	if (HiddenLightning > 0) {\n"
-"       float ld = 1;\n"
-"		if (HiddenLightning == 2) "
-"           ld = smoothstep(hdcenter - hdsize, hdcenter, Pos_world.y);\n"
-"		else if (HiddenLightning == 1) "
-"           ld = smoothstep(hdcenter, hdcenter - hdsize, Pos_world.y);\n"
-"		else { ld = smoothstep(hdcenter - flsize - hdsize / 2, hdcenter - flsize, Pos_world.y) * \n"
-"                   smoothstep(hdcenter + flsize + hdsize / 2, hdcenter + flsize, Pos_world.y);\n"
-" } \n"
-"		gl_FragColor = vec4(tCol.rgb, tCol.a * ld);\n"
-"	} else if (HiddenLightning == 0) {\n"
-"		gl_FragColor = tCol;\n"
-"	}\n"
-"    gl_FragColor *= colorfrag;\n"
-"}\n";
+const unsigned char fragShader[] = {
+#embed "./defaultFrag.glsl"
+};
 
+namespace {
+	void ReplaceAll(std::string& source, const std::string& from, const std::string& to) {
+		size_t pos = 0;
+		while ((pos = source.find(from, pos)) != std::string::npos) {
+			source.replace(pos, from.size(), to);
+			pos += to.size();
+		}
+	}
 
+	std::string NormalizeShaderSource(std::string source) {
+		if (source.size() >= 3 &&
+			static_cast<unsigned char>(source[0]) == 0xEF &&
+			static_cast<unsigned char>(source[1]) == 0xBB &&
+			static_cast<unsigned char>(source[2]) == 0xBF) {
+			source.erase(0, 3);
+		}
+
+		const auto first = source.find_first_not_of(" \t\r\n");
+		if (first != std::string::npos)
+			source.erase(0, first);
+
+		ReplaceAll(source, "texture2D", "texture");
+
+		return source;
+	}
+}
 
 namespace Renderer {
 	int Shader::mLastShader = -1;
@@ -103,11 +63,17 @@ namespace Renderer {
 	{
 		CHECKERR();
 		mVertProgram = glCreateShader(GL_VERTEX_SHADER);
-		glShaderSource(mVertProgram, 1, &vertShader, nullptr);
+		auto normalizedVert = NormalizeShaderSource(std::string(reinterpret_cast<const char *>(vertShader), sizeof(vertShader)));
+		const auto vertSrc = normalizedVert.c_str();
+		const auto vertLength = static_cast<GLint>(normalizedVert.size());
+		glShaderSource(mVertProgram, 1, &vertSrc, &vertLength);
 		glCompileShader(mVertProgram);
 
 		mFragProgram = glCreateShader(GL_FRAGMENT_SHADER);
-		glShaderSource(mFragProgram, 1, &fragShader, nullptr);
+		auto normalizedFrag = NormalizeShaderSource(std::string(reinterpret_cast<const char *>(fragShader), sizeof(fragShader)));
+		const auto fragSrc = normalizedFrag.c_str();
+		const auto fragLength = static_cast<GLint>(normalizedFrag.size());
+		glShaderSource(mFragProgram, 1, &fragSrc, &fragLength);
 		glCompileShader(mFragProgram);
 
 		GLint status;
@@ -208,9 +174,11 @@ namespace Renderer {
 		CHECKERR();
 		Log::LogPrintf("Compiling fragment shader.\n");
 
+		auto normalized_frag = NormalizeShaderSource(frag);
 		auto fragsh = glCreateShader(GL_FRAGMENT_SHADER);
-		auto src = frag.c_str();
-		glShaderSource(fragsh, 1, &src, nullptr); CHECKERR();
+		auto src = normalized_frag.c_str();
+		const auto length = static_cast<GLint>(normalized_frag.size());
+		glShaderSource(fragsh, 1, &src, &length); CHECKERR();
 		glCompileShader(fragsh);
 
 		GLint status;

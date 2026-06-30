@@ -144,13 +144,32 @@ rd::Difficulty * GameState::GetDifficulty(int pn)
 
 std::shared_ptr<rd::Difficulty> GameState::GetDifficultyShared(int pn)
 {
-	if (PlayerNumberInBounds(pn) && PlayerInfo[pn].active_difficulty)
-		return PlayerInfo[pn].active_difficulty;
-	else {
-		return ((rd::Song*)GetSelectedSong())->Difficulties[SongWheel::GetInstance().GetDifficulty()];
-	}
+    if (auto song = GetSelectedSong())
+        return song->Difficulties[SongWheel::GetInstance().GetDifficulty()];
 
 	return nullptr;
+}
+
+otoworm::Chart *GameState::GetChart(int pn)
+{
+    auto chart = GetChartShared(pn);
+    return chart.get();
+}
+
+std::shared_ptr<otoworm::Chart> GameState::GetChartShared(int pn)
+{
+    if (PlayerNumberInBounds(pn) && PlayerInfo[pn].active_chart)
+        return PlayerInfo[pn].active_chart;
+
+    auto group = GetSelectedChartGroupShared();
+    if (!group)
+        return nullptr;
+
+    const auto index = SongWheel::GetInstance().GetDifficulty();
+    if (index < group->charts.size())
+        return group->charts[index];
+
+    return group->charts.empty() ? nullptr : group->charts.front();
 }
 
 

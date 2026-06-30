@@ -1,11 +1,15 @@
 #pragma once
 
+#include <game/RaindropProcessedChart.h>
+
 namespace rd {
     namespace NoteTransform
     {
-        void Randomize(VectorTrackNote &Notes, int ChannelCount, bool RespectScratch, int Seed);
-        void Mirror(VectorTrackNote &Notes, int ChannelCount, bool RespectScratch = false);
-        void MoveKeysoundsToBGM(unsigned char channels, VectorTrackNote notes_by_channel, std::vector<AutoplaySound> &bg_ms, double drift);
-        void TransformToBeats(unsigned char channels, VectorTrackNote notes_by_channel, const TimingData &BPS);
+        using RuntimeNoteLanes = std::array<RuntimeNoteStorage, otoworm::MAX_CHANNELS>;
+
+        void Randomize(RuntimeNoteLanes &notes, int channel_count, bool respect_scratch, int seed);
+        void Mirror(RuntimeNoteLanes &notes, int channel_count, bool respect_scratch = false);
+        void MoveKeysoundsToBGM(unsigned char channels, RuntimeNoteLanes& notes_by_channel, std::vector<AutoplaySound> &bg_ms, double drift);
+        void TransformToBeats(unsigned char channels, RuntimeNoteLanes& notes_by_channel, const otoworm::TimingData &bps);
     }
 }

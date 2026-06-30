@@ -17,10 +17,13 @@
 
 #endif
 
-#ifdef LINUX
+#if defined(LINUX) || defined(__APPLE__)
 //This one might be needed : #include <fcntl.h>
 #include <mpg123.h>
 #include <unistd.h>
+#endif
+
+#ifdef LINUX
 #include <pa_linux_alsa.h>
 #endif
 
@@ -270,4 +273,3 @@ AudioSourceMP3::Metadata AudioSourceMP3::GetMetadata()
 
 	return Metadata();
 }
-

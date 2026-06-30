@@ -1,5 +1,8 @@
 #pragma once
 
+#include <thread>
+#include <glm.h>
+
 class BitmapFont;
 class Sprite;
 class SongDatabase;

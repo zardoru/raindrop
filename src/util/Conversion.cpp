@@ -3,7 +3,7 @@
 #include <locale>
 #include <codecvt>
 
-#ifdef LINUX
+#if defined(LINUX) || defined(DARWIN) || defined(__APPLE__)
 #include <iconv.h>
 #endif
 

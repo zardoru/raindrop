@@ -1,10 +1,7 @@
-#include <string>
 #include <vector>
 #include <rmath.h>
 
 #include "SDF.h"
-
-#include "Logging.h"
 
 // SDF algorithm: 8SSEDT
 // Translation of implementation found at www.codersnotes.com/notes/signed-distance-fields/

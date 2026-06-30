@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Interruptible.h"
+#include <ChartGroup.h>
 
 namespace rd
 {
@@ -22,7 +23,11 @@ public:
     virtual void Render();
 
     /* Can only be called from main thread if LoadNow = true! */
-    static std::unique_ptr<BackgroundAnimation> CreateBGAFromSong(uint8_t DifficultyIndex, rd::Song& Input, Interruptible* context, bool LoadNow = false);
+    static std::unique_ptr<BackgroundAnimation> CreateBGAFromChartGroup(
+            uint8_t chart_index,
+            const std::shared_ptr<otoworm::ChartGroup>& chart_group,
+            Interruptible* context,
+            bool LoadNow = false);
 };
 
 bool IsVideoPath(std::filesystem::path path);

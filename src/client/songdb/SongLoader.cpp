@@ -2,9 +2,12 @@
 
 #include "Logging.h"
 
+#include <array>
+#include <string_view>
 #include <game/Song.h>
-#include <game/NoteLoader7K.h>
+#include <game/OtowormLoaderBridge.h>
 #include <game/SingleSongLoad.h>
+#include <note_loader_7k.h>
 #include <TextAndFileUtil.h>
 #include <cassert>
 #include <utility>
@@ -15,18 +18,24 @@
 
 using namespace rd;
 
-/* matches SingleSongLoad stuff */
-const rd::loaderVSRGEntry_t LoadersVSRG[] = {
-        { L".bms",   NoteLoaderBMS::LoadObjectsFromFile },
-        { L".bme",   NoteLoaderBMS::LoadObjectsFromFile },
-        { L".bml",   NoteLoaderBMS::LoadObjectsFromFile },
-        { L".pms",   NoteLoaderBMS::LoadObjectsFromFile },
-        { L".sm",    NoteLoaderSM::LoadObjectsFromFile  },
-        { L".osu",   NoteLoaderOM::LoadObjectsFromFile  },
-        { L".ft2",   NoteLoaderFTB::LoadObjectsFromFile },
-        { L".ojn",   NoteLoaderOJN::LoadObjectsFromFile },
-        { L".ssc",   NoteLoaderSSC::LoadObjectsFromFile },
-        { L".bmson", NoteLoaderBMSON::LoadObjectsFromFile }
+constexpr auto VSRG_EXTENSIONS = std::array{
+    std::wstring_view(L".bms"),
+    std::wstring_view(L".bme"),
+    std::wstring_view(L".bml"),
+    std::wstring_view(L".pms"),
+    std::wstring_view(L".sm"),
+    std::wstring_view(L".osu"),
+    std::wstring_view(L".ft2"),
+    std::wstring_view(L".ojn"),
+    std::wstring_view(L".ssc"),
+    std::wstring_view(L".bmson"),
+};
+
+constexpr auto BMS_EXTENSIONS = std::array{
+    std::wstring_view(L".bms"),
+    std::wstring_view(L".bme"),
+    std::wstring_view(L".bml"),
+    std::wstring_view(L".pms"),
 };
 
 SongLoader::SongLoader(SongDatabase* Database)
@@ -36,24 +45,18 @@ SongLoader::SongLoader(SongDatabase* Database)
 
 bool VSRGValidExtension(const std::wstring &s)
 {
-    for (auto i : LoadersVSRG)
-    {
-        if (s == i.Ext)
+    for (auto ext : VSRG_EXTENSIONS)
+        if (s == ext)
             return true;
-    }
 
     return false;
 }
 
 bool ValidBMSExtension(const std::wstring &s)
 {
-
-    for (auto & i : LoadersVSRG)
-    {
-        if (s == i.Ext &&
-			i.LoadFunc == NoteLoaderBMS::LoadObjectsFromFile)
+    for (auto ext : BMS_EXTENSIONS)
+        if (s == ext)
             return true;
-    }
 
     return false;
 }
@@ -74,44 +77,60 @@ std::shared_ptr<rd::Song> LoadSong7KFromFilename(
 
 
     // no extension
-    if (!Filename.has_extension() || !VSRGValidExtension(Filename.extension()))
+    if (!Filename.has_extension() || !VSRGValidExtension(Filename.extension().wstring()))
     {
         if (AllocSong) delete Sng;
         return nullptr;
     }
 
-    Sng->SongDirectory = std::filesystem::absolute(Filename).parent_path();
 	auto fn = Filename;
 
-	auto ext = Filename.extension();
-
-    for (auto i : LoadersVSRG)
+    Log::LogPrintf("SongLoader: Load %ls from disk...", fn.wstring().c_str());
+    try
     {
-        if (ext == i.Ext)
+        auto otoworm_song = otoworm::load_song_from_file(fn);
+        if (!otoworm_song)
         {
-            Log::LogPrintf("SongLoader: Load %ls from disk...", fn.wstring().c_str());
-            try
-            {
-                i.LoadFunc(fn, Sng);
-                Log::LogPrintf(" ok\n");
-
-				int dindex = 0;
-				auto hash = (DB != nullptr) ? DB->GetChartHash(fn) : Utility::GetSha256ForFile(fn);
-				for (auto &d : Sng->Difficulties) {
-					d->Data->FileHash = hash;
-					if (d->Data->IndexInFile == -1) {
-						d->Data->IndexInFile = dindex;
-						dindex++;
-					}
-				}
-
-            }
-            catch (std::exception &e)
-            {
-                Log::LogPrintf("SongLoader: Failure loading. Reason: %s \n", e.what());
-            }
-            break;
+            if (AllocSong) delete Sng;
+            return nullptr;
         }
+
+        rd::Song loaded;
+        rd::ConvertFromOtoworm(std::move(otoworm_song), &loaded);
+
+        if (Sng->Difficulties.empty())
+        {
+            Sng->ID = loaded.ID;
+            Sng->Title = loaded.Title;
+            Sng->Artist = loaded.Artist;
+            Sng->SongDirectory = loaded.SongDirectory;
+            Sng->SongFilename = loaded.SongFilename;
+            Sng->BackgroundFilename = loaded.BackgroundFilename;
+            Sng->SongPreviewSource = loaded.SongPreviewSource;
+            Sng->PreviewTime = loaded.PreviewTime;
+            Sng->Subtitle = loaded.Subtitle;
+            Sng->Genre = loaded.Genre;
+        }
+
+        Sng->SongDirectory = std::filesystem::absolute(Filename).parent_path();
+        for (auto& difficulty : loaded.Difficulties)
+            Sng->Difficulties.push_back(std::move(difficulty));
+
+        Log::LogPrintf(" ok\n");
+
+		int dindex = 0;
+		auto hash = (DB != nullptr) ? DB->GetChartHash(fn) : Utility::GetSha256ForFile(fn);
+		for (auto &d : Sng->Difficulties) {
+			d->Data->FileHash = hash;
+			if (d->Data->IndexInFile == -1) {
+				d->Data->IndexInFile = dindex;
+				dindex++;
+			}
+		}
+    }
+    catch (std::exception &e)
+    {
+        Log::LogPrintf("SongLoader: Failure loading. Reason: %s \n", e.what());
     }
 
     if (AllocSong)
@@ -226,7 +245,7 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<r
             we should just ignore this file.
             It'll be loaded in any case, but not considered for cache.
         */
-        auto ext = File.extension();
+        auto ext = File.extension().wstring();
 		if (VSRGValidExtension(ext))
 		{
 			if (DB->CacheNeedsRenewal(File)) {
@@ -258,7 +277,7 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<r
         for (auto &entry: pathlist)
         {
 			// get extension
-			auto Ext = entry.extension();
+			auto Ext = entry.extension().wstring();
 
             // We want to group charts with the same title together.
             if (ValidBMSExtension(Ext) || Ext == L".bmson")
@@ -358,14 +377,19 @@ void SongLoader::GetSongList7K(std::vector<Song*> &OutVec,std::filesystem::path 
     }
 }
 
-std::shared_ptr<Song> SongLoader::LoadFromMeta(const rd::Song* Meta, std::shared_ptr<rd::Difficulty> CurrentDiff, std::filesystem::path &FilenameOut, uint8_t &Index)
+std::shared_ptr<Song> SongLoader::LoadFromMeta(
+        const int meta_song_id,
+        const std::shared_ptr<otoworm::Chart>& current_chart,
+        std::filesystem::path &FilenameOut,
+        uint8_t &Index)
 {
     std::shared_ptr<Song> Out;
 
-    std::filesystem::path fn = DB->GetDifficultyFilename(CurrentDiff->ID);
+    const auto chart_id = current_chart ? static_cast<int>(current_chart->id) : -1;
+    std::filesystem::path fn = DB->GetDifficultyFilename(chart_id);
     FilenameOut = fn;
 
-	Log::LogPrintf("Loading chart from meta ID %i from %ls\n", Meta->ID, fn.wstring().c_str());
+	Log::LogPrintf("Loading chart from meta ID %i from %ls\n", meta_song_id, fn.wstring().c_str());
     Out = LoadSong7KFromFilename(fn, nullptr, DB);
     if (!Out) return nullptr;
 	
@@ -374,10 +398,9 @@ std::shared_ptr<Song> SongLoader::LoadFromMeta(const rd::Song* Meta, std::shared
     bool DifficultyFound = false;
     for (const auto& k : Out->Difficulties)
     {
-        DB->InsertOrUpdateDifficulty(Meta->ID, k.get());
-        if (k->ID == CurrentDiff->ID) // We've got a match; move onward.
+        DB->InsertOrUpdateDifficulty(meta_song_id, k.get());
+        if (k->OtoChart && static_cast<int>(k->OtoChart->id) == chart_id) // We've got a match; move onward.
         {
-            CurrentDiff = k;
             DifficultyFound = true;
             break; // We're done here, we've found the difficulty we were trying to load
         }

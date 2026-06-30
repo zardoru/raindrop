@@ -1,5 +1,8 @@
 #pragma once
 
+#include <Transformation.h>
+#include <rmath.h>
+
 class VBO;
 class Texture;
 
@@ -17,10 +20,12 @@ public:
 
 class Sprite : public Drawable2D
 {
+protected:
+    Renderer::Shader *mShader;
+    VBO *UvBuffer;
 private: // Transformations
     void Cleanup();
-
-    bool DirtyTexture;
+    Texture* mTexture;
 
     EBlendMode BlendingMode;
 
@@ -36,15 +41,24 @@ private: // Transformations
     float mCrop_x1, mCrop_y1;
     float mCrop_x2, mCrop_y2;
 
-    Texture* mTexture;
+
 
     void Construct(bool doInitTexture);
 protected:
-	Renderer::Shader *mShader;
-    VBO *UvBuffer;
-    bool DoTextureCleanup;
     void UpdateTexture();
     bool ShouldDraw();
+
+    bool DirtyTexture;
+    bool DoTextureCleanup;
+public:
+    bool Centered; // 0 for topleft, 1 for center
+    bool Lighten;
+
+    bool Scissor;
+
+    bool ColorInvert;
+    bool AffectedByLightning;
+    bool BlackToTransparent; // If enabled, transforms black pixels into transparent pixels.
 public:
 
     Sprite(bool ShouldInitTexture);
@@ -59,15 +73,8 @@ public:
     // Only valid if lighten is enabled.
     float LightenFactor;
 
-    bool Centered; // 0 for topleft, 1 for center
-    bool Lighten;
-
-    bool Scissor;
     AABB ScissorRegion;
 
-    bool ColorInvert;
-    bool AffectedByLightning;
-    bool BlackToTransparent; // If enabled, transforms black pixels into transparent pixels.
 
     void SetImage(Texture* image, bool ChangeSize = true);
     Texture* GetImage();

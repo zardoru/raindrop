@@ -4,7 +4,6 @@
 #include <vector>
 #include <filesystem>
 #include <utf8.h>
-#include <glm.h>
 
 
 #define STB_TRUETYPE_IMPLEMENTATION
@@ -13,18 +12,15 @@
 
 #include "TruetypeFont.h"
 
-#include <game/GameConstants.h>
-#include "../game/PlayscreenParameters.h"
 #include "../game/GameState.h"
 #include "GameWindow.h"
 
-#include "Transformation.h"
 #include "TTFCache.h"
 #include "Logging.h"
 
 #include "SDF.h"
 
-const std::filesystem::path CACHE_PATH = "GameData/fontcache/";
+const std::filesystem::path CACHE_PATH = "data/fontcache/";
 
 class TTFMan {
 public:

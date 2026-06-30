@@ -1,7 +1,6 @@
 #include <filesystem>
 #include <GL/glew.h>
 #include <rmath.h>
-#include <cstdint>
 #include <map>
 
 #include "Transformation.h"

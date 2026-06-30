@@ -55,6 +55,26 @@ public:
     SwrResampler () : mResampler(swr_alloc(), swr_free_wrap()) {}
 
     void Configure(const Config cfg) {
+#ifdef AV_CHANNEL_LAYOUT_STEREO
+        AVChannelLayout outputLayout = AV_CHANNEL_LAYOUT_STEREO;
+        AVChannelLayout inputLayout = AV_CHANNEL_LAYOUT_MONO;
+        if (cfg.input_channels == 2) {
+            inputLayout = AV_CHANNEL_LAYOUT_STEREO;
+        }
+        SwrContext* context = mResampler.release();
+        swr_alloc_set_opts2(
+                &context,
+                &outputLayout,
+                cfg.get_output_sample_format(),
+                cfg.dst_rate,
+                &inputLayout,
+                AV_SAMPLE_FMT_S16,
+                cfg.src_rate,
+                0,
+                NULL
+        );
+        mResampler.reset(context);
+#else
         swr_alloc_set_opts(
                 mResampler.get(),
                 AV_CH_LAYOUT_STEREO,
@@ -66,6 +86,7 @@ public:
                 0,
                 NULL
         );
+#endif
 
         swr_init(mResampler.get());
         last_config = cfg;

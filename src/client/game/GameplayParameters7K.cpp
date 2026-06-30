@@ -1,4 +1,4 @@
-#include <game/PlayerChartState.h>
+#include <ProcessedChart.h>
 #include <game/VSRGMechanics.h>
 #include <game/ScoreKeeper7K.h>
 #include <game/NoteTransformations.h>

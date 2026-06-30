@@ -53,7 +53,7 @@ public:
 	AVFormatContext *AV;
 	AVCodecParameters *CodecCtx;
 	AVCodecContext *UsableCodecCtx;
-	AVCodec *Codec;
+	const AVCodec *Codec;
 
     std::ifstream buf;
     unsigned char* buffer;
@@ -68,11 +68,11 @@ public:
 	// contains AVFrame* available to write to
 	PaUtilRingBuffer mCleanFrameQueue;
 
-	std::vector<char> PendingQueueData;
-	std::vector<char> CleanQueueData;
+	std::vector<uint8_t> PendingQueueData;
+	std::vector<uint8_t> CleanQueueData;
 
-	std::vector<char> DecodedFrameData;
-	std::vector<char> FrameData;
+	std::vector<uint8_t> DecodedFrameData;
+	std::vector<uint8_t> FrameData;
 
 	SwsContext *sws_ctx;
 
@@ -340,8 +340,11 @@ bool VideoPlayback::Open(std::filesystem::path path)
 	h = ucc->height;
 
 	auto avframe = av_frame_alloc();
-	uint8_t *buf = (uint8_t*)newctx->DecodedFrameData.data();
-	avpicture_fill((AVPicture*)avframe, buf, ucc->pix_fmt, w, h);
+	uint8_t *buf = newctx->DecodedFrameData.data();
+	avframe->format = ucc->pix_fmt;
+	avframe->width = w;
+	avframe->height = h;
+	av_image_fill_arrays(avframe->data, avframe->linesize, buf, ucc->pix_fmt, w, h, 1);
 	newctx->DecodedFrame = avframe;
 
 	newctx->sws_ctx = sws_getContext(w, h, 

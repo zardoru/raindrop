@@ -1,5 +1,6 @@
-#ifndef RAINDROP_PLAYSCREENPARAMETERS_H
-#define RAINDROP_PLAYSCREENPARAMETERS_H
+
+#pragma once
+#include "game/GameConstants.h"
 
 // The values here must be consistent with the shaders!
 enum EHiddenMode
@@ -78,17 +79,6 @@ public:
 
     int SpeedType;
 
-    /* PlayerChartState* Setup(
-            double DesiredDefaultSpeed,
-            int SpeedType,
-            double Drift,
-            std::shared_ptr<VSRG::Difficulty> CurrentDiff);
-
-    std::unique_ptr<rd::VSRG::Mechanics> PrepareMechanicsSet(
-            std::shared_ptr<VSRG::Difficulty> CurrentDiff,
-            std::shared_ptr<rd::VSRG::ScoreKeeper> PlayerScorekeeper,
-            double JudgeY); */
-
     rd::ScoreType GetScoringType() const;
 
     int GetHiddenMode() const;
@@ -124,4 +114,3 @@ public:
     }
 };
 
-#endif //RAINDROP_PLAYSCREENPARAMETERS_H

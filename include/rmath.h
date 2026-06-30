@@ -63,12 +63,12 @@ struct Fraction
 		return Fraction{ Num / t, Den / t };
 	}
 
-	operator double() {
-		return Num / Den;
+	operator double() const {
+		return static_cast<double>(Num) / static_cast<double>(Den);
 	}
 
-	bool operator<(Fraction<T> other) {
-		return this->operator double() < other->operator double();
+	bool operator<(const Fraction<T>& other) const {
+		return static_cast<double>(*this) < static_cast<double>(other);
 	}
 };
 
@@ -123,7 +123,7 @@ T sign(T num) {
 
 template
         <class T>
-struct TAABB
+struct TRect
 {
     union
     {
@@ -137,14 +137,14 @@ struct TAABB
         struct { T X2, Y2; }; // Bottomright point
     };
 
-    TAABB(T x1, T y1, T x2, T y2) {
+    TRect(T x1, T y1, T x2, T y2) {
         X1 = x1;
         X2 = x2;
         Y1 = y1;
         Y2 = y2;
     }
 
-    TAABB() {
+    TRect() {
         X1 = X2 = 0;
         Y1 = Y2 = 0;
     }
@@ -154,7 +154,7 @@ struct TAABB
                && y >= Y1 && y <= Y2;
     }
 
-    inline bool Intersects(const TAABB &other) {
+    inline bool Intersects(const TRect &other) {
         return IsInBox(other.X1, other.Y1) ||
                IsInBox(other.X2, other.Y2) ||
                IsInBox(other.X2, other.Y1) ||
@@ -178,8 +178,8 @@ struct TAABB
     }
 };
 
-using AABB = TAABB<float>;
-using AABBd = TAABB<double>;
+using AABB = TRect<float>;
+using AABBd = TRect<double>;
 
 template
         <class T>
@@ -204,6 +204,13 @@ namespace Color
     extern const ColorRGB Blue;
 }
 
+
+enum EBlendMode
+{
+    BLEND_ADD,
+    BLEND_ALPHA,
+    BLEND_MULTIPLY
+};
+
 int LCM(const std::vector<int> &Set);
 double latof(std::string s);
-

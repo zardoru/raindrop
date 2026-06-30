@@ -15,7 +15,6 @@
 
 #include "Texture.h"
 #include "ImageLoader.h"
-#include "Transformation.h"
 #include "Rendering.h"
 
 #include "../structure/Configuration.h"

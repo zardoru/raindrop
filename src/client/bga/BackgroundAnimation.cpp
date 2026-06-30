@@ -10,7 +10,7 @@
 #include "Transformation.h"
 #include "Rendering.h"
 #include "Sprite.h"
-#include <game/Song.h>
+#include <ChartGroup.h>
 
 #include "BackgroundAnimation.h"
 
@@ -24,13 +24,82 @@
 #include <game/Timing.h>
 #include "osuBackgroundAnimation.h"
 
-
-std::filesystem::path GetSongBackground(rd::Song &Song)
+namespace
 {
-    auto SngDir = Song.SongDirectory;
+    struct BGAEvent
+    {
+        double Time = 0;
+        int BMP = 0;
 
-    if (std::filesystem::exists(SngDir / Song.BackgroundFilename))
-        return SngDir / Song.BackgroundFilename;
+        bool operator<(const BGAEvent& other) const
+        {
+            return Time < other.Time;
+        }
+    };
+
+    bool BGAEventTimeBefore(const BGAEvent& event, const double time)
+    {
+        return event.Time < time;
+    }
+
+    BGAEvent ConvertAutoplayBMP(const otoworm::AutoplayBMP& event)
+    {
+        return {event.time, event.bmp};
+    }
+
+    std::vector<BGAEvent> ConvertAutoplayBMPEvents(const std::vector<otoworm::AutoplayBMP>& events)
+    {
+        std::vector<BGAEvent> out;
+        out.reserve(events.size());
+        for (const auto& event : events) {
+            out.push_back(ConvertAutoplayBMP(event));
+        }
+        return out;
+    }
+
+    otoworm::ChartTransient* GetOtoTransient(const std::shared_ptr<otoworm::Chart>& chart)
+    {
+        if (!chart) {
+            return nullptr;
+        }
+        return chart->transient.get();
+    }
+
+    const otoworm::BMPEventsDetail* GetOtoBMPEvents(const std::shared_ptr<otoworm::Chart>& chart)
+    {
+        auto* transient = GetOtoTransient(chart);
+        if (!transient || !transient->bmp_events) {
+            return nullptr;
+        }
+        return &*transient->bmp_events;
+    }
+
+    bool IsOtoBmson(const std::shared_ptr<otoworm::Chart>& chart)
+    {
+        auto* transient = GetOtoTransient(chart);
+        if (!transient || !transient->specialized_info ||
+            transient->specialized_info->get_class() != otoworm::CC_BMS) {
+            return false;
+        }
+
+        return std::static_pointer_cast<otoworm::BMSChartInfo>(transient->specialized_info)->is_bmson;
+    }
+
+    std::string GetOtoOsuSprites(const std::shared_ptr<otoworm::Chart>& chart)
+    {
+        auto* transient = GetOtoTransient(chart);
+        auto* osu_transient = dynamic_cast<otoworm::OsumaniaChartTransient*>(transient);
+        return osu_transient ? osu_transient->osb_sprites : "";
+    }
+}
+
+
+std::filesystem::path GetSongBackground(const otoworm::ChartGroup& chart_group)
+{
+    auto SngDir = chart_group.path;
+
+    if (std::filesystem::exists(SngDir / chart_group.background_filename))
+        return SngDir / chart_group.background_filename;
 
     for (auto i : std::filesystem::directory_iterator(SngDir))
     {
@@ -73,38 +142,42 @@ class BMSBackground final : public BackgroundAnimation
     std::shared_ptr<Sprite> LayerMiss;
     std::shared_ptr<Sprite> Layer1;
     std::shared_ptr<Sprite> Layer2;
-    std::vector<AutoplayBMP> EventsLayer0;
-    std::vector<AutoplayBMP> EventsLayerMiss;
-    std::vector<AutoplayBMP> EventsLayer1;
-    std::vector<AutoplayBMP> EventsLayer2;
+    std::vector<BGAEvent> EventsLayer0;
+    std::vector<BGAEvent> EventsLayerMiss;
+    std::vector<BGAEvent> EventsLayer1;
+    std::vector<BGAEvent> EventsLayer2;
 
 	std::map<int, VideoPlayback*> Videos;
 	
 
     ImageList List;
-    rd::Song* Song;
-    rd::Difficulty* Difficulty;
+    std::filesystem::path SongDirectory;
+    std::filesystem::path BackgroundFilename;
+    std::shared_ptr<otoworm::Chart> Chart;
     bool Validated;
     bool BlackToTransparent;
 	int MaxWidth, MaxHeight;
 	bool IsBMSON;
 public:
-    BMSBackground(Interruptible* parent, rd::Difficulty* Difficulty, rd::Song* Song) : BackgroundAnimation(parent), List(this)
+    BMSBackground(
+            Interruptible* parent,
+            std::shared_ptr<otoworm::Chart> chart,
+            std::filesystem::path song_directory,
+            std::filesystem::path background_filename)
+            : BackgroundAnimation(parent), List(this)
     {
-        this->Difficulty = Difficulty;
-        this->Song = Song;
+        Chart = std::move(chart);
+        SongDirectory = std::move(song_directory);
+        BackgroundFilename = std::move(background_filename);
         Validated = false;
         MissTime = 0;
 
 		MaxWidth = MaxHeight = 256;
 
         bool BtoT = false;
-        if (Difficulty->Data->TimingInfo->GetType() == rd::TI_BMS)
-        {
-			IsBMSON = std::dynamic_pointer_cast<rd::BMSChartInfo>(Difficulty->Data->TimingInfo)->IsBMSON;
-            if (!IsBMSON)
-                BtoT = true;
-        }
+        IsBMSON = IsOtoBmson(Chart);
+        if (!IsBMSON)
+            BtoT = true;
         BlackToTransparent = BtoT;
     }
 
@@ -117,14 +190,19 @@ public:
 
     void Load() override
     {
-        EventsLayer0 = Difficulty->Data->BMPEvents->BMPEventsLayerBase;
-        EventsLayerMiss = Difficulty->Data->BMPEvents->BMPEventsLayerMiss;
-        EventsLayer1 = Difficulty->Data->BMPEvents->BMPEventsLayer;
-        EventsLayer2 = Difficulty->Data->BMPEvents->BMPEventsLayer2;
+        const auto* bmp_events = GetOtoBMPEvents(Chart);
+        if (!bmp_events) {
+            return;
+        }
 
-		for (const auto& v : Difficulty->Data->BMPEvents->BMPList) {
+        EventsLayer0 = ConvertAutoplayBMPEvents(bmp_events->layer_base);
+        EventsLayerMiss = ConvertAutoplayBMPEvents(bmp_events->layer_miss);
+        EventsLayer1 = ConvertAutoplayBMPEvents(bmp_events->layer_upper);
+        EventsLayer2 = ConvertAutoplayBMPEvents(bmp_events->layer_upper2);
+
+		for (const auto& v : bmp_events->bmp_list) {
 			auto vs = v.second;
-			auto path = Song->SongDirectory / vs;
+			auto path = SongDirectory / vs;
 			if (IsVideoPath(path))
 			{
 				auto vid = new VideoPlayback();
@@ -143,7 +221,7 @@ public:
 
 		}
 
-        List.AddToList(Song->BackgroundFilename, Song->SongDirectory);
+        List.AddToList(BackgroundFilename, SongDirectory);
         List.LoadAll();
     }
 
@@ -184,7 +262,7 @@ public:
         // Add BMP 0 as default value for layer 0.
         if (EventsLayerMiss.empty() || (!EventsLayerMiss.empty() && EventsLayerMiss[0].Time > 0))
         {
-            AutoplayBMP bmp;
+            BGAEvent bmp;
             bmp.Time = 0;
             bmp.BMP = 0;
             EventsLayerMiss.push_back(bmp);
@@ -196,9 +274,9 @@ public:
         Validated = true;
     }
 
-    void SetLayerImage(Sprite *sprite, std::vector<AutoplayBMP> &events_layer, double time)
+    void SetLayerImage(Sprite *sprite, std::vector<BGAEvent> &events_layer, double time)
     {
-        auto bmp = std::lower_bound(events_layer.begin(), events_layer.end(), time, TimeSegmentCompare<AutoplayBMP>);
+        auto bmp = std::lower_bound(events_layer.begin(), events_layer.end(), time, BGAEventTimeBefore);
         if (bmp != events_layer.begin())
         {
             bmp = bmp - 1;
@@ -292,24 +370,32 @@ public:
     }
 };
 
-std::unique_ptr<BackgroundAnimation> CreateBGAforVSRG(rd::Song &input, uint8_t DifficultyIndex, Interruptible *context)
+std::unique_ptr<BackgroundAnimation> CreateBGAforVSRG(
+        const std::shared_ptr<otoworm::ChartGroup>& input,
+        uint8_t chart_index,
+        Interruptible *context)
 {
-    rd::Difficulty* Diff = input.GetDifficulty(DifficultyIndex);
-    if (Diff)
+    if (input && chart_index < input->charts.size())
     {
-        if (Diff->Data && Diff->Data->BMPEvents)
-            return std::make_unique<BMSBackground>(context, Diff, &input);
-		if (Diff->Data && Diff->Data->TimingInfo && Diff->Data->TimingInfo->GetType() == rd::TI_OSUMANIA) {
+        auto chart = input->charts[chart_index];
+        if (GetOtoBMPEvents(chart))
+            return std::make_unique<BMSBackground>(
+                    context,
+                    chart,
+                    input->path,
+                    input->background_filename);
+        auto osb_sprites = GetOtoOsuSprites(chart);
+		if (!osb_sprites.empty()) {
 		    try {
-		        std::stringstream s(Diff->Data->osbSprites);
+		        std::stringstream s(osb_sprites);
 
-                return std::make_unique<osuBackgroundAnimation>(context, ReadOSBEvents(s), &input);
+                return std::make_unique<osuBackgroundAnimation>(context, ReadOSBEvents(s), input->path);
             } catch (std::exception &e) {
                 Log::LogPrintf("Failure to parse OSB events of .osu file. Reason: %s\n", e.what());
             }
         }
 
-        return std::make_unique<StaticBackground>(context, GetSongBackground(input));
+        return std::make_unique<StaticBackground>(context, GetSongBackground(*input));
     }
 
     return nullptr;
@@ -347,11 +433,15 @@ void BackgroundAnimation::Render()
 {
 }
 
-std::unique_ptr<BackgroundAnimation> BackgroundAnimation::CreateBGAFromSong(uint8_t DifficultyIndex, rd::Song& Input, Interruptible* context, bool LoadNow)
+std::unique_ptr<BackgroundAnimation> BackgroundAnimation::CreateBGAFromChartGroup(
+        uint8_t chart_index,
+        const std::shared_ptr<otoworm::ChartGroup>& chart_group,
+        Interruptible* context,
+        bool LoadNow)
 {
-    auto ret = CreateBGAforVSRG(static_cast<rd::Song&> (Input), DifficultyIndex, context);
+    auto ret = CreateBGAforVSRG(chart_group, chart_index, context);
     
-    if (LoadNow)
+    if (ret && LoadNow)
     {
         ret->Load();
         ret->Validate();

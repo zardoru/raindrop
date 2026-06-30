@@ -1,7 +1,7 @@
 #include <string>
+#include <filesystem>
 #include <game/ScoreKeeper7K.h>
 #include <json.hpp>
-#include "game/Song.h"
 #include "ScoreSerializer.h"
 #include "../client/game/PlayscreenParameters.h"
 #include "TextAndFileUtil.h"
@@ -61,7 +61,7 @@ const std::map<int, std::string> systemTypeMapper = {
 
 };
 
-json StormIR::SerializeScore(const rd::Song *pSong, const rd::Difficulty *pDifficulty,
+json StormIR::SerializeScore(const otoworm::ChartGroup *chart_group, const otoworm::Chart *chart,
                              const size_t index, const rd::ScoreKeeper &keeper,
                              const PlayscreenParameters &options) {
     json ret;
@@ -72,8 +72,8 @@ json StormIR::SerializeScore(const rd::Song *pSong, const rd::Difficulty *pDiffi
     // difficulty index
     ret["diff_index"] = index;
 
-    ret["song"] = SerializeSongInformation(pSong);
-    ret["diff"] = SerializeDifficultyInformation(pDifficulty);
+    ret["song"] = SerializeSongInformation(chart_group);
+    ret["diff"] = SerializeDifficultyInformation(chart_group, chart);
     ret["options"] = SerializeOptions(options);
     ret["detail"] = SerializeScoreDetail(keeper, options.GetScoringType(),
                                          static_cast<const rd::LifeType>(options.GaugeType));
@@ -100,21 +100,27 @@ json StormIR::SerializeScore(const rd::Song *pSong, const rd::Difficulty *pDiffi
     return ret;
 }
 
-json StormIR::SerializeSongInformation(const rd::Song *pSong) {
+json StormIR::SerializeSongInformation(const otoworm::ChartGroup *chart_group) {
     return nlohmann::json() = {
-            {"title",    pSong->Title},
-            {"subtitle", pSong->Subtitle},
-            {"artist",   pSong->Artist}
+            {"title",    chart_group ? chart_group->title : ""},
+            {"subtitle", chart_group ? chart_group->subtitle : ""},
+            {"artist",   chart_group ? chart_group->artist : ""}
     };
 }
 
-json StormIR::SerializeDifficultyInformation(const rd::Difficulty *pDifficulty) {
+json StormIR::SerializeDifficultyInformation(const otoworm::ChartGroup *chart_group, const otoworm::Chart *chart) {
+    std::filesystem::path chart_path;
+    if (chart && chart->meta)
+        chart_path = chart->meta->path;
+    if (chart_group && !chart_path.empty() && chart_path.is_relative())
+        chart_path = chart_group->path / chart_path;
+
     return nlohmann::json() = {
-            {"sha256",    Utility::GetSha256ForFile(pDifficulty->Filename)},
-            {"name",      pDifficulty->Name},
-            {"charter",   pDifficulty->Author},
-            {"playlevel", pDifficulty->Level},
-            {"channels",  pDifficulty->Channels}
+            {"sha256",    chart_path.empty() ? "" : Utility::GetSha256ForFile(chart_path)},
+            {"name",      chart && chart->meta ? chart->meta->name : ""},
+            {"charter",   chart && chart->meta ? chart->meta->author : ""},
+            {"playlevel", chart ? chart->level : 0},
+            {"channels",  chart ? chart->channels : 0}
     };
 }
 

@@ -18,10 +18,10 @@
 
 // OpenGL
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include <SDL3/SDL.h>
 
 // audio
-#include <portaudio/portaudio.h>
+#include <portaudio.h>
 
 enum KeyEventType
 {

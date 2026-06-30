@@ -1,5 +1,9 @@
 #pragma once
 
+#include <ChartGroup.h>
+#include "PlayscreenParameters.h"
+
+
 class SongDatabase;
 class Texture;
 class Screen;
@@ -28,12 +32,13 @@ class GameState
     Texture* StageImage;
     Texture* SongBG;
     std::shared_ptr<rd::Song> SelectedSong;
+    std::shared_ptr<otoworm::ChartGroup> SelectedChartGroup;
     std::unique_ptr<StormIR::StormIR> ir;
 
     struct SPlayerCurrent7K {
         std::shared_ptr<rd::ScoreKeeper> scorekeeper;
         PlayscreenParameters play_parameters;
-        std::shared_ptr<rd::Difficulty> active_difficulty;
+        std::shared_ptr<otoworm::Chart> active_chart;
         PlayerContext *ctx;
         Profile* profile;
     };
@@ -50,6 +55,7 @@ public:
     GameState();
     std::filesystem::path GetSkinScriptFile(const char* Filename, const std::string& Skin);
     std::shared_ptr<rd::Song> GetSelectedSongShared() const;
+    std::shared_ptr<otoworm::ChartGroup> GetSelectedChartGroupShared() const;
     std::string GetFirstFallbackSkin();
     static GameState &GetInstance();
     void Initialize();
@@ -68,7 +74,9 @@ public:
     std::string GetSkin();
 
     void SetSelectedSong(std::shared_ptr<rd::Song> song);
+    void SetSelectedChartGroup(std::shared_ptr<otoworm::ChartGroup> chart_group);
     rd::Song *GetSelectedSong() const;
+    otoworm::ChartGroup *GetSelectedChartGroup() const;
 
     Texture* GetSongBG();
     Texture* GetSongStage();
@@ -105,7 +113,9 @@ public:
     PlayscreenParameters* GetParameters(int pn);
     rd::Difficulty* GetDifficulty(int pn);
     std::shared_ptr<rd::Difficulty> GetDifficultyShared(int pn);
-    void SetDifficulty(std::shared_ptr<rd::Difficulty> df, int pn);
+    otoworm::Chart* GetChart(int pn);
+    std::shared_ptr<otoworm::Chart> GetChartShared(int pn);
+    void SetChart(std::shared_ptr<otoworm::Chart> chart, int pn);
     int GetPlayerCount() const;
     void SubmitScore(int pn);
 
@@ -118,5 +128,5 @@ public:
     static std::shared_ptr<Screen> GetCurrentScreen();
     std::shared_ptr<Screen> GetNextScreen();
 
-    void AddActiveProfile(std::string profile_name);
+    void AddActiveProfile(const std::string &profile_name);
 };

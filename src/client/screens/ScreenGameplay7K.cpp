@@ -21,7 +21,7 @@
 #include "Sprite.h"
 
 #include <game/Song.h>
-#include <game/PlayerChartState.h>
+#include <ProcessedChart.h>
 #include <game/VSRGMechanics.h>
 #include <game/ScoreKeeper7K.h>
 #include "../game/PlayscreenParameters.h"
@@ -50,8 +50,8 @@ bool ScreenGameplay::IsActive() const {
     return Active;
 }
 
-rd::Song *ScreenGameplay::GetSong() const {
-    return MySong.get();
+otoworm::ChartGroup *ScreenGameplay::GetChartGroup() const {
+    return MyChartGroup.get();
 }
 
 void ScreenGameplay::PlayKeysound(int Keysound) {

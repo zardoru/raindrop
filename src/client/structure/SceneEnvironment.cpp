@@ -26,7 +26,7 @@
 #include <LuaBridge/LuaBridge.h>
 #include <TextAndFileUtil.h>
 
-#include <GLFW/glfw3.h>
+#include <SDL3/SDL.h>
 #include "TruetypeFont.h"
 #include "Configuration.h"
 #include "BindingsManager.h"

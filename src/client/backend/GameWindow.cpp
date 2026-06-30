@@ -2,11 +2,10 @@
 #include <map>
 #include <vector>
 #include <string>
-#include <atomic>
 #include <memory>
 #include <filesystem>
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include <SDL3/SDL.h>
 #include <rmath.h>
 #include <glm.h>
 
@@ -14,13 +13,11 @@
 #include "Logging.h"
 #include "../structure/BindingsManager.h"
 
-#include "../structure/Screen.h"
 #include "../Application.h"
 #include "GameWindow.h"
 #include "ImageLoader.h"
 #include "Transformation.h"
 #include "Rendering.h"
-#include "Sprite.h"
 #include "VBO.h"
 #include "TruetypeFont.h"
 // #include "RaindropRocketInterface.h"
@@ -31,6 +28,10 @@
 #include "Shader.h"
 //#include <glm/gtc/matrix_transform.hpp>
 
+#ifndef APIENTRY
+#define APIENTRY
+#endif
+
 GameWindow WindowFrame;
 
 std::map<int32_t, KeyType> BindingsManager::ScanFunction;
@@ -40,6 +41,7 @@ const int NUM_OF_USED_CONTROLLER_BUTTONS = 32;
 
 int controllerToUse;
 bool JoystickEnabled;
+SDL_Joystick* activeJoystick = nullptr;
 
 // az: wait - this is kind of a bad idea (limited size array)
 // TODO: there's ought to be a better way to do this
@@ -58,43 +60,43 @@ struct KeyAssociation
 
 KeyAssociation StaticSpecialKeys[] = // only add if someone actually needs more
 {
-    { "LShift", GLFW_KEY_LEFT_SHIFT },
-    { "RShift", GLFW_KEY_RIGHT_SHIFT },
-    { "Enter", GLFW_KEY_ENTER },
-    { "LCtrl", GLFW_KEY_LEFT_CONTROL },
-    { "RCtrl", GLFW_KEY_RIGHT_CONTROL },
-    { "LAlt", GLFW_KEY_LEFT_ALT },
-    { "RAlt", GLFW_KEY_RIGHT_ALT },
-    { "Tab", GLFW_KEY_TAB },
-    { "BSPC", GLFW_KEY_BACKSPACE },
-    { "F1", GLFW_KEY_F1 },
-    { "F2", GLFW_KEY_F2 },
-    { "F3", GLFW_KEY_F3 },
-    { "F4", GLFW_KEY_F4 },
-    { "F5", GLFW_KEY_F5 },
-    { "F6", GLFW_KEY_F6 },
-    { "F7", GLFW_KEY_F7 },
-    { "F8", GLFW_KEY_F8 },
-    { "F9", GLFW_KEY_F9 },
-    { "F10", GLFW_KEY_F10 },
-    { "F11", GLFW_KEY_F11 },
-    { "F12", GLFW_KEY_F12 },
-    { "Supr", GLFW_KEY_DELETE },
-    { "End", GLFW_KEY_END },
-    { "Home", GLFW_KEY_HOME },
-    { "Insert", GLFW_KEY_INSERT },
-    { "PrintScreen", GLFW_KEY_PRINT_SCREEN },
-    { "PageDown", GLFW_KEY_PAGE_DOWN },
-    { "PageUp", GLFW_KEY_PAGE_UP },
-    { "Pause", GLFW_KEY_PAUSE },
-    { "Escape", GLFW_KEY_ESCAPE },
-    { "UpArrow", GLFW_KEY_UP },
-    { "DownArrow", GLFW_KEY_DOWN },
-    { "LeftArrow", GLFW_KEY_LEFT },
-    { "RightArrow", GLFW_KEY_RIGHT },
-    { "Space", GLFW_KEY_SPACE },
-    { "Enter", GLFW_KEY_ENTER },
-    { "Backspace", GLFW_KEY_BACKSPACE }
+    { "LShift", SDLK_LSHIFT },
+    { "RShift", SDLK_RSHIFT },
+    { "Enter", SDLK_RETURN },
+    { "LCtrl", SDLK_LCTRL },
+    { "RCtrl", SDLK_RCTRL },
+    { "LAlt", SDLK_LALT },
+    { "RAlt", SDLK_RALT },
+    { "Tab", SDLK_TAB },
+    { "BSPC", SDLK_BACKSPACE },
+    { "F1", SDLK_F1 },
+    { "F2", SDLK_F2 },
+    { "F3", SDLK_F3 },
+    { "F4", SDLK_F4 },
+    { "F5", SDLK_F5 },
+    { "F6", SDLK_F6 },
+    { "F7", SDLK_F7 },
+    { "F8", SDLK_F8 },
+    { "F9", SDLK_F9 },
+    { "F10", SDLK_F10 },
+    { "F11", SDLK_F11 },
+    { "F12", SDLK_F12 },
+    { "Supr", SDLK_DELETE },
+    { "End", SDLK_END },
+    { "Home", SDLK_HOME },
+    { "Insert", SDLK_INSERT },
+    { "PrintScreen", SDLK_PRINTSCREEN },
+    { "PageDown", SDLK_PAGEDOWN },
+    { "PageUp", SDLK_PAGEUP },
+    { "Pause", SDLK_PAUSE },
+    { "Escape", SDLK_ESCAPE },
+    { "UpArrow", SDLK_UP },
+    { "DownArrow", SDLK_DOWN },
+    { "LeftArrow", SDLK_LEFT },
+    { "RightArrow", SDLK_RIGHT },
+    { "Space", SDLK_SPACE },
+    { "Enter", SDLK_RETURN },
+    { "Backspace", SDLK_BACKSPACE }
 };
 
 static void GLCHECKERR() {
@@ -136,7 +138,7 @@ int KeyTranslate(std::string K)
         if (Utility::IsNumeric(K.c_str()))
             return atoi(K.c_str());
         else
-            return (int)K[0];
+            return K[0];
     }
     else
         return 0;
@@ -147,18 +149,18 @@ struct defaultKeys_s
     int key;
     KeyType command;
 } defaultKeys[] = {
-    { GLFW_KEY_ESCAPE, KT_Escape },
-    { GLFW_KEY_UP, KT_Up },
-    { GLFW_KEY_DOWN, KT_Down },
-    { GLFW_KEY_LEFT, KT_Left },
-    { GLFW_KEY_RIGHT, KT_Right },
-    { GLFW_KEY_SPACE, KT_Select },
-    { GLFW_KEY_ENTER, KT_Enter },
-    { GLFW_KEY_BACKSPACE, KT_BSPC },
-    { GLFW_MOUSE_BUTTON_LEFT, KT_Select },
-    { GLFW_MOUSE_BUTTON_RIGHT, KT_SelectRight },
-	{ GLFW_KEY_F5, KT_ReloadScreenScripts },
-	{ GLFW_KEY_F10, KT_ReloadCFG }
+    { SDLK_ESCAPE, KT_Escape },
+    { SDLK_UP, KT_Up },
+    { SDLK_DOWN, KT_Down },
+    { SDLK_LEFT, KT_Left },
+    { SDLK_RIGHT, KT_Right },
+    { SDLK_SPACE, KT_Select },
+    { SDLK_RETURN, KT_Enter },
+    { SDLK_BACKSPACE, KT_BSPC },
+    { SDL_BUTTON_LEFT, KT_Select },
+    { SDL_BUTTON_RIGHT, KT_SelectRight },
+	{ SDLK_F5, KT_ReloadScreenScripts },
+	{ SDLK_F10, KT_ReloadCFG }
 };
 
 const int DEFAULT_KEYS_COUNT = sizeof(defaultKeys) / sizeof(defaultKeys_s);
@@ -230,10 +232,12 @@ void BindingsManager::Initialize()
     //controllerToUse = 1; should use this if the user entered garbage data (anything that isn't a number)
     controllerToUse = (int)Configuration::GetConfigf("ControllerNumber") - 1;
 
-    if (glfwJoystickPresent(controllerToUse))
+    int joystickCount = 0;
+    SDL_JoystickID* joysticks = SDL_GetJoysticks(&joystickCount);
+    if (joysticks && controllerToUse >= 0 && controllerToUse < joystickCount)
     {
-        int numOfButtons;
-        glfwGetJoystickButtons(controllerToUse, &numOfButtons);
+        activeJoystick = SDL_OpenJoystick(joysticks[controllerToUse]);
+        int numOfButtons = activeJoystick ? SDL_GetNumJoystickButtons(activeJoystick) : 0;
         if (numOfButtons)
         {
             for (int i = 1; i <= numOfButtons; i++)
@@ -245,10 +249,9 @@ void BindingsManager::Initialize()
                 thisButton.boundkey = 1000 + i;
                 SpecialKeys.push_back(thisButton);
             }
-        }
+		}
 
-		int numOfAxis;
-		glfwGetJoystickAxes(controllerToUse, &numOfAxis);
+		int numOfAxis = activeJoystick ? SDL_GetNumJoystickAxes(activeJoystick) : 0;
 		if (numOfAxis)
 		{
 			for (int i = numOfButtons + 1; i <= numOfButtons + numOfAxis; i++) {
@@ -261,8 +264,10 @@ void BindingsManager::Initialize()
 			}
 		}
     }
+    if (joysticks)
+        SDL_free(joysticks);
 
-    JoystickEnabled = (glfwJoystickPresent(GLFW_JOYSTICK_1) == GL_TRUE);
+    JoystickEnabled = activeJoystick != nullptr;
 
     std::map <std::string, std::string> fields;
     Configuration::GetConfigListS("SystemKeys", fields, "");
@@ -349,17 +354,19 @@ GameWindow::GameWindow()
     Viewport.x = Viewport.y = 0;
     SizeRatio = 1.0f;
     FullscreenSwitchbackPending = false;
+    CloseRequested = false;
     wnd = NULL;
+    glContext = nullptr;
 }
 
-void ResizeFunc(GLFWwindow* wnd, int32_t width, int32_t height)
+void ResizeFunc(int32_t width, int32_t height)
 {
     float HeightRatio = (float)height / WindowFrame.GetMatrixSize().y;
 
 	if (!WindowFrame.IsFullscreen) { // well then, let's enforce some aspect ratio
 		double mwidth = WindowFrame.GetMatrixSize().x * HeightRatio;
 		glViewport(0, 0, mwidth, height);
-		glfwSetWindowSize(wnd, mwidth, height);
+		SDL_SetWindowSize(WindowFrame.wnd, mwidth, height);
 
 		WindowFrame.size.x = mwidth;
 		WindowFrame.size.y = height;
@@ -373,28 +380,22 @@ void ResizeFunc(GLFWwindow* wnd, int32_t width, int32_t height)
     WindowFrame.SizeRatio = HeightRatio;
 }
 
-void InputFunc(GLFWwindow*, int32_t key, int32_t scancode, int32_t code, int32_t modk)
+void InputFunc(int32_t key, bool pressed, SDL_Keymod modk)
 {
-    if (code != GLFW_REPEAT)
-        WindowFrame.Parent->HandleInput(key, code == GLFW_PRESS, false);
+    WindowFrame.Parent->HandleInput(key, pressed, false);
 
-    if (key == GLFW_KEY_ENTER && code == GLFW_PRESS && (modk & GLFW_MOD_ALT))
+    if (key == SDLK_RETURN && pressed && (modk & SDL_KMOD_ALT))
         WindowFrame.FullscreenSwitchbackPending = true;
 }
 
-void MouseInputFunc(GLFWwindow*, int32_t key, int32_t code, int32_t modk)
+void MouseInputFunc(int32_t key, bool pressed)
 {
-    if (code != GLFW_REPEAT) // Ignore GLFW_REPEAT events
-        WindowFrame.Parent->HandleInput(key, code == GLFW_PRESS, true);
+    WindowFrame.Parent->HandleInput(key, pressed, true);
 }
 
-void ScrollFunc(GLFWwindow*, double xOff, double yOff)
+void ScrollFunc(double xOff, double yOff)
 {
     WindowFrame.Parent->HandleScrollInput(xOff, yOff);
-}
-
-void MouseMoveFunc(GLFWwindow*, double newx, double newy)
-{
 }
 
 Vec2 GameWindow::GetWindowSize() const
@@ -409,8 +410,8 @@ Vec2 GameWindow::GetMatrixSize() const
 
 Vec2 GameWindow::GetRelativeMPos()
 {
-    double mousex, mousey;
-    glfwGetCursorPos(wnd, &mousex, &mousey);
+    float mousex, mousey;
+    SDL_GetMouseState(&mousex, &mousey);
     float outx = (mousex - Viewport.x) / SizeRatio;
     float outy = matrixSize.y * mousey / size.y;
     return Vec2(outx, outy);
@@ -418,8 +419,8 @@ Vec2 GameWindow::GetRelativeMPos()
 
 Vec2 GameWindow::GetWindowMPos()
 {
-    double mousex, mousey;
-    glfwGetCursorPos(wnd, &mousex, &mousey);
+    float mousex, mousey;
+    SDL_GetMouseState(&mousex, &mousey);
     return Vec2(mousex, mousey);
 }
 
@@ -428,15 +429,10 @@ float GameWindow::GetWindowVScale()
     return SizeRatio;
 }
 
-void CharInputFunc(GLFWwindow*, unsigned int cp)
-{
-    WindowFrame.Parent->HandleTextInput(cp);
-}
-
 bool GameWindow::SetupWindow()
 {
     GLenum err;
-    glfwMakeContextCurrent(wnd);
+    SDL_GL_MakeCurrent(wnd, glContext);
 
     // we have an opengl context, try opening up glew
     if ((err = glewInit()) != GLEW_OK)
@@ -465,7 +461,7 @@ bool GameWindow::SetupWindow()
     // glAlphaFunc(GL_GREATER, 0); GLCHECKERR();
 
     if (VSync)
-        glfwSwapInterval(1);
+        SDL_GL_SetSwapInterval(1);
 
     projection = glm::ortho<float>(0.0, matrixSize.x, matrixSize.y, 0.0, -32.0, 1.0);
     projectionInverse = glm::inverse(projection);
@@ -484,16 +480,7 @@ bool GameWindow::SetupWindow()
         glDebugMessageCallback(OnGlDebugMsg, nullptr);
     }
 
-    // GLFW Hooks
-    glfwSetFramebufferSizeCallback(wnd, ResizeFunc);
-    glfwSetWindowSizeCallback(wnd, ResizeFunc);
-    glfwSetKeyCallback(wnd, InputFunc);
-    glfwSetMouseButtonCallback(wnd, MouseInputFunc);
-    glfwSetCursorPosCallback(wnd, MouseMoveFunc);
-    glfwSetScrollCallback(wnd, ScrollFunc);
-    glfwSetCharCallback(wnd, CharInputFunc);
-
-    ResizeFunc(wnd, size.x, size.y);
+    ResizeFunc(size.x, size.y);
 
     assert(glGetError() == 0);
     return true;
@@ -509,33 +496,25 @@ Mat4 GameWindow::GetMatrixProjectionInverse()
     return projectionInverse;
 }
 
-void glfwError(int c, const char* s)
-{
-    Log::LogPrintf("GLFW Error %d: %s\n", c, s);
-}
-
 bool GameWindow::AutoSetupWindow(Application* _parent)
 {
     Parent = _parent;
 
-    glfwSetErrorCallback(glfwError);
-
-    // todo: enum modes
-    if (!glfwInit())
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK))
     {
-        Log::LogPrintf("Failure to initialize glfw.\n");
-        return false; // std::exception("glfw failed initialization!"); // don't do shit
+        Log::LogPrintf("Failure to initialize SDL: %s\n", SDL_GetError());
+        return false;
 	}
 	else {
-		Log::LogPrintf("GLFW succesfully initialized.\n");
+		Log::LogPrintf("SDL succesfully initialized.\n");
 	}
 
-	glfwWindowHint(GLFW_SRGB_CAPABLE, 1);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 #ifndef NDEBUG
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
 
     AssignSize();
@@ -548,15 +527,26 @@ bool GameWindow::AutoSetupWindow(Application* _parent)
     VSync = Configuration::GetConfigf("VSync") != 0;
 
 	if (IsFullscreen) {
-		if (!glfwGetPrimaryMonitor()) {
-			Log::LogPrintf("Can't get primary window (Fullscreen)\n");
+		if (!SDL_GetPrimaryDisplay()) {
+			Log::LogPrintf("Can't get primary display (Fullscreen)\n");
 			IsFullscreen = false;
 		}
 	}
 
-    if (!(wnd = glfwCreateWindow(size.x, size.y, RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, IsFullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr)))
+    SDL_WindowFlags flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+    if (IsFullscreen)
+        flags |= SDL_WINDOW_FULLSCREEN;
+
+    if (!(wnd = SDL_CreateWindow(RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, size.x, size.y, flags)))
     {
-        Log::Logf("Failure to initialize window.\n");
+        Log::Logf("Failure to initialize window: %s\n", SDL_GetError());
+        return false;
+    }
+
+    glContext = SDL_GL_CreateContext(wnd);
+    if (!glContext)
+    {
+        Log::Logf("Failure to initialize OpenGL context: %s\n", SDL_GetError());
         return false;
     }
 
@@ -564,8 +554,8 @@ bool GameWindow::AutoSetupWindow(Application* _parent)
     // This is a temporary hack for OS X where our size isn't getting initialized to the correct values.
     int outx = 0;
     int outy = 0;
-    glfwGetWindowSize(wnd, &outx, &outy);
-    ResizeFunc(wnd, outx, outy);
+    SDL_GetWindowSize(wnd, &outx, &outy);
+    ResizeFunc(outx, outy);
 #endif
 
     SetVisibleCursor(Configuration::GetSkinConfigf("ShowCursor") != 0);
@@ -580,13 +570,13 @@ void GameWindow::AssignSize()
 
     if (WindowWidth == 0 || WindowHeight == 0)
     {
-        GLFWmonitor *mon = glfwGetPrimaryMonitor();
+        SDL_DisplayID display = SDL_GetPrimaryDisplay();
 
-		if (mon) {
-			const GLFWvidmode *mode = glfwGetVideoMode(mon);
+		if (display) {
+			const SDL_DisplayMode *mode = SDL_GetCurrentDisplayMode(display);
 
-			size.x = mode->width;
-			size.y = mode->height;
+			size.x = mode->w;
+			size.y = mode->h;
 		}
 		else {
 			Log::LogPrintf("Monitor == null? Defaulting to 1024x768.");
@@ -608,7 +598,7 @@ void GameWindow::SwapBuffers()
 	if (doFlush)
 		glFlush();
 
-	glfwSwapBuffers(wnd);
+	SDL_GL_SwapWindow(wnd);
 	
 
     /* Fullscreen switching */
@@ -622,8 +612,18 @@ void GameWindow::ClearWindow()
 
 void GameWindow::Cleanup()
 {
-	glfwDestroyWindow(wnd);
-	glfwTerminate();
+    if (activeJoystick)
+    {
+        SDL_CloseJoystick(activeJoystick);
+        activeJoystick = nullptr;
+    }
+    if (glContext)
+    {
+        SDL_GL_DestroyContext(glContext);
+        glContext = nullptr;
+    }
+	SDL_DestroyWindow(wnd);
+	SDL_Quit();
 }
 
 void GameWindow::UpdateFullscreen()
@@ -631,31 +631,19 @@ void GameWindow::UpdateFullscreen()
 	if (FullscreenSwitchbackPending)
 	{
 		Log::LogPrintf("Attempting to switch fullscreen mode.\n");
-		if (IsFullscreen)
-		{
-			glfwDestroyWindow(wnd);
-			wnd = glfwCreateWindow(size.x, size.y, RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, NULL, NULL);
-			IsFullscreen = false;
-		}
-		else
-		{
-			if (glfwGetPrimaryMonitor()) {
-				AssignSize();
-				glfwDestroyWindow(wnd);
-				wnd = glfwCreateWindow(size.x, size.y, RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, glfwGetPrimaryMonitor(), NULL);
+        IsFullscreen = !IsFullscreen;
+        if (!SDL_SetWindowFullscreen(wnd, IsFullscreen))
+        {
+            Log::LogPrintf("Can't switch fullscreen mode: %s\n", SDL_GetError());
+            IsFullscreen = !IsFullscreen;
+            FullscreenSwitchbackPending = false;
+            return;
+        }
 
-				IsFullscreen = true;
-				Log::LogPrintf("Switched to fullscreen mode.\n");
-			}
-			else {
-				IsFullscreen = false;
-				Log::LogPrintf("Can't switch to fullscreen. No primary monitor detected?\n");
-				FullscreenSwitchbackPending = false;
-				return;
-			}
-		}
-
-		SetupWindow();
+        int outx = 0;
+        int outy = 0;
+        SDL_GetWindowSize(wnd, &outx, &outy);
+        ResizeFunc(outx, outy);
 
 		// Reload all images.
 		// todo: rmlui
@@ -681,13 +669,46 @@ void GameWindow::UpdateFullscreen()
 
 void GameWindow::RunInput()
 {
-	glfwPollEvents();
+    SDL_Event event;
+    while (SDL_PollEvent(&event))
+    {
+        switch (event.type)
+        {
+        case SDL_EVENT_QUIT:
+            CloseRequested = true;
+            break;
+        case SDL_EVENT_WINDOW_RESIZED:
+            ResizeFunc(event.window.data1, event.window.data2);
+            break;
+        case SDL_EVENT_KEY_DOWN:
+            if (!event.key.repeat)
+                InputFunc(event.key.key, true, event.key.mod);
+            break;
+        case SDL_EVENT_KEY_UP:
+            InputFunc(event.key.key, false, event.key.mod);
+            break;
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
+            MouseInputFunc(event.button.button, true);
+            break;
+        case SDL_EVENT_MOUSE_BUTTON_UP:
+            MouseInputFunc(event.button.button, false);
+            break;
+        case SDL_EVENT_MOUSE_WHEEL:
+            ScrollFunc(event.wheel.x, event.wheel.y);
+            break;
+        case SDL_EVENT_TEXT_INPUT:
+            if (event.text.text && event.text.text[0])
+                WindowFrame.Parent->HandleTextInput(static_cast<unsigned int>(event.text.text[0]));
+            break;
+        default:
+            break;
+        }
+    }
 
 	if (JoystickEnabled)
 	{
 		// buttons
-		int buttonArraySize = 0;
-		const unsigned char *buttonArray = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &buttonArraySize);
+		int buttonArraySize = SDL_GetNumJoystickButtons(activeJoystick);
 		if (buttonArraySize > 0)
 		{
 			for (int i = 0; i < buttonArraySize; i++)
@@ -699,10 +720,11 @@ void GameWindow::RunInput()
 					if (i + 1 == thisKeyNumber)
 					{
 						/* Only processes the button push/release if the state has changed. */
-						if ((buttonArray[i] != 0) != controllerButtonState[thisKeyNumber])
+                        const auto pressed = SDL_GetJoystickButton(activeJoystick, i);
+						if (pressed != controllerButtonState[thisKeyNumber])
 						{
-							WindowFrame.Parent->HandleInput(SpecialKey.boundkey, buttonArray[i] == GLFW_PRESS, false);
-							controllerButtonState[thisKeyNumber] = !controllerButtonState[thisKeyNumber];
+							WindowFrame.Parent->HandleInput(SpecialKey.boundkey, pressed, false);
+							controllerButtonState[thisKeyNumber] = pressed;
 						}
 					}
 				}
@@ -710,11 +732,11 @@ void GameWindow::RunInput()
 		}
 
 		// axis
-		int axisArraySize;
+		int axisArraySize = SDL_GetNumJoystickAxes(activeJoystick);
 		float deadzone = 0.25;
-		const float *axisArray = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axisArraySize);
 		if (axisArraySize) {
 			for (auto i = 0; i < axisArraySize; i++) {
+                const float axisValue = SDL_GetJoystickAxis(activeJoystick, i) / 32767.0f;
 				for (auto & SpecialKey : SpecialKeys) {
 					// as before, specialkeys vector value
 					int axis = SpecialKey.boundkey - 1000;
@@ -722,18 +744,18 @@ void GameWindow::RunInput()
 					if ((i + buttonArraySize + 1) != axis)
 						continue;
 
-					if (abs(axisArray[i]) > deadzone) {
+					if (abs(axisValue) > deadzone) {
 						if (!controllerButtonState[axis]) {
-							lastAxisSign[i] = sign(axisArray[i]);
+							lastAxisSign[i] = sign(axisValue);
 
 							controllerButtonState[axis] = true;
 							WindowFrame.Parent->HandleInput(SpecialKey.boundkey, true, false);
 						}
 						else {
-							if (lastAxisSign[i] != sign(axisArray[i])) {
+							if (lastAxisSign[i] != sign(axisValue)) {
 								WindowFrame.Parent->HandleInput(SpecialKey.boundkey, false, false);
 								WindowFrame.Parent->HandleInput(SpecialKey.boundkey, true, false);
-								lastAxisSign[i] = sign(axisArray[i]);
+								lastAxisSign[i] = sign(axisValue);
 							}
 						}
 					}
@@ -752,17 +774,17 @@ void GameWindow::RunInput()
 
 bool GameWindow::ShouldCloseWindow()
 {
-    return !!glfwWindowShouldClose(wnd);
+    return CloseRequested;
 }
 
 void GameWindow::SetVisibleCursor(bool Visible)
 {
     if (Visible)
     {
-        glfwSetInputMode(wnd, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        SDL_ShowCursor();
     }
     else
-        glfwSetInputMode(wnd, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+        SDL_HideCursor();
 }
 
 bool GameWindow::SetupShaders()
@@ -823,7 +845,7 @@ void GameWindow::AddTTF(TruetypeFont* TTF)
 
 void GameWindow::RemoveTTF(TruetypeFont *TTF)
 {
-    for (std::vector<TruetypeFont*>::iterator i = TTFList.begin(); i != TTFList.end(); i++)
+    for (auto i = TTFList.begin(); i != TTFList.end(); ++i)
     {
         if (*i == TTF)
         {
@@ -834,5 +856,5 @@ void GameWindow::RemoveTTF(TruetypeFont *TTF)
 }
 
 double GameWindow::GetCurrentTime() {
-    return glfwGetTime();
+    return SDL_GetTicks() / 1000.0;
 }

@@ -3,7 +3,7 @@
 #include <rmath.h>
 #include <glm.h>
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include <SDL3/SDL.h>
 #include <utf8.h>
 #include <stb/stb_truetype.h>
 #include <TextAndFileUtil.h>
@@ -13,6 +13,9 @@
 #include "VBO.h"
 #include "Transformation.h"
 #include "Rendering.h"
+
+#include <ranges>
+
 #include "Sprite.h"
 
 
@@ -659,17 +662,15 @@ void TruetypeFont::Render(const std::string &In, const Vec2 &Position, const Mat
 
 void TruetypeFont::ReleaseTextures()
 {
-    for (auto i = Texes->begin();
-    i != Texes->end();
-        ++i)
+    for (auto &val: *Texes | std::views::values)
     {
-		if (i->second.tex) {
-			free(i->second.tex);
-			i->second.tex = 0;
+		if (val.tex) {
+			free(val.tex);
+			val.tex = 0;
 		}
-		if (i->second.gltx) {
-			glDeleteTextures(1, &i->second.gltx);
-			i->second.gltx = 0;
+		if (val.gltx) {
+			glDeleteTextures(1, &val.gltx);
+			val.gltx = 0;
 		}
     }
 }

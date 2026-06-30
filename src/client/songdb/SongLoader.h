@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ChartGroup.h>
+
 class SongDatabase;
 
 class SongLoader
@@ -17,7 +19,7 @@ public:
 
 	void LoadSong7KFromDir(std::filesystem::path songPath, std::vector<rd::Song*> &VecOut);
     void GetSongList7K(std::vector<rd::Song*> &OutVec, std::filesystem::path Dir);
-    std::shared_ptr<rd::Song> LoadFromMeta(const rd::Song* Meta, std::shared_ptr<rd::Difficulty> CurrentDiff, std::filesystem::path& FilenameOut, uint8_t& Index);
+    std::shared_ptr<rd::Song> LoadFromMeta(int meta_song_id, const std::shared_ptr<otoworm::Chart>& current_chart, std::filesystem::path& FilenameOut, uint8_t& Index);
 };
 
 std::shared_ptr<rd::Song> LoadSong7KFromFilename(

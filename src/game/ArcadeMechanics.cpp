@@ -2,7 +2,6 @@
 #include <stdexcept>
 
 #include <game/GameConstants.h>
-#include <game/TrackNote.h>
 #include <game/VSRGMechanics.h>
 #include <game/ScoreKeeper7K.h>
 
@@ -20,16 +19,16 @@ int RaindropArcadeMechanics::GetScratchForLane(uint32_t Lane) {
     return 0;
 }
 
-bool RaindropArcadeMechanics::CanHitNoteHead(double time, TrackNote *note) {
+bool RaindropArcadeMechanics::CanHitNoteHead(double time, RuntimeNote *note) {
     double cutoff = PlayerScoreKeeper->getJudgmentCutoffMS() / 1000.0;
-    return (abs(time - note->GetStartTime()) < cutoff) && note->IsHeadEnabled() && !note->WasHit();
+    return (abs(time - note->get_start_time()) < cutoff) && note->is_head_enabled() && !note->was_hit();
 }
 
-bool RaindropArcadeMechanics::CanHitNoteTail(double time, TrackNote *note) {
-    return !note->IsHeadEnabled() && note->WasHit();
+bool RaindropArcadeMechanics::CanHitNoteTail(double time, RuntimeNote *note) {
+    return !note->is_head_enabled() && note->was_hit();
 }
 
-void RaindropArcadeMechanics::JudgeScratch(double SongTime, TrackNote *Note, uint32_t Lane,
+void RaindropArcadeMechanics::JudgeScratch(double SongTime, RuntimeNote *Note, uint32_t Lane,
                                            EScratchState newScratchState, EScratchState oldScratchState) {
 
     if ((newScratchState != SCR_NEUTRAL && oldScratchState == SCR_NEUTRAL) ||
@@ -40,54 +39,54 @@ void RaindropArcadeMechanics::JudgeScratch(double SongTime, TrackNote *Note, uin
     }
 }
 
-void RaindropArcadeMechanics::PerformJudgement(double SongTime, TrackNote *Note, uint32_t Lane) {
+void RaindropArcadeMechanics::PerformJudgement(double SongTime, RuntimeNote *Note, uint32_t Lane) {
     // From neutral or opposite scratch, or key press, trigger the head.
-    double dev = 1000. * (SongTime - Note->GetStartTime());
+    double dev = 1000. * (SongTime - Note->get_start_time());
     if (IsEarlyMiss(SongTime, Note)) {
-        MissNotify(dev, Lane, Note->IsHold(), false, true);
+        MissNotify(dev, Lane, Note->is_hold(), false, true);
     } else {
         // Heads, Non-holds
-        if (Note->IsHeadEnabled() && !Note->WasHit()) {
+        if (Note->is_head_enabled() && !Note->was_hit()) {
             // Within miss judgement?
             if (!IsBmBadJudge(SongTime, Note)) {
                 // Hit head
-                Note->Hit();
-                HitNotify(dev, Lane, Note->IsHold(), false);
+                Note->hit();
+                HitNotify(dev, Lane, Note->is_hold(), false);
 
-                PlayNoteSoundEvent(Note->GetSound());
+                PlayNoteSoundEvent(Note->get_sound());
 
-                if (Note->IsHold()) {
+                if (Note->is_hold()) {
                     SetLaneHoldingState(Lane, true);
-                    Note->DisableHead();
+                    Note->disable_head();
                 } else {
-                    Note->Disable();
-                    Note->MakeInvisible(); // Should we do this?
+                    Note->disable();
+                    Note->make_invisible(); // Should we do this?
                 }
 
             } else {
                 // Completely disable head or note
-                Note->FailHit();
+                Note->fail_hit();
 
-                if (Note->IsHold())
-                    Note->DisableHead();
+                if (Note->is_hold())
+                    Note->disable_head();
                 else
-                    Note->Disable();
+                    Note->disable();
 
-                MissNotify(dev, Lane, Note->IsHold(), false, false);
+                MissNotify(dev, Lane, Note->is_hold(), false, false);
             }
         } else { // Hold Tails
 
-            Note->Disable();
+            Note->disable();
 
-            double tdev = (Note->GetEndTime() - SongTime) * 1000.;
+            double tdev = (Note->get_end_time() - SongTime) * 1000.;
             // Tail is within judge window, and head was hit
             if (abs(tdev) < PlayerScoreKeeper->getJudgmentWindow(SKJ_W3)
-                && Note->WasHit()) {
-                Note->Hit();
-                HitNotify(tdev, Lane, Note->IsHold(), true);
+                && Note->was_hit()) {
+                Note->hit();
+                HitNotify(tdev, Lane, Note->is_hold(), true);
             } else { // Tail outside judgement
-                Note->FailHit();
-                MissNotify(dev, Lane, Note->IsHold(), false, false);
+                Note->fail_hit();
+                MissNotify(dev, Lane, Note->is_hold(), false, false);
             }
 
             SetLaneHoldingState(Lane, false);
@@ -99,41 +98,41 @@ RaindropArcadeMechanics::RaindropArcadeMechanics() {
     ScratchState[0] = ScratchState[1] = SCR_NEUTRAL;
 }
 
-bool RaindropArcadeMechanics::OnUpdate(double SongTime, TrackNote *Note, uint32_t Lane) {
-    if (!Note->IsEnabled()) return false;
+bool RaindropArcadeMechanics::OnUpdate(double SongTime, RuntimeNote *Note, uint32_t Lane) {
+    if (!Note->is_enabled()) return false;
 
     double miss_time = PlayerScoreKeeper->getJudgmentWindow(SKJ_W3);
-    double dev = (SongTime - Note->GetStartTime()) * 1000.;
-    double tail_dev = (SongTime - Note->GetEndTime()) * 1000.;
+    double dev = (SongTime - Note->get_start_time()) * 1000.;
+    double tail_dev = (SongTime - Note->get_end_time()) * 1000.;
 
-    if ((dev > miss_time && Note->IsHeadEnabled()) ||  // Judge head only if not hit or regular note
-        (tail_dev > miss_time && !Note->IsHeadEnabled())) { // Judge tail regardless of whether it was hit or not
+    if ((dev > miss_time && Note->is_head_enabled()) ||  // Judge head only if not hit or regular note
+        (tail_dev > miss_time && !Note->is_head_enabled())) { // Judge tail regardless of whether it was hit or not
 
-        Note->FailedHit();
+        Note->failed_hit();
 
         // Check for nonhold or deactivated head
-        if (!Note->IsHold() || !Note->IsHeadEnabled()) {
-            Note->Disable();
+        if (!Note->is_hold() || !Note->is_head_enabled()) {
+            Note->disable();
 
-            if (Note->WasHit() && Note->IsHold()) {
+            if (Note->was_hit() && Note->is_hold()) {
                 SetLaneHoldingState(Lane, false);
             }
         }
 
         // Check hold with activated head
-        if (Note->IsHold() && Note->IsHeadEnabled())
-            Note->DisableHead();
+        if (Note->is_hold() && Note->is_head_enabled())
+            Note->disable_head();
 
         // Will "emergingly" miss head and tail at their respective times.
 
-        MissNotify(dev, Lane, Note->IsHold(), false, false);
+        MissNotify(dev, Lane, Note->is_hold(), false, false);
     }
 
     return false;
 }
 
-bool RaindropArcadeMechanics::OnPressLane(double SongTime, TrackNote *Note, uint32_t Lane) {
-    if (!Note->IsEnabled()) return false;
+bool RaindropArcadeMechanics::OnPressLane(double SongTime, RuntimeNote *Note, uint32_t Lane) {
+    if (!Note->is_enabled()) return false;
     if (!InJudgeCutoff(SongTime, Note)) return false;
     if (!CanHitNoteHead(SongTime, Note)) return false;
 
@@ -141,8 +140,8 @@ bool RaindropArcadeMechanics::OnPressLane(double SongTime, TrackNote *Note, uint
     return true;
 }
 
-bool RaindropArcadeMechanics::OnReleaseLane(double SongTime, TrackNote *Note, uint32_t Lane) {
-    if (!Note->IsEnabled()) return false;
+bool RaindropArcadeMechanics::OnReleaseLane(double SongTime, RuntimeNote *Note, uint32_t Lane) {
+    if (!Note->is_enabled()) return false;
     if (!InJudgeCutoff(SongTime, Note)) return false;
     if (!CanHitNoteTail(SongTime, Note)) return false;
 
@@ -150,8 +149,8 @@ bool RaindropArcadeMechanics::OnReleaseLane(double SongTime, TrackNote *Note, ui
     return true;
 }
 
-bool RaindropArcadeMechanics::OnScratchUp(double SongTime, TrackNote *Note, uint32_t Lane) {
-    if (!Note->IsEnabled()) return false;
+bool RaindropArcadeMechanics::OnScratchUp(double SongTime, RuntimeNote *Note, uint32_t Lane) {
+    if (!Note->is_enabled()) return false;
     int scratch = GetScratchForLane(Lane);
     bool judgeHead = CanHitNoteHead(SongTime, Note);
     bool judgeTail = CanHitNoteTail(SongTime, Note);
@@ -162,8 +161,8 @@ bool RaindropArcadeMechanics::OnScratchUp(double SongTime, TrackNote *Note, uint
     return true;
 }
 
-bool RaindropArcadeMechanics::OnScratchDown(double SongTime, TrackNote *Note, uint32_t Lane) {
-    if (!Note->IsEnabled()) return false;
+bool RaindropArcadeMechanics::OnScratchDown(double SongTime, RuntimeNote *Note, uint32_t Lane) {
+    if (!Note->is_enabled()) return false;
     int scratch = GetScratchForLane(Lane);
     bool judgeHead = CanHitNoteHead(SongTime, Note);
     bool judgeTail = CanHitNoteTail(SongTime, Note);
@@ -174,8 +173,8 @@ bool RaindropArcadeMechanics::OnScratchDown(double SongTime, TrackNote *Note, ui
     return true;
 }
 
-bool RaindropArcadeMechanics::OnScratchNeutral(double SongTime, TrackNote *Note, uint32_t Lane) {
-    if (!Note->IsEnabled()) return false;
+bool RaindropArcadeMechanics::OnScratchNeutral(double SongTime, RuntimeNote *Note, uint32_t Lane) {
+    if (!Note->is_enabled()) return false;
     int scratch = GetScratchForLane(Lane);
     bool judgeHead = CanHitNoteHead(SongTime, Note);
     bool judgeTail = CanHitNoteTail(SongTime, Note);
@@ -183,9 +182,9 @@ bool RaindropArcadeMechanics::OnScratchNeutral(double SongTime, TrackNote *Note,
 
     if (ScratchState[scratch] != SCR_NEUTRAL) {
         // It's an active hold? Then kill it.
-        if (Note->WasHit() && !Note->IsHeadEnabled()) {
-            Note->FailHit();
-            Note->Disable();
+        if (Note->was_hit() && !Note->is_head_enabled()) {
+            Note->fail_hit();
+            Note->disable();
         }
     } // else do nothing
 

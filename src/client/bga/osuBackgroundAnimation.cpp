@@ -3,7 +3,7 @@
 #include <functional>
 #include <regex>
 #include <rmath.h>
-#include <game/Song.h>
+#include <game/Timing.h>
 
 #include <game/Easing.h>
 #include "Transformation.h"
@@ -990,7 +990,7 @@ int osuBackgroundAnimation::AddImageToList(std::string image_filename)
 {
 	std::filesystem::path fn = image_filename;
 	auto idx = mFileIndices.size() + 1;
-	auto full_path = Song->SongDirectory / image_filename;
+	auto full_path = SongDirectory / image_filename;
 
 	if (std::filesystem::exists(full_path)) {
 		// Okay, full path is definitely not in.
@@ -1021,7 +1021,10 @@ int osuBackgroundAnimation::AddImageToList(std::string image_filename)
 	return -1; // everything has failed
 }
 
-osuBackgroundAnimation::osuBackgroundAnimation(Interruptible* parent, const osb::SpriteList& existing_mSprites, rd::Song* song)
+osuBackgroundAnimation::osuBackgroundAnimation(
+		Interruptible* parent,
+		const osb::SpriteList& existing_mSprites,
+		std::filesystem::path song_directory)
 	: BackgroundAnimation(parent),
 		mImageList(this)
 {
@@ -1029,14 +1032,14 @@ osuBackgroundAnimation::osuBackgroundAnimation(Interruptible* parent, const osb:
 	mScreenTransformation.SetPositionX( (OSB_WIDTH_WIDE - OSB_WIDTH) / 2 / OSB_WIDTH_WIDE);
 	mScreenTransformation.SetSize(1 / OSB_WIDTH_WIDE, 1 / OSB_HEIGHT);
 	mScreenTransformation.ChainTransformation(this);
-	Song = song;
+	SongDirectory = std::move(song_directory);
 	CanValidate = false;
 
 	int video_index = 0;
     for (auto sp : existing_mSprites) {
         sp.SetParent(this);
 
-        auto vpath = song->SongDirectory / sp.GetImageFilename();
+        auto vpath = SongDirectory / sp.GetImageFilename();
         if (IsVideoPath(vpath)) {
             video_index--;
             auto vid = mVideoList[video_index] = new VideoPlayback();
@@ -1079,7 +1082,7 @@ int osuBackgroundAnimation::GetIndexFromFilename(std::string filename)
 void osuBackgroundAnimation::Load()
 {
 	// Read the osb file from the song's directory.
-	auto fl = Utility::GetFileListing(Song->SongDirectory);
+	auto fl = Utility::GetFileListing(SongDirectory);
 	auto candidates = filter([](std::filesystem::path p) {
 		return p.extension() == ".osb";
 	}, fl);

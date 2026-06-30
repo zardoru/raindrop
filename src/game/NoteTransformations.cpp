@@ -7,7 +7,7 @@
 #include <functional>
 
 namespace rd::NoteTransform {
-    void Randomize(rd::VectorTrackNote &Notes, int ChannelCount, bool RespectScratch, int Seed) {
+    void Randomize(RuntimeNoteLanes &Notes, int ChannelCount, bool RespectScratch, int Seed) {
         std::vector<int> s;
 
         // perform action to channel index minus scratch ones if applicable
@@ -48,39 +48,39 @@ namespace rd::NoteTransform {
         // to all applicable channels swap with applicable channels
         toChannels([&](int index) {
             if (v <= limit) { // avoid cycles
-                swap(Notes[index], Notes[s[v]]);
+                std::swap(Notes[index], Notes[s[v]]);
                 v++;
             }
         });
     }
 
-    void Mirror(rd::VectorTrackNote &Notes, int ChannelCount, bool RespectScratch) {
+    void Mirror(RuntimeNoteLanes &Notes, int ChannelCount, bool RespectScratch) {
         int k;
         if (RespectScratch) k = 1; else k = 0;
         for (int v = ChannelCount - 1; k < ChannelCount / 2; k++, v--)
-            swap(Notes[k], Notes[v]);
+            std::swap(Notes[k], Notes[v]);
     }
 
-    void MoveKeysoundsToBGM(unsigned char channels, rd::VectorTrackNote notes_by_channel,
+    void MoveKeysoundsToBGM(unsigned char channels, RuntimeNoteLanes& notes_by_channel,
                             std::vector<AutoplaySound> &bg_ms, double drift) {
         for (auto k = 0; k < channels; k++) {
-            for (auto &&n : notes_by_channel[k]) {
-                bg_ms.emplace_back(float(double(n.GetStartTime()) - drift), n.GetSound());
-                n.RemoveSound();
+            for (auto &&n : notes_by_channel[k].handles) {
+                bg_ms.emplace_back(float(double(n.get_start_time()) - drift), n.get_sound());
+                n.remove_sound();
             }
         }
     }
 
     void TransformToBeats(unsigned char channels,
-                          rd::VectorTrackNote notes_by_channel,
-                          const TimingData &BPS) {
+                          RuntimeNoteLanes& notes_by_channel,
+                          const otoworm::TimingData &BPS) {
         for (uint8_t k = 0; k < channels; k++) {
-            for (auto &m : notes_by_channel[k]) {
-                double beatStart = IntegrateToTime(BPS, m.GetDataStartTime());
-                double beatEnd = IntegrateToTime(BPS, m.GetDataEndTime());
-                m.GetDataStartTime() = beatStart;
-                if (m.GetDataEndTime() != 0)
-                    m.GetDataEndTime() = beatEnd;
+            for (auto &m : notes_by_channel[k].handles) {
+                double beatStart = BPS.integrate_to_time(m.get_data_start_time());
+                double beatEnd = BPS.integrate_to_time(m.get_data_end_time());
+                m.get_data_start_time() = beatStart;
+                if (m.get_data_end_time() != 0)
+                    m.get_data_end_time() = beatEnd;
             }
         }
     }

@@ -262,6 +262,7 @@ void Application::SetupPreviewMode()
     }
 
     GameState::GetInstance().SetSelectedSong(song);
+    GameState::GetInstance().SetSelectedChartGroup(song->OtoChartGroup);
     // Create loading screen and gameplay screen.
     auto game = std::make_shared<ScreenGameplay>();
     auto LoadScreen = std::make_shared<ScreenLoading>(game);
@@ -279,7 +280,7 @@ void Application::SetupPreviewMode()
     */
     
 	GameState::GetInstance().GetParameters(0)->Auto = Auto;
-    game->Init(song);
+    game->Init(song->OtoChartGroup);
     LoadScreen->Init();
 
     Game = LoadScreen;

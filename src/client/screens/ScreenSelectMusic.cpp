@@ -15,7 +15,7 @@
 #include <game/Song.h>
 #include "../game/PlayscreenParameters.h"
 #include "../game/GameState.h"
-#include "../game/PlayerChartState.h"
+#include <ProcessedChart.h>
 #include "../game/VSRGMechanics.h"
 #include "../game/PlayerContext.h"
 #include "Logging.h"
@@ -205,13 +205,12 @@ float ScreenSelectMusic::GetListHeightTransformation(const float Y) {
 
 void ScreenSelectMusic::StartGameplayScreen() {
     std::shared_ptr<ScreenLoading> LoadNext;
-    std::shared_ptr<rd::Song> MySong = GameState::GetInstance().GetSelectedSongShared();
-    auto difindex = SongWheel::GetInstance().GetDifficulty();
+    auto chart_group = GameState::GetInstance().GetSelectedChartGroupShared();
 
 
     auto VSRGGame = std::make_shared<ScreenGameplay>();
 
-    VSRGGame->Init(std::dynamic_pointer_cast<rd::Song>(MySong));
+    VSRGGame->Init(chart_group);
 
     LoadNext = std::make_shared<ScreenLoading>(VSRGGame);
 
@@ -235,7 +234,8 @@ void ScreenSelectMusic::OnSongSelect(std::shared_ptr<rd::Song> MySong, uint8_t d
 
     StopLoops();
 
-    GameState::GetInstance().SetDifficulty(MySong->Difficulties[difindex], 0);
+    if (MySong->OtoChartGroup && difindex < MySong->OtoChartGroup->charts.size())
+        GameState::GetInstance().SetChart(MySong->OtoChartGroup->charts[difindex], 0);
 
     Animations->DoEvent("OnSelect", 1);
     TransitionTime = Animations->GetEnv()->GetFunctionResultF();
@@ -492,4 +492,3 @@ void ScreenSelectMusic::OnItemHoverLeave(int32_t Index, uint32_t boundIndex, std
         Animations->GetEnv()->RunFunction();
     }
 }
-

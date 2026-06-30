@@ -1,3 +1,8 @@
+#pragma once
+
+#include <game/RaindropProcessedChart.h>
+#include <ChartGroup.h>
+
 class Line;
 class Noteskin;
 class Replay;
@@ -20,6 +25,7 @@ class Replay;
 
 namespace rd {
     class ScoreKeeper;
+    class Mechanics;
 }
 
 /* fixme: add constructors and destructors initialization and destruction of these new pointers */
@@ -27,11 +33,11 @@ class PlayerContext {
 public:
     ;
 private:
-    rd::PlayerChartState ChartState;
+    rd::RaindropProcessedChart ChartState;
 
     double LastUpdateTime; // seconds, song time
 
-    std::shared_ptr<rd::Difficulty>	 CurrentDiff;
+    std::shared_ptr<otoworm::Chart> CurrentChart;
 
     std::unique_ptr<rd::Mechanics> MechanicsSet;
     std::shared_ptr<rd::ScoreKeeper> PlayerScoreKeeper;
@@ -48,7 +54,7 @@ private:
 
     struct SGearState {
         std::map<int, int> Bindings;
-        rd::TrackNote*   CurrentKeysounds[rd::MAX_CHANNELS];
+        rd::RuntimeNote*   CurrentKeysounds[rd::MAX_CHANNELS];
         bool IsPressed[rd::MAX_CHANNELS]; //  Whether the lane is pressed
         bool HeldKey[rd::MAX_CHANNELS]; //  Whether a hold note is active
         int  ClosestNoteMS[rd::MAX_CHANNELS];
@@ -68,7 +74,7 @@ private:
     void SetupMechanics();
     void RunMeasures(double time);
     void PlayLaneKeysound(uint32_t Lane);
-    void RunAuto(rd::TrackNote *m, double usedTime, uint32_t k);
+    void RunAuto(rd::RuntimeNote *m, double usedTime, uint32_t k);
 
     void OnPlayerKeyEvent(double Time, bool KeyDown, uint32_t lane);
 public:
@@ -88,8 +94,8 @@ public:
         About this pointer's lifetime:
         PlayerContext requires the song/difficulty pointer to stay valid until it's destroyed.
     */
-    void SetPlayableData(std::shared_ptr<rd::Difficulty> difficulty, double Drift = 0);
-    const rd::PlayerChartState &GetPlayerState();
+    void SetPlayableData(std::shared_ptr<otoworm::Chart> chart, double Drift = 0);
+    const rd::RaindropProcessedChart &GetPlayerState();
 
     // Getters (Lua)
     bool IsFailEnabled() const;
@@ -115,7 +121,7 @@ public:
 
     double GetWaitingTime();
 
-    rd::Difficulty* GetDifficulty() const;
+    otoworm::Chart* GetChart() const;
 
     double GetDuration() const;
     double GetBeatDuration() const;
@@ -177,4 +183,3 @@ public:
     // Whether failure is delayed until the screen is over
     bool HasDelayedFailure();
 };
-

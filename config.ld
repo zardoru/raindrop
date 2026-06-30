@@ -1,5 +1,5 @@
 file = {
-    "GameData/Scripts", 
+    "data/Scripts",
     "src/NoteskinLua.cpp",
     "src/Noteskin.cpp",
     "src/PlayerContext.cpp",

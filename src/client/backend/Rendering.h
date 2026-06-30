@@ -1,11 +1,7 @@
 #pragma once
 
-enum EBlendMode
-{
-    BLEND_ADD,
-    BLEND_ALPHA,
-    BLEND_MULTIPLY
-};
+#include <rmath.h>
+#include <Transformation.h>
 
 class Texture;
 class VBO;

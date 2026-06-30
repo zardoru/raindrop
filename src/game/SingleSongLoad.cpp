@@ -1,57 +1,16 @@
-#include "rmath.h"
-
-#include <game/GameConstants.h>
 #include <game/Song.h>
-#include <game/NoteLoader7K.h>
+#include <game/OtowormLoaderBridge.h>
 #include <game/SingleSongLoad.h>
 
-#include "TextAndFileUtil.h"
+#include <note_loader_7k.h>
 
-const rd::loaderVSRGEntry_t LoadersVSRG[] = {
-    { L".bms",   NoteLoaderBMS::LoadObjectsFromFile },
-    { L".bme",   NoteLoaderBMS::LoadObjectsFromFile },
-    { L".bml",   NoteLoaderBMS::LoadObjectsFromFile },
-    { L".pms",   NoteLoaderBMS::LoadObjectsFromFile },
-    { L".sm",    NoteLoaderSM::LoadObjectsFromFile  },
-    { L".osu",   NoteLoaderOM::LoadObjectsFromFile  },
-    { L".ft2",   NoteLoaderFTB::LoadObjectsFromFile },
-    { L".ojn",   NoteLoaderOJN::LoadObjectsFromFile },
-    { L".ssc",   NoteLoaderSSC::LoadObjectsFromFile },
-    { L".bmson", NoteLoaderBMSON::LoadObjectsFromFile }
-};
-
-std::shared_ptr<rd::Song> LoadSongFromFile(std::filesystem::path filename)
+std::shared_ptr<rd::Song> rd::LoadSongFromFile(std::filesystem::path filename)
 {
-    if (!filename.has_extension())
-    {
+    auto otoworm_song = otoworm::load_song_from_file(filename);
+    if (!otoworm_song)
         return nullptr;
-    }
 
-	filename = std::filesystem::absolute(filename);
-
-    auto Sng = std::make_shared<rd::Song>();
-
-    Sng->SongDirectory = filename.parent_path();
-
-    for (auto i : LoadersVSRG)
-    {
-        if (filename.extension() == i.Ext)
-        {
-            i.LoadFunc(filename, Sng.get());
-
-            auto hash = Utility::GetSha256ForFile(filename);
-            auto dindex = 0;
-            for (auto &d : Sng->Difficulties) {
-                d->Data->FileHash = hash;
-                if (d->Data->IndexInFile == -1) {
-                    d->Data->IndexInFile = dindex;
-                    dindex++;
-                }
-            }
-
-            break;
-        }
-    }
-
-	return Sng;
+    auto song = std::make_shared<rd::Song>();
+    rd::ConvertFromOtoworm(std::move(otoworm_song), song.get());
+	return song;
 }

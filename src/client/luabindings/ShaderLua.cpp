@@ -8,6 +8,10 @@
 
 class LShader : public Renderer::Shader {
 public:
+	void Compile(const std::string& fragment) {
+		Renderer::Shader::Compile(fragment);
+	}
+
 	int Send(lua_State *L) {
 		int n = lua_gettop(L);
 		std::string sendto = luaL_checkstring(L, 2);

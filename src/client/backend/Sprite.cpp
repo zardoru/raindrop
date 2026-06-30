@@ -1,6 +1,5 @@
 #include <string>
 #include <TextAndFileUtil.h>
-#include <cstdint>
 #include <rmath.h>
 
 #include "Transformation.h"

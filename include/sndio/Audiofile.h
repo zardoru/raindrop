@@ -90,7 +90,6 @@ struct stream_time_map_t {
     int64_t frame_start, frame_end;
     inline double map(double clock, double sample_rate) {
         double t_relative = (clock - clock_start) / (clock_end - clock_start);
-        /* if (t_relative < 0) t_relative = 0; /* clamp t_relative - probably fine if it's negative */
         if (t_relative > 1) t_relative = 1;
 
         return ((frame_end - frame_start) * t_relative + frame_start) / sample_rate;

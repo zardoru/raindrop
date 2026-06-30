@@ -1,5 +1,8 @@
 #pragma once
 
+#include <SDL3/SDL_video.h>
+#include <SDL3/SDL_keyboard.h>
+
 class VBO;
 class Application;
 class TruetypeFont;
@@ -8,16 +11,12 @@ namespace Renderer {
 	class Shader;
 }
 
-struct GLFWwindow;
-
 class GameWindow
 {
-    friend void ResizeFunc(GLFWwindow*, int32_t, int32_t);
-    friend void InputFunc(GLFWwindow*, int32_t, int32_t, int32_t, int32_t);
-    friend void MouseInputFunc(GLFWwindow*, int32_t key, int32_t code, int32_t modk);
-    friend void ScrollFunc(GLFWwindow*, double xOff, double yOff);
-    friend void MouseMoveFunc(GLFWwindow*, double newx, double newy);
-    friend void CharInputFunc(GLFWwindow*, unsigned int);
+    friend void ResizeFunc(int32_t, int32_t);
+    friend void InputFunc(int32_t, bool, SDL_Keymod);
+    friend void MouseInputFunc(int32_t, bool);
+    friend void ScrollFunc(double, double);
 
     Vec2 size;
     Vec2 matrixSize, Viewport;
@@ -25,7 +24,8 @@ class GameWindow
     Mat4 projectionInverse;
 
     uint32_t defaultVao;
-    GLFWwindow *wnd;
+    SDL_Window *wnd;
+    SDL_GLContext glContext;
     float SizeRatio;
 
     bool SetupWindow();
@@ -37,7 +37,7 @@ class GameWindow
 	std::vector<Renderer::Shader*> ShaderList;
 
     Application* Parent;
-    bool FullscreenSwitchbackPending, IsFullscreen;
+    bool FullscreenSwitchbackPending, IsFullscreen, CloseRequested;
 
 public:
     GameWindow();

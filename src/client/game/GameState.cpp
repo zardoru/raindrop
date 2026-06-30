@@ -2,14 +2,12 @@
 #include <mutex>
 #include <future>
 #include <fstream>
-#include <queue>
 #include <rmath.h>
-#include <glm.h>
 
 
 #include <game/Song.h>
-#include <game/NoteLoader7K.h>
 #include <game/ScoreKeeper7K.h>
+#include <note_loader_7k.h>
 
 #include "PlayscreenParameters.h"
 #include "GameState.h"
@@ -21,11 +19,8 @@
 #include "ScoreDatabase.h"
 #include "Profile.h"
 
-#include <game/PlayerChartState.h>
-#include <game/VSRGMechanics.h>
 #include "Replay7K.h"
 #include "PlayerContext.h"
-#include "AudioFile.h"
 
 #include "../structure/Screen.h"
 #include "../structure/ScreenCustom.h"
@@ -38,11 +33,11 @@
 
 #include "../../ir/StormIR.h"
 #include "Logging.h"
+#include "Audiofile.h"
 
-
-std::string DirectoryPrefix("GameData/");
-#define SkinsPrefix std::string("Skins/")
-#define ScriptsPrefix std::string("Scripts/")
+std::string DirectoryPrefix("data/");
+#define SkinsPrefix std::string("skins/")
+#define ScriptsPrefix std::string("scripts/")
 
 CfgVar StormIR_AppId    ("AppId", "StormIR");
 CfgVar StormIR_ClientKey("ClientKey", "StormIR");
@@ -70,6 +65,7 @@ GameState::GameState():
 {
     CurrentSkin = "default";
     SelectedSong = nullptr;
+    SelectedChartGroup = nullptr;
     Database = nullptr;
 
     if (!StormIR_AppId.str().empty() && !StormIR_ClientKey.str().empty() ) {
@@ -128,6 +124,13 @@ std::shared_ptr<rd::Song> GameState::GetSelectedSongShared() const
 		return SelectedSong;
 }
 
+std::shared_ptr<otoworm::ChartGroup> GameState::GetSelectedChartGroupShared() const
+{
+    if (auto song = SongWheel::GetInstance().GetSelectedSong())
+        return song->OtoChartGroup;
+    return SelectedChartGroup;
+}
+
 std::string GameState::GetFirstFallbackSkin()
 {
     return Fallback[GetSkin()][0];
@@ -142,12 +145,23 @@ GameState& GameState::GetInstance()
 void GameState::SetSelectedSong(std::shared_ptr<Song> sng)
 {
 	SelectedSong = sng;
+    SelectedChartGroup = SelectedSong ? SelectedSong->OtoChartGroup : nullptr;
+}
+
+void GameState::SetSelectedChartGroup(std::shared_ptr<otoworm::ChartGroup> chart_group)
+{
+    SelectedChartGroup = std::move(chart_group);
 }
 
 Song *GameState::GetSelectedSong() const
 {
 	auto p = SongWheel::GetInstance().GetSelectedSong().get();
     return p ? p : SelectedSong.get();
+}
+
+otoworm::ChartGroup *GameState::GetSelectedChartGroup() const
+{
+    return GetSelectedChartGroupShared().get();
 }
 
 void GameState::StartScreenTransition(std::string target)
@@ -179,7 +193,7 @@ std::filesystem::path GameState::GetSkinFile(const std::string &Name, const std:
     if (std::filesystem::exists(Test))
         return Test;
 
-    if (Fallback.find(Skin) != Fallback.end())
+    if (Fallback.contains(Skin))
     {
         for (auto &s : Fallback[Skin])
         {
@@ -273,9 +287,10 @@ int GameState::GetCurrentGaugeType(int pn) const
 
 Texture* GameState::GetSongBG()
 {
-	if (SelectedSong)
+    auto chart_group = GetSelectedChartGroupShared();
+	if (chart_group)
 	{
-		auto toLoad = SelectedSong->SongDirectory / SelectedSong->BackgroundFilename;
+		auto toLoad = chart_group->path / chart_group->background_filename;
 
 		if (std::filesystem::exists(toLoad))
 		{
@@ -293,19 +308,19 @@ Texture* GameState::GetSongBG()
 
 Texture* GameState::GetSongStage()
 {
-	auto sng = SelectedSong ? SelectedSong.get() : GetSelectedSong();
-	if (sng)
+	auto chart_group = GetSelectedChartGroupShared();
+	if (chart_group)
 	{
-		if (PlayerInfo[0].active_difficulty)
+		if (PlayerInfo[0].active_chart)
 		{
-			auto diff = PlayerInfo[0].active_difficulty;
-			std::filesystem::path File = Database->GetStageFile(diff->ID);
+			auto chart = PlayerInfo[0].active_chart;
+			std::filesystem::path File = Database->GetStageFile(static_cast<int>(chart->id));
 
 			// Oh so it's loaded and it's not in the database, fine.
-			if (File.wstring().length() == 0 && diff->Data)
-				File = diff->Data->StageFile;
+			if (File.wstring().length() == 0 && chart->transient)
+				File = chart->transient->stage_file;
 
-			auto toLoad = sng->SongDirectory / File;
+			auto toLoad = chart_group->path / File;
 
 			// ojn files use their cover inside the very ojn
 			if (File.extension() == ".ojn")
@@ -356,7 +371,7 @@ Texture* GameState::GetSkinImage(const std::string& Path)
 bool GameState::SkinSupportsChannelCount(int Count)
 {
     char nstr[256];
-    sprintf(nstr, "Channels%d", Count);
+    snprintf(nstr, sizeof nstr, "Channels%d", Count);
     return Configuration::ListExists(nstr);
 }
 
@@ -395,11 +410,10 @@ int GameState::GetCurrentSystemType(int pn) const
 		return 0;
 }
 
-void GameState::SetDifficulty(std::shared_ptr<rd::Difficulty> df, int pn)
+void GameState::SetChart(std::shared_ptr<otoworm::Chart> chart, int pn)
 {
-	if (PlayerNumberInBounds(pn)) {
-		PlayerInfo[pn].active_difficulty = df;
-	}
+    if (PlayerNumberInBounds(pn))
+        PlayerInfo[pn].active_chart = std::move(chart);
 }
 
 int GameState::GetPlayerCount() const
@@ -413,7 +427,8 @@ void GameState::SubmitScore(int pn)
 		return;
 
 	auto *player = &PlayerInfo[pn];
-	auto d = GetDifficultyShared(pn);
+	auto chart = GetChartShared(pn);
+	auto chart_group = GetSelectedChartGroupShared();
 	auto replay = player->ctx->GetReplay();
 
 	if (replay.GetEffectiveParameters().Auto)
@@ -424,7 +439,7 @@ void GameState::SubmitScore(int pn)
 	auto joffset = player->ctx->GetJudgeOffset();
 	auto &song = *GetSelectedSong();
 
-    auto submitfunc = [=]() {
+    auto submitfunc = [=, this] {
         player->profile->Scores.AddScore(
                 replay.GetSongHash(),
                 replay.GetDifficultyIndex(),
@@ -438,7 +453,7 @@ void GameState::SubmitScore(int pn)
 
         if (ir && ir->IsConnected()) {
             Log::LogPrintf("[IR] Submitting score...\n");
-            if (ir->SubmitScore(&song, d.get(), replay, scorekeeper)) {
+            if (ir->SubmitScore(chart_group.get(), chart.get(), replay, scorekeeper)) {
                 Log::LogPrintf("[IR] Success.\n");
             } else {
                 Log::LogPrintf("[IR] Couldn't submit score: %s\n", ir->GetLastError().c_str());
@@ -476,11 +491,11 @@ std::shared_ptr<Screen> GameState::GetNextScreen()
 
 void GameState::SortWheelBy(int criteria)
 {
-	SongWheel::GetInstance().SortBy(ESortCriteria(criteria));
+	SongWheel::GetInstance().SortBy(static_cast<ESortCriteria>(criteria));
 }
 
-void GameState::AddActiveProfile(std::string profile_name) {
-    PlayerInfo.emplace_back(SPlayerCurrent7K());
+void GameState::AddActiveProfile(const std::string &profile_name) {
+    PlayerInfo.emplace_back();
     auto *new_player = &PlayerInfo.back();
     new_player->profile = new Profile();
     new_player->profile->Load(profile_name);

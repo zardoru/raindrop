@@ -1,10 +1,8 @@
 #pragma once
 
-class osuBackgroundAnimation;
+#include <filesystem>
 
-namespace rd {
-	class Song;
-}
+class osuBackgroundAnimation;
 
 namespace osb
 {
@@ -289,13 +287,13 @@ class osuBackgroundAnimation : public BackgroundAnimation
     ImageList mImageList;
     std::map<int, VideoPlayback*> mVideoList;
     int AddImageToList(std::string image_filename);
-	rd::Song *Song;
+	std::filesystem::path SongDirectory;
 
     Transformation mScreenTransformation;
     bool CanValidate;
 
 public:
-    osuBackgroundAnimation(Interruptible* parent, const osb::SpriteList& existing_sprites, rd::Song* song);
+    osuBackgroundAnimation(Interruptible* parent, const osb::SpriteList& existing_sprites, std::filesystem::path song_directory);
     ~osuBackgroundAnimation();
     Texture* GetImageFromIndex(int m_image_index);
     int GetIndexFromFilename(std::string filename);

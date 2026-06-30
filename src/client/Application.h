@@ -1,5 +1,7 @@
 #pragma once
 
+class Screen;
+
 class Application
 {
     double oldTime;

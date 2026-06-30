@@ -3,16 +3,12 @@
 #include <rmath.h>
 
 
-#include <game/GameConstants.h>
-#include "../game/PlayscreenParameters.h"
 #include "../game/GameState.h"
 
 #include "Texture.h"
 #include "ImageList.h"
 #include "ImageLoader.h"
 
-#include "Transformation.h"
-#include "Rendering.h"
 #include "Sprite.h"
 
 ImageList::ImageList(bool ReleaseAtDestruction)

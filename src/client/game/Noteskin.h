@@ -1,5 +1,7 @@
 #pragma once
 
+#include <game/RaindropProcessedChart.h>
+
 /*
 	A noteskin must first be set up, then validated.
 	Then it's in a valid state and you can use whatever you want from it.
@@ -37,7 +39,7 @@ public:
 
     void Update(float Delta, float CurrentBeat);
 
-    void DrawNote(rd::TrackNote &T, int Lane, float Location);
+    void DrawNote(rd::RuntimeNote &T, int Lane, float Location);
 
     void DrawHoldBody(int Lane, float Location, float Size, int ActiveLevel);
 
@@ -51,9 +53,9 @@ public:
 
     double GetJudgmentY() const;
 
-    void DrawHoldHead(rd::TrackNote &T, int Lane, float Location, int ActiveLevel);
+    void DrawHoldHead(rd::RuntimeNote &T, int Lane, float Location, int ActiveLevel);
 
-    void DrawHoldTail(rd::TrackNote &T, int Lane, float Location, int ActiveLevel);
+    void DrawHoldTail(rd::RuntimeNote &T, int Lane, float Location, int ActiveLevel);
 
     double GetNoteOffset() const;
 

@@ -5,8 +5,10 @@
 #include <map>
 #include <future>
 #include <condition_variable>
+#include <atomic>
+#include <cassert>
 #include "../structure/Configuration.h"
-#include <portaudio/portaudio.h>
+#include <portaudio.h>
 
 #include <sndio/Audiofile.h>
 
@@ -16,14 +18,13 @@
 
 #ifdef WIN32
 
-#include <portaudio/pa_win_wasapi.h>
-#include <portaudio/pa_win_ds.h>
-#include <portaudio/pa_win_wdmks.h>
-#include <atomic>
-#include <pa_ringbuffer.h>
-#include <cassert>
+#include <pa_win_wasapi.h>
+#include <pa_win_ds.h>
+#include <pa_win_wdmks.h>
 
 #endif
+
+#include <pa_ringbuffer.h>
 
 #include "Audio.h"
 
@@ -198,7 +199,7 @@ public:
         return *Mixer;
     }
 
-    double GetRate() {
+    double GetRate() override {
         return Rate;
     }
 
@@ -335,7 +336,6 @@ public:
 
 private:
     float ts[BUFF_SIZE * 2]{};
-    float tsF[BUFF_SIZE * 2]{};
 
 public:
 
@@ -343,8 +343,6 @@ public:
             float *out,
             int samples,
             const PaStreamCallbackTimeInfo *timeInfo) {
-        int count = samples;
-
         memset(out, 0, samples * sizeof(float));
 
         bool streaming = false;
@@ -404,7 +402,7 @@ public:
         return Latency;
     }
 
-    double GetFactor() {
+    double GetFactor() override {
         return ConstFactor;
     }
 };

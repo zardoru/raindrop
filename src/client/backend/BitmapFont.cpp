@@ -3,19 +3,13 @@
 #include <filesystem>
 #include <map>
 
-#include <rmath.h>
-
-#include <game/GameConstants.h>
 #include <TextAndFileUtil.h>
-#include "../game/PlayscreenParameters.h"
 #include "../game/GameState.h"
 
 #include "LuaManager.h"
 #include "Transformation.h"
-#include "Rendering.h"
 #include "Sprite.h"
 
-#include "Font.h"
 #include "BitmapFont.h"
 
 #include "Texture.h"

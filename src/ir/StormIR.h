@@ -5,6 +5,8 @@
 #ifndef RAINDROP_STORMIR_H
 #define RAINDROP_STORMIR_H
 
+#include <ChartGroup.h>
+
 namespace StormIR {
 
     class StormIRImpl;
@@ -29,7 +31,7 @@ namespace StormIR {
         void FetchPersonalScore();
 
         bool
-        SubmitScore(const rd::Song *song, const rd::Difficulty *diff, const Replay& replay,
+        SubmitScore(const otoworm::ChartGroup *chart_group, const otoworm::Chart *chart, const Replay& replay,
                     const rd::ScoreKeeper &score);
     };
 

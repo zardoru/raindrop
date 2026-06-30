@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ChartGroup.h>
+
 class AudioStream;
 class Texture;
 class SceneEnvironment;
@@ -17,8 +19,8 @@ private:
 
     std::queue<AutoplaySound>   BGMEvents;
 
-    std::shared_ptr<rd::Song>			 MySong;
-    std::shared_ptr<rd::Song>			 LoadedSong;
+    std::shared_ptr<otoworm::ChartGroup> MyChartGroup;
+    std::shared_ptr<otoworm::ChartGroup> LoadedChartGroup;
 
     struct {
         double Stream;
@@ -96,11 +98,11 @@ public:
 
     // Functions for data.
     bool IsActive() const;
-    rd::Song* GetSong() const;
+    otoworm::ChartGroup* GetChartGroup() const;
 
 
     ScreenGameplay();
-    void Init(std::shared_ptr<rd::Song> S);
+    void Init(std::shared_ptr<otoworm::ChartGroup> chart_group);
     void LoadResources() override;
     void InitializeResources() override;
 

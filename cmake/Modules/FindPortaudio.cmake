@@ -1,9 +1,7 @@
-# - Try to find Portaudio
-# Once done this will define
-#
-#  Portaudio_FOUND - system has Portaudio
-#  Portaudio_INCLUDE_DIRS - the Portaudio include directory
-#  Portaudio_LIBRARIES - Link these to use Portaudio
+include(FetchContent)
+include(FindPackageHandleStandardArgs)
+
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 
 find_package(PkgConfig)
 pkg_check_modules(Portaudio portaudio-2.0)
@@ -50,8 +48,6 @@ if(EXISTS ${Portaudio_INCLUDE_DIRS}/portaudio.h)
   set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES_SAVED})
   unset(CMAKE_REQUIRED_INCLUDES_SAVED)
   if(PORTAUDIO2_FOUND)
-    INCLUDE(FindPackageHandleStandardArgs)
-    FIND_PACKAGE_HANDLE_STANDARD_ARGS(Portaudio DEFAULT_MSG Portaudio_INCLUDE_DIRS Portaudio_LIBRARIES)
     set(Portaudio_FOUND TRUE)
   else(PORTAUDIO2_FOUND)
     message(STATUS
@@ -59,3 +55,33 @@ if(EXISTS ${Portaudio_INCLUDE_DIRS}/portaudio.h)
     set(Portaudio_FOUND FALSE)
   endif(PORTAUDIO2_FOUND)
 endif()
+
+if(Portaudio_FOUND AND NOT TARGET PortAudio::PortAudio)
+  add_library(PortAudio::PortAudio UNKNOWN IMPORTED)
+  set_target_properties(PortAudio::PortAudio PROPERTIES
+    IMPORTED_LOCATION "${Portaudio_LIBRARIES}"
+    INTERFACE_INCLUDE_DIRECTORIES "${Portaudio_INCLUDE_DIRS}"
+  )
+endif()
+
+if(NOT TARGET PortAudio::PortAudio)
+  FetchContent_Declare(
+    portaudio
+    GIT_REPOSITORY https://github.com/PortAudio/portaudio.git
+    GIT_TAG master
+    GIT_SHALLOW TRUE
+  )
+  FetchContent_MakeAvailable(portaudio)
+
+  if(TARGET PortAudio::PortAudio)
+    set(Portaudio_FOUND TRUE)
+  elseif(TARGET portaudio)
+    add_library(PortAudio::PortAudio ALIAS portaudio)
+    set(Portaudio_FOUND TRUE)
+  elseif(TARGET portaudio_static)
+    add_library(PortAudio::PortAudio ALIAS portaudio_static)
+    set(Portaudio_FOUND TRUE)
+  endif()
+endif()
+
+find_package_handle_standard_args(Portaudio DEFAULT_MSG Portaudio_FOUND)

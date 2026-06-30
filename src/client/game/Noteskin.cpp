@@ -19,7 +19,7 @@
 
 #include "GameWindow.h"
 
-#include <game/PlayerChartState.h>
+#include <game/RaindropProcessedChart.h>
 #include <game/VSRGMechanics.h>
 #include "PlayerContext.h"
 
@@ -98,7 +98,7 @@ void Noteskin::Update(float Delta, float CurrentBeat) {
     }
 }
 
-void Noteskin::DrawNote(rd::TrackNote &T, int Lane, float Location) {
+void Noteskin::DrawNote(rd::RuntimeNote &T, int Lane, float Location) {
     const char *CallFunc = nullptr;
     /***
      Draw a normal note.
@@ -108,7 +108,7 @@ void Noteskin::DrawNote(rd::TrackNote &T, int Lane, float Location) {
      @param fraction Measure subdivision of this note.
      @param active_level Always 0 for normal notes.
      */
-    switch (T.GetDataNoteKind()) {
+    switch (T.get_data_note_kind()) {
         case rd::ENoteKind::NK_NORMAL:
             CallFunc = "DrawNormal";
             break;
@@ -134,7 +134,7 @@ void Noteskin::DrawNote(rd::TrackNote &T, int Lane, float Location) {
     if (NoteskinLua.CallFunction(CallFunc, 4)) {
         NoteskinLua.PushArgument(Lane);
         NoteskinLua.PushArgument(Location);
-        NoteskinLua.PushArgument(T.GetFracKind());
+        NoteskinLua.PushArgument(T.get_frac_kind());
         NoteskinLua.PushArgument(0);
         NoteskinLua.RunFunction();
     }
@@ -161,7 +161,7 @@ double Noteskin::GetJudgmentY() const {
     return JudgmentY;
 }
 
-void Noteskin::DrawHoldHead(rd::TrackNote &T, int Lane, float Location, int ActiveLevel) {
+void Noteskin::DrawHoldHead(rd::RuntimeNote &T, int Lane, float Location, int ActiveLevel) {
     /***
      Draw a hold head. Falls back to DrawNormal if nonexistent
      @callback DrawHoldHead
@@ -178,13 +178,13 @@ void Noteskin::DrawHoldHead(rd::TrackNote &T, int Lane, float Location, int Acti
     CanRender = true;
     NoteskinLua.PushArgument(Lane);
     NoteskinLua.PushArgument(Location);
-    NoteskinLua.PushArgument(T.GetFracKind());
+    NoteskinLua.PushArgument(T.get_frac_kind());
     NoteskinLua.PushArgument(ActiveLevel);
     NoteskinLua.RunFunction();
     CanRender = false;
 }
 
-void Noteskin::DrawHoldTail(rd::TrackNote &T, int Lane, float Location, int ActiveLevel) {
+void Noteskin::DrawHoldTail(rd::RuntimeNote &T, int Lane, float Location, int ActiveLevel) {
     /***
      Draw a hold tail. Falls back to DrawNormal if nonexistent
      @callback DrawHoldTail
@@ -201,7 +201,7 @@ void Noteskin::DrawHoldTail(rd::TrackNote &T, int Lane, float Location, int Acti
     CanRender = true;
     NoteskinLua.PushArgument(Lane);
     NoteskinLua.PushArgument(Location);
-    NoteskinLua.PushArgument(T.GetFracKind());
+    NoteskinLua.PushArgument(T.get_frac_kind());
     NoteskinLua.PushArgument(ActiveLevel);
     NoteskinLua.RunFunction();
     CanRender = false;

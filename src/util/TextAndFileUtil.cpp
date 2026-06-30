@@ -8,6 +8,7 @@
 #include <cstdarg>
 #include <sstream>
 #include <filesystem>
+#include <chrono>
 
 
 #include "TextAndFileUtil.h"
@@ -123,7 +124,10 @@ namespace Utility
 		if (std::filesystem::exists(Path)) {
 #ifndef WIN32
 			auto a = std::filesystem::last_write_time(Path);
-            return decltype(a)::clock::to_time_t(a);
+            auto systemTime = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+                a - decltype(a)::clock::now() + std::chrono::system_clock::now()
+            );
+            return std::chrono::system_clock::to_time_t(systemTime);
 #else
             // az: bah. fucking windows.
             struct _stat s{};

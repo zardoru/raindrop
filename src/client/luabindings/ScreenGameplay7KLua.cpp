@@ -16,7 +16,6 @@
 #include "LuaManager.h"
 #include <LuaBridge/LuaBridge.h>
 
-#include <game/Song.h>
 #include <game/VSRGMechanics.h>
 #include "../game/PlayscreenParameters.h"
 #include "../game/PlayerContext.h"
@@ -40,9 +39,6 @@ void ScreenGameplay::AddScriptClasses(LuaManager* Env)
         // Whether the song time is advancing.
         /// @roproperty Active
         .f("Active", IsActive)
-        // Current active song.
-        /// @roproperty Song
-        .f("Song", GetSong)
         /// Get player playing on this screen.
         // @function GetPlayer
         // @param id Index of the player to return.

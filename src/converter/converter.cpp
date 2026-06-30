@@ -2,10 +2,11 @@
 #include <filesystem>
 #include <boost/program_options.hpp>
 
-#include <rmath.h>
-#include <game/NoteLoader7K.h>
-#include <game/Converter.h>
+#include <converter.h>
+#include <note_loader_7k.h>
 #include <fstream>
+#include <iomanip>
+#include <set>
 
 const auto VERSION = "1.0";
 
@@ -28,28 +29,29 @@ enum class ConvertMode
 } convert_mode;
 
 void convert() {
-    auto song = LoadSongFromFile(in_path);
+    auto song = otoworm::load_song_from_file(in_path);
 
-    if (song && !song->Difficulties.empty())
+    if (song && !song->charts.empty())
     {
         std::cout << "Initiating conversion for mode " << (int)convert_mode << std::endl;
         if (convert_mode == ConvertMode::CONV_OM) // for now this is the default
-            ConvertToOM(song.get(), out_path, author);
+            convert_to_om(song.get(), out_path, author);
         else if (convert_mode == ConvertMode::CONV_BMS)
-            ConvertToBMS(song.get(), out_path);
+            convert_to_bms(song.get(), out_path);
         else if (convert_mode == ConvertMode::CONV_UQBMS)
-            ExportToBMSUnquantized(song.get(), out_path);
+            export_to_bms_unquantized(song.get(), out_path);
         else if (convert_mode == ConvertMode::CONV_NPS)
-            ConvertToNPSGraph(song.get(), out_path);
+            convert_to_nps_graph(song.get(), out_path);
         else if (convert_mode == ConvertMode::CONV_ACCTEST)
         {
-            auto msr = song->Difficulties[0]->Data->Measures;
+            const auto& chart = song->charts[0];
+            const auto& msr = chart->transient->measures;
             auto timeset = std::set<double>();
             for (const auto& m : msr) {
-                for (auto i = 0; i < song->Difficulties[0]->Channels; i++)
-                    for (auto note : m.Notes[i])
-                        if (note.NoteKind == 0)
-                            timeset.insert(note.StartTime);
+                for (auto i = 0; i < chart->channels; i++)
+                    for (auto note : m.notes[i])
+                        if (note.type == 0)
+                            timeset.insert(note.start);
             }
 
             if (!out_path.empty()) {
@@ -72,7 +74,7 @@ void convert() {
             }
         }
         else
-            ConvertToSMTiming(song.get(), out_path);
+            convert_to_sm_timing(song.get(), out_path);
     }
     else
     {

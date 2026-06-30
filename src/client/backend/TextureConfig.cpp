@@ -7,9 +7,7 @@
 #include "Logging.h"
 
 
-#include <game/GameConstants.h>
 #include <fstream>
-#include "../game/PlayscreenParameters.h"
 #include "../game/GameState.h"
 
 using std::string;
