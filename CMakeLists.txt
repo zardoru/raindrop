@@ -1,5 +1,8 @@
-cmake_minimum_required(VERSION 3.17.2)
-project(raindrop)
+cmake_minimum_required(VERSION 4.2)
+project(
+        raindrop
+        VERSION 0.700.0
+)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
@@ -8,11 +11,22 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+execute_process(
+        COMMAND git rev-parse --short HEAD
+        OUTPUT_VARIABLE GIT_REVISION
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+configure_file(
+        config.h.in
+        src/config.h
+)
+
 ## <== CPR SNIP
 include(FetchContent)
-# The commit hash for 1.8.1. Replace with the latest from: https://github.com/libcpr/cpr/releases
+# Replace with the latest from: https://github.com/libcpr/cpr/releases
 FetchContent_Declare(cpr GIT_REPOSITORY https://github.com/libcpr/cpr.git
-        GIT_TAG 6ea2dec23c3df14ac3b27b7d2d6bbff0cb7ba1b0)
+        GIT_TAG f091b2c061b307ee89b164c39976fc9202a1c79d)
 FetchContent_MakeAvailable(cpr)
 ## CPR SNIP ==>
 
@@ -81,38 +95,18 @@ message("$<==== BOOST ${Boost_PROGRAM_OPTIONS_LIBRARY} =====>")
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/libotoworm" "${CMAKE_BINARY_DIR}/_deps/libotoworm")
 
-
 include_directories(include)
 include_directories(src-thirdparty)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/src)
 include_directories(${MPG123_INCLUDE_DIR})
 
-set(SHA256_FILES src-thirdparty/sha256/sha256.cpp)
 set(RINGBUFFER_FILES src-thirdparty/ringbuffer/pa_ringbuffer.c)
 set(SQLITE_FILES src-thirdparty/sqlite/sqlite3.c)
 set(MINIZIP_FILES src-thirdparty/minizip/ioapi.c src-thirdparty/minizip/unzip.c)
 
-# Utility library
-# ================================================
-file(GLOB_RECURSE util_files src/util/*.cpp src/util/*.c)
-add_library(rd.util STATIC ${util_files} ${SHA256_FILES})
-target_link_libraries(rd.util Iconv::Iconv)
-
-if (LINUX)
-    if (NOT USE_GCC)
-        target_link_libraries(rd.util stdc++fs)
-    else()
-        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.1)
-            target_link_libraries(rd.util stdc++fs)
-        else()
-            find_package(Boost REQUIRED COMPONENTS filesystem)
-            target_link_libraries(rd.util boost_filesystem)        
-        endif()
-    endif()
-endif(LINUX)
-
 # Sound File IO library
 # ================================================
-file(GLOB_RECURSE sndio_files "src/sndio/*.cpp")
+file(GLOB_RECURSE sndio_files CONFIGURE_DEPENDS "src/sndio/*.cpp")
 add_library(rd.sndio STATIC ${sndio_files} ${RINGBUFFER_FILES})
 target_include_directories(rd.sndio PUBLIC include/sndio)
 target_include_directories(rd.sndio PUBLIC
@@ -128,7 +122,7 @@ target_compile_definitions(rd.sndio PUBLIC SNDIO_DLL)
 # message(STATUS ${FFMPEG_LIBSWRESAMPLE} " "  ${OGG_LIBRARY})
 
 target_link_libraries(rd.sndio
-    rd.util
+    otoworm::otoworm
     ${OGG_LIBRARY} 
     ${VORBIS_LIBRARY} 
     ${VORBISFILE_LIBRARY}
@@ -139,13 +133,12 @@ target_link_libraries(rd.sndio
 
 # Common chart data library
 # ================================================
-file(GLOB_RECURSE core_files src/game/*.cpp src/game/*.c)
+file(GLOB_RECURSE core_files CONFIGURE_DEPENDS src/game/*.cpp src/game/*.c)
 add_library(rd.core STATIC ${core_files} ${MINIZIP_FILES})
 target_include_directories(rd.core PUBLIC ${ZLIB_INCLUDE_DIR})
 target_link_libraries(rd.core
     otoworm::otoworm
     rd.sndio
-    rd.util
     ZLIB::ZLIB)
 
 # rd Body Source (What's common to Tests and the Actual Executable)

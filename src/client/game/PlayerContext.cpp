@@ -8,7 +8,7 @@
 
 
 #include <glm.h>
-#include <TextAndFileUtil.h>
+#include <text_and_file_util.h>
 
 #include "LuaManager.h"
 #include <LuaBridge/LuaBridge.h>
@@ -71,9 +71,6 @@ namespace {
         return chart->transient.get();
     }
 
-    AutoplaySound ToRdAutoplaySound(const otoworm::AutoplaySound& sound) {
-        return {sound.time, sound.sound};
-    }
 }
 
 PlayerContext::PlayerContext(int pn, PlayscreenParameters p) : ChartState(DEFAULT_WAIT_TIME) {
@@ -702,12 +699,12 @@ bool PlayerContext::BindKeysToLanes(bool UseTurntable) {
     std::vector<std::string> keyListArr;
 
     if (UseTurntable)
-        KeyProfile = (std::string) CfgVar("KeyProfileSpecial" + IntToStr(CurrentChart->channels));
+        KeyProfile = (std::string) CfgVar("KeyProfileSpecial" + std::to_string(CurrentChart->channels));
     else
-        KeyProfile = (std::string) CfgVar("KeyProfile" + IntToStr(CurrentChart->channels));
+        KeyProfile = (std::string) CfgVar("KeyProfile" + std::to_string(CurrentChart->channels));
 
     keyList = (std::string) CfgVar("Keys", KeyProfile);
-    keyListArr = Utility::TokenSplit(keyList);
+    keyListArr = otoworm::util::token_split(keyList);
 
     for (unsigned i = 0; i < CurrentChart->channels; i++) {
         Gear.ClosestNoteMS[i] = 0;
@@ -716,7 +713,7 @@ bool PlayerContext::BindKeysToLanes(bool UseTurntable) {
             Gear.Bindings[static_cast<int>(latof(keyListArr[i]))] = i;
         else {
             if (!Parameters.Auto) {
-                Log::Printf("Mising bindings starting from lane " + IntToStr(i) + " using profile " +
+                Log::Printf("Mising bindings starting from lane " + std::to_string(i) + " using profile " +
                             KeyProfile);
                 return false;
             }
@@ -1090,15 +1087,15 @@ void PlayerContext::set_playable_data(std::shared_ptr<otoworm::Chart> chart, dou
     UnitsPerMeasure = UNITS_PER_MEASURE;
 }
 
-std::vector<AutoplaySound> PlayerContext::GetBgmData() {
+std::vector<otoworm::AutoplaySound> PlayerContext::GetBgmData() {
     CfgVar DisableKeysounds("DisableKeysounds");
 
     // Load up BGM events
-    std::vector<AutoplaySound> BGMs;
+    std::vector<otoworm::AutoplaySound> BGMs;
     if (const auto transient = GetOtoTransient(CurrentChart)) {
         BGMs.reserve(transient->bgm_events.size());
         for (const auto& bgm : transient->bgm_events)
-            BGMs.push_back(ToRdAutoplaySound(bgm));
+            BGMs.push_back(bgm);
     }
 
     if (DisableKeysounds)
@@ -1393,7 +1390,7 @@ int PlayerContext::DrawMeasures(double song_time) {
 
 
     if (DebugNoteRendering) {
-        fnt->render(Utility::Format(
+        fnt->render(otoworm::util::format(
                 "NOTES RENDERED: %d\nSORTEDTIME: %d\nRNG: %f to %f\nMULT/EFFECTIVEMULT/SPEED: %f/%f/%f",
                 rnc,
                 true,//ChartState.IsNoteTimeSorted(),

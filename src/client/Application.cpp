@@ -9,8 +9,8 @@
 
 
 #include <game/GameConstants.h>
-#include <game/Song.h>
 #include <game/VSRGMechanics.h>
+#include <note_loader.h>
 
 #include "game/Game.h"
 #include "Logging.h"
@@ -51,7 +51,7 @@
 #include "structure/ScreenCustom.h"
 
 #include "structure/Configuration.h"
-#include "TextAndFileUtil.h"
+#include <text_and_file_util.h>
 
 #include "TruetypeFont.h"
 
@@ -194,7 +194,7 @@ void Application::Init()
 
 	Log::Printf(RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT " start.\n");
 	// Log::Printf("Current Time: %s.\n", t1);
-	Log::Printf("Working directory: %s\n", Conversion::ToU8(std::filesystem::current_path().wstring()).c_str());
+	Log::Printf("Working directory: %s\n", otoworm::locale::wstring_to_utf8(std::filesystem::current_path().wstring()).c_str());
 
 	/*
 #if (defined WIN32)
@@ -251,36 +251,26 @@ void Application::Init()
 
 void Application::SetupPreviewMode()
 {
-    // Load the song.
-    auto song = LoadSong7KFromFilename(InFile);
+    // Load the chart group.
+    auto chart_group = otoworm::load_song_from_file(InFile);
 
 
-    if (!song || !song->Difficulties.size())
+    if (!chart_group || chart_group->charts.empty())
     {
-        Log::Printf("File %ls could not be loaded for preview. (ptr %d/diffcnt %d)\n", InFile.c_str(), (long long int)song.get(), song ? song->Difficulties.size() : 0);
+        Log::Printf("File %ls could not be loaded for preview. (ptr %d/chartcnt %d)\n", InFile.c_str(), (long long int)chart_group.get(), chart_group ? chart_group->charts.size() : 0);
         return;
     }
 
-    GameState::get_instance().set_selected_song(song);
-    GameState::get_instance().set_selected_chart_group(song->OtoChartGroup);
+    GameState::get_instance().set_selected_chart_group(chart_group);
     // Create loading screen and gameplay screen.
     auto game = std::make_shared<ScreenGameplay>();
     auto LoadScreen = std::make_shared<ScreenLoading>(game);
 
     // Set them up.
-	song->SongDirectory = std::filesystem::absolute(InFile.parent_path());
+	chart_group->path = std::filesystem::absolute(InFile.parent_path());
 
-	/*
-    rd::VSRG::PlayscreenParameters param;
-
-    param.Upscroll = Upscroll;
-    param.StartMeasure = Measure;
-    param.Preloaded = true;
-    param.Auto = Auto;
-    */
-    
 	GameState::get_instance().get_parameters(0)->Auto = Auto;
-    game->Init(song->OtoChartGroup);
+    game->Init(chart_group);
     LoadScreen->Init();
 
     Game = LoadScreen;
@@ -332,7 +322,7 @@ void Application::Run()
             IPC::Message Msg;
             Msg.MessageKind = IPC::Message::MSG_STARTFROMMEASURE;
             Msg.Param = Measure;
-            strncpy(Msg.Path, Conversion::ToU8(InFile.wstring()).c_str(), 256);
+            strncpy(Msg.Path, otoworm::locale::wstring_to_utf8(InFile.wstring()).c_str(), 256);
 
             IPC::SendMessageToQueue(&Msg);
             RunLoop = false;
@@ -373,7 +363,7 @@ void Application::Run()
     else if (RunMode == MODE_CUSTOMSCREEN)
     {
         Log::Printf("Initializing custom, ad-hoc screen...\n");
-		auto s = Conversion::ToU8(InFile.wstring());
+		auto s = otoworm::locale::wstring_to_utf8(InFile.wstring());
         auto scr = std::make_shared<ScreenCustom>(GameState::get_instance().get_skin_file(s));
         Game = scr;
 	}

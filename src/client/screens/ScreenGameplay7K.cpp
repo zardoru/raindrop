@@ -20,7 +20,6 @@
 #include "Rendering.h"
 #include "Sprite.h"
 
-#include <game/Song.h>
 #include <ProcessedChart.h>
 #include <game/VSRGMechanics.h>
 #include <game/ScoreKeeper7K.h>
@@ -174,10 +173,10 @@ bool ScreenGameplay::HandleInput(int32_t key, bool isPressed, bool isMouseInput)
 void ScreenGameplay::RunAutoEvents() {
     if (!StageFailureTriggered && Active) {
         // Play BGM events.
-        while (!BGMEvents.empty() && BGMEvents.front().Time <= Time.Stream) {
-            for (auto &&s : Keysounds[BGMEvents.front().Sound])
+        while (!BGMEvents.empty() && BGMEvents.front().time <= Time.Stream) {
+            for (auto &&s : Keysounds[BGMEvents.front().sound])
                 if (s) {
-                    double dt = Time.Stream - BGMEvents.front().Time;
+                    double dt = Time.Stream - BGMEvents.front().time;
                     if (dt < s->get_duration()) {
                         s->seek_time(dt);
                         s->play();

@@ -1,7 +1,6 @@
 #include <rmath.h>
 #include <cstdint>
 #include <filesystem>
-#include <game/Song.h>
 
 #include <client/backend/Transformation.h>
 #include <client/backend/Rendering.h>

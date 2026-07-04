@@ -62,7 +62,7 @@ namespace rd::NoteTransform {
     }
 
     void MoveKeysoundsToBGM(unsigned char channels, RuntimeNoteLanes& notes_by_channel,
-                            std::vector<AutoplaySound> &bg_ms, double drift) {
+                            std::vector<otoworm::AutoplaySound> &bg_ms, double drift) {
         for (auto k = 0; k < channels; k++) {
             for (auto &&n : notes_by_channel[k].handles) {
                 bg_ms.emplace_back(float(double(n.get_start_time()) - drift), n.get_sound());

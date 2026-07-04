@@ -3,7 +3,7 @@
 
 #include "LuaManager.h"
 #include "Logging.h"
-#include "TextAndFileUtil.h"
+#include <text_and_file_util.h>
 
 int LuaPanic(lua_State* State)
 {
@@ -20,7 +20,7 @@ int LuaPanic(lua_State* State)
 
 int Break(lua_State *S)
 {
-    Utility::DebugBreak();
+    otoworm::util::debug_break();
     return 0;
 }
 
@@ -73,7 +73,7 @@ void reportError(lua_State *State)
 
     // Log::LogPrintf("LuaManager: Lua error: %s\n", reason);
 #ifndef TESTS
-    Utility::DebugBreak();
+    otoworm::util::debug_break();
 #endif
     lua_pop(State, 1);
 }
@@ -89,7 +89,7 @@ bool LuaManager::RunScript(std::filesystem::path file)
 
     if (!std::filesystem::exists(file))
     {
-        last_error = Utility::Format("File %s does not exist", file.string().c_str());
+        last_error = otoworm::util::format("File %s does not exist", file.string().c_str());
         return false;    
     }
 
@@ -134,7 +134,7 @@ bool LuaManager::Require(std::filesystem::path Filename)
 {
 	lua_pushcfunction(State, LuaPanic);
     lua_getglobal(State, "require");
-    lua_pushstring(State, Conversion::ToLocaleStr(Filename.wstring()).c_str());
+    lua_pushstring(State, otoworm::locale::to_locale_str(Filename.wstring()).c_str());
     if (lua_pcall(State, 1, 1, -3))
     {
         const char* reason = lua_tostring(State, -1);

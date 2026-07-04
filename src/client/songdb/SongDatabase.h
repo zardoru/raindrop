@@ -3,8 +3,9 @@
 struct sqlite3;
 struct sqlite3_stmt;
 
-namespace rd {
-    class Song;
+namespace otoworm {
+    struct Chart;
+    class ChartGroup;
 }
 
 class SongDatabase
@@ -36,12 +37,12 @@ private:
 		*st_HashFromFile;
 
     // Returns the ID.
-    int InsertOrUpdateChartFile(rd::Difficulty* Diff);
+    int InsertOrUpdateChartFile(const otoworm::Chart* chart);
     bool DifficultyExists(int FileID, std::string DifficultyName, int *IDOut = NULL);
 
-	void UpdateDiffInternal(int &ret, int DiffID, rd::Difficulty * Diff);
-	void InsertDiffInternal(int &ret, int SongID, int FileID, rd::Difficulty * Diff);
-	int InsertSongInternal(rd::Song *Song);
+	void UpdateDiffInternal(int &ret, int DiffID, otoworm::Chart *chart);
+	void InsertDiffInternal(int &ret, int SongID, int FileID, otoworm::Chart *chart);
+	int InsertSongInternal(otoworm::ChartGroup *chart_group);
 public:
 
     SongDatabase(std::string Database);
@@ -54,14 +55,14 @@ public:
 		Adds a difficulty to the database, or updates it if it already exists. 
 		The difficulty gets its ID from here.
 	*/
-	void InsertOrUpdateDifficulty(int SongID, rd::Difficulty* Diff);
+	void InsertOrUpdateDifficulty(int SongID, otoworm::Chart* chart);
 
 	/*
 		Sets the song ID to one corresponding on the database
 		as well as sets the song ID for faster further 
 		querying with the database, once the non-metadata is removed.
 	*/
-	void AssociateSong(rd::Song * New);
+	void AssociateSong(otoworm::ChartGroup *chart_group);
 
     void GetPreviewInfo(int SongID, std::string &Filename, float &PreviewStart);
 
@@ -88,7 +89,7 @@ public:
 		- Difficulty data (metadata only)
 
 	*/
-    void GetSongInformation(int ID, rd::Song* Out);
+    void GetSongInformation(int ID, otoworm::ChartGroup* out);
 
     void StartTransaction();
     void EndTransaction();

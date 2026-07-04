@@ -9,7 +9,7 @@
 
 #include "AudioSourceMP3.h"
 
-#include "TextAndFileUtil.h"
+#include <text_and_file_util.h>
 #include "rmath.h"
 
 extern "C" {
@@ -101,7 +101,7 @@ public:
         auto res = swr_convert(mResampler.get(), reinterpret_cast<uint8_t **>(&buffer_out), frames_out, &in_ptr, frames_in);
         if (res < 0) {
             // error? mm
-            throw std::runtime_error(Utility::Format("error during resampling %d", res));
+            throw std::runtime_error(otoworm::util::format("error during resampling %d", res));
         }
 
         return res;
@@ -153,8 +153,8 @@ void monoToStereo(T* Buffer, const size_t cnt, const size_t max_len)
 std::unique_ptr<AudioDataSource> SourceFromExt(std::filesystem::path Filename)
 {
     std::unique_ptr<AudioDataSource> Ret = nullptr;
-    auto ext = Conversion::ToU8(Filename.extension().wstring());
-	auto u8fn = Conversion::ToU8(Filename.wstring());
+    auto ext = otoworm::locale::wstring_to_utf8(Filename.extension().wstring());
+	auto u8fn = otoworm::locale::wstring_to_utf8(Filename.wstring());
     
     if (u8fn.length() == 0 || ext.length() == 0)
     {
@@ -162,7 +162,7 @@ std::unique_ptr<AudioDataSource> SourceFromExt(std::filesystem::path Filename)
         return nullptr;
     }
 
-    Utility::ToLower(ext);
+    otoworm::util::to_lower(ext);
 
     const char* xt = ext.c_str();
     if (strstr(xt, "wav") || strstr(xt, "flac"))
@@ -342,7 +342,6 @@ bool AudioSample::inner_load(AudioDataSource *Src) {
 
             auto &vec_out = *new_data;
             auto size_out = resampler.Resample(vec_in, vec_out.data(), totalResampledSamples / channels_);
-            // Utility::DebugBreak();
         }
 
 
@@ -454,8 +453,8 @@ std::filesystem::path RearrangeFilename(std::filesystem::path Fn)
         return Fn;
     else
     {
-        auto Ext = Conversion::ToU8(Fn.extension().wstring());
-        Utility::ToLower(Ext);
+        auto Ext = otoworm::locale::wstring_to_utf8(Fn.extension().wstring());
+        otoworm::util::to_lower(Ext);
 
         if (Ext == ".wav")
             Ret = Fn.parent_path() / (Fn.stem().wstring() + L".ogg");

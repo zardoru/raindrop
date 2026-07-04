@@ -1,7 +1,7 @@
 #include "GameFilesystem.h"
 
 #include "Configuration.h"
-#include "TextAndFileUtil.h"
+#include <text_and_file_util.h>
 
 #include <fstream>
 #include <utility>
@@ -24,14 +24,14 @@ void GameFilesystem::load_skin_fallbacks()
     if (!std::filesystem::exists(skins_dir))
         return;
 
-    const std::vector<std::filesystem::path> listing = Utility::GetFileListing(skins_dir);
-    for (const auto& skin_path : listing) {
+    for (const auto& skin_entry : std::filesystem::directory_iterator(skins_dir)) {
+        const auto& skin_path = skin_entry.path();
         auto skin = skin_path.filename().string();
         std::ifstream fallback_file(skin_path / "fallback.txt");
         if (fallback_file.is_open() && skin_path != "default") {
             std::string line;
             while (getline(fallback_file, line)) {
-                if (Utility::ToLower(line) != Utility::ToLower(skin))
+                if (otoworm::util::to_lower(line) != otoworm::util::to_lower(skin))
                     fallback[skin].push_back(line);
             }
         }

@@ -17,7 +17,7 @@ private:
     std::map<int, bool> PlayfieldClipEnabled;
     std::map<int, AABB> PlayfieldClipArea;
 
-    std::queue<AutoplaySound>   BGMEvents;
+    std::queue<otoworm::AutoplaySound>   BGMEvents;
 
     std::shared_ptr<otoworm::ChartGroup> MyChartGroup;
     std::shared_ptr<otoworm::ChartGroup> LoadedChartGroup;

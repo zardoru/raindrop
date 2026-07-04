@@ -267,46 +267,6 @@ namespace rd
         void Destroy(); // remove non-metadata
     };
 
-    class Song
-    {
-    public:
-
-        int ID;
-        std::vector<std::shared_ptr<Difficulty>> Difficulties;
-        std::shared_ptr<otoworm::ChartGroup> OtoChartGroup;
-
-        /* Song title */
-        std::string Title;
-
-        /* Song Author */
-        std::string Artist;
-
-        /* Directory where files are contained */
-        std::filesystem::path SongDirectory;
-
-        /* Relative Paths */
-        std::filesystem::path SongFilename, BackgroundFilename;
-
-        /* Song Audio for Preview*/
-        std::filesystem::path SongPreviewSource;
-
-        /* Time to start preview */
-        float PreviewTime;
-
-        // Song subtitles
-        std::string Subtitle;
-
-        // Song genre
-        std::string Genre;
-
-        // returns pointer owned by Song class, so don't delete.
-        Difficulty* GetDifficulty(uint32_t i);
-
-        uint8_t GetDifficultyCount();
-
-        Song() { ID = -1; PreviewTime = 0; };
-        virtual ~Song() {};
-    };
 }
 
 

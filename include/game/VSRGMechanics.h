@@ -7,7 +7,6 @@
 
 namespace rd {
     class ScoreKeeper;
-    class Song;
 
     class Mechanics {
     public:

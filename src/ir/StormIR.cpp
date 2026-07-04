@@ -32,23 +32,23 @@ namespace StormIR {
         // create the session object for a parse call
     public:
 
-        cpr::Session ApiRequest(std::string action) {
+        std::unique_ptr<cpr::Session> ApiRequest(std::string action) {
             using namespace cpr;
-            cpr::Session sess;
-            sess.SetUrl(cpr::Url{backendUrl + "/" + action});
-            sess.SetHeader({
+            auto sess = std::make_unique<cpr::Session>();
+            sess->SetUrl(cpr::Url{backendUrl + "/" + action});
+            sess->SetHeader({
                    {"X-Parse-Application-Id", appid},
                    {"X-Parse-Client-Key",     clientkey}
            });
 
             // add logged in request
             if (!_sessionToken.empty())
-                sess.UpdateHeader({
+                sess->UpdateHeader({
                                           {"X-Parse-Session-Token", _sessionToken}
                                   });
 
 
-            return std::move(sess);
+            return sess;
         }
     };
 
@@ -66,12 +66,12 @@ namespace StormIR {
             return true;
 
         auto s = _impl->ApiRequest("login");
-        s.SetParameters({
+        s->SetParameters({
                 {"username", username},
                 {"password", password}
         });
 
-        auto r = s.Get();
+        auto r = s->Get();
         if (r.status_code != 200) {
             // failed to log in
             auto err = json::parse(r.text);
@@ -112,10 +112,10 @@ namespace StormIR {
         );
         auto s = _impl->ApiRequest("functions/submitScore");
         auto b = j.dump();
-        s.UpdateHeader({{"Content-Type", "application/json"}});
-        s.SetBody(cpr::Body{b});
+        s->UpdateHeader({{"Content-Type", "application/json"}});
+        s->SetBody(cpr::Body{b});
 
-        auto r = s.Post();
+        auto r = s->Post();
         auto t = r.text;
         auto errJson = json::parse(r.text);
         auto hasError = !errJson["code"].is_null() && !errJson["message"].is_null();

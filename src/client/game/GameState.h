@@ -13,7 +13,6 @@ struct lua_State;
 
 namespace rd
 {
-    class Song;
     class Difficulty;
     class ScoreKeeper;
 }
@@ -32,7 +31,6 @@ class GameState
 
     Texture* StageImage;
     Texture* SongBG;
-    std::shared_ptr<rd::Song> SelectedSong;
     std::shared_ptr<otoworm::ChartGroup> SelectedChartGroup;
     std::unique_ptr<StormIR::StormIR> ir;
 
@@ -53,7 +51,6 @@ public:
     GameFilesystem& filesystem();
     const GameFilesystem& filesystem() const;
     std::filesystem::path get_skin_script_file(const char* Filename, const std::string& Skin);
-    std::shared_ptr<rd::Song> get_selected_song_shared() const;
     std::shared_ptr<otoworm::ChartGroup> get_selected_chart_group_shared() const;
     std::string get_first_fallback_skin();
     static GameState &get_instance();
@@ -72,9 +69,7 @@ public:
     static bool skin_supports_channel_count(int Count);
     std::string get_skin();
 
-    void set_selected_song(std::shared_ptr<rd::Song> song);
     void set_selected_chart_group(std::shared_ptr<otoworm::ChartGroup> chart_group);
-    rd::Song *get_selected_song() const;
     otoworm::ChartGroup *get_selected_chart_group() const;
 
     Texture* get_song_bg();
@@ -110,16 +105,16 @@ public:
     void set_scorekeeper7_k(std::shared_ptr<rd::ScoreKeeper> other, int pn);
 
     PlayscreenParameters* get_parameters(int pn);
-    rd::Difficulty* get_difficulty(int pn);
-    std::shared_ptr<rd::Difficulty> get_difficulty_shared(int pn);
+    otoworm::Chart* get_difficulty(int pn);
+    std::shared_ptr<otoworm::Chart> get_difficulty_shared(int pn);
     otoworm::Chart* get_chart(int pn);
     std::shared_ptr<otoworm::Chart> get_chart_shared(int pn);
     void set_chart(std::shared_ptr<otoworm::Chart> chart, int pn);
     int get_player_count() const;
     void submit_score(int pn);
 
-    bool is_song_unlocked(rd::Song *song);
-    void unlock_song(rd::Song *song);
+    bool is_song_unlocked(otoworm::ChartGroup *chart_group);
+    void unlock_song(otoworm::ChartGroup *chart_group);
 
     void set_system_folder(const std::string folder);
 

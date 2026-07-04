@@ -1,9 +1,9 @@
 #include <queue>
-#include <game/Song.h>
+#include <ChartGroup.h>
 #include <game/ScoreKeeper7K.h>
 
 
-#include <TextAndFileUtil.h>
+#include <text_and_file_util.h>
 
 #include "PlayscreenParameters.h"
 #include "Replay7K.h"
@@ -47,7 +47,7 @@ bool Profile::Save() {
     return false;
 }
 
-void Profile::SaveReplay(const rd::Song *song, const Replay &replay) {
+void Profile::SaveReplay(const otoworm::ChartGroup *chart_group, const Replay &replay) {
     time_t now;
     time(&now);
     auto tm = localtime(&now);
@@ -63,9 +63,9 @@ void Profile::SaveReplay(const rd::Song *song, const Replay &replay) {
             replay_filename,
             512,
             L"[%s] %ls - %ls.rdr",
-            Conversion::Widen(date_str).c_str(),
-            Conversion::Widen(song->Artist).c_str(),
-            Conversion::Widen(song->Title).c_str()
+            otoworm::locale::widen(date_str).c_str(),
+            otoworm::locale::widen(chart_group->artist).c_str(),
+            otoworm::locale::widen(chart_group->title).c_str()
     );
 
     // put it out

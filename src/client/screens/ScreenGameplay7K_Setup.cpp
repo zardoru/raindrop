@@ -5,7 +5,6 @@
 #include <glm.h>
 #include <rmath.h>
 
-#include <game/Song.h>
 #include <game/ScoreKeeper7K.h>
 #include <game/NoteTransformations.h>
 
@@ -31,7 +30,7 @@
 
 #include <ProcessedChart.h>
 #include <game/VSRGMechanics.h>
-#include <TextAndFileUtil.h>
+#include <text_and_file_util.h>
 #include "../game/PlayerContext.h"
 #include "ScreenGameplay7K.h"
 
@@ -130,18 +129,18 @@ bool ScreenGameplay::LoadChartData() {
         std::filesystem::path FN;
 
         Log::Printf("Loading Chart...");
-        auto loaded_legacy_song = Loader.LoadFromMeta(
+        auto loaded_chart_group = Loader.LoadFromMeta(
                 MyChartGroup ? MyChartGroup->id : -1,
                 GameState::get_instance().get_chart_shared(0),
                 FN,
                 index);
 
-        if (loaded_legacy_song == nullptr) {
-            Log::Printf("Failure to load chart. (Filename: %s)\n", Conversion::ToU8(FN.wstring()).c_str());
+        if (loaded_chart_group == nullptr) {
+            Log::Printf("Failure to load chart. (Filename: %s)\n", otoworm::locale::wstring_to_utf8(FN.wstring()).c_str());
             return false;
         }
 
-        MyChartGroup = loaded_legacy_song->OtoChartGroup;
+        MyChartGroup = loaded_chart_group;
         LoadedChartGroup = MyChartGroup;
         GameState::get_instance().set_selected_chart_group(MyChartGroup);
 
@@ -312,13 +311,13 @@ void ScreenGameplay::LoadBmson() {
 
             // Verbose, but not as verbose as other languages.
 
-            Log::LogPrintf("BMSON: Load sound %s AUDIO ID: %d\n", Conversion::ToU8(path.wstring()).c_str(),
+            Log::LogPrintf("BMSON: Load sound %s AUDIO ID: %d\n", otoworm::locale::wstring_to_utf8(path.wstring()).c_str(),
                            audiofile.first);
             auto t = std::chrono::high_resolution_clock::now();
 
             // Open file
             if (!p->open(path))
-                throw std::runtime_error(Utility::Format("Unable to load %s.", audiofile.second.c_str()));
+                throw std::runtime_error(otoworm::util::format("Unable to load %s.", audiofile.second.c_str()));
 
 
             // Done. Slicing

@@ -10,27 +10,26 @@
 #include <client/backend/Rendering.h>
 #include <client/backend/Sprite.h>
 #include <client/bga/BackgroundAnimation.h>
-#include <game/Song.h>
 #include <client/songdb/SongLoader.h>
-#include <game/PlayerChartState.h>
+#include <ProcessedChart.h>
 
 TEST_CASE("osu storyboard compliance")
 {
 	Interruptible stub;
-	auto song = LoadSong7KFromFilename("tests/files/esb.osu");
+	auto chart_group = LoadChartGroupFromFilename("tests/files/esb.osu");
 
-	REQUIRE(song != nullptr);
-	REQUIRE(!song->Difficulties.empty());
+	REQUIRE(chart_group != nullptr);
+	REQUIRE(!chart_group->charts.empty());
 
-	auto bga = BackgroundAnimation::CreateBGAFromSong(0, *song, &stub, true);
+	auto bga = BackgroundAnimation::CreateBGAFromChartGroup(0, chart_group, &stub, true);
 
 	bga->SetAnimationTime(65.0f);
 }
 
 TEST_CASE("Speed support")
 {
-	auto sng = LoadSong7KFromFilename("tests/files/jnight.ssc");
-	auto pcd = rd::PlayerChartState::FromDifficulty(sng->GetDifficulty(0));
-	auto tbeat = pcd.GetTimeAtBeat(93. + 4.);
-	REQUIRE(pcd.GetSpeedMultiplierAt(tbeat) == 0.250);
+	auto chart_group = LoadChartGroupFromFilename("tests/files/jnight.ssc");
+	auto pcd = otoworm::ProcessedChart::from(chart_group->get_chart(0));
+	auto tbeat = pcd.get_time_for_beat(93. + 4.);
+	REQUIRE(pcd.get_speed_multiplier_at(tbeat) == 0.250);
 }

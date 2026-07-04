@@ -8,7 +8,7 @@
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #include <stb/stb_truetype.h>
-#include <TextAndFileUtil.h>
+#include <text_and_file_util.h>
 
 #include "TruetypeFont.h"
 
@@ -105,7 +105,7 @@ TruetypeFont::TruetypeFont(std::filesystem::path Filename)
         WindowFrame.AddTTF(this);
     }
     else
-        Log::Printf("Failure loading TTF file %s.\n", Conversion::ToU8(Filename.wstring()).c_str());
+        Log::Printf("Failure loading TTF file %s.\n", otoworm::locale::wstring_to_utf8(Filename.wstring()).c_str());
 }
 
 TruetypeFont::~TruetypeFont()

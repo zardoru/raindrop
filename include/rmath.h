@@ -213,4 +213,8 @@ enum EBlendMode
 };
 
 int LCM(const std::vector<int> &Set);
-double latof(std::string s);
+namespace otoworm::util
+{
+    double latof(std::string s);
+}
+using otoworm::util::latof;

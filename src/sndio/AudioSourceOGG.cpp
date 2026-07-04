@@ -4,7 +4,7 @@
 #include "IMixer.h"
 
 #include "AudioSourceOGG.h"
-#include "TextAndFileUtil.h"
+#include <text_and_file_util.h>
 
 #include <ogg/ogg.h>
 #include <vorbis/vorbisfile.h>
@@ -77,7 +77,7 @@ AudioSourceOGG::~AudioSourceOGG()
 bool AudioSourceOGG::open(const std::filesystem::path Filename)
 {
 #if !(defined WIN32) || (defined MINGW)
-    int32_t retv = ov_fopen(Conversion::ToU8(Filename.wstring()).c_str(), &internal->mOggFile);
+    int32_t retv = ov_fopen(otoworm::locale::wstring_to_utf8(Filename.wstring()).c_str(), &internal->mOggFile);
 #else
     FILE* fp = _wfopen(Filename.wstring().c_str(), L"rb");
     int retv = -1;
@@ -101,7 +101,7 @@ bool AudioSourceOGG::open(const std::filesystem::path Filename)
     else
     {
         mIsValid = false;
-        // Log::LogPrintf("Failure loading ogg file: %s (%d)\n", Utility::ToU8(Filename.wstring()).c_str(), retv);
+        // Log::LogPrintf("Failure loading ogg file: %s (%d)\n", otoworm::locale::wstring_to_utf8(Filename.wstring()).c_str(), retv);
     }
 
     return mIsValid;
@@ -198,7 +198,7 @@ std::string GetOggTitle(std::string file)
         for (int i = 0; i < comment->comments; i++)
         {
             std::string user_comment = comment->user_comments[i];
-            auto splitvec = Utility::TokenSplit(user_comment, "=");
+            auto splitvec = otoworm::util::token_split(user_comment, "=");
             if (splitvec[0] == "TITLE")
             {
                 result = splitvec[1];

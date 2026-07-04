@@ -2,6 +2,10 @@
 
 class SongLoader;
 
+namespace otoworm {
+    class ChartGroup;
+}
+
 struct ListEntry
 {
     enum
@@ -48,8 +52,7 @@ public:
 
     void AddNamedDirectory(std::mutex &loadMutex, SongLoader *Loader, std::filesystem::path Dir, std::string Name, OnLoadNotifyFunc OnSongLoaded = nullptr);
     void AddDirectory(std::mutex &loadMutex, SongLoader *Loader, std::filesystem::path Dir, OnLoadNotifyFunc OnSongLoaded = nullptr);
-    void AddVirtualDirectory(std::string NewEntryName, rd::Song* List, int Count);
-    void AddSong(std::shared_ptr<rd::Song> Song);
+    void AddSong(std::shared_ptr<otoworm::ChartGroup> chart_group);
 	
 	void AddEntry(ListEntry entry);
 	const std::vector<ListEntry>& GetEntries();
@@ -57,7 +60,7 @@ public:
     // if false, it's a song
 	bool IsDirectory(unsigned int Entry) const;
     std::shared_ptr<SongList> GetListEntry(unsigned int Entry);
-    std::shared_ptr<rd::Song> GetSongEntry(unsigned int Entry);
+    std::shared_ptr<otoworm::ChartGroup> GetSongEntry(unsigned int Entry);
 
     std::string GetEntryTitle(unsigned int Entry);
     unsigned int GetNumEntries() const;

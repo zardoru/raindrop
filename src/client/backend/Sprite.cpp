@@ -1,5 +1,5 @@
 #include <string>
-#include <TextAndFileUtil.h>
+#include <text_and_file_util.h>
 #include <rmath.h>
 
 #include "Transformation.h"
@@ -165,7 +165,7 @@ void Sprite::bind_texture_vbo() const
 std::string Sprite::get_image_filename() const
 {
     if (m_texture_)
-        return Conversion::ToU8(m_texture_->fname.wstring());
+        return otoworm::locale::wstring_to_utf8(m_texture_->fname.wstring());
     else
         return std::string();
 }

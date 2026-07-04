@@ -9,7 +9,6 @@
 #include <sndio/Audiofile.h>
 #include <sndio/AudioSourceOJM.h>
 
-#include <game/Song.h>
 #include "../game/PlayscreenParameters.h"
 #include "../game/GameState.h"
 #include "../structure/Screen.h"

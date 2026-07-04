@@ -8,7 +8,7 @@
 #include "LuaManager.h"
 #include <LuaBridge/LuaBridge.h>
 
-#include <game/Song.h>
+#include <ChartGroup.h>
 #include "../game/PlayscreenParameters.h"
 
 #include "../game/GameState.h"
@@ -32,14 +32,57 @@ enum OBJTYPE
 struct songHelper
 {
     template <class T>
-    static uint32_t getDifficultyCountForSong(T const *Sng)
+    static uint32_t getDifficultyCountForSong(T const *chart_group)
     {
-        return Sng->Difficulties.size();
+        return chart_group->get_chart_count();
     }
 
 
     template <class T>
-    static void setDifficultyCountForSong(T *Sng, uint32_t v)
+    static void setDifficultyCountForSong(T *chart_group, uint32_t v)
+    {
+        return;
+    }
+
+    static uint32_t get_chart_count(const otoworm::ChartGroup *chart_group)
+    {
+        return chart_group->get_chart_count();
+    }
+
+    static otoworm::Chart* get_chart(otoworm::ChartGroup *chart_group, uint32_t idx)
+    {
+        return chart_group->get_chart(idx);
+    }
+
+    static std::string get_chart_name(const otoworm::Chart *chart)
+    {
+        return chart && chart->meta ? chart->meta->name : "";
+    }
+
+    static void set_chart_name(otoworm::Chart *chart, std::string name)
+    {
+        return;
+    }
+
+    static std::string get_chart_author(const otoworm::Chart *chart)
+    {
+        std::string candidate = GameState::get_instance().get_song_database()->GetArtistForDifficulty(chart->id);
+        if (!candidate.length() && chart->meta)
+            candidate = chart->meta->author;
+        return candidate;
+    }
+
+    static void set_chart_author(otoworm::Chart *chart, std::string author)
+    {
+        return;
+    }
+
+    static std::string get_chart_genre(const otoworm::Chart *chart)
+    {
+        return GameState::get_instance().get_song_database()->GetGenreForDifficulty(chart->id);
+    }
+
+    static void set_chart_genre(otoworm::Chart *chart, std::string genre)
     {
         return;
     }
@@ -76,7 +119,7 @@ struct songHelper
 	template <class T>
 	static int getLevel(T const *Diff)
 	{
-		return Diff->Level;
+		return Diff->level;
 	}
 
 
@@ -85,16 +128,6 @@ struct songHelper
 	{
 		return;
 	}
-
-    template <class T, class Q>
-    static Q* getDifficulty(T *Sng, uint32_t idx)
-    {
-        if (idx < 0 || idx >= getDifficultyCountForSong(Sng))
-            return NULL;
-
-        Q* diff = (Q*)Sng->Difficulties[idx];
-        return diff;
-    }
 
 	template <class T>
 	static int GetObjCount(T const* diff)
@@ -135,19 +168,15 @@ PlayscreenParameters* GameState::get_parameters(int pn)
 	else return nullptr;
 }
 
-rd::Difficulty * GameState::get_difficulty(int pn)
+otoworm::Chart * GameState::get_difficulty(int pn)
 {
-	if(get_selected_song())
-		return ((rd::Song*)get_selected_song())->GetDifficulty(SongWheel::GetInstance().GetDifficulty());
-	return nullptr;
+    auto chart = get_difficulty_shared(pn);
+    return chart.get();
 }
 
-std::shared_ptr<rd::Difficulty> GameState::get_difficulty_shared(int pn)
+std::shared_ptr<otoworm::Chart> GameState::get_difficulty_shared(int pn)
 {
-    if (auto song = get_selected_song())
-        return song->Difficulties[SongWheel::GetInstance().GetDifficulty()];
-
-	return nullptr;
+    return get_chart_shared(pn);
 }
 
 otoworm::Chart *GameState::get_chart(int pn)
@@ -186,84 +215,84 @@ void GameState::initialize_lua(lua_State *L)
 	luabridge::getGlobalNamespace(L)
 		/// Base Song class.
 		/// @type Song
-		.beginClass <rd::Song>("Song")
+		.beginClass <otoworm::ChartGroup>("Song")
 		/// The song's title.
 		// @roproperty Title 
-		.addData("Title", &rd::Song::Title, false)
+		.addData("Title", &otoworm::ChartGroup::title, false)
 		/// The song's author.
 		// @roproperty Author 
-		.addData("Author", &rd::Song::Artist, false)
+		.addData("Author", &otoworm::ChartGroup::artist, false)
 		/// The song's subtitle.
 		// @roproperty Subtitle 
-		.addData("Subtitle", &rd::Song::Subtitle, false)
+		.addData("Subtitle", &otoworm::ChartGroup::subtitle, false)
 		/// The song's database ID.
 		// @roproperty ID 
-		.addData("ID", &rd::Song::ID, false)
+		.addData("ID", &otoworm::ChartGroup::id, false)
 		.endClass();
 
 	luabridge::getGlobalNamespace(L)
 		/// The Base Difficulty class.
 		/// @type Difficulty
-		.beginClass <rd::Difficulty>("Difficulty")
+		.beginClass <otoworm::Chart>("Difficulty")
 		/// Duration of the difficulty, in seconds.
 		// @roproperty Duration
-		.addData("Duration", &rd::Difficulty::Duration, false)
+		.addData("Duration", &otoworm::Chart::duration, false)
 		/// Difficulty name.
 		// @roproperty Name
-		.addData("Name", &rd::Difficulty::Name, false)
+		.addProperty("Name", &songHelper::get_chart_name, &songHelper::set_chart_name)
 		/// Offset.
 		// @roproperty Offset
-		.addData("Offset", &rd::Difficulty::Offset, false)
+		.addData("Offset", &otoworm::Chart::offset, false)
 		/// Object count.
 		// @roproperty Objects
 		.addProperty("Objects", 
-			&songHelper::GetObjCount<rd::Difficulty>,
-			&songHelper::SetObjCount<rd::Difficulty>)
+			&songHelper::GetObjCount<otoworm::Chart>,
+			&songHelper::SetObjCount<otoworm::Chart>)
 		/// Count of objects that matter for score.
 		// @roproperty ScoreObjects
 		.addProperty("ScoreObjects",
-			&songHelper::GetScoreObjCount<rd::Difficulty>,
-			&songHelper::SetScoreObjCount<rd::Difficulty>)
+			&songHelper::GetScoreObjCount<otoworm::Chart>,
+			&songHelper::SetScoreObjCount<otoworm::Chart>)
 		/// Difficulty's Author.
 		// @roproperty Author
 		.addProperty("Author", 
-			&songHelper::getDifficultyAuthor<rd::Difficulty>,
-			&songHelper::setDifficultyAuthor <rd::Difficulty>)
+			&songHelper::get_chart_author,
+			&songHelper::set_chart_author)
 		/// Difficulty's Genre.
 		// @roproperty Genre
 		.addProperty("Genre", 
-			&songHelper::getDifficultyGenre<rd::Difficulty>,
-			&songHelper::setDifficultyGenre<rd::Difficulty>)
+			&songHelper::get_chart_genre,
+			&songHelper::set_chart_genre)
 		.endClass();
 
 	luabridge::getGlobalNamespace(L)
 		/// VSRG specific difficulty class.
 		/// @type Difficulty7K
-		.deriveClass <rd::Difficulty, rd::Difficulty>("Difficulty7K")
+		.deriveClass <otoworm::Chart, otoworm::Chart>("Difficulty7K")
 		/// Level, as informed by the loader.
 		// @roproperty Level
 		.addProperty("Level", 
-			&songHelper::getLevel<rd::Difficulty>,
-			&songHelper::setLevel<rd::Difficulty>)
+			&songHelper::getLevel<otoworm::Chart>,
+			&songHelper::setLevel<otoworm::Chart>)
 		/// Effective channels in use.
 		// @roproperty Channels
-		.addData("Channels", &rd::Difficulty::Channels, false)
+		.addData("Channels", &otoworm::Chart::channels, false)
 		.endClass();
 
 
 	luabridge::getGlobalNamespace(L)
 		/// Song class, specific for VSRG.
 		/// @type Song
-		.beginClass <rd::Song>("Song")
+		.beginClass <otoworm::ChartGroup>("Song")
 		/// Difficulty count
 		// @roproperty DifficultyCount
-		.addProperty("DifficultyCount", &songHelper::getDifficultyCountForSong<rd::Song>,
-			&songHelper::setDifficultyCountForSong<rd::Song>)
+		.addProperty("DifficultyCount", &songHelper::get_chart_count,
+			&songHelper::setDifficultyCountForSong<otoworm::ChartGroup>)
 		/// Get a difficulty, by index. Can return nil.
 		// @function GetDifficulty
 		// @param index The difficulty index.
 		// @return A Difficulty. Can be nil.
-		.addFunction("GetDifficulty", &rd::Song::GetDifficulty)
+		.addFunction("GetDifficulty", &songHelper::get_chart)
 		.endClass();
 
 	luabridge::getGlobalNamespace(L)
@@ -328,7 +357,7 @@ void GameState::initialize_lua(lua_State *L)
 		/// Returns currently selected song.
 		// @function GetSelectedSong
 		// @return The currently selected song.
-		.addFunction("GetSelectedSong", &GameState::get_selected_song)
+		.addFunction("GetSelectedSong", &GameState::get_selected_chart_group)
 		/// Returns the player's current difficulty.
 		// @function GetDifficulty
 		// @param pn The player number.

@@ -4,9 +4,8 @@
 #include <rmath.h>
 
 
-#include <game/Song.h>
 #include <game/ScoreKeeper7K.h>
-#include <note_loader_7k.h>
+#include <note_loader.h>
 
 #include "PlayscreenParameters.h"
 #include "GameState.h"
@@ -28,7 +27,7 @@
 #include "ImageLoader.h"
 
 #include "../structure/Configuration.h"
-#include "TextAndFileUtil.h"
+#include <text_and_file_util.h>
 
 #include "../../ir/StormIR.h"
 #include "Logging.h"
@@ -50,7 +49,6 @@ GameState::GameState():
 	StageImage(nullptr), 
 	SongBG(nullptr)
 {
-    SelectedSong = nullptr;
     SelectedChartGroup = nullptr;
     Database = nullptr;
 
@@ -88,18 +86,10 @@ std::filesystem::path GameState::get_skin_script_file(const char* Filename, cons
     return Filesystem.get_skin_script_file(Filename, skin);
 }
 
-std::shared_ptr<rd::Song> GameState::get_selected_song_shared() const
-{
-	if (SongWheel::GetInstance().GetSelectedSong())
-		return SongWheel::GetInstance().GetSelectedSong();
-	else
-		return SelectedSong;
-}
-
 std::shared_ptr<otoworm::ChartGroup> GameState::get_selected_chart_group_shared() const
 {
-    if (const auto song = SongWheel::GetInstance().GetSelectedSong())
-        return song->OtoChartGroup;
+    if (const auto chart_group = SongWheel::GetInstance().GetSelectedChartGroup())
+        return chart_group;
     return SelectedChartGroup;
 }
 
@@ -114,21 +104,9 @@ GameState& GameState::get_instance()
     return *StateInstance;
 }
 
-void GameState::set_selected_song(std::shared_ptr<Song> sng)
-{
-	SelectedSong = sng;
-    SelectedChartGroup = SelectedSong ? SelectedSong->OtoChartGroup : nullptr;
-}
-
 void GameState::set_selected_chart_group(std::shared_ptr<otoworm::ChartGroup> chart_group)
 {
     SelectedChartGroup = std::move(chart_group);
-}
-
-Song *GameState::get_selected_song() const
-{
-	const auto p = SongWheel::GetInstance().GetSelectedSong().get();
-    return p ? p : SelectedSong.get();
 }
 
 otoworm::ChartGroup *GameState::get_selected_chart_group() const
@@ -139,7 +117,7 @@ otoworm::ChartGroup *GameState::get_selected_chart_group() const
 void GameState::start_screen_transition(std::string target) const
 {
 	if (target.find("custom") == 0) {
-		auto res = Utility::TokenSplit(target, ":");
+		auto res = otoworm::util::token_split(target, ":");
 		if (res.size() == 2)
 		{
 			const auto scr = std::make_shared<ScreenCustom>(res[1]);
@@ -383,7 +361,9 @@ void GameState::submit_score(int pn)
 	const auto scorekeeper = *player->scorekeeper;
 	const auto drift = player->ctx->get_drift();
 	const auto joffset = player->ctx->get_judge_offset();
-	const auto &song = *get_selected_song();
+	const auto selected_chart_group = get_selected_chart_group();
+	if (!selected_chart_group)
+		return;
 
     auto submitfunc = [=, this] {
         player->profile->Scores.AddScore(
@@ -395,7 +375,7 @@ void GameState::submit_score(int pn)
                 joffset
         );
 
-        player->profile->SaveReplay(&song, replay);
+        player->profile->SaveReplay(selected_chart_group, replay);
 
         if (ir && ir->IsConnected()) {
             Log::LogPrintf("[IR] Submitting score...\n");
@@ -411,12 +391,12 @@ void GameState::submit_score(int pn)
     t.detach();
 }
 
-bool GameState::is_song_unlocked(rd::Song * song)
+bool GameState::is_song_unlocked(otoworm::ChartGroup * chart_group)
 {
 	return true;
 }
 
-void GameState::unlock_song(rd::Song * song)
+void GameState::unlock_song(otoworm::ChartGroup * chart_group)
 {
 }
 

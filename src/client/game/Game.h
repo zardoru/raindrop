@@ -36,14 +36,6 @@ extern const char* KeytypeNames[];
 
 
 /* Program itself consts */
-#define RAINDROP_WINDOWTITLE "raindrop ver: "
-#define RAINDROP_VERSION "0.600"
-#ifdef NDEBUG
-#define RAINDROP_BUILDTYPE " "
-#else
-#define RAINDROP_BUILDTYPE " (debug) "
-#endif
-
-#define RAINDROP_VERSIONTEXT RAINDROP_VERSION RAINDROP_BUILDTYPE __DATE__
+#include <config.h>
 
 #include "../structure/BindingsManager.h"

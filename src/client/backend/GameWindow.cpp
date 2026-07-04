@@ -23,7 +23,7 @@
 // #include "RaindropRocketInterface.h"
 
 #include "../structure/Configuration.h"
-#include "TextAndFileUtil.h"
+#include <text_and_file_util.h>
 
 #include "Shader.h"
 //#include <glm/gtc/matrix_transform.hpp>
@@ -127,15 +127,15 @@ int KeyTranslate(std::string K)
 {
     for (auto & SpecialKey : SpecialKeys)
     {
-        std::string Key = K; Utility::ToLower(Key);
-        std::string Target = std::string(SpecialKey.KeyString);  Utility::ToLower(Target);
+        std::string Key = K; otoworm::util::to_lower(Key);
+        std::string Target = std::string(SpecialKey.KeyString);  otoworm::util::to_lower(Target);
         if (Key == Target)
             return SpecialKey.boundkey;
     }
 
     if (K.length())
     {
-        if (Utility::IsNumeric(K.c_str()))
+        if (otoworm::util::is_numeric(K.c_str()))
             return atoi(K.c_str());
         else
             return K[0];
@@ -195,8 +195,8 @@ int getIndexForKeytype(const char* key)
 {
     for (int i = 0; i < sizeof KeytypeNames / sizeof(char*); i++)
     {
-        std::string lowkey = std::string(key); Utility::ToLower(lowkey);
-        std::string lowname = std::string(KeytypeNames[i]); Utility::ToLower(lowname);
+        std::string lowkey = std::string(key); otoworm::util::to_lower(lowkey);
+        std::string lowname = std::string(KeytypeNames[i]); otoworm::util::to_lower(lowname);
         if (lowkey == lowname)
             return i;
     }
@@ -209,7 +209,7 @@ std::string getNameForKeytype(const KeyType K)
     if (K < sizeof KeytypeNames / sizeof(char*))
         return KeytypeNames[K];
     else
-        return IntToStr(K);
+        return std::to_string(K);
 }
 
 std::string getNameForUntranslatedKey(const int K)
@@ -220,7 +220,7 @@ std::string getNameForUntranslatedKey(const int K)
             return StaticSpecialKeys[i].KeyString;
     }
 
-    return IntToStr(K);
+    return std::to_string(K);
 }
 
 void BindingsManager::Initialize()
@@ -302,7 +302,7 @@ void BindingsManager::Initialize()
             std::string charOut;
             if (defaultKeys[i].key <= 255 && isgraph(defaultKeys[i].key)) // we're not setting like, gibberish
             {
-                charOut = CharToStr(defaultKeys[i].key);
+                charOut = std::string(1, static_cast<char>(defaultKeys[i].key));
             }
             else
             {

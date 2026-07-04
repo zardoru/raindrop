@@ -9,19 +9,6 @@ ChartType ChartInfo::GetType() const
     return Type;
 }
 
-Difficulty* Song::GetDifficulty(uint32_t i)
-{
-    if (i >= Difficulties.size())
-        return nullptr;
-    else
-        return Difficulties.at(i).get();
-}
-
-uint8_t Song::GetDifficultyCount()
-{
-	return Difficulties.size();
-}
-
 void Difficulty::Destroy()
 {
     if (Data)

@@ -7,7 +7,6 @@
 #include <iomanip>
 #include <numeric>
 #include <iostream>
-#include <TextAndFileUtil.h>
 
 namespace rd {
     ScoreKeeper::~ScoreKeeper() {}

@@ -1,6 +1,6 @@
 #include "rmath.h"
 
-#include "TextAndFileUtil.h"
+#include <text_and_file_util.h>
 #include <game/Song.h>
 
 #include <numeric>
@@ -28,7 +28,7 @@ double SectionValue(const TimingData &Timing, double Beat)
         int Index = SectionIndex(Timing, Beat);
 #ifndef NDEBUG
         if (Index < 0)
-            Utility::DebugBreak();
+            otoworm::util::debug_break();
 #endif
         return Timing[Index].Value;
     }
@@ -89,11 +89,11 @@ void LoadTimingList(TimingData &Timing, std::string line, bool AllowZeros)
 
     Timing.clear();
     // Remove whitespace.
-    Utility::ReplaceAll(ListString, "\n", "");
-    SplitResult = Utility::TokenSplit(ListString); // Separate List of BPMs.
+    otoworm::util::replace_all(ListString, "\n", "");
+    SplitResult = otoworm::util::token_split(ListString); // Separate List of BPMs.
     for (auto ValueString : SplitResult)
     { // Separate Time=Value pairs.
-        std::vector< std::string > SplitResultPair = Utility::TokenSplit(ValueString, "=");
+        std::vector< std::string > SplitResultPair = otoworm::util::token_split(ValueString, "=");
 
         if (SplitResultPair.size() == 1) // Assume only one BPM on the whole list.
         {

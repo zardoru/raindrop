@@ -16,7 +16,7 @@
 
 #include <boost/algorithm/string/case_conv.hpp>
 #include <utility>
-#include <TextAndFileUtil.h>
+#include <text_and_file_util.h>
 #include "Texture.h"
 #include "Logging.h"
 
@@ -845,7 +845,7 @@ osb::SpriteList ReadOSBEvents(std::istream& event_str)
 		lead_spaces = sst != std::string::npos ? sst : 0;
 		line = line.substr(lead_spaces);
 
-		std::vector<std::string> split_result = Utility::TokenSplit(line, ",");
+		std::vector<std::string> split_result = otoworm::util::token_split(line, ",");
 		for (auto &&s : split_result) boost::algorithm::to_lower(s);
 
 		if (!line.length() || split_result.size() < 2) continue;
@@ -1082,10 +1082,11 @@ int osuBackgroundAnimation::GetIndexFromFilename(std::string filename)
 void osuBackgroundAnimation::Load()
 {
 	// Read the osb file from the song's directory.
-	auto fl = Utility::GetFileListing(SongDirectory);
-	auto candidates = filter([](std::filesystem::path p) {
-		return p.extension() == ".osb";
-	}, fl);
+	std::vector<std::filesystem::path> candidates;
+	for (const auto& entry : std::filesystem::directory_iterator(SongDirectory)) {
+		if (entry.path().extension() == ".osb")
+			candidates.push_back(entry.path());
+	}
 
 	if (candidates.size())
 	{

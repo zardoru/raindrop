@@ -10,9 +10,8 @@
 
 #include "LuaManager.h"
 #include <LuaBridge/LuaBridge.h>
-#include <TextAndFileUtil.h>
+#include <text_and_file_util.h>
 
-#include <game/Song.h>
 #include "../game/PlayscreenParameters.h"
 #include "../game/GameState.h"
 #include <ProcessedChart.h>
@@ -84,8 +83,8 @@ void SetupWheelLua(LuaManager *Man) {
 ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic") {
     PreviewStream = nullptr;
 
-    PreviousPreview = std::make_shared<rd::Song>();
-    ToPreview = nullptr;
+    previous_preview = nullptr;
+    to_preview = nullptr;
 
     SongWheel *Wheel = &SongWheel::GetInstance();
     Wheel->Initialize(GameState::get_instance().get_song_database());
@@ -218,13 +217,13 @@ void ScreenSelectMusic::StartGameplayScreen() {
     Next = LoadNext;
 }
 
-void ScreenSelectMusic::OnSongSelect(std::shared_ptr<rd::Song> MySong, uint8_t difindex) {
+void ScreenSelectMusic::OnSongSelect(std::shared_ptr<otoworm::ChartGroup> chart_group, uint8_t difindex) {
     // Handle a recently selected song
 
     if (IsTransitioning)
         return;
 
-    if (difindex > MySong->GetDifficultyCount()) return;
+    if (!chart_group || difindex > chart_group->get_chart_count()) return;
 
     if (PreviewStream) PreviewStream->stop();
 
@@ -234,8 +233,9 @@ void ScreenSelectMusic::OnSongSelect(std::shared_ptr<rd::Song> MySong, uint8_t d
 
     StopLoops();
 
-    if (MySong->OtoChartGroup && difindex < MySong->OtoChartGroup->charts.size())
-        GameState::get_instance().set_chart(MySong->OtoChartGroup->charts[difindex], 0);
+    GameState::get_instance().set_selected_chart_group(chart_group);
+    if (difindex < chart_group->charts.size())
+        GameState::get_instance().set_chart(chart_group->charts[difindex], 0);
 
     Animations->DoEvent("OnSelect", 1);
     TransitionTime = Animations->GetEnv()->GetFunctionResultF();
@@ -243,54 +243,54 @@ void ScreenSelectMusic::OnSongSelect(std::shared_ptr<rd::Song> MySong, uint8_t d
     SwitchBackGuiPending = true;
 }
 
-void ScreenSelectMusic::OnSongChange(std::shared_ptr<rd::Song> MySong, uint8_t difindex) {
+void ScreenSelectMusic::OnSongChange(std::shared_ptr<otoworm::ChartGroup> chart_group, uint8_t difindex) {
     ClickSnd->play();
 
-    if (MySong) {
+    if (chart_group) {
         Animations->DoEvent("OnSongChange");
 
         PreviewWaitTime = 1;
     }
 
-    ToPreview = MySong;
+    to_preview = chart_group;
 }
 
 void ScreenSelectMusic::PlayPreview() {
     // Do the song preview thing.
     SongDatabase *DB = GameState::get_instance().get_song_database();
-    float StartTime;
-    std::string PreviewFile;
+    float start_time;
+    std::string preview_file;
 
-    if (ToPreview == nullptr) {
+    if (to_preview == nullptr) {
         if (PreviewStream != nullptr)
             PreviewStream->stop();
         return;
     }
 
-    DB->GetPreviewInfo(ToPreview->ID, PreviewFile, StartTime);
+    DB->GetPreviewInfo(to_preview->id, preview_file, start_time);
 
-    if (PreviewFile.length() > 0) {
+    if (preview_file.length() > 0) {
         if (PreviewStream) {
             PreviewStream->stop();
             PreviewStream = nullptr;
         }
 
-        auto previewPath = ToPreview->SongDirectory / PreviewFile;
+        auto preview_path = to_preview->path / preview_file;
 
         // If missing, find alternate preview file
-        if (!std::filesystem::exists(previewPath))
-            for (const auto& i : std::filesystem::directory_iterator(ToPreview->SongDirectory)) {
+        if (!std::filesystem::exists(preview_path))
+            for (const auto& i : std::filesystem::directory_iterator(to_preview->path)) {
                 auto extension = i.path().extension();
                 if (extension == ".mp3" || extension == ".ogg")
-                    previewPath = i.path();
+                    preview_path = i.path();
             }
 
         // Load preview
-        if (std::filesystem::exists(previewPath)) {
+        if (std::filesystem::exists(preview_path)) {
             PreviewStream = std::make_shared<AudioStream>();
-            if (PreviewStream->open(previewPath)) {
+            if (PreviewStream->open(preview_path)) {
                 PreviewStream->play();
-                PreviewStream->seek_time(StartTime);
+                PreviewStream->seek_time(start_time);
                 PreviewStream->set_loop(true);
             }
         }
@@ -301,7 +301,7 @@ void ScreenSelectMusic::PlayPreview() {
         }
     }
 
-    PreviousPreview = ToPreview;
+    previous_preview = to_preview;
 }
 
 void ScreenSelectMusic::PlayLoops() {
@@ -313,7 +313,7 @@ void ScreenSelectMusic::PlayLoops() {
             std::filesystem::is_regular_file(fn)) {
             auto s = fn.string();
             auto IsLoop = false;
-            Utility::ToLower(s);
+            otoworm::util::to_lower(s);
 
             if (s.find_first_of("loop") != std::string::npos)
                 IsLoop = true;
@@ -353,7 +353,7 @@ bool ScreenSelectMusic::Run(double Delta) {
 
         PreviewWaitTime -= Delta;
         if (PreviewWaitTime <= 0) {
-            if (PreviousPreview != ToPreview)
+            if (previous_preview != to_preview)
                 PlayPreview();
 
             if (PreviewStream && PreviewStream->is_playing())
@@ -434,21 +434,21 @@ bool ScreenSelectMusic::HandleScrollInput(double xOff, double yOff) {
     return SongWheel::GetInstance().HandleScrollInput(xOff, yOff);
 }
 
-void ScreenSelectMusic::TransformItem(int Item, std::shared_ptr<rd::Song> Song, bool IsSelected, int Index) {
+void ScreenSelectMusic::TransformItem(int Item, std::shared_ptr<otoworm::ChartGroup> chart_group, bool IsSelected, int Index) {
     if (Animations->GetEnv()->CallFunction("TransformItem", 4)) {
         luabridge::push(Animations->GetEnv()->GetState(), Item);
-        luabridge::push(Animations->GetEnv()->GetState(), Song.get());
+        luabridge::push(Animations->GetEnv()->GetState(), chart_group.get());
         luabridge::push(Animations->GetEnv()->GetState(), IsSelected);
         luabridge::push(Animations->GetEnv()->GetState(), Index);
         Animations->GetEnv()->RunFunction();
     }
 }
 
-void ScreenSelectMusic::TransformString(int Item, std::shared_ptr<rd::Song> Song, bool IsSelected, int Index,
+void ScreenSelectMusic::TransformString(int Item, std::shared_ptr<otoworm::ChartGroup> chart_group, bool IsSelected, int Index,
                                         std::string text) {
     if (Animations->GetEnv()->CallFunction("TransformString", 5)) {
         luabridge::push(Animations->GetEnv()->GetState(), Item);
-        luabridge::push(Animations->GetEnv()->GetState(), Song.get());
+        luabridge::push(Animations->GetEnv()->GetState(), chart_group.get());
         luabridge::push(Animations->GetEnv()->GetState(), IsSelected);
         luabridge::push(Animations->GetEnv()->GetState(), Index);
         luabridge::push(Animations->GetEnv()->GetState(), text.c_str());
@@ -461,7 +461,7 @@ void ScreenSelectMusic::OnDirectoryChange() {
 }
 
 void ScreenSelectMusic::OnItemClick(int32_t Index, uint32_t boundIndex, std::string Line,
-                                    std::shared_ptr<rd::Song> Selected) {
+                                    std::shared_ptr<otoworm::ChartGroup> Selected) {
     if (Animations->GetEnv()->CallFunction("OnItemClick", 4)) {
         luabridge::push(Animations->GetEnv()->GetState(), Index);
         luabridge::push(Animations->GetEnv()->GetState(), boundIndex);
@@ -472,7 +472,7 @@ void ScreenSelectMusic::OnItemClick(int32_t Index, uint32_t boundIndex, std::str
 }
 
 void ScreenSelectMusic::OnItemHover(int32_t Index, uint32_t boundIndex, std::string Line,
-                                    std::shared_ptr<rd::Song> Selected) {
+                                    std::shared_ptr<otoworm::ChartGroup> Selected) {
     if (Animations->GetEnv()->CallFunction("OnItemHover", 4)) {
         luabridge::push(Animations->GetEnv()->GetState(), Index);
         luabridge::push(Animations->GetEnv()->GetState(), boundIndex);
@@ -483,7 +483,7 @@ void ScreenSelectMusic::OnItemHover(int32_t Index, uint32_t boundIndex, std::str
 }
 
 void ScreenSelectMusic::OnItemHoverLeave(int32_t Index, uint32_t boundIndex, std::string Line,
-                                         std::shared_ptr<rd::Song> Selected) {
+                                         std::shared_ptr<otoworm::ChartGroup> Selected) {
     if (Animations->GetEnv()->CallFunction("OnItemHoverLeave", 4)) {
         luabridge::push(Animations->GetEnv()->GetState(), Index);
         luabridge::push(Animations->GetEnv()->GetState(), boundIndex);

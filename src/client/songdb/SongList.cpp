@@ -3,8 +3,8 @@
 #include <mutex>
 #include <rmath.h>
 
-#include <game/Song.h>
-#include <TextAndFileUtil.h>
+#include <ChartGroup.h>
+#include <text_and_file_util.h>
 #include <cassert>
 #include "SongList.h"
 
@@ -58,11 +58,11 @@ void SongList::ClearEmpty()
 	}
 }
 
-void SongList::AddSong(std::shared_ptr<rd::Song> Song)
+void SongList::AddSong(std::shared_ptr<otoworm::ChartGroup> chart_group)
 {
     ListEntry NewEntry;
     NewEntry.Kind = ListEntry::Song;
-    NewEntry.Data = Song;
+    NewEntry.Data = chart_group;
 
     mChildren.push_back(NewEntry);
 }
@@ -93,7 +93,7 @@ void SongList::AddNamedDirectory(
     NewEntry.Kind = ListEntry::Directory;
     NewEntry.Data = std::shared_ptr<void>(NewList);
 
-    std::vector<rd::Song*> Songs7K;
+    std::vector<std::shared_ptr<otoworm::ChartGroup>> chart_groups;
     std::vector<std::string> Listing;
 
 	// boost throws with nonexisting directories
@@ -105,9 +105,9 @@ void SongList::AddNamedDirectory(
 
 		if (!std::filesystem::is_directory(i.path())) continue;
 
-		Loader->LoadSong7KFromDir(i, Songs7K);
+		Loader->LoadChartGroupsFromDir(i, chart_groups);
 
-        if (!Songs7K.size()) // No songs, so, time to recursively search.
+        if (!chart_groups.size()) // No songs, so, time to recursively search.
         {
             if (!EntryWasPushed)
             {
@@ -133,14 +133,14 @@ void SongList::AddNamedDirectory(
             {
                 std::unique_lock<std::mutex> lock(loadMutex);
 
-                for (auto j = Songs7K.begin();
-                j != Songs7K.end();
+                for (auto j = chart_groups.begin();
+                j != chart_groups.end();
                     ++j)
                 {
-                    NewList->AddSong(std::shared_ptr<rd::Song>(*j));
+                    NewList->AddSong(*j);
                 }
 
-                Songs7K.clear();
+                chart_groups.clear();
             }
 
             if (!EntryWasPushed)
@@ -160,22 +160,7 @@ void SongList::AddNamedDirectory(
 
 void SongList::AddDirectory(std::mutex &loadMutex, SongLoader *Loader, std::filesystem::path Dir, OnLoadNotifyFunc OnSongLoaded)
 {
-    AddNamedDirectory(loadMutex, Loader, Dir, Conversion::ToU8(Dir.filename().wstring()), OnSongLoaded);
-}
-
-void SongList::AddVirtualDirectory(std::string NewEntryName, rd::Song* List, int Count)
-{
-    auto* NewList = new SongList(this);
-
-    ListEntry NewEntry;
-    NewEntry.EntryName = NewEntryName;
-    NewEntry.Kind = ListEntry::Directory;
-    NewEntry.Data = std::shared_ptr <void>(NewList);
-
-    for (int i = 0; i < Count; i++)
-        NewList->AddSong(std::shared_ptr<rd::Song>(&List[Count]));
-
-    mChildren.push_back(NewEntry);
+    AddNamedDirectory(loadMutex, Loader, Dir, otoworm::locale::wstring_to_utf8(Dir.filename().wstring()), OnSongLoaded);
 }
 
 // if false, it's a song
@@ -191,10 +176,10 @@ std::shared_ptr<SongList> SongList::GetListEntry(unsigned int Entry)
     return std::static_pointer_cast<SongList> (mChildren[Entry].Data);
 }
 
-std::shared_ptr<rd::Song> SongList::GetSongEntry(unsigned int Entry)
+std::shared_ptr<otoworm::ChartGroup> SongList::GetSongEntry(unsigned int Entry)
 {
     if (!IsDirectory(Entry))
-        return std::static_pointer_cast<rd::Song> (mChildren[Entry].Data);
+        return std::static_pointer_cast<otoworm::ChartGroup> (mChildren[Entry].Data);
     else
         return nullptr;
 }
@@ -208,9 +193,9 @@ std::string SongList::GetEntryTitle(unsigned int Entry)
         return mChildren[Entry].EntryName;
     else
     {
-        std::shared_ptr<rd::Song> Song = std::static_pointer_cast<rd::Song>(mChildren[Entry].Data);
-        if (Song)
-            return Song->Title;
+        std::shared_ptr<otoworm::ChartGroup> song = std::static_pointer_cast<otoworm::ChartGroup>(mChildren[Entry].Data);
+        if (song)
+            return song->title;
         else
             return "<no song>";
     }
@@ -259,33 +244,32 @@ void SongList::SortBy(ESortCriteria criteria)
 	case SORT_TITLE:
 		SortByFn([](const ListEntry&A, const ListEntry&B)
 		{
-			auto a = std::static_pointer_cast<rd::Song>(A.Data);
-			auto b = std::static_pointer_cast<rd::Song>(B.Data);
-			return a->Title < b->Title;
+			auto a = std::static_pointer_cast<otoworm::ChartGroup>(A.Data);
+			auto b = std::static_pointer_cast<otoworm::ChartGroup>(B.Data);
+			return a->title < b->title;
 		});
 		break;
 	case SORT_AUTHOR:
 		SortByFn([](const ListEntry&A, const ListEntry&B)
 		{
-			auto a = std::static_pointer_cast<rd::Song>(A.Data);
-			auto b = std::static_pointer_cast<rd::Song>(B.Data);
-			return a->Artist < b->Artist;
+			auto a = std::static_pointer_cast<otoworm::ChartGroup>(A.Data);
+			auto b = std::static_pointer_cast<otoworm::ChartGroup>(B.Data);
+			return a->artist < b->artist;
 		});
 		break;
 	case SORT_LENGTH:
 		SortByFn([](const ListEntry&A, const ListEntry&B)
 		{
-			auto dur = [](std::shared_ptr<rd::Song> a)
+			auto dur = [](std::shared_ptr<otoworm::ChartGroup> a)
 			{
-				auto sng = std::static_pointer_cast<rd::Song>(a);
-				auto dif = sng->GetDifficulty(0);
-				if (dif) return dif->Duration;
+				auto chart = a->get_chart(0);
+				if (chart) return chart->duration;
 				
 				return 0.0;
 			};
 
-			auto a = std::static_pointer_cast<rd::Song>(A.Data);
-			auto b = std::static_pointer_cast<rd::Song>(B.Data);
+			auto a = std::static_pointer_cast<otoworm::ChartGroup>(A.Data);
+			auto b = std::static_pointer_cast<otoworm::ChartGroup>(B.Data);
 			float lena = dur(a);
 			float lenb = dur(b);
 		
@@ -295,19 +279,18 @@ void SongList::SortBy(ESortCriteria criteria)
 	case SORT_MINLEVEL:
 		SortByFn([](const ListEntry&A, const ListEntry&B)
 		{
-			auto nps = [](std::shared_ptr<rd::Song> a)
+			auto nps = [](std::shared_ptr<otoworm::ChartGroup> a)
 			{
-				auto sng = std::static_pointer_cast<rd::Song>(a);
 				long long minnps = 10000000;
-				for (auto diff : sng->Difficulties) {
-					minnps = std::min(minnps, diff->Level);
+				for (auto chart : a->charts) {
+					minnps = std::min(minnps, chart->level);
 				}
 
 				return minnps;
 			};
 
-			auto a = std::static_pointer_cast<rd::Song>(A.Data);
-			auto b = std::static_pointer_cast<rd::Song>(B.Data);
+			auto a = std::static_pointer_cast<otoworm::ChartGroup>(A.Data);
+			auto b = std::static_pointer_cast<otoworm::ChartGroup>(B.Data);
 			float npsa = nps(a);
 			float npsb = nps(b);
 		
@@ -317,19 +300,18 @@ void SongList::SortBy(ESortCriteria criteria)
 	case SORT_MAXLEVEL:
 		SortByFn([](const ListEntry&A, const ListEntry&B)
 		{
-			auto nps = [](std::shared_ptr<rd::Song> a)
+			auto nps = [](std::shared_ptr<otoworm::ChartGroup> a)
 			{
-				auto sng = std::static_pointer_cast<rd::Song>(a);
 				long long maxnps = -10000000;
-				for (auto diff : sng->Difficulties) {
-					maxnps = std::max(maxnps, diff->Level);
+				for (auto chart : a->charts) {
+					maxnps = std::max(maxnps, chart->level);
 				}
 
 				return maxnps;
 			};
 
-			auto a = std::static_pointer_cast<rd::Song>(A.Data);
-			auto b = std::static_pointer_cast<rd::Song>(B.Data);
+			auto a = std::static_pointer_cast<otoworm::ChartGroup>(A.Data);
+			auto b = std::static_pointer_cast<otoworm::ChartGroup>(B.Data);
 			float npsa = nps(a);
 			float npsb = nps(b);
 		

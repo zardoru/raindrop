@@ -139,7 +139,7 @@ public:
     void SetUserMultiplier(float Multip);
 
     // Only if Difficulty->Data is not null.
-    std::vector<AutoplaySound> GetBgmData();
+    std::vector<otoworm::AutoplaySound> GetBgmData();
 
     static void SetupLua(LuaManager *Env);
 

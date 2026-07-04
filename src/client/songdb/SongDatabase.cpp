@@ -3,10 +3,10 @@
 #include <sqlite/sqlite3.h>
 #include "Logging.h"
 
-#include <game/Song.h>
+#include <ChartGroup.h>
 #include "SongDatabase.h"
 
-#include <TextAndFileUtil.h>
+#include <text_and_file_util.h>
 #include <cassert>
 
 auto DatabaseQuery =
@@ -109,12 +109,12 @@ auto HashFromFile = "SELECT hash FROM songfiledb WHERE filename=$filename";
 // sqlite check
 #define SC(x) \
 {ret=x; if(ret!=SQLITE_OK && ret != SQLITE_DONE) \
-{Log::Printf("sqlite: %ls (code %d)\n",Conversion::Widen(sqlite3_errmsg(db)).c_str(), ret); Utility::DebugBreak(); }}
+{Log::Printf("sqlite: %ls (code %d)\n",otoworm::locale::widen(sqlite3_errmsg(db)).c_str(), ret); otoworm::util::debug_break(); }}
 
 // sqlite check sequence
 #define SCS(x) \
 {ret=x; if(ret!=SQLITE_DONE && ret != SQLITE_ROW) \
-{Log::Printf("sqlite: %ls (code %d)\n",Conversion::Widen(sqlite3_errmsg(db)).c_str(), ret); Utility::DebugBreak(); }}
+{Log::Printf("sqlite: %ls (code %d)\n",otoworm::locale::widen(sqlite3_errmsg(db)).c_str(), ret); otoworm::util::debug_break(); }}
 
 SongDatabase::SongDatabase(std::string Database) {
     int ret = sqlite3_open_v2(Database.c_str(), &db, SQLITE_OPEN_FULLMUTEX | SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
@@ -187,19 +187,19 @@ void FilenameBind(sqlite3_stmt *stmt, std::wstring &s, int parameter) {
             SQLITE_STATIC
     );
 #else
-    auto us = Conversion::ToU8(s);
+    auto us = otoworm::locale::wstring_to_utf8(s);
     sqlite3_bind_text(stmt, parameter, us.c_str(), us.length(), SQLITE_TRANSIENT);
 #endif
 }
 
 // Inserts a filename, if it already exists, updates it.
 // Returns the ID of the filename.
-int SongDatabase::InsertOrUpdateChartFile(rd::Difficulty *Diff) {
+int SongDatabase::InsertOrUpdateChartFile(const otoworm::Chart *chart) {
     int ret;
     int idOut;
     int lmt;
-    auto Fn = Diff->Filename;
-    auto dbfn = std::filesystem::absolute(Fn).wstring();
+    const auto fn = chart->meta ? chart->meta->path : std::filesystem::path();
+    auto dbfn = std::filesystem::absolute(fn).wstring();
 
     FilenameBind(
             st_FilenameQuery,
@@ -211,11 +211,11 @@ int SongDatabase::InsertOrUpdateChartFile(rd::Difficulty *Diff) {
         idOut = sqlite3_column_int(st_FilenameQuery, 0);
         lmt = sqlite3_column_int(st_FilenameQuery, 1);
 
-        int lastLmt = Utility::GetLastModifiedTime(Fn);
+        int lastLmt = otoworm::util::get_last_modified_time(fn);
 
         // Update the last-modified-time of this file, and its hash if it has changed.
         if (lmt != lastLmt) {
-            std::string Hash = Diff->Data->FileHash;
+            std::string hash = chart->transient ? chart->transient->file_hash : otoworm::util::get_sha256_for_file(fn);
 
             SC(sqlite3_bind_int(
                     st_UpdateLMT,
@@ -226,8 +226,8 @@ int SongDatabase::InsertOrUpdateChartFile(rd::Difficulty *Diff) {
             SC(sqlite3_bind_text(
                     st_UpdateLMT,
                     sqlite3_bind_parameter_index(st_UpdateLMT, "$hash"),
-                    Hash.c_str(),
-                    Hash.length(),
+                    hash.c_str(),
+                    hash.length(),
                     SQLITE_STATIC
             ));
 
@@ -241,7 +241,7 @@ int SongDatabase::InsertOrUpdateChartFile(rd::Difficulty *Diff) {
             SC(sqlite3_reset(st_UpdateLMT));
         }
     } else {
-        std::string Hash = Utility::GetSha256ForFile(Fn);
+        std::string hash = chart->transient ? chart->transient->file_hash : otoworm::util::get_sha256_for_file(fn);
 
         // There's no entry, got to insert it.
         FilenameBind(
@@ -253,14 +253,14 @@ int SongDatabase::InsertOrUpdateChartFile(rd::Difficulty *Diff) {
         SC(sqlite3_bind_int(
                 st_FilenameInsertQuery,
                 sqlite3_bind_parameter_index(st_FilenameInsertQuery, "$lmt"),
-                Utility::GetLastModifiedTime(Fn)
+                otoworm::util::get_last_modified_time(fn)
         ));
 
         SC(sqlite3_bind_text(
                 st_FilenameInsertQuery,
                 sqlite3_bind_parameter_index(st_FilenameInsertQuery, "$hash"),
-                Hash.c_str(),
-                Hash.length(),
+                hash.c_str(),
+                hash.length(),
                 SQLITE_STATIC
         ));
 
@@ -323,7 +323,12 @@ bool SongDatabase::DifficultyExists(int FileID, std::string DifficultyName, int 
     return r == SQLITE_ROW;
 }
 
-void SongDatabase::UpdateDiffInternal(int &ret, int DiffID, rd::Difficulty *Diff) {
+void SongDatabase::UpdateDiffInternal(int &ret, int DiffID, otoworm::Chart *chart) {
+    const auto difficulty_name = chart->meta ? chart->meta->name : std::string();
+    const auto author = chart->meta ? chart->meta->author : std::string();
+    const auto stage_file = chart->transient ? chart->transient->stage_file : std::string();
+    const auto genre = chart->transient ? chart->transient->genre : std::string();
+
     SC(sqlite3_bind_int(
             st_DiffUpdateQuery,
             sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$did"),
@@ -332,71 +337,68 @@ void SongDatabase::UpdateDiffInternal(int &ret, int DiffID, rd::Difficulty *Diff
     SC(sqlite3_bind_text(
             st_DiffUpdateQuery,
             sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$name"),
-            Diff->Name.c_str(),
-            Diff->Name.length(),
+            difficulty_name.c_str(),
+            difficulty_name.length(),
             SQLITE_STATIC
     ));
 
     SC(sqlite3_bind_double(
             st_DiffUpdateQuery,
             sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$dur"),
-            Diff->Duration
+            chart->duration
     ));
-
-    auto VDiff = static_cast<rd::Difficulty *>(Diff);
-    assert(VDiff->Data != nullptr);
 
     SC(sqlite3_bind_int(
             st_DiffUpdateQuery,
             sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$objcnt"),
-            VDiff->Data->GetObjectCount()
+            chart->transient ? chart->transient->get_total_note_count() : 0
     ));
 
     SC(sqlite3_bind_int(
             st_DiffUpdateQuery,
             sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$scoreobjcnt"),
-            VDiff->Data->GetScoreItemsCount()
+            chart->transient ? chart->transient->get_scorable_note_count() : 0
     ));
 
     SC(sqlite3_bind_int(
             st_DiffUpdateQuery,
             sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$virtual"),
-            VDiff->IsVirtual
+            chart->has_no_audio_stream
     ));
 
     SC(sqlite3_bind_int(
             st_DiffUpdateQuery,
             sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$keys"),
-            VDiff->Channels
+            chart->channels
     ));
 
     SC(sqlite3_bind_int64(
             st_DiffUpdateQuery,
             sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$level"),
-            VDiff->Level
+            chart->level
     ));
 
     SC(sqlite3_bind_text(
             st_DiffUpdateQuery,
             sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$author"),
-            VDiff->Author.c_str(),
-            VDiff->Author.length(),
+            author.c_str(),
+            author.length(),
             SQLITE_STATIC
     ));
 
     SC(sqlite3_bind_text(
             st_DiffUpdateQuery,
             sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$stagefile"),
-            VDiff->Data->StageFile.c_str(),
-            VDiff->Data->StageFile.length(),
+            stage_file.c_str(),
+            stage_file.length(),
             SQLITE_STATIC
     ));
 
     SC(sqlite3_bind_text(
             st_DiffUpdateQuery,
             sqlite3_bind_parameter_index(st_DiffUpdateQuery, "$genre"),
-            VDiff->Data->Genre.c_str(),
-            VDiff->Data->Genre.length(),
+            genre.c_str(),
+            genre.length(),
             SQLITE_STATIC
     ));
 
@@ -405,76 +407,76 @@ void SongDatabase::UpdateDiffInternal(int &ret, int DiffID, rd::Difficulty *Diff
     SC(sqlite3_reset(st_DiffUpdateQuery));
 }
 
-void SongDatabase::AssociateSong(rd::Song *New) {
-    int ID;
+void SongDatabase::AssociateSong(otoworm::ChartGroup *chart_group) {
+    int id;
 
-    if (!New->Difficulties.size())
+    if (!chart_group || chart_group->charts.empty())
         return;
 
     // All difficulties have the same song ID, so..
-    ID = GetSongIDForFile(New->Difficulties.at(0)->Filename);
-    if (ID == -1) {
-        ID = InsertSongInternal(New);
+    const auto first_chart = chart_group->charts.at(0);
+    id = GetSongIDForFile(first_chart->meta ? first_chart->meta->path : std::filesystem::path());
+    if (id == -1) {
+        id = InsertSongInternal(chart_group);
     }
 
-    New->ID = ID;
+    chart_group->id = id;
 
     // Do the update, with the either new or old difficulty.
-    for (auto k = New->Difficulties.begin();
-         k != New->Difficulties.end();
-         ++k) {
-        InsertOrUpdateDifficulty(ID, k->get());
-        (*k)->Destroy();
+    for (auto &chart : chart_group->charts) {
+        InsertOrUpdateDifficulty(id, chart.get());
+        chart->reset_transient();
     }
 }
 
-void SongDatabase::InsertOrUpdateDifficulty(int SongID, rd::Difficulty *Diff) {
-    int FileID = InsertOrUpdateChartFile(Diff);
-    int DiffID;
+void SongDatabase::InsertOrUpdateDifficulty(int SongID, otoworm::Chart *chart) {
+    int FileID = InsertOrUpdateChartFile(chart);
+    int DiffID = 0;
     int ret;
+    const auto difficulty_name = chart->meta ? chart->meta->name : std::string();
 
-    if (!DifficultyExists(FileID, Diff->Name, &DiffID))
-        InsertDiffInternal(ret, SongID, FileID, Diff);
+    if (!DifficultyExists(FileID, difficulty_name, &DiffID))
+        InsertDiffInternal(ret, SongID, FileID, chart);
     else // Update
-        UpdateDiffInternal(ret, DiffID, Diff);
+        UpdateDiffInternal(ret, DiffID, chart);
 
     if (DiffID == 0) {
-        if (!DifficultyExists(FileID, Diff->Name, &DiffID))
-            Utility::DebugBreak();
+        if (!DifficultyExists(FileID, difficulty_name, &DiffID))
+            otoworm::util::debug_break();
         if (DiffID == 0)
-            Utility::DebugBreak();
+            otoworm::util::debug_break();
     }
 
-    Diff->ID = DiffID;
+    chart->id = DiffID;
 }
 
-int SongDatabase::InsertSongInternal(rd::Song *Song) {
+int SongDatabase::InsertSongInternal(otoworm::ChartGroup *chart_group) {
     int ret = 0;
-    auto sngfn = Song->SongFilename.wstring();
-    auto bgfn = Song->BackgroundFilename.wstring();
-    auto previewfn = Song->SongPreviewSource.wstring();
+    auto sngfn = chart_group->song_filename.wstring();
+    auto bgfn = chart_group->background_filename.wstring();
+    auto previewfn = chart_group->song_preview_source.wstring();
 
     // Okay then, insert the song.
     // So now the latest entry is what we're going to insert difficulties and files into.
     SC(sqlite3_bind_text(st_SngInsertQuery,
                          sqlite3_bind_parameter_index(st_SngInsertQuery, "$title"),
-                         Song->Title.c_str(),
-                         Song->Title.length(),
+                         chart_group->title.c_str(),
+                         chart_group->title.length(),
                          SQLITE_STATIC
     ));
 
     SC(sqlite3_bind_text(st_SngInsertQuery,
                          sqlite3_bind_parameter_index(st_SngInsertQuery, "$author"),
-                         Song->Artist.c_str(),
-                         Song->Artist.length(),
+                         chart_group->artist.c_str(),
+                         chart_group->artist.length(),
                          SQLITE_STATIC
     ));
 
     SC(sqlite3_bind_text(
             st_SngInsertQuery,
             sqlite3_bind_parameter_index(st_SngInsertQuery, "$subtitle"),
-            Song->Subtitle.c_str(),
-            Song->Subtitle.length(),
+            chart_group->subtitle.c_str(),
+            chart_group->subtitle.length(),
             SQLITE_STATIC
     ));
 
@@ -499,7 +501,7 @@ int SongDatabase::InsertSongInternal(rd::Song *Song) {
     SC(sqlite3_bind_double(
             st_SngInsertQuery,
             sqlite3_bind_parameter_index(st_SngInsertQuery, "$ptime"),
-            Song->PreviewTime
+            chart_group->preview_time
     ));
 
     SCS(sqlite3_step(st_SngInsertQuery));
@@ -512,7 +514,12 @@ int SongDatabase::InsertSongInternal(rd::Song *Song) {
     return Out;
 }
 
-void SongDatabase::InsertDiffInternal(int &ret, int SongID, int FileID, rd::Difficulty *Diff) {
+void SongDatabase::InsertDiffInternal(int &ret, int SongID, int FileID, otoworm::Chart *chart) {
+    const auto difficulty_name = chart->meta ? chart->meta->name : std::string();
+    const auto author = chart->meta ? chart->meta->author : std::string();
+    const auto stage_file = chart->transient ? chart->transient->stage_file : std::string();
+    const auto genre = chart->transient ? chart->transient->genre : std::string();
+
     SC(sqlite3_bind_int(
             st_DiffInsertQuery,
             sqlite3_bind_parameter_index(st_DiffInsertQuery, "$sid"),
@@ -528,70 +535,68 @@ void SongDatabase::InsertDiffInternal(int &ret, int SongID, int FileID, rd::Diff
     SC(sqlite3_bind_text(
             st_DiffInsertQuery,
             sqlite3_bind_parameter_index(st_DiffInsertQuery, "$name"),
-            Diff->Name.c_str(),
-            Diff->Name.length(),
+            difficulty_name.c_str(),
+            difficulty_name.length(),
             SQLITE_STATIC
     ));
 
     SC(sqlite3_bind_double(
             st_DiffInsertQuery,
             sqlite3_bind_parameter_index(st_DiffInsertQuery, "$dur"),
-            Diff->Duration
+            chart->duration
     ));
 
     SC(sqlite3_bind_text(
             st_DiffInsertQuery,
             sqlite3_bind_parameter_index(st_DiffInsertQuery, "$author"),
-            Diff->Author.c_str(),
-            Diff->Author.length(),
+            author.c_str(),
+            author.length(),
             SQLITE_STATIC
     ));
-
-    auto VDiff = static_cast<rd::Difficulty *>(Diff);
 
     SC(sqlite3_bind_int(
             st_DiffInsertQuery,
             sqlite3_bind_parameter_index(st_DiffInsertQuery, "$objcnt"),
-            VDiff->Data->GetObjectCount()
+            chart->transient ? chart->transient->get_total_note_count() : 0
     ));
 
     SC(sqlite3_bind_int(
             st_DiffInsertQuery,
             sqlite3_bind_parameter_index(st_DiffInsertQuery, "$scoreobjcnt"),
-            VDiff->Data->GetScoreItemsCount()
+            chart->transient ? chart->transient->get_scorable_note_count() : 0
     ));
 
     SC(sqlite3_bind_int(
             st_DiffInsertQuery,
             sqlite3_bind_parameter_index(st_DiffInsertQuery, "$virtual"),
-            VDiff->IsVirtual
+            chart->has_no_audio_stream
     ));
 
     SC(sqlite3_bind_int(
             st_DiffInsertQuery,
             sqlite3_bind_parameter_index(st_DiffInsertQuery, "$keys"),
-            VDiff->Channels
+            chart->channels
     ));
 
     SC(sqlite3_bind_int64(
             st_DiffInsertQuery,
             sqlite3_bind_parameter_index(st_DiffInsertQuery, "$level"),
-            VDiff->Level
+            chart->level
     ));
 
     SC(sqlite3_bind_text(
             st_DiffInsertQuery,
             sqlite3_bind_parameter_index(st_DiffInsertQuery, "$genre"),
-            VDiff->Data->Genre.c_str(),
-            VDiff->Data->Genre.length(),
+            genre.c_str(),
+            genre.length(),
             SQLITE_STATIC
     ));
 
     SC(sqlite3_bind_text(
             st_DiffInsertQuery,
             sqlite3_bind_parameter_index(st_DiffInsertQuery, "$stagefile"),
-            VDiff->Data->StageFile.c_str(),
-            VDiff->Data->StageFile.length(),
+            stage_file.c_str(),
+            stage_file.length(),
             SQLITE_STATIC
     ));
 
@@ -606,7 +611,7 @@ std::filesystem::path SongDatabase::GetDifficultyFilename(int ID) {
     SCS(sqlite3_step(st_GetDiffFilename));
 
 #ifdef _WIN32
-    std::filesystem::path out = Conversion::Widen((char *) sqlite3_column_text(st_GetDiffFilename, 0));
+    std::filesystem::path out = otoworm::locale::widen((char *) sqlite3_column_text(st_GetDiffFilename, 0));
 #else
     std::filesystem::path out = (char*)sqlite3_column_text(st_GetDiffFilename, 0);
 #endif
@@ -662,7 +667,7 @@ std::string SongDatabase::GetChartHash(std::filesystem::path filename) {
         auto out = (char *) sqlite3_column_text(st_HashFromFile, 0);
         ret = out;
     } else {
-        ret = Utility::GetSha256ForFile(filename);
+        ret = otoworm::util::get_sha256_for_file(filename);
     }
 
     sqlite3_reset(st_HashFromFile);
@@ -673,7 +678,7 @@ std::string SongDatabase::GetChartHash(std::filesystem::path filename) {
 bool SongDatabase::CacheNeedsRenewal(std::filesystem::path Dir) {
     // must match what we put at InsertFilename time, so turn into absolute path on both places!
     auto chartfilename = std::filesystem::absolute(Dir).wstring();
-    int CurLMT = Utility::GetLastModifiedTime(Dir);
+    int CurLMT = otoworm::util::get_last_modified_time(Dir);
     bool NeedsRenewal;
     int res, ret;
 
@@ -742,12 +747,12 @@ std::string SongDatabase::GetGenreForDifficulty(int DiffID) {
 }
 
 #ifdef _WIN32
-#define _W(x) Conversion::Widen((char*)x)
+#define _W(x) otoworm::locale::widen((char*)x)
 #else
 #define _W(x) ((char*)x)
 #endif
 
-void SongDatabase::GetSongInformation(int ID, rd::Song *Out) {
+void SongDatabase::GetSongInformation(int ID, otoworm::ChartGroup *out) {
     int ret;
 
     SC(sqlite3_bind_int(
@@ -767,13 +772,13 @@ void SongDatabase::GetSongInformation(int ID, rd::Song *Out) {
 
     // oh god there is no better way without keeping track of column names for a
     // statement by yourself...
-    Out->Title = (char *) sqlite3_column_text(stGetSongInfo, 0);
-    Out->Artist = (char *) sqlite3_column_text(stGetSongInfo, 1);
-    Out->SongFilename = _W(sqlite3_column_text(stGetSongInfo, 2));
-    Out->Subtitle = (char *) sqlite3_column_text(stGetSongInfo, 3);
-    // Out->BackgroundFilename = _W(sqlite3_column_text(stGetSongInfo, 4));
-    Out->ID = ID;
-    Out->PreviewTime = sqlite3_column_double(stGetSongInfo, 5);
+    out->title = (char *) sqlite3_column_text(stGetSongInfo, 0);
+    out->artist = (char *) sqlite3_column_text(stGetSongInfo, 1);
+    out->song_filename = _W(sqlite3_column_text(stGetSongInfo, 2));
+    out->subtitle = (char *) sqlite3_column_text(stGetSongInfo, 3);
+    // out->background_filename = _W(sqlite3_column_text(stGetSongInfo, 4));
+    out->id = ID;
+    out->preview_time = sqlite3_column_double(stGetSongInfo, 5);
 
     SC(sqlite3_reset(stGetSongInfo));
 
@@ -783,18 +788,18 @@ void SongDatabase::GetSongInformation(int ID, rd::Song *Out) {
                         ID));
 
     while (sqlite3_step(stGetDiffInfo) != SQLITE_DONE) {
-        auto Diff = std::make_shared<rd::Difficulty>();
+        auto chart = std::make_shared<otoworm::Chart>();
 
         // diffid associated data
-        Diff->ID = sqlite3_column_int(stGetDiffInfo, 0);
-        Diff->Name = (char *) sqlite3_column_text(stGetDiffInfo, 1);
-        Diff->Duration = sqlite3_column_double(stGetDiffInfo, 4);
-        Diff->IsVirtual = (sqlite3_column_int(stGetDiffInfo, 5) == 1);
-        Diff->Channels = sqlite3_column_int(stGetDiffInfo, 6);
+        chart->id = sqlite3_column_int(stGetDiffInfo, 0);
+        const auto difficulty_name = std::string((char *) sqlite3_column_text(stGetDiffInfo, 1));
+        chart->duration = sqlite3_column_double(stGetDiffInfo, 4);
+        chart->has_no_audio_stream = (sqlite3_column_int(stGetDiffInfo, 5) == 1);
+        chart->channels = sqlite3_column_int(stGetDiffInfo, 6);
 
         // We don't include author information to force querying it from the database.
-        // Diff->Author
-        Diff->Level = sqlite3_column_int64(stGetDiffInfo, 8);
+        // chart->meta->author
+        chart->level = sqlite3_column_int64(stGetDiffInfo, 8);
 
         // File ID associated data
         int FileID = sqlite3_column_int(stGetDiffInfo, 7);
@@ -814,10 +819,11 @@ void SongDatabase::GetSongInformation(int ID, rd::Song *Out) {
         // if it tries encoding from u8 into the internal ::path representation and it fails!
         try {
 #ifdef _WIN32
-            Diff->Filename = Conversion::Widen(s);
+            auto filename = otoworm::locale::widen(s);
 #else
-            Diff->Filename = s;
+            auto filename = std::filesystem::path(s);
 #endif
+            chart->meta = otoworm::ChartMetadata{difficulty_name, filename, ""};
         }
         catch (std::exception &e) {
             // We failed copying this thing - clean up and rethrow.
@@ -827,7 +833,7 @@ void SongDatabase::GetSongInformation(int ID, rd::Song *Out) {
         }
 
         SC(sqlite3_reset(st_GetFileInfo));
-        Out->Difficulties.push_back(Diff);
+        out->charts.push_back(chart);
     }
 
     SC(sqlite3_reset(stGetDiffInfo));

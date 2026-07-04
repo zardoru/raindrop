@@ -3,7 +3,7 @@
 #include <sqlite/sqlite3.h>
 
 
-#include <TextAndFileUtil.h>
+#include <text_and_file_util.h>
 
 #include <game/GameConstants.h>
 #include <game/ScoreKeeper7K.h>
@@ -86,7 +86,7 @@ auto qAllScores = "SELECT rankpts, exscore, score, gauge, \
 
 #define SC(x) \
 {ret=x; if(ret!=SQLITE_OK && ret != SQLITE_DONE) \
-{Log::Printf("sqlite: %ls (code %d)\n",Conversion::Widen(sqlite3_errmsg(db)).c_str(), ret); Utility::DebugBreak(); }}
+{Log::Printf("sqlite: %ls (code %d)\n", otoworm::locale::widen(sqlite3_errmsg(db)).c_str(), ret); otoworm::util::debug_break(); }}
 
 ScoreDatabase::ScoreDatabase() {
     stAddScore = nullptr;
@@ -399,5 +399,4 @@ std::vector<ScoreRow> ScoreDatabase::GetAllScoresForSong(std::string songhash, i
     sqlite3_reset(stAllScores);
     return ret;
 }
-
 

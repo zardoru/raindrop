@@ -12,17 +12,14 @@ public:
     SongLoader(SongDatabase* usedDatabase);
 
 	void LoadBMS(
-		rd::Song * &BMSSong,
+		std::shared_ptr<otoworm::ChartGroup> &bms_group,
 		std::filesystem::path File,
-		std::map<std::string, rd::Song *> &bmsk,
-		std::vector<rd::Song *> & VecOut);
+		std::map<std::string, std::shared_ptr<otoworm::ChartGroup>> &bmsk,
+		std::vector<std::shared_ptr<otoworm::ChartGroup>> & VecOut);
 
-	void LoadSong7KFromDir(std::filesystem::path songPath, std::vector<rd::Song*> &VecOut);
-    void GetSongList7K(std::vector<rd::Song*> &OutVec, std::filesystem::path Dir);
-    std::shared_ptr<rd::Song> LoadFromMeta(int meta_song_id, const std::shared_ptr<otoworm::Chart>& current_chart, std::filesystem::path& FilenameOut, uint8_t& Index);
+	void LoadChartGroupsFromDir(std::filesystem::path songPath, std::vector<std::shared_ptr<otoworm::ChartGroup>> &VecOut);
+    void GetChartGroupList(std::vector<std::shared_ptr<otoworm::ChartGroup>> &OutVec, std::filesystem::path Dir);
+    std::shared_ptr<otoworm::ChartGroup> LoadFromMeta(int meta_song_id, const std::shared_ptr<otoworm::Chart>& current_chart, std::filesystem::path& FilenameOut, uint8_t& Index);
 };
 
-std::shared_ptr<rd::Song> LoadSong7KFromFilename(
-        const std::filesystem::path& Filename,
-        rd::Song* Sng = nullptr,
-        SongDatabase* DB = nullptr);
+std::shared_ptr<otoworm::ChartGroup> LoadChartGroupFromFilename(const std::filesystem::path& Filename);

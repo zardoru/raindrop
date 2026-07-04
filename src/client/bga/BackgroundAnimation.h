@@ -3,11 +3,6 @@
 #include "Interruptible.h"
 #include <ChartGroup.h>
 
-namespace rd
-{
-    class Song;
-}
-
 class BackgroundAnimation : public Interruptible, public Drawable2D
 {
 public:

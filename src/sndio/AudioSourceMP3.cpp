@@ -4,8 +4,6 @@
 
 #include <fstream>
 
-#include "TextAndFileUtil.h"
-
 #ifdef WIN32
 
 #ifndef MINGW

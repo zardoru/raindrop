@@ -4,7 +4,7 @@
 #include <json.hpp>
 #include "ScoreSerializer.h"
 #include "../client/game/PlayscreenParameters.h"
-#include "TextAndFileUtil.h"
+#include <text_and_file_util.h>
 
 using nlohmann::json;
 
@@ -116,7 +116,7 @@ json StormIR::SerializeDifficultyInformation(const otoworm::ChartGroup *chart_gr
         chart_path = chart_group->path / chart_path;
 
     return nlohmann::json() = {
-            {"sha256",    chart_path.empty() ? "" : Utility::GetSha256ForFile(chart_path)},
+            {"sha256",    chart_path.empty() ? "" : otoworm::util::get_sha256_for_file(chart_path)},
             {"name",      chart && chart->meta ? chart->meta->name : ""},
             {"charter",   chart && chart->meta ? chart->meta->author : ""},
             {"playlevel", chart ? chart->level : 0},
@@ -128,12 +128,12 @@ json StormIR::SerializeOptions(const PlayscreenParameters &parameters) {
     std::vector<std::string> opts;
 
     if (parameters.NoFail) opts.emplace_back("nofail");
-    if (parameters.Rate != 1.0) opts.push_back(Utility::Format("rate:%.2f", parameters.Rate));
+    if (parameters.Rate != 1.0) opts.push_back(otoworm::util::format("rate:%.2f", parameters.Rate));
     if (parameters.UseW0) opts.emplace_back("w0");
-    if (parameters.Random) opts.push_back(Utility::Format("seed:%d", parameters.Seed));
+    if (parameters.Random) opts.push_back(otoworm::util::format("seed:%d", parameters.Seed));
     if (parameters.Upscroll) opts.emplace_back("scroll:up");
 
-    opts.push_back(Utility::Format("g:%s", gaugeTypeMapper.at(parameters.GaugeType).c_str()));
+    opts.push_back(otoworm::util::format("g:%s", gaugeTypeMapper.at(parameters.GaugeType).c_str()));
 
     return json() = opts;
 }

@@ -3,7 +3,7 @@
 #include <boost/program_options.hpp>
 
 #include <converter.h>
-#include <note_loader_7k.h>
+#include <note_loader.h>
 #include <fstream>
 #include <iomanip>
 #include <set>

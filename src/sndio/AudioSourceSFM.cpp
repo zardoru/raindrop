@@ -9,7 +9,7 @@
 
 
 #include <sndfile.h>
-#include "TextAndFileUtil.h"
+#include <text_and_file_util.h>
 
 
 AudioSourceSFM::AudioSourceSFM()
@@ -37,7 +37,7 @@ bool AudioSourceSFM::open(const std::filesystem::path Filename)
     info->format = 0;
 
 #ifndef WIN32
-    mWavFile = sf_open(Conversion::ToU8(Filename.wstring()).c_str(), SFM_READ, info);
+    mWavFile = sf_open(otoworm::locale::wstring_to_utf8(Filename.wstring()).c_str(), SFM_READ, info);
 #else
     mWavFile = sf_wchar_open(Filename.wstring().c_str(), SFM_READ, info);
 #endif
@@ -49,7 +49,7 @@ bool AudioSourceSFM::open(const std::filesystem::path Filename)
     int err = 0;
     if (!mWavFile || (err = sf_error((SNDFILE*)mWavFile)))
     {
-        // Log::LogPrintf("Error %d: Filename %s (wavfile %p)\n", err, Utility::ToU8(Filename.wstring()).c_str(), mWavFile);
+        // Log::LogPrintf("Error %d: Filename %s (wavfile %p)\n", err, otoworm::locale::wstring_to_utf8(Filename.wstring()).c_str(), mWavFile);
         return false;
     }
 

@@ -1,5 +1,8 @@
 
+#include <filesystem>
+#include <memory>
 
-namespace rd {
-    std::shared_ptr<Song> LoadSongFromFile(std::filesystem::path filename);
+namespace otoworm {
+    class ChartGroup;
+    std::shared_ptr<ChartGroup> load_song_from_file(std::filesystem::path filename);
 }

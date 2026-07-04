@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <map>
 
-#include <TextAndFileUtil.h>
+#include <text_and_file_util.h>
 #include "../game/GameState.h"
 
 #include "LuaManager.h"
@@ -84,6 +84,6 @@ BitmapFont *BitmapFont::from_lua(LuaManager* Lua, std::string TableName)
 
 void BitmapFont::load_skin_font_image(std::filesystem::path Location, const Vec2 _CharSize, const Vec2 _CellSize, const Vec2 _RenderSize, const char FontStart)
 {
-    load_font_image(GameState::get_instance().get_skin_file(Conversion::ToU8(Location.wstring())),
+    load_font_image(GameState::get_instance().get_skin_file(otoworm::locale::wstring_to_utf8(Location.wstring())),
                   _CharSize, _CellSize, _RenderSize, FontStart);
 }

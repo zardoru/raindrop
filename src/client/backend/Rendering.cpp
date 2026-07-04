@@ -6,7 +6,7 @@
 #include <SDL3/SDL.h>
 #include <utf8.h>
 #include <stb/stb_truetype.h>
-#include <TextAndFileUtil.h>
+#include <text_and_file_util.h>
 
 #include "GameWindow.h"
 
@@ -646,7 +646,7 @@ void TruetypeFont::render(const std::string &in, const Vec2 &position, const Mat
 #ifndef NDEBUG
     catch (utf8::exception &ex)
     {
-        Utility::DebugBreak();
+        otoworm::util::debug_break();
         //Log::Logf("Invalid UTF-8 string %s was passed. Error type: %s\n", ex.what());
     }
 #else

@@ -24,7 +24,6 @@
 
 #include "LuaManager.h"
 #include <LuaBridge/LuaBridge.h>
-#include <TextAndFileUtil.h>
 
 #include <SDL3/SDL.h>
 #include "TruetypeFont.h"

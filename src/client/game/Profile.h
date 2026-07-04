@@ -1,7 +1,7 @@
 #pragma once
 
-namespace rd {
-    class Song;
+namespace otoworm {
+    class ChartGroup;
 }
 
 class Replay;
@@ -19,7 +19,7 @@ public:
     bool Save();
 
     void SaveReplay(
-        const rd::Song* song,
+        const otoworm::ChartGroup* chart_group,
         const Replay &replay
     );
 

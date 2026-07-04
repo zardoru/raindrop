@@ -1,4 +1,4 @@
-#include <TextAndFileUtil.h>
+#include <text_and_file_util.h>
 #include <map>
 #include <rmath.h>
 
@@ -88,14 +88,14 @@ namespace LuaAnimFuncs
     int GetSkinFile(lua_State *L)
     {
         auto Out = GameState::get_instance().get_skin_file(std::string(luaL_checkstring(L, 1)), GameState::get_instance().get_skin());
-        lua_pushstring(L, Conversion::ToU8(Out.wstring()).c_str());
+        lua_pushstring(L, otoworm::locale::wstring_to_utf8(Out.wstring()).c_str());
         return 1;
     }
 
     int GetFallbackFile(lua_State *L)
     {
         auto Out = GameState::get_instance().get_fallback_skin_file(std::string(luaL_checkstring(L, 1)));
-        lua_pushstring(L, Conversion::ToU8(Out.wstring()).c_str());
+        lua_pushstring(L, otoworm::locale::wstring_to_utf8(Out.wstring()).c_str());
         return 1;
     }
 }

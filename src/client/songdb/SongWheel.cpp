@@ -1,6 +1,6 @@
 #include <cstdint>
 #include <mutex>
-#include <game/Song.h>
+#include <ChartGroup.h>
 #include <functional>
 
 #include <utility>
@@ -193,11 +193,11 @@ int SongWheel::PrevDifficulty()
     if (!FilteredCurrentList.IsDirectory(SelectedBoundItem))
     {
         DifficultyIndex--;
-        auto Song = std::static_pointer_cast<rd::Song> (FilteredCurrentList.GetSongEntry(SelectedBoundItem));
-		max_index = Song->Difficulties.size() - 1;
+        auto song = FilteredCurrentList.GetSongEntry(SelectedBoundItem);
+		max_index = song->charts.size() - 1;
 
         DifficultyIndex = std::min(max_index, DifficultyIndex);
-        OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
+        OnSongTentativeSelect(GetSelectedChartGroup(), DifficultyIndex);
     }
     else
         DifficultyIndex = 0;
@@ -211,12 +211,12 @@ int SongWheel::NextDifficulty()
     {
         DifficultyIndex++;
         
-        auto Song = std::static_pointer_cast<rd::Song> (FilteredCurrentList.GetSongEntry(SelectedBoundItem));
-        if (DifficultyIndex >= Song->Difficulties.size())
+        auto song = FilteredCurrentList.GetSongEntry(SelectedBoundItem);
+        if (DifficultyIndex >= song->charts.size())
             DifficultyIndex = 0;
         
 
-        OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
+        OnSongTentativeSelect(GetSelectedChartGroup(), DifficultyIndex);
     }
 
     return DifficultyIndex;
@@ -243,8 +243,8 @@ void SongWheel::SetDifficulty(uint32_t i)
 {
     if (!FilteredCurrentList.IsDirectory(SelectedBoundItem))
     {
-        auto Song = std::static_pointer_cast<rd::Song> (GetSelectedSong());
-        size_t maxIndex = Song->Difficulties.size();
+        auto song = GetSelectedChartGroup();
+        size_t maxIndex = song->charts.size();
         size_t oldDI = DifficultyIndex;
 
         if (maxIndex)
@@ -253,7 +253,7 @@ void SongWheel::SetDifficulty(uint32_t i)
             DifficultyIndex = 0;
 
         if (DifficultyIndex != oldDI)
-            OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
+            OnSongTentativeSelect(GetSelectedChartGroup(), DifficultyIndex);
     }
 }
 
@@ -310,7 +310,7 @@ void SongWheel::GoUp()
 		CurrentList->ClearEmpty();
 		ReapplyFilters();
         OnDirectoryChange();
-		OnSongTentativeSelect(GetSelectedSong(), 0);
+		OnSongTentativeSelect(GetSelectedChartGroup(), 0);
     }
 }
 
@@ -319,9 +319,9 @@ bool SongWheel::HandleScrollInput(const double dx, const double dy)
     return true;
 }
 
-std::shared_ptr<rd::Song> SongWheel::GetSelectedSong()
+std::shared_ptr<otoworm::ChartGroup> SongWheel::GetSelectedChartGroup()
 {
-    return std::static_pointer_cast<rd::Song>(FilteredCurrentList.GetSongEntry(SelectedBoundItem));
+    return FilteredCurrentList.GetSongEntry(SelectedBoundItem);
 }
 
 void SongWheel::Update(float Delta)
@@ -363,7 +363,7 @@ void SongWheel::Update(float Delta)
         OldCursorPos = CursorPos;
         if (OnItemHover)
         {
-            std::shared_ptr<rd::Song> Notify = GetSelectedSong();
+            std::shared_ptr<otoworm::ChartGroup> Notify = GetSelectedChartGroup();
             OnItemHover(GetCursorIndex(), GetListCursorIndex(),
                 FilteredCurrentList.GetEntryTitle(GetCursorIndex()), Notify);
         }
@@ -380,12 +380,12 @@ void SongWheel::DisplayItem(int32_t ListItem, int32_t ListPosition, float itemFr
     if (screen_box.Intersects(item_box))
     {
         bool IsSelected = false;
-        std::shared_ptr<Song> Song = nullptr;
+        std::shared_ptr<otoworm::ChartGroup> song = nullptr;
         std::string Text;
 
         if (ListItem != -1)
         {
-            Song = FilteredCurrentList.GetSongEntry(ListItem);
+            song = FilteredCurrentList.GetSongEntry(ListItem);
             Text = FilteredCurrentList.GetEntryTitle(ListItem);
             IsSelected = (ListPosition == SelectedUnboundItem);
         }
@@ -395,7 +395,7 @@ void SongWheel::DisplayItem(int32_t ListItem, int32_t ListPosition, float itemFr
             Sprite.second->SetPosition(item_box.X1, item_box.Y1);
 
             if (TransformItem)
-                TransformItem(Sprite.first, Song, IsSelected, ListPosition);
+                TransformItem(Sprite.first, song, IsSelected, ListPosition);
 
             // Render the objects.
             Sprite.second->Render();
@@ -406,7 +406,7 @@ void SongWheel::DisplayItem(int32_t ListItem, int32_t ListPosition, float itemFr
             String.second->SetPosition(pos);
 
             if (TransformString)
-                TransformString(String.first, Song, IsSelected, ListPosition, Text);
+                TransformString(String.first, song, IsSelected, ListPosition, Text);
 
             String.second->Render();
         }
@@ -465,7 +465,7 @@ void SongWheel::SetSelectedItem(int32_t Item)
     
     // Set bound item index to this.
     SelectedBoundItem = Item;
-    OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
+    OnSongTentativeSelect(GetSelectedChartGroup(), DifficultyIndex);
 }
 
 int32_t SongWheel::IndexAtPoint(float X, float Y)
@@ -519,8 +519,8 @@ void SongWheel::ConfirmSelection()
 {
     if (!FilteredCurrentList.IsDirectory(SelectedBoundItem))
     {
-		if (DifficultyIndex < GetSelectedSong()->GetDifficultyCount())
-			OnSongConfirm(GetSelectedSong(), DifficultyIndex);
+		if (DifficultyIndex < GetSelectedChartGroup()->get_chart_count())
+			OnSongConfirm(GetSelectedChartGroup(), DifficultyIndex);
     }
     else
     {
@@ -529,7 +529,7 @@ void SongWheel::ConfirmSelection()
 
 		ReapplyFilters();
         SetSelectedItem(SelectedUnboundItem); // Update our selected item to new bounderies.
-        OnSongTentativeSelect(GetSelectedSong(), DifficultyIndex);
+        OnSongTentativeSelect(GetSelectedChartGroup(), DifficultyIndex);
     }
 }
 
@@ -563,7 +563,7 @@ void SongWheel::ReapplyFilters()
 		bool add = true;
 
 		if (entry.Kind == ListEntry::Song) {
-			auto song = std::static_pointer_cast<rd::Song>(entry.Data);
+			auto song = std::static_pointer_cast<otoworm::ChartGroup>(entry.Data);
 			if (!GameState::get_instance().is_song_unlocked(song.get()))
 				continue;
 		}

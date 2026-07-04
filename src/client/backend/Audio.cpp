@@ -12,7 +12,7 @@
 
 #include <sndio/Audiofile.h>
 
-#include <TextAndFileUtil.h>
+#include <text_and_file_util.h>
 
 #define BUFF_SIZE 8192
 
@@ -138,7 +138,7 @@ PaError OpenStream(PaStream **mStream, const PaDeviceIndex Device, void *Sound, 
 
     if (Err) {
         Log::Logf("Audio: Failed opening device, portaudio reports \"%ls\"\n",
-                  Conversion::Widen(Pa_GetErrorText(Err)).c_str());
+                  otoworm::locale::widen(Pa_GetErrorText(Err)).c_str());
     }
 #ifdef LINUX
     else

@@ -10,6 +10,10 @@ class TruetypeFont;
 class LuaManager;
 class GraphicalString;
 
+namespace otoworm {
+    class ChartGroup;
+}
+
 /*
     The flow of the wheel is as follows.
 
@@ -21,10 +25,10 @@ class GraphicalString;
     If it's not, we set it as a tentative song pick. If it's selected again, we confirm a song was selected.
 */
 
-typedef std::function<void(std::shared_ptr<rd::Song>, uint8_t)> SongNotification;
-typedef std::function<void(int32_t, uint32_t, std::string, std::shared_ptr<rd::Song>)> ItemNotification;
-typedef std::function<void(int32_t, std::shared_ptr<rd::Song>, bool, int32_t)> ItemTransformFunction;
-typedef std::function<void(int32_t, std::shared_ptr<rd::Song>, bool, int32_t, std::string)> StringTransformFunction;
+typedef std::function<void(std::shared_ptr<otoworm::ChartGroup>, uint8_t)> SongNotification;
+typedef std::function<void(int32_t, uint32_t, std::string, std::shared_ptr<otoworm::ChartGroup>)> ItemNotification;
+typedef std::function<void(int32_t, std::shared_ptr<otoworm::ChartGroup>, bool, int32_t)> ItemTransformFunction;
+typedef std::function<void(int32_t, std::shared_ptr<otoworm::ChartGroup>, bool, int32_t, std::string)> StringTransformFunction;
 typedef std::function <float(float)> ListTransformFunction;
 typedef std::function<void()> DirectoryChangeNotifyFunction;
 typedef std::function<bool(const ListEntry * const)> FuncFilterCriteria;
@@ -102,7 +106,7 @@ public:
 
     bool HandleInput(int32_t key, bool isPressed, bool isMouseInput);
     bool HandleScrollInput(const double dx, const double dy);
-    std::shared_ptr<rd::Song> GetSelectedSong();
+    std::shared_ptr<otoworm::ChartGroup> GetSelectedChartGroup();
     void ReloadSongs(SongDatabase* Database);
     void LoadSongsOnce(SongDatabase* Database);
 

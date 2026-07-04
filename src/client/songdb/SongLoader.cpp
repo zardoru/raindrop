@@ -4,19 +4,14 @@
 
 #include <array>
 #include <string_view>
-#include <game/Song.h>
-#include <game/OtowormLoaderBridge.h>
-#include <game/SingleSongLoad.h>
-#include <note_loader_7k.h>
-#include <TextAndFileUtil.h>
+#include <note_loader.h>
+#include <text_and_file_util.h>
 #include <cassert>
 #include <utility>
 #include "SongDatabase.h"
 #include "SongLoader.h"
 #include "../structure/Configuration.h"
 
-
-using namespace rd;
 
 constexpr auto VSRG_EXTENSIONS = std::array{
     std::wstring_view(L".bms"),
@@ -63,110 +58,67 @@ bool ValidBMSExtension(const std::wstring &s)
 
 
 
-std::shared_ptr<rd::Song> LoadSong7KFromFilename(
-        const std::filesystem::path& Filename,
-        rd::Song* Sng,
-        SongDatabase* DB)
+std::shared_ptr<otoworm::ChartGroup> LoadChartGroupFromFilename(const std::filesystem::path& Filename)
 {
-    bool AllocSong = false;
-    if (!Sng)
-    {
-        AllocSong = true;
-        Sng = new rd::Song();
-    }
-
-
     // no extension
     if (!Filename.has_extension() || !VSRGValidExtension(Filename.extension().wstring()))
-    {
-        if (AllocSong) delete Sng;
         return nullptr;
-    }
 
 	auto fn = Filename;
 
     Log::LogPrintf("SongLoader: Load %ls from disk...", fn.wstring().c_str());
     try
     {
-        auto otoworm_song = otoworm::load_song_from_file(fn);
-        if (!otoworm_song)
-        {
-            if (AllocSong) delete Sng;
+        auto chart_group = otoworm::load_song_from_file(fn);
+        if (!chart_group)
             return nullptr;
-        }
-
-        rd::Song loaded;
-        rd::ConvertFromOtoworm(std::move(otoworm_song), &loaded);
-
-        if (Sng->Difficulties.empty())
-        {
-            Sng->ID = loaded.ID;
-            Sng->Title = loaded.Title;
-            Sng->Artist = loaded.Artist;
-            Sng->SongDirectory = loaded.SongDirectory;
-            Sng->SongFilename = loaded.SongFilename;
-            Sng->BackgroundFilename = loaded.BackgroundFilename;
-            Sng->SongPreviewSource = loaded.SongPreviewSource;
-            Sng->PreviewTime = loaded.PreviewTime;
-            Sng->Subtitle = loaded.Subtitle;
-            Sng->Genre = loaded.Genre;
-        }
-
-        Sng->SongDirectory = std::filesystem::absolute(Filename).parent_path();
-        for (auto& difficulty : loaded.Difficulties)
-            Sng->Difficulties.push_back(std::move(difficulty));
 
         Log::LogPrintf(" ok\n");
-
-		int dindex = 0;
-		auto hash = (DB != nullptr) ? DB->GetChartHash(fn) : Utility::GetSha256ForFile(fn);
-		for (auto &d : Sng->Difficulties) {
-			d->Data->FileHash = hash;
-			if (d->Data->IndexInFile == -1) {
-				d->Data->IndexInFile = dindex;
-				dindex++;
-			}
-		}
+        return chart_group;
     }
     catch (std::exception &e)
     {
         Log::LogPrintf("SongLoader: Failure loading. Reason: %s \n", e.what());
     }
 
-    if (AllocSong)
-        return std::shared_ptr<rd::Song>(Sng);
     return nullptr;
 }
 
 
 
-void AddSongToList(std::vector<rd::Song*> &VecOut, rd::Song* Sng)
+void AddSongToList(std::vector<std::shared_ptr<otoworm::ChartGroup>> &VecOut, std::shared_ptr<otoworm::ChartGroup> chart_group)
 {
-    if (Sng->Difficulties.size())
-        VecOut.push_back(Sng);
-    else
-        delete Sng;
+    if (chart_group && !chart_group->charts.empty())
+        VecOut.push_back(std::move(chart_group));
 }
 
 CfgVar NoFileGrouping("NoFileGrouping");
 
 void SongLoader::LoadBMS(
-        rd::Song * &BMSSong,
-        std::filesystem::path File,
-        std::map<std::string, rd::Song *> &bmsk,
-        std::vector<rd::Song *> & VecOut)
+        std::shared_ptr<otoworm::ChartGroup> &bms_group,
+        std::filesystem::path file,
+        std::map<std::string, std::shared_ptr<otoworm::ChartGroup>> &bmsk,
+        std::vector<std::shared_ptr<otoworm::ChartGroup>> &VecOut)
 {
-	BMSSong->SongDirectory = std::filesystem::absolute(File).parent_path();
-
 	try
 	{
-		LoadSong7KFromFilename(File, BMSSong, DB);
+        auto loaded_group = LoadChartGroupFromFilename(file);
+        if (!loaded_group)
+            return;
+
+        if (!bms_group)
+            bms_group = loaded_group;
+        else
+            bms_group->charts.insert(
+                    bms_group->charts.end(),
+                    loaded_group->charts.begin(),
+                    loaded_group->charts.end());
 	}
 	catch (std::exception &ex)
 	{
-		Log::Logf("\nSongLoader::LoadSong7KFromDir(): Exception \"%s\" occurred while loading file \"%ls\"\n",
-			ex.what(), File.wstring().c_str());
-		Utility::DebugBreak();
+		Log::Logf("\nSongLoader::LoadChartGroupsFromDir(): Exception \"%s\" occurred while loading file \"%ls\"\n",
+			ex.what(), file.wstring().c_str());
+		otoworm::util::debug_break();
 	}
 
 	// We found a chart with the same title (and subtitle) already.
@@ -174,43 +126,40 @@ void SongLoader::LoadBMS(
 	if (!NoFileGrouping) {
 		std::string key;
 		//if (Configuration::GetConfigf("SeparateBySubtitle"))
-			key = BMSSong->Title + BMSSong->Subtitle;
+			key = bms_group->title + bms_group->subtitle;
 		//else
-		//	key = BMSSong->Title;
+		//	key = bms_group->title;
 
 		if (bmsk.find(key) != bmsk.end())
 		{
-			rd::Song *oldSng = bmsk[key];
+			auto old_group = bmsk[key];
 
-			if (!BMSSong->Difficulties.empty()) // BMS charts don't have more than one difficulty anyway.
-				oldSng->Difficulties.push_back(BMSSong->Difficulties[0]);
-
-			BMSSong->Difficulties.clear();
-			delete BMSSong;
+			if (!bms_group->charts.empty()) // BMS charts don't have more than one difficulty anyway.
+				old_group->charts.push_back(bms_group->charts[0]);
 		}
 		else // Ah then, don't delete it.
 		{
-			bmsk[key] = BMSSong;
+			bmsk[key] = bms_group;
 		}
 
-		BMSSong = new rd::Song;
+		bms_group = nullptr;
 	}
 	else
 	{
-		DB->AssociateSong(BMSSong);
-		AddSongToList(VecOut, BMSSong);
-		BMSSong = new rd::Song;
+		DB->AssociateSong(bms_group.get());
+		AddSongToList(VecOut, bms_group);
+		bms_group = nullptr;
 	}
 }
 
 std::vector<std::filesystem::path> pathlist(32);
 
-void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<rd::Song*> &VecOut)
+void SongLoader::LoadChartGroupsFromDir(std::filesystem::path songPath, std::vector<std::shared_ptr<otoworm::ChartGroup>> &VecOut)
 {
 	if (!std::filesystem::is_directory(songPath))
 		return;
 
-    std::filesystem::path SongDirectory = std::filesystem::absolute(songPath);
+    std::filesystem::path song_directory = std::filesystem::absolute(songPath);
 
     /*
         Procedure:
@@ -220,7 +169,7 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<r
         4.- If it does not need to be renewed or created, just read the metadata and leave it like that.
     */
 
-    bool RenewCache = false;
+    bool renew_cache = false;
 
     /*
         We want the following:
@@ -235,7 +184,7 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<r
 	pathlist.clear();
 
     /* First we need to see whether these file need to be renewed.*/
-    for (auto &entry: std::filesystem::directory_iterator(SongDirectory))
+    for (auto &entry: std::filesystem::directory_iterator(song_directory))
     {
 		const auto &File = entry.path();
 
@@ -250,7 +199,7 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<r
 		{
 			if (DB->CacheNeedsRenewal(File)) {
 				Log::LogPrintf("File '%ls' needs renewal.\n", File.wstring().c_str());
-				RenewCache = true;
+				renew_cache = true;
 			}
 
 			pathlist.push_back(File);
@@ -258,21 +207,21 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<r
     }
 
     // Files were modified- we have to reload the charts.
-    if (RenewCache)
+    if (renew_cache)
     {
-		std::map<std::string, rd::Song * > bmsk;
+		std::map<std::string, std::shared_ptr<otoworm::ChartGroup>> bmsk;
 
 		// These may or not be grouped together.
-		auto BMSSong = new rd::Song;
+		std::shared_ptr<otoworm::ChartGroup> bms_group;
 
-		// Every OJN gets its own Song object.
-		auto OJNSong = new rd::Song;
+		// Every OJN gets its own chart group.
+		std::shared_ptr<otoworm::ChartGroup> ojn_group;
 
 		// osu!mania charts are packed together, with FTB charts.
-		auto osuSong = new rd::Song;
+		std::shared_ptr<otoworm::ChartGroup> osu_group;
 
-		// Stepmania charts get their own song objects too.
-		auto smSong = new rd::Song;
+		// Stepmania charts get their own chart groups too.
+		std::shared_ptr<otoworm::ChartGroup> sm_group;
 
         for (auto &entry: pathlist)
         {
@@ -282,49 +231,56 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<r
             // We want to group charts with the same title together.
             if (ValidBMSExtension(Ext) || Ext == L".bmson")
             {
-				LoadBMS(BMSSong, entry, bmsk, VecOut);
+				LoadBMS(bms_group, entry, bmsk, VecOut);
             }
 
 			// .ft2 doesn't need its own entry. 
-			if (Ext == L".ojn" || Ext == L".ft2")
+            if (Ext == L".ojn" || Ext == L".ft2")
             {
-                LoadSong7KFromFilename(entry, OJNSong, DB);
-                DB->AssociateSong(OJNSong);
-                AddSongToList(VecOut, OJNSong);
-                OJNSong = new Song;
-                OJNSong->SongDirectory = SongDirectory;
+                ojn_group = LoadChartGroupFromFilename(entry);
+                DB->AssociateSong(ojn_group.get());
+                AddSongToList(VecOut, ojn_group);
+                ojn_group = nullptr;
             }
 
 			// Add them all to the same song.
             if (Ext == L".osu")
-                LoadSong7KFromFilename(entry, osuSong, DB);
+            {
+                auto loaded_group = LoadChartGroupFromFilename(entry);
+                if (!osu_group)
+                    osu_group = loaded_group;
+                else if (loaded_group)
+                    osu_group->charts.insert(
+                            osu_group->charts.end(),
+                            loaded_group->charts.begin(),
+                            loaded_group->charts.end());
+            }
 
 			// Same as before.
             if (Ext == L".sm" || Ext == L".ssc")
             {
-                LoadSong7KFromFilename(entry, smSong, DB);
-                DB->AssociateSong(smSong);
-                AddSongToList(VecOut, smSong);
-                smSong = new Song;
-                smSong->SongDirectory = SongDirectory;
+                sm_group = LoadChartGroupFromFilename(entry);
+                DB->AssociateSong(sm_group.get());
+                AddSongToList(VecOut, sm_group);
+                sm_group = nullptr;
             }
         }
 
         // AddSongToList() handles the cleanup.
         for (auto & i : bmsk)
         {
-            DB->AssociateSong(i.second);
+            DB->AssociateSong(i.second.get());
             AddSongToList(VecOut, i.second);
         }
 
-        DB->AssociateSong(OJNSong);
-        AddSongToList(VecOut, OJNSong);
+        DB->AssociateSong(ojn_group.get());
+        AddSongToList(VecOut, ojn_group);
 
-        DB->AssociateSong(osuSong);
-        AddSongToList(VecOut, osuSong);
+        DB->AssociateSong(osu_group.get());
+        AddSongToList(VecOut, osu_group);
 
-        DB->AssociateSong(smSong);
-        AddSongToList(VecOut, smSong);
+        DB->AssociateSong(sm_group.get());
+        AddSongToList(VecOut, sm_group);
     }
     else // We can reload from cache. We do this on a per-file basis.
     {
@@ -346,16 +302,16 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<r
         // Time to load from cache.
         for (int & i : IDList)
         {
-            Song *New = new Song;
+            auto new_group = std::make_shared<otoworm::ChartGroup>();
             Log::Logf("Song ID %d load from cache...", i);
 			try {
-				DB->GetSongInformation(i, New);
-				New->SongDirectory = SongDirectory;
+				DB->GetSongInformation(i, new_group.get());
+				new_group->path = song_directory;
 
 				// make sure it's a well-formed directory on debug
-				assert(std::filesystem::exists(New->SongDirectory));
+				assert(std::filesystem::exists(new_group->path));
 
-				AddSongToList(VecOut, New);
+				AddSongToList(VecOut, new_group);
 				Log::Logf(" ok\n");
 			}
 			catch (std::exception &e) {
@@ -365,50 +321,47 @@ void SongLoader::LoadSong7KFromDir(std::filesystem::path songPath, std::vector<r
     }
 }
 
-void SongLoader::GetSongList7K(std::vector<Song*> &OutVec,std::filesystem::path Dir)
+void SongLoader::GetChartGroupList(std::vector<std::shared_ptr<otoworm::ChartGroup>> &OutVec,std::filesystem::path Dir)
 {
-    std::vector <std::filesystem::path> Listing = Utility::GetFileListing(Dir);
-
-    for (const auto& i: Listing)
+    for (const auto& entry : std::filesystem::directory_iterator(Dir))
     {
+        const auto& i = entry.path();
 		Log::Printf("%s... ", i.c_str());
-        LoadSong7KFromDir(i, OutVec);
+        LoadChartGroupsFromDir(i, OutVec);
         Log::Printf("ok\n");
     }
 }
 
-std::shared_ptr<Song> SongLoader::LoadFromMeta(
+std::shared_ptr<otoworm::ChartGroup> SongLoader::LoadFromMeta(
         const int meta_song_id,
         const std::shared_ptr<otoworm::Chart>& current_chart,
         std::filesystem::path &FilenameOut,
         uint8_t &Index)
 {
-    std::shared_ptr<Song> Out;
-
     const auto chart_id = current_chart ? static_cast<int>(current_chart->id) : -1;
     std::filesystem::path fn = DB->GetDifficultyFilename(chart_id);
     FilenameOut = fn;
 
 	Log::LogPrintf("Loading chart from meta ID %i from %ls\n", meta_song_id, fn.wstring().c_str());
-    Out = LoadSong7KFromFilename(fn, nullptr, DB);
-    if (!Out) return nullptr;
+    auto out = LoadChartGroupFromFilename(fn);
+    if (!out) return nullptr;
 	
     Index = 0;
     /* Find out Difficulty IDs to the recently loaded song's difficulty! */
-    bool DifficultyFound = false;
-    for (const auto& k : Out->Difficulties)
+    bool difficulty_found = false;
+    for (const auto& chart : out->charts)
     {
-        DB->InsertOrUpdateDifficulty(meta_song_id, k.get());
-        if (k->OtoChart && static_cast<int>(k->OtoChart->id) == chart_id) // We've got a match; move onward.
+        DB->InsertOrUpdateDifficulty(meta_song_id, chart.get());
+        if (static_cast<int>(chart->id) == chart_id) // We've got a match; move onward.
         {
-            DifficultyFound = true;
+            difficulty_found = true;
             break; // We're done here, we've found the difficulty we were trying to load
         }
         Index++;
     }
 
-    if (!DifficultyFound)
+    if (!difficulty_found)
         return nullptr;
 
-    return Out;
+    return out;
 }
