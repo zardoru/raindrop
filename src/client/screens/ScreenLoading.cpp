@@ -55,8 +55,8 @@ ScreenLoading::ScreenLoading(std::shared_ptr<Screen> _Next) : Screen("ScreenLoad
 	// @autoinstance Global
     GameState::get_instance().initialize_lua(scene_->get_script_manager()->get_lua_state());
 
-    scene_->Preload(GameState::get_instance().get_skin_file("screenloading.lua"), "Preload");
-    scene_->Initialize("", false);
+    scene_->preload(GameState::get_instance().get_skin_file("screenloading.lua"), "Preload");
+    scene_->initialize("", false);
 
     IntroDuration = std::max(scene_->get_script_manager()->GetGlobalD("IntroDuration"), 0.0);
     ExitDuration = std::max(scene_->get_script_manager()->GetGlobalD("ExitDuration"), 0.0);
@@ -98,7 +98,7 @@ bool ScreenLoading::Run(double TimeDelta)
 
     if (!scene_) return false;
 
-    scene_->DrawTargets(TimeDelta);
+    scene_->draw_targets(TimeDelta);
 
     if (FinishedLoading)
     {

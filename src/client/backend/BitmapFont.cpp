@@ -12,7 +12,7 @@
 
 #include "BitmapFont.h"
 
-#include "Texture.h"
+#include "Texture2D.h"
 
 BitmapFont::BitmapFont()
 {
@@ -23,9 +23,9 @@ BitmapFont::BitmapFont()
 void BitmapFont::load_font_image(std::filesystem::path Location, const Vec2 _CharSize, const Vec2 _CellSize, const Vec2 _RenderSize, const char FontStart)
 {
     if (!Font)
-        Font = new Texture;
+        Font = new Texture2D;
 
-    Font->LoadFile(Location);
+    Font->load_file(Location);
 
     StartingCharacter = FontStart;
     CharSize = _CharSize;

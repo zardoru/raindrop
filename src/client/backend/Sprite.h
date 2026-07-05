@@ -4,7 +4,7 @@
 #include <rmath.h>
 
 class VBO;
-class Texture;
+class Texture2D;
 
 namespace renderer {
 	class Shader;
@@ -25,7 +25,7 @@ protected:
     VBO *uv_buffer_;
 private: // Transformations
     void Cleanup();
-    Texture* m_texture_;
+    Texture2D* m_texture_;
 
     EBlendMode blending_mode_;
 
@@ -76,8 +76,8 @@ public:
     AABB ScissorRegion;
 
 
-    void set_image(Texture* image, bool reset_size = true);
-    Texture* get_image() const;
+    void set_image(Texture2D* image, bool reset_size = true);
+    Texture2D* get_image() const;
     std::string get_image_filename() const;
 
     virtual void initialize(bool should_init_texture);

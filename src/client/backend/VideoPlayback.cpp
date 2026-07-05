@@ -5,7 +5,7 @@
 
 #include <GL/glew.h>
 #include <fstream>
-#include "Texture.h"
+#include "Texture2D.h"
 #include "VideoPlayback.h"
 
 #include <condition_variable>
@@ -411,13 +411,13 @@ void VideoPlayback::UpdateVideoTexture(void * data)
 {
 	auto* frame = (AVFrame*)data;
 
-	CreateTexture();
-	Bind();
+	ensure_current_gpu_texture_2d();
+	bind();
 
-	if (IsValid) {
+	if (is_valid_) {
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-		if (!TextureAssigned) {
+		if (!texture_was_assigned_) {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
@@ -425,7 +425,7 @@ void VideoPlayback::UpdateVideoTexture(void * data)
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, frame->data[0]);
-			TextureAssigned = true;
+			texture_was_assigned_ = true;
 		}
 		else {
 			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, frame->data[0]);

@@ -3,7 +3,7 @@
 
 Line::Line()
 {
-    lnvbo = NULL;
+    lnvbo = nullptr;
     R = G = B = A = 1;
     x1 = 0;
     x2 = 100;

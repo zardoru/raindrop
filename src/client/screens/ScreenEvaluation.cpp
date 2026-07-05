@@ -22,7 +22,7 @@
 #include "../bga/BackgroundAnimation.h"
 #include "ScreenGameplay.h"
 
-#include "ImageLoader.h"
+#include "TextureCollection.h"
 #include "../structure/SceneEnvironment.h"
 
 #include "LuaManager.h"
@@ -36,10 +36,10 @@ ScreenEvaluation::ScreenEvaluation() :
 
 void ScreenEvaluation::Init(ScreenGameplay *pr) {
     pr->setup_scripts(scene_->get_script_manager());
-    scene_->Initialize(GameState::get_instance().get_skin_file("screenevaluation7k.lua"));
+    scene_->initialize(GameState::get_instance().get_skin_file("screenevaluation7k.lua"));
 
-    IntroDuration = scene_->GetIntroDuration();
-    ExitDuration = scene_->GetExitDuration();
+    IntroDuration = scene_->get_intro_duration();
+    ExitDuration = scene_->get_exit_duration();
 
     ChangeState(StateIntro);
 
@@ -58,7 +58,7 @@ void ScreenEvaluation::cleanup() {
 }
 
 bool ScreenEvaluation::Run(double Delta) {
-    scene_->DrawTargets(Delta);
+    scene_->draw_targets(Delta);
     return is_active_;
 }
 /*

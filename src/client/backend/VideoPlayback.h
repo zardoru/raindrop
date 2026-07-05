@@ -2,7 +2,7 @@
 
 class VideoPlaybackData;
 
-class VideoPlayback : public Texture
+class VideoPlayback : public Texture2D
 {
 	double PlaybackTime;
 	uint32_t mFrameQueueItems;

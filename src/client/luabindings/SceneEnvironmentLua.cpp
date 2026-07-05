@@ -33,18 +33,18 @@ void CreateSceneEnvironmentLua(LuaManager* anim_lua)
 		// @tparam Easing easing Easing type.
 		// @tparam double duration Duration in seconds.
 		// @tparam double delay Time in seconds to wait for the animation to fire.
-		.addFunction("AddAnimation", &SceneEnvironment::AddLuaAnimation)
+		.addFunction("AddAnimation", &SceneEnvironment::add_lua_animation)
 		/// Register a previously-unregistered @{Object2D}
 		// @function AddTarget
 		// @tparam Object2Dtarget The Object2D to handle.
-		.addFunction("AddTarget", &SceneEnvironment::AddSpriteTarget)
+		.addFunction("AddTarget", &SceneEnvironment::add_sprite_target)
         /// Register a previously-unregistered @{Object2D}
         // @function AddTarget
         // @tparam Object2Dtarget The Object2D to handle.
-        .addFunction("RemoveTarget", &SceneEnvironment::RemoveSpriteTarget)
+        .addFunction("RemoveTarget", &SceneEnvironment::remove_sprite_target)
 		/// Sort objects. Generally done behind-the-scenes when a Z is changed.
 		// @function Sort
-		.addFunction("Sort", &SceneEnvironment::Sort)
+		.addFunction("Sort", &SceneEnvironment::sort)
 		/// Stop all animations of the target.
 		// @function StopAnimation
 		// @param target Target to stop animations of.
@@ -52,7 +52,7 @@ void CreateSceneEnvironmentLua(LuaManager* anim_lua)
 		/// Create an Object2D and register it. Shorthand for obj = Object2D(); Engine:AddTarget(obj).
 		// @function CreateObject
 		// @return A new @{Object2D}
-		.addFunction("CreateObject", &SceneEnvironment::CreateObject)
+		.addFunction("CreateObject", &SceneEnvironment::create_object)
 		.endClass();
 
 	luabridge::push(anim_lua->get_lua_state(), GetObjectFromState<SceneEnvironment>(anim_lua->get_lua_state(), "GOMAN"));

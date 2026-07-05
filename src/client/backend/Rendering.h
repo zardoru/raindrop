@@ -3,7 +3,7 @@
 #include <rmath.h>
 #include <Transformation.h>
 
-class Texture;
+class Texture2D;
 class VBO;
 
 namespace renderer {
@@ -20,7 +20,7 @@ namespace renderer {
 	void do_quad_draw();
 	void set_blending_mode(EBlendMode Mode);
 	void set_textured_quad_vbo(VBO *TexQuad);
-	void draw_textured_quad(Texture* ToDraw, const AABB& TextureCrop, const Transformation& QuadTransformation, const EBlendMode &Mode = BLEND_ALPHA, const ColorRGB &InColor = Color::White);
+	void draw_textured_quad(Texture2D* ToDraw, const AABB& TextureCrop, const Transformation& QuadTransformation, const EBlendMode &Mode = BLEND_ALPHA, const ColorRGB &InColor = Color::White);
 	void draw_primitive_quad(Transformation &QuadTransformation, const EBlendMode &Mode = BLEND_ALPHA, const ColorRGB &InColor = Color::White);
 
 	void set_scissor(bool enable);
@@ -31,7 +31,7 @@ namespace renderer {
 	VBO* get_default_texture_buffer();
 	VBO* get_default_color_buffer();
 
-	Texture* get_xor_texture();
+	Texture2D* get_xor_texture();
 }
 
 inline float l2gamma (const float c) {

@@ -3,7 +3,7 @@
 #include <ChartGroup.h>
 
 class AudioStream;
-class Texture;
+class Texture2D;
 class SceneEnvironment;
 class LuaManager;
 
@@ -102,7 +102,7 @@ public:
 
 
     ScreenGameplay();
-    void Init(std::shared_ptr<otoworm::ChartGroup> chart_group);
+    void initialize(std::shared_ptr<otoworm::ChartGroup> chart_group);
     void load_resources() override;
     void post_load_initialization() override;
 

@@ -21,7 +21,7 @@
 #include "Transformation.h"
 #include "Rendering.h"
 #include "Sprite.h"
-#include "ImageLoader.h"
+#include "TextureCollection.h"
 #include "GameWindow.h"
 #include "LuaManager.h"
 
@@ -251,7 +251,7 @@ void Application::setup_preview_mode()
 	chart_group->path = std::filesystem::absolute(InFile.parent_path());
 
 	GameState::get_instance().get_parameters(0)->Auto = Auto;
-    game->Init(chart_group);
+    game->initialize(chart_group);
     LoadScreen->Init();
 
     root = LoadScreen;
@@ -360,7 +360,7 @@ void Application::run()
     if (!run_loop)
         return;
 
-    ImageLoader::UpdateTextures();
+    TextureCollection::upload_and_reload_textures();
 	GameState::get_instance().set_root_screen(root);
 
     oldTime = window.get_current_time();
@@ -368,7 +368,7 @@ void Application::run()
     {
         const double new_time = window.get_current_time();
         const double delta = new_time - oldTime;
-        ImageLoader::UpdateTextures();
+        TextureCollection::upload_and_reload_textures();
 
 		window.run_input();
 

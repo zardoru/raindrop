@@ -8,7 +8,7 @@
 
 int LuaPanic(lua_State* State)
 {
-	const char* msg = NULL;
+	const char* msg = nullptr;
 	if (lua_isstring(State, 1)) {
 		msg = lua_tostring(State, 1);
 		luaL_traceback(State, State, msg, 2);

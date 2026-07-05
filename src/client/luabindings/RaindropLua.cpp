@@ -6,8 +6,8 @@
 #include "../game/PlayscreenParameters.h"
 #include "../game/GameState.h"
 
-#include "Texture.h"
-#include "ImageLoader.h"
+#include "Texture2D.h"
+#include "TextureCollection.h"
 #include "LuaManager.h"
 
 #include "../structure/Configuration.h"

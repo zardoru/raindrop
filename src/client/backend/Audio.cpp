@@ -78,7 +78,7 @@ PaError OpenStream(PaStream **mStream, const PaDeviceIndex Device, void *Sound, 
 
 #ifndef WIN32
 
-    outputParams.hostApiSpecificStreamInfo = NULL;
+    outputParams.hostApiSpecificStreamInfo = nullptr;
 
 #else
     PaWasapiStreamInfo StreamInfo;

@@ -15,7 +15,7 @@
 #include "Transformation.h"
 #include "Rendering.h"
 #include "Sprite.h"
-#include "Texture.h"
+#include "Texture2D.h"
 
 #include "SceneEnvironment.h"
 
@@ -40,7 +40,7 @@
 
 void CreateLuaInterface(LuaManager *AnimLua);
 
-bool LuaAnimation(LuaManager *Lua, const std::string &Func, Sprite *Target, float Frac) {
+bool LuaAnimation(LuaManager *Lua, const std::string &Func, Sprite *Target, const float Frac) {
     if (Lua->CallFunction(Func.c_str(), 2, 1)) {
         Lua->PushArgument(Frac);
         luabridge::push(Lua->get_lua_state(), Target);
@@ -66,7 +66,7 @@ void SceneEnvironment::StopAnimationsForTarget(Sprite *Target) {
     }
 }
 
-void SceneEnvironment::RunIntro(float Fraction, float Delta) {
+void SceneEnvironment::RunIntro(const float Fraction, const float Delta) {
     if (mFrameSkip) {
         mFrameSkip = false;
         return;
@@ -82,10 +82,10 @@ void SceneEnvironment::RunIntro(float Fraction, float Delta) {
         Lua->RunFunction();
     }
 
-    DrawFromLayer(0);
+    draw_from_layer(0);
 }
 
-void SceneEnvironment::RunExit(float Fraction, float Delta) {
+void SceneEnvironment::RunExit(const float Fraction, const float Delta) {
     if (mFrameSkip) {
         mFrameSkip = false;
         return;
@@ -100,34 +100,34 @@ void SceneEnvironment::RunExit(float Fraction, float Delta) {
         Lua->RunFunction();
     }
 
-    DrawFromLayer(0);
+    draw_from_layer(0);
 }
 
-float SceneEnvironment::GetIntroDuration() {
+float SceneEnvironment::get_intro_duration() const {
     /// How long the intro section lasts.
     // @modvar IntroDuration
     return std::max(Lua->GetGlobalD("IntroDuration"), 0.0);
 }
 
-float SceneEnvironment::GetExitDuration() {
+float SceneEnvironment::get_exit_duration() const {
     /// How long the outro section lasts.
     // @modvar ExitDuration
     return std::max(Lua->GetGlobalD("ExitDuration"), 0.0);
 }
 
-void SceneEnvironment::AddLuaAnimation(Sprite *Target, const std::string &FuncName,
-                                       int Easing, float Duration, float Delay) {
+void SceneEnvironment::add_lua_animation(Sprite *target, const std::string &func_name,
+                                       int easing, const float duration, const float delay) {
     Animation Anim;
-    Anim.Function = bind(LuaAnimation, Lua.get(), FuncName, Target, std::placeholders::_1);
-    Anim.Easing = (Animation::EEaseType) Easing;
-    Anim.Duration = Duration;
-    Anim.Delay = Delay;
-    Anim.Target = Target;
+    Anim.Function = bind(LuaAnimation, Lua.get(), func_name, target, std::placeholders::_1);
+    Anim.Easing = (Animation::EEaseType) easing;
+    Anim.Duration = duration;
+    Anim.Delay = delay;
+    Anim.Target = target;
 
     Animations.push_back(Anim);
 }
 
-SceneEnvironment::SceneEnvironment(const char *ScreenName, bool initUI) {
+SceneEnvironment::SceneEnvironment(const char *screen_name, bool init_ui) {
     Animations.reserve(10);
     Lua = std::make_shared<LuaManager>();
     Lua->RegisterStruct("GOMAN", this);
@@ -141,10 +141,10 @@ SceneEnvironment::SceneEnvironment(const char *ScreenName, bool initUI) {
     Images = std::make_shared<ImageList>(true);
     mFrameSkip = true;
 
-    mScreenName = ScreenName;
+    mScreenName = screen_name;
 }
 
-TruetypeFont *SceneEnvironment::CreateTTF(const char *Dir) {
+TruetypeFont *SceneEnvironment::create_ttf(const char *Dir) {
     auto *Ret = new TruetypeFont(Dir);
     ManagedFonts.push_back(Ret);
     return Ret;
@@ -168,7 +168,7 @@ SceneEnvironment::~SceneEnvironment() {
     ManagedFonts.clear();
 }
 
-void SceneEnvironment::Preload(const std::filesystem::path &Filename, std::string array_name) {
+void SceneEnvironment::preload(const std::filesystem::path &Filename, std::string array_name) {
     mInitScript = Filename;
 
     if (!Lua->RunScript(Filename)) {
@@ -188,21 +188,21 @@ void SceneEnvironment::Preload(const std::filesystem::path &Filename, std::strin
     }
 }
 
-void SceneEnvironment::Sort() {
+void SceneEnvironment::sort() {
     std::ranges::stable_sort(
         Objects,
         [](const Drawable2D *A, const Drawable2D *B) -> bool { return A->GetZ() < B->GetZ(); }
     );
 }
 
-Sprite *SceneEnvironment::CreateObject() {
+Sprite *SceneEnvironment::create_object() {
     auto Out = new Sprite;
     ManagedObjects.push_back(Out);
-    AddTarget(Out, true); // Destroy on reload
+    add_target(Out, true); // Destroy on reload
     return Out;
 }
 
-bool SceneEnvironment::IsManagedObject(Drawable2D *Obj) {
+bool SceneEnvironment::is_managed_object(Drawable2D *Obj) const {
     for (auto i: ManagedObjects) {
         if (Obj == i)
             return true;
@@ -211,11 +211,11 @@ bool SceneEnvironment::IsManagedObject(Drawable2D *Obj) {
     return false;
 }
 
-void SceneEnvironment::Initialize(const std::filesystem::path &Filename, bool RunScript) {
-    if (!mInitScript.wstring().length() && Filename.wstring().length())
-        mInitScript = Filename;
+void SceneEnvironment::initialize(const std::filesystem::path &filename, const bool run_script) {
+    if (mInitScript.wstring().empty() && !filename.wstring().empty())
+        mInitScript = filename;
 
-    if (RunScript) {
+    if (run_script) {
         if (!Lua->RunScript(mInitScript)) {
             Log::LogPrintf("Couldn't load script %s: %s", mInitScript.string().c_str(), Lua->GetLastError().c_str());
         }
@@ -229,30 +229,30 @@ void SceneEnvironment::Initialize(const std::filesystem::path &Filename, bool Ru
     Images->LoadAll();
 }
 
-void SceneEnvironment::AddTarget(Drawable2D *target, bool IsExternal) {
+void SceneEnvironment::add_target(Drawable2D *target, const bool is_external) {
     Objects.push_back(target);
 
-    if (IsExternal)
+    if (is_external)
         ExternalObjects.push_back(target);
 
-    Sort();
+    sort();
 }
 
-void SceneEnvironment::AddSpriteTarget(Sprite *target) {
+void SceneEnvironment::add_sprite_target(Sprite *target) {
     if (target == nullptr) {
         Log::LogPrintf("attempt to add null target\n");
         return;
     }
-    AddTarget(target, false);
+    add_target(target, false);
 }
 
-void SceneEnvironment::AddLuaTarget(Sprite *target, std::string Varname) {
+void SceneEnvironment::add_lua_target(Sprite *target, std::string Varname) const {
     lua_State *L = Lua->get_lua_state();
     luabridge::push(L, target);
     lua_setglobal(L, Varname.c_str());
 }
 
-void SceneEnvironment::StopManagingObject(Drawable2D *Obj) {
+void SceneEnvironment::stop_managing_object(Drawable2D *Obj) {
     for (auto i = ManagedObjects.begin(); i != ManagedObjects.end(); ++i) {
         if (Obj == *i) {
             ManagedObjects.erase(i);
@@ -261,10 +261,10 @@ void SceneEnvironment::StopManagingObject(Drawable2D *Obj) {
     }
 }
 
-void SceneEnvironment::RemoveManagedObject(Drawable2D *Obj) {
+void SceneEnvironment::remove_managed_object(Drawable2D *Obj) {
     for (auto i = ManagedObjects.begin(); i != ManagedObjects.end(); ++i) {
         if (*i == Obj) {
-            RemoveTarget(*i);
+            remove_target(*i);
             delete *i;
             ManagedObjects.erase(i);
             return;
@@ -272,7 +272,7 @@ void SceneEnvironment::RemoveManagedObject(Drawable2D *Obj) {
     }
 }
 
-void SceneEnvironment::HandleScrollInput(double x_off, double y_off) {
+void SceneEnvironment::on_scroll_input(const double x_off, const double y_off) const {
     /// Called when the mouse scrolls.
     // @callback ScrollEvent
     // @param xoff Change in X scroll.
@@ -284,24 +284,24 @@ void SceneEnvironment::HandleScrollInput(double x_off, double y_off) {
     }
 }
 
-void SceneEnvironment::RemoveManagedObjects() {
+void SceneEnvironment::remove_managed_objects() {
     for (auto i: ManagedObjects) {
-        RemoveTarget(i);
+        remove_target(i);
         delete i;
     }
 
     ManagedObjects.clear();
 }
 
-void SceneEnvironment::RemoveExternalObjects() {
+void SceneEnvironment::remove_external_objects() {
     for (auto i: ExternalObjects) {
-        RemoveTarget(i);
+        remove_target(i);
     }
 
     ExternalObjects.clear();
 }
 
-void SceneEnvironment::RemoveTarget(Drawable2D *target) {
+void SceneEnvironment::remove_target(Drawable2D *target) {
     for (auto i = Objects.begin(); i != Objects.end();) {
         if (*i == target) {
             i = Objects.erase(i);
@@ -315,13 +315,13 @@ void SceneEnvironment::RemoveTarget(Drawable2D *target) {
     }
 }
 
-void SceneEnvironment::DrawTargets(double TimeDelta) {
-    UpdateTargets(TimeDelta);
+void SceneEnvironment::draw_targets(const double TimeDelta) {
+    update_targets(TimeDelta);
 
-    DrawFromLayer(0);
+    draw_from_layer(0);
 }
 
-void SceneEnvironment::UpdateTargets(double TimeDelta) {
+void SceneEnvironment::update_targets(const double TimeDelta) {
     if (mFrameSkip) {
         mFrameSkip = false;
         return;
@@ -388,46 +388,46 @@ void SceneEnvironment::ReloadUI() {
 }
 
 /* This function right now is broken beyond repair. Don't mind it. */
-void SceneEnvironment::ReloadScripts() {
+void SceneEnvironment::reload_scripts() {
     auto InitScript = mInitScript;
     this->~SceneEnvironment();
     new(this) SceneEnvironment(mScreenName.c_str(), false);
 
-    Initialize(InitScript);
+    initialize(InitScript);
 }
 
-void SceneEnvironment::ReloadAll() {
+void SceneEnvironment::reload_all() {
     //ReloadUI();
-    ReloadScripts();
+    reload_scripts();
 }
 
-void SceneEnvironment::SetScreenName(std::string sname) {
+void SceneEnvironment::set_screen_name(const std::string &sname) {
     mScreenName = sname;
 }
 
-void SceneEnvironment::DrawUntilLayer(uint32_t Layer) {
-    for (auto i: Objects) {
+void SceneEnvironment::draw_until_layer(const uint32_t layer) const {
+    for (const auto i: Objects) {
         if (i == nullptr) {
             /* throw an error */
             continue;
         }
-        if (i->GetZ() <= Layer)
+        if (i->GetZ() <= layer)
             i->Render();
     }
 }
 
-void SceneEnvironment::DrawFromLayer(uint32_t Layer) {
-    for (auto &Object: Objects) {
-        if (Object->GetZ() >= Layer)
-            Object->Render();
+void SceneEnvironment::draw_from_layer(const uint32_t layer) const {
+    for (auto &object: Objects) {
+        if (object->GetZ() >= layer)
+            object->Render();
     }
 }
 
-LuaManager *SceneEnvironment::get_script_manager() {
+LuaManager *SceneEnvironment::get_script_manager() const {
     return Lua.get();
 }
 
-bool SceneEnvironment::HandleInput(int32_t key, bool isPressed, bool isMouseInput) {
+bool SceneEnvironment::on_input(const int32_t key, const bool is_pressed, const bool is_mouse_input) const {
     /// Called when a key is pressed or released.
     // @callback KeyEvent
     // @param key The key code.
@@ -435,27 +435,27 @@ bool SceneEnvironment::HandleInput(int32_t key, bool isPressed, bool isMouseInpu
     // @param isMouseInput Whether this is a mouse button press.
     if (Lua->CallFunction("KeyEvent", 3)) {
         Lua->PushArgument(key);
-        Lua->PushArgument(isPressed);
-        Lua->PushArgument(isMouseInput);
+        Lua->PushArgument(is_pressed);
+        Lua->PushArgument(is_mouse_input);
         Lua->RunFunction();
     }
 
     return true;
 }
 
-bool SceneEnvironment::HandleTextInput(int codepoint) {
+bool SceneEnvironment::handle_text_input(int codepoint) {
     return false;
 }
 
-ImageList *SceneEnvironment::GetImageList() {
+ImageList *SceneEnvironment::get_image_list() const {
     return Images.get();
 }
 
-void SceneEnvironment::trigger_event(std::string EventName, int Return) {
-    if (Lua->CallFunction(EventName.c_str(), 0, Return))
+void SceneEnvironment::trigger_event(const std::string &event_name, const int Return) const {
+    if (Lua->CallFunction(event_name.c_str(), 0, Return))
         Lua->RunFunction();
 }
 
-void SceneEnvironment::RemoveSpriteTarget(Sprite *Targ) {
-    RemoveTarget(Targ);
+void SceneEnvironment::remove_sprite_target(Sprite *Targ) {
+    remove_target(Targ);
 }

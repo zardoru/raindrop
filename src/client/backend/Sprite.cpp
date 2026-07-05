@@ -7,7 +7,7 @@
 #include "Sprite.h"
 
 #include "VBO.h"
-#include "Texture.h"
+#include "Texture2D.h"
 
 void Drawable2D::Render() {}
 
@@ -85,7 +85,7 @@ renderer::Shader * Sprite::GetShader() const
 	return m_shader_;
 }
 
-void Sprite::set_image(Texture* image, const bool reset_size)
+void Sprite::set_image(Texture2D* image, const bool reset_size)
 {
     if (m_texture_ != image)
     {
@@ -152,7 +152,7 @@ void Sprite::invalidate()
     // stub
 }
 
-Texture* Sprite::get_image() const
+Texture2D* Sprite::get_image() const
 {
     return m_texture_;
 }

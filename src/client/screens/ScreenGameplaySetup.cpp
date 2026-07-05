@@ -46,10 +46,8 @@
 
 #include "../structure/Configuration.h"
 
-CfgVar DisableBGA("DisableBGA");
+CfgVar disable_bga("DisableBGA");
 
-
-bool isChartLoaded;
 
 ScreenGameplay::ScreenGameplay() : Screen("ScreenGameplay7K") {
     time_ = {};
@@ -65,8 +63,6 @@ ScreenGameplay::ScreenGameplay() : Screen("ScreenGameplay7K") {
 
     // Don't play unless everything goes right (later checks)
     load_successful_ = false;
-
-    isChartLoaded = false;
 }
 
 void ScreenGameplay::cleanup() {
@@ -81,9 +77,9 @@ void ScreenGameplay::cleanup() {
 }
 
 void ScreenGameplay::jump_to_measure(const uint32_t measure) {
-    double mt = players_[0]->get_chart_state().get_time_at_measure(measure);
-    double wt = players_[0]->get_chart_state().real_to_warped_time(mt);
-    for (auto &player : players_) {
+    const double mt = players_[0]->get_chart_state().get_time_at_measure(measure);
+    const double wt = players_[0]->get_chart_state().real_to_warped_time(mt);
+    for (const auto &player : players_) {
         player->set_unwarped_time(mt);
     }
 
@@ -103,7 +99,7 @@ void ScreenGameplay::jump_to_measure(const uint32_t measure) {
     active_ = true;
 }
 
-void ScreenGameplay::Init(std::shared_ptr<otoworm::ChartGroup> chart_group) {
+void ScreenGameplay::initialize(std::shared_ptr<otoworm::ChartGroup> chart_group) {
     my_chart_group_ = std::move(chart_group);
     start_active_ = false;
 
@@ -121,7 +117,7 @@ bool ScreenGameplay::load_chart_data() {
     if (!my_chart_group_)
         preloaded = false;
     else {
-        for (auto &chart : my_chart_group_->charts) {
+        for (const auto &chart : my_chart_group_->charts) {
             if (!chart || !chart->transient) preloaded = false;
         }
     }
@@ -129,17 +125,17 @@ bool ScreenGameplay::load_chart_data() {
     if (!preloaded) {
         // The difficulty details are destroyed; which means we should load this from its original file.
         SongLoader Loader(GameState::get_instance().get_song_database());
-        std::filesystem::path FN;
+        std::filesystem::path fn;
 
         Log::Printf("Loading Chart...");
-        auto loaded_chart_group = Loader.LoadFromMeta(
+        const auto loaded_chart_group = Loader.LoadFromMeta(
                 my_chart_group_ ? my_chart_group_->id : -1,
                 GameState::get_instance().get_chart_shared(0),
-                FN,
+                fn,
                 index);
 
         if (loaded_chart_group == nullptr) {
-            Log::Printf("Failure to load chart. (Filename: %s)\n", otoworm::locale::wstring_to_utf8(FN.wstring()).c_str());
+            Log::Printf("Failure to load chart. (Filename: %s)\n", otoworm::locale::wstring_to_utf8(fn.wstring()).c_str());
             return false;
         }
 
@@ -155,7 +151,6 @@ bool ScreenGameplay::load_chart_data() {
 
     bga_ = BackgroundAnimation::CreateBGAFromChartGroup(index, my_chart_group_, this);
 
-    isChartLoaded = true;
     return true;
 }
 
@@ -167,25 +162,21 @@ bool ScreenGameplay::load_song_audio() {
         return true;
     }
 
-    if (!isChartLoaded) {
-        Log::LogPrintf("what the hell is going on");
-    }
-
-    auto Rate = GameState::get_instance().get_parameters(0)->Rate;
+    const auto rate = GameState::get_instance().get_parameters(0)->Rate;
 
     Log::LogPrintf("Chart audio: Load start!\n");
     auto &ps = players_[0]->get_chart_state();
-    auto SoundList = ps.get_sound_list();
+    const auto sound_list = ps.get_sound_list();
     if (!music_) {
         bool attempt_music_load = true;
         music_ = std::make_unique<AudioStream>(GetMixer());
-        music_->set_pitch(Rate);
+        music_->set_pitch(rate);
 
 
         if (my_chart_group_->song_filename.empty())
             attempt_music_load = false;
 
-        auto s = my_chart_group_->path / my_chart_group_->song_filename;
+        const auto s = my_chart_group_->path / my_chart_group_->song_filename;
 
         if (attempt_music_load)
             Log::LogPrintf("Chart Audio: Attempt to load \"%ls\"...\n", s.wstring().c_str());
@@ -197,20 +188,19 @@ bool ScreenGameplay::load_song_audio() {
         } else {
             if (!players_[0]->get_chart_state().is_virtual()) {
                 // Caveat: Try to autodetect an mp3/ogg file.
-                auto SngDir = my_chart_group_->path;
+                const auto sng_dir = my_chart_group_->path;
 
                 if (DebugLoadAudio)
                     Log::LogPrintf("Attempt to autodetect audio from directory...\n");
 
                 // Open the first MP3 and OGG file in the directory
-                for (const auto& i : std::filesystem::directory_iterator(SngDir)) {
-                    auto extension = i.path().extension();
-                    if (extension == ".mp3" || extension == ".ogg")
+                for (const auto& i : std::filesystem::directory_iterator(sng_dir)) {
+                    if (auto extension = i.path().extension(); extension == ".mp3" || extension == ".ogg")
                         if (music_->open(i.path())) {
                             if (DebugLoadAudio)
                                 Log::LogPrintf("Got audio on path... %S\n", i.path().wstring().c_str());
 
-                            if (SoundList.empty())
+                            if (sound_list.empty())
                                 return true;
                         }
                 }
@@ -219,7 +209,7 @@ bool ScreenGameplay::load_song_audio() {
                 music_ = nullptr;
 
                 // don't abort load if we have keysounds
-                if (SoundList.empty()) {
+                if (sound_list.empty()) {
                     Log::Printf("Unable to load song (Path: %ls)\n", my_chart_group_->song_filename.wstring().c_str());
                     return false;
                 }
@@ -231,7 +221,7 @@ bool ScreenGameplay::load_song_audio() {
     if (my_chart_group_->song_filename.extension() == ".ojm") {
         Log::Printf("O2JAM: Loading OJM.\n");
         ojm_audio_ = std::make_unique<AudioSourceOJM>(this);
-        ojm_audio_->SetPitch(Rate);
+        ojm_audio_->SetPitch(rate);
         ojm_audio_->open(my_chart_group_->path / my_chart_group_->song_filename);
 
         for (int i = 1; i <= 2000; i++) {
@@ -240,7 +230,7 @@ bool ScreenGameplay::load_song_audio() {
             if (Snd != nullptr)
                 keysounds_[i].push_back(Snd);
         }
-    } else if (!SoundList.empty()) {
+    } else if (!sound_list.empty()) {
         Log::LogPrintf("Chart Audio: Loading samples... ");
         load_samples();
 
@@ -254,15 +244,15 @@ bool ScreenGameplay::load_song_audio() {
 }
 
 void ScreenGameplay::load_samples() {
-    auto Rate = GameState::get_instance().get_parameters(0)->Rate;
+    const auto rate = GameState::get_instance().get_parameters(0)->Rate;
     auto &ps = players_[0]->get_chart_state();
-    auto SoundList = ps.get_sound_list();
+    const auto sound_list = ps.get_sound_list();
 
-    auto start = std::chrono::high_resolution_clock::now();
-    for (auto & i : SoundList) {
+    const auto start = std::chrono::high_resolution_clock::now();
+    for (auto & i : sound_list) {
         auto ks = std::make_shared<AudioSample>(GetMixer());
 
-        ks->set_pitch(Rate);
+        ks->set_pitch(rate);
         std::filesystem::path rfd = i.second;
         std::filesystem::path afd = my_chart_group_->path / rfd;
 
@@ -279,15 +269,15 @@ void ScreenGameplay::load_samples() {
         CheckInterruption();
     }
 
-    auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(
+    const auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::high_resolution_clock::now() - start).count();
     Log::LogPrintf("Keysounds loading in the background. Taken %I64dms to finish.", dur);
 }
 
 void ScreenGameplay::load_bmson() {
-    auto Rate = GameState::get_instance().get_parameters(0)->Rate;
+    const auto Rate = GameState::get_instance().get_parameters(0)->Rate;
     auto &ps = players_[0]->get_chart_state();
-    auto dir = my_chart_group_->path;
+    const auto dir = my_chart_group_->path;
     std::map<int, AudioSample> audio;
     std::mutex audio_data_mutex;
     std::mutex keysound_data_mutex;
@@ -297,15 +287,15 @@ void ScreenGameplay::load_bmson() {
     std::vector<std::future<void>> threads;
     std::atomic<int> obj_cnt(0);
 
-    auto load_start_time = std::chrono::high_resolution_clock::now();
-    for (auto audiofile : slicedata.audio_files) {
-        auto fn = [&](const std::pair<int, std::string>& audiofile) {
-            auto path = (dir / audiofile.second);
+    const auto load_start_time = std::chrono::high_resolution_clock::now();
+    for (const auto& audio_file : slicedata.audio_files) {
+        auto fn = [&](const std::pair<int, std::string>& audio_file) {
+            const auto path = (dir / audio_file.second);
             AudioSample *p;
 
             // Audio load (parallelly?)
             audio_data_mutex.lock();
-            p = &audio[audiofile.first];
+            p = &audio[audio_file.first];
             audio_data_mutex.unlock();
 
             p->set_pitch(Rate);
@@ -313,27 +303,27 @@ void ScreenGameplay::load_bmson() {
             // Verbose, but not as verbose as other languages.
 
             Log::LogPrintf("BMSON: Load sound %s AUDIO ID: %d\n", otoworm::locale::wstring_to_utf8(path.wstring()).c_str(),
-                           audiofile.first);
-            auto t = std::chrono::high_resolution_clock::now();
+                           audio_file.first);
+            const auto t = std::chrono::high_resolution_clock::now();
 
             // Open file
             if (!p->open(path))
-                throw std::runtime_error(otoworm::util::format("Unable to load %s.", audiofile.second.c_str()));
+                throw std::runtime_error(otoworm::util::format("Unable to load %s.", audio_file.second.c_str()));
 
 
             // Done. Slicing
-            auto d = std::chrono::high_resolution_clock::now() - t;
-            auto cd = std::chrono::duration_cast<std::chrono::milliseconds>(d);
+            const auto d = std::chrono::high_resolution_clock::now() - t;
+            const auto cd = std::chrono::duration_cast<std::chrono::milliseconds>(d);
 
-            Log::LogPrintf("BMSON: Slicing %d. Read in %I64dms...\n", audiofile.first, cd.count());
-            auto t2 = std::chrono::high_resolution_clock::now();
+            Log::LogPrintf("BMSON: Slicing %d. Read in %I64dms...\n", audio_file.first, cd.count());
+            const auto t2 = std::chrono::high_resolution_clock::now();
             // Slice file
             // For each wav/sound index on the list
             for (const auto& wav : slicedata.slices) {
                 // for each slice on this index (mix-note)
-                for (auto sound : wav.second) {
+                for (const auto sound : wav.second) {
                     // This is a slice of our available big boy.
-                    if (sound.first == audiofile.first) {
+                    if (sound.first == audio_file.first) {
                         p->slice(sound.second.start, sound.second.end);
                         keysound_data_mutex.lock();
                         keysounds_[wav.first].push_back(p->CopySlice());
@@ -343,12 +333,12 @@ void ScreenGameplay::load_bmson() {
                 }
             }
 
-            auto d2 = std::chrono::duration_cast<std::chrono::milliseconds>(
+            const auto d2 = std::chrono::duration_cast<std::chrono::milliseconds>(
                     std::chrono::high_resolution_clock::now() - t2);
-            Log::LogPrintf("BMSON: Sliced %d in %I64dms...\n", audiofile.first, d2.count());
+            Log::LogPrintf("BMSON: Sliced %d in %I64dms...\n", audio_file.first, d2.count());
         };
 
-        threads.push_back(std::async(std::launch::async, fn, audiofile));
+        threads.push_back(std::async(std::launch::async, fn, audio_file));
     }
 
     bool go_on = true;
@@ -368,8 +358,8 @@ void ScreenGameplay::load_bmson() {
         ks.second.shrink_to_fit();
     }
 
-    auto load_dur = std::chrono::high_resolution_clock::now() - load_start_time;
-    auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(load_dur).count();
+    const auto load_dur = std::chrono::high_resolution_clock::now() - load_start_time;
+    const auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(load_dur).count();
     Log::LogPrintf("BMSON: Loaded slices in %I64d\n", dur);
     //Log::Printf("BMSON: Generated %d sound objects.\n", wavs);
 }
@@ -379,8 +369,8 @@ bool ScreenGameplay::process_song() {
 
     double SpeedConstant = 0; // Unless set, assume we're using speed changes
 
-    int ApplyDriftVirtual = Configuration::GetConfigf("UseAudioCompensationKeysounds");
-    int ApplyDriftDecoder = Configuration::GetConfigf("UseAudioCompensationNonKeysounded");
+    const int apply_drift_virtual = Configuration::GetConfigf("UseAudioCompensationKeysounds");
+    const int apply_drift_decoder = Configuration::GetConfigf("UseAudioCompensationNonKeysounded");
 
     auto chart = GameState::get_instance().get_chart_shared(0);
     if (!chart && my_chart_group_ && !my_chart_group_->charts.empty())
@@ -391,8 +381,8 @@ bool ScreenGameplay::process_song() {
         return false;
     }
 
-    if (((ApplyDriftVirtual && chart->has_no_audio_stream) ||  // We want to apply it to a keysounded file and it's virtual
-         (ApplyDriftDecoder &&
+    if (((apply_drift_virtual && chart->has_no_audio_stream) ||  // We want to apply it to a keysounded file and it's virtual
+         (apply_drift_decoder &&
           chart->has_no_audio_stream))) // or we want to apply it to a non-keysounded file and it's not virtual
         TimeError.AudioDrift += MixerGetLatency();
 
@@ -444,10 +434,10 @@ bool ScreenGameplay::process_song() {
 }
 
 bool ScreenGameplay::load_bga() const {
-    if (!DisableBGA) {
+    if (!disable_bga) {
         try {
             bga_->Load();
-            scene_->AddTarget(bga_.get(), true);
+            scene_->add_target(bga_.get(), true);
         }
         catch (std::exception &e) {
             Log::LogPrintf("Failure to load BGA: %s.\n", e.what());
@@ -494,7 +484,7 @@ void ScreenGameplay::load_resources() {
 
     register_script_values();
 
-    scene_->Preload(GameState::get_instance().get_skin_file("screengameplay7k.lua"), "Preload");
+    scene_->preload(GameState::get_instance().get_skin_file("screengameplay7k.lua"), "Preload");
     Log::Printf("Done.\n");
 
     if (start_measure_ > 0)
@@ -537,10 +527,10 @@ void ScreenGameplay::post_load_initialization() {
 
     play_reactive_sounds_ = (!Configuration::GetConfigf("DisableHitsounds"));
 
-    scene_->GetImageList()->ForceFetch();
+    scene_->get_image_list()->ForceFetch();
     bga_->Validate();
 
-    for (auto &p : players_) {
+    for (const auto &p : players_) {
         p->validate();
 
         // TODO: parameter types/names
@@ -563,6 +553,6 @@ void ScreenGameplay::post_load_initialization() {
     }
 
 
-    scene_->Initialize("", false);
+    scene_->initialize("", false);
     is_active_ = true;
 }

@@ -24,7 +24,7 @@
 #include "../structure/ScreenCustom.h"
 #include "../screens/ScreenSelectMusic.h"
 
-#include "ImageLoader.h"
+#include "TextureCollection.h"
 
 #include "../structure/Configuration.h"
 #include <text_and_file_util.h>
@@ -152,8 +152,8 @@ void GameState::initialize()
     {
         Database = new SongDatabase("rd.db");
 
-        SongBG = new Texture();
-        StageImage = new Texture();
+        SongBG = new Texture2D();
+        StageImage = new Texture2D();
     }
 }
 
@@ -211,7 +211,7 @@ int GameState::get_current_gauge_type(int pn) const
 	return 0;
 }
 
-Texture* GameState::get_song_bg()
+Texture2D* GameState::get_song_bg()
 {
     const auto chart_group = get_selected_chart_group_shared();
 	if (chart_group)
@@ -220,7 +220,7 @@ Texture* GameState::get_song_bg()
 
 		if (std::filesystem::exists(toLoad))
 		{
-			SongBG->LoadFile(toLoad, true);
+			SongBG->load_file(toLoad, true);
 			return SongBG;
 		}
 
@@ -232,7 +232,7 @@ Texture* GameState::get_song_bg()
 	return nullptr;
 }
 
-Texture* GameState::get_song_stage()
+Texture2D* GameState::get_song_stage()
 {
 	const auto chart_group = get_selected_chart_group_shared();
 	if (chart_group)
@@ -253,8 +253,8 @@ Texture* GameState::get_song_stage()
 			{
 				size_t read;
 				const auto* buf = reinterpret_cast<const unsigned char*>(load_ojn_cover(toLoad, read));
-				ImageData data = ImageLoader::GetDataForImageFromMemory(buf, read);
-				StageImage->SetTextureData2D(data, true);
+				ImageData2d data = TextureCollection::get_data_for_image_from_memory(buf, read);
+				StageImage->set_texture_data_2d(data, true);
 				delete[] buf;
 
 				return StageImage;
@@ -262,7 +262,7 @@ Texture* GameState::get_song_stage()
 
 			if (File.wstring().length() && std::filesystem::exists(toLoad))
 			{
-				StageImage->LoadFile(toLoad, true);
+				StageImage->load_file(toLoad, true);
 				return StageImage;
 			}
 
@@ -277,7 +277,7 @@ Texture* GameState::get_song_stage()
 	return nullptr;
 }
 
-Texture* GameState::get_skin_image(const std::string& Path)
+Texture2D* GameState::get_skin_image(const std::string& Path)
 {
     /* Special paths */
     if (Path == "STAGEFILE")
@@ -288,7 +288,7 @@ Texture* GameState::get_skin_image(const std::string& Path)
 
     /* Regular paths */
     if (Path.length())
-        return ImageLoader::Load(Filesystem.get_skin_file(Path));
+        return TextureCollection::load(Filesystem.get_skin_file(Path));
 
 	// no path?
     return nullptr;

@@ -195,7 +195,7 @@ float TruetypeFont::get_horizontal_length(const char *in)
             {
                 float aW = stbtt_GetCodepointKernAdvance(info.get(), *it, *it_nx);
                 int bW;
-                stbtt_GetCodepointHMetrics(info.get(), *it, &bW, NULL);
+                stbtt_GetCodepointHMetrics(info.get(), *it, &bW, nullptr);
                 out += aW * realscale + bW * realscale;
             }
             else

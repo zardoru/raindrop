@@ -4,16 +4,16 @@
 
 #include "Interruptible.h"
 
-class Texture;
+class Texture2D;
 
 /*
     In particular, allows a manifest of filenames to be passed to it and control when it loads those images.
 */
 class ImageList : public Interruptible
 {
-    std::map <std::filesystem::path, Texture*> Images;
+    std::map <std::filesystem::path, Texture2D*> Images;
     std::map <int, std::filesystem::path> ImagesIndexPending;
-    std::map <int, Texture*> ImagesIndex;
+    std::map <int, Texture2D*> ImagesIndex;
     bool ShouldDeleteAtDestruction;
 
 public:
@@ -29,7 +29,7 @@ public:
     void AddToListIndex(const std::filesystem::path& Filename, int Index);
 
 	// Add texture (Doesn't get removed)
-	void AddToListIndex(Texture* tex, int Index);
+	void AddToListIndex(Texture2D* tex, int Index);
 
     void AddToList(const uint32_t Count, const std::string *Filename, const std::string& Prefix);
 
@@ -39,11 +39,11 @@ public:
     void ForceFetch();
 
     // Gets image from this filename
-    Texture* GetFromFilename(const std::string& Filename);
+    Texture2D* GetFromFilename(const std::string& Filename);
 
     // Gets image from this index
-    Texture* GetFromIndex(int Index);
+    Texture2D* GetFromIndex(int Index);
 
     // Gets image from SkinPrefix + filename
-    Texture* GetFromSkin(const std::string& Filename);
+    Texture2D* GetFromSkin(const std::string& Filename);
 };

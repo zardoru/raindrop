@@ -5,9 +5,9 @@
 
 #include "../game/GameState.h"
 
-#include "Texture.h"
+#include "Texture2D.h"
 #include "ImageList.h"
-#include "ImageLoader.h"
+#include "TextureCollection.h"
 
 #include "Sprite.h"
 
@@ -36,7 +36,7 @@ void ImageList::AddToList(const std::filesystem::path& Filename, const std::file
 
     if (Images.find(ResFilename) == Images.end())
     {
-        ImageLoader::AddToPending(ResFilename);
+        TextureCollection::add_to_pending_2d_uploads(ResFilename);
         Images[ResFilename] = nullptr;
     }
 }
@@ -45,14 +45,14 @@ void ImageList::AddToListIndex(const std::filesystem::path& Filename, const int 
 {
     if (ImagesIndex.find(Index) == ImagesIndex.end())
     {
-        ImageLoader::AddToPending(Filename);
+        TextureCollection::add_to_pending_2d_uploads(Filename);
         Images[Filename] = nullptr;
         ImagesIndex[Index] = nullptr;
         ImagesIndexPending[Index] = Filename;
     }
 }
 
-void ImageList::AddToListIndex(Texture * tex, const int Index)
+void ImageList::AddToListIndex(Texture2D * tex, const int Index)
 {
 	ImagesIndex[Index] = tex;
 }
@@ -60,7 +60,7 @@ void ImageList::AddToListIndex(Texture * tex, const int Index)
 void ImageList::Destroy()
 {
     for (auto & Image : Images)
-        ImageLoader::DeleteImage(Image.second);
+        TextureCollection::delete_texture_2d(Image.second);
 }
 
 void ImageList::AddToList(const uint32_t Count, const std::string *Filename, const std::string& Prefix)
@@ -79,7 +79,7 @@ bool ImageList::LoadAll()
         if (Image.first.empty())
             continue;
 
-        Image.second = ImageLoader::Load(Image.first);
+        Image.second = TextureCollection::load(Image.first);
         if (Image.second == nullptr)
             WereErrors = true;
         CheckInterruption();
@@ -87,7 +87,7 @@ bool ImageList::LoadAll()
 
     for (auto i = ImagesIndexPending.begin(); i != ImagesIndexPending.end();)
     {
-        ImagesIndex[i->first] = ImageLoader::Load(i->second);
+        ImagesIndex[i->first] = TextureCollection::load(i->second);
         if (ImagesIndex[i->first] == nullptr)
             WereErrors = true;
 
@@ -99,18 +99,18 @@ bool ImageList::LoadAll()
 }
 
 // Gets image from this filename
-Texture* ImageList::GetFromFilename(const std::string& Filename)
+Texture2D* ImageList::GetFromFilename(const std::string& Filename)
 {
     return Images[Filename];
 }
 
 // Gets image from SkinPrefix + filename
-Texture* ImageList::GetFromSkin(const std::string& Filename)
+Texture2D* ImageList::GetFromSkin(const std::string& Filename)
 {
     return Images[GameState::get_instance().get_skin_prefix() + Filename];
 }
 
-Texture* ImageList::GetFromIndex(const int Index)
+Texture2D* ImageList::GetFromIndex(const int Index)
 {
     return ImagesIndex[Index];
 }

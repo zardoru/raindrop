@@ -42,7 +42,7 @@ bool Screen::on_text_input(int codepoint)
 {
     if (Next)
         return Next->on_text_input(codepoint);
-    return scene_->HandleTextInput(codepoint);
+    return scene_->handle_text_input(codepoint);
 }
 
 void Screen::Close()

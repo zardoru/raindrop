@@ -17,7 +17,7 @@
 #include <boost/algorithm/string/case_conv.hpp>
 #include <utility>
 #include <text_and_file_util.h>
-#include "Texture.h"
+#include "Texture2D.h"
 #include "Logging.h"
 
 #include "VideoPlayback.h"
@@ -1066,7 +1066,7 @@ Transformation& osuBackgroundAnimation::GetScreenTransformation()
 	return mScreenTransformation;
 }
 
-Texture* osuBackgroundAnimation::GetImageFromIndex(int m_image_index)
+Texture2D* osuBackgroundAnimation::GetImageFromIndex(int m_image_index)
 {
 	if (m_image_index >= 0)
 		return mImageList.GetFromIndex(m_image_index);

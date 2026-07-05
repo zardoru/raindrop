@@ -16,7 +16,7 @@
 
 #include "../Application.h"
 #include "GameWindow.h"
-#include "ImageLoader.h"
+#include "TextureCollection.h"
 #include "Transformation.h"
 #include "Rendering.h"
 #include "VBO.h"
@@ -355,7 +355,7 @@ GameWindow::GameWindow()
     size_ratio_ = 1.0f;
     FullscreenSwitchbackPending = false;
     CloseRequested = false;
-    wnd_ = NULL;
+    wnd_ = nullptr;
     gl_context_ = nullptr;
 }
 
@@ -644,7 +644,7 @@ void GameWindow::update_fullscreen()
 		// Reload all images.
 		// todo: rmlui
 		// Engine::RocketInterface::ReloadTextures();
-		ImageLoader::ReloadAll();
+		TextureCollection::reload_all();
 
 		/* This revalidates all VBOs and fonts */
 		for (const auto & i : vbo_list_)

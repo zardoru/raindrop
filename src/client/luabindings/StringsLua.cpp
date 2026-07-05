@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <rmath.h>
 
-#include "Texture.h"
+#include "Texture2D.h"
 
 #include "Transformation.h"
 #include "Rendering.h"

@@ -20,14 +20,14 @@
 
 
 #include "Line.h"
-#include "Texture.h"
+#include "Texture2D.h"
 
 #include "TruetypeFont.h"
 #include "BitmapFont.h"
 
 #include "Shader.h"
 
-#include "ImageLoader.h"
+#include "TextureCollection.h"
 
 #include "../structure/Configuration.h"
 
@@ -43,7 +43,7 @@ namespace renderer {
 	VBO* texture_buffer = nullptr;
 	VBO* temp_texture_buffer = nullptr;
 	VBO* color_buffer = nullptr;
-	Texture* xor_tex = nullptr;
+	Texture2D* xor_tex = nullptr;
 
 	float QuadPositions[8] =
 	{
@@ -73,7 +73,7 @@ namespace renderer {
 
 	void draw_primitive_quad(Transformation &QuadTransformation, const EBlendMode &Mode, const ColorRGB &Color)
 	{
-		Texture::Unbind();
+		Texture2D::unbind();
 		Shader::SetUniform(DefaultShader::GetUniform(U_COLOR), Color.Red, Color.Green, Color.Blue, Color.Alpha);
 
 		set_blending_mode(Mode);
@@ -86,7 +86,7 @@ namespace renderer {
 		do_quad_draw();
 		finalize_draw();
 
-		Texture::ForceRebind();
+		Texture2D::force_rebind();
 	}
 
 	void set_xor_tex_parameters() {
@@ -118,7 +118,7 @@ namespace renderer {
             assert(glGetError() == 0);
 
 			// create xor texture
-			xor_tex = new Texture;
+			xor_tex = new Texture2D;
 			
 			std::vector<uint32_t> buf(256 * 256);
 			for(int i = 0; i < 256; i++) {
@@ -129,10 +129,10 @@ namespace renderer {
 				}
 			}
 
-			ImageData d(256, 256, nullptr);
+			ImageData2d d(256, 256, nullptr);
 			d.Data = buf;
 
-			xor_tex->SetTextureData2D(d);
+			xor_tex->set_texture_data_2d(d);
             assert(glGetError() == 0);
 
 			xor_tex->fname = "xor";
@@ -140,7 +140,7 @@ namespace renderer {
 			set_xor_tex_parameters(); // it's bound by SetTextureData2D, apply parameters
             assert(glGetError() == 0);
 
-			ImageLoader::RegisterTexture(xor_tex);
+			TextureCollection::register_texture(xor_tex);
             assert(glGetError() == 0);
 
 
@@ -148,7 +148,7 @@ namespace renderer {
 		}
 	}
 
-	Texture* get_xor_texture(){
+	Texture2D* get_xor_texture(){
 		return xor_tex;
 	}
 
@@ -297,11 +297,11 @@ namespace renderer {
 		Shader::SetUniform(DefaultShader::GetUniform(U_CENTERED), Centered);
 	}
 
-	void draw_textured_quad(Texture* ToDraw, const AABB& TextureCrop, const Transformation& QuadTransformation,
+	void draw_textured_quad(Texture2D* ToDraw, const AABB& TextureCrop, const Transformation& QuadTransformation,
 		const EBlendMode &Mode, const ColorRGB &InColor)
 	{
 		if (ToDraw)
-			ToDraw->Bind();
+			ToDraw->bind();
 		else return;
 
 		Shader::SetUniform(DefaultShader::GetUniform(U_COLOR), InColor.Red, InColor.Green, InColor.Blue, InColor.Alpha);
@@ -429,8 +429,8 @@ bool Sprite::should_draw() const
 
     if (m_texture_)
     {
-		m_texture_->Bind();
-		return m_texture_->IsBound();
+		m_texture_->bind();
+		return m_texture_->is_bound();
     }
     else
         return m_shader_ && m_shader_->is_valid();
@@ -638,7 +638,7 @@ void TruetypeFont::render(const std::string &in, const Vec2 &position, const Mat
             {
                 float aW = stbtt_GetCodepointKernAdvance(info.get(), *it, *next);
                 int bW;
-                stbtt_GetCodepointHMetrics(info.get(), *it, &bW, NULL);
+                stbtt_GetCodepointHMetrics(info.get(), *it, &bW, nullptr);
                 vOffs.x += (aW * realscale + bW * realscale) * scale.x  * scale.y / SDF_SIZE;
             }
         }
@@ -657,7 +657,7 @@ void TruetypeFont::render(const std::string &in, const Vec2 &position, const Mat
 #endif
 
     renderer::finalize_draw();
-    Texture::ForceRebind();
+    Texture2D::force_rebind();
 }
 
 void TruetypeFont::release_textures() const
@@ -666,7 +666,7 @@ void TruetypeFont::release_textures() const
     {
 		if (val.tex) {
 			free(val.tex);
-			val.tex = 0;
+			val.tex = nullptr;
 		}
 		if (val.gltx) {
 			glDeleteTextures(1, &val.gltx);
@@ -724,7 +724,7 @@ void Line::Render()
     Shader::disable_attrib_array(DefaultShader::GetUniform(A_POSITION));
     Shader::disable_attrib_array(DefaultShader::GetUniform(A_COLOR));
 
-    Texture::ForceRebind();
+    Texture2D::force_rebind();
 
     glEnable(GL_DEPTH_TEST);
 }
@@ -738,14 +738,14 @@ void BitmapFont::render(const std::string &In, const Vec2 &Position, const Mat4 
     if (!Font)
         return;
 
-    if (!Font->IsValid)
+    if (!Font->is_valid_)
     {
         for (int i = 0; i < 256; i++)
         {
             CharPosition[i].invalidate();
             CharPosition[i].initialize(true);
         }
-        Font->IsValid = true;
+        Font->is_valid_ = true;
     }
 
 //    Renderer::SetScissor(Scissor);
@@ -755,7 +755,7 @@ void BitmapFont::render(const std::string &In, const Vec2 &Position, const Mat4 
 	set_default_shader_parameters(false, false);
     DefaultShader::set_color(Red, Green, Blue, Alpha);
 
-    Font->Bind();
+    Font->bind();
 
     // Assign position attrib. pointer
 	renderer::quad_buffer->bind();

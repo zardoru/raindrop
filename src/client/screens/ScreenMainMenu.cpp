@@ -11,7 +11,7 @@
 
 #include "../structure/SceneEnvironment.h"
 #include "../structure/Screen.h"
-#include "ImageLoader.h"
+#include "TextureCollection.h"
 #include "Audio.h"
 #include "GameWindow.h"
 
@@ -52,10 +52,10 @@ void ScreenMainMenu::Init()
 	// @autoinstance Global
 	GameState::get_instance().initialize_lua(MainMenuLua->get_lua_state());
 
-    scene_->Initialize(GameState::get_instance().get_skin_file("mainmenu.lua"));
+    scene_->initialize(GameState::get_instance().get_skin_file("mainmenu.lua"));
 
-    IntroDuration = scene_->GetIntroDuration();
-    ExitDuration = scene_->GetIntroDuration();
+    IntroDuration = scene_->get_intro_duration();
+    ExitDuration = scene_->get_intro_duration();
 
     ChangeState(StateIntro);
 
@@ -69,7 +69,7 @@ bool ScreenMainMenu::on_input(int32_t key, bool isPressed, bool isMouseInput)
     if (Screen::on_input(key, isPressed, isMouseInput))
         return true;
 
-    return scene_->HandleInput(key, isPressed, isMouseInput);
+    return scene_->on_input(key, isPressed, isMouseInput);
 }
 
 bool ScreenMainMenu::on_scroll_input(double xOff, double yOff)
@@ -83,7 +83,7 @@ bool ScreenMainMenu::Run(double Delta)
         return true;
 
     
-    scene_->DrawTargets(Delta);
+    scene_->draw_targets(Delta);
 
 	/*
 	float f = 24;

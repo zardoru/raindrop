@@ -42,56 +42,57 @@ class SceneEnvironment
     std::filesystem::path mInitScript;
 
 public:
-    SceneEnvironment(const char* ScreenName, bool initGUI = false);
+    SceneEnvironment(const char* screen_name, bool initGUI = false);
     ~SceneEnvironment();
 
-    void RemoveManagedObjects();
-    void RemoveExternalObjects();
+    void remove_managed_objects();
+    void remove_external_objects();
 
-    void ReloadScripts();
+    void reload_scripts();
     void ReloadUI();
-    void ReloadAll();
+    void reload_all();
 
-	void SetScreenName(std::string sname);
+	void set_screen_name(const std::string &sname);
 
-    void Preload(const std::filesystem::path& Filename, std::string array_name);
-    void Initialize(const std::filesystem::path& Filename = "", bool RunScript = true);
-    LuaManager *get_script_manager();
-    ImageList* GetImageList();
+    void preload(const std::filesystem::path& Filename, std::string array_name);
+    void initialize(const std::filesystem::path& filename = "", bool run_script = true);
+    LuaManager *get_script_manager() const;
+    ImageList* get_image_list() const;
 
-    Sprite* CreateObject();
+    Sprite* create_object();
 
-    void trigger_event(std::string EventName, int Return = 0);
-    void AddLuaAnimation(Sprite* Target, const std::string &FName, int Easing, float Duration, float Delay);
+    void trigger_event(const std::string &event_name, int Return = 0) const;
+    void add_lua_animation(Sprite* target, const std::string &FName, int easing, float duration, float delay);
     void StopAnimationsForTarget(Sprite* Target);
-    void AddTarget(Drawable2D* Targ, bool IsExternal = false);
-    void AddSpriteTarget(Sprite* Targ);
-    void RemoveSpriteTarget(Sprite* Targ);
-    void AddLuaTarget(Sprite *Targ, std::string Varname);
+    void add_target(Drawable2D* target, bool is_external = false);
+    void add_sprite_target(Sprite* Targ);
+    void remove_sprite_target(Sprite* Targ);
+    void add_lua_target(Sprite *Targ, std::string Varname) const;
     void AddLuaTargetArray(Sprite *Targ, std::string Varname, std::string Arrname);
-    void RemoveTarget(Drawable2D *Targ);
-    void DrawTargets(double TimeDelta);
+    void remove_target(Drawable2D *Targ);
+    void draw_targets(double TimeDelta);
 
-    TruetypeFont* CreateTTF(const char* Dir);
+    TruetypeFont* create_ttf(const char* Dir);
 
-    void Sort();
+    void sort();
 
-    void UpdateTargets(double TimeDelta);
-    void DrawUntilLayer(uint32_t Layer);
-    void DrawFromLayer(uint32_t Layer);
+    void update_targets(double TimeDelta);
+    void draw_until_layer(uint32_t layer) const;
+    void draw_from_layer(uint32_t layer) const;
 
     void RunIntro(float Fraction, float Delta);
     void RunExit(float Fraction, float Delta);
 
-    float GetIntroDuration();
-    float GetExitDuration();
+    float get_intro_duration() const;
+    float get_exit_duration() const;
 
-    bool HandleInput(int32_t key, bool isPressed, bool isMouseInput);
-    bool HandleTextInput(int codepoint);
-    bool IsManagedObject(Drawable2D *Obj);
-    void StopManagingObject(Drawable2D *Obj);
-    void RemoveManagedObject(Drawable2D *Obj);
-    void HandleScrollInput(double x_off, double y_off);
+    bool on_input(int32_t key, bool is_pressed, bool is_mouse_input) const;
+
+    static bool handle_text_input(int codepoint);
+    bool is_managed_object(Drawable2D *Obj) const;
+    void stop_managing_object(Drawable2D *Obj);
+    void remove_managed_object(Drawable2D *Obj);
+    void on_scroll_input(double x_off, double y_off) const;
 };
 
 void DefineSpriteInterface(LuaManager* anim_lua);

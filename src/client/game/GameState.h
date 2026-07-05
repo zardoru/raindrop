@@ -6,7 +6,7 @@
 
 
 class SongDatabase;
-class Texture;
+class Texture2D;
 class Screen;
 
 struct lua_State;
@@ -29,8 +29,8 @@ class GameState
     GameFilesystem Filesystem;
     SongDatabase* Database;
 
-    Texture* StageImage;
-    Texture* SongBG;
+    Texture2D* StageImage;
+    Texture2D* SongBG;
     std::shared_ptr<otoworm::ChartGroup> SelectedChartGroup;
     std::unique_ptr<StormIR::StormIR> ir;
 
@@ -65,15 +65,15 @@ public:
     static std::string get_skin_prefix(const std::string &skin);
     static std::string get_scripts_directory();
     void set_skin(const std::string& NextSkin);
-    Texture* get_skin_image(const std::string& Texture);
+    Texture2D* get_skin_image(const std::string& Texture);
     static bool skin_supports_channel_count(int Count);
     std::string get_skin();
 
     void set_selected_chart_group(std::shared_ptr<otoworm::ChartGroup> chart_group);
     otoworm::ChartGroup *get_selected_chart_group() const;
 
-    Texture* get_song_bg();
-    Texture* get_song_stage();
+    Texture2D* get_song_bg();
+    Texture2D* get_song_stage();
 
     void start_screen_transition(std::string target) const;
     void exit_current_screen() const;

@@ -16,10 +16,10 @@
 
 #include <algorithm>
 
-#include "Texture.h"
+#include "Texture2D.h"
 #include "VideoPlayback.h"
 
-#include "ImageLoader.h"
+#include "TextureCollection.h"
 #include "ImageList.h"
 #include "Logging.h"
 

@@ -21,7 +21,7 @@
 #include "../structure/Screen.h"
 #include "../structure/SceneEnvironment.h"
 #include "GameWindow.h"
-#include "ImageLoader.h"
+#include "TextureCollection.h"
 
 #include <Audio.h>
 #include <sndio/Audiofile.h>
@@ -152,7 +152,7 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic") {
 void ScreenSelectMusic::post_load_initialization() {
     auto luam = scene_->get_script_manager();
 
-    scene_->Initialize();
+    scene_->initialize();
 
     GameState::get_instance().initialize_lua(luam->get_lua_state());
 }
@@ -163,7 +163,7 @@ void ScreenSelectMusic::load_resources() {
     SwitchBackGuiPending = true;
 
     SetupWheelLua(scene_->get_script_manager());
-    scene_->Preload(GameState::get_instance().get_skin_file("screenselectmusic.lua"), "Preload");
+    scene_->preload(GameState::get_instance().get_skin_file("screenselectmusic.lua"), "Preload");
 
     Time = 0;
 }
@@ -209,7 +209,7 @@ void ScreenSelectMusic::StartGameplayScreen() {
 
     auto VSRGGame = std::make_shared<ScreenGameplay>();
 
-    VSRGGame->Init(chart_group);
+    VSRGGame->initialize(chart_group);
 
     LoadNext = std::make_shared<ScreenLoading>(VSRGGame);
 
@@ -369,13 +369,13 @@ bool ScreenSelectMusic::Run(double Delta) {
 
     SongWheel::get_instance().Update(Delta);
 
-    scene_->UpdateTargets(Delta);
+    scene_->update_targets(Delta);
 
-    scene_->DrawUntilLayer(16);
+    scene_->draw_until_layer(16);
 
     SongWheel::get_instance().Render();
 
-    scene_->DrawFromLayer(16);
+    scene_->draw_from_layer(16);
 
     return is_active_;
 }
@@ -399,7 +399,7 @@ bool ScreenSelectMusic::on_input(int32_t key, bool isPressed, bool isMouseInput)
     if (SongWheel::get_instance().HandleInput(key, isPressed, isMouseInput))
         return true;
 
-    scene_->HandleInput(key, isPressed, isMouseInput);
+    scene_->on_input(key, isPressed, isMouseInput);
 
     if (isPressed) {
         switch (BindingsManager::translate_key(key)) {
@@ -430,7 +430,7 @@ bool ScreenSelectMusic::on_scroll_input(double xOff, double yOff) {
 
     if (IsTransitioning) return false;
 
-    scene_->HandleScrollInput(xOff, yOff);
+    scene_->on_scroll_input(xOff, yOff);
     return SongWheel::get_instance().HandleScrollInput(xOff, yOff);
 }
 

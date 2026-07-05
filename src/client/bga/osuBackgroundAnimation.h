@@ -295,7 +295,7 @@ class osuBackgroundAnimation : public BackgroundAnimation
 public:
     osuBackgroundAnimation(Interruptible* parent, const osb::SpriteList& existing_sprites, std::filesystem::path song_directory);
     ~osuBackgroundAnimation();
-    Texture* GetImageFromIndex(int m_image_index);
+    Texture2D* GetImageFromIndex(int m_image_index);
     int GetIndexFromFilename(std::string filename);
     Transformation& GetScreenTransformation();
 

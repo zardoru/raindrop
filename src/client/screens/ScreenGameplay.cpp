@@ -120,7 +120,7 @@ bool ScreenGameplay::on_input(int32_t key, bool isPressed, bool isMouseInput) {
     if (Screen::on_input(key, isPressed, isMouseInput))
         return true;
 
-    scene_->HandleInput(key, isPressed, isMouseInput);
+    scene_->on_input(key, isPressed, isMouseInput);
 
     if (isPressed) {
         switch (BindingsManager::translate_key(key)) {
@@ -440,7 +440,7 @@ bool ScreenGameplay::Run(double Delta) {
     for (auto &p : players_)
         p->update(time_.stream);
 
-    scene_->UpdateTargets(Delta);
+    scene_->update_targets(Delta);
     bga_->Update(Delta);
     render();
 
@@ -452,7 +452,7 @@ bool ScreenGameplay::Run(double Delta) {
 
 
 void ScreenGameplay::render() {
-    scene_->DrawUntilLayer(13);
+    scene_->draw_until_layer(13);
 
     for (auto &p : players_) {
         if (playfield_clip_enabled_[p->get_player_number()]) {
@@ -471,6 +471,6 @@ void ScreenGameplay::render() {
         }
     }
 
-    scene_->DrawFromLayer(14);
+    scene_->draw_from_layer(14);
 
 }
