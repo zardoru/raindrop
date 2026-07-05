@@ -65,9 +65,9 @@ class ScreenSelectMusic : public Screen {
 public:
     ScreenSelectMusic();
 
-    void LoadResources() override;
+    void load_resources() override;
 
-    void InitializeResources() override;
+    void post_load_initialization() override;
 
     bool Run(double Delta) override;
 

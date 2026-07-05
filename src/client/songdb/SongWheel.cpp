@@ -248,7 +248,7 @@ void SongWheel::SetDifficulty(uint32_t i)
         size_t oldDI = DifficultyIndex;
 
         if (maxIndex)
-            DifficultyIndex = Clamp(i, uint32_t(0), uint32_t(maxIndex - 1));
+            DifficultyIndex = clamp(i, uint32_t(0), uint32_t(maxIndex - 1));
         else
             DifficultyIndex = 0;
 

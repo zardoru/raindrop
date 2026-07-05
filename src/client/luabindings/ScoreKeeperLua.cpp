@@ -2,7 +2,7 @@
 #include <filesystem>
 
 #include <game/GameConstants.h>
-#include <game/ScoreKeeper7K.h>
+#include <game/ScoreKeeper.h>
 
 #include "LuaManager.h"
 #include <LuaBridge/LuaBridge.h>
@@ -175,7 +175,7 @@ namespace rd {
                 .addProperty("BMRank", &ScoreKeeper::getBMRank)
                         /// Whether O2Jam timing is being used.
                         // @roproperty UsesO2
-                .addProperty("UsesO2", &ScoreKeeper::usesO2)
+                .addProperty("UsesO2", &ScoreKeeper::is_o2jam)
                         /// Current O2Jam pill count
                         // @roproperty Pills
                 .addProperty("Pills", &ScoreKeeper::getPills)

@@ -10,7 +10,7 @@ private:
     double ScreenTime; // How long has it been open?
 protected:
 
-    std::shared_ptr<SceneEnvironment> Animations;
+    std::shared_ptr<SceneEnvironment> scene_;
 
     enum EScreenState
     {
@@ -21,7 +21,7 @@ protected:
 
     double GetScreenTime();
     std::shared_ptr<Screen> Parent;
-    bool Running; // Is this screen active?
+    bool is_active_; // Is this screen active?
     bool SkipThisFrame;
 
     void ChangeState(EScreenState NewState);
@@ -48,8 +48,8 @@ public:
 	void StartTransition(std::shared_ptr<Screen> scr);
 
     // Screen implementation.
-    virtual void LoadResources(); // could, or not, be called from main thread.
-    virtual void InitializeResources(); // must be called from main thread - assume it always is
+    virtual void load_resources(); // could, or not, be called from main thread.
+    virtual void post_load_initialization(); // must be called from main thread - assume it always is
     virtual bool RunIntro(float Fraction, float Delta);
     virtual bool RunExit(float Fraction, float Delta);
     virtual bool Run(double delta) = 0;

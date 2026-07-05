@@ -1,12 +1,12 @@
 #include <queue>
 #include <ChartGroup.h>
-#include <game/ScoreKeeper7K.h>
+#include <game/ScoreKeeper.h>
 
 
 #include <text_and_file_util.h>
 
 #include "PlayscreenParameters.h"
-#include "Replay7K.h"
+#include "Replay.h"
 
 #include "ScoreDatabase.h"
 #include "Profile.h"

@@ -8,6 +8,8 @@
 #include <cassert>
 #include "SongList.h"
 
+#include <algorithm>
+
 #include "SongLoader.h"
 
 ListEntry::ListEntry() {
@@ -218,23 +220,23 @@ SongList* SongList::GetParentDirectory()
 
 void SongList::SortByFn(std::function<bool(const ListEntry&, const ListEntry&)> fn)
 {
-	std::stable_sort(mChildren.begin(), mChildren.end(), [&](const ListEntry&A, const ListEntry&B)
-	{
-		if (A.Kind == ListEntry::Directory && B.Kind != A.Kind)
-		{
-			return true;
-		}
+	std::ranges::stable_sort(mChildren, [&](const ListEntry&A, const ListEntry&B)
+    {
+        if (A.Kind == ListEntry::Directory && B.Kind != A.Kind)
+        {
+            return true;
+        }
 
-		if (A.Kind != ListEntry::Directory && B.Kind != A.Kind)
-		{
-			return false;
-		}
+        if (A.Kind != ListEntry::Directory && B.Kind != A.Kind)
+        {
+            return false;
+        }
 
-		if (A.Kind == B.Kind && A.Kind == ListEntry::Directory)
-			return A.EntryName < B.EntryName;
+        if (A.Kind == B.Kind && A.Kind == ListEntry::Directory)
+            return A.EntryName < B.EntryName;
 
-		return fn(A, B);
-	});
+        return fn(A, B);
+    });
 };
 
 void SongList::SortBy(ESortCriteria criteria)

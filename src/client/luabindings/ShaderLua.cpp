@@ -49,7 +49,7 @@ public:
 /// @engineclass Shader
 void CreateShaderLua(LuaManager* anim_lua)
 {
-	luabridge::getGlobalNamespace(anim_lua->GetState())
+	luabridge::getGlobalNamespace(anim_lua->get_lua_state())
 		.beginClass<renderer::Shader>("__shader_internal")
 		.endClass()
 		.deriveClass<LShader, renderer::Shader>("Shader")

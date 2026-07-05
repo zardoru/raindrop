@@ -24,7 +24,7 @@ void CreateSceneEnvironmentLua(LuaManager* anim_lua)
 
 	/// Object2D handler. Does most callbacks behind the scene.
 	// @type SceneEnvironment
-	luabridge::getGlobalNamespace(anim_lua->GetState())
+	luabridge::getGlobalNamespace(anim_lua->get_lua_state())
 		.beginClass <SceneEnvironment>("GraphObjMan")
 		/// Add an animation to be handled by SceneEnvironment.
 		// @function AddAnimation
@@ -55,6 +55,6 @@ void CreateSceneEnvironmentLua(LuaManager* anim_lua)
 		.addFunction("CreateObject", &SceneEnvironment::CreateObject)
 		.endClass();
 
-	luabridge::push(anim_lua->GetState(), GetObjectFromState<SceneEnvironment>(anim_lua->GetState(), "GOMAN"));
-	lua_setglobal(anim_lua->GetState(), "Engine");
+	luabridge::push(anim_lua->get_lua_state(), GetObjectFromState<SceneEnvironment>(anim_lua->get_lua_state(), "GOMAN"));
+	lua_setglobal(anim_lua->get_lua_state(), "Engine");
 }

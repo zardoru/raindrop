@@ -1,3 +1,4 @@
+#include <cmath>
 #include <rmath.h>
 #include <game/scoring_systems/OsumaniaScoring.h>
 

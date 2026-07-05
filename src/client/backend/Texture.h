@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 struct ImageData
 {
 	std::filesystem::path Filename;

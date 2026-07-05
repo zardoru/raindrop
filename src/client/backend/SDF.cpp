@@ -3,6 +3,8 @@
 
 #include "SDF.h"
 
+#include <cmath>
+
 // SDF algorithm: 8SSEDT
 // Translation of implementation found at www.codersnotes.com/notes/signed-distance-fields/
 // for variable w/h, and slightly more "classed"
@@ -147,7 +149,7 @@ void ConvertToSDF(unsigned char* out, unsigned char* tex, const int w, const int
 	// copy to float GL_ALPHA texture
 	for (int y = 0; y < h; y++) {
 		for (int x = 0; x < w; x++) {
-			auto d1 = sqrt(g1.DistSqr(x, y));
+			auto d1 = std::sqrt(g1.DistSqr(x, y));
 			auto d2 = sqrt(g2.DistSqr(x, y));
 			int dist = round(d1 - d2);
 
@@ -167,12 +169,12 @@ void ConvertToSDF(unsigned char* out, unsigned char* tex, const int w, const int
 
 			if (v < 0) {
 				float o = round(v * -128.0 / min + 128);
-				int d = Clamp((int)o, 0, 255);
+				int d = clamp((int)o, 0, 255);
 				out[y * w + x] = d;
 			}
 			else {
 				float o = round(v * 127 / max + 128);
-				int d = Clamp((int)o, 0, 255);
+				int d = clamp((int)o, 0, 255);
 				out[y * w + x] = d;
 			}
 		}

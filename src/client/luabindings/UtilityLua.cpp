@@ -84,7 +84,7 @@ public:
 /// Utility classes.
 /// @engineclass Utility
 void CreateUtilityLua(LuaManager *AnimLua) {
-    luabridge::getGlobalNamespace(AnimLua->GetState())
+    luabridge::getGlobalNamespace(AnimLua->get_lua_state())
             .beginClass<VectorLua>("Vec2")
             // TODO: Document Lua
             .addConstructor < void(*)(float, float) > ()

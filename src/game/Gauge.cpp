@@ -1,3 +1,4 @@
+#include <cmath>
 #include <rmath.h>
 #include <game/Gauge.h>
 #include <game/gauges/GaugeO2Jam.h>
@@ -91,7 +92,7 @@ void GaugeStepmania::Update(ScoreKeeperJudgment skj, bool is_early, float mine_v
             lifebar_amount -= increments[SKJ_MISS] / 2.0; // early miss compensation, half the WMiss value
     }
 
-    lifebar_amount = Clamp(lifebar_amount, 0.0, 1.0);
+    lifebar_amount = clamp(lifebar_amount, 0.0, 1.0);
 }
 
 void GaugeOsuMania::DefaultSetup() {
@@ -99,7 +100,7 @@ void GaugeOsuMania::DefaultSetup() {
 }
 
 void GaugeOsuMania::Setup(double total, long long int max, double strictness) {
-    HP = Clamp(strictness, 0.0, 10.0);
+    HP = clamp(strictness, 0.0, 10.0);
 
     double _whole;
     const auto fraction = modf(HP, &_whole);
@@ -164,7 +165,7 @@ void GaugeOsuMania::Update(ScoreKeeperJudgment skj, bool is_early, float mine_va
     if (skj == SKJ_TICK) lifebar_amount += ln_tick_fill;
     if (skj >= SKJ_W0 && skj <= SKJ_MISS)
         lifebar_amount += hp_change[skj];
-    lifebar_amount = Clamp(lifebar_amount, 0.0, 1.0);
+    lifebar_amount = clamp(lifebar_amount, 0.0, 1.0);
 }
 
 void GaugeOsuMania::Reset() {

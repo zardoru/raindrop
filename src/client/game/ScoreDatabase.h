@@ -9,7 +9,7 @@ struct ScoreRow {
     float gauge;
     int hits;
     int max_combo;
-    int judgments[6];
+    int judgments[6]{};
     int misses;
     float avghit;
     float stdev;
@@ -22,7 +22,6 @@ struct ScoreRow {
         gauge = 0;
         avghit = stdev = 0;
         rank_score = 0;
-        memset(judgments, 0, sizeof(judgments));
         hits = misses = 0;
         offset = judgeoffset = 0;
         max_combo = 0;

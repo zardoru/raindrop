@@ -8,7 +8,7 @@
 #include "PlayscreenParameters.h"
 #include "../serialize/PlayscreenParameters.h"
 
-#include "Replay7K.h"
+#include "Replay.h"
 
 
 using json = nlohmann::json;
@@ -21,7 +21,7 @@ Replay::~Replay() {
 
 }
 
-void Replay::SetSongData(
+void Replay::set_chart_data(
         PlayscreenParameters params,
         rd::ESpeedType speedType,
         std::string sha256hash,
@@ -48,11 +48,11 @@ bool Replay::IsLoaded() {
     return !EventPlaybackQueue.empty();
 }
 
-void Replay::AddEvent(Entry entry) {
+void Replay::add_event(Entry entry) {
     ReplayData.push_back(entry);
 }
 
-bool Replay::Load(std::filesystem::path input) {
+bool Replay::load(std::filesystem::path input) {
     std::ifstream in(input, std::ios::in | std::ios::binary);
 
     json root;
@@ -116,7 +116,7 @@ bool Replay::Save(std::filesystem::path outputpath) const {
     return true;
 }
 
-void Replay::Update(double Time) {
+void Replay::update(double Time) {
     while (!EventPlaybackQueue.empty() &&
            EventPlaybackQueue.front().Time <= Time) {
         auto evt = EventPlaybackQueue.front();
@@ -129,7 +129,7 @@ void Replay::Update(double Time) {
     }
 }
 
-void Replay::AddPlaybackListener(OnReplayEvent fn) {
+void Replay::add_playback_listener(OnReplayEvent fn) {
     PlaybackListeners.push_back(fn);
 }
 

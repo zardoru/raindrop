@@ -1,5 +1,7 @@
 #pragma once
 
+#include <atomic>
+
 class InterruptedException : public std::exception
 {
 public:

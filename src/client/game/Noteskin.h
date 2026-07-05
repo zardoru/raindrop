@@ -37,7 +37,7 @@ public:
 
     void SetupNoteskin(bool SpecialStyle, int Lanes);
 
-    void Update(float Delta, float CurrentBeat);
+    void update(float Delta, float CurrentBeat);
 
     void DrawNote(rd::RuntimeNote &T, int Lane, float Location);
 

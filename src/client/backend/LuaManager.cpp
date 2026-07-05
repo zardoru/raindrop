@@ -1,5 +1,6 @@
 #include <string>
 #include <filesystem>
+#include <vector>
 
 #include "LuaManager.h"
 #include "Logging.h"
@@ -531,7 +532,7 @@ std::string LuaManager::GetFunctionResultS(const int StackPos)
 	return Value;
 }
 
-float LuaManager::GetFunctionResultF(const int StackPos)
+float LuaManager::get_stack_f(const int StackPos)
 {
 	return GetFunctionResultD(StackPos);
 }
@@ -562,7 +563,7 @@ void LuaManager::RegisterLibrary(std::string Libname, const luaL_Reg *Reg)
     lua_setglobal(State, Libname.c_str());
 }
 
-lua_State* LuaManager::GetState()
+lua_State* LuaManager::get_lua_state()
 {
     return State;
 }

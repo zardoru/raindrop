@@ -199,7 +199,7 @@ void CreateObject2DLua(LuaManager *anim_lua) {
     anim_lua->FinalizeEnum("BlendMode");
 
     ///
-    luabridge::getGlobalNamespace(anim_lua->GetState())
+    luabridge::getGlobalNamespace(anim_lua->get_lua_state())
             .deriveClass<Sprite, Transformation>("Object2D")
                     /// Creates a new Object2D instance. On a Noteskin context, will only be drawn with Render().
                     // Otherwise, will only be drawn if created with @{SceneEnvironment:CreateObject} or

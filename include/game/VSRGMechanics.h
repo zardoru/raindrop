@@ -34,15 +34,15 @@ namespace rd {
         virtual ~Mechanics() = default;
 
         // These HAVE to be set before anything else is called.
-        std::function<bool(uint32_t)> IsLaneKeyDown;
-        std::function<void(uint32_t, bool)> SetLaneHoldingState;
-        KeysoundEvent PlayNoteSoundEvent;
-        HitEvent HitNotify;
-        MissEvent MissNotify;
+        std::function<bool(uint32_t)> is_lane_key_down;
+        std::function<void(uint32_t, bool)> set_lane_holding_state;
+        KeysoundEvent play_keysound;
+        HitEvent notify_hit;
+        MissEvent notify_miss;
 
-        virtual void TransformNotes(RaindropProcessedChart &ChartState);
+        virtual void transform_notes(RaindropProcessedChart &ChartState);
 
-        virtual void Setup(otoworm::Chart *chart, std::shared_ptr<ScoreKeeper> scoreKeeper);
+        virtual void configure(otoworm::Chart *chart, std::shared_ptr<ScoreKeeper> scoreKeeper);
 
         // If returns true, don't judge any more notes.
         virtual bool OnUpdate(double SongTime, RuntimeNote *Note, uint32_t Lane) = 0;

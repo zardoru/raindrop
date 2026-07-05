@@ -1,5 +1,7 @@
 #pragma once
 
+#include <atomic>
+
 class SongLoader;
 
 namespace otoworm {

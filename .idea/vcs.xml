@@ -2,10 +2,6 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/cpr-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/lua/src/lua_external" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/portaudio-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/zlib-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/data" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/libotoworm" vcs="Git" />
   </component>

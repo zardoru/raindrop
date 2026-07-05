@@ -278,7 +278,7 @@ namespace renderer {
 		Shader::disable_attrib_array(DefaultShader::GetUniform(A_COLOR));
 	}
 
-	void set_shader_parameters(const bool InvertColor,
+	void set_default_shader_parameters(const bool InvertColor,
                                const bool Centered,
                                const bool BlackToTransparent, const bool ReplaceColor,
                                const int8_t HiddenMode)
@@ -485,7 +485,7 @@ void Sprite::Render()
     // Assign our matrix.
 	if (!m_shader_) {
 		auto mat = GetMatrix();
-		renderer::set_shader_parameters(ColorInvert, Centered, BlackToTransparent);
+		renderer::set_default_shader_parameters(ColorInvert, Centered, BlackToTransparent);
         assert(glGetError() == 0);
 
 		auto lf = 1.0 + LightenFactor;
@@ -573,7 +573,7 @@ void TruetypeFont::render(const std::string &in, const Vec2 &position, const Mat
 
     renderer::DefaultShader::static_bind();
     renderer::set_blending_mode(BLEND_ALPHA);
-    renderer::set_shader_parameters(false, false, false, true);
+    renderer::set_default_shader_parameters(false, false, false, true);
     renderer::DefaultShader::set_color(Red, Green, Blue, Alpha);
     renderer::set_primitive_quad_vbo();
 
@@ -707,7 +707,7 @@ void Line::Render()
 
     // Set the color.
 	using namespace renderer;
-	set_shader_parameters(true, false, false, false);
+	set_default_shader_parameters(true, false, false, false);
 
     DefaultShader::set_color(R, G, B, A);
     Shader::set_uniform(DefaultShader::GetUniform(U_MODELVIEW), &(Identity[0][0]));
@@ -752,7 +752,7 @@ void BitmapFont::render(const std::string &In, const Vec2 &Position, const Mat4 
 //    Renderer::SetScissorRegion(ScissorRegion.X1, ScissorRegion.Y1, ScissorRegion.width(), ScissorRegion.height());
 
 	using namespace renderer;
-	set_shader_parameters(false, false);
+	set_default_shader_parameters(false, false);
     DefaultShader::set_color(Red, Green, Blue, Alpha);
 
     Font->Bind();

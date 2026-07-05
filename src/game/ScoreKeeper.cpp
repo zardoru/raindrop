@@ -1,7 +1,7 @@
 #include "rmath.h"
 
 #include <game/GameConstants.h>
-#include <game/ScoreKeeper7K.h>
+#include <game/ScoreKeeper.h>
 
 #include <sstream>
 #include <iomanip>
@@ -121,8 +121,8 @@ namespace rd {
         if (judge != SKJ_MISS) {
             // SC, ACC^2 score
 
-            sc_score += Clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.0) * 2;
-            sc_sc_score += sc_score * Clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.0);
+            sc_score += clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.0) * 2;
+            sc_sc_score += sc_score * clamp(accuracy_percent(ms * ms) / 100, 0.0, 1.0);
 
             score = double(SCORE_MAX * sc_sc_score) / (getMaxJudgableNotes() * (getMaxJudgableNotes() + 1));
 
@@ -506,7 +506,7 @@ namespace rd {
         }
     }
 
-    bool ScoreKeeper::usesO2() const {
+    bool ScoreKeeper::is_o2jam() const {
         return use_o2jam;
     }
 

@@ -111,12 +111,12 @@ namespace osb {
 
 	void Event::SetEase(int val)
 	{
-		mEase = static_cast<EEase>(Clamp(val, static_cast<int>(EEase::EASE_NONE), static_cast<int>(EEase::EASE_COUNT) - 1));
+		mEase = static_cast<EEase>(clamp(val, static_cast<int>(EEase::EASE_NONE), static_cast<int>(EEase::EASE_COUNT) - 1));
 	}
 
 	float SingleValEvent::LerpValue(float At) const
 	{
-		return Lerp(Value, EndValue, EasingFuncs[GetEase()](Clamp((At - Time) / GetDuration(), 0.f, 1.f)));
+		return Lerp(Value, EndValue, EasingFuncs[GetEase()](clamp((At - Time) / GetDuration(), 0.f, 1.f)));
 	}
 
 	float SingleValEvent::GetValue() const
@@ -161,7 +161,7 @@ namespace osb {
 
 	Vec2 TwoValEvent::LerpValue(float At) const
 	{
-		return Lerp(Value, EndValue, EasingFuncs[GetEase()](Clamp((At - Time) / GetDuration(), 0.f, 1.f)));
+		return Lerp(Value, EndValue, EasingFuncs[GetEase()](clamp((At - Time) / GetDuration(), 0.f, 1.f)));
 	}
 
 	Vec3 ColorizeEvent::GetValue() const
@@ -187,7 +187,7 @@ namespace osb {
 	Vec3 ColorizeEvent::LerpValue(float At) const
 	{
 		float factor = 1.f / 255.f;
-		return Lerp(Value, EndValue, EasingFuncs[GetEase()](Clamp((At - Time) / GetDuration(), 0.f, 1.f))) * factor;
+		return Lerp(Value, EndValue, EasingFuncs[GetEase()](clamp((At - Time) / GetDuration(), 0.f, 1.f))) * factor;
 	}
 
 	BGASprite::BGASprite(std::string file, EOrigin origin, Vec2 start_pos, ELayer layer) : EventComponent(EVT_COUNT)

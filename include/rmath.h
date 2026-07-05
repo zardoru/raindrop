@@ -82,7 +82,7 @@ T abs(T x)
     return x > 0 ? x : -x;
 }
 
-inline bool IntervalsIntersect(const double a, const double b, const double c, const double d)
+inline bool intervals_intersect(const double a, const double b, const double c, const double d)
 {
     return a <= d && c <= b;
 }
@@ -100,7 +100,7 @@ inline T Lerp(const T &Start, const T& End, N k)
 }
 
 template <class T>
-inline T Clamp(const T &Value, const T &Min, const T &Max)
+inline T clamp(const T &Value, const T &Min, const T &Max)
 {
     if (Value < Min) return Min;
     else if (Value > Max) return Max;

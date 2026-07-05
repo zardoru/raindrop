@@ -60,7 +60,7 @@ namespace rd {
             Parameter::modify_inc(lifebar_amount, gauge_inc);
 
             lifebar_amount += gauge_inc;
-            lifebar_amount = Clamp(lifebar_amount, Parameter::min_value, 100.0);
+            lifebar_amount = clamp(lifebar_amount, Parameter::min_value, 100.0);
 
             /* block any further updates */
             if (!HasDelayedFailure() && lifebar_amount < Parameter::pass_threshold)

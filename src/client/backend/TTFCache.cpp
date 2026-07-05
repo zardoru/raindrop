@@ -4,6 +4,8 @@
 
 #include "TTFCache.h"
 
+#include <cstring>
+
 TTFCache::TTFCache()
 {
 }

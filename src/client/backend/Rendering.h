@@ -8,7 +8,7 @@ class VBO;
 
 namespace renderer {
 	void initialize();
-	void set_shader_parameters(bool InvertColor,
+	void set_default_shader_parameters(bool InvertColor,
                                bool Centered,
                                bool BlackToTransparent = false, bool ReplaceColor = false,
                                int8_t HiddenMode = -1);

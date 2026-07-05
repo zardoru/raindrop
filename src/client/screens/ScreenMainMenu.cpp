@@ -45,17 +45,17 @@ ScreenMainMenu::ScreenMainMenu() : Screen("ScreenMainMenu", false)
 
 void ScreenMainMenu::Init()
 {
-    Running = true;
+    is_active_ = true;
 
-    MainMenuLua = Animations->GetEnv();
+    MainMenuLua = scene_->get_script_manager();
 	/// Global gamestate instance.
 	// @autoinstance Global
-	GameState::get_instance().initialize_lua(MainMenuLua->GetState());
+	GameState::get_instance().initialize_lua(MainMenuLua->get_lua_state());
 
-    Animations->Initialize(GameState::get_instance().get_skin_file("mainmenu.lua"));
+    scene_->Initialize(GameState::get_instance().get_skin_file("mainmenu.lua"));
 
-    IntroDuration = Animations->GetIntroDuration();
-    ExitDuration = Animations->GetIntroDuration();
+    IntroDuration = scene_->GetIntroDuration();
+    ExitDuration = scene_->GetIntroDuration();
 
     ChangeState(StateIntro);
 
@@ -69,7 +69,7 @@ bool ScreenMainMenu::HandleInput(int32_t key, bool isPressed, bool isMouseInput)
     if (Screen::HandleInput(key, isPressed, isMouseInput))
         return true;
 
-    return Animations->HandleInput(key, isPressed, isMouseInput);
+    return scene_->HandleInput(key, isPressed, isMouseInput);
 }
 
 bool ScreenMainMenu::HandleScrollInput(double xOff, double yOff)
@@ -83,7 +83,7 @@ bool ScreenMainMenu::Run(double Delta)
         return true;
 
     
-    Animations->DrawTargets(Delta);
+    scene_->DrawTargets(Delta);
 
 	/*
 	float f = 24;
@@ -92,14 +92,14 @@ bool ScreenMainMenu::Run(double Delta)
 		Vec2(0, 0), m, Vec2(1, f));
 	 */
 
-    return Running;
+    return is_active_;
 }
 
 void ScreenMainMenu::OnExitEnd()
 {
     Screen::OnExitEnd();
     ChangeState(StateRunning);
-    Animations->DoEvent("OnRestore");
+    scene_->trigger_event("OnRestore");
 }
 
 void ScreenMainMenu::Cleanup()

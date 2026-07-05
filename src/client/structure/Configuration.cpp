@@ -60,7 +60,7 @@ void Configuration::Initialize()
 
     SkinCfgLua->SetGlobal("Widescreen", IsWidescreen);
     
-	GameState::get_instance().initialize_lua(SkinCfgLua->GetState());
+	GameState::get_instance().initialize_lua(SkinCfgLua->get_lua_state());
     SkinCfgLua->RunScript(GameState::get_instance().get_skin_file("skin.lua"));
 
 	AddRDLuaGlobal(SkinCfgLua);
@@ -241,7 +241,7 @@ bool Configuration::ListExists(std::string Name)
 {
 	if (!Config) throw CfgNotLoaded;
 
-    lua_State *L = SkinCfgLua->GetState();
+    lua_State *L = SkinCfgLua->get_lua_state();
     bool Exists;
 
     lua_getglobal(L, Name.c_str());

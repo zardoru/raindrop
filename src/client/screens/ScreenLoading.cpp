@@ -31,7 +31,7 @@ public:
         mFinished = false;
         try
         {
-            mScreen->LoadResources();
+            mScreen->load_resources();
         }
         catch (InterruptedException &)
         {
@@ -49,17 +49,17 @@ ScreenLoading::ScreenLoading(std::shared_ptr<Screen> _Next) : Screen("ScreenLoad
 {
     Next = _Next;
     LoadThread = nullptr;
-    Running = true;
+    is_active_ = true;
     ThreadInterrupted = false;
 	/// Global gamestate.
 	// @autoinstance Global
-    GameState::get_instance().initialize_lua(Animations->GetEnv()->GetState());
+    GameState::get_instance().initialize_lua(scene_->get_script_manager()->get_lua_state());
 
-    Animations->Preload(GameState::get_instance().get_skin_file("screenloading.lua"), "Preload");
-    Animations->Initialize("", false);
+    scene_->Preload(GameState::get_instance().get_skin_file("screenloading.lua"), "Preload");
+    scene_->Initialize("", false);
 
-    IntroDuration = std::max(Animations->GetEnv()->GetGlobalD("IntroDuration"), 0.0);
-    ExitDuration = std::max(Animations->GetEnv()->GetGlobalD("ExitDuration"), 0.0);
+    IntroDuration = std::max(scene_->get_script_manager()->GetGlobalD("IntroDuration"), 0.0);
+    ExitDuration = std::max(scene_->get_script_manager()->GetGlobalD("ExitDuration"), 0.0);
 
     ChangeState(StateIntro);
 }
@@ -82,7 +82,7 @@ void ScreenLoading::OnExitEnd()
     //WindowFrame.SetLightMultiplier(1);
     //WindowFrame.SetLightPosition(glm::vec3(0, 0, 1));
 
-    Animations.reset();
+    scene_.reset();
 
     // Close the screen we're loading if we asked to interrupt its loading.
     if (ThreadInterrupted)
@@ -94,22 +94,22 @@ void ScreenLoading::OnExitEnd()
 bool ScreenLoading::Run(double TimeDelta)
 {
     if (!LoadThread && !ThreadInterrupted)
-        return (Running = RunNested(TimeDelta));
+        return (is_active_ = RunNested(TimeDelta));
 
-    if (!Animations) return false;
+    if (!scene_) return false;
 
-    Animations->DrawTargets(TimeDelta);
+    scene_->DrawTargets(TimeDelta);
 
     if (FinishedLoading)
     {
         LoadThread->join();
         LoadThread = nullptr;
-        Next->InitializeResources();
+        Next->post_load_initialization();
         ChangeState(StateExit);
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(16));
-    return Running;
+    return is_active_;
 }
 
 bool ScreenLoading::HandleInput(int32_t key, bool isPressed, bool isMouseInput)

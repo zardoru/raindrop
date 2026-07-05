@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <unordered_map>
 #include <game/gauges/GaugeBMS.h>
 #include <game/gauges/GaugeStepmania.h>
@@ -121,7 +122,7 @@ namespace rd {
 
         bool usesW0() const;
 
-        bool usesO2() const;
+        bool is_o2jam() const;
 
         float getHitStDev() const;
 

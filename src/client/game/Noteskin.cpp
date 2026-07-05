@@ -72,18 +72,18 @@ void Noteskin::SetupNoteskin(bool SpecialStyle, int Lanes) {
 
     /// Instance of @{NoteskinObject} provided by the engine.
     // @autoinstance Notes
-    luabridge::setGlobal(NoteskinLua.GetState(), this, "Notes");
+    luabridge::setGlobal(NoteskinLua.get_lua_state(), this, "Notes");
 
-    PlayerContext::SetupLua(&NoteskinLua);
+    PlayerContext::setup_script_context(&NoteskinLua);
     /// Instance of @{Player} provided by the engine. Owner of the current noteskin script.
     // @autoinstance Player
-    luabridge::setGlobal(NoteskinLua.GetState(), Parent, "Player");
+    luabridge::setGlobal(NoteskinLua.get_lua_state(), Parent, "Player");
     if (!NoteskinLua.RunScript(GameState::get_instance().get_skin_file("noteskin.lua"))) {
         Log::LogPrintf("noteskin.lua: %s\n", NoteskinLua.GetLastError().c_str());
     }
 }
 
-void Noteskin::Update(float Delta, float CurrentBeat) {
+void Noteskin::update(float Delta, float CurrentBeat) {
     /***
      Update callback. Called every frame.
      @callback Update

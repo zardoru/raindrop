@@ -1,3 +1,5 @@
+#include <cmath>
+#include <cstring>
 #include <rmath.h>
 #include <game/TimingWindows.h>
 #include <game/timing_windows/TimingWindowsRaindropBMS.h>
@@ -58,7 +60,7 @@ void TimingWindows::Reset() {
 }
 
 void TimingWindows::SetWindowSkip(uint32_t window_skip) {
-    current_window_skip = Clamp(window_skip, min_window_skip, max_window_skip);
+    current_window_skip = clamp(window_skip, min_window_skip, max_window_skip);
 }
 
 void TimingWindows::DefaultSetup() {

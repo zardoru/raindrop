@@ -56,12 +56,12 @@ public:
 
     void Preload(const std::filesystem::path& Filename, std::string array_name);
     void Initialize(const std::filesystem::path& Filename = "", bool RunScript = true);
-    LuaManager *GetEnv();
+    LuaManager *get_script_manager();
     ImageList* GetImageList();
 
     Sprite* CreateObject();
 
-    void DoEvent(std::string EventName, int Return = 0);
+    void trigger_event(std::string EventName, int Return = 0);
     void AddLuaAnimation(Sprite* Target, const std::string &FName, int Easing, float Duration, float Delay);
     void StopAnimationsForTarget(Sprite* Target);
     void AddTarget(Drawable2D* Targ, bool IsExternal = false);

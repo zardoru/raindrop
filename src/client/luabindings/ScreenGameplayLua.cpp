@@ -30,25 +30,25 @@
 #include "../screens/ScreenGameplay7K.h"
 
 
-void ScreenGameplay::AddScriptClasses(LuaManager* Env)
+void ScreenGameplay::add_script_classes(LuaManager* Env)
 {
 #define f(n, x) addProperty(n, &ScreenGameplay::x)
-    luabridge::getGlobalNamespace(Env->GetState())
+    luabridge::getGlobalNamespace(Env->get_lua_state())
         /// @engineclass ScreenGameplay7K
         .beginClass<ScreenGameplay>("ScreenGameplay7K")
         // Whether the song time is advancing.
         /// @roproperty Active
-        .f("Active", IsActive)
+        .f("Active", is_active)
         /// Get player playing on this screen.
         // @function GetPlayer
         // @param id Index of the player to return.
         // @return nil if not found, Player if found.
         .addFunction("GetPlayer", &ScreenGameplay::GetPlayerContext)
-        .addFunction("SetPlayerClip", &ScreenGameplay::SetPlayerClip)
-        .addFunction("DisablePlayerClip", &ScreenGameplay::DisablePlayerClip)
+        .addFunction("SetPlayerClip", &ScreenGameplay::set_player_clip)
+        .addFunction("DisablePlayerClip", &ScreenGameplay::disable_player_clip)
         // All of these depend on the player.
         .endClass();
 
-    luabridge::push(Env->GetState(), this);
-    lua_setglobal(Env->GetState(), "Game");
+    luabridge::push(Env->get_lua_state(), this);
+    lua_setglobal(Env->get_lua_state(), "Game");
 }

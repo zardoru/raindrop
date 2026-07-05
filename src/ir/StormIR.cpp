@@ -4,14 +4,14 @@
 
 #include <queue>
 #include <string>
-#include <game/ScoreKeeper7K.h>
+#include <game/ScoreKeeper.h>
 #include "game/Song.h"
 #include <memory>
 #include <cpr/cpr.h>
 #include <json.hpp>
 
 #include "../client/game/PlayscreenParameters.h"
-#include "../client/game/Replay7K.h"
+#include "../client/game/Replay.h"
 #include "StormIR.h"
 #include "ScoreSerializer.h"
 #include "Logging.h"

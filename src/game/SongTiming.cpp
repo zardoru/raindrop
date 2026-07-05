@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "rmath.h"
 
 #include <text_and_file_util.h>
@@ -5,6 +7,7 @@
 
 #include <numeric>
 #include <cassert>
+#include <cmath>
 
 
 int LCM(const std::vector<int> &Set)
@@ -14,7 +17,7 @@ int LCM(const std::vector<int> &Set)
 
 int SectionIndex(const TimingData &Timing, double Beat)
 {
-    return upper_bound(Timing.begin(), Timing.end(), Beat) - Timing.begin() - 1;
+    return std::ranges::upper_bound(Timing.begin(), Timing.end(), Beat) - Timing.begin() - 1;
 }
 
 double SectionValue(const TimingData &Timing, double Beat)

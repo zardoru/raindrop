@@ -3,7 +3,7 @@
 
 #include <game/GameConstants.h>
 #include <game/VSRGMechanics.h>
-#include <game/ScoreKeeper7K.h>
+#include <game/ScoreKeeper.h>
 
 using namespace rd;
 
@@ -43,7 +43,7 @@ void RaindropArcadeMechanics::PerformJudgement(double SongTime, RuntimeNote *Not
     // From neutral or opposite scratch, or key press, trigger the head.
     double dev = 1000. * (SongTime - Note->get_start_time());
     if (IsEarlyMiss(SongTime, Note)) {
-        MissNotify(dev, Lane, Note->is_hold(), false, true);
+        notify_miss(dev, Lane, Note->is_hold(), false, true);
     } else {
         // Heads, Non-holds
         if (Note->is_head_enabled() && !Note->was_hit()) {
@@ -51,12 +51,12 @@ void RaindropArcadeMechanics::PerformJudgement(double SongTime, RuntimeNote *Not
             if (!IsBmBadJudge(SongTime, Note)) {
                 // Hit head
                 Note->hit();
-                HitNotify(dev, Lane, Note->is_hold(), false);
+                notify_hit(dev, Lane, Note->is_hold(), false);
 
-                PlayNoteSoundEvent(Note->get_sound());
+                play_keysound(Note->get_sound());
 
                 if (Note->is_hold()) {
-                    SetLaneHoldingState(Lane, true);
+                    set_lane_holding_state(Lane, true);
                     Note->disable_head();
                 } else {
                     Note->disable();
@@ -72,7 +72,7 @@ void RaindropArcadeMechanics::PerformJudgement(double SongTime, RuntimeNote *Not
                 else
                     Note->disable();
 
-                MissNotify(dev, Lane, Note->is_hold(), false, false);
+                notify_miss(dev, Lane, Note->is_hold(), false, false);
             }
         } else { // Hold Tails
 
@@ -83,13 +83,13 @@ void RaindropArcadeMechanics::PerformJudgement(double SongTime, RuntimeNote *Not
             if (abs(tdev) < PlayerScoreKeeper->getJudgmentWindow(SKJ_W3)
                 && Note->was_hit()) {
                 Note->hit();
-                HitNotify(tdev, Lane, Note->is_hold(), true);
+                notify_hit(tdev, Lane, Note->is_hold(), true);
             } else { // Tail outside judgement
                 Note->fail_hit();
-                MissNotify(dev, Lane, Note->is_hold(), false, false);
+                notify_miss(dev, Lane, Note->is_hold(), false, false);
             }
 
-            SetLaneHoldingState(Lane, false);
+            set_lane_holding_state(Lane, false);
         }
     }
 }
@@ -115,7 +115,7 @@ bool RaindropArcadeMechanics::OnUpdate(double SongTime, RuntimeNote *Note, uint3
             Note->disable();
 
             if (Note->was_hit() && Note->is_hold()) {
-                SetLaneHoldingState(Lane, false);
+                set_lane_holding_state(Lane, false);
             }
         }
 
@@ -125,7 +125,7 @@ bool RaindropArcadeMechanics::OnUpdate(double SongTime, RuntimeNote *Note, uint3
 
         // Will "emergingly" miss head and tail at their respective times.
 
-        MissNotify(dev, Lane, Note->is_hold(), false, false);
+        notify_miss(dev, Lane, Note->is_hold(), false, false);
     }
 
     return false;

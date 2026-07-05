@@ -14,6 +14,8 @@
 
 #include "BackgroundAnimation.h"
 
+#include <algorithm>
+
 #include "Texture.h"
 #include "VideoPlayback.h"
 
@@ -282,8 +284,7 @@ public:
             bmp = bmp - 1;
 
 			auto tex = List.GetFromIndex(bmp->BMP);
-			auto vid = dynamic_cast<VideoPlayback*>(tex);
-			if (vid) {
+            if (const auto vid = dynamic_cast<VideoPlayback*>(tex)) {
 				vid->UpdateClock(time - bmp->Time);
 			}
 

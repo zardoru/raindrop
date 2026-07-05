@@ -1,6 +1,6 @@
 #include <ProcessedChart.h>
 #include <game/VSRGMechanics.h>
-#include <game/ScoreKeeper7K.h>
+#include <game/ScoreKeeper.h>
 #include <game/NoteTransformations.h>
 
 #include "Logging.h"
@@ -121,7 +121,7 @@ int PlayscreenParameters::GetSeed() const
     return Seed;
 }
 
-void PlayscreenParameters::SetSeed(int seed)
+void PlayscreenParameters::set_seed(int seed)
 {
     Seed = seed;
     IsSeedSet = true;
@@ -148,7 +148,7 @@ void deserialize(PlayscreenParameters &out, nlohmann::json json)
     // ScoringType = json["score"];
 
     if (out.Random) {
-        out.SetSeed(json["seed"]);
+        out.set_seed(json["seed"]);
     }
 }
 

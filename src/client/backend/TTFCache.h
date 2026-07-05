@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 class TTFCache {
 	std::map<int, std::vector<uint8_t>> mCharBuffer;
 public:

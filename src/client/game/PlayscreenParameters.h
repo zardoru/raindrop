@@ -90,7 +90,7 @@ public:
     int GetSeed() const;
 
     // Use this seed to shuffle.
-    void SetSeed(int seed);
+    void set_seed(int seed);
 
     // Unset the seed. Generate a new one.
     void ResetSeed();

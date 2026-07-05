@@ -37,7 +37,7 @@ namespace rd {
         TI_LR2 = 7
     };
 
-    const uint8_t MAX_CHANNELS = 128; // full MIDI range
+    constexpr uint8_t MAX_CHANNELS = 64;
 
     enum ScoreKeeperJudgment {
         SKJ_NONE = -1, // no judgment.
@@ -98,7 +98,7 @@ namespace rd {
         PST_OSU = 5, // osu!mania
     };
 
-    const double SCORE_MAX = 100000000;
+    constexpr double SCORE_MAX = 100000000;
 
     enum LifeType {
 

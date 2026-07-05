@@ -45,7 +45,7 @@ public:
     void SetGlobal(const std::string &VariableName, const std::string &Value);
     void SetGlobal(const std::string &VariableName, const double &Value);
 
-    lua_State* GetState();
+    lua_State* get_lua_state();
 
     // Function calling
     void PushArgument(int Value);
@@ -58,7 +58,7 @@ public:
 
     int GetFunctionResult(int StackPos = 1);
 	std::string GetFunctionResultS(int StackPos = 1);
-    float GetFunctionResultF(int StackPos = 1);
+    float get_stack_f(int StackPos = 1);
 	double GetFunctionResultD(int StackPos = 1);
 
     std::string GetLastError();

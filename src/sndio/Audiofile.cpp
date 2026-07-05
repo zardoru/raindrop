@@ -295,7 +295,7 @@ AudioSample::~AudioSample()
 
 void AudioSample::seek(const size_t offs)
 {
-	m_counter_ = Clamp(offs, (size_t)0, m_data_->size());
+	m_counter_ = clamp(offs, (size_t)0, m_data_->size());
 }
 
 
@@ -449,8 +449,8 @@ void AudioSample::slice(const float audio_start, const float audio_end)
 	if (!m_is_loaded_) m_thread_.wait();
 
     float audioDuration = float(m_data_->size()) / (float(m_rate_) * channels_);
-    m_audio_start_ = Clamp(float(audio_start / m_pitch_), 0.0f, audioDuration);
-    m_audio_end_ = Clamp(float(audio_end / m_pitch_), m_audio_start_, audioDuration);
+    m_audio_start_ = clamp(float(audio_start / m_pitch_), 0.0f, audioDuration);
+    m_audio_end_ = clamp(float(audio_end / m_pitch_), m_audio_start_, audioDuration);
 }
 
 std::shared_ptr<AudioSample> AudioSample::CopySlice()
@@ -458,8 +458,8 @@ std::shared_ptr<AudioSample> AudioSample::CopySlice()
 	if (!m_is_loaded_)
 		m_thread_.wait();
 
-    size_t start = Clamp(size_t(m_audio_start_ * m_rate_ * channels_), size_t(0), m_data_->size());
-    size_t end = Clamp(size_t(m_audio_end_ * m_rate_ * channels_), start, m_data_->size());
+    size_t start = clamp(size_t(m_audio_start_ * m_rate_ * channels_), size_t(0), m_data_->size());
+    size_t end = clamp(size_t(m_audio_end_ * m_rate_ * channels_), start, m_data_->size());
 
     if (!m_audio_end_) throw std::runtime_error("No buffer available");
     if (end < start) throw std::runtime_error("warning copy slice: end < start");

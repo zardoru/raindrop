@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <queue>
 
 class Replay {
 public:
@@ -34,7 +35,7 @@ public:
 
     // Use the params after player processing
     // not the requested params, but effective ones
-    void SetSongData(
+    void set_chart_data(
             PlayscreenParameters params, // params we're going ingame with
             rd::ESpeedType SpeedType, // target speed type
             std::string sha256hash = "", // file hash, for locating within database
@@ -55,19 +56,19 @@ public:
      of audio drift and user note displacement
      but, in unwarped time, and including judgetime
     */
-    void AddEvent(Entry entry);
+    void add_event(Entry entry);
 
-    bool Load(std::filesystem::path input);
+    bool load(std::filesystem::path input);
 
     bool Save(std::filesystem::path input) const;
 
     // similar to auto, use judgetime - offset
-    void Update(double Time);
+    void update(double Time);
 
     /*
     function recieves time at which to pretend the judgement ocurred
     in unwarped time, without offset
     as well as lane.
     */
-    void AddPlaybackListener(OnReplayEvent fn);
+    void add_playback_listener(OnReplayEvent fn);
 };

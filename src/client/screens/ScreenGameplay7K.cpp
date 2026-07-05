@@ -22,12 +22,15 @@
 
 #include <ProcessedChart.h>
 #include <game/VSRGMechanics.h>
-#include <game/ScoreKeeper7K.h>
+#include <game/ScoreKeeper.h>
 #include "../game/PlayscreenParameters.h"
 #include "../game/Noteskin.h"
 #include "../game/PlayerContext.h"
 #include "../bga/BackgroundAnimation.h"
 #include "ScreenGameplay7K.h"
+
+#include <math.h>
+#include <ranges>
 
 #include "ScreenEvaluation7K.h"
 
@@ -36,28 +39,28 @@
 #include "../structure/Configuration.h"
 
 /// @themescript screengameplay7k.lua
-void ScreenGameplay::Activate() {
+void ScreenGameplay::activate() {
     /// Called once the song time starts advancing.
     // @callback OnActivateEvent
-    if (!Active)
-        Animations->DoEvent("OnActivateEvent");
+    if (!active_)
+        scene_->trigger_event("OnActivateEvent");
 
-    Active = true;
+    active_ = true;
 }
 
-bool ScreenGameplay::IsActive() const {
-    return Active;
+bool ScreenGameplay::is_active() const {
+    return active_;
 }
 
-otoworm::ChartGroup *ScreenGameplay::GetChartGroup() const {
-    return MyChartGroup.get();
+otoworm::ChartGroup *ScreenGameplay::get_chart_group() const {
+    return my_chart_group_.get();
 }
 
-void ScreenGameplay::PlayKeysound(int Keysound) {
-    auto fnd = Keysounds.find(Keysound);
+void ScreenGameplay::play_keysound(int keysound) {
+    auto fnd = keysounds_.find(keysound);
 
-    if (fnd != Keysounds.end() && PlayReactiveSounds) {
-        for (auto &&s: Keysounds[Keysound]) {
+    if (fnd != keysounds_.end() && play_reactive_sounds_) {
+        for (auto &&s: keysounds_[keysound]) {
             if (s) s->play();
         }
     }
@@ -65,44 +68,44 @@ void ScreenGameplay::PlayKeysound(int Keysound) {
 
 
 // Called right after the scorekeeper and the engine's objects are initialized.
-void ScreenGameplay::SetupScriptConstants() {
-    auto L = Animations->GetEnv();
-    luabridge::push(L->GetState(), static_cast<Transformation *>(BGA.get()));
+void ScreenGameplay::register_script_values() const {
+    auto L = scene_->get_script_manager();
+    luabridge::push(L->get_lua_state(), static_cast<Transformation *>(bga_.get()));
     /// The BGA's transform.
     // @autoinstance Background
-    lua_setglobal(L->GetState(), "Background");
+    lua_setglobal(L->get_lua_state(), "Background");
 }
 
 // Called before the script is executed at all.
-void ScreenGameplay::SetupLua(LuaManager *Env) {
+void ScreenGameplay::setup_scripts(LuaManager *Env) {
     /// Global Gamestate
     // @autoinstance Global
-    GameState::get_instance().initialize_lua(Env->GetState());
-    PlayerContext::SetupLua(Env);
+    GameState::get_instance().initialize_lua(Env->get_lua_state());
+    PlayerContext::setup_script_context(Env);
 
-    AddScriptClasses(Env);
+    add_script_classes(Env);
 
-    luabridge::push(Env->GetState(), this);
+    luabridge::push(Env->get_lua_state(), this);
     /// ScreenGameplay instance.
     // @autoinstance rd
-    lua_setglobal(Env->GetState(), "rd");
+    lua_setglobal(Env->get_lua_state(), "rd");
 }
 
 
-PlayerContext *ScreenGameplay::GetPlayerContext(int i) {
-    if (i >= 0 && i < Players.size())
-        return Players[i].get();
+PlayerContext *ScreenGameplay::GetPlayerContext(int i) const {
+    if (i >= 0 && i < players_.size())
+        return players_[i].get();
     else
         return nullptr;
 }
 
-void ScreenGameplay::SetPlayerClip(int pn, AABB box) {
-    PlayfieldClipEnabled[pn] = true;
-    PlayfieldClipArea[pn] = box;
+void ScreenGameplay::set_player_clip(int pn, AABB box) {
+    playfield_clip_enabled_[pn] = true;
+    playfield_clip_area_[pn] = box;
 }
 
-void ScreenGameplay::DisablePlayerClip(int pn) {
-    PlayfieldClipEnabled[pn] = false;
+void ScreenGameplay::disable_player_clip(int pn) {
+    playfield_clip_enabled_[pn] = false;
 }
 
 bool ScreenGameplay::HandleInput(int32_t key, bool isPressed, bool isMouseInput) {
@@ -117,19 +120,19 @@ bool ScreenGameplay::HandleInput(int32_t key, bool isPressed, bool isMouseInput)
     if (Screen::HandleInput(key, isPressed, isMouseInput))
         return true;
 
-    Animations->HandleInput(key, isPressed, isMouseInput);
+    scene_->HandleInput(key, isPressed, isMouseInput);
 
     if (isPressed) {
         switch (BindingsManager::TranslateKey(key)) {
             case KT_Escape:
-                if (SongPassTriggered)
-                    Time.Success = -1;
+                if (song_pass_triggered_)
+                    time_.success = -1;
                 else
-                    Running = false;
+                    is_active_ = false;
                 break;
             case KT_Enter:
-                if (!Active)
-                    Activate();
+                if (!active_)
+                    activate();
                 break;
             default:
                 break;
@@ -138,31 +141,31 @@ bool ScreenGameplay::HandleInput(int32_t key, bool isPressed, bool isMouseInput)
 #ifndef NDEBUG
         if (key == 290) // f1
         {
-            if (Music)
-                Music->set_pitch(Music->get_pitch() - 0.2);
+            if (music_)
+                music_->set_pitch(music_->get_pitch() - 0.2);
         }
         if (key == 291)
         {
-            if (Music)
-                Music->set_pitch(Music->get_pitch() + 0.2);
+            if (music_)
+                music_->set_pitch(music_->get_pitch() + 0.2);
         }// f2
 #endif
 
         if (BindingsManager::TranslateKey7K(key) != KT_Unknown) {
-            for (auto &player : Players) {
-                player->translate_key(
+            for (auto &player : players_) {
+                player->handle_lane_events(
                         BindingsManager::TranslateKey7K(key),
                         true,
-                        Time.Stream);
+                        time_.stream);
             }
         }
     } else {
         if (BindingsManager::TranslateKey7K(key) != KT_Unknown) {
-            for (auto &player : Players) {
-                player->translate_key(
+            for (auto &player : players_) {
+                player->handle_lane_events(
                         BindingsManager::TranslateKey7K(key),
                         false,
-                        Time.Stream);
+                        time_.stream);
             }
         }
     }
@@ -170,43 +173,43 @@ bool ScreenGameplay::HandleInput(int32_t key, bool isPressed, bool isMouseInput)
     return true;
 }
 
-void ScreenGameplay::RunAutoEvents() {
-    if (!StageFailureTriggered && Active) {
+void ScreenGameplay::run_auto_events() {
+    if (!stage_failure_triggered_ && active_) {
         // Play BGM events.
-        while (!BGMEvents.empty() && BGMEvents.front().time <= Time.Stream) {
-            for (auto &&s : Keysounds[BGMEvents.front().sound])
+        while (!bgm_events_.empty() && bgm_events_.front().time <= time_.stream) {
+            for (auto &&s : keysounds_[bgm_events_.front().sound])
                 if (s) {
-                    double dt = Time.Stream - BGMEvents.front().time;
+                    double dt = time_.stream - bgm_events_.front().time;
                     if (dt < s->get_duration()) {
                         s->seek_time(dt);
                         s->play();
                     }
                 }
-            BGMEvents.pop();
+            bgm_events_.pop();
         }
     }
 
-    BGA->SetAnimationTime(Time.Stream);
+    bga_->SetAnimationTime(time_.stream);
 }
 
-void ScreenGameplay::CheckShouldEndScreen() {
+void ScreenGameplay::evaluate_stage_failure() {
     auto perform_stage_failure = [&]() {
-        StageFailureTriggered = true;
+        stage_failure_triggered_ = true;
         // ScoreKeeper->failStage();
 
         // go to evaluation screen, or back to song select depending on the skin
         GameState::get_instance().submit_score(0);
 
         // post-gameplay failure?
-        if (!ShouldDelayFailure()) {
-            FailSnd.play();
+        if (!has_delayed_failure()) {
+            fail_snd_.play();
 
             // We stop all audio..
-            if (Music)
-                Music->stop();
+            if (music_)
+                music_->stop();
 
-            for (auto & Keysound : Keysounds)
-                for (auto &&s : Keysound.second)
+            for (auto &ks: keysounds_ | std::views::values)
+                for (auto &&s : ks)
                     if (s)
                         s->stop();
 
@@ -215,20 +218,20 @@ void ScreenGameplay::CheckShouldEndScreen() {
             /// If the player fails, this is called. 
             // Return time to wait before transitioning out of this screen. Clamped to [0,30]
             // @callback OnFailureEvent
-            Animations->DoEvent("OnFailureEvent", 1);
-            Time.Failure = Clamp(Animations->GetEnv()->GetFunctionResultF(), 0.0f, 30.0f);
+            scene_->trigger_event("OnFailureEvent", 1);
+            time_.failure = clamp(scene_->get_script_manager()->get_stack_f(), 0.0f, 30.0f);
         }
     };
 
     // Run failure first; make sure it has priority over checking whether it's a pass or not.
-    if (PlayersHaveFailed() && !ShouldDelayFailure() && !StageFailureTriggered)
+    if (all_players_failed() && !has_delayed_failure() && !stage_failure_triggered_)
         perform_stage_failure();
 
     // Okay then, so it's a pass?
-    if (SongHasFinished() && !StageFailureTriggered) {
-        if (!SongPassTriggered) {
+    if (has_song_finished() && !stage_failure_triggered_) {
+        if (!song_pass_triggered_) {
             // delayed failure check. 
-            if (PlayersHaveFailed()) {
+            if (all_players_failed()) {
                 perform_stage_failure(); // No, don't trigger SongPassTriggered. It wasn't a pass.
                 return;
             }
@@ -236,38 +239,41 @@ void ScreenGameplay::CheckShouldEndScreen() {
             // do score submit
             GameState::get_instance().submit_score(0);
 
-            SongPassTriggered = true; // Reached the end!
+            song_pass_triggered_ = true; // Reached the end!
 
             /// If the player succeeds, this is called.
             // Returns time to exit screen. Clamped [0,30]
             // @callback OnSongFinishedEvent
-            Animations->DoEvent("OnSongFinishedEvent", 1);
-            Time.Success = Clamp(Animations->GetEnv()->GetFunctionResultF(), 1.0f, 30.0f);
+            scene_->trigger_event("OnSongFinishedEvent", 1);
+            time_.success = clamp(scene_->get_script_manager()->get_stack_f(), 1.0f, 30.0f);
         }
     }
 
     // Okay then, the song's done, and the success animation is done too. Time to evaluate.
-    if (Time.Success < 0 && SongPassTriggered) {
-        auto Eval = std::make_shared<ScreenEvaluation>();
-        Eval->Init(this);
-        Next = Eval;
+    bool trigger_eval = false;
+    if (time_.success < 0 && song_pass_triggered_) {
+        trigger_eval = true;
     }
 
-    if (StageFailureTriggered) {
-        Time.Miss = 10; // Infinite, for as long as it lasts.
-        if (Time.Failure <= 0) {
+    if (stage_failure_triggered_) {
+        time_.miss_layer = 10; // Infinite, for as long as it lasts.
+        if (time_.failure <= 0) {
             if (Configuration::GetSkinConfigf("GoToSongSelectOnFailure") == 0) {
-                auto Eval = std::make_shared<ScreenEvaluation>();
-                Eval->Init(this);
-                Next = Eval;
+                trigger_eval = true;
             } else
-                Running = false;
+                is_active_ = false;
         }
+    }
+
+    if (trigger_eval) {
+        const auto screen_evaluation = std::make_shared<ScreenEvaluation>();
+        screen_evaluation->Init(this);
+        Next = screen_evaluation;
     }
 }
 
-bool ScreenGameplay::ShouldDelayFailure() {
-    for (auto &player : Players) {
+bool ScreenGameplay::has_delayed_failure() const {
+    for (auto &player : players_) {
         if (player->has_delayed_failure())
             return true;
     }
@@ -275,8 +281,8 @@ bool ScreenGameplay::ShouldDelayFailure() {
     return false;
 }
 
-bool ScreenGameplay::PlayersHaveFailed() {
-    for (auto &player : Players) {
+bool ScreenGameplay::all_players_failed() const {
+    for (auto &player : players_) {
         if (!player->has_failed())
             return false;
     }
@@ -284,15 +290,15 @@ bool ScreenGameplay::PlayersHaveFailed() {
     return true;
 }
 
-bool ScreenGameplay::SongHasFinished() {
-    auto runtime = Time.Stream;
+bool ScreenGameplay::has_song_finished() const {
+    auto runtime = time_.stream;
 
     // music is not playing, game is active...
-    if (Music && !Music->is_playing() && Active) {
-        runtime = Time.Stream;
+    if (music_ && !music_->is_playing() && active_) {
+        runtime = time_.stream;
     }
 
-    for (auto &player : Players) {
+    for (auto &player : players_) {
         if (!player->has_song_finished(runtime))
             return false;
     }
@@ -300,41 +306,41 @@ bool ScreenGameplay::SongHasFinished() {
     return true;
 }
 
-void ScreenGameplay::UpdateSongTime(float Delta) {
+void ScreenGameplay::update_song_time(float delta) {
 
     // First call.
-    if (isnan(Time.OldStream)) {
-        if (Music && Music->is_valid()) {
-            if (Time.Stream == 0) /* we have not sought already */
-                Music->seek_time(-Time.Waiting);
+    if (::isnan(time_.old_stream)) {
+        if (music_ && music_->is_valid()) {
+            if (time_.stream == 0) /* we have not sought already */
+                music_->seek_time(-time_.waiting);
 
             // Music->SetPitch(0.8);
-            Music->play();
+            music_->play();
         } else {
-            Time.Stream = -Time.Waiting;
+            time_.stream = -time_.waiting;
         }
 
-        Time.AudioOld = GetMixer()->GetTime();
+        time_.audio_old = GetMixer()->GetTime();
     }
 
     // UpdateDecoder for the next delta.
-    Time.OldStream = Time.Stream;
+    time_.old_stream = time_.stream;
 
     // Current Time
-    if (Music && Music->is_valid())
+    if (music_ && music_->is_valid())
         /* map stream time to DAC queued sample times */
-        Time.Stream = Music->map_stream_clock(GetMixer()->GetTime());
+        time_.stream = music_->map_stream_clock(GetMixer()->GetTime());
     else {
         /* these remain deltas for rates*/
         double CurrAudioTime = GetMixer()->GetTime();
-        Time.Stream += CurrAudioTime - Time.AudioOld;
-        Time.AudioOld = CurrAudioTime;
+        time_.stream += CurrAudioTime - time_.audio_old;
+        time_.audio_old = CurrAudioTime;
     }
 
 #ifdef AUDIO_CLOCK_DEBUG
-    if (Music->is_playing() && Time.Stream > 0 && Music->get_played_time() > 0) {
-        double expected = (GetMixer()->GetTime() - Music->get_played_time()) * Music->get_pitch();
-        if (expected - Time.Stream > 0.1) {
+    if (music_->is_playing() && time_.stream > 0 && music_->get_played_time() > 0) {
+        double expected = (GetMixer()->GetTime() - music_->get_played_time()) * music_->get_pitch();
+        if (expected - time_.stream > 0.1) {
             std::cerr << "..." << std::endl;
         }
     }
@@ -342,8 +348,8 @@ void ScreenGameplay::UpdateSongTime(float Delta) {
 }
 
 void
-ScreenGameplay::OnPlayerHit(rd::ScoreKeeperJudgment judgment, double dt, uint32_t lane, bool hold, bool release,
-                            int pn) {
+ScreenGameplay::on_player_hit(rd::ScoreKeeperJudgment judgment, double dt, uint32_t lane, bool hold, bool release,
+                            int pn) const {
     /// When a note is hit, this is called.
     // @callback HitEvent
     // @param judgment Judgment value.
@@ -352,28 +358,28 @@ ScreenGameplay::OnPlayerHit(rd::ScoreKeeperJudgment judgment, double dt, uint32_
     // @param hold Whether the note was a hold.
     // @param release Whether it was a hold release.
     // @param pn Player number. Identifies who hit the note.
-    if (Animations->GetEnv()->CallFunction("HitEvent", 6)) {
-        Animations->GetEnv()->PushArgument(judgment);
-        Animations->GetEnv()->PushArgument(dt);
-        Animations->GetEnv()->PushArgument((int) lane + 1);
-        Animations->GetEnv()->PushArgument(hold);
-        Animations->GetEnv()->PushArgument(release);
-        Animations->GetEnv()->PushArgument(pn);
-        Animations->GetEnv()->RunFunction();
+    if (scene_->get_script_manager()->CallFunction("HitEvent", 6)) {
+        scene_->get_script_manager()->PushArgument(judgment);
+        scene_->get_script_manager()->PushArgument(dt);
+        scene_->get_script_manager()->PushArgument((int) lane + 1);
+        scene_->get_script_manager()->PushArgument(hold);
+        scene_->get_script_manager()->PushArgument(release);
+        scene_->get_script_manager()->PushArgument(pn);
+        scene_->get_script_manager()->RunFunction();
     }
 
-    auto PlayerScoreKeeper = Players[pn]->GetScoreKeeper();
+    auto PlayerScoreKeeper = players_[pn]->get_score_keeper();
     if (PlayerScoreKeeper->getMaxJudgableNotes() == PlayerScoreKeeper->getScore(rd::ST_NOTES_HIT)) {
         /// Once a player achieves a full combo, this is called. This is called inmediately after HitEvent
         // so the script can keep track of player number who last hit.
         // @callback OnFullComboEvent
-        Animations->DoEvent("OnFullComboEvent");
+        scene_->trigger_event("OnFullComboEvent");
     }
 
 }
 
-void ScreenGameplay::OnPlayerMiss(double dt, uint32_t lane, bool hold, bool dontbreakcombo, bool earlymiss, int pn) {
-    BGA->OnMiss();
+void ScreenGameplay::on_player_miss(double dt, uint32_t lane, bool hold, bool dontbreakcombo, bool earlymiss, int pn) const {
+    bga_->OnMiss();
 
     /// Whenever a player fails, this is called.
     // @callback MissEvent
@@ -381,27 +387,27 @@ void ScreenGameplay::OnPlayerMiss(double dt, uint32_t lane, bool hold, bool dont
     // @param lane 1-index based lane.
     // @param hold Whether the note was a hold.
     // @param pn Player number identifying who missed the note.
-    if (Animations->GetEnv()->CallFunction("MissEvent", 4)) {
-        Animations->GetEnv()->PushArgument(dt);
-        Animations->GetEnv()->PushArgument((int) lane + 1);
-        Animations->GetEnv()->PushArgument(hold);
-        Animations->GetEnv()->PushArgument(pn);
-        Animations->GetEnv()->RunFunction();
+    if (scene_->get_script_manager()->CallFunction("MissEvent", 4)) {
+        scene_->get_script_manager()->PushArgument(dt);
+        scene_->get_script_manager()->PushArgument((int) lane + 1);
+        scene_->get_script_manager()->PushArgument(hold);
+        scene_->get_script_manager()->PushArgument(pn);
+        scene_->get_script_manager()->RunFunction();
     }
 }
 
-void ScreenGameplay::OnPlayerGearKeyEvent(uint32_t lane, bool keydown, int pn) {
+void ScreenGameplay::on_player_gear_key_event(uint32_t lane, bool keydown, int pn) const {
     /// Called when a gear button was pressed or released
     // @callback GearKeyEvent
     // @param lane 1-index based lane.
     // @param keydown Whether the key is down or up.
     // @param pn Player number identifying who performed this event.
-    if (Animations->GetEnv()->CallFunction("GearKeyEvent", 3)) {
-        Animations->GetEnv()->PushArgument((int) lane + 1);
-        Animations->GetEnv()->PushArgument(keydown);
-        Animations->GetEnv()->PushArgument(pn);
+    if (scene_->get_script_manager()->CallFunction("GearKeyEvent", 3)) {
+        scene_->get_script_manager()->PushArgument((int) lane + 1);
+        scene_->get_script_manager()->PushArgument(keydown);
+        scene_->get_script_manager()->PushArgument(pn);
 
-        Animations->GetEnv()->RunFunction();
+        scene_->get_script_manager()->RunFunction();
     }
 }
 
@@ -409,62 +415,62 @@ bool ScreenGameplay::Run(double Delta) {
     if (Next)
         return RunNested(Delta);
 
-    if (!DoPlay)
+    if (!load_successful_)
         return false;
 
-    if (ForceActivation) {
-        Activate();
-        ForceActivation = false;
+    if (start_active_) {
+        activate();
+        start_active_ = false;
     }
 
-    if (Active) {
-        Time.Game += Delta;
-        Time.Miss -= Delta;
-        Time.Failure -= Delta;
-        Time.Success -= Delta;
+    if (active_) {
+        time_.game += Delta;
+        time_.miss_layer -= Delta;
+        time_.failure -= Delta;
+        time_.success -= Delta;
 
-        UpdateSongTime(Delta);
+        update_song_time(Delta);
 
-        if (Time.Game >= Time.Waiting) {
-            CheckShouldEndScreen();
+        if (time_.game >= time_.waiting) {
+            evaluate_stage_failure();
         }
     }
 
-    RunAutoEvents();
-    for (auto &p : Players)
-        p->update(Time.Stream);
+    run_auto_events();
+    for (auto &p : players_)
+        p->update(time_.stream);
 
-    Animations->UpdateTargets(Delta);
-    BGA->Update(Delta);
-    Render();
+    scene_->UpdateTargets(Delta);
+    bga_->Update(Delta);
+    render();
 
     if (Delta > 0.1)
-        Log::Logf("ScreenGameplay7K: Delay@[ST%.03f/RST:%.03f] = %f\n", GetScreenTime(), Time.Game, Delta);
+        Log::Logf("ScreenGameplay7K: Delay@[ST%.03f/RST:%.03f] = %f\n", GetScreenTime(), time_.game, Delta);
 
-    return Running;
+    return is_active_;
 }
 
 
-void ScreenGameplay::Render() {
-    Animations->DrawUntilLayer(13);
+void ScreenGameplay::render() {
+    scene_->DrawUntilLayer(13);
 
-    for (auto &p : Players) {
-        if (PlayfieldClipEnabled[p->get_player_number()]) {
+    for (auto &p : players_) {
+        if (playfield_clip_enabled_[p->get_player_number()]) {
             renderer::set_scissor(true);
 
-            auto reg = PlayfieldClipArea[p->get_player_number()];
+            auto reg = playfield_clip_area_[p->get_player_number()];
 
             renderer::set_scissor_region_wnd(
                     reg.X1, reg.Y1, reg.width(), reg.height()
             );
 
-            p->render(Time.Stream);
+            p->render(time_.stream);
             renderer::set_scissor(false);
         } else {
-            p->render(Time.Stream);
+            p->render(time_.stream);
         }
     }
 
-    Animations->DrawFromLayer(14);
+    scene_->DrawFromLayer(14);
 
 }

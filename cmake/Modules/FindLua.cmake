@@ -1,18 +1,21 @@
 include(FindPackageHandleStandardArgs)
 include(FetchContent)
 
-find_path(LUA_INCLUDE_DIR lua.h
-    PATH_SUFFIXES lua lua5.4 lua54 lua5.3 lua53
-)
-find_library(LUA_LIBRARY NAMES lua lua5.4 lua54 lua5.3 lua53)
-
-if(LUA_INCLUDE_DIR AND LUA_LIBRARY AND NOT TARGET Lua::Lua)
-    add_library(Lua::Lua UNKNOWN IMPORTED)
-    set_target_properties(Lua::Lua PROPERTIES
-        IMPORTED_LOCATION "${LUA_LIBRARY}"
-        INTERFACE_INCLUDE_DIRECTORIES "${LUA_INCLUDE_DIR}"
-    )
-endif()
+# Don't use non-vendored lua; luaL symbols are mandatory.
+#find_path(LUA_INCLUDE_DIR lua.h
+#    PATH_SUFFIXES lua lua5.4 lua54 lua5.3 lua53
+#)
+#find_library(LUA_LIBRARY NAMES lua lua5.4 lua54 lua5.3 lua53)
+#
+#if(LUA_INCLUDE_DIR AND LUA_LIBRARY AND NOT TARGET Lua::Lua)
+#    add_library(Lua::Lua UNKNOWN IMPORTED)
+#    set_target_properties(Lua::Lua PROPERTIES
+#        IMPORTED_LOCATION "${LUA_LIBRARY}"
+#        INTERFACE_INCLUDE_DIRECTORIES "${LUA_INCLUDE_DIR}"
+#    )
+#
+#    message("-- Lua Found: ${LUA_INCLUDE_DIR} ${LUA_LIBRARY}")
+#endif()
 
 if(NOT TARGET Lua::Lua)
     FetchContent_Declare(lua

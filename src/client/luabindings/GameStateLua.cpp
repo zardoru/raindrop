@@ -19,7 +19,7 @@
 #include "../game/PlayscreenParameters.h"
 #include "../structure/Configuration.h"
 
-#include <game/ScoreKeeper7K.h>
+#include <game/ScoreKeeper.h>
 
 enum OBJTYPE
 {

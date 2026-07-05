@@ -31,15 +31,15 @@
 
 ScreenEvaluation::ScreenEvaluation() :
         Screen("ScreenEvaluation7K", false) {
-    Running = true;
+    is_active_ = true;
 }
 
 void ScreenEvaluation::Init(ScreenGameplay *pr) {
-    pr->SetupLua(Animations->GetEnv());
-    Animations->Initialize(GameState::get_instance().get_skin_file("screenevaluation7k.lua"));
+    pr->setup_scripts(scene_->get_script_manager());
+    scene_->Initialize(GameState::get_instance().get_skin_file("screenevaluation7k.lua"));
 
-    IntroDuration = Animations->GetIntroDuration();
-    ExitDuration = Animations->GetExitDuration();
+    IntroDuration = scene_->GetIntroDuration();
+    ExitDuration = scene_->GetExitDuration();
 
     ChangeState(StateIntro);
 
@@ -49,7 +49,7 @@ void ScreenEvaluation::Init(ScreenGameplay *pr) {
 bool ScreenEvaluation::HandleInput(int32_t key, bool isPressed, bool isMouseInput) {
     auto k = BindingsManager::TranslateKey(key);
     if ((k == KT_Escape || k == KT_Select) && isPressed)
-        Running = false;
+        is_active_ = false;
 
     return true;
 }
@@ -58,8 +58,8 @@ void ScreenEvaluation::Cleanup() {
 }
 
 bool ScreenEvaluation::Run(double Delta) {
-    Animations->DrawTargets(Delta);
-    return Running;
+    scene_->DrawTargets(Delta);
+    return is_active_;
 }
 /*
 void ScreenEvaluation::PrintCLIResults(ScoreKeeper *result){

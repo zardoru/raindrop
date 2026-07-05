@@ -3,7 +3,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <LuaManager.h>
 #include <game/VSRGMechanics.h>
-#include <game/ScoreKeeper7K.h>
+#include <game/ScoreKeeper.h>
 
 constexpr auto TIME_RANGE = 10000;
 
@@ -44,10 +44,10 @@ struct BMSSetup {
 	BMSSetup() : mech(true) {
 		sk = std::make_shared<ScoreKeeper>();
 		sk->setJudgeRank(4); // easy
-		mech.Setup(nullptr, sk);
+		mech.configure(nullptr, sk);
         sk->setTotalObjects(100, 0);
 
-		mech.MissNotify = [&](double t, uint32_t, bool hold, bool nobreakcombo, bool earlymiss) {
+		mech.notify_miss = [&](double t, uint32_t, bool hold, bool nobreakcombo, bool earlymiss) {
             sk->missNote(nobreakcombo, earlymiss, true);
 		};
 	}
@@ -60,7 +60,7 @@ struct SMSetup {
 	SMSetup() : mech(false) {
 		sk = std::make_shared<ScoreKeeper>();
 		sk->setSMJ4Windows();
-		mech.Setup(nullptr, sk);
+		mech.configure(nullptr, sk);
         sk->setTotalObjects(100, 0);
 	}
 };

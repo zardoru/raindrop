@@ -8,6 +8,8 @@
 #include "Texture.h"
 #include "VideoPlayback.h"
 
+#include <condition_variable>
+
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>

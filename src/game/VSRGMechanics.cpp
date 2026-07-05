@@ -1,9 +1,11 @@
+#include <math.h>
+
 #include "rmath.h"
 
 #include <game/Song.h>
 #include <game/RaindropProcessedChart.h>
 
-#include <game/ScoreKeeper7K.h>
+#include <game/ScoreKeeper.h>
 
 #include <game/VSRGMechanics.h>
 #include <game/NoteTransformations.h>
@@ -38,7 +40,7 @@ namespace rd {
     }
 
 
-    void Mechanics::TransformNotes(RaindropProcessedChart &ChartState) {
+    void Mechanics::transform_notes(RaindropProcessedChart &ChartState) {
         if (GetTimingKind() == TT_BEATS) {
             NoteTransform::TransformToBeats(
                     ChartState.chart->channels,
@@ -47,7 +49,7 @@ namespace rd {
         }
     }
 
-    void Mechanics::Setup(otoworm::Chart *chart, std::shared_ptr<ScoreKeeper> scoreKeeper) {
+    void Mechanics::configure(otoworm::Chart *chart, std::shared_ptr<ScoreKeeper> scoreKeeper) {
         CurrentChart = chart;
         PlayerScoreKeeper = scoreKeeper;
     }
@@ -74,8 +76,8 @@ namespace rd {
                 // remove hold notes that were never hit.
                 m->make_invisible();
 
-                if (MissNotify)
-                    MissNotify(tD, k, m->is_hold(), true, false);
+                if (notify_miss)
+                    notify_miss(tD, k, m->is_hold(), true, false);
 
                 m->hit();
 
@@ -85,8 +87,8 @@ namespace rd {
         } // Condition B: Regular note or hold head outside cutoff, wasn't hit and it's enabled.
         else if (IsLateHeadMiss(SongTime, m) &&
                  (!m->was_hit() && m->is_head_enabled())) {
-            if (MissNotify)
-                MissNotify(
+            if (notify_miss)
+                notify_miss(
                         abs(SongTime - m->get_start_time()) * 1000,
                         k,
                         m->is_hold(),
@@ -100,11 +102,11 @@ namespace rd {
                 m->disable();
             } else {
                 m->disable_head();
-                if (IsLaneKeyDown(k)) { // if the note was already being held down
+                if (is_lane_key_down(k)) { // if the note was already being held down
                     m->hit();
 
-                    if (SetLaneHoldingState)
-                        SetLaneHoldingState(k, true);
+                    if (set_lane_holding_state)
+                        set_lane_holding_state(k, true);
 
                     hold_hit_time[Lane] = SongTime;
                 }
@@ -118,11 +120,11 @@ namespace rd {
                 m->fail_hit();
                 // Take away health and combo (1st false)
 
-                if (MissNotify)
-                    MissNotify(abs(SongTime - m->get_end_time()) * 1000, k, m->is_hold(), false, false);
+                if (notify_miss)
+                    notify_miss(abs(SongTime - m->get_end_time()) * 1000, k, m->is_hold(), false, false);
 
-                if (SetLaneHoldingState)
-                    SetLaneHoldingState(k, false);
+                if (set_lane_holding_state)
+                    set_lane_holding_state(k, false);
 
                 m->disable();
                 hold_hit_time[Lane] = NAN;
@@ -130,13 +132,13 @@ namespace rd {
                 return true;
             } else if ((SongTime - m->get_end_time()) * 1000 > 0 && !forcedRelease) {
                 // Condition C-2: Forced release is not enabled
-                if (IsLaneKeyDown(Lane)) {
-                    if (HitNotify)
-                        HitNotify(0, k, true, true);
+                if (is_lane_key_down(Lane)) {
+                    if (notify_hit)
+                        notify_hit(0, k, true, true);
                 } else {
                     // Only take away health, but not combo (1st true)
-                    if (MissNotify)
-                        MissNotify(
+                    if (notify_miss)
+                        notify_miss(
                                 PlayerScoreKeeper->getLateMissCutoffMS(),
                                 k,
                                 m->is_hold(),
@@ -145,8 +147,8 @@ namespace rd {
                         );
                 }
 
-                if (SetLaneHoldingState)
-                    SetLaneHoldingState(k, false);
+                if (set_lane_holding_state)
+                    set_lane_holding_state(k, false);
 
                 hold_hit_time[Lane] = NAN;
                 m->disable();
@@ -154,7 +156,7 @@ namespace rd {
             } else { // still not over, and we're hitting it
                 auto tick_interval = PlayerScoreKeeper->getLNTickInterval();
                 if (tick_interval > 0) {
-                    if (m->is_enabled() && m->was_hit() && !isnan(hold_hit_time[Lane])) {
+                    if (m->is_enabled() && m->was_hit() && !::isnan(hold_hit_time[Lane])) {
                         auto delta = SongTime - hold_hit_time[Lane];
 
                         if (delta > tick_interval) {
@@ -186,16 +188,16 @@ namespace rd {
         {
             // early miss
             if (IsEarlyMiss(SongTime, m)) {
-                if (MissNotify)
-                    MissNotify(dev, Lane, m->is_hold(), m->is_hold(), true);
+                if (notify_miss)
+                    notify_miss(dev, Lane, m->is_hold(), m->is_hold(), true);
             } else {
                 m->hit();
-                if (HitNotify)
-                    HitNotify(dev, Lane, m->is_hold(), false);
+                if (notify_hit)
+                    notify_hit(dev, Lane, m->is_hold(), false);
 
                 if (m->is_hold()) {
-                    if (SetLaneHoldingState)
-                        SetLaneHoldingState(Lane, true);
+                    if (set_lane_holding_state)
+                        set_lane_holding_state(Lane, true);
 
                     hold_hit_time[Lane] = SongTime;
                 } else {
@@ -204,8 +206,8 @@ namespace rd {
                 }
             }
 
-            if (PlayNoteSoundEvent)
-                PlayNoteSoundEvent(m->get_sound());
+            if (play_keysound)
+                play_keysound(m->get_sound());
 
             return true;
         }
@@ -234,27 +236,27 @@ namespace rd {
             if (((tD < releaseWindow) && !forcedRelease) ||
                 (dev > -earlyHit && dev < lateMiss)) {
                 // Only consider it a timed thing if releasing it is forced.
-                if (HitNotify)
-                    HitNotify(forcedRelease ? dev : 0, Lane, true, true);
+                if (notify_hit)
+                    notify_hit(forcedRelease ? dev : 0, Lane, true, true);
             } else /* Released off time */
             {
                 // early misses for hold notes always count as regular misses.
                 // they don't break combo when we're not doing forced releases.
                 m->fail_hit();
 
-                if (MissNotify)
-                    MissNotify(dev, Lane, true, false, false);
+                if (notify_miss)
+                    notify_miss(dev, Lane, true, false, false);
             }
 
             hold_hit_time[Lane] = NAN;
 
-            if (SetLaneHoldingState)
-                SetLaneHoldingState(Lane, false);
+            if (set_lane_holding_state)
+                set_lane_holding_state(Lane, false);
 
             m->disable();
 
-            if (PlayNoteSoundEvent)
-                PlayNoteSoundEvent(m->get_tail_sound());
+            if (play_keysound)
+                play_keysound(m->get_tail_sound());
 
             return true;
         }
@@ -279,19 +281,19 @@ namespace rd {
 
             if (tD < PlayerScoreKeeper->getJudgmentWindow(SKJ_W3)) /* Released in time */
             {
-                HitNotify(dev, Lane, m->is_hold(), true);
-                SetLaneHoldingState(Lane, false);
+                notify_hit(dev, Lane, m->is_hold(), true);
+                set_lane_holding_state(Lane, false);
                 m->disable();
             } else /* Released off time (early since Late is managed by the OnUpdate function.) */
             {
                 m->fail_hit();
-                MissNotify(dev, Lane, m->is_hold(), false, false);
+                notify_miss(dev, Lane, m->is_hold(), false, false);
 
                 m->disable();
-                SetLaneHoldingState(Lane, false);
+                set_lane_holding_state(Lane, false);
             }
 
-            PlayNoteSoundEvent(m->get_tail_sound());
+            play_keysound(m->get_tail_sound());
 
             return true;
         }
@@ -310,10 +312,10 @@ namespace rd {
         {
             m->hit();
 
-            HitNotify(dev, Lane, m->is_hold(), false);
+            notify_hit(dev, Lane, m->is_hold(), false);
 
             if (m->is_hold())
-                SetLaneHoldingState(Lane, true);
+                set_lane_holding_state(Lane, true);
             else {
                 m->disable();
 
@@ -322,15 +324,15 @@ namespace rd {
                     m->make_invisible();
             }
 
-            PlayNoteSoundEvent(m->get_sound());
+            play_keysound(m->get_sound());
 
             return true;
         } else if (tD > PlayerScoreKeeper->getJudgmentWindow(SKJ_W3) && tD < PlayerScoreKeeper->getLateMissCutoffMS()) {
             m->fail_hit();
             m->disable();
 
-            MissNotify(dev, Lane, m->is_hold(), false, false);
-            PlayNoteSoundEvent(m->get_sound());
+            notify_miss(dev, Lane, m->is_hold(), false, false);
+            play_keysound(m->get_sound());
         }
 
         return false;
@@ -348,12 +350,12 @@ namespace rd {
         if (tTail > 0 && !m->was_hit() && m->is_hold()) {
             // remove hold notes that were never hit.
             m->fail_hit();
-            MissNotify(abs(tTail), k, m->is_hold(), true, false);
+            notify_miss(abs(tTail), k, m->is_hold(), true, false);
             m->disable();
         } // Condition B: Regular note or hold head outside cutoff, wasn't hit and it's enabled.
         else if (tHead > PlayerScoreKeeper->getJudgmentWindow(SKJ_W3) && !m->was_hit() && m->is_enabled()) {
             m->fail_hit();
-            MissNotify(abs(tHead), k, m->is_hold(), false, false);
+            notify_miss(abs(tHead), k, m->is_hold(), false, false);
 
             // remove from judgment completely
             m->disable();
@@ -361,9 +363,9 @@ namespace rd {
         else if (tTail > PlayerScoreKeeper->getJudgmentWindow(SKJ_W3) &&
                  m->is_hold() && m->was_hit() && m->is_enabled()) {
             m->fail_hit();
-            MissNotify(abs(tTail), k, m->is_hold(), false, false);
+            notify_miss(abs(tTail), k, m->is_hold(), false, false);
 
-            SetLaneHoldingState(k, false);
+            set_lane_holding_state(k, false);
             m->disable();
         }
 

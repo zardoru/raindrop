@@ -18,6 +18,9 @@
 #include "Texture.h"
 
 #include "SceneEnvironment.h"
+
+#include <algorithm>
+
 #include "ImageList.h"
 #include "Logging.h"
 #include "GameWindow.h"
@@ -37,10 +40,10 @@
 
 void CreateLuaInterface(LuaManager *AnimLua);
 
-bool LuaAnimation(LuaManager *Lua, const std::string& Func, Sprite *Target, float Frac) {
+bool LuaAnimation(LuaManager *Lua, const std::string &Func, Sprite *Target, float Frac) {
     if (Lua->CallFunction(Func.c_str(), 2, 1)) {
         Lua->PushArgument(Frac);
-        luabridge::push(Lua->GetState(), Target);
+        luabridge::push(Lua->get_lua_state(), Target);
 
         if (Lua->RunFunction())
             return Lua->GetFunctionResult() > 0;
@@ -52,7 +55,7 @@ bool LuaAnimation(LuaManager *Lua, const std::string& Func, Sprite *Target, floa
 void SceneEnvironment::StopAnimationsForTarget(Sprite *Target) {
     for (auto i = Animations.begin();
          i != Animations.end();
-            ) {
+    ) {
         if (i->Target == Target) {
             i = Animations.erase(i);
             if (i == Animations.end()) break;
@@ -130,7 +133,7 @@ SceneEnvironment::SceneEnvironment(const char *ScreenName, bool initUI) {
     Lua->RegisterStruct("GOMAN", this);
 
 
-    GameState::get_instance().initialize_lua(Lua->GetState());
+    GameState::get_instance().initialize_lua(Lua->get_lua_state());
 
     /// Automatic instance of SceneEnvironment for script use.
     // @autoinstance Engine
@@ -155,17 +158,17 @@ SceneEnvironment::~SceneEnvironment() {
     }
 
     // Remove all managed drawable objects.
-    for (auto i : ManagedObjects)
+    for (auto i: ManagedObjects)
         delete i;
 
-    for (auto i : ManagedFonts)
+    for (auto i: ManagedFonts)
         delete i;
 
     ManagedObjects.clear();
     ManagedFonts.clear();
 }
 
-void SceneEnvironment::Preload(const std::filesystem::path& Filename, std::string array_name) {
+void SceneEnvironment::Preload(const std::filesystem::path &Filename, std::string array_name) {
     mInitScript = Filename;
 
     if (!Lua->RunScript(Filename)) {
@@ -186,8 +189,10 @@ void SceneEnvironment::Preload(const std::filesystem::path& Filename, std::strin
 }
 
 void SceneEnvironment::Sort() {
-    std::stable_sort(Objects.begin(), Objects.end(),
-                     [](const Drawable2D *A, const Drawable2D *B) -> bool { return A->GetZ() < B->GetZ(); });
+    std::ranges::stable_sort(
+        Objects,
+        [](const Drawable2D *A, const Drawable2D *B) -> bool { return A->GetZ() < B->GetZ(); }
+    );
 }
 
 Sprite *SceneEnvironment::CreateObject() {
@@ -198,7 +203,7 @@ Sprite *SceneEnvironment::CreateObject() {
 }
 
 bool SceneEnvironment::IsManagedObject(Drawable2D *Obj) {
-    for (auto i : ManagedObjects) {
+    for (auto i: ManagedObjects) {
         if (Obj == i)
             return true;
     }
@@ -206,7 +211,7 @@ bool SceneEnvironment::IsManagedObject(Drawable2D *Obj) {
     return false;
 }
 
-void SceneEnvironment::Initialize(const std::filesystem::path& Filename, bool RunScript) {
+void SceneEnvironment::Initialize(const std::filesystem::path &Filename, bool RunScript) {
     if (!mInitScript.wstring().length() && Filename.wstring().length())
         mInitScript = Filename;
 
@@ -242,7 +247,7 @@ void SceneEnvironment::AddSpriteTarget(Sprite *target) {
 }
 
 void SceneEnvironment::AddLuaTarget(Sprite *target, std::string Varname) {
-    lua_State *L = Lua->GetState();
+    lua_State *L = Lua->get_lua_state();
     luabridge::push(L, target);
     lua_setglobal(L, Varname.c_str());
 }
@@ -280,7 +285,7 @@ void SceneEnvironment::HandleScrollInput(double x_off, double y_off) {
 }
 
 void SceneEnvironment::RemoveManagedObjects() {
-    for (auto i : ManagedObjects) {
+    for (auto i: ManagedObjects) {
         RemoveTarget(i);
         delete i;
     }
@@ -289,7 +294,7 @@ void SceneEnvironment::RemoveManagedObjects() {
 }
 
 void SceneEnvironment::RemoveExternalObjects() {
-    for (auto i : ExternalObjects) {
+    for (auto i: ExternalObjects) {
         RemoveTarget(i);
     }
 
@@ -377,7 +382,6 @@ void SceneEnvironment::UpdateTargets(double TimeDelta) {
         Lua->PushArgument(TimeDelta);
         Lua->RunFunction();
     }
-
 }
 
 void SceneEnvironment::ReloadUI() {
@@ -402,21 +406,24 @@ void SceneEnvironment::SetScreenName(std::string sname) {
 }
 
 void SceneEnvironment::DrawUntilLayer(uint32_t Layer) {
-    for (auto i : Objects) {
-        if (i == nullptr) { /* throw an error */ continue; }
+    for (auto i: Objects) {
+        if (i == nullptr) {
+            /* throw an error */
+            continue;
+        }
         if (i->GetZ() <= Layer)
             i->Render();
     }
 }
 
 void SceneEnvironment::DrawFromLayer(uint32_t Layer) {
-    for (auto &Object : Objects) {
+    for (auto &Object: Objects) {
         if (Object->GetZ() >= Layer)
             Object->Render();
     }
 }
 
-LuaManager *SceneEnvironment::GetEnv() {
+LuaManager *SceneEnvironment::get_script_manager() {
     return Lua.get();
 }
 
@@ -444,7 +451,7 @@ ImageList *SceneEnvironment::GetImageList() {
     return Images.get();
 }
 
-void SceneEnvironment::DoEvent(std::string EventName, int Return) {
+void SceneEnvironment::trigger_event(std::string EventName, int Return) {
     if (Lua->CallFunction(EventName.c_str(), 0, Return))
         Lua->RunFunction();
 }

@@ -1,7 +1,7 @@
 #include "rmath.h"
 
 #include <game/GameConstants.h>
-#include <game/ScoreKeeper7K.h>
+#include <game/ScoreKeeper.h>
 #include <cmath>
 
 namespace rd {

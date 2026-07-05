@@ -7,6 +7,9 @@
 #include <condition_variable>
 #include <atomic>
 #include <cassert>
+#include <cstring>
+#include <algorithm>
+
 #include "../structure/Configuration.h"
 #include <portaudio.h>
 
@@ -22,6 +25,10 @@
 #include <pa_win_ds.h>
 #include <pa_win_wdmks.h>
 
+#endif
+
+#ifdef LINUX
+#include <pa_linux_alsa.h>
 #endif
 
 #include <pa_ringbuffer.h>
@@ -175,7 +182,7 @@ class PaMixer : public IMixer {
     double Latency{};
     double Rate;
 
-    std::vector<AudioStream *> Streams;
+    std::vector<AudioStream *> active_streams;
     std::vector<AudioSample *> Samples;
     double ConstFactor{};
 
@@ -263,7 +270,7 @@ public:
 
             {
                 mutex_decoder.lock();
-                for (auto &item: Streams)
+                for (auto &item: active_streams)
                     item->update_decoder();
                 mutex_decoder.unlock();
             }
@@ -281,8 +288,8 @@ public:
     void AddStream(AudioStream *stream) override {
         mutex_decoder.lock();
         mutex_stream.lock();
-        if (std::find(Streams.begin(), Streams.end(), stream) == Streams.end())
-            Streams.push_back(stream);
+        if (const auto s = std::ranges::find(active_streams, stream); s == active_streams.end())
+            active_streams.push_back(stream);
 
         mutex_stream.unlock();
         mutex_decoder.unlock();
@@ -291,10 +298,10 @@ public:
     void RemoveStream(AudioStream *stream) override {
         mutex_decoder.lock();
         mutex_stream.lock();
-        for (auto i = Streams.begin(); i != Streams.end();) {
+        for (auto i = active_streams.begin(); i != active_streams.end();) {
             if ((*i) == stream) {
-                i = Streams.erase(i);
-                if (i != Streams.end())
+                i = active_streams.erase(i);
+                if (i != active_streams.end())
                     continue;
                 else
                     break;
@@ -350,7 +357,7 @@ public:
         bool streaming = false;
         {
             mutex_stream.lock();
-            for (auto &Stream: Streams) {
+            for (auto &Stream: active_streams) {
                 /*
                  * first, update our clocks
                  * */

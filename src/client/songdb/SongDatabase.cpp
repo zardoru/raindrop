@@ -8,6 +8,7 @@
 
 #include <text_and_file_util.h>
 #include <cassert>
+#include <cstring>
 
 auto DatabaseQuery =
         "CREATE TABLE IF NOT EXISTS [songdb] (\

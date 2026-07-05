@@ -11,7 +11,7 @@
 #include "../game/Noteskin.h"
 
 void Noteskin::AddScriptClasses() {
-    luabridge::getGlobalNamespace(NoteskinLua.GetState())
+    luabridge::getGlobalNamespace(NoteskinLua.get_lua_state())
             /// @engineclass NoteskinObject
             .beginClass<Noteskin>("Noteskin")
                     /***

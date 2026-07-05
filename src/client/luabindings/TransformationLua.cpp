@@ -67,7 +67,7 @@ public:
 void CreateTransformationLua(LuaManager* anim_lua)
 {
 	
-	luabridge::getGlobalNamespace(anim_lua->GetState())
+	luabridge::getGlobalNamespace(anim_lua->get_lua_state())
 		.beginClass <Transformation>("Transformation")
 		/// Transformation constructor
 		// @function Transformation

@@ -16,12 +16,12 @@ namespace rd {
 
         /* relative_total: #TOTAL / total_score_objects_with_2x_holds */
         void Setup(double total, long long max_notes, double strictness) override {
-            lifebar_increment = Clamp(
+            lifebar_increment = clamp(
                     total / max_notes / GaugeParameters::increase_total_divider,
                     GaugeParameters::min_increment,
                     GaugeParameters::max_increment
             );
-            lifebar_decrement = Clamp(
+            lifebar_decrement = clamp(
                     total / max_notes / GaugeParameters::decrease_total_divider,
                     GaugeParameters::min_decrement,
                     GaugeParameters::max_decrement
@@ -46,7 +46,7 @@ namespace rd {
                 lifebar_amount += lifebar_increment;
             }
 
-            lifebar_amount = Clamp(lifebar_amount, 0.0, 1.0);
+            lifebar_amount = clamp(lifebar_amount, 0.0, 1.0);
         }
 
         bool HasFailed(bool song_ended) override {

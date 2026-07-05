@@ -34,7 +34,7 @@ void CreateStringsLuaInterface(LuaManager* AnimLua)
 
 	/// Base class for fonts.
 	// @type Font.Font
-	luabridge::getGlobalNamespace(AnimLua->GetState())
+	luabridge::getGlobalNamespace(AnimLua->get_lua_state())
 		.beginNamespace("Fonts")
 		.beginClass<Font>("Font")
 		/// Set font color.
@@ -67,7 +67,7 @@ void CreateStringsLuaInterface(LuaManager* AnimLua)
 
 	/// The class to display strings on raindrop. Inherits from @{Object2D}
 	/// @type StringObject2D
-	luabridge::getGlobalNamespace(AnimLua->GetState())
+	luabridge::getGlobalNamespace(AnimLua->get_lua_state())
 		.deriveClass<GraphicalString, Sprite>("StringObject2D")
 		/// Create a new instance of StringObject2D.
 		// @function StringObject2D

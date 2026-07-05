@@ -4,7 +4,7 @@
 #include <rmath.h>
 
 
-#include <game/ScoreKeeper7K.h>
+#include <game/ScoreKeeper.h>
 #include <note_loader.h>
 
 #include "PlayscreenParameters.h"
@@ -17,7 +17,7 @@
 #include "ScoreDatabase.h"
 #include "Profile.h"
 
-#include "Replay7K.h"
+#include "Replay.h"
 #include "PlayerContext.h"
 
 #include "../structure/Screen.h"
@@ -207,7 +207,7 @@ void GameState::set_player_context(PlayerContext * pc, int pn)
 int GameState::get_current_gauge_type(int pn) const
 {
 	if (player_number_in_bounds(pn))
-		return PlayerInfo[pn].ctx ? PlayerInfo[pn].ctx->GetCurrentGaugeType() : PlayerInfo[pn].play_parameters.GaugeType;
+		return PlayerInfo[pn].ctx ? PlayerInfo[pn].ctx->get_current_gauge_type() : PlayerInfo[pn].play_parameters.GaugeType;
 	return 0;
 }
 

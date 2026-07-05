@@ -6,7 +6,7 @@
 #include <game/Gauge.h>
 #include <game/gauges/GaugeOsuMania.h>
 #include <game/VSRGMechanics.h>
-#include <game/ScoreKeeper7K.h>
+#include <game/ScoreKeeper.h>
 #include <iostream>
 
 constexpr auto epsilon = 0.001; // one ms
@@ -39,7 +39,7 @@ struct OMSetup {
     OMSetup() : mech(true) {
         sk = std::make_shared<ScoreKeeper>();
         sk->setODWindows(0);
-        mech.Setup(nullptr, sk);
+        mech.configure(nullptr, sk);
         sk->setTotalObjects(100, 0);
 
         // SetLaneHoldingState is set if we're currently hitting a hold.
@@ -48,15 +48,15 @@ struct OMSetup {
             LaneDown = state;
         };*/
 
-        mech.IsLaneKeyDown = [&](uint32_t) {
+        mech.is_lane_key_down = [&](uint32_t) {
             return LaneDown;
         };
 
-        mech.HitNotify = [&](double dev, uint32_t lane, bool hold, bool should_break) {
+        mech.notify_hit = [&](double dev, uint32_t lane, bool hold, bool should_break) {
             sk->hitNote(dev, lane, NoteJudgmentPart::NOTE);
         };
 
-        mech.MissNotify = [&](double t, uint32_t, bool hold, bool nobreakcombo, bool earlymiss) {
+        mech.notify_miss = [&](double t, uint32_t, bool hold, bool nobreakcombo, bool earlymiss) {
             sk->missNote(nobreakcombo, earlymiss, true);
         };
     }

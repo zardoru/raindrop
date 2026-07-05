@@ -6,7 +6,7 @@
 #include <text_and_file_util.h>
 
 #include <game/GameConstants.h>
-#include <game/ScoreKeeper7K.h>
+#include <game/ScoreKeeper.h>
 
 #include <json.hpp>
 #include "PlayscreenParameters.h"

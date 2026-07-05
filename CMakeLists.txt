@@ -32,19 +32,9 @@ FetchContent_Declare(cpr GIT_REPOSITORY https://github.com/libcpr/cpr.git
 FetchContent_MakeAvailable(cpr)
 ## CPR SNIP ==>
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-    option(USE_GCC "Use GCC as your compiler" OFF)
-    set(LINUX TRUE)
-    add_definitions(/DLINUX)
-    if (NOT USE_GCC)
-        set(CMAKE_C_COMPILER   "clang")
-        set(CMAKE_CXX_COMPILER "clang++")
-        message("-- Compiling with clang...")
-    else()
-        set(CMAKE_C_COMPILER   "gcc")
-        set(CMAKE_CXX_COMPILER "g++")
-        message("-- Compiling with gcc...")    
-    endif()
+if(LINUX)
+    add_compile_definitions(LINUX)
+
 endif()
 
 if(WIN32)
@@ -53,23 +43,6 @@ endif(WIN32)
 
 # Configure those libraries. Find whenever possible.
 
-# This is neccesary for CMake to try to find the library files from the bundle.
-if (WIN32)
-    # Includes
-    set(BASE_INCLUDE_PATH "${CMAKE_SOURCE_DIR}/lib/include")
-    list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/")
-    list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/lua")
-    list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/png")
-    list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/jpeg")
-    list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/mpg123")
-    list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/ffmpeg")
-
-    # Libraries
-    set(BASE_LIB_PATH "${CMAKE_SOURCE_DIR}/lib/lib")
-    list(APPEND CMAKE_LIBRARY_PATH "${BASE_LIB_PATH}")
-endif ()
-
-# boost 1.75.0 on windows does not build the dll version of things.
 if (WIN32)
     set(Boost_USE_STATIC_LIBS 1)
 endif()
@@ -87,10 +60,8 @@ find_package(MPG123 REQUIRED)
 find_package(FFmpeg REQUIRED)
 find_package(Portaudio REQUIRED)
 find_package(Sndfile REQUIRED)
+find_package(LuaBridge REQUIRED)
 
-if (UNIX)
-    find_package(Iconv REQUIRED)
-endif()
 
 if (BUILD_TESTS)
     include(CTest)
@@ -130,6 +101,7 @@ target_include_directories(rd.sndio PUBLIC
         ${OGG_INCLUDE_DIR}
         ${VORBISFILE_INCLUDE_DIR}
         ${SNDFILE_INCLUDE_DIR}
+        ${MPG123_INCLUDE_DIR}
         ${FFMPEG_INCLUDE_DIR})
 target_compile_definitions(rd.sndio PUBLIC SNDIO_DLL)
 
@@ -177,7 +149,6 @@ set(BODY_INCLUDE
         ${PNG_INCLUDE_DIRS}
         ${JPEG_INCLUDE_DIR}
         ${Boost_INCLUDE_DIR}
-        ${LUA_INCLUDE_DIR}
         ${FFMPEG_INCLUDE_DIR}
         src/client/backend
 )
@@ -187,26 +158,30 @@ target_include_directories(rdbody.src PUBLIC
 )
 
 if (WIN32)
-    set(WINLIBS opengl32.lib Shlwapi.lib Dbghelp.lib)
+    set(PLATFORM_LIBS opengl32.lib Shlwapi.lib Dbghelp.lib)
     target_compile_definitions(rdbody.src PRIVATE -DUNICODE)
 endif()
 
+if (LINUX)
+    set(PLATFORM_LIBS GL)
+endif()
+
 target_link_libraries(rdbody.src
-        ${LUA_LIBRARIES}
         rd.core
         Boost::program_options
         Boost::date_time
         SDL3::SDL3
         ${PNG_LIBRARIES}
-        ${LUA_LIBRARIES}
         ${JPEG_LIBRARIES}
-        ${GLEW_LIBRARIES}
+        GLEW::GLEW
         PortAudio::PortAudio
+        Lua::Lua
+        LuaBridge
         ${FFMPEG_LIBAVCODEC}
         ${FFMPEG_LIBAVUTIL}
         ${FFMPEG_LIBAVFORMAT}
         ${FFMPEG_LIBSWSCALE}
-        ${WINLIBS}
+        ${PLATFORM_LIBS}
         cpr::cpr)
 
 # rdbody - the actual thing people can play

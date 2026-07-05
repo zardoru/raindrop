@@ -1,6 +1,6 @@
 #include <string>
 #include <filesystem>
-#include <game/ScoreKeeper7K.h>
+#include <game/ScoreKeeper.h>
 #include <json.hpp>
 #include "ScoreSerializer.h"
 #include "../client/game/PlayscreenParameters.h"
