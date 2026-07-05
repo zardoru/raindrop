@@ -4,8 +4,9 @@
 #include <string>
 #include <memory>
 #include <filesystem>
-#include <GL/glew.h>
 #include <SDL3/SDL.h>
+#include <GL/glew.h>
+#include <SDL3/SDL_opengl.h>
 #include <rmath.h>
 #include <glm.h>
 
@@ -431,11 +432,11 @@ float GameWindow::GetWindowVScale()
 
 bool GameWindow::SetupWindow()
 {
-    GLenum err;
     SDL_GL_MakeCurrent(wnd, glContext);
 
     // we have an opengl context, try opening up glew
-    if ((err = glewInit()) != GLEW_OK)
+    glewExperimental = true;
+    if (const GLenum err = glewInit(); err != GLEW_OK && err != GLEW_ERROR_NO_GLX_DISPLAY)
     {
         Log::Logf("glew failed initialization: %s", glewGetErrorString(err));
         return false;
