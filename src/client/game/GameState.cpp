@@ -252,7 +252,7 @@ Texture* GameState::get_song_stage()
 			if (File.extension() == ".ojn")
 			{
 				size_t read;
-				const auto* buf = reinterpret_cast<const unsigned char*>(LoadOJNCover(toLoad, read));
+				const auto* buf = reinterpret_cast<const unsigned char*>(load_ojn_cover(toLoad, read));
 				ImageData data = ImageLoader::GetDataForImageFromMemory(buf, read);
 				StageImage->SetTextureData2D(data, true);
 				delete[] buf;
