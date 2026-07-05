@@ -7,12 +7,26 @@
 #include <client/backend/Sprite.h>
 #include <client/backend/LuaManager.h>
 #include <client/game/Noteskin.h>
+#include <client/structure/Configuration.h>
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 
+namespace {
+    void EnsureConfigurationLoaded()
+    {
+        static const bool initialized = [] {
+            Configuration::SetConfigFile("tests/files/test_config.ini");
+            Configuration::Initialize();
+            return true;
+        }();
+
+        (void)initialized;
+    }
+}
 
 TEST_CASE("Noteskin can be used with no context", "[noteskin]")
 {
+    EnsureConfigurationLoaded();
     Noteskin n(nullptr);
 
     SECTION("Noteskin doesn't crash with no context") {

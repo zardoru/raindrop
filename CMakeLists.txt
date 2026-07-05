@@ -6,6 +6,8 @@ project(
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
+option(BUILD_TESTS "build tests?" ON)
+
 # message("Current dir: ${CMAKE_SOURCE_DIR}")
 
 set(CMAKE_CXX_STANDARD 20)
@@ -88,7 +90,29 @@ find_package(MPG123 REQUIRED)
 find_package(FFmpeg REQUIRED)
 find_package(Portaudio REQUIRED)
 find_package(Sndfile REQUIRED)
-find_package(Iconv REQUIRED)
+
+if (UNIX)
+    find_package(Iconv REQUIRED)
+endif()
+
+if (BUILD_TESTS)
+    include(CTest)
+    enable_testing()
+
+    find_package(Catch2 3)
+
+    if (NOT TARGET Catch2::Catch2)
+        FetchContent_Declare(
+                Catch2
+                GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+                GIT_TAG        v3.8.1 # or a later release
+        )
+
+        FetchContent_MakeAvailable(Catch2)
+        list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
+    endif()
+endif()
+
 message("$<==== BOOST ${Boost_PROGRAM_OPTIONS_LIBRARY} =====>")
 
 
@@ -119,8 +143,6 @@ target_compile_definitions(rd.sndio PUBLIC SNDIO_DLL)
 #message(STATUS ${OGG_LIBRARY} " " ${VORBIS_LIBRARY} " "
 #        ${VORBISFILE_LIBRARY})
 
-# message(STATUS ${FFMPEG_LIBSWRESAMPLE} " "  ${OGG_LIBRARY})
-
 target_link_libraries(rd.sndio
     otoworm::otoworm
     ${OGG_LIBRARY} 
@@ -128,7 +150,7 @@ target_link_libraries(rd.sndio
     ${VORBISFILE_LIBRARY}
     ${MPG123_LIBRARY}
     SndFile::sndfile
-    ${FFMPEG_LIBSWRESAMPLE})
+    SDL3::SDL3)
 
 
 # Common chart data library
@@ -229,21 +251,33 @@ target_link_libraries(rdconverter
 
 # Test runner
 # ================================================
+if (TARGET Catch2::Catch2)
 
+    add_executable(rdtests
+            tests/main.cpp
+            tests/MechanicsTests.cpp
+            tests/OsuManiaTests.cpp
+            tests/NoteskinTests.cpp
+            tests/FilesTests.cpp)
 
-add_executable(rdtests
-        tests/main.cpp
-        tests/MechanicsTests.cpp
-        tests/OsuManiaTests.cpp
-        tests/NoteskinTests.cpp
-        tests/FilesTests.cpp)
+    target_link_libraries(rdtests
+        PRIVATE
+            rdbody.src
+            Catch2::Catch2
+    )
 
-target_link_libraries(rdtests
-    rdbody.src
-)
+    target_include_directories(rdtests PRIVATE
+            ${BODY_INCLUDE}
+            src/
+            src-thirdparty/
+    )
 
-target_include_directories(rdtests PRIVATE
-        ${BODY_INCLUDE}
-        src/
-        src-thirdparty/
-)
+    include(Catch)
+    catch_discover_tests(rdtests WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+else()
+    message("can't build tests, no catch2.")
+endif()
+
+install(TARGETS rdconverter rdbody)
+install(DIRECTORY data/ DESTINATION data)
+install(FILES default_config.ini RENAME config.ini DESTINATION .)

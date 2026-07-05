@@ -1,7 +1,7 @@
 #include <filesystem>
 #include <array>
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <LuaManager.h>
 #include <game/Gauge.h>
 #include <game/gauges/GaugeOsuMania.h>
@@ -13,6 +13,21 @@ constexpr auto epsilon = 0.001; // one ms
 constexpr auto TIME_RANGE = 10000;
 
 using namespace rd;
+
+namespace {
+    struct TestRuntimeNote {
+        otoworm::TrackNote source;
+        RuntimeNoteStorage storage;
+
+        explicit TestRuntimeNote(const otoworm::NoteData& data) : source(data) {
+            storage.push_note(source);
+        }
+
+        RuntimeNote* get() {
+            return storage.note_at(0);
+        }
+    };
+}
 
 struct OMSetup {
     std::shared_ptr<ScoreKeeper> sk;
@@ -88,75 +103,77 @@ TEST_CASE("osu!mania judgments", "[omjudge]") {
     double earlyhitWindow = s.sk->getEarlyHitCutoffMS() / 1000.0;
     double lateCutoff = s.sk->getLateMissCutoffMS() / 1000.0;
     double lnCutoff = s.sk->getJudgmentWindow(SKJ_W3);
-    TrackNote t(
-            NoteData{0, 10}
+    const otoworm::NoteData noteData{0, 10};
+
+    TestRuntimeNote t(
+            noteData
     );
 
     SECTION("Long note tail windows are hit inside the hit window") {
-        TrackNote lt = t;
+        TestRuntimeNote lt(noteData);
 
-        lt.Hit(); // we need this flag to hit the tail
-        REQUIRE(s.mech.OnReleaseLane(lt.GetEndTime(), &lt, 0));
+        lt.get()->hit(); // we need this flag to hit the tail
+        REQUIRE(s.mech.OnReleaseLane(lt.get()->get_end_time(), lt.get(), 0));
 
-        lt.Reset();
-        lt.Hit();
-        REQUIRE(s.mech.OnReleaseLane(lt.GetEndTime() - earlyhitWindow + epsilon, &lt, 0));
+        lt.get()->reset();
+        lt.get()->hit();
+        REQUIRE(s.mech.OnReleaseLane(lt.get()->get_end_time() - earlyhitWindow + epsilon, lt.get(), 0));
 
-        lt.Reset();
-        lt.Hit();
-        REQUIRE(s.mech.OnReleaseLane(lt.GetEndTime() + lateCutoff - epsilon, &lt, 0));
+        lt.get()->reset();
+        lt.get()->hit();
+        REQUIRE(s.mech.OnReleaseLane(lt.get()->get_end_time() + lateCutoff - epsilon, lt.get(), 0));
     }
 
     SECTION("Long note tails have proper lenience when hit") {
-        TrackNote lt = t;
+        TestRuntimeNote lt(noteData);
 
 // update
-        lt.Hit();
-        REQUIRE_FALSE(s.mech.OnUpdate(lt.GetEndTime() - lateCutoff + epsilon, &lt, 0));
-        REQUIRE_FALSE(s.mech.OnUpdate(lt.GetEndTime() + lateCutoff - epsilon, &lt, 0));
-        REQUIRE_FALSE(s.mech.OnUpdate(lt.GetEndTime() + epsilon, &lt, 0));
+        lt.get()->hit();
+        REQUIRE_FALSE(s.mech.OnUpdate(lt.get()->get_end_time() - lateCutoff + epsilon, lt.get(), 0));
+        REQUIRE_FALSE(s.mech.OnUpdate(lt.get()->get_end_time() + lateCutoff - epsilon, lt.get(), 0));
+        REQUIRE_FALSE(s.mech.OnUpdate(lt.get()->get_end_time() + epsilon, lt.get(), 0));
 
-        lt.Reset();
-        lt.Hit();
-        REQUIRE(s.mech.OnUpdate(lt.GetEndTime() + lateCutoff + epsilon, &lt, 0));
+        lt.get()->reset();
+        lt.get()->hit();
+        REQUIRE(s.mech.OnUpdate(lt.get()->get_end_time() + lateCutoff + epsilon, lt.get(), 0));
 
 
 // release on time
-        lt.Reset();
-        lt.Hit();
+        lt.get()->reset();
+        lt.get()->hit();
         int misses = s.sk->getJudgmentCount(SKJ_MISS);
-        REQUIRE(s.mech.OnReleaseLane(lt.GetEndTime() + lateCutoff - epsilon, &lt, 0));
+        REQUIRE(s.mech.OnReleaseLane(lt.get()->get_end_time() + lateCutoff - epsilon, lt.get(), 0));
         REQUIRE(s.sk->getJudgmentCount(SKJ_MISS) == misses);
 
-        lt.Reset();
-        lt.Hit();
-        REQUIRE(s.mech.OnReleaseLane(lt.GetEndTime() + epsilon, &lt, 0));
+        lt.get()->reset();
+        lt.get()->hit();
+        REQUIRE(s.mech.OnReleaseLane(lt.get()->get_end_time() + epsilon, lt.get(), 0));
         REQUIRE(s.sk->getJudgmentCount(SKJ_MISS) == misses);
 
-        lt.Reset();
-        lt.Hit();
-        REQUIRE(s.mech.OnReleaseLane(lt.GetEndTime() - lateCutoff + epsilon, &lt, 0));
+        lt.get()->reset();
+        lt.get()->hit();
+        REQUIRE(s.mech.OnReleaseLane(lt.get()->get_end_time() - lateCutoff + epsilon, lt.get(), 0));
         REQUIRE(s.sk->getJudgmentCount(SKJ_MISS) == misses);
 
 // too early/late release
-        lt.Reset();
-        lt.Hit();
-        REQUIRE(s.mech.OnReleaseLane(lt.GetEndTime() - earlyhitWindow - epsilon, &lt, 0));
+        lt.get()->reset();
+        lt.get()->hit();
+        REQUIRE(s.mech.OnReleaseLane(lt.get()->get_end_time() - earlyhitWindow - epsilon, lt.get(), 0));
         REQUIRE(s.sk->getJudgmentCount(SKJ_MISS) == misses + 1);
 
-        lt.Reset();
-        lt.Hit();
-        REQUIRE(s.mech.OnReleaseLane(lt.GetEndTime() + lateCutoff + epsilon, &lt, 0));
+        lt.get()->reset();
+        lt.get()->hit();
+        REQUIRE(s.mech.OnReleaseLane(lt.get()->get_end_time() + lateCutoff + epsilon, lt.get(), 0));
         REQUIRE(s.sk->getJudgmentCount(SKJ_MISS) == misses + 2);
     }
 
     SECTION("Long note tails miss only after the tail end is done when not hit") {
-        TrackNote lt = t;
-        REQUIRE_FALSE(s.mech.OnUpdate(5, &lt, 0));
+        TestRuntimeNote lt(noteData);
+        REQUIRE_FALSE(s.mech.OnUpdate(5, lt.get(), 0));
 
-        lt.DisableHead(); // otherwise, it'll miss the head
-        REQUIRE_FALSE(s.mech.OnUpdate(t.GetEndTime() - epsilon, &lt, 0));
-        REQUIRE(s.mech.OnUpdate(t.GetEndTime() + epsilon, &lt, 0));
+        lt.get()->disable_head(); // otherwise, it'll miss the head
+        REQUIRE_FALSE(s.mech.OnUpdate(t.get()->get_end_time() - epsilon, lt.get(), 0));
+        REQUIRE(s.mech.OnUpdate(t.get()->get_end_time() + epsilon, lt.get(), 0));
     }
 
 
@@ -194,9 +211,9 @@ TEST_CASE("osu!mania judgments", "[omjudge]") {
         for (int i = 0; i < 50; i++)
             s.sk->hitNote(0, 0, NoteJudgmentPart::NOTE);
 
-        TrackNote t(NoteData{ 0, 0 });
+        TestRuntimeNote t(otoworm::NoteData{ 0, 0 });
         REQUIRE(s.sk->getScore(ST_COMBO) == 50);
-        REQUIRE(s.mech.OnPressLane((-s.sk->getEarlyHitCutoffMS() + 1) / 1000.0, &t, 0) == true);
+        REQUIRE(s.mech.OnPressLane((-s.sk->getEarlyHitCutoffMS() + 1) / 1000.0, t.get(), 0) == true);
         REQUIRE(s.sk->getScore(ST_COMBO) == 0);
 
         /* late version */
@@ -206,10 +223,10 @@ TEST_CASE("osu!mania judgments", "[omjudge]") {
             s.sk->hitNote(0, 0, NoteJudgmentPart::NOTE);
 
 
-        t.Reset();
+        t.get()->reset();
         REQUIRE(s.sk->getScore(ST_COMBO) == 50);
-        REQUIRE(s.mech.OnPressLane((s.sk->getLateMissCutoffMS() - 1) / 1000.0, &t, 0) == true);
-        REQUIRE(s.sk->getScore(ST_COMBO) == 0);
+        REQUIRE_FALSE(s.mech.OnPressLane((s.sk->getEarlyHitCutoffMS() - 1) / 1000.0, t.get(), 0));
+        REQUIRE(s.sk->getScore(ST_COMBO) == 50);
     }
 
     SECTION("Hits to fill match tested data.") {

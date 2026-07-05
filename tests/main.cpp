@@ -1,13 +1,12 @@
-#define CATCH_CONFIG_RUNNER
 #include <filesystem>
-#include <catch.hpp>
+#include <catch2/catch_session.hpp>
 
 
 int main(int argc, char const *argv[])
 {
     Catch::Session session;
-	session.applyCommandLine(argc, argv);
-	std::cout << "cwd: " << std::filesystem::current_path() << std::endl;
+	auto res = session.run(argc, argv);
+	//std::cout << "cwd: " << std::filesystem::current_path() << std::endl;
 
-    return session.run();
+    return res;
 }

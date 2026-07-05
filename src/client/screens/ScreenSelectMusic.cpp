@@ -287,7 +287,7 @@ void ScreenSelectMusic::PlayPreview() {
 
         // Load preview
         if (std::filesystem::exists(preview_path)) {
-            PreviewStream = std::make_shared<AudioStream>();
+            PreviewStream = std::make_shared<AudioStream>(GetMixer());
             if (PreviewStream->open(preview_path)) {
                 PreviewStream->play();
                 PreviewStream->seek_time(start_time);
@@ -307,8 +307,8 @@ void ScreenSelectMusic::PlayPreview() {
 void ScreenSelectMusic::PlayLoops() {
     if (!BGM) {
         auto fn = Configuration::GetSkinSound("SongSelectBGM");
-        BGM = std::make_unique<AudioStream>();
-        GetMixer()->AddStream(BGM.get());
+        BGM = std::make_unique<AudioStream>(GetMixer());
+
         if (std::filesystem::exists(fn) &&
             std::filesystem::is_regular_file(fn)) {
             auto s = fn.string();

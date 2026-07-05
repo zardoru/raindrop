@@ -105,10 +105,18 @@ bool AudioSourceMP3::open(const std::filesystem::path Filename)
     {
         long rate;
 
-        auto res = mpg123_format_all((mpg123_handle*)mHandle);
-        // mpg123_format((mpg123_handle*)mHandle, 44100, MPG123_STEREO, MPG123_ENC_SIGNED_16);
+        if (mpg123_getformat((mpg123_handle*)mHandle, &rate, &mChannels, &mEncoding) != MPG123_OK)
+            return false;
 
-        auto res2 = mpg123_getformat((mpg123_handle*)mHandle, &rate, &mChannels, &mEncoding);
+        mpg123_format_none((mpg123_handle*)mHandle);
+        if (mpg123_format((mpg123_handle*)mHandle, rate, mChannels, MPG123_ENC_SIGNED_16) != MPG123_OK)
+            return false;
+
+        if (mpg123_getformat((mpg123_handle*)mHandle, &rate, &mChannels, &mEncoding) != MPG123_OK)
+            return false;
+
+        if (mEncoding != MPG123_ENC_SIGNED_16)
+            return false;
 
         mRate = rate;
 

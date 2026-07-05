@@ -1,6 +1,6 @@
 #include <filesystem>
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <LuaManager.h>
 #include <game/VSRGMechanics.h>
 #include <game/ScoreKeeper7K.h>
@@ -16,6 +16,21 @@ TEST_CASE("Lua Manager state")
 }
 
 using namespace rd;
+
+namespace {
+	struct TestRuntimeNote {
+		otoworm::TrackNote source;
+		RuntimeNoteStorage storage;
+
+		explicit TestRuntimeNote(const otoworm::NoteData& data) : source(data) {
+			storage.push_note(source);
+		}
+
+		RuntimeNote* get() {
+			return storage.note_at(0);
+		}
+	};
+}
 
 
 
@@ -56,20 +71,20 @@ TEST_CASE("Raindrop Mechanics (general behaviour)", "[general]")
 
 	SECTION("Doesn't act twice on the same note") {
 		double lateMissThreshold = s.sk->getLateMissCutoffMS();
-		TrackNote t(NoteData{
+		TestRuntimeNote t(otoworm::NoteData{
 			0, 0
 		});
 
-		REQUIRE(s.mech.OnPressLane(0, &t, 0));
-		REQUIRE_FALSE(s.mech.OnPressLane(0, &t, 0));
+		REQUIRE(s.mech.OnPressLane(0, t.get(), 0));
+		REQUIRE_FALSE(s.mech.OnPressLane(0, t.get(), 0));
 
-		t.Reset();
-		REQUIRE(s.mech.OnUpdate(lateMissThreshold + epsilon, &t, 0));
-		REQUIRE_FALSE(s.mech.OnUpdate(lateMissThreshold + epsilon, &t, 0));
+		t.get()->reset();
+		REQUIRE(s.mech.OnUpdate(lateMissThreshold + epsilon, t.get(), 0));
+		REQUIRE_FALSE(s.mech.OnUpdate(lateMissThreshold + epsilon, t.get(), 0));
 
-		t.Reset();
-		REQUIRE(s.mech.OnUpdate(lateMissThreshold + epsilon, &t, 0));
-		REQUIRE_FALSE(s.mech.OnPressLane(0, &t, 0));
+		t.get()->reset();
+		REQUIRE(s.mech.OnUpdate(lateMissThreshold + epsilon, t.get(), 0));
+		REQUIRE_FALSE(s.mech.OnPressLane(0, t.get(), 0));
 	}
 }
 
@@ -78,23 +93,23 @@ TEST_CASE("Raindrop Mechanics (BMS tests)", "[raindropbms]") {
 
 	SECTION("Early misses work properly") {
 		double earlyMiss = s.sk->getEarlyMissCutoffMS() / 1000.0;
-		TrackNote t(NoteData{
+		TestRuntimeNote t(otoworm::NoteData{
 			10, 0
 		});
 
-		auto t1 = t.GetStartTime() - earlyMiss + 0.001;
-		REQUIRE(s.mech.IsEarlyMiss(t1, &t));
-		REQUIRE(s.mech.OnPressLane(t1, &t, 0));
+		auto t1 = t.get()->get_start_time() - earlyMiss + 0.001;
+		REQUIRE(s.mech.IsEarlyMiss(t1, t.get()));
+		REQUIRE(s.mech.OnPressLane(t1, t.get(), 0));
 
-		auto t2 = t.GetStartTime() - earlyMiss + epsilon;
-		t.Reset();
-		REQUIRE(s.mech.IsEarlyMiss(t2, &t));
-		REQUIRE(s.mech.OnPressLane(t2, &t, 0));
+		auto t2 = t.get()->get_start_time() - earlyMiss + epsilon;
+		t.get()->reset();
+		REQUIRE(s.mech.IsEarlyMiss(t2, t.get()));
+		REQUIRE(s.mech.OnPressLane(t2, t.get(), 0));
 
-		auto t3 = t.GetStartTime() - earlyMiss - epsilon;
-		t.Reset();
-		REQUIRE_FALSE(s.mech.IsEarlyMiss(t3, &t));
-		REQUIRE_FALSE(s.mech.OnPressLane(t3, &t, 0));
+		auto t3 = t.get()->get_start_time() - earlyMiss - epsilon;
+		t.get()->reset();
+		REQUIRE_FALSE(s.mech.IsEarlyMiss(t3, t.get()));
+		REQUIRE_FALSE(s.mech.OnPressLane(t3, t.get(), 0));
 	}
 
 	double hitwindow = s.sk->getEarlyHitCutoffMS();
@@ -129,13 +144,13 @@ TEST_CASE("Raindrop Mechanics (BMS tests)", "[raindropbms]") {
 	}
 
 	SECTION("Late window misses work as intended") {
-		TrackNote t(
-			NoteData { 0, 0 }
+		TestRuntimeNote t(
+			otoworm::NoteData { 0, 0 }
 		);
 		double latemiss = s.sk->getLateMissCutoffMS();
 
 		int misses = s.sk->getJudgmentCount(SKJ_MISS);
-		REQUIRE(s.mech.OnUpdate(latemiss + epsilon, &t, 0));
+		REQUIRE(s.mech.OnUpdate(latemiss + epsilon, t.get(), 0));
 		REQUIRE(s.sk->getJudgmentCount(SKJ_MISS) == misses + 1);
 	}
 
@@ -152,34 +167,34 @@ TEST_CASE("Raindrop Mechanics (Stepmania - LN tails)", "[raindropmechsettails]")
 
 	SECTION("Tails are not missed earlier than they should") {
 		double tailTime = 0.001;
-		TrackNote t(NoteData{
+		TestRuntimeNote t(otoworm::NoteData{
 			0, tailTime
 			});
 
 		// that is inside the judgement area
-		REQUIRE_FALSE(s.mech.OnUpdate(0, &t, 0));
+		REQUIRE_FALSE(s.mech.OnUpdate(0, t.get(), 0));
 
-		TrackNote t2(NoteData{
+		TestRuntimeNote t2(otoworm::NoteData{
 			100, 100 + tailTime
 			});
 
 		// that is outside the judgment area
-		REQUIRE_FALSE(s.mech.OnUpdate(0, &t2, 0));
+		REQUIRE_FALSE(s.mech.OnUpdate(0, t2.get(), 0));
 	}
 	
 	SECTION("Tails are not missed when the head is still active") {
 		double tailTime = 0.001;
 		double missCutoff = s.sk->getLateMissCutoffMS() / 1000.0;
 
-		TrackNote t(NoteData{
+		TestRuntimeNote t(otoworm::NoteData{
 			0, tailTime
 		});
 
 		// Simple tail time < time
-		REQUIRE_FALSE(s.mech.OnUpdate(0.06, &t, 0));
+		REQUIRE_FALSE(s.mech.OnUpdate(0.06, t.get(), 0));
 
 		// Tail time < time, head can still be hit, should not miss!
-		REQUIRE_FALSE(s.mech.OnUpdate(tailTime + missCutoff - 0.002, &t, 0));
+		REQUIRE_FALSE(s.mech.OnUpdate(tailTime + missCutoff - 0.002, t.get(), 0));
 	}
 
     SECTION("No runtime errors across a big range of time") {
@@ -189,4 +204,3 @@ TEST_CASE("Raindrop Mechanics (Stepmania - LN tails)", "[raindropmechsettails]")
         }
     }
 }
-

@@ -6,10 +6,6 @@ set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 find_package(SDL3 CONFIG QUIET)
 
 if(NOT TARGET SDL3::SDL3)
-    if(SDL3_SOURCE_DIR MATCHES "wormedit")
-        unset(SDL3_SOURCE_DIR CACHE)
-    endif()
-
     set(SDL3_SOURCE_DIR "" CACHE PATH "Local SDL3 source directory")
 
     if(SDL3_SOURCE_DIR)

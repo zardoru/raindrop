@@ -115,20 +115,20 @@ class AudioStream : public Sound
     
 
     std::unique_ptr<AudioDataSource> m_source_;
-    unsigned int     m_buffer_size_;
+    unsigned int     m_buffer_size_{};
     std::vector<short>	 m_decoded_data_;
     std::vector<uint8_t>	 m_resample_buffer_;
-    short			 audio_buffer_[8192];
+    short			 audio_buffer_[8192]{};
     double			 m_stream_time_;
-    double			 m_playback_time_;
+    double			 m_playback_time_{};
 
     /* total # of frames pulled after a Read operation. Can be negative for syncing purposes.
      * Is in the sampling rate of the target sample rate, not the source sample rate */
-    size_t           m_read_frames_;
+    int64_t          m_read_frames_;
 
     bool			 m_is_playing_;
     IMixer *m_owner_mixer_;
-    stream_time_map_t current_clock_;
+    stream_time_map_t current_clock_{};
 public:
     AudioStream();
     explicit AudioStream(IMixer* owner_mixer);

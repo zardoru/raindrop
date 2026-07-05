@@ -95,8 +95,11 @@ bool AudioSourceOGG::open(const std::filesystem::path Filename)
         internal->info = ov_info(&internal->mOggFile, -1);
         internal->comment = ov_comment(&internal->mOggFile, -1);
 
-        mIsValid = true;
-        mIsDataLeft = true;
+        mIsValid = internal->info && internal->info->rate > 0 && internal->info->channels >= 1 && internal->info->channels <= 2;
+        mIsDataLeft = mIsValid;
+
+        if (!mIsValid)
+            ov_clear(&internal->mOggFile);
     }
     else
     {
@@ -126,10 +129,9 @@ uint32_t AudioSourceOGG::read(short* buffer, const size_t count)
     }
 
     /* read from ogg vorbis file */
-    size_t res;
     while (read < size)
     {
-        res = ov_read(&internal->mOggFile, reinterpret_cast<char*>(buffer) + read, size - read, 0, 2, 1, &sect);
+        const long res = ov_read(&internal->mOggFile, reinterpret_cast<char*>(buffer) + read, size - read, 0, 2, 1, &sect);
 
         if (res > 0)
             read += res;
@@ -143,14 +145,14 @@ uint32_t AudioSourceOGG::read(short* buffer, const size_t count)
             else
             {
                 mIsDataLeft = false;
-                return 0;
+                return read / sizeof(short);
             }
         }
         else
         {
             // Log::Printf("AudioSourceOGG: Error while reading OGG source (%d)\n", res);
             mIsDataLeft = false;
-            return 0;
+            return read / sizeof(short);
         }
     }
 

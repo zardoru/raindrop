@@ -31,7 +31,6 @@ pkg_check_modules(_FFMPEG_AVUTIL libavutil)
 pkg_check_modules(_FFMPEG_AVFILTER libavfilter)
 pkg_check_modules(_FFMPEG_AVDEVICE libavdevice)
 pkg_check_modules(_FFMPEG_SWSCALE libswscale)
-pkg_check_modules(_FFMPEG_SWRESAMPLE libswresample)
 endif (PKG_CONFIG_FOUND)
 
 find_path(FFMPEG_AVCODEC_INCLUDE_DIR
@@ -70,11 +69,6 @@ NAMES swscale
 PATHS ${_FFMPEG_SWSCALE_LIBRARY_DIRS} /usr/lib /usr/local/lib /opt/local/lib /sw/lib
 )
 
-find_library(FFMPEG_LIBSWRESAMPLE
-NAMES swresample
-PATHS ${_FFMPEG_SWRESAMPLE_LIBRARY_DIRS} /usr/lib /usr/local/lib /opt/local/lib /sw/lib
-)
-
 if (FFMPEG_LIBAVCODEC AND FFMPEG_LIBAVFORMAT)
 set(FFMPEG_FOUND TRUE)
 endif()
@@ -89,7 +83,6 @@ set(FFMPEG_LIBRARIES
   ${FFMPEG_LIBAVCODEC}
   ${FFMPEG_LIBAVUTIL}
   ${FFMPEG_LIBSWSCALE}
-  ${FFMPEG_LIBSWRESAMPLE}
 )
 
 endif (FFMPEG_FOUND)

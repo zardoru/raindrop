@@ -1,4 +1,5 @@
 #include <array>
+#include <cstdio>
 #include "av-io-common-pch.h"
 #include "Audiofile.h"
 #include "IMixer.h"
@@ -12,99 +13,118 @@
 #include <text_and_file_util.h>
 #include "rmath.h"
 
-extern "C" {
-#include <libswresample/swresample.h>
-}
+#include <SDL3/SDL_audio.h>
+#include <SDL3/SDL_error.h>
 
-/* wraps around libSwResample using the settings we're likely to Always Use */
-class SwrResampler {
-    struct swr_free_wrap {
-        void operator()(SwrContext* p) const {
-            swr_free(&p);
+/* wraps around SDL_AudioStream using the settings we're likely to always use */
+class SdlResampler {
+    struct audio_stream_free_wrap {
+        void operator()(SDL_AudioStream* p) const {
+            SDL_DestroyAudioStream(p);
         }
     };
 
-    std::unique_ptr<SwrContext, swr_free_wrap>			 mResampler;
 public:
     struct Config {
         double src_rate;
         double dst_rate;
         uint8_t input_channels;
         bool use_float;
-
-        AVSampleFormat get_output_sample_format() const {
-            if (use_float)
-                return AV_SAMPLE_FMT_FLT;
-            else
-                return AV_SAMPLE_FMT_S16;
-        }
-
-        int64_t get_input_channel_layout() const {
-            if (input_channels == 2)
-                return AV_CH_LAYOUT_STEREO;
-            else if (input_channels == 1)
-                return AV_CH_LAYOUT_MONO;
-            else {
-                throw std::runtime_error("unexpected channel layout");
-            }
-        }
     };
 
+private:
+    std::unique_ptr<SDL_AudioStream, audio_stream_free_wrap> m_resampler_;
+
+    static SDL_AudioSpec get_input_spec(const Config& cfg) {
+        return SDL_AudioSpec{
+            .format = SDL_AUDIO_S16,
+            .channels = cfg.input_channels,
+            .freq = static_cast<int>(cfg.src_rate)
+        };
+    }
+
+    static SDL_AudioSpec get_output_spec(const Config& cfg) {
+        return SDL_AudioSpec{
+            .format = cfg.use_float ? SDL_AUDIO_F32 : SDL_AUDIO_S16,
+            .channels = 2,
+            .freq = static_cast<int>(cfg.dst_rate)
+        };
+    }
+
+public:
     Config last_config{};
 
-    SwrResampler () : mResampler(swr_alloc(), swr_free_wrap()) {}
+    void Configure(const Config cfg)
+    {
+        if (cfg.input_channels != 1 && cfg.input_channels != 2)
+            throw std::runtime_error("unexpected channel layout");
 
-    void Configure(const Config cfg) {
-#ifdef AV_CHANNEL_LAYOUT_STEREO
-        AVChannelLayout outputLayout = AV_CHANNEL_LAYOUT_STEREO;
-        AVChannelLayout inputLayout = AV_CHANNEL_LAYOUT_MONO;
-        if (cfg.input_channels == 2) {
-            inputLayout = AV_CHANNEL_LAYOUT_STEREO;
-        }
-        SwrContext* context = mResampler.release();
-        swr_alloc_set_opts2(
-                &context,
-                &outputLayout,
-                cfg.get_output_sample_format(),
-                cfg.dst_rate,
-                &inputLayout,
-                AV_SAMPLE_FMT_S16,
-                cfg.src_rate,
-                0,
-                NULL
-        );
-        mResampler.reset(context);
-#else
-        swr_alloc_set_opts(
-                mResampler.get(),
-                AV_CH_LAYOUT_STEREO,
-                cfg.get_output_sample_format(),
-                cfg.dst_rate,
-                cfg.get_input_channel_layout(),
-                AV_SAMPLE_FMT_S16,
-                cfg.src_rate,
-                0,
-                NULL
-        );
-#endif
+        const auto input_spec = get_input_spec(cfg);
+        const auto output_spec = get_output_spec(cfg);
+        m_resampler_.reset(SDL_CreateAudioStream(&input_spec, &output_spec));
 
-        swr_init(mResampler.get());
+        if (!m_resampler_)
+            throw std::runtime_error(otoworm::util::format("error creating SDL audio stream: %s", SDL_GetError()));
+
         last_config = cfg;
     }
 
+    void SetPitch(const double pitch)
+    {
+        if (!m_resampler_)
+            return;
+
+        if (!SDL_SetAudioStreamFrequencyRatio(m_resampler_.get(), static_cast<float>(pitch)))
+            throw std::runtime_error(otoworm::util::format("error setting SDL resampler pitch: %s", SDL_GetError()));
+    }
+
+    void QueueInput(std::vector<uint8_t> &buffer_in) {
+        if (!m_resampler_)
+            return;
+
+        if (!SDL_PutAudioStreamData(m_resampler_.get(), buffer_in.data(), static_cast<int>(buffer_in.size())))
+            throw std::runtime_error(otoworm::util::format("error during resampling input: %s", SDL_GetError()));
+    }
+
+    int OutputBytesPerFrame() const {
+        return (last_config.use_float ? sizeof(float) : sizeof(short)) * 2;
+    }
+
+    int AvailableOutputBytes() const {
+        if (!m_resampler_)
+            return 0;
+
+        const int available = SDL_GetAudioStreamAvailable(m_resampler_.get());
+        if (available < 0)
+            throw std::runtime_error(otoworm::util::format("error checking SDL resampler output: %s", SDL_GetError()));
+
+        return available;
+    }
+
     /* returns: samples output per channel */
+    int GetOutput(void *buffer_out, const size_t frames_out) {
+        const int output_bytes_per_frame = OutputBytesPerFrame();
+        const int bytes_requested = static_cast<int>(frames_out) * output_bytes_per_frame;
+        const int bytes_read = SDL_GetAudioStreamData(m_resampler_.get(), buffer_out, bytes_requested);
+
+        if (bytes_read < 0)
+            throw std::runtime_error(otoworm::util::format("error during resampling output: %s", SDL_GetError()));
+
+        return bytes_read / output_bytes_per_frame;
+    }
+
+    void Flush()
+    {
+        if (!m_resampler_)
+            return;
+
+        if (!SDL_FlushAudioStream(m_resampler_.get()))
+            throw std::runtime_error(otoworm::util::format("error flushing resampler: %s", SDL_GetError()));
+    }
+
     int Resample(std::vector<uint8_t> &buffer_in, void *buffer_out, const size_t frames_out) {
-        auto frames_in = buffer_in.size() / sizeof (short) / last_config.input_channels;
-
-        const uint8_t * in_ptr = buffer_in.data();
-
-        auto res = swr_convert(mResampler.get(), reinterpret_cast<uint8_t **>(&buffer_out), frames_out, &in_ptr, frames_in);
-        if (res < 0) {
-            // error? mm
-            throw std::runtime_error(otoworm::util::format("error during resampling %d", res));
-        }
-
-        return res;
+        QueueInput(buffer_in);
+        return GetOutput(buffer_out, frames_out);
     }
 };
 
@@ -115,7 +135,7 @@ class AudioStream::AudioStreamInternal
 
     std::array<uint8_t, 4096> mBufClockData{};
     PaUtilRingBuffer mBufClock{};
-    SwrResampler mResampler;
+    SdlResampler mResampler;
 };
 
 template<class T>
@@ -306,7 +326,10 @@ bool AudioSample::inner_load(AudioDataSource *Src) {
     size_t total = Src->read(m_data_->data(), mSampleCount);
 
     if (total < mSampleCount) // Oh, odd. Oh well.
+    {
         mSampleCount = total;
+        m_data_->resize(mSampleCount); // trim trailing unread samples so resampler doesn't consume phantom frames
+    }
 
     m_rate_ = Src->get_rate();
 
@@ -316,9 +339,7 @@ bool AudioSample::inner_load(AudioDataSource *Src) {
 
     if (m_rate_ != rate || m_pitch_ != 1)
     {
-        size_t idone = 0;
-        size_t odone = 0;
-        double DstRate = rate / m_pitch_;
+        double DstRate = rate;
         double ResamplingRate = DstRate / m_rate_;
 
         auto totalResampledSamples = size_t(ceil(mSampleCount * ResamplingRate));
@@ -326,14 +347,14 @@ bool AudioSample::inner_load(AudioDataSource *Src) {
         auto new_data = std::make_shared<std::vector<uint8_t>>(totalOutputFrameCount * sizeof (short));
 
         {
-            SwrResampler::Config cfg = {
+            SdlResampler::Config cfg = {
                     .src_rate = static_cast<double>(m_rate_),
                     .dst_rate = DstRate,
                     .input_channels = static_cast<uint8_t>(channels_),
                     .use_float = false
             };
 
-            SwrResampler resampler;
+            SdlResampler resampler;
             resampler.Configure(cfg);
 
             /* here's hoping the compiler is smart. */
@@ -341,12 +362,18 @@ bool AudioSample::inner_load(AudioDataSource *Src) {
             memcpy(vec_in.data(), m_data_->data(), vec_in.size());
 
             auto &vec_out = *new_data;
-            auto size_out = resampler.Resample(vec_in, vec_out.data(), totalResampledSamples / channels_);
+            resampler.QueueInput(vec_in);
+            resampler.Flush();
+            auto size_out = resampler.GetOutput(vec_out.data(), totalResampledSamples / channels_);
+            // size_out is frames-per-channel actually produced by swr; output is stereo (2 channels)
+            new_data->resize(size_out * 2 * sizeof(short));
         }
 
 
         m_data_->resize(new_data->size() / sizeof (short));
         memcpy(m_data_->data(), new_data->data(), new_data->size());
+        // resampled output is always stereo regardless of input channel count
+        channels_ = 2;
 
         m_rate_ = rate;
     }
@@ -565,7 +592,7 @@ AudioStream::~AudioStream()
 
 uint32_t AudioStream::read(float* buffer, const size_t count)
 {
-    ring_buffer_size_t requested_samples_to_read = count; // Count is the amount of samples.
+    ring_buffer_size_t requested_samples_to_read = count; // Count is the amount of stereo output samples.
     size_t padded = 0;
 
     if (!m_source_ || !m_source_->is_valid())
@@ -594,47 +621,40 @@ uint32_t AudioStream::read(float* buffer, const size_t count)
         padded = padding_len;
     }
 
-    if (channels_ == 1) // We just want half the samples.
-        requested_samples_to_read >>= 1;
-
-    // TODO: account for sample rate differences
-    if (PaUtil_GetRingBufferReadAvailable(&internal_->mDecodedDataRingbuffer) < requested_samples_to_read || !m_is_playing_)
-        requested_samples_to_read = PaUtil_GetRingBufferReadAvailable(&internal_->mDecodedDataRingbuffer);
-
-    double dstrate = m_source_->get_rate();
-    if (m_owner_mixer_)
-        dstrate = m_owner_mixer_->GetRate();
-
     if (m_is_playing_)
     {
-        // This is what our destination rate will be
-        const double orig_rate = m_source_->get_rate();
+        const size_t requested_output_frames = requested_samples_to_read / 2;
+        const int bytes_requested = static_cast<int>(requested_output_frames) * internal_->mResampler.OutputBytesPerFrame();
+        size_t decoded_input_frames = 0;
 
-        // This is what our destination rate is.
-        const double res_rate = dstrate / m_pitch_;
-        const double rate_ratio = res_rate / orig_rate;
+        internal_->mResampler.SetPitch(m_pitch_);
 
-        // This is how many samples we want to read from the source buffer
-        size_t samples_to_read = ceil(orig_rate / res_rate * requested_samples_to_read);
+        while (internal_->mResampler.AvailableOutputBytes() < bytes_requested) {
+            auto samples_to_read = PaUtil_GetRingBufferReadAvailable(&internal_->mDecodedDataRingbuffer);
+            if (!samples_to_read)
+                break;
 
-        if (samples_to_read & 1 && channels_ == 2 && m_pitch_ < 1) samples_to_read += 1; // make even (channels)
-        else if (samples_to_read & 1 && channels_ == 2 && m_pitch_ > 1) samples_to_read -= 1; // also make even
+            samples_to_read -= samples_to_read % channels_;
+            if (!samples_to_read)
+                break;
 
-        m_resample_buffer_.resize(samples_to_read * sizeof (short));
-        size_t decoded_samples_read = PaUtil_ReadRingBuffer(&internal_->mDecodedDataRingbuffer, m_resample_buffer_.data(), samples_to_read);
-        // decoded_samples_read now contains how many samples we actually read...
+            m_resample_buffer_.resize(samples_to_read * sizeof (short));
+            const size_t decoded_samples_read = PaUtil_ReadRingBuffer(
+                    &internal_->mDecodedDataRingbuffer,
+                    m_resample_buffer_.data(),
+                    samples_to_read);
+            if (!decoded_samples_read)
+                break;
 
-        if (!decoded_samples_read)
-            return padded; // case 1: pure padding. case 2: really just not enough data has been decoded
+            m_resample_buffer_.resize(decoded_samples_read * sizeof(short));
+            internal_->mResampler.QueueInput(m_resample_buffer_);
+            decoded_input_frames += decoded_samples_read / channels_;
+        }
 
-        size_t samples_to_output = round(decoded_samples_read * rate_ratio);
-        if (samples_to_output & 1 && samples_to_output < count) samples_to_output += 1; // make even (edge case... :S)
-
-        // The count that soxr asks for I think, is frames, not samples. Thus, the division by channels.
-        const size_t total_output_frames = internal_->mResampler.Resample(m_resample_buffer_, buffer, samples_to_output / 2);
+        const size_t total_output_frames = internal_->mResampler.GetOutput(buffer, requested_output_frames);
 
         m_read_frames_ += total_output_frames;
-        m_stream_time_ += static_cast<double>(total_output_frames) / m_source_->get_rate();
+        m_stream_time_ += static_cast<double>(decoded_input_frames) / m_source_->get_rate();
         return total_output_frames * 2 /* we output stereo */ + padded;
     }
 
@@ -653,7 +673,7 @@ bool AudioStream::open(const std::filesystem::path filename)
         double dst_rate = m_source_->get_rate();
         if (m_owner_mixer_) dst_rate = m_owner_mixer_->GetRate();
 
-        SwrResampler::Config cfg{};
+        SdlResampler::Config cfg{};
         cfg.input_channels = channels_;
         cfg.dst_rate = dst_rate;
         cfg.src_rate = m_source_->get_rate();
@@ -756,6 +776,9 @@ uint32_t AudioStream::update_decoder()
 
 uint32_t AudioStream::get_rate() const
 {
+    if (m_owner_mixer_)
+        return m_owner_mixer_->GetRate();
+
     return m_source_->get_rate();
 }
 

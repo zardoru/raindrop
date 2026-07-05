@@ -278,19 +278,21 @@ public:
         } while (Threaded);
     }
 
-    void AddStream(AudioStream *Stream) override {
+    void AddStream(AudioStream *stream) override {
         mutex_decoder.lock();
         mutex_stream.lock();
-        Streams.push_back(Stream);
+        if (std::find(Streams.begin(), Streams.end(), stream) == Streams.end())
+            Streams.push_back(stream);
+
         mutex_stream.unlock();
         mutex_decoder.unlock();
     }
 
-    void RemoveStream(AudioStream *Stream) override {
+    void RemoveStream(AudioStream *stream) override {
         mutex_decoder.lock();
         mutex_stream.lock();
         for (auto i = Streams.begin(); i != Streams.end();) {
-            if ((*i) == Stream) {
+            if ((*i) == stream) {
                 i = Streams.erase(i);
                 if (i != Streams.end())
                     continue;
