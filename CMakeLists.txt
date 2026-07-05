@@ -58,13 +58,10 @@ if (WIN32)
     # Includes
     set(BASE_INCLUDE_PATH "${CMAKE_SOURCE_DIR}/lib/include")
     list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/")
-    list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/zlib")
     list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/lua")
     list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/png")
     list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/jpeg")
     list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/mpg123")
-    list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/libsndfile")
-    list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/portaudio")
     list(APPEND CMAKE_INCLUDE_PATH "${BASE_INCLUDE_PATH}/ffmpeg")
 
     # Libraries
@@ -99,7 +96,7 @@ if (BUILD_TESTS)
     include(CTest)
     enable_testing()
 
-    find_package(Catch2 3)
+    find_package(Catch2 3 QUIET)
 
     if (NOT TARGET Catch2::Catch2)
         FetchContent_Declare(
@@ -112,10 +109,6 @@ if (BUILD_TESTS)
         list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
     endif()
 endif()
-
-message("$<==== BOOST ${Boost_PROGRAM_OPTIONS_LIBRARY} =====>")
-
-
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/libotoworm" "${CMAKE_BINARY_DIR}/_deps/libotoworm")
 
@@ -281,3 +274,6 @@ endif()
 install(TARGETS rdconverter rdbody)
 install(DIRECTORY data/ DESTINATION data)
 install(FILES default_config.ini RENAME config.ini DESTINATION .)
+
+set(CPACK_PACKAGE_VENDOR "wyrmin.xyz")
+include(CPack)
