@@ -32,7 +32,7 @@ enum KeyType
 	KT_ChannelStart
 };
         
-extern const char* KeytypeNames[];
+extern const char* keytype_names[];
 
 
 /* Program itself consts */

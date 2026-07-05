@@ -52,7 +52,7 @@ int SongWheel::GetDifficulty() const
     return DifficultyIndex;
 }
 
-SongWheel& SongWheel::GetInstance()
+SongWheel& SongWheel::get_instance()
 {
     static auto WheelInstance = new SongWheel();
     return *WheelInstance;
@@ -65,7 +65,7 @@ void SongWheel::CleanItems()
 }
 
 
-void SongWheel::Initialize(SongDatabase* Database)
+void SongWheel::initialize(SongDatabase* Database)
 {
     if (IsInitialized)
     {
@@ -115,7 +115,7 @@ public:
         for (auto & Directorie : Directories)
         {
             ListRoot->AddNamedDirectory(*mLoadMutex, &Loader, Directorie.second, Directorie.first, [] {
-                SongWheel::GetInstance().ReapplyFilters();
+                SongWheel::get_instance().ReapplyFilters();
             });
         }
 
@@ -125,7 +125,7 @@ public:
     }
 };
 
-void SongWheel::Join()
+void SongWheel::join_loading_thread()
 {
     if (mLoadThread)
     {
@@ -138,7 +138,7 @@ void SongWheel::Join()
 void SongWheel::ReloadSongs(SongDatabase* Database)
 {
     DB = Database;
-    Join();
+    join_loading_thread();
 
     ListRoot = std::make_shared<SongList>();
     CurrentList = ListRoot.get();
@@ -261,7 +261,7 @@ bool SongWheel::HandleInput(int32_t key, bool isPressed, bool isMouseInput)
 {
     if (isPressed)
     {
-        switch (BindingsManager::TranslateKey(key))
+        switch (BindingsManager::translate_key(key))
         {
         default:
             break;
@@ -272,7 +272,7 @@ bool SongWheel::HandleInput(int32_t key, bool isPressed, bool isMouseInput)
             CursorPos++;
             return true;
         case KT_Select:
-            Vec2 mpos = WindowFrame.GetRelativeMPos();
+            Vec2 mpos = window.get_relative_mouse_pos();
             auto boundIndex = GetCursorIndex();
             auto Idx = GetListCursorIndex();
             if (boundIndex != FilteredCurrentList.GetNumEntries()) // There's entries!
@@ -340,7 +340,7 @@ void SongWheel::Update(float Delta)
     if (!CurrentList)
         return;
 
-    Vec2 mpos = WindowFrame.GetRelativeMPos();
+    Vec2 mpos = window.get_relative_mouse_pos();
     if (InWheelBounds(mpos))
     {
         IsHovering = true;

@@ -36,7 +36,7 @@
 #include <iostream>
 #include "bga/BackgroundAnimation.h"
 #include "game/PlayerContext.h"
-#include "screens/ScreenGameplay7K.h"
+#include "screens/ScreenGameplay.h"
 
 #include "screens/ScreenLoading.h"
 
@@ -56,20 +56,20 @@
 #include "TruetypeFont.h"
 
 bool Auto = false;
-bool DoRun = false;
+bool good_to_go = false;
 
-Application::Application(int argc, char *argv[])
+Application::Application(const int argc, char *argv[])
 {
     oldTime = 0;
-    Game = nullptr;
-    RunMode = MODE_PLAY;
+    root = nullptr;
+    mode = MODE_PLAY;
     Upscroll = false;
     difIndex = 0;
 
-    ParseArgs(argc, argv);
+    parse_args(argc, argv);
 }
 
-void Application::ParseArgs(int argc, char **argv)
+void Application::parse_args(const int argc, char **argv)
 {
     namespace po = boost::program_options;
 
@@ -107,152 +107,133 @@ void Application::ParseArgs(int argc, char **argv)
     catch (...)
     {
         Log::Printf("unknown / incompatible option supplied\n");
-        RunMode = MODE_NULL;
+        mode = MODE_NULL;
         return;
     }
     po::notify(vm);
 
-    if (vm.count("help"))
+    if (vm.contains("help"))
     {
         std::cout << desc;
         return;
     }
 
-    if (vm.count("input"))
+    if (vm.contains("input"))
     {
         InFile = vm["input"].as<std::string>();
-        RunMode = MODE_VSRGPREVIEW;
+        mode = MODE_VSRGPREVIEW;
     }
 
-    if (vm.count("config"))
+    if (vm.contains("config"))
     {
         Configuration::SetConfigFile(vm["config"].as<std::string>());
     }
 
-    if (vm.count("gencache"))
+    if (vm.contains("gencache"))
     {
-        RunMode = MODE_GENSONGCACHE;
+        mode = MODE_GENSONGCACHE;
     }
 
-	if (vm.count("fontcache")) {
-		RunMode = MODE_GENFONTCACHE;
+	if (vm.contains("fontcache")) {
+		mode = MODE_GENFONTCACHE;
 		InFontTextFile = vm["fontcache"].as<std::string>();
 	}
 
 
 
-    if (vm.count("measure"))
+    if (vm.contains("measure"))
     {
-        Measure = vm["measure"].as<unsigned>();
+        measure_ = vm["measure"].as<unsigned>();
     }
 
-    if (vm.count("a"))
+    if (vm.contains("a"))
     {
         Author = vm["a"].as<std::string>();
     }
 
-    if (vm.count("A"))
+    if (vm.contains("A"))
     {
         Auto = true;
     }
 
-    if (vm.count("S"))
+    if (vm.contains("S"))
     {
-        RunMode = MODE_STOPPREVIEW;
+        mode = MODE_STOPPREVIEW;
     }
 
-    if (vm.count("R"))
+    if (vm.contains("R"))
     {
-        RunMode = MODE_NULL;
+        mode = MODE_NULL;
         IPC::RemoveQueue();
     }
 
-    if (vm.count("L"))
+    if (vm.contains("L"))
     {
-        RunMode = MODE_CUSTOMSCREEN;
+        mode = MODE_CUSTOMSCREEN;
         InFile = vm["L"].as<std::string>();
     }
 
 }
 
-void Application::Init()
+void Application::init()
 {
     using Clock = std::chrono::high_resolution_clock;
     auto t1 = Clock::now();
 
-    /*
-     // is this necessary, tbh?
-#if (defined WIN32) && !(defined MINGW)
-	SetConsoleOutputCP(CP_UTF8);
-	_setmode(_fileno(stdout), _O_U8TEXT);
-#else
-    setlocale(LC_ALL, "");
-#endif
-     */
-
     setbuf(stdout, 0);
 
 	Log::Printf(RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT " start.\n");
-	// Log::Printf("Current Time: %s.\n", t1);
 	Log::Printf("Working directory: %s\n", otoworm::locale::wstring_to_utf8(std::filesystem::current_path().wstring()).c_str());
-
-	/*
-#if (defined WIN32)
-	Log::Printf("Current codepage: %u\n", GetACP());
-#endif
-	 */
 
     Configuration::Initialize();
     GameState::get_instance().initialize();
-    Log::Printf("Initializing... \n");
+    Log::Printf("Configuration and Game State OK. \n");
 
+    bool open_window = false;
 
-
-    bool Setup = false;
-
-    if (RunMode == MODE_PLAY)
+    if (mode == MODE_PLAY)
     {
-        Setup = true;
+        open_window = true;
 
         if (Configuration::GetConfigf("Preload"))
         {
             Log::Printf("Preloading songs...");
-            SongWheel::GetInstance().LoadSongsOnce(GameState::get_instance().get_song_database());
-            SongWheel::GetInstance().Join();
+            SongWheel::get_instance().LoadSongsOnce(GameState::get_instance().get_song_database());
+            SongWheel::get_instance().join_loading_thread();
         }
     }
-    if (RunMode == MODE_VSRGPREVIEW)
+    if (mode == MODE_VSRGPREVIEW)
     {
 #ifdef NDEBUG
         if (IPC::IsInstanceAlreadyRunning())
-            Setup = false;
+            open_window = false;
         else
 #endif
-            Setup = true;
+            open_window = true;
     }
 
-    if (RunMode == MODE_CUSTOMSCREEN)
-        Setup = true;
+    if (mode == MODE_CUSTOMSCREEN)
+        open_window = true;
 
-    if (Setup)
+    if (open_window)
     {
-        DoRun = WindowFrame.AutoSetupWindow(this);
-        InitAudio();
-        Game = nullptr;
+        good_to_go = window.setup(this);
+        init_audio();
+        root = nullptr;
     }
     else
     {
-        if (RunMode != MODE_NULL)
-            DoRun = true;
+        if (mode != MODE_NULL)
+            good_to_go = true;
     }
 
     Log::Printf("Total Initialization Time: %fs\n", std::chrono::duration_cast<std::chrono::microseconds>(Clock::now() - t1).count() / 1000000.0);
 }
 
-void Application::SetupPreviewMode()
+void Application::setup_preview_mode()
 {
     // Load the chart group.
-    auto chart_group = otoworm::load_song_from_file(InFile);
+    const auto chart_group = otoworm::load_song_from_file(InFile);
 
 
     if (!chart_group || chart_group->charts.empty())
@@ -273,25 +254,25 @@ void Application::SetupPreviewMode()
     game->Init(chart_group);
     LoadScreen->Init();
 
-    Game = LoadScreen;
+    root = LoadScreen;
 }
 
-bool Application::PollIPC()
+bool Application::poll_ipc()
 {
-    IPC::Message Msg = IPC::PopMessageFromQueue();
-    switch (Msg.MessageKind)
+    IPC::Message msg = IPC::PopMessageFromQueue();
+    switch (msg.message_class)
     {
     case IPC::Message::MSG_STARTFROMMEASURE:
-        Measure = Msg.Param;
-        InFile = std::string(Msg.Path);
-        Game->Close();
-		Game = nullptr;
+        measure_ = msg.param;
+        InFile = std::string(msg.Path);
+        root->Close();
+		root = nullptr;
 
-        SetupPreviewMode();
+        setup_preview_mode();
 
         return true;
     case IPC::Message::MSG_STOP:
-        Game->Close();
+        root->Close();
         return true;
     case IPC::Message::MSG_NULL:
     default:
@@ -300,140 +281,135 @@ bool Application::PollIPC()
 }
 
 
-void Application::Run()
+void Application::run()
 {
-    double T1 = WindowFrame.GetCurrentTime();
-    bool RunLoop = true;
+    const double current_time = window.get_current_time();
+    bool run_loop = true;
 
-    if (!DoRun)
+    if (!good_to_go)
         return;
 
-    if (RunMode == MODE_PLAY)
+    if (mode == MODE_PLAY)
     {
-        auto scr = std::make_shared<ScreenMainMenu>();
+        const auto scr = std::make_shared<ScreenMainMenu>();
         scr->Init();
-        Game = scr;
+        root = scr;
     }
-    else if (RunMode == MODE_VSRGPREVIEW)
+    else if (mode == MODE_VSRGPREVIEW)
     {
         if (IPC::IsInstanceAlreadyRunning())
         {
             // So okay then, we'll send a message telling the existing process to restart with this file, at this time.
-            IPC::Message Msg;
-            Msg.MessageKind = IPC::Message::MSG_STARTFROMMEASURE;
-            Msg.Param = Measure;
-            strncpy(Msg.Path, otoworm::locale::wstring_to_utf8(InFile.wstring()).c_str(), 256);
+            IPC::Message msg;
+            msg.message_class = IPC::Message::MSG_STARTFROMMEASURE;
+            msg.param = measure_;
+            strncpy(msg.Path, otoworm::locale::wstring_to_utf8(InFile.wstring()).c_str(), 256);
 
-            IPC::SendMessageToQueue(&Msg);
-            RunLoop = false;
+            IPC::SendMessageToQueue(&msg);
+            run_loop = false;
         }
         else
         {
-            SetupPreviewMode();
+            setup_preview_mode();
 
-            if (!Game)
+            if (!root)
                 return;
 
             // Set up the message queue. We need this if we're in preview mode to be able to control raindrop from the command line.
             IPC::SetupMessageQueue();
         }
     }
-    else if (RunMode == MODE_GENSONGCACHE)
+    else if (mode == MODE_GENSONGCACHE)
     {
         Log::Printf("Generating cache...\n");
         GameState::get_instance().initialize();
-        SongWheel::GetInstance().Initialize(GameState::get_instance().get_song_database());
-        SongWheel::GetInstance().Join();
+        SongWheel::get_instance().initialize(GameState::get_instance().get_song_database());
+        SongWheel::get_instance().join_loading_thread();
 
-        RunLoop = false;
+        run_loop = false;
     }
-    else if (RunMode == MODE_STOPPREVIEW)
+    else if (mode == MODE_STOPPREVIEW)
     {
         if (IPC::IsInstanceAlreadyRunning())
         {
             // So okay then, we'll send a message telling the existing process to restart with this file, at this time.
-            IPC::Message Msg;
-            Msg.MessageKind = IPC::Message::MSG_STOP;
+            IPC::Message msg;
+            msg.message_class = IPC::Message::MSG_STOP;
 
-            IPC::SendMessageToQueue(&Msg);
+            IPC::SendMessageToQueue(&msg);
         }
 
-        RunLoop = false;
+        run_loop = false;
     }
-    else if (RunMode == MODE_CUSTOMSCREEN)
+    else if (mode == MODE_CUSTOMSCREEN)
     {
         Log::Printf("Initializing custom, ad-hoc screen...\n");
-		auto s = otoworm::locale::wstring_to_utf8(InFile.wstring());
-        auto scr = std::make_shared<ScreenCustom>(GameState::get_instance().get_skin_file(s));
-        Game = scr;
+		const auto s = otoworm::locale::wstring_to_utf8(InFile.wstring());
+        const auto scr = std::make_shared<ScreenCustom>(GameState::get_instance().get_skin_file(s));
+        root = scr;
 	}
-	else if (RunMode == MODE_GENFONTCACHE)
+	else if (mode == MODE_GENFONTCACHE)
 	{
 		Log::Printf("Generating font cache for provided file...\n");
-
 		TruetypeFont::GenerateFontCache(InFontTextFile, InFile);
-
-		RunLoop = false;
+		run_loop = false;
 	}
 
-    Log::Printf("Time: %fs\n", WindowFrame.GetCurrentTime() - T1);
+    Log::Printf("Time: %fs\n", window.get_current_time() - current_time);
 
-    if (!RunLoop)
+    if (!run_loop)
         return;
 
     ImageLoader::UpdateTextures();
-	GameState::get_instance().set_root_screen(Game);
+	GameState::get_instance().set_root_screen(root);
 
-    oldTime = WindowFrame.GetCurrentTime();
-    while (Game->IsScreenRunning() && !WindowFrame.ShouldCloseWindow())
+    oldTime = window.get_current_time();
+    while (root->IsScreenRunning() && !window.should_close_window())
     {
-        double newTime = WindowFrame.GetCurrentTime();
-        double delta = newTime - oldTime;
+        const double new_time = window.get_current_time();
+        const double delta = new_time - oldTime;
         ImageLoader::UpdateTextures();
 
-		WindowFrame.RunInput();
+		window.run_input();
 
-        WindowFrame.ClearWindow();
+        window.clear_window();
 
-        if (RunMode == MODE_VSRGPREVIEW) // Run IPC Message Queue Querying.
-            if (PollIPC()) continue;
+        if (mode == MODE_VSRGPREVIEW) // Run IPC Message Queue Querying.
+            if (poll_ipc()) continue;
 
-        Game->Update(delta);
+        root->update(delta);
 
-        MixerUpdate();
-        WindowFrame.SwapBuffers();
-		WindowFrame.UpdateFullscreen();
+        update_mixer();
+        window.swap_buffers();
+		window.update_fullscreen();
 
-        oldTime = newTime;
+        oldTime = new_time;
     }
 }
 
-void Application::HandleInput(int32_t key, bool isPressed, bool isMouseInput)
-{
-	if (BindingsManager::TranslateKey(key) == KT_ReloadCFG && isPressed)
+void Application::on_input(const int32_t key, const bool is_pressed, const bool is_mouse_input) const {
+	if (BindingsManager::translate_key(key) == KT_ReloadCFG && is_pressed)
 		Configuration::Reload();
 
-    Game->HandleInput(key, isPressed, isMouseInput);
+    root->on_input(key, is_pressed, is_mouse_input);
 }
 
-void Application::HandleScrollInput(double xOff, double yOff)
-{
-    Game->HandleScrollInput(xOff, yOff);
+void Application::on_scroll_input(const double x_off, const double y_off) const {
+    root->on_scroll_input(x_off, y_off);
 }
 
-void Application::Close()
+void Application::close()
 {
-    if (Game)
+    if (root)
     {
-        Game->Cleanup();
-		Game = nullptr;
+        root->cleanup();
+		root = nullptr;
     }
 
-    WindowFrame.Cleanup();
-    Configuration::Cleanup();
+    window.cleanup();
+    Configuration::cleanup();
 }
 
-void Application::HandleTextInput(unsigned cp)
-{
-    Game->HandleTextInput(cp);
+void Application::on_text_input(unsigned cp) const {
+    root->on_text_input(cp);
 }

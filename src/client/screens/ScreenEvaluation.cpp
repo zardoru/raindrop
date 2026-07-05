@@ -17,10 +17,10 @@
 #include "Rendering.h"
 #include "Sprite.h"
 
-#include "ScreenEvaluation7K.h"
+#include "ScreenEvaluation.h"
 
 #include "../bga/BackgroundAnimation.h"
-#include "ScreenGameplay7K.h"
+#include "ScreenGameplay.h"
 
 #include "ImageLoader.h"
 #include "../structure/SceneEnvironment.h"
@@ -46,15 +46,15 @@ void ScreenEvaluation::Init(ScreenGameplay *pr) {
     // PrintCLIResults(Result);
 }
 
-bool ScreenEvaluation::HandleInput(int32_t key, bool isPressed, bool isMouseInput) {
-    auto k = BindingsManager::TranslateKey(key);
+bool ScreenEvaluation::on_input(int32_t key, bool isPressed, bool isMouseInput) {
+    auto k = BindingsManager::translate_key(key);
     if ((k == KT_Escape || k == KT_Select) && isPressed)
         is_active_ = false;
 
     return true;
 }
 
-void ScreenEvaluation::Cleanup() {
+void ScreenEvaluation::cleanup() {
 }
 
 bool ScreenEvaluation::Run(double Delta) {

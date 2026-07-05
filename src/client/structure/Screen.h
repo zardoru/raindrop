@@ -39,7 +39,7 @@ public:
     // Nesting screens.
     bool IsScreenRunning();
     bool RunNested(float delta);
-    bool Update(float delta);
+    bool update(float delta);
 
     void Close();
 
@@ -60,14 +60,14 @@ public:
     virtual void OnExitBegin();
     virtual void OnExitEnd();
 
-    virtual bool HandleInput(int32_t key, bool isPressed, bool isMouseInput);
-    virtual bool HandleScrollInput(double xOff, double yOff);
-    virtual bool HandleTextInput(int codepoint);
+    virtual bool on_input(int32_t key, bool isPressed, bool isMouseInput);
+    virtual bool on_scroll_input(double xOff, double yOff);
+    virtual bool on_text_input(int codepoint);
 
     // We need to set up graphics again? This gets called.
     virtual void Invalidate();
 
     // Implement this if there's anything you want to get done outside of a destructor
     // like operations that would throw exceptions.
-    virtual void Cleanup();
+    virtual void cleanup();
 };

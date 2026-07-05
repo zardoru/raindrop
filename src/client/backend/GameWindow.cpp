@@ -33,30 +33,30 @@
 #define APIENTRY
 #endif
 
-GameWindow WindowFrame;
+GameWindow window;
 
 std::map<int32_t, KeyType> BindingsManager::ScanFunction;
 std::map<int32_t, int32_t> BindingsManager::ScanFunction7K;
 
 constexpr int NUM_OF_USED_CONTROLLER_BUTTONS = 32;
 
-int controllerToUse;
-bool JoystickEnabled;
-SDL_Joystick* activeJoystick = nullptr;
+int controller_to_use;
+bool joystick_enabled;
+SDL_Joystick* active_joystick = nullptr;
 
 // az: wait - this is kind of a bad idea (limited size array)
 // TODO: there's ought to be a better way to do this
 
 //True is pressed, false is released
-bool controllerButtonState[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = { 0 };
-float lastAxisSign[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = { 0 };
-float lastAxisValue[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = { 0 };
+bool controller_button_state[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = { 0 };
+float last_axis_sign[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = { 0 };
+float last_axis_value[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = { 0 };
 //The first member of this array should never be accessed; it's there to make reading some of the code easier.
 
 struct KeyAssociation
 {
-    char KeyString[32];
-    int boundkey;
+    char key_string[32];
+    int bound_key;
 };
 
 KeyAssociation StaticSpecialKeys[] = // only add if someone actually needs more
@@ -107,7 +107,7 @@ static void GLCHECKERR() {
     }
 }
 
-void APIENTRY OnGlDebugMsg(
+void APIENTRY on_gl_debug_msg(
         const GLenum source,
         const GLenum type,
         const GLuint id,
@@ -124,22 +124,23 @@ constexpr int NUM_OF_STATIC_SPECIAL_KEYS = sizeof(StaticSpecialKeys) / sizeof(Ke
 
 std::vector<KeyAssociation> SpecialKeys;
 
-int KeyTranslate(std::string K)
+int key_translate(std::string key)
 {
     for (auto & SpecialKey : SpecialKeys)
     {
-        std::string Key = K; otoworm::util::to_lower(Key);
-        std::string Target = std::string(SpecialKey.KeyString);  otoworm::util::to_lower(Target);
-        if (Key == Target)
-            return SpecialKey.boundkey;
+        std::string key = key; otoworm::util::to_lower(key);
+        auto target = std::string(SpecialKey.key_string);
+        otoworm::util::to_lower(target);
+        if (key == target)
+            return SpecialKey.bound_key;
     }
 
-    if (K.length())
+    if (!key.empty())
     {
-        if (otoworm::util::is_numeric(K.c_str()))
-            return atoi(K.c_str());
+        if (otoworm::util::is_numeric(key.c_str()))
+            return atoi(key.c_str());
         else
-            return K[0];
+            return key[0];
     }
     else
         return 0;
@@ -167,7 +168,7 @@ struct defaultKeys_s
 constexpr int DEFAULT_KEYS_COUNT = sizeof(defaultKeys) / sizeof(defaultKeys_s);
 
 // Must match KeyType structure.
-const char* KeytypeNames[] = {
+const char* keytype_names[] = {
     "unknown",
     "escape",
     "select",
@@ -192,12 +193,14 @@ const char* KeytypeNames[] = {
 	"scratchp2down",
 };
 
-int getIndexForKeytype(const char* key)
+int get_index_for_keytype(const char* key)
 {
-    for (int i = 0; i < sizeof KeytypeNames / sizeof(char*); i++)
+    for (int i = 0; i < sizeof keytype_names / sizeof(char*); i++)
     {
-        std::string lowkey = std::string(key); otoworm::util::to_lower(lowkey);
-        std::string lowname = std::string(KeytypeNames[i]); otoworm::util::to_lower(lowname);
+        auto lowkey = std::string(key);
+        otoworm::util::to_lower(lowkey);
+        auto lowname = std::string(keytype_names[i]);
+        otoworm::util::to_lower(lowname);
         if (lowkey == lowname)
             return i;
     }
@@ -205,244 +208,239 @@ int getIndexForKeytype(const char* key)
     return -1;
 }
 
-std::string getNameForKeytype(const KeyType K)
+std::string get_name_for_keytype(const KeyType K)
 {
-    if (K < sizeof KeytypeNames / sizeof(char*))
-        return KeytypeNames[K];
+    if (K < sizeof keytype_names / sizeof(char*))
+        return keytype_names[K];
     else
         return std::to_string(K);
 }
 
-std::string getNameForUntranslatedKey(const int K)
+std::string get_name_for_untranslated_key(const int K)
 {
-    for (int i = 0; i < NUM_OF_STATIC_SPECIAL_KEYS; i++)
+    for (auto &[key_string, bound_key] : StaticSpecialKeys)
     {
-        if (StaticSpecialKeys[i].boundkey == K)
-            return StaticSpecialKeys[i].KeyString;
+        if (bound_key == K)
+            return key_string;
     }
 
     return std::to_string(K);
 }
 
-void BindingsManager::Initialize()
+void BindingsManager::initialize()
 {
     SpecialKeys.clear();
-    for (int i = 0; i < NUM_OF_STATIC_SPECIAL_KEYS; i++)
-        SpecialKeys.push_back(StaticSpecialKeys[i]);
+    for (const auto & static_special_key : StaticSpecialKeys)
+        SpecialKeys.push_back(static_special_key);
 
     //controllerToUse = 1; should use this if the user entered garbage data (anything that isn't a number)
-    controllerToUse = (int)Configuration::GetConfigf("ControllerNumber") - 1;
+    controller_to_use = (int)Configuration::GetConfigf("ControllerNumber") - 1;
 
     int joystickCount = 0;
     SDL_JoystickID* joysticks = SDL_GetJoysticks(&joystickCount);
-    if (joysticks && controllerToUse >= 0 && controllerToUse < joystickCount)
+    if (joysticks && controller_to_use >= 0 && controller_to_use < joystickCount)
     {
-        activeJoystick = SDL_OpenJoystick(joysticks[controllerToUse]);
-        int numOfButtons = activeJoystick ? SDL_GetNumJoystickButtons(activeJoystick) : 0;
-        if (numOfButtons)
+        active_joystick = SDL_OpenJoystick(joysticks[controller_to_use]);
+        const int num_of_buttons = active_joystick ? SDL_GetNumJoystickButtons(active_joystick) : 0;
+        if (num_of_buttons)
         {
-            for (int i = 1; i <= numOfButtons; i++)
+            for (int i = 1; i <= num_of_buttons; i++)
             {
                 char name[32];
                 sprintf(name, "Controller%d", i);
                 KeyAssociation thisButton;
-                strcpy(thisButton.KeyString, name);
-                thisButton.boundkey = 1000 + i;
+                strcpy(thisButton.key_string, name);
+                thisButton.bound_key = 1000 + i;
                 SpecialKeys.push_back(thisButton);
             }
 		}
 
-		int numOfAxis = activeJoystick ? SDL_GetNumJoystickAxes(activeJoystick) : 0;
-		if (numOfAxis)
+        if (const int num_of_axis = active_joystick ? SDL_GetNumJoystickAxes(active_joystick) : 0)
 		{
-			for (int i = numOfButtons + 1; i <= numOfButtons + numOfAxis; i++) {
+			for (int i = num_of_buttons + 1; i <= num_of_buttons + num_of_axis; i++) {
 				char name[32];
 				sprintf(name, "Controller%d", i);
-				KeyAssociation thisAxis;
-				strcpy(thisAxis.KeyString, name);
-				thisAxis.boundkey = 1000 + i;
-				SpecialKeys.push_back(thisAxis);
+				KeyAssociation this_axis{};
+				strcpy(this_axis.key_string, name);
+				this_axis.bound_key = 1000 + i;
+				SpecialKeys.push_back(this_axis);
 			}
 		}
     }
     if (joysticks)
         SDL_free(joysticks);
 
-    JoystickEnabled = activeJoystick != nullptr;
+    joystick_enabled = active_joystick != nullptr;
 
     std::map <std::string, std::string> fields;
     Configuration::GetConfigListS("SystemKeys", fields, "");
 
     // key = function
     // e.g. Z = gameclick, X = gameclick
-    for (auto i = fields.begin(); i != fields.end(); i++)
+    for (const auto &[key, keytype] : fields)
     {
         // transform special name into keytype index
-        int idx = getIndexForKeytype(i->second.c_str());
 
         // ah it's valid
-        if (idx != -1)
+        if (int idx = get_index_for_keytype(keytype.c_str()); idx != -1)
         {
             // get the key in either int or name or char format and save that into the key -> command translator
-            int Key = KeyTranslate(i->first.c_str());
 
-            if (Key) // a valid key, probably
-                ScanFunction[Key] = (KeyType)idx;
+            if (int scan = key_translate(key)) // a valid key, probably
+                ScanFunction[scan] = (KeyType)idx;
         }
     }
 
     // fill missing default keys after it's done
-    for (int i = 0; i < DEFAULT_KEYS_COUNT; i++)
+    for (auto &[key, keytype] : defaultKeys)
     {
-        if (ScanFunction.find(defaultKeys[i].key) == ScanFunction.end())
+        if (!ScanFunction.contains(key))
         {
             // fill the key -> command translation
-            ScanFunction[defaultKeys[i].key] = defaultKeys[i].command;
+            ScanFunction[key] = keytype;
 
             // write it out to the config file
-            std::string charOut;
-            if (defaultKeys[i].key <= 255 && isgraph(defaultKeys[i].key)) // we're not setting like, gibberish
+            std::string char_out;
+            if (key <= 255 && isgraph(key)) // we're not setting like, gibberish
             {
-                charOut = std::string(1, static_cast<char>(defaultKeys[i].key));
+                char_out = std::string(1, static_cast<char>(key));
             }
             else
             {
-                charOut = getNameForUntranslatedKey(defaultKeys[i].key);
+                char_out = get_name_for_untranslated_key(key);
             }
 
-            Configuration::SetConfig(charOut, getNameForKeytype(defaultKeys[i].command), "SystemKeys");
+            Configuration::SetConfig(char_out, get_name_for_keytype(keytype), "SystemKeys");
         }
     }
 
     int i = 1;
-    std::map<std::string, std::string> Keys;
-    Configuration::GetConfigListS("Keys7K", Keys, "");
+    std::map<std::string, std::string> keys;
+    Configuration::GetConfigListS("Keys7K", keys, "");
 
-    for (auto v : Keys)
+    for (auto [key, val] : keys)
     {
-        int Binding = KeyTranslate(v.first);
-        if (Binding)
-            ScanFunction7K[Binding] = floor(latof(v.second));
+        if (int binding = key_translate(key))
+            ScanFunction7K[binding] = floor(latof(val));
     }
 }
 
-KeyType BindingsManager::TranslateKey(const int32_t Scan)
+KeyType BindingsManager::translate_key(const int32_t scan)
 {
-    if (ScanFunction.find(Scan) != ScanFunction.end())
+    if (ScanFunction.contains(scan))
     {
-        return ScanFunction[Scan];
+        return ScanFunction[scan];
     }
 
     return KT_Unknown;
 }
 
-int32_t BindingsManager::TranslateKey7K(const int32_t Scan)
+int32_t BindingsManager::translate_key_game(const int32_t scan)
 {
-    if (ScanFunction7K.find(Scan) != ScanFunction7K.end())
+    if (ScanFunction7K.contains(scan))
     {
-        return ScanFunction7K[Scan];
+        return ScanFunction7K[scan];
     }
 
     return -1;
 }
 
 
-bool doFlush = false;
-bool VSync = false;
+bool do_flush = false;
+bool v_sync = false;
 
 GameWindow::GameWindow()
 {
-    Viewport.x = Viewport.y = 0;
-    SizeRatio = 1.0f;
+    viewport_.x = viewport_.y = 0;
+    size_ratio_ = 1.0f;
     FullscreenSwitchbackPending = false;
     CloseRequested = false;
-    wnd = NULL;
-    glContext = nullptr;
+    wnd_ = NULL;
+    gl_context_ = nullptr;
 }
 
-void ResizeFunc(const int32_t width, const int32_t height)
+void resize_func(const int32_t width, const int32_t height)
 {
-    float HeightRatio = (float)height / WindowFrame.GetMatrixSize().y;
+    float HeightRatio = (float)height / window.get_matrix_size().y;
 
-	if (!WindowFrame.IsFullscreen) { // well then, let's enforce some aspect ratio
-		double mwidth = WindowFrame.GetMatrixSize().x * HeightRatio;
+	if (!window.IsFullscreen) { // well then, let's enforce some aspect ratio
+		double mwidth = window.get_matrix_size().x * HeightRatio;
 		glViewport(0, 0, mwidth, height);
-		SDL_SetWindowSize(WindowFrame.wnd, mwidth, height);
+		SDL_SetWindowSize(window.wnd_, mwidth, height);
 
-		WindowFrame.size.x = mwidth;
-		WindowFrame.size.y = height;
+		window.size_.x = mwidth;
+		window.size_.y = height;
 	}
 	else { // just assume the values are correct in fullscreen
 		glViewport(0, 0, width, height);
-		WindowFrame.size.x = width;
-		WindowFrame.size.y = height;
+		window.size_.x = width;
+		window.size_.y = height;
 	}
 
-    WindowFrame.SizeRatio = HeightRatio;
+    window.size_ratio_ = HeightRatio;
 }
 
-void InputFunc(const int32_t key, const bool pressed, const SDL_Keymod modk)
+void input_func(const int32_t key, const bool pressed, const SDL_Keymod modk)
 {
-    WindowFrame.Parent->HandleInput(key, pressed, false);
+    window.application_->on_input(key, pressed, false);
 
     if (key == SDLK_RETURN && pressed && (modk & SDL_KMOD_ALT))
-        WindowFrame.FullscreenSwitchbackPending = true;
+        window.FullscreenSwitchbackPending = true;
 }
 
-void MouseInputFunc(const int32_t key, const bool pressed)
+void mouse_input_func(const int32_t key, const bool pressed)
 {
-    WindowFrame.Parent->HandleInput(key, pressed, true);
+    window.application_->on_input(key, pressed, true);
 }
 
-void ScrollFunc(const double xOff, const double yOff)
+void scroll_func(const double xOff, const double yOff)
 {
-    WindowFrame.Parent->HandleScrollInput(xOff, yOff);
+    window.application_->on_scroll_input(xOff, yOff);
 }
 
-Vec2 GameWindow::GetWindowSize() const
+Vec2 GameWindow::get_window_size() const
 {
-    return size;
+    return size_;
 }
 
-Vec2 GameWindow::GetMatrixSize() const
+Vec2 GameWindow::get_matrix_size() const
 {
-    return matrixSize;
+    return matrix_size_;
 }
 
-Vec2 GameWindow::GetRelativeMPos()
-{
-    float mousex, mousey;
-    SDL_GetMouseState(&mousex, &mousey);
-    float outx = (mousex - Viewport.x) / SizeRatio;
-    float outy = matrixSize.y * mousey / size.y;
-    return Vec2(outx, outy);
-}
-
-Vec2 GameWindow::GetWindowMPos()
+Vec2 GameWindow::get_relative_mouse_pos()
 {
     float mousex, mousey;
     SDL_GetMouseState(&mousex, &mousey);
-    return Vec2(mousex, mousey);
+    const float outx = (mousex - viewport_.x) / size_ratio_;
+    const float outy = matrix_size_.y * mousey / size_.y;
+    return {outx, outy};
 }
 
-float GameWindow::GetWindowVScale()
+Vec2 GameWindow::get_window_mouse_pos()
 {
-    return SizeRatio;
+    float mousex, mousey;
+    SDL_GetMouseState(&mousex, &mousey);
+    return {mousex, mousey};
 }
 
-bool GameWindow::SetupWindow()
+float GameWindow::get_window_v_scale() const {
+    return size_ratio_;
+}
+
+bool GameWindow::setup_window()
 {
-    SDL_GL_MakeCurrent(wnd, glContext);
+    SDL_GL_MakeCurrent(wnd_, gl_context_);
 
     // we have an opengl context, try opening up glew
     glewExperimental = true;
     if (const GLenum err = glewInit(); err != GLEW_OK && err != GLEW_ERROR_NO_GLX_DISPLAY)
     {
-        Log::Logf("glew failed initialization: %s", glewGetErrorString(err));
+        Log::LogPrintf("glew failed initialization: %s", glewGetErrorString(err));
         return false;
     }
 
-    BindingsManager::Initialize();
+    BindingsManager::initialize();
 
     glEnable(GL_BLEND); GLCHECKERR();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); GLCHECKERR();
@@ -461,13 +459,13 @@ bool GameWindow::SetupWindow()
 	// glEnable(GL_POLYGON_SMOOTH);
     // glAlphaFunc(GL_GREATER, 0); GLCHECKERR();
 
-    if (VSync)
+    if (v_sync)
         SDL_GL_SetSwapInterval(1);
 
-    projection = glm::ortho<float>(0.0, matrixSize.x, matrixSize.y, 0.0, -32.0, 1.0);
-    projectionInverse = glm::inverse(projection);
+    projection_ = glm::ortho<float>(0.0, matrix_size_.x, matrix_size_.y, 0.0, -32.0, 1.0);
+    projection_inverse_ = glm::inverse(projection_);
 
-    if (!SetupShaders())
+    if (!setup_shaders())
         return false;
 
     GLCHECKERR();
@@ -478,28 +476,26 @@ bool GameWindow::SetupWindow()
 
     if (glDebugMessageCallback) {
         // glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_MEDIUM, 0, nullptr, GL_TRUE);
-        glDebugMessageCallback(OnGlDebugMsg, nullptr);
+        glDebugMessageCallback(on_gl_debug_msg, nullptr);
     }
 
-    ResizeFunc(size.x, size.y);
+    resize_func(size_.x, size_.y);
 
     assert(glGetError() == 0);
     return true;
 }
 
-Mat4 GameWindow::GetMatrixProjection()
-{
-    return projection;
+Mat4 GameWindow::get_matrix_projection() const {
+    return projection_;
 }
 
-Mat4 GameWindow::GetMatrixProjectionInverse()
-{
-    return projectionInverse;
+Mat4 GameWindow::get_matrix_projection_inverse() const {
+    return projection_inverse_;
 }
 
-bool GameWindow::AutoSetupWindow(Application* _parent)
+bool GameWindow::setup(Application* _parent)
 {
-    Parent = _parent;
+    application_ = _parent;
 
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK))
     {
@@ -518,14 +514,14 @@ bool GameWindow::AutoSetupWindow(Application* _parent)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
 
-    AssignSize();
-    matrixSize.x = ScreenWidth;
-    matrixSize.y = ScreenHeight;
+    assign_size();
+    matrix_size_.x = ScreenWidth;
+    matrix_size_.y = ScreenHeight;
 
     IsFullscreen = Configuration::GetConfigf("Fullscreen") != 0;
 
-    doFlush = Configuration::GetConfigf("VideoFlush") != 0;
-    VSync = Configuration::GetConfigf("VSync") != 0;
+    do_flush = Configuration::GetConfigf("VideoFlush") != 0;
+    v_sync = Configuration::GetConfigf("VSync") != 0;
 
 	if (IsFullscreen) {
 		if (!SDL_GetPrimaryDisplay()) {
@@ -538,14 +534,14 @@ bool GameWindow::AutoSetupWindow(Application* _parent)
     if (IsFullscreen)
         flags |= SDL_WINDOW_FULLSCREEN;
 
-    if (!(wnd = SDL_CreateWindow(RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, size.x, size.y, flags)))
+    if (!((wnd_ = SDL_CreateWindow(RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, size_.x, size_.y, flags))))
     {
         Log::Logf("Failure to initialize window: %s\n", SDL_GetError());
         return false;
     }
 
-    glContext = SDL_GL_CreateContext(wnd);
-    if (!glContext)
+    gl_context_ = SDL_GL_CreateContext(wnd_);
+    if (!gl_context_)
     {
         Log::Logf("Failure to initialize OpenGL context: %s\n", SDL_GetError());
         return false;
@@ -555,85 +551,84 @@ bool GameWindow::AutoSetupWindow(Application* _parent)
     // This is a temporary hack for OS X where our size isn't getting initialized to the correct values.
     int outx = 0;
     int outy = 0;
-    SDL_GetWindowSize(wnd, &outx, &outy);
-    ResizeFunc(outx, outy);
+    SDL_GetWindowSize(wnd_, &outx, &outy);
+    resize_func(outx, outy);
 #endif
 
-    SetVisibleCursor(Configuration::GetSkinConfigf("ShowCursor") != 0);
+    set_visible_cursor(Configuration::GetSkinConfigf("ShowCursor") != 0);
 
-    return SetupWindow();
+    return setup_window();
 }
 
-void GameWindow::AssignSize()
+void GameWindow::assign_size()
 {
-    float WindowWidth = Configuration::GetConfigf("WindowWidth");
-    float WindowHeight = Configuration::GetConfigf("WindowHeight");
+    float window_width = Configuration::GetConfigf("WindowWidth");
+    float window_height = Configuration::GetConfigf("WindowHeight");
 
-    if (WindowWidth == 0 || WindowHeight == 0)
+    if (window_width == 0 || window_height == 0)
     {
         SDL_DisplayID display = SDL_GetPrimaryDisplay();
 
 		if (display) {
 			const SDL_DisplayMode *mode = SDL_GetCurrentDisplayMode(display);
 
-			size.x = mode->w;
-			size.y = mode->h;
+			size_.x = mode->w;
+			size_.y = mode->h;
 		}
 		else {
 			Log::LogPrintf("Monitor == null? Defaulting to 1024x768.");
-			WindowWidth = 1024;
-			WindowHeight = 768;
+			window_width = 1024;
+			window_height = 768;
 			goto autosize;
 		}
     }
     else
     {
 		autosize:
-        size.x = WindowWidth;
-        size.y = WindowHeight;
+        size_.x = window_width;
+        size_.y = window_height;
     }
 }
 
-void GameWindow::SwapBuffers()
-{
-	if (doFlush)
+void GameWindow::swap_buffers() const {
+	if (do_flush)
 		glFlush();
 
-	SDL_GL_SwapWindow(wnd);
+	SDL_GL_SwapWindow(wnd_);
 	
 
     /* Fullscreen switching */
 
 }
 
-void GameWindow::ClearWindow()
+void GameWindow::clear_window()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void GameWindow::Cleanup()
+void GameWindow::cleanup()
 {
-    if (activeJoystick)
+    if (active_joystick)
     {
-        SDL_CloseJoystick(activeJoystick);
-        activeJoystick = nullptr;
+        SDL_CloseJoystick(active_joystick);
+        active_joystick = nullptr;
     }
-    if (glContext)
+    if (gl_context_)
     {
-        SDL_GL_DestroyContext(glContext);
-        glContext = nullptr;
+        SDL_GL_DestroyContext(gl_context_);
+        gl_context_ = nullptr;
     }
-	SDL_DestroyWindow(wnd);
+	SDL_DestroyWindow(wnd_);
 	SDL_Quit();
 }
 
-void GameWindow::UpdateFullscreen()
+void GameWindow::update_fullscreen()
 {
 	if (FullscreenSwitchbackPending)
 	{
 		Log::LogPrintf("Attempting to switch fullscreen mode.\n");
         IsFullscreen = !IsFullscreen;
-        if (!SDL_SetWindowFullscreen(wnd, IsFullscreen))
+        if (!SDL_SetWindowFullscreen(wnd_, IsFullscreen))
         {
             Log::LogPrintf("Can't switch fullscreen mode: %s\n", SDL_GetError());
             IsFullscreen = !IsFullscreen;
@@ -643,8 +638,8 @@ void GameWindow::UpdateFullscreen()
 
         int outx = 0;
         int outy = 0;
-        SDL_GetWindowSize(wnd, &outx, &outy);
-        ResizeFunc(outx, outy);
+        SDL_GetWindowSize(wnd_, &outx, &outy);
+        resize_func(outx, outy);
 
 		// Reload all images.
 		// todo: rmlui
@@ -652,14 +647,14 @@ void GameWindow::UpdateFullscreen()
 		ImageLoader::ReloadAll();
 
 		/* This revalidates all VBOs and fonts */
-		for (auto & i : VBOList)
+		for (const auto & i : vbo_list_)
 		{
 			i->invalidate();
 			i->validate();
 		}
 
 		// Automatically revalidated on usage
-		for (auto & i : TTFList)
+		for (auto & i : ttf_list_)
 		{
 			i->invalidate();
 		}
@@ -668,7 +663,7 @@ void GameWindow::UpdateFullscreen()
 	}
 }
 
-void GameWindow::RunInput()
+void GameWindow::run_input()
 {
     SDL_Event event;
     while (SDL_PollEvent(&event))
@@ -679,53 +674,52 @@ void GameWindow::RunInput()
             CloseRequested = true;
             break;
         case SDL_EVENT_WINDOW_RESIZED:
-            ResizeFunc(event.window.data1, event.window.data2);
+            resize_func(event.window.data1, event.window.data2);
             break;
         case SDL_EVENT_KEY_DOWN:
             if (!event.key.repeat)
-                InputFunc(event.key.key, true, event.key.mod);
+                input_func(event.key.key, true, event.key.mod);
             break;
         case SDL_EVENT_KEY_UP:
-            InputFunc(event.key.key, false, event.key.mod);
+            input_func(event.key.key, false, event.key.mod);
             break;
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
-            MouseInputFunc(event.button.button, true);
+            mouse_input_func(event.button.button, true);
             break;
         case SDL_EVENT_MOUSE_BUTTON_UP:
-            MouseInputFunc(event.button.button, false);
+            mouse_input_func(event.button.button, false);
             break;
         case SDL_EVENT_MOUSE_WHEEL:
-            ScrollFunc(event.wheel.x, event.wheel.y);
+            scroll_func(event.wheel.x, event.wheel.y);
             break;
         case SDL_EVENT_TEXT_INPUT:
             if (event.text.text && event.text.text[0])
-                WindowFrame.Parent->HandleTextInput(static_cast<unsigned int>(event.text.text[0]));
+                window.application_->on_text_input(static_cast<unsigned int>(event.text.text[0]));
             break;
         default:
             break;
         }
     }
 
-	if (JoystickEnabled)
+	if (joystick_enabled)
 	{
 		// buttons
-		int buttonArraySize = SDL_GetNumJoystickButtons(activeJoystick);
-		if (buttonArraySize > 0)
+		const int button_array_size = SDL_GetNumJoystickButtons(active_joystick);
+		if (button_array_size > 0)
 		{
-			for (int i = 0; i < buttonArraySize; i++)
+			for (int i = 0; i < button_array_size; i++)
 			{
-				for (auto & SpecialKey : SpecialKeys)
+				for (const auto &[key_string, bound_key] : SpecialKeys)
 				{
 					/* Matches the pressed button to its entry in the SpecialKeys vector. */
-					int thisKeyNumber = SpecialKey.boundkey - 1000;
-					if (i + 1 == thisKeyNumber)
+                    if (const int this_key_number = bound_key - 1000; i + 1 == this_key_number)
 					{
 						/* Only processes the button push/release if the state has changed. */
-                        const auto pressed = SDL_GetJoystickButton(activeJoystick, i);
-						if (pressed != controllerButtonState[thisKeyNumber])
+                        if (const auto pressed = SDL_GetJoystickButton(active_joystick, i);
+                            pressed != controller_button_state[this_key_number])
 						{
-							WindowFrame.Parent->HandleInput(SpecialKey.boundkey, pressed, false);
-							controllerButtonState[thisKeyNumber] = pressed;
+							window.application_->on_input(bound_key, pressed, false);
+							controller_button_state[this_key_number] = pressed;
 						}
 					}
 				}
@@ -733,37 +727,35 @@ void GameWindow::RunInput()
 		}
 
 		// axis
-		int axisArraySize = SDL_GetNumJoystickAxes(activeJoystick);
-		float deadzone = 0.25;
-		if (axisArraySize) {
-			for (auto i = 0; i < axisArraySize; i++) {
-                const float axisValue = SDL_GetJoystickAxis(activeJoystick, i) / 32767.0f;
-				for (auto & SpecialKey : SpecialKeys) {
+        if (const int axis_array_size = SDL_GetNumJoystickAxes(active_joystick)) {
+			for (auto i = 0; i < axis_array_size; i++) {
+                const float axis_value = SDL_GetJoystickAxis(active_joystick, i) / 32767.0f;
+				for (auto &[key_string, bound_key] : SpecialKeys) {
 					// as before, specialkeys vector value
-					int axis = SpecialKey.boundkey - 1000;
+					const int axis = bound_key - 1000;
 
-					if ((i + buttonArraySize + 1) != axis)
+					if ((i + button_array_size + 1) != axis)
 						continue;
 
-					if (abs(axisValue) > deadzone) {
-						if (!controllerButtonState[axis]) {
-							lastAxisSign[i] = sign(axisValue);
+					if (constexpr float deadzone = 0.25; abs(axis_value) > deadzone) {
+						if (!controller_button_state[axis]) {
+							last_axis_sign[i] = sign(axis_value);
 
-							controllerButtonState[axis] = true;
-							WindowFrame.Parent->HandleInput(SpecialKey.boundkey, true, false);
+							controller_button_state[axis] = true;
+							window.application_->on_input(bound_key, true, false);
 						}
 						else {
-							if (lastAxisSign[i] != sign(axisValue)) {
-								WindowFrame.Parent->HandleInput(SpecialKey.boundkey, false, false);
-								WindowFrame.Parent->HandleInput(SpecialKey.boundkey, true, false);
-								lastAxisSign[i] = sign(axisValue);
+							if (last_axis_sign[i] != sign(axis_value)) {
+								window.application_->on_input(bound_key, false, false);
+								window.application_->on_input(bound_key, true, false);
+								last_axis_sign[i] = sign(axis_value);
 							}
 						}
 					}
 					else {
-						if (controllerButtonState[axis]) {
-							controllerButtonState[axis] = false;
-							WindowFrame.Parent->HandleInput(SpecialKey.boundkey, false, false);
+						if (controller_button_state[axis]) {
+							controller_button_state[axis] = false;
+							window.application_->on_input(bound_key, false, false);
 						}
 					}
 				}
@@ -773,14 +765,13 @@ void GameWindow::RunInput()
 	}
 }
 
-bool GameWindow::ShouldCloseWindow()
-{
+bool GameWindow::should_close_window() const {
     return CloseRequested;
 }
 
-void GameWindow::SetVisibleCursor(const bool Visible)
+void GameWindow::set_visible_cursor(const bool visible)
 {
-    if (Visible)
+    if (visible)
     {
         SDL_ShowCursor();
     }
@@ -788,74 +779,74 @@ void GameWindow::SetVisibleCursor(const bool Visible)
         SDL_HideCursor();
 }
 
-bool GameWindow::SetupShaders()
+bool GameWindow::setup_shaders()
 {
-    Log::Printf("Setting up shaders...");
+    Log::Printf("Setting up shaders...\n");
 
     if (glGenVertexArrays && glBindVertexArray)
     {
 		Log::Printf("System supports VAOs...\n");
-        glGenVertexArrays(1, &defaultVao);
-        glBindVertexArray(defaultVao);
+        glGenVertexArrays(1, &default_vao_);
+        glBindVertexArray(default_vao_);
     }
 
 	renderer::DefaultShader::compile();
-	renderer::DefaultShader::update_projection(projection);
+	renderer::DefaultShader::update_projection(projection_);
 
     return true;
 }
 
-void GameWindow::AddVBO(VBO *V)
+void GameWindow::add_vbo(VBO *v)
 {
-    VBOList.push_back(V);
+    vbo_list_.push_back(v);
 }
 
-void GameWindow::RemoveVBO(VBO *V)
+void GameWindow::remove_vbo(VBO *v)
 {
-    if (!VBOList.size()) return;
+    if (!vbo_list_.size()) return;
 
-    for (auto i = VBOList.begin(); i != VBOList.end(); ++i)
+    for (auto i = vbo_list_.begin(); i != vbo_list_.end(); ++i)
     {
-        if (*i == V)
+        if (*i == v)
         {
-            VBOList.erase(i);
+            vbo_list_.erase(i);
             return;
         }
     }
 }
 
-void GameWindow::AddShader(renderer::Shader *S)
+void GameWindow::add_shader(renderer::Shader *s)
 {
-	ShaderList.push_back(S);
+	shader_list_.push_back(s);
 }
 
-void GameWindow::RemoveShader(renderer::Shader *S)
+void GameWindow::remove_shader(renderer::Shader *s)
 {
-	for (auto i = ShaderList.begin(); i != ShaderList.end(); ++i) {
-		if (*i == S) {
-			ShaderList.erase(i);
+	for (auto i = shader_list_.begin(); i != shader_list_.end(); ++i) {
+		if (*i == s) {
+			shader_list_.erase(i);
 			return;
 		}
 	}
 }
 
-void GameWindow::AddTTF(TruetypeFont* TTF)
+void GameWindow::add_ttf(TruetypeFont* ttf)
 {
-    TTFList.push_back(TTF);
+    ttf_list_.push_back(ttf);
 }
 
-void GameWindow::RemoveTTF(TruetypeFont *TTF)
+void GameWindow::remove_ttf(TruetypeFont *ttf)
 {
-    for (auto i = TTFList.begin(); i != TTFList.end(); ++i)
+    for (auto i = ttf_list_.begin(); i != ttf_list_.end(); ++i)
     {
-        if (*i == TTF)
+        if (*i == ttf)
         {
-            TTFList.erase(i);
+            ttf_list_.erase(i);
             return;
         }
     }
 }
 
-double GameWindow::GetCurrentTime() {
+double GameWindow::get_current_time() {
     return SDL_GetTicks() / 1000.0;
 }

@@ -71,11 +71,11 @@ public:
 
     bool Run(double Delta) override;
 
-    void Cleanup() override;
+    void cleanup() override;
 
     float GetTransform(const char *TransformName, const float Y);
 
-    bool HandleInput(int32_t key, bool isPressed, bool isMouseInput) override;
+    bool on_input(int32_t key, bool isPressed, bool isMouseInput) override;
 
-    bool HandleScrollInput(double xOff, double yOff) override;
+    bool on_scroll_input(double xOff, double yOff) override;
 };

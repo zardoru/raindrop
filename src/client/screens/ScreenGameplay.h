@@ -106,10 +106,10 @@ public:
     void load_resources() override;
     void post_load_initialization() override;
 
-    void Cleanup() override;
+    void cleanup() override;
 
     PlayerContext* GetPlayerContext(int i) const;
 
     bool Run(double Delta) override;
-    bool HandleInput(int32_t key, bool isPressed, bool isMouseInput) override;
+    bool on_input(int32_t key, bool isPressed, bool isMouseInput) override;
 };

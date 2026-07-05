@@ -32,7 +32,7 @@
 #include <game/VSRGMechanics.h>
 #include <text_and_file_util.h>
 #include "../game/PlayerContext.h"
-#include "ScreenGameplay7K.h"
+#include "ScreenGameplay.h"
 
 #include "LuaManager.h"
 // #include <LuaBridge/LuaBridge.h>
@@ -69,7 +69,7 @@ ScreenGameplay::ScreenGameplay() : Screen("ScreenGameplay7K") {
     isChartLoaded = false;
 }
 
-void ScreenGameplay::Cleanup() {
+void ScreenGameplay::cleanup() {
     if (music_) {
         music_->stop();
     }

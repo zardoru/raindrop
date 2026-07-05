@@ -13,14 +13,14 @@ namespace IPC
             MSG_NULL,
             MSG_STOP,
             MSG_STARTFROMMEASURE
-        } MessageKind;
+        } message_class;
 
-        int Param;
+        int param;
         char Path[256];
 
         Message()
         {
-            MessageKind = MSG_NULL;
+            message_class = MSG_NULL;
         }
     };
 

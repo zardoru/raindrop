@@ -289,11 +289,11 @@ namespace renderer {
 
 	Shader::Shader() {
 		mShaderHandle = -1;
-		WindowFrame.AddShader(this);
+		window.add_shader(this);
 	}
 
 	Shader::~Shader() {
 		glDeleteProgram(mShaderHandle);
-		WindowFrame.RemoveShader(this);
+		window.remove_shader(this);
 	}
 }

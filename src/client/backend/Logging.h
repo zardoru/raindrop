@@ -4,7 +4,7 @@ namespace Log
 {
     void DebugPrintf(std::string Format, ...);
 
-    void Printf(std::string Format, ...);
-    void Logf(std::string Format, ...);
-    void LogPrintf(const std::string str, ...);
+    void Printf(const std::string& format, ...);
+    void Logf(const std::string &format, ...);
+    void LogPrintf(const std::string &str, ...);
 };

@@ -27,12 +27,12 @@
 #include "../game/Noteskin.h"
 #include "../game/PlayerContext.h"
 #include "../bga/BackgroundAnimation.h"
-#include "ScreenGameplay7K.h"
+#include "ScreenGameplay.h"
 
 #include <math.h>
 #include <ranges>
 
-#include "ScreenEvaluation7K.h"
+#include "ScreenEvaluation.h"
 
 #include "../game/GameState.h"
 #include "../game/Game.h"
@@ -108,7 +108,7 @@ void ScreenGameplay::disable_player_clip(int pn) {
     playfield_clip_enabled_[pn] = false;
 }
 
-bool ScreenGameplay::HandleInput(int32_t key, bool isPressed, bool isMouseInput) {
+bool ScreenGameplay::on_input(int32_t key, bool isPressed, bool isMouseInput) {
     /*
     In here we should use the input arrangements depending on
     the amount of channels the current difficulty is using.
@@ -117,13 +117,13 @@ bool ScreenGameplay::HandleInput(int32_t key, bool isPressed, bool isMouseInput)
     */
 
     /* Handle nested screens. */
-    if (Screen::HandleInput(key, isPressed, isMouseInput))
+    if (Screen::on_input(key, isPressed, isMouseInput))
         return true;
 
     scene_->HandleInput(key, isPressed, isMouseInput);
 
     if (isPressed) {
-        switch (BindingsManager::TranslateKey(key)) {
+        switch (BindingsManager::translate_key(key)) {
             case KT_Escape:
                 if (song_pass_triggered_)
                     time_.success = -1;
@@ -151,19 +151,19 @@ bool ScreenGameplay::HandleInput(int32_t key, bool isPressed, bool isMouseInput)
         }// f2
 #endif
 
-        if (BindingsManager::TranslateKey7K(key) != KT_Unknown) {
+        if (BindingsManager::translate_key_game(key) != KT_Unknown) {
             for (auto &player : players_) {
                 player->handle_lane_events(
-                        BindingsManager::TranslateKey7K(key),
+                        BindingsManager::translate_key_game(key),
                         true,
                         time_.stream);
             }
         }
     } else {
-        if (BindingsManager::TranslateKey7K(key) != KT_Unknown) {
+        if (BindingsManager::translate_key_game(key) != KT_Unknown) {
             for (auto &player : players_) {
                 player->handle_lane_events(
-                        BindingsManager::TranslateKey7K(key),
+                        BindingsManager::translate_key_game(key),
                         false,
                         time_.stream);
             }

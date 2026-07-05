@@ -37,7 +37,7 @@
 
 #include "../bga/BackgroundAnimation.h"
 
-#include "ScreenGameplay7K.h"
+#include "ScreenGameplay.h"
 
 #include "../songdb/SongDatabase.h"
 #include "../songdb/SongList.h"
@@ -75,7 +75,7 @@ void SetupWheelLua(LuaManager *Man) {
             .addData("DisplayItemCount", &SongWheel::DisplayItemCount)
             .endClass();
 
-    luabridge::push(L, &SongWheel::GetInstance());
+    luabridge::push(L, &SongWheel::get_instance());
     lua_setglobal(L, "Wheel");
 }
 
@@ -86,8 +86,8 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic") {
     previous_preview = nullptr;
     to_preview = nullptr;
 
-    SongWheel *Wheel = &SongWheel::GetInstance();
-    Wheel->Initialize(GameState::get_instance().get_song_database());
+    SongWheel *Wheel = &SongWheel::get_instance();
+    Wheel->initialize(GameState::get_instance().get_song_database());
 
     SongNotification SongNotifyFunc([this](auto &&PH1, auto &&PH2) {
         OnSongChange(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2));
@@ -168,13 +168,13 @@ void ScreenSelectMusic::load_resources() {
     Time = 0;
 }
 
-void ScreenSelectMusic::Cleanup() {
+void ScreenSelectMusic::cleanup() {
     if (PreviewStream)
         PreviewStream = nullptr;
 
     StopLoops();
 
-    SongWheel::GetInstance().CleanItems();
+    SongWheel::get_instance().CleanItems();
 }
 
 float ScreenSelectMusic::GetTransform(const char *TransformName, const float Y) {
@@ -367,13 +367,13 @@ bool ScreenSelectMusic::Run(double Delta) {
 
     Time += Delta;
 
-    SongWheel::GetInstance().Update(Delta);
+    SongWheel::get_instance().Update(Delta);
 
     scene_->UpdateTargets(Delta);
 
     scene_->DrawUntilLayer(16);
 
-    SongWheel::GetInstance().Render();
+    SongWheel::get_instance().Render();
 
     scene_->DrawFromLayer(16);
 
@@ -388,29 +388,29 @@ void ScreenSelectMusic::StopLoops() {
     }
 }
 
-bool ScreenSelectMusic::HandleInput(int32_t key, bool isPressed, bool isMouseInput) {
+bool ScreenSelectMusic::on_input(int32_t key, bool isPressed, bool isMouseInput) {
     if (TransitionTime > 0 && IsTransitioning)
         return true;
 
     if (Next)
-        return Next->HandleInput(key, isPressed, isMouseInput);
+        return Next->on_input(key, isPressed, isMouseInput);
 
 
-    if (SongWheel::GetInstance().HandleInput(key, isPressed, isMouseInput))
+    if (SongWheel::get_instance().HandleInput(key, isPressed, isMouseInput))
         return true;
 
     scene_->HandleInput(key, isPressed, isMouseInput);
 
     if (isPressed) {
-        switch (BindingsManager::TranslateKey(key)) {
+        switch (BindingsManager::translate_key(key)) {
             case KT_Escape:
                 is_active_ = false;
                 break;
             case KT_Left:
-                SongWheel::GetInstance().PrevDifficulty();
+                SongWheel::get_instance().PrevDifficulty();
                 break;
             case KT_Right:
-                SongWheel::GetInstance().NextDifficulty();
+                SongWheel::get_instance().NextDifficulty();
                 break;
             default:
                 break;
@@ -420,10 +420,10 @@ bool ScreenSelectMusic::HandleInput(int32_t key, bool isPressed, bool isMouseInp
     return true;
 }
 
-bool ScreenSelectMusic::HandleScrollInput(double xOff, double yOff) {
+bool ScreenSelectMusic::on_scroll_input(double xOff, double yOff) {
     if (Next) {
         if (TransitionTime <= 0)
-            return Next->HandleScrollInput(xOff, yOff);
+            return Next->on_scroll_input(xOff, yOff);
         else
             return true;
     }
@@ -431,7 +431,7 @@ bool ScreenSelectMusic::HandleScrollInput(double xOff, double yOff) {
     if (IsTransitioning) return false;
 
     scene_->HandleScrollInput(xOff, yOff);
-    return SongWheel::GetInstance().HandleScrollInput(xOff, yOff);
+    return SongWheel::get_instance().HandleScrollInput(xOff, yOff);
 }
 
 void ScreenSelectMusic::TransformItem(int Item, std::shared_ptr<otoworm::ChartGroup> chart_group, bool IsSelected, int Index) {

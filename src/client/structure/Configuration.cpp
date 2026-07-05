@@ -68,7 +68,7 @@ void Configuration::Initialize()
     LoadTextureParameters();
 }
 
-void Configuration::Cleanup()
+void Configuration::cleanup()
 {
 	if (Config)
 		Config->SaveFile(ConfigFile.c_str());

@@ -194,7 +194,7 @@ std::shared_ptr<otoworm::Chart> GameState::get_chart_shared(int pn)
     if (!group)
         return nullptr;
 
-    const auto index = SongWheel::GetInstance().GetDifficulty();
+    const auto index = SongWheel::get_instance().GetDifficulty();
     if (index < group->charts.size())
         return group->charts[index];
 

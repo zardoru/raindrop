@@ -112,18 +112,18 @@ bool ScreenLoading::Run(double TimeDelta)
     return is_active_;
 }
 
-bool ScreenLoading::HandleInput(int32_t key, bool isPressed, bool isMouseInput)
+bool ScreenLoading::on_input(int32_t key, bool isPressed, bool isMouseInput)
 {
     if (!LoadThread)
     {
         if (Next)
-            return Next->HandleInput(key, isPressed, isMouseInput);
+            return Next->on_input(key, isPressed, isMouseInput);
         return true;
     }
 
     if (!isPressed)
     {
-        if (BindingsManager::TranslateKey(key) == KT_Escape)
+        if (BindingsManager::translate_key(key) == KT_Escape)
         {
             Next->RequestInterrupt();
             ThreadInterrupted = true;
@@ -133,16 +133,16 @@ bool ScreenLoading::HandleInput(int32_t key, bool isPressed, bool isMouseInput)
     return true;
 }
 
-bool ScreenLoading::HandleScrollInput(double xOff, double yOff)
+bool ScreenLoading::on_scroll_input(double xOff, double yOff)
 {
     if (!LoadThread)
     {
-        return Next->HandleScrollInput(xOff, yOff);
+        return Next->on_scroll_input(xOff, yOff);
     }
 
-    return Screen::HandleScrollInput(xOff, yOff);
+    return Screen::on_scroll_input(xOff, yOff);
 }
 
-void ScreenLoading::Cleanup()
+void ScreenLoading::cleanup()
 {
 }

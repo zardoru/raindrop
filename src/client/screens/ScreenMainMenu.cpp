@@ -64,17 +64,17 @@ void ScreenMainMenu::Init()
         */
 }
 
-bool ScreenMainMenu::HandleInput(int32_t key, bool isPressed, bool isMouseInput)
+bool ScreenMainMenu::on_input(int32_t key, bool isPressed, bool isMouseInput)
 {
-    if (Screen::HandleInput(key, isPressed, isMouseInput))
+    if (Screen::on_input(key, isPressed, isMouseInput))
         return true;
 
     return scene_->HandleInput(key, isPressed, isMouseInput);
 }
 
-bool ScreenMainMenu::HandleScrollInput(double xOff, double yOff)
+bool ScreenMainMenu::on_scroll_input(double xOff, double yOff)
 {
-    return Screen::HandleScrollInput(xOff, yOff);
+    return Screen::on_scroll_input(xOff, yOff);
 }
 
 bool ScreenMainMenu::Run(double Delta)
@@ -102,6 +102,6 @@ void ScreenMainMenu::OnExitEnd()
     scene_->trigger_event("OnRestore");
 }
 
-void ScreenMainMenu::Cleanup()
+void ScreenMainMenu::cleanup()
 {
 }

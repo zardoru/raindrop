@@ -24,7 +24,7 @@ bool ScreenCustom::Run(double Delta)
     return true;
 }
 
-bool ScreenCustom::HandleInput(int32_t key, bool isPressed, bool isMouseInput)
+bool ScreenCustom::on_input(int32_t key, bool isPressed, bool isMouseInput)
 {
     return scene_->HandleInput(key, isPressed, isMouseInput);
 }

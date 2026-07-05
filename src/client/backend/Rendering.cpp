@@ -358,7 +358,7 @@ namespace renderer {
 	}
 
 	void set_scissor_region(const int x, const int y, const int w, const int h) {
-		float ratio = WindowFrame.GetWindowVScale();
+		float ratio = window.get_window_v_scale();
 		glScissor(x * ratio, (ScreenHeight - (y + h)) * ratio, w * ratio, h * ratio);
 	}
 
@@ -366,17 +366,17 @@ namespace renderer {
 		// x: 0 -> 0; screenwidth -> windowwidth
 		// y: 0 -> windowheight; screenheight -> 0
 		auto tx = [&](const int x) {
-			auto ww = WindowFrame.GetWindowSize().x;
+			auto ww = window.get_window_size().x;
 			return x * ww / ScreenWidth;
 		};
 
 		auto ty = [&](const int y) {
-			auto wh = WindowFrame.GetWindowSize().y;
+			auto wh = window.get_window_size().y;
 			auto m = -wh / ScreenHeight;
 			return m * y + wh;
 		};
 
-		auto vratio = WindowFrame.GetWindowSize().y / ScreenHeight;
+		auto vratio = window.get_window_size().y / ScreenHeight;
 		glScissor(tx(x), ty(y) - h * vratio, tx(w), h * vratio);
 	}
 }
@@ -499,7 +499,7 @@ void Sprite::Render()
         assert(glGetError() == 0);
 	}
 	else {
-		auto proj = WindowFrame.GetMatrixProjection();
+		auto proj = window.get_matrix_projection();
 		auto mat = GetMatrix();
 
 		m_shader_->bind();
@@ -807,7 +807,7 @@ VBO::VBO(const Type T, const uint32_t Elements, const uint32_t Size, const IdxKi
     IsValid = false;
     mType = T;
     mKind = Kind;
-    WindowFrame.AddVBO(this);
+    window.add_vbo(this);
 
     ElementCount = Elements;
     ElementSize = Size;
@@ -822,7 +822,7 @@ VBO::~VBO()
         InternalVBO = 0;
     }
 
-    WindowFrame.RemoveVBO(this);
+    window.remove_vbo(this);
 
     delete[] VboData;
     VboData = nullptr;

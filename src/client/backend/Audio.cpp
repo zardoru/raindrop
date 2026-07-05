@@ -461,7 +461,7 @@ void GetAudioInfo() {
     }
 }
 
-void InitAudio() {
+void init_audio() {
 #ifndef NO_AUDIO
     PaError Err = Pa_Initialize();
 
@@ -495,7 +495,7 @@ IMixer *GetMixer() {
     return &PaMixer::GetInstance();
 }
 
-void MixerUpdate() {
+void update_mixer() {
 #ifndef NO_AUDIO
     if (!UseThreadedDecoder)
         PaMixer::GetInstance().Run();

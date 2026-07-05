@@ -48,7 +48,7 @@ if (WIN32)
 endif()
 
 # While we use gil, there's no real need to include it here. it's header-only.
-find_package(Boost COMPONENTS program_options date_time REQUIRED)
+find_package(Boost COMPONENTS program_options date_time nowide REQUIRED)
 find_package(SDL3 REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(PNG REQUIRED)

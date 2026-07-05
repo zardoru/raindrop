@@ -88,7 +88,7 @@ std::filesystem::path GameState::get_skin_script_file(const char* Filename, cons
 
 std::shared_ptr<otoworm::ChartGroup> GameState::get_selected_chart_group_shared() const
 {
-    if (const auto chart_group = SongWheel::GetInstance().GetSelectedChartGroup())
+    if (const auto chart_group = SongWheel::get_instance().GetSelectedChartGroup())
         return chart_group;
     return SelectedChartGroup;
 }
@@ -417,7 +417,7 @@ std::shared_ptr<Screen> GameState::get_next_screen()
 
 void GameState::sort_wheel_by(int criteria)
 {
-	SongWheel::GetInstance().SortBy(static_cast<ESortCriteria>(criteria));
+	SongWheel::get_instance().SortBy(static_cast<ESortCriteria>(criteria));
 }
 
 void GameState::add_active_profile(const std::string &profile_name) {

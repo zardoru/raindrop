@@ -13,7 +13,7 @@ public:
     void OnExitEnd() override;
 
     bool Run(double TimeDelta) override;
-    bool HandleInput(int32_t key, bool isPressed, bool isMouseInput) override;
-    bool HandleScrollInput(double xOff, double yOff) override;
-    void Cleanup() override;
+    bool on_input(int32_t key, bool isPressed, bool isMouseInput) override;
+    bool on_scroll_input(double xOff, double yOff) override;
+    void cleanup() override;
 };

@@ -27,7 +27,7 @@ namespace Configuration
     void SetConfig(std::string Name, std::string Value, std::string Namespace = "");
     // void SetConfig(std::string Name, float Value, std::string Namespace = "");
     /// void SaveConfig();
-    void Cleanup();
+    void cleanup();
 }
 
 class ConfigurationVariable

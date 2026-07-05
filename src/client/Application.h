@@ -5,7 +5,7 @@ class Screen;
 class Application
 {
     double oldTime;
-    std::shared_ptr<Screen> Game;
+    std::shared_ptr<Screen> root;
 
     enum
     {
@@ -16,30 +16,30 @@ class Application
         MODE_STOPPREVIEW,
         MODE_CUSTOMSCREEN,
 		MODE_GENFONTCACHE
-    }RunMode;
+    }mode;
 
-    void ParseArgs(int, char **);
+    void parse_args(int, char **);
 
     std::filesystem::path InFile, InFontTextFile;
 
-    int Measure;
+    int measure_;
     int difIndex;
     std::string Author;
 
     bool Upscroll;
 
-    void SetupPreviewMode();
-    bool PollIPC();
+    void setup_preview_mode();
+    bool poll_ipc();
 
 public:
 
     Application(int argc, char *argv[]);
 
-    void HandleInput(int32_t key, bool isPressed, bool isMouseInput);
-    void HandleScrollInput(double xOff, double yOff);
+    void on_input(int32_t key, bool is_pressed, bool is_mouse_input) const;
+    void on_scroll_input(double x_off, double y_off) const;
 
-    void Init();
-    void Run();
-    void Close();
-    void HandleTextInput(unsigned cp);
+    void init();
+    void run();
+    void close();
+    void on_text_input(unsigned cp) const;
 };

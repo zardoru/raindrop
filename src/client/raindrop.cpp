@@ -27,9 +27,9 @@ int main(int argc, char *argv[])
 	__try {
 #endif
 	    Application app(argc, argv);
-	    app.Init();
-	    app.Run();
-	    app.Close();
+	    app.init();
+	    app.run();
+	    app.close();
 #if _WIN32 && NDEBUG
 	} 
 	__except ( ex_info = GetExceptionInformation(),

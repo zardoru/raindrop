@@ -80,7 +80,7 @@ namespace IPC
 
             if (!mque->try_receive(&Msg, sizeof(Message), st, prio))
             {
-                Msg.MessageKind = Message::MSG_NULL;
+                Msg.message_class = Message::MSG_NULL;
             }
         }
 

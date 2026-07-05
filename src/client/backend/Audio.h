@@ -4,8 +4,8 @@
 #include <string>
 #include <sndio/IMixer.h>
 
-void InitAudio();
-void MixerUpdate();
+void init_audio();
+void update_mixer();
 double MixerGetTime();
 double MixerGetLatency();
 

@@ -93,16 +93,16 @@ public:
     StringTransformFunction TransformString;
 
     // Singleton
-    static SongWheel& GetInstance();
+    static SongWheel& get_instance();
 
     void CleanItems();
 
     void ReapplyFilters();
 
     void GoUp();
-    void Initialize(SongDatabase* Database);
+    void initialize(SongDatabase* Database);
 
-    void Join();
+    void join_loading_thread();
 
     bool HandleInput(int32_t key, bool isPressed, bool isMouseInput);
     bool HandleScrollInput(const double dx, const double dy);

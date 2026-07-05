@@ -27,7 +27,7 @@
 #include "../bga/BackgroundAnimation.h"
 
 #include "../structure/Screen.h"
-#include "../screens/ScreenGameplay7K.h"
+#include "../screens/ScreenGameplay.h"
 
 
 void ScreenGameplay::add_script_classes(LuaManager* Env)

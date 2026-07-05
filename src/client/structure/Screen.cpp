@@ -38,16 +38,16 @@ Screen::Screen(std::string Name, std::shared_ptr<Screen> _Parent)
 
 Screen::~Screen() {}
 
-bool Screen::HandleTextInput(int codepoint)
+bool Screen::on_text_input(int codepoint)
 {
     if (Next)
-        return Next->HandleTextInput(codepoint);
+        return Next->on_text_input(codepoint);
     return scene_->HandleTextInput(codepoint);
 }
 
 void Screen::Close()
 {
-    Cleanup();
+    cleanup();
     is_active_ = false;
     if (Next)
         Next->Close();
@@ -93,12 +93,12 @@ bool Screen::RunNested(float delta)
     if (!Next)
         return false;
 
-    if (Next->Update(delta))
+    if (Next->update(delta))
         return true;
     else // The screen's done?
     {
         // It's not null- so we'll delete it.
-        Next->Cleanup();
+        Next->cleanup();
         Next = nullptr;
         return false;
     }
@@ -123,7 +123,7 @@ double Screen::GetScreenTime()
     return ScreenTime;
 }
 
-bool Screen::Update(float delta)
+bool Screen::update(float delta)
 {
     ScreenTime += delta;
 
@@ -196,18 +196,18 @@ bool Screen::RunExit(float Fraction, float Delta)
 
     return is_active_;
 }
-bool Screen::HandleInput(int32_t key, bool isPressed, bool isMouseInput)
+bool Screen::on_input(int32_t key, bool isPressed, bool isMouseInput)
 {
     if (Next && Next->IsScreenRunning())
-        return Next->HandleInput(key, isPressed, isMouseInput);
+        return Next->on_input(key, isPressed, isMouseInput);
 
     return false;
 }
 
-bool Screen::HandleScrollInput(double xOff, double yOff)
+bool Screen::on_scroll_input(double xOff, double yOff)
 {
     if (Next && Next->IsScreenRunning())
-        return Next->HandleScrollInput(xOff, yOff);
+        return Next->on_scroll_input(xOff, yOff);
 
     return false;
 }
@@ -239,6 +239,6 @@ void Screen::OnRunningBegin()
     scene_->trigger_event("OnRunningBegin");
 }
 
-void Screen::Cleanup() { /* stub */ }
+void Screen::cleanup() { /* stub */ }
 
 void Screen::Invalidate() { /* stub */ }

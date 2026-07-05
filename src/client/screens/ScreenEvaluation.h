@@ -18,9 +18,9 @@ public:
 
     bool Run(double Delta);
 
-    void Cleanup();
+    void cleanup();
 
-    bool HandleInput(int32_t key, bool isPressed, bool isMouseInput);
+    bool on_input(int32_t key, bool isPressed, bool isMouseInput);
 
     void PrintCLIResults(ScoreKeeper *result);
 };
