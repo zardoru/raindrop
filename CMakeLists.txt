@@ -164,6 +164,10 @@ if (LINUX)
     set(PLATFORM_LIBS GL)
 endif()
 
+if (UNIX AND NOT WIN32)
+    list(APPEND PLATFORM_LIBS ${CMAKE_DL_LIBS})
+endif()
+
 target_link_libraries(rdbody.src
         rd.core
         Boost::program_options
@@ -189,6 +193,10 @@ add_executable(rdbody
 )
 
 target_link_libraries(rdbody rdbody.src)
+
+if (UNIX AND NOT WIN32)
+    set_target_properties(rdbody PROPERTIES ENABLE_EXPORTS ON)
+endif()
 
 if (WIN32)
     set(WINLIBS opengl32.lib Shlwapi.lib Dbghelp.lib)
@@ -233,6 +241,10 @@ if (TARGET Catch2::Catch2)
             src/
             src-thirdparty/
     )
+
+    if (UNIX AND NOT WIN32)
+        set_target_properties(rdtests PROPERTIES ENABLE_EXPORTS ON)
+    endif()
 
     include(Catch)
     catch_discover_tests(rdtests WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})

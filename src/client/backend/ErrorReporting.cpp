@@ -6,6 +6,8 @@
 
 #include <vector>
 #include <csignal>
+#include <cstdlib>
+#include <cstring>
 #include "Logging.h"
 
 void PrintStackTrace();
@@ -14,13 +16,60 @@ void PrintStackTrace();
 void InitDbgHelp();
 #endif
 
+namespace {
+
+volatile std::sig_atomic_t handling_signal = 0;
+
+const char* signal_name(const int sig)
+{
+	switch (sig) {
+	case SIGABRT: return "SIGABRT";
+	case SIGSEGV: return "SIGSEGV";
+#ifdef SIGBUS
+	case SIGBUS: return "SIGBUS";
+#endif
+#ifdef SIGILL
+	case SIGILL: return "SIGILL";
+#endif
+#ifdef SIGFPE
+	case SIGFPE: return "SIGFPE";
+#endif
+#ifdef SIGTRAP
+	case SIGTRAP: return "SIGTRAP";
+#endif
+	default: return "unknown";
+	}
+}
+
+}
+
 void signalrec(int sig) {
+	if (handling_signal)
+		std::_Exit(128 + sig);
+
+	handling_signal = 1;
+	Log::LogPrintf("Caught signal %d (%s).\n", sig, signal_name(sig));
 	PrintStackTrace();
+
+	std::signal(sig, SIG_DFL);
+	std::raise(sig);
 }
 
 void register_signals() {
 	signal(SIGABRT, signalrec);
 	signal(SIGSEGV, signalrec);
+#ifdef SIGBUS
+	signal(SIGBUS, signalrec);
+#endif
+#ifdef SIGILL
+	signal(SIGILL, signalrec);
+#endif
+#ifdef SIGFPE
+	signal(SIGFPE, signalrec);
+#endif
+#ifdef SIGTRAP
+	signal(SIGTRAP, signalrec);
+#endif
 
 #ifdef _WIN32
 #ifndef NDEBUG
@@ -173,7 +222,60 @@ void PrintStackTrace() {
 	PrintTraceFromContext(ctx);
 }
 #else
-void PrintStackTrace() {
+#include <cstddef>
+#include <cxxabi.h>
+#include <dlfcn.h>
+#include <execinfo.h>
 
+namespace {
+
+std::string demangle_symbol(const char* name)
+{
+	int status = 0;
+	char* demangled = abi::__cxa_demangle(name, nullptr, nullptr, &status);
+	if (status == 0 && demangled) {
+		std::string result = demangled;
+		std::free(demangled);
+		return result;
+	}
+
+	std::free(demangled);
+	return name ? name : "";
+}
+
+}
+
+void PrintStackTrace() {
+	constexpr int max_frames = 128;
+	void* frames[max_frames];
+	const int frame_count = backtrace(frames, max_frames);
+
+	Log::LogPrintf("Stack trace (%d frames):\n", frame_count);
+
+	char** fallback_symbols = backtrace_symbols(frames, frame_count);
+	for (int i = 0; i < frame_count; ++i) {
+		Dl_info info;
+		std::memset(&info, 0, sizeof(info));
+
+		if (dladdr(frames[i], &info) && info.dli_sname) {
+			const auto symbol = demangle_symbol(info.dli_sname);
+			const auto offset = static_cast<std::ptrdiff_t>(
+				static_cast<char*>(frames[i]) - static_cast<char*>(info.dli_saddr));
+			Log::LogPrintf("\t#%02d %p %s + %td (%s)\n",
+				i,
+				frames[i],
+				symbol.c_str(),
+				offset,
+				info.dli_fname ? info.dli_fname : "unknown");
+		}
+		else if (fallback_symbols) {
+			Log::LogPrintf("\t#%02d %s\n", i, fallback_symbols[i]);
+		}
+		else {
+			Log::LogPrintf("\t#%02d %p\n", i, frames[i]);
+		}
+	}
+
+	std::free(fallback_symbols);
 }
 #endif
