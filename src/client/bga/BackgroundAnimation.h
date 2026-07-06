@@ -15,7 +15,7 @@ public:
 
     virtual void OnHit();
     virtual void OnMiss();
-    virtual void Render();
+    virtual void render();
 
     /* Can only be called from main thread if LoadNow = true! */
     static std::unique_ptr<BackgroundAnimation> CreateBGAFromChartGroup(

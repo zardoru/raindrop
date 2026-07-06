@@ -246,7 +246,7 @@ public:
         LayerMiss->SetZ(0);
         Layer2->SetZ(0);
 
-        Layer1->BlackToTransparent = Layer2->BlackToTransparent = BlackToTransparent;
+        Layer1->black_to_transparent = Layer2->black_to_transparent = BlackToTransparent;
 
         LayerMiss->set_image(List.GetFromIndex(0), true);
         Layer0->set_image(List.GetFromIndex(1), true);
@@ -311,14 +311,14 @@ public:
 
     float MissTime;
 
-    void Render() override
+    void render() override
     {
-        Layer0->Render();
-        Layer1->Render();
-        Layer2->Render();
+        Layer0->render();
+        Layer1->render();
+        Layer2->render();
 
         if (MissTime > 0)
-            LayerMiss->Render();
+            LayerMiss->render();
     }
 
     void OnMiss() override
@@ -364,10 +364,10 @@ public:
         List.LoadAll();
     }
 
-    void Render() override
+    void render() override
     {
         if (Background != nullptr)
-            Background->Render();
+            Background->render();
     }
 };
 
@@ -430,7 +430,7 @@ void BackgroundAnimation::OnMiss()
 {
 }
 
-void BackgroundAnimation::Render()
+void BackgroundAnimation::render()
 {
 }
 

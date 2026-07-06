@@ -12,7 +12,7 @@ constexpr auto TIME_RANGE = 10000;
 TEST_CASE("Lua Manager state")
 {
 	LuaManager l;
-	REQUIRE_FALSE(l.CallFunction("NonExistingFunction"));
+	REQUIRE_FALSE(l.call_function("NonExistingFunction"));
 }
 
 using namespace rd;

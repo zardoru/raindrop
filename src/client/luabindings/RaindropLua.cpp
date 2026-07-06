@@ -21,8 +21,8 @@ namespace LuaAnimFuncs
     {
         auto Lua = GetObjectFromState<LuaManager>(S, "Luaman");
         std::string File = luaL_checkstring(S, 1);
-        if (!Lua->Require(GameState::get_instance().get_scripts_directory() + File)) {
-            Log::LogPrintf("lua error while doing game_require: %s", Lua->GetLastError().c_str());
+        if (!Lua->require(GameState::get_instance().get_scripts_directory() + File)) {
+            Log::LogPrintf("lua error while doing game_require: %s", Lua->get_last_error().c_str());
         }
         return 1;
     }
@@ -50,8 +50,8 @@ namespace LuaAnimFuncs
         auto *Lua = GetObjectFromState<LuaManager>(L, "Luaman");
         std::string Request = luaL_checkstring(L, 1);
         auto File = GameState::get_instance().get_skin_script_file(Request.c_str(), GameState::get_instance().get_skin());
-        if (!Lua->Require(File)) {
-            Log::LogPrintf("Error while calling require: %s\n", Lua->GetLastError().c_str());
+        if (!Lua->require(File)) {
+            Log::LogPrintf("Error while calling require: %s\n", Lua->get_last_error().c_str());
         }
 
 		// return whatever lua->require left on the stack.
@@ -72,8 +72,8 @@ namespace LuaAnimFuncs
             return 1;
         }
 
-        if (!Lua->Require(GameState::get_instance().get_skin_script_file(file.c_str(), skin))) {
-            Log::LogPrintf("Failure executing lua script while running fallback_require: %s\n", Lua->GetLastError().c_str());
+        if (!Lua->require(GameState::get_instance().get_skin_script_file(file.c_str(), skin))) {
+            Log::LogPrintf("Failure executing lua script while running fallback_require: %s\n", Lua->get_last_error().c_str());
         }
 
         return 1;
@@ -124,12 +124,12 @@ void DefineSpriteInterface(LuaManager* anim_lua)
 
 void AddRDLuaGlobal(LuaManager * anim_lua)
 {
-	anim_lua->AppendPath("./?;./?.lua");
-	anim_lua->AppendPath(GameState::get_instance().get_scripts_directory() + "?");
-	anim_lua->AppendPath(GameState::get_instance().get_scripts_directory() + "?.lua");
+	anim_lua->append_path("./?;./?.lua");
+	anim_lua->append_path(GameState::get_instance().get_scripts_directory() + "?");
+	anim_lua->append_path(GameState::get_instance().get_scripts_directory() + "?.lua");
 
-	anim_lua->AppendPath(GameState::get_instance().get_skin_prefix() + "?");
-	anim_lua->AppendPath(GameState::get_instance().get_skin_prefix() + "?.lua");
+	anim_lua->append_path(GameState::get_instance().get_skin_prefix() + "?");
+	anim_lua->append_path(GameState::get_instance().get_skin_prefix() + "?.lua");
 
 	// anim_lua->AppendPath(GameState::GetFallbackSkinPrefix());
 	anim_lua->Register(LuaAnimFuncs::Require, "skin_require");
@@ -142,10 +142,10 @@ void AddRDLuaGlobal(LuaManager * anim_lua)
 	anim_lua->Register(LuaAnimFuncs::GetSkinDirectory, "GetSkinDirectory");
 	anim_lua->Register(LuaAnimFuncs::GetSkinFile, "GetSkinFile");
 
-	anim_lua->NewArray();
+	anim_lua->new_array();
 	anim_lua->SetFieldI("Height", ScreenHeight);
 	anim_lua->SetFieldI("Width", ScreenWidth);
-	anim_lua->FinalizeArray("Screen");
+	anim_lua->finalize_array("Screen");
 }
 
 // New lua interface.

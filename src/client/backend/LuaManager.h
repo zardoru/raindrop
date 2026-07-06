@@ -6,7 +6,7 @@ class LuaManager
 {
 	bool WeOwnThisState;
     lua_State* State;
-    void GetGlobal(std::string VarName);
+    void get_global(std::string VarName);
 
     int func_args, func_results; bool func_input; bool func_err;
 	std::string last_error;
@@ -18,57 +18,59 @@ public:
 
     ~LuaManager();
 
-    bool IsValid(); // returns true if instance is valid, as in we were able to open a lua state.
+    bool is_valid() const; // returns true if instance is valid, as in we were able to open a lua state.
 
     // All functions here will crash if the lua state is not valid.
 
-    bool Register(lua_CFunction Function, std::string FunctionName);
-    bool RegisterStruct(std::string Key, void* data, std::string MetatableName = std::string());
-    void RegisterLibrary(std::string arrayname, const luaL_Reg *lib);
-    void* GetStruct(std::string Key);
-    bool RunScript(std::filesystem::path file);
-    bool RunScript(std::string Filename);
+    bool Register(lua_CFunction function, const std::string &function_name) const;
+    bool register_struct(std::string Key, void* data, std::string MetatableName = std::string());
+    void register_library(std::string arrayname, const luaL_Reg *lib);
+    void* get_struct(std::string Key);
+    bool run_script(std::filesystem::path file);
+    bool run_script(std::string Filename);
     
-    bool RunString(std::string string);
+    bool run_string(std::string string);
 
     // Do a "require" call with Filename as the argument. This leaves a value on the stack!
-    bool Require(std::filesystem::path path);
+    bool require(std::filesystem::path path);
 
-	void DumpStack();
+	void dump_stack();
 
     // Global variables
 
-    int GetGlobalI(std::string VariableName, int Default = -1);
-    double GetGlobalD(std::string VariableName, double Default = -1);
-    std::string GetGlobalS(std::string VariableName, std::string Default = std::string());
+    int get_global_i(const std::string &variable_name, int defaultv = -1);
+    double get_global_d(const std::string &variable_name, double Default = -1);
+    std::string get_global_s(const std::string &variable_name, std::string defaultv = std::string());
 
-    void SetGlobal(const std::string &VariableName, const std::string &Value);
-    void SetGlobal(const std::string &VariableName, const double &Value);
+    void set_global(const std::string &VariableName, const std::string &Value);
+    void set_global(const std::string &VariableName, int Value);
+    void set_global(const std::string &VariableName, const double &Value);
+    void set_global(const std::string &VariableName, bool Value);
 
     lua_State* get_lua_state();
 
     // Function calling
-    void PushArgument(int Value);
-    void PushArgument(double Value);
-    void PushArgument(std::string Value);
-	void PushArgument(bool Value);
+    void push_argument(int Value);
+    void push_argument(double Value);
+    void push_argument(std::string Value);
+	void push_argument(bool Value);
 
-    bool CallFunction(const char* Name, int Arguments = 0, int Results = 0);
-    bool RunFunction();
+    bool call_function(const char* Name, int Arguments = 0, int Results = 0);
+    bool run_function();
 
-    int GetFunctionResult(int StackPos = 1);
-	std::string GetFunctionResultS(int StackPos = 1);
+    int get_function_result(int StackPos = 1);
+	std::string get_function_result_s(int StackPos = 1);
     float get_stack_f(int StackPos = 1);
-	double GetFunctionResultD(int StackPos = 1);
+	double get_function_result_d(int StackPos = 1);
 
-    std::string GetLastError();
+    std::string get_last_error();
 
-    void Pop();
+    void pop();
 
     /* Metatables */
-    void NewMetatable(std::string MtName);
+    void new_metatable(std::string MtName);
 
-    int GetStackTop();
+    int get_stack_top();
 
     // Arrays
     /*
@@ -79,31 +81,31 @@ public:
      also these are tables but we work with them differently than how we would do tables.
     */
 
-    void NewArray();
-    bool UseArray(std::string VariableName); // returns true if the array exists
+    void new_array();
+    bool use_array(std::string variable_name); // returns true if the array exists
 
-    void SetFieldI(int index, int Value);
-	void SetFieldI(std::string name, int Value);
-    void SetFieldD(int index, double Value);
-	void SetFieldD(std::string name, double Value);
-    void SetFieldS(int index, std::string Value);
-    void SetFieldS(std::string name, std::string Value);
+    void set_field_i(int index, int value);
+	void SetFieldI(std::string name, int value);
+    void set_field_d(int index, double value);
+	void set_field_d(std::string name, double value);
+    void set_field_s(int index, std::string value);
+    void set_field_s(std::string name, std::string value);
 
-    int GetFieldI(std::string Key, int Default = -1);
-    double GetFieldD(std::string Key, double Default = -1);
-    std::string GetFieldS(std::string Key, std::string Default = std::string());
+    int get_field_i(std::string key, int Default = -1);
+    double get_field_d(std::string key, double Default = -1);
+    std::string get_field_s(std::string key, std::string Default = std::string());
 
     // Table iteration
-    void StartIteration();
+    void start_iteration();
 
-    bool IterateNext();
-    int NextInt();
-    double NextDouble();
-    std::string NextGString();
+    bool iterate_next();
+    int next_int();
+    double next_double();
+    std::string next_g_string();
 
-    void FinalizeArray(std::string ArrayName); // saves the new array with this name
-	void FinalizeEnum(std::string EnumName);
-    void AppendPath(std::string Path);
+    void finalize_array(std::string ArrayName); // saves the new array with this name
+	void finalize_enum(std::string EnumName);
+    void append_path(std::string Path);
     // TODO: Table variables
 };
 

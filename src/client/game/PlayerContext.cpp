@@ -427,9 +427,9 @@ void PlayerContext::draw_barlines(const double current_vertical, const double us
         const double real_v = (current_vertical - i * units_per_measure_) * user_speed_multiplier +
                               noteskin_->GetBarlineOffset() * sign(user_speed_multiplier) + get_judgment_y();
         if (real_v > 0 && real_v < ScreenWidth) {
-            barline_->SetLocation(Vec2(noteskin_->GetBarlineStartX(), real_v),
+            barline_->set_location(Vec2(noteskin_->GetBarlineStartX(), real_v),
                                   Vec2(noteskin_->GetBarlineStartX() + noteskin_->GetBarlineWidth(), real_v));
-            barline_->Render();
+            barline_->render();
         }
     }
 }
@@ -592,8 +592,8 @@ void PlayerContext::set_playable_data(std::shared_ptr<otoworm::Chart> chart, con
 
     // this has to happen after the setup so we can use the effective parameters!
     // use data from the replay if one is loaded
-    if (replay_data_->IsLoaded()) {
-        parameters_ = replay_data_->GetEffectiveParameters();
+    if (replay_data_->is_loaded()) {
+        parameters_ = replay_data_->get_effective_parameters();
         desired_default_speed = parameters_.UserSpeedMultiplier;
 
         // treat desired default speed as the actual multiplier

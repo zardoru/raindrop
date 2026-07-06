@@ -10,16 +10,16 @@ class GraphicalString : public Sprite
 	float mKernScale;
 public:
     GraphicalString();
-    void SetText(std::string _Text);
-    std::string GetText() const;
-    void SetFont(Font* _Font);
-    Font* GetFont() const;
+    void set_text(const std::string &text);
+    std::string get_text() const;
+    void set_font(Font* font);
+    Font* get_font() const;
 
-	float GetKerningScale() const;
-	void SetKerningScale(float ks);
-	float GetTextSize() const;
-	void SetFontSize(float fsize);
-	float GetFontSize() const;
+	float get_kerning_scale() const;
+	void set_kerning_scale(float ks);
+	float get_text_size() const;
+	void set_font_size(float fsize);
+	float get_font_size() const;
 
-    void Render() override;
+    void render() override;
 };

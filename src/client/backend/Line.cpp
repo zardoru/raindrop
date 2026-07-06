@@ -11,7 +11,7 @@ Line::Line()
     y2 = 100;
 }
 
-void Line::SetColor(const float iR, const float iG, const float iB, const float iA)
+void Line::set_color(const float iR, const float iG, const float iB, const float iA)
 {
     R = iR;
     G = iG;
@@ -19,7 +19,7 @@ void Line::SetColor(const float iR, const float iG, const float iB, const float 
     A = iA;
 }
 
-void Line::SetLocation(const Vec2 &p1, const Vec2 &p2)
+void Line::set_location(const Vec2 &p1, const Vec2 &p2)
 {
     x1 = p1.x;
     x2 = p2.x;

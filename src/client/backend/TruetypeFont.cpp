@@ -41,9 +41,9 @@ public:
 		bool &IsValid) {
 
 		// accelerate loading if font is on registers
-		if (font_data.find(Filename) != font_data.end())
+		if (font_data.contains(Filename))
 		{
-			auto &fnt = font_data[Filename];
+			const auto &fnt = font_data[Filename];
 			info = fnt.info;
 			data = fnt.data;
 			Texels = fnt.texels;

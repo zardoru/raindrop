@@ -16,11 +16,11 @@ void CreateSceneEnvironmentLua(LuaManager* anim_lua)
 	// @param None No easing
 	// @param In Ease In
 	// @param Out Ease Out
-	anim_lua->NewArray();
+	anim_lua->new_array();
 	anim_lua->SetFieldI("None", Animation::EaseLinear);
 	anim_lua->SetFieldI("In", Animation::EaseIn);
 	anim_lua->SetFieldI("Out", Animation::EaseOut);
-	anim_lua->FinalizeEnum("Easing");
+	anim_lua->finalize_enum("Easing");
 
 	/// Object2D handler. Does most callbacks behind the scene.
 	// @type SceneEnvironment

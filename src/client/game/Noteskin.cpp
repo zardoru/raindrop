@@ -52,8 +52,8 @@ void Noteskin::Validate() {
      Function called when the Noteskin is created. Called only once.
      @callback Init
      */
-    if (NoteskinLua.CallFunction("Init"))
-        NoteskinLua.RunFunction();
+    if (NoteskinLua.call_function("Init"))
+        NoteskinLua.run_function();
 }
 
 int Noteskin::GetChannels() const {
@@ -78,8 +78,8 @@ void Noteskin::SetupNoteskin(bool SpecialStyle, int Lanes) {
     /// Instance of @{Player} provided by the engine. Owner of the current noteskin script.
     // @autoinstance Player
     luabridge::setGlobal(NoteskinLua.get_lua_state(), Parent, "Player");
-    if (!NoteskinLua.RunScript(GameState::get_instance().get_skin_file("noteskin.lua"))) {
-        Log::LogPrintf("noteskin.lua: %s\n", NoteskinLua.GetLastError().c_str());
+    if (!NoteskinLua.run_script(GameState::get_instance().get_skin_file("noteskin.lua"))) {
+        Log::LogPrintf("noteskin.lua: %s\n", NoteskinLua.get_last_error().c_str());
     }
 }
 
@@ -90,10 +90,10 @@ void Noteskin::update(float Delta, float CurrentBeat) {
      @param delta Time since last frame.
      @param beat Current song beat.
      */
-    if (NoteskinLua.CallFunction("Update", 2)) {
-        NoteskinLua.PushArgument(Delta);
-        NoteskinLua.PushArgument(CurrentBeat);
-        NoteskinLua.RunFunction();
+    if (NoteskinLua.call_function("Update", 2)) {
+        NoteskinLua.push_argument(Delta);
+        NoteskinLua.push_argument(CurrentBeat);
+        NoteskinLua.run_function();
     }
 }
 
@@ -130,12 +130,12 @@ void Noteskin::DrawNote(rd::RuntimeNote &T, int Lane, float Location) {
     // We didn't get a name to call. Odd.
 
     CanRender = true;
-    if (NoteskinLua.CallFunction(CallFunc, 4)) {
-        NoteskinLua.PushArgument(Lane);
-        NoteskinLua.PushArgument(Location);
-        NoteskinLua.PushArgument(T.get_frac_kind());
-        NoteskinLua.PushArgument(0);
-        NoteskinLua.RunFunction();
+    if (NoteskinLua.call_function(CallFunc, 4)) {
+        NoteskinLua.push_argument(Lane);
+        NoteskinLua.push_argument(Location);
+        NoteskinLua.push_argument(T.get_frac_kind());
+        NoteskinLua.push_argument(0);
+        NoteskinLua.run_function();
     }
     CanRender = false;
 }
@@ -170,16 +170,16 @@ void Noteskin::DrawHoldHead(rd::RuntimeNote &T, int Lane, float Location, int Ac
      @param active_level 0 if failed, 1 if active, 2 if being hit, 3 if succesfully hit.
      */
 
-    if (!NoteskinLua.CallFunction("DrawHoldHead", 4))
-        if (!NoteskinLua.CallFunction("DrawNormal", 4))
+    if (!NoteskinLua.call_function("DrawHoldHead", 4))
+        if (!NoteskinLua.call_function("DrawNormal", 4))
             return;
 
     CanRender = true;
-    NoteskinLua.PushArgument(Lane);
-    NoteskinLua.PushArgument(Location);
-    NoteskinLua.PushArgument(T.get_frac_kind());
-    NoteskinLua.PushArgument(ActiveLevel);
-    NoteskinLua.RunFunction();
+    NoteskinLua.push_argument(Lane);
+    NoteskinLua.push_argument(Location);
+    NoteskinLua.push_argument(T.get_frac_kind());
+    NoteskinLua.push_argument(ActiveLevel);
+    NoteskinLua.run_function();
     CanRender = false;
 }
 
@@ -193,16 +193,16 @@ void Noteskin::DrawHoldTail(rd::RuntimeNote &T, int Lane, float Location, int Ac
      @param active_level 0 if failed, 1 if active, 2 if being hit, 3 if succesfully hit.
      */
 
-    if (!NoteskinLua.CallFunction("DrawHoldTail", 4))
-        if (!NoteskinLua.CallFunction("DrawNormal", 4))
+    if (!NoteskinLua.call_function("DrawHoldTail", 4))
+        if (!NoteskinLua.call_function("DrawNormal", 4))
             return;
 
     CanRender = true;
-    NoteskinLua.PushArgument(Lane);
-    NoteskinLua.PushArgument(Location);
-    NoteskinLua.PushArgument(T.get_frac_kind());
-    NoteskinLua.PushArgument(ActiveLevel);
-    NoteskinLua.RunFunction();
+    NoteskinLua.push_argument(Lane);
+    NoteskinLua.push_argument(Location);
+    NoteskinLua.push_argument(T.get_frac_kind());
+    NoteskinLua.push_argument(ActiveLevel);
+    NoteskinLua.run_function();
     CanRender = false;
 }
 
@@ -228,15 +228,15 @@ void Noteskin::DrawHoldBody(int Lane, float Location, float Size, int ActiveLeve
      @param active_level 0 if failed, 1 if active, 2 if being hit, 3 if succesfully hit.
      */
 
-    if (!NoteskinLua.CallFunction("DrawHoldBody", 4))
+    if (!NoteskinLua.call_function("DrawHoldBody", 4))
         return;
 
     CanRender = true;
-    NoteskinLua.PushArgument(Lane);
-    NoteskinLua.PushArgument(Location);
-    NoteskinLua.PushArgument(Size);
-    NoteskinLua.PushArgument(ActiveLevel);
-    NoteskinLua.RunFunction();
+    NoteskinLua.push_argument(Lane);
+    NoteskinLua.push_argument(Location);
+    NoteskinLua.push_argument(Size);
+    NoteskinLua.push_argument(ActiveLevel);
+    NoteskinLua.run_function();
     CanRender = false;
 }
 

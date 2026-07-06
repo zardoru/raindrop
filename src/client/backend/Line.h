@@ -18,7 +18,7 @@ class Line : public Drawable
 public:
     Line();
 
-    void SetColor(float R, float G, float B, float A);
-    void SetLocation(const Vec2 &p1, const Vec2 &p2);
-    void Render();
+    void set_color(float R, float G, float B, float A);
+    void set_location(const Vec2 &p1, const Vec2 &p2);
+    void render() override;
 };

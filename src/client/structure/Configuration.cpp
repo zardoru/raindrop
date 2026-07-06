@@ -58,10 +58,10 @@ void Configuration::Initialize()
 
     IsWidescreen = Configuration::GetConfigf("Widescreen");
 
-    SkinCfgLua->SetGlobal("Widescreen", IsWidescreen);
+    SkinCfgLua->set_global("Widescreen", IsWidescreen);
     
 	GameState::get_instance().initialize_lua(SkinCfgLua->get_lua_state());
-    SkinCfgLua->RunScript(GameState::get_instance().get_skin_file("skin.lua"));
+    SkinCfgLua->run_script(GameState::get_instance().get_skin_file("skin.lua"));
 
 	AddRDLuaGlobal(SkinCfgLua);
 
@@ -90,24 +90,24 @@ std::string GetConfsInt(std::string Name, std::string Namespace, LuaManager &L)
     std::string Retval;
     if (Namespace.length())
     {
-        if (L.UseArray(Namespace))
+        if (L.use_array(Namespace))
         {
-			if (L.CallFunction(Name.c_str(), 0, 1)) {
-				if (L.RunFunction())
-					Retval = L.GetFunctionResultS();
+			if (L.call_function(Name.c_str(), 0, 1)) {
+				if (L.run_function())
+					Retval = L.get_function_result_s();
 			}
 			else {
-				Retval = L.GetFieldS(Name);
+				Retval = L.get_field_s(Name);
 			}
-			L.Pop();
+			L.pop();
 		}
     }
     else {
-		if (L.CallFunction(Name.c_str(), 0, 1)) {
-			if (L.RunFunction())
-				Retval = L.GetFunctionResultS();
+		if (L.call_function(Name.c_str(), 0, 1)) {
+			if (L.run_function())
+				Retval = L.get_function_result_s();
 		} else
-	        Retval = L.GetGlobalS(Name);
+	        Retval = L.get_global_s(Name);
 	}
     return Retval;
 }
@@ -117,25 +117,25 @@ double GetConffInt(std::string Name, std::string Namespace, LuaManager &L)
     double Retval = 0;
     if (Namespace.length())
     {
-        if (L.UseArray(Namespace))
+        if (L.use_array(Namespace))
         {
-			if (L.CallFunction(Name.c_str(), 0, 1)) {
-				if (L.RunFunction())
-					Retval = L.GetFunctionResultD();
+			if (L.call_function(Name.c_str(), 0, 1)) {
+				if (L.run_function())
+					Retval = L.get_function_result_d();
 			}
 			else {
-				Retval = L.GetFieldD(Name, 0);
+				Retval = L.get_field_d(Name, 0);
 			}
 
-			L.Pop();
+			L.pop();
         }
     }
     else {
-		if (L.CallFunction(Name.c_str(), 0, 1)) {
-			if (L.RunFunction())
-				Retval = L.GetFunctionResultD();
+		if (L.call_function(Name.c_str(), 0, 1)) {
+			if (L.run_function())
+				Retval = L.get_function_result_d();
 		} else
-	        Retval = L.GetGlobalD(Name, 0);
+	        Retval = L.get_global_d(Name, 0);
 	}
     return Retval;
 }

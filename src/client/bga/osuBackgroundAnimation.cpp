@@ -277,23 +277,23 @@ namespace osb {
 		
 		if (ValidateEventIterator(fade_evt, evFade)) {
 			if (WithinEvents(Time))
-					mSprite->Alpha = fade_evt->LerpValue(Time);
+					mSprite->alpha = fade_evt->LerpValue(Time);
 			else {
 				if (fade_evt->GetTime() == 0 && mLayer == LAYER_SP_BACKGROUND)
-					mSprite->Alpha = 1;
+					mSprite->alpha = 1;
 				else
-					mSprite->Alpha = 0;
+					mSprite->alpha = 0;
 			}
 		}
 		else {
 			if (WithinEvents(Time))
-				mSprite->Alpha = 1;
+				mSprite->alpha = 1;
 			else
-				mSprite->Alpha = 0;
+				mSprite->alpha = 0;
 		}
 
 		// Don't bother updating unless we're visible.
-		if (mSprite->Alpha == 0)
+		if (mSprite->alpha == 0)
 			return;
 
 		// Now position.	
@@ -360,9 +360,9 @@ namespace osb {
 		auto colorization_evt = GetEvent(Time, evColorize);
 		if (ValidateEventIterator(colorization_evt, evColorize)) {
 			auto lerp = colorization_evt->LerpValue(Time);
-			mSprite->Color.Red = lerp.r;
-			mSprite->Color.Green = lerp.g;
-			mSprite->Color.Blue = lerp.b;
+			mSprite->color.Red = lerp.r;
+			mSprite->color.Green = lerp.g;
+			mSprite->color.Blue = lerp.b;
 		}
 
 		// The effects after this don't set values before they begin. (Parameter)
@@ -370,8 +370,8 @@ namespace osb {
 		if (additive_evt != evAdditive.begin()
 			&& evAdditive.begin() != evAdditive.end()
 			&& (additive_evt - 1)->GetEndTime() <= Time)
-			mSprite->SetBlendMode(BLEND_ADD);
-		else mSprite->SetBlendMode(BLEND_ALPHA);
+			mSprite->set_blend_mode(BLEND_ADD);
+		else mSprite->set_blend_mode(BLEND_ALPHA);
 
 		auto hflip_evt = GetEvent(Time, evFlipH);
 		if (hflip_evt != evFlipH.begin() 
@@ -1216,12 +1216,12 @@ void osuBackgroundAnimation::Update(float Delta)
 {
 }
 
-void osuBackgroundAnimation::Render()
+void osuBackgroundAnimation::render()
 {
 	for (auto&& item : mAutoBGLayer)
-		item.Render();
+		item.render();
 	for (auto&& item: mBackgroundLayer)
-		item.Render();
+		item.render();
 	for (auto&& item: mForegroundLayer)
-		item.Render();
+		item.render();
 }

@@ -42,13 +42,13 @@ public:
             uint32_t diffindex = 0 // difficulty index in the defined chart hash
     );
 
-    PlayscreenParameters GetEffectiveParameters() const;
+    PlayscreenParameters get_effective_parameters() const;
 
-    std::string GetSongHash() const;
+    std::string get_song_hash() const;
 
-    uint32_t GetDifficultyIndex() const;
+    uint32_t get_difficulty_index() const;
 
-    bool IsLoaded();
+    bool is_loaded();
 
 
     /*
@@ -60,7 +60,7 @@ public:
 
     bool load(std::filesystem::path input);
 
-    bool Save(std::filesystem::path input) const;
+    bool save(std::filesystem::path input) const;
 
     // similar to auto, use judgetime - offset
     void update(double Time);

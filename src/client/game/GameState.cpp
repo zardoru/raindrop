@@ -29,7 +29,7 @@
 #include "../structure/Configuration.h"
 #include <text_and_file_util.h>
 
-#include "../../ir/StormIR.h"
+#include "../ir/StormIR.h"
 #include "Logging.h"
 #include "Audiofile.h"
 
@@ -355,7 +355,7 @@ void GameState::submit_score(int pn)
 	const auto chart_group = get_selected_chart_group_shared();
 	const auto replay = player->ctx->get_replay();
 
-	if (replay.GetEffectiveParameters().Auto)
+	if (replay.get_effective_parameters().Auto)
 		return;
 
 	const auto scorekeeper = *player->scorekeeper;
@@ -366,16 +366,16 @@ void GameState::submit_score(int pn)
 		return;
 
     auto submitfunc = [=, this] {
-        player->profile->Scores.AddScore(
-                replay.GetSongHash(),
-                replay.GetDifficultyIndex(),
-                replay.GetEffectiveParameters(),
+        player->profile->scores.AddScore(
+                replay.get_song_hash(),
+                replay.get_difficulty_index(),
+                replay.get_effective_parameters(),
                 scorekeeper,
                 drift,
                 joffset
         );
 
-        player->profile->SaveReplay(selected_chart_group, replay);
+        player->profile->save_replay(selected_chart_group, replay);
 
         if (ir && ir->IsConnected()) {
             Log::LogPrintf("[IR] Submitting score...\n");
@@ -424,5 +424,5 @@ void GameState::add_active_profile(const std::string &profile_name) {
     PlayerInfo.emplace_back();
     auto *new_player = &PlayerInfo.back();
     new_player->profile = new Profile();
-    new_player->profile->Load(profile_name);
+    new_player->profile->load(profile_name);
 }

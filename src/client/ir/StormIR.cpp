@@ -10,8 +10,8 @@
 #include <cpr/cpr.h>
 #include <json.hpp>
 
-#include "../client/game/PlayscreenParameters.h"
-#include "../client/game/Replay.h"
+#include "../game/PlayscreenParameters.h"
+#include "../game/Replay.h"
 #include "StormIR.h"
 #include "ScoreSerializer.h"
 #include "Logging.h"
@@ -103,12 +103,12 @@ namespace StormIR {
             return false;
 
         // most of the hard work is done in this function
-        auto j = SerializeScore(
+        auto j = serialize_score(
                 chart_group,
                 chart,
-                replay.GetDifficultyIndex(),
+                replay.get_difficulty_index(),
                 score,
-                replay.GetEffectiveParameters()
+                replay.get_effective_parameters()
         );
         auto s = _impl->ApiRequest("functions/submitScore");
         auto b = j.dump();

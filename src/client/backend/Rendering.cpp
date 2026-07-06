@@ -385,12 +385,12 @@ void Sprite::update_texture()
 {
 	if (!renderer::Initialized) return;
 
-    if (!DirtyTexture)
+    if (!dirty_texture_)
         return;
 
-    if (!DoTextureCleanup) // We must not own a UV buffer.
+    if (!do_texture_cleanup_) // We must not own a UV buffer.
     {
-        DirtyTexture = false;
+        dirty_texture_ = false;
         return;
     }
 
@@ -415,12 +415,12 @@ void Sprite::update_texture()
     };
 
     uv_buffer_->assign_data(CropPositions);
-    DirtyTexture = false;
+    dirty_texture_ = false;
 }
 
 bool Sprite::should_draw() const
 {
-    if (Alpha == 0)
+    if (alpha == 0)
         return false;
 
 	if (m_shader_)
@@ -457,24 +457,24 @@ bool Sprite::render_minimal_setup()
 	);
 
     // Set the color.
-	auto lf = 1.0 + LightenFactor;
-	if (!Lighten)
-		renderer::DefaultShader::set_color(Color.Red, Color.Green, Color.Blue, Alpha);
+	auto lf = 1.0 + lighten_factor;
+	if (!lighten)
+		renderer::DefaultShader::set_color(color.Red, color.Green, color.Blue, alpha);
 	else
-		renderer::DefaultShader::set_color(Color.Red * lf, Color.Green * lf, Color.Blue * lf, Alpha);
+		renderer::DefaultShader::set_color(color.Red * lf, color.Green * lf, color.Blue * lf, alpha);
 
     renderer::do_quad_draw();
 
     return true;
 }
 
-void Sprite::Render()
+void Sprite::render()
 {
     if (!should_draw())
         return;
 
-    renderer::set_scissor(Scissor);
-    renderer::set_scissor_region(ScissorRegion.X1, ScissorRegion.Y1, ScissorRegion.width(), ScissorRegion.height());
+    renderer::set_scissor(scissor);
+    renderer::set_scissor_region(scissor_region.X1, scissor_region.Y1, scissor_region.width(), scissor_region.height());
 
     update_texture();
     assert(glGetError() == 0);
@@ -485,14 +485,14 @@ void Sprite::Render()
     // Assign our matrix.
 	if (!m_shader_) {
 		auto mat = GetMatrix();
-		renderer::set_default_shader_parameters(ColorInvert, Centered, BlackToTransparent);
+		renderer::set_default_shader_parameters(color_invert, centered, black_to_transparent);
         assert(glGetError() == 0);
 
-		auto lf = 1.0 + LightenFactor;
-		if (!Lighten)
-			renderer::DefaultShader::set_color(Color.Red, Color.Green, Color.Blue, Alpha);
+		auto lf = 1.0 + lighten_factor;
+		if (!lighten)
+			renderer::DefaultShader::set_color(color.Red, color.Green, color.Blue, alpha);
 		else
-			renderer::DefaultShader::set_color(Color.Red * lf, Color.Green * lf, Color.Blue * lf, Alpha);
+			renderer::DefaultShader::set_color(color.Red * lf, color.Green * lf, color.Blue * lf, alpha);
         assert(glGetError() == 0);
 		
 		renderer::set_current_object_matrix(mat);
@@ -515,15 +515,15 @@ void Sprite::Render()
 
 		sh = m_shader_->get_uniform("centered"); assert(glGetError() == 0);
 		if (sh != -1)
-			renderer::Shader::SetUniform(sh, Centered); assert(glGetError() == 0);
+			renderer::Shader::SetUniform(sh, centered); assert(glGetError() == 0);
 
 		sh = m_shader_->get_uniform("color"); assert(glGetError() == 0);
 		if (sh != -1)
 			renderer::Shader::SetUniform(sh, 
-				l2gamma(Color.Red), 
-				l2gamma(Color.Green), 
-				l2gamma(Color.Blue), 
-				Alpha);
+				l2gamma(color.Red), 
+				l2gamma(color.Green), 
+				l2gamma(color.Blue), 
+				alpha);
 	    }
 
     assert(glGetError() == 0);
@@ -538,9 +538,9 @@ void Sprite::Render()
     assert(glGetError() == 0);
 }
 
-void Sprite::Cleanup()
+void Sprite::cleanup()
 {
-    if (DoTextureCleanup)
+    if (do_texture_cleanup_)
     {
         delete uv_buffer_;
 		uv_buffer_ = nullptr;
@@ -697,7 +697,7 @@ void Line::update_vbo()
     }
 }
 
-void Line::Render()
+void Line::render()
 {
     auto Identity = glm::identity<Mat4>();
     update_vbo();

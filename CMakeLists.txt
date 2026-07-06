@@ -101,7 +101,6 @@ target_include_directories(rd.sndio PUBLIC
         ${OGG_INCLUDE_DIR}
         ${VORBISFILE_INCLUDE_DIR}
         ${SNDFILE_INCLUDE_DIR}
-        ${MPG123_INCLUDE_DIR}
         ${FFMPEG_INCLUDE_DIR})
 target_compile_definitions(rd.sndio PUBLIC SNDIO_DLL)
 
@@ -113,7 +112,7 @@ target_link_libraries(rd.sndio
     ${OGG_LIBRARY} 
     ${VORBIS_LIBRARY} 
     ${VORBISFILE_LIBRARY}
-    ${MPG123_LIBRARY}
+    MPG123::MPG123
     SndFile::sndfile
     SDL3::SDL3)
 
@@ -134,8 +133,7 @@ file(GLOB_RECURSE backend_files CONFIGURE_DEPENDS src/client/*.cpp)
 
 set (BODY_SOURCE
         ${backend_files}
-        ${SQLITE_FILES}
-        src/ir/StormIR.cpp src/ir/StormIR.h src/ir/ScoreSerializer.cpp src/ir/ScoreSerializer.h)
+        ${SQLITE_FILES})
 
 list(REMOVE_ITEM BODY_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/client/raindrop.cpp
@@ -202,10 +200,6 @@ endif()
 add_executable(rdconverter
         src/converter/converter.cpp)
 
-target_include_directories(rdconverter PRIVATE
-        ${Boost_INCLUDE_DIR}
-)
-
 if (WIN32)
     set(WINLIBS_CONV Shlwapi.lib)
     target_compile_definitions(rdconverter PRIVATE -DUNICODE)
@@ -247,7 +241,10 @@ else()
 endif()
 
 install(TARGETS rdconverter rdbody)
-install(DIRECTORY data/ DESTINATION data)
+install(DIRECTORY data/ DESTINATION data
+        PATTERN ".git" EXCLUDE
+        PATTERN ".gitignore" EXCLUDE
+)
 install(FILES default_config.ini RENAME config.ini DESTINATION .)
 
 set(CPACK_PACKAGE_VENDOR "wyrmin.xyz")

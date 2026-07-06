@@ -58,8 +58,8 @@ ScreenLoading::ScreenLoading(std::shared_ptr<Screen> _Next) : Screen("ScreenLoad
     scene_->preload(GameState::get_instance().get_skin_file("screenloading.lua"), "Preload");
     scene_->initialize("", false);
 
-    IntroDuration = std::max(scene_->get_script_manager()->GetGlobalD("IntroDuration"), 0.0);
-    ExitDuration = std::max(scene_->get_script_manager()->GetGlobalD("ExitDuration"), 0.0);
+    IntroDuration = std::max(scene_->get_script_manager()->get_global_d("IntroDuration"), 0.0);
+    ExitDuration = std::max(scene_->get_script_manager()->get_global_d("ExitDuration"), 0.0);
 
     ChangeState(StateIntro);
 }

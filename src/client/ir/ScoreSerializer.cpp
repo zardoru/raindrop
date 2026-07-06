@@ -3,7 +3,6 @@
 #include <game/ScoreKeeper.h>
 #include <json.hpp>
 #include "ScoreSerializer.h"
-#include "../client/game/PlayscreenParameters.h"
 #include <text_and_file_util.h>
 
 using nlohmann::json;
@@ -61,7 +60,7 @@ const std::map<int, std::string> systemTypeMapper = {
 
 };
 
-json StormIR::SerializeScore(const otoworm::ChartGroup *chart_group, const otoworm::Chart *chart,
+json StormIR::serialize_score(const otoworm::ChartGroup *chart_group, const otoworm::Chart *chart,
                              const size_t index, const rd::ScoreKeeper &keeper,
                              const PlayscreenParameters &options) {
     json ret;
@@ -72,10 +71,10 @@ json StormIR::SerializeScore(const otoworm::ChartGroup *chart_group, const otowo
     // difficulty index
     ret["diff_index"] = index;
 
-    ret["song"] = SerializeSongInformation(chart_group);
-    ret["diff"] = SerializeDifficultyInformation(chart_group, chart);
-    ret["options"] = SerializeOptions(options);
-    ret["detail"] = SerializeScoreDetail(keeper, options.GetScoringType(),
+    ret["song"] = serialize_song_information(chart_group);
+    ret["diff"] = serialize_difficulty_information(chart_group, chart);
+    ret["options"] = serialize_options(options);
+    ret["detail"] = serialize_score_detail(keeper, options.GetScoringType(),
                                          static_cast<const rd::LifeType>(options.GaugeType));
 
     // score type
@@ -100,7 +99,7 @@ json StormIR::SerializeScore(const otoworm::ChartGroup *chart_group, const otowo
     return ret;
 }
 
-json StormIR::SerializeSongInformation(const otoworm::ChartGroup *chart_group) {
+json StormIR::serialize_song_information(const otoworm::ChartGroup *chart_group) {
     return nlohmann::json() = {
             {"title",    chart_group ? chart_group->title : ""},
             {"subtitle", chart_group ? chart_group->subtitle : ""},
@@ -108,7 +107,7 @@ json StormIR::SerializeSongInformation(const otoworm::ChartGroup *chart_group) {
     };
 }
 
-json StormIR::SerializeDifficultyInformation(const otoworm::ChartGroup *chart_group, const otoworm::Chart *chart) {
+json StormIR::serialize_difficulty_information(const otoworm::ChartGroup *chart_group, const otoworm::Chart *chart) {
     std::filesystem::path chart_path;
     if (chart && chart->meta)
         chart_path = chart->meta->path;
@@ -124,7 +123,7 @@ json StormIR::SerializeDifficultyInformation(const otoworm::ChartGroup *chart_gr
     };
 }
 
-json StormIR::SerializeOptions(const PlayscreenParameters &parameters) {
+json StormIR::serialize_options(const PlayscreenParameters &parameters) {
     std::vector<std::string> opts;
 
     if (parameters.NoFail) opts.emplace_back("nofail");
@@ -138,7 +137,7 @@ json StormIR::SerializeOptions(const PlayscreenParameters &parameters) {
     return json() = opts;
 }
 
-json StormIR::SerializeScoreDetail(const rd::ScoreKeeper &keeper, const rd::ScoreType type, const rd::LifeType gaugeType) {
+json StormIR::serialize_score_detail(const rd::ScoreKeeper &keeper, const rd::ScoreType type, const rd::LifeType gaugeType) {
     json ret;
     ret["judge"] = {
             {"w0" , keeper.getJudgmentCount(rd::SKJ_W0)},

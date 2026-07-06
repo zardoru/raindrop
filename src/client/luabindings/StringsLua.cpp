@@ -74,19 +74,19 @@ void CreateStringsLuaInterface(LuaManager* AnimLua)
 		.addConstructor <void(*) ()>()
 		/// Sets the font of this string.
 		// @property Font
-		.addProperty("Font", &GraphicalString::GetFont, &GraphicalString::SetFont)
+		.addProperty("Font", &GraphicalString::get_font, &GraphicalString::set_font)
 		/// Sets the text of this string.
 		// @property Text
-		.addProperty("Text", &GraphicalString::GetText, &GraphicalString::SetText)
+		.addProperty("Text", &GraphicalString::get_text, &GraphicalString::set_text)
 		/// Sets the font size for this string.
 		// @property FontSize
-		.addProperty("FontSize", &GraphicalString::GetFontSize, &GraphicalString::SetFontSize)
+		.addProperty("FontSize", &GraphicalString::get_font_size, &GraphicalString::set_font_size)
 		/// Returns the length of the currently set string.
 		// @property TextSize
-		.addProperty("TextSize", &GraphicalString::GetTextSize)
+		.addProperty("TextSize", &GraphicalString::get_text_size)
 		/// Sets the kerning scale. 
 		// @property KernScale
-		.addProperty("KernScale", &GraphicalString::GetKerningScale, &GraphicalString::SetKerningScale)
+		.addProperty("KernScale", &GraphicalString::get_kerning_scale, &GraphicalString::set_kerning_scale)
 		// .addProperty("ChainTransformation", &O2DProxy::getChainTransformation<GraphicalString>, &O2DProxy::setChainTransformation<GraphicalString>)
 		.endClass();
 }

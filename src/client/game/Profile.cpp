@@ -19,35 +19,35 @@ const std::filesystem::path SCOREDB_FILENAME = "scores.db";
 const std::filesystem::path REPLAYS_DIR = "replays";
 
 void Profile::AssureProfilePathExistence() {
-    auto path = GetPath();
+    auto path = get_path();
     std::filesystem::create_directories(path);
 
     auto replaypath = path / REPLAYS_DIR;
     std::filesystem::create_directory(replaypath);
 }
 
-std::filesystem::path Profile::GetPath() {
-    return std::filesystem::absolute(PROFILE_DIR) / Name;
+std::filesystem::path Profile::get_path() {
+    return std::filesystem::absolute(PROFILE_DIR) / name;
 }
 
-bool Profile::Load(std::string Name) {
-    this->Name = Name;
+bool Profile::load(std::string Name) {
+    this->name = Name;
     AssureProfilePathExistence();
 
-    auto path = GetPath();
-    Scores.Open(path / SCOREDB_FILENAME);
+    auto path = get_path();
+    scores.Open(path / SCOREDB_FILENAME);
 
     return true;
 }
 
-bool Profile::Save() {
+bool Profile::save() {
     AssureProfilePathExistence();
 
 
     return false;
 }
 
-void Profile::SaveReplay(const otoworm::ChartGroup *chart_group, const Replay &replay) {
+void Profile::save_replay(const otoworm::ChartGroup *chart_group, const Replay &replay) {
     time_t now;
     time(&now);
     auto tm = localtime(&now);
@@ -69,7 +69,7 @@ void Profile::SaveReplay(const otoworm::ChartGroup *chart_group, const Replay &r
     );
 
     // put it out
-    replay.Save(GetPath() / REPLAYS_DIR / replay_filename);
+    replay.save(get_path() / REPLAYS_DIR / replay_filename);
 }
 
 /*ScoreRow Profile::GetDifficultyScore(rd::Difficulty * diff)
@@ -77,6 +77,6 @@ void Profile::SaveReplay(const otoworm::ChartGroup *chart_group, const Replay &r
     return ScoreRow();
 }*/
 
-std::vector<std::string> Profile::GetProfileList() {
+std::vector<std::string> Profile::get_profile_list() {
     return std::vector<std::string>();
 }

@@ -56,27 +56,27 @@ struct O2DProxy {
     }
 
     static float getRed(Sprite const *obj) {
-        return obj->Color.Red;
+        return obj->color.Red;
     }
 
     static void setGreen(Sprite *obj, float param) {
-        obj->Color.Green = param;
+        obj->color.Green = param;
     }
 
     static float getGreen(Sprite const *obj) {
-        return obj->Color.Green;
+        return obj->color.Green;
     }
 
     static void setBlue(Sprite *obj, float param) {
-        obj->Color.Blue = param;
+        obj->color.Blue = param;
     }
 
     static float getBlue(Sprite const *obj) {
-        return obj->Color.Blue;
+        return obj->color.Blue;
     }
 
     static void setRed(Sprite *obj, float param) {
-        obj->Color.Red = param;
+        obj->color.Red = param;
     }
 
     template<class T>
@@ -193,10 +193,10 @@ void CreateObject2DLua(LuaManager *anim_lua) {
     // @enum BlendMode
     // @param Add Addition blend mode.
     // @param Alpha Alpha blend mode. Default.
-    anim_lua->NewArray();
+    anim_lua->new_array();
     anim_lua->SetFieldI("Add", (int) BLEND_ADD);
     anim_lua->SetFieldI("Alpha", (int) BLEND_ALPHA);
-    anim_lua->FinalizeEnum("BlendMode");
+    anim_lua->finalize_enum("BlendMode");
 
     ///
     luabridge::getGlobalNamespace(anim_lua->get_lua_state())
@@ -211,17 +211,17 @@ void CreateObject2DLua(LuaManager *anim_lua) {
 
             /// Whether this object uses the center or the top left as the pivot. If true, centered.
             // @property Centered
-            .addData("Centered", &Sprite::Centered)
-            .addData("Lighten", &Sprite::Lighten)
-            .addData("LightenFactor", &Sprite::LightenFactor)
-            .addData("Scissor", &Sprite::Scissor)
-            .addData("ScissorRegion", &Sprite::ScissorRegion)
+            .addData("Centered", &Sprite::centered)
+            .addData("Lighten", &Sprite::lighten)
+            .addData("LightenFactor", &Sprite::lighten_factor)
+            .addData("Scissor", &Sprite::scissor)
+            .addData("ScissorRegion", &Sprite::scissor_region)
                     /// Whether to invert the colors of this sprite. Useless if the shader is set.
                     // @property ColorInvert
-            .addData("ColorInvert", &Sprite::ColorInvert)
+            .addData("ColorInvert", &Sprite::color_invert)
                     /// The sprite's alpha.
                     // @property Alpha
-            .addData("Alpha", &Sprite::Alpha)
+            .addData("Alpha", &Sprite::alpha)
                     /// The red value of the sprite. Range from 0 to 1. Will be multiplied
                     // @property Red
             .addProperty("Red", &O2DProxy::getRed, &O2DProxy::setRed)
@@ -234,7 +234,7 @@ void CreateObject2DLua(LuaManager *anim_lua) {
                     /// The blend mode for this sprite.
                     // @property BlendMode
                     // @see BlendMode
-            .addProperty("BlendMode", &Sprite::GetBlendMode, &Sprite::SetBlendMode)
+            .addProperty("BlendMode", &Sprite::get_blend_mode, &Sprite::set_blend_mode)
                     /// Set the crop of the sprite by pixel measurements.
                     // @function SetCropByPixels
                     // @param x1 Left X coordinate.
@@ -247,7 +247,7 @@ void CreateObject2DLua(LuaManager *anim_lua) {
             .addFunction("ResetCrop", &Sprite::set_crop_to_whole_image)
                     /// @{Shader} to render this sprite with.
                     // @property Shader
-            .addProperty("Shader", &Sprite::GetShader, &Sprite::SetShader)
+            .addProperty("Shader", &Sprite::get_shader, &Sprite::set_shader)
             // TODO: Document Lua
             .addProperty("Position", &O2DProxy::getPosition, &O2DProxy::setPosition)
             .addProperty("position", &O2DProxy::getPosition, &O2DProxy::setPosition)

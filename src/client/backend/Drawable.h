@@ -3,6 +3,6 @@
 class Drawable
 {
 public:
-    virtual ~Drawable() {};
-    virtual void Render() {};
+    virtual ~Drawable() = default;
+    virtual void render() {};
 };

@@ -47,8 +47,8 @@
 #include "../game/Game.h"
 
 void LuaEvt(LuaManager *LuaMan, std::string Func, Sprite *Obj) {
-    LuaMan->CallFunction(Func.c_str());
-    LuaMan->RunFunction();
+    LuaMan->call_function(Func.c_str());
+    LuaMan->run_function();
 }
 
 void SetupWheelLua(LuaManager *Man) {
@@ -179,9 +179,9 @@ void ScreenSelectMusic::cleanup() {
 
 float ScreenSelectMusic::GetTransform(const char *TransformName, const float Y) {
     LuaManager *Lua = scene_->get_script_manager();
-    if (Lua->CallFunction(TransformName, 1, 1)) {
-        Lua->PushArgument(Y);
-        Lua->RunFunction();
+    if (Lua->call_function(TransformName, 1, 1)) {
+        Lua->push_argument(Y);
+        Lua->run_function();
         return Lua->get_stack_f();
     } else return 0;
 }
@@ -435,24 +435,24 @@ bool ScreenSelectMusic::on_scroll_input(double xOff, double yOff) {
 }
 
 void ScreenSelectMusic::TransformItem(int Item, std::shared_ptr<otoworm::ChartGroup> chart_group, bool IsSelected, int Index) {
-    if (scene_->get_script_manager()->CallFunction("TransformItem", 4)) {
+    if (scene_->get_script_manager()->call_function("TransformItem", 4)) {
         luabridge::push(scene_->get_script_manager()->get_lua_state(), Item);
         luabridge::push(scene_->get_script_manager()->get_lua_state(), chart_group.get());
         luabridge::push(scene_->get_script_manager()->get_lua_state(), IsSelected);
         luabridge::push(scene_->get_script_manager()->get_lua_state(), Index);
-        scene_->get_script_manager()->RunFunction();
+        scene_->get_script_manager()->run_function();
     }
 }
 
 void ScreenSelectMusic::TransformString(int Item, std::shared_ptr<otoworm::ChartGroup> chart_group, bool IsSelected, int Index,
                                         std::string text) {
-    if (scene_->get_script_manager()->CallFunction("TransformString", 5)) {
+    if (scene_->get_script_manager()->call_function("TransformString", 5)) {
         luabridge::push(scene_->get_script_manager()->get_lua_state(), Item);
         luabridge::push(scene_->get_script_manager()->get_lua_state(), chart_group.get());
         luabridge::push(scene_->get_script_manager()->get_lua_state(), IsSelected);
         luabridge::push(scene_->get_script_manager()->get_lua_state(), Index);
         luabridge::push(scene_->get_script_manager()->get_lua_state(), text.c_str());
-        scene_->get_script_manager()->RunFunction();
+        scene_->get_script_manager()->run_function();
     }
 }
 
@@ -462,33 +462,33 @@ void ScreenSelectMusic::OnDirectoryChange() {
 
 void ScreenSelectMusic::OnItemClick(int32_t Index, uint32_t boundIndex, std::string Line,
                                     std::shared_ptr<otoworm::ChartGroup> Selected) {
-    if (scene_->get_script_manager()->CallFunction("OnItemClick", 4)) {
+    if (scene_->get_script_manager()->call_function("OnItemClick", 4)) {
         luabridge::push(scene_->get_script_manager()->get_lua_state(), Index);
         luabridge::push(scene_->get_script_manager()->get_lua_state(), boundIndex);
         luabridge::push(scene_->get_script_manager()->get_lua_state(), Line);
         luabridge::push(scene_->get_script_manager()->get_lua_state(), Selected.get());
-        scene_->get_script_manager()->RunFunction();
+        scene_->get_script_manager()->run_function();
     }
 }
 
 void ScreenSelectMusic::OnItemHover(int32_t Index, uint32_t boundIndex, std::string Line,
                                     std::shared_ptr<otoworm::ChartGroup> Selected) {
-    if (scene_->get_script_manager()->CallFunction("OnItemHover", 4)) {
+    if (scene_->get_script_manager()->call_function("OnItemHover", 4)) {
         luabridge::push(scene_->get_script_manager()->get_lua_state(), Index);
         luabridge::push(scene_->get_script_manager()->get_lua_state(), boundIndex);
         luabridge::push(scene_->get_script_manager()->get_lua_state(), Line);
         luabridge::push(scene_->get_script_manager()->get_lua_state(), Selected.get());
-        scene_->get_script_manager()->RunFunction();
+        scene_->get_script_manager()->run_function();
     }
 }
 
 void ScreenSelectMusic::OnItemHoverLeave(int32_t Index, uint32_t boundIndex, std::string Line,
                                          std::shared_ptr<otoworm::ChartGroup> Selected) {
-    if (scene_->get_script_manager()->CallFunction("OnItemHoverLeave", 4)) {
+    if (scene_->get_script_manager()->call_function("OnItemHoverLeave", 4)) {
         luabridge::push(scene_->get_script_manager()->get_lua_state(), Index);
         luabridge::push(scene_->get_script_manager()->get_lua_state(), boundIndex);
         luabridge::push(scene_->get_script_manager()->get_lua_state(), Line);
         luabridge::push(scene_->get_script_manager()->get_lua_state(), Selected.get());
-        scene_->get_script_manager()->RunFunction();
+        scene_->get_script_manager()->run_function();
     }
 }

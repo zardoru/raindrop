@@ -32,19 +32,19 @@ void Replay::set_chart_data(
     SpeedType = speedType;
 }
 
-PlayscreenParameters Replay::GetEffectiveParameters() const {
+PlayscreenParameters Replay::get_effective_parameters() const {
     return UserParameters;
 }
 
-std::string Replay::GetSongHash() const {
+std::string Replay::get_song_hash() const {
     return SongHash;
 }
 
-uint32_t Replay::GetDifficultyIndex() const {
+uint32_t Replay::get_difficulty_index() const {
     return DiffIndex;
 }
 
-bool Replay::IsLoaded() {
+bool Replay::is_loaded() {
     return !EventPlaybackQueue.empty();
 }
 
@@ -85,7 +85,7 @@ bool Replay::load(std::filesystem::path input) {
     return true;
 }
 
-bool Replay::Save(std::filesystem::path outputpath) const {
+bool Replay::save(std::filesystem::path outputpath) const {
     json root = {
         {"song",
             {

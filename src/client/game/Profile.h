@@ -9,21 +9,21 @@ class Replay;
 class Profile {
     void AssureProfilePathExistence();
 public:
-    std::string Name;
-    ScoreDatabase Scores;
+    std::string name;
+    ScoreDatabase scores;
 
-    std::filesystem::path GetPath();
+    std::filesystem::path get_path();
 
     // based off names
-    bool Load(std::string Name);
-    bool Save();
+    bool load(std::string Name);
+    bool save();
 
-    void SaveReplay(
+    void save_replay(
         const otoworm::ChartGroup* chart_group,
         const Replay &replay
     );
 
     // ScoreRow GetDifficultyScore(rd::Difficulty* diff);
 
-    static std::vector<std::string> GetProfileList();
+    static std::vector<std::string> get_profile_list();
 };

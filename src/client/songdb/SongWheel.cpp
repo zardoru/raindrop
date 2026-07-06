@@ -398,7 +398,7 @@ void SongWheel::DisplayItem(int32_t ListItem, int32_t ListPosition, float itemFr
                 TransformItem(Sprite.first, song, IsSelected, ListPosition);
 
             // Render the objects.
-            Sprite.second->Render();
+            Sprite.second->render();
         }
 
         for (auto & String : Strings)
@@ -408,7 +408,7 @@ void SongWheel::DisplayItem(int32_t ListItem, int32_t ListPosition, float itemFr
             if (TransformString)
                 TransformString(String.first, song, IsSelected, ListPosition, Text);
 
-            String.second->Render();
+            String.second->render();
         }
     }
 }

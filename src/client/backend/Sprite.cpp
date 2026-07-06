@@ -9,7 +9,7 @@
 #include "VBO.h"
 #include "Texture2D.h"
 
-void Drawable2D::Render() {}
+void Drawable2D::render() {}
 
 Sprite::Sprite(bool should_init_texture) : Drawable2D()
 {
@@ -25,27 +25,27 @@ void Sprite::construct(const bool doInitTexture)
 {
     set_crop_to_whole_image();
 
-    Lighten = false;
-    LightenFactor = 1.0f;
-    BlackToTransparent = false;
+    lighten = false;
+    lighten_factor = 1.0f;
+    black_to_transparent = false;
 
     blending_mode_ = BLEND_ALPHA;
 
-    Color.Red = Color.Blue = Color.Green = 1.0;
-    Alpha = 1.0;
+    color.Red = color.Blue = color.Green = 1.0;
+    alpha = 1.0;
 
-    Centered = false;
-    ColorInvert = false;
-    DirtyTexture = true;
-    DoTextureCleanup = doInitTexture;
-    AffectedByLightning = false;
+    centered = false;
+    color_invert = false;
+    dirty_texture_ = true;
+    do_texture_cleanup_ = doInitTexture;
+    affected_by_lightning = false;
 
     m_texture_ = nullptr;
     uv_buffer_ = nullptr;
 	m_shader_ = nullptr;
 
-    Scissor = false;
-    ScissorRegion = AABB ();
+    scissor = false;
+    scissor_region = AABB ();
 
     initialize(doInitTexture);
 }
@@ -62,25 +62,25 @@ void Sprite::initialize(const bool should_init_texture)
 
 Sprite::~Sprite()
 {
-    Cleanup();
+    cleanup();
 }
 
-void Sprite::SetBlendMode(int Mode)
+void Sprite::set_blend_mode(int mode)
 {
-    blending_mode_ = (EBlendMode)Mode;
+    blending_mode_ = (EBlendMode)mode;
 }
 
-int Sprite::GetBlendMode() const
+int Sprite::get_blend_mode() const
 {
     return blending_mode_;
 }
 
-void Sprite::SetShader(renderer::Shader * s)
+void Sprite::set_shader(renderer::Shader * s)
 {
 	m_shader_ = s;
 }
 
-renderer::Shader * Sprite::GetShader() const
+renderer::Shader * Sprite::get_shader() const
 {
 	return m_shader_;
 }
@@ -110,7 +110,7 @@ void Sprite::set_crop_by_pixels(const int32_t x1, const int32_t x2, const int32_
         mCrop_y1 = (float)y1 / (float)m_texture_->h;
         mCrop_y2 = (float)y2 / (float)m_texture_->h;
 
-        DirtyTexture = true;
+        dirty_texture_ = true;
         update_texture();
     }
 }
@@ -121,7 +121,7 @@ void Sprite::set_crop_to_whole_image()
     mCrop_x2 = 1;
     mCrop_y1 = 0;
     mCrop_y2 = 1;
-    DirtyTexture = true;
+    dirty_texture_ = true;
 }
 
 void Sprite::set_crop(const Vec2 Crop1, const Vec2 Crop2)
@@ -130,21 +130,21 @@ void Sprite::set_crop(const Vec2 Crop1, const Vec2 Crop2)
     mCrop_y1 = Crop1.y;
     mCrop_x2 = Crop2.x;
     mCrop_y2 = Crop2.y;
-    DirtyTexture = true;
+    dirty_texture_ = true;
 }
 
 void Sprite::set_crop1(const Vec2 Crop1)
 {
     mCrop_x1 = Crop1.x;
     mCrop_y1 = Crop1.y;
-    DirtyTexture = true;
+    dirty_texture_ = true;
 }
 
 void Sprite::set_crop2(const Vec2 Crop2)
 {
     mCrop_x2 = Crop2.x;
     mCrop_y2 = Crop2.y;
-    DirtyTexture = true;
+    dirty_texture_ = true;
 }
 
 void Sprite::invalidate()

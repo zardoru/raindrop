@@ -18,61 +18,61 @@ GraphicalString::GraphicalString()
 	mKernScale = 1;
 }
 
-void GraphicalString::SetFont(Font* _Font)
+void GraphicalString::set_font(Font* font)
 {
-    mFont = _Font;
+    mFont = font;
 }
 
-Font* GraphicalString::GetFont() const
+Font* GraphicalString::get_font() const
 {
     return mFont;
 }
 
-void GraphicalString::SetText(std::string _Text)
+void GraphicalString::set_text(const std::string &text)
 {
-    mText = _Text;
+    mText = text;
 }
 
-std::string GraphicalString::GetText() const
+std::string GraphicalString::get_text() const
 {
     return mText;
 }
 
-float GraphicalString::GetKerningScale() const
+float GraphicalString::get_kerning_scale() const
 {
 	return mKernScale;
 }
 
-void GraphicalString::SetKerningScale(const float ks)
+void GraphicalString::set_kerning_scale(const float ks)
 {
 	mKernScale = ks;
 }
 
-float GraphicalString::GetTextSize() const
+float GraphicalString::get_text_size() const
 {
 	if (!mFont) return 0.0f;
 	return mFont->get_horizontal_length(mText.c_str()) / SDF_SIZE * mFontHeight * mKernScale;
 }
 
-void GraphicalString::SetFontSize(const float fsize)
+void GraphicalString::set_font_size(const float fsize)
 {
 	mFontHeight = fsize;
 }
 
-float GraphicalString::GetFontSize() const
+float GraphicalString::get_font_size() const
 {
 	return mFontHeight;
 }
 
-void GraphicalString::Render()
+void GraphicalString::render()
 {
     if (!mFont) return;
 
-    renderer::set_scissor(Scissor);
-    renderer::set_scissor_region(ScissorRegion.X1, ScissorRegion.Y1, ScissorRegion.width(), ScissorRegion.height());
+    renderer::set_scissor(scissor);
+    renderer::set_scissor_region(scissor_region.X1, scissor_region.Y1, scissor_region.width(), scissor_region.height());
 
-    mFont->set_color(Color.Red, Color.Green, Color.Blue);
-    mFont->set_alpha(Alpha);
+    mFont->set_color(color.Red, color.Green, color.Blue);
+    mFont->set_alpha(alpha);
 
 	float sc = mFontHeight;
     mFont->render(mText, Vec2(0, 0), GetMatrix(), Vec2(mKernScale, sc));

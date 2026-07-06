@@ -5,6 +5,47 @@
 #include "LuaManager.h"
 #include "Logging.h"
 #include <text_and_file_util.h>
+#include <LuaBridge/LuaBridge.h>
+
+namespace {
+
+template<class LuaValue>
+bool is_lua_number(const LuaValue &value)
+{
+    value.push(value.state());
+    const bool result = lua_isnumber(value.state(), -1);
+    lua_pop(value.state(), 1);
+    return result;
+}
+
+template<class LuaValue>
+bool is_lua_string(const LuaValue &value)
+{
+    value.push(value.state());
+    const bool result = lua_isstring(value.state(), -1);
+    lua_pop(value.state(), 1);
+    return result;
+}
+
+template<class LuaValue>
+int to_int_or_default(const LuaValue &value, const int default_value)
+{
+    return is_lua_number(value) ? static_cast<int>(value.template cast<double>()) : default_value;
+}
+
+template<class LuaValue>
+double to_double_or_default(const LuaValue &value, const double default_value)
+{
+    return is_lua_number(value) ? value.template cast<double>() : default_value;
+}
+
+template<class LuaValue>
+std::string to_string_or_default(const LuaValue &value, const std::string &default_value)
+{
+    return is_lua_string(value) ? value.template cast<std::string>() : default_value;
+}
+
+}
 
 int LuaPanic(lua_State* State)
 {
@@ -39,7 +80,7 @@ LuaManager::LuaManager()
     if (State)
     {
         // luaL_openlibs(State);
-        RegisterStruct("Luaman", (void*)this);
+        register_struct("Luaman", (void*)this);
         Register(Break, "DEBUGBREAK");
         luaL_openlibs(State);
         lua_atpanic(State, &LuaPanic);
@@ -62,7 +103,7 @@ LuaManager::~LuaManager()
         lua_close(State);
 }
 
-void LuaManager::GetGlobal(std::string VarName)
+void LuaManager::get_global(std::string VarName)
 {
     lua_getglobal(State, VarName.c_str());
 }
@@ -79,12 +120,12 @@ void reportError(lua_State *State)
     lua_pop(State, 1);
 }
 
-std::string LuaManager::GetLastError()
+std::string LuaManager::get_last_error()
 {
     return last_error;
 }
 
-bool LuaManager::RunScript(std::filesystem::path file)
+bool LuaManager::run_script(std::filesystem::path file)
 {
     int errload = 0, errcall = 0;
 
@@ -97,7 +138,7 @@ bool LuaManager::RunScript(std::filesystem::path file)
 	if ((errload = luaL_loadfile(State, file.string().c_str()))) {
 		std::string s = lua_tostring(State, -1);
         last_error = s;
-        Pop();
+        pop();
 		return false;
 	}
 	
@@ -108,16 +149,16 @@ bool LuaManager::RunScript(std::filesystem::path file)
     {
 		std::string s = lua_tostring(State, -1);
         last_error = s;
-        Pop(); // remove error
-		Pop(); // remove pushed panic function
+        pop(); // remove error
+		pop(); // remove pushed panic function
 		return false;
     }
 
-	Pop(); // remove panic func.
+	pop(); // remove panic func.
     return true;
 }
 
-bool LuaManager::RunString(std::string string)
+bool LuaManager::run_string(std::string string)
 {
     int errload = 0, errcall = 0;
 
@@ -125,13 +166,13 @@ bool LuaManager::RunString(std::string string)
     {
         std::string reason = lua_tostring(State, -1);
         last_error = reason;
-        Pop();
+        pop();
         return false;
     }
     return true;
 }
 
-bool LuaManager::Require(std::filesystem::path Filename)
+bool LuaManager::require(std::filesystem::path Filename)
 {
 	lua_pushcfunction(State, LuaPanic);
     lua_getglobal(State, "require");
@@ -153,77 +194,56 @@ bool LuaManager::Require(std::filesystem::path Filename)
     return true;
 }
 
-bool LuaManager::IsValid()
-{
+bool LuaManager::is_valid() const {
     return State != nullptr;
 }
 
-bool LuaManager::Register(const lua_CFunction Function, std::string FunctionName)
-{
-    if (!Function || FunctionName.empty())
+bool LuaManager::Register(const lua_CFunction function, const std::string &function_name) const {
+    if (!function || function_name.empty())
         return false;
-    lua_register(State, FunctionName.c_str(), Function);
+    lua_register(State, function_name.c_str(), function);
     return true;
 }
 
-int LuaManager::GetGlobalI(std::string VariableName, const int Default)
+int LuaManager::get_global_i(const std::string &variable_name, const int defaultv)
 {
-    int rval = Default;
-
-    GetGlobal(VariableName);
-
-    if (lua_isnumber(State, -1))
-    {
-        rval = lua_tonumber(State, -1);
-    }
-
-    Pop();
-    return rval;
+    const auto value = luabridge::getGlobal(State, variable_name.c_str());
+    return to_int_or_default(value, defaultv);
 }
 
-std::string LuaManager::GetGlobalS(std::string VariableName, std::string Default)
+std::string LuaManager::get_global_s(const std::string &variable_name, std::string defaultv)
 {
-    std::string rval = Default;
-
-    GetGlobal(VariableName);
-
-    if (!lua_isnil(State, -1) && lua_isstring(State, -1))
-    {
-        const char* s = lua_tostring(State, -1);
-        rval = s ? s : "";
-    }
-
-    Pop();
-    return rval;
+    const auto value = luabridge::getGlobal(State, variable_name.c_str());
+    return to_string_or_default(value, defaultv);
 }
 
-double LuaManager::GetGlobalD(std::string VariableName, const double Default)
+double LuaManager::get_global_d(const std::string &variable_name, const double Default)
 {
-    double rval = Default;
-
-    GetGlobal(VariableName);
-    if (lua_isnumber(State, -1))
-    {
-        rval = lua_tonumber(State, -1);
-    }
-
-    Pop();
-    return rval;
+    const auto value = luabridge::getGlobal(State, variable_name.c_str());
+    return to_double_or_default(value, Default);
 }
 
-void LuaManager::SetGlobal(const std::string &VariableName, const std::string &Value)
+void LuaManager::set_global(const std::string &VariableName, const std::string &Value)
 {
-    lua_pushstring(State, Value.c_str());
-    lua_setglobal(State, VariableName.c_str());
+    luabridge::setGlobal(State, Value, VariableName.c_str());
 }
 
-void LuaManager::SetGlobal(const std::string &VariableName, const double &Value)
+void LuaManager::set_global(const std::string &VariableName, const int Value)
 {
-    lua_pushnumber(State, Value);
-    lua_setglobal(State, VariableName.c_str());
+    luabridge::setGlobal(State, Value, VariableName.c_str());
 }
 
-bool LuaManager::RegisterStruct(std::string Key, void* data, std::string MetatableName)
+void LuaManager::set_global(const std::string &VariableName, const double &Value)
+{
+    luabridge::setGlobal(State, Value, VariableName.c_str());
+}
+
+void LuaManager::set_global(const std::string &VariableName, const bool Value)
+{
+    luabridge::setGlobal(State, Value, VariableName.c_str());
+}
+
+bool LuaManager::register_struct(std::string Key, void* data, std::string MetatableName)
 {
     if (!data) return false;
     if (Key.length() < 1) return false;
@@ -241,134 +261,106 @@ bool LuaManager::RegisterStruct(std::string Key, void* data, std::string Metatab
     return true;
 }
 
-void* LuaManager::GetStruct(std::string Key)
+void* LuaManager::get_struct(std::string Key)
 {
     void* ptr = nullptr;
     lua_pushstring(State, Key.c_str());
     lua_gettable(State, LUA_REGISTRYINDEX);
     ptr = lua_touserdata(State, -1); // returns null if does not exist
 
-    Pop();
+    pop();
     return ptr;
 }
 
-void LuaManager::NewArray()
+void LuaManager::new_array()
 {
     lua_newtable(State);
 }
 
-bool LuaManager::UseArray(std::string VariableName)
+bool LuaManager::use_array(std::string variable_name)
 {
-    GetGlobal(VariableName);
+    get_global(variable_name);
     if (lua_istable(State, -1))
         return true;
 
-    Pop();
+    pop();
     return false;
 }
 
-void LuaManager::SetFieldI(const int index, const int Value)
+void LuaManager::set_field_i(const int index, const int value)
 {
-    lua_pushnumber(State, Value);
-    lua_rawseti(State, -2, index);
+    auto table = luabridge::LuaRef::fromStack(State, -1);
+    table[index] = value;
 }
 
-void LuaManager::SetFieldI(std::string name, const int Value)
+void LuaManager::SetFieldI(std::string name, const int value)
 {
-	lua_pushinteger(State, Value);
-	lua_setfield(State, -2, name.c_str());
+    auto table = luabridge::LuaRef::fromStack(State, -1);
+    table[name] = value;
 }
 
-void LuaManager::SetFieldS(const int index, std::string Value)
+void LuaManager::set_field_s(const int index, std::string value)
 {
-    lua_pushstring(State, Value.c_str());
-    lua_rawseti(State, -2, index);
+    auto table = luabridge::LuaRef::fromStack(State, -1);
+    table[index] = value;
 }
 
-void LuaManager::SetFieldS(std::string name, std::string Value)
+void LuaManager::set_field_s(std::string name, std::string value)
 {
-    lua_pushstring(State, Value.c_str());
-    lua_setfield(State, -2, name.c_str());
+    auto table = luabridge::LuaRef::fromStack(State, -1);
+    table[name] = value;
 }
 
-void LuaManager::SetFieldD(const int index, const double Value)
+void LuaManager::set_field_d(const int index, const double value)
 {
-    lua_pushnumber(State, Value);
-    lua_rawseti(State, -2, index);
+    auto table = luabridge::LuaRef::fromStack(State, -1);
+    table[index] = value;
 }
 
-void LuaManager::SetFieldD(std::string name, const double Value)
+void LuaManager::set_field_d(std::string name, const double value)
 {
-	lua_pushnumber(State, Value);
-	lua_setfield(State, -2, name.c_str());
+    auto table = luabridge::LuaRef::fromStack(State, -1);
+    table[name] = value;
 }
 
-int LuaManager::GetFieldI(std::string Key, const int Default)
+int LuaManager::get_field_i(std::string key, const int Default)
 {
-    int R = Default;
-    lua_pushstring(State, Key.c_str());
-    lua_gettable(State, -2);
-
-    if (lua_isnumber(State, -1))
-    {
-        R = lua_tonumber(State, -1);
-    }// else Error
-
-    Pop();
-    return R;
+    const auto table = luabridge::LuaRef::fromStack(State, -1);
+    const auto value = table[key];
+    return to_int_or_default(value, Default);
 }
 
-double LuaManager::GetFieldD(std::string Key, const double Default)
+double LuaManager::get_field_d(std::string key, const double Default)
 {
-    double R = Default;
+    const auto table = luabridge::LuaRef::fromStack(State, -1);
+    if (!table.isTable())
+        return Default;
 
-    if (lua_istable(State, -1))
-    {
-        lua_pushstring(State, Key.c_str());
-        lua_gettable(State, -2);
-
-        if (lua_isnumber(State, -1))
-        {
-            R = lua_tonumber(State, -1);
-        }// else Error
-
-        Pop();
-        return R;
-    }
-    else
-        return R;
+    const auto value = table[key];
+    return to_double_or_default(value, Default);
 }
 
-std::string LuaManager::GetFieldS(std::string Key, std::string Default)
+std::string LuaManager::get_field_s(std::string key, std::string Default)
 {
-    std::string R = Default;
-
-    lua_pushstring(State, Key.c_str());
-    lua_gettable(State, -2);
-
-    if (lua_isstring(State, -1))
-    {
-        R = lua_tostring(State, -1);
-    }// else Error
-
-    Pop();
-    return R;
+    const auto table = luabridge::LuaRef::fromStack(State, -1);
+    const auto value = table[key];
+    return to_string_or_default(value, Default);
 }
 
-void LuaManager::Pop()
+void LuaManager::pop()
 {
     lua_pop(State, 1);
 }
 
-void LuaManager::FinalizeArray(std::string ArrayName)
+void LuaManager::finalize_array(std::string ArrayName)
 {
     lua_setglobal(State, ArrayName.c_str());
 }
 
-void LuaManager::FinalizeEnum(std::string EnumName)
+void LuaManager::finalize_enum(std::string EnumName)
 {
 	// create read-only metatable
-	NewArray();
+	new_array();
 	lua_pushcfunction(State, LuaReadOnlyError);
 	lua_setfield(State, -2, "__newindex");
 	lua_setmetatable(State, -2);
@@ -376,44 +368,44 @@ void LuaManager::FinalizeEnum(std::string EnumName)
 	lua_setglobal(State, EnumName.c_str());
 }
 
-void LuaManager::AppendPath(std::string Path)
+void LuaManager::append_path(std::string Path)
 {
-    GetGlobal("package");
-    SetFieldS("path", GetFieldS("path") + ";" + Path);
-    Pop();
+    get_global("package");
+    set_field_s("path", get_field_s("path") + ";" + Path);
+    pop();
 }
 
-void LuaManager::PushArgument(const int Value)
-{
-    if (func_input)
-        lua_pushnumber(State, Value);
-}
-
-void LuaManager::PushArgument(const double Value)
+void LuaManager::push_argument(const int Value)
 {
     if (func_input)
         lua_pushnumber(State, Value);
 }
 
-void LuaManager::PushArgument(std::string Value)
+void LuaManager::push_argument(const double Value)
+{
+    if (func_input)
+        lua_pushnumber(State, Value);
+}
+
+void LuaManager::push_argument(std::string Value)
 {
     if (func_input)
         lua_pushstring(State, Value.c_str());
 }
 
-void LuaManager::PushArgument(const bool Value)
+void LuaManager::push_argument(const bool Value)
 {
 	if (func_input)
 		lua_pushboolean(State, Value);
 }
 
-int LuaManager::GetStackTop()
+int LuaManager::get_stack_top()
 {
     return lua_gettop(State);
 }
 
 // http://lua-users.org/lists/lua-l/2006-03/msg00335.html
-void LuaManager::DumpStack()
+void LuaManager::dump_stack()
 {
 	auto L = State;
 	int i = lua_gettop(L);
@@ -437,7 +429,7 @@ void LuaManager::DumpStack()
 	Log::LogPrintf("--------------- Stack Dump Finished ---------------\n");*/
 }
 
-bool LuaManager::CallFunction(const char* Name, const int Arguments, const int Results)
+bool LuaManager::call_function(const char* Name, const int Arguments, const int Results)
 {
 	bool IsFunc;
 
@@ -457,7 +449,7 @@ bool LuaManager::CallFunction(const char* Name, const int Arguments, const int R
     if (IsFunc)
         func_input = true;
 	else {
-		Pop();
+		pop();
 
 		// this is generalizable, but i'm too lazy. -az
 		if (isTable) {
@@ -469,14 +461,14 @@ bool LuaManager::CallFunction(const char* Name, const int Arguments, const int R
 				func_input = true;
 			}
 			else
-				Pop();
+				pop();
 		}
 	}
 
     return IsFunc;
 }
 
-bool LuaManager::RunFunction()
+bool LuaManager::run_function()
 {
     if (!func_input)
         return false;
@@ -501,7 +493,7 @@ bool LuaManager::RunFunction()
 #endif
 		}
 		lua_remove(State, base); // remove traceback function
-        Pop(); // Remove the error from the stack.
+        pop(); // Remove the error from the stack.
         func_err = true;
         return false;
     }
@@ -512,12 +504,12 @@ bool LuaManager::RunFunction()
     return true;
 }
 
-int LuaManager::GetFunctionResult(const int StackPos)
+int LuaManager::get_function_result(const int StackPos)
 {
-    return GetFunctionResultD(StackPos);
+    return get_function_result_d(StackPos);
 }
 
-std::string LuaManager::GetFunctionResultS(const int StackPos)
+std::string LuaManager::get_function_result_s(const int StackPos)
 {
 	std::string Value;
 
@@ -528,16 +520,16 @@ std::string LuaManager::GetFunctionResultS(const int StackPos)
 		Value = lua_tostring(State, -StackPos);
 	}
 
-	Pop();
+	pop();
 	return Value;
 }
 
 float LuaManager::get_stack_f(const int StackPos)
 {
-	return GetFunctionResultD(StackPos);
+	return get_function_result_d(StackPos);
 }
 
-double LuaManager::GetFunctionResultD(const int StackPos)
+double LuaManager::get_function_result_d(const int StackPos)
 {
 	double Value = -1;
 
@@ -548,16 +540,16 @@ double LuaManager::GetFunctionResultD(const int StackPos)
 		Value = lua_tonumber(State, -StackPos);
 	}
 
-	Pop();
+	pop();
 	return Value;
 }
 
-void LuaManager::NewMetatable(std::string MtName)
+void LuaManager::new_metatable(std::string MtName)
 {
     luaL_newmetatable(State, MtName.c_str());
 }
 
-void LuaManager::RegisterLibrary(std::string Libname, const luaL_Reg *Reg)
+void LuaManager::register_library(std::string Libname, const luaL_Reg *Reg)
 {
     luaL_newlib(State, Reg);
     lua_setglobal(State, Libname.c_str());
@@ -568,27 +560,27 @@ lua_State* LuaManager::get_lua_state()
     return State;
 }
 
-void LuaManager::StartIteration()
+void LuaManager::start_iteration()
 {
     lua_pushnil(State);
 }
 
-bool LuaManager::IterateNext()
+bool LuaManager::iterate_next()
 {
     return lua_next(State, -2) != 0;
 }
 
-int LuaManager::NextInt()
+int LuaManager::next_int()
 {
     return lua_tonumber(State, -1);
 }
 
-double LuaManager::NextDouble()
+double LuaManager::next_double()
 {
     return lua_tonumber(State, -1);
 }
 
-std::string LuaManager::NextGString()
+std::string LuaManager::next_g_string()
 {
     return lua_tostring(State, -1);
 }

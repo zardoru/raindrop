@@ -14,7 +14,7 @@ class Drawable2D : public Transformation
 {
 public:
     virtual ~Drawable2D() {};
-    virtual void Render();
+    virtual void render();
     // Stub
 };
 
@@ -24,7 +24,7 @@ protected:
     renderer::Shader *m_shader_;
     VBO *uv_buffer_;
 private: // Transformations
-    void Cleanup();
+    void cleanup();
     Texture2D* m_texture_;
 
     EBlendMode blending_mode_;
@@ -48,17 +48,17 @@ protected:
     void update_texture();
     bool should_draw() const;
 
-    bool DirtyTexture;
-    bool DoTextureCleanup;
+    bool dirty_texture_;
+    bool do_texture_cleanup_;
 public:
-    bool Centered; // 0 for topleft, 1 for center
-    bool Lighten;
+    bool centered; // 0 for topleft, 1 for center
+    bool lighten;
 
-    bool Scissor;
+    bool scissor;
 
-    bool ColorInvert;
-    bool AffectedByLightning;
-    bool BlackToTransparent; // If enabled, transforms black pixels into transparent pixels.
+    bool color_invert;
+    bool affected_by_lightning;
+    bool black_to_transparent; // If enabled, transforms black pixels into transparent pixels.
 public:
 
     Sprite(bool should_init_texture);
@@ -66,14 +66,14 @@ public:
     ~Sprite();
 
     // color and other transformations
-    float Alpha;
-	ColorRGB Color;
+    float alpha;
+	ColorRGB color;
     // float Red, Blue, Green;
 
     // Only valid if lighten is enabled.
-    float LightenFactor;
+    float lighten_factor;
 
-    AABB ScissorRegion;
+    AABB scissor_region;
 
 
     void set_image(Texture2D* image, bool reset_size = true);
@@ -82,11 +82,11 @@ public:
 
     virtual void initialize(bool should_init_texture);
 
-    void SetBlendMode(int Mode);
-    int GetBlendMode() const;
+    void set_blend_mode(int mode);
+    int get_blend_mode() const;
 
-	void SetShader(renderer::Shader *s);
-	renderer::Shader *GetShader() const;
+	void set_shader(renderer::Shader *s);
+	renderer::Shader *get_shader() const;
 
     // Cropping
     void set_crop(Vec2 Crop1, Vec2 Crop2);
@@ -95,7 +95,7 @@ public:
     void set_crop_to_whole_image();
     void set_crop_by_pixels(int32_t x1, int32_t x2, int32_t y1, int32_t y2);
 
-    virtual void Render() override;
+    void render() override;
     bool render_minimal_setup();
     virtual void invalidate();
 

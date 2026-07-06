@@ -303,7 +303,7 @@ public:
 	void Validate() override;
 	void Update(float Delta) override;
 	void SetAnimationTime(double Time) override;
-	void Render() override;
+	void render() override;
 };
 
 osb::SpriteList ReadOSBEvents(std::istream& event_str);

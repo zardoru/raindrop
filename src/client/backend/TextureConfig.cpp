@@ -94,7 +94,7 @@ private:
         incoffs();
         char s[2];
         s[0] = tok; s[1] = 0;
-        tokout->push_back(s);
+        tokout->emplace_back(s);
     }
 
     void readstmt()

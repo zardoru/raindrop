@@ -27,7 +27,7 @@ namespace rd {
         // @param SKJ_W3 GOOD/200/GREAT/BAD
         // @param SKJ_W4 BAD/100/GOOD
         // @param SKJ_W5 50/BOO
-        helper.NewArray();
+        helper.new_array();
         Constant(SKJ_MISS);
         Constant(SKJ_W0);
         Constant(SKJ_W1);
@@ -35,7 +35,7 @@ namespace rd {
         Constant(SKJ_W3);
         Constant(SKJ_W4);
         Constant(SKJ_W5);
-        helper.FinalizeEnum("Judgment");
+        helper.finalize_enum("Judgment");
 
         /// Score types
         // @enum ScoreType
@@ -51,7 +51,7 @@ namespace rd {
         // @param ST_NOTES_HIT Total notes hit
         // @param ST_OSUMANIA osu!mania scoring
         // @param ST_O2JAM O2jam scoring
-        helper.NewArray();
+        helper.new_array();
         Constant(ST_SCORE);
         Constant(ST_COMBO);
         Constant(ST_DP);
@@ -65,7 +65,7 @@ namespace rd {
         Constant(ST_NOTES_HIT);
         Constant(ST_OSUMANIA);
         Constant(ST_O2JAM);
-        helper.FinalizeEnum("ScoreType");
+        helper.finalize_enum("ScoreType");
 
         /// Percentual score types
         // @enum PercentScoreType
@@ -74,13 +74,13 @@ namespace rd {
         // @param PST_EX EX score percentage.
         // @param PST_NH Notes hit percentage.
         // @param PST_OSU osu!mania accuracy percentage.
-        helper.NewArray();
+        helper.new_array();
         Constant(PST_RANK);
         Constant(PST_ACC);
         Constant(PST_EX);
         Constant(PST_NH);
         Constant(PST_OSU);
-        helper.FinalizeEnum("PercentScoreType");
+        helper.finalize_enum("PercentScoreType");
 
         /// Lifebar types.
         // @enum LifeType
@@ -93,7 +93,7 @@ namespace rd {
         // @param LT_STEPMANIA Stepmania gauge.
         // @param LT_NORECOV No recovery gauge.
         // @param LT_BATTERY Battery gauge.
-        helper.NewArray();
+        helper.new_array();
         Constant(LT_GROOVE);
         Constant(LT_SURVIVAL);
         Constant(LT_EXHARD);
@@ -113,7 +113,7 @@ namespace rd {
         Constant(LT_LR2_CLASS);
         Constant(LT_LR2_EXCLASS);
         Constant(LT_LR2_EXHARDCLASS);
-        helper.FinalizeEnum("LifeType");
+        helper.finalize_enum("LifeType");
 
         /// Pacemaker grade targets.
         // @enum PacemakerType
@@ -125,7 +125,7 @@ namespace rd {
         // @param PMT_D Target D.
         // @param PMT_E Target E.
         // @param PMT_F Target F.
-        helper.NewArray();
+        helper.new_array();
         Constant(PMT_AAA);
         Constant(PMT_AA);
         Constant(PMT_A);
@@ -134,7 +134,7 @@ namespace rd {
         Constant(PMT_D);
         Constant(PMT_E);
         Constant(PMT_F);
-        helper.FinalizeEnum("PacemakerType");
+        helper.finalize_enum("PacemakerType");
 
         /// System types.
         // @enum SystemType
@@ -143,13 +143,13 @@ namespace rd {
         // @param TI_OSUMANIA osu!mania subsystem.
         // @param TI_O2JAM O2Jam subsystem.
         // @param TI_STEPMANIA Stepmania subsystem.
-        helper.NewArray();
+        helper.new_array();
         Constant(TI_NONE);
         Constant(TI_BMS);
         Constant(TI_OSUMANIA);
         Constant(TI_O2JAM);
         Constant(TI_STEPMANIA);
-        helper.FinalizeEnum("SystemType");
+        helper.finalize_enum("SystemType");
 
         /// ScoreKeeper for 7K scores.
         // @type ScoreKeeper7K

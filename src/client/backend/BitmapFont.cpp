@@ -66,16 +66,16 @@ BitmapFont *BitmapFont::from_lua(LuaManager* Lua, std::string TableName)
 {
 	auto Ret = new BitmapFont();
 
-    Lua->UseArray(TableName);
-    std::filesystem::path Locat = Lua->GetFieldS("Location", GameState::get_instance().get_skin_prefix() + "font.tga");
-    int CharWidth = Lua->GetFieldI("CharWidth");
-    int CharHeight = Lua->GetFieldI("CharHeight");
-    int CellWidth = Lua->GetFieldI("CellWidth");
-    int CellHeight = Lua->GetFieldI("CellHeight");
-    int RenderWidth = Lua->GetFieldI("RenderWidth");
-    int RenderHeight = Lua->GetFieldI("RenderHeight");
-    int FontStart = Lua->GetFieldI("FontStart");
-    Lua->Pop();
+    Lua->use_array(TableName);
+    std::filesystem::path Locat = Lua->get_field_s("Location", GameState::get_instance().get_skin_prefix() + "font.tga");
+    int CharWidth = Lua->get_field_i("CharWidth");
+    int CharHeight = Lua->get_field_i("CharHeight");
+    int CellWidth = Lua->get_field_i("CellWidth");
+    int CellHeight = Lua->get_field_i("CellHeight");
+    int RenderWidth = Lua->get_field_i("RenderWidth");
+    int RenderHeight = Lua->get_field_i("RenderHeight");
+    int FontStart = Lua->get_field_i("FontStart");
+    Lua->pop();
 
     Ret->load_font_image(Locat.c_str(), Vec2(CharWidth, CharHeight), Vec2(CellWidth, CellHeight), Vec2(RenderWidth, RenderHeight), FontStart);
 
