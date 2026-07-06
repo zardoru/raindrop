@@ -17,7 +17,7 @@ namespace rd {
         LuaManager helper(L);
 
 
-#define Constant(x) helper.SetFieldI(#x, x)
+#define Constant(x) helper.set_field_i(#x, x)
         /// Judgments array.
         // @enum Judgment
         // @param SKJ_MISS Miss judgments.

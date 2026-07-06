@@ -56,23 +56,23 @@ void SetupWheelLua(LuaManager *Man) {
     lua_State *L = Man->get_lua_state();
     luabridge::getGlobalNamespace(L)
             .beginClass<SongWheel>("SongWheel")
-            .addFunction("NextDifficulty", &SongWheel::NextDifficulty)
-            .addFunction("PrevDifficulty", &SongWheel::PrevDifficulty)
-            .addProperty("DifficultyIndex", &SongWheel::GetDifficulty, &SongWheel::SetDifficulty)
-            .addFunction("IsLoading", &SongWheel::IsLoading)
-            .addFunction("GetIndexAtPoint", &SongWheel::IndexAtPoint)
-            .addFunction("GetNormalizedIndexAtPoint", &SongWheel::NormalizedIndexAtPoint)
-            .addFunction("GoUp", &SongWheel::GoUp)
-            .addFunction("AddSprite", &SongWheel::AddSprite)
-            .addFunction("AddString", &SongWheel::AddText)
-            .addFunction("ConfirmSelection", &SongWheel::ConfirmSelection)
-            .addFunction("IsItemDirectory", &SongWheel::IsItemDirectory)
-            .addProperty("SelectedIndex", &SongWheel::GetSelectedItem, &SongWheel::SetSelectedItem)
-            .addProperty("CursorIndex", &SongWheel::GetCursorIndex, &SongWheel::SetCursorIndex)
-            .addProperty("ListIndex", &SongWheel::GetListCursorIndex)
-            .addProperty("ItemCount", &SongWheel::GetNumItems)
-            .addData("DisplayStartIndex", &SongWheel::DisplayStartIndex)
-            .addData("DisplayItemCount", &SongWheel::DisplayItemCount)
+            .addFunction("NextDifficulty", &SongWheel::next_difficulty)
+            .addFunction("PrevDifficulty", &SongWheel::prev_difficulty)
+            .addProperty("DifficultyIndex", &SongWheel::get_difficulty, &SongWheel::set_difficulty)
+            .addFunction("IsLoading", &SongWheel::is_loading)
+            .addFunction("GetIndexAtPoint", &SongWheel::index_at_point)
+            .addFunction("GetNormalizedIndexAtPoint", &SongWheel::normalized_index_at_point)
+            .addFunction("GoUp", &SongWheel::go_up)
+            .addFunction("AddSprite", &SongWheel::add_sprite)
+            .addFunction("AddString", &SongWheel::add_text)
+            .addFunction("ConfirmSelection", &SongWheel::confirm_selection)
+            .addFunction("IsItemDirectory", &SongWheel::is_item_directory)
+            .addProperty("SelectedIndex", &SongWheel::get_selected_item, &SongWheel::set_selected_item)
+            .addProperty("CursorIndex", &SongWheel::get_cursor_index, &SongWheel::set_cursor_index)
+            .addProperty("ListIndex", &SongWheel::get_list_cursor_index)
+            .addProperty("ItemCount", &SongWheel::get_num_items)
+            .addData("DisplayStartIndex", &SongWheel::display_start_index)
+            .addData("DisplayItemCount", &SongWheel::display_item_count)
             .endClass();
 
     luabridge::push(L, &SongWheel::get_instance());
@@ -90,49 +90,49 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic") {
     Wheel->initialize(GameState::get_instance().get_song_database());
 
     SongNotification SongNotifyFunc([this](auto &&PH1, auto &&PH2) {
-        OnSongChange(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2));
+        on_song_change(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2));
     });
     SongNotification SongNotifySelectFunc([this](auto &&PH1, auto &&PH2) {
-        OnSongSelect(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2));
+        on_song_select(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2));
     });
-    Wheel->OnSongTentativeSelect = SongNotifyFunc;
-    Wheel->OnSongConfirm = SongNotifySelectFunc;
+    Wheel->on_song_tentative_select = SongNotifyFunc;
+    Wheel->on_song_confirm = SongNotifySelectFunc;
 
-    ListTransformFunction TransformHFunc([this](float &&PH1) -> float { return GetListHorizontalTransformation(PH1); });
-    ListTransformFunction TransformVFunc([this](float &&PH1) -> float { return GetListVerticalTransformation(PH1); });
-    ListTransformFunction TransformWFunc([this](float &&PH1) -> float { return GetListWidthTransformation(PH1); });
-    ListTransformFunction TransformHeightFunc(
-            [this](float &&PH1) -> float { return GetListHeightTransformation(PH1); });
-    Wheel->TransformHorizontal = TransformHFunc;
-    Wheel->TransformVertical = TransformVFunc;
-    Wheel->TransformWidth = TransformWFunc;
-    Wheel->TransformHeight = TransformHeightFunc;
+    ListTransformFunction transform_h_func([this](float &&PH1) -> float { return get_list_horizontal_transformation(PH1); });
+    ListTransformFunction transform_v_func([this](float &&PH1) -> float { return get_list_vertical_transformation(PH1); });
+    ListTransformFunction transform_w_func([this](float &&PH1) -> float { return get_list_width_transformation(PH1); });
+    ListTransformFunction transform_height_func(
+            [this](float &&PH1) -> float { return get_list_height_transformation(PH1); });
+    Wheel->transform_horizontal = transform_h_func;
+    Wheel->transform_vertical = transform_v_func;
+    Wheel->transform_width = transform_w_func;
+    Wheel->transform_height = transform_height_func;
 
-    DirectoryChangeNotifyFunction DirChangeNotif([this] { OnDirectoryChange(); });
-    Wheel->OnDirectoryChange = DirChangeNotif;
+    DirectoryChangeNotifyFunction dir_change_notif([this] { on_directory_change(); });
+    Wheel->on_directory_change = dir_change_notif;
 
-    ItemNotification ItClickNotif([this](auto &&PH1, auto &&PH2, auto &&PH3, auto &&PH4) {
-        OnItemClick(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2),
+    ItemNotification it_click_notif([this](auto &&PH1, auto &&PH2, auto &&PH3, auto &&PH4) {
+        on_item_click(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2),
                     std::forward<decltype(PH3)>(PH3), std::forward<decltype(PH4)>(PH4));
     });
-    ItemNotification ItHoverNotif([this](auto &&PH1, auto &&PH2, auto &&PH3, auto &&PH4) {
-        OnItemHover(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2),
+    ItemNotification it_hover_notif([this](auto &&PH1, auto &&PH2, auto &&PH3, auto &&PH4) {
+        on_item_hover(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2),
                     std::forward<decltype(PH3)>(PH3), std::forward<decltype(PH4)>(PH4));
     });
-    ItemNotification ItHoverLeaveNotif([this](auto &&PH1, auto &&PH2, auto &&PH3, auto &&PH4) {
-        OnItemHoverLeave(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2),
+    ItemNotification it_hover_leave_notif([this](auto &&PH1, auto &&PH2, auto &&PH3, auto &&PH4) {
+        on_item_hover_leave(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2),
                          std::forward<decltype(PH3)>(PH3), std::forward<decltype(PH4)>(PH4));
     });
-    Wheel->OnItemClick = ItClickNotif;
-    Wheel->OnItemHover = ItHoverNotif;
-    Wheel->OnItemHoverLeave = ItHoverLeaveNotif;
+    Wheel->on_item_click = it_click_notif;
+    Wheel->on_item_hover = it_hover_notif;
+    Wheel->on_item_hover_leave = it_hover_leave_notif;
 
-    Wheel->TransformItem = [this](auto &&PH1, auto &&PH2, auto &&PH3, auto &&PH4) {
-        TransformItem(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2),
+    Wheel->transform_item = [this](auto &&PH1, auto &&PH2, auto &&PH3, auto &&PH4) {
+        transform_item(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2),
                       std::forward<decltype(PH3)>(PH3), std::forward<decltype(PH4)>(PH4));
     };
-    Wheel->TransformString = [this](auto &&PH1, auto &&PH2, auto &&PH3, auto &&PH4, auto &&PH5) {
-        TransformString(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2),
+    Wheel->transform_string = [this](auto &&PH1, auto &&PH2, auto &&PH3, auto &&PH4, auto &&PH5) {
+        transform_string(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2),
                         std::forward<decltype(PH3)>(PH3), std::forward<decltype(PH4)>(PH4),
                         std::forward<decltype(PH5)>(PH5));
     };
@@ -172,52 +172,48 @@ void ScreenSelectMusic::cleanup() {
     if (PreviewStream)
         PreviewStream = nullptr;
 
-    StopLoops();
+    stop_loops();
 
-    SongWheel::get_instance().CleanItems();
+    SongWheel::get_instance().clean_items();
 }
 
-float ScreenSelectMusic::GetTransform(const char *TransformName, const float Y) {
-    LuaManager *Lua = scene_->get_script_manager();
-    if (Lua->call_function(TransformName, 1, 1)) {
-        Lua->push_argument(Y);
-        Lua->run_function();
-        return Lua->get_stack_f();
+float ScreenSelectMusic::get_transform(const char *transform_name, const float Y) const {
+    if (scene_->call_callback_with_results(transform_name, 1, Y)) {
+        return scene_->get_script_manager()->get_stack_f();
     } else return 0;
 }
 
-float ScreenSelectMusic::GetListVerticalTransformation(const float Y) {
-    return GetTransform("TransformListVertical", Y);
+float ScreenSelectMusic::get_list_vertical_transformation(const float Y) const {
+    return get_transform("TransformListVertical", Y);
 }
 
-float ScreenSelectMusic::GetListHorizontalTransformation(const float Y) {
-    return GetTransform("TransformListHorizontal", Y);
+float ScreenSelectMusic::get_list_horizontal_transformation(const float Y) const {
+    return get_transform("TransformListHorizontal", Y);
 }
 
-float ScreenSelectMusic::GetListWidthTransformation(const float Y) {
-    return GetTransform("TransformListWidth", Y);
+float ScreenSelectMusic::get_list_width_transformation(const float Y) const {
+    return get_transform("TransformListWidth", Y);
 }
 
-float ScreenSelectMusic::GetListHeightTransformation(const float Y) {
-    return GetTransform("TransformListHeight", Y);
+float ScreenSelectMusic::get_list_height_transformation(const float Y) const {
+    return get_transform("TransformListHeight", Y);
 }
 
-void ScreenSelectMusic::StartGameplayScreen() {
-    std::shared_ptr<ScreenLoading> LoadNext;
+void ScreenSelectMusic::start_gameplay_screen() {
     auto chart_group = GameState::get_instance().get_selected_chart_group_shared();
 
 
-    auto VSRGGame = std::make_shared<ScreenGameplay>();
+    auto screen_gameplay = std::make_shared<ScreenGameplay>();
 
-    VSRGGame->initialize(chart_group);
+    screen_gameplay->initialize(chart_group);
 
-    LoadNext = std::make_shared<ScreenLoading>(VSRGGame);
+    const auto load_next = std::make_shared<ScreenLoading>(screen_gameplay);
 
-    LoadNext->Init();
-    Next = LoadNext;
+    load_next->Init();
+    Next = load_next;
 }
 
-void ScreenSelectMusic::OnSongSelect(std::shared_ptr<otoworm::ChartGroup> chart_group, uint8_t difindex) {
+void ScreenSelectMusic::on_song_select(std::shared_ptr<otoworm::ChartGroup> chart_group, uint8_t difindex) {
     // Handle a recently selected song
 
     if (IsTransitioning)
@@ -231,7 +227,7 @@ void ScreenSelectMusic::OnSongSelect(std::shared_ptr<otoworm::ChartGroup> chart_
 
     SelectSnd->play();
 
-    StopLoops();
+    stop_loops();
 
     GameState::get_instance().set_selected_chart_group(chart_group);
     if (difindex < chart_group->charts.size())
@@ -243,19 +239,18 @@ void ScreenSelectMusic::OnSongSelect(std::shared_ptr<otoworm::ChartGroup> chart_
     SwitchBackGuiPending = true;
 }
 
-void ScreenSelectMusic::OnSongChange(std::shared_ptr<otoworm::ChartGroup> chart_group, uint8_t difindex) {
+void ScreenSelectMusic::on_song_change(std::shared_ptr<otoworm::ChartGroup> chart_group, uint8_t difindex) {
     ClickSnd->play();
 
     if (chart_group) {
         scene_->trigger_event("OnSongChange");
-
         PreviewWaitTime = 1;
     }
 
     to_preview = chart_group;
 }
 
-void ScreenSelectMusic::PlayPreview() {
+void ScreenSelectMusic::play_preview() {
     // Do the song preview thing.
     SongDatabase *DB = GameState::get_instance().get_song_database();
     float start_time;
@@ -304,7 +299,7 @@ void ScreenSelectMusic::PlayPreview() {
     previous_preview = to_preview;
 }
 
-void ScreenSelectMusic::PlayLoops() {
+void ScreenSelectMusic::play_loops() {
     if (!BGM) {
         auto fn = Configuration::GetSkinSound("SongSelectBGM");
         BGM = std::make_unique<AudioStream>(GetMixer());
@@ -340,47 +335,47 @@ bool ScreenSelectMusic::Run(double Delta) {
         } else {
             // We're going to cross the threshold. Fire up the next screen.
             if (TransitionTime - Delta <= 0)
-                StartGameplayScreen();
+                start_gameplay_screen();
 
             TransitionTime -= Delta;
         }
     } else {
         if (SwitchBackGuiPending) {
             SwitchBackGuiPending = false;
-            PlayLoops();
+            play_loops();
             scene_->trigger_event("OnRestore");
         }
 
         PreviewWaitTime -= Delta;
         if (PreviewWaitTime <= 0) {
             if (previous_preview != to_preview)
-                PlayPreview();
+                play_preview();
 
             if (PreviewStream && PreviewStream->is_playing())
-                StopLoops();
+                stop_loops();
             else {
                 if (!SwitchBackGuiPending)
-                    PlayLoops();
+                    play_loops();
             }
         }
     }
 
     Time += Delta;
 
-    SongWheel::get_instance().Update(Delta);
+    SongWheel::get_instance().update(Delta);
 
     scene_->update_targets(Delta);
 
     scene_->draw_until_layer(16);
 
-    SongWheel::get_instance().Render();
+    SongWheel::get_instance().render();
 
     scene_->draw_from_layer(16);
 
     return is_active_;
 }
 
-void ScreenSelectMusic::StopLoops() {
+void ScreenSelectMusic::stop_loops() {
     if (BGM) {
         BGM->stop();
         GetMixer()->RemoveStream(BGM.get());
@@ -396,7 +391,7 @@ bool ScreenSelectMusic::on_input(int32_t key, bool isPressed, bool isMouseInput)
         return Next->on_input(key, isPressed, isMouseInput);
 
 
-    if (SongWheel::get_instance().HandleInput(key, isPressed, isMouseInput))
+    if (SongWheel::get_instance().handle_input(key, isPressed, isMouseInput))
         return true;
 
     scene_->on_input(key, isPressed, isMouseInput);
@@ -407,10 +402,10 @@ bool ScreenSelectMusic::on_input(int32_t key, bool isPressed, bool isMouseInput)
                 is_active_ = false;
                 break;
             case KT_Left:
-                SongWheel::get_instance().PrevDifficulty();
+                SongWheel::get_instance().prev_difficulty();
                 break;
             case KT_Right:
-                SongWheel::get_instance().NextDifficulty();
+                SongWheel::get_instance().next_difficulty();
                 break;
             default:
                 break;
@@ -431,64 +426,33 @@ bool ScreenSelectMusic::on_scroll_input(double xOff, double yOff) {
     if (IsTransitioning) return false;
 
     scene_->on_scroll_input(xOff, yOff);
-    return SongWheel::get_instance().HandleScrollInput(xOff, yOff);
+    return SongWheel::get_instance().handle_scroll_input(xOff, yOff);
 }
 
-void ScreenSelectMusic::TransformItem(int Item, std::shared_ptr<otoworm::ChartGroup> chart_group, bool IsSelected, int Index) {
-    if (scene_->get_script_manager()->call_function("TransformItem", 4)) {
-        luabridge::push(scene_->get_script_manager()->get_lua_state(), Item);
-        luabridge::push(scene_->get_script_manager()->get_lua_state(), chart_group.get());
-        luabridge::push(scene_->get_script_manager()->get_lua_state(), IsSelected);
-        luabridge::push(scene_->get_script_manager()->get_lua_state(), Index);
-        scene_->get_script_manager()->run_function();
-    }
+void ScreenSelectMusic::transform_item(int Item, std::shared_ptr<otoworm::ChartGroup> chart_group, bool IsSelected, int Index) const {
+    scene_->call_callback("TransformItem", Item, chart_group.get(), IsSelected, Index);
 }
 
-void ScreenSelectMusic::TransformString(int Item, std::shared_ptr<otoworm::ChartGroup> chart_group, bool IsSelected, int Index,
-                                        std::string text) {
-    if (scene_->get_script_manager()->call_function("TransformString", 5)) {
-        luabridge::push(scene_->get_script_manager()->get_lua_state(), Item);
-        luabridge::push(scene_->get_script_manager()->get_lua_state(), chart_group.get());
-        luabridge::push(scene_->get_script_manager()->get_lua_state(), IsSelected);
-        luabridge::push(scene_->get_script_manager()->get_lua_state(), Index);
-        luabridge::push(scene_->get_script_manager()->get_lua_state(), text.c_str());
-        scene_->get_script_manager()->run_function();
-    }
+void ScreenSelectMusic::transform_string(int Item, std::shared_ptr<otoworm::ChartGroup> chart_group, bool IsSelected, int Index,
+                                        std::string text) const {
+    scene_->call_callback("TransformString", Item, chart_group.get(), IsSelected, Index, text);
 }
 
-void ScreenSelectMusic::OnDirectoryChange() {
+void ScreenSelectMusic::on_directory_change() const {
     scene_->trigger_event("OnDirectoryChange");
 }
 
-void ScreenSelectMusic::OnItemClick(int32_t Index, uint32_t boundIndex, std::string Line,
-                                    std::shared_ptr<otoworm::ChartGroup> Selected) {
-    if (scene_->get_script_manager()->call_function("OnItemClick", 4)) {
-        luabridge::push(scene_->get_script_manager()->get_lua_state(), Index);
-        luabridge::push(scene_->get_script_manager()->get_lua_state(), boundIndex);
-        luabridge::push(scene_->get_script_manager()->get_lua_state(), Line);
-        luabridge::push(scene_->get_script_manager()->get_lua_state(), Selected.get());
-        scene_->get_script_manager()->run_function();
-    }
+void ScreenSelectMusic::on_item_click(int32_t Index, uint32_t boundIndex, std::string Line,
+                                    std::shared_ptr<otoworm::ChartGroup> Selected) const {
+    scene_->call_callback("OnItemClick", Index, boundIndex, Line, Selected.get());
 }
 
-void ScreenSelectMusic::OnItemHover(int32_t Index, uint32_t boundIndex, std::string Line,
-                                    std::shared_ptr<otoworm::ChartGroup> Selected) {
-    if (scene_->get_script_manager()->call_function("OnItemHover", 4)) {
-        luabridge::push(scene_->get_script_manager()->get_lua_state(), Index);
-        luabridge::push(scene_->get_script_manager()->get_lua_state(), boundIndex);
-        luabridge::push(scene_->get_script_manager()->get_lua_state(), Line);
-        luabridge::push(scene_->get_script_manager()->get_lua_state(), Selected.get());
-        scene_->get_script_manager()->run_function();
-    }
+void ScreenSelectMusic::on_item_hover(int32_t Index, uint32_t boundIndex, std::string Line,
+                                    std::shared_ptr<otoworm::ChartGroup> Selected) const {
+    scene_->call_callback("OnItemHover", Index, boundIndex, Line, Selected.get());
 }
 
-void ScreenSelectMusic::OnItemHoverLeave(int32_t Index, uint32_t boundIndex, std::string Line,
-                                         std::shared_ptr<otoworm::ChartGroup> Selected) {
-    if (scene_->get_script_manager()->call_function("OnItemHoverLeave", 4)) {
-        luabridge::push(scene_->get_script_manager()->get_lua_state(), Index);
-        luabridge::push(scene_->get_script_manager()->get_lua_state(), boundIndex);
-        luabridge::push(scene_->get_script_manager()->get_lua_state(), Line);
-        luabridge::push(scene_->get_script_manager()->get_lua_state(), Selected.get());
-        scene_->get_script_manager()->run_function();
-    }
+void ScreenSelectMusic::on_item_hover_leave(int32_t Index, uint32_t boundIndex, std::string Line,
+                                         std::shared_ptr<otoworm::ChartGroup> Selected) const {
+    scene_->call_callback("OnItemHoverLeave", Index, boundIndex, Line, Selected.get());
 }

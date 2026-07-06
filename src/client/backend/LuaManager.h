@@ -1,3 +1,5 @@
+#pragma once
+
 #include <lua.hpp>
 
 int LuaPanic(lua_State* State);
@@ -22,7 +24,7 @@ public:
 
     // All functions here will crash if the lua state is not valid.
 
-    bool Register(lua_CFunction function, const std::string &function_name) const;
+    bool register_function(lua_CFunction function, const std::string &function_name) const;
     bool register_struct(std::string Key, void* data, std::string MetatableName = std::string());
     void register_library(std::string arrayname, const luaL_Reg *lib);
     void* get_struct(std::string Key);
@@ -85,7 +87,7 @@ public:
     bool use_array(std::string variable_name); // returns true if the array exists
 
     void set_field_i(int index, int value);
-	void SetFieldI(std::string name, int value);
+	void set_field_i(std::string name, int value);
     void set_field_d(int index, double value);
 	void set_field_d(std::string name, double value);
     void set_field_s(int index, std::string value);
@@ -110,7 +112,7 @@ public:
 };
 
 template <class T>
-T* GetObjectFromState(lua_State* L, const std::string ObjectName)
+T* get_object_from_state(lua_State* L, const std::string ObjectName)
 {
     lua_pushstring(L, ObjectName.c_str());
     lua_gettable(L, LUA_REGISTRYINDEX);
@@ -118,11 +120,11 @@ T* GetObjectFromState(lua_State* L, const std::string ObjectName)
 }
 
 template<class T>
-T* GetUserObject(lua_State *L, const int Parameter, const char* MetatableName)
+T* get_user_object(lua_State *L, const int Parameter, const char* MetatableName)
 {
     T* ud = (T*)luaL_checkudata(L, Parameter, MetatableName);
     luaL_argcheck(L, ud != NULL, 1, "Expected object of different type!");
     return ud;
 }
 
-void AddRDLuaGlobal(LuaManager * anim_lua);
+void add_rd_lua_global(LuaManager * anim_lua);

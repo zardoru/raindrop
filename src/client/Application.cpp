@@ -198,7 +198,7 @@ void Application::init()
         if (Configuration::GetConfigf("Preload"))
         {
             Log::Printf("Preloading songs...");
-            SongWheel::get_instance().LoadSongsOnce(GameState::get_instance().get_song_database());
+            SongWheel::get_instance().load_songs_once(GameState::get_instance().get_song_database());
             SongWheel::get_instance().join_loading_thread();
         }
     }

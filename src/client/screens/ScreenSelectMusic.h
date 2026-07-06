@@ -25,42 +25,42 @@ class ScreenSelectMusic : public Screen {
     bool SwitchBackGuiPending;
     bool IsTransitioning;
 
-    void PlayPreview();
+    void play_preview();
 
-    void PlayLoops();
+    void play_loops();
 
-    void StopLoops();
+    void stop_loops();
 
     std::unique_ptr<AudioStream> BGM;
     std::unique_ptr<AudioSample> SelectSnd;
     std::unique_ptr<AudioSample> ClickSnd;
 
 
-    void StartGameplayScreen();
+    void start_gameplay_screen();
 
-    float GetListVerticalTransformation(const float Y);
+    float get_list_vertical_transformation(const float Y) const;
 
-    float GetListHorizontalTransformation(const float Y);
+    float get_list_horizontal_transformation(const float Y) const;
 
-    float GetListWidthTransformation(const float Y);
+    float get_list_width_transformation(const float Y) const;
 
-    float GetListHeightTransformation(const float Y);
+    float get_list_height_transformation(const float Y) const;
 
-    void OnSongChange(std::shared_ptr<otoworm::ChartGroup> chart_group, uint8_t difindex);
+    void on_song_change(std::shared_ptr<otoworm::ChartGroup> chart_group, uint8_t difindex);
 
-    void OnSongSelect(std::shared_ptr<otoworm::ChartGroup> chart_group, uint8_t difindex);
+    void on_song_select(std::shared_ptr<otoworm::ChartGroup> chart_group, uint8_t difindex);
 
-    void OnDirectoryChange();
+    void on_directory_change() const;
 
-    void OnItemClick(int32_t index, uint32_t bound_index, std::string Line, std::shared_ptr<otoworm::ChartGroup> selected);
+    void on_item_click(int32_t index, uint32_t bound_index, std::string Line, std::shared_ptr<otoworm::ChartGroup> selected) const;
 
-    void OnItemHover(int32_t index, uint32_t bound_index, std::string Line, std::shared_ptr<otoworm::ChartGroup> selected);
+    void on_item_hover(int32_t index, uint32_t bound_index, std::string Line, std::shared_ptr<otoworm::ChartGroup> selected) const;
 
-    void OnItemHoverLeave(int32_t index, uint32_t bound_index, std::string Line, std::shared_ptr<otoworm::ChartGroup> selected);
+    void on_item_hover_leave(int32_t index, uint32_t bound_index, std::string Line, std::shared_ptr<otoworm::ChartGroup> selected) const;
 
-    void TransformItem(int Item, std::shared_ptr<otoworm::ChartGroup> chart_group, bool IsSelected, int ListItem);
+    void transform_item(int Item, std::shared_ptr<otoworm::ChartGroup> chart_group, bool IsSelected, int ListItem) const;
 
-    void TransformString(int Item, std::shared_ptr<otoworm::ChartGroup> chart_group, bool IsSelected, int ListItem, std::string text);
+    void transform_string(int Item, std::shared_ptr<otoworm::ChartGroup> chart_group, bool IsSelected, int ListItem, std::string text) const;
 
 public:
     ScreenSelectMusic();
@@ -73,7 +73,7 @@ public:
 
     void cleanup() override;
 
-    float GetTransform(const char *TransformName, const float Y);
+    float get_transform(const char *transform_name, const float Y) const;
 
     bool on_input(int32_t key, bool isPressed, bool isMouseInput) override;
 

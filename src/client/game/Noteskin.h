@@ -1,6 +1,12 @@
 #pragma once
 
+#include <filesystem>
+#include <optional>
+#include <string>
+
 #include <game/RaindropProcessedChart.h>
+#include "LuaManager.h"
+#include <LuaBridge/LuaBridge.h>
 
 /*
 	A noteskin must first be set up, then validated.
@@ -13,6 +19,7 @@ class PlayerContext;
 
 class Noteskin {
     LuaManager NoteskinLua;
+    std::optional<luabridge::LuaRef> Callbacks;
     double NoteScreenSize;
     double BarlineWidth;
     double BarlineStartX;
@@ -29,6 +36,37 @@ class Noteskin {
     void LuaRender(Sprite *);
 
     void AddScriptClasses();
+    bool load_script_callbacks(const std::filesystem::path &filename);
+    void log_callback_error(const std::string &name, const std::string &message) const;
+
+    template<class... Args>
+    bool call_callback(const std::string &event_name, Args&&... args)
+    {
+        auto *state = NoteskinLua.get_lua_state();
+
+        if (Callbacks && Callbacks->isTable()) {
+            auto callback = (*Callbacks)[event_name];
+            if (callback.isFunction()) {
+                try {
+                    callback(std::forward<Args>(args)...);
+                    return true;
+                }
+                catch (const luabridge::LuaException &e) {
+                    log_callback_error(event_name, e.what());
+                    return false;
+                }
+            }
+        }
+
+        if (NoteskinLua.call_function(event_name.c_str(), sizeof...(Args))) {
+            if constexpr (sizeof...(Args) > 0) {
+                (luabridge::push(state, std::forward<Args>(args)), ...);
+            }
+            return NoteskinLua.run_function();
+        }
+
+        return false;
+    }
 
 public:
     Noteskin(PlayerContext *parent);

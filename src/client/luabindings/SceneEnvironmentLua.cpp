@@ -17,9 +17,9 @@ void CreateSceneEnvironmentLua(LuaManager* anim_lua)
 	// @param In Ease In
 	// @param Out Ease Out
 	anim_lua->new_array();
-	anim_lua->SetFieldI("None", Animation::EaseLinear);
-	anim_lua->SetFieldI("In", Animation::EaseIn);
-	anim_lua->SetFieldI("Out", Animation::EaseOut);
+	anim_lua->set_field_i("None", Animation::EaseLinear);
+	anim_lua->set_field_i("In", Animation::EaseIn);
+	anim_lua->set_field_i("Out", Animation::EaseOut);
 	anim_lua->finalize_enum("Easing");
 
 	/// Object2D handler. Does most callbacks behind the scene.
@@ -55,6 +55,6 @@ void CreateSceneEnvironmentLua(LuaManager* anim_lua)
 		.addFunction("CreateObject", &SceneEnvironment::create_object)
 		.endClass();
 
-	luabridge::push(anim_lua->get_lua_state(), GetObjectFromState<SceneEnvironment>(anim_lua->get_lua_state(), "GOMAN"));
+	luabridge::push(anim_lua->get_lua_state(), get_object_from_state<SceneEnvironment>(anim_lua->get_lua_state(), "GOMAN"));
 	lua_setglobal(anim_lua->get_lua_state(), "Engine");
 }

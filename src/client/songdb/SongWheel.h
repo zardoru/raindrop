@@ -39,113 +39,113 @@ private:
     friend class ScreenSelectMusic;
     SongWheel();
 
-    int32_t CursorPos{}, OldCursorPos{};
-    int32_t SelectedBoundItem{}, SelectedUnboundItem{};
+    int32_t cursor_pos_{}, old_cursor_pos_{};
+    int32_t selected_bound_item_{}, selected_unbound_item_{};
 
-    std::mutex* mLoadMutex;
-    std::thread* mLoadThread;
-    std::atomic<bool> mLoading;
+    std::mutex* m_load_mutex_;
+    std::thread* m_load_thread_;
+    std::atomic<bool> m_loading_;
 
-    SongDatabase* DB{};
+    SongDatabase* db_{};
 
-    std::shared_ptr<SongList> ListRoot;
-    SongList* CurrentList;
-    SongList FilteredCurrentList;
+    std::shared_ptr<SongList> list_root_;
+    SongList* current_list_;
+    SongList filtered_current_list_;
 
-    std::map<int, Sprite*> Sprites;
-    std::map<int, GraphicalString*> Strings;
+    std::map<int, Sprite*> sprites_;
+    std::map<int, GraphicalString*> strings_;
 
-    float Time{};
+    float time_{};
 
     // itemFraction = item / total of displayed items
-    void DisplayItem(int32_t ListItem, int32_t ItemPosition, float itemFraction);
-    bool InWheelBounds(Vec2 Pos);
+    void display_item(int32_t ListItem, int32_t ItemPosition, float itemFraction);
+    bool in_wheel_bounds(Vec2 Pos);
 
-    bool IsInitialized;
-    bool IsHovering;
+    bool is_initialized_;
+    bool is_hovering_;
 
-    bool LoadedSongsOnce;
-    size_t DifficultyIndex;
+    bool loaded_songs_once_;
+    size_t difficulty_index_;
 
-    std::vector<FuncFilterCriteria> ActiveFilters;
+    std::vector<FuncFilterCriteria> active_filters_;
 
-    AABBd ItemBoxAt(float t);
+    AABBd item_box_at(float t);
 public:
 
-    DirectoryChangeNotifyFunction OnDirectoryChange;
+    DirectoryChangeNotifyFunction on_directory_change;
 
-    ItemNotification OnItemClick;
-    ItemNotification OnItemHover;
-    ItemNotification OnItemHoverLeave;
+    ItemNotification on_item_click;
+    ItemNotification on_item_hover;
+    ItemNotification on_item_hover_leave;
 
-    SongNotification OnSongConfirm;
-    SongNotification OnSongTentativeSelect;
+    SongNotification on_song_confirm;
+    SongNotification on_song_tentative_select;
 
-    ListTransformFunction TransformHorizontal;
-    ListTransformFunction TransformVertical;
-    ListTransformFunction TransformWidth;
-    ListTransformFunction TransformHeight;
+    ListTransformFunction transform_horizontal;
+    ListTransformFunction transform_vertical;
+    ListTransformFunction transform_width;
+    ListTransformFunction transform_height;
 
-    int DisplayItemCount;
-    int DisplayStartIndex;
+    int display_item_count;
+    int display_start_index;
 
-    ItemTransformFunction TransformItem;
-    StringTransformFunction TransformString;
+    ItemTransformFunction transform_item;
+    StringTransformFunction transform_string;
 
     // Singleton
     static SongWheel& get_instance();
 
-    void CleanItems();
+    void clean_items();
 
-    void ReapplyFilters();
+    void reapply_filters();
 
-    void GoUp();
+    void go_up();
     void initialize(SongDatabase* Database);
 
     void join_loading_thread();
 
-    bool HandleInput(int32_t key, bool isPressed, bool isMouseInput);
-    bool HandleScrollInput(const double dx, const double dy);
+    bool handle_input(int32_t key, bool isPressed, bool isMouseInput);
+    bool handle_scroll_input(const double dx, const double dy);
     std::shared_ptr<otoworm::ChartGroup> GetSelectedChartGroup();
-    void ReloadSongs(SongDatabase* Database);
-    void LoadSongsOnce(SongDatabase* Database);
+    void reload_songs(SongDatabase* Database);
+    void load_songs_once(SongDatabase* Database);
 
-    int AddSprite(Sprite* Item);
-    int AddText(GraphicalString* Str);
+    int add_sprite(Sprite* Item);
+    int add_text(GraphicalString* Str);
 
     // return: the new difficulty index
-    int NextDifficulty();
-    int PrevDifficulty();
-    int GetDifficulty() const;
-    void SetDifficulty(uint32_t i);
+    int next_difficulty();
+    int prev_difficulty();
+    int get_difficulty() const;
+    void set_difficulty(uint32_t i);
 
     // Returns the index of the last item the user hovered with the mouse over.
-    int GetCursorIndex() const;
-    void SetCursorIndex(int Index);
+    int get_cursor_index() const;
+    void set_cursor_index(int Index);
 
-    void ConfirmSelection();
+    void confirm_selection();
 
     // Returns the item index the mouse is currently hovering over.
-    int GetListCursorIndex() const;
+    int get_list_cursor_index() const;
 
     // These give and set the global, infinite wheel item.
     // When wanting to use the bound index, read from SelectedBoundItem, not these.
-    void  SetSelectedItem(int32_t Item);
-    int32_t GetSelectedItem() const;
-    int32_t GetNumItems() const;
+    void  set_selected_item(int32_t Item);
+    int32_t get_selected_item() const;
+    int32_t get_num_items() const;
 
-    bool IsItemDirectory(int32_t Item) const;
+    bool is_item_directory(int32_t Item) const;
 
-    int32_t IndexAtPoint(float X, float Y);
-    uint32_t NormalizedIndexAtPoint(float X, float Y);
+    int32_t index_at_point(float X, float Y);
+    uint32_t normalized_index_at_point(float X, float Y);
 
-    bool IsLoading();
+    bool is_loading();
 
-    void SortBy(ESortCriteria criteria);
+    void sort_by(ESortCriteria criteria);
 
-    void ResetFilters();
-    void SelectBy(FuncFilterCriteria criteria);
+    void reset_filters();
+    void select_by(FuncFilterCriteria criteria);
 
-    void Update(float Delta);
-    void Render();
+    void update(float Delta);
+    void render();
 };

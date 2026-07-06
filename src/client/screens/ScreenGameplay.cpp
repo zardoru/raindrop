@@ -358,15 +358,7 @@ ScreenGameplay::on_player_hit(rd::ScoreKeeperJudgment judgment, double dt, uint3
     // @param hold Whether the note was a hold.
     // @param release Whether it was a hold release.
     // @param pn Player number. Identifies who hit the note.
-    if (scene_->get_script_manager()->call_function("HitEvent", 6)) {
-        scene_->get_script_manager()->push_argument(judgment);
-        scene_->get_script_manager()->push_argument(dt);
-        scene_->get_script_manager()->push_argument((int) lane + 1);
-        scene_->get_script_manager()->push_argument(hold);
-        scene_->get_script_manager()->push_argument(release);
-        scene_->get_script_manager()->push_argument(pn);
-        scene_->get_script_manager()->run_function();
-    }
+    scene_->call_callback("HitEvent", static_cast<int>(judgment), dt, static_cast<int>(lane) + 1, hold, release, pn);
 
     auto PlayerScoreKeeper = players_[pn]->get_score_keeper();
     if (PlayerScoreKeeper->getMaxJudgableNotes() == PlayerScoreKeeper->getScore(rd::ST_NOTES_HIT)) {
@@ -387,13 +379,7 @@ void ScreenGameplay::on_player_miss(double dt, uint32_t lane, bool hold, bool do
     // @param lane 1-index based lane.
     // @param hold Whether the note was a hold.
     // @param pn Player number identifying who missed the note.
-    if (scene_->get_script_manager()->call_function("MissEvent", 4)) {
-        scene_->get_script_manager()->push_argument(dt);
-        scene_->get_script_manager()->push_argument((int) lane + 1);
-        scene_->get_script_manager()->push_argument(hold);
-        scene_->get_script_manager()->push_argument(pn);
-        scene_->get_script_manager()->run_function();
-    }
+    scene_->call_callback("MissEvent", dt, static_cast<int>(lane) + 1, hold, pn);
 }
 
 void ScreenGameplay::on_player_gear_key_event(uint32_t lane, bool keydown, int pn) const {
@@ -402,13 +388,7 @@ void ScreenGameplay::on_player_gear_key_event(uint32_t lane, bool keydown, int p
     // @param lane 1-index based lane.
     // @param keydown Whether the key is down or up.
     // @param pn Player number identifying who performed this event.
-    if (scene_->get_script_manager()->call_function("GearKeyEvent", 3)) {
-        scene_->get_script_manager()->push_argument((int) lane + 1);
-        scene_->get_script_manager()->push_argument(keydown);
-        scene_->get_script_manager()->push_argument(pn);
-
-        scene_->get_script_manager()->run_function();
-    }
+    scene_->call_callback("GearKeyEvent", static_cast<int>(lane) + 1, keydown, pn);
 }
 
 bool ScreenGameplay::Run(double Delta) {

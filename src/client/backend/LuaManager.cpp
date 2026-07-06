@@ -81,7 +81,7 @@ LuaManager::LuaManager()
     {
         // luaL_openlibs(State);
         register_struct("Luaman", (void*)this);
-        Register(Break, "DEBUGBREAK");
+        register_function(Break, "DEBUGBREAK");
         luaL_openlibs(State);
         lua_atpanic(State, &LuaPanic);
     }
@@ -198,7 +198,7 @@ bool LuaManager::is_valid() const {
     return State != nullptr;
 }
 
-bool LuaManager::Register(const lua_CFunction function, const std::string &function_name) const {
+bool LuaManager::register_function(const lua_CFunction function, const std::string &function_name) const {
     if (!function || function_name.empty())
         return false;
     lua_register(State, function_name.c_str(), function);
@@ -293,7 +293,7 @@ void LuaManager::set_field_i(const int index, const int value)
     table[index] = value;
 }
 
-void LuaManager::SetFieldI(std::string name, const int value)
+void LuaManager::set_field_i(std::string name, const int value)
 {
     auto table = luabridge::LuaRef::fromStack(State, -1);
     table[name] = value;
@@ -551,7 +551,8 @@ void LuaManager::new_metatable(std::string MtName)
 
 void LuaManager::register_library(std::string Libname, const luaL_Reg *Reg)
 {
-    luaL_newlib(State, Reg);
+    lua_newtable(State);
+    luaL_setfuncs(State, Reg, 0);
     lua_setglobal(State, Libname.c_str());
 }
 

@@ -19,7 +19,7 @@ namespace LuaAnimFuncs
 
     int DoGameScript(lua_State *S)
     {
-        auto Lua = GetObjectFromState<LuaManager>(S, "Luaman");
+        auto Lua = get_object_from_state<LuaManager>(S, "Luaman");
         std::string File = luaL_checkstring(S, 1);
         if (!Lua->require(GameState::get_instance().get_scripts_directory() + File)) {
             Log::LogPrintf("lua error while doing game_require: %s", Lua->get_last_error().c_str());
@@ -47,7 +47,7 @@ namespace LuaAnimFuncs
 
     int Require(lua_State *L)
     {
-        auto *Lua = GetObjectFromState<LuaManager>(L, "Luaman");
+        auto *Lua = get_object_from_state<LuaManager>(L, "Luaman");
         std::string Request = luaL_checkstring(L, 1);
         auto File = GameState::get_instance().get_skin_script_file(Request.c_str(), GameState::get_instance().get_skin());
         if (!Lua->require(File)) {
@@ -60,7 +60,7 @@ namespace LuaAnimFuncs
 
     int FallbackRequire(lua_State *L)
     {
-        auto *Lua = GetObjectFromState<LuaManager>(L, "Luaman");
+        auto *Lua = get_object_from_state<LuaManager>(L, "Luaman");
         std::string file = luaL_checkstring(L, 1);
         std::string skin = GameState::get_instance().get_first_fallback_skin();
         if (lua_isstring(L, 2) && lua_tostring(L, 2))
@@ -112,7 +112,7 @@ void CreateSceneEnvironmentLua(LuaManager* anim_lua);
 
 void DefineSpriteInterface(LuaManager* anim_lua)
 {
-	AddRDLuaGlobal(anim_lua);
+	add_rd_lua_global(anim_lua);
 
 	CreateUtilityLua(anim_lua);
 	CreateTransformationLua(anim_lua);
@@ -122,7 +122,7 @@ void DefineSpriteInterface(LuaManager* anim_lua)
 	CreateStringsLuaInterface(anim_lua);
 }
 
-void AddRDLuaGlobal(LuaManager * anim_lua)
+void add_rd_lua_global(LuaManager * anim_lua)
 {
 	anim_lua->append_path("./?;./?.lua");
 	anim_lua->append_path(GameState::get_instance().get_scripts_directory() + "?");
@@ -132,19 +132,19 @@ void AddRDLuaGlobal(LuaManager * anim_lua)
 	anim_lua->append_path(GameState::get_instance().get_skin_prefix() + "?.lua");
 
 	// anim_lua->AppendPath(GameState::GetFallbackSkinPrefix());
-	anim_lua->Register(LuaAnimFuncs::Require, "skin_require");
-    anim_lua->Register(LuaAnimFuncs::DoGameScript, "game_require");
-	anim_lua->Register(LuaAnimFuncs::FallbackRequire, "fallback_require");
+	anim_lua->register_function(LuaAnimFuncs::Require, "skin_require");
+    anim_lua->register_function(LuaAnimFuncs::DoGameScript, "game_require");
+	anim_lua->register_function(LuaAnimFuncs::FallbackRequire, "fallback_require");
 
 	// anim_lua->NewMetatable(LuaAnimFuncs::SpriteMetatable);
-	anim_lua->Register(LuaAnimFuncs::GetSkinConfigF, "GetConfigF");
-	anim_lua->Register(LuaAnimFuncs::GetSkinConfigS, "GetConfigS");
-	anim_lua->Register(LuaAnimFuncs::GetSkinDirectory, "GetSkinDirectory");
-	anim_lua->Register(LuaAnimFuncs::GetSkinFile, "GetSkinFile");
+	anim_lua->register_function(LuaAnimFuncs::GetSkinConfigF, "GetConfigF");
+	anim_lua->register_function(LuaAnimFuncs::GetSkinConfigS, "GetConfigS");
+	anim_lua->register_function(LuaAnimFuncs::GetSkinDirectory, "GetSkinDirectory");
+	anim_lua->register_function(LuaAnimFuncs::GetSkinFile, "GetSkinFile");
 
 	anim_lua->new_array();
-	anim_lua->SetFieldI("Height", ScreenHeight);
-	anim_lua->SetFieldI("Width", ScreenWidth);
+	anim_lua->set_field_i("Height", ScreenHeight);
+	anim_lua->set_field_i("Width", ScreenWidth);
 	anim_lua->finalize_array("Screen");
 }
 

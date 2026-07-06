@@ -1,5 +1,6 @@
 #define SI_CONVERT_GENERIC
 #include <memory>
+#include <optional>
 
 #include <filesystem>
 #include <simpleini/SimpleIni.h>
@@ -13,10 +14,12 @@
 
 #include "LuaManager.h"
 #include "Logging.h"
+#include <LuaBridge/LuaBridge.h>
 
 using namespace Configuration;
 
 LuaManager *SkinCfgLua;
+std::optional<luabridge::LuaRef> SkinCallbacks;
 CSimpleIniA *Config;
 int IsWidescreen;
 std::string ConfigFile = "config.ini";
@@ -34,6 +37,116 @@ public:
 };
 
 ConfigurationException CfgNotLoaded("Configuration not loaded yet.");
+
+namespace {
+
+bool load_skin_callbacks(const std::filesystem::path &filename)
+{
+    auto *state = SkinCfgLua->get_lua_state();
+
+    if (!std::filesystem::exists(filename)) {
+        Log::LogPrintf("File %s does not exist\n", filename.string().c_str());
+        return false;
+    }
+
+    if (luaL_loadfile(state, filename.string().c_str())) {
+        const char *reason = lua_tostring(state, -1);
+        Log::LogPrintf("skin.lua: %s\n", reason ? reason : "unknown error");
+        lua_pop(state, 1);
+        return false;
+    }
+
+    lua_pushcfunction(state, LuaPanic);
+    lua_insert(state, -2);
+
+    if (lua_pcall(state, 0, 1, -2)) {
+        const char *reason = lua_tostring(state, -1);
+        Log::LogPrintf("skin.lua: %s\n", reason ? reason : "unknown error");
+        lua_pop(state, 1);
+        lua_pop(state, 1);
+        return false;
+    }
+
+    if (lua_istable(state, -1))
+        SkinCallbacks.emplace(luabridge::LuaRef::fromStack(state, -1));
+    else
+        SkinCallbacks.reset();
+
+    lua_pop(state, 1);
+    lua_pop(state, 1);
+    return true;
+}
+
+template<class LuaValue>
+bool is_lua_number(const LuaValue &value)
+{
+    value.push(value.state());
+    const bool result = lua_isnumber(value.state(), -1);
+    lua_pop(value.state(), 1);
+    return result;
+}
+
+template<class LuaValue>
+bool is_lua_string(const LuaValue &value)
+{
+    value.push(value.state());
+    const bool result = lua_isstring(value.state(), -1);
+    lua_pop(value.state(), 1);
+    return result;
+}
+
+std::optional<luabridge::LuaRef> get_skin_callback_value(const std::string &name, const std::string &name_space)
+{
+    if (!SkinCallbacks || !SkinCallbacks->isTable())
+        return std::nullopt;
+
+    luabridge::LuaRef value(SkinCallbacks->state(), luabridge::Nil());
+    if (name_space.empty()) {
+        value = luabridge::LuaRef((*SkinCallbacks)[name]);
+    }
+    else {
+        auto table = luabridge::LuaRef((*SkinCallbacks)[name_space]);
+        if (!table.isTable())
+            return std::nullopt;
+
+        value = luabridge::LuaRef(table[name]);
+    }
+
+    if (value.isFunction()) {
+        try {
+            value = value();
+        }
+        catch (const luabridge::LuaException &e) {
+            Log::LogPrintf("skin.lua callback error in %s: %s\n", name.c_str(), e.what());
+            return std::nullopt;
+        }
+    }
+
+    if (value.isNil())
+        return std::nullopt;
+
+    return value;
+}
+
+std::optional<std::string> get_skin_callback_string(const std::string &name, const std::string &name_space)
+{
+    auto value = get_skin_callback_value(name, name_space);
+    if (!value || !is_lua_string(*value))
+        return std::nullopt;
+
+    return value->cast<std::string>();
+}
+
+std::optional<double> get_skin_callback_number(const std::string &name, const std::string &name_space)
+{
+    auto value = get_skin_callback_value(name, name_space);
+    if (!value || !is_lua_number(*value))
+        return std::nullopt;
+
+    return value->cast<double>();
+}
+
+}
 
 void Configuration::SetConfigFile(std::string cfg)
 {
@@ -61,9 +174,9 @@ void Configuration::Initialize()
     SkinCfgLua->set_global("Widescreen", IsWidescreen);
     
 	GameState::get_instance().initialize_lua(SkinCfgLua->get_lua_state());
-    SkinCfgLua->run_script(GameState::get_instance().get_skin_file("skin.lua"));
+    load_skin_callbacks(GameState::get_instance().get_skin_file("skin.lua"));
 
-	AddRDLuaGlobal(SkinCfgLua);
+	add_rd_lua_global(SkinCfgLua);
 
     LoadTextureParameters();
 }
@@ -73,6 +186,7 @@ void Configuration::cleanup()
 	if (Config)
 		Config->SaveFile(ConfigFile.c_str());
 
+    SkinCallbacks.reset();
     delete Config;
     delete SkinCfgLua;
 }
@@ -81,12 +195,16 @@ void Configuration::Reload()
 {
 	Log::LogPrintf("Reloading configuration...\n");
     delete Config;
+    SkinCallbacks.reset();
     delete SkinCfgLua;
 	Initialize();
 }
 
 std::string GetConfsInt(std::string Name, std::string Namespace, LuaManager &L)
 {
+    if (auto value = get_skin_callback_string(Name, Namespace))
+        return *value;
+
     std::string Retval;
     if (Namespace.length())
     {
@@ -114,6 +232,9 @@ std::string GetConfsInt(std::string Name, std::string Namespace, LuaManager &L)
 
 double GetConffInt(std::string Name, std::string Namespace, LuaManager &L)
 {
+    if (auto value = get_skin_callback_number(Name, Namespace))
+        return *value;
+
     double Retval = 0;
     if (Namespace.length())
     {
@@ -243,6 +364,12 @@ bool Configuration::ListExists(std::string Name)
 
     lua_State *L = SkinCfgLua->get_lua_state();
     bool Exists;
+
+    if (SkinCallbacks && SkinCallbacks->isTable()) {
+        auto list = (*SkinCallbacks)[Name];
+        if (list.isTable())
+            return true;
+    }
 
     lua_getglobal(L, Name.c_str());
     Exists = lua_istable(L, -1);

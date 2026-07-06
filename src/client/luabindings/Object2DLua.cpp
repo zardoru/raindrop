@@ -194,8 +194,8 @@ void CreateObject2DLua(LuaManager *anim_lua) {
     // @param Add Addition blend mode.
     // @param Alpha Alpha blend mode. Default.
     anim_lua->new_array();
-    anim_lua->SetFieldI("Add", (int) BLEND_ADD);
-    anim_lua->SetFieldI("Alpha", (int) BLEND_ALPHA);
+    anim_lua->set_field_i("Add", (int) BLEND_ADD);
+    anim_lua->set_field_i("Alpha", (int) BLEND_ALPHA);
     anim_lua->finalize_enum("BlendMode");
 
     ///

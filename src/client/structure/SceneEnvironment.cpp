@@ -52,6 +52,56 @@ bool LuaAnimation(LuaManager *Lua, const std::string &Func, Sprite *Target, cons
     } else return false;
 }
 
+bool SceneEnvironment::load_script_callbacks(const std::filesystem::path &filename) {
+    auto *state = Lua->get_lua_state();
+
+    if (!std::filesystem::exists(filename)) {
+        Log::LogPrintf("File %s does not exist\n", filename.string().c_str());
+        return false;
+    }
+
+    if (luaL_loadfile(state, filename.string().c_str())) {
+        const char *reason = lua_tostring(state, -1);
+        Log::LogPrintf("Couldn't load script %s: %s\n", filename.string().c_str(), reason ? reason : "unknown error");
+        lua_pop(state, 1);
+        return false;
+    }
+
+    lua_pushcfunction(state, LuaPanic);
+    lua_insert(state, -2);
+
+    if (lua_pcall(state, 0, 1, -2)) {
+        const char *reason = lua_tostring(state, -1);
+        Log::LogPrintf("Couldn't load script %s: %s\n", filename.string().c_str(), reason ? reason : "unknown error");
+        lua_pop(state, 1);
+        lua_pop(state, 1);
+        return false;
+    }
+
+    if (lua_istable(state, -1))
+        mCallbacks.emplace(luabridge::LuaRef::fromStack(state, -1));
+    else
+        mCallbacks.reset();
+
+    lua_pop(state, 1);
+    lua_pop(state, 1);
+    return true;
+}
+
+double SceneEnvironment::get_callback_number(const std::string &name, const double default_value) const {
+    if (mCallbacks && mCallbacks->isTable()) {
+        auto value = (*mCallbacks)[name];
+        if (value.isNumber())
+            return value.cast<double>();
+    }
+
+    return Lua->get_global_d(name, default_value);
+}
+
+void SceneEnvironment::log_callback_error(const std::string &name, const std::string &message) const {
+    Log::LogPrintf("lua callback error in %s: %s\n", name.c_str(), message.c_str());
+}
+
 void SceneEnvironment::StopAnimationsForTarget(Sprite *Target) {
     for (auto i = Animations.begin();
          i != Animations.end();
@@ -76,11 +126,7 @@ void SceneEnvironment::RunIntro(const float Fraction, const float Delta) {
     // @callback UpdateIntro
     // @param fraction The percentage of the intro that is done.
     // @param delta The time passed since last frame.
-    if (Lua->call_function("UpdateIntro", 2)) {
-        Lua->push_argument(Fraction);
-        Lua->push_argument(Delta);
-        Lua->run_function();
-    }
+    call_callback("UpdateIntro", Fraction, Delta);
 
     draw_from_layer(0);
 }
@@ -94,11 +140,7 @@ void SceneEnvironment::RunExit(const float Fraction, const float Delta) {
     // @callback UpdateExit
     // @param fraction The percentage of the intro that is done.
     // @param delta The time passed since last frame.
-    if (Lua->call_function("UpdateExit", 2)) {
-        Lua->push_argument(Fraction);
-        Lua->push_argument(Delta);
-        Lua->run_function();
-    }
+    call_callback("UpdateExit", Fraction, Delta);
 
     draw_from_layer(0);
 }
@@ -106,13 +148,13 @@ void SceneEnvironment::RunExit(const float Fraction, const float Delta) {
 float SceneEnvironment::get_intro_duration() const {
     /// How long the intro section lasts.
     // @modvar IntroDuration
-    return std::max(Lua->get_global_d("IntroDuration"), 0.0);
+    return std::max(get_callback_number("IntroDuration", -1), 0.0);
 }
 
 float SceneEnvironment::get_exit_duration() const {
     /// How long the outro section lasts.
     // @modvar ExitDuration
-    return std::max(Lua->get_global_d("ExitDuration"), 0.0);
+    return std::max(get_callback_number("ExitDuration", -1), 0.0);
 }
 
 void SceneEnvironment::add_lua_animation(Sprite *target, const std::string &func_name,
@@ -153,9 +195,7 @@ TruetypeFont *SceneEnvironment::create_ttf(const char *Dir) {
 SceneEnvironment::~SceneEnvironment() {
     /// Called when the scene environment will be destroyed.
     // @callback Cleanup
-    if (Lua->call_function("Cleanup")) {
-        Lua->run_function();
-    }
+    call_callback("Cleanup");
 
     // Remove all managed drawable objects.
     for (auto i: ManagedObjects)
@@ -171,8 +211,20 @@ SceneEnvironment::~SceneEnvironment() {
 void SceneEnvironment::preload(const std::filesystem::path &Filename, std::string array_name) {
     mInitScript = Filename;
 
-    if (!Lua->run_script(Filename)) {
-        Log::LogPrintf("Couldn't run lua script while preloading: %s\n", Lua->get_last_error().c_str());
+    load_script_callbacks(Filename);
+
+    if (mCallbacks && mCallbacks->isTable()) {
+        auto preload = (*mCallbacks)[array_name];
+        if (preload.isTable()) {
+            for (int i = 1; i <= preload.length(); ++i) {
+                auto item = preload[i];
+                if (item.isString()) {
+                    auto s = GameState::get_instance().get_skin_file(item.cast<std::string>());
+                    Images->AddToList(s, "");
+                }
+            }
+            return;
+        }
     }
 
     if (Lua->use_array(array_name)) {
@@ -216,15 +268,12 @@ void SceneEnvironment::initialize(const std::filesystem::path &filename, const b
         mInitScript = filename;
 
     if (run_script) {
-        if (!Lua->run_script(mInitScript)) {
-            Log::LogPrintf("Couldn't load script %s: %s", mInitScript.string().c_str(), Lua->get_last_error().c_str());
-        }
+        load_script_callbacks(mInitScript);
     }
 
     /// This function is called at the initialization phase of the screen.
     // @callback Init
-    if (Lua->call_function("Init"))
-        Lua->run_function();
+    call_callback("Init");
 
     Images->LoadAll();
 }
@@ -277,11 +326,7 @@ void SceneEnvironment::on_scroll_input(const double x_off, const double y_off) c
     // @callback ScrollEvent
     // @param xoff Change in X scroll.
     // @param yoff Change in Y scroll.
-    if (Lua->call_function("ScrollEvent", 2)) {
-        Lua->push_argument(x_off);
-        Lua->push_argument(y_off);
-        Lua->run_function();
-    }
+    call_callback("ScrollEvent", x_off, y_off);
 }
 
 void SceneEnvironment::remove_managed_objects() {
@@ -378,10 +423,7 @@ void SceneEnvironment::update_targets(const double TimeDelta) {
     /// Main update loop. Called every frame.
     // @callback Update
     // @param delta Change in time since last frame.
-    if (Lua->call_function("Update", 1)) {
-        Lua->push_argument(TimeDelta);
-        Lua->run_function();
-    }
+    call_callback("Update", TimeDelta);
 }
 
 void SceneEnvironment::ReloadUI() {
@@ -433,12 +475,7 @@ bool SceneEnvironment::on_input(const int32_t key, const bool is_pressed, const 
     // @param key The key code.
     // @param type The type of event. 1 is press, 2 is release.
     // @param isMouseInput Whether this is a mouse button press.
-    if (Lua->call_function("KeyEvent", 3)) {
-        Lua->push_argument(key);
-        Lua->push_argument(is_pressed);
-        Lua->push_argument(is_mouse_input);
-        Lua->run_function();
-    }
+    call_callback("KeyEvent", key, is_pressed, is_mouse_input);
 
     return true;
 }
@@ -452,8 +489,7 @@ ImageList *SceneEnvironment::get_image_list() const {
 }
 
 void SceneEnvironment::trigger_event(const std::string &event_name, const int Return) const {
-    if (Lua->call_function(event_name.c_str(), 0, Return))
-        Lua->run_function();
+    call_callback_with_results(event_name, Return);
 }
 
 void SceneEnvironment::remove_sprite_target(Sprite *Targ) {

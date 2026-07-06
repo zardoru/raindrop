@@ -417,7 +417,7 @@ std::shared_ptr<Screen> GameState::get_next_screen()
 
 void GameState::sort_wheel_by(int criteria)
 {
-	SongWheel::get_instance().SortBy(static_cast<ESortCriteria>(criteria));
+	SongWheel::get_instance().sort_by(static_cast<ESortCriteria>(criteria));
 }
 
 void GameState::add_active_profile(const std::string &profile_name) {
