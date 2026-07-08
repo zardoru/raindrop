@@ -46,6 +46,6 @@ void Noteskin::AddScriptClasses() {
             .addData("JudgmentY", &Noteskin::JudgmentY)
                     /// Read-only property informing of the amount of channels currently active.
                     // @roproperty Channels
-            .addProperty("Channels", &Noteskin::GetChannels)
+            .addProperty("Channels", &Noteskin::get_channels)
             .endClass();
 }

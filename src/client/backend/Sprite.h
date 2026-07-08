@@ -52,7 +52,6 @@ protected:
     bool do_texture_cleanup_;
 public:
     bool centered; // 0 for topleft, 1 for center
-    bool lighten;
 
     bool scissor;
 
@@ -67,11 +66,8 @@ public:
 
     // color and other transformations
     float alpha;
-	ColorRGB color;
+    ColorRGB color;
     // float Red, Blue, Green;
-
-    // Only valid if lighten is enabled.
-    float lighten_factor;
 
     AABB scissor_region;
 

@@ -91,6 +91,6 @@ public:
 	*/
     void GetSongInformation(int ID, otoworm::ChartGroup* out);
 
-    void StartTransaction();
-    void EndTransaction();
+    void start_transaction();
+    void end_transaction();
 };

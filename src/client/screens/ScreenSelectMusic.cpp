@@ -378,7 +378,7 @@ bool ScreenSelectMusic::Run(double Delta) {
 void ScreenSelectMusic::stop_loops() {
     if (BGM) {
         BGM->stop();
-        GetMixer()->RemoveStream(BGM.get());
+        GetMixer()->remove_stream(BGM.get());
         BGM = nullptr;
     }
 }

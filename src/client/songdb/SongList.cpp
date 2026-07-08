@@ -1,336 +1,283 @@
-#include <memory>
+#include <algorithm>
+#include <cassert>
 #include <functional>
+#include <memory>
 #include <mutex>
-#include <rmath.h>
+#include <ranges>
 
 #include <ChartGroup.h>
 #include <text_and_file_util.h>
-#include <cassert>
+
 #include "SongList.h"
-
-#include <algorithm>
-
 #include "SongLoader.h"
 
-ListEntry::ListEntry() {
-	Kind = Directory;
-	SelectedIndex = 0;
-}
-
-SongList::SongList(SongList* Parent)
-    : mParent(Parent)
-	, IsInUse(false)
+ListEntry::ListEntry()
+    : data(std::make_shared<SongList>()),
+      selected_index(0)
 {
 }
 
-SongList::~SongList()
+SongList::SongList(SongList* parent)
+    : m_parent_(parent),
+      is_in_use_(false)
 {
 }
 
-void SongList::Clear()
+SongList::~SongList() = default;
+
+void SongList::clear()
 {
-	mChildren.clear();
+    m_children_.clear();
 }
 
-void SongList::SetInUse(bool inuse)
+void SongList::set_in_use(bool inuse)
 {
-	IsInUse = inuse;
+    is_in_use_ = inuse;
 }
 
-bool SongList::InUse()
+bool SongList::is_in_use()
 {
-	return IsInUse;
+    return is_in_use_;
 }
 
-void SongList::ClearEmpty()
+void SongList::clear_empty()
 {
-	for (auto it = mChildren.begin(); it != mChildren.end(); ) {
-		bool increase = true;
+    for (auto it = m_children_.begin(); it != m_children_.end();) {
+        bool increase = true;
 
-		if (it->Kind == it->Directory) {
-			auto list = std::static_pointer_cast<SongList>(it->Data);
-			if (list->GetNumEntries() == 0 && !list->InUse()) {
-				it = mChildren.erase(it);
-				increase = false;
-			}
-		}
-
-		if (increase)
-			++it;
-	}
-}
-
-void SongList::AddSong(std::shared_ptr<otoworm::ChartGroup> chart_group)
-{
-    ListEntry NewEntry;
-    NewEntry.Kind = ListEntry::Song;
-    NewEntry.Data = chart_group;
-
-    mChildren.push_back(NewEntry);
-}
-
-void SongList::AddEntry(ListEntry entry)
-{
-	mChildren.push_back(entry);
-}
-
-const std::vector<ListEntry>& SongList::GetEntries()
-{
-	return mChildren;
-}
-
-void SongList::AddNamedDirectory(
-	std::mutex &loadMutex, 
-	SongLoader *Loader, 
-	std::filesystem::path Dir, 
-	std::string Name,
-	OnLoadNotifyFunc OnSongLoaded)
-{
-    bool EntryWasPushed = false;
-    auto* NewList = new SongList(this);
-
-    ListEntry NewEntry;
-
-    NewEntry.EntryName = Name;
-    NewEntry.Kind = ListEntry::Directory;
-    NewEntry.Data = std::shared_ptr<void>(NewList);
-
-    std::vector<std::shared_ptr<otoworm::ChartGroup>> chart_groups;
-    std::vector<std::string> Listing;
-
-	// boost throws with nonexisting directories
-	if (!std::filesystem::exists(Dir)) return;
-
-	for (const auto& i : std::filesystem::directory_iterator (Dir))
-    {
-        if (i.path() == "." || i.path() == "..") continue;
-
-		if (!std::filesystem::is_directory(i.path())) continue;
-
-		Loader->LoadChartGroupsFromDir(i, chart_groups);
-
-        if (!chart_groups.size()) // No songs, so, time to recursively search.
-        {
-            if (!EntryWasPushed)
-            {
-                std::unique_lock<std::mutex> lock(loadMutex);
-                mChildren.push_back(NewEntry);
-                EntryWasPushed = true;
-            }
-
-            NewList->AddDirectory(loadMutex, Loader, i, OnSongLoaded);
-
-            {
-                std::unique_lock<std::mutex> lock(loadMutex);
-                if (!NewList->GetNumEntries() && !NewList->InUse())
-                {
-                    if (mChildren.size())
-                        mChildren.erase(mChildren.end() - 1);
-                    EntryWasPushed = false;
-                }
+        if (std::holds_alternative<std::shared_ptr<SongList>>(it->data)) {
+            auto list = std::get<std::shared_ptr<SongList>>(it->data);
+            if (list->get_num_entries() == 0 && !list->is_in_use()) {
+                it = m_children_.erase(it);
+                increase = false;
             }
         }
-        else
-        {
-            {
-                std::unique_lock<std::mutex> lock(loadMutex);
 
-                for (auto j = chart_groups.begin();
-                j != chart_groups.end();
-                    ++j)
-                {
-                    NewList->AddSong(*j);
+        if (increase)
+            ++it;
+    }
+}
+
+void SongList::add_song(const std::shared_ptr<otoworm::ChartGroup>& chart_group)
+{
+    ListEntry new_entry;
+    new_entry.data = chart_group;
+    m_children_.push_back(new_entry);
+}
+
+void SongList::add_entry(const ListEntry& entry)
+{
+    m_children_.push_back(entry);
+}
+
+const std::vector<ListEntry>& SongList::get_entries()
+{
+    return m_children_;
+}
+
+void SongList::add_named_directory(
+    std::mutex& load_mutex,
+    SongLoader& loader,
+    const std::filesystem::path& dir,
+    std::string name,
+    const OnLoadNotifyFunc& on_song_loaded)
+{
+    bool entry_was_pushed = false;
+    auto new_list = std::make_shared<SongList>(this);
+
+    ListEntry new_entry;
+    new_entry.entry_name = std::move(name);
+    new_entry.data = new_list;
+
+    std::vector<std::shared_ptr<otoworm::ChartGroup>> chart_groups;
+
+    if (!std::filesystem::exists(dir))
+        return;
+
+    for (const auto& i : std::filesystem::directory_iterator(dir)) {
+        if (i.path() == "." || i.path() == "..")
+            continue;
+
+        if (!std::filesystem::is_directory(i.path()))
+            continue;
+
+        loader.LoadChartGroupsFromDir(i, chart_groups);
+
+        if (chart_groups.empty()) {
+            if (!entry_was_pushed) {
+                std::unique_lock lock(load_mutex);
+                m_children_.push_back(new_entry);
+                entry_was_pushed = true;
+            }
+
+            new_list->add_directory(load_mutex, loader, i, on_song_loaded);
+
+            {
+                std::unique_lock lock(load_mutex);
+                if (!new_list->get_num_entries() && !new_list->is_in_use()) {
+                    if (!m_children_.empty())
+                        m_children_.erase(m_children_.end() - 1);
+                    entry_was_pushed = false;
                 }
+            }
+        } else {
+            {
+                std::unique_lock lock(load_mutex);
+                for (const auto& chart_group : chart_groups)
+                    new_list->add_song(chart_group);
 
                 chart_groups.clear();
             }
 
-            if (!EntryWasPushed)
-            {
-                std::unique_lock<std::mutex> lock(loadMutex);
-                mChildren.push_back(NewEntry);
-                EntryWasPushed = true;
+            if (!entry_was_pushed) {
+                std::unique_lock lock(load_mutex);
+                m_children_.push_back(new_entry);
+                entry_was_pushed = true;
             }
         }
 
-        if (EntryWasPushed) {
-            if (OnSongLoaded)
-                OnSongLoaded ();
-        }
+        if (entry_was_pushed && on_song_loaded)
+            on_song_loaded();
     }
 }
 
-void SongList::AddDirectory(std::mutex &loadMutex, SongLoader *Loader, std::filesystem::path Dir, OnLoadNotifyFunc OnSongLoaded)
+void SongList::add_directory(
+    std::mutex& load_mutex,
+    SongLoader& loader,
+    const std::filesystem::path& dir,
+    const OnLoadNotifyFunc& on_song_loaded)
 {
-    AddNamedDirectory(loadMutex, Loader, Dir, otoworm::locale::wstring_to_utf8(Dir.filename().wstring()), OnSongLoaded);
+    add_named_directory(load_mutex, loader, dir, otoworm::locale::wstring_to_utf8(dir.filename().wstring()), on_song_loaded);
 }
 
-// if false, it's a song
-bool SongList::IsDirectory(unsigned int Entry) const
+bool SongList::is_directory(unsigned int entry) const
 {
-    if (Entry >= mChildren.size()) return true;
-    return mChildren[Entry].Kind == ListEntry::Directory;
+    if (entry >= m_children_.size())
+        return true;
+
+    return std::holds_alternative<std::shared_ptr<SongList>>(m_children_[entry].data);
 }
 
-std::shared_ptr<SongList> SongList::GetListEntry(unsigned int Entry)
+std::shared_ptr<SongList> SongList::get_list_entry(unsigned int entry) const
 {
-    assert(IsDirectory(Entry));
-    return std::static_pointer_cast<SongList> (mChildren[Entry].Data);
+    assert(is_directory(entry));
+    return std::get<std::shared_ptr<SongList>>(m_children_[entry].data);
 }
 
-std::shared_ptr<otoworm::ChartGroup> SongList::GetSongEntry(unsigned int Entry)
+std::shared_ptr<otoworm::ChartGroup> SongList::get_song_entry(unsigned int entry) const
 {
-    if (!IsDirectory(Entry))
-        return std::static_pointer_cast<otoworm::ChartGroup> (mChildren[Entry].Data);
-    else
-        return nullptr;
+    if (!is_directory(entry))
+        return std::get<std::shared_ptr<otoworm::ChartGroup>>(m_children_[entry].data);
+
+    return nullptr;
 }
 
-std::string SongList::GetEntryTitle(unsigned int Entry)
+std::string SongList::get_entry_title(unsigned int entry)
 {
-    if (Entry >= mChildren.size())
+    if (entry >= m_children_.size())
         return "";
 
-    if (mChildren[Entry].Kind == ListEntry::Directory)
-        return mChildren[Entry].EntryName;
-    else
-    {
-        std::shared_ptr<otoworm::ChartGroup> song = std::static_pointer_cast<otoworm::ChartGroup>(mChildren[Entry].Data);
-        if (song)
-            return song->title;
-        else
-            return "<no song>";
-    }
+    if (is_directory(entry))
+        return m_children_[entry].entry_name;
+
+    auto song = std::get<std::shared_ptr<otoworm::ChartGroup>>(m_children_[entry].data);
+    return song ? song->title : "<no song>";
 }
 
-unsigned int SongList::GetNumEntries() const
+unsigned int SongList::get_num_entries() const
 {
-    return mChildren.size();
+    return m_children_.size();
 }
 
-bool SongList::HasParentDirectory()
+bool SongList::has_parent_directory() const
 {
-    return mParent != nullptr;
+    return m_parent_ != nullptr;
 }
 
-SongList* SongList::GetParentDirectory()
+SongList* SongList::get_parent_directory() const
 {
-    return mParent;
+    return m_parent_;
 }
 
-void SongList::SortByFn(std::function<bool(const ListEntry&, const ListEntry&)> fn)
+void SongList::sort_by_fn(std::function<bool(const ListEntry&, const ListEntry&)> fn)
 {
-	std::ranges::stable_sort(mChildren, [&](const ListEntry&A, const ListEntry&B)
-    {
-        if (A.Kind == ListEntry::Directory && B.Kind != A.Kind)
-        {
-            return true;
-        }
+    std::ranges::stable_sort(m_children_, [&](const ListEntry& a, const ListEntry& b) {
+        const bool a_is_dir = std::holds_alternative<std::shared_ptr<SongList>>(a.data);
+        const bool b_is_dir = std::holds_alternative<std::shared_ptr<SongList>>(b.data);
 
-        if (A.Kind != ListEntry::Directory && B.Kind != A.Kind)
-        {
-            return false;
-        }
+        if (a_is_dir != b_is_dir)
+            return a_is_dir;
 
-        if (A.Kind == B.Kind && A.Kind == ListEntry::Directory)
-            return A.EntryName < B.EntryName;
+        if (a_is_dir)
+            return a.entry_name < b.entry_name;
 
-        return fn(A, B);
+        return fn(a, b);
     });
-};
+}
 
-void SongList::SortBy(ESortCriteria criteria)
+void SongList::sort_by(ESortCriteria criteria)
 {
-	switch (criteria)
-	{
-	case SORT_TITLE:
-		SortByFn([](const ListEntry&A, const ListEntry&B)
-		{
-			auto a = std::static_pointer_cast<otoworm::ChartGroup>(A.Data);
-			auto b = std::static_pointer_cast<otoworm::ChartGroup>(B.Data);
-			return a->title < b->title;
-		});
-		break;
-	case SORT_AUTHOR:
-		SortByFn([](const ListEntry&A, const ListEntry&B)
-		{
-			auto a = std::static_pointer_cast<otoworm::ChartGroup>(A.Data);
-			auto b = std::static_pointer_cast<otoworm::ChartGroup>(B.Data);
-			return a->artist < b->artist;
-		});
-		break;
-	case SORT_LENGTH:
-		SortByFn([](const ListEntry&A, const ListEntry&B)
-		{
-			auto dur = [](std::shared_ptr<otoworm::ChartGroup> a)
-			{
-				auto chart = a->get_chart(0);
-				if (chart) return chart->duration;
-				
-				return 0.0;
-			};
+    switch (criteria) {
+    case SORT_TITLE:
+        sort_by_fn([](const ListEntry& a, const ListEntry& b) {
+            auto chart_a = std::get<std::shared_ptr<otoworm::ChartGroup>>(a.data);
+            auto chart_b = std::get<std::shared_ptr<otoworm::ChartGroup>>(b.data);
+            return chart_a->title < chart_b->title;
+        });
+        break;
+    case SORT_AUTHOR:
+        sort_by_fn([](const ListEntry& a, const ListEntry& b) {
+            auto chart_a = std::get<std::shared_ptr<otoworm::ChartGroup>>(a.data);
+            auto chart_b = std::get<std::shared_ptr<otoworm::ChartGroup>>(b.data);
+            return chart_a->artist < chart_b->artist;
+        });
+        break;
+    case SORT_LENGTH:
+        sort_by_fn([](const ListEntry& a, const ListEntry& b) {
+            auto duration = [](const std::shared_ptr<otoworm::ChartGroup>& chart_group) {
+                auto chart = chart_group->get_chart(0);
+                return chart ? chart->duration : 0.0;
+            };
 
-			auto a = std::static_pointer_cast<otoworm::ChartGroup>(A.Data);
-			auto b = std::static_pointer_cast<otoworm::ChartGroup>(B.Data);
-			float lena = dur(a);
-			float lenb = dur(b);
-		
-			return lena < lenb;
-		});
-		break;
-	case SORT_MINLEVEL:
-		SortByFn([](const ListEntry&A, const ListEntry&B)
-		{
-			auto nps = [](std::shared_ptr<otoworm::ChartGroup> a)
-			{
-				long long minnps = 10000000;
-				for (auto chart : a->charts) {
-					minnps = std::min(minnps, chart->level);
-				}
+            auto chart_a = std::get<std::shared_ptr<otoworm::ChartGroup>>(a.data);
+            auto chart_b = std::get<std::shared_ptr<otoworm::ChartGroup>>(b.data);
+            return duration(chart_a) < duration(chart_b);
+        });
+        break;
+    case SORT_MINLEVEL:
+        sort_by_fn([](const ListEntry& a, const ListEntry& b) {
+            auto min_level = [](const std::shared_ptr<otoworm::ChartGroup>& chart_group) {
+                long long level = 10000000;
+                for (auto chart : chart_group->charts)
+                    level = std::min(level, chart->level);
+                return level;
+            };
 
-				return minnps;
-			};
+            auto chart_a = std::get<std::shared_ptr<otoworm::ChartGroup>>(a.data);
+            auto chart_b = std::get<std::shared_ptr<otoworm::ChartGroup>>(b.data);
+            return min_level(chart_a) < min_level(chart_b);
+        });
+        break;
+    case SORT_MAXLEVEL:
+        sort_by_fn([](const ListEntry& a, const ListEntry& b) {
+            auto max_level = [](const std::shared_ptr<otoworm::ChartGroup>& chart_group) {
+                long long level = -10000000;
+                for (auto chart : chart_group->charts)
+                    level = std::max(level, chart->level);
+                return level;
+            };
 
-			auto a = std::static_pointer_cast<otoworm::ChartGroup>(A.Data);
-			auto b = std::static_pointer_cast<otoworm::ChartGroup>(B.Data);
-			float npsa = nps(a);
-			float npsb = nps(b);
-		
-			return npsa < npsb;
-		});
-		break;
-	case SORT_MAXLEVEL:
-		SortByFn([](const ListEntry&A, const ListEntry&B)
-		{
-			auto nps = [](std::shared_ptr<otoworm::ChartGroup> a)
-			{
-				long long maxnps = -10000000;
-				for (auto chart : a->charts) {
-					maxnps = std::max(maxnps, chart->level);
-				}
+            auto chart_a = std::get<std::shared_ptr<otoworm::ChartGroup>>(a.data);
+            auto chart_b = std::get<std::shared_ptr<otoworm::ChartGroup>>(b.data);
+            return max_level(chart_a) < max_level(chart_b);
+        });
+        break;
+    default:
+        break;
+    }
 
-				return maxnps;
-			};
-
-			auto a = std::static_pointer_cast<otoworm::ChartGroup>(A.Data);
-			auto b = std::static_pointer_cast<otoworm::ChartGroup>(B.Data);
-			float npsa = nps(a);
-			float npsb = nps(b);
-		
-			return npsa < npsb;
-		});
-		break;
-	default:
-		break;
-	}
-
-	// recursively sort
-	for (auto &&ch: mChildren)
-	{
-		if (ch.Kind == ListEntry::Directory)
-		{
-			auto list = std::static_pointer_cast<SongList>(ch.Data);
-			list->SortBy(criteria);
-		}
-	}
+    for (auto&& child : m_children_) {
+        if (std::holds_alternative<std::shared_ptr<SongList>>(child.data))
+            std::get<std::shared_ptr<SongList>>(child.data)->sort_by(criteria);
+    }
 }

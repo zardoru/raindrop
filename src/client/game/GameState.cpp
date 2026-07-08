@@ -88,7 +88,7 @@ std::filesystem::path GameState::get_skin_script_file(const char* Filename, cons
 
 std::shared_ptr<otoworm::ChartGroup> GameState::get_selected_chart_group_shared() const
 {
-    if (const auto chart_group = SongWheel::get_instance().GetSelectedChartGroup())
+    if (const auto chart_group = SongWheel::get_instance().get_selected_chart_group())
         return chart_group;
     return SelectedChartGroup;
 }

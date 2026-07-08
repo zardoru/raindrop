@@ -149,16 +149,16 @@ struct TRect
         Y1 = Y2 = 0;
     }
 
-    inline bool IsInBox(T x, T y) {
+    inline bool is_in_box(T x, T y) {
         return x >= X1 && x <= X2
                && y >= Y1 && y <= Y2;
     }
 
     inline bool Intersects(const TRect &other) {
-        return IsInBox(other.X1, other.Y1) ||
-               IsInBox(other.X2, other.Y2) ||
-               IsInBox(other.X2, other.Y1) ||
-               IsInBox(other.X1, other.Y2);
+        return is_in_box(other.X1, other.Y1) ||
+               is_in_box(other.X2, other.Y2) ||
+               is_in_box(other.X2, other.Y1) ||
+               is_in_box(other.X1, other.Y2);
     }
 
     inline void SetWidth(T w) {

@@ -144,8 +144,8 @@ void CreateUtilityLua(LuaManager *AnimLua) {
                     // @function Contains
                     // @param x X coordinate
                     // @param y Y coordinate
-            .addFunction("Contains", &AABB::IsInBox)
-            .addFunction("contains", &AABB::IsInBox)
+            .addFunction("Contains", &AABB::is_in_box)
+            .addFunction("contains", &AABB::is_in_box)
                     /// Whether this AABB intersects another AABB
                     // @function Intersects
                     // @tparam AABB aabb Other AABB

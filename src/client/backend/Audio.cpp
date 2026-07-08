@@ -206,7 +206,7 @@ public:
         return *Mixer;
     }
 
-    double GetRate() override {
+    double get_rate() override {
         return Rate;
     }
 
@@ -285,7 +285,7 @@ public:
         } while (Threaded);
     }
 
-    void AddStream(AudioStream *stream) override {
+    void add_stream(AudioStream *stream) override {
         mutex_decoder.lock();
         mutex_stream.lock();
         if (const auto s = std::ranges::find(active_streams, stream); s == active_streams.end())
@@ -295,7 +295,7 @@ public:
         mutex_decoder.unlock();
     }
 
-    void RemoveStream(AudioStream *stream) override {
+    void remove_stream(AudioStream *stream) override {
         mutex_decoder.lock();
         mutex_stream.lock();
         for (auto i = active_streams.begin(); i != active_streams.end();) {
@@ -313,7 +313,7 @@ public:
         mutex_decoder.unlock();
     }
 
-    void AddSample(AudioSample *Sample) override {
+    void add_sample(AudioSample *Sample) override {
         mutex_decoder.lock();
         mutex_stream.lock();
         Samples.push_back(Sample);
@@ -321,7 +321,7 @@ public:
         mutex_decoder.unlock();
     }
 
-    void RemoveSample(AudioSample *Sample) override {
+    void remove_sample(AudioSample *Sample) override {
         mutex_decoder.lock();
         mutex_stream.lock();
         for (auto i = Samples.begin(); i != Samples.end();) {
@@ -339,7 +339,7 @@ public:
         mutex_decoder.unlock();
     }
 
-    double GetTime() override {
+    double get_time() override {
         return Pa_GetStreamTime(Stream);
     }
 
@@ -348,7 +348,7 @@ private:
 
 public:
 
-    void WriteAndAdvanceStream(
+    void write_and_advance_stream(
             float *out,
             const int samples,
             const PaStreamCallbackTimeInfo *timeInfo) {
@@ -373,7 +373,7 @@ public:
                 if (read > 0) {
                     stream_time_map_t map{
                             timeInfo->outputBufferDacTime,
-                            timeInfo->outputBufferDacTime + (read / 2) / GetRate(),
+                            timeInfo->outputBufferDacTime + (read / 2) / get_rate(),
                             read_frames_start,
                             read_frames_end
                     };
@@ -411,7 +411,7 @@ public:
         return Latency;
     }
 
-    double GetFactor() override {
+    double get_factor() override {
         return ConstFactor;
     }
 };
@@ -419,7 +419,7 @@ public:
 int Mix(const void *input, void *output, const unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo,
         PaStreamCallbackFlags statusFlags, void *userData) {
     auto *Mix = static_cast<PaMixer *>(userData);
-    Mix->WriteAndAdvanceStream(static_cast<float *>(output), frameCount * 2, timeInfo);
+    Mix->write_and_advance_stream(static_cast<float *>(output), frameCount * 2, timeInfo);
     return 0;
 }
 
@@ -511,12 +511,12 @@ double MixerGetLatency() {
 }
 
 double MixerGetRate() {
-    return PaMixer::GetInstance().GetRate();
+    return PaMixer::GetInstance().get_rate();
 }
 
 double MixerGetFactor() {
 #ifndef NO_AUDIO
-    return PaMixer::GetInstance().GetFactor();
+    return PaMixer::GetInstance().get_factor();
 #else
     return 0;
 #endif
@@ -524,7 +524,7 @@ double MixerGetFactor() {
 
 double MixerGetTime() {
 #ifndef NO_AUDIO
-    return PaMixer::GetInstance().GetTime();
+    return PaMixer::GetInstance().get_time();
 #else
     return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now()).count() / 1000.0;
 #endif

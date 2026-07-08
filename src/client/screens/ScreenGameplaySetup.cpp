@@ -72,7 +72,7 @@ void ScreenGameplay::cleanup() {
 
     for (auto& k : keysounds_) {
         for (auto &s: k.second)
-            GetMixer()->RemoveSample(s.get());
+            GetMixer()->remove_sample(s.get());
     }
 }
 
@@ -505,7 +505,7 @@ void ScreenGameplay::load_resources() {
         for (auto &val: keysounds_ | std::views::values) {
             for (const auto &snd : val) {
                 snd->await_load();
-                // GetMixer()->AddSample(snd.get());
+                // GetMixer()->add_sample(snd.get());
             }
         }
 

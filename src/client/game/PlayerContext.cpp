@@ -99,11 +99,11 @@ PlayerContext::PlayerContext(const int pn, PlayscreenParameters p) : chart_state
 PlayerContext::~PlayerContext() = default;
 
 void PlayerContext::init() const {
-    noteskin_->SetupNoteskin(chart_state_.has_turntable, current_chart_->channels);
+    noteskin_->init_noteskin(chart_state_.has_turntable, current_chart_->channels);
 }
 
 void PlayerContext::validate() {
-    noteskin_->Validate();
+    noteskin_->validate();
     ms_display_margin_ = (Configuration::GetSkinConfigf("HitErrorDisplayLimiter"));
 
 

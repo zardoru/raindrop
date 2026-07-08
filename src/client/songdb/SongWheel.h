@@ -46,7 +46,7 @@ private:
     std::thread* m_load_thread_;
     std::atomic<bool> m_loading_;
 
-    SongDatabase* db_{};
+    SongDatabase* song_db_{};
 
     std::shared_ptr<SongList> list_root_;
     SongList* current_list_;
@@ -100,28 +100,28 @@ public:
     void reapply_filters();
 
     void go_up();
-    void initialize(SongDatabase* Database);
+    void initialize(SongDatabase* database);
 
     void join_loading_thread();
 
-    bool handle_input(int32_t key, bool isPressed, bool isMouseInput);
+    bool handle_input(int32_t key, bool is_pressed, bool is_mouse_input);
     bool handle_scroll_input(const double dx, const double dy);
-    std::shared_ptr<otoworm::ChartGroup> GetSelectedChartGroup();
-    void reload_songs(SongDatabase* Database);
-    void load_songs_once(SongDatabase* Database);
+    std::shared_ptr<otoworm::ChartGroup> get_selected_chart_group();
+    void reload_songs(SongDatabase* database);
+    void load_songs_once(SongDatabase* database);
 
-    int add_sprite(Sprite* Item);
-    int add_text(GraphicalString* Str);
+    int add_sprite(Sprite* item);
+    int add_text(GraphicalString* str);
 
     // return: the new difficulty index
     int next_difficulty();
     int prev_difficulty();
-    int get_difficulty() const;
+    size_t get_difficulty() const;
     void set_difficulty(uint32_t i);
 
     // Returns the index of the last item the user hovered with the mouse over.
     int get_cursor_index() const;
-    void set_cursor_index(int Index);
+    void set_cursor_index(int index);
 
     void confirm_selection();
 
@@ -130,13 +130,13 @@ public:
 
     // These give and set the global, infinite wheel item.
     // When wanting to use the bound index, read from SelectedBoundItem, not these.
-    void  set_selected_item(int32_t Item);
+    void  set_selected_item(int32_t item);
     int32_t get_selected_item() const;
     int32_t get_num_items() const;
 
-    bool is_item_directory(int32_t Item) const;
+    bool is_item_directory(int32_t item) const;
 
-    int32_t index_at_point(float X, float Y);
+    int32_t index_at_point(float x, float y);
     uint32_t normalized_index_at_point(float X, float Y);
 
     bool is_loading();
@@ -144,8 +144,8 @@ public:
     void sort_by(ESortCriteria criteria);
 
     void reset_filters();
-    void select_by(FuncFilterCriteria criteria);
+    void select_by(const FuncFilterCriteria &criteria);
 
-    void update(float Delta);
+    void update(float delta);
     void render();
 };

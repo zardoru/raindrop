@@ -704,12 +704,12 @@ bool SongDatabase::CacheNeedsRenewal(std::filesystem::path Dir) {
     return NeedsRenewal;
 }
 
-void SongDatabase::StartTransaction() {
+void SongDatabase::start_transaction() {
     char *tail;
     sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, &tail);
 }
 
-void SongDatabase::EndTransaction() {
+void SongDatabase::end_transaction() {
     char *tail;
     sqlite3_exec(db, "COMMIT;", NULL, NULL, &tail);
 }

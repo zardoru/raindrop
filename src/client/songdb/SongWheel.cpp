@@ -47,7 +47,7 @@ SongWheel::SongWheel()
     is_hovering_ = false;
 }
 
-int SongWheel::get_difficulty() const
+size_t SongWheel::get_difficulty() const
 {
     return difficulty_index_;
 }
@@ -65,7 +65,7 @@ void SongWheel::clean_items()
 }
 
 
-void SongWheel::initialize(SongDatabase* Database)
+void SongWheel::initialize(SongDatabase* database)
 {
     if (is_initialized_)
     {
@@ -82,46 +82,46 @@ void SongWheel::initialize(SongDatabase* Database)
     is_initialized_ = true;
     difficulty_index_ = 0;
 
-    load_songs_once(Database);
+    load_songs_once(database);
 }
 
 class LoadThread
 {
-    std::mutex* mLoadMutex;
-    SongDatabase* DB;
-    std::shared_ptr<SongList> ListRoot;
-    std::atomic<bool>& isLoading;
+    std::mutex* load_mutex_;
+    SongDatabase* db_;
+    std::shared_ptr<SongList> list_root_;
+    std::atomic<bool>& is_loading_;
 public:
     LoadThread(std::mutex* m, SongDatabase* d, std::shared_ptr<SongList> r, std::atomic<bool>& loadingstatus)
-        : mLoadMutex(m),
-        DB(d),
-        ListRoot(std::move(r)),
-        isLoading(loadingstatus)
+        : load_mutex_(m),
+        db_(d),
+        list_root_(std::move(r)),
+        is_loading_(loadingstatus)
     {
-        isLoading = true;
+        is_loading_ = true;
     }
 
-    void Load()
+    void load()
     {
-        std::map<std::string, std::string> Directories;
+        std::map<std::string, std::string> directories;
 
-        Configuration::GetConfigListS("SongDirectories", Directories, "Songs");
+        Configuration::GetConfigListS("SongDirectories", directories, "Songs");
 
-        SongLoader Loader(DB);
+        SongLoader loader(db_);
 
         Log::Printf("Started loading songs..\n");
-        DB->StartTransaction();
+        db_->start_transaction();
 
-        for (auto & Directorie : Directories)
+        for (auto& directory : directories)
         {
-            ListRoot->AddNamedDirectory(*mLoadMutex, &Loader, Directorie.second, Directorie.first, [] {
+            list_root_->add_named_directory(*load_mutex_, loader, directory.second, directory.first, [] {
                 SongWheel::get_instance().reapply_filters();
             });
         }
 
-        DB->EndTransaction();
+        db_->end_transaction();
         Log::Printf("Finished reloading songs.\n");
-        isLoading = false;
+        is_loading_ = false;
     }
 };
 
@@ -135,9 +135,9 @@ void SongWheel::join_loading_thread()
     }
 }
 
-void SongWheel::reload_songs(SongDatabase* Database)
+void SongWheel::reload_songs(SongDatabase* database)
 {
-    db_ = Database;
+    song_db_ = database;
     join_loading_thread();
 
     list_root_ = std::make_shared<SongList>();
@@ -146,15 +146,15 @@ void SongWheel::reload_songs(SongDatabase* Database)
     if (!m_load_mutex_)
         m_load_mutex_ = new std::mutex;
 
-    LoadThread L(m_load_mutex_, db_, list_root_, m_loading_);
-    m_load_thread_ = new std::thread(&LoadThread::Load, L);
+    LoadThread loader(m_load_mutex_, song_db_, list_root_, m_loading_);
+    m_load_thread_ = new std::thread(&LoadThread::load, loader);
 }
 
-void SongWheel::load_songs_once(SongDatabase* Database)
+void SongWheel::load_songs_once(SongDatabase* database)
 {
     if (!loaded_songs_once_) loaded_songs_once_ = true;
     else return;
-    reload_songs(Database);
+    reload_songs(database);
 }
 
 int SongWheel::add_sprite(Sprite* Item)
@@ -190,14 +190,14 @@ int SongWheel::get_cursor_index() const
 int SongWheel::prev_difficulty()
 {
     size_t max_index = 0;
-    if (!filtered_current_list_.IsDirectory(selected_bound_item_))
+    if (!filtered_current_list_.is_directory(selected_bound_item_))
     {
         difficulty_index_--;
-        auto song = filtered_current_list_.GetSongEntry(selected_bound_item_);
+        auto song = filtered_current_list_.get_song_entry(selected_bound_item_);
 		max_index = song->charts.size() - 1;
 
         difficulty_index_ = std::min(max_index, difficulty_index_);
-        on_song_tentative_select(GetSelectedChartGroup(), difficulty_index_);
+        on_song_tentative_select(get_selected_chart_group(), difficulty_index_);
     }
     else
         difficulty_index_ = 0;
@@ -207,16 +207,16 @@ int SongWheel::prev_difficulty()
 
 int SongWheel::next_difficulty()
 {
-    if (!filtered_current_list_.IsDirectory(selected_bound_item_))
+    if (!filtered_current_list_.is_directory(selected_bound_item_))
     {
         difficulty_index_++;
         
-        auto song = filtered_current_list_.GetSongEntry(selected_bound_item_);
+        auto song = filtered_current_list_.get_song_entry(selected_bound_item_);
         if (difficulty_index_ >= song->charts.size())
             difficulty_index_ = 0;
         
 
-        on_song_tentative_select(GetSelectedChartGroup(), difficulty_index_);
+        on_song_tentative_select(get_selected_chart_group(), difficulty_index_);
     }
 
     return difficulty_index_;
@@ -241,9 +241,9 @@ AABBd SongWheel::item_box_at(float t)
 
 void SongWheel::set_difficulty(uint32_t i)
 {
-    if (!filtered_current_list_.IsDirectory(selected_bound_item_))
+    if (!filtered_current_list_.is_directory(selected_bound_item_))
     {
-        auto song = GetSelectedChartGroup();
+        auto song = get_selected_chart_group();
         size_t maxIndex = song->charts.size();
         size_t oldDI = difficulty_index_;
 
@@ -253,13 +253,13 @@ void SongWheel::set_difficulty(uint32_t i)
             difficulty_index_ = 0;
 
         if (difficulty_index_ != oldDI)
-            on_song_tentative_select(GetSelectedChartGroup(), difficulty_index_);
+            on_song_tentative_select(get_selected_chart_group(), difficulty_index_);
     }
 }
 
-bool SongWheel::handle_input(int32_t key, bool isPressed, bool isMouseInput)
+bool SongWheel::handle_input(int32_t key, bool is_pressed, bool is_mouse_input)
 {
-    if (isPressed)
+    if (is_pressed)
     {
         switch (BindingsManager::translate_key(key))
         {
@@ -275,14 +275,14 @@ bool SongWheel::handle_input(int32_t key, bool isPressed, bool isMouseInput)
             Vec2 mpos = window.get_relative_mouse_pos();
             auto boundIndex = get_cursor_index();
             auto Idx = get_list_cursor_index();
-            if (boundIndex != filtered_current_list_.GetNumEntries()) // There's entries!
+            if (boundIndex != filtered_current_list_.get_num_entries()) // There's entries!
             {
-                if (in_wheel_bounds(mpos) || !isMouseInput)
+                if (in_wheel_bounds(mpos) || !is_mouse_input)
                 {
                     if (on_item_click)
                         on_item_click(Idx, boundIndex,
-							filtered_current_list_.GetEntryTitle(boundIndex),
-							filtered_current_list_.GetSongEntry(boundIndex));
+							filtered_current_list_.get_entry_title(boundIndex),
+							filtered_current_list_.get_song_entry(boundIndex));
                     return true;
                 }
             }
@@ -303,14 +303,14 @@ void SongWheel::go_up()
 {
     std::unique_lock<std::mutex> lock(*m_load_mutex_);
 
-    if (current_list_->HasParentDirectory())
+    if (current_list_->has_parent_directory())
     {
-		current_list_->SetInUse(false);
-        current_list_ = current_list_->GetParentDirectory();
-		current_list_->ClearEmpty();
+		current_list_->set_in_use(false);
+        current_list_ = current_list_->get_parent_directory();
+		current_list_->clear_empty();
 		reapply_filters();
         on_directory_change();
-		on_song_tentative_select(GetSelectedChartGroup(), 0);
+		on_song_tentative_select(get_selected_chart_group(), 0);
     }
 }
 
@@ -319,16 +319,16 @@ bool SongWheel::handle_scroll_input(const double dx, const double dy)
     return true;
 }
 
-std::shared_ptr<otoworm::ChartGroup> SongWheel::GetSelectedChartGroup()
+std::shared_ptr<otoworm::ChartGroup> SongWheel::get_selected_chart_group()
 {
-    return filtered_current_list_.GetSongEntry(selected_bound_item_);
+    return filtered_current_list_.get_song_entry(selected_bound_item_);
 }
 
-void SongWheel::update(float Delta)
+void SongWheel::update(float delta)
 {
     uint32_t Size = get_num_items();
 
-    time_ += Delta;
+    time_ += delta;
 
     if (!is_loading() && m_load_thread_)
     {
@@ -353,7 +353,7 @@ void SongWheel::update(float Delta)
             is_hovering_ = false;
             if (on_item_hover_leave)
                 on_item_hover_leave(get_cursor_index(), get_list_cursor_index(),
-                filtered_current_list_.GetEntryTitle(get_cursor_index()), nullptr);
+                filtered_current_list_.get_entry_title(get_cursor_index()), nullptr);
         }
     }
 
@@ -363,17 +363,17 @@ void SongWheel::update(float Delta)
         old_cursor_pos_ = cursor_pos_;
         if (on_item_hover)
         {
-            std::shared_ptr<otoworm::ChartGroup> Notify = GetSelectedChartGroup();
+            std::shared_ptr<otoworm::ChartGroup> Notify = get_selected_chart_group();
             on_item_hover(get_cursor_index(), get_list_cursor_index(),
-                filtered_current_list_.GetEntryTitle(get_cursor_index()), Notify);
+                filtered_current_list_.get_entry_title(get_cursor_index()), Notify);
         }
     }
 }
 
-void SongWheel::display_item(int32_t ListItem, int32_t ListPosition, float itemFraction)
+void SongWheel::display_item(int32_t list_item, int32_t list_position, float item_fraction)
 {
 	AABBd screen_box (0.0, 0.0, ScreenWidth, ScreenHeight);
-	AABBd item_box = item_box_at(itemFraction);
+	AABBd item_box = item_box_at(item_fraction);
 	Vec2 pos(item_box.X1, item_box.Y1);
 	// Vec2 size (item_box.width(), item_box.height()); 
 
@@ -383,11 +383,11 @@ void SongWheel::display_item(int32_t ListItem, int32_t ListPosition, float itemF
         std::shared_ptr<otoworm::ChartGroup> song = nullptr;
         std::string Text;
 
-        if (ListItem != -1)
+        if (list_item != -1)
         {
-            song = filtered_current_list_.GetSongEntry(ListItem);
-            Text = filtered_current_list_.GetEntryTitle(ListItem);
-            IsSelected = (ListPosition == selected_unbound_item_);
+            song = filtered_current_list_.get_song_entry(list_item);
+            Text = filtered_current_list_.get_entry_title(list_item);
+            IsSelected = (list_position == selected_unbound_item_);
         }
 
         for (auto & Sprite : sprites_)
@@ -395,7 +395,7 @@ void SongWheel::display_item(int32_t ListItem, int32_t ListPosition, float itemF
             Sprite.second->SetPosition(item_box.X1, item_box.Y1);
 
             if (transform_item)
-                transform_item(Sprite.first, song, IsSelected, ListPosition);
+                transform_item(Sprite.first, song, IsSelected, list_position);
 
             // Render the objects.
             Sprite.second->render();
@@ -406,7 +406,7 @@ void SongWheel::display_item(int32_t ListItem, int32_t ListPosition, float itemF
             String.second->SetPosition(pos);
 
             if (transform_string)
-                transform_string(String.first, song, IsSelected, ListPosition, Text);
+                transform_string(String.first, song, IsSelected, list_position, Text);
 
             String.second->render();
         }
@@ -419,7 +419,7 @@ void SongWheel::render()
     int Index = get_cursor_index();
     std::unique_lock<std::mutex> lock(*m_load_mutex_);
     int Cur = 0;
-    int Max = filtered_current_list_.GetNumEntries();
+    int Max = filtered_current_list_.get_num_entries();
 
 	// I only really need the top index.
 	int DisplayEndIndex = display_start_index + display_item_count + 1;
@@ -465,7 +465,7 @@ void SongWheel::set_selected_item(int32_t Item)
     
     // Set bound item index to this.
     selected_bound_item_ = Item;
-    on_song_tentative_select(GetSelectedChartGroup(), difficulty_index_);
+    on_song_tentative_select(get_selected_chart_group(), difficulty_index_);
 }
 
 int32_t SongWheel::index_at_point(float X, float Y)
@@ -475,7 +475,7 @@ int32_t SongWheel::index_at_point(float X, float Y)
 		cur++) {
 		float t = float(cur - display_start_index) / float(display_item_count + 1);
 
-		if (item_box_at(t).IsInBox(X, Y))
+		if (item_box_at(t).is_in_box(X, Y))
 			return cur;
 	}
 
@@ -494,42 +494,42 @@ int32_t SongWheel::get_num_items() const
         return 0;
     else
     {
-        return filtered_current_list_.GetNumEntries();
+        return filtered_current_list_.get_num_entries();
     }
 }
 
-bool SongWheel::is_item_directory(int32_t Item) const
+bool SongWheel::is_item_directory(int32_t item) const
 {
-    if (filtered_current_list_.GetNumEntries())
+    if (filtered_current_list_.get_num_entries())
     {
-        while (Item < 0) Item += get_num_items();
-        Item %= get_num_items();
-        return filtered_current_list_.IsDirectory(Item);
+        while (item < 0) item += get_num_items();
+        item %= get_num_items();
+        return filtered_current_list_.is_directory(item);
     }
 
     return false;
 }
 
-void SongWheel::set_cursor_index(int Index)
+void SongWheel::set_cursor_index(int index)
 {
-    cursor_pos_ = Index;
+    cursor_pos_ = index;
 }
 
 void SongWheel::confirm_selection()
 {
-    if (!filtered_current_list_.IsDirectory(selected_bound_item_))
+    if (!filtered_current_list_.is_directory(selected_bound_item_))
     {
-		if (difficulty_index_ < GetSelectedChartGroup()->get_chart_count())
-			on_song_confirm(GetSelectedChartGroup(), difficulty_index_);
+		if (difficulty_index_ < get_selected_chart_group()->get_chart_count())
+			on_song_confirm(get_selected_chart_group(), difficulty_index_);
     }
     else
     {
-        current_list_ = current_list_->GetListEntry(selected_bound_item_).get();
-		current_list_->SetInUse(true);
+        current_list_ = current_list_->get_list_entry(selected_bound_item_).get();
+		current_list_->set_in_use(true);
 
 		reapply_filters();
         set_selected_item(selected_unbound_item_); // Update our selected item to new bounderies.
-        on_song_tentative_select(GetSelectedChartGroup(), difficulty_index_);
+        on_song_tentative_select(get_selected_chart_group(), difficulty_index_);
     }
 }
 
@@ -550,7 +550,7 @@ bool SongWheel::is_loading()
 void SongWheel::sort_by(ESortCriteria criteria)
 {
 	std::unique_lock<std::mutex> lock(*m_load_mutex_);
-	list_root_->SortBy(criteria);
+	list_root_->sort_by(criteria);
 	reapply_filters();
 }
 
@@ -558,12 +558,12 @@ void SongWheel::reapply_filters()
 {
 	if (!current_list_) return;
 
-	filtered_current_list_.Clear();
-	for (const auto& entry : current_list_->GetEntries()) {
+	filtered_current_list_.clear();
+	for (const auto& entry : current_list_->get_entries()) {
 		bool add = true;
 
-		if (entry.Kind == ListEntry::Song) {
-			auto song = std::static_pointer_cast<otoworm::ChartGroup>(entry.Data);
+		if (std::holds_alternative<std::shared_ptr<otoworm::ChartGroup>>(entry.data)) {
+			auto song = std::get<std::shared_ptr<otoworm::ChartGroup>>(entry.data);
 			if (!GameState::get_instance().is_song_unlocked(song.get()))
 				continue;
 		}
@@ -580,7 +580,7 @@ void SongWheel::reapply_filters()
 
 		// all filters passed!
 		if (add)
-			filtered_current_list_.AddEntry(entry);
+			filtered_current_list_.add_entry(entry);
 	}
 }
 
@@ -590,7 +590,7 @@ void SongWheel::reset_filters()
 	reapply_filters();
 }
 
-void SongWheel::select_by(FuncFilterCriteria criteria)
+void SongWheel::select_by(const FuncFilterCriteria& criteria)
 {
 	active_filters_.push_back(criteria);
 	reapply_filters();

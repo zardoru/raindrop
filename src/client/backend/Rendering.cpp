@@ -457,11 +457,7 @@ bool Sprite::render_minimal_setup()
 	);
 
     // Set the color.
-	auto lf = 1.0 + lighten_factor;
-	if (!lighten)
-		renderer::DefaultShader::set_color(color.Red, color.Green, color.Blue, alpha);
-	else
-		renderer::DefaultShader::set_color(color.Red * lf, color.Green * lf, color.Blue * lf, alpha);
+    renderer::DefaultShader::set_color(color.Red, color.Green, color.Blue, alpha);
 
     renderer::do_quad_draw();
 
@@ -488,11 +484,7 @@ void Sprite::render()
 		renderer::set_default_shader_parameters(color_invert, centered, black_to_transparent);
         assert(glGetError() == 0);
 
-		auto lf = 1.0 + lighten_factor;
-		if (!lighten)
-			renderer::DefaultShader::set_color(color.Red, color.Green, color.Blue, alpha);
-		else
-			renderer::DefaultShader::set_color(color.Red * lf, color.Green * lf, color.Blue * lf, alpha);
+        renderer::DefaultShader::set_color(color.Red, color.Green, color.Blue, alpha);
         assert(glGetError() == 0);
 		
 		renderer::set_current_object_matrix(mat);

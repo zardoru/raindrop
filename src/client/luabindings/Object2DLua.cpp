@@ -212,8 +212,6 @@ void CreateObject2DLua(LuaManager *anim_lua) {
             /// Whether this object uses the center or the top left as the pivot. If true, centered.
             // @property Centered
             .addData("Centered", &Sprite::centered)
-            .addData("Lighten", &Sprite::lighten)
-            .addData("LightenFactor", &Sprite::lighten_factor)
             .addData("Scissor", &Sprite::scissor)
             .addData("ScissorRegion", &Sprite::scissor_region)
                     /// Whether to invert the colors of this sprite. Useless if the shader is set.

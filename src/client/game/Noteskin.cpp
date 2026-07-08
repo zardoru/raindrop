@@ -87,7 +87,7 @@ void Noteskin::log_callback_error(const std::string &name, const std::string &me
     Log::LogPrintf("noteskin callback error in %s: %s\n", name.c_str(), message.c_str());
 }
 
-void Noteskin::Validate() {
+void Noteskin::validate() {
     /***
      Function called when the Noteskin is created. Called only once.
      @callback Init
@@ -95,14 +95,14 @@ void Noteskin::Validate() {
     call_callback("Init");
 }
 
-int Noteskin::GetChannels() const {
+int Noteskin::get_channels() const {
     return Channels;
 }
 
-void Noteskin::SetupNoteskin(bool SpecialStyle, int Lanes) {
+void Noteskin::init_noteskin(bool special_style, int lanes) {
     CanRender = false;
 
-    Channels = Lanes;
+    Channels = lanes;
 
     // we need a clean state if we're being called from a different thread (to destroy objects properly)
     DefineSpriteInterface(&NoteskinLua);

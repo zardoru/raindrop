@@ -320,7 +320,7 @@ void ScreenGameplay::update_song_time(float delta) {
             time_.stream = -time_.waiting;
         }
 
-        time_.audio_old = GetMixer()->GetTime();
+        time_.audio_old = GetMixer()->get_time();
     }
 
     // UpdateDecoder for the next delta.
@@ -329,17 +329,17 @@ void ScreenGameplay::update_song_time(float delta) {
     // Current Time
     if (music_ && music_->is_valid())
         /* map stream time to DAC queued sample times */
-        time_.stream = music_->map_stream_clock(GetMixer()->GetTime());
+        time_.stream = music_->map_stream_clock(GetMixer()->get_time());
     else {
         /* these remain deltas for rates*/
-        double CurrAudioTime = GetMixer()->GetTime();
+        double CurrAudioTime = GetMixer()->get_time();
         time_.stream += CurrAudioTime - time_.audio_old;
         time_.audio_old = CurrAudioTime;
     }
 
 #ifdef AUDIO_CLOCK_DEBUG
     if (music_->is_playing() && time_.stream > 0 && music_->get_played_time() > 0) {
-        double expected = (GetMixer()->GetTime() - music_->get_played_time()) * music_->get_pitch();
+        double expected = (GetMixer()->get_time() - music_->get_played_time()) * music_->get_pitch();
         if (expected - time_.stream > 0.1) {
             std::cerr << "..." << std::endl;
         }

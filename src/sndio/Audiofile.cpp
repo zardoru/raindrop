@@ -243,7 +243,7 @@ AudioSample::AudioSample(IMixer* owner_mixer) : AudioSample()
 {
     m_owner_mixer_ = owner_mixer;
     if (m_owner_mixer_)
-        m_owner_mixer_->AddSample(this);
+        m_owner_mixer_->add_sample(this);
 }
 
 AudioSample::AudioSample(const AudioSample& Other)
@@ -261,7 +261,7 @@ AudioSample::AudioSample(const AudioSample& Other)
     channels_ = Other.channels_;
     m_is_playing_ = false;
     if (m_owner_mixer_)
-        m_owner_mixer_->AddSample(this);
+        m_owner_mixer_->add_sample(this);
 }
 
 AudioSample::AudioSample(AudioSample&& Other)
@@ -284,13 +284,13 @@ AudioSample::AudioSample(AudioSample&& Other)
     channels_ = Other.channels_;
     m_is_playing_ = false;
     if (m_owner_mixer_)
-        m_owner_mixer_->AddSample(this);
+        m_owner_mixer_->add_sample(this);
 }
 
 AudioSample::~AudioSample()
 {
     if (m_owner_mixer_)
-        m_owner_mixer_->RemoveSample(this);
+        m_owner_mixer_->remove_sample(this);
 }
 
 void AudioSample::seek(const size_t offs)
@@ -335,7 +335,7 @@ bool AudioSample::inner_load(AudioDataSource *Src) {
 
     double rate = m_rate_;
     if (m_owner_mixer_)
-        rate = m_owner_mixer_->GetRate();
+        rate = m_owner_mixer_->get_rate();
 
     if (m_rate_ != rate || m_pitch_ != 1)
     {
@@ -587,7 +587,7 @@ AudioStream::AudioStream()
 AudioStream::~AudioStream()
 {
     if (m_owner_mixer_)
-        m_owner_mixer_->RemoveStream(this);
+        m_owner_mixer_->remove_stream(this);
 }
 
 uint32_t AudioStream::read(float* buffer, const size_t count)
@@ -612,7 +612,7 @@ uint32_t AudioStream::read(float* buffer, const size_t count)
         requested_samples_to_read -= padding_len;
 
         if (m_owner_mixer_) {
-            auto rate_ratio = double (get_rate()) / double (m_owner_mixer_->GetRate());
+            auto rate_ratio = double (get_rate()) / double (m_owner_mixer_->get_rate());
             auto len = padding_len / 2 * rate_ratio;
             m_read_frames_ += len;
         } else
@@ -671,7 +671,7 @@ bool AudioStream::open(const std::filesystem::path filename)
         channels_ = m_source_->get_channels();
 
         double dst_rate = m_source_->get_rate();
-        if (m_owner_mixer_) dst_rate = m_owner_mixer_->GetRate();
+        if (m_owner_mixer_) dst_rate = m_owner_mixer_->get_rate();
 
         SdlResampler::Config cfg{};
         cfg.input_channels = channels_;
@@ -777,7 +777,7 @@ uint32_t AudioStream::update_decoder()
 uint32_t AudioStream::get_rate() const
 {
     if (m_owner_mixer_)
-        return m_owner_mixer_->GetRate();
+        return m_owner_mixer_->get_rate();
 
     return m_source_->get_rate();
 }
@@ -839,5 +839,5 @@ bool AudioStream::is_valid() const
 
 AudioStream::AudioStream(IMixer *owner_mixer) : AudioStream() {
     m_owner_mixer_ = owner_mixer;
-    m_owner_mixer_->AddStream(this);
+    m_owner_mixer_->add_stream(this);
 }

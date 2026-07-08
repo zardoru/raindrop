@@ -71,9 +71,9 @@ class Noteskin {
 public:
     Noteskin(PlayerContext *parent);
 
-    void Validate();
+    void validate();
 
-    void SetupNoteskin(bool SpecialStyle, int Lanes);
+    void init_noteskin(bool special_style, int lanes);
 
     void update(float Delta, float CurrentBeat);
 
@@ -101,5 +101,5 @@ public:
 
     bool ShouldDecreaseHoldSizeWhenBeingHit() const;
 
-    int GetChannels() const;
+    int get_channels() const;
 };
