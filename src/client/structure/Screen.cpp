@@ -12,45 +12,44 @@
 #include "SceneEnvironment.h"
 #include "Screen.h"
 
-Screen::Screen(std::string Name, bool InitUI)
-{
-    Parent = nullptr;
+Screen::Screen(const std::string &name, bool init_ui) : transition_time_(0), exit_duration_(0) {
+    parent_ = nullptr;
     is_active_ = false;
-    Next = nullptr;
-    ScreenTime = 0;
-    IntroDuration = 0;
-    ScreenState = StateRunning;
-    scene_ = std::make_shared<SceneEnvironment>(Name.c_str(), InitUI);
-    SkipThisFrame = true;
+    next_screen_ = nullptr;
+    screen_time_ = 0;
+    intro_duration_ = 0;
+    screen_state_ = StateRunning;
+    scene_ = std::make_shared<SceneEnvironment>(name.c_str(), init_ui);
+    skip_this_frame_ = true;
 }
 
-Screen::Screen(std::string Name, std::shared_ptr<Screen> _Parent)
+Screen::Screen(const std::string &name, const std::shared_ptr<Screen> &parent)
 {
-    Parent = _Parent;
+    parent_ = parent;
     is_active_ = false;
-    Next = 0;
-    ScreenTime = 0;
-    IntroDuration = 0;
-    ScreenState = StateRunning;
-    scene_ = std::make_shared<SceneEnvironment>(Name.c_str());
-    SkipThisFrame = true;
+    next_screen_ = 0;
+    screen_time_ = 0;
+    intro_duration_ = 0;
+    screen_state_ = StateRunning;
+    scene_ = std::make_shared<SceneEnvironment>(name.c_str());
+    skip_this_frame_ = true;
 }
 
 Screen::~Screen() {}
 
 bool Screen::on_text_input(int codepoint)
 {
-    if (Next)
-        return Next->on_text_input(codepoint);
+    if (next_screen_)
+        return next_screen_->on_text_input(codepoint);
     return scene_->handle_text_input(codepoint);
 }
 
-void Screen::Close()
+void Screen::close()
 {
     cleanup();
     is_active_ = false;
-    if (Next)
-        Next->Close();
+    if (next_screen_)
+        next_screen_->close();
 }
 
 void Screen::load_resources()
@@ -63,43 +62,42 @@ void Screen::post_load_initialization()
     // virtual
 }
 
-void Screen::ChangeState(Screen::EScreenState NewState)
+void Screen::change_state(Screen::EScreenState new_state)
 {
-    ScreenState = NewState;
+    screen_state_ = new_state;
 
-    switch (NewState)
+    switch (new_state)
     {
     case StateIntro:
-        OnIntroBegin();
+        on_intro_begin();
         break;
     case StateExit:
-        OnExitBegin();
+        on_exit_begin();
         break;
     default:
         break;
     }
 
-    TransitionTime = 0;
-    SkipThisFrame = true;
+    transition_time_ = 0;
+    skip_this_frame_ = true;
 }
 
-bool Screen::IsScreenRunning()
-{
+bool Screen::is_screen_running() const {
     return is_active_;
 }
 
-bool Screen::RunNested(float delta)
+bool Screen::run_nested(float delta)
 {
-    if (!Next)
+    if (!next_screen_)
         return false;
 
-    if (Next->update(delta))
+    if (next_screen_->update(delta))
         return true;
     else // The screen's done?
     {
         // It's not null- so we'll delete it.
-        Next->cleanup();
-        Next = nullptr;
+        next_screen_->cleanup();
+        next_screen_ = nullptr;
         return false;
     }
 
@@ -107,138 +105,137 @@ bool Screen::RunNested(float delta)
     return false;
 }
 
-Screen* Screen::GetTop()
+Screen* Screen::get_top()
 {
-    if (Next) return Next->GetTop();
+    if (next_screen_) return next_screen_->get_top();
     else return this;
 }
 
-void Screen::StartTransition(std::shared_ptr<Screen> scr)
+void Screen::start_transition(std::shared_ptr<Screen> scr)
 {
-	Next = scr;
+	next_screen_ = scr;
 }
 
-double Screen::GetScreenTime()
-{
-    return ScreenTime;
+double Screen::get_screen_time() const {
+    return screen_time_;
 }
 
 bool Screen::update(float delta)
 {
-    ScreenTime += delta;
+    screen_time_ += delta;
 
-    if (SkipThisFrame)
+    if (skip_this_frame_)
     {
-        SkipThisFrame = false;
+        skip_this_frame_ = false;
         return true;
     }
 
-    if (ScreenState == StateIntro)
+    if (screen_state_ == StateIntro)
     {
-        float Frac;
-        TransitionTime += delta;
+        float frac;
+        transition_time_ += delta;
 
-        if (TransitionTime < IntroDuration)
-            Frac = clamp(TransitionTime / IntroDuration, 0.0, 1.0);
+        if (transition_time_ < intro_duration_)
+            frac = clamp(transition_time_ / intro_duration_, 0.0, 1.0);
         else
         {
-            Frac = 1;
-            ScreenState = StateRunning;
+            frac = 1;
+            screen_state_ = StateRunning;
         }
 
-        return RunIntro(Frac, delta);
+        return run_intro(frac, delta);
     }
-    else if (ScreenState == StateExit)
+    else if (screen_state_ == StateExit)
     {
-        float Frac;
+        float frac;
 
-        TransitionTime += delta;
-        if (TransitionTime < ExitDuration)
-            Frac = clamp(TransitionTime / ExitDuration, 0.0, 1.0);
+        transition_time_ += delta;
+        if (transition_time_ < exit_duration_)
+            frac = clamp(transition_time_ / exit_duration_, 0.0, 1.0);
         else
         {
-            Frac = 1;
-            ScreenState = StateRunning;
+            frac = 1;
+            screen_state_ = StateRunning;
         }
 
         /*
             StateExit can still go back to the "StateRunning" state
             This way it can be used for transitions.
         */
-        return RunExit(Frac, delta);
+        return run_exit(frac, delta);
     }
     else
-        return Run(delta);
+        return run(delta);
 }
 
-void Screen::Init()
+void Screen::init()
 {
     load_resources();
     post_load_initialization();
 }
 
-bool Screen::RunIntro(float Fraction, float Delta)
+bool Screen::run_intro(const float fraction, const float delta)
 {
-    scene_->RunIntro(Fraction, Delta);
+    scene_->RunIntro(fraction, delta);
 
-    if (Fraction == 1)
-        OnIntroEnd();
+    if (fraction == 1)
+        on_intro_end();
 
     return is_active_;
 }
 
-bool Screen::RunExit(float Fraction, float Delta)
+bool Screen::run_exit(const float fraction, const float delta)
 {
-    scene_->RunExit(Fraction, Delta);
+    scene_->RunExit(fraction, delta);
 
-    if (Fraction == 1)
-        OnExitEnd();
+    if (fraction == 1)
+        on_exit_end();
 
     return is_active_;
 }
 bool Screen::on_input(int32_t key, bool isPressed, bool isMouseInput)
 {
-    if (Next && Next->IsScreenRunning())
-        return Next->on_input(key, isPressed, isMouseInput);
+    if (next_screen_ && next_screen_->is_screen_running())
+        return next_screen_->on_input(key, isPressed, isMouseInput);
 
     return false;
 }
 
 bool Screen::on_scroll_input(double xOff, double yOff)
 {
-    if (Next && Next->IsScreenRunning())
-        return Next->on_scroll_input(xOff, yOff);
+    if (next_screen_ && next_screen_->is_screen_running())
+        return next_screen_->on_scroll_input(xOff, yOff);
 
     return false;
 }
-void Screen::OnIntroBegin()
+void Screen::on_intro_begin()
 {
     scene_->trigger_event("OnIntroBegin");
 }
 
-void Screen::OnIntroEnd()
+void Screen::on_intro_end()
 {
     scene_->trigger_event("OnIntroEnd");
 }
 
-void Screen::OnExitBegin()
+void Screen::on_exit_begin()
 {
     scene_->trigger_event("OnExitBegin");
 }
 
-void Screen::OnExitEnd()
+void Screen::on_exit_end()
 {
     scene_->trigger_event("OnExitEnd");
 
-	if (!Next)
-		Next = GameState::get_instance().get_next_screen();
+	if (!next_screen_)
+		next_screen_ = GameState::get_instance().get_next_screen();
 }
 
-void Screen::OnRunningBegin()
+void Screen::on_running_begin()
 {
     scene_->trigger_event("OnRunningBegin");
 }
 
 void Screen::cleanup() { /* stub */ }
 
-void Screen::Invalidate() { /* stub */ }
+void Screen::invalidate() { /* stub */ }

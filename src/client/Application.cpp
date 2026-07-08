@@ -252,7 +252,7 @@ void Application::setup_preview_mode()
 
 	GameState::get_instance().get_parameters(0)->Auto = Auto;
     game->initialize(chart_group);
-    LoadScreen->Init();
+    LoadScreen->init();
 
     root = LoadScreen;
 }
@@ -265,14 +265,14 @@ bool Application::poll_ipc()
     case IPC::Message::MSG_STARTFROMMEASURE:
         measure_ = msg.param;
         InFile = std::string(msg.Path);
-        root->Close();
+        root->close();
 		root = nullptr;
 
         setup_preview_mode();
 
         return true;
     case IPC::Message::MSG_STOP:
-        root->Close();
+        root->close();
         return true;
     case IPC::Message::MSG_NULL:
     default:
@@ -292,7 +292,7 @@ void Application::run()
     if (mode == MODE_PLAY)
     {
         const auto scr = std::make_shared<ScreenMainMenu>();
-        scr->Init();
+        scr->init();
         root = scr;
     }
     else if (mode == MODE_VSRGPREVIEW)
@@ -364,7 +364,7 @@ void Application::run()
 	GameState::get_instance().set_root_screen(root);
 
     oldTime = window.get_current_time();
-    while (root->IsScreenRunning() && !window.should_close_window())
+    while (root->is_screen_running() && !window.should_close_window())
     {
         const double new_time = window.get_current_time();
         const double delta = new_time - oldTime;

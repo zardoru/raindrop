@@ -121,19 +121,19 @@ void GameState::start_screen_transition(std::string target) const
 		if (res.size() == 2)
 		{
 			const auto scr = std::make_shared<ScreenCustom>(res[1]);
-			RootScreen->GetTop()->StartTransition(scr);
+			RootScreen->get_top()->start_transition(scr);
 		}
 	}
 	else if (target == "songselect") {
 		const auto scr = std::make_shared<ScreenSelectMusic>();
-		scr->Init();
-		RootScreen->GetTop()->StartTransition(scr);
+		scr->init();
+		RootScreen->get_top()->start_transition(scr);
 	}
 }
 
 void GameState::exit_current_screen() const
 {
-	RootScreen->GetTop()->Close();
+	RootScreen->get_top()->close();
 }
 
 std::filesystem::path GameState::get_skin_file(const std::string &Name, const std::string &Skin)

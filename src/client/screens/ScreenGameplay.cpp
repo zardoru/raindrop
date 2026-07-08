@@ -268,7 +268,7 @@ void ScreenGameplay::evaluate_stage_failure() {
     if (trigger_eval) {
         const auto screen_evaluation = std::make_shared<ScreenEvaluation>();
         screen_evaluation->Init(this);
-        Next = screen_evaluation;
+        next_screen_ = screen_evaluation;
     }
 }
 
@@ -391,9 +391,9 @@ void ScreenGameplay::on_player_gear_key_event(uint32_t lane, bool keydown, int p
     scene_->call_callback("GearKeyEvent", static_cast<int>(lane) + 1, keydown, pn);
 }
 
-bool ScreenGameplay::Run(double Delta) {
-    if (Next)
-        return RunNested(Delta);
+bool ScreenGameplay::run(double Delta) {
+    if (next_screen_)
+        return run_nested(Delta);
 
     if (!load_successful_)
         return false;
@@ -425,7 +425,7 @@ bool ScreenGameplay::Run(double Delta) {
     render();
 
     if (Delta > 0.1)
-        Log::Logf("ScreenGameplay7K: Delay@[ST%.03f/RST:%.03f] = %f\n", GetScreenTime(), time_.game, Delta);
+        Log::Logf("ScreenGameplay7K: Delay@[ST%.03f/RST:%.03f] = %f\n", get_screen_time(), time_.game, Delta);
 
     return is_active_;
 }

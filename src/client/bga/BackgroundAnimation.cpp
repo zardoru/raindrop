@@ -208,8 +208,8 @@ public:
 			if (IsVideoPath(path))
 			{
 				auto vid = new VideoPlayback();
-				if (vid->Open(path)) {
-					vid->StartDecodeThread();
+				if (vid->open(path)) {
+					vid->start_decode_thread();
 					List.AddToListIndex(vid, v.first);
 					Videos[v.first] = vid;
 					MaxWidth = std::max(MaxWidth, vid->w);
@@ -285,7 +285,7 @@ public:
 
 			auto tex = List.GetFromIndex(bmp->BMP);
             if (const auto vid = dynamic_cast<VideoPlayback*>(tex)) {
-				vid->UpdateClock(time - bmp->Time);
+				vid->update_clock(time - bmp->Time);
 			}
 
             sprite->set_image(tex, false);

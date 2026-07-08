@@ -38,10 +38,10 @@ void ScreenEvaluation::Init(ScreenGameplay *pr) {
     pr->setup_scripts(scene_->get_script_manager());
     scene_->initialize(GameState::get_instance().get_skin_file("screenevaluation7k.lua"));
 
-    IntroDuration = scene_->get_intro_duration();
-    ExitDuration = scene_->get_exit_duration();
+    intro_duration_ = scene_->get_intro_duration();
+    exit_duration_ = scene_->get_exit_duration();
 
-    ChangeState(StateIntro);
+    change_state(StateIntro);
 
     // PrintCLIResults(Result);
 }
@@ -57,7 +57,7 @@ bool ScreenEvaluation::on_input(int32_t key, bool isPressed, bool isMouseInput) 
 void ScreenEvaluation::cleanup() {
 }
 
-bool ScreenEvaluation::Run(double Delta) {
+bool ScreenEvaluation::run(double Delta) {
     scene_->draw_targets(Delta);
     return is_active_;
 }

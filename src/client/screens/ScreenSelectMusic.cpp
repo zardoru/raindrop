@@ -81,7 +81,7 @@ void SetupWheelLua(LuaManager *Man) {
 
 
 ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic") {
-    PreviewStream = nullptr;
+    preview_stream_ = nullptr;
 
     previous_preview = nullptr;
     to_preview = nullptr;
@@ -137,16 +137,16 @@ ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic") {
                         std::forward<decltype(PH5)>(PH5));
     };
 
-    SelectSnd = std::make_unique<AudioSample>();
-    SelectSnd->open(Configuration::GetSkinSound("SongSelectDecision"));
+    select_snd_ = std::make_unique<AudioSample>();
+    select_snd_->open(Configuration::GetSkinSound("SongSelectDecision"));
 
-    ClickSnd = std::make_unique<AudioSample>();
-    ClickSnd->open(Configuration::GetSkinSound("SongSelectHover"));
+    click_snd_ = std::make_unique<AudioSample>();
+    click_snd_->open(Configuration::GetSkinSound("SongSelectHover"));
 
     // rd::dotcur::GameObject::GlobalInit();
 
-    IsTransitioning = false;
-    TransitionTime = 0;
+    is_transitioning_ = false;
+    transition_time_ = 0;
 }
 
 void ScreenSelectMusic::post_load_initialization() {
@@ -160,17 +160,17 @@ void ScreenSelectMusic::post_load_initialization() {
 void ScreenSelectMusic::load_resources() {
     is_active_ = true;
 
-    SwitchBackGuiPending = true;
+    switch_back_gui_pending_ = true;
 
     SetupWheelLua(scene_->get_script_manager());
     scene_->preload(GameState::get_instance().get_skin_file("screenselectmusic.lua"), "Preload");
 
-    Time = 0;
+    time_ = 0;
 }
 
 void ScreenSelectMusic::cleanup() {
-    if (PreviewStream)
-        PreviewStream = nullptr;
+    if (preview_stream_)
+        preview_stream_ = nullptr;
 
     stop_loops();
 
@@ -209,23 +209,23 @@ void ScreenSelectMusic::start_gameplay_screen() {
 
     const auto load_next = std::make_shared<ScreenLoading>(screen_gameplay);
 
-    load_next->Init();
-    Next = load_next;
+    load_next->init();
+    next_screen_ = load_next;
 }
 
 void ScreenSelectMusic::on_song_select(std::shared_ptr<otoworm::ChartGroup> chart_group, uint8_t difindex) {
     // Handle a recently selected song
 
-    if (IsTransitioning)
+    if (is_transitioning_)
         return;
 
     if (!chart_group || difindex > chart_group->get_chart_count()) return;
 
-    if (PreviewStream) PreviewStream->stop();
+    if (preview_stream_) preview_stream_->stop();
 
-    IsTransitioning = true;
+    is_transitioning_ = true;
 
-    SelectSnd->play();
+    select_snd_->play();
 
     stop_loops();
 
@@ -234,17 +234,17 @@ void ScreenSelectMusic::on_song_select(std::shared_ptr<otoworm::ChartGroup> char
         GameState::get_instance().set_chart(chart_group->charts[difindex], 0);
 
     scene_->trigger_event("OnSelect", 1);
-    TransitionTime = scene_->get_script_manager()->get_stack_f();
+    transition_time_ = scene_->get_script_manager()->get_stack_f();
 
-    SwitchBackGuiPending = true;
+    switch_back_gui_pending_ = true;
 }
 
 void ScreenSelectMusic::on_song_change(std::shared_ptr<otoworm::ChartGroup> chart_group, uint8_t difindex) {
-    ClickSnd->play();
+    click_snd_->play();
 
     if (chart_group) {
         scene_->trigger_event("OnSongChange");
-        PreviewWaitTime = 1;
+        preview_wait_time_ = 1;
     }
 
     to_preview = chart_group;
@@ -257,17 +257,17 @@ void ScreenSelectMusic::play_preview() {
     std::string preview_file;
 
     if (to_preview == nullptr) {
-        if (PreviewStream != nullptr)
-            PreviewStream->stop();
+        if (preview_stream_ != nullptr)
+            preview_stream_->stop();
         return;
     }
 
     DB->GetPreviewInfo(to_preview->id, preview_file, start_time);
 
     if (preview_file.length() > 0) {
-        if (PreviewStream) {
-            PreviewStream->stop();
-            PreviewStream = nullptr;
+        if (preview_stream_) {
+            preview_stream_->stop();
+            preview_stream_ = nullptr;
         }
 
         auto preview_path = to_preview->path / preview_file;
@@ -282,17 +282,17 @@ void ScreenSelectMusic::play_preview() {
 
         // Load preview
         if (std::filesystem::exists(preview_path)) {
-            PreviewStream = std::make_shared<AudioStream>(GetMixer());
-            if (PreviewStream->open(preview_path)) {
-                PreviewStream->play();
-                PreviewStream->seek_time(start_time);
-                PreviewStream->set_loop(true);
+            preview_stream_ = std::make_shared<AudioStream>(GetMixer());
+            if (preview_stream_->open(preview_path)) {
+                preview_stream_->play();
+                preview_stream_->seek_time(start_time);
+                preview_stream_->set_loop(true);
             }
         }
     } else {
-        if (PreviewStream) {
-            PreviewStream->stop();
-            PreviewStream = nullptr;
+        if (preview_stream_) {
+            preview_stream_->stop();
+            preview_stream_ = nullptr;
         }
     }
 
@@ -300,71 +300,71 @@ void ScreenSelectMusic::play_preview() {
 }
 
 void ScreenSelectMusic::play_loops() {
-    if (!BGM) {
+    if (!bgm_) {
         auto fn = Configuration::GetSkinSound("SongSelectBGM");
-        BGM = std::make_unique<AudioStream>(GetMixer());
+        bgm_ = std::make_unique<AudioStream>(GetMixer());
 
         if (std::filesystem::exists(fn) &&
             std::filesystem::is_regular_file(fn)) {
             auto s = fn.string();
-            auto IsLoop = false;
+            auto is_loop = false;
             otoworm::util::to_lower(s);
 
             if (s.find_first_of("loop") != std::string::npos)
-                IsLoop = true;
+                is_loop = true;
 
-            if (BGM->open(fn)) {
-                BGM->set_loop(IsLoop);
-                BGM->play();
+            if (bgm_->open(fn)) {
+                bgm_->set_loop(is_loop);
+                bgm_->play();
             }
         }
     }
 }
 
-bool ScreenSelectMusic::Run(double Delta) {
-    if (IsTransitioning) {
-        if (PreviewStream && PreviewStream->is_playing())
-            PreviewStream->stop();
+bool ScreenSelectMusic::run(const double delta) {
+    if (is_transitioning_) {
+        if (preview_stream_ && preview_stream_->is_playing())
+            preview_stream_->stop();
 
-        if (TransitionTime < 0) {
-            if (RunNested(Delta))
+        if (transition_time_ < 0) {
+            if (run_nested(delta))
                 return true;
             else {
-                IsTransitioning = false;
+                is_transitioning_ = false;
             }
         } else {
             // We're going to cross the threshold. Fire up the next screen.
-            if (TransitionTime - Delta <= 0)
+            if (transition_time_ - delta <= 0)
                 start_gameplay_screen();
 
-            TransitionTime -= Delta;
+            transition_time_ -= delta;
         }
     } else {
-        if (SwitchBackGuiPending) {
-            SwitchBackGuiPending = false;
+        if (switch_back_gui_pending_) {
+            switch_back_gui_pending_ = false;
             play_loops();
             scene_->trigger_event("OnRestore");
         }
 
-        PreviewWaitTime -= Delta;
-        if (PreviewWaitTime <= 0) {
+        preview_wait_time_ -= delta;
+        if (preview_wait_time_ <= 0) {
             if (previous_preview != to_preview)
                 play_preview();
 
-            if (PreviewStream && PreviewStream->is_playing())
+            if (preview_stream_ && preview_stream_->is_playing())
                 stop_loops();
             else {
-                if (!SwitchBackGuiPending)
+                if (!switch_back_gui_pending_)
                     play_loops();
             }
         }
     }
 
-    Time += Delta;
+    time_ += delta;
 
-    SongWheel::get_instance().update(Delta);
+    SongWheel::get_instance().update(delta);
 
-    scene_->update_targets(Delta);
+    scene_->update_targets(delta);
 
     scene_->draw_until_layer(16);
 
@@ -376,19 +376,19 @@ bool ScreenSelectMusic::Run(double Delta) {
 }
 
 void ScreenSelectMusic::stop_loops() {
-    if (BGM) {
-        BGM->stop();
-        GetMixer()->remove_stream(BGM.get());
-        BGM = nullptr;
+    if (bgm_) {
+        bgm_->stop();
+        GetMixer()->remove_stream(bgm_.get());
+        bgm_ = nullptr;
     }
 }
 
 bool ScreenSelectMusic::on_input(int32_t key, bool isPressed, bool isMouseInput) {
-    if (TransitionTime > 0 && IsTransitioning)
+    if (transition_time_ > 0 && is_transitioning_)
         return true;
 
-    if (Next)
-        return Next->on_input(key, isPressed, isMouseInput);
+    if (next_screen_)
+        return next_screen_->on_input(key, isPressed, isMouseInput);
 
 
     if (SongWheel::get_instance().handle_input(key, isPressed, isMouseInput))
@@ -416,14 +416,14 @@ bool ScreenSelectMusic::on_input(int32_t key, bool isPressed, bool isMouseInput)
 }
 
 bool ScreenSelectMusic::on_scroll_input(double xOff, double yOff) {
-    if (Next) {
-        if (TransitionTime <= 0)
-            return Next->on_scroll_input(xOff, yOff);
+    if (next_screen_) {
+        if (transition_time_ <= 0)
+            return next_screen_->on_scroll_input(xOff, yOff);
         else
             return true;
     }
 
-    if (IsTransitioning) return false;
+    if (is_transitioning_) return false;
 
     scene_->on_scroll_input(xOff, yOff);
     return SongWheel::get_instance().handle_scroll_input(xOff, yOff);

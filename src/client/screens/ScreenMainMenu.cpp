@@ -43,7 +43,7 @@ ScreenMainMenu::ScreenMainMenu() : Screen("ScreenMainMenu", false)
     TNext = nullptr;
 }
 
-void ScreenMainMenu::Init()
+void ScreenMainMenu::init()
 {
     is_active_ = true;
 
@@ -54,10 +54,10 @@ void ScreenMainMenu::Init()
 
     scene_->initialize(GameState::get_instance().get_skin_file("mainmenu.lua"));
 
-    IntroDuration = scene_->get_intro_duration();
-    ExitDuration = scene_->get_intro_duration();
+    intro_duration_ = scene_->get_intro_duration();
+    exit_duration_ = scene_->get_intro_duration();
 
-    ChangeState(StateIntro);
+    change_state(StateIntro);
 
     /*if (!TTFO)
         TTFO = new TruetypeFont(GameState::GetInstance().GetSkinFile("font.ttf"));
@@ -77,9 +77,9 @@ bool ScreenMainMenu::on_scroll_input(double xOff, double yOff)
     return Screen::on_scroll_input(xOff, yOff);
 }
 
-bool ScreenMainMenu::Run(double Delta)
+bool ScreenMainMenu::run(double Delta)
 {
-    if (RunNested(Delta))
+    if (run_nested(Delta))
         return true;
 
     
@@ -95,10 +95,10 @@ bool ScreenMainMenu::Run(double Delta)
     return is_active_;
 }
 
-void ScreenMainMenu::OnExitEnd()
+void ScreenMainMenu::on_exit_end()
 {
-    Screen::OnExitEnd();
-    ChangeState(StateRunning);
+    Screen::on_exit_end();
+    change_state(StateRunning);
     scene_->trigger_event("OnRestore");
 }
 

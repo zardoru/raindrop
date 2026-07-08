@@ -110,6 +110,6 @@ public:
 
     PlayerContext* GetPlayerContext(int i) const;
 
-    bool Run(double Delta) override;
+    bool run(double Delta) override;
     bool on_input(int32_t key, bool isPressed, bool isMouseInput) override;
 };

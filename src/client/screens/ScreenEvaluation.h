@@ -16,7 +16,7 @@ public:
 
     void Init(ScreenGameplay *rs);
 
-    bool Run(double Delta);
+    bool run(double Delta);
 
     void cleanup();
 

@@ -13,17 +13,22 @@ class AudioStream;
 class AudioSample;
 
 class ScreenSelectMusic : public Screen {
-    double Time;
-    double TransitionTime;
-    double PreviewWaitTime;
+    double time_;
+    double transition_time_;
+    double preview_wait_time_;
 
     std::shared_ptr<otoworm::ChartGroup> to_preview;
     std::shared_ptr<otoworm::ChartGroup> previous_preview;
 
-    std::shared_ptr<AudioStream> PreviewStream;
+    std::shared_ptr<AudioStream> preview_stream_;
 
-    bool SwitchBackGuiPending;
-    bool IsTransitioning;
+
+    std::unique_ptr<AudioStream> bgm_;
+    std::unique_ptr<AudioSample> select_snd_;
+    std::unique_ptr<AudioSample> click_snd_;
+
+    bool switch_back_gui_pending_;
+    bool is_transitioning_;
 
     void play_preview();
 
@@ -31,9 +36,6 @@ class ScreenSelectMusic : public Screen {
 
     void stop_loops();
 
-    std::unique_ptr<AudioStream> BGM;
-    std::unique_ptr<AudioSample> SelectSnd;
-    std::unique_ptr<AudioSample> ClickSnd;
 
 
     void start_gameplay_screen();
@@ -69,7 +71,7 @@ public:
 
     void post_load_initialization() override;
 
-    bool Run(double Delta) override;
+    bool run(double delta) override;
 
     void cleanup() override;
 

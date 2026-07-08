@@ -52,49 +52,49 @@ static int readVideoFunction(void* opaque, uint8_t* buf, const int buf_size) {
 class VideoPlaybackData
 {
 public:
-	AVFormatContext *AV;
-	AVCodecParameters *CodecCtx;
-	AVCodecContext *UsableCodecCtx;
-	const AVCodec *Codec;
+	AVFormatContext *av;
+	AVCodecParameters *codec_ctx;
+	AVCodecContext *usable_codec_ctx;
+	const AVCodec *codec;
 
     std::ifstream buf;
     unsigned char* buffer;
-    std::shared_ptr<AVIOContext> avioContext;
+    std::shared_ptr<AVIOContext> avio_context;
 
 
-    VideoFrame DisplayFrame;
+    VideoFrame display_frame;
 	
 	// contains pending AVFrame* to display
-	PaUtilRingBuffer mPendingFrameQueue;
+	PaUtilRingBuffer m_pending_frame_queue;
 
 	// contains AVFrame* available to write to
-	PaUtilRingBuffer mCleanFrameQueue;
+	PaUtilRingBuffer m_frame_pool;
 
-	std::vector<uint8_t> PendingQueueData;
-	std::vector<uint8_t> CleanQueueData;
+	std::vector<uint8_t> pending_queue_data;
+	std::vector<uint8_t> clean_queue_data;
 
-	std::vector<uint8_t> DecodedFrameData;
-	std::vector<uint8_t> FrameData;
+	std::vector<uint8_t> decoded_frame_data;
+	std::vector<uint8_t> frame_data;
 
 	SwsContext *sws_ctx;
 
-	AVFrame* DecodedFrame;
+	AVFrame* decoded_frame;
 
-	int videoStreamIndex;
+	int video_stream_index;
 
 	std::mutex ringbuffer_mutex;
-	std::atomic<bool> CleanFrameAvailable;
+	std::atomic<bool> is_clean_frame_available;
 	std::condition_variable ringbuffer_has_space;
 
 	/*
 	 * answer from https://stackoverflow.com/questions/9604633/reading-a-file-located-in-memory-with-libavformat
 	 * to read from iostreams
 	 * */
-	VideoPlaybackData(std::filesystem::path path) :
-	    AV(avformat_alloc_context()),
+	VideoPlaybackData(const std::filesystem::path &path) :
+	    av(avformat_alloc_context()),
 	    buf(path, std::ios::binary),
 	    buffer((unsigned char*)av_malloc(8192)),
-	    avioContext(avio_alloc_context(
+	    avio_context(avio_alloc_context(
 	            buffer,
 	            4096, 0,
 	            reinterpret_cast<void*>(static_cast<std::istream*>(&buf)),
@@ -103,47 +103,47 @@ public:
 	            nullptr),
                  av_free
          ){
-		CodecCtx = nullptr;
-		Codec = nullptr;
+		codec_ctx = nullptr;
+		codec = nullptr;
 		sws_ctx = nullptr;
 
-        AV->pb = avioContext.get();
-        AV->flags |= AVFMT_FLAG_CUSTOM_IO;
+        av->pb = avio_context.get();
+        av->flags |= AVFMT_FLAG_CUSTOM_IO;
 	}
 
-	VideoFrame GetCleanFrame()
+	VideoFrame alloc_frame()
 	{
 		VideoFrame ret;
-		if (PaUtil_GetRingBufferReadAvailable(&mCleanFrameQueue)) {
-			PaUtil_ReadRingBuffer(&mCleanFrameQueue, &ret, 1);
+		if (PaUtil_GetRingBufferReadAvailable(&m_frame_pool)) {
+			PaUtil_ReadRingBuffer(&m_frame_pool, &ret, 1);
 			return ret;
 		}
 		else
 			return VideoFrame();
 	}
 
-	VideoFrame GetPendingFrame()
+	VideoFrame get_decoded_frame()
 	{
 		VideoFrame ret;
-		if (PaUtil_GetRingBufferReadAvailable(&mPendingFrameQueue)) {
-			PaUtil_ReadRingBuffer(&mPendingFrameQueue, &ret, 1);
+		if (PaUtil_GetRingBufferReadAvailable(&m_pending_frame_queue)) {
+			PaUtil_ReadRingBuffer(&m_pending_frame_queue, &ret, 1);
 			return ret;
 		}
 		else
 			return VideoFrame();
 	}
 
-	void PutPendingFrame(const VideoFrame frame)
+	void put_decoded_frame(const VideoFrame frame)
 	{
-		if (PaUtil_GetRingBufferWriteAvailable(&mPendingFrameQueue)) {
-			PaUtil_WriteRingBuffer(&mPendingFrameQueue, &frame, 1);
+		if (PaUtil_GetRingBufferWriteAvailable(&m_pending_frame_queue)) {
+			PaUtil_WriteRingBuffer(&m_pending_frame_queue, &frame, 1);
 		}
 	}
 
-	void PutCleanFrame(const VideoFrame frame)
+	void put_clean_frame(const VideoFrame frame)
 	{
-		if (PaUtil_GetRingBufferWriteAvailable(&mCleanFrameQueue)) {
-			PaUtil_WriteRingBuffer(&mCleanFrameQueue, &frame, 1);
+		if (PaUtil_GetRingBufferWriteAvailable(&m_frame_pool)) {
+			PaUtil_WriteRingBuffer(&m_frame_pool, &frame, 1);
 		}
 	}
 
@@ -151,71 +151,70 @@ public:
 
         // fuck it, leak it
         // avformat_free_context(AV);
-        avformat_close_input(&AV);
-        avioContext = nullptr;
+        avformat_close_input(&av);
+        avio_context = nullptr;
         // av_free(buffer);
 
 
-		av_frame_free(&DisplayFrame.frame);
+		av_frame_free(&display_frame.frame);
 		
 		AVFrame* f;
-		while ((f = GetCleanFrame().frame)) {
+		while ((f = alloc_frame().frame)) {
 			av_frame_free(&f);
 		}
 
-		while ((f = GetPendingFrame().frame)) {
+		while ((f = get_decoded_frame().frame)) {
 			av_frame_free(&f);
 		}
 
 
 
-		avcodec_free_context(&UsableCodecCtx);
+		avcodec_free_context(&usable_codec_ctx);
 		//avcodec_free_context(&CodecCtx);
 		//avcodec_free_context(&Codec);
 		sws_freeContext(sws_ctx);
 	}
 
-	void InitializeBuffers(const uint32_t framecnt, const int w, const int h) {
+	void initialize_buffers(const uint32_t framecnt, const int w, const int h) {
 		// framecnt += 1;
 
-		auto mem = sizeof(VideoFrame) * framecnt;
-		CleanQueueData.assign(mem, 0);
-		PendingQueueData.assign(mem, 0);
+		const auto mem = sizeof(VideoFrame) * framecnt;
+		clean_queue_data.assign(mem, 0);
+		pending_queue_data.assign(mem, 0);
 
-		PaUtil_InitializeRingBuffer(&mPendingFrameQueue, sizeof(VideoFrame), framecnt, PendingQueueData.data());
-		PaUtil_InitializeRingBuffer(&mCleanFrameQueue, sizeof(VideoFrame), framecnt, CleanQueueData.data());
+		PaUtil_InitializeRingBuffer(&m_pending_frame_queue, sizeof(VideoFrame), framecnt, pending_queue_data.data());
+		PaUtil_InitializeRingBuffer(&m_frame_pool, sizeof(VideoFrame), framecnt, clean_queue_data.data());
 
-		auto frame_size = av_image_get_buffer_size(AV_PIX_FMT_RGB24, w, h, 1) + AV_INPUT_BUFFER_PADDING_SIZE;
+		const auto frame_size = av_image_get_buffer_size(AV_PIX_FMT_RGB24, w, h, 1) + AV_INPUT_BUFFER_PADDING_SIZE;
 
-		FrameData.assign(frame_size * framecnt, 0);
+		frame_data.assign(frame_size * framecnt, 0);
 
 		for (uint32_t i = 0; i < framecnt; i++)
 		{
-			auto avframe = av_frame_alloc();
-			auto *frame_data = (uint8_t*)(FrameData.data() + i * frame_size);
-			av_image_fill_arrays(avframe->data, avframe->linesize, frame_data, AV_PIX_FMT_RGB24, w, h, 1);
+			const auto avframe = av_frame_alloc();
+			const auto *frame_datad = (uint8_t*)(frame_data.data() + i * frame_size);
+			av_image_fill_arrays(avframe->data, avframe->linesize, frame_datad, AV_PIX_FMT_RGB24, w, h, 1);
 
 			VideoFrame vf;
 			vf.frame = avframe;
-			PaUtil_WriteRingBuffer(&mCleanFrameQueue, &vf, 1);
+			PaUtil_WriteRingBuffer(&m_frame_pool, &vf, 1);
 		}
 	}
 };
 
 
-void VideoPlayback::QueueFrame()
-{
-	if (!(PaUtil_GetRingBufferReadAvailable(&Context->mCleanFrameQueue) > 0 &&
-		PaUtil_GetRingBufferWriteAvailable(&Context->mPendingFrameQueue) > 0)) {
+void VideoPlayback::decode_next_frame() const {
+	if (!(PaUtil_GetRingBufferReadAvailable(&context_->m_frame_pool) > 0 &&
+		PaUtil_GetRingBufferWriteAvailable(&context_->m_pending_frame_queue) > 0)) {
 		return;
 	}
 
 	AVPacket packet;
-	while (av_read_frame(Context->AV, &packet) >= 0) {
+	while (av_read_frame(context_->av, &packet) >= 0) {
 		bool got_frame = false;
 
-		if (packet.stream_index == Context->videoStreamIndex) {
-			auto res = avcodec_send_packet(Context->UsableCodecCtx, &packet);
+		if (packet.stream_index == context_->video_stream_index) {
+			auto res = avcodec_send_packet(context_->usable_codec_ctx, &packet);
 			if (res < 0)
 			{
 				// what CAN we do?
@@ -224,23 +223,23 @@ void VideoPlayback::QueueFrame()
 			}
 
 			if (res >= 0) {
-				res = avcodec_receive_frame(Context->UsableCodecCtx, Context->DecodedFrame);
+				res = avcodec_receive_frame(context_->usable_codec_ctx, context_->decoded_frame);
 
-				auto cf = Context->GetCleanFrame();
+				auto cf = context_->alloc_frame();
 
 				sws_scale(
-					Context->sws_ctx,
-					(uint8_t const* const*)Context->DecodedFrame->data,
-					Context->DecodedFrame->linesize,
+					context_->sws_ctx,
+					(uint8_t const* const*)context_->decoded_frame->data,
+					context_->decoded_frame->linesize,
 					0,
-					Context->UsableCodecCtx->height,
+					context_->usable_codec_ctx->height,
 					cf.frame->data,
 					cf.frame->linesize
 				);
 
-				cf.pts = Context->DecodedFrame->best_effort_timestamp *
-					av_q2d(Context->AV->streams[Context->videoStreamIndex]->time_base);
-				Context->PutPendingFrame(std::move(cf));
+				cf.pts = context_->decoded_frame->best_effort_timestamp *
+					av_q2d(context_->av->streams[context_->video_stream_index]->time_base);
+				context_->put_decoded_frame(std::move(cf));
 				got_frame = true;
 			}
 		}
@@ -254,100 +253,100 @@ void VideoPlayback::QueueFrame()
 
 VideoPlayback::VideoPlayback(const uint32_t framequeueitems)
 {
-	mFrameQueueItems = framequeueitems;
-	Context = nullptr;
-	mDecodeThread = nullptr;
+	m_frame_queue_items_ = framequeueitems;
+	context_ = nullptr;
+	m_decode_thread_ = nullptr;
 }
 
 VideoPlayback::~VideoPlayback()
 {
-	if (mDecodeThread) {
-		RunDecodeThread = false;
+	if (m_decode_thread_) {
+		run_decode_thread_ = false;
 
-		mDecodeThread->join();
+		m_decode_thread_->join();
 	}
 
-	delete Context;
+	delete context_;
 }
 
-bool VideoPlayback::Open(std::filesystem::path path)
+bool VideoPlayback::open(const std::filesystem::path &path)
 {
-	auto newctx = new VideoPlaybackData(path);
+	const auto newctx = new VideoPlaybackData(path);
 
-	if (avformat_open_input(&newctx->AV, "dummy", nullptr, nullptr) < 0) {
+	if (avformat_open_input(&newctx->av, "dummy", nullptr, nullptr) < 0) {
 		delete newctx;
 		return false;
 	}
 
-	if (avformat_find_stream_info(newctx->AV, nullptr) < 0) {
+	if (avformat_find_stream_info(newctx->av, nullptr) < 0) {
 		delete newctx;
 		return false;
 	}
 
 	// Find the first video stream
-	for (size_t i = 0; i < newctx->AV->nb_streams; i++)
+	for (size_t i = 0; i < newctx->av->nb_streams; i++)
 	{
-		if (newctx->AV->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
-			newctx->videoStreamIndex = i;
-			newctx->CodecCtx = newctx->AV->streams[i]->codecpar;
+		if (newctx->av->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
+			newctx->video_stream_index = i;
+			newctx->codec_ctx = newctx->av->streams[i]->codecpar;
 			break;
 		}
 	}
 
-	if (!newctx->CodecCtx) {
+	if (!newctx->codec_ctx) {
 		delete newctx;
 		return false; // Didn't find a video stream
 	}
 
 	// decoder find...
-	newctx->Codec = avcodec_find_decoder(newctx->CodecCtx->codec_id);
-	if (!newctx->Codec) {
+	newctx->codec = avcodec_find_decoder(newctx->codec_ctx->codec_id);
+	if (!newctx->codec) {
 		delete newctx;
 		return false;
 	}
 
 	// context copy
-	newctx->UsableCodecCtx = avcodec_alloc_context3(newctx->Codec);
-	if (avcodec_parameters_to_context(newctx->UsableCodecCtx, newctx->CodecCtx) != 0) {
+	newctx->usable_codec_ctx = avcodec_alloc_context3(newctx->codec);
+	if (avcodec_parameters_to_context(newctx->usable_codec_ctx, newctx->codec_ctx) != 0) {
 		delete newctx;
 		return false;
 	}
 
-	if (newctx->UsableCodecCtx->pix_fmt == AV_PIX_FMT_NONE) {
+	if (newctx->usable_codec_ctx->pix_fmt == AV_PIX_FMT_NONE) {
 		delete newctx;
 		return false;
 	}
 
 	// open context?
-	if (avcodec_open2(newctx->UsableCodecCtx, newctx->Codec, nullptr) < 0) {
+	if (avcodec_open2(newctx->usable_codec_ctx, newctx->codec, nullptr) < 0) {
 		delete newctx;
 		return false;
 	}
 
-	newctx->InitializeBuffers(mFrameQueueItems, newctx->UsableCodecCtx->width, newctx->UsableCodecCtx->height);
+	newctx->initialize_buffers(m_frame_queue_items_, newctx->usable_codec_ctx->width, newctx->usable_codec_ctx->height);
 
 	/*Log::Printf("Video delay (frames): %d\n", newctx->UsableCodecCtx->delay);
 	av_seek_frame(newctx->AV, newctx->videoStreamIndex, newctx->UsableCodecCtx->delay * 2, 0);*/
 
-	auto f = av_image_get_buffer_size(
-		newctx->UsableCodecCtx->pix_fmt,
-		newctx->UsableCodecCtx->width,
-		newctx->UsableCodecCtx->height,
+	const auto f = av_image_get_buffer_size(
+		newctx->usable_codec_ctx->pix_fmt,
+		newctx->usable_codec_ctx->width,
+		newctx->usable_codec_ctx->height,
 		1) + AV_INPUT_BUFFER_PADDING_SIZE;
-	newctx->DecodedFrameData.assign(f, 0);
+	newctx->decoded_frame_data.assign(f, 0);
 
-	auto ucc = newctx->UsableCodecCtx;
+	const auto ucc = newctx->usable_codec_ctx;
 
 	w = ucc->width;
 	h = ucc->height;
 
-	auto avframe = av_frame_alloc();
-	uint8_t *buf = newctx->DecodedFrameData.data();
+	const auto avframe = av_frame_alloc();
+	const uint8_t *buf = newctx->decoded_frame_data.data();
 	avframe->format = ucc->pix_fmt;
 	avframe->width = w;
 	avframe->height = h;
 	av_image_fill_arrays(avframe->data, avframe->linesize, buf, ucc->pix_fmt, w, h, 1);
-	newctx->DecodedFrame = avframe;
+	newctx->decoded_frame = avframe;
 
 	newctx->sws_ctx = sws_getContext(w, h, 
 		ucc->pix_fmt, 
@@ -356,60 +355,60 @@ bool VideoPlayback::Open(std::filesystem::path path)
 		nullptr, nullptr, nullptr);
 
 	// only assign on success
-	delete Context;
-	Context = newctx;
+	delete context_;
+	context_ = newctx;
 	return true;
 }
 
-void VideoPlayback::Reset()
+void VideoPlayback::reset()
 {
 }
 
-void VideoPlayback::StartDecodeThread()
+void VideoPlayback::start_decode_thread()
 {
-	RunDecodeThread = true;
-	mDecodeThread = new std::thread([&]() {
-		while (RunDecodeThread) {
+	run_decode_thread_ = true;
+	m_decode_thread_ = new std::thread([&]() {
+		while (run_decode_thread_) {
 
-			QueueFrame();
+			decode_next_frame();
 
-			while (!Context->CleanFrameAvailable && RunDecodeThread) {
-				std::unique_lock<std::mutex> lock(Context->ringbuffer_mutex);
-				Context->ringbuffer_has_space.wait_for(lock, std::chrono::seconds(1));
+			while (!context_->is_clean_frame_available && run_decode_thread_) {
+				std::unique_lock<std::mutex> lock(context_->ringbuffer_mutex);
+				context_->ringbuffer_has_space.wait_for(lock, std::chrono::seconds(1));
 			}
 		}
 	});
 }
 
-void VideoPlayback::UpdateClock(const double clock)
+void VideoPlayback::update_clock(const double clock)
 {
 	bool update = true;
 
-	if (!Context) return;
+	if (!context_) return;
 	if (clock < 0) return; 
 
 	while (update) {
-		if (Context->DisplayFrame.frame) {
-			if (Context->DisplayFrame.pts <= clock) {
-				UpdateVideoTexture(Context->DisplayFrame.frame);
-				Context->PutCleanFrame(Context->DisplayFrame);
-				Context->DisplayFrame.frame = nullptr;
+		if (context_->display_frame.frame) {
+			if (context_->display_frame.pts <= clock) {
+				upload_video_texture(context_->display_frame.frame);
+				context_->put_clean_frame(context_->display_frame);
+				context_->display_frame.frame = nullptr;
 			}
 			else break;
 		}
 		else {
-			Context->DisplayFrame = Context->GetPendingFrame();
-			Context->CleanFrameAvailable = true;
-			Context->ringbuffer_has_space.notify_one();
+			context_->display_frame = context_->get_decoded_frame();
+			context_->is_clean_frame_available = true;
+			context_->ringbuffer_has_space.notify_one();
 
-			if (!Context->DisplayFrame.frame) update = false;
+			if (!context_->display_frame.frame) update = false;
 		}
 	}
 }
 
-void VideoPlayback::UpdateVideoTexture(void * data)
+void VideoPlayback::upload_video_texture(void * data)
 {
-	auto* frame = (AVFrame*)data;
+	const auto* frame = (AVFrame*)data;
 
 	ensure_current_gpu_texture_2d();
 	bind();

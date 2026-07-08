@@ -47,7 +47,7 @@ public:
 
 ScreenLoading::ScreenLoading(std::shared_ptr<Screen> _Next) : Screen("ScreenLoading", false)
 {
-    Next = _Next;
+    next_screen_ = _Next;
     LoadThread = nullptr;
     is_active_ = true;
     ThreadInterrupted = false;
@@ -58,26 +58,26 @@ ScreenLoading::ScreenLoading(std::shared_ptr<Screen> _Next) : Screen("ScreenLoad
     scene_->preload(GameState::get_instance().get_skin_file("screenloading.lua"), "Preload");
     scene_->initialize("", false);
 
-    IntroDuration = std::max(scene_->get_script_manager()->get_global_d("IntroDuration"), 0.0);
-    ExitDuration = std::max(scene_->get_script_manager()->get_global_d("ExitDuration"), 0.0);
+    intro_duration_ = std::max(scene_->get_script_manager()->get_global_d("IntroDuration"), 0.0);
+    exit_duration_ = std::max(scene_->get_script_manager()->get_global_d("ExitDuration"), 0.0);
 
-    ChangeState(StateIntro);
+    change_state(StateIntro);
 }
 
-void ScreenLoading::OnIntroBegin()
+void ScreenLoading::on_intro_begin()
 {
     //WindowFrame.SetLightMultiplier(0.8f);
     //WindowFrame.SetLightPosition(glm::vec3(0, -0.5, 1));
 }
 
-void ScreenLoading::Init()
+void ScreenLoading::init()
 {
-    LoadThread = std::make_shared<std::thread>(&LoadScreenThread::DoLoad, LoadScreenThread(FinishedLoading, Next.get()));
+    LoadThread = std::make_shared<std::thread>(&LoadScreenThread::DoLoad, LoadScreenThread(FinishedLoading, next_screen_.get()));
 }
 
-void ScreenLoading::OnExitEnd()
+void ScreenLoading::on_exit_end()
 {
-    Screen::OnExitEnd();
+    Screen::on_exit_end();
 
     //WindowFrame.SetLightMultiplier(1);
     //WindowFrame.SetLightPosition(glm::vec3(0, 0, 1));
@@ -86,15 +86,15 @@ void ScreenLoading::OnExitEnd()
 
     // Close the screen we're loading if we asked to interrupt its loading.
     if (ThreadInterrupted)
-        Next->Close();
+        next_screen_->close();
 	
-    ChangeState(StateRunning);
+    change_state(StateRunning);
 }
 
-bool ScreenLoading::Run(double TimeDelta)
+bool ScreenLoading::run(double TimeDelta)
 {
     if (!LoadThread && !ThreadInterrupted)
-        return (is_active_ = RunNested(TimeDelta));
+        return (is_active_ = run_nested(TimeDelta));
 
     if (!scene_) return false;
 
@@ -104,8 +104,8 @@ bool ScreenLoading::Run(double TimeDelta)
     {
         LoadThread->join();
         LoadThread = nullptr;
-        Next->post_load_initialization();
-        ChangeState(StateExit);
+        next_screen_->post_load_initialization();
+        change_state(StateExit);
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(16));
@@ -116,8 +116,8 @@ bool ScreenLoading::on_input(int32_t key, bool isPressed, bool isMouseInput)
 {
     if (!LoadThread)
     {
-        if (Next)
-            return Next->on_input(key, isPressed, isMouseInput);
+        if (next_screen_)
+            return next_screen_->on_input(key, isPressed, isMouseInput);
         return true;
     }
 
@@ -125,7 +125,7 @@ bool ScreenLoading::on_input(int32_t key, bool isPressed, bool isMouseInput)
     {
         if (BindingsManager::translate_key(key) == KT_Escape)
         {
-            Next->RequestInterrupt();
+            next_screen_->RequestInterrupt();
             ThreadInterrupted = true;
         }
     }
@@ -137,7 +137,7 @@ bool ScreenLoading::on_scroll_input(double xOff, double yOff)
 {
     if (!LoadThread)
     {
-        return Next->on_scroll_input(xOff, yOff);
+        return next_screen_->on_scroll_input(xOff, yOff);
     }
 
     return Screen::on_scroll_input(xOff, yOff);

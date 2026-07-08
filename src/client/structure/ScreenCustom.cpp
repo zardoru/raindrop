@@ -9,15 +9,15 @@ ScreenCustom::ScreenCustom(const std::filesystem::path& ScriptName)
     : Screen("ScreenCustom", false)
 {
     scene_->initialize(ScriptName);
-    IntroDuration = scene_->get_intro_duration();
-    ExitDuration = scene_->get_exit_duration();
-    ChangeState(StateIntro);
+    intro_duration_ = scene_->get_intro_duration();
+    exit_duration_ = scene_->get_exit_duration();
+    change_state(StateIntro);
     is_active_ = true;
 
 	scene_->set_screen_name(ScriptName.filename().replace_extension().string());
 }
 
-bool ScreenCustom::Run(double Delta)
+bool ScreenCustom::run(double Delta)
 {
     // Update and draw targets, and carry on.
     scene_->draw_targets(Delta);

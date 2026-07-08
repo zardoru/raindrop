@@ -352,7 +352,7 @@ namespace osb {
 
 			auto vid = dynamic_cast<VideoPlayback*>(i);
 			if (vid) {
-				vid->UpdateClock(Time - evFade.begin()->GetTime());
+				vid->update_clock(Time - evFade.begin()->GetTime());
 			}
 		}
 
@@ -1043,8 +1043,8 @@ osuBackgroundAnimation::osuBackgroundAnimation(
         if (IsVideoPath(vpath)) {
             video_index--;
             auto vid = mVideoList[video_index] = new VideoPlayback();
-            if (vid->Open(vpath)) {
-                vid->StartDecodeThread();
+            if (vid->open(vpath)) {
+                vid->start_decode_thread();
                 mImageList.AddToListIndex(vid, video_index);
             }
         } else {

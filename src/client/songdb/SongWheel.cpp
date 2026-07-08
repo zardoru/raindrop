@@ -245,14 +245,14 @@ void SongWheel::set_difficulty(uint32_t i)
     {
         auto song = get_selected_chart_group();
         size_t maxIndex = song->charts.size();
-        size_t oldDI = difficulty_index_;
+        size_t old_di = difficulty_index_;
 
         if (maxIndex)
             difficulty_index_ = clamp(i, uint32_t(0), uint32_t(maxIndex - 1));
         else
             difficulty_index_ = 0;
 
-        if (difficulty_index_ != oldDI)
+        if (difficulty_index_ != old_di)
             on_song_tentative_select(get_selected_chart_group(), difficulty_index_);
     }
 }

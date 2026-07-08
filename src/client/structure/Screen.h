@@ -7,7 +7,7 @@ class SceneEnvironment;
 class Screen : public Interruptible
 {
 private:
-    double ScreenTime; // How long has it been open?
+    double screen_time_; // How long has it been open?
 protected:
 
     std::shared_ptr<SceneEnvironment> scene_;
@@ -17,55 +17,55 @@ protected:
         StateIntro,
         StateRunning,
         StateExit
-    }ScreenState;
+    }screen_state_;
 
-    double GetScreenTime();
-    std::shared_ptr<Screen> Parent;
+    double get_screen_time() const;
+    std::shared_ptr<Screen> parent_;
     bool is_active_; // Is this screen active?
-    bool SkipThisFrame;
+    bool skip_this_frame_;
 
-    void ChangeState(EScreenState NewState);
-    double TransitionTime;
-    double IntroDuration, ExitDuration;
-    std::shared_ptr<Screen> Next;
+    void change_state(EScreenState new_state);
+    double transition_time_;
+    double intro_duration_, exit_duration_;
+    std::shared_ptr<Screen> next_screen_;
 
 public:
-    explicit Screen(std::string Name, bool InitUI = true);
-    Screen(std::string Name, std::shared_ptr<Screen> _Parent);
+    explicit Screen(const std::string &name, bool init_ui = true);
+    Screen(const std::string &name, const std::shared_ptr<Screen> &parent);
     virtual ~Screen();
 
-    virtual void Init();
+    virtual void init();
 
     // Nesting screens.
-    bool IsScreenRunning();
-    bool RunNested(float delta);
+    bool is_screen_running() const;
+    bool run_nested(float delta);
     bool update(float delta);
 
-    void Close();
+    void close();
 
-    Screen* GetTop();
+    Screen* get_top();
 
-	void StartTransition(std::shared_ptr<Screen> scr);
+	void start_transition(std::shared_ptr<Screen> scr);
 
     // Screen implementation.
     virtual void load_resources(); // could, or not, be called from main thread.
     virtual void post_load_initialization(); // must be called from main thread - assume it always is
-    virtual bool RunIntro(float Fraction, float Delta);
-    virtual bool RunExit(float Fraction, float Delta);
-    virtual bool Run(double delta) = 0;
+    virtual bool run_intro(float fraction, float delta);
+    virtual bool run_exit(float fraction, float delta);
+    virtual bool run(double delta) = 0;
 
-    virtual void OnIntroBegin();
-    virtual void OnIntroEnd();
-    virtual void OnRunningBegin();
-    virtual void OnExitBegin();
-    virtual void OnExitEnd();
+    virtual void on_intro_begin();
+    virtual void on_intro_end();
+    virtual void on_running_begin();
+    virtual void on_exit_begin();
+    virtual void on_exit_end();
 
     virtual bool on_input(int32_t key, bool isPressed, bool isMouseInput);
     virtual bool on_scroll_input(double xOff, double yOff);
     virtual bool on_text_input(int codepoint);
 
     // We need to set up graphics again? This gets called.
-    virtual void Invalidate();
+    virtual void invalidate();
 
     // Implement this if there's anything you want to get done outside of a destructor
     // like operations that would throw exceptions.
