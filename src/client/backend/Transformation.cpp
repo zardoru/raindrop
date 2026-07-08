@@ -11,7 +11,7 @@ Transformation::Transformation()
     SetSize(1);
     SetScale(1);
     SetRotation(0);
-    SetPosition(0, 0);
+    set_position(0, 0);
     Chain = nullptr;
     mLayer = 0;
 	mDirtyMatrix = true;
@@ -50,13 +50,13 @@ Vec2 Transformation::GetScale() const
 }
 
 // Position
-void Transformation::SetPosition(const Vec2 Pos)
+void Transformation::set_position(const Vec2 Pos)
 {
     mPosition = Pos;
     mDirtyMatrix = true;
 }
 
-void Transformation::SetPosition(const float pX, const float pY)
+void Transformation::set_position(const float pX, const float pY)
 {
     SetPositionX(pX);
     SetPositionY(pY);

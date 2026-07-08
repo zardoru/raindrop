@@ -71,15 +71,15 @@ namespace renderer {
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	}
 
-	void draw_primitive_quad(Transformation &QuadTransformation, const EBlendMode &Mode, const ColorRGB &Color)
+	void draw_primitive_quad(Transformation &quad_transformation, const EBlendMode &mode, const ColorRGB &Color)
 	{
 		Texture2D::unbind();
-		Shader::SetUniform(DefaultShader::GetUniform(U_COLOR), Color.Red, Color.Green, Color.Blue, Color.Alpha);
+		Shader::set_uniform(DefaultShader::get_uniform(U_COLOR), Color.Red, Color.Green, Color.Blue, Color.Alpha);
 
-		set_blending_mode(Mode);
+		set_blending_mode(mode);
 
-		Mat4 Mat = QuadTransformation.GetMatrix();
-		Shader::set_uniform(DefaultShader::GetUniform(U_MODELVIEW), &(Mat[0][0]));
+		Mat4 mat = quad_transformation.GetMatrix();
+		Shader::set_uniform(DefaultShader::get_uniform(U_MODELVIEW), &(mat[0][0]));
 
 		// Assign position attrib. pointer
 		set_primitive_quad_vbo();
@@ -238,14 +238,14 @@ namespace renderer {
         }
     }
 
-	void set_blending_mode(const EBlendMode Mode)
+	void set_blending_mode(const EBlendMode mode)
 	{
-		if (Mode == BLEND_ADD)
+		if (mode == BLEND_ADD)
 		{
 			glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		}
-		else if (Mode == BLEND_ALPHA)
+		else if (mode == BLEND_ALPHA)
 		{
 			glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -255,72 +255,158 @@ namespace renderer {
 	void set_primitive_quad_vbo()
 	{
 		quad_buffer->bind();
-		glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::GetUniform(A_POSITION)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
-		glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::GetUniform(A_UV)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+		glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::get_uniform(A_POSITION)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+		glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::get_uniform(A_UV)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
 		color_buffer->bind();
-		glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::GetUniform(A_COLOR)), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
+		glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::get_uniform(A_COLOR)), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
 	}
 
-	void set_textured_quad_vbo(VBO *TexQuad)
+	void set_textured_quad_vbo(VBO *tex_quad)
 	{
 		quad_buffer->bind();
-		glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::GetUniform(A_POSITION)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
-		TexQuad->bind();
-		glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::GetUniform(A_UV)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+		glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::get_uniform(A_POSITION)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+		tex_quad->bind();
+		glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::get_uniform(A_UV)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
 		color_buffer->bind();
-		glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::GetUniform(A_COLOR)), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
+		glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::get_uniform(A_COLOR)), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
 	}
 
 	void finalize_draw()
 	{
-		Shader::disable_attrib_array(DefaultShader::GetUniform(A_POSITION));
-		Shader::disable_attrib_array(DefaultShader::GetUniform(A_UV));
-		Shader::disable_attrib_array(DefaultShader::GetUniform(A_COLOR));
+		Shader::disable_attrib_array(DefaultShader::get_uniform(A_POSITION));
+		Shader::disable_attrib_array(DefaultShader::get_uniform(A_UV));
+		Shader::disable_attrib_array(DefaultShader::get_uniform(A_COLOR));
 	}
 
-	void set_default_shader_parameters(const bool InvertColor,
-                               const bool Centered,
-                               const bool BlackToTransparent, const bool ReplaceColor,
-                               const int8_t HiddenMode)
+	void set_default_shader_parameters(const bool invert_color,
+                               const bool centered,
+                               const bool black_to_transparent, const bool replace_color,
+                               const int8_t hidden_mode)
 	{
 		DefaultShader::static_bind();
-		Shader::SetUniform(DefaultShader::GetUniform(U_INVERT), InvertColor);
+		Shader::set_uniform(DefaultShader::get_uniform(U_INVERT), invert_color);
 
-		if (HiddenMode == -1)
-			Shader::SetUniform(DefaultShader::GetUniform(U_HIDDEN), 0); // not affected by hidden lightning
+		if (hidden_mode == -1)
+			Shader::set_uniform(DefaultShader::get_uniform(U_HIDDEN), 0); // not affected by hidden lightning
 		else
-			Shader::SetUniform(DefaultShader::GetUniform(U_HIDDEN), HiddenMode); // Assume the other related parameters are already set.
+			Shader::set_uniform(DefaultShader::get_uniform(U_HIDDEN), hidden_mode); // Assume the other related parameters are already set.
 
-		Shader::SetUniform(DefaultShader::GetUniform(U_REPCOLOR), ReplaceColor);
-		Shader::SetUniform(DefaultShader::GetUniform(U_BTRANSP), BlackToTransparent);
+		Shader::set_uniform(DefaultShader::get_uniform(U_REPCOLOR), replace_color);
+		Shader::set_uniform(DefaultShader::get_uniform(U_BTRANSP), black_to_transparent);
 
-		Shader::SetUniform(DefaultShader::GetUniform(U_CENTERED), Centered);
+		Shader::set_uniform(DefaultShader::get_uniform(U_CENTERED), centered);
 	}
 
-	void draw_textured_quad(Texture2D* ToDraw, const AABB& TextureCrop, const Transformation& QuadTransformation,
-		const EBlendMode &Mode, const ColorRGB &InColor)
+	void draw_quad(const QuadDrawParams &params)
 	{
-		if (ToDraw)
-			ToDraw->bind();
+		set_blending_mode(params.blend_mode);
+		assert(glGetError() == 0);
+
+		const auto color = params.color;
+
+		if (!params.shader) {
+			if (params.configure_default_shader) {
+				set_default_shader_parameters(
+					params.invert_color,
+					params.centered,
+					params.black_to_transparent,
+					params.replace_color,
+					params.hidden_mode
+				);
+				assert(glGetError() == 0);
+			}
+
+			DefaultShader::set_color(color.Red, color.Green, color.Blue, color.Alpha);
+			assert(glGetError() == 0);
+
+			if (params.model) {
+				Shader::set_uniform(DefaultShader::get_uniform(U_MODELVIEW), &((*params.model)[0][0]));
+				assert(glGetError() == 0);
+			}
+		} else {
+			const auto projection = window.get_matrix_projection();
+			params.shader->bind();
+
+			auto uniform = params.shader->get_uniform("projection");
+			assert(glGetError() == 0);
+			if (uniform != -1)
+				Shader::set_uniform(uniform, &projection[0][0]);
+			assert(glGetError() == 0);
+
+			uniform = params.shader->get_uniform("mvp");
+			assert(glGetError() == 0);
+			if (uniform != -1 && params.model)
+				Shader::set_uniform(uniform, &((*params.model)[0][0]));
+			assert(glGetError() == 0);
+
+			uniform = params.shader->get_uniform("centered");
+			assert(glGetError() == 0);
+			if (uniform != -1)
+				Shader::set_uniform(uniform, params.centered);
+			assert(glGetError() == 0);
+
+			uniform = params.shader->get_uniform("color");
+			assert(glGetError() == 0);
+			if (uniform != -1)
+				Shader::set_uniform(
+					uniform,
+					l2gamma(color.Red),
+					l2gamma(color.Green),
+					l2gamma(color.Blue),
+					color.Alpha
+				);
+			assert(glGetError() == 0);
+		}
+
+		const auto texture_coordinates = params.texture_coordinates ? params.texture_coordinates : texture_buffer;
+		if (params.configure_geometry) {
+			set_textured_quad_vbo(texture_coordinates);
+		} else {
+			texture_coordinates->bind();
+			glVertexAttribPointer(
+				Shader::enable_attrib_array(DefaultShader::get_uniform(A_UV)),
+				2,
+				GL_FLOAT,
+				GL_FALSE,
+				sizeof(float) * 2,
+				nullptr
+			);
+		}
+		assert(glGetError() == 0);
+
+		do_quad_draw();
+		assert(glGetError() == 0);
+
+		if (params.finalize) {
+			finalize_draw();
+			assert(glGetError() == 0);
+		}
+	}
+
+	void draw_textured_quad(Texture2D* to_draw, const AABB& texture_crop, const Transformation& quad_transformation,
+		const EBlendMode &mode, const ColorRGB &in_color)
+	{
+		if (to_draw)
+			to_draw->bind();
 		else return;
 
-		Shader::SetUniform(DefaultShader::GetUniform(U_COLOR), InColor.Red, InColor.Green, InColor.Blue, InColor.Alpha);
+		Shader::set_uniform(DefaultShader::get_uniform(U_COLOR), in_color.Red, in_color.Green, in_color.Blue, in_color.Alpha);
 
-		set_blending_mode(Mode);
+		set_blending_mode(mode);
 
 		float CropPositions[8] = {
 			// topright
-			TextureCrop.P2.X / float(ToDraw->w),
-			TextureCrop.P2.Y / float(ToDraw->h),
+			texture_crop.P2.X / float(to_draw->w),
+			texture_crop.P2.Y / float(to_draw->h),
 			// bottom right
-			TextureCrop.P2.X / float(ToDraw->w),
-			TextureCrop.P1.Y / float(ToDraw->h),
+			texture_crop.P2.X / float(to_draw->w),
+			texture_crop.P1.Y / float(to_draw->h),
 			// bottom left
-			TextureCrop.P1.X / float(ToDraw->w),
-			TextureCrop.P1.Y / float(ToDraw->h),
+			texture_crop.P1.X / float(to_draw->w),
+			texture_crop.P1.Y / float(to_draw->h),
 			// topleft
-			TextureCrop.P1.X / float(ToDraw->w),
-			TextureCrop.P2.Y / float(ToDraw->h),
+			texture_crop.P1.X / float(to_draw->w),
+			texture_crop.P2.Y / float(to_draw->h),
 		};
 
 		temp_texture_buffer->assign_data(CropPositions);
@@ -348,7 +434,7 @@ namespace renderer {
 
 	void set_current_object_matrix(glm::mat4 &mat)
 	{
-	    Shader::set_uniform(DefaultShader::GetUniform(U_MODELVIEW), &(mat[0][0]));
+	    Shader::set_uniform(DefaultShader::get_uniform(U_MODELVIEW), &(mat[0][0]));
 	}
 
 	void set_scissor(const bool enabled)
@@ -448,18 +534,18 @@ bool Sprite::render_minimal_setup()
 
     update_texture();
 
-    renderer::set_blending_mode(blending_mode_);
+	auto quad_color = color;
+	quad_color.Alpha = alpha;
 
-    uv_buffer_->bind();
-    glVertexAttribPointer(
-		renderer::Shader::enable_attrib_array(renderer::DefaultShader::GetUniform(renderer::A_UV)), 
-		2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr
-	);
+	renderer::QuadDrawParams params;
+	params.texture_coordinates = uv_buffer_;
+	params.blend_mode = blending_mode_;
+	params.color = quad_color;
+	params.configure_default_shader = false;
+	params.configure_geometry = false;
+	params.finalize = false;
 
-    // Set the color.
-    renderer::DefaultShader::set_color(color.Red, color.Green, color.Blue, alpha);
-
-    renderer::do_quad_draw();
+	renderer::draw_quad(params);
 
     return true;
 }
@@ -475,58 +561,21 @@ void Sprite::render()
     update_texture();
     assert(glGetError() == 0);
 
-    renderer::set_blending_mode(blending_mode_);
-    assert(glGetError() == 0);
+	auto mat = GetMatrix();
+	auto quad_color = color;
+	quad_color.Alpha = alpha;
 
-    // Assign our matrix.
-	if (!m_shader_) {
-		auto mat = GetMatrix();
-		renderer::set_default_shader_parameters(color_invert, centered, black_to_transparent);
-        assert(glGetError() == 0);
+	renderer::QuadDrawParams params;
+	params.texture_coordinates = uv_buffer_;
+	params.model = &mat;
+	params.shader = m_shader_;
+	params.blend_mode = blending_mode_;
+	params.color = quad_color;
+	params.centered = centered;
+	params.invert_color = color_invert;
+	params.black_to_transparent = black_to_transparent;
 
-        renderer::DefaultShader::set_color(color.Red, color.Green, color.Blue, alpha);
-        assert(glGetError() == 0);
-		
-		renderer::set_current_object_matrix(mat);
-        assert(glGetError() == 0);
-	}
-	else {
-		auto proj = window.get_matrix_projection();
-		auto mat = GetMatrix();
-
-		m_shader_->bind();
-
-		auto sh = m_shader_->get_uniform("projection"); assert(glGetError() == 0);
-		if (sh != -1)
-			renderer::Shader::set_uniform(sh, &proj[0][0]);
-        assert(glGetError() == 0);
-
-		sh = m_shader_->get_uniform("mvp"); assert(glGetError() == 0);
-		if (sh != -1)
-			renderer::Shader::set_uniform(sh, &mat[0][0]); assert(glGetError() == 0);
-
-		sh = m_shader_->get_uniform("centered"); assert(glGetError() == 0);
-		if (sh != -1)
-			renderer::Shader::SetUniform(sh, centered); assert(glGetError() == 0);
-
-		sh = m_shader_->get_uniform("color"); assert(glGetError() == 0);
-		if (sh != -1)
-			renderer::Shader::SetUniform(sh, 
-				l2gamma(color.Red), 
-				l2gamma(color.Green), 
-				l2gamma(color.Blue), 
-				alpha);
-	    }
-
-    assert(glGetError() == 0);
-
-    renderer::set_textured_quad_vbo(uv_buffer_);
-    assert(glGetError() == 0);
-
-    renderer::do_quad_draw();
-    assert(glGetError() == 0);
-
-    renderer::finalize_draw();
+	renderer::draw_quad(params);
     assert(glGetError() == 0);
 }
 
@@ -619,7 +668,7 @@ void TruetypeFont::render(const std::string &in, const Vec2 &position, const Mat
             dx = transform * glm::translate(glm::identity<Mat4>(), trans) *
                  glm::scale(glm::identity<Mat4>(), glm::vec3(cp.w * scale.y / SDF_SIZE, cp.h * scale.y / SDF_SIZE, 1));
 
-            renderer::Shader::set_uniform(renderer::DefaultShader::GetUniform(renderer::U_MODELVIEW), &(dx[0][0]));
+            renderer::Shader::set_uniform(renderer::DefaultShader::get_uniform(renderer::U_MODELVIEW), &(dx[0][0]));
 
             renderer::do_quad_draw();
 
@@ -702,19 +751,19 @@ void Line::render()
 	set_default_shader_parameters(true, false, false, false);
 
     DefaultShader::set_color(R, G, B, A);
-    Shader::set_uniform(DefaultShader::GetUniform(U_MODELVIEW), &(Identity[0][0]));
+    Shader::set_uniform(DefaultShader::get_uniform(U_MODELVIEW), &(Identity[0][0]));
 
     // Assign position attrib. pointer
     lnvbo->bind();
-    glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::GetUniform(A_POSITION)), 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::get_uniform(A_POSITION)), 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
 	color_buffer->bind();
-    glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::GetUniform(A_COLOR)), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
+    glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::get_uniform(A_COLOR)), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
 
     glDrawArrays(GL_LINES, 0, 2);
 
-    Shader::disable_attrib_array(DefaultShader::GetUniform(A_POSITION));
-    Shader::disable_attrib_array(DefaultShader::GetUniform(A_COLOR));
+    Shader::disable_attrib_array(DefaultShader::get_uniform(A_POSITION));
+    Shader::disable_attrib_array(DefaultShader::get_uniform(A_COLOR));
 
     Texture2D::force_rebind();
 
@@ -751,10 +800,10 @@ void BitmapFont::render(const std::string &In, const Vec2 &Position, const Mat4 
 
     // Assign position attrib. pointer
 	renderer::quad_buffer->bind();
-    glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::GetUniform(A_POSITION)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+    glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::get_uniform(A_POSITION)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
 
 	renderer::color_buffer->bind();
-    glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::GetUniform(A_COLOR)), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
+    glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::get_uniform(A_COLOR)), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
 
     for (; *Text != '\0'; Text++)
     {
@@ -768,26 +817,26 @@ void BitmapFont::render(const std::string &In, const Vec2 &Position, const Mat4 
         if (*Text < 0)
             continue;
 
-        CharPosition[*Text].SetPosition(Position.x + Character, Position.y + Line);
+        CharPosition[*Text].set_position(Position.x + Character, Position.y + Line);
         Mat4 RenderTransform = Transform * CharPosition[*Text].GetMatrix();
 
         // Assign transformation matrix
-        Shader::set_uniform(DefaultShader::GetUniform(U_MODELVIEW), &(RenderTransform[0][0]));
+        Shader::set_uniform(DefaultShader::get_uniform(U_MODELVIEW), &(RenderTransform[0][0]));
 
         // Assign vertex UVs
         CharPosition[*Text].bind_texture_vbo();
-        glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::GetUniform(A_UV)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+        glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::get_uniform(A_UV)), 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
 
         // Do the rendering!
         renderer::do_quad_draw();
 
-        Shader::disable_attrib_array(DefaultShader::GetUniform(A_UV));
+        Shader::disable_attrib_array(DefaultShader::get_uniform(A_UV));
 
         Character += RenderSize.x;
     }
 
-    Shader::disable_attrib_array(DefaultShader::GetUniform(A_POSITION));
-    Shader::disable_attrib_array(DefaultShader::GetUniform(A_COLOR));
+    Shader::disable_attrib_array(DefaultShader::get_uniform(A_POSITION));
+    Shader::disable_attrib_array(DefaultShader::get_uniform(A_COLOR));
 }
 
 uint32_t VBO::LastBound = 0;

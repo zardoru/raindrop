@@ -252,7 +252,7 @@ public:
         Layer0->set_image(List.GetFromIndex(1), true);
 
 
-		auto ratio = Layer0->GetWidth() / Layer0->GetHeight();
+		const auto ratio = Layer0->GetWidth() / Layer0->GetHeight();
 		Layer0->SetWidth(1);
 		Layer0->SetHeight(1);
 
@@ -276,7 +276,7 @@ public:
         Validated = true;
     }
 
-    void SetLayerImage(Sprite *sprite, std::vector<BGAEvent> &events_layer, double time)
+    void set_layer_image(Sprite *sprite, std::vector<BGAEvent> &events_layer, double time)
     {
         auto bmp = std::lower_bound(events_layer.begin(), events_layer.end(), time, BGAEventTimeBefore);
         if (bmp != events_layer.begin())
@@ -303,10 +303,10 @@ public:
     {
         if (!Validated) return;
 
-        SetLayerImage(Layer0.get(), EventsLayer0, Time);
-        SetLayerImage(LayerMiss.get(), EventsLayerMiss, Time);
-        SetLayerImage(Layer1.get(), EventsLayer1, Time);
-        SetLayerImage(Layer2.get(), EventsLayer2, Time);
+        set_layer_image(Layer0.get(), EventsLayer0, Time);
+        set_layer_image(LayerMiss.get(), EventsLayerMiss, Time);
+        set_layer_image(Layer1.get(), EventsLayer1, Time);
+        set_layer_image(Layer2.get(), EventsLayer2, Time);
     }
 
     float MissTime;
@@ -334,26 +334,26 @@ public:
 
 class StaticBackground : public BackgroundAnimation
 {
-    std::shared_ptr<Sprite> Background;
-    ImageList List;
+    std::shared_ptr<Sprite> background_;
+    ImageList list_;
 public:
-    StaticBackground(Interruptible* parent, std::filesystem::path Filename)
-        : BackgroundAnimation(parent), List(this)
+    StaticBackground(Interruptible* parent, const std::filesystem::path &filename)
+        : BackgroundAnimation(parent), list_(this)
     {
-        Log::Printf("Using static background: %ls\n", Filename.wstring().c_str());
-        List.AddToListIndex(Filename, 0);
+        Log::Printf("Using static background: %ls\n", filename.wstring().c_str());
+        list_.AddToListIndex(filename, 0);
     }
 
     void SetAnimationTime(double Time) override {}
 
     void Validate() override
     {
-        if (!Background)
+        if (!background_)
         {
-            auto pt = List.GetFromIndex(0);
-            Background = std::make_shared<Sprite>();
-            Background->set_image(pt, false);
-            Background->ChainTransformation(this);
+            auto pt = list_.GetFromIndex(0);
+            background_ = std::make_shared<Sprite>();
+            background_->set_image(pt, false);
+            background_->ChainTransformation(this);
             SetWidth(pt ? pt->w : 0);
             SetHeight(pt ? pt->h : 0);
         }
@@ -361,17 +361,17 @@ public:
 
     void Load() override
     {
-        List.LoadAll();
+        list_.LoadAll();
     }
 
     void render() override
     {
-        if (Background != nullptr)
-            Background->render();
+        if (background_ != nullptr)
+            background_->render();
     }
 };
 
-std::unique_ptr<BackgroundAnimation> CreateBGAforVSRG(
+std::unique_ptr<BackgroundAnimation> make_bga(
         const std::shared_ptr<otoworm::ChartGroup>& input,
         uint8_t chart_index,
         Interruptible *context)
@@ -434,15 +434,15 @@ void BackgroundAnimation::render()
 {
 }
 
-std::unique_ptr<BackgroundAnimation> BackgroundAnimation::CreateBGAFromChartGroup(
-        uint8_t chart_index,
+std::unique_ptr<BackgroundAnimation> BackgroundAnimation::create_bga_from_chart_group(
+        const uint8_t chart_index,
         const std::shared_ptr<otoworm::ChartGroup>& chart_group,
         Interruptible* context,
-        bool LoadNow)
+        const bool load_now)
 {
-    auto ret = CreateBGAforVSRG(chart_group, chart_index, context);
+    auto ret = make_bga(chart_group, chart_index, context);
     
-    if (ret && LoadNow)
+    if (ret && load_now)
     {
         ret->Load();
         ret->Validate();

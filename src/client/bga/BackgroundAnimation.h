@@ -18,11 +18,11 @@ public:
     virtual void render();
 
     /* Can only be called from main thread if LoadNow = true! */
-    static std::unique_ptr<BackgroundAnimation> CreateBGAFromChartGroup(
+    static std::unique_ptr<BackgroundAnimation> create_bga_from_chart_group(
             uint8_t chart_index,
             const std::shared_ptr<otoworm::ChartGroup>& chart_group,
             Interruptible* context,
-            bool LoadNow = false);
+            bool load_now = false);
 };
 
 bool IsVideoPath(std::filesystem::path path);

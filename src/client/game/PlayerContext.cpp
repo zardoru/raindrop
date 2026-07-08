@@ -1182,14 +1182,14 @@ int PlayerContext::draw_measures(const double song_time) {
 
     // Sudden = 1, Hidden = 2, flashlight = 3 (Defined in the shader)
     if (parameters_.GetHiddenMode()) {
-        renderer::Shader::SetUniform(
-            renderer::DefaultShader::GetUniform(renderer::U_HIDCENTER),
+        renderer::Shader::set_uniform(
+            renderer::DefaultShader::get_uniform(renderer::U_HIDCENTER),
             parameters_.GetHiddenCenter());
-        renderer::Shader::SetUniform(
-            renderer::DefaultShader::GetUniform(renderer::U_HIDSIZE),
+        renderer::Shader::set_uniform(
+            renderer::DefaultShader::get_uniform(renderer::U_HIDSIZE),
             parameters_.GetHiddenTransitionSize());
-        renderer::Shader::SetUniform(
-            renderer::DefaultShader::GetUniform(renderer::U_HIDFLSIZE),
+        renderer::Shader::set_uniform(
+            renderer::DefaultShader::get_uniform(renderer::U_HIDFLSIZE),
             parameters_.GetHiddenCenterSize());
     }
 

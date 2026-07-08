@@ -54,15 +54,15 @@ namespace osb
         float EndTime;
         explicit Event(EEventType typ);
     public:
-        EEventType GetEventType() const;
-        float GetTime() const;
-        float GetEndTime() const;
-        float GetDuration() const;
-		int GetEase() const;
+        EEventType get_event_type() const;
+        float get_time() const;
+        float get_end_time() const;
+        float get_duration() const;
+		int get_ease() const;
 
-        void SetTime(float time);
-        void SetEndTime(float EndTime);
-	    void SetEase(int val);
+        void set_time(float time);
+        void set_end_time(float EndTime);
+	    void set_ease(int val);
     };
 
 	// We need to cast these - and to cast these we need to copy them.
@@ -78,12 +78,12 @@ namespace osb
 			Event(typ), Value(0), EndValue(0)
         {};
     public:
-        float GetValue() const;
-        void SetValue(float value);
+        float get_value() const;
+        void set_value(float value);
 
-        float GetEndValue() const;
-        void SetEndValue(float EndValue);
-        float LerpValue(float Time) const;
+        float get_end_value() const;
+        void set_end_value(float EndValue);
+        float lerp_value(float Time) const;
     };
 
     class TwoValEvent : public Event
@@ -92,12 +92,12 @@ namespace osb
     protected:
         TwoValEvent(EEventType evt) : Event(evt) {};
     public:
-        Vec2 GetValue() const;
-        Vec2 GetEndValue() const;
+        Vec2 get_value() const;
+        Vec2 get_end_value() const;
 
-        void SetValue(Vec2 val);
-        void SetEndValue(Vec2 val);
-        Vec2 LerpValue(float Time) const;
+        void set_value(Vec2 val);
+        void set_end_value(Vec2 val);
+        Vec2 lerp_value(float Time) const;
     };
 
     class MoveEvent : public TwoValEvent
@@ -123,12 +123,12 @@ namespace osb
         Vec3 Value, EndValue;
     public:
         ColorizeEvent() : Event(EVT_COLORIZE) {};
-        Vec3 GetValue() const;
-        Vec3 GetEndValue() const;
+        Vec3 get_value() const;
+        Vec3 get_end_value() const;
 
-        void SetValue(Vec3 val);
-        void SetEndValue(Vec3 val);
-		Vec3 LerpValue(float At) const;
+        void set_value(Vec3 val);
+        void set_end_value(Vec3 val);
+		Vec3 lerp_value(float At) const;
     };
 
     class MoveXEvent : public SingleValEvent
@@ -225,14 +225,14 @@ namespace osb
 	    EventComponent(EEventType evt);
 		friend class Loop;
     public:
-        void AddEvent(std::shared_ptr<Event> evt);
+        void add_event(const std::shared_ptr<Event> &evt);
 		void ClearEvents();
-        void SortEvents();
-	    bool WithinEvents(float Time) const;
-		float GetStartTime() const;
-		float GetEndTime() const;
-		void CopyEventsFrom(EventComponent &ec);
-        float GetDuration();
+        void sort_events();
+	    bool is_time_in_event_bounds(float Time) const;
+		float get_start_time() const;
+		float get_end_time() const;
+		void copy_events_from(const EventComponent &ec);
+        float get_duration();
     };
 
     class Loop : public EventComponent
@@ -263,13 +263,13 @@ namespace osb
     public:
         BGASprite(std::string file, EOrigin origin, Vec2 start_pos, ELayer laer);
 
-		void SetSprite(Sprite* sprite);
-	    void InitializeSprite();
-	    void Update(float Time);
-        std::string GetImageFilename() const;
-		ELayer GetLayer() const;
-        void SetParent(osuBackgroundAnimation* parent);
-	    void SetImageIndex(int index);
+		void set_sprite(Sprite* sprite);
+	    void initialize_sprite();
+	    void update(float time);
+        std::string get_image_filename() const;
+		ELayer get_layer() const;
+        void set_parent(osuBackgroundAnimation* parent);
+	    void set_image_index(int index);
     };
 
     typedef std::vector<osb::BGASprite> SpriteList;

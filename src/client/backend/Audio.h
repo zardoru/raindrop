@@ -6,7 +6,7 @@
 
 void init_audio();
 void update_mixer();
-double MixerGetTime();
-double MixerGetLatency();
+double mixer_get_time();
+double mixer_get_latency();
 
-IMixer* GetMixer();
+IMixer* get_mixer();

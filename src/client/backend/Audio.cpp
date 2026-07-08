@@ -171,8 +171,8 @@ PaDeviceIndex GetWasapiDevice()
 }
 #endif
 
-int Mix(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo,
-        PaStreamCallbackFlags statusFlags, void *userData);
+int mix(const void *input, void *output, unsigned long frame_count, const PaStreamCallbackTimeInfo *time_info,
+        PaStreamCallbackFlags statusFlags, void *user_data);
 
 class PaMixer : public IMixer {
     PaStream *Stream;
@@ -226,11 +226,11 @@ public:
 
         CfgVar RequestedDevice("RequestedDevice", "Audio");
         if (RequestedDevice > 0)
-            OpenStream(&Stream, RequestedDevice - 1, (void *) this, Latency, Mix);
+            OpenStream(&Stream, RequestedDevice - 1, (void *) this, Latency, mix);
 
 #ifdef WIN32
         if (UseWasapi && !Stream) {
-            OpenStream(&Stream, GetWasapiDevice(), static_cast<void *>(this), Latency, Mix);
+            OpenStream(&Stream, GetWasapiDevice(), static_cast<void *>(this), Latency, mix);
         }
 
         if (!Stream) {
@@ -240,14 +240,14 @@ public:
                 UseWasapi = false;
             }
 
-            OpenStream(&Stream, DefaultWDMKSDevice, static_cast<void *>(this), Latency, Mix);
+            OpenStream(&Stream, DefaultWDMKSDevice, static_cast<void *>(this), Latency, mix);
             if (!Stream) {
                 Log::Logf("AUDIO: Problem initializing WDMKS. Falling back to DirectSound.\n");
-                OpenStream(&Stream, DefaultDSDevice, static_cast<void *>(this), Latency, Mix);
+                OpenStream(&Stream, DefaultDSDevice, static_cast<void *>(this), Latency, mix);
 
                 if (!Stream) {
                     Log::Logf("AUDIO: Problem initializing DirectSound API. Falling back to default API.\n");
-                    OpenStream(&Stream, Pa_GetDefaultOutputDevice(), static_cast<void *>(this), Latency, Mix);
+                    OpenStream(&Stream, Pa_GetDefaultOutputDevice(), static_cast<void *>(this), Latency, mix);
                 }
             }
         }
@@ -351,13 +351,13 @@ public:
     void write_and_advance_stream(
             float *out,
             const int samples,
-            const PaStreamCallbackTimeInfo *timeInfo) {
+            const PaStreamCallbackTimeInfo *time_info) {
         memset(out, 0, samples * sizeof(float));
 
         bool streaming = false;
         {
             mutex_stream.lock();
-            for (auto &Stream: active_streams) {
+            for (const auto &stream: active_streams) {
                 /*
                  * first, update our clocks
                  * */
@@ -366,19 +366,19 @@ public:
 //                auto& map = new_clock.clock_map[new_clock.clock_map_index];
 //                Stream->dac_clock.store(new_clock);
 
-                auto read_frames_start = Stream->get_read_frames();
-                auto read = Stream->read(ts, samples);
-                auto read_frames_end = Stream->get_read_frames();
+                auto read_frames_start = stream->get_read_frames();
+                auto read = stream->read(ts, samples);
+                auto read_frames_end = stream->get_read_frames();
 
                 if (read > 0) {
                     stream_time_map_t map{
-                            timeInfo->outputBufferDacTime,
-                            timeInfo->outputBufferDacTime + (read / 2) / get_rate(),
+                            time_info->outputBufferDacTime,
+                            time_info->outputBufferDacTime + (read / 2) / get_rate(),
                             read_frames_start,
                             read_frames_end
                     };
 
-                    Stream->queue_stream_clock(map);
+                    stream->queue_stream_clock(map);
 
                     for (size_t k = 0; k < read; k++)
                         out[k] += ts[k];
@@ -388,7 +388,7 @@ public:
                  * Copy read data into output
                  */
 
-                streaming |= Stream->is_playing();
+                streaming |= stream->is_playing();
             }
 
             for (auto &Sample: Samples) {
@@ -407,7 +407,7 @@ public:
         }
     }
 
-    double GetLatency() const {
+    double get_latency() const {
         return Latency;
     }
 
@@ -416,10 +416,10 @@ public:
     }
 };
 
-int Mix(const void *input, void *output, const unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo,
-        PaStreamCallbackFlags statusFlags, void *userData) {
-    auto *Mix = static_cast<PaMixer *>(userData);
-    Mix->write_and_advance_stream(static_cast<float *>(output), frameCount * 2, timeInfo);
+int mix(const void *input, void *output, const unsigned long frame_count, const PaStreamCallbackTimeInfo *time_info,
+        PaStreamCallbackFlags statusFlags, void *user_data) {
+    auto *mix = static_cast<PaMixer *>(user_data);
+    mix->write_and_advance_stream(static_cast<float *>(output), frame_count * 2, time_info);
     return 0;
 }
 
@@ -427,45 +427,45 @@ int Mix(const void *input, void *output, const unsigned long frameCount, const P
 /********** API **********/
 /*************************/
 
-void GetAudioInfo() {
-    PaHostApiIndex ApiCount = Pa_GetHostApiCount();
+void get_audio_info() {
+    const PaHostApiIndex api_count = Pa_GetHostApiCount();
 
     Log::Logf("AUDIO: The default API is %d\n", Pa_GetDefaultHostApi());
 
-    for (PaHostApiIndex i = 0; i < ApiCount; i++) {
-        const PaHostApiInfo *Index = Pa_GetHostApiInfo(i);
-        Log::Logf("(%d) %s: Default Output: %d (Identifier: %d)\n", i, Index->name, Index->defaultOutputDevice,
-                  Index->type);
+    for (PaHostApiIndex i = 0; i < api_count; i++) {
+        const PaHostApiInfo *index = Pa_GetHostApiInfo(i);
+        Log::Logf("(%d) %s: Default Output: %d (Identifier: %d)\n", i, index->name, index->defaultOutputDevice,
+                  index->type);
 
 #ifdef WIN32
-        if (Index->type == paWASAPI)
-            DefaultWasapiDevice = Index->defaultOutputDevice;
-        else if (Index->type == paDirectSound)
-            DefaultDSDevice = Index->defaultOutputDevice;
-        else if (Index->type == paWDMKS)
-            DefaultWDMKSDevice = Index->defaultOutputDevice;
+        if (index->type == paWASAPI)
+            DefaultWasapiDevice = index->defaultOutputDevice;
+        else if (index->type == paDirectSound)
+            DefaultDSDevice = index->defaultOutputDevice;
+        else if (index->type == paWDMKS)
+            DefaultWDMKSDevice = index->defaultOutputDevice;
 #endif
     }
 
     Log::Logf("\nAUDIO: The audio devices are\n");
 
-    PaDeviceIndex DevCount = Pa_GetDeviceCount();
-    for (PaDeviceIndex i = 0; i < DevCount; i++) {
-        const PaDeviceInfo *Info = Pa_GetDeviceInfo(i);
-        if (Info->maxOutputChannels == 0) continue; // Skip input devices.
-        Log::Logf("(%d): %s\n", i + 1, Info->name);
-        Log::Logf("\thighLat: %f ms, lowLat: %f ma\n", Info->defaultHighOutputLatency * 1000,
-                  Info->defaultLowOutputLatency * 1000);
-        Log::Logf("\tsampleRate: %f, hostApi: %d\n", Info->defaultSampleRate, Info->hostApi);
-        Log::Logf("\tmaxchannels: %d\n", Info->maxOutputChannels);
+    const PaDeviceIndex dev_count = Pa_GetDeviceCount();
+    for (PaDeviceIndex i = 0; i < dev_count; i++) {
+        const PaDeviceInfo *info = Pa_GetDeviceInfo(i);
+        if (info->maxOutputChannels == 0) continue; // Skip input devices.
+        Log::Logf("(%d): %s\n", i + 1, info->name);
+        Log::Logf("\thighLat: %f ms, lowLat: %f ma\n", info->defaultHighOutputLatency * 1000,
+                  info->defaultLowOutputLatency * 1000);
+        Log::Logf("\tsampleRate: %f, hostApi: %d\n", info->defaultSampleRate, info->hostApi);
+        Log::Logf("\tmaxchannels: %d\n", info->maxOutputChannels);
     }
 }
 
 void init_audio() {
 #ifndef NO_AUDIO
-    PaError Err = Pa_Initialize();
+    const PaError err = Pa_Initialize();
 
-    if (Err != 0) // Couldn't get audio, bail out
+    if (err != 0) // Couldn't get audio, bail out
         return;
 
 #ifdef WIN32
@@ -475,14 +475,14 @@ void init_audio() {
 
     UseThreadedDecoder = ConfigurationVariable("UseThreadedDecoder", "Audio");
 
-    GetAudioInfo();
+    get_audio_info();
 
     PaMixer::GetInstance().Initialize(UseThreadedDecoder);
-    assert(Err == 0);
+    assert(err == 0);
 #endif
 }
 
-double GetDeviceLatency() {
+double get_device_latency() {
 #ifndef NO_AUDIO
     return Pa_GetDeviceInfo(Pa_GetDefaultOutputDevice())->defaultLowOutputLatency;
 #else
@@ -491,7 +491,7 @@ double GetDeviceLatency() {
 }
 
 
-IMixer *GetMixer() {
+IMixer *get_mixer() {
     return &PaMixer::GetInstance();
 }
 
@@ -502,19 +502,19 @@ void update_mixer() {
 #endif
 }
 
-double MixerGetLatency() {
+double mixer_get_latency() {
 #ifndef NO_AUDIO
-    return PaMixer::GetInstance().GetLatency();
+    return PaMixer::GetInstance().get_latency();
 #else
     return 0;
 #endif
 }
 
-double MixerGetRate() {
+double mixer_get_rate() {
     return PaMixer::GetInstance().get_rate();
 }
 
-double MixerGetFactor() {
+double mixer_get_factor() {
 #ifndef NO_AUDIO
     return PaMixer::GetInstance().get_factor();
 #else
@@ -522,7 +522,7 @@ double MixerGetFactor() {
 #endif
 }
 
-double MixerGetTime() {
+double mixer_get_time() {
 #ifndef NO_AUDIO
     return PaMixer::GetInstance().get_time();
 #else

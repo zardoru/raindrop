@@ -54,7 +54,7 @@ private:
 public:
     Config last_config{};
 
-    void Configure(const Config cfg)
+    void configure(const Config &cfg)
     {
         if (cfg.input_channels != 1 && cfg.input_channels != 2)
             throw std::runtime_error("unexpected channel layout");
@@ -69,8 +69,7 @@ public:
         last_config = cfg;
     }
 
-    void SetPitch(const double pitch)
-    {
+    void set_pitch(const double pitch) const {
         if (!m_resampler_)
             return;
 
@@ -78,7 +77,7 @@ public:
             throw std::runtime_error(otoworm::util::format("error setting SDL resampler pitch: %s", SDL_GetError()));
     }
 
-    void QueueInput(std::vector<uint8_t> &buffer_in) {
+    void queue_input(std::vector<uint8_t> &buffer_in) const {
         if (!m_resampler_)
             return;
 
@@ -86,11 +85,11 @@ public:
             throw std::runtime_error(otoworm::util::format("error during resampling input: %s", SDL_GetError()));
     }
 
-    int OutputBytesPerFrame() const {
+    int output_bytes_per_frame() const {
         return (last_config.use_float ? sizeof(float) : sizeof(short)) * 2;
     }
 
-    int AvailableOutputBytes() const {
+    int available_output_bytes() const {
         if (!m_resampler_)
             return 0;
 
@@ -102,8 +101,8 @@ public:
     }
 
     /* returns: samples output per channel */
-    int GetOutput(void *buffer_out, const size_t frames_out) {
-        const int output_bytes_per_frame = OutputBytesPerFrame();
+    int get_output(void *buffer_out, const size_t frames_out) const {
+        const int output_bytes_per_frame = this->output_bytes_per_frame();
         const int bytes_requested = static_cast<int>(frames_out) * output_bytes_per_frame;
         const int bytes_read = SDL_GetAudioStreamData(m_resampler_.get(), buffer_out, bytes_requested);
 
@@ -113,29 +112,23 @@ public:
         return bytes_read / output_bytes_per_frame;
     }
 
-    void Flush()
-    {
+    void flush() const {
         if (!m_resampler_)
             return;
 
         if (!SDL_FlushAudioStream(m_resampler_.get()))
             throw std::runtime_error(otoworm::util::format("error flushing resampler: %s", SDL_GetError()));
     }
-
-    int Resample(std::vector<uint8_t> &buffer_in, void *buffer_out, const size_t frames_out) {
-        QueueInput(buffer_in);
-        return GetOutput(buffer_out, frames_out);
-    }
 };
 
 class AudioStream::AudioStreamInternal
 {
     public:
-    PaUtilRingBuffer mDecodedDataRingbuffer{};
+    PaUtilRingBuffer m_decoded_data_ringbuffer{};
 
-    std::array<uint8_t, 4096> mBufClockData{};
-    PaUtilRingBuffer mBufClock{};
-    SdlResampler mResampler;
+    std::array<uint8_t, 4096> m_buf_clock_data{};
+    PaUtilRingBuffer m_buf_clock{};
+    SdlResampler m_resampler;
 };
 
 template<class T>
@@ -143,15 +136,15 @@ void s16tof32(const T& iterable_start, const T& iterable_end, float* output)
 {
     for (auto s = iterable_start; s != iterable_end; ++s)
     {
-        if (*s < 0) *output = -float(*s) / std::numeric_limits<short>::min();
-        else *output = float(*s) / std::numeric_limits<short>::max();
+        if (*s < 0) *output = -static_cast<float>(*s) / std::numeric_limits<short>::min();
+        else *output = static_cast<float>(*s) / std::numeric_limits<short>::max();
         output++;
     }
 }
 
 // Buffer -> buffer to convert to stereo (interleaved) cnt -> current samples max_len -> Maximum samples
 template<class T>
-void monoToStereo(T* Buffer, const size_t cnt, const size_t max_len)
+void mono_to_stereo(T* buffer, const size_t cnt, const size_t max_len)
 {
     if (!cnt)
         return;
@@ -164,19 +157,19 @@ void monoToStereo(T* Buffer, const size_t cnt, const size_t max_len)
         // So interleave them...
         for (int i = cnt + 1; i >= 0; i--)
         {
-            Buffer[i * 2 + 1] = Buffer[i];
-            Buffer[i * 2] = Buffer[i];
+            buffer[i * 2 + 1] = buffer[i];
+            buffer[i * 2] = buffer[i];
         }
     }
 }
 
-std::unique_ptr<AudioDataSource> SourceFromExt(std::filesystem::path Filename)
+std::unique_ptr<AudioDataSource> source_from_ext(const std::filesystem::path &filename)
 {
-    std::unique_ptr<AudioDataSource> Ret = nullptr;
-    auto ext = otoworm::locale::wstring_to_utf8(Filename.extension().wstring());
-	auto u8fn = otoworm::locale::wstring_to_utf8(Filename.wstring());
+    std::unique_ptr<AudioDataSource> ret = nullptr;
+    auto ext = otoworm::locale::wstring_to_utf8(filename.extension().wstring());
+	auto u8fn = otoworm::locale::wstring_to_utf8(filename.wstring());
     
-    if (u8fn.length() == 0 || ext.length() == 0)
+    if (u8fn.empty() || ext.empty())
     {
         // Log::Printf("Invalid filename. (%s) (%s)\n", u8fn.c_str(), u8fn.c_str());
         return nullptr;
@@ -186,14 +179,14 @@ std::unique_ptr<AudioDataSource> SourceFromExt(std::filesystem::path Filename)
 
     const char* xt = ext.c_str();
     if (strstr(xt, "wav") || strstr(xt, "flac"))
-        Ret = std::make_unique<AudioSourceSFM>();
+        ret = std::make_unique<AudioSourceSFM>();
     else if (strstr(xt, "mp3") || strstr(xt, "ftb")) // az: ftb hax lol
-        Ret = std::make_unique<AudioSourceMP3>();
+        ret = std::make_unique<AudioSourceMP3>();
     else if (strstr(xt, "ogg"))
-        Ret = std::make_unique<AudioSourceOGG>();
+        ret = std::make_unique<AudioSourceOGG>();
 
-    if (Ret && Ret->open(Filename))
-		return Ret;
+    if (ret && ret->open(filename))
+		return ret;
     else
     {
         // Log::Printf("extension %s has no audiosource associated\n", ext.c_str());
@@ -211,9 +204,9 @@ double Sound::get_pitch() const
     return m_pitch_;
 }
 
-void Sound::set_loop(const bool Loop)
+void Sound::set_loop(const bool loop)
 {
-    m_is_looping_ = Loop;
+    m_is_looping_ = loop;
 }
 
 bool Sound::is_looping() const
@@ -246,42 +239,42 @@ AudioSample::AudioSample(IMixer* owner_mixer) : AudioSample()
         m_owner_mixer_->add_sample(this);
 }
 
-AudioSample::AudioSample(const AudioSample& Other)
+AudioSample::AudioSample(const AudioSample& other)
 {
-    m_pitch_ = Other.m_pitch_;
-    m_is_valid_ = (bool)Other.m_is_valid_;
-    m_is_looping_ = Other.m_is_looping_;
-	m_is_loaded_ = (bool)Other.m_is_loaded_;
-    m_owner_mixer_ = Other.m_owner_mixer_;
-    m_audio_start_ = Other.m_audio_start_;
-    m_audio_end_ = Other.m_audio_end_;
-    m_rate_ = Other.m_rate_;
-    m_data_ = Other.m_data_;
+    m_pitch_ = other.m_pitch_;
+    m_is_valid_ = (bool)other.m_is_valid_;
+    m_is_looping_ = other.m_is_looping_;
+	m_is_loaded_ = (bool)other.m_is_loaded_;
+    m_owner_mixer_ = other.m_owner_mixer_;
+    m_audio_start_ = other.m_audio_start_;
+    m_audio_end_ = other.m_audio_end_;
+    m_rate_ = other.m_rate_;
+    m_data_ = other.m_data_;
     m_counter_ = 0;
-    channels_ = Other.channels_;
+    channels_ = other.channels_;
     m_is_playing_ = false;
     if (m_owner_mixer_)
         m_owner_mixer_->add_sample(this);
 }
 
-AudioSample::AudioSample(AudioSample&& Other)
+AudioSample::AudioSample(AudioSample&& other)
  noexcept {
-    m_pitch_ = Other.m_pitch_;
-    m_is_valid_ = (bool)Other.m_is_valid_;
-    m_is_looping_ = Other.m_is_looping_;
-    m_owner_mixer_ = Other.m_owner_mixer_;
+    m_pitch_ = other.m_pitch_;
+    m_is_valid_ = (bool)other.m_is_valid_;
+    m_is_looping_ = other.m_is_looping_;
+    m_owner_mixer_ = other.m_owner_mixer_;
 
-	if (!Other.m_is_loaded_)
-		Other.m_thread_.wait();
+	if (!other.m_is_loaded_)
+		other.m_thread_.wait();
 
 	m_is_loaded_ = true;
 
-    m_audio_start_ = Other.m_audio_start_;
-    m_audio_end_ = Other.m_audio_end_;
-    m_rate_ = Other.m_rate_;
-    m_data_ = Other.m_data_;
+    m_audio_start_ = other.m_audio_start_;
+    m_audio_end_ = other.m_audio_end_;
+    m_rate_ = other.m_rate_;
+    m_data_ = other.m_data_;
     m_counter_ = 0;
-    channels_ = Other.channels_;
+    channels_ = other.channels_;
     m_is_playing_ = false;
     if (m_owner_mixer_)
         m_owner_mixer_->add_sample(this);
@@ -299,15 +292,15 @@ void AudioSample::seek(const size_t offs)
 }
 
 
-bool AudioSample::open(AudioDataSource* Src, const bool async)
+bool AudioSample::open(AudioDataSource* source, const bool async)
 {
-    if (Src && Src->is_valid())
+    if (source && source->is_valid())
     {
 
 		if (async)
-            m_thread_ = std::async(std::launch::async, [&] { return inner_load(Src); });
+            m_thread_ = std::async(std::launch::async, [&] { return inner_load(source); });
 		else
-            inner_load(Src);
+            inner_load(source);
 
 
         return true;
@@ -315,23 +308,23 @@ bool AudioSample::open(AudioDataSource* Src, const bool async)
     return false;
 }
 
-bool AudioSample::inner_load(AudioDataSource *Src) {
-    channels_ = Src->get_channels();
-    size_t mSampleCount = Src->get_length() * channels_;
+bool AudioSample::inner_load(AudioDataSource *src) {
+    channels_ = src->get_channels();
+    size_t mSampleCount = src->get_length() * channels_;
 
     if (!mSampleCount) // Huh what why?
         return false;
 
     m_data_ = std::make_shared<std::vector<short>>(mSampleCount);
-    size_t total = Src->read(m_data_->data(), mSampleCount);
 
-    if (total < mSampleCount) // Oh, odd. Oh well.
+    if (const size_t total = src->read(m_data_->data(), mSampleCount);
+        total < mSampleCount) // Oh, odd. Oh well.
     {
         mSampleCount = total;
         m_data_->resize(mSampleCount); // trim trailing unread samples so resampler doesn't consume phantom frames
     }
 
-    m_rate_ = Src->get_rate();
+    m_rate_ = src->get_rate();
 
     double rate = m_rate_;
     if (m_owner_mixer_)
@@ -339,32 +332,32 @@ bool AudioSample::inner_load(AudioDataSource *Src) {
 
     if (m_rate_ != rate || m_pitch_ != 1)
     {
-        double DstRate = rate;
-        double ResamplingRate = DstRate / m_rate_;
+        const double dst_rate = rate;
+        const double resampling_rate = dst_rate / m_rate_;
 
-        auto totalResampledSamples = size_t(ceil(mSampleCount * ResamplingRate));
-        auto totalOutputFrameCount = totalResampledSamples / channels_ * 2; /* *2 because we want stereo output. */
-        auto new_data = std::make_shared<std::vector<uint8_t>>(totalOutputFrameCount * sizeof (short));
+        const auto total_resampled_samples = static_cast<size_t>(ceil(mSampleCount * resampling_rate));
+        const auto total_output_frame_count = total_resampled_samples / channels_ * 2; /* *2 because we want stereo output. */
+        const auto new_data = std::make_shared<std::vector<uint8_t>>(total_output_frame_count * sizeof (short));
 
         {
-            SdlResampler::Config cfg = {
+            const SdlResampler::Config cfg = {
                     .src_rate = static_cast<double>(m_rate_),
-                    .dst_rate = DstRate,
+                    .dst_rate = dst_rate,
                     .input_channels = static_cast<uint8_t>(channels_),
                     .use_float = false
             };
 
             SdlResampler resampler;
-            resampler.Configure(cfg);
+            resampler.configure(cfg);
 
             /* here's hoping the compiler is smart. */
             std::vector<uint8_t> vec_in(m_data_->size() * sizeof (short));
             memcpy(vec_in.data(), m_data_->data(), vec_in.size());
 
             auto &vec_out = *new_data;
-            resampler.QueueInput(vec_in);
-            resampler.Flush();
-            auto size_out = resampler.GetOutput(vec_out.data(), totalResampledSamples / channels_);
+            resampler.queue_input(vec_in);
+            resampler.flush();
+            const auto size_out = resampler.get_output(vec_out.data(), total_resampled_samples / channels_);
             // size_out is frames-per-channel actually produced by swr; output is stereo (2 channels)
             new_data->resize(size_out * 2 * sizeof(short));
         }
@@ -381,7 +374,7 @@ bool AudioSample::inner_load(AudioDataSource *Src) {
     m_counter_ = 0;
     m_is_valid_ = true;
 
-    m_audio_end_ = (float(m_data_->size()) / (float(m_rate_) * channels_));
+    m_audio_end_ = (static_cast<float>(m_data_->size()) / (static_cast<float>(m_rate_) * channels_));
     m_is_loaded_ = true;
 
     return true;
@@ -389,7 +382,7 @@ bool AudioSample::inner_load(AudioDataSource *Src) {
 
 uint32_t AudioSample::read(float* buffer, size_t count)
 {
-    size_t limit = (m_rate_ * channels_ * m_audio_end_);
+    const size_t limit = m_rate_ * channels_ * m_audio_end_;
 
     if (!m_is_playing_ || !m_is_loaded_)
         return 0;
@@ -399,7 +392,7 @@ _read:
     if (m_is_valid_ && count && !m_data_->empty())
     {
 		size_t buffer_left = limit - m_counter_;
-        uint32_t read_amount = std::min(buffer_left, count);
+        const uint32_t read_amount = std::min(buffer_left, count);
 
         if (m_counter_ < limit)
         {
@@ -434,8 +427,7 @@ _read:
         return 0;
 }
 
-double AudioSample::get_duration()
-{
+double AudioSample::get_duration() const {
 	return m_audio_end_ - m_audio_start_;
 }
 
@@ -448,23 +440,23 @@ void AudioSample::slice(const float audio_start, const float audio_end)
 {
 	if (!m_is_loaded_) m_thread_.wait();
 
-    float audioDuration = float(m_data_->size()) / (float(m_rate_) * channels_);
-    m_audio_start_ = clamp(float(audio_start / m_pitch_), 0.0f, audioDuration);
-    m_audio_end_ = clamp(float(audio_end / m_pitch_), m_audio_start_, audioDuration);
+    const auto audio_duration = static_cast<float>(m_data_->size()) / (static_cast<float>(m_rate_) * channels_);
+    m_audio_start_ = clamp(static_cast<float>(audio_start / m_pitch_), 0.0f, audio_duration);
+    m_audio_end_ = clamp(static_cast<float>(audio_end / m_pitch_), m_audio_start_, audio_duration);
 }
 
-std::shared_ptr<AudioSample> AudioSample::CopySlice()
+std::shared_ptr<AudioSample> AudioSample::copy_slice()
 {
 	if (!m_is_loaded_)
 		m_thread_.wait();
 
-    size_t start = clamp(size_t(m_audio_start_ * m_rate_ * channels_), size_t(0), m_data_->size());
-    size_t end = clamp(size_t(m_audio_end_ * m_rate_ * channels_), start, m_data_->size());
+    const size_t start = clamp(static_cast<size_t>(m_audio_start_ * m_rate_ * channels_), static_cast<size_t>(0), m_data_->size());
+    const size_t end = clamp(static_cast<size_t>(m_audio_end_ * m_rate_ * channels_), start, m_data_->size());
 
     if (!m_audio_end_) throw std::runtime_error("No buffer available");
     if (end < start) throw std::runtime_error("warning copy slice: end < start");
 
-    std::shared_ptr<AudioSample> out = std::make_shared<AudioSample>(*this);
+    auto out = std::make_shared<AudioSample>(*this);
     return out;
 }
 
@@ -473,23 +465,23 @@ bool AudioSample::is_valid() const
     return m_data_ != nullptr && m_data_->size() != 0;
 }
 
-std::filesystem::path RearrangeFilename(std::filesystem::path Fn)
+std::filesystem::path rearrange_filename(std::filesystem::path fn)
 {
     std::filesystem::path Ret;
-    if (std::filesystem::exists(Fn))
-        return Fn;
+    if (std::filesystem::exists(fn))
+        return fn;
     else
     {
-        auto Ext = otoworm::locale::wstring_to_utf8(Fn.extension().wstring());
-        otoworm::util::to_lower(Ext);
+        auto ext = otoworm::locale::wstring_to_utf8(fn.extension().wstring());
+        otoworm::util::to_lower(ext);
 
-        if (Ext == ".wav")
-            Ret = Fn.parent_path() / (Fn.stem().wstring() + L".ogg");
+        if (ext == ".wav")
+            Ret = fn.parent_path() / (fn.stem().wstring() + L".ogg");
         else
-            Ret = Fn.parent_path() / (Fn.stem().wstring() + L".wav");
+            Ret = fn.parent_path() / (fn.stem().wstring() + L".wav");
 
         if (!std::filesystem::exists(Ret))
-            return Fn;
+            return fn;
         else
             return Ret;
     }
@@ -497,17 +489,17 @@ std::filesystem::path RearrangeFilename(std::filesystem::path Fn)
 
 bool AudioSample::open(const std::filesystem::path Filename)
 {
-    auto FilenameFixed = RearrangeFilename(Filename);
-    std::unique_ptr<AudioDataSource> Src = SourceFromExt(FilenameFixed);
-    return open(Src.get());
+    const auto filename_fixed = rearrange_filename(Filename);
+    const std::unique_ptr<AudioDataSource> src = source_from_ext(filename_fixed);
+    return open(src.get());
 }
 
-bool AudioSample::open(std::filesystem::path Filename, const bool async)
+bool AudioSample::open(const std::filesystem::path &filename, const bool async)
 {
-	auto fn = [=]() {
-		auto FilenameFixed = RearrangeFilename(Filename);
-		std::unique_ptr<AudioDataSource> Src = SourceFromExt(FilenameFixed);
-		return this->open(Src.get(), false);
+	auto fn = [=, this]() {
+		const auto filename_fixed = rearrange_filename(filename);
+		const auto src = source_from_ext(filename_fixed);
+		return this->open(src.get(), false);
 	};
 
 	if (async)
@@ -554,8 +546,7 @@ void AudioSample::stop()
     m_is_playing_ = false;
 }
 
-bool AudioSample::await_load()
-{
+bool AudioSample::await_load() const {
 	if (!m_is_loaded_ && m_thread_.valid())
 	{
 		m_thread_.wait();
@@ -612,7 +603,7 @@ uint32_t AudioStream::read(float* buffer, const size_t count)
         requested_samples_to_read -= padding_len;
 
         if (m_owner_mixer_) {
-            auto rate_ratio = double (get_rate()) / double (m_owner_mixer_->get_rate());
+            auto rate_ratio = static_cast<double>(get_rate()) / static_cast<double>(m_owner_mixer_->get_rate());
             auto len = padding_len / 2 * rate_ratio;
             m_read_frames_ += len;
         } else
@@ -624,13 +615,13 @@ uint32_t AudioStream::read(float* buffer, const size_t count)
     if (m_is_playing_)
     {
         const size_t requested_output_frames = requested_samples_to_read / 2;
-        const int bytes_requested = static_cast<int>(requested_output_frames) * internal_->mResampler.OutputBytesPerFrame();
+        const int bytes_requested = static_cast<int>(requested_output_frames) * internal_->m_resampler.output_bytes_per_frame();
         size_t decoded_input_frames = 0;
 
-        internal_->mResampler.SetPitch(m_pitch_);
+        internal_->m_resampler.set_pitch(m_pitch_);
 
-        while (internal_->mResampler.AvailableOutputBytes() < bytes_requested) {
-            auto samples_to_read = PaUtil_GetRingBufferReadAvailable(&internal_->mDecodedDataRingbuffer);
+        while (internal_->m_resampler.available_output_bytes() < bytes_requested) {
+            auto samples_to_read = PaUtil_GetRingBufferReadAvailable(&internal_->m_decoded_data_ringbuffer);
             if (!samples_to_read)
                 break;
 
@@ -640,18 +631,18 @@ uint32_t AudioStream::read(float* buffer, const size_t count)
 
             m_resample_buffer_.resize(samples_to_read * sizeof (short));
             const size_t decoded_samples_read = PaUtil_ReadRingBuffer(
-                    &internal_->mDecodedDataRingbuffer,
+                    &internal_->m_decoded_data_ringbuffer,
                     m_resample_buffer_.data(),
                     samples_to_read);
             if (!decoded_samples_read)
                 break;
 
             m_resample_buffer_.resize(decoded_samples_read * sizeof(short));
-            internal_->mResampler.QueueInput(m_resample_buffer_);
+            internal_->m_resampler.queue_input(m_resample_buffer_);
             decoded_input_frames += decoded_samples_read / channels_;
         }
 
-        const size_t total_output_frames = internal_->mResampler.GetOutput(buffer, requested_output_frames);
+        const size_t total_output_frames = internal_->m_resampler.get_output(buffer, requested_output_frames);
 
         m_read_frames_ += total_output_frames;
         m_stream_time_ += static_cast<double>(decoded_input_frames) / m_source_->get_rate();
@@ -664,7 +655,7 @@ uint32_t AudioStream::read(float* buffer, const size_t count)
 
 bool AudioStream::open(const std::filesystem::path filename)
 {
-    m_source_ = SourceFromExt(RearrangeFilename(filename));
+    m_source_ = source_from_ext(rearrange_filename(filename));
 
     if (m_source_)
     {
@@ -679,23 +670,23 @@ bool AudioStream::open(const std::filesystem::path filename)
         cfg.src_rate = m_source_->get_rate();
         cfg.use_float = true;
 
-        internal_->mResampler.Configure(cfg);
+        internal_->m_resampler.configure(cfg);
 
         m_buffer_size_ = BUFF_SIZE;
         m_decoded_data_.resize(m_buffer_size_);
         assert(m_decoded_data_.size() == m_buffer_size_);
         PaUtil_InitializeRingBuffer(
-            &internal_->mDecodedDataRingbuffer,
+            &internal_->m_decoded_data_ringbuffer,
             sizeof(short), 
             m_buffer_size_,
             m_decoded_data_.data()
         );
 
         PaUtil_InitializeRingBuffer(
-            &internal_->mBufClock,
+            &internal_->m_buf_clock,
             sizeof(stream_time_map_t),
             4096 / sizeof(stream_time_map_t),
-            internal_->mBufClockData.data()
+            internal_->m_buf_clock_data.data()
         );
 
         current_clock_ = {};
@@ -754,7 +745,7 @@ void AudioStream::stop()
 
 uint32_t AudioStream::update_decoder()
 {
-    const uint32_t avail_write_count = PaUtil_GetRingBufferWriteAvailable(&internal_->mDecodedDataRingbuffer);
+    const uint32_t avail_write_count = PaUtil_GetRingBufferWriteAvailable(&internal_->m_decoded_data_ringbuffer);
     uint32_t read_total;
 
     if (!m_source_ || !m_source_->is_valid()) return 0;
@@ -763,11 +754,11 @@ uint32_t AudioStream::update_decoder()
 
     if ((read_total = m_source_->read(audio_buffer_, avail_write_count)))
     {
-        PaUtil_WriteRingBuffer(&internal_->mDecodedDataRingbuffer, audio_buffer_, read_total);
+        PaUtil_WriteRingBuffer(&internal_->m_decoded_data_ringbuffer, audio_buffer_, read_total);
     }
     else
     {
-        if (!PaUtil_GetRingBufferReadAvailable(&internal_->mDecodedDataRingbuffer) && !m_source_->has_data_left())
+        if (!PaUtil_GetRingBufferReadAvailable(&internal_->m_decoded_data_ringbuffer) && !m_source_->has_data_left())
             m_is_playing_ = false;
     }
 
@@ -795,7 +786,7 @@ double AudioStream::map_stream_clock(const double stream_clock) {
         }
 
         /* if there are no pending clock maps on the ring buffer */
-        if (!PaUtil_ReadRingBuffer(&internal_->mBufClock, &current_clock_, 1)) {
+        if (!PaUtil_ReadRingBuffer(&internal_->m_buf_clock, &current_clock_, 1)) {
             break;
         }
     }
@@ -809,8 +800,8 @@ int64_t AudioStream::get_read_frames() const {
 
 bool AudioStream::queue_stream_clock(const stream_time_map_t& map) const
 {
-    if (PaUtil_GetRingBufferWriteAvailable(&internal_->mBufClock) > 0) {
-        PaUtil_WriteRingBuffer(&internal_->mBufClock, &map, 1);
+    if (PaUtil_GetRingBufferWriteAvailable(&internal_->m_buf_clock) > 0) {
+        PaUtil_WriteRingBuffer(&internal_->m_buf_clock, &map, 1);
         return true;
     }
 
@@ -824,12 +815,11 @@ AudioDataSource::AudioDataSource()
 }
 
 AudioDataSource::~AudioDataSource()
-{
-}
+= default;
 
-void AudioDataSource::set_looping(const bool Loop)
+void AudioDataSource::set_looping(const bool loop)
 {
-    mSourceLoop = Loop;
+    mSourceLoop = loop;
 }
 
 bool AudioStream::is_valid() const

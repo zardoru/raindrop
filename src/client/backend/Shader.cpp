@@ -146,7 +146,7 @@ namespace renderer {
 
 	void DefaultShader::set_color(const float r, const float g, const float b, const float a)
 	{
-		SetUniform(GetUniform(U_COLOR), l2gamma(r), l2gamma(g), l2gamma(b), a);
+		set_uniform(get_uniform(U_COLOR), l2gamma(r), l2gamma(g), l2gamma(b), a);
 	}
 
 	void DefaultShader::update_projection(Mat4 proj)
@@ -231,27 +231,27 @@ namespace renderer {
 		}
 	}
 
-	void Shader::SetUniform(const uint32_t uniform, const int i)
+	void Shader::set_uniform(const uint32_t uniform, const int i)
 	{
 		glUniform1i(uniform, i);
 	}
 
-	void Shader::SetUniform(const uint32_t uniform, const float A, const float B, const float C, const float D)
+	void Shader::set_uniform(const uint32_t uniform, const float A, const float B, const float C, const float D)
 	{
 		glUniform4f(uniform, A, B, C, D);
 	}
 
-	void Shader::SetUniform(const uint32_t uniform, const glm::vec2 Pos)
+	void Shader::set_uniform(const uint32_t uniform, const glm::vec2 Pos)
 	{
 		glUniform2f(uniform, Pos.x, Pos.y);
 	}
 
-	void Shader::SetUniform(const uint32_t uniform, const glm::vec3 Pos)
+	void Shader::set_uniform(const uint32_t uniform, const glm::vec3 Pos)
 	{
 		glUniform3f(uniform, Pos.x, Pos.y, Pos.z);
 	}
 
-	void Shader::SetUniform(const uint32_t Uniform, const float F)
+	void Shader::set_uniform(const uint32_t Uniform, const float F)
 	{
 		glUniform1f(Uniform, F);
 	}
@@ -282,7 +282,7 @@ namespace renderer {
 		return mIsValid;
 	}
 
-	uint32_t DefaultShader::GetUniform(const uint32_t uni) {
+	uint32_t DefaultShader::get_uniform(const uint32_t uni) {
 		assert(uni < NUM_SHADERVARS);
 		return uniforms[uni];
 	}

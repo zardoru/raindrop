@@ -69,7 +69,7 @@ private:
 
     std::vector<FuncFilterCriteria> active_filters_;
 
-    AABBd item_box_at(float t);
+    AABBd item_box_at(float t) const;
 public:
 
     DirectoryChangeNotifyFunction on_directory_change;
@@ -136,8 +136,8 @@ public:
 
     bool is_item_directory(int32_t item) const;
 
-    int32_t index_at_point(float x, float y);
-    uint32_t normalized_index_at_point(float X, float Y);
+    int32_t index_at_point(float x, float y) const;
+    uint32_t normalized_index_at_point(float x, float y) const;
 
     bool is_loading();
 

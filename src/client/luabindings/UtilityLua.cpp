@@ -149,7 +149,7 @@ void CreateUtilityLua(LuaManager *AnimLua) {
                     /// Whether this AABB intersects another AABB
                     // @function Intersects
                     // @tparam AABB aabb Other AABB
-            .addFunction("Intersects", &AABB::Intersects)
-            .addFunction("intersects", &AABB::Intersects)
+            .addFunction("Intersects", &AABB::intersects)
+            .addFunction("intersects", &AABB::intersects)
             .endClass();
 }

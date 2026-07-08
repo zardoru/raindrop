@@ -28,8 +28,8 @@ public:
     Vec2 GetScale() const;
 
     // Position
-    void SetPosition(Vec2 Pos);
-    void SetPosition(float pX, float pY);
+    void set_position(Vec2 Pos);
+    void set_position(float pX, float pY);
     void AddPosition(Vec2 pos);
     void AddPosition(float pX, float pY);
     void SetPositionX(float pX);

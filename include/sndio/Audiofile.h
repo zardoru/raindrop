@@ -17,7 +17,7 @@ public:
     virtual bool is_valid() = 0;
     virtual bool has_data_left() = 0;
 
-    void set_looping(bool Loop);
+    void set_looping(bool loop);
 };
 
 class Sound
@@ -37,7 +37,7 @@ public:
     virtual void stop() = 0;
     void set_pitch(double pitch);
     double get_pitch() const;
-    void set_loop(bool Loop);
+    void set_loop(bool loop);
     bool is_looping() const;
     uint32_t get_channels() const;
 };
@@ -58,31 +58,31 @@ class AudioSample : public Sound
 public:
     AudioSample();
     AudioSample(IMixer* owner_mixer);
-    AudioSample(const AudioSample& Other);
-    AudioSample(AudioSample &&Other) noexcept;
+    AudioSample(const AudioSample& other);
+    AudioSample(AudioSample &&other) noexcept;
     ~AudioSample();
 	void seek(size_t offs);
 	uint32_t read(float* buffer, size_t count) override;
     bool open(std::filesystem::path Filename) override;
-    bool open(std::filesystem::path Filename, bool async);
-    bool open(AudioDataSource* Source, bool async = false);
+    bool open(const std::filesystem::path &filename, bool async);
+    bool open(AudioDataSource* source, bool async = false);
     void play() override;
     void seek_time(float Second) override;
     void seek_sample(uint32_t Sample) override;
     void stop() override;
 
-	bool await_load();
+	bool await_load() const;
 
 	// returns duration in seconds
-	double get_duration();
+	double get_duration() const;
 
     bool is_playing() const override;
     void slice(float audio_start, float audio_end);
-    std::shared_ptr<AudioSample> CopySlice();
+    std::shared_ptr<AudioSample> copy_slice();
     // void Mix(AudioSample& Other);
     bool is_valid() const;
 
-    bool inner_load(AudioDataSource *Src);
+    bool inner_load(AudioDataSource *src);
 };
 
 struct stream_time_map_t {

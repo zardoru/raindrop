@@ -72,7 +72,7 @@ void ScreenGameplay::cleanup() {
 
     for (auto& k : keysounds_) {
         for (auto &s: k.second)
-            GetMixer()->remove_sample(s.get());
+            get_mixer()->remove_sample(s.get());
     }
 }
 
@@ -149,7 +149,7 @@ bool ScreenGameplay::load_chart_data() {
     }
 
 
-    bga_ = BackgroundAnimation::CreateBGAFromChartGroup(index, my_chart_group_, this);
+    bga_ = BackgroundAnimation::create_bga_from_chart_group(index, my_chart_group_, this);
 
     return true;
 }
@@ -169,7 +169,7 @@ bool ScreenGameplay::load_song_audio() {
     const auto sound_list = ps.get_sound_list();
     if (!music_) {
         bool attempt_music_load = true;
-        music_ = std::make_unique<AudioStream>(GetMixer());
+        music_ = std::make_unique<AudioStream>(get_mixer());
         music_->set_pitch(rate);
 
 
@@ -250,7 +250,7 @@ void ScreenGameplay::load_samples() {
 
     const auto start = std::chrono::high_resolution_clock::now();
     for (auto & i : sound_list) {
-        auto ks = std::make_shared<AudioSample>(GetMixer());
+        auto ks = std::make_shared<AudioSample>(get_mixer());
 
         ks->set_pitch(rate);
         std::filesystem::path rfd = i.second;
@@ -326,7 +326,7 @@ void ScreenGameplay::load_bmson() {
                     if (sound.first == audio_file.first) {
                         p->slice(sound.second.start, sound.second.end);
                         keysound_data_mutex.lock();
-                        keysounds_[wav.first].push_back(p->CopySlice());
+                        keysounds_[wav.first].push_back(p->copy_slice());
                         keysound_data_mutex.unlock();
                     }
                     // obj_cnt++;
@@ -384,7 +384,7 @@ bool ScreenGameplay::process_song() {
     if (((apply_drift_virtual && chart->has_no_audio_stream) ||  // We want to apply it to a keysounded file and it's virtual
          (apply_drift_decoder &&
           chart->has_no_audio_stream))) // or we want to apply it to a non-keysounded file and it's not virtual
-        TimeError.AudioDrift += MixerGetLatency();
+        TimeError.AudioDrift += mixer_get_latency();
 
     TimeError.AudioDrift += Configuration::GetConfigf("Offset7K");
 
@@ -393,7 +393,7 @@ bool ScreenGameplay::process_song() {
     else
         TimeError.AudioDrift += Configuration::GetConfigf("OffsetNonKeysounded");
 
-    Log::Logf("TimeCompensation: %f (Latency: %f / Offset: %f)\n", TimeError.AudioDrift, MixerGetLatency(),
+    Log::Logf("TimeCompensation: %f (Latency: %f / Offset: %f)\n", TimeError.AudioDrift, mixer_get_latency(),
               chart->offset);
 
     Log::Printf("Processing song... ");

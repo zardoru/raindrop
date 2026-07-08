@@ -154,7 +154,7 @@ struct TRect
                && y >= Y1 && y <= Y2;
     }
 
-    inline bool Intersects(const TRect &other) {
+    inline bool intersects(const TRect &other) {
         return is_in_box(other.X1, other.Y1) ||
                is_in_box(other.X2, other.Y2) ||
                is_in_box(other.X2, other.Y1) ||

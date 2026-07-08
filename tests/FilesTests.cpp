@@ -25,7 +25,7 @@ TEST_CASE("osu storyboard compliance")
 	REQUIRE(chart_group != nullptr);
 	REQUIRE(!chart_group->charts.empty());
 
-	auto bga = BackgroundAnimation::CreateBGAFromChartGroup(0, chart_group, &stub, true);
+	auto bga = BackgroundAnimation::create_bga_from_chart_group(0, chart_group, &stub, true);
 
 	bga->SetAnimationTime(65.0f);
 }

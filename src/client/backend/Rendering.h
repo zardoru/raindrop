@@ -7,21 +7,40 @@ class Texture2D;
 class VBO;
 
 namespace renderer {
+	class Shader;
+
+	struct QuadDrawParams {
+		VBO *texture_coordinates = nullptr;
+		const Mat4 *model = nullptr;
+		Shader *shader = nullptr;
+		EBlendMode blend_mode = BLEND_ALPHA;
+		ColorRGB color = { 1, 1, 1, 1 };
+		bool centered = false;
+		bool invert_color = false;
+		bool black_to_transparent = false;
+		bool replace_color = false;
+		int8_t hidden_mode = -1;
+		bool configure_default_shader = true;
+		bool configure_geometry = true;
+		bool finalize = true;
+	};
+
 	void initialize();
-	void set_default_shader_parameters(bool InvertColor,
-                               bool Centered,
-                               bool BlackToTransparent = false, bool ReplaceColor = false,
-                               int8_t HiddenMode = -1);
+	void set_default_shader_parameters(bool invert_color,
+                               bool centered,
+                               bool black_to_transparent = false, bool replace_color = false,
+                               int8_t hidden_mode = -1);
 
 	void set_texture_parameters(std::string param_src);
 
 	void set_primitive_quad_vbo();
 	void finalize_draw();
 	void do_quad_draw();
-	void set_blending_mode(EBlendMode Mode);
-	void set_textured_quad_vbo(VBO *TexQuad);
-	void draw_textured_quad(Texture2D* ToDraw, const AABB& TextureCrop, const Transformation& QuadTransformation, const EBlendMode &Mode = BLEND_ALPHA, const ColorRGB &InColor = Color::White);
-	void draw_primitive_quad(Transformation &QuadTransformation, const EBlendMode &Mode = BLEND_ALPHA, const ColorRGB &InColor = Color::White);
+	void set_blending_mode(EBlendMode mode);
+	void set_textured_quad_vbo(VBO *tex_quad);
+	void draw_quad(const QuadDrawParams &params = {});
+	void draw_textured_quad(Texture2D* to_draw, const AABB& texture_crop, const Transformation& quad_transformation, const EBlendMode &mode = BLEND_ALPHA, const ColorRGB &in_color = Color::White);
+	void draw_primitive_quad(Transformation &quad_transformation, const EBlendMode &mode = BLEND_ALPHA, const ColorRGB &in_color = Color::White);
 
 	void set_scissor(bool enable);
 	void set_scissor_region(int x, int y, int w, int h);

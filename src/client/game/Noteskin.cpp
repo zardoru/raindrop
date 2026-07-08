@@ -42,7 +42,7 @@ Noteskin::Noteskin(PlayerContext *parent) {
 void Noteskin::LuaRender(Sprite *S) {
     if (CanRender) {
         Mat4 mt = S->GetMatrix();
-        renderer::Shader::set_uniform(renderer::DefaultShader::GetUniform(renderer::U_MODELVIEW), &mt[0][0]);
+        renderer::Shader::set_uniform(renderer::DefaultShader::get_uniform(renderer::U_MODELVIEW), &mt[0][0]);
         S->render_minimal_setup();
     }
 }

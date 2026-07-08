@@ -21,19 +21,19 @@ public:
 
 		switch (n) {
 		case 3:
-			Shader::SetUniform(uniform, (float)luaL_checknumber(L, 3));
+			Shader::set_uniform(uniform, (float)luaL_checknumber(L, 3));
 			break;
 		case 4:
-			Shader::SetUniform(uniform, Vec2((float)luaL_checknumber(L, 3),
+			Shader::set_uniform(uniform, Vec2((float)luaL_checknumber(L, 3),
 				(float)luaL_checknumber(L, 4)));
 			break;
 		case 5:
-			Shader::SetUniform(uniform, Vec3((float)luaL_checknumber(L, 3),
+			Shader::set_uniform(uniform, Vec3((float)luaL_checknumber(L, 3),
 				(float)luaL_checknumber(L, 4),
 				(float)luaL_checknumber(L, 5)));
 			break;
 		case 6:
-			Shader::SetUniform(uniform, (float)luaL_checknumber(L, 3),
+			Shader::set_uniform(uniform, (float)luaL_checknumber(L, 3),
 				(float)luaL_checknumber(L, 4),
 				(float)luaL_checknumber(L, 5),
 				(float)luaL_checknumber(L, 6));

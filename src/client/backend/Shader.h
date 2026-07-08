@@ -39,12 +39,12 @@ namespace renderer {
 
 		bool is_valid() const;
 
-		static void SetUniform(uint32_t uniform, int i);
+		static void set_uniform(uint32_t uniform, int i);
 
-		static void SetUniform(uint32_t Uniform, float F);
-		static void SetUniform(uint32_t uniform, glm::vec2 vec);
-		static void SetUniform(uint32_t uniform, glm::vec3 vec);
-		static void SetUniform(uint32_t uniform, float A, float B, float C, float D);
+		static void set_uniform(uint32_t Uniform, float F);
+		static void set_uniform(uint32_t uniform, glm::vec2 vec);
+		static void set_uniform(uint32_t uniform, glm::vec3 vec);
+		static void set_uniform(uint32_t uniform, float A, float B, float C, float D);
 		
 		static void set_uniform(uint32_t uniform, const float *matrix4_x4);
 
@@ -60,7 +60,7 @@ namespace renderer {
 		static bool compile();
 		static void update_projection(Mat4 proj);
 		static void static_bind();
-		static uint32_t GetUniform(uint32_t uni);
+		static uint32_t get_uniform(uint32_t uni);
 
 		static void set_color(float r, float g, float b, float a);
 

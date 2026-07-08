@@ -320,7 +320,7 @@ void ScreenGameplay::update_song_time(float delta) {
             time_.stream = -time_.waiting;
         }
 
-        time_.audio_old = GetMixer()->get_time();
+        time_.audio_old = get_mixer()->get_time();
     }
 
     // UpdateDecoder for the next delta.
@@ -329,17 +329,17 @@ void ScreenGameplay::update_song_time(float delta) {
     // Current Time
     if (music_ && music_->is_valid())
         /* map stream time to DAC queued sample times */
-        time_.stream = music_->map_stream_clock(GetMixer()->get_time());
+        time_.stream = music_->map_stream_clock(get_mixer()->get_time());
     else {
         /* these remain deltas for rates*/
-        double CurrAudioTime = GetMixer()->get_time();
+        double CurrAudioTime = get_mixer()->get_time();
         time_.stream += CurrAudioTime - time_.audio_old;
         time_.audio_old = CurrAudioTime;
     }
 
 #ifdef AUDIO_CLOCK_DEBUG
     if (music_->is_playing() && time_.stream > 0 && music_->get_played_time() > 0) {
-        double expected = (GetMixer()->get_time() - music_->get_played_time()) * music_->get_pitch();
+        double expected = (get_mixer()->get_time() - music_->get_played_time()) * music_->get_pitch();
         if (expected - time_.stream > 0.1) {
             std::cerr << "..." << std::endl;
         }
@@ -360,8 +360,8 @@ ScreenGameplay::on_player_hit(rd::ScoreKeeperJudgment judgment, double dt, uint3
     // @param pn Player number. Identifies who hit the note.
     scene_->call_callback("HitEvent", static_cast<int>(judgment), dt, static_cast<int>(lane) + 1, hold, release, pn);
 
-    auto PlayerScoreKeeper = players_[pn]->get_score_keeper();
-    if (PlayerScoreKeeper->getMaxJudgableNotes() == PlayerScoreKeeper->getScore(rd::ST_NOTES_HIT)) {
+    if (const auto player_score_keeper = players_[pn]->get_score_keeper();
+        player_score_keeper->getMaxJudgableNotes() == player_score_keeper->getScore(rd::ST_NOTES_HIT)) {
         /// Once a player achieves a full combo, this is called. This is called inmediately after HitEvent
         // so the script can keep track of player number who last hit.
         // @callback OnFullComboEvent
@@ -391,9 +391,9 @@ void ScreenGameplay::on_player_gear_key_event(uint32_t lane, bool keydown, int p
     scene_->call_callback("GearKeyEvent", static_cast<int>(lane) + 1, keydown, pn);
 }
 
-bool ScreenGameplay::run(double Delta) {
+bool ScreenGameplay::run(const double delta) {
     if (next_screen_)
-        return run_nested(Delta);
+        return run_nested(delta);
 
     if (!load_successful_)
         return false;
@@ -404,12 +404,12 @@ bool ScreenGameplay::run(double Delta) {
     }
 
     if (active_) {
-        time_.game += Delta;
-        time_.miss_layer -= Delta;
-        time_.failure -= Delta;
-        time_.success -= Delta;
+        time_.game += delta;
+        time_.miss_layer -= delta;
+        time_.failure -= delta;
+        time_.success -= delta;
 
-        update_song_time(Delta);
+        update_song_time(delta);
 
         if (time_.game >= time_.waiting) {
             evaluate_stage_failure();
@@ -417,15 +417,15 @@ bool ScreenGameplay::run(double Delta) {
     }
 
     run_auto_events();
-    for (auto &p : players_)
+    for (const auto &p : players_)
         p->update(time_.stream);
 
-    scene_->update_targets(Delta);
-    bga_->Update(Delta);
+    scene_->update_targets(delta);
+    bga_->Update(delta);
     render();
 
-    if (Delta > 0.1)
-        Log::Logf("ScreenGameplay7K: Delay@[ST%.03f/RST:%.03f] = %f\n", get_screen_time(), time_.game, Delta);
+    if (delta > 0.1)
+        Log::Logf("ScreenGameplay7K: Delay@[ST%.03f/RST:%.03f] = %f\n", get_screen_time(), time_.game, delta);
 
     return is_active_;
 }
@@ -434,7 +434,7 @@ bool ScreenGameplay::run(double Delta) {
 void ScreenGameplay::render() {
     scene_->draw_until_layer(13);
 
-    for (auto &p : players_) {
+    for (const auto &p : players_) {
         if (playfield_clip_enabled_[p->get_player_number()]) {
             renderer::set_scissor(true);
 
@@ -452,5 +452,4 @@ void ScreenGameplay::render() {
     }
 
     scene_->draw_from_layer(14);
-
 }
