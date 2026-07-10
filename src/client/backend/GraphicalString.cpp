@@ -64,16 +64,12 @@ float GraphicalString::get_font_size() const
 	return mFontHeight;
 }
 
-void GraphicalString::render()
+ void GraphicalString::emit_draw_calls(DrawCallSink &sink)
 {
-    if (!mFont) return;
+    if (!mFont)
+        return;
 
-    renderer::set_scissor(scissor);
-    renderer::set_scissor_region(scissor_region.X1, scissor_region.Y1, scissor_region.width(), scissor_region.height());
-
-    mFont->set_color(color.Red, color.Green, color.Blue);
-    mFont->set_alpha(alpha);
-
-	float sc = mFontHeight;
-    mFont->render(mText, Vec2(0, 0), GetMatrix(), Vec2(mKernScale, sc));
+    sink.submit_string(GetZ(), mFont, mText, Vec2(0, 0), GetMatrix(),
+                       Vec2(mKernScale, mFontHeight), color, alpha,
+                       scissor, scissor_region);
 }

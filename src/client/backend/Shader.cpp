@@ -88,8 +88,8 @@ namespace renderer {
 			Log::LogPrintf("Default Vertex Shader Error: %s\n", buffer);
 			return false;
 		}
-		else
-			Log::LogPrintf("Default Vertex Shader Compiled Succesfully\n", buffer);
+		// else
+			// Log::LogPrintf("Default Vertex Shader Compiled Succesfully\n", buffer);
 
 		glGetShaderiv(mFragProgram, GL_COMPILE_STATUS, &status);
 
@@ -100,7 +100,7 @@ namespace renderer {
 			Log::LogPrintf("Fragment Shader Error: %s\n", buffer);
 			return false;
 		}
-		else Log::LogPrintf("Fragment Shader Compiled succesfully\n", buffer);
+		// else Log::LogPrintf("Fragment Shader Compiled succesfully\n", buffer);
 
 		mProgram = glCreateProgram();
 		glAttachShader(mProgram, mVertProgram);

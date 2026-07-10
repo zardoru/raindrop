@@ -21,5 +21,5 @@ public:
 	void set_font_size(float fsize);
 	float get_font_size() const;
 
-    void render() override;
+    void emit_draw_calls(DrawCallSink &sink) override;
 };

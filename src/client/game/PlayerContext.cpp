@@ -429,7 +429,8 @@ void PlayerContext::draw_barlines(const double current_vertical, const double us
         if (real_v > 0 && real_v < ScreenWidth) {
             barline_->set_location(Vec2(noteskin_->GetBarlineStartX(), real_v),
                                   Vec2(noteskin_->GetBarlineStartX() + noteskin_->GetBarlineWidth(), real_v));
-            barline_->render();
+            if (draw_calls_)
+                barline_->emit_draw_calls(*draw_calls_);
         }
     }
 }
@@ -577,8 +578,12 @@ void PlayerContext::update(const double song_time) {
 }
 
 
-void PlayerContext::render(const double song_time) {
-    int rnc = draw_measures(song_time - drift_);
+void PlayerContext::emit_draw_calls(const double song_time, DrawCallSink &sink) {
+    draw_calls_ = &sink;
+    noteskin_->begin_draw(sink);
+    draw_measures(song_time - drift_);
+    noteskin_->end_draw();
+    draw_calls_ = nullptr;
 }
 
 void PlayerContext::set_playable_data(std::shared_ptr<otoworm::Chart> chart, const double drift) {

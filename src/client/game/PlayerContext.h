@@ -6,6 +6,7 @@
 class Line;
 class Noteskin;
 class Replay;
+class DrawCallSink;
 
 /*
 	Usage of a PlayerContext requires several steps.
@@ -69,6 +70,7 @@ private:
     int draw_measures(double song_time); // returns rendered note count
 
     std::unique_ptr<Noteskin> noteskin_;
+    DrawCallSink *draw_calls_ = nullptr;
     int player_number_;
 
     void setup_mechanics();
@@ -83,7 +85,7 @@ public:
     void init() const;
     void validate();
     void update(double song_time);
-    void render(double song_time);
+    void emit_draw_calls(double song_time, DrawCallSink &sink);
 
     std::function<void(int sndid)> play_keysound;
     std::function<void(rd::ScoreKeeperJudgment judgment, double dt, uint32_t lane, bool hold, bool release, int pn)> on_hit;

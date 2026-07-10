@@ -4,6 +4,7 @@
 
 class Transformation
 {
+    static constexpr uint32_t MaxLayer = 15;
     Mat4   mMatrix;
     float  mWidth, mHeight;
     Vec2   mPosition;

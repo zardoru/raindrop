@@ -1213,12 +1213,12 @@ void osuBackgroundAnimation::Update(float Delta)
 {
 }
 
-void osuBackgroundAnimation::render()
+void osuBackgroundAnimation::emit_draw_calls(DrawCallSink &sink)
 {
 	for (auto&& item : mAutoBGLayer)
-		item.render();
+		item.emit_draw_calls(sink);
 	for (auto&& item: mBackgroundLayer)
-		item.render();
+		item.emit_draw_calls(sink);
 	for (auto&& item: mForegroundLayer)
-		item.render();
+		item.emit_draw_calls(sink);
 }

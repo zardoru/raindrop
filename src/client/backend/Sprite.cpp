@@ -9,7 +9,9 @@
 #include "VBO.h"
 #include "Texture2D.h"
 
-void Drawable2D::render() {}
+void Drawable2D::emit_draw_calls(DrawCallSink &sink)
+{
+}
 
 Sprite::Sprite(bool should_init_texture) : Drawable2D()
 {

@@ -319,8 +319,7 @@ bool SongWheel::handle_scroll_input(const double dx, const double dy)
     return true;
 }
 
-std::shared_ptr<otoworm::ChartGroup> SongWheel::get_selected_chart_group()
-{
+std::shared_ptr<otoworm::ChartGroup> SongWheel::get_selected_chart_group() const {
     return filtered_current_list_.get_song_entry(selected_bound_item_);
 }
 
@@ -368,7 +367,7 @@ void SongWheel::update(const float delta)
     }
 }
 
-void SongWheel::display_item(const int32_t list_item, const int32_t list_position, const float item_fraction)
+void SongWheel::display_item(const int32_t list_item, const int32_t list_position, const float item_fraction, DrawCallSink &sink)
 {
 	AABBd screen_box (0.0, 0.0, ScreenWidth, ScreenHeight);
 	const AABBd item_box = item_box_at(item_fraction);
@@ -395,8 +394,7 @@ void SongWheel::display_item(const int32_t list_item, const int32_t list_positio
             if (transform_item)
                 transform_item(index, song, is_selected, list_position);
 
-            // Render the objects.
-            sprite->render();
+            sprite->emit_draw_calls(sink);
         }
 
         for (const auto &[index, str] : strings_)
@@ -406,13 +404,13 @@ void SongWheel::display_item(const int32_t list_item, const int32_t list_positio
             if (transform_string)
                 transform_string(index, song, is_selected, list_position, Text);
 
-            str->render();
+            str->emit_draw_calls(sink);
         }
     }
 }
 
 
-void SongWheel::render()
+void SongWheel::emit_draw_calls(DrawCallSink &sink)
 {
     std::unique_lock<std::mutex> lock(*m_load_mutex_);
     int cur = 0;
@@ -434,10 +432,10 @@ void SongWheel::render()
             while (real_index < 0) // Loop over..
                 real_index += max;
 
-            display_item(real_index, cur, t);
+            display_item(real_index, cur, t, sink);
         }
         else
-            display_item(-1, cur, t);
+            display_item(-1, cur, t, sink);
     }
 }
 
@@ -544,7 +542,7 @@ bool SongWheel::is_loading()
 
 void SongWheel::sort_by(const ESortCriteria criteria)
 {
-	std::unique_lock<std::mutex> lock(*m_load_mutex_);
+	std::unique_lock lock(*m_load_mutex_);
 	list_root_->sort_by(criteria);
 	reapply_filters();
 }

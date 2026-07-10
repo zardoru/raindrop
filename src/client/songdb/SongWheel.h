@@ -9,6 +9,7 @@ class SongDatabase;
 class TruetypeFont;
 class LuaManager;
 class GraphicalString;
+class DrawCallSink;
 
 namespace otoworm {
     class ChartGroup;
@@ -58,7 +59,7 @@ private:
     float time_{};
 
     // itemFraction = item / total of displayed items
-    void display_item(int32_t ListItem, int32_t ItemPosition, float itemFraction);
+    void display_item(int32_t ListItem, int32_t ItemPosition, float itemFraction, DrawCallSink &sink);
     bool in_wheel_bounds(Vec2 Pos);
 
     bool is_initialized_;
@@ -106,7 +107,7 @@ public:
 
     bool handle_input(int32_t key, bool is_pressed, bool is_mouse_input);
     bool handle_scroll_input(const double dx, const double dy);
-    std::shared_ptr<otoworm::ChartGroup> get_selected_chart_group();
+    std::shared_ptr<otoworm::ChartGroup> get_selected_chart_group() const;
     void reload_songs(SongDatabase* database);
     void load_songs_once(SongDatabase* database);
 
@@ -147,5 +148,5 @@ public:
     void select_by(const FuncFilterCriteria &criteria);
 
     void update(float delta);
-    void render();
+    void emit_draw_calls(DrawCallSink &sink);
 };

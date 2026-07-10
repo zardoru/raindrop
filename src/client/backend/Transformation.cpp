@@ -1,6 +1,8 @@
 #include "Transformation.h"
 //#include <glm/gtc/matrix_transform.inl>
 
+#include <algorithm>
+
 bool Transformation::IsMatrixDirty()
 {
 	return mDirtyMatrix || Chain;
@@ -175,7 +177,7 @@ uint32_t Transformation::GetZ() const
 
 void Transformation::SetZ(const uint32_t Z)
 {
-    mLayer = Z;
+    mLayer = std::min(Z, MaxLayer);
     mDirtyMatrix = true;
 }
 

@@ -40,11 +40,8 @@ Noteskin::Noteskin(PlayerContext *parent) {
 }
 
 void Noteskin::LuaRender(Sprite *S) {
-    if (CanRender) {
-        Mat4 mt = S->GetMatrix();
-        renderer::Shader::set_uniform(renderer::DefaultShader::get_uniform(renderer::U_MODELVIEW), &mt[0][0]);
-        S->render_minimal_setup();
-    }
+    if (CanRender && draw_calls_ && S)
+        S->emit_draw_calls(*draw_calls_);
 }
 
 bool Noteskin::load_script_callbacks(const std::filesystem::path &filename) {
@@ -129,6 +126,9 @@ void Noteskin::update(float Delta, float CurrentBeat) {
      */
     call_callback("Update", Delta, CurrentBeat);
 }
+
+void Noteskin::begin_draw(DrawCallSink &sink) { draw_calls_ = &sink; }
+void Noteskin::end_draw() { draw_calls_ = nullptr; }
 
 void Noteskin::DrawNote(rd::RuntimeNote &T, int Lane, float Location) {
     const char *CallFunc = nullptr;

@@ -16,6 +16,7 @@
 */
 
 class PlayerContext;
+class DrawCallSink;
 
 class Noteskin {
     LuaManager NoteskinLua;
@@ -32,6 +33,7 @@ class Noteskin {
     bool CanRender;
     bool DecreaseHoldSizeWhenBeingHit;
     PlayerContext *Parent;
+    DrawCallSink *draw_calls_ = nullptr;
 
     void LuaRender(Sprite *);
 
@@ -76,6 +78,8 @@ public:
     void init_noteskin(bool special_style, int lanes);
 
     void update(float Delta, float CurrentBeat);
+    void begin_draw(DrawCallSink &sink);
+    void end_draw();
 
     void DrawNote(rd::RuntimeNote &T, int Lane, float Location);
 

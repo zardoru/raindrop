@@ -15,7 +15,7 @@ public:
 
     virtual void OnHit();
     virtual void OnMiss();
-    virtual void render();
+    void emit_draw_calls(DrawCallSink &sink) override;
 
     /* Can only be called from main thread if LoadNow = true! */
     static std::unique_ptr<BackgroundAnimation> create_bga_from_chart_group(

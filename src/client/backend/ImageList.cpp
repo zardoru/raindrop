@@ -118,6 +118,7 @@ Texture2D* ImageList::GetFromIndex(const int Index)
 void ImageList::ForceFetch()
 {
     Sprite Fill;
+    DrawCallSink calls;
 
     for (auto & Image : Images)
     {
@@ -126,6 +127,8 @@ void ImageList::ForceFetch()
         // Draw as black.
         Fill.color.Red = Fill.color.Blue = Fill.color.Green = 0.0001f;
         Fill.alpha = 0.0001f;
-        Fill.render();
+        Fill.emit_draw_calls(calls);
     }
+
+    calls.flush();
 }

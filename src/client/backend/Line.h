@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Drawable.h"
+#include "DrawCallSink.h"
 
 class VBO;
 
-class Line : public Drawable
+class Line
 {
     VBO *lnvbo;
 
@@ -20,5 +20,5 @@ public:
 
     void set_color(float R, float G, float B, float A);
     void set_location(const Vec2 &p1, const Vec2 &p2);
-    void render() override;
+    void emit_draw_calls(DrawCallSink &sink, uint32_t z = 0) const;
 };

@@ -449,8 +449,7 @@ bool GameWindow::setup_window()
     // glCullFace(GL_BACK);
     // glFrontFace(GL_CW);
     // glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-    glEnable(GL_DEPTH_TEST); GLCHECKERR();
-    glDepthFunc(GL_LEQUAL); GLCHECKERR();
+    glDisable(GL_DEPTH_TEST); GLCHECKERR();
 
 	//glRenderbufferStorage(GL_RENDERBUFFER, )
 	glEnable(GL_FRAMEBUFFER_SRGB); GLCHECKERR();

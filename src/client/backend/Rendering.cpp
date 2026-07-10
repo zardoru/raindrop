@@ -524,59 +524,28 @@ bool Sprite::should_draw() const
     return true;
 }
 
-bool Sprite::render_minimal_setup()
-{
-    if (!should_draw())
-        return false;
-
-//    Renderer::SetScissor(Scissor);
-//    Renderer::SetScissorRegion(ScissorRegion.X1, ScissorRegion.Y1, ScissorRegion.width(), ScissorRegion.height());
-
-    update_texture();
-
-	auto quad_color = color;
-	quad_color.Alpha = alpha;
-
-	renderer::QuadDrawParams params;
-	params.texture_coordinates = uv_buffer_;
-	params.blend_mode = blending_mode_;
-	params.color = quad_color;
-	params.configure_default_shader = false;
-	params.configure_geometry = false;
-	params.finalize = false;
-
-	renderer::draw_quad(params);
-
-    return true;
-}
-
-void Sprite::render()
+ void Sprite::emit_draw_calls(DrawCallSink &sink)
 {
     if (!should_draw())
         return;
 
-    renderer::set_scissor(scissor);
-    renderer::set_scissor_region(scissor_region.X1, scissor_region.Y1, scissor_region.width(), scissor_region.height());
-
     update_texture();
-    assert(glGetError() == 0);
 
-	auto mat = GetMatrix();
-	auto quad_color = color;
-	quad_color.Alpha = alpha;
+    auto matrix = GetMatrix();
+    auto quad_color = color;
+    quad_color.Alpha = alpha;
 
-	renderer::QuadDrawParams params;
-	params.texture_coordinates = uv_buffer_;
-	params.model = &mat;
-	params.shader = m_shader_;
-	params.blend_mode = blending_mode_;
-	params.color = quad_color;
-	params.centered = centered;
-	params.invert_color = color_invert;
-	params.black_to_transparent = black_to_transparent;
+    renderer::QuadDrawParams params;
+    params.texture_coordinates = uv_buffer_;
+    params.model = &matrix;
+    params.shader = m_shader_;
+    params.blend_mode = blending_mode_;
+    params.color = quad_color;
+    params.centered = centered;
+    params.invert_color = color_invert;
+    params.black_to_transparent = black_to_transparent;
 
-	renderer::draw_quad(params);
-    assert(glGetError() == 0);
+    sink.submit_quad(GetZ(), params, m_texture_, scissor, scissor_region);
 }
 
 void Sprite::cleanup()
@@ -738,36 +707,9 @@ void Line::update_vbo()
     }
 }
 
-void Line::render()
+void Line::emit_draw_calls(DrawCallSink &sink, const uint32_t z) const
 {
-    auto Identity = glm::identity<Mat4>();
-    update_vbo();
-
-    glDisable(GL_DEPTH_TEST);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    // Set the color.
-	using namespace renderer;
-	set_default_shader_parameters(true, false, false, false);
-
-    DefaultShader::set_color(R, G, B, A);
-    Shader::set_uniform(DefaultShader::get_uniform(U_MODELVIEW), &(Identity[0][0]));
-
-    // Assign position attrib. pointer
-    lnvbo->bind();
-    glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::get_uniform(A_POSITION)), 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-	color_buffer->bind();
-    glVertexAttribPointer(Shader::enable_attrib_array(DefaultShader::get_uniform(A_COLOR)), 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
-
-    glDrawArrays(GL_LINES, 0, 2);
-
-    Shader::disable_attrib_array(DefaultShader::get_uniform(A_POSITION));
-    Shader::disable_attrib_array(DefaultShader::get_uniform(A_COLOR));
-
-    Texture2D::force_rebind();
-
-    glEnable(GL_DEPTH_TEST);
+    sink.submit_line(z, Vec2(x1, y1), Vec2(x2, y2), {R, G, B, A});
 }
 
 void BitmapFont::render(const std::string &In, const Vec2 &Position, const Mat4 &Transform, const Vec2 &Scale)

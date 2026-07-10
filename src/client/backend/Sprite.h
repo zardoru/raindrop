@@ -3,6 +3,8 @@
 #include <Transformation.h>
 #include <rmath.h>
 
+#include "DrawCallSink.h"
+
 class VBO;
 class Texture2D;
 
@@ -14,7 +16,7 @@ class Drawable2D : public Transformation
 {
 public:
     virtual ~Drawable2D() {};
-    virtual void render();
+    virtual void emit_draw_calls(DrawCallSink &sink);
     // Stub
 };
 
@@ -91,8 +93,7 @@ public:
     void set_crop_to_whole_image();
     void set_crop_by_pixels(int32_t x1, int32_t x2, int32_t y1, int32_t y2);
 
-    void render() override;
-    bool render_minimal_setup();
+    void emit_draw_calls(DrawCallSink &sink) override;
     virtual void invalidate();
 
     void bind_texture_vbo() const;

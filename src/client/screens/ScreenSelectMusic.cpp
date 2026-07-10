@@ -366,11 +366,8 @@ bool ScreenSelectMusic::run(const double delta) {
 
     scene_->update_targets(delta);
 
-    scene_->draw_until_layer(16);
-
-    SongWheel::get_instance().render();
-
-    scene_->draw_from_layer(16);
+    SongWheel::get_instance().emit_draw_calls(scene_->get_draw_calls());
+    scene_->draw();
 
     return is_active_;
 }

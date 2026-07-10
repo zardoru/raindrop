@@ -432,24 +432,17 @@ bool ScreenGameplay::run(const double delta) {
 
 
 void ScreenGameplay::render() {
-    scene_->draw_until_layer(13);
-
     for (const auto &p : players_) {
         if (playfield_clip_enabled_[p->get_player_number()]) {
-            renderer::set_scissor(true);
-
             auto reg = playfield_clip_area_[p->get_player_number()];
-
-            renderer::set_scissor_region_wnd(
-                    reg.X1, reg.Y1, reg.width(), reg.height()
-            );
-
-            p->render(time_.stream);
-            renderer::set_scissor(false);
+            scene_->get_draw_calls().set_clip(true, reg, true);
+            p->emit_draw_calls(time_.stream, scene_->get_draw_calls());
+            scene_->get_draw_calls().set_clip(false);
         } else {
-            p->render(time_.stream);
+            p->emit_draw_calls(time_.stream, scene_->get_draw_calls());
         }
     }
 
-    scene_->draw_from_layer(14);
+    scene_->draw();
+
 }

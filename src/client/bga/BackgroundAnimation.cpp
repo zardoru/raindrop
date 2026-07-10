@@ -311,14 +311,14 @@ public:
 
     float MissTime;
 
-    void render() override
+    void emit_draw_calls(DrawCallSink &sink) override
     {
-        Layer0->render();
-        Layer1->render();
-        Layer2->render();
+        Layer0->emit_draw_calls(sink);
+        Layer1->emit_draw_calls(sink);
+        Layer2->emit_draw_calls(sink);
 
         if (MissTime > 0)
-            LayerMiss->render();
+            LayerMiss->emit_draw_calls(sink);
     }
 
     void OnMiss() override
@@ -364,10 +364,10 @@ public:
         list_.LoadAll();
     }
 
-    void render() override
+    void emit_draw_calls(DrawCallSink &sink) override
     {
         if (background_ != nullptr)
-            background_->render();
+            background_->emit_draw_calls(sink);
     }
 };
 
@@ -430,7 +430,7 @@ void BackgroundAnimation::OnMiss()
 {
 }
 
-void BackgroundAnimation::render()
+void BackgroundAnimation::emit_draw_calls(DrawCallSink &sink)
 {
 }
 

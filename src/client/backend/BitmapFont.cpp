@@ -56,7 +56,7 @@ void BitmapFont::regenerate_char_positions(const Vec2 CellSize)
             CharPosition[Current].set_crop_by_pixels(x*CellSize.x, (x)*CellSize.x + CharSize.x, y*CellSize.y, (y)*CellSize.y + CharSize.y);
             CharPosition[Current].SetWidth(RenderSize.x);
             CharPosition[Current].SetHeight(RenderSize.y);
-            CharPosition[Current].SetZ(16);
+            CharPosition[Current].SetZ(8);
             Current++;
         }
     }
