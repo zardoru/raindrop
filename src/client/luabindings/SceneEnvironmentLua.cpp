@@ -15,6 +15,13 @@ void CreateSceneEnvironmentLua(LuaManager* anim_lua)
 	// @type SceneEnvironment
 	luabridge::getGlobalNamespace(anim_lua->get_lua_state())
 		.beginClass <SceneEnvironment>("GraphObjMan")
+		/// Queue a textured quad for drawing after Update.
+		// @function DrawQuad
+		.addFunction("DrawQuad", static_cast<void (SceneEnvironment::*)(uint32_t, Texture2D *, Transformation *, float, float, float, float, int)>(&SceneEnvironment::draw_quad))
+		/// Queue text for drawing after Update.
+		// @function DrawString
+		.addFunction("DrawString", static_cast<void (SceneEnvironment::*)(uint32_t, Font *, std::string, const Vec2 &, float)>(&SceneEnvironment::draw_string))
+		.addFunction("DrawString", static_cast<void (SceneEnvironment::*)(uint32_t, Font *, std::string, const Vec2 &, float, float)>(&SceneEnvironment::draw_string))
 		/// Register a previously-unregistered @{Object2D}
 		// @function AddTarget
 		// @tparam Object2Dtarget The Object2D to handle.

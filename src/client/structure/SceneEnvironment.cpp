@@ -339,10 +339,35 @@ void SceneEnvironment::draw_quad(const uint32_t z, const renderer::QuadDrawParam
     draw_calls_.submit_quad(z, params, nullptr, false, {});
 }
 
+void SceneEnvironment::draw_quad(const uint32_t z, Texture2D *texture, Transformation *transform,
+                                 const float red, const float green, const float blue,
+                                 const float alpha, const int blend_mode) {
+    if (!texture || !transform)
+        return;
+
+    auto matrix = transform->GetMatrix();
+    renderer::QuadDrawParams params;
+    params.model = &matrix;
+    params.blend_mode = static_cast<EBlendMode>(blend_mode);
+    params.color = {red, green, blue, alpha};
+    draw_calls_.submit_quad(z, params, texture, false, {});
+}
+
 void SceneEnvironment::draw_string(const uint32_t z, Font *font, std::string text,
                                    const Vec2 &position, const Mat4 &transform, const Vec2 &scale) {
     draw_calls_.submit_string(z, font, std::move(text), position, transform, scale,
                               {1, 1, 1, 1}, 1, false, {});
+}
+
+void SceneEnvironment::draw_string(const uint32_t z, Font *font, std::string text,
+                                   const Vec2 &position, const float font_size) {
+    draw_string(z, font, std::move(text), position, font_size, 1.0f);
+}
+
+void SceneEnvironment::draw_string(const uint32_t z, Font *font, std::string text,
+                                   const Vec2 &position, const float font_size,
+                                   const float kerning_scale) {
+    draw_string(z, font, std::move(text), position, Mat4(), Vec2(kerning_scale, font_size));
 }
 
 void SceneEnvironment::update_targets(const double TimeDelta) {

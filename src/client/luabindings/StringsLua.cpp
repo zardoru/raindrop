@@ -7,6 +7,7 @@
 #include <rmath.h>
 
 #include "Texture2D.h"
+#include "TextureCollection.h"
 
 #include "Transformation.h"
 #include "Rendering.h"
@@ -27,10 +28,23 @@ void LoadBmFont(BitmapFont* B, std::string Fn, float CellWidth, float CellHeight
 	B->load_skin_font_image(Fn.c_str(), Size, CellSize, Size, startChar);
 }
 
+Texture2D *LoadTexture(const std::string &filename)
+{
+	return TextureCollection::load(filename);
+}
+
 /// Font and string types. Instantiate a font with TruetypeFont() or LoadBitmapFont() - they are on the "Font" namespace.
 /// @engineclass Strings
 void CreateStringsLuaInterface(LuaManager* AnimLua)
 {
+	luabridge::getGlobalNamespace(AnimLua->get_lua_state())
+		.beginClass<Texture2D>("Texture2D")
+		.addData("Width", &Texture2D::w, false)
+		.addData("Height", &Texture2D::h, false)
+		.endClass()
+		.beginNamespace("Textures")
+		.addFunction("Load", &LoadTexture)
+		.endNamespace();
 
 	/// Base class for fonts.
 	// @type Font.Font
@@ -51,6 +65,10 @@ void CreateStringsLuaInterface(LuaManager* AnimLua)
 		// @function GetLength
 		// @tparam string s The string to get the length of.
 		.addFunction("GetLength", &Font::get_horizontal_length)
+		/// Get the rendered horizontal length for a font size and kerning scale.
+		// @function Measure
+		.addFunction("Measure", static_cast<float (Font::*)(const std::string &, float)>(&Font::measure))
+		.addFunction("Measure", static_cast<float (Font::*)(const std::string &, float, float)>(&Font::measure))
 		.endClass()
 		/// @type Font.TruetypeFont
 		.deriveClass <TruetypeFont, Font>("TruetypeFont")

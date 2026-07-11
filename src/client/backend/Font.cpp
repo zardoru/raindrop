@@ -35,3 +35,13 @@ float Font::get_horizontal_length(const char* Text)
 {
     return 0; // stub
 }
+
+float Font::measure(const std::string &text, const float font_size, const float kerning_scale)
+{
+    return get_horizontal_length(text.c_str()) / SDF_SIZE * font_size * kerning_scale;
+}
+
+float Font::measure(const std::string &text, const float font_size)
+{
+    return measure(text, font_size, 1.0f);
+}

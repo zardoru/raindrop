@@ -19,6 +19,7 @@ class Drawable2D;
 class Sprite;
 class ImageList;
 class TruetypeFont;
+class Texture2D;
 class SceneEnvironment
 {
     std::shared_ptr<LuaManager> lua_;
@@ -105,8 +106,14 @@ public:
     void draw_targets(double TimeDelta);
     void draw();
     void draw_quad(uint32_t z, const renderer::QuadDrawParams &params = {});
+    void draw_quad(uint32_t z, Texture2D *texture, Transformation *transform,
+                   float red, float green, float blue, float alpha, int blend_mode);
     void draw_string(uint32_t z, Font *font, std::string text, const Vec2 &position,
                      const Mat4 &transform = Mat4(), const Vec2 &scale = Vec2(1, 1));
+    void draw_string(uint32_t z, Font *font, std::string text, const Vec2 &position,
+                     float font_size);
+    void draw_string(uint32_t z, Font *font, std::string text, const Vec2 &position,
+                     float font_size, float kerning_scale = 1.0f);
     DrawCallSink &get_draw_calls() { return draw_calls_; }
 
     TruetypeFont* create_ttf(const char* Dir);
