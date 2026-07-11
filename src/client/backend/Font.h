@@ -1,11 +1,12 @@
 #pragma once
 
 #include <glm.h>
+#include <rmath.h>
 
 class Font
 {
 protected:
-    float Red, Green, Blue, Alpha;
+    ColorRGB color_;
 public:
     Font();
 

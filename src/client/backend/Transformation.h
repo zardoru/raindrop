@@ -4,62 +4,61 @@
 
 class Transformation
 {
-    static constexpr uint32_t MaxLayer = 15;
-    Mat4   mMatrix;
-    float  mWidth, mHeight;
-    Vec2   mPosition;
-    uint32_t mLayer;
+    static constexpr uint8_t MaxLayer = 15;
+    Transformation* chain_;
+    Mat4   m_matrix_;
+    float  m_width_, m_height_;
+    Vec2   m_position_;
+    Vec2 m_scale_;
+    float m_rotation_;
+    bool   m_dirty_matrix_;
+    uint8_t m_layer_;
 
-    Vec2 mScale;
-    float mRotation;
-    bool   mDirtyMatrix;
-
-	bool IsMatrixDirty();
-    Transformation* Chain;
+	bool is_matrix_dirty() const;
 public:
     Transformation();
 
     // Scale
-    void SetScale(Vec2 Scale);
-    void SetScale(float Scale);
-    void SetScaleX(float ScaleX);
-    void SetScaleY(float ScaleY);
-    float GetScaleX() const;
-    float GetScaleY() const;
-    Vec2 GetScale() const;
+    void set_scale(Vec2 scale);
+    void set_scale(float scale);
+    void set_scale_x(float scale_x);
+    void set_scale_y(float scale_y);
+    float get_scale_x() const;
+    float get_scale_y() const;
+    Vec2 get_scale() const;
 
     // Position
-    void set_position(Vec2 Pos);
-    void set_position(float pX, float pY);
-    void AddPosition(Vec2 pos);
-    void AddPosition(float pX, float pY);
-    void SetPositionX(float pX);
-    void SetPositionY(float pY);
-    void AddPositionX(float pX);
-    void AddPositionY(float pY);
-    Vec2 GetPosition() const;
-    float GetPositionX() const;
-    float GetPositionY() const;
-    void SetZ(uint32_t Z);
-    uint32_t GetZ() const;
+    void set_position(Vec2 pos);
+    void set_position(float p_x, float p_y);
+    void move(Vec2 pos);
+    void move(float p_x, float p_y);
+    void set_position_x(float p_x);
+    void set_position_y(float p_y);
+    void add_position_x(float p_x);
+    void add_position_y(float p_y);
+    Vec2 get_position() const;
+    float get_position_x() const;
+    float get_position_y() const;
+    void set_z(uint8_t z);
+    uint8_t get_z() const;
 
     // Size
-    void SetSize(Vec2 Size);
-    void SetSize(float Size);
-    void SetSize(float W, float H);
-    void SetWidth(float W);
-    void SetHeight(float H);
-    float GetWidth() const;
-    float GetHeight() const;
-    Vec2 GetSize() const;
+    void set_size(Vec2 size);
+    void set_size(float size);
+    void set_size(float w, float h);
+    void set_width(float w);
+    void set_height(float h);
+    float get_width() const;
+    float get_height() const;
+    Vec2 get_size() const;
 
     // Rotation
-    void SetRotation(float Rot);
-    float GetRotation() const;
-    void AddRotation(float Rot);
+    void set_rotation(float rot);
+    float get_rotation() const;
+    void add_rotation(float rot);
 
-    void ChainTransformation(Transformation *Other);
+    void chain_transformation(Transformation *other);
 
-    const glm::mat4 &GetMatrix();
-    void UpdateMatrix();
+    const glm::mat4 &as_matrix();
+    void update_matrix();
 };

@@ -172,7 +172,7 @@ namespace renderer {
 	void Shader::compile(const std::string& frag) {
 		mIsValid = true;
 		CHECKERR();
-		Log::LogPrintf("Compiling fragment shader.\n");
+		// Log::LogPrintf("Compiling fragment shader.\n");
 
 		auto normalized_frag = normalize_shader_source(frag);
 		auto fragsh = glCreateShader(GL_FRAGMENT_SHADER);
@@ -193,8 +193,8 @@ namespace renderer {
 			Log::LogPrintf("Fragment Shader Error: %s\n", buffer);
 			mIsValid = false;
 		}
-		else
-			Log::LogPrintf("Fragment Shader Compiled Succesfully\n");
+		// else
+		// 	Log::LogPrintf("Fragment Shader Compiled Succesfully\n");
 
 		mShaderHandle = glCreateProgram();
 		CHECKERR();
@@ -211,8 +211,8 @@ namespace renderer {
 			Log::LogPrintf("Shader linking failed: %d - %s\n", status, buffer);
 			mIsValid = false;
 		}
-		else
-			Log::LogPrintf("Shader linking succesful.\n");
+		// else
+		// 	Log::LogPrintf("Shader linking succesful.\n");
 
         assert(glGetError() == 0);
 

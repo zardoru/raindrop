@@ -15,49 +15,49 @@ public:
 
     template<class T>
     static void setChainTransformation(T *obj, Transformation *param) {
-        obj->ChainTransformation(param);
+        obj->chain_transformation(param);
     }
     static VectorLua getScaleVec(Transformation const *obj) {
-        return {obj->GetScaleX(), obj->GetScaleY()};
+        return {obj->get_scale_x(), obj->get_scale_y()};
     }
 
     static void setScaleVec(Transformation *obj, VectorLua v) {
-        obj->SetScaleX(v.getX());
-        obj->SetScaleY(v.getY());
+        obj->set_scale_x(v.getX());
+        obj->set_scale_y(v.getY());
     }
 
     static VectorLua getSize(Transformation const *obj) {
-        return {obj->GetWidth(), obj->GetHeight()};
+        return {obj->get_width(), obj->get_height()};
     }
 
     static void setSize(Transformation *obj, VectorLua v) {
-        obj->SetWidth(v.getX());
-        obj->SetHeight(v.getY());
+        obj->set_width(v.getX());
+        obj->set_height(v.getY());
     }
 
     static VectorLua getPosition(Transformation const *obj) {
-        return {obj->GetPositionX(), obj->GetPositionY()};
+        return {obj->get_position_x(), obj->get_position_y()};
     }
 
     static void setPosition(Transformation *obj, VectorLua v) {
-        obj->SetPositionX(v.getX());
-        obj->SetPositionY(v.getY());
+        obj->set_position_x(v.getX());
+        obj->set_position_y(v.getY());
     }
 
     static AABB getRect(Transformation const *obj) {
         return {
-                obj->GetPositionX(),
-                obj->GetPositionY(),
-                obj->GetPositionX() + obj->GetWidth(),
-                obj->GetPositionY() + obj->GetHeight()
+                obj->get_position_x(),
+                obj->get_position_y(),
+                obj->get_position_x() + obj->get_width(),
+                obj->get_position_y() + obj->get_height()
         };
     }
 
     static void setRect(Transformation *obj, AABB box) {
-        obj->SetPositionX(box.X1);
-        obj->SetPositionY(box.X2);
-        obj->SetWidth(box.width());
-        obj->SetHeight(box.height());
+        obj->set_position_x(box.X1);
+        obj->set_position_y(box.X2);
+        obj->set_width(box.width());
+        obj->set_height(box.height());
     }
     
 };
@@ -78,31 +78,31 @@ void CreateTransformationLua(LuaManager* anim_lua)
 
 		/// Layer shorthand.
 		// @property Z
-		.addProperty("Z", &Transformation::GetZ, &Transformation::SetZ)
+		.addProperty("Z", &Transformation::get_z, &Transformation::set_z)
 		/// Layer. Does the same as the layer of @{Object2D}
 		// @property Layer
-		.addProperty("Layer", &Transformation::GetZ, &Transformation::SetZ)
+		.addProperty("Layer", &Transformation::get_z, &Transformation::set_z)
 		/// Rotation in degrees.
 		// @property Rotation
-		.addProperty("Rotation", &Transformation::GetRotation, &Transformation::SetRotation)
+		.addProperty("Rotation", &Transformation::get_rotation, &Transformation::set_rotation)
 		/// Transformation Width. Stacks with ScaleX
 		// @property Width
-		.addProperty("Width", &Transformation::GetWidth, &Transformation::SetWidth)
+		.addProperty("Width", &Transformation::get_width, &Transformation::set_width)
 		/// Transformation height. Stacks with ScaleY.
 		// @property Height
-		.addProperty("Height", &Transformation::GetHeight, &Transformation::SetHeight)
+		.addProperty("Height", &Transformation::get_height, &Transformation::set_height)
 		/// Horizontal Scale in local space.
 		// @property ScaleX
-		.addProperty("ScaleX", &Transformation::GetScaleX, &Transformation::SetScaleX)
+		.addProperty("ScaleX", &Transformation::get_scale_x, &Transformation::set_scale_x)
 		/// Vertical scale in local space.
 		// @property ScaleY
-		.addProperty("ScaleY", &Transformation::GetScaleY, &Transformation::SetScaleY)
+		.addProperty("ScaleY", &Transformation::get_scale_y, &Transformation::set_scale_y)
 		/// X position in local space.
 		// @property X
-		.addProperty("X", &Transformation::GetPositionX, &Transformation::SetPositionX)
+		.addProperty("X", &Transformation::get_position_x, &Transformation::set_position_x)
 		/// Y position in local space.
 		// @property Y
-		.addProperty("Y", &Transformation::GetPositionY, &Transformation::SetPositionY)
+		.addProperty("Y", &Transformation::get_position_y, &Transformation::set_position_y)
        .addProperty("ChainTransformation",
                     &TransformationProxy::getChainTransformation<Transformation>,
                     &TransformationProxy::setChainTransformation<Transformation>)

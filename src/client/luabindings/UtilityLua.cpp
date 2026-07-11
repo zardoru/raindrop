@@ -103,6 +103,17 @@ void CreateUtilityLua(LuaManager *AnimLua) {
             .addFunction("__sub", &VectorLua::sub)
             .addFunction("__mul", &VectorLua::scale)
             .endClass()
+            .beginClass<ColorRGB>("ColorRGB")
+            .addConstructor<void(*)(float, float, float, float)>()
+            .addData("R", &ColorRGB::R)
+            .addData("G", &ColorRGB::G)
+            .addData("B", &ColorRGB::B)
+            .addData("A", &ColorRGB::A)
+            .addData("r", &ColorRGB::R)
+            .addData("g", &ColorRGB::G)
+            .addData("b", &ColorRGB::B)
+            .addData("a", &ColorRGB::A)
+            .endClass()
             .beginClass<AABB>("AABB")
                     /// Constructor
                     // @function AABB

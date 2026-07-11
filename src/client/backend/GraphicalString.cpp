@@ -12,8 +12,8 @@ GraphicalString::GraphicalString()
     : Sprite(false),
     mFont(nullptr)
 {
-    SetSize(1); // Default size, so it doesn't scale to 0
-    SetZ(0);
+    set_size(1); // Default size, so it doesn't scale to 0
+    set_z(0);
 	mFontHeight = 16;
 	mKernScale = 1;
 }
@@ -69,7 +69,7 @@ float GraphicalString::get_font_size() const
     if (!mFont)
         return;
 
-    sink.submit_string(GetZ(), mFont, mText, Vec2(0, 0), GetMatrix(),
-                       Vec2(mKernScale, mFontHeight), color, alpha,
+    sink.submit_string(get_z(), mFont, mText, Vec2(0, 0), as_matrix(),
+                       Vec2(mKernScale, mFontHeight), color,
                        scissor, scissor_region);
 }

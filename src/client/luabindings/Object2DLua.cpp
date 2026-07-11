@@ -24,39 +24,47 @@
 // Adding these directly does not work. Inheriting them from Transformation does not work. We're left only with this.
 struct O2DProxy {
     static uint32_t getZ(Sprite const *obj) {
-        return obj->GetZ();
+        return obj->get_z();
     }
 
     static float getScaleX(Sprite const *obj) {
-        return obj->GetScaleX();
+        return obj->get_scale_x();
     }
 
     static float getScaleY(Sprite const *obj) {
-        return obj->GetScaleY();
+        return obj->get_scale_y();
     }
 
     static float getWidth(Sprite const *obj) {
-        return obj->GetWidth();
+        return obj->get_width();
     }
 
     static float getHeight(Sprite const *obj) {
-        return obj->GetHeight();
+        return obj->get_height();
     }
 
     static float getX(Sprite const *obj) {
-        return obj->GetPositionX();
+        return obj->get_position_x();
     }
 
     static float getY(Sprite const *obj) {
-        return obj->GetPositionY();
+        return obj->get_position_y();
     }
 
     static float getRotation(Sprite const *obj) {
-        return obj->GetRotation();
+        return obj->get_rotation();
     }
 
     static float getRed(Sprite const *obj) {
         return obj->color.Red;
+    }
+
+    static float getAlpha(Sprite const *obj) {
+        return obj->color.Alpha;
+    }
+
+    static void setAlpha(Sprite *obj, float param) {
+        obj->color.Alpha = param;
     }
 
     static void setGreen(Sprite *obj, float param) {
@@ -85,95 +93,95 @@ struct O2DProxy {
     }
 
     static void setZ(Sprite *obj, uint32_t nZ) {
-        obj->SetZ(nZ);
+        obj->set_z(nZ);
     }
 
     static void setHeight(Sprite *obj, float param) {
-        obj->SetHeight(param);
+        obj->set_height(param);
     }
 
     static void setWidth(Sprite *obj, float param) {
-        obj->SetWidth(param);
+        obj->set_width(param);
     }
 
     static void setScaleY(Sprite *obj, float param) {
-        obj->SetScaleY(param);
+        obj->set_scale_y(param);
     }
 
     static void setScaleX(Sprite *obj, float param) {
-        obj->SetScaleX(param);
+        obj->set_scale_x(param);
     }
 
     static void setRotation(Sprite *obj, float param) {
-        obj->SetRotation(param);
+        obj->set_rotation(param);
     }
 
     static void setX(Sprite *obj, float param) {
-        obj->SetPositionX(param);
+        obj->set_position_x(param);
     }
 
     static void setY(Sprite *obj, float param) {
-        obj->SetPositionY(param);
+        obj->set_position_y(param);
     }
 
     template<class T>
     static void setChainTransformation(T *obj, Transformation *param) {
-        obj->ChainTransformation(param);
+        obj->chain_transformation(param);
     }
 
     static void setScale(Sprite *obj, float param) {
-        obj->SetScale(param);
+        obj->set_scale(param);
     }
 
     static void AddRotation(Sprite *obj, float param) {
-        obj->AddRotation(param);
+        obj->add_rotation(param);
     }
 
     static float getScale(Sprite const *obj) {
-        return (obj->GetScaleX() + obj->GetScaleY()) / 2;
+        return (obj->get_scale_x() + obj->get_scale_y()) / 2;
     }
 
     static VectorLua getScaleVec(Sprite const *obj) {
-        return {obj->GetScaleX(), obj->GetScaleY()};
+        return {obj->get_scale_x(), obj->get_scale_y()};
     }
 
     static void setScaleVec(Sprite *obj, VectorLua v) {
-        obj->SetScaleX(v.getX());
-        obj->SetScaleY(v.getY());
+        obj->set_scale_x(v.getX());
+        obj->set_scale_y(v.getY());
     }
 
     static VectorLua getSize(Sprite const *obj) {
-        return {obj->GetWidth(), obj->GetHeight()};
+        return {obj->get_width(), obj->get_height()};
     }
 
     static void setSize(Sprite *obj, VectorLua v) {
-        obj->SetWidth(v.getX());
-        obj->SetHeight(v.getY());
+        obj->set_width(v.getX());
+        obj->set_height(v.getY());
     }
 
     static VectorLua getPosition(Sprite const *obj) {
-        return {obj->GetPositionX(), obj->GetPositionY()};
+        return {obj->get_position_x(), obj->get_position_y()};
     }
 
     static void setPosition(Sprite *obj, VectorLua v) {
-        obj->SetPositionX(v.getX());
-        obj->SetPositionY(v.getY());
+        obj->set_position_x(v.getX());
+        obj->set_position_y(v.getY());
     }
 
     static AABB getRect(Sprite const *obj) {
         return {
-                obj->GetPositionX(),
-                obj->GetPositionY(),
-                obj->GetPositionX() + obj->GetWidth(),
-                obj->GetPositionY() + obj->GetHeight()
+                obj->get_position_x(),
+                obj->get_position_y(),
+                obj->get_position_x() + obj->get_width(),
+                obj->get_position_y() + obj->get_height()
         };
     }
 
     static void setRect(Sprite *obj, AABB box) {
-        obj->SetPositionX(box.X1);
-        obj->SetPositionY(box.X2);
-        obj->SetWidth(box.width());
-        obj->SetHeight(box.height());
+        obj->set_position_x(box.X1);
+        obj->set_position_y(box.X2);
+        obj->set_width(box.width());
+        obj->set_height(box.height());
     }
 };
 
@@ -214,12 +222,9 @@ void CreateObject2DLua(LuaManager *anim_lua) {
             .addData("Centered", &Sprite::centered)
             .addData("Scissor", &Sprite::scissor)
             .addData("ScissorRegion", &Sprite::scissor_region)
-                    /// Whether to invert the colors of this sprite. Useless if the shader is set.
-                    // @property ColorInvert
-            .addData("ColorInvert", &Sprite::color_invert)
                     /// The sprite's alpha.
                     // @property Alpha
-            .addData("Alpha", &Sprite::alpha)
+            .addProperty("Alpha", &O2DProxy::getAlpha, &O2DProxy::setAlpha)
                     /// The red value of the sprite. Range from 0 to 1. Will be multiplied
                     // @property Red
             .addProperty("Red", &O2DProxy::getRed, &O2DProxy::setRed)
@@ -240,6 +245,9 @@ void CreateObject2DLua(LuaManager *anim_lua) {
                     // @param y1 Top Y coordinate.
                     // @param y2 Bottom Y coordinate.
             .addFunction("SetCropByPixels", &Sprite::set_crop_by_pixels)
+			/// Set normalized UV crop bounds.
+			// @property Crop
+			.addProperty("Crop", &Sprite::get_crop, static_cast<void (Sprite::*)(const AABB &)>(&Sprite::set_crop))
                     /// Reset the crop to the whole image.
                     // @function ResetCrop
             .addFunction("ResetCrop", &Sprite::set_crop_to_whole_image)

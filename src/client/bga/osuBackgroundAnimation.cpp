@@ -228,17 +228,17 @@ namespace osb {
             // apply position
 
             // rotation -> scale + vecscale -> position.
-            mTransform.ChainTransformation(&mParent->GetScreenTransformation());
+            mTransform.chain_transformation(&mParent->GetScreenTransformation());
 
             // flip -> pivot
             mPivot.set_position(OriginPivots[mOrigin].x, OriginPivots[mOrigin].y);
-            mPivot.ChainTransformation(&mTransform);
+            mPivot.chain_transformation(&mTransform);
 			
             // sprite -> flip vertices
-            mFlip.ChainTransformation(&mPivot);
+            mFlip.chain_transformation(&mPivot);
 
             // No op from sprite.
-            mSprite->ChainTransformation(&mFlip);
+            mSprite->chain_transformation(&mFlip);
 
             // Set the image.
             mSprite->set_image(mParent->GetImageFromIndex(mImageIndex), false);
@@ -275,35 +275,35 @@ namespace osb {
 		
 		if (validate_event_iterator(fade_evt, evFade)) {
 			if (is_time_in_event_bounds(time))
-					mSprite->alpha = fade_evt->lerp_value(time);
+					mSprite->color.Alpha = fade_evt->lerp_value(time);
 			else {
 				if (fade_evt->get_time() == 0 && mLayer == LAYER_SP_BACKGROUND)
-					mSprite->alpha = 1;
+					mSprite->color.Alpha = 1;
 				else
-					mSprite->alpha = 0;
+					mSprite->color.Alpha = 0;
 			}
 		}
 		else {
 			if (is_time_in_event_bounds(time))
-				mSprite->alpha = 1;
+				mSprite->color.Alpha = 1;
 			else
-				mSprite->alpha = 0;
+				mSprite->color.Alpha = 0;
 		}
 
 		// Don't bother updating unless we're visible.
-		if (mSprite->alpha == 0)
+		if (mSprite->color.Alpha == 0)
 			return;
 
 		// Now position.	
 		auto movx_evt = get_event(time, evMoveX);
 		if (validate_event_iterator(movx_evt, evMoveX))
-			mTransform.SetPositionX(movx_evt->lerp_value(time));
-		else mTransform.SetPositionX(mStartPos.x);
+			mTransform.set_position_x(movx_evt->lerp_value(time));
+		else mTransform.set_position_x(mStartPos.x);
 
 		auto movy_evt = get_event(time, evMoveY);
 		if (validate_event_iterator(movy_evt, evMoveY))
-			mTransform.SetPositionY(movy_evt->lerp_value(time));
-		else mTransform.SetPositionY(mStartPos.y);
+			mTransform.set_position_y(movy_evt->lerp_value(time));
+		else mTransform.set_position_y(mStartPos.y);
 
 		// We already unpacked move events, so no need for this next snip.
 		/* auto mov_evt = GetEvent(Time, EVT_MOVE);
@@ -333,9 +333,9 @@ namespace osb {
 		float rot = 0;
 		if (validate_event_iterator(rot_evt, evRotate)) {
 			rot = rot_evt->lerp_value(time);
-			mTransform.SetRotation(rot);
+			mTransform.set_rotation(rot);
 		}
-		else mTransform.SetRotation(0);
+		else mTransform.set_rotation(0);
 
 		if (mSprite->get_image())
 		{
@@ -346,7 +346,7 @@ namespace osb {
 			// then both size and scale on mTransform are free for usage.
 
 			// Set active scales.
-			mTransform.SetSize(i->w * scale * vscale.x, i->h * scale * vscale.y);
+			mTransform.set_size(i->w * scale * vscale.x, i->h * scale * vscale.y);
 
             if (const auto vid = dynamic_cast<VideoPlayback*>(i)) {
 				vid->update_clock(time - evFade.begin()->get_time());
@@ -376,12 +376,12 @@ namespace osb {
 		{
 			if ((hflip_evt - 1)->get_end_time() <= time)
 			{
-				mFlip.SetScaleX(-1);
-				mFlip.SetPositionX(1);
+				mFlip.set_scale_x(-1);
+				mFlip.set_position_x(1);
 			} else
 			{
-				mFlip.SetScaleX(1);
-				mFlip.SetPositionX(0);
+				mFlip.set_scale_x(1);
+				mFlip.set_position_x(0);
 			}
 		}
 
@@ -391,12 +391,12 @@ namespace osb {
 		{
 			if ((vflip_evt - 1)->get_end_time() <= time)
 			{
-				mFlip.SetScaleY(-1);
-				mFlip.SetPositionY(1);
+				mFlip.set_scale_y(-1);
+				mFlip.set_position_y(1);
 			} else
 			{
-				mFlip.SetScaleY(1);
-				mFlip.SetPositionY(0);
+				mFlip.set_scale_y(1);
+				mFlip.set_position_y(0);
 			}
 		}
 	}
@@ -1025,10 +1025,10 @@ osuBackgroundAnimation::osuBackgroundAnimation(
 	: BackgroundAnimation(parent),
 		mImageList(this)
 {
-	SetSize(OSB_WIDTH_WIDE, OSB_HEIGHT);
-	mScreenTransformation.SetPositionX( (OSB_WIDTH_WIDE - OSB_WIDTH) / 2 / OSB_WIDTH_WIDE);
-	mScreenTransformation.SetSize(1 / OSB_WIDTH_WIDE, 1 / OSB_HEIGHT);
-	mScreenTransformation.ChainTransformation(this);
+	set_size(OSB_WIDTH_WIDE, OSB_HEIGHT);
+	mScreenTransformation.set_position_x( (OSB_WIDTH_WIDE - OSB_WIDTH) / 2 / OSB_WIDTH_WIDE);
+	mScreenTransformation.set_size(1 / OSB_WIDTH_WIDE, 1 / OSB_HEIGHT);
+	mScreenTransformation.chain_transformation(this);
 	SongDirectory = std::move(song_directory);
 	CanValidate = false;
 

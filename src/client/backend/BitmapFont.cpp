@@ -54,9 +54,9 @@ void BitmapFont::regenerate_char_positions(const Vec2 CellSize)
             // Ideally, we should actually be using a texture matrix.
             CharPosition[Current].set_image(Font);
             CharPosition[Current].set_crop_by_pixels(x*CellSize.x, (x)*CellSize.x + CharSize.x, y*CellSize.y, (y)*CellSize.y + CharSize.y);
-            CharPosition[Current].SetWidth(RenderSize.x);
-            CharPosition[Current].SetHeight(RenderSize.y);
-            CharPosition[Current].SetZ(8);
+            CharPosition[Current].set_width(RenderSize.x);
+            CharPosition[Current].set_height(RenderSize.y);
+            CharPosition[Current].set_z(8);
             Current++;
         }
     }

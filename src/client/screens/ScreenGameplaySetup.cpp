@@ -49,7 +49,7 @@
 CfgVar disable_bga("DisableBGA");
 
 
-ScreenGameplay::ScreenGameplay() : Screen("ScreenGameplay7K") {
+ScreenGameplay::ScreenGameplay() : Screen("ScreenGameplay") {
     time_ = {};
     time_.old_stream = NAN;
     music_ = nullptr;
@@ -91,7 +91,7 @@ void ScreenGameplay::jump_to_measure(const uint32_t measure) {
     time_.stream = mt;
 
     if (music_) {
-        Log::Printf("ScreenGameplay7K: Setting player to time %f.\n", mt);
+        Log::Printf("ScreenGameplay: Setting player to time %f.\n", mt);
         time_.old_stream = NAN;
         music_->seek_time(time_.stream);
     }
@@ -484,7 +484,7 @@ void ScreenGameplay::load_resources() {
 
     register_script_values();
 
-    scene_->preload(GameState::get_instance().get_skin_file("screengameplay7k.lua"), "Preload");
+    scene_->preload(GameState::get_instance().get_skin_file("screengameplay.lua"), "Preload");
     Log::Printf("Done.\n");
 
     if (start_measure_ > 0)

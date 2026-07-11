@@ -38,7 +38,7 @@
 #include "../game/Game.h"
 #include "../structure/Configuration.h"
 
-/// @themescript screengameplay7k.lua
+/// @themescript screengameplay.lua
 void ScreenGameplay::activate() {
     /// Called once the song time starts advancing.
     // @callback OnActivateEvent
@@ -425,7 +425,7 @@ bool ScreenGameplay::run(const double delta) {
     render();
 
     if (delta > 0.1)
-        Log::Logf("ScreenGameplay7K: Delay@[ST%.03f/RST:%.03f] = %f\n", get_screen_time(), time_.game, delta);
+        Log::Logf("ScreenGameplay: Delay@[ST%.03f/RST:%.03f] = %f\n", get_screen_time(), time_.game, delta);
 
     return is_active_;
 }

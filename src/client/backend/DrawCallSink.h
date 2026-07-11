@@ -16,12 +16,13 @@ class Texture2D;
 // this class alone owns their lifetime, ordering, and renderer interaction.
 class DrawCallSink
 {
-    static constexpr size_t BucketSize = 128;
+    static constexpr size_t BucketSize = 96;
     static constexpr uint32_t LayerCount = 16;
 
     enum class Type : uint8_t { Quad, String, Line };
     struct Handle { size_t bucket; size_t slot; };
 
+    // 96 fits neatly on a 32kb cache
     struct Bucket {
         std::array<Type, BucketSize> types{};
         std::array<bool, BucketSize> drawn{};
@@ -38,7 +39,6 @@ class DrawCallSink
         std::array<Mat4, BucketSize> string_transforms{};
         std::array<Vec2, BucketSize> string_scales{};
         std::array<ColorRGB, BucketSize> string_colors{};
-        std::array<float, BucketSize> string_alphas{};
         std::array<bool, BucketSize> string_scissors{};
         std::array<AABB, BucketSize> string_scissor_regions{};
         std::array<bool, BucketSize> string_scissor_windows{};
@@ -71,7 +71,7 @@ public:
                      bool scissor, const AABB &scissor_region);
     void submit_string(uint32_t z, Font *font, std::string text,
                        const Vec2 &position, const Mat4 &transform, const Vec2 &scale,
-                       const ColorRGB &color, float alpha,
+                       const ColorRGB &color,
                        bool scissor, const AABB &scissor_region);
     void submit_line(uint32_t z, const Vec2 &start, const Vec2 &end, const ColorRGB &color);
 };

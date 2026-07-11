@@ -23,7 +23,7 @@ Sprite::Sprite() : Drawable2D()
     construct(true);
 }
 
-void Sprite::construct(const bool doInitTexture)
+void Sprite::construct(const bool do_init_texture)
 {
     set_crop_to_whole_image();
 
@@ -31,14 +31,11 @@ void Sprite::construct(const bool doInitTexture)
 
     blending_mode_ = BLEND_ALPHA;
 
-    color.Red = color.Blue = color.Green = 1.0;
-    alpha = 1.0;
+    color = {1.0, 1.0, 1.0, 1.0};
 
     centered = false;
-    color_invert = false;
     dirty_texture_ = true;
-    do_texture_cleanup_ = doInitTexture;
-    affected_by_lightning = false;
+    do_texture_cleanup_ = do_init_texture;
 
     m_texture_ = nullptr;
     uv_buffer_ = nullptr;
@@ -47,7 +44,7 @@ void Sprite::construct(const bool doInitTexture)
     scissor = false;
     scissor_region = AABB ();
 
-    initialize(doInitTexture);
+    initialize(do_init_texture);
 }
 
 void Sprite::initialize(const bool should_init_texture)
@@ -95,7 +92,7 @@ void Sprite::set_image(Texture2D* image, const bool reset_size)
             if (reset_size)
             {
                 set_crop_to_whole_image();
-                SetSize(image->w, image->h);
+                set_size(image->w, image->h);
             }
         }
     }
@@ -105,10 +102,10 @@ void Sprite::set_crop_by_pixels(const int32_t x1, const int32_t x2, const int32_
 {
     if (m_texture_)
     {
-        mCrop_x1 = (float)x1 / (float)m_texture_->w;
-        mCrop_x2 = (float)x2 / (float)m_texture_->w;
-        mCrop_y1 = (float)y1 / (float)m_texture_->h;
-        mCrop_y2 = (float)y2 / (float)m_texture_->h;
+        crop_.X1 = (float)x1 / (float)m_texture_->w;
+        crop_.X2 = (float)x2 / (float)m_texture_->w;
+        crop_.Y1 = (float)y1 / (float)m_texture_->h;
+        crop_.Y2 = (float)y2 / (float)m_texture_->h;
 
         dirty_texture_ = true;
         update_texture();
@@ -117,34 +114,39 @@ void Sprite::set_crop_by_pixels(const int32_t x1, const int32_t x2, const int32_
 
 void Sprite::set_crop_to_whole_image()
 {
-    mCrop_x1 = 0;
-    mCrop_x2 = 1;
-    mCrop_y1 = 0;
-    mCrop_y2 = 1;
+    crop_ = {0, 0, 1, 1};
     dirty_texture_ = true;
 }
 
-void Sprite::set_crop(const Vec2 Crop1, const Vec2 Crop2)
+void Sprite::set_crop(const Vec2 crop1, const Vec2 crop2)
 {
-    mCrop_x1 = Crop1.x;
-    mCrop_y1 = Crop1.y;
-    mCrop_x2 = Crop2.x;
-    mCrop_y2 = Crop2.y;
+    crop_ = {crop1.x, crop1.y, crop2.x, crop2.y};
     dirty_texture_ = true;
 }
 
-void Sprite::set_crop1(const Vec2 Crop1)
+void Sprite::set_crop_topleft(const Vec2 crop1)
 {
-    mCrop_x1 = Crop1.x;
-    mCrop_y1 = Crop1.y;
+    crop_.X1 = crop1.x;
+    crop_.Y1 = crop1.y;
     dirty_texture_ = true;
 }
 
-void Sprite::set_crop2(const Vec2 Crop2)
+void Sprite::set_crop_bottomright(const Vec2 crop2)
 {
-    mCrop_x2 = Crop2.x;
-    mCrop_y2 = Crop2.y;
+    crop_.X2 = crop2.x;
+    crop_.Y2 = crop2.y;
     dirty_texture_ = true;
+}
+
+void Sprite::set_crop(const AABB &crop)
+{
+    crop_ = crop;
+    dirty_texture_ = true;
+}
+
+AABB Sprite::get_crop() const
+{
+    return crop_;
 }
 
 void Sprite::invalidate()

@@ -76,7 +76,7 @@ void DrawCallSink::submit_quad(const uint32_t z, const renderer::QuadDrawParams 
 
 void DrawCallSink::submit_string(const uint32_t z, Font *font, std::string text,
                                  const Vec2 &position, const Mat4 &transform, const Vec2 &scale,
-                                 const ColorRGB &color, const float alpha,
+                                 const ColorRGB &color,
                                  const bool scissor, const AABB &region) {
     if (!font) return;
     const auto handle = allocate();
@@ -89,7 +89,6 @@ void DrawCallSink::submit_string(const uint32_t z, Font *font, std::string text,
     bucket.string_transforms[slot] = transform;
     bucket.string_scales[slot] = scale;
     bucket.string_colors[slot] = color;
-    bucket.string_alphas[slot] = alpha;
     bucket.string_scissors[slot] = clip_enabled_ || scissor;
     bucket.string_scissor_regions[slot] = clip_enabled_ ? clip_region_ : region;
     bucket.string_scissor_windows[slot] = clip_enabled_ && clip_window_coordinates_;
@@ -129,7 +128,7 @@ void DrawCallSink::draw(const Handle handle) {
         }
         auto *font = bucket.fonts[slot];
         font->set_color(bucket.string_colors[slot].Red, bucket.string_colors[slot].Green, bucket.string_colors[slot].Blue);
-        font->set_alpha(bucket.string_alphas[slot]);
+        font->set_alpha(bucket.string_colors[slot].Alpha);
         font->render(bucket.strings[slot], bucket.string_positions[slot], bucket.string_transforms[slot], bucket.string_scales[slot]);
     } else {
         if (!line_vbo_) line_vbo_ = std::make_unique<VBO>(VBO::Stream, 4);

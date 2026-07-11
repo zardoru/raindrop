@@ -5,20 +5,20 @@
 #include "Logging.h"
 
 Font::Font() :
-    Red(1), Green(1), Blue(1), Alpha(1)
+    color_{1, 1, 1, 1}
 {
 }
 
 void Font::set_color(const float red, const float green, const float blue)
 {
-    Red = red;
-    Green = green;
-    Blue = blue;
+    color_.Red = red;
+    color_.Green = green;
+    color_.Blue = blue;
 }
 
 void Font::set_alpha(const float alpha)
 {
-    Alpha = alpha;
+    color_.Alpha = alpha;
 }
 
 void Font::invalidate()

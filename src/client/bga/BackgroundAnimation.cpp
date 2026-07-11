@@ -236,15 +236,15 @@ public:
         Layer1 = std::make_shared<Sprite>();
         Layer2 = std::make_shared<Sprite>();
 
-        Layer0->ChainTransformation(this);
-        LayerMiss->ChainTransformation(this);
-        Layer1->ChainTransformation(this);
-        Layer2->ChainTransformation(this);
+        Layer0->chain_transformation(this);
+        LayerMiss->chain_transformation(this);
+        Layer1->chain_transformation(this);
+        Layer2->chain_transformation(this);
 
-        Layer0->SetZ(0);
-        Layer1->SetZ(0);
-        LayerMiss->SetZ(0);
-        Layer2->SetZ(0);
+        Layer0->set_z(0);
+        Layer1->set_z(0);
+        LayerMiss->set_z(0);
+        Layer2->set_z(0);
 
         Layer1->black_to_transparent = Layer2->black_to_transparent = BlackToTransparent;
 
@@ -252,9 +252,9 @@ public:
         Layer0->set_image(List.GetFromIndex(1), true);
 
 
-		const auto ratio = Layer0->GetWidth() / Layer0->GetHeight();
-		Layer0->SetWidth(1);
-		Layer0->SetHeight(1);
+		const auto ratio = Layer0->get_width() / Layer0->get_height();
+		Layer0->set_width(1);
+		Layer0->set_height(1);
 
         sort(EventsLayer0.begin(), EventsLayer0.end());
         sort(EventsLayerMiss.begin(), EventsLayerMiss.end());
@@ -270,8 +270,8 @@ public:
             EventsLayerMiss.push_back(bmp);
         }
 
-        SetWidth(256 * ratio);
-        SetHeight(256);
+        set_width(256 * ratio);
+        set_height(256);
 
         Validated = true;
     }
@@ -353,9 +353,9 @@ public:
             auto pt = list_.GetFromIndex(0);
             background_ = std::make_shared<Sprite>();
             background_->set_image(pt, false);
-            background_->ChainTransformation(this);
-            SetWidth(pt ? pt->w : 0);
-            SetHeight(pt ? pt->h : 0);
+            background_->chain_transformation(this);
+            set_width(pt ? pt->w : 0);
+            set_height(pt ? pt->h : 0);
         }
     }
 

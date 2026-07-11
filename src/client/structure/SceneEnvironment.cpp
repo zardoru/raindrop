@@ -207,7 +207,7 @@ void SceneEnvironment::preload(const std::filesystem::path &Filename, std::strin
 void SceneEnvironment::sort() {
     std::ranges::stable_sort(
         objects_,
-        [](const Drawable2D *A, const Drawable2D *B) -> bool { return A->GetZ() < B->GetZ(); }
+        [](const Drawable2D *A, const Drawable2D *B) -> bool { return A->get_z() < B->get_z(); }
     );
 }
 
@@ -340,23 +340,22 @@ void SceneEnvironment::draw_quad(const uint32_t z, const renderer::QuadDrawParam
 }
 
 void SceneEnvironment::draw_quad(const uint32_t z, Texture2D *texture, Transformation *transform,
-                                 const float red, const float green, const float blue,
-                                 const float alpha, const int blend_mode) {
+                                 const ColorRGB &color, const int blend_mode) {
     if (!texture || !transform)
         return;
 
-    auto matrix = transform->GetMatrix();
+    const auto matrix = transform->as_matrix();
     renderer::QuadDrawParams params;
     params.model = &matrix;
     params.blend_mode = static_cast<EBlendMode>(blend_mode);
-    params.color = {red, green, blue, alpha};
+    params.color = color;
     draw_calls_.submit_quad(z, params, texture, false, {});
 }
 
 void SceneEnvironment::draw_string(const uint32_t z, Font *font, std::string text,
                                    const Vec2 &position, const Mat4 &transform, const Vec2 &scale) {
     draw_calls_.submit_string(z, font, std::move(text), position, transform, scale,
-                              {1, 1, 1, 1}, 1, false, {});
+                              {1, 1, 1, 1}, false, {});
 }
 
 void SceneEnvironment::draw_string(const uint32_t z, Font *font, std::string text,
@@ -368,6 +367,19 @@ void SceneEnvironment::draw_string(const uint32_t z, Font *font, std::string tex
                                    const Vec2 &position, const float font_size,
                                    const float kerning_scale) {
     draw_string(z, font, std::move(text), position, Mat4(), Vec2(kerning_scale, font_size));
+}
+
+void SceneEnvironment::draw_string(const uint32_t z, Font *font, std::string text,
+                                   const Vec2 &position, const float font_size,
+                                   const ColorRGB &color) {
+    draw_string(z, font, std::move(text), position, font_size, color, 1.0f);
+}
+
+void SceneEnvironment::draw_string(const uint32_t z, Font *font, std::string text,
+                                   const Vec2 &position, const float font_size,
+                                   const ColorRGB &color, const float kerning_scale) {
+    draw_calls_.submit_string(z, font, std::move(text), position, Mat4(), Vec2(kerning_scale, font_size),
+                              color, false, {});
 }
 
 void SceneEnvironment::update_targets(const double TimeDelta) {

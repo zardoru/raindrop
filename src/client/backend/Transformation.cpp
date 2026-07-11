@@ -3,228 +3,227 @@
 
 #include <algorithm>
 
-bool Transformation::IsMatrixDirty()
-{
-	return mDirtyMatrix || Chain;
+bool Transformation::is_matrix_dirty() const {
+	return m_dirty_matrix_ || chain_;
 }
 
 Transformation::Transformation()
 {
-    SetSize(1);
-    SetScale(1);
-    SetRotation(0);
+    set_size(1);
+    set_scale(1);
+    set_rotation(0);
     set_position(0, 0);
-    Chain = nullptr;
-    mLayer = 0;
-	mDirtyMatrix = true;
+    chain_ = nullptr;
+    m_layer_ = 0;
+	m_dirty_matrix_ = true;
 
-    UpdateMatrix();
+    update_matrix();
 }
 
 // Scale
-void Transformation::SetScale(const Vec2 Scale)
+void Transformation::set_scale(const Vec2 scale)
 {
-    mScale = Scale;
-    mDirtyMatrix = true;
+    m_scale_ = scale;
+    m_dirty_matrix_ = true;
 }
 
-void Transformation::SetScale(const float Scale)
+void Transformation::set_scale(const float scale)
 {
-    SetScaleX(Scale);
-    SetScaleY(Scale);
+    set_scale_x(scale);
+    set_scale_y(scale);
 }
 
-void Transformation::SetScaleX(const float ScaleX)
+void Transformation::set_scale_x(const float scale_x)
 {
-    mScale.x = ScaleX;
-    mDirtyMatrix = true;
+    m_scale_.x = scale_x;
+    m_dirty_matrix_ = true;
 }
 
-void Transformation::SetScaleY(const float ScaleY)
+void Transformation::set_scale_y(const float scale_y)
 {
-    mScale.y = ScaleY;
-    mDirtyMatrix = true;
+    m_scale_.y = scale_y;
+    m_dirty_matrix_ = true;
 }
 
-Vec2 Transformation::GetScale() const
+Vec2 Transformation::get_scale() const
 {
-    return mScale;
+    return m_scale_;
 }
 
 // Position
-void Transformation::set_position(const Vec2 Pos)
+void Transformation::set_position(const Vec2 pos)
 {
-    mPosition = Pos;
-    mDirtyMatrix = true;
+    m_position_ = pos;
+    m_dirty_matrix_ = true;
 }
 
-void Transformation::set_position(const float pX, const float pY)
+void Transformation::set_position(const float p_x, const float p_y)
 {
-    SetPositionX(pX);
-    SetPositionY(pY);
+    set_position_x(p_x);
+    set_position_y(p_y);
 }
 
-void Transformation::SetPositionX(const float pX)
+void Transformation::set_position_x(const float p_x)
 {
-    mPosition.x = pX;
-    mDirtyMatrix = true;
+    m_position_.x = p_x;
+    m_dirty_matrix_ = true;
 }
 
-void Transformation::SetPositionY(const float pY)
+void Transformation::set_position_y(const float p_y)
 {
-    mPosition.y = pY;
-    mDirtyMatrix = true;
+    m_position_.y = p_y;
+    m_dirty_matrix_ = true;
 }
 
-void Transformation::AddPosition(const float pX, const float pY)
+void Transformation::move(const float p_x, const float p_y)
 {
-    mPosition.x += pX;
-    mPosition.y += pY;
-    mDirtyMatrix = true;
+    m_position_.x += p_x;
+    m_position_.y += p_y;
+    m_dirty_matrix_ = true;
 }
 
-void Transformation::AddPosition(const Vec2 pos)
+void Transformation::move(const Vec2 pos)
 {
-    mPosition += pos;
-    mDirtyMatrix = true;
+    m_position_ += pos;
+    m_dirty_matrix_ = true;
 }
 
-void Transformation::AddPositionX(const float pX)
+void Transformation::add_position_x(const float p_x)
 {
-    AddPosition(pX, 0);
+    move(p_x, 0);
 }
 
-void Transformation::AddPositionY(const float pY)
+void Transformation::add_position_y(const float p_y)
 {
-    AddPosition(0, pY);
+    move(0, p_y);
 }
 
-Vec2 Transformation::GetPosition() const
+Vec2 Transformation::get_position() const
 {
-    return mPosition;
+    return m_position_;
 }
 
 // Size
-void Transformation::SetSize(const Vec2 Size)
+void Transformation::set_size(const Vec2 size)
 {
-    mWidth = Size.x;
-    mHeight = Size.y;
-    mDirtyMatrix = true;
+    m_width_ = size.x;
+    m_height_ = size.y;
+    m_dirty_matrix_ = true;
 }
 
-void Transformation::SetSize(const float Size)
+void Transformation::set_size(const float size)
 {
-    SetSize(Vec2(Size, Size));
+    set_size(Vec2(size, size));
 }
 
-void Transformation::SetSize(const float W, const float H)
+void Transformation::set_size(const float w, const float h)
 {
-    SetSize(Vec2(W, H));
+    set_size(Vec2(w, h));
 }
 
-void Transformation::SetWidth(const float W)
+void Transformation::set_width(const float w)
 {
-    mWidth = W;
-    mDirtyMatrix = true;
+    m_width_ = w;
+    m_dirty_matrix_ = true;
 }
 
-void Transformation::SetHeight(const float H)
+void Transformation::set_height(const float h)
 {
-    mHeight = H;
-    mDirtyMatrix = true;
+    m_height_ = h;
+    m_dirty_matrix_ = true;
 }
 
-Vec2 Transformation::GetSize() const
+Vec2 Transformation::get_size() const
 {
-    return Vec2(mWidth, mHeight);
+    return Vec2(m_width_, m_height_);
 }
 
-float Transformation::GetWidth() const
+float Transformation::get_width() const
 {
-    return mWidth;
+    return m_width_;
 }
 
-float Transformation::GetHeight() const
+float Transformation::get_height() const
 {
-    return mHeight;
+    return m_height_;
 }
 
 // Rotation
-void Transformation::SetRotation(const float Rot)
+void Transformation::set_rotation(const float rot)
 {
-    mRotation = Rot;
-    mDirtyMatrix = true;
+    m_rotation_ = rot;
+    m_dirty_matrix_ = true;
 }
 
-float Transformation::GetRotation() const
+float Transformation::get_rotation() const
 {
-    return mRotation;
+    return m_rotation_;
 }
 
-void Transformation::AddRotation(const float Rot)
+void Transformation::add_rotation(const float rot)
 {
-    mRotation += Rot;
+    m_rotation_ += rot;
 
-    if (mRotation >= 360)
-        mRotation -= 360;
-    mDirtyMatrix = true;
+    if (m_rotation_ >= 360)
+        m_rotation_ -= 360;
+    m_dirty_matrix_ = true;
 }
 
-uint32_t Transformation::GetZ() const
+uint8_t Transformation::get_z() const
 {
-    return mLayer;
+    return m_layer_;
 }
 
-void Transformation::SetZ(const uint32_t Z)
+void Transformation::set_z(const uint8_t z)
 {
-    mLayer = std::min(Z, MaxLayer);
-    mDirtyMatrix = true;
+    m_layer_ = std::min(z, MaxLayer);
+    m_dirty_matrix_ = true;
 }
 
-const glm::mat4 &Transformation::GetMatrix()
+const glm::mat4 &Transformation::as_matrix()
 {
-    if (IsMatrixDirty())
-        UpdateMatrix();
+    if (is_matrix_dirty())
+        update_matrix();
 
-    return mMatrix;
+    return m_matrix_;
 }
 
-float Transformation::GetScaleX() const
+float Transformation::get_scale_x() const
 {
-    return mScale.x;
+    return m_scale_.x;
 }
 
-float Transformation::GetScaleY() const
+float Transformation::get_scale_y() const
 {
-    return mScale.y;
+    return m_scale_.y;
 }
 
-float Transformation::GetPositionX() const
+float Transformation::get_position_x() const
 {
-    return mPosition.x;
+    return m_position_.x;
 }
 
-float Transformation::GetPositionY() const
+float Transformation::get_position_y() const
 {
-    return mPosition.y;
+    return m_position_.y;
 }
 
-void Transformation::UpdateMatrix()
+void Transformation::update_matrix()
 {
-    Mat4 Scl = glm::scale(glm::identity<Mat4>(), glm::vec3(mWidth*mScale.x, mHeight*mScale.y, 1));
-    Mat4 Pos = glm::translate(glm::identity<Mat4>(), glm::vec3(mPosition.x, mPosition.y, mLayer));
-    Mat4 Rot = glm::rotate(glm::identity<Mat4>(), mRotation, glm::vec3(0, 0, 1));
-    Mat4 Chn = glm::identity<Mat4>();
+    const Mat4 scl = glm::scale(glm::identity<Mat4>(), glm::vec3(m_width_*m_scale_.x, m_height_*m_scale_.y, 1));
+    const Mat4 pos = glm::translate(glm::identity<Mat4>(), glm::vec3(m_position_.x, m_position_.y, m_layer_));
+    const Mat4 rot = glm::rotate(glm::identity<Mat4>(), m_rotation_, glm::vec3(0, 0, 1));
+    auto chn = glm::identity<Mat4>();
 
-    if (Chain)
-        Chn = Chain->GetMatrix();
+    if (chain_)
+        chn = chain_->as_matrix();
 
-    mMatrix = Chn * Pos * Rot * Scl;
-    mDirtyMatrix = false;
+    m_matrix_ = chn * pos * rot * scl;
+    m_dirty_matrix_ = false;
 }
 
-void Transformation::ChainTransformation(Transformation *Other)
+void Transformation::chain_transformation(Transformation *other)
 {
-    if (Other != this)
-        Chain = Other;
+    if (other != this)
+        chain_ = other;
 }

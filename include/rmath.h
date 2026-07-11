@@ -190,6 +190,9 @@ struct TColorRGB
         struct { T R, G, B, A; };
         struct { T Red, Green, Blue, Alpha; };
     };
+
+    constexpr TColorRGB(const T r = 1, const T g = 1, const T b = 1, const T a = 1)
+        : R(r), G(g), B(b), A(a) {}
 };
 
 using ColorRGB = TColorRGB<float>;

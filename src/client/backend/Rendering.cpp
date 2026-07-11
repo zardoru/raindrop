@@ -78,7 +78,7 @@ namespace renderer {
 
 		set_blending_mode(mode);
 
-		Mat4 mat = quad_transformation.GetMatrix();
+		Mat4 mat = quad_transformation.as_matrix();
 		Shader::set_uniform(DefaultShader::get_uniform(U_MODELVIEW), &(mat[0][0]));
 
 		// Assign position attrib. pointer
@@ -487,17 +487,17 @@ void Sprite::update_texture()
 
     float CropPositions[8] = { // 2 for each vertex and a uniform for z order
 		// topright
-		mCrop_x2,
-		mCrop_y1,
+		crop_.X2,
+		crop_.Y1,
 		// bottom right
-		mCrop_x2,
-		mCrop_y2,
+		crop_.X2,
+		crop_.Y2,
 		// bottom left
-		mCrop_x1,
-		mCrop_y2,
+		crop_.X1,
+		crop_.Y2,
 		// topleft
-		mCrop_x1,
-		mCrop_y1,
+		crop_.X1,
+		crop_.Y1,
     };
 
     uv_buffer_->assign_data(CropPositions);
@@ -506,7 +506,7 @@ void Sprite::update_texture()
 
 bool Sprite::should_draw() const
 {
-    if (alpha == 0)
+    if (color.Alpha == 0)
         return false;
 
 	if (m_shader_)
@@ -531,21 +531,17 @@ bool Sprite::should_draw() const
 
     update_texture();
 
-    auto matrix = GetMatrix();
-    auto quad_color = color;
-    quad_color.Alpha = alpha;
-
+    auto matrix = as_matrix();
     renderer::QuadDrawParams params;
     params.texture_coordinates = uv_buffer_;
     params.model = &matrix;
     params.shader = m_shader_;
     params.blend_mode = blending_mode_;
-    params.color = quad_color;
+    params.color = color;
     params.centered = centered;
-    params.invert_color = color_invert;
     params.black_to_transparent = black_to_transparent;
 
-    sink.submit_quad(GetZ(), params, m_texture_, scissor, scissor_region);
+    sink.submit_quad(get_z(), params, m_texture_, scissor, scissor_region);
 }
 
 void Sprite::cleanup()
@@ -584,7 +580,7 @@ void TruetypeFont::render(const std::string &in, const Vec2 &position, const Mat
     renderer::DefaultShader::static_bind();
     renderer::set_blending_mode(BLEND_ALPHA);
     renderer::set_default_shader_parameters(false, false, false, true);
-    renderer::DefaultShader::set_color(Red, Green, Blue, Alpha);
+    renderer::DefaultShader::set_color(color_.Red, color_.Green, color_.Blue, color_.Alpha);
     renderer::set_primitive_quad_vbo();
 
     try
@@ -736,7 +732,7 @@ void BitmapFont::render(const std::string &In, const Vec2 &Position, const Mat4 
 
 	using namespace renderer;
 	set_default_shader_parameters(false, false);
-    DefaultShader::set_color(Red, Green, Blue, Alpha);
+    DefaultShader::set_color(color_.Red, color_.Green, color_.Blue, color_.Alpha);
 
     Font->bind();
 
@@ -760,7 +756,7 @@ void BitmapFont::render(const std::string &In, const Vec2 &Position, const Mat4 
             continue;
 
         CharPosition[*Text].set_position(Position.x + Character, Position.y + Line);
-        Mat4 RenderTransform = Transform * CharPosition[*Text].GetMatrix();
+        Mat4 RenderTransform = Transform * CharPosition[*Text].as_matrix();
 
         // Assign transformation matrix
         Shader::set_uniform(DefaultShader::get_uniform(U_MODELVIEW), &(RenderTransform[0][0]));
@@ -781,112 +777,112 @@ void BitmapFont::render(const std::string &In, const Vec2 &Position, const Mat4 
     Shader::disable_attrib_array(DefaultShader::get_uniform(A_COLOR));
 }
 
-uint32_t VBO::LastBound = 0;
-uint32_t VBO::LastBoundIndex = 0;
+uint32_t VBO::last_bound_ = 0;
+uint32_t VBO::last_bound_index_ = 0;
 
-VBO::VBO(const Type T, const uint32_t Elements, const uint32_t Size, const IdxKind Kind)
+VBO::VBO(const Type t, const uint32_t elements, const uint32_t size, const IdxKind kind)
 {
-    InternalVBO = 0;
-    IsValid = false;
-    mType = T;
-    mKind = Kind;
+    internal_vbo_ = 0;
+    is_valid_ = false;
+    m_type_ = t;
+    m_kind_ = kind;
     window.add_vbo(this);
 
-    ElementCount = Elements;
-    ElementSize = Size;
-    VboData = new char[ElementSize * ElementCount];
+    element_count_ = elements;
+    element_size_ = size;
+    vbo_data_.reset(new uint8_t[element_size_ * element_count_]);
 }
 
 VBO::~VBO()
 {
-    if (InternalVBO)
+    if (internal_vbo_)
     {
-        glDeleteBuffers(1, &InternalVBO);
-        InternalVBO = 0;
+        glDeleteBuffers(1, &internal_vbo_);
+        internal_vbo_ = 0;
     }
 
     window.remove_vbo(this);
-
-    delete[] VboData;
-    VboData = nullptr;
 }
 
 uint32_t VBO::get_element_count() const
 {
-    return ElementCount;
+    return element_count_;
 }
 
 void VBO::invalidate()
 {
-    IsValid = false;
+    is_valid_ = false;
 }
 
 void VBO::validate()
 {
-    if (!IsValid)
-        assign_data(VboData);
+    if (!is_valid_)
+        upload_to_gpu();
 }
 
-unsigned int up_type_for_kind(const VBO::Type mType)
+unsigned int up_type_for_kind(const VBO::Type m_type)
 {
     auto UpType = 0;
 
-    if (mType == VBO::Stream)
+    if (m_type == VBO::Stream)
         UpType = GL_STREAM_DRAW;
-    else if (mType == VBO::Dynamic)
+    else if (m_type == VBO::Dynamic)
         UpType = GL_DYNAMIC_DRAW;
-    else if (mType == VBO::Static)
+    else if (m_type == VBO::Static)
         UpType = GL_STATIC_DRAW;
 
     return UpType;
 }
 
-unsigned int BufTypeForKind(const VBO::IdxKind mKind)
+unsigned int BufTypeForKind(const VBO::IdxKind m_kind)
 {
     unsigned int BufType = GL_ARRAY_BUFFER;
 
-    if (mKind == VBO::ArrayBuffer)
+    if (m_kind == VBO::ArrayBuffer)
         BufType = GL_ARRAY_BUFFER;
-    else if (mKind == VBO::IndexBuffer)
+    else if (m_kind == VBO::IndexBuffer)
         BufType = GL_ELEMENT_ARRAY_BUFFER;
     return BufType;
 }
 
-void VBO::assign_data(const void* Data)
-{
+void VBO::upload_to_gpu() {
     bool RegenBuffer = false;
 
-    const unsigned int up_type = up_type_for_kind(mType);
-    const unsigned int buf_type = BufTypeForKind(mKind);
-
-    memmove(VboData, Data, ElementSize * ElementCount);
-
-    if (!IsValid)
+    if (!is_valid_)
     {
-        glGenBuffers(1, &InternalVBO);
-        IsValid = true;
+        glGenBuffers(1, &internal_vbo_);
+        is_valid_ = true;
         RegenBuffer = true;
     }
 
     bind(true);
+    const unsigned int up_type = up_type_for_kind(m_type_);
+    const unsigned int buf_type = BufTypeForKind(m_kind_);
+
     if (RegenBuffer)
-        glBufferData(buf_type, ElementSize * ElementCount, VboData, up_type);
+        glBufferData(buf_type, element_size_ * element_count_, vbo_data_, up_type);
     else
-        glBufferSubData(buf_type, 0, ElementSize * ElementCount, VboData);
+        glBufferSubData(buf_type, 0, element_size_ * element_count_, vbo_data_);
+}
+
+void VBO::assign_data(const void* data)
+{
+    memmove(vbo_data_.get(), data, element_size_ * element_count_);
+    upload_to_gpu();
 }
 
 void VBO::bind(const bool force) const
 {
-    assert(IsValid);
+    assert(is_valid_);
 
-    if (mKind == ArrayBuffer && (LastBound != InternalVBO || force))
+    if (m_kind_ == ArrayBuffer && (last_bound_ != internal_vbo_ || force))
     {
-        glBindBuffer(BufTypeForKind(mKind), InternalVBO);
-        LastBound = InternalVBO;
+        glBindBuffer(BufTypeForKind(m_kind_), internal_vbo_);
+        last_bound_ = internal_vbo_;
     }
-    else if (mKind == IndexBuffer && (LastBoundIndex != InternalVBO || force))
+    else if (m_kind_ == IndexBuffer && (last_bound_index_ != internal_vbo_ || force))
     {
-        glBindBuffer(BufTypeForKind(mKind), InternalVBO);
-        LastBoundIndex = InternalVBO;
+        glBindBuffer(BufTypeForKind(m_kind_), internal_vbo_);
+        last_bound_index_ = internal_vbo_;
     }
 }

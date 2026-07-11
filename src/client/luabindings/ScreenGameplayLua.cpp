@@ -34,8 +34,8 @@ void ScreenGameplay::add_script_classes(LuaManager* Env)
 {
 #define f(n, x) addProperty(n, &ScreenGameplay::x)
     luabridge::getGlobalNamespace(Env->get_lua_state())
-        /// @engineclass ScreenGameplay7K
-        .beginClass<ScreenGameplay>("ScreenGameplay7K")
+        /// @engineclass ScreenGameplay
+        .beginClass<ScreenGameplay>("ScreenGameplay")
         // Whether the song time is advancing.
         /// @roproperty Active
         .f("Active", is_active)
