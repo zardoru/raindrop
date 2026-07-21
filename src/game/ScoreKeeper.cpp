@@ -31,7 +31,7 @@ namespace rd {
     }
 
     int ScoreKeeper::getMaxJudgableNotes() const {
-        if (CurrentTimingWindow->UsesTwoJudgesPerHold())
+        if (CurrentTimingWindow->uses_two_judges_per_hold())
             return total_score_objects + total_holds;
         else
             return total_score_objects;
@@ -81,7 +81,7 @@ namespace rd {
         // judgments
         /* add judgment, handle combo etc.. */
 
-        auto judge = CurrentTimingWindow->GetJudgmentForTimeOffset(ms, static_cast<uint32_t>(lane), part);
+        auto judge = CurrentTimingWindow->get_judgment_for_time_offset(ms, static_cast<uint32_t>(lane), part);
         ScoreKeeperJudgment o2Judge;
         for (auto &timing: Timings) {
             /* XXX: this won't really work unless the ms part of this is in beats */
@@ -90,24 +90,24 @@ namespace rd {
 
                 // we didn't run "getJudgement" for our o2jam state
                 if (timing.second != CurrentTimingWindow) {
-                    o2Judge = timing.second->GetJudgmentForTimeOffset(ms, lane, part);
+                    o2Judge = timing.second->get_judgment_for_time_offset(ms, lane, part);
                 } else  // we did so just reuse it
                     o2Judge = judge;
 
                 o2Judge = static_cast<ScoreKeeperJudgment>(score_o2jam.MutateJudgment(o2Judge));
-                timing.second->AddJudgment(o2Judge, false);
+                timing.second->add_judgment(o2Judge, false);
 
                 // update our temporal judgment if we're using o2jam timing
                 if (CurrentTimingWindow == &timing_o2jam) {
                     judge = o2Judge;
                 }
             } else {
-                bool early_miss = ms < -timing.second->GetEarlyHitCutoff() && ms >= -timing.second->GetEarlyThreshold();
+                bool early_miss = ms < -timing.second->get_early_hit_cutoff() && ms >= -timing.second->get_early_threshold();
                 if (timing.second == CurrentTimingWindow)
-                    timing.second->AddJudgment(judge, early_miss);
+                    timing.second->add_judgment(judge, early_miss);
                 else {
-                    auto myJudge = timing.second->GetJudgmentForTimeOffset(ms, lane, part);
-                    timing.second->AddJudgment(myJudge, early_miss);
+                    auto myJudge = timing.second->get_judgment_for_time_offset(ms, lane, part);
+                    timing.second->add_judgment(myJudge, early_miss);
                 }
             }
         }
@@ -147,17 +147,17 @@ namespace rd {
     }
 
     int ScoreKeeper::getJudgmentCount(int judgment) const {
-        return CurrentTimingWindow->GetJudgmentCount(static_cast<ScoreKeeperJudgment>(judgment));
+        return CurrentTimingWindow->get_judgment_count(static_cast<ScoreKeeperJudgment>(judgment));
     }
 
     bool ScoreKeeper::usesW0() const {
-        return CurrentTimingWindow->GetWindowSkip() == 0;
+        return CurrentTimingWindow->get_window_skip() == 0;
     }
 
     void ScoreKeeper::missNote(bool dont_break_combo, bool early_miss, bool apply_miss) {
         if (apply_miss) {
             for (auto &timing: Timings) {
-                timing.second->AddJudgment(SKJ_MISS, early_miss);
+                timing.second->add_judgment(SKJ_MISS, early_miss);
             }
 
             for (auto &scoresys: Scores) {
@@ -189,20 +189,20 @@ namespace rd {
                 Timings.end(),
                 0.0,
                 [] (double accum, const std::pair<ChartType, TimingWindows*>& wnd) {
-                    return std::max(accum, std::max(wnd.second->GetEarlyThreshold(), wnd.second->GetLateThreshold()));
+                    return std::max(accum, std::max(wnd.second->get_early_threshold(), wnd.second->get_late_threshold()));
                 });
     }
 
     double ScoreKeeper::getEarlyMissCutoffMS() const {
-        return CurrentTimingWindow->GetEarlyThreshold();
+        return CurrentTimingWindow->get_early_threshold();
     }
 
     double ScoreKeeper::getEarlyHitCutoffMS() const {
-        return CurrentTimingWindow->GetEarlyHitCutoff();
+        return CurrentTimingWindow->get_early_hit_cutoff();
     }
 
     double ScoreKeeper::getLateMissCutoffMS() const {
-        return CurrentTimingWindow->GetLateThreshold();
+        return CurrentTimingWindow->get_late_threshold();
     }
 
     double ScoreKeeper::getAccMax() const {
@@ -210,7 +210,7 @@ namespace rd {
     }
 
     double ScoreKeeper::getJudgmentWindow(int judgment) {
-        return CurrentTimingWindow->GetJudgmentWindow(static_cast<ScoreKeeperJudgment>(judgment));
+        return CurrentTimingWindow->get_judgment_window(static_cast<ScoreKeeperJudgment>(judgment));
     }
 
     std::string ScoreKeeper::getHistogram() {
@@ -260,11 +260,11 @@ namespace rd {
             case ST_SCORE:
                 return int(score);
             case ST_COMBO:
-                return CurrentTimingWindow->GetCombo();
+                return CurrentTimingWindow->get_combo();
             case ST_MAX_COMBO:
-                return CurrentTimingWindow->GetMaxCombo();
+                return CurrentTimingWindow->get_max_combo();
             case ST_NOTES_HIT:
-                return CurrentTimingWindow->GetNotesHit();
+                return CurrentTimingWindow->get_notes_hit();
             default:
                 return 0;
         }
@@ -284,7 +284,7 @@ namespace rd {
                 return accuracy;
             case PST_NH:
                 if (judged_notes)
-                    return double(CurrentTimingWindow->GetNotesHit()) / double(judged_notes) * 100.0;
+                    return double(CurrentTimingWindow->get_notes_hit()) / double(judged_notes) * 100.0;
                 return 100;
             case PST_OSU:
                 if (judged_notes)
@@ -491,13 +491,13 @@ namespace rd {
     }
 
     double ScoreKeeper::getLNTickInterval() {
-        return CurrentTimingWindow->GetTickInterval();
+        return CurrentTimingWindow->get_tick_interval();
     }
 
     void ScoreKeeper::tickLN(int ticks) {
         for (auto i = 0; i < ticks; i++) {
             for (auto &timing : Timings) {
-                timing.second->AddJudgment(SKJ_TICK, false);
+                timing.second->add_judgment(SKJ_TICK, false);
             }
 
             for (auto &gauge : Gauges) {

@@ -340,7 +340,7 @@ void SceneEnvironment::draw_quad(const uint32_t z, const renderer::QuadDrawParam
 }
 
 void SceneEnvironment::draw_quad(const uint32_t z, Texture2D *texture, Transformation *transform,
-                                 const ColorRGB &color, const int blend_mode) {
+                                 const ColorRGBA &color, const int blend_mode) {
     if (!texture || !transform)
         return;
 
@@ -371,13 +371,13 @@ void SceneEnvironment::draw_string(const uint32_t z, Font *font, std::string tex
 
 void SceneEnvironment::draw_string(const uint32_t z, Font *font, std::string text,
                                    const Vec2 &position, const float font_size,
-                                   const ColorRGB &color) {
+                                   const ColorRGBA &color) {
     draw_string(z, font, std::move(text), position, font_size, color, 1.0f);
 }
 
 void SceneEnvironment::draw_string(const uint32_t z, Font *font, std::string text,
                                    const Vec2 &position, const float font_size,
-                                   const ColorRGB &color, const float kerning_scale) {
+                                   const ColorRGBA &color, const float kerning_scale) {
     draw_calls_.submit_string(z, font, std::move(text), position, Mat4(), Vec2(kerning_scale, font_size),
                               color, false, {});
 }

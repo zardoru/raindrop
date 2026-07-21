@@ -38,13 +38,13 @@ class DrawCallSink
         std::array<Vec2, BucketSize> string_positions{};
         std::array<Mat4, BucketSize> string_transforms{};
         std::array<Vec2, BucketSize> string_scales{};
-        std::array<ColorRGB, BucketSize> string_colors{};
+        std::array<ColorRGBA, BucketSize> string_colors{};
         std::array<bool, BucketSize> string_scissors{};
         std::array<AABB, BucketSize> string_scissor_regions{};
         std::array<bool, BucketSize> string_scissor_windows{};
         std::array<Vec2, BucketSize> line_starts{};
         std::array<Vec2, BucketSize> line_ends{};
-        std::array<ColorRGB, BucketSize> line_colors{};
+        std::array<ColorRGBA, BucketSize> line_colors{};
         size_t next_slot = 0;
     };
 
@@ -71,7 +71,7 @@ public:
                      bool scissor, const AABB &scissor_region);
     void submit_string(uint32_t z, Font *font, std::string text,
                        const Vec2 &position, const Mat4 &transform, const Vec2 &scale,
-                       const ColorRGB &color,
+                       const ColorRGBA &color,
                        bool scissor, const AABB &scissor_region);
-    void submit_line(uint32_t z, const Vec2 &start, const Vec2 &end, const ColorRGB &color);
+    void submit_line(uint32_t z, const Vec2 &start, const Vec2 &end, const ColorRGBA &color);
 };

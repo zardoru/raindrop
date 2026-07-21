@@ -11,14 +11,14 @@ Font::Font() :
 
 void Font::set_color(const float red, const float green, const float blue)
 {
-    color_.Red = red;
-    color_.Green = green;
-    color_.Blue = blue;
+    color_.red = red;
+    color_.green = green;
+    color_.blue = blue;
 }
 
 void Font::set_alpha(const float alpha)
 {
-    color_.Alpha = alpha;
+    color_.alpha = alpha;
 }
 
 void Font::invalidate()

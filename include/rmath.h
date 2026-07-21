@@ -183,28 +183,28 @@ using AABBd = TRect<double>;
 
 template
         <class T>
-struct TColorRGB
+struct ColorRGBA_
 {
     union
     {
         struct { T R, G, B, A; };
-        struct { T Red, Green, Blue, Alpha; };
+        struct { T red, green, blue, alpha; };
     };
 
-    constexpr TColorRGB(const T r = 1, const T g = 1, const T b = 1, const T a = 1)
+    constexpr ColorRGBA_(const T r = 1, const T g = 1, const T b = 1, const T a = 1)
         : R(r), G(g), B(b), A(a) {}
 };
 
-using ColorRGB = TColorRGB<float>;
-using ColorRGBd = TColorRGB<double>;
+using ColorRGBA = ColorRGBA_<float>;
+using ColorRGBAd = ColorRGBA_<double>;
 
 namespace Color
 {
-    extern const ColorRGB White;
-    extern const ColorRGB Black;
-    extern const ColorRGB Red;
-    extern const ColorRGB Green;
-    extern const ColorRGB Blue;
+    inline constexpr ColorRGBA white{1, 1, 1, 1};
+    inline constexpr ColorRGBA black{0, 0, 0, 1};
+    inline constexpr ColorRGBA red{1, 0, 0, 1};
+    inline constexpr ColorRGBA green{0, 1, 0, 1};
+    inline constexpr ColorRGBA blue{0, 0, 1, 1};
 }
 
 

@@ -17,13 +17,13 @@ void CreateSceneEnvironmentLua(LuaManager* anim_lua)
 		.beginClass <SceneEnvironment>("GraphObjMan")
 		/// Queue a textured quad for drawing after Update.
 		// @function DrawQuad
-		.addFunction("DrawQuad", static_cast<void (SceneEnvironment::*)(uint32_t, Texture2D *, Transformation *, const ColorRGB &, int)>(&SceneEnvironment::draw_quad))
+		.addFunction("DrawQuad", static_cast<void (SceneEnvironment::*)(uint32_t, Texture2D *, Transformation *, const ColorRGBA &, int)>(&SceneEnvironment::draw_quad))
 		/// Queue text for drawing after Update.
 		// @function DrawString
 		.addFunction("DrawString", static_cast<void (SceneEnvironment::*)(uint32_t, Font *, std::string, const Vec2 &, float)>(&SceneEnvironment::draw_string))
 		.addFunction("DrawString", static_cast<void (SceneEnvironment::*)(uint32_t, Font *, std::string, const Vec2 &, float, float)>(&SceneEnvironment::draw_string))
-		.addFunction("DrawString", static_cast<void (SceneEnvironment::*)(uint32_t, Font *, std::string, const Vec2 &, float, const ColorRGB &)>(&SceneEnvironment::draw_string))
-		.addFunction("DrawString", static_cast<void (SceneEnvironment::*)(uint32_t, Font *, std::string, const Vec2 &, float, const ColorRGB &, float)>(&SceneEnvironment::draw_string))
+		.addFunction("DrawString", static_cast<void (SceneEnvironment::*)(uint32_t, Font *, std::string, const Vec2 &, float, const ColorRGBA &)>(&SceneEnvironment::draw_string))
+		.addFunction("DrawString", static_cast<void (SceneEnvironment::*)(uint32_t, Font *, std::string, const Vec2 &, float, const ColorRGBA &, float)>(&SceneEnvironment::draw_string))
 		/// Register a previously-unregistered @{Object2D}
 		// @function AddTarget
 		// @tparam Object2Dtarget The Object2D to handle.

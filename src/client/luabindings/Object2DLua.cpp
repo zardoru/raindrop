@@ -56,35 +56,35 @@ struct O2DProxy {
     }
 
     static float getRed(Sprite const *obj) {
-        return obj->color.Red;
+        return obj->color.red;
     }
 
     static float getAlpha(Sprite const *obj) {
-        return obj->color.Alpha;
+        return obj->color.alpha;
     }
 
     static void setAlpha(Sprite *obj, float param) {
-        obj->color.Alpha = param;
+        obj->color.alpha = param;
     }
 
     static void setGreen(Sprite *obj, float param) {
-        obj->color.Green = param;
+        obj->color.green = param;
     }
 
     static float getGreen(Sprite const *obj) {
-        return obj->color.Green;
+        return obj->color.green;
     }
 
     static void setBlue(Sprite *obj, float param) {
-        obj->color.Blue = param;
+        obj->color.blue = param;
     }
 
     static float getBlue(Sprite const *obj) {
-        return obj->color.Blue;
+        return obj->color.blue;
     }
 
     static void setRed(Sprite *obj, float param) {
-        obj->color.Red = param;
+        obj->color.red = param;
     }
 
     template<class T>

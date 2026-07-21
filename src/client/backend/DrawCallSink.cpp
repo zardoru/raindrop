@@ -76,7 +76,7 @@ void DrawCallSink::submit_quad(const uint32_t z, const renderer::QuadDrawParams 
 
 void DrawCallSink::submit_string(const uint32_t z, Font *font, std::string text,
                                  const Vec2 &position, const Mat4 &transform, const Vec2 &scale,
-                                 const ColorRGB &color,
+                                 const ColorRGBA &color,
                                  const bool scissor, const AABB &region) {
     if (!font) return;
     const auto handle = allocate();
@@ -95,7 +95,7 @@ void DrawCallSink::submit_string(const uint32_t z, Font *font, std::string text,
     queue(z, handle);
 }
 
-void DrawCallSink::submit_line(const uint32_t z, const Vec2 &start, const Vec2 &end, const ColorRGB &color) {
+void DrawCallSink::submit_line(const uint32_t z, const Vec2 &start, const Vec2 &end, const ColorRGBA &color) {
     const auto handle = allocate();
     auto &bucket = *buckets_[handle.bucket];
     bucket.types[handle.slot] = Type::Line;
@@ -127,24 +127,24 @@ void DrawCallSink::draw(const Handle handle) {
             else renderer::set_scissor_region(r.X1, r.Y1, r.width(), r.height());
         }
         auto *font = bucket.fonts[slot];
-        font->set_color(bucket.string_colors[slot].Red, bucket.string_colors[slot].Green, bucket.string_colors[slot].Blue);
-        font->set_alpha(bucket.string_colors[slot].Alpha);
+        font->set_color(bucket.string_colors[slot].red, bucket.string_colors[slot].green, bucket.string_colors[slot].blue);
+        font->set_alpha(bucket.string_colors[slot].alpha);
         font->render(bucket.strings[slot], bucket.string_positions[slot], bucket.string_transforms[slot], bucket.string_scales[slot]);
     } else {
         if (!line_vbo_) line_vbo_ = std::make_unique<VBO>(VBO::Stream, 4);
         const float points[] = {bucket.line_starts[slot].x, bucket.line_starts[slot].y,
                                 bucket.line_ends[slot].x, bucket.line_ends[slot].y};
-        line_vbo_->assign_data(points);
-        const auto identity = glm::identity<Mat4>();
+        line_vbo_->assign(points);
+        constexpr auto identity = glm::identity<Mat4>();
         renderer::set_default_shader_parameters(true, false, false, false);
-        renderer::DefaultShader::set_color(bucket.line_colors[slot].Red, bucket.line_colors[slot].Green,
-                                           bucket.line_colors[slot].Blue, bucket.line_colors[slot].Alpha);
-        renderer::Shader::set_uniform(renderer::DefaultShader::get_uniform(renderer::U_MODELVIEW), &identity[0][0]);
+		renderer::Shader::Default::set_color(bucket.line_colors[slot].red, bucket.line_colors[slot].green,
+                                           bucket.line_colors[slot].blue, bucket.line_colors[slot].alpha);
+		renderer::Shader::set_uniform(renderer::Shader::Default::get_uniform(renderer::U_MODELVIEW), &identity[0][0]);
         line_vbo_->bind();
-        glVertexAttribPointer(renderer::Shader::enable_attrib_array(renderer::DefaultShader::get_uniform(renderer::A_POSITION)),
+		glVertexAttribPointer(renderer::Shader::enable_attrib_array(renderer::Shader::Default::get_uniform(renderer::A_POSITION)),
                               2, GL_FLOAT, GL_FALSE, 0, nullptr);
         glDrawArrays(GL_LINES, 0, 2);
-        renderer::Shader::disable_attrib_array(renderer::DefaultShader::get_uniform(renderer::A_POSITION));
+		renderer::Shader::disable_attrib_array(renderer::Shader::Default::get_uniform(renderer::A_POSITION));
         Texture2D::force_rebind();
     }
     bucket.drawn[slot] = true;

@@ -830,8 +830,8 @@ bool GameWindow::setup_shaders()
         glBindVertexArray(default_vao_);
     }
 
-	renderer::DefaultShader::compile();
-	renderer::DefaultShader::update_projection(projection_);
+	renderer::Shader::Default::compile();
+	renderer::Shader::Default::update_projection(projection_);
 
     return true;
 }

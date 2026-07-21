@@ -125,8 +125,8 @@ void ImageList::ForceFetch()
         Fill.set_image(Image.second, false);
 
         // Draw as black.
-        Fill.color.Red = Fill.color.Blue = Fill.color.Green = 0.0001f;
-        Fill.color.Alpha = 0.0001f;
+        Fill.color.red = Fill.color.blue = Fill.color.green = 0.0001f;
+        Fill.color.alpha = 0.0001f;
         Fill.emit_draw_calls(calls);
     }
 

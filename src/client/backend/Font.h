@@ -6,7 +6,7 @@
 class Font
 {
 protected:
-    ColorRGB color_;
+    ColorRGBA color_;
 public:
     Font();
 

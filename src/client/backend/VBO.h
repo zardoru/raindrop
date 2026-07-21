@@ -46,5 +46,5 @@ public:
     void upload_to_gpu();
 
     /* Size must be valid with parameters given to VBO. */
-    void assign_data(const void *data);
+    void assign(const void *data);
 };

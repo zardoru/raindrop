@@ -14,7 +14,7 @@ namespace renderer {
 		const Mat4 *model = nullptr;
 		Shader *shader = nullptr;
 		EBlendMode blend_mode = BLEND_ALPHA;
-		ColorRGB color = { 1, 1, 1, 1 };
+		ColorRGBA color = { 1, 1, 1, 1 };
 		bool centered = false;
 		bool invert_color = false;
 		bool black_to_transparent = false;
@@ -39,8 +39,8 @@ namespace renderer {
 	void set_blending_mode(EBlendMode mode);
 	void set_textured_quad_vbo(VBO *tex_quad);
 	void draw_quad(const QuadDrawParams &params = {});
-	void draw_textured_quad(Texture2D* to_draw, const AABB& texture_crop, const Transformation& quad_transformation, const EBlendMode &mode = BLEND_ALPHA, const ColorRGB &in_color = Color::White);
-	void draw_primitive_quad(Transformation &quad_transformation, const EBlendMode &mode = BLEND_ALPHA, const ColorRGB &in_color = Color::White);
+	void draw_textured_quad(Texture2D* to_draw, const AABB& texture_crop, const Transformation& quad_transformation, const EBlendMode &mode = BLEND_ALPHA, const ColorRGBA &in_color = Color::white);
+	void draw_primitive_quad(Transformation &quad_transformation, const EBlendMode &mode = BLEND_ALPHA, const ColorRGBA &in_color = Color::white);
 
 	void set_scissor(bool enable);
 	void set_scissor_region(int x, int y, int w, int h);

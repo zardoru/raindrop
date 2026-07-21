@@ -275,23 +275,23 @@ namespace osb {
 		
 		if (validate_event_iterator(fade_evt, evFade)) {
 			if (is_time_in_event_bounds(time))
-					mSprite->color.Alpha = fade_evt->lerp_value(time);
+					mSprite->color.alpha = fade_evt->lerp_value(time);
 			else {
 				if (fade_evt->get_time() == 0 && mLayer == LAYER_SP_BACKGROUND)
-					mSprite->color.Alpha = 1;
+					mSprite->color.alpha = 1;
 				else
-					mSprite->color.Alpha = 0;
+					mSprite->color.alpha = 0;
 			}
 		}
 		else {
 			if (is_time_in_event_bounds(time))
-				mSprite->color.Alpha = 1;
+				mSprite->color.alpha = 1;
 			else
-				mSprite->color.Alpha = 0;
+				mSprite->color.alpha = 0;
 		}
 
 		// Don't bother updating unless we're visible.
-		if (mSprite->color.Alpha == 0)
+		if (mSprite->color.alpha == 0)
 			return;
 
 		// Now position.	
@@ -357,9 +357,9 @@ namespace osb {
 		auto colorization_evt = get_event(time, evColorize);
 		if (validate_event_iterator(colorization_evt, evColorize)) {
 			auto lerp = colorization_evt->lerp_value(time);
-			mSprite->color.Red = lerp.r;
-			mSprite->color.Green = lerp.g;
-			mSprite->color.Blue = lerp.b;
+			mSprite->color.red = lerp.r;
+			mSprite->color.green = lerp.g;
+			mSprite->color.blue = lerp.b;
 		}
 
 		// The effects after this don't set values before they begin. (Parameter)

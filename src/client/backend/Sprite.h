@@ -72,7 +72,7 @@ private: // Transformations
 
 public:
     // color and other transformations
-    ColorRGB color;
+    ColorRGBA color;
 
     AABB scissor_region;
 private:

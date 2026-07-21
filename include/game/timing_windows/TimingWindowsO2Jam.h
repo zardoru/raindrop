@@ -5,8 +5,8 @@
 namespace rd {
     class TimingWindowsO2Jam : public TimingWindows {
     public:
-        void DefaultSetup() override;
-        void Setup(double strictness, double scale) override;
+        void default_setup() override;
+        void setup(double strictness, double scale) override;
     };
 
 

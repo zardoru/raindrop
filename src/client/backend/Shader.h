@@ -28,6 +28,8 @@ namespace renderer {
 	protected:
 		static int m_last_shader_;
 	public:
+		class Default;
+
 		Shader();
 		~Shader();
 
@@ -53,7 +55,7 @@ namespace renderer {
 		
 	};
 
-	class DefaultShader : public Shader {
+	class Shader::Default : public Shader {
 		static int mFragProgram, mVertProgram, mProgram;
 		static uint32_t uniforms[NUM_SHADERVARS];
 	public:

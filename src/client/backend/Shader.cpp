@@ -56,10 +56,10 @@ namespace {
 
 namespace renderer {
 	int Shader::m_last_shader_ = -1;
-	int DefaultShader::mVertProgram, DefaultShader::mFragProgram, DefaultShader::mProgram;
-	uint32_t DefaultShader::uniforms[NUM_SHADERVARS];
+	int Shader::Default::mVertProgram, Shader::Default::mFragProgram, Shader::Default::mProgram;
+	uint32_t Shader::Default::uniforms[NUM_SHADERVARS];
 
-	bool DefaultShader::compile()
+	bool Shader::Default::compile()
 	{
 		CHECKERR();
 		mVertProgram = glCreateShader(GL_VERTEX_SHADER);
@@ -144,18 +144,18 @@ namespace renderer {
 		return true;
 	}
 
-	void DefaultShader::set_color(const float r, const float g, const float b, const float a)
+	void Shader::Default::set_color(const float r, const float g, const float b, const float a)
 	{
 		set_uniform(get_uniform(U_COLOR), l2gamma(r), l2gamma(g), l2gamma(b), a);
 	}
 
-	void DefaultShader::update_projection(Mat4 proj)
+	void Shader::Default::update_projection(Mat4 proj)
 	{
 		GLuint MatrixID = glGetUniformLocation(mProgram, "projection");
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &proj[0][0]);
 	}
 
-	void DefaultShader::static_bind() {
+	void Shader::Default::static_bind() {
 		CHECKERR();
 		if (m_last_shader_ != mProgram) {
 			m_last_shader_ = mProgram;
@@ -164,7 +164,7 @@ namespace renderer {
 		}
 	}
 
-	int DefaultShader::get_vertex_shader() {
+	int Shader::Default::get_vertex_shader() {
 		return mVertProgram;
 	}
 
@@ -198,7 +198,7 @@ namespace renderer {
 
 		mShaderHandle = glCreateProgram();
 		CHECKERR();
-		glAttachShader(mShaderHandle, DefaultShader::get_vertex_shader());
+		glAttachShader(mShaderHandle, Shader::Default::get_vertex_shader());
 		CHECKERR();
 		glAttachShader(mShaderHandle, fragsh);
 		CHECKERR();
@@ -282,7 +282,7 @@ namespace renderer {
 		return mIsValid;
 	}
 
-	uint32_t DefaultShader::get_uniform(const uint32_t uni) {
+	uint32_t Shader::Default::get_uniform(const uint32_t uni) {
 		assert(uni < NUM_SHADERVARS);
 		return uniforms[uni];
 	}

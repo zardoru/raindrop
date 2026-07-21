@@ -91,8 +91,8 @@ namespace rd {
         };
 
         for (auto &timing: Timings) {
-            timing.second->DefaultSetup();
-            timing.second->Reset();
+            timing.second->default_setup();
+            timing.second->reset();
         }
 
         CurrentTimingWindow = &timing_raindrop;
@@ -110,7 +110,7 @@ namespace rd {
     }
 
     void ScoreKeeper::setODWindows(int od) {
-        timing_osumania.Setup(od, 1);
+        timing_osumania.setup(od, 1);
         CurrentTimingWindow = &timing_osumania;
     }
 
@@ -130,7 +130,7 @@ namespace rd {
 
     ScoreKeeper::ScoreKeeper(double judge_window_scale) {
         init();
-        timing_raindrop.Setup(0, judge_window_scale);
+        timing_raindrop.setup(0, judge_window_scale);
         setBMSTimingWindows();
     }
 
@@ -226,14 +226,14 @@ namespace rd {
                 break;
         }
 
-        timing_raindrop.Setup(0, judge_window_scale);
-        timing_lr2.Setup(0, lr2_rank);
+        timing_raindrop.setup(0, judge_window_scale);
+        timing_lr2.setup(0, lr2_rank);
         setBMSTimingWindows();
     }
 
     void ScoreKeeper::setJudgeScale(double scale) {
-        timing_raindrop.Setup(0, scale * 100.0 / 72.0);
-        timing_lr2.Setup(0, scale);
+        timing_raindrop.setup(0, scale * 100.0 / 72.0);
+        timing_lr2.setup(0, scale);
         setBMSTimingWindows();
     }
 }
