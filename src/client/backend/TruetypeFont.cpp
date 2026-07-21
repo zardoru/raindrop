@@ -102,7 +102,7 @@ TruetypeFont::TruetypeFont(std::filesystem::path Filename)
     if (IsValid)
     {
 		realscale = stbtt_ScaleForPixelHeight(info.get(), SDF_SIZE);
-        window.add_ttf(this);
+        GameWindow::get_instance().add_ttf(this);
     }
     else
         Log::Printf("Failure loading TTF file %s.\n", otoworm::locale::wstring_to_utf8(Filename.wstring()).c_str());
@@ -110,7 +110,7 @@ TruetypeFont::TruetypeFont(std::filesystem::path Filename)
 
 TruetypeFont::~TruetypeFont()
 {
-    window.remove_ttf(this);
+    GameWindow::get_instance().remove_ttf(this);
     // ReleaseTextures();
 }
 

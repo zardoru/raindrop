@@ -29,12 +29,12 @@
 #include "../game/Game.h"
 
 
-ScreenEvaluation::ScreenEvaluation() :
-        Screen("ScreenEvaluation7K", false) {
+ScreenEvaluation::ScreenEvaluation(GameWindow& window) :
+        Screen(window, "ScreenEvaluation7K", false) {
     is_active_ = true;
 }
 
-void ScreenEvaluation::Init(ScreenGameplay *pr) {
+void ScreenEvaluation::init(ScreenGameplay *pr) {
     pr->setup_scripts(scene_->get_script_manager());
     scene_->initialize(GameState::get_instance().get_skin_file("screenevaluation7k.lua"));
 
@@ -120,5 +120,4 @@ void ScreenEvaluation::PrintCLIResults(ScoreKeeper *result){
     //std::cerr << result->getHistogram();
 }
 */
-
 

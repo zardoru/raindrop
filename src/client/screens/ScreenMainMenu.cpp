@@ -38,7 +38,7 @@ LuaManager* MainMenuLua = NULL;
 
 
 /// @themescript mainmenu.lua
-ScreenMainMenu::ScreenMainMenu() : Screen("ScreenMainMenu", false)
+ScreenMainMenu::ScreenMainMenu(GameWindow& window) : Screen(window, "ScreenMainMenu", false)
 {
     TNext = nullptr;
 }

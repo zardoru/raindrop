@@ -45,12 +45,12 @@ public:
     }
 };
 
-ScreenLoading::ScreenLoading(std::shared_ptr<Screen> _Next) : Screen("ScreenLoading", false)
+ScreenLoading::ScreenLoading(GameWindow& window, std::shared_ptr<Screen> next) : Screen(window, "ScreenLoading", false)
 {
-    next_screen_ = _Next;
-    LoadThread = nullptr;
+    next_screen_ = std::move(next);
+    load_thread_ = nullptr;
     is_active_ = true;
-    ThreadInterrupted = false;
+    thread_interrupted_ = false;
 	/// Global gamestate.
 	// @autoinstance Global
     GameState::get_instance().initialize_lua(scene_->get_script_manager()->get_lua_state());
@@ -72,7 +72,7 @@ void ScreenLoading::on_intro_begin()
 
 void ScreenLoading::init()
 {
-    LoadThread = std::make_shared<std::thread>(&LoadScreenThread::DoLoad, LoadScreenThread(FinishedLoading, next_screen_.get()));
+    load_thread_ = std::make_shared<std::thread>(&LoadScreenThread::DoLoad, LoadScreenThread(finished_loading_, next_screen_.get()));
 }
 
 void ScreenLoading::on_exit_end()
@@ -85,25 +85,25 @@ void ScreenLoading::on_exit_end()
     scene_.reset();
 
     // Close the screen we're loading if we asked to interrupt its loading.
-    if (ThreadInterrupted)
+    if (thread_interrupted_)
         next_screen_->close();
 	
     change_state(StateRunning);
 }
 
-bool ScreenLoading::run(double TimeDelta)
+bool ScreenLoading::run(double time_delta)
 {
-    if (!LoadThread && !ThreadInterrupted)
-        return (is_active_ = run_nested(TimeDelta));
+    if (!load_thread_ && !thread_interrupted_)
+        return (is_active_ = run_nested(time_delta));
 
     if (!scene_) return false;
 
-    scene_->draw_targets(TimeDelta);
+    scene_->draw_targets(time_delta);
 
-    if (FinishedLoading)
+    if (finished_loading_)
     {
-        LoadThread->join();
-        LoadThread = nullptr;
+        load_thread_->join();
+        load_thread_ = nullptr;
         next_screen_->post_load_initialization();
         change_state(StateExit);
     }
@@ -114,7 +114,7 @@ bool ScreenLoading::run(double TimeDelta)
 
 bool ScreenLoading::on_input(int32_t key, bool isPressed, bool isMouseInput)
 {
-    if (!LoadThread)
+    if (!load_thread_)
     {
         if (next_screen_)
             return next_screen_->on_input(key, isPressed, isMouseInput);
@@ -126,7 +126,7 @@ bool ScreenLoading::on_input(int32_t key, bool isPressed, bool isMouseInput)
         if (BindingsManager::translate_key(key) == KT_Escape)
         {
             next_screen_->RequestInterrupt();
-            ThreadInterrupted = true;
+            thread_interrupted_ = true;
         }
     }
 
@@ -135,7 +135,7 @@ bool ScreenLoading::on_input(int32_t key, bool isPressed, bool isMouseInput)
 
 bool ScreenLoading::on_scroll_input(double xOff, double yOff)
 {
-    if (!LoadThread)
+    if (!load_thread_)
     {
         return next_screen_->on_scroll_input(xOff, yOff);
     }

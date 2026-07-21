@@ -49,7 +49,7 @@
 CfgVar disable_bga("DisableBGA");
 
 
-ScreenGameplay::ScreenGameplay() : Screen("ScreenGameplay") {
+ScreenGameplay::ScreenGameplay(GameWindow& window) : Screen(window, "ScreenGameplay") {
     time_ = {};
     time_.old_stream = NAN;
     music_ = nullptr;
@@ -221,11 +221,11 @@ bool ScreenGameplay::load_song_audio() {
     if (my_chart_group_->song_filename.extension() == ".ojm") {
         Log::Printf("O2JAM: Loading OJM.\n");
         ojm_audio_ = std::make_unique<AudioSourceOJM>(this);
-        ojm_audio_->SetPitch(rate);
+        ojm_audio_->set_pitch(rate);
         ojm_audio_->open(my_chart_group_->path / my_chart_group_->song_filename);
 
         for (int i = 1; i <= 2000; i++) {
-            std::shared_ptr<AudioSample> Snd = ojm_audio_->GetFromIndex(i);
+            std::shared_ptr<AudioSample> Snd = ojm_audio_->get_from_index(i);
 
             if (Snd != nullptr)
                 keysounds_[i].push_back(Snd);

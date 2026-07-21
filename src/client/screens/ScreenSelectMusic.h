@@ -65,7 +65,7 @@ class ScreenSelectMusic : public Screen {
     void transform_string(int Item, std::shared_ptr<otoworm::ChartGroup> chart_group, bool IsSelected, int ListItem, std::string text) const;
 
 public:
-    ScreenSelectMusic();
+    explicit ScreenSelectMusic(GameWindow& window);
 
     void load_resources() override;
 

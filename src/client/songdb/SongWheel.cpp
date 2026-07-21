@@ -271,7 +271,7 @@ bool SongWheel::handle_input(const int32_t key, const bool is_pressed, const boo
             cursor_pos_++;
             return true;
         case KT_Select:
-            const Vec2 mpos = window.get_relative_mouse_pos();
+            const Vec2 mpos = GameWindow::get_instance().get_relative_mouse_pos();
             const auto boundIndex = get_cursor_index();
             const auto Idx = get_list_cursor_index();
             if (boundIndex != filtered_current_list_.get_num_entries()) // There's entries!
@@ -337,7 +337,7 @@ void SongWheel::update(const float delta)
     if (!current_list_)
         return;
 
-    const Vec2 mpos = window.get_relative_mouse_pos();
+    const Vec2 mpos = GameWindow::get_instance().get_relative_mouse_pos();
     if (in_wheel_bounds(mpos))
     {
         is_hovering_ = true;

@@ -324,7 +324,7 @@ namespace renderer {
 				assert(glGetError() == 0);
 			}
 		} else {
-			const auto projection = window.get_matrix_projection();
+			const auto projection = GameWindow::get_instance().get_matrix_projection();
 			params.shader->bind();
 
 			auto uniform = params.shader->get_uniform("projection");
@@ -444,7 +444,7 @@ namespace renderer {
 	}
 
 	void set_scissor_region(const int x, const int y, const int w, const int h) {
-		float ratio = window.get_window_v_scale();
+		float ratio = GameWindow::get_instance().get_window_v_scale();
 		glScissor(x * ratio, (ScreenHeight - (y + h)) * ratio, w * ratio, h * ratio);
 	}
 
@@ -452,17 +452,17 @@ namespace renderer {
 		// x: 0 -> 0; screenwidth -> windowwidth
 		// y: 0 -> windowheight; screenheight -> 0
 		auto tx = [&](const int x) {
-			auto ww = window.get_window_size().x;
+			auto ww = GameWindow::get_instance().get_window_size().x;
 			return x * ww / ScreenWidth;
 		};
 
 		auto ty = [&](const int y) {
-			auto wh = window.get_window_size().y;
+			auto wh = GameWindow::get_instance().get_window_size().y;
 			auto m = -wh / ScreenHeight;
 			return m * y + wh;
 		};
 
-		auto vratio = window.get_window_size().y / ScreenHeight;
+		auto vratio = GameWindow::get_instance().get_window_size().y / ScreenHeight;
 		glScissor(tx(x), ty(y) - h * vratio, tx(w), h * vratio);
 	}
 }
@@ -786,7 +786,7 @@ VBO::VBO(const Type t, const uint32_t elements, const uint32_t size, const IdxKi
     is_valid_ = false;
     m_type_ = t;
     m_kind_ = kind;
-    window.add_vbo(this);
+    GameWindow::get_instance().add_vbo(this);
 
     element_count_ = elements;
     element_size_ = size;
@@ -801,7 +801,7 @@ VBO::~VBO()
         internal_vbo_ = 0;
     }
 
-    window.remove_vbo(this);
+    GameWindow::get_instance().remove_vbo(this);
 }
 
 uint32_t VBO::get_element_count() const
@@ -860,9 +860,9 @@ void VBO::upload_to_gpu() {
     const unsigned int buf_type = BufTypeForKind(m_kind_);
 
     if (RegenBuffer)
-        glBufferData(buf_type, element_size_ * element_count_, vbo_data_, up_type);
+        glBufferData(buf_type, element_size_ * element_count_, vbo_data_.get(), up_type);
     else
-        glBufferSubData(buf_type, 0, element_size_ * element_count_, vbo_data_);
+        glBufferSubData(buf_type, 0, element_size_ * element_count_, vbo_data_.get());
 }
 
 void VBO::assign_data(const void* data)

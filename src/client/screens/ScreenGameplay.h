@@ -101,7 +101,7 @@ public:
     otoworm::ChartGroup* get_chart_group() const;
 
 
-    ScreenGameplay();
+    explicit ScreenGameplay(GameWindow& window);
     void initialize(std::shared_ptr<otoworm::ChartGroup> chart_group);
     void load_resources() override;
     void post_load_initialization() override;

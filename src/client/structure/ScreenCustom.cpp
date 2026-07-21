@@ -5,8 +5,8 @@
 #include "ScreenCustom.h"
 #include "SceneEnvironment.h"
 
-ScreenCustom::ScreenCustom(const std::filesystem::path& ScriptName)
-    : Screen("ScreenCustom", false)
+ScreenCustom::ScreenCustom(GameWindow& window, const std::filesystem::path& ScriptName)
+    : Screen(window, "ScreenCustom", false)
 {
     scene_->initialize(ScriptName);
     intro_duration_ = scene_->get_intro_duration();

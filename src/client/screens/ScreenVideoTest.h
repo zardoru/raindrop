@@ -5,7 +5,7 @@ class ScreenVideoTest : public Screen
 	double clock;
 	Sprite sprite;
 public:
-	ScreenVideoTest();
+	explicit ScreenVideoTest(GameWindow& window);
 
 	bool Run(double dt);
 };

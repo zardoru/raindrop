@@ -266,8 +266,8 @@ void ScreenGameplay::evaluate_stage_failure() {
     }
 
     if (trigger_eval) {
-        const auto screen_evaluation = std::make_shared<ScreenEvaluation>();
-        screen_evaluation->Init(this);
+        const auto screen_evaluation = std::make_shared<ScreenEvaluation>(window_);
+        screen_evaluation->init(this);
         next_screen_ = screen_evaluation;
     }
 }

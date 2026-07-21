@@ -3,9 +3,12 @@
 #include <SDL3/SDL_video.h>
 #include <SDL3/SDL_keyboard.h>
 
+#include <memory>
+
 class VBO;
 class Application;
 class TruetypeFont;
+struct JoystickSupport;
 
 namespace renderer {
 	class Shader;
@@ -37,10 +40,18 @@ class GameWindow
 	std::vector<renderer::Shader*> shader_list_;
 
     Application* application_;
-    bool FullscreenSwitchbackPending, IsFullscreen, CloseRequested;
+    bool fullscreen_switchback_pending_, is_fullscreen_, close_requested_;
+    std::unique_ptr<JoystickSupport> joystick_support_;
+
+    GameWindow();
+    ~GameWindow();
 
 public:
-    GameWindow();
+    GameWindow(const GameWindow&) = delete;
+    GameWindow& operator=(const GameWindow&) = delete;
+
+    static GameWindow& get_instance();
+
     bool setup(Application* _app);
     void clear_window(); // basically wrapping up glClear
     void cleanup();
@@ -50,13 +61,13 @@ public:
 
     void set_visible_cursor(bool visible);
     void add_vbo(VBO* v);
-    void remove_vbo(VBO *v);
+    void remove_vbo(const VBO *v);
 
 	void add_shader(renderer::Shader *s);
-	void remove_shader(renderer::Shader *s);
+	void remove_shader(const renderer::Shader *s);
 
     void add_ttf(TruetypeFont* ttf);
-    void remove_ttf(TruetypeFont* ttf);
+    void remove_ttf(const TruetypeFont* ttf);
 
     Mat4 get_matrix_projection() const;
     Mat4 get_matrix_projection_inverse() const;
@@ -81,5 +92,3 @@ public:
     void swap_buffers() const;
     double get_current_time();
 };
-
-extern GameWindow window;

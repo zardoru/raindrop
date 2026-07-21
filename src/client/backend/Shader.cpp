@@ -289,11 +289,11 @@ namespace renderer {
 
 	Shader::Shader() {
 		mShaderHandle = -1;
-		window.add_shader(this);
+		GameWindow::get_instance().add_shader(this);
 	}
 
 	Shader::~Shader() {
 		glDeleteProgram(mShaderHandle);
-		window.remove_shader(this);
+		GameWindow::get_instance().remove_shader(this);
 	}
 }

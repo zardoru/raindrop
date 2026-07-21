@@ -12,9 +12,9 @@ class ScreenGameplay;
 
 class ScreenEvaluation : public Screen {
 public:
-    ScreenEvaluation();
+    explicit ScreenEvaluation(GameWindow& window);
 
-    void Init(ScreenGameplay *rs);
+    void init(ScreenGameplay *rs);
 
     bool run(double Delta);
 
@@ -24,5 +24,4 @@ public:
 
     void PrintCLIResults(ScoreKeeper *result);
 };
-
 

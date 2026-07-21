@@ -9,7 +9,7 @@
 
 VideoPlayback play(2);
 
-ScreenVideoTest::ScreenVideoTest() : Screen("ScreenVideoTest", false)
+ScreenVideoTest::ScreenVideoTest(GameWindow& window) : Screen(window, "ScreenVideoTest", false)
 {
 	clock = 0;
 	play.Open("bga.mp4");

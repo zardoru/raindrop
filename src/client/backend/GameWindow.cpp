@@ -33,30 +33,14 @@
 #define APIENTRY
 #endif
 
-GameWindow window;
-
 std::map<int32_t, KeyType> BindingsManager::ScanFunction;
 std::map<int32_t, int32_t> BindingsManager::ScanFunction7K;
-
-constexpr int NUM_OF_USED_CONTROLLER_BUTTONS = 32;
-
-int controller_to_use;
-bool joystick_enabled;
-SDL_Joystick* active_joystick = nullptr;
-
-// az: wait - this is kind of a bad idea (limited size array)
-// TODO: there's ought to be a better way to do this
-
-//True is pressed, false is released
-bool controller_button_state[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = { 0 };
-float last_axis_sign[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = { 0 };
-float last_axis_value[NUM_OF_USED_CONTROLLER_BUTTONS + 1] = { 0 };
-//The first member of this array should never be accessed; it's there to make reading some of the code easier.
 
 struct KeyAssociation
 {
     char key_string[32];
     int bound_key;
+    int controller = -1;
 };
 
 KeyAssociation StaticSpecialKeys[] = // only add if someone actually needs more
@@ -124,15 +108,167 @@ constexpr int NUM_OF_STATIC_SPECIAL_KEYS = sizeof(StaticSpecialKeys) / sizeof(Ke
 
 std::vector<KeyAssociation> SpecialKeys;
 
-int key_translate(std::string key)
-{
-    for (auto & SpecialKey : SpecialKeys)
+struct JoystickInstance {
+    std::unique_ptr<SDL_Joystick, decltype(&SDL_CloseJoystick)> active_joystick;
+    std::vector<bool> controller_button_state;
+    std::vector<float> last_axis_sign;
+    uint32_t key_start;
+    SDL_JoystickID controller_id;
+
+    JoystickInstance(JoystickInstance&& other) noexcept : active_joystick(nullptr, SDL_CloseJoystick) {
+        active_joystick = std::move(other.active_joystick);
+        controller_button_state = std::move(other.controller_button_state);
+        last_axis_sign = std::move(other.last_axis_sign);
+        key_start = other.key_start;
+        controller_id = other.controller_id;
+    }
+
+    JoystickInstance(const SDL_JoystickID joystick_id, std::vector<KeyAssociation>& special_keys) :
+        active_joystick(SDL_OpenJoystick(joystick_id), SDL_CloseJoystick), controller_id(joystick_id) {
+        key_start = 1000 * joystick_id;
+
+        const int num_of_buttons = active_joystick ? SDL_GetNumJoystickButtons(active_joystick.get()) : 0;
+        if (num_of_buttons)
+        {
+            for (int i = 1; i <= num_of_buttons; i++)
+            {
+                char name[32];
+                snprintf(name, sizeof name, "Controller%dBtn%d", joystick_id, i);
+                KeyAssociation this_button{};
+                strcpy(this_button.key_string, name);
+                this_button.bound_key = key_start + i;
+                this_button.controller = joystick_id;
+                special_keys.push_back(this_button);
+            }
+        }
+
+        const int num_of_axes = active_joystick ? SDL_GetNumJoystickAxes(active_joystick.get()) : 0;
+        for (int i = 1; i <= num_of_axes; i++)
+        {
+            char name[32];
+            snprintf(name, sizeof name, "Controller%dAxis%d", joystick_id, i);
+            KeyAssociation this_axis{};
+            strcpy(this_axis.key_string, name);
+            this_axis.bound_key = key_start + i + num_of_buttons;
+            this_axis.controller = joystick_id;
+            special_keys.push_back(this_axis);
+        }
+
+        controller_button_state.resize(num_of_buttons + num_of_axes + 1);
+        last_axis_sign.resize(num_of_axes);
+    }
+
+    ~JoystickInstance() = default;
+
+    void run_input(const Application* application, const std::vector<KeyAssociation>& special_keys)
     {
-        std::string key = key; otoworm::util::to_lower(key);
-        auto target = std::string(SpecialKey.key_string);
+        if (!active_joystick)
+            return;
+
+        const int button_array_size = SDL_GetNumJoystickButtons(active_joystick.get());
+        for (int i = 0; i < button_array_size; i++)
+        {
+            for (const auto& [key_string, bound_key, controller] : special_keys)
+            {
+                if (controller != controller_id)
+                    continue;
+
+                const int this_key_number = bound_key - key_start;
+                if (i + 1 != this_key_number)
+                    continue;
+
+                const auto pressed = SDL_GetJoystickButton(active_joystick.get(), i);
+                if (pressed != controller_button_state[this_key_number])
+                {
+                    application->on_input(bound_key, pressed, false);
+                    controller_button_state[this_key_number] = pressed;
+                }
+            }
+        }
+
+        const int axis_array_size = SDL_GetNumJoystickAxes(active_joystick.get());
+        for (int i = 0; i < axis_array_size; i++)
+        {
+            const float axis_value = SDL_GetJoystickAxis(active_joystick.get(), i) / 32767.0f;
+            for (const auto& [key_string, bound_key, controller] : special_keys)
+            {
+                if (controller != controller_id)
+                    continue;
+
+                const int axis = bound_key - key_start;
+                if (i + button_array_size + 1 != axis)
+                    continue;
+
+                if (constexpr float deadzone = 0.25; abs(axis_value) > deadzone)
+                {
+                    if (!controller_button_state[axis])
+                    {
+                        last_axis_sign[i] = sign(axis_value);
+                        controller_button_state[axis] = true;
+                        application->on_input(bound_key, true, false);
+                    }
+                    else if (last_axis_sign[i] != sign(axis_value))
+                    {
+                        application->on_input(bound_key, false, false);
+                        application->on_input(bound_key, true, false);
+                        last_axis_sign[i] = sign(axis_value);
+                    }
+                }
+                else if (controller_button_state[axis])
+                {
+                    controller_button_state[axis] = false;
+                    application->on_input(bound_key, false, false);
+                }
+            }
+        }
+    }
+};
+
+struct JoystickSupport
+{
+    std::vector<JoystickInstance> controllers_;
+    ~JoystickSupport() = default;
+
+    void initialize(std::vector<KeyAssociation>& special_keys)
+    {
+        controllers_.clear();
+
+        int joystick_count = 0;
+        SDL_JoystickID* joysticks = SDL_GetJoysticks(&joystick_count);
+        if (joysticks)
+        {
+            for (int i = 0; i < joystick_count; ++i)
+            {
+                controllers_.emplace_back(joysticks[i], special_keys);
+            }
+        }
+
+        if (joysticks)
+            SDL_free(joysticks);
+    }
+
+    void run_input(const Application* application, const std::vector<KeyAssociation>& special_keys)
+    {
+        for (auto &joy : controllers_) {
+            joy.run_input(application, special_keys);
+        }
+    }
+
+    void cleanup()
+    {
+        controllers_.clear();
+    }
+};
+
+int key_translate(const std::string &key)
+{
+    for (auto& [key_string, bound_key, controller] : SpecialKeys)
+    {
+        std::string nkey = key; otoworm::util::to_lower(nkey);
+        auto target = std::string(key_string);
         otoworm::util::to_lower(target);
-        if (key == target)
-            return SpecialKey.bound_key;
+        if (nkey == target)
+            return bound_key;
     }
 
     if (!key.empty())
@@ -218,7 +354,7 @@ std::string get_name_for_keytype(const KeyType K)
 
 std::string get_name_for_untranslated_key(const int K)
 {
-    for (auto &[key_string, bound_key] : StaticSpecialKeys)
+    for (auto& [key_string, bound_key, controller] : StaticSpecialKeys)
     {
         if (bound_key == K)
             return key_string;
@@ -229,49 +365,6 @@ std::string get_name_for_untranslated_key(const int K)
 
 void BindingsManager::initialize()
 {
-    SpecialKeys.clear();
-    for (const auto & static_special_key : StaticSpecialKeys)
-        SpecialKeys.push_back(static_special_key);
-
-    //controllerToUse = 1; should use this if the user entered garbage data (anything that isn't a number)
-    controller_to_use = (int)Configuration::GetConfigf("ControllerNumber") - 1;
-
-    int joystickCount = 0;
-    SDL_JoystickID* joysticks = SDL_GetJoysticks(&joystickCount);
-    if (joysticks && controller_to_use >= 0 && controller_to_use < joystickCount)
-    {
-        active_joystick = SDL_OpenJoystick(joysticks[controller_to_use]);
-        const int num_of_buttons = active_joystick ? SDL_GetNumJoystickButtons(active_joystick) : 0;
-        if (num_of_buttons)
-        {
-            for (int i = 1; i <= num_of_buttons; i++)
-            {
-                char name[32];
-                sprintf(name, "Controller%d", i);
-                KeyAssociation thisButton;
-                strcpy(thisButton.key_string, name);
-                thisButton.bound_key = 1000 + i;
-                SpecialKeys.push_back(thisButton);
-            }
-		}
-
-        if (const int num_of_axis = active_joystick ? SDL_GetNumJoystickAxes(active_joystick) : 0)
-		{
-			for (int i = num_of_buttons + 1; i <= num_of_buttons + num_of_axis; i++) {
-				char name[32];
-				sprintf(name, "Controller%d", i);
-				KeyAssociation this_axis{};
-				strcpy(this_axis.key_string, name);
-				this_axis.bound_key = 1000 + i;
-				SpecialKeys.push_back(this_axis);
-			}
-		}
-    }
-    if (joysticks)
-        SDL_free(joysticks);
-
-    joystick_enabled = active_joystick != nullptr;
-
     std::map <std::string, std::string> fields;
     Configuration::GetConfigListS("SystemKeys", fields, "");
 
@@ -353,49 +446,60 @@ GameWindow::GameWindow()
 {
     viewport_.x = viewport_.y = 0;
     size_ratio_ = 1.0f;
-    FullscreenSwitchbackPending = false;
-    CloseRequested = false;
+    fullscreen_switchback_pending_ = false;
+    close_requested_ = false;
     wnd_ = nullptr;
     gl_context_ = nullptr;
+    joystick_support_ = std::make_unique<JoystickSupport>();
+}
+
+GameWindow::~GameWindow() = default;
+
+GameWindow& GameWindow::get_instance()
+{
+    static GameWindow instance;
+    return instance;
 }
 
 void resize_func(const int32_t width, const int32_t height)
 {
-    float HeightRatio = (float)height / window.get_matrix_size().y;
+    auto& game_window = GameWindow::get_instance();
+    float HeightRatio = (float)height / game_window.get_matrix_size().y;
 
-	if (!window.IsFullscreen) { // well then, let's enforce some aspect ratio
-		double mwidth = window.get_matrix_size().x * HeightRatio;
+	if (!game_window.is_fullscreen_) { // well then, let's enforce some aspect ratio
+		double mwidth = game_window.get_matrix_size().x * HeightRatio;
 		glViewport(0, 0, mwidth, height);
-		SDL_SetWindowSize(window.wnd_, mwidth, height);
+		SDL_SetWindowSize(game_window.wnd_, mwidth, height);
 
-		window.size_.x = mwidth;
-		window.size_.y = height;
+		game_window.size_.x = mwidth;
+		game_window.size_.y = height;
 	}
 	else { // just assume the values are correct in fullscreen
 		glViewport(0, 0, width, height);
-		window.size_.x = width;
-		window.size_.y = height;
+		game_window.size_.x = width;
+		game_window.size_.y = height;
 	}
 
-    window.size_ratio_ = HeightRatio;
+    game_window.size_ratio_ = HeightRatio;
 }
 
 void input_func(const int32_t key, const bool pressed, const SDL_Keymod modk)
 {
-    window.application_->on_input(key, pressed, false);
+    auto& game_window = GameWindow::get_instance();
+    game_window.application_->on_input(key, pressed, false);
 
     if (key == SDLK_RETURN && pressed && (modk & SDL_KMOD_ALT))
-        window.FullscreenSwitchbackPending = true;
+        game_window.fullscreen_switchback_pending_ = true;
 }
 
 void mouse_input_func(const int32_t key, const bool pressed)
 {
-    window.application_->on_input(key, pressed, true);
+    GameWindow::get_instance().application_->on_input(key, pressed, true);
 }
 
 void scroll_func(const double xOff, const double yOff)
 {
-    window.application_->on_scroll_input(xOff, yOff);
+    GameWindow::get_instance().application_->on_scroll_input(xOff, yOff);
 }
 
 Vec2 GameWindow::get_window_size() const
@@ -440,6 +544,11 @@ bool GameWindow::setup_window()
         return false;
     }
 
+    SpecialKeys.clear();
+    for (const auto& static_special_key : StaticSpecialKeys)
+        SpecialKeys.push_back(static_special_key);
+
+    joystick_support_->initialize(SpecialKeys);
     BindingsManager::initialize();
 
     glEnable(GL_BLEND); GLCHECKERR();
@@ -517,20 +626,20 @@ bool GameWindow::setup(Application* _parent)
     matrix_size_.x = ScreenWidth;
     matrix_size_.y = ScreenHeight;
 
-    IsFullscreen = Configuration::GetConfigf("Fullscreen") != 0;
+    is_fullscreen_ = Configuration::GetConfigf("Fullscreen") != 0;
 
     do_flush = Configuration::GetConfigf("VideoFlush") != 0;
     v_sync = Configuration::GetConfigf("VSync") != 0;
 
-	if (IsFullscreen) {
+	if (is_fullscreen_) {
 		if (!SDL_GetPrimaryDisplay()) {
 			Log::LogPrintf("Can't get primary display (Fullscreen)\n");
-			IsFullscreen = false;
+			is_fullscreen_ = false;
 		}
 	}
 
     SDL_WindowFlags flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
-    if (IsFullscreen)
+    if (is_fullscreen_)
         flags |= SDL_WINDOW_FULLSCREEN;
 
     if (!((wnd_ = SDL_CreateWindow(RAINDROP_WINDOWTITLE RAINDROP_VERSIONTEXT, size_.x, size_.y, flags))))
@@ -607,11 +716,7 @@ void GameWindow::clear_window()
 
 void GameWindow::cleanup()
 {
-    if (active_joystick)
-    {
-        SDL_CloseJoystick(active_joystick);
-        active_joystick = nullptr;
-    }
+    joystick_support_->cleanup();
     if (gl_context_)
     {
         SDL_GL_DestroyContext(gl_context_);
@@ -623,15 +728,15 @@ void GameWindow::cleanup()
 
 void GameWindow::update_fullscreen()
 {
-	if (FullscreenSwitchbackPending)
+	if (fullscreen_switchback_pending_)
 	{
 		Log::LogPrintf("Attempting to switch fullscreen mode.\n");
-        IsFullscreen = !IsFullscreen;
-        if (!SDL_SetWindowFullscreen(wnd_, IsFullscreen))
+        is_fullscreen_ = !is_fullscreen_;
+        if (!SDL_SetWindowFullscreen(wnd_, is_fullscreen_))
         {
             Log::LogPrintf("Can't switch fullscreen mode: %s\n", SDL_GetError());
-            IsFullscreen = !IsFullscreen;
-            FullscreenSwitchbackPending = false;
+            is_fullscreen_ = !is_fullscreen_;
+            fullscreen_switchback_pending_ = false;
             return;
         }
 
@@ -640,9 +745,6 @@ void GameWindow::update_fullscreen()
         SDL_GetWindowSize(wnd_, &outx, &outy);
         resize_func(outx, outy);
 
-		// Reload all images.
-		// todo: rmlui
-		// Engine::RocketInterface::ReloadTextures();
 		TextureCollection::reload_all();
 
 		/* This revalidates all VBOs and fonts */
@@ -653,12 +755,12 @@ void GameWindow::update_fullscreen()
 		}
 
 		// Automatically revalidated on usage
-		for (auto & i : ttf_list_)
+		for (const auto & i : ttf_list_)
 		{
 			i->invalidate();
 		}
 
-		FullscreenSwitchbackPending = false;
+		fullscreen_switchback_pending_ = false;
 	}
 }
 
@@ -670,7 +772,7 @@ void GameWindow::run_input()
         switch (event.type)
         {
         case SDL_EVENT_QUIT:
-            CloseRequested = true;
+            close_requested_ = true;
             break;
         case SDL_EVENT_WINDOW_RESIZED:
             resize_func(event.window.data1, event.window.data2);
@@ -693,79 +795,18 @@ void GameWindow::run_input()
             break;
         case SDL_EVENT_TEXT_INPUT:
             if (event.text.text && event.text.text[0])
-                window.application_->on_text_input(static_cast<unsigned int>(event.text.text[0]));
+                application_->on_text_input(static_cast<unsigned int>(event.text.text[0]));
             break;
         default:
             break;
         }
     }
 
-	if (joystick_enabled)
-	{
-		// buttons
-		const int button_array_size = SDL_GetNumJoystickButtons(active_joystick);
-		if (button_array_size > 0)
-		{
-			for (int i = 0; i < button_array_size; i++)
-			{
-				for (const auto &[key_string, bound_key] : SpecialKeys)
-				{
-					/* Matches the pressed button to its entry in the SpecialKeys vector. */
-                    if (const int this_key_number = bound_key - 1000; i + 1 == this_key_number)
-					{
-						/* Only processes the button push/release if the state has changed. */
-                        if (const auto pressed = SDL_GetJoystickButton(active_joystick, i);
-                            pressed != controller_button_state[this_key_number])
-						{
-							window.application_->on_input(bound_key, pressed, false);
-							controller_button_state[this_key_number] = pressed;
-						}
-					}
-				}
-			}
-		}
-
-		// axis
-        if (const int axis_array_size = SDL_GetNumJoystickAxes(active_joystick)) {
-			for (auto i = 0; i < axis_array_size; i++) {
-                const float axis_value = SDL_GetJoystickAxis(active_joystick, i) / 32767.0f;
-				for (auto &[key_string, bound_key] : SpecialKeys) {
-					// as before, specialkeys vector value
-					const int axis = bound_key - 1000;
-
-					if ((i + button_array_size + 1) != axis)
-						continue;
-
-					if (constexpr float deadzone = 0.25; abs(axis_value) > deadzone) {
-						if (!controller_button_state[axis]) {
-							last_axis_sign[i] = sign(axis_value);
-
-							controller_button_state[axis] = true;
-							window.application_->on_input(bound_key, true, false);
-						}
-						else {
-							if (last_axis_sign[i] != sign(axis_value)) {
-								window.application_->on_input(bound_key, false, false);
-								window.application_->on_input(bound_key, true, false);
-								last_axis_sign[i] = sign(axis_value);
-							}
-						}
-					}
-					else {
-						if (controller_button_state[axis]) {
-							controller_button_state[axis] = false;
-							window.application_->on_input(bound_key, false, false);
-						}
-					}
-				}
-			}
-		}
-
-	}
+    joystick_support_->run_input(application_, SpecialKeys);
 }
 
 bool GameWindow::should_close_window() const {
-    return CloseRequested;
+    return close_requested_;
 }
 
 void GameWindow::set_visible_cursor(const bool visible)
@@ -800,9 +841,9 @@ void GameWindow::add_vbo(VBO *v)
     vbo_list_.push_back(v);
 }
 
-void GameWindow::remove_vbo(VBO *v)
+void GameWindow::remove_vbo(const VBO *v)
 {
-    if (!vbo_list_.size()) return;
+    if (vbo_list_.empty()) return;
 
     for (auto i = vbo_list_.begin(); i != vbo_list_.end(); ++i)
     {
@@ -819,7 +860,7 @@ void GameWindow::add_shader(renderer::Shader *s)
 	shader_list_.push_back(s);
 }
 
-void GameWindow::remove_shader(renderer::Shader *s)
+void GameWindow::remove_shader(const renderer::Shader *s)
 {
 	for (auto i = shader_list_.begin(); i != shader_list_.end(); ++i) {
 		if (*i == s) {
@@ -834,7 +875,7 @@ void GameWindow::add_ttf(TruetypeFont* ttf)
     ttf_list_.push_back(ttf);
 }
 
-void GameWindow::remove_ttf(TruetypeFont *ttf)
+void GameWindow::remove_ttf(const TruetypeFont *ttf)
 {
     for (auto i = ttf_list_.begin(); i != ttf_list_.end(); ++i)
     {

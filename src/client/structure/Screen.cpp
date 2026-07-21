@@ -12,7 +12,8 @@
 #include "SceneEnvironment.h"
 #include "Screen.h"
 
-Screen::Screen(const std::string &name, bool init_ui) : transition_time_(0), exit_duration_(0) {
+Screen::Screen(GameWindow& window, const std::string &name, bool init_ui)
+    : window_(window), transition_time_(0), exit_duration_(0) {
     parent_ = nullptr;
     is_active_ = false;
     next_screen_ = nullptr;
@@ -23,7 +24,8 @@ Screen::Screen(const std::string &name, bool init_ui) : transition_time_(0), exi
     skip_this_frame_ = true;
 }
 
-Screen::Screen(const std::string &name, const std::shared_ptr<Screen> &parent)
+Screen::Screen(GameWindow& window, const std::string &name, const std::shared_ptr<Screen> &parent)
+    : window_(window)
 {
     parent_ = parent;
     is_active_ = false;
@@ -109,6 +111,11 @@ Screen* Screen::get_top()
 {
     if (next_screen_) return next_screen_->get_top();
     else return this;
+}
+
+GameWindow& Screen::get_window() const
+{
+    return window_;
 }
 
 void Screen::start_transition(std::shared_ptr<Screen> scr)

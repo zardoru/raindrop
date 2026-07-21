@@ -217,7 +217,7 @@ void Application::init()
 
     if (open_window)
     {
-        good_to_go = window.setup(this);
+        good_to_go = GameWindow::get_instance().setup(this);
         init_audio();
         root = nullptr;
     }
@@ -244,8 +244,9 @@ void Application::setup_preview_mode()
 
     GameState::get_instance().set_selected_chart_group(chart_group);
     // Create loading screen and gameplay screen.
-    auto game = std::make_shared<ScreenGameplay>();
-    auto LoadScreen = std::make_shared<ScreenLoading>(game);
+    auto& game_window = GameWindow::get_instance();
+    auto game = std::make_shared<ScreenGameplay>(game_window);
+    auto LoadScreen = std::make_shared<ScreenLoading>(game_window, game);
 
     // Set them up.
 	chart_group->path = std::filesystem::absolute(InFile.parent_path());
@@ -283,7 +284,7 @@ bool Application::poll_ipc()
 
 void Application::run()
 {
-    const double current_time = window.get_current_time();
+    const double current_time = GameWindow::get_instance().get_current_time();
     bool run_loop = true;
 
     if (!good_to_go)
@@ -291,7 +292,7 @@ void Application::run()
 
     if (mode == MODE_PLAY)
     {
-        const auto scr = std::make_shared<ScreenMainMenu>();
+        const auto scr = std::make_shared<ScreenMainMenu>(GameWindow::get_instance());
         scr->init();
         root = scr;
     }
@@ -345,7 +346,8 @@ void Application::run()
     {
         Log::Printf("Initializing custom, ad-hoc screen...\n");
 		const auto s = otoworm::locale::wstring_to_utf8(InFile.wstring());
-        const auto scr = std::make_shared<ScreenCustom>(GameState::get_instance().get_skin_file(s));
+        const auto scr = std::make_shared<ScreenCustom>(
+            GameWindow::get_instance(), GameState::get_instance().get_skin_file(s));
         root = scr;
 	}
 	else if (mode == MODE_GENFONTCACHE)
@@ -355,7 +357,7 @@ void Application::run()
 		run_loop = false;
 	}
 
-    Log::Printf("Time: %fs\n", window.get_current_time() - current_time);
+    Log::Printf("Time: %fs\n", GameWindow::get_instance().get_current_time() - current_time);
 
     if (!run_loop)
         return;
@@ -363,16 +365,16 @@ void Application::run()
     TextureCollection::upload_and_reload_textures();
 	GameState::get_instance().set_root_screen(root);
 
-    oldTime = window.get_current_time();
-    while (root->is_screen_running() && !window.should_close_window())
+    oldTime = GameWindow::get_instance().get_current_time();
+    while (root->is_screen_running() && !GameWindow::get_instance().should_close_window())
     {
-        const double new_time = window.get_current_time();
+        const double new_time = GameWindow::get_instance().get_current_time();
         const double delta = new_time - oldTime;
         TextureCollection::upload_and_reload_textures();
 
-		window.run_input();
+		GameWindow::get_instance().run_input();
 
-        window.clear_window();
+        GameWindow::get_instance().clear_window();
 
         if (mode == MODE_VSRGPREVIEW) // Run IPC Message Queue Querying.
             if (poll_ipc()) continue;
@@ -380,8 +382,8 @@ void Application::run()
         root->update(delta);
 
         update_mixer();
-        window.swap_buffers();
-		window.update_fullscreen();
+        GameWindow::get_instance().swap_buffers();
+		GameWindow::get_instance().update_fullscreen();
 
         oldTime = new_time;
     }
@@ -406,7 +408,7 @@ void Application::close()
 		root = nullptr;
     }
 
-    window.cleanup();
+    GameWindow::get_instance().cleanup();
     Configuration::cleanup();
 }
 

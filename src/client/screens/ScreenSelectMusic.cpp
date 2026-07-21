@@ -80,7 +80,7 @@ void SetupWheelLua(LuaManager *Man) {
 }
 
 
-ScreenSelectMusic::ScreenSelectMusic() : Screen("ScreenSelectMusic") {
+ScreenSelectMusic::ScreenSelectMusic(GameWindow& window) : Screen(window, "ScreenSelectMusic") {
     preview_stream_ = nullptr;
 
     previous_preview = nullptr;
@@ -203,11 +203,11 @@ void ScreenSelectMusic::start_gameplay_screen() {
     auto chart_group = GameState::get_instance().get_selected_chart_group_shared();
 
 
-    auto screen_gameplay = std::make_shared<ScreenGameplay>();
+    auto screen_gameplay = std::make_shared<ScreenGameplay>(window_);
 
     screen_gameplay->initialize(chart_group);
 
-    const auto load_next = std::make_shared<ScreenLoading>(screen_gameplay);
+    const auto load_next = std::make_shared<ScreenLoading>(window_, screen_gameplay);
 
     load_next->init();
     next_screen_ = load_next;

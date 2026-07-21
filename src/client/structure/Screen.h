@@ -2,6 +2,7 @@
 
 #include "Interruptible.h"
 class SceneEnvironment;
+class GameWindow;
 
 // Interface.
 class Screen : public Interruptible
@@ -11,6 +12,7 @@ private:
 protected:
 
     std::shared_ptr<SceneEnvironment> scene_;
+    GameWindow& window_;
 
     enum EScreenState
     {
@@ -30,8 +32,8 @@ protected:
     std::shared_ptr<Screen> next_screen_;
 
 public:
-    explicit Screen(const std::string &name, bool init_ui = true);
-    Screen(const std::string &name, const std::shared_ptr<Screen> &parent);
+    explicit Screen(GameWindow& window, const std::string &name, bool init_ui = true);
+    Screen(GameWindow& window, const std::string &name, const std::shared_ptr<Screen> &parent);
     virtual ~Screen();
 
     virtual void init();
@@ -44,6 +46,7 @@ public:
     void close();
 
     Screen* get_top();
+    GameWindow& get_window() const;
 
 	void start_transition(std::shared_ptr<Screen> scr);
 

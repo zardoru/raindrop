@@ -120,12 +120,12 @@ void GameState::start_screen_transition(std::string target) const
 		auto res = otoworm::util::token_split(target, ":");
 		if (res.size() == 2)
 		{
-			const auto scr = std::make_shared<ScreenCustom>(res[1]);
+            const auto scr = std::make_shared<ScreenCustom>(RootScreen->get_window(), res[1]);
 			RootScreen->get_top()->start_transition(scr);
 		}
 	}
 	else if (target == "songselect") {
-		const auto scr = std::make_shared<ScreenSelectMusic>();
+        const auto scr = std::make_shared<ScreenSelectMusic>(RootScreen->get_window());
 		scr->init();
 		RootScreen->get_top()->start_transition(scr);
 	}
