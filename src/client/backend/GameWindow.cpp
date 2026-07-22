@@ -260,6 +260,93 @@ struct JoystickSupport
     }
 };
 
+int32_t normalize_sdl_key(const int32_t key)
+{
+    // Keep the key values used by the existing config.ini and Lua skins.
+    // They were GLFW key values before the SDL migration.
+    switch (key)
+    {
+    case SDLK_ESCAPE: return 256;
+    case SDLK_RETURN: return 257;
+    case SDLK_TAB: return 258;
+    case SDLK_BACKSPACE: return 259;
+    case SDLK_INSERT: return 260;
+    case SDLK_DELETE: return 261;
+    case SDLK_RIGHT: return 262;
+    case SDLK_LEFT: return 263;
+    case SDLK_DOWN: return 264;
+    case SDLK_UP: return 265;
+    case SDLK_PAGEUP: return 266;
+    case SDLK_PAGEDOWN: return 267;
+    case SDLK_HOME: return 268;
+    case SDLK_END: return 269;
+    case SDLK_CAPSLOCK: return 280;
+    case SDLK_SCROLLLOCK: return 281;
+    case SDLK_NUMLOCKCLEAR: return 282;
+    case SDLK_PRINTSCREEN: return 283;
+    case SDLK_PAUSE: return 284;
+    case SDLK_F1: return 290;
+    case SDLK_F2: return 291;
+    case SDLK_F3: return 292;
+    case SDLK_F4: return 293;
+    case SDLK_F5: return 294;
+    case SDLK_F6: return 295;
+    case SDLK_F7: return 296;
+    case SDLK_F8: return 297;
+    case SDLK_F9: return 298;
+    case SDLK_F10: return 299;
+    case SDLK_F11: return 300;
+    case SDLK_F12: return 301;
+    case SDLK_F13: return 302;
+    case SDLK_F14: return 303;
+    case SDLK_F15: return 304;
+    case SDLK_F16: return 305;
+    case SDLK_F17: return 306;
+    case SDLK_F18: return 307;
+    case SDLK_F19: return 308;
+    case SDLK_F20: return 309;
+    case SDLK_F21: return 310;
+    case SDLK_F22: return 311;
+    case SDLK_F23: return 312;
+    case SDLK_F24: return 313;
+    case SDLK_KP_0: return 320;
+    case SDLK_KP_1: return 321;
+    case SDLK_KP_2: return 322;
+    case SDLK_KP_3: return 323;
+    case SDLK_KP_4: return 324;
+    case SDLK_KP_5: return 325;
+    case SDLK_KP_6: return 326;
+    case SDLK_KP_7: return 327;
+    case SDLK_KP_8: return 328;
+    case SDLK_KP_9: return 329;
+    case SDLK_KP_DECIMAL: return 330;
+    case SDLK_KP_DIVIDE: return 331;
+    case SDLK_KP_MULTIPLY: return 332;
+    case SDLK_KP_MINUS: return 333;
+    case SDLK_KP_PLUS: return 334;
+    case SDLK_KP_ENTER: return 335;
+    case SDLK_KP_EQUALS: return 336;
+    case SDLK_LSHIFT: return 340;
+    case SDLK_LCTRL: return 341;
+    case SDLK_LALT: return 342;
+    case SDLK_LGUI: return 343;
+    case SDLK_RSHIFT: return 344;
+    case SDLK_RCTRL: return 345;
+    case SDLK_RALT: return 346;
+    case SDLK_RGUI: return 347;
+    case SDLK_MENU: return 348;
+    default:
+        break;
+    }
+
+    // GLFW used uppercase ASCII values for alphabetic keys; SDL keycodes are
+    // layout-dependent lowercase Unicode values by default.
+    if (key >= 'a' && key <= 'z')
+        return key - ('a' - 'A');
+
+    return key;
+}
+
 int key_translate(const std::string &key)
 {
     for (auto& [key_string, bound_key, controller] : SpecialKeys)
@@ -380,7 +467,10 @@ void BindingsManager::initialize()
             // get the key in either int or name or char format and save that into the key -> command translator
 
             if (int scan = key_translate(key)) // a valid key, probably
+            {
                 ScanFunction[scan] = (KeyType)idx;
+                ScanFunction[normalize_sdl_key(scan)] = (KeyType)idx;
+            }
         }
     }
 
@@ -391,6 +481,7 @@ void BindingsManager::initialize()
         {
             // fill the key -> command translation
             ScanFunction[key] = keytype;
+            ScanFunction[normalize_sdl_key(key)] = keytype;
 
             // write it out to the config file
             std::string char_out;
@@ -414,7 +505,10 @@ void BindingsManager::initialize()
     for (auto [key, val] : keys)
     {
         if (int binding = key_translate(key))
+        {
             ScanFunction7K[binding] = floor(latof(val));
+            ScanFunction7K[normalize_sdl_key(binding)] = floor(latof(val));
+        }
     }
 }
 
@@ -425,6 +519,10 @@ KeyType BindingsManager::translate_key(const int32_t scan)
         return ScanFunction[scan];
     }
 
+    const auto normalized = normalize_sdl_key(scan);
+    if (ScanFunction.contains(normalized))
+        return ScanFunction[normalized];
+
     return KT_Unknown;
 }
 
@@ -434,6 +532,10 @@ int32_t BindingsManager::translate_key_game(const int32_t scan)
     {
         return ScanFunction7K[scan];
     }
+
+    const auto normalized = normalize_sdl_key(scan);
+    if (ScanFunction7K.contains(normalized))
+        return ScanFunction7K[normalized];
 
     return -1;
 }
@@ -488,7 +590,7 @@ void input_func(const int32_t key, const bool pressed, const SDL_Keymod modk)
     auto& game_window = GameWindow::get_instance();
     game_window.application_->on_input(key, pressed, false);
 
-    if (key == SDLK_RETURN && pressed && (modk & SDL_KMOD_ALT))
+    if (key == normalize_sdl_key(SDLK_RETURN) && pressed && (modk & SDL_KMOD_ALT))
         game_window.fullscreen_switchback_pending_ = true;
 }
 
@@ -779,10 +881,10 @@ void GameWindow::run_input()
             break;
         case SDL_EVENT_KEY_DOWN:
             if (!event.key.repeat)
-                input_func(event.key.key, true, event.key.mod);
+                input_func(normalize_sdl_key(event.key.key), true, event.key.mod);
             break;
         case SDL_EVENT_KEY_UP:
-            input_func(event.key.key, false, event.key.mod);
+            input_func(normalize_sdl_key(event.key.key), false, event.key.mod);
             break;
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
             mouse_input_func(event.button.button, true);

@@ -141,7 +141,16 @@ bool ScreenGameplay::load_chart_data() {
 
         my_chart_group_ = loaded_chart_group;
         loaded_chart_group_ = my_chart_group_;
-        GameState::get_instance().set_selected_chart_group(my_chart_group_);
+        auto& game_state = GameState::get_instance();
+        game_state.set_selected_chart_group(my_chart_group_);
+
+        // The selected chart is normally kept as a per-player pointer.  The
+        // database cleanup leaves that pointer metadata-only, so replace it
+        // with the fully loaded difficulty before process_song() asks for it.
+        if (index >= my_chart_group_->charts.size())
+            return false;
+        for (int player = 0; player < game_state.get_player_count(); ++player)
+            game_state.set_chart(my_chart_group_->charts[index], player);
 
         /*
             At this point, LoadedChartGroup owns the loaded otoworm data.

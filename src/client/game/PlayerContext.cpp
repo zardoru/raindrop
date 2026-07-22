@@ -634,6 +634,10 @@ bool PlayerContext::is_fail_enabled() const {
     return !parameters_.no_fail;
 }
 
+bool PlayerContext::is_autoplay() const {
+    return parameters_.Auto;
+}
+
 bool PlayerContext::is_upscrolling() const {
     return get_applied_speed_multiplier(last_update_time_ - drift_) < 0;
 }
@@ -825,6 +829,12 @@ void PlayerContext::setup_script_context(LuaManager *scripts) {
             /// Whether failure is enabled
             // @roproperty CanFail
             .addProperty("CanFail", &PlayerContext::is_fail_enabled)
+            /// Whether this player is in autoplay mode
+            // @roproperty Auto
+            .addProperty("Auto", &PlayerContext::is_autoplay)
+            /// The fully loaded difficulty currently being played
+            // @roproperty Difficulty
+            .addProperty("Difficulty", &PlayerContext::get_chart)
             /// Whether the player has failed
             // @roproperty HasFailed
             .addProperty("HasFailed", &PlayerContext::has_failed)

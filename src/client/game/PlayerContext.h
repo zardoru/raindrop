@@ -101,6 +101,7 @@ public:
 
     // Getters (Lua)
     bool is_fail_enabled() const;
+    bool is_autoplay() const;
     bool is_upscrolling() const;
     bool get_uses_turntable() const;
 
