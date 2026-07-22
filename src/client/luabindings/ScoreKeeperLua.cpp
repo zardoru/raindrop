@@ -11,7 +11,7 @@
 
 /// @engineclass ScoreKeeper7K
 namespace rd {
-    void SetupScorekeeperLuaInterface(void *state) {
+    void setup_scorekeeper_lua_interface(void *state) {
         using namespace rd;
         lua_State *L = (lua_State *) state;
         LuaManager helper(L);
@@ -157,97 +157,97 @@ namespace rd {
                 .beginClass<ScoreKeeper>("ScoreKeeper")
                         /// Max Accuracy achieved (percentual)
                         // @roproperty MaxAccuracy
-                .addProperty("MaxAccuracy", &ScoreKeeper::getAccMax)
+                .addProperty("MaxAccuracy", &ScoreKeeper::get_acc_max)
                         /// Early miss cutoff, in MS
                         // @roproperty EarlyMissCutoffMS
-                .addProperty("EarlyMissCutoffMS", &ScoreKeeper::getEarlyMissCutoffMS)
+                .addProperty("EarlyMissCutoffMS", &ScoreKeeper::get_early_miss_cutoff_ms)
                         /// Whether the W0 window is active
                         // @roproperty UsesW0
-                .addProperty("UsesW0", &ScoreKeeper::usesW0)
+                .addProperty("UsesW0", &ScoreKeeper::uses_w0)
                         /// The late miss cutoff, in MS.
                         // @roproperty MissCutoffMS
-                .addProperty("MissCutoffMS", &ScoreKeeper::getLateMissCutoffMS)
+                .addProperty("MissCutoffMS", &ScoreKeeper::get_late_miss_cutoff_ms)
                         /// The current raindrop Rank.
                         // @roproperty Rank
-                .addProperty("Rank", &ScoreKeeper::getRank)
+                .addProperty("Rank", &ScoreKeeper::get_rank)
                         /// The current Beatmania Rank.
                         // @roproperty BMRank
-                .addProperty("BMRank", &ScoreKeeper::getBMRank)
+                .addProperty("BMRank", &ScoreKeeper::get_bm_rank)
                         /// Whether O2Jam timing is being used.
                         // @roproperty UsesO2
                 .addProperty("UsesO2", &ScoreKeeper::is_o2jam)
                         /// Current O2Jam pill count
                         // @roproperty Pills
-                .addProperty("Pills", &ScoreKeeper::getPills)
+                .addProperty("Pills", &ScoreKeeper::get_pills)
                         /// Current O2Jam Cool Combo
                         // @roproperty CoolCombo
-                .addProperty("CoolCombo", &ScoreKeeper::getCoolCombo)
+                .addProperty("CoolCombo", &ScoreKeeper::get_cool_combo)
                         /// Current count of judged notes
                         // @roproperty JudgedNotes
-                .addProperty("JudgedNotes", &ScoreKeeper::getJudgedNotes)
+                .addProperty("JudgedNotes", &ScoreKeeper::get_judged_notes)
                         /// Current histogram point count
                         // @roproperty HistogramPointCount
-                .addProperty("HistogramPointCount", &ScoreKeeper::getHistogramPointCount)
+                .addProperty("HistogramPointCount", &ScoreKeeper::get_histogram_point_count)
                         /// Highest point of the histogram
                         // @roproperty HistogramHighestPoint
-                .addProperty("HistogramHighestPoint", &ScoreKeeper::getHistogramHighestPoint)
+                .addProperty("HistogramHighestPoint", &ScoreKeeper::get_histogram_highest_point)
                         /// Average hit off (in MS)
                         // @roproperty AvgHit
-                .addProperty("AvgHit", &ScoreKeeper::getAvgHit)
+                .addProperty("AvgHit", &ScoreKeeper::get_avg_hit)
                         /// Standard deviation (in MS)
                         // @roproperty StDev
-                .addProperty("StDev", &ScoreKeeper::getHitStDev)
+                .addProperty("StDev", &ScoreKeeper::get_hit_stdev)
                         /// Max judgable notes
                         // @roproperty MaxNotes
-                .addProperty("MaxNotes", &ScoreKeeper::getMaxJudgableNotes)
+                .addProperty("MaxNotes", &ScoreKeeper::get_max_judgable_notes)
                         /// Confidence offset is wrong in 0-1 range
                         // @roproperty OffsetDistrust
-                .addProperty("OffsetDistrust", &ScoreKeeper::getOffsetDistrust)
+                .addProperty("OffsetDistrust", &ScoreKeeper::get_offset_distrust)
                         /// Get Judgment window value
                         // @function GetJudgmentWindow
                         // @tparam Judgment judge Judgment to get the window of.
                         // @return The judgment window, in MS
-                .addFunction("GetJudgmentWindow", &ScoreKeeper::getJudgmentWindow)
+                .addFunction("GetJudgmentWindow", &ScoreKeeper::get_judgment_window)
                         /// Get a histogram point
                         // @function GetHistogramPoint
                         // @param index Index of the histogram point
                         // @return The histogram point count at (index - PointCount / 2)ms.
-                .addFunction("GetHistogramPoint", &ScoreKeeper::getHistogramPoint)
+                .addFunction("GetHistogramPoint", &ScoreKeeper::get_histogram_point)
                         /// Get judgment count
                         // @function GetJudgmentCount
                         // @tparam Judgment judge The judgment to get the count of.
                         // @return The count of the given judgment.
-                .addFunction("GetJudgmentCount", &ScoreKeeper::getJudgmentCount)
+                .addFunction("GetJudgmentCount", &ScoreKeeper::get_judgment_count)
                         /// Get Score given a type
                         // @function GetScore
                         // @tparam ScoreType type The type of score to get
                         // @return The score of the given parameter type.
-                .addFunction("GetScore", &ScoreKeeper::getScore)
+                .addFunction("GetScore", &ScoreKeeper::get_score)
                         /// Get a percentual score value
                         // @function GetPercentScore
                         // @tparam PercentScoreType type The percent score type to use.
                         // @return The percentual score, in range 0-100.
-                .addFunction("GetPercentScore", &ScoreKeeper::getPercentScore)
+                .addFunction("GetPercentScore", &ScoreKeeper::get_percent_score)
                         /// Get whether the stage has been failed given a gauge.
                         // @function IsStageFailed
                         // @tparam LifeType type The gauge type to check for failure.
                         // @treturn bool Whether the stage was failed.
-                .addFunction("IsStageFailed", &ScoreKeeper::isStageFailed)
+                .addFunction("IsStageFailed", &ScoreKeeper::is_stage_failed)
                         /// Whether the current gauge delays failure until the end of the song.
-                        // @function hasDelayedFailure
+                        // @function has_delayed_failure
                         // @tparam LifeType type The gauge type to check for whether it ends at the end or not.
                         // @treturn bool Whether the gauge type has a delayed failure.
-                .addFunction("HasDelayedFailure", &ScoreKeeper::hasDelayedFailure)
+                .addFunction("HasDelayedFailure", &ScoreKeeper::has_delayed_failure)
                         /// Get the gauge value given a type.
                         // @function GetLifebarAmount
                         // @tparam LifeType type The gauge type.
                         // @treturn double The value of the gauge, in range 0-1.
-                .addFunction("GetLifebarAmount", &ScoreKeeper::getLifebarAmount)
+                .addFunction("GetLifebarAmount", &ScoreKeeper::get_lifebar_amount)
                 .endClass();
     }
 }
 
-void SetScorekeeperInstance(void *state, rd::ScoreKeeper *Instance) {
+void set_scorekeeper_instance(void *state, rd::ScoreKeeper *Instance) {
     luabridge::push((lua_State *) state, Instance);
     lua_setglobal((lua_State *) state, "ScoreKeeper");
 }

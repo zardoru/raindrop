@@ -140,22 +140,22 @@ json StormIR::serialize_options(const PlayscreenParameters &parameters) {
 json StormIR::serialize_score_detail(const rd::ScoreKeeper &keeper, const rd::ScoreType type, const rd::LifeType gaugeType) {
     json ret;
     ret["judge"] = {
-            {"w0" , keeper.getJudgmentCount(rd::SKJ_W0)},
-            {"w1" , keeper.getJudgmentCount(rd::SKJ_W1)},
-            {"w2" , keeper.getJudgmentCount(rd::SKJ_W2)},
-            {"w3" , keeper.getJudgmentCount(rd::SKJ_W3)},
-            {"w4" , keeper.getJudgmentCount(rd::SKJ_W4)},
-            {"w5" , keeper.getJudgmentCount(rd::SKJ_W5)},
-            {"miss" , keeper.getJudgmentCount(rd::SKJ_MISS)},
-            {"mine" , keeper.getJudgmentCount(rd::SKJ_MINE)}
+            {"w0" , keeper.get_judgment_count(rd::SKJ_W0)},
+            {"w1" , keeper.get_judgment_count(rd::SKJ_W1)},
+            {"w2" , keeper.get_judgment_count(rd::SKJ_W2)},
+            {"w3" , keeper.get_judgment_count(rd::SKJ_W3)},
+            {"w4" , keeper.get_judgment_count(rd::SKJ_W4)},
+            {"w5" , keeper.get_judgment_count(rd::SKJ_W5)},
+            {"miss" , keeper.get_judgment_count(rd::SKJ_MISS)},
+            {"mine" , keeper.get_judgment_count(rd::SKJ_MINE)}
     };
 
-    ret["score"] = keeper.getScore(type);
-    ret["gauge"] = keeper.getLifebarAmount(gaugeType);
-    ret["pass"] = !keeper.isStageFailed(gaugeType);
+    ret["score"] = keeper.get_score(type);
+    ret["gauge"] = keeper.get_lifebar_amount(gaugeType);
+    ret["pass"] = !keeper.is_stage_failed(gaugeType);
 
     if (type == rd::ST_OSUMANIA)
-        ret["om_acc"] = keeper.getScore(rd::ST_OSUMANIA_ACC);
+        ret["om_acc"] = keeper.get_score(rd::ST_OSUMANIA_ACC);
 
     return ret;
 }

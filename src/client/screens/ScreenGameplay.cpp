@@ -195,7 +195,7 @@ void ScreenGameplay::run_auto_events() {
 void ScreenGameplay::evaluate_stage_failure() {
     auto perform_stage_failure = [&]() {
         stage_failure_triggered_ = true;
-        // ScoreKeeper->failStage();
+        // ScoreKeeper->fail_stage();
 
         // go to evaluation screen, or back to song select depending on the skin
         GameState::get_instance().submit_score(0);
@@ -361,7 +361,7 @@ ScreenGameplay::on_player_hit(rd::ScoreKeeperJudgment judgment, double dt, uint3
     scene_->call_callback("HitEvent", static_cast<int>(judgment), dt, static_cast<int>(lane) + 1, hold, release, pn);
 
     if (const auto player_score_keeper = players_[pn]->get_score_keeper();
-        player_score_keeper->getMaxJudgableNotes() == player_score_keeper->getScore(rd::ST_NOTES_HIT)) {
+        player_score_keeper->get_max_judgable_notes() == player_score_keeper->get_score(rd::ST_NOTES_HIT)) {
         /// Once a player achieves a full combo, this is called. This is called inmediately after HitEvent
         // so the script can keep track of player number who last hit.
         // @callback OnFullComboEvent

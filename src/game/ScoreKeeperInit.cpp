@@ -31,8 +31,8 @@ namespace rd {
         pacemaker_texts[PMT_RANK_P8] = "+8";
         pacemaker_texts[PMT_RANK_P9] = "+9";
 
-        setAccMin(6.4);
-        setAccMax(100);
+        set_acc_min(6.4);
+        set_acc_max(100);
 
         total_score_objects = 0;
         total_holds = 0;
@@ -41,7 +41,7 @@ namespace rd {
         total_sqdev = 0;
         accuracy = 0;
 
-        Scores = {
+        scores = {
                 {ST_LR2, &score_lr2},
                 {ST_EX, &score_ex},
                 {ST_O2JAM, &score_o2jam},
@@ -53,11 +53,11 @@ namespace rd {
                 {ST_IIDX, &score_bms}
         };
 
-        for (auto &scoresys: Scores) {
+        for (auto &scoresys: scores) {
             scoresys.second->Reset();
         }
 
-        Gauges = {
+        gauges = {
                 {LT_GROOVE, &gauge_groove},
                 {LT_EASY, &gauge_easy},
                 {LT_SURVIVAL, &gauge_survival},
@@ -77,12 +77,12 @@ namespace rd {
                 {LT_LR2_EXHARDCLASS, &gauge_lr2_exhardclass}
         };
 
-        for (auto &gauge: Gauges) {
+        for (auto &gauge: gauges) {
             gauge.second->DefaultSetup();
             gauge.second->Reset();
         }
 
-        Timings = {
+        timings = {
                 {TI_RAINDROP, &timing_raindrop},
                 {TI_OSUMANIA, &timing_osumania},
                 {TI_O2JAM, &timing_o2jam},
@@ -90,32 +90,32 @@ namespace rd {
                 {TI_LR2, &timing_lr2}
         };
 
-        for (auto &timing: Timings) {
+        for (auto &timing: timings) {
             timing.second->default_setup();
             timing.second->reset();
         }
 
-        CurrentTimingWindow = &timing_raindrop;
+        current_timing_window = &timing_raindrop;
 
         for (auto i = -127; i < 128; ++i)
             histogram[i + 127] = 0;
     }
 
-    void ScoreKeeper::setO2JamBeatTimingWindows() {
-        CurrentTimingWindow = &timing_o2jam;
+    void ScoreKeeper::set_o2jam_beat_timing_windows() {
+        current_timing_window = &timing_o2jam;
     }
 
-    void ScoreKeeper::setBMSTimingWindows() {
-        CurrentTimingWindow = &timing_raindrop;
+    void ScoreKeeper::set_bms_timing_windows() {
+        current_timing_window = &timing_raindrop;
     }
 
-    void ScoreKeeper::setODWindows(int od) {
+    void ScoreKeeper::set_od_windows(int od) {
         timing_osumania.setup(od, 1);
-        CurrentTimingWindow = &timing_osumania;
+        current_timing_window = &timing_osumania;
     }
 
-    void ScoreKeeper::setUseW0(bool on) {
-        for (auto &timing: Timings) {
+    void ScoreKeeper::set_use_w0(bool on) {
+        for (auto &timing: timings) {
             if (on)
                 timing.second->SetWindowSkip(1);
             else
@@ -131,14 +131,14 @@ namespace rd {
     ScoreKeeper::ScoreKeeper(double judge_window_scale) {
         init();
         timing_raindrop.setup(0, judge_window_scale);
-        setBMSTimingWindows();
+        set_bms_timing_windows();
     }
 
-    void ScoreKeeper::setSMJ4Windows() {
-        CurrentTimingWindow = &timing_stepmania;
+    void ScoreKeeper::set_smj4_windows() {
+        current_timing_window = &timing_stepmania;
     }
 
-    void ScoreKeeper::setLifeTotal(double total, double multiplier) {
+    void ScoreKeeper::set_life_total(double total, double multiplier) {
         double effmul = std::isnan(multiplier) ? 1 : multiplier;
 
         double lifebar_total_lr2;
@@ -146,7 +146,7 @@ namespace rd {
             lifebar_total = total;
             lifebar_total_lr2 = total;
         } else {
-            auto max_notes = getMaxJudgableNotes();
+            auto max_notes = get_max_judgable_notes();
             lifebar_total =
                     std::max(260.0, 7.605 * max_notes / (6.5 + 0.01 * max_notes)) * effmul;
 
@@ -154,32 +154,32 @@ namespace rd {
         }
 
         // recalculate groove lifebar increments.
-        gauge_death.Setup(lifebar_total, getMaxJudgableNotes(), 0);
-        gauge_exhard.Setup(lifebar_total, getMaxJudgableNotes(), 0);
-        gauge_survival.Setup(lifebar_total, getMaxJudgableNotes(), 0);
-        gauge_easy.Setup(lifebar_total, getMaxJudgableNotes(), 0);
-        gauge_groove.Setup(lifebar_total, getMaxJudgableNotes(), 0);
-        gauge_lr2_assist.Setup(lifebar_total_lr2, getMaxJudgableNotes(), 0);
-        gauge_lr2_easy.Setup(lifebar_total_lr2, getMaxJudgableNotes(), 0);
-        gauge_lr2_normal.Setup(lifebar_total_lr2, getMaxJudgableNotes(), 0);
-        gauge_lr2_hard.Setup(lifebar_total_lr2, getMaxJudgableNotes(), 0);
-        gauge_lr2_exhard.Setup(lifebar_total_lr2, getMaxJudgableNotes(), 0);
-        gauge_lr2_hazard.Setup(lifebar_total_lr2, getMaxJudgableNotes(), 0);
-        gauge_lr2_class.Setup(lifebar_total_lr2, getMaxJudgableNotes(), 0);
-        gauge_lr2_exclass.Setup(lifebar_total_lr2, getMaxJudgableNotes(), 0);
-        gauge_lr2_exhardclass.Setup(lifebar_total_lr2, getMaxJudgableNotes(), 0);
+        gauge_death.Setup(lifebar_total, get_max_judgable_notes(), 0);
+        gauge_exhard.Setup(lifebar_total, get_max_judgable_notes(), 0);
+        gauge_survival.Setup(lifebar_total, get_max_judgable_notes(), 0);
+        gauge_easy.Setup(lifebar_total, get_max_judgable_notes(), 0);
+        gauge_groove.Setup(lifebar_total, get_max_judgable_notes(), 0);
+        gauge_lr2_assist.Setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
+        gauge_lr2_easy.Setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
+        gauge_lr2_normal.Setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
+        gauge_lr2_hard.Setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
+        gauge_lr2_exhard.Setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
+        gauge_lr2_hazard.Setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
+        gauge_lr2_class.Setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
+        gauge_lr2_exclass.Setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
+        gauge_lr2_exhardclass.Setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
     }
 
-    void ScoreKeeper::setO2LifebarRating(int difficulty) {
+    void ScoreKeeper::set_o2_lifebar_rating(int difficulty) {
         gauge_o2jam.Setup(0, 0, difficulty);
     }
 
-   void ScoreKeeper::setJudgeRank(int rank) {
+   void ScoreKeeper::set_judge_rank(int rank) {
 
         if (rank == -100) // We assume we're dealing with beats-based timing.
         {
             use_o2jam = true;
-            setO2JamBeatTimingWindows();
+            set_o2jam_beat_timing_windows();
             return;
         }
 
@@ -228,12 +228,12 @@ namespace rd {
 
         timing_raindrop.setup(0, judge_window_scale);
         timing_lr2.setup(0, lr2_rank);
-        setBMSTimingWindows();
+        set_bms_timing_windows();
     }
 
-    void ScoreKeeper::setJudgeScale(double scale) {
+    void ScoreKeeper::set_judge_scale(double scale) {
         timing_raindrop.setup(0, scale * 100.0 / 72.0);
         timing_lr2.setup(0, scale);
-        setBMSTimingWindows();
+        set_bms_timing_windows();
     }
 }

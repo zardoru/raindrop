@@ -73,27 +73,27 @@ void ScreenEvaluation::PrintCLIResults(ScoreKeeper *result){
 
     ss << std::fixed << std::setprecision(3);
 
-    if(result->getRank() > 10){
-        ss << "  Rank: " << "*" << result->getRank() - 10 << " (" << result->getPercentScore(PST_RANK) << " pts.)\n";
-    }else if(result->getRank() > 0){
-        ss << "  Rank: " << "+" << result->getRank() << " (" << result->getPercentScore(PST_RANK) << " pts.)\n";
+    if(result->get_rank() > 10){
+        ss << "  Rank: " << "*" << result->get_rank() - 10 << " (" << result->get_percent_score(PST_RANK) << " pts.)\n";
+    }else if(result->get_rank() > 0){
+        ss << "  Rank: " << "+" << result->get_rank() << " (" << result->get_percent_score(PST_RANK) << " pts.)\n";
     }else{
-        ss << "  Rank: " << result->getRank() << " (" << result->getPercentScore(PST_RANK) << " pts.)\n";
+        ss << "  Rank: " << result->get_rank() << " (" << result->get_percent_score(PST_RANK) << " pts.)\n";
     }
 
     ss
         << "\n" << std::setprecision(2)
-        << "  Accuracy: " << result->getPercentScore(PST_ACC) << "%\n"
-        << "  Final Score: " << result->getScore(ST_EXP3) << "\n"
-        << "  Max Combo: " << result->getScore(ST_MAX_COMBO) << "\n"
+        << "  Accuracy: " << result->get_percent_score(PST_ACC) << "%\n"
+        << "  Final Score: " << result->get_score(ST_EXP3) << "\n"
+        << "  Max Combo: " << result->get_score(ST_MAX_COMBO) << "\n"
         << "\n"
-        << "  Notes hit: " << result->getPercentScore(PST_NH) << "%\n"
-        << "  EX score: " << result->getPercentScore(PST_EX) << "%\n"
+        << "  Notes hit: " << result->get_percent_score(PST_NH) << "%\n"
+        << "  EX score: " << result->get_percent_score(PST_EX) << "%\n"
     ;
 
-    if(result->usesW0()){
-        ss << "  osu!mania accuracy: " << result->getPercentScore(PST_OSU) << "%\n";
-        ss << "  osu!mania score: " << result->getScore(ST_OSUMANIA) << "\n";
+    if(result->uses_w0()){
+        ss << "  osu!mania accuracy: " << result->get_percent_score(PST_OSU) << "%\n";
+        ss << "  osu!mania score: " << result->get_score(ST_OSUMANIA) << "\n";
     }
 
     ss << "\n";
@@ -102,15 +102,15 @@ void ScreenEvaluation::PrintCLIResults(ScoreKeeper *result){
         << "===== Judgments =====\n"
     ;
 
-    if(result->usesW0())
-        ss << " Fantastic: " << result->getJudgmentCount(SKJ_W0) << " (" << float(result->getJudgmentCount(SKJ_W0) * 100) / float(result->getMaxNotes()) << "%)\n";
+    if(result->uses_w0())
+        ss << " Fantastic: " << result->get_judgment_count(SKJ_W0) << " (" << float(result->get_judgment_count(SKJ_W0) * 100) / float(result->getMaxNotes()) << "%)\n";
 
     ss
-        << "   J_PERFECT: " << result->getJudgmentCount(SKJ_W1) << " (" << float(result->getJudgmentCount(SKJ_W1) * 100) / float(result->getMaxNotes()) << "%)\n"
-        << "     J_GREAT: " << result->getJudgmentCount(SKJ_W2) << " (" << float(result->getJudgmentCount(SKJ_W2) * 100) / float(result->getMaxNotes()) << "%)\n"
-        << "      Good: " << result->getJudgmentCount(SKJ_W3) << " (" << float(result->getJudgmentCount(SKJ_W3) * 100) / float(result->getMaxNotes()) << "%)\n"
-        << "       Bad: " << result->getJudgmentCount(SKJ_W4) << " (" << float(result->getJudgmentCount(SKJ_W4) * 100) / float(result->getMaxNotes()) << "%)\n"
-        << "        NG: " << result->getJudgmentCount(SKJ_MISS) << " (" << float(result->getJudgmentCount(SKJ_MISS) * 100) / float(result->getMaxJudgableNotes()) << "%)\n"
+        << "   J_PERFECT: " << result->get_judgment_count(SKJ_W1) << " (" << float(result->get_judgment_count(SKJ_W1) * 100) / float(result->getMaxNotes()) << "%)\n"
+        << "     J_GREAT: " << result->get_judgment_count(SKJ_W2) << " (" << float(result->get_judgment_count(SKJ_W2) * 100) / float(result->getMaxNotes()) << "%)\n"
+        << "      Good: " << result->get_judgment_count(SKJ_W3) << " (" << float(result->get_judgment_count(SKJ_W3) * 100) / float(result->getMaxNotes()) << "%)\n"
+        << "       Bad: " << result->get_judgment_count(SKJ_W4) << " (" << float(result->get_judgment_count(SKJ_W4) * 100) / float(result->getMaxNotes()) << "%)\n"
+        << "        NG: " << result->get_judgment_count(SKJ_MISS) << " (" << float(result->get_judgment_count(SKJ_MISS) * 100) / float(result->get_max_judgable_notes()) << "%)\n"
         << "\n"
     ;
 

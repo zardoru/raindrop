@@ -210,7 +210,7 @@ void GameState::initialize_lua(lua_State *L)
 {
 	LuaManager l(L);
 
-	rd::SetupScorekeeperLuaInterface(L);
+	rd::setup_scorekeeper_lua_interface(L);
 
 	luabridge::getGlobalNamespace(L)
 		/// Base Song class.

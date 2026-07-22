@@ -130,35 +130,35 @@ TimingType setup_game_system(
         if (chart_type == TI_BMS) {
             if (const auto info = dynamic_cast<otoworm::BMSChartInfo *>(timing_info.get());
                 !info->percentual_judgerank)
-                player_score_keeper->setJudgeRank(info->judge_rank);
+                player_score_keeper->set_judge_rank(info->judge_rank);
             else
-                player_score_keeper->setJudgeScale(info->judge_rank / 100.0);
+                player_score_keeper->set_judge_scale(info->judge_rank / 100.0);
         } else {
-            player_score_keeper->setJudgeRank(2);
+            player_score_keeper->set_judge_rank(2);
         }
 
         if (param.system_type == TI_LR2) {
-            player_score_keeper->useLR2Timing();
+            player_score_keeper->use_lr2_timing();
         }
     } else if (param.system_type == TI_O2JAM) {
         used_timing_type = TT_BEATS;
-        player_score_keeper->setJudgeRank(-100);
+        player_score_keeper->set_judge_rank(-100);
     } else if (param.system_type == TI_OSUMANIA) {
         used_timing_type = TT_TIME;
         if (chart_type == TI_OSUMANIA) {
             const auto info = dynamic_cast<otoworm::OsumaniaChartInfo *>(timing_info.get());
-            player_score_keeper->setODWindows(info->overall_difficulty);
-        } else player_score_keeper->setODWindows(7);
+            player_score_keeper->set_od_windows(info->overall_difficulty);
+        } else player_score_keeper->set_od_windows(7);
     } else if (param.system_type == TI_STEPMANIA) {
         used_timing_type = TT_TIME;
-        player_score_keeper->setSMJ4Windows();
+        player_score_keeper->set_smj4_windows();
     } else if (param.system_type == TI_RAINDROP) {
         // LifebarType = LT_STEPMANIA;
     } else {
         Log::LogPrintf("Warning: unknown SystemType %d\n", param.system_type);
     }
 
-    player_score_keeper->applyRateScale(param.rate);
+    player_score_keeper->apply_rate_scale(param.rate);
     return used_timing_type;
 }
 
@@ -313,13 +313,13 @@ void setup_gauge(
         case LT_OSUMANIA:
             if (chart_type == TI_OSUMANIA) {
                 const auto info = dynamic_cast<otoworm::OsumaniaChartInfo *>(timing_info.get());
-                scorekeeper->setOsuHP(info->hp);
+                scorekeeper->set_osu_hp(info->hp);
             }
 
         case LT_O2JAM:
             if (chart_type == TI_O2JAM) {
                 const auto info = dynamic_cast<otoworm::O2JamChartInfo *>(timing_info.get());
-                scorekeeper->setO2LifebarRating(info->difficulty);
+                scorekeeper->set_o2_lifebar_rating(info->difficulty);
             } // else by default
             // LifebarType = LT_O2JAM; // By default, HX
             break;
@@ -332,11 +332,11 @@ void setup_gauge(
             if (chart_type == TI_BMS) {
                 // Only needs setup if it's a BMS file
                 if (const auto info = dynamic_cast<otoworm::BMSChartInfo *>(timing_info.get()); info->is_bmson)
-                    scorekeeper->setLifeTotal(NAN, info->gauge_total / 100.0);
+                    scorekeeper->set_life_total(NAN, info->gauge_total / 100.0);
                 else
-                    scorekeeper->setLifeTotal(info->gauge_total);
+                    scorekeeper->set_life_total(info->gauge_total);
             } else // by raindrop defaults
-                scorekeeper->setLifeTotal(-1);
+                scorekeeper->set_life_total(-1);
             // LifebarType = (LifeType)Parameters.GaugeType;
             break;
         case LT_NORECOV:
@@ -354,13 +354,13 @@ std::unique_ptr<Mechanics> configure_mechanics(
     const double judge_y) {
     std::unique_ptr<Mechanics> mechanics_set = nullptr;
 
-    // This must be done before setLifeTotal in order for it to work.
+    // This must be done before set_life_total in order for it to work.
     const auto transient = GetOtoTransient(current_chart);
     const auto object_count = transient ? transient->get_total_note_count() : 0;
     const auto score_count = transient ? transient->get_scorable_note_count() : 0;
     const auto hold_count = score_count - object_count;
-    scorekeeper->setTotalObjects(object_count, hold_count);
-    scorekeeper->setUseW0(param.use_w0);
+    scorekeeper->set_total_objects(object_count, hold_count);
+    scorekeeper->set_use_w0(param.use_w0);
 
     // JudgeScale, Stepmania and OD can't be run together - only one can be set.
     const auto timing_info = GetOtoTimingInfo(current_chart);
@@ -680,7 +680,7 @@ double PlayerContext::get_judgment_y() const {
 
 double PlayerContext::get_life_pst() const {
     const auto lifebar_type = get_current_gauge_type();
-    const auto lifebar_amount = player_score_keeper_->getLifebarAmount(lifebar_type);
+    const auto lifebar_amount = player_score_keeper_->get_lifebar_amount(lifebar_type);
     if (lifebar_type == LT_GROOVE || lifebar_type == LT_EASY)
         return std::max(2, static_cast<int>(floor(lifebar_amount * 50) * 2));
     else
@@ -689,20 +689,20 @@ double PlayerContext::get_life_pst() const {
 
 std::string PlayerContext::get_pacemaker_text(const bool bm) const {
     if (bm) {
-        auto bmpm = player_score_keeper_->getAutoPacemaker();
+        auto bmpm = player_score_keeper_->get_auto_pacemaker();
         return bmpm.first;
     } else {
-        auto pm = player_score_keeper_->getAutoRankPacemaker();
+        auto pm = player_score_keeper_->get_auto_rank_pacemaker();
         return pm.first;
     }
 }
 
 int PlayerContext::get_pacemaker_value(const bool bm) const {
     if (bm) {
-        const auto bmpm = player_score_keeper_->getAutoPacemaker();
+        const auto bmpm = player_score_keeper_->get_auto_pacemaker();
         return bmpm.second;
     } else {
-        const auto pm = player_score_keeper_->getAutoRankPacemaker();
+        const auto pm = player_score_keeper_->get_auto_rank_pacemaker();
         return pm.second;
     }
 }
@@ -738,9 +738,9 @@ bool PlayerContext::has_song_finished(const double time) const {
         const double cur_bps = chart_state_.get_bps_at(time);
         const double cutoffspb = 1 / cur_bps;
 
-        cutoff = cutoffspb * player_score_keeper_->getLateMissCutoffMS();
+        cutoff = cutoffspb * player_score_keeper_->get_late_miss_cutoff_ms();
     } else // time-based judgments
-        cutoff = player_score_keeper_->getLateMissCutoffMS() / 1000.0;
+        cutoff = player_score_keeper_->get_late_miss_cutoff_ms() / 1000.0;
 
     return wt > current_chart_->duration + cutoff;
 }
@@ -893,11 +893,11 @@ void PlayerContext::load_replay(const std::filesystem::path &path) const {
 }
 
 double PlayerContext::get_score() const {
-    return player_score_keeper_->getScore(parameters_.get_scoring_type());
+    return player_score_keeper_->get_score(parameters_.get_scoring_type());
 }
 
 int PlayerContext::get_combo() const {
-    return player_score_keeper_->getScore(ST_COMBO);
+    return player_score_keeper_->get_score(ST_COMBO);
 }
 
 void PlayerContext::hit_note(const double time_off,
@@ -914,7 +914,7 @@ void PlayerContext::hit_note(const double time_off,
             part = NoteJudgmentPart::HOLD_HEAD;
     }
 
-    const auto Judgment = player_score_keeper_->hitNote(time_off, lane, part);
+    const auto Judgment = player_score_keeper_->hit_note(time_off, lane, part);
 
     if (on_hit)
         on_hit(Judgment, time_off, lane, is_hold, is_hold_release, player_number_);
@@ -926,7 +926,7 @@ void PlayerContext::miss_note(
     const bool is_hold,
     const bool dont_break_combo,
     const bool early_miss) {
-    player_score_keeper_->missNote(dont_break_combo, early_miss, true);
+    player_score_keeper_->miss_note(dont_break_combo, early_miss, true);
 
     if (is_hold)
         gear_state_.is_hold_active[lane] = false;
@@ -954,8 +954,8 @@ void PlayerContext::judge_lane(const uint32_t lane, const double Time) {
 
     // Use this optimization when we can make sure vertical properly aligns up with time, as with ReleaseLane.
     const auto threshold = (player_score_keeper_->is_o2jam()
-                                ? player_score_keeper_->getJudgmentCutoffMS()
-                                : (player_score_keeper_->getJudgmentCutoffMS() / 1000.0));
+                                ? player_score_keeper_->get_judgment_cutoff_ms()
+                                : (player_score_keeper_->get_judgment_cutoff_ms() / 1000.0));
     const auto time_lower = (Time - threshold);
     const auto time_higher = (Time + threshold);
 
@@ -1007,8 +1007,8 @@ void PlayerContext::release_lane(const uint32_t Lane, const double Time) {
     // In comparison to the regular compare function, since end times are what matter with holds (or lift events, where start == end)
     // this does the job as it should instead of comparing start times where hold tails would be completely ignored.
     const auto threshold = (player_score_keeper_->is_o2jam()
-                                ? player_score_keeper_->getLateMissCutoffMS()
-                                : (player_score_keeper_->getLateMissCutoffMS() / 1000.0));
+                                ? player_score_keeper_->get_late_miss_cutoff_ms()
+                                : (player_score_keeper_->get_late_miss_cutoff_ms() / 1000.0));
 
     const auto time_lower = (Time - threshold);
     const auto time_higher = (Time + threshold);
@@ -1149,11 +1149,11 @@ double PlayerContext::get_rate() const {
 }
 
 bool PlayerContext::has_failed() const {
-    return player_score_keeper_->isStageFailed(get_current_gauge_type()) && !parameters_.no_fail;
+    return player_score_keeper_->is_stage_failed(get_current_gauge_type()) && !parameters_.no_fail;
 }
 
 bool PlayerContext::has_delayed_failure() const {
-    return player_score_keeper_->hasDelayedFailure(get_current_gauge_type());
+    return player_score_keeper_->has_delayed_failure(get_current_gauge_type());
 }
 
 Mat4 id;

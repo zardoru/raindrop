@@ -13,30 +13,30 @@
 
 namespace rd {
     bool Mechanics::IsLateHeadMiss(double t, RuntimeNote *note) {
-        return (t - note->get_start_time()) * 1000.0 > PlayerScoreKeeper->getLateMissCutoffMS();
+        return (t - note->get_start_time()) * 1000.0 > PlayerScoreKeeper->get_late_miss_cutoff_ms();
     }
 
     bool Mechanics::InJudgeCutoff(double t, RuntimeNote *note) {
-        double earlyMissCutoff = PlayerScoreKeeper->getEarlyMissCutoffMS() / 1000.0;
-        double missCutoff = PlayerScoreKeeper->getLateMissCutoffMS() / 1000.0;
+        double earlyMissCutoff = PlayerScoreKeeper->get_early_miss_cutoff_ms() / 1000.0;
+        double missCutoff = PlayerScoreKeeper->get_late_miss_cutoff_ms() / 1000.0;
         return (abs(t - note->get_start_time()) <= earlyMissCutoff) ||
                (abs(t - note->get_end_time()) <= missCutoff);
     }
 
     bool Mechanics::IsEarlyMiss(double t, RuntimeNote *note) {
         double dt = (t - note->get_start_time()) * 1000.;
-        return dt < -PlayerScoreKeeper->getEarlyHitCutoffMS() && dt >= -PlayerScoreKeeper->getEarlyMissCutoffMS();
+        return dt < -PlayerScoreKeeper->get_early_hit_cutoff_ms() && dt >= -PlayerScoreKeeper->get_early_miss_cutoff_ms();
     }
 
     bool Mechanics::IsBmBadJudge(double t, RuntimeNote *note) {
         double dt = abs(t - note->get_start_time()) * 1000.0;
-        return dt > PlayerScoreKeeper->getJudgmentWindow(SKJ_W3) && dt < PlayerScoreKeeper->getJudgmentWindow(SKJ_W4);
+        return dt > PlayerScoreKeeper->get_judgment_window(SKJ_W3) && dt < PlayerScoreKeeper->get_judgment_window(SKJ_W4);
     }
 
     bool Mechanics::InHeadCutoff(double t, RuntimeNote *note) {
         double dev = (t - note->get_start_time()) * 1000;
-        return dev >= -PlayerScoreKeeper->getEarlyMissCutoffMS() &&
-               dev <= PlayerScoreKeeper->getLateMissCutoffMS();
+        return dev >= -PlayerScoreKeeper->get_early_miss_cutoff_ms() &&
+               dev <= PlayerScoreKeeper->get_late_miss_cutoff_ms();
     }
 
 
@@ -62,7 +62,7 @@ namespace rd {
     bool RaindropMechanics::OnUpdate(double SongTime, RuntimeNote *m, uint32_t Lane) {
         auto k = Lane;
         /* We have to check for all gameplay conditions for this note. */
-        double missCutoff = PlayerScoreKeeper->getLateMissCutoffMS();
+        double missCutoff = PlayerScoreKeeper->get_late_miss_cutoff_ms();
 
         // Condition A: Hold tail outside accuracy cutoff (can't be hit any longer),
         // note wasn't hit at the head and can't be hit at the head, and it's a hold
@@ -139,7 +139,7 @@ namespace rd {
                     // Only take away health, but not combo (1st true)
                     if (notify_miss)
                         notify_miss(
-                                PlayerScoreKeeper->getLateMissCutoffMS(),
+                                PlayerScoreKeeper->get_late_miss_cutoff_ms(),
                                 k,
                                 m->is_hold(),
                                 true,
@@ -154,14 +154,14 @@ namespace rd {
                 m->disable();
                 return true;
             } else { // still not over, and we're hitting it
-                auto tick_interval = PlayerScoreKeeper->getLNTickInterval();
+                auto tick_interval = PlayerScoreKeeper->get_ln_tick_interval();
                 if (tick_interval > 0) {
                     if (m->is_enabled() && m->was_hit() && !::isnan(hold_hit_time[Lane])) {
                         auto delta = SongTime - hold_hit_time[Lane];
 
                         if (delta > tick_interval) {
                             auto ticks = floor(delta / tick_interval);
-                            PlayerScoreKeeper->tickLN((int) ticks);
+                            PlayerScoreKeeper->tick_ln((int) ticks);
                             hold_hit_time[Lane] += ticks * tick_interval;
                         }
 
@@ -222,13 +222,13 @@ namespace rd {
             double dev = (SongTime - m->get_end_time()) * 1000;
             double tD = abs(dev);
 
-            double earlyHit = PlayerScoreKeeper->getEarlyMissCutoffMS();
-            double lateMiss = PlayerScoreKeeper->getLateMissCutoffMS();
+            double earlyHit = PlayerScoreKeeper->get_early_miss_cutoff_ms();
+            double lateMiss = PlayerScoreKeeper->get_late_miss_cutoff_ms();
 
             double releaseWindow;
 
             if (forcedRelease) {
-                releaseWindow = PlayerScoreKeeper->getJudgmentWindow(SKJ_W3);
+                releaseWindow = PlayerScoreKeeper->get_judgment_window(SKJ_W3);
             } else
                 releaseWindow = 250; // 250 ms
 
@@ -279,7 +279,7 @@ namespace rd {
             double dev = (SongBeat - m->get_end_time());
             double tD = abs(dev);
 
-            if (tD < PlayerScoreKeeper->getJudgmentWindow(SKJ_W3)) /* Released in time */
+            if (tD < PlayerScoreKeeper->get_judgment_window(SKJ_W3)) /* Released in time */
             {
                 notify_hit(dev, Lane, m->is_hold(), true);
                 set_lane_holding_state(Lane, false);
@@ -308,7 +308,7 @@ namespace rd {
         double dev = (SongBeat - m->get_start_time());
         double tD = abs(dev);
 
-        if (tD < PlayerScoreKeeper->getJudgmentWindow(SKJ_W3)) // If the note was hit inside judging range
+        if (tD < PlayerScoreKeeper->get_judgment_window(SKJ_W3)) // If the note was hit inside judging range
         {
             m->hit();
 
@@ -320,14 +320,14 @@ namespace rd {
                 m->disable();
 
                 // BADs stay visible.
-                if (tD < PlayerScoreKeeper->getJudgmentWindow(SKJ_W2))
+                if (tD < PlayerScoreKeeper->get_judgment_window(SKJ_W2))
                     m->make_invisible();
             }
 
             play_keysound(m->get_sound());
 
             return true;
-        } else if (tD > PlayerScoreKeeper->getJudgmentWindow(SKJ_W3) && tD < PlayerScoreKeeper->getLateMissCutoffMS()) {
+        } else if (tD > PlayerScoreKeeper->get_judgment_window(SKJ_W3) && tD < PlayerScoreKeeper->get_late_miss_cutoff_ms()) {
             m->fail_hit();
             m->disable();
 
@@ -353,14 +353,14 @@ namespace rd {
             notify_miss(abs(tTail), k, m->is_hold(), true, false);
             m->disable();
         } // Condition B: Regular note or hold head outside cutoff, wasn't hit and it's enabled.
-        else if (tHead > PlayerScoreKeeper->getJudgmentWindow(SKJ_W3) && !m->was_hit() && m->is_enabled()) {
+        else if (tHead > PlayerScoreKeeper->get_judgment_window(SKJ_W3) && !m->was_hit() && m->is_enabled()) {
             m->fail_hit();
             notify_miss(abs(tHead), k, m->is_hold(), false, false);
 
             // remove from judgment completely
             m->disable();
         } // Condition C: Hold head was hit, but hold tail was not released.
-        else if (tTail > PlayerScoreKeeper->getJudgmentWindow(SKJ_W3) &&
+        else if (tTail > PlayerScoreKeeper->get_judgment_window(SKJ_W3) &&
                  m->is_hold() && m->was_hit() && m->is_enabled()) {
             m->fail_hit();
             notify_miss(abs(tTail), k, m->is_hold(), false, false);

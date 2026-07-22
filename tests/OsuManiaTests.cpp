@@ -38,9 +38,9 @@ struct OMSetup {
 
     OMSetup() : mech(true) {
         sk = std::make_shared<ScoreKeeper>();
-        sk->setODWindows(0);
+        sk->set_od_windows(0);
         mech.configure(nullptr, sk);
-        sk->setTotalObjects(100, 0);
+        sk->set_total_objects(100, 0);
 
         // SetLaneHoldingState is set if we're currently hitting a hold.
         // we don't really need this.
@@ -53,11 +53,11 @@ struct OMSetup {
         };
 
         mech.notify_hit = [&](double dev, uint32_t lane, bool hold, bool should_break) {
-            sk->hitNote(dev, lane, NoteJudgmentPart::NOTE);
+            sk->hit_note(dev, lane, NoteJudgmentPart::NOTE);
         };
 
         mech.notify_miss = [&](double t, uint32_t, bool hold, bool nobreakcombo, bool earlymiss) {
-            sk->missNote(nobreakcombo, earlymiss, true);
+            sk->miss_note(nobreakcombo, earlymiss, true);
         };
     }
 };
@@ -72,7 +72,7 @@ TEST_CASE("osu!mania judgments", "[omjudge]") {
     SECTION("Judgments from W1 to W5 are correct Early (OD0)") {
         auto j = SKJ_W1;
         for (auto judgems : JudgmentValues) {
-            REQUIRE(s.sk->hitNote(judgems + 2, 0, NoteJudgmentPart::NOTE) == j);
+            REQUIRE(s.sk->hit_note(judgems + 2, 0, NoteJudgmentPart::NOTE) == j);
 
             j = (ScoreKeeperJudgment)((int) j + 1);
         }
@@ -81,7 +81,7 @@ TEST_CASE("osu!mania judgments", "[omjudge]") {
     SECTION("Judgments from W1 to W5 are correct at the limit Early (OD0)") {
         auto j = SKJ_W1;
         for (auto judgems : JudgmentValues) {
-            REQUIRE(s.sk->hitNote(judgems, 0, NoteJudgmentPart::NOTE) == j);
+            REQUIRE(s.sk->hit_note(judgems, 0, NoteJudgmentPart::NOTE) == j);
 
             j = (ScoreKeeperJudgment)((int) j + 1);
         }
@@ -90,19 +90,19 @@ TEST_CASE("osu!mania judgments", "[omjudge]") {
     SECTION("Judgments from W1 to W5 are correct at the limit Late (OD0)") {
         auto j = SKJ_W1;
         for (auto judgems : JudgmentValuesLate) {
-            REQUIRE(s.sk->hitNote(judgems, 0, NoteJudgmentPart::NOTE) == j);
+            REQUIRE(s.sk->hit_note(judgems, 0, NoteJudgmentPart::NOTE) == j);
 
             j = (ScoreKeeperJudgment)((int) j + 1);
         }
     }
 
     SECTION("What even happened here?") {
-        REQUIRE(s.sk->hitNote(-127.73032683987395, 0, NoteJudgmentPart::NOTE) != -1);
+        REQUIRE(s.sk->hit_note(-127.73032683987395, 0, NoteJudgmentPart::NOTE) != -1);
     }
 
-    double earlyhitWindow = s.sk->getEarlyHitCutoffMS() / 1000.0;
-    double lateCutoff = s.sk->getLateMissCutoffMS() / 1000.0;
-    double lnCutoff = s.sk->getJudgmentWindow(SKJ_W3);
+    double earlyhitWindow = s.sk->get_early_hit_cutoff_ms() / 1000.0;
+    double lateCutoff = s.sk->get_late_miss_cutoff_ms() / 1000.0;
+    double lnCutoff = s.sk->get_judgment_window(SKJ_W3);
     const otoworm::NoteData noteData{0, 10};
 
     TestRuntimeNote t(
@@ -141,30 +141,30 @@ TEST_CASE("osu!mania judgments", "[omjudge]") {
 // release on time
         lt.get()->reset();
         lt.get()->hit();
-        int misses = s.sk->getJudgmentCount(SKJ_MISS);
+        int misses = s.sk->get_judgment_count(SKJ_MISS);
         REQUIRE(s.mech.OnReleaseLane(lt.get()->get_end_time() + lateCutoff - epsilon, lt.get(), 0));
-        REQUIRE(s.sk->getJudgmentCount(SKJ_MISS) == misses);
+        REQUIRE(s.sk->get_judgment_count(SKJ_MISS) == misses);
 
         lt.get()->reset();
         lt.get()->hit();
         REQUIRE(s.mech.OnReleaseLane(lt.get()->get_end_time() + epsilon, lt.get(), 0));
-        REQUIRE(s.sk->getJudgmentCount(SKJ_MISS) == misses);
+        REQUIRE(s.sk->get_judgment_count(SKJ_MISS) == misses);
 
         lt.get()->reset();
         lt.get()->hit();
         REQUIRE(s.mech.OnReleaseLane(lt.get()->get_end_time() - lateCutoff + epsilon, lt.get(), 0));
-        REQUIRE(s.sk->getJudgmentCount(SKJ_MISS) == misses);
+        REQUIRE(s.sk->get_judgment_count(SKJ_MISS) == misses);
 
 // too early/late release
         lt.get()->reset();
         lt.get()->hit();
         REQUIRE(s.mech.OnReleaseLane(lt.get()->get_end_time() - earlyhitWindow - epsilon, lt.get(), 0));
-        REQUIRE(s.sk->getJudgmentCount(SKJ_MISS) == misses + 1);
+        REQUIRE(s.sk->get_judgment_count(SKJ_MISS) == misses + 1);
 
         lt.get()->reset();
         lt.get()->hit();
         REQUIRE(s.mech.OnReleaseLane(lt.get()->get_end_time() + lateCutoff + epsilon, lt.get(), 0));
-        REQUIRE(s.sk->getJudgmentCount(SKJ_MISS) == misses + 2);
+        REQUIRE(s.sk->get_judgment_count(SKJ_MISS) == misses + 2);
     }
 
     SECTION("Long note tails miss only after the tail end is done when not hit") {
@@ -180,53 +180,53 @@ TEST_CASE("osu!mania judgments", "[omjudge]") {
     SECTION("No runtime errors across a big range of time") {
         for (int i = -TIME_RANGE; i <= TIME_RANGE; i++) {
             double t = (double) i / 1000.0;
-            REQUIRE_NOTHROW(s.sk->hitNote(t, 0, NoteJudgmentPart::NOTE));
+            REQUIRE_NOTHROW(s.sk->hit_note(t, 0, NoteJudgmentPart::NOTE));
         }
     }
 
     SECTION("Hit weaks should break combo.") {
         s.sk->init();
-        s.sk->setODWindows(0);
+        s.sk->set_od_windows(0);
         for (int i = 0; i < 50; i++)
-            s.sk->hitNote(0, 0, NoteJudgmentPart::NOTE);
+            s.sk->hit_note(0, 0, NoteJudgmentPart::NOTE);
 
-        REQUIRE(s.sk->getScore(ST_COMBO) == 50);
-        REQUIRE(s.sk->hitNote(-s.sk->getEarlyHitCutoffMS() + 1, 0, NoteJudgmentPart::NOTE) == SKJ_MISS);
-        REQUIRE(s.sk->getScore(ST_COMBO) == 0);
+        REQUIRE(s.sk->get_score(ST_COMBO) == 50);
+        REQUIRE(s.sk->hit_note(-s.sk->get_early_hit_cutoff_ms() + 1, 0, NoteJudgmentPart::NOTE) == SKJ_MISS);
+        REQUIRE(s.sk->get_score(ST_COMBO) == 0);
 
         /* late version */
         s.sk->init();
-        s.sk->setODWindows(0);
+        s.sk->set_od_windows(0);
         for (int i = 0; i < 50; i++)
-            s.sk->hitNote(0, 0, NoteJudgmentPart::NOTE);
+            s.sk->hit_note(0, 0, NoteJudgmentPart::NOTE);
 
-        REQUIRE(s.sk->getScore(ST_COMBO) == 50);
-        REQUIRE(s.sk->hitNote(s.sk->getEarlyHitCutoffMS() - 1, 0, NoteJudgmentPart::NOTE) == SKJ_MISS);
-        REQUIRE(s.sk->getScore(ST_COMBO) == 0);
+        REQUIRE(s.sk->get_score(ST_COMBO) == 50);
+        REQUIRE(s.sk->hit_note(s.sk->get_early_hit_cutoff_ms() - 1, 0, NoteJudgmentPart::NOTE) == SKJ_MISS);
+        REQUIRE(s.sk->get_score(ST_COMBO) == 0);
     }
 
     SECTION("[Mechanics] Early Weak hits should break combo.") {
         s.sk->init();
-        s.sk->setODWindows(0);
+        s.sk->set_od_windows(0);
         for (int i = 0; i < 50; i++)
-            s.sk->hitNote(0, 0, NoteJudgmentPart::NOTE);
+            s.sk->hit_note(0, 0, NoteJudgmentPart::NOTE);
 
         TestRuntimeNote t(otoworm::NoteData{ 0, 0 });
-        REQUIRE(s.sk->getScore(ST_COMBO) == 50);
-        REQUIRE(s.mech.OnPressLane((-s.sk->getEarlyHitCutoffMS() + 1) / 1000.0, t.get(), 0) == true);
-        REQUIRE(s.sk->getScore(ST_COMBO) == 0);
+        REQUIRE(s.sk->get_score(ST_COMBO) == 50);
+        REQUIRE(s.mech.OnPressLane((-s.sk->get_early_hit_cutoff_ms() + 1) / 1000.0, t.get(), 0) == true);
+        REQUIRE(s.sk->get_score(ST_COMBO) == 0);
 
         /* late version */
         s.sk->init();
-        s.sk->setODWindows(0);
+        s.sk->set_od_windows(0);
         for (int i = 0; i < 50; i++)
-            s.sk->hitNote(0, 0, NoteJudgmentPart::NOTE);
+            s.sk->hit_note(0, 0, NoteJudgmentPart::NOTE);
 
 
         t.get()->reset();
-        REQUIRE(s.sk->getScore(ST_COMBO) == 50);
-        REQUIRE_FALSE(s.mech.OnPressLane((s.sk->getEarlyHitCutoffMS() - 1) / 1000.0, t.get(), 0));
-        REQUIRE(s.sk->getScore(ST_COMBO) == 50);
+        REQUIRE(s.sk->get_score(ST_COMBO) == 50);
+        REQUIRE_FALSE(s.mech.OnPressLane((s.sk->get_early_hit_cutoff_ms() - 1) / 1000.0, t.get(), 0));
+        REQUIRE(s.sk->get_score(ST_COMBO) == 50);
     }
 
     SECTION("Hits to fill match tested data.") {

@@ -32,114 +32,114 @@ namespace rd {
 
         void init();
 
-        void setTotalObjects(int total_objects, int total_holds);
+        void set_total_objects(int total_objects, int total_holds);
 
         // total if multiplier is nan, else default rate * multiplier - has to be called after setting
         // any timing parameters like judge rank or OD and after setting total objects.
-        void setLifeTotal(double total, double multiplier = NAN);
+        void set_life_total(double total, double multiplier = NAN);
 
-        void setO2LifebarRating(int difficulty);
+        void set_o2_lifebar_rating(int difficulty);
 
-        void setJudgeRank(int rank);
+        void set_judge_rank(int rank);
 
-        void setJudgeScale(double scale);
+        void set_judge_scale(double scale);
 
-        void setODWindows(int od);
+        void set_od_windows(int od);
 
-        void setSMJ4Windows();
+        void set_smj4_windows();
 
-        void setAccMin(double ms);
+        void set_acc_min(double ms);
 
-        void setAccMax(double ms);
+        void set_acc_max(double ms);
 
         // accessor functions
 
-        int getMaxJudgableNotes() const;
+        int get_max_judgable_notes() const;
 
-        int getJudgedNotes() const;
+        int get_judged_notes() const;
 
-        int getJudgmentCount(int Judge) const;
+        int get_judgment_count(int Judge) const;
 
-        std::string getHistogram();
+        std::string get_histogram();
 
-        int getHistogramPoint(int point) const;
+        int get_histogram_point(int point) const;
 
-        int getHistogramPointCount() const;
+        int get_histogram_point_count() const;
 
-        int getHistogramHighestPoint() const;
+        int get_histogram_highest_point() const;
 
-        double getAvgHit() const;
+        double get_avg_hit() const;
 
-        ScoreKeeperJudgment hitNote(double ms, uint32_t lane, NoteJudgmentPart part);
+        ScoreKeeperJudgment hit_note(double ms, uint32_t lane, NoteJudgmentPart part);
 
-        void lifebarHit(double ms, rd::ScoreKeeperJudgment judgment);
+        void lifebar_hit(double ms, rd::ScoreKeeperJudgment judgment);
 
-        void missNote(bool dont_break_combo, bool early_miss, bool apply_miss);
+        void miss_note(bool dont_break_combo, bool early_miss, bool apply_miss);
 
-        double getAccMax() const;
+        double get_acc_max() const;
 
-        double getJudgmentWindow(int judgment);
+        double get_judgment_window(int judgment);
 
-        double getLateMissCutoffMS() const;
+        double get_late_miss_cutoff_ms() const;
 
-        double getEarlyMissCutoffMS() const;
+        double get_early_miss_cutoff_ms() const;
 
-        double getEarlyHitCutoffMS() const;
+        double get_early_hit_cutoff_ms() const;
 
-        double getJudgmentCutoffMS();
+        double get_judgment_cutoff_ms();
 
-        int getScore(int score_type) const;
+        int get_score(int score_type) const;
 
-        float getPercentScore(int score_type) const;
+        float get_percent_score(int score_type) const;
 
-        float getLifebarAmount(int lifebar_amount_type) const;
+        float get_lifebar_amount(int lifebar_amount_type) const;
 
-        bool isStageFailed(int lifebar_amount_type) const;
+        bool is_stage_failed(int lifebar_amount_type) const;
 
-        bool hasDelayedFailure(int lifebar_type);
+        bool has_delayed_failure(int lifebar_type);
 
-        void failStage();
+        void fail_stage();
 
-        int getPacemakerDiff(PacemakerType pmt);
+        int get_pacemaker_diff(PacemakerType pmt);
 
-        std::pair<std::string, int> getAutoPacemaker();
+        std::pair<std::string, int> get_auto_pacemaker();
 
-        std::pair<std::string, int> getAutoRankPacemaker();
+        std::pair<std::string, int> get_auto_rank_pacemaker();
 
         std::unordered_map<PacemakerType, std::string> pacemaker_texts;
 
-        void applyRateScale(double rate);
+        void apply_rate_scale(double rate);
 
 
-        int getRank() const; // returns a number from -9 to 9
-        int getBMRank() const; // returns PMT_xxx according to EXScore Rank
+        int get_rank() const; // returns a number from -9 to 9
+        int get_bm_rank() const; // returns PMT_xxx according to EXScore Rank
 
-        uint8_t getPills() const;
+        uint8_t get_pills() const;
 
-        int getCoolCombo() const;
+        int get_cool_combo() const;
 
-        void setUseW0(bool);
+        void set_use_w0(bool);
 
-        bool usesW0() const;
+        bool uses_w0() const;
 
         bool is_o2jam() const;
 
-        float getHitStDev() const;
+        float get_hit_stdev() const;
 
         // percent we're sure the offset is wrong
-        double getOffsetDistrust() const;
+        double get_offset_distrust() const;
 
-        void useLR2Timing();
+        void use_lr2_timing();
 
-        void setOsuHP(float hp);
+        void set_osu_hp(float hp);
 
-        double getLNTickInterval();
+        double get_ln_tick_interval();
 
-        void tickLN(int ticks);
+        void tick_ln(int ticks);
 
     private:
 
-        void setO2JamBeatTimingWindows();
+        void set_o2jam_beat_timing_windows();
 
         // online avg hit and variance
         double avg_hit;
@@ -180,7 +180,7 @@ namespace rd {
         ScoreSystemExp3 score_exp3;
         ScoreSystemRank score_rank;
 
-        std::unordered_map<ScoreType, ScoringSystem*> Scores;
+        std::unordered_map<ScoreType, ScoringSystem*> scores;
 
         /*
             misc.
@@ -220,7 +220,7 @@ namespace rd {
         GaugeLr2ExClass gauge_lr2_exclass;
         GaugeLr2ExHardClass gauge_lr2_exhardclass;
 
-        std::unordered_map<LifeType, Gauge*> Gauges;
+        std::unordered_map<LifeType, Gauge*> gauges;
 
         // judgment information
         TimingWindowsO2Jam timing_o2jam;
@@ -229,10 +229,10 @@ namespace rd {
         TimingWindowsStepmania timing_stepmania;
         TimingWindowsLR2Oraja timing_lr2;
 
-        std::unordered_map<ChartType, TimingWindows*> Timings;
-        TimingWindows* CurrentTimingWindow;
+        std::unordered_map<ChartType, TimingWindows*> timings;
+        TimingWindows* current_timing_window;
 
-        void setBMSTimingWindows();
+        void set_bms_timing_windows();
 
         double histogram[255]; // records from -127 to +127 ms.
 
@@ -242,14 +242,14 @@ namespace rd {
         long long lifebar_battery_lives;
 
         // scoring parameters.
-        double ACC_MIN, ACC_MIN_SQ;
-        double ACC_MAX, ACC_MAX_SQ;
+        double acc_min, acc_min_sq;
+        double acc_max, acc_max_sq;
 
     };
 
-    void SetupScorekeeperLuaInterface(void *state);
+    void setup_scorekeeper_lua_interface(void *state);
 
-    void SetScorekeeperInstance(void *state, ScoreKeeper *Instance);
+    void set_scorekeeper_instance(void *state, ScoreKeeper *Instance);
 }
 
 

@@ -185,91 +185,91 @@ void ScoreDatabase::AddScore(
     sqlite3_bind_int64(
             stAddScore,
             sqlite3_bind_parameter_index(stAddScore, "$rankpts"),
-            keeper.getScore(rd::ST_RANK)
+            keeper.get_score(rd::ST_RANK)
     );
 
     sqlite3_bind_int(
             stAddScore,
             sqlite3_bind_parameter_index(stAddScore, "$ex"),
-            keeper.getScore(rd::ST_EX)
+            keeper.get_score(rd::ST_EX)
     );
 
     sqlite3_bind_int64(
             stAddScore,
             sqlite3_bind_parameter_index(stAddScore, "$score"),
-            keeper.getScore(type)
+            keeper.get_score(type)
     );
 
     sqlite3_bind_double(
             stAddScore,
             sqlite3_bind_parameter_index(stAddScore, "$gauge"),
-            keeper.getLifebarAmount(gaugetype)
+            keeper.get_lifebar_amount(gaugetype)
     );
 
     sqlite3_bind_int(
             stAddScore,
             sqlite3_bind_parameter_index(stAddScore, "$hits"),
-            keeper.getJudgedNotes()
+            keeper.get_judged_notes()
     );
 
     sqlite3_bind_int(
             stAddScore,
             sqlite3_bind_parameter_index(stAddScore, "$maxcombo"),
-            keeper.getScore(rd::ST_MAX_COMBO)
+            keeper.get_score(rd::ST_MAX_COMBO)
     );
 
     sqlite3_bind_int(
             stAddScore,
             sqlite3_bind_parameter_index(stAddScore, "$w0"),
-            keeper.getJudgmentCount(rd::SKJ_W0)
+            keeper.get_judgment_count(rd::SKJ_W0)
     );
 
     sqlite3_bind_int(
             stAddScore,
             sqlite3_bind_parameter_index(stAddScore, "$w1"),
-            keeper.getJudgmentCount(rd::SKJ_W1)
+            keeper.get_judgment_count(rd::SKJ_W1)
     );
 
     sqlite3_bind_int(
             stAddScore,
             sqlite3_bind_parameter_index(stAddScore, "$w2"),
-            keeper.getJudgmentCount(rd::SKJ_W2)
+            keeper.get_judgment_count(rd::SKJ_W2)
     );
 
     sqlite3_bind_int(
             stAddScore,
             sqlite3_bind_parameter_index(stAddScore, "$w3"),
-            keeper.getJudgmentCount(rd::SKJ_W3)
+            keeper.get_judgment_count(rd::SKJ_W3)
     );
 
     sqlite3_bind_int(
             stAddScore,
             sqlite3_bind_parameter_index(stAddScore, "$w4"),
-            keeper.getJudgmentCount(rd::SKJ_W4)
+            keeper.get_judgment_count(rd::SKJ_W4)
     );
 
     sqlite3_bind_int(
             stAddScore,
             sqlite3_bind_parameter_index(stAddScore, "$w5"),
-            keeper.getJudgmentCount(rd::SKJ_W5)
+            keeper.get_judgment_count(rd::SKJ_W5)
     );
 
     sqlite3_bind_int(
             stAddScore,
             sqlite3_bind_parameter_index(stAddScore, "$misses"),
-            keeper.getJudgmentCount(rd::SKJ_MISS)
+            keeper.get_judgment_count(rd::SKJ_MISS)
     );
 
     sqlite3_bind_double(
             stAddScore,
             sqlite3_bind_parameter_index(stAddScore, "$avghit"),
-            keeper.getAvgHit()
+            keeper.get_avg_hit()
     );
 
     sqlite3_bind_double(
             stAddScore,
             sqlite3_bind_parameter_index(stAddScore, "$stdev"),
-            keeper.getHitStDev()
+            keeper.get_hit_stdev()
     );
 
     sqlite3_bind_double(

@@ -43,12 +43,12 @@ struct BMSSetup {
 
 	BMSSetup() : mech(true) {
 		sk = std::make_shared<ScoreKeeper>();
-		sk->setJudgeRank(4); // easy
+		sk->set_judge_rank(4); // easy
 		mech.configure(nullptr, sk);
-        sk->setTotalObjects(100, 0);
+        sk->set_total_objects(100, 0);
 
 		mech.notify_miss = [&](double t, uint32_t, bool hold, bool nobreakcombo, bool earlymiss) {
-            sk->missNote(nobreakcombo, earlymiss, true);
+            sk->miss_note(nobreakcombo, earlymiss, true);
 		};
 	}
 };
@@ -59,9 +59,9 @@ struct SMSetup {
 
 	SMSetup() : mech(false) {
 		sk = std::make_shared<ScoreKeeper>();
-		sk->setSMJ4Windows();
+		sk->set_smj4_windows();
 		mech.configure(nullptr, sk);
-        sk->setTotalObjects(100, 0);
+        sk->set_total_objects(100, 0);
 	}
 };
 
@@ -70,7 +70,7 @@ TEST_CASE("Raindrop Mechanics (general behaviour)", "[general]")
 	BMSSetup s;
 
 	SECTION("Doesn't act twice on the same note") {
-		double lateMissThreshold = s.sk->getLateMissCutoffMS();
+		double lateMissThreshold = s.sk->get_late_miss_cutoff_ms();
 		TestRuntimeNote t(otoworm::NoteData{
 			0, 0
 		});
@@ -92,7 +92,7 @@ TEST_CASE("Raindrop Mechanics (BMS tests)", "[raindropbms]") {
 	BMSSetup s;
 
 	SECTION("Early misses work properly") {
-		double earlyMiss = s.sk->getEarlyMissCutoffMS() / 1000.0;
+		double earlyMiss = s.sk->get_early_miss_cutoff_ms() / 1000.0;
 		TestRuntimeNote t(otoworm::NoteData{
 			10, 0
 		});
@@ -112,52 +112,52 @@ TEST_CASE("Raindrop Mechanics (BMS tests)", "[raindropbms]") {
 		REQUIRE_FALSE(s.mech.OnPressLane(t3, t.get(), 0));
 	}
 
-	double hitwindow = s.sk->getEarlyHitCutoffMS();
+	double hitwindow = s.sk->get_early_hit_cutoff_ms();
 	SECTION("No MISS judgment on the widest window") {
-		REQUIRE(s.sk->hitNote(hitwindow, 0, NoteJudgmentPart::NOTE) != SKJ_MISS);
-		REQUIRE(s.sk->hitNote(hitwindow, 0, NoteJudgmentPart::NOTE) != SKJ_NONE);
-		REQUIRE(s.sk->hitNote(hitwindow - 1, 0, NoteJudgmentPart::NOTE) != SKJ_MISS);
-		REQUIRE(s.sk->hitNote(hitwindow - 1, 0, NoteJudgmentPart::NOTE) != SKJ_NONE);
+		REQUIRE(s.sk->hit_note(hitwindow, 0, NoteJudgmentPart::NOTE) != SKJ_MISS);
+		REQUIRE(s.sk->hit_note(hitwindow, 0, NoteJudgmentPart::NOTE) != SKJ_NONE);
+		REQUIRE(s.sk->hit_note(hitwindow - 1, 0, NoteJudgmentPart::NOTE) != SKJ_MISS);
+		REQUIRE(s.sk->hit_note(hitwindow - 1, 0, NoteJudgmentPart::NOTE) != SKJ_NONE);
 	}
 
 	SECTION("Early Misses don't break combo") {
 	    s.sk->init();
-	    s.sk->setJudgeRank(4);
+	    s.sk->set_judge_rank(4);
 
 	    for (int i = 0; i < 10; i++) {
-	        s.sk->hitNote(0, 0, NoteJudgmentPart::NOTE);
+	        s.sk->hit_note(0, 0, NoteJudgmentPart::NOTE);
 	    }
 
-	    REQUIRE(s.sk->getScore(ST_COMBO) == 10);
-        REQUIRE(s.sk->hitNote(-s.sk->getEarlyHitCutoffMS() - 1, 0, NoteJudgmentPart::NOTE) == SKJ_MISS);
-        REQUIRE(s.sk->getScore(ST_COMBO) == 10);
+	    REQUIRE(s.sk->get_score(ST_COMBO) == 10);
+        REQUIRE(s.sk->hit_note(-s.sk->get_early_hit_cutoff_ms() - 1, 0, NoteJudgmentPart::NOTE) == SKJ_MISS);
+        REQUIRE(s.sk->get_score(ST_COMBO) == 10);
 	}
 
 	SECTION("NONE judgment outside of hit window") {
-		double earlymiss = -s.sk->getEarlyMissCutoffMS();
-		double latemiss = s.sk->getLateMissCutoffMS();
+		double earlymiss = -s.sk->get_early_miss_cutoff_ms();
+		double latemiss = s.sk->get_late_miss_cutoff_ms();
 
-		REQUIRE(s.sk->hitNote(earlymiss - 1, 0, NoteJudgmentPart::NOTE) == SKJ_NONE);
+		REQUIRE(s.sk->hit_note(earlymiss - 1, 0, NoteJudgmentPart::NOTE) == SKJ_NONE);
 
 		// following test is no longer true due to new implementation of timing windows.
-		// REQUIRE(s.sk->hitNote(latemiss + 1, 0, NoteJudgmentPart::NOTE) == SKJ_NONE);
+		// REQUIRE(s.sk->hit_note(latemiss + 1, 0, NoteJudgmentPart::NOTE) == SKJ_NONE);
 	}
 
 	SECTION("Late window misses work as intended") {
 		TestRuntimeNote t(
 			otoworm::NoteData { 0, 0 }
 		);
-		double latemiss = s.sk->getLateMissCutoffMS();
+		double latemiss = s.sk->get_late_miss_cutoff_ms();
 
-		int misses = s.sk->getJudgmentCount(SKJ_MISS);
+		int misses = s.sk->get_judgment_count(SKJ_MISS);
 		REQUIRE(s.mech.OnUpdate(latemiss + epsilon, t.get(), 0));
-		REQUIRE(s.sk->getJudgmentCount(SKJ_MISS) == misses + 1);
+		REQUIRE(s.sk->get_judgment_count(SKJ_MISS) == misses + 1);
 	}
 
 	SECTION("No runtime errors across a big range of time") {
 	    for (int i = -TIME_RANGE; i <= TIME_RANGE; i++) {
 	        double t = (double)i / 1000.0;
-            REQUIRE_NOTHROW(s.sk->hitNote(t, 0, NoteJudgmentPart::NOTE));
+            REQUIRE_NOTHROW(s.sk->hit_note(t, 0, NoteJudgmentPart::NOTE));
 	    }
 	}
 }
@@ -184,7 +184,7 @@ TEST_CASE("Raindrop Mechanics (Stepmania - LN tails)", "[raindropmechsettails]")
 	
 	SECTION("Tails are not missed when the head is still active") {
 		double tailTime = 0.001;
-		double missCutoff = s.sk->getLateMissCutoffMS() / 1000.0;
+		double missCutoff = s.sk->get_late_miss_cutoff_ms() / 1000.0;
 
 		TestRuntimeNote t(otoworm::NoteData{
 			0, tailTime
@@ -200,7 +200,7 @@ TEST_CASE("Raindrop Mechanics (Stepmania - LN tails)", "[raindropmechsettails]")
     SECTION("No runtime errors across a big range of time") {
         for (int i = -TIME_RANGE; i <= TIME_RANGE; i++) {
             double t = (double)i / 1000.0;
-            REQUIRE_NOTHROW(s.sk->hitNote(t, 0, NoteJudgmentPart::NOTE));
+            REQUIRE_NOTHROW(s.sk->hit_note(t, 0, NoteJudgmentPart::NOTE));
         }
     }
 }
