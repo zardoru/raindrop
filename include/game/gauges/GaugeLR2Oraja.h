@@ -6,38 +6,38 @@
 namespace rd {
     template<class Parameter>
     class GaugeLR2 : public Gauge {
-        double rate = 1;
-        bool failed = false;
+        double rate_ = 1;
+        bool failed_ = false;
     public:
-        void DefaultSetup() override { Setup(100, 100, 0); failed = false; }
+        void default_setup() override { setup(100, 100, 0); failed_ = false; }
 
-        void Setup(double total, long long max_notes, double strictness) override {
-            rate = Parameter::setup(total, max_notes);
+        void setup(double total, long long max_notes, double strictness) override {
+            rate_ = Parameter::setup(total, max_notes);
         }
 
-        void Reset() override {
-            lifebar_amount = Parameter::init_value;
-            failed = false;
+        void reset() override {
+            lifebar_amount_ = Parameter::init_value;
+            failed_ = false;
         }
 
-        double GetGaugeValue() override {
-            return lifebar_amount / 100.0;
+        double get_gauge_value() override {
+            return lifebar_amount_ / 100.0;
         }
 
-        bool HasDelayedFailure() override {
+        bool has_delayed_failure() override {
             return Parameter::fail_immediate;
         }
 
-        bool HasFailed(bool song_ended) override {
-            if (HasDelayedFailure())
-                return song_ended && lifebar_amount < Parameter::pass_threshold;
+        bool has_failed(bool song_ended) override {
+            if (has_delayed_failure())
+                return song_ended && lifebar_amount_ < Parameter::pass_threshold;
             else
-                return lifebar_amount <= 0;
+                return lifebar_amount_ <= 0;
         }
 
-        void Update(ScoreKeeperJudgment skj, bool is_early, float mine_value) override {
+        void update(ScoreKeeperJudgment skj, bool is_early, float mine_value) override {
             if (skj == SKJ_NONE || skj == SKJ_TICK) return;
-            if (failed) return; /* stop updating */
+            if (failed_) return; /* stop updating */
 
             double gauge_inc = 0;
             if (skj > SKJ_MINE || skj < SKJ_W0) {
@@ -56,28 +56,28 @@ namespace rd {
                 gauge_inc += Parameter::per_judgment_increments[skj];
             }
 
-            gauge_inc *= rate;
-            Parameter::modify_inc(lifebar_amount, gauge_inc);
+            gauge_inc *= rate_;
+            Parameter::modify_inc(lifebar_amount_, gauge_inc);
 
-            lifebar_amount += gauge_inc;
-            lifebar_amount = clamp(lifebar_amount, Parameter::min_value, 100.0);
+            lifebar_amount_ += gauge_inc;
+            lifebar_amount_ = clamp(lifebar_amount_, Parameter::min_value, 100.0);
 
             /* block any further updates */
-            if (!HasDelayedFailure() && lifebar_amount < Parameter::pass_threshold)
-                failed = true;
+            if (!has_delayed_failure() && lifebar_amount_ < Parameter::pass_threshold)
+                failed_ = true;
         }
     };
 
     namespace lr2 {
         struct NoIncrementChange {
-            static void modify_inc(double lifebar_amount, double &inc) {}
+            static void modify_inc(double lifebar_amount_, double &inc) {}
         };
 
         struct SlowDecrementChange {
-            static void modify_inc(double lifebar_amount, double &inc) {
+            static void modify_inc(double lifebar_amount_, double &inc) {
                 /* lr2oraja gaugeproperty.java guts */
                 // decrease damage below 32%
-                if (lifebar_amount < 32 && inc < 0)
+                if (lifebar_amount_ < 32 && inc < 0)
                     inc *= 0.6;
             }
         };

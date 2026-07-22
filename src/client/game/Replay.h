@@ -8,25 +8,25 @@ public:
 
     // 16 bytes per entry
     struct Entry {
-        double Time;
-        uint32_t Lane;
-        uint32_t Down;
+        double time;
+        uint32_t lane;
+        uint32_t down;
     };
 
     typedef std::function<void(Entry)> OnReplayEvent;
 
 private:
 
-    std::vector<Entry> ReplayData;
-    std::queue<Entry> EventPlaybackQueue;
+    std::vector<Entry> replay_data_;
+    std::queue<Entry> event_playback_queue_;
 
-    std::vector<OnReplayEvent> PlaybackListeners;
+    std::vector<OnReplayEvent> playback_listeners_;
 
-    std::string SongHash;
-    uint32_t DiffIndex{};
+    std::string song_hash_;
+    uint32_t diff_index_{};
 
-    PlayscreenParameters UserParameters;
-    rd::ESpeedType SpeedType;
+    PlayscreenParameters user_parameters_;
+    rd::ESpeedType speed_type_;
 
 public:
     Replay();
@@ -37,7 +37,7 @@ public:
     // not the requested params, but effective ones
     void set_chart_data(
             PlayscreenParameters params, // params we're going ingame with
-            rd::ESpeedType SpeedType, // target speed type
+            rd::ESpeedType speed_type, // target speed type
             std::string sha256hash = "", // file hash, for locating within database
             uint32_t diffindex = 0 // difficulty index in the defined chart hash
     );

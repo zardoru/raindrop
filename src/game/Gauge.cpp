@@ -8,104 +8,104 @@
 
 using namespace rd;
 
-bool Gauge::HasFailed(bool song_ended) {
-    return lifebar_amount <= 0;
+bool Gauge::has_failed(bool song_ended) {
+    return lifebar_amount_ <= 0;
 }
 
-double Gauge::GetGaugeValue() {
-    return lifebar_amount;
+double Gauge::get_gauge_value() {
+    return lifebar_amount_;
 }
 
-double Gauge::GetGaugeDisplayValue() {
-    return lifebar_amount;
+double Gauge::get_gauge_display_value() {
+    return lifebar_amount_;
 }
 
-bool Gauge::HasDelayedFailure() {
+bool Gauge::has_delayed_failure() {
     return false;
 }
 
-void Gauge::Setup(double total, long long max_notes, double strictness) {
+void Gauge::setup(double total, long long max_notes, double strictness) {
     // stub
 }
 
-void Gauge::DefaultSetup() {
+void Gauge::default_setup() {
    // stub
 }
 
-void GaugeO2Jam::Setup(double total, long long max_notes, double strictness) {
+void GaugeO2Jam::setup(double total, long long max_notes, double strictness) {
     // Thanks to Entozer for giving this information.
     if (strictness == 0) { // EX
-        increment = 0.3;
-        increment_good = 0.2;
-        decrement_bad = -1;
-        decrement_miss = -5;
+        increment_ = 0.3;
+        increment_good_ = 0.2;
+        decrement_bad_ = -1;
+        decrement_miss_ = -5;
     } else if (strictness == 1) { // NX
-        increment = 0.2;
-        increment_good = 0.1;
-        decrement_bad = -0.7;
-        decrement_miss = -4;
+        increment_ = 0.2;
+        increment_good_ = 0.1;
+        decrement_bad_ = -0.7;
+        decrement_miss_ = -4;
     } else { // HX
-        increment = 0.1;
-        increment_good = 0.0;
-        decrement_bad = -0.5;
-        decrement_miss = -3;
+        increment_ = 0.1;
+        increment_good_ = 0.0;
+        decrement_bad_ = -0.5;
+        decrement_miss_ = -3;
     }
 }
 
-void GaugeO2Jam::Update(ScoreKeeperJudgment skj, bool is_early, float mine_value) {
+void GaugeO2Jam::update(ScoreKeeperJudgment skj, bool is_early, float mine_value) {
     if (skj == SKJ_NONE) return;
     if (skj == SKJ_TICK) return;
     if (skj <= SKJ_W1) // only COOLs restore o2jam lifebar
-        lifebar_amount += increment;
+        lifebar_amount_ += increment_;
     else if (skj == SKJ_W2)
-        lifebar_amount += increment_good;
+        lifebar_amount_ += increment_good_;
     else if (skj == SKJ_MISS)
-        lifebar_amount -= decrement_miss;
-    else if (skj >= SKJ_W3) // BADs get some HP from you,
-        lifebar_amount -= decrement_bad;
+        lifebar_amount_ -= decrement_miss_;
+    else if (skj >= SKJ_W3) // BADs get some hp_ from you,
+        lifebar_amount_ -= decrement_bad_;
 }
 
-void GaugeO2Jam::Reset() {
-    lifebar_amount = 100;
+void GaugeO2Jam::reset() {
+    lifebar_amount_ = 100;
 }
 
-void GaugeO2Jam::DefaultSetup() {
-    Setup(0, 0, 2); // HX
+void GaugeO2Jam::default_setup() {
+    setup(0, 0, 2); // HX
 }
 
-double GaugeO2Jam::GetGaugeValue() {
-    return lifebar_amount / 100.0;
+double GaugeO2Jam::get_gauge_value() {
+    return lifebar_amount_ / 100.0;
 }
 
-void GaugeStepmania::Reset() { lifebar_amount = 0.5; }
+void GaugeStepmania::reset() { lifebar_amount_ = 0.5; }
 
-void GaugeStepmania::Update(ScoreKeeperJudgment skj, bool is_early, float mine_value) {
+void GaugeStepmania::update(ScoreKeeperJudgment skj, bool is_early, float mine_value) {
     if (skj == SKJ_TICK) return;
     if (skj == SKJ_MINE) {
-        lifebar_amount -= mine_value;
+        lifebar_amount_ -= mine_value;
     } else {
         // in range - we rely on the enum values lining up with the array.
         if (skj >= SKJ_W0 && skj <= SKJ_MISS)
-            lifebar_amount += increments[skj];
+            lifebar_amount_ += increments_[skj];
 
         if (skj == SKJ_MISS && is_early)
-            lifebar_amount -= increments[SKJ_MISS] / 2.0; // early miss compensation, half the WMiss value
+            lifebar_amount_ -= increments_[SKJ_MISS] / 2.0; // early miss compensation, half the WMiss value
     }
 
-    lifebar_amount = clamp(lifebar_amount, 0.0, 1.0);
+    lifebar_amount_ = clamp(lifebar_amount_, 0.0, 1.0);
 }
 
-void GaugeOsuMania::DefaultSetup() {
-    Setup(0, 0, 8);
+void GaugeOsuMania::default_setup() {
+    setup(0, 0, 8);
 }
 
-void GaugeOsuMania::Setup(double total, long long int max, double strictness) {
-    HP = clamp(strictness, 0.0, 10.0);
+void GaugeOsuMania::setup(double total, long long int max, double strictness) {
+    hp_ = clamp(strictness, 0.0, 10.0);
 
-    double _whole;
-    const auto fraction = modf(HP, &_whole);
-    const auto whole = (long long)_whole;
-    static constexpr std::array<double, 11> HPM = { /* HP multipliers */
+    double whole_part;
+    const auto fraction = modf(hp_, &whole_part);
+    const auto whole = (long long)whole_part;
+    static constexpr std::array<double, 11> hpm = { /* hp_ multipliers */
             7.272727273,
             7.142857143,
             7.168458781,
@@ -132,42 +132,42 @@ void GaugeOsuMania::Setup(double total, long long int max, double strictness) {
 
 
 
-    // interpolate the HPM
-    auto hpm_value = HPM[whole];
+    // interpolate the hpm
+    auto hpm_value = hpm[whole];
     if (fraction > 0 && whole + 1 <= 10)
-        hpm_value += (HPM[whole + 1] - HPM[whole]) * fraction;
+        hpm_value += (hpm[whole + 1] - hpm[whole]) * fraction;
 
     // tick fill
-    ln_tick_fill = (0.5 - HP*0.05) * HP / 200.0;
+    ln_tick_fill_ = (0.5 - hp_*0.05) * hp_ / 200.0;
 
     // judgment fill
-    hp_change[SKJ_W0] = hp_change[SKJ_W1] = (1.1 - HP * 0.1);
-    hp_change[SKJ_W2] = 0.5 - HP * 0.05;
-    hp_change[SKJ_W3] = 0.8 - HP * 0.08;
-    hp_change[SKJ_W4] = 0;
-    hp_change[SKJ_W5] = -(HP+1)*0.32;
-    hp_change[SKJ_MISS] = -(HP+1)*1.5;
+    hp_change_[SKJ_W0] = hp_change_[SKJ_W1] = (1.1 - hp_ * 0.1);
+    hp_change_[SKJ_W2] = 0.5 - hp_ * 0.05;
+    hp_change_[SKJ_W3] = 0.8 - hp_ * 0.08;
+    hp_change_[SKJ_W4] = 0;
+    hp_change_[SKJ_W5] = -(hp_+1)*0.32;
+    hp_change_[SKJ_MISS] = -(hp_+1)*1.5;
 
-    /* normalize to 0-1 scale, apply HPM */
+    /* normalize to 0-1 scale, apply hpm */
     for (int i = SKJ_W0; i <= SKJ_MISS; i++) {
 
-        // do not apply HPM to 50s nor misses
-        // because it doesn't make sense to "increase" them as HP goes from 10 to 0.
+        // do not apply hpm to 50s nor misses
+        // because it doesn't make sense to "increase" them as hp_ goes from 10 to 0.
         if (i < SKJ_W5)
-            hp_change[i] *= hpm_value;
+            hp_change_[i] *= hpm_value;
 
-        hp_change[i] /= 200.0;
+        hp_change_[i] /= 200.0;
     }
 }
 
-void GaugeOsuMania::Update(ScoreKeeperJudgment skj, bool is_early, float mine_value) {
+void GaugeOsuMania::update(ScoreKeeperJudgment skj, bool is_early, float mine_value) {
     if (skj == SKJ_NONE) return;
-    if (skj == SKJ_TICK) lifebar_amount += ln_tick_fill;
+    if (skj == SKJ_TICK) lifebar_amount_ += ln_tick_fill_;
     if (skj >= SKJ_W0 && skj <= SKJ_MISS)
-        lifebar_amount += hp_change[skj];
-    lifebar_amount = clamp(lifebar_amount, 0.0, 1.0);
+        lifebar_amount_ += hp_change_[skj];
+    lifebar_amount_ = clamp(lifebar_amount_, 0.0, 1.0);
 }
 
-void GaugeOsuMania::Reset() {
-    lifebar_amount = 1;
+void GaugeOsuMania::reset() {
+    lifebar_amount_ = 1;
 }

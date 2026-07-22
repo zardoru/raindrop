@@ -26,30 +26,30 @@ void Replay::set_chart_data(
         rd::ESpeedType speedType,
         std::string sha256hash,
         uint32_t diffindex) {
-    UserParameters = params;
-    SongHash = sha256hash;
-    DiffIndex = diffindex;
-    SpeedType = speedType;
+    user_parameters_ = params;
+    song_hash_ = sha256hash;
+    diff_index_ = diffindex;
+    speed_type_ = speedType;
 }
 
 PlayscreenParameters Replay::get_effective_parameters() const {
-    return UserParameters;
+    return user_parameters_;
 }
 
 std::string Replay::get_song_hash() const {
-    return SongHash;
+    return song_hash_;
 }
 
 uint32_t Replay::get_difficulty_index() const {
-    return DiffIndex;
+    return diff_index_;
 }
 
 bool Replay::is_loaded() {
-    return !EventPlaybackQueue.empty();
+    return !event_playback_queue_.empty();
 }
 
 void Replay::add_event(Entry entry) {
-    ReplayData.push_back(entry);
+    replay_data_.push_back(entry);
 }
 
 bool Replay::load(std::filesystem::path input) {
@@ -71,16 +71,16 @@ bool Replay::load(std::filesystem::path input) {
 
     // put all events ordered on the queue. now we're sure it's sorted
     std::sort(events.begin(), events.end(), [](const Entry &A, const Entry &B) {
-        return A.Time < B.Time;
+        return A.time < B.time;
     });
 
     for (auto evt: events) {
-        EventPlaybackQueue.push(evt);
+        event_playback_queue_.push(evt);
     }
 
-    SongHash = root["song"]["hash"];
-    DiffIndex = root["song"]["index"];
-    deserialize(UserParameters, root["userParameters"]);
+    song_hash_ = root["song"]["hash"];
+    diff_index_ = root["song"]["index"];
+    deserialize(user_parameters_, root["userParameters"]);
 
     return true;
 }
@@ -89,20 +89,20 @@ bool Replay::save(std::filesystem::path outputpath) const {
     json root = {
         {"song",
             {
-                {"hash", SongHash},
-                {"index", DiffIndex}
+                {"hash", song_hash_},
+                {"index", diff_index_}
             }
         },
         {
-         "userParameters", serialize(UserParameters)
+         "userParameters", serialize(user_parameters_)
         }
     };
 
-    for (auto entry : ReplayData) {
+    for (auto entry : replay_data_) {
         json jsonentry = {
-            {"t", entry.Time},
-            {"l", entry.Lane},
-            {"d", entry.Down != 0}
+            {"t", entry.time},
+            {"l", entry.lane},
+            {"d", entry.down != 0}
         };
 
         root["replayEvents"].push_back(jsonentry);
@@ -117,19 +117,19 @@ bool Replay::save(std::filesystem::path outputpath) const {
 }
 
 void Replay::update(double Time) {
-    while (!EventPlaybackQueue.empty() &&
-           EventPlaybackQueue.front().Time <= Time) {
-        auto evt = EventPlaybackQueue.front();
+    while (!event_playback_queue_.empty() &&
+           event_playback_queue_.front().time <= Time) {
+        auto evt = event_playback_queue_.front();
 
         // push to all listeners
-        for (auto &listener : PlaybackListeners)
+        for (auto &listener : playback_listeners_)
             listener(evt);
 
-        EventPlaybackQueue.pop();
+        event_playback_queue_.pop();
     }
 }
 
 void Replay::add_playback_listener(OnReplayEvent fn) {
-    PlaybackListeners.push_back(fn);
+    playback_listeners_.push_back(fn);
 }
 

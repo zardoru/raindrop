@@ -7,10 +7,10 @@
 
 using namespace rd;
 
-int RaindropArcadeMechanics::GetScratchForLane(uint32_t Lane) {
-    if (Lane == SCRATCH_1P_CHANNEL) {
+int RaindropArcadeMechanics::get_scratch_for_lane(uint32_t lane) {
+    if (lane == SCRATCH_1P_CHANNEL) {
         return 0;
-    } else if (Lane == SCRATCH_2P_CHANNEL) {
+    } else if (lane == SCRATCH_2P_CHANNEL) {
         return 1;
     } else {
         throw std::runtime_error("Scratch called on non-scratch lane!");
@@ -19,179 +19,179 @@ int RaindropArcadeMechanics::GetScratchForLane(uint32_t Lane) {
     return 0;
 }
 
-bool RaindropArcadeMechanics::CanHitNoteHead(double time, RuntimeNote *note) {
-    double cutoff = PlayerScoreKeeper->get_judgment_cutoff_ms() / 1000.0;
+bool RaindropArcadeMechanics::can_hit_note_head(double time, RuntimeNote *note) {
+    double cutoff = player_score_keeper_->get_judgment_cutoff_ms() / 1000.0;
     return (abs(time - note->get_start_time()) < cutoff) && note->is_head_enabled() && !note->was_hit();
 }
 
-bool RaindropArcadeMechanics::CanHitNoteTail(double time, RuntimeNote *note) {
+bool RaindropArcadeMechanics::can_hit_note_tail(double time, RuntimeNote *note) {
     return !note->is_head_enabled() && note->was_hit();
 }
 
-void RaindropArcadeMechanics::JudgeScratch(double SongTime, RuntimeNote *Note, uint32_t Lane,
-                                           EScratchState newScratchState, EScratchState oldScratchState) {
+void RaindropArcadeMechanics::judge_scratch(double song_time, RuntimeNote *note, uint32_t lane,
+                                           EScratchState new_scratch_state, EScratchState old_scratch_state) {
 
-    if ((newScratchState != SCR_NEUTRAL && oldScratchState == SCR_NEUTRAL) ||
-        (oldScratchState == SCR_UP && newScratchState == SCR_DOWN) ||
-        (oldScratchState == SCR_DOWN && newScratchState == SCR_UP)) {
+    if ((new_scratch_state != SCR_NEUTRAL && old_scratch_state == SCR_NEUTRAL) ||
+        (old_scratch_state == SCR_UP && new_scratch_state == SCR_DOWN) ||
+        (old_scratch_state == SCR_DOWN && new_scratch_state == SCR_UP)) {
 
-        PerformJudgement(SongTime, Note, Lane);
+        perform_judgement(song_time, note, lane);
     }
 }
 
-void RaindropArcadeMechanics::PerformJudgement(double SongTime, RuntimeNote *Note, uint32_t Lane) {
+void RaindropArcadeMechanics::perform_judgement(double song_time, RuntimeNote *note, uint32_t lane) {
     // From neutral or opposite scratch, or key press, trigger the head.
-    double dev = 1000. * (SongTime - Note->get_start_time());
-    if (IsEarlyMiss(SongTime, Note)) {
-        notify_miss(dev, Lane, Note->is_hold(), false, true);
+    double dev = 1000. * (song_time - note->get_start_time());
+    if (is_early_miss(song_time, note)) {
+        notify_miss(dev, lane, note->is_hold(), false, true);
     } else {
         // Heads, Non-holds
-        if (Note->is_head_enabled() && !Note->was_hit()) {
+        if (note->is_head_enabled() && !note->was_hit()) {
             // Within miss judgement?
-            if (!IsBmBadJudge(SongTime, Note)) {
+            if (!is_bm_bad_judge(song_time, note)) {
                 // Hit head
-                Note->hit();
-                notify_hit(dev, Lane, Note->is_hold(), false);
+                note->hit();
+                notify_hit(dev, lane, note->is_hold(), false);
 
-                play_keysound(Note->get_sound());
+                play_keysound(note->get_sound());
 
-                if (Note->is_hold()) {
-                    set_lane_holding_state(Lane, true);
-                    Note->disable_head();
+                if (note->is_hold()) {
+                    set_lane_holding_state(lane, true);
+                    note->disable_head();
                 } else {
-                    Note->disable();
-                    Note->make_invisible(); // Should we do this?
+                    note->disable();
+                    note->make_invisible(); // Should we do this?
                 }
 
             } else {
                 // Completely disable head or note
-                Note->fail_hit();
+                note->fail_hit();
 
-                if (Note->is_hold())
-                    Note->disable_head();
+                if (note->is_hold())
+                    note->disable_head();
                 else
-                    Note->disable();
+                    note->disable();
 
-                notify_miss(dev, Lane, Note->is_hold(), false, false);
+                notify_miss(dev, lane, note->is_hold(), false, false);
             }
         } else { // Hold Tails
 
-            Note->disable();
+            note->disable();
 
-            double tdev = (Note->get_end_time() - SongTime) * 1000.;
+            double tdev = (note->get_end_time() - song_time) * 1000.;
             // Tail is within judge window, and head was hit
-            if (abs(tdev) < PlayerScoreKeeper->get_judgment_window(SKJ_W3)
-                && Note->was_hit()) {
-                Note->hit();
-                notify_hit(tdev, Lane, Note->is_hold(), true);
+            if (abs(tdev) < player_score_keeper_->get_judgment_window(SKJ_W3)
+                && note->was_hit()) {
+                note->hit();
+                notify_hit(tdev, lane, note->is_hold(), true);
             } else { // Tail outside judgement
-                Note->fail_hit();
-                notify_miss(dev, Lane, Note->is_hold(), false, false);
+                note->fail_hit();
+                notify_miss(dev, lane, note->is_hold(), false, false);
             }
 
-            set_lane_holding_state(Lane, false);
+            set_lane_holding_state(lane, false);
         }
     }
 }
 
 RaindropArcadeMechanics::RaindropArcadeMechanics() {
-    ScratchState[0] = ScratchState[1] = SCR_NEUTRAL;
+    scratch_state_[0] = scratch_state_[1] = SCR_NEUTRAL;
 }
 
-bool RaindropArcadeMechanics::OnUpdate(double SongTime, RuntimeNote *Note, uint32_t Lane) {
-    if (!Note->is_enabled()) return false;
+bool RaindropArcadeMechanics::on_update(double song_time, RuntimeNote *note, uint32_t lane) {
+    if (!note->is_enabled()) return false;
 
-    double miss_time = PlayerScoreKeeper->get_judgment_window(SKJ_W3);
-    double dev = (SongTime - Note->get_start_time()) * 1000.;
-    double tail_dev = (SongTime - Note->get_end_time()) * 1000.;
+    double miss_time = player_score_keeper_->get_judgment_window(SKJ_W3);
+    double dev = (song_time - note->get_start_time()) * 1000.;
+    double tail_dev = (song_time - note->get_end_time()) * 1000.;
 
-    if ((dev > miss_time && Note->is_head_enabled()) ||  // Judge head only if not hit or regular note
-        (tail_dev > miss_time && !Note->is_head_enabled())) { // Judge tail regardless of whether it was hit or not
+    if ((dev > miss_time && note->is_head_enabled()) ||  // Judge head only if not hit or regular note
+        (tail_dev > miss_time && !note->is_head_enabled())) { // Judge tail regardless of whether it was hit or not
 
-        Note->failed_hit();
+        note->failed_hit();
 
         // Check for nonhold or deactivated head
-        if (!Note->is_hold() || !Note->is_head_enabled()) {
-            Note->disable();
+        if (!note->is_hold() || !note->is_head_enabled()) {
+            note->disable();
 
-            if (Note->was_hit() && Note->is_hold()) {
-                set_lane_holding_state(Lane, false);
+            if (note->was_hit() && note->is_hold()) {
+                set_lane_holding_state(lane, false);
             }
         }
 
         // Check hold with activated head
-        if (Note->is_hold() && Note->is_head_enabled())
-            Note->disable_head();
+        if (note->is_hold() && note->is_head_enabled())
+            note->disable_head();
 
         // Will "emergingly" miss head and tail at their respective times.
 
-        notify_miss(dev, Lane, Note->is_hold(), false, false);
+        notify_miss(dev, lane, note->is_hold(), false, false);
     }
 
     return false;
 }
 
-bool RaindropArcadeMechanics::OnPressLane(double SongTime, RuntimeNote *Note, uint32_t Lane) {
-    if (!Note->is_enabled()) return false;
-    if (!InJudgeCutoff(SongTime, Note)) return false;
-    if (!CanHitNoteHead(SongTime, Note)) return false;
+bool RaindropArcadeMechanics::on_press_lane(double song_time, RuntimeNote *note, uint32_t lane) {
+    if (!note->is_enabled()) return false;
+    if (!in_judge_cutoff(song_time, note)) return false;
+    if (!can_hit_note_head(song_time, note)) return false;
 
-    PerformJudgement(SongTime, Note, Lane);
+    perform_judgement(song_time, note, lane);
     return true;
 }
 
-bool RaindropArcadeMechanics::OnReleaseLane(double SongTime, RuntimeNote *Note, uint32_t Lane) {
-    if (!Note->is_enabled()) return false;
-    if (!InJudgeCutoff(SongTime, Note)) return false;
-    if (!CanHitNoteTail(SongTime, Note)) return false;
+bool RaindropArcadeMechanics::on_release_lane(double song_time, RuntimeNote *note, uint32_t lane) {
+    if (!note->is_enabled()) return false;
+    if (!in_judge_cutoff(song_time, note)) return false;
+    if (!can_hit_note_tail(song_time, note)) return false;
 
-    PerformJudgement(SongTime, Note, Lane);
+    perform_judgement(song_time, note, lane);
     return true;
 }
 
-bool RaindropArcadeMechanics::OnScratchUp(double SongTime, RuntimeNote *Note, uint32_t Lane) {
-    if (!Note->is_enabled()) return false;
-    int scratch = GetScratchForLane(Lane);
-    bool judgeHead = CanHitNoteHead(SongTime, Note);
-    bool judgeTail = CanHitNoteTail(SongTime, Note);
-    if (!judgeHead && !judgeTail) return false;
+bool RaindropArcadeMechanics::on_scratch_up(double song_time, RuntimeNote *note, uint32_t lane) {
+    if (!note->is_enabled()) return false;
+    int scratch = get_scratch_for_lane(lane);
+    bool judge_head = can_hit_note_head(song_time, note);
+    bool judge_tail = can_hit_note_tail(song_time, note);
+    if (!judge_head && !judge_tail) return false;
 
-    JudgeScratch(SongTime, Note, Lane, SCR_UP, ScratchState[scratch]);
-    ScratchState[scratch] = SCR_UP;
+    judge_scratch(song_time, note, lane, SCR_UP, scratch_state_[scratch]);
+    scratch_state_[scratch] = SCR_UP;
     return true;
 }
 
-bool RaindropArcadeMechanics::OnScratchDown(double SongTime, RuntimeNote *Note, uint32_t Lane) {
-    if (!Note->is_enabled()) return false;
-    int scratch = GetScratchForLane(Lane);
-    bool judgeHead = CanHitNoteHead(SongTime, Note);
-    bool judgeTail = CanHitNoteTail(SongTime, Note);
-    if (!judgeHead && !judgeTail) return false;
+bool RaindropArcadeMechanics::on_scratch_down(double song_time, RuntimeNote *note, uint32_t lane) {
+    if (!note->is_enabled()) return false;
+    int scratch = get_scratch_for_lane(lane);
+    bool judge_head = can_hit_note_head(song_time, note);
+    bool judge_tail = can_hit_note_tail(song_time, note);
+    if (!judge_head && !judge_tail) return false;
 
-    JudgeScratch(SongTime, Note, Lane, SCR_DOWN, ScratchState[scratch]);
-    ScratchState[scratch] = SCR_DOWN;
+    judge_scratch(song_time, note, lane, SCR_DOWN, scratch_state_[scratch]);
+    scratch_state_[scratch] = SCR_DOWN;
     return true;
 }
 
-bool RaindropArcadeMechanics::OnScratchNeutral(double SongTime, RuntimeNote *Note, uint32_t Lane) {
-    if (!Note->is_enabled()) return false;
-    int scratch = GetScratchForLane(Lane);
-    bool judgeHead = CanHitNoteHead(SongTime, Note);
-    bool judgeTail = CanHitNoteTail(SongTime, Note);
-    if (!judgeHead && !judgeTail) return false;
+bool RaindropArcadeMechanics::on_scratch_neutral(double song_time, RuntimeNote *note, uint32_t lane) {
+    if (!note->is_enabled()) return false;
+    int scratch = get_scratch_for_lane(lane);
+    bool judge_head = can_hit_note_head(song_time, note);
+    bool judge_tail = can_hit_note_tail(song_time, note);
+    if (!judge_head && !judge_tail) return false;
 
-    if (ScratchState[scratch] != SCR_NEUTRAL) {
+    if (scratch_state_[scratch] != SCR_NEUTRAL) {
         // It's an active hold? Then kill it.
-        if (Note->was_hit() && !Note->is_head_enabled()) {
-            Note->fail_hit();
-            Note->disable();
+        if (note->was_hit() && !note->is_head_enabled()) {
+            note->fail_hit();
+            note->disable();
         }
     } // else do nothing
 
-    ScratchState[scratch] = SCR_NEUTRAL;
+    scratch_state_[scratch] = SCR_NEUTRAL;
     return true;
 }
 
-TimingType RaindropArcadeMechanics::GetTimingKind() {
+TimingType RaindropArcadeMechanics::get_timing_kind() {
     return TT_TIME;
 }

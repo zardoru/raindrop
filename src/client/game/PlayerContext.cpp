@@ -503,15 +503,15 @@ void PlayerContext::run_measures(const double time) {
             if (!can_judge())
                 continue; // don't check for judgments after stage has failed.
 
-            if (mechanics_set_->OnUpdate(used_time, m, k))
+            if (mechanics_set_->on_update(used_time, m, k))
                 break;
         } // end for notes
     } // end for channels
 }
 
 
-void PlayerContext::play_lane_keysound(const uint32_t Lane) const {
-    const auto TN = gear_state_.current_keysounds[Lane];
+void PlayerContext::play_lane_keysound(const uint32_t lane) const {
+    const auto TN = gear_state_.current_keysounds[lane];
     if (!TN) return;
 
     play_keysound(TN->get_sound());
@@ -608,7 +608,7 @@ void PlayerContext::set_playable_data(std::shared_ptr<otoworm::Chart> chart, con
         type = SPEEDTYPE_MULTIPLIER;
 
         replay_data_->add_playback_listener([this](const Replay::Entry entry) {
-            this->on_player_key_event(entry.Time + this->get_drift(), entry.Down, entry.Lane);
+            this->on_player_key_event(entry.time + this->get_drift(), entry.down, entry.lane);
         });
     }
 
@@ -708,7 +708,7 @@ int PlayerContext::get_pacemaker_value(const bool bm) const {
 }
 
 double PlayerContext::get_chart_time_at(const double time) const {
-    if (mechanics_set_->GetTimingKind() == TT_BEATS) {
+    if (mechanics_set_->get_timing_kind() == TT_BEATS) {
         return chart_state_.get_beat_at(time);
     } else
         return time;
@@ -870,12 +870,12 @@ void PlayerContext::setup_script_context(LuaManager *scripts) {
             .addFunction("GetPacemakerValue", &PlayerContext::get_pacemaker_value)
             /// Get if there's a hold currently being held at the given lane
             // @function IsHoldActive
-            // @param lane Lane, 0-index based
+            // @param lane lane, 0-index based
             // @return A boolean, stating whether the lane has a hold currently being pressed.
             .addFunction("IsHoldActive", &PlayerContext::get_is_held_key)
             /// Get the closest note time to the last key press' timestamp.
             // @function GetClosestNoteTime
-            // @param lane Lane, 0-index based
+            // @param lane lane, 0-index based
             // @return Closest note time, in MS.
             .addFunction("GetClosestNoteTime", &PlayerContext::get_closest_note_time)
             /// Get current player @{ScoreKeeper7K} instance
@@ -984,7 +984,7 @@ void PlayerContext::judge_lane(const uint32_t lane, const double Time) {
         if (!m->is_judgable())
             continue;
 
-        if (mechanics_set_->OnPressLane(Time, m, lane)) {
+        if (mechanics_set_->on_press_lane(Time, m, lane)) {
             return; // we judged a note in this lane, so we're done.
         }
     }
@@ -993,17 +993,17 @@ void PlayerContext::judge_lane(const uint32_t lane, const double Time) {
         play_keysound(gear_state_.current_keysounds[lane]->get_sound());
 }
 
-void PlayerContext::release_lane(const uint32_t Lane, const double Time) {
-    gear_key_event(Lane, false);
+void PlayerContext::release_lane(const uint32_t lane, const double Time) {
+    gear_key_event(lane, false);
 
     if (!can_judge()) return; // don't judge any more after stage is failed.
 
     auto &notes_by_channel = chart_state_.notes_time_ordered;
-    auto start = notes_by_channel[Lane].begin();
-    auto end = notes_by_channel[Lane].end();
+    auto start = notes_by_channel[lane].begin();
+    auto end = notes_by_channel[lane].end();
 
     // Use this optimization when we can make sure vertical properly aligns up with time.
-    //if (ChartState.IsNoteTimeSorted())
+    //if (chart_state.IsNoteTimeSorted())
     // In comparison to the regular compare function, since end times are what matter with holds (or lift events, where start == end)
     // this does the job as it should instead of comparing start times where hold tails would be completely ignored.
     const auto threshold = (player_score_keeper_->is_o2jam()
@@ -1014,19 +1014,19 @@ void PlayerContext::release_lane(const uint32_t Lane, const double Time) {
     const auto time_higher = (Time + threshold);
 
     auto note_end_before = [&](const RuntimeNoteHandle handle, const double time) {
-        return chart_state_.note_at(Lane, handle)->get_end_time() < time;
+        return chart_state_.note_at(lane, handle)->get_end_time() < time;
     };
     auto time_before_note_end = [&](const double time, const RuntimeNoteHandle handle) {
-        return time < chart_state_.note_at(Lane, handle)->get_end_time();
+        return time < chart_state_.note_at(lane, handle)->get_end_time();
     };
 
-    start = std::ranges::lower_bound(notes_by_channel[Lane]
+    start = std::ranges::lower_bound(notes_by_channel[lane]
                                      , time_lower, note_end_before);
 
     // Locate the first hold that we can judge in this range (Pending holds. Similar to what was done when drawing.)
     const auto rStart = std::reverse_iterator<RuntimeNoteHandleList::iterator>(start);
-    for (auto i = rStart; i != notes_by_channel[Lane].rend(); ++i) {
-        const auto ip = chart_state_.note_at(Lane, *i);
+    for (auto i = rStart; i != notes_by_channel[lane].rend(); ++i) {
+        const auto ip = chart_state_.note_at(lane, *i);
         if (!ip) continue;
         if (ip->is_hold()
             && ip->is_enabled()
@@ -1036,18 +1036,18 @@ void PlayerContext::release_lane(const uint32_t Lane, const double Time) {
             start = i.base() - 1;
     }
 
-    end = std::ranges::upper_bound(notes_by_channel[Lane],
+    end = std::ranges::upper_bound(notes_by_channel[lane],
                                    time_higher,
                                    time_before_note_end);
 
-    if (end != notes_by_channel[Lane].end())
+    if (end != notes_by_channel[lane].end())
         ++end;
 
     for (auto mp = start; mp != end; ++mp) {
-        const auto m = chart_state_.note_at(Lane, *mp);
+        const auto m = chart_state_.note_at(lane, *mp);
         if (!m) continue;
         if (!m->is_judgable()) continue;
-        if (mechanics_set_->OnReleaseLane(Time, m, Lane)) // Are we done judging..?
+        if (mechanics_set_->on_release_lane(Time, m, lane)) // Are we done judging..?
             break;
     }
 }
@@ -1070,13 +1070,13 @@ void PlayerContext::handle_lane_events(const int32_t key, const bool key_down, c
     on_player_key_event(time + judge_offset_, key_down, lane);
 }
 
-void PlayerContext::set_lane_hold_state(const uint32_t Lane, const bool NewState) {
-    gear_state_.is_hold_active[Lane] = NewState;
+void PlayerContext::set_lane_hold_state(const uint32_t lane, const bool NewState) {
+    gear_state_.is_hold_active[lane] = NewState;
 }
 
 // true if holding down key
-bool PlayerContext::get_gear_lane_state(const uint32_t Lane) const {
-    return gear_state_.is_key_down[Lane] != 0;
+bool PlayerContext::get_gear_lane_state(const uint32_t lane) const {
+    return gear_state_.is_key_down[lane] != 0;
 }
 
 bool PlayerContext::bind_keys_to_lanes(const bool use_turntable) {
@@ -1133,7 +1133,7 @@ int PlayerContext::get_current_score_type() const {
 }
 
 int PlayerContext::get_current_system_type() const {
-    return mechanics_set_->GetTimingKind();
+    return mechanics_set_->get_timing_kind();
 }
 
 double PlayerContext::get_drift() const {

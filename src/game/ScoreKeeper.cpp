@@ -142,7 +142,7 @@ namespace rd {
 
     void ScoreKeeper::lifebar_hit(double ms, rd::ScoreKeeperJudgment judgment) {
         for (auto &gauge: gauges) {
-            gauge.second->Update(judgment, true);
+            gauge.second->update(judgment, true);
         }
     }
 
@@ -172,7 +172,7 @@ namespace rd {
         accuracy = accuracy_percent(total_sqdev / judged_notes);
 
         for (auto &gauge : gauges) {
-            gauge.second->Update(SKJ_MISS, early_miss);
+            gauge.second->update(SKJ_MISS, early_miss);
         }
 
         if (!early_miss && !dont_break_combo) {
@@ -297,7 +297,7 @@ namespace rd {
 
     float ScoreKeeper::get_lifebar_amount(int lifebar_amount_type) const {
         if (gauges.find((LifeType)lifebar_amount_type) != gauges.end())
-            return gauges.at((LifeType)lifebar_amount_type)->GetGaugeValue();
+            return gauges.at((LifeType)lifebar_amount_type)->get_gauge_value();
 
         return 0;
    }
@@ -306,14 +306,14 @@ namespace rd {
         bool song_ended = judged_notes == get_max_judgable_notes();
 
         if (gauges.find((LifeType)lifebar_amount_type) != gauges.end())
-            return gauges.at((LifeType)lifebar_amount_type)->HasFailed(song_ended);
+            return gauges.at((LifeType)lifebar_amount_type)->has_failed(song_ended);
 
         return false;
     }
 
     bool ScoreKeeper::has_delayed_failure(int lifebar_type) {
         if (gauges.find((LifeType)lifebar_type) != gauges.end())
-            return gauges[(LifeType)lifebar_type]->HasDelayedFailure();
+            return gauges[(LifeType)lifebar_type]->has_delayed_failure();
 
         return false;
     }
@@ -487,7 +487,7 @@ namespace rd {
     }
 
     void ScoreKeeper::set_osu_hp(float hp) {
-        gauge_osumania.Setup(0, 0, hp);
+        gauge_osumania.setup(0, 0, hp);
     }
 
     double ScoreKeeper::get_ln_tick_interval() {
@@ -501,7 +501,7 @@ namespace rd {
             }
 
             for (auto &gauge : gauges) {
-                gauge.second->Update(SKJ_TICK, false, 0);
+                gauge.second->update(SKJ_TICK, false, 0);
             }
         }
     }

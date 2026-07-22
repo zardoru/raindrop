@@ -2,13 +2,13 @@
 
 namespace rd {
     class GaugeOsuMania : public Gauge {
-        float HP;
-        std::array<double, 7> hp_change;
-        double ln_tick_fill;
+        float hp_;
+        std::array<double, 7> hp_change_;
+        double ln_tick_fill_;
     public:
-        void Reset() override;
-        void DefaultSetup() override;
-        void Setup(double total, long long max, double strictness) override;
-        void Update(ScoreKeeperJudgment skj, bool is_early, float mine_value) override;
+        void reset() override;
+        void default_setup() override;
+        void setup(double total, long long max, double strictness) override;
+        void update(ScoreKeeperJudgment skj, bool is_early, float mine_value) override;
     };
 }

@@ -16,20 +16,20 @@ namespace rd {
 
     protected:
 
-        otoworm::Chart *CurrentChart;
-        std::shared_ptr<ScoreKeeper> PlayerScoreKeeper;
+        otoworm::Chart *current_chart_;
+        std::shared_ptr<ScoreKeeper> player_score_keeper_;
     public:
 
-        bool IsLateHeadMiss(double t, RuntimeNote *note);
+        bool is_late_head_miss(double t, RuntimeNote *note);
 
-        bool InJudgeCutoff(double t, RuntimeNote *note);
+        bool in_judge_cutoff(double t, RuntimeNote *note);
 
-        bool IsEarlyMiss(double t, RuntimeNote *note);
+        bool is_early_miss(double t, RuntimeNote *note);
 
-        bool IsBmBadJudge(double t, RuntimeNote *note);
+        bool is_bm_bad_judge(double t, RuntimeNote *note);
 
         /* returns true if the note is within the timing windows. */
-        bool InHeadCutoff(double t, RuntimeNote *note);
+        bool in_head_cutoff(double t, RuntimeNote *note);
 
         virtual ~Mechanics() = default;
 
@@ -40,53 +40,53 @@ namespace rd {
         HitEvent notify_hit;
         MissEvent notify_miss;
 
-        virtual void transform_notes(RaindropProcessedChart &ChartState);
+        virtual void transform_notes(RaindropProcessedChart &chart_state);
 
-        virtual void configure(otoworm::Chart *chart, std::shared_ptr<ScoreKeeper> scoreKeeper);
-
-        // If returns true, don't judge any more notes.
-        virtual bool OnUpdate(double SongTime, RuntimeNote *Note, uint32_t Lane) = 0;
+        virtual void configure(otoworm::Chart *chart, std::shared_ptr<ScoreKeeper> score_keeper);
 
         // If returns true, don't judge any more notes.
-        virtual bool OnPressLane(double SongTime, RuntimeNote *Note, uint32_t Lane) = 0;
+        virtual bool on_update(double song_time, RuntimeNote *note, uint32_t lane) = 0;
+
+        // If returns true, don't judge any more notes.
+        virtual bool on_press_lane(double song_time, RuntimeNote *note, uint32_t lane) = 0;
 
         // If returns true, don't judge any more notes either.
-        virtual bool OnReleaseLane(double SongTime, RuntimeNote *Note, uint32_t Lane) = 0;
+        virtual bool on_release_lane(double song_time, RuntimeNote *note, uint32_t lane) = 0;
 
-        virtual bool OnScratchUp(double SongTime, RuntimeNote *Note, uint32_t Lane);
+        virtual bool on_scratch_up(double song_time, RuntimeNote *note, uint32_t lane);
 
-        virtual bool OnScratchDown(double SongTime, RuntimeNote *Note, uint32_t Lane);
+        virtual bool on_scratch_down(double song_time, RuntimeNote *note, uint32_t lane);
 
-        virtual bool OnScratchNeutral(double SongTime, RuntimeNote *Note, uint32_t Lane);
+        virtual bool on_scratch_neutral(double song_time, RuntimeNote *note, uint32_t lane);
 
-        virtual TimingType GetTimingKind() = 0;
+        virtual TimingType get_timing_kind() = 0;
     };
 
     class RaindropMechanics : public Mechanics {
-        bool forcedRelease;
-        std::array<double, MAX_CHANNELS> hold_hit_time;
+        bool forced_release_;
+        std::array<double, MAX_CHANNELS> hold_hit_time_;
     public:
-        explicit RaindropMechanics(bool forcedRelease);
+        explicit RaindropMechanics(bool forced_release);
 
-        bool OnUpdate(double SongTime, RuntimeNote *Note, uint32_t Lane) override;
+        bool on_update(double song_time, RuntimeNote *note, uint32_t lane) override;
 
-        bool OnPressLane(double SongTime, RuntimeNote *Note, uint32_t Lane) override;
+        bool on_press_lane(double song_time, RuntimeNote *note, uint32_t lane) override;
 
-        bool OnReleaseLane(double SongTime, RuntimeNote *Note, uint32_t Lane) override;
+        bool on_release_lane(double song_time, RuntimeNote *note, uint32_t lane) override;
 
-        TimingType GetTimingKind() override;
+        TimingType get_timing_kind() override;
     };
 
     class O2JamMechanics : public Mechanics {
     public:
 
-        bool OnUpdate(double SongBeat, RuntimeNote *Note, uint32_t Lane) override;
+        bool on_update(double song_beat, RuntimeNote *note, uint32_t lane) override;
 
-        bool OnPressLane(double SongBeat, RuntimeNote *Note, uint32_t Lane) override;
+        bool on_press_lane(double song_beat, RuntimeNote *note, uint32_t lane) override;
 
-        bool OnReleaseLane(double SongBeat, RuntimeNote *Note, uint32_t Lane) override;
+        bool on_release_lane(double song_beat, RuntimeNote *note, uint32_t lane) override;
 
-        TimingType GetTimingKind() override;
+        TimingType get_timing_kind() override;
     };
 
     class RaindropArcadeMechanics : public Mechanics {
@@ -99,18 +99,18 @@ namespace rd {
 
     private:
         // Left and right (case of double?)
-        EScratchState ScratchState[2];
+        EScratchState scratch_state_[2];
 
-        int GetScratchForLane(uint32_t Lane);
+        int get_scratch_for_lane(uint32_t lane);
 
-        bool CanHitNoteHead(double time, RuntimeNote *note);
+        bool can_hit_note_head(double time, RuntimeNote *note);
 
-        bool CanHitNoteTail(double time, RuntimeNote *note);
+        bool can_hit_note_tail(double time, RuntimeNote *note);
 
-        void JudgeScratch(double SongTime, RuntimeNote *Note, uint32_t Lane, EScratchState newScratchState,
-                          EScratchState oldScratchState);
+        void judge_scratch(double song_time, RuntimeNote *note, uint32_t lane, EScratchState new_scratch_state,
+                          EScratchState old_scratch_state);
 
-        void PerformJudgement(double SongTime, RuntimeNote *Note, uint32_t Lane);
+        void perform_judgement(double song_time, RuntimeNote *note, uint32_t lane);
 
     public:
         RaindropArcadeMechanics();
@@ -118,22 +118,22 @@ namespace rd {
         ~RaindropArcadeMechanics() = default;
 
         // If returns true, don't judge any more notes.
-        bool OnUpdate(double SongTime, RuntimeNote *Note, uint32_t Lane) override;
+        bool on_update(double song_time, RuntimeNote *note, uint32_t lane) override;
 
         // If returns true, don't judge any more notes.
-        bool OnPressLane(double SongTime, RuntimeNote *Note, uint32_t Lane) override;
+        bool on_press_lane(double song_time, RuntimeNote *note, uint32_t lane) override;
 
         // If returns true, don't judge any more notes either.
-        bool OnReleaseLane(double SongTime, RuntimeNote *Note, uint32_t Lane) override;
+        bool on_release_lane(double song_time, RuntimeNote *note, uint32_t lane) override;
 
-        bool OnScratchUp(double SongTime, RuntimeNote *Note, uint32_t Lane) override;
+        bool on_scratch_up(double song_time, RuntimeNote *note, uint32_t lane) override;
 
-        bool OnScratchDown(double SongTime, RuntimeNote *Note, uint32_t Lane) override;
+        bool on_scratch_down(double song_time, RuntimeNote *note, uint32_t lane) override;
 
-        // If Note is null, it didn't happen while an hold was being held
+        // If note is null, it didn't happen while an hold was being held
         // otherwise, it happened while a hold was being held
-        bool OnScratchNeutral(double SongTime, RuntimeNote *Note, uint32_t Lane) override;
+        bool on_scratch_neutral(double song_time, RuntimeNote *note, uint32_t lane) override;
 
-        TimingType GetTimingKind() override;
+        TimingType get_timing_kind() override;
     };
 }

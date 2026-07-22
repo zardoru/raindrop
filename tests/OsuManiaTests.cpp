@@ -113,15 +113,15 @@ TEST_CASE("osu!mania judgments", "[omjudge]") {
         TestRuntimeNote lt(noteData);
 
         lt.get()->hit(); // we need this flag to hit the tail
-        REQUIRE(s.mech.OnReleaseLane(lt.get()->get_end_time(), lt.get(), 0));
+        REQUIRE(s.mech.on_release_lane(lt.get()->get_end_time(), lt.get(), 0));
 
         lt.get()->reset();
         lt.get()->hit();
-        REQUIRE(s.mech.OnReleaseLane(lt.get()->get_end_time() - earlyhitWindow + epsilon, lt.get(), 0));
+        REQUIRE(s.mech.on_release_lane(lt.get()->get_end_time() - earlyhitWindow + epsilon, lt.get(), 0));
 
         lt.get()->reset();
         lt.get()->hit();
-        REQUIRE(s.mech.OnReleaseLane(lt.get()->get_end_time() + lateCutoff - epsilon, lt.get(), 0));
+        REQUIRE(s.mech.on_release_lane(lt.get()->get_end_time() + lateCutoff - epsilon, lt.get(), 0));
     }
 
     SECTION("Long note tails have proper lenience when hit") {
@@ -129,51 +129,51 @@ TEST_CASE("osu!mania judgments", "[omjudge]") {
 
 // update
         lt.get()->hit();
-        REQUIRE_FALSE(s.mech.OnUpdate(lt.get()->get_end_time() - lateCutoff + epsilon, lt.get(), 0));
-        REQUIRE_FALSE(s.mech.OnUpdate(lt.get()->get_end_time() + lateCutoff - epsilon, lt.get(), 0));
-        REQUIRE_FALSE(s.mech.OnUpdate(lt.get()->get_end_time() + epsilon, lt.get(), 0));
+        REQUIRE_FALSE(s.mech.on_update(lt.get()->get_end_time() - lateCutoff + epsilon, lt.get(), 0));
+        REQUIRE_FALSE(s.mech.on_update(lt.get()->get_end_time() + lateCutoff - epsilon, lt.get(), 0));
+        REQUIRE_FALSE(s.mech.on_update(lt.get()->get_end_time() + epsilon, lt.get(), 0));
 
         lt.get()->reset();
         lt.get()->hit();
-        REQUIRE(s.mech.OnUpdate(lt.get()->get_end_time() + lateCutoff + epsilon, lt.get(), 0));
+        REQUIRE(s.mech.on_update(lt.get()->get_end_time() + lateCutoff + epsilon, lt.get(), 0));
 
 
 // release on time
         lt.get()->reset();
         lt.get()->hit();
         int misses = s.sk->get_judgment_count(SKJ_MISS);
-        REQUIRE(s.mech.OnReleaseLane(lt.get()->get_end_time() + lateCutoff - epsilon, lt.get(), 0));
+        REQUIRE(s.mech.on_release_lane(lt.get()->get_end_time() + lateCutoff - epsilon, lt.get(), 0));
         REQUIRE(s.sk->get_judgment_count(SKJ_MISS) == misses);
 
         lt.get()->reset();
         lt.get()->hit();
-        REQUIRE(s.mech.OnReleaseLane(lt.get()->get_end_time() + epsilon, lt.get(), 0));
+        REQUIRE(s.mech.on_release_lane(lt.get()->get_end_time() + epsilon, lt.get(), 0));
         REQUIRE(s.sk->get_judgment_count(SKJ_MISS) == misses);
 
         lt.get()->reset();
         lt.get()->hit();
-        REQUIRE(s.mech.OnReleaseLane(lt.get()->get_end_time() - lateCutoff + epsilon, lt.get(), 0));
+        REQUIRE(s.mech.on_release_lane(lt.get()->get_end_time() - lateCutoff + epsilon, lt.get(), 0));
         REQUIRE(s.sk->get_judgment_count(SKJ_MISS) == misses);
 
 // too early/late release
         lt.get()->reset();
         lt.get()->hit();
-        REQUIRE(s.mech.OnReleaseLane(lt.get()->get_end_time() - earlyhitWindow - epsilon, lt.get(), 0));
+        REQUIRE(s.mech.on_release_lane(lt.get()->get_end_time() - earlyhitWindow - epsilon, lt.get(), 0));
         REQUIRE(s.sk->get_judgment_count(SKJ_MISS) == misses + 1);
 
         lt.get()->reset();
         lt.get()->hit();
-        REQUIRE(s.mech.OnReleaseLane(lt.get()->get_end_time() + lateCutoff + epsilon, lt.get(), 0));
+        REQUIRE(s.mech.on_release_lane(lt.get()->get_end_time() + lateCutoff + epsilon, lt.get(), 0));
         REQUIRE(s.sk->get_judgment_count(SKJ_MISS) == misses + 2);
     }
 
     SECTION("Long note tails miss only after the tail end is done when not hit") {
         TestRuntimeNote lt(noteData);
-        REQUIRE_FALSE(s.mech.OnUpdate(5, lt.get(), 0));
+        REQUIRE_FALSE(s.mech.on_update(5, lt.get(), 0));
 
         lt.get()->disable_head(); // otherwise, it'll miss the head
-        REQUIRE_FALSE(s.mech.OnUpdate(t.get()->get_end_time() - epsilon, lt.get(), 0));
-        REQUIRE(s.mech.OnUpdate(t.get()->get_end_time() + epsilon, lt.get(), 0));
+        REQUIRE_FALSE(s.mech.on_update(t.get()->get_end_time() - epsilon, lt.get(), 0));
+        REQUIRE(s.mech.on_update(t.get()->get_end_time() + epsilon, lt.get(), 0));
     }
 
 
@@ -213,7 +213,7 @@ TEST_CASE("osu!mania judgments", "[omjudge]") {
 
         TestRuntimeNote t(otoworm::NoteData{ 0, 0 });
         REQUIRE(s.sk->get_score(ST_COMBO) == 50);
-        REQUIRE(s.mech.OnPressLane((-s.sk->get_early_hit_cutoff_ms() + 1) / 1000.0, t.get(), 0) == true);
+        REQUIRE(s.mech.on_press_lane((-s.sk->get_early_hit_cutoff_ms() + 1) / 1000.0, t.get(), 0) == true);
         REQUIRE(s.sk->get_score(ST_COMBO) == 0);
 
         /* late version */
@@ -225,7 +225,7 @@ TEST_CASE("osu!mania judgments", "[omjudge]") {
 
         t.get()->reset();
         REQUIRE(s.sk->get_score(ST_COMBO) == 50);
-        REQUIRE_FALSE(s.mech.OnPressLane((s.sk->get_early_hit_cutoff_ms() - 1) / 1000.0, t.get(), 0));
+        REQUIRE_FALSE(s.mech.on_press_lane((s.sk->get_early_hit_cutoff_ms() - 1) / 1000.0, t.get(), 0));
         REQUIRE(s.sk->get_score(ST_COMBO) == 50);
     }
 
@@ -247,20 +247,20 @@ TEST_CASE("osu!mania judgments", "[omjudge]") {
         auto od = 0;
         for (const auto &target: htf) {
             GaugeOsuMania gauge;
-            gauge.Setup(0, 0, od);
+            gauge.setup(0, 0, od);
             od++;
 
             auto mtf = 0;
-            while (gauge.GetGaugeValue() > 0) {
-                gauge.Update(SKJ_MISS, false, 0);
+            while (gauge.get_gauge_value() > 0) {
+                gauge.update(SKJ_MISS, false, 0);
                 mtf ++;
             }
 
             INFO("OD " << od - 1 << " Misses To Fail = " << mtf);
 
             auto test_htf = 0;
-            while (gauge.GetGaugeValue() < 1) {
-                gauge.Update(SKJ_W1, false, 0);
+            while (gauge.get_gauge_value() < 1) {
+                gauge.update(SKJ_W1, false, 0);
                 test_htf++;
             }
 
@@ -286,16 +286,16 @@ TEST_CASE("osu!mania judgments", "[omjudge]") {
         auto od = 0;
         for (const auto &target: mtf) {
             GaugeOsuMania gauge;
-            gauge.Setup(0, 0, od);
+            gauge.setup(0, 0, od);
 
             for (int i = 0; i < target - 1; i++) {
-                gauge.Update(SKJ_MISS, false, 0);
+                gauge.update(SKJ_MISS, false, 0);
                 INFO(od << " - " << i << "/" << target);
-                REQUIRE(gauge.GetGaugeValue() > 0);
+                REQUIRE(gauge.get_gauge_value() > 0);
             }
 
-            gauge.Update(SKJ_MISS, false, 0);
-            REQUIRE(gauge.GetGaugeValue() == 0);
+            gauge.update(SKJ_MISS, false, 0);
+            REQUIRE(gauge.get_gauge_value() == 0);
             od += 1;
         }
     }

@@ -75,16 +75,16 @@ TEST_CASE("Raindrop Mechanics (general behaviour)", "[general]")
 			0, 0
 		});
 
-		REQUIRE(s.mech.OnPressLane(0, t.get(), 0));
-		REQUIRE_FALSE(s.mech.OnPressLane(0, t.get(), 0));
+		REQUIRE(s.mech.on_press_lane(0, t.get(), 0));
+		REQUIRE_FALSE(s.mech.on_press_lane(0, t.get(), 0));
 
 		t.get()->reset();
-		REQUIRE(s.mech.OnUpdate(lateMissThreshold + epsilon, t.get(), 0));
-		REQUIRE_FALSE(s.mech.OnUpdate(lateMissThreshold + epsilon, t.get(), 0));
+		REQUIRE(s.mech.on_update(lateMissThreshold + epsilon, t.get(), 0));
+		REQUIRE_FALSE(s.mech.on_update(lateMissThreshold + epsilon, t.get(), 0));
 
 		t.get()->reset();
-		REQUIRE(s.mech.OnUpdate(lateMissThreshold + epsilon, t.get(), 0));
-		REQUIRE_FALSE(s.mech.OnPressLane(0, t.get(), 0));
+		REQUIRE(s.mech.on_update(lateMissThreshold + epsilon, t.get(), 0));
+		REQUIRE_FALSE(s.mech.on_press_lane(0, t.get(), 0));
 	}
 }
 
@@ -98,18 +98,18 @@ TEST_CASE("Raindrop Mechanics (BMS tests)", "[raindropbms]") {
 		});
 
 		auto t1 = t.get()->get_start_time() - earlyMiss + 0.001;
-		REQUIRE(s.mech.IsEarlyMiss(t1, t.get()));
-		REQUIRE(s.mech.OnPressLane(t1, t.get(), 0));
+		REQUIRE(s.mech.is_early_miss(t1, t.get()));
+		REQUIRE(s.mech.on_press_lane(t1, t.get(), 0));
 
 		auto t2 = t.get()->get_start_time() - earlyMiss + epsilon;
 		t.get()->reset();
-		REQUIRE(s.mech.IsEarlyMiss(t2, t.get()));
-		REQUIRE(s.mech.OnPressLane(t2, t.get(), 0));
+		REQUIRE(s.mech.is_early_miss(t2, t.get()));
+		REQUIRE(s.mech.on_press_lane(t2, t.get(), 0));
 
 		auto t3 = t.get()->get_start_time() - earlyMiss - epsilon;
 		t.get()->reset();
-		REQUIRE_FALSE(s.mech.IsEarlyMiss(t3, t.get()));
-		REQUIRE_FALSE(s.mech.OnPressLane(t3, t.get(), 0));
+		REQUIRE_FALSE(s.mech.is_early_miss(t3, t.get()));
+		REQUIRE_FALSE(s.mech.on_press_lane(t3, t.get(), 0));
 	}
 
 	double hitwindow = s.sk->get_early_hit_cutoff_ms();
@@ -150,7 +150,7 @@ TEST_CASE("Raindrop Mechanics (BMS tests)", "[raindropbms]") {
 		double latemiss = s.sk->get_late_miss_cutoff_ms();
 
 		int misses = s.sk->get_judgment_count(SKJ_MISS);
-		REQUIRE(s.mech.OnUpdate(latemiss + epsilon, t.get(), 0));
+		REQUIRE(s.mech.on_update(latemiss + epsilon, t.get(), 0));
 		REQUIRE(s.sk->get_judgment_count(SKJ_MISS) == misses + 1);
 	}
 
@@ -172,14 +172,14 @@ TEST_CASE("Raindrop Mechanics (Stepmania - LN tails)", "[raindropmechsettails]")
 			});
 
 		// that is inside the judgement area
-		REQUIRE_FALSE(s.mech.OnUpdate(0, t.get(), 0));
+		REQUIRE_FALSE(s.mech.on_update(0, t.get(), 0));
 
 		TestRuntimeNote t2(otoworm::NoteData{
 			100, 100 + tailTime
 			});
 
 		// that is outside the judgment area
-		REQUIRE_FALSE(s.mech.OnUpdate(0, t2.get(), 0));
+		REQUIRE_FALSE(s.mech.on_update(0, t2.get(), 0));
 	}
 	
 	SECTION("Tails are not missed when the head is still active") {
@@ -191,10 +191,10 @@ TEST_CASE("Raindrop Mechanics (Stepmania - LN tails)", "[raindropmechsettails]")
 		});
 
 		// Simple tail time < time
-		REQUIRE_FALSE(s.mech.OnUpdate(0.06, t.get(), 0));
+		REQUIRE_FALSE(s.mech.on_update(0.06, t.get(), 0));
 
 		// Tail time < time, head can still be hit, should not miss!
-		REQUIRE_FALSE(s.mech.OnUpdate(tailTime + missCutoff - 0.002, t.get(), 0));
+		REQUIRE_FALSE(s.mech.on_update(tailTime + missCutoff - 0.002, t.get(), 0));
 	}
 
     SECTION("No runtime errors across a big range of time") {

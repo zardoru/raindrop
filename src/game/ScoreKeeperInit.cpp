@@ -78,8 +78,8 @@ namespace rd {
         };
 
         for (auto &gauge: gauges) {
-            gauge.second->DefaultSetup();
-            gauge.second->Reset();
+            gauge.second->default_setup();
+            gauge.second->reset();
         }
 
         timings = {
@@ -154,24 +154,24 @@ namespace rd {
         }
 
         // recalculate groove lifebar increments.
-        gauge_death.Setup(lifebar_total, get_max_judgable_notes(), 0);
-        gauge_exhard.Setup(lifebar_total, get_max_judgable_notes(), 0);
-        gauge_survival.Setup(lifebar_total, get_max_judgable_notes(), 0);
-        gauge_easy.Setup(lifebar_total, get_max_judgable_notes(), 0);
-        gauge_groove.Setup(lifebar_total, get_max_judgable_notes(), 0);
-        gauge_lr2_assist.Setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
-        gauge_lr2_easy.Setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
-        gauge_lr2_normal.Setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
-        gauge_lr2_hard.Setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
-        gauge_lr2_exhard.Setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
-        gauge_lr2_hazard.Setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
-        gauge_lr2_class.Setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
-        gauge_lr2_exclass.Setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
-        gauge_lr2_exhardclass.Setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
+        gauge_death.setup(lifebar_total, get_max_judgable_notes(), 0);
+        gauge_exhard.setup(lifebar_total, get_max_judgable_notes(), 0);
+        gauge_survival.setup(lifebar_total, get_max_judgable_notes(), 0);
+        gauge_easy.setup(lifebar_total, get_max_judgable_notes(), 0);
+        gauge_groove.setup(lifebar_total, get_max_judgable_notes(), 0);
+        gauge_lr2_assist.setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
+        gauge_lr2_easy.setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
+        gauge_lr2_normal.setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
+        gauge_lr2_hard.setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
+        gauge_lr2_exhard.setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
+        gauge_lr2_hazard.setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
+        gauge_lr2_class.setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
+        gauge_lr2_exclass.setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
+        gauge_lr2_exhardclass.setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
     }
 
     void ScoreKeeper::set_o2_lifebar_rating(int difficulty) {
-        gauge_o2jam.Setup(0, 0, difficulty);
+        gauge_o2jam.setup(0, 0, difficulty);
     }
 
    void ScoreKeeper::set_judge_rank(int rank) {

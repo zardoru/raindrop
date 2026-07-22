@@ -8,55 +8,55 @@ namespace rd {
     template<typename GaugeParameters>
     class GaugeBMS : public Gauge {
     protected:
-        double lifebar_increment{}, lifebar_decrement{};
+        double lifebar_increment_{}, lifebar_decrement_{};
     public:
-        void DefaultSetup() override {
-            Setup(100, 100, 0);
+        void default_setup() override {
+            setup(100, 100, 0);
         }
 
         /* relative_total: #TOTAL / total_score_objects_with_2x_holds */
-        void Setup(double total, long long max_notes, double strictness) override {
-            lifebar_increment = clamp(
+        void setup(double total, long long max_notes, double strictness) override {
+            lifebar_increment_ = clamp(
                     total / max_notes / GaugeParameters::increase_total_divider,
                     GaugeParameters::min_increment,
                     GaugeParameters::max_increment
             );
-            lifebar_decrement = clamp(
+            lifebar_decrement_ = clamp(
                     total / max_notes / GaugeParameters::decrease_total_divider,
                     GaugeParameters::min_decrement,
                     GaugeParameters::max_decrement
             );
         };
 
-        void Reset() override {
-            lifebar_amount = GaugeParameters::reset_value;
+        void reset() override {
+            lifebar_amount_ = GaugeParameters::reset_value;
         }
 
-        void Update(ScoreKeeperJudgment skj, bool is_early, float mine_value) override {
+        void update(ScoreKeeperJudgment skj, bool is_early, float mine_value) override {
             if (skj == SKJ_NONE) return;
             if (skj == SKJ_TICK) return;
             if (skj == SKJ_MINE) {
-                lifebar_amount -= mine_value;
+                lifebar_amount_ -= mine_value;
             } else if (skj > SKJ_W3) { /* bad, miss */
                 if (is_early) // miss tier 1 (early miss)
-                    lifebar_amount -= lifebar_decrement * GaugeParameters::early_miss_mult;
+                    lifebar_amount_ -= lifebar_decrement_ * GaugeParameters::early_miss_mult;
                 else // miss tier 2 (late miss)
-                    lifebar_amount -= lifebar_decrement * GaugeParameters::late_miss_mult;
+                    lifebar_amount_ -= lifebar_decrement_ * GaugeParameters::late_miss_mult;
             } else if (skj <= SKJ_W3)  { /* xgreat, pgreat, great*/
-                lifebar_amount += lifebar_increment;
+                lifebar_amount_ += lifebar_increment_;
             }
 
-            lifebar_amount = clamp(lifebar_amount, 0.0, 1.0);
+            lifebar_amount_ = clamp(lifebar_amount_, 0.0, 1.0);
         }
 
-        bool HasFailed(bool song_ended) override {
+        bool has_failed(bool song_ended) override {
             if (GaugeParameters::pass_threshold != 0)
-                return song_ended && lifebar_amount < GaugeParameters::pass_threshold;
+                return song_ended && lifebar_amount_ < GaugeParameters::pass_threshold;
             else
-                return lifebar_amount <= 0;
+                return lifebar_amount_ <= 0;
         }
 
-        bool HasDelayedFailure() override {
+        bool has_delayed_failure() override {
             return GaugeParameters::pass_threshold != 0;
         }
 
