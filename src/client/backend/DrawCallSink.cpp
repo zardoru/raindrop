@@ -136,15 +136,15 @@ void DrawCallSink::draw(const Handle handle) {
                                 bucket.line_ends[slot].x, bucket.line_ends[slot].y};
         line_vbo_->assign(points);
         constexpr auto identity = glm::identity<Mat4>();
-        renderer::set_default_shader_parameters(true, false, false, false);
+        renderer::set_default_shader_parameters(false);
 		renderer::Shader::Default::set_color(bucket.line_colors[slot].red, bucket.line_colors[slot].green,
                                            bucket.line_colors[slot].blue, bucket.line_colors[slot].alpha);
-		renderer::Shader::set_uniform(renderer::Shader::Default::get_uniform(renderer::U_MODELVIEW), &identity[0][0]);
+		renderer::Shader::set_uniform(renderer::Shader::Default::uniform(renderer::Shader::Default::Uniform::ModelView), &identity[0][0]);
         line_vbo_->bind();
-		glVertexAttribPointer(renderer::Shader::enable_attrib_array(renderer::Shader::Default::get_uniform(renderer::A_POSITION)),
+		glVertexAttribPointer(renderer::Shader::enable_attrib_array(renderer::A_POSITION),
                               2, GL_FLOAT, GL_FALSE, 0, nullptr);
         glDrawArrays(GL_LINES, 0, 2);
-		renderer::Shader::disable_attrib_array(renderer::Shader::Default::get_uniform(renderer::A_POSITION));
+		renderer::Shader::disable_attrib_array(renderer::A_POSITION);
         Texture2D::force_rebind();
     }
     bucket.drawn[slot] = true;

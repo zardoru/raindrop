@@ -50,6 +50,7 @@ public:
     void set_crop_by_pixels(int32_t x1, int32_t x2, int32_t y1, int32_t y2);
 
     void emit_draw_calls(DrawCallSink &sink) override;
+    void emit_draw_calls(DrawCallSink &sink, renderer::Shader *shader_override);
     virtual void invalidate();
 
     void bind_texture_vbo() const;
@@ -60,7 +61,7 @@ private:
 
 protected:
     void update_texture();
-    bool should_draw() const;
+    bool should_draw(const renderer::Shader *shader = nullptr) const;
 
     // these are so we can arrange the layout easily
 protected:
@@ -89,7 +90,5 @@ public:
     bool centered; // 0 for topleft, 1 for center
 
     bool scissor;
-
-    bool black_to_transparent; // If enabled, transforms black pixels into transparent pixels.
 
 };

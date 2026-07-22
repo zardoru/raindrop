@@ -16,20 +16,13 @@ namespace renderer {
 		EBlendMode blend_mode = BLEND_ALPHA;
 		ColorRGBA color = { 1, 1, 1, 1 };
 		bool centered = false;
-		bool invert_color = false;
-		bool black_to_transparent = false;
-		bool replace_color = false;
-		int8_t hidden_mode = -1;
 		bool configure_default_shader = true;
 		bool configure_geometry = true;
 		bool finalize = true;
 	};
 
 	void initialize();
-	void set_default_shader_parameters(bool invert_color,
-                               bool centered,
-                               bool black_to_transparent = false, bool replace_color = false,
-                               int8_t hidden_mode = -1);
+	void set_default_shader_parameters(bool centered);
 
 	void set_texture_parameters(std::string param_src);
 

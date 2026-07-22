@@ -28,8 +28,6 @@
 #include "Sprite.h"
 #include "Font.h"
 #include "BitmapFont.h"
-#include "Shader.h"
-
 #include "../structure/Configuration.h"
 
 #include "Noteskin.h"
@@ -580,6 +578,11 @@ void PlayerContext::update(const double song_time) {
 
 void PlayerContext::emit_draw_calls(const double song_time, DrawCallSink &sink) {
     draw_calls_ = &sink;
+    noteskin_->set_hidden_effect(
+        parameters_.get_hidden_mode(),
+        parameters_.get_hidden_center(),
+        parameters_.get_hidden_transition_size(),
+        parameters_.get_hidden_center_size());
     noteskin_->begin_draw(sink);
     draw_measures(song_time - drift_);
     noteskin_->end_draw();
@@ -1176,29 +1179,6 @@ int PlayerContext::draw_measures(const double song_time) {
     if (noteskin_->is_barline_enabled())
         draw_barlines(chart_displacement, effective_chart_speed_multiplier);
 
-    // Set some parameters...
-    renderer::set_default_shader_parameters(
-        false,
-        true,
-        false,
-        false,
-        parameters_.get_hidden_mode()
-    );
-
-    // Sudden = 1, Hidden = 2, flashlight = 3 (Defined in the shader)
-    if (parameters_.get_hidden_mode()) {
-        renderer::Shader::set_uniform(
-            renderer::Shader::Default::get_uniform(renderer::U_HIDCENTER),
-            parameters_.get_hidden_center());
-        renderer::Shader::set_uniform(
-            renderer::Shader::Default::get_uniform(renderer::U_HIDSIZE),
-            parameters_.get_hidden_transition_size());
-        renderer::Shader::set_uniform(
-            renderer::Shader::Default::get_uniform(renderer::U_HIDFLSIZE),
-            parameters_.get_hidden_center_size());
-    }
-
-    renderer::set_primitive_quad_vbo();
     auto &notes = chart_state_.notes_vertically_ordered;
     const auto jy = get_judgment_y();
 
@@ -1327,11 +1307,6 @@ int PlayerContext::draw_measures(const double song_time) {
             rnc++; // Rendered note count increases...
         }
     }
-
-    /* Clean up */
-    renderer::set_default_shader_parameters(false, true, false, false, 0);
-    renderer::finalize_draw();
-
 
     if (DebugNoteRendering) {
         fnt->render(otoworm::util::format(

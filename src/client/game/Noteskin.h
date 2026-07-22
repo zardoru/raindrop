@@ -1,11 +1,13 @@
 #pragma once
 
 #include <filesystem>
+#include <memory>
 #include <optional>
 #include <string>
 
 #include <game/RaindropProcessedChart.h>
 #include "LuaManager.h"
+#include "Shader.h"
 #include <LuaBridge/LuaBridge.h>
 
 /*
@@ -34,6 +36,7 @@ class Noteskin {
     bool decrease_hold_size_when_being_hit_;
     PlayerContext *parent_;
     DrawCallSink *draw_calls_ = nullptr;
+    std::unique_ptr<renderer::Shader::Note> note_shader_;
 
     void lua_render(Sprite *) const;
 
@@ -72,6 +75,7 @@ class Noteskin {
 
 public:
     Noteskin(PlayerContext *parent);
+    ~Noteskin();
 
     void finalize_loading();
 
@@ -80,6 +84,7 @@ public:
     void update(float delta, float current_beat);
     void begin_draw(DrawCallSink &sink);
     void end_draw();
+    void set_hidden_effect(int mode, float center, float transition_size, float flashlight_size);
 
     void draw_note(const rd::RuntimeNote &t, int lane, float location);
 

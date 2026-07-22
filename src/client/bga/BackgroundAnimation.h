@@ -1,13 +1,22 @@
 #pragma once
 
+#include <memory>
+
 #include "Interruptible.h"
+#include "Shader.h"
+#include "Sprite.h"
 #include <ChartGroup.h>
 
 class BackgroundAnimation : public Interruptible, public Drawable2D
 {
+    std::unique_ptr<renderer::Shader::BGA> black_to_transparent_shader_;
+
+protected:
+    renderer::Shader::BGA *black_to_transparent_shader();
+
 public:
     explicit BackgroundAnimation(Interruptible* parent = nullptr);
-    virtual ~BackgroundAnimation() = default;
+    virtual ~BackgroundAnimation();
     virtual void set_animation_time(double Time);
     virtual void load();
     virtual void finalize_loading();

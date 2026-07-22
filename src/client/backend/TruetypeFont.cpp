@@ -12,6 +12,8 @@
 
 #include "TruetypeFont.h"
 
+#include "Shader.h"
+
 #include "../game/GameState.h"
 #include "GameWindow.h"
 
@@ -112,6 +114,16 @@ TruetypeFont::~TruetypeFont()
 {
     GameWindow::get_instance().remove_ttf(this);
     // ReleaseTextures();
+}
+
+renderer::Shader::SDF *TruetypeFont::sdf_shader()
+{
+    if (!sdf_shader_) {
+        // This links against Shader::Default's vertex shader, which is compiled during window setup.
+        sdf_shader_ = std::make_unique<renderer::Shader::SDF>();
+    }
+
+    return sdf_shader_.get();
 }
 
 void TruetypeFont::invalidate()

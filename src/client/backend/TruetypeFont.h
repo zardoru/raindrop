@@ -1,6 +1,13 @@
 #pragma once
 
+#include <filesystem>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "Font.h"
+#include "Shader.h"
 
 struct stbtt_fontinfo;
 class VBO;
@@ -25,9 +32,11 @@ class TruetypeFont : public Font
 
     std::string filename;
     std::shared_ptr<std::map<int, codepdata> > Texes;
+    std::unique_ptr<renderer::Shader::SDF> sdf_shader_;
     codepdata& GetTexFromCodepoint(int cp);
     void release_codepoint(int cp) const;
     void release_textures() const;
+    renderer::Shader::SDF *sdf_shader();
 
 	friend class TTFMan;
 public:

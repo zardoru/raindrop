@@ -39,9 +39,11 @@ Noteskin::Noteskin(PlayerContext *parent) {
     judgment_y_ = 0;
 }
 
+Noteskin::~Noteskin() = default;
+
 void Noteskin::lua_render(Sprite *s) const {
-    if (can_render_ && draw_calls_ && s)
-        s->emit_draw_calls(*draw_calls_);
+    if (can_render_ && draw_calls_ && note_shader_ && s)
+        s->emit_draw_calls(*draw_calls_, note_shader_.get());
 }
 
 bool Noteskin::load_script_callbacks(const std::filesystem::path &filename) {
@@ -85,6 +87,11 @@ void Noteskin::log_callback_error(const std::string &name, const std::string &me
 }
 
 void Noteskin::finalize_loading() {
+    if (!note_shader_) {
+        // This links against Shader::Default's vertex shader, which is compiled during window setup.
+        note_shader_ = std::make_unique<renderer::Shader::Note>();
+    }
+
     /***
      Function called when the Noteskin is created. Called only once.
      @callback Init
@@ -129,6 +136,14 @@ void Noteskin::update(float delta, float current_beat) {
 
 void Noteskin::begin_draw(DrawCallSink &sink) { draw_calls_ = &sink; }
 void Noteskin::end_draw() { draw_calls_ = nullptr; }
+
+void Noteskin::set_hidden_effect(const int mode, const float center, const float transition_size,
+                                 const float flashlight_size) {
+    if (!note_shader_ || !note_shader_->is_valid())
+        return;
+
+    note_shader_->set_hidden_effect(mode, center, transition_size, flashlight_size);
+}
 
 void Noteskin::draw_note(const rd::RuntimeNote &t, int lane, float location) {
     const char *call_func = nullptr;

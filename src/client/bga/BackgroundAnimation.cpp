@@ -9,6 +9,7 @@
 
 #include "Transformation.h"
 #include "Rendering.h"
+#include "Shader.h"
 #include "Sprite.h"
 #include <ChartGroup.h>
 
@@ -246,8 +247,6 @@ public:
         LayerMiss->set_z(0);
         Layer2->set_z(0);
 
-        Layer1->black_to_transparent = Layer2->black_to_transparent = BlackToTransparent;
-
         LayerMiss->set_image(List.get_from_index(0), true);
         Layer0->set_image(List.get_from_index(1), true);
 
@@ -272,6 +271,9 @@ public:
 
         set_width(256 * ratio);
         set_height(256);
+
+        if (BlackToTransparent)
+            black_to_transparent_shader();
 
         Validated = true;
     }
@@ -314,8 +316,9 @@ public:
     void emit_draw_calls(DrawCallSink &sink) override
     {
         Layer0->emit_draw_calls(sink);
-        Layer1->emit_draw_calls(sink);
-        Layer2->emit_draw_calls(sink);
+        auto *shader = BlackToTransparent ? black_to_transparent_shader() : nullptr;
+        Layer1->emit_draw_calls(sink, shader);
+        Layer2->emit_draw_calls(sink, shader);
 
         if (MissTime > 0)
             LayerMiss->emit_draw_calls(sink);
@@ -404,6 +407,18 @@ std::unique_ptr<BackgroundAnimation> make_bga(
 
 BackgroundAnimation::BackgroundAnimation(Interruptible* parent) : Interruptible(parent)
 {
+}
+
+BackgroundAnimation::~BackgroundAnimation() = default;
+
+renderer::Shader::BGA *BackgroundAnimation::black_to_transparent_shader()
+{
+    if (!black_to_transparent_shader_) {
+        // This links against Shader::Default's vertex shader, which is compiled during window setup.
+        black_to_transparent_shader_ = std::make_unique<renderer::Shader::BGA>();
+    }
+
+    return black_to_transparent_shader_.get();
 }
 
 void BackgroundAnimation::set_animation_time(double Time)

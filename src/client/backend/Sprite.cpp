@@ -27,8 +27,6 @@ void Sprite::construct(const bool do_init_texture)
 {
     set_crop_to_whole_image();
 
-    black_to_transparent = false;
-
     blending_mode_ = BLEND_ALPHA;
 
     color = {1.0, 1.0, 1.0, 1.0};

@@ -27,6 +27,18 @@ const unsigned char fragShader[] = {
 #embed "./defaultFrag.glsl"
 };
 
+const unsigned char noteFragShader[] = {
+#embed "./noteFrag.glsl"
+};
+
+const unsigned char bgaFragShader[] = {
+#embed "./bgaFrag.glsl"
+};
+
+const unsigned char sdfFragShader[] = {
+#embed "./sdfFrag.glsl"
+};
+
 namespace {
 	void replace_all(std::string& source, const std::string& from, const std::string& to) {
 		size_t pos = 0;
@@ -57,7 +69,7 @@ namespace {
 namespace renderer {
 	int Shader::m_last_shader_ = -1;
 	int Shader::Default::mVertProgram, Shader::Default::mFragProgram, Shader::Default::mProgram;
-	uint32_t Shader::Default::uniforms[NUM_SHADERVARS];
+	int Shader::Default::uniforms[static_cast<int>(Shader::Default::Uniform::Count)];
 
 	bool Shader::Default::compile()
 	{
@@ -124,19 +136,10 @@ namespace renderer {
 		glDeleteShader(mFragProgram);
 
 		// Set up the uniform constants we'll be using in the program.
-		uniforms[A_POSITION] = glGetAttribLocation(mProgram, "position");
-		uniforms[A_UV] = glGetAttribLocation(mProgram, "vertexUV");
-		uniforms[A_COLOR] = glGetAttribLocation(mProgram, "colorvert");
-		uniforms[U_MODELVIEW] = glGetUniformLocation(mProgram, "mvp");
-		uniforms[U_CENTERED] = glGetUniformLocation(mProgram, "centered");
-		uniforms[U_COLOR] = glGetUniformLocation(mProgram, "color");
-		uniforms[U_INVERT] = glGetUniformLocation(mProgram, "inverted");
-		uniforms[U_HIDDEN] = glGetUniformLocation(mProgram, "HiddenLightning");
-		uniforms[U_HIDCENTER] = glGetUniformLocation(mProgram, "hdcenter");
-		uniforms[U_HIDSIZE] = glGetUniformLocation(mProgram, "hdsize");
-		uniforms[U_HIDFLSIZE] = glGetUniformLocation(mProgram, "flsize");
-		uniforms[U_REPCOLOR] = glGetUniformLocation(mProgram, "replaceColor");
-		uniforms[U_BTRANSP] = glGetUniformLocation(mProgram, "BlackToTransparent");
+		uniforms[static_cast<int>(Uniform::Projection)] = glGetUniformLocation(mProgram, "projection");
+		uniforms[static_cast<int>(Uniform::ModelView)] = glGetUniformLocation(mProgram, "mvp");
+		uniforms[static_cast<int>(Uniform::Centered)] = glGetUniformLocation(mProgram, "centered");
+		uniforms[static_cast<int>(Uniform::Color)] = glGetUniformLocation(mProgram, "color");
 
 
 		static_bind();
@@ -146,13 +149,12 @@ namespace renderer {
 
 	void Shader::Default::set_color(const float r, const float g, const float b, const float a)
 	{
-		set_uniform(get_uniform(U_COLOR), l2gamma(r), l2gamma(g), l2gamma(b), a);
+		set_uniform(uniform(Uniform::Color), l2gamma(r), l2gamma(g), l2gamma(b), a);
 	}
 
 	void Shader::Default::update_projection(Mat4 proj)
 	{
-		GLuint MatrixID = glGetUniformLocation(mProgram, "projection");
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &proj[0][0]);
+		glUniformMatrix4fv(uniform(Uniform::Projection), 1, GL_FALSE, &proj[0][0]);
 	}
 
 	void Shader::Default::static_bind() {
@@ -221,6 +223,21 @@ namespace renderer {
         assert(glGetError() == 0);
 	}
 
+	Shader::Note::Note() {
+		compile(std::string(reinterpret_cast<const char *>(noteFragShader), sizeof(noteFragShader)));
+		if (is_valid()) cache_locations();
+	}
+
+	Shader::BGA::BGA() {
+		compile(std::string(reinterpret_cast<const char *>(bgaFragShader), sizeof(bgaFragShader)));
+		if (is_valid()) cache_locations();
+	}
+
+	Shader::SDF::SDF() {
+		compile(std::string(reinterpret_cast<const char *>(sdfFragShader), sizeof(sdfFragShader)));
+		if (is_valid()) cache_locations();
+	}
+
 	void Shader::bind() {
 		CHECKERR();
 		assert(glIsProgram(mShaderHandle));
@@ -231,50 +248,54 @@ namespace renderer {
 		}
 	}
 
-	void Shader::set_uniform(const uint32_t uniform, const int i)
+	void Shader::set_uniform(const int uniform, const int i)
 	{
 		glUniform1i(uniform, i);
 	}
 
-	void Shader::set_uniform(const uint32_t uniform, const float A, const float B, const float C, const float D)
+	void Shader::set_uniform(const int uniform, const float A, const float B, const float C, const float D)
 	{
 		glUniform4f(uniform, A, B, C, D);
 	}
 
-	void Shader::set_uniform(const uint32_t uniform, const glm::vec2 Pos)
+	void Shader::set_uniform(const int uniform, const glm::vec2 Pos)
 	{
 		glUniform2f(uniform, Pos.x, Pos.y);
 	}
 
-	void Shader::set_uniform(const uint32_t uniform, const glm::vec3 Pos)
+	void Shader::set_uniform(const int uniform, const glm::vec3 Pos)
 	{
 		glUniform3f(uniform, Pos.x, Pos.y, Pos.z);
 	}
 
-	void Shader::set_uniform(const uint32_t Uniform, const float F)
+	void Shader::set_uniform(const int Uniform, const float F)
 	{
 		glUniform1f(Uniform, F);
 	}
 
-	void Shader::set_uniform(const uint32_t uniform, const float *matrix4_x4)
+	void Shader::set_uniform(const int uniform, const float *matrix4_x4)
 	{
 		glUniformMatrix4fv(uniform, 1, GL_FALSE, matrix4_x4);
 	}
 
-	int Shader::enable_attrib_array(const uint32_t Attrib)
+	int Shader::enable_attrib_array(const int Attrib)
 	{
 		glEnableVertexAttribArray(Attrib);
 		return Attrib;
 	}
 
-	int Shader::disable_attrib_array(const uint32_t Attrib)
+	int Shader::disable_attrib_array(const int Attrib)
 	{
 		glDisableVertexAttribArray(Attrib);
 		return Attrib;
 	}
 
-	uint32_t Shader::get_uniform(const std::string& uni) const {
-		return glGetUniformLocation(mShaderHandle, uni.c_str());
+	int Shader::get_uniform(const std::string& uni) const {
+		return uniform_location(uni);
+	}
+
+	int Shader::uniform_location(const std::string& name) const {
+		return glGetUniformLocation(mShaderHandle, name.c_str());
 	}
 
 	bool Shader::is_valid() const
@@ -282,9 +303,63 @@ namespace renderer {
 		return mIsValid;
 	}
 
-	uint32_t Shader::Default::get_uniform(const uint32_t uni) {
-		assert(uni < NUM_SHADERVARS);
-		return uniforms[uni];
+	int Shader::Default::uniform(const Uniform uniform) {
+		return uniforms[static_cast<int>(uniform)];
+	}
+
+	void Shader::Note::cache_locations() {
+		locations_.projection = uniform_location("projection");
+		locations_.model_view = uniform_location("mvp");
+		locations_.centered = uniform_location("centered");
+		locations_.color = uniform_location("color");
+		locations_.hidden_mode = uniform_location("HiddenLightning");
+		locations_.hidden_center = uniform_location("hdcenter");
+		locations_.hidden_size = uniform_location("hdsize");
+		locations_.flashlight_size = uniform_location("flsize");
+	}
+
+	void Shader::Note::apply_draw_state(const DrawState &state) const {
+		set_uniform(locations_.projection, &state.projection[0][0]);
+		if (state.model) set_uniform(locations_.model_view, &(*state.model)[0][0]);
+		set_uniform(locations_.centered, state.centered);
+		set_uniform(locations_.color, l2gamma(state.color.red), l2gamma(state.color.green), l2gamma(state.color.blue), state.color.alpha);
+	}
+
+	void Shader::Note::set_hidden_effect(const int mode, const float center, const float transition_size,
+	                                     const float flashlight_size) {
+		bind();
+		set_uniform(locations_.hidden_mode, mode);
+		set_uniform(locations_.hidden_center, center);
+		set_uniform(locations_.hidden_size, transition_size);
+		set_uniform(locations_.flashlight_size, flashlight_size);
+	}
+
+	void Shader::BGA::cache_locations() {
+		locations_.projection = uniform_location("projection");
+		locations_.model_view = uniform_location("mvp");
+		locations_.centered = uniform_location("centered");
+		locations_.color = uniform_location("color");
+	}
+
+	void Shader::BGA::apply_draw_state(const DrawState &state) const {
+		set_uniform(locations_.projection, &state.projection[0][0]);
+		if (state.model) set_uniform(locations_.model_view, &(*state.model)[0][0]);
+		set_uniform(locations_.centered, state.centered);
+		set_uniform(locations_.color, l2gamma(state.color.red), l2gamma(state.color.green), l2gamma(state.color.blue), state.color.alpha);
+	}
+
+	void Shader::SDF::cache_locations() {
+		locations_.projection = uniform_location("projection");
+		locations_.model_view = uniform_location("mvp");
+		locations_.centered = uniform_location("centered");
+		locations_.color = uniform_location("color");
+	}
+
+	void Shader::SDF::apply_draw_state(const DrawState &state) const {
+		set_uniform(locations_.projection, &state.projection[0][0]);
+		if (state.model) set_uniform(locations_.model_view, &(*state.model)[0][0]);
+		set_uniform(locations_.centered, state.centered);
+		set_uniform(locations_.color, l2gamma(state.color.red), l2gamma(state.color.green), l2gamma(state.color.blue), state.color.alpha);
 	}
 
 	Shader::Shader() {
