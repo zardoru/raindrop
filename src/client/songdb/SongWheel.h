@@ -46,6 +46,7 @@ private:
     std::mutex* m_load_mutex_;
     std::thread* m_load_thread_;
     std::atomic<bool> m_loading_;
+    std::atomic<bool> filters_dirty_{};
 
     SongDatabase* song_db_{};
 

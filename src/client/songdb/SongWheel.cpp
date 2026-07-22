@@ -91,12 +91,19 @@ class LoadThread
     SongDatabase* db_;
     std::shared_ptr<SongList> list_root_;
     std::atomic<bool>& is_loading_;
+    std::atomic<bool>& filters_dirty_;
 public:
-    LoadThread(std::mutex* m, SongDatabase* d, std::shared_ptr<SongList> r, std::atomic<bool>& loadingstatus)
+    LoadThread(
+        std::mutex* m,
+        SongDatabase* d,
+        std::shared_ptr<SongList> r,
+        std::atomic<bool>& loadingstatus,
+        std::atomic<bool>& filters_dirty)
         : load_mutex_(m),
         db_(d),
         list_root_(std::move(r)),
-        is_loading_(loadingstatus)
+        is_loading_(loadingstatus),
+        filters_dirty_(filters_dirty)
     {
         is_loading_ = true;
     }
@@ -113,8 +120,10 @@ public:
 
         for (auto& directory : directories)
         {
-            list_root_->add_named_directory(*load_mutex_, loader, directory.second, directory.first, [] {
-                SongWheel::get_instance().reapply_filters();
+            list_root_->add_named_directory(*load_mutex_, loader, directory.second, directory.first, [this] {
+                // The loader thread must not mutate the list consumed by the wheel.
+                // update() will rebuild the filtered snapshot on the wheel thread.
+                filters_dirty_.store(true, std::memory_order_release);
             });
         }
 
@@ -145,7 +154,7 @@ void SongWheel::reload_songs(SongDatabase* database)
     if (!m_load_mutex_)
         m_load_mutex_ = new std::mutex;
 
-    LoadThread loader(m_load_mutex_, song_db_, list_root_, m_loading_);
+    LoadThread loader(m_load_mutex_, song_db_, list_root_, m_loading_, filters_dirty_);
     m_load_thread_ = new std::thread(&LoadThread::load, loader);
 }
 
@@ -301,13 +310,21 @@ bool SongWheel::handle_input(const int32_t key, const bool is_pressed, const boo
 
 void SongWheel::go_up()
 {
-    std::unique_lock lock(*m_load_mutex_);
+    bool directory_changed = false;
 
-    if (current_list_->has_parent_directory())
     {
-		current_list_->set_in_use(false);
-        current_list_ = current_list_->get_parent_directory();
-		current_list_->clear_empty();
+        std::unique_lock lock(*m_load_mutex_);
+
+        if (current_list_->has_parent_directory())
+        {
+			current_list_->set_in_use(false);
+            current_list_ = current_list_->get_parent_directory();
+			current_list_->clear_empty();
+            directory_changed = true;
+        }
+    }
+
+    if (directory_changed) {
 		reapply_filters();
         on_directory_change();
 		on_song_tentative_select(get_selected_chart_group(), 0);
@@ -336,6 +353,9 @@ void SongWheel::update(const float delta)
 
     if (!current_list_)
         return;
+
+    if (filters_dirty_.exchange(false, std::memory_order_acq_rel))
+        reapply_filters();
 
     const Vec2 mpos = GameWindow::get_instance().get_relative_mouse_pos();
     if (in_wheel_bounds(mpos))
@@ -517,8 +537,11 @@ void SongWheel::confirm_selection()
     }
     else
     {
-        current_list_ = current_list_->get_list_entry(selected_bound_item_).get();
-		current_list_->set_in_use(true);
+		{
+			std::unique_lock lock(*m_load_mutex_);
+			current_list_ = current_list_->get_list_entry(selected_bound_item_).get();
+			current_list_->set_in_use(true);
+		}
 
 		reapply_filters();
         set_selected_item(selected_unbound_item_); // Update our selected item to new bounderies.
@@ -542,8 +565,11 @@ bool SongWheel::is_loading()
 
 void SongWheel::sort_by(const ESortCriteria criteria)
 {
-	std::unique_lock lock(*m_load_mutex_);
-	list_root_->sort_by(criteria);
+	{
+		std::unique_lock lock(*m_load_mutex_);
+		list_root_->sort_by(criteria);
+	}
+
 	reapply_filters();
 }
 
@@ -551,6 +577,7 @@ void SongWheel::reapply_filters()
 {
 	if (!current_list_) return;
 
+	std::unique_lock lock(*m_load_mutex_);
 	filtered_current_list_.clear();
 	for (const auto& entry : current_list_->get_entries()) {
 		bool add = true;
