@@ -16,14 +16,17 @@
 #include <ProcessedChart.h>
 #include <sndio/Audiofile.h>
 #include <sndio/AudioSourceOGG.h>
+#include <text_and_file_util.h>
 
 TEST_CASE("osu storyboard compliance")
 {
 	Interruptible stub;
 	auto chart_group = LoadChartGroupFromFilename("tests/files/esb.osu");
 
-	REQUIRE(chart_group != nullptr);
-	REQUIRE(!chart_group->charts.empty());
+    REQUIRE(chart_group != nullptr);
+    REQUIRE(!chart_group->charts.empty());
+    REQUIRE(chart_group->get_chart(0)->transient->file_hash ==
+        otoworm::util::get_sha256_for_file("tests/files/esb.osu"));
 
 	auto bga = BackgroundAnimation::create_bga_from_chart_group(0, chart_group, &stub, true);
 
