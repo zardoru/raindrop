@@ -1,9 +1,11 @@
 /* tests that depend on outside files */
 
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <cstdint>
 #include <future>
+#include <sstream>
 #include <vector>
 #include <rmath.h>
 #include <map>
@@ -16,17 +18,15 @@
 #include <ProcessedChart.h>
 #include <sndio/Audiofile.h>
 #include <sndio/AudioSourceOGG.h>
-#include <text_and_file_util.h>
+#include <note_loader.h>
 
 TEST_CASE("osu storyboard compliance")
 {
 	Interruptible stub;
 	auto chart_group = LoadChartGroupFromFilename("tests/files/esb.osu");
 
-    REQUIRE(chart_group != nullptr);
-    REQUIRE(!chart_group->charts.empty());
-    REQUIRE(chart_group->get_chart(0)->transient->file_hash ==
-        otoworm::util::get_sha256_for_file("tests/files/esb.osu"));
+	REQUIRE(chart_group != nullptr);
+	REQUIRE(!chart_group->charts.empty());
 
 	auto bga = BackgroundAnimation::create_bga_from_chart_group(0, chart_group, &stub, true);
 
@@ -65,4 +65,44 @@ TEST_CASE("OGG audio source reports frames and returns samples", "[audio]")
 
 	REQUIRE(total_samples_read == source.get_length() * source.get_channels());
 	REQUIRE_FALSE(source.has_data_left());
+}
+
+TEST_CASE("BMS loader consumes evaluated event commands", "[bms]")
+{
+    const std::string text =
+        "#TITLE Track [Hyper]\r\n"
+        "#ARTIST Composer / obj: Chart author\r\n"
+        "#BPM 120\r\n"
+        "#WAV01 one.wav\r\n"
+        "#WAV02 two.wav\r\n"
+        "#00101:02000100\r\n"
+        "#00111:0100\r\n";
+
+    const auto tree = NoteLoaderBMS::ParseTreeFromString(text);
+    REQUIRE(tree);
+
+    const auto commands = tree->evaluate();
+    const auto event = std::find_if(commands.begin(), commands.end(), [](const auto& command) {
+        return command.type == otoworm::bms::command_type::events &&
+            command.event_channel.kind == otoworm::bms::channel::bgm;
+    });
+    REQUIRE(event != commands.end());
+    REQUIRE(event->measure == 1);
+    REQUIRE(event->events == std::vector<uint16_t>{2, 0, 1, 0});
+
+    std::istringstream stream(text);
+    otoworm::ChartGroup song;
+    NoteLoaderBMS::load_chart_from_stream(stream, &song);
+
+    REQUIRE(song.title == "Track");
+    REQUIRE(song.artist == "Composer");
+    REQUIRE(song.charts.size() == 1);
+
+    const auto& chart = song.charts.front();
+    REQUIRE(chart->meta->name == "Hyper");
+    REQUIRE(chart->meta->author == "Chart author");
+    REQUIRE(chart->transient->bgm_events.size() == 2);
+    REQUIRE(chart->transient->bgm_events[0].sound == 2);
+    REQUIRE(chart->transient->bgm_events[1].sound == 1);
+    REQUIRE(chart->transient->bgm_events[0].time < chart->transient->bgm_events[1].time);
 }

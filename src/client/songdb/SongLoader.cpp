@@ -12,6 +12,14 @@
 #include "SongLoader.h"
 #include "../structure/Configuration.h"
 
+namespace {
+
+std::string path_to_utf8(const std::filesystem::path& path)
+{
+    return otoworm::locale::wstring_to_utf8(path.wstring());
+}
+
+}
 
 constexpr auto VSRG_EXTENSIONS = std::array{
     std::wstring_view(L".bms"),
@@ -66,7 +74,7 @@ std::shared_ptr<otoworm::ChartGroup> LoadChartGroupFromFilename(const std::files
 
 	auto fn = Filename;
 
-    Log::LogPrintf("SongLoader: Load %ls from disk...", fn.wstring().c_str());
+    Log::LogPrintf("SongLoader: Load %s from disk...", path_to_utf8(fn).c_str());
     try
     {
         auto chart_group = otoworm::load_song_from_file(fn);
@@ -116,8 +124,8 @@ void SongLoader::LoadBMS(
 	}
 	catch (std::exception &ex)
 	{
-		Log::Logf("\nSongLoader::LoadChartGroupsFromDir(): Exception \"%s\" occurred while loading file \"%ls\"\n",
-			ex.what(), file.wstring().c_str());
+		Log::Logf("\nSongLoader::LoadChartGroupsFromDir(): Exception \"%s\" occurred while loading file \"%s\"\n",
+			ex.what(), path_to_utf8(file).c_str());
 		otoworm::util::debug_break();
 	}
 
@@ -198,7 +206,7 @@ void SongLoader::LoadChartGroupsFromDir(std::filesystem::path songPath, std::vec
 		if (VSRGValidExtension(ext))
 		{
 			if (DB->CacheNeedsRenewal(File)) {
-				Log::LogPrintf("File '%ls' needs renewal.\n", File.wstring().c_str());
+				Log::LogPrintf("File '%s' needs renewal.\n", path_to_utf8(File).c_str());
 				renew_cache = true;
 			}
 
@@ -342,7 +350,7 @@ std::shared_ptr<otoworm::ChartGroup> SongLoader::LoadFromMeta(
     std::filesystem::path fn = DB->GetDifficultyFilename(chart_id);
     FilenameOut = fn;
 
-	Log::LogPrintf("Loading chart from meta ID %i from %ls\n", meta_song_id, fn.wstring().c_str());
+	Log::LogPrintf("Loading chart from meta ID %i from %s\n", meta_song_id, path_to_utf8(fn).c_str());
     auto out = LoadChartGroupFromFilename(fn);
     if (!out) return nullptr;
 	
