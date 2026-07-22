@@ -186,7 +186,7 @@ namespace osb
 		VFlipEvent() : Event(EVT_VFLIP) {};
 	};
 
-    enum EOrigin
+    enum EOrigin : uint8_t
     {
         PP_TOPLEFT,
         PP_TOP,
@@ -199,7 +199,7 @@ namespace osb
         PP_BOTTOMRIGHT
     };
 
-	enum ELayer
+	enum ELayer : uint8_t
 	{
 		LAYER_SP_BACKGROUND, // special background (0,0 event)
 		LAYER_BACKGROUND,
@@ -248,19 +248,19 @@ namespace osb
 
     class BGASprite : public EventComponent
     {
-        EOrigin mOrigin;
-        std::string mFile;
-        Vec2 mStartPos;
-		Transformation mFlip;
-        Transformation mTransform;
-		Transformation mPivot;
-        osuBackgroundAnimation *mParent;
+        std::string m_file_;
+        Vec2 m_start_pos_;
+		Transformation m_flip_;
+        Transformation m_transform_;
+		Transformation m_pivot_;
+        osuBackgroundAnimation *m_parent_;
 
-		Sprite* mSprite;
-        int mImageIndex;
+		Sprite* m_sprite_;
+        int m_image_index_;
 
-		ELayer mLayer;
-		bool mUninitialized;
+		ELayer m_layer_;
+        EOrigin m_origin_;
+		bool m_uninitialized_;
     public:
         BGASprite(std::string file, EOrigin origin, Vec2 start_pos, ELayer laer);
 

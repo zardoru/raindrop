@@ -1,14 +1,14 @@
 #include <rmath.h>
 #include <game/scoring_systems/RaindropScoring.h>
 
-void rd::ScoreSystemRank::Reset() {
+void rd::ScoreSystemRank::reset() {
     rank_w0_count = 0;
     rank_w1_count = 0;
     rank_w2_count = 0;
     rank_w3_count = 0;
 }
 
-void rd::ScoreSystemRank::Update(rd::ScoreKeeperJudgment skj, bool use_w0) {
+void rd::ScoreSystemRank::update(const rd::ScoreKeeperJudgment skj, const bool use_w0) {
     if (skj < SKJ_W0) return;
     if (!use_w0 && skj <= SKJ_W0) ++rank_w0_count;
 
@@ -19,21 +19,21 @@ void rd::ScoreSystemRank::Update(rd::ScoreKeeperJudgment skj, bool use_w0) {
     ++judged_notes;
 }
 
-long long rd::ScoreSystemRank::GetCurrentScore(long long int max_notes, bool use_w0) const {
-    long long rank_w0_pts = std::max(rank_w0_count * 2 - judged_notes, 0LL);
-    long long rank_w1_pts = std::max(rank_w1_count * 2 - judged_notes, 0LL);
-    long long rank_w2_pts = std::max(rank_w2_count * 2 - judged_notes, 0LL);
-    long long rank_w3_pts = std::max(rank_w3_count * 2 - judged_notes, 0LL);
+long long rd::ScoreSystemRank::get_current_score(long long int max_notes, bool use_w0) const {
+    const long long rank_w0_pts = std::max(rank_w0_count * 2 - judged_notes, 0LL);
+    const long long rank_w1_pts = std::max(rank_w1_count * 2 - judged_notes, 0LL);
+    const long long rank_w2_pts = std::max(rank_w2_count * 2 - judged_notes, 0LL);
+    const long long rank_w3_pts = std::max(rank_w3_count * 2 - judged_notes, 0LL);
 
     return rank_w0_pts + rank_w1_pts + rank_w2_pts + rank_w3_pts;
 }
 
-long long rd::ScoreSystemRank::GetMaxScore(long long int max_notes, bool use_w0) {
+long long rd::ScoreSystemRank::get_max_score(long long int max_notes, bool use_w0) {
     return 0;
 }
 
 int rd::ScoreSystemRank::GetRank() const {
-    auto rank_pts = GetCurrentScore(0, 0);
+    const auto rank_pts = get_current_score(0, 0);
     if (rank_pts == judged_notes * 400 / 100) return 15;
     if (rank_pts >= judged_notes * 380 / 100) return 14;
     if (rank_pts >= judged_notes * 360 / 100) return 13;
@@ -62,13 +62,13 @@ int rd::ScoreSystemRank::GetRank() const {
     return -9;
 }
 
-void rd::ScoreSystemExp::Reset() {
+void rd::ScoreSystemExp::reset() {
     exp_combo = 0;
     exp_combo_pts = 0;
     exp_hit_score = 0;
 }
 
-void rd::ScoreSystemExp::Update(rd::ScoreKeeperJudgment skj, bool use_w0) {
+void rd::ScoreSystemExp::update(const rd::ScoreKeeperJudgment skj, const bool use_w0) {
     if (use_w0) {
         switch (skj) {
             case SKJ_W0:
@@ -116,25 +116,25 @@ void rd::ScoreSystemExp::Update(rd::ScoreKeeperJudgment skj, bool use_w0) {
     if (exp_combo > 96) exp_combo = 96;
 }
 
-long long rd::ScoreSystemExp::GetCurrentScore(long long int max_notes, bool use_w0) const {
+long long rd::ScoreSystemExp::get_current_score(const long long int max_notes, bool use_w0) const {
     return 1.2e6 * exp_combo_pts / GetMaxComboPts(max_notes);
 }
 
-long long rd::ScoreSystemExp::GetMaxScore(long long int max_notes, bool use_w0) {
+long long rd::ScoreSystemExp::get_max_score(long long int max_notes, bool use_w0) {
     return 0; /* TODO: implement */
 }
 
-long long rd::ScoreSystemExp::GetMaxComboPts(long long max_notes) const {
+long long rd::ScoreSystemExp::GetMaxComboPts(const long long max_notes) const {
     if (max_notes < 25)
         return max_notes * (max_notes + 1) * 2;
     else
         return 1300 + (max_notes - 25) * 100;
 }
 
-long long rd::ScoreSystemExp3::GetCurrentScore(long long int max_notes, bool use_w0) const {
+long long rd::ScoreSystemExp3::get_current_score(const long long int max_notes, bool use_w0) const {
     return 0.8e6 * exp_combo_pts / GetMaxComboPts(max_notes) + 0.1e6 * exp_hit_score / max_notes;
 }
 
-long long rd::ScoreSystemExp3::GetMaxScore(long long int max_notes, bool use_w0) {
+long long rd::ScoreSystemExp3::get_max_score(long long int max_notes, bool use_w0) {
     return 0; /* TODO: implement */
 }

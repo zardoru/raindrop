@@ -11,21 +11,21 @@
 namespace rd {
     ScoreKeeper::~ScoreKeeper() {}
 
-    double ScoreKeeper::accuracy_percent(double var) {
+    double ScoreKeeper::accuracy_percent(const double var) {
         return double(acc_max_sq - var) / (acc_max_sq - acc_min_sq) * 100;
     }
 
-    void ScoreKeeper::set_acc_min(double ms) {
+    void ScoreKeeper::set_acc_min(const double ms) {
         acc_min = ms;
         acc_min_sq = ms * ms;
     }
 
-    void ScoreKeeper::set_acc_max(double ms) {
+    void ScoreKeeper::set_acc_max(const double ms) {
         acc_max = ms;
         acc_max_sq = ms * ms;
     }
 
-    void ScoreKeeper::set_total_objects(int total_objects, int _total_holds) {
+    void ScoreKeeper::set_total_objects(const int total_objects, const int _total_holds) {
         total_score_objects = std::max(total_objects, 1);
         total_holds = _total_holds;
     }
@@ -47,17 +47,17 @@ namespace rd {
     }
 
     // ms is misleading- since it may very well be beats, but it's fine.
-    ScoreKeeperJudgment ScoreKeeper::hit_note(double ms, uint32_t lane, NoteJudgmentPart part) {
+    ScoreKeeperJudgment ScoreKeeper::hit_note(const double ms, const uint32_t lane, const NoteJudgmentPart part) {
 
         // online variance and average hit
         ++judged_notes;
-        float delta = ms - avg_hit;
+        const float delta = ms - avg_hit;
         avg_hit += delta / judged_notes;
 
         hit_variance += delta * (ms - avg_hit);
 
 
-        auto rounded = round(ms);
+        const auto rounded = round(ms);
         if (use_o2jam) {
             auto dist = ms / O2_WINDOW * 128;
             if (std::abs(rounded) < 128) {
@@ -83,7 +83,7 @@ namespace rd {
 
         auto judge = current_timing_window->get_judgment_for_time_offset(ms, static_cast<uint32_t>(lane), part);
         ScoreKeeperJudgment o2Judge;
-        for (auto &timing: timings) {
+        for (const auto &timing: timings) {
             /* XXX: this won't really work unless the ms part of this is in beats */
             if (timing.first == TI_O2JAM) {
                 ScoreKeeperJudgment o2Judge;
@@ -102,11 +102,11 @@ namespace rd {
                     judge = o2Judge;
                 }
             } else {
-                bool early_miss = ms < -timing.second->get_early_hit_cutoff() && ms >= -timing.second->get_early_threshold();
+                const bool early_miss = ms < -timing.second->get_early_hit_cutoff() && ms >= -timing.second->get_early_threshold();
                 if (timing.second == current_timing_window)
                     timing.second->add_judgment(judge, early_miss);
                 else {
-                    auto myJudge = timing.second->get_judgment_for_time_offset(ms, lane, part);
+                    const auto myJudge = timing.second->get_judgment_for_time_offset(ms, lane, part);
                     timing.second->add_judgment(myJudge, early_miss);
                 }
             }
@@ -130,8 +130,8 @@ namespace rd {
             lifebar_hit(abs(ms), judge);
 
             // scores
-            for (auto &scoresys: scores) {
-                scoresys.second->Update(judge, uses_w0());
+            for (const auto &scoresys: scores) {
+                scoresys.second->update(judge, uses_w0());
             }
         } else {
             miss_note(false, false, false);
@@ -140,8 +140,8 @@ namespace rd {
         return judge;
     }
 
-    void ScoreKeeper::lifebar_hit(double ms, rd::ScoreKeeperJudgment judgment) {
-        for (auto &gauge: gauges) {
+    void ScoreKeeper::lifebar_hit(double ms, const rd::ScoreKeeperJudgment judgment) {
+        for (const auto &gauge: gauges) {
             gauge.second->update(judgment, true);
         }
     }
@@ -154,14 +154,14 @@ namespace rd {
         return current_timing_window->get_window_skip() == 0;
     }
 
-    void ScoreKeeper::miss_note(bool dont_break_combo, bool early_miss, bool apply_miss) {
+    void ScoreKeeper::miss_note(const bool dont_break_combo, const bool early_miss, const bool apply_miss) {
         if (apply_miss) {
-            for (auto &timing: timings) {
+            for (const auto &timing: timings) {
                 timing.second->add_judgment(SKJ_MISS, early_miss);
             }
 
-            for (auto &scoresys: scores) {
-                scoresys.second->Update(SKJ_MISS, uses_w0());
+            for (const auto &scoresys: scores) {
+                scoresys.second->update(SKJ_MISS, uses_w0());
             }
         }
 
@@ -171,7 +171,7 @@ namespace rd {
 
         accuracy = accuracy_percent(total_sqdev / judged_notes);
 
-        for (auto &gauge : gauges) {
+        for (const auto &gauge : gauges) {
             gauge.second->update(SKJ_MISS, early_miss);
         }
 
@@ -188,7 +188,7 @@ namespace rd {
                 timings.begin(),
                 timings.end(),
                 0.0,
-                [] (double accum, const std::pair<ChartType, TimingWindows*>& wnd) {
+                [] (const double accum, const std::pair<ChartType, TimingWindows*>& wnd) {
                     return std::max(accum, std::max(wnd.second->get_early_threshold(), wnd.second->get_late_threshold()));
                 });
     }
@@ -219,7 +219,7 @@ namespace rd {
         const int histogram_display_width = 15;
 
         for (int i = 0; i < 255; ++i) {
-            int it = (i % histogram_display_width) * (255 / histogram_display_width) +
+            const int it = (i % histogram_display_width) * (255 / histogram_display_width) +
                      (i / histogram_display_width); // transpose
             ss << std::setw(4) << it - 127 << ": " << std::setw(4) << histogram[it] << " ";
             if (i % histogram_display_width == histogram_display_width - 1)
@@ -229,8 +229,8 @@ namespace rd {
         return ss.str();
     }
 
-    int ScoreKeeper::get_histogram_point(int point) const {
-        int msCount = sizeof(histogram) / sizeof(double) / 2;
+    int ScoreKeeper::get_histogram_point(const int point) const {
+        const int msCount = sizeof(histogram) / sizeof(double) / 2;
         if (abs(point) > msCount) return 0;
         return histogram[point + msCount];
     }
@@ -241,7 +241,7 @@ namespace rd {
 
     int ScoreKeeper::get_histogram_highest_point() const {
         return std::accumulate(&histogram[0], histogram + get_histogram_point_count(), 1.0,
-                               [](double a, double b) -> double {
+                               [](const double a, const double b) -> double {
                                    return std::max(a, b);
                                });
     }
@@ -254,7 +254,7 @@ namespace rd {
 
     int ScoreKeeper::get_score(int score_type) const {
         if (scores.find(static_cast<const ScoreType>(score_type)) != scores.end())
-            return scores.at(static_cast<ScoreType>(score_type))->GetCurrentScore(get_max_judgable_notes(), uses_w0());
+            return scores.at(static_cast<ScoreType>(score_type))->get_current_score(get_max_judgable_notes(), uses_w0());
 
         switch (score_type) {
             case ST_SCORE:
@@ -270,7 +270,7 @@ namespace rd {
         }
     }
 
-    float ScoreKeeper::get_percent_score(int percent_score_type) const {
+    float ScoreKeeper::get_percent_score(const int percent_score_type) const {
         switch (percent_score_type) {
             case PST_RANK:
                 if (judged_notes)
@@ -303,7 +303,7 @@ namespace rd {
    }
 
     bool ScoreKeeper::is_stage_failed(int lifebar_amount_type) const{
-        bool song_ended = judged_notes == get_max_judgable_notes();
+        const bool song_ended = judged_notes == get_max_judgable_notes();
 
         if (gauges.find((LifeType)lifebar_amount_type) != gauges.end())
             return gauges.at((LifeType)lifebar_amount_type)->has_failed(song_ended);
@@ -321,14 +321,14 @@ namespace rd {
     void ScoreKeeper::fail_stage() {
         judged_notes = get_max_judgable_notes();
 
-        for (auto &scoresys: scores) {
-            scoresys.second->Update(SKJ_MISS, uses_w0());
+        for (const auto &scoresys: scores) {
+            scoresys.second->update(SKJ_MISS, uses_w0());
         }
     }
 
-    int ScoreKeeper::get_pacemaker_diff(PacemakerType pacemaker) {
-        auto ex_score = get_score(ST_EX);
-        auto rank_pts = get_score(ST_RANK);
+    int ScoreKeeper::get_pacemaker_diff(const PacemakerType pacemaker) {
+        const auto ex_score = get_score(ST_EX);
+        const auto rank_pts = get_score(ST_RANK);
         switch (pacemaker) {
             case PMT_F:
                 return ex_score - (judged_notes * 2 / 9 + (judged_notes * 2 % 9 != 0));
@@ -383,7 +383,7 @@ namespace rd {
     }
 
     std::pair<std::string, int> ScoreKeeper::get_auto_pacemaker() {
-        auto ex_score = get_score(ST_EX);
+        const auto ex_score = get_score(ST_EX);
         PacemakerType pmt;
 
         if (ex_score < judged_notes * 2 / 9) pmt = PMT_F;
@@ -404,7 +404,7 @@ namespace rd {
     }
 
     std::pair<std::string, int> ScoreKeeper::get_auto_rank_pacemaker() {
-        auto rank_pts = get_score(ST_RANK);
+        const auto rank_pts = get_score(ST_RANK);
         PacemakerType pmt;
         if (rank_pts < judged_notes * 110 / 100) pmt = PMT_RANK_ZERO;
         else if (rank_pts < judged_notes * 130 / 100) pmt = PMT_RANK_P1;
@@ -446,7 +446,7 @@ namespace rd {
         return score_rank.GetRank();
     }
 
-    double normalCdf(double x) {
+    double normalCdf(const double x) {
         return 0.5 + 0.5 * erf(x / sqrt(2));
     }
 
@@ -475,9 +475,9 @@ namespace rd {
     double ScoreKeeper::get_offset_distrust() const {
         // avgHit != 0 is what we're testing
         // don't want this to grow that much with total notes, at all.
-        double zscore = abs(get_avg_hit()) / (get_hit_stdev()/* /sqrt(judged_notes) */);
+        const double zscore = abs(get_avg_hit()) / (get_hit_stdev()/* /sqrt(judged_notes) */);
         // we're always off the center, so, sort of scale the result
-        double pvalue = (normalCdf(zscore) - 0.5) * 2;
+        const double pvalue = (normalCdf(zscore) - 0.5) * 2;
 
         return pvalue;
     }
@@ -486,7 +486,7 @@ namespace rd {
         current_timing_window = &timing_lr2;
     }
 
-    void ScoreKeeper::set_osu_hp(float hp) {
+    void ScoreKeeper::set_osu_hp(const float hp) {
         gauge_osumania.setup(0, 0, hp);
     }
 
@@ -494,13 +494,13 @@ namespace rd {
         return current_timing_window->get_tick_interval();
     }
 
-    void ScoreKeeper::tick_ln(int ticks) {
+    void ScoreKeeper::tick_ln(const int ticks) {
         for (auto i = 0; i < ticks; i++) {
-            for (auto &timing : timings) {
+            for (const auto &timing : timings) {
                 timing.second->add_judgment(SKJ_TICK, false);
             }
 
-            for (auto &gauge : gauges) {
+            for (const auto &gauge : gauges) {
                 gauge.second->update(SKJ_TICK, false, 0);
             }
         }

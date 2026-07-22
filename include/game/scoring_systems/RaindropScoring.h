@@ -35,20 +35,20 @@ namespace rd {
 
         long long GetMaxComboPts(long long max_notes) const;
     public:
-        void Reset() override;
+        void reset() override;
 
-        void Update(ScoreKeeperJudgment skj, bool use_w0) override;
+        void update(ScoreKeeperJudgment skj, bool use_w0) override;
 
-        long long GetCurrentScore(long long max_notes, bool use_w0) const override;
+        long long get_current_score(long long max_notes, bool use_w0) const override;
 
-        long long GetMaxScore(long long max_notes, bool use_w0) override;
+        long long get_max_score(long long max_notes, bool use_w0) override;
     };
 
     class ScoreSystemExp3 : public ScoreSystemExp {
     public:
-        long long GetCurrentScore(long long max_notes, bool use_w0) const override;
+        long long get_current_score(long long max_notes, bool use_w0) const override;
 
-        long long GetMaxScore(long long max_notes, bool use_w0) override;
+        long long get_max_score(long long max_notes, bool use_w0) override;
     };
 
     class ScoreSystemRank : public ScoringSystem {
@@ -59,13 +59,13 @@ namespace rd {
 
         long long judged_notes;
     public:
-        void Reset() override;
+        void reset() override;
 
-        void Update(ScoreKeeperJudgment skj, bool use_w0) override;
+        void update(ScoreKeeperJudgment skj, bool use_w0) override;
 
-        long long GetCurrentScore(long long max_notes, bool use_w0) const override;
+        long long get_current_score(long long max_notes, bool use_w0) const override;
 
-        long long GetMaxScore(long long max_notes, bool use_w0) override;
+        long long get_max_score(long long max_notes, bool use_w0) override;
 
         int GetRank() const;
     };

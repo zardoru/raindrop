@@ -18,7 +18,7 @@ void TimingWindows::setup(double strictness, double scale) {
     // stub. might get ignored in favor of a constructor
 }
 
-ScoreKeeperJudgment TimingWindows::get_judgment_for_time_offset(double time_delta, uint32_t lane, NoteJudgmentPart part) {
+ScoreKeeperJudgment TimingWindows::get_judgment_for_time_offset(const double time_delta, uint32_t lane, NoteJudgmentPart part) {
     return get_judgment_from_timing_windows(judgment_time_, time_delta);
 }
 
@@ -30,14 +30,14 @@ double TimingWindows::get_late_threshold() const {
     return late_miss_threshold_;
 }
 
-void TimingWindows::add_judgment(ScoreKeeperJudgment skj, bool early_miss) {
+void TimingWindows::add_judgment(const ScoreKeeperJudgment skj, const bool early_miss) {
     if (skj >= 0 && skj < JUDGMENT_ARRAY_SIZE) {
         judgment_amt_[skj] += 1;
         update_combo(skj, !early_miss);
     }
 }
 
-uint32_t TimingWindows::get_judgment_count(ScoreKeeperJudgment skj) const {
+uint32_t TimingWindows::get_judgment_count(const ScoreKeeperJudgment skj) const {
     if (skj >= 0 && skj < JUDGMENT_ARRAY_SIZE)
         return judgment_amt_[skj];
     return 0;
@@ -59,7 +59,7 @@ void TimingWindows::reset() {
     notes_hit_ = 0;
 }
 
-void TimingWindows::SetWindowSkip(uint32_t window_skip) {
+void TimingWindows::SetWindowSkip(const uint32_t window_skip) {
     current_window_skip_ = clamp(window_skip, min_window_skip_, max_window_skip_);
 }
 
@@ -67,7 +67,7 @@ void TimingWindows::default_setup() {
     // stub
 }
 
-void TimingWindows::update_combo(ScoreKeeperJudgment skj, bool should_break_combo) {
+void TimingWindows::update_combo(const ScoreKeeperJudgment skj, const bool should_break_combo) {
     if (skj <= combo_leniency_) {
         notes_hit_++;
         combo_++;
@@ -83,7 +83,7 @@ double TimingWindows::get_early_hit_cutoff() const {
     return early_hit_threshold_;
 }
 
-double TimingWindows::get_judgment_window(ScoreKeeperJudgment skj) {
+double TimingWindows::get_judgment_window(const ScoreKeeperJudgment skj) {
     if (skj >= 0 && skj < judgment_time_.size())
         return judgment_time_[skj];
     return -1;
@@ -123,9 +123,9 @@ TimingWindows::get_judgment_from_timing_windows(const std::array<double, JUDGMEN
 
         auto skj = current_window_skip_;
         for (auto i = current_window_skip_; i < windows.size(); i++) { /* running off the assumption */
-            auto wnd = windows[i];
+            const auto wnd = windows[i];
             if (time_delta <= wnd) {
-                auto skj_val = (ScoreKeeperJudgment) skj;
+                const auto skj_val = (ScoreKeeperJudgment) skj;
                 return skj_val;
             }
             skj += 1;
@@ -143,7 +143,7 @@ bool TimingWindows::uses_two_judges_per_hold() const {
  * Raindrop BMS
  */
 
-void TimingWindowsRaindropBMS::setup(double strictness, double scale) {
+void TimingWindowsRaindropBMS::setup(double strictness, const double scale) {
     static constexpr double JudgmentValues[] = {6.4, 16, 40, 100, 250, -1, 625};
 
     // don't scale any of these
@@ -160,7 +160,7 @@ void TimingWindowsRaindropBMS::setup(double strictness, double scale) {
 
     // cap early hit threshold
     if (judgment_time_[SKJ_W4] < 250.0) {
-        auto window = std::max(judgment_time_[SKJ_W1], judgment_time_[SKJ_W4]);
+        const auto window = std::max(judgment_time_[SKJ_W1], judgment_time_[SKJ_W4]);
         early_hit_threshold_ = late_miss_threshold_ = std::min(window, 250.0);
     }
 
@@ -195,7 +195,7 @@ void TimingWindowsStepmania::default_setup() {
 /*
  * osu!mania
  */
-void TimingWindowsOsuMania::setup(double strictness, double scale) {
+void TimingWindowsOsuMania::setup(const double strictness, double scale) {
     const auto od = strictness;
     // w1, w2, w3, w4, w5, miss
     static constexpr double JudgmentValues[] = {16, 16, 64, 97, 127, 151, 188};
@@ -218,7 +218,7 @@ void TimingWindowsOsuMania::setup(double strictness, double scale) {
     lane_hold_delta_time.fill(-1);
 }
 
-ScoreKeeperJudgment TimingWindowsOsuMania::get_judgment_for_time_offset(double time_delta, uint32_t lane, NoteJudgmentPart part) {
+ScoreKeeperJudgment TimingWindowsOsuMania::get_judgment_for_time_offset(const double time_delta, const uint32_t lane, const NoteJudgmentPart part) {
     if (part == NoteJudgmentPart::NOTE)
         return TimingWindows::get_judgment_for_time_offset(time_delta, lane, part);
     if (part == NoteJudgmentPart::HOLD_HEAD) {
@@ -256,7 +256,7 @@ ScoreKeeperJudgment TimingWindowsOsuMania::get_judgment_for_time_offset(double t
     return skj;
 }
 
-TimingWindowsOsuMania::TimingWindowsOsuMania(bool _score_v2) :
+TimingWindowsOsuMania::TimingWindowsOsuMania(const bool _score_v2) :
     score_v2(_score_v2) {
 }
 
@@ -331,7 +331,7 @@ void TimingWindowsLR2Oraja::default_setup() {
     setup(0, 100);
 }
 
-void TimingWindowsLR2Oraja::setup(double strictness, double scale) {
+void TimingWindowsLR2Oraja::setup(double strictness, const double scale) {
     static constexpr double wnd_note[] =  { -1 , 21  , 60  , 120 , 200 , -1 , 1000 } ;
     static constexpr double wnd_ln[]   =  { -1 , 120 , 160 , 170 , 200 , -1 , 1000 } ;
 
@@ -362,13 +362,13 @@ void TimingWindowsLR2Oraja::scale_by_def_ex_rank(std::array<double, JUDGMENT_ARR
     };
 
     if (scale < 100) {
-        int judge_index = scale / 25; // every 25 judges it changes difficulty (VHARD, HARD, NORMAL, etc..)
-        auto interpolate = fmod(scale, 25.0);
+        const int judge_index = scale / 25; // every 25 judges it changes difficulty (VHARD, HARD, NORMAL, etc..)
+        const auto interpolate = fmod(scale, 25.0);
 
         for (int skj = SKJ_W1; skj < SKJ_W4; ++skj) {
-            auto judge = wnd_scale[skj - SKJ_W1];
-            auto delta = judge[judge_index + 1] - judge[judge_index] + 12;
-            auto interJudge = judge[judge_index] + interpolate * delta / 25.0;
+            const auto judge = wnd_scale[skj - SKJ_W1];
+            const auto delta = judge[judge_index + 1] - judge[judge_index] + 12;
+            const auto interJudge = judge[judge_index] + interpolate * delta / 25.0;
             in_out[skj] = in_out[skj] * interJudge / judge[4];
         }
     } else {

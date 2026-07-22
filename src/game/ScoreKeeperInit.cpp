@@ -53,8 +53,8 @@ namespace rd {
                 {ST_IIDX, &score_bms}
         };
 
-        for (auto &scoresys: scores) {
-            scoresys.second->Reset();
+        for (const auto &scoresys: scores) {
+            scoresys.second->reset();
         }
 
         gauges = {
@@ -77,7 +77,7 @@ namespace rd {
                 {LT_LR2_EXHARDCLASS, &gauge_lr2_exhardclass}
         };
 
-        for (auto &gauge: gauges) {
+        for (const auto &gauge: gauges) {
             gauge.second->default_setup();
             gauge.second->reset();
         }
@@ -90,7 +90,7 @@ namespace rd {
                 {TI_LR2, &timing_lr2}
         };
 
-        for (auto &timing: timings) {
+        for (const auto &timing: timings) {
             timing.second->default_setup();
             timing.second->reset();
         }
@@ -109,13 +109,13 @@ namespace rd {
         current_timing_window = &timing_raindrop;
     }
 
-    void ScoreKeeper::set_od_windows(int od) {
+    void ScoreKeeper::set_od_windows(const int od) {
         timing_osumania.setup(od, 1);
         current_timing_window = &timing_osumania;
     }
 
-    void ScoreKeeper::set_use_w0(bool on) {
-        for (auto &timing: timings) {
+    void ScoreKeeper::set_use_w0(const bool on) {
+        for (const auto &timing: timings) {
             if (on)
                 timing.second->SetWindowSkip(1);
             else
@@ -128,7 +128,7 @@ namespace rd {
         init();
     }
 
-    ScoreKeeper::ScoreKeeper(double judge_window_scale) {
+    ScoreKeeper::ScoreKeeper(const double judge_window_scale) {
         init();
         timing_raindrop.setup(0, judge_window_scale);
         set_bms_timing_windows();
@@ -138,15 +138,15 @@ namespace rd {
         current_timing_window = &timing_stepmania;
     }
 
-    void ScoreKeeper::set_life_total(double total, double multiplier) {
-        double effmul = std::isnan(multiplier) ? 1 : multiplier;
+    void ScoreKeeper::set_life_total(const double total, const double multiplier) {
+        const double effmul = std::isnan(multiplier) ? 1 : multiplier;
 
         double lifebar_total_lr2;
         if (total != -1 && std::isnan(multiplier) && !std::isnan(total)) {
             lifebar_total = total;
             lifebar_total_lr2 = total;
         } else {
-            auto max_notes = get_max_judgable_notes();
+            const auto max_notes = get_max_judgable_notes();
             lifebar_total =
                     std::max(260.0, 7.605 * max_notes / (6.5 + 0.01 * max_notes)) * effmul;
 
@@ -170,11 +170,11 @@ namespace rd {
         gauge_lr2_exhardclass.setup(lifebar_total_lr2, get_max_judgable_notes(), 0);
     }
 
-    void ScoreKeeper::set_o2_lifebar_rating(int difficulty) {
+    void ScoreKeeper::set_o2_lifebar_rating(const int difficulty) {
         gauge_o2jam.setup(0, 0, difficulty);
     }
 
-   void ScoreKeeper::set_judge_rank(int rank) {
+   void ScoreKeeper::set_judge_rank(const int rank) {
 
         if (rank == -100) // We assume we're dealing with beats-based timing.
         {
@@ -231,7 +231,7 @@ namespace rd {
         set_bms_timing_windows();
     }
 
-    void ScoreKeeper::set_judge_scale(double scale) {
+    void ScoreKeeper::set_judge_scale(const double scale) {
         timing_raindrop.setup(0, scale * 100.0 / 72.0);
         timing_lr2.setup(0, scale);
         set_bms_timing_windows();

@@ -11,28 +11,28 @@ namespace rd {
 
         static long long GetMaxComboPts(long long notes);
     public:
-        void Reset() override;
-        void Update(ScoreKeeperJudgment skj, bool use_w0) override;
-        long long GetCurrentScore(long long max_notes, bool use_w0) const override;
-        long long GetMaxScore(long long max_notes, bool use_w0) override;
+        void reset() override;
+        void update(ScoreKeeperJudgment skj, bool use_w0) override;
+        long long get_current_score(long long max_notes, bool use_w0) const override;
+        long long get_max_score(long long max_notes, bool use_w0) override;
     };
 
     class ScoreSystemEX : public ScoringSystem {
         long long ex_score;
     public:
-        void Reset() override;
-        void Update(ScoreKeeperJudgment skj, bool use_w0) override;
-        long long GetCurrentScore(long long max_notes, bool use_w0) const override;
-        long long GetMaxScore(long long max_notes, bool use_w0) override;
+        void reset() override;
+        void update(ScoreKeeperJudgment skj, bool use_w0) override;
+        long long get_current_score(long long max_notes, bool use_w0) const override;
+        long long get_max_score(long long max_notes, bool use_w0) override;
         rd::PacemakerType GetRank(long long max_notes) const;
     };
 
     class ScoreSystemLR2 : public ScoringSystem {
         long long lr2_dance_pts;
     public:
-        void Reset() override;
-        void Update(ScoreKeeperJudgment skj, bool use_w0) override;
-        long long GetCurrentScore(long long max_notes, bool use_w0) const override;
-        long long GetMaxScore(long long max_notes, bool use_w0) override;
+        void reset() override;
+        void update(ScoreKeeperJudgment skj, bool use_w0) override;
+        long long get_current_score(long long max_notes, bool use_w0) const override;
+        long long get_max_score(long long max_notes, bool use_w0) override;
     };
 }

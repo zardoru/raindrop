@@ -11,29 +11,29 @@
 
 
 namespace rd {
-    bool Mechanics::is_late_head_miss(double t, RuntimeNote *note) {
+    bool Mechanics::is_late_head_miss(const double t, RuntimeNote *note) {
         return (t - note->get_start_time()) * 1000.0 > player_score_keeper_->get_late_miss_cutoff_ms();
     }
 
-    bool Mechanics::in_judge_cutoff(double t, RuntimeNote *note) {
-        double early_miss_cutoff = player_score_keeper_->get_early_miss_cutoff_ms() / 1000.0;
-        double miss_cutoff = player_score_keeper_->get_late_miss_cutoff_ms() / 1000.0;
+    bool Mechanics::in_judge_cutoff(const double t, RuntimeNote *note) {
+        const double early_miss_cutoff = player_score_keeper_->get_early_miss_cutoff_ms() / 1000.0;
+        const double miss_cutoff = player_score_keeper_->get_late_miss_cutoff_ms() / 1000.0;
         return (abs(t - note->get_start_time()) <= early_miss_cutoff) ||
                (abs(t - note->get_end_time()) <= miss_cutoff);
     }
 
-    bool Mechanics::is_early_miss(double t, RuntimeNote *note) {
-        double dt = (t - note->get_start_time()) * 1000.;
+    bool Mechanics::is_early_miss(const double t, RuntimeNote *note) {
+        const double dt = (t - note->get_start_time()) * 1000.;
         return dt < -player_score_keeper_->get_early_hit_cutoff_ms() && dt >= -player_score_keeper_->get_early_miss_cutoff_ms();
     }
 
-    bool Mechanics::is_bm_bad_judge(double t, RuntimeNote *note) {
-        double dt = abs(t - note->get_start_time()) * 1000.0;
+    bool Mechanics::is_bm_bad_judge(const double t, RuntimeNote *note) {
+        const double dt = abs(t - note->get_start_time()) * 1000.0;
         return dt > player_score_keeper_->get_judgment_window(SKJ_W3) && dt < player_score_keeper_->get_judgment_window(SKJ_W4);
     }
 
-    bool Mechanics::in_head_cutoff(double t, RuntimeNote *note) {
-        double dev = (t - note->get_start_time()) * 1000;
+    bool Mechanics::in_head_cutoff(const double t, RuntimeNote *note) {
+        const double dev = (t - note->get_start_time()) * 1000;
         return dev >= -player_score_keeper_->get_early_miss_cutoff_ms() &&
                dev <= player_score_keeper_->get_late_miss_cutoff_ms();
     }
@@ -48,28 +48,28 @@ namespace rd {
         }
     }
 
-    void Mechanics::configure(otoworm::Chart *chart, std::shared_ptr<ScoreKeeper> score_keeper) {
+    void Mechanics::configure(otoworm::Chart *chart, const std::shared_ptr<ScoreKeeper> score_keeper) {
         current_chart_ = chart;
         player_score_keeper_ = score_keeper;
     }
 
-    RaindropMechanics::RaindropMechanics(bool forced_release) {
+    RaindropMechanics::RaindropMechanics(const bool forced_release) {
         this->forced_release_ = forced_release;
         hold_hit_time_.fill(NAN);
     }
 
-    bool RaindropMechanics::on_update(double song_time, RuntimeNote *m, uint32_t lane) {
-        auto k = lane;
+    bool RaindropMechanics::on_update(const double song_time, RuntimeNote *m, const uint32_t lane) {
+        const auto k = lane;
         /* We have to check for all gameplay conditions for this note. */
-        double miss_cutoff = player_score_keeper_->get_late_miss_cutoff_ms();
+        const double miss_cutoff = player_score_keeper_->get_late_miss_cutoff_ms();
 
         // Condition A: Hold tail outside accuracy cutoff (can't be hit any longer),
         // note wasn't hit at the head and can't be hit at the head, and it's a hold
         if (!in_head_cutoff(song_time, m) // head outside judgment
             && !m->was_hit() && m->is_hold()) // not hit yet
         {
-            double dev = (song_time - m->get_end_time()) * 1000;
-            double t_d = abs(dev);
+            const double dev = (song_time - m->get_end_time()) * 1000;
+            const double t_d = abs(dev);
 
             if (dev > 0) {
                 // remove hold notes that were never hit.
@@ -153,13 +153,13 @@ namespace rd {
                 m->disable();
                 return true;
             } else { // still not over, and we're hitting it
-                auto tick_interval = player_score_keeper_->get_ln_tick_interval();
+                const auto tick_interval = player_score_keeper_->get_ln_tick_interval();
                 if (tick_interval > 0) {
                     if (m->is_enabled() && m->was_hit() && !::isnan(hold_hit_time_[lane])) {
-                        auto delta = song_time - hold_hit_time_[lane];
+                        const auto delta = song_time - hold_hit_time_[lane];
 
                         if (delta > tick_interval) {
-                            auto ticks = floor(delta / tick_interval);
+                            const auto ticks = floor(delta / tick_interval);
                             player_score_keeper_->tick_ln((int) ticks);
                             hold_hit_time_[lane] += ticks * tick_interval;
                         }
@@ -172,11 +172,11 @@ namespace rd {
         return false;
     }
 
-    bool RaindropMechanics::on_press_lane(double song_time, RuntimeNote *m, uint32_t lane) {
+    bool RaindropMechanics::on_press_lane(const double song_time, RuntimeNote *m, const uint32_t lane) {
         if (!m->is_enabled())
             return false;
 
-        double dev = (song_time - m->get_start_time()) * 1000;
+        const double dev = (song_time - m->get_start_time()) * 1000;
 
         if (!in_head_cutoff(song_time, m)) // If the note was hit outside of judging range
         {
@@ -214,15 +214,15 @@ namespace rd {
         return false;
     }
 
-    bool RaindropMechanics::on_release_lane(double song_time, RuntimeNote *m, uint32_t lane) {
+    bool RaindropMechanics::on_release_lane(const double song_time, RuntimeNote *m, const uint32_t lane) {
         if (m->is_hold() && m->was_hit() &&
             m->is_enabled()) /* We hit the hold's head and we've not released it early already */
         {
-            double dev = (song_time - m->get_end_time()) * 1000;
-            double t_d = abs(dev);
+            const double dev = (song_time - m->get_end_time()) * 1000;
+            const double t_d = abs(dev);
 
-            double early_hit = player_score_keeper_->get_early_miss_cutoff_ms();
-            double late_miss = player_score_keeper_->get_late_miss_cutoff_ms();
+            const double early_hit = player_score_keeper_->get_early_miss_cutoff_ms();
+            const double late_miss = player_score_keeper_->get_late_miss_cutoff_ms();
 
             double release_window;
 
@@ -271,12 +271,12 @@ namespace rd {
         return TT_BEATS;
     }
 
-    bool O2JamMechanics::on_release_lane(double song_beat, RuntimeNote *m, uint32_t lane) {
+    bool O2JamMechanics::on_release_lane(const double song_beat, RuntimeNote *m, const uint32_t lane) {
         if (m->is_hold() && m->was_hit() &&
             m->is_enabled()) /* We hit the hold's head and we've not released it early already */
         {
-            double dev = (song_beat - m->get_end_time());
-            double t_d = abs(dev);
+            const double dev = (song_beat - m->get_end_time());
+            const double t_d = abs(dev);
 
             if (t_d < player_score_keeper_->get_judgment_window(SKJ_W3)) /* Released in time */
             {
@@ -300,12 +300,12 @@ namespace rd {
         return false;
     }
 
-    bool O2JamMechanics::on_press_lane(double song_beat, RuntimeNote *m, uint32_t lane) {
+    bool O2JamMechanics::on_press_lane(const double song_beat, RuntimeNote *m, const uint32_t lane) {
         if (!m->is_enabled())
             return false;
 
-        double dev = (song_beat - m->get_start_time());
-        double t_d = abs(dev);
+        const double dev = (song_beat - m->get_start_time());
+        const double t_d = abs(dev);
 
         if (t_d < player_score_keeper_->get_judgment_window(SKJ_W3)) // If the note was hit inside judging range
         {
@@ -337,10 +337,10 @@ namespace rd {
         return false;
     }
 
-    bool O2JamMechanics::on_update(double song_beat, RuntimeNote *m, uint32_t lane) {
-        auto k = lane;
-        double t_tail = song_beat - m->get_end_time();
-        double t_head = song_beat - m->get_start_time();
+    bool O2JamMechanics::on_update(const double song_beat, RuntimeNote *m, const uint32_t lane) {
+        const auto k = lane;
+        const double t_tail = song_beat - m->get_end_time();
+        const double t_head = song_beat - m->get_start_time();
 
         if (!m->is_enabled()) return false; // keep looking
 

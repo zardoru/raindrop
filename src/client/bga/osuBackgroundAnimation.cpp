@@ -189,29 +189,29 @@ namespace osb {
 
 	BGASprite::BGASprite(std::string file, const EOrigin origin, const Vec2 start_pos, const ELayer layer) : EventComponent(EVT_COUNT)
     {
-        mFile = std::move(file);
-        mOrigin = origin;
-        mStartPos = start_pos;
-        mLayer = layer;
+        m_file_ = std::move(file);
+        m_origin_ = origin;
+        m_start_pos_ = start_pos;
+        m_layer_ = layer;
 
-        mSprite = nullptr;
-        mParent = nullptr;
-        mImageIndex = -1;
-        mUninitialized = true;
+        m_sprite_ = nullptr;
+        m_parent_ = nullptr;
+        m_image_index_ = -1;
+        m_uninitialized_ = true;
     }
 
 	void BGASprite::set_sprite(Sprite* sprite)
     {
-        mSprite = sprite;
+        m_sprite_ = sprite;
     }
 
 
 	void BGASprite::initialize_sprite()
     {
-        if (mUninitialized) // We haven't initialized from the parent's data yet? Alright.
+        if (m_uninitialized_) // We haven't initialized from the parent's data yet? Alright.
         {
             // -> == then
-            assert(mParent != nullptr);
+            assert(m_parent_ != nullptr);
             // Starts from the sprite, at the bottom. Read bottom to top to see how transformations are applied.
 
             // Steamlined, in order
@@ -227,22 +227,22 @@ namespace osb {
             // apply position
 
             // rotation -> scale + vecscale -> position.
-            mTransform.chain_transformation(&mParent->get_screen_transformation());
+            m_transform_.chain_transformation(&m_parent_->get_screen_transformation());
 
             // flip -> pivot
-            mPivot.set_position(OriginPivots[mOrigin].x, OriginPivots[mOrigin].y);
-            mPivot.chain_transformation(&mTransform);
+            m_pivot_.set_position(OriginPivots[m_origin_].x, OriginPivots[m_origin_].y);
+            m_pivot_.chain_transformation(&m_transform_);
 			
             // sprite -> flip vertices
-            mFlip.chain_transformation(&mPivot);
+            m_flip_.chain_transformation(&m_pivot_);
 
             // No op from sprite.
-            mSprite->chain_transformation(&mFlip);
+            m_sprite_->chain_transformation(&m_flip_);
 
             // Set the image.
-            mSprite->set_image(mParent->get_image_from_index(mImageIndex), false);
+            m_sprite_->set_image(m_parent_->get_image_from_index(m_image_index_), false);
 
-            mUninitialized = false;
+            m_uninitialized_ = false;
         }
     }
 
@@ -265,8 +265,8 @@ namespace osb {
 
 	void BGASprite::update(const float time)
 	{
-		assert (mSprite != nullptr);
-		assert (mParent != nullptr); // We need this.
+		assert (m_sprite_ != nullptr);
+		assert (m_parent_ != nullptr); // We need this.
 		// Now get the values for all the different stuff.
 		
 		// Okay, a pretty long function follows. Fade first.
@@ -274,35 +274,35 @@ namespace osb {
 		
 		if (validate_event_iterator(fade_evt, evFade)) {
 			if (is_time_in_event_bounds(time))
-					mSprite->color.alpha = fade_evt->lerp_value(time);
+					m_sprite_->color.alpha = fade_evt->lerp_value(time);
 			else {
-				if (fade_evt->get_time() == 0 && mLayer == LAYER_SP_BACKGROUND)
-					mSprite->color.alpha = 1;
+				if (fade_evt->get_time() == 0 && m_layer_ == LAYER_SP_BACKGROUND)
+					m_sprite_->color.alpha = 1;
 				else
-					mSprite->color.alpha = 0;
+					m_sprite_->color.alpha = 0;
 			}
 		}
 		else {
 			if (is_time_in_event_bounds(time))
-				mSprite->color.alpha = 1;
+				m_sprite_->color.alpha = 1;
 			else
-				mSprite->color.alpha = 0;
+				m_sprite_->color.alpha = 0;
 		}
 
 		// Don't bother updating unless we're visible.
-		if (mSprite->color.alpha == 0)
+		if (m_sprite_->color.alpha == 0)
 			return;
 
 		// Now position.	
 		auto movx_evt = get_event(time, evMoveX);
 		if (validate_event_iterator(movx_evt, evMoveX))
-			mTransform.set_position_x(movx_evt->lerp_value(time));
-		else mTransform.set_position_x(mStartPos.x);
+			m_transform_.set_position_x(movx_evt->lerp_value(time));
+		else m_transform_.set_position_x(m_start_pos_.x);
 
 		auto movy_evt = get_event(time, evMoveY);
 		if (validate_event_iterator(movy_evt, evMoveY))
-			mTransform.set_position_y(movy_evt->lerp_value(time));
-		else mTransform.set_position_y(mStartPos.y);
+			m_transform_.set_position_y(movy_evt->lerp_value(time));
+		else m_transform_.set_position_y(m_start_pos_.y);
 
 		// We already unpacked move events, so no need for this next snip.
 		/* auto mov_evt = GetEvent(Time, EVT_MOVE);
@@ -314,8 +314,8 @@ namespace osb {
 		auto scale_evt = get_event(time, evScale);
 		if (validate_event_iterator(scale_evt, evScale))
 			scale = scale_evt->lerp_value(time);
-		else if (mLayer == osb::LAYER_SP_BACKGROUND && mSprite->get_image())
-			scale *= OSB_WIDTH_WIDE / mSprite->get_image()->w;
+		else if (m_layer_ == osb::LAYER_SP_BACKGROUND && m_sprite_->get_image())
+			scale *= OSB_WIDTH_WIDE / m_sprite_->get_image()->w;
 		else scale = 1;
 		// we want to scale it to fit - but we don't want to alter the scale set by the user
 		// scales just get multiplied so we'll do that
@@ -332,20 +332,20 @@ namespace osb {
 		float rot = 0;
 		if (validate_event_iterator(rot_evt, evRotate)) {
 			rot = rot_evt->lerp_value(time);
-			mTransform.set_rotation(rot);
+			m_transform_.set_rotation(rot);
 		}
-		else mTransform.set_rotation(0);
+		else m_transform_.set_rotation(0);
 
-		if (mSprite->get_image())
+		if (m_sprite_->get_image())
 		{
-			auto i = mSprite->get_image();
+			auto i = m_sprite_->get_image();
 
 			// Move, then scale (is the way transformations are set up
 			// therefore, pivot is applied, then scale
 			// then both size and scale on mTransform are free for usage.
 
 			// Set active scales.
-			mTransform.set_size(i->w * scale * vscale.x, i->h * scale * vscale.y);
+			m_transform_.set_size(i->w * scale * vscale.x, i->h * scale * vscale.y);
 
             if (const auto vid = dynamic_cast<VideoPlayback*>(i)) {
 				vid->update_clock(time - evFade.begin()->get_time());
@@ -356,9 +356,9 @@ namespace osb {
 		auto colorization_evt = get_event(time, evColorize);
 		if (validate_event_iterator(colorization_evt, evColorize)) {
 			auto lerp = colorization_evt->lerp_value(time);
-			mSprite->color.red = lerp.r;
-			mSprite->color.green = lerp.g;
-			mSprite->color.blue = lerp.b;
+			m_sprite_->color.red = lerp.r;
+			m_sprite_->color.green = lerp.g;
+			m_sprite_->color.blue = lerp.b;
 		}
 
 		// The effects after this don't set values before they begin. (Parameter)
@@ -366,8 +366,8 @@ namespace osb {
 		if (additive_evt != evAdditive.begin()
 			&& evAdditive.begin() != evAdditive.end()
 			&& (additive_evt - 1)->get_end_time() <= time)
-			mSprite->set_blend_mode(BLEND_ADD);
-		else mSprite->set_blend_mode(BLEND_ALPHA);
+			m_sprite_->set_blend_mode(BLEND_ADD);
+		else m_sprite_->set_blend_mode(BLEND_ALPHA);
 
 		auto hflip_evt = get_event(time, evFlipH);
 		if (hflip_evt != evFlipH.begin() 
@@ -375,12 +375,12 @@ namespace osb {
 		{
 			if ((hflip_evt - 1)->get_end_time() <= time)
 			{
-				mFlip.set_scale_x(-1);
-				mFlip.set_position_x(1);
+				m_flip_.set_scale_x(-1);
+				m_flip_.set_position_x(1);
 			} else
 			{
-				mFlip.set_scale_x(1);
-				mFlip.set_position_x(0);
+				m_flip_.set_scale_x(1);
+				m_flip_.set_position_x(0);
 			}
 		}
 
@@ -390,34 +390,34 @@ namespace osb {
 		{
 			if ((vflip_evt - 1)->get_end_time() <= time)
 			{
-				mFlip.set_scale_y(-1);
-				mFlip.set_position_y(1);
+				m_flip_.set_scale_y(-1);
+				m_flip_.set_position_y(1);
 			} else
 			{
-				mFlip.set_scale_y(1);
-				mFlip.set_position_y(0);
+				m_flip_.set_scale_y(1);
+				m_flip_.set_position_y(0);
 			}
 		}
 	}
 
 	std::string BGASprite::get_image_filename() const
 	{
-		return mFile;
+		return m_file_;
 	}
 
 	ELayer BGASprite::get_layer() const
 	{
-		return mLayer;
+		return m_layer_;
 	}
 
 	void BGASprite::set_parent(osuBackgroundAnimation* parent)
 	{
-		mParent = parent;
+		m_parent_ = parent;
 	}
 
 	void BGASprite::set_image_index(const int index)
 	{
-		mImageIndex = index;
+		m_image_index_ = index;
 	}
 
 	template <class T>

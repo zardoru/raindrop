@@ -1,14 +1,14 @@
 #include <rmath.h>
 #include <game/scoring_systems/BMSScoring.h>
 
-void rd::ScoreSystemBMS::Reset() {
+void rd::ScoreSystemBMS::reset() {
     bms_combo = -1;
     bms_combo = 0;
     bms_combo_pts = 0;
     bms_dance_pts = 0;
 }
 
-void rd::ScoreSystemBMS::Update(rd::ScoreKeeperJudgment skj, bool use_w0) {
+void rd::ScoreSystemBMS::update(const rd::ScoreKeeperJudgment skj, const bool use_w0) {
     if (skj == SKJ_NONE || skj > SKJ_MISS) return;
 
     if (use_w0) {
@@ -47,27 +47,27 @@ void rd::ScoreSystemBMS::Update(rd::ScoreKeeperJudgment skj, bool use_w0) {
     bms_combo_pts += bms_combo;
 }
 
-long long rd::ScoreSystemBMS::GetCurrentScore(long long int max_notes, bool use_w0) const {
+long long rd::ScoreSystemBMS::get_current_score(const long long int max_notes, bool use_w0) const {
     return 50000 * bms_combo_pts / GetMaxComboPts(max_notes)
            + 10000 * bms_dance_pts / max_notes;
 }
 
-long long rd::ScoreSystemBMS::GetMaxScore(long long int max_notes, bool use_w0) {
+long long rd::ScoreSystemBMS::get_max_score(long long int max_notes, bool use_w0) {
     return 1; /* TODO: implement i guess */
 }
 
-long long rd::ScoreSystemBMS::GetMaxComboPts(long long int notes) {
+long long rd::ScoreSystemBMS::GetMaxComboPts(const long long int notes) {
     if (notes < 10)
         return notes * (notes + 1) / 2;
     else
         return 55 + (notes - 10) * 10;
 }
 
-void rd::ScoreSystemLR2::Reset() {
+void rd::ScoreSystemLR2::reset() {
     lr2_dance_pts = 0;
 }
 
-void rd::ScoreSystemLR2::Update(rd::ScoreKeeperJudgment skj, bool use_w0) {
+void rd::ScoreSystemLR2::update(const rd::ScoreKeeperJudgment skj, const bool use_w0) {
     if (skj == SKJ_NONE || skj > SKJ_MISS) return;
     if (use_w0) {
         switch (skj) {
@@ -100,19 +100,19 @@ void rd::ScoreSystemLR2::Update(rd::ScoreKeeperJudgment skj, bool use_w0) {
     }
 }
 
-long long rd::ScoreSystemLR2::GetCurrentScore(long long int max_notes, bool use_w0) const {
+long long rd::ScoreSystemLR2::get_current_score(const long long int max_notes, bool use_w0) const {
     return 20000 * lr2_dance_pts / max_notes;
 }
 
-long long rd::ScoreSystemLR2::GetMaxScore(long long int max_notes, bool use_w0) {
+long long rd::ScoreSystemLR2::get_max_score(long long int max_notes, bool use_w0) {
     return 200000;
 }
 
-void rd::ScoreSystemEX::Reset() {
+void rd::ScoreSystemEX::reset() {
     ex_score = 0;
 }
 
-void rd::ScoreSystemEX::Update(rd::ScoreKeeperJudgment skj, bool use_w0) {
+void rd::ScoreSystemEX::update(const rd::ScoreKeeperJudgment skj, const bool use_w0) {
     if (skj == SKJ_NONE || skj > SKJ_MISS) return;
     if (use_w0) {
         switch (skj) {
@@ -139,20 +139,20 @@ void rd::ScoreSystemEX::Update(rd::ScoreKeeperJudgment skj, bool use_w0) {
     }
 }
 
-long long rd::ScoreSystemEX::GetCurrentScore(long long int max_notes, bool use_w0) const {
+long long rd::ScoreSystemEX::get_current_score(long long int max_notes, bool use_w0) const {
     return ex_score;
 }
 
-long long rd::ScoreSystemEX::GetMaxScore(long long int max_notes, bool use_w0) {
+long long rd::ScoreSystemEX::get_max_score(const long long int max_notes, bool use_w0) {
     return max_notes * 2;
 }
 
-rd::PacemakerType rd::ScoreSystemEX::GetRank(long long max_notes) const {
+rd::PacemakerType rd::ScoreSystemEX::GetRank(const long long max_notes) const {
     static constexpr double thresholds[] = {8.0 / 9.0, 7.0 / 9.0, 6.0 / 9.0,
                            5.0 / 9.0, 4.0 / 9.0, 3.0 / 9.0, 2.0 / 9.0, 1.0 / 9.0,
                            0, -std::numeric_limits<double>::infinity()};
 
-    double exps = double (ex_score) / double (max_notes) / 2.0;
+    const double exps = double (ex_score) / double (max_notes) / 2.0;
     auto rank_index = 9;
 
     // see if the current ex score crosses the threshold for this BM rank

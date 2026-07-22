@@ -2,13 +2,13 @@
 #include <rmath.h>
 #include <game/scoring_systems/OsumaniaScoring.h>
 
-void rd::ScoreSystemOsuMania::Reset() {
+void rd::ScoreSystemOsuMania::reset() {
     osu_points = 0;
     bonus_counter = 100;
     osu_bonus_points = 0;
 }
 
-void rd::ScoreSystemOsuMania::Update(rd::ScoreKeeperJudgment skj, bool use_w0) {
+void rd::ScoreSystemOsuMania::update(const rd::ScoreKeeperJudgment skj, bool use_w0) {
     int osu_bonus_multiplier = 0;
 
     if (skj < SKJ_W0 || skj > SKJ_MISS) return;
@@ -51,19 +51,19 @@ void rd::ScoreSystemOsuMania::Update(rd::ScoreKeeperJudgment skj, bool use_w0) {
     osu_bonus_points += osu_bonus_multiplier * sqrt(double(bonus_counter));
 }
 
-long long rd::ScoreSystemOsuMania::GetCurrentScore(long long int max_notes, bool use_w0) const {
+long long rd::ScoreSystemOsuMania::get_current_score(const long long int max_notes, bool use_w0) const {
     return 500000 * ((osu_points + osu_bonus_points) / (max_notes * 320));
 }
 
-long long rd::ScoreSystemOsuMania::GetMaxScore(long long int max_notes, bool use_w0) {
+long long rd::ScoreSystemOsuMania::get_max_score(long long int max_notes, bool use_w0) {
     return 1000000;
 }
 
-void rd::ScoreSystemOsuManiaAccuracy::Reset() {
+void rd::ScoreSystemOsuManiaAccuracy::reset() {
     osu_accuracy = 100;
 }
 
-void rd::ScoreSystemOsuManiaAccuracy::Update(rd::ScoreKeeperJudgment skj, bool use_w0) {
+void rd::ScoreSystemOsuManiaAccuracy::update(const rd::ScoreKeeperJudgment skj, bool use_w0) {
 
     switch (skj) {
         case SKJ_W0:
@@ -88,10 +88,10 @@ void rd::ScoreSystemOsuManiaAccuracy::Update(rd::ScoreKeeperJudgment skj, bool u
 
 }
 
-long long rd::ScoreSystemOsuManiaAccuracy::GetCurrentScore(long long int max_notes, bool use_w0) const {
+long long rd::ScoreSystemOsuManiaAccuracy::get_current_score(const long long int max_notes, bool use_w0) const {
     return osu_accuracy * 100 / 3 / max_notes;
 }
 
-long long rd::ScoreSystemOsuManiaAccuracy::GetMaxScore(long long int max_notes, bool use_w0) {
+long long rd::ScoreSystemOsuManiaAccuracy::get_max_score(long long int max_notes, bool use_w0) {
     return 10000; // 100 and 2 decimals
 }

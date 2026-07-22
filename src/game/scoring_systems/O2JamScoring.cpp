@@ -2,7 +2,7 @@
 #include <game/scoring_systems/O2JamScoring.h>
 
 
-void rd::ScoreSystemO2Jam::Reset() {
+void rd::ScoreSystemO2Jam::reset() {
     coolcombo = 0;
     pills = 0;
     jams = 0;
@@ -10,7 +10,7 @@ void rd::ScoreSystemO2Jam::Reset() {
     o2_score = 0;
 }
 
-void rd::ScoreSystemO2Jam::Update(rd::ScoreKeeperJudgment skj, bool use_w0) {
+void rd::ScoreSystemO2Jam::update(const rd::ScoreKeeperJudgment skj, bool use_w0) {
     if (skj > SKJ_MISS || skj <= -1) return;
 
     if (skj == SKJ_W1) {
@@ -53,11 +53,11 @@ void rd::ScoreSystemO2Jam::Update(rd::ScoreKeeperJudgment skj, bool use_w0) {
     o2_score = std::max(static_cast<long long>(0), o2_score);
 }
 
-long long rd::ScoreSystemO2Jam::GetCurrentScore(long long int max_notes, bool use_w0) const {
+long long rd::ScoreSystemO2Jam::get_current_score(long long int max_notes, bool use_w0) const {
     return o2_score;
 }
 
-long long rd::ScoreSystemO2Jam::GetMaxScore(long long int max_notes, bool use_w0) {
+long long rd::ScoreSystemO2Jam::get_max_score(long long int max_notes, bool use_w0) {
     return 0; /* TODO: h-how can I EVEN KNOW WHO EVEN WANTS TO DO THE MATHS */
 }
 

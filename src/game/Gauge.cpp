@@ -32,7 +32,7 @@ void Gauge::default_setup() {
    // stub
 }
 
-void GaugeO2Jam::setup(double total, long long max_notes, double strictness) {
+void GaugeO2Jam::setup(double total, long long max_notes, const double strictness) {
     // Thanks to Entozer for giving this information.
     if (strictness == 0) { // EX
         increment_ = 0.3;
@@ -52,7 +52,7 @@ void GaugeO2Jam::setup(double total, long long max_notes, double strictness) {
     }
 }
 
-void GaugeO2Jam::update(ScoreKeeperJudgment skj, bool is_early, float mine_value) {
+void GaugeO2Jam::update(const ScoreKeeperJudgment skj, bool is_early, float mine_value) {
     if (skj == SKJ_NONE) return;
     if (skj == SKJ_TICK) return;
     if (skj <= SKJ_W1) // only COOLs restore o2jam lifebar
@@ -79,7 +79,7 @@ double GaugeO2Jam::get_gauge_value() {
 
 void GaugeStepmania::reset() { lifebar_amount_ = 0.5; }
 
-void GaugeStepmania::update(ScoreKeeperJudgment skj, bool is_early, float mine_value) {
+void GaugeStepmania::update(const ScoreKeeperJudgment skj, const bool is_early, const float mine_value) {
     if (skj == SKJ_TICK) return;
     if (skj == SKJ_MINE) {
         lifebar_amount_ -= mine_value;
@@ -99,7 +99,7 @@ void GaugeOsuMania::default_setup() {
     setup(0, 0, 8);
 }
 
-void GaugeOsuMania::setup(double total, long long int max, double strictness) {
+void GaugeOsuMania::setup(double total, long long int max, const double strictness) {
     hp_ = clamp(strictness, 0.0, 10.0);
 
     double whole_part;
@@ -160,7 +160,7 @@ void GaugeOsuMania::setup(double total, long long int max, double strictness) {
     }
 }
 
-void GaugeOsuMania::update(ScoreKeeperJudgment skj, bool is_early, float mine_value) {
+void GaugeOsuMania::update(const ScoreKeeperJudgment skj, bool is_early, float mine_value) {
     if (skj == SKJ_NONE) return;
     if (skj == SKJ_TICK) lifebar_amount_ += ln_tick_fill_;
     if (skj >= SKJ_W0 && skj <= SKJ_MISS)

@@ -7,7 +7,7 @@
 
 using namespace rd;
 
-int RaindropArcadeMechanics::get_scratch_for_lane(uint32_t lane) {
+int RaindropArcadeMechanics::get_scratch_for_lane(const uint32_t lane) {
     if (lane == SCRATCH_1P_CHANNEL) {
         return 0;
     } else if (lane == SCRATCH_2P_CHANNEL) {
@@ -19,8 +19,8 @@ int RaindropArcadeMechanics::get_scratch_for_lane(uint32_t lane) {
     return 0;
 }
 
-bool RaindropArcadeMechanics::can_hit_note_head(double time, RuntimeNote *note) {
-    double cutoff = player_score_keeper_->get_judgment_cutoff_ms() / 1000.0;
+bool RaindropArcadeMechanics::can_hit_note_head(const double time, RuntimeNote *note) {
+    const double cutoff = player_score_keeper_->get_judgment_cutoff_ms() / 1000.0;
     return (abs(time - note->get_start_time()) < cutoff) && note->is_head_enabled() && !note->was_hit();
 }
 
@@ -28,8 +28,8 @@ bool RaindropArcadeMechanics::can_hit_note_tail(double time, RuntimeNote *note) 
     return !note->is_head_enabled() && note->was_hit();
 }
 
-void RaindropArcadeMechanics::judge_scratch(double song_time, RuntimeNote *note, uint32_t lane,
-                                           EScratchState new_scratch_state, EScratchState old_scratch_state) {
+void RaindropArcadeMechanics::judge_scratch(const double song_time, RuntimeNote *note, const uint32_t lane,
+                                           const EScratchState new_scratch_state, const EScratchState old_scratch_state) {
 
     if ((new_scratch_state != SCR_NEUTRAL && old_scratch_state == SCR_NEUTRAL) ||
         (old_scratch_state == SCR_UP && new_scratch_state == SCR_DOWN) ||
@@ -39,9 +39,9 @@ void RaindropArcadeMechanics::judge_scratch(double song_time, RuntimeNote *note,
     }
 }
 
-void RaindropArcadeMechanics::perform_judgement(double song_time, RuntimeNote *note, uint32_t lane) {
+void RaindropArcadeMechanics::perform_judgement(const double song_time, RuntimeNote *note, const uint32_t lane) {
     // From neutral or opposite scratch, or key press, trigger the head.
-    double dev = 1000. * (song_time - note->get_start_time());
+    const double dev = 1000. * (song_time - note->get_start_time());
     if (is_early_miss(song_time, note)) {
         notify_miss(dev, lane, note->is_hold(), false, true);
     } else {
@@ -78,7 +78,7 @@ void RaindropArcadeMechanics::perform_judgement(double song_time, RuntimeNote *n
 
             note->disable();
 
-            double tdev = (note->get_end_time() - song_time) * 1000.;
+            const double tdev = (note->get_end_time() - song_time) * 1000.;
             // Tail is within judge window, and head was hit
             if (abs(tdev) < player_score_keeper_->get_judgment_window(SKJ_W3)
                 && note->was_hit()) {
@@ -98,12 +98,12 @@ RaindropArcadeMechanics::RaindropArcadeMechanics() {
     scratch_state_[0] = scratch_state_[1] = SCR_NEUTRAL;
 }
 
-bool RaindropArcadeMechanics::on_update(double song_time, RuntimeNote *note, uint32_t lane) {
+bool RaindropArcadeMechanics::on_update(const double song_time, RuntimeNote *note, const uint32_t lane) {
     if (!note->is_enabled()) return false;
 
-    double miss_time = player_score_keeper_->get_judgment_window(SKJ_W3);
-    double dev = (song_time - note->get_start_time()) * 1000.;
-    double tail_dev = (song_time - note->get_end_time()) * 1000.;
+    const double miss_time = player_score_keeper_->get_judgment_window(SKJ_W3);
+    const double dev = (song_time - note->get_start_time()) * 1000.;
+    const double tail_dev = (song_time - note->get_end_time()) * 1000.;
 
     if ((dev > miss_time && note->is_head_enabled()) ||  // Judge head only if not hit or regular note
         (tail_dev > miss_time && !note->is_head_enabled())) { // Judge tail regardless of whether it was hit or not
@@ -131,7 +131,7 @@ bool RaindropArcadeMechanics::on_update(double song_time, RuntimeNote *note, uin
     return false;
 }
 
-bool RaindropArcadeMechanics::on_press_lane(double song_time, RuntimeNote *note, uint32_t lane) {
+bool RaindropArcadeMechanics::on_press_lane(const double song_time, RuntimeNote *note, const uint32_t lane) {
     if (!note->is_enabled()) return false;
     if (!in_judge_cutoff(song_time, note)) return false;
     if (!can_hit_note_head(song_time, note)) return false;
@@ -140,7 +140,7 @@ bool RaindropArcadeMechanics::on_press_lane(double song_time, RuntimeNote *note,
     return true;
 }
 
-bool RaindropArcadeMechanics::on_release_lane(double song_time, RuntimeNote *note, uint32_t lane) {
+bool RaindropArcadeMechanics::on_release_lane(const double song_time, RuntimeNote *note, const uint32_t lane) {
     if (!note->is_enabled()) return false;
     if (!in_judge_cutoff(song_time, note)) return false;
     if (!can_hit_note_tail(song_time, note)) return false;
@@ -149,11 +149,11 @@ bool RaindropArcadeMechanics::on_release_lane(double song_time, RuntimeNote *not
     return true;
 }
 
-bool RaindropArcadeMechanics::on_scratch_up(double song_time, RuntimeNote *note, uint32_t lane) {
+bool RaindropArcadeMechanics::on_scratch_up(const double song_time, RuntimeNote *note, const uint32_t lane) {
     if (!note->is_enabled()) return false;
-    int scratch = get_scratch_for_lane(lane);
-    bool judge_head = can_hit_note_head(song_time, note);
-    bool judge_tail = can_hit_note_tail(song_time, note);
+    const int scratch = get_scratch_for_lane(lane);
+    const bool judge_head = can_hit_note_head(song_time, note);
+    const bool judge_tail = can_hit_note_tail(song_time, note);
     if (!judge_head && !judge_tail) return false;
 
     judge_scratch(song_time, note, lane, SCR_UP, scratch_state_[scratch]);
@@ -161,11 +161,11 @@ bool RaindropArcadeMechanics::on_scratch_up(double song_time, RuntimeNote *note,
     return true;
 }
 
-bool RaindropArcadeMechanics::on_scratch_down(double song_time, RuntimeNote *note, uint32_t lane) {
+bool RaindropArcadeMechanics::on_scratch_down(const double song_time, RuntimeNote *note, const uint32_t lane) {
     if (!note->is_enabled()) return false;
-    int scratch = get_scratch_for_lane(lane);
-    bool judge_head = can_hit_note_head(song_time, note);
-    bool judge_tail = can_hit_note_tail(song_time, note);
+    const int scratch = get_scratch_for_lane(lane);
+    const bool judge_head = can_hit_note_head(song_time, note);
+    const bool judge_tail = can_hit_note_tail(song_time, note);
     if (!judge_head && !judge_tail) return false;
 
     judge_scratch(song_time, note, lane, SCR_DOWN, scratch_state_[scratch]);
@@ -173,11 +173,11 @@ bool RaindropArcadeMechanics::on_scratch_down(double song_time, RuntimeNote *not
     return true;
 }
 
-bool RaindropArcadeMechanics::on_scratch_neutral(double song_time, RuntimeNote *note, uint32_t lane) {
+bool RaindropArcadeMechanics::on_scratch_neutral(const double song_time, RuntimeNote *note, const uint32_t lane) {
     if (!note->is_enabled()) return false;
-    int scratch = get_scratch_for_lane(lane);
-    bool judge_head = can_hit_note_head(song_time, note);
-    bool judge_tail = can_hit_note_tail(song_time, note);
+    const int scratch = get_scratch_for_lane(lane);
+    const bool judge_head = can_hit_note_head(song_time, note);
+    const bool judge_tail = can_hit_note_tail(song_time, note);
     if (!judge_head && !judge_tail) return false;
 
     if (scratch_state_[scratch] != SCR_NEUTRAL) {
