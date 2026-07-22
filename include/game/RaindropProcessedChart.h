@@ -7,7 +7,6 @@
 
 #include <ProcessedChart.h>
 #include <game/GameConstants.h>
-#include <game/Song.h>
 
 namespace rd {
     struct RuntimeNoteStorage;

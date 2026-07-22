@@ -13,7 +13,6 @@ struct lua_State;
 
 namespace rd
 {
-    class Difficulty;
     class ScoreKeeper;
 }
 

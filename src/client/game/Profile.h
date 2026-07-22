@@ -23,7 +23,6 @@ public:
         const Replay &replay
     );
 
-    // ScoreRow GetDifficultyScore(rd::Difficulty* diff);
 
     static std::vector<std::string> get_profile_list();
 };

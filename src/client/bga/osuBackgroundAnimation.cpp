@@ -3,7 +3,6 @@
 #include <functional>
 #include <regex>
 #include <rmath.h>
-#include <game/Timing.h>
 
 #include <game/Easing.h>
 #include "Transformation.h"
@@ -71,7 +70,7 @@ namespace osb {
 	Event::Event(const EEventType typ) :
         mEvtType(typ), mEase(EASE_NONE)
     {
-        Time = 0; EndTime = 0;
+        time = 0; EndTime = 0;
     }
 
 	EEventType Event::get_event_type() const
@@ -81,7 +80,7 @@ namespace osb {
 
 	float Event::get_time() const
     {
-        return Time;
+        return time;
     }
 
 	float Event::get_end_time() const
@@ -91,7 +90,7 @@ namespace osb {
 
 	float Event::get_duration() const
     {
-        return EndTime - Time;
+        return EndTime - time;
     }
 
 	int Event::get_ease() const
@@ -101,7 +100,7 @@ namespace osb {
 
 	void Event::set_time(const float time)
     {
-        Time = time;
+        this->time = time;
     }
 
 	void Event::set_end_time(const float EndTime)
@@ -135,7 +134,7 @@ namespace osb {
 
 	float SingleValEvent::lerp_value(const float At) const
     {
-        return Lerp(Value, EndValue, EasingFuncs[get_ease()](clamp((At - Time) / get_duration(), 0.f, 1.f)));
+        return Lerp(Value, EndValue, EasingFuncs[get_ease()](clamp((At - time) / get_duration(), 0.f, 1.f)));
     }
 
 	Vec2 TwoValEvent::get_value() const
@@ -159,7 +158,7 @@ namespace osb {
 
 	Vec2 TwoValEvent::lerp_value(const float At) const
     {
-        return Lerp(Value, EndValue, EasingFuncs[get_ease()](clamp((At - Time) / get_duration(), 0.f, 1.f)));
+        return Lerp(Value, EndValue, EasingFuncs[get_ease()](clamp((At - time) / get_duration(), 0.f, 1.f)));
     }
 
 	Vec3 ColorizeEvent::get_value() const
@@ -185,7 +184,7 @@ namespace osb {
 	Vec3 ColorizeEvent::lerp_value(const float At) const
     {
         float factor = 1.f / 255.f;
-        return Lerp(Value, EndValue, EasingFuncs[get_ease()](clamp((At - Time) / get_duration(), 0.f, 1.f))) * factor;
+        return Lerp(Value, EndValue, EasingFuncs[get_ease()](clamp((At - time) / get_duration(), 0.f, 1.f))) * factor;
     }
 
 	BGASprite::BGASprite(std::string file, const EOrigin origin, const Vec2 start_pos, const ELayer layer) : EventComponent(EVT_COUNT)
@@ -252,7 +251,7 @@ namespace osb {
 	{
 		return lower_bound(vec.begin(), vec.end(), time, [](const typename T::value_type & v, const double &TT)
 		{
-			return v.Time < TT;
+			return v.time < TT;
 		});
 	}
 
@@ -643,16 +642,16 @@ namespace osb {
 		// not just last event's end time, so events are repeated as soon as the last one of the previous one ends
 		// that means, the time of the next event is not loop start time + max last time of event * iter
 		// but that dur previously mentioned instead.
-		unroll_events(iter_duration, Time, LoopCount, ec->evMoveX, evMoveX);
-		unroll_events(iter_duration, Time, LoopCount, ec->evMoveY, evMoveY);
-		unroll_events(iter_duration, Time, LoopCount, ec->evScale, evScale);
-		unroll_events(iter_duration, Time, LoopCount, ec->evScaleVec, evScaleVec);
-		unroll_events(iter_duration, Time, LoopCount, ec->evRotate, evRotate);
-		unroll_events(iter_duration, Time, LoopCount, ec->evColorize, evColorize);
-		unroll_events(iter_duration, Time, LoopCount, ec->evFade, evFade);
-		unroll_events(iter_duration, Time, LoopCount, ec->evFlipH, evFlipH);
-		unroll_events(iter_duration, Time, LoopCount, ec->evFlipV, evFlipV);
-		unroll_events(iter_duration, Time, LoopCount, ec->evAdditive, evAdditive);
+		unroll_events(iter_duration, time, LoopCount, ec->evMoveX, evMoveX);
+		unroll_events(iter_duration, time, LoopCount, ec->evMoveY, evMoveY);
+		unroll_events(iter_duration, time, LoopCount, ec->evScale, evScale);
+		unroll_events(iter_duration, time, LoopCount, ec->evScaleVec, evScaleVec);
+		unroll_events(iter_duration, time, LoopCount, ec->evRotate, evRotate);
+		unroll_events(iter_duration, time, LoopCount, ec->evColorize, evColorize);
+		unroll_events(iter_duration, time, LoopCount, ec->evFade, evFade);
+		unroll_events(iter_duration, time, LoopCount, ec->evFlipH, evFlipH);
+		unroll_events(iter_duration, time, LoopCount, ec->evFlipV, evFlipV);
+		unroll_events(iter_duration, time, LoopCount, ec->evAdditive, evAdditive);
 	}
 }
 

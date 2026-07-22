@@ -72,11 +72,6 @@ void Profile::save_replay(const otoworm::ChartGroup *chart_group, const Replay &
     replay.save(get_path() / REPLAYS_DIR / replay_filename);
 }
 
-/*ScoreRow Profile::GetDifficultyScore(rd::Difficulty * diff)
-{
-    return ScoreRow();
-}*/
-
 std::vector<std::string> Profile::get_profile_list() {
     return std::vector<std::string>();
 }

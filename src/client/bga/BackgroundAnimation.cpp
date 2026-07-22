@@ -24,7 +24,6 @@
 #include "ImageList.h"
 #include "Logging.h"
 
-#include <game/Timing.h>
 #include "osuBackgroundAnimation.h"
 
 namespace

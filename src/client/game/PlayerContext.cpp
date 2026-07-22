@@ -1,6 +1,5 @@
 #include <rmath.h>
 #include <queue>
-#include <game/Song.h>
 #include <game/ScoreKeeper.h>
 #include <game/RaindropProcessedChart.h>
 #include <game/VSRGMechanics.h>

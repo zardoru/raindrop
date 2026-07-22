@@ -2,7 +2,6 @@
 
 #include "rmath.h"
 
-#include <game/Song.h>
 #include <game/RaindropProcessedChart.h>
 
 #include <game/ScoreKeeper.h>

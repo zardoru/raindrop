@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <timing.h>
 
 class osuBackgroundAnimation;
 
@@ -46,7 +47,7 @@ namespace osb
 	};
 
 
-    class Event : public TimedEvent<Event, float>
+    class Event : public otoworm::TimedEvent<Event, float>
     {
         EEventType mEvtType;
 		EEase mEase;

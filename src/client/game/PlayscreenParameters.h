@@ -13,12 +13,6 @@ enum EHiddenMode
 
 struct PlayscreenParameters {
     bool is_seed_set;
-/* rd::TimingType SetupGameSystem(
-        std::shared_ptr<rd::ChartInfo> TimingInfo,
-        rd::ScoreKeeper* PlayerScoreKeeper);
-
-void SetupGauge(std::shared_ptr<rd::ChartInfo> TimingInfo, rd::ScoreKeeper* PlayerScoreKeeper); */
-
 int seed;
 
     void update_hidden(double judge_y);
@@ -113,4 +107,3 @@ public:
         speed_type = rd::SPEEDTYPE_DEFAULT;
     }
 };
-
