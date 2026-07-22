@@ -20,6 +20,14 @@
 class PlayerContext;
 class DrawCallSink;
 
+enum class NoteskinNoteState : int {
+    Unknown = -1,
+    Failed,
+    Active,
+    BeingHit,
+    SuccessfullyHit,
+};
+
 class Noteskin {
     LuaManager noteskin_lua_;
     std::optional<luabridge::LuaRef> callbacks_;
@@ -88,7 +96,7 @@ public:
 
     void draw_note(const rd::RuntimeNote &t, int lane, float location);
 
-    void draw_hold_body(int lane, float location, float size, int active_level);
+    void draw_hold_body(int lane, float location, float size, NoteskinNoteState state);
 
     float get_barline_width() const;
 
@@ -100,9 +108,9 @@ public:
 
     double get_judgment_y() const;
 
-    void draw_hold_head(const rd::RuntimeNote &t, int lane, float location, int active_level);
+    void draw_hold_head(const rd::RuntimeNote &t, int lane, float location, NoteskinNoteState state);
 
-    void draw_hold_tail(const rd::RuntimeNote &t, int lane, float location, int active_level);
+    void draw_hold_tail(const rd::RuntimeNote &t, int lane, float location, NoteskinNoteState state);
 
     double get_note_offset() const;
 

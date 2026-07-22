@@ -56,7 +56,7 @@ namespace {
         REQUIRE_NOTHROW(noteskin.update(2, 3));
         CHECK(noteskin.get_barline_start_x() == 23);
 
-        REQUIRE_NOTHROW(noteskin.draw_hold_body(1, 2, 3, 4));
+        REQUIRE_NOTHROW(noteskin.draw_hold_body(1, 2, 3, NoteskinNoteState::SuccessfullyHit));
         CHECK(noteskin.get_note_offset() == 10);
     }
 }
@@ -70,7 +70,7 @@ TEST_CASE("Noteskin can be used with no context", "[noteskin]")
 
         REQUIRE_NOTHROW(n.init_noteskin(false, 4));
         REQUIRE_NOTHROW(n.finalize_loading());
-        REQUIRE_NOTHROW(n.draw_hold_body(0, 0, 0, 0));
+        REQUIRE_NOTHROW(n.draw_hold_body(0, 0, 0, NoteskinNoteState::Failed));
     }
 }
 

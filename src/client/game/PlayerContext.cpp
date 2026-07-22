@@ -1261,24 +1261,21 @@ int PlayerContext::draw_measures(const double song_time) {
             // We draw the body first, so that way the heads get drawn on top
             if (m->is_hold()) {
                 // todo: move this note state determination to the note itself
-                enum : int {
-                    Failed, Active, BeingHit, SuccesfullyHit
-                };
-                int level = -1;
+                auto state = NoteskinNoteState::Unknown;
 
                 if (m->is_enabled() && !m->failed_hit())
-                    level = Active;
+                    state = NoteskinNoteState::Active;
                 if (!m->is_enabled() && m->failed_hit())
-                    level = Failed;
+                    state = NoteskinNoteState::Failed;
                 if (!m->is_enabled() && !m->failed_hit() && !m->was_hit())
-                    level = Failed;
+                    state = NoteskinNoteState::Failed;
                 if (m->is_enabled() && m->was_hit() && !m->failed_hit())
-                    level = BeingHit;
+                    state = NoteskinNoteState::BeingHit;
                 if (!m->is_enabled() && m->was_hit() && !m->failed_hit())
-                    level = SuccesfullyHit;
+                    state = NoteskinNoteState::SuccessfullyHit;
 
                 // If we're being hit and..
-                const bool decrease_hold_size = noteskin_->should_decrease_hold_size_when_being_hit() && level == 2;
+                const bool decrease_hold_size = noteskin_->should_decrease_hold_size_when_being_hit() && state == NoteskinNoteState::BeingHit;
                 auto reference_point = 0.0f;
                 if (decrease_hold_size) {
                     reference_point = judge_y;
@@ -1290,13 +1287,13 @@ int PlayerContext::draw_measures(const double song_time) {
                 const double pos = (vertical_hold_end + reference_point) / 2;
                 const double size = vertical_hold_end - reference_point;
 
-                noteskin_->draw_hold_body(k, pos, size, level);
-                noteskin_->draw_hold_tail(*m, k, vertical_hold_end, level);
+                noteskin_->draw_hold_body(k, pos, size, state);
+                noteskin_->draw_hold_tail(*m, k, vertical_hold_end, state);
 
                 if (noteskin_->allow_dangling_heads() || decrease_hold_size)
-                    noteskin_->draw_hold_head(*m, k, judge_y, level);
+                    noteskin_->draw_hold_head(*m, k, judge_y, state);
                 else
-                    noteskin_->draw_hold_head(*m, k, vertical, level);
+                    noteskin_->draw_hold_head(*m, k, vertical, state);
             } else {
                 if (noteskin_->allow_dangling_heads())
                     noteskin_->draw_note(*m, k, judge_y);
