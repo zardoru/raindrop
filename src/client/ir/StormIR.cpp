@@ -61,8 +61,8 @@ namespace StormIR {
 
     StormIR::~StormIR() = default;
 
-    bool StormIR::Login(std::string username, std::string password) {
-        if (IsConnected())
+    bool StormIR::login(std::string username, std::string password) {
+        if (is_connected())
             return true;
 
         auto s = _impl->ApiRequest("login");
@@ -89,17 +89,17 @@ namespace StormIR {
         return true;
     }
 
-    bool StormIR::IsConnected() {
+    bool StormIR::is_connected() {
         return !_impl->_sessionToken.empty();
     }
 
-    bool StormIR::SubmitScore(
+    bool StormIR::submit_score(
             const otoworm::ChartGroup *chart_group,
             const otoworm::Chart *chart,
             const Replay &replay,
             const rd::ScoreKeeper &score
     ) {
-        if (!IsConnected())
+        if (!is_connected())
             return false;
 
         // most of the hard work is done in this function
@@ -127,15 +127,15 @@ namespace StormIR {
         return true;
     }
 
-    void StormIR::FetchPersonalScore() {
+    void StormIR::fetch_personal_score() {
 
     }
 
-    std::string StormIR::GetSessionToken() {
+    std::string StormIR::get_session_token() {
         return _impl->_sessionToken;
     }
 
-    std::string StormIR::GetLastError() {
+    std::string StormIR::get_last_error() {
         return last_error;
     }
 }

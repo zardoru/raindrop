@@ -20,18 +20,18 @@ namespace StormIR {
 
         ~StormIR();
 
-        bool Login(std::string username, std::string password);
+        bool login(std::string username, std::string password);
 
-        bool IsConnected();
+        bool is_connected();
 
-        std::string GetSessionToken();
+        std::string get_session_token();
 
-        std::string GetLastError();
+        std::string get_last_error();
 
-        void FetchPersonalScore();
+        void fetch_personal_score();
 
         bool
-        SubmitScore(const otoworm::ChartGroup *chart_group, const otoworm::Chart *chart, const Replay& replay,
+        submit_score(const otoworm::ChartGroup *chart_group, const otoworm::Chart *chart, const Replay& replay,
                     const rd::ScoreKeeper &score);
     };
 

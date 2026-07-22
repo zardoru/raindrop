@@ -11,39 +11,39 @@ class Texture2D;
 */
 class ImageList : public Interruptible
 {
-    std::map <std::filesystem::path, Texture2D*> Images;
-    std::map <int, std::filesystem::path> ImagesIndexPending;
-    std::map <int, Texture2D*> ImagesIndex;
-    bool ShouldDeleteAtDestruction;
+    std::map <std::filesystem::path, Texture2D*> images_;
+    std::map <int, std::filesystem::path> images_index_pending_;
+    std::map <int, Texture2D*> images_index_;
+    bool should_delete_at_destruction_;
 
 public:
+    explicit ImageList(bool release_at_destruction = true);
 
-    ImageList(bool ReleaseAtDestruction = true);
-    ImageList(Interruptible *parent, bool ReleaseAtDestruction = true);
-    ~ImageList();
+    explicit ImageList(Interruptible *parent, bool release_at_destruction = true);
+    ~ImageList() override;
 
-    void Destroy();
-    void AddToList(const std::filesystem::path& Filename, const std::filesystem::path& Prefix);
+    void destroy();
+    void add_to_list(const std::filesystem::path& filename, const std::filesystem::path& prefix);
 
 	// AddToListIndex asks ImageLoader to load on a different thread.
-    void AddToListIndex(const std::filesystem::path& Filename, int Index);
+    void add_to_list_index(const std::filesystem::path& filename, int index);
 
 	// Add texture (Doesn't get removed)
-	void AddToListIndex(Texture2D* tex, int Index);
+	void add_to_list_index(Texture2D* tex, int index);
 
-    void AddToList(const uint32_t Count, const std::string *Filename, const std::string& Prefix);
+    void add_to_list(const uint32_t count, const std::string *filename, const std::string& prefix);
 
 	// Either load from scratch or from cached image. Unsafe for non-main thread.
-    bool LoadAll();
+    bool load_all();
 
-    void ForceFetch();
+    void force_fetch() const;
 
     // Gets image from this filename
-    Texture2D* GetFromFilename(const std::string& Filename);
+    Texture2D* get_from_filename(const std::string& filename);
 
     // Gets image from this index
-    Texture2D* GetFromIndex(int Index);
+    Texture2D* get_from_index(int index);
 
     // Gets image from SkinPrefix + filename
-    Texture2D* GetFromSkin(const std::string& Filename);
+    Texture2D* get_from_skin(const std::string& filename);
 };

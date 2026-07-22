@@ -124,11 +124,11 @@ bool ScreenGameplay::load_chart_data() {
 
     if (!preloaded) {
         // The difficulty details are destroyed; which means we should load this from its original file.
-        SongLoader Loader(GameState::get_instance().get_song_database());
+        SongLoader loader(GameState::get_instance().get_song_database());
         std::filesystem::path fn;
 
         Log::Printf("Loading Chart...");
-        const auto loaded_chart_group = Loader.LoadFromMeta(
+        const auto loaded_chart_group = loader.LoadFromMeta(
                 my_chart_group_ ? my_chart_group_->id : -1,
                 GameState::get_instance().get_chart_shared(0),
                 fn,
@@ -162,7 +162,7 @@ bool ScreenGameplay::load_song_audio() {
         return true;
     }
 
-    const auto rate = GameState::get_instance().get_parameters(0)->Rate;
+    const auto rate = GameState::get_instance().get_parameters(0)->rate;
 
     Log::LogPrintf("Chart audio: Load start!\n");
     auto &ps = players_[0]->get_chart_state();
@@ -244,7 +244,7 @@ bool ScreenGameplay::load_song_audio() {
 }
 
 void ScreenGameplay::load_samples() {
-    const auto rate = GameState::get_instance().get_parameters(0)->Rate;
+    const auto rate = GameState::get_instance().get_parameters(0)->rate;
     auto &ps = players_[0]->get_chart_state();
     const auto sound_list = ps.get_sound_list();
 
@@ -275,7 +275,7 @@ void ScreenGameplay::load_samples() {
 }
 
 void ScreenGameplay::load_bmson() {
-    const auto Rate = GameState::get_instance().get_parameters(0)->Rate;
+    const auto Rate = GameState::get_instance().get_parameters(0)->rate;
     auto &ps = players_[0]->get_chart_state();
     const auto dir = my_chart_group_->path;
     std::map<int, AudioSample> audio;
@@ -436,7 +436,7 @@ bool ScreenGameplay::process_song() {
 bool ScreenGameplay::load_bga() const {
     if (!disable_bga) {
         try {
-            bga_->Load();
+            bga_->load();
             scene_->add_target(bga_.get(), true);
         }
         catch (std::exception &e) {
@@ -527,11 +527,11 @@ void ScreenGameplay::post_load_initialization() {
 
     play_reactive_sounds_ = (!Configuration::GetConfigf("DisableHitsounds"));
 
-    scene_->get_image_list()->ForceFetch();
-    bga_->Validate();
+    scene_->get_image_list()->force_fetch();
+    bga_->finalize_loading();
 
     for (const auto &p : players_) {
-        p->validate();
+        p->finalize_loading();
 
         // TODO: parameter types/names
         p->on_hit = [this](auto && PH1, auto && PH2, auto && PH3, auto && PH4, auto && PH5, auto && PH6) {

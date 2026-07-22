@@ -55,10 +55,10 @@ GameState::GameState():
     if (!StormIR_AppId.str().empty() && !StormIR_ClientKey.str().empty() ) {
         if (!StormIR_Username.str().empty() && !StormIR_Password.str().empty() ) {
             ir = std::make_unique<StormIR::StormIR>(StormIR_AppId, StormIR_ClientKey);
-            if (ir->Login(StormIR_Username, StormIR_Password)) {
+            if (ir->login(StormIR_Username, StormIR_Password)) {
                 Log::LogPrintf("[IR] Logged into StormIR.\n");
             } else {
-                Log::LogPrintf("[IR] Failed to log into StormIR: %s.\n", ir->GetLastError().c_str());
+                Log::LogPrintf("[IR] Failed to log into StormIR: %s.\n", ir->get_last_error().c_str());
             }
         } else {
             Log::LogPrintf("[IR] StormIR User or Password missing.\n");
@@ -207,7 +207,7 @@ void GameState::set_player_context(PlayerContext * pc, int pn)
 int GameState::get_current_gauge_type(int pn) const
 {
 	if (player_number_in_bounds(pn))
-		return PlayerInfo[pn].ctx ? PlayerInfo[pn].ctx->get_current_gauge_type() : PlayerInfo[pn].play_parameters.GaugeType;
+		return PlayerInfo[pn].ctx ? PlayerInfo[pn].ctx->get_current_gauge_type() : PlayerInfo[pn].play_parameters.gauge_type;
 	return 0;
 }
 
@@ -321,7 +321,7 @@ void GameState::set_scorekeeper7_k(std::shared_ptr<rd::ScoreKeeper> other, int p
 int GameState::get_current_score_type(int pn) const
 {
 	if (player_number_in_bounds(pn))
-		return PlayerInfo[pn].play_parameters.GetScoringType();
+		return PlayerInfo[pn].play_parameters.get_scoring_type();
 	else
 		return 0;
 }
@@ -329,7 +329,7 @@ int GameState::get_current_score_type(int pn) const
 int GameState::get_current_system_type(int pn) const
 {
 	if (player_number_in_bounds(pn))
-		return PlayerInfo[pn].ctx ? PlayerInfo[pn].ctx->get_current_system_type() : PlayerInfo[pn].play_parameters.SystemType;
+		return PlayerInfo[pn].ctx ? PlayerInfo[pn].ctx->get_current_system_type() : PlayerInfo[pn].play_parameters.system_type;
 	else
 		return 0;
 }
@@ -377,12 +377,12 @@ void GameState::submit_score(int pn)
 
         player->profile->save_replay(selected_chart_group, replay);
 
-        if (ir && ir->IsConnected()) {
+        if (ir && ir->is_connected()) {
             Log::LogPrintf("[IR] Submitting score...\n");
-            if (ir->SubmitScore(chart_group.get(), chart.get(), replay, scorekeeper)) {
+            if (ir->submit_score(chart_group.get(), chart.get(), replay, scorekeeper)) {
                 Log::LogPrintf("[IR] Success.\n");
             } else {
-                Log::LogPrintf("[IR] Couldn't submit score: %s\n", ir->GetLastError().c_str());
+                Log::LogPrintf("[IR] Couldn't submit score: %s\n", ir->get_last_error().c_str());
             }
         }
     };

@@ -83,7 +83,7 @@ public:
     PlayerContext(int pn, PlayscreenParameters par = PlayscreenParameters());
     ~PlayerContext();
     void init() const;
-    void validate();
+    void finalize_loading();
     void update(double song_time);
     void emit_draw_calls(double song_time, DrawCallSink &sink);
 

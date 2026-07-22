@@ -127,7 +127,7 @@ std::string videoextensions[] = {
 	".webm"
 };
 
-bool IsVideoPath(std::filesystem::path path)
+bool is_video_path(std::filesystem::path path)
 {
 	auto pathext = path.extension().string();
 	for (const auto& ext : videoextensions) {
@@ -190,7 +190,7 @@ public:
 		}
 	}
 
-    void Load() override
+    void load() override
     {
         const auto* bmp_events = GetOtoBMPEvents(Chart);
         if (!bmp_events) {
@@ -205,12 +205,12 @@ public:
 		for (const auto& v : bmp_events->bmp_list) {
 			auto vs = v.second;
 			auto path = SongDirectory / vs;
-			if (IsVideoPath(path))
+			if (is_video_path(path))
 			{
 				auto vid = new VideoPlayback();
 				if (vid->open(path)) {
 					vid->start_decode_thread();
-					List.AddToListIndex(vid, v.first);
+					List.add_to_list_index(vid, v.first);
 					Videos[v.first] = vid;
 					MaxWidth = std::max(MaxWidth, vid->w);
 					MaxHeight = std::max(MaxHeight, vid->h);
@@ -219,15 +219,15 @@ public:
 					delete vid;
 			}
 			else
-				List.AddToListIndex(path, v.first);
+				List.add_to_list_index(path, v.first);
 
 		}
 
-        List.AddToList(BackgroundFilename, SongDirectory);
-        List.LoadAll();
+        List.add_to_list(BackgroundFilename, SongDirectory);
+        List.load_all();
     }
 
-    void Validate() override
+    void finalize_loading() override
     {
         if (Validated) return;
 
@@ -248,8 +248,8 @@ public:
 
         Layer1->black_to_transparent = Layer2->black_to_transparent = BlackToTransparent;
 
-        LayerMiss->set_image(List.GetFromIndex(0), true);
-        Layer0->set_image(List.GetFromIndex(1), true);
+        LayerMiss->set_image(List.get_from_index(0), true);
+        Layer0->set_image(List.get_from_index(1), true);
 
 
 		const auto ratio = Layer0->get_width() / Layer0->get_height();
@@ -283,7 +283,7 @@ public:
         {
             bmp = bmp - 1;
 
-			auto tex = List.GetFromIndex(bmp->BMP);
+			auto tex = List.get_from_index(bmp->BMP);
             if (const auto vid = dynamic_cast<VideoPlayback*>(tex)) {
 				vid->update_clock(time - bmp->Time);
 			}
@@ -299,7 +299,7 @@ public:
         }
     }
 
-    void SetAnimationTime(double Time) override
+    void set_animation_time(double Time) override
     {
         if (!Validated) return;
 
@@ -321,12 +321,12 @@ public:
             LayerMiss->emit_draw_calls(sink);
     }
 
-    void OnMiss() override
+    void on_miss() override
     {
         MissTime = Configuration::GetSkinConfigf("OnMissBGATime");
     }
 
-    void Update(float Delta) override
+    void update(float Delta) override
     {
         MissTime -= Delta;
     }
@@ -341,16 +341,16 @@ public:
         : BackgroundAnimation(parent), list_(this)
     {
         Log::Printf("Using static background: %ls\n", filename.wstring().c_str());
-        list_.AddToListIndex(filename, 0);
+        list_.add_to_list_index(filename, 0);
     }
 
-    void SetAnimationTime(double Time) override {}
+    void set_animation_time(double Time) override {}
 
-    void Validate() override
+    void finalize_loading() override
     {
         if (!background_)
         {
-            auto pt = list_.GetFromIndex(0);
+            auto pt = list_.get_from_index(0);
             background_ = std::make_shared<Sprite>();
             background_->set_image(pt, false);
             background_->chain_transformation(this);
@@ -359,9 +359,9 @@ public:
         }
     }
 
-    void Load() override
+    void load() override
     {
-        list_.LoadAll();
+        list_.load_all();
     }
 
     void emit_draw_calls(DrawCallSink &sink) override
@@ -390,7 +390,7 @@ std::unique_ptr<BackgroundAnimation> make_bga(
 		    try {
 		        std::stringstream s(osb_sprites);
 
-                return std::make_unique<osuBackgroundAnimation>(context, ReadOSBEvents(s), input->path);
+                return std::make_unique<osuBackgroundAnimation>(context, read_osb_events(s), input->path);
             } catch (std::exception &e) {
                 Log::LogPrintf("Failure to parse OSB events of .osu file. Reason: %s\n", e.what());
             }
@@ -406,27 +406,27 @@ BackgroundAnimation::BackgroundAnimation(Interruptible* parent) : Interruptible(
 {
 }
 
-void BackgroundAnimation::SetAnimationTime(double Time)
+void BackgroundAnimation::set_animation_time(double Time)
 {
 }
 
-void BackgroundAnimation::Load()
+void BackgroundAnimation::load()
 {
 }
 
-void BackgroundAnimation::Validate()
+void BackgroundAnimation::finalize_loading()
 {
 }
 
-void BackgroundAnimation::Update(float Delta)
+void BackgroundAnimation::update(float Delta)
 {
 }
 
-void BackgroundAnimation::OnHit()
+void BackgroundAnimation::on_hit()
 {
 }
 
-void BackgroundAnimation::OnMiss()
+void BackgroundAnimation::on_miss()
 {
 }
 
@@ -444,8 +444,8 @@ std::unique_ptr<BackgroundAnimation> BackgroundAnimation::create_bga_from_chart_
     
     if (ret && load_now)
     {
-        ret->Load();
-        ret->Validate();
+        ret->load();
+        ret->finalize_loading();
     }
 
     return ret;

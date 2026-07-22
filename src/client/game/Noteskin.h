@@ -19,35 +19,35 @@ class PlayerContext;
 class DrawCallSink;
 
 class Noteskin {
-    LuaManager NoteskinLua;
-    std::optional<luabridge::LuaRef> Callbacks;
-    double NoteScreenSize;
-    double BarlineWidth;
-    double BarlineStartX;
-    double BarlineOffset;
-    double JudgmentY;
+    LuaManager noteskin_lua_;
+    std::optional<luabridge::LuaRef> callbacks_;
+    double note_screen_size_;
+    double barline_width_;
+    double barline_start_x_;
+    double barline_offset_;
+    double judgment_y_;
 
-    int Channels;
-    bool BarlineEnabled;
-    bool DanglingHeads;
-    bool CanRender;
-    bool DecreaseHoldSizeWhenBeingHit;
-    PlayerContext *Parent;
+    int channels_{};
+    bool barline_enabled_;
+    bool dangling_heads_;
+    bool can_render_;
+    bool decrease_hold_size_when_being_hit_;
+    PlayerContext *parent_;
     DrawCallSink *draw_calls_ = nullptr;
 
-    void LuaRender(Sprite *);
+    void lua_render(Sprite *) const;
 
-    void AddScriptClasses();
+    void add_script_classes();
     bool load_script_callbacks(const std::filesystem::path &filename);
     void log_callback_error(const std::string &name, const std::string &message) const;
 
     template<class... Args>
     bool call_callback(const std::string &event_name, Args&&... args)
     {
-        auto *state = NoteskinLua.get_lua_state();
+        auto *state = noteskin_lua_.get_lua_state();
 
-        if (Callbacks && Callbacks->isTable()) {
-            auto callback = (*Callbacks)[event_name];
+        if (callbacks_ && callbacks_->isTable()) {
+            auto callback = (*callbacks_)[event_name];
             if (callback.isFunction()) {
                 try {
                     callback(std::forward<Args>(args)...);
@@ -60,11 +60,11 @@ class Noteskin {
             }
         }
 
-        if (NoteskinLua.call_function(event_name.c_str(), sizeof...(Args))) {
+        if (noteskin_lua_.call_function(event_name.c_str(), sizeof...(Args))) {
             if constexpr (sizeof...(Args) > 0) {
                 (luabridge::push(state, std::forward<Args>(args)), ...);
             }
-            return NoteskinLua.run_function();
+            return noteskin_lua_.run_function();
         }
 
         return false;
@@ -73,37 +73,37 @@ class Noteskin {
 public:
     Noteskin(PlayerContext *parent);
 
-    void validate();
+    void finalize_loading();
 
     void init_noteskin(bool special_style, int lanes);
 
-    void update(float Delta, float CurrentBeat);
+    void update(float delta, float current_beat);
     void begin_draw(DrawCallSink &sink);
     void end_draw();
 
-    void DrawNote(rd::RuntimeNote &T, int Lane, float Location);
+    void draw_note(const rd::RuntimeNote &t, int lane, float location);
 
-    void DrawHoldBody(int Lane, float Location, float Size, int ActiveLevel);
+    void draw_hold_body(int lane, float location, float size, int active_level);
 
-    float GetBarlineWidth() const;
+    float get_barline_width() const;
 
-    double GetBarlineStartX() const;
+    double get_barline_start_x() const;
 
-    double GetBarlineOffset() const;
+    double get_barline_offset() const;
 
-    bool IsBarlineEnabled() const;
+    bool is_barline_enabled() const;
 
-    double GetJudgmentY() const;
+    double get_judgment_y() const;
 
-    void DrawHoldHead(rd::RuntimeNote &T, int Lane, float Location, int ActiveLevel);
+    void draw_hold_head(const rd::RuntimeNote &t, int lane, float location, int active_level);
 
-    void DrawHoldTail(rd::RuntimeNote &T, int Lane, float Location, int ActiveLevel);
+    void draw_hold_tail(const rd::RuntimeNote &t, int lane, float location, int active_level);
 
-    double GetNoteOffset() const;
+    double get_note_offset() const;
 
-    bool AllowDanglingHeads() const;
+    bool allow_dangling_heads() const;
 
-    bool ShouldDecreaseHoldSizeWhenBeingHit() const;
+    bool should_decrease_hold_size_when_being_hit() const;
 
     int get_channels() const;
 };

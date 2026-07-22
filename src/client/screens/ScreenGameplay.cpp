@@ -189,7 +189,7 @@ void ScreenGameplay::run_auto_events() {
         }
     }
 
-    bga_->SetAnimationTime(time_.stream);
+    bga_->set_animation_time(time_.stream);
 }
 
 void ScreenGameplay::evaluate_stage_failure() {
@@ -371,7 +371,7 @@ ScreenGameplay::on_player_hit(rd::ScoreKeeperJudgment judgment, double dt, uint3
 }
 
 void ScreenGameplay::on_player_miss(double dt, uint32_t lane, bool hold, bool dontbreakcombo, bool earlymiss, int pn) const {
-    bga_->OnMiss();
+    bga_->on_miss();
 
     /// Whenever a player fails, this is called.
     // @callback MissEvent
@@ -421,7 +421,7 @@ bool ScreenGameplay::run(const double delta) {
         p->update(time_.stream);
 
     scene_->update_targets(delta);
-    bga_->Update(delta);
+    bga_->update(delta);
     render();
 
     if (delta > 0.1)

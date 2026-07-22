@@ -12,105 +12,105 @@ enum EHiddenMode
 };
 
 struct PlayscreenParameters {
-    bool IsSeedSet;
+    bool is_seed_set;
 /* rd::TimingType SetupGameSystem(
         std::shared_ptr<rd::ChartInfo> TimingInfo,
         rd::ScoreKeeper* PlayerScoreKeeper);
 
 void SetupGauge(std::shared_ptr<rd::ChartInfo> TimingInfo, rd::ScoreKeeper* PlayerScoreKeeper); */
 
-int Seed;
+int seed;
 
-    void UpdateHidden(double JudgeY);
+    void update_hidden(double judge_y);
 
 private:
     struct SHiddenData {
-        EHiddenMode		 Mode; // effective mode after upscroll adjustment
-        float            Center; // in NDC
-        float			 TransitionSize; // in NDC
-        float			 CenterSize; // in NDC
+        EHiddenMode		 mode; // effective mode after upscroll adjustment
+        float            center; // in NDC
+        float			 transition_size; // in NDC
+        float			 center_size; // in NDC
     };
 
-    SHiddenData Hidden;
+    SHiddenData hidden_;
 
 public:
 
     // == Non Player Options ==
     // If true, assume difficulty is already loaded and is not just metadata
-    int Preloaded;
+    int preloaded;
 
     // Auto mode enabled if true.
     int Auto;
 
     // Selected starting measure (Preivew mode only)
-    int32_t StartMeasure;
+    int32_t start_measure;
 
     // == Player options ==
     // If true, use upscroll (VSRG only)
-    int Upscroll;
+    int upscroll;
 
     // Fail disabled if true.
-    int NoFail;
+    int no_fail;
 
     // Selected hidden mode (VSRG only)
-    int HiddenMode;
+    int hidden_mode;
 
     // Music speed
-    float Rate;
+    float rate;
 
     // Scroll speed
-    double UserSpeedMultiplier;
+    double user_speed_multiplier;
 
     // Randomizing mode -> 0 = Disabled, 1 = Per-Lane, 2 = Panic (unimplemented)
-    int Random;
+    int random;
 
     // Gauge type (VSRG only)
-    int32_t GaugeType;
+    int32_t gauge_type;
 
     // rd System Type (VSRG only)
-    int32_t SystemType;
+    int32_t system_type;
 
     // Whether to interpret desired speed
     // as green number
-    bool GreenNumber;
+    bool green_number;
 
     // Whether to enable the use of strictest timing
-    bool UseW0;
+    bool use_w0;
 
-    int SpeedType;
+    int speed_type;
 
-    rd::ScoreType GetScoringType() const;
+    rd::ScoreType get_scoring_type() const;
 
-    int GetHiddenMode() const;
-    float GetHiddenCenter() const;
-    float GetHiddenTransitionSize() const;
-    float GetHiddenCenterSize() const;
+    int get_hidden_mode() const;
+    float get_hidden_center() const;
+    float get_hidden_transition_size() const;
+    float get_hidden_center_size() const;
 
     // Last used, or set, seed.
-    int GetSeed() const;
+    int get_seed() const;
 
     // Use this seed to shuffle.
     void set_seed(int seed);
 
     // Unset the seed. Generate a new one.
-    void ResetSeed();
+    void reset_seed();
 
     PlayscreenParameters() {
-        Upscroll = false;
-        Preloaded = false;
+        upscroll = false;
+        preloaded = false;
         Auto = false;
-        NoFail = false;
-        GreenNumber = false;
-        UseW0 = false;
-        HiddenMode = HM_NONE;
-        StartMeasure = -1;
-        Random = 0;
-        Rate = 1;
-        GaugeType = rd::LT_AUTO;
-        SystemType = rd::TI_NONE;
-        UserSpeedMultiplier = 4;
-        IsSeedSet = false;
-        SpeedType = rd::SPEEDTYPE_DEFAULT;
+        no_fail = false;
+        green_number = false;
+        use_w0 = false;
+        hidden_mode = HM_NONE;
+        start_measure = -1;
+        random = 0;
+        rate = 1;
+        gauge_type = rd::LT_AUTO;
+        system_type = rd::TI_NONE;
+        user_speed_multiplier = 4;
+        is_seed_set = false;
+        speed_type = rd::SPEEDTYPE_DEFAULT;
     }
 };
 

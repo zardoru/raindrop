@@ -7,74 +7,77 @@
 
 #include "Texture2D.h"
 #include "ImageList.h"
+
+#include <ranges>
+
 #include "TextureCollection.h"
 
 #include "Sprite.h"
 
-ImageList::ImageList(const bool ReleaseAtDestruction)
+ImageList::ImageList(const bool release_at_destruction)
 {
-    ShouldDeleteAtDestruction = ReleaseAtDestruction;
+    should_delete_at_destruction_ = release_at_destruction;
 }
 
-ImageList::ImageList(Interruptible *Parent, const bool ReleaseAtDestruction)
+ImageList::ImageList(Interruptible *Parent, const bool release_at_destruction)
     : Interruptible(Parent)
 {
-    ShouldDeleteAtDestruction = ReleaseAtDestruction;
+    should_delete_at_destruction_ = release_at_destruction;
 }
 
 ImageList::~ImageList()
 {
-    if (!ShouldDeleteAtDestruction)
+    if (!should_delete_at_destruction_)
         return;
 
-    Destroy();
+    destroy();
 }
 
-void ImageList::AddToList(const std::filesystem::path& Filename, const std::filesystem::path& Prefix)
+void ImageList::add_to_list(const std::filesystem::path& filename, const std::filesystem::path& prefix)
 {
-    auto ResFilename = Prefix / Filename;
+    auto ResFilename = prefix / filename;
 
-    if (Images.find(ResFilename) == Images.end())
+    if (images_.find(ResFilename) == images_.end())
     {
         TextureCollection::add_to_pending_2d_uploads(ResFilename);
-        Images[ResFilename] = nullptr;
+        images_[ResFilename] = nullptr;
     }
 }
 
-void ImageList::AddToListIndex(const std::filesystem::path& Filename, const int Index)
+void ImageList::add_to_list_index(const std::filesystem::path& filename, const int index)
 {
-    if (ImagesIndex.find(Index) == ImagesIndex.end())
+    if (images_index_.find(index) == images_index_.end())
     {
-        TextureCollection::add_to_pending_2d_uploads(Filename);
-        Images[Filename] = nullptr;
-        ImagesIndex[Index] = nullptr;
-        ImagesIndexPending[Index] = Filename;
+        TextureCollection::add_to_pending_2d_uploads(filename);
+        images_[filename] = nullptr;
+        images_index_[index] = nullptr;
+        images_index_pending_[index] = filename;
     }
 }
 
-void ImageList::AddToListIndex(Texture2D * tex, const int Index)
+void ImageList::add_to_list_index(Texture2D * tex, const int index)
 {
-	ImagesIndex[Index] = tex;
+	images_index_[index] = tex;
 }
 
-void ImageList::Destroy()
+void ImageList::destroy()
 {
-    for (auto & Image : Images)
+    for (auto & Image : images_)
         TextureCollection::delete_texture_2d(Image.second);
 }
 
-void ImageList::AddToList(const uint32_t Count, const std::string *Filename, const std::string& Prefix)
+void ImageList::add_to_list(const uint32_t count, const std::string *filename, const std::string& prefix)
 {
-    for (uint32_t i = 0; i < Count; i++)
+    for (uint32_t i = 0; i < count; i++)
     {
-        AddToList(Filename[i], Prefix);
+        add_to_list(filename[i], prefix);
     }
 }
 
-bool ImageList::LoadAll()
+bool ImageList::load_all()
 {
     bool WereErrors = false;
-    for (auto & Image : Images)
+    for (auto & Image : images_)
     {
         if (Image.first.empty())
             continue;
@@ -85,13 +88,13 @@ bool ImageList::LoadAll()
         CheckInterruption();
     }
 
-    for (auto i = ImagesIndexPending.begin(); i != ImagesIndexPending.end();)
+    for (auto i = images_index_pending_.begin(); i != images_index_pending_.end();)
     {
-        ImagesIndex[i->first] = TextureCollection::load(i->second);
-        if (ImagesIndex[i->first] == nullptr)
+        images_index_[i->first] = TextureCollection::load(i->second);
+        if (images_index_[i->first] == nullptr)
             WereErrors = true;
 
-        i = ImagesIndexPending.erase(i);
+        i = images_index_pending_.erase(i);
         CheckInterruption();
     }
 
@@ -99,35 +102,34 @@ bool ImageList::LoadAll()
 }
 
 // Gets image from this filename
-Texture2D* ImageList::GetFromFilename(const std::string& Filename)
+Texture2D* ImageList::get_from_filename(const std::string& filename)
 {
-    return Images[Filename];
+    return images_[filename];
 }
 
 // Gets image from SkinPrefix + filename
-Texture2D* ImageList::GetFromSkin(const std::string& Filename)
+Texture2D* ImageList::get_from_skin(const std::string& filename)
 {
-    return Images[GameState::get_instance().get_skin_prefix() + Filename];
+    return images_[GameState::get_instance().get_skin_prefix() + filename];
 }
 
-Texture2D* ImageList::GetFromIndex(const int Index)
+Texture2D* ImageList::get_from_index(const int index)
 {
-    return ImagesIndex[Index];
+    return images_index_[index];
 }
 
-void ImageList::ForceFetch()
-{
-    Sprite Fill;
+void ImageList::force_fetch() const {
+    Sprite fill;
     DrawCallSink calls;
 
-    for (auto & Image : Images)
+    for (const auto &val: images_ | std::views::values)
     {
-        Fill.set_image(Image.second, false);
+        fill.set_image(val, false);
 
         // Draw as black.
-        Fill.color.red = Fill.color.blue = Fill.color.green = 0.0001f;
-        Fill.color.alpha = 0.0001f;
-        Fill.emit_draw_calls(calls);
+        fill.color.red = fill.color.blue = fill.color.green = 0.0001f;
+        fill.color.alpha = 0.0001f;
+        fill.emit_draw_calls(calls);
     }
 
     calls.flush();

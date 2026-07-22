@@ -301,10 +301,10 @@ void GameState::initialize_lua(lua_State *L)
 		.beginClass <PlayscreenParameters>("PlayscreenParameters")
 		/// Request upscroll.
 		// @property Upscroll
-		.addData("Upscroll", &PlayscreenParameters::Upscroll)
+		.addData("Upscroll", &PlayscreenParameters::upscroll)
 		/// Request to disable failing.
 		// @property NoFail
-		.addData("NoFail", &PlayscreenParameters::NoFail)
+		.addData("NoFail", &PlayscreenParameters::no_fail)
 		/// Request to autoplay.
 		// @property Autoplay
 		.addData("Autoplay", &PlayscreenParameters::Auto)
@@ -314,11 +314,11 @@ void GameState::initialize_lua(lua_State *L)
 		// @param 1 Sudden
 		// @param 2 Hidden
 		// @param 3 Flashlight
-		.addData("HiddenMode", &PlayscreenParameters::HiddenMode)
+		.addData("HiddenMode", &PlayscreenParameters::hidden_mode)
 		//.addData("Rate", &PlayscreenParameters::Rate)
 		/// Request a random permutation of lanes.
 		// @property Random
-		.addData("Random", &PlayscreenParameters::Random)
+		.addData("Random", &PlayscreenParameters::random)
 		/// Request a specific gauge type.
 		// @enumproperty GaugeType
 		// @param 0 Auto
@@ -330,7 +330,7 @@ void GameState::initialize_lua(lua_State *L)
 		// @param 6 Stepmania gauge
 		// @param 7 No Recovery gauge
 		// @param 8 O2Jam Gauge
-		.addData("GaugeType", &PlayscreenParameters::GaugeType)
+		.addData("GaugeType", &PlayscreenParameters::gauge_type)
 		/// Request a specific game type.
 		// @enumproperty SystemType
 		// @param 0 Auto
@@ -340,14 +340,14 @@ void GameState::initialize_lua(lua_State *L)
 		// @param 4 Stepmania
 		// @param 5 Raindrop
 		// @param 6 RDAC
-		.addData("SystemType", &PlayscreenParameters::SystemType)
+		.addData("SystemType", &PlayscreenParameters::system_type)
 		/// Whether to treat input desired speed as a green number
 		// @property GreenNumber
-		.addData("GreenNumber", &PlayscreenParameters::GreenNumber)
+		.addData("GreenNumber", &PlayscreenParameters::green_number)
 		/// Whether to enable extended W0 judge
 		// @property UseW0
-		.addData("UseW0", &PlayscreenParameters::UseW0)
-        .addData("SpeedType", &PlayscreenParameters::SpeedType)
+		.addData("UseW0", &PlayscreenParameters::use_w0)
+        .addData("SpeedType", &PlayscreenParameters::speed_type)
 		.endClass();
 
 	luabridge::getGlobalNamespace(L)

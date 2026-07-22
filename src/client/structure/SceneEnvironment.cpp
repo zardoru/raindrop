@@ -184,7 +184,7 @@ void SceneEnvironment::preload(const std::filesystem::path &Filename, std::strin
                 auto item = preload[i];
                 if (item.isString()) {
                     auto s = GameState::get_instance().get_skin_file(item.cast<std::string>());
-                    images_->AddToList(s, "");
+                    images_->add_to_list(s, "");
                 }
             }
             return;
@@ -196,7 +196,7 @@ void SceneEnvironment::preload(const std::filesystem::path &Filename, std::strin
 
         while (lua_->iterate_next()) {
             auto s = GameState::get_instance().get_skin_file(lua_->next_g_string());
-            images_->AddToList(s, "");
+            images_->add_to_list(s, "");
             lua_->pop();
         }
 
@@ -239,7 +239,7 @@ void SceneEnvironment::initialize(const std::filesystem::path &filename, const b
     // @callback Init
     call_callback("Init");
 
-    images_->LoadAll();
+    images_->load_all();
 }
 
 void SceneEnvironment::add_target(Drawable2D *target, const bool is_external) {

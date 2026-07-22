@@ -162,8 +162,8 @@ void ScoreDatabase::AddScore(
         double offset,
         double judgeoffset) {
     // az: this takes forever to type.
-    auto type = params.GetScoringType();
-    auto gaugetype = params.GaugeType;
+    auto type = params.get_scoring_type();
+    auto gaugetype = params.gauge_type;
 
     // insert or do nothing
     AddHash(charthash);

@@ -226,7 +226,7 @@ namespace osb
 		friend class Loop;
     public:
         void add_event(const std::shared_ptr<Event> &evt);
-		void ClearEvents();
+		void clear_events();
         void sort_events();
 	    bool is_time_in_event_bounds(float Time) const;
 		float get_start_time() const;
@@ -279,31 +279,31 @@ class VideoPlayback;
 
 class osuBackgroundAnimation : public BackgroundAnimation
 {
-    osb::SpriteList mSprites;
-    std::vector<Sprite> mAutoBGLayer;
-    std::vector<Sprite> mBackgroundLayer;
-    std::vector<Sprite> mForegroundLayer;
-    std::map<std::string, int> mFileIndices;
-    ImageList mImageList;
-    std::map<int, VideoPlayback*> mVideoList;
-    int AddImageToList(std::string image_filename);
-	std::filesystem::path SongDirectory;
+    osb::SpriteList m_sprites_;
+    std::vector<Sprite> m_auto_bg_layer_;
+    std::vector<Sprite> m_background_layer_;
+    std::vector<Sprite> m_foreground_layer_;
+    std::map<std::string, int> m_file_indices_;
+    ImageList m_image_list_;
+    std::map<int, VideoPlayback*> m_video_list_;
+    int add_image_to_list(std::string image_filename);
+	std::filesystem::path song_directory_;
 
-    Transformation mScreenTransformation;
-    bool CanValidate;
+    Transformation m_screen_transformation_;
+    bool can_validate_;
 
 public:
     osuBackgroundAnimation(Interruptible* parent, const osb::SpriteList& existing_sprites, std::filesystem::path song_directory);
-    ~osuBackgroundAnimation();
-    Texture2D* GetImageFromIndex(int m_image_index);
-    int GetIndexFromFilename(std::string filename);
-    Transformation& GetScreenTransformation();
+    ~osuBackgroundAnimation() final;
+    Texture2D* get_image_from_index(int m_image_index);
+    int get_index_from_filename(std::string filename);
+    Transformation& get_screen_transformation();
 
-	void Load() override;
-	void Validate() override;
-	void Update(float Delta) override;
-	void SetAnimationTime(double Time) override;
+	void load() override;
+	void finalize_loading() override;
+	void update(float delta) override;
+	void set_animation_time(double time) override;
 	void emit_draw_calls(DrawCallSink &sink) override;
 };
 
-osb::SpriteList ReadOSBEvents(std::istream& event_str);
+osb::SpriteList read_osb_events(std::istream& event_str);

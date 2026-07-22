@@ -26,26 +26,26 @@
 
 /// @themescript noteskin.lua
 Noteskin::Noteskin(PlayerContext *parent) {
-    CanRender = false;
-    NoteScreenSize = 0;
-    DecreaseHoldSizeWhenBeingHit = true;
-    DanglingHeads = true;
-    Parent = parent;
+    can_render_ = false;
+    note_screen_size_ = 0;
+    decrease_hold_size_when_being_hit_ = true;
+    dangling_heads_ = true;
+    parent_ = parent;
 
-    BarlineOffset = 0;
-    BarlineEnabled = false;
-    BarlineStartX = 0;
-    BarlineWidth = 0;
-    JudgmentY = 0;
+    barline_offset_ = 0;
+    barline_enabled_ = false;
+    barline_start_x_ = 0;
+    barline_width_ = 0;
+    judgment_y_ = 0;
 }
 
-void Noteskin::LuaRender(Sprite *S) {
-    if (CanRender && draw_calls_ && S)
-        S->emit_draw_calls(*draw_calls_);
+void Noteskin::lua_render(Sprite *s) const {
+    if (can_render_ && draw_calls_ && s)
+        s->emit_draw_calls(*draw_calls_);
 }
 
 bool Noteskin::load_script_callbacks(const std::filesystem::path &filename) {
-    auto *state = NoteskinLua.get_lua_state();
+    auto *state = noteskin_lua_.get_lua_state();
 
     if (!std::filesystem::exists(filename)) {
         Log::LogPrintf("File %s does not exist\n", filename.string().c_str());
@@ -71,9 +71,9 @@ bool Noteskin::load_script_callbacks(const std::filesystem::path &filename) {
     }
 
     if (lua_istable(state, -1))
-        Callbacks.emplace(luabridge::LuaRef::fromStack(state, -1));
+        callbacks_.emplace(luabridge::LuaRef::fromStack(state, -1));
     else
-        Callbacks.reset();
+        callbacks_.reset();
 
     lua_pop(state, 1);
     lua_pop(state, 1);
@@ -84,7 +84,7 @@ void Noteskin::log_callback_error(const std::string &name, const std::string &me
     Log::LogPrintf("noteskin callback error in %s: %s\n", name.c_str(), message.c_str());
 }
 
-void Noteskin::validate() {
+void Noteskin::finalize_loading() {
     /***
      Function called when the Noteskin is created. Called only once.
      @callback Init
@@ -93,45 +93,45 @@ void Noteskin::validate() {
 }
 
 int Noteskin::get_channels() const {
-    return Channels;
+    return channels_;
 }
 
 void Noteskin::init_noteskin(bool special_style, int lanes) {
-    CanRender = false;
+    can_render_ = false;
 
-    Channels = lanes;
+    channels_ = lanes;
 
     // we need a clean state if we're being called from a different thread (to destroy objects properly)
-    DefineSpriteInterface(&NoteskinLua);
+    DefineSpriteInterface(&noteskin_lua_);
 
-    AddScriptClasses();
+    add_script_classes();
 
     /// Instance of @{NoteskinObject} provided by the engine.
     // @autoinstance Notes
-    luabridge::setGlobal(NoteskinLua.get_lua_state(), this, "Notes");
+    luabridge::setGlobal(noteskin_lua_.get_lua_state(), this, "Notes");
 
-    PlayerContext::setup_script_context(&NoteskinLua);
+    PlayerContext::setup_script_context(&noteskin_lua_);
     /// Instance of @{Player} provided by the engine. Owner of the current noteskin script.
     // @autoinstance Player
-    luabridge::setGlobal(NoteskinLua.get_lua_state(), Parent, "Player");
+    luabridge::setGlobal(noteskin_lua_.get_lua_state(), parent_, "Player");
     load_script_callbacks(GameState::get_instance().get_skin_file("noteskin.lua"));
 }
 
-void Noteskin::update(float Delta, float CurrentBeat) {
+void Noteskin::update(float delta, float current_beat) {
     /***
      Update callback. Called every frame.
      @callback Update
      @param delta Time since last frame.
      @param beat Current song beat.
      */
-    call_callback("Update", Delta, CurrentBeat);
+    call_callback("Update", delta, current_beat);
 }
 
 void Noteskin::begin_draw(DrawCallSink &sink) { draw_calls_ = &sink; }
 void Noteskin::end_draw() { draw_calls_ = nullptr; }
 
-void Noteskin::DrawNote(rd::RuntimeNote &T, int Lane, float Location) {
-    const char *CallFunc = nullptr;
+void Noteskin::draw_note(const rd::RuntimeNote &t, int lane, float location) {
+    const char *call_func = nullptr;
     /***
      Draw a normal note.
      @callback DrawNormal
@@ -140,54 +140,54 @@ void Noteskin::DrawNote(rd::RuntimeNote &T, int Lane, float Location) {
      @param fraction Measure subdivision of this note.
      @param active_level Always 0 for normal notes.
      */
-    switch (T.get_data_note_kind()) {
+    switch (t.get_data_note_kind()) {
         case rd::ENoteKind::NK_NORMAL:
-            CallFunc = "DrawNormal";
+            call_func = "DrawNormal";
             break;
         case rd::ENoteKind::NK_FAKE:
-            CallFunc = "DrawFake";
+            call_func = "DrawFake";
             break;
         case rd::ENoteKind::NK_INVISIBLE:
             return; // Undrawable
         case rd::ENoteKind::NK_LIFT:
-            CallFunc = "DrawLift";
+            call_func = "DrawLift";
             break;
         case rd::ENoteKind::NK_MINE:
-            CallFunc = "DrawMine";
+            call_func = "DrawMine";
             break;
         case rd::ENoteKind::NK_ROLL:
             return; // Unimplemented
     }
 
-    assert(CallFunc != nullptr);
+    assert(call_func != nullptr);
     // We didn't get a name to call. Odd.
 
-    CanRender = true;
-    call_callback(CallFunc, Lane, Location, T.get_frac_kind(), 0);
-    CanRender = false;
+    can_render_ = true;
+    call_callback(call_func, lane, location, t.get_frac_kind(), 0);
+    can_render_ = false;
 }
 
-float Noteskin::GetBarlineWidth() const {
-    return BarlineWidth;
+float Noteskin::get_barline_width() const {
+    return barline_width_;
 }
 
-double Noteskin::GetBarlineStartX() const {
-    return BarlineStartX;
+double Noteskin::get_barline_start_x() const {
+    return barline_start_x_;
 }
 
-double Noteskin::GetBarlineOffset() const {
-    return BarlineOffset;
+double Noteskin::get_barline_offset() const {
+    return barline_offset_;
 }
 
-bool Noteskin::IsBarlineEnabled() const {
-    return BarlineEnabled;
+bool Noteskin::is_barline_enabled() const {
+    return barline_enabled_;
 }
 
-double Noteskin::GetJudgmentY() const {
-    return JudgmentY;
+double Noteskin::get_judgment_y() const {
+    return judgment_y_;
 }
 
-void Noteskin::DrawHoldHead(rd::RuntimeNote &T, int Lane, float Location, int ActiveLevel) {
+void Noteskin::draw_hold_head(const rd::RuntimeNote &t, int lane, float location, int active_level) {
     /***
      Draw a hold head. Falls back to DrawNormal if nonexistent
      @callback DrawHoldHead
@@ -197,13 +197,13 @@ void Noteskin::DrawHoldHead(rd::RuntimeNote &T, int Lane, float Location, int Ac
      @param active_level 0 if failed, 1 if active, 2 if being hit, 3 if succesfully hit.
      */
 
-    CanRender = true;
-    if (!call_callback("DrawHoldHead", Lane, Location, T.get_frac_kind(), ActiveLevel))
-        call_callback("DrawNormal", Lane, Location, T.get_frac_kind(), ActiveLevel);
-    CanRender = false;
+    can_render_ = true;
+    if (!call_callback("DrawHoldHead", lane, location, t.get_frac_kind(), active_level))
+        call_callback("DrawNormal", lane, location, t.get_frac_kind(), active_level);
+    can_render_ = false;
 }
 
-void Noteskin::DrawHoldTail(rd::RuntimeNote &T, int Lane, float Location, int ActiveLevel) {
+void Noteskin::draw_hold_tail(const rd::RuntimeNote &t, int lane, float location, int active_level) {
     /***
      Draw a hold tail. Falls back to DrawNormal if nonexistent
      @callback DrawHoldTail
@@ -213,25 +213,25 @@ void Noteskin::DrawHoldTail(rd::RuntimeNote &T, int Lane, float Location, int Ac
      @param active_level 0 if failed, 1 if active, 2 if being hit, 3 if succesfully hit.
      */
 
-    CanRender = true;
-    if (!call_callback("DrawHoldTail", Lane, Location, T.get_frac_kind(), ActiveLevel))
-        call_callback("DrawNormal", Lane, Location, T.get_frac_kind(), ActiveLevel);
-    CanRender = false;
+    can_render_ = true;
+    if (!call_callback("DrawHoldTail", lane, location, t.get_frac_kind(), active_level))
+        call_callback("DrawNormal", lane, location, t.get_frac_kind(), active_level);
+    can_render_ = false;
 }
 
-double Noteskin::GetNoteOffset() const {
-    return NoteScreenSize;
+double Noteskin::get_note_offset() const {
+    return note_screen_size_;
 }
 
-bool Noteskin::AllowDanglingHeads() const {
-    return DanglingHeads;
+bool Noteskin::allow_dangling_heads() const {
+    return dangling_heads_;
 }
 
-bool Noteskin::ShouldDecreaseHoldSizeWhenBeingHit() const {
-    return DecreaseHoldSizeWhenBeingHit;
+bool Noteskin::should_decrease_hold_size_when_being_hit() const {
+    return decrease_hold_size_when_being_hit_;
 }
 
-void Noteskin::DrawHoldBody(int Lane, float Location, float Size, int ActiveLevel) {
+void Noteskin::draw_hold_body(int lane, float location, float size, int active_level) {
     /***
      Draw a hold body.
      @callback DrawHoldBody
@@ -241,9 +241,9 @@ void Noteskin::DrawHoldBody(int Lane, float Location, float Size, int ActiveLeve
      @param active_level 0 if failed, 1 if active, 2 if being hit, 3 if succesfully hit.
      */
 
-    CanRender = true;
-    call_callback("DrawHoldBody", Lane, Location, Size, ActiveLevel);
-    CanRender = false;
+    can_render_ = true;
+    call_callback("DrawHoldBody", lane, location, size, active_level);
+    can_render_ = false;
 }
 
 		

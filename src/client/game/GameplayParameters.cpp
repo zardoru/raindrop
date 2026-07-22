@@ -19,7 +19,7 @@ extern SkinMetric UNITS_PER_MEASURE;
 using namespace rd;
 
 
-void PlayscreenParameters::UpdateHidden(double JudgeY)
+void PlayscreenParameters::update_hidden(double judge_y)
 {
     /*
     Given the top of the screen being 1, the bottom being -1
@@ -39,115 +39,115 @@ void PlayscreenParameters::UpdateHidden(double JudgeY)
     float Center = toYRange(Threshold * PLAYFIELD_SIZE);
 
     // Hidden calc
-    if (HiddenMode)
+    if (hidden_mode)
     {
         float pfCenter;
 
-        Hidden.TransitionSize = HiddenSize * PLAYFIELD_SIZE / ScreenHeight;
+        hidden_.transition_size = HiddenSize * PLAYFIELD_SIZE / ScreenHeight;
 
-        if (Upscroll)
+        if (upscroll)
         {
-            pfCenter = toYRange(ScreenHeight - JudgeY + Threshold * PLAYFIELD_SIZE);
+            pfCenter = toYRange(ScreenHeight - judge_y + Threshold * PLAYFIELD_SIZE);
             Center = pfCenter;
 
 
             // Invert Hidden Mode.
-            if (HiddenMode == HM_SUDDEN) Hidden.Mode = HM_HIDDEN;
-            else if (HiddenMode == HM_HIDDEN) Hidden.Mode = HM_SUDDEN;
-            else Hidden.Mode = (EHiddenMode)HiddenMode;
+            if (hidden_mode == HM_SUDDEN) hidden_.mode = HM_HIDDEN;
+            else if (hidden_mode == HM_HIDDEN) hidden_.mode = HM_SUDDEN;
+            else hidden_.mode = (EHiddenMode)hidden_mode;
         }
         else
         {
             // pfCenter = Center;
             // Center = pfCenter;
-            Hidden.Mode = (EHiddenMode)HiddenMode;
+            hidden_.mode = (EHiddenMode)hidden_mode;
         }
 
-        Hidden.CenterSize = FLSize * PLAYFIELD_SIZE / ScreenHeight;
+        hidden_.center_size = FLSize * PLAYFIELD_SIZE / ScreenHeight;
     }
 }
 
-ScoreType PlayscreenParameters::GetScoringType() const
+ScoreType PlayscreenParameters::get_scoring_type() const
 {
-    if (SystemType == TI_BMS || SystemType == TI_RDAC) {
+    if (system_type == TI_BMS || system_type == TI_RDAC) {
         return ST_EX;
     }
 
-    if (SystemType == TI_O2JAM) {
+    if (system_type == TI_O2JAM) {
         return ST_O2JAM;
     }
 
-    if (SystemType == TI_OSUMANIA) {
+    if (system_type == TI_OSUMANIA) {
         return ST_OSUMANIA;
     }
 
-    if (SystemType == TI_STEPMANIA) {
+    if (system_type == TI_STEPMANIA) {
         return ST_EX;
     }
 
-    if (SystemType == TI_RAINDROP) {
+    if (system_type == TI_RAINDROP) {
         return ST_EXP3;
     }
 
-    if (SystemType == TI_LR2) {
+    if (system_type == TI_LR2) {
         return ST_LR2; /* most people use EX but hey... */
     }
 
     return ST_EX;
 }
 
-int PlayscreenParameters::GetHiddenMode() const
+int PlayscreenParameters::get_hidden_mode() const
 {
-    return Hidden.Mode;
+    return hidden_.mode;
 }
 
-float PlayscreenParameters::GetHiddenCenter() const
+float PlayscreenParameters::get_hidden_center() const
 {
-    return Hidden.Center;
+    return hidden_.center;
 }
 
-float PlayscreenParameters::GetHiddenTransitionSize() const
+float PlayscreenParameters::get_hidden_transition_size() const
 {
-    return Hidden.TransitionSize;
+    return hidden_.transition_size;
 }
 
-float PlayscreenParameters::GetHiddenCenterSize() const
+float PlayscreenParameters::get_hidden_center_size() const
 {
-    return Hidden.CenterSize;
+    return hidden_.center_size;
 }
 
-int PlayscreenParameters::GetSeed() const
+int PlayscreenParameters::get_seed() const
 {
-    return Seed;
+    return seed;
 }
 
 void PlayscreenParameters::set_seed(int seed)
 {
-    Seed = seed;
-    IsSeedSet = true;
+    seed = seed;
+    is_seed_set = true;
 }
 
-void PlayscreenParameters::ResetSeed()
+void PlayscreenParameters::reset_seed()
 {
-    IsSeedSet = false;
+    is_seed_set = false;
 }
 
 void deserialize(PlayscreenParameters &out, nlohmann::json json)
 {
-    out.Upscroll = json["upscroll"];
-    out.NoFail = json["nofail"];
-    out.HiddenMode = json["hidden"];
-    out.Rate = json["rate"];
-    out.UserSpeedMultiplier = json["userspeed"];
-    out.Random = json["random"];
-    out.GaugeType = json["gauge"];
-    out.SystemType = json["system"];
-    out.GreenNumber = json["isGreenNumber"];
-    out.UseW0 = json["W0"];
+    out.upscroll = json["upscroll"];
+    out.no_fail = json["nofail"];
+    out.hidden_mode = json["hidden"];
+    out.rate = json["rate"];
+    out.user_speed_multiplier = json["userspeed"];
+    out.random = json["random"];
+    out.gauge_type = json["gauge"];
+    out.system_type = json["system"];
+    out.green_number = json["isGreenNumber"];
+    out.use_w0 = json["W0"];
     // future use:
     // ScoringType = json["score"];
 
-    if (out.Random) {
+    if (out.random) {
         out.set_seed(json["seed"]);
     }
 }
@@ -155,23 +155,23 @@ void deserialize(PlayscreenParameters &out, nlohmann::json json)
 nlohmann::json serialize(const PlayscreenParameters &in)
 {
     nlohmann::json ret;
-    ret["upscroll"] = in.Upscroll;
-    ret["nofail"] = in.NoFail;
-    ret["hidden"] = in.HiddenMode;
-    ret["rate"] = in.Rate;
-    ret["userspeed"] = in.UserSpeedMultiplier;
-    ret["random"] = in.Random;
-    ret["gauge"] = in.GaugeType;
-    ret["system"] = in.SystemType;
-    ret["score"] = in.GetScoringType();
-    ret["isGreenNumber"] = in.GreenNumber;
-    ret["W0"] = in.UseW0;
+    ret["upscroll"] = in.upscroll;
+    ret["nofail"] = in.no_fail;
+    ret["hidden"] = in.hidden_mode;
+    ret["rate"] = in.rate;
+    ret["userspeed"] = in.user_speed_multiplier;
+    ret["random"] = in.random;
+    ret["gauge"] = in.gauge_type;
+    ret["system"] = in.system_type;
+    ret["score"] = in.get_scoring_type();
+    ret["isGreenNumber"] = in.green_number;
+    ret["W0"] = in.use_w0;
 
-    if (in.Random && in.IsSeedSet) {
-        ret["seed"] = in.Seed;
+    if (in.random && in.is_seed_set) {
+        ret["seed"] = in.seed;
     }
 
-    if (in.Random && !in.IsSeedSet)
+    if (in.random && !in.is_seed_set)
         Log::LogPrintf("Warning: serializing with random set, but no seed\n");
 
     return ret;

@@ -6,15 +6,15 @@
 class BackgroundAnimation : public Interruptible, public Drawable2D
 {
 public:
-    BackgroundAnimation(Interruptible* parent = nullptr);
+    explicit BackgroundAnimation(Interruptible* parent = nullptr);
     virtual ~BackgroundAnimation() = default;
-    virtual void SetAnimationTime(double Time);
-    virtual void Load();
-    virtual void Validate();
-    virtual void Update(float Delta);
+    virtual void set_animation_time(double Time);
+    virtual void load();
+    virtual void finalize_loading();
+    virtual void update(float Delta);
 
-    virtual void OnHit();
-    virtual void OnMiss();
+    virtual void on_hit();
+    virtual void on_miss();
     void emit_draw_calls(DrawCallSink &sink) override;
 
     /* Can only be called from main thread if LoadNow = true! */
@@ -25,4 +25,4 @@ public:
             bool load_now = false);
 };
 
-bool IsVideoPath(std::filesystem::path path);
+bool is_video_path(std::filesystem::path path);

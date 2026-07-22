@@ -50,14 +50,14 @@ namespace {
 
     void CheckReturnedCallbackDispatch(Noteskin& noteskin)
     {
-        REQUIRE_NOTHROW(noteskin.validate());
-        CHECK(noteskin.GetBarlineWidth() == 123);
+        REQUIRE_NOTHROW(noteskin.finalize_loading());
+        CHECK(noteskin.get_barline_width() == 123);
 
         REQUIRE_NOTHROW(noteskin.update(2, 3));
-        CHECK(noteskin.GetBarlineStartX() == 23);
+        CHECK(noteskin.get_barline_start_x() == 23);
 
-        REQUIRE_NOTHROW(noteskin.DrawHoldBody(1, 2, 3, 4));
-        CHECK(noteskin.GetNoteOffset() == 10);
+        REQUIRE_NOTHROW(noteskin.draw_hold_body(1, 2, 3, 4));
+        CHECK(noteskin.get_note_offset() == 10);
     }
 }
 
@@ -69,8 +69,8 @@ TEST_CASE("Noteskin can be used with no context", "[noteskin]")
     SECTION("Noteskin doesn't crash with no context") {
 
         REQUIRE_NOTHROW(n.init_noteskin(false, 4));
-        REQUIRE_NOTHROW(n.validate());
-        REQUIRE_NOTHROW(n.DrawHoldBody(0, 0, 0, 0));
+        REQUIRE_NOTHROW(n.finalize_loading());
+        REQUIRE_NOTHROW(n.draw_hold_body(0, 0, 0, 0));
     }
 }
 

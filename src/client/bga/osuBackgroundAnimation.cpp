@@ -228,7 +228,7 @@ namespace osb {
             // apply position
 
             // rotation -> scale + vecscale -> position.
-            mTransform.chain_transformation(&mParent->GetScreenTransformation());
+            mTransform.chain_transformation(&mParent->get_screen_transformation());
 
             // flip -> pivot
             mPivot.set_position(OriginPivots[mOrigin].x, OriginPivots[mOrigin].y);
@@ -241,7 +241,7 @@ namespace osb {
             mSprite->chain_transformation(&mFlip);
 
             // Set the image.
-            mSprite->set_image(mParent->GetImageFromIndex(mImageIndex), false);
+            mSprite->set_image(mParent->get_image_from_index(mImageIndex), false);
 
             mUninitialized = false;
         }
@@ -552,7 +552,7 @@ namespace osb {
 			EndPeriod = event->get_end_time();
 	}
 
-	void EventComponent::ClearEvents()
+	void EventComponent::clear_events()
 	{
 		evMoveX.clear();
 		evMoveY.clear();
@@ -799,7 +799,7 @@ std::shared_ptr<osb::Event> ParseEvent(std::vector<std::string> split)
 	return evt;
 }
 
-osb::SpriteList ReadOSBEvents(std::istream& event_str)
+osb::SpriteList read_osb_events(std::istream& event_str)
 {
 	auto line_nm = 1;
 	auto list = osb::SpriteList();
@@ -983,20 +983,20 @@ osb::SpriteList ReadOSBEvents(std::istream& event_str)
 	return list;
 }
 
-int osuBackgroundAnimation::AddImageToList(std::string image_filename)
+int osuBackgroundAnimation::add_image_to_list(std::string image_filename)
 {
 	std::filesystem::path fn = image_filename;
-	auto idx = mFileIndices.size() + 1;
-	auto full_path = SongDirectory / image_filename;
+	auto idx = m_file_indices_.size() + 1;
+	auto full_path = song_directory_ / image_filename;
 
 	if (std::filesystem::exists(full_path)) {
 		// Okay, full path is definitely not in.
-		if (mFileIndices.find(full_path.string()) == mFileIndices.end()) {
-			mFileIndices[full_path.string()] = idx;
+		if (m_file_indices_.find(full_path.string()) == m_file_indices_.end()) {
+			m_file_indices_[full_path.string()] = idx;
 			return idx;
 		} // It is? Okay. Give back the full path's index here.
 		else
-			return mFileIndices[full_path.string()];
+			return m_file_indices_[full_path.string()];
 	} else
 	{
 		// Couldn't find this file? Perhaps it's missing its extension.
@@ -1007,10 +1007,10 @@ int osuBackgroundAnimation::AddImageToList(std::string image_filename)
 			if (i.path().filename() == full_path.filename())
 			{
 				fn.replace_extension(i.path().extension());
-				if (mFileIndices.find(fn.string()) == mFileIndices.end())
-					mFileIndices[fn.string()] = idx;
+				if (m_file_indices_.find(fn.string()) == m_file_indices_.end())
+					m_file_indices_[fn.string()] = idx;
 				else
-					return mFileIndices[fn.string()];
+					return m_file_indices_[fn.string()];
 			}
 		}
 	}
@@ -1023,64 +1023,64 @@ osuBackgroundAnimation::osuBackgroundAnimation(
 		const osb::SpriteList& existing_mSprites,
 		std::filesystem::path song_directory)
 	: BackgroundAnimation(parent),
-		mImageList(this)
+		m_image_list_(this)
 {
 	set_size(OSB_WIDTH_WIDE, OSB_HEIGHT);
-	mScreenTransformation.set_position_x( (OSB_WIDTH_WIDE - OSB_WIDTH) / 2 / OSB_WIDTH_WIDE);
-	mScreenTransformation.set_size(1 / OSB_WIDTH_WIDE, 1 / OSB_HEIGHT);
-	mScreenTransformation.chain_transformation(this);
-	SongDirectory = std::move(song_directory);
-	CanValidate = false;
+	m_screen_transformation_.set_position_x( (OSB_WIDTH_WIDE - OSB_WIDTH) / 2 / OSB_WIDTH_WIDE);
+	m_screen_transformation_.set_size(1 / OSB_WIDTH_WIDE, 1 / OSB_HEIGHT);
+	m_screen_transformation_.chain_transformation(this);
+	song_directory_ = std::move(song_directory);
+	can_validate_ = false;
 
 	int video_index = 0;
     for (auto sp : existing_mSprites) {
         sp.set_parent(this);
 
-        auto vpath = SongDirectory / sp.get_image_filename();
-        if (IsVideoPath(vpath)) {
+        auto vpath = song_directory_ / sp.get_image_filename();
+        if (is_video_path(vpath)) {
             video_index--;
-            auto vid = mVideoList[video_index] = new VideoPlayback();
+            auto vid = m_video_list_[video_index] = new VideoPlayback();
             if (vid->open(vpath)) {
                 vid->start_decode_thread();
-                mImageList.AddToListIndex(vid, video_index);
+                m_image_list_.add_to_list_index(vid, video_index);
             }
         } else {
-            sp.set_image_index(AddImageToList(sp.get_image_filename()));
+            sp.set_image_index(add_image_to_list(sp.get_image_filename()));
         }
-        mSprites.push_back(sp);
+        m_sprites_.push_back(sp);
 	}
 }
 
 osuBackgroundAnimation::~osuBackgroundAnimation()
 {
-	for (auto v: mVideoList) {
+	for (auto v: m_video_list_) {
 		delete v.second;
 	}
 }
 	
-Transformation& osuBackgroundAnimation::GetScreenTransformation()
+Transformation& osuBackgroundAnimation::get_screen_transformation()
 {
-	return mScreenTransformation;
+	return m_screen_transformation_;
 }
 
-Texture2D* osuBackgroundAnimation::GetImageFromIndex(const int m_image_index)
+Texture2D* osuBackgroundAnimation::get_image_from_index(const int m_image_index)
 {
 	if (m_image_index >= 0)
-		return mImageList.GetFromIndex(m_image_index);
+		return m_image_list_.get_from_index(m_image_index);
 	else
-		return mVideoList[m_image_index];
+		return m_video_list_[m_image_index];
 }
 
-int osuBackgroundAnimation::GetIndexFromFilename(std::string filename)
+int osuBackgroundAnimation::get_index_from_filename(std::string filename)
 {
-	return mFileIndices[filename];
+	return m_file_indices_[filename];
 }
 
-void osuBackgroundAnimation::Load()
+void osuBackgroundAnimation::load()
 {
 	// Read the osb file from the song's directory.
 	std::vector<std::filesystem::path> candidates;
-	for (const auto& entry : std::filesystem::directory_iterator(SongDirectory)) {
+	for (const auto& entry : std::filesystem::directory_iterator(song_directory_)) {
 		if (entry.path().extension() == ".osb")
 			candidates.push_back(entry.path());
 	}
@@ -1092,7 +1092,7 @@ void osuBackgroundAnimation::Load()
 
 		if (std::getline(s, head) && head == "[Events]")
 		{
-			auto mSprite_list = ReadOSBEvents(s);
+			auto mSprite_list = read_osb_events(s);
 
 			// at this point i honestly forgot the type of this thing
 			auto newlist = osb::SpriteList();
@@ -1105,7 +1105,7 @@ void osuBackgroundAnimation::Load()
 				// I assume no one.
 				// We only want to do this check once.
 				if (!bgOverwritten) {
-					for (auto &&s: mSprites) {
+					for (auto &&s: m_sprites_) {
 						// we only want to possibly move these once
 						if (s.get_layer() == osb::LAYER_SP_BACKGROUND) {
 							if (s.get_image_filename() == sp.get_image_filename()) {
@@ -1120,66 +1120,66 @@ void osuBackgroundAnimation::Load()
 
 				if (!moved) {
 					sp.set_parent(this);
-					sp.set_image_index(AddImageToList(sp.get_image_filename()));
+					sp.set_image_index(add_image_to_list(sp.get_image_filename()));
 					newlist.push_back(sp);
 				}
 			}
 			
-			newlist.insert(newlist.end(), mSprites.begin(), mSprites.end());
-			mSprites = newlist;
+			newlist.insert(newlist.end(), m_sprites_.begin(), m_sprites_.end());
+			m_sprites_ = newlist;
 		}
 	}
 
-	for (auto &&i : mFileIndices) {
-		mImageList.AddToListIndex(i.first, i.second);
+	for (auto &&i : m_file_indices_) {
+		m_image_list_.add_to_list_index(i.first, i.second);
 		CheckInterruption();
 	}
 
-	CanValidate = true;
+	can_validate_ = true;
 }
 
-void osuBackgroundAnimation::Validate()
+void osuBackgroundAnimation::finalize_loading()
 {
-	if (!CanValidate)
+	if (!can_validate_)
 	{
 		Log::LogPrintf("Can't validate osu! storyboard.");
 		return;
 	}
 
-	mImageList.LoadAll();
-	mImageList.ForceFetch();
+	m_image_list_.load_all();
+	m_image_list_.force_fetch();
 
 	// Count items/layer
 	std::map<int, int> cnt;
-	for (auto &&i : mSprites)
+	for (auto &&i : m_sprites_)
 		cnt[i.get_layer()]++;
 
 	// Set size of sprite containers
-	mAutoBGLayer.resize(cnt[osb::LAYER_SP_BACKGROUND], Sprite(false));
-	mBackgroundLayer.resize(cnt[osb::LAYER_BACKGROUND] + cnt[osb::LAYER_PASS] + cnt[osb::LAYER_FAIL], Sprite(false));
-	mForegroundLayer.resize(cnt[osb::LAYER_FOREGROUND], Sprite(false));
+	m_auto_bg_layer_.resize(cnt[osb::LAYER_SP_BACKGROUND], Sprite(false));
+	m_background_layer_.resize(cnt[osb::LAYER_BACKGROUND] + cnt[osb::LAYER_PASS] + cnt[osb::LAYER_FAIL], Sprite(false));
+	m_foreground_layer_.resize(cnt[osb::LAYER_FOREGROUND], Sprite(false));
 
 	// counters for each layer (only first three used atm)
 	auto i1 = 0, i2 = 0, i3 = 0, i4 = 0, i5 = 0;
 
 	// assign pre-reserved space to these layers
-	for (auto &&i : mSprites)
+	for (auto &&i : m_sprites_)
 	{
 		Sprite* spr = nullptr;
 		switch (i.get_layer())
 		{
 		case osb::LAYER_SP_BACKGROUND:
-			spr = &mAutoBGLayer[i1];
+			spr = &m_auto_bg_layer_[i1];
 			i1++;
 			break;
 		case osb::LAYER_BACKGROUND:
 		case osb::LAYER_PASS:
 		case osb::LAYER_FAIL:
-			spr = &mBackgroundLayer[i2];
+			spr = &m_background_layer_[i2];
 			i2++;
 			break;
 		case osb::LAYER_FOREGROUND:
-			spr = &mForegroundLayer[i3];
+			spr = &m_foreground_layer_[i3];
 			i3++;
 			break;
 		default:
@@ -1198,27 +1198,27 @@ void osuBackgroundAnimation::Validate()
 	}
 }
 
-void osuBackgroundAnimation::SetAnimationTime(const double Time)
+void osuBackgroundAnimation::set_animation_time(const double time)
 {
-	if (!CanValidate)
+	if (!can_validate_)
 		return;
 
-	for (auto&& item: mSprites)
+	for (auto&& item: m_sprites_)
 	{
-        item.update(Time);
+        item.update(time);
 	}
 }
 
-void osuBackgroundAnimation::Update(float Delta)
+void osuBackgroundAnimation::update(float delta)
 {
 }
 
 void osuBackgroundAnimation::emit_draw_calls(DrawCallSink &sink)
 {
-	for (auto&& item : mAutoBGLayer)
+	for (auto&& item : m_auto_bg_layer_)
 		item.emit_draw_calls(sink);
-	for (auto&& item: mBackgroundLayer)
+	for (auto&& item: m_background_layer_)
 		item.emit_draw_calls(sink);
-	for (auto&& item: mForegroundLayer)
+	for (auto&& item: m_foreground_layer_)
 		item.emit_draw_calls(sink);
 }

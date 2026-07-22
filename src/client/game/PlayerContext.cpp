@@ -102,8 +102,8 @@ void PlayerContext::init() const {
     noteskin_->init_noteskin(chart_state_.has_turntable, current_chart_->channels);
 }
 
-void PlayerContext::validate() {
-    noteskin_->validate();
+void PlayerContext::finalize_loading() {
+    noteskin_->finalize_loading();
     ms_display_margin_ = (Configuration::GetSkinConfigf("HitErrorDisplayLimiter"));
 
 
@@ -111,7 +111,7 @@ void PlayerContext::validate() {
         if (!bind_keys_to_lanes(!chart_state_.has_turntable))
             Log::LogPrintf("Couldn't get valid bindings for current key count %d.\n", get_channel_count());
 
-    if (noteskin_->IsBarlineEnabled())
+    if (noteskin_->is_barline_enabled())
         barline_ = std::make_unique<Line>();
 }
 
@@ -124,11 +124,11 @@ TimingType setup_game_system(
     const PlayscreenParameters &param,
     const std::shared_ptr<otoworm::ChartInfo> &timing_info,
     ScoreKeeper *player_score_keeper) {
-    TimingType UsedTimingType = TT_TIME;
+    TimingType used_timing_type = TT_TIME;
     const auto chart_type = GetChartType(timing_info);
 
-    if (param.SystemType == TI_BMS || param.SystemType == TI_RDAC || param.SystemType == TI_LR2) {
-        UsedTimingType = TT_TIME;
+    if (param.system_type == TI_BMS || param.system_type == TI_RDAC || param.system_type == TI_LR2) {
+        used_timing_type = TT_TIME;
         if (chart_type == TI_BMS) {
             if (const auto info = dynamic_cast<otoworm::BMSChartInfo *>(timing_info.get());
                 !info->percentual_judgerank)
@@ -139,29 +139,29 @@ TimingType setup_game_system(
             player_score_keeper->setJudgeRank(2);
         }
 
-        if (param.SystemType == TI_LR2) {
+        if (param.system_type == TI_LR2) {
             player_score_keeper->useLR2Timing();
         }
-    } else if (param.SystemType == TI_O2JAM) {
-        UsedTimingType = TT_BEATS;
+    } else if (param.system_type == TI_O2JAM) {
+        used_timing_type = TT_BEATS;
         player_score_keeper->setJudgeRank(-100);
-    } else if (param.SystemType == TI_OSUMANIA) {
-        UsedTimingType = TT_TIME;
+    } else if (param.system_type == TI_OSUMANIA) {
+        used_timing_type = TT_TIME;
         if (chart_type == TI_OSUMANIA) {
             const auto info = dynamic_cast<otoworm::OsumaniaChartInfo *>(timing_info.get());
             player_score_keeper->setODWindows(info->overall_difficulty);
         } else player_score_keeper->setODWindows(7);
-    } else if (param.SystemType == TI_STEPMANIA) {
-        UsedTimingType = TT_TIME;
+    } else if (param.system_type == TI_STEPMANIA) {
+        used_timing_type = TT_TIME;
         player_score_keeper->setSMJ4Windows();
-    } else if (param.SystemType == TI_RAINDROP) {
+    } else if (param.system_type == TI_RAINDROP) {
         // LifebarType = LT_STEPMANIA;
     } else {
-        Log::LogPrintf("Warning: unknown SystemType %d\n", param.SystemType);
+        Log::LogPrintf("Warning: unknown SystemType %d\n", param.system_type);
     }
 
-    player_score_keeper->applyRateScale(param.Rate);
-    return UsedTimingType;
+    player_score_keeper->applyRateScale(param.rate);
+    return used_timing_type;
 }
 
 
@@ -186,13 +186,13 @@ auto setup(
     RaindropProcessedChart chart_state(DEFAULT_WAIT_TIME);
 
     if (desired_default_speed != 0) {
-        desired_default_speed /= param.Rate;
+        desired_default_speed /= param.rate;
 
         if (type == SPEEDTYPE_CMOD) // cmod
         {
-            param.UserSpeedMultiplier = 1;
+            param.user_speed_multiplier = 1;
 
-            double spd = param.GreenNumber ? 1000 : desired_default_speed;
+            double spd = param.green_number ? 1000 : desired_default_speed;
 
             chart_state = RaindropProcessedChart::from(current_chart.get(), spd);
         } else
@@ -200,7 +200,7 @@ auto setup(
 
         // if GN is true, Default Speed = GN!
         // Convert GN to speed.
-        if (param.GreenNumber) {
+        if (param.green_number) {
             // v0 is normal speed
             // (green number speed * green number time) / (normal speed * normal time)
             // equals
@@ -211,7 +211,7 @@ auto setup(
             desired_default_speed = new_speed;
 
             if (type == SPEEDTYPE_CMOD) {
-                param.UserSpeedMultiplier = desired_default_speed / 1000;
+                param.user_speed_multiplier = desired_default_speed / 1000;
             }
         }
 
@@ -223,11 +223,11 @@ auto setup(
             }
 
             double ratio = desired_default_speed / speed_max; // How much above or below are we from the maximum speed?
-            param.UserSpeedMultiplier = ratio;
+            param.user_speed_multiplier = ratio;
         } else if (type == SPEEDTYPE_FIRST) // First speed.
         {
             double desired_multiplier = desired_default_speed / chart_state.speeds[0].value;
-            param.UserSpeedMultiplier = desired_multiplier;
+            param.user_speed_multiplier = desired_multiplier;
         } else if (type == SPEEDTYPE_MODE) // Most lasting speed.
         {
             std::map<double, double> freq;
@@ -245,23 +245,23 @@ auto setup(
                 }
             }
 
-            param.UserSpeedMultiplier = desired_default_speed / (speed * UNITS_PER_MEASURE);
+            param.user_speed_multiplier = desired_default_speed / (speed * UNITS_PER_MEASURE);
         } else if (type == SPEEDTYPE_MULTIPLIER) // target speed is just a multiplier
         {
-            param.UserSpeedMultiplier = desired_default_speed;
+            param.user_speed_multiplier = desired_default_speed;
         } else if (type != SPEEDTYPE_CMOD) // other cases
         {
             double bpsd = 4.0 / (chart_state.bps[0].value);
             double Speed = (UNITS_PER_MEASURE / bpsd);
             double DesiredMultiplier = desired_default_speed / Speed;
 
-            param.UserSpeedMultiplier = DesiredMultiplier;
+            param.user_speed_multiplier = DesiredMultiplier;
         }
     } else
         chart_state = RaindropProcessedChart::from(current_chart.get(), drift);
 
-    if (param.Random) {
-        if (!param.IsSeedSet)
+    if (param.random) {
+        if (!param.is_seed_set)
             param.set_seed(time(nullptr));
 
 
@@ -269,13 +269,13 @@ auto setup(
             chart_state.notes,
             current_chart->channels,
             chart_state.has_turntable,
-            param.Seed
+            param.seed
         );
     }
 
 
     // Sinisterrr/fully negative charts fix.
-    param.UserSpeedMultiplier = abs(param.UserSpeedMultiplier);
+    param.user_speed_multiplier = abs(param.user_speed_multiplier);
     return new RaindropProcessedChart(chart_state);
 }
 
@@ -284,31 +284,31 @@ void setup_gauge(
     const std::shared_ptr<otoworm::ChartInfo> &timing_info,
     ScoreKeeper *scorekeeper) {
     const auto chart_type = GetChartType(timing_info);
-    if (param.GaugeType == LT_AUTO) {
-        switch (param.SystemType) {
+    if (param.gauge_type == LT_AUTO) {
+        switch (param.system_type) {
             case TI_BMS:
             case TI_RAINDROP:
             case TI_RDAC:
-                param.GaugeType = LT_GROOVE;
+                param.gauge_type = LT_GROOVE;
                 break;
             case TI_LR2: // LR2's groove gauge
-                param.GaugeType = LT_LR2_NORMAL;
+                param.gauge_type = LT_LR2_NORMAL;
                 break;
             case TI_O2JAM:
-                param.GaugeType = LT_O2JAM;
+                param.gauge_type = LT_O2JAM;
                 break;
             case TI_OSUMANIA:
-                param.GaugeType = LT_OSUMANIA;
+                param.gauge_type = LT_OSUMANIA;
                 break;
             case TI_STEPMANIA:
-                param.GaugeType = LT_STEPMANIA;
+                param.gauge_type = LT_STEPMANIA;
                 break;
             default:
                 throw std::runtime_error("Invalid requested system.");
         }
     }
 
-    switch (param.GaugeType) {
+    switch (param.gauge_type) {
         case LT_STEPMANIA:
             // LifebarType = LT_STEPMANIA; // Needs no setup.
             break;
@@ -362,19 +362,19 @@ std::unique_ptr<Mechanics> configure_mechanics(
     const auto score_count = transient ? transient->get_scorable_note_count() : 0;
     const auto hold_count = score_count - object_count;
     scorekeeper->setTotalObjects(object_count, hold_count);
-    scorekeeper->setUseW0(param.UseW0);
+    scorekeeper->setUseW0(param.use_w0);
 
     // JudgeScale, Stepmania and OD can't be run together - only one can be set.
     const auto timing_info = GetOtoTimingInfo(current_chart);
 
     // Pick a timing system
-    if (param.SystemType == TI_NONE) {
+    if (param.system_type == TI_NONE) {
         if (timing_info) {
             // Automatic setup
-            param.SystemType = GetChartType(timing_info);
+            param.system_type = GetChartType(timing_info);
         } else {
             // Log::Printf("Null timing info - assigning raindrop defaults.\n");
-            param.SystemType = TI_RAINDROP;
+            param.system_type = TI_RAINDROP;
             // pick raindrop system for null Timing Info
         }
     }
@@ -383,10 +383,10 @@ std::unique_ptr<Mechanics> configure_mechanics(
     // If we got just assigned one or was already requested
     // unlikely: timing info type is none? what
 
-    if (param.SystemType == TI_NONE) {
+    if (param.system_type == TI_NONE) {
         // Player didn't request a specific subsystem
         // Log::Printf("System picked was none - on purpose. Defaulting to raindrop.\n");
-        param.SystemType = TI_RAINDROP;
+        param.system_type = TI_RAINDROP;
     }
 
     const TimingType used_timing_type = setup_game_system(param, timing_info, scorekeeper.get());
@@ -396,11 +396,11 @@ std::unique_ptr<Mechanics> configure_mechanics(
     and use mechanics that use TT_BEATS as its timing type.
     */
 
-    const bool disable_forced_release = param.SystemType == TI_BMS ||
-                                        param.SystemType == TI_RDAC ||
-                                        param.SystemType == TI_STEPMANIA;
+    const bool disable_forced_release = param.system_type == TI_BMS ||
+                                        param.system_type == TI_RDAC ||
+                                        param.system_type == TI_STEPMANIA;
     if (used_timing_type == TT_TIME) {
-        if (param.SystemType == TI_RDAC) {
+        if (param.system_type == TI_RDAC) {
             // Log::Printf("RAINDROP ARCADE STAAAAAAAAART!\n");
             mechanics_set = std::make_unique<RaindropArcadeMechanics>();
         } else {
@@ -416,7 +416,7 @@ std::unique_ptr<Mechanics> configure_mechanics(
 
     mechanics_set->configure(current_chart.get(), scorekeeper);
     setup_gauge(param, timing_info, scorekeeper.get());
-    param.UpdateHidden(judge_y);
+    param.update_hidden(judge_y);
 
     return mechanics_set;
 }
@@ -425,10 +425,10 @@ std::unique_ptr<Mechanics> configure_mechanics(
 void PlayerContext::draw_barlines(const double current_vertical, const double user_speed_multiplier) const {
     for (const auto i: chart_state_.barlines) {
         const double real_v = (current_vertical - i * units_per_measure_) * user_speed_multiplier +
-                              noteskin_->GetBarlineOffset() * sign(user_speed_multiplier) + get_judgment_y();
+                              noteskin_->get_barline_offset() * sign(user_speed_multiplier) + get_judgment_y();
         if (real_v > 0 && real_v < ScreenWidth) {
-            barline_->set_location(Vec2(noteskin_->GetBarlineStartX(), real_v),
-                                  Vec2(noteskin_->GetBarlineStartX() + noteskin_->GetBarlineWidth(), real_v));
+            barline_->set_location(Vec2(noteskin_->get_barline_start_x(), real_v),
+                                  Vec2(noteskin_->get_barline_start_x() + noteskin_->get_barline_width(), real_v));
             if (draw_calls_)
                 barline_->emit_draw_calls(*draw_calls_);
         }
@@ -599,7 +599,7 @@ void PlayerContext::set_playable_data(std::shared_ptr<otoworm::Chart> chart, con
     // use data from the replay if one is loaded
     if (replay_data_->is_loaded()) {
         parameters_ = replay_data_->get_effective_parameters();
-        desired_default_speed = parameters_.UserSpeedMultiplier;
+        desired_default_speed = parameters_.user_speed_multiplier;
 
         // treat desired default speed as the actual multiplier
         type = SPEEDTYPE_MULTIPLIER;
@@ -629,7 +629,7 @@ void PlayerContext::set_playable_data(std::shared_ptr<otoworm::Chart> chart, con
 }
 
 bool PlayerContext::is_fail_enabled() const {
-    return !parameters_.NoFail;
+    return !parameters_.no_fail;
 }
 
 bool PlayerContext::is_upscrolling() const {
@@ -642,7 +642,7 @@ bool PlayerContext::get_uses_turntable() const {
 
 double PlayerContext::get_applied_speed_multiplier(const double time) const {
     const auto sm = chart_state_.get_speed_multiplier_at(time);
-    if (parameters_.Upscroll)
+    if (parameters_.upscroll)
         return -sm;
     else
         return sm;
@@ -653,7 +653,7 @@ double PlayerContext::get_current_beat() const {
 }
 
 double PlayerContext::get_user_multiplier() const {
-    return parameters_.UserSpeedMultiplier;
+    return parameters_.user_speed_multiplier;
 }
 
 double PlayerContext::get_current_vertical_speed() const {
@@ -670,9 +670,9 @@ double PlayerContext::get_current_bpm() const {
 
 double PlayerContext::get_judgment_y() const {
     if (is_upscrolling())
-        return noteskin_->GetJudgmentY();
+        return noteskin_->get_judgment_y();
     else
-        return ScreenHeight - noteskin_->GetJudgmentY();
+        return ScreenHeight - noteskin_->get_judgment_y();
 }
 
 double PlayerContext::get_life_pst() const {
@@ -776,7 +776,7 @@ double PlayerContext::get_closest_note_time(const int lane) const {
 }
 
 void PlayerContext::set_user_multiplier(const float multip) {
-    parameters_.UserSpeedMultiplier = multip;
+    parameters_.user_speed_multiplier = multip;
 }
 
 std::vector<otoworm::AutoplaySound> PlayerContext::create_autoplay_sound_list() {
@@ -890,7 +890,7 @@ void PlayerContext::load_replay(const std::filesystem::path &path) const {
 }
 
 double PlayerContext::get_score() const {
-    return player_score_keeper_->getScore(parameters_.GetScoringType());
+    return player_score_keeper_->getScore(parameters_.get_scoring_type());
 }
 
 int PlayerContext::get_combo() const {
@@ -1121,12 +1121,12 @@ void PlayerContext::set_unwarped_time(const double time) {
 }
 
 int PlayerContext::get_current_gauge_type() const {
-    return parameters_.GaugeType;
+    return parameters_.gauge_type;
 }
 
 
 int PlayerContext::get_current_score_type() const {
-    return parameters_.GetScoringType();
+    return parameters_.get_scoring_type();
 }
 
 int PlayerContext::get_current_system_type() const {
@@ -1142,11 +1142,11 @@ double PlayerContext::get_judge_offset() const {
 }
 
 double PlayerContext::get_rate() const {
-    return parameters_.Rate;
+    return parameters_.rate;
 }
 
 bool PlayerContext::has_failed() const {
-    return player_score_keeper_->isStageFailed(get_current_gauge_type()) && !parameters_.NoFail;
+    return player_score_keeper_->isStageFailed(get_current_gauge_type()) && !parameters_.no_fail;
 }
 
 bool PlayerContext::has_delayed_failure() const {
@@ -1168,12 +1168,12 @@ int PlayerContext::draw_measures(const double song_time) {
 
     // effective speed multiplier
     const auto chart_multiplier = get_applied_speed_multiplier(song_time);
-    const auto effective_chart_speed_multiplier = chart_multiplier * parameters_.UserSpeedMultiplier;
+    const auto effective_chart_speed_multiplier = chart_multiplier * parameters_.user_speed_multiplier;
 
     // since + is downward, - is upward!
     const bool upscrolling = effective_chart_speed_multiplier < 0;
 
-    if (noteskin_->IsBarlineEnabled())
+    if (noteskin_->is_barline_enabled())
         draw_barlines(chart_displacement, effective_chart_speed_multiplier);
 
     // Set some parameters...
@@ -1182,20 +1182,20 @@ int PlayerContext::draw_measures(const double song_time) {
         true,
         false,
         false,
-        parameters_.GetHiddenMode()
+        parameters_.get_hidden_mode()
     );
 
     // Sudden = 1, Hidden = 2, flashlight = 3 (Defined in the shader)
-    if (parameters_.GetHiddenMode()) {
+    if (parameters_.get_hidden_mode()) {
         renderer::Shader::set_uniform(
             renderer::Shader::Default::get_uniform(renderer::U_HIDCENTER),
-            parameters_.GetHiddenCenter());
+            parameters_.get_hidden_center());
         renderer::Shader::set_uniform(
             renderer::Shader::Default::get_uniform(renderer::U_HIDSIZE),
-            parameters_.GetHiddenTransitionSize());
+            parameters_.get_hidden_transition_size());
         renderer::Shader::set_uniform(
             renderer::Shader::Default::get_uniform(renderer::U_HIDFLSIZE),
-            parameters_.GetHiddenCenterSize());
+            parameters_.get_hidden_center_size());
     }
 
     renderer::set_primitive_quad_vbo();
@@ -1223,11 +1223,11 @@ int PlayerContext::draw_measures(const double song_time) {
         // Signs are switched. Doesn't begin by the first note closest to the lower edge, but the one closest to the higher edge.
         if (!upscrolling)
             start = std::ranges::lower_bound(notes[k],
-                                             ScreenHeight + noteskin_->GetNoteOffset(),
+                                             ScreenHeight + noteskin_->get_note_offset(),
                                              loc_predicate);
         else
             start = std::ranges::lower_bound(notes[k],
-                                             0 - noteskin_->GetNoteOffset(),
+                                             0 - noteskin_->get_note_offset(),
                                              loc_predicate);
 
         // Locate the first hold that we can draw in this range
@@ -1251,11 +1251,11 @@ int PlayerContext::draw_measures(const double song_time) {
         // Find the note that is out of the drawing range
         // As before. Top becomes bottom, bottom becomes top.
         if (!upscrolling)
-            end = std::ranges::lower_bound(notes[k], 0 - noteskin_->GetNoteOffset(),
+            end = std::ranges::lower_bound(notes[k], 0 - noteskin_->get_note_offset(),
                                            loc_predicate);
         else
             end = std::ranges::lower_bound(notes[k],
-                                           ScreenHeight + noteskin_->GetNoteOffset(), loc_predicate);
+                                           ScreenHeight + noteskin_->get_note_offset(), loc_predicate);
 
 
         // Now, draw them.
@@ -1298,7 +1298,7 @@ int PlayerContext::draw_measures(const double song_time) {
                     level = SuccesfullyHit;
 
                 // If we're being hit and..
-                const bool decrease_hold_size = noteskin_->ShouldDecreaseHoldSizeWhenBeingHit() && level == 2;
+                const bool decrease_hold_size = noteskin_->should_decrease_hold_size_when_being_hit() && level == 2;
                 auto reference_point = 0.0f;
                 if (decrease_hold_size) {
                     reference_point = judge_y;
@@ -1310,18 +1310,18 @@ int PlayerContext::draw_measures(const double song_time) {
                 const double pos = (vertical_hold_end + reference_point) / 2;
                 const double size = vertical_hold_end - reference_point;
 
-                noteskin_->DrawHoldBody(k, pos, size, level);
-                noteskin_->DrawHoldTail(*m, k, vertical_hold_end, level);
+                noteskin_->draw_hold_body(k, pos, size, level);
+                noteskin_->draw_hold_tail(*m, k, vertical_hold_end, level);
 
-                if (noteskin_->AllowDanglingHeads() || decrease_hold_size)
-                    noteskin_->DrawHoldHead(*m, k, judge_y, level);
+                if (noteskin_->allow_dangling_heads() || decrease_hold_size)
+                    noteskin_->draw_hold_head(*m, k, judge_y, level);
                 else
-                    noteskin_->DrawHoldHead(*m, k, vertical, level);
+                    noteskin_->draw_hold_head(*m, k, vertical, level);
             } else {
-                if (noteskin_->AllowDanglingHeads())
-                    noteskin_->DrawNote(*m, k, judge_y);
+                if (noteskin_->allow_dangling_heads())
+                    noteskin_->draw_note(*m, k, judge_y);
                 else
-                    noteskin_->DrawNote(*m, k, vertical);
+                    noteskin_->draw_note(*m, k, vertical);
             }
 
             rnc++; // Rendered note count increases...

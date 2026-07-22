@@ -32,7 +32,7 @@ struct ScoreRow {
     bool IsPlayedScore() {
         // enough things are zero to say we didn't play this thing
         if (hits == misses && hits == 0) {
-            if (score == 0 || play_opts.GaugeType == rd::LT_AUTO)
+            if (score == 0 || play_opts.gauge_type == rd::LT_AUTO)
                 return false;
         }
 

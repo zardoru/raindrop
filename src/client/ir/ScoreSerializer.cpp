@@ -74,11 +74,11 @@ json StormIR::serialize_score(const otoworm::ChartGroup *chart_group, const otow
     ret["song"] = serialize_song_information(chart_group);
     ret["diff"] = serialize_difficulty_information(chart_group, chart);
     ret["options"] = serialize_options(options);
-    ret["detail"] = serialize_score_detail(keeper, options.GetScoringType(),
-                                         static_cast<const rd::LifeType>(options.GaugeType));
+    ret["detail"] = serialize_score_detail(keeper, options.get_scoring_type(),
+                                         static_cast<const rd::LifeType>(options.gauge_type));
 
     // score type
-    switch (options.GetScoringType()) {
+    switch (options.get_scoring_type()) {
         // must match scoreTypeMapper definition above
         case rd::ST_EX:
         case rd::ST_DP:
@@ -89,13 +89,13 @@ json StormIR::serialize_score(const otoworm::ChartGroup *chart_group, const otow
         case rd::ST_EXP:
         case rd::ST_EXP3:
         case rd::ST_O2JAM:
-            ret["score_type"] = scoreTypeMapper.at(options.GetScoringType());
+            ret["score_type"] = scoreTypeMapper.at(options.get_scoring_type());
             break;
         default:
             throw BadScoreType();
     }
 
-    ret["system_type"] = systemTypeMapper.at(options.SystemType);
+    ret["system_type"] = systemTypeMapper.at(options.system_type);
     return ret;
 }
 
@@ -126,13 +126,13 @@ json StormIR::serialize_difficulty_information(const otoworm::ChartGroup *chart_
 json StormIR::serialize_options(const PlayscreenParameters &parameters) {
     std::vector<std::string> opts;
 
-    if (parameters.NoFail) opts.emplace_back("nofail");
-    if (parameters.Rate != 1.0) opts.push_back(otoworm::util::format("rate:%.2f", parameters.Rate));
-    if (parameters.UseW0) opts.emplace_back("w0");
-    if (parameters.Random) opts.push_back(otoworm::util::format("seed:%d", parameters.Seed));
-    if (parameters.Upscroll) opts.emplace_back("scroll:up");
+    if (parameters.no_fail) opts.emplace_back("nofail");
+    if (parameters.rate != 1.0) opts.push_back(otoworm::util::format("rate:%.2f", parameters.rate));
+    if (parameters.use_w0) opts.emplace_back("w0");
+    if (parameters.random) opts.push_back(otoworm::util::format("seed:%d", parameters.seed));
+    if (parameters.upscroll) opts.emplace_back("scroll:up");
 
-    opts.push_back(otoworm::util::format("g:%s", gaugeTypeMapper.at(parameters.GaugeType).c_str()));
+    opts.push_back(otoworm::util::format("g:%s", gaugeTypeMapper.at(parameters.gauge_type).c_str()));
 
     return json() = opts;
 }
