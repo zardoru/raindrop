@@ -87,11 +87,6 @@ void Noteskin::log_callback_error(const std::string &name, const std::string &me
 }
 
 void Noteskin::finalize_loading() {
-    if (!note_shader_) {
-        // This links against Shader::Default's vertex shader, which is compiled during window setup.
-        note_shader_ = std::make_unique<renderer::Shader::Note>();
-    }
-
     /***
      Function called when the Noteskin is created. Called only once.
      @callback Init
@@ -134,7 +129,14 @@ void Noteskin::update(float delta, float current_beat) {
     call_callback("Update", delta, current_beat);
 }
 
-void Noteskin::begin_draw(DrawCallSink &sink) { draw_calls_ = &sink; }
+void Noteskin::begin_draw(DrawCallSink &sink) {
+    if (!note_shader_) {
+        // begin_draw is only reached during rendering, after Shader::Default has compiled its vertex shader.
+        note_shader_ = std::make_unique<renderer::Shader::Note>();
+    }
+
+    draw_calls_ = &sink;
+}
 void Noteskin::end_draw() { draw_calls_ = nullptr; }
 
 void Noteskin::set_hidden_effect(const int mode, const float center, const float transition_size,

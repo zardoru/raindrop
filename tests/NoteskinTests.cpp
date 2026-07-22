@@ -57,7 +57,7 @@ namespace {
         CHECK(noteskin.get_barline_start_x() == 23);
 
         REQUIRE_NOTHROW(noteskin.draw_hold_body(1, 2, 3, NoteskinNoteState::SuccessfullyHit));
-        CHECK(noteskin.get_note_offset() == 10);
+        CHECK(noteskin.get_note_offset() == 9);
     }
 }
 

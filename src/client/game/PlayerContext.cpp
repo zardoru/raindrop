@@ -578,12 +578,12 @@ void PlayerContext::update(const double song_time) {
 
 void PlayerContext::emit_draw_calls(const double song_time, DrawCallSink &sink) {
     draw_calls_ = &sink;
+    noteskin_->begin_draw(sink);
     noteskin_->set_hidden_effect(
         parameters_.get_hidden_mode(),
         parameters_.get_hidden_center(),
         parameters_.get_hidden_transition_size(),
         parameters_.get_hidden_center_size());
-    noteskin_->begin_draw(sink);
     draw_measures(song_time - drift_);
     noteskin_->end_draw();
     draw_calls_ = nullptr;
