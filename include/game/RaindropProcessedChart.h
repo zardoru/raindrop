@@ -79,9 +79,9 @@ namespace rd {
     using RuntimeNoteHandleList = std::vector<RuntimeNoteHandle>;
 
     struct RaindropProcessedChart : otoworm::ProcessedChart {
-        std::array<RuntimeNoteStorage, otoworm::MAX_CHANNELS> notes;
-        std::array<RuntimeNoteHandleList, otoworm::MAX_CHANNELS> notes_vertically_ordered;
-        std::array<RuntimeNoteHandleList, otoworm::MAX_CHANNELS> notes_time_ordered;
+        std::array<RuntimeNoteStorage, otoworm::max_channels> notes;
+        std::array<RuntimeNoteHandleList, otoworm::max_channels> notes_vertically_ordered;
+        std::array<RuntimeNoteHandleList, otoworm::max_channels> notes_time_ordered;
         std::vector<double> barlines;
 
         explicit RaindropProcessedChart(double wait_time = DEFAULT_WAIT_TIME);

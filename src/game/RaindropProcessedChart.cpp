@@ -225,7 +225,7 @@ namespace rd {
         out.wait_time = processed.wait_time;
         out.chart = processed.chart;
 
-        for (uint32_t channel = 0; channel < otoworm::MAX_CHANNELS; ++channel) {
+        for (uint32_t channel = 0; channel < otoworm::max_channels; ++channel) {
             out.notes[channel].clear();
             for (auto& note : processed.notes[channel])
                 out.notes[channel].push_note(note);
@@ -265,7 +265,7 @@ namespace rd {
     }
 
     void RaindropProcessedChart::prepare_ordered_notes() {
-        for (uint32_t channel = 0; channel < otoworm::MAX_CHANNELS; ++channel) {
+        for (uint32_t channel = 0; channel < otoworm::max_channels; ++channel) {
             notes[channel].rebuild_handles();
             notes_vertically_ordered[channel].clear();
             notes_time_ordered[channel].clear();

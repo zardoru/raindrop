@@ -5,7 +5,7 @@
 namespace rd {
     namespace NoteTransform
     {
-        using RuntimeNoteLanes = std::array<RuntimeNoteStorage, otoworm::MAX_CHANNELS>;
+        using RuntimeNoteLanes = std::array<RuntimeNoteStorage, otoworm::max_channels>;
 
         void Randomize(RuntimeNoteLanes &notes, int channel_count, bool respect_scratch, int seed);
         void Mirror(RuntimeNoteLanes &notes, int channel_count, bool respect_scratch = false);
