@@ -19,6 +19,7 @@
 
 class PlayerContext;
 class DrawCallSink;
+class Sprite;
 
 enum class NoteskinNoteState : int {
     Unknown = -1,
@@ -94,9 +95,9 @@ public:
     void end_draw();
     void set_hidden_effect(int mode, float center, float transition_size, float flashlight_size);
 
-    void draw_note(const rd::RuntimeNote &t, int lane, float location);
+    void draw_note(const rd::RuntimeNote &t, rd::LaneHandle lane, float location);
 
-    void draw_hold_body(int lane, float location, float size, NoteskinNoteState state);
+    void draw_hold_body(rd::LaneHandle lane, float location, float size, NoteskinNoteState state);
 
     float get_barline_width() const;
 
@@ -108,9 +109,9 @@ public:
 
     double get_judgment_y() const;
 
-    void draw_hold_head(const rd::RuntimeNote &t, int lane, float location, NoteskinNoteState state);
+    void draw_hold_head(const rd::RuntimeNote &t, rd::LaneHandle lane, float location, NoteskinNoteState state);
 
-    void draw_hold_tail(const rd::RuntimeNote &t, int lane, float location, NoteskinNoteState state);
+    void draw_hold_tail(const rd::RuntimeNote &t, rd::LaneHandle lane, float location, NoteskinNoteState state);
 
     double get_note_offset() const;
 

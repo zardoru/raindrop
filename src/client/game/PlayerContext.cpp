@@ -474,7 +474,7 @@ void PlayerContext::run_measures(const double time) {
     const double used_time = get_chart_time_at(time);
     auto &notes_by_channel = chart_state_.notes_time_ordered;
 
-    for (auto k = 0U; k < current_chart_->channels; k++) {
+    for (rd::LaneHandle k = 0; k < current_chart_->channels; k++) {
         for (auto mp = notes_by_channel[k].begin(); mp != notes_by_channel[k].end(); ++mp) {
             const auto m = chart_state_.note_at(k, *mp);
             if (!m) continue;
@@ -508,14 +508,14 @@ void PlayerContext::run_measures(const double time) {
 }
 
 
-void PlayerContext::play_lane_keysound(const uint32_t lane) const {
+void PlayerContext::play_lane_keysound(const rd::LaneHandle lane) const {
     const auto TN = gear_state_.current_keysounds[lane];
     if (!TN) return;
 
     play_keysound(TN->get_sound());
 }
 
-void PlayerContext::run_autoplay(RuntimeNote *m, const double usedTime, const uint32_t k) {
+void PlayerContext::run_autoplay(RuntimeNote *m, const double usedTime, const rd::LaneHandle k) {
     const auto perfect_auto = true;
     if (const double time_threshold = usedTime + 0.008; m->get_start_time() <= time_threshold) {
         if (m->is_enabled()) {
@@ -547,7 +547,7 @@ void PlayerContext::run_autoplay(RuntimeNote *m, const double usedTime, const ui
 }
 
 
-void PlayerContext::on_player_key_event(const double time, const bool key_down, const uint32_t lane) {
+void PlayerContext::on_player_key_event(const double time, const bool key_down, const rd::LaneHandle lane) {
     replay_data_->add_event(Replay::Entry
         {
             time - drift_,
@@ -909,7 +909,7 @@ int PlayerContext::get_combo() const {
 }
 
 void PlayerContext::hit_note(const double time_off,
-                             const uint32_t lane,
+                             const rd::LaneHandle lane,
                              const rd::NoteJudgmentPart part) const {
     const auto Judgment = player_score_keeper_->hit_note(time_off, lane, part);
 
@@ -919,7 +919,7 @@ void PlayerContext::hit_note(const double time_off,
 
 void PlayerContext::miss_note(
     const double time_off,
-    const uint32_t lane,
+    const rd::LaneHandle lane,
     const bool is_hold,
     const bool dont_break_combo,
     const bool early_miss) {
@@ -932,13 +932,13 @@ void PlayerContext::miss_note(
         on_miss(time_off, lane, is_hold, dont_break_combo, early_miss, player_number_);
 }
 
-void PlayerContext::gear_key_event(const uint32_t lane, const bool key_down) const {
+void PlayerContext::gear_key_event(const rd::LaneHandle lane, const bool key_down) const {
     if (on_gear_key_event) {
         on_gear_key_event(lane, key_down, player_number_);
     }
 }
 
-void PlayerContext::judge_lane(const uint32_t lane, const double Time) {
+void PlayerContext::judge_lane(const rd::LaneHandle lane, const double Time) {
     gear_key_event(lane, true);
 
     if (!can_judge())
@@ -990,7 +990,7 @@ void PlayerContext::judge_lane(const uint32_t lane, const double Time) {
         play_keysound(gear_state_.current_keysounds[lane]->get_sound());
 }
 
-void PlayerContext::release_lane(const uint32_t lane, const double Time) {
+void PlayerContext::release_lane(const rd::LaneHandle lane, const double Time) {
     gear_key_event(lane, false);
 
     if (!can_judge()) return; // don't judge any more after stage is failed.
@@ -1059,20 +1059,20 @@ void PlayerContext::handle_lane_events(const int32_t key, const bool key_down, c
     if (!gear_state_.key_to_lane_bindings.contains(key))
         return;
 
-    const int lane = gear_state_.key_to_lane_bindings[key]; /* Binding this key to a lane */
+    const auto lane = gear_state_.key_to_lane_bindings[key]; /* Binding this key to a lane */
 
-    if (lane >= MAX_CHANNELS || lane < 0)
+    if (lane >= MAX_CHANNELS)
         return;
 
     on_player_key_event(time + judge_offset_, key_down, lane);
 }
 
-void PlayerContext::set_lane_hold_state(const uint32_t lane, const bool NewState) {
+void PlayerContext::set_lane_hold_state(const rd::LaneHandle lane, const bool NewState) {
     gear_state_.is_hold_active[lane] = NewState;
 }
 
 // true if holding down key
-bool PlayerContext::get_gear_lane_state(const uint32_t lane) const {
+bool PlayerContext::get_gear_lane_state(const rd::LaneHandle lane) const {
     return gear_state_.is_key_down[lane] != 0;
 }
 

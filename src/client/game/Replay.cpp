@@ -101,7 +101,7 @@ bool Replay::save(std::filesystem::path outputpath) const {
     for (auto entry : replay_data_) {
         json jsonentry = {
             {"t", entry.time},
-            {"l", entry.lane},
+            {"l", static_cast<uint32_t>(entry.lane)},
             {"d", entry.down != 0}
         };
 

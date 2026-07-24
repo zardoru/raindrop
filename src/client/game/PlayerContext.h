@@ -57,7 +57,7 @@ private:
     std::shared_ptr<Replay> replay_data_;
 
     struct SGearState {
-        std::map<int, int> key_to_lane_bindings;
+        std::map<int, rd::LaneHandle> key_to_lane_bindings;
         rd::RuntimeNote*   current_keysounds[rd::MAX_CHANNELS];
         int  closest_note_timedist_ms[rd::MAX_CHANNELS];
         bool is_key_down[rd::MAX_CHANNELS]; //  Whether the lane is pressed
@@ -81,10 +81,10 @@ private:
 
     void setup_mechanics();
     void run_measures(double time);
-    void play_lane_keysound(uint32_t Lane) const;
-    void run_autoplay(rd::RuntimeNote *m, double usedTime, uint32_t k);
+    void play_lane_keysound(rd::LaneHandle Lane) const;
+    void run_autoplay(rd::RuntimeNote *m, double usedTime, rd::LaneHandle k);
 
-    void on_player_key_event(double time, bool key_down, uint32_t lane);
+    void on_player_key_event(double time, bool key_down, rd::LaneHandle lane);
 public:
     PlayerContext(int pn, PlayscreenParameters par = PlayscreenParameters());
     ~PlayerContext();
@@ -93,10 +93,10 @@ public:
     void update(double song_time);
     void emit_draw_calls(double song_time, DrawCallSink &sink);
 
-    std::function<void(int sndid)> play_keysound;
-    std::function<void(rd::ScoreKeeperJudgment judgment, double dt, uint32_t lane, rd::NoteJudgmentPart part, int pn)> on_hit;
-    std::function<void(double dt, uint32_t lane, bool hold, bool dontbreakcombo, bool earlymiss, int pn)> on_miss;
-    std::function<void(uint32_t lane, bool keydown, int pn)> on_gear_key_event;
+    std::function<void(rd::KeysoundHandle sound)> play_keysound;
+    std::function<void(rd::ScoreKeeperJudgment judgment, double dt, rd::LaneHandle lane, rd::NoteJudgmentPart part, int pn)> on_hit;
+    std::function<void(double dt, rd::LaneHandle lane, bool hold, bool dontbreakcombo, bool earlymiss, int pn)> on_miss;
+    std::function<void(rd::LaneHandle lane, bool keydown, int pn)> on_gear_key_event;
 
     /*
         About this pointer's lifetime:
@@ -158,15 +158,15 @@ public:
     double get_score() const;
     int get_combo() const;
 
-    void hit_note(double time_off, uint32_t lane, rd::NoteJudgmentPart part) const;
-    void miss_note(double time_off, uint32_t lane, bool is_hold, bool dont_break_combo, bool early_miss);
-    void gear_key_event(uint32_t lane, bool key_down) const;
-    void judge_lane(uint32_t lane, double Time);
-    void release_lane(uint32_t Lane, double Time);
+    void hit_note(double time_off, rd::LaneHandle lane, rd::NoteJudgmentPart part) const;
+    void miss_note(double time_off, rd::LaneHandle lane, bool is_hold, bool dont_break_combo, bool early_miss);
+    void gear_key_event(rd::LaneHandle lane, bool key_down) const;
+    void judge_lane(rd::LaneHandle lane, double Time);
+    void release_lane(rd::LaneHandle Lane, double Time);
     void handle_lane_events(int32_t key, bool key_down, double time);
-    void set_lane_hold_state(uint32_t Lane, bool NewState);
+    void set_lane_hold_state(rd::LaneHandle Lane, bool NewState);
     // true if holding down key
-    bool get_gear_lane_state(uint32_t Lane) const;
+    bool get_gear_lane_state(rd::LaneHandle Lane) const;
     bool bind_keys_to_lanes(bool use_turntable);
 
     void set_can_judge(bool can_judge);

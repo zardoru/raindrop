@@ -70,7 +70,7 @@ namespace rd {
 
         double get_avg_hit() const;
 
-        ScoreKeeperJudgment hit_note(double ms, uint32_t lane, NoteJudgmentPart part);
+        ScoreKeeperJudgment hit_note(double ms, LaneHandle lane, NoteJudgmentPart part);
 
         void lifebar_hit(double ms, rd::ScoreKeeperJudgment judgment);
 

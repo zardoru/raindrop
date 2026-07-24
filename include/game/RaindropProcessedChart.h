@@ -21,7 +21,7 @@ namespace rd {
 
         double& get_data_start_time();
         double& get_data_end_time();
-        uint32_t& get_data_sound();
+        KeysoundHandle& get_data_sound();
         uint8_t get_data_note_kind() const;
         uint8_t get_data_fraction_kind() const;
 
@@ -40,8 +40,8 @@ namespace rd {
         bool was_hit() const;
         bool is_judgable() const;
         bool is_visible() const;
-        uint32_t get_sound() const;
-        uint32_t get_tail_sound() const;
+        KeysoundHandle get_sound() const;
+        KeysoundHandle get_tail_sound() const;
         double get_end_time() const;
         double get_start_time() const;
         int get_frac_kind() const;
@@ -59,8 +59,8 @@ namespace rd {
         std::vector<double> end_time;
         std::vector<double> vertical;
         std::vector<double> hold_end_vertical;
-        std::vector<uint32_t> sound;
-        std::vector<uint32_t> tail_sound;
+        std::vector<KeysoundHandle> sound;
+        std::vector<KeysoundHandle> tail_sound;
         std::vector<uint8_t> note_kind;
         std::vector<uint8_t> fraction_kind;
         std::vector<uint8_t> flags;
@@ -90,8 +90,8 @@ namespace rd {
         void prepare_ordered_notes();
         void disable_notes_until(double time);
         void reset_notes();
-        RuntimeNote* note_at(uint32_t lane, RuntimeNoteHandle handle);
-        const RuntimeNote* note_at(uint32_t lane, RuntimeNoteHandle handle) const;
+        RuntimeNote* note_at(LaneHandle lane, RuntimeNoteHandle handle);
+        const RuntimeNote* note_at(LaneHandle lane, RuntimeNoteHandle handle) const;
 
         static RaindropProcessedChart from(otoworm::Chart* chart, double speed = 0);
     };

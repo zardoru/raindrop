@@ -16,7 +16,7 @@ namespace rd {
          * scale is defexrank (i.e. 100 is 1x)
          * */
         void setup(double strictness, double scale) override;
-        ScoreKeeperJudgment get_judgment_for_time_offset(double time_delta, uint32_t lane, NoteJudgmentPart part) override;
+        ScoreKeeperJudgment get_judgment_for_time_offset(double time_delta, LaneHandle lane, NoteJudgmentPart part) override;
 
         [[nodiscard]] bool uses_two_judges_per_hold() const override;
     };

@@ -31,7 +31,7 @@ namespace rd {
 
     double& RuntimeNote::get_data_start_time() { return storage->start_time[index]; }
     double& RuntimeNote::get_data_end_time() { return storage->end_time[index]; }
-    uint32_t& RuntimeNote::get_data_sound() { return storage->sound[index]; }
+    KeysoundHandle& RuntimeNote::get_data_sound() { return storage->sound[index]; }
     uint8_t RuntimeNote::get_data_note_kind() const { return storage->note_kind[index]; }
     uint8_t RuntimeNote::get_data_fraction_kind() const { return storage->fraction_kind[index]; }
 
@@ -105,8 +105,8 @@ namespace rd {
         return storage->note_kind[index] != NK_INVISIBLE && !(storage->flags[index] & InvisibleFlag);
     }
 
-    uint32_t RuntimeNote::get_sound() const { return storage->sound[index]; }
-    uint32_t RuntimeNote::get_tail_sound() const { return storage->tail_sound[index]; }
+    KeysoundHandle RuntimeNote::get_sound() const { return storage->sound[index]; }
+    KeysoundHandle RuntimeNote::get_tail_sound() const { return storage->tail_sound[index]; }
 
     double RuntimeNote::get_end_time() const {
         return std::max(storage->start_time[index], storage->end_time[index]);
@@ -308,11 +308,11 @@ namespace rd {
         }
     }
 
-    RuntimeNote* RaindropProcessedChart::note_at(const uint32_t lane, const RuntimeNoteHandle handle) {
+    RuntimeNote* RaindropProcessedChart::note_at(const LaneHandle lane, const RuntimeNoteHandle handle) {
         return lane < notes.size() ? notes[lane].note_at(handle) : nullptr;
     }
 
-    const RuntimeNote* RaindropProcessedChart::note_at(const uint32_t lane, const RuntimeNoteHandle handle) const {
+    const RuntimeNote* RaindropProcessedChart::note_at(const LaneHandle lane, const RuntimeNoteHandle handle) const {
         return lane < notes.size() ? notes[lane].note_at(handle) : nullptr;
     }
 }

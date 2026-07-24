@@ -18,7 +18,7 @@ void TimingWindows::setup(double strictness, double scale) {
     // stub. might get ignored in favor of a constructor
 }
 
-ScoreKeeperJudgment TimingWindows::get_judgment_for_time_offset(const double time_delta, uint32_t lane, NoteJudgmentPart part) {
+ScoreKeeperJudgment TimingWindows::get_judgment_for_time_offset(const double time_delta, LaneHandle lane, NoteJudgmentPart part) {
     return get_judgment_from_timing_windows(judgment_time_, time_delta);
 }
 
@@ -218,7 +218,7 @@ void TimingWindowsOsuMania::setup(const double strictness, double scale) {
     lane_hold_delta_time.fill(-1);
 }
 
-ScoreKeeperJudgment TimingWindowsOsuMania::get_judgment_for_time_offset(const double time_delta, const uint32_t lane, const NoteJudgmentPart part) {
+ScoreKeeperJudgment TimingWindowsOsuMania::get_judgment_for_time_offset(const double time_delta, const LaneHandle lane, const NoteJudgmentPart part) {
     if (part == NoteJudgmentPart::NOTE)
         return TimingWindows::get_judgment_for_time_offset(time_delta, lane, part);
     if (part == NoteJudgmentPart::HOLD_HEAD) {
@@ -384,7 +384,7 @@ void TimingWindowsLR2Oraja::scale_by_def_ex_rank(std::array<double, JUDGMENT_ARR
     }
 }
 
-ScoreKeeperJudgment TimingWindowsLR2Oraja::get_judgment_for_time_offset(const double time_delta, const uint32_t lane, const NoteJudgmentPart part) {
+ScoreKeeperJudgment TimingWindowsLR2Oraja::get_judgment_for_time_offset(const double time_delta, const LaneHandle lane, const NoteJudgmentPart part) {
     if (part == NoteJudgmentPart::NOTE)
         return TimingWindows::get_judgment_for_time_offset(time_delta, lane, part);
     if (part == NoteJudgmentPart::HOLD_HEAD)

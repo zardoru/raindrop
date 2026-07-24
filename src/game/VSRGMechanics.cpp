@@ -58,7 +58,7 @@ namespace rd {
         hold_hit_time_.fill(NAN);
     }
 
-    bool RaindropMechanics::on_update(const double song_time, RuntimeNote *m, const uint32_t lane) {
+    bool RaindropMechanics::on_update(const double song_time, RuntimeNote *m, const LaneHandle lane) {
         const auto k = lane;
         /* We have to check for all gameplay conditions for this note. */
         const double miss_cutoff = player_score_keeper_->get_late_miss_cutoff_ms();
@@ -172,7 +172,7 @@ namespace rd {
         return false;
     }
 
-    bool RaindropMechanics::on_press_lane(const double song_time, RuntimeNote *m, const uint32_t lane) {
+    bool RaindropMechanics::on_press_lane(const double song_time, RuntimeNote *m, const LaneHandle lane) {
         if (!m->is_enabled())
             return false;
 
@@ -214,7 +214,7 @@ namespace rd {
         return false;
     }
 
-    bool RaindropMechanics::on_release_lane(const double song_time, RuntimeNote *m, const uint32_t lane) {
+    bool RaindropMechanics::on_release_lane(const double song_time, RuntimeNote *m, const LaneHandle lane) {
         if (m->is_hold() && m->was_hit() &&
             m->is_enabled()) /* We hit the hold's head and we've not released it early already */
         {
@@ -271,7 +271,7 @@ namespace rd {
         return TT_BEATS;
     }
 
-    bool O2JamMechanics::on_release_lane(const double song_beat, RuntimeNote *m, const uint32_t lane) {
+    bool O2JamMechanics::on_release_lane(const double song_beat, RuntimeNote *m, const LaneHandle lane) {
         if (m->is_hold() && m->was_hit() &&
             m->is_enabled()) /* We hit the hold's head and we've not released it early already */
         {
@@ -300,7 +300,7 @@ namespace rd {
         return false;
     }
 
-    bool O2JamMechanics::on_press_lane(const double song_beat, RuntimeNote *m, const uint32_t lane) {
+    bool O2JamMechanics::on_press_lane(const double song_beat, RuntimeNote *m, const LaneHandle lane) {
         if (!m->is_enabled())
             return false;
 
@@ -337,7 +337,7 @@ namespace rd {
         return false;
     }
 
-    bool O2JamMechanics::on_update(const double song_beat, RuntimeNote *m, const uint32_t lane) {
+    bool O2JamMechanics::on_update(const double song_beat, RuntimeNote *m, const LaneHandle lane) {
         const auto k = lane;
         const double t_tail = song_beat - m->get_end_time();
         const double t_head = song_beat - m->get_start_time();
@@ -371,15 +371,15 @@ namespace rd {
         return false;
     }
 
-    bool Mechanics::on_scratch_up(double song_time, RuntimeNote *note, uint32_t lane) {
+    bool Mechanics::on_scratch_up(double song_time, RuntimeNote *note, LaneHandle lane) {
         return false;
     }
 
-    bool Mechanics::on_scratch_down(double song_time, RuntimeNote *note, uint32_t lane) {
+    bool Mechanics::on_scratch_down(double song_time, RuntimeNote *note, LaneHandle lane) {
         return false;
     }
 
-    bool Mechanics::on_scratch_neutral(double song_time, RuntimeNote *note, uint32_t lane) {
+    bool Mechanics::on_scratch_neutral(double song_time, RuntimeNote *note, LaneHandle lane) {
         return false;
     }
 }

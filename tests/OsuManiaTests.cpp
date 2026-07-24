@@ -52,7 +52,7 @@ struct OMSetup {
             return LaneDown;
         };
 
-        mech.notify_hit = [&](double dev, uint32_t lane, NoteJudgmentPart part) {
+        mech.notify_hit = [&](double dev, LaneHandle lane, NoteJudgmentPart part) {
             sk->hit_note(dev, lane, part);
         };
 

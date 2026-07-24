@@ -13,7 +13,7 @@ class ScreenGameplay : public Screen
 private:
 
 
-    std::map <int, std::vector<std::shared_ptr<AudioSample> > > keysounds_;
+    std::map <rd::KeysoundHandle, std::vector<std::shared_ptr<AudioSample> > > keysounds_;
     std::vector<std::unique_ptr<PlayerContext>> players_;
     std::map<int, bool> playfield_clip_enabled_;
     std::map<int, AABB> playfield_clip_area_;
@@ -77,17 +77,17 @@ private:
     bool has_song_finished() const;
 
     void update_song_time(float delta);
-    void on_player_hit(rd::ScoreKeeperJudgment judgment, double dt, uint32_t lane, rd::NoteJudgmentPart part, int pn) const;
+    void on_player_hit(rd::ScoreKeeperJudgment judgment, double dt, rd::LaneHandle lane, rd::NoteJudgmentPart part, int pn) const;
     void render();
 
-    void play_keysound(int keysound);
+    void play_keysound(rd::KeysoundHandle keysound);
 
     void activate();
 
 
-    void on_player_miss(double dt, uint32_t lane, bool hold, bool dontbreakcombo, bool earlymiss, int pn) const;
+    void on_player_miss(double dt, rd::LaneHandle lane, bool hold, bool dontbreakcombo, bool earlymiss, int pn) const;
 
-    void on_player_gear_key_event(uint32_t lane, bool keydown, int pn) const;
+    void on_player_gear_key_event(rd::LaneHandle lane, bool keydown, int pn) const;
 
     void set_player_clip(int pn, AABB box);
     void disable_player_clip(int pn);

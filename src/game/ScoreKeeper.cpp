@@ -47,7 +47,7 @@ namespace rd {
     }
 
     // ms is misleading- since it may very well be beats, but it's fine.
-    ScoreKeeperJudgment ScoreKeeper::hit_note(const double ms, const uint32_t lane, const NoteJudgmentPart part) {
+    ScoreKeeperJudgment ScoreKeeper::hit_note(const double ms, const LaneHandle lane, const NoteJudgmentPart part) {
 
         // online variance and average hit
         ++judged_notes;
@@ -81,7 +81,7 @@ namespace rd {
         // judgments
         /* add judgment, handle combo etc.. */
 
-        auto judge = current_timing_window->get_judgment_for_time_offset(ms, static_cast<uint32_t>(lane), part);
+        auto judge = current_timing_window->get_judgment_for_time_offset(ms, lane, part);
         ScoreKeeperJudgment o2Judge;
         for (const auto &timing: timings) {
             /* XXX: this won't really work unless the ms part of this is in beats */

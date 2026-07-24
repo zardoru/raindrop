@@ -551,7 +551,7 @@ void ScreenGameplay::post_load_initialization() {
                         std::forward<decltype(PH5)>(PH5));
         };
 
-        p->on_miss = [this](double dt, uint32_t lane, bool hold, bool dontbreakcombo, bool earlymiss, int playerNumber) {
+        p->on_miss = [this](double dt, rd::LaneHandle lane, bool hold, bool dontbreakcombo, bool earlymiss, int playerNumber) {
             on_player_miss(dt, lane, hold, dontbreakcombo, earlymiss, playerNumber);
         };
 

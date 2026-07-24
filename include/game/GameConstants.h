@@ -5,10 +5,13 @@
 namespace rd {
     const auto DEFAULT_WAIT_TIME = 1.5;
 
-    const int SCRATCH_1P_CHANNEL = 0;
-    const int SCRATCH_2P_CHANNEL = 8;
+    using LaneHandle = uint8_t;
+    using KeysoundHandle = uint32_t;
 
-    inline bool IsScratchLane(uint32_t lane) {
+    constexpr LaneHandle SCRATCH_1P_CHANNEL = 0;
+    constexpr LaneHandle SCRATCH_2P_CHANNEL = 8;
+
+    inline bool IsScratchLane(LaneHandle lane) {
         return lane == SCRATCH_1P_CHANNEL || lane == SCRATCH_2P_CHANNEL;
     }
 
@@ -37,7 +40,7 @@ namespace rd {
         TI_LR2 = 7
     };
 
-    constexpr uint8_t MAX_CHANNELS = 64;
+    constexpr LaneHandle MAX_CHANNELS = 64;
 
     enum ScoreKeeperJudgment {
         SKJ_NONE = -1, // no judgment.

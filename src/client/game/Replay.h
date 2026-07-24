@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <queue>
+#include <game/GameConstants.h>
 
 class Replay {
 public:
@@ -9,7 +10,7 @@ public:
     // 16 bytes per entry
     struct Entry {
         double time;
-        uint32_t lane;
+        rd::LaneHandle lane;
         uint32_t down;
     };
 

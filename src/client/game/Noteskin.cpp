@@ -147,7 +147,7 @@ void Noteskin::set_hidden_effect(const int mode, const float center, const float
     note_shader_->set_hidden_effect(mode, center, transition_size, flashlight_size);
 }
 
-void Noteskin::draw_note(const rd::RuntimeNote &t, int lane, float location) {
+void Noteskin::draw_note(const rd::RuntimeNote &t, rd::LaneHandle lane, float location) {
     const char *call_func = nullptr;
     /***
      Draw a normal note.
@@ -180,7 +180,7 @@ void Noteskin::draw_note(const rd::RuntimeNote &t, int lane, float location) {
     // We didn't get a name to call. Odd.
 
     can_render_ = true;
-    call_callback(call_func, lane, location, t.get_frac_kind(), 0);
+    call_callback(call_func, static_cast<int>(lane), location, t.get_frac_kind(), 0);
     can_render_ = false;
 }
 
@@ -204,7 +204,7 @@ double Noteskin::get_judgment_y() const {
     return judgment_y_;
 }
 
-void Noteskin::draw_hold_head(const rd::RuntimeNote &t, int lane, float location, NoteskinNoteState state) {
+void Noteskin::draw_hold_head(const rd::RuntimeNote &t, rd::LaneHandle lane, float location, NoteskinNoteState state) {
     /***
      Draw a hold head. Falls back to DrawNormal if nonexistent
      @callback DrawHoldHead
@@ -216,12 +216,12 @@ void Noteskin::draw_hold_head(const rd::RuntimeNote &t, int lane, float location
 
     can_render_ = true;
     const auto active_level = static_cast<int>(state);
-    if (!call_callback("DrawHoldHead", lane, location, t.get_frac_kind(), active_level))
-        call_callback("DrawNormal", lane, location, t.get_frac_kind(), active_level);
+    if (!call_callback("DrawHoldHead", static_cast<int>(lane), location, t.get_frac_kind(), active_level))
+        call_callback("DrawNormal", static_cast<int>(lane), location, t.get_frac_kind(), active_level);
     can_render_ = false;
 }
 
-void Noteskin::draw_hold_tail(const rd::RuntimeNote &t, int lane, float location, NoteskinNoteState state) {
+void Noteskin::draw_hold_tail(const rd::RuntimeNote &t, rd::LaneHandle lane, float location, NoteskinNoteState state) {
     /***
      Draw a hold tail. Falls back to DrawNormal if nonexistent
      @callback DrawHoldTail
@@ -233,8 +233,8 @@ void Noteskin::draw_hold_tail(const rd::RuntimeNote &t, int lane, float location
 
     can_render_ = true;
     const auto active_level = static_cast<int>(state);
-    if (!call_callback("DrawHoldTail", lane, location, t.get_frac_kind(), active_level))
-        call_callback("DrawNormal", lane, location, t.get_frac_kind(), active_level);
+    if (!call_callback("DrawHoldTail", static_cast<int>(lane), location, t.get_frac_kind(), active_level))
+        call_callback("DrawNormal", static_cast<int>(lane), location, t.get_frac_kind(), active_level);
     can_render_ = false;
 }
 
@@ -250,7 +250,7 @@ bool Noteskin::should_shrink_while_hit() const {
     return decrease_hold_size_when_being_hit_;
 }
 
-void Noteskin::draw_hold_body(int lane, float location, float size, NoteskinNoteState state) {
+void Noteskin::draw_hold_body(rd::LaneHandle lane, float location, float size, NoteskinNoteState state) {
     /***
      Draw a hold body.
      @callback DrawHoldBody
@@ -261,7 +261,7 @@ void Noteskin::draw_hold_body(int lane, float location, float size, NoteskinNote
      */
 
     can_render_ = true;
-    call_callback("DrawHoldBody", lane, location, size, static_cast<int>(state));
+    call_callback("DrawHoldBody", static_cast<int>(lane), location, size, static_cast<int>(state));
     can_render_ = false;
 }
 

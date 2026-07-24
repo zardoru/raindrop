@@ -56,7 +56,7 @@ otoworm::ChartGroup *ScreenGameplay::get_chart_group() const {
     return my_chart_group_.get();
 }
 
-void ScreenGameplay::play_keysound(int keysound) {
+void ScreenGameplay::play_keysound(const rd::KeysoundHandle keysound) {
     auto fnd = keysounds_.find(keysound);
 
     if (fnd != keysounds_.end() && play_reactive_sounds_) {
@@ -348,7 +348,7 @@ void ScreenGameplay::update_song_time(float delta) {
 }
 
 void
-ScreenGameplay::on_player_hit(rd::ScoreKeeperJudgment judgment, double dt, uint32_t lane, rd::NoteJudgmentPart part,
+ScreenGameplay::on_player_hit(rd::ScoreKeeperJudgment judgment, double dt, rd::LaneHandle lane, rd::NoteJudgmentPart part,
                             int pn) const {
     /// When a note is hit, this is called.
     // @callback HitEvent
@@ -370,7 +370,7 @@ ScreenGameplay::on_player_hit(rd::ScoreKeeperJudgment judgment, double dt, uint3
 
 }
 
-void ScreenGameplay::on_player_miss(double dt, uint32_t lane, bool hold, bool dontbreakcombo, bool earlymiss, int pn) const {
+void ScreenGameplay::on_player_miss(double dt, rd::LaneHandle lane, bool hold, bool dontbreakcombo, bool earlymiss, int pn) const {
     bga_->on_miss();
 
     /// Whenever a player fails, this is called.
@@ -382,7 +382,7 @@ void ScreenGameplay::on_player_miss(double dt, uint32_t lane, bool hold, bool do
     scene_->call_callback("MissEvent", dt, static_cast<int>(lane) + 1, hold, pn);
 }
 
-void ScreenGameplay::on_player_gear_key_event(uint32_t lane, bool keydown, int pn) const {
+void ScreenGameplay::on_player_gear_key_event(rd::LaneHandle lane, bool keydown, int pn) const {
     /// Called when a gear button was pressed or released
     // @callback GearKeyEvent
     // @param lane 1-index based lane.

@@ -7,11 +7,11 @@
 
 namespace rd::NoteTransform {
     void Randomize(RuntimeNoteLanes &Notes, const int ChannelCount, const bool RespectScratch, const int Seed) {
-        std::vector<int> s;
+        std::vector<LaneHandle> s;
 
         // perform action to channel index minus scratch ones if applicable
-        auto toChannels = [&](const std::function<void(int)> &fn) {
-            for (auto i = 0; i < ChannelCount; i++) {
+        auto toChannels = [&](const std::function<void(LaneHandle)> &fn) {
+            for (LaneHandle i = 0; i < ChannelCount; i++) {
                 if (i == 0 && RespectScratch)
                     if (ChannelCount == 6 || ChannelCount == 8) {
                         continue;
@@ -29,7 +29,7 @@ namespace rd::NoteTransform {
 
 
         // get indices of all applicable channels
-        toChannels([&](const int index) {
+        toChannels([&](const LaneHandle index) {
             s.push_back(index);
         });
 
@@ -45,7 +45,7 @@ namespace rd::NoteTransform {
         const int limit = int(ceil(s.size() / 2.0));
         int v = 0;
         // to all applicable channels swap with applicable channels
-        toChannels([&](const int index) {
+        toChannels([&](const LaneHandle index) {
             if (v <= limit) { // avoid cycles
                 std::swap(Notes[index], Notes[s[v]]);
                 v++;
@@ -54,15 +54,15 @@ namespace rd::NoteTransform {
     }
 
     void Mirror(RuntimeNoteLanes &Notes, const int ChannelCount, const bool RespectScratch) {
-        int k;
+        LaneHandle k;
         if (RespectScratch) k = 1; else k = 0;
-        for (int v = ChannelCount - 1; k < ChannelCount / 2; k++, v--)
+        for (LaneHandle v = ChannelCount - 1; k < ChannelCount / 2; k++, v--)
             std::swap(Notes[k], Notes[v]);
     }
 
     void MoveKeysoundsToBGM(const unsigned char channels, RuntimeNoteLanes& notes_by_channel,
                             std::vector<otoworm::AutoplaySound> &bg_ms, const double drift) {
-        for (auto k = 0; k < channels; k++) {
+        for (LaneHandle k = 0; k < channels; k++) {
             for (auto &&n : notes_by_channel[k].handles) {
                 bg_ms.emplace_back(float(double(n.get_start_time()) - drift), n.get_sound());
                 n.remove_sound();
@@ -73,7 +73,7 @@ namespace rd::NoteTransform {
     void TransformToBeats(const unsigned char channels,
                           RuntimeNoteLanes& notes_by_channel,
                           const otoworm::TimingData &BPS) {
-        for (uint8_t k = 0; k < channels; k++) {
+        for (LaneHandle k = 0; k < channels; k++) {
             for (auto &m : notes_by_channel[k].handles) {
                 const double beatStart = BPS.integrate_to_time(m.get_data_start_time());
                 const double beatEnd = BPS.integrate_to_time(m.get_data_end_time());

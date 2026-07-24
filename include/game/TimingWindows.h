@@ -66,7 +66,7 @@ namespace rd {
          * osu!mania even needs to keep state of the total of the time_deltas of head and tail,
          * so that's per-lane information.
          * */
-        virtual ScoreKeeperJudgment get_judgment_for_time_offset(double time_delta, uint32_t lane, NoteJudgmentPart part);
+        virtual ScoreKeeperJudgment get_judgment_for_time_offset(double time_delta, LaneHandle lane, NoteJudgmentPart part);
         virtual void update_combo(ScoreKeeperJudgment skj, bool should_break_combo);
         double get_early_threshold() const; /* in the units described by GetTimeUnits */
         double get_late_threshold() const; /* in the units described by GetTimeUnits */
