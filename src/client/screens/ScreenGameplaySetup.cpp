@@ -543,13 +543,12 @@ void ScreenGameplay::post_load_initialization() {
         p->finalize_loading();
 
         // TODO: parameter types/names
-        p->on_hit = [this](auto && PH1, auto && PH2, auto && PH3, auto && PH4, auto && PH5, auto && PH6) {
+        p->on_hit = [this](auto && PH1, auto && PH2, auto && PH3, auto && PH4, auto && PH5) {
             on_player_hit(std::forward<decltype(PH1)>(PH1),
                         std::forward<decltype(PH2)>(PH2),
                         std::forward<decltype(PH3)>(PH3),
                         std::forward<decltype(PH4)>(PH4),
-                        std::forward<decltype(PH5)>(PH5),
-                        std::forward<decltype(PH6)>(PH6));
+                        std::forward<decltype(PH5)>(PH5));
         };
 
         p->on_miss = [this](double dt, uint32_t lane, bool hold, bool dontbreakcombo, bool earlymiss, int playerNumber) {

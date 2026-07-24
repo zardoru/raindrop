@@ -439,9 +439,8 @@ void PlayerContext::setup_mechanics() {
 
     mechanics_set_->configure(current_chart_.get(), player_score_keeper_);
     // Setup mechanics set callbacks
-    mechanics_set_->notify_hit = [this](auto &&PH1, auto &&PH2, auto &&PH3, auto &&PH4) {
-        hit_note(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2), std::forward<decltype(PH3)>(PH3),
-                 std::forward<decltype(PH4)>(PH4));
+    mechanics_set_->notify_hit = [this](auto &&PH1, auto &&PH2, auto &&PH3) {
+        hit_note(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2), std::forward<decltype(PH3)>(PH3));
     };
 
     mechanics_set_->notify_miss = [this](auto &&PH1, auto &&PH2, auto &&PH3, auto &&PH4, auto &&PH5) {
@@ -911,22 +910,11 @@ int PlayerContext::get_combo() const {
 
 void PlayerContext::hit_note(const double time_off,
                              const uint32_t lane,
-                             const bool is_hold,
-                             const bool is_hold_release) const {
-    NoteJudgmentPart part;
-
-    if (!is_hold) part = NoteJudgmentPart::NOTE;
-    else {
-        if (is_hold_release)
-            part = NoteJudgmentPart::HOLD_TAIL;
-        else
-            part = NoteJudgmentPart::HOLD_HEAD;
-    }
-
+                             const rd::NoteJudgmentPart part) const {
     const auto Judgment = player_score_keeper_->hit_note(time_off, lane, part);
 
     if (on_hit)
-        on_hit(Judgment, time_off, lane, is_hold, is_hold_release, player_number_);
+        on_hit(Judgment, time_off, lane, part, player_number_);
 }
 
 void PlayerContext::miss_note(
@@ -1167,6 +1155,22 @@ bool PlayerContext::has_delayed_failure() const {
 
 Mat4 id;
 
+NoteskinNoteState PlayerContext::classify_note_state(RuntimeNote * const m) {
+    auto state = NoteskinNoteState::Unknown;
+
+    if (m->is_enabled() && !m->failed_hit())
+        state = NoteskinNoteState::Active;
+    if (!m->is_enabled() && m->failed_hit())
+        state = NoteskinNoteState::Failed;
+    if (!m->is_enabled() && !m->failed_hit() && !m->was_hit())
+        state = NoteskinNoteState::Failed;
+    if (m->is_enabled() && m->was_hit() && !m->failed_hit())
+        state = NoteskinNoteState::BeingHit;
+    if (!m->is_enabled() && m->was_hit() && !m->failed_hit())
+        state = NoteskinNoteState::SuccessfullyHit;
+    return state;
+}
+
 int PlayerContext::draw_measures(const double song_time) {
     int rnc = 0;
     /*
@@ -1269,22 +1273,10 @@ int PlayerContext::draw_measures(const double song_time) {
 
             // We draw the body first, so that way the heads get drawn on top
             if (m->is_hold()) {
-                // todo: move this note state determination to the note itself
-                auto state = NoteskinNoteState::Unknown;
-
-                if (m->is_enabled() && !m->failed_hit())
-                    state = NoteskinNoteState::Active;
-                if (!m->is_enabled() && m->failed_hit())
-                    state = NoteskinNoteState::Failed;
-                if (!m->is_enabled() && !m->failed_hit() && !m->was_hit())
-                    state = NoteskinNoteState::Failed;
-                if (m->is_enabled() && m->was_hit() && !m->failed_hit())
-                    state = NoteskinNoteState::BeingHit;
-                if (!m->is_enabled() && m->was_hit() && !m->failed_hit())
-                    state = NoteskinNoteState::SuccessfullyHit;
+                const NoteskinNoteState state = classify_note_state(m);
 
                 // If we're being hit and..
-                const bool decrease_hold_size = noteskin_->should_decrease_hold_size_when_being_hit() && state == NoteskinNoteState::BeingHit;
+                const bool decrease_hold_size = noteskin_->should_shrink_while_hit() && state == NoteskinNoteState::BeingHit;
                 auto reference_point = 0.0f;
                 if (decrease_hold_size) {
                     reference_point = judge_y;

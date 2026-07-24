@@ -1,7 +1,10 @@
 #pragma once
 
 #include <game/RaindropProcessedChart.h>
+#include <game/TimingWindows.h>
 #include <ChartGroup.h>
+
+#include "Noteskin.h"
 
 class Line;
 class Noteskin;
@@ -67,6 +70,9 @@ private:
     } gear_state_;
 
     void draw_barlines(double cur_vertical, double user_speed_multiplier) const;
+
+    NoteskinNoteState classify_note_state(rd::RuntimeNote *m);
+
     int draw_measures(double song_time); // returns rendered note count
 
     std::unique_ptr<Noteskin> noteskin_;
@@ -88,7 +94,7 @@ public:
     void emit_draw_calls(double song_time, DrawCallSink &sink);
 
     std::function<void(int sndid)> play_keysound;
-    std::function<void(rd::ScoreKeeperJudgment judgment, double dt, uint32_t lane, bool hold, bool release, int pn)> on_hit;
+    std::function<void(rd::ScoreKeeperJudgment judgment, double dt, uint32_t lane, rd::NoteJudgmentPart part, int pn)> on_hit;
     std::function<void(double dt, uint32_t lane, bool hold, bool dontbreakcombo, bool earlymiss, int pn)> on_miss;
     std::function<void(uint32_t lane, bool keydown, int pn)> on_gear_key_event;
 
@@ -152,7 +158,7 @@ public:
     double get_score() const;
     int get_combo() const;
 
-    void hit_note(double time_off, uint32_t lane, bool is_hold, bool is_hold_release = false) const;
+    void hit_note(double time_off, uint32_t lane, rd::NoteJudgmentPart part) const;
     void miss_note(double time_off, uint32_t lane, bool is_hold, bool dont_break_combo, bool early_miss);
     void gear_key_event(uint32_t lane, bool key_down) const;
     void judge_lane(uint32_t lane, double Time);

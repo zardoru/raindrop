@@ -52,8 +52,8 @@ struct OMSetup {
             return LaneDown;
         };
 
-        mech.notify_hit = [&](double dev, uint32_t lane, bool hold, bool should_break) {
-            sk->hit_note(dev, lane, NoteJudgmentPart::NOTE);
+        mech.notify_hit = [&](double dev, uint32_t lane, NoteJudgmentPart part) {
+            sk->hit_note(dev, lane, part);
         };
 
         mech.notify_miss = [&](double t, uint32_t, bool hold, bool nobreakcombo, bool earlymiss) {

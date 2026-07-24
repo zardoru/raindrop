@@ -51,7 +51,7 @@ void RaindropArcadeMechanics::perform_judgement(const double song_time, RuntimeN
             if (!is_bm_bad_judge(song_time, note)) {
                 // Hit head
                 note->hit();
-                notify_hit(dev, lane, note->is_hold(), false);
+                notify_hit(dev, lane, note->is_hold() ? NoteJudgmentPart::HOLD_HEAD : NoteJudgmentPart::NOTE);
 
                 play_keysound(note->get_sound());
 
@@ -83,7 +83,7 @@ void RaindropArcadeMechanics::perform_judgement(const double song_time, RuntimeN
             if (abs(tdev) < player_score_keeper_->get_judgment_window(SKJ_W3)
                 && note->was_hit()) {
                 note->hit();
-                notify_hit(tdev, lane, note->is_hold(), true);
+                notify_hit(tdev, lane, NoteJudgmentPart::HOLD_TAIL);
             } else { // Tail outside judgement
                 note->fail_hit();
                 notify_miss(dev, lane, note->is_hold(), false, false);

@@ -3,6 +3,7 @@
 #include <functional>
 #include <array>
 #include <game/RaindropProcessedChart.h>
+#include <game/TimingWindows.h>
 #include <ChartGroup.h>
 
 namespace rd {
@@ -10,7 +11,7 @@ namespace rd {
 
     class Mechanics {
     public:
-        typedef std::function<void(double, uint32_t, bool, bool)> HitEvent;
+        typedef std::function<void(double, uint32_t, NoteJudgmentPart)> HitEvent;
         typedef std::function<void(double, uint32_t, bool, bool, bool)> MissEvent;
         typedef std::function<void(uint32_t)> KeysoundEvent;
 

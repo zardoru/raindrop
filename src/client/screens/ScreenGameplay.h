@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ChartGroup.h>
+#include <game/TimingWindows.h>
 
 class AudioStream;
 class Texture2D;
@@ -76,7 +77,7 @@ private:
     bool has_song_finished() const;
 
     void update_song_time(float delta);
-    void on_player_hit(rd::ScoreKeeperJudgment judgment, double dt, uint32_t lane, bool hold, bool release, int pn) const;
+    void on_player_hit(rd::ScoreKeeperJudgment judgment, double dt, uint32_t lane, rd::NoteJudgmentPart part, int pn) const;
     void render();
 
     void play_keysound(int keysound);

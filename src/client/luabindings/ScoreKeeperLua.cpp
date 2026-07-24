@@ -3,6 +3,7 @@
 
 #include <game/GameConstants.h>
 #include <game/ScoreKeeper.h>
+#include <game/TimingWindows.h>
 
 #include "LuaManager.h"
 #include <LuaBridge/LuaBridge.h>
@@ -36,6 +37,17 @@ namespace rd {
         Constant(SKJ_W4);
         Constant(SKJ_W5);
         helper.finalize_enum("Judgment");
+
+        /// Note judgment parts.
+        // @enum NoteJudgmentPart
+        // @param NOTE A regular note.
+        // @param HOLD_HEAD The head of a hold note.
+        // @param HOLD_TAIL The tail of a hold note.
+        helper.new_array();
+        helper.set_field_i("NOTE", static_cast<int>(NoteJudgmentPart::NOTE));
+        helper.set_field_i("HOLD_HEAD", static_cast<int>(NoteJudgmentPart::HOLD_HEAD));
+        helper.set_field_i("HOLD_TAIL", static_cast<int>(NoteJudgmentPart::HOLD_TAIL));
+        helper.finalize_enum("NoteJudgmentPart");
 
         /// Score types
         // @enum ScoreType

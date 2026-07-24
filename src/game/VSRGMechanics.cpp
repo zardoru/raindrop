@@ -133,7 +133,7 @@ namespace rd {
                 // Condition C-2: Forced release is not enabled
                 if (is_lane_key_down(lane)) {
                     if (notify_hit)
-                        notify_hit(0, k, true, true);
+                        notify_hit(0, k, NoteJudgmentPart::HOLD_TAIL);
                 } else {
                     // Only take away health, but not combo (1st true)
                     if (notify_miss)
@@ -192,7 +192,7 @@ namespace rd {
             } else {
                 m->hit();
                 if (notify_hit)
-                    notify_hit(dev, lane, m->is_hold(), false);
+                    notify_hit(dev, lane, m->is_hold() ? NoteJudgmentPart::HOLD_HEAD : NoteJudgmentPart::NOTE);
 
                 if (m->is_hold()) {
                     if (set_lane_holding_state)
@@ -236,7 +236,7 @@ namespace rd {
                 (dev > -early_hit && dev < late_miss)) {
                 // Only consider it a timed thing if releasing it is forced.
                 if (notify_hit)
-                    notify_hit(forced_release_ ? dev : 0, lane, true, true);
+                    notify_hit(forced_release_ ? dev : 0, lane, NoteJudgmentPart::HOLD_TAIL);
             } else /* Released off time */
             {
                 // early misses for hold notes always count as regular misses.
@@ -280,7 +280,7 @@ namespace rd {
 
             if (t_d < player_score_keeper_->get_judgment_window(SKJ_W3)) /* Released in time */
             {
-                notify_hit(dev, lane, m->is_hold(), true);
+                notify_hit(dev, lane, NoteJudgmentPart::HOLD_TAIL);
                 set_lane_holding_state(lane, false);
                 m->disable();
             } else /* Released off time (early since Late is managed by the on_update function.) */
@@ -311,7 +311,7 @@ namespace rd {
         {
             m->hit();
 
-            notify_hit(dev, lane, m->is_hold(), false);
+            notify_hit(dev, lane, m->is_hold() ? NoteJudgmentPart::HOLD_HEAD : NoteJudgmentPart::NOTE);
 
             if (m->is_hold())
                 set_lane_holding_state(lane, true);

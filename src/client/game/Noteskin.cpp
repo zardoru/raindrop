@@ -246,7 +246,7 @@ bool Noteskin::allow_dangling_heads() const {
     return dangling_heads_;
 }
 
-bool Noteskin::should_decrease_hold_size_when_being_hit() const {
+bool Noteskin::should_shrink_while_hit() const {
     return decrease_hold_size_when_being_hit_;
 }
 

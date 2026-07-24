@@ -116,7 +116,7 @@ public:
 
     bool allow_dangling_heads() const;
 
-    bool should_decrease_hold_size_when_being_hit() const;
+    bool should_shrink_while_hit() const;
 
     int get_channels() const;
 };

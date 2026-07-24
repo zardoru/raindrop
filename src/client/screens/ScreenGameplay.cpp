@@ -348,17 +348,17 @@ void ScreenGameplay::update_song_time(float delta) {
 }
 
 void
-ScreenGameplay::on_player_hit(rd::ScoreKeeperJudgment judgment, double dt, uint32_t lane, bool hold, bool release,
+ScreenGameplay::on_player_hit(rd::ScoreKeeperJudgment judgment, double dt, uint32_t lane, rd::NoteJudgmentPart part,
                             int pn) const {
     /// When a note is hit, this is called.
     // @callback HitEvent
     // @param judgment Judgment value.
     // @param dev Deviation from the note in ms.
     // @param lane 1-index based lane.
-    // @param hold Whether the note was a hold.
-    // @param release Whether it was a hold release.
+    // @param part Which part of the note was judged.
     // @param pn Player number. Identifies who hit the note.
-    scene_->call_callback("HitEvent", static_cast<int>(judgment), dt, static_cast<int>(lane) + 1, hold, release, pn);
+    scene_->call_callback("HitEvent", static_cast<int>(judgment), dt, static_cast<int>(lane) + 1,
+                          static_cast<int>(part), pn);
 
     if (const auto player_score_keeper = players_[pn]->get_score_keeper();
         player_score_keeper->get_max_judgable_notes() == player_score_keeper->get_score(rd::ST_NOTES_HIT)) {
