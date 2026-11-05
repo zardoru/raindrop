@@ -42,6 +42,9 @@ public:
     void validate();
     void bind(bool force = false) const;
     uint32_t get_element_count() const;
+    uint32_t get_element_size() const { return element_size_; }
+    // CPU-side mirror of the last assigned contents.
+    const void *get_data() const { return vbo_data_.get(); }
 
     void upload_to_gpu();
 

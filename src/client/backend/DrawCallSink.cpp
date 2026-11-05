@@ -1,6 +1,8 @@
 #include "DrawCallSink.h"
 
 #include <algorithm>
+#include <cassert>
+#include <cstring>
 #include <filesystem>
 
 #include "Texture2D.h"
@@ -11,67 +13,58 @@
 
 DrawCallSink::~DrawCallSink() = default;
 
-DrawCallSink::Handle DrawCallSink::allocate() {
-    if (!free_calls_.empty()) {
-        auto handle = free_calls_.back();
-        free_calls_.pop_back();
-        return handle;
-    }
-    if (buckets_.empty() || buckets_.back()->next_slot == BucketSize)
-        buckets_.push_back(std::make_unique<Bucket>());
-    auto &bucket = *buckets_.back();
-    return {buckets_.size() - 1, bucket.next_slot++};
-}
-
-void DrawCallSink::release(const Handle handle) {
-    auto &bucket = *buckets_[handle.bucket];
-    const auto slot = handle.slot;
-    bucket.drawn[slot] = false;
-    bucket.quads[slot] = {};
-    bucket.quad_textures[slot] = nullptr;
-    bucket.quad_has_models[slot] = false;
-    bucket.quad_scissors[slot] = false;
-    bucket.fonts[slot] = nullptr;
-    bucket.strings[slot].clear();
-    bucket.string_scissors[slot] = false;
-    free_calls_.push_back(handle);
+void DrawCallSink::reset() {
+    // clear() keeps each vector's capacity, so steady-state frames don't allocate
+    // (beyond the strings handed in by value).
+    quads_.clear();
+    strings_.clear();
+    lines_.clear();
+    for (auto &layer : layers_) layer.clear();
 }
 
 void DrawCallSink::begin_frame() {
-    for (auto &layer : layers_) {
-        for (auto it = layer.begin(); it != layer.end();) {
-            if (buckets_[it->bucket]->drawn[it->slot]) {
-                release(*it);
-                it = layer.erase(it);
-            } else ++it;
-        }
-    }
+    // Anything still queued here was submitted after the last flush. Drop it rather than
+    // drawing it a frame late with pointers that may no longer be valid.
+    reset();
 }
 
 void DrawCallSink::set_clip(const bool enabled, const AABB &region, const bool window_coordinates) {
-    clip_enabled_ = enabled;
-    clip_window_coordinates_ = window_coordinates;
-    clip_region_ = region;
+    clip_.enabled = enabled;
+    clip_.region = region;
+    clip_.window_coordinates = window_coordinates;
 }
 
-void DrawCallSink::queue(const uint32_t z, const Handle handle) {
-    layers_[std::min(z, LayerCount - 1)].push_back(handle);
+DrawCallSink::Scissor DrawCallSink::resolve_scissor(const bool scissor, const AABB &region) const {
+    if (clip_.enabled) return clip_;
+    return {region, scissor, false};
+}
+
+void DrawCallSink::queue(const uint32_t z, const Type type, const size_t index) {
+    assert(index <= IndexMask);
+    layers_[std::min(z, LayerCount - 1)].push_back(
+        static_cast<uint32_t>(type) << TypeShift | static_cast<uint32_t>(index));
 }
 
 void DrawCallSink::submit_quad(const uint32_t z, const renderer::QuadDrawParams &params,
                                Texture2D *texture, const bool scissor, const AABB &region) {
-    const auto handle = allocate();
-    auto &bucket = *buckets_[handle.bucket];
-    const auto slot = handle.slot;
-    bucket.types[slot] = Type::Quad;
-    bucket.quads[slot] = params;
-    bucket.quad_textures[slot] = texture;
-    bucket.quad_has_models[slot] = params.model != nullptr;
-    if (params.model) bucket.quad_models[slot] = *params.model;
-    bucket.quad_scissors[slot] = clip_enabled_ || scissor;
-    bucket.quad_scissor_regions[slot] = clip_enabled_ ? clip_region_ : region;
-    bucket.quad_scissor_windows[slot] = clip_enabled_ && clip_window_coordinates_;
-    queue(z, handle);
+    auto &cmd = quads_.emplace_back();
+    cmd.params = params;
+    cmd.params.model = nullptr;
+    cmd.texture = texture;
+    cmd.has_model = params.model != nullptr;
+    if (params.model) cmd.model = *params.model;
+
+    // UV buffers are mutable and shared (a sprite rewrites its own when its crop changes),
+    // so snapshot the contents now instead of keeping the pointer.
+    const auto *uv = params.texture_coordinates;
+    cmd.has_uvs = uv && uv->get_element_count() == QuadUVCount && uv->get_element_size() == sizeof(float);
+    if (cmd.has_uvs) {
+        std::memcpy(cmd.uvs.data(), uv->get_data(), sizeof(UVs));
+        cmd.params.texture_coordinates = nullptr;
+    }
+
+    cmd.scissor = resolve_scissor(scissor, region);
+    queue(z, Type::Quad, quads_.size() - 1);
 }
 
 void DrawCallSink::submit_string(const uint32_t z, Font *font, std::string text,
@@ -79,80 +72,84 @@ void DrawCallSink::submit_string(const uint32_t z, Font *font, std::string text,
                                  const ColorRGBA &color,
                                  const bool scissor, const AABB &region) {
     if (!font) return;
-    const auto handle = allocate();
-    auto &bucket = *buckets_[handle.bucket];
-    const auto slot = handle.slot;
-    bucket.types[slot] = Type::String;
-    bucket.fonts[slot] = font;
-    bucket.strings[slot] = std::move(text);
-    bucket.string_positions[slot] = position;
-    bucket.string_transforms[slot] = transform;
-    bucket.string_scales[slot] = scale;
-    bucket.string_colors[slot] = color;
-    bucket.string_scissors[slot] = clip_enabled_ || scissor;
-    bucket.string_scissor_regions[slot] = clip_enabled_ ? clip_region_ : region;
-    bucket.string_scissor_windows[slot] = clip_enabled_ && clip_window_coordinates_;
-    queue(z, handle);
+    strings_.push_back({font, std::move(text), position, transform, scale, color,
+                        resolve_scissor(scissor, region)});
+    queue(z, Type::String, strings_.size() - 1);
 }
 
 void DrawCallSink::submit_line(const uint32_t z, const Vec2 &start, const Vec2 &end, const ColorRGBA &color) {
-    const auto handle = allocate();
-    auto &bucket = *buckets_[handle.bucket];
-    bucket.types[handle.slot] = Type::Line;
-    bucket.line_starts[handle.slot] = start;
-    bucket.line_ends[handle.slot] = end;
-    bucket.line_colors[handle.slot] = color;
-    queue(z, handle);
+    lines_.push_back({start, end, color});
+    queue(z, Type::Line, lines_.size() - 1);
 }
 
-void DrawCallSink::draw(const Handle handle) {
-    auto &bucket = *buckets_[handle.bucket];
-    const auto slot = handle.slot;
-    if (bucket.drawn[slot]) return;
-    if (bucket.types[slot] == Type::Quad) {
-        if (bucket.quad_textures[slot]) bucket.quad_textures[slot]->bind();
-        renderer::set_scissor(bucket.quad_scissors[slot]);
-        if (bucket.quad_scissors[slot]) {
-            const auto &r = bucket.quad_scissor_regions[slot];
-            if (bucket.quad_scissor_windows[slot]) renderer::set_scissor_region_wnd(r.X1, r.Y1, r.width(), r.height());
-            else renderer::set_scissor_region(r.X1, r.Y1, r.width(), r.height());
-        }
-        if (bucket.quad_has_models[slot]) bucket.quads[slot].model = &bucket.quad_models[slot];
-        renderer::draw_quad(bucket.quads[slot]);
-    } else if (bucket.types[slot] == Type::String) {
-        renderer::set_scissor(bucket.string_scissors[slot]);
-        if (bucket.string_scissors[slot]) {
-            const auto &r = bucket.string_scissor_regions[slot];
-            if (bucket.string_scissor_windows[slot]) renderer::set_scissor_region_wnd(r.X1, r.Y1, r.width(), r.height());
-            else renderer::set_scissor_region(r.X1, r.Y1, r.width(), r.height());
-        }
-        auto *font = bucket.fonts[slot];
-        font->set_color(bucket.string_colors[slot].red, bucket.string_colors[slot].green, bucket.string_colors[slot].blue);
-        font->set_alpha(bucket.string_colors[slot].alpha);
-        font->render(bucket.strings[slot], bucket.string_positions[slot], bucket.string_transforms[slot], bucket.string_scales[slot]);
-    } else {
-        if (!line_vbo_) line_vbo_ = std::make_unique<VBO>(VBO::Stream, 4);
-        const float points[] = {bucket.line_starts[slot].x, bucket.line_starts[slot].y,
-                                bucket.line_ends[slot].x, bucket.line_ends[slot].y};
-        line_vbo_->assign(points);
-        constexpr auto identity = glm::identity<Mat4>();
-        renderer::set_default_shader_parameters(false);
-		renderer::Shader::Default::set_color(bucket.line_colors[slot].red, bucket.line_colors[slot].green,
-                                           bucket.line_colors[slot].blue, bucket.line_colors[slot].alpha);
-		renderer::Shader::set_uniform(renderer::Shader::Default::uniform(renderer::Shader::Default::Uniform::ModelView), &identity[0][0]);
-        line_vbo_->bind();
-		glVertexAttribPointer(renderer::Shader::enable_attrib_array(renderer::A_POSITION),
-                              2, GL_FLOAT, GL_FALSE, 0, nullptr);
-        glDrawArrays(GL_LINES, 0, 2);
-		renderer::Shader::disable_attrib_array(renderer::A_POSITION);
-        Texture2D::force_rebind();
+VBO *DrawCallSink::upload_uvs(const UVs &uvs) {
+    if (!uv_vbo_) uv_vbo_ = std::make_unique<VBO>(VBO::Stream, QuadUVCount);
+    // Re-creates the GL buffer from the CPU mirror if the context invalidated it.
+    uv_vbo_->validate();
+    // Consecutive quads usually share a crop; skip redundant uploads.
+    if (!uv_vbo_loaded_ || uploaded_uvs_ != uvs) {
+        uv_vbo_->assign(uvs.data());
+        uploaded_uvs_ = uvs;
+        uv_vbo_loaded_ = true;
     }
-    bucket.drawn[slot] = true;
+    return uv_vbo_.get();
+}
+
+static void apply_scissor(const bool enabled, const AABB &r, const bool window_coordinates) {
+    renderer::set_scissor(enabled);
+    if (!enabled) return;
+    if (window_coordinates) renderer::set_scissor_region_wnd(r.X1, r.Y1, r.width(), r.height());
+    else renderer::set_scissor_region(r.X1, r.Y1, r.width(), r.height());
+}
+
+void DrawCallSink::draw(const QuadCommand &cmd) {
+    if (cmd.texture) cmd.texture->bind();
+    apply_scissor(cmd.scissor.enabled, cmd.scissor.region, cmd.scissor.window_coordinates);
+    auto params = cmd.params;
+    if (cmd.has_model) params.model = &cmd.model;
+    if (cmd.has_uvs) params.texture_coordinates = upload_uvs(cmd.uvs);
+    renderer::draw_quad(params);
+}
+
+void DrawCallSink::draw(const StringCommand &cmd) {
+    apply_scissor(cmd.scissor.enabled, cmd.scissor.region, cmd.scissor.window_coordinates);
+    cmd.font->set_color(cmd.color.red, cmd.color.green, cmd.color.blue);
+    cmd.font->set_alpha(cmd.color.alpha);
+    cmd.font->render(cmd.text, cmd.position, cmd.transform, cmd.scale);
+}
+
+void DrawCallSink::draw(const LineCommand &cmd) {
+    // Lines carry no scissor/blend state of their own; don't inherit the previous call's.
+    renderer::set_scissor(false);
+    renderer::set_blending_mode(BLEND_ALPHA);
+    if (!line_vbo_) line_vbo_ = std::make_unique<VBO>(VBO::Stream, 4);
+    const float points[] = {cmd.start.x, cmd.start.y, cmd.end.x, cmd.end.y};
+    line_vbo_->assign(points);
+    constexpr auto identity = glm::identity<Mat4>();
+    renderer::set_default_shader_parameters(false);
+    renderer::Shader::Default::set_color(cmd.color.red, cmd.color.green, cmd.color.blue, cmd.color.alpha);
+    renderer::Shader::set_uniform(renderer::Shader::Default::uniform(renderer::Shader::Default::Uniform::ModelView), &identity[0][0]);
+    line_vbo_->bind();
+    glVertexAttribPointer(renderer::Shader::enable_attrib_array(renderer::A_POSITION),
+                          2, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glDrawArrays(GL_LINES, 0, 2);
+    renderer::Shader::disable_attrib_array(renderer::A_POSITION);
+    Texture2D::force_rebind();
 }
 
 void DrawCallSink::flush() {
-    for (auto &layer : layers_) {
-        const auto count = layer.size();
-        for (size_t i = 0; i < count; ++i) draw(layer[i]);
+    if (quads_.empty() && strings_.empty() && lines_.empty()) return;
+    for (const auto &layer : layers_) {
+        for (const auto entry : layer) {
+            const auto index = entry & IndexMask;
+            switch (static_cast<Type>(entry >> TypeShift)) {
+                case Type::Quad: draw(quads_[index]); break;
+                case Type::String: draw(strings_[index]); break;
+                case Type::Line: draw(lines_[index]); break;
+            }
+        }
     }
+    // Don't leak per-call scissor state to whatever renders after us.
+    renderer::set_scissor(false);
+    reset();
 }

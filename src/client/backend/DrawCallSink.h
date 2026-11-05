@@ -14,52 +14,75 @@ class Texture2D;
 
 // Owns the transient 2D draw queue. Producers emit immutable draw parameters;
 // this class alone owns their lifetime, ordering, and renderer interaction.
+//
+// Lifetime: the queue is a per-frame arena. flush() draws everything queued and
+// empties it; begin_frame() discards anything still pending. Nothing survives
+// either call, so raw pointers handed in (textures, fonts, shaders) only need to
+// outlive the next flush(). Mutable per-draw data (model matrix, UVs) is copied
+// at submit time.
 class DrawCallSink
 {
-    static constexpr size_t BucketSize = 96;
     static constexpr uint32_t LayerCount = 16;
+    static constexpr size_t QuadUVCount = 8;
 
-    enum class Type : uint8_t { Quad, String, Line };
-    struct Handle { size_t bucket; size_t slot; };
+    using UVs = std::array<float, QuadUVCount>;
 
-    // 96 fits neatly on a 32kb cache
-    struct Bucket {
-        std::array<Type, BucketSize> types{};
-        std::array<bool, BucketSize> drawn{};
-        std::array<renderer::QuadDrawParams, BucketSize> quads{};
-        std::array<Texture2D*, BucketSize> quad_textures{};
-        std::array<Mat4, BucketSize> quad_models{};
-        std::array<bool, BucketSize> quad_has_models{};
-        std::array<bool, BucketSize> quad_scissors{};
-        std::array<AABB, BucketSize> quad_scissor_regions{};
-        std::array<bool, BucketSize> quad_scissor_windows{};
-        std::array<Font*, BucketSize> fonts{};
-        std::array<std::string, BucketSize> strings{};
-        std::array<Vec2, BucketSize> string_positions{};
-        std::array<Mat4, BucketSize> string_transforms{};
-        std::array<Vec2, BucketSize> string_scales{};
-        std::array<ColorRGBA, BucketSize> string_colors{};
-        std::array<bool, BucketSize> string_scissors{};
-        std::array<AABB, BucketSize> string_scissor_regions{};
-        std::array<bool, BucketSize> string_scissor_windows{};
-        std::array<Vec2, BucketSize> line_starts{};
-        std::array<Vec2, BucketSize> line_ends{};
-        std::array<ColorRGBA, BucketSize> line_colors{};
-        size_t next_slot = 0;
+    struct Scissor {
+        AABB region{};
+        bool enabled = false;
+        bool window_coordinates = false;
     };
 
-    std::vector<std::unique_ptr<Bucket>> buckets_;
-    std::vector<Handle> free_calls_;
-    std::array<std::vector<Handle>, LayerCount> layers_;
-    std::unique_ptr<VBO> line_vbo_;
-    bool clip_enabled_ = false;
-    bool clip_window_coordinates_ = false;
-    AABB clip_region_{};
+    struct QuadCommand {
+        renderer::QuadDrawParams params; // model/texture_coordinates are filled in at draw time
+        Mat4 model{};
+        UVs uvs{};
+        Texture2D *texture = nullptr;
+        Scissor scissor;
+        bool has_model = false;
+        bool has_uvs = false;
+    };
 
-    Handle allocate();
-    void release(Handle handle);
-    void queue(uint32_t z, Handle handle);
-    void draw(Handle handle);
+    struct StringCommand {
+        Font *font = nullptr;
+        std::string text;
+        Vec2 position{};
+        Mat4 transform{};
+        Vec2 scale{};
+        ColorRGBA color{};
+        Scissor scissor;
+    };
+
+    struct LineCommand {
+        Vec2 start{};
+        Vec2 end{};
+        ColorRGBA color{};
+    };
+
+    // Layer entries pack the command type into the top bits and its index into the rest.
+    enum class Type : uint32_t { Quad = 0, String = 1, Line = 2 };
+    static constexpr uint32_t TypeShift = 30;
+    static constexpr uint32_t IndexMask = (1u << TypeShift) - 1;
+
+    std::vector<QuadCommand> quads_;
+    std::vector<StringCommand> strings_;
+    std::vector<LineCommand> lines_;
+    std::array<std::vector<uint32_t>, LayerCount> layers_;
+
+    std::unique_ptr<VBO> line_vbo_;
+    std::unique_ptr<VBO> uv_vbo_;
+    UVs uploaded_uvs_{};
+    bool uv_vbo_loaded_ = false;
+
+    Scissor clip_;
+
+    Scissor resolve_scissor(bool scissor, const AABB &region) const;
+    void queue(uint32_t z, Type type, size_t index);
+    void reset();
+    void draw(const QuadCommand &cmd);
+    void draw(const StringCommand &cmd);
+    void draw(const LineCommand &cmd);
+    VBO *upload_uvs(const UVs &uvs);
 
 public:
     ~DrawCallSink();
