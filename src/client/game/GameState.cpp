@@ -42,30 +42,36 @@ using namespace rd;
 
 void GameState::set_system_folder(const std::string folder)
 {
-	Filesystem.set_system_folder(folder);
+	filesystem_.set_system_folder(folder);
 }
 
-GameState::GameState(): 
-	StageImage(nullptr), 
-	SongBG(nullptr)
-{
-    SelectedChartGroup = nullptr;
-    Database = nullptr;
-
-    if (!StormIR_AppId.str().empty() && !StormIR_ClientKey.str().empty() ) {
-        if (!StormIR_Username.str().empty() && !StormIR_Password.str().empty() ) {
-            ir = std::make_unique<StormIR::StormIR>(StormIR_AppId, StormIR_ClientKey);
-            if (ir->login(StormIR_Username, StormIR_Password)) {
-                Log::LogPrintf("[IR] Logged into StormIR.\n");
-            } else {
-                Log::LogPrintf("[IR] Failed to log into StormIR: %s.\n", ir->get_last_error().c_str());
-            }
-        } else {
-            Log::LogPrintf("[IR] StormIR User or Password missing.\n");
-        }
-    } else {
+void GameState::login_internet_ranking() {
+    if (StormIR_AppId.str().empty() || StormIR_ClientKey.str().empty() ) {
         Log::LogPrintf("[IR] StormIR appid or clientkey are missing. Could not connect.\n");
+        return;
     }
+
+    if (StormIR_Username.str().empty() || StormIR_Password.str().empty() ) {
+        Log::LogPrintf("[IR] StormIR User or Password missing.\n");
+        return;
+    }
+
+    ir_ = std::make_unique<StormIR::StormIR>(StormIR_AppId, StormIR_ClientKey);
+    if (ir_->login(StormIR_Username, StormIR_Password)) {
+        Log::LogPrintf("[IR] Logged into StormIR.\n");
+    } else {
+        Log::LogPrintf("[IR] Failed to log into StormIR: %s.\n", ir_->get_last_error().c_str());
+    }
+}
+
+GameState::GameState():
+	stage_image_(nullptr),
+	song_bg_(nullptr)
+{
+    selected_chart_group_ = nullptr;
+    database_ = nullptr;
+
+    login_internet_ranking();
 
 	// push the default player
 	add_active_profile("machine");
@@ -73,29 +79,27 @@ GameState::GameState():
 
 GameFilesystem& GameState::filesystem()
 {
-    return Filesystem;
+    return filesystem_;
 }
 
 const GameFilesystem& GameState::filesystem() const
 {
-    return Filesystem;
+    return filesystem_;
 }
 
-std::filesystem::path GameState::get_skin_script_file(const char* Filename, const std::string& skin)
-{
-    return Filesystem.get_skin_script_file(Filename, skin);
+std::filesystem::path GameState::get_skin_script_file(const char* Filename, const std::string& skin) const {
+    return filesystem_.get_skin_script_file(Filename, skin);
 }
 
 std::shared_ptr<otoworm::ChartGroup> GameState::get_selected_chart_group_shared() const
 {
     if (const auto chart_group = SongWheel::get_instance().get_selected_chart_group())
         return chart_group;
-    return SelectedChartGroup;
+    return selected_chart_group_;
 }
 
-std::string GameState::get_first_fallback_skin()
-{
-    return Filesystem.get_first_fallback_skin();
+std::string GameState::get_first_fallback_skin() const {
+    return filesystem_.get_first_fallback_skin();
 }
 
 GameState& GameState::get_instance()
@@ -106,7 +110,7 @@ GameState& GameState::get_instance()
 
 void GameState::set_selected_chart_group(std::shared_ptr<otoworm::ChartGroup> chart_group)
 {
-    SelectedChartGroup = std::move(chart_group);
+    selected_chart_group_ = std::move(chart_group);
 }
 
 otoworm::ChartGroup *GameState::get_selected_chart_group() const
@@ -120,40 +124,39 @@ void GameState::start_screen_transition(std::string target) const
 		auto res = otoworm::util::token_split(target, ":");
 		if (res.size() == 2)
 		{
-            const auto scr = std::make_shared<ScreenCustom>(RootScreen->get_window(), res[1]);
-			RootScreen->get_top()->start_transition(scr);
+            const auto scr = std::make_shared<ScreenCustom>(root_screen_->get_window(), res[1]);
+			root_screen_->get_top()->start_transition(scr);
 		}
 	}
 	else if (target == "songselect") {
-        const auto scr = std::make_shared<ScreenSelectMusic>(RootScreen->get_window());
+        const auto scr = std::make_shared<ScreenSelectMusic>(root_screen_->get_window());
 		scr->init();
-		RootScreen->get_top()->start_transition(scr);
+		root_screen_->get_top()->start_transition(scr);
 	}
 }
 
 void GameState::exit_current_screen() const
 {
-	RootScreen->get_top()->close();
+	root_screen_->get_top()->close();
 }
 
-std::filesystem::path GameState::get_skin_file(const std::string &Name, const std::string &Skin)
+std::filesystem::path GameState::get_skin_file(const std::string &name, const std::string &skin)
 {
-    return Filesystem.get_skin_file(Name, Skin);
+    return filesystem_.get_skin_file(name, skin);
 }
 
-std::filesystem::path GameState::get_skin_file(const std::string& Name)
-{
-    return Filesystem.get_skin_file(Name);
+std::filesystem::path GameState::get_skin_file(const std::string& name) const {
+    return filesystem_.get_skin_file(name);
 }
 
 void GameState::initialize()
 {
-    if (!Database)
+    if (!database_)
     {
-        Database = new SongDatabase("rd.db");
+        database_ = new SongDatabase("rd.db");
 
-        SongBG = new Texture2D();
-        StageImage = new Texture2D();
+        song_bg_ = new Texture2D();
+        stage_image_ = new Texture2D();
     }
 }
 
@@ -162,9 +165,8 @@ std::string GameState::get_directory_prefix()
 	return get_instance().filesystem().get_directory_prefix();
 }
 
-std::string GameState::get_skin_prefix()
-{
-    return Filesystem.get_skin_prefix();
+std::string GameState::get_skin_prefix() const {
+    return filesystem_.get_skin_prefix();
 }
 
 std::string GameState::get_skin_prefix(const std::string& skin)
@@ -174,7 +176,7 @@ std::string GameState::get_skin_prefix(const std::string& skin)
 
 void GameState::set_skin(const std::string& Skin)
 {
-    Filesystem.set_skin(Skin);
+    filesystem_.set_skin(Skin);
 }
 
 std::string GameState::get_scripts_directory()
@@ -184,97 +186,90 @@ std::string GameState::get_scripts_directory()
 
 SongDatabase* GameState::get_song_database() const
 {
-    return Database;
+    return database_;
 }
 
-std::filesystem::path GameState::get_fallback_skin_file(const std::string &Name)
-{
-    return Filesystem.get_fallback_skin_file(Name);
+std::filesystem::path GameState::get_fallback_skin_file(const std::string &name) const {
+    return filesystem_.get_fallback_skin_file(name);
 }
 
 bool GameState::player_number_in_bounds(int pn) const
 {
-	return pn >= 0 && pn < PlayerInfo.size();
+	return pn >= 0 && pn < player_info_.size();
 }
 
 void GameState::set_player_context(PlayerContext * pc, int pn)
 {
 	if (player_number_in_bounds(pn)) {
-		PlayerInfo[pn].ctx = pc;
+		player_info_[pn].ctx = pc;
 	}
 }
 
 int GameState::get_current_gauge_type(int pn) const
 {
 	if (player_number_in_bounds(pn))
-		return PlayerInfo[pn].ctx ? PlayerInfo[pn].ctx->get_current_gauge_type() : PlayerInfo[pn].play_parameters.gauge_type;
+		return player_info_[pn].ctx ? player_info_[pn].ctx->get_current_gauge_type() : player_info_[pn].play_parameters.gauge_type;
 	return 0;
 }
 
-Texture2D* GameState::get_song_bg()
-{
+Texture2D* GameState::get_song_bg() const {
     const auto chart_group = get_selected_chart_group_shared();
-	if (chart_group)
-	{
-		const auto toLoad = chart_group->path / chart_group->background_filename;
+	if (!chart_group) {
+        // no song selected
+        return nullptr;
+    }
 
-		if (std::filesystem::exists(toLoad))
-		{
-			SongBG->load_file(toLoad, true);
-			return SongBG;
-		}
+    const auto toLoad = chart_group->path / chart_group->background_filename;
 
-		// file doesn't exist
-		return nullptr;
-	}
+    if (std::filesystem::exists(toLoad))
+    {
+        song_bg_->load_file(toLoad, true);
+        return song_bg_;
+    }
 
-	// no song selected
-	return nullptr;
+    // file doesn't exist
+    return nullptr;
 }
 
-Texture2D* GameState::get_song_stage()
-{
+Texture2D* GameState::get_song_stage() const {
 	const auto chart_group = get_selected_chart_group_shared();
-	if (chart_group)
-	{
-		if (PlayerInfo[0].active_chart)
-		{
-			const auto chart = PlayerInfo[0].active_chart;
-			std::filesystem::path File = Database->GetStageFile(static_cast<int>(chart->id));
+	if (!chart_group) {
+        // no song selected
+        return nullptr;
+    }
 
-			// Oh so it's loaded and it's not in the database, fine.
-			if (File.wstring().length() == 0 && chart->transient)
-				File = chart->transient->stage_file;
+    if (!player_info_[0].active_chart) {
+        return nullptr;
+        // Oh okay, no difficulty assigned.
+    }
 
-			const auto toLoad = chart_group->path / File;
+    const auto chart = player_info_[0].active_chart;
+    std::filesystem::path file = database_->GetStageFile(static_cast<int>(chart->id));
 
-			// ojn files use their cover inside the very ojn
-			if (File.extension() == ".ojn")
-			{
-				size_t read;
-				const auto* buf = reinterpret_cast<const unsigned char*>(load_ojn_cover(toLoad, read));
-				ImageData2d data = TextureCollection::get_data_for_image_from_memory(buf, read);
-				StageImage->set_texture_data_2d(data, true);
-				delete[] buf;
+    // Oh so it's loaded and it's not in the database, fine.
+    if (file.wstring().empty() && chart->transient)
+        file = chart->transient->stage_file;
 
-				return StageImage;
-			}
+    const auto to_load = chart_group->path / file;
 
-			if (File.wstring().length() && std::filesystem::exists(toLoad))
-			{
-				StageImage->load_file(toLoad, true);
-				return StageImage;
-			}
+    // ojn files use their cover inside the very ojn
+    if (file.extension() == ".ojn")
+    {
+        size_t read;
+        const auto buf = load_ojn_cover(to_load, read);
+        const ImageData2d data = TextureCollection::get_data_for_image_from_memory(buf.get(), read);
+        stage_image_->set_texture_data_2d(data, true);
 
-			return nullptr;
-		}
+        return stage_image_;
+    }
 
-		return nullptr;
-		// Oh okay, no difficulty assigned.
-	}
+    if (!file.wstring().empty() && std::filesystem::exists(to_load))
+    {
+        stage_image_->load_file(to_load, true);
+        return stage_image_;
+    }
 
-	// no song selected
-	return nullptr;
+    return nullptr;
 }
 
 Texture2D* GameState::get_skin_image(const std::string& Path)
@@ -288,7 +283,7 @@ Texture2D* GameState::get_skin_image(const std::string& Path)
 
     /* Regular paths */
     if (Path.length())
-        return TextureCollection::load(Filesystem.get_skin_file(Path));
+        return TextureCollection::load(filesystem_.get_skin_file(Path));
 
 	// no path?
     return nullptr;
@@ -299,29 +294,27 @@ bool GameState::skin_supports_channel_count(int Count)
     return get_instance().filesystem().skin_supports_channel_count(Count);
 }
 
-std::string GameState::get_skin()
-{
-    return Filesystem.get_skin();
+std::string GameState::get_skin() const {
+    return filesystem_.get_skin();
 }
 
-rd::ScoreKeeper* GameState::get_scorekeeper7_k(int pn)
-{
+rd::ScoreKeeper* GameState::get_scorekeeper7_k(int pn) const {
 	if (player_number_in_bounds(pn))
-		return PlayerInfo[pn].scorekeeper.get();
+		return player_info_[pn].scorekeeper.get();
 	else return nullptr;
 }
 
 void GameState::set_scorekeeper7_k(std::shared_ptr<rd::ScoreKeeper> other, int pn)
 {
     if (player_number_in_bounds(pn))
-		PlayerInfo[pn].scorekeeper = other;
+		player_info_[pn].scorekeeper = other;
 }
 
 
 int GameState::get_current_score_type(int pn) const
 {
 	if (player_number_in_bounds(pn))
-		return PlayerInfo[pn].play_parameters.get_scoring_type();
+		return player_info_[pn].play_parameters.get_scoring_type();
 	else
 		return 0;
 }
@@ -329,7 +322,7 @@ int GameState::get_current_score_type(int pn) const
 int GameState::get_current_system_type(int pn) const
 {
 	if (player_number_in_bounds(pn))
-		return PlayerInfo[pn].ctx ? PlayerInfo[pn].ctx->get_current_system_type() : PlayerInfo[pn].play_parameters.system_type;
+		return player_info_[pn].ctx ? player_info_[pn].ctx->get_current_system_type() : player_info_[pn].play_parameters.system_type;
 	else
 		return 0;
 }
@@ -337,12 +330,12 @@ int GameState::get_current_system_type(int pn) const
 void GameState::set_chart(std::shared_ptr<otoworm::Chart> chart, int pn)
 {
     if (player_number_in_bounds(pn))
-        PlayerInfo[pn].active_chart = std::move(chart);
+        player_info_[pn].active_chart = std::move(chart);
 }
 
 int GameState::get_player_count() const
 {
-	return PlayerInfo.size();
+	return player_info_.size();
 }
 
 void GameState::submit_score(int pn)
@@ -350,7 +343,7 @@ void GameState::submit_score(int pn)
 	if (!player_number_in_bounds(pn))
 		return;
 
-	const auto *player = &PlayerInfo[pn];
+	const auto *player = &player_info_[pn];
 	const auto chart = get_chart_shared(pn);
 	const auto chart_group = get_selected_chart_group_shared();
 	const auto replay = player->ctx->get_replay();
@@ -365,8 +358,8 @@ void GameState::submit_score(int pn)
 	if (!selected_chart_group)
 		return;
 
-    auto submitfunc = [=, this] {
-        player->profile->scores.AddScore(
+    std::thread([=, this] {
+        player->profile->scores.add_score(
                 replay.get_song_hash(),
                 replay.get_difficulty_index(),
                 replay.get_effective_parameters(),
@@ -377,18 +370,15 @@ void GameState::submit_score(int pn)
 
         player->profile->save_replay(selected_chart_group, replay);
 
-        if (ir && ir->is_connected()) {
+        if (ir_ && ir_->is_connected()) {
             Log::LogPrintf("[IR] Submitting score...\n");
-            if (ir->submit_score(chart_group.get(), chart.get(), replay, scorekeeper)) {
+            if (ir_->submit_score(chart_group.get(), chart.get(), replay, scorekeeper)) {
                 Log::LogPrintf("[IR] Success.\n");
             } else {
-                Log::LogPrintf("[IR] Couldn't submit score: %s\n", ir->get_last_error().c_str());
+                Log::LogPrintf("[IR] Couldn't submit score: %s\n", ir_->get_last_error().c_str());
             }
         }
-    };
-
-    std::thread t(submitfunc);
-    t.detach();
+    }).detach();
 }
 
 bool GameState::is_song_unlocked(otoworm::ChartGroup * chart_group)
@@ -402,12 +392,11 @@ void GameState::unlock_song(otoworm::ChartGroup * chart_group)
 
 void GameState::set_root_screen(std::shared_ptr<Screen> root)
 {
-	RootScreen = root;
+	root_screen_ = root;
 }
 
-std::shared_ptr<Screen> GameState::get_current_screen()
-{
-	return std::shared_ptr<Screen>();
+Screen* GameState::get_current_screen() const {
+	return root_screen_->get_top();
 }
 
 std::shared_ptr<Screen> GameState::get_next_screen()
@@ -421,8 +410,8 @@ void GameState::sort_wheel_by(int criteria)
 }
 
 void GameState::add_active_profile(const std::string &profile_name) {
-    PlayerInfo.emplace_back();
-    auto *new_player = &PlayerInfo.back();
+    player_info_.emplace_back();
+    auto *new_player = &player_info_.back();
     new_player->profile = new Profile();
     new_player->profile->load(profile_name);
 }

@@ -99,7 +99,7 @@ ScoreDatabase::ScoreDatabase() {
     db = nullptr;
 }
 
-void ScoreDatabase::AddHash(std::string hash) {
+void ScoreDatabase::add_hash(std::string hash) {
     sqlite3_bind_text(stAddHash,
                       sqlite3_bind_parameter_index(stAddHash, "$hash"),
                       hash.c_str(),
@@ -111,7 +111,7 @@ void ScoreDatabase::AddHash(std::string hash) {
     sqlite3_reset(stAddHash);
 }
 
-void ScoreDatabase::CleanupStatements() {
+void ScoreDatabase::cleanup_statements() {
     sqlite3_finalize(stAddScore);
     sqlite3_finalize(stAllScores);
     sqlite3_finalize(stBestEx);
@@ -121,15 +121,15 @@ void ScoreDatabase::CleanupStatements() {
 }
 
 ScoreDatabase::~ScoreDatabase() {
-    CleanupStatements();
+    cleanup_statements();
 
     if (db)
         sqlite3_close(db);
 }
 
-void ScoreDatabase::Open(std::filesystem::path path) {
+void ScoreDatabase::open(std::filesystem::path path) {
     if (db) {
-        CleanupStatements();
+        cleanup_statements();
         sqlite3_close(db);
         db = nullptr;
     }
@@ -154,7 +154,7 @@ void ScoreDatabase::Open(std::filesystem::path path) {
     SC(sqlite3_prepare_v2(db, qAddHash, strlen(qAddHash), &stAddHash, &err));
 }
 
-void ScoreDatabase::AddScore(
+void ScoreDatabase::add_score(
         std::string charthash,
         int diffindex,
         PlayscreenParameters params,
@@ -166,7 +166,7 @@ void ScoreDatabase::AddScore(
     auto gaugetype = params.gauge_type;
 
     // insert or do nothing
-    AddHash(charthash);
+    add_hash(charthash);
 
     sqlite3_bind_text(
             stAddScore,
@@ -366,7 +366,7 @@ ScoreRow toScoreRow(sqlite3_stmt *stmt) {
     return ret;
 }*/
 
-ScoreRow ScoreDatabase::GetBestScoreForSongEX(std::string songhash, int diffindex) {
+ScoreRow ScoreDatabase::get_best_score_for_song_ex(std::string songhash, int diffindex) {
     ScoreRow ret;
     prepareBest(stBestEx, songhash, diffindex);
     if (sqlite3_step(stBestEx) == SQLITE_ROW) {
@@ -377,7 +377,7 @@ ScoreRow ScoreDatabase::GetBestScoreForSongEX(std::string songhash, int diffinde
     return ret;
 }
 
-ScoreRow ScoreDatabase::GetBestScoreForSongRank(std::string songhash, int diffindex) {
+ScoreRow ScoreDatabase::get_best_score_for_song_rank(std::string songhash, int diffindex) {
     ScoreRow ret;
     prepareBest(stBestRank, songhash, diffindex);
     if (sqlite3_step(stBestRank) == SQLITE_ROW) {
@@ -388,7 +388,7 @@ ScoreRow ScoreDatabase::GetBestScoreForSongRank(std::string songhash, int diffin
     return ret;
 }
 
-std::vector<ScoreRow> ScoreDatabase::GetAllScoresForSong(std::string songhash, int diffindex) {
+std::vector<ScoreRow> ScoreDatabase::get_all_scores_for_song(std::string songhash, int diffindex) {
     auto ret = std::vector<ScoreRow>();
 
     prepareBest(stAllScores, songhash, diffindex);

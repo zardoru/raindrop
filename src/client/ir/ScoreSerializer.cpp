@@ -114,7 +114,7 @@ json StormIR::serialize_difficulty_information(const otoworm::ChartGroup *chart_
     if (chart_group && !chart_path.empty() && chart_path.is_relative())
         chart_path = chart_group->path / chart_path;
 
-    return nlohmann::json() = {
+    return json() = {
             {"sha256",    chart_path.empty() ? "" : otoworm::util::get_sha256_for_file(chart_path)},
             {"name",      chart && chart->meta ? chart->meta->name : ""},
             {"charter",   chart && chart->meta ? chart->meta->author : ""},

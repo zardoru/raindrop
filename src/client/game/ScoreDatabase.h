@@ -29,7 +29,7 @@ struct ScoreRow {
 
     // returns true if the score is to be considered
     // anything that was actually played.
-    bool IsPlayedScore() {
+    bool is_played_score() const {
         // enough things are zero to say we didn't play this thing
         if (hits == misses && hits == 0) {
             if (score == 0 || play_opts.gauge_type == rd::LT_AUTO)
@@ -51,14 +51,14 @@ class ScoreDatabase {
         *stAllScores,
         *stAddHash;
 
-    void AddHash(std::string hash);
+    void add_hash(std::string hash);
 
-    void CleanupStatements();
+    void cleanup_statements();
 public:
     ScoreDatabase();
     ~ScoreDatabase();
-    void Open(std::filesystem::path path);
-    void AddScore(
+    void open(std::filesystem::path path);
+    void add_score(
         std::string charthash,
         int diffindex,
         PlayscreenParameters params,
@@ -66,9 +66,9 @@ public:
         double offset, // note time displacement
         double judgeoffset); // judgment time displacement
 
-    ScoreRow GetBestScoreForSong(std::string songhash, int diffindex, rd::ScoreType st);
-    ScoreRow GetBestScoreForSongEX(std::string songhash, int diffindex);
-    ScoreRow GetBestScoreForSongRank(std::string songhash, int diffindex);
+    ScoreRow get_best_score_for_song(std::string songhash, int diffindex, rd::ScoreType st);
+    ScoreRow get_best_score_for_song_ex(std::string songhash, int diffindex);
+    ScoreRow get_best_score_for_song_rank(std::string songhash, int diffindex);
 
-    std::vector<ScoreRow> GetAllScoresForSong(std::string songhash, int diffindex);
+    std::vector<ScoreRow> get_all_scores_for_song(std::string songhash, int diffindex);
 };

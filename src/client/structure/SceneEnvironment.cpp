@@ -89,7 +89,7 @@ void SceneEnvironment::log_callback_error(const std::string &name, const std::st
     Log::LogPrintf("lua callback error in %s: %s\n", name.c_str(), message.c_str());
 }
 
-void SceneEnvironment::RunIntro(const float Fraction, const float Delta) {
+void SceneEnvironment::run_intro(const float fraction, const float delta) {
     if (m_frame_skip_) {
         m_frame_skip_ = false;
         return;
@@ -99,14 +99,14 @@ void SceneEnvironment::RunIntro(const float Fraction, const float Delta) {
     // @callback UpdateIntro
     // @param fraction The percentage of the intro that is done.
     // @param delta The time passed since last frame.
-    call_callback("UpdateIntro", Fraction, Delta);
+    call_callback("UpdateIntro", fraction, delta);
 
     draw_calls_.begin_frame();
     queue_targets();
     draw();
 }
 
-void SceneEnvironment::RunExit(const float Fraction, const float Delta) {
+void SceneEnvironment::run_exit(const float fraction, const float delta) {
     if (m_frame_skip_) {
         m_frame_skip_ = false;
         return;
@@ -115,7 +115,7 @@ void SceneEnvironment::RunExit(const float Fraction, const float Delta) {
     // @callback UpdateExit
     // @param fraction The percentage of the intro that is done.
     // @param delta The time passed since last frame.
-    call_callback("UpdateExit", Fraction, Delta);
+    call_callback("UpdateExit", fraction, delta);
 
     draw_calls_.begin_frame();
     queue_targets();
@@ -151,9 +151,9 @@ SceneEnvironment::SceneEnvironment(const char *screen_name, bool init_ui) {
 }
 
 TruetypeFont *SceneEnvironment::create_ttf(const char *Dir) {
-    auto *Ret = new TruetypeFont(Dir);
-    managed_fonts_.push_back(Ret);
-    return Ret;
+    auto *ret = new TruetypeFont(Dir);
+    managed_fonts_.push_back(ret);
+    return ret;
 }
 
 SceneEnvironment::~SceneEnvironment() {
@@ -172,10 +172,10 @@ SceneEnvironment::~SceneEnvironment() {
     managed_fonts_.clear();
 }
 
-void SceneEnvironment::preload(const std::filesystem::path &Filename, std::string array_name) {
-    m_init_script_ = Filename;
+void SceneEnvironment::preload(const std::filesystem::path &filename, std::string array_name) {
+    m_init_script_ = filename;
 
-    load_script_callbacks(Filename);
+    load_script_callbacks(filename);
 
     if (m_callbacks_ && m_callbacks_->isTable()) {
         auto preload = (*m_callbacks_)[array_name];
@@ -218,13 +218,8 @@ Sprite *SceneEnvironment::create_object() {
     return Out;
 }
 
-bool SceneEnvironment::is_managed_object(Drawable2D *Obj) const {
-    for (auto i: managed_objects_) {
-        if (Obj == i)
-            return true;
-    }
-
-    return false;
+bool SceneEnvironment::is_managed_object(Drawable2D *obj) const {
+    return std::ranges::any_of(managed_objects_, [obj](const Drawable2D *i) { return obj == i; });
 }
 
 void SceneEnvironment::initialize(const std::filesystem::path &filename, const bool run_script) {
@@ -260,23 +255,23 @@ void SceneEnvironment::add_sprite_target(Sprite *target) {
 }
 
 void SceneEnvironment::add_lua_target(Sprite *target, std::string Varname) const {
-    lua_State *L = lua_->get_lua_state();
-    luabridge::push(L, target);
-    lua_setglobal(L, Varname.c_str());
+    lua_State *l = lua_->get_lua_state();
+    luabridge::push(l, target);
+    lua_setglobal(l, Varname.c_str());
 }
 
-void SceneEnvironment::stop_managing_object(Drawable2D *Obj) {
+void SceneEnvironment::stop_managing_object(Drawable2D *obj) {
     for (auto i = managed_objects_.begin(); i != managed_objects_.end(); ++i) {
-        if (Obj == *i) {
+        if (obj == *i) {
             managed_objects_.erase(i);
             return;
         }
     }
 }
 
-void SceneEnvironment::remove_managed_object(Drawable2D *Obj) {
+void SceneEnvironment::remove_managed_object(Drawable2D *obj) {
     for (auto i = managed_objects_.begin(); i != managed_objects_.end(); ++i) {
-        if (*i == Obj) {
+        if (*i == obj) {
             remove_target(*i);
             delete *i;
             managed_objects_.erase(i);
@@ -294,7 +289,7 @@ void SceneEnvironment::on_scroll_input(const double x_off, const double y_off) c
 }
 
 void SceneEnvironment::remove_managed_objects() {
-    for (auto i: managed_objects_) {
+    for (const auto i: managed_objects_) {
         remove_target(i);
         delete i;
     }
@@ -303,7 +298,7 @@ void SceneEnvironment::remove_managed_objects() {
 }
 
 void SceneEnvironment::remove_external_objects() {
-    for (auto i: external_objects_) {
+    for (const auto i: external_objects_) {
         remove_target(i);
     }
 
@@ -382,7 +377,7 @@ void SceneEnvironment::draw_string(const uint32_t z, Font *font, std::string tex
                               color, false, {});
 }
 
-void SceneEnvironment::update_targets(const double TimeDelta) {
+void SceneEnvironment::update_targets(const double time_delta) {
     draw_calls_.begin_frame();
 
     if (m_frame_skip_) {
@@ -394,11 +389,11 @@ void SceneEnvironment::update_targets(const double TimeDelta) {
     /// Main update loop. Called every frame.
     // @callback Update
     // @param delta Change in time since last frame.
-    call_callback("Update", TimeDelta);
+    call_callback("Update", time_delta);
     queue_targets();
 }
 
-void SceneEnvironment::ReloadUI() {
+void SceneEnvironment::reload_ui() {
 }
 
 /* This function right now is broken beyond repair. Don't mind it. */

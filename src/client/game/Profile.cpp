@@ -11,14 +11,16 @@
 #include "ScoreDatabase.h"
 #include "Profile.h"
 
+#include <SDL3/SDL_filesystem.h>
 
-const std::filesystem::path PROFILE_DIR = "./profiles";
+
+const std::filesystem::path PROFILE_DIR = "profiles";
 
 const std::filesystem::path SCOREDB_FILENAME = "scores.db";
 
 const std::filesystem::path REPLAYS_DIR = "replays";
 
-void Profile::AssureProfilePathExistence() {
+void Profile::ensure_profile_path_existence() const {
     auto path = get_path();
     std::filesystem::create_directories(path);
 
@@ -26,28 +28,28 @@ void Profile::AssureProfilePathExistence() {
     std::filesystem::create_directory(replaypath);
 }
 
-std::filesystem::path Profile::get_path() {
-    return std::filesystem::absolute(PROFILE_DIR) / name;
+std::filesystem::path Profile::get_path() const {
+    return SDL_GetUserFolder(SDL_FOLDER_SAVEDGAMES) / std::filesystem::path("wyrmin") / "raindrop" / PROFILE_DIR / name;
 }
 
 bool Profile::load(std::string Name) {
     this->name = Name;
-    AssureProfilePathExistence();
+    ensure_profile_path_existence();
 
-    auto path = get_path();
-    scores.Open(path / SCOREDB_FILENAME);
+    const auto path = get_path();
+    scores.open(path / SCOREDB_FILENAME);
 
     return true;
 }
 
-bool Profile::save() {
-    AssureProfilePathExistence();
+bool Profile::save() const {
+    ensure_profile_path_existence();
 
 
     return false;
 }
 
-void Profile::save_replay(const otoworm::ChartGroup *chart_group, const Replay &replay) {
+void Profile::save_replay(const otoworm::ChartGroup *chart_group, const Replay &replay) const {
     time_t now;
     time(&now);
     auto tm = localtime(&now);
@@ -73,5 +75,5 @@ void Profile::save_replay(const otoworm::ChartGroup *chart_group, const Replay &
 }
 
 std::vector<std::string> Profile::get_profile_list() {
-    return std::vector<std::string>();
+    return {};
 }

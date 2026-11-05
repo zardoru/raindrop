@@ -183,7 +183,7 @@ void Screen::init()
 
 bool Screen::run_intro(const float fraction, const float delta)
 {
-    scene_->RunIntro(fraction, delta);
+    scene_->run_intro(fraction, delta);
 
     if (fraction == 1)
         on_intro_end();
@@ -193,7 +193,7 @@ bool Screen::run_intro(const float fraction, const float delta)
 
 bool Screen::run_exit(const float fraction, const float delta)
 {
-    scene_->RunExit(fraction, delta);
+    scene_->run_exit(fraction, delta);
 
     if (fraction == 1)
         on_exit_end();

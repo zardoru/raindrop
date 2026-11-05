@@ -25,13 +25,13 @@ namespace StormIR {
 
 class GameState
 {
-    GameFilesystem Filesystem;
-    SongDatabase* Database;
+    GameFilesystem filesystem_;
+    SongDatabase* database_;
 
-    Texture2D* StageImage;
-    Texture2D* SongBG;
-    std::shared_ptr<otoworm::ChartGroup> SelectedChartGroup;
-    std::unique_ptr<StormIR::StormIR> ir;
+    Texture2D* stage_image_;
+    Texture2D* song_bg_;
+    std::shared_ptr<otoworm::ChartGroup> selected_chart_group_;
+    std::unique_ptr<StormIR::StormIR> ir_;
 
     struct SPlayerCurrent7K {
         std::shared_ptr<rd::ScoreKeeper> scorekeeper;
@@ -41,17 +41,17 @@ class GameState
         Profile* profile;
     };
 
-    std::vector<SPlayerCurrent7K> PlayerInfo;
+    std::vector<SPlayerCurrent7K> player_info_;
 
-    std::shared_ptr<Screen> RootScreen;
+    std::shared_ptr<Screen> root_screen_;
 public:
 
     GameState();
     GameFilesystem& filesystem();
     const GameFilesystem& filesystem() const;
-    std::filesystem::path get_skin_script_file(const char* Filename, const std::string& Skin);
+    std::filesystem::path get_skin_script_file(const char* Filename, const std::string& Skin) const;
     std::shared_ptr<otoworm::ChartGroup> get_selected_chart_group_shared() const;
-    std::string get_first_fallback_skin();
+    std::string get_first_fallback_skin() const;
     static GameState &get_instance();
     void initialize();
 
@@ -60,26 +60,26 @@ public:
     void initialize_lua(lua_State *L);
 
     static std::string get_directory_prefix();
-    std::string get_skin_prefix();
+    std::string get_skin_prefix() const;
     static std::string get_skin_prefix(const std::string &skin);
     static std::string get_scripts_directory();
     void set_skin(const std::string& NextSkin);
     Texture2D* get_skin_image(const std::string& Texture);
     static bool skin_supports_channel_count(int Count);
-    std::string get_skin();
+    std::string get_skin() const;
 
     void set_selected_chart_group(std::shared_ptr<otoworm::ChartGroup> chart_group);
     otoworm::ChartGroup *get_selected_chart_group() const;
 
-    Texture2D* get_song_bg();
-    Texture2D* get_song_stage();
+    Texture2D* get_song_bg() const;
+    Texture2D* get_song_stage() const;
 
     void start_screen_transition(std::string target) const;
     void exit_current_screen() const;
 
-    std::filesystem::path get_skin_file(const std::string &Name, const std::string &Skin);
-    std::filesystem::path get_skin_file(const std::string &Name);
-    std::filesystem::path get_fallback_skin_file(const std::string &Name);
+    std::filesystem::path get_skin_file(const std::string &name, const std::string &skin);
+    std::filesystem::path get_skin_file(const std::string &name) const;
+    std::filesystem::path get_fallback_skin_file(const std::string &name) const;
 
     SongDatabase* get_song_database() const;
 
@@ -100,7 +100,7 @@ public:
     int get_current_system_type(int pn) const;
 
     // Note: Returning a shared_ptr causes lua to fail an assertion, since shared_ptr is not registered.
-    rd::ScoreKeeper* get_scorekeeper7_k(int pn);
+    rd::ScoreKeeper* get_scorekeeper7_k(int pn) const;
     void set_scorekeeper7_k(std::shared_ptr<rd::ScoreKeeper> other, int pn);
 
     PlayscreenParameters* get_parameters(int pn);
@@ -117,8 +117,12 @@ public:
 
     void set_system_folder(const std::string folder);
 
+    void login_internet_ranking();
+
     void set_root_screen(std::shared_ptr<Screen> root);
-    static std::shared_ptr<Screen> get_current_screen();
+
+    // returns non-owning pointer to current screen
+    Screen* get_current_screen() const;
     std::shared_ptr<Screen> get_next_screen();
 
     void add_active_profile(const std::string &profile_name);

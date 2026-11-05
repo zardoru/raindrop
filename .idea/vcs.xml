@@ -2,11 +2,17 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/catch2-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/cpr-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/luabridge-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/luabridge-src/third_party/gtest" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/zlib-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-release/_deps/catch2-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-release/_deps/cpr-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-release/_deps/libpsl_src-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-release/_deps/libpsl_src-src/list" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-release/_deps/lua-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-release/_deps/luabridge-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-release/_deps/luabridge-src/third_party/gtest" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-release/_deps/portaudio-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-release/_deps/zlib-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/data" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/libotoworm" vcs="Git" />
   </component>

@@ -40,19 +40,19 @@ class SceneEnvironment
     void queue_targets();
 
 public:
-    SceneEnvironment(const char* screen_name, bool initGUI = false);
+    explicit SceneEnvironment(const char* screen_name, bool init_gui = false);
     ~SceneEnvironment();
 
     void remove_managed_objects();
     void remove_external_objects();
 
     void reload_scripts();
-    void ReloadUI();
+    void reload_ui();
     void reload_all();
 
 	void set_screen_name(const std::string &sname);
 
-    void preload(const std::filesystem::path& Filename, std::string array_name);
+    void preload(const std::filesystem::path& filename, std::string array_name);
     void initialize(const std::filesystem::path& filename = "", bool run_script = true);
     LuaManager *get_script_manager() const;
     ImageList* get_image_list() const;
@@ -124,10 +124,10 @@ public:
 
     void sort();
 
-    void update_targets(double TimeDelta);
+    void update_targets(double time_delta);
 
-    void RunIntro(float Fraction, float Delta);
-    void RunExit(float Fraction, float Delta);
+    void run_intro(float fraction, float delta);
+    void run_exit(float fraction, float delta);
 
     float get_intro_duration() const;
     float get_exit_duration() const;
@@ -135,9 +135,9 @@ public:
     bool on_input(int32_t key, bool is_pressed, bool is_mouse_input) const;
 
     static bool handle_text_input(int codepoint);
-    bool is_managed_object(Drawable2D *Obj) const;
-    void stop_managing_object(Drawable2D *Obj);
-    void remove_managed_object(Drawable2D *Obj);
+    bool is_managed_object(Drawable2D *obj) const;
+    void stop_managing_object(Drawable2D *obj);
+    void remove_managed_object(Drawable2D *obj);
     void on_scroll_input(double x_off, double y_off) const;
 };
 

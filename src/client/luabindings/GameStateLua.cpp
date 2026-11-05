@@ -164,7 +164,7 @@ struct songHelper
 PlayscreenParameters* GameState::get_parameters(int pn)
 {
 	if (player_number_in_bounds(pn))
-		return &PlayerInfo[pn].play_parameters;
+		return &player_info_[pn].play_parameters;
 	else return nullptr;
 }
 
@@ -187,8 +187,8 @@ otoworm::Chart *GameState::get_chart(int pn)
 
 std::shared_ptr<otoworm::Chart> GameState::get_chart_shared(int pn)
 {
-    if (player_number_in_bounds(pn) && PlayerInfo[pn].active_chart)
-        return PlayerInfo[pn].active_chart;
+    if (player_number_in_bounds(pn) && player_info_[pn].active_chart)
+        return player_info_[pn].active_chart;
 
     auto group = get_selected_chart_group_shared();
     if (!group)
