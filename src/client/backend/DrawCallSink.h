@@ -22,7 +22,7 @@ class Texture2D;
 // at submit time.
 class DrawCallSink
 {
-    static constexpr uint32_t LayerCount = 16;
+    static constexpr uint32_t LayerCount = 32;
     static constexpr size_t QuadUVCount = 8;
 
     using UVs = std::array<float, QuadUVCount>;

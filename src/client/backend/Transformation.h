@@ -4,7 +4,7 @@
 
 class Transformation
 {
-    static constexpr uint8_t MaxLayer = 15;
+    static constexpr uint8_t MaxLayer = 31;
     Transformation* chain_;
     Mat4   m_matrix_;
     float  m_width_, m_height_;

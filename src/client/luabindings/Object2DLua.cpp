@@ -274,7 +274,7 @@ void CreateObject2DLua(LuaManager *anim_lua) {
                     /// Z. Equivalent to Layer
                     // @property Z
             .addProperty("Z", &O2DProxy::getZ, &O2DProxy::setZ)
-                    /// Layer. If lower, will be behind, if higher, will be above. Ranges from 0 to 15.
+                    /// Layer. If lower, will be behind, if higher, will be above. Ranges from 0 to 31.
                     // @property Layer
             .addProperty("Layer", &O2DProxy::getZ, &O2DProxy::setZ)
                     /// Scale in the horizontal direction.
