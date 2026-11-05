@@ -78,7 +78,7 @@ TEST_CASE("BMS loader consumes evaluated event commands", "[bms]")
         "#00101:02000100\r\n"
         "#00111:0100\r\n";
 
-    const auto tree = NoteLoaderBMS::ParseTreeFromString(text);
+    const auto tree = otoworm::bms::tree::from_string(text);
     REQUIRE(tree);
 
     const auto commands = tree->evaluate();
@@ -105,4 +105,16 @@ TEST_CASE("BMS loader consumes evaluated event commands", "[bms]")
     REQUIRE(chart->transient->bgm_events[0].sound == 2);
     REQUIRE(chart->transient->bgm_events[1].sound == 1);
     REQUIRE(chart->transient->bgm_events[0].time < chart->transient->bgm_events[1].time);
+}
+
+TEST_CASE("BMS tree decodes channel 03 as hexadecimal", "[bms]")
+{
+    const auto command = otoworm::bms::parse_line("#00103:FF0A", 0);
+    REQUIRE(command);
+    REQUIRE(command->event_channel.kind == otoworm::bms::channel::bpm);
+    REQUIRE(command->events == std::vector<uint16_t>{255, 10});
+
+    const auto other = otoworm::bms::parse_line("#00101:FF0A", 0);
+    REQUIRE(other);
+    REQUIRE(other->events == std::vector<uint16_t>{555, 10});
 }
