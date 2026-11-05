@@ -105,6 +105,9 @@ bool AudioSourceMP3::open(const std::filesystem::path Filename)
     {
         long rate;
 
+        // the constructor disables every format; re-enable them so mpg123 can
+        // report the stream's native format before we pin it to s16.
+        mpg123_format_all((mpg123_handle*)mHandle);
         if (mpg123_getformat((mpg123_handle*)mHandle, &rate, &mChannels, &mEncoding) != MPG123_OK)
             return false;
 

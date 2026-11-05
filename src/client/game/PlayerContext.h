@@ -39,7 +39,7 @@ public:
 private:
     rd::RaindropProcessedChart chart_state_;
 
-    double last_update_time_; // seconds, song time
+    double last_update_time_ = 0; // seconds, song time
 
     std::shared_ptr<otoworm::Chart> current_chart_;
 

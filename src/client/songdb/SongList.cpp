@@ -46,7 +46,7 @@ void SongList::clear_empty()
         bool increase = true;
 
         if (std::holds_alternative<std::shared_ptr<SongList>>(it->data)) {
-            auto list = std::get<std::shared_ptr<SongList>>(it->data);
+            const auto list = std::get<std::shared_ptr<SongList>>(it->data);
             if (list->get_num_entries() == 0 && !list->is_in_use()) {
                 it = m_children_.erase(it);
                 increase = false;
